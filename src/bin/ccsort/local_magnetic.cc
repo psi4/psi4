@@ -98,9 +98,9 @@ void local_magnetic(const char *cart, int **domain, int *domain_len,
     C_DGEMM('n', 'n', nso, moinfo.occpi[0], nso, 1, &(TMP[0][0]), nao, &(C[0][0]), moinfo.occpi[0],
 	    0, &(L[0][0]), moinfo.occpi[0]);
 
-    dpd_file2_init(&U, PSIF_CC_OEI, 0, 1, 0, "CPHF Ub_X_AI");
-    dpd_file2_mat_init(&U);
-    dpd_file2_mat_rd(&U);
+    dpd_->file2_init(&U, PSIF_CC_OEI, 0, 1, 0, "CPHF Ub_X_AI");
+    dpd_->file2_mat_init(&U);
+    dpd_->file2_mat_rd(&U);
 
     C_DGEMM('n', 'n', nso,moinfo.occpi[0],moinfo.virtpi[0], 1, &(moinfo.C[0][0][0]), moinfo.virtpi[0],
 	    &(U.matrix[0][0][0]), moinfo.occpi[0], 0, &(Z[0][0]), moinfo.occpi[0]);
@@ -172,8 +172,8 @@ void local_magnetic(const char *cart, int **domain, int *domain_len,
       }
     }
 
-    dpd_file2_mat_close(&U);
-    dpd_file2_close(&U);
+    dpd_->file2_mat_close(&U);
+    dpd_->file2_close(&U);
   }
 
   if (!strcmp(cart, "Y")) {
@@ -192,9 +192,9 @@ void local_magnetic(const char *cart, int **domain, int *domain_len,
     C_DGEMM('n', 'n', nso, moinfo.occpi[0], nso, 1, &(TMP[0][0]), nao, &(C[0][0]), moinfo.occpi[0],
 	    0, &(L[0][0]), moinfo.occpi[0]);
 
-    dpd_file2_init(&U, PSIF_CC_OEI, 0, 1, 0, "CPHF Ub_Y_AI");
-    dpd_file2_mat_init(&U);
-    dpd_file2_mat_rd(&U);
+    dpd_->file2_init(&U, PSIF_CC_OEI, 0, 1, 0, "CPHF Ub_Y_AI");
+    dpd_->file2_mat_init(&U);
+    dpd_->file2_mat_rd(&U);
 
     C_DGEMM('n', 'n', nso,moinfo.occpi[0],moinfo.virtpi[0], 1, &(moinfo.C[0][0][0]), moinfo.virtpi[0],
 	    &(U.matrix[0][0][0]), moinfo.occpi[0], 0, &(Z[0][0]), moinfo.occpi[0]);
@@ -265,8 +265,8 @@ void local_magnetic(const char *cart, int **domain, int *domain_len,
       }
     }
 
-    dpd_file2_mat_close(&U);
-    dpd_file2_close(&U);
+    dpd_->file2_mat_close(&U);
+    dpd_->file2_close(&U);
   }
 
   if (!strcmp(cart, "Z")) {
@@ -285,9 +285,9 @@ void local_magnetic(const char *cart, int **domain, int *domain_len,
     C_DGEMM('n', 'n', nso, moinfo.occpi[0], nso, 1, &(TMP[0][0]), nao, &(C[0][0]), moinfo.occpi[0],
 	    0, &(L[0][0]), moinfo.occpi[0]);
 
-    dpd_file2_init(&U, PSIF_CC_OEI, 0, 1, 0, "CPHF Ub_Z_AI");
-    dpd_file2_mat_init(&U);
-    dpd_file2_mat_rd(&U);
+    dpd_->file2_init(&U, PSIF_CC_OEI, 0, 1, 0, "CPHF Ub_Z_AI");
+    dpd_->file2_mat_init(&U);
+    dpd_->file2_mat_rd(&U);
 
     C_DGEMM('n', 'n', nso,moinfo.occpi[0],moinfo.virtpi[0], 1, &(moinfo.C[0][0][0]), moinfo.virtpi[0],
 	    &(U.matrix[0][0][0]), moinfo.occpi[0], 0, &(Z[0][0]), moinfo.occpi[0]);
@@ -358,8 +358,8 @@ void local_magnetic(const char *cart, int **domain, int *domain_len,
       }
     }
 
-    dpd_file2_mat_close(&U);
-    dpd_file2_close(&U);
+    dpd_->file2_mat_close(&U);
+    dpd_->file2_close(&U);
   }
 
   free_block(TMP);

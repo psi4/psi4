@@ -66,11 +66,11 @@ int build_abcd_packed(int inputfile, double tolerance, int keep)
   int rows_per_bucket, rows_left, row_start, nvirt;
   int m, Gc, C, cc;
 
-  dpd_file4_init_nocache(&B, PSIF_CC_BINTS, 0, 8, 5, "B(+) <ab|cd>");  /* junk target */
-  dpd_buf4_init(&B_s, PSIF_CC_BINTS, 0, 8, 8, 8, 8, 0, "B(+) <ab|cd> + <ab|dc>");
-  dpd_buf4_scm(&B_s, 0.0);
-  dpd_buf4_init(&B_a, PSIF_CC_BINTS, 0, 9, 9, 9, 9, 0, "B(-) <ab|cd> - <ab|dc>");
-  dpd_buf4_scm(&B_a, 0.0);
+  dpd_->file4_init_nocache(&B, PSIF_CC_BINTS, 0, 8, 5, "B(+) <ab|cd>");  /* junk target */
+  dpd_->buf4_init(&B_s, PSIF_CC_BINTS, 0, 8, 8, 8, 8, 0, "B(+) <ab|cd> + <ab|dc>");
+  dpd_->buf4_scm(&B_s, 0.0);
+  dpd_->buf4_init(&B_a, PSIF_CC_BINTS, 0, 9, 9, 9, 9, 0, "B(-) <ab|cd> - <ab|dc>");
+  dpd_->buf4_scm(&B_a, 0.0);
 
   nirreps = B.params->nirreps;
 
@@ -205,8 +205,8 @@ int build_abcd_packed(int inputfile, double tolerance, int keep)
 /* 	psio_write(B.filenum, B.label, (char *) B.matrix[h][0], */
 /* 		   bucket_size[n][h]*((long int) sizeof(double)), next, &next); */
 
-        dpd_buf4_mat_irrep_row_init(&B_s, h);
-        dpd_buf4_mat_irrep_row_init(&B_a, h);
+        dpd_->buf4_mat_irrep_row_init(&B_s, h);
+        dpd_->buf4_mat_irrep_row_init(&B_a, h);
         for(ab=0; ab < bucket_rowdim[n][h]; ab++) {
           for(cd=0; cd < B_s.params->coltot[h]; cd++) {
             c = B_s.params->colorb[h][cd][0];
@@ -218,11 +218,11 @@ int build_abcd_packed(int inputfile, double tolerance, int keep)
             B_s.matrix[h][0][cd] = abcd + abdc;
             B_a.matrix[h][0][cd] = abcd - abdc;
           }
-          dpd_buf4_mat_irrep_row_wrt(&B_s, h, ab+bucket_offset[n][h]);
-          dpd_buf4_mat_irrep_row_wrt(&B_a, h, ab+bucket_offset[n][h]);
+          dpd_->buf4_mat_irrep_row_wrt(&B_s, h, ab+bucket_offset[n][h]);
+          dpd_->buf4_mat_irrep_row_wrt(&B_a, h, ab+bucket_offset[n][h]);
         }
-        dpd_buf4_mat_irrep_row_close(&B_s, h);
-        dpd_buf4_mat_irrep_row_close(&B_a, h);
+        dpd_->buf4_mat_irrep_row_close(&B_s, h);
+        dpd_->buf4_mat_irrep_row_close(&B_a, h);
       }
       free_block(B.matrix[h]);
     }
@@ -244,26 +244,26 @@ int build_abcd_packed(int inputfile, double tolerance, int keep)
   free(bucket_rowdim);
   free(bucket_size);
 
-  dpd_file4_close(&B);
-  dpd_buf4_close(&B_s);
-  dpd_buf4_close(&B_a);
+  dpd_->file4_close(&B);
+  dpd_->buf4_close(&B_s);
+  dpd_->buf4_close(&B_a);
 
   /* Generate <ab|cc> components of B(+) */
   for(h=0,nvirt=0; h < moinfo.nirreps; h++) nvirt += moinfo.virtpi[h];
-  dpd_buf4_init(&B_s, PSIF_CC_BINTS, 0, 8, 8, 8, 8, 0, "B(+) <ab|cd> + <ab|dc>");
+  dpd_->buf4_init(&B_s, PSIF_CC_BINTS, 0, 8, 8, 8, 8, 0, "B(+) <ab|cd> + <ab|dc>");
 
   rows_per_bucket = dpd_memfree()/(B_s.params->coltot[0] + nvirt);
   if(rows_per_bucket > B_s.params->rowtot[0]) rows_per_bucket = B_s.params->rowtot[0];
   nbuckets = (int) ceil((double) B_s.params->rowtot[0]/(double) rows_per_bucket);
   rows_left = B_s.params->rowtot[0] % rows_per_bucket;
 
-  dpd_buf4_mat_irrep_init_block(&B_s, 0, rows_per_bucket);
-  B_diag = dpd_block_matrix(rows_per_bucket, nvirt);
+  dpd_->buf4_mat_irrep_init_block(&B_s, 0, rows_per_bucket);
+  B_diag = dpd_->dpd_block_matrix(rows_per_bucket, nvirt);
 
   next = PSIO_ZERO;
   for(m=0; m < (rows_left ? nbuckets-1:nbuckets); m++) {
     row_start = m * rows_per_bucket;
-    dpd_buf4_mat_irrep_rd_block(&B_s, 0, row_start, rows_per_bucket);
+    dpd_->buf4_mat_irrep_rd_block(&B_s, 0, row_start, rows_per_bucket);
     for(ab=0; ab < rows_per_bucket; ab++)
       for(Gc=0; Gc < moinfo.nirreps; Gc++)
         for(C=0; C < moinfo.virtpi[Gc]; C++) {
@@ -275,7 +275,7 @@ int build_abcd_packed(int inputfile, double tolerance, int keep)
   }
   if(rows_left) {
     row_start = m * rows_per_bucket;
-    dpd_buf4_mat_irrep_rd_block(&B_s, 0, row_start, rows_left);
+    dpd_->buf4_mat_irrep_rd_block(&B_s, 0, row_start, rows_left);
     for(ab=0; ab < rows_left; ab++)
       for(Gc=0; Gc < moinfo.nirreps; Gc++)
         for(C=0; C < moinfo.virtpi[Gc]; C++) {
@@ -285,9 +285,9 @@ int build_abcd_packed(int inputfile, double tolerance, int keep)
         }
     psio_write(PSIF_CC_BINTS, "B(+) <ab|cc>", (char *) B_diag[0], rows_left*nvirt*sizeof(double), next, &next);
   }
-  dpd_free_block(B_diag, rows_per_bucket, nvirt);
-  dpd_buf4_mat_irrep_close_block(&B_s, 0, rows_per_bucket);
-  dpd_buf4_close(&B_s);
+  dpd_->free_dpd_block(B_diag, rows_per_bucket, nvirt);
+  dpd_->buf4_mat_irrep_close_block(&B_s, 0, rows_per_bucket);
+  dpd_->buf4_close(&B_s);
 
   return 0;
 }

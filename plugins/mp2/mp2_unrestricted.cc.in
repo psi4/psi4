@@ -84,15 +84,15 @@ double plugin_mp2_unrestricted(Options &options, shared_ptr<Chkpt> chkpt)
     }
 
     // The alpha-alpha spin case
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
-    dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[O,O]"), ID("[V,V]"), "MO Ints <OO|VV>");
-    dpd_buf4_close(&K);
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), 
+    dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[O,O]"), ID("[V,V]"), "MO Ints <OO|VV>");
+    dpd_->buf4_close(&K);
+    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), 
                   ID("[O,O]"), ID("[V,V]"), 1, "MO Ints <OO|VV>");
     for(int h = 0; h < nirreps; ++h){
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        dpd_->buf4_mat_irrep_init(&K, h);
+        dpd_->buf4_mat_irrep_rd(&K, h);
         for(int ij = 0; ij < K.params->rowtot[h]; ++ij){
             int i = K.params->roworb[h][ij][0];
             int j = K.params->roworb[h][ij][1];
@@ -103,20 +103,20 @@ double plugin_mp2_unrestricted(Options &options, shared_ptr<Chkpt> chkpt)
                      ( aOccEvals[i] + aOccEvals[j] - aVirEvals[a] - aVirEvals[b]);
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
+        dpd_->buf4_mat_irrep_close(&K, h);
     }
-    dpd_buf4_close(&K);
+    dpd_->buf4_close(&K);
 
     // The alpha-beta spin case
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[o,v]"),
+    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[o,v]"),
                   ID("[O,V]"), ID("[o,v]"), 0, "MO Ints (OV|ov)");
-    dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[O,o]"), ID("[V,v]"), "MO Ints <Oo|Vv>");
-    dpd_buf4_close(&K);
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"), 
+    dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[O,o]"), ID("[V,v]"), "MO Ints <Oo|Vv>");
+    dpd_->buf4_close(&K);
+    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"), 
                   ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
     for(int h = 0; h < nirreps; ++h){
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        dpd_->buf4_mat_irrep_init(&K, h);
+        dpd_->buf4_mat_irrep_rd(&K, h);
         for(int ij = 0; ij < K.params->rowtot[h]; ++ij){
             int i = K.params->roworb[h][ij][0];
             int j = K.params->roworb[h][ij][1];
@@ -127,21 +127,21 @@ double plugin_mp2_unrestricted(Options &options, shared_ptr<Chkpt> chkpt)
                      ( aOccEvals[i] + bOccEvals[j] - aVirEvals[a] - bVirEvals[b]);
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
+        dpd_->buf4_mat_irrep_close(&K, h);
     }
-    dpd_buf4_close(&K);
+    dpd_->buf4_close(&K);
 
     // The beta-beta spin case
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
+    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
                   ID("[o,v]"), ID("[o,v]"), 0, "MO Ints (ov|ov)");
-    dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[o,o]"), ID("[v,v]"), 
+    dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[o,o]"), ID("[v,v]"), 
                   "MO Ints <oo|vv>");
-    dpd_buf4_close(&K);
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), 
+    dpd_->buf4_close(&K);
+    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), 
                   ID("[o,o]"), ID("[v,v]"), 1, "MO Ints <oo|vv>");
     for(int h = 0; h < nirreps; ++h){
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        dpd_->buf4_mat_irrep_init(&K, h);
+        dpd_->buf4_mat_irrep_rd(&K, h);
         for(int ij = 0; ij < K.params->rowtot[h]; ++ij){
             int i = K.params->roworb[h][ij][0];
             int j = K.params->roworb[h][ij][1];
@@ -152,9 +152,9 @@ double plugin_mp2_unrestricted(Options &options, shared_ptr<Chkpt> chkpt)
                      ( bOccEvals[i] + bOccEvals[j] - bVirEvals[a] - bVirEvals[b]);
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
+        dpd_->buf4_mat_irrep_close(&K, h);
     }
-    dpd_buf4_close(&K);
+    dpd_->buf4_close(&K);
     
     e2 = aE2 + bE2 + aaE2 + abE2 + bbE2;
     fprintf(outfile, "\n\n\t\tAA correlation energy = %20.16f\n", aaE2);

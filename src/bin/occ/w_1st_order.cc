@@ -45,16 +45,16 @@ void OCCWave::w_1st_order()
 //===========================================================================================
 if (reference_ == "RESTRICTED") {
     // W_mbej => W(me,jb) = <mb|ej> = (me|jb)
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
-    dpd_buf4_copy(&K, PSIF_OCC_DPD, "W_1 (OV|OV)");
-    dpd_buf4_close(&K);
+    dpd_->buf4_copy(&K, PSIF_OCC_DPD, "W_1 (OV|OV)");
+    dpd_->buf4_close(&K);
     
     // W_mbje => W'(me,jb) = <mb|je> = <me|jb>
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV>");
-    dpd_buf4_copy(&K, PSIF_OCC_DPD, "W_1 <OV|OV>");
-    dpd_buf4_close(&K);
+    dpd_->buf4_copy(&K, PSIF_OCC_DPD, "W_1 <OV|OV>");
+    dpd_->buf4_close(&K);
     
 }// end if (reference_ == "RESTRICTED") 
 
@@ -143,95 +143,95 @@ else if (reference_ == "UNRESTRICTED") {
     
     
     // W_MBEJ => W(ME,JB) = <MB||EJ> = (ME|JB) - <ME|JB>
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
-    dpd_buf4_copy(&K, PSIF_OCC_DPD, "W_1 (OV|OV)");
-    dpd_buf4_close(&K);
-    dpd_buf4_init(&W, PSIF_OCC_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+    dpd_->buf4_copy(&K, PSIF_OCC_DPD, "W_1 (OV|OV)");
+    dpd_->buf4_close(&K);
+    dpd_->buf4_init(&W, PSIF_OCC_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "W_1 (OV|OV)");
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV>");
-    dpd_buf4_axpy(&K, &W, -1.0); // -1.0*K + W -> W
-    dpd_buf4_close(&K);
-    dpd_buf4_close(&W);    
+    dpd_->buf4_axpy(&K, &W, -1.0); // -1.0*K + W -> W
+    dpd_->buf4_close(&K);
+    dpd_->buf4_close(&W);    
     
     
     // W_mbej => W(me,jb) = <mb||ej> = (me|jb) - <me|jb>
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
+    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
                   ID("[o,v]"), ID("[o,v]"), 0, "MO Ints (ov|ov)");
-    dpd_buf4_copy(&K, PSIF_OCC_DPD, "W_1 (ov|ov)");
-    dpd_buf4_close(&K);
-    dpd_buf4_init(&W, PSIF_OCC_DPD, 0, ID("[o,v]"), ID("[o,v]"),
+    dpd_->buf4_copy(&K, PSIF_OCC_DPD, "W_1 (ov|ov)");
+    dpd_->buf4_close(&K);
+    dpd_->buf4_init(&W, PSIF_OCC_DPD, 0, ID("[o,v]"), ID("[o,v]"),
                   ID("[o,v]"), ID("[o,v]"), 0, "W_1 (ov|ov)");
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
+    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
                   ID("[o,v]"), ID("[o,v]"), 0, "MO Ints <ov|ov>");
-    dpd_buf4_axpy(&K, &W, -1.0); // -1.0*K + W -> W
-    dpd_buf4_close(&K);
-    dpd_buf4_close(&W);
+    dpd_->buf4_axpy(&K, &W, -1.0); // -1.0*K + W -> W
+    dpd_->buf4_close(&K);
+    dpd_->buf4_close(&W);
     
     
     // W_MbEj => W(ME,jb) = <Mb||Ej> = (ME|jb)
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[o,v]"),
+    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[o,v]"),
                   ID("[O,V]"), ID("[o,v]"), 0, "MO Ints (OV|ov)");
-    dpd_buf4_copy(&K, PSIF_OCC_DPD, "W_1 (OV|ov)");
-    dpd_buf4_close(&K);
+    dpd_->buf4_copy(&K, PSIF_OCC_DPD, "W_1 (OV|ov)");
+    dpd_->buf4_close(&K);
     
     
     // W_MbeJ => W(Me,Jb) = <Mb||eJ> = -(MJ|be)
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[v,v]"),
+    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[v,v]"),
                   ID("[O>=O]+"), ID("[v>=v]+"), 0, "MO Ints (OO|vv)");
-    dpd_buf4_sort(&K, PSIF_OCC_DPD , psqr, ID("[O,v]"), ID("[O,v]"), "W_1 (Ov|Ov)");
-    dpd_buf4_close(&K);
-    dpd_buf4_init(&W, PSIF_OCC_DPD, 0, ID("[O,v]"), ID("[O,v]"),
+    dpd_->buf4_sort(&K, PSIF_OCC_DPD , psqr, ID("[O,v]"), ID("[O,v]"), "W_1 (Ov|Ov)");
+    dpd_->buf4_close(&K);
+    dpd_->buf4_init(&W, PSIF_OCC_DPD, 0, ID("[O,v]"), ID("[O,v]"),
                   ID("[O,v]"), ID("[O,v]"), 0, "W_1 (Ov|Ov)");
-    dpd_buf4_scm(&W, -1.0);
-    dpd_buf4_close(&W);
+    dpd_->buf4_scm(&W, -1.0);
+    dpd_->buf4_close(&W);
     
     
     // W_mBEj => W(mE,jB) = <mB||Ej> = -(BE|mj)
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[o,o]"),
+    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[o,o]"),
                   ID("[V>=V]+"), ID("[o>=o]+"), 0, "MO Ints (VV|oo)");
-    dpd_buf4_sort(&K, PSIF_OCC_DPD , rqsp, ID("[o,V]"), ID("[o,V]"), "W_1 (oV|oV)");
-    dpd_buf4_close(&K);
-    dpd_buf4_init(&W, PSIF_OCC_DPD, 0, ID("[o,V]"), ID("[o,V]"),
+    dpd_->buf4_sort(&K, PSIF_OCC_DPD , rqsp, ID("[o,V]"), ID("[o,V]"), "W_1 (oV|oV)");
+    dpd_->buf4_close(&K);
+    dpd_->buf4_init(&W, PSIF_OCC_DPD, 0, ID("[o,V]"), ID("[o,V]"),
                   ID("[o,V]"), ID("[o,V]"), 0, "W_1 (oV|oV)");
-    dpd_buf4_scm(&W, -1.0);
-    dpd_buf4_close(&W);
+    dpd_->buf4_scm(&W, -1.0);
+    dpd_->buf4_close(&W);
     
     
     // it is unnecessary for omp3, but i will create it so that can use DPD with OOC
     // W_mBeJ => W(me,JB) = <mB||eJ> = (JB|me) = W(JB,me) = W_JeBm
-    dpd_buf4_init(&W, PSIF_OCC_DPD, 0, ID("[O,V]"), ID("[o,v]"),
+    dpd_->buf4_init(&W, PSIF_OCC_DPD, 0, ID("[O,V]"), ID("[o,v]"),
                   ID("[O,V]"), ID("[o,v]"), 0, "W_1 (OV|ov)");
-    dpd_buf4_sort(&W, PSIF_OCC_DPD , rspq, ID("[o,v]"), ID("[O,V]"), "W_1 (ov|OV)");
-    dpd_buf4_close(&W);
+    dpd_->buf4_sort(&W, PSIF_OCC_DPD , rspq, ID("[o,v]"), ID("[O,V]"), "W_1 (ov|OV)");
+    dpd_->buf4_close(&W);
     
     //Print 
     if (print_ > 3) {
-      dpd_buf4_init(&W, PSIF_OCC_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+      dpd_->buf4_init(&W, PSIF_OCC_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "W_1 (OV|OV)");
-      dpd_buf4_print(&W, outfile, 1);
-      dpd_buf4_close(&W);
+      dpd_->buf4_print(&W, outfile, 1);
+      dpd_->buf4_close(&W);
 
-      dpd_buf4_init(&W, PSIF_OCC_DPD, 0, ID("[o,v]"), ID("[o,v]"),
+      dpd_->buf4_init(&W, PSIF_OCC_DPD, 0, ID("[o,v]"), ID("[o,v]"),
                   ID("[o,v]"), ID("[o,v]"), 0, "W_1 (ov|ov)");
-      dpd_buf4_print(&W, outfile, 1);
-      dpd_buf4_close(&W);
+      dpd_->buf4_print(&W, outfile, 1);
+      dpd_->buf4_close(&W);
 
-      dpd_buf4_init(&W, PSIF_OCC_DPD, 0, ID("[O,V]"), ID("[o,v]"),
+      dpd_->buf4_init(&W, PSIF_OCC_DPD, 0, ID("[O,V]"), ID("[o,v]"),
                   ID("[O,V]"), ID("[o,v]"), 0, "W_1 (OV|ov)");
-      dpd_buf4_print(&W, outfile, 1);
-      dpd_buf4_close(&W);
+      dpd_->buf4_print(&W, outfile, 1);
+      dpd_->buf4_close(&W);
 
-      dpd_buf4_init(&W, PSIF_OCC_DPD, 0, ID("[O,v]"), ID("[O,v]"),
+      dpd_->buf4_init(&W, PSIF_OCC_DPD, 0, ID("[O,v]"), ID("[O,v]"),
                   ID("[O,v]"), ID("[O,v]"), 0, "W_1 (Ov|Ov)");
-      dpd_buf4_print(&W, outfile, 1);
-      dpd_buf4_close(&W);
+      dpd_->buf4_print(&W, outfile, 1);
+      dpd_->buf4_close(&W);
 
-      dpd_buf4_init(&W, PSIF_OCC_DPD, 0, ID("[o,V]"), ID("[o,V]"),
+      dpd_->buf4_init(&W, PSIF_OCC_DPD, 0, ID("[o,V]"), ID("[o,V]"),
                   ID("[o,V]"), ID("[o,V]"), 0, "W_1 (oV|oV)");
-      dpd_buf4_print(&W, outfile, 1);
-      dpd_buf4_close(&W);
+      dpd_->buf4_print(&W, outfile, 1);
+      dpd_->buf4_close(&W);
     }
     
 

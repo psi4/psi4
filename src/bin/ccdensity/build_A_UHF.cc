@@ -58,36 +58,36 @@ void build_A_UHF(void)
 
   nirreps = moinfo.nirreps;
 
-  dpd_file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
-  dpd_file2_mat_init(&fIJ);
-  dpd_file2_mat_rd(&fIJ);
-  dpd_file2_init(&fij, PSIF_CC_OEI, 0, 2, 2, "fij");
-  dpd_file2_mat_init(&fij);
-  dpd_file2_mat_rd(&fij);
-  dpd_file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
-  dpd_file2_mat_init(&fAB);
-  dpd_file2_mat_rd(&fAB);
-  dpd_file2_init(&fab, PSIF_CC_OEI, 0, 3, 3, "fab");
-  dpd_file2_mat_init(&fab);
-  dpd_file2_mat_rd(&fab);
-  dpd_file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
-  dpd_file2_mat_init(&fIA);
-  dpd_file2_mat_rd(&fIA);
-  dpd_file2_init(&fia, PSIF_CC_OEI, 0, 2, 3, "fia");
-  dpd_file2_mat_init(&fia);
-  dpd_file2_mat_rd(&fia);
+  dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+  dpd_->file2_mat_init(&fIJ);
+  dpd_->file2_mat_rd(&fIJ);
+  dpd_->file2_init(&fij, PSIF_CC_OEI, 0, 2, 2, "fij");
+  dpd_->file2_mat_init(&fij);
+  dpd_->file2_mat_rd(&fij);
+  dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
+  dpd_->file2_mat_init(&fAB);
+  dpd_->file2_mat_rd(&fAB);
+  dpd_->file2_init(&fab, PSIF_CC_OEI, 0, 3, 3, "fab");
+  dpd_->file2_mat_init(&fab);
+  dpd_->file2_mat_rd(&fab);
+  dpd_->file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
+  dpd_->file2_mat_init(&fIA);
+  dpd_->file2_mat_rd(&fIA);
+  dpd_->file2_init(&fia, PSIF_CC_OEI, 0, 2, 3, "fia");
+  dpd_->file2_mat_init(&fia);
+  dpd_->file2_mat_rd(&fia);
 
-  dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 1, "D <IJ|AB>");
-  dpd_buf4_sort(&D, PSIF_CC_MISC, rpsq, 21, 21, "A(AI,BJ)");
-  dpd_buf4_close(&D);
-  dpd_buf4_init(&D, PSIF_CC_CINTS, 0, 20, 20, 20, 20, 0, "C <IA||JB>");
-  dpd_buf4_sort_axpy(&D, PSIF_CC_MISC, qrsp, 21, 21, "A(AI,BJ)", -1.0);
-  dpd_buf4_close(&D);
+  dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 1, "D <IJ|AB>");
+  dpd_->buf4_sort(&D, PSIF_CC_MISC, rpsq, 21, 21, "A(AI,BJ)");
+  dpd_->buf4_close(&D);
+  dpd_->buf4_init(&D, PSIF_CC_CINTS, 0, 20, 20, 20, 20, 0, "C <IA||JB>");
+  dpd_->buf4_sort_axpy(&D, PSIF_CC_MISC, qrsp, 21, 21, "A(AI,BJ)", -1.0);
+  dpd_->buf4_close(&D);
 
-  dpd_buf4_init(&Amat, PSIF_CC_MISC, 0, 21, 21, 21, 21, 0, "A(AI,BJ)");
+  dpd_->buf4_init(&Amat, PSIF_CC_MISC, 0, 21, 21, 21, 21, 0, "A(AI,BJ)");
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&Amat, h);
-    dpd_buf4_mat_irrep_rd(&Amat, h);
+    dpd_->buf4_mat_irrep_init(&Amat, h);
+    dpd_->buf4_mat_irrep_rd(&Amat, h);
 
     for(row=0; row < Amat.params->rowtot[h]; row++) {
       a = Amat.params->roworb[h][row][0];
@@ -112,22 +112,22 @@ void build_A_UHF(void)
       }
     }
 
-    dpd_buf4_mat_irrep_wrt(&Amat, h);
-    dpd_buf4_mat_irrep_close(&Amat, h);
+    dpd_->buf4_mat_irrep_wrt(&Amat, h);
+    dpd_->buf4_mat_irrep_close(&Amat, h);
   }
-  dpd_buf4_close(&Amat);
+  dpd_->buf4_close(&Amat);
 
-  dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 10, 15, 10, 15, 1, "D <ij|ab>");
-  dpd_buf4_sort(&D, PSIF_CC_MISC, rpsq, 31, 31, "A(ai,bj)");
-  dpd_buf4_close(&D);
-  dpd_buf4_init(&D, PSIF_CC_CINTS, 0, 30, 30, 30, 30, 0, "C <ia||jb>");
-  dpd_buf4_sort_axpy(&D, PSIF_CC_MISC, qrsp, 31, 31, "A(ai,bj)", -1.0);
-  dpd_buf4_close(&D);
+  dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 10, 15, 10, 15, 1, "D <ij|ab>");
+  dpd_->buf4_sort(&D, PSIF_CC_MISC, rpsq, 31, 31, "A(ai,bj)");
+  dpd_->buf4_close(&D);
+  dpd_->buf4_init(&D, PSIF_CC_CINTS, 0, 30, 30, 30, 30, 0, "C <ia||jb>");
+  dpd_->buf4_sort_axpy(&D, PSIF_CC_MISC, qrsp, 31, 31, "A(ai,bj)", -1.0);
+  dpd_->buf4_close(&D);
 
-  dpd_buf4_init(&Amat, PSIF_CC_MISC, 0, 31, 31, 31, 31, 0, "A(ai,bj)");
+  dpd_->buf4_init(&Amat, PSIF_CC_MISC, 0, 31, 31, 31, 31, 0, "A(ai,bj)");
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&Amat, h);
-    dpd_buf4_mat_irrep_rd(&Amat, h);
+    dpd_->buf4_mat_irrep_init(&Amat, h);
+    dpd_->buf4_mat_irrep_rd(&Amat, h);
 
     for(row=0; row < Amat.params->rowtot[h]; row++) {
       a = Amat.params->roworb[h][row][0];
@@ -152,30 +152,30 @@ void build_A_UHF(void)
       }
     }
 
-    dpd_buf4_mat_irrep_wrt(&Amat, h);
-    dpd_buf4_mat_irrep_close(&Amat, h);
+    dpd_->buf4_mat_irrep_wrt(&Amat, h);
+    dpd_->buf4_mat_irrep_close(&Amat, h);
   }
-  dpd_buf4_close(&Amat);
+  dpd_->buf4_close(&Amat);
 
-  dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
-  dpd_buf4_sort(&D, PSIF_CC_MISC, rpsq, 21, 31, "A(AI,bj)");
-  dpd_buf4_close(&D);
-  dpd_buf4_init(&Amat, PSIF_CC_MISC, 0, 21, 31, 21, 31, 0, "A(AI,bj)");
-  dpd_buf4_scm(&Amat, 2);
-  dpd_buf4_close(&Amat);
+  dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
+  dpd_->buf4_sort(&D, PSIF_CC_MISC, rpsq, 21, 31, "A(AI,bj)");
+  dpd_->buf4_close(&D);
+  dpd_->buf4_init(&Amat, PSIF_CC_MISC, 0, 21, 31, 21, 31, 0, "A(AI,bj)");
+  dpd_->buf4_scm(&Amat, 2);
+  dpd_->buf4_close(&Amat);
 
-  dpd_file2_mat_close(&fIJ);
-  dpd_file2_close(&fIJ);
-  dpd_file2_mat_close(&fij);
-  dpd_file2_close(&fij);
-  dpd_file2_mat_close(&fAB);
-  dpd_file2_close(&fAB);
-  dpd_file2_mat_close(&fab);
-  dpd_file2_close(&fab);
-  dpd_file2_mat_close(&fIA);
-  dpd_file2_close(&fIA);
-  dpd_file2_mat_close(&fia);
-  dpd_file2_close(&fia);
+  dpd_->file2_mat_close(&fIJ);
+  dpd_->file2_close(&fIJ);
+  dpd_->file2_mat_close(&fij);
+  dpd_->file2_close(&fij);
+  dpd_->file2_mat_close(&fAB);
+  dpd_->file2_close(&fAB);
+  dpd_->file2_mat_close(&fab);
+  dpd_->file2_close(&fab);
+  dpd_->file2_mat_close(&fIA);
+  dpd_->file2_close(&fIA);
+  dpd_->file2_mat_close(&fia);
+  dpd_->file2_close(&fia);
 }
 
 

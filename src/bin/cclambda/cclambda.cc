@@ -184,29 +184,51 @@ PsiReturnType cclambda(Options& options)
 
     cachelist = cacheprep_rhf(params.cachelev, cachefiles);
 
-    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL,
-         2, moinfo.occpi, moinfo.occ_sym, moinfo.virtpi, moinfo.vir_sym);
+    std::vector<int*> spaces;
+    spaces.push_back(moinfo.occpi);
+    spaces.push_back(moinfo.occ_sym);
+    spaces.push_back(moinfo.virtpi);
+    spaces.push_back(moinfo.vir_sym);
+    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL, 2, spaces);
 
     if(params.aobasis) { /* Set up new DPD for AO-basis algorithm */
-      dpd_init(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL,
-           2, moinfo.occpi, moinfo.occ_sym, moinfo.sopi, moinfo.sosym);
-      dpd_set_default(0);
+        std::vector<int*> aospaces;
+        aospaces.push_back(moinfo.occpi);
+        aospaces.push_back(moinfo.occ_sym);
+        aospaces.push_back(moinfo.sopi);
+        aospaces.push_back(moinfo.sosym);
+        dpd_init(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL, 2, aospaces);
+        dpd_set_default(0);
     }
 
   }
   else if(params.ref == 2) { /** UHF **/
 
     cachelist = cacheprep_uhf(params.cachelev, cachefiles);
+    std::vector<int*> spaces;
+    spaces.push_back(moinfo.aoccpi);
+    spaces.push_back(moinfo.aocc_sym);
+    spaces.push_back(moinfo.avirtpi);
+    spaces.push_back(moinfo.avir_sym);
+    spaces.push_back(moinfo.boccpi);
+    spaces.push_back(moinfo.bocc_sym);
+    spaces.push_back(moinfo.bvirtpi);
+    spaces.push_back(moinfo.bvir_sym);
 
-    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles,
-         cachelist, NULL, 4, moinfo.aoccpi, moinfo.aocc_sym, moinfo.avirtpi,
-         moinfo.avir_sym, moinfo.boccpi, moinfo.bocc_sym, moinfo.bvirtpi, moinfo.bvir_sym);
+    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL, 4, spaces);
 
     if(params.aobasis) { /* Set up new DPD's for AO-basis algorithm */
-      dpd_init(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL,
-               4, moinfo.aoccpi, moinfo.aocc_sym, moinfo.sopi, moinfo.sosym,
-               moinfo.boccpi, moinfo.bocc_sym, moinfo.sopi, moinfo.sosym);
-      dpd_set_default(0);
+        std::vector<int*> aospaces;
+        aospaces.push_back(moinfo.aoccpi);
+        aospaces.push_back(moinfo.aocc_sym);
+        aospaces.push_back(moinfo.sopi);
+        aospaces.push_back(moinfo.sosym);
+        aospaces.push_back(moinfo.boccpi);
+        aospaces.push_back(moinfo.bocc_sym);
+        aospaces.push_back(moinfo.sopi);
+        aospaces.push_back(moinfo.sosym);
+        dpd_init(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL, 4, aospaces);
+        dpd_set_default(0);
     }
   }
 
@@ -411,52 +433,52 @@ void Lsave_index(struct L_Params L_params) {
   L_irr = L_params.irrep;
 
   if(params.ref == 0 || params.ref == 1) { /** ROHF **/
-    dpd_file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
-    dpd_file2_copy(&L1, PSIF_CC_LAMPS, L1A_lbl);
-    dpd_file2_close(&L1);
-    dpd_file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "Lia");
-    dpd_file2_copy(&L1, PSIF_CC_LAMPS, L1B_lbl);
-    dpd_file2_close(&L1);
-    dpd_buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "LIJAB");
-    dpd_buf4_copy(&L2, PSIF_CC_LAMPS, L2AA_lbl);
-    dpd_buf4_close(&L2);
-    dpd_buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "Lijab");
-    dpd_buf4_copy(&L2, PSIF_CC_LAMPS, L2BB_lbl);
-    dpd_buf4_close(&L2);
-    dpd_buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
-    dpd_buf4_copy(&L2, PSIF_CC_LAMPS, L2AB_lbl);
-    dpd_buf4_close(&L2);
+    dpd_->file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
+    dpd_->file2_copy(&L1, PSIF_CC_LAMPS, L1A_lbl);
+    dpd_->file2_close(&L1);
+    dpd_->file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "Lia");
+    dpd_->file2_copy(&L1, PSIF_CC_LAMPS, L1B_lbl);
+    dpd_->file2_close(&L1);
+    dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "LIJAB");
+    dpd_->buf4_copy(&L2, PSIF_CC_LAMPS, L2AA_lbl);
+    dpd_->buf4_close(&L2);
+    dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "Lijab");
+    dpd_->buf4_copy(&L2, PSIF_CC_LAMPS, L2BB_lbl);
+    dpd_->buf4_close(&L2);
+    dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
+    dpd_->buf4_copy(&L2, PSIF_CC_LAMPS, L2AB_lbl);
+    dpd_->buf4_close(&L2);
   }
   else if(params.ref == 2) { /** UHF **/
-    dpd_file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
-    dpd_file2_copy(&L1, PSIF_CC_LAMPS, L1A_lbl);
-    dpd_file2_close(&L1);
-    dpd_file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 2, 3, "Lia");
-    dpd_file2_copy(&L1, PSIF_CC_LAMPS, L1B_lbl);
-    dpd_file2_close(&L1);
-    dpd_buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "LIJAB");
-    dpd_buf4_copy(&L2, PSIF_CC_LAMPS, L2AA_lbl);
-    dpd_buf4_close(&L2);
-    dpd_buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 12, 17, 12, 17, 0, "Lijab");
-    dpd_buf4_copy(&L2, PSIF_CC_LAMPS, L2BB_lbl);
-    dpd_buf4_close(&L2);
-    dpd_buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "LIjAb");
-    dpd_buf4_copy(&L2, PSIF_CC_LAMPS, L2AB_lbl);
-    dpd_buf4_close(&L2);
+    dpd_->file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
+    dpd_->file2_copy(&L1, PSIF_CC_LAMPS, L1A_lbl);
+    dpd_->file2_close(&L1);
+    dpd_->file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 2, 3, "Lia");
+    dpd_->file2_copy(&L1, PSIF_CC_LAMPS, L1B_lbl);
+    dpd_->file2_close(&L1);
+    dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "LIJAB");
+    dpd_->buf4_copy(&L2, PSIF_CC_LAMPS, L2AA_lbl);
+    dpd_->buf4_close(&L2);
+    dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 12, 17, 12, 17, 0, "Lijab");
+    dpd_->buf4_copy(&L2, PSIF_CC_LAMPS, L2BB_lbl);
+    dpd_->buf4_close(&L2);
+    dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "LIjAb");
+    dpd_->buf4_copy(&L2, PSIF_CC_LAMPS, L2AB_lbl);
+    dpd_->buf4_close(&L2);
   }
 
   if (params.ref == 0) { /** RHF for those codes that can use them **/
-    dpd_buf4_init(&LIjAb, PSIF_CC_LAMPS, L_irr, 0, 5, 0, 5, 0, L2AB_lbl);
-    dpd_buf4_sort(&LIjAb, PSIF_CC_TMP, pqsr, 0, 5, "LIjbA");
-    dpd_buf4_copy(&LIjAb, PSIF_CC_LAMPS, L2RHF_lbl);
-    dpd_buf4_close(&LIjAb);
+    dpd_->buf4_init(&LIjAb, PSIF_CC_LAMPS, L_irr, 0, 5, 0, 5, 0, L2AB_lbl);
+    dpd_->buf4_sort(&LIjAb, PSIF_CC_TMP, pqsr, 0, 5, "LIjbA");
+    dpd_->buf4_copy(&LIjAb, PSIF_CC_LAMPS, L2RHF_lbl);
+    dpd_->buf4_close(&LIjAb);
 
-    dpd_buf4_init(&LIjAb, PSIF_CC_LAMPS, L_irr, 0, 5, 0, 5, 0, L2RHF_lbl);
-    dpd_buf4_scm(&LIjAb, 2.0);
-    dpd_buf4_init(&LIjbA, PSIF_CC_TMP, L_irr, 0, 5, 0, 5, 0, "LIjbA");
-    dpd_buf4_axpy(&LIjbA, &LIjAb, -1.0);
-    dpd_buf4_close(&LIjbA);
-    dpd_buf4_close(&LIjAb);
+    dpd_->buf4_init(&LIjAb, PSIF_CC_LAMPS, L_irr, 0, 5, 0, 5, 0, L2RHF_lbl);
+    dpd_->buf4_scm(&LIjAb, 2.0);
+    dpd_->buf4_init(&LIjbA, PSIF_CC_TMP, L_irr, 0, 5, 0, 5, 0, "LIjbA");
+    dpd_->buf4_axpy(&LIjbA, &LIjAb, -1.0);
+    dpd_->buf4_close(&LIjbA);
+    dpd_->buf4_close(&LIjAb);
   }
   return;
 }
@@ -466,53 +488,53 @@ void L_zero(int L_irr) {
   dpdbuf4 LIJAB, Lijab, LIjAb;
 
   if(params.ref == 0) { /** RHF **/
-    dpd_file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
-    dpd_file2_scm(&LIA, 0.0);
-    dpd_file2_close(&LIA);
+    dpd_->file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
+    dpd_->file2_scm(&LIA, 0.0);
+    dpd_->file2_close(&LIA);
   }
   else if(params.ref == 1) { /** RHF/ROHF **/
-    dpd_file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
-    dpd_file2_init(&Lia, PSIF_CC_LAMBDA, L_irr, 0, 1, "New Lia");
-    dpd_file2_scm(&LIA, 0.0);
-    dpd_file2_scm(&Lia, 0.0);
-    dpd_file2_close(&LIA);
-    dpd_file2_close(&Lia);
+    dpd_->file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
+    dpd_->file2_init(&Lia, PSIF_CC_LAMBDA, L_irr, 0, 1, "New Lia");
+    dpd_->file2_scm(&LIA, 0.0);
+    dpd_->file2_scm(&Lia, 0.0);
+    dpd_->file2_close(&LIA);
+    dpd_->file2_close(&Lia);
   }
   else if(params.ref == 2) { /** UHF **/
-    dpd_file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
-    dpd_file2_init(&Lia, PSIF_CC_LAMBDA, L_irr, 2, 3, "New Lia");
-    dpd_file2_scm(&LIA, 0.0);
-    dpd_file2_scm(&Lia, 0.0);
-    dpd_file2_close(&LIA);
-    dpd_file2_close(&Lia);
+    dpd_->file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
+    dpd_->file2_init(&Lia, PSIF_CC_LAMBDA, L_irr, 2, 3, "New Lia");
+    dpd_->file2_scm(&LIA, 0.0);
+    dpd_->file2_scm(&Lia, 0.0);
+    dpd_->file2_close(&LIA);
+    dpd_->file2_close(&Lia);
   }
 
   if(params.ref == 0) { /** RHF **/
-    dpd_buf4_init(&LIjAb, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
-    dpd_buf4_scm(&LIjAb, 0.0);
-    dpd_buf4_close(&LIjAb);
+    dpd_->buf4_init(&LIjAb, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
+    dpd_->buf4_scm(&LIjAb, 0.0);
+    dpd_->buf4_close(&LIjAb);
   }
   else if (params.ref == 1 ) { /** ROHF **/
-    dpd_buf4_init(&LIJAB, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
-    dpd_buf4_scm(&LIJAB, 0.0);
-    dpd_buf4_close(&LIJAB);
-    dpd_buf4_init(&Lijab, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New Lijab");
-    dpd_buf4_scm(&Lijab, 0.0);
-    dpd_buf4_close(&Lijab);
-    dpd_buf4_init(&LIjAb, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
-    dpd_buf4_scm(&LIjAb, 0.0);
-    dpd_buf4_close(&LIjAb);
+    dpd_->buf4_init(&LIJAB, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
+    dpd_->buf4_scm(&LIJAB, 0.0);
+    dpd_->buf4_close(&LIJAB);
+    dpd_->buf4_init(&Lijab, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New Lijab");
+    dpd_->buf4_scm(&Lijab, 0.0);
+    dpd_->buf4_close(&Lijab);
+    dpd_->buf4_init(&LIjAb, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
+    dpd_->buf4_scm(&LIjAb, 0.0);
+    dpd_->buf4_close(&LIjAb);
   }
   else { /** UHF **/
-    dpd_buf4_init(&LIJAB, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
-    dpd_buf4_scm(&LIJAB, 0.0);
-    dpd_buf4_close(&LIJAB);
-    dpd_buf4_init(&Lijab, PSIF_CC_LAMBDA, L_irr, 12, 17, 12, 17, 0, "New Lijab");
-    dpd_buf4_scm(&Lijab, 0.0);
-    dpd_buf4_close(&Lijab);
-    dpd_buf4_init(&LIjAb, PSIF_CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "New LIjAb");
-    dpd_buf4_scm(&LIjAb, 0.0);
-    dpd_buf4_close(&LIjAb);
+    dpd_->buf4_init(&LIJAB, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
+    dpd_->buf4_scm(&LIJAB, 0.0);
+    dpd_->buf4_close(&LIJAB);
+    dpd_->buf4_init(&Lijab, PSIF_CC_LAMBDA, L_irr, 12, 17, 12, 17, 0, "New Lijab");
+    dpd_->buf4_scm(&Lijab, 0.0);
+    dpd_->buf4_close(&Lijab);
+    dpd_->buf4_init(&LIjAb, PSIF_CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "New LIjAb");
+    dpd_->buf4_scm(&LIjAb, 0.0);
+    dpd_->buf4_close(&LIjAb);
   }
 }
 
@@ -526,19 +548,19 @@ void L_clean(struct L_Params L_params) {
 
   L_irr = L_params.irrep;
 
-  dpd_file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
-  dpd_file2_init(&Lia, PSIF_CC_LAMBDA, L_irr, 0, 1, "New Lia");
-  dpd_buf4_init(&LIJAB, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
-  dpd_buf4_init(&Lijab, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New Lijab");
-  dpd_buf4_init(&LIjAb, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
+  dpd_->file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
+  dpd_->file2_init(&Lia, PSIF_CC_LAMBDA, L_irr, 0, 1, "New Lia");
+  dpd_->buf4_init(&LIJAB, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
+  dpd_->buf4_init(&Lijab, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New Lijab");
+  dpd_->buf4_init(&LIjAb, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
 
   c_clean(&LIA, &Lia, &LIJAB, &Lijab, &LIjAb);
 
-  dpd_file2_close(&LIA);
-  dpd_file2_close(&Lia);
-  dpd_buf4_close(&LIJAB);
-  dpd_buf4_close(&Lijab);
-  dpd_buf4_close(&LIjAb);
+  dpd_->file2_close(&LIA);
+  dpd_->file2_close(&Lia);
+  dpd_->buf4_close(&LIJAB);
+  dpd_->buf4_close(&Lijab);
+  dpd_->buf4_close(&LIjAb);
 }
 
 void zeta_norm(struct L_Params L_params) {
@@ -549,38 +571,38 @@ void zeta_norm(struct L_Params L_params) {
   Z_irr = L_params.irrep;
 
   if (params.ref == 0 || params.ref == 1) {
-    dpd_file2_init(&ZIA, PSIF_CC_LAMPS, Z_irr, 0, 1, "ZIA");
-    tval = dpd_file2_dot_self(&ZIA);
-    dpd_file2_close(&ZIA);
-    dpd_file2_init(&Zia, PSIF_CC_LAMPS, Z_irr, 0, 1, "Zia");
-    tval += dpd_file2_dot_self(&Zia);
-    dpd_file2_close(&Zia);
-    dpd_buf4_init(&ZIJAB, PSIF_CC_LAMPS, Z_irr, 2, 7, 2, 7, 0, "ZIJAB");
-    tval += dpd_buf4_dot_self(&ZIJAB);
-    dpd_buf4_close(&ZIJAB);
-    dpd_buf4_init(&Zijab, PSIF_CC_LAMPS, Z_irr, 2, 7, 2, 7, 0, "Zijab");
-    tval += dpd_buf4_dot_self(&Zijab);
-    dpd_buf4_close(&Zijab);
-    dpd_buf4_init(&ZIjAb, PSIF_CC_LAMPS, Z_irr, 0, 5, 0, 5, 0, "ZIjAb");
-    tval += dpd_buf4_dot_self(&ZIjAb);
-    dpd_buf4_close(&ZIjAb);
+    dpd_->file2_init(&ZIA, PSIF_CC_LAMPS, Z_irr, 0, 1, "ZIA");
+    tval = dpd_->file2_dot_self(&ZIA);
+    dpd_->file2_close(&ZIA);
+    dpd_->file2_init(&Zia, PSIF_CC_LAMPS, Z_irr, 0, 1, "Zia");
+    tval += dpd_->file2_dot_self(&Zia);
+    dpd_->file2_close(&Zia);
+    dpd_->buf4_init(&ZIJAB, PSIF_CC_LAMPS, Z_irr, 2, 7, 2, 7, 0, "ZIJAB");
+    tval += dpd_->buf4_dot_self(&ZIJAB);
+    dpd_->buf4_close(&ZIJAB);
+    dpd_->buf4_init(&Zijab, PSIF_CC_LAMPS, Z_irr, 2, 7, 2, 7, 0, "Zijab");
+    tval += dpd_->buf4_dot_self(&Zijab);
+    dpd_->buf4_close(&Zijab);
+    dpd_->buf4_init(&ZIjAb, PSIF_CC_LAMPS, Z_irr, 0, 5, 0, 5, 0, "ZIjAb");
+    tval += dpd_->buf4_dot_self(&ZIjAb);
+    dpd_->buf4_close(&ZIjAb);
   }
   else { /* UHF */
-    dpd_file2_init(&ZIA, PSIF_CC_LAMPS, Z_irr, 0, 1, "ZIA");
-    tval = dpd_file2_dot_self(&ZIA);
-    dpd_file2_close(&ZIA);
-    dpd_file2_init(&Zia, PSIF_CC_LAMPS, Z_irr, 2, 3, "Zia");
-    tval += dpd_file2_dot_self(&Zia);
-    dpd_file2_close(&Zia);
-    dpd_buf4_init(&ZIJAB, PSIF_CC_LAMPS, Z_irr, 2, 7, 2, 7, 0, "ZIJAB");
-    tval += dpd_buf4_dot_self(&ZIJAB);
-    dpd_buf4_close(&ZIJAB);
-    dpd_buf4_init(&Zijab, PSIF_CC_LAMPS, Z_irr, 12, 17, 12, 17, 0, "Zijab");
-    tval += dpd_buf4_dot_self(&Zijab);
-    dpd_buf4_close(&Zijab);
-    dpd_buf4_init(&ZIjAb, PSIF_CC_LAMPS, Z_irr, 22, 28, 22, 28, 0, "ZIjAb");
-    tval += dpd_buf4_dot_self(&ZIjAb);
-    dpd_buf4_close(&ZIjAb);
+    dpd_->file2_init(&ZIA, PSIF_CC_LAMPS, Z_irr, 0, 1, "ZIA");
+    tval = dpd_->file2_dot_self(&ZIA);
+    dpd_->file2_close(&ZIA);
+    dpd_->file2_init(&Zia, PSIF_CC_LAMPS, Z_irr, 2, 3, "Zia");
+    tval += dpd_->file2_dot_self(&Zia);
+    dpd_->file2_close(&Zia);
+    dpd_->buf4_init(&ZIJAB, PSIF_CC_LAMPS, Z_irr, 2, 7, 2, 7, 0, "ZIJAB");
+    tval += dpd_->buf4_dot_self(&ZIJAB);
+    dpd_->buf4_close(&ZIJAB);
+    dpd_->buf4_init(&Zijab, PSIF_CC_LAMPS, Z_irr, 12, 17, 12, 17, 0, "Zijab");
+    tval += dpd_->buf4_dot_self(&Zijab);
+    dpd_->buf4_close(&Zijab);
+    dpd_->buf4_init(&ZIjAb, PSIF_CC_LAMPS, Z_irr, 22, 28, 22, 28, 0, "ZIjAb");
+    tval += dpd_->buf4_dot_self(&ZIjAb);
+    dpd_->buf4_close(&ZIjAb);
   }
   fprintf(outfile,"Norm of Zeta: %20.15lf\n", sqrt(tval) );
   return;

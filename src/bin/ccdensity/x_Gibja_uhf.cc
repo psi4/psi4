@@ -54,324 +54,324 @@ void x_Gibja_uhf(void)
   /* Gajib = lia rjb + limae (rjmbe - rmb tje - rje tmb + rme tjb) */
 
   /* term 3  Gibja += L(im,ae) R(jm,be) */
-  dpd_buf4_init(&V2, PSIF_EOM_TMP, G_irr, 20, 20, 20, 20, 0, "R2L2_OVOV");
-  dpd_buf4_sort(&V2, PSIF_EOM_TMP0, rspq, 20, 20, "GIAJB");
-  dpd_buf4_close(&V2);
-  dpd_buf4_init(&V2, PSIF_EOM_TMP, G_irr, 30, 30, 30, 30, 0, "R2L2_ovov");
-  dpd_buf4_sort(&V2, PSIF_EOM_TMP0, rspq, 30, 30, "Giajb");
-  dpd_buf4_close(&V2);
-  dpd_buf4_init(&V2, PSIF_EOM_TMP, G_irr, 24, 24, 24, 24, 0, "R2L2_OvOv");
-  dpd_buf4_sort(&V2, PSIF_EOM_TMP0, rspq, 24, 24, "GIaJb");
-  dpd_buf4_close(&V2);
-  dpd_buf4_init(&V2, PSIF_EOM_TMP, G_irr, 27, 27, 27, 27, 0, "R2L2_oVoV");
-  dpd_buf4_sort(&V2, PSIF_EOM_TMP0, rspq, 27, 27, "GiAjB");
-  dpd_buf4_close(&V2);
-  dpd_buf4_init(&V2, PSIF_EOM_TMP, G_irr, 30, 20, 30, 20, 0, "R2L2_ovOV");
-  dpd_buf4_sort(&V2, PSIF_EOM_TMP0, rspq, 20, 30, "GIAjb");
-  dpd_buf4_close(&V2);
-  dpd_buf4_init(&V2, PSIF_EOM_TMP, G_irr, 20, 30, 20, 30, 0, "R2L2_OVov");
-  dpd_buf4_sort(&V2, PSIF_EOM_TMP0, rspq, 30, 20, "GiaJB");
-  dpd_buf4_close(&V2);
+  dpd_->buf4_init(&V2, PSIF_EOM_TMP, G_irr, 20, 20, 20, 20, 0, "R2L2_OVOV");
+  dpd_->buf4_sort(&V2, PSIF_EOM_TMP0, rspq, 20, 20, "GIAJB");
+  dpd_->buf4_close(&V2);
+  dpd_->buf4_init(&V2, PSIF_EOM_TMP, G_irr, 30, 30, 30, 30, 0, "R2L2_ovov");
+  dpd_->buf4_sort(&V2, PSIF_EOM_TMP0, rspq, 30, 30, "Giajb");
+  dpd_->buf4_close(&V2);
+  dpd_->buf4_init(&V2, PSIF_EOM_TMP, G_irr, 24, 24, 24, 24, 0, "R2L2_OvOv");
+  dpd_->buf4_sort(&V2, PSIF_EOM_TMP0, rspq, 24, 24, "GIaJb");
+  dpd_->buf4_close(&V2);
+  dpd_->buf4_init(&V2, PSIF_EOM_TMP, G_irr, 27, 27, 27, 27, 0, "R2L2_oVoV");
+  dpd_->buf4_sort(&V2, PSIF_EOM_TMP0, rspq, 27, 27, "GiAjB");
+  dpd_->buf4_close(&V2);
+  dpd_->buf4_init(&V2, PSIF_EOM_TMP, G_irr, 30, 20, 30, 20, 0, "R2L2_ovOV");
+  dpd_->buf4_sort(&V2, PSIF_EOM_TMP0, rspq, 20, 30, "GIAjb");
+  dpd_->buf4_close(&V2);
+  dpd_->buf4_init(&V2, PSIF_EOM_TMP, G_irr, 20, 30, 20, 30, 0, "R2L2_OVov");
+  dpd_->buf4_sort(&V2, PSIF_EOM_TMP0, rspq, 30, 20, "GiaJB");
+  dpd_->buf4_close(&V2);
 
   /* term 4, G(IA,JB) <-- - L(IM,AE) T(J,E) R(M,B) */
-  dpd_buf4_init(&Z, PSIF_EOM_TMP1, L_irr, 0, 21, 0, 21, 0, "Z(IM,AJ)");
-  dpd_buf4_init(&L2, PSIF_CC_GL, L_irr, 0, 5, 2, 7, 0, "LIJAB");
-  dpd_file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
-  dpd_contract424(&L2, &T1A, &Z, 3, 1, 0, 1.0, 0.0);
-  dpd_file2_close(&T1A);
-  dpd_buf4_close(&L2);
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 20, 21, 20, 21, 0, "Z(IB,AJ)");
-  dpd_file2_init(&R1A, PSIF_CC_GR, R_irr, 0, 1, "RIA");
-  dpd_contract424(&Z, &R1A, &Z1, 1, 0, 1, 1.0, 0.0);
-  dpd_file2_close(&R1A);
-  dpd_buf4_close(&Z);
-  dpd_buf4_sort(&Z1, PSIF_EOM_TMP1, prqs, 20, 21, "Z(IA,BJ)");
-  dpd_buf4_close(&Z1);
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 20, 21, 20, 21, 0, "Z(IA,BJ)");
-  dpd_buf4_sort(&Z1, PSIF_EOM_TMP1, pqsr, 20, 20, "Z(IA,JB)");
-  dpd_buf4_close(&Z1);
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 20, 20, 20, 20, 0, "Z(IA,JB)");
-  dpd_buf4_init(&G, PSIF_EOM_TMP0, G_irr, 20, 20, 20, 20, 0, "GIAJB");
-  dpd_buf4_axpy(&Z1, &G, -1.0);
-  dpd_buf4_close(&Z1);
-  dpd_buf4_close(&G);
+  dpd_->buf4_init(&Z, PSIF_EOM_TMP1, L_irr, 0, 21, 0, 21, 0, "Z(IM,AJ)");
+  dpd_->buf4_init(&L2, PSIF_CC_GL, L_irr, 0, 5, 2, 7, 0, "LIJAB");
+  dpd_->file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
+  dpd_->contract424(&L2, &T1A, &Z, 3, 1, 0, 1.0, 0.0);
+  dpd_->file2_close(&T1A);
+  dpd_->buf4_close(&L2);
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 20, 21, 20, 21, 0, "Z(IB,AJ)");
+  dpd_->file2_init(&R1A, PSIF_CC_GR, R_irr, 0, 1, "RIA");
+  dpd_->contract424(&Z, &R1A, &Z1, 1, 0, 1, 1.0, 0.0);
+  dpd_->file2_close(&R1A);
+  dpd_->buf4_close(&Z);
+  dpd_->buf4_sort(&Z1, PSIF_EOM_TMP1, prqs, 20, 21, "Z(IA,BJ)");
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 20, 21, 20, 21, 0, "Z(IA,BJ)");
+  dpd_->buf4_sort(&Z1, PSIF_EOM_TMP1, pqsr, 20, 20, "Z(IA,JB)");
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 20, 20, 20, 20, 0, "Z(IA,JB)");
+  dpd_->buf4_init(&G, PSIF_EOM_TMP0, G_irr, 20, 20, 20, 20, 0, "GIAJB");
+  dpd_->buf4_axpy(&Z1, &G, -1.0);
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_close(&G);
 
   /* term 4, G(ia,jb) <-- - L(im,ae) T(j,e) R(m,b) */
-  dpd_buf4_init(&Z, PSIF_EOM_TMP1, L_irr, 10, 31, 10, 31, 0, "Z(im,aj)");
-  dpd_buf4_init(&L2, PSIF_CC_GL, L_irr, 10, 15, 12, 17, 0, "Lijab");
-  dpd_file2_init(&T1B, PSIF_CC_OEI, 0, 2, 3, "tia");
-  dpd_contract424(&L2, &T1B, &Z, 3, 1, 0, 1.0, 0.0);
-  dpd_file2_close(&T1B);
-  dpd_buf4_close(&L2);
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 30, 31, 30, 31, 0, "Z(ib,aj)");
-  dpd_file2_init(&R1B, PSIF_CC_GR, R_irr, 2, 3, "Ria");
-  dpd_contract424(&Z, &R1B, &Z1, 1, 0, 1, 1.0, 0.0);
-  dpd_file2_close(&R1B);
-  dpd_buf4_close(&Z);
-  dpd_buf4_sort(&Z1, PSIF_EOM_TMP1, prqs, 30, 31, "Z(ia,bj)");
-  dpd_buf4_close(&Z1);
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 30, 31, 30, 31, 0, "Z(ia,bj)");
-  dpd_buf4_sort(&Z1, PSIF_EOM_TMP1, pqsr, 30, 30, "Z(ia,jb)");
-  dpd_buf4_close(&Z1);
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 30, 30, 30, 30, 0, "Z(ia,jb)");
-  dpd_buf4_init(&G, PSIF_EOM_TMP0, G_irr, 30, 30, 30, 30, 0, "Giajb");
-  dpd_buf4_axpy(&Z1, &G, -1.0);
-  dpd_buf4_close(&Z1);
-  dpd_buf4_close(&G);
+  dpd_->buf4_init(&Z, PSIF_EOM_TMP1, L_irr, 10, 31, 10, 31, 0, "Z(im,aj)");
+  dpd_->buf4_init(&L2, PSIF_CC_GL, L_irr, 10, 15, 12, 17, 0, "Lijab");
+  dpd_->file2_init(&T1B, PSIF_CC_OEI, 0, 2, 3, "tia");
+  dpd_->contract424(&L2, &T1B, &Z, 3, 1, 0, 1.0, 0.0);
+  dpd_->file2_close(&T1B);
+  dpd_->buf4_close(&L2);
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 30, 31, 30, 31, 0, "Z(ib,aj)");
+  dpd_->file2_init(&R1B, PSIF_CC_GR, R_irr, 2, 3, "Ria");
+  dpd_->contract424(&Z, &R1B, &Z1, 1, 0, 1, 1.0, 0.0);
+  dpd_->file2_close(&R1B);
+  dpd_->buf4_close(&Z);
+  dpd_->buf4_sort(&Z1, PSIF_EOM_TMP1, prqs, 30, 31, "Z(ia,bj)");
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 30, 31, 30, 31, 0, "Z(ia,bj)");
+  dpd_->buf4_sort(&Z1, PSIF_EOM_TMP1, pqsr, 30, 30, "Z(ia,jb)");
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 30, 30, 30, 30, 0, "Z(ia,jb)");
+  dpd_->buf4_init(&G, PSIF_EOM_TMP0, G_irr, 30, 30, 30, 30, 0, "Giajb");
+  dpd_->buf4_axpy(&Z1, &G, -1.0);
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_close(&G);
 
   /* term 4, G(Ia,Jb) <-- - L(Im,aE) T(J,E) R(m,b) */
-  dpd_buf4_init(&Z, PSIF_EOM_TMP1, L_irr, 22, 25, 22, 25, 0, "Z(Im,aJ)");
-  dpd_buf4_init(&L2, PSIF_CC_GL, L_irr, 22, 29, 22, 29, 0, "LIjaB");
-  dpd_file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
-  dpd_contract424(&L2, &T1A, &Z, 3, 1, 0, 1.0, 0.0);
-  dpd_file2_close(&T1A);
-  dpd_buf4_close(&L2);
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 24, 25, 24, 25, 0, "Z(Ib,aJ)");
-  dpd_file2_init(&R1B, PSIF_CC_GR, R_irr, 2, 3, "Ria");
-  dpd_contract424(&Z, &R1B, &Z1, 1, 0, 1, 1.0, 0.0);
-  dpd_file2_close(&R1B);
-  dpd_buf4_close(&Z);
-  dpd_buf4_sort(&Z1, PSIF_EOM_TMP1, prqs, 24, 25, "Z(Ia,bJ)");
-  dpd_buf4_close(&Z1);
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 24, 25, 24, 25, 0, "Z(Ia,bJ)");
-  dpd_buf4_sort(&Z1, PSIF_EOM_TMP1, pqsr, 24, 24, "Z(Ia,Jb)");
-  dpd_buf4_close(&Z1);
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 24, 24, 24, 24, 0, "Z(Ia,Jb)");
-  dpd_buf4_init(&G, PSIF_EOM_TMP0, G_irr, 24, 24, 24, 24, 0, "GIaJb");
-  dpd_buf4_axpy(&Z1, &G, 1.0);
-  dpd_buf4_close(&Z1);
-  dpd_buf4_close(&G);
+  dpd_->buf4_init(&Z, PSIF_EOM_TMP1, L_irr, 22, 25, 22, 25, 0, "Z(Im,aJ)");
+  dpd_->buf4_init(&L2, PSIF_CC_GL, L_irr, 22, 29, 22, 29, 0, "LIjaB");
+  dpd_->file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
+  dpd_->contract424(&L2, &T1A, &Z, 3, 1, 0, 1.0, 0.0);
+  dpd_->file2_close(&T1A);
+  dpd_->buf4_close(&L2);
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 24, 25, 24, 25, 0, "Z(Ib,aJ)");
+  dpd_->file2_init(&R1B, PSIF_CC_GR, R_irr, 2, 3, "Ria");
+  dpd_->contract424(&Z, &R1B, &Z1, 1, 0, 1, 1.0, 0.0);
+  dpd_->file2_close(&R1B);
+  dpd_->buf4_close(&Z);
+  dpd_->buf4_sort(&Z1, PSIF_EOM_TMP1, prqs, 24, 25, "Z(Ia,bJ)");
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 24, 25, 24, 25, 0, "Z(Ia,bJ)");
+  dpd_->buf4_sort(&Z1, PSIF_EOM_TMP1, pqsr, 24, 24, "Z(Ia,Jb)");
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 24, 24, 24, 24, 0, "Z(Ia,Jb)");
+  dpd_->buf4_init(&G, PSIF_EOM_TMP0, G_irr, 24, 24, 24, 24, 0, "GIaJb");
+  dpd_->buf4_axpy(&Z1, &G, 1.0);
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_close(&G);
 
   /* term 4, G(iA,jB) <-- - L(iM,Ae) T(j,e) R(M,B) */
-  dpd_buf4_init(&Z, PSIF_EOM_TMP1, L_irr, 23, 26, 23, 26, 0, "Z(iM,Aj)");
-  dpd_buf4_init(&L2, PSIF_CC_GL, L_irr, 23, 28, 23, 28, 0, "LiJAb");
-  dpd_file2_init(&T1A, PSIF_CC_OEI, 0, 2, 3, "tia");
-  dpd_contract424(&L2, &T1A, &Z, 3, 1, 0, 1.0, 0.0);
-  dpd_file2_close(&T1A);
-  dpd_buf4_close(&L2);
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 27, 26, 27, 26, 0, "Z(iB,Aj)");
-  dpd_file2_init(&R1A, PSIF_CC_GR, R_irr, 0, 1, "RIA");
-  dpd_contract424(&Z, &R1A, &Z1, 1, 0, 1, 1.0, 0.0);
-  dpd_file2_close(&R1A);
-  dpd_buf4_close(&Z);
-  dpd_buf4_sort(&Z1, PSIF_EOM_TMP1, prqs, 27, 26, "Z(iA,Bj)");
-  dpd_buf4_close(&Z1);
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 27, 26, 27, 26, 0, "Z(iA,Bj)");
-  dpd_buf4_sort(&Z1, PSIF_EOM_TMP1, pqsr, 27, 27, "Z(iA,jB)");
-  dpd_buf4_close(&Z1);
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 27, 27, 27, 27, 0, "Z(iA,jB)");
-  dpd_buf4_init(&G, PSIF_EOM_TMP0, G_irr, 27, 27, 27, 27, 0, "GiAjB");
-  dpd_buf4_axpy(&Z1, &G, 1.0);
-  dpd_buf4_close(&Z1);
-  dpd_buf4_close(&G);
+  dpd_->buf4_init(&Z, PSIF_EOM_TMP1, L_irr, 23, 26, 23, 26, 0, "Z(iM,Aj)");
+  dpd_->buf4_init(&L2, PSIF_CC_GL, L_irr, 23, 28, 23, 28, 0, "LiJAb");
+  dpd_->file2_init(&T1A, PSIF_CC_OEI, 0, 2, 3, "tia");
+  dpd_->contract424(&L2, &T1A, &Z, 3, 1, 0, 1.0, 0.0);
+  dpd_->file2_close(&T1A);
+  dpd_->buf4_close(&L2);
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 27, 26, 27, 26, 0, "Z(iB,Aj)");
+  dpd_->file2_init(&R1A, PSIF_CC_GR, R_irr, 0, 1, "RIA");
+  dpd_->contract424(&Z, &R1A, &Z1, 1, 0, 1, 1.0, 0.0);
+  dpd_->file2_close(&R1A);
+  dpd_->buf4_close(&Z);
+  dpd_->buf4_sort(&Z1, PSIF_EOM_TMP1, prqs, 27, 26, "Z(iA,Bj)");
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 27, 26, 27, 26, 0, "Z(iA,Bj)");
+  dpd_->buf4_sort(&Z1, PSIF_EOM_TMP1, pqsr, 27, 27, "Z(iA,jB)");
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 27, 27, 27, 27, 0, "Z(iA,jB)");
+  dpd_->buf4_init(&G, PSIF_EOM_TMP0, G_irr, 27, 27, 27, 27, 0, "GiAjB");
+  dpd_->buf4_axpy(&Z1, &G, 1.0);
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_close(&G);
 
   /* term 4, G(IA,jb) <-- - L2(Im,Ae) T(j,e) R(m,b) */
-  dpd_buf4_init(&Z, PSIF_EOM_TMP1, L_irr, 22, 26, 22, 26, 0, "Z(Im,Aj)");
-  dpd_buf4_init(&L2, PSIF_CC_GL, L_irr, 22, 28, 22, 28, 0, "LIjAb");
-  dpd_file2_init(&T1B, PSIF_CC_OEI, 0, 2, 3, "tia");
-  dpd_contract424(&L2, &T1B, &Z, 3, 1, 0, 1.0, 0.0);
-  dpd_buf4_close(&L2);
-  dpd_file2_close(&T1B);
-  dpd_file2_init(&R1B, PSIF_CC_GR, R_irr, 2, 3, "Ria");
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 24, 26, 24, 26, 0, "Z(Ib,Aj)");
-  dpd_contract424(&Z, &R1B, &Z1, 1, 0, 1, 1.0, 0.0);
-  dpd_buf4_close(&Z);
-  dpd_file2_close(&R1B);
-  dpd_buf4_sort(&Z1, PSIF_EOM_TMP1, prqs, 20, 31, "Z(IA,bj)");
-  dpd_buf4_close(&Z1);
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 20, 31, 20, 31, 0, "Z(IA,bj)");
-  dpd_buf4_sort(&Z1, PSIF_EOM_TMP1, pqsr, 20, 30, "Z(IA,jb)");
-  dpd_buf4_close(&Z1);
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 20, 30, 20, 30, 0, "Z(IA,jb)");
-  dpd_buf4_init(&G, PSIF_EOM_TMP0, 0, 20, 30, 20, 30, 0, "GIAjb");
-  dpd_buf4_axpy(&Z1, &G, -1.0);
-  dpd_buf4_close(&Z1);
-  dpd_buf4_close(&G);
+  dpd_->buf4_init(&Z, PSIF_EOM_TMP1, L_irr, 22, 26, 22, 26, 0, "Z(Im,Aj)");
+  dpd_->buf4_init(&L2, PSIF_CC_GL, L_irr, 22, 28, 22, 28, 0, "LIjAb");
+  dpd_->file2_init(&T1B, PSIF_CC_OEI, 0, 2, 3, "tia");
+  dpd_->contract424(&L2, &T1B, &Z, 3, 1, 0, 1.0, 0.0);
+  dpd_->buf4_close(&L2);
+  dpd_->file2_close(&T1B);
+  dpd_->file2_init(&R1B, PSIF_CC_GR, R_irr, 2, 3, "Ria");
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 24, 26, 24, 26, 0, "Z(Ib,Aj)");
+  dpd_->contract424(&Z, &R1B, &Z1, 1, 0, 1, 1.0, 0.0);
+  dpd_->buf4_close(&Z);
+  dpd_->file2_close(&R1B);
+  dpd_->buf4_sort(&Z1, PSIF_EOM_TMP1, prqs, 20, 31, "Z(IA,bj)");
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 20, 31, 20, 31, 0, "Z(IA,bj)");
+  dpd_->buf4_sort(&Z1, PSIF_EOM_TMP1, pqsr, 20, 30, "Z(IA,jb)");
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 20, 30, 20, 30, 0, "Z(IA,jb)");
+  dpd_->buf4_init(&G, PSIF_EOM_TMP0, 0, 20, 30, 20, 30, 0, "GIAjb");
+  dpd_->buf4_axpy(&Z1, &G, -1.0);
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_close(&G);
 
   /* term 4, G(ia,JB) <-- - L(iM,aE) T(J,E) R(M,B) */
-  dpd_buf4_init(&Z, PSIF_EOM_TMP1, L_irr, 23, 25, 23, 25, 0, "Z(iM,aJ)");
-  dpd_buf4_init(&L2, PSIF_CC_GL, L_irr, 23, 29, 23, 29, 0, "LiJaB");
-  dpd_file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
-  dpd_contract424(&L2, &T1A, &Z, 3, 1, 0, 1.0, 0.0);
-  dpd_buf4_close(&L2);
-  dpd_file2_close(&T1A);
-  dpd_file2_init(&R1A, PSIF_CC_GR, R_irr, 0, 1, "RIA");
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 27, 25, 27, 25, 0, "Z(iB,aJ)");
-  dpd_contract424(&Z, &R1A, &Z1, 1, 0, 1, 1.0, 0.0);
-  dpd_buf4_close(&Z);
-  dpd_file2_close(&R1A);
-  dpd_buf4_sort(&Z1, PSIF_EOM_TMP1, prqs, 30, 21, "Z(ia,BJ)");
-  dpd_buf4_close(&Z1);
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 30, 21, 30, 21, 0, "Z(ia,BJ)");
-  dpd_buf4_sort(&Z1, PSIF_EOM_TMP1, pqsr, 30, 20, "Z(ia,JB)");
-  dpd_buf4_close(&Z1);
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 30, 20, 30, 20, 0, "Z(ia,JB)");
-  dpd_buf4_init(&G, PSIF_EOM_TMP0, G_irr, 30, 20, 30, 20, 0, "GiaJB");
-  dpd_buf4_axpy(&Z1, &G, -1.0);
-  dpd_buf4_close(&Z1);
-  dpd_buf4_close(&G);
+  dpd_->buf4_init(&Z, PSIF_EOM_TMP1, L_irr, 23, 25, 23, 25, 0, "Z(iM,aJ)");
+  dpd_->buf4_init(&L2, PSIF_CC_GL, L_irr, 23, 29, 23, 29, 0, "LiJaB");
+  dpd_->file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
+  dpd_->contract424(&L2, &T1A, &Z, 3, 1, 0, 1.0, 0.0);
+  dpd_->buf4_close(&L2);
+  dpd_->file2_close(&T1A);
+  dpd_->file2_init(&R1A, PSIF_CC_GR, R_irr, 0, 1, "RIA");
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 27, 25, 27, 25, 0, "Z(iB,aJ)");
+  dpd_->contract424(&Z, &R1A, &Z1, 1, 0, 1, 1.0, 0.0);
+  dpd_->buf4_close(&Z);
+  dpd_->file2_close(&R1A);
+  dpd_->buf4_sort(&Z1, PSIF_EOM_TMP1, prqs, 30, 21, "Z(ia,BJ)");
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 30, 21, 30, 21, 0, "Z(ia,BJ)");
+  dpd_->buf4_sort(&Z1, PSIF_EOM_TMP1, pqsr, 30, 20, "Z(ia,JB)");
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 30, 20, 30, 20, 0, "Z(ia,JB)");
+  dpd_->buf4_init(&G, PSIF_EOM_TMP0, G_irr, 30, 20, 30, 20, 0, "GiaJB");
+  dpd_->buf4_axpy(&Z1, &G, -1.0);
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_close(&G);
 
   psio_close(PSIF_EOM_TMP1, 0);
   psio_open(PSIF_EOM_TMP1,PSIO_OPEN_NEW);
 
   /* term 5, G(IA,JB) <-- - (L(IM,AE)*R(J,E)) * T(M,B) */
-  dpd_buf4_init(&Z, PSIF_EOM_TMP, G_irr, 0, 21, 2, 21, 0, "L2R1_OOVO");
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 20, 21, 20, 21, 0, "Z(IB,AJ)");
-  dpd_file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
-  dpd_contract424(&Z, &T1A, &Z1, 1, 0, 1, 1.0, 0.0);
-  dpd_file2_close(&T1A);
-  dpd_buf4_close(&Z);
-  dpd_buf4_sort(&Z1, PSIF_EOM_TMP1, prqs, 20, 21, "Z(IA,BJ)");
-  dpd_buf4_close(&Z1);
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 20, 21, 20, 21, 0, "Z(IA,BJ)");
-  dpd_buf4_sort(&Z1, PSIF_EOM_TMP1, pqsr, 20, 20, "Z(IA,JB)");
-  dpd_buf4_close(&Z1);
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 20, 20, 20, 20, 0, "Z(IA,JB)");
-  dpd_buf4_init(&G, PSIF_EOM_TMP0, G_irr, 20, 20, 20, 20, 0, "GIAJB");
-  dpd_buf4_axpy(&Z1, &G, -1.0);
-  dpd_buf4_close(&Z1);
-  dpd_buf4_close(&G);
+  dpd_->buf4_init(&Z, PSIF_EOM_TMP, G_irr, 0, 21, 2, 21, 0, "L2R1_OOVO");
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 20, 21, 20, 21, 0, "Z(IB,AJ)");
+  dpd_->file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
+  dpd_->contract424(&Z, &T1A, &Z1, 1, 0, 1, 1.0, 0.0);
+  dpd_->file2_close(&T1A);
+  dpd_->buf4_close(&Z);
+  dpd_->buf4_sort(&Z1, PSIF_EOM_TMP1, prqs, 20, 21, "Z(IA,BJ)");
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 20, 21, 20, 21, 0, "Z(IA,BJ)");
+  dpd_->buf4_sort(&Z1, PSIF_EOM_TMP1, pqsr, 20, 20, "Z(IA,JB)");
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 20, 20, 20, 20, 0, "Z(IA,JB)");
+  dpd_->buf4_init(&G, PSIF_EOM_TMP0, G_irr, 20, 20, 20, 20, 0, "GIAJB");
+  dpd_->buf4_axpy(&Z1, &G, -1.0);
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_close(&G);
 
   /* term 5, G(ia,jb) <-- - (L(im,ae)*R(j,e)) * T(m,b) */
-  dpd_buf4_init(&Z, PSIF_EOM_TMP, G_irr, 10, 31, 12, 31, 0, "L2R1_oovo");
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 30, 31, 30, 31, 0, "Z(ib,aj)");
-  dpd_file2_init(&T1B, PSIF_CC_OEI, 0, 2, 3, "tia");
-  dpd_contract424(&Z, &T1B, &Z1, 1, 0, 1, 1.0, 0.0);
-  dpd_file2_close(&T1B);
-  dpd_buf4_close(&Z);
-  dpd_buf4_sort(&Z1, PSIF_EOM_TMP1, prqs, 30, 31, "Z(ia,bj)");
-  dpd_buf4_close(&Z1);
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 30, 31, 30, 31, 0, "Z(ia,bj)");
-  dpd_buf4_sort(&Z1, PSIF_EOM_TMP1, pqsr, 30, 30, "Z(ia,jb)");
-  dpd_buf4_close(&Z1);
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 30, 30, 30, 30, 0, "Z(ia,jb)");
-  dpd_buf4_init(&G, PSIF_EOM_TMP0, G_irr, 30, 30, 30, 30, 0, "Giajb");
-  dpd_buf4_axpy(&Z1, &G, -1.0);
-  dpd_buf4_close(&Z1);
-  dpd_buf4_close(&G);
+  dpd_->buf4_init(&Z, PSIF_EOM_TMP, G_irr, 10, 31, 12, 31, 0, "L2R1_oovo");
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 30, 31, 30, 31, 0, "Z(ib,aj)");
+  dpd_->file2_init(&T1B, PSIF_CC_OEI, 0, 2, 3, "tia");
+  dpd_->contract424(&Z, &T1B, &Z1, 1, 0, 1, 1.0, 0.0);
+  dpd_->file2_close(&T1B);
+  dpd_->buf4_close(&Z);
+  dpd_->buf4_sort(&Z1, PSIF_EOM_TMP1, prqs, 30, 31, "Z(ia,bj)");
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 30, 31, 30, 31, 0, "Z(ia,bj)");
+  dpd_->buf4_sort(&Z1, PSIF_EOM_TMP1, pqsr, 30, 30, "Z(ia,jb)");
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 30, 30, 30, 30, 0, "Z(ia,jb)");
+  dpd_->buf4_init(&G, PSIF_EOM_TMP0, G_irr, 30, 30, 30, 30, 0, "Giajb");
+  dpd_->buf4_axpy(&Z1, &G, -1.0);
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_close(&G);
 
   /* term 5, G(Ia,Jb) <-- - (L2(Im,Ea)*R(J,E)) * T(m,b) */
-  dpd_buf4_init(&Z, PSIF_EOM_TMP, G_irr, 22, 25, 22, 25, 0, "L2R1_OovO");
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 24, 25, 24, 25, 0, "Z(Ib,aJ)");
-  dpd_file2_init(&T1B, PSIF_CC_OEI, 0, 2, 3, "tia");
-  dpd_contract424(&Z, &T1B, &Z1, 1, 0, 1, 1.0, 0.0);
-  dpd_file2_close(&T1B);
-  dpd_buf4_close(&Z);
-  dpd_buf4_sort(&Z1, PSIF_EOM_TMP1, prqs, 24, 25, "Z(Ia,bJ)");
-  dpd_buf4_close(&Z1);
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 24, 25, 24, 25, 0, "Z(Ia,bJ)");
-  dpd_buf4_sort(&Z1, PSIF_EOM_TMP1, pqsr, 24, 24, "Z(Ia,Jb)");
-  dpd_buf4_close(&Z1);
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 24, 24, 24, 24, 0, "Z(Ia,Jb)");
-  dpd_buf4_init(&G, PSIF_EOM_TMP0, G_irr, 24, 24, 24, 24, 0, "GIaJb");
-  dpd_buf4_axpy(&Z1, &G, 1.0);
-  dpd_buf4_close(&Z1);
-  dpd_buf4_close(&G);
+  dpd_->buf4_init(&Z, PSIF_EOM_TMP, G_irr, 22, 25, 22, 25, 0, "L2R1_OovO");
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 24, 25, 24, 25, 0, "Z(Ib,aJ)");
+  dpd_->file2_init(&T1B, PSIF_CC_OEI, 0, 2, 3, "tia");
+  dpd_->contract424(&Z, &T1B, &Z1, 1, 0, 1, 1.0, 0.0);
+  dpd_->file2_close(&T1B);
+  dpd_->buf4_close(&Z);
+  dpd_->buf4_sort(&Z1, PSIF_EOM_TMP1, prqs, 24, 25, "Z(Ia,bJ)");
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 24, 25, 24, 25, 0, "Z(Ia,bJ)");
+  dpd_->buf4_sort(&Z1, PSIF_EOM_TMP1, pqsr, 24, 24, "Z(Ia,Jb)");
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 24, 24, 24, 24, 0, "Z(Ia,Jb)");
+  dpd_->buf4_init(&G, PSIF_EOM_TMP0, G_irr, 24, 24, 24, 24, 0, "GIaJb");
+  dpd_->buf4_axpy(&Z1, &G, 1.0);
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_close(&G);
 
   /* term 5, G(iA,jB) <-- - (L2(iM,eA)*R(j,e)) * T(M,B) */
-  dpd_buf4_init(&Z, PSIF_EOM_TMP1, G_irr, 23, 26, 23, 26, 0, "Z(iM,Aj)");
-  dpd_buf4_init(&L2, PSIF_CC_GL, L_irr, 23, 28, 23, 28, 0, "LiJAb");
-  dpd_file2_init(&R1A, PSIF_CC_GR, R_irr, 2, 3, "Ria");
-  dpd_contract424(&L2, &R1A, &Z, 3, 1, 0, 1.0, 0.0);
-  dpd_file2_close(&R1A);
-  dpd_buf4_close(&L2);
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 27, 26, 27, 26, 0, "Z(iB,Aj)");
-  dpd_file2_init(&T1B, PSIF_CC_OEI, 0, 0, 1, "tIA");
-  dpd_contract424(&Z, &T1B, &Z1, 1, 0, 1, 1.0, 0.0);
-  dpd_file2_close(&T1B);
-  dpd_buf4_close(&Z);
-  dpd_buf4_sort(&Z1, PSIF_EOM_TMP1, prqs, 27, 26, "Z(iA,Bj)");
-  dpd_buf4_close(&Z1);
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 27, 26, 27, 26, 0, "Z(iA,Bj)");
-  dpd_buf4_sort(&Z1, PSIF_EOM_TMP1, pqsr, 27, 27, "Z(iA,jB)");
-  dpd_buf4_close(&Z1);
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 27, 27, 27, 27, 0, "Z(iA,jB)");
-  dpd_buf4_init(&G, PSIF_EOM_TMP0, G_irr, 27, 27, 27, 27, 0, "GiAjB");
-  dpd_buf4_axpy(&Z1, &G, 1.0);
-  dpd_buf4_close(&G);
-  dpd_buf4_close(&Z1);
+  dpd_->buf4_init(&Z, PSIF_EOM_TMP1, G_irr, 23, 26, 23, 26, 0, "Z(iM,Aj)");
+  dpd_->buf4_init(&L2, PSIF_CC_GL, L_irr, 23, 28, 23, 28, 0, "LiJAb");
+  dpd_->file2_init(&R1A, PSIF_CC_GR, R_irr, 2, 3, "Ria");
+  dpd_->contract424(&L2, &R1A, &Z, 3, 1, 0, 1.0, 0.0);
+  dpd_->file2_close(&R1A);
+  dpd_->buf4_close(&L2);
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 27, 26, 27, 26, 0, "Z(iB,Aj)");
+  dpd_->file2_init(&T1B, PSIF_CC_OEI, 0, 0, 1, "tIA");
+  dpd_->contract424(&Z, &T1B, &Z1, 1, 0, 1, 1.0, 0.0);
+  dpd_->file2_close(&T1B);
+  dpd_->buf4_close(&Z);
+  dpd_->buf4_sort(&Z1, PSIF_EOM_TMP1, prqs, 27, 26, "Z(iA,Bj)");
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 27, 26, 27, 26, 0, "Z(iA,Bj)");
+  dpd_->buf4_sort(&Z1, PSIF_EOM_TMP1, pqsr, 27, 27, "Z(iA,jB)");
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 27, 27, 27, 27, 0, "Z(iA,jB)");
+  dpd_->buf4_init(&G, PSIF_EOM_TMP0, G_irr, 27, 27, 27, 27, 0, "GiAjB");
+  dpd_->buf4_axpy(&Z1, &G, 1.0);
+  dpd_->buf4_close(&G);
+  dpd_->buf4_close(&Z1);
 
   /* term 5, G(IA,jb) <-- - L2(Im,Ae) R(j,e) T(m,b) */
-  dpd_buf4_init(&Z, PSIF_EOM_TMP1, G_irr, 22, 26, 22, 26, 0, "Z(Im,Aj)");
-  dpd_buf4_init(&L2, PSIF_CC_GL, L_irr, 22, 28, 22, 28, 0, "LIjAb");
-  dpd_file2_init(&R1B, PSIF_CC_GR, R_irr, 2, 3, "Ria");
-  dpd_contract424(&L2, &R1B, &Z, 3, 1, 0, 1.0, 0.0);
-  dpd_buf4_close(&L2);
-  dpd_file2_close(&R1B);
-  dpd_file2_init(&T1B, PSIF_CC_OEI, 0, 2, 3, "tia");
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 24, 26, 24, 26, 0, "Z(Ib,Aj)");
-  dpd_contract424(&Z, &T1B, &Z1, 1, 0, 1, 1.0, 0.0);
-  dpd_buf4_close(&Z);
-  dpd_file2_close(&T1B);
-  dpd_buf4_sort(&Z1, PSIF_EOM_TMP1, prqs, 20, 31, "Z(IA,bj)");
-  dpd_buf4_close(&Z1);
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 20, 31, 20, 31, 0, "Z(IA,bj)");
-  dpd_buf4_sort(&Z1, PSIF_EOM_TMP1, pqsr, 20, 30, "Z(IA,jb)");
-  dpd_buf4_close(&Z1);
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 20, 30, 20, 30, 0, "Z(IA,jb)");
-  dpd_buf4_init(&G, PSIF_EOM_TMP0, 0, 20, 30, 20, 30, 0, "GIAjb");
-  dpd_buf4_axpy(&Z1, &G, -1.0);
-  dpd_buf4_close(&Z1);
-  dpd_buf4_close(&G);
+  dpd_->buf4_init(&Z, PSIF_EOM_TMP1, G_irr, 22, 26, 22, 26, 0, "Z(Im,Aj)");
+  dpd_->buf4_init(&L2, PSIF_CC_GL, L_irr, 22, 28, 22, 28, 0, "LIjAb");
+  dpd_->file2_init(&R1B, PSIF_CC_GR, R_irr, 2, 3, "Ria");
+  dpd_->contract424(&L2, &R1B, &Z, 3, 1, 0, 1.0, 0.0);
+  dpd_->buf4_close(&L2);
+  dpd_->file2_close(&R1B);
+  dpd_->file2_init(&T1B, PSIF_CC_OEI, 0, 2, 3, "tia");
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 24, 26, 24, 26, 0, "Z(Ib,Aj)");
+  dpd_->contract424(&Z, &T1B, &Z1, 1, 0, 1, 1.0, 0.0);
+  dpd_->buf4_close(&Z);
+  dpd_->file2_close(&T1B);
+  dpd_->buf4_sort(&Z1, PSIF_EOM_TMP1, prqs, 20, 31, "Z(IA,bj)");
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 20, 31, 20, 31, 0, "Z(IA,bj)");
+  dpd_->buf4_sort(&Z1, PSIF_EOM_TMP1, pqsr, 20, 30, "Z(IA,jb)");
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 20, 30, 20, 30, 0, "Z(IA,jb)");
+  dpd_->buf4_init(&G, PSIF_EOM_TMP0, 0, 20, 30, 20, 30, 0, "GIAjb");
+  dpd_->buf4_axpy(&Z1, &G, -1.0);
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_close(&G);
 
   /* term 5, G(ia,JB) <-- - L(iM,aE) R(J,E) T(M,B) */
-  dpd_buf4_init(&Z, PSIF_EOM_TMP1, G_irr, 23, 25, 23, 25, 0, "Z(iM,aJ)");
-  dpd_buf4_init(&L2, PSIF_CC_GL, L_irr, 23, 29, 23, 29, 0, "LiJaB");
-  dpd_file2_init(&R1A, PSIF_CC_GR, R_irr, 0, 1, "RIA");
-  dpd_contract424(&L2, &R1A, &Z, 3, 1, 0, 1.0, 0.0);
-  dpd_buf4_close(&L2);
-  dpd_file2_close(&R1A);
-  dpd_file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 27, 25, 27, 25, 0, "Z(iB,aJ)");
-  dpd_contract424(&Z, &T1A, &Z1, 1, 0, 1, 1.0, 0.0);
-  dpd_buf4_close(&Z);
-  dpd_file2_close(&T1A);
-  dpd_buf4_sort(&Z1, PSIF_EOM_TMP1, prqs, 30, 21, "Z(ia,BJ)");
-  dpd_buf4_close(&Z1);
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 30, 21, 30, 21, 0, "Z(ia,BJ)");
-  dpd_buf4_sort(&Z1, PSIF_EOM_TMP1, pqsr, 30, 20, "Z(ia,JB)");
-  dpd_buf4_close(&Z1);
-  dpd_buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 30, 20, 30, 20, 0, "Z(ia,JB)");
-  dpd_buf4_init(&G, PSIF_EOM_TMP0, G_irr, 30, 20, 30, 20, 0, "GiaJB");
-  dpd_buf4_axpy(&Z1, &G, -1.0);
-  dpd_buf4_close(&Z1);
-  dpd_buf4_close(&G);
+  dpd_->buf4_init(&Z, PSIF_EOM_TMP1, G_irr, 23, 25, 23, 25, 0, "Z(iM,aJ)");
+  dpd_->buf4_init(&L2, PSIF_CC_GL, L_irr, 23, 29, 23, 29, 0, "LiJaB");
+  dpd_->file2_init(&R1A, PSIF_CC_GR, R_irr, 0, 1, "RIA");
+  dpd_->contract424(&L2, &R1A, &Z, 3, 1, 0, 1.0, 0.0);
+  dpd_->buf4_close(&L2);
+  dpd_->file2_close(&R1A);
+  dpd_->file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 27, 25, 27, 25, 0, "Z(iB,aJ)");
+  dpd_->contract424(&Z, &T1A, &Z1, 1, 0, 1, 1.0, 0.0);
+  dpd_->buf4_close(&Z);
+  dpd_->file2_close(&T1A);
+  dpd_->buf4_sort(&Z1, PSIF_EOM_TMP1, prqs, 30, 21, "Z(ia,BJ)");
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 30, 21, 30, 21, 0, "Z(ia,BJ)");
+  dpd_->buf4_sort(&Z1, PSIF_EOM_TMP1, pqsr, 30, 20, "Z(ia,JB)");
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_init(&Z1, PSIF_EOM_TMP1, G_irr, 30, 20, 30, 20, 0, "Z(ia,JB)");
+  dpd_->buf4_init(&G, PSIF_EOM_TMP0, G_irr, 30, 20, 30, 20, 0, "GiaJB");
+  dpd_->buf4_axpy(&Z1, &G, -1.0);
+  dpd_->buf4_close(&Z1);
+  dpd_->buf4_close(&G);
 
   psio_close(PSIF_EOM_TMP1, 0);
   psio_open(PSIF_EOM_TMP1,PSIO_OPEN_NEW);
 
-  dpd_file2_init(&R1A, PSIF_CC_GR, R_irr, 0, 1, "RIA");
-  dpd_file2_mat_init(&R1A);
-  dpd_file2_mat_rd(&R1A);
-  dpd_file2_init(&R1B, PSIF_CC_GR, R_irr, 2, 3, "Ria");
-  dpd_file2_mat_init(&R1B);
-  dpd_file2_mat_rd(&R1B);
-  dpd_file2_init(&L1A, PSIF_CC_GL, L_irr, 0, 1, "LIA");
-  dpd_file2_mat_init(&L1A);
-  dpd_file2_mat_rd(&L1A);
-  dpd_file2_init(&L1B, PSIF_CC_GL, L_irr, 2, 3, "Lia");
-  dpd_file2_mat_init(&L1B);
-  dpd_file2_mat_rd(&L1B);
+  dpd_->file2_init(&R1A, PSIF_CC_GR, R_irr, 0, 1, "RIA");
+  dpd_->file2_mat_init(&R1A);
+  dpd_->file2_mat_rd(&R1A);
+  dpd_->file2_init(&R1B, PSIF_CC_GR, R_irr, 2, 3, "Ria");
+  dpd_->file2_mat_init(&R1B);
+  dpd_->file2_mat_rd(&R1B);
+  dpd_->file2_init(&L1A, PSIF_CC_GL, L_irr, 0, 1, "LIA");
+  dpd_->file2_mat_init(&L1A);
+  dpd_->file2_mat_rd(&L1A);
+  dpd_->file2_init(&L1B, PSIF_CC_GL, L_irr, 2, 3, "Lia");
+  dpd_->file2_mat_init(&L1B);
+  dpd_->file2_mat_rd(&L1B);
   if (!params.connect_xi) {
-    dpd_file2_init(&I1A, PSIF_EOM_TMP, G_irr, 0, 1, "L2R1_OV");
-    dpd_file2_mat_init(&I1A);
-    dpd_file2_mat_rd(&I1A);
-    dpd_file2_init(&I1B, PSIF_EOM_TMP, G_irr, 2, 3, "L2R1_ov");
-    dpd_file2_mat_init(&I1B);
-    dpd_file2_mat_rd(&I1B);
+    dpd_->file2_init(&I1A, PSIF_EOM_TMP, G_irr, 0, 1, "L2R1_OV");
+    dpd_->file2_mat_init(&I1A);
+    dpd_->file2_mat_rd(&I1A);
+    dpd_->file2_init(&I1B, PSIF_EOM_TMP, G_irr, 2, 3, "L2R1_ov");
+    dpd_->file2_mat_init(&I1B);
+    dpd_->file2_mat_rd(&I1B);
   }
-  dpd_file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
-  dpd_file2_mat_init(&T1A);
-  dpd_file2_mat_rd(&T1A);
-  dpd_file2_init(&T1B, PSIF_CC_OEI, 0, 2, 3, "tia");
-  dpd_file2_mat_init(&T1B);
-  dpd_file2_mat_rd(&T1B);
+  dpd_->file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
+  dpd_->file2_mat_init(&T1A);
+  dpd_->file2_mat_rd(&T1A);
+  dpd_->file2_init(&T1B, PSIF_CC_OEI, 0, 2, 3, "tia");
+  dpd_->file2_mat_init(&T1B);
+  dpd_->file2_mat_rd(&T1B);
 
   /* term 1, G(IA,JB) <-- +  L(I,A) R(J,B) */
-  dpd_buf4_init(&G, PSIF_EOM_TMP0, G_irr, 20, 20, 20, 20, 0, "GIAJB");
+  dpd_->buf4_init(&G, PSIF_EOM_TMP0, G_irr, 20, 20, 20, 20, 0, "GIAJB");
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&G, h); 
-    dpd_buf4_mat_irrep_rd(&G, h);
+    dpd_->buf4_mat_irrep_init(&G, h); 
+    dpd_->buf4_mat_irrep_rd(&G, h);
     for(row=0; row < G.params->rowtot[h]; row++) {
       i = G.params->roworb[h][row][0];
       I = L1A.params->rowidx[i]; Isym = L1A.params->psym[i];
@@ -386,14 +386,14 @@ void x_Gibja_uhf(void)
           G.matrix[h][row][col] += L1A.matrix[Isym][I][A] * R1A.matrix[Jsym][J][B];
       }
     }
-    dpd_buf4_mat_irrep_wrt(&G, h);
-    dpd_buf4_mat_irrep_close(&G, h);
+    dpd_->buf4_mat_irrep_wrt(&G, h);
+    dpd_->buf4_mat_irrep_close(&G, h);
   }
   /* term 2, G(IA,JB) <-- + (L(IM,AE) R(M,E))  T(J,B) = L2R1_OV(I,A) * T(J,B) */
   if (!params.connect_xi) {
     for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&G, h); 
-      dpd_buf4_mat_irrep_rd(&G, h);
+      dpd_->buf4_mat_irrep_init(&G, h); 
+      dpd_->buf4_mat_irrep_rd(&G, h);
       for(row=0; row < G.params->rowtot[h]; row++) {
         i = G.params->roworb[h][row][0];
         I = I1A.params->rowidx[i]; Isym = I1A.params->psym[i];
@@ -408,18 +408,18 @@ void x_Gibja_uhf(void)
             G.matrix[h][row][col] += I1A.matrix[Isym][I][A] * T1A.matrix[Jsym][J][B];
 	    }
       }
-      dpd_buf4_mat_irrep_wrt(&G, h);
-      dpd_buf4_mat_irrep_close(&G, h);
+      dpd_->buf4_mat_irrep_wrt(&G, h);
+      dpd_->buf4_mat_irrep_close(&G, h);
     }
   }
-  dpd_buf4_scm(&G, -1.0);
-  dpd_buf4_close(&G);
+  dpd_->buf4_scm(&G, -1.0);
+  dpd_->buf4_close(&G);
 
   /* term 1, G(ia,jb) <-- +  L(i,a) R(j,b) */
-  dpd_buf4_init(&G, PSIF_EOM_TMP0, G_irr, 30, 30, 30, 30, 0, "Giajb");
+  dpd_->buf4_init(&G, PSIF_EOM_TMP0, G_irr, 30, 30, 30, 30, 0, "Giajb");
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&G, h); 
-    dpd_buf4_mat_irrep_rd(&G, h);
+    dpd_->buf4_mat_irrep_init(&G, h); 
+    dpd_->buf4_mat_irrep_rd(&G, h);
     for(row=0; row < G.params->rowtot[h]; row++) {
       i = G.params->roworb[h][row][0];
       I = L1B.params->rowidx[i]; Isym = L1B.params->psym[i];
@@ -434,14 +434,14 @@ void x_Gibja_uhf(void)
           G.matrix[h][row][col] += L1B.matrix[Isym][I][A] * R1B.matrix[Jsym][J][B];
       }
     }
-    dpd_buf4_mat_irrep_wrt(&G, h);
-    dpd_buf4_mat_irrep_close(&G, h);
+    dpd_->buf4_mat_irrep_wrt(&G, h);
+    dpd_->buf4_mat_irrep_close(&G, h);
   }
   /* term 2, G(ia,jb) <-- + (L(im,ae) R(m,e))*T(j,b) = L2R1_ov(i,a) * T(j,b) */
   if (!params.connect_xi) {
     for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&G, h); 
-      dpd_buf4_mat_irrep_rd(&G, h);
+      dpd_->buf4_mat_irrep_init(&G, h); 
+      dpd_->buf4_mat_irrep_rd(&G, h);
       for(row=0; row < G.params->rowtot[h]; row++) {
         i = G.params->roworb[h][row][0];
         I = I1B.params->rowidx[i]; Isym = I1B.params->psym[i];
@@ -456,18 +456,18 @@ void x_Gibja_uhf(void)
             G.matrix[h][row][col] += I1B.matrix[Isym][I][A] * T1B.matrix[Jsym][J][B];
 	    }
       }
-      dpd_buf4_mat_irrep_wrt(&G, h);
-      dpd_buf4_mat_irrep_close(&G, h);
+      dpd_->buf4_mat_irrep_wrt(&G, h);
+      dpd_->buf4_mat_irrep_close(&G, h);
     }
   }
-  dpd_buf4_scm(&G, -1.0);
-  dpd_buf4_close(&G);
+  dpd_->buf4_scm(&G, -1.0);
+  dpd_->buf4_close(&G);
 
     /* term 1, G(IA,jb) <-- L(I,A) R(j,b) */
-  dpd_buf4_init(&G, PSIF_EOM_TMP0, G_irr, 20, 30, 20, 30, 0, "GIAjb");
+  dpd_->buf4_init(&G, PSIF_EOM_TMP0, G_irr, 20, 30, 20, 30, 0, "GIAjb");
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&G, h);
-    dpd_buf4_mat_irrep_rd(&G, h);
+    dpd_->buf4_mat_irrep_init(&G, h);
+    dpd_->buf4_mat_irrep_rd(&G, h);
     for(row=0; row < G.params->rowtot[h]; row++) {
       i = G.params->roworb[h][row][0];
       I = L1A.params->rowidx[i]; Isym = L1A.params->psym[i];
@@ -482,14 +482,14 @@ void x_Gibja_uhf(void)
           G.matrix[h][row][col] += L1A.matrix[Isym][I][A] * R1B.matrix[Jsym][J][B];
       }
     }
-    dpd_buf4_mat_irrep_wrt(&G, h);
-    dpd_buf4_mat_irrep_close(&G, h);
+    dpd_->buf4_mat_irrep_wrt(&G, h);
+    dpd_->buf4_mat_irrep_close(&G, h);
   }
   /* term 2, G(IA,jb) <-- L2R1_OV(I,A) *  T(j,b) */
   if (!params.connect_xi) {
     for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&G, h);
-      dpd_buf4_mat_irrep_rd(&G, h);
+      dpd_->buf4_mat_irrep_init(&G, h);
+      dpd_->buf4_mat_irrep_rd(&G, h);
       for(row=0; row < G.params->rowtot[h]; row++) {
         i = G.params->roworb[h][row][0];
         I = I1A.params->rowidx[i]; Isym = I1A.params->psym[i];
@@ -504,18 +504,18 @@ void x_Gibja_uhf(void)
             G.matrix[h][row][col] += I1A.matrix[Isym][I][A] * T1B.matrix[Jsym][J][B];
         }
       }
-      dpd_buf4_mat_irrep_wrt(&G, h);
-      dpd_buf4_mat_irrep_close(&G, h);
+      dpd_->buf4_mat_irrep_wrt(&G, h);
+      dpd_->buf4_mat_irrep_close(&G, h);
     }
   }
-  dpd_buf4_scm(&G, -1.0);
-  dpd_buf4_close(&G);
+  dpd_->buf4_scm(&G, -1.0);
+  dpd_->buf4_close(&G);
 
   /* term 1, G(ia,JB) <-- L(i,a) R(J,B) */
-  dpd_buf4_init(&G, PSIF_EOM_TMP0, G_irr, 30, 20, 30, 20, 0, "GiaJB");
+  dpd_->buf4_init(&G, PSIF_EOM_TMP0, G_irr, 30, 20, 30, 20, 0, "GiaJB");
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&G, h);
-    dpd_buf4_mat_irrep_rd(&G, h);
+    dpd_->buf4_mat_irrep_init(&G, h);
+    dpd_->buf4_mat_irrep_rd(&G, h);
     for(row=0; row < G.params->rowtot[h]; row++) {
       i = G.params->roworb[h][row][0];
       I = L1B.params->rowidx[i]; Isym = L1B.params->psym[i];
@@ -530,14 +530,14 @@ void x_Gibja_uhf(void)
           G.matrix[h][row][col] += L1B.matrix[Isym][I][A] * R1A.matrix[Jsym][J][B];
       }
     }
-    dpd_buf4_mat_irrep_wrt(&G, h);
-    dpd_buf4_mat_irrep_close(&G, h);
+    dpd_->buf4_mat_irrep_wrt(&G, h);
+    dpd_->buf4_mat_irrep_close(&G, h);
   }
   /* term 2, G(ia,JB) <-- L2R1_ov(i,a) T(J,B) */
   if (!params.connect_xi) {
     for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&G, h);
-      dpd_buf4_mat_irrep_rd(&G, h);
+      dpd_->buf4_mat_irrep_init(&G, h);
+      dpd_->buf4_mat_irrep_rd(&G, h);
       for(row=0; row < G.params->rowtot[h]; row++) {
         i = G.params->roworb[h][row][0];
         I = I1B.params->rowidx[i]; Isym = I1B.params->psym[i];
@@ -552,105 +552,105 @@ void x_Gibja_uhf(void)
             G.matrix[h][row][col] += I1B.matrix[Isym][I][A] * T1A.matrix[Jsym][J][B];
         }
       }
-      dpd_buf4_mat_irrep_wrt(&G, h);
-      dpd_buf4_mat_irrep_close(&G, h);
+      dpd_->buf4_mat_irrep_wrt(&G, h);
+      dpd_->buf4_mat_irrep_close(&G, h);
     }
   }
-  dpd_buf4_scm(&G, -1.0);
-  dpd_buf4_close(&G);
+  dpd_->buf4_scm(&G, -1.0);
+  dpd_->buf4_close(&G);
 
-  dpd_file2_mat_close(&R1A);
-  dpd_file2_close(&R1A);
-  dpd_file2_mat_close(&R1B);
-  dpd_file2_close(&R1B);
-  dpd_file2_mat_close(&L1A);
-  dpd_file2_close(&L1A);
-  dpd_file2_mat_close(&L1B);
-  dpd_file2_close(&L1B);
+  dpd_->file2_mat_close(&R1A);
+  dpd_->file2_close(&R1A);
+  dpd_->file2_mat_close(&R1B);
+  dpd_->file2_close(&R1B);
+  dpd_->file2_mat_close(&L1A);
+  dpd_->file2_close(&L1A);
+  dpd_->file2_mat_close(&L1B);
+  dpd_->file2_close(&L1B);
   if (!params.connect_xi) {
-    dpd_file2_mat_close(&I1A);
-    dpd_file2_close(&I1A);
-    dpd_file2_mat_close(&I1B);
-    dpd_file2_close(&I1B);
+    dpd_->file2_mat_close(&I1A);
+    dpd_->file2_close(&I1A);
+    dpd_->file2_mat_close(&I1B);
+    dpd_->file2_close(&I1B);
   }
-  dpd_file2_mat_close(&T1A);
-  dpd_file2_close(&T1A);
-  dpd_file2_mat_close(&T1B);
-  dpd_file2_close(&T1B);
+  dpd_->file2_mat_close(&T1A);
+  dpd_->file2_close(&T1A);
+  dpd_->file2_mat_close(&T1B);
+  dpd_->file2_close(&T1B);
 
     /* Sort all spin cases to correct ordering (ib,ja) */
-  dpd_buf4_init(&G, PSIF_EOM_TMP0, G_irr, 20, 20, 20, 20, 0, "GIAJB");
-  dpd_buf4_sort(&G, PSIF_EOM_TMP0, psrq, 20, 20, "GIBJA");
-  dpd_buf4_close(&G);
-  dpd_buf4_init(&G, PSIF_EOM_TMP0, G_irr, 30, 30, 30, 30, 0, "Giajb");
-  dpd_buf4_sort(&G, PSIF_EOM_TMP0, psrq, 30, 30, "Gibja");
-  dpd_buf4_close(&G);
-  dpd_buf4_init(&G, PSIF_EOM_TMP0, G_irr, 24, 24, 24, 24, 0, "GIaJb");
-  dpd_buf4_scm(&G,-1.0);
-  dpd_buf4_sort(&G, PSIF_EOM_TMP0, psrq, 24, 24, "GIbJa");
-  dpd_buf4_close(&G);
-  dpd_buf4_init(&G, PSIF_EOM_TMP0, G_irr, 27, 27, 27, 27, 0, "GiAjB");
-  dpd_buf4_scm(&G,-1.0);
-  dpd_buf4_sort(&G, PSIF_EOM_TMP0, psrq, 27, 27, "GiBjA");
-  dpd_buf4_close(&G);
-  dpd_buf4_init(&G, PSIF_EOM_TMP0, G_irr, 20, 30, 20, 30, 0, "GIAjb");
-  dpd_buf4_sort(&G, PSIF_EOM_TMP0, psrq, 24, 27, "GIbjA");
-  dpd_buf4_close(&G);
-  dpd_buf4_init(&G, PSIF_EOM_TMP0, G_irr, 30, 20, 30, 20, 0, "GiaJB");
-  dpd_buf4_sort(&G, PSIF_EOM_TMP0, psrq, 27, 24, "GiBJa");
-  dpd_buf4_close(&G);
+  dpd_->buf4_init(&G, PSIF_EOM_TMP0, G_irr, 20, 20, 20, 20, 0, "GIAJB");
+  dpd_->buf4_sort(&G, PSIF_EOM_TMP0, psrq, 20, 20, "GIBJA");
+  dpd_->buf4_close(&G);
+  dpd_->buf4_init(&G, PSIF_EOM_TMP0, G_irr, 30, 30, 30, 30, 0, "Giajb");
+  dpd_->buf4_sort(&G, PSIF_EOM_TMP0, psrq, 30, 30, "Gibja");
+  dpd_->buf4_close(&G);
+  dpd_->buf4_init(&G, PSIF_EOM_TMP0, G_irr, 24, 24, 24, 24, 0, "GIaJb");
+  dpd_->buf4_scm(&G,-1.0);
+  dpd_->buf4_sort(&G, PSIF_EOM_TMP0, psrq, 24, 24, "GIbJa");
+  dpd_->buf4_close(&G);
+  dpd_->buf4_init(&G, PSIF_EOM_TMP0, G_irr, 27, 27, 27, 27, 0, "GiAjB");
+  dpd_->buf4_scm(&G,-1.0);
+  dpd_->buf4_sort(&G, PSIF_EOM_TMP0, psrq, 27, 27, "GiBjA");
+  dpd_->buf4_close(&G);
+  dpd_->buf4_init(&G, PSIF_EOM_TMP0, G_irr, 20, 30, 20, 30, 0, "GIAjb");
+  dpd_->buf4_sort(&G, PSIF_EOM_TMP0, psrq, 24, 27, "GIbjA");
+  dpd_->buf4_close(&G);
+  dpd_->buf4_init(&G, PSIF_EOM_TMP0, G_irr, 30, 20, 30, 20, 0, "GiaJB");
+  dpd_->buf4_sort(&G, PSIF_EOM_TMP0, psrq, 27, 24, "GiBJa");
+  dpd_->buf4_close(&G);
 
   /* Add to ground state terms in CC_GAMMA */
-  dpd_buf4_init(&GIBJA, PSIF_EOM_TMP0, G_irr, 20, 20, 20, 20, 0, "GIBJA");
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, G_irr, 20, 20, 20, 20, 0, "GIBJA");
-  dpd_buf4_axpy(&GIBJA, &G, 1.0);
-  dpd_buf4_close(&G);
-  dpd_buf4_close(&GIBJA);
-  dpd_buf4_init(&Gibja, PSIF_EOM_TMP0, G_irr, 30, 30, 30, 30, 0, "Gibja");
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, G_irr, 30, 30, 30, 30, 0, "Gibja");
-  dpd_buf4_axpy(&Gibja, &G, 1.0);
-  dpd_buf4_close(&G);
-  dpd_buf4_close(&Gibja);
-  dpd_buf4_init(&GIbJa, PSIF_EOM_TMP0, G_irr, 24, 24, 24, 24, 0, "GIbJa");
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, G_irr, 24, 24, 24, 24, 0, "GIbJa");
-  dpd_buf4_axpy(&GIbJa, &G, 1.0);
-  dpd_buf4_close(&G);
-  dpd_buf4_close(&GIbJa);
-  dpd_buf4_init(&GiBjA, PSIF_EOM_TMP0, G_irr, 27, 27, 27, 27, 0, "GiBjA");
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, G_irr, 27, 27, 27, 27, 0, "GiBjA");
-  dpd_buf4_axpy(&GiBjA, &G, 1.0);
-  dpd_buf4_close(&G);
-  dpd_buf4_close(&GiBjA);
-  dpd_buf4_init(&GIbjA, PSIF_EOM_TMP0, G_irr, 24, 27, 24, 27, 0, "GIbjA");
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, G_irr, 24, 27, 24, 27, 0, "GIbjA");
-  dpd_buf4_axpy(&GIbjA, &G, 1.0);
-  dpd_buf4_close(&G);
-  dpd_buf4_close(&GIbjA);
-  dpd_buf4_init(&GiBJa, PSIF_EOM_TMP0, G_irr, 27, 24, 27, 24, 0, "GiBJa");
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, G_irr, 27, 24, 27, 24, 0, "GiBJa");
-  dpd_buf4_axpy(&GiBJa, &G, 1.0);
-  dpd_buf4_close(&G);
-  dpd_buf4_close(&GiBJa);
+  dpd_->buf4_init(&GIBJA, PSIF_EOM_TMP0, G_irr, 20, 20, 20, 20, 0, "GIBJA");
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 20, 20, 20, 20, 0, "GIBJA");
+  dpd_->buf4_axpy(&GIBJA, &G, 1.0);
+  dpd_->buf4_close(&G);
+  dpd_->buf4_close(&GIBJA);
+  dpd_->buf4_init(&Gibja, PSIF_EOM_TMP0, G_irr, 30, 30, 30, 30, 0, "Gibja");
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 30, 30, 30, 30, 0, "Gibja");
+  dpd_->buf4_axpy(&Gibja, &G, 1.0);
+  dpd_->buf4_close(&G);
+  dpd_->buf4_close(&Gibja);
+  dpd_->buf4_init(&GIbJa, PSIF_EOM_TMP0, G_irr, 24, 24, 24, 24, 0, "GIbJa");
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 24, 24, 24, 24, 0, "GIbJa");
+  dpd_->buf4_axpy(&GIbJa, &G, 1.0);
+  dpd_->buf4_close(&G);
+  dpd_->buf4_close(&GIbJa);
+  dpd_->buf4_init(&GiBjA, PSIF_EOM_TMP0, G_irr, 27, 27, 27, 27, 0, "GiBjA");
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 27, 27, 27, 27, 0, "GiBjA");
+  dpd_->buf4_axpy(&GiBjA, &G, 1.0);
+  dpd_->buf4_close(&G);
+  dpd_->buf4_close(&GiBjA);
+  dpd_->buf4_init(&GIbjA, PSIF_EOM_TMP0, G_irr, 24, 27, 24, 27, 0, "GIbjA");
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 24, 27, 24, 27, 0, "GIbjA");
+  dpd_->buf4_axpy(&GIbjA, &G, 1.0);
+  dpd_->buf4_close(&G);
+  dpd_->buf4_close(&GIbjA);
+  dpd_->buf4_init(&GiBJa, PSIF_EOM_TMP0, G_irr, 27, 24, 27, 24, 0, "GiBJa");
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 27, 24, 27, 24, 0, "GiBJa");
+  dpd_->buf4_axpy(&GiBJa, &G, 1.0);
+  dpd_->buf4_close(&G);
+  dpd_->buf4_close(&GiBJa);
 
   /* symmetrize after adding to CC_GAMMA */
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, G_irr, 20, 20, 20, 20, 0, "GIBJA");
-  dpd_buf4_symm(&G);
-  dpd_buf4_close(&G);
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, G_irr, 30, 30, 30, 30, 0, "Gibja");
-  dpd_buf4_symm(&G);
-  dpd_buf4_close(&G);
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, G_irr, 24, 24, 24, 24, 0, "GIbJa");
-  dpd_buf4_symm(&G);
-  dpd_buf4_close(&G);
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, G_irr, 27, 27, 27, 27, 0, "GiBjA");
-  dpd_buf4_symm(&G);
-  dpd_buf4_close(&G);
-  dpd_buf4_init(&GIbjA, PSIF_CC_GAMMA, G_irr, 24, 27, 24, 27, 0, "GIbjA");
-  dpd_buf4_init(&GiBJa, PSIF_CC_GAMMA, G_irr, 27, 24, 27, 24, 0, "GiBJa");
-  dpd_buf4_symm2(&GIbjA, &GiBJa);
-  dpd_buf4_close(&GiBJa);
-  dpd_buf4_sort(&GIbjA, PSIF_CC_GAMMA, rspq, 27, 24, "GiBJa");
-  dpd_buf4_close(&GIbjA);
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 20, 20, 20, 20, 0, "GIBJA");
+  dpd_->buf4_symm(&G);
+  dpd_->buf4_close(&G);
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 30, 30, 30, 30, 0, "Gibja");
+  dpd_->buf4_symm(&G);
+  dpd_->buf4_close(&G);
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 24, 24, 24, 24, 0, "GIbJa");
+  dpd_->buf4_symm(&G);
+  dpd_->buf4_close(&G);
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 27, 27, 27, 27, 0, "GiBjA");
+  dpd_->buf4_symm(&G);
+  dpd_->buf4_close(&G);
+  dpd_->buf4_init(&GIbjA, PSIF_CC_GAMMA, G_irr, 24, 27, 24, 27, 0, "GIbjA");
+  dpd_->buf4_init(&GiBJa, PSIF_CC_GAMMA, G_irr, 27, 24, 27, 24, 0, "GiBJa");
+  dpd_->buf4_symm2(&GIbjA, &GiBJa);
+  dpd_->buf4_close(&GiBJa);
+  dpd_->buf4_sort(&GIbjA, PSIF_CC_GAMMA, rspq, 27, 24, "GiBJa");
+  dpd_->buf4_close(&GIbjA);
 
   psio_close(PSIF_EOM_TMP0, 0);
   psio_open(PSIF_EOM_TMP0,PSIO_OPEN_NEW);
