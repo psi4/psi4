@@ -424,6 +424,9 @@ class Vector(LightVector, Tensor):
     #    """
     #    return self.column
 
+Vector.x_axis = Vector([1, 0, 0])
+Vector.y_axis = Vector([0, 1, 0])
+Vector.z_axis = Vector([0, 0, 1])
 
 
 
