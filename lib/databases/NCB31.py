@@ -21,9 +21,10 @@
 #
 
 """
-| Database of <description of members and reference energy type>.
-| Geometries from <Reference>.
-| Reference interaction energies from <Reference>.
+| Database (Truhlar) of several classes of noncovalent interactions.
+| Geometries from Truhlar and coworkers at site http://comp.chem.umn.edu/database_noncov/noncovalent.htm
+| Reference energies from Truhlar and coworkers at site http://comp.chem.umn.edu/database_noncov/noncovalent.htm
+| First comprehensive citation JPCA 109 5656 (2005). 
 
 - **cp**  ``'off'`` || ``'on'``
 
@@ -36,13 +37,13 @@
 
 - **subset**
 
-  - ``'small'``
-  - ``'large'``
+  - ``'small'`` 3: HF-HF, He-Ne, HCCH-HCCH
+  - ``'large'`` 1: BzBz_PD
   - ``'HB6'`` hydrogen-bonded
   - ``'CT7'`` charge-transfer
-  - ``'DI6'``
+  - ``'DI6'`` dipole-interacting
   - ``'WI7'`` weakly interacting
-  - ``'PPS5'``
+  - ``'PPS5'`` pi-pi stacking
 
 """
 import qcdb

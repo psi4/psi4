@@ -1088,6 +1088,7 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
         }
         else if(numEntries == 7) {
             // This is line 4 onwards of a Z-Matrix
+            //zmatrix = true;
             rTo = mol->get_anchor_atom(splitLine[1], *line);
             if(rTo >= currentAtom)
                 throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
@@ -1159,25 +1160,34 @@ std::string Molecule::create_psi4_string_from_molecule() const
             }
 
             // append atoms and coordentries and fragment separators with charge and multiplicity
-            for(int i = 0; i < nallatom(); ++i){
-                for(int fr=0; fr<fragments_.size(); ++fr) {
-                    if (i==fragments_[fr].first) {
-                        sprintf(buffer, "%s    %d %d\n", 
-                            fr==0 ? "" : "    --\n",
-                            fragment_charges_[fr], fragment_multiplicities_[fr]);
+            int Pfr = 0;
+            for(int fr=0; fr<fragments_.size(); ++fr) {
+                if ((fragment_types_[fr] == Absent) && (zmat_ == false)) {
+                    continue;
+                } 
+                sprintf(buffer, "%s    %s%d %d\n",
+                    Pfr == 0 ? "" : "    --\n",
+                    (fragment_types_[fr] == Ghost || fragment_types_[fr] == Absent) ? "#" : "",
+                    fragment_charges_[fr], fragment_multiplicities_[fr]);
+                ss << buffer;
+                Pfr++;
+                for(int at=fragments_[fr].first; at<fragments_[fr].second; ++at) {
+                    if (fragment_types_[fr] == Absent) {
+                        sprintf(buffer, "    %-8s", "X");
                         ss << buffer;
                     }
-                }
-                if (fZ(i) || (fsymbol(i) == "X")) {
-                    sprintf(buffer, "    %-8s", fsymbol(i).c_str());
+                    else if (fZ(at) || fsymbol(at) == "X") {
+                        sprintf(buffer, "    %-8s", fsymbol(at).c_str());
+                        ss << buffer;
+                    }
+                    else {
+                        std::string stmp = std::string("Gh(") + fsymbol(at) + ")";
+                        sprintf(buffer, "    %-8s", stmp.c_str());
+                        ss << buffer;
+                    }
+                    sprintf(buffer, "    %s", full_atoms_[at]->string_in_input_format().c_str());
                     ss << buffer;
-                } else {
-                    std::string stmp = std::string("Gh(") + fsymbol(i) + ")";
-                    sprintf(buffer, "    %-8s", stmp.c_str());
-                    ss << buffer;
                 }
-                sprintf(buffer, "    %s", full_atoms_[i]->string_in_input_format().c_str());
-                ss << buffer;
             }
             sprintf(buffer,"\n");
             ss << buffer;

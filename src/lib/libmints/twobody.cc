@@ -50,6 +50,7 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory* intsfactory, int deriv) :
     tformbuf_ = 0;
     source_ = 0;
     natom_ = original_bs1_->molecule()->natom();  // This assumes the 4 bases come from the same molecule.
+    enable_pybuffer_ = false;
 }
 
 TwoBodyAOInt::~TwoBodyAOInt()

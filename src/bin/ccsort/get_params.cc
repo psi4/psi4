@@ -57,7 +57,7 @@ void get_params(Options & options)
      params.wfn!="CIS" && params.wfn!="RPA" &&
      params.wfn!="CC2" && params.wfn!="CC3" &&
      params.wfn!="EOM_CC3" && params.wfn!="EOM_CC2" &&
-     params.wfn!="CCSD_MVD") {
+     params.wfn!="CCSD_MVD" && params.wfn!="CCSD_AT") {
     fprintf(outfile, "Invalid value of input keyword WFN: %s\n", params.wfn.c_str());
     throw PsiException("ccsort failure", __FILE__, __LINE__);
   }
@@ -69,7 +69,7 @@ void get_params(Options & options)
   junk = options.get_str("REFERENCE");
   if(junk=="RHF") params.ref = 0;
   else if(junk=="ROHF" &&
-          (params.wfn=="MP2" || params.wfn=="CCSD_T" ||
+          (params.wfn=="MP2" || params.wfn=="CCSD_T" || params.wfn=="CCSD_AT" ||
            params.wfn=="CC3" || params.wfn=="EOM_CC3" ||
            params.wfn=="CC2" || params.wfn=="EOM_CC2")) {
     params.ref = 2;

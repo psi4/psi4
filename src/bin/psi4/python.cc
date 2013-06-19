@@ -47,6 +47,7 @@
 #include "psi4.h"
 
 #include "../ccenergy/ccwave.h"
+#include "../cclambda/cclambda.h"
 //#include "../mp2/mp2wave.h"
 
 #if defined(MAKE_PYTHON_MODULE)
@@ -519,12 +520,26 @@ double py_psi_cchbar()
     return 0.0;
 }
 
+// double py_psi_cclambda()
+// {
+//     py_psi_prepare_options_for_module("CCLAMBDA");
+//     cclambda::cclambda(Process::environment.options);
+//     return 0.0;
+// }
+
 double py_psi_cclambda()
 {
     py_psi_prepare_options_for_module("CCLAMBDA");
-    cclambda::cclambda(Process::environment.options);
-    return 0.0;
+    boost::shared_ptr<Wavefunction> cclambda(new cclambda::CCLambdaWavefunction(
+                                               Process::environment.wavefunction(),
+                                               Process::environment.options)
+                                           );
+    Process::environment.set_wavefunction(cclambda);
+
+    double energy = cclambda->compute_energy();
+    return energy;
 }
+
 
 double py_psi_ccdensity()
 {

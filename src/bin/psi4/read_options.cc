@@ -1979,7 +1979,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- MODULEDESCRIPTION Computes coupled cluster energies. Called as part of any coupled cluster computation. -*/
 
     /*- Wavefunction type !expert -*/
-    options.add_str("WFN", "NONE", "CCSD CCSD_T EOM_CCSD LEOM_CCSD BCCD BCCD_T CC2 CC3 EOM_CC2 EOM_CC3 CCSD_MVD");
+    options.add_str("WFN", "NONE", "CCSD CCSD_T CCSD_AT EOM_CCSD LEOM_CCSD BCCD BCCD_T CC2 CC3 EOM_CC2 EOM_CC3 CCSD_MVD");
     /*- Reference wavefunction type -*/
     options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
     /*- Do use new triples? -*/
@@ -2767,6 +2767,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("RUN_MP4",false);
       /*- do ccsd rather than qcisd? !expert -*/
       options.add_bool("RUN_CCSD",false);
+      /*- Use 3-index integrals to generate 4-index ERI's? 
+      This keyword is used for testing purposes only.  Changing its
+      value will have no effect on the computation.  !expert -*/
+      options.add_bool("USE_DF_INTS",false);
 
       /*- Do use density fitting or cholesky decomposition in CC? This 
       keyword is used internally by the driver. Changing its value 

@@ -339,7 +339,8 @@ void export_mints()
     class_<TwoBodyAOInt, boost::shared_ptr<TwoBodyAOInt>, boost::noncopyable>("TwoBodyAOInt", "docstring", no_init).
             def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell), "docstring").
             add_property("py_buffer_object", make_function(&TwoBodyAOInt::py_buffer_object, return_internal_reference<>()), "docstring").
-            add_property("py_buffer", &TwoBodyAOInt::py_buffer, "docstring");
+            add_property("py_buffer", &TwoBodyAOInt::py_buffer, "docstring").
+            def("set_enable_pybuffer", &TwoBodyAOInt::set_enable_pybuffer, "docstring");
 
     class_<TwoElectronInt, boost::shared_ptr<TwoElectronInt>, bases<TwoBodyAOInt>, boost::noncopyable>("TwoElectronInt", "docstring", no_init);
             def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell), "docstring");
