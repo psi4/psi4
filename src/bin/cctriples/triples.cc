@@ -47,6 +47,7 @@ namespace psi { namespace cctriples {
     void exit_io(void);
     void cleanup(void);
     double ET_RHF(void);
+    double EaT_RHF(void);
     double ET_AAA(void);
     double ET_AAB(void);
     double ET_ABB(void);
@@ -128,14 +129,26 @@ PsiReturnType cctriples(Options &options)
 
   if(params.ref == 0) { /** RHF **/
 
-    ET = ET_RHF();
-    fprintf(outfile, "\t(T) energy                    = %20.15f\n", ET);
-    fprintf(outfile, "      * CCSD(T) total energy          = %20.15f\n",
-        ET + moinfo.ecc + moinfo.eref);
+    if(params.wfn=="CCSD_T" || params.wfn=="BCCD_T") {
+      ET = ET_RHF();
+      fprintf(outfile, "\t(T) energy                    = %20.15f\n", ET);
+      fprintf(outfile, "      * CCSD(T) total energy          = %20.15f\n",
+          ET + moinfo.ecc + moinfo.eref);
 
-    Process::environment.globals["(T) CORRECTION ENERGY"] = ET;
-    Process::environment.globals["CCSD(T) CORRELATION ENERGY"] = ET + moinfo.ecc;
-    Process::environment.globals["CCSD(T) TOTAL ENERGY"] = ET + moinfo.ecc + moinfo.eref;
+      Process::environment.globals["(T) CORRECTION ENERGY"] = ET;
+      Process::environment.globals["CCSD(T) CORRELATION ENERGY"] = ET + moinfo.ecc;
+      Process::environment.globals["CCSD(T) TOTAL ENERGY"] = ET + moinfo.ecc + moinfo.eref;
+    }
+    else if(params.wfn=="CCSD_AT") {
+      ET = EaT_RHF();
+      fprintf(outfile, "\t(aT) energy                    = %20.15f\n", ET);
+      fprintf(outfile, "      * CCSD(aT) total energy          = %20.15f\n",
+          ET + moinfo.ecc + moinfo.eref);
+
+      Process::environment.globals["A-(T) CORRECTION ENERGY"] = ET;
+      Process::environment.globals["A-CCSD(T) CORRELATION ENERGY"] = ET + moinfo.ecc;
+      Process::environment.globals["A-CCSD(T) TOTAL ENERGY"] = ET + moinfo.ecc + moinfo.eref;
+    }
 
     /* Compute triples contributions to the gradient */
     if(params.dertype == 1){
