@@ -60,7 +60,7 @@ void get_params(Options &options)
   /* if no reference is given, assume rhf */
   if(junk == "RHF") params.ref = 0;
   else if(junk == "ROHF" &&
-    (params.wfn == "MP2" || params.wfn == "CCSD_T" ||
+    (params.wfn == "MP2" || params.wfn == "CCSD_T" || params.wfn == "CCSD_AT" ||
     params.wfn == "CC3" || params.wfn == "EOM_CC3" ||
     params.wfn == "CC2" || params.wfn == "EOM_CC2")) {
     params.ref = 2;

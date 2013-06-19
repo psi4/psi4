@@ -56,7 +56,7 @@ void get_params(Options & options)
     params.ref = 0;
   }
   else if((reference == "ROHF") and
-     ((params.wfn == "MP2") or (params.wfn == "CCSD_T") or
+     ((params.wfn == "MP2") or (params.wfn == "CCSD_T") or (params.wfn == "CCSD_AT") or
      (params.wfn == "CC3") or (params.wfn == "EOM_CC3") or
      (params.wfn == "CC2") or (params.wfn == "EOM_CC2"))) {
       params.ref = 2;
