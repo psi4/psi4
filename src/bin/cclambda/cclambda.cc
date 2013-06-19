@@ -34,12 +34,15 @@
 #include <cmath>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
+#include <libpsio/psio.hpp>
 #include <libqt/qt.h>
 #include <psi4-dec.h>
+#include <libmints/wavefunction.h>
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
 #include "globals.h"
+#include "cclambda.h"
 
 namespace psi { namespace cclambda {
 
@@ -93,6 +96,63 @@ void cc3_l3l1(void);
 
 void local_init(void);
 void local_done(void);
+
+PsiReturnType cclambda(Options& options);
+
+}} //namespace psi::cclambda
+
+// Forward declaration to call cctriples
+namespace psi { namespace cctriples {
+PsiReturnType cctriples(Options &options);
+}}
+
+namespace psi { namespace cclambda {
+
+CCLambdaWavefunction::CCLambdaWavefunction(boost::shared_ptr<Wavefunction>
+reference_wavefunction, Options &options)
+    : Wavefunction(options, _default_psio_lib_)
+{
+    set_reference_wavefunction(reference_wavefunction);
+    init();
+}
+
+CCLambdaWavefunction::~CCLambdaWavefunction()
+{
+
+}
+
+void CCLambdaWavefunction::init()
+{
+    // Wavefunction creates a chkpt object for you, but we're not going to use it.
+    // Destroy it. Otherwise we will see a "file already open" error.
+    chkpt_.reset();
+
+    copy(reference_wavefunction_);
+}
+
+double CCLambdaWavefunction::compute_energy()
+{
+    energy_ = 0.0;
+    PsiReturnType ccsd_return;
+    if ((ccsd_return = psi::cclambda::cclambda(options_)) == Success) {
+      // Get the total energy of the CCSD wavefunction
+      energy_ = Process::environment.globals["CURRENT ENERGY"];
+    }
+
+    if ((options_.get_str("WFN") == "CCSD_AT")) {
+      // Make sure ccenergy returned Success
+      if (ccsd_return != Success)
+          throw PSIEXCEPTION("CCEnergyWavefunction: CCSD did not converge, will not proceed to (aT) correction.");
+
+      // Run cctriples
+      if (psi::cctriples::cctriples(options_) == Success)
+          energy_ = Process::environment.globals["CURRENT ENERGY"];
+      else
+          energy_ = 0.0;
+    }
+
+    return energy_;
+}
 
 PsiReturnType cclambda(Options& options)
 {

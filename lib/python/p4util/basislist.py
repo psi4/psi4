@@ -27,8 +27,6 @@ with Psi4.
 
 """
 import os
-import psi4
-from psiexceptions import *
 
 
 basisfamily_list = []
@@ -92,8 +90,13 @@ def sanitize_basisname(name):
     ``+`` into ``p``, ``*`` into ``s``, and ``(``, ``)``, & ``,``
     into ``_``.
     """
-    temp = psi4.BasisSet.make_filename(name)
-    return os.path.splitext(os.path.splitext(temp)[0])[0]
+    temp = name.lower()
+    temp = temp.replace('+', 'p')
+    temp = temp.replace('*', 's')
+    temp = temp.replace('(', '_')
+    temp = temp.replace(')', '_')
+    temp = temp.replace(',', '_')
+    return temp
 
 
 def load_basis_families():
@@ -116,8 +119,23 @@ def print_basis_families():
     """
     basisfamily_list = load_basis_families()
 
+    text = ''
     for fam in basisfamily_list:
-        psi4.print_out('%s' % fam)
+        text += '%s' % (fam)
+    return text
+
+
+def corresponding_orbital(name):
+    """Function to validate if the orbital basis *name* in coded or
+    ornate form is in Psi4's standard installed bases list. ``None``
+    is returned if the orbital basis is not found.
+    """
+    basisfamily_list = load_basis_families()
+
+    for fam in basisfamily_list:
+        if sanitize_basisname(fam.ornate) == sanitize_basisname(name):
+            return fam.ornate
+    return None
 
 
 def corresponding_jkfit(name):
@@ -160,4 +178,3 @@ def corresponding_dualfit(name):
         if sanitize_basisname(fam.ornate) == sanitize_basisname(name):
             return fam.dualfit
     return None
-

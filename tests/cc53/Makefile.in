@@ -1,0 +1,7 @@
+
+SRCDIR = @srcdir@
+
+include ../MakeVars
+PSIAUTOTEST = false
+include ../MakeRules
+
