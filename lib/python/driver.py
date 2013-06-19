@@ -90,6 +90,8 @@ procedures = {
             'ccenergy'      : run_ccenergy,  # full control over ccenergy
             'ccsd'          : run_ccenergy,
             'ccsd(t)'       : run_ccenergy,
+            'ccsd(at)'      : run_ccenergy,
+            'a-ccsd(t)'      : run_ccenergy,
             'cc2'           : run_ccenergy,
             'cc3'           : run_ccenergy,
             'mrcc'          : run_mrcc,      # interface to Kallay's MRCC program
