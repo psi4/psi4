@@ -392,20 +392,20 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
     /* allocate memory for all irrep blocks of (ab,c) */
     for(Gab=0; Gab < nirreps; Gab++) {
         Gc = Gab ^ Gijk ^ GX3;
-        W3[Gab] = dpd_->dpd_block_matrix(WAbEi->params->coltot[Gab], virtpi[Gc]);
+        W3[Gab] = global_dpd_->dpd_block_matrix(WAbEi->params->coltot[Gab], virtpi[Gc]);
         if(newtrips) {
-            W[Gab] = dpd_->dpd_block_matrix(WAbEi->params->coltot[Gab], virtpi[Gc]);
-            V[Gab] = dpd_->dpd_block_matrix(WAbEi->params->coltot[Gab], virtpi[Gc]);
+            W[Gab] = global_dpd_->dpd_block_matrix(WAbEi->params->coltot[Gab], virtpi[Gc]);
+            V[Gab] = global_dpd_->dpd_block_matrix(WAbEi->params->coltot[Gab], virtpi[Gc]);
         }
     }
     for(Ga=0; Ga < nirreps; Ga++) {
         Gbc = Ga ^ Gijk ^ GX3;
         if(newtrips) {
-            Wa[Ga] = dpd_->dpd_block_matrix(virtpi[Ga], WAbEi->params->coltot[Gbc]);
-            Va[Ga] = dpd_->dpd_block_matrix(virtpi[Ga], WAbEi->params->coltot[Gbc]);
+            Wa[Ga] = global_dpd_->dpd_block_matrix(virtpi[Ga], WAbEi->params->coltot[Gbc]);
+            Va[Ga] = global_dpd_->dpd_block_matrix(virtpi[Ga], WAbEi->params->coltot[Gbc]);
         }
         else
-            W3a[Ga] = dpd_->dpd_block_matrix(virtpi[Ga], WAbEi->params->coltot[Gbc]);
+            W3a[Ga] = global_dpd_->dpd_block_matrix(virtpi[Ga], WAbEi->params->coltot[Gbc]);
     }
 
     cnt_ijk = -1;
@@ -428,7 +428,7 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
                 jk = CIjAb->params->rowidx[J][K];
                 kj = CIjAb->params->rowidx[K][J];
 
-                dpd_->T3_RHF_ic(W3, nirreps, I, Gi, J, Gj, K, Gk, CIjAb, WAbEi, WMbIj,
+                global_dpd_->T3_RHF_ic(W3, nirreps, I, Gi, J, Gj, K, Gk, CIjAb, WAbEi, WMbIj,
                                 fIJ, fAB, occpi, occ_off, virtpi, vir_off, omega);
 
                 if(newtrips) {
@@ -475,7 +475,7 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
                             nlinks = virtpi[Gc];
 
                             if(nrows && ncols && nlinks) {
-                                Z = dpd_->dpd_block_matrix(nrows, ncols);
+                                Z = global_dpd_->dpd_block_matrix(nrows, ncols);
 
                                 C_DGEMM('n', 't', nrows, ncols, nlinks, 1.0, W[Gab][0],
                                         nlinks, &(WMnIe->matrix[Gjk][jk][lc]), nlinks,
@@ -493,7 +493,7 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
                                         SIjAb_local.matrix[Gli][il][ab] -= Z[ab][l];
                                     }
                                 }
-                                dpd_->free_dpd_block(Z, nrows, ncols);
+                                global_dpd_->free_dpd_block(Z, nrows, ncols);
                             }
                         }
                     }  /* newtrips */
@@ -512,7 +512,7 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
                             nlinks = virtpi[Gc];
 
                             if(nrows && ncols && nlinks) {
-                                Z = dpd_->dpd_block_matrix(nrows, ncols);
+                                Z = global_dpd_->dpd_block_matrix(nrows, ncols);
 
                                 C_DGEMM('n', 't', nrows, ncols, nlinks, 1.0, W3[Gab][0], nlinks,
                                         &(WMnIe->matrix[Gjk][jk][lc]), nlinks, 0.0, Z[0], ncols);
@@ -529,7 +529,7 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
                                         SIjAb_local.matrix[Gli][il][ab] -= 2.0 * Z[ab][l];
                                     }
                                 }
-                                dpd_->free_dpd_block(Z, nrows, ncols);
+                                global_dpd_->free_dpd_block(Z, nrows, ncols);
                             }
                         }
 
@@ -546,7 +546,7 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
                             nlinks = virtpi[Gc];
 
                             if(nrows && ncols && nlinks) {
-                                Z = dpd_->dpd_block_matrix(nrows, ncols);
+                                Z = global_dpd_->dpd_block_matrix(nrows, ncols);
 
                                 C_DGEMM('n', 't', nrows, ncols, nlinks, 1.0, W3[Gab][0], nlinks,
                                         &(WMnIe->matrix[Gji][ji][lc]), nlinks, 0.0, Z[0], ncols);
@@ -563,7 +563,7 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
                                         SIjAb_local.matrix[Glk][kl][ab] += Z[ab][l];
                                     }
                                 }
-                                dpd_->free_dpd_block(Z, nrows, ncols);
+                                global_dpd_->free_dpd_block(Z, nrows, ncols);
                             }
                         }
 
@@ -580,7 +580,7 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
                             nlinks = virtpi[Gc];
 
                             if(nrows && ncols && nlinks) {
-                                Z = dpd_->dpd_block_matrix(nrows, ncols);
+                                Z = global_dpd_->dpd_block_matrix(nrows, ncols);
 
                                 C_DGEMM('n', 't', nrows, ncols, nlinks, 1.0, W3[Gab][0], nlinks,
                                         &(WMnIe->matrix[Gkj][kj][lc]), nlinks, 0.0, Z[0], ncols);
@@ -597,7 +597,7 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
                                         SIjAb_local.matrix[Gli][il][ab] += Z[ab][l];
                                     }
                                 }
-                                dpd_->free_dpd_block(Z, nrows, ncols);
+                                global_dpd_->free_dpd_block(Z, nrows, ncols);
                             }
                         }
                     } /* no newtrips */
@@ -719,7 +719,7 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
                             if(nrows && ncols && nlinks) {
                                 kd = WmAEf->row_offset[Gkd][K];
 
-                                Z = dpd_->dpd_block_matrix(virtpi[Ga], virtpi[Gd]);
+                                Z = global_dpd_->dpd_block_matrix(virtpi[Ga], virtpi[Gd]);
                                 C_DGEMM('n', 't', nrows, ncols, nlinks, 1.0, Wa[Ga][0],
                                         nlinks, WmAEf->matrix[Gkd][kd], nlinks, 1.0, Z[0], ncols);
 
@@ -734,7 +734,7 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
                                     }
                                 }
 
-                                dpd_->free_dpd_block(Z, virtpi[Ga], virtpi[Gd]);
+                                global_dpd_->free_dpd_block(Z, virtpi[Ga], virtpi[Gd]);
                             }
                         }
                     } /* newtrips */
@@ -798,7 +798,7 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
                                 /*   WmAEf->matrix[Gkd] = dpd_block_matrix(virtpi[Gd], WmAEf->params->coltot[Gkd^GW]);
                   dpd_buf4_mat_irrep_rd_block(WmAEf, Gkd, kd, virtpi[Gd]); */
 
-                                Z = dpd_->dpd_block_matrix(virtpi[Ga], virtpi[Gd]);
+                                Z = global_dpd_->dpd_block_matrix(virtpi[Ga], virtpi[Gd]);
                                 C_DGEMM('n', 't', nrows, ncols, nlinks, 1.0, W3a[Ga][0], nlinks,
                                         WmAEf->matrix[Gkd][kd], nlinks, 1.0, Z[0], ncols);
 
@@ -812,7 +812,7 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
                                         SIjAb_local.matrix[Gij][ji][da] += 2.0 * Z[a][d];
                                     }
                                 }
-                                dpd_->free_dpd_block(Z, virtpi[Ga], virtpi[Gd]);
+                                global_dpd_->free_dpd_block(Z, virtpi[Ga], virtpi[Gd]);
                                 /* dpd_free_block(WmAEf->matrix[Gkd], virtpi[Gd], WmAEf->params->coltot[Gkd^GW]); */
                             }
                         }
@@ -832,7 +832,7 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
                                 /* WmAEf->matrix[Gid] = dpd_block_matrix(virtpi[Gd], WmAEf->params->coltot[Gid^GW]);
               dpd_buf4_mat_irrep_rd_block(WmAEf, Gid, id, virtpi[Gd]); */
 
-                                Z = dpd_->dpd_block_matrix(virtpi[Ga], virtpi[Gd]);
+                                Z = global_dpd_->dpd_block_matrix(virtpi[Ga], virtpi[Gd]);
                                 C_DGEMM('n', 't', nrows, ncols, nlinks, 1.0, W3a[Ga][0], nlinks,
                                         WmAEf->matrix[Gid][id], nlinks, 1.0, Z[0], ncols);
 
@@ -847,7 +847,7 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
                                     }
                                 }
 
-                                dpd_->free_dpd_block(Z, virtpi[Ga], virtpi[Gd]);
+                                global_dpd_->free_dpd_block(Z, virtpi[Ga], virtpi[Gd]);
                                 /* dpd_free_block(WmAEf->matrix[Gid], virtpi[Gd], WmAEf->params->coltot[Gid^GW]); */
                             }
                         }
@@ -867,7 +867,7 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
                                 /* WmAEf->matrix[Gjd] = dpd_block_matrix(virtpi[Gd], WmAEf->params->coltot[Gjd^GW]);
               dpd_buf4_mat_irrep_rd_block(WmAEf, Gjd, jd, virtpi[Gd]); */
 
-                                Z = dpd_->dpd_block_matrix(virtpi[Ga], virtpi[Gd]);
+                                Z = global_dpd_->dpd_block_matrix(virtpi[Ga], virtpi[Gd]);
                                 C_DGEMM('n', 't', nrows, ncols, nlinks, 1.0, W3a[Ga][0], nlinks,
                                         WmAEf->matrix[Gjd][jd], nlinks, 1.0, Z[0], ncols);
 
@@ -881,7 +881,7 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
                                         SIjAb_local.matrix[Gik][ik][ad] -= Z[a][d];
                                     }
                                 }
-                                dpd_->free_dpd_block(Z, virtpi[Ga], virtpi[Gd]);
+                                global_dpd_->free_dpd_block(Z, virtpi[Ga], virtpi[Gd]);
                                 /* dpd_free_block(WmAEf->matrix[Gjd], virtpi[Gd], WmAEf->params->coltot[Gjd^GW]); */
                             }
                         }
@@ -893,20 +893,20 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
 
     for(Gab=0; Gab < nirreps; Gab++) {
         Gc = Gab ^ Gijk ^ GX3;
-        dpd_->free_dpd_block(W3[Gab], WAbEi->params->coltot[Gab], virtpi[Gc]);
+        global_dpd_->free_dpd_block(W3[Gab], WAbEi->params->coltot[Gab], virtpi[Gc]);
         if(newtrips) {
-            dpd_->free_dpd_block(W[Gab], WAbEi->params->coltot[Gab], virtpi[Gc]);
-            dpd_->free_dpd_block(V[Gab], WAbEi->params->coltot[Gab], virtpi[Gc]);
+            global_dpd_->free_dpd_block(W[Gab], WAbEi->params->coltot[Gab], virtpi[Gc]);
+            global_dpd_->free_dpd_block(V[Gab], WAbEi->params->coltot[Gab], virtpi[Gc]);
         }
     }
     for(Ga=0; Ga < nirreps; Ga++) {
         Gbc = Ga ^ Gijk ^ GX3;
         if(newtrips) {
-            dpd_->free_dpd_block(Wa[Ga], virtpi[Ga], WAbEi->params->coltot[Gbc]);
-            dpd_->free_dpd_block(Va[Ga], virtpi[Ga], WAbEi->params->coltot[Gbc]);
+            global_dpd_->free_dpd_block(Wa[Ga], virtpi[Ga], WAbEi->params->coltot[Gbc]);
+            global_dpd_->free_dpd_block(Va[Ga], virtpi[Ga], WAbEi->params->coltot[Gbc]);
         }
         else
-            dpd_->free_dpd_block(W3a[Ga], virtpi[Ga], WAbEi->params->coltot[Gbc]);
+            global_dpd_->free_dpd_block(W3a[Ga], virtpi[Ga], WAbEi->params->coltot[Gbc]);
     }
     free(W3);
     free(W3a);

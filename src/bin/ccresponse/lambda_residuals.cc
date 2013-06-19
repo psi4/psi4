@@ -55,23 +55,23 @@ void lambda_residuals(void)
   int row, col;
 
   /* Generate spin-adapted Type-I Lambda-residual contributions to LHX1Y1 */
-  dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "LHX1Y1 Residual I");
-  dpd_->buf4_scmcopy(&L2, PSIF_CC_LAMPS, "LHX1Y1 I (2 Lijab - Lijba)", 2);
-  dpd_->buf4_sort_axpy(&L2, PSIF_CC_LAMPS, pqsr, 0, 5, "LHX1Y1 I (2 Lijab - Lijba)", -1);
-  dpd_->buf4_close(&L2); 
+  global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "LHX1Y1 Residual I");
+  global_dpd_->buf4_scmcopy(&L2, PSIF_CC_LAMPS, "LHX1Y1 I (2 Lijab - Lijba)", 2);
+  global_dpd_->buf4_sort_axpy(&L2, PSIF_CC_LAMPS, pqsr, 0, 5, "LHX1Y1 I (2 Lijab - Lijba)", -1);
+  global_dpd_->buf4_close(&L2); 
 
   /* Generate spin-adapted Type-II Lambda-residual contributions to LHX1Y1 */
-  dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "LHX1Y1 Residual II");
+  global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "LHX1Y1 Residual II");
 
-  dpd_->file2_init(&L1, PSIF_CC_LAMPS, 0, 0, 1, "LIA 0 -1");
-  dpd_->file2_mat_init(&L1);
-  dpd_->file2_mat_rd(&L1);
-  dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "FME");
-  dpd_->file2_mat_init(&F);
-  dpd_->file2_mat_rd(&F);
+  global_dpd_->file2_init(&L1, PSIF_CC_LAMPS, 0, 0, 1, "LIA 0 -1");
+  global_dpd_->file2_mat_init(&L1);
+  global_dpd_->file2_mat_rd(&L1);
+  global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "FME");
+  global_dpd_->file2_mat_init(&F);
+  global_dpd_->file2_mat_rd(&F);
 
   for(h=0; h < moinfo.nirreps; h++) {
-    dpd_->buf4_mat_irrep_init(&Z, h);
+    global_dpd_->buf4_mat_irrep_init(&Z, h);
     for(row=0; row < Z.params->rowtot[h]; row++) {
       i = Z.params->roworb[h][row][0];
       a = Z.params->roworb[h][row][1];
@@ -86,33 +86,33 @@ void lambda_residuals(void)
 	  Z.matrix[h][row][col] = (L1.matrix[Isym][I][A] * F.matrix[Msym][M][E]);
       }
     }
-    dpd_->buf4_mat_irrep_wrt(&Z, h);
-    dpd_->buf4_mat_irrep_close(&Z, h);
+    global_dpd_->buf4_mat_irrep_wrt(&Z, h);
+    global_dpd_->buf4_mat_irrep_close(&Z, h);
   }
-  dpd_->file2_mat_close(&F);
-  dpd_->file2_close(&F);
-  dpd_->file2_mat_close(&L1);
-  dpd_->file2_close(&L1);
+  global_dpd_->file2_mat_close(&F);
+  global_dpd_->file2_close(&F);
+  global_dpd_->file2_mat_close(&L1);
+  global_dpd_->file2_close(&L1);
 
-  dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "2 LIjAb - LIjBa");
-  dpd_->buf4_sort(&L2, PSIF_CC_TMP0, prqs, 10, 10, "2 Lijab - Lijba (ia,jb)");
-  dpd_->buf4_sort(&L2, PSIF_CC_TMP0, psqr, 10, 10, "2 Lijab - Lijba (ib,ja)");
-  dpd_->buf4_close(&L2);
+  global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "2 LIjAb - LIjBa");
+  global_dpd_->buf4_sort(&L2, PSIF_CC_TMP0, prqs, 10, 10, "2 Lijab - Lijba (ia,jb)");
+  global_dpd_->buf4_sort(&L2, PSIF_CC_TMP0, psqr, 10, 10, "2 Lijab - Lijba (ib,ja)");
+  global_dpd_->buf4_close(&L2);
 
-  dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbEj");
-  dpd_->buf4_init(&L2, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "2 Lijab - Lijba (ia,jb)");
-  dpd_->contract444(&L2, &W, &Z, 0, 0, 1, 1);
-  dpd_->buf4_close(&L2);
-  dpd_->buf4_close(&W);
+  global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbEj");
+  global_dpd_->buf4_init(&L2, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "2 Lijab - Lijba (ia,jb)");
+  global_dpd_->contract444(&L2, &W, &Z, 0, 0, 1, 1);
+  global_dpd_->buf4_close(&L2);
+  global_dpd_->buf4_close(&W);
 
-  dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbeJ");
-  dpd_->buf4_init(&L2, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "2 Lijab - Lijba (ib,ja)");
-  dpd_->contract444(&L2, &W, &Z, 0, 0, -1, 1);
-  dpd_->buf4_close(&L2);
-  dpd_->buf4_close(&W);
+  global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbeJ");
+  global_dpd_->buf4_init(&L2, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "2 Lijab - Lijba (ib,ja)");
+  global_dpd_->contract444(&L2, &W, &Z, 0, 0, -1, 1);
+  global_dpd_->buf4_close(&L2);
+  global_dpd_->buf4_close(&W);
 
-  dpd_->buf4_sort(&Z, PSIF_CC_LAMPS, psrq, 10, 10, "LHX1Y1 Residual II");
-  dpd_->buf4_close(&Z);
+  global_dpd_->buf4_sort(&Z, PSIF_CC_LAMPS, psrq, 10, 10, "LHX1Y1 Residual II");
+  global_dpd_->buf4_close(&Z);
 }
 
 }} // namespace psi::ccresponse

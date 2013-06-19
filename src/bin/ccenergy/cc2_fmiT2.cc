@@ -41,129 +41,129 @@ void cc2_fmiT2(void) {
   dpdbuf4 Zijab;
 
   if(params.ref == 0) { /** RHF **/
-    dpd_->file2_init(&fMI, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+    global_dpd_->file2_init(&fMI, PSIF_CC_OEI, 0, 0, 0, "fIJ");
 
-    dpd_->buf4_init(&Zijab, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "CC2 ZIjAb");
-    dpd_->buf4_init(&tIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-    dpd_->contract244(&fMI, &tIjAb, &Zijab, 0, 0, 0, -1, 0);
-    dpd_->buf4_close(&tIjAb);
-    dpd_->buf4_init(&newtIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
-    dpd_->buf4_axpy(&Zijab, &newtIjAb, 1);
-    dpd_->buf4_close(&newtIjAb);
-    dpd_->buf4_sort_axpy(&Zijab, PSIF_CC_TAMPS, qpsr, 0, 5, "New tIjAb", 1);
-    dpd_->buf4_close(&Zijab);
+    global_dpd_->buf4_init(&Zijab, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "CC2 ZIjAb");
+    global_dpd_->buf4_init(&tIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+    global_dpd_->contract244(&fMI, &tIjAb, &Zijab, 0, 0, 0, -1, 0);
+    global_dpd_->buf4_close(&tIjAb);
+    global_dpd_->buf4_init(&newtIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
+    global_dpd_->buf4_axpy(&Zijab, &newtIjAb, 1);
+    global_dpd_->buf4_close(&newtIjAb);
+    global_dpd_->buf4_sort_axpy(&Zijab, PSIF_CC_TAMPS, qpsr, 0, 5, "New tIjAb", 1);
+    global_dpd_->buf4_close(&Zijab);
 
-    dpd_->file2_close(&fMI);
+    global_dpd_->file2_close(&fMI);
   }
   else if(params.ref == 1) { /** ROHF **/
 
-    dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
-    dpd_->file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
-    dpd_->file2_init(&FMI, PSIF_CC2_HET1, 0, 0, 0, "CC2 FMI");
-    dpd_->contract222(&fIA, &tIA, &FMI, 0, 0, 1, 0);
-    dpd_->file2_close(&FMI); 
-    dpd_->file2_close(&fIA); 
-    dpd_->file2_close(&tIA);
+    global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    global_dpd_->file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
+    global_dpd_->file2_init(&FMI, PSIF_CC2_HET1, 0, 0, 0, "CC2 FMI");
+    global_dpd_->contract222(&fIA, &tIA, &FMI, 0, 0, 1, 0);
+    global_dpd_->file2_close(&FMI); 
+    global_dpd_->file2_close(&fIA); 
+    global_dpd_->file2_close(&tIA);
 
-    dpd_->file2_init(&tia, PSIF_CC_OEI, 0, 0, 1, "tia");
-    dpd_->file2_init(&fia, PSIF_CC_OEI, 0, 0, 1, "fia");
-    dpd_->file2_init(&Fmi, PSIF_CC2_HET1, 0, 0, 0, "CC2 Fmi");
-    dpd_->contract222(&fia, &tia, &Fmi, 0, 0, 1, 0);
-    dpd_->file2_close(&Fmi);
-    dpd_->file2_close(&fia); 
-    dpd_->file2_close(&tia);
+    global_dpd_->file2_init(&tia, PSIF_CC_OEI, 0, 0, 1, "tia");
+    global_dpd_->file2_init(&fia, PSIF_CC_OEI, 0, 0, 1, "fia");
+    global_dpd_->file2_init(&Fmi, PSIF_CC2_HET1, 0, 0, 0, "CC2 Fmi");
+    global_dpd_->contract222(&fia, &tia, &Fmi, 0, 0, 1, 0);
+    global_dpd_->file2_close(&Fmi);
+    global_dpd_->file2_close(&fia); 
+    global_dpd_->file2_close(&tia);
 
     /** F -> tijab **/
-    dpd_->file2_init(&FMI, PSIF_CC2_HET1, 0, 0, 0, "CC2 FMI");
-    dpd_->file2_init(&Fmi, PSIF_CC2_HET1, 0, 0, 0, "CC2 Fmi");
+    global_dpd_->file2_init(&FMI, PSIF_CC2_HET1, 0, 0, 0, "CC2 FMI");
+    global_dpd_->file2_init(&Fmi, PSIF_CC2_HET1, 0, 0, 0, "CC2 Fmi");
 
     /*** AA ***/
-    dpd_->buf4_init(&tIJAB, PSIF_CC_TAMPS, 0, 0, 7, 2, 7, 0, "tIJAB");
-    dpd_->buf4_init(&t2, PSIF_CC_TMP0, 0, 0, 7, 0, 7, 0, "T (IJ,A>B)");
-    dpd_->contract424(&tIJAB, &FMI, &t2, 1, 0, 1, -1, 0);
-    dpd_->contract244(&FMI, &tIJAB, &t2, 0, 0, 0, -1, 1);
-    dpd_->buf4_init(&newtIJAB, PSIF_CC_TAMPS, 0, 0, 7, 2, 7, 0, "New tIJAB");
-    dpd_->buf4_axpy(&t2, &newtIJAB, 1);
-    dpd_->buf4_close(&newtIJAB);
-    dpd_->buf4_close(&t2);
-    dpd_->buf4_close(&tIJAB);
+    global_dpd_->buf4_init(&tIJAB, PSIF_CC_TAMPS, 0, 0, 7, 2, 7, 0, "tIJAB");
+    global_dpd_->buf4_init(&t2, PSIF_CC_TMP0, 0, 0, 7, 0, 7, 0, "T (IJ,A>B)");
+    global_dpd_->contract424(&tIJAB, &FMI, &t2, 1, 0, 1, -1, 0);
+    global_dpd_->contract244(&FMI, &tIJAB, &t2, 0, 0, 0, -1, 1);
+    global_dpd_->buf4_init(&newtIJAB, PSIF_CC_TAMPS, 0, 0, 7, 2, 7, 0, "New tIJAB");
+    global_dpd_->buf4_axpy(&t2, &newtIJAB, 1);
+    global_dpd_->buf4_close(&newtIJAB);
+    global_dpd_->buf4_close(&t2);
+    global_dpd_->buf4_close(&tIJAB);
 
     /*** BB ***/
-    dpd_->buf4_init(&tijab, PSIF_CC_TAMPS, 0, 0, 7, 2, 7, 0, "tijab");
-    dpd_->buf4_init(&t2, PSIF_CC_TMP0, 0, 0, 7, 0, 7, 0, "T (IJ,A>B)");
-    dpd_->contract424(&tijab, &Fmi, &t2, 1, 0, 1, -1, 0);
-    dpd_->contract244(&Fmi, &tijab, &t2, 0, 0, 0, -1, 1);
-    dpd_->buf4_init(&newtijab, PSIF_CC_TAMPS, 0, 0, 7, 2, 7, 0, "New tijab");
-    dpd_->buf4_axpy(&t2, &newtijab, 1);
-    dpd_->buf4_close(&newtijab);
-    dpd_->buf4_close(&t2);
-    dpd_->buf4_close(&tijab);
+    global_dpd_->buf4_init(&tijab, PSIF_CC_TAMPS, 0, 0, 7, 2, 7, 0, "tijab");
+    global_dpd_->buf4_init(&t2, PSIF_CC_TMP0, 0, 0, 7, 0, 7, 0, "T (IJ,A>B)");
+    global_dpd_->contract424(&tijab, &Fmi, &t2, 1, 0, 1, -1, 0);
+    global_dpd_->contract244(&Fmi, &tijab, &t2, 0, 0, 0, -1, 1);
+    global_dpd_->buf4_init(&newtijab, PSIF_CC_TAMPS, 0, 0, 7, 2, 7, 0, "New tijab");
+    global_dpd_->buf4_axpy(&t2, &newtijab, 1);
+    global_dpd_->buf4_close(&newtijab);
+    global_dpd_->buf4_close(&t2);
+    global_dpd_->buf4_close(&tijab);
 
     /*** AB ***/
-    dpd_->buf4_init(&tIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-    dpd_->buf4_init(&newtIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
-    dpd_->contract424(&tIjAb, &Fmi, &newtIjAb, 1, 0, 1, -1, 1);
-    dpd_->contract244(&FMI, &tIjAb, &newtIjAb, 0, 0, 0, -1, 1);
-    dpd_->buf4_close(&newtIjAb);
-    dpd_->buf4_close(&tIjAb);
+    global_dpd_->buf4_init(&tIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+    global_dpd_->buf4_init(&newtIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
+    global_dpd_->contract424(&tIjAb, &Fmi, &newtIjAb, 1, 0, 1, -1, 1);
+    global_dpd_->contract244(&FMI, &tIjAb, &newtIjAb, 0, 0, 0, -1, 1);
+    global_dpd_->buf4_close(&newtIjAb);
+    global_dpd_->buf4_close(&tIjAb);
 
-    dpd_->file2_close(&FMI); 
-    dpd_->file2_close(&Fmi);
+    global_dpd_->file2_close(&FMI); 
+    global_dpd_->file2_close(&Fmi);
   }
   else if(params.ref == 2) { /** UHF **/
 
-    dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
-    dpd_->file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
-    dpd_->file2_init(&FMI, PSIF_CC2_HET1, 0, 0, 0, "CC2 FMI");
-    dpd_->contract222(&fIA, &tIA, &FMI, 0, 0, 1, 0);
-    dpd_->file2_close(&FMI); 
-    dpd_->file2_close(&fIA); 
-    dpd_->file2_close(&tIA);
+    global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    global_dpd_->file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
+    global_dpd_->file2_init(&FMI, PSIF_CC2_HET1, 0, 0, 0, "CC2 FMI");
+    global_dpd_->contract222(&fIA, &tIA, &FMI, 0, 0, 1, 0);
+    global_dpd_->file2_close(&FMI); 
+    global_dpd_->file2_close(&fIA); 
+    global_dpd_->file2_close(&tIA);
 
-    dpd_->file2_init(&tia, PSIF_CC_OEI, 0, 2, 3, "tia");
-    dpd_->file2_init(&fia, PSIF_CC_OEI, 0, 2, 3, "fia");
-    dpd_->file2_init(&Fmi, PSIF_CC2_HET1, 0, 2, 2, "CC2 Fmi");
-    dpd_->contract222(&fia, &tia, &Fmi, 0, 0, 1, 0);
-    dpd_->file2_close(&Fmi);
-    dpd_->file2_close(&fia);
-    dpd_->file2_close(&tia);
+    global_dpd_->file2_init(&tia, PSIF_CC_OEI, 0, 2, 3, "tia");
+    global_dpd_->file2_init(&fia, PSIF_CC_OEI, 0, 2, 3, "fia");
+    global_dpd_->file2_init(&Fmi, PSIF_CC2_HET1, 0, 2, 2, "CC2 Fmi");
+    global_dpd_->contract222(&fia, &tia, &Fmi, 0, 0, 1, 0);
+    global_dpd_->file2_close(&Fmi);
+    global_dpd_->file2_close(&fia);
+    global_dpd_->file2_close(&tia);
 
     /** tijab <- Fmi **/
-    dpd_->file2_init(&FMI, PSIF_CC2_HET1, 0, 0, 0, "CC2 FMI");
-    dpd_->file2_init(&Fmi, PSIF_CC2_HET1, 0, 2, 2, "CC2 Fmi");
+    global_dpd_->file2_init(&FMI, PSIF_CC2_HET1, 0, 0, 0, "CC2 FMI");
+    global_dpd_->file2_init(&Fmi, PSIF_CC2_HET1, 0, 2, 2, "CC2 Fmi");
 
     /*** AA ***/
-    dpd_->buf4_init(&tIJAB, PSIF_CC_TAMPS, 0, 0, 7, 2, 7, 0, "tIJAB");
-    dpd_->buf4_init(&t2, PSIF_CC_TMP0, 0, 0, 7, 0, 7, 0, "T (IJ,A>B)");
-    dpd_->contract424(&tIJAB, &FMI, &t2, 1, 0, 1, -1, 0);
-    dpd_->contract244(&FMI, &tIJAB, &t2, 0, 0, 0, -1, 1);
-    dpd_->buf4_close(&tIJAB);
-    dpd_->buf4_init(&newtIJAB, PSIF_CC_TAMPS, 0, 0, 7, 2, 7, 0, "New tIJAB");
-    dpd_->buf4_axpy(&t2, &newtIJAB, 1);
-    dpd_->buf4_close(&newtIJAB);
-    dpd_->buf4_close(&t2);
+    global_dpd_->buf4_init(&tIJAB, PSIF_CC_TAMPS, 0, 0, 7, 2, 7, 0, "tIJAB");
+    global_dpd_->buf4_init(&t2, PSIF_CC_TMP0, 0, 0, 7, 0, 7, 0, "T (IJ,A>B)");
+    global_dpd_->contract424(&tIJAB, &FMI, &t2, 1, 0, 1, -1, 0);
+    global_dpd_->contract244(&FMI, &tIJAB, &t2, 0, 0, 0, -1, 1);
+    global_dpd_->buf4_close(&tIJAB);
+    global_dpd_->buf4_init(&newtIJAB, PSIF_CC_TAMPS, 0, 0, 7, 2, 7, 0, "New tIJAB");
+    global_dpd_->buf4_axpy(&t2, &newtIJAB, 1);
+    global_dpd_->buf4_close(&newtIJAB);
+    global_dpd_->buf4_close(&t2);
 
     /*** BB ***/
-    dpd_->buf4_init(&tijab, PSIF_CC_TAMPS, 0, 10, 17, 12, 17, 0, "tijab");
-    dpd_->buf4_init(&t2, PSIF_CC_TMP0, 0, 10, 17, 10, 17, 0, "T (ij,a>b)");
-    dpd_->contract424(&tijab, &Fmi, &t2, 1, 0, 1, -1, 0);
-    dpd_->contract244(&Fmi, &tijab, &t2, 0, 0, 0, -1, 1);
-    dpd_->buf4_close(&tijab);
-    dpd_->buf4_init(&newtijab, PSIF_CC_TAMPS, 0, 10, 17, 12, 17, 0, "New tijab");
-    dpd_->buf4_axpy(&t2, &newtijab, 1);
-    dpd_->buf4_close(&newtijab);
-    dpd_->buf4_close(&t2);
+    global_dpd_->buf4_init(&tijab, PSIF_CC_TAMPS, 0, 10, 17, 12, 17, 0, "tijab");
+    global_dpd_->buf4_init(&t2, PSIF_CC_TMP0, 0, 10, 17, 10, 17, 0, "T (ij,a>b)");
+    global_dpd_->contract424(&tijab, &Fmi, &t2, 1, 0, 1, -1, 0);
+    global_dpd_->contract244(&Fmi, &tijab, &t2, 0, 0, 0, -1, 1);
+    global_dpd_->buf4_close(&tijab);
+    global_dpd_->buf4_init(&newtijab, PSIF_CC_TAMPS, 0, 10, 17, 12, 17, 0, "New tijab");
+    global_dpd_->buf4_axpy(&t2, &newtijab, 1);
+    global_dpd_->buf4_close(&newtijab);
+    global_dpd_->buf4_close(&t2);
 
     /*** AB ***/
-    dpd_->buf4_init(&tIjAb, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
-    dpd_->buf4_init(&newtIjAb, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "New tIjAb");
-    dpd_->contract424(&tIjAb, &Fmi, &newtIjAb, 1, 0, 1, -1, 1);
-    dpd_->contract244(&FMI, &tIjAb, &newtIjAb, 0, 0, 0, -1, 1);
-    dpd_->buf4_close(&newtIjAb);
-    dpd_->buf4_close(&tIjAb);
+    global_dpd_->buf4_init(&tIjAb, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
+    global_dpd_->buf4_init(&newtIjAb, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "New tIjAb");
+    global_dpd_->contract424(&tIjAb, &Fmi, &newtIjAb, 1, 0, 1, -1, 1);
+    global_dpd_->contract244(&FMI, &tIjAb, &newtIjAb, 0, 0, 0, -1, 1);
+    global_dpd_->buf4_close(&newtIjAb);
+    global_dpd_->buf4_close(&tIjAb);
 
-    dpd_->file2_close(&Fmi);
-    dpd_->file2_close(&FMI); 
+    global_dpd_->file2_close(&Fmi);
+    global_dpd_->file2_close(&FMI); 
   }
 }
 }} // namespace psi::ccenergy

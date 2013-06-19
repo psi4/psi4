@@ -64,16 +64,16 @@ DCFTSolver::half_transform(dpdbuf4 *SO, dpdbuf4 *MO, SharedMatrix& C1, SharedMat
     double **X;
 
         for(int h = 0; h < nirrep_; ++h){
-        dpd_->buf4_mat_irrep_init(SO, h);
-        dpd_->buf4_mat_irrep_init(MO, h);
+        global_dpd_->buf4_mat_irrep_init(SO, h);
+        global_dpd_->buf4_mat_irrep_init(MO, h);
 
         if(backwards){
-            if(alpha != 0.0) dpd_->buf4_mat_irrep_rd(MO, h);
-            if(beta != 0.0) dpd_->buf4_mat_irrep_rd(SO, h);
+            if(alpha != 0.0) global_dpd_->buf4_mat_irrep_rd(MO, h);
+            if(beta != 0.0) global_dpd_->buf4_mat_irrep_rd(SO, h);
         }
         else{
-            if(alpha != 0.0) dpd_->buf4_mat_irrep_rd(SO, h);
-            if(beta != 0.0) dpd_->buf4_mat_irrep_rd(MO, h);
+            if(alpha != 0.0) global_dpd_->buf4_mat_irrep_rd(SO, h);
+            if(beta != 0.0) global_dpd_->buf4_mat_irrep_rd(MO, h);
         }
 
         for(Gc=0; Gc < nirrep_; Gc++) {
@@ -120,11 +120,11 @@ DCFTSolver::half_transform(dpdbuf4 *SO, dpdbuf4 *MO, SharedMatrix& C1, SharedMat
             }
         }
 
-        if(!backwards) dpd_->buf4_mat_irrep_wrt(MO, h);
-        dpd_->buf4_mat_irrep_close(MO, h);
+        if(!backwards) global_dpd_->buf4_mat_irrep_wrt(MO, h);
+        global_dpd_->buf4_mat_irrep_close(MO, h);
 
-        if(backwards) dpd_->buf4_mat_irrep_wrt(SO, h);
-        dpd_->buf4_mat_irrep_close(SO, h);
+        if(backwards) global_dpd_->buf4_mat_irrep_wrt(SO, h);
+        global_dpd_->buf4_mat_irrep_close(SO, h);
 
     }
     dcft_timer_off("DCFTSolver::half_transform");

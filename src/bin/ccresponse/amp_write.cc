@@ -65,14 +65,14 @@ void amp_write(const char *pert, int irrep, double omega)
 
   if(params.ref == 0) { /** RHF **/
     sprintf(lbl, "X_%s_IA (%5.3f)", pert, omega);
-    dpd_->file2_init(&T1, PSIF_CC_OEI, irrep, 0, 1, lbl);
+    global_dpd_->file2_init(&T1, PSIF_CC_OEI, irrep, 0, 1, lbl);
     amp_write_T1(&T1, params.num_amps, "\n\tLargest XIA Amplitudes:\n", outfile);
-    dpd_->file2_close(&T1);
+    global_dpd_->file2_close(&T1);
 
     sprintf(lbl, "X_%s_IjAb (%5.3f)", pert, omega);
-    dpd_->buf4_init(&T2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
+    global_dpd_->buf4_init(&T2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
     amp_write_T2(&T2, params.num_amps, "\n\tLargest XIjAb Amplitudes:\n", outfile);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_close(&T2);
   }
 }
 
@@ -90,8 +90,8 @@ void amp_write_T1(dpdfile2 *T1, int length, const char *label, FILE *outfile)
   t1stack = (struct onestack *) malloc(length * sizeof(struct onestack));
   for(m=0; m < length; m++) { t1stack[m].value = 0; t1stack[m].i = 0; t1stack[m].a = 0; }
 
-  dpd_->file2_mat_init(T1);
-  dpd_->file2_mat_rd(T1);
+  global_dpd_->file2_mat_init(T1);
+  global_dpd_->file2_mat_rd(T1);
 
   numt1 = 0;
   for(h=0; h < nirreps; h++) {
@@ -113,7 +113,7 @@ void amp_write_T1(dpdfile2 *T1, int length, const char *label, FILE *outfile)
     }
   }
 
-  dpd_->file2_mat_close(T1);
+  global_dpd_->file2_mat_close(T1);
 
   for(m=0; m < ((numt1 < length) ? numt1 : length); m++)
     if(fabs(t1stack[m].value) > 1e-8) num2print++;
@@ -175,8 +175,8 @@ void amp_write_T2(dpdbuf4 *T2, int length, const char *label, FILE *outfile)
 
   numt2 = 0;
   for(h=0; h < nirreps; h++) {
-    dpd_->buf4_mat_irrep_init(T2, h);
-    dpd_->buf4_mat_irrep_rd(T2, h);
+    global_dpd_->buf4_mat_irrep_init(T2, h);
+    global_dpd_->buf4_mat_irrep_rd(T2, h);
 
     numt2 += T2->params->rowtot[h] * T2->params->coltot[h^Gijab];
 
@@ -198,7 +198,7 @@ void amp_write_T2(dpdbuf4 *T2, int length, const char *label, FILE *outfile)
       }
     }
 
-    dpd_->buf4_mat_irrep_close(T2, h);
+    global_dpd_->buf4_mat_irrep_close(T2, h);
   }
 
   for(m=0; m < ((numt2 < length) ? numt2 : length); m++)

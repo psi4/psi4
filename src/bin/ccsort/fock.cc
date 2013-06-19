@@ -101,10 +101,10 @@ void fock_uhf(void)
   Fb->print();
 #endif
 
-  dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
-  dpd_->file2_init(&fij, PSIF_CC_OEI, 0, 2, 2, "fij");
-  dpd_->file2_mat_init(&fIJ);
-  dpd_->file2_mat_init(&fij);
+  global_dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+  global_dpd_->file2_init(&fij, PSIF_CC_OEI, 0, 2, 2, "fij");
+  global_dpd_->file2_mat_init(&fIJ);
+  global_dpd_->file2_mat_init(&fij);
 
   for(h=0; h < nirreps; h++) {
 
@@ -117,20 +117,20 @@ void fock_uhf(void)
         fij.matrix[h][i][j] = Fb->get(h,i + frdocc[h],j + frdocc[h]);
   }
 
-  dpd_->file2_mat_wrt(&fIJ);
-  dpd_->file2_mat_wrt(&fij);
+  global_dpd_->file2_mat_wrt(&fIJ);
+  global_dpd_->file2_mat_wrt(&fij);
 #if DEBUG
   dpd_file2_print(&fIJ, outfile);
   dpd_file2_print(&fij, outfile);
 #endif
-  dpd_->file2_close(&fIJ);
-  dpd_->file2_close(&fij);
+  global_dpd_->file2_close(&fIJ);
+  global_dpd_->file2_close(&fij);
 
-  dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
-  dpd_->file2_init(&fab, PSIF_CC_OEI, 0, 3, 3, "fab");
+  global_dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
+  global_dpd_->file2_init(&fab, PSIF_CC_OEI, 0, 3, 3, "fab");
 
-  dpd_->file2_mat_init(&fAB);
-  dpd_->file2_mat_init(&fab);
+  global_dpd_->file2_mat_init(&fAB);
+  global_dpd_->file2_mat_init(&fab);
 
   for(h=0; h < nirreps; h++) {
 
@@ -143,20 +143,20 @@ void fock_uhf(void)
         fab.matrix[h][a][b] = Fb->get(h, a + frdocc[h] + boccpi[h], b + frdocc[h] + boccpi[h]);
   }
 
-  dpd_->file2_mat_wrt(&fAB);
-  dpd_->file2_mat_wrt(&fab);
+  global_dpd_->file2_mat_wrt(&fAB);
+  global_dpd_->file2_mat_wrt(&fab);
 #if DEBUG
   dpd_file2_print(&fAB, outfile);
   dpd_file2_print(&fab, outfile);
 #endif
-  dpd_->file2_close(&fAB);
-  dpd_->file2_close(&fab);
+  global_dpd_->file2_close(&fAB);
+  global_dpd_->file2_close(&fab);
 
   /* Prepare the alpha and beta occ-vir Fock matrix files */
-  dpd_->file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
-  dpd_->file2_init(&fia, PSIF_CC_OEI, 0, 2, 3, "fia");
-  dpd_->file2_mat_init(&fIA);
-  dpd_->file2_mat_init(&fia);
+  global_dpd_->file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
+  global_dpd_->file2_init(&fia, PSIF_CC_OEI, 0, 2, 3, "fia");
+  global_dpd_->file2_mat_init(&fIA);
+  global_dpd_->file2_mat_init(&fia);
 
   /* One-electron (frozen-core) contributions */
   for(h=0; h < nirreps; h++) {
@@ -171,16 +171,16 @@ void fock_uhf(void)
   }
 
   /* Close the alpha and beta occ-vir Fock matrix files */
-  dpd_->file2_mat_wrt(&fIA);
-  dpd_->file2_mat_wrt(&fia);
-  dpd_->file2_mat_close(&fIA);
-  dpd_->file2_mat_close(&fia);
+  global_dpd_->file2_mat_wrt(&fIA);
+  global_dpd_->file2_mat_wrt(&fia);
+  global_dpd_->file2_mat_close(&fIA);
+  global_dpd_->file2_mat_close(&fia);
 #if DEBUG
   dpd_file2_print(&fIA, outfile);
   dpd_file2_print(&fia, outfile);
 #endif
-  dpd_->file2_close(&fIA);
-  dpd_->file2_close(&fia);
+  global_dpd_->file2_close(&fIA);
+  global_dpd_->file2_close(&fia);
 
 }
 
@@ -216,10 +216,10 @@ void fock_rhf(void)
 #endif
 
   /* Prepare the alpha and beta occ-occ Fock matrix files */
-  dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
-  dpd_->file2_init(&fij, PSIF_CC_OEI, 0, 0, 0, "fij");
-  dpd_->file2_mat_init(&fIJ);
-  dpd_->file2_mat_init(&fij);
+  global_dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+  global_dpd_->file2_init(&fij, PSIF_CC_OEI, 0, 0, 0, "fij");
+  global_dpd_->file2_mat_init(&fIJ);
+  global_dpd_->file2_mat_init(&fij);
 
   /* One-electron (frozen-core) contributions */
   for(h=0; h < nirreps; h++) {
@@ -234,22 +234,22 @@ void fock_rhf(void)
   }
 
   /* Close the alpha and beta occ-occ Fock matrix files */
-  dpd_->file2_mat_wrt(&fIJ);
-  dpd_->file2_mat_wrt(&fij);
-  dpd_->file2_mat_close(&fIJ);
-  dpd_->file2_mat_close(&fij);
+  global_dpd_->file2_mat_wrt(&fIJ);
+  global_dpd_->file2_mat_wrt(&fij);
+  global_dpd_->file2_mat_close(&fIJ);
+  global_dpd_->file2_mat_close(&fij);
 #if DEBUG
   dpd_file2_print(&fIJ, outfile);
   dpd_file2_print(&fij, outfile);
 #endif
-  dpd_->file2_close(&fIJ);
-  dpd_->file2_close(&fij);
+  global_dpd_->file2_close(&fIJ);
+  global_dpd_->file2_close(&fij);
 
   /* Prepare the alpha and beta vir-vir Fock matrix files */
-  dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
-  dpd_->file2_init(&fab, PSIF_CC_OEI, 0, 1, 1, "fab");
-  dpd_->file2_mat_init(&fAB);
-  dpd_->file2_mat_init(&fab);
+  global_dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
+  global_dpd_->file2_init(&fab, PSIF_CC_OEI, 0, 1, 1, "fab");
+  global_dpd_->file2_mat_init(&fAB);
+  global_dpd_->file2_mat_init(&fab);
 
   /* One-electron (frozen-core) contributions */
   for(h=0; h < nirreps; h++) {
@@ -276,22 +276,22 @@ void fock_rhf(void)
   }
 
   /* Close the alpha and beta vir-vir Fock matrix files */
-  dpd_->file2_mat_wrt(&fAB);
-  dpd_->file2_mat_wrt(&fab);
-  dpd_->file2_mat_close(&fAB);
-  dpd_->file2_mat_close(&fab);
+  global_dpd_->file2_mat_wrt(&fAB);
+  global_dpd_->file2_mat_wrt(&fab);
+  global_dpd_->file2_mat_close(&fAB);
+  global_dpd_->file2_mat_close(&fab);
 #if DEBUG
   dpd_file2_print(&fAB, outfile);
   dpd_file2_print(&fab, outfile);
 #endif
-  dpd_->file2_close(&fAB);
-  dpd_->file2_close(&fab);
+  global_dpd_->file2_close(&fAB);
+  global_dpd_->file2_close(&fab);
 
   /* Prepare the alpha and beta occ-vir Fock matrix files */
-  dpd_->file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
-  dpd_->file2_init(&fia, PSIF_CC_OEI, 0, 0, 1, "fia");
-  dpd_->file2_mat_init(&fIA);
-  dpd_->file2_mat_init(&fia);
+  global_dpd_->file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
+  global_dpd_->file2_init(&fia, PSIF_CC_OEI, 0, 0, 1, "fia");
+  global_dpd_->file2_mat_init(&fIA);
+  global_dpd_->file2_mat_init(&fia);
 
   /* One-electron (frozen-core) contributions */
   for(h=0; h < nirreps; h++) {
@@ -311,16 +311,16 @@ void fock_rhf(void)
   }
 
   /* Close the alpha and beta occ-vir Fock matrix files */
-  dpd_->file2_mat_wrt(&fIA);
-  dpd_->file2_mat_wrt(&fia);
-  dpd_->file2_mat_close(&fIA);
-  dpd_->file2_mat_close(&fia);
+  global_dpd_->file2_mat_wrt(&fIA);
+  global_dpd_->file2_mat_wrt(&fia);
+  global_dpd_->file2_mat_close(&fIA);
+  global_dpd_->file2_mat_close(&fia);
 #if DEBUG
   dpd_file2_print(&fIA, outfile);
   dpd_file2_print(&fia, outfile);
 #endif
-  dpd_->file2_close(&fIA);
-  dpd_->file2_close(&fia);
+  global_dpd_->file2_close(&fIA);
+  global_dpd_->file2_close(&fia);
 }
 
 }} // namespace psi::ccsort

@@ -59,9 +59,9 @@ void sort_ltd_rohf(struct TD_Params S)
 
   moinfo.ltd = block_matrix(nmo, nmo);
 
-  dpd_->file2_init(&D, PSIF_CC_TMP, S.irrep, 0, 0, "LTDIJ");
-  dpd_->file2_mat_init(&D);
-  dpd_->file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_TMP, S.irrep, 0, 0, "LTDIJ");
+  global_dpd_->file2_mat_init(&D);
+  global_dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(i=0; i < occpi[h]; i++) {
       I = qt_occ[occ_off[h] + i];
@@ -71,12 +71,12 @@ void sort_ltd_rohf(struct TD_Params S)
       }
     }
   }
-  dpd_->file2_mat_close(&D);
-  dpd_->file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
-  dpd_->file2_init(&D, PSIF_CC_TMP, S.irrep, 1, 1, "LTDAB");
-  dpd_->file2_mat_init(&D);
-  dpd_->file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_TMP, S.irrep, 1, 1, "LTDAB");
+  global_dpd_->file2_mat_init(&D);
+  global_dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(a=0; a < (virtpi[h] - openpi[h]); a++) {
       A = qt_vir[vir_off[h] + a];
@@ -86,13 +86,13 @@ void sort_ltd_rohf(struct TD_Params S)
       }
     }
   }
-  dpd_->file2_mat_close(&D);
-  dpd_->file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
   /* Note that this component of the density is stored occ-vir */
-  dpd_->file2_init(&D, PSIF_CC_TMP, S.irrep, 0, 1, "LTDAI");
-  dpd_->file2_mat_init(&D);
-  dpd_->file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_TMP, S.irrep, 0, 1, "LTDAI");
+  global_dpd_->file2_mat_init(&D);
+  global_dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(i=0; i < occpi[h]; i++) {
       I = qt_occ[occ_off[h] + i];
@@ -102,12 +102,12 @@ void sort_ltd_rohf(struct TD_Params S)
       }
     }
   }
-  dpd_->file2_mat_close(&D);
-  dpd_->file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
-  dpd_->file2_init(&D, PSIF_CC_TMP, S.irrep, 0, 1, "LTDIA");
-  dpd_->file2_mat_init(&D);
-  dpd_->file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_TMP, S.irrep, 0, 1, "LTDIA");
+  global_dpd_->file2_mat_init(&D);
+  global_dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(i=0; i < occpi[h]; i++) {
       I = qt_occ[occ_off[h] + i];
@@ -117,12 +117,12 @@ void sort_ltd_rohf(struct TD_Params S)
       }
     }
   }
-  dpd_->file2_mat_close(&D);
-  dpd_->file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
-  dpd_->file2_init(&D, PSIF_CC_TMP, S.irrep, 0, 0, "LTDij");
-  dpd_->file2_mat_init(&D); 
-  dpd_->file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_TMP, S.irrep, 0, 0, "LTDij");
+  global_dpd_->file2_mat_init(&D); 
+  global_dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(i=0; i < (occpi[h] - openpi[h]); i++) { 
       I = qt_occ[occ_off[h] + i];
@@ -132,12 +132,12 @@ void sort_ltd_rohf(struct TD_Params S)
       }
     }
   }
-  dpd_->file2_mat_close(&D);
-  dpd_->file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
-  dpd_->file2_init(&D, PSIF_CC_TMP, S.irrep, 1, 1, "LTDab");
-  dpd_->file2_mat_init(&D);
-  dpd_->file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_TMP, S.irrep, 1, 1, "LTDab");
+  global_dpd_->file2_mat_init(&D);
+  global_dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(a=0; a < virtpi[h]; a++) {
       A = qt_vir[vir_off[h] + a];
@@ -147,13 +147,13 @@ void sort_ltd_rohf(struct TD_Params S)
       }
     }
   }
-  dpd_->file2_mat_close(&D);
-  dpd_->file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
   /* Note that this component of the density is stored occ-vir */
-  dpd_->file2_init(&D, PSIF_CC_TMP, S.irrep, 0, 1, "LTDai");
-  dpd_->file2_mat_init(&D);
-  dpd_->file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_TMP, S.irrep, 0, 1, "LTDai");
+  global_dpd_->file2_mat_init(&D);
+  global_dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(i=0; i < (occpi[h] - openpi[h]); i++) {
       I = qt_occ[occ_off[h] + i];
@@ -163,12 +163,12 @@ void sort_ltd_rohf(struct TD_Params S)
       }
     }
   }
-  dpd_->file2_mat_close(&D);
-  dpd_->file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
-  dpd_->file2_init(&D, PSIF_CC_TMP, S.irrep, 0, 1, "LTDia");
-  dpd_->file2_mat_init(&D);
-  dpd_->file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_TMP, S.irrep, 0, 1, "LTDia");
+  global_dpd_->file2_mat_init(&D);
+  global_dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(i=0; i < (occpi[h] - openpi[h]); i++) {
       I = qt_occ[occ_off[h] + i];
@@ -178,8 +178,8 @@ void sort_ltd_rohf(struct TD_Params S)
       }
     }
   }
-  dpd_->file2_mat_close(&D);
-  dpd_->file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
   /*mat_print(moinfo.ltd,nmo,nmo,outfile);*/
 

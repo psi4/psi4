@@ -73,60 +73,60 @@ void diis_RHF(int iter)
   nirreps = moinfo.nirreps;
 
   /* Compute the length of a single error vector */
-  dpd_->file2_init(&T1, PSIF_CC_TAMPS, 0, 0, 1, "tIA");
-  dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  global_dpd_->file2_init(&T1, PSIF_CC_TAMPS, 0, 0, 1, "tIA");
+  global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
   for(h=0; h < nirreps; h++) {
     vector_length += T1.params->rowtot[h] * T1.params->coltot[h];
     vector_length += T2.params->rowtot[h] * T2.params->coltot[h];
   }
-  dpd_->file2_close(&T1);
-  dpd_->buf4_close(&T2);
+  global_dpd_->file2_close(&T1);
+  global_dpd_->buf4_close(&T2);
 
   /* Set the diis cycle value */
   diis_cycle = (iter-1) % nvector;
 
   /* Build the current error vector and dump it to disk */
-  error = dpd_->dpd_block_matrix(1,vector_length);
+  error = global_dpd_->dpd_block_matrix(1,vector_length);
 
   word=0;
-  dpd_->file2_init(&T1a, PSIF_CC_OEI, 0, 0, 1, "New tIA");
-  dpd_->file2_mat_init(&T1a);
-  dpd_->file2_mat_rd(&T1a);
-  dpd_->file2_init(&T1b, PSIF_CC_OEI, 0, 0, 1, "tIA");
-  dpd_->file2_mat_init(&T1b);
-  dpd_->file2_mat_rd(&T1b);
+  global_dpd_->file2_init(&T1a, PSIF_CC_OEI, 0, 0, 1, "New tIA");
+  global_dpd_->file2_mat_init(&T1a);
+  global_dpd_->file2_mat_rd(&T1a);
+  global_dpd_->file2_init(&T1b, PSIF_CC_OEI, 0, 0, 1, "tIA");
+  global_dpd_->file2_mat_init(&T1b);
+  global_dpd_->file2_mat_rd(&T1b);
   for(h=0; h < nirreps; h++)
     for(row=0; row < T1a.params->rowtot[h]; row++)
       for(col=0; col < T1a.params->coltot[h]; col++)
 	error[0][word++] = T1a.matrix[h][row][col] - T1b.matrix[h][row][col];
-  dpd_->file2_mat_close(&T1a);
-  dpd_->file2_close(&T1a);
-  dpd_->file2_mat_close(&T1b);
-  dpd_->file2_close(&T1b);
+  global_dpd_->file2_mat_close(&T1a);
+  global_dpd_->file2_close(&T1a);
+  global_dpd_->file2_mat_close(&T1b);
+  global_dpd_->file2_close(&T1b);
 
   t1_word = word;
-  dpd_->buf4_init(&T2a, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
+  global_dpd_->buf4_init(&T2a, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
   for(h=0; h < nirreps; h++) {
-    dpd_->buf4_mat_irrep_init(&T2a, h);
-    dpd_->buf4_mat_irrep_rd(&T2a, h);
+    global_dpd_->buf4_mat_irrep_init(&T2a, h);
+    global_dpd_->buf4_mat_irrep_rd(&T2a, h);
     for(row=0; row < T2a.params->rowtot[h]; row++)
       for(col=0; col < T2a.params->coltot[h]; col++)
 	error[0][word++] = T2a.matrix[h][row][col];
-    dpd_->buf4_mat_irrep_close(&T2a, h);
+    global_dpd_->buf4_mat_irrep_close(&T2a, h);
   }
-  dpd_->buf4_close(&T2a);
+  global_dpd_->buf4_close(&T2a);
 
   word = t1_word;
-  dpd_->buf4_init(&T2b, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  global_dpd_->buf4_init(&T2b, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
   for(h=0; h < nirreps; h++) {
-    dpd_->buf4_mat_irrep_init(&T2b, h);
-    dpd_->buf4_mat_irrep_rd(&T2b, h);
+    global_dpd_->buf4_mat_irrep_init(&T2b, h);
+    global_dpd_->buf4_mat_irrep_rd(&T2b, h);
     for(row=0; row < T2b.params->rowtot[h]; row++)
       for(col=0; col < T2b.params->coltot[h]; col++)
 	error[0][word++] -= T2b.matrix[h][row][col];
-    dpd_->buf4_mat_irrep_close(&T2b, h);
+    global_dpd_->buf4_mat_irrep_close(&T2b, h);
   }
-  dpd_->buf4_close(&T2b);
+  global_dpd_->buf4_close(&T2b);
 
   start = psio_get_address(PSIO_ZERO, diis_cycle*vector_length*sizeof(double));
   psio_write(PSIF_CC_DIIS_ERR, "DIIS Error Vectors" , (char *) error[0], 
@@ -135,26 +135,26 @@ void diis_RHF(int iter)
   /* Store the current amplitude vector on disk */
   word=0;
 
-  dpd_->file2_init(&T1a, PSIF_CC_OEI, 0, 0, 1, "New tIA");
-  dpd_->file2_mat_init(&T1a);
-  dpd_->file2_mat_rd(&T1a);
+  global_dpd_->file2_init(&T1a, PSIF_CC_OEI, 0, 0, 1, "New tIA");
+  global_dpd_->file2_mat_init(&T1a);
+  global_dpd_->file2_mat_rd(&T1a);
   for(h=0; h < nirreps; h++)
     for(row=0; row < T1a.params->rowtot[h]; row++)
       for(col=0; col < T1a.params->coltot[h]; col++)
 	error[0][word++] = T1a.matrix[h][row][col];
-  dpd_->file2_mat_close(&T1a);
-  dpd_->file2_close(&T1a);
+  global_dpd_->file2_mat_close(&T1a);
+  global_dpd_->file2_close(&T1a);
 
-  dpd_->buf4_init(&T2a, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
+  global_dpd_->buf4_init(&T2a, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
   for(h=0; h < nirreps; h++) {
-    dpd_->buf4_mat_irrep_init(&T2a, h);
-    dpd_->buf4_mat_irrep_rd(&T2a, h);
+    global_dpd_->buf4_mat_irrep_init(&T2a, h);
+    global_dpd_->buf4_mat_irrep_rd(&T2a, h);
     for(row=0; row < T2a.params->rowtot[h]; row++)
       for(col=0; col < T2a.params->coltot[h]; col++)
 	error[0][word++] = T2a.matrix[h][row][col];
-    dpd_->buf4_mat_irrep_close(&T2a, h);
+    global_dpd_->buf4_mat_irrep_close(&T2a, h);
   }
-  dpd_->buf4_close(&T2a);
+  global_dpd_->buf4_close(&T2a);
 
   start = psio_get_address(PSIO_ZERO, diis_cycle*vector_length*sizeof(double));
   psio_write(PSIF_CC_DIIS_AMP, "DIIS Amplitude Vectors" , (char *) error[0], 
@@ -164,14 +164,14 @@ void diis_RHF(int iter)
      for the extrapolation */
   if(!(iter >= (nvector))) {
     if(iter < 2) { /* Leave if we can't extrapolate at all */
-      dpd_->free_dpd_block(error, 1, vector_length);
+      global_dpd_->free_dpd_block(error, 1, vector_length);
       return; 
     }
     nvector = iter;
   }
 
   /* Build B matrix of error vector products */
-  vector = dpd_->dpd_block_matrix(2, vector_length);
+  vector = global_dpd_->dpd_block_matrix(2, vector_length);
   B = block_matrix(nvector+1,nvector+1);
   for(p=0; p < nvector; p++) {
 
@@ -196,7 +196,7 @@ void diis_RHF(int iter)
       B[p][q] = B[q][p] = product;
     }
   }
-  dpd_->free_dpd_block(vector, 2, vector_length);
+  global_dpd_->free_dpd_block(vector, 2, vector_length);
 
   for(p=0; p < nvector; p++) {
     B[p][nvector] = -1;
@@ -223,7 +223,7 @@ void diis_RHF(int iter)
   diis_invert_B(B,C,nvector+1,1.0E-12);
 
   /* Build a new amplitude vector from the old ones */
-  vector = dpd_->dpd_block_matrix(1, vector_length);
+  vector = global_dpd_->dpd_block_matrix(1, vector_length);
   for(p=0; p < vector_length; p++) error[0][p] = 0.0;
   for(p=0; p < nvector; p++) {
 
@@ -236,36 +236,36 @@ void diis_RHF(int iter)
       error[0][q] += C[p] * vector[0][q];
 
   }
-  dpd_->free_dpd_block(vector, 1, vector_length);
+  global_dpd_->free_dpd_block(vector, 1, vector_length);
 
   /* Now place these elements into the DPD amplitude arrays */
   word=0;
-  dpd_->file2_init(&T1a, PSIF_CC_OEI, 0, 0, 1, "New tIA");
-  dpd_->file2_mat_init(&T1a);
+  global_dpd_->file2_init(&T1a, PSIF_CC_OEI, 0, 0, 1, "New tIA");
+  global_dpd_->file2_mat_init(&T1a);
   for(h=0; h < nirreps; h++)
     for(row=0; row < T1a.params->rowtot[h]; row++)
       for(col=0; col < T1a.params->coltot[h]; col++)
 	T1a.matrix[h][row][col] = error[0][word++];
-  dpd_->file2_mat_wrt(&T1a);
-  dpd_->file2_mat_close(&T1a);
-  dpd_->file2_close(&T1a);
+  global_dpd_->file2_mat_wrt(&T1a);
+  global_dpd_->file2_mat_close(&T1a);
+  global_dpd_->file2_close(&T1a);
 
-  dpd_->buf4_init(&T2a, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
+  global_dpd_->buf4_init(&T2a, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
   for(h=0; h < nirreps; h++) {
-    dpd_->buf4_mat_irrep_init(&T2a, h);
+    global_dpd_->buf4_mat_irrep_init(&T2a, h);
     for(row=0; row < T2a.params->rowtot[h]; row++)
       for(col=0; col < T2a.params->coltot[h]; col++)
 	T2a.matrix[h][row][col] = error[0][word++];
-    dpd_->buf4_mat_irrep_wrt(&T2a, h);
-    dpd_->buf4_mat_irrep_close(&T2a, h);
+    global_dpd_->buf4_mat_irrep_wrt(&T2a, h);
+    global_dpd_->buf4_mat_irrep_close(&T2a, h);
   }
-  dpd_->buf4_close(&T2a);
+  global_dpd_->buf4_close(&T2a);
 
   /* Release memory and return */
   /*    free_matrix(vector, nvector); */
   free_block(B);
   free(C);
-  dpd_->free_dpd_block(error, 1, vector_length);
+  global_dpd_->free_dpd_block(error, 1, vector_length);
 
 
   return;

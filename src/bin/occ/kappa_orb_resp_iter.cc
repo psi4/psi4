@@ -55,27 +55,27 @@ if (reference_ == "RESTRICTED") {
 
     // Sort some integrals
     // (OV|OV) -> (VO|VO)
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
-    dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , qpsr, ID("[V,O]"), ID("[V,O]"), "MO Ints (VO|VO)");
-    dpd_->buf4_close(&K);
+    global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , qpsr, ID("[V,O]"), ID("[V,O]"), "MO Ints (VO|VO)");
+    global_dpd_->buf4_close(&K);
 
     // (ai|bj) -> (aj|bi)
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
                   ID("[V,O]"), ID("[V,O]"), 0, "MO Ints (VO|VO)");
-    dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , psrq, ID("[V,O]"), ID("[V,O]"), "MO Ints (aj|bi)");
-    dpd_->buf4_close(&K);
+    global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , psrq, ID("[V,O]"), ID("[V,O]"), "MO Ints (aj|bi)");
+    global_dpd_->buf4_close(&K);
 
     // <OV|OV> -> <VO|VO>
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV>");
-    dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , qpsr, ID("[V,O]"), ID("[V,O]"), "MO Ints <VO|VO>");
-    dpd_->buf4_close(&K);
+    global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , qpsr, ID("[V,O]"), ID("[V,O]"), "MO Ints <VO|VO>");
+    global_dpd_->buf4_close(&K);
 
     // Build Sigma_0 = A * k0
     // Write p vector to dpdfile2
-    dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "P <V|O>");  
-    dpd_->file2_mat_init(&P);
+    global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "P <V|O>");  
+    global_dpd_->file2_mat_init(&P);
     int idp_idx = 0;
     for(int h = 0; h < nirrep_; ++h){
         for(int a = 0 ; a < virtpiA[h]; ++a){
@@ -85,36 +85,36 @@ if (reference_ == "RESTRICTED") {
             }
         }
     }
-    dpd_->file2_mat_wrt(&P);
-    dpd_->file2_close(&P);
+    global_dpd_->file2_mat_wrt(&P);
+    global_dpd_->file2_close(&P);
 
     // Build sigma = A * p
     // sigma_ai = 8 \sum_{bj} (ai|bj) P_bj
-    dpd_->file2_init(&S, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "Sigma <V|O>");  
-    dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "P <V|O>");  
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
+    global_dpd_->file2_init(&S, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "Sigma <V|O>");  
+    global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "P <V|O>");  
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
                   ID("[V,O]"), ID("[V,O]"), 0, "MO Ints (VO|VO)");
-    dpd_->contract422(&K, &P, &S, 0, 0, 8.0, 0.0);
-    dpd_->buf4_close(&K);
+    global_dpd_->contract422(&K, &P, &S, 0, 0, 8.0, 0.0);
+    global_dpd_->buf4_close(&K);
 
     // sigma_ai -= 2 \sum_{bj} (aj|bi) P_bj
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
                   ID("[V,O]"), ID("[V,O]"), 0, "MO Ints (aj|bi)");
-    dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
-    dpd_->buf4_close(&K);
+    global_dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
+    global_dpd_->buf4_close(&K);
 
     // sigma_ai -= 2 \sum_{bj} <ai|bj> P_bj
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
                   ID("[V,O]"), ID("[V,O]"), 0, "MO Ints <VO|VO>");
-    dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
-    dpd_->buf4_close(&K);
-    dpd_->file2_close(&P);
-    dpd_->file2_close(&S);
+    global_dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
+    global_dpd_->buf4_close(&K);
+    global_dpd_->file2_close(&P);
+    global_dpd_->file2_close(&S);
 
     // Read sigma vector from dpdfile2
-    dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "Sigma <V|O>");  
-    dpd_->file2_mat_init(&P);
-    dpd_->file2_mat_rd(&P);
+    global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "Sigma <V|O>");  
+    global_dpd_->file2_mat_init(&P);
+    global_dpd_->file2_mat_rd(&P);
     idp_idx = 0;
     for(int h = 0; h < nirrep_; ++h){
         for(int a = 0 ; a < virtpiA[h]; ++a){
@@ -124,7 +124,7 @@ if (reference_ == "RESTRICTED") {
             }
         }
     }
-    dpd_->file2_close(&P);
+    global_dpd_->file2_close(&P);
 
     // Add Fock contribution
     for(int x = 0; x < nidpA; x++) {
@@ -270,57 +270,57 @@ else if (reference_ == "UNRESTRICTED") {
 
     // Sort some integrals
     // (OV|OV) -> (VO|VO)
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
-    dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , qpsr, ID("[V,O]"), ID("[V,O]"), "MO Ints (VO|VO)");
-    dpd_->buf4_close(&K);
+    global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , qpsr, ID("[V,O]"), ID("[V,O]"), "MO Ints (VO|VO)");
+    global_dpd_->buf4_close(&K);
 
     // (ov|ov) -> (vo|vo)
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
                  ID("[o,v]"), ID("[o,v]"), 0, "MO Ints (ov|ov)");
-    dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , qpsr, ID("[v,o]"), ID("[v,o]"), "MO Ints (vo|vo)");
-    dpd_->buf4_close(&K);
+    global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , qpsr, ID("[v,o]"), ID("[v,o]"), "MO Ints (vo|vo)");
+    global_dpd_->buf4_close(&K);
 
     // (AI|BJ) -> (AJ|BI)
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
                   ID("[V,O]"), ID("[V,O]"), 0, "MO Ints (VO|VO)");
-    dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , psrq, ID("[V,O]"), ID("[V,O]"), "MO Ints (AJ|BI)");
-    dpd_->buf4_close(&K);
+    global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , psrq, ID("[V,O]"), ID("[V,O]"), "MO Ints (AJ|BI)");
+    global_dpd_->buf4_close(&K);
 
     // (ai|bj) -> (aj|bi)
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"),
                   ID("[v,o]"), ID("[v,o]"), 0, "MO Ints (vo|vo)");
-    dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , psrq, ID("[v,o]"), ID("[v,o]"), "MO Ints (aj|bi)");
-    dpd_->buf4_close(&K);
+    global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , psrq, ID("[v,o]"), ID("[v,o]"), "MO Ints (aj|bi)");
+    global_dpd_->buf4_close(&K);
 
     // <OV|OV> -> <VO|VO>
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV>");
-    dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , qpsr, ID("[V,O]"), ID("[V,O]"), "MO Ints <VO|VO>");
-    dpd_->buf4_close(&K);
+    global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , qpsr, ID("[V,O]"), ID("[V,O]"), "MO Ints <VO|VO>");
+    global_dpd_->buf4_close(&K);
 
     // <ov|ov> -> <vo|vo>
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
                  ID("[o,v]"), ID("[o,v]"), 0, "MO Ints <ov|ov>");
-    dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , qpsr, ID("[v,o]"), ID("[v,o]"), "MO Ints <vo|vo>");
-    dpd_->buf4_close(&K);
+    global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , qpsr, ID("[v,o]"), ID("[v,o]"), "MO Ints <vo|vo>");
+    global_dpd_->buf4_close(&K);
 
     // (OV|ov) -> (VO|vo)
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[o,v]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[o,v]"),
                  ID("[O,V]"), ID("[o,v]"), 0, "MO Ints (OV|ov)");
-    dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , qpsr, ID("[V,O]"), ID("[v,o]"), "MO Ints (VO|vo)");
-    dpd_->buf4_close(&K);
+    global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , qpsr, ID("[V,O]"), ID("[v,o]"), "MO Ints (VO|vo)");
+    global_dpd_->buf4_close(&K);
 
     // (VO|vo) -> (vo|VO)
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[v,o]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[v,o]"),
                   ID("[V,O]"), ID("[v,o]"), 0, "MO Ints (VO|vo)");
-    dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , rspq, ID("[v,o]"), ID("[V,O]"), "MO Ints (vo|VO)");
-    dpd_->buf4_close(&K);
+    global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , rspq, ID("[v,o]"), ID("[V,O]"), "MO Ints (vo|VO)");
+    global_dpd_->buf4_close(&K);
 
     // Build Sigma_0 = A * k0
     // Write alpha p vector to dpdfile2
-    dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "P <V|O>");  
-    dpd_->file2_mat_init(&P);
+    global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "P <V|O>");  
+    global_dpd_->file2_mat_init(&P);
     idp_idx = 0;
     for(int h = 0; h < nirrep_; ++h){
         for(int a = 0 ; a < virtpiA[h]; ++a){
@@ -330,12 +330,12 @@ else if (reference_ == "UNRESTRICTED") {
             }
         }
     }
-    dpd_->file2_mat_wrt(&P);
-    dpd_->file2_close(&P);
+    global_dpd_->file2_mat_wrt(&P);
+    global_dpd_->file2_close(&P);
 
     // Write beta p vector to dpdfile2
-    dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('v'), ID('o'), "P <v|o>");  
-    dpd_->file2_mat_init(&P);
+    global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('v'), ID('o'), "P <v|o>");  
+    global_dpd_->file2_mat_init(&P);
     idp_idx = 0;
     for(int h = 0; h < nirrep_; ++h){
         for(int a = 0 ; a < virtpiB[h]; ++a){
@@ -345,45 +345,45 @@ else if (reference_ == "UNRESTRICTED") {
             }
         }
     }
-    dpd_->file2_mat_wrt(&P);
-    dpd_->file2_close(&P);
+    global_dpd_->file2_mat_wrt(&P);
+    global_dpd_->file2_close(&P);
 
     // Start to alpha spin case
     // Build sigma = A * p
     // sigma_AI = 4 \sum_{BJ} (AI|BJ) P_BJ
-    dpd_->file2_init(&S, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "Sigma <V|O>");  
-    dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "P <V|O>");  
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
+    global_dpd_->file2_init(&S, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "Sigma <V|O>");  
+    global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "P <V|O>");  
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
                   ID("[V,O]"), ID("[V,O]"), 0, "MO Ints (VO|VO)");
-    dpd_->contract422(&K, &P, &S, 0, 0, 4.0, 0.0);
-    dpd_->buf4_close(&K);
+    global_dpd_->contract422(&K, &P, &S, 0, 0, 4.0, 0.0);
+    global_dpd_->buf4_close(&K);
 
     // sigma_AI -= 2 \sum_{BJ} (AJ|BI) P_BJ
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
                   ID("[V,O]"), ID("[V,O]"), 0, "MO Ints (AJ|BI)");
-    dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
-    dpd_->buf4_close(&K);
+    global_dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
+    global_dpd_->buf4_close(&K);
 
     // sigma_AI -= 2 \sum_{BJ} <AI|BJ> P_BJ
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
                   ID("[V,O]"), ID("[V,O]"), 0, "MO Ints <VO|VO>");
-    dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
-    dpd_->buf4_close(&K);
-    dpd_->file2_close(&P);
+    global_dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
+    global_dpd_->buf4_close(&K);
+    global_dpd_->file2_close(&P);
 
     // sigma_AI += 4 \sum_{bj} (AI|bj) P_bj
-    dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('v'), ID('o'), "P <v|o>");  
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[v,o]"),
+    global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('v'), ID('o'), "P <v|o>");  
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[v,o]"),
                   ID("[V,O]"), ID("[v,o]"), 0, "MO Ints (VO|vo)");
-    dpd_->contract422(&K, &P, &S, 0, 0, 4.0, 1.0);
-    dpd_->buf4_close(&K);
-    dpd_->file2_close(&P);
-    dpd_->file2_close(&S);
+    global_dpd_->contract422(&K, &P, &S, 0, 0, 4.0, 1.0);
+    global_dpd_->buf4_close(&K);
+    global_dpd_->file2_close(&P);
+    global_dpd_->file2_close(&S);
 
     // Read sigma vector from dpdfile2
-    dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "Sigma <V|O>");  
-    dpd_->file2_mat_init(&P);
-    dpd_->file2_mat_rd(&P);
+    global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "Sigma <V|O>");  
+    global_dpd_->file2_mat_init(&P);
+    global_dpd_->file2_mat_rd(&P);
     idp_idx = 0;
     for(int h = 0; h < nirrep_; ++h){
         for(int a = 0 ; a < virtpiA[h]; ++a){
@@ -393,7 +393,7 @@ else if (reference_ == "UNRESTRICTED") {
             }
         }
     }
-    dpd_->file2_close(&P);
+    global_dpd_->file2_close(&P);
 
     // Add Fock contribution
     for(int x = 0; x < nidpA; x++) {
@@ -443,39 +443,39 @@ else if (reference_ == "UNRESTRICTED") {
     // Start to beta spin case
     // Build sigma = A * p
     // sigma_ai = 4 \sum_{bj} (ai|bj) P_bj
-    dpd_->file2_init(&S, PSIF_OCC_DPD, 0, ID('v'), ID('o'), "Sigma <v|o>");  
-    dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('v'), ID('o'), "P <v|o>");  
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"),
+    global_dpd_->file2_init(&S, PSIF_OCC_DPD, 0, ID('v'), ID('o'), "Sigma <v|o>");  
+    global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('v'), ID('o'), "P <v|o>");  
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"),
                   ID("[v,o]"), ID("[v,o]"), 0, "MO Ints (vo|vo)");
-    dpd_->contract422(&K, &P, &S, 0, 0, 4.0, 0.0);
-    dpd_->buf4_close(&K);
+    global_dpd_->contract422(&K, &P, &S, 0, 0, 4.0, 0.0);
+    global_dpd_->buf4_close(&K);
 
     // sigma_ai -= 2 \sum_{bj} (aj|bi) P_bj
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"),
                   ID("[v,o]"), ID("[v,o]"), 0, "MO Ints (aj|bi)");
-    dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
-    dpd_->buf4_close(&K);
+    global_dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
+    global_dpd_->buf4_close(&K);
 
     // sigma_ai -= 2 \sum_{bj} <ai|bj> P_bj
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"),
                   ID("[v,o]"), ID("[v,o]"), 0, "MO Ints <vo|vo>");
-    dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
-    dpd_->buf4_close(&K);
-    dpd_->file2_close(&P);
+    global_dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
+    global_dpd_->buf4_close(&K);
+    global_dpd_->file2_close(&P);
 
     // sigma_ai += 4 \sum_{BJ} (ai|BJ) P_BJ
-    dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "P <V|O>");  
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[V,O]"),
+    global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "P <V|O>");  
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[V,O]"),
                   ID("[v,o]"), ID("[V,O]"), 0, "MO Ints (vo|VO)");
-    dpd_->contract422(&K, &P, &S, 0, 0, 4.0, 1.0);
-    dpd_->buf4_close(&K);
-    dpd_->file2_close(&P);
-    dpd_->file2_close(&S);
+    global_dpd_->contract422(&K, &P, &S, 0, 0, 4.0, 1.0);
+    global_dpd_->buf4_close(&K);
+    global_dpd_->file2_close(&P);
+    global_dpd_->file2_close(&S);
 
     // Read sigma vector from dpdfile2
-    dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('v'), ID('o'), "Sigma <v|o>");  
-    dpd_->file2_mat_init(&P);
-    dpd_->file2_mat_rd(&P);
+    global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('v'), ID('o'), "Sigma <v|o>");  
+    global_dpd_->file2_mat_init(&P);
+    global_dpd_->file2_mat_rd(&P);
     idp_idx = 0;
     for(int h = 0; h < nirrep_; ++h){
         for(int a = 0 ; a < virtpiB[h]; ++a){
@@ -485,7 +485,7 @@ else if (reference_ == "UNRESTRICTED") {
             }
         }
     }
-    dpd_->file2_close(&P);
+    global_dpd_->file2_close(&P);
 
     // Add Fock contribution
     for(int x = 0; x < nidpB; x++) {
@@ -666,8 +666,8 @@ void OCCWave::orb_resp_pcg_rhf()
     dpdfile2 P, S, F; 
 
     // Write p vector to dpdfile2
-    dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "P <V|O>");  
-    dpd_->file2_mat_init(&P);
+    global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "P <V|O>");  
+    global_dpd_->file2_mat_init(&P);
     idp_idx = 0;
     for(int h = 0; h < nirrep_; ++h){
         for(int a = 0 ; a < virtpiA[h]; ++a){
@@ -677,36 +677,36 @@ void OCCWave::orb_resp_pcg_rhf()
             }
         }
     }
-    dpd_->file2_mat_wrt(&P);
-    dpd_->file2_close(&P);
+    global_dpd_->file2_mat_wrt(&P);
+    global_dpd_->file2_close(&P);
 
     // Build sigma = A * p
     // sigma_ai = 8 \sum_{bj} (ai|bj) P_bj
-    dpd_->file2_init(&S, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "Sigma <V|O>");  
-    dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "P <V|O>");  
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
+    global_dpd_->file2_init(&S, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "Sigma <V|O>");  
+    global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "P <V|O>");  
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
                   ID("[V,O]"), ID("[V,O]"), 0, "MO Ints (VO|VO)");
-    dpd_->contract422(&K, &P, &S, 0, 0, 8.0, 0.0);
-    dpd_->buf4_close(&K);
+    global_dpd_->contract422(&K, &P, &S, 0, 0, 8.0, 0.0);
+    global_dpd_->buf4_close(&K);
 
     // sigma_ai -= 2 \sum_{bj} (aj|bi) P_bj
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
                   ID("[V,O]"), ID("[V,O]"), 0, "MO Ints (aj|bi)");
-    dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
-    dpd_->buf4_close(&K);
+    global_dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
+    global_dpd_->buf4_close(&K);
 
     // sigma_ai -= 2 \sum_{bj} <ai|bj> P_bj
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
                   ID("[V,O]"), ID("[V,O]"), 0, "MO Ints <VO|VO>");
-    dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
-    dpd_->buf4_close(&K);
-    dpd_->file2_close(&P);
-    dpd_->file2_close(&S);
+    global_dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
+    global_dpd_->buf4_close(&K);
+    global_dpd_->file2_close(&P);
+    global_dpd_->file2_close(&S);
 
     // Read sigma vector from dpdfile2
-    dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "Sigma <V|O>");  
-    dpd_->file2_mat_init(&P);
-    dpd_->file2_mat_rd(&P);
+    global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "Sigma <V|O>");  
+    global_dpd_->file2_mat_init(&P);
+    global_dpd_->file2_mat_rd(&P);
     idp_idx = 0;
     for(int h = 0; h < nirrep_; ++h){
         for(int a = 0 ; a < virtpiA[h]; ++a){
@@ -716,7 +716,7 @@ void OCCWave::orb_resp_pcg_rhf()
             }
         }
     }
-    dpd_->file2_close(&P);
+    global_dpd_->file2_close(&P);
 
     // Addd Fock contribution
     for(int x = 0; x < nidpA; x++) {
@@ -850,8 +850,8 @@ void OCCWave::orb_resp_pcg_uhf()
     dpdfile2 P, S, F; 
 
     // Write alpha p vector to dpdfile2
-    dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "P <V|O>");  
-    dpd_->file2_mat_init(&P);
+    global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "P <V|O>");  
+    global_dpd_->file2_mat_init(&P);
     idp_idx = 0;
     for(int h = 0; h < nirrep_; ++h){
         for(int a = 0 ; a < virtpiA[h]; ++a){
@@ -861,12 +861,12 @@ void OCCWave::orb_resp_pcg_uhf()
             }
         }
     }
-    dpd_->file2_mat_wrt(&P);
-    dpd_->file2_close(&P);
+    global_dpd_->file2_mat_wrt(&P);
+    global_dpd_->file2_close(&P);
 
     // Write beta p vector to dpdfile2
-    dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('v'), ID('o'), "P <v|o>");  
-    dpd_->file2_mat_init(&P);
+    global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('v'), ID('o'), "P <v|o>");  
+    global_dpd_->file2_mat_init(&P);
     idp_idx = 0;
     for(int h = 0; h < nirrep_; ++h){
         for(int a = 0 ; a < virtpiB[h]; ++a){
@@ -876,45 +876,45 @@ void OCCWave::orb_resp_pcg_uhf()
             }
         }
     }
-    dpd_->file2_mat_wrt(&P);
-    dpd_->file2_close(&P);
+    global_dpd_->file2_mat_wrt(&P);
+    global_dpd_->file2_close(&P);
 
     // Start to alpha spin case
     // Build sigma = A * p
     // sigma_AI = 4 \sum_{BJ} (AI|BJ) P_BJ
-    dpd_->file2_init(&S, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "Sigma <V|O>");  
-    dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "P <V|O>");  
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
+    global_dpd_->file2_init(&S, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "Sigma <V|O>");  
+    global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "P <V|O>");  
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
                   ID("[V,O]"), ID("[V,O]"), 0, "MO Ints (VO|VO)");
-    dpd_->contract422(&K, &P, &S, 0, 0, 4.0, 0.0);
-    dpd_->buf4_close(&K);
+    global_dpd_->contract422(&K, &P, &S, 0, 0, 4.0, 0.0);
+    global_dpd_->buf4_close(&K);
 
     // sigma_AI -= 2 \sum_{BJ} (AJ|BI) P_BJ
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
                   ID("[V,O]"), ID("[V,O]"), 0, "MO Ints (AJ|BI)");
-    dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
-    dpd_->buf4_close(&K);
+    global_dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
+    global_dpd_->buf4_close(&K);
 
     // sigma_AI -= 2 \sum_{BJ} <AI|BJ> P_BJ
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
                   ID("[V,O]"), ID("[V,O]"), 0, "MO Ints <VO|VO>");
-    dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
-    dpd_->buf4_close(&K);
-    dpd_->file2_close(&P);
+    global_dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
+    global_dpd_->buf4_close(&K);
+    global_dpd_->file2_close(&P);
 
     // sigma_AI += 4 \sum_{bj} (AI|bj) P_bj
-    dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('v'), ID('o'), "P <v|o>");  
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[v,o]"),
+    global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('v'), ID('o'), "P <v|o>");  
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[v,o]"),
                   ID("[V,O]"), ID("[v,o]"), 0, "MO Ints (VO|vo)");
-    dpd_->contract422(&K, &P, &S, 0, 0, 4.0, 1.0);
-    dpd_->buf4_close(&K);
-    dpd_->file2_close(&P);
-    dpd_->file2_close(&S);
+    global_dpd_->contract422(&K, &P, &S, 0, 0, 4.0, 1.0);
+    global_dpd_->buf4_close(&K);
+    global_dpd_->file2_close(&P);
+    global_dpd_->file2_close(&S);
 
     // Read sigma vector from dpdfile2
-    dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "Sigma <V|O>");  
-    dpd_->file2_mat_init(&P);
-    dpd_->file2_mat_rd(&P);
+    global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "Sigma <V|O>");  
+    global_dpd_->file2_mat_init(&P);
+    global_dpd_->file2_mat_rd(&P);
     idp_idx = 0;
     for(int h = 0; h < nirrep_; ++h){
         for(int a = 0 ; a < virtpiA[h]; ++a){
@@ -924,7 +924,7 @@ void OCCWave::orb_resp_pcg_uhf()
             }
         }
     }
-    dpd_->file2_close(&P);
+    global_dpd_->file2_close(&P);
 
     // Add Fock contribution
     for(int x = 0; x < nidpA; x++) {
@@ -974,39 +974,39 @@ void OCCWave::orb_resp_pcg_uhf()
     // Start to beta spin case
     // Build sigma = A * p
     // sigma_ai = 4 \sum_{bj} (ai|bj) P_bj
-    dpd_->file2_init(&S, PSIF_OCC_DPD, 0, ID('v'), ID('o'), "Sigma <v|o>");  
-    dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('v'), ID('o'), "P <v|o>");  
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"),
+    global_dpd_->file2_init(&S, PSIF_OCC_DPD, 0, ID('v'), ID('o'), "Sigma <v|o>");  
+    global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('v'), ID('o'), "P <v|o>");  
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"),
                   ID("[v,o]"), ID("[v,o]"), 0, "MO Ints (vo|vo)");
-    dpd_->contract422(&K, &P, &S, 0, 0, 4.0, 0.0);
-    dpd_->buf4_close(&K);
+    global_dpd_->contract422(&K, &P, &S, 0, 0, 4.0, 0.0);
+    global_dpd_->buf4_close(&K);
 
     // sigma_ai -= 2 \sum_{bj} (aj|bi) P_bj
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"),
                   ID("[v,o]"), ID("[v,o]"), 0, "MO Ints (aj|bi)");
-    dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
-    dpd_->buf4_close(&K);
+    global_dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
+    global_dpd_->buf4_close(&K);
 
     // sigma_ai -= 2 \sum_{bj} <ai|bj> P_bj
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"),
                   ID("[v,o]"), ID("[v,o]"), 0, "MO Ints <vo|vo>");
-    dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
-    dpd_->buf4_close(&K);
-    dpd_->file2_close(&P);
+    global_dpd_->contract422(&K, &P, &S, 0, 0, -2.0, 1.0);
+    global_dpd_->buf4_close(&K);
+    global_dpd_->file2_close(&P);
 
     // sigma_ai += 4 \sum_{BJ} (ai|BJ) P_BJ
-    dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "P <V|O>");  
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[V,O]"),
+    global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('V'), ID('O'), "P <V|O>");  
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[V,O]"),
                   ID("[v,o]"), ID("[V,O]"), 0, "MO Ints (vo|VO)");
-    dpd_->contract422(&K, &P, &S, 0, 0, 4.0, 1.0);
-    dpd_->buf4_close(&K);
-    dpd_->file2_close(&P);
-    dpd_->file2_close(&S);
+    global_dpd_->contract422(&K, &P, &S, 0, 0, 4.0, 1.0);
+    global_dpd_->buf4_close(&K);
+    global_dpd_->file2_close(&P);
+    global_dpd_->file2_close(&S);
 
     // Read sigma vector from dpdfile2
-    dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('v'), ID('o'), "Sigma <v|o>");  
-    dpd_->file2_mat_init(&P);
-    dpd_->file2_mat_rd(&P);
+    global_dpd_->file2_init(&P, PSIF_OCC_DPD, 0, ID('v'), ID('o'), "Sigma <v|o>");  
+    global_dpd_->file2_mat_init(&P);
+    global_dpd_->file2_mat_rd(&P);
     idp_idx = 0;
     for(int h = 0; h < nirrep_; ++h){
         for(int a = 0 ; a < virtpiB[h]; ++a){
@@ -1016,7 +1016,7 @@ void OCCWave::orb_resp_pcg_uhf()
             }
         }
     }
-    dpd_->file2_close(&P);
+    global_dpd_->file2_close(&P);
 
     // Add Fock contribution
     for(int x = 0; x < nidpB; x++) {

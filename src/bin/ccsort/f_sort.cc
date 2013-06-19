@@ -37,9 +37,9 @@ void f_sort(void)
   dpdbuf4 F;
 
   if(params.ref == 2) {  /*** UHF ***/
-    dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 28, 26, 28, 26, 0, "F <Ab|Ci>");
-    dpd_->buf4_sort_ooc(&F, PSIF_CC_FINTS, spqr, 27, 29, "F <iA|bC>");
-    dpd_->buf4_close(&F);
+    global_dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 28, 26, 28, 26, 0, "F <Ab|Ci>");
+    global_dpd_->buf4_sort_ooc(&F, PSIF_CC_FINTS, spqr, 27, 29, "F <iA|bC>");
+    global_dpd_->buf4_close(&F);
   }
 }
 

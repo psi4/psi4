@@ -40,16 +40,16 @@ void e_spinad(void)
   dpdbuf4 E, E1;
 
   if(params.ref == 0) { /*** RHF ***/
-    dpd_->buf4_init(&E, PSIF_CC_EINTS, 0, 11, 0, 11, 0, 0, "E <ai|jk>");
-    dpd_->buf4_scmcopy(&E, PSIF_CC_EINTS, "E 2<ai|jk> - <ai|kj>", 2);
-    dpd_->buf4_sort(&E, PSIF_CC_TMP0, pqsr, 11, 0, "E <ai|kj>");
-    dpd_->buf4_close(&E);
+    global_dpd_->buf4_init(&E, PSIF_CC_EINTS, 0, 11, 0, 11, 0, 0, "E <ai|jk>");
+    global_dpd_->buf4_scmcopy(&E, PSIF_CC_EINTS, "E 2<ai|jk> - <ai|kj>", 2);
+    global_dpd_->buf4_sort(&E, PSIF_CC_TMP0, pqsr, 11, 0, "E <ai|kj>");
+    global_dpd_->buf4_close(&E);
 
-    dpd_->buf4_init(&E, PSIF_CC_EINTS, 0, 11, 0, 11, 0, 0, "E 2<ai|jk> - <ai|kj>");
-    dpd_->buf4_init(&E1, PSIF_CC_TMP0, 0, 11, 0, 11, 0, 0, "E <ai|kj>");
-    dpd_->buf4_axpy(&E1, &E, -1);
-    dpd_->buf4_close(&E1);
-    dpd_->buf4_close(&E);
+    global_dpd_->buf4_init(&E, PSIF_CC_EINTS, 0, 11, 0, 11, 0, 0, "E 2<ai|jk> - <ai|kj>");
+    global_dpd_->buf4_init(&E1, PSIF_CC_TMP0, 0, 11, 0, 11, 0, 0, "E <ai|kj>");
+    global_dpd_->buf4_axpy(&E1, &E, -1);
+    global_dpd_->buf4_close(&E1);
+    global_dpd_->buf4_close(&E);
 
   }
 }

@@ -61,138 +61,138 @@ void rhf_check_energy(int chk)
   if(chk == 1) {
     fprintf(outfile, "\n\tEnergies re-computed from MP2 density:\n");
     fprintf(outfile,   "\t-------------------------------------\n");
-    dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "DIJ");
-    dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 0, "fIJ");
-    E_opdm += dpd_->file2_dot(&D, &F);
-    dpd_->file2_close(&F);
-    dpd_->file2_close(&D);
+    global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "DIJ");
+    global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+    E_opdm += global_dpd_->file2_dot(&D, &F);
+    global_dpd_->file2_close(&F);
+    global_dpd_->file2_close(&D);
   
-    dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "DAB");
-    dpd_->file2_init(&F, PSIF_CC_OEI, 0, 1, 1, "fAB");
-    E_opdm += dpd_->file2_dot(&D, &F);
-    dpd_->file2_close(&F);
-    dpd_->file2_close(&D);
+    global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "DAB");
+    global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 1, 1, "fAB");
+    E_opdm += global_dpd_->file2_dot(&D, &F);
+    global_dpd_->file2_close(&F);
+    global_dpd_->file2_close(&D);
 
-    dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "GIjAb");
-    dpd_->buf4_init(&I, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
-    E_tpdm += 2 * dpd_->buf4_dot(&G, &I);
-    dpd_->buf4_close(&I);
-    dpd_->buf4_close(&G);
+    global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "GIjAb");
+    global_dpd_->buf4_init(&I, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
+    E_tpdm += 2 * global_dpd_->buf4_dot(&G, &I);
+    global_dpd_->buf4_close(&I);
+    global_dpd_->buf4_close(&G);
   }
   else if(chk == 2) {
     fprintf(outfile, "\n\tEnergies re-computed from Fock-adjusted MP2 density:\n");
     fprintf(outfile,   "\t----------------------------------------------------\n");
-    dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "DIJ");
-    dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 0, "h(i,j)");
-    E_opdm += dpd_->file2_dot(&D, &F);
-    dpd_->file2_close(&F);
-    dpd_->file2_close(&D);
+    global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "DIJ");
+    global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 0, "h(i,j)");
+    E_opdm += global_dpd_->file2_dot(&D, &F);
+    global_dpd_->file2_close(&F);
+    global_dpd_->file2_close(&D);
 
-    dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "DAB");
-    dpd_->file2_init(&F, PSIF_CC_OEI, 0, 1, 1, "h(a,b)");
-    E_opdm += dpd_->file2_dot(&D, &F);
-    dpd_->file2_close(&F);
-    dpd_->file2_close(&D);
+    global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "DAB");
+    global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 1, 1, "h(a,b)");
+    E_opdm += global_dpd_->file2_dot(&D, &F);
+    global_dpd_->file2_close(&F);
+    global_dpd_->file2_close(&D);
 
-    dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 0, "DAI");
-    dpd_->file2_mat_init(&D);
-    dpd_->file2_mat_rd(&D);
-    dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "h(i,a)");
-    dpd_->file2_mat_init(&F);
-    dpd_->file2_mat_rd(&F);
+    global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 0, "DAI");
+    global_dpd_->file2_mat_init(&D);
+    global_dpd_->file2_mat_rd(&D);
+    global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "h(i,a)");
+    global_dpd_->file2_mat_init(&F);
+    global_dpd_->file2_mat_rd(&F);
     for(h=0; h < mo.nirreps; h++)
       for(a=0; a < mo.virtpi[h]; a++)
         for(i=0; i < mo.doccpi[h]; i++)  
           E_opdm += 2*D.matrix[h][a][i]*F.matrix[h][i][a];
-    dpd_->file2_mat_close(&F);
-    dpd_->file2_mat_close(&D);
-    dpd_->file2_close(&F);
-    dpd_->file2_close(&D);
+    global_dpd_->file2_mat_close(&F);
+    global_dpd_->file2_mat_close(&D);
+    global_dpd_->file2_close(&F);
+    global_dpd_->file2_close(&D);
 
-    dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 0, 0, 0, 0, "GIjKl");
-    dpd_->buf4_init(&I, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 0, "A <ij|kl>");
-    dpd_->buf4_scmcopy(&I, PSIF_CC_AINTS, "A 2<ij|kl> - <ij|lk>", 2);
-    dpd_->buf4_sort_axpy(&I, PSIF_CC_AINTS, pqsr, 0, 0, "A 2<ij|kl> - <ij|lk>", -1);
-    dpd_->buf4_close(&I);
-    dpd_->buf4_init(&I, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 0, "A 2<ij|kl> - <ij|lk>");
-    E_tpdm += 0.5 * dpd_->buf4_dot(&I, &G);
-    dpd_->buf4_close(&I);
-    dpd_->buf4_close(&G);
+    global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 0, 0, 0, 0, "GIjKl");
+    global_dpd_->buf4_init(&I, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 0, "A <ij|kl>");
+    global_dpd_->buf4_scmcopy(&I, PSIF_CC_AINTS, "A 2<ij|kl> - <ij|lk>", 2);
+    global_dpd_->buf4_sort_axpy(&I, PSIF_CC_AINTS, pqsr, 0, 0, "A 2<ij|kl> - <ij|lk>", -1);
+    global_dpd_->buf4_close(&I);
+    global_dpd_->buf4_init(&I, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 0, "A 2<ij|kl> - <ij|lk>");
+    E_tpdm += 0.5 * global_dpd_->buf4_dot(&I, &G);
+    global_dpd_->buf4_close(&I);
+    global_dpd_->buf4_close(&G);
 
-    dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 0, 11, 0, 0, "GAiJk");
-    dpd_->buf4_init(&I, PSIF_CC_EINTS, 0, 11, 0, 11, 0, 0, "E 2<ai|jk> - <ai|kj>");
-    E_tpdm += 2*dpd_->buf4_dot(&I, &G);
-    dpd_->buf4_close(&I);
-    dpd_->buf4_close(&G);
+    global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 0, 11, 0, 0, "GAiJk");
+    global_dpd_->buf4_init(&I, PSIF_CC_EINTS, 0, 11, 0, 11, 0, 0, "E 2<ai|jk> - <ai|kj>");
+    E_tpdm += 2*global_dpd_->buf4_dot(&I, &G);
+    global_dpd_->buf4_close(&I);
+    global_dpd_->buf4_close(&G);
     
-    dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIbJa");
-    dpd_->buf4_init(&I, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia||jb>");
-    E_tpdm += dpd_->buf4_dot(&I, &G);
-    dpd_->buf4_close(&I);
-    dpd_->buf4_init(&I, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia|jb>");
-    E_tpdm += dpd_->buf4_dot(&I, &G);
-    dpd_->buf4_close(&I);
-    dpd_->buf4_close(&G);
+    global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIbJa");
+    global_dpd_->buf4_init(&I, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia||jb>");
+    E_tpdm += global_dpd_->buf4_dot(&I, &G);
+    global_dpd_->buf4_close(&I);
+    global_dpd_->buf4_init(&I, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia|jb>");
+    E_tpdm += global_dpd_->buf4_dot(&I, &G);
+    global_dpd_->buf4_close(&I);
+    global_dpd_->buf4_close(&G);
 
-    dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "GIjAb");
-    dpd_->buf4_init(&I, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
-    E_tpdm += 2*dpd_->buf4_dot(&G, &I);
-    dpd_->buf4_close(&I);
-    dpd_->buf4_close(&G);
+    global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "GIjAb");
+    global_dpd_->buf4_init(&I, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
+    E_tpdm += 2*global_dpd_->buf4_dot(&G, &I);
+    global_dpd_->buf4_close(&I);
+    global_dpd_->buf4_close(&G);
   }
   else if(chk == 3) {
     fprintf(outfile, "\n\tEnergies re-computed from MP2 Mulliken density:\n");
     fprintf(outfile,   "\t-----------------------------------------------\n");
-    dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "DIJ");
-    dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 0, "h(i,j)");
-    E_opdm += dpd_->file2_dot(&D, &F);
-    dpd_->file2_close(&F);
-    dpd_->file2_close(&D);
+    global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "DIJ");
+    global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 0, "h(i,j)");
+    E_opdm += global_dpd_->file2_dot(&D, &F);
+    global_dpd_->file2_close(&F);
+    global_dpd_->file2_close(&D);
 
-    dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "DAB");
-    dpd_->file2_init(&F, PSIF_CC_OEI, 0, 1, 1, "h(a,b)");
-    E_opdm += dpd_->file2_dot(&D, &F);
-    dpd_->file2_close(&F);
-    dpd_->file2_close(&D);
+    global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "DAB");
+    global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 1, 1, "h(a,b)");
+    E_opdm += global_dpd_->file2_dot(&D, &F);
+    global_dpd_->file2_close(&F);
+    global_dpd_->file2_close(&D);
 
-    dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 0, "DAI");
-    dpd_->file2_mat_init(&D);
-    dpd_->file2_mat_rd(&D);
-    dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "h(i,a)");
-    dpd_->file2_mat_init(&F);
-    dpd_->file2_mat_rd(&F);
+    global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 0, "DAI");
+    global_dpd_->file2_mat_init(&D);
+    global_dpd_->file2_mat_rd(&D);
+    global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "h(i,a)");
+    global_dpd_->file2_mat_init(&F);
+    global_dpd_->file2_mat_rd(&F);
     for(h=0; h < mo.nirreps; h++)
       for(a=0; a < mo.virtpi[h]; a++)
         for(i=0; i < mo.doccpi[h]; i++)  
           E_opdm += 2 * D.matrix[h][a][i] * F.matrix[h][i][a];
-    dpd_->file2_mat_close(&F);
-    dpd_->file2_mat_close(&D);
-    dpd_->file2_close(&F);
-    dpd_->file2_close(&D);
+    global_dpd_->file2_mat_close(&F);
+    global_dpd_->file2_mat_close(&D);
+    global_dpd_->file2_close(&F);
+    global_dpd_->file2_close(&D);
 
-    dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 0, 0, 0, 0, "GIjKl");
-    dpd_->buf4_init(&I, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 0, "A <ij|kl>");
-    E_tpdm += 0.5 * dpd_->buf4_dot(&I, &G);
-    dpd_->buf4_close(&I);
-    dpd_->buf4_close(&G);
+    global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 0, 0, 0, 0, "GIjKl");
+    global_dpd_->buf4_init(&I, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 0, "A <ij|kl>");
+    E_tpdm += 0.5 * global_dpd_->buf4_dot(&I, &G);
+    global_dpd_->buf4_close(&I);
+    global_dpd_->buf4_close(&G);
     
-    dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 0, 11, 0, 0, "GAiJk");
-    dpd_->buf4_init(&I, PSIF_CC_EINTS, 0, 11, 0, 11, 0, 0, "E <ai|jk>");
-    E_tpdm += 2*dpd_->buf4_dot(&I, &G);
-    dpd_->buf4_close(&I);
-    dpd_->buf4_close(&G);
+    global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 0, 11, 0, 0, "GAiJk");
+    global_dpd_->buf4_init(&I, PSIF_CC_EINTS, 0, 11, 0, 11, 0, 0, "E <ai|jk>");
+    E_tpdm += 2*global_dpd_->buf4_dot(&I, &G);
+    global_dpd_->buf4_close(&I);
+    global_dpd_->buf4_close(&G);
 
-    dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIbJa");
-    dpd_->buf4_init(&I, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia|jb>");
-    E_tpdm += dpd_->buf4_dot(&I, &G);
-    dpd_->buf4_close(&I);
-    dpd_->buf4_close(&G);
+    global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIbJa");
+    global_dpd_->buf4_init(&I, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia|jb>");
+    E_tpdm += global_dpd_->buf4_dot(&I, &G);
+    global_dpd_->buf4_close(&I);
+    global_dpd_->buf4_close(&G);
     
-    dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "GIjAb");
-    dpd_->buf4_init(&I, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
-    E_tpdm += 2*dpd_->buf4_dot(&G, &I);
-    dpd_->buf4_close(&I);
-    dpd_->buf4_close(&G);
+    global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "GIjAb");
+    global_dpd_->buf4_init(&I, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+    E_tpdm += 2*global_dpd_->buf4_dot(&G, &I);
+    global_dpd_->buf4_close(&I);
+    global_dpd_->buf4_close(&G);
   }
   else {
 

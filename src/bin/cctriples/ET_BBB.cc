@@ -61,33 +61,33 @@ double ET_BBB(void)
   occ_off = moinfo.occ_off;
   vir_off = moinfo.vir_off;
 
-  dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fij");
-  dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fab");
-  dpd_->file2_mat_init(&fIJ);
-  dpd_->file2_mat_init(&fAB);
-  dpd_->file2_mat_rd(&fIJ);
-  dpd_->file2_mat_rd(&fAB);
+  global_dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fij");
+  global_dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fab");
+  global_dpd_->file2_mat_init(&fIJ);
+  global_dpd_->file2_mat_init(&fAB);
+  global_dpd_->file2_mat_rd(&fIJ);
+  global_dpd_->file2_mat_rd(&fAB);
 
-  dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tia");
-  dpd_->file2_mat_init(&T1);
-  dpd_->file2_mat_rd(&T1);
+  global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tia");
+  global_dpd_->file2_mat_init(&T1);
+  global_dpd_->file2_mat_rd(&T1);
 
-  dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tijab");
-  dpd_->buf4_init(&Fints, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 1, "F <ia|bc>");
-  dpd_->buf4_init(&Eints, PSIF_CC_EINTS, 0, 0, 10, 2, 10, 0, "E <ij||ka> (i>j,ka)");
-  dpd_->buf4_init(&Dints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij||ab>");
+  global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tijab");
+  global_dpd_->buf4_init(&Fints, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 1, "F <ia|bc>");
+  global_dpd_->buf4_init(&Eints, PSIF_CC_EINTS, 0, 0, 10, 2, 10, 0, "E <ij||ka> (i>j,ka)");
+  global_dpd_->buf4_init(&Dints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij||ab>");
   for(h=0; h < nirreps; h++) {
-    dpd_->buf4_mat_irrep_init(&T2, h);
-    dpd_->buf4_mat_irrep_rd(&T2, h);
+    global_dpd_->buf4_mat_irrep_init(&T2, h);
+    global_dpd_->buf4_mat_irrep_rd(&T2, h);
 
-    dpd_->buf4_mat_irrep_init(&Fints, h);
-    dpd_->buf4_mat_irrep_rd(&Fints, h);
+    global_dpd_->buf4_mat_irrep_init(&Fints, h);
+    global_dpd_->buf4_mat_irrep_rd(&Fints, h);
 
-    dpd_->buf4_mat_irrep_init(&Eints, h);
-    dpd_->buf4_mat_irrep_rd(&Eints, h);
+    global_dpd_->buf4_mat_irrep_init(&Eints, h);
+    global_dpd_->buf4_mat_irrep_rd(&Eints, h);
 
-    dpd_->buf4_mat_irrep_init(&Dints, h);
-    dpd_->buf4_mat_irrep_rd(&Dints, h);
+    global_dpd_->buf4_mat_irrep_init(&Dints, h);
+    global_dpd_->buf4_mat_irrep_rd(&Dints, h);
   }
 
   cnt = 0;
@@ -645,24 +645,24 @@ double ET_BBB(void)
   /*  fprintf(outfile, "ET_BBB = %20.14f\n", ET_BBB); */
 
   for(h=0; h < nirreps; h++) {
-    dpd_->buf4_mat_irrep_close(&T2, h);
-    dpd_->buf4_mat_irrep_close(&Fints, h);
-    dpd_->buf4_mat_irrep_close(&Eints, h);
-    dpd_->buf4_mat_irrep_close(&Dints, h);
+    global_dpd_->buf4_mat_irrep_close(&T2, h);
+    global_dpd_->buf4_mat_irrep_close(&Fints, h);
+    global_dpd_->buf4_mat_irrep_close(&Eints, h);
+    global_dpd_->buf4_mat_irrep_close(&Dints, h);
   }
 
-  dpd_->buf4_close(&T2);
-  dpd_->buf4_close(&Fints);
-  dpd_->buf4_close(&Eints);
-  dpd_->buf4_close(&Dints);
+  global_dpd_->buf4_close(&T2);
+  global_dpd_->buf4_close(&Fints);
+  global_dpd_->buf4_close(&Eints);
+  global_dpd_->buf4_close(&Dints);
 
-  dpd_->file2_mat_close(&T1);
-  dpd_->file2_close(&T1);
+  global_dpd_->file2_mat_close(&T1);
+  global_dpd_->file2_close(&T1);
 
-  dpd_->file2_mat_close(&fIJ);
-  dpd_->file2_mat_close(&fAB);
-  dpd_->file2_close(&fIJ);
-  dpd_->file2_close(&fAB);
+  global_dpd_->file2_mat_close(&fIJ);
+  global_dpd_->file2_mat_close(&fAB);
+  global_dpd_->file2_close(&fIJ);
+  global_dpd_->file2_close(&fAB);
 
   return ET_BBB;
 }

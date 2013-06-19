@@ -34,7 +34,7 @@
 
 namespace psi {
 
-DPD *dpd_ = NULL;
+DPD *global_dpd_ = NULL;
 int dpd_default = 0;
 DPD* dpd_list[2] = {NULL, NULL};
 dpd_gbl dpd_main;
@@ -53,7 +53,7 @@ struct dpdpair{
 int dpd_set_default(int dpd_num)
 {
   dpd_default = dpd_num;
-  dpd_ = dpd_list[dpd_num];
+  global_dpd_ = dpd_list[dpd_num];
   return 0;
 }
 
@@ -66,7 +66,7 @@ extern int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype,
     dpd_list[dpd_num] = new DPD(dpd_num, nirreps, memory, cachetype, cachefiles, cachelist,
                                 priority, num_subspaces, spaceArrays);
     dpd_default = dpd_num;
-    dpd_ = dpd_list[dpd_num];
+    global_dpd_ = dpd_list[dpd_num];
     return 0;
 }
 

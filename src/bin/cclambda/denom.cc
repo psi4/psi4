@@ -65,17 +65,17 @@ void denom_rhf(struct L_Params L_params)
   occpi = moinfo.occpi; virtpi = moinfo.virtpi;
   occ_off = moinfo.occ_off; vir_off = moinfo.vir_off;
 
-  dpd_->file2_init(&FMI, PSIF_CC_OEI, 0, 0, 0, "FMI");
-  dpd_->file2_mat_init(&FMI);
-  dpd_->file2_mat_rd(&FMI);
+  global_dpd_->file2_init(&FMI, PSIF_CC_OEI, 0, 0, 0, "FMI");
+  global_dpd_->file2_mat_init(&FMI);
+  global_dpd_->file2_mat_rd(&FMI);
 
-  dpd_->file2_init(&FAE, PSIF_CC_OEI, 0, 1, 1, "FAE");
-  dpd_->file2_mat_init(&FAE);
-  dpd_->file2_mat_rd(&FAE);
+  global_dpd_->file2_init(&FAE, PSIF_CC_OEI, 0, 1, 1, "FAE");
+  global_dpd_->file2_mat_init(&FAE);
+  global_dpd_->file2_mat_rd(&FAE);
 
   /* Alpha one-electron denominator */
-  dpd_->file2_init(&dIA, PSIF_CC_DENOM, L_irr, 0, 1, "dIA");
-  dpd_->file2_mat_init(&dIA);
+  global_dpd_->file2_init(&dIA, PSIF_CC_DENOM, L_irr, 0, 1, "dIA");
+  global_dpd_->file2_mat_init(&dIA);
   for(h=0; h < nirreps; h++) { /* irreps of dIA and Fii */
     for(i=0; i < occpi[h]; i++) {
       Fii = FMI.matrix[h][i][i];
@@ -85,15 +85,15 @@ void denom_rhf(struct L_Params L_params)
       }
     }
   }
-  dpd_->file2_mat_wrt(&dIA);
-  dpd_->file2_mat_close(&dIA);
-  dpd_->file2_close(&dIA);
+  global_dpd_->file2_mat_wrt(&dIA);
+  global_dpd_->file2_mat_close(&dIA);
+  global_dpd_->file2_close(&dIA);
 
   /* Alpha-beta two-electron denominator */
-  dpd_->file4_init(&dIjAb, PSIF_CC_DENOM, L_irr, 0, 5, "dIjAb");
+  global_dpd_->file4_init(&dIjAb, PSIF_CC_DENOM, L_irr, 0, 5, "dIjAb");
 
   for(h=0; h < nirreps; h++) {
-    dpd_->file4_mat_irrep_init(&dIjAb, h);
+    global_dpd_->file4_mat_irrep_init(&dIjAb, h);
     /* Loop over the rows */
     for(ij=0; ij < dIjAb.params->rowtot[h]; ij++) {
           i = dIjAb.params->roworb[h][ij][0];
@@ -124,15 +124,15 @@ void denom_rhf(struct L_Params L_params)
               dIjAb.matrix[h][ij][ab] = 1.0/(Fii + Fjj - Faa - Fbb + L_params.cceom_energy);
             }
         }
-    dpd_->file4_mat_irrep_wrt(&dIjAb, h);
-    dpd_->file4_mat_irrep_close(&dIjAb, h);
+    global_dpd_->file4_mat_irrep_wrt(&dIjAb, h);
+    global_dpd_->file4_mat_irrep_close(&dIjAb, h);
   }
-  dpd_->file4_close(&dIjAb);
+  global_dpd_->file4_close(&dIjAb);
 
-  dpd_->file2_mat_close(&FMI);
-  dpd_->file2_mat_close(&FAE);
-  dpd_->file2_close(&FMI);
-  dpd_->file2_close(&FAE);
+  global_dpd_->file2_mat_close(&FMI);
+  global_dpd_->file2_mat_close(&FAE);
+  global_dpd_->file2_close(&FMI);
+  global_dpd_->file2_close(&FAE);
 
   return;
 }
@@ -161,43 +161,43 @@ void denom_uhf(struct L_Params L_params)
 
   if((params.wfn == "CC2") || (params.wfn == "EOM_CC2")) {
 
-    dpd_->file2_init(&LFMIt, PSIF_CC_OEI, 0, 0, 0, "fIJ");
-    dpd_->file2_mat_init(&LFMIt);
-    dpd_->file2_mat_rd(&LFMIt);
+    global_dpd_->file2_init(&LFMIt, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+    global_dpd_->file2_mat_init(&LFMIt);
+    global_dpd_->file2_mat_rd(&LFMIt);
 
-    dpd_->file2_init(&LFmit, PSIF_CC_OEI, 0, 2, 2, "fij");
-    dpd_->file2_mat_init(&LFmit);
-    dpd_->file2_mat_rd(&LFmit);
+    global_dpd_->file2_init(&LFmit, PSIF_CC_OEI, 0, 2, 2, "fij");
+    global_dpd_->file2_mat_init(&LFmit);
+    global_dpd_->file2_mat_rd(&LFmit);
 
-    dpd_->file2_init(&LFaet, PSIF_CC_OEI, 0, 3, 3, "fab");
-    dpd_->file2_mat_init(&LFaet);
-    dpd_->file2_mat_rd(&LFaet);
+    global_dpd_->file2_init(&LFaet, PSIF_CC_OEI, 0, 3, 3, "fab");
+    global_dpd_->file2_mat_init(&LFaet);
+    global_dpd_->file2_mat_rd(&LFaet);
 
-    dpd_->file2_init(&LFAEt, PSIF_CC_OEI, 0, 1, 1, "fAB");
-    dpd_->file2_mat_init(&LFAEt);
-    dpd_->file2_mat_rd(&LFAEt);
+    global_dpd_->file2_init(&LFAEt, PSIF_CC_OEI, 0, 1, 1, "fAB");
+    global_dpd_->file2_mat_init(&LFAEt);
+    global_dpd_->file2_mat_rd(&LFAEt);
 
   }
   else {
-    dpd_->file2_init(&LFMIt, PSIF_CC_OEI, 0, 0, 0, "FMI");
-    dpd_->file2_mat_init(&LFMIt);
-    dpd_->file2_mat_rd(&LFMIt);
+    global_dpd_->file2_init(&LFMIt, PSIF_CC_OEI, 0, 0, 0, "FMI");
+    global_dpd_->file2_mat_init(&LFMIt);
+    global_dpd_->file2_mat_rd(&LFMIt);
 
-    dpd_->file2_init(&LFmit, PSIF_CC_OEI, 0, 2, 2, "Fmi");
-    dpd_->file2_mat_init(&LFmit);
-    dpd_->file2_mat_rd(&LFmit);
+    global_dpd_->file2_init(&LFmit, PSIF_CC_OEI, 0, 2, 2, "Fmi");
+    global_dpd_->file2_mat_init(&LFmit);
+    global_dpd_->file2_mat_rd(&LFmit);
 
-    dpd_->file2_init(&LFaet, PSIF_CC_OEI, 0, 3, 3, "Fae");
-    dpd_->file2_mat_init(&LFaet);
-    dpd_->file2_mat_rd(&LFaet);
+    global_dpd_->file2_init(&LFaet, PSIF_CC_OEI, 0, 3, 3, "Fae");
+    global_dpd_->file2_mat_init(&LFaet);
+    global_dpd_->file2_mat_rd(&LFaet);
 
-    dpd_->file2_init(&LFAEt, PSIF_CC_OEI, 0, 1, 1, "FAE");
-    dpd_->file2_mat_init(&LFAEt);
-    dpd_->file2_mat_rd(&LFAEt);
+    global_dpd_->file2_init(&LFAEt, PSIF_CC_OEI, 0, 1, 1, "FAE");
+    global_dpd_->file2_mat_init(&LFAEt);
+    global_dpd_->file2_mat_rd(&LFAEt);
   }
 
-  dpd_->file2_init(&dIA, PSIF_CC_DENOM, L_irr, 0, 1, "dIA");
-  dpd_->file2_mat_init(&dIA);
+  global_dpd_->file2_init(&dIA, PSIF_CC_DENOM, L_irr, 0, 1, "dIA");
+  global_dpd_->file2_mat_init(&dIA);
   for(h=0; h < nirreps; h++) {
     for(i=0; i < aoccpi[h]; i++) {
       Fii = LFMIt.matrix[h][i][i];
@@ -207,12 +207,12 @@ void denom_uhf(struct L_Params L_params)
       }
     }
   }
-  dpd_->file2_mat_wrt(&dIA);
-  dpd_->file2_mat_close(&dIA);
-  dpd_->file2_close(&dIA);
+  global_dpd_->file2_mat_wrt(&dIA);
+  global_dpd_->file2_mat_close(&dIA);
+  global_dpd_->file2_close(&dIA);
 
-  dpd_->file2_init(&dia, PSIF_CC_DENOM, L_irr, 2, 3, "dia");
-  dpd_->file2_mat_init(&dia);
+  global_dpd_->file2_init(&dia, PSIF_CC_DENOM, L_irr, 2, 3, "dia");
+  global_dpd_->file2_mat_init(&dia);
   for(h=0; h < nirreps; h++) {
     for(i=0; i < boccpi[h]; i++) {
       Fii = LFmit.matrix[h][i][i];
@@ -222,13 +222,13 @@ void denom_uhf(struct L_Params L_params)
       }
     }
   }
-  dpd_->file2_mat_wrt(&dia);
-  dpd_->file2_mat_close(&dia);
-  dpd_->file2_close(&dia);
+  global_dpd_->file2_mat_wrt(&dia);
+  global_dpd_->file2_mat_close(&dia);
+  global_dpd_->file2_close(&dia);
 
-  dpd_->file4_init(&dIJAB, PSIF_CC_DENOM, L_irr, 1, 6, "dIJAB");
+  global_dpd_->file4_init(&dIJAB, PSIF_CC_DENOM, L_irr, 1, 6, "dIJAB");
   for(h=0; h < nirreps; h++) {
-    dpd_->file4_mat_irrep_init(&dIJAB, h);
+    global_dpd_->file4_mat_irrep_init(&dIJAB, h);
     for(ij=0; ij < dIJAB.params->rowtot[h]; ij++) {
       i = dIJAB.params->roworb[h][ij][0];
       j = dIJAB.params->roworb[h][ij][1];
@@ -253,15 +253,15 @@ void denom_uhf(struct L_Params L_params)
 				       + L_params.cceom_energy);
       }
     }
-    dpd_->file4_mat_irrep_wrt(&dIJAB, h);
-    dpd_->file4_mat_irrep_close(&dIJAB, h);
+    global_dpd_->file4_mat_irrep_wrt(&dIJAB, h);
+    global_dpd_->file4_mat_irrep_close(&dIJAB, h);
   }
-  dpd_->file4_close(&dIJAB);
+  global_dpd_->file4_close(&dIJAB);
 
-  dpd_->file4_init(&dijab, PSIF_CC_DENOM, L_irr, 11, 16, "dijab");
+  global_dpd_->file4_init(&dijab, PSIF_CC_DENOM, L_irr, 11, 16, "dijab");
 
   for(h=0; h < nirreps; h++) {
-    dpd_->file4_mat_irrep_init(&dijab, h);
+    global_dpd_->file4_mat_irrep_init(&dijab, h);
     for(ij=0; ij < dijab.params->rowtot[h]; ij++) {
       i = dijab.params->roworb[h][ij][0];
       j = dijab.params->roworb[h][ij][1];
@@ -286,15 +286,15 @@ void denom_uhf(struct L_Params L_params)
 				       + L_params.cceom_energy);
       }
     }
-    dpd_->file4_mat_irrep_wrt(&dijab, h);
-    dpd_->file4_mat_irrep_close(&dijab, h);
+    global_dpd_->file4_mat_irrep_wrt(&dijab, h);
+    global_dpd_->file4_mat_irrep_close(&dijab, h);
   }
-  dpd_->file4_close(&dijab);
+  global_dpd_->file4_close(&dijab);
 
-  dpd_->file4_init(&dIjAb, PSIF_CC_DENOM, L_irr, 22, 28, "dIjAb");
+  global_dpd_->file4_init(&dIjAb, PSIF_CC_DENOM, L_irr, 22, 28, "dIjAb");
 
   for(h=0; h < nirreps; h++) {
-    dpd_->file4_mat_irrep_init(&dIjAb, h);
+    global_dpd_->file4_mat_irrep_init(&dIjAb, h);
     for(ij=0; ij < dIjAb.params->rowtot[h]; ij++) {
       i = dIjAb.params->roworb[h][ij][0];
       j = dIjAb.params->roworb[h][ij][1];
@@ -319,19 +319,19 @@ void denom_uhf(struct L_Params L_params)
 				       + L_params.cceom_energy);
       }
     }
-    dpd_->file4_mat_irrep_wrt(&dIjAb, h);
-    dpd_->file4_mat_irrep_close(&dIjAb, h);
+    global_dpd_->file4_mat_irrep_wrt(&dIjAb, h);
+    global_dpd_->file4_mat_irrep_close(&dIjAb, h);
   }
-  dpd_->file4_close(&dIjAb);
+  global_dpd_->file4_close(&dIjAb);
 
-  dpd_->file2_mat_close(&LFMIt);
-  dpd_->file2_mat_close(&LFmit);
-  dpd_->file2_mat_close(&LFAEt);
-  dpd_->file2_mat_close(&LFaet);
-  dpd_->file2_close(&LFMIt);
-  dpd_->file2_close(&LFmit);
-  dpd_->file2_close(&LFAEt);
-  dpd_->file2_close(&LFaet);
+  global_dpd_->file2_mat_close(&LFMIt);
+  global_dpd_->file2_mat_close(&LFmit);
+  global_dpd_->file2_mat_close(&LFAEt);
+  global_dpd_->file2_mat_close(&LFaet);
+  global_dpd_->file2_close(&LFMIt);
+  global_dpd_->file2_close(&LFmit);
+  global_dpd_->file2_close(&LFAEt);
+  global_dpd_->file2_close(&LFaet);
 
   /*     if((!strcmp(params.wfn,"CC2")) || (!strcmp(params.wfn,"EOM_CC2"))) { */
   /*       dpd_file2_init(&FMI, CC_OEI, 0, 0, 0, "FMI"); */
@@ -406,25 +406,25 @@ void denom_rohf(struct L_Params L_params)
   openpi = moinfo.openpi;
   occ_off = moinfo.occ_off; vir_off = moinfo.vir_off;
 
-  dpd_->file2_init(&LFMIt, PSIF_CC_OEI, 0, 0, 0, "FMI");
-  dpd_->file2_mat_init(&LFMIt);
-  dpd_->file2_mat_rd(&LFMIt);
+  global_dpd_->file2_init(&LFMIt, PSIF_CC_OEI, 0, 0, 0, "FMI");
+  global_dpd_->file2_mat_init(&LFMIt);
+  global_dpd_->file2_mat_rd(&LFMIt);
 
-  dpd_->file2_init(&LFmit, PSIF_CC_OEI, 0, 0, 0, "Fmi");
-  dpd_->file2_mat_init(&LFmit);
-  dpd_->file2_mat_rd(&LFmit);
+  global_dpd_->file2_init(&LFmit, PSIF_CC_OEI, 0, 0, 0, "Fmi");
+  global_dpd_->file2_mat_init(&LFmit);
+  global_dpd_->file2_mat_rd(&LFmit);
 
-  dpd_->file2_init(&LFaet, PSIF_CC_OEI, 0, 1, 1, "Fae");
-  dpd_->file2_mat_init(&LFaet);
-  dpd_->file2_mat_rd(&LFaet);
+  global_dpd_->file2_init(&LFaet, PSIF_CC_OEI, 0, 1, 1, "Fae");
+  global_dpd_->file2_mat_init(&LFaet);
+  global_dpd_->file2_mat_rd(&LFaet);
 
-  dpd_->file2_init(&LFAEt, PSIF_CC_OEI, 0, 1, 1, "FAE");
-  dpd_->file2_mat_init(&LFAEt);
-  dpd_->file2_mat_rd(&LFAEt);
+  global_dpd_->file2_init(&LFAEt, PSIF_CC_OEI, 0, 1, 1, "FAE");
+  global_dpd_->file2_mat_init(&LFAEt);
+  global_dpd_->file2_mat_rd(&LFAEt);
 
   /* Alpha one-electron denominator */
-  dpd_->file2_init(&dIA, PSIF_CC_DENOM, L_irr, 0, 1, "dIA");
-  dpd_->file2_mat_init(&dIA);
+  global_dpd_->file2_init(&dIA, PSIF_CC_DENOM, L_irr, 0, 1, "dIA");
+  global_dpd_->file2_mat_init(&dIA);
   for(h=0; h < nirreps; h++) { /* irreps of dIA and Fii */
     for(i=0; i < occpi[h]; i++) {
       Fii = LFMIt.matrix[h][i][i];
@@ -434,13 +434,13 @@ void denom_rohf(struct L_Params L_params)
       }
     }
   }
-  dpd_->file2_mat_wrt(&dIA);
-  dpd_->file2_mat_close(&dIA);
-  dpd_->file2_close(&dIA);
+  global_dpd_->file2_mat_wrt(&dIA);
+  global_dpd_->file2_mat_close(&dIA);
+  global_dpd_->file2_close(&dIA);
 
   /* Beta one-electron denominator */
-  dpd_->file2_init(&dia, PSIF_CC_DENOM, L_irr, 0, 1, "dia");
-  dpd_->file2_mat_init(&dia);
+  global_dpd_->file2_init(&dia, PSIF_CC_DENOM, L_irr, 0, 1, "dia");
+  global_dpd_->file2_mat_init(&dia);
   for(h=0; h < nirreps; h++) {
     for(i=0; i < (occpi[h] - openpi[h]); i++) {
       Fii = LFmit.matrix[h][i][i];
@@ -450,15 +450,15 @@ void denom_rohf(struct L_Params L_params)
       }
     }
   }
-  dpd_->file2_mat_wrt(&dia);
-  dpd_->file2_mat_close(&dia);
-  dpd_->file2_close(&dia);
+  global_dpd_->file2_mat_wrt(&dia);
+  global_dpd_->file2_mat_close(&dia);
+  global_dpd_->file2_close(&dia);
 
   /* Alpha-alpha two-electron denominator */
-  dpd_->file4_init(&dIJAB, PSIF_CC_DENOM, L_irr, 1, 6, "dIJAB");
+  global_dpd_->file4_init(&dIJAB, PSIF_CC_DENOM, L_irr, 1, 6, "dIJAB");
 
   for(h=0; h < nirreps; h++) {
-    dpd_->file4_mat_irrep_init(&dIJAB, h);
+    global_dpd_->file4_mat_irrep_init(&dIJAB, h);
       /* Loop over the rows */
       for(ij=0; ij < dIJAB.params->rowtot[h]; ij++) {
           i = dIJAB.params->roworb[h][ij][0];
@@ -494,16 +494,16 @@ void denom_rohf(struct L_Params L_params)
                    + L_params.cceom_energy));
           }
       }
-    dpd_->file4_mat_irrep_wrt(&dIJAB, h);
-    dpd_->file4_mat_irrep_close(&dIJAB, h);
+    global_dpd_->file4_mat_irrep_wrt(&dIJAB, h);
+    global_dpd_->file4_mat_irrep_close(&dIJAB, h);
   }
-  dpd_->file4_close(&dIJAB);
+  global_dpd_->file4_close(&dIJAB);
 
   /* Beta-beta two-electron denominator */
-  dpd_->file4_init(&dijab, PSIF_CC_DENOM, L_irr, 1, 6, "dijab");
+  global_dpd_->file4_init(&dijab, PSIF_CC_DENOM, L_irr, 1, 6, "dijab");
 
   for(h=0; h < nirreps; h++) {
-    dpd_->file4_mat_irrep_init(&dijab, h);
+    global_dpd_->file4_mat_irrep_init(&dijab, h);
     /* Loop over the rows */
     for(ij=0; ij < dijab.params->rowtot[h]; ij++) {
           i = dijab.params->roworb[h][ij][0];
@@ -539,17 +539,17 @@ void denom_rohf(struct L_Params L_params)
                    + L_params.cceom_energy));
       }
     }
-    dpd_->file4_mat_irrep_wrt(&dijab, h);
-    dpd_->file4_mat_irrep_close(&dijab, h);
+    global_dpd_->file4_mat_irrep_wrt(&dijab, h);
+    global_dpd_->file4_mat_irrep_close(&dijab, h);
   }
-  dpd_->file4_close(&dijab);
+  global_dpd_->file4_close(&dijab);
 
 
   /* Alpha-beta two-electron denominator */
-  dpd_->file4_init(&dIjAb, PSIF_CC_DENOM, L_irr, 0, 5, "dIjAb");
+  global_dpd_->file4_init(&dIjAb, PSIF_CC_DENOM, L_irr, 0, 5, "dIjAb");
 
   for(h=0; h < nirreps; h++) {
-    dpd_->file4_mat_irrep_init(&dIjAb, h);
+    global_dpd_->file4_mat_irrep_init(&dIjAb, h);
     /* Loop over the rows */
     for(ij=0; ij < dIjAb.params->rowtot[h]; ij++) {
           i = dIjAb.params->roworb[h][ij][0];
@@ -584,19 +584,19 @@ void denom_rohf(struct L_Params L_params)
                    + L_params.cceom_energy));
             }
         }
-    dpd_->file4_mat_irrep_wrt(&dIjAb, h);
-    dpd_->file4_mat_irrep_close(&dIjAb, h);
+    global_dpd_->file4_mat_irrep_wrt(&dIjAb, h);
+    global_dpd_->file4_mat_irrep_close(&dIjAb, h);
   }
-  dpd_->file4_close(&dIjAb);
+  global_dpd_->file4_close(&dIjAb);
 
-  dpd_->file2_mat_close(&LFMIt);
-  dpd_->file2_mat_close(&LFmit);
-  dpd_->file2_mat_close(&LFAEt);
-  dpd_->file2_mat_close(&LFaet);
-  dpd_->file2_close(&LFMIt);
-  dpd_->file2_close(&LFmit);
-  dpd_->file2_close(&LFAEt);
-  dpd_->file2_close(&LFaet);
+  global_dpd_->file2_mat_close(&LFMIt);
+  global_dpd_->file2_mat_close(&LFmit);
+  global_dpd_->file2_mat_close(&LFAEt);
+  global_dpd_->file2_mat_close(&LFaet);
+  global_dpd_->file2_close(&LFMIt);
+  global_dpd_->file2_close(&LFmit);
+  global_dpd_->file2_close(&LFAEt);
+  global_dpd_->file2_close(&LFaet);
 
   return;
 }

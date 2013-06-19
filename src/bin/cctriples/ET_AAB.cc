@@ -62,58 +62,58 @@ double ET_AAB(void)
   occ_off = moinfo.occ_off;
   vir_off = moinfo.vir_off;
 
-  dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
-  dpd_->file2_init(&fij, PSIF_CC_OEI, 0, 0, 0, "fij");
-  dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
-  dpd_->file2_init(&fab, PSIF_CC_OEI, 0, 1, 1, "fab");
-  dpd_->file2_mat_init(&fIJ);
-  dpd_->file2_mat_init(&fij);
-  dpd_->file2_mat_init(&fAB);
-  dpd_->file2_mat_init(&fab);
-  dpd_->file2_mat_rd(&fIJ);
-  dpd_->file2_mat_rd(&fij);
-  dpd_->file2_mat_rd(&fAB);
-  dpd_->file2_mat_rd(&fab);
+  global_dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+  global_dpd_->file2_init(&fij, PSIF_CC_OEI, 0, 0, 0, "fij");
+  global_dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
+  global_dpd_->file2_init(&fab, PSIF_CC_OEI, 0, 1, 1, "fab");
+  global_dpd_->file2_mat_init(&fIJ);
+  global_dpd_->file2_mat_init(&fij);
+  global_dpd_->file2_mat_init(&fAB);
+  global_dpd_->file2_mat_init(&fab);
+  global_dpd_->file2_mat_rd(&fIJ);
+  global_dpd_->file2_mat_rd(&fij);
+  global_dpd_->file2_mat_rd(&fAB);
+  global_dpd_->file2_mat_rd(&fab);
 
-  dpd_->file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
-  dpd_->file2_mat_init(&T1A);
-  dpd_->file2_mat_rd(&T1A);
-  dpd_->file2_init(&T1B, PSIF_CC_OEI, 0, 0, 1, "tia");
-  dpd_->file2_mat_init(&T1B);
-  dpd_->file2_mat_rd(&T1B);
+  global_dpd_->file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
+  global_dpd_->file2_mat_init(&T1A);
+  global_dpd_->file2_mat_rd(&T1A);
+  global_dpd_->file2_init(&T1B, PSIF_CC_OEI, 0, 0, 1, "tia");
+  global_dpd_->file2_mat_init(&T1B);
+  global_dpd_->file2_mat_rd(&T1B);
 
-  dpd_->buf4_init(&T2AA, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
-  dpd_->buf4_init(&T2AB, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-  dpd_->buf4_init(&Faints, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 1, "F <ia|bc>");
-  dpd_->buf4_init(&Fints, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
-  dpd_->buf4_init(&Eaints, PSIF_CC_EINTS, 0, 0, 10, 2, 10, 0, "E <ij||ka> (i>j,ka)");
-  dpd_->buf4_init(&Eints, PSIF_CC_EINTS, 0, 0, 10, 0, 10, 0, "E <ij|ka>");
-  dpd_->buf4_init(&Daints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij||ab>");
-  dpd_->buf4_init(&Dints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+  global_dpd_->buf4_init(&T2AA, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
+  global_dpd_->buf4_init(&T2AB, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  global_dpd_->buf4_init(&Faints, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 1, "F <ia|bc>");
+  global_dpd_->buf4_init(&Fints, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
+  global_dpd_->buf4_init(&Eaints, PSIF_CC_EINTS, 0, 0, 10, 2, 10, 0, "E <ij||ka> (i>j,ka)");
+  global_dpd_->buf4_init(&Eints, PSIF_CC_EINTS, 0, 0, 10, 0, 10, 0, "E <ij|ka>");
+  global_dpd_->buf4_init(&Daints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij||ab>");
+  global_dpd_->buf4_init(&Dints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
   for(h=0; h < nirreps; h++) {
-    dpd_->buf4_mat_irrep_init(&T2AA, h);
-    dpd_->buf4_mat_irrep_rd(&T2AA, h);
+    global_dpd_->buf4_mat_irrep_init(&T2AA, h);
+    global_dpd_->buf4_mat_irrep_rd(&T2AA, h);
 
-    dpd_->buf4_mat_irrep_init(&T2AB, h);
-    dpd_->buf4_mat_irrep_rd(&T2AB, h);
+    global_dpd_->buf4_mat_irrep_init(&T2AB, h);
+    global_dpd_->buf4_mat_irrep_rd(&T2AB, h);
 
-    dpd_->buf4_mat_irrep_init(&Faints, h);
-    dpd_->buf4_mat_irrep_rd(&Faints, h);
+    global_dpd_->buf4_mat_irrep_init(&Faints, h);
+    global_dpd_->buf4_mat_irrep_rd(&Faints, h);
 
-    dpd_->buf4_mat_irrep_init(&Fints, h);
-    dpd_->buf4_mat_irrep_rd(&Fints, h);
+    global_dpd_->buf4_mat_irrep_init(&Fints, h);
+    global_dpd_->buf4_mat_irrep_rd(&Fints, h);
 
-    dpd_->buf4_mat_irrep_init(&Eaints, h);
-    dpd_->buf4_mat_irrep_rd(&Eaints, h);
+    global_dpd_->buf4_mat_irrep_init(&Eaints, h);
+    global_dpd_->buf4_mat_irrep_rd(&Eaints, h);
 
-    dpd_->buf4_mat_irrep_init(&Eints, h);
-    dpd_->buf4_mat_irrep_rd(&Eints, h);
+    global_dpd_->buf4_mat_irrep_init(&Eints, h);
+    global_dpd_->buf4_mat_irrep_rd(&Eints, h);
 
-    dpd_->buf4_mat_irrep_init(&Daints, h);
-    dpd_->buf4_mat_irrep_rd(&Daints, h);
+    global_dpd_->buf4_mat_irrep_init(&Daints, h);
+    global_dpd_->buf4_mat_irrep_rd(&Daints, h);
 
-    dpd_->buf4_mat_irrep_init(&Dints, h);
-    dpd_->buf4_mat_irrep_rd(&Dints, h);
+    global_dpd_->buf4_mat_irrep_init(&Dints, h);
+    global_dpd_->buf4_mat_irrep_rd(&Dints, h);
   }
 
   cnt = 0;
@@ -586,38 +586,38 @@ double ET_AAB(void)
   /*  fprintf(outfile, "ET_AAB = %20.14f\n", ET_AAB); */
 
   for(h=0; h < nirreps; h++) {
-    dpd_->buf4_mat_irrep_close(&T2AA, h);
-    dpd_->buf4_mat_irrep_close(&T2AB, h);
-    dpd_->buf4_mat_irrep_close(&Faints, h);
-    dpd_->buf4_mat_irrep_close(&Fints, h);
-    dpd_->buf4_mat_irrep_close(&Eaints, h);
-    dpd_->buf4_mat_irrep_close(&Eints, h);
-    dpd_->buf4_mat_irrep_close(&Daints, h);
-    dpd_->buf4_mat_irrep_close(&Dints, h);
+    global_dpd_->buf4_mat_irrep_close(&T2AA, h);
+    global_dpd_->buf4_mat_irrep_close(&T2AB, h);
+    global_dpd_->buf4_mat_irrep_close(&Faints, h);
+    global_dpd_->buf4_mat_irrep_close(&Fints, h);
+    global_dpd_->buf4_mat_irrep_close(&Eaints, h);
+    global_dpd_->buf4_mat_irrep_close(&Eints, h);
+    global_dpd_->buf4_mat_irrep_close(&Daints, h);
+    global_dpd_->buf4_mat_irrep_close(&Dints, h);
   }
 
-  dpd_->buf4_close(&T2AA);
-  dpd_->buf4_close(&T2AB);
-  dpd_->buf4_close(&Faints);
-  dpd_->buf4_close(&Fints);
-  dpd_->buf4_close(&Eaints);
-  dpd_->buf4_close(&Eints);
-  dpd_->buf4_close(&Daints);
-  dpd_->buf4_close(&Dints);
+  global_dpd_->buf4_close(&T2AA);
+  global_dpd_->buf4_close(&T2AB);
+  global_dpd_->buf4_close(&Faints);
+  global_dpd_->buf4_close(&Fints);
+  global_dpd_->buf4_close(&Eaints);
+  global_dpd_->buf4_close(&Eints);
+  global_dpd_->buf4_close(&Daints);
+  global_dpd_->buf4_close(&Dints);
 
-  dpd_->file2_mat_close(&T1A);
-  dpd_->file2_close(&T1A);
-  dpd_->file2_mat_close(&T1B);
-  dpd_->file2_close(&T1B);
+  global_dpd_->file2_mat_close(&T1A);
+  global_dpd_->file2_close(&T1A);
+  global_dpd_->file2_mat_close(&T1B);
+  global_dpd_->file2_close(&T1B);
 
-  dpd_->file2_mat_close(&fIJ);
-  dpd_->file2_mat_close(&fij);
-  dpd_->file2_mat_close(&fAB);
-  dpd_->file2_mat_close(&fab);
-  dpd_->file2_close(&fIJ);
-  dpd_->file2_close(&fij);
-  dpd_->file2_close(&fAB);
-  dpd_->file2_close(&fab);
+  global_dpd_->file2_mat_close(&fIJ);
+  global_dpd_->file2_mat_close(&fij);
+  global_dpd_->file2_mat_close(&fAB);
+  global_dpd_->file2_mat_close(&fab);
+  global_dpd_->file2_close(&fIJ);
+  global_dpd_->file2_close(&fij);
+  global_dpd_->file2_close(&fAB);
+  global_dpd_->file2_close(&fab);
 
   return ET_AAB;
 }

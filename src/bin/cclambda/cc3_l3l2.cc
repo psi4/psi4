@@ -99,45 +99,45 @@ void cc3_l3l2_RHF_AAA(void)
   virtpi = moinfo.virtpi;
   vir_off = moinfo.vir_off;
 
-  dpd_->buf4_init(&WMAFE, PSIF_CC3_HET1, 0, 10, 5, 10, 7, 0, "CC3 WABEI (IE,B>A)");
-  dpd_->buf4_init(&WMNIE, PSIF_CC3_HET1, 0, 0, 10, 2, 10, 0, "CC3 WMBIJ (I>J,MB)");
+  global_dpd_->buf4_init(&WMAFE, PSIF_CC3_HET1, 0, 10, 5, 10, 7, 0, "CC3 WABEI (IE,B>A)");
+  global_dpd_->buf4_init(&WMNIE, PSIF_CC3_HET1, 0, 0, 10, 2, 10, 0, "CC3 WMBIJ (I>J,MB)");
   for(h=0; h < nirreps; h++) {
-    dpd_->buf4_mat_irrep_init(&WMNIE, h);
-    dpd_->buf4_mat_irrep_rd(&WMNIE, h);
+    global_dpd_->buf4_mat_irrep_init(&WMNIE, h);
+    global_dpd_->buf4_mat_irrep_rd(&WMNIE, h);
   }
 
-  dpd_->buf4_init(&L2new, PSIF_CC3_MISC, 0, 0, 5, 0, 5, 0, "CC3 LIJAB");
-  for(h=0; h < nirreps; h++) dpd_->buf4_mat_irrep_init(&L2new, h);
+  global_dpd_->buf4_init(&L2new, PSIF_CC3_MISC, 0, 0, 5, 0, 5, 0, "CC3 LIJAB");
+  for(h=0; h < nirreps; h++) global_dpd_->buf4_mat_irrep_init(&L2new, h);
 
-  dpd_->buf4_init(&ZIGDE, PSIF_CC3_MISC, 0, 10, 5, 10, 5, 0, "CC3 ZIGDE");
-  dpd_->buf4_scm(&ZIGDE, 0.0); /* must be cleared in each iteration */
+  global_dpd_->buf4_init(&ZIGDE, PSIF_CC3_MISC, 0, 10, 5, 10, 5, 0, "CC3 ZIGDE");
+  global_dpd_->buf4_scm(&ZIGDE, 0.0); /* must be cleared in each iteration */
 
-  dpd_->buf4_init(&ZDMAE, PSIF_CC3_MISC, 0, 10, 5, 10, 5, 0, "CC3 ZDMAE (MD,AE)");
-  dpd_->buf4_scm(&ZDMAE, 0.0);
+  global_dpd_->buf4_init(&ZDMAE, PSIF_CC3_MISC, 0, 10, 5, 10, 5, 0, "CC3 ZDMAE (MD,AE)");
+  global_dpd_->buf4_scm(&ZDMAE, 0.0);
 
-  dpd_->buf4_init(&ZLMAO, PSIF_CC3_MISC, 0, 0, 11, 0, 11, 0, "CC3 ZLMAO");
-  for(h=0; h < nirreps; h++) dpd_->buf4_mat_irrep_init(&ZLMAO, h);
+  global_dpd_->buf4_init(&ZLMAO, PSIF_CC3_MISC, 0, 0, 11, 0, 11, 0, "CC3 ZLMAO");
+  for(h=0; h < nirreps; h++) global_dpd_->buf4_mat_irrep_init(&ZLMAO, h);
 
-  dpd_->buf4_init(&ZIMLE, PSIF_CC3_MISC, 0, 0, 10, 0, 10, 0, "CC3 ZIMLE");
-  for(h=0; h < nirreps; h++) dpd_->buf4_mat_irrep_init(&ZIMLE, h);
+  global_dpd_->buf4_init(&ZIMLE, PSIF_CC3_MISC, 0, 0, 10, 0, 10, 0, "CC3 ZIMLE");
+  for(h=0; h < nirreps; h++) global_dpd_->buf4_mat_irrep_init(&ZIMLE, h);
 
-  dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
+  global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
   for(h=0; h < nirreps; h++) {
-    dpd_->buf4_mat_irrep_init(&T2, h);
-    dpd_->buf4_mat_irrep_rd(&T2, h);
+    global_dpd_->buf4_mat_irrep_init(&T2, h);
+    global_dpd_->buf4_mat_irrep_rd(&T2, h);
   }
 
-  dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
-  dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
+  global_dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+  global_dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
 
-  dpd_->buf4_init(&L, PSIF_CC_LAMBDA, 0, 0, 5, 2, 7, 0, "LIJAB");
-  dpd_->buf4_init(&F, PSIF_CC3_HET1, 0, 10, 5, 10, 7, 0, "CC3 WAMEF (MA,F>E)");
-  dpd_->buf4_init(&E, PSIF_CC3_HET1, 0, 0, 10, 2, 10, 0, "CC3 WMNIE (M>N,IE)");
+  global_dpd_->buf4_init(&L, PSIF_CC_LAMBDA, 0, 0, 5, 2, 7, 0, "LIJAB");
+  global_dpd_->buf4_init(&F, PSIF_CC3_HET1, 0, 10, 5, 10, 7, 0, "CC3 WAMEF (MA,F>E)");
+  global_dpd_->buf4_init(&E, PSIF_CC3_HET1, 0, 0, 10, 2, 10, 0, "CC3 WMNIE (M>N,IE)");
 
-  dpd_->buf4_init(&Dints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij||ab>");
-  dpd_->buf4_init(&LIJAB, PSIF_CC_LAMBDA, 0, 0, 5, 2, 7, 0, "LIJAB");
-  dpd_->file2_init(&LIA, PSIF_CC_LAMBDA, 0, 0, 1, "LIA");
-  dpd_->file2_init(&FME, PSIF_CC_OEI, 0, 0, 1, "FME");
+  global_dpd_->buf4_init(&Dints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij||ab>");
+  global_dpd_->buf4_init(&LIJAB, PSIF_CC_LAMBDA, 0, 0, 5, 2, 7, 0, "LIJAB");
+  global_dpd_->file2_init(&LIA, PSIF_CC_LAMBDA, 0, 0, 1, "LIA");
+  global_dpd_->file2_init(&FME, PSIF_CC_OEI, 0, 0, 1, "FME");
 
   W1 = (double ***) malloc(nirreps * sizeof(double **));
   W2 = (double ***) malloc(nirreps * sizeof(double **));
@@ -153,11 +153,11 @@ void cc3_l3l2_RHF_AAA(void)
 
 	for(Gab=0; Gab < nirreps; Gab++) {
 	  Gc = Gab ^ Gijk; /* totally symmetric */
-	  W1[Gab] = dpd_->dpd_block_matrix(F.params->coltot[Gab], virtpi[Gc]);
+	  W1[Gab] = global_dpd_->dpd_block_matrix(F.params->coltot[Gab], virtpi[Gc]);
 	}
 	for(Ga=0; Ga < nirreps; Ga++) {
 	  Gbc = Ga ^ Gijk; /* totally symmetric */
-	  W2[Ga] = dpd_->dpd_block_matrix(virtpi[Ga], F.params->coltot[Gbc]);
+	  W2[Ga] = global_dpd_->dpd_block_matrix(virtpi[Ga], F.params->coltot[Gbc]);
 	}
 
 	for(i=0; i < occpi[Gi]; i++) {
@@ -180,8 +180,8 @@ void cc3_l3l2_RHF_AAA(void)
 		id = WMAFE.row_offset[Gid][I];
 
 		Z = block_matrix(virtpi[Gc],virtpi[Gd]);
-		WMAFE.matrix[Gid] = dpd_->dpd_block_matrix(virtpi[Gd], WMAFE.params->coltot[Gid]);
-		dpd_->buf4_mat_irrep_rd_block(&WMAFE, Gid, id, virtpi[Gd]);
+		WMAFE.matrix[Gid] = global_dpd_->dpd_block_matrix(virtpi[Gd], WMAFE.params->coltot[Gid]);
+		global_dpd_->buf4_mat_irrep_rd_block(&WMAFE, Gid, id, virtpi[Gd]);
 
 		nrows = virtpi[Gc];
 		ncols = virtpi[Gd];
@@ -201,7 +201,7 @@ void cc3_l3l2_RHF_AAA(void)
 		    L2new.matrix[Gjk][jk][cd] += -Z[c][d];
 		  }
 		}
-		dpd_->free_dpd_block(WMAFE.matrix[Gid], virtpi[Gd], WMAFE.params->coltot[Gid]);
+		global_dpd_->free_dpd_block(WMAFE.matrix[Gid], virtpi[Gd], WMAFE.params->coltot[Gid]);
 		free_block(Z);
 	      }
 
@@ -218,7 +218,7 @@ void cc3_l3l2_RHF_AAA(void)
 		ncols = occpi[Gm];
 		nlinks = virtpi[Gc];
 
-		Z = dpd_->dpd_block_matrix(nrows, ncols);
+		Z = global_dpd_->dpd_block_matrix(nrows, ncols);
 
 		if(nrows && ncols && nlinks) 
 		  C_DGEMM('n', 't', nrows, ncols, nlinks, 0.5, W1[Gab][0], nlinks,
@@ -234,7 +234,7 @@ void cc3_l3l2_RHF_AAA(void)
 		  }
 		}
 
-		dpd_->free_dpd_block(Z, nrows, ncols);
+		global_dpd_->free_dpd_block(Z, nrows, ncols);
 	      }
 
 	      /* Z_IDAB <-- 1/2 L_IJKABC t_JKDC */
@@ -251,15 +251,15 @@ void cc3_l3l2_RHF_AAA(void)
 
 		dc = T2.col_offset[Gjk][Gd];
 		id = ZIGDE.row_offset[Gid][I];
-		ZIGDE.matrix[Gid] = dpd_->dpd_block_matrix(nrows, ncols);
-		dpd_->buf4_mat_irrep_rd_block(&ZIGDE, Gid, id, nrows);
+		ZIGDE.matrix[Gid] = global_dpd_->dpd_block_matrix(nrows, ncols);
+		global_dpd_->buf4_mat_irrep_rd_block(&ZIGDE, Gid, id, nrows);
 
 		if(nrows && ncols && nlinks)
 		  C_DGEMM('n', 't', nrows, ncols, nlinks, 0.5, &(T2.matrix[Gjk][jk][dc]), nlinks,
 			  W1[Gab][0], nlinks, 1.0, ZIGDE.matrix[Gid][0], ncols);
 
-		dpd_->buf4_mat_irrep_wrt_block(&ZIGDE, Gid, id, nrows);
-		dpd_->free_dpd_block(ZIGDE.matrix[Gid], nrows, ncols);
+		global_dpd_->buf4_mat_irrep_wrt_block(&ZIGDE, Gid, id, nrows);
+		global_dpd_->free_dpd_block(ZIGDE.matrix[Gid], nrows, ncols);
 	      }
 
 	      /* Z_JDAB <-- 1/2 L_IJKABC t_IKDC */
@@ -275,15 +275,15 @@ void cc3_l3l2_RHF_AAA(void)
 
 		dc = T2.col_offset[Gik][Gd];
 		jd = ZDMAE.row_offset[Gjd][J];
-		ZDMAE.matrix[Gjd] = dpd_->dpd_block_matrix(nrows, ncols);
-		dpd_->buf4_mat_irrep_rd_block(&ZDMAE, Gjd, jd, nrows);
+		ZDMAE.matrix[Gjd] = global_dpd_->dpd_block_matrix(nrows, ncols);
+		global_dpd_->buf4_mat_irrep_rd_block(&ZDMAE, Gjd, jd, nrows);
 
 		if(nrows && ncols && nlinks) 
 		  C_DGEMM('n', 't', nrows, ncols, nlinks, 0.5, &(T2.matrix[Gik][ik][dc]), nlinks,
 			  W1[Gab][0], nlinks, 1.0, ZDMAE.matrix[Gjd][0], ncols);
 
-		dpd_->buf4_mat_irrep_wrt_block(&ZDMAE, Gjd, jd, nrows);
-		dpd_->free_dpd_block(ZDMAE.matrix[Gjd], nrows, ncols);
+		global_dpd_->buf4_mat_irrep_wrt_block(&ZDMAE, Gjd, jd, nrows);
+		global_dpd_->free_dpd_block(ZDMAE.matrix[Gjd], nrows, ncols);
 	      }
 
 	      /* Z_IJAM <-- -1/2 L_IJKABC t_MKBC */
@@ -368,11 +368,11 @@ void cc3_l3l2_RHF_AAA(void)
 
 	for(Gab=0; Gab < nirreps; Gab++) {
 	  Gc = Gab ^ Gijk; /* totally symmetric */
-	  dpd_->free_dpd_block(W1[Gab], F.params->coltot[Gab], virtpi[Gc]);
+	  global_dpd_->free_dpd_block(W1[Gab], F.params->coltot[Gab], virtpi[Gc]);
 	}
 	for(Ga=0; Ga < nirreps; Ga++) {
 	  Gbc = Ga ^ Gijk; /* totally symmetric */
-	  dpd_->free_dpd_block(W2[Ga], virtpi[Ga], F.params->coltot[Gbc]);
+	  global_dpd_->free_dpd_block(W2[Ga], virtpi[Ga], F.params->coltot[Gbc]);
 	}
 
       } /* Gk */
@@ -382,51 +382,51 @@ void cc3_l3l2_RHF_AAA(void)
   free(W1);
   free(W2);
 
-  dpd_->buf4_close(&E);
-  dpd_->buf4_close(&F);
-  dpd_->buf4_close(&L);
+  global_dpd_->buf4_close(&E);
+  global_dpd_->buf4_close(&F);
+  global_dpd_->buf4_close(&L);
 
-  dpd_->file2_close(&fIJ);
-  dpd_->file2_close(&fAB);
+  global_dpd_->file2_close(&fIJ);
+  global_dpd_->file2_close(&fAB);
 
-  dpd_->file2_close(&FME);
-  dpd_->file2_close(&LIA);
-  dpd_->buf4_close(&Dints);
-  dpd_->buf4_close(&LIJAB);
+  global_dpd_->file2_close(&FME);
+  global_dpd_->file2_close(&LIA);
+  global_dpd_->buf4_close(&Dints);
+  global_dpd_->buf4_close(&LIJAB);
 
-  dpd_->buf4_close(&WMAFE);
-  for(h=0; h < nirreps; h++) dpd_->buf4_mat_irrep_close(&WMNIE, h);
-  dpd_->buf4_close(&WMNIE);
+  global_dpd_->buf4_close(&WMAFE);
+  for(h=0; h < nirreps; h++) global_dpd_->buf4_mat_irrep_close(&WMNIE, h);
+  global_dpd_->buf4_close(&WMNIE);
 
-  dpd_->buf4_close(&ZIGDE);
-  dpd_->buf4_close(&ZDMAE);
-
-  for(h=0; h < nirreps; h++) {
-    dpd_->buf4_mat_irrep_wrt(&ZLMAO, h);
-    dpd_->buf4_mat_irrep_close(&ZLMAO, h);
-  }
-  dpd_->buf4_close(&ZLMAO);
+  global_dpd_->buf4_close(&ZIGDE);
+  global_dpd_->buf4_close(&ZDMAE);
 
   for(h=0; h < nirreps; h++) {
-    dpd_->buf4_mat_irrep_wrt(&ZIMLE, h);
-    dpd_->buf4_mat_irrep_close(&ZIMLE, h);
+    global_dpd_->buf4_mat_irrep_wrt(&ZLMAO, h);
+    global_dpd_->buf4_mat_irrep_close(&ZLMAO, h);
   }
-  dpd_->buf4_close(&ZIMLE);
-
-  for(h=0; h < nirreps; h++) dpd_->buf4_mat_irrep_close(&T2, h);
-  dpd_->buf4_close(&T2);
+  global_dpd_->buf4_close(&ZLMAO);
 
   for(h=0; h < nirreps; h++) {
-    dpd_->buf4_mat_irrep_wrt(&L2new, h);
-    dpd_->buf4_mat_irrep_close(&L2new, h);
+    global_dpd_->buf4_mat_irrep_wrt(&ZIMLE, h);
+    global_dpd_->buf4_mat_irrep_close(&ZIMLE, h);
   }
-  dpd_->buf4_init(&D2, PSIF_CC_DENOM, 0, 0, 5, 0, 5, 0, "dIjAb");
-  dpd_->buf4_dirprd(&D2, &L2new);
-  dpd_->buf4_close(&D2);
-  dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, 0, 0, 5, 2, 7, 0, "New LIJAB");
-  dpd_->buf4_axpy(&L2new, &L2, 1);
-  dpd_->buf4_close(&L2);
-  dpd_->buf4_close(&L2new);
+  global_dpd_->buf4_close(&ZIMLE);
+
+  for(h=0; h < nirreps; h++) global_dpd_->buf4_mat_irrep_close(&T2, h);
+  global_dpd_->buf4_close(&T2);
+
+  for(h=0; h < nirreps; h++) {
+    global_dpd_->buf4_mat_irrep_wrt(&L2new, h);
+    global_dpd_->buf4_mat_irrep_close(&L2new, h);
+  }
+  global_dpd_->buf4_init(&D2, PSIF_CC_DENOM, 0, 0, 5, 0, 5, 0, "dIjAb");
+  global_dpd_->buf4_dirprd(&D2, &L2new);
+  global_dpd_->buf4_close(&D2);
+  global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, 0, 0, 5, 2, 7, 0, "New LIJAB");
+  global_dpd_->buf4_axpy(&L2new, &L2, 1);
+  global_dpd_->buf4_close(&L2);
+  global_dpd_->buf4_close(&L2new);
 
 }
 
@@ -470,93 +470,93 @@ void cc3_l3l2_RHF_AAB(void)
   virtpi = moinfo.virtpi;
   vir_off = moinfo.vir_off;
 
-  dpd_->buf4_init(&L2AAnew, PSIF_CC3_MISC, 0, 0, 5, 0, 5, 0, "CC3 LIJAB");
-  for(h=0; h < nirreps; h++) dpd_->buf4_mat_irrep_init(&L2AAnew, h);
+  global_dpd_->buf4_init(&L2AAnew, PSIF_CC3_MISC, 0, 0, 5, 0, 5, 0, "CC3 LIJAB");
+  for(h=0; h < nirreps; h++) global_dpd_->buf4_mat_irrep_init(&L2AAnew, h);
 
-  dpd_->buf4_init(&L2ABnew, PSIF_CC3_MISC, 0, 0, 5, 0, 5, 0, "CC3 LIjAb");
-  for(h=0; h < nirreps; h++) dpd_->buf4_mat_irrep_init(&L2ABnew, h);
+  global_dpd_->buf4_init(&L2ABnew, PSIF_CC3_MISC, 0, 0, 5, 0, 5, 0, "CC3 LIjAb");
+  for(h=0; h < nirreps; h++) global_dpd_->buf4_mat_irrep_init(&L2ABnew, h);
 
-  dpd_->buf4_init(&T2AB, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-  dpd_->buf4_init(&T2AA, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
+  global_dpd_->buf4_init(&T2AB, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  global_dpd_->buf4_init(&T2AA, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
   for(h=0; h < nirreps; h++) {
-    dpd_->buf4_mat_irrep_init(&T2AB, h);
-    dpd_->buf4_mat_irrep_rd(&T2AB, h);
+    global_dpd_->buf4_mat_irrep_init(&T2AB, h);
+    global_dpd_->buf4_mat_irrep_rd(&T2AB, h);
 
-    dpd_->buf4_mat_irrep_init(&T2AA, h);
-    dpd_->buf4_mat_irrep_rd(&T2AA, h);
+    global_dpd_->buf4_mat_irrep_init(&T2AA, h);
+    global_dpd_->buf4_mat_irrep_rd(&T2AA, h);
   }
 
-  dpd_->buf4_init(&ZIGDE, PSIF_CC3_MISC, 0, 10, 5, 10, 5, 0, "CC3 ZIGDE");
-  dpd_->buf4_scm(&ZIGDE, 0.0); /* this must be cleared in each iteration */
-  dpd_->buf4_init(&ZIgDe, PSIF_CC3_MISC, 0, 10, 5, 10, 5, 0, "CC3 ZIgDe");
-  dpd_->buf4_scm(&ZIgDe, 0.0); /* this must be cleared in each iteration */
+  global_dpd_->buf4_init(&ZIGDE, PSIF_CC3_MISC, 0, 10, 5, 10, 5, 0, "CC3 ZIGDE");
+  global_dpd_->buf4_scm(&ZIGDE, 0.0); /* this must be cleared in each iteration */
+  global_dpd_->buf4_init(&ZIgDe, PSIF_CC3_MISC, 0, 10, 5, 10, 5, 0, "CC3 ZIgDe");
+  global_dpd_->buf4_scm(&ZIgDe, 0.0); /* this must be cleared in each iteration */
 
-  dpd_->buf4_init(&ZDMAE, PSIF_CC3_MISC, 0, 10, 5, 10, 5, 0, "CC3 ZDMAE (MD,AE)");
-  dpd_->buf4_scm(&ZDMAE, 0.0); /* must be cleared in each iteration */
-  dpd_->buf4_init(&ZDmAe, PSIF_CC3_MISC, 0, 10, 5, 10, 5, 0, "CC3 ZDmAe (mD,Ae)");
-  dpd_->buf4_scm(&ZDmAe, 0.0); /* must be cleared in each iteration */
-  dpd_->buf4_init(&ZdMAe, PSIF_CC3_MISC, 0, 10, 5, 10, 5, 0, "CC3 ZdMAe (Md,Ae)");
-  dpd_->buf4_scm(&ZdMAe, 0.0); /* must be cleared in each iteration */
+  global_dpd_->buf4_init(&ZDMAE, PSIF_CC3_MISC, 0, 10, 5, 10, 5, 0, "CC3 ZDMAE (MD,AE)");
+  global_dpd_->buf4_scm(&ZDMAE, 0.0); /* must be cleared in each iteration */
+  global_dpd_->buf4_init(&ZDmAe, PSIF_CC3_MISC, 0, 10, 5, 10, 5, 0, "CC3 ZDmAe (mD,Ae)");
+  global_dpd_->buf4_scm(&ZDmAe, 0.0); /* must be cleared in each iteration */
+  global_dpd_->buf4_init(&ZdMAe, PSIF_CC3_MISC, 0, 10, 5, 10, 5, 0, "CC3 ZdMAe (Md,Ae)");
+  global_dpd_->buf4_scm(&ZdMAe, 0.0); /* must be cleared in each iteration */
 
-  dpd_->buf4_init(&ZLMAO, PSIF_CC3_MISC, 0, 0, 11, 0, 11, 0, "CC3 ZLMAO");
-  dpd_->buf4_init(&ZLmAo, PSIF_CC3_MISC, 0, 0, 11, 0, 11, 0, "CC3 ZLmAo");
+  global_dpd_->buf4_init(&ZLMAO, PSIF_CC3_MISC, 0, 0, 11, 0, 11, 0, "CC3 ZLMAO");
+  global_dpd_->buf4_init(&ZLmAo, PSIF_CC3_MISC, 0, 0, 11, 0, 11, 0, "CC3 ZLmAo");
   for(h=0; h < nirreps; h++) {
-    dpd_->buf4_mat_irrep_init(&ZLMAO, h);
-    dpd_->buf4_mat_irrep_rd(&ZLMAO, h);
+    global_dpd_->buf4_mat_irrep_init(&ZLMAO, h);
+    global_dpd_->buf4_mat_irrep_rd(&ZLMAO, h);
 
-    dpd_->buf4_mat_irrep_init(&ZLmAo, h);
+    global_dpd_->buf4_mat_irrep_init(&ZLmAo, h);
   }
 
-  dpd_->buf4_init(&ZIMLE, PSIF_CC3_MISC, 0, 0, 10, 0, 10, 0, "CC3 ZIMLE");
-  dpd_->buf4_init(&ZImLe, PSIF_CC3_MISC, 0, 0, 10, 0, 10, 0, "CC3 ZImLe");
-  dpd_->buf4_init(&ZImlE, PSIF_CC3_MISC, 0, 0, 10, 0, 10, 0, "CC3 ZImlE");
+  global_dpd_->buf4_init(&ZIMLE, PSIF_CC3_MISC, 0, 0, 10, 0, 10, 0, "CC3 ZIMLE");
+  global_dpd_->buf4_init(&ZImLe, PSIF_CC3_MISC, 0, 0, 10, 0, 10, 0, "CC3 ZImLe");
+  global_dpd_->buf4_init(&ZImlE, PSIF_CC3_MISC, 0, 0, 10, 0, 10, 0, "CC3 ZImlE");
   for(h=0; h < nirreps; h++) {
-    dpd_->buf4_mat_irrep_init(&ZIMLE, h);
-    dpd_->buf4_mat_irrep_rd(&ZIMLE, h);
+    global_dpd_->buf4_mat_irrep_init(&ZIMLE, h);
+    global_dpd_->buf4_mat_irrep_rd(&ZIMLE, h);
 
-    dpd_->buf4_mat_irrep_init(&ZImLe, h);
-    dpd_->buf4_mat_irrep_init(&ZImlE, h);
+    global_dpd_->buf4_mat_irrep_init(&ZImLe, h);
+    global_dpd_->buf4_mat_irrep_init(&ZImlE, h);
   }
 
-  dpd_->buf4_init(&WmAfE, PSIF_CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WAbEi (iE,bA)");
-  dpd_->buf4_init(&WMAFE, PSIF_CC3_HET1, 0, 10, 5, 10, 7, 0, "CC3 WABEI (IE,B>A)");
-  dpd_->buf4_init(&WMaFe, PSIF_CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WaBeI (Ie,Ba)");
+  global_dpd_->buf4_init(&WmAfE, PSIF_CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WAbEi (iE,bA)");
+  global_dpd_->buf4_init(&WMAFE, PSIF_CC3_HET1, 0, 10, 5, 10, 7, 0, "CC3 WABEI (IE,B>A)");
+  global_dpd_->buf4_init(&WMaFe, PSIF_CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WaBeI (Ie,Ba)");
 
-  dpd_->buf4_init(&WMnIe, PSIF_CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WMbIj (Ij,Mb)");
-  dpd_->buf4_init(&WMNIE, PSIF_CC3_HET1, 0, 0, 10, 2, 10, 0, "CC3 WMBIJ (I>J,MB)");
-  dpd_->buf4_init(&WmNiE, PSIF_CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WmBiJ (iJ,mB)");
+  global_dpd_->buf4_init(&WMnIe, PSIF_CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WMbIj (Ij,Mb)");
+  global_dpd_->buf4_init(&WMNIE, PSIF_CC3_HET1, 0, 0, 10, 2, 10, 0, "CC3 WMBIJ (I>J,MB)");
+  global_dpd_->buf4_init(&WmNiE, PSIF_CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WmBiJ (iJ,mB)");
   for(h=0; h < nirreps; h++) {
-    dpd_->buf4_mat_irrep_init(&WMnIe, h);
-    dpd_->buf4_mat_irrep_rd(&WMnIe, h);
-    dpd_->buf4_mat_irrep_init(&WMNIE, h);
-    dpd_->buf4_mat_irrep_rd(&WMNIE, h);
-    dpd_->buf4_mat_irrep_init(&WmNiE, h);
-    dpd_->buf4_mat_irrep_rd(&WmNiE, h);
+    global_dpd_->buf4_mat_irrep_init(&WMnIe, h);
+    global_dpd_->buf4_mat_irrep_rd(&WMnIe, h);
+    global_dpd_->buf4_mat_irrep_init(&WMNIE, h);
+    global_dpd_->buf4_mat_irrep_rd(&WMNIE, h);
+    global_dpd_->buf4_mat_irrep_init(&WmNiE, h);
+    global_dpd_->buf4_mat_irrep_rd(&WmNiE, h);
   }
 
-  dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
-  dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
-  dpd_->file2_init(&fij, PSIF_CC_OEI, 0, 0, 0, "fij");
-  dpd_->file2_init(&fab, PSIF_CC_OEI, 0, 1, 1, "fab");
+  global_dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+  global_dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
+  global_dpd_->file2_init(&fij, PSIF_CC_OEI, 0, 0, 0, "fij");
+  global_dpd_->file2_init(&fab, PSIF_CC_OEI, 0, 1, 1, "fab");
 
-  dpd_->buf4_init(&L2AA, PSIF_CC_LAMBDA, 0, 0, 5, 2, 7, 0, "LIJAB");
-  dpd_->buf4_init(&L2AB, PSIF_CC_LAMBDA, 0, 0, 5, 0, 5, 0, "LIjAb");
-  dpd_->buf4_init(&L2BA, PSIF_CC_LAMBDA, 0, 0, 5, 0, 5, 0, "LiJaB");
-  dpd_->buf4_init(&FAA, PSIF_CC3_HET1, 0, 10, 5, 10, 7, 0, "CC3 WAMEF (MA,F>E)");
-  dpd_->buf4_init(&FAB, PSIF_CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WaMeF (Ma,Fe)");
-  dpd_->buf4_init(&FBA, PSIF_CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WAmEf (mA,fE)");
-  dpd_->buf4_init(&EAA, PSIF_CC3_HET1, 0, 0, 10, 2, 10, 0, "CC3 WMNIE (M>N,IE)");
-  dpd_->buf4_init(&EAB, PSIF_CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WMnIe (Mn,Ie)");
-  dpd_->buf4_init(&EBA, PSIF_CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WmNiE (mN,iE)");
+  global_dpd_->buf4_init(&L2AA, PSIF_CC_LAMBDA, 0, 0, 5, 2, 7, 0, "LIJAB");
+  global_dpd_->buf4_init(&L2AB, PSIF_CC_LAMBDA, 0, 0, 5, 0, 5, 0, "LIjAb");
+  global_dpd_->buf4_init(&L2BA, PSIF_CC_LAMBDA, 0, 0, 5, 0, 5, 0, "LiJaB");
+  global_dpd_->buf4_init(&FAA, PSIF_CC3_HET1, 0, 10, 5, 10, 7, 0, "CC3 WAMEF (MA,F>E)");
+  global_dpd_->buf4_init(&FAB, PSIF_CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WaMeF (Ma,Fe)");
+  global_dpd_->buf4_init(&FBA, PSIF_CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WAmEf (mA,fE)");
+  global_dpd_->buf4_init(&EAA, PSIF_CC3_HET1, 0, 0, 10, 2, 10, 0, "CC3 WMNIE (M>N,IE)");
+  global_dpd_->buf4_init(&EAB, PSIF_CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WMnIe (Mn,Ie)");
+  global_dpd_->buf4_init(&EBA, PSIF_CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WmNiE (mN,iE)");
 
-  dpd_->buf4_init(&DAAints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij||ab>");
-  dpd_->buf4_init(&DABints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
-  dpd_->buf4_init(&LIJAB, PSIF_CC_LAMBDA, 0, 0, 5, 2, 7, 0, "LIJAB");
-  dpd_->buf4_init(&LIjAb, PSIF_CC_LAMBDA, 0, 0, 5, 0, 5, 0, "LIjAb");
-  dpd_->file2_init(&LIA, PSIF_CC_LAMBDA, 0, 0, 1, "LIA");
-  dpd_->file2_init(&Lia, PSIF_CC_LAMBDA, 0, 0, 1, "Lia");
-  dpd_->file2_init(&FME, PSIF_CC_OEI, 0, 0, 1, "FME");
-  dpd_->file2_init(&Fme, PSIF_CC_OEI, 0, 0, 1, "Fme");
+  global_dpd_->buf4_init(&DAAints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij||ab>");
+  global_dpd_->buf4_init(&DABints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+  global_dpd_->buf4_init(&LIJAB, PSIF_CC_LAMBDA, 0, 0, 5, 2, 7, 0, "LIJAB");
+  global_dpd_->buf4_init(&LIjAb, PSIF_CC_LAMBDA, 0, 0, 5, 0, 5, 0, "LIjAb");
+  global_dpd_->file2_init(&LIA, PSIF_CC_LAMBDA, 0, 0, 1, "LIA");
+  global_dpd_->file2_init(&Lia, PSIF_CC_LAMBDA, 0, 0, 1, "Lia");
+  global_dpd_->file2_init(&FME, PSIF_CC_OEI, 0, 0, 1, "FME");
+  global_dpd_->file2_init(&Fme, PSIF_CC_OEI, 0, 0, 1, "Fme");
 
   W1 = (double ***) malloc(nirreps * sizeof(double **));
   W2 = (double ***) malloc(nirreps * sizeof(double **));
@@ -572,11 +572,11 @@ void cc3_l3l2_RHF_AAB(void)
 
 	for(Gab=0; Gab < nirreps; Gab++) {
 	  Gc = Gab ^ Gijk; /* totally symmetric */
-	  W1[Gab] = dpd_->dpd_block_matrix(FAA.params->coltot[Gab], virtpi[Gc]);
+	  W1[Gab] = global_dpd_->dpd_block_matrix(FAA.params->coltot[Gab], virtpi[Gc]);
 	}
 	for(Ga=0; Ga < nirreps; Ga++) {
 	  Gcb = Ga ^ Gijk; /* assumes totally symmetric */
-	  W2[Ga] = dpd_->dpd_block_matrix(virtpi[Ga], WmAfE.params->coltot[Gcb]);  /* alpha-beta-alpha */
+	  W2[Ga] = global_dpd_->dpd_block_matrix(virtpi[Ga], WmAfE.params->coltot[Gcb]);  /* alpha-beta-alpha */
 	}
 
 	for(i=0; i < occpi[Gi]; i++) {
@@ -615,8 +615,8 @@ void cc3_l3l2_RHF_AAB(void)
 		Ga = Gd ^ Gij;       /* assumes totally symmetric */
 
 		kd = WmAfE.row_offset[Gkd][K];
-		WmAfE.matrix[Gkd] = dpd_->dpd_block_matrix(virtpi[Gd], WmAfE.params->coltot[Gkd]);
-		dpd_->buf4_mat_irrep_rd_block(&WmAfE, Gkd, kd, virtpi[Gd]);
+		WmAfE.matrix[Gkd] = global_dpd_->dpd_block_matrix(virtpi[Gd], WmAfE.params->coltot[Gkd]);
+		global_dpd_->buf4_mat_irrep_rd_block(&WmAfE, Gkd, kd, virtpi[Gd]);
 		Z = block_matrix(virtpi[Ga], virtpi[Gd]);
 
 		nrows = virtpi[Ga];
@@ -638,7 +638,7 @@ void cc3_l3l2_RHF_AAB(void)
 		  }
 		}
 
-		dpd_->free_dpd_block(WmAfE.matrix[Gkd], virtpi[Gd], WmAfE.params->coltot[Gkd]);
+		global_dpd_->free_dpd_block(WmAfE.matrix[Gkd], virtpi[Gd], WmAfE.params->coltot[Gkd]);
 		free_block(Z);
 	      }
 
@@ -657,7 +657,7 @@ void cc3_l3l2_RHF_AAB(void)
 		ncols = occpi[Gm];
 		nlinks = virtpi[Gc];
 
-		Z = dpd_->dpd_block_matrix(nrows, ncols);
+		Z = global_dpd_->dpd_block_matrix(nrows, ncols);
 
 		if(nrows && ncols && nlinks)
 		  C_DGEMM('n', 't', nrows, ncols, nlinks, 1.0, W1[Gab][0], nlinks,
@@ -673,7 +673,7 @@ void cc3_l3l2_RHF_AAB(void)
 		  }
 		}
 
-		dpd_->free_dpd_block(Z, nrows, ncols);
+		global_dpd_->free_dpd_block(Z, nrows, ncols);
 	      }
 
 	      /* t_JkDc <-- 1/2 t_IJkABc W_IDAB */
@@ -687,8 +687,8 @@ void cc3_l3l2_RHF_AAB(void)
 		Gc = Gab ^ Gijk;     /* assumes totally symmetric */
 
 		id = WMAFE.row_offset[Gid][I];
-		WMAFE.matrix[Gid] = dpd_->dpd_block_matrix(virtpi[Gd], WMAFE.params->coltot[Gid]);
-		dpd_->buf4_mat_irrep_rd_block(&WMAFE, Gid, id, virtpi[Gd]);
+		WMAFE.matrix[Gid] = global_dpd_->dpd_block_matrix(virtpi[Gd], WMAFE.params->coltot[Gid]);
+		global_dpd_->buf4_mat_irrep_rd_block(&WMAFE, Gid, id, virtpi[Gd]);
 		Z = block_matrix(virtpi[Gc], virtpi[Gd]);
 
 		nrows = virtpi[Gc];
@@ -711,7 +711,7 @@ void cc3_l3l2_RHF_AAB(void)
 		}
 
 		free_block(Z);
-		dpd_->free_dpd_block(WMAFE.matrix[Gid], virtpi[Gd], WMAFE.params->coltot[Gid]);
+		global_dpd_->free_dpd_block(WMAFE.matrix[Gid], virtpi[Gd], WMAFE.params->coltot[Gid]);
 	      }
 
 	      /* t_JkBd <-- t_IJkABc W_IdAc */
@@ -740,8 +740,8 @@ void cc3_l3l2_RHF_AAB(void)
 		Gb = Gac ^ Gijk;     /* assumes totally symmetric */
 
 		id = WMaFe.row_offset[Gid][I]; 
-		WMaFe.matrix[Gid] = dpd_->dpd_block_matrix(virtpi[Gd], WMaFe.params->coltot[Gid]);
-		dpd_->buf4_mat_irrep_rd_block(&WMaFe, Gid, id, virtpi[Gd]);
+		WMaFe.matrix[Gid] = global_dpd_->dpd_block_matrix(virtpi[Gd], WMaFe.params->coltot[Gid]);
+		global_dpd_->buf4_mat_irrep_rd_block(&WMaFe, Gid, id, virtpi[Gd]);
 		Z = block_matrix(virtpi[Gb], virtpi[Gd]);
 
 		nrows = virtpi[Gb];
@@ -763,7 +763,7 @@ void cc3_l3l2_RHF_AAB(void)
 		  }
 		}
 
-		dpd_->free_dpd_block(WMaFe.matrix[Gid], virtpi[Gd], WMaFe.params->coltot[Gid]);
+		global_dpd_->free_dpd_block(WMaFe.matrix[Gid], virtpi[Gd], WMaFe.params->coltot[Gid]);
 		free_block(Z);
 	      }
 
@@ -796,7 +796,7 @@ void cc3_l3l2_RHF_AAB(void)
 		ncols = occpi[Gm];
 		nlinks = virtpi[Ga];
 
-		Z = dpd_->dpd_block_matrix(nrows, ncols);
+		Z = global_dpd_->dpd_block_matrix(nrows, ncols);
 
 		if(nrows && ncols && nlinks)
 		  C_DGEMM('t', 't', nrows, ncols, nlinks, 0.5, W2[Ga][0], nrows,
@@ -821,7 +821,7 @@ void cc3_l3l2_RHF_AAB(void)
 		  }
 		}
 
-		dpd_->free_dpd_block(Z, nrows, ncols);
+		global_dpd_->free_dpd_block(Z, nrows, ncols);
 	      }
 
 	      /* t_ImBc <-- t_IJkABc W_kJmA */
@@ -853,7 +853,7 @@ void cc3_l3l2_RHF_AAB(void)
 		ncols = occpi[Gm];
 		nlinks = virtpi[Ga];
 
-		Z = dpd_->dpd_block_matrix(nrows, ncols);
+		Z = global_dpd_->dpd_block_matrix(nrows, ncols);
 
 		if(nrows && ncols && nlinks)
 		  C_DGEMM('t', 't', nrows, ncols, nlinks, 1.0, W2[Ga][0], nrows,
@@ -878,7 +878,7 @@ void cc3_l3l2_RHF_AAB(void)
 		  }
 		}
 
-		dpd_->free_dpd_block(Z, nrows, ncols);
+		global_dpd_->free_dpd_block(Z, nrows, ncols);
 	      }
 
 	      /* Z_IDAB <-- L_IJkABc t_JkDc */
@@ -895,18 +895,18 @@ void cc3_l3l2_RHF_AAB(void)
 
 		dc = T2AB.col_offset[Gjk][Gd];
 		id = ZIGDE.row_offset[Gid][I];
-		ZIGDE.matrix[Gid] = dpd_->dpd_block_matrix(nrows, ncols);
+		ZIGDE.matrix[Gid] = global_dpd_->dpd_block_matrix(nrows, ncols);
 
 		if(nrows && ncols && nlinks) {
-		  dpd_->buf4_mat_irrep_rd_block(&ZIGDE, Gid, id, nrows);
+		  global_dpd_->buf4_mat_irrep_rd_block(&ZIGDE, Gid, id, nrows);
 
 		  C_DGEMM('n', 't', nrows, ncols, nlinks, 1.0, &(T2AB.matrix[Gjk][jk][dc]), nlinks,
 			  W1[Gab][0], nlinks, 1.0, ZIGDE.matrix[Gid][0], ncols);
 
-		  dpd_->buf4_mat_irrep_wrt_block(&ZIGDE, Gid, id, nrows);
+		  global_dpd_->buf4_mat_irrep_wrt_block(&ZIGDE, Gid, id, nrows);
 		}
 
-		dpd_->free_dpd_block(ZIGDE.matrix[Gid], nrows, ncols);
+		global_dpd_->free_dpd_block(ZIGDE.matrix[Gid], nrows, ncols);
 	      }
 
 	      /* ZkDCa <-- 1/2 L_ijKabC t_ijdb */
@@ -939,15 +939,15 @@ void cc3_l3l2_RHF_AAB(void)
 
 		db = T2AA.col_offset[Gij][Gd];
 		kd = ZIgDe.row_offset[Gkd][K];
-		ZIgDe.matrix[Gkd] = dpd_->dpd_block_matrix(nrows, ncols);
-		dpd_->buf4_mat_irrep_rd_block(&ZIgDe, Gkd, kd, nrows);
+		ZIgDe.matrix[Gkd] = global_dpd_->dpd_block_matrix(nrows, ncols);
+		global_dpd_->buf4_mat_irrep_rd_block(&ZIgDe, Gkd, kd, nrows);
 
 		if(nrows && ncols && nlinks)
 		  C_DGEMM('n', 'n', nrows, ncols, nlinks, 0.5, &(T2AA.matrix[Gij][ij][db]), nlinks,
 			  W2[Gb][0], ncols, 1.0, ZIgDe.matrix[Gkd][0], ncols);
 
-		dpd_->buf4_mat_irrep_wrt_block(&ZIgDe, Gkd, kd, nrows);
-		dpd_->free_dpd_block(ZIgDe.matrix[Gkd], nrows, ncols);
+		global_dpd_->buf4_mat_irrep_wrt_block(&ZIgDe, Gkd, kd, nrows);
+		global_dpd_->free_dpd_block(ZIgDe.matrix[Gkd], nrows, ncols);
 	      }
 
 	      /* Z_IdAc <-- L_IJkABc t_JkBd */
@@ -980,15 +980,15 @@ void cc3_l3l2_RHF_AAB(void)
 
 		bd = T2AB.col_offset[Gjk][Gb];
 		id = ZIgDe.row_offset[Gid][I];
-		ZIgDe.matrix[Gid] = dpd_->dpd_block_matrix(nrows, ncols);
-		dpd_->buf4_mat_irrep_rd_block(&ZIgDe, Gid, id, nrows);
+		ZIgDe.matrix[Gid] = global_dpd_->dpd_block_matrix(nrows, ncols);
+		global_dpd_->buf4_mat_irrep_rd_block(&ZIgDe, Gid, id, nrows);
 
 		if(nrows && ncols && nlinks)
 		  C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, &(T2AB.matrix[Gjk][jk][bd]), nrows,
 			  W2[Gb][0], ncols, 1.0, ZIgDe.matrix[Gid][0], ncols);
 
-		dpd_->buf4_mat_irrep_wrt_block(&ZIgDe, Gid, id, nrows);
-		dpd_->free_dpd_block(ZIgDe.matrix[Gid], nrows, ncols);
+		global_dpd_->buf4_mat_irrep_wrt_block(&ZIgDe, Gid, id, nrows);
+		global_dpd_->free_dpd_block(ZIgDe.matrix[Gid], nrows, ncols);
 	      }
 
 	      /* Z_JDAB <-- 1/2 L_IJkABc t_IkDc */
@@ -1004,15 +1004,15 @@ void cc3_l3l2_RHF_AAB(void)
 
 		dc = T2AB.col_offset[Gik][Gd];
 		jd = ZDMAE.row_offset[Gjd][J];
-		ZDMAE.matrix[Gjd] = dpd_->dpd_block_matrix(nrows, ncols);
-		dpd_->buf4_mat_irrep_rd_block(&ZDMAE, Gjd, jd, nrows);
+		ZDMAE.matrix[Gjd] = global_dpd_->dpd_block_matrix(nrows, ncols);
+		global_dpd_->buf4_mat_irrep_rd_block(&ZDMAE, Gjd, jd, nrows);
 
 		if(nrows && ncols && nlinks) 
 		  C_DGEMM('n', 't', nrows, ncols, nlinks, 1.0, &(T2AB.matrix[Gik][ik][dc]), nlinks,
 			  W1[Gab][0], nlinks, 1.0, ZDMAE.matrix[Gjd][0], ncols);
 
-		dpd_->buf4_mat_irrep_wrt_block(&ZDMAE, Gjd, jd, nrows);
-		dpd_->free_dpd_block(ZDMAE.matrix[Gjd], nrows, ncols);
+		global_dpd_->buf4_mat_irrep_wrt_block(&ZDMAE, Gjd, jd, nrows);
+		global_dpd_->free_dpd_block(ZDMAE.matrix[Gjd], nrows, ncols);
 	      }
 
 	      /* Z_kDAc <-- 1/2 L_IJkABc t_IJDB */
@@ -1043,15 +1043,15 @@ void cc3_l3l2_RHF_AAB(void)
 
 		db = T2AA.col_offset[Gij][Gd];
 		kd = ZDmAe.row_offset[Gkd][K];
-		ZDmAe.matrix[Gkd] = dpd_->dpd_block_matrix(nrows, ncols);
-		dpd_->buf4_mat_irrep_rd_block(&ZDmAe, Gkd, kd, nrows);
+		ZDmAe.matrix[Gkd] = global_dpd_->dpd_block_matrix(nrows, ncols);
+		global_dpd_->buf4_mat_irrep_rd_block(&ZDmAe, Gkd, kd, nrows);
 
 		if(nrows && ncols && nlinks)
 		  C_DGEMM('n', 'n', nrows, ncols, nlinks, 0.5, &(T2AA.matrix[Gij][ij][db]), nlinks,
 			  W2[Gb][0], ncols, 1.0, ZDmAe.matrix[Gkd][0], ncols);
 
-		dpd_->buf4_mat_irrep_wrt_block(&ZDmAe, Gkd, kd, nrows);
-		dpd_->free_dpd_block(ZDmAe.matrix[Gkd], nrows, ncols);
+		global_dpd_->buf4_mat_irrep_wrt_block(&ZDmAe, Gkd, kd, nrows);
+		global_dpd_->free_dpd_block(ZDmAe.matrix[Gkd], nrows, ncols);
 	      }
 
 	      /* Z_iDCa <-- L_ijKabC t_KjDb */
@@ -1082,15 +1082,15 @@ void cc3_l3l2_RHF_AAB(void)
 
 		db = T2AB.col_offset[Gkj][Gd];
 		id = ZDmAe.row_offset[Gid][I];
-		ZDmAe.matrix[Gid] = dpd_->dpd_block_matrix(nrows, ncols);
-		dpd_->buf4_mat_irrep_rd_block(&ZDmAe, Gid, id, nrows);
+		ZDmAe.matrix[Gid] = global_dpd_->dpd_block_matrix(nrows, ncols);
+		global_dpd_->buf4_mat_irrep_rd_block(&ZDmAe, Gid, id, nrows);
 
 		if(nrows && ncols && nlinks)
 		  C_DGEMM('n', 'n', nrows, ncols, nlinks, 1.0, &(T2AB.matrix[Gkj][kj][db]), nlinks,
 			  W2[Gb][0], ncols, 1.0, ZDmAe.matrix[Gid][0], ncols);
 
-		dpd_->buf4_mat_irrep_wrt_block(&ZDmAe, Gid, id, nrows);
-		dpd_->free_dpd_block(ZDmAe.matrix[Gid], nrows, ncols);
+		global_dpd_->buf4_mat_irrep_wrt_block(&ZDmAe, Gid, id, nrows);
+		global_dpd_->free_dpd_block(ZDmAe.matrix[Gid], nrows, ncols);
 	      }
 
 	      /* Z_KdCa <-- -1/2 L_ijKabC t_ijdb */
@@ -1121,15 +1121,15 @@ void cc3_l3l2_RHF_AAB(void)
 
 		db = T2AA.col_offset[Gij][Gd];
 		kd = ZdMAe.row_offset[Gkd][K];
-		ZdMAe.matrix[Gkd] = dpd_->dpd_block_matrix(nrows, ncols);
-		dpd_->buf4_mat_irrep_rd_block(&ZdMAe, Gkd, kd, nrows);
+		ZdMAe.matrix[Gkd] = global_dpd_->dpd_block_matrix(nrows, ncols);
+		global_dpd_->buf4_mat_irrep_rd_block(&ZdMAe, Gkd, kd, nrows);
 
 		if(nrows && ncols && nlinks)
 		  C_DGEMM('n', 'n', nrows, ncols, nlinks, -0.5, &(T2AA.matrix[Gij][ij][db]), nlinks,
 			  W2[Gb][0], ncols, 1.0, ZdMAe.matrix[Gkd][0], ncols);
 
-		dpd_->buf4_mat_irrep_wrt_block(&ZdMAe, Gkd, kd, nrows);
-		dpd_->free_dpd_block(ZdMAe.matrix[Gkd], nrows, ncols);
+		global_dpd_->buf4_mat_irrep_wrt_block(&ZdMAe, Gkd, kd, nrows);
+		global_dpd_->free_dpd_block(ZdMAe.matrix[Gkd], nrows, ncols);
 	      }
 
 	      /* Z_JdAc <-- L_IJkABc t_IkBd */
@@ -1161,15 +1161,15 @@ void cc3_l3l2_RHF_AAB(void)
 
 		bd = T2AB.col_offset[Gik][Gb];
 		jd = ZdMAe.row_offset[Gjd][J];
-		ZdMAe.matrix[Gjd] = dpd_->dpd_block_matrix(nrows, ncols);
-		dpd_->buf4_mat_irrep_rd_block(&ZdMAe, Gjd, jd, nrows);
+		ZdMAe.matrix[Gjd] = global_dpd_->dpd_block_matrix(nrows, ncols);
+		global_dpd_->buf4_mat_irrep_rd_block(&ZdMAe, Gjd, jd, nrows);
 
 		if(nrows && ncols && nlinks)
 		  C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, &(T2AB.matrix[Gik][ik][bd]), nrows,
 			  W2[Gb][0], ncols, 1.0, ZdMAe.matrix[Gjd][0], ncols);
 
-		dpd_->buf4_mat_irrep_wrt_block(&ZdMAe, Gjd, jd, nrows);
-		dpd_->free_dpd_block(ZdMAe.matrix[Gjd], nrows, ncols);
+		global_dpd_->buf4_mat_irrep_wrt_block(&ZdMAe, Gjd, jd, nrows);
+		global_dpd_->free_dpd_block(ZdMAe.matrix[Gjd], nrows, ncols);
 	      }
 
 	      /* Z_IJAM <-- -1/2 L_IJkABc t_MkBc */
@@ -1423,11 +1423,11 @@ void cc3_l3l2_RHF_AAB(void)
 
 	for(Gab=0; Gab < nirreps; Gab++) {
 	  Gc = Gab ^ Gijk; /* totally symmetric */
-	  dpd_->free_dpd_block(W1[Gab], FAA.params->coltot[Gab], virtpi[Gc]);
+	  global_dpd_->free_dpd_block(W1[Gab], FAA.params->coltot[Gab], virtpi[Gc]);
 	}
 	for(Ga=0; Ga < nirreps; Ga++) {
 	  Gcb = Ga ^ Gijk; /* assumes totally symmetric */
-	  dpd_->free_dpd_block(W2[Ga], virtpi[Ga], WmAfE.params->coltot[Gcb]);
+	  global_dpd_->free_dpd_block(W2[Ga], virtpi[Ga], WmAfE.params->coltot[Gcb]);
 	}
 
       } /* Gk */
@@ -1437,111 +1437,111 @@ void cc3_l3l2_RHF_AAB(void)
   free(W1);
   free(W2);
 
-  dpd_->buf4_close(&EAA);
-  dpd_->buf4_close(&EAB);
-  dpd_->buf4_close(&EBA);
-  dpd_->buf4_close(&FAA);
-  dpd_->buf4_close(&FAB);
-  dpd_->buf4_close(&FBA);
-  dpd_->buf4_close(&L2AA);
-  dpd_->buf4_close(&L2AB);
-  dpd_->buf4_close(&L2BA);
+  global_dpd_->buf4_close(&EAA);
+  global_dpd_->buf4_close(&EAB);
+  global_dpd_->buf4_close(&EBA);
+  global_dpd_->buf4_close(&FAA);
+  global_dpd_->buf4_close(&FAB);
+  global_dpd_->buf4_close(&FBA);
+  global_dpd_->buf4_close(&L2AA);
+  global_dpd_->buf4_close(&L2AB);
+  global_dpd_->buf4_close(&L2BA);
 
-  dpd_->file2_close(&fIJ);
-  dpd_->file2_close(&fAB);
-  dpd_->file2_close(&fij);
-  dpd_->file2_close(&fab);
+  global_dpd_->file2_close(&fIJ);
+  global_dpd_->file2_close(&fAB);
+  global_dpd_->file2_close(&fij);
+  global_dpd_->file2_close(&fab);
 
-  dpd_->file2_close(&FME);
-  dpd_->file2_close(&Fme);
-  dpd_->file2_close(&LIA);
-  dpd_->file2_close(&Lia);
+  global_dpd_->file2_close(&FME);
+  global_dpd_->file2_close(&Fme);
+  global_dpd_->file2_close(&LIA);
+  global_dpd_->file2_close(&Lia);
 
-  dpd_->buf4_close(&DAAints);
-  dpd_->buf4_close(&DABints);
-  dpd_->buf4_close(&LIJAB);
-  dpd_->buf4_close(&LIjAb);
+  global_dpd_->buf4_close(&DAAints);
+  global_dpd_->buf4_close(&DABints);
+  global_dpd_->buf4_close(&LIJAB);
+  global_dpd_->buf4_close(&LIjAb);
 
-  dpd_->buf4_close(&WmAfE);
-  dpd_->buf4_close(&WMAFE);
-  dpd_->buf4_close(&WMaFe);
+  global_dpd_->buf4_close(&WmAfE);
+  global_dpd_->buf4_close(&WMAFE);
+  global_dpd_->buf4_close(&WMaFe);
 
-  for(h=0; h < nirreps; h++) dpd_->buf4_mat_irrep_close(&WMnIe, h);
-  for(h=0; h < nirreps; h++) dpd_->buf4_mat_irrep_close(&WMNIE, h);
-  for(h=0; h < nirreps; h++) dpd_->buf4_mat_irrep_close(&WmNiE, h);
-  dpd_->buf4_close(&WMnIe);
-  dpd_->buf4_close(&WMNIE);
-  dpd_->buf4_close(&WmNiE);
+  for(h=0; h < nirreps; h++) global_dpd_->buf4_mat_irrep_close(&WMnIe, h);
+  for(h=0; h < nirreps; h++) global_dpd_->buf4_mat_irrep_close(&WMNIE, h);
+  for(h=0; h < nirreps; h++) global_dpd_->buf4_mat_irrep_close(&WmNiE, h);
+  global_dpd_->buf4_close(&WMnIe);
+  global_dpd_->buf4_close(&WMNIE);
+  global_dpd_->buf4_close(&WmNiE);
 
-  dpd_->buf4_close(&ZIgDe);
-  dpd_->buf4_close(&ZIGDE);
+  global_dpd_->buf4_close(&ZIgDe);
+  global_dpd_->buf4_close(&ZIGDE);
 
-  dpd_->buf4_close(&ZDMAE);
-  dpd_->buf4_close(&ZDmAe);
-  dpd_->buf4_close(&ZdMAe);
-
-  for(h=0; h < nirreps; h++) {
-    dpd_->buf4_mat_irrep_wrt(&ZLMAO, h);
-    dpd_->buf4_mat_irrep_close(&ZLMAO, h);
-  }
-  dpd_->buf4_close(&ZLMAO);
-  for(h=0; h < nirreps; h++) {
-    dpd_->buf4_mat_irrep_wrt(&ZLmAo, h);
-    dpd_->buf4_mat_irrep_close(&ZLmAo, h);
-  }
-  dpd_->buf4_close(&ZLmAo);
+  global_dpd_->buf4_close(&ZDMAE);
+  global_dpd_->buf4_close(&ZDmAe);
+  global_dpd_->buf4_close(&ZdMAe);
 
   for(h=0; h < nirreps; h++) {
-    dpd_->buf4_mat_irrep_wrt(&ZIMLE, h);
-    dpd_->buf4_mat_irrep_close(&ZIMLE, h);
+    global_dpd_->buf4_mat_irrep_wrt(&ZLMAO, h);
+    global_dpd_->buf4_mat_irrep_close(&ZLMAO, h);
   }
-  dpd_->buf4_close(&ZIMLE);
+  global_dpd_->buf4_close(&ZLMAO);
   for(h=0; h < nirreps; h++) {
-    dpd_->buf4_mat_irrep_wrt(&ZImLe, h);
-    dpd_->buf4_mat_irrep_close(&ZImLe, h);
+    global_dpd_->buf4_mat_irrep_wrt(&ZLmAo, h);
+    global_dpd_->buf4_mat_irrep_close(&ZLmAo, h);
   }
-  dpd_->buf4_close(&ZImLe);
-  for(h=0; h < nirreps; h++) {
-    dpd_->buf4_mat_irrep_wrt(&ZImlE, h);
-    dpd_->buf4_mat_irrep_close(&ZImlE, h);
-  }
-  dpd_->buf4_close(&ZImlE);
-
-  for(h=0; h < nirreps; h++) dpd_->buf4_mat_irrep_close(&T2AB, h);
-  for(h=0; h < nirreps; h++) dpd_->buf4_mat_irrep_close(&T2AA, h);
-  dpd_->buf4_close(&T2AB);
-  dpd_->buf4_close(&T2AA);
+  global_dpd_->buf4_close(&ZLmAo);
 
   for(h=0; h < nirreps; h++) {
-    dpd_->buf4_mat_irrep_wrt(&L2AAnew, h);
-    dpd_->buf4_mat_irrep_close(&L2AAnew, h);
+    global_dpd_->buf4_mat_irrep_wrt(&ZIMLE, h);
+    global_dpd_->buf4_mat_irrep_close(&ZIMLE, h);
   }
-  dpd_->buf4_init(&D2, PSIF_CC_DENOM, 0, 0, 5, 0, 5, 0, "dIjAb");
-  dpd_->buf4_dirprd(&D2, &L2AAnew);
-  dpd_->buf4_close(&D2);
-  dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, 0, 0, 5, 2, 7, 0, "New LIJAB");
-  dpd_->buf4_axpy(&L2AAnew, &L2, 1);
-  dpd_->buf4_close(&L2);
-  dpd_->buf4_close(&L2AAnew);
+  global_dpd_->buf4_close(&ZIMLE);
+  for(h=0; h < nirreps; h++) {
+    global_dpd_->buf4_mat_irrep_wrt(&ZImLe, h);
+    global_dpd_->buf4_mat_irrep_close(&ZImLe, h);
+  }
+  global_dpd_->buf4_close(&ZImLe);
+  for(h=0; h < nirreps; h++) {
+    global_dpd_->buf4_mat_irrep_wrt(&ZImlE, h);
+    global_dpd_->buf4_mat_irrep_close(&ZImlE, h);
+  }
+  global_dpd_->buf4_close(&ZImlE);
+
+  for(h=0; h < nirreps; h++) global_dpd_->buf4_mat_irrep_close(&T2AB, h);
+  for(h=0; h < nirreps; h++) global_dpd_->buf4_mat_irrep_close(&T2AA, h);
+  global_dpd_->buf4_close(&T2AB);
+  global_dpd_->buf4_close(&T2AA);
 
   for(h=0; h < nirreps; h++) {
-    dpd_->buf4_mat_irrep_wrt(&L2ABnew, h);
-    dpd_->buf4_mat_irrep_close(&L2ABnew, h);
+    global_dpd_->buf4_mat_irrep_wrt(&L2AAnew, h);
+    global_dpd_->buf4_mat_irrep_close(&L2AAnew, h);
   }
-  dpd_->buf4_init(&D2, PSIF_CC_DENOM, 0, 0, 5, 0, 5, 0, "dIjAb");
-  dpd_->buf4_dirprd(&D2, &L2ABnew);
-  dpd_->buf4_close(&D2);
-  dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, 0, 0, 5, 0, 5, 0, "New LIjAb");
-  dpd_->buf4_axpy(&L2ABnew, &L2, 1);
-  dpd_->buf4_close(&L2);
-  dpd_->buf4_close(&L2ABnew);
+  global_dpd_->buf4_init(&D2, PSIF_CC_DENOM, 0, 0, 5, 0, 5, 0, "dIjAb");
+  global_dpd_->buf4_dirprd(&D2, &L2AAnew);
+  global_dpd_->buf4_close(&D2);
+  global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, 0, 0, 5, 2, 7, 0, "New LIJAB");
+  global_dpd_->buf4_axpy(&L2AAnew, &L2, 1);
+  global_dpd_->buf4_close(&L2);
+  global_dpd_->buf4_close(&L2AAnew);
+
+  for(h=0; h < nirreps; h++) {
+    global_dpd_->buf4_mat_irrep_wrt(&L2ABnew, h);
+    global_dpd_->buf4_mat_irrep_close(&L2ABnew, h);
+  }
+  global_dpd_->buf4_init(&D2, PSIF_CC_DENOM, 0, 0, 5, 0, 5, 0, "dIjAb");
+  global_dpd_->buf4_dirprd(&D2, &L2ABnew);
+  global_dpd_->buf4_close(&D2);
+  global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, 0, 0, 5, 0, 5, 0, "New LIjAb");
+  global_dpd_->buf4_axpy(&L2ABnew, &L2, 1);
+  global_dpd_->buf4_close(&L2);
+  global_dpd_->buf4_close(&L2ABnew);
 
   /* Spin adaptation will remove this.  And yes, this means that all the above
      calculations for LIJAB were pointless... -TDC */
-  dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, 0, 2, 7, 0, 5, 1, "New LIjAb");
-  dpd_->buf4_copy(&L2, PSIF_CC_LAMBDA, "New LIJAB");
-  dpd_->buf4_copy(&L2, PSIF_CC_LAMBDA, "New Lijab");
-  dpd_->buf4_close(&L2);
+  global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, 0, 2, 7, 0, 5, 1, "New LIjAb");
+  global_dpd_->buf4_copy(&L2, PSIF_CC_LAMBDA, "New LIJAB");
+  global_dpd_->buf4_copy(&L2, PSIF_CC_LAMBDA, "New Lijab");
+  global_dpd_->buf4_close(&L2);
 
 }
 

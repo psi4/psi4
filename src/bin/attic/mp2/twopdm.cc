@@ -46,9 +46,9 @@ void rhf_twopdm(void)
 {
   dpdbuf4 T;
 
-  dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-  dpd_->buf4_copy(&T, PSIF_CC_GAMMA, "GIjAb");
-  dpd_->buf4_close(&T);
+  global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  global_dpd_->buf4_copy(&T, PSIF_CC_GAMMA, "GIjAb");
+  global_dpd_->buf4_close(&T);
 }
 
 void uhf_twopdm(void)
@@ -60,17 +60,17 @@ void rhf_sf_twopdm(void)
 {
   dpdbuf4 T;
 
-  dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
-  dpd_->buf4_copy(&T, PSIF_CC_GAMMA, "GIJAB");
-  dpd_->buf4_close(&T);
+  global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
+  global_dpd_->buf4_copy(&T, PSIF_CC_GAMMA, "GIJAB");
+  global_dpd_->buf4_close(&T);
 
-  dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tijab");
-  dpd_->buf4_copy(&T, PSIF_CC_GAMMA, "Gijab");
-  dpd_->buf4_close(&T);
+  global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tijab");
+  global_dpd_->buf4_copy(&T, PSIF_CC_GAMMA, "Gijab");
+  global_dpd_->buf4_close(&T);
 
-  dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-  dpd_->buf4_copy(&T, PSIF_CC_GAMMA, "GIjAb");
-  dpd_->buf4_close(&T);
+  global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  global_dpd_->buf4_copy(&T, PSIF_CC_GAMMA, "GIjAb");
+  global_dpd_->buf4_close(&T);
 }
 
 void uhf_sf_twopdm(void)

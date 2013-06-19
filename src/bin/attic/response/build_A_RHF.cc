@@ -56,39 +56,39 @@ void build_A_RHF(void)
 
   nirreps = moinfo.nirreps;
 
-  dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
-  dpd_->buf4_sort(&D, PSIF_MO_HESS, rpsq, 11, 11, "A(AI,BJ)");
-  dpd_->buf4_close(&D);
-  dpd_->buf4_init(&Amat, PSIF_MO_HESS, 0, 11, 11, 11, 11, 0, "A(AI,BJ)");
-  dpd_->buf4_scm(&Amat, 2);
-  dpd_->buf4_close(&Amat);
+  global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+  global_dpd_->buf4_sort(&D, PSIF_MO_HESS, rpsq, 11, 11, "A(AI,BJ)");
+  global_dpd_->buf4_close(&D);
+  global_dpd_->buf4_init(&Amat, PSIF_MO_HESS, 0, 11, 11, 11, 11, 0, "A(AI,BJ)");
+  global_dpd_->buf4_scm(&Amat, 2);
+  global_dpd_->buf4_close(&Amat);
 
-  dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia|jb>");
-  dpd_->buf4_sort_axpy(&C, PSIF_MO_HESS, qpsr, 11, 11, "A(AI,BJ)", -1);
-  dpd_->buf4_sort(&C, PSIF_MO_HESS, qpsr, 11, 11, "A(AI,BJ) triplet");
-  dpd_->buf4_close(&C);
+  global_dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia|jb>");
+  global_dpd_->buf4_sort_axpy(&C, PSIF_MO_HESS, qpsr, 11, 11, "A(AI,BJ)", -1);
+  global_dpd_->buf4_sort(&C, PSIF_MO_HESS, qpsr, 11, 11, "A(AI,BJ) triplet");
+  global_dpd_->buf4_close(&C);
 
-  dpd_->buf4_init(&Amat, PSIF_MO_HESS, 0, 11, 11, 11, 11, 0, "A(AI,BJ) triplet");
-  dpd_->buf4_scm(&Amat, -1);
-  dpd_->buf4_close(&Amat);
+  global_dpd_->buf4_init(&Amat, PSIF_MO_HESS, 0, 11, 11, 11, 11, 0, "A(AI,BJ) triplet");
+  global_dpd_->buf4_scm(&Amat, -1);
+  global_dpd_->buf4_close(&Amat);
 
-  dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
-  dpd_->file2_mat_init(&fIJ);
-  dpd_->file2_mat_rd(&fIJ);
-  dpd_->file2_init(&fij, PSIF_CC_OEI, 0, 0, 0, "fij");
-  dpd_->file2_mat_init(&fij);
-  dpd_->file2_mat_rd(&fij);
-  dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
-  dpd_->file2_mat_init(&fAB);
-  dpd_->file2_mat_rd(&fAB);
-  dpd_->file2_init(&fab, PSIF_CC_OEI, 0, 1, 1, "fab");
-  dpd_->file2_mat_init(&fab);
-  dpd_->file2_mat_rd(&fab);
+  global_dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+  global_dpd_->file2_mat_init(&fIJ);
+  global_dpd_->file2_mat_rd(&fIJ);
+  global_dpd_->file2_init(&fij, PSIF_CC_OEI, 0, 0, 0, "fij");
+  global_dpd_->file2_mat_init(&fij);
+  global_dpd_->file2_mat_rd(&fij);
+  global_dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
+  global_dpd_->file2_mat_init(&fAB);
+  global_dpd_->file2_mat_rd(&fAB);
+  global_dpd_->file2_init(&fab, PSIF_CC_OEI, 0, 1, 1, "fab");
+  global_dpd_->file2_mat_init(&fab);
+  global_dpd_->file2_mat_rd(&fab);
 
-  dpd_->buf4_init(&Amat, PSIF_MO_HESS, 0, 11, 11, 11, 11, 0, "A(AI,BJ)");
+  global_dpd_->buf4_init(&Amat, PSIF_MO_HESS, 0, 11, 11, 11, 11, 0, "A(AI,BJ)");
   for(h=0; h < nirreps; h++) {
-    dpd_->buf4_mat_irrep_init(&Amat, h);
-    dpd_->buf4_mat_irrep_rd(&Amat, h);
+    global_dpd_->buf4_mat_irrep_init(&Amat, h);
+    global_dpd_->buf4_mat_irrep_rd(&Amat, h);
     for(ai=0; ai < Amat.params->rowtot[h]; ai++) {
       a = Amat.params->roworb[h][ai][0];
       i = Amat.params->roworb[h][ai][1];
@@ -107,15 +107,15 @@ void build_A_RHF(void)
 	if((I==J) && (Asym==Bsym)) Amat.matrix[h][ai][bj] += fAB.matrix[Asym][A][B];
       }
     }
-    dpd_->buf4_mat_irrep_wrt(&Amat, h);
-    dpd_->buf4_mat_irrep_close(&Amat, h);
+    global_dpd_->buf4_mat_irrep_wrt(&Amat, h);
+    global_dpd_->buf4_mat_irrep_close(&Amat, h);
   }
-  dpd_->buf4_close(&Amat);
+  global_dpd_->buf4_close(&Amat);
 
-  dpd_->buf4_init(&Amat, PSIF_MO_HESS, 0, 11, 11, 11, 11, 0, "A(AI,BJ) triplet");
+  global_dpd_->buf4_init(&Amat, PSIF_MO_HESS, 0, 11, 11, 11, 11, 0, "A(AI,BJ) triplet");
   for(h=0; h < nirreps; h++) {
-    dpd_->buf4_mat_irrep_init(&Amat, h);
-    dpd_->buf4_mat_irrep_rd(&Amat, h);
+    global_dpd_->buf4_mat_irrep_init(&Amat, h);
+    global_dpd_->buf4_mat_irrep_rd(&Amat, h);
     for(ai=0; ai < Amat.params->rowtot[h]; ai++) {
       a = Amat.params->roworb[h][ai][0];
       i = Amat.params->roworb[h][ai][1];
@@ -134,19 +134,19 @@ void build_A_RHF(void)
 	if((I==J) && (Asym==Bsym)) Amat.matrix[h][ai][bj] += fAB.matrix[Asym][A][B];
       }
     }
-    dpd_->buf4_mat_irrep_wrt(&Amat, h);
-    dpd_->buf4_mat_irrep_close(&Amat, h);
+    global_dpd_->buf4_mat_irrep_wrt(&Amat, h);
+    global_dpd_->buf4_mat_irrep_close(&Amat, h);
   }
-  dpd_->buf4_close(&Amat);
+  global_dpd_->buf4_close(&Amat);
 
-  dpd_->file2_mat_close(&fab);
-  dpd_->file2_close(&fab);
-  dpd_->file2_mat_close(&fAB);
-  dpd_->file2_close(&fAB);
-  dpd_->file2_mat_close(&fij);
-  dpd_->file2_close(&fij);
-  dpd_->file2_mat_close(&fIJ);
-  dpd_->file2_close(&fIJ);
+  global_dpd_->file2_mat_close(&fab);
+  global_dpd_->file2_close(&fab);
+  global_dpd_->file2_mat_close(&fAB);
+  global_dpd_->file2_close(&fAB);
+  global_dpd_->file2_mat_close(&fij);
+  global_dpd_->file2_close(&fij);
+  global_dpd_->file2_mat_close(&fIJ);
+  global_dpd_->file2_close(&fIJ);
 }
 
 }} // namespace psi::response

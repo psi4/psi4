@@ -41,75 +41,75 @@ void Gabcd(void)
   G_irr = params.G_irr;
 
   if(params.ref == 0) { /** RHF **/
-    dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 5, 5, 5, 5, 0, "GAbCd");
-    dpd_->buf4_init(&L, PSIF_CC_GLG, G_irr, 0, 5, 0, 5, 0, "LIjAb");
-    dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjAb");
-    dpd_->contract444(&L, &T, &G, 1, 1, 1.0, 0.0);
-    dpd_->buf4_close(&T);
-    dpd_->buf4_close(&L);
+    global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 5, 5, 5, 5, 0, "GAbCd");
+    global_dpd_->buf4_init(&L, PSIF_CC_GLG, G_irr, 0, 5, 0, 5, 0, "LIjAb");
+    global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjAb");
+    global_dpd_->contract444(&L, &T, &G, 1, 1, 1.0, 0.0);
+    global_dpd_->buf4_close(&T);
+    global_dpd_->buf4_close(&L);
     if (params.ground)
-      dpd_->buf4_symm(&G);
-    dpd_->buf4_close(&G);
+      global_dpd_->buf4_symm(&G);
+    global_dpd_->buf4_close(&G);
   }
   else if(params.ref == 1) { /** RHF/ROHF **/
 
-    dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 7, 7, 7, 7, 0, "GABCD");
-    dpd_->buf4_init(&L, PSIF_CC_GLG, G_irr, 2, 7, 2, 7, 0, "LIJAB");
-    dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tauIJAB");
-    dpd_->contract444(&L, &T, &G, 1, 1, 1.0, 0.0);
-    dpd_->buf4_close(&T);
-    dpd_->buf4_close(&L);
+    global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 7, 7, 7, 7, 0, "GABCD");
+    global_dpd_->buf4_init(&L, PSIF_CC_GLG, G_irr, 2, 7, 2, 7, 0, "LIJAB");
+    global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tauIJAB");
+    global_dpd_->contract444(&L, &T, &G, 1, 1, 1.0, 0.0);
+    global_dpd_->buf4_close(&T);
+    global_dpd_->buf4_close(&L);
     if (params.ground)
-      dpd_->buf4_symm(&G);
-    dpd_->buf4_close(&G);
+      global_dpd_->buf4_symm(&G);
+    global_dpd_->buf4_close(&G);
 
-    dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 7, 7, 7, 7, 0, "Gabcd");
-    dpd_->buf4_init(&L, PSIF_CC_GLG, G_irr, 2, 7, 2, 7, 0, "Lijab");
-    dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tauijab");
-    dpd_->contract444(&L, &T, &G, 1, 1, 1.0, 0.0);
-    dpd_->buf4_close(&T);
-    dpd_->buf4_close(&L);
+    global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 7, 7, 7, 7, 0, "Gabcd");
+    global_dpd_->buf4_init(&L, PSIF_CC_GLG, G_irr, 2, 7, 2, 7, 0, "Lijab");
+    global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tauijab");
+    global_dpd_->contract444(&L, &T, &G, 1, 1, 1.0, 0.0);
+    global_dpd_->buf4_close(&T);
+    global_dpd_->buf4_close(&L);
     if (params.ground)
-      dpd_->buf4_symm(&G);
-    dpd_->buf4_close(&G);
+      global_dpd_->buf4_symm(&G);
+    global_dpd_->buf4_close(&G);
 
-    dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 5, 5, 5, 5, 0, "GAbCd");
-    dpd_->buf4_init(&L, PSIF_CC_GLG, G_irr, 0, 5, 0, 5, 0, "LIjAb");
-    dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjAb");
-    dpd_->contract444(&L, &T, &G, 1, 1, 1.0, 0.0);
-    dpd_->buf4_close(&T);
-    dpd_->buf4_close(&L);
+    global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 5, 5, 5, 5, 0, "GAbCd");
+    global_dpd_->buf4_init(&L, PSIF_CC_GLG, G_irr, 0, 5, 0, 5, 0, "LIjAb");
+    global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjAb");
+    global_dpd_->contract444(&L, &T, &G, 1, 1, 1.0, 0.0);
+    global_dpd_->buf4_close(&T);
+    global_dpd_->buf4_close(&L);
     if (params.ground)
-      dpd_->buf4_symm(&G);
-    dpd_->buf4_close(&G);
+      global_dpd_->buf4_symm(&G);
+    global_dpd_->buf4_close(&G);
   }
   else if(params.ref == 2) { /** UHF **/
-    dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 7, 7, 7, 7, 0, "GABCD");
-    dpd_->buf4_init(&L, PSIF_CC_GLG, G_irr, 2, 7, 2, 7, 0, "LIJAB");
-    dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tauIJAB");
-    dpd_->contract444(&L, &T, &G, 1, 1, 1.0, 0.0);
-    dpd_->buf4_close(&T);
-    dpd_->buf4_close(&L);
-    dpd_->buf4_symm(&G);
-    dpd_->buf4_close(&G);
+    global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 7, 7, 7, 7, 0, "GABCD");
+    global_dpd_->buf4_init(&L, PSIF_CC_GLG, G_irr, 2, 7, 2, 7, 0, "LIJAB");
+    global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tauIJAB");
+    global_dpd_->contract444(&L, &T, &G, 1, 1, 1.0, 0.0);
+    global_dpd_->buf4_close(&T);
+    global_dpd_->buf4_close(&L);
+    global_dpd_->buf4_symm(&G);
+    global_dpd_->buf4_close(&G);
 
-    dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 17, 17, 17, 17, 0, "Gabcd");
-    dpd_->buf4_init(&L, PSIF_CC_GLG, G_irr, 12, 17, 12, 17, 0, "Lijab");
-    dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "tauijab");
-    dpd_->contract444(&L, &T, &G, 1, 1, 1.0, 0.0);
-    dpd_->buf4_close(&T);
-    dpd_->buf4_close(&L);
-    dpd_->buf4_symm(&G);
-    dpd_->buf4_close(&G);
+    global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 17, 17, 17, 17, 0, "Gabcd");
+    global_dpd_->buf4_init(&L, PSIF_CC_GLG, G_irr, 12, 17, 12, 17, 0, "Lijab");
+    global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "tauijab");
+    global_dpd_->contract444(&L, &T, &G, 1, 1, 1.0, 0.0);
+    global_dpd_->buf4_close(&T);
+    global_dpd_->buf4_close(&L);
+    global_dpd_->buf4_symm(&G);
+    global_dpd_->buf4_close(&G);
 
-    dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 28, 28, 28, 28, 0, "GAbCd");
-    dpd_->buf4_init(&L, PSIF_CC_GLG, G_irr, 22, 28, 22, 28, 0, "LIjAb");
-    dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tauIjAb");
-    dpd_->contract444(&L, &T, &G, 1, 1, 1.0, 0.0);
-    dpd_->buf4_close(&T);
-    dpd_->buf4_close(&L);
-    dpd_->buf4_symm(&G);
-    dpd_->buf4_close(&G);
+    global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 28, 28, 28, 28, 0, "GAbCd");
+    global_dpd_->buf4_init(&L, PSIF_CC_GLG, G_irr, 22, 28, 22, 28, 0, "LIjAb");
+    global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tauIjAb");
+    global_dpd_->contract444(&L, &T, &G, 1, 1, 1.0, 0.0);
+    global_dpd_->buf4_close(&T);
+    global_dpd_->buf4_close(&L);
+    global_dpd_->buf4_symm(&G);
+    global_dpd_->buf4_close(&G);
   }
 }
 

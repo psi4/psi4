@@ -119,64 +119,64 @@ void WmbejT2(void)
     /*** AB ***/
 
     /* 2 W(ME,jb) + W(Me,Jb) */
-    dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbeJ");
-    dpd_->buf4_copy(&W, PSIF_CC_TMP0, "2 W(ME,jb) + W(Me,Jb)");
-    dpd_->buf4_close(&W);
-    dpd_->buf4_init(&W1, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "2 W(ME,jb) + W(Me,Jb)");
-    dpd_->buf4_init(&W2, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbEj");
-    dpd_->buf4_axpy(&W2, &W1, 2);
-    dpd_->buf4_close(&W2);
-    dpd_->buf4_close(&W1);
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbeJ");
+    global_dpd_->buf4_copy(&W, PSIF_CC_TMP0, "2 W(ME,jb) + W(Me,Jb)");
+    global_dpd_->buf4_close(&W);
+    global_dpd_->buf4_init(&W1, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "2 W(ME,jb) + W(Me,Jb)");
+    global_dpd_->buf4_init(&W2, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbEj");
+    global_dpd_->buf4_axpy(&W2, &W1, 2);
+    global_dpd_->buf4_close(&W2);
+    global_dpd_->buf4_close(&W1);
 
 
     /* T2(Ib,mE) * W(mE,jA) --> Z(Ib,jA) */
-    dpd_->buf4_init(&T2new, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "Z (Ib,jA)");
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tIbjA");
-    dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbeJ");
-    dpd_->contract444(&T2, &W, &T2new, 0, 1, 1, 0);
-    dpd_->buf4_close(&W);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2new, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "Z (Ib,jA)");
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tIbjA");
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbeJ");
+    global_dpd_->contract444(&T2, &W, &T2new, 0, 1, 1, 0);
+    global_dpd_->buf4_close(&W);
+    global_dpd_->buf4_close(&T2);
     /* T2(Ib,jA) --> T2(IA,jb) (part III) */
-    dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, psrq, 10, 10, "T2 (IA,jb) 3");
-    dpd_->buf4_close(&T2new);
+    global_dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, psrq, 10, 10, "T2 (IA,jb) 3");
+    global_dpd_->buf4_close(&T2new);
 
     /* 1/2 [ (2 T2(IA,me) - T2(IE,ma)) * (2 W(ME,jb) + W(Me,Jb)] --> T2(IA,jb) */
-    dpd_->buf4_init(&T2new, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "T2 (IA,jb) 1");
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "2 tIAjb - tIBja");
-    dpd_->buf4_init(&W, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "2 W(ME,jb) + W(Me,Jb)");
-    dpd_->contract444(&T2, &W, &T2new, 0, 1, 0.5, 0);
-    dpd_->buf4_close(&W);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2new, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "T2 (IA,jb) 1");
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "2 tIAjb - tIBja");
+    global_dpd_->buf4_init(&W, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "2 W(ME,jb) + W(Me,Jb)");
+    global_dpd_->contract444(&T2, &W, &T2new, 0, 1, 0.5, 0);
+    global_dpd_->buf4_close(&W);
+    global_dpd_->buf4_close(&T2);
     /* 1/2 Z(Ib,jA) + T2(IA,jb) --> T2(IA,jb) (Part I) */
-    dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "Z (Ib,jA)");
-    dpd_->buf4_axpy(&Z, &T2new, 0.5);
-    dpd_->buf4_close(&Z);
-    dpd_->buf4_close(&T2new);
+    global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "Z (Ib,jA)");
+    global_dpd_->buf4_axpy(&Z, &T2new, 0.5);
+    global_dpd_->buf4_close(&Z);
+    global_dpd_->buf4_close(&T2new);
 
     /* T2(IA,jb) (I) + T2(IA,jb) (III) --> T2(IA,jb) */
-    dpd_->buf4_init(&T2new, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "T2 (IA,jb) 1");
-    dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "T2 (IA,jb) 3");
-    dpd_->buf4_axpy(&T2, &T2new, 1);
-    dpd_->buf4_close(&T2);
-    dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, prqs, 0, 5, "T2 (Ij,Ab) (1+3)");
-    dpd_->buf4_close(&T2new);
+    global_dpd_->buf4_init(&T2new, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "T2 (IA,jb) 1");
+    global_dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "T2 (IA,jb) 3");
+    global_dpd_->buf4_axpy(&T2, &T2new, 1);
+    global_dpd_->buf4_close(&T2);
+    global_dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, prqs, 0, 5, "T2 (Ij,Ab) (1+3)");
+    global_dpd_->buf4_close(&T2new);
 
-    dpd_->buf4_init(&T2new, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "T2 (Ij,Ab) (1+3)");
-    dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, qpsr, 0, 5, "T2 (Ij,Ab) (2+4)");
-    dpd_->buf4_close(&T2new);
+    global_dpd_->buf4_init(&T2new, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "T2 (Ij,Ab) (1+3)");
+    global_dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, qpsr, 0, 5, "T2 (Ij,Ab) (2+4)");
+    global_dpd_->buf4_close(&T2new);
 
     /* T2(Ij,Ab) <--- I + II + III + IV */
-    dpd_->buf4_init(&T2new, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
+    global_dpd_->buf4_init(&T2new, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
 
-    dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "T2 (Ij,Ab) (1+3)");
-    dpd_->buf4_axpy(&T2, &T2new, 1);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "T2 (Ij,Ab) (1+3)");
+    global_dpd_->buf4_axpy(&T2, &T2new, 1);
+    global_dpd_->buf4_close(&T2);
 
-    dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "T2 (Ij,Ab) (2+4)");
-    dpd_->buf4_axpy(&T2, &T2new, 1);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "T2 (Ij,Ab) (2+4)");
+    global_dpd_->buf4_axpy(&T2, &T2new, 1);
+    global_dpd_->buf4_close(&T2);
 
-    dpd_->buf4_close(&T2new);
+    global_dpd_->buf4_close(&T2new);
 
   }
   else if(params.ref == 1) { /** ROHF **/
@@ -184,159 +184,159 @@ void WmbejT2(void)
     /*** AA ***/
 
     /* T2(IA,ME) * W(ME,JB) --> T2(IA,JB) */
-    dpd_->buf4_init(&T2new, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "T2 (IA,JB)");
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tIAJB");
-    dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMBEJ");
-    dpd_->contract444(&T2, &W, &T2new, 0, 1, 1, 0);
-    dpd_->buf4_close(&W);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2new, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "T2 (IA,JB)");
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tIAJB");
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMBEJ");
+    global_dpd_->contract444(&T2, &W, &T2new, 0, 1, 1, 0);
+    global_dpd_->buf4_close(&W);
+    global_dpd_->buf4_close(&T2);
 
     /* T2(IA,me) * W(me,JB) --> T2(IA,JB) */
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tIAjb");
-    dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WmBeJ");
-    dpd_->contract444(&T2, &W, &T2new, 0, 1, 1, 1);
-    dpd_->buf4_close(&W);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tIAjb");
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WmBeJ");
+    global_dpd_->contract444(&T2, &W, &T2new, 0, 1, 1, 1);
+    global_dpd_->buf4_close(&W);
+    global_dpd_->buf4_close(&T2);
 
     /* T2(IA,JB) --> T2(IJ,AB) */
-    dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, prqs, 0, 5, "X(0,5) 1");
-    dpd_->buf4_close(&T2new);
+    global_dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, prqs, 0, 5, "X(0,5) 1");
+    global_dpd_->buf4_close(&T2new);
   
     /* P(IJ) P(AB) T2(IA,JB) */
-    dpd_->buf4_init(&T2new, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "X(0,5) 1");
-    dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, qprs, 0, 5, "X(0,5) 2");
-    dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, pqsr, 0, 5, "X(0,5) 3");
-    dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, qpsr, 0, 5, "X(0,5) 4");
+    global_dpd_->buf4_init(&T2new, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "X(0,5) 1");
+    global_dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, qprs, 0, 5, "X(0,5) 2");
+    global_dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, pqsr, 0, 5, "X(0,5) 3");
+    global_dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, qpsr, 0, 5, "X(0,5) 4");
 
     /* T2(IA,JB) - T2(JA,IB) - T2(IB,JA) + T2(JB,IA) --> T2(IA,JB) */
-    dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "X(0,5) 2");
-    dpd_->buf4_axpy(&T2, &T2new, -1);
-    dpd_->buf4_close(&T2);
-    dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "X(0,5) 3");
-    dpd_->buf4_axpy(&T2, &T2new, -1);
-    dpd_->buf4_close(&T2);
-    dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "X(0,5) 4");
-    dpd_->buf4_axpy(&T2, &T2new, +1);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "X(0,5) 2");
+    global_dpd_->buf4_axpy(&T2, &T2new, -1);
+    global_dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "X(0,5) 3");
+    global_dpd_->buf4_axpy(&T2, &T2new, -1);
+    global_dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "X(0,5) 4");
+    global_dpd_->buf4_axpy(&T2, &T2new, +1);
+    global_dpd_->buf4_close(&T2);
 
     /* T2(IJ,AB) --> New T2(IJ,AB) */
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "New tIJAB");
-    dpd_->buf4_axpy(&T2new, &T2, 1);
-    dpd_->buf4_close(&T2);
-    dpd_->buf4_close(&T2new);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "New tIJAB");
+    global_dpd_->buf4_axpy(&T2new, &T2, 1);
+    global_dpd_->buf4_close(&T2);
+    global_dpd_->buf4_close(&T2new);
 
 
     /*** BB ***/
 
     /* T2(ia,me) * W(me,jb) --> T2(ia,jb) */
-    dpd_->buf4_init(&T2new, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "T2 (ia,jb)");
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tiajb");
-    dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "Wmbej");
-    dpd_->contract444(&T2, &W, &T2new, 0, 1, 1, 0);
-    dpd_->buf4_close(&W);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2new, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "T2 (ia,jb)");
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tiajb");
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "Wmbej");
+    global_dpd_->contract444(&T2, &W, &T2new, 0, 1, 1, 0);
+    global_dpd_->buf4_close(&W);
+    global_dpd_->buf4_close(&T2);
 
     /* T2(ia,ME) * W(ME,jb) --> T2(ia,jb) */
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tiaJB");
-    dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbEj");
-    dpd_->contract444(&T2, &W, &T2new, 0, 1, 1, 1);
-    dpd_->buf4_close(&W);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tiaJB");
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbEj");
+    global_dpd_->contract444(&T2, &W, &T2new, 0, 1, 1, 1);
+    global_dpd_->buf4_close(&W);
+    global_dpd_->buf4_close(&T2);
 
     /* T2(ia,jb) --> T2(ij,ab) */
-    dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, prqs, 0, 5, "X(0,5) 1");
-    dpd_->buf4_close(&T2new);
+    global_dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, prqs, 0, 5, "X(0,5) 1");
+    global_dpd_->buf4_close(&T2new);
   
     /* P(ij) P(ab) T2(ia,jb) */
-    dpd_->buf4_init(&T2new, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "X(0,5) 1");
-    dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, qprs, 0, 5, "X(0,5) 2");
-    dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, pqsr, 0, 5, "X(0,5) 3");
-    dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, qpsr, 0, 5, "X(0,5) 4");
+    global_dpd_->buf4_init(&T2new, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "X(0,5) 1");
+    global_dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, qprs, 0, 5, "X(0,5) 2");
+    global_dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, pqsr, 0, 5, "X(0,5) 3");
+    global_dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, qpsr, 0, 5, "X(0,5) 4");
 
     /* T2(ij,ab) - T2(ji,ab) - T2(ij,ba) + T2(ji,ba) --> T2(ij,ab) */
-    dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "X(0,5) 2");
-    dpd_->buf4_axpy(&T2, &T2new, -1);
-    dpd_->buf4_close(&T2);
-    dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "X(0,5) 3");
-    dpd_->buf4_axpy(&T2, &T2new, -1);
-    dpd_->buf4_close(&T2);
-    dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "X(0,5) 4");
-    dpd_->buf4_axpy(&T2, &T2new, +1);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "X(0,5) 2");
+    global_dpd_->buf4_axpy(&T2, &T2new, -1);
+    global_dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "X(0,5) 3");
+    global_dpd_->buf4_axpy(&T2, &T2new, -1);
+    global_dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "X(0,5) 4");
+    global_dpd_->buf4_axpy(&T2, &T2new, +1);
+    global_dpd_->buf4_close(&T2);
   
     /* T2(ij,ab) --> New T2(ij,ab) */
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "New tijab");
-    dpd_->buf4_axpy(&T2new, &T2, 1);
-    dpd_->buf4_close(&T2);
-    dpd_->buf4_close(&T2new);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "New tijab");
+    global_dpd_->buf4_axpy(&T2new, &T2, 1);
+    global_dpd_->buf4_close(&T2);
+    global_dpd_->buf4_close(&T2new);
 
 
     /*** AB ***/
 
     /* T2(IA,ME) * W(ME,jb) --> T2(IA,jb) */
-    dpd_->buf4_init(&T2new, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "T2 (IA,jb)");
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tIAJB");
-    dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbEj");
-    dpd_->contract444(&T2, &W, &T2new, 0, 1, 1, 0);
-    dpd_->buf4_close(&W);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2new, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "T2 (IA,jb)");
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tIAJB");
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbEj");
+    global_dpd_->contract444(&T2, &W, &T2new, 0, 1, 1, 0);
+    global_dpd_->buf4_close(&W);
+    global_dpd_->buf4_close(&T2);
 
     /* T2(IA,me) * W(me,jb) --> T2(IA,jb) */
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tIAjb");
-    dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "Wmbej");
-    dpd_->contract444(&T2, &W, &T2new, 0, 1, 1, 1);
-    dpd_->buf4_close(&W);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tIAjb");
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "Wmbej");
+    global_dpd_->contract444(&T2, &W, &T2new, 0, 1, 1, 1);
+    global_dpd_->buf4_close(&W);
+    global_dpd_->buf4_close(&T2);
 
     /* W(ME,IA) * T2(jb,ME) --> T2(IA,jb) */
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tiaJB");
-    dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMBEJ");
-    dpd_->contract444(&W, &T2, &T2new, 1, 0, 1, 1);
-    dpd_->buf4_close(&W);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tiaJB");
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMBEJ");
+    global_dpd_->contract444(&W, &T2, &T2new, 1, 0, 1, 1);
+    global_dpd_->buf4_close(&W);
+    global_dpd_->buf4_close(&T2);
 
     /* W(me,IA) * T2(jb,me) --> T2(IA,jb) */
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tiajb");
-    dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WmBeJ");
-    dpd_->contract444(&W, &T2, &T2new, 1, 0, 1, 1);
-    dpd_->buf4_close(&W);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tiajb");
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WmBeJ");
+    global_dpd_->contract444(&W, &T2, &T2new, 1, 0, 1, 1);
+    global_dpd_->buf4_close(&W);
+    global_dpd_->buf4_close(&T2);
 
     /* T2(IA,jb) --> T2(Ij,Ab) (part 1) */
-    dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, prqs, 0, 5, "T2 (Ij,Ab) 1");
-    dpd_->buf4_close(&T2new);
+    global_dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, prqs, 0, 5, "T2 (Ij,Ab) 1");
+    global_dpd_->buf4_close(&T2new);
 
     /* T2(Ib,mE) * W(mE,jA) --> T2(Ib,jA) */
-    dpd_->buf4_init(&T2new, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "T2 (Ib,jA)");
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tIbjA");
-    dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WmBEj");
-    dpd_->contract444(&T2, &W, &T2new, 0, 1, 1, 0);
-    dpd_->buf4_close(&W);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2new, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "T2 (Ib,jA)");
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tIbjA");
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WmBEj");
+    global_dpd_->contract444(&T2, &W, &T2new, 0, 1, 1, 0);
+    global_dpd_->buf4_close(&W);
+    global_dpd_->buf4_close(&T2);
 
     /* W(Me,Ib) * T2(jA,Me) --> T2(Ib,jA) */
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tjAIb");
-    dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbeJ");
-    dpd_->contract444(&W, &T2, &T2new, 1, 0, 1, 1);
-    dpd_->buf4_close(&W);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tjAIb");
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbeJ");
+    global_dpd_->contract444(&W, &T2, &T2new, 1, 0, 1, 1);
+    global_dpd_->buf4_close(&W);
+    global_dpd_->buf4_close(&T2);
 
     /* T2(Ib,jA) --> T2(Ij,Ab) (part 2) */
-    dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, prsq, 0, 5, "T2 (Ij,Ab) 2");
-    dpd_->buf4_close(&T2new);
+    global_dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, prsq, 0, 5, "T2 (Ij,Ab) 2");
+    global_dpd_->buf4_close(&T2new);
 
 
     /* T2(Ij,Ab) (part 1) + T2(Ij,Ab) (part 2) --> New T2(Ij,Ab) */
-    dpd_->buf4_init(&T2new, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
+    global_dpd_->buf4_init(&T2new, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
 
-    dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "T2 (Ij,Ab) 1");
-    dpd_->buf4_axpy(&T2, &T2new, 1);
-    dpd_->buf4_close(&T2);
-    dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "T2 (Ij,Ab) 2");
-    dpd_->buf4_axpy(&T2, &T2new, 1);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "T2 (Ij,Ab) 1");
+    global_dpd_->buf4_axpy(&T2, &T2new, 1);
+    global_dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "T2 (Ij,Ab) 2");
+    global_dpd_->buf4_axpy(&T2, &T2new, 1);
+    global_dpd_->buf4_close(&T2);
 
-    dpd_->buf4_close(&T2new);
+    global_dpd_->buf4_close(&T2new);
 
   } /*** ROHF ***/
   else if(params.ref == 2) { /*** UHF ***/
@@ -344,159 +344,159 @@ void WmbejT2(void)
     /*** AA ***/
 
     /* T2(IA,ME) * W(ME,JB) --> T2(IA,JB) */
-    dpd_->buf4_init(&T2new, PSIF_CC_TMP0, 0, 20, 20, 20, 20, 0, "T2 (IA,JB)");
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 20, 20, 20, 20, 0, "tIAJB");
-    dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 20, 20, 20, 20, 0, "WMBEJ");
-    dpd_->contract444(&T2, &W, &T2new, 0, 1, 1, 0);
-    dpd_->buf4_close(&W);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2new, PSIF_CC_TMP0, 0, 20, 20, 20, 20, 0, "T2 (IA,JB)");
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 20, 20, 20, 20, 0, "tIAJB");
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 20, 20, 20, 20, 0, "WMBEJ");
+    global_dpd_->contract444(&T2, &W, &T2new, 0, 1, 1, 0);
+    global_dpd_->buf4_close(&W);
+    global_dpd_->buf4_close(&T2);
 
     /* T2(IA,me) * W(me,JB) --> T2(IA,JB) */
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 20, 30, 20, 30, 0, "tIAjb");
-    dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 30, 20, 30, 20, 0, "WmBeJ");
-    dpd_->contract444(&T2, &W, &T2new, 0, 1, 1, 1);
-    dpd_->buf4_close(&W);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 20, 30, 20, 30, 0, "tIAjb");
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 30, 20, 30, 20, 0, "WmBeJ");
+    global_dpd_->contract444(&T2, &W, &T2new, 0, 1, 1, 1);
+    global_dpd_->buf4_close(&W);
+    global_dpd_->buf4_close(&T2);
 
     /* T2(IA,JB) --> T2(IJ,AB) */
-    dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, prqs, 0, 5, "X(0,5) 1");
-    dpd_->buf4_close(&T2new);
+    global_dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, prqs, 0, 5, "X(0,5) 1");
+    global_dpd_->buf4_close(&T2new);
   
     /* P(IJ) P(AB) T2(IA,JB) */
-    dpd_->buf4_init(&T2new, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "X(0,5) 1");
-    dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, qprs, 0, 5, "X(0,5) 2");
-    dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, pqsr, 0, 5, "X(0,5) 3");
-    dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, qpsr, 0, 5, "X(0,5) 4");
+    global_dpd_->buf4_init(&T2new, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "X(0,5) 1");
+    global_dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, qprs, 0, 5, "X(0,5) 2");
+    global_dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, pqsr, 0, 5, "X(0,5) 3");
+    global_dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, qpsr, 0, 5, "X(0,5) 4");
 
     /* T2(IA,JB) - T2(JA,IB) - T2(IB,JA) + T2(JB,IA) --> T2(IA,JB) */
-    dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "X(0,5) 2");
-    dpd_->buf4_axpy(&T2, &T2new, -1);
-    dpd_->buf4_close(&T2);
-    dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "X(0,5) 3");
-    dpd_->buf4_axpy(&T2, &T2new, -1);
-    dpd_->buf4_close(&T2);
-    dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "X(0,5) 4");
-    dpd_->buf4_axpy(&T2, &T2new, +1);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "X(0,5) 2");
+    global_dpd_->buf4_axpy(&T2, &T2new, -1);
+    global_dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "X(0,5) 3");
+    global_dpd_->buf4_axpy(&T2, &T2new, -1);
+    global_dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "X(0,5) 4");
+    global_dpd_->buf4_axpy(&T2, &T2new, +1);
+    global_dpd_->buf4_close(&T2);
 
     /* T2(IJ,AB) --> New T2(IJ,AB) */
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "New tIJAB");
-    dpd_->buf4_axpy(&T2new, &T2, 1);
-    dpd_->buf4_close(&T2);
-    dpd_->buf4_close(&T2new);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "New tIJAB");
+    global_dpd_->buf4_axpy(&T2new, &T2, 1);
+    global_dpd_->buf4_close(&T2);
+    global_dpd_->buf4_close(&T2new);
 
 
     /*** BB ***/
 
     /* T2(ia,me) * W(me,jb) --> T2(ia,jb) */
-    dpd_->buf4_init(&T2new, PSIF_CC_TMP0, 0, 30, 30, 30, 30, 0, "T2 (ia,jb)");
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 30, 30, 30, 30, 0, "tiajb");
-    dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 30, 30, 30, 30, 0, "Wmbej");
-    dpd_->contract444(&T2, &W, &T2new, 0, 1, 1, 0);
-    dpd_->buf4_close(&W);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2new, PSIF_CC_TMP0, 0, 30, 30, 30, 30, 0, "T2 (ia,jb)");
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 30, 30, 30, 30, 0, "tiajb");
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 30, 30, 30, 30, 0, "Wmbej");
+    global_dpd_->contract444(&T2, &W, &T2new, 0, 1, 1, 0);
+    global_dpd_->buf4_close(&W);
+    global_dpd_->buf4_close(&T2);
 
     /* T2(ia,ME) * W(ME,jb) --> T2(ia,jb) */
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 30, 20, 30, 20, 0, "tiaJB");
-    dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 20, 30, 20, 30, 0, "WMbEj");
-    dpd_->contract444(&T2, &W, &T2new, 0, 1, 1, 1);
-    dpd_->buf4_close(&W);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 30, 20, 30, 20, 0, "tiaJB");
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 20, 30, 20, 30, 0, "WMbEj");
+    global_dpd_->contract444(&T2, &W, &T2new, 0, 1, 1, 1);
+    global_dpd_->buf4_close(&W);
+    global_dpd_->buf4_close(&T2);
 
     /* T2(ia,jb) --> T2(ij,ab) */
-    dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, prqs, 10, 15, "X(10,15) 1");
-    dpd_->buf4_close(&T2new);
+    global_dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, prqs, 10, 15, "X(10,15) 1");
+    global_dpd_->buf4_close(&T2new);
   
     /* P(ij) P(ab) T2(ia,jb) */
-    dpd_->buf4_init(&T2new, PSIF_CC_TMP0, 0, 10, 15, 10, 15, 0, "X(10,15) 1");
-    dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, qprs, 10, 15, "X(10,15) 2");
-    dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, pqsr, 10, 15, "X(10,15) 3");
-    dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, qpsr, 10, 15, "X(10,15) 4");
+    global_dpd_->buf4_init(&T2new, PSIF_CC_TMP0, 0, 10, 15, 10, 15, 0, "X(10,15) 1");
+    global_dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, qprs, 10, 15, "X(10,15) 2");
+    global_dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, pqsr, 10, 15, "X(10,15) 3");
+    global_dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, qpsr, 10, 15, "X(10,15) 4");
 
     /* T2(ij,ab) - T2(ji,ab) - T2(ij,ba) + T2(ji,ba) --> T2(ij,ab) */
-    dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 10, 15, 10, 15, 0, "X(10,15) 2");
-    dpd_->buf4_axpy(&T2, &T2new, -1);
-    dpd_->buf4_close(&T2);
-    dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 10, 15, 10, 15, 0, "X(10,15) 3");
-    dpd_->buf4_axpy(&T2, &T2new, -1);
-    dpd_->buf4_close(&T2);
-    dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 10, 15, 10, 15, 0, "X(10,15) 4");
-    dpd_->buf4_axpy(&T2, &T2new, +1);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 10, 15, 10, 15, 0, "X(10,15) 2");
+    global_dpd_->buf4_axpy(&T2, &T2new, -1);
+    global_dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 10, 15, 10, 15, 0, "X(10,15) 3");
+    global_dpd_->buf4_axpy(&T2, &T2new, -1);
+    global_dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 10, 15, 10, 15, 0, "X(10,15) 4");
+    global_dpd_->buf4_axpy(&T2, &T2new, +1);
+    global_dpd_->buf4_close(&T2);
   
     /* T2(ij,ab) --> New T2(ij,ab) */
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 15, 12, 17, 0, "New tijab");
-    dpd_->buf4_axpy(&T2new, &T2, 1);
-    dpd_->buf4_close(&T2);
-    dpd_->buf4_close(&T2new);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 15, 12, 17, 0, "New tijab");
+    global_dpd_->buf4_axpy(&T2new, &T2, 1);
+    global_dpd_->buf4_close(&T2);
+    global_dpd_->buf4_close(&T2new);
 
 
     /*** AB ***/
 
     /* T2(IA,ME) * W(ME,jb) --> T2(IA,jb) */
-    dpd_->buf4_init(&T2new, PSIF_CC_TMP0, 0, 20, 30, 20, 30, 0, "T2 (IA,jb)");
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 20, 20, 20, 20, 0, "tIAJB");
-    dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 20, 30, 20, 30, 0, "WMbEj");
-    dpd_->contract444(&T2, &W, &T2new, 0, 1, 1, 0);
-    dpd_->buf4_close(&W);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2new, PSIF_CC_TMP0, 0, 20, 30, 20, 30, 0, "T2 (IA,jb)");
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 20, 20, 20, 20, 0, "tIAJB");
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 20, 30, 20, 30, 0, "WMbEj");
+    global_dpd_->contract444(&T2, &W, &T2new, 0, 1, 1, 0);
+    global_dpd_->buf4_close(&W);
+    global_dpd_->buf4_close(&T2);
 
     /* T2(IA,me) * W(me,jb) --> T2(IA,jb) */
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 20, 30, 20, 30, 0, "tIAjb");
-    dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 30, 30, 30, 30, 0, "Wmbej");
-    dpd_->contract444(&T2, &W, &T2new, 0, 1, 1, 1);
-    dpd_->buf4_close(&W);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 20, 30, 20, 30, 0, "tIAjb");
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 30, 30, 30, 30, 0, "Wmbej");
+    global_dpd_->contract444(&T2, &W, &T2new, 0, 1, 1, 1);
+    global_dpd_->buf4_close(&W);
+    global_dpd_->buf4_close(&T2);
 
     /* W(ME,IA) * T2(jb,ME) --> T2(IA,jb) */
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 30, 20, 30, 20, 0, "tiaJB");
-    dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 20, 20, 20, 20, 0, "WMBEJ");
-    dpd_->contract444(&W, &T2, &T2new, 1, 0, 1, 1);
-    dpd_->buf4_close(&W);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 30, 20, 30, 20, 0, "tiaJB");
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 20, 20, 20, 20, 0, "WMBEJ");
+    global_dpd_->contract444(&W, &T2, &T2new, 1, 0, 1, 1);
+    global_dpd_->buf4_close(&W);
+    global_dpd_->buf4_close(&T2);
 
     /* W(me,IA) * T2(jb,me) --> T2(IA,jb) */
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 30, 30, 30, 30, 0, "tiajb");
-    dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 30, 20, 30, 20, 0, "WmBeJ");
-    dpd_->contract444(&W, &T2, &T2new, 1, 0, 1, 1);
-    dpd_->buf4_close(&W);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 30, 30, 30, 30, 0, "tiajb");
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 30, 20, 30, 20, 0, "WmBeJ");
+    global_dpd_->contract444(&W, &T2, &T2new, 1, 0, 1, 1);
+    global_dpd_->buf4_close(&W);
+    global_dpd_->buf4_close(&T2);
 
     /* T2(IA,jb) --> T2(Ij,Ab) (part 1) */
-    dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, prqs, 22, 28, "T2 (Ij,Ab) 1");
-    dpd_->buf4_close(&T2new);
+    global_dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, prqs, 22, 28, "T2 (Ij,Ab) 1");
+    global_dpd_->buf4_close(&T2new);
 
     /* T2(Ib,mE) * W(mE,jA) --> T2(Ib,jA) */
-    dpd_->buf4_init(&T2new, PSIF_CC_TMP0, 0, 24, 27, 24, 27, 0, "T2 (Ib,jA)");
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 24, 27, 24, 27, 0, "tIbjA");
-    dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 27, 27, 27, 27, 0, "WmBEj");
-    dpd_->contract444(&T2, &W, &T2new, 0, 1, 1, 0);
-    dpd_->buf4_close(&W);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2new, PSIF_CC_TMP0, 0, 24, 27, 24, 27, 0, "T2 (Ib,jA)");
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 24, 27, 24, 27, 0, "tIbjA");
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 27, 27, 27, 27, 0, "WmBEj");
+    global_dpd_->contract444(&T2, &W, &T2new, 0, 1, 1, 0);
+    global_dpd_->buf4_close(&W);
+    global_dpd_->buf4_close(&T2);
 
     /* W(Me,Ib) * T2(jA,Me) --> T2(Ib,jA) */
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 27, 24, 27, 24, 0, "tiBJa");
-    dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 24, 24, 24, 24, 0, "WMbeJ");
-    dpd_->contract444(&W, &T2, &T2new, 1, 0, 1, 1);
-    dpd_->buf4_close(&W);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 27, 24, 27, 24, 0, "tiBJa");
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 24, 24, 24, 24, 0, "WMbeJ");
+    global_dpd_->contract444(&W, &T2, &T2new, 1, 0, 1, 1);
+    global_dpd_->buf4_close(&W);
+    global_dpd_->buf4_close(&T2);
 
     /* T2(Ib,jA) --> T2(Ij,Ab) (part 2) */
-    dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, prsq, 22, 28, "T2 (Ij,Ab) 2");
-    dpd_->buf4_close(&T2new);
+    global_dpd_->buf4_sort(&T2new, PSIF_CC_TMP0, prsq, 22, 28, "T2 (Ij,Ab) 2");
+    global_dpd_->buf4_close(&T2new);
 
 
     /* T2(Ij,Ab) (part 1) + T2(Ij,Ab) (part 2) --> New T2(Ij,Ab) */
-    dpd_->buf4_init(&T2new, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "New tIjAb");
+    global_dpd_->buf4_init(&T2new, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "New tIjAb");
 
-    dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 22, 28, 22, 28, 0, "T2 (Ij,Ab) 1");
-    dpd_->buf4_axpy(&T2, &T2new, 1);
-    dpd_->buf4_close(&T2);
-    dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 22, 28, 22, 28, 0, "T2 (Ij,Ab) 2");
-    dpd_->buf4_axpy(&T2, &T2new, 1);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 22, 28, 22, 28, 0, "T2 (Ij,Ab) 1");
+    global_dpd_->buf4_axpy(&T2, &T2new, 1);
+    global_dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TMP0, 0, 22, 28, 22, 28, 0, "T2 (Ij,Ab) 2");
+    global_dpd_->buf4_axpy(&T2, &T2new, 1);
+    global_dpd_->buf4_close(&T2);
 
-    dpd_->buf4_close(&T2new);
+    global_dpd_->buf4_close(&T2new);
 
   } /*** UHF ***/
 }

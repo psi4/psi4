@@ -40,14 +40,14 @@ void d_spinad(void)
   dpdbuf4 D, D1;
 
   if(params.ref == 0) { /*** RHF ***/
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
-    dpd_->buf4_scmcopy(&D, PSIF_CC_DINTS, "D 2<ij|ab> - <ij|ba>", 2);
-    dpd_->buf4_sort_axpy(&D, PSIF_CC_DINTS, pqsr, 0, 5, "D 2<ij|ab> - <ij|ba>", -1);
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+    global_dpd_->buf4_scmcopy(&D, PSIF_CC_DINTS, "D 2<ij|ab> - <ij|ba>", 2);
+    global_dpd_->buf4_sort_axpy(&D, PSIF_CC_DINTS, pqsr, 0, 5, "D 2<ij|ab> - <ij|ba>", -1);
+    global_dpd_->buf4_close(&D);
 
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
-    dpd_->buf4_sort(&D, PSIF_CC_DINTS, prqs, 10, 10, "D 2<ij|ab> - <ij|ba> (ia,jb)");
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
+    global_dpd_->buf4_sort(&D, PSIF_CC_DINTS, prqs, 10, 10, "D 2<ij|ab> - <ij|ba> (ia,jb)");
+    global_dpd_->buf4_close(&D);
 
   }
 }

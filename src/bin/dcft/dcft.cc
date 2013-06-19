@@ -71,10 +71,10 @@ void
 DCFTSolver::dpd_buf4_add(dpdbuf4 *A, dpdbuf4 *B, double alpha)
 {
     for(int h = 0; h < nirrep_; ++h){
-        dpd_->buf4_mat_irrep_init(A, h);
-        dpd_->buf4_mat_irrep_init(B, h);
-        dpd_->buf4_mat_irrep_rd(A, h);
-        dpd_->buf4_mat_irrep_rd(B, h);
+        global_dpd_->buf4_mat_irrep_init(A, h);
+        global_dpd_->buf4_mat_irrep_init(B, h);
+        global_dpd_->buf4_mat_irrep_rd(A, h);
+        global_dpd_->buf4_mat_irrep_rd(B, h);
 
         #pragma omp parallel for
         for(int row = 0; row < A->params->rowtot[h]; ++row){
@@ -82,9 +82,9 @@ DCFTSolver::dpd_buf4_add(dpdbuf4 *A, dpdbuf4 *B, double alpha)
                 A->matrix[h][row][col] += alpha * B->matrix[h][row][col];
             }
         }
-        dpd_->buf4_mat_irrep_wrt(A, h);
-        dpd_->buf4_mat_irrep_close(A, h);
-        dpd_->buf4_mat_irrep_close(B, h);
+        global_dpd_->buf4_mat_irrep_wrt(A, h);
+        global_dpd_->buf4_mat_irrep_close(A, h);
+        global_dpd_->buf4_mat_irrep_close(B, h);
     }
 }
 

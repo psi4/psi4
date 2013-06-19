@@ -50,14 +50,14 @@ double rhf_energy(void)
   dpdbuf4 S;
   double os_energy, ss_energy;
 
-  dpd_->buf4_init(&tIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-  dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
-  E = dpd_->buf4_dot(&D, &tIjAb);
-  dpd_->buf4_close(&D);
-  dpd_->buf4_init(&S, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
-  os_energy = dpd_->buf4_dot(&S, &tIjAb);
-  dpd_->buf4_close(&tIjAb);
-  dpd_->buf4_close(&S);
+  global_dpd_->buf4_init(&tIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
+  E = global_dpd_->buf4_dot(&D, &tIjAb);
+  global_dpd_->buf4_close(&D);
+  global_dpd_->buf4_init(&S, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+  os_energy = global_dpd_->buf4_dot(&S, &tIjAb);
+  global_dpd_->buf4_close(&tIjAb);
+  global_dpd_->buf4_close(&S);
   ss_energy = (E - os_energy);
 
   mo.emp2_os = os_energy;
@@ -86,36 +86,36 @@ double uhf_energy(void)
   dpdbuf4 tIJAB, tijab, tIjAb,  D;
 
   if(params.semicanonical) {
-    dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "fIA");
-    dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
-    E1A = dpd_->file2_dot(&F, &T1);
-    dpd_->file2_close(&F);
-    dpd_->file2_close(&T1);
+    global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "fIA");
+    global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    E1A = global_dpd_->file2_dot(&F, &T1);
+    global_dpd_->file2_close(&F);
+    global_dpd_->file2_close(&T1);
 
-    dpd_->file2_init(&F, PSIF_CC_OEI, 0, 2, 3, "fia");
-    dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia");
-    E1B = dpd_->file2_dot(&F, &T1);
-    dpd_->file2_close(&F);
-    dpd_->file2_close(&T1);
+    global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 2, 3, "fia");
+    global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia");
+    E1B = global_dpd_->file2_dot(&F, &T1);
+    global_dpd_->file2_close(&F);
+    global_dpd_->file2_close(&T1);
   }
 
-  dpd_->buf4_init(&tIJAB, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
-  dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 2, 7, 2, 7, 0, "D <IJ||AB> (I>J,A>B)");
-  E2AA = dpd_->buf4_dot(&D, &tIJAB);
-  dpd_->buf4_close(&D);
-  dpd_->buf4_close(&tIJAB);
+  global_dpd_->buf4_init(&tIJAB, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
+  global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 2, 7, 2, 7, 0, "D <IJ||AB> (I>J,A>B)");
+  E2AA = global_dpd_->buf4_dot(&D, &tIJAB);
+  global_dpd_->buf4_close(&D);
+  global_dpd_->buf4_close(&tIJAB);
 
-  dpd_->buf4_init(&tijab, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "tijab");
-  dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 12, 17, 12, 17, 0, "D <ij||ab> (i>j,a>b)");
-  E2BB = dpd_->buf4_dot(&D, &tijab);
-  dpd_->buf4_close(&D);
-  dpd_->buf4_close(&tijab);
+  global_dpd_->buf4_init(&tijab, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "tijab");
+  global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 12, 17, 12, 17, 0, "D <ij||ab> (i>j,a>b)");
+  E2BB = global_dpd_->buf4_dot(&D, &tijab);
+  global_dpd_->buf4_close(&D);
+  global_dpd_->buf4_close(&tijab);
 
-  dpd_->buf4_init(&tIjAb, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
-  dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
-  E2AB = dpd_->buf4_dot(&D, &tIjAb);
-  dpd_->buf4_close(&D);
-  dpd_->buf4_close(&tIjAb);
+  global_dpd_->buf4_init(&tIjAb, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
+  global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
+  E2AB = global_dpd_->buf4_dot(&D, &tIjAb);
+  global_dpd_->buf4_close(&D);
+  global_dpd_->buf4_close(&tIjAb);
 
   if(params.semicanonical)
     return(E1A+E1B+E2AA+E2BB+E2AB);

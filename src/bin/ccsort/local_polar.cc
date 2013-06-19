@@ -96,9 +96,9 @@ void local_polar(const char *cart, int **domain, int *domain_len,
     C_DGEMM('n', 'n', nso, moinfo.occpi[0], nso, 1, &(TMP[0][0]), nao, &(C[0][0]), moinfo.occpi[0],
 	    0, &(MU[0][0]), moinfo.occpi[0]);
 
-    dpd_->file2_init(&U, PSIF_CC_OEI, 0, 1, 0, "CPHF Uf_X_AI");
-    dpd_->file2_mat_init(&U);
-    dpd_->file2_mat_rd(&U);
+    global_dpd_->file2_init(&U, PSIF_CC_OEI, 0, 1, 0, "CPHF Uf_X_AI");
+    global_dpd_->file2_mat_init(&U);
+    global_dpd_->file2_mat_rd(&U);
 
     C_DGEMM('n', 'n', nso,moinfo.occpi[0],moinfo.virtpi[0], 1, &(moinfo.C[0][0][0]), moinfo.virtpi[0],
 	    &(U.matrix[0][0][0]), moinfo.occpi[0], 0, &(Z[0][0]), moinfo.occpi[0]);
@@ -170,8 +170,8 @@ void local_polar(const char *cart, int **domain, int *domain_len,
       }
     }
 
-    dpd_->file2_mat_close(&U);
-    dpd_->file2_close(&U);
+    global_dpd_->file2_mat_close(&U);
+    global_dpd_->file2_close(&U);
   }
 
   if (!strcmp(cart,"Y")) {
@@ -188,9 +188,9 @@ void local_polar(const char *cart, int **domain, int *domain_len,
     C_DGEMM('n', 'n', nso, moinfo.occpi[0], nso, 1, &(TMP[0][0]), nao, &(C[0][0]), moinfo.occpi[0],
 	    0, &(MU[0][0]), moinfo.occpi[0]);
 
-    dpd_->file2_init(&U, PSIF_CC_OEI, 0, 1, 0, "CPHF Uf_Y_AI");
-    dpd_->file2_mat_init(&U);
-    dpd_->file2_mat_rd(&U);
+    global_dpd_->file2_init(&U, PSIF_CC_OEI, 0, 1, 0, "CPHF Uf_Y_AI");
+    global_dpd_->file2_mat_init(&U);
+    global_dpd_->file2_mat_rd(&U);
 
     C_DGEMM('n', 'n', nso,moinfo.occpi[0],moinfo.virtpi[0], 1, &(moinfo.C[0][0][0]), moinfo.virtpi[0],
 	    &(U.matrix[0][0][0]), moinfo.occpi[0], 0, &(Z[0][0]), moinfo.occpi[0]);
@@ -261,8 +261,8 @@ void local_polar(const char *cart, int **domain, int *domain_len,
       }
     }
 
-    dpd_->file2_mat_close(&U);
-    dpd_->file2_close(&U);
+    global_dpd_->file2_mat_close(&U);
+    global_dpd_->file2_close(&U);
   }
 
   if (!strcmp(cart,"Z")) {
@@ -279,9 +279,9 @@ void local_polar(const char *cart, int **domain, int *domain_len,
     C_DGEMM('n', 'n', nso, moinfo.occpi[0], nso, 1, &(TMP[0][0]), nao, &(C[0][0]), moinfo.occpi[0],
 	    0, &(MU[0][0]), moinfo.occpi[0]);
 
-    dpd_->file2_init(&U, PSIF_CC_OEI, 0, 1, 0, "CPHF Uf_Z_AI");
-    dpd_->file2_mat_init(&U);
-    dpd_->file2_mat_rd(&U);
+    global_dpd_->file2_init(&U, PSIF_CC_OEI, 0, 1, 0, "CPHF Uf_Z_AI");
+    global_dpd_->file2_mat_init(&U);
+    global_dpd_->file2_mat_rd(&U);
 
     C_DGEMM('n', 'n', nso,moinfo.occpi[0],moinfo.virtpi[0], 1, &(moinfo.C[0][0][0]), moinfo.virtpi[0],
 	    &(U.matrix[0][0][0]), moinfo.occpi[0], 0, &(Z[0][0]), moinfo.occpi[0]);
@@ -352,8 +352,8 @@ void local_polar(const char *cart, int **domain, int *domain_len,
       }
     }
 
-    dpd_->file2_mat_close(&U);
-    dpd_->file2_close(&U);
+    global_dpd_->file2_mat_close(&U);
+    global_dpd_->file2_close(&U);
   }
 
   free_block(TMP);

@@ -88,37 +88,37 @@ if (wfn_type_ != "OMP2") {
      timer_on("Sort chem -> phys");
      timer_on("Sort (OO|OO) -> <OO|OO>");
      // (OO|OO) -> <OO|OO>
-     dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"),
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"),
                   ID("[O>=O]+"), ID("[O>=O]+"), 0, "MO Ints (OO|OO)");
-     dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[O,O]"), ID("[O,O]"), "MO Ints <OO|OO>");
-     dpd_->buf4_close(&K);
+     global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[O,O]"), ID("[O,O]"), "MO Ints <OO|OO>");
+     global_dpd_->buf4_close(&K);
      timer_off("Sort (OO|OO) -> <OO|OO>");
  
   
      timer_on("Sort (OO|OV) -> <OO|OV>");
      // (OO|OV) -> <OO|OV>
-     dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
                   ID("[O>=O]+"), ID("[O,V]"), 0, "MO Ints (OO|OV)");
-     dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[O,O]"), ID("[O,V]"), "MO Ints <OO|OV>");
-     dpd_->buf4_close(&K);
+     global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[O,O]"), ID("[O,V]"), "MO Ints <OO|OV>");
+     global_dpd_->buf4_close(&K);
      timer_off("Sort (OO|OV) -> <OO|OV>");
      
      
      timer_on("Sort (OV|OV) -> <OO|VV>");
      // (OV|OV) -> <OO|VV>
-     dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
-     dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[O,O]"), ID("[V,V]"), "MO Ints <OO|VV>");
-     dpd_->buf4_close(&K);
+     global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[O,O]"), ID("[V,V]"), "MO Ints <OO|VV>");
+     global_dpd_->buf4_close(&K);
      timer_off("Sort (OV|OV) -> <OO|VV>");
      
     
      timer_on("Sort (OO|VV) -> <OV|OV>");
      // (OO|VV) -> <OV|OV>
-     dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O>=O]+"), ID("[V>=V]+"), 0, "MO Ints (OO|VV)");
-     dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[O,V]"), ID("[O,V]"), "MO Ints <OV|OV>");
-     dpd_->buf4_close(&K);
+     global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[O,V]"), ID("[O,V]"), "MO Ints <OV|OV>");
+     global_dpd_->buf4_close(&K);
      timer_off("Sort (OO|VV) -> <OV|OV>");
      
      
@@ -129,10 +129,10 @@ if (wfn_type_ == "OMP2" && incore_iabc_ == 0) {
 }
 
 else {
-     dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
                   ID("[O,V]"), ID("[V>=V]+"), 0, "MO Ints (OV|VV)");
-     dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[O,V]"), ID("[V,V]"), "MO Ints <OV|VV>");
-     dpd_->buf4_close(&K);
+     global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[O,V]"), ID("[V,V]"), "MO Ints <OV|VV>");
+     global_dpd_->buf4_close(&K);
 }
      timer_off("Sort (OV|VV) -> <OV|VV>");
      
@@ -141,10 +141,10 @@ else {
 if (wfn_type_ != "OMP2") { 
      timer_on("Sort (VV|VV) -> <VV|VV>");
      // (VV|VV) -> <VV|VV>
-     dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
                  ID("[V>=V]+"), ID("[V>=V]+"), 0, "MO Ints (VV|VV)");
-     dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[V,V]"), ID("[V,V]"), "MO Ints <VV|VV>");
-     dpd_->buf4_close(&K);
+     global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[V,V]"), ID("[V,V]"), "MO Ints <VV|VV>");
+     global_dpd_->buf4_close(&K);
      timer_off("Sort (VV|VV) -> <VV|VV>");
 }// end if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA") { 
      timer_off("Sort chem -> phys");
@@ -207,10 +207,10 @@ void OCCWave::denominators_rhf()
     }
     
     // Build denominators
-    dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+    global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "D <OO|VV>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_->buf4_mat_irrep_init(&D, h);
+        global_dpd_->buf4_mat_irrep_init(&D, h);
         for(int row = 0; row < D.params->rowtot[h]; ++row){
             int i = D.params->roworb[h][row][0];
             int j = D.params->roworb[h][row][1];
@@ -220,11 +220,11 @@ void OCCWave::denominators_rhf()
                 D.matrix[h][row][col] = 1.0/(aOccEvals[i] + aOccEvals[j] - aVirEvals[a] - aVirEvals[b]);
             }
         }
-        dpd_->buf4_mat_irrep_wrt(&D, h);
-        dpd_->buf4_mat_irrep_close(&D, h);
+        global_dpd_->buf4_mat_irrep_wrt(&D, h);
+        global_dpd_->buf4_mat_irrep_close(&D, h);
     }
-    if (print_ > 2) dpd_->buf4_print(&D, outfile, 1);
-    dpd_->buf4_close(&D);
+    if (print_ > 2) global_dpd_->buf4_print(&D, outfile, 1);
+    global_dpd_->buf4_close(&D);
     
     
     //Print
@@ -249,8 +249,8 @@ void OCCWave::denominators_rhf()
     // Off-diagonal elements of the Fock matrix    
     // Build Occupied-Occupied block
     // The alpha-alpha spin case 
-    dpd_->file2_init(&Fo, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F <O|O>");
-    dpd_->file2_mat_init(&Fo);
+    global_dpd_->file2_init(&Fo, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F <O|O>");
+    global_dpd_->file2_mat_init(&Fo);
     for(int h = 0; h < nirrep_; ++h){
         for(int i = 0 ; i < aoccpiA[h]; ++i){
             for(int j = 0 ; j < aoccpiA[h]; ++j){
@@ -259,20 +259,20 @@ void OCCWave::denominators_rhf()
             }
         }
     }
-    dpd_->file2_mat_wrt(&Fo);
-    dpd_->file2_close(&Fo);
+    global_dpd_->file2_mat_wrt(&Fo);
+    global_dpd_->file2_close(&Fo);
     
     if (print_ > 2) {
-      dpd_->file2_init(&Fo, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F <O|O>");
-      dpd_->file2_mat_init(&Fo);
-      dpd_->file2_mat_print(&Fo, outfile);
-      dpd_->file2_close(&Fo);
+      global_dpd_->file2_init(&Fo, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F <O|O>");
+      global_dpd_->file2_mat_init(&Fo);
+      global_dpd_->file2_mat_print(&Fo, outfile);
+      global_dpd_->file2_close(&Fo);
     }
     
     // Build Virtual-Virtual block
     // The alpha-alpha spin case 
-    dpd_->file2_init(&Fv, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "F <V|V>");
-    dpd_->file2_mat_init(&Fv);
+    global_dpd_->file2_init(&Fv, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "F <V|V>");
+    global_dpd_->file2_mat_init(&Fv);
     for(int h = 0; h < nirrep_; ++h){
         for(int i = 0 ; i < avirtpiA[h]; ++i){
             for(int j = 0 ; j < avirtpiA[h]; ++j){
@@ -281,14 +281,14 @@ void OCCWave::denominators_rhf()
             }
         }
     }
-    dpd_->file2_mat_wrt(&Fv);
-    dpd_->file2_close(&Fv);
+    global_dpd_->file2_mat_wrt(&Fv);
+    global_dpd_->file2_close(&Fv);
     
     if (print_ > 2) {
-      dpd_->file2_init(&Fv, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "F <V|V>");
-      dpd_->file2_mat_init(&Fv);
-      dpd_->file2_mat_print(&Fv, outfile);
-      dpd_->file2_close(&Fv);
+      global_dpd_->file2_init(&Fv, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "F <V|V>");
+      global_dpd_->file2_mat_init(&Fv);
+      global_dpd_->file2_mat_print(&Fv, outfile);
+      global_dpd_->file2_close(&Fv);
     }
 
 //fprintf(outfile,"\n denominators done. \n"); fflush(outfile);

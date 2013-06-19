@@ -45,69 +45,69 @@ void overlap(int L_irr)
 
   nirreps = moinfo.nirreps;
 
-  dpd_->file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
-  dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
-  ST1A = dpd_->file2_dot(&T1, &L1);
-  dpd_->file2_close(&L1);
-  dpd_->file2_close(&T1);
+  global_dpd_->file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
+  global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
+  ST1A = global_dpd_->file2_dot(&T1, &L1);
+  global_dpd_->file2_close(&L1);
+  global_dpd_->file2_close(&T1);
 
   if(params.ref == 0 || params.ref == 1) { /** RHF/ROHF **/
-    dpd_->file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "Lia");
-    dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tia");
+    global_dpd_->file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "Lia");
+    global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tia");
   }
   else if(params.ref == 2) { /** UHF **/
-    dpd_->file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 2, 3, "Lia");
-    dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia");
+    global_dpd_->file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 2, 3, "Lia");
+    global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia");
   }
-  ST1B = dpd_->file2_dot(&T1, &L1);
-  dpd_->file2_close(&L1);
-  dpd_->file2_close(&T1);
+  ST1B = global_dpd_->file2_dot(&T1, &L1);
+  global_dpd_->file2_close(&L1);
+  global_dpd_->file2_close(&T1);
 
-  dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "LIJAB");
-  dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
-  ST2AA = dpd_->buf4_dot(&L2, &T2);
-  dpd_->buf4_close(&T2);
-  dpd_->buf4_close(&L2);
+  global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "LIJAB");
+  global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
+  ST2AA = global_dpd_->buf4_dot(&L2, &T2);
+  global_dpd_->buf4_close(&T2);
+  global_dpd_->buf4_close(&L2);
 
   if(params.ref == 0 || params.ref == 1) { /** RHF/ROHF **/
-    dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "Lijab");
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tijab");
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "Lijab");
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tijab");
   }
   else if(params.ref == 2) { /** UHF **/
-    dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 12, 17, 12, 17, 0, "Lijab");
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "tijab");
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 12, 17, 12, 17, 0, "Lijab");
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "tijab");
   }
-  ST2BB = dpd_->buf4_dot(&L2, &T2);
-  dpd_->buf4_close(&T2);
-  dpd_->buf4_close(&L2);
+  ST2BB = global_dpd_->buf4_dot(&L2, &T2);
+  global_dpd_->buf4_close(&T2);
+  global_dpd_->buf4_close(&L2);
 
   if(params.ref == 0 || params.ref == 1) { /** RHF/ROHF **/
-    dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
   }
   else if(params.ref == 2) { /** UHF **/
-    dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "LIjAb");
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "LIjAb");
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
   }
-  ST2AB = dpd_->buf4_dot(&L2, &T2);
-  dpd_->buf4_close(&T2);
-  dpd_->buf4_close(&L2);
+  ST2AB = global_dpd_->buf4_dot(&L2, &T2);
+  global_dpd_->buf4_close(&T2);
+  global_dpd_->buf4_close(&L2);
 
-  dpd_->file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
-  dpd_->file2_mat_init(&T1A);
-  dpd_->file2_mat_rd(&T1A);
+  global_dpd_->file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
+  global_dpd_->file2_mat_init(&T1A);
+  global_dpd_->file2_mat_rd(&T1A);
   if(params.ref == 0 || params.ref == 1) /** RHF/ROHF **/
-    dpd_->file2_init(&T1B, PSIF_CC_OEI, 0, 0, 1, "tia");
+    global_dpd_->file2_init(&T1B, PSIF_CC_OEI, 0, 0, 1, "tia");
   else if(params.ref == 2) /** UHF **/
-    dpd_->file2_init(&T1B, PSIF_CC_OEI, 0, 2, 3, "tia");
-  dpd_->file2_mat_init(&T1B);
-  dpd_->file2_mat_rd(&T1B);
+    global_dpd_->file2_init(&T1B, PSIF_CC_OEI, 0, 2, 3, "tia");
+  global_dpd_->file2_mat_init(&T1B);
+  global_dpd_->file2_mat_rd(&T1B);
 
   ST12AA = 0.0;
-  dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "LIJAB");
+  global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "LIJAB");
   for(h=0; h < nirreps; h++) {
-    dpd_->buf4_mat_irrep_init(&L2, h);
-    dpd_->buf4_mat_irrep_rd(&L2, h);
+    global_dpd_->buf4_mat_irrep_init(&L2, h);
+    global_dpd_->buf4_mat_irrep_rd(&L2, h);
     for(row=0; row < L2.params->rowtot[h]; row++) {
       i = L2.params->roworb[h][row][0];
       j = L2.params->roworb[h][row][1];
@@ -126,20 +126,20 @@ void overlap(int L_irr)
 	    T1A.matrix[Isym][I][B] * T1A.matrix[Jsym][J][A];
       }
     }
-    dpd_->buf4_mat_irrep_close(&L2, h);
+    global_dpd_->buf4_mat_irrep_close(&L2, h);
   }
-  dpd_->buf4_close(&L2);
+  global_dpd_->buf4_close(&L2);
 
   ST12BB = 0.0;
 
   if(params.ref == 0 || params.ref == 1)
-    dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "Lijab");
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "Lijab");
   else if(params.ref == 2)
-    dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 12, 17, 12, 17, 0, "Lijab");
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 12, 17, 12, 17, 0, "Lijab");
 
   for(h=0; h < nirreps; h++) {
-    dpd_->buf4_mat_irrep_init(&L2, h);
-    dpd_->buf4_mat_irrep_rd(&L2, h);
+    global_dpd_->buf4_mat_irrep_init(&L2, h);
+    global_dpd_->buf4_mat_irrep_rd(&L2, h);
     for(row=0; row < L2.params->rowtot[h]; row++) {
       i = L2.params->roworb[h][row][0];
       j = L2.params->roworb[h][row][1];
@@ -158,20 +158,20 @@ void overlap(int L_irr)
 	    T1B.matrix[Isym][I][B] * T1B.matrix[Jsym][J][A];
       }
     }
-    dpd_->buf4_mat_irrep_close(&L2, h);
+    global_dpd_->buf4_mat_irrep_close(&L2, h);
   }
-  dpd_->buf4_close(&L2);
+  global_dpd_->buf4_close(&L2);
 
   ST12AB = 0.0;
 
   if(params.ref == 0 || params.ref == 1)
-    dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
   else if(params.ref == 2)
-    dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "LIjAb");
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "LIjAb");
 
   for(h=0; h < nirreps; h++) {
-    dpd_->buf4_mat_irrep_init(&L2, h);
-    dpd_->buf4_mat_irrep_rd(&L2, h);
+    global_dpd_->buf4_mat_irrep_init(&L2, h);
+    global_dpd_->buf4_mat_irrep_rd(&L2, h);
     for(row=0; row < L2.params->rowtot[h]; row++) {
       i = L2.params->roworb[h][row][0];
       j = L2.params->roworb[h][row][1];
@@ -187,15 +187,15 @@ void overlap(int L_irr)
 	    T1A.matrix[Isym][I][A] * T1B.matrix[Jsym][J][B];
       }
     }
-    dpd_->buf4_mat_irrep_close(&L2, h);
+    global_dpd_->buf4_mat_irrep_close(&L2, h);
   }
-  dpd_->buf4_close(&L2);
+  global_dpd_->buf4_close(&L2);
 
 
-  dpd_->file2_mat_close(&T1A);
-  dpd_->file2_close(&T1A);
-  dpd_->file2_mat_close(&T1B);
-  dpd_->file2_close(&T1B);
+  global_dpd_->file2_mat_close(&T1A);
+  global_dpd_->file2_close(&T1A);
+  global_dpd_->file2_mat_close(&T1B);
+  global_dpd_->file2_close(&T1B);
 
   /*
     fprintf(outfile, "\tST1A = %20.15f\n", ST1A);

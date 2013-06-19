@@ -40,115 +40,115 @@ void sort_amps(void)
 
   if(params.ref == 0) { /** RHF **/
     /* T(iJ,aB) */
-    dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-    dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, qpsr, 0, 5, "tiJaB");
-    dpd_->buf4_close(&t2);
+    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+    global_dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, qpsr, 0, 5, "tiJaB");
+    global_dpd_->buf4_close(&t2);
 
     /* TIjAb (IA,jb) */
-    dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-    dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, prqs, 10, 10, "tIAjb");
-    dpd_->buf4_close(&t2);
+    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+    global_dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, prqs, 10, 10, "tIAjb");
+    global_dpd_->buf4_close(&t2);
 
     /* TIjAb (ij,JB) */
-    dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tIAjb");
-    dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, rspq, 10, 10, "tiaJB");
-    dpd_->buf4_close(&t2);
+    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tIAjb");
+    global_dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, rspq, 10, 10, "tiaJB");
+    global_dpd_->buf4_close(&t2);
 
     /* TIjAb (Ib,jA) */
-    dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tIAjb");
-    dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, psrq, 10, 10, "tIbjA");
-    dpd_->buf4_close(&t2);
+    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tIAjb");
+    global_dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, psrq, 10, 10, "tIbjA");
+    global_dpd_->buf4_close(&t2);
 
     /* TIjAb (jA,Ib) */
-    dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tIbjA");
-    dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, rspq, 10, 10, "tjAIb");
-    dpd_->buf4_close(&t2);
+    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tIbjA");
+    global_dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, rspq, 10, 10, "tjAIb");
+    global_dpd_->buf4_close(&t2);
 
     /* 2 tIjAb - tIjBa */
-    dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-    dpd_->buf4_scmcopy(&t2, PSIF_CC_TAMPS, "2 tIjAb - tIjBa", 2);
-    dpd_->buf4_sort_axpy(&t2, PSIF_CC_TAMPS, pqsr, 0, 5, "2 tIjAb - tIjBa", -1);
-    dpd_->buf4_close(&t2);
+    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+    global_dpd_->buf4_scmcopy(&t2, PSIF_CC_TAMPS, "2 tIjAb - tIjBa", 2);
+    global_dpd_->buf4_sort_axpy(&t2, PSIF_CC_TAMPS, pqsr, 0, 5, "2 tIjAb - tIjBa", -1);
+    global_dpd_->buf4_close(&t2);
 
     /* 2 T(IA,jb) - t(IB,ja) */
-    dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tIAjb");
-    dpd_->buf4_scmcopy(&t2, PSIF_CC_TAMPS, "2 tIAjb - tIBja", 2);
-    dpd_->buf4_close(&t2);
-    dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "2 tIAjb - tIBja");
-    dpd_->buf4_init(&t2B, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tIbjA");
-    dpd_->buf4_axpy(&t2B, &t2, -1);
-    dpd_->buf4_close(&t2B);
-    dpd_->buf4_close(&t2);
+    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tIAjb");
+    global_dpd_->buf4_scmcopy(&t2, PSIF_CC_TAMPS, "2 tIAjb - tIBja", 2);
+    global_dpd_->buf4_close(&t2);
+    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "2 tIAjb - tIBja");
+    global_dpd_->buf4_init(&t2B, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tIbjA");
+    global_dpd_->buf4_axpy(&t2B, &t2, -1);
+    global_dpd_->buf4_close(&t2B);
+    global_dpd_->buf4_close(&t2);
 
   }
   else if(params.ref == 1) { /** ROHF **/
     /* T(iJ,aB) */
-    dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-    dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, qpsr, 0, 5, "tiJaB");
-    dpd_->buf4_close(&t2);
+    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+    global_dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, qpsr, 0, 5, "tiJaB");
+    global_dpd_->buf4_close(&t2);
 
     /* TIJAB (IA,JB) */
-    dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
-    dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, prqs, 10, 10, "tIAJB");
-    dpd_->buf4_close(&t2);
+    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
+    global_dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, prqs, 10, 10, "tIAJB");
+    global_dpd_->buf4_close(&t2);
 
     /* Tijab (ia,jb) */
-    dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tijab");
-    dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, prqs, 10, 10, "tiajb");
-    dpd_->buf4_close(&t2);
+    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tijab");
+    global_dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, prqs, 10, 10, "tiajb");
+    global_dpd_->buf4_close(&t2);
 
     /* TIjAb (IA,jb) */
-    dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-    dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, prqs, 10, 10, "tIAjb");
-    dpd_->buf4_close(&t2);
+    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+    global_dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, prqs, 10, 10, "tIAjb");
+    global_dpd_->buf4_close(&t2);
 
     /* TIjAb (ij,JB) */
-    dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tIAjb");
-    dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, rspq, 10, 10, "tiaJB");
-    dpd_->buf4_close(&t2);
+    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tIAjb");
+    global_dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, rspq, 10, 10, "tiaJB");
+    global_dpd_->buf4_close(&t2);
 
     /* TIjAb (Ib,jA) */
-    dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tIAjb");
-    dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, psrq, 10, 10, "tIbjA");
-    dpd_->buf4_close(&t2);
+    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tIAjb");
+    global_dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, psrq, 10, 10, "tIbjA");
+    global_dpd_->buf4_close(&t2);
     /* TIjAb (jA,Ib) */
-    dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tIbjA");
-    dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, rspq, 10, 10, "tjAIb");
-    dpd_->buf4_close(&t2);
+    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tIbjA");
+    global_dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, rspq, 10, 10, "tjAIb");
+    global_dpd_->buf4_close(&t2);
   }
   else if(params.ref == 2) { /*** UHF ***/
 
     /* TIJAB (IA,JB) */
-    dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
-    dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, prqs, 20, 20, "tIAJB");
-    dpd_->buf4_close(&t2);
+    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
+    global_dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, prqs, 20, 20, "tIAJB");
+    global_dpd_->buf4_close(&t2);
 
     /* Tijab (ia,jb) */
-    dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 10, 15, 12, 17, 0, "tijab");
-    dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, prqs, 30, 30, "tiajb");
-    dpd_->buf4_close(&t2);
+    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 10, 15, 12, 17, 0, "tijab");
+    global_dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, prqs, 30, 30, "tiajb");
+    global_dpd_->buf4_close(&t2);
 
     /* TIjAb (IA,jb) */
-    dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
-    dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, prqs, 20, 30, "tIAjb");
-    dpd_->buf4_close(&t2);
+    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
+    global_dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, prqs, 20, 30, "tIAjb");
+    global_dpd_->buf4_close(&t2);
 
-    dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 20, 30, 20, 30, 0, "tIAjb");
+    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 20, 30, 20, 30, 0, "tIAjb");
     /* TIjAb (jb,IA) */
-    dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, rspq, 30, 20, "tiaJB");
+    global_dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, rspq, 30, 20, "tiaJB");
     /* TIjAb (Ib,jA) (Wmbej.c) */
-    dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, psrq, 24, 27, "tIbjA");
-    dpd_->buf4_close(&t2);
+    global_dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, psrq, 24, 27, "tIbjA");
+    global_dpd_->buf4_close(&t2);
 
     /* TiJaB (iB,Ja) (Wmbej.c) */
-    dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 24, 27, 24, 27, 0, "tIbjA");
-    dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, rspq, 27, 24, "tiBJa");
-    dpd_->buf4_close(&t2);
+    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 24, 27, 24, 27, 0, "tIbjA");
+    global_dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, rspq, 27, 24, "tiBJa");
+    global_dpd_->buf4_close(&t2);
 
     /* T(iJ,aB) */
-    dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
-    dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, qpsr, 23, 29, "tiJaB");
-    dpd_->buf4_close(&t2);
+    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
+    global_dpd_->buf4_sort(&t2, PSIF_CC_TAMPS, qpsr, 23, 29, "tiJaB");
+    global_dpd_->buf4_close(&t2);
 
   }
 }

@@ -51,26 +51,26 @@ void mp2(void)
   if(params.ref == 0) { /** RHF **/
 
     /* build initial guess amplitudes */
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
-    dpd_->buf4_copy(&D, PSIF_CC_MISC, "MP2 tIjAb");
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+    global_dpd_->buf4_copy(&D, PSIF_CC_MISC, "MP2 tIjAb");
+    global_dpd_->buf4_close(&D);
 
-    dpd_->buf4_init(&T2, PSIF_CC_MISC, 0, 0, 5, 0, 5, 0, "MP2 tIjAb");
+    global_dpd_->buf4_init(&T2, PSIF_CC_MISC, 0, 0, 5, 0, 5, 0, "MP2 tIjAb");
     if(params.local) local_filter_T2(&T2);
     else {
-      dpd_->buf4_init(&D, PSIF_CC_DENOM, 0, 0, 5, 0, 5, 0, "dIjAb");
-      dpd_->buf4_dirprd(&D, &T2);
-      dpd_->buf4_close(&D);
+      global_dpd_->buf4_init(&D, PSIF_CC_DENOM, 0, 0, 5, 0, 5, 0, "dIjAb");
+      global_dpd_->buf4_dirprd(&D, &T2);
+      global_dpd_->buf4_close(&D);
     }
 
-    dpd_->buf4_copy(&T2, PSIF_CC_MISC, "New MP2 tIjAb");
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_copy(&T2, PSIF_CC_MISC, "New MP2 tIjAb");
+    global_dpd_->buf4_close(&T2);
 
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
-    dpd_->buf4_init(&T2, PSIF_CC_MISC, 0, 0, 5, 0, 5, 0, "MP2 tIjAb");
-    energy = dpd_->buf4_dot(&D, &T2);
-    dpd_->buf4_close(&T2);
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
+    global_dpd_->buf4_init(&T2, PSIF_CC_MISC, 0, 0, 5, 0, 5, 0, "MP2 tIjAb");
+    energy = global_dpd_->buf4_dot(&D, &T2);
+    global_dpd_->buf4_close(&T2);
+    global_dpd_->buf4_close(&D);
 
     if(params.local) {
       fprintf(outfile, "\n\tSolving for LMP2 wave function:\n");
@@ -86,54 +86,54 @@ void mp2(void)
     conv = 0;
     for(iter=1; iter < params.maxiter; iter++) {
 
-      dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
-      dpd_->buf4_copy(&D, PSIF_CC_MISC, "New MP2 tIjAb Increment");
-      dpd_->buf4_close(&D);
+      global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+      global_dpd_->buf4_copy(&D, PSIF_CC_MISC, "New MP2 tIjAb Increment");
+      global_dpd_->buf4_close(&D);
 
-      dpd_->buf4_init(&newT2, PSIF_CC_MISC, 0, 0, 5, 0, 5, 0, "New MP2 tIjAb Increment");
-      dpd_->buf4_init(&T2, PSIF_CC_MISC, 0, 0, 5, 0, 5, 0, "MP2 tIjAb");
+      global_dpd_->buf4_init(&newT2, PSIF_CC_MISC, 0, 0, 5, 0, 5, 0, "New MP2 tIjAb Increment");
+      global_dpd_->buf4_init(&T2, PSIF_CC_MISC, 0, 0, 5, 0, 5, 0, "MP2 tIjAb");
 
-      dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 0, "fIJ");
-      dpd_->contract424(&T2, &F, &newT2, 1, 0, 1, -1, 1);
-      dpd_->contract244(&F, &T2, &newT2, 0, 0, 0, -1, 1);
-      dpd_->file2_close(&F);
+      global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+      global_dpd_->contract424(&T2, &F, &newT2, 1, 0, 1, -1, 1);
+      global_dpd_->contract244(&F, &T2, &newT2, 0, 0, 0, -1, 1);
+      global_dpd_->file2_close(&F);
 
-      dpd_->file2_init(&F, PSIF_CC_OEI, 0, 1, 1, "fAB");
-      dpd_->contract244(&F, &T2, &newT2, 1, 2, 1, 1, 1);
-      dpd_->contract424(&T2, &F, &newT2, 3, 1, 0, 1, 1);
-      dpd_->file2_close(&F);
+      global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 1, 1, "fAB");
+      global_dpd_->contract244(&F, &T2, &newT2, 1, 2, 1, 1, 1);
+      global_dpd_->contract424(&T2, &F, &newT2, 3, 1, 0, 1, 1);
+      global_dpd_->file2_close(&F);
 
-      dpd_->buf4_close(&T2);
+      global_dpd_->buf4_close(&T2);
 
       if(params.local) {
 	local_filter_T2(&newT2);
       }
       else {
-	dpd_->buf4_init(&D, PSIF_CC_DENOM, 0, 0, 5, 0, 5, 0, "dIjAb");
-	dpd_->buf4_dirprd(&D, &newT2);
-	dpd_->buf4_close(&D);
+	global_dpd_->buf4_init(&D, PSIF_CC_DENOM, 0, 0, 5, 0, 5, 0, "dIjAb");
+	global_dpd_->buf4_dirprd(&D, &newT2);
+	global_dpd_->buf4_close(&D);
       }
 
-      dpd_->buf4_close(&newT2);
+      global_dpd_->buf4_close(&newT2);
 
-      dpd_->buf4_init(&newT2, PSIF_CC_MISC, 0, 0, 5, 0, 5, 0, "New MP2 tIjAb");
-      dpd_->buf4_init(&T2, PSIF_CC_MISC, 0, 0, 5, 0, 5, 0, "New MP2 tIjAb Increment");
-      dpd_->buf4_axpy(&T2, &newT2, 1);
-      dpd_->buf4_close(&T2);
+      global_dpd_->buf4_init(&newT2, PSIF_CC_MISC, 0, 0, 5, 0, 5, 0, "New MP2 tIjAb");
+      global_dpd_->buf4_init(&T2, PSIF_CC_MISC, 0, 0, 5, 0, 5, 0, "New MP2 tIjAb Increment");
+      global_dpd_->buf4_axpy(&T2, &newT2, 1);
+      global_dpd_->buf4_close(&T2);
 
-      dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
-      energy = dpd_->buf4_dot(&D, &newT2);
-      dpd_->buf4_close(&D);
-      dpd_->buf4_close(&newT2);
+      global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
+      energy = global_dpd_->buf4_dot(&D, &newT2);
+      global_dpd_->buf4_close(&D);
+      global_dpd_->buf4_close(&newT2);
 
-      dpd_->buf4_init(&newT2, PSIF_CC_MISC, 0, 0, 5, 0, 5, 0, "New MP2 tIjAb");
-      dpd_->buf4_init(&T2, PSIF_CC_MISC, 0, 0, 5, 0, 5, 0, "MP2 tIjAb");
+      global_dpd_->buf4_init(&newT2, PSIF_CC_MISC, 0, 0, 5, 0, 5, 0, "New MP2 tIjAb");
+      global_dpd_->buf4_init(&T2, PSIF_CC_MISC, 0, 0, 5, 0, 5, 0, "MP2 tIjAb");
       rms = 0.0;
       for(h=0; h < nirreps; h++) {
-	dpd_->buf4_mat_irrep_init(&newT2, h);
-	dpd_->buf4_mat_irrep_rd(&newT2, h);
-	dpd_->buf4_mat_irrep_init(&T2, h);
-	dpd_->buf4_mat_irrep_rd(&T2, h);
+	global_dpd_->buf4_mat_irrep_init(&newT2, h);
+	global_dpd_->buf4_mat_irrep_rd(&newT2, h);
+	global_dpd_->buf4_mat_irrep_init(&T2, h);
+	global_dpd_->buf4_mat_irrep_rd(&T2, h);
 
 	for(row=0; row < T2.params->rowtot[h]; row++)
 	  for(col=0; col < T2.params->coltot[h]; col++) {
@@ -141,11 +141,11 @@ void mp2(void)
 	    rms += value * value;
 	  }
 
-	dpd_->buf4_mat_irrep_close(&T2, h);
-	dpd_->buf4_mat_irrep_close(&newT2, h);
+	global_dpd_->buf4_mat_irrep_close(&T2, h);
+	global_dpd_->buf4_mat_irrep_close(&newT2, h);
       }
-      dpd_->buf4_close(&T2);
-      dpd_->buf4_close(&newT2);
+      global_dpd_->buf4_close(&T2);
+      global_dpd_->buf4_close(&newT2);
       rms = sqrt(rms);
 
       if(params.local) {
@@ -161,9 +161,9 @@ void mp2(void)
 	break;
       }
       else {
-	dpd_->buf4_init(&T2, PSIF_CC_MISC, 0, 0, 5, 0, 5, 0, "New MP2 tIjAb");
-	dpd_->buf4_copy(&T2, PSIF_CC_MISC, "MP2 tIjAb");
-	dpd_->buf4_close(&T2);
+	global_dpd_->buf4_init(&T2, PSIF_CC_MISC, 0, 0, 5, 0, 5, 0, "New MP2 tIjAb");
+	global_dpd_->buf4_copy(&T2, PSIF_CC_MISC, "MP2 tIjAb");
+	global_dpd_->buf4_close(&T2);
       }
     }
 
@@ -173,44 +173,44 @@ void mp2(void)
     }
 
     /* spin adapt the final amplitudes */
-    dpd_->buf4_init(&T2, PSIF_CC_MISC, 0, 0, 5, 0, 5, 0, "MP2 tIjAb");
-    dpd_->buf4_sort(&T2, PSIF_CC_TMP0, pqsr, 0, 5, "MP2 tIjbA");
-    dpd_->buf4_copy(&T2, PSIF_CC_MISC, "MP2 2 tIjAb - tIjbA");
-    dpd_->buf4_close(&T2);
-    dpd_->buf4_init(&T2, PSIF_CC_MISC, 0, 0, 5, 0, 5, 0, "MP2 2 tIjAb - tIjbA");
-    dpd_->buf4_scm(&T2, 2);
-    dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "MP2 tIjbA");
-    dpd_->buf4_axpy(&Z, &T2, -1);
-    dpd_->buf4_close(&Z);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2, PSIF_CC_MISC, 0, 0, 5, 0, 5, 0, "MP2 tIjAb");
+    global_dpd_->buf4_sort(&T2, PSIF_CC_TMP0, pqsr, 0, 5, "MP2 tIjbA");
+    global_dpd_->buf4_copy(&T2, PSIF_CC_MISC, "MP2 2 tIjAb - tIjbA");
+    global_dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2, PSIF_CC_MISC, 0, 0, 5, 0, 5, 0, "MP2 2 tIjAb - tIjbA");
+    global_dpd_->buf4_scm(&T2, 2);
+    global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "MP2 tIjbA");
+    global_dpd_->buf4_axpy(&Z, &T2, -1);
+    global_dpd_->buf4_close(&Z);
+    global_dpd_->buf4_close(&T2);
   }
   else if(params.ref == 2) { /** UHF **/
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 2, 7, 2, 7, 0, "D <IJ||AB> (I>J,A>B)");
-    dpd_->buf4_copy(&D, PSIF_CC_MISC, "MP2 tIJAB");
-    dpd_->buf4_close(&D);
-    dpd_->buf4_init(&T2, PSIF_CC_MISC, 0, 2, 7, 2, 7, 0, "MP2 tIJAB");
-    dpd_->buf4_init(&D, PSIF_CC_DENOM, 0, 1, 6, 1, 6, 0, "dIJAB");
-    dpd_->buf4_dirprd(&D, &T2);
-    dpd_->buf4_close(&D);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 2, 7, 2, 7, 0, "D <IJ||AB> (I>J,A>B)");
+    global_dpd_->buf4_copy(&D, PSIF_CC_MISC, "MP2 tIJAB");
+    global_dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&T2, PSIF_CC_MISC, 0, 2, 7, 2, 7, 0, "MP2 tIJAB");
+    global_dpd_->buf4_init(&D, PSIF_CC_DENOM, 0, 1, 6, 1, 6, 0, "dIJAB");
+    global_dpd_->buf4_dirprd(&D, &T2);
+    global_dpd_->buf4_close(&D);
+    global_dpd_->buf4_close(&T2);
 
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 12, 17, 12, 17, 0, "D <ij||ab> (i>j,a>b)");
-    dpd_->buf4_copy(&D, PSIF_CC_MISC, "MP2 tijab");
-    dpd_->buf4_close(&D);
-    dpd_->buf4_init(&T2, PSIF_CC_MISC, 0, 12, 17, 12, 17, 0, "MP2 tijab");
-    dpd_->buf4_init(&D, PSIF_CC_DENOM, 0, 11, 16, 11, 16, 0, "dijab");
-    dpd_->buf4_dirprd(&D, &T2);
-    dpd_->buf4_close(&D);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 12, 17, 12, 17, 0, "D <ij||ab> (i>j,a>b)");
+    global_dpd_->buf4_copy(&D, PSIF_CC_MISC, "MP2 tijab");
+    global_dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&T2, PSIF_CC_MISC, 0, 12, 17, 12, 17, 0, "MP2 tijab");
+    global_dpd_->buf4_init(&D, PSIF_CC_DENOM, 0, 11, 16, 11, 16, 0, "dijab");
+    global_dpd_->buf4_dirprd(&D, &T2);
+    global_dpd_->buf4_close(&D);
+    global_dpd_->buf4_close(&T2);
 
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
-    dpd_->buf4_copy(&D, PSIF_CC_MISC, "MP2 tIjAb");
-    dpd_->buf4_close(&D);
-    dpd_->buf4_init(&T2, PSIF_CC_MISC, 0, 22, 28, 22, 28, 0, "MP2 tIjAb");
-    dpd_->buf4_init(&D, PSIF_CC_DENOM, 0, 22, 28, 22, 28, 0, "dIjAb");
-    dpd_->buf4_dirprd(&D, &T2);
-    dpd_->buf4_close(&D);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
+    global_dpd_->buf4_copy(&D, PSIF_CC_MISC, "MP2 tIjAb");
+    global_dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&T2, PSIF_CC_MISC, 0, 22, 28, 22, 28, 0, "MP2 tIjAb");
+    global_dpd_->buf4_init(&D, PSIF_CC_DENOM, 0, 22, 28, 22, 28, 0, "dIjAb");
+    global_dpd_->buf4_dirprd(&D, &T2);
+    global_dpd_->buf4_close(&D);
+    global_dpd_->buf4_close(&T2);
   }
 }
 

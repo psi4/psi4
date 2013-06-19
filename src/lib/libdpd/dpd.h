@@ -498,7 +498,7 @@ public:
  * Static variables/functions to mimic the old C machinery
  */
 extern dpd_gbl dpd_main;
-extern DPD* dpd_;
+extern DPD* global_dpd_;
 extern int dpd_default;
 extern DPD* dpd_list[2];
 extern int dpd_set_default(int dpd_num);

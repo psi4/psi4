@@ -48,62 +48,62 @@ void rhf_sf_Iab(void)
   dpdbuf4 G, Dints;
 
   /* I'AB <-- sum_I fAI (DBI + DIB) + sum_C fAC (DBC + DCB) */
-  dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 1, "I'AB");
+  global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 1, "I'AB");
 
-  dpd_->file2_init(&F, PSIF_CC_OEI, 0, 1, 1, "fAB");
-  dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "DAB");
-  dpd_->contract222(&F, &D, &I, 0, 0, 1.0, 0.0);
-  dpd_->contract222(&F, &D, &I, 0, 1, 1.0, 1.0);
-  dpd_->file2_close(&D);
-  dpd_->file2_close(&F);
+  global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 1, 1, "fAB");
+  global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "DAB");
+  global_dpd_->contract222(&F, &D, &I, 0, 0, 1.0, 0.0);
+  global_dpd_->contract222(&F, &D, &I, 0, 1, 1.0, 1.0);
+  global_dpd_->file2_close(&D);
+  global_dpd_->file2_close(&F);
 
-  dpd_->file2_close(&I);
+  global_dpd_->file2_close(&I);
 
   /* I'ab <-- sum_i fai (Dbi + Dib) + sum_c fac (Dbc + Dcb) */
-  dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 1, "I'ab");
+  global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 1, "I'ab");
 
-  dpd_->file2_init(&F, PSIF_CC_OEI, 0, 1, 1, "fab");
-  dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "Dab");
-  dpd_->contract222(&F, &D, &I, 0, 0, 1.0, 0.0);
-  dpd_->contract222(&F, &D, &I, 0, 1, 1.0, 1.0);
-  dpd_->file2_close(&D);
-  dpd_->file2_close(&F);
+  global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 1, 1, "fab");
+  global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "Dab");
+  global_dpd_->contract222(&F, &D, &I, 0, 0, 1.0, 0.0);
+  global_dpd_->contract222(&F, &D, &I, 0, 1, 1.0, 1.0);
+  global_dpd_->file2_close(&D);
+  global_dpd_->file2_close(&F);
 
-  dpd_->file2_close(&I);
+  global_dpd_->file2_close(&I);
 
   /* I'AB <-- sum_CIJ <IJ||CA> G(IJ,CB) + 2 sum_Ijc <Ij|Ac> G(Ij,Bc) */
-  dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 1, "I'AB");
+  global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 1, "I'AB");
 
-  dpd_->buf4_init(&Dints, PSIF_CC_DINTS, 0, 2, 5, 2, 5, 0, "D <ij||ab> (i>j,ab)");
-  dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 5, 2, 7, 0, "GIJAB");
-  dpd_->contract442(&Dints, &G, &I, 3, 3, 2.0, 1.0);
-  dpd_->buf4_close(&G);
-  dpd_->buf4_close(&Dints);
+  global_dpd_->buf4_init(&Dints, PSIF_CC_DINTS, 0, 2, 5, 2, 5, 0, "D <ij||ab> (i>j,ab)");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 5, 2, 7, 0, "GIJAB");
+  global_dpd_->contract442(&Dints, &G, &I, 3, 3, 2.0, 1.0);
+  global_dpd_->buf4_close(&G);
+  global_dpd_->buf4_close(&Dints);
 
-  dpd_->buf4_init(&Dints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
-  dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "GIjAb");
-  dpd_->contract442(&Dints, &G, &I, 2, 2, 2.0, 1.0);
-  dpd_->buf4_close(&G);
-  dpd_->buf4_close(&Dints);
+  global_dpd_->buf4_init(&Dints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "GIjAb");
+  global_dpd_->contract442(&Dints, &G, &I, 2, 2, 2.0, 1.0);
+  global_dpd_->buf4_close(&G);
+  global_dpd_->buf4_close(&Dints);
 
-  dpd_->file2_close(&I);
+  global_dpd_->file2_close(&I);
 
   /* I'ab <-- sum_cij <ij||ca> G(ij,cb) + 2 sum_IjC <Ij|Ca> G(Ij,Cb) */
-  dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 1, "I'ab");
+  global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 1, "I'ab");
 
-  dpd_->buf4_init(&Dints, PSIF_CC_DINTS, 0, 2, 5, 2, 5, 0, "D <ij||ab> (i>j,ab)");
-  dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 5, 2, 7, 0, "Gijab");
-  dpd_->contract442(&Dints, &G, &I, 3, 3, 2.0, 1.0);
-  dpd_->buf4_close(&G);
-  dpd_->buf4_close(&Dints);
+  global_dpd_->buf4_init(&Dints, PSIF_CC_DINTS, 0, 2, 5, 2, 5, 0, "D <ij||ab> (i>j,ab)");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 5, 2, 7, 0, "Gijab");
+  global_dpd_->contract442(&Dints, &G, &I, 3, 3, 2.0, 1.0);
+  global_dpd_->buf4_close(&G);
+  global_dpd_->buf4_close(&Dints);
 
-  dpd_->buf4_init(&Dints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
-  dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "GIjAb");
-  dpd_->contract442(&Dints, &G, &I, 3, 3, 2.0, 1.0);
-  dpd_->buf4_close(&G);
-  dpd_->buf4_close(&Dints);
+  global_dpd_->buf4_init(&Dints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "GIjAb");
+  global_dpd_->contract442(&Dints, &G, &I, 3, 3, 2.0, 1.0);
+  global_dpd_->buf4_close(&G);
+  global_dpd_->buf4_close(&Dints);
 
-  dpd_->file2_close(&I);
+  global_dpd_->file2_close(&I);
 }
 
 void uhf_sf_Iab(void)
