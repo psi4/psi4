@@ -869,6 +869,12 @@ def run_ccenergy(name, **kwargs):
         psi4.set_local_option('TRANSQT2', 'WFN', 'CCSD_T')
         psi4.set_local_option('CCSORT', 'WFN', 'CCSD_T')
         psi4.set_local_option('CCENERGY', 'WFN', 'CCSD_T')
+    elif (lowername == 'ccsd(at)' or lowername == 'a-ccsd(t)'):
+        psi4.set_local_option('TRANSQT2', 'WFN', 'CCSD_AT')
+        psi4.set_local_option('CCSORT', 'WFN', 'CCSD_AT')
+        psi4.set_local_option('CCENERGY', 'WFN', 'CCSD_AT')
+        psi4.set_local_option('CCHBAR', 'WFN', 'CCSD_AT')
+        psi4.set_local_option('CCLAMBDA', 'WFN', 'CCSD_AT')
     elif (lowername == 'cc2'):
         psi4.set_local_option('TRANSQT2', 'WFN', 'CC2')
         psi4.set_local_option('CCSORT', 'WFN', 'CC2')
@@ -901,6 +907,10 @@ def run_ccenergy(name, **kwargs):
     psi4.transqt2()
     psi4.ccsort()
     psi4.ccenergy()
+
+    if (lowername == 'ccsd(at)' or lowername == 'a-ccsd(t)'):
+	psi4.cchbar()
+	psi4.cclambda()
 
     optstash.restore()
 

@@ -205,7 +205,7 @@ for xyzfile in glob.glob('*.' + fext):
         print "%-25s %6d %6d %6d %6d %6d" % (system, CHGsyst, MLPsyst, Nsyst, Nsyst, 0)
         gpy += "GEOS['%%s-%%s-%%s' %% (dbse, '%s', 'reagent')] = qcdb.Molecule(\"\"\"\n" % (str(system))
 
-    gpy += mol.save_string_for_psi4()
+    gpy += mol.create_psi4_string_from_molecule()
     gpy += """\"\"\")\n\n"""
 
     count += 1
