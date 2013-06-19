@@ -80,259 +80,259 @@ void deanti_UHF(struct RHO_Params rho_params)
   fprintf(outfile, "\n\tEnergies re-computed from Mulliken density:\n");
   fprintf(outfile,   "\t-------------------------------------------\n");
 
-  dpd_file2_init(&d, PSIF_CC_OEI, 0, 0, 0, rho_params.DIJ_lbl);
-  dpd_file2_init(&h, PSIF_CC_OEI, 0, 0, 0, "h(I,J)");
-  one_energy += dpd_file2_dot(&d, &h);
-  dpd_file2_close(&h);
-  dpd_file2_close(&d);
+  dpd_->file2_init(&d, PSIF_CC_OEI, 0, 0, 0, rho_params.DIJ_lbl);
+  dpd_->file2_init(&h, PSIF_CC_OEI, 0, 0, 0, "h(I,J)");
+  one_energy += dpd_->file2_dot(&d, &h);
+  dpd_->file2_close(&h);
+  dpd_->file2_close(&d);
 
-  dpd_file2_init(&d, PSIF_CC_OEI, 0, 2, 2, rho_params.Dij_lbl);
-  dpd_file2_init(&h, PSIF_CC_OEI, 0, 2, 2, "h(i,j)");
-  one_energy += dpd_file2_dot(&d, &h);
-  dpd_file2_close(&h);
-  dpd_file2_close(&d);
+  dpd_->file2_init(&d, PSIF_CC_OEI, 0, 2, 2, rho_params.Dij_lbl);
+  dpd_->file2_init(&h, PSIF_CC_OEI, 0, 2, 2, "h(i,j)");
+  one_energy += dpd_->file2_dot(&d, &h);
+  dpd_->file2_close(&h);
+  dpd_->file2_close(&d);
 
-  dpd_file2_init(&d, PSIF_CC_OEI, 0, 1, 1, rho_params.DAB_lbl);
-  dpd_file2_init(&h, PSIF_CC_OEI, 0, 1, 1, "h(A,B)");
-  one_energy += dpd_file2_dot(&d, &h);
-  dpd_file2_close(&h);
-  dpd_file2_close(&d);
+  dpd_->file2_init(&d, PSIF_CC_OEI, 0, 1, 1, rho_params.DAB_lbl);
+  dpd_->file2_init(&h, PSIF_CC_OEI, 0, 1, 1, "h(A,B)");
+  one_energy += dpd_->file2_dot(&d, &h);
+  dpd_->file2_close(&h);
+  dpd_->file2_close(&d);
 
-  dpd_file2_init(&d, PSIF_CC_OEI, 0, 3, 3, rho_params.Dab_lbl);
-  dpd_file2_init(&h, PSIF_CC_OEI, 0, 3, 3, "h(a,b)");
-  one_energy += dpd_file2_dot(&d, &h);
-  dpd_file2_close(&h);
-  dpd_file2_close(&d);
+  dpd_->file2_init(&d, PSIF_CC_OEI, 0, 3, 3, rho_params.Dab_lbl);
+  dpd_->file2_init(&h, PSIF_CC_OEI, 0, 3, 3, "h(a,b)");
+  one_energy += dpd_->file2_dot(&d, &h);
+  dpd_->file2_close(&h);
+  dpd_->file2_close(&d);
 
-  dpd_file2_init(&d, PSIF_CC_OEI, 0, 0, 1, rho_params.DIA_lbl);
-  dpd_file2_init(&h, PSIF_CC_OEI, 0, 0, 1, "h(I,A)");
-  one_energy += dpd_file2_dot(&d, &h);
-  dpd_file2_close(&h);
-  dpd_file2_close(&d);
+  dpd_->file2_init(&d, PSIF_CC_OEI, 0, 0, 1, rho_params.DIA_lbl);
+  dpd_->file2_init(&h, PSIF_CC_OEI, 0, 0, 1, "h(I,A)");
+  one_energy += dpd_->file2_dot(&d, &h);
+  dpd_->file2_close(&h);
+  dpd_->file2_close(&d);
 
-  dpd_file2_init(&d, PSIF_CC_OEI, 0, 2, 3, rho_params.Dia_lbl);
-  dpd_file2_init(&h, PSIF_CC_OEI, 0, 2, 3, "h(i,a)");
-  one_energy += dpd_file2_dot(&d, &h);
-  dpd_file2_close(&h);
-  dpd_file2_close(&d);
+  dpd_->file2_init(&d, PSIF_CC_OEI, 0, 2, 3, rho_params.Dia_lbl);
+  dpd_->file2_init(&h, PSIF_CC_OEI, 0, 2, 3, "h(i,a)");
+  one_energy += dpd_->file2_dot(&d, &h);
+  dpd_->file2_close(&h);
+  dpd_->file2_close(&d);
 
-  dpd_file2_init(&d, PSIF_CC_OEI, 0, 0, 1, rho_params.DAI_lbl);
-  dpd_file2_init(&h, PSIF_CC_OEI, 0, 0, 1, "h(I,A)");
-  one_energy += dpd_file2_dot(&d, &h);
-  dpd_file2_close(&h);
-  dpd_file2_close(&d);
+  dpd_->file2_init(&d, PSIF_CC_OEI, 0, 0, 1, rho_params.DAI_lbl);
+  dpd_->file2_init(&h, PSIF_CC_OEI, 0, 0, 1, "h(I,A)");
+  one_energy += dpd_->file2_dot(&d, &h);
+  dpd_->file2_close(&h);
+  dpd_->file2_close(&d);
 
-  dpd_file2_init(&d, PSIF_CC_OEI, 0, 2, 3, rho_params.Dai_lbl);
-  dpd_file2_init(&h, PSIF_CC_OEI, 0, 2, 3, "h(i,a)");
-  one_energy += dpd_file2_dot(&d, &h);
-  dpd_file2_close(&h);
-  dpd_file2_close(&d);
+  dpd_->file2_init(&d, PSIF_CC_OEI, 0, 2, 3, rho_params.Dai_lbl);
+  dpd_->file2_init(&h, PSIF_CC_OEI, 0, 2, 3, "h(i,a)");
+  one_energy += dpd_->file2_dot(&d, &h);
+  dpd_->file2_close(&h);
+  dpd_->file2_close(&d);
 
   fprintf(outfile, "\tOne-electron energy        = %20.15f\n", one_energy);
   fflush(outfile);
 
   /* G(Ij,Kl) = 1/2 G(Ij,Kl) */
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 22, 22, 22, 22, 0, "GIjKl");
-  dpd_buf4_scm(&G, 0.5);
-  dpd_buf4_init(&A, PSIF_CC_AINTS, 0, 22, 22, 22, 22, 0, "A <Ij|Kl>");
-  two_energy = 2*dpd_buf4_dot(&A, &G);
-  dpd_buf4_close(&A);
-  dpd_buf4_close(&G);
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 22, 22, 22, 22, 0, "GIjKl");
+  dpd_->buf4_scm(&G, 0.5);
+  dpd_->buf4_init(&A, PSIF_CC_AINTS, 0, 22, 22, 22, 22, 0, "A <Ij|Kl>");
+  two_energy = 2*dpd_->buf4_dot(&A, &G);
+  dpd_->buf4_close(&A);
+  dpd_->buf4_close(&G);
   fprintf(outfile, "\tIjKl energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
 
   /* G(IJ,KL) = 1/2 G(IJ,KL) */
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 0, 2, 2, 0, "GIJKL");
-  dpd_buf4_scm(&G, 0.5);
-  dpd_buf4_init(&A, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 0, "A <IJ|KL>");
-  two_energy = dpd_buf4_dot(&A, &G);
-  dpd_buf4_close(&A);
-  dpd_buf4_close(&G);
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 0, 2, 2, 0, "GIJKL");
+  dpd_->buf4_scm(&G, 0.5);
+  dpd_->buf4_init(&A, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 0, "A <IJ|KL>");
+  two_energy = dpd_->buf4_dot(&A, &G);
+  dpd_->buf4_close(&A);
+  dpd_->buf4_close(&G);
   fprintf(outfile, "\tIJKL energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
 
   /* G(ij,kl) = 1/2 G(ij,kl) */
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 12, 12, 0, "Gijkl");
-  dpd_buf4_scm(&G, 0.5);
-  dpd_buf4_init(&A, PSIF_CC_AINTS, 0, 10, 10, 10, 10, 0, "A <ij|kl>");
-  two_energy = dpd_buf4_dot(&A, &G);
-  dpd_buf4_close(&A);
-  dpd_buf4_close(&G);
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 12, 12, 0, "Gijkl");
+  dpd_->buf4_scm(&G, 0.5);
+  dpd_->buf4_init(&A, PSIF_CC_AINTS, 0, 10, 10, 10, 10, 0, "A <ij|kl>");
+  two_energy = dpd_->buf4_dot(&A, &G);
+  dpd_->buf4_close(&A);
+  dpd_->buf4_close(&G);
   fprintf(outfile, "\tijkl energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
 
   /* No change to G(IJ,KA) components */
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 22, 24, 22, 24, 0, "GIjKa");
-  dpd_buf4_init(&E, PSIF_CC_EINTS, 0, 22, 24, 22, 24, 0, "E <Ij|Ka>");
-  two_energy = 2*dpd_buf4_dot(&E, &G);
-  dpd_buf4_close(&E);
-  dpd_buf4_close(&G);
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 22, 24, 22, 24, 0, "GIjKa");
+  dpd_->buf4_init(&E, PSIF_CC_EINTS, 0, 22, 24, 22, 24, 0, "E <Ij|Ka>");
+  two_energy = 2*dpd_->buf4_dot(&E, &G);
+  dpd_->buf4_close(&E);
+  dpd_->buf4_close(&G);
 
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 23, 27, 23, 27, 0, "GiJkA");
-  dpd_buf4_init(&E, PSIF_CC_EINTS, 0, 23, 27, 23, 27, 0, "E <iJ|kA>");
-  two_energy += 2*dpd_buf4_dot(&E, &G);
-  dpd_buf4_close(&E);
-  dpd_buf4_close(&G);
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 23, 27, 23, 27, 0, "GiJkA");
+  dpd_->buf4_init(&E, PSIF_CC_EINTS, 0, 23, 27, 23, 27, 0, "E <iJ|kA>");
+  two_energy += 2*dpd_->buf4_dot(&E, &G);
+  dpd_->buf4_close(&E);
+  dpd_->buf4_close(&G);
   fprintf(outfile, "\tIjKa+iJkA energy           = %20.15f\n", two_energy);
   total_two_energy += two_energy;
 
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 20, 2, 20, 0, "GIJKA");
-  dpd_buf4_init(&E, PSIF_CC_EINTS, 0, 0, 20, 0, 20, 0, "E <IJ|KA>");
-  two_energy = 2*dpd_buf4_dot(&E, &G);
-  dpd_buf4_close(&E);
-  dpd_buf4_close(&G);
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 20, 2, 20, 0, "GIJKA");
+  dpd_->buf4_init(&E, PSIF_CC_EINTS, 0, 0, 20, 0, 20, 0, "E <IJ|KA>");
+  two_energy = 2*dpd_->buf4_dot(&E, &G);
+  dpd_->buf4_close(&E);
+  dpd_->buf4_close(&G);
   fprintf(outfile, "\tIJKA energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
 
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 30, 12, 30, 0, "Gijka");
-  dpd_buf4_init(&E, PSIF_CC_EINTS, 0, 10, 30, 10, 30, 0, "E <ij|ka>");
-  two_energy = 2*dpd_buf4_dot(&E, &G);
-  dpd_buf4_close(&E);
-  dpd_buf4_close(&G);
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 30, 12, 30, 0, "Gijka");
+  dpd_->buf4_init(&E, PSIF_CC_EINTS, 0, 10, 30, 10, 30, 0, "E <ij|ka>");
+  two_energy = 2*dpd_->buf4_dot(&E, &G);
+  dpd_->buf4_close(&E);
+  dpd_->buf4_close(&G);
   fprintf(outfile, "\tijka energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
 
   /* G(Ij,Ab) <-- G(Ij,Ab) - G(Ib,jA) */
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 22, 28, 22, 28, 0, "GIjAb");
-  dpd_buf4_init(&G2, PSIF_CC_GAMMA, 0, 24, 27, 24, 27, 0, "GIbjA");
-  dpd_buf4_sort(&G2, PSIF_CC_TMP0, prsq, 22, 28, "GIbjA (Ij,Ab)");
-  dpd_buf4_close(&G2);
-  dpd_buf4_init(&G2, PSIF_CC_TMP0, 0, 22, 28, 22, 28, 0, "GIbjA (Ij,Ab)");
-  dpd_buf4_axpy(&G2, &G, -1.0);
-  dpd_buf4_close(&G2);
-  dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
-  two_energy = 2 * dpd_buf4_dot(&D, &G);
-  dpd_buf4_close(&D);
-  dpd_buf4_close(&G);
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 22, 28, 22, 28, 0, "GIjAb");
+  dpd_->buf4_init(&G2, PSIF_CC_GAMMA, 0, 24, 27, 24, 27, 0, "GIbjA");
+  dpd_->buf4_sort(&G2, PSIF_CC_TMP0, prsq, 22, 28, "GIbjA (Ij,Ab)");
+  dpd_->buf4_close(&G2);
+  dpd_->buf4_init(&G2, PSIF_CC_TMP0, 0, 22, 28, 22, 28, 0, "GIbjA (Ij,Ab)");
+  dpd_->buf4_axpy(&G2, &G, -1.0);
+  dpd_->buf4_close(&G2);
+  dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
+  two_energy = 2 * dpd_->buf4_dot(&D, &G);
+  dpd_->buf4_close(&D);
+  dpd_->buf4_close(&G);
   fprintf(outfile, "\tIjAb energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
   
   /* G(IJ,AB) <-- G(IJ,AB) - G(IB,JA) */
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 2, 7, 0, "GIJAB");
-  dpd_buf4_copy(&G, PSIF_CC_GAMMA, "G(IJ,AB)");
-  dpd_buf4_close(&G);
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "G(IJ,AB)");
-  dpd_buf4_init(&G2, PSIF_CC_GAMMA, 0, 20, 20, 20, 20, 0, "GIBJA");
-  dpd_buf4_sort(&G2, PSIF_CC_TMP0, prsq, 0, 5, "GIBJA (IJ,AB)");
-  dpd_buf4_close(&G2);
-  dpd_buf4_init(&G2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "GIBJA (IJ,AB)");
-  dpd_buf4_axpy(&G2, &G, -1.0); 
-  dpd_buf4_close(&G2);
-  dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <IJ|AB>");
-  two_energy = dpd_buf4_dot(&D, &G);
-  dpd_buf4_close(&D);
-  dpd_buf4_close(&G);
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 2, 7, 0, "GIJAB");
+  dpd_->buf4_copy(&G, PSIF_CC_GAMMA, "G(IJ,AB)");
+  dpd_->buf4_close(&G);
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "G(IJ,AB)");
+  dpd_->buf4_init(&G2, PSIF_CC_GAMMA, 0, 20, 20, 20, 20, 0, "GIBJA");
+  dpd_->buf4_sort(&G2, PSIF_CC_TMP0, prsq, 0, 5, "GIBJA (IJ,AB)");
+  dpd_->buf4_close(&G2);
+  dpd_->buf4_init(&G2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "GIBJA (IJ,AB)");
+  dpd_->buf4_axpy(&G2, &G, -1.0); 
+  dpd_->buf4_close(&G2);
+  dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <IJ|AB>");
+  two_energy = dpd_->buf4_dot(&D, &G);
+  dpd_->buf4_close(&D);
+  dpd_->buf4_close(&G);
   fprintf(outfile, "\tIJAB energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
   
   /* G(ij,ab) <-- G(ij,ab) - G(ib,ja) */
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 15, 12, 17, 0, "Gijab");
-  dpd_buf4_copy(&G, PSIF_CC_GAMMA, "G(ij,ab)");
-  dpd_buf4_close(&G);
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 15, 10, 15, 0, "G(ij,ab)");
-  dpd_buf4_init(&G2, PSIF_CC_GAMMA, 0, 30, 30, 30, 30, 0, "Gibja");
-  dpd_buf4_sort(&G2, PSIF_CC_TMP0, prsq, 10, 15, "Gibja (ij,ab)");
-  dpd_buf4_close(&G2);
-  dpd_buf4_init(&G2, PSIF_CC_TMP0, 0, 10, 15, 10, 15, 0, "Gibja (ij,ab)");
-  dpd_buf4_axpy(&G2, &G, -1.0);
-  dpd_buf4_close(&G2);
-  dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 10, 15, 10, 15, 0, "D <ij|ab>");
-  two_energy = dpd_buf4_dot(&D, &G);
-  dpd_buf4_close(&D);
-  dpd_buf4_close(&G);
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 15, 12, 17, 0, "Gijab");
+  dpd_->buf4_copy(&G, PSIF_CC_GAMMA, "G(ij,ab)");
+  dpd_->buf4_close(&G);
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 15, 10, 15, 0, "G(ij,ab)");
+  dpd_->buf4_init(&G2, PSIF_CC_GAMMA, 0, 30, 30, 30, 30, 0, "Gibja");
+  dpd_->buf4_sort(&G2, PSIF_CC_TMP0, prsq, 10, 15, "Gibja (ij,ab)");
+  dpd_->buf4_close(&G2);
+  dpd_->buf4_init(&G2, PSIF_CC_TMP0, 0, 10, 15, 10, 15, 0, "Gibja (ij,ab)");
+  dpd_->buf4_axpy(&G2, &G, -1.0);
+  dpd_->buf4_close(&G2);
+  dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 10, 15, 10, 15, 0, "D <ij|ab>");
+  two_energy = dpd_->buf4_dot(&D, &G);
+  dpd_->buf4_close(&D);
+  dpd_->buf4_close(&G);
   fprintf(outfile, "\tijab energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
   
   /* No change to G(IB,JA) components */
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 20, 20, 20, 20, 0, "GIBJA");
-  dpd_buf4_init(&C, PSIF_CC_CINTS, 0, 20, 20, 20, 20, 0, "C <IA|JB>");
-  two_energy = dpd_buf4_dot(&C, &G);
-  dpd_buf4_close(&C);
-  dpd_buf4_close(&G);
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 20, 20, 20, 20, 0, "GIBJA");
+  dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 20, 20, 20, 20, 0, "C <IA|JB>");
+  two_energy = dpd_->buf4_dot(&C, &G);
+  dpd_->buf4_close(&C);
+  dpd_->buf4_close(&G);
   fprintf(outfile, "\tIBJA energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
   
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 30, 30, 30, 30, 0, "Gibja");
-  dpd_buf4_init(&C, PSIF_CC_CINTS, 0, 30, 30, 30, 30, 0, "C <ia|jb>");
-  two_energy = dpd_buf4_dot(&C, &G);
-  dpd_buf4_close(&C);
-  dpd_buf4_close(&G); 
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 30, 30, 30, 30, 0, "Gibja");
+  dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 30, 30, 30, 30, 0, "C <ia|jb>");
+  two_energy = dpd_->buf4_dot(&C, &G);
+  dpd_->buf4_close(&C);
+  dpd_->buf4_close(&G); 
   fprintf(outfile, "\tibja energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
   
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 24, 24, 24, 24, 0, "GIbJa");
-  dpd_buf4_init(&C, PSIF_CC_CINTS, 0, 24, 24, 24, 24, 0, "C <Ia|Jb>");
-  two_energy = dpd_buf4_dot(&C, &G);
-  dpd_buf4_close(&C);
-  dpd_buf4_close(&G); 
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 24, 24, 24, 24, 0, "GIbJa");
+  dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 24, 24, 24, 24, 0, "C <Ia|Jb>");
+  two_energy = dpd_->buf4_dot(&C, &G);
+  dpd_->buf4_close(&C);
+  dpd_->buf4_close(&G); 
 
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 27, 27, 27, 27, 0, "GiBjA");
-  dpd_buf4_init(&C, PSIF_CC_CINTS, 0, 27, 27, 27, 27, 0, "C <iA|jB>");
-  two_energy += dpd_buf4_dot(&C, &G);
-  dpd_buf4_close(&C);
-  dpd_buf4_close(&G);
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 27, 27, 27, 27, 0, "GiBjA");
+  dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 27, 27, 27, 27, 0, "C <iA|jB>");
+  two_energy += dpd_->buf4_dot(&C, &G);
+  dpd_->buf4_close(&C);
+  dpd_->buf4_close(&G);
   fprintf(outfile, "\tiBjA+IbJa energy           = %20.15f\n", two_energy);
   total_two_energy += two_energy;
   
 
   /* No change to G(CI,AB) components */
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 26, 28, 26, 28, 0, "GCiAb");
-  dpd_buf4_init(&F, PSIF_CC_FINTS, 0, 26, 28, 26, 28, 0, "F <Ai|Bc>");
-  two_energy = 2*dpd_buf4_dot(&F, &G);
-  dpd_buf4_close(&F);
-  dpd_buf4_close(&G);
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 26, 28, 26, 28, 0, "GCiAb");
+  dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 26, 28, 26, 28, 0, "F <Ai|Bc>");
+  two_energy = 2*dpd_->buf4_dot(&F, &G);
+  dpd_->buf4_close(&F);
+  dpd_->buf4_close(&G);
   
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 25, 29, 25, 29, 0, "GcIaB");
-  dpd_buf4_init(&F, PSIF_CC_FINTS, 0, 25, 29, 25, 29, 0, "F <aI|bC>");
-  two_energy += 2*dpd_buf4_dot(&F, &G);
-  dpd_buf4_close(&F);
-  dpd_buf4_close(&G); 
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 25, 29, 25, 29, 0, "GcIaB");
+  dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 25, 29, 25, 29, 0, "F <aI|bC>");
+  two_energy += 2*dpd_->buf4_dot(&F, &G);
+  dpd_->buf4_close(&F);
+  dpd_->buf4_close(&G); 
   fprintf(outfile, "\tcIaB+CiAb energy           = %20.15f\n", two_energy);
   total_two_energy += two_energy;
   
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 21, 5, 21, 7, 0, "GCIAB");
-  dpd_buf4_init(&F, PSIF_CC_FINTS, 0, 21, 5, 21, 5, 0, "F <AI|BC>");
-  two_energy = 2*dpd_buf4_dot(&F, &G);
-  dpd_buf4_close(&F);
-  dpd_buf4_close(&G); 
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 21, 5, 21, 7, 0, "GCIAB");
+  dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 21, 5, 21, 5, 0, "F <AI|BC>");
+  two_energy = 2*dpd_->buf4_dot(&F, &G);
+  dpd_->buf4_close(&F);
+  dpd_->buf4_close(&G); 
   fprintf(outfile, "\tCIAB energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
   
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 31, 15, 31, 17, 0, "Gciab");
-  dpd_buf4_init(&F, PSIF_CC_FINTS, 0, 31, 15, 31, 15, 0, "F <ai|bc>");
-  two_energy = 2*dpd_buf4_dot(&F, &G);
-  dpd_buf4_close(&F);
-  dpd_buf4_close(&G);
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 31, 15, 31, 17, 0, "Gciab");
+  dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 31, 15, 31, 15, 0, "F <ai|bc>");
+  two_energy = 2*dpd_->buf4_dot(&F, &G);
+  dpd_->buf4_close(&F);
+  dpd_->buf4_close(&G);
   fprintf(outfile, "\tciab energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
   
   /* G(Ab,Cd) = 1/2 G(Ab,Cd) */
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 28, 28, 28, 28, 0, "GAbCd");
-  dpd_buf4_scm(&G, 0.5);
-  dpd_buf4_init(&B, PSIF_CC_BINTS, 0, 28, 28, 28, 28, 0, "B <Ab|Cd>");
-  two_energy = 2*dpd_buf4_dot(&B, &G);
-  dpd_buf4_close(&B);
-  dpd_buf4_close(&G);
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 28, 28, 28, 28, 0, "GAbCd");
+  dpd_->buf4_scm(&G, 0.5);
+  dpd_->buf4_init(&B, PSIF_CC_BINTS, 0, 28, 28, 28, 28, 0, "B <Ab|Cd>");
+  two_energy = 2*dpd_->buf4_dot(&B, &G);
+  dpd_->buf4_close(&B);
+  dpd_->buf4_close(&G);
   fprintf(outfile, "\tAbCd energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
   
   /* G(AB,CD) = 1/2 G(AB,CD) */
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 5, 5, 7, 7, 0, "GABCD");
-  dpd_buf4_scm(&G, 0.5);
-  dpd_buf4_init(&B, PSIF_CC_BINTS, 0, 5, 5, 5, 5, 0, "B <AB|CD>");
-  two_energy = dpd_buf4_dot(&B, &G);
-  dpd_buf4_close(&B);
-  dpd_buf4_close(&G);
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 5, 5, 7, 7, 0, "GABCD");
+  dpd_->buf4_scm(&G, 0.5);
+  dpd_->buf4_init(&B, PSIF_CC_BINTS, 0, 5, 5, 5, 5, 0, "B <AB|CD>");
+  two_energy = dpd_->buf4_dot(&B, &G);
+  dpd_->buf4_close(&B);
+  dpd_->buf4_close(&G);
   fprintf(outfile, "\tABCD energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
   
   /* G(ab,cd) = 1/2 G(ab,cd) */
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 15, 15, 17, 17, 0, "Gabcd");
-  dpd_buf4_scm(&G, 0.5);
-  dpd_buf4_init(&B, PSIF_CC_BINTS, 0, 15, 15, 15, 15, 0, "B <ab|cd>");
-  two_energy = dpd_buf4_dot(&B, &G);
-  dpd_buf4_close(&B);
-  dpd_buf4_close(&G);
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 15, 15, 17, 17, 0, "Gabcd");
+  dpd_->buf4_scm(&G, 0.5);
+  dpd_->buf4_init(&B, PSIF_CC_BINTS, 0, 15, 15, 15, 15, 0, "B <ab|cd>");
+  two_energy = dpd_->buf4_dot(&B, &G);
+  dpd_->buf4_close(&B);
+  dpd_->buf4_close(&G);
   fprintf(outfile, "\tabcd energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
   

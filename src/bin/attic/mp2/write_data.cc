@@ -116,21 +116,21 @@ void rhf_sf_write_data(void)
 		   sizeof(double)*nmo*nmo);
   psio_close(PSIF_MO_LAG, 1);
 
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 0, 0, 0, 0, "GIjKl");
-  dpd_buf4_sort(&G, PSIF_CC_TMP0, prqs, 0, 0, "G(IK,JL)");
-  dpd_buf4_close(&G);
-  dpd_buf4_init(&G, PSIF_CC_TMP0, 0, 0, 0, 0, 0, 0, "G(IK,JL)");
-  dpd_buf4_dump(&G, &OutBuf, qt_occ, qt_occ, qt_occ, qt_occ, 1, 0);
-  dpd_buf4_close(&G);
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 0, 0, 0, 0, "GIjKl");
+  dpd_->buf4_sort(&G, PSIF_CC_TMP0, prqs, 0, 0, "G(IK,JL)");
+  dpd_->buf4_close(&G);
+  dpd_->buf4_init(&G, PSIF_CC_TMP0, 0, 0, 0, 0, 0, 0, "G(IK,JL)");
+  dpd_->buf4_dump(&G, &OutBuf, qt_occ, qt_occ, qt_occ, qt_occ, 1, 0);
+  dpd_->buf4_close(&G);
 
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 10, 0, 10, 0, "GIjKa");
-  dpd_buf4_sort(&G, PSIF_CC_TMP0, prqs, 0, 10, "G(IK,JA)");
-  dpd_buf4_close(&G);
-  dpd_buf4_init(&G, PSIF_CC_TMP0, 0, 0, 10, 0, 10, 0, "G(IK,JA)");
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 10, 0, 10, 0, "GIjKa");
+  dpd_->buf4_sort(&G, PSIF_CC_TMP0, prqs, 0, 10, "G(IK,JA)");
+  dpd_->buf4_close(&G);
+  dpd_->buf4_init(&G, PSIF_CC_TMP0, 0, 0, 10, 0, 10, 0, "G(IK,JA)");
   
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&G, h);
-    dpd_buf4_mat_irrep_rd(&G, h);
+    dpd_->buf4_mat_irrep_init(&G, h);
+    dpd_->buf4_mat_irrep_rd(&G, h);
 
     for(row=0; row < G.params->rowtot[h]; row++) {
       p = G.params->roworb[h][row][0];
@@ -144,30 +144,30 @@ void rhf_sf_write_data(void)
       }
     }
 
-    dpd_buf4_mat_irrep_wrt(&G, h);
-    dpd_buf4_mat_irrep_close(&G, h);
+    dpd_->buf4_mat_irrep_wrt(&G, h);
+    dpd_->buf4_mat_irrep_close(&G, h);
   }
 
-  dpd_buf4_dump(&G, &OutBuf, qt_occ, qt_occ, qt_occ, qt_vir, 0, 0);
-  dpd_buf4_close(&G);
+  dpd_->buf4_dump(&G, &OutBuf, qt_occ, qt_occ, qt_occ, qt_vir, 0, 0);
+  dpd_->buf4_close(&G);
 
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "GIjAb");
-  dpd_buf4_sort(&G, PSIF_CC_TMP9, prqs, 10, 10, "G(IA,JB)");
-  dpd_buf4_close(&G);
-  dpd_buf4_init(&G, PSIF_CC_TMP9, 0, 10, 10, 10, 10, 0, "G(IA,JB)");
-  dpd_buf4_symm(&G);
-  dpd_buf4_dump(&G, &OutBuf, qt_occ, qt_vir, qt_occ, qt_vir, 1, 0);
-  dpd_buf4_close(&G);
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "GIjAb");
+  dpd_->buf4_sort(&G, PSIF_CC_TMP9, prqs, 10, 10, "G(IA,JB)");
+  dpd_->buf4_close(&G);
+  dpd_->buf4_init(&G, PSIF_CC_TMP9, 0, 10, 10, 10, 10, 0, "G(IA,JB)");
+  dpd_->buf4_symm(&G);
+  dpd_->buf4_dump(&G, &OutBuf, qt_occ, qt_vir, qt_occ, qt_vir, 1, 0);
+  dpd_->buf4_close(&G);
 
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIBJA");
-  dpd_buf4_sort(&G, PSIF_CC_TMP0, prqs, 0, 5, "G(IJ,AB)");
-  dpd_buf4_close(&G);
-  dpd_buf4_init(&G, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "G(IJ,AB)");
-  dpd_buf4_scm(&G, 0.5);
+  dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIBJA");
+  dpd_->buf4_sort(&G, PSIF_CC_TMP0, prqs, 0, 5, "G(IJ,AB)");
+  dpd_->buf4_close(&G);
+  dpd_->buf4_init(&G, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "G(IJ,AB)");
+  dpd_->buf4_scm(&G, 0.5);
 
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&G, h);
-    dpd_buf4_mat_irrep_rd(&G, h);
+    dpd_->buf4_mat_irrep_init(&G, h);
+    dpd_->buf4_mat_irrep_rd(&G, h);
 
     for(row=0; row < G.params->rowtot[h]; row++) {
       p = G.params->roworb[h][row][0];
@@ -181,12 +181,12 @@ void rhf_sf_write_data(void)
       }
     }
 
-    dpd_buf4_mat_irrep_wrt(&G, h);
-    dpd_buf4_mat_irrep_close(&G, h);
+    dpd_->buf4_mat_irrep_wrt(&G, h);
+    dpd_->buf4_mat_irrep_close(&G, h);
   }
   
-  dpd_buf4_dump(&G, &OutBuf, qt_occ, qt_occ, qt_vir, qt_vir, 0, 0);
-  dpd_buf4_close(&G);
+  dpd_->buf4_dump(&G, &OutBuf, qt_occ, qt_occ, qt_vir, qt_vir, 0, 0);
+  dpd_->buf4_close(&G);
 
   iwl_buf_flush(&OutBuf, 1);
   iwl_buf_close(&OutBuf, 1);

@@ -53,35 +53,35 @@ void purge(void) {
   openpi = moinfo.openpi;
 
   /* Purge FME matrix elements */
-  dpd_file2_init(&FME, PSIF_CC_OEI, 0, 0, 1, "FME");
-  dpd_file2_mat_init(&FME);
-  dpd_file2_mat_rd(&FME);
+  dpd_->file2_init(&FME, PSIF_CC_OEI, 0, 0, 1, "FME");
+  dpd_->file2_mat_init(&FME);
+  dpd_->file2_mat_rd(&FME);
   for(h=0; h < nirreps; h++) {
     for(m=0; m<occpi[h]; m++)
       for(e=(virtpi[h]-openpi[h]); e<virtpi[h]; e++)
 	FME.matrix[h][m][e] = 0.0;
   }
-  dpd_file2_mat_wrt(&FME);
-  dpd_file2_mat_close(&FME);
-  dpd_file2_close(&FME);
+  dpd_->file2_mat_wrt(&FME);
+  dpd_->file2_mat_close(&FME);
+  dpd_->file2_close(&FME);
 
   /* Purge Fme matrix elements */
-  dpd_file2_init(&Fme, PSIF_CC_OEI, 0, 0, 1, "Fme");
-  dpd_file2_mat_init(&Fme);
-  dpd_file2_mat_rd(&Fme);
+  dpd_->file2_init(&Fme, PSIF_CC_OEI, 0, 0, 1, "Fme");
+  dpd_->file2_mat_init(&Fme);
+  dpd_->file2_mat_rd(&Fme);
   for(h=0; h < nirreps; h++) {
     for(e=0; e<virtpi[h]; e++)
       for(m=(occpi[h]-openpi[h]); m<occpi[h]; m++)
 	Fme.matrix[h][m][e] = 0.0;
   }
-  dpd_file2_mat_wrt(&Fme);
-  dpd_file2_mat_close(&Fme);
-  dpd_file2_close(&Fme);
+  dpd_->file2_mat_wrt(&Fme);
+  dpd_->file2_mat_close(&Fme);
+  dpd_->file2_close(&Fme);
 
   /* Purge Fmi matrix elements */
-  dpd_file2_init(&Fmi, PSIF_CC_OEI, 0, 0, 0, "Fmi");
-  dpd_file2_mat_init(&Fmi);
-  dpd_file2_mat_rd(&Fmi);
+  dpd_->file2_init(&Fmi, PSIF_CC_OEI, 0, 0, 0, "Fmi");
+  dpd_->file2_mat_init(&Fmi);
+  dpd_->file2_mat_rd(&Fmi);
   for(h=0; h < nirreps; h++) {
 
     for(i=0; i<occpi[h]; i++)
@@ -93,14 +93,14 @@ void purge(void) {
 	Fmi.matrix[h][i][j] = 0.0;
 
   }
-  dpd_file2_mat_wrt(&Fmi);
-  dpd_file2_mat_close(&Fmi);
-  dpd_file2_close(&Fmi);
+  dpd_->file2_mat_wrt(&Fmi);
+  dpd_->file2_mat_close(&Fmi);
+  dpd_->file2_close(&Fmi);
 
   /* Purge FAE matrix elements */
-  dpd_file2_init(&FAE, PSIF_CC_OEI, 0, 1, 1, "FAE");
-  dpd_file2_mat_init(&FAE);
-  dpd_file2_mat_rd(&FAE);
+  dpd_->file2_init(&FAE, PSIF_CC_OEI, 0, 1, 1, "FAE");
+  dpd_->file2_mat_init(&FAE);
+  dpd_->file2_mat_rd(&FAE);
   for(h=0; h < nirreps; h++) {
 
     for(a=0; a<virtpi[h]; a++)
@@ -112,14 +112,14 @@ void purge(void) {
 	FAE.matrix[h][a][b] = 0.0;
 
   }
-  dpd_file2_mat_wrt(&FAE);
-  dpd_file2_mat_close(&FAE);
-  dpd_file2_close(&FAE);
+  dpd_->file2_mat_wrt(&FAE);
+  dpd_->file2_mat_close(&FAE);
+  dpd_->file2_close(&FAE);
 
   /* Purge Fmit (matrix elements with zero diagonal) */
-  dpd_file2_init(&Fmi, PSIF_CC_OEI, 0, 0, 0, "Fmit");
-  dpd_file2_mat_init(&Fmi);
-  dpd_file2_mat_rd(&Fmi);
+  dpd_->file2_init(&Fmi, PSIF_CC_OEI, 0, 0, 0, "Fmit");
+  dpd_->file2_mat_init(&Fmi);
+  dpd_->file2_mat_rd(&Fmi);
   for(h=0; h < nirreps; h++) {
 
     for(i=0; i<occpi[h]; i++)
@@ -131,14 +131,14 @@ void purge(void) {
 	Fmi.matrix[h][i][j] = 0.0;
 
   }
-  dpd_file2_mat_wrt(&Fmi);
-  dpd_file2_mat_close(&Fmi);
-  dpd_file2_close(&Fmi);
+  dpd_->file2_mat_wrt(&Fmi);
+  dpd_->file2_mat_close(&Fmi);
+  dpd_->file2_close(&Fmi);
 
   /* Purge FAEt (matrix elements with zero diagonal) */
-  dpd_file2_init(&FAE, PSIF_CC_OEI, 0, 1, 1, "FAEt");
-  dpd_file2_mat_init(&FAE);
-  dpd_file2_mat_rd(&FAE);
+  dpd_->file2_init(&FAE, PSIF_CC_OEI, 0, 1, 1, "FAEt");
+  dpd_->file2_mat_init(&FAE);
+  dpd_->file2_mat_rd(&FAE);
   for(h=0; h < nirreps; h++) {
 
     for(a=0; a<virtpi[h]; a++)
@@ -150,15 +150,15 @@ void purge(void) {
 	FAE.matrix[h][a][b] = 0.0;
 
   }
-  dpd_file2_mat_wrt(&FAE);
-  dpd_file2_mat_close(&FAE);
-  dpd_file2_close(&FAE);
+  dpd_->file2_mat_wrt(&FAE);
+  dpd_->file2_mat_close(&FAE);
+  dpd_->file2_close(&FAE);
 
   /* Purge Wmnij matrix elements */
-  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 2, 2,"Wmnij");
+  dpd_->file4_init(&W, PSIF_CC_HBAR, 0, 2, 2,"Wmnij");
   for(h=0; h < nirreps; h++) {
-    dpd_file4_mat_irrep_init(&W, h);
-    dpd_file4_mat_irrep_rd(&W, h);
+    dpd_->file4_mat_irrep_init(&W, h);
+    dpd_->file4_mat_irrep_rd(&W, h);
     for(mn=0; mn < W.params->rowtot[h]; mn++) {
       m = W.params->roworb[h][mn][0];
       n = W.params->roworb[h][mn][1];
@@ -180,15 +180,15 @@ void purge(void) {
 	  W.matrix[h][mn][ij] = 0.0;
       }
     }
-    dpd_file4_mat_irrep_wrt(&W, h);
-    dpd_file4_mat_irrep_close(&W, h);
+    dpd_->file4_mat_irrep_wrt(&W, h);
+    dpd_->file4_mat_irrep_close(&W, h);
   }
-  dpd_file4_close(&W);
+  dpd_->file4_close(&W);
 
-  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 0, 0,"WMnIj");
+  dpd_->file4_init(&W, PSIF_CC_HBAR, 0, 0, 0,"WMnIj");
   for(h=0; h < nirreps; h++) {
-    dpd_file4_mat_irrep_init(&W, h);
-    dpd_file4_mat_irrep_rd(&W, h);
+    dpd_->file4_mat_irrep_init(&W, h);
+    dpd_->file4_mat_irrep_rd(&W, h);
     for(mn=0; mn < W.params->rowtot[h]; mn++) {
       n = W.params->roworb[h][mn][1];
       nsym = W.params->qsym[n];
@@ -202,16 +202,16 @@ void purge(void) {
 	  W.matrix[h][mn][ij] = 0.0;
       }
     }
-    dpd_file4_mat_irrep_wrt(&W, h);
-    dpd_file4_mat_irrep_close(&W, h);
+    dpd_->file4_mat_irrep_wrt(&W, h);
+    dpd_->file4_mat_irrep_close(&W, h);
   }
-  dpd_file4_close(&W);
+  dpd_->file4_close(&W);
 
   /* Purge Wmbej matrix elements */
-  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 10, 10,"WMBEJ");
+  dpd_->file4_init(&W, PSIF_CC_HBAR, 0, 10, 10,"WMBEJ");
   for(h=0; h < nirreps; h++) {
-    dpd_file4_mat_irrep_init(&W, h);
-    dpd_file4_mat_irrep_rd(&W, h);
+    dpd_->file4_mat_irrep_init(&W, h);
+    dpd_->file4_mat_irrep_rd(&W, h);
     for(me=0; me < W.params->rowtot[h]; me++) {
       e = W.params->roworb[h][me][1];
       esym = W.params->qsym[e];
@@ -225,15 +225,15 @@ void purge(void) {
 	  W.matrix[h][me][jb] = 0.0;
       }
     }
-    dpd_file4_mat_irrep_wrt(&W, h);
-    dpd_file4_mat_irrep_close(&W, h);
+    dpd_->file4_mat_irrep_wrt(&W, h);
+    dpd_->file4_mat_irrep_close(&W, h);
   }
-  dpd_file4_close(&W);
+  dpd_->file4_close(&W);
 
-  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 10, 10,"Wmbej");
+  dpd_->file4_init(&W, PSIF_CC_HBAR, 0, 10, 10,"Wmbej");
   for(h=0; h < nirreps; h++) {
-    dpd_file4_mat_irrep_init(&W, h);
-    dpd_file4_mat_irrep_rd(&W, h);
+    dpd_->file4_mat_irrep_init(&W, h);
+    dpd_->file4_mat_irrep_rd(&W, h);
     for(me=0; me < W.params->rowtot[h]; me++) {
       m = W.params->roworb[h][me][0];
       msym = W.params->psym[m];
@@ -247,15 +247,15 @@ void purge(void) {
 	  W.matrix[h][me][jb] = 0.0;
       }
     }
-    dpd_file4_mat_irrep_wrt(&W, h);
-    dpd_file4_mat_irrep_close(&W, h);
+    dpd_->file4_mat_irrep_wrt(&W, h);
+    dpd_->file4_mat_irrep_close(&W, h);
   }
-  dpd_file4_close(&W);
+  dpd_->file4_close(&W);
 
-  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 10, 10,"WMbEj");
+  dpd_->file4_init(&W, PSIF_CC_HBAR, 0, 10, 10,"WMbEj");
   for(h=0; h < nirreps; h++) {
-    dpd_file4_mat_irrep_init(&W, h);
-    dpd_file4_mat_irrep_rd(&W, h);
+    dpd_->file4_mat_irrep_init(&W, h);
+    dpd_->file4_mat_irrep_rd(&W, h);
     for(me=0; me < W.params->rowtot[h]; me++) {
       e = W.params->roworb[h][me][1];
       esym = W.params->qsym[e];
@@ -269,15 +269,15 @@ void purge(void) {
 	  W.matrix[h][me][jb] = 0.0;
       }
     }
-    dpd_file4_mat_irrep_wrt(&W, h);
-    dpd_file4_mat_irrep_close(&W, h);
+    dpd_->file4_mat_irrep_wrt(&W, h);
+    dpd_->file4_mat_irrep_close(&W, h);
   }
-  dpd_file4_close(&W);
+  dpd_->file4_close(&W);
 
-  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 10, 10,"WmBeJ");
+  dpd_->file4_init(&W, PSIF_CC_HBAR, 0, 10, 10,"WmBeJ");
   for(h=0; h < nirreps; h++) {
-    dpd_file4_mat_irrep_init(&W, h);
-    dpd_file4_mat_irrep_rd(&W, h);
+    dpd_->file4_mat_irrep_init(&W, h);
+    dpd_->file4_mat_irrep_rd(&W, h);
     for(me=0; me < W.params->rowtot[h]; me++) {
       m = W.params->roworb[h][me][0];
       msym = W.params->psym[m];
@@ -291,15 +291,15 @@ void purge(void) {
 	  W.matrix[h][me][jb] = 0.0;
       }
     }
-    dpd_file4_mat_irrep_wrt(&W, h);
-    dpd_file4_mat_irrep_close(&W, h);
+    dpd_->file4_mat_irrep_wrt(&W, h);
+    dpd_->file4_mat_irrep_close(&W, h);
   }
-  dpd_file4_close(&W);
+  dpd_->file4_close(&W);
 
-  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 10, 10,"WmBEj");
+  dpd_->file4_init(&W, PSIF_CC_HBAR, 0, 10, 10,"WmBEj");
   for(h=0; h < nirreps; h++) {
-    dpd_file4_mat_irrep_init(&W, h);
-    dpd_file4_mat_irrep_rd(&W, h);
+    dpd_->file4_mat_irrep_init(&W, h);
+    dpd_->file4_mat_irrep_rd(&W, h);
     for(me=0; me < W.params->rowtot[h]; me++) {
       m = W.params->roworb[h][me][0];
       e = W.params->roworb[h][me][1];
@@ -321,18 +321,18 @@ void purge(void) {
 	  W.matrix[h][me][jb] = 0.0;
       }
     }
-    dpd_file4_mat_irrep_wrt(&W, h);
-    dpd_file4_mat_irrep_close(&W, h);
+    dpd_->file4_mat_irrep_wrt(&W, h);
+    dpd_->file4_mat_irrep_close(&W, h);
   }
-  dpd_file4_close(&W);
+  dpd_->file4_close(&W);
 
   /* WMbeJ is already OK */
 
   /* Purge Wamef matrix elements */
-  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 11, 7,"WAMEF");
+  dpd_->file4_init(&W, PSIF_CC_HBAR, 0, 11, 7,"WAMEF");
   for(h=0; h < nirreps; h++) {
-    dpd_file4_mat_irrep_init(&W, h);
-    dpd_file4_mat_irrep_rd(&W, h);
+    dpd_->file4_mat_irrep_init(&W, h);
+    dpd_->file4_mat_irrep_rd(&W, h);
     for(ma=0; ma < W.params->rowtot[h]; ma++) {
       a = W.params->roworb[h][ma][0];
       asym = W.params->psym[a];
@@ -350,15 +350,15 @@ void purge(void) {
 	  W.matrix[h][ma][ef] = 0.0;
       }
     }
-    dpd_file4_mat_irrep_wrt(&W, h);
-    dpd_file4_mat_irrep_close(&W, h);
+    dpd_->file4_mat_irrep_wrt(&W, h);
+    dpd_->file4_mat_irrep_close(&W, h);
   }
-  dpd_file4_close(&W);
+  dpd_->file4_close(&W);
 
-  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 11, 7,"Wamef");
+  dpd_->file4_init(&W, PSIF_CC_HBAR, 0, 11, 7,"Wamef");
   for(h=0; h < nirreps; h++) {
-    dpd_file4_mat_irrep_init(&W, h);
-    dpd_file4_mat_irrep_rd(&W, h);
+    dpd_->file4_mat_irrep_init(&W, h);
+    dpd_->file4_mat_irrep_rd(&W, h);
     for(ma=0; ma < W.params->rowtot[h]; ma++) {
       m = W.params->roworb[h][ma][1];
       msym = W.params->qsym[m];
@@ -368,15 +368,15 @@ void purge(void) {
 	  W.matrix[h][ma][ef] = 0.0;
       }
     }
-    dpd_file4_mat_irrep_wrt(&W, h);
-    dpd_file4_mat_irrep_close(&W, h);
+    dpd_->file4_mat_irrep_wrt(&W, h);
+    dpd_->file4_mat_irrep_close(&W, h);
   }
-  dpd_file4_close(&W);
+  dpd_->file4_close(&W);
 
-  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 11, 5,"WAmEf");
+  dpd_->file4_init(&W, PSIF_CC_HBAR, 0, 11, 5,"WAmEf");
   for(h=0; h < nirreps; h++) {
-    dpd_file4_mat_irrep_init(&W, h);
-    dpd_file4_mat_irrep_rd(&W, h);
+    dpd_->file4_mat_irrep_init(&W, h);
+    dpd_->file4_mat_irrep_rd(&W, h);
     for(ma=0; ma < W.params->rowtot[h]; ma++) {
       a = W.params->roworb[h][ma][0];
       m = W.params->roworb[h][ma][1];
@@ -394,15 +394,15 @@ void purge(void) {
 	  W.matrix[h][ma][ef] = 0.0;
       }
     }
-    dpd_file4_mat_irrep_wrt(&W, h);
-    dpd_file4_mat_irrep_close(&W, h);
+    dpd_->file4_mat_irrep_wrt(&W, h);
+    dpd_->file4_mat_irrep_close(&W, h);
   }
-  dpd_file4_close(&W);
+  dpd_->file4_close(&W);
 
-  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 11, 5,"WaMeF");
+  dpd_->file4_init(&W, PSIF_CC_HBAR, 0, 11, 5,"WaMeF");
   for(h=0; h < nirreps; h++) {
-    dpd_file4_mat_irrep_init(&W, h);
-    dpd_file4_mat_irrep_rd(&W, h);
+    dpd_->file4_mat_irrep_init(&W, h);
+    dpd_->file4_mat_irrep_rd(&W, h);
     for(ma=0; ma < W.params->rowtot[h]; ma++) {
       for(ef=0; ef< W.params->coltot[h]; ef++) {
 	f = W.params->colorb[h][ef][1];
@@ -412,10 +412,10 @@ void purge(void) {
 	  W.matrix[h][ma][ef] = 0.0;
       }
     }
-    dpd_file4_mat_irrep_wrt(&W, h);
-    dpd_file4_mat_irrep_close(&W, h);
+    dpd_->file4_mat_irrep_wrt(&W, h);
+    dpd_->file4_mat_irrep_close(&W, h);
   }
-  dpd_file4_close(&W);
+  dpd_->file4_close(&W);
 
 
   /* Purge Wmnie matrix elements */
@@ -510,10 +510,10 @@ void purge(void) {
 
 
   /* Purge WMBIJ matrix elements */
-  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 10, 2,"WMBIJ");
+  dpd_->file4_init(&W, PSIF_CC_HBAR, 0, 10, 2,"WMBIJ");
   for(h=0; h < nirreps; h++) {
-    dpd_file4_mat_irrep_init(&W, h);
-    dpd_file4_mat_irrep_rd(&W, h);
+    dpd_->file4_mat_irrep_init(&W, h);
+    dpd_->file4_mat_irrep_rd(&W, h);
     for(mb=0; mb<W.params->rowtot[h]; mb++) {
       b = W.params->roworb[h][mb][1];
       bsym = W.params->qsym[b];
@@ -523,15 +523,15 @@ void purge(void) {
 	  W.matrix[h][mb][ij] = 0.0;
       }
     }
-    dpd_file4_mat_irrep_wrt(&W, h);
-    dpd_file4_mat_irrep_close(&W, h);
+    dpd_->file4_mat_irrep_wrt(&W, h);
+    dpd_->file4_mat_irrep_close(&W, h);
   }
-  dpd_file4_close(&W);
+  dpd_->file4_close(&W);
 
-  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 10, 2,"Wmbij");
+  dpd_->file4_init(&W, PSIF_CC_HBAR, 0, 10, 2,"Wmbij");
   for(h=0; h < nirreps; h++) {
-    dpd_file4_mat_irrep_init(&W, h);
-    dpd_file4_mat_irrep_rd(&W, h);
+    dpd_->file4_mat_irrep_init(&W, h);
+    dpd_->file4_mat_irrep_rd(&W, h);
     for(mb=0; mb<W.params->rowtot[h]; mb++) {
       m = W.params->roworb[h][mb][0];
       msym = W.params->psym[m];
@@ -549,15 +549,15 @@ void purge(void) {
 	  W.matrix[h][mb][ij] = 0.0;
       }
     }
-    dpd_file4_mat_irrep_wrt(&W, h);
-    dpd_file4_mat_irrep_close(&W, h);
+    dpd_->file4_mat_irrep_wrt(&W, h);
+    dpd_->file4_mat_irrep_close(&W, h);
   }
-  dpd_file4_close(&W);
+  dpd_->file4_close(&W);
 
-  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 10, 0,"WMbIj");
+  dpd_->file4_init(&W, PSIF_CC_HBAR, 0, 10, 0,"WMbIj");
   for(h=0; h < nirreps; h++) {
-    dpd_file4_mat_irrep_init(&W, h);
-    dpd_file4_mat_irrep_rd(&W, h);
+    dpd_->file4_mat_irrep_init(&W, h);
+    dpd_->file4_mat_irrep_rd(&W, h);
     for(mb=0; mb<W.params->rowtot[h]; mb++) {
       for(ij=0; ij<W.params->coltot[h]; ij++) {
 	j = W.params->colorb[h][ij][1];
@@ -567,15 +567,15 @@ void purge(void) {
 	  W.matrix[h][mb][ij] = 0.0;
       }
     }
-    dpd_file4_mat_irrep_wrt(&W, h);
-    dpd_file4_mat_irrep_close(&W, h);
+    dpd_->file4_mat_irrep_wrt(&W, h);
+    dpd_->file4_mat_irrep_close(&W, h);
   }
-  dpd_file4_close(&W);
+  dpd_->file4_close(&W);
 
-  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 10, 0,"WmBiJ");
+  dpd_->file4_init(&W, PSIF_CC_HBAR, 0, 10, 0,"WmBiJ");
   for(h=0; h < nirreps; h++) {
-    dpd_file4_mat_irrep_init(&W, h);
-    dpd_file4_mat_irrep_rd(&W, h);
+    dpd_->file4_mat_irrep_init(&W, h);
+    dpd_->file4_mat_irrep_rd(&W, h);
     for(mb=0; mb<W.params->rowtot[h]; mb++) {
       m = W.params->roworb[h][mb][0];
       b = W.params->roworb[h][mb][1];
@@ -593,20 +593,20 @@ void purge(void) {
 	  W.matrix[h][mb][ij] = 0.0;
       }
     }
-    dpd_file4_mat_irrep_wrt(&W, h);
-    dpd_file4_mat_irrep_close(&W, h);
+    dpd_->file4_mat_irrep_wrt(&W, h);
+    dpd_->file4_mat_irrep_close(&W, h);
   }
-  dpd_file4_close(&W);
+  dpd_->file4_close(&W);
 
 
 
 
 
   /* Purge Wabei matrix elements */
-  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 11, 7,"WEIAB");
+  dpd_->file4_init(&W, PSIF_CC_HBAR, 0, 11, 7,"WEIAB");
   for(h=0; h < nirreps; h++) {
-    dpd_file4_mat_irrep_init(&W, h);
-    dpd_file4_mat_irrep_rd(&W, h);
+    dpd_->file4_mat_irrep_init(&W, h);
+    dpd_->file4_mat_irrep_rd(&W, h);
     for(ei=0; ei<W.params->rowtot[h]; ei++) {
       e = W.params->roworb[h][ei][0];
       esym = W.params->psym[e];
@@ -624,15 +624,15 @@ void purge(void) {
 	  W.matrix[h][ei][ab] = 0.0;
       }
     }
-    dpd_file4_mat_irrep_wrt(&W, h);
-    dpd_file4_mat_irrep_close(&W, h);
+    dpd_->file4_mat_irrep_wrt(&W, h);
+    dpd_->file4_mat_irrep_close(&W, h);
   }
-  dpd_file4_close(&W);
+  dpd_->file4_close(&W);
 
-  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 11, 7,"Weiab");
+  dpd_->file4_init(&W, PSIF_CC_HBAR, 0, 11, 7,"Weiab");
   for(h=0; h < nirreps; h++) {
-    dpd_file4_mat_irrep_init(&W, h);
-    dpd_file4_mat_irrep_rd(&W, h);
+    dpd_->file4_mat_irrep_init(&W, h);
+    dpd_->file4_mat_irrep_rd(&W, h);
     for(ei=0; ei<W.params->rowtot[h]; ei++) {
       i = W.params->roworb[h][ei][1];
       isym = W.params->qsym[i];
@@ -642,15 +642,15 @@ void purge(void) {
 	  W.matrix[h][ei][ab] = 0.0;
       }
     }
-    dpd_file4_mat_irrep_wrt(&W, h);
-    dpd_file4_mat_irrep_close(&W, h);
+    dpd_->file4_mat_irrep_wrt(&W, h);
+    dpd_->file4_mat_irrep_close(&W, h);
   }
-  dpd_file4_close(&W);
+  dpd_->file4_close(&W);
 
-  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 11, 5,"WEiAb");
+  dpd_->file4_init(&W, PSIF_CC_HBAR, 0, 11, 5,"WEiAb");
   for(h=0; h < nirreps; h++) {
-    dpd_file4_mat_irrep_init(&W, h);
-    dpd_file4_mat_irrep_rd(&W, h);
+    dpd_->file4_mat_irrep_init(&W, h);
+    dpd_->file4_mat_irrep_rd(&W, h);
     for(ei=0; ei<W.params->rowtot[h]; ei++) {
       e = W.params->roworb[h][ei][0];
       i = W.params->roworb[h][ei][1];
@@ -669,15 +669,15 @@ void purge(void) {
 	  W.matrix[h][ei][ab] = 0.0;
       }
     }
-    dpd_file4_mat_irrep_wrt(&W, h);
-    dpd_file4_mat_irrep_close(&W, h);
+    dpd_->file4_mat_irrep_wrt(&W, h);
+    dpd_->file4_mat_irrep_close(&W, h);
   }
-  dpd_file4_close(&W);
+  dpd_->file4_close(&W);
 
-  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 11, 5,"WeIaB");
+  dpd_->file4_init(&W, PSIF_CC_HBAR, 0, 11, 5,"WeIaB");
   for(h=0; h < nirreps; h++) {
-    dpd_file4_mat_irrep_init(&W, h);
-    dpd_file4_mat_irrep_rd(&W, h);
+    dpd_->file4_mat_irrep_init(&W, h);
+    dpd_->file4_mat_irrep_rd(&W, h);
     for(ei=0; ei<W.params->rowtot[h]; ei++) {
       for(ab=0; ab<W.params->coltot[h]; ab++) {
 	b = W.params->colorb[h][ab][1];
@@ -687,10 +687,10 @@ void purge(void) {
 	  W.matrix[h][ei][ab] = 0.0;
       }
     }
-    dpd_file4_mat_irrep_wrt(&W, h);
-    dpd_file4_mat_irrep_close(&W, h);
+    dpd_->file4_mat_irrep_wrt(&W, h);
+    dpd_->file4_mat_irrep_close(&W, h);
   }
-  dpd_file4_close(&W);
+  dpd_->file4_close(&W);
 
   return;
 }
@@ -713,10 +713,10 @@ void purge_Wmnie(void) {
   occ_sym = moinfo.occ_sym; vir_sym = moinfo.vir_sym;
   openpi = moinfo.openpi;
 
-  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 0, 11,"WMnIe (Mn,eI)");
+  dpd_->file4_init(&W, PSIF_CC_HBAR, 0, 0, 11,"WMnIe (Mn,eI)");
   for(h=0; h < nirreps; h++) {
-    dpd_file4_mat_irrep_init(&W, h);
-    dpd_file4_mat_irrep_rd(&W, h);
+    dpd_->file4_mat_irrep_init(&W, h);
+    dpd_->file4_mat_irrep_rd(&W, h);
     for(mn=0; mn<W.params->rowtot[h]; mn++) {
       n = W.params->roworb[h][mn][1];
       nsym = W.params->qsym[n];
@@ -726,14 +726,14 @@ void purge_Wmnie(void) {
 	  W.matrix[h][mn][ei] = 0.0;
       }
     }
-    dpd_file4_mat_irrep_wrt(&W, h);
-    dpd_file4_mat_irrep_close(&W, h);
+    dpd_->file4_mat_irrep_wrt(&W, h);
+    dpd_->file4_mat_irrep_close(&W, h);
   }
 
-  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 2, 11, "WMNIE (M>N,EI)");
+  dpd_->file4_init(&W, PSIF_CC_HBAR, 0, 2, 11, "WMNIE (M>N,EI)");
   for(h=0; h < W.params->nirreps; h++) {
-    dpd_file4_mat_irrep_init(&W, h);
-    dpd_file4_mat_irrep_rd(&W, h);
+    dpd_->file4_mat_irrep_init(&W, h);
+    dpd_->file4_mat_irrep_rd(&W, h);
     for(mn=0; mn<W.params->rowtot[h]; mn++) {
       for(ei=0; ei<W.params->coltot[h]; ei++) {
         e = W.params->colorb[h][ei][0];
@@ -743,15 +743,15 @@ void purge_Wmnie(void) {
           W.matrix[h][mn][ei] = 0.0;
       }
     }
-    dpd_file4_mat_irrep_wrt(&W, h);
-    dpd_file4_mat_irrep_close(&W, h);
+    dpd_->file4_mat_irrep_wrt(&W, h);
+    dpd_->file4_mat_irrep_close(&W, h);
   }
-  dpd_file4_close(&W);
+  dpd_->file4_close(&W);
 
-  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 2, 11,"Wmnie (m>n,ei)");
+  dpd_->file4_init(&W, PSIF_CC_HBAR, 0, 2, 11,"Wmnie (m>n,ei)");
   for(h=0; h < nirreps; h++) {
-    dpd_file4_mat_irrep_init(&W, h);
-    dpd_file4_mat_irrep_rd(&W, h);
+    dpd_->file4_mat_irrep_init(&W, h);
+    dpd_->file4_mat_irrep_rd(&W, h);
     for(mn=0; mn<W.params->rowtot[h]; mn++) {
       m = W.params->roworb[h][mn][0];
       n = W.params->roworb[h][mn][1];
@@ -769,15 +769,15 @@ void purge_Wmnie(void) {
           W.matrix[h][mn][ei] = 0.0;
       }
     }
-    dpd_file4_mat_irrep_wrt(&W, h);
-    dpd_file4_mat_irrep_close(&W, h);
+    dpd_->file4_mat_irrep_wrt(&W, h);
+    dpd_->file4_mat_irrep_close(&W, h);
   }
-  dpd_file4_close(&W);
+  dpd_->file4_close(&W);
 
-  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 0, 11,"WmNiE (mN,Ei)");
+  dpd_->file4_init(&W, PSIF_CC_HBAR, 0, 0, 11,"WmNiE (mN,Ei)");
   for(h=0; h < nirreps; h++) {
-    dpd_file4_mat_irrep_init(&W, h);
-    dpd_file4_mat_irrep_rd(&W, h);
+    dpd_->file4_mat_irrep_init(&W, h);
+    dpd_->file4_mat_irrep_rd(&W, h);
     for(mn=0; mn<W.params->rowtot[h]; mn++) {
       m = W.params->roworb[h][mn][0];
       msym = W.params->psym[m];
@@ -795,10 +795,10 @@ void purge_Wmnie(void) {
           W.matrix[h][mn][ei] = 0.0;
       }
     }
-    dpd_file4_mat_irrep_wrt(&W, h);
-    dpd_file4_mat_irrep_close(&W, h);
+    dpd_->file4_mat_irrep_wrt(&W, h);
+    dpd_->file4_mat_irrep_close(&W, h);
   }
-  dpd_file4_close(&W);
+  dpd_->file4_close(&W);
   return;
 }
 

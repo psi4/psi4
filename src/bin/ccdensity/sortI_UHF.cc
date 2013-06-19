@@ -80,9 +80,9 @@ void sortI_UHF(void)
   O_b = block_matrix(nmo,nmo);
 
   /* Sort alpha components first */
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "I(I,J)");
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "I(I,J)");
+  dpd_->file2_mat_init(&D);
+  dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(i=0; i < aoccpi[h]; i++) {
       I = qt_aocc[aocc_off[h] + i];
@@ -92,12 +92,12 @@ void sortI_UHF(void)
       }
     }
   }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  dpd_->file2_mat_close(&D);
+  dpd_->file2_close(&D);
 
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "I'AB");
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "I'AB");
+  dpd_->file2_mat_init(&D);
+  dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(a=0; a < avirtpi[h]; a++) {
       A = qt_avir[avir_off[h] + a];
@@ -108,12 +108,12 @@ void sortI_UHF(void)
       }
     }
   }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  dpd_->file2_mat_close(&D);
+  dpd_->file2_close(&D);
 
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "I(I,A)");
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "I(I,A)");
+  dpd_->file2_mat_init(&D);
+  dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(i=0; i < aoccpi[h]; i++) {
       I = qt_aocc[aocc_off[h] + i];
@@ -125,13 +125,13 @@ void sortI_UHF(void)
       }
     }
   }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  dpd_->file2_mat_close(&D);
+  dpd_->file2_close(&D);
 
   /* Sort beta components */
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 2, 2, "I(i,j)");
-  dpd_file2_mat_init(&D); 
-  dpd_file2_mat_rd(&D);
+  dpd_->file2_init(&D, PSIF_CC_OEI, 0, 2, 2, "I(i,j)");
+  dpd_->file2_mat_init(&D); 
+  dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(i=0; i < boccpi[h]; i++) { 
       I = qt_bocc[bocc_off[h] + i];
@@ -141,12 +141,12 @@ void sortI_UHF(void)
       }
     }
   }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  dpd_->file2_mat_close(&D);
+  dpd_->file2_close(&D);
 
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 3, 3, "I'ab");
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  dpd_->file2_init(&D, PSIF_CC_OEI, 0, 3, 3, "I'ab");
+  dpd_->file2_mat_init(&D);
+  dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(a=0; a < bvirtpi[h]; a++) {
       A = qt_bvir[bvir_off[h] + a];
@@ -157,12 +157,12 @@ void sortI_UHF(void)
       }
     }
   }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  dpd_->file2_mat_close(&D);
+  dpd_->file2_close(&D);
 
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 2, 3, "I(i,a)");
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  dpd_->file2_init(&D, PSIF_CC_OEI, 0, 2, 3, "I(i,a)");
+  dpd_->file2_mat_init(&D);
+  dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(i=0; i < boccpi[h]; i++) {
       I = qt_bocc[bocc_off[h] + i];
@@ -174,8 +174,8 @@ void sortI_UHF(void)
       }
     }
   }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  dpd_->file2_mat_close(&D);
+  dpd_->file2_close(&D);
 
   /* Symmetrize the Lagrangians */
   for(p=0; p < nmo; p++) {

@@ -117,9 +117,9 @@ PsiReturnType cis(Options & options, int argc, char *argv[])
         fprintf(outfile, "\nLargest components of singlet excited wave function #%d/#%d:\n",
             h, i);
         sprintf(lbl, "BIA(%d)[%d] singlet", i, h);
-        dpd_file2_init(&B, PSIF_CC_OEI, h, 0, 1, lbl);
+        dpd_->file2_init(&B, PSIF_CC_OEI, h, 0, 1, lbl);
         amp_write_T1(&B, 5, outfile);
-        dpd_file2_close(&B);
+        dpd_->file2_close(&B);
 
       }
     }
@@ -138,9 +138,9 @@ PsiReturnType cis(Options & options, int argc, char *argv[])
 
         fprintf(outfile, "\nLargest components of triplet excited wave function #%d/#%d:\n", h, i);
         sprintf(lbl, "BIA(%d)[%d] triplet", i, h);
-        dpd_file2_init(&B, PSIF_CC_OEI, h, 0, 1, lbl);
+        dpd_->file2_init(&B, PSIF_CC_OEI, h, 0, 1, lbl);
         amp_write_T1(&B, 5, outfile);
-        dpd_file2_close(&B);
+        dpd_->file2_close(&B);
         fprintf(outfile, "\n");
 
       }

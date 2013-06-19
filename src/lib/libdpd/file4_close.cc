@@ -22,7 +22,7 @@
 
 /*! \file
     \ingroup DPD
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -36,16 +36,16 @@ namespace psi {
 **   dpdfile4 *File: A pointer to the file to be closed.
 */
 
-int dpd_file4_close(dpdfile4 *File)
+int DPD::file4_close(dpdfile4 *File)
 {
-  dpd_file4_cache_unlock(File);
+    file4_cache_unlock(File);
 
-  free(File->lfiles);
+    free(File->lfiles);
 
-  if(!File->incore) free(File->matrix);
-  else File->matrix = NULL;
-  
-  return 0;
+    if(!File->incore) free(File->matrix);
+    else File->matrix = NULL;
+
+    return 0;
 }
 
 }

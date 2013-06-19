@@ -483,23 +483,23 @@ void local_init(Options & options)
   /* Grab the MO-basis Fock matrix */
   Fmo = block_matrix(nso, nso);
   for(i=0; i < nfzc; i++) Fmo[i][i] = eps_all[i];
-  dpd_file2_init(&fock, PSIF_CC_OEI, 0, 0, 0, "fIJ");
-  dpd_file2_mat_init(&fock);
-  dpd_file2_mat_rd(&fock);
+  dpd_->file2_init(&fock, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+  dpd_->file2_mat_init(&fock);
+  dpd_->file2_mat_rd(&fock);
   for(i=0; i < nocc; i++) 
     for(j=0; j < nocc; j++)
       Fmo[i+nfzc][j+nfzc] = fock.matrix[0][i][j];
-  dpd_file2_mat_close(&fock);
-  dpd_file2_close(&fock);
+  dpd_->file2_mat_close(&fock);
+  dpd_->file2_close(&fock);
 
-  dpd_file2_init(&fock, PSIF_CC_OEI, 0, 1, 1, "fAB");
-  dpd_file2_mat_init(&fock);
-  dpd_file2_mat_rd(&fock);
+  dpd_->file2_init(&fock, PSIF_CC_OEI, 0, 1, 1, "fAB");
+  dpd_->file2_mat_init(&fock);
+  dpd_->file2_mat_rd(&fock);
   for(i=0; i < nvir; i++) 
     for(j=0; j < nvir; j++)
       Fmo[i+nfzc+nocc][j+nfzc+nocc] = fock.matrix[0][i][j];
-  dpd_file2_mat_close(&fock);
-  dpd_file2_close(&fock);
+  dpd_->file2_mat_close(&fock);
+  dpd_->file2_close(&fock);
 
   /*
     fprintf(outfile, "\n\tMO Basis Fock matrix:\n");
@@ -751,8 +751,8 @@ void local_filter_T2(dpdbuf4 *T2)
   weak_pairs = local.weak_pairs;
 
   /* Grab the MO-basis T2's */
-  dpd_buf4_mat_irrep_init(T2, 0);
-  dpd_buf4_mat_irrep_rd(T2, 0);
+  dpd_->buf4_mat_irrep_init(T2, 0);
+  dpd_->buf4_mat_irrep_rd(T2, 0);
 
   X1 = block_matrix(nso,nvir);
   X2 = block_matrix(nvir,nso);
@@ -801,8 +801,8 @@ void local_filter_T2(dpdbuf4 *T2)
   free_block(T2bar);
 
   /* Write the updated MO-basis T2's to disk */
-  dpd_buf4_mat_irrep_wrt(T2, 0);
-  dpd_buf4_mat_irrep_close(T2, 0);
+  dpd_->buf4_mat_irrep_wrt(T2, 0);
+  dpd_->buf4_mat_irrep_close(T2, 0);
 }
 
 void local_filter_U2(dpdbuf4 *T2, double lambda)
@@ -825,8 +825,8 @@ void local_filter_U2(dpdbuf4 *T2, double lambda)
   weak_pairs = local.weak_pairs;
 
   /* Grab the MO-basis T2's */
-  dpd_buf4_mat_irrep_init(T2, 0);
-  dpd_buf4_mat_irrep_rd(T2, 0);
+  dpd_->buf4_mat_irrep_init(T2, 0);
+  dpd_->buf4_mat_irrep_rd(T2, 0);
 
   X1 = block_matrix(nso,nvir);
   X2 = block_matrix(nvir,nso);
@@ -875,8 +875,8 @@ void local_filter_U2(dpdbuf4 *T2, double lambda)
   free_block(T2bar);
 
   /* Write the updated MO-basis T2's to disk */
-  dpd_buf4_mat_irrep_wrt(T2, 0);
-  dpd_buf4_mat_irrep_close(T2, 0);
+  dpd_->buf4_mat_irrep_wrt(T2, 0);
+  dpd_->buf4_mat_irrep_close(T2, 0);
 }
 
 

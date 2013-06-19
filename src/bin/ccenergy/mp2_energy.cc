@@ -59,45 +59,45 @@ double rhf_mp2_energy(void)
   double os_energy, ss_energy, scs_energy;
   
   /* Initialize MP2 T1 Amps (zero for true HF references) */
-  dpd_file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "fIA");
-  dpd_file2_copy(&F, PSIF_CC_OEI, "tIA (MP2)");
-  dpd_file2_close(&F);
-  dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA (MP2)");
-  dpd_file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, "dIA");
-  dpd_file2_dirprd(&D1, &T1);
-  dpd_file2_close(&D1);  
-  dpd_file2_close(&T1);
+  dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "fIA");
+  dpd_->file2_copy(&F, PSIF_CC_OEI, "tIA (MP2)");
+  dpd_->file2_close(&F);
+  dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA (MP2)");
+  dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, "dIA");
+  dpd_->file2_dirprd(&D1, &T1);
+  dpd_->file2_close(&D1);  
+  dpd_->file2_close(&T1);
 
-  dpd_file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "fIA");
-  dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA (MP2)");
-  T1_energy = 2.0 * dpd_file2_dot(&F, &T1);
-  dpd_file2_close(&F);
-  dpd_file2_close(&T1);
+  dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "fIA");
+  dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA (MP2)");
+  T1_energy = 2.0 * dpd_->file2_dot(&F, &T1);
+  dpd_->file2_close(&F);
+  dpd_->file2_close(&T1);
 
   /* Initialize MP2 T2 Amps */
-  dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
-  dpd_buf4_copy(&D, PSIF_CC_TAMPS, "tIjAb (MP2)");
-  dpd_buf4_close(&D);
-  dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb (MP2)");
-  dpd_buf4_init(&D, PSIF_CC_DENOM, 0, 0, 5, 0, 5, 0, "dIjAb");
-  dpd_buf4_dirprd(&D, &T2);
-  dpd_buf4_close(&D);
-  dpd_buf4_close(&T2);
+  dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+  dpd_->buf4_copy(&D, PSIF_CC_TAMPS, "tIjAb (MP2)");
+  dpd_->buf4_close(&D);
+  dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb (MP2)");
+  dpd_->buf4_init(&D, PSIF_CC_DENOM, 0, 0, 5, 0, 5, 0, "dIjAb");
+  dpd_->buf4_dirprd(&D, &T2);
+  dpd_->buf4_close(&D);
+  dpd_->buf4_close(&T2);
   
-  dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
-  dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb (MP2)");
-  T2_energy = dpd_buf4_dot(&D, &T2);
+  dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
+  dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb (MP2)");
+  T2_energy = dpd_->buf4_dot(&D, &T2);
 
-  dpd_buf4_init(&S, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
-  os_energy = dpd_buf4_dot(&S, &T2);
-  dpd_buf4_close(&S);
+  dpd_->buf4_init(&S, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+  os_energy = dpd_->buf4_dot(&S, &T2);
+  dpd_->buf4_close(&S);
   ss_energy = (T2_energy - os_energy);
 
   moinfo.emp2_ss = ss_energy;
   moinfo.emp2_os = os_energy;
 
-  dpd_buf4_close(&T2);
-  dpd_buf4_close(&D);
+  dpd_->buf4_close(&T2);
+  dpd_->buf4_close(&D);
   
   return (T2_energy+T1_energy);
 }
@@ -109,80 +109,80 @@ double uhf_mp2_energy(void)
   dpdfile2 T1, F, D1;
   
   /* Initialize MP2 T1 Amps (zero for true HF references) */
-  dpd_file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "fIA");
-  dpd_file2_copy(&F, PSIF_CC_OEI, "tIA (MP2)");
-  dpd_file2_close(&F);
-  dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA (MP2)");
-  dpd_file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, "dIA");
-  dpd_file2_dirprd(&D1, &T1);
-  dpd_file2_close(&D1);  
-  dpd_file2_close(&T1);
+  dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "fIA");
+  dpd_->file2_copy(&F, PSIF_CC_OEI, "tIA (MP2)");
+  dpd_->file2_close(&F);
+  dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA (MP2)");
+  dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, "dIA");
+  dpd_->file2_dirprd(&D1, &T1);
+  dpd_->file2_close(&D1);  
+  dpd_->file2_close(&T1);
   
-  dpd_file2_init(&F, PSIF_CC_OEI, 0, 2, 3, "fia");
-  dpd_file2_copy(&F, PSIF_CC_OEI, "tia (MP2)");
-  dpd_file2_close(&F);
-  dpd_file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia (MP2)");
-  dpd_file2_init(&D1, PSIF_CC_OEI, 0, 2, 3, "dia");
-  dpd_file2_dirprd(&D1, &T1);
-  dpd_file2_close(&D1);  
-  dpd_file2_close(&T1);
+  dpd_->file2_init(&F, PSIF_CC_OEI, 0, 2, 3, "fia");
+  dpd_->file2_copy(&F, PSIF_CC_OEI, "tia (MP2)");
+  dpd_->file2_close(&F);
+  dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia (MP2)");
+  dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 2, 3, "dia");
+  dpd_->file2_dirprd(&D1, &T1);
+  dpd_->file2_close(&D1);  
+  dpd_->file2_close(&T1);
   
-  dpd_file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "fIA");
-  dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA (MP2)");
-  T1A = dpd_file2_dot(&F, &T1);
-  dpd_file2_close(&F);
-  dpd_file2_close(&T1);
+  dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "fIA");
+  dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA (MP2)");
+  T1A = dpd_->file2_dot(&F, &T1);
+  dpd_->file2_close(&F);
+  dpd_->file2_close(&T1);
 
-  dpd_file2_init(&F, PSIF_CC_OEI, 0, 2, 3, "fia");
-  dpd_file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia (MP2)");
-  T1B = dpd_file2_dot(&F, &T1);
-  dpd_file2_close(&F);
-  dpd_file2_close(&T1);
+  dpd_->file2_init(&F, PSIF_CC_OEI, 0, 2, 3, "fia");
+  dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia (MP2)");
+  T1B = dpd_->file2_dot(&F, &T1);
+  dpd_->file2_close(&F);
+  dpd_->file2_close(&T1);
 
-  dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 2, 7, 2, 7, 0, "D <IJ||AB> (I>J,A>B)");
-  dpd_buf4_copy(&D, PSIF_CC_TAMPS, "tIJAB (MP2)");
-  dpd_buf4_close(&D);
-  dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB (MP2)");
-  dpd_buf4_init(&D, PSIF_CC_DENOM, 0, 2, 7, 2, 7, 0, "dIJAB");
-  dpd_buf4_dirprd(&D, &T2);
-  dpd_buf4_close(&D);
-  dpd_buf4_close(&T2);
+  dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 2, 7, 2, 7, 0, "D <IJ||AB> (I>J,A>B)");
+  dpd_->buf4_copy(&D, PSIF_CC_TAMPS, "tIJAB (MP2)");
+  dpd_->buf4_close(&D);
+  dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB (MP2)");
+  dpd_->buf4_init(&D, PSIF_CC_DENOM, 0, 2, 7, 2, 7, 0, "dIJAB");
+  dpd_->buf4_dirprd(&D, &T2);
+  dpd_->buf4_close(&D);
+  dpd_->buf4_close(&T2);
 
-  dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 12, 17, 12, 17, 0, "D <ij||ab> (i>j,a>b)");
-  dpd_buf4_copy(&D, PSIF_CC_TAMPS, "tijab (MP2)");
-  dpd_buf4_close(&D);
-  dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "tijab (MP2)");
-  dpd_buf4_init(&D, PSIF_CC_DENOM, 0, 12, 17, 12, 17, 0, "dijab");
-  dpd_buf4_dirprd(&D, &T2);
-  dpd_buf4_close(&D);
-  dpd_buf4_close(&T2);
+  dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 12, 17, 12, 17, 0, "D <ij||ab> (i>j,a>b)");
+  dpd_->buf4_copy(&D, PSIF_CC_TAMPS, "tijab (MP2)");
+  dpd_->buf4_close(&D);
+  dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "tijab (MP2)");
+  dpd_->buf4_init(&D, PSIF_CC_DENOM, 0, 12, 17, 12, 17, 0, "dijab");
+  dpd_->buf4_dirprd(&D, &T2);
+  dpd_->buf4_close(&D);
+  dpd_->buf4_close(&T2);
 
-  dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
-  dpd_buf4_copy(&D, PSIF_CC_TAMPS, "tIjAb (MP2)");
-  dpd_buf4_close(&D);
-  dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb (MP2)");
-  dpd_buf4_init(&D, PSIF_CC_DENOM, 0, 22, 28, 22, 28, 0, "dIjAb");
-  dpd_buf4_dirprd(&D, &T2);
-  dpd_buf4_close(&D);
-  dpd_buf4_close(&T2);
+  dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
+  dpd_->buf4_copy(&D, PSIF_CC_TAMPS, "tIjAb (MP2)");
+  dpd_->buf4_close(&D);
+  dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb (MP2)");
+  dpd_->buf4_init(&D, PSIF_CC_DENOM, 0, 22, 28, 22, 28, 0, "dIjAb");
+  dpd_->buf4_dirprd(&D, &T2);
+  dpd_->buf4_close(&D);
+  dpd_->buf4_close(&T2);
 
-  dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB (MP2)");
-  dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 2, 7, 2, 7, 0, "D <IJ||AB> (I>J,A>B)");
-  E2AA = dpd_buf4_dot(&D, &T2);
-  dpd_buf4_close(&D);
-  dpd_buf4_close(&T2);
+  dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB (MP2)");
+  dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 2, 7, 2, 7, 0, "D <IJ||AB> (I>J,A>B)");
+  E2AA = dpd_->buf4_dot(&D, &T2);
+  dpd_->buf4_close(&D);
+  dpd_->buf4_close(&T2);
 
-  dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "tijab (MP2)");
-  dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 12, 17, 12, 17, 0, "D <ij||ab> (i>j,a>b)");
-  E2BB = dpd_buf4_dot(&D, &T2);
-  dpd_buf4_close(&D);
-  dpd_buf4_close(&T2);
+  dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "tijab (MP2)");
+  dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 12, 17, 12, 17, 0, "D <ij||ab> (i>j,a>b)");
+  E2BB = dpd_->buf4_dot(&D, &T2);
+  dpd_->buf4_close(&D);
+  dpd_->buf4_close(&T2);
 
-  dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb (MP2)");
-  dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
-  E2AB = dpd_buf4_dot(&D, &T2);
-  dpd_buf4_close(&D);
-  dpd_buf4_close(&T2);
+  dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb (MP2)");
+  dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
+  E2AB = dpd_->buf4_dot(&D, &T2);
+  dpd_->buf4_close(&D);
+  dpd_->buf4_close(&T2);
 
   // We define EMP2_SS as the same-spin pair energy, and EMP2_OS as the 
   // opposite-spin pair energy (singles not included)

@@ -58,9 +58,9 @@ double d1diag_t1_rhf(void)
   nirreps = moinfo.nirreps;
   max = 0.0;
 
-  dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
-  dpd_file2_mat_init(&T1);
-  dpd_file2_mat_rd(&T1);
+  dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
+  dpd_->file2_mat_init(&T1);
+  dpd_->file2_mat_rd(&T1);
 
   for(h=0; h < nirreps; h++) {
     if(T1.params->rowtot[h]) {
@@ -90,8 +90,8 @@ double d1diag_t1_rhf(void)
     }
   }
 
-  dpd_file2_mat_close(&T1);
-  dpd_file2_close(&T1);
+  dpd_->file2_mat_close(&T1);
+  dpd_->file2_close(&T1);
 
   max = sqrt(max);
 
@@ -149,13 +149,13 @@ d1diag_t1_rohf()
 
   nirreps = moinfo.nirreps;
 
-  dpd_file2_init(&T1_a, PSIF_CC_OEI, 0, 0, 1, "tia");
-  dpd_file2_mat_init(&T1_a);
-  dpd_file2_mat_rd(&T1_a);
+  dpd_->file2_init(&T1_a, PSIF_CC_OEI, 0, 0, 1, "tia");
+  dpd_->file2_mat_init(&T1_a);
+  dpd_->file2_mat_rd(&T1_a);
       
-  dpd_file2_init(&T1_b, PSIF_CC_OEI, 0, 0, 1, "tIA");
-  dpd_file2_mat_init(&T1_b);
-  dpd_file2_mat_rd(&T1_b);
+  dpd_->file2_init(&T1_b, PSIF_CC_OEI, 0, 0, 1, "tIA");
+  dpd_->file2_mat_init(&T1_b);
+  dpd_->file2_mat_rd(&T1_b);
 
   for(h=0; h < nirreps; h++) {
       int nrow = T1_a.params->rowtot[h];
@@ -183,11 +183,11 @@ d1diag_t1_rohf()
        }
     }
 
-  dpd_file2_mat_close(&T1_a);
-  dpd_file2_close(&T1_a);
+  dpd_->file2_mat_close(&T1_a);
+  dpd_->file2_close(&T1_a);
 
-  dpd_file2_mat_close(&T1_b);
-  dpd_file2_close(&T1_b);
+  dpd_->file2_mat_close(&T1_b);
+  dpd_->file2_close(&T1_b);
 
   max_ph = sqrt(max_ph);
   max_hx = sqrt(max_hx);
