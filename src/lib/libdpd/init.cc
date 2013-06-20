@@ -148,8 +148,6 @@ int DPD::init(int dpd_num_in, int nirreps_in, long int memory_in, int cachetype_
 {
     int h,h0,h1,cnt,***dp,l_irrep,r_irrep,p,q;
     int i,j,k,l,*count,offset1,offset2;
-    int num_pairs;
-    int ****pairorb;
     int *tmparray;
     dpdpair *pairs;
     int nump, nrows, Gp, offset;
