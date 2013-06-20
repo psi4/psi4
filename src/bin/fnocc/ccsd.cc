@@ -2540,7 +2540,6 @@ double DFCoupledCluster::compute_energy() {
   // free some memory!
   free(Fij);
   free(Fab);
-  free(Qmo);
   free(Abij);
   free(Sbij);
   free(integrals);
@@ -2987,16 +2986,37 @@ void DFCoupledCluster::T1Fock(){
     // (Q|rs)
     boost::shared_ptr<PSIO> psio(new PSIO());
     psio->open(PSIF_DCC_QSO,PSIO_OPEN_OLD);
-    psio->read_entry(PSIF_DCC_QSO,"Qso SCF",(char*)&integrals[0],nso*nso*nQ_scf*sizeof(double));
-    psio->close(PSIF_DCC_QSO,1);
-    F_DGEMM('n','n',full,nso*nQ_scf,nso,1.0,Ca_L,full,integrals,nso,0.0,Qmo,full);
-    #pragma omp parallel for schedule (static)
-    for (int q = 0; q < nQ_scf; q++) {
-        for (int mu = 0; mu < nso; mu++) {
-            F_DCOPY(full,Qmo+q*nso*full+mu*full,1,integrals+q*nso*full+mu,full);
-        }
+    psio_address addr1  = PSIO_ZERO;
+    psio_address addr2  = PSIO_ZERO;
+    psio_address addroo = PSIO_ZERO;
+    psio_address addrov = PSIO_ZERO;
+    psio_address addrvo = PSIO_ZERO;
+    psio_address addrvv = PSIO_ZERO;
+
+    long int nrows = 1;
+    long int rowsize = nQ_scf;
+    while ( rowsize*nso*nso > o*o*v*v ) {
+        nrows++;
+        rowsize = nQ_scf / nrows;
+        if (nrows * rowsize < nQ_scf) rowsize++;
     }
-    F_DGEMM('n','n',full,full*nQ_scf,nso,1.0,Ca_R,full,integrals,nso,0.0,Qmo,full);
+    long int lastrowsize = nQ_scf - (nrows - 1L) * rowsize;
+    long int * rowdims = new long int [nrows];
+    for (int i = 0; i < nrows-1; i++) rowdims[i] = rowsize;
+    rowdims[nrows-1] = lastrowsize;
+    for (int row = 0; row < nrows; row++) {
+        psio->read(PSIF_DCC_QSO,"Qso SCF",(char*)&integrals[0],rowdims[row]*nso*nso*sizeof(double),addr1,&addr1);
+        F_DGEMM('n','n',full,nso*rowdims[row],nso,1.0,Ca_L,full,integrals,nso,0.0,tempv,full);
+        for (int q = 0; q < rowdims[row]; q++) {
+            for (int mu = 0; mu < nso; mu++) {
+                F_DCOPY(full,tempv+q*nso*full+mu*full,1,integrals+q*nso*full+mu,full);
+            }
+        }
+        F_DGEMM('n','n',full,full*rowdims[row],nso,1.0,Ca_R,full,integrals,nso,0.0,tempv,full);
+        // full Qmo
+        psio->write(PSIF_DCC_QSO,"Qmo SCF",(char*)&tempv[0],rowdims[row]*full*full*sizeof(double),addr2,&addr2);
+    }
+    delete rowdims;
 
     // build Fock matrix
 
@@ -3027,59 +3047,64 @@ void DFCoupledCluster::T1Fock(){
         }
     }
 
-    // build Fock matrix:  sum_k (Q|kk)
-    double * temp2 = (double*)malloc(nQ_scf*sizeof(double));
     double * temp3 = (double*)malloc(full*full*sizeof(double));
-    for (int q = 0; q < nQ_scf; q++) {
-        double dum = 0.0;
-        for (int k = 0; k < ndocc; k++) {
-            dum += Qmo[q*full*full + k*full + k];
-        }
-        temp2[q] = 2.0 * dum;
-    }
 
-    // use temp and Qvv as storage for Qmo( q, r, k) and Qmo( q, k, s)
-    for (int q = 0; q < nQ_scf; q++) {
-        for (int r = 0; r < full; r++) {
+    memset((void*)temp3,'\0',full*full*sizeof(double));
+    psio_address addr = PSIO_ZERO;
+
+    nrows = 1;
+    rowsize = nQ_scf;
+    while ( rowsize*full*full > o*o*v*v ) {
+        nrows++;
+        rowsize = nQ_scf / nrows;
+        if (nrows * rowsize < nQ_scf) rowsize++;
+    }
+    lastrowsize = nQ_scf - (nrows - 1L) * rowsize;
+    rowdims = new long int [nrows];
+    for (int i = 0; i < nrows-1; i++) rowdims[i] = rowsize;
+    rowdims[nrows-1] = lastrowsize;
+    for (int row = 0; row < nrows; row++) {
+        psio->read(PSIF_DCC_QSO,"Qmo SCF",(char*)&integrals[0],rowdims[row]*full*full*sizeof(double),addr,&addr);
+        for (int q = 0; q < rowdims[row]; q++) {
+            // sum k (q|rk) (q|ks)
+            F_DGEMM('n','n',full,full,ndocc,-1.0,integrals+q*full*full,full,integrals+q*full*full,full,1.0,temp3,full);
+
+            // sum k (q|kk) (q|rs)
+            double dum = 0.0;
             for (int k = 0; k < ndocc; k++) {
-                integrals[q*full*ndocc+k*full+r] = Qmo[q*full*full+r*full+k];
-                Qvv[q*full*ndocc+k*full+r]  = Qmo[q*full*full+k*full+r];
+                dum += integrals[q*full*full+k*full + k];
             }
+            F_DAXPY(full*full,2.0 * dum,integrals+q*full*full,1,temp3,1);
         }
     }
-    // I(r,s) = sum q k (q|ks)(q|rk)
-    F_DGEMM('n','t',full,full,nQ_scf*ndocc,1.0,Qvv,full,integrals,full,0.0,temp3,full);
+    delete rowdims;
+    psio->close(PSIF_DCC_QSO,1);
 
     // Fij
     for (int i = 0; i < o; i++) {
         for (int j = 0; j < o; j++) {
-            double dum = h[i*nmo+j] - temp3[(i+nfzc)*full+(j+nfzc)];
-            dum += F_DDOT(nQ_scf,temp2,1,Qmo + (i+nfzc)*full + (j+nfzc) , full*full);
-            Fij[i*o+j] = dum;
+            Fij[i*o+j] = h[i*nmo+j] + temp3[(i+nfzc)*full+(j+nfzc)];
         }
     }
+
     // Fia
     for (int i = 0; i < o; i++) {
         for (int a = 0; a < v; a++) {
-            double dum = h[i*nmo+a+o] - temp3[(i+nfzc)*full+(a+ndocc)];
-            dum += F_DDOT(nQ_scf,temp2,1,Qmo + (i+nfzc)*full + (a+ndocc) , full*full);
-            Fia[i*v+a] = dum;
+            Fia[i*v+a] = h[i*nmo+a+o] + temp3[(i+nfzc)*full+(a+ndocc)];
         }
     }
+
     // Fai
     for (int a = 0; a < v; a++) {
         for (int i = 0; i < o; i++) {
-            double dum = h[(a+o)*nmo+i] - temp3[(a+ndocc)*full+(i+nfzc)];
-            dum += F_DDOT(nQ_scf,temp2,1,Qmo + (a+ndocc)*full + (i+nfzc) , full*full);
-            Fai[a*o+i] = dum;
+            Fai[a*o+i] = h[(a+o)*nmo+i] + temp3[(a+ndocc)*full+(i+nfzc)];
         }
     }
+
     // Fab
     for (int a = 0; a < v; a++) {
         for (int b = 0; b < v; b++) {
-            double dum = h[(a+o)*nmo+b+o] - temp3[(a+ndocc)*full+(b+ndocc)];
-            dum += F_DDOT(nQ_scf,temp2,1,Qmo + (a+ndocc)*full + (b+ndocc) , full*full);
-            Fab[a*v+b] = dum;
+            Fab[a*v+b] = h[(a+o)*nmo+b+o] + temp3[(a+ndocc)*full+(b+ndocc)];
         }
     }
 
@@ -3092,9 +3117,9 @@ void DFCoupledCluster::T1Fock(){
     }
 
     free(h);
-    free(temp2);
     free(temp3);
 }
+
 void DFCoupledCluster::T1Integrals(){
     long int o = ndoccact;
     long int v = nvirt;
@@ -3141,56 +3166,69 @@ void DFCoupledCluster::T1Integrals(){
     // (Q|rs)
     boost::shared_ptr<PSIO> psio(new PSIO());
     psio->open(PSIF_DCC_QSO,PSIO_OPEN_OLD);
-    psio->read_entry(PSIF_DCC_QSO,"Qso CC",(char*)&integrals[0],nso*nso*nQ*sizeof(double));
-    psio->close(PSIF_DCC_QSO,1);
-    F_DGEMM('n','n',full,nso*nQ,nso,1.0,Ca_L,full,integrals,nso,0.0,Qmo,full);
-    #pragma omp parallel for schedule (static)
-    for (int q = 0; q < nQ; q++) {
-        for (int mu = 0; mu < nso; mu++) {
-            F_DCOPY(full,Qmo+q*nso*full+mu*full,1,integrals+q*nso*full+mu,full);
-        }
+    psio_address addr1  = PSIO_ZERO;
+    psio_address addrvo = PSIO_ZERO;
+    long int nrows = 1;
+    long int rowsize = nQ;
+    while ( rowsize*nso*nso > o*o*v*v ) {
+        nrows++;
+        rowsize = nQ / nrows;
+        if (nrows * rowsize < nQ) rowsize++;
     }
-    F_DGEMM('n','n',full,full*nQ,nso,1.0,Ca_R,full,integrals,nso,0.0,Qmo,full);
+    long int lastrowsize = nQ - (nrows - 1L) * rowsize;
+    long int * rowdims = new long int [nrows];
+    for (int i = 0; i < nrows-1; i++) rowdims[i] = rowsize;
+    rowdims[nrows-1] = lastrowsize;
+    for (int row = 0; row < nrows; row++) {
+        psio->read(PSIF_DCC_QSO,"Qso CC",(char*)&integrals[0],rowdims[row]*nso*nso*sizeof(double),addr1,&addr1);
+        F_DGEMM('n','n',full,nso*rowdims[row],nso,1.0,Ca_L,full,integrals,nso,0.0,tempv,full);
+        for (int q = 0; q < rowdims[row]; q++) {
+            for (int mu = 0; mu < nso; mu++) {
+                F_DCOPY(full,tempv+q*nso*full+mu*full,1,integrals+q*nso*full+mu,full);
+            }
+        }
+        F_DGEMM('n','n',full,full*rowdims[row],nso,1.0,Ca_R,full,integrals,nso,0.0,tempv,full);
 
-    // (Q|vo)
-    #pragma omp parallel for schedule (static)
-    for (int q = 0; q < nQ; q++) {
-        for (int i = 0; i < o; i++) {
+        // Qoo
+        #pragma omp parallel for schedule (static)
+        for (int q = 0; q < rowdims[row]; q++) {
+            for (int i = 0; i < o; i++) {
+                for (int j = 0; j < o; j++) {
+                    Qoo[(q+rowdims[0]*row)*o*o+i*o+j] = tempv[q*full*full+(i+nfzc)*full+(j+nfzc)];
+                }
+            }
+        }
+        // Qov
+        #pragma omp parallel for schedule (static)
+        for (int q = 0; q < rowdims[row]; q++) {
+            for (int i = 0; i < o; i++) {
+                for (int a = 0; a < v; a++) {
+                    Qov[(q+rowdims[0]*row)*o*v+i*v+a] = tempv[q*full*full+(i+nfzc)*full+(a+ndocc)];
+                }
+            }
+        }
+        // Qvo
+        #pragma omp parallel for schedule (static)
+        for (int q = 0; q < rowdims[row]; q++) {
             for (int a = 0; a < v; a++) {
-                Qov[q*o*v+a*o+i] = Qmo[q*full*full+(a+ndocc)*full+(i+nfzc)];
+                for (int i = 0; i < o; i++) {
+                    integrals[q*o*v+a*o+i] = tempv[q*full*full+(a+ndocc)*full+(i+nfzc)];
+                }
+            }
+        }
+        psio->write(PSIF_DCC_QSO,"qvo",(char*)&integrals[0],rowdims[row]*o*v*sizeof(double),addrvo,&addrvo);
+        // Qvv
+        #pragma omp parallel for schedule (static)
+        for (int q = 0; q < rowdims[row]; q++) {
+            for (int a = 0; a < v; a++) {
+                for (int b = 0; b < v; b++) {
+                    Qvv[(q+rowdims[0]*row)*v*v+a*v+b] = tempv[q*full*full+(a+ndocc)*full+(b+ndocc)];
+                }
             }
         }
     }
-    psio->open(PSIF_DCC_QSO,PSIO_OPEN_OLD);
-    psio->write_entry(PSIF_DCC_QSO,"qvo",(char*)&Qov[0],o*v*nQ*sizeof(double));
+    delete rowdims;
     psio->close(PSIF_DCC_QSO,1);
-    // (Q|ov)
-    #pragma omp parallel for schedule (static)
-    for (int q = 0; q < nQ; q++) {
-        for (int i = 0; i < o; i++) {
-            for (int a = 0; a < v; a++) {
-                Qov[q*o*v+i*v+a] = Qmo[q*full*full+(i+nfzc)*full+(a+ndocc)];
-            }
-        }
-    }
-    // (Q|oo)
-    #pragma omp parallel for schedule (static)
-    for (int q = 0; q < nQ; q++) {
-        for (int i = 0; i < o; i++) {
-            for (int j = 0; j < o; j++) {
-                Qoo[q*o*o+i*o+j] = Qmo[q*full*full+(i+nfzc)*full+(j+nfzc)];
-            }
-        }
-    }
-    // (Q|vv)
-    #pragma omp parallel for schedule (static)
-    for (int q = 0; q < nQ; q++) {
-        for (int a = 0; a < v; a++) {
-            for (int b = 0; b < v; b++) {
-                Qvv[q*v*v+a*v+b] = Qmo[q*full*full+(a+ndocc)*full+(b+ndocc)];
-            }
-        }
-    }
 }
 
 double DFCoupledCluster::CheckEnergy(){
@@ -3295,11 +3333,6 @@ void DFCoupledCluster::AllocateMemory() {
   nQ_scf      = (int)Process::environment.globals["NAUX (SCF)"];
 
   // orbital energies
-  //boost::shared_ptr<Vector> eps_test = reference_wavefunction_->epsilon_a();
-  //double * tempeps                   = eps_test->pointer();
-  //eps                                = (double*)malloc(nmo*sizeof(double));
-  //F_DCOPY(nmo,tempeps+nfzc,1,eps,1);
-
   if (!reference_wavefunction_->isCIM()){
       int count=0;
       eps = (double*)malloc((ndoccact+nvirt)*sizeof(double));
@@ -3361,7 +3394,7 @@ void DFCoupledCluster::AllocateMemory() {
 
   double total_memory = dim+(o*o*v*v+o*v)+(o*(o+1)*v*(v+1)+o*v)+o*o*v*v+2.*o*v+2.*v*v;
   long int max = nvirt*nvirt*nQmax > (nfzv+ndocc+nvirt)*ndocc*nQmax ? nvirt*nvirt*nQmax : (nfzv+ndocc+nvirt)*ndocc*nQmax;
-  double df_memory    = nQ*(o*o+o*v)+max + nso*nso*nQmax;
+  double df_memory    = nQ*(o*o+o*v)+max;
 
   total_memory       *= 8./1024./1024.;
   df_memory          *= 8./1024./1024.;
@@ -3431,7 +3464,6 @@ void DFCoupledCluster::AllocateMemory() {
   Fia   = (double*)malloc(o*v*sizeof(double));
   Fai   = (double*)malloc(o*v*sizeof(double));
   Fab   = (double*)malloc(v*v*sizeof(double));
-  Qmo   = (double*)malloc(nso*nso*(nQ > nQ_scf ? nQ : nQ_scf)*sizeof(double));
   Ca_R  = (double*)malloc(nso*(nmo+nfzc+nfzv)*sizeof(double));
   Ca_L  = (double*)malloc(nso*(nmo+nfzc+nfzv)*sizeof(double));
   Ca = reference_wavefunction_->Ca()->pointer();
@@ -3545,10 +3577,9 @@ void DFCoupledCluster::Vabcd1(){
 
   int nthreads = omp_get_max_threads();
 
-  double * Iqdb = Qmo;
-  double * Vp   = Qmo;
   double * Vcdb = integrals;
   double * Vm   = integrals+v*v*v;
+  double * Vp   = Vm;
 
   // qvv transpose
   #pragma omp parallel for schedule (static)
@@ -3562,16 +3593,8 @@ void DFCoupledCluster::Vabcd1(){
   double time3 = 0.0;
   for (long int a = 0; a < v; a++) {
 
-      int nb = 0;
-      // fill Iqdb for b > a
       double start1 = omp_get_wtime();
-      //#pragma omp parallel for schedule (static)
-      //for (long int b = a; b < v; b++) {
-      //    F_DCOPY(nQ*v,Qvv+b*nQ*v,1,Iqdb+(b-a)*nQ*v,1);
-      //}
-      nb = v-a;
-
-      //F_DGEMM('t','n',v,v*nb,nQ,1.0,Qvv+a*v*nQ,nQ,Iqdb,nQ,0.0,Vcdb,v);
+      int nb = v-a;
       F_DGEMM('t','n',v,v*nb,nQ,1.0,Qvv+a*v*nQ,nQ,Qvv+a*v*nQ,nQ,0.0,Vcdb,v);
 
       #pragma omp parallel for schedule (static)
@@ -3583,7 +3606,6 @@ void DFCoupledCluster::Vabcd1(){
           for (long int c=0; c<v; c++){
               for (long int d=0; d<=c; d++){
                   Vp[ind1+cd] = Vcdb[ind2+d*v+c] + Vcdb[ind2+c*v+d];
-                  Vm[ind1+cd] = Vcdb[ind2+d*v+c] - Vcdb[ind2+c*v+d];
                   cd++;
               }
           }
@@ -3592,6 +3614,19 @@ void DFCoupledCluster::Vabcd1(){
 
       double start2 = omp_get_wtime();
       F_DGEMM('n','n',otri,nb,vtri,0.5,tempt,otri,Vp,vtri,0.0,Abij,otri);
+      #pragma omp parallel for schedule (static)
+      for (long int b = a; b < v; b++){
+          long int cd = 0;
+          long int ind1 = (b-a)*vtri;
+          long int ind2 = (b-a)*v*v;
+          long int v1,v2;
+          for (long int c=0; c<v; c++){
+              for (long int d=0; d<=c; d++){
+                  Vm[ind1+cd] = Vcdb[ind2+d*v+c] - Vcdb[ind2+c*v+d];
+                  cd++;
+              }
+          }
+      }
       F_DGEMM('n','n',otri,nb,vtri,0.5,tempt+otri*vtri,otri,Vm,vtri,0.0,Sbij,otri);
       double end2 = omp_get_wtime();
 
