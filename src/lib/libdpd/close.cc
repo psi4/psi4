@@ -39,7 +39,6 @@ DPD::~DPD()
     /*  dpd_file4_cache_print(stdout);*/
     file4_cache_close();
 
-#if 0
     if(params4)
         for(i=0; i < num_pairs; i++)
             for(j=0; j < num_pairs; j++)
@@ -117,7 +116,7 @@ DPD::~DPD()
             free(params2[i]);
         free(params2);
     }
-#endif
+
     /*
     printf("memory = %d; memfree = %d\n",
     dpd_main.memory, dpd_main.memfree);
