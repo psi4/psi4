@@ -34,9 +34,6 @@
 #include <libqt/qt.h>
 #include <libmints/mints.h>
 #include <libfock/jk.h>
-#include <psifiles.h>
-#include <physconst.h>
-#include "integralfunctors.h"
 
 #include <libefp_solver/efp_solver.h>
 

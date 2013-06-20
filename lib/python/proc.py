@@ -2803,17 +2803,17 @@ def run_property(name, **kwargs):
     return junk
 
 def run_efp(name, **kwargs):
-    #efp = PsiMod.efp_init()
-    PsiMod.print_out('Executing run_efp in proc.py...\n')
-    efp = PsiMod.get_active_efp()
-    PsiMod.efp_set_options()
+    #efp = psi4.efp_init()
+    psi4.print_out('Executing run_efp in proc.py...\n')
+    efp = psi4.get_active_efp()
+    psi4.efp_set_options()
     returnvalue = efp.Compute()
     return returnvalue
 
 def run_efp_gradient(name, **kwargs):
-    PsiMod.print_out('Executing run_efp_gradient in proc.py...\n')
-    efp = PsiMod.get_active_efp()
-    PsiMod.efp_set_options()
+    psi4.print_out('Executing run_efp_gradient in proc.py...\n')
+    efp = psi4.get_active_efp()
+    psi4.efp_set_options()
     returnvalue = efp.Compute()
     return returnvalue
 
@@ -2823,7 +2823,7 @@ def run_scfefp(name, **kwargs):
     kwargs = kwargs_lower(kwargs)
 
     # initialize library
-    #efp = PsiMod.efp_init()
+    #efp = psi4.efp_init()
     # set which atoms are qm
     #efp.set_qm_atoms()
     # TODO: provide efp a callback function that computes electron density at arbitrary points
