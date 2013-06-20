@@ -17,7 +17,6 @@
 #include <libpsio/psio.h>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
-#include <liboptions/python.h>
 #include <psifiles.h>
 #include <libmints/multipolesymmetry.h>
 #include <psi4-dec.h>

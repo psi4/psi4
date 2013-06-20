@@ -39,11 +39,11 @@ ref_efp = [
      [ 0.003255,     -0.002735,     -0.004364,      0.005464,      0.002667,     -0.004870],   #TEST
      [-0.001902,      0.001009,     -0.002530,     -0.000059,      0.003312,      0.004040] ]   #TEST
 
-refF = PsiMod.Matrix(9, 3)                       #TEST
+refF = psi4.Matrix(9, 3)                       #TEST
 refF.set(ref_force)                              #TEST
-refT = PsiMod.Matrix(9, 3)                       #TEST
+refT = psi4.Matrix(9, 3)                       #TEST
 refT.set(ref_torque)                             #TEST
-refEFP = PsiMod.Matrix(9, 6)                    #TEST
+refEFP = psi4.Matrix(9, 6)                    #TEST
 refEFP.set(ref_efp)                             #TEST
 
 
