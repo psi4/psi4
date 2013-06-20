@@ -8,13 +8,16 @@ sp-rhf-cc3 sp-rhf-ccsdt
 sp_uhf_subdirs = sp-uhf-scf sp-uhf-mp2 sp-uhf-ccsd sp-uhf-ccsd_t_ sp-uhf-ccsd_t_-ao \
 sp-uhf-ccsd_t_-ao-ecc sp-uhf-ccsd_t_-ecc sp-uhf-cc3 sp-uhf-ccsdt
 
-sp_rohf_subdirs = sp-rohf-scf sp-rohf-mp2-sc sp-rohf-mp4-sc sp-rohf-ccsd \
+sp_rohf_subdirs = sp-rohf-scf sp-rohf-mp2-sc psi-scsmp2 sp-rohf-mp4-sc sp-rohf-ccsd \
 sp-rohf-ccsd_t_ sp-rohf-ccsdt
+
+psi_subdirs = psi-scsmp2 psi-mp3 psi-mp4
 
 subdirs = \
 $(sp_rhf_subdirs) \
 $(sp_uhf_subdirs) \
-$(sp_rohf_subdirs)
+$(sp_rohf_subdirs) \
+$(psi_subdirs)
 
 # Compile the plugins, if we activated them
 HAVE_PLUGINS=@HAVE_PLUGINS@
@@ -91,6 +94,12 @@ sp_rhf_tests: $(sp_rhf_subdirs)
 
 sp_uhf_tests: $(sp_uhf_subdirs)
 	$(call gatherresults, $(sp_uhf_subdirs))
+
+sp_rohf_tests: $(sp_rohf_subdirs)
+	$(call gatherresults, $(sp_rohf_subdirs))
+
+psi_tests: $(psi_subdirs)
+	$(call gatherresults, $(psi_subdirs))
 
 plugins:
 	for dir in $(plugin_subdirs); \

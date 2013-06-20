@@ -1222,9 +1222,15 @@ def parse_arbitrary_order(name):
         namelevel = int(decompose.group(2))
 
         if (namestump == 'mp') or (namestump == 'zapt') or (namestump == 'ci'):
-            # Let 'mp2' and 'mp3' pass through as themselves to occ module
-            if (namestump == 'mp') and ((namelevel == 2) or (namelevel == 3)):
+            # Let 'mp2' pass through to occ module
+            if (namestump == 'mp') and (namelevel == 2):
                 return namelower, None
+            # Let 'mp3' pass through to occ module for rhf/uhf, direct to detci for rohf
+            elif (namestump == 'mp') and (namelevel == 3):
+                if psi4.get_option('SCF','REFERENCE') == 'ROHF':
+                    return 'detci-mp', 3
+                else:
+                    return namelower, None
             # Let 'mp4' be redirected to fnocc module if rhf
             elif (namestump == 'mp') and (namelevel == 4):
                 if psi4.get_option('SCF', 'REFERENCE') == 'RHF':

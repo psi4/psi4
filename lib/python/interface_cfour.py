@@ -113,7 +113,7 @@ def run_cfour(name, **kwargs):
     psi4.print_out('\n====== Begin ZMAT input for CFOUR ======\n')
     psi4.print_out(open('ZMAT', 'r').read())
     psi4.print_out('======= End ZMAT input for CFOUR =======\n\n')
-    print('\n====== Begin ZMAT input for CFOUR ======\n', open('ZMAT', 'r').read(), '======= End ZMAT input for CFOUR =======\n\n')
+    #print('\n====== Begin ZMAT input for CFOUR ======\n', open('ZMAT', 'r').read(), '======= End ZMAT input for CFOUR =======\n\n')
 
     # Close output file and reopen
     psi4.close_outfile()
@@ -142,7 +142,8 @@ def run_cfour(name, **kwargs):
 
     c4out = ""
     while retcode.returncode == None:
-        data = retcode.stdout.read(1)
+        #data = retcode.stdout.read(1)
+        data = retcode.stdout.readline()
         if psi4.outfile_name() == 'stdout':
             sys.stdout.write(data)
         else:
