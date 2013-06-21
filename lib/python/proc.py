@@ -2807,6 +2807,7 @@ def run_efp(name, **kwargs):
     psi4.print_out('Executing run_efp in proc.py...\n')
     efp = psi4.get_active_efp()
     psi4.efp_set_options()
+    efp.print_out()
     returnvalue = efp.Compute()
     return returnvalue
 
@@ -2814,6 +2815,7 @@ def run_efp_gradient(name, **kwargs):
     psi4.print_out('Executing run_efp_gradient in proc.py...\n')
     efp = psi4.get_active_efp()
     psi4.efp_set_options()
+    efp.print_out()
     returnvalue = efp.Compute()
     return returnvalue
 
