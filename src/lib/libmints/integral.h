@@ -469,6 +469,10 @@ public:
     /// Returns an OneBodyInt that computes the point electrostatic potential
     virtual OneBodyAOInt *electrostatic();
 
+    /// Returns an OneBodyInt that computes the electrostatic potential at desired points
+    /// Want to change the name of this after the PCM dust settles
+    virtual OneBodyAOInt *pcm_potentialint();
+
     /// Returns an ERI integral object
     virtual TwoBodyAOInt* eri(int deriv=0, bool use_shell_pairs=false);
 
