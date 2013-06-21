@@ -21,7 +21,6 @@
  */
 
 #include "mints.h"
-#include "potentialint.h"
 #include <libint/libint.h>
 
 using namespace boost;
