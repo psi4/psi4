@@ -22,7 +22,7 @@
 
 /*! \file
     \ingroup DPD
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <libqt/qt.h>
@@ -40,15 +40,15 @@ namespace psi {
 **   double a, b, c, scalar prefactors
 */
 
-int dpd_file2_axpbycz(dpdfile2 *FileA, dpdfile2 *FileB, dpdfile2 *FileC,
-  double a, double b, double c)
+int DPD::file2_axpbycz(dpdfile2 *FileA, dpdfile2 *FileB, dpdfile2 *FileC,
+                       double a, double b, double c)
 {
-  dpd_file2_scm(FileC, c);
+    file2_scm(FileC, c);
 
-  dpd_file2_axpy(FileB, FileC, b, 0);
+    file2_axpy(FileB, FileC, b, 0);
 
-  dpd_file2_axpy(FileA, FileC, a, 0);
-  return 0;
+    file2_axpy(FileA, FileC, a, 0);
+    return 0;
 }
 
 

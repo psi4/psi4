@@ -376,14 +376,14 @@ void SymBlockMatrix::set(double **Asq)
 void SymBlockMatrix::set(dpdbuf4 G)
 {
     for(int h = 0; h < nirreps_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
-        dpd_buf4_mat_irrep_rd(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
         for(int row = 0; row < G.params->rowtot[h]; ++row){
             for(int col = 0; col < G.params->coltot[h]; ++col){
                 matrix_[h][row][col] = G.matrix[h][row][col];
             }
         }
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
 }//
 

@@ -22,7 +22,7 @@
 
 /*! \file
     \ingroup DPD
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -31,19 +31,19 @@
 
 namespace psi {
 
-int dpd_trans4_close(dpdtrans4 *Trans)
+int DPD::trans4_close(dpdtrans4 *Trans)
 {
-  int nirreps;
+    int nirreps;
 
-  nirreps = Trans->buf.params->nirreps;
+    nirreps = Trans->buf.params->nirreps;
 
-  free(Trans->matrix);
-  
-  free_int_matrix(Trans->shift.rowtot);
-  free_int_matrix(Trans->shift.coltot);
-  free(Trans->shift.matrix);
+    free(Trans->matrix);
 
-  return 0;
+    free_int_matrix(Trans->shift.rowtot);
+    free_int_matrix(Trans->shift.coltot);
+    free(Trans->shift.matrix);
+
+    return 0;
 
 }
 

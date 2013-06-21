@@ -55,7 +55,13 @@ PsiReturnType thermo(Options &options) {
 
   int Natom = mol->natom();
   int multiplicity = mol->multiplicity();
-  const boost::shared_ptr<Vector> vib_freqs = wf->frequencies();
+  boost::shared_ptr<Vector> vib_freqs;
+
+  if (psi::Process::environment.wavefunction()) {
+    vib_freqs = psi::Process::environment.wavefunction()->frequencies();
+  } else {
+    vib_freqs = psi::Process::environment.frequencies();
+  }
 
   Vector rot_const = mol->rotational_constants();
   RotorType rot_type = mol->rotor_type();

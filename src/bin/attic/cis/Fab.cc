@@ -42,46 +42,46 @@ void Fab_build(void)
   dpdbuf4 D, T2;
 
   if(params.ref == 0) { /** RHF **/
-    dpd_file2_init(&F, PSIF_CC_MISC, 0, 1, 1, "FAB");
-    dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
-    dpd_buf4_init(&T2, PSIF_CC_MISC, 0, 0, 5, 0, 5, 0, "MP2 tIjAb");
-    dpd_contract442(&T2, &D, &F, 3, 3, -1, 0);
-    dpd_buf4_close(&T2);
-    dpd_buf4_close(&D);
-    dpd_file2_close(&F);
+    global_dpd_->file2_init(&F, PSIF_CC_MISC, 0, 1, 1, "FAB");
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
+    global_dpd_->buf4_init(&T2, PSIF_CC_MISC, 0, 0, 5, 0, 5, 0, "MP2 tIjAb");
+    global_dpd_->contract442(&T2, &D, &F, 3, 3, -1, 0);
+    global_dpd_->buf4_close(&T2);
+    global_dpd_->buf4_close(&D);
+    global_dpd_->file2_close(&F);
   }
   else if(params.ref == 2) { /** UHF **/
-    dpd_file2_init(&F, PSIF_CC_MISC, 0, 1, 1, "FAB");
+    global_dpd_->file2_init(&F, PSIF_CC_MISC, 0, 1, 1, "FAB");
 
-    dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 2, 5, 2, 5, 0, "D <IJ||AB> (I>J,AB)");
-    dpd_buf4_init(&T2, PSIF_CC_MISC, 0, 2, 5, 2, 7, 0, "MP2 tIJAB");
-    dpd_contract442(&T2, &D, &F, 3, 3, -1, 0);
-    dpd_buf4_close(&T2);
-    dpd_buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 2, 5, 2, 5, 0, "D <IJ||AB> (I>J,AB)");
+    global_dpd_->buf4_init(&T2, PSIF_CC_MISC, 0, 2, 5, 2, 7, 0, "MP2 tIJAB");
+    global_dpd_->contract442(&T2, &D, &F, 3, 3, -1, 0);
+    global_dpd_->buf4_close(&T2);
+    global_dpd_->buf4_close(&D);
 
-    dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
-    dpd_buf4_init(&T2, PSIF_CC_MISC, 0, 22, 28, 22, 28, 0, "MP2 tIjAb");
-    dpd_contract442(&T2, &D, &F, 2, 2, -1, 1);
-    dpd_buf4_close(&T2);
-    dpd_buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
+    global_dpd_->buf4_init(&T2, PSIF_CC_MISC, 0, 22, 28, 22, 28, 0, "MP2 tIjAb");
+    global_dpd_->contract442(&T2, &D, &F, 2, 2, -1, 1);
+    global_dpd_->buf4_close(&T2);
+    global_dpd_->buf4_close(&D);
 
-    dpd_file2_close(&F);
+    global_dpd_->file2_close(&F);
 
-    dpd_file2_init(&F, PSIF_CC_MISC, 0, 3, 3, "Fab");
+    global_dpd_->file2_init(&F, PSIF_CC_MISC, 0, 3, 3, "Fab");
 
-    dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 12, 15, 12, 15, 0, "D <ij||ab> (i>j,ab)");
-    dpd_buf4_init(&T2, PSIF_CC_MISC, 0, 12, 15, 12, 17, 0, "MP2 tijab");
-    dpd_contract442(&T2, &D, &F, 3, 3, -1, 0);
-    dpd_buf4_close(&T2);
-    dpd_buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 12, 15, 12, 15, 0, "D <ij||ab> (i>j,ab)");
+    global_dpd_->buf4_init(&T2, PSIF_CC_MISC, 0, 12, 15, 12, 17, 0, "MP2 tijab");
+    global_dpd_->contract442(&T2, &D, &F, 3, 3, -1, 0);
+    global_dpd_->buf4_close(&T2);
+    global_dpd_->buf4_close(&D);
 
-    dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
-    dpd_buf4_init(&T2, PSIF_CC_MISC, 0, 22, 28, 22, 28, 0, "MP2 tIjAb");
-    dpd_contract442(&T2, &D, &F, 3, 3, -1, 1);
-    dpd_buf4_close(&T2);
-    dpd_buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
+    global_dpd_->buf4_init(&T2, PSIF_CC_MISC, 0, 22, 28, 22, 28, 0, "MP2 tIjAb");
+    global_dpd_->contract442(&T2, &D, &F, 3, 3, -1, 1);
+    global_dpd_->buf4_close(&T2);
+    global_dpd_->buf4_close(&D);
 
-    dpd_file2_close(&F);
+    global_dpd_->file2_close(&F);
   }
 }
 

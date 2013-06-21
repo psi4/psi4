@@ -152,9 +152,9 @@ void CartesianEntry::print_in_input_format()
 
 std::string CartesianEntry::string_in_input_format()
 {
-    std::string xstr(variable_to_string(x_, 12));
-    std::string ystr(variable_to_string(y_, 12));
-    std::string zstr(variable_to_string(z_, 12));
+    std::string xstr(variable_to_string(x_, 15));
+    std::string ystr(variable_to_string(y_, 15));
+    std::string zstr(variable_to_string(z_, 15));
 
     char buffer[120];
     std::stringstream ss;
@@ -309,7 +309,7 @@ std::string ZMatrixEntry::string_in_input_format()
          * The second atom
          */
         int rto = rto_->entry_number() + 1;
-        std::string rval = variable_to_string(rval_, 6);
+        std::string rval = variable_to_string(rval_, 10);
         sprintf(buffer, "  %5d %11s\n", rto, rval.c_str());
         ss << buffer;
     }else if(dto_ == 0){
@@ -317,9 +317,9 @@ std::string ZMatrixEntry::string_in_input_format()
          * The third atom
          */
         int rto = rto_->entry_number() + 1;
-        std::string rval = variable_to_string(rval_, 6);
+        std::string rval = variable_to_string(rval_, 10);
         int ato = ato_->entry_number() + 1;
-        std::string aval = variable_to_string(aval_, 6);
+        std::string aval = variable_to_string(aval_, 10);
         sprintf(buffer, "  %5d %11s  %5d %11s\n", rto, rval.c_str(), ato, aval.c_str());
         ss << buffer;
     }else{
@@ -327,11 +327,11 @@ std::string ZMatrixEntry::string_in_input_format()
          * Remaining atoms
          */
         int rto = rto_->entry_number() + 1;
-        std::string rval = variable_to_string(rval_, 6);
+        std::string rval = variable_to_string(rval_, 10);
         int ato = ato_->entry_number() + 1;
-        std::string aval = variable_to_string(aval_, 6);
+        std::string aval = variable_to_string(aval_, 10);
         int dto = dto_->entry_number() + 1;
-        std::string dval = variable_to_string(dval_, 6);
+        std::string dval = variable_to_string(dval_, 10);
         sprintf(buffer, "  %5d %11s  %5d %11s  %5d %11s\n",
             rto, rval.c_str(), ato, aval.c_str(), dto, dval.c_str());
         ss << buffer;
