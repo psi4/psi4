@@ -1074,6 +1074,8 @@ AC_CONFIG_FILES([
           tests/pywrap-alias/Makefile
           tests/efp1/Makefile
           tests/efp2/Makefile
+          tests/efp3/Makefile
+          tests/efp6/Makefile
           tests/pywrap-opt-sowreap/Makefile
           tests/pywrap-freq-e-sowreap/Makefile
           tests/pywrap-basis/Makefile

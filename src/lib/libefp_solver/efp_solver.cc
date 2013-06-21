@@ -17,6 +17,7 @@
 #include <libpsio/psio.h>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
+//#include <liboptions/python.h>
 #include <psifiles.h>
 #include <libmints/multipolesymmetry.h>
 #include <psi4-dec.h>
@@ -633,10 +634,11 @@ void EFP::print_out() {
     fprintf(outfile, "  Electrostatics enabled:  %12d\n", elst_enabled_);
     fprintf(outfile, "  Polarization enabled:    %12d\n", pol_enabled_);
     fprintf(outfile, "  Dispersion enabled:      %12d\n", disp_enabled_);
-    fprintf(outfile, "  Exchanged enabled:       %12d\n", exch_enabled_);
+    fprintf(outfile, "  Exchange enabled:        %12d\n", exch_enabled_);
     fprintf(outfile, "  Gradient enabled:        %12d\n", do_grad_);
     fprintf(outfile, "\n");
 
+    print_efp_geometry();
     //molecule_->print();  // TODO: used to work, broken now?
 }
 
@@ -705,7 +707,7 @@ void EFP::set_options() {
     fprintf(outfile, "  Electrostatics enabled:  %12d\n", elst_enabled_);
     fprintf(outfile, "  Polarization enabled:    %12d\n", pol_enabled_);
     fprintf(outfile, "  Dispersion enabled:      %12d\n", disp_enabled_);
-    fprintf(outfile, "  Exchanged enabled:       %12d\n", exch_enabled_);
+    fprintf(outfile, "  Exchange enabled:        %12d\n", exch_enabled_);
     fprintf(outfile, "  Gradient enabled:        %12d\n", do_grad_);
     fprintf(outfile, "\n");
 

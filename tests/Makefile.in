@@ -17,7 +17,7 @@ cepa_subdirs = cepa1 cepa2 cepa3
 
 fnocc_subdirs = fnocc1 fnocc2 fnocc3 fnocc4
 
-efp_subdirs = efp1 efp2
+efp_subdirs = efp1 efp2 efp3 efp6
 
 ci_subdirs = cisd-h2o+-0 cisd-h2o+-1 cisd-h2o+-2 cisd-h2o-clpse cisd-sp cisd-sp-2 fci-h2o fci-h2o-2 fci-h2o-fzcv fci-dipole fci-tdm fci-tdm-2 cisd-opt-fd rasci-c2-active rasci-h2o rasci-ne zaptn-nh2 mpn-bh ci-multi
 
@@ -54,6 +54,7 @@ $(tutorial_subdirs) \
 $(mints_subdirs) \
 $(matrix_subdirs) \
 $(scf_subdirs) \
+$(efp_subdirs) \
 $(opt_subdirs) \
 $(freq_subdirs) \
 $(df_subdirs) \
@@ -181,6 +182,9 @@ python_tests: $(python_test_subdirs)
 
 dftd3_tests: $(dftd3_subdirs)
 	$(call gatherresults, $(dftd3_subdirs))
+
+efp_tests: $(efp_subdirs)
+	$(call gatherresults, $(efp_subdirs))
 
 longtests: $(longtest_subdirs)
 	$(call gatherresults, $(longtest_subdirs)
