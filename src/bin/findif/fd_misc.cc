@@ -82,7 +82,10 @@ void print_vibrations(std::vector<VIBRATION *> modes) {
     freq_vector->set(i, modes[i]->cm);
 
   //freq_vector->print_out();
-  Process::environment.wavefunction()->set_frequencies(freq_vector);
+  if (psi::Process::environment.wavefunction()) {
+    Process::environment.wavefunction()->set_frequencies(freq_vector);
+  }
+  Process::environment.set_frequencies(freq_vector);
 
   double sum = 0.0;
   for (int a=0; a<Natom; ++a)

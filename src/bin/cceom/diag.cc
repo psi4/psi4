@@ -180,10 +180,10 @@ timer_on("INIT GUESS");
 
     /* zero out files between irreps */
     if (!first_irrep) {
-      dpd_file2_cache_close();
-      dpd_file2_cache_init();
-      dpd_file4_cache_close();
-      dpd_file4_cache_init();
+      global_dpd_->file2_cache_close();
+      global_dpd_->file2_cache_init();
+      global_dpd_->file4_cache_close();
+      global_dpd_->file4_cache_init();
     }
     for (i=PSIF_EOM_D; i<=PSIF_EOM_R; ++i) {
       if (eom_params.restart_eom_cc3 && (i >= PSIF_EOM_CME) && (i<= PSIF_EOM_CMnEf)) continue;
@@ -222,24 +222,24 @@ timer_on("INIT GUESS");
         fprintf(outfile, "Using C1 vectors on disk as initial guesses.\n");
         /* normalize first guess */
         sprintf(lbl, "%s %d", "CME", 0);
-        dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
+        global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
         norm = norm_C1_rhf(&CME);
-        dpd_file2_scm(&CME, 1.0/norm);
-        dpd_file2_close(&CME);
+        global_dpd_->file2_scm(&CME, 1.0/norm);
+        global_dpd_->file2_close(&CME);
         /* reorthoganalize and normalize other guesses */
         for(i=1; i < eom_params.cs_per_irrep[C_irr]; i++) {
           sprintf(lbl, "%s %d", "CME", i);
-          dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
+          global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
           for(j=0; j < i; j++) {
             sprintf(lbl, "%s %d", "CME", j);
-            dpd_file2_init(&CME2, PSIF_EOM_CME, C_irr, 0, 1, lbl);
-            norm = 2.0 * dpd_file2_dot(&CME, &CME2);
-            dpd_file2_axpy(&CME2, &CME, -1.0*norm, 0);
-            dpd_file2_close(&CME2);
+            global_dpd_->file2_init(&CME2, PSIF_EOM_CME, C_irr, 0, 1, lbl);
+            norm = 2.0 * global_dpd_->file2_dot(&CME, &CME2);
+            global_dpd_->file2_axpy(&CME2, &CME, -1.0*norm, 0);
+            global_dpd_->file2_close(&CME2);
           }
           norm = norm_C1_rhf(&CME);
-          dpd_file2_scm(&CME, 1.0/norm);
-          dpd_file2_close(&CME);
+          global_dpd_->file2_scm(&CME, 1.0/norm);
+          global_dpd_->file2_close(&CME);
         }
 #ifdef EOM_DEBUG
         /* check initial guesses - overlap matrix */
@@ -382,15 +382,15 @@ timer_off("INIT GUESS");
         /* Cleaning out sigma vectors for open-shell cases  */
         if (params.eom_ref == 1) {
           sprintf(lbl, "%s %d", "SIA", i);
-          dpd_file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
+          global_dpd_->file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
           sprintf(lbl, "%s %d", "Sia", i);
-          dpd_file2_init(&Sia, PSIF_EOM_Sia, C_irr, 0, 1, lbl);
+          global_dpd_->file2_init(&Sia, PSIF_EOM_Sia, C_irr, 0, 1, lbl);
           sprintf(lbl, "%s %d", "SIJAB", i);
-          dpd_buf4_init(&SIJAB, PSIF_EOM_SIJAB, C_irr, 2, 7, 2, 7, 0, lbl);
+          global_dpd_->buf4_init(&SIJAB, PSIF_EOM_SIJAB, C_irr, 2, 7, 2, 7, 0, lbl);
           sprintf(lbl, "%s %d", "Sijab", i);
-          dpd_buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, 2, 7, 2, 7, 0, lbl);
+          global_dpd_->buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, 2, 7, 2, 7, 0, lbl);
           sprintf(lbl, "%s %d", "SIjAb", i);
-          dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
+          global_dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
 
           c_clean(&SIA, &Sia, &SIJAB, &Sijab, &SIjAb);
 
@@ -400,11 +400,11 @@ timer_off("INIT GUESS");
           check_sum(lbl, i, C_irr);
 #endif
 
-          dpd_file2_close(&SIA);
-          dpd_file2_close(&Sia);
-          dpd_buf4_close(&SIJAB);
-          dpd_buf4_close(&Sijab);
-          dpd_buf4_close(&SIjAb);
+          global_dpd_->file2_close(&SIA);
+          global_dpd_->file2_close(&Sia);
+          global_dpd_->buf4_close(&SIJAB);
+          global_dpd_->buf4_close(&Sijab);
+          global_dpd_->buf4_close(&SIjAb);
           fflush(outfile);
         }
       }
@@ -427,51 +427,51 @@ timer_off("INIT GUESS");
         if(params.eom_ref == 0) {
           /* Spin-adapt C */
           sprintf(lbl, "%s %d", "CME", i);
-          dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
+          global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
 					if (params.full_matrix) {
              sprintf(lbl, "%s %d", "C0", i);
              psio_read_entry(PSIF_EOM_CME, lbl, (char *) &C0, sizeof(double));
 					}
 
           sprintf(lbl, "%s %d", "CMnEf", i);
-          dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
-          dpd_buf4_copy(&CMnEf, PSIF_EOM_TMP, "CMnEf");
-          dpd_buf4_sort(&CMnEf, PSIF_EOM_TMP, pqsr, 0, 5, "CMnfE");
-          dpd_buf4_close(&CMnEf);
+          global_dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
+          global_dpd_->buf4_copy(&CMnEf, PSIF_EOM_TMP, "CMnEf");
+          global_dpd_->buf4_sort(&CMnEf, PSIF_EOM_TMP, pqsr, 0, 5, "CMnfE");
+          global_dpd_->buf4_close(&CMnEf);
 
-          dpd_buf4_init(&CMnEf1, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "CMnEf");
-          dpd_buf4_scm(&CMnEf1, 2.0);
-          dpd_buf4_init(&CMnfE1, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "CMnfE");
-          dpd_buf4_axpy(&CMnfE1, &CMnEf1, -1.0);
-          dpd_buf4_close(&CMnfE1);
-          dpd_buf4_close(&CMnEf1);
+          global_dpd_->buf4_init(&CMnEf1, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "CMnEf");
+          global_dpd_->buf4_scm(&CMnEf1, 2.0);
+          global_dpd_->buf4_init(&CMnfE1, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "CMnfE");
+          global_dpd_->buf4_axpy(&CMnfE1, &CMnEf1, -1.0);
+          global_dpd_->buf4_close(&CMnfE1);
+          global_dpd_->buf4_close(&CMnEf1);
 
           /* dpd_file2_init(&CME, EOM_TMP, C_irr, 0, 1, "CME");*/
-          dpd_buf4_init(&CMnEf, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "CMnEf");
+          global_dpd_->buf4_init(&CMnEf, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "CMnEf");
         }
         else if (params.eom_ref == 1) {
           sprintf(lbl, "%s %d", "CME", i);
-          dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
+          global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
           sprintf(lbl, "%s %d", "Cme", i);
-          dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 0, 1, lbl);
+          global_dpd_->file2_init(&Cme, PSIF_EOM_Cme, C_irr, 0, 1, lbl);
           sprintf(lbl, "%s %d", "CMNEF", i);
-          dpd_buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 2, 7, 2, 7, 0, lbl);
+          global_dpd_->buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 2, 7, 2, 7, 0, lbl);
           sprintf(lbl, "%s %d", "Cmnef", i);
-          dpd_buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 2, 7, 2, 7, 0, lbl);
+          global_dpd_->buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 2, 7, 2, 7, 0, lbl);
           sprintf(lbl, "%s %d", "CMnEf", i);
-          dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
+          global_dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
         }
         else if (params.eom_ref == 2) {
           sprintf(lbl, "%s %d", "CME", i);
-          dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
+          global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
           sprintf(lbl, "%s %d", "Cme", i);
-          dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 2, 3, lbl);
+          global_dpd_->file2_init(&Cme, PSIF_EOM_Cme, C_irr, 2, 3, lbl);
           sprintf(lbl, "%s %d", "CMNEF", i);
-          dpd_buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 2, 7, 2, 7, 0, lbl);
+          global_dpd_->buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 2, 7, 2, 7, 0, lbl);
           sprintf(lbl, "%s %d", "Cmnef", i);
-          dpd_buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 12, 17, 12, 17, 0, lbl);
+          global_dpd_->buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 12, 17, 12, 17, 0, lbl);
           sprintf(lbl, "%s %d", "CMnEf", i);
-          dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 22, 28, 22, 28, 0, lbl);
+          global_dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 22, 28, 22, 28, 0, lbl);
         }
 
         /* Dot C's and sigma vectors together to form G matrix */
@@ -482,73 +482,73 @@ timer_off("INIT GUESS");
 
           if(params.eom_ref == 0) {
             sprintf(lbl, "%s %d", "SIA", j);
-            dpd_file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
-            tval = 2.0 * dpd_file2_dot(&CME, &SIA);
+            global_dpd_->file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
+            tval = 2.0 * global_dpd_->file2_dot(&CME, &SIA);
             sprintf(lbl, "%s %d", "SIjAb", j);
-            dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
-            tval += dpd_buf4_dot(&CMnEf, &SIjAb);
-            dpd_file2_close(&SIA);
+            global_dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
+            tval += global_dpd_->buf4_dot(&CMnEf, &SIjAb);
+            global_dpd_->file2_close(&SIA);
 						if (params.full_matrix) {
               sprintf(lbl, "%s %d", "S0", j);
 							psio_read_entry(PSIF_EOM_SIA, lbl, (char *) &S0, sizeof(double));
 							tval += C0 * S0;
 						}
-            dpd_buf4_close(&SIjAb);
+            global_dpd_->buf4_close(&SIjAb);
           }
           else if (params.eom_ref == 1) {
             sprintf(lbl, "%s %d", "SIA", j);
-            dpd_file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
-            tval = dpd_file2_dot(&CME, &SIA);
-            dpd_file2_close(&SIA);
+            global_dpd_->file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
+            tval = global_dpd_->file2_dot(&CME, &SIA);
+            global_dpd_->file2_close(&SIA);
             sprintf(lbl, "%s %d", "Sia", j);
-            dpd_file2_init(&Sia, PSIF_EOM_Sia, C_irr, 0, 1, lbl);
-            tval += dpd_file2_dot(&Cme, &Sia);
-            dpd_file2_close(&Sia);
+            global_dpd_->file2_init(&Sia, PSIF_EOM_Sia, C_irr, 0, 1, lbl);
+            tval += global_dpd_->file2_dot(&Cme, &Sia);
+            global_dpd_->file2_close(&Sia);
             sprintf(lbl, "%s %d", "SIJAB", j);
-            dpd_buf4_init(&SIJAB, PSIF_EOM_SIJAB, C_irr, 2, 7, 2, 7, 0, lbl);
-            tval += r2aa = dpd_buf4_dot(&CMNEF, &SIJAB);
-            dpd_buf4_close(&SIJAB);
+            global_dpd_->buf4_init(&SIJAB, PSIF_EOM_SIJAB, C_irr, 2, 7, 2, 7, 0, lbl);
+            tval += r2aa = global_dpd_->buf4_dot(&CMNEF, &SIJAB);
+            global_dpd_->buf4_close(&SIJAB);
             sprintf(lbl, "%s %d", "Sijab", j);
-            dpd_buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, 2, 7, 2, 7, 0, lbl);
-            tval += r2bb = dpd_buf4_dot(&Cmnef, &Sijab);
-            dpd_buf4_close(&Sijab);
+            global_dpd_->buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, 2, 7, 2, 7, 0, lbl);
+            tval += r2bb = global_dpd_->buf4_dot(&Cmnef, &Sijab);
+            global_dpd_->buf4_close(&Sijab);
             sprintf(lbl, "%s %d", "SIjAb", j);
-            dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
-            tval += r2ab = dpd_buf4_dot(&CMnEf, &SIjAb);
-            dpd_buf4_close(&SIjAb);
+            global_dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
+            tval += r2ab = global_dpd_->buf4_dot(&CMnEf, &SIjAb);
+            global_dpd_->buf4_close(&SIjAb);
             /* fprintf(outfile,"r2aa %12.7lf r2bb %12.7lf r2ab %12.7lf\n", r2aa, r2bb, r2ab); */
           }
           else if (params.eom_ref == 2) {
             sprintf(lbl, "%s %d", "SIA", j);
-            dpd_file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
-            tval = dpd_file2_dot(&CME, &SIA);
-            dpd_file2_close(&SIA);
+            global_dpd_->file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
+            tval = global_dpd_->file2_dot(&CME, &SIA);
+            global_dpd_->file2_close(&SIA);
             sprintf(lbl, "%s %d", "Sia", j);
-            dpd_file2_init(&Sia, PSIF_EOM_Sia, C_irr, 2, 3, lbl);
-            tval += dpd_file2_dot(&Cme, &Sia);
-            dpd_file2_close(&Sia);
+            global_dpd_->file2_init(&Sia, PSIF_EOM_Sia, C_irr, 2, 3, lbl);
+            tval += global_dpd_->file2_dot(&Cme, &Sia);
+            global_dpd_->file2_close(&Sia);
             sprintf(lbl, "%s %d", "SIJAB", j);
-            dpd_buf4_init(&SIJAB, PSIF_EOM_SIJAB, C_irr, 2, 7, 2, 7, 0, lbl);
-            tval += dpd_buf4_dot(&CMNEF, &SIJAB);
-            dpd_buf4_close(&SIJAB);
+            global_dpd_->buf4_init(&SIJAB, PSIF_EOM_SIJAB, C_irr, 2, 7, 2, 7, 0, lbl);
+            tval += global_dpd_->buf4_dot(&CMNEF, &SIJAB);
+            global_dpd_->buf4_close(&SIJAB);
             sprintf(lbl, "%s %d", "Sijab", j);
-            dpd_buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, 12, 17, 12, 17, 0, lbl);
-            tval += dpd_buf4_dot(&Cmnef, &Sijab);
-            dpd_buf4_close(&Sijab);
+            global_dpd_->buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, 12, 17, 12, 17, 0, lbl);
+            tval += global_dpd_->buf4_dot(&Cmnef, &Sijab);
+            global_dpd_->buf4_close(&Sijab);
             sprintf(lbl, "%s %d", "SIjAb", j);
-            dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 22, 28, 22, 28, 0, lbl);
-            tval += dpd_buf4_dot(&CMnEf, &SIjAb);
-            dpd_buf4_close(&SIjAb);
+            global_dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 22, 28, 22, 28, 0, lbl);
+            tval += global_dpd_->buf4_dot(&CMnEf, &SIjAb);
+            global_dpd_->buf4_close(&SIjAb);
           }
           G[i][j] = tval;
         }
 
-        dpd_file2_close(&CME);
-        dpd_buf4_close(&CMnEf);
+        global_dpd_->file2_close(&CME);
+        global_dpd_->buf4_close(&CMnEf);
         if (params.eom_ref > 0) {
-          dpd_file2_close(&Cme);
-          dpd_buf4_close(&CMNEF);
-          dpd_buf4_close(&Cmnef);
+          global_dpd_->file2_close(&Cme);
+          global_dpd_->buf4_close(&CMNEF);
+          global_dpd_->buf4_close(&Cmnef);
         }
       } /* end build of G */
 
@@ -577,22 +577,22 @@ timer_off("INIT GUESS");
 
       /* Open up residual vector files */
       if (params.eom_ref == 0) {
-        dpd_file2_init(&RIA, PSIF_EOM_R, C_irr, 0, 1, "RIA");
-        dpd_buf4_init(&RIjAb, PSIF_EOM_R, C_irr, 0, 5, 0, 5, 0, "RIjAb");
+        global_dpd_->file2_init(&RIA, PSIF_EOM_R, C_irr, 0, 1, "RIA");
+        global_dpd_->buf4_init(&RIjAb, PSIF_EOM_R, C_irr, 0, 5, 0, 5, 0, "RIjAb");
       }
       else if (params.eom_ref == 1) {
-        dpd_file2_init(&RIA, PSIF_EOM_R, C_irr, 0, 1, "RIA");
-        dpd_file2_init(&Ria, PSIF_EOM_R, C_irr, 0, 1, "Ria");
-        dpd_buf4_init(&RIJAB, PSIF_EOM_R, C_irr, 2, 7, 2, 7, 0, "RIJAB");
-        dpd_buf4_init(&Rijab, PSIF_EOM_R, C_irr, 2, 7, 2, 7, 0, "Rijab");
-        dpd_buf4_init(&RIjAb, PSIF_EOM_R, C_irr, 0, 5, 0, 5, 0, "RIjAb");
+        global_dpd_->file2_init(&RIA, PSIF_EOM_R, C_irr, 0, 1, "RIA");
+        global_dpd_->file2_init(&Ria, PSIF_EOM_R, C_irr, 0, 1, "Ria");
+        global_dpd_->buf4_init(&RIJAB, PSIF_EOM_R, C_irr, 2, 7, 2, 7, 0, "RIJAB");
+        global_dpd_->buf4_init(&Rijab, PSIF_EOM_R, C_irr, 2, 7, 2, 7, 0, "Rijab");
+        global_dpd_->buf4_init(&RIjAb, PSIF_EOM_R, C_irr, 0, 5, 0, 5, 0, "RIjAb");
       }
       else if (params.eom_ref == 2) {
-        dpd_file2_init(&RIA, PSIF_EOM_R, C_irr, 0, 1, "RIA");
-        dpd_file2_init(&Ria, PSIF_EOM_R, C_irr, 2, 3, "Ria");
-        dpd_buf4_init(&RIJAB, PSIF_EOM_R, C_irr, 2, 7, 2, 7, 0, "RIJAB");
-        dpd_buf4_init(&Rijab, PSIF_EOM_R, C_irr, 12, 17, 12, 17, 0, "Rijab");
-        dpd_buf4_init(&RIjAb, PSIF_EOM_R, C_irr, 22, 28, 22, 28, 0, "RIjAb");
+        global_dpd_->file2_init(&RIA, PSIF_EOM_R, C_irr, 0, 1, "RIA");
+        global_dpd_->file2_init(&Ria, PSIF_EOM_R, C_irr, 2, 3, "Ria");
+        global_dpd_->buf4_init(&RIJAB, PSIF_EOM_R, C_irr, 2, 7, 2, 7, 0, "RIJAB");
+        global_dpd_->buf4_init(&Rijab, PSIF_EOM_R, C_irr, 12, 17, 12, 17, 0, "Rijab");
+        global_dpd_->buf4_init(&RIjAb, PSIF_EOM_R, C_irr, 22, 28, 22, 28, 0, "RIjAb");
       }
       fprintf(outfile,"  Root    EOM Energy     Delta E   Res. Norm    Conv?\n");
       for (k=0;k<eom_params.cs_per_irrep[C_irr];++k) {
@@ -605,12 +605,12 @@ timer_off("INIT GUESS");
         R0 = 0.0;
         psio_write_entry(PSIF_EOM_R, "R0", (char *) &R0, sizeof(double));
       }
-      dpd_file2_scm(&RIA, 0.0);
-      dpd_buf4_scm(&RIjAb, 0.0);
+      global_dpd_->file2_scm(&RIA, 0.0);
+      global_dpd_->buf4_scm(&RIjAb, 0.0);
       if (params.eom_ref > 0) {
-        dpd_file2_scm(&Ria, 0.0);
-        dpd_buf4_scm(&RIJAB, 0.0);
-        dpd_buf4_scm(&Rijab, 0.0);
+        global_dpd_->file2_scm(&Ria, 0.0);
+        global_dpd_->buf4_scm(&RIJAB, 0.0);
+        global_dpd_->buf4_scm(&Rijab, 0.0);
       }
 
         /* only one cc3 root can be sought */
@@ -625,20 +625,20 @@ timer_off("INIT GUESS");
         for (i=0;i<L;++i) {
           if (params.eom_ref == 0) { /* RHF residual */
             sprintf(lbl, "%s %d", "SIA", i);
-            dpd_file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
+            global_dpd_->file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
             sprintf(lbl, "%s %d", "CME", i);
-            dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
-            dpd_file2_axpbycz(&CME, &SIA, &RIA, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
-            dpd_file2_close(&CME);
-            dpd_file2_close(&SIA);
+            global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
+            global_dpd_->file2_axpbycz(&CME, &SIA, &RIA, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
+            global_dpd_->file2_close(&CME);
+            global_dpd_->file2_close(&SIA);
 
             sprintf(lbl, "%s %d", "CMnEf", i);
-            dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
+            global_dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
             sprintf(lbl, "%s %d", "SIjAb", i);
-            dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
-            dpd_buf4_axpbycz(&CMnEf, &SIjAb, &RIjAb, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
-            dpd_buf4_close(&CMnEf);
-            dpd_buf4_close(&SIjAb);
+            global_dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
+            global_dpd_->buf4_axpbycz(&CMnEf, &SIjAb, &RIjAb, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
+            global_dpd_->buf4_close(&CMnEf);
+            global_dpd_->buf4_close(&SIjAb);
 
             if (params.full_matrix) {
               sprintf(lbl, "%s %d", "S0", i);
@@ -652,85 +652,85 @@ timer_off("INIT GUESS");
           }
           else if (params.eom_ref == 1) { /* ROHF residual */
             sprintf(lbl, "%s %d", "SIA", i);
-            dpd_file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
+            global_dpd_->file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
             sprintf(lbl, "%s %d", "CME", i);
-            dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
-            dpd_file2_axpbycz(&CME, &SIA, &RIA, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
-            dpd_file2_close(&CME);
-            dpd_file2_close(&SIA);
+            global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
+            global_dpd_->file2_axpbycz(&CME, &SIA, &RIA, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
+            global_dpd_->file2_close(&CME);
+            global_dpd_->file2_close(&SIA);
   
             sprintf(lbl, "%s %d", "CMnEf", i);
-            dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
+            global_dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
             sprintf(lbl, "%s %d", "SIjAb", i);
-            dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
-            dpd_buf4_axpbycz(&CMnEf, &SIjAb, &RIjAb, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
-            dpd_buf4_close(&CMnEf);
-            dpd_buf4_close(&SIjAb);
+            global_dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
+            global_dpd_->buf4_axpbycz(&CMnEf, &SIjAb, &RIjAb, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
+            global_dpd_->buf4_close(&CMnEf);
+            global_dpd_->buf4_close(&SIjAb);
 
             sprintf(lbl, "%s %d", "Sia", i);
-            dpd_file2_init(&Sia, PSIF_EOM_Sia, C_irr, 0, 1, lbl);
+            global_dpd_->file2_init(&Sia, PSIF_EOM_Sia, C_irr, 0, 1, lbl);
             sprintf(lbl, "%s %d", "Cme", i);
-            dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 0, 1, lbl);
-            dpd_file2_axpbycz(&Cme, &Sia, &Ria, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
-            dpd_file2_close(&Cme);
-            dpd_file2_close(&Sia);
+            global_dpd_->file2_init(&Cme, PSIF_EOM_Cme, C_irr, 0, 1, lbl);
+            global_dpd_->file2_axpbycz(&Cme, &Sia, &Ria, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
+            global_dpd_->file2_close(&Cme);
+            global_dpd_->file2_close(&Sia);
 
             sprintf(lbl, "%s %d", "CMNEF", i);
-            dpd_buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 2, 7, 2, 7, 0, lbl);
+            global_dpd_->buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 2, 7, 2, 7, 0, lbl);
             sprintf(lbl, "%s %d", "SIJAB", i);
-            dpd_buf4_init(&SIJAB, PSIF_EOM_SIJAB, C_irr, 2, 7, 2, 7, 0, lbl);
-            dpd_buf4_axpbycz(&CMNEF, &SIJAB, &RIJAB, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
-            dpd_buf4_close(&CMNEF);
-            dpd_buf4_close(&SIJAB);
+            global_dpd_->buf4_init(&SIJAB, PSIF_EOM_SIJAB, C_irr, 2, 7, 2, 7, 0, lbl);
+            global_dpd_->buf4_axpbycz(&CMNEF, &SIJAB, &RIJAB, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
+            global_dpd_->buf4_close(&CMNEF);
+            global_dpd_->buf4_close(&SIJAB);
 
             sprintf(lbl, "%s %d", "Cmnef", i);
-            dpd_buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 2, 7, 2, 7, 0, lbl);
+            global_dpd_->buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 2, 7, 2, 7, 0, lbl);
             sprintf(lbl, "%s %d", "Sijab", i);
-            dpd_buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, 2, 7, 2, 7, 0, lbl);
-            dpd_buf4_axpbycz(&Cmnef, &Sijab, &Rijab, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
-            dpd_buf4_close(&Cmnef);
-            dpd_buf4_close(&Sijab);
+            global_dpd_->buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, 2, 7, 2, 7, 0, lbl);
+            global_dpd_->buf4_axpbycz(&Cmnef, &Sijab, &Rijab, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
+            global_dpd_->buf4_close(&Cmnef);
+            global_dpd_->buf4_close(&Sijab);
           }
           else if (params.eom_ref == 2) { /* UHF residual */
             sprintf(lbl, "%s %d", "SIA", i);
-            dpd_file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
+            global_dpd_->file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
             sprintf(lbl, "%s %d", "CME", i);
-            dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
-            dpd_file2_axpbycz(&CME, &SIA, &RIA, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
-            dpd_file2_close(&CME);
-            dpd_file2_close(&SIA);
+            global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
+            global_dpd_->file2_axpbycz(&CME, &SIA, &RIA, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
+            global_dpd_->file2_close(&CME);
+            global_dpd_->file2_close(&SIA);
   
             sprintf(lbl, "%s %d", "CMnEf", i);
-            dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 22, 28, 22, 28, 0, lbl);
+            global_dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 22, 28, 22, 28, 0, lbl);
             sprintf(lbl, "%s %d", "SIjAb", i);
-            dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 22, 28, 22, 28, 0, lbl);
-            dpd_buf4_axpbycz(&CMnEf, &SIjAb, &RIjAb, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
-            dpd_buf4_close(&CMnEf);
-            dpd_buf4_close(&SIjAb);
+            global_dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 22, 28, 22, 28, 0, lbl);
+            global_dpd_->buf4_axpbycz(&CMnEf, &SIjAb, &RIjAb, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
+            global_dpd_->buf4_close(&CMnEf);
+            global_dpd_->buf4_close(&SIjAb);
 
             sprintf(lbl, "%s %d", "Sia", i);
-            dpd_file2_init(&Sia, PSIF_EOM_Sia, C_irr, 2, 3, lbl);
+            global_dpd_->file2_init(&Sia, PSIF_EOM_Sia, C_irr, 2, 3, lbl);
             sprintf(lbl, "%s %d", "Cme", i);
-            dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 2, 3, lbl);
-            dpd_file2_axpbycz(&Cme, &Sia, &Ria, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
-            dpd_file2_close(&Cme);
-            dpd_file2_close(&Sia);
+            global_dpd_->file2_init(&Cme, PSIF_EOM_Cme, C_irr, 2, 3, lbl);
+            global_dpd_->file2_axpbycz(&Cme, &Sia, &Ria, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
+            global_dpd_->file2_close(&Cme);
+            global_dpd_->file2_close(&Sia);
 
             sprintf(lbl, "%s %d", "CMNEF", i);
-            dpd_buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 2, 7, 2, 7, 0, lbl);
+            global_dpd_->buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 2, 7, 2, 7, 0, lbl);
             sprintf(lbl, "%s %d", "SIJAB", i);
-            dpd_buf4_init(&SIJAB, PSIF_EOM_SIJAB, C_irr, 2, 7, 2, 7, 0, lbl);
-            dpd_buf4_axpbycz(&CMNEF, &SIJAB, &RIJAB, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
-            dpd_buf4_close(&CMNEF);
-            dpd_buf4_close(&SIJAB);
+            global_dpd_->buf4_init(&SIJAB, PSIF_EOM_SIJAB, C_irr, 2, 7, 2, 7, 0, lbl);
+            global_dpd_->buf4_axpbycz(&CMNEF, &SIJAB, &RIJAB, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
+            global_dpd_->buf4_close(&CMNEF);
+            global_dpd_->buf4_close(&SIJAB);
 
             sprintf(lbl, "%s %d", "Cmnef", i);
-            dpd_buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 12, 17, 12, 17, 0, lbl);
+            global_dpd_->buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 12, 17, 12, 17, 0, lbl);
             sprintf(lbl, "%s %d", "Sijab", i);
-            dpd_buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, 12, 17, 12, 17, 0, lbl);
-            dpd_buf4_axpbycz(&Cmnef, &Sijab, &Rijab, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
-            dpd_buf4_close(&Cmnef);
-            dpd_buf4_close(&Sijab);
+            global_dpd_->buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, 12, 17, 12, 17, 0, lbl);
+            global_dpd_->buf4_axpbycz(&Cmnef, &Sijab, &Rijab, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
+            global_dpd_->buf4_close(&Cmnef);
+            global_dpd_->buf4_close(&Sijab);
           }
         }
 
@@ -752,8 +752,8 @@ timer_off("INIT GUESS");
 	else precondition(&RIA, &Ria, &RIJAB, &Rijab, &RIjAb, lambda[k]); */
 
         if (params.eom_ref == 0) {
-          dpd_buf4_sort(&RIjAb, PSIF_EOM_TMP, pqsr, 0, 5, "RIjbA");
-          dpd_buf4_init(&RIjbA, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "RIjbA");
+          global_dpd_->buf4_sort(&RIjAb, PSIF_EOM_TMP, pqsr, 0, 5, "RIjbA");
+          global_dpd_->buf4_init(&RIjbA, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "RIjbA");
           if (!params.full_matrix) norm = norm_C_rhf(&RIA, &RIjAb, &RIjbA);
           else {
             psio_read_entry(PSIF_EOM_R, "R0", (char *) &R0, sizeof(double));
@@ -778,22 +778,22 @@ timer_off("INIT GUESS");
 	  if(params.eom_ref == 0) {
 
             /* Normalize R */
-            dpd_buf4_sort(&RIjAb, PSIF_EOM_TMP, pqsr, 0, 5, "RIjbA");
-            dpd_buf4_init(&RIjbA, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "RIjbA");
+            global_dpd_->buf4_sort(&RIjAb, PSIF_EOM_TMP, pqsr, 0, 5, "RIjbA");
+            global_dpd_->buf4_init(&RIjbA, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "RIjbA");
 
             if (!params.full_matrix) norm = norm_C_rhf(&RIA, &RIjAb, &RIjbA);
             else {
               psio_read_entry(PSIF_EOM_R, "R0", (char *) &R0, sizeof(double));
               norm = norm_C_rhf_full(R0, &RIA, &RIjAb, &RIjbA);
             }
-            dpd_buf4_close(&RIjbA);
+            global_dpd_->buf4_close(&RIjbA);
 
             if (params.full_matrix) {
               R0 *= 1.0/norm;
               psio_write_entry(PSIF_EOM_R, "R0", (char *) &R0, sizeof(double));
             }
-            dpd_file2_scm(&RIA, 1.0/norm);
-            dpd_buf4_scm(&RIjAb, 1.0/norm);
+            global_dpd_->file2_scm(&RIA, 1.0/norm);
+            global_dpd_->buf4_scm(&RIjAb, 1.0/norm);
           }
           else {
             norm = norm_C(&RIA, &Ria, &RIJAB, &Rijab, &RIjAb);
@@ -821,12 +821,12 @@ timer_off("INIT GUESS");
         }
       }
 
-      dpd_file2_close(&RIA);
-      dpd_buf4_close(&RIjAb);
+      global_dpd_->file2_close(&RIA);
+      global_dpd_->buf4_close(&RIjAb);
       if (params.eom_ref > 0) {
-        dpd_file2_close(&Ria);
-        dpd_buf4_close(&RIJAB);
-        dpd_buf4_close(&Rijab);
+        global_dpd_->file2_close(&Ria);
+        global_dpd_->buf4_close(&RIJAB);
+        global_dpd_->buf4_close(&Rijab);
       }
 
       for (i=0;i<eom_params.cs_per_irrep[C_irr];++i) lambda_old[i] = lambda[i];
@@ -997,54 +997,54 @@ timer_off("INIT GUESS");
           fprintf(outfile, "\nLargest components of excited wave function #%d:\n", num_converged_index);
           if(params.eom_ref == 0) {
             sprintf(lbl, "%s %d %d", "RIA", C_irr, i);
-            dpd_file2_init(&CME, PSIF_CC_RAMPS, C_irr, 0, 1, lbl);
+            global_dpd_->file2_init(&CME, PSIF_CC_RAMPS, C_irr, 0, 1, lbl);
             sprintf(lbl, "%s %d %d", "RIjAb", C_irr, i);
-            dpd_buf4_init(&CMnEf, PSIF_CC_RAMPS, C_irr, 0, 5, 0, 5, 0, lbl);
+            global_dpd_->buf4_init(&CMnEf, PSIF_CC_RAMPS, C_irr, 0, 5, 0, 5, 0, lbl);
 
             amp_write_RHF(&CME, &CMnEf, eom_params.amps_to_print);
 
-            dpd_file2_close(&CME);
-            dpd_buf4_close(&CMnEf);
+            global_dpd_->file2_close(&CME);
+            global_dpd_->buf4_close(&CMnEf);
           }
           else if (params.eom_ref == 1) {
             sprintf(lbl, "%s %d %d", "RIA", C_irr, i);
-            dpd_file2_init(&CME, PSIF_CC_RAMPS, C_irr, 0, 1, lbl);
+            global_dpd_->file2_init(&CME, PSIF_CC_RAMPS, C_irr, 0, 1, lbl);
             sprintf(lbl, "%s %d %d", "Ria", C_irr, i);
-            dpd_file2_init(&Cme, PSIF_CC_RAMPS, C_irr, 0, 1, lbl);
+            global_dpd_->file2_init(&Cme, PSIF_CC_RAMPS, C_irr, 0, 1, lbl);
             sprintf(lbl, "%s %d %d", "RIJAB", C_irr, i);
-            dpd_buf4_init(&CMNEF, PSIF_CC_RAMPS, C_irr, 2, 7, 2, 7, 0, lbl);
+            global_dpd_->buf4_init(&CMNEF, PSIF_CC_RAMPS, C_irr, 2, 7, 2, 7, 0, lbl);
             sprintf(lbl, "%s %d %d", "Rijab", C_irr, i);
-            dpd_buf4_init(&Cmnef, PSIF_CC_RAMPS, C_irr, 2, 7, 2, 7, 0, lbl);
+            global_dpd_->buf4_init(&Cmnef, PSIF_CC_RAMPS, C_irr, 2, 7, 2, 7, 0, lbl);
             sprintf(lbl, "%s %d %d", "RIjAb", C_irr, i);
-            dpd_buf4_init(&CMnEf, PSIF_CC_RAMPS, C_irr, 0, 5, 0, 5, 0, lbl);
+            global_dpd_->buf4_init(&CMnEf, PSIF_CC_RAMPS, C_irr, 0, 5, 0, 5, 0, lbl);
 
             amp_write_ROHF(&CME, &Cme, &CMNEF, &Cmnef, &CMnEf, eom_params.amps_to_print);
 
-            dpd_file2_close(&CME);
-            dpd_file2_close(&Cme);
-            dpd_buf4_close(&CMNEF);
-            dpd_buf4_close(&Cmnef);
-            dpd_buf4_close(&CMnEf);
+            global_dpd_->file2_close(&CME);
+            global_dpd_->file2_close(&Cme);
+            global_dpd_->buf4_close(&CMNEF);
+            global_dpd_->buf4_close(&Cmnef);
+            global_dpd_->buf4_close(&CMnEf);
           }
           else if (params.eom_ref == 2) {
             sprintf(lbl, "%s %d %d", "RIA", C_irr, i);
-            dpd_file2_init(&CME, PSIF_CC_RAMPS, C_irr, 0, 1, lbl);
+            global_dpd_->file2_init(&CME, PSIF_CC_RAMPS, C_irr, 0, 1, lbl);
             sprintf(lbl, "%s %d %d", "Ria", C_irr, i);
-            dpd_file2_init(&Cme, PSIF_CC_RAMPS, C_irr, 2, 3, lbl);
+            global_dpd_->file2_init(&Cme, PSIF_CC_RAMPS, C_irr, 2, 3, lbl);
             sprintf(lbl, "%s %d %d", "RIJAB", C_irr, i);
-            dpd_buf4_init(&CMNEF, PSIF_CC_RAMPS, C_irr, 2, 7, 2, 7, 0, lbl);
+            global_dpd_->buf4_init(&CMNEF, PSIF_CC_RAMPS, C_irr, 2, 7, 2, 7, 0, lbl);
             sprintf(lbl, "%s %d %d", "Rijab", C_irr, i);
-            dpd_buf4_init(&Cmnef, PSIF_CC_RAMPS, C_irr, 12, 17, 12, 17, 0, lbl);
+            global_dpd_->buf4_init(&Cmnef, PSIF_CC_RAMPS, C_irr, 12, 17, 12, 17, 0, lbl);
             sprintf(lbl, "%s %d %d", "RIjAb", C_irr, i);
-            dpd_buf4_init(&CMnEf, PSIF_CC_RAMPS, C_irr, 22, 28, 22, 28, 0, lbl);
+            global_dpd_->buf4_init(&CMnEf, PSIF_CC_RAMPS, C_irr, 22, 28, 22, 28, 0, lbl);
 
             amp_write_UHF(&CME, &Cme, &CMNEF, &Cmnef, &CMnEf, eom_params.amps_to_print);
 
-            dpd_file2_close(&CME);
-            dpd_file2_close(&Cme);
-            dpd_buf4_close(&CMNEF);
-            dpd_buf4_close(&Cmnef);
-            dpd_buf4_close(&CMnEf);
+            global_dpd_->file2_close(&CME);
+            global_dpd_->file2_close(&Cme);
+            global_dpd_->buf4_close(&CMNEF);
+            global_dpd_->buf4_close(&Cmnef);
+            global_dpd_->buf4_close(&CMnEf);
           } // UHF
 
           // The 'key' or 'property' root is stored in eom_params.prop_sym and prop_root
@@ -1105,9 +1105,9 @@ void init_C1(int i, int C_irr ){
   double zip = 0.0;
   if (params.eom_ref == 0) {
     sprintf(lbl, "%s %d", "CME", i);
-    dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
-    dpd_file2_scm(&CME, 0.0);
-    dpd_file2_close(&CME);
+    global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
+    global_dpd_->file2_scm(&CME, 0.0);
+    global_dpd_->file2_close(&CME);
     if (params.full_matrix) {
       sprintf(lbl, "%s %d", "C0", i);
       psio_write_entry(PSIF_EOM_CME, lbl, (char *) &(zip), sizeof(double));
@@ -1115,13 +1115,13 @@ void init_C1(int i, int C_irr ){
   }
   else {
     sprintf(lbl, "%s %d", "CME", i);
-    dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
+    global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
     sprintf(lbl, "%s %d", "Cme", i);
-    if (params.eom_ref == 1) dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 0, 1, lbl);
-    else if (params.eom_ref == 2) dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 2, 3, lbl);
+    if (params.eom_ref == 1) global_dpd_->file2_init(&Cme, PSIF_EOM_Cme, C_irr, 0, 1, lbl);
+    else if (params.eom_ref == 2) global_dpd_->file2_init(&Cme, PSIF_EOM_Cme, C_irr, 2, 3, lbl);
     scm_C1(&CME, &Cme, 0.0);
-    dpd_file2_close(&CME);
-    dpd_file2_close(&Cme);
+    global_dpd_->file2_close(&CME);
+    global_dpd_->file2_close(&Cme);
   }
 }
 
@@ -1132,9 +1132,9 @@ void init_S1(int i, int C_irr) {
   double zip = 0.0;
   if (params.eom_ref == 0) {
     sprintf(lbl, "%s %d", "SIA", i);
-    dpd_file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
-    dpd_file2_scm(&SIA, 0.0);
-    dpd_file2_close(&SIA);
+    global_dpd_->file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
+    global_dpd_->file2_scm(&SIA, 0.0);
+    global_dpd_->file2_close(&SIA);
     if (params.full_matrix) {
       sprintf(lbl, "%s %d", "S0", i);
       psio_write_entry(PSIF_EOM_SIA, lbl, (char *) &(zip), sizeof(double));
@@ -1142,13 +1142,13 @@ void init_S1(int i, int C_irr) {
   }
   else {
     sprintf(lbl, "%s %d", "SIA", i);
-    dpd_file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
+    global_dpd_->file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
     sprintf(lbl, "%s %d", "Sia", i);
-    if (params.eom_ref == 1) dpd_file2_init(&Sia, PSIF_EOM_Sia, C_irr, 0, 1, lbl);
-    else if (params.eom_ref == 2) dpd_file2_init(&Sia, PSIF_EOM_Sia, C_irr, 2, 3, lbl);
+    if (params.eom_ref == 1) global_dpd_->file2_init(&Sia, PSIF_EOM_Sia, C_irr, 0, 1, lbl);
+    else if (params.eom_ref == 2) global_dpd_->file2_init(&Sia, PSIF_EOM_Sia, C_irr, 2, 3, lbl);
     scm_C1(&SIA, &Sia, 0.0);
-    dpd_file2_close(&SIA);
-    dpd_file2_close(&Sia);
+    global_dpd_->file2_close(&SIA);
+    global_dpd_->file2_close(&Sia);
   }
 }
 
@@ -1158,34 +1158,34 @@ void init_C2(int i, int C_irr) {
   char lbl[32];
   if (params.eom_ref == 0) {
     sprintf(lbl, "%s %d", "CMnEf", i);
-    dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
-    dpd_buf4_scm(&CMnEf, 0.0);
-    dpd_buf4_close(&CMnEf);
+    global_dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
+    global_dpd_->buf4_scm(&CMnEf, 0.0);
+    global_dpd_->buf4_close(&CMnEf);
   }
   else {
     sprintf(lbl, "%s %d", "CMNEF", i);
-    dpd_buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 2, 7, 2, 7, 0, lbl);
+    global_dpd_->buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 2, 7, 2, 7, 0, lbl);
 
     sprintf(lbl, "%s %d", "Cmnef", i);
     if (params.eom_ref == 1)
-      dpd_buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 2, 7, 2, 7, 0, lbl);
+      global_dpd_->buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 2, 7, 2, 7, 0, lbl);
     else if (params.eom_ref == 2)
-      dpd_buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 12, 17, 12, 17, 0, lbl);
+      global_dpd_->buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 12, 17, 12, 17, 0, lbl);
 
     sprintf(lbl, "%s %d", "CMnEf", i);
     if (params.eom_ref == 1)
-      dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
+      global_dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
     else if (params.eom_ref == 2)
-      dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 22, 28, 22, 28, 0, lbl);
+      global_dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 22, 28, 22, 28, 0, lbl);
 
     /* scm_C2(&CMNEF, &Cmnef, &CMnEf, 0.0); */
-    dpd_buf4_scm(&CMNEF, 0.0);
-    dpd_buf4_scm(&Cmnef, 0.0);
-    dpd_buf4_scm(&CMnEf, 0.0);
+    global_dpd_->buf4_scm(&CMNEF, 0.0);
+    global_dpd_->buf4_scm(&Cmnef, 0.0);
+    global_dpd_->buf4_scm(&CMnEf, 0.0);
 
-    dpd_buf4_close(&CMNEF);
-    dpd_buf4_close(&Cmnef);
-    dpd_buf4_close(&CMnEf);
+    global_dpd_->buf4_close(&CMNEF);
+    global_dpd_->buf4_close(&Cmnef);
+    global_dpd_->buf4_close(&CMnEf);
   }
 }
 
@@ -1195,28 +1195,28 @@ void init_S2(int i, int C_irr) {
   char lbl[32];
   if (params.eom_ref == 0) {
     sprintf(lbl, "%s %d", "SIjAb", i);
-    dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
-    dpd_buf4_scm(&SIjAb, 0.0);
-    dpd_buf4_close(&SIjAb);
+    global_dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
+    global_dpd_->buf4_scm(&SIjAb, 0.0);
+    global_dpd_->buf4_close(&SIjAb);
   }
   else {
     sprintf(lbl, "%s %d", "SIJAB", i);
-    dpd_buf4_init(&SIJAB, PSIF_EOM_SIJAB, C_irr, 2, 7, 2, 7, 0, lbl);
+    global_dpd_->buf4_init(&SIJAB, PSIF_EOM_SIJAB, C_irr, 2, 7, 2, 7, 0, lbl);
     sprintf(lbl, "%s %d", "Sijab", i);
     if (params.eom_ref == 1) 
-      dpd_buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, 2, 7, 2, 7, 0, lbl);
+      global_dpd_->buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, 2, 7, 2, 7, 0, lbl);
     else if (params.eom_ref == 2) 
-      dpd_buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, 12, 17, 12, 17, 0, lbl);
+      global_dpd_->buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, 12, 17, 12, 17, 0, lbl);
 
     sprintf(lbl, "%s %d", "SIjAb", i);
     if (params.eom_ref == 1)
-      dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
+      global_dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
     else if (params.eom_ref == 2)
-      dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 22, 28, 22, 28, 0, lbl);
+      global_dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 22, 28, 22, 28, 0, lbl);
     scm_C2(&SIJAB, &Sijab, &SIjAb, 0.0);
-    dpd_buf4_close(&SIJAB);
-    dpd_buf4_close(&Sijab);
-    dpd_buf4_close(&SIjAb);
+    global_dpd_->buf4_close(&SIJAB);
+    global_dpd_->buf4_close(&Sijab);
+    global_dpd_->buf4_close(&SIjAb);
   }
 }
 

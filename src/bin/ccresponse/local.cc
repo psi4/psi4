@@ -117,8 +117,8 @@ void local_filter_T1(dpdfile2 *T1)
               local.pairdom_len[ij]*local.pairdom_nrlen[ij]*sizeof(double), next, &next);
   }
 
-  dpd_file2_mat_init(T1);
-  dpd_file2_mat_rd(T1);
+  global_dpd_->file2_mat_init(T1);
+  global_dpd_->file2_mat_rd(T1);
 
   for(i=0; i < nocc; i++) {
     ii = i * nocc + i;  /* diagonal element of pair matrices */
@@ -156,8 +156,8 @@ void local_filter_T1(dpdfile2 *T1)
 
   }
 
-  dpd_file2_mat_wrt(T1);
-  dpd_file2_mat_close(T1);
+  global_dpd_->file2_mat_wrt(T1);
+  global_dpd_->file2_mat_close(T1);
 
   for(i=0; i < nocc*nocc; i++) {
     free_block(local.W[i]);
@@ -219,8 +219,8 @@ void local_filter_T2(dpdbuf4 *T2)
   }
 
   /* Grab the MO-basis T2's */
-  dpd_buf4_mat_irrep_init(T2, 0);
-  dpd_buf4_mat_irrep_rd(T2, 0);
+  global_dpd_->buf4_mat_irrep_init(T2, 0);
+  global_dpd_->buf4_mat_irrep_rd(T2, 0);
 
   X1 = block_matrix(nso,nvir);
   X2 = block_matrix(nvir,nso);
@@ -275,8 +275,8 @@ void local_filter_T2(dpdbuf4 *T2)
   free_block(T2bar);
 
   /* Write the updated MO-basis T2's to disk */
-  dpd_buf4_mat_irrep_wrt(T2, 0);
-  dpd_buf4_mat_irrep_close(T2, 0);
+  global_dpd_->buf4_mat_irrep_wrt(T2, 0);
+  global_dpd_->buf4_mat_irrep_close(T2, 0);
 
   for(i=0; i < nocc*nocc; i++) {
     free_block(local.W[i]);

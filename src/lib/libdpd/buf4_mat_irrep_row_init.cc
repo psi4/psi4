@@ -22,7 +22,7 @@
 
 /*! \file
     \ingroup DPD
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <libqt/qt.h>
@@ -31,19 +31,19 @@
 
 namespace psi {
 
-int dpd_buf4_mat_irrep_row_init(dpdbuf4 *Buf, int irrep)
+int DPD::buf4_mat_irrep_row_init(dpdbuf4 *Buf, int irrep)
 {
-  int all_buf_irrep;
-  all_buf_irrep = Buf->file.my_irrep;
+    int all_buf_irrep;
+    all_buf_irrep = Buf->file.my_irrep;
 #ifdef DPD_TIMER
-  timer_on("b4_rowinit");
+    timer_on("b4_rowinit");
 #endif
-  Buf->matrix[irrep] = dpd_block_matrix(1, Buf->params->coltot[irrep^all_buf_irrep]);
+    Buf->matrix[irrep] = dpd_block_matrix(1, Buf->params->coltot[irrep^all_buf_irrep]);
 #ifdef DPD_TIMER
-  timer_off("b4_rowinit");
+    timer_off("b4_rowinit");
 #endif
 
-  return 0;
+    return 0;
 }
 
 }
