@@ -2814,6 +2814,7 @@ def run_efp(name, **kwargs):
 def run_efp_gradient(name, **kwargs):
     psi4.print_out('Executing run_efp_gradient in proc.py...\n')
     efp = psi4.get_active_efp()
+    psi4.set_local_option('EFP', 'DERTYPE', 'FIRST')
     psi4.efp_set_options()
     efp.print_out()
     returnvalue = efp.Compute()
