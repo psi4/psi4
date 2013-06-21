@@ -2,6 +2,8 @@
 #ifndef _psi_include_psiconfig_h
 #define _psi_include_psiconfig_h
 
+#define CMAKE_BUILD
+
 /* Define if you have <stdint.h>.  */
 #cmakedefine HAVE_STDINT_H
 
