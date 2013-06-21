@@ -21,6 +21,7 @@
  */
 
 #include "mints.h"
+#include "potentialint.h"
 #include <libint/libint.h>
 
 using namespace boost;
@@ -133,6 +134,11 @@ OneBodySOInt* IntegralFactory::so_pseudospectral(int deriv)
 OneBodyAOInt* IntegralFactory::electrostatic()
 {
     return new ElectrostaticInt(spherical_transforms_, bs1_, bs2_, 0);
+}
+
+OneBodyAOInt* IntegralFactory::pcm_potentialint()
+{
+    return new PCMPotentialInt(spherical_transforms_, bs1_, bs2_, 0);
 }
 
 OneBodyAOInt* IntegralFactory::ao_dipole(int deriv)
