@@ -7,7 +7,6 @@ enable_language(Fortran)
 get_filename_component(ROOT_SRC_DIR ${CMAKE_CURRENT_LIST_FILE} PATH)
 set(CMAKE_MODULE_PATH "${ROOT_SRC_DIR}/cmake/")
 
-
 #
 # Command line options
 #
@@ -252,6 +251,12 @@ set(RECONFIGURE_PSI "${PROJECT_BINARY_DIR}/reconfigure.sh")
 message("The following command can be used to exactly reproduce this build. It can also be found in ${RECONFIGURE_PSI}:\n")
 message("${CONFIGURE_CMD}\n")
 configure_file(cmake/reconfigure.sh.in reconfigure.sh)
+
+#
+# Output the build settings, for plugins to read later
+#
+#set(buildsettingsfile ${PROJECT_BINARY_DIR}/buildsettings.cmake)
+#export(TARGETS psi4 FILE ${buildsettingsfile})
 
 #get_cmake_property(_variableNames VARIABLES)
 #foreach (_variableName ${_variableNames})
