@@ -42,9 +42,11 @@ static const double qm_xyz[] = {
 };
 
 static enum efp_result get_electron_density_field(int n_pt,
-		UNUSED const double *xyz, double *field,
-		UNUSED void *user_data)
+		const double *xyz, double *field, void *user_data)
 {
+	(void)xyz;
+	(void)user_data;
+
 	/* no electrons */
 	memset(field, 0, n_pt * 3 * sizeof(double));
 	return EFP_RESULT_SUCCESS;

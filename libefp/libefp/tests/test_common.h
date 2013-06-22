@@ -35,10 +35,7 @@
 #include "test_list.h"
 
 #define BOHR_RADIUS 0.52917721092
-
-#define UNUSED __attribute__((unused))
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
-
 #define BOHR(x) ((x) / BOHR_RADIUS)
 #define ANGSTROM(x) ((x) * BOHR_RADIUS)
 

@@ -24,6 +24,7 @@
  * SUCH DAMAGE.
  */
 
+#include <assert.h>
 #include <stdlib.h>
 
 #include "elec.h"
@@ -154,20 +155,6 @@ set_coord_rotmat(struct frag *frag, const double *coord)
 
 	update_fragment(frag);
 	return EFP_RESULT_SUCCESS;
-}
-
-static size_t
-get_coord_count(enum efp_coord_type coord_type)
-{
-	switch (coord_type) {
-		case EFP_COORD_TYPE_XYZABC:
-			return 6;
-		case EFP_COORD_TYPE_POINTS:
-			return 9;
-		case EFP_COORD_TYPE_ROTMAT:
-			return 12;
-	}
-	return 0;
 }
 
 static void
@@ -303,20 +290,6 @@ check_opts(const struct efp_opts *opts)
 	    ((terms & EFP_TERM_AI_XR) && !(terms & EFP_TERM_XR)) ||
 	    ((terms & EFP_TERM_AI_CHTR) && !(terms & EFP_TERM_CHTR)))
 		return EFP_RESULT_INCONSISTENT_TERMS;
-
-	if (opts->elec_damp != EFP_ELEC_DAMP_SCREEN &&
-	    opts->elec_damp != EFP_ELEC_DAMP_OVERLAP &&
-	    opts->elec_damp != EFP_ELEC_DAMP_OFF)
-		return EFP_RESULT_INCORRECT_ENUM_VALUE;
-
-	if (opts->disp_damp != EFP_DISP_DAMP_OVERLAP &&
-	    opts->disp_damp != EFP_DISP_DAMP_TT &&
-	    opts->disp_damp != EFP_DISP_DAMP_OFF)
-		return EFP_RESULT_INCORRECT_ENUM_VALUE;
-
-	if (opts->pol_damp != EFP_POL_DAMP_TT &&
-	    opts->pol_damp != EFP_POL_DAMP_OFF)
-		return EFP_RESULT_INCORRECT_ENUM_VALUE;
 
 	if (opts->enable_pbc) {
 		if ((opts->terms & EFP_TERM_AI_ELEC) ||
@@ -563,14 +536,23 @@ EFP_EXPORT enum efp_result
 efp_set_coordinates(struct efp *efp, enum efp_coord_type coord_type,
 			const double *coord)
 {
-	size_t stride;
+	size_t stride = 0;
 	enum efp_result res;
+
+	switch (coord_type) {
+		case EFP_COORD_TYPE_XYZABC:
+			stride = 6;
+			break;
+		case EFP_COORD_TYPE_POINTS:
+			stride = 9;
+			break;
+		case EFP_COORD_TYPE_ROTMAT:
+			stride = 12;
+			break;
+	}
 
 	if (!efp)
 		return EFP_RESULT_NOT_INITIALIZED;
-
-	if ((stride = get_coord_count(coord_type)) == 0)
-		return EFP_RESULT_INCORRECT_ENUM_VALUE;
 
 	for (int i = 0; i < efp->n_frag; i++, coord += stride)
 		if ((res = efp_set_frag_coordinates(efp, i, coord_type, coord)))
@@ -601,7 +583,7 @@ efp_set_frag_coordinates(struct efp *efp, int frag_idx,
 			return set_coord_rotmat(efp->frags + frag_idx, coord);
 	}
 
-	return EFP_RESULT_INCORRECT_ENUM_VALUE;
+	assert(0);
 }
 
 EFP_EXPORT enum efp_result
@@ -993,8 +975,7 @@ efp_get_opts(struct efp *efp, struct efp_opts *opts)
 EFP_EXPORT void
 efp_opts_default(struct efp_opts *opts)
 {
-	if (!opts)
-		return;
+	assert(opts);
 
 	memset(opts, 0, sizeof(struct efp_opts));
 
@@ -1031,7 +1012,7 @@ efp_add_fragment(struct efp *efp, const char *name)
 	for (int a = 0; a < 3; a++) {
 		size_t size = frag->xr_wf_size * frag->n_lmo;
 
-		frag->xr_wf_deriv[a] = malloc(size * sizeof(double));
+		frag->xr_wf_deriv[a] = calloc(size, sizeof(double));
 
 		if (!frag->xr_wf_deriv[a])
 			return EFP_RESULT_NO_MEMORY;
@@ -1202,6 +1183,10 @@ efp_get_frag_atoms(struct efp *efp, int frag_idx,
 EFP_EXPORT void
 efp_torque_to_derivative(const double *euler, const double *torque, double *deriv)
 {
+	assert(euler);
+	assert(torque);
+	assert(deriv);
+
 	double tx = torque[0];
 	double ty = torque[1];
 	double tz = torque[2];
@@ -1267,8 +1252,6 @@ return "fragment must contain at least three atoms";
 return "polarization SCF did not converge";
 	case EFP_RESULT_PARAMETERS_MISSING:
 return "required EFP fragment parameters are missing";
-	case EFP_RESULT_INCORRECT_ENUM_VALUE:
-return "incorrect enumeration value";
 	case EFP_RESULT_INVALID_ROTATION_MATRIX:
 return "invalid rotation matrix specified";
 	case EFP_RESULT_INDEX_OUT_OF_RANGE:
@@ -1280,5 +1263,5 @@ return "unsupported SCREEN group found in EFP data";
 	case EFP_RESULT_INCONSISTENT_TERMS:
 return "inconsistent EFP energy terms selected";
 	}
-return "unknown result";
+	assert(0);
 }

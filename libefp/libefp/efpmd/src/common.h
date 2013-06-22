@@ -28,23 +28,48 @@
 #define EFPMD_COMMON_H
 
 #include <assert.h>
-#include <math.h>
+#include <ctype.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <efp.h>
+#include <math_util.h>
 
 #include "cfg.h"
 #include "phys.h"
 
 #define NORETURN __attribute__((noreturn))
-#define UNUSED __attribute__((unused))
-
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
+
+enum run_type {
+	RUN_TYPE_SP,
+	RUN_TYPE_GRAD,
+	RUN_TYPE_HESS,
+	RUN_TYPE_OPT,
+	RUN_TYPE_MD
+};
+
+enum ensemble_type {
+	ENSEMBLE_TYPE_NVE,
+	ENSEMBLE_TYPE_NVT,
+	ENSEMBLE_TYPE_NPT
+};
+
+struct frag {
+	char *name;
+	double coord[12];
+	double vel[6];
+};
+
+struct sys {
+	int n_frags;
+	struct frag *frags;
+};
 
 void NORETURN die(const char *, ...);
 void NORETURN error(const char *, ...);
-
-void check_fail(enum efp_result);
 
 void *xmalloc(size_t);
 void *xcalloc(size_t, size_t);
@@ -57,7 +82,10 @@ void print_fragment(const char *, const double *, const double *);
 void print_vector(int, const double *);
 void print_matrix(int, int, const double *);
 
-int efp_strcasecmp(const char *, const char *); /* from libefp */
-int efp_strncasecmp(const char *, const char *, size_t); /* from libefp */
+void check_fail(enum efp_result);
+struct sys *parse_input(struct cfg *, const char *);
+vec_t box_from_str(const char *);
+int efp_strcasecmp(const char *, const char *);
+int efp_strncasecmp(const char *, const char *, size_t);
 
 #endif /* EFPMD_COMMON_H */

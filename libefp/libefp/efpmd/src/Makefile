@@ -8,9 +8,9 @@ LDFLAGS= -L$(TOP)/src $(MYLDFLAGS)
 LIBS= $(LAPACK) -lefp -lm
 
 PROG= efpmd
-ALL_C= clapack.c common.c grad.c hess.c main.c \
+ALL_C= cfg.c clapack.c common.c grad.c hess.c main.c \
        md.c opt.c optimizer.c parse.c rand.c sp.c
-ALL_O= clapack.o common.o grad.o hess.o main.o \
+ALL_O= cfg.o clapack.o common.o grad.o hess.o main.o \
        md.o opt.o optimizer.o parse.o rand.o sp.o \
        blas.o lbfgsb.o linpack.o timer.o
 

@@ -27,7 +27,7 @@
 #include "common.h"
 #include "optimizer.h"
 
-void sim_opt(struct efp *, const struct config *);
+void sim_opt(struct efp *, const struct cfg *, const struct sys *);
 
 static double compute_efp(int n, const double *x, double *gx, void *data)
 {
@@ -118,12 +118,17 @@ static void print_status(struct efp *efp, double e_diff, double rms_grad,
 	fflush(stdout);
 }
 
-void sim_opt(struct efp *efp, const struct config *config)
+void sim_opt(struct efp *efp, const struct cfg *cfg, const struct sys *sys)
 {
+	(void)sys;
+
 	printf("ENERGY MINIMIZATION JOB\n\n\n");
 
-	int n_coord = 6 * config->n_frags;
+	int n_frags, n_coord;
 	double rms_grad, max_grad;
+
+	check_fail(efp_get_frag_count(efp, &n_frags));
+	n_coord = 6 * n_frags;
 
 	struct opt_state *state = opt_create(n_coord);
 	if (!state)
@@ -133,7 +138,7 @@ void sim_opt(struct efp *efp, const struct config *config)
 	opt_set_user_data(state, efp);
 
 	double coord[n_coord], grad[n_coord];
-	check_fail(efp_get_coordinates(efp, config->n_frags, coord));
+	check_fail(efp_get_coordinates(efp, n_frags, coord));
 
 	if (opt_init(state, n_coord, coord))
 		error("UNABLE TO INITIALIZE AN OPTIMIZER");
@@ -145,7 +150,7 @@ void sim_opt(struct efp *efp, const struct config *config)
 	printf("    INITIAL STATE\n\n");
 	print_status(efp, 0.0, rms_grad, max_grad);
 
-	for (int step = 1; step <= config->max_steps; step++) {
+	for (int step = 1; step <= cfg_get_int(cfg, "max_steps"); step++) {
 		if (opt_step(state))
 			error("UNABLE TO MAKE AN OPTIMIZATION STEP");
 
@@ -153,7 +158,7 @@ void sim_opt(struct efp *efp, const struct config *config)
 		opt_get_gx(state, n_coord, grad);
 		get_grad_info(n_coord, grad, &rms_grad, &max_grad);
 
-		if (check_conv(rms_grad, max_grad, config->opt_tol)) {
+		if (check_conv(rms_grad, max_grad, cfg_get_double(cfg, "opt_tol"))) {
 			printf("    FINAL STATE\n\n");
 			print_status(efp, e_new - e_old, rms_grad, max_grad);
 			printf("OPTIMIZATION CONVERGED\n");

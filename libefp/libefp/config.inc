@@ -14,10 +14,10 @@ PREFIX= /usr/local
 FRAGLIB= $(PREFIX)/share/libefp/fraglib
 
 # additional C flags
-MYCFLAGS= -std=c99 -g -O2 -fopenmp -Wall -Wextra
+MYCFLAGS= -std=c99 -O3 -fopenmp -Wall -Wextra
 
 # additional Fortran flags
-MYFFLAGS= -O2 -fopenmp
+MYFFLAGS= -O3 -fopenmp
 
 # additional linker flags
 MYLDFLAGS=

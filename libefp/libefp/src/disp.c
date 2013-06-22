@@ -25,7 +25,6 @@
  */
 
 #include <assert.h>
-#include <stddef.h>
 
 #include "private.h"
 

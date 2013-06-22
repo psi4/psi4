@@ -29,9 +29,10 @@
 #include "clapack.h"
 #include "common.h"
 
-void sim_hess(struct efp *, const struct config *);
+void sim_hess(struct efp *, const struct cfg *, const struct sys *);
 
-static void compute_gradient(struct efp *efp, int n_frags, const double *xyzabc, double *grad)
+static void compute_gradient(struct efp *efp, int n_frags,
+		const double *xyzabc, double *grad)
 {
 	check_fail(efp_set_coordinates(efp, EFP_COORD_TYPE_XYZABC, xyzabc));
 	check_fail(efp_compute(efp, 1));
@@ -51,10 +52,11 @@ static void show_progress(int disp, int total, const char *dir)
 	fflush(stdout);
 }
 
-static void compute_hessian(struct efp *efp, const struct config *config, double *hess)
+static void compute_hessian(struct efp *efp, const struct cfg *cfg, double *hess)
 {
 	int n_frags, n_coord;
 	double *xyzabc, *grad_f, *grad_b;
+	bool central = cfg_get_bool(cfg, "hess_central");
 
 	check_fail(efp_get_frag_count(efp, &n_frags));
 	n_coord = 6 * n_frags;
@@ -65,7 +67,7 @@ static void compute_hessian(struct efp *efp, const struct config *config, double
 
 	check_fail(efp_get_coordinates(efp, n_frags, xyzabc));
 
-	if (!config->hess_central) {
+	if (!central) {
 		check_fail(efp_get_gradient(efp, n_frags, grad_b));
 
 		for (int i = 0; i < n_frags; i++) {
@@ -78,19 +80,20 @@ static void compute_hessian(struct efp *efp, const struct config *config, double
 
 	for (int i = 0; i < n_coord; i++) {
 		double save = xyzabc[i];
-		double step = i % 6 < 3 ? config->hess_step_dist : config->hess_step_angle;
+		double step = i % 6 < 3 ? cfg_get_double(cfg, "hess_step_dist") :
+				cfg_get_double(cfg, "hess_step_angle");
 
 		show_progress(i + 1, n_coord, "FORWARD");
 		xyzabc[i] = save + step;
 		compute_gradient(efp, n_frags, xyzabc, grad_f);
 
-		if (config->hess_central) {
+		if (central) {
 			show_progress(i + 1, n_coord, "BACKWARD");
 			xyzabc[i] = save - step;
 			compute_gradient(efp, n_frags, xyzabc, grad_b);
 		}
 
-		double delta = config->hess_central ? 2.0 * step : step;
+		double delta = central ? 2.0 * step : step;
 
 		for (int j = 0; j < n_coord; j++)
 			hess[i * n_coord + j] = (grad_f[j] - grad_b[j]) / delta;
@@ -271,8 +274,10 @@ static void print_mode(int mode, double eigen)
 	printf("    MODE %4d    FREQUENCY %10.3lf cm-1\n\n", mode, eigen);
 }
 
-void sim_hess(struct efp *efp, const struct config *config)
+void sim_hess(struct efp *efp, const struct cfg *cfg, const struct sys *sys)
 {
+	(void)sys;
+
 	printf("HESSIAN JOB\n\n\n");
 
 	print_geometry(efp);
@@ -280,11 +285,14 @@ void sim_hess(struct efp *efp, const struct config *config)
 	print_energy(efp);
 	print_gradient(efp);
 
-	int n_frags = config->n_frags, n_coord = 6 * n_frags;
+	int n_frags, n_coord;
 	double *hess, *mass_hess, *eigen;
 
+	check_fail(efp_get_frag_count(efp, &n_frags));
+	n_coord = 6 * n_frags;
+
 	hess = xmalloc(n_coord * n_coord * sizeof(double));
-	compute_hessian(efp, config, hess);
+	compute_hessian(efp, cfg, hess);
 
 	printf("    HESSIAN MATRIX\n\n");
 	print_matrix(n_coord, n_coord, hess);

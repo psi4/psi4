@@ -34,12 +34,14 @@
 
 void rand_init(void)
 {
-	srand(time(NULL));
+	srand((unsigned)time(NULL));
 }
 
 double rand_uniform_1(void)
 {
-	return (double)rand() / RAND_MAX;
+	int val = rand();
+
+	return (double)val / RAND_MAX;
 }
 
 double rand_uniform_2(void)
