@@ -26,22 +26,99 @@
 
 #include "common.h"
 
-void sim_sp(struct efp *, const struct config *);
-void sim_grad(struct efp *, const struct config *);
-void sim_hess(struct efp *, const struct config *);
-void sim_opt(struct efp *, const struct config *);
-void sim_md(struct efp *, const struct config *);
+void sim_sp(struct efp *, const struct cfg *, const struct sys *);
+void sim_grad(struct efp *, const struct cfg *, const struct sys *);
+void sim_hess(struct efp *, const struct cfg *, const struct sys *);
+void sim_opt(struct efp *, const struct cfg *, const struct sys *);
+void sim_md(struct efp *, const struct cfg *, const struct sys *);
 
-static void run_sim(struct efp *efp, const struct config *config)
+static struct cfg *make_cfg(void)
 {
-	switch (config->run_type) {
-		case RUN_TYPE_SP:   sim_sp(efp, config);   return;
-		case RUN_TYPE_GRAD: sim_grad(efp, config); return;
-		case RUN_TYPE_HESS: sim_hess(efp, config); return;
-		case RUN_TYPE_OPT:  sim_opt(efp, config);  return;
-		case RUN_TYPE_MD:   sim_md(efp, config);   return;
-	}
-	assert(0);
+	struct cfg *cfg = cfg_create();
+
+	cfg_add_enum(cfg, "run_type", RUN_TYPE_SP,
+		"sp\n"
+		"grad\n"
+		"hess\n"
+		"opt\n"
+		"md\n",
+		(int []) { RUN_TYPE_SP,
+			   RUN_TYPE_GRAD,
+			   RUN_TYPE_HESS,
+			   RUN_TYPE_OPT,
+			   RUN_TYPE_MD });
+
+	cfg_add_enum(cfg, "coord", EFP_COORD_TYPE_XYZABC,
+		"xyzabc\n"
+		"points\n"
+		"rotmat\n",
+		(int []) { EFP_COORD_TYPE_XYZABC,
+			   EFP_COORD_TYPE_POINTS,
+			   EFP_COORD_TYPE_ROTMAT });
+
+	cfg_add_string(cfg, "terms", "elec pol disp xr");
+
+	cfg_add_enum(cfg, "elec_damp", EFP_ELEC_DAMP_SCREEN,
+		"screen\n"
+		"overlap\n"
+		"off\n",
+		(int []) { EFP_ELEC_DAMP_SCREEN,
+			   EFP_ELEC_DAMP_OVERLAP,
+			   EFP_ELEC_DAMP_OFF });
+
+	cfg_add_enum(cfg, "disp_damp", EFP_DISP_DAMP_OVERLAP,
+		"tt\n"
+		"overlap\n"
+		"off\n",
+		(int []) { EFP_DISP_DAMP_TT,
+			   EFP_DISP_DAMP_OVERLAP,
+			   EFP_DISP_DAMP_OFF });
+
+	cfg_add_enum(cfg, "pol_damp", EFP_POL_DAMP_TT,
+		"tt\n"
+		"off\n",
+		(int []) { EFP_POL_DAMP_TT,
+			   EFP_POL_DAMP_OFF });
+
+	cfg_add_bool(cfg, "enable_cutoff", false);
+	cfg_add_double(cfg, "swf_cutoff", 10.0);
+	cfg_add_int(cfg, "max_steps", 100);
+	cfg_add_string(cfg, "fraglib_path", FRAGLIB_PATH);
+	cfg_add_string(cfg, "userlib_path", ".");
+	cfg_add_bool(cfg, "enable_pbc", false);
+	cfg_add_string(cfg, "periodic_box", "30.0 30.0 30.0");
+	cfg_add_double(cfg, "opt_tol", 1.0e-4);
+	cfg_add_bool(cfg, "hess_central", false);
+	cfg_add_double(cfg, "hess_step_dist", 0.001);
+	cfg_add_double(cfg, "hess_step_angle", 0.01);
+
+	cfg_add_enum(cfg, "ensemble", ENSEMBLE_TYPE_NVE,
+		"nve\n"
+		"nvt\n"
+		"npt\n",
+		(int []) { ENSEMBLE_TYPE_NVE,
+			   ENSEMBLE_TYPE_NVT,
+			   ENSEMBLE_TYPE_NPT });
+
+	cfg_add_double(cfg, "time_step", 1.0);
+	cfg_add_int(cfg, "print_step", 1);
+	cfg_add_bool(cfg, "velocitize", false);
+	cfg_add_double(cfg, "temperature", 300.0);
+	cfg_add_double(cfg, "pressure", 1.0);
+	cfg_add_double(cfg, "thermostat_tau", 1.0e3);
+	cfg_add_double(cfg, "barostat_tau", 1.0e4);
+
+	return cfg;
+}
+
+static void run_sim(struct efp *efp, const struct cfg *cfg, const struct sys *sys)
+{
+	(void (*[])(struct efp *, const struct cfg *, const struct sys *)) {
+		[RUN_TYPE_SP] = sim_sp,
+		[RUN_TYPE_GRAD] = sim_grad,
+		[RUN_TYPE_HESS] = sim_hess,
+		[RUN_TYPE_OPT] = sim_opt,
+		[RUN_TYPE_MD] = sim_md }[cfg_get_enum(cfg, "run_type")](efp, cfg, sys);
 }
 
 static void print_banner(void)
@@ -56,7 +133,7 @@ static int string_compare(const void *a, const void *b)
 	const char *s1 = *(const char *const *)a;
 	const char *s2 = *(const char *const *)b;
 
-	return efp_strcasecmp(s1, s2);
+	return strcmp(s1, s2);
 }
 
 static bool is_lib(const char *name)
@@ -66,72 +143,103 @@ static bool is_lib(const char *name)
 	return name[len - 2] == '_' && (name[len - 1] == 'l' || name[len - 1] == 'L');
 }
 
-static size_t name_len(const char *name)
-{
-	return is_lib(name) ? strlen(name) - 2 : strlen(name);
-}
-
-static void add_potentials(struct efp *efp, const struct config *config)
+static void add_potentials(struct efp *efp, const struct cfg *cfg, const struct sys *sys)
 {
 	int i, n_uniq;
-	const char *uniq[config->n_frags];
+	const char *uniq[sys->n_frags];
+	char path[512];
 
-	for (i = 0; i < config->n_frags; i++)
-		uniq[i] = config->frags[i].name;
+	for (i = 0; i < sys->n_frags; i++)
+		uniq[i] = sys->frags[i].name;
 
-	qsort(uniq, config->n_frags, sizeof(char *), string_compare);
+	qsort(uniq, sys->n_frags, sizeof(const char *), string_compare);
 
-	for (i = 1, n_uniq = 1; i < config->n_frags; i++)
-		if (efp_strcasecmp(uniq[i - 1], uniq[i]) != 0)
+	for (i = 1, n_uniq = 1; i < sys->n_frags; i++)
+		if (strcmp(uniq[i - 1], uniq[i]) != 0)
 			uniq[n_uniq++] = uniq[i];
 
 	for (i = 0; i < n_uniq; i++) {
-		const char *prefix = is_lib(uniq[i]) ?
-			config->fraglib_path : config->userlib_path;
-		size_t size = strlen(prefix) + name_len(uniq[i]) + strlen(".efp") + 2;
-		char path[size];
+		const char *name = uniq[i];
+		const char *prefix = is_lib(name) ?
+			cfg_get_string(cfg, "fraglib_path") :
+			cfg_get_string(cfg, "userlib_path");
+		size_t len = is_lib(name) ? strlen(name) - 2 : strlen(name);
 
-		strcat(strncat(strcat(strcpy(path, prefix), "/"), uniq[i],
-			name_len(uniq[i])), ".efp");
+		snprintf(path, sizeof(path), "%s/%.*s.efp", prefix, (int)len, name);
 		check_fail(efp_add_potential(efp, path));
 	}
 }
 
-static struct efp *init_sim(const struct config *config)
+static unsigned get_terms(const char *str)
 {
-	struct efp_opts opts = {
-		.terms = config->terms,
-		.elec_damp = config->elec_damp,
-		.disp_damp = config->disp_damp,
-		.pol_damp = config->pol_damp,
-		.enable_pbc = config->enable_pbc,
-		.enable_cutoff = config->enable_cutoff,
-		.swf_cutoff = config->swf_cutoff
+	static const struct {
+		const char *name;
+		enum efp_term value;
+	} list[] = {
+		{ "elec", EFP_TERM_ELEC },
+		{ "pol",  EFP_TERM_POL  },
+		{ "disp", EFP_TERM_DISP },
+		{ "xr",   EFP_TERM_XR   }
 	};
 
+	unsigned terms = 0;
+
+	while (*str) {
+		for (size_t i = 0; i < ARRAY_SIZE(list); i++) {
+			if (efp_strncasecmp(list[i].name, str, strlen(list[i].name)) == 0) {
+				str += strlen(list[i].name);
+				terms |= list[i].value;
+				goto next;
+			}
+		}
+		error("unknown energy term specified");
+next:
+		while (*str && isspace(*str))
+			str++;
+	}
+
+	return terms;
+}
+
+static struct efp *init_sim(const struct cfg *cfg, const struct sys *sys)
+{
+	struct efp_opts opts = {
+		.terms = get_terms(cfg_get_string(cfg, "terms")),
+		.elec_damp = cfg_get_enum(cfg, "elec_damp"),
+		.disp_damp = cfg_get_enum(cfg, "disp_damp"),
+		.pol_damp = cfg_get_enum(cfg, "pol_damp"),
+		.enable_pbc = cfg_get_bool(cfg, "enable_pbc"),
+		.enable_cutoff = cfg_get_bool(cfg, "enable_cutoff"),
+		.swf_cutoff = cfg_get_double(cfg, "swf_cutoff")
+	};
+
+	enum efp_coord_type coord = cfg_get_enum(cfg, "coord");
 	struct efp *efp = efp_create();
 
 	if (!efp)
 		error("unable to create efp object");
 
 	check_fail(efp_set_opts(efp, &opts));
-	add_potentials(efp, config);
+	add_potentials(efp, cfg, sys);
 
-	for (int i = 0; i < config->n_frags; i++) {
-		check_fail(efp_add_fragment(efp, config->frags[i].name));
-		check_fail(efp_set_frag_coordinates(efp, i, config->coord_type,
-					config->frags[i].coord));
+	for (int i = 0; i < sys->n_frags; i++) {
+		check_fail(efp_add_fragment(efp, sys->frags[i].name));
+		check_fail(efp_set_frag_coordinates(efp, i, coord, sys->frags[i].coord));
 	}
 
-	if (config->enable_pbc) {
-		double x = config->box[0];
-		double y = config->box[1];
-		double z = config->box[2];
-
-		check_fail(efp_set_periodic_box(efp, x, y, z));
+	if (cfg_get_bool(cfg, "enable_pbc")) {
+		vec_t box = box_from_str(cfg_get_string(cfg, "periodic_box"));
+		check_fail(efp_set_periodic_box(efp, box.x, box.y, box.z));
 	}
 
 	return efp;
+}
+
+static void print_defaults(void)
+{
+	struct cfg *cfg = make_cfg();
+	cfg_print(cfg, stdout);
+	cfg_free(cfg);
 }
 
 static void print_usage(void)
@@ -142,8 +250,46 @@ static void print_usage(void)
 	puts("  -h  print this help message");
 }
 
+static void convert_units(struct cfg *cfg, struct sys *sys)
+{
+	cfg_set_double(cfg, "time_step",
+		cfg_get_double(cfg, "time_step") * FS_TO_AU);
+	cfg_set_double(cfg, "thermostat_tau",
+		cfg_get_double(cfg, "thermostat_tau") * FS_TO_AU);
+	cfg_set_double(cfg, "barostat_tau",
+		cfg_get_double(cfg, "barostat_tau") * FS_TO_AU);
+	cfg_set_double(cfg, "pressure",
+		cfg_get_double(cfg, "pressure") * BAR_TO_AU);
+	cfg_set_double(cfg, "swf_cutoff",
+		cfg_get_double(cfg, "swf_cutoff") / BOHR_RADIUS);
+	cfg_set_double(cfg, "hess_step_dist",
+		cfg_get_double(cfg, "hess_step_dist") / BOHR_RADIUS);
+
+	int n_convert = (int []) {
+		[EFP_COORD_TYPE_XYZABC] = 3,
+		[EFP_COORD_TYPE_POINTS] = 9,
+		[EFP_COORD_TYPE_ROTMAT] = 3 }[cfg_get_enum(cfg, "coord")];
+
+	for (int i = 0; i < sys->n_frags; i++)
+		for (int j = 0; j < n_convert; j++)
+			sys->frags[i].coord[j] /= BOHR_RADIUS;
+}
+
+static void sys_free(struct sys *sys)
+{
+	for (int i = 0; i < sys->n_frags; i++)
+		free(sys->frags[i].name);
+
+	free(sys->frags);
+	free(sys);
+}
+
 int main(int argc, char **argv)
 {
+	struct cfg *cfg;
+	struct efp *efp;
+	struct sys *sys;
+
 	if (argc < 2) {
 		print_usage();
 		return EXIT_FAILURE;
@@ -165,14 +311,17 @@ int main(int argc, char **argv)
 
 	print_banner();
 	printf("\n");
-
-	struct config *config = parse_config(argv[1]);
-	struct efp *efp = init_sim(config);
-
-	run_sim(efp, config);
-
+	cfg = make_cfg();
+	sys = parse_input(cfg, argv[1]);
+	printf("SIMULATION SETTINGS\n\n");
+	cfg_print(cfg, stdout);
+	printf("\n\n");
+	convert_units(cfg, sys);
+	efp = init_sim(cfg, sys);
+	run_sim(efp, cfg, sys);
 	efp_shutdown(efp);
-	free_config(config);
+	sys_free(sys);
+	cfg_free(cfg);
 
 	return EXIT_SUCCESS;
 }

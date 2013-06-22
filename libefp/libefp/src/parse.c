@@ -29,13 +29,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "stream.h"
 #include "private.h"
-
-struct stream {
-	char *buffer;
-	char *ptr;
-	FILE *in;
-};
 
 static inline struct frag *
 get_last_frag(struct efp *efp)
@@ -43,80 +38,16 @@ get_last_frag(struct efp *efp)
 	return efp->lib[efp->n_lib - 1];
 }
 
-static char *
-read_line(FILE *in)
-{
-	int size = 128;
-	int i = 0;
-	char *buffer = malloc(size);
-
-	if (!buffer)
-		return NULL;
-
-	for(;;) {
-		int ch = getc(in);
-
-		switch(ch) {
-		case EOF:
-			if (i == 0) {
-				free(buffer);
-				return NULL;
-			}
-
-		case '\n':
-			if (i == size)
-				buffer = realloc(buffer, size + 1);
-			buffer[i] = '\0';
-			return buffer;
-
-		case '>':
-			ch = getc(in);
-
-			if (ch == '\n')
-				continue;
-
-		default:
-			buffer[i++] = ch;
-
-			if (i == size) {
-				size *= 2;
-				buffer = realloc(buffer, size);
-			}
-		}
-	}
-	return NULL;
-}
-
-static void
-next_line(struct stream *stream)
-{
-	if (stream->buffer)
-		free(stream->buffer);
-
-	stream->buffer = read_line(stream->in);
-	stream->ptr = stream->buffer;
-}
-
-static void
-skip_space(struct stream *stream)
-{
-	while (*stream->ptr && isspace(*stream->ptr))
-		stream->ptr++;
-}
-
 static int
 tok(struct stream *stream, const char *id)
 {
-	if (!stream->ptr)
+	efp_stream_skip_space(stream);
+
+	if (efp_stream_eol(stream))
 		return 0;
 
-	skip_space(stream);
-	size_t len = strlen(id);
-
-	if (strncmp(stream->ptr, id, len) == 0) {
-		stream->ptr += len;
-		return 1;
-	}
+	if (strncmp(efp_stream_get_ptr(stream), id, strlen(id)) == 0)
+		return efp_stream_advance(stream, strlen(id));
 
 	return 0;
 }
@@ -125,7 +56,7 @@ static inline int
 tok_stop(struct stream *stream)
 {
 	if (tok(stream, "STOP")) {
-		next_line(stream);
+		efp_stream_next_line(stream);
 		return 1;
 	}
 	return 0;
@@ -135,7 +66,7 @@ static inline int
 tok_end(struct stream *stream)
 {
 	if (tok(stream, "$END")) {
-		next_line(stream);
+		efp_stream_next_line(stream);
 		return 1;
 	}
 	return 0;
@@ -144,66 +75,42 @@ tok_end(struct stream *stream)
 static int
 skip_label(struct stream *stream)
 {
-	skip_space(stream);
+	efp_stream_skip_space(stream);
+	efp_stream_skip_nonspace(stream);
 
-	if (!*stream->ptr)
-		return 0;
-
-	while (*stream->ptr && !isspace(*stream->ptr))
-		stream->ptr++;
-
-	return 1;
+	return efp_stream_current_char(stream) != '\0';
 }
 
 static int
 tok_label(struct stream *stream, size_t size, char *val)
 {
-	skip_space(stream);
+	efp_stream_skip_space(stream);
 
-	if (!*stream->ptr)
+	if (efp_stream_eol(stream))
 		return 0;
 
-	while (*stream->ptr && !isspace(*stream->ptr) && --size)
-		*val++ = *stream->ptr++;
+	const char *start = efp_stream_get_ptr(stream);
+	efp_stream_skip_nonspace(stream);
+	size_t len = efp_stream_get_ptr(stream) - start;
 
-	*val = '\0';
-	return size > 0;
+	if (len >= size)
+		return 0;
+
+	strncpy(val, start, len);
+	val[len] = '\0';
+	return 1;
 }
 
 static int
 tok_int(struct stream *stream, int *val)
 {
-	skip_space(stream);
-
-	char *endptr;
-	int x = strtol(stream->ptr, &endptr, 10);
-
-	if (endptr == stream->ptr)
-		return 0;
-
-	if (val)
-		*val = x;
-
-	stream->ptr = endptr;
-	return 1;
+	return efp_stream_parse_int(stream, val);
 }
 
 static int
 tok_double(struct stream *stream, double *val)
 {
-	skip_space(stream);
-
-	char *endptr;
-	double x = strtod(stream->ptr, &endptr);
-
-	if (endptr == stream->ptr)
-		return 0;
-
-	if (val)
-		*val = x;
-
-	stream->ptr = endptr;
-	return 1;
+	return efp_stream_parse_double(stream, val);
 }
 
 static enum efp_result
@@ -211,9 +118,9 @@ parse_coordinates(struct efp *efp, struct stream *stream)
 {
 	struct frag *frag = get_last_frag(efp);
 
-	next_line(stream);
+	efp_stream_next_line(stream);
 
-	while (stream->ptr) {
+	while (!efp_stream_eof(stream)) {
 		if (tok_stop(stream)) {
 			if (frag->n_atoms < 1)
 				return EFP_RESULT_SYNTAX_ERROR;
@@ -253,7 +160,7 @@ parse_coordinates(struct efp *efp, struct stream *stream)
 		memset(last_pt, 0, sizeof(struct multipole_pt));
 		last_pt->x = atom.x, last_pt->y = atom.y, last_pt->z = atom.z;
 
-		next_line(stream);
+		efp_stream_next_line(stream);
 	}
 	return EFP_RESULT_SYNTAX_ERROR;
 }
@@ -266,14 +173,14 @@ parse_monopoles(struct efp *efp, struct stream *stream)
 	if (!frag->multipole_pts)
 		return EFP_RESULT_SYNTAX_ERROR;
 
-	next_line(stream);
+	efp_stream_next_line(stream);
 
 	for (int i = 0; i < frag->n_multipole_pts; i++) {
 		if (!skip_label(stream) ||
 		    !tok_double(stream, &frag->multipole_pts[i].monopole) ||
 		    !tok_double(stream, NULL))
 			return EFP_RESULT_SYNTAX_ERROR;
-		next_line(stream);
+		efp_stream_next_line(stream);
 	}
 
 	if (!tok_stop(stream))
@@ -290,7 +197,7 @@ parse_dipoles(struct efp *efp, struct stream *stream)
 	if (!frag->multipole_pts)
 		return EFP_RESULT_SYNTAX_ERROR;
 
-	next_line(stream);
+	efp_stream_next_line(stream);
 
 	for (int i = 0; i < frag->n_multipole_pts; i++) {
 		if (!skip_label(stream) ||
@@ -298,7 +205,7 @@ parse_dipoles(struct efp *efp, struct stream *stream)
 		    !tok_double(stream, &frag->multipole_pts[i].dipole.y) ||
 		    !tok_double(stream, &frag->multipole_pts[i].dipole.z))
 			return EFP_RESULT_SYNTAX_ERROR;
-		next_line(stream);
+		efp_stream_next_line(stream);
 	}
 
 	if (!tok_stop(stream))
@@ -315,7 +222,7 @@ parse_quadrupoles(struct efp *efp, struct stream *stream)
 	if (!frag->multipole_pts)
 		return EFP_RESULT_SYNTAX_ERROR;
 
-	next_line(stream);
+	efp_stream_next_line(stream);
 
 	for (int i = 0; i < frag->n_multipole_pts; i++) {
 		if (!skip_label(stream))
@@ -327,7 +234,7 @@ parse_quadrupoles(struct efp *efp, struct stream *stream)
 			if (!tok_double(stream, q + j))
 				return EFP_RESULT_SYNTAX_ERROR;
 
-		next_line(stream);
+		efp_stream_next_line(stream);
 	}
 
 	if (!tok_stop(stream))
@@ -344,7 +251,7 @@ parse_octupoles(struct efp *efp, struct stream *stream)
 	if (!frag->multipole_pts)
 		return EFP_RESULT_SYNTAX_ERROR;
 
-	next_line(stream);
+	efp_stream_next_line(stream);
 
 	for (int i = 0; i < frag->n_multipole_pts; i++) {
 		if (!skip_label(stream))
@@ -356,7 +263,7 @@ parse_octupoles(struct efp *efp, struct stream *stream)
 			if (!tok_double(stream, o + j))
 				return EFP_RESULT_SYNTAX_ERROR;
 
-		next_line(stream);
+		efp_stream_next_line(stream);
 	}
 
 	if (!tok_stop(stream))
@@ -369,9 +276,9 @@ static enum efp_result
 parse_polarizable_pts(struct efp *efp, struct stream *stream)
 {
 	struct frag *frag = get_last_frag(efp);
-	next_line(stream);
+	efp_stream_next_line(stream);
 
-	while (stream->ptr) {
+	while (!efp_stream_eof(stream)) {
 		if (tok_stop(stream))
 			return EFP_RESULT_SUCCESS;
 
@@ -386,14 +293,15 @@ parse_polarizable_pts(struct efp *efp, struct stream *stream)
 		struct polarizable_pt *pt =
 			frag->polarizable_pts + frag->n_polarizable_pts - 1;
 
-		stream->ptr += 4;
+		if (!efp_stream_advance(stream, 4))
+			return EFP_RESULT_SYNTAX_ERROR;
 
 		if (!tok_double(stream, &pt->x) ||
 		    !tok_double(stream, &pt->y) ||
 		    !tok_double(stream, &pt->z))
 			return EFP_RESULT_SYNTAX_ERROR;
 
-		next_line(stream);
+		efp_stream_next_line(stream);
 		double m[9];
 
 		for (int i = 0; i < 9; i++)
@@ -410,8 +318,9 @@ parse_polarizable_pts(struct efp *efp, struct stream *stream)
 		pt->tensor.zx = m[7];
 		pt->tensor.zy = m[8];
 
-		next_line(stream);
+		efp_stream_next_line(stream);
 	}
+
 	return EFP_RESULT_SYNTAX_ERROR;
 }
 
@@ -419,9 +328,9 @@ static enum efp_result
 parse_dynamic_polarizable_pts(struct efp *efp, struct stream *stream)
 {
 	struct frag *frag = get_last_frag(efp);
-	next_line(stream);
+	efp_stream_next_line(stream);
 
-	while (stream->ptr) {
+	while (!efp_stream_eof(stream)) {
 		frag->n_dynamic_polarizable_pts++;
 
 		size_t size = sizeof(struct dynamic_polarizable_pt);
@@ -435,14 +344,15 @@ parse_dynamic_polarizable_pts(struct efp *efp, struct stream *stream)
 			frag->dynamic_polarizable_pts +
 			frag->n_dynamic_polarizable_pts - 1;
 
-		stream->ptr += 5;
+		if (!efp_stream_advance(stream, 5))
+			return EFP_RESULT_SYNTAX_ERROR;
 
 		if (!tok_double(stream, &pt->x) ||
 		    !tok_double(stream, &pt->y) ||
 		    !tok_double(stream, &pt->z))
 			return EFP_RESULT_SYNTAX_ERROR;
 
-		next_line(stream);
+		efp_stream_next_line(stream);
 		double m[9];
 
 		for (int j = 0; j < 9; j++)
@@ -451,12 +361,16 @@ parse_dynamic_polarizable_pts(struct efp *efp, struct stream *stream)
 
 		pt->trace[0] = (m[0] + m[1] + m[2]) / 3.0;
 
-		next_line(stream);
-		if (strstr(stream->ptr, "FOR"))
+		efp_stream_next_line(stream);
+
+		if (efp_stream_eof(stream))
+			return EFP_RESULT_SYNTAX_ERROR;
+
+		if (strstr(efp_stream_get_ptr(stream), "FOR"))
 			break;
 	}
 
-	if (!stream->ptr)
+	if (efp_stream_eof(stream))
 		return EFP_RESULT_SYNTAX_ERROR;
 
 	for (int w = 1; w < 12; w++) {
@@ -464,14 +378,15 @@ parse_dynamic_polarizable_pts(struct efp *efp, struct stream *stream)
 			struct dynamic_polarizable_pt *pt =
 				frag->dynamic_polarizable_pts + i;
 
-			stream->ptr += 5;
+			if (!efp_stream_advance(stream, 5))
+				return EFP_RESULT_SYNTAX_ERROR;
 
 			if (!tok_double(stream, &pt->x) ||
 			    !tok_double(stream, &pt->y) ||
 			    !tok_double(stream, &pt->z))
 				return EFP_RESULT_SYNTAX_ERROR;
 
-			next_line(stream);
+			efp_stream_next_line(stream);
 			double m[9];
 
 			for (int j = 0; j < 9; j++)
@@ -479,7 +394,7 @@ parse_dynamic_polarizable_pts(struct efp *efp, struct stream *stream)
 					return EFP_RESULT_SYNTAX_ERROR;
 
 			pt->trace[w] = (m[0] + m[1] + m[2]) / 3.0;
-			next_line(stream);
+			efp_stream_next_line(stream);
 		}
 	}
 
@@ -495,28 +410,29 @@ parse_projection_basis(struct efp *efp, struct stream *stream)
 	struct frag *frag = get_last_frag(efp);
 	double x, y, z;
 
-	next_line(stream);
+	efp_stream_next_line(stream);
 
-	while (stream->ptr) {
+	while (!efp_stream_eof(stream)) {
 		if (tok_stop(stream))
 			return EFP_RESULT_SUCCESS;
 
-		stream->ptr += 8;
+		if (!efp_stream_advance(stream, 8))
+			return EFP_RESULT_SYNTAX_ERROR;
 
 		if (!tok_double(stream, &x) ||
 		    !tok_double(stream, &y) ||
 		    !tok_double(stream, &z))
 			return EFP_RESULT_SYNTAX_ERROR;
 
-		next_line(stream);
+		efp_stream_next_line(stream);
 shell:
-		if (!stream->ptr)
+		if (efp_stream_eof(stream))
 			return EFP_RESULT_SYNTAX_ERROR;
 
-		skip_space(stream);
+		efp_stream_skip_space(stream);
 
-		if (!*stream->ptr) {
-			next_line(stream);
+		if (efp_stream_eol(stream)) {
+			efp_stream_next_line(stream);
 			continue;
 		}
 
@@ -527,7 +443,7 @@ shell:
 		struct shell *shell = frag->xr_shells + frag->n_xr_shells - 1;
 
 		shell->x = x, shell->y = y, shell->z = z;
-		shell->type = *stream->ptr++;
+		shell->type = efp_stream_get_char(stream);
 
 		if (!strchr("SLPDF", shell->type))
 			return EFP_RESULT_SYNTAX_ERROR;
@@ -535,7 +451,7 @@ shell:
 		if (!tok_int(stream, &shell->n_funcs))
 			return EFP_RESULT_SYNTAX_ERROR;
 
-		next_line(stream);
+		efp_stream_next_line(stream);
 
 		shell->coef = malloc((shell->type == 'L' ? 3 : 2) *
 					shell->n_funcs * sizeof(double));
@@ -552,10 +468,11 @@ shell:
 				if (!tok_double(stream, ptr++))
 					return EFP_RESULT_SYNTAX_ERROR;
 
-			next_line(stream);
+			efp_stream_next_line(stream);
 		}
 		goto shell;
 	}
+
 	return EFP_RESULT_SYNTAX_ERROR;
 }
 
@@ -567,7 +484,7 @@ parse_multiplicity(struct efp *efp, struct stream *stream)
 	if (!tok_int(stream, &frag->multiplicity))
 		return EFP_RESULT_SYNTAX_ERROR;
 
-	next_line(stream);
+	efp_stream_next_line(stream);
 
 	if (!tok_stop(stream))
 		return EFP_RESULT_SYNTAX_ERROR;
@@ -588,29 +505,34 @@ parse_projection_wf(struct efp *efp, struct stream *stream)
 	if (!frag->xr_wf)
 		return EFP_RESULT_NO_MEMORY;
 
-	next_line(stream);
+	efp_stream_next_line(stream);
 	double *ptr = frag->xr_wf;
 
 	for (int j = 0; j < frag->n_lmo; j++) {
 		for (int i = 0; i < frag->xr_wf_size / 5; i++) {
-			stream->ptr += 5;
+			if (!efp_stream_advance(stream, 5))
+				return EFP_RESULT_SYNTAX_ERROR;
+
 			for (int k = 0; k < 5; k++)
 				if (!tok_double(stream, ptr++))
 					return EFP_RESULT_SYNTAX_ERROR;
-			next_line(stream);
+
+			efp_stream_next_line(stream);
 		}
 
 		if (frag->xr_wf_size % 5 == 0)
 			continue;
 
-		stream->ptr += 5;
+		if (!efp_stream_advance(stream, 5))
+			return EFP_RESULT_SYNTAX_ERROR;
 
 		for (int k = 0; k < frag->xr_wf_size % 5; k++)
 			if (!tok_double(stream, ptr++))
 				return EFP_RESULT_SYNTAX_ERROR;
 
-		next_line(stream);
+		efp_stream_next_line(stream);
 	}
+
 	return EFP_RESULT_SUCCESS;
 }
 
@@ -618,7 +540,7 @@ static enum efp_result
 parse_fock_mat(struct efp *efp, struct stream *stream)
 {
 	struct frag *frag = get_last_frag(efp);
-	next_line(stream);
+	efp_stream_next_line(stream);
 
 	int size = frag->n_lmo * (frag->n_lmo + 1) / 2;
 	frag->xr_fock_mat = malloc(size * sizeof(double));
@@ -629,7 +551,7 @@ parse_fock_mat(struct efp *efp, struct stream *stream)
 		if (!tok_double(stream, frag->xr_fock_mat + i))
 			return EFP_RESULT_SYNTAX_ERROR;
 
-	next_line(stream);
+	efp_stream_next_line(stream);
 	return EFP_RESULT_SUCCESS;
 }
 
@@ -637,7 +559,7 @@ static enum efp_result
 parse_lmo_centroids(struct efp *efp, struct stream *stream)
 {
 	struct frag *frag = get_last_frag(efp);
-	next_line(stream);
+	efp_stream_next_line(stream);
 
 	frag->lmo_centroids = malloc(frag->n_lmo * sizeof(vec_t));
 	if (!frag->lmo_centroids)
@@ -652,7 +574,7 @@ parse_lmo_centroids(struct efp *efp, struct stream *stream)
 		    !tok_double(stream, &ct->z))
 			return EFP_RESULT_SYNTAX_ERROR;
 
-		next_line(stream);
+		efp_stream_next_line(stream);
 	}
 
 	if (!tok_stop(stream))
@@ -662,34 +584,40 @@ parse_lmo_centroids(struct efp *efp, struct stream *stream)
 }
 
 static enum efp_result
-parse_canonvec(UNUSED struct efp *efp, struct stream *stream)
+parse_canonvec(struct efp *efp, struct stream *stream)
 {
+	(void)efp;
+
 	int wf_size;
 
 	if (!tok_int(stream, NULL) ||
 	    !tok_int(stream, &wf_size))
 		return EFP_RESULT_SYNTAX_ERROR;
 
-	next_line(stream);
+	efp_stream_next_line(stream);
 
 	for (int j = 0; j < wf_size; j++) {
 		for (int i = 0; i <= (wf_size - 1) / 5; i++) {
-			next_line(stream);
+			efp_stream_next_line(stream);
 		}
 	}
+
 	return EFP_RESULT_SUCCESS;
 }
 
 static enum efp_result
-parse_canonfok(UNUSED struct efp *efp, struct stream *stream)
+parse_canonfok(struct efp *efp, struct stream *stream)
 {
-	next_line(stream);
+	(void)efp;
 
-	while (stream->ptr) {
+	efp_stream_next_line(stream);
+
+	while (!efp_stream_eof(stream)) {
 		if (tok_stop(stream))
 			return EFP_RESULT_SUCCESS;
-		next_line(stream);
+		efp_stream_next_line(stream);
 	}
+
 	return EFP_RESULT_SYNTAX_ERROR;
 }
 
@@ -702,7 +630,7 @@ parse_screen(struct efp *efp, struct stream *stream)
 	if (!scr)
 		return EFP_RESULT_NO_MEMORY;
 
-	char type = *stream->ptr;
+	char type = efp_stream_get_char(stream);
 
 	if (type == '\0' || isspace(type)) {
 		if (frag->ai_screen_params)
@@ -718,7 +646,7 @@ parse_screen(struct efp *efp, struct stream *stream)
 		return EFP_RESULT_UNSUPPORTED_SCREEN;
 	}
 
-	next_line(stream);
+	efp_stream_next_line(stream);
 
 	for (int i = 0; i < frag->n_multipole_pts; i++) {
 		if (!skip_label(stream) ||
@@ -726,7 +654,7 @@ parse_screen(struct efp *efp, struct stream *stream)
 		    !tok_double(stream, scr + i))
 			return EFP_RESULT_SYNTAX_ERROR;
 
-		next_line(stream);
+		efp_stream_next_line(stream);
 	}
 
 	if (!tok_stop(stream))
@@ -773,7 +701,7 @@ parse_fragment(struct efp *efp, struct stream *stream)
 {
 	enum efp_result res;
 
-	while (stream->ptr) {
+	while (!efp_stream_eof(stream)) {
 		parse_fn fn = get_parse_fn(stream);
 
 		if (!fn) {
@@ -786,6 +714,7 @@ parse_fragment(struct efp *efp, struct stream *stream)
 		if ((res = fn(efp, stream)))
 			return res;
 	}
+
 	return EFP_RESULT_SYNTAX_ERROR;
 }
 
@@ -795,13 +724,12 @@ parse_file(struct efp *efp, struct stream *stream)
 	char name[32];
 	enum efp_result res;
 
-	while (stream->ptr) {
-		if (stream->ptr[0] == '\0' || stream->ptr[1] != '$') {
-			next_line(stream);
+	while (!efp_stream_eof(stream)) {
+		if (efp_stream_get_char(stream) == '\0' ||
+		    efp_stream_get_char(stream) != '$') {
+			efp_stream_next_line(stream);
 			continue;
 		}
-
-		stream->ptr += 2;
 
 		if (!tok_label(stream, sizeof(name), name))
 			return EFP_RESULT_SYNTAX_ERROR;
@@ -822,12 +750,13 @@ parse_file(struct efp *efp, struct stream *stream)
 		strcpy(frag->name, name);
 		efp->lib[efp->n_lib - 1] = frag;
 
-		next_line(stream);
-		next_line(stream);
+		efp_stream_next_line(stream);
+		efp_stream_next_line(stream);
 
 		if ((res = parse_fragment(efp, stream)))
 			return res;
 	}
+
 	return EFP_RESULT_SUCCESS;
 }
 
@@ -841,22 +770,15 @@ efp_add_potential(struct efp *efp, const char *path)
 		return EFP_RESULT_INVALID_ARGUMENT;
 
 	enum efp_result res;
+	struct stream *stream;
 
-	struct stream stream = {
-		.buffer = NULL,
-		.ptr = NULL,
-		.in = fopen(path, "r")
-	};
-
-	if (!stream.in)
+	if ((stream = efp_stream_open(path)) == NULL)
 		return EFP_RESULT_FILE_NOT_FOUND;
 
-	next_line(&stream);
-	res = parse_file(efp, &stream);
-
-	if (stream.buffer)
-		free(stream.buffer);
-	fclose(stream.in);
+	efp_stream_set_split_char(stream, '>');
+	efp_stream_next_line(stream);
+	res = parse_file(efp, stream);
+	efp_stream_close(stream);
 
 	return res;
 }

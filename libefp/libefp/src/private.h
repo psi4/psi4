@@ -33,8 +33,6 @@
 #include "terms.h"
 
 #define EFP_EXPORT __attribute__((visibility("default")))
-#define UNUSED __attribute__((unused))
-
 #define ARRAY_SIZE(arr) (sizeof(arr)/sizeof(arr[0]))
 
 struct frag {

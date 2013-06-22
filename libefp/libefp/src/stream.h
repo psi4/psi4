@@ -24,19 +24,28 @@
  * SUCH DAMAGE.
  */
 
-#ifndef LIBEFP_SWF_H
-#define LIBEFP_SWF_H
+#ifndef LIBEFP_STREAM_H
+#define LIBEFP_STREAM_H
 
-#include "math_util.h"
+#include <stddef.h>
 
-struct swf {
-	double swf;
-	vec_t dswf;
-	vec_t dr;
-	vec_t cell;
-};
+struct stream;
 
-double efp_get_swf(double, double);
-double efp_get_dswf(double, double);
+struct stream *efp_stream_open(const char *);
+void efp_stream_set_split_char(struct stream *, char);
+char efp_stream_get_split_char(struct stream *);
+const char *efp_stream_get_ptr(struct stream *);
+void efp_stream_next_line(struct stream *);
+void efp_stream_reset_line(struct stream *);
+char efp_stream_get_char(struct stream *);
+char efp_stream_current_char(struct stream *);
+int efp_stream_parse_int(struct stream *, int *);
+int efp_stream_parse_double(struct stream *, double *);
+int efp_stream_advance(struct stream *, size_t);
+void efp_stream_skip_space(struct stream *);
+void efp_stream_skip_nonspace(struct stream *);
+int efp_stream_eol(struct stream *);
+int efp_stream_eof(struct stream *);
+void efp_stream_close(struct stream *);
 
-#endif /* LIBEFP_SWF_H */
+#endif /* LIBEFP_STREAM_H */

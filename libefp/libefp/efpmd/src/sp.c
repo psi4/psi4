@@ -26,10 +26,13 @@
 
 #include "common.h"
 
-void sim_sp(struct efp *, const struct config *);
+void sim_sp(struct efp *, const struct cfg *, const struct sys *);
 
-void sim_sp(struct efp *efp, UNUSED const struct config *config)
+void sim_sp(struct efp *efp, const struct cfg *cfg, const struct sys *sys)
 {
+	(void)cfg;
+	(void)sys;
+
 	printf("SINGLE POINT ENERGY JOB\n\n\n");
 
 	print_geometry(efp);

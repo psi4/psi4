@@ -24,8 +24,6 @@
  * SUCH DAMAGE.
  */
 
-#include <stdarg.h>
-
 #include "common.h"
 
 void NORETURN die(const char *format, ...)
@@ -108,7 +106,7 @@ void print_geometry(struct efp *efp)
 			double y = atoms[a].y * BOHR_RADIUS;
 			double z = atoms[a].z * BOHR_RADIUS;
 
-			printf("%s %12.6lf %12.6lf %12.6lf\n", atoms[a].label, x, y, z);
+			printf("%-16s %12.6lf %12.6lf %12.6lf\n", atoms[a].label, x, y, z);
 		}
 	}
 
@@ -220,4 +218,15 @@ void print_matrix(int rows, int cols, const double *mat)
 
 		printf("\n\n");
 	}
+}
+
+vec_t box_from_str(const char *str)
+{
+	vec_t box;
+
+	if (sscanf(str, "%lf %lf %lf", &box.x, &box.y, &box.z) < 3)
+		error("incorrect box format");
+
+	vec_scale(&box, 1.0 / BOHR_RADIUS);
+	return box;
 }

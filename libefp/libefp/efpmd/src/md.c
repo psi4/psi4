@@ -65,15 +65,16 @@ struct md {
 	double (*get_invariant)(const struct md *);
 	void (*update_step)(struct md *);
 	struct efp *efp;
-	const struct config *config;
+	const struct cfg *cfg;
+	const struct sys *sys;
 	void *data;
 };
 
-void sim_md(struct efp *, const struct config *);
+void sim_md(struct efp *, const struct cfg *, const struct sys *);
 
 static vec_t wrap(const struct md *md, const vec_t *pos)
 {
-	if (!md->config->enable_pbc)
+	if (!cfg_get_bool(md->cfg, "enable_pbc"))
 		return *pos;
 
 	vec_t sub = {
@@ -148,8 +149,8 @@ static double get_invariant_nvt(const struct md *md)
 {
 	struct nvt_data *data = (struct nvt_data *)md->data;
 
-	double t_tau = md->config->thermostat_tau;
-	double t_target = md->config->target_temperature;
+	double t_tau = cfg_get_double(md->cfg, "thermostat_tau");
+	double t_target = cfg_get_double(md->cfg, "temperature");
 
 	double kbt = BOLTZMANN * t_target;
 
@@ -163,10 +164,10 @@ static double get_invariant_npt(const struct md *md)
 {
 	struct npt_data *data = (struct npt_data *)md->data;
 
-	double t_tau = md->config->thermostat_tau;
-	double t_target = md->config->target_temperature;
-	double p_tau = md->config->barostat_tau;
-	double p_target = md->config->target_pressure;
+	double t_tau = cfg_get_double(md->cfg, "thermostat_tau");
+	double t_target = cfg_get_double(md->cfg, "temperature");
+	double p_tau = cfg_get_double(md->cfg, "barostat_tau");
+	double p_target = cfg_get_double(md->cfg, "pressure");
 
 	double kbt = BOLTZMANN * t_target;
 	double volume = get_volume(md);
@@ -316,28 +317,20 @@ static void remove_system_drift(struct md *md)
 	assert(vec_len(&cv2) < EPSILON && vec_len(&am2) < EPSILON);
 }
 
-static void make_coord_array(const struct md *md, double *coord)
-{
-	for (int i = 0; i < md->n_bodies; i++, coord += 12) {
-		struct body *body = md->bodies + i;
-
-		coord[0] = body->pos.x;
-		coord[1] = body->pos.y;
-		coord[2] = body->pos.z;
-
-		memcpy(coord + 3, &body->rotmat, sizeof(mat_t));
-	}
-}
-
 static void compute_forces(struct md *md)
 {
 	struct efp_energy energy;
-	double coord[12 * md->n_bodies];
 	double grad[6 * md->n_bodies];
 
-	make_coord_array(md, coord);
+	for (int i = 0; i < md->n_bodies; i++) {
+		double crd[12];
 
-	check_fail(efp_set_coordinates(md->efp, EFP_COORD_TYPE_ROTMAT, coord));
+		memcpy(crd, &md->bodies[i].pos, 3 * sizeof(double));
+		memcpy(crd + 3, &md->bodies[i].rotmat, 9 * sizeof(double));
+
+		check_fail(efp_set_frag_coordinates(md->efp, i, EFP_COORD_TYPE_ROTMAT, crd));
+	}
+
 	check_fail(efp_compute(md->efp, 1));
 	check_fail(efp_get_energy(md->efp, &energy));
 	check_fail(efp_get_gradient(md->efp, md->n_bodies, grad));
@@ -437,7 +430,7 @@ static void rotate_body(struct body *body, double dt)
 
 static void update_step_nve(struct md *md)
 {
-	double dt = md->config->time_step;
+	double dt = cfg_get_double(md->cfg, "time_step");
 
 	for (int i = 0; i < md->n_bodies; i++) {
 		struct body *body = md->bodies + i;
@@ -485,9 +478,9 @@ static void update_step_nvt(struct md *md)
 {
 	struct nvt_data *data = (struct nvt_data *)md->data;
 
-	double dt = md->config->time_step;
-	double target = md->config->target_temperature;
-	double tau = md->config->thermostat_tau;
+	double dt = cfg_get_double(md->cfg, "time_step");
+	double target = cfg_get_double(md->cfg, "temperature");
+	double tau = cfg_get_double(md->cfg, "thermostat_tau");
 
 	double t0 = get_temperature(md);
 
@@ -575,11 +568,11 @@ static void update_step_npt(struct md *md)
 {
 	struct npt_data *data = (struct npt_data *)md->data;
 
-	double dt = md->config->time_step;
-	double t_tau = md->config->thermostat_tau;
-	double t_target = md->config->target_temperature;
-	double p_tau = md->config->barostat_tau;
-	double p_target = md->config->target_pressure;
+	double dt = cfg_get_double(md->cfg, "time_step");
+	double t_tau = cfg_get_double(md->cfg, "thermostat_tau");
+	double t_target = cfg_get_double(md->cfg, "temperature");
+	double p_tau = cfg_get_double(md->cfg, "barostat_tau");
+	double p_target = cfg_get_double(md->cfg, "pressure");
 
 	double t_tau2 = t_tau * t_tau;
 	double p_tau2 = p_tau * p_tau;
@@ -715,13 +708,13 @@ static void print_info(const struct md *md)
 	printf("%30s %16.10lf\n", "INVARIANT", invariant);
 	printf("%30s %16.10lf\n", "TEMPERATURE", temperature);
 
-	if (md->config->ensemble_type == ENSEMBLE_TYPE_NPT) {
+	if (cfg_get_enum(md->cfg, "ensemble") == ENSEMBLE_TYPE_NPT) {
 		double pressure = get_pressure(md) / BAR_TO_AU;
 
 		printf("%30s %16.10lf\n", "PRESSURE", pressure);
 	}
 
-	if (md->config->enable_pbc) {
+	if (cfg_get_bool(md->cfg, "enable_pbc")) {
 		double x = md->box.x * BOHR_RADIUS;
 		double y = md->box.y * BOHR_RADIUS;
 		double z = md->box.z * BOHR_RADIUS;
@@ -761,15 +754,16 @@ static void print_restart(const struct md *md)
 	printf("\n");
 }
 
-static struct md *md_create(struct efp *efp, const struct config *config)
+static struct md *md_create(struct efp *efp, const struct cfg *cfg, const struct sys *sys)
 {
 	struct md *md = xcalloc(1, sizeof(struct md));
 
 	md->efp = efp;
-	md->config = config;
-	md->box = *(const vec_t *)config->box;
+	md->cfg = cfg;
+	md->sys = sys;
+	md->box = box_from_str(cfg_get_string(cfg, "periodic_box"));
 
-	switch (config->ensemble_type) {
+	switch (cfg_get_enum(cfg, "ensemble")) {
 		case ENSEMBLE_TYPE_NVE:
 			md->get_invariant = get_invariant_nve;
 			md->update_step = update_step_nve;
@@ -788,7 +782,7 @@ static struct md *md_create(struct efp *efp, const struct config *config)
 			assert(0);
 	}
 
-	md->n_bodies = config->n_frags;
+	md->n_bodies = sys->n_frags;
 	md->bodies = xcalloc(md->n_bodies, sizeof(struct body));
 
 	double coord[6 * md->n_bodies];
@@ -807,15 +801,15 @@ static struct md *md_create(struct efp *efp, const struct config *config)
 
 		euler_to_matrix(a, b, c, &body->rotmat);
 
-		body->vel.x = md->config->frags[i].vel[0];
-		body->vel.y = md->config->frags[i].vel[1];
-		body->vel.z = md->config->frags[i].vel[2];
+		body->vel.x = md->sys->frags[i].vel[0];
+		body->vel.y = md->sys->frags[i].vel[1];
+		body->vel.z = md->sys->frags[i].vel[2];
 
 		set_body_mass_and_inertia(efp, i, body);
 
-		body->angmom.x = md->config->frags[i].vel[3] * body->inertia.x;
-		body->angmom.y = md->config->frags[i].vel[4] * body->inertia.y;
-		body->angmom.z = md->config->frags[i].vel[5] * body->inertia.z;
+		body->angmom.x = md->sys->frags[i].vel[3] * body->inertia.x;
+		body->angmom.y = md->sys->frags[i].vel[4] * body->inertia.y;
+		body->angmom.z = md->sys->frags[i].vel[5] * body->inertia.z;
 
 		md->n_freedom += 3;
 
@@ -834,7 +828,7 @@ static void velocitize(struct md *md)
 {
 	rand_init();
 
-	double temperature = md->config->target_temperature;
+	double temperature = cfg_get_double(md->cfg, "temperature");
 	double ke = temperature * BOLTZMANN * md->n_freedom / (2.0 * 6.0 * md->n_bodies);
 
 	for (int i = 0; i < md->n_bodies; i++) {
@@ -868,13 +862,13 @@ static void md_shutdown(struct md *md)
 	free(md);
 }
 
-void sim_md(struct efp *efp, const struct config *config)
+void sim_md(struct efp *efp, const struct cfg *cfg, const struct sys *sys)
 {
 	printf("MOLECULAR DYNAMICS JOB\n\n\n");
 
-	struct md *md = md_create(efp, config);
+	struct md *md = md_create(efp, cfg, sys);
 
-	if (config->velocitize)
+	if (cfg_get_bool(cfg, "velocitize"))
 		velocitize(md);
 
 	remove_system_drift(md);
@@ -883,10 +877,10 @@ void sim_md(struct efp *efp, const struct config *config)
 	printf("    INITIAL STATE\n\n");
 	print_status(md);
 
-	for (int i = 1; i <= config->max_steps; i++) {
+	for (int i = 1; i <= cfg_get_int(cfg, "max_steps"); i++) {
 		md->update_step(md);
 
-		if (i % config->print_step == 0) {
+		if (i % cfg_get_int(cfg, "print_step") == 0) {
 			printf("    STATE AFTER %d STEPS\n\n", i);
 			print_status(md);
 		}

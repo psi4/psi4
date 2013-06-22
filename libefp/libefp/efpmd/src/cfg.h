@@ -28,60 +28,29 @@
 #define EFPMD_CFG_H
 
 #include <stdbool.h>
-#include <efp.h>
+#include <stdio.h>
 
-enum run_type {
-	RUN_TYPE_SP,
-	RUN_TYPE_GRAD,
-	RUN_TYPE_HESS,
-	RUN_TYPE_OPT,
-	RUN_TYPE_MD
-};
+struct cfg;
 
-enum ensemble_type {
-	ENSEMBLE_TYPE_NVE,
-	ENSEMBLE_TYPE_NVT,
-	ENSEMBLE_TYPE_NPT
-};
-
-struct frag {
-	char *name;
-	double coord[12];
-	double vel[6];
-};
-
-struct config {
-	enum run_type run_type;
-	enum efp_coord_type coord_type;
-	unsigned terms;
-	enum efp_elec_damp elec_damp;
-	enum efp_disp_damp disp_damp;
-	enum efp_pol_damp pol_damp;
-	bool enable_cutoff;
-	double swf_cutoff;
-	int max_steps;
-	char *fraglib_path;
-	char *userlib_path;
-	bool enable_pbc;
-	double box[3];
-	double opt_tol;
-	bool hess_central;
-	double hess_step_dist;
-	double hess_step_angle;
-	enum ensemble_type ensemble_type;
-	double time_step;
-	int print_step;
-	bool velocitize;
-	double target_temperature;
-	double target_pressure;
-	double thermostat_tau;
-	double barostat_tau;
-	int n_frags;
-	struct frag *frags;
-};
-
-struct config *parse_config(const char *);
-void free_config(struct config *);
-void print_defaults(void);
+struct cfg *cfg_create(void);
+void cfg_add_int(struct cfg *, const char *, int);
+void cfg_add_double(struct cfg *, const char *, double);
+void cfg_add_bool(struct cfg *, const char *, bool);
+void cfg_add_string(struct cfg *, const char *, const char *);
+void cfg_add_enum(struct cfg *, const char *, int, const char *, const int *);
+void cfg_set_int(struct cfg *, const char *, int);
+void cfg_set_double(struct cfg *, const char *, double);
+void cfg_set_bool(struct cfg *, const char *, bool);
+void cfg_set_string(struct cfg *, const char *, const char *);
+void cfg_set_enum(struct cfg *, const char *, int);
+int cfg_get_int(const struct cfg *, const char *);
+double cfg_get_double(const struct cfg *, const char *);
+bool cfg_get_bool(const struct cfg *, const char *);
+const char *cfg_get_string(const struct cfg *, const char *);
+int cfg_get_enum(const struct cfg *, const char *);
+bool cfg_parse_line(struct cfg *, const char *);
+void cfg_print(const struct cfg *, FILE *);
+const char *cfg_get_last_error(const struct cfg *);
+void cfg_free(struct cfg *);
 
 #endif /* EFPMD_CFG_H */
