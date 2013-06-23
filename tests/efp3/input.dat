@@ -34,11 +34,7 @@ molecule efp_spec {
 
 set {
   step_type nr
-  geom_maxiter 1000
-}
-
-set efp {
-  dertype first
+  geom_maxiter 200
 }
 
 optimize('efp')
