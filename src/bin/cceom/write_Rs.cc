@@ -94,9 +94,9 @@ void write_Rs(int C_irr, double *evals, int *converged) {
     sprintf(C_lbl, "CME %d", i);
     sprintf(R_lbl, "RIA %d %d", C_irr, R_index);
 
-    dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, C_lbl);
-    dpd_file2_copy(&CME, PSIF_CC_RAMPS, R_lbl);
-    dpd_file2_close(&CME);
+    global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, C_lbl);
+    global_dpd_->file2_copy(&CME, PSIF_CC_RAMPS, R_lbl);
+    global_dpd_->file2_close(&CME);
 
     if (params.full_matrix) {
       sprintf(C_lbl, "C0 %d", i);
@@ -108,38 +108,38 @@ void write_Rs(int C_irr, double *evals, int *converged) {
     sprintf(C_lbl, "CMnEf %d", i);
     sprintf(R_lbl, "RIjAb %d %d", C_irr, R_index);
     if (params.eom_ref <= 1)
-      dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, C_lbl);
+      global_dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, C_lbl);
     else if (params.eom_ref == 2)
-      dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 22, 28, 22, 28, 0, C_lbl);
-    dpd_buf4_copy(&CMnEf, PSIF_CC_RAMPS, R_lbl);
-    dpd_buf4_close(&CMnEf);
+      global_dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 22, 28, 22, 28, 0, C_lbl);
+    global_dpd_->buf4_copy(&CMnEf, PSIF_CC_RAMPS, R_lbl);
+    global_dpd_->buf4_close(&CMnEf);
           
     if(params.eom_ref > 0) {
       sprintf(C_lbl, "Cme %d", i);
       sprintf(R_lbl, "Ria %d %d", C_irr, R_index);
       if (params.eom_ref == 1)
-         dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 0, 1, C_lbl);
+         global_dpd_->file2_init(&Cme, PSIF_EOM_Cme, C_irr, 0, 1, C_lbl);
       else if (params.eom_ref == 2)
-         dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 2, 3, C_lbl);
-      dpd_file2_copy(&Cme, PSIF_CC_RAMPS, R_lbl);
-      dpd_file2_close(&Cme);
+         global_dpd_->file2_init(&Cme, PSIF_EOM_Cme, C_irr, 2, 3, C_lbl);
+      global_dpd_->file2_copy(&Cme, PSIF_CC_RAMPS, R_lbl);
+      global_dpd_->file2_close(&Cme);
 
       sprintf(C_lbl, "CMNEF %d", i);
       sprintf(R_lbl, "RIJAB %d %d", C_irr, R_index);
 
-      dpd_buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 2, 7, 2, 7, 0, C_lbl);
-      dpd_buf4_copy(&CMNEF, PSIF_CC_RAMPS, R_lbl);
-      dpd_buf4_close(&CMNEF);
+      global_dpd_->buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 2, 7, 2, 7, 0, C_lbl);
+      global_dpd_->buf4_copy(&CMNEF, PSIF_CC_RAMPS, R_lbl);
+      global_dpd_->buf4_close(&CMNEF);
 
       sprintf(C_lbl, "Cmnef %d", i);
       sprintf(R_lbl, "Rijab %d %d", C_irr, R_index);
 
       if (params.eom_ref == 1)
-        dpd_buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 2, 7, 2, 7, 0, C_lbl);
+        global_dpd_->buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 2, 7, 2, 7, 0, C_lbl);
       else if (params.eom_ref ==2)
-        dpd_buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 12, 17, 12, 17, 0, C_lbl);
-        dpd_buf4_copy(&Cmnef, PSIF_CC_RAMPS, R_lbl);
-        dpd_buf4_close(&Cmnef);
+        global_dpd_->buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 12, 17, 12, 17, 0, C_lbl);
+        global_dpd_->buf4_copy(&Cmnef, PSIF_CC_RAMPS, R_lbl);
+        global_dpd_->buf4_close(&Cmnef);
     }
   }
 }

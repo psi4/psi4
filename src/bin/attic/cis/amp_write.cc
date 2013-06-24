@@ -52,8 +52,8 @@ void amp_write_T1(dpdfile2 *T1, int length, FILE *outfile)
   t1stack = (struct onestack *) malloc(length * sizeof(struct onestack));
   for(m=0; m < length; m++) { t1stack[m].value = 0; t1stack[m].i = 0; t1stack[m].a = 0; }
 
-  dpd_file2_mat_init(T1);
-  dpd_file2_mat_rd(T1);
+  global_dpd_->file2_mat_init(T1);
+  global_dpd_->file2_mat_rd(T1);
 
   numt1 = 0;
   for(h=0; h < nirreps; h++) {
@@ -75,7 +75,7 @@ void amp_write_T1(dpdfile2 *T1, int length, FILE *outfile)
     }
   }
 
-  dpd_file2_mat_close(T1);
+  global_dpd_->file2_mat_close(T1);
 
   for(m=0; m < ((numt1 < length) ? numt1 : length); m++)
     if(fabs(t1stack[m].value) > 1e-6)

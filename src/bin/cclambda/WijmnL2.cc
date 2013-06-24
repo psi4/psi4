@@ -41,65 +41,65 @@ void WijmnL2(int L_irr)
 
   /* RHS += Lmnab*Wijmn */
   if(params.ref == 0) { /** RHF **/
-    dpd_buf4_init(&LIjAb, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
-    dpd_buf4_init(&newLIjAb, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
-    dpd_buf4_init(&WMnIj, PSIF_CC_HBAR, 0, 0, 0, 0, 0, 0, "WMnIj");
-    dpd_contract444(&WMnIj, &LIjAb, &newLIjAb, 0, 1, 1.0, 1.0);
-    dpd_buf4_close(&WMnIj);
-    dpd_buf4_close(&LIjAb);
-    dpd_buf4_close(&newLIjAb);
+    global_dpd_->buf4_init(&LIjAb, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
+    global_dpd_->buf4_init(&newLIjAb, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
+    global_dpd_->buf4_init(&WMnIj, PSIF_CC_HBAR, 0, 0, 0, 0, 0, 0, "WMnIj");
+    global_dpd_->contract444(&WMnIj, &LIjAb, &newLIjAb, 0, 1, 1.0, 1.0);
+    global_dpd_->buf4_close(&WMnIj);
+    global_dpd_->buf4_close(&LIjAb);
+    global_dpd_->buf4_close(&newLIjAb);
   }
   else if(params.ref == 1) { /** ROHF **/
 
-    dpd_buf4_init(&LIJAB, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "LIJAB");
-    dpd_buf4_init(&newLIJAB, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
-    dpd_buf4_init(&WMNIJ, PSIF_CC_HBAR, 0, 2, 2, 2, 2, 0, "WMNIJ");
-    dpd_contract444(&WMNIJ, &LIJAB, &newLIJAB, 0, 1, 1.0, 1.0);
-    dpd_buf4_close(&WMNIJ);
-    dpd_buf4_close(&LIJAB);
-    dpd_buf4_close(&newLIJAB);
+    global_dpd_->buf4_init(&LIJAB, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "LIJAB");
+    global_dpd_->buf4_init(&newLIJAB, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
+    global_dpd_->buf4_init(&WMNIJ, PSIF_CC_HBAR, 0, 2, 2, 2, 2, 0, "WMNIJ");
+    global_dpd_->contract444(&WMNIJ, &LIJAB, &newLIJAB, 0, 1, 1.0, 1.0);
+    global_dpd_->buf4_close(&WMNIJ);
+    global_dpd_->buf4_close(&LIJAB);
+    global_dpd_->buf4_close(&newLIJAB);
 
-    dpd_buf4_init(&Lijab, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "Lijab");
-    dpd_buf4_init(&newLijab, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New Lijab");
-    dpd_buf4_init(&Wmnij, PSIF_CC_HBAR, 0, 2, 2, 2, 2, 0, "Wmnij");
-    dpd_contract444(&Wmnij, &Lijab, &newLijab, 0, 1, 1.0, 1.0);
-    dpd_buf4_close(&Wmnij);
-    dpd_buf4_close(&Lijab);
-    dpd_buf4_close(&newLijab);
+    global_dpd_->buf4_init(&Lijab, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "Lijab");
+    global_dpd_->buf4_init(&newLijab, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New Lijab");
+    global_dpd_->buf4_init(&Wmnij, PSIF_CC_HBAR, 0, 2, 2, 2, 2, 0, "Wmnij");
+    global_dpd_->contract444(&Wmnij, &Lijab, &newLijab, 0, 1, 1.0, 1.0);
+    global_dpd_->buf4_close(&Wmnij);
+    global_dpd_->buf4_close(&Lijab);
+    global_dpd_->buf4_close(&newLijab);
 
-    dpd_buf4_init(&LIjAb, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
-    dpd_buf4_init(&newLIjAb, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
-    dpd_buf4_init(&WMnIj, PSIF_CC_HBAR, 0, 0, 0, 0, 0, 0, "WMnIj");
-    dpd_contract444(&WMnIj, &LIjAb, &newLIjAb, 0, 1, 1.0, 1.0);
-    dpd_buf4_close(&WMnIj);
-    dpd_buf4_close(&LIjAb);
-    dpd_buf4_close(&newLIjAb);
+    global_dpd_->buf4_init(&LIjAb, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
+    global_dpd_->buf4_init(&newLIjAb, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
+    global_dpd_->buf4_init(&WMnIj, PSIF_CC_HBAR, 0, 0, 0, 0, 0, 0, "WMnIj");
+    global_dpd_->contract444(&WMnIj, &LIjAb, &newLIjAb, 0, 1, 1.0, 1.0);
+    global_dpd_->buf4_close(&WMnIj);
+    global_dpd_->buf4_close(&LIjAb);
+    global_dpd_->buf4_close(&newLIjAb);
   }
   else if(params.ref == 2) { /** UHF **/
 
-    dpd_buf4_init(&LIJAB, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "LIJAB");
-    dpd_buf4_init(&newLIJAB, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
-    dpd_buf4_init(&WMNIJ, PSIF_CC_HBAR, 0, 2, 2, 2, 2, 0, "WMNIJ");
-    dpd_contract444(&WMNIJ, &LIJAB, &newLIJAB, 0, 1, 1, 1);
-    dpd_buf4_close(&WMNIJ);
-    dpd_buf4_close(&LIJAB);
-    dpd_buf4_close(&newLIJAB);
+    global_dpd_->buf4_init(&LIJAB, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "LIJAB");
+    global_dpd_->buf4_init(&newLIJAB, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
+    global_dpd_->buf4_init(&WMNIJ, PSIF_CC_HBAR, 0, 2, 2, 2, 2, 0, "WMNIJ");
+    global_dpd_->contract444(&WMNIJ, &LIJAB, &newLIJAB, 0, 1, 1, 1);
+    global_dpd_->buf4_close(&WMNIJ);
+    global_dpd_->buf4_close(&LIJAB);
+    global_dpd_->buf4_close(&newLIJAB);
 
-    dpd_buf4_init(&Lijab, PSIF_CC_LAMBDA, L_irr, 12, 17, 12, 17, 0, "Lijab");
-    dpd_buf4_init(&newLijab, PSIF_CC_LAMBDA, L_irr, 12, 17, 12, 17, 0, "New Lijab");
-    dpd_buf4_init(&Wmnij, PSIF_CC_HBAR, 0, 12, 12, 12, 12, 0, "Wmnij");
-    dpd_contract444(&Wmnij, &Lijab, &newLijab, 0, 1, 1, 1);
-    dpd_buf4_close(&Wmnij);
-    dpd_buf4_close(&Lijab);
-    dpd_buf4_close(&newLijab);
+    global_dpd_->buf4_init(&Lijab, PSIF_CC_LAMBDA, L_irr, 12, 17, 12, 17, 0, "Lijab");
+    global_dpd_->buf4_init(&newLijab, PSIF_CC_LAMBDA, L_irr, 12, 17, 12, 17, 0, "New Lijab");
+    global_dpd_->buf4_init(&Wmnij, PSIF_CC_HBAR, 0, 12, 12, 12, 12, 0, "Wmnij");
+    global_dpd_->contract444(&Wmnij, &Lijab, &newLijab, 0, 1, 1, 1);
+    global_dpd_->buf4_close(&Wmnij);
+    global_dpd_->buf4_close(&Lijab);
+    global_dpd_->buf4_close(&newLijab);
 
-    dpd_buf4_init(&LIjAb, PSIF_CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "LIjAb");
-    dpd_buf4_init(&newLIjAb, PSIF_CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "New LIjAb");
-    dpd_buf4_init(&WMnIj, PSIF_CC_HBAR, 0, 22, 22, 22, 22, 0, "WMnIj");
-    dpd_contract444(&WMnIj, &LIjAb, &newLIjAb, 0, 1, 1, 1);
-    dpd_buf4_close(&WMnIj);
-    dpd_buf4_close(&LIjAb);
-    dpd_buf4_close(&newLIjAb);
+    global_dpd_->buf4_init(&LIjAb, PSIF_CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "LIjAb");
+    global_dpd_->buf4_init(&newLIjAb, PSIF_CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "New LIjAb");
+    global_dpd_->buf4_init(&WMnIj, PSIF_CC_HBAR, 0, 22, 22, 22, 22, 0, "WMnIj");
+    global_dpd_->contract444(&WMnIj, &LIjAb, &newLIjAb, 0, 1, 1, 1);
+    global_dpd_->buf4_close(&WMnIj);
+    global_dpd_->buf4_close(&LIjAb);
+    global_dpd_->buf4_close(&newLIjAb);
   }
 }
 

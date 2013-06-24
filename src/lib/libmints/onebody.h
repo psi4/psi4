@@ -29,6 +29,7 @@
 #include "vector3.h"
 #include <boost/python/list.hpp>
 #include "pybuffer.h"
+#include "exception.h"
 
 namespace psi {
 

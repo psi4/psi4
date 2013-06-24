@@ -97,7 +97,7 @@ ADC::compute_energy()
                         poles_[irrep][root].renorm_factor = 1/denom;
                         
                         sprintf(lbl, "V^(%d)_[%d]12", root, irrep);
-                        dpd_file2_init(&V, PSIF_ADC, irrep, ID('O'), ID('V'), lbl);
+                        global_dpd_->file2_init(&V, PSIF_ADC, irrep, ID('O'), ID('V'), lbl);
                         fprintf(outfile, "->\t%d%3s state   : %10.7f (a.u.), %10.7f (eV)\n", root+1, irrep_[irrep], omega[root], omega[root]*pc_hartree2ev);
                         fprintf(outfile, "\tNon-iterative: %10.7f (a.u.), %10.7f (eV)\n", poles_[irrep][root].ps_value, poles_[irrep][root].ps_value*pc_hartree2ev);
                         fprintf(outfile, "\t         Occ Vir        Coefficient\n");
@@ -111,10 +111,10 @@ ADC::compute_energy()
                         fprintf(outfile, "\tSquared norm of the S component: %10.7f\n", poles_[irrep][root].renorm_factor);
                         
                         sprintf(lbl, "B^(%d)_[%d]12", root, irrep);
-                        dpd_file2_init(&B, PSIF_ADC, irrep, ID('O'), ID('V'), lbl);
-                        theta = acos(dpd_file2_dot(&B, &V)) * 180.0 / pc_pi;
+                        global_dpd_->file2_init(&B, PSIF_ADC, irrep, ID('O'), ID('V'), lbl);
+                        theta = acos(global_dpd_->file2_dot(&B, &V)) * 180.0 / pc_pi;
                         if((180.0-fabs(theta)) < theta) theta = 180.0 - fabs(theta); 
-                        dpd_file2_close(&B);
+                        global_dpd_->file2_close(&B);
                         fprintf(outfile, "\tThe S vector is rotated up to %6.3f (deg.)\n", theta);
                         if(theta > ANGL_TOL_)
                             fprintf(outfile, "\t#WARNING: Strongly rotated from the CIS state!\n");
@@ -122,8 +122,8 @@ ADC::compute_energy()
 
                         // Detachment / Attachment analysis Reference: JPC 99 (1995) 14261
                         // Extistence of D vector is not considered here, just akin to CIS(D_inf) manner.
-                        dpd_file2_mat_init(&V);
-                        dpd_file2_mat_rd(&V);
+                        global_dpd_->file2_mat_init(&V);
+                        global_dpd_->file2_mat_rd(&V);
 /*                        
                         trace = 0;
                         tracepi = init_array(nirrep_);
@@ -243,7 +243,7 @@ ADC::compute_energy()
                         oss << state_top << root + 1 << " " << irrep_[irrep] << " TOTAL ENERGY";
                         Process::environment.globals[oss.str()] = omega[root] + energy_ + corr_energy;
                 
-                        dpd_file2_close(&V);
+                        global_dpd_->file2_close(&V);
                         
                         break;
                     }

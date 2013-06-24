@@ -253,7 +253,7 @@ class DFCoupledCluster : public CoupledCluster{
     bool ischolesky_;
     long int nQ;
     long int nQ_scf;
-    double*Qmo,*Qov,*Qvv,*Qoo;
+    double*Qov,*Qvv,*Qoo;
     void  ThreeIndexIntegrals();
 
     /// more 3-index stuff for t1-transformed integrals
