@@ -233,10 +233,12 @@ class AliasedDictTest(unittest.TestCase):
 
     #endregion
 
-    @expected_failure
+    #region | Not yet implemented features |
+
     def test_viewkeys(self):
-        v = self.d.viewkeys()
-        self.assertEqual(len(v), 6)
+        with self.assertRaises(NotImplementedError):
+            v = self.d.viewkeys()
+            self.assertEqual(len(v), 6)
 
     # End AliasedDictTest
     pass
