@@ -62,11 +62,11 @@ void check_sum(const char *term_lbl, int index, int irrep) {
 
   if (params.eom_ref == 0) {
     sprintf(lbl, "%s %d", "SIA", index);
-    dpd_file2_init(&SIA, PSIF_EOM_SIA, irrep, 0, 1, lbl);
+    global_dpd_->file2_init(&SIA, PSIF_EOM_SIA, irrep, 0, 1, lbl);
     sprintf(lbl, "%s %d", "SIjAb", index);
-    dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, irrep, 0, 5, 0, 5, 0, lbl);
-    dpd_buf4_sort(&SIjAb, PSIF_EOM_SIjAb, pqsr, 0, 5, "SIjbA"); 
-    dpd_buf4_init(&SIjbA, PSIF_EOM_SIjAb, irrep, 0, 5, 0, 5, 0, "SIjbA");
+    global_dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, irrep, 0, 5, 0, 5, 0, lbl);
+    global_dpd_->buf4_sort(&SIjAb, PSIF_EOM_SIjAb, pqsr, 0, 5, "SIjbA"); 
+    global_dpd_->buf4_init(&SIjbA, PSIF_EOM_SIjAb, irrep, 0, 5, 0, 5, 0, "SIjbA");
 
     if (!params.full_matrix) {
       norm = norm_C_rhf(&SIA, &SIjAb, &SIjbA);
@@ -77,49 +77,49 @@ void check_sum(const char *term_lbl, int index, int irrep) {
       norm = norm_C_rhf_full(S0, &SIA, &SIjAb, &SIjbA);
 		}
 
-    dpd_file2_close(&SIA);
-    dpd_buf4_close(&SIjAb);
-    dpd_buf4_close(&SIjbA);
+    global_dpd_->file2_close(&SIA);
+    global_dpd_->buf4_close(&SIjAb);
+    global_dpd_->buf4_close(&SIjbA);
   }
   else if (params.eom_ref == 1) {
     sprintf(lbl, "%s %d", "SIA", index);
-    dpd_file2_init(&SIA, PSIF_EOM_SIA, irrep, 0, 1, lbl);
+    global_dpd_->file2_init(&SIA, PSIF_EOM_SIA, irrep, 0, 1, lbl);
     sprintf(lbl, "%s %d", "Sia", index);
-    dpd_file2_init(&Sia, PSIF_EOM_Sia, irrep, 0, 1, lbl);
+    global_dpd_->file2_init(&Sia, PSIF_EOM_Sia, irrep, 0, 1, lbl);
     sprintf(lbl, "%s %d", "SIJAB", index);
-    dpd_buf4_init(&SIJAB, PSIF_EOM_SIJAB, irrep, 2, 7, 2, 7, 0, lbl);
+    global_dpd_->buf4_init(&SIJAB, PSIF_EOM_SIJAB, irrep, 2, 7, 2, 7, 0, lbl);
     sprintf(lbl, "%s %d", "Sijab", index);
-    dpd_buf4_init(&Sijab, PSIF_EOM_Sijab, irrep, 2, 7, 2, 7, 0, lbl);
+    global_dpd_->buf4_init(&Sijab, PSIF_EOM_Sijab, irrep, 2, 7, 2, 7, 0, lbl);
     sprintf(lbl, "%s %d", "SIjAb", index);
-    dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, irrep, 0, 5, 0, 5, 0, lbl);
+    global_dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, irrep, 0, 5, 0, 5, 0, lbl);
 
     norm = norm_C(&SIA, &Sia, &SIJAB, &Sijab, &SIjAb); 
 
-    dpd_file2_close(&SIA);
-    dpd_file2_close(&Sia);
-    dpd_buf4_close(&SIJAB);
-    dpd_buf4_close(&Sijab);
-    dpd_buf4_close(&SIjAb);
+    global_dpd_->file2_close(&SIA);
+    global_dpd_->file2_close(&Sia);
+    global_dpd_->buf4_close(&SIJAB);
+    global_dpd_->buf4_close(&Sijab);
+    global_dpd_->buf4_close(&SIjAb);
   }
   else if (params.eom_ref == 2) {
     sprintf(lbl, "%s %d", "SIA", index);
-    dpd_file2_init(&SIA, PSIF_EOM_SIA, irrep, 0, 1, lbl);
+    global_dpd_->file2_init(&SIA, PSIF_EOM_SIA, irrep, 0, 1, lbl);
     sprintf(lbl, "%s %d", "Sia", index);
-    dpd_file2_init(&Sia, PSIF_EOM_Sia, irrep, 2, 3, lbl);
+    global_dpd_->file2_init(&Sia, PSIF_EOM_Sia, irrep, 2, 3, lbl);
     sprintf(lbl, "%s %d", "SIJAB", index);
-    dpd_buf4_init(&SIJAB, PSIF_EOM_SIJAB, irrep, 2, 7, 2, 7, 0, lbl);
+    global_dpd_->buf4_init(&SIJAB, PSIF_EOM_SIJAB, irrep, 2, 7, 2, 7, 0, lbl);
     sprintf(lbl, "%s %d", "Sijab", index);
-    dpd_buf4_init(&Sijab, PSIF_EOM_Sijab, irrep, 12, 17, 12, 17, 0, lbl);
+    global_dpd_->buf4_init(&Sijab, PSIF_EOM_Sijab, irrep, 12, 17, 12, 17, 0, lbl);
     sprintf(lbl, "%s %d", "SIjAb", index);
-    dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, irrep, 22, 28, 22, 28, 0, lbl);
+    global_dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, irrep, 22, 28, 22, 28, 0, lbl);
 
     norm = norm_C(&SIA, &Sia, &SIJAB, &Sijab, &SIjAb);
 
-    dpd_file2_close(&SIA);
-    dpd_file2_close(&Sia);
-    dpd_buf4_close(&SIJAB);
-    dpd_buf4_close(&Sijab);
-    dpd_buf4_close(&SIjAb);
+    global_dpd_->file2_close(&SIA);
+    global_dpd_->file2_close(&Sia);
+    global_dpd_->buf4_close(&SIJAB);
+    global_dpd_->buf4_close(&Sijab);
+    global_dpd_->buf4_close(&SIjAb);
   }
 
   fprintf(outfile,"%7s, D(norm sigma)=%15.10lf\n", term_lbl, norm - old_norm);

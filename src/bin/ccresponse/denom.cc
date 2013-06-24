@@ -49,38 +49,38 @@ void denom1(dpdfile2 *X1, double omega)
   irrep = X1->my_irrep;
 
   if(params.wfn == "CC2" || params.wfn == "EOM_CC2") {
-    dpd_file2_init(&FMI, PSIF_CC_OEI, 0, 0, 0, "fIJ");
-    dpd_file2_mat_init(&FMI);
-    dpd_file2_mat_rd(&FMI);
+    global_dpd_->file2_init(&FMI, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+    global_dpd_->file2_mat_init(&FMI);
+    global_dpd_->file2_mat_rd(&FMI);
 
-    dpd_file2_init(&FAE, PSIF_CC_OEI, 0, 1, 1, "fAB");
-    dpd_file2_mat_init(&FAE);
-    dpd_file2_mat_rd(&FAE);
+    global_dpd_->file2_init(&FAE, PSIF_CC_OEI, 0, 1, 1, "fAB");
+    global_dpd_->file2_mat_init(&FAE);
+    global_dpd_->file2_mat_rd(&FAE);
   }
   else {
-    dpd_file2_init(&FAE, PSIF_CC_OEI, 0, 1, 1, "FAE");
-    dpd_file2_mat_init(&FAE);
-    dpd_file2_mat_rd(&FAE);
+    global_dpd_->file2_init(&FAE, PSIF_CC_OEI, 0, 1, 1, "FAE");
+    global_dpd_->file2_mat_init(&FAE);
+    global_dpd_->file2_mat_rd(&FAE);
 
-    dpd_file2_init(&FMI, PSIF_CC_OEI, 0, 0, 0, "FMI");
-    dpd_file2_mat_init(&FMI);
-    dpd_file2_mat_rd(&FMI);
+    global_dpd_->file2_init(&FMI, PSIF_CC_OEI, 0, 0, 0, "FMI");
+    global_dpd_->file2_mat_init(&FMI);
+    global_dpd_->file2_mat_rd(&FMI);
   }
 
-  dpd_file2_mat_init(X1);
-  dpd_file2_mat_rd(X1);
+  global_dpd_->file2_mat_init(X1);
+  global_dpd_->file2_mat_rd(X1);
   for(h=0; h < nirreps; h++) {
     for(i=0; i < occpi[h]; i++) 
       for(a=0; a < virtpi[h^irrep]; a++)
 	X1->matrix[h][i][a] /= (FMI.matrix[h][i][i] - FAE.matrix[h^irrep][a][a] + omega);
   }
-  dpd_file2_mat_wrt(X1);
-  dpd_file2_mat_close(X1);
+  global_dpd_->file2_mat_wrt(X1);
+  global_dpd_->file2_mat_close(X1);
 
-  dpd_file2_mat_close(&FAE);
-  dpd_file2_mat_close(&FMI);
-  dpd_file2_close(&FAE);
-  dpd_file2_close(&FMI);
+  global_dpd_->file2_mat_close(&FAE);
+  global_dpd_->file2_mat_close(&FMI);
+  global_dpd_->file2_close(&FAE);
+  global_dpd_->file2_close(&FMI);
 }
 
 void denom2(dpdbuf4 *X2, double omega)
@@ -93,27 +93,27 @@ void denom2(dpdbuf4 *X2, double omega)
   irrep = X2->file.my_irrep;
 
   if(params.wfn == "CC2" || params.wfn == "EOM_CC2") {
-    dpd_file2_init(&FMI, PSIF_CC_OEI, 0, 0, 0, "fIJ");
-    dpd_file2_mat_init(&FMI);
-    dpd_file2_mat_rd(&FMI);
+    global_dpd_->file2_init(&FMI, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+    global_dpd_->file2_mat_init(&FMI);
+    global_dpd_->file2_mat_rd(&FMI);
 
-    dpd_file2_init(&FAE, PSIF_CC_OEI, 0, 1, 1, "fAB");
-    dpd_file2_mat_init(&FAE);
-    dpd_file2_mat_rd(&FAE);
+    global_dpd_->file2_init(&FAE, PSIF_CC_OEI, 0, 1, 1, "fAB");
+    global_dpd_->file2_mat_init(&FAE);
+    global_dpd_->file2_mat_rd(&FAE);
   }
   else {
-    dpd_file2_init(&FAE, PSIF_CC_OEI, 0, 1, 1, "FAE");
-    dpd_file2_mat_init(&FAE);
-    dpd_file2_mat_rd(&FAE);
+    global_dpd_->file2_init(&FAE, PSIF_CC_OEI, 0, 1, 1, "FAE");
+    global_dpd_->file2_mat_init(&FAE);
+    global_dpd_->file2_mat_rd(&FAE);
 
-    dpd_file2_init(&FMI, PSIF_CC_OEI, 0, 0, 0, "FMI");
-    dpd_file2_mat_init(&FMI);
-    dpd_file2_mat_rd(&FMI);
+    global_dpd_->file2_init(&FMI, PSIF_CC_OEI, 0, 0, 0, "FMI");
+    global_dpd_->file2_mat_init(&FMI);
+    global_dpd_->file2_mat_rd(&FMI);
   }
 
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(X2, h);
-    dpd_buf4_mat_irrep_rd(X2, h);
+    global_dpd_->buf4_mat_irrep_init(X2, h);
+    global_dpd_->buf4_mat_irrep_rd(X2, h);
 
     for(row=0; row < X2->params->rowtot[h]; row++) {
 
@@ -139,14 +139,14 @@ void denom2(dpdbuf4 *X2, double omega)
       }
     }
 
-    dpd_buf4_mat_irrep_wrt(X2, h);
-    dpd_buf4_mat_irrep_close(X2, h);
+    global_dpd_->buf4_mat_irrep_wrt(X2, h);
+    global_dpd_->buf4_mat_irrep_close(X2, h);
   }
 
-  dpd_file2_mat_close(&FAE);
-  dpd_file2_mat_close(&FMI);
-  dpd_file2_close(&FAE);
-  dpd_file2_close(&FMI);
+  global_dpd_->file2_mat_close(&FAE);
+  global_dpd_->file2_mat_close(&FMI);
+  global_dpd_->file2_close(&FAE);
+  global_dpd_->file2_close(&FMI);
 }
 
 }} // namespace psi::ccresponse
