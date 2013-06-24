@@ -24,6 +24,7 @@ import atexit
 #psi4.geometry("H 0 0 0\nH 0 0 1")
 
 #TODO test suite
+#TODO move to grendel
 from grendel.util.sentinal_values import SentinalValue
 
 xproduct = lambda *args: product(*[xrange(i) for i in args])
@@ -43,6 +44,12 @@ fail_warnings = AliasedDict({
     (ShapeMismatchWarning, "ShapeMismatchWarning") : False,
     (FileOverwriteWarning, "FileOverwriteWarning") : False
 })
+
+#================================================================================#
+
+#region | Warning handling |
+
+#TODO move this to grendel, generalize
 
 def enable_warning(w):
     enabled_warnings[w] = True
@@ -66,6 +73,8 @@ def raise_warning(msg, warning_type):
         warn(msg, warning_type)
     if fail_warnings[warning_type]:
         raise RuntimeError("Critical warning raised.")
+
+#endregion
 
 #================================================================================#
 
@@ -152,8 +161,16 @@ class UninitializedDependency(object):
 
 class DatumGetter(object):
     __metaclass__ = ABCMeta
-    needs = None
-    abstractproperty(needs)
+
+    @property
+    def needs(self):
+        if hasattr(self, "_needs"):
+            return self._needs
+        else:
+            return getargspec(self.__call__).args[2:]
+    @needs.setter
+    def needs(self, value):
+        self._needs = value
 
     @abstractmethod
     def __call__(self, *args, **kwargs):
@@ -163,10 +180,6 @@ class DatumGetter(object):
         raise TypeError("Instances of DatumGetter and its subclasses should never be pickled.")
 
 class SimpleMethodCallGetter(DatumGetter):
-
-    @property
-    def needs(self):
-        return self._needs
 
     def __init__(self, obj, method_name, *args):
         self._needs = [obj]
@@ -179,10 +192,20 @@ class SimpleMethodCallGetter(DatumGetter):
         obj = kwargs.values()[0]
         return getattr(obj, self.method_name)(*self.method_args)
 
+class DimensionListGetter(SimpleMethodCallGetter):
+
+    def __call__(self, **kwargs):
+        if len(kwargs) > 1:
+            raise TypeError("SimpleMethodCallGetter requires exactly one argument")
+        obj = kwargs.values()[0]
+        dimrv = getattr(obj, self.method_name)(*self.method_args)
+        size = dimrv.n()
+        rv = []
+        for i in range(size):
+            rv.append(dimrv[i])
+        return rv
+
 class MemmapArrayGetter(DatumGetter):
-    @property
-    def needs(self):
-        return getargspec(self.__call__).args[2:]
     @abstractmethod
     def get_shape(self, *args):
         pass
@@ -215,6 +238,9 @@ class TEIGetter(MemmapArrayGetter):
             raise NameError("Don't know how to get two electron integrals for kernel '{0}'".format(
                 self.kernel_name
             ))
+        if self.kernel_name == "eri":
+            # Make a special needs that doesn't include the correlation factor
+            self.needs = [n for n in self.needs if n != "correlation_factor"]
         self.physicist_notation = physicist_notation
 
     ###################
@@ -246,8 +272,10 @@ class TEIGetter(MemmapArrayGetter):
             if C3 is None: C3 = C1
             getter_args.extend([C1, C2, C3, C4])
         mints_getter = getattr(mints, func_name)
-        if "eri" not in func_name:
+        if "f12" in func_name:
             getter_args.insert(0, correlation_factor)
+        elif "erf" in func_name:
+            raise NotImplementedError()
         psimat = mints_getter(*getter_args)
         self._copy_in_matrix(out, psimat, physicist_notation)
         return out
@@ -258,7 +286,7 @@ class AOTEIGetter(TEIGetter):
         nbf = basis.nbf()
         return (nbf,)*4
 
-    def __call__(self, out, mints, correlation_factor):
+    def __call__(self, out, mints, correlation_factor=None):
         self._get_tei(out,
             "ao_" + self.kernel_name,
             mints, correlation_factor, self.physicist_notation
@@ -422,13 +450,16 @@ class AOTEIGetterWithComputer(MemmapArrayGetter):
             raise ValueError("Don't know how to compute integrals of type '{0}'".format(
                 integral_type
             ))
+        # Make a special needs for the ERI doesn't include the correlation factor
+        if self.integral_type == "eri":
+            self.needs = [n for n in self.needs if n != "correlation_factor"]
         self.zero_basis_set = lambda: psi4.BasisSet.zero_ao_basis_set()
 
     def get_shape(self, basis):
         nbf = basis.nbf()
         return nbf, nbf, nbf, nbf
 
-    def __call__(self, out, basis, correlation_factor):
+    def __call__(self, out, basis, correlation_factor=None):
         self._compute_ints(out,
             basis_sets=(basis, basis, basis, basis),
             correlation_factor=correlation_factor
@@ -494,7 +525,7 @@ class DFThreeCenterAOTEIGetter(AOTEIGetterWithComputer):
             return dfnbf, nbf, nbf
 
     # noinspection PyMethodOverriding
-    def __call__(self, out, basis, df_basis, correlation_factor):
+    def __call__(self, out, basis, df_basis, correlation_factor=None):
         if isinstance(self.zero_basis_set, lambda_type): self.zero_basis_set = self.zero_basis_set()
         if self.two_center_bra:
             basis_sets = (basis, basis, df_basis, self.zero_basis_set)
@@ -508,7 +539,7 @@ class DFTwoCenterAOTEIGetter(AOTEIGetterWithComputer):
         dfnbf = df_basis.nbf()
         return dfnbf, dfnbf
 
-    def __call__(self, out, df_basis, correlation_factor):
+    def __call__(self, out, df_basis, correlation_factor=None):
         if isinstance(self.zero_basis_set, lambda_type): self.zero_basis_set = self.zero_basis_set()
         self._compute_ints(out,
             basis_sets=(df_basis, self.zero_basis_set, df_basis, self.zero_basis_set),
@@ -545,7 +576,7 @@ class ArbitraryBasisAOTEIGetter(ArbitraryBasisDatumGetter, AOTEIGetterWithComput
     def get_shape(self, basis_sets):
         return tuple(bs.nbf() for bs in basis_sets)
 
-    def __call__(self, out, basis_sets, correlation_factor):
+    def __call__(self, out, basis_sets, correlation_factor=None):
         self._compute_ints(out, basis_sets, correlation_factor)
 
 class GeneralCorrelationFactorAOTEIGetter(ArbitraryBasisAOTEIGetter):
@@ -618,6 +649,20 @@ class ArbitraryBasisAOOEIGetter(ArbitraryBasisDatumGetter, AOOEIGetterWithComput
     def __call__(self, out, basis_sets):
         self._compute_ints(out, basis_sets)
 
+class MOEigenvaluesGetter(MemmapArrayGetter):
+
+    #TODO open shell
+    #TODO symmetry
+
+    def get_shape(self, reference_wavefunction):
+        return reference_wavefunction.nmo(),
+
+    def __call__(self, out, reference_wavefunction):
+        vect = reference_wavefunction.epsilon_a()
+        nbf = out.value.shape[0]
+        for ibf in range(nbf):
+            out.value[ibf] = vect[0, ibf]
+
 #endregion
 
 #================================================================================#
@@ -689,16 +734,28 @@ class ComputationCache(object):
             path_join(self.directory, "computation_shelf.db"),
             flag=flag,
             protocol=2,
-            writeback=True
+            writeback=False
         )
-        def close_shelf(shelf):
+        self.analogous_keys = shelve.open(
+            path_join(self.directory, "analogous_keys.db"),
+            flag=flag,
+            protocol=2,
+            writeback=False
+        )
+        def close_shelf(shelf, other_shelf):
             try:
                 shelf.close()
             except ValueError:
                 # If it's already closed, it's okay
                 pass
-        atexit.register(close_shelf, self.shelf)
+            try:
+                other_shelf.close()
+            except ValueError:
+                # If it's already closed, it's okay
+                pass
+        atexit.register(close_shelf, self.shelf, self.analogous_keys)
         #endregion
+        #----------------------------------------#
 
     #endregion
 
@@ -711,8 +768,18 @@ class ComputationCache(object):
             needed_data=None,
             **kwargs
     ):
+        """
+
+        @param molecule:
+        @type molecule: Molecule
+        @param needed_data:
+        @type needed_data: NoneType, Iterable
+        @rtype: CachedComputation
+        """
         molkey = self._get_molecule_key(molecule)
         key = [molkey]
+        key_mandatory = [molkey]
+        optional_part = []
         init_kwargs = dict(molecule=molecule)
         psi_options = dict()
         #----------------------------------------#
@@ -733,6 +800,7 @@ class ComputationCache(object):
             if isinstance(val, str) and arg not in ComputationCache.case_sensative_attributes:
                 val=val.lower()
             key.append((arg,val))
+            key_mandatory.append((arg,val))
             init_kwargs[arg] = val
         #endregion
         #----------------------------------------#
@@ -762,9 +830,11 @@ class ComputationCache(object):
                 val=val.lower()
             if has_arg:
                 key.append((firstkey,val))
+                optional_part.append((firstkey,val))
                 optional_args[firstkey] = val
             elif not defaultval == ComputationCache.NoDefaultValue:
                 key.append((firstkey,val))
+                optional_part.append((firstkey,val))
                 optional_args[firstkey] = defaultval
         if len(kwargs) > 0:
             raise ValueError("Unknown or duplicate attribute {0}".format(kwargs.keys()[0]))
@@ -790,6 +860,7 @@ class ComputationCache(object):
                 val=val.lower()
             if has_arg:
                 key.append((arg,val))
+                key_mandatory.append((arg,val))
                 psi_options[arg] = val
         #endregion
         #----------------------------------------#
@@ -797,7 +868,9 @@ class ComputationCache(object):
         #   with scf_convergence set to 8 and 8.0 would show
         #   up as unique.  But shelve apperently requires a
         #   string to hash with.
-        key = str(tuple(key))
+        key_tuple = tuple(key)
+        key = str(key_tuple)
+        key_mandatory = str(tuple(key_mandatory))
         if key not in self.shelf:
             # The directory name isn't all that important,
             #   since it won't (and shouldn't) be human
@@ -827,16 +900,23 @@ class ComputationCache(object):
                 **init_kwargs
             )
             rv.shelf_key = key
+            rv.minimal_shelf_key = key_mandatory
+            # Add the key to the list of keys related to the
+            #   mandatory minimal subset of keys
+            self._map_analogous_keys(key_mandatory, key_tuple)
             # Make sure the object is constructed successfully
             #   before shelving it
             self.shelf[key] = rv
         else:
-            rv = self.shelf[key]
-            rv.shelf_key = key
-            rv.owner = self
+            rv = self._get_existing_computation(key, key_mandatory)
+            # Add the key to the list of keys related to the
+            #   mandatory minimal subset of keys if it isn't
+            #   already there
+            self._map_analogous_keys(key_mandatory, key_tuple)
             if needed_data is not None:
                 rv.get_data(needed_data)
         return rv
+
 
     def sync_computation(self, comp):
         self.shelf[comp.shelf_key] = comp
@@ -846,6 +926,33 @@ class ComputationCache(object):
     #========================================#
 
     #region | Private Methods |
+
+    def _get_existing_computation(self, key, key_mandatory):
+        """
+        Internal use only
+
+        @type key: str
+        @type key_mandatory: str
+        @rtype : CachedComputation
+        @raise KeyError : if key is not found in the computation
+        """
+        rv = self.shelf[key]
+        rv.shelf_key = key
+        rv.minimal_shelf_key = key_mandatory
+        rv.owner = self
+        return rv
+
+    def _map_analogous_keys(self, key_mandatory, key_tuple):
+        if key_mandatory in self.analogous_keys:
+            # Don't append, since mutation of the object will
+            #   not get immediately registered.  Instead, assign
+            #   the appended list
+            known_keys = self.analogous_keys[key_mandatory]
+            if key_tuple not in known_keys:
+                self.analogous_keys[key_mandatory] = self.analogous_keys[key_mandatory] + [key_tuple]
+        else:
+            self.analogous_keys[key_mandatory] = [key_tuple]
+
 
     def _get_molecule_key(self, molecule):
         """
@@ -894,6 +1001,7 @@ class CachedComputation(object):
         else:
             array_getters["mo_coefficients" + "_" + orbital_type] = MOCoefficientsGetter(orbital_type)
             array_getters["occupied_mo_coefficients" + "_" + orbital_type] = OccupiedMOCoefficientsGetter(orbital_type)
+    array_getters["mo_eigenvalues"] = MOEigenvaluesGetter()
 
     other_getters = dict()
     # Simple getters that amount to nothing more than
@@ -909,6 +1017,12 @@ class CachedComputation(object):
     ]
     for method in _reference_wavefunction_methods:
         other_getters["reference_wavefunction_" + method] = SimpleMethodCallGetter('reference_wavefunction', method)
+    _reference_wavefunction_dimension_methods = [
+        "doccpi", "soccpi", "nsopi",
+        "nalphapi", "nbetapi", "frzcpi", "frzvpi"
+    ]
+    for method in _reference_wavefunction_dimension_methods:
+        other_getters["reference_wavefunction_" + method] = DimensionListGetter('reference_wavefunction', method)
 
     #endregion
 
@@ -958,6 +1072,8 @@ class CachedComputation(object):
             ))
         self._custom_getters = dict()
         self._basis_registry = AliasedDict()
+        self._optional_argument_dependencies = dict()
+        self._analogously_loaded_data = set()
         #endregion
         #========================================#
         #region psi options
@@ -1007,7 +1123,8 @@ class CachedComputation(object):
                 ),
                 self, depends_on=['psi_molecule'],
                 requires_optional_arguments=['df_basis']
-            )
+            ),
+            dependent_optional_arguments=['df_basis']
         )
         if self.optional_argument_given("df_basis"):
             self._basis_registry[self.optional_arguments['df_basis'].lower()] = self.df_basis
@@ -1052,7 +1169,8 @@ class CachedComputation(object):
                     self.optional_arguments['correlation_factor_exponent']
                 ),
                 self, depends_on=['psi_molecule']
-            )
+            ),
+            dependent_optional_arguments=['correlation_factor_exponent']
         )
         # TODO handle open shells
         self.register_dependency(
@@ -1124,7 +1242,8 @@ class CachedComputation(object):
             attribute_name,
             dependency_object_or_function,
             depends_on=None,
-            aliases=None
+            aliases=None,
+            dependent_optional_arguments=None
     ):
         if isinstance(dependency_object_or_function, UninitializedDependency):
             dependency_object = dependency_object_or_function
@@ -1140,6 +1259,12 @@ class CachedComputation(object):
             # Register pointers to the original object under alternate names
             for alias in aliases:
                 self.register_dependency_alias(alias, attribute_name)
+        if dependent_optional_arguments is not None:
+            self._optional_argument_dependencies[attribute_name] = dependent_optional_arguments
+        else:
+            self._optional_argument_dependencies[attribute_name] = []
+
+
 
     def register_dependency_alias(self, alias, original_name):
         # Use __dict__ instead of getattr in case we switch to a descriptor motif in the future
@@ -1153,7 +1278,13 @@ class CachedComputation(object):
             name=None,
             custom_getter=None,
             pre_computation_callback=None,
-            post_computation_callback=None
+            post_computation_callback=None,
+            analogous_load_callback=lambda akey, fname=None: print(
+                "Loaded datum from analogous source file {0} with computation key {1}".format(
+                    "(no file)" if fname is None else fname,
+                    akey
+            )),
+            allow_analogous_load=True
     ):
         if name is None:
             if not hasattr(custom_getter, "name"):
@@ -1169,7 +1300,9 @@ class CachedComputation(object):
             self._fill_datum(
                 name, custom_getter,
                 pre_computation_callback=pre_computation_callback,
-                post_computation_callback=post_computation_callback
+                post_computation_callback=post_computation_callback,
+                allow_analogous_load=allow_analogous_load,
+                analogous_load_callback=analogous_load_callback
             )
             # Sync the parent shelf since self has been modified
             if self.owner is not None:
@@ -1184,12 +1317,16 @@ class CachedComputation(object):
 
     def clear_datum(self, name, fail_if_missing=False):
         if name in self.cached_data:
-            d = self.cached_data[name]
-            if isinstance(d, CachedMemmapArray):
-                fname = d.filename
-                del self.cached_data[name]
-                os.remove(fname)
+            if name not in self._analogously_loaded_data:
+                d = self.cached_data[name]
+                if isinstance(d, CachedMemmapArray):
+                    fname = d.filename
+                    del self.cached_data[name]
+                    os.remove(fname)
+                else:
+                    del self.cached_data[name]
             else:
+                # Just remove the reference from the dictionary
                 del self.cached_data[name]
             # Sync the parent shelf since self has been modified
             if self.owner is not None:
@@ -1301,7 +1438,9 @@ class CachedComputation(object):
             needed_name=None,
             getter=None,
             pre_computation_callback=None,
-            post_computation_callback=None
+            post_computation_callback=None,
+            analogous_load_callback=None,
+            allow_analogous_load=True
     ):
         if needed_name is None:
             if not hasattr(getter, 'name'):
@@ -1366,39 +1505,64 @@ class CachedComputation(object):
                     tb = sys.last_traceback
             # Only compute the shape using the getter if we need to.
             if not load_successful:
-                # We don't have the file, or the file is invalid,
-                #   so we need to first get the shape and then
-                #   create the file.
-                shape_needs = getargspec(getter.get_shape).args[1:]  # exclude "self"
-                shape_kwargs = self._fill_needed_kwargs(shape_needs, getter)
-                shape = getter.get_shape(**shape_kwargs)
-                # If the file exists but we've gotten here, this means that the file
-                #   somehow corrupted and needs to be overwritten.  Warn the user
-                #   of the situation.
-                if exists(fname):
-                    if tb is not None:
+                loaded_key = False
+                if allow_analogous_load:
+                    loaded_key = self._check_analogous_computation(needed_name, getter)
+                if allow_analogous_load and loaded_key is not False:
+                    # Another computatation has a compatible datum.  We can use it.
+                    #   The helper function has already put it in our cached_data
+                    #   dictionary, so all we need to do is use it.
+                    out = self.cached_data[needed_name]
+                    # We should check that there isn't a file in our own directory,
+                    #   and if so, delete it.
+                    if exists(fname):
                         raise_warning(
-                            "File '{0}' is corrupted and will be overwritten."
-                            " Its data will be recomputed.  Traceback:\n    {1}".format(
+                            "File '{0}' is corrupted (couldn't get shape), but an analogous"
+                            " datum was found in '{1}'; the corrupted file will be deleted"
+                            " and the analogous one will be used.".format(
                                 fname,
-                                "\n    ".join(traceback.format_tb(tb))),
+                                out.filename
+                            ),
                             FileOverwriteWarning
                         )
-                    else:
-                        raise_warning(
-                            "File '{0}' is corrupted (couldn't get shape) and will be overwritten."
-                            " Its data will be recomputed.".format(
-                                fname),
-                            FileOverwriteWarning
-                        )
-                # Construct the CachedMemmapArray with force_overwrite=True since
-                #   we already checked for a valid file earlier and found that
-                #   we couldn't determine the shape.
-                out = CachedMemmapArray(
-                    fname,
-                    shape=shape,
-                    force_overwrite=True
-                )
+                        os.remove(fname)
+                    self._analogously_loaded_data.add(needed_name)
+                    if callable(analogous_load_callback):
+                        analogous_load_callback(loaded_key, out.filename)
+                else:
+                    # We don't have the file, or the file is invalid,
+                    #   so we need to first get the shape and then
+                    #   create the file.
+                    shape_needs = getargspec(getter.get_shape).args[1:]  # exclude "self"
+                    shape_kwargs = self._fill_needed_kwargs(shape_needs, getter)
+                    shape = getter.get_shape(**shape_kwargs)
+                    # If the file exists but we've gotten here, this means that the file
+                    #   somehow corrupted and needs to be overwritten.  Warn the user
+                    #   of the situation.
+                    if exists(fname):
+                        if tb is not None:
+                            raise_warning(
+                                "File '{0}' is corrupted and will be overwritten."
+                                " Its data will be recomputed.  Traceback:\n    {1}".format(
+                                    fname,
+                                    "\n    ".join(traceback.format_tb(tb))),
+                                FileOverwriteWarning
+                            )
+                        else:
+                            raise_warning(
+                                "File '{0}' is corrupted (couldn't get shape) and will be overwritten."
+                                " Its data will be recomputed.".format(
+                                    fname),
+                                FileOverwriteWarning
+                            )
+                    # Construct the CachedMemmapArray with force_overwrite=True since
+                    #   we already checked for a valid file earlier and found that
+                    #   we couldn't determine the shape.
+                    out = CachedMemmapArray(
+                        fname,
+                        shape=shape,
+                        force_overwrite=True
+                    )
             #----------------------------------------#
             # Only fill it if we need to
             if not out.filled:
@@ -1421,19 +1585,66 @@ class CachedComputation(object):
         #----------------------------------------#
         #region | Handle simpler getters |
         elif isinstance(getter, DatumGetter) or needed_name in CachedComputation.other_getters:
-            if pre_computation_callback is not None:
-                pre_computation_callback()
             if not isinstance(getter, DatumGetter):
                 getter = CachedComputation.other_getters[needed_name]
-            getter_kwargs = self._fill_needed_kwargs(getter.needs, getter)
-            self.cached_data[needed_name] = CachedDatum(getter(**getter_kwargs))
-            self.cached_data[needed_name].filled = True
-            if post_computation_callback is not None:
-                post_computation_callback()
+            loaded_key = False
+            if allow_analogous_load:
+                loaded_key = self._check_analogous_computation(needed_name, getter)
+            if allow_analogous_load and loaded_key is not False:
+                self._analogously_loaded_data.add(needed_name)
+                if callable(analogous_load_callback):
+                    analogous_load_callback(loaded_key)
+            else:
+                if pre_computation_callback is not None:
+                    pre_computation_callback()
+                getter_kwargs = self._fill_needed_kwargs(getter.needs, getter)
+                self.cached_data[needed_name] = CachedDatum(getter(**getter_kwargs))
+                self.cached_data[needed_name].filled = True
+                if post_computation_callback is not None:
+                    post_computation_callback()
         #endregion
         #----------------------------------------#
         else:
             raise NotImplementedError("Don't know how to get '{}'".format(needed_name))
+
+    def _check_analogous_computation(self, needed_datum_name, getter):
+        if self.owner is not None and hasattr(self, "minimal_shelf_key"):
+            analogs = self.owner.analogous_keys[self.minimal_shelf_key]
+            needed_opt = []
+            # remove the basis_sets attribute which is used by arbitrary basis getters
+            #   and does not serve to make one computation distinct from another anyway
+            needs_no_bs = [g for g in getter.needs if g != "basis_sets"]
+            for needed_attr in needs_no_bs:
+                needed_opt.extend(self._optional_argument_dependencies[needed_attr])
+            for akey in analogs:
+                if str(akey) == self.shelf_key:
+                    # Don't check ourselves...
+                    continue
+                useable = True
+                for opt in needed_opt:
+                    # Skip the molecule key using akey[1:]; it's never optional
+                    avalues = [v for k, v in akey[1:] if k == opt]
+                    if len(avalues) == 0:
+                        # A required optional argument was not given
+                        #   for the analogous computation, so we
+                        #   can't use it
+                        useable = False
+                        break
+                    elif len(avalues) == 2:
+                        # This should never happen
+                        raise KeyError("Something went horribly wrong; multiply defined key")
+                    else: # len(avalues) == 1
+                        if avalues[0] != self.optional_arguments[opt]:
+                            # It doesn't have the same value, so we
+                            #   can't use it
+                            useable = False
+                            break
+                if useable:
+                    acomp = self.owner._get_existing_computation(str(akey), self.minimal_shelf_key)
+                    if acomp.has_datum(needed_datum_name):
+                        self.cached_data[needed_datum_name] = acomp.get_datum(needed_datum_name)
+                        return akey
+        return False
 
     def _fill_needed_kwargs(self, needed_kws, getter):
         rv = dict()
@@ -1488,6 +1699,7 @@ class CachedMemmapArray(CachedDatum):
     ####################
 
     DEFAULT_MMAP_LOAD_MODE = 'r'
+    files_needing_flush = set()
 
     ##################
     # Initialization #
@@ -1611,7 +1823,9 @@ class CachedMemmapArray(CachedDatum):
             )
             self.write_mode = True
             # Make sure the value is flushed on exit
-            atexit.register(self.flush_value)
+            if self.filename not in CachedMemmapArray.files_needing_flush:
+                atexit.register(self.flush_value)
+                CachedMemmapArray.files_needing_flush.add(self.filename)
             self.filled = False
         return value
 
@@ -1657,4 +1871,4 @@ class CachedComputationUnloader(object):
                     rv.register_basis(bsname)
         return rv
 
-
+#endregion

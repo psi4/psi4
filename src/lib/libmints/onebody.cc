@@ -72,9 +72,10 @@ static void transform1e_2(int am, SphericalTransformIter& sti, double *s, double
 
 OneBodyAOInt::OneBodyAOInt(std::vector<SphericalTransform> &spherical_transforms, boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2, int deriv)
     : bs1_(bs1), bs2_(bs2), spherical_transforms_(spherical_transforms), deriv_(deriv), nchunk_(1),
-    enable_pybuffer_(false), pybuffer_(&buffer_, true)
+    pybuffer_(&buffer_, true)
 
 {
+	enable_pybuffer_ = false;
     force_cartesian_ = false;
     buffer_ = 0;
     natom_ = bs1_->molecule()->natom();
