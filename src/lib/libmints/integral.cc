@@ -135,6 +135,11 @@ OneBodyAOInt* IntegralFactory::electrostatic()
     return new ElectrostaticInt(spherical_transforms_, bs1_, bs2_, 0);
 }
 
+OneBodyAOInt* IntegralFactory::pcm_potentialint()
+{
+    return new PCMPotentialInt(spherical_transforms_, bs1_, bs2_, 0);
+}
+
 OneBodyAOInt* IntegralFactory::ao_dipole(int deriv)
 {
     return new DipoleInt(spherical_transforms_, bs1_, bs2_, deriv);

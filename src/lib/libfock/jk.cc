@@ -4226,7 +4226,7 @@ void CDJK::initialize_JK_core()
     timer_on("CD: schwarz");
     for (long int mu = 0; mu < nbf; mu++) {
         for (long int nu = mu; nu < nbf; nu++) {
-            if ( schwarz_fun_pairs[mu*(mu+1)/2+nu] < 0 ) continue;
+            if ( schwarz_fun_pairs[nu*(nu+1)/2+mu] < 0 ) continue;
             for (long int P = 0; P < ncholesky_; P++) {
                 Qmnp[P][schwarz_fun_pairs[nu*(nu+1)/2+mu]] = Lp[P][mu * nbf + nu];
             }

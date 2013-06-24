@@ -200,6 +200,7 @@ for ssuper in superfunctional_list():
     if ((not ssuper.is_c_hybrid()) and (not ssuper.is_c_lrc()) and (not ssuper.is_x_lrc())):
         procedures['gradient'][ssuper.name().lower()] = run_dft_gradient
 
+
 def energy(name, **kwargs):
     r"""Function to compute the single-point electronic energy.
 
@@ -621,8 +622,8 @@ def gradient(name, **kwargs):
             % (lowername, dertype))
 
     # no analytic derivatives for scf_type cd
-    if psi4.get_option('SCF','SCF_TYPE') == 'CD':
-        if (dertype == 1 ):
+    if psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
+        if (dertype == 1):
             raise ValidationError('No analytic derivatives for SCF_TYPE CD.')
 
     # Make sure the molecule the user provided is the active one
@@ -744,7 +745,7 @@ def gradient(name, **kwargs):
             # Build string of title banner
             banners = ''
             banners += """psi4.print_out('\\n')\n"""
-            banners += """p4util.banner(' Gradient %d Computation: Displacement %d')\n""" % (opt_iter, n + 1)
+            banners += """p4util.banner(' Gradient %d Computation: Displacement %d ')\n""" % (opt_iter, n + 1)
             banners += """psi4.print_out('\\n')\n\n"""
 
             if (opt_mode.lower() == 'continuous'):
@@ -788,34 +789,9 @@ def gradient(name, **kwargs):
 
             # S/R: Read energy from each displaced geometry output file and save in energies array
             elif (opt_mode.lower() == 'reap'):
-                E = 0.0
                 exec(banners)
-
-                try:
-                    freagent = open('%s.out' % (rfile), 'r')
-                except IOError:
-                    ValidationError('Aborting upon output file \'%s.out\' not found.\n' % (rfile))
-                    return 0.0
-                else:
-                    while 1:
-                        line = freagent.readline()
-                        if not line:
-                            if E == 0.0:
-                                ValidationError('Aborting upon output file \'%s.out\' has no %s RESULT line.\n' % (rfile, 'GRADIENT'))
-                            break
-                        s = line.split()
-                        if (len(s) != 0) and (s[0:3] == ['GRADIENT', 'RESULT:', 'computation']):
-                            if int(s[3]) != opt_linkage:
-                                raise ValidationError('Output file \'%s.out\' has linkage %s incompatible with master.in linkage %s.'
-                                    % (rfile, str(s[3]), str(opt_linkage)))
-                            if s[6] != str(n + 1):
-                                raise ValidationError('Output file \'%s.out\' has nominal affiliation %s incompatible with item %s.'
-                                    % (rfile, s[6], str(n + 1)))
-                            if (s[8:10] == ['electronic', 'energy']):
-                                E = float(s[10])
-                                psi4.print_out('%s RESULT: electronic energy = %20.12f\n' % ('GRADIENT', E))
-                    freagent.close()
-                energies.append(E)
+                psi4.set_variable('NUCLEAR REPULSION ENERGY', molecule.nuclear_repulsion_energy())
+                energies.append(p4util.extract_sowreap_from_output(rfile, 'GRADIENT', n, opt_linkage, True))
 
         # S/R: Quit sow after writing files
         if (opt_mode.lower() == 'sow'):
@@ -1073,8 +1049,8 @@ def optimize(name, **kwargs):
         current_sym = mol.schoenflies_symbol()
         if initial_sym != current_sym:
             raise Exception("Point group changed!  You should restart using " +\
-                            "the last geometry in the output, after carefully "+\
-                            "making sure all symmetry-dependent information in "+\
+                            "the last geometry in the output, after carefully " +\
+                            "making sure all symmetry-dependent information in " +\
                             "the input, such as DOCC, is correct.")
         kwargs['opt_iter'] = n
 
@@ -1218,7 +1194,7 @@ def parse_arbitrary_order(name):
                 return namelower, None
             # Let 'mp4' be redirected to fnocc module if rhf
             elif (namestump == 'mp') and (namelevel == 4):
-                if psi4.get_option('SCF','REFERENCE') == 'RHF':
+                if psi4.get_option('SCF', 'REFERENCE') == 'RHF':
                     return 'fnocc-mp', 4
                 else:
                     return 'detci-mp', 4
@@ -1231,55 +1207,10 @@ def parse_arbitrary_order(name):
         return namelower, None
 
 
-def frequency(name, **kwargs):
-    r"""Function to compute harmonic vibrational frequencies.
-
-    :aliases: frequencies(), freq()
-
-    :returns: (*float*) Total electronic energy in Hartrees.
-
-    .. note:: Analytic hessians are not available. Frequencies will proceed through
-        finite differences according to availability of gradients or energies.
-
-    .. caution:: Some features are not yet implemented. Buy a developer a coffee.
-
-       - Make frequency look analogous to gradient, especially in matching derivative levels. Make dertype actually a dertype type.
-
-    .. _`table:freq_gen`:
-
-    :type name: string
-    :param name: ``'scf'`` || ``'df-mp2'`` || ``'ci5'`` || etc.
-
-        First argument, usually unlabeled. Indicates the computational method
-        to be applied to the system.
-
-    :type dertype: :ref:`dertype <op_py_dertype>`
-    :param dertype: |dl| ``'hessian'`` |dr| || ``'gradient'`` || ``'energy'``
-
-        Indicates whether analytic (if available- they're not), finite
-        difference of gradients (if available) or finite difference of
-        energies is to be performed.
-
-    :type irrep: int or string
-    :param irrep: |dl| ``-1`` |dr| || ``1`` || ``'b2'`` || ``'App'`` || etc.
-
-        Indicates which symmetry block (:ref:`Cotton <table:irrepOrdering>` ordering) of vibrational
-        frequencies to be computed. ``1``, ``'1'``, or ``'a1'`` represents
-        :math:`a_1`, requesting only the totally symmetric modes.
-        ``-1`` indicates a full frequency calculation.
-
-    :type molecule: :ref:`molecule <op_py_molecule>`
-    :param molecule: ``h2o`` || etc.
-
-        The target molecule, if not the last molecule defined.
-
-    :examples:
-
-    >>> # [1] <example description>
-    >>> <example python command>
-
-    >>> # [2] Frequency calculation for b2 modes through finite difference of gradients
-    >>> frequencies('scf', dertype=1, irrep=4)
+def hessian(name, **kwargs):
+    r"""Function complementary to :py:func:`~frequency`. Computes force
+    constants, deciding analytic, finite difference of gradients, or
+    finite difference of energies.
 
     """
     lowername = name.lower()
@@ -1357,6 +1288,23 @@ def frequency(name, **kwargs):
     molecule.update_geometry()
     psi4.set_global_option('BASIS', psi4.get_global_option('BASIS'))
 
+    # S/R: Mode of operation- whether finite difference opt run in one job or files farmed out
+    freq_mode = 'continuous'
+    if ('mode' in kwargs) and ((dertype == 0) or (dertype == 1)):
+        freq_mode = kwargs['mode']
+
+    if (freq_mode.lower() == 'continuous'):
+        pass
+    elif (freq_mode.lower() == 'sow'):
+        pass
+    elif (freq_mode.lower() == 'reap'):
+        if('linkage' in kwargs):
+            freq_linkage = kwargs['linkage']
+        else:
+            raise ValidationError('Frequency execution mode \'reap\' requires a linkage option.')
+    else:
+        raise ValidationError('Frequency execution mode \'%s\' not valid.' % (freq_mode))
+
     # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
     if not psi4.has_option_changed('SCF', 'E_CONVERGENCE'):
         if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
@@ -1386,17 +1334,22 @@ def frequency(name, **kwargs):
         procedures['hessian'][lowername](lowername, **kwargs)
         optstash.restore()
 
-        # call thermo module
-        psi4.thermo()
+        if 'mode' in kwargs and kwargs['mode'].lower() == 'sow':
+            raise ValidationError('Frequency execution mode \'sow\' not valid for analytic frequency calculation.')
 
-        return psi4.wavefunction().energy()
+        # TODO: check that current energy's being set to the right figure when this code is actually used
+        psi4.set_variable('CURRENT ENERGY', psi4.wavefunction().energy())
+
+        # TODO: return hessian matrix
 
     elif (dertype == 1):
         # Ok, we're doing frequencies by gradients
-        info = 'Performing finite difference by gradient calculations'
-        print(info)
+        print('Performing finite difference by gradient calculations')
 
         func = procedures['gradient'][lowername]
+
+        if 'mode' in kwargs and kwargs['mode'].lower() == 'sow':
+            raise ValidationError('Frequency execution mode \'sow\' not yet implemented for finite difference of analytic gradient calculation.')
 
         # Obtain list of displacements
         displacements = psi4.fd_geoms_freq_1(irrep)
@@ -1450,16 +1403,13 @@ def frequency(name, **kwargs):
         # But not this one, it always goes back to True
         psi4.get_active_molecule().reinterpret_coordentry(True)
 
-        # call thermo module
-        psi4.thermo()
-
         optstash.restore()
-        # TODO: add return statement
+        # TODO: add return statement of hessian matrix
+        # TODO: set current energy to un-displaced energy
 
-    else:  # Assume energy points
+    else:
         # If not, perform finite difference of energies
-        info = 'Performing finite difference calculations by energies'
-        print(info)
+        print('Performing finite difference calculations by energies')
 
         # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
         optstash.restore()
@@ -1491,28 +1441,101 @@ def frequency(name, **kwargs):
         # This version is pretty dependent on the reference geometry being last (as it is now)
         print(' %d displacements needed.' % ndisp)
         energies = []
+
+        # S/R: Write instructions for sow/reap procedure to output file and reap input file
+        if (freq_mode.lower() == 'sow'):
+            instructionsO = """\n#    The frequency sow/reap procedure has been selected through mode='sow'. In addition\n"""
+            instructionsO += """#    to this output file (which contains no quantum chemical calculations), this job\n"""
+            instructionsO += """#    has produced a number of input files (FREQ-*.in) for individual components\n"""
+            instructionsO += """#    and a single input file (FREQ-master.in) with a frequency(mode='reap') command.\n"""
+            instructionsO += """#    These files may look very peculiar since they contain processed and pickled python\n"""
+            instructionsO += """#    rather than normal input. Follow the instructions below (repeated in FREQ-master.in)\n"""
+            instructionsO += """#    to continue.\n#\n"""
+            instructionsO += """#    Alternatively, a single-job execution of the hessian may be accessed through\n"""
+            instructionsO += """#    the frequency wrapper option mode='continuous'.\n#\n"""
+            psi4.print_out(instructionsO)
+
+            instructionsM = """\n#    Follow the instructions below to carry out this frequency computation.\n#\n"""
+            instructionsM += """#    (1)  Run all of the FREQ-*.in input files on any variety of computer architecture.\n"""
+            instructionsM += """#       The output file names must be as given below (these are the defaults when executed\n"""
+            instructionsM += """#       as `psi4 FREQ-1.in`, etc.).\n#\n"""
+            for rgt in range(ndisp):
+                pre = 'FREQ-' + str(rgt + 1)
+                instructionsM += """#             psi4 -i %-27s -o %-27s\n""" % (pre + '.in', pre + '.out')
+            instructionsM += """#\n#    (2)  Gather all the resulting output files in a directory. Place input file\n"""
+            instructionsM += """#         FREQ-master.in into that directory and run it. The job will be minimal in\n"""
+            instructionsM += """#         length and give summary results for the frequency computation in its output file.\n#\n"""
+            instructionsM += """#             psi4 -i %-27s -o %-27s\n#\n\n""" % ('FREQ-master.in', 'FREQ-master.out')
+
+            fmaster = open('FREQ-master.in', 'w')
+            fmaster.write('# This is a psi4 input file auto-generated from the hessian() wrapper.\n\n')
+            fmaster.write(p4util.format_molecule_for_input(molecule))
+            fmaster.write(p4util.format_options_for_input())
+            p4util.format_kwargs_for_input(fmaster, 2, **kwargs)
+            fmaster.write("""%s('%s', **kwargs)\n\n""" % (frequency.__name__, lowername))
+            fmaster.write(instructionsM)
+            fmaster.close()
+            psi4.print_out(instructionsM)
+
         for n, displacement in enumerate(displacements):
-            # Print information to output.dat
-            psi4.print_out('\n')
-            p4util.banner('Loading displacement %d of %d' % (n + 1, ndisp))
+            rfile = 'FREQ-%s' % (n + 1)
 
-            # Print information to the screen
-            print(' %d' % (n + 1), end="")
-            if (n + 1) == ndisp:
-                print('\n', end='')
-            sys.stdout.flush()
+            # Build string of title banner
+            banners = ''
+            banners += """psi4.print_out('\\n')\n"""
+            banners += """p4util.banner(' Hessian Computation: Energy Displacement %d ')\n""" % (n + 1)
+            banners += """psi4.print_out('\\n')\n\n"""
 
-            # Load in displacement into the active molecule
-            molecule.set_geometry(displacement)
+            if (freq_mode.lower() == 'continuous'):
+                # Print information to output.dat
+                psi4.print_out('\n')
+                p4util.banner('Loading displacement %d of %d' % (n + 1, ndisp))
 
-            # Perform the energy calculation
-            E = func(lowername, **kwargs)
+                # Print information to the screen
+                print(' %d' % (n + 1), end="")
+                if (n + 1) == ndisp:
+                    print('\n', end='')
+                sys.stdout.flush()
 
-            # Save the energy
-            energies.append(E)
+                # Load in displacement into the active molecule
+                molecule.set_geometry(displacement)
 
-            # clean may be necessary when changing irreps of displacements
-            psi4.clean()
+                # Perform the energy calculation
+                func(lowername, **kwargs)
+
+                # Save the energy
+                energies.append(psi4.get_variable('CURRENT ENERGY'))
+
+                # clean may be necessary when changing irreps of displacements
+                psi4.clean()
+
+            # S/R: Write each displaced geometry to an input file
+            elif (freq_mode.lower() == 'sow'):
+                molecule.set_geometry(displacement)
+
+                # S/R: Prepare molecule, options, and kwargs
+                freagent = open('%s.in' % (rfile), 'w')
+                freagent.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n')
+                freagent.write(p4util.format_molecule_for_input(molecule))
+                freagent.write(p4util.format_options_for_input())
+                p4util.format_kwargs_for_input(freagent, **kwargs)
+
+                # S/R: Prepare function call and energy save
+                freagent.write("""electronic_energy = %s('%s', **kwargs)\n\n""" % (func.__name__, lowername))
+                freagent.write("""psi4.print_out('\\nHESSIAN RESULT: computation %d for item %d """ % (os.getpid(), n + 1))
+                freagent.write("""yields electronic energy %20.12f\\n' % (electronic_energy))\n\n""")
+                freagent.close()
+
+            # S/R: Read energy from each displaced geometry output file and save in energies array
+            elif (freq_mode.lower() == 'reap'):
+                exec(banners)
+                psi4.set_variable('NUCLEAR REPULSION ENERGY', molecule.nuclear_repulsion_energy())
+                energies.append(p4util.extract_sowreap_from_output(rfile, 'HESSIAN', n, freq_linkage, True))
+
+        # S/R: Quit sow after writing files
+        if (freq_mode.lower() == 'sow'):
+            optstash.restore()
+            return None
 
         # Obtain the gradient. This function stores the gradient in the wavefunction.
         psi4.fd_freq_0(energies, irrep)
@@ -1527,29 +1550,93 @@ def frequency(name, **kwargs):
         # But not this one, it always goes back to True
         psi4.get_active_molecule().reinterpret_coordentry(True)
 
-        # The last item in the list is the reference energy, return it
-        optstash.restore()
-
         # Clear the "parent" symmetry now
         psi4.set_parent_symmetry("")
 
+        # The last item in the list is the reference energy, return it
+        optstash.restore()
+        psi4.set_variable('CURRENT ENERGY', energies[-1])
+
+        #TODO: return hessian matrix
+
+
+def frequency(name, **kwargs):
+    r"""Function to compute harmonic vibrational frequencies.
+
+    :aliases: frequencies(), freq()
+
+    :returns: (*float*) Total electronic energy in Hartrees.
+
+    .. note:: Analytic hessians are not available. Frequencies will proceed through
+        finite differences according to availability of gradients or energies.
+
+    .. caution:: Some features are not yet implemented. Buy a developer a coffee.
+
+       - Implement sow/reap mode for finite difference of gradients. Presently only for findif of energies.
+
+    .. _`table:freq_gen`:
+
+    :type name: string
+    :param name: ``'scf'`` || ``'df-mp2'`` || ``'ci5'`` || etc.
+
+        First argument, usually unlabeled. Indicates the computational method
+        to be applied to the system.
+
+    :type dertype: :ref:`dertype <op_py_dertype>`
+    :param dertype: |dl| ``'hessian'`` |dr| || ``'gradient'`` || ``'energy'``
+
+        Indicates whether analytic (if available- they're not), finite
+        difference of gradients (if available) or finite difference of
+        energies is to be performed.
+
+    :type mode: string
+    :param mode: |dl| ``'continuous'`` |dr| || ``'sow'`` || ``'reap'``
+
+        For a finite difference of energies or gradients frequency, indicates
+        whether the calculations required to complet the frequency are to be run
+        in one file (``'continuous'``) or are to be farmed out in an
+        embarrassingly parallel fashion (``'sow'``/``'reap'``)/ For the latter,
+        run an initial job with ``'sow'`` and follow instructions in its output file.
+
+    :type irrep: int or string
+    :param irrep: |dl| ``-1`` |dr| || ``1`` || ``'b2'`` || ``'App'`` || etc.
+
+        Indicates which symmetry block (:ref:`Cotton <table:irrepOrdering>` ordering) of vibrational
+        frequencies to be computed. ``1``, ``'1'``, or ``'a1'`` represents
+        :math:`a_1`, requesting only the totally symmetric modes.
+        ``-1`` indicates a full frequency calculation.
+
+    :type molecule: :ref:`molecule <op_py_molecule>`
+    :param molecule: ``h2o`` || etc.
+
+        The target molecule, if not the last molecule defined.
+
+    :examples:
+
+    >>> # [1] <example description>
+    >>> <example python command>
+
+    >>> # [2] Frequency calculation for b2 modes through finite difference of gradients
+    >>> frequencies('scf', dertype=1, irrep=4)
+
+    """
+    lowername = name.lower()
+    kwargs = p4util.kwargs_lower(kwargs)
+
+    # Compute the hessian
+    hessian(name, **kwargs)
+
+    if not (('mode' in kwargs) and (kwargs['mode'].lower() == 'sow')):
         # call thermo module
         psi4.thermo()
 
-        optstash.restore()
-        return energies[-1]
+    #TODO add return current energy once satisfied that's set to energy at eq, not a findif
+    return psi4.get_variable('CURRENT ENERGY')
+
 
 ##  Aliases  ##
 frequencies = frequency
 freq = frequency
-
-
-# hessian to be changed later to compute force constants
-def hessian(name, **kwargs):
-    r"""Function to compute force constants. Presently identical to frequency()."""
-    lowername = name.lower()
-    kwargs = p4util.kwargs_lower(kwargs)
-    frequencies(name, **kwargs)
 
 
 def molden(filename):

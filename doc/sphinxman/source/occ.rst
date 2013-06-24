@@ -36,8 +36,8 @@ density matrices (PDMs). Moreover, active space approximations can be readily in
 [Krylov:2000:vod]_. Additionally, orbital-optimized coupled-cluster avoids spurious second-order 
 poles in its response function, and its transition dipole moments are gauge invarianti [Pedersen:1999:od]_.
 
-Another advantage is that the orbital-optimized methods does not suffer from the artifactual symmetry-breaking 
-instabilities [Sherrill:1998:od]_, [Bozkaya:2011:omp2]_, and [Bozkaya:2011:omp3]_.
+Another advantage is that the orbital-optimized methods does not suffer from artifactual symmetry-breaking 
+instabilities [Crawford:1997:instability]_, [Sherrill:1998:od]_, [Bozkaya:2011:omp2]_, and [Bozkaya:2011:omp3]_.
 Further, Kurlancheek and Head-Gordon [Kurlancek:2009]_ demonstrated that first order properties such as 
 forces or dipole moments are discontinuous along nuclear coordinates when such a symmetry breaking occurs. 
 They also observed that although the energy appears well behaved, the MP2 method can have natural occupation 

@@ -154,7 +154,7 @@ class SymmetryOperation {
     double operator()(int i, int j) const { return d[i][j]; }
 
     /// zero out the symop
-    void zero() { memset(d,0,sizeof(double)*9); }
+    void zero() { ::memset(d,0,sizeof(double)*9); }
 
     /// This operates on this with r (i.e. return r * this).
     SymmetryOperation operate(const SymmetryOperation& r) const;
@@ -240,7 +240,7 @@ class SymRep {
     double operator()(int i, int j) const { return d[i][j]; }
 
     /// zero out the symop
-    void zero() { memset(d,0,sizeof(double)*25); }
+    void zero() { ::memset(d,0,sizeof(double)*25); }
 
     /// This operates on this with r (i.e. return r * this).
     SymRep operate(const SymRep& r) const;
