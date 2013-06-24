@@ -160,7 +160,7 @@ def run_cfour(name, **kwargs):
     import qcprograms
     psivars = qcprograms.cfour.cfour_harvest(c4out)
     for key in psivars.keys():
-        psi4.set_variable(key.upper(), psivars[key])
+        psi4.set_variable(key.upper(), float(psivars[key]))
 
 
     # Scan iface file and grab the file energy.
@@ -220,4 +220,64 @@ def cfour_list():
     val.append('cfour')
     val.append('c4-ccsd')
     return val
+
+
+def format_array_option_for_cfour(optval):
+    """
+    """
+    cmd = ''
+    if type(optval[0]).__name__ == 'list':
+        if type(optval[0][0]).__name__ == 'list':
+            raise ValidationError('Option has level of array nesting inconsistent with CFOUR.')
+        else:
+            # option is 2D array
+            for no in range(len(optval)):
+                for ni in range(len(optval[no])):
+                    cmd += str(optval[no][ni])
+                    if ni < (len(optval[no]) - 1):
+                        cmd += '-'
+                if no < (len(optval) - 1):
+                    cmd += '/'
+    else:
+        # option is plain 1D array
+        for n in range(len(optval)):
+            cmd += str(optval[n])
+            if n < (len(optval) - 1):
+                cmd += '-'
+    return cmd
+
+
+def prepare_options_for_cfour():
+    """
+
+    """
+    options = prepare_options_for_modules()
+    commands = """*CFOUR("""
+
+    # Handle options that interact with p4 options
+    interacted = []
+    # memory options, mandatory: c4 options if present, otherwise p4
+    interacted.append('CFOUR_MEMORY_SIZE')
+    interacted.append('CFOUR_MEM_UNIT')
+    if options['CFOUR']['CFOUR_MEMORY_SIZE']['has_changed']:
+        commands += """MEMORY=%d,MEM_UNIT=%s""" % (
+            options['CFOUR']['CFOUR_MEMORY_SIZE']['value'],
+            options['CFOUR']['CFOUR_MEM_UNIT']['value'])
+    else:
+        mem = int(0.000001 * psi4.get_memory())
+        commands += """MEMORY=%d,MEM_UNIT=MB""" % (mem)
+    
+    # Handle options c4 understands inherently
+    for opt, val in options['CFOUR'].items():
+        if opt.startswith('CFOUR_') and opt not in interacted:  # get only options directable to c4
+            if val['has_changed']:
+                c4opt = opt[6:]  # lop off the CFOUR_ prefix
+                if isinstance(val['value'], list):
+                    c4val = format_array_option_for_cfour(val['value'])
+                else:
+                    c4val = val['value']
+                commands += """\n%s=%s""" % (c4opt, c4val)
+    
+    commands += """)\n\n"""
+    return commands
 

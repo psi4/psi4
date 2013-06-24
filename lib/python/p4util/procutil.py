@@ -24,6 +24,7 @@
 import os
 import sys
 import pickle
+import collections
 import psi4
 import inputparser
 from psiexceptions import *
@@ -105,8 +106,6 @@ def format_options_for_input():
 
        - Does not cover local (as opposed to global) options.
 
-       - Does not work with array-type options.
-
     """
     commands = ''
     commands += """\npsi4.set_memory(%s)\n\n""" % (psi4.get_memory())
@@ -115,10 +114,8 @@ def format_options_for_input():
             chgdoptval = psi4.get_global_option(chgdopt)
             if isinstance(chgdoptval, basestring):
                 commands += """psi4.set_global_option('%s', '%s')\n""" % (chgdopt, chgdoptval)
-            elif isinstance(chgdoptval, int) or isinstance(chgdoptval, float):
-                commands += """psi4.set_global_option('%s', %s)\n""" % (chgdopt, chgdoptval)
             else:
-                raise ValidationError('Option \'%s\' is not of a type (string, int, float, bool) that can be processed.' % (chgdopt))
+                commands += """psi4.set_global_option('%s', %s)\n""" % (chgdopt, chgdoptval)
     return commands
 
 
@@ -250,3 +247,71 @@ def extract_sowreap_from_output(sowout, quantity, sownum, linkage, allvital=Fals
                     psi4.print_out('%s RESULT: electronic energy = %20.12f\n' % (quantity, E))
         freagent.close()
     return E
+
+def prepare_options_for_modules():
+    """Function to return a string of commands to replicate the
+    current state of user-modified options. Used to capture C++
+    options information for distributed (sow/reap) input files.
+
+    .. caution:: Some features are not yet implemented. Buy a developer a coffee.
+
+       - Need some option to get either all or changed
+
+       - Need some option to either get dict or set string or psimod command list
+
+    """
+    modules = [
+        # PSI4 Modules
+        "ADC", "CCENERGY", "CCEOM", "CCDENSITY", "CCLAMBDA", "CCHBAR",
+        "CCRESPONSE", "CCSORT", "CCTRIPLES", "CLAG", "CPHF", "CIS",
+        "DCFT", "DETCI", "DFMP2", "DFTSAPT", "FINDIF", "FNOCC", "LMP2",
+        "MCSCF", "MINTS", "MRCC", "OCC", "OPTKING", "PSIMRCC", "RESPONSE",
+        "SAPT", "SCF", "STABILITY", "THERMO", "TRANSQT", "TRANSQT2",
+        # External Modules
+        "CFOUR",
+        ]
+
+    options = collections.defaultdict(lambda: collections.defaultdict(dict))
+    for opt in psi4.get_global_option_list():
+        options['GLOBALS'][opt]['value'] = psi4.get_global_option(opt)
+        options['GLOBALS'][opt]['has_changed'] = psi4.has_global_option_changed(opt)
+        for module in modules:
+            try:
+                options[module][opt]['value'] = psi4.get_option(module, opt)
+                options[module][opt]['has_changed'] = psi4.has_option_changed(module, opt)
+            except RuntimeError:
+                pass
+
+    return options
+
+
+#def prepare_options_for_input_new():
+#    """Function to
+#
+#    """
+#    options = prepare_options_for_modules()
+
+#    commands = ''
+#    commands += """\npsi4.set_memory(%s)\n\n""" % (psi4.get_memory())
+
+#    for chgdopt in psi4.get_global_option_list():
+#        if psi4.has_global_option_changed(chgdopt):
+#            chgdoptval = psi4.get_global_option(chgdopt)
+#            print 'GLOBAL', chgdopt, chgdoptval
+#        for module in modules:
+#            try:
+#                if psi4.has_local_option_changed(module, chgdopt):
+#                    chgdoptval = psi4.get_local_option(module, chgdopt)
+#                    print 'MODULE', module, chgdopt, chgdoptval
+#            except RuntimeError:
+#                pass
+        #if psi4.has_global_option_changed(chgdopt):
+            #chgdoptval = psi4.get_global_option(chgdopt)
+            #print(chgdopt, chgdoptval)
+            #if isinstance(chgdoptval, basestring):
+            #    commands += """psi4.set_global_option('%s', '%s')\n""" % (chgdopt, chgdoptval)
+            #elif isinstance(chgdoptval, int) or isinstance(chgdoptval, float):
+            #    commands += """psi4.set_global_option('%s', %s)\n""" % (chgdopt, chgdoptval)
+            #else:
+            #    raise ValidationError('Option \'%s\' is not of a type (string, int, float, bool) that can be processed.' % (chgdopt))
+#    return commands
