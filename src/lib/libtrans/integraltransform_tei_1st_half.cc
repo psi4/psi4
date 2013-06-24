@@ -85,7 +85,7 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
     psio_->open(PSIF_HALFT0, PSIO_OPEN_NEW);
 
     dpdbuf4 J, K;
-    dpd_buf4_init(&J, PSIF_SO_PRESORT, 0, DPD_ID("[n>=n]+"), DPD_ID("[n,n]"),
+    global_dpd_->buf4_init(&J, PSIF_SO_PRESORT, 0, DPD_ID("[n>=n]+"), DPD_ID("[n,n]"),
                   DPD_ID("[n>=n]+"), DPD_ID("[n>=n]+"), 0, "SO Ints (nn|nn)");
 
     int braCore = DPD_ID("[n>=n]+");
@@ -93,7 +93,7 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
     int braDisk = DPD_ID("[n>=n]+");
     int ketDisk = DPD_ID(s1, s2, Alpha, true);
     sprintf(label, "Half-Transformed Ints (nn|%c%c)", toupper(s1->label()), toupper(s2->label()));
-    dpd_buf4_init(&K, PSIF_HALFT0, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
+    global_dpd_->buf4_init(&K, PSIF_HALFT0, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
     if(print_ > 5)
         fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
                             label, braCore, ketCore, braDisk, ketDisk);
@@ -120,15 +120,15 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
             fflush(outfile);
         }
 
-        dpd_buf4_mat_irrep_init_block(&J, h, rowsPerBucket);
-        dpd_buf4_mat_irrep_init_block(&K, h, rowsPerBucket);
+        global_dpd_->buf4_mat_irrep_init_block(&J, h, rowsPerBucket);
+        global_dpd_->buf4_mat_irrep_init_block(&K, h, rowsPerBucket);
 
         for(int n=0; n < nBuckets; n++){
             if(nBuckets == 1)
                 thisBucketRows = rowsPerBucket;
             else
                 thisBucketRows = (n < nBuckets-1) ? rowsPerBucket : rowsLeft;
-            dpd_buf4_mat_irrep_rd_block(&J, h, n*rowsPerBucket, thisBucketRows);
+            global_dpd_->buf4_mat_irrep_rd_block(&J, h, n*rowsPerBucket, thisBucketRows);
             for(int pq=0; pq < thisBucketRows; pq++) {
                 for(int Gr=0; Gr < nirreps_; Gr++) {
                     // Transform ( n n | n n ) -> ( n n | n S2 )
@@ -155,13 +155,13 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
                     //TODO else if s2->label() == MOSPACE_NIL, copy buffer...
                 } /* Gr */
             } /* pq */
-            dpd_buf4_mat_irrep_wrt_block(&K, h, n*rowsPerBucket, thisBucketRows);
+            global_dpd_->buf4_mat_irrep_wrt_block(&K, h, n*rowsPerBucket, thisBucketRows);
         }
-        dpd_buf4_mat_irrep_close_block(&J, h, rowsPerBucket);
-        dpd_buf4_mat_irrep_close_block(&K, h, rowsPerBucket);
+        global_dpd_->buf4_mat_irrep_close_block(&J, h, rowsPerBucket);
+        global_dpd_->buf4_mat_irrep_close_block(&K, h, rowsPerBucket);
     }
-    dpd_buf4_close(&K);
-    dpd_buf4_close(&J);
+    global_dpd_->buf4_close(&K);
+    global_dpd_->buf4_close(&J);
 
     if(print_) {
         if(transformationType_ == Restricted){
@@ -177,13 +177,13 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
     braCore = braDisk = DPD_ID("[n>=n]+");
     ketCore = ketDisk = DPD_ID(s1, s2, Alpha, true);
     sprintf(label, "Half-Transformed Ints (nn|%c%c)", toupper(s1->label()), toupper(s2->label()));
-    dpd_buf4_init(&K, PSIF_HALFT0, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
+    global_dpd_->buf4_init(&K, PSIF_HALFT0, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
     if(print_ > 5)
         fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
                             label, braCore, ketCore, braDisk, ketDisk);
     sprintf(label, "Half-Transformed Ints (%c%c|nn)", toupper(s1->label()), toupper(s2->label()));
-    dpd_buf4_sort(&K, aHtIntFile_, rspq, ketCore, braCore, label);
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_sort(&K, aHtIntFile_, rspq, ketCore, braCore, label);
+    global_dpd_->buf4_close(&K);
 
     psio_->close(aHtIntFile_, 1);
     psio_->close(PSIF_HALFT0, 0);
@@ -197,7 +197,7 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
 
         psio_->open(PSIF_HALFT0, PSIO_OPEN_NEW);
 
-        dpd_buf4_init(&J, PSIF_SO_PRESORT, 0, DPD_ID("[n>=n]+"), DPD_ID("[n,n]"),
+        global_dpd_->buf4_init(&J, PSIF_SO_PRESORT, 0, DPD_ID("[n>=n]+"), DPD_ID("[n,n]"),
                       DPD_ID("[n>=n]+"), DPD_ID("[n>=n]+"), 0, "SO Ints (nn|nn)");
 
         braCore = DPD_ID("[n>=n]+");
@@ -205,7 +205,7 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
         braDisk = DPD_ID("[n>=n]+");
         ketDisk = DPD_ID(s1, s2, Beta, true);
         sprintf(label, "Half-Transformed Ints (nn|%c%c)", tolower(s1->label()), tolower(s2->label()));
-        dpd_buf4_init(&K, PSIF_HALFT0, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
+        global_dpd_->buf4_init(&K, PSIF_HALFT0, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
         if(print_ > 5)
             fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
                                 label, braCore, ketCore, braDisk, ketDisk);
@@ -233,15 +233,15 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
                 fflush(outfile);
             }
 
-            dpd_buf4_mat_irrep_init_block(&J, h, rowsPerBucket);
-            dpd_buf4_mat_irrep_init_block(&K, h, rowsPerBucket);
+            global_dpd_->buf4_mat_irrep_init_block(&J, h, rowsPerBucket);
+            global_dpd_->buf4_mat_irrep_init_block(&K, h, rowsPerBucket);
 
             for(int n=0; n < nBuckets; n++) {
                 if(nBuckets == 1)
                     thisBucketRows = rowsPerBucket;
                 else
                     thisBucketRows = (n < nBuckets-1) ? rowsPerBucket : rowsLeft;
-                dpd_buf4_mat_irrep_rd_block(&J, h, n*rowsPerBucket, thisBucketRows);
+                global_dpd_->buf4_mat_irrep_rd_block(&J, h, n*rowsPerBucket, thisBucketRows);
                 for(int pq=0; pq < thisBucketRows; pq++) {
                     for(int Gr=0; Gr < nirreps_; Gr++) {
                         // Transform ( n n | n n ) -> ( n n | n s2 )
@@ -268,13 +268,13 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
                         //TODO else if s1->label() == MOSPACE_NIL, copy buffer...
                     } /* Gr */
                 } /* pq */
-                dpd_buf4_mat_irrep_wrt_block(&K, h, n*rowsPerBucket, thisBucketRows);
+                global_dpd_->buf4_mat_irrep_wrt_block(&K, h, n*rowsPerBucket, thisBucketRows);
             }
-            dpd_buf4_mat_irrep_close_block(&J, h, rowsPerBucket);
-            dpd_buf4_mat_irrep_close_block(&K, h, rowsPerBucket);
+            global_dpd_->buf4_mat_irrep_close_block(&J, h, rowsPerBucket);
+            global_dpd_->buf4_mat_irrep_close_block(&K, h, rowsPerBucket);
         }
-        dpd_buf4_close(&K);
-        dpd_buf4_close(&J);
+        global_dpd_->buf4_close(&K);
+        global_dpd_->buf4_close(&J);
 
         if(print_) {
             fprintf(outfile, "\tSorting BB half-transformed integrals.\n");
@@ -288,14 +288,14 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
         braDisk = DPD_ID("[n>=n]+");
         ketDisk = DPD_ID(s1, s2, Beta, true);
         sprintf(label, "Half-Transformed Ints (nn|%c%c)", tolower(s1->label()), tolower(s2->label()));
-        dpd_buf4_init(&K, PSIF_HALFT0, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
+        global_dpd_->buf4_init(&K, PSIF_HALFT0, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
         if(print_ > 5)
             fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
                                 label, braCore, ketCore, braDisk, ketDisk);
 
         sprintf(label, "Half-Transformed Ints (%c%c|nn)", tolower(s1->label()), tolower(s2->label()));
-        dpd_buf4_sort(&K, bHtIntFile_, rspq, ketCore, braCore, label);
-        dpd_buf4_close(&K);
+        global_dpd_->buf4_sort(&K, bHtIntFile_, rspq, ketCore, braCore, label);
+        global_dpd_->buf4_close(&K);
 
         psio_->close(bHtIntFile_, 1);
         psio_->close(PSIF_HALFT0, 0);

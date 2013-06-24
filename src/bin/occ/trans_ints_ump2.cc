@@ -58,28 +58,28 @@ void OCCWave::trans_ints_ump2()
      timer_on("Sort chem -> phys");
      // (OV|OV) -> <OO|VV>
      timer_on("Sort (OV|OV) -> <OO|VV>");
-     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
-     dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[O,O]"), ID("[V,V]"), "MO Ints <OO|VV>");
-     dpd_buf4_close(&K);
+     global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[O,O]"), ID("[V,V]"), "MO Ints <OO|VV>");
+     global_dpd_->buf4_close(&K);
      
      // (ov|ov) -> <oo|vv>
-     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
                   ID("[o,v]"), ID("[o,v]"), 0, "MO Ints (ov|ov)");
-     dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[o,o]"), ID("[v,v]"), "MO Ints <oo|vv>");
-     dpd_buf4_close(&K);
+     global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[o,o]"), ID("[v,v]"), "MO Ints <oo|vv>");
+     global_dpd_->buf4_close(&K);
      
      // (OV|ov) -> <Oo|Vv>
-     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[o,v]"),
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[o,v]"),
                   ID("[O,V]"), ID("[o,v]"), 0, "MO Ints (OV|ov)");
-     dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[O,o]"), ID("[V,v]"), "MO Ints <Oo|Vv>");
-     dpd_buf4_close(&K);
+     global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[O,o]"), ID("[V,v]"), "MO Ints <Oo|Vv>");
+     global_dpd_->buf4_close(&K);
      
      // (OV|ov) -> <Ov|Vo>: <Ia||Bj> = <Ia|Bj> = (IB|ja)
-     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[o,v]"),
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[o,v]"),
                   ID("[O,V]"), ID("[o,v]"), 0, "MO Ints (OV|ov)");
-     dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , psqr, ID("[O,v]"), ID("[V,o]"), "MO Ints <Ov|Vo>");
-     dpd_buf4_close(&K);
+     global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , psqr, ID("[O,v]"), ID("[V,o]"), "MO Ints <Ov|Vo>");
+     global_dpd_->buf4_close(&K);
      timer_off("Sort (OV|OV) -> <OO|VV>");
      timer_off("Sort chem -> phys");
      
@@ -89,19 +89,19 @@ void OCCWave::trans_ints_ump2()
       timer_on("Antisymmetrize integrals");
      // <OO||VV>:  <IJ||AB> = <IJ|AB> - <IJ|BA> 
      timer_on("Make <OO||VV>");
-     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
-     dpd_buf4_copy(&K, PSIF_LIBTRANS_DPD, "MO Ints <OO||VV>");
-     dpd_buf4_close(&K);
-     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+     global_dpd_->buf4_copy(&K, PSIF_LIBTRANS_DPD, "MO Ints <OO||VV>");
+     global_dpd_->buf4_close(&K);
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO||VV>");
-     dpd_buf4_init(&G, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+     global_dpd_->buf4_init(&G, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
      for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&K, h);
-	dpd_buf4_mat_irrep_init(&G, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
-        dpd_buf4_mat_irrep_rd(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+	global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
         for(int ij = 0; ij < K.params->rowtot[h]; ++ij){
             for(int ab = 0; ab < K.params->coltot[h]; ++ab){
                 int a = K.params->colorb[h][ab][0];
@@ -110,28 +110,28 @@ void OCCWave::trans_ints_ump2()
 		K.matrix[h][ij][ab] -= G.matrix[h][ij][ba];                
             }
         }
-        dpd_buf4_mat_irrep_wrt(&K, h);
-        dpd_buf4_mat_irrep_close(&K, h);
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_wrt(&K, h);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-    dpd_buf4_close(&K);
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&K);
+    global_dpd_->buf4_close(&G);
 
      
      // <oo||vv>:  <ij||ab> = <ij|ab> - <ij|ba> 
-     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "MO Ints <oo|vv>");
-     dpd_buf4_copy(&K, PSIF_LIBTRANS_DPD, "MO Ints <oo||vv>");
-     dpd_buf4_close(&K);
-     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+     global_dpd_->buf4_copy(&K, PSIF_LIBTRANS_DPD, "MO Ints <oo||vv>");
+     global_dpd_->buf4_close(&K);
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "MO Ints <oo||vv>");
-     dpd_buf4_init(&G, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+     global_dpd_->buf4_init(&G, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "MO Ints <oo|vv>");
      for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&K, h);
-	dpd_buf4_mat_irrep_init(&G, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
-        dpd_buf4_mat_irrep_rd(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+	global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
         for(int ij = 0; ij < K.params->rowtot[h]; ++ij){
             for(int ab = 0; ab < K.params->coltot[h]; ++ab){
                 int a = K.params->colorb[h][ab][0];
@@ -140,12 +140,12 @@ void OCCWave::trans_ints_ump2()
 		K.matrix[h][ij][ab] -= G.matrix[h][ij][ba];                
             }
         }
-        dpd_buf4_mat_irrep_wrt(&K, h);
-        dpd_buf4_mat_irrep_close(&K, h);
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_wrt(&K, h);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-    dpd_buf4_close(&K);
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&K);
+    global_dpd_->buf4_close(&G);
     timer_off("Make <OO||VV>");
     timer_off("Antisymmetrize integrals");
 
@@ -210,10 +210,10 @@ void OCCWave::denominators_ump2()
     
     // Build denominators
     // The alpha-alpha spin case
-    dpd_buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+    global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "D <OO|VV>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&D, h);
+        global_dpd_->buf4_mat_irrep_init(&D, h);
         for(int row = 0; row < D.params->rowtot[h]; ++row){
             int i = D.params->roworb[h][row][0];
             int j = D.params->roworb[h][row][1];
@@ -223,18 +223,18 @@ void OCCWave::denominators_ump2()
                 D.matrix[h][row][col] = 1.0/(aOccEvals[i] + aOccEvals[j] - aVirEvals[a] - aVirEvals[b]);
             }
         }
-        dpd_buf4_mat_irrep_wrt(&D, h);
-        dpd_buf4_mat_irrep_close(&D, h);
+        global_dpd_->buf4_mat_irrep_wrt(&D, h);
+        global_dpd_->buf4_mat_irrep_close(&D, h);
     }
-    if (print_ > 2) dpd_buf4_print(&D, outfile, 1);
-    dpd_buf4_close(&D);
+    if (print_ > 2) global_dpd_->buf4_print(&D, outfile, 1);
+    global_dpd_->buf4_close(&D);
     
 
     // The beta-beta spin case 
-    dpd_buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+    global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "D <oo|vv>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&D, h);
+        global_dpd_->buf4_mat_irrep_init(&D, h);
         for(int row = 0; row < D.params->rowtot[h]; ++row){
             int i = D.params->roworb[h][row][0];
             int j = D.params->roworb[h][row][1];
@@ -244,18 +244,18 @@ void OCCWave::denominators_ump2()
                 D.matrix[h][row][col] = 1.0/(bOccEvals[i] + bOccEvals[j] - bVirEvals[a] - bVirEvals[b]);
             }
         }
-        dpd_buf4_mat_irrep_wrt(&D, h);
-        dpd_buf4_mat_irrep_close(&D, h);
+        global_dpd_->buf4_mat_irrep_wrt(&D, h);
+        global_dpd_->buf4_mat_irrep_close(&D, h);
     }
-    if (print_ > 2) dpd_buf4_print(&D, outfile, 1);
-    dpd_buf4_close(&D);
+    if (print_ > 2) global_dpd_->buf4_print(&D, outfile, 1);
+    global_dpd_->buf4_close(&D);
     
     
     // The alpha-beta spin case 
-    dpd_buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+    global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "D <Oo|Vv>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&D, h);
+        global_dpd_->buf4_mat_irrep_init(&D, h);
         for(int row = 0; row < D.params->rowtot[h]; ++row){
             int i = D.params->roworb[h][row][0];
             int j = D.params->roworb[h][row][1];
@@ -265,11 +265,11 @@ void OCCWave::denominators_ump2()
                 D.matrix[h][row][col] = 1.0/(aOccEvals[i] + bOccEvals[j] - aVirEvals[a] - bVirEvals[b]);
             }
         }
-        dpd_buf4_mat_irrep_wrt(&D, h);
-        dpd_buf4_mat_irrep_close(&D, h);
+        global_dpd_->buf4_mat_irrep_wrt(&D, h);
+        global_dpd_->buf4_mat_irrep_close(&D, h);
     }
-    if (print_ > 2) dpd_buf4_print(&D, outfile, 1);
-    dpd_buf4_close(&D);
+    if (print_ > 2) global_dpd_->buf4_print(&D, outfile, 1);
+    global_dpd_->buf4_close(&D);
     
     //Print
     if(print_ > 1){

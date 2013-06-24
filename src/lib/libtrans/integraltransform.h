@@ -41,10 +41,8 @@ namespace boost {
 
 namespace psi{
 
-struct _dpdfile4;
-typedef _dpdfile4 dpdfile4;
-struct _dpdbuf4;
-typedef _dpdbuf4 dpdbuf4;
+struct dpdfile4;
+struct dpdbuf4;
 class Matrix;
 class Dimension;
 class Wavefunction;

@@ -228,20 +228,20 @@ DIISManager::add_entry(int numQuantities, ...)
             case DIISEntry::DPDBuf4:
                 buf4 = va_arg(args, dpdbuf4*);
                 for(int h = 0; h < buf4->params->nirreps; ++h){
-                    dpd_buf4_mat_irrep_init(buf4, h);
-                    dpd_buf4_mat_irrep_rd(buf4, h);
+                    global_dpd_->buf4_mat_irrep_init(buf4, h);
+                    global_dpd_->buf4_mat_irrep_rd(buf4, h);
                     for(int row = 0; row < buf4->params->rowtot[h]; ++row){
                         for(int col = 0; col < buf4->params->coltot[h]; ++col){
                             *arrayPtr++ = buf4->matrix[h][row][col];
                         }
                     }
-                    dpd_buf4_mat_irrep_close(buf4, h);
+                    global_dpd_->buf4_mat_irrep_close(buf4, h);
                 }
                 break;
             case DIISEntry::DPDFile2:
                 file2 = va_arg(args, dpdfile2*);
-                dpd_file2_mat_init(file2);
-                dpd_file2_mat_rd(file2);
+                global_dpd_->file2_mat_init(file2);
+                global_dpd_->file2_mat_rd(file2);
                 for(int h = 0; h < file2->params->nirreps; ++h){
                     for(int row = 0; row < file2->params->rowtot[h]; ++row){
                         for(int col = 0; col < file2->params->coltot[h]; ++col){
@@ -249,7 +249,7 @@ DIISManager::add_entry(int numQuantities, ...)
                         }
                     }
                 }
-                dpd_file2_mat_close(file2);
+                global_dpd_->file2_mat_close(file2);
                 break;
             case DIISEntry::Matrix:
                 matrix = va_arg(args, Matrix*);
@@ -457,24 +457,24 @@ DIISManager::extrapolate(int numQuantities, ...)
                     break;
                 case DIISEntry::DPDBuf4:
                     buf4 = va_arg(args, dpdbuf4*);
-                    if(!n) dpd_buf4_scm(buf4, 0.0);
+                    if(!n) global_dpd_->buf4_scm(buf4, 0.0);
                     for(int h = 0; h < buf4->params->nirreps; ++h){
-                        dpd_buf4_mat_irrep_init(buf4, h);
-                        dpd_buf4_mat_irrep_rd(buf4, h);
+                        global_dpd_->buf4_mat_irrep_init(buf4, h);
+                        global_dpd_->buf4_mat_irrep_rd(buf4, h);
                         for(int row = 0; row < buf4->params->rowtot[h]; ++row){
                             for(int col = 0; col < buf4->params->coltot[h]; ++col){
                                 buf4->matrix[h][row][col] += coefficient * *arrayPtr++;
                             }
                         }
-                        dpd_buf4_mat_irrep_wrt(buf4, h);
-                        dpd_buf4_mat_irrep_close(buf4, h);
+                        global_dpd_->buf4_mat_irrep_wrt(buf4, h);
+                        global_dpd_->buf4_mat_irrep_close(buf4, h);
                     }
                     break;
                 case DIISEntry::DPDFile2:
                     file2 = va_arg(args, dpdfile2*);
-                    if(!n) dpd_file2_scm(file2, 0.0);
-                    dpd_file2_mat_init(file2);
-                    dpd_file2_mat_rd(file2);
+                    if(!n) global_dpd_->file2_scm(file2, 0.0);
+                    global_dpd_->file2_mat_init(file2);
+                    global_dpd_->file2_mat_rd(file2);
                     for(int h = 0; h < file2->params->nirreps; ++h){
                         for(int row = 0; row < file2->params->rowtot[h]; ++row){
                             for(int col = 0; col < file2->params->coltot[h]; ++col){
@@ -482,8 +482,8 @@ DIISManager::extrapolate(int numQuantities, ...)
                             }
                         }
                     }
-                    dpd_file2_mat_wrt(file2);
-                    dpd_file2_mat_close(file2);
+                    global_dpd_->file2_mat_wrt(file2);
+                    global_dpd_->file2_mat_close(file2);
                     break;
                 case DIISEntry::Matrix:
                     matrix = va_arg(args, Matrix*);

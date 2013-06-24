@@ -429,8 +429,8 @@ void get_largest_R1_amps(dpdfile2 *R1, int namps, vector<R1_amp> & R1_stack) {
 
   nirreps = R1->params->nirreps;
   Gia = R1->my_irrep;
-  dpd_file2_mat_init(R1);
-  dpd_file2_mat_rd(R1);
+  global_dpd_->file2_mat_init(R1);
+  global_dpd_->file2_mat_rd(R1);
   R1_stack.push_back(one_R1); // create stack with 1 zero entry
 
   for(h=0; h < nirreps; h++) {
@@ -452,7 +452,7 @@ void get_largest_R1_amps(dpdfile2 *R1, int namps, vector<R1_amp> & R1_stack) {
       }
     }
   }
-  dpd_file2_mat_close(R1);
+  global_dpd_->file2_mat_close(R1);
   return;
 }
 
@@ -466,8 +466,8 @@ void get_largest_R2_amps(dpdbuf4 *R2, int namps, vector<R2_amp> & R2_stack) {
   R2_stack.push_back(one_R2); // create stack with 1 zero entry
 
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(R2, h);
-    dpd_buf4_mat_irrep_rd(R2, h);
+    global_dpd_->buf4_mat_irrep_init(R2, h);
+    global_dpd_->buf4_mat_irrep_rd(R2, h);
 
     for(ij=0; ij < R2->params->rowtot[h]; ij++) {
       i = R2->params->roworb[h][ij][0];
@@ -496,7 +496,7 @@ void get_largest_R2_amps(dpdbuf4 *R2, int namps, vector<R2_amp> & R2_stack) {
         }
       }
     }
-    dpd_buf4_mat_irrep_close(R2, h);
+    global_dpd_->buf4_mat_irrep_close(R2, h);
   }
 }
 

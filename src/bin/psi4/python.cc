@@ -979,6 +979,25 @@ SharedMatrix py_psi_get_gradient()
     }
 }
 
+void py_psi_set_frequencies(boost::shared_ptr<Vector> freq)
+{
+    if (Process::environment.wavefunction()) {
+        Process::environment.wavefunction()->set_frequencies(freq);
+    } else {
+        Process::environment.set_frequencies(freq);
+    }
+}
+
+boost::shared_ptr<Vector> py_psi_get_frequencies()
+{
+    if (Process::environment.wavefunction()) {
+        boost::shared_ptr<Wavefunction> wf = Process::environment.wavefunction();
+        return wf->frequencies();
+    } else {
+        return Process::environment.frequencies();
+    }
+}
+
 double py_psi_get_variable(const std::string & key)
 {
     string uppercase_key = key;
@@ -1201,6 +1220,8 @@ BOOST_PYTHON_MODULE(psi4)
     def("wavefunction", py_psi_wavefunction, "Returns the current wavefunction object from the most recent computation.");
     def("get_gradient", py_psi_get_gradient, "Returns the most recently computed gradient, as a N by 3 Matrix object.");
     def("set_gradient", py_psi_set_gradient, "Assigns the global gradient to the values stored in the N by 3 Matrix argument.");
+    def("get_frequencies", py_psi_get_frequencies, "Returns the most recently computed frequencies, as a 3N-6 Vector object.");
+    def("set_frequencies", py_psi_set_frequencies, "Assigns the global frequencies to the values stored in the 3N-6 Vector argument.");
     def("set_memory", py_psi_set_memory, "Sets the memory available to Psi (in bytes).");
     def("get_memory", py_psi_get_memory, "Returns the amount of memory available to Psi (in bytes).");
     def("set_nthread", &py_psi_set_n_threads, "Sets the number of threads to use in SMP parallel computations.");
