@@ -438,7 +438,7 @@ SharedMatrix MintsHelper::ao_overlap()
 SharedMatrix MintsHelper::ao_kinetic()
 {
     boost::shared_ptr<OneBodyAOInt> T(integral_->ao_kinetic());
-    SharedMatrix       kinetic_mat(new Matrix( basisset_->nbf (), basisset_->nbf ()));
+    SharedMatrix       kinetic_mat(new Matrix("AO-basis Kinetic Ints", basisset_->nbf (), basisset_->nbf ()));
     T->compute(kinetic_mat);
     return kinetic_mat;
 }
@@ -446,7 +446,7 @@ SharedMatrix MintsHelper::ao_kinetic()
 SharedMatrix MintsHelper::ao_potential()
 {
     boost::shared_ptr<OneBodyAOInt> V(integral_->ao_potential());
-    SharedMatrix       potential_mat(new Matrix(basisset_->nbf (), basisset_->nbf ()));
+    SharedMatrix       potential_mat(new Matrix("AO-basis Potential Ints", basisset_->nbf (), basisset_->nbf ()));
     V->compute(potential_mat);
     return potential_mat;
 }

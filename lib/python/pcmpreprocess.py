@@ -18,6 +18,7 @@ def	setup_keywords():
         cavity.add_kw('Mode','STR','Explicit')
         cavity.add_kw('Atoms','INT_ARRAY')
         cavity.add_kw('Radii','DBL_ARRAY')
+	cavity.add_kw('RadiiSet', 'STR', 'Bondi')
 	cavity.add_kw('Spheres','DBL_ARRAY', callback=verify_spheres)
 	top.add_sect(cavity)
         
