@@ -61,13 +61,6 @@ class EFPMultipolePotentialInt : public OneBodyAOInt
     // OS Recursion for this type of potential integral
     ObaraSaikaTwoCenterEFPRecursion mvi_recur_;
 
-    // X Center of mutipole expansion
-    double Cx_;
-    // Y Center of mutipole expansion
-    double Cy_;
-    // Z Center of mutipole expansion
-    double Cz_;
-
     //! Computes the electric field between two gaussian shells.
     void compute_pair(const GaussianShell&, const GaussianShell&);
 
@@ -76,9 +69,6 @@ public:
     EFPMultipolePotentialInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, int deriv=0);
     //! Virtual destructor
     virtual ~EFPMultipolePotentialInt();
-
-    // Set the center of the multipole expansion
-    void set_center(double Cx, double Cy, double Cz) { Cx_ = Cx; Cy_ = Cy; Cz_ = Cz; }
 
 };
 

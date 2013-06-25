@@ -6,12 +6,9 @@ using namespace boost;
 using namespace psi;
 using namespace std;
 
-#include "mints.h"
-
 EFPMultipolePotentialInt::EFPMultipolePotentialInt(vector<SphericalTransform>& spherical_transforms, boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2, int nderiv) :
     OneBodyAOInt(spherical_transforms, bs1, bs2, nderiv),
-    mvi_recur_(bs1->max_am(), bs2->max_am()),
-    Cx_(0.0), Cy_(0.0), Cz_(0.0)
+    mvi_recur_(bs1->max_am(), bs2->max_am())
 {
     int maxam1 = bs1_->max_am();
     int maxam2 = bs2_->max_am();
@@ -88,6 +85,10 @@ void EFPMultipolePotentialInt::compute_pair(const GaussianShell& s1,
     double ***yzz = mvi_recur_.yzz();
     double ***xyz = mvi_recur_.xyz();
 
+    double Cx = origin_[0];
+    double Cy = origin_[1];
+    double Cz = origin_[2];
+
     for (int p1=0; p1<nprim1; ++p1) {
         double a1 = s1.exp(p1);
         double c1 = s1.coef(p1);
@@ -113,9 +114,9 @@ void EFPMultipolePotentialInt::compute_pair(const GaussianShell& s1,
             double over_pf = exp(-a1*a2*AB2*oog) * sqrt(M_PI*oog) * M_PI * oog * c1 * c2;
             double PC[3];
 
-            PC[0] = P[0] - Cx_;
-            PC[1] = P[1] - Cy_;
-            PC[2] = P[2] - Cz_;
+            PC[0] = P[0] - Cx;
+            PC[1] = P[1] - Cy;
+            PC[2] = P[2] - Cz;
 
             // Get recursive
             mvi_recur_.compute(PA, PB, PC, gamma, am1, am2);
