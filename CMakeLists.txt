@@ -7,7 +7,6 @@ enable_language(Fortran)
 get_filename_component(ROOT_SRC_DIR ${CMAKE_CURRENT_LIST_FILE} PATH)
 set(CMAKE_MODULE_PATH "${ROOT_SRC_DIR}/cmake/")
 
-
 #
 # Command line options
 #
@@ -123,7 +122,7 @@ include_directories(
 #    find_package(BLAS REQUIRED)
 #endif()
 if(NOT useroptLAPACK STREQUAL EMPTY)
-    set(LAPACK_Libraries ${useroptLAPACK})
+    set(LAPACK_LIBRARIES ${useroptLAPACK})
     message(WARNING "Skipping LAPACK detection and using these flags: ${useroptLAPACK}")
 else()
     find_package(LAPACK REQUIRED)
@@ -228,7 +227,7 @@ file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
-set(PSILIB mints_wrapper dfmp2 scf ccenergy ccsort psimrcc transqt2 cctriples mp2 scf_solver fock dcft mcscf sapt dftsapt sapt_solver cchbar cclambda ccdensity transqt ccresponse detci occ mrcc fnocc cceom adc thermo functional disp thce 3index deriv_wrapper optking findif mints trans dpd chkpt iwl psio qt ciomr options moinfo util stable deriv scfgrad int util diis plugin parallel)
+set(PSILIB mints_wrapper dfmp2 scf ccenergy ccsort psimrcc transqt2 cctriples scf_solver fock dcft mcscf sapt dftsapt sapt_solver cchbar cclambda ccdensity transqt ccresponse detci occ mrcc fnocc cceom adc thermo functional disp thce 3index deriv_wrapper optking findif mints trans dpd chkpt iwl psio qt ciomr options moinfo util stable deriv scfgrad int util diis plugin parallel)
 
 #
 # The ERD integrals package
@@ -252,6 +251,12 @@ set(RECONFIGURE_PSI "${PROJECT_BINARY_DIR}/reconfigure.sh")
 message("The following command can be used to exactly reproduce this build. It can also be found in ${RECONFIGURE_PSI}:\n")
 message("${CONFIGURE_CMD}\n")
 configure_file(cmake/reconfigure.sh.in reconfigure.sh)
+
+#
+# Output the build settings, for plugins to read later
+#
+#set(buildsettingsfile ${PROJECT_BINARY_DIR}/buildsettings.cmake)
+#export(TARGETS psi4 FILE ${buildsettingsfile})
 
 #get_cmake_property(_variableNames VARIABLES)
 #foreach (_variableName ${_variableNames})
