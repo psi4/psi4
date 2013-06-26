@@ -34,6 +34,7 @@ def DeclareIndexRange(indices, begin_index_or_size, end_index=None, name=None, *
     """
     return IndexRange(indices, begin_index_or_size, end_index, name, **kwargs)
 
+#TODO known_ranges needs to be an AliasedDict
 class IndexRangeSet(object):
     """
     """
@@ -60,6 +61,15 @@ class IndexRangeSet(object):
 
     def __setitem__(self, key, item):
         self.known_ranges[key] = item
+
+    def __contains__(self, item):
+        if item in self.known_ranges:
+            return True
+        elif any(v.name == item for v in self.known_ranges.values()):
+            return True
+        else:
+            return False
+
 # Useful alias when used as a transparent context
 IndexingContext = IndexRangeSet
 
