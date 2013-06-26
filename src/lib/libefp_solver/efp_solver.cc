@@ -370,6 +370,9 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
     double * xyz_p  = xyz->pointer();
     double * mult_p = mult->pointer();
     for (int n = 0; n < n_multipole; n++) {
+        for(int i=0; i < 20; ++i){
+           mats[i]->zero();
+        }
         Vector3 coords(xyz_p[n*3],xyz_p[n*3+1],xyz_p[n*3+2]);
         efp_ints->set_origin(coords);
         efp_ints->compute(mats);
@@ -383,6 +386,9 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
 //    xyz_p  = xyz_id->pointer();
 //    mult_p = id->pointer();
 //    for (int n = 0; n < n_id; n++) {
+//        for(int i=0; i < 20; ++i){
+//           mats[i]->zero();
+//        }
 //        Vector3 coords(xyz_p[n*3],xyz_p[n*3+1],xyz_p[n*3+2]);
 //        efp_ints->set_origin(coords);
 //        efp_ints->compute(mats);
