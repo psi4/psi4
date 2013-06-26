@@ -102,6 +102,9 @@ class EFP {
         /// Prints private members of efp object
         void print_out(void);
 
+        /// Computes the nuclear repulsion between the QM and EFP regions
+        double EFP_QM_nuclear_repulsion_energy();
+
 
 };
 

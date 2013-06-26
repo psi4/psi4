@@ -298,7 +298,6 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
         throw PsiException("libefp failed to return number of multipoles",__FILE__,__LINE__);
     }
 
-    // workspace for efp_get_multipoles
     // multipole coordinates are stored array xyz.
     boost::shared_ptr<Vector> xyz  (new Vector(3*n_multipole));
     boost::shared_ptr<Vector> mult (new Vector((1+3+6+10)*n_multipole));
@@ -327,45 +326,108 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
     if ( efp_get_induced_dipole_values(efp_,id->pointer()) != EFP_RESULT_SUCCESS ) {
         throw PsiException("libefp failed to return induced dipole values",__FILE__,__LINE__);
     }
-    // boost::shared_ptr<Vector> idt (new Vector(3*n_id));
-    // if ( efp_get_induced_dipole_values(efp_,idt->pointer())  != EFP_RESULT_SUCCESS ) {
-    //     throw PsiException("libefp failed to return induced dipole conjugate values",__FILE__,__LINE__);
-    // }
-    // // take average of induced dipole and conjugate
-    // id->add(idt);
-    // id->scale(0.5);
+    boost::shared_ptr<Vector> idt (new Vector(3*n_id));
+    if ( efp_get_induced_dipole_values(efp_,idt->pointer())  != EFP_RESULT_SUCCESS ) {
+        throw PsiException("libefp failed to return induced dipole conjugate values",__FILE__,__LINE__);
+    }
+    // take average of induced dipole and conjugate
+    id->add(idt);
+    id->scale(0.5);
 
     // get electrostatic potential at each point returned in the xyz array
     // TODO: need this function
     // ... not sure that this is where we need to do this
 
-    // grab matrix factory from wavefunction
-    boost::shared_ptr<Wavefunction> wfn         = Process::environment.wavefunction();
-    boost::shared_ptr<MatrixFactory> matrix     = wfn->matrix_factory();
-    boost::shared_ptr<IntegralFactory> integral = wfn->integral();
-
-    // generate funky multipole integrals integrals
-    // 
-    // normal multipole integrals are ordered as follows 
-    // x, y, z, 
-    // xx, xy, xz, yy, yz, zz, 
-    // xxx, xxy, xxz, xyy, xyz, xzz, yyy, yyz, yzz, zzz
-    // presumably the new integrals will be ordered similarly
-    // 
-    //boost::shared_ptr<OneBodySOInt> mult3 ( integral->so_multipoles(3) );
-    //boost::shared_ptr<MultipoleSymmetry> multsym ( new MultipoleSymmetry(3,molecule_,integral,matrix) );
-    //std::vector<boost::shared_ptr<Matrix> > multipoles = multsym->create_matrices("Multipole: ");
-    //mult3->compute(multipoles);
-
-    // arrays to map our multipole ordering to Ilya's
-    int mapq[6]  = { 0, 3, 4, 1, 5, 2};
-    int mapo[10] = { 0, 3, 4, 5, 9, 7, 1, 6, 8, 2};
+//    // normal multipole integrals are ordered as follows 
+//    // x, y, z, 
+//    // xx, xy, xz, yy, yz, zz, 
+//    // xxx, xxy, xxz, xyy, xyz, xzz, yyy, yyz, yzz, zzz
+//    // presumably the new integrals will be ordered similarly
+//
+//    // arrays to map our multipole ordering to Ilya's
+//    int mapq[6]  = { 0, 3, 4, 1, 5, 2};
+//    int mapo[10] = { 0, 3, 4, 5, 9, 7, 1, 6, 8, 2};
 
     // contract/dot/something multipoles with multipole integrals.  the result goes into V
-    // TODO: need this function
-    boost::shared_ptr<Matrix> V = matrix->create_shared_matrix("EFP V contribution");
+    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
+    boost::shared_ptr<OneBodyAOInt> efp_ints(wfn->integral()->ao_efp_multipole_potential());
 
+    int nbf = wfn->basisset()->nbf();
+
+                               // 0    X    Y    Z      XX       YY       ZZ       XY       XZ       YZ
+    const double prefacs[20] = { 1.0, 1.0, 1.0, 1.0, 1.0/3.0, 1.0/3.0, 1.0/3.0, 2.0/3.0, 2.0/3.0, 2.0/3.0,
+    //   XXX       YYY       ZZZ       XXY       XXZ       XYY       YYZ       XZZ       YZZ       XYZ  
+      1.0/15.0, 1.0/15.0, 1.0/15.0, 3.0/15.0, 3.0/15.0, 3.0/15.0, 3.0/15.0, 3.0/15.0, 3.0/15.0, 6.0/15.0};
+
+    std::vector<SharedMatrix> mats;
+    for(int i=0; i < 20; ++i) {
+        mats.push_back(SharedMatrix(new Matrix(nbf, nbf)));
+    }
+
+    SharedMatrix V(new Matrix("EFP contribution to the Fock Matrix", nbf, nbf));
+
+    // multipole contributions to Fock matrix
+    double * xyz_p  = xyz->pointer();
+    double * mult_p = mult->pointer();
+    for (int n = 0; n < n_multipole; n++) {
+        Vector3 coords(xyz_p[n*3],xyz_p[n*3+1],xyz_p[n*3+2]);
+        efp_ints->set_origin(coords);
+        efp_ints->compute(mats);
+        for(int i=0; i < 20; ++i){
+            mats[i]->scale( -prefacs[i] * mult_p[20*n+i] );
+            V->add(mats[i]);
+        }
+    }
+
+    // induced dipole contributions to Fock matrix (is this right?)
+//    xyz_p  = xyz_id->pointer();
+//    mult_p = id->pointer();
+//    for (int n = 0; n < n_id; n++) {
+//        Vector3 coords(xyz_p[n*3],xyz_p[n*3+1],xyz_p[n*3+2]);
+//        efp_ints->set_origin(coords);
+//        efp_ints->compute(mats);
+//        // only dealing with dipoles here:
+//        for(int i=0; i < 3; ++i){
+//            mats[i+1]->scale( -prefacs[i+1] * mult_p[3*n+i] );
+//            V->add(mats[i]);
+//        }
+//    }
+
+    V->print();
     return V;
+}
+
+double EFP::EFP_QM_nuclear_repulsion_energy() {
+    double nu = 0.0;
+    boost::shared_ptr<Molecule> mol = Process::environment.molecule();
+    for (int frag = 0; frag < nfrag_; frag++) {
+        int natom = 0;
+        if ( efp_get_frag_atom_count(efp_,frag,&natom) != EFP_RESULT_SUCCESS ) {
+            throw PsiException("libefp failed to return the number of atoms",__FILE__,__LINE__);
+        }
+        efp_atom * atoms = (efp_atom*)malloc(natom*sizeof(efp_atom));
+        if ( efp_get_frag_atoms(efp_, frag, natom, atoms) != EFP_RESULT_SUCCESS ) {
+            throw PsiException("libefp failed to return atom charges",__FILE__,__LINE__);
+        }
+
+        for (int i = 0; i < natom; i++) {
+            double znuc = atoms[i].znuc;
+            double x    = atoms[i].x;
+            double y    = atoms[i].y;
+            double z    = atoms[i].z;
+
+            for (int j = 0; j < mol->natom(); j++) {
+                double dx = x - mol->x(j);
+                double dy = y - mol->y(j);
+                double dz = z - mol->z(j);
+                double r  = sqrt(x*x+y*y+z*z);
+                nu += znuc * mol->Z(j) / r;
+            }
+
+
+        }
+    }
+    return nu;
 }
 
 /**
