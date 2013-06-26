@@ -189,6 +189,17 @@ OneBodyAOInt* IntegralFactory::ao_multipoles(int order)
     return new MultipoleInt(spherical_transforms_, bs1_, bs2_, order);
 }
 
+OneBodyAOInt* IntegralFactory::ao_efp_multipole_potential(int order)
+{
+    return new EFPMultipolePotentialInt(spherical_transforms_, bs1_, bs2_, order);
+}
+
+OneBodySOInt* IntegralFactory::so_efp_multipole_potential(int order)
+{
+    boost::shared_ptr<OneBodyAOInt> ao_int(ao_efp_multipole_potential(order));
+    return new OneBodySOInt(ao_int, this);
+}
+
 OneBodySOInt* IntegralFactory::so_multipoles(int order)
 {
     boost::shared_ptr<OneBodyAOInt> ao_int(ao_multipoles(order));
