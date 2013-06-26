@@ -420,7 +420,7 @@ double EFP::EFP_QM_nuclear_repulsion_energy() {
                 double dx = x - mol->x(j);
                 double dy = y - mol->y(j);
                 double dz = z - mol->z(j);
-                double r  = sqrt(x*x+y*y+z*z);
+                double r  = sqrt(dx*dx+dy*dy+dz*dz);
                 nu += znuc * mol->Z(j) / r;
             }
 
