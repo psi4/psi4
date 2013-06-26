@@ -2823,12 +2823,15 @@ def run_efp_gradient(name, **kwargs):
 def run_scfefp(name, **kwargs):
 
     lowername = name.lower()
-    kwargs = kwargs_lower(kwargs)
+    kwargs = p4util.kwargs_lower(kwargs)
 
     # initialize library
-    #efp = psi4.efp_init()
+    efp = psi4.get_active_efp()
+    psi4.efp_set_options()
+    efp.print_out()
     # set which atoms are qm
-    #efp.set_qm_atoms()
+    efp.set_qm_atoms()
+
     # TODO: provide efp a callback function that computes electron density at arbitrary points
 
     # process environment molecule needs to contain only qm atoms
