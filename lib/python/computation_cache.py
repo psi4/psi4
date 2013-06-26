@@ -7,6 +7,7 @@ from itertools import product
 from os import makedirs, mkdir, remove, unlink
 import os
 from os.path import exists, isdir, split as path_split, sep as path_sep, join as path_join
+import re
 import shelve
 import traceback
 from warnings import warn
@@ -20,15 +21,23 @@ from functools import partial
 from hashlib import md5
 import psi4
 import atexit
+from grendel.util.sentinal_values import SentinalValue
 # Create a trivial molecule so psi4 doesn't freak out about not having a Molecule
 #psi4.geometry("H 0 0 0\nH 0 0 1")
 
+RegexType = type(re.compile(''))
+
 #TODO test suite
 #TODO move to grendel
-from grendel.util.sentinal_values import SentinalValue
 
 xproduct = lambda *args: product(*[xrange(i) for i in args])
 lambda_type = type(lambda x: x)
+
+class CacheInconsistancyWarning(Warning):
+    pass
+
+class FileMissingWarning(CacheInconsistancyWarning):
+    pass
 
 class ShapeMismatchWarning(Warning):
     pass
@@ -38,11 +47,13 @@ class FileOverwriteWarning(Warning):
 
 enabled_warnings = AliasedDict({
     (ShapeMismatchWarning, "ShapeMismatchWarning") : True,
-    (FileOverwriteWarning, "FileOverwriteWarning") : True
+    (FileOverwriteWarning, "FileOverwriteWarning") : True,
+    (FileMissingWarning, "FileMissingWarning") : True
 })
 fail_warnings = AliasedDict({
     (ShapeMismatchWarning, "ShapeMismatchWarning") : False,
-    (FileOverwriteWarning, "FileOverwriteWarning") : False
+    (FileOverwriteWarning, "FileOverwriteWarning") : False,
+    (FileMissingWarning, "FileMissingWarning") : False
 })
 
 #================================================================================#
@@ -300,7 +311,7 @@ class MOTEIGetter(TEIGetter):
         nmo = reference_wavefunction.nmo()
         return (nmo,)*4
 
-    def __call__(self, out, mints, correlation_factor, mo_coefficients):
+    def __call__(self, out, mints, mo_coefficients, correlation_factor=None):
         self._get_tei(out,
             "mo_" + self.kernel_name,
             mints, correlation_factor, self.physicist_notation,
@@ -686,6 +697,7 @@ class ComputationCache(object):
 
     available_psi_options = [
         "scf_convergence"
+
     ]
 
     # Sentinel value for optional attributes to not include in the
@@ -700,6 +712,8 @@ class ComputationCache(object):
     case_sensative_attributes = [
     ]
 
+    do_writeback_on_sync = False
+
     #========================================#
 
     #region | Initialization |
@@ -708,7 +722,8 @@ class ComputationCache(object):
             directory,
             make_directory=False,
             make_path=False,
-            make_shelve=True
+            make_shelve=True,
+            writeback=True
     ):
         #========================================#
         #region Check for the directory and make it if needed.
@@ -734,14 +749,15 @@ class ComputationCache(object):
             path_join(self.directory, "computation_shelf.db"),
             flag=flag,
             protocol=2,
-            writeback=False
+            writeback=writeback
         )
         self.analogous_keys = shelve.open(
             path_join(self.directory, "analogous_keys.db"),
             flag=flag,
             protocol=2,
-            writeback=False
+            writeback=writeback
         )
+        self.writeback = writeback
         def close_shelf(shelf, other_shelf):
             try:
                 shelf.close()
@@ -918,16 +934,70 @@ class ComputationCache(object):
         return rv
 
 
-    def sync_computation(self, comp):
+    def sync_computation(self, comp, sync_writeback=None):
         self.shelf[comp.shelf_key] = comp
+        if ((sync_writeback is None and self.do_writeback_on_sync) or sync_writeback) and self.writeback:
+            self.shelf.sync()
 
     #endregion
+
+    def clear_datum(self, datum_name, fail_if_missing=False):
+        """
+        Clear datum named `datum_name` from all computations in the cache
+
+        @param datum_name: The name of the datum to clear from all known computations
+        @type datum_name: str
+        @param fail_if_missing: Whether or not to raise an exception if no computations have a datum named `datum_name`
+        @return: The number of data deleted
+        @rtype: int
+        @see CachedComputation.clear_datum, clear_data_regex
+        """
+        num_found = 0
+        for key in self.shelf:
+            comp = self._get_existing_computation(key)
+            cleared = comp.clear_datum(datum_name)
+            if cleared:
+                num_found += 1
+        if fail_if_missing and num_found == 0:
+            raise ValueError("No known computations have a datum named '{0}'".format(datum_name))
+        return num_found
+
+    def clear_data_regex(self, regex, fail_if_missing=False, flags=0):
+        """
+        Clear all data matching regex from known computations
+
+        @param regex:  The regular expression to search for in the name of the datum
+        @type regex: str or compiled regex
+        @param fail_if_missing: Whether or not to raise an exception if no data match the regex
+        @param flags: Flags to compile the regular expression with.  Ignored if regex is an instance of re.RegexObject.
+        @type flags: int
+        @raise ValueError: if no data names match the regex and fail_if_missing is True
+        @return: Length 2 tuple of the number of data removed and the number of computations it was removed from.
+        @rtype: tuple
+        @see CachedComputation.clear_data_regex
+        """
+        num_found = 0
+        num_comps = 0
+        if hasattr(regex, "pattern") and hasattr(regex, "search"):
+            re_string = regex.pattern
+        else:
+            re_string = str(regex)
+            regex = re.compile(re_string, flags)
+        for key in self.shelf:
+            comp = self._get_existing_computation(key)
+            found = comp.clear_data_regex(regex, flags=flags)
+            if found > 0:
+                num_found += found
+                num_comps += 1
+        if fail_if_missing and num_found == 0:
+            raise ValueError("No known computations have a datum matching '{0}'".format(re_string))
+        return num_found, num_comps
 
     #========================================#
 
     #region | Private Methods |
 
-    def _get_existing_computation(self, key, key_mandatory):
+    def _get_existing_computation(self, key, key_mandatory=None):
         """
         Internal use only
 
@@ -938,7 +1008,8 @@ class ComputationCache(object):
         """
         rv = self.shelf[key]
         rv.shelf_key = key
-        rv.minimal_shelf_key = key_mandatory
+        if key_mandatory is not None:
+            rv.minimal_shelf_key = key_mandatory
         rv.owner = self
         return rv
 
@@ -982,7 +1053,7 @@ class CachedComputation(object):
 
     #region | Class Attributes |
 
-    PICKLE_VERSION = (2,0,1)
+    PICKLE_VERSION = (2,1,0)
 
     parser = psi4.Gaussian94BasisSetParser()
 
@@ -1006,6 +1077,10 @@ class CachedComputation(object):
     other_getters = dict()
     # Simple getters that amount to nothing more than
     #   a method call on a single dependency
+    # SimpleMethodCallGetters for molecule
+    _molecule_methods = ["nuclear_repulsion_energy", "natom", "name"]
+    for method in _molecule_methods:
+        other_getters["molecule_" + method] = SimpleMethodCallGetter('psi_molecule', method)
     # SimpleMethodCallGetters for basis
     _basis_methods = ["nbf", "nao", "nprimitive", "nshell", "has_puream"]
     for method in _basis_methods:
@@ -1023,6 +1098,10 @@ class CachedComputation(object):
     ]
     for method in _reference_wavefunction_dimension_methods:
         other_getters["reference_wavefunction_" + method] = DimensionListGetter('reference_wavefunction', method)
+
+    default_psi_options = dict(
+        scf_type = "direct"
+    )
 
     #endregion
 
@@ -1083,8 +1162,7 @@ class CachedComputation(object):
         #   prevents a change of option in one computation
         #   from affecting the option value in another
         #   computation which assumes the default.
-        self._psi_options = dict(
-        )
+        self._psi_options = CachedComputation.default_psi_options.copy()
         if psi_options is not None:
             self._psi_options.update(psi_options)
         #endregion
@@ -1103,7 +1181,8 @@ class CachedComputation(object):
         self.register_dependency(
             "psi_molecule",
             UninitializedDependency(
-                # Don't use symmetry for now.
+                # Don't use symmetry for now
+                # Note that psi4.geometry calls activate on the molecule
                 lambda self: psi4.geometry("symmetry c1\n" + self.molecule.xyz_string(header=False).strip()),
                 self, depends_on=[]
             )
@@ -1147,19 +1226,19 @@ class CachedComputation(object):
                 self, depends_on=['mints']
             )
         )
-        self.register_dependency(
-            "scf_energy",
-            UninitializedDependency(
-                lambda self: psi4.energy("scf"),
-                self, depends_on=['basis']
-            )
-        )
+        def get_scf_wavefunction(self):
+            # Check the basis to be sure it's the right one
+            if psi4.options.basis.lower() != self.basis_name.lower():
+                psi4.options.basis = self.basis_name
+            # run SCF
+            psi4.energy("scf")
+            # grab the wavefunction of the most recently run computation (scf, in this case)
+            return psi4.wavefunction()
         self.register_dependency(
             "reference_wavefunction",
             UninitializedDependency(
-                # TODO check somehow to make sure this is the SCF Wavefunction
-                lambda self: psi4.wavefunction(),
-                self, depends_on=['scf_energy']
+                get_scf_wavefunction,
+                self, depends_on=['basis']
             )
         )
         self.register_dependency(
@@ -1316,28 +1395,84 @@ class CachedComputation(object):
         return rv
 
     def clear_datum(self, name, fail_if_missing=False):
+        """
+        Clear a datum from the computation.  If the datum has a file
+        associated with it, delete the file.
+
+        @param name: The name of the datum to clear
+        @type name: str
+        @param fail_if_missing: Whether or not to raise an exception if the datum is not found
+        @type fail_if_missing: bool
+        @raise ValueError: if the datum named `name` is not found
+        @return: True if the datum was found and deleted, False otherwise
+        @rtype: bool
+        """
         if name in self.cached_data:
             if name not in self._analogously_loaded_data:
                 d = self.cached_data[name]
                 if isinstance(d, CachedMemmapArray):
                     fname = d.filename
                     del self.cached_data[name]
-                    os.remove(fname)
+                    if exists(fname):
+                        os.remove(fname)
+                    else:
+                        raise_warning(
+                            "File '{0}' associated with datum named '{1}' is missing and"
+                            " cannot be deleted".format(
+                                fname, name
+                            ),
+                            FileMissingWarning
+                        )
                 else:
                     del self.cached_data[name]
             else:
                 # Just remove the reference from the dictionary
                 del self.cached_data[name]
+                self._analogously_loaded_data.remove(name)
             # Sync the parent shelf since self has been modified
             if self.owner is not None:
                 self.owner.sync_computation(self)
+            return True
         elif fail_if_missing:
             raise ValueError("Datum '{0}' does not exist.  Known data names are:\n{1}".format(
                 name, "    " + "\n    ".join(self.cached_data.keys())
             ))
+        return False
+
+    def clear_data_regex(self, regex, fail_if_missing=False, flags=0):
+        """
+        Clear all data matching regex
+
+        @param regex:  The regular expression to search for in the name of the datum
+        @type regex: str or re.RegexObject
+        @param fail_if_missing: Whether or not to raise an exception if no data match the regex
+        @param flags: Flags to compile the regular expression with.  Ignored if regex is an instance of re.RegexObject.
+        @type flags: int
+        @raise ValueError: if no data names match the regex and fail_if_missing is True
+        @return: The number of data removed
+        @rtype: int
+        """
+        found_count = 0
+        if hasattr(regex, "pattern") and hasattr(regex, "search"):
+            re_string = regex.pattern
+        else:
+            re_string = str(regex)
+            regex = re.compile(re_string, flags)
+        for name in list(self.cached_data.keys()):
+            if regex.search(name) is not None:
+                found_count += 1
+                self.clear_datum(name)
+        if fail_if_missing and found_count == 0:
+            raise ValueError("No data matching '{0}' found.  Known data names are:\n{1}".format(
+                re_string, "    " + "\n    ".join(self.cached_data.keys())
+            ))
+        if found_count > 0:
+            if self.owner is not None:
+                self.owner.sync_computation(self)
+        return found_count
 
     def clear_all_data(self):
-        for datum_name in self.cached_data.keys():
+        for datum_name in list(self.cached_data.keys()):
             self.clear_datum(datum_name)
 
     def get_lazy_attribute(self, needed_attr):
@@ -1398,9 +1533,10 @@ class CachedComputation(object):
             out = CachedDatum(value)
             out.filled = True
             self.cached_data[name] = out
-            # Sync the parent shelf since self has been modified
-            if self.owner is not None:
-                self.owner.sync_computation(self)
+        #----------------------------------------#
+        # Sync the parent shelf since self has been modified
+        if self.owner is not None:
+            self.owner.sync_computation(self)
 
     def has_datum(self, name):
         return (name in self.cached_data
@@ -1425,13 +1561,15 @@ class CachedComputation(object):
     #region | Private Methods |
 
     def _psi_options_use(self):
+        if not isinstance(self.psi_molecule, UninitializedDependency):
+            psi4.activate(self.psi_molecule)
         self._psi_saved_opts = dict()
         for opt, val in self._psi_options.items():
             self._psi_saved_opts[opt] = getattr(psi4.options, opt)
             setattr(psi4.options, opt, val)
 
     def _psi_options_restore(self):
-        for opt, val in self._psi_saved_opts:
+        for opt, val in self._psi_saved_opts.items():
             setattr(psi4.options, opt, val)
 
     def _fill_datum(self,
@@ -1574,7 +1712,8 @@ class CachedComputation(object):
                     getter(out, **getter_kwargs)
                 except Exception:
                     # Remove the file caching the failure
-                    remove(fname)
+                    if exists(fname):
+                        remove(fname)
                     raise
                 else:
                     out.filled = True
@@ -1850,6 +1989,14 @@ class CachedComputationUnloader(object):
             directory=comp.directory
         )
         self.basis_sets_to_register = tuple(comp._basis_registry.keys())
+        if hasattr(comp, "minimal_shelf_key"):
+            self.minimal_shelf_key = comp.minimal_shelf_key
+        else:
+            self.minimal_shelf_key = None
+        if hasattr(comp, "shelf_key"):
+            self.shelf_key = comp.shelf_key
+        else:
+            self.shelf_key = None
 
     def __call__(self):
         init_kwargs = dict(
@@ -1869,6 +2016,13 @@ class CachedComputationUnloader(object):
                     bsname = next(iter(bsname))
                 if bsname not in rv._basis_registry:
                     rv.register_basis(bsname)
+            #----------------------------------------#
+            if self.pickler_version >= (2, 1, 0):
+                if self.minimal_shelf_key is not None:
+                    rv.minimal_shelf_key = self.minimal_shelf_key
+                if self.shelf_key is not None:
+                    rv.shelf_key = self.shelf_key
+        #========================================#
         return rv
 
 #endregion
