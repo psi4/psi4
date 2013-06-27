@@ -126,7 +126,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- Text to be passed directly into CFOUR input files. May contain
   molecule, options, percent blocks, etc. Access through ``cfour {...}``
   block. -*/
-  options.add_str_i("CFOUR_LITERAL", "");
+  options.add_str_i("LITERAL_CFOUR", "");
 
   // CDS-TODO: We should go through and check that the user hasn't done
   // something silly like specify frozen_docc in DETCI but not in TRANSQT.

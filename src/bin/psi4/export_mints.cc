@@ -200,6 +200,12 @@ void export_mints()
             .value("Descending", descending)
             .export_values();
 
+    enum_<Molecule::GeometryUnits>("GeometryUnits", "docstring")
+            .value("Angstrom", Molecule::Angstrom)
+            .value("Bohr", Molecule::Bohr)
+            .export_values();
+
+
     class_<PyBuffer<double>, shared_ptr<PyBuffer<double> > >("DoublePyBuffer", "Buffer interface to NumPy arrays").
             add_property("__array_interface__", &PyBuffer<double>::array_interface, "docstring");
 
@@ -608,6 +614,7 @@ void export_mints()
             def("set_basis_by_symbol", &Molecule::set_basis_by_symbol, "Sets basis set arg3 to all atoms with symbol (e.g., H) arg2").
             def("set_basis_by_label", &Molecule::set_basis_by_label, "Sets basis set arg3 to all atoms with label (e.g., H4) arg2").
             def("set_basis_by_number", &Molecule::set_basis_by_number, "Sets basis set arg3 to atom number (1-indexed, incl. dummies) arg2").
+            add_property("units", &Molecule::units, &Molecule::set_units, "Units (Angstrom or Bohr) used to define the geometry").
             def("clone", &Molecule::clone, "Returns a new Molecule identical to arg1").
             def("geometry", &Molecule::geometry, "Gets the geometry as a (Natom X 3) matrix of coordinates (in Bohr)");
 
