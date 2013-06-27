@@ -27,6 +27,7 @@
 #include "typedefs.h"
 #include "vector3.h"
 #include <boost/python/list.hpp>
+#include "exception.h"
 
 namespace psi {
 
