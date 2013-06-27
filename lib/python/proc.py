@@ -2805,6 +2805,7 @@ def run_property(name, **kwargs):
 def run_efp(name, **kwargs):
     #efp = psi4.efp_init()
     psi4.print_out('Executing run_efp in proc.py...\n')
+    psi4.set_global_option('QMEFP', False)  # apt to go haywire if set locally to efp
     efp = psi4.get_active_efp()
     psi4.efp_set_options()
     efp.print_out()
@@ -2814,6 +2815,7 @@ def run_efp(name, **kwargs):
 def run_efp_gradient(name, **kwargs):
     psi4.print_out('Executing run_efp_gradient in proc.py...\n')
     efp = psi4.get_active_efp()
+    psi4.set_global_option('QMEFP', False)  # apt to go haywire if set locally to efp
     psi4.set_local_option('EFP', 'DERTYPE', 'FIRST')
     psi4.efp_set_options()
     efp.print_out()
@@ -2827,6 +2829,7 @@ def run_scfefp(name, **kwargs):
 
     # initialize library
     efp = psi4.get_active_efp()
+    psi4.set_global_option('QMEFP', True)  # apt to go haywire if set locally to efp
     psi4.efp_set_options()
     efp.print_out()
     # set which atoms are qm

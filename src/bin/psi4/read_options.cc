@@ -2826,11 +2826,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         /*- Dispersion damping type. ``TT`` is a damping formula by
         Tang and Toennies. ``OVERLAP`` is overlap-based dispersion damping. -*/
         options.add_str("EFP_DISP_DAMPING", "OVERLAP", "TT OVERLAP OFF");
-        /*- Names of fragment files corresponding to molecule subsets.
-        This is temporary until better EFP input geometry parsing is implemented. -*/
-        options.add("FRAGS", new ArrayType());
         /* Do EFP gradient. !expert */
         options.add_str("DERTYPE", "NONE", "NONE FIRST");
+        /* Do turn on QM/EFP terms. !expert */
+        options.add_bool("QMEFP", false);
     }
   return true;
 }
