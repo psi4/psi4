@@ -223,7 +223,7 @@ def process_cfour_command(matchobj):
 
     literalkey = str(random.randint(0, 99999))
     literals[literalkey] = cfourblock
-    return spaces + "psi4.set_global_option(\"%s\", \"\"\"%s\n\"\"\")\n" % ('CFOUR_LITERAL',
+    return spaces + "psi4.set_global_option(\"%s\", \"\"\"%s\n\"\"\")\n" % ('LITERAL_CFOUR',
         'literals_psi4_yo-' + literalkey)
 
 

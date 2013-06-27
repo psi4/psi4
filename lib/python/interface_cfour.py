@@ -20,12 +20,12 @@
 #@END LICENSE
 #
 
-from __future__ import print_function
 """Module with functions that encode the sequence of PSI module
 calls for each of the *name* values of the energy(), optimize(),
 response(), and frequency() function.
 
 """
+from __future__ import print_function
 import shutil
 import os
 import subprocess
@@ -34,6 +34,7 @@ import psi4
 import p4const
 import p4util
 import qcdb
+import qcprograms
 from p4regex import *
 #from extend_Molecule import *
 from molutil import *
@@ -106,14 +107,20 @@ def run_cfour(name, **kwargs):
     # Generate integrals and input file (dumps files to the current directory)
     #psi4.cfour_generate_input(level)
     with open("ZMAT", "w") as cfour_infile:
-        cfour_infile.write(psi4.get_global_option('CFOUR_LITERAL'))
+        #cfour_infile.write(psi4.get_global_option('LITERAL_CFOUR'))
+        #cfour_infile.write(prepare_molecule_for_cfour())
+        #cfour_infile.write(prepare_options_for_cfour())
+        cfour_infile.write(write_zmat())
+
+    memcmd, memkw = qcprograms.cfour.cfour_memory(0.000001 * psi4.get_memory())
+
 
     # Load the ZMAT file
     # and dump a copy into the outfile
     psi4.print_out('\n====== Begin ZMAT input for CFOUR ======\n')
     psi4.print_out(open('ZMAT', 'r').read())
     psi4.print_out('======= End ZMAT input for CFOUR =======\n\n')
-    #print('\n====== Begin ZMAT input for CFOUR ======\n', open('ZMAT', 'r').read(), '======= End ZMAT input for CFOUR =======\n\n')
+    print('\n====== Begin ZMAT input for CFOUR ======\n', open('ZMAT', 'r').read(), '======= End ZMAT input for CFOUR =======\n\n')
 
     # Close output file and reopen
     psi4.close_outfile()
@@ -157,33 +164,9 @@ def run_cfour(name, **kwargs):
         if psi4.has_option_changed('CFOUR', 'CFOUR_OMP_NUM_THREADS') == True:
             os.environ['OMP_NUM_THREADS'] = omp_num_threads_user
 
-    import qcprograms
     psivars = qcprograms.cfour.cfour_harvest(c4out)
     for key in psivars.keys():
         psi4.set_variable(key.upper(), float(psivars[key]))
-
-
-    # Scan iface file and grab the file energy.
-    #e = 0.0
-    #for line in file('iface'):
-    #    fields = line.split()
-    #    m = fields[1]
-    #    try:
-    #        e = float(fields[5])
-    #        if m == "MP(2)":
-    #            m = "MP2"
-    #        psi4.set_variable(m + ' TOTAL ENERGY', e)
-    #        psi4.set_variable(m + ' CORRELATION ENERGY', e - vscf)
-    #    except ValueError:
-    #        continue
-
-    # The last 'e' in iface is the one the user requested.
-    #psi4.set_variable('CURRENT ENERGY', e)
-    #psi4.set_variable('CURRENT CORRELATION ENERGY', e - vscf)
-
-    # Load the iface file
-    #iface = open('iface', 'r')
-    #iface_contents = iface.read()
 
     # Delete cfour tempdir
     os.chdir('..')
@@ -207,13 +190,6 @@ def run_cfour(name, **kwargs):
         psi4.print_out('\nCFOUR scratch files have been kept.\n')
         psi4.print_out('They can be found in ' + psi_io.get_default_path() + cfour_tmpdir)
 
-    # Dump iface contents to output
-    #psi4.print_out('\n')
-    #p4util.banner('Full results from MRCC')
-    #psi4.print_out('\n')
-    #psi4.print_out(iface_contents)
-
-    #return e
 
 def cfour_list():
     val = []
@@ -222,36 +198,177 @@ def cfour_list():
     return val
 
 
-def format_array_option_for_cfour(optval):
+#def format_option_for_cfour(opt, val):
+#    """
+#    """
+#    cmd = ''
+#
+#    # Transform list from [[3, 0, 1, 1], [2, 0, 1, 0]] --> 3-0-1-1/2-0-1-0
+#    if isinstance(val, list):
+#        if type(val[0]).__name__ == 'list':
+#            if type(val[0][0]).__name__ == 'list':
+#                raise ValidationError('Option has level of array nesting inconsistent with CFOUR.')
+#            else:
+#                # option is 2D array
+#                for no in range(len(val)):
+#                    for ni in range(len(val[no])):
+#                        cmd += str(val[no][ni])
+#                        if ni < (len(val[no]) - 1):
+#                            cmd += '-'
+#                    if no < (len(val) - 1):
+#                        cmd += '/'
+#        else:
+#            # option is plain 1D array
+#            for n in range(len(val)):
+#                cmd += str(val[n])
+#                if n < (len(val) - 1):
+#                    cmd += '-'
+#
+#    # Transform the basis sets that *must* be lowercase (dratted c4 input)
+#    elif (opt == 'CFOUR_BASIS') and (val.lower() in ['svp', 'dzp', 'tzp', 'tzp2p', 'qz2p', 'pz3d2f', '13s9p4d3f']):
+#        cmd += str(val.lower())
+#
+#    # No Transform
+#    else:
+#        cmd += str(val)
+#        
+#    return opt[6:], cmd
+
+
+def write_zmat():
     """
+
     """
-    cmd = ''
-    if type(optval[0]).__name__ == 'list':
-        if type(optval[0][0]).__name__ == 'list':
-            raise ValidationError('Option has level of array nesting inconsistent with CFOUR.')
-        else:
-            # option is 2D array
-            for no in range(len(optval)):
-                for ni in range(len(optval[no])):
-                    cmd += str(optval[no][ni])
-                    if ni < (len(optval[no]) - 1):
-                        cmd += '-'
-                if no < (len(optval) - 1):
-                    cmd += '/'
+
+    # Handle memory
+    mem = int(0.000001 * psi4.get_memory())
+    if mem == 256:
+        memcmd = ''
+        memkw = {}
     else:
-        # option is plain 1D array
-        for n in range(len(optval)):
-            cmd += str(optval[n])
-            if n < (len(optval) - 1):
-                cmd += '-'
-    return cmd
+        memcmd, memkw = qcprograms.cfour.cfour_memory(mem)
+
+    # Handle molecule
+    molecule = psi4.get_active_molecule()
+    if molecule.name() == 'blank_molecule_psi4_yo':
+        molcmd = ''
+        molkw = {}
+    else:
+        molecule.update_geometry()
+        print(molecule.create_psi4_string_from_molecule())
+        qcdbmolecule = qcdb.Molecule(molecule.create_psi4_string_from_molecule())
+        qcdbmolecule.tagline = molecule.name()
+        molcmd, molkw = qcdbmolecule.format_molecule_for_cfour()
+
+    # Handle psi4 keywords implying cfour keyword values (NYI)
+
+    # Handle driver vs input/default keyword reconciliation
+    userkw = p4util.prepare_options_for_modules()
+    userkw = qcdb.options.reconcile_options(userkw, memkw)
+    userkw = qcdb.options.reconcile_options(userkw, molkw)
+
+    # Handle conversion of psi4 keyword structure into cfour format
+    optcmd = qcdb.options.prepare_options_for_cfour(userkw)
+
+    # Handle text to be passed untouched to cfour
+    litcmd = psi4.get_global_option('LITERAL_CFOUR')
+
+    print('mem', type(memcmd))
+    print('mol', type(molcmd))
+    print('opt', type(optcmd))
+    print('lit', type(litcmd))
+    zmat = memcmd + molcmd + optcmd + litcmd
+    return zmat
+
+
+#
+#
+#    commands = ''
+#    # Get only options directable to c4 that aren't default
+#    for opt, val in options['CFOUR'].items():
+#        if opt.startswith('CFOUR_'):
+#            if val['has_changed']:
+#                if not commands:
+#                    commands += """*CFOUR("""
+#                commands += """%s=%s\n""" % (format_option_for_cfour(opt, val['value']))
+#    if commands:
+#        commands = commands[:-1] + ')\n\n'
+
+
+
+
+
+
+
+
+#def prepare_molecule_for_cfour():
+#    """
+#    """
+#    molecule = psi4.get_active_molecule()
+#
+#    commands = ''
+#    if molecule.name() != 'blank_molecule_psi4_yo':
+#        molecule.update_geometry()
+#
+#        # Check for discrepancies between altered options and molecule block
+#        if psi4.has_option_changed('CFOUR', 'CFOUR_CHARGE') and \
+#            psi4.get_option('CFOUR', 'CFOUR_CHARGE') != molecule.molecular_charge():
+#            raise ValidationError("""Molecular charge set by options '%d' incompatible with charge set in molecule block '%d'.""" %
+#                (psi4.get_option('CFOUR', 'CFOUR_CHARGE'), molecule.molecular_charge()))
+#        if psi4.has_option_changed('CFOUR', 'CFOUR_MULTIPLICITY') and \
+#            psi4.get_option('CFOUR', 'CFOUR_MULTIPLICITY') != molecule.multiplicity():
+#            raise ValidationError("""Multiplicity set by options '%d' incompatible with multiplicity set in molecule block '%d'.""" %
+#                (psi4.get_option('CFOUR', 'CFOUR_MULTIPLICITY'), molecule.multiplicity()))
+#        if psi4.has_option_changed('CFOUR', 'CFOUR_UNITS') and \
+#            psi4.get_option('CFOUR', 'CFOUR_UNITS') != str(molecule.units).upper():
+#            raise ValidationError("""Geometry units set by options '%s' incompatible with units set in molecule block '%s'.""" %
+#                (psi4.get_option('CFOUR', 'CFOUR_UNITS'), str(molecule.units).upper()))
+#
+#        # Set molecule keywords as c-side keywords
+#        psi4.set_local_option('CFOUR', 'CFOUR_CHARGE', molecule.molecular_charge())
+#        psi4.set_local_option('CFOUR', 'CFOUR_MULTIPLICITY', molecule.multiplicity())
+#        psi4.set_local_option('CFOUR', 'CFOUR_UNITS', str(molecule.units))
+#
+#        print(molecule.create_psi4_string_from_molecule())
+#        qcdbmolecule = qcdb.Molecule(molecule.create_psi4_string_from_molecule())
+#        qcdbmolecule.tagline = molecule.name()
+#        commands += qcdbmolecule.format_molecule_for_cfour()
+#    
+#    return commands
 
 
 def prepare_options_for_cfour():
     """
 
     """
-    options = prepare_options_for_modules()
+    options = p4util.prepare_options_for_modules()
+    commands = ''
+
+    # Get only options directable to c4 that aren't default
+    for opt, val in options['CFOUR'].items():
+        if opt.startswith('CFOUR_') and opt != 'CFOUR_LITERAL':  # TODO: handle literal differently
+            if val['has_changed']:
+                if not commands:
+                    commands += """*CFOUR("""
+                commands += """%s=%s\n""" % (format_option_for_cfour(opt, val['value']))
+    if commands:
+        commands = commands[:-1] + ')\n\n'
+
+#    if options['CFOUR']['CFOUR_MEMORY_SIZE']['has_changed']:
+#        commands += """MEMORY=%d,MEM_UNIT=%s""" % (
+#            options['CFOUR']['CFOUR_MEMORY_SIZE']['value'],
+#            options['CFOUR']['CFOUR_MEM_UNIT']['value'])
+#    else:
+#        mem = int(0.000001 * psi4.get_memory())
+#        commands += """MEMORY=%d,MEM_UNIT=MB""" % (mem)
+    
+    return commands
+
+def prepare_options_for_cfour_old():
+    """
+
+    """
+    options = p4util.prepare_options_for_modules()
     commands = """*CFOUR("""
 
     # Handle options that interact with p4 options
