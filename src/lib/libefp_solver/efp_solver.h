@@ -31,7 +31,7 @@ class EFP {
         int nfrag_;
         struct efp * efp_;
         boost::shared_ptr<Molecule>molecule_;
-        bool elst_enabled_, pol_enabled_, disp_enabled_, exch_enabled_, do_grad_;
+        bool elst_enabled_, pol_enabled_, disp_enabled_, exch_enabled_, do_grad_, do_qm_;
         /// Initialize options
         void common_init();
     public:

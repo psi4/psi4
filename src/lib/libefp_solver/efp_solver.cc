@@ -682,6 +682,7 @@ void EFP::print_out() {
     fprintf(outfile, "  Dispersion enabled:      %12d\n", disp_enabled_);
     fprintf(outfile, "  Exchange enabled:        %12d\n", exch_enabled_);
     fprintf(outfile, "  Gradient enabled:        %12d\n", do_grad_);
+    fprintf(outfile, "  QM/EFP enabled:          %12d\n", do_qm_);
     fprintf(outfile, "\n");
 
     print_efp_geometry();
@@ -704,12 +705,18 @@ void EFP::set_options() {
     pol_enabled_  = options_.get_bool("EFP_POL");
     disp_enabled_ = options_.get_bool("EFP_DISP");
     exch_enabled_ = options_.get_bool("EFP_EXCH");
+    do_qm_        = options_.get_bool("QMEFP");
 
     std::string dertype = options_.get_str("DERTYPE");
-
     do_grad_ = false;
     if (dertype == "FIRST")
         do_grad_ = true;
+
+    // AI_DISP, AI_XR, AI_CHTR may be enabled in a future libefp release
+    if (do_qm_) {
+        opts.terms |= EFP_TERM_AI_ELEC;
+        opts.terms |= EFP_TERM_AI_POL;
+    }
 
     if (elst_enabled_)
         opts.terms |= EFP_TERM_ELEC;
