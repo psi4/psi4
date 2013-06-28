@@ -29,7 +29,7 @@ my @OrderedSubsection = ();
 # Start looping over the driver file
 while(<DRIVER>){
     # Look for the name of the module for which options are being added
-    if(/name\s*\=\=\s*\"(\w+)\"/){
+    if((/^\s*if\s*\(\s*name\s*\=\=\s*\"(\w+)\"/) || (/dodoc\s*\=\=\s*\"(\w+)\"/)){
         $CurrentModule = $1;
         $CurrentSubsection = "";
         @OrderedSubsection = ();
