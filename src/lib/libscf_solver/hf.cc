@@ -1473,6 +1473,12 @@ double HF::compute_energy()
     fflush(outfile);
 
     // SCF iterations
+
+    // EFP energies   
+    double efp_total_energy = 0.0; 
+    double efp_wfn_dependent_energy = 0.0;
+    double efp_only_energy = 0.0;
+
     do {
         iteration_++;
 
@@ -1502,10 +1508,12 @@ double HF::compute_energy()
 
         // add efp contribuation to energy
         if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
-	        double efp_energy = Process::environment.get_efp()->scf_energy_update();
-	        fprintf(outfile,"    EFP SCF energy contribution: %20.12lf\n",efp_energy);
-	        E_ += efp_energy;
-        }
+            efp_total_energy         = Process::environment.get_efp()->ComputeEnergy();
+            efp_wfn_dependent_energy = Process::environment.get_efp()->scf_energy_update();
+	        fprintf(outfile,"    EFP SCF energy contribution: %20.12lf\n",efp_wfn_dependent_energy);
+            efp_only_energy = efp_total_energy - efp_wfn_dependent_energy;
+	        E_ += efp_total_energy;
+        }   
 
         timer_on("DIIS");
         bool add_to_diis_subspace = false;

@@ -327,16 +327,12 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
         throw PsiException("libefp failed to return induced dipole values",__FILE__,__LINE__);
     }
     boost::shared_ptr<Vector> idt (new Vector(3*n_id));
-    if ( efp_get_induced_dipole_values(efp_,idt->pointer())  != EFP_RESULT_SUCCESS ) {
+    if ( efp_get_induced_dipole_conj_values(efp_,idt->pointer())  != EFP_RESULT_SUCCESS ) {
         throw PsiException("libefp failed to return induced dipole conjugate values",__FILE__,__LINE__);
     }
     // take average of induced dipole and conjugate
     id->add(idt);
     id->scale(0.5);
-
-    // get electrostatic potential at each point returned in the xyz array
-    // TODO: need this function
-    // ... not sure that this is where we need to do this
 
 //    // normal multipole integrals are ordered as follows 
 //    // x, y, z, 
@@ -366,6 +362,9 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
 
     SharedMatrix V(new Matrix("EFP contribution to the Fock Matrix", nbf, nbf));
 
+    // e-Nu contributions from fragments (TODO: this should be computed once only at beggining of the SCF)
+    V->add( EFP_nuclear_potential() );
+
     // multipole contributions to Fock matrix
     double * xyz_p  = xyz->pointer();
     double * mult_p = mult->pointer();
@@ -382,7 +381,7 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
         }
     }
 
-    // induced dipole contributions to Fock matrix (is this right?)
+    // induced dipole contributions to Fock matrix
 //    xyz_p  = xyz_id->pointer();
 //    mult_p = id->pointer();
 //    for (int n = 0; n < n_id; n++) {
@@ -449,6 +448,23 @@ double EFP::scf_energy_update() {
     return efp_energy;
 }
 
+/**
+ * Compute and return efp total energy only
+ */
+double EFP::ComputeEnergy() {
+    enum efp_result res;
+
+    // Main EFP computation routine 
+    if (res = efp_compute(efp_, do_grad_ ? 1 : 0))
+        throw PsiException("EFP::Compute():efp_compute() " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
+    
+    struct efp_energy energy;
+    
+    if (res = efp_get_energy(efp_, &energy))
+        throw PsiException("EFP::Compute():efp_get_energy(): " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
+
+    return energy.total;
+}
 /**
  * Compute efp energy components and/or gradient
  */
@@ -689,6 +705,17 @@ void EFP::print_out() {
     //molecule_->print();  // TODO: used to work, broken now?
 }
 
+
+efp_result field_callback_function(int n_pt, const double *xyz, double *field, void *user_data) {
+    memset((void*)field,'\0',3*n_pt*sizeof(double));
+    for (int i = 0; i < n_pt; i++) {
+        double x = xyz[3*i];
+        double y = xyz[3*i+1];
+        double z = xyz[3*i+2];
+    }
+    return EFP_RESULT_SUCCESS;
+}
+
 /**
  * Resetting of EFP options
  */
@@ -765,6 +792,10 @@ void EFP::set_options() {
     fprintf(outfile, "\n");
 
     fprintf(outfile, "\n");
+
+    // sets call-back function to provide electric field from electrons
+    efp_set_electron_density_field_fn( efp_, field_callback_function );
+
 }
 
 int EFP::efp_natom() {
@@ -808,6 +839,49 @@ void EFP::print_efp_geometry() {
     }
     fprintf(outfile,"\n");
 }
+
+boost::shared_ptr<Matrix> EFP::EFP_nuclear_potential() {
+
+    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
+
+    int nbf = wfn->basisset()->nbf();
+
+    boost::shared_ptr<Matrix> V (new Matrix(nbf,nbf));
+
+    for (int frag = 0; frag < nfrag_; frag++) {
+        int natom = 0;
+        if ( efp_get_frag_atom_count(efp_,frag,&natom) != EFP_RESULT_SUCCESS ) {
+            throw PsiException("libefp failed to return the number of atoms",__FILE__,__LINE__);
+        }
+        efp_atom * atoms = (efp_atom*)malloc(natom*sizeof(efp_atom));
+        if ( efp_get_frag_atoms(efp_, frag, natom, atoms) != EFP_RESULT_SUCCESS ) {
+            throw PsiException("libefp failed to return atom charges",__FILE__,__LINE__);
+        }
+
+        SharedMatrix V_charge(new Matrix("External Potential (Charges)", nbf, nbf));
+
+        SharedMatrix Zxyz(new Matrix("Charges (Z,x,y,z)", natom, 4));
+        double** Zxyzp = Zxyz->pointer();
+        for (int i = 0; i < natom; i++) {
+            Zxyzp[i][0] = atoms[i].znuc;
+            Zxyzp[i][1] = atoms[i].x;
+            Zxyzp[i][2] = atoms[i].y;
+            Zxyzp[i][3] = atoms[i].z;
+        }
+
+        boost::shared_ptr<PotentialInt> pot(static_cast<PotentialInt*>(wfn->integral()->ao_potential()));
+        pot->set_charge_field(Zxyz);
+        pot->compute(V_charge);
+
+        // add to efp fock contribution
+        V->add(V_charge);
+
+        V_charge.reset();
+        pot.reset();
+    }
+    return V;
+}
+
 
 }
 

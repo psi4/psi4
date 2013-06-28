@@ -2829,11 +2829,16 @@ def run_scfefp(name, **kwargs):
 
     # initialize library
     efp = psi4.get_active_efp()
+
     psi4.set_global_option('QMEFP', True)  # apt to go haywire if set locally to efp
+
+    # set options
     psi4.efp_set_options()
-    efp.print_out()
+
     # set which atoms are qm
     efp.set_qm_atoms()
+
+    efp.print_out()
 
     # TODO: provide efp a callback function that computes electron density at arbitrary points
 
