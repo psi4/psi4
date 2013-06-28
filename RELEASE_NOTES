@@ -1,6 +1,1057 @@
-====================
-PSI4.0B4.1, May 2013
-====================
+===================
+PSI4.0B5, July 2013
+===================
+
+commit 296790992c38f353b8d0f120955933adcc9faf91
+Author: Lori Burns <lori.burns@gatech.edu>
+Date:   Fri Jun 28 18:13:34 2013 -0400
+
+    De-clutter read_options of attic-ed modules. Avoid autodoc-ing options for attic-ed modules.
+
+commit c1d0a5c7975cbe0e688cfa17739a6a2dc04540b2
+Author: Lori Burns <lori.burns@gatech.edu>
+Date:   Fri Jun 28 16:31:03 2013 -0400
+
+    Bring naming of *mp2 spin-component psivars in line with *cc.
+
+commit 32563bad59cf9ee682581dfe1314d3773558aa16
+Author: Lori Burns <lori.burns@gatech.edu>
+Date:   Fri Jun 28 16:30:04 2013 -0400
+
+    Update tests and samples
+
+commit e9f19e9aa317fb894a699daebf65a0fc78db3861
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Fri Jun 28 12:10:07 2013 -0400
+
+    Fixed ElectricFieldInts to handle arbitrary origin properly.
+
+commit 434ee019e02f9bc21b4c8a6975fe99dc9da8c0cb
+Merge: c2789c0 5147333
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Fri Jun 28 11:45:20 2013 -0400
+
+    t pushMerge branch 'master' of github.com:psi4/psi4
+
+commit c2789c04c4670b4058c41f1f49bfee582d8f9377
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Fri Jun 28 11:45:03 2013 -0400
+
+    Fixed ElectricFieldInts to properly compute nuclear contributions at an arbitrary origin.
+loriab@ariadne:Macintosh-132:/Users/loriab/linux/psihub/master/psi4: ll /Users/loriab/linux/psihub/master/psi4/lib/python/pyparsing.py
+-rw-r--r--  1 loriab  loriab  147580 Jun 27 14:38 /Users/loriab/linux/psihub/master/psi4/lib/python/pyparsing.py
+loriab@ariadne:Macintosh-132:/Users/loriab/linux/psihub/master/psi4: vi /Users/loriab/linux/psihub/master/psi4/lib/python/pyparsing.py
+loriab@ariadne:Macintosh-132:/Users/loriab/linux/psihub/master/psi4: git log
+commit 296790992c38f353b8d0f120955933adcc9faf91
+Author: Lori Burns <lori.burns@gatech.edu>
+Date:   Fri Jun 28 18:13:34 2013 -0400
+
+    De-clutter read_options of attic-ed modules. Avoid autodoc-ing options for attic-ed modules.
+
+commit c1d0a5c7975cbe0e688cfa17739a6a2dc04540b2
+Author: Lori Burns <lori.burns@gatech.edu>
+Date:   Fri Jun 28 16:31:03 2013 -0400
+
+    Bring naming of *mp2 spin-component psivars in line with *cc.
+
+commit 32563bad59cf9ee682581dfe1314d3773558aa16
+Author: Lori Burns <lori.burns@gatech.edu>
+Date:   Fri Jun 28 16:30:04 2013 -0400
+
+    Update tests and samples
+
+commit e9f19e9aa317fb894a699daebf65a0fc78db3861
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Fri Jun 28 12:10:07 2013 -0400
+
+    Fixed ElectricFieldInts to handle arbitrary origin properly.
+
+commit 434ee019e02f9bc21b4c8a6975fe99dc9da8c0cb
+Merge: c2789c0 5147333
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Fri Jun 28 11:45:20 2013 -0400
+
+    t pushMerge branch 'master' of github.com:psi4/psi4
+
+commit c2789c04c4670b4058c41f1f49bfee582d8f9377
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Fri Jun 28 11:45:03 2013 -0400
+
+    Fixed ElectricFieldInts to properly compute nuclear contributions at an arbitrary origin.
+
+commit 51473334453db6cd4324dc9e2c944697ffdf3a53
+Merge: 384d303 0be03e5
+Author: Lori Burns <lori.burns@gatech.edu>
+Date:   Thu Jun 27 14:38:01 2013 -0400
+
+    Merge branch 'master' of https://github.com/psi4/psi4
+
+commit 384d303ee5c6c51e9a7d7333363a56d527e4dfc9
+Author: Lori Burns <lori.burns@gatech.edu>
+Date:   Thu Jun 27 14:36:33 2013 -0400
+
+    Slight fix to database to make the database summary work.
+
+commit 0be03e5d193e83af648e76a755dd98ac9c92ee8d
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Tue Jun 25 11:19:19 2013 -0400
+
+    Modified EFP integrals to use the origin_ member inherited from OneBodyAOInt
+
+commit 24a129622a675dfd37311bd486b5d8321a7f5e4e
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Tue Jun 25 10:09:57 2013 -0400
+
+    Oops, I forgot to add default arguments to the EFP integral factory.
+
+commit 159386bc9f7c8fb1d2aac1ba3068bff05b6719a9
+Merge: b661be6 e873819
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Tue Jun 25 09:21:00 2013 -0400
+
+    Merge branch 'master' of github.com:psi4/psi4
+
+commit b661be60195a783def1814674b9b1b39f1141f3f
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Tue Jun 25 09:20:45 2013 -0400
+
+    Added multipole potential integrals for EFP, along with IntegralFactory constructor.
+
+commit e873819fa3102791218ecde7cd245fcfd38a6471
+Merge: 32d5f34 545d0df
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Mon Jun 24 17:09:56 2013 -0400
+
+    Merge
+
+commit 32d5f342f9448420ab36a3ec84819254ab3e5c04
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Mon Jun 24 17:09:18 2013 -0400
+
+    Mods MintsHelper slightly
+
+commit 545d0dff9ad1ddae9c16a2ee3bfdd6fe59320fd4
+Author: crawdad <crawdad@vt.edu>
+Date:   Fri Jun 21 13:28:34 2013 -0400
+
+    Added new RadiiSet keyword for compatibility with pcmsolver module.
+
+commit 891d8d87240be5828b1b6a67835a7d943a9ae5c6
+Merge: abd0434 977b8a6
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Fri Jun 21 12:13:23 2013 -0400
+
+    Merge branch 'master' of github.com:psi4/psi4
+
+commit abd0434c015fd3703a17e82c8a33da03cad3eafe
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Fri Jun 21 12:13:03 2013 -0400
+
+    Just experimenting with CMake for plugins.
+
+commit 977b8a668cf94218e948c64143e9c78490fb849f
+Merge: 8978c84 533c675
+Author: crawdad <crawdad@vt.edu>
+Date:   Fri Jun 21 11:48:33 2013 -0400
+
+    Merge branch 'master' of https://github.com/psi4/psi4
+
+commit 8978c845e4f84ebb2eade43c4b490078e4b67cb7
+Author: crawdad <crawdad@vt.edu>
+Date:   Fri Jun 21 11:47:33 2013 -0400
+
+    Added some documentation to PSI4 CC codes.
+
+commit 1ea68618e110e24dc418dfde0f27b644e421c9e8
+Author: crawdad <crawdad@vt.edu>
+Date:   Fri Jun 21 11:17:04 2013 -0400
+
+    Added a-CCSD(T) to CC documentation.
+
+commit e87e6e7025a848d237d8e0b0603b12df261f1d1f
+Author: crawdad <crawdad@vt.edu>
+Date:   Fri Jun 21 10:31:36 2013 -0400
+
+    Finished moving PCM electrostatic integrals to factory.
+
+commit beeb4a42e25b12f9cde71b910c337458f064a1b2
+Merge: 357cb6d 5084871
+Author: crawdad <crawdad@vt.edu>
+Date:   Fri Jun 21 09:45:45 2013 -0400
+
+    Merge branch 'pcm' of 10.0.1.11:/Users/crawdad/src/psi4
+
+commit 357cb6dcd0f98517161fe78c224aff7c55b301e4
+Merge: 63d9e9f 083d488
+Author: crawdad <crawdad@vt.edu>
+Date:   Fri Jun 21 09:26:54 2013 -0400
+
+    Merge branch 'pcm' of https://github.com/psi4/psi4
+
+commit 508487178987176db03cdb3be6e30cdde2c62489
+Author: Daniel Crawford <crawdad@vt.edu>
+Date:   Fri Jun 21 09:19:20 2013 -0400
+
+    Shifting electrostatic potential integrals for PCM code into libmints
+    factory.
+
+commit 533c67583b3feb421e4c59467497841784617497
+Merge: 2971e11 1eecd30
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Thu Jun 20 17:02:52 2013 -0400
+
+    Merge branch 'master' of github.com:psi4/psi4
+
+commit 2971e11996d0180e70affc60cfe20e5a6eb7c860
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Thu Jun 20 17:02:35 2013 -0400
+
+    Fixed strange error in DPD's destructor.
+
+commit 1eecd304cc9bda15c834a1c293a23abf7fe3ce31
+Merge: 61346f8 2addb20
+Author: deprince <eugene.deprince@gmail.com>
+Date:   Thu Jun 20 14:53:07 2013 -0400
+
+    Merge branch 'master' of github.com:psi4/psi4
+
+commit 61346f80ec9f9854baca8de6601a564ed5adc370
+Author: deprince <eugene.deprince@gmail.com>
+Date:   Thu Jun 20 14:51:09 2013 -0400
+
+    fixed bug in CDJK.  mea culpa
+
+commit 2addb20a6406cee0ff8b17e55d4a2c7e95e4af60
+Author: Eugene DePrince <eugene.deprince@gmail.com>
+Date:   Thu Jun 20 11:07:46 2013 -0400
+
+    dfcc can use less memory by storing t2 on disk
+
+commit ea161a960b10fa53b79269499cd0241beec18608
+Merge: fff0fbd edc171b
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Thu Jun 20 08:13:16 2013 -0400
+
+    Merge branch 'master' of github.com:psi4/psi4
+
+commit fff0fbd3e192d1323d96f0d32def38999084db68
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Thu Jun 20 08:12:50 2013 -0400
+
+    Modified the DPD destructor, until a strange segfault can be isolated.
+
+commit edc171ba744f282e94dccb08b849e9cccb1a246e
+Author: Eugene DePrince <eugene.deprince@gmail.com>
+Date:   Wed Jun 19 22:02:23 2013 -0400
+
+    slightly smaller memory requirements for dfcc
+
+commit 38401320ad5a46d75fb0fc6f5dd23a320771ac42
+Merge: 72ac984 63d9e9f
+Author: Lori Burns <lori.burns@gatech.edu>
+Date:   Wed Jun 19 18:05:55 2013 -0400
+
+    Merge branch 'master' of https://github.com/psi4/psi4
+
+commit 72ac98492bf12a1efd2711f28ebb0462071a7965
+Author: Lori Burns <lori.burns@gatech.edu>
+Date:   Wed Jun 19 18:00:56 2013 -0400
+
+    Add sow/reap capability for frequencies by finite difference of energies (gradient findif NYI). Switch hessian and frequen
+
+commit 248f74c81aa42d8f10c65afc1bf2fba94f495fa3
+Author: Lori Burns <lori.burns@gatech.edu>
+Date:   Wed Jun 19 17:22:41 2013 -0400
+
+    Store frequencies in Process::environment since sow/reap procedures can't access them from Wavefunction. Someday, would ra
+
+commit 31a9441574e730f02e00ada3afe85ff84b59e35f
+Author: Lori Burns <lori.burns@gatech.edu>
+Date:   Wed Jun 19 17:18:59 2013 -0400
+
+    Add freq by energy findif test case. Consign fd-freq-gradient-large to longtests. Separate opt_tests and freq_tests target
+
+commit 7e9b35432ca128f59dac86d745bb103d02c82d0a
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Wed Jun 19 16:13:36 2013 -0400
+
+    Refactored dpd_ to global_dpd_, to avoid potential clashes.
+
+commit d6fae959290020bd265b5945ea93aca7f29a5548
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Wed Jun 19 15:47:57 2013 -0400
+
+    Updated aCC code, to handle new DPD calling conventions.
+
+commit 1a62150b4740c0d837d4e2fa395f431ea92e9697
+Merge: 63d9e9f a556dc9
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Wed Jun 19 14:41:32 2013 -0400
+
+    Merge branch 'cc'
+
+commit cdaa7d56b2fae91ebf31b22c257a90e831be8d5a
+Merge: 7214f44 63d9e9f
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Wed Jun 19 10:22:41 2013 -0400
+
+    Merge
+
+commit a556dc924513842a660b2667ce73cd927ca3f5e7
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Tue Jun 18 18:55:57 2013 -0400
+
+    Removed shared_ptrs from the DPD tracking mechanisms.  Only the DCFT code fails at this point.
+
+commit 63d9e9fa90128915f0b662ee9103668410b6d1cd
+Author: Daniel Crawford <crawdad@vt.edu>
+Date:   Mon Jun 17 11:50:16 2013 -0400
+
+    Fixed minor bug in B-CCD(T) code introduced by new a-CCSD(T) capabilities.
+
+commit 8c48986ad106c531b0162879fcabe906f1748239
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Mon Jun 17 09:08:50 2013 -0400
+
+    More tweaks to the statics in DPD.
+
+commit 6597b7e9a70748777c1482d7ccc5d3832e751847
+Merge: cf7d1ec b3eaad0
+Author: Daniel Crawford <crawdad@vt.edu>
+Date:   Sun Jun 16 21:12:15 2013 -0400
+
+    Merge branch 'master' of https://github.com/psi4/psi4
+
+commit cf7d1ec0de28dfd667f826e13683f3ddab957b32
+Author: Daniel Crawford <crawdad@vt.edu>
+Date:   Fri Jun 14 17:08:35 2013 -0400
+
+    Added production-level a-CCSD(T) energies with test case.
+
+commit b3eaad0659548cbdcaaf76a0ed6a711975bf97dc
+Author: Lori Burns <lori.burns@gatech.edu>
+Date:   Fri Jun 14 14:03:50 2013 -0400
+
+    Fixed error that prevented use of non-small-large subsets in database
+
+commit d672557eda36bb410487eb23c0e83190f876b8a0
+Author: Lori Burns <lori.burns@gatech.edu>
+Date:   Fri Jun 14 11:16:56 2013 -0400
+
+    Reconcile standalone and psi4 flavors of qcdb. Update the qcdb Molecule class to reflect some of the libmints Molecule cha
+
+commit ddbdfef3a621de48920ebc9f99e2fe8888259da3
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Thu Jun 13 08:18:26 2013 -0400
+
+    DPD is now a class.  Members are currently public, so that the usage is most consistent with the existing standards.  Stil
+
+commit bd98601b478f77404b94b9472145e06be3a612de
+Merge: 1495778 8de2047
+Author: Lori Burns <lori.burns@gatech.edu>
+Date:   Thu Jun 13 01:14:23 2013 -0400
+
+    Merge branch 'master' of https://github.com/psi4/psi4
+
+commit 1495778d0ced1b2136f27e83b6710a3deb5bff70
+Author: Lori Burns <lori.burns@gatech.edu>
+Date:   Thu Jun 13 01:01:52 2013 -0400
+
+    Implement string of qcdb.Molecule. This should fix chgmult problems for database with fragments. This libmints version of 
+
+commit 8de20473baf1a2927de72a7c1757b7daf4773b08
+Author: Eugene DePrince <eugene.deprince@gmail.com>
+Date:   Tue Jun 11 14:54:07 2013 -0400
+
+    small changes related to previous commit
+
+commit b7a865c6209ce432ec8077ca8b1255a2096394d9
+Author: Eugene DePrince <eugene.deprince@gmail.com>
+Date:   Tue Jun 11 14:48:07 2013 -0400
+
+    adds function to conventional eri fnocc codes to build 4-index eri's from 3-index integrals
+
+commit c74ed4e99ff19f168dd0e72a1847e108adaeca22
+Merge: e9f578d 5ddcfbd
+Author: David Hollman <david.s.hollman@gmail.com>
+Date:   Mon Jun 10 16:57:13 2013 -0400
+
+    Merge branch 'master' of github.com:psi4/psi4
+
+commit e9f578d75f8bd4b66affdaf62d1e5b73ef602b80
+Author: David Hollman <david.s.hollman@gmail.com>
+Date:   Mon Jun 10 16:57:00 2013 -0400
+
+    fixed problem with PyBuffer and threads.  PyBuffer is now basically off by default (which it probably should have been to 
+
+commit 7214f44ac625dc69e635934173bace5ea5f29dd9
+Merge: 4032f64 5ddcfbd
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Mon Jun 10 13:15:03 2013 -0400
+
+    merge
+
+commit 5ddcfbd683fa98682c8c7cf8c0a507cf73111a6a
+Author: Lori Burns <lori.burns@gatech.edu>
+Date:   Sun Jun 9 13:04:33 2013 -0400
+
+    Add Molecule function to recreate initialization string with current status
+
+commit 6f2133aca05d7de2471ee465d04827274765e672
+Merge: f7cd275 9dccfa7
+Author: David Hollman <david.s.hollman@gmail.com>
+Date:   Mon Jun 10 11:51:49 2013 -0400
+
+    Merge branch 'master' of github.com:psi4/psi4
+
+commit f7cd275693ff3fe750b9c7f2f12f04f26080f9d5
+Author: David Hollman <david.s.hollman@gmail.com>
+Date:   Mon Jun 10 11:49:02 2013 -0400
+
+    fixed gcc problem.  Strange; not what I thought the problem would be
+
+commit 4032f644b909a6eee2261851219ecc914b5b86e6
+Merge: 7f86cb6 9dccfa7
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Mon Jun 10 07:38:08 2013 -0400
+
+    merge
+
+commit 59d79287976f61210377a726d449c661e73e6589
+Merge: 083d488 9dccfa7
+Author: Daniel Crawford <crawdad@vt.edu>
+Date:   Sun Jun 9 20:23:09 2013 +0200
+
+    Bringing current master into older pcm branch.
+    Merge branch 'master' into pcm
+
+commit 9dccfa78b77b670b77294f1833349447fb4d7c9c
+Author: Daniel Crawford <crawdad@vt.edu>
+Date:   Sun Jun 9 19:04:13 2013 +0200
+
+    Modifications to out-of-core calls in dpd_contract444().
+
+commit 48c5bd571c03294e3e2ffa97c2462c32cee5bff5
+Author: Ugur Bozkaya <ugrbzky@gmail.com>
+Date:   Sun Jun 9 18:16:30 2013 +0300
+
+    Really fix HTR40, now mode=sow works.
+
+commit a6bb6f5a370b28f0c38de7ffe4015f8752f5e0ae
+Author: Ugur Bozkaya <ugrbzky@gmail.com>
+Date:   Sun Jun 9 11:07:52 2013 +0300
+
+    A quick fix for HTR40.
+
+commit 0fdf1c27a45288a51c182eba4b2d1fa0b7cc5df2
+Author: Ugur Bozkaya <ugrbzky@gmail.com>
+Date:   Sun Jun 9 10:56:30 2013 +0300
+
+    OO methods will not cause segfault for Hydrogen atom any more. Adding a new database of hydrogen transfer reactions, HTR40
+
+commit 1782b4ca08973837fbcaefc22de0ef72392687fa
+Author: David Hollman <david.s.hollman@gmail.com>
+Date:   Wed Jun 5 19:04:43 2013 -0400
+
+    changes to grendel
+
+commit 7da440506219e025020ad5eb7f393a2cd7ada81b
+Author: David Hollman <david.s.hollman@gmail.com>
+Date:   Wed Jun 5 12:45:07 2013 -0400
+
+    Went ahead and added grendel to psi.  Added tests to tests/testgrendel.  The tests require the package 'nose'; grendel its
+
+commit 7f86cb6956a0bf53e65dd3cd84494b4a7a59a5cd
+Merge: 9afd852 c2869f8
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Wed Jun 5 08:21:16 2013 +0200
+
+    Merge
+
+commit c2869f8f9be5a635431da2fb083b70c0d3d78a1a
+Author: David Hollman <david.s.hollman@gmail.com>
+Date:   Tue Jun 4 17:30:31 2013 -0400
+
+    more numpy __array_interface__, this time with Matrix
+
+commit 9e513d46ff3042ff6c00f142e87d8b0ce625de66
+Author: David Hollman <david.s.hollman@gmail.com>
+Date:   Tue Jun 4 16:34:04 2013 -0400
+
+    Added the PyBuffer class that supports the numpy __array_interface__ protocol so that buffer pointers can be used by pytho
+
+commit 9afd8529c04d0279e9fd555a8f358cad08b89af3
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Tue Jun 4 17:39:12 2013 +0200
+
+    stuff
+
+commit adb3f21f8def02fce3df27c8da410f24786ead6e
+Author: David Sherrill <sherrill@gatech.edu>
+Date:   Tue Jun 4 09:09:14 2013 -0400
+
+    Some stuff changed as docs updated
+
+commit d908a192c4a166437b9f4b9904ea0668ac7fca1f
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Tue Jun 4 14:31:10 2013 +0200
+
+    Andy's still working on this
+
+commit b379279d8b46c60a9892a8bb505c499ceea29dcc
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Tue Jun 4 08:29:08 2013 -0400
+
+    Oops.
+
+commit 00c40f44321297315fb190962606060f59f3a7e7
+Merge: fad8dcc 4b0347f
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Tue Jun 4 08:23:43 2013 -0400
+
+    Merge branch 'master' of github.com:psi4/psi4
+
+commit fad8dcc9966d5eb9ee67e5d414d30eba38889a3b
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Tue Jun 4 08:23:28 2013 -0400
+
+    More changes to cmake stuff.
+
+commit 4b0347f5b56710e8b924cc2012558ae57efc7f93
+Author: David Hollman <david.s.hollman@gmail.com>
+Date:   Thu May 30 16:22:04 2013 -0400
+
+    fixed export_mints so it compiles
+
+commit d8c96e6572866663cc9a7bbdfa00b42c67ed8a64
+Merge: 788f927 3cdcbec
+Author: David Hollman <david.s.hollman@gmail.com>
+Date:   Thu May 30 10:18:11 2013 -0400
+
+    Merge branch 'master' of github.com:psi4/psi4
+
+commit 788f9277bbbd9e3160da22f6ddf98b84ee6739f6
+Author: David Hollman <david.s.hollman@gmail.com>
+Date:   Thu May 30 10:17:35 2013 -0400
+
+    more python hooks for one body ints
+
+commit 3cdcbec9efdf9bf32b27d8f9bf2fd7793e36ecb2
+Merge: f901429 c09a7d2
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Thu May 30 06:24:10 2013 -0400
+
+    Merge branch 'master' of github.com:psi4/psi4
+
+commit f9014296f12c7f8682dd504a9d22c25824c55318
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Thu May 30 06:23:52 2013 -0400
+
+    Added CMake functionality, including Fortran linkage detection.
+
+commit e95e29c28d5af94c3878cdc32c7213f95f367f99
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Thu May 30 06:23:18 2013 -0400
+
+    Added configure-like wrapper to cmake.
+
+commit c09a7d2a4d9716437f883f439dffe40b87b83069
+Author: David Sherrill <sherrill@gatech.edu>
+Date:   Mon May 27 14:43:42 2013 -0400
+
+    Merge my docs on monomer-centered basis sets with Lori's
+
+commit 0f9968d74a16ff05f4ed5f6fcdadc6313f4a5b84
+Merge: 1573260 bad599a
+Author: David Sherrill <sherrill@gatech.edu>
+Date:   Mon May 27 14:39:39 2013 -0400
+
+    Merge branch 'master' of github.com:psi4/psi4
+
+commit 157326091393e2d689b45cf6ce35d655e108211a
+Author: David Sherrill <sherrill@gatech.edu>
+Date:   Mon May 27 14:39:10 2013 -0400
+
+    Add documentation on monomer-centered basis sets in SAPT
+
+commit bad599af6944c153cbe7e6a924b2b1d4becf8d1e
+Author: Lori Burns <lori.burns@gatech.edu>
+Date:   Mon May 27 04:09:12 2013 -0400
+
+    Make read_options defaults for E_CONV match what's actually happening for single points. No change in what code is actuall
+
+commit f53877d9646532f39986d934d25cbfea9c182db3
+Author: Lori Burns <lori.burns@gatech.edu>
+Date:   Mon May 27 03:08:19 2013 -0400
+
+    Remove psi license from python formatting-check script.
+
+commit 76ec9062898235fc3a5ddd6f8fb226b869673d23
+Author: Lori Burns <lori.burns@gatech.edu>
+Date:   Mon May 27 02:24:45 2013 -0400
+
+    Old typos. Add note about monomer-basis sapt and perils of zmat sapt. (Ed's monomber-basis input file works, btw)
+
+commit 3cf37a2757e2abb6ed790ec3c26de2db11a715c9
+Merge: adc0f51 5cb3862
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Wed May 22 15:15:23 2013 -0400
+
+    Merge branch 'master' of github.com:psi4/psi4
+
+commit 5cb38629a820ec3b5dee858d1eddd2fee8bc9ed9
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Wed May 22 11:49:48 2013 -0400
+
+    Only fall back to PK method when the SCF_TYPE is DF, else error out
+
+commit eec18cb98873204ecd610ce226c6c14aac60344d
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Wed May 22 11:41:48 2013 -0400
+
+    Fixes #77 Falls back to non-DF SCF method when basis set is unavailable
+
+commit 71dc180dd39cec3e2e04bd37403e5b31a131989f
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Wed May 22 11:06:55 2013 -0400
+
+    Fixes interactive Psi4 when an input file does not exist
+
+commit 17721528513ac839382d6a79afc296faed79ef56
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Wed May 22 11:06:29 2013 -0400
+
+    Patches the python wrapping for the dimension object
+
+commit 57cae015bb00d46a81d516118ce04e9444f35f83
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Tue May 21 13:03:58 2013 -0400
+
+    Fixes #49
+
+commit a4c9ac57e9a0c2d10542d75af26ec5a4f9ab785d
+Merge: c6f7fcf 2c3b921
+Author: David Hollman <david.s.hollman@gmail.com>
+Date:   Mon May 20 17:50:18 2013 -0400
+
+    Merge branch 'master' of github.com:psi4/psi4
+
+commit c6f7fcff88c2f8824f016d2cab19b2b10bc699df
+Author: David Hollman <david.s.hollman@gmail.com>
+Date:   Mon May 20 17:50:08 2013 -0400
+
+    put one electron ints back in export_mints.cc
+
+commit 2c3b9213cf14a99703e412ebb87f726ae2008cb1
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Mon May 20 15:16:16 2013 -0400
+
+    Wrapper the Localizers
+
+commit 7ae03d620055612a56408fa9399db73139d2b01d
+Author: rparrish <robparrish@gmail.com>
+Date:   Sun May 19 20:05:01 2013 -0400
+
+    Local electrostatic sources added to A-SAPT. Frozen-core Disp fixed
+
+commit d5001150fb7f8807ccff24606046c1ad726e1a37
+Author: Daniel Crawford <crawdad@vt.edu>
+Date:   Sun May 19 05:59:44 2013 +0200
+
+    Corrected temp matrix dimensions in matrix.back_transform() to allow for
+    rectangular matrices..
+
+commit fe9a59a0a2903687d039bdc4b7e138149829f331
+Merge: b0e29fd 8a2238d
+Author: Daniel Crawford <crawdad@vt.edu>
+Date:   Sat May 18 20:58:18 2013 +0200
+
+    Merging into recent PCM work and bugfixes.
+    Merge branch 'master' of github.com:psi4/psi4
+
+commit 8a2238dc0752edfb6e3f85db3a706fa3c0de86c4
+Merge: 3e923cf b6547fe
+Author: Eugene DePrince <eugene.deprince@gmail.com>
+Date:   Sat May 18 09:33:41 2013 -0400
+
+    Merge branch 'master' of github.com:psi4/psi4
+
+commit 3e923cf450b0b6b57502a4e02321d087bddf563b
+Author: Eugene DePrince <eugene.deprince@gmail.com>
+Date:   Sat May 18 09:33:04 2013 -0400
+
+    fixes bug in fnocc when t2 stored on disk
+
+commit 4cb27cd06195f81c0ed840f2531fac61fd442112
+Author: Eugene DePrince <eugene.deprince@gmail.com>
+Date:   Sat May 18 09:18:26 2013 -0400
+
+    fixes memory estimates for dfcc.  also, makes some functions virtual.
+
+commit b6547fedd0a7dd1558105eee6c9c686a22685df9
+Author: Ugur Bozkaya <ugrbzky@gmail.com>
+Date:   Sat May 18 05:23:46 2013 +0300
+
+    More EKT for mp2.5
+
+commit cbbdf6b984a430a99797ec4c71b2fba00fc44aac
+Author: Ugur Bozkaya <ugrbzky@gmail.com>
+Date:   Sat May 18 05:15:17 2013 +0300
+
+    Working on EKT.
+
+commit e83118dab1f25d4c743213bb5a54fe5155c1117d
+Author: Eugene DePrince <eugene.deprince@gmail.com>
+Date:   Thu May 16 20:44:42 2013 -0400
+
+    reduced io in diis in fnocc.  thanks rob!
+
+commit a8869992743b7fa7198047eb508f4a819f2edd63
+Author: Eugene DePrince <eugene.deprince@gmail.com>
+Date:   Thu May 16 14:09:21 2013 -0400
+
+    removes some functions from oeprop that aren't necessary
+
+commit b0e29fd3a36b175c91ea497d2909326512737384
+Merge: b72ad03 0a62c37
+Author: Daniel Crawford <crawdad@vt.edu>
+Date:   Thu May 16 11:53:18 2013 +0200
+
+    placeholder
+    Merge branch 'master' of github.com:psi4/psi4
+
+commit 0a62c374d225f005c0dacea191e58d1d804cd0f3
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Wed May 15 16:39:42 2013 -0400
+
+    Fixes MRCC interface for UHF references
+
+commit b72ad032da8c8f5a7a736166b07f5b05ff60d31f
+Merge: b2b6e53 893b389
+Author: Daniel Crawford <crawdad@vt.edu>
+Date:   Wed May 15 19:45:43 2013 +0200
+
+    Merge branch 'master' of github.com:psi4/psi4
+
+commit b2b6e53b14afadc46b58907e5ed504ae5e3c3627
+Author: Daniel Crawford <crawdad@vt.edu>
+Date:   Wed May 15 19:45:19 2013 +0200
+
+    Corrected for p4util and p4const subdirs.
+
+commit 893b389540e4650d89a4ff1424e9fc4b05b285da
+Author: Eugene DePrince <eugene.deprince@gmail.com>
+Date:   Wed May 15 12:59:47 2013 -0400
+
+    enable local (t) for cim-df-cc
+
+commit 083d48887fa16db7a21c8730bd0e630905fa9ca7
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Tue May 14 11:15:45 2013 -0400
+
+    Trivial cleanup of PCM parser.
+
+commit 90f0b2bb357f58fe39fcb7a37017aec65e05ada2
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Tue May 14 11:01:53 2013 -0400
+
+    Added PCM preprocessor.
+
+commit c064e273416e96f7b0426d20e75ee449eed6311b
+Author: deprince <eugene.deprince@gmail.com>
+Date:   Mon May 13 15:30:43 2013 -0400
+
+    REALLY fixes cim-dfmp2 energy
+
+commit e322527ae2362fa2b0b25809344bcb7904c75b49
+Author: Eugene DePrince <eugene.deprince@gmail.com>
+Date:   Mon May 13 15:08:42 2013 -0400
+
+    fixes cim-df-mp2 energies
+
+commit 472222f5b9638f1fb84acfec83c13d0ab8fa5c27
+Author: Eugene DePrince <eugene.deprince@gmail.com>
+Date:   Mon May 13 13:40:55 2013 -0400
+
+    making my checkins in the "RELEASE_NOTES" more sensible
+
+commit 9fdab5fadfff7fbc2edc704119f430ba5b18319b
+Author: rparrish <robparrish@gmail.com>
+Date:   Mon May 13 04:33:54 2013 -0400
+
+    Whoops, thread safety
+
+commit dcfd5f71e4930d64b7ca08374608c1ac64e02a8c
+Author: rparrish <robparrish@gmail.com>
+Date:   Mon May 13 03:05:31 2013 -0400
+
+    Minor bug fix
+
+commit e414e3320c2d13e13440be3ac146a417a2eac44f
+Author: rparrish <robparrish@gmail.com>
+Date:   Sun May 12 23:02:54 2013 -0400
+
+    Added SAPT0 analysis to ASAPT output
+
+commit 1004c2b68d84696da10ae3a3224a7820b9e0a107
+Merge: c539605 dbbcf06
+Author: rparrish <robparrish@gmail.com>
+Date:   Sun May 12 22:43:51 2013 -0400
+
+    Merge branch 'master' of github.com:psi4/psi4
+
+commit c5396052361315eea8e8c750fed8196f6069f21a
+Author: rparrish <robparrish@gmail.com>
+Date:   Sun May 12 22:42:55 2013 -0400
+
+    ASAPT working in the uncoupled induction picture. Time to visualize some stuff!
+
+commit 0e16158c147e57b69b03e961b9cc63e7a0730bbf
+Author: rparrish <robparrish@gmail.com>
+Date:   Sun May 12 22:29:47 2013 -0400
+
+    Useful breakdown of ExchInd terms
+
+commit cc38505a6c9ffe8eb4d46bf93342f28c4739291c
+Author: rparrish <robparrish@gmail.com>
+Date:   Sun May 12 21:56:21 2013 -0400
+
+    Almost done. Little bug in Exch-Ind20,u (B<-A), need to checkpoint to roll back and go term by term
+
+commit 7abe14363767bd7735a8c7d5ef226dddbb016699
+Author: rparrish <robparrish@gmail.com>
+Date:   Sun May 12 19:22:27 2013 -0400
+
+    About to get aggressive with ExchInd, let's checkpoint
+
+commit 467f7ea63e8e047084388ca630707f6fd9cd6398
+Author: rparrish <robparrish@gmail.com>
+Date:   Sun May 12 17:04:39 2013 -0400
+
+    Ind20,u working in ASAPT
+
+commit d18b0ab235de90d1289a1aad4d67eb31c3798ca4
+Author: rparrish <robparrish@gmail.com>
+Date:   Sun May 12 14:33:26 2013 -0400
+
+    Some improvements to DFTensor
+
+commit dbbcf06124a79c56a30bbe5bd6f0f932ac9d3cda
+Author: Taylor Mach <mactay@vt.edu>
+Date:   Sun May 12 13:50:01 2013 -0400
+
+    changes libqt/mat_print to fix Gprime and polarizability overflows
+
+commit 41efaf3823471e0f55e7bd9796ec548bcf63533e
+Author: rparrish <robparrish@gmail.com>
+Date:   Sun May 12 02:29:50 2013 -0400
+
+    Better look and feel, ready for some induction
+
+commit fbbd6d8598a212d9df133eaf7af1d3ec415ce41e
+Author: Francesco Evangelista <francesco@Francescos-MacBook-Pro.local>
+Date:   Sat May 11 23:31:15 2013 -0400
+
+    Added instructions to copy /lib/python/p4const and /lib/python/p4util when installing psi4.
+
+commit fc82dab356095d06814f33aea3d1a8d2ec50d034
+Author: rparrish <robparrish@gmail.com>
+Date:   Sat May 11 21:21:04 2013 -0400
+
+    A-SAPT implemented through Elst, Exch, Disp
+
+commit adc0f51e389117f53c5df1195372c3b43cd99bb4
+Merge: d217616 1342a73
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Fri May 10 11:16:47 2013 -0400
+
+    Merge branch 'master' of github.com:psi4/psi4
+
+commit 1342a735ef871e4952599ba45e6740ea3316808c
+Author: Eugene DePrince <eugene.deprince@gmail.com>
+Date:   Thu May 9 12:17:53 2013 -0400
+
+    resolves plugin issues after procutil and other pythong files moved
+
+commit d217616c407f6e21f59475bb482d0344e08cfbe3
+Merge: d022165 54fc075
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Thu May 9 10:10:14 2013 -0400
+
+    Merge branch 'master' of github.com:psi4/psi4
+
+commit 54fc0755f8d9192742275053de0b233b6e65bb6f
+Merge: f66b491 1c242fb
+Author: rparrish <robparrish@gmail.com>
+Date:   Thu May 9 00:47:38 2013 -0400
+
+    Random merge conflict? Never commit after 12 AM
+
+commit f66b491ed8035aacbd8ab3f8d0bf881adb03f6cc
+Author: rparrish <robparrish@gmail.com>
+Date:   Thu May 9 00:45:24 2013 -0400
+
+    Thresh likes to be tighter for localization
+
+commit 1c242fb9feecdbbd19e541435c5892c3d5938844
+Merge: c49c892 e5c6210
+Author: Alexander Sokolov <alex@ccqc.uga.edu>
+Date:   Wed May 8 23:04:08 2013 -0400
+
+    Merge branch 'master' of github.com:psi4/psi4
+
+commit c49c8925ada9c4929bfb873bdde84f5297d99a08
+Author: Alexander Sokolov <alex@ccqc.uga.edu>
+Date:   Wed May 8 23:02:49 2013 -0400
+
+    CC code can now be run with external potential from QMMM code. This commit modifies transqt2 to use the core hamiltonian a
+
+commit 32cc5f3cb2a9e4619ecef0c2af30889f3ba7e3e3
+Author: rparrish <robparrish@gmail.com>
+Date:   Wed May 8 14:19:39 2013 -0400
+
+    Pipek-Mezey implemented (works the first time, very scary)
+
+commit e5c62106fefb6eb35878b14ed5bffda1597be4d5
+Author: David Sherrill <sherrill@gatech.edu>
+Date:   Wed May 8 14:03:27 2013 -0400
+
+    Remove unnecessary comments about symmetry c1 and no_reorient in the SAPT tutorial, since these are set automagically
+
+commit b04397b8cc6bedeaeade3fc6dd2f7d8f8313c514
+Author: Alexander Sokolov <alex@ccqc.uga.edu>
+Date:   Wed May 8 13:31:42 2013 -0400
+
+    Fock build in rotate.cc now takes the core hamiltonian from wavefunctino
+
+commit ebe85376fab085fd23b9b6afe0fca79bb8c48ac4
+Author: Alexander Sokolov <alex@ccqc.uga.edu>
+Date:   Wed May 8 12:07:09 2013 -0400
+
+    Core Hamiltonian is now a Wavefunction object. Wfn also provides a getter function that returns core hamiltonian from SCF
+
+commit 5aeb17f99c288a2aced84c28240d63bfda7d431d
+Author: Alexander Sokolov <alex@ccqc.uga.edu>
+Date:   Wed May 8 11:16:54 2013 -0400
+
+    All CC tests pass meaning that CC code can now be used with external potential. Still need to make sure the Brueckner code
+
+commit c8890eca9d3ed1a4f62925f699812d6b969e9770
+Author: Alexander Sokolov <alex@ccqc.uga.edu>
+Date:   Tue May 7 16:11:56 2013 -0400
+
+    BCC now updates the orbitals and the fock matrix in Wavefunction
+
+commit b7119f3cf13e2edb7e4240609fdee84a00a27f7d
+Author: Alexander Sokolov <alex@ccqc.uga.edu>
+Date:   Tue May 7 14:32:34 2013 -0400
+
+    Trying to figure out why Brueckner CC convergence got affected
+
+commit 8494626c758d00a4da563b71ad3f8983bc031acf
+Author: Alexander Sokolov <alex@ccqc.uga.edu>
+Date:   Tue May 7 13:41:23 2013 -0400
+
+    Semicanonical orbitals are now taken from wavefunction in transqt2
+
+commit d50bbaf7c6a022ffcdc8380cc143c3b5c08d46a3
+Author: Alexander Sokolov <alex@ccqc.uga.edu>
+Date:   Tue May 7 11:16:27 2013 -0400
+
+    Most of the test cases pass, but not the ones with semi-canonical orbitals
+
+commit 995252b566acab3c0b2f96ccad33794029d61f87
+Author: Alexander Sokolov <alex@ccqc.uga.edu>
+Date:   Tue May 7 10:06:47 2013 -0400
+
+    Extra printing
+
+commit 9dc6576de056348a2c023fcb424c17825f7b30e8
+Author: Alexander Sokolov <alex@ccqc.uga.edu>
+Date:   Tue May 7 09:50:57 2013 -0400
+
+    Frozen core is fixed in fock.cc in cc_sort
+
+commit 455fba692d6e6519daeb2685c8a89e1cdd0e197c
+Author: Alexander Sokolov <alex@ccqc.uga.edu>
+Date:   Mon May 6 22:17:00 2013 -0400
+
+    Fock now work with ROHF referece in cc_sort, frozen core seems to have a bug
+
+commit 10536dbd1c47f32999f7fb3fba3e3f9bc9f54601
+Author: Alexander Sokolov <alex@ccqc.uga.edu>
+Date:   Mon May 6 20:58:35 2013 -0400
+
+    CC_sort now reads the Fock matrix from the Wavefunction. Works for UHF reference
+
+commit 1763900a73b8345e928c47abdaff9be42be1fab1
+Author: Alexander Sokolov <alex@ccqc.uga.edu>
+Date:   Mon May 6 10:12:52 2013 -0400
+
+    Working in fock.cc in ccsort
+
+commit 5aed8c4172834fbfaa0ff9ddf66618af2439d232
+Merge: e901fc4 be08fc7
+Author: Alexander Sokolov <alex@ccqc.uga.edu>
+Date:   Tue May 7 14:51:22 2013 -0400
+
+    Merge branch 'master' of github.com:psi4/psi4
+
+commit e901fc4cd4448466c7e035b61985a9aa070d6cf4
+Author: Alexander Sokolov <alex@ccqc.uga.edu>
+Date:   Tue May 7 14:51:15 2013 -0400
+
+    Modifies printing in SCF code to make sure user is aware when density-fitting is used
+
+commit be08fc7d7013b1e6944b0c91f3621c9efe81e24d
+Author: deprince <eugene.deprince@gmail.com>
+Date:   Tue May 7 14:42:08 2013 -0400
+
+    dfcc: auxiliary basis respects PUREAM value of primary basis
+
+commit 031392c44a139715992cf8171c64922a8dc6b43e
+Merge: bbe46e5 fdc9715
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Tue May 7 13:53:48 2013 -0400
+
+    Merge branch 'master' of ssh://github.com/psi4/psi4
+
+commit bbe46e5585e8af47118787267da78cf7bb8256bc
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Tue May 7 13:53:43 2013 -0400
+
+    Adds interactive interface for psi4.
+
+commit fdc9715205de38e555cf4dc6d60bd21ec029694f
+Merge: 812f4b3 b0b58b3
+Author: Eugene DePrince <eugene.deprince@gmail.com>
+Date:   Tue May 7 12:53:37 2013 -0400
+
+    Merge branch 'master' of github.com:psi4/psi4
+
+commit 812f4b3bd16980392d25ba43ef32f84e7965e9f3
+Author: Eugene DePrince <eugene.deprince@gmail.com>
+Date:   Tue May 7 12:51:51 2013 -0400
+
+    dfcc works with cim plugin
+
+commit b0b58b31fa404fedeb091a3a984034067bb449b4
+Author: Ugur Bozkaya <ugrbzky@gmail.com>
+Date:   Tue May 7 07:02:46 2013 -0400
+
+    Moving definitions of OCC files to psifiles.h
+
+commit 6f6ab365ee5f2b7ec897ef5c51c7fc46b2622233
+Author: Lori Burns <lori.burns@gatech.edu>
+Date:   Mon May 6 14:57:12 2013 -0400
+
+    Move mp2 module to attic (docs are deceptive if MP2 module present but inactive)
+
+commit 4d8fca207e8abe38883eb98a9982874d53718944
+Author: Lori Burns <lori.burns@gatech.edu>
+Date:   Mon May 6 14:36:32 2013 -0400
+
+    Add RELEASE_NOTES in crude form
 
 commit ce057f69a595c4edb1dd3681531d3cb41684f847
 Author: Justin Turney <justin.turney@gmail.com>
