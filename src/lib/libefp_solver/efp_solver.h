@@ -5,6 +5,7 @@
  */
 
 #include<libmints/molecule.h>
+#include "../../libefp/libefp/src/efp.h"
 
 struct efp;
 
@@ -41,6 +42,9 @@ class EFP {
 
         /// Compute energy and/or gradient
         void Compute();
+
+        /// Compute total energy only
+        double ComputeEnergy();
 
         /// Wrapper to efp_get_point_charge_gradient
         boost::shared_ptr<Vector> get_electrostatic_gradient();
@@ -105,7 +109,8 @@ class EFP {
         /// Computes the nuclear repulsion between the QM and EFP regions
         double EFP_QM_nuclear_repulsion_energy();
 
-
+        /// Computes the nuclear potential integrals from the EFP fragments
+        boost::shared_ptr<Matrix> EFP_nuclear_potential();
 };
 
 }
