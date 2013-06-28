@@ -62,6 +62,7 @@ public:
 
         boost::shared_ptr<Molecule> molecule_;
         SharedMatrix gradient_;
+        boost::shared_ptr<Vector> frequencies_;
         boost::shared_ptr<Wavefunction> wavefunction_;
         boost::shared_ptr<PointGroup> parent_symmetry_;
     public:
@@ -89,6 +90,11 @@ public:
         void set_gradient(const SharedMatrix g) { gradient_ = g; }
         /// Get gradient manually
         SharedMatrix gradient() const { return gradient_; }
+
+        /// Set frequencies manually
+        void set_frequencies(const boost::shared_ptr<Vector> f) { frequencies_ = f; }
+        /// Get frequencies manually
+        boost::shared_ptr<Vector> frequencies() const { return frequencies_; }
 
         /// Map containing current energies
         std::map<std::string, double> globals;

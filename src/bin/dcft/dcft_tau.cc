@@ -44,91 +44,91 @@ DCFTSolver::build_tau()
     dpdbuf4 L1, L2;
     dpdfile2 T_OO, T_oo, T_VV, T_vv;
 
-    dpd_file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
-    dpd_file2_init(&T_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Tau <o|o>");
-    dpd_file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
-    dpd_file2_init(&T_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
+    global_dpd_->file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
+    global_dpd_->file2_init(&T_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Tau <o|o>");
+    global_dpd_->file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
+    global_dpd_->file2_init(&T_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
 
-    dpd_buf4_init(&L1, PSIF_DCFT_DPD, 0,
+    global_dpd_->buf4_init(&L1, PSIF_DCFT_DPD, 0,
                   _ints->DPD_ID("[O,O]"), _ints->DPD_ID("[V,V]"),
                   ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
-    dpd_buf4_init(&L2, PSIF_DCFT_DPD, 0,
+    global_dpd_->buf4_init(&L2, PSIF_DCFT_DPD, 0,
                   _ints->DPD_ID("[O,O]"), _ints->DPD_ID("[V,V]"),
                   ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
     /*
      * Tau_IJ = -1/2 Lambda_IKAB Lambda_JKAB
      */
-    dpd_contract442(&L1, &L2, &T_OO, 0, 0, -0.5, 0.0);
+    global_dpd_->contract442(&L1, &L2, &T_OO, 0, 0, -0.5, 0.0);
     /*
      * Tau_AB = +1/2 Lambda_IJAC Lambda_IJBC
      */
-    dpd_contract442(&L1, &L2, &T_VV, 2, 2, 0.5, 0.0);
-    dpd_buf4_close(&L1);
-    dpd_buf4_close(&L2);
+    global_dpd_->contract442(&L1, &L2, &T_VV, 2, 2, 0.5, 0.0);
+    global_dpd_->buf4_close(&L1);
+    global_dpd_->buf4_close(&L2);
 
-    dpd_buf4_init(&L1, PSIF_DCFT_DPD, 0,
+    global_dpd_->buf4_init(&L1, PSIF_DCFT_DPD, 0,
                   _ints->DPD_ID("[o,o]"), _ints->DPD_ID("[v,v]"),
                   ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
-    dpd_buf4_init(&L2, PSIF_DCFT_DPD, 0,
+    global_dpd_->buf4_init(&L2, PSIF_DCFT_DPD, 0,
                   _ints->DPD_ID("[o,o]"), _ints->DPD_ID("[v,v]"),
                   ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
     /*
      * Tau_ij = -1/2 Lambda_ikab Lambda_jkab
      */
-    dpd_contract442(&L1, &L2, &T_oo, 0, 0, -0.5, 0.0);
+    global_dpd_->contract442(&L1, &L2, &T_oo, 0, 0, -0.5, 0.0);
     /*
      * Tau_ab = +1/2 Lambda_ijac Lambda_ijbc
      */
-    dpd_contract442(&L1, &L2, &T_vv, 2, 2, 0.5, 0.0);
-    dpd_buf4_close(&L1);
-    dpd_buf4_close(&L2);
+    global_dpd_->contract442(&L1, &L2, &T_vv, 2, 2, 0.5, 0.0);
+    global_dpd_->buf4_close(&L1);
+    global_dpd_->buf4_close(&L2);
 
-    dpd_buf4_init(&L1, PSIF_DCFT_DPD, 0,
+    global_dpd_->buf4_init(&L1, PSIF_DCFT_DPD, 0,
                   _ints->DPD_ID("[O,o]"), _ints->DPD_ID("[V,v]"),
                   _ints->DPD_ID("[O,o]"), _ints->DPD_ID("[V,v]"),
                   0, "Lambda <Oo|Vv>");
-    dpd_buf4_init(&L2, PSIF_DCFT_DPD, 0,
+    global_dpd_->buf4_init(&L2, PSIF_DCFT_DPD, 0,
                   _ints->DPD_ID("[O,o]"), _ints->DPD_ID("[V,v]"),
                   _ints->DPD_ID("[O,o]"), _ints->DPD_ID("[V,v]"),
                   0, "Lambda <Oo|Vv>");
     /*
      * Tau_IJ -= 1/2 Lambda_IkAb Lambda_JkAb - 1/2 Lambda_IkaB Lambda_JkaB
      */
-    dpd_contract442(&L1, &L2, &T_OO, 0, 0, -1.0, 1.0);
+    global_dpd_->contract442(&L1, &L2, &T_OO, 0, 0, -1.0, 1.0);
     /*
      * Tau_ij -= 1/2 Lambda_KiAb Lambda_KjAb - 1/2 Lambda_KiaB Lambda_KjaB
      */
-    dpd_contract442(&L1, &L2, &T_oo, 1, 1, -1.0, 1.0);
+    global_dpd_->contract442(&L1, &L2, &T_oo, 1, 1, -1.0, 1.0);
     /*
      * Tau_AB += 1/2 Lambda_IjAc Lambda_IjBc + 1/2 Lambda_iJAc Lambda_iJBc
      */
-    dpd_contract442(&L1, &L2, &T_VV, 2, 2, 1.0, 1.0);
+    global_dpd_->contract442(&L1, &L2, &T_VV, 2, 2, 1.0, 1.0);
     /*
      * Tau_ab += 1/2 Lambda_IjCa Lambda_IjCb + 1/2 Lambda_iJCa Lambda_iJCb
      */
-    dpd_contract442(&L1, &L2, &T_vv, 3, 3, 1.0, 1.0);
-    dpd_buf4_close(&L1);
-    dpd_buf4_close(&L2);
-    dpd_file2_close(&T_OO);
-    dpd_file2_close(&T_oo);
-    dpd_file2_close(&T_VV);
-    dpd_file2_close(&T_vv);
+    global_dpd_->contract442(&L1, &L2, &T_vv, 3, 3, 1.0, 1.0);
+    global_dpd_->buf4_close(&L1);
+    global_dpd_->buf4_close(&L2);
+    global_dpd_->file2_close(&T_OO);
+    global_dpd_->file2_close(&T_oo);
+    global_dpd_->file2_close(&T_VV);
+    global_dpd_->file2_close(&T_vv);
 
     // Read MO-basis Tau from disk into the memory
-    dpd_file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
-    dpd_file2_init(&T_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Tau <o|o>");
-    dpd_file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
-    dpd_file2_init(&T_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
+    global_dpd_->file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
+    global_dpd_->file2_init(&T_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Tau <o|o>");
+    global_dpd_->file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
+    global_dpd_->file2_init(&T_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
 
-    dpd_file2_mat_init(&T_OO);
-    dpd_file2_mat_init(&T_oo);
-    dpd_file2_mat_init(&T_VV);
-    dpd_file2_mat_init(&T_vv);
+    global_dpd_->file2_mat_init(&T_OO);
+    global_dpd_->file2_mat_init(&T_oo);
+    global_dpd_->file2_mat_init(&T_VV);
+    global_dpd_->file2_mat_init(&T_vv);
 
-    dpd_file2_mat_rd(&T_OO);
-    dpd_file2_mat_rd(&T_oo);
-    dpd_file2_mat_rd(&T_VV);
-    dpd_file2_mat_rd(&T_vv);
+    global_dpd_->file2_mat_rd(&T_OO);
+    global_dpd_->file2_mat_rd(&T_oo);
+    global_dpd_->file2_mat_rd(&T_VV);
+    global_dpd_->file2_mat_rd(&T_vv);
 
     for(int h = 0; h < nirrep_; ++h){
         for(int i = 0; i < naoccpi_[h]; ++i){
@@ -153,10 +153,10 @@ DCFTSolver::build_tau()
         }
     }
 
-    dpd_file2_close(&T_OO);
-    dpd_file2_close(&T_oo);
-    dpd_file2_close(&T_VV);
-    dpd_file2_close(&T_vv);
+    global_dpd_->file2_close(&T_OO);
+    global_dpd_->file2_close(&T_oo);
+    global_dpd_->file2_close(&T_VV);
+    global_dpd_->file2_close(&T_vv);
 
     dcft_timer_off("DCFTSolver::build_tau()");
 }
@@ -168,19 +168,19 @@ DCFTSolver::transform_tau()
 
     dpdfile2 T_OO, T_oo, T_VV, T_vv;
 
-    dpd_file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
-    dpd_file2_init(&T_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Tau <o|o>");
-    dpd_file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
-    dpd_file2_init(&T_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
+    global_dpd_->file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
+    global_dpd_->file2_init(&T_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Tau <o|o>");
+    global_dpd_->file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
+    global_dpd_->file2_init(&T_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
 
-    dpd_file2_mat_init(&T_OO);
-    dpd_file2_mat_init(&T_oo);
-    dpd_file2_mat_init(&T_VV);
-    dpd_file2_mat_init(&T_vv);
-    dpd_file2_mat_rd(&T_OO);
-    dpd_file2_mat_rd(&T_oo);
-    dpd_file2_mat_rd(&T_VV);
-    dpd_file2_mat_rd(&T_vv);
+    global_dpd_->file2_mat_init(&T_OO);
+    global_dpd_->file2_mat_init(&T_oo);
+    global_dpd_->file2_mat_init(&T_VV);
+    global_dpd_->file2_mat_init(&T_vv);
+    global_dpd_->file2_mat_rd(&T_OO);
+    global_dpd_->file2_mat_rd(&T_oo);
+    global_dpd_->file2_mat_rd(&T_VV);
+    global_dpd_->file2_mat_rd(&T_vv);
 
     // Zero SO tau arrays before computing it in the MO basis
     tau_so_a_->zero();
@@ -233,10 +233,10 @@ DCFTSolver::transform_tau()
         free_block(temp);
     }
 
-    dpd_file2_close(&T_OO);
-    dpd_file2_close(&T_oo);
-    dpd_file2_close(&T_VV);
-    dpd_file2_close(&T_vv);
+    global_dpd_->file2_close(&T_OO);
+    global_dpd_->file2_close(&T_oo);
+    global_dpd_->file2_close(&T_VV);
+    global_dpd_->file2_close(&T_vv);
 
     dcft_timer_off("DCFTSolver::transform_tau()");
 }
@@ -249,20 +249,20 @@ DCFTSolver::print_opdm()
 {
     dpdbuf4 L1, L2;
     dpdfile2 T_OO, T_oo, T_VV, T_vv;
-    dpd_file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
-    dpd_file2_init(&T_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Tau <o|o>");
-    dpd_file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
-    dpd_file2_init(&T_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
+    global_dpd_->file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
+    global_dpd_->file2_init(&T_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Tau <o|o>");
+    global_dpd_->file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
+    global_dpd_->file2_init(&T_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
 
-    dpd_file2_mat_init(&T_OO);
-    dpd_file2_mat_init(&T_oo);
-    dpd_file2_mat_init(&T_VV);
-    dpd_file2_mat_init(&T_vv);
+    global_dpd_->file2_mat_init(&T_OO);
+    global_dpd_->file2_mat_init(&T_oo);
+    global_dpd_->file2_mat_init(&T_VV);
+    global_dpd_->file2_mat_init(&T_vv);
 
-    dpd_file2_mat_rd(&T_OO);
-    dpd_file2_mat_rd(&T_oo);
-    dpd_file2_mat_rd(&T_VV);
-    dpd_file2_mat_rd(&T_vv);
+    global_dpd_->file2_mat_rd(&T_OO);
+    global_dpd_->file2_mat_rd(&T_oo);
+    global_dpd_->file2_mat_rd(&T_VV);
+    global_dpd_->file2_mat_rd(&T_vv);
 
     std::vector<std::pair<double, int> > aPairs;
     std::vector<std::pair<double, int> > bPairs;
@@ -277,10 +277,10 @@ DCFTSolver::print_opdm()
         for(int row = 0; row < T_vv.params->coltot[h]; ++row)
             bPairs.push_back(std::make_pair(T_vv.matrix[h][row][row], h));
     }
-    dpd_file2_close(&T_OO);
-    dpd_file2_close(&T_oo);
-    dpd_file2_close(&T_VV);
-    dpd_file2_close(&T_vv);
+    global_dpd_->file2_close(&T_OO);
+    global_dpd_->file2_close(&T_oo);
+    global_dpd_->file2_close(&T_VV);
+    global_dpd_->file2_close(&T_vv);
 
     sort(aPairs.begin(), aPairs.end(), greater<std::pair<double, int> >());
     sort(bPairs.begin(), bPairs.end(), greater<std::pair<double, int> >());
@@ -454,15 +454,15 @@ DCFTSolver::refine_tau() {
 
     // Write the exact tau back to disk
 
-    dpd_file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
-    dpd_file2_init(&T_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Tau <o|o>");
-    dpd_file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
-    dpd_file2_init(&T_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
+    global_dpd_->file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
+    global_dpd_->file2_init(&T_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Tau <o|o>");
+    global_dpd_->file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
+    global_dpd_->file2_init(&T_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
 
-    dpd_file2_mat_init(&T_OO);
-    dpd_file2_mat_init(&T_oo);
-    dpd_file2_mat_init(&T_VV);
-    dpd_file2_mat_init(&T_vv);
+    global_dpd_->file2_mat_init(&T_OO);
+    global_dpd_->file2_mat_init(&T_oo);
+    global_dpd_->file2_mat_init(&T_VV);
+    global_dpd_->file2_mat_init(&T_vv);
 
     for(int h = 0; h < nirrep_; ++h){
         for(int i = 0; i < naoccpi_[h]; ++i){
@@ -487,15 +487,15 @@ DCFTSolver::refine_tau() {
         }
     }
 
-    dpd_file2_mat_wrt(&T_OO);
-    dpd_file2_mat_wrt(&T_oo);
-    dpd_file2_mat_wrt(&T_VV);
-    dpd_file2_mat_wrt(&T_vv);
+    global_dpd_->file2_mat_wrt(&T_OO);
+    global_dpd_->file2_mat_wrt(&T_oo);
+    global_dpd_->file2_mat_wrt(&T_VV);
+    global_dpd_->file2_mat_wrt(&T_vv);
 
-    dpd_file2_close(&T_OO);
-    dpd_file2_close(&T_oo);
-    dpd_file2_close(&T_VV);
-    dpd_file2_close(&T_vv);
+    global_dpd_->file2_close(&T_OO);
+    global_dpd_->file2_close(&T_oo);
+    global_dpd_->file2_close(&T_VV);
+    global_dpd_->file2_close(&T_vv);
 
 }
 

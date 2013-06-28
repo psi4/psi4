@@ -50,23 +50,23 @@ void OCCWave::common_init()
         // print title and options
     if (print_ > 0) options_.print();
     wfn_type_=options_.get_str("WFN_TYPE");
-        orb_opt_=options_.get_str("ORB_OPT");
-        title();
+    orb_opt_=options_.get_str("ORB_OPT");
+    title();
 
     tol_Eod=options_.get_double("E_CONVERGENCE");
     tol_t2=options_.get_double("R_CONVERGENCE");
 
-        cc_maxiter=options_.get_int("CC_MAXITER");
+    cc_maxiter=options_.get_int("CC_MAXITER");
     mo_maxiter=options_.get_int("MO_MAXITER");
     print_=options_.get_int("PRINT");
     cachelev=options_.get_int("CACHELEVEL");
     exp_cutoff=options_.get_int("CUTOFF");
-        tol_pcg=options_.get_double("PCG_CONVERGENCE");
-        pcg_maxiter=options_.get_int("PCG_MAXITER");
+    tol_pcg=options_.get_double("PCG_CONVERGENCE");
+    pcg_maxiter=options_.get_int("PCG_MAXITER");
     num_vecs=options_.get_int("MO_DIIS_NUM_VECS");
     cc_maxdiis_=options_.get_int("CC_DIIS_MAX_VECS");
     cc_mindiis_=options_.get_int("CC_DIIS_MIN_VECS");
-        ep_maxiter=options_.get_int("EP_MAXITER");
+    ep_maxiter=options_.get_int("EP_MAXITER");
 
     step_max=options_.get_double("MO_STEP_MAX");
     lshift_parameter=options_.get_double("LEVEL_SHIFT");
@@ -90,23 +90,23 @@ void OCCWave::common_init()
     do_sos=options_.get_str("DO_SOS");
     write_mo_coeff=options_.get_str("MO_WRITE");
     read_mo_coeff=options_.get_str("MO_READ");
-        lineq=options_.get_str("LINEQ_SOLVER");
+    lineq=options_.get_str("LINEQ_SOLVER");
     level_shift=options_.get_str("DO_LEVEL_SHIFT");
     scs_type_=options_.get_str("SCS_TYPE");
     sos_type_=options_.get_str("SOS_TYPE");
     dertype=options_.get_str("DERTYPE");
     pcg_beta_type_=options_.get_str("PCG_BETA_TYPE");
-        twopdm_abcd_type=options_.get_str("TPDM_ABCD_TYPE");
+    twopdm_abcd_type=options_.get_str("TPDM_ABCD_TYPE");
     dertype=options_.get_str("DERTYPE");
     pcg_beta_type_=options_.get_str("PCG_BETA_TYPE");
-        compute_ccl=options_.get_str("CCL_ENERGY");
-        orb_resp_solver_=options_.get_str("ORB_RESP_SOLVER");
-        ip_poles=options_.get_str("IP_POLES");
-        ea_poles=options_.get_str("EA_POLES");
-        ep_ip_poles=options_.get_str("EP_IP_POLES");
-        ep_ea_poles=options_.get_str("EP_EA_POLES");
-        ekt_ip_=options_.get_str("EKT_IP");
-        ekt_ea_=options_.get_str("EKT_EA");
+    compute_ccl=options_.get_str("CCL_ENERGY");
+    orb_resp_solver_=options_.get_str("ORB_RESP_SOLVER");
+    ip_poles=options_.get_str("IP_POLES");
+    ea_poles=options_.get_str("EA_POLES");
+    ep_ip_poles=options_.get_str("EP_IP_POLES");
+    ep_ea_poles=options_.get_str("EP_EA_POLES");
+    ekt_ip_=options_.get_str("EKT_IP");
+    ekt_ea_=options_.get_str("EKT_EA");
 
     //   Tying orbital convergence to the desired e_conv,
     //   particularly important for sane numerical frequencies by energy
@@ -164,7 +164,7 @@ void OCCWave::common_init()
         else if (options_.get_str("DO_DIIS") == "FALSE") do_diis_ = 0;
 
     cutoff = pow(10.0,-exp_cutoff);
-        if (reference == "ROHF") reference_wavefunction_->semicanonicalize();
+    if (reference == "ROHF") reference_wavefunction_->semicanonicalize();
     get_moinfo();
 
 
@@ -193,7 +193,7 @@ if (reference_ == "RESTRICTED") {
                              ct.gamma(h).symbol(), frzcpi_[h], aoccpiA[h], avirtpiA[h], frzvpi_[h]);
         }
         fprintf(outfile,     "\t==============================\n");
-    fflush(outfile);
+        fflush(outfile);
 
         // Compute costs
         //cost_iabc_ = 8 * nooA * nvoA * nvoA * nvoA;
@@ -217,28 +217,28 @@ if (reference_ == "RESTRICTED") {
         fprintf(outfile,"\n\tMemory is %6lu MB \n", memory_mb_);
         fprintf(outfile,"\tCost of iabc is %6lu MB \n", cost_iabc_);
         fprintf(outfile,"\tCost of abcd is %6lu MB \n", cost_abcd_);
-    fflush(outfile);
+        fflush(outfile);
         if (cost_iabc_ < memory_mb_) {
             incore_iabc_ = 1;
             fprintf(outfile,     "\tSwitching to the incore algoritm for iabc..\n");
-        fflush(outfile);
+            fflush(outfile);
         }
         else {
             incore_iabc_ = 0;
             fprintf(outfile,     "\tSwitching to the out of core algoritm for iabc..\n");
-        fflush(outfile);
+            fflush(outfile);
         }
 
         //cost_abcd_ = 8 * nvoA * nvoA * nvoA * nvoA;
         if (cost_abcd_ < memory_mb_) {
             incore_abcd_ = 1;
             fprintf(outfile,     "\tSwitching to the incore algoritm for abcd..\n");
-        fflush(outfile);
+            fflush(outfile);
         }
         else {
             incore_abcd_ = 0;
             fprintf(outfile,     "\tSwitching to the out of core algoritm for abcd..\n");
-        fflush(outfile);
+            fflush(outfile);
         }
     }// end if (wfn_type_ == "OMP2")
 
@@ -319,7 +319,7 @@ else if (reference_ == "UNRESTRICTED") {
                              ct.gamma(h).symbol(), frzcpi_[h], aoccpiA[h], aoccpiB[h], avirtpiA[h], avirtpiB[h], frzvpi_[h]);
         }
         fprintf(outfile,     "\t==========================================\n");
-    fflush(outfile);
+        fflush(outfile);
 
     // Alloc ints
     std::vector<boost::shared_ptr<MOSpace> > spaces;
@@ -360,7 +360,7 @@ void OCCWave::title()
    else if (wfn_type_ == "OMP2.5" && orb_opt_ == "TRUE") fprintf(outfile,"                       OMP2.5 (OO-MP2.5)   \n");
    else if (wfn_type_ == "OMP2.5" && orb_opt_ == "FALSE") fprintf(outfile,"                       MP2.5  \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ;
-   fprintf(outfile,"              Latest Revision May 18, 2013.\n") ;
+   fprintf(outfile,"              Latest Revision Jun 09, 2013.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");

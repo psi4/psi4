@@ -66,42 +66,42 @@ void sigmaCC3(int i, int C_irr, double omega) {
 
   if (params.eom_ref == 0) { /* RHF */
     sprintf(lbl, "%s %d", "SIA", i);
-    dpd_file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
+    global_dpd_->file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
     sprintf(lbl, "%s %d", "SIjAb", i);
-    dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
+    global_dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
 
     /*** alpha-alpha-beta term 1 ***/ 
     /* quantities to compute X3 */
     sprintf(lbl, "%s %d", "CMnEf", i);
-    dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
-    dpd_buf4_init(&WAbEi, PSIF_CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WAbEi (iE,bA)");
-    dpd_buf4_init(&WMbIj, PSIF_CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WMbIj (Ij,Mb)");
+    global_dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
+    global_dpd_->buf4_init(&WAbEi, PSIF_CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WAbEi (iE,bA)");
+    global_dpd_->buf4_init(&WMbIj, PSIF_CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WMbIj (Ij,Mb)");
     /* quantities to compute sigma */
-    dpd_buf4_init(&Dints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
-    dpd_file2_init(&FME, PSIF_CC_OEI, 0, 0, 1, "FME");
-    dpd_buf4_init(&WmAEf, PSIF_CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WAmEf (mA,Ef)");
-    dpd_buf4_init(&WMnIe, PSIF_CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WMnIe (Mn,Ie)");
+    global_dpd_->buf4_init(&Dints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
+    global_dpd_->file2_init(&FME, PSIF_CC_OEI, 0, 0, 1, "FME");
+    global_dpd_->buf4_init(&WmAEf, PSIF_CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WAmEf (mA,Ef)");
+    global_dpd_->buf4_init(&WMnIe, PSIF_CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WMnIe (Mn,Ie)");
   
          /* * <S| H    <T| (Uhat C2)c   |0> |T> / (w-wt) -> sigma_1
             * <D| Hhat <T| (Uhat C2)c   |0> |T> / (w-wt) -> sigma_2 */
 
     if (params.t3_Ws_incore)
-      cc3_sigma_RHF_ic(&CMnEf, &WAbEi, &WMbIj, 1,  &Dints, &SIA, 
+      global_dpd_->cc3_sigma_RHF_ic(&CMnEf, &WAbEi, &WMbIj, 1,  &Dints, &SIA, 
         1, &FME, &WmAEf, &WMnIe, &SIjAb, moinfo.occpi, moinfo.occ_off,
         moinfo.virtpi, moinfo.vir_off, omega, outfile, params.nthreads,
         params.newtrips);
     else
-      cc3_sigma_RHF(&CMnEf, &WAbEi, &WMbIj, 1,  &Dints, &SIA, 
+      global_dpd_->cc3_sigma_RHF(&CMnEf, &WAbEi, &WMbIj, 1,  &Dints, &SIA, 
         1, &FME, &WmAEf, &WMnIe, &SIjAb, moinfo.occpi, moinfo.occ_off,
         moinfo.virtpi, moinfo.vir_off, omega, outfile, params.newtrips);
   
-    dpd_buf4_close(&CMnEf);
-    dpd_buf4_close(&WAbEi);
-    dpd_buf4_close(&WMbIj);
-    dpd_buf4_close(&Dints);
-    dpd_file2_close(&FME);
-    dpd_buf4_close(&WmAEf);
-    dpd_buf4_close(&WMnIe);
+    global_dpd_->buf4_close(&CMnEf);
+    global_dpd_->buf4_close(&WAbEi);
+    global_dpd_->buf4_close(&WMbIj);
+    global_dpd_->buf4_close(&Dints);
+    global_dpd_->file2_close(&FME);
+    global_dpd_->buf4_close(&WmAEf);
+    global_dpd_->buf4_close(&WMnIe);
 
 #ifdef EOM_DEBUG
     dpd_file2_close(&SIA);
@@ -114,35 +114,35 @@ void sigmaCC3(int i, int C_irr, double omega) {
 #endif
 
     /* do alpha-alpha-beta term 2 */
-    dpd_buf4_init(&tIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-    dpd_buf4_init(&WAbEi, PSIF_CC3_HC1ET1, C_irr, 10, 5, 10, 5, 0, "Ht_WAbEi (iE,bA)");
-    dpd_buf4_init(&WMbIj, PSIF_CC3_HC1ET1, C_irr, 0, 10, 0, 10, 0, "Ht_WMbIj (Ij,Mb)");
+    global_dpd_->buf4_init(&tIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+    global_dpd_->buf4_init(&WAbEi, PSIF_CC3_HC1ET1, C_irr, 10, 5, 10, 5, 0, "Ht_WAbEi (iE,bA)");
+    global_dpd_->buf4_init(&WMbIj, PSIF_CC3_HC1ET1, C_irr, 0, 10, 0, 10, 0, "Ht_WMbIj (Ij,Mb)");
   
-    dpd_buf4_init(&Dints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
-    dpd_file2_init(&FME, PSIF_CC_OEI, 0, 0, 1, "FME");
-    dpd_buf4_init(&WmAEf, PSIF_CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WAmEf (mA,Ef)");
-    dpd_buf4_init(&WMnIe, PSIF_CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WMnIe (Mn,Ie)");
+    global_dpd_->buf4_init(&Dints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
+    global_dpd_->file2_init(&FME, PSIF_CC_OEI, 0, 0, 1, "FME");
+    global_dpd_->buf4_init(&WmAEf, PSIF_CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WAmEf (mA,Ef)");
+    global_dpd_->buf4_init(&WMnIe, PSIF_CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WMnIe (Mn,Ie)");
   
            /* * <S| H    <T| (Utilde T2)c |0> |T> / (w-wt) -> sigma_1
               * <D| Hhat <T| (Utilde T2)c |0> |T> / (w-wt) -> sigma_2 */
   
     if (params.t3_Ws_incore)
-      cc3_sigma_RHF_ic(&tIjAb, &WAbEi, &WMbIj, 1,  &Dints, &SIA, 
+      global_dpd_->cc3_sigma_RHF_ic(&tIjAb, &WAbEi, &WMbIj, 1,  &Dints, &SIA, 
         1, &FME, &WmAEf, &WMnIe, &SIjAb, moinfo.occpi, moinfo.occ_off,
         moinfo.virtpi, moinfo.vir_off, omega, outfile, params.nthreads,
         params.newtrips);
     else
-      cc3_sigma_RHF(&tIjAb, &WAbEi, &WMbIj, 1,  &Dints, &SIA,
+      global_dpd_->cc3_sigma_RHF(&tIjAb, &WAbEi, &WMbIj, 1,  &Dints, &SIA,
          1, &FME, &WmAEf, &WMnIe, &SIjAb, moinfo.occpi, moinfo.occ_off,
          moinfo.virtpi, moinfo.vir_off, omega, outfile, params.newtrips);
   
-    dpd_buf4_close(&tIjAb);
-    dpd_buf4_close(&WAbEi);
-    dpd_buf4_close(&WMbIj);
-    dpd_buf4_close(&Dints);
-    dpd_file2_close(&FME);
-    dpd_buf4_close(&WmAEf);
-    dpd_buf4_close(&WMnIe);
+    global_dpd_->buf4_close(&tIjAb);
+    global_dpd_->buf4_close(&WAbEi);
+    global_dpd_->buf4_close(&WMbIj);
+    global_dpd_->buf4_close(&Dints);
+    global_dpd_->file2_close(&FME);
+    global_dpd_->buf4_close(&WmAEf);
+    global_dpd_->buf4_close(&WMnIe);
   
 #ifdef EOM_DEBUG
     dpd_file2_close(&SIA);
@@ -155,32 +155,32 @@ void sigmaCC3(int i, int C_irr, double omega) {
 #endif
 
     /* alpha-alpha-beta term 3 */
-    dpd_buf4_init(&tIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-    dpd_buf4_init(&WAbEi, PSIF_CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WAbEi (iE,bA)");
-    dpd_buf4_init(&WMbIj, PSIF_CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WMbIj (Ij,Mb)");
+    global_dpd_->buf4_init(&tIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+    global_dpd_->buf4_init(&WAbEi, PSIF_CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WAbEi (iE,bA)");
+    global_dpd_->buf4_init(&WMbIj, PSIF_CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WMbIj (Ij,Mb)");
   
-    dpd_file2_init(&FME, PSIF_CC3_HC1, C_irr, 0, 1, "HC1 FME");
-    dpd_buf4_init(&WmAEf, PSIF_CC3_HC1, C_irr, 10, 5, 10, 5, 0, "HC1 WAmEf (mA,Ef)");
-    dpd_buf4_init(&WMnIe, PSIF_CC3_HC1, C_irr, 0, 10, 0, 10, 0, "HC1 WMnIe (Mn,Ie)");
+    global_dpd_->file2_init(&FME, PSIF_CC3_HC1, C_irr, 0, 1, "HC1 FME");
+    global_dpd_->buf4_init(&WmAEf, PSIF_CC3_HC1, C_irr, 10, 5, 10, 5, 0, "HC1 WAmEf (mA,Ef)");
+    global_dpd_->buf4_init(&WMnIe, PSIF_CC3_HC1, C_irr, 0, 10, 0, 10, 0, "HC1 WMnIe (Mn,Ie)");
   
            /* <D| H'   <T| (Uhat T2)c   |0> |T> / (-wt) -> sigma_2 */
   
     if (params.t3_Ws_incore)
-      cc3_sigma_RHF_ic(&tIjAb, &WAbEi, &WMbIj, 0, NULL, NULL, 
+      global_dpd_->cc3_sigma_RHF_ic(&tIjAb, &WAbEi, &WMbIj, 0, NULL, NULL, 
         1, &FME, &WmAEf, &WMnIe, &SIjAb, moinfo.occpi, moinfo.occ_off,
         moinfo.virtpi, moinfo.vir_off, 0.0, outfile, params.nthreads,
         params.newtrips);
     else
-    cc3_sigma_RHF(&tIjAb, &WAbEi, &WMbIj, 0, NULL, NULL,
+    global_dpd_->cc3_sigma_RHF(&tIjAb, &WAbEi, &WMbIj, 0, NULL, NULL,
        1, &FME, &WmAEf, &WMnIe, &SIjAb, moinfo.occpi, moinfo.occ_off,
        moinfo.virtpi, moinfo.vir_off, 0.0, outfile, params.newtrips);
   
-    dpd_buf4_close(&tIjAb); 
-    dpd_buf4_close(&WAbEi);
-    dpd_buf4_close(&WMbIj);
-    dpd_file2_close(&FME);
-    dpd_buf4_close(&WmAEf);
-    dpd_buf4_close(&WMnIe);
+    global_dpd_->buf4_close(&tIjAb); 
+    global_dpd_->buf4_close(&WAbEi);
+    global_dpd_->buf4_close(&WMbIj);
+    global_dpd_->file2_close(&FME);
+    global_dpd_->buf4_close(&WmAEf);
+    global_dpd_->buf4_close(&WMnIe);
 
 #ifdef EOM_DEBUG
     dpd_file2_close(&SIA);
@@ -192,165 +192,165 @@ void sigmaCC3(int i, int C_irr, double omega) {
     dpd_buf4_init(&SIjAb, EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
 #endif
 
-    dpd_file2_close(&SIA);
-    dpd_buf4_close(&SIjAb);
+    global_dpd_->file2_close(&SIA);
+    global_dpd_->buf4_close(&SIjAb);
   }
   else if (params.eom_ref == 1) { /* ROHF */
   }
   else if (params.eom_ref == 2) { /* UHF */
     /* open all sigma (output) files */
     sprintf(lbl, "%s %d", "SIA", i);
-    dpd_file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
+    global_dpd_->file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
     sprintf(lbl, "%s %d", "Sia", i);
-    dpd_file2_init(&Sia, PSIF_EOM_Sia, C_irr, 2, 3, lbl);
+    global_dpd_->file2_init(&Sia, PSIF_EOM_Sia, C_irr, 2, 3, lbl);
     sprintf(lbl, "%s %d", "SIJAB", i);
-    dpd_buf4_init(&SIJAB, PSIF_EOM_SIJAB, C_irr, 0, 5, 2, 7, 0, lbl);
+    global_dpd_->buf4_init(&SIJAB, PSIF_EOM_SIJAB, C_irr, 0, 5, 2, 7, 0, lbl);
     sprintf(lbl, "%s %d", "Sijab", i);
-    dpd_buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, 10, 15, 12, 17, 0, lbl);
+    global_dpd_->buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, 10, 15, 12, 17, 0, lbl);
     sprintf(lbl, "%s %d", "SIjAb", i);
-    dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 22, 28, 22, 28, 0, lbl);
+    global_dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 22, 28, 22, 28, 0, lbl);
 
     /*** alpha-alpha-alpha term 1 */
 
     sprintf(lbl, "%s %d", "CMNEF", i);
-    dpd_buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 0, 5, 2, 7, 0, lbl);
-    dpd_buf4_init(&WABEI, PSIF_CC3_HET1, 0, 20, 5, 20, 7, 0, "CC3 WABEI (IE,B>A)");
-    dpd_buf4_init(&WMBIJ, PSIF_CC3_HET1, 0, 0, 20, 2, 20, 0, "CC3 WMBIJ (I>J,MB)");
-    dpd_buf4_init(&DIJAB_anti, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <IJ||AB>");
-    dpd_file2_init(&FME, PSIF_CC_OEI, 0, 0, 1, "FME");
-    dpd_buf4_init(&WAMEF, PSIF_CC3_HET1, 0, 20, 5, 20, 7, 0, "CC3 WAMEF (MA,F>E)");
-    dpd_buf4_init(&WMNIE, PSIF_CC3_HET1, 0, 0, 20, 2, 20, 0, "CC3 WMNIE (M>N,IE)");
+    global_dpd_->buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 0, 5, 2, 7, 0, lbl);
+    global_dpd_->buf4_init(&WABEI, PSIF_CC3_HET1, 0, 20, 5, 20, 7, 0, "CC3 WABEI (IE,B>A)");
+    global_dpd_->buf4_init(&WMBIJ, PSIF_CC3_HET1, 0, 0, 20, 2, 20, 0, "CC3 WMBIJ (I>J,MB)");
+    global_dpd_->buf4_init(&DIJAB_anti, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <IJ||AB>");
+    global_dpd_->file2_init(&FME, PSIF_CC_OEI, 0, 0, 1, "FME");
+    global_dpd_->buf4_init(&WAMEF, PSIF_CC3_HET1, 0, 20, 5, 20, 7, 0, "CC3 WAMEF (MA,F>E)");
+    global_dpd_->buf4_init(&WMNIE, PSIF_CC3_HET1, 0, 0, 20, 2, 20, 0, "CC3 WMNIE (M>N,IE)");
 
          /* * <S| H    <T| (Uhat C2)c   |0> |T> / (w-wt) -> sigma_1
             * <D| Hhat <T| (Uhat C2)c   |0> |T> / (w-wt) -> sigma_2 */
 
-    cc3_sigma_UHF_AAA(&CMNEF, &WABEI, &WMBIJ, 1, &DIJAB_anti, &SIA,
+    global_dpd_->cc3_sigma_UHF_AAA(&CMNEF, &WABEI, &WMBIJ, 1, &DIJAB_anti, &SIA,
         1, &FME, &WAMEF, &WMNIE, &SIJAB, moinfo.aoccpi, moinfo.aocc_off,
         moinfo.avirtpi, moinfo.avir_off, omega, outfile);
 
-    dpd_buf4_close(&CMNEF);
-    dpd_buf4_close(&WABEI);
-    dpd_buf4_close(&WMBIJ);
-    dpd_buf4_close(&DIJAB_anti);
-    dpd_file2_close(&FME);
-    dpd_buf4_close(&WAMEF);
-    dpd_buf4_close(&WMNIE);
+    global_dpd_->buf4_close(&CMNEF);
+    global_dpd_->buf4_close(&WABEI);
+    global_dpd_->buf4_close(&WMBIJ);
+    global_dpd_->buf4_close(&DIJAB_anti);
+    global_dpd_->file2_close(&FME);
+    global_dpd_->buf4_close(&WAMEF);
+    global_dpd_->buf4_close(&WMNIE);
 
     /*** beta-beta-beta term 1 */
 
     sprintf(lbl, "%s %d", "Cmnef", i);
-    dpd_buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 10, 15, 12, 17, 0, lbl);
-    dpd_buf4_init(&Wabei, PSIF_CC3_HET1, 0, 30, 15, 30, 17, 0, "CC3 Wabei (ie,b>a)");
-    dpd_buf4_init(&Wmbij, PSIF_CC3_HET1, 0, 10, 30, 12, 30, 0, "CC3 Wmbij (i>j,mb)");
-    dpd_buf4_init(&Dijab_anti, PSIF_CC_DINTS, 0, 10, 15, 10, 15, 0, "D <ij||ab>");
-    dpd_file2_init(&Fme, PSIF_CC_OEI, 0, 2, 3, "Fme");
-    dpd_buf4_init(&Wamef, PSIF_CC3_HET1, 0, 30, 15, 30, 17, 0, "CC3 Wamef (ma,f>e)");
-    dpd_buf4_init(&Wmnie, PSIF_CC3_HET1, 0, 10, 30, 12, 30, 0, "CC3 Wmnie (m>n,ie)");
+    global_dpd_->buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 10, 15, 12, 17, 0, lbl);
+    global_dpd_->buf4_init(&Wabei, PSIF_CC3_HET1, 0, 30, 15, 30, 17, 0, "CC3 Wabei (ie,b>a)");
+    global_dpd_->buf4_init(&Wmbij, PSIF_CC3_HET1, 0, 10, 30, 12, 30, 0, "CC3 Wmbij (i>j,mb)");
+    global_dpd_->buf4_init(&Dijab_anti, PSIF_CC_DINTS, 0, 10, 15, 10, 15, 0, "D <ij||ab>");
+    global_dpd_->file2_init(&Fme, PSIF_CC_OEI, 0, 2, 3, "Fme");
+    global_dpd_->buf4_init(&Wamef, PSIF_CC3_HET1, 0, 30, 15, 30, 17, 0, "CC3 Wamef (ma,f>e)");
+    global_dpd_->buf4_init(&Wmnie, PSIF_CC3_HET1, 0, 10, 30, 12, 30, 0, "CC3 Wmnie (m>n,ie)");
 
          /* * <S| H    <T| (Uhat C2)c   |0> |T> / (w-wt) -> sigma_1
             * <D| Hhat <T| (Uhat C2)c   |0> |T> / (w-wt) -> sigma_2 */
 
-    cc3_sigma_UHF_BBB(&Cmnef, &Wabei, &Wmbij, 1, &Dijab_anti, &Sia,
+    global_dpd_->cc3_sigma_UHF_BBB(&Cmnef, &Wabei, &Wmbij, 1, &Dijab_anti, &Sia,
         1, &Fme, &Wamef, &Wmnie, &Sijab, moinfo.boccpi, moinfo.bocc_off,
         moinfo.bvirtpi, moinfo.bvir_off, omega, outfile);
 
-    dpd_buf4_close(&Cmnef);
-    dpd_buf4_close(&Wabei);
-    dpd_buf4_close(&Wmbij);
-    dpd_buf4_close(&Dijab_anti);
-    dpd_file2_close(&Fme);
-    dpd_buf4_close(&Wamef);
-    dpd_buf4_close(&Wmnie);
+    global_dpd_->buf4_close(&Cmnef);
+    global_dpd_->buf4_close(&Wabei);
+    global_dpd_->buf4_close(&Wmbij);
+    global_dpd_->buf4_close(&Dijab_anti);
+    global_dpd_->file2_close(&Fme);
+    global_dpd_->buf4_close(&Wamef);
+    global_dpd_->buf4_close(&Wmnie);
 
     /*** alpha-alpha-beta term 1 */ 
 
     sprintf(lbl, "%s %d", "CMNEF", i);
-    dpd_buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 0, 5, 2, 7, 0, lbl);
+    global_dpd_->buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 0, 5, 2, 7, 0, lbl);
     sprintf(lbl, "%s %d", "CMnEf", i);
-    dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 22, 28, 22, 28, 0, lbl);
-    dpd_buf4_init(&CmNeF, PSIF_EOM_TMP, C_irr, 23, 29, 23, 29, 0, "CmNeF");
+    global_dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 22, 28, 22, 28, 0, lbl);
+    global_dpd_->buf4_init(&CmNeF, PSIF_EOM_TMP, C_irr, 23, 29, 23, 29, 0, "CmNeF");
 
-    dpd_buf4_init(&WABEI, PSIF_CC3_HET1, 0, 20, 5, 20, 7, 0, "CC3 WABEI (IE,B>A)");
-    dpd_buf4_init(&WaBeI, PSIF_CC3_HET1, 0, 24, 28, 24, 28, 0, "CC3 WaBeI (Ie,Ba)");
-    dpd_buf4_init(&WAbEi, PSIF_CC3_HET1, 0, 27, 29, 27, 29, 0, "CC3 WAbEi (iE,bA)");
-    dpd_buf4_init(&WMBIJ, PSIF_CC3_HET1, 0, 0, 20, 2, 20, 0, "CC3 WMBIJ (I>J,MB)");
-    dpd_buf4_init(&WMbIj, PSIF_CC3_HET1, 0, 22, 24, 22, 24, 0, "CC3 WMbIj (Ij,Mb)");
-    dpd_buf4_init(&WmBiJ, PSIF_CC3_HET1, 0, 23, 27, 23, 27, 0, "CC3 WmBiJ (iJ,mB)");
+    global_dpd_->buf4_init(&WABEI, PSIF_CC3_HET1, 0, 20, 5, 20, 7, 0, "CC3 WABEI (IE,B>A)");
+    global_dpd_->buf4_init(&WaBeI, PSIF_CC3_HET1, 0, 24, 28, 24, 28, 0, "CC3 WaBeI (Ie,Ba)");
+    global_dpd_->buf4_init(&WAbEi, PSIF_CC3_HET1, 0, 27, 29, 27, 29, 0, "CC3 WAbEi (iE,bA)");
+    global_dpd_->buf4_init(&WMBIJ, PSIF_CC3_HET1, 0, 0, 20, 2, 20, 0, "CC3 WMBIJ (I>J,MB)");
+    global_dpd_->buf4_init(&WMbIj, PSIF_CC3_HET1, 0, 22, 24, 22, 24, 0, "CC3 WMbIj (Ij,Mb)");
+    global_dpd_->buf4_init(&WmBiJ, PSIF_CC3_HET1, 0, 23, 27, 23, 27, 0, "CC3 WmBiJ (iJ,mB)");
 
-    dpd_buf4_init(&DIJAB_anti, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <IJ||AB>");
-    dpd_buf4_init(&DIjAb, PSIF_CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
+    global_dpd_->buf4_init(&DIJAB_anti, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <IJ||AB>");
+    global_dpd_->buf4_init(&DIjAb, PSIF_CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
 
-    dpd_file2_init(&FME, PSIF_CC_OEI, 0, 0, 1, "FME");
-    dpd_file2_init(&Fme, PSIF_CC_OEI, 0, 2, 3, "Fme");
-    dpd_buf4_init(&WAMEF, PSIF_CC3_HET1, 0, 20, 5, 20, 7, 0, "CC3 WAMEF (MA,F>E)");
-    dpd_buf4_init(&WaMeF, PSIF_CC3_HET1, 0, 24, 28, 24, 28, 0, "CC3 WaMeF (Ma,Fe)");
-    dpd_buf4_init(&WAmEf, PSIF_CC3_HET1, 0, 27, 29, 27, 29, 0, "CC3 WAmEf (mA,fE)");
-    dpd_buf4_init(&WMNIE, PSIF_CC3_HET1, 0, 0, 20, 2, 20, 0, "CC3 WMNIE (M>N,IE)");
-    dpd_buf4_init(&WMnIe, PSIF_CC3_HET1, 0, 22, 24, 22, 24, 0, "CC3 WMnIe (Mn,Ie)");
-    dpd_buf4_init(&WmNiE, PSIF_CC3_HET1, 0, 23, 27, 23, 27, 0, "CC3 WmNiE (mN,iE)");
+    global_dpd_->file2_init(&FME, PSIF_CC_OEI, 0, 0, 1, "FME");
+    global_dpd_->file2_init(&Fme, PSIF_CC_OEI, 0, 2, 3, "Fme");
+    global_dpd_->buf4_init(&WAMEF, PSIF_CC3_HET1, 0, 20, 5, 20, 7, 0, "CC3 WAMEF (MA,F>E)");
+    global_dpd_->buf4_init(&WaMeF, PSIF_CC3_HET1, 0, 24, 28, 24, 28, 0, "CC3 WaMeF (Ma,Fe)");
+    global_dpd_->buf4_init(&WAmEf, PSIF_CC3_HET1, 0, 27, 29, 27, 29, 0, "CC3 WAmEf (mA,fE)");
+    global_dpd_->buf4_init(&WMNIE, PSIF_CC3_HET1, 0, 0, 20, 2, 20, 0, "CC3 WMNIE (M>N,IE)");
+    global_dpd_->buf4_init(&WMnIe, PSIF_CC3_HET1, 0, 22, 24, 22, 24, 0, "CC3 WMnIe (Mn,Ie)");
+    global_dpd_->buf4_init(&WmNiE, PSIF_CC3_HET1, 0, 23, 27, 23, 27, 0, "CC3 WmNiE (mN,iE)");
 
          /* * <S| H    <T| (Uhat C2)c   |0> |T> / (w-wt) -> sigma_1
             * <D| Hhat <T| (Uhat C2)c   |0> |T> / (w-wt) -> sigma_2 */
 
-    cc3_sigma_UHF_AAB(&CMNEF, &CMnEf, &CmNeF, &WABEI, &WaBeI, &WAbEi,
+    global_dpd_->cc3_sigma_UHF_AAB(&CMNEF, &CMnEf, &CmNeF, &WABEI, &WaBeI, &WAbEi,
        &WMBIJ, &WMbIj, &WmBiJ, 1,  &DIJAB_anti, &DIjAb, &SIA, &Sia,
        1, &FME, &Fme, &WAMEF, &WaMeF, &WAmEf, &WMNIE, &WMnIe, &WmNiE,
        &SIJAB, &SIjAb, moinfo.aoccpi, moinfo.aocc_off, moinfo.boccpi,
        moinfo.bocc_off, moinfo.avirtpi, moinfo.avir_off, moinfo.bvirtpi,
        moinfo.bvir_off, omega, outfile);
 
-    dpd_buf4_close(&CMNEF); dpd_buf4_close(&CMnEf); dpd_buf4_close(&CmNeF);
-    dpd_buf4_close(&WABEI); dpd_buf4_close(&WaBeI); dpd_buf4_close(&WAbEi);
-    dpd_buf4_close(&WMBIJ); dpd_buf4_close(&WMbIj); dpd_buf4_close(&WmBiJ);
-    dpd_buf4_close(&DIJAB_anti); dpd_buf4_close(&DIjAb);
-    dpd_file2_close(&FME); dpd_file2_close(&Fme);
-    dpd_buf4_close(&WAMEF); dpd_buf4_close(&WaMeF); dpd_buf4_close(&WAmEf);
-    dpd_buf4_close(&WMNIE); dpd_buf4_close(&WMnIe); dpd_buf4_close(&WmNiE);
+    global_dpd_->buf4_close(&CMNEF); global_dpd_->buf4_close(&CMnEf); global_dpd_->buf4_close(&CmNeF);
+    global_dpd_->buf4_close(&WABEI); global_dpd_->buf4_close(&WaBeI); global_dpd_->buf4_close(&WAbEi);
+    global_dpd_->buf4_close(&WMBIJ); global_dpd_->buf4_close(&WMbIj); global_dpd_->buf4_close(&WmBiJ);
+    global_dpd_->buf4_close(&DIJAB_anti); global_dpd_->buf4_close(&DIjAb);
+    global_dpd_->file2_close(&FME); global_dpd_->file2_close(&Fme);
+    global_dpd_->buf4_close(&WAMEF); global_dpd_->buf4_close(&WaMeF); global_dpd_->buf4_close(&WAmEf);
+    global_dpd_->buf4_close(&WMNIE); global_dpd_->buf4_close(&WMnIe); global_dpd_->buf4_close(&WmNiE);
 
     /*** beta-beta-alpha term 1 */ 
 
     sprintf(lbl, "%s %d", "Cmnef", i);
-    dpd_buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 10, 15, 12, 17, 0, lbl);
+    global_dpd_->buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 10, 15, 12, 17, 0, lbl);
     sprintf(lbl, "%s %d", "CMnEf", i);
-    dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 22, 28, 22, 28, 0, lbl);
-    dpd_buf4_init(&CmNeF, PSIF_EOM_TMP, C_irr, 23, 29, 23, 29, 0, "CmNeF");
+    global_dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 22, 28, 22, 28, 0, lbl);
+    global_dpd_->buf4_init(&CmNeF, PSIF_EOM_TMP, C_irr, 23, 29, 23, 29, 0, "CmNeF");
 
-    dpd_buf4_init(&Wabei, PSIF_CC3_HET1, 0, 30, 15, 30, 17, 0, "CC3 Wabei (ie,b>a)");
-    dpd_buf4_init(&WaBeI, PSIF_CC3_HET1, 0, 24, 28, 24, 28, 0, "CC3 WaBeI (Ie,Ba)");
-    dpd_buf4_init(&WAbEi, PSIF_CC3_HET1, 0, 27, 29, 27, 29, 0, "CC3 WAbEi (iE,bA)");
-    dpd_buf4_init(&Wmbij, PSIF_CC3_HET1, 0, 10, 30, 12, 30, 0, "CC3 Wmbij (i>j,mb)");
-    dpd_buf4_init(&WMbIj, PSIF_CC3_HET1, 0, 22, 24, 22, 24, 0, "CC3 WMbIj (Ij,Mb)");
-    dpd_buf4_init(&WmBiJ, PSIF_CC3_HET1, 0, 23, 27, 23, 27, 0, "CC3 WmBiJ (iJ,mB)");
+    global_dpd_->buf4_init(&Wabei, PSIF_CC3_HET1, 0, 30, 15, 30, 17, 0, "CC3 Wabei (ie,b>a)");
+    global_dpd_->buf4_init(&WaBeI, PSIF_CC3_HET1, 0, 24, 28, 24, 28, 0, "CC3 WaBeI (Ie,Ba)");
+    global_dpd_->buf4_init(&WAbEi, PSIF_CC3_HET1, 0, 27, 29, 27, 29, 0, "CC3 WAbEi (iE,bA)");
+    global_dpd_->buf4_init(&Wmbij, PSIF_CC3_HET1, 0, 10, 30, 12, 30, 0, "CC3 Wmbij (i>j,mb)");
+    global_dpd_->buf4_init(&WMbIj, PSIF_CC3_HET1, 0, 22, 24, 22, 24, 0, "CC3 WMbIj (Ij,Mb)");
+    global_dpd_->buf4_init(&WmBiJ, PSIF_CC3_HET1, 0, 23, 27, 23, 27, 0, "CC3 WmBiJ (iJ,mB)");
 
-    dpd_buf4_init(&Dijab_anti, PSIF_CC_DINTS, 0, 10, 15, 10, 15, 0, "D <ij||ab>");
-    dpd_buf4_init(&DiJaB, PSIF_CC_DINTS, 0, 23, 29, 23, 29, 0, "D <iJ|aB>");
+    global_dpd_->buf4_init(&Dijab_anti, PSIF_CC_DINTS, 0, 10, 15, 10, 15, 0, "D <ij||ab>");
+    global_dpd_->buf4_init(&DiJaB, PSIF_CC_DINTS, 0, 23, 29, 23, 29, 0, "D <iJ|aB>");
 
-    dpd_file2_init(&FME, PSIF_CC_OEI, 0, 0, 1, "FME");
-    dpd_file2_init(&Fme, PSIF_CC_OEI, 0, 2, 3, "Fme");
-    dpd_buf4_init(&Wamef, PSIF_CC3_HET1, 0, 30, 15, 30, 17, 0, "CC3 Wamef (ma,f>e)");
-    dpd_buf4_init(&WaMeF, PSIF_CC3_HET1, 0, 24, 28, 24, 28, 0, "CC3 WaMeF (Ma,Fe)");
-    dpd_buf4_init(&WAmEf, PSIF_CC3_HET1, 0, 27, 29, 27, 29, 0, "CC3 WAmEf (mA,fE)");
-    dpd_buf4_init(&Wmnie, PSIF_CC3_HET1, 0, 10, 30, 12, 30, 0, "CC3 Wmnie (m>n,ie)");
-    dpd_buf4_init(&WMnIe, PSIF_CC3_HET1, 0, 22, 24, 22, 24, 0, "CC3 WMnIe (Mn,Ie)");
-    dpd_buf4_init(&WmNiE, PSIF_CC3_HET1, 0, 23, 27, 23, 27, 0, "CC3 WmNiE (mN,iE)");
+    global_dpd_->file2_init(&FME, PSIF_CC_OEI, 0, 0, 1, "FME");
+    global_dpd_->file2_init(&Fme, PSIF_CC_OEI, 0, 2, 3, "Fme");
+    global_dpd_->buf4_init(&Wamef, PSIF_CC3_HET1, 0, 30, 15, 30, 17, 0, "CC3 Wamef (ma,f>e)");
+    global_dpd_->buf4_init(&WaMeF, PSIF_CC3_HET1, 0, 24, 28, 24, 28, 0, "CC3 WaMeF (Ma,Fe)");
+    global_dpd_->buf4_init(&WAmEf, PSIF_CC3_HET1, 0, 27, 29, 27, 29, 0, "CC3 WAmEf (mA,fE)");
+    global_dpd_->buf4_init(&Wmnie, PSIF_CC3_HET1, 0, 10, 30, 12, 30, 0, "CC3 Wmnie (m>n,ie)");
+    global_dpd_->buf4_init(&WMnIe, PSIF_CC3_HET1, 0, 22, 24, 22, 24, 0, "CC3 WMnIe (Mn,Ie)");
+    global_dpd_->buf4_init(&WmNiE, PSIF_CC3_HET1, 0, 23, 27, 23, 27, 0, "CC3 WmNiE (mN,iE)");
 
          /* * <S| H    <T| (Uhat C2)c   |0> |T> / (w-wt) -> sigma_1
             * <D| Hhat <T| (Uhat C2)c   |0> |T> / (w-wt) -> sigma_2 */
 
-    cc3_sigma_UHF_BBA(&Cmnef, &CMnEf, &CmNeF, &Wabei, &WaBeI, &WAbEi,
+    global_dpd_->cc3_sigma_UHF_BBA(&Cmnef, &CMnEf, &CmNeF, &Wabei, &WaBeI, &WAbEi,
       &Wmbij, &WMbIj, &WmBiJ, 1, &Dijab_anti, &DiJaB, &SIA, &Sia,
       1, &FME, &Fme, &Wamef, &WaMeF, &WAmEf, &Wmnie, &WMnIe, &WmNiE,
       &Sijab, &SIjAb, moinfo.aoccpi, moinfo.aocc_off, moinfo.boccpi,
       moinfo.bocc_off, moinfo.avirtpi, moinfo.avir_off, moinfo.bvirtpi,
       moinfo.bvir_off, omega, outfile);
 
-    dpd_buf4_close(&Cmnef); dpd_buf4_close(&CMnEf); dpd_buf4_close(&CmNeF);
-    dpd_buf4_close(&Wabei); dpd_buf4_close(&WaBeI); dpd_buf4_close(&WAbEi);
-    dpd_buf4_close(&Wmbij); dpd_buf4_close(&WMbIj); dpd_buf4_close(&WmBiJ);
-    dpd_buf4_close(&Dijab_anti); dpd_buf4_close(&DiJaB);
-    dpd_file2_close(&FME); dpd_file2_close(&Fme);
-    dpd_buf4_close(&Wamef); dpd_buf4_close(&WaMeF); dpd_buf4_close(&WAmEf);
-    dpd_buf4_close(&Wmnie); dpd_buf4_close(&WMnIe); dpd_buf4_close(&WmNiE);
+    global_dpd_->buf4_close(&Cmnef); global_dpd_->buf4_close(&CMnEf); global_dpd_->buf4_close(&CmNeF);
+    global_dpd_->buf4_close(&Wabei); global_dpd_->buf4_close(&WaBeI); global_dpd_->buf4_close(&WAbEi);
+    global_dpd_->buf4_close(&Wmbij); global_dpd_->buf4_close(&WMbIj); global_dpd_->buf4_close(&WmBiJ);
+    global_dpd_->buf4_close(&Dijab_anti); global_dpd_->buf4_close(&DiJaB);
+    global_dpd_->file2_close(&FME); global_dpd_->file2_close(&Fme);
+    global_dpd_->buf4_close(&Wamef); global_dpd_->buf4_close(&WaMeF); global_dpd_->buf4_close(&WAmEf);
+    global_dpd_->buf4_close(&Wmnie); global_dpd_->buf4_close(&WMnIe); global_dpd_->buf4_close(&WmNiE);
 
 #ifdef EOM_DEBUG
   dpd_file2_close(&SIA);
@@ -373,139 +373,139 @@ void sigmaCC3(int i, int C_irr, double omega) {
 
     /*** alpha-alpha-alpha term 2 */
 
-    dpd_buf4_init(&TIJAB, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
-    dpd_buf4_init(&WABEI, PSIF_CC3_HC1ET1, C_irr, 20, 5, 20, 7, 0, "Ht_WABEI (IE,B>A)");
-    dpd_buf4_init(&WMBIJ, PSIF_CC3_HC1ET1, C_irr, 0, 20, 2, 20, 0, "Ht_WMBIJ (I>J,MB)");
-    dpd_buf4_init(&DIJAB_anti, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <IJ||AB>");
-    dpd_file2_init(&FME, PSIF_CC_OEI, 0, 0, 1, "FME");
-    dpd_buf4_init(&WAMEF, PSIF_CC3_HET1, 0, 20, 5, 20, 7, 0, "CC3 WAMEF (MA,F>E)");
-    dpd_buf4_init(&WMNIE, PSIF_CC3_HET1, 0, 0, 20, 2, 20, 0, "CC3 WMNIE (M>N,IE)");
+    global_dpd_->buf4_init(&TIJAB, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
+    global_dpd_->buf4_init(&WABEI, PSIF_CC3_HC1ET1, C_irr, 20, 5, 20, 7, 0, "Ht_WABEI (IE,B>A)");
+    global_dpd_->buf4_init(&WMBIJ, PSIF_CC3_HC1ET1, C_irr, 0, 20, 2, 20, 0, "Ht_WMBIJ (I>J,MB)");
+    global_dpd_->buf4_init(&DIJAB_anti, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <IJ||AB>");
+    global_dpd_->file2_init(&FME, PSIF_CC_OEI, 0, 0, 1, "FME");
+    global_dpd_->buf4_init(&WAMEF, PSIF_CC3_HET1, 0, 20, 5, 20, 7, 0, "CC3 WAMEF (MA,F>E)");
+    global_dpd_->buf4_init(&WMNIE, PSIF_CC3_HET1, 0, 0, 20, 2, 20, 0, "CC3 WMNIE (M>N,IE)");
 
          /* * <S| H    <T| (Utilde T2)c |0> |T> / (w-wt) -> sigma_1
             * <D| Hhat <T| (Utilde T2)c |0> |T> / (w-wt) -> sigma_2 */
 
-    cc3_sigma_UHF_AAA(&TIJAB, &WABEI, &WMBIJ, 1, &DIJAB_anti, &SIA,
+    global_dpd_->cc3_sigma_UHF_AAA(&TIJAB, &WABEI, &WMBIJ, 1, &DIJAB_anti, &SIA,
         1, &FME, &WAMEF, &WMNIE, &SIJAB, moinfo.aoccpi, moinfo.aocc_off, 
         moinfo.avirtpi, moinfo.avir_off, omega, outfile);
 
-    dpd_buf4_close(&TIJAB);
-    dpd_buf4_close(&WABEI);
-    dpd_buf4_close(&WMBIJ);
-    dpd_buf4_close(&DIJAB_anti);
-    dpd_file2_close(&FME);
-    dpd_buf4_close(&WAMEF);
-    dpd_buf4_close(&WMNIE);
+    global_dpd_->buf4_close(&TIJAB);
+    global_dpd_->buf4_close(&WABEI);
+    global_dpd_->buf4_close(&WMBIJ);
+    global_dpd_->buf4_close(&DIJAB_anti);
+    global_dpd_->file2_close(&FME);
+    global_dpd_->buf4_close(&WAMEF);
+    global_dpd_->buf4_close(&WMNIE);
 
     /*** beta-beta-beta term 2 */
 
-    dpd_buf4_init(&Tijab, PSIF_CC_TAMPS, 0, 10, 15, 12, 17, 0, "tijab");
-    dpd_buf4_init(&Wabei, PSIF_CC3_HC1ET1, C_irr, 30, 15, 30, 17, 0, "Ht_Wabei (ie,b>a)");
-    dpd_buf4_init(&Wmbij, PSIF_CC3_HC1ET1, C_irr, 10, 30, 12, 30, 0, "Ht_Wmbij (i>j,mb)");
-    dpd_buf4_init(&Dijab_anti, PSIF_CC_DINTS, 0, 10, 15, 10, 15, 0, "D <ij||ab>");
-    dpd_file2_init(&Fme, PSIF_CC_OEI, 0, 2, 3, "Fme");
-    dpd_buf4_init(&Wamef, PSIF_CC3_HET1, 0, 30, 15, 30, 17, 0, "CC3 Wamef (ma,f>e)");
-    dpd_buf4_init(&Wmnie, PSIF_CC3_HET1, 0, 10, 30, 12, 30, 0, "CC3 Wmnie (m>n,ie)");
+    global_dpd_->buf4_init(&Tijab, PSIF_CC_TAMPS, 0, 10, 15, 12, 17, 0, "tijab");
+    global_dpd_->buf4_init(&Wabei, PSIF_CC3_HC1ET1, C_irr, 30, 15, 30, 17, 0, "Ht_Wabei (ie,b>a)");
+    global_dpd_->buf4_init(&Wmbij, PSIF_CC3_HC1ET1, C_irr, 10, 30, 12, 30, 0, "Ht_Wmbij (i>j,mb)");
+    global_dpd_->buf4_init(&Dijab_anti, PSIF_CC_DINTS, 0, 10, 15, 10, 15, 0, "D <ij||ab>");
+    global_dpd_->file2_init(&Fme, PSIF_CC_OEI, 0, 2, 3, "Fme");
+    global_dpd_->buf4_init(&Wamef, PSIF_CC3_HET1, 0, 30, 15, 30, 17, 0, "CC3 Wamef (ma,f>e)");
+    global_dpd_->buf4_init(&Wmnie, PSIF_CC3_HET1, 0, 10, 30, 12, 30, 0, "CC3 Wmnie (m>n,ie)");
 
          /* * <S| H    <T| (Utilde T2)c |0> |T> / (w-wt) -> sigma_1
             * <D| Hhat <T| (Utilde T2)c |0> |T> / (w-wt) -> sigma_2 */
 
-    cc3_sigma_UHF_BBB(&Tijab, &Wabei, &Wmbij, 1, &Dijab_anti, &Sia,
+    global_dpd_->cc3_sigma_UHF_BBB(&Tijab, &Wabei, &Wmbij, 1, &Dijab_anti, &Sia,
         1, &Fme, &Wamef, &Wmnie, &Sijab, moinfo.boccpi, moinfo.bocc_off,
         moinfo.bvirtpi, moinfo.bvir_off, omega, outfile);
 
-    dpd_buf4_close(&Tijab);
-    dpd_buf4_close(&Wabei);
-    dpd_buf4_close(&Wmbij);
-    dpd_buf4_close(&Dijab_anti);
-    dpd_file2_close(&Fme);
-    dpd_buf4_close(&Wamef);
-    dpd_buf4_close(&Wmnie);
+    global_dpd_->buf4_close(&Tijab);
+    global_dpd_->buf4_close(&Wabei);
+    global_dpd_->buf4_close(&Wmbij);
+    global_dpd_->buf4_close(&Dijab_anti);
+    global_dpd_->file2_close(&Fme);
+    global_dpd_->buf4_close(&Wamef);
+    global_dpd_->buf4_close(&Wmnie);
 
     /*** do alpha-alpha-beta term 2 */
 
-    dpd_buf4_init(&TIJAB, PSIF_CC_TAMPS, 0,  0,  5,  2,  7, 0, "tIJAB");
-    dpd_buf4_init(&TIjAb, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
-    dpd_buf4_init(&TiJaB, PSIF_CC_TAMPS, 0, 23, 29, 23, 29, 0, "tiJaB");
+    global_dpd_->buf4_init(&TIJAB, PSIF_CC_TAMPS, 0,  0,  5,  2,  7, 0, "tIJAB");
+    global_dpd_->buf4_init(&TIjAb, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
+    global_dpd_->buf4_init(&TiJaB, PSIF_CC_TAMPS, 0, 23, 29, 23, 29, 0, "tiJaB");
 
-    dpd_buf4_init(&WABEI, PSIF_CC3_HC1ET1, C_irr, 20, 5, 20, 7, 0, "Ht_WABEI (IE,B>A)");
-    dpd_buf4_init(&WaBeI, PSIF_CC3_HC1ET1, C_irr, 24, 28, 24, 28, 0, "Ht_WaBeI (Ie,Ba)");
-    dpd_buf4_init(&WAbEi, PSIF_CC3_HC1ET1, C_irr, 27, 29, 27, 29, 0, "Ht_WAbEi (iE,bA)");
-    dpd_buf4_init(&WMBIJ, PSIF_CC3_HC1ET1, C_irr, 0, 20, 2, 20, 0, "Ht_WMBIJ (I>J,MB)");
-    dpd_buf4_init(&WMbIj, PSIF_CC3_HC1ET1, C_irr, 22, 24, 22, 24, 0, "Ht_WMbIj (Ij,Mb)");
-    dpd_buf4_init(&WmBiJ, PSIF_CC3_HC1ET1, C_irr, 23, 27, 23, 27, 0, "Ht_WmBiJ (iJ,mB)");
+    global_dpd_->buf4_init(&WABEI, PSIF_CC3_HC1ET1, C_irr, 20, 5, 20, 7, 0, "Ht_WABEI (IE,B>A)");
+    global_dpd_->buf4_init(&WaBeI, PSIF_CC3_HC1ET1, C_irr, 24, 28, 24, 28, 0, "Ht_WaBeI (Ie,Ba)");
+    global_dpd_->buf4_init(&WAbEi, PSIF_CC3_HC1ET1, C_irr, 27, 29, 27, 29, 0, "Ht_WAbEi (iE,bA)");
+    global_dpd_->buf4_init(&WMBIJ, PSIF_CC3_HC1ET1, C_irr, 0, 20, 2, 20, 0, "Ht_WMBIJ (I>J,MB)");
+    global_dpd_->buf4_init(&WMbIj, PSIF_CC3_HC1ET1, C_irr, 22, 24, 22, 24, 0, "Ht_WMbIj (Ij,Mb)");
+    global_dpd_->buf4_init(&WmBiJ, PSIF_CC3_HC1ET1, C_irr, 23, 27, 23, 27, 0, "Ht_WmBiJ (iJ,mB)");
 
-    dpd_buf4_init(&DIJAB_anti, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <IJ||AB>");
-    dpd_buf4_init(&DIjAb, PSIF_CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
+    global_dpd_->buf4_init(&DIJAB_anti, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <IJ||AB>");
+    global_dpd_->buf4_init(&DIjAb, PSIF_CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
 
-    dpd_file2_init(&FME, PSIF_CC_OEI, 0, 0, 1, "FME");
-    dpd_file2_init(&Fme, PSIF_CC_OEI, 0, 2, 3, "Fme");
-    dpd_buf4_init(&WAMEF, PSIF_CC3_HET1, 0, 20, 5, 20, 7, 0, "CC3 WAMEF (MA,F>E)");
-    dpd_buf4_init(&WaMeF, PSIF_CC3_HET1, 0, 24, 28, 24, 28, 0, "CC3 WaMeF (Ma,Fe)");
-    dpd_buf4_init(&WAmEf, PSIF_CC3_HET1, 0, 27, 29, 27, 29, 0, "CC3 WAmEf (mA,fE)");
-    dpd_buf4_init(&WMNIE, PSIF_CC3_HET1, 0, 0, 20, 2, 20, 0, "CC3 WMNIE (M>N,IE)");
-    dpd_buf4_init(&WMnIe, PSIF_CC3_HET1, 0, 22, 24, 22, 24, 0, "CC3 WMnIe (Mn,Ie)");
-    dpd_buf4_init(&WmNiE, PSIF_CC3_HET1, 0, 23, 27, 23, 27, 0, "CC3 WmNiE (mN,iE)");
+    global_dpd_->file2_init(&FME, PSIF_CC_OEI, 0, 0, 1, "FME");
+    global_dpd_->file2_init(&Fme, PSIF_CC_OEI, 0, 2, 3, "Fme");
+    global_dpd_->buf4_init(&WAMEF, PSIF_CC3_HET1, 0, 20, 5, 20, 7, 0, "CC3 WAMEF (MA,F>E)");
+    global_dpd_->buf4_init(&WaMeF, PSIF_CC3_HET1, 0, 24, 28, 24, 28, 0, "CC3 WaMeF (Ma,Fe)");
+    global_dpd_->buf4_init(&WAmEf, PSIF_CC3_HET1, 0, 27, 29, 27, 29, 0, "CC3 WAmEf (mA,fE)");
+    global_dpd_->buf4_init(&WMNIE, PSIF_CC3_HET1, 0, 0, 20, 2, 20, 0, "CC3 WMNIE (M>N,IE)");
+    global_dpd_->buf4_init(&WMnIe, PSIF_CC3_HET1, 0, 22, 24, 22, 24, 0, "CC3 WMnIe (Mn,Ie)");
+    global_dpd_->buf4_init(&WmNiE, PSIF_CC3_HET1, 0, 23, 27, 23, 27, 0, "CC3 WmNiE (mN,iE)");
 
          /* * <S| H    <T| (Utilde T2)c |0> |T> / (w-wt) -> sigma_1
             * <D| Hhat <T| (Utilde T2)c |0> |T> / (w-wt) -> sigma_2 */
 
-    cc3_sigma_UHF_AAB(&TIJAB, &TIjAb, &TiJaB, &WABEI, &WaBeI, &WAbEi,
+    global_dpd_->cc3_sigma_UHF_AAB(&TIJAB, &TIjAb, &TiJaB, &WABEI, &WaBeI, &WAbEi,
        &WMBIJ, &WMbIj, &WmBiJ, 1,  &DIJAB_anti, &DIjAb, &SIA, &Sia,
        1, &FME, &Fme, &WAMEF, &WaMeF, &WAmEf, &WMNIE, &WMnIe, &WmNiE,
        &SIJAB, &SIjAb, moinfo.aoccpi, moinfo.aocc_off, moinfo.boccpi,
        moinfo.bocc_off, moinfo.avirtpi, moinfo.avir_off, moinfo.bvirtpi,
        moinfo.bvir_off, omega, outfile);
 
-    dpd_buf4_close(&TIJAB); dpd_buf4_close(&TIjAb); dpd_buf4_close(&TiJaB);
-    dpd_buf4_close(&WABEI); dpd_buf4_close(&WaBeI); dpd_buf4_close(&WAbEi);
-    dpd_buf4_close(&WMBIJ); dpd_buf4_close(&WMbIj); dpd_buf4_close(&WmBiJ);
-    dpd_buf4_close(&DIJAB_anti); dpd_buf4_close(&DIjAb);
-    dpd_file2_close(&FME); dpd_file2_close(&Fme);
-    dpd_buf4_close(&WAMEF); dpd_buf4_close(&WaMeF); dpd_buf4_close(&WAmEf);
-    dpd_buf4_close(&WMNIE); dpd_buf4_close(&WMnIe); dpd_buf4_close(&WmNiE);
+    global_dpd_->buf4_close(&TIJAB); global_dpd_->buf4_close(&TIjAb); global_dpd_->buf4_close(&TiJaB);
+    global_dpd_->buf4_close(&WABEI); global_dpd_->buf4_close(&WaBeI); global_dpd_->buf4_close(&WAbEi);
+    global_dpd_->buf4_close(&WMBIJ); global_dpd_->buf4_close(&WMbIj); global_dpd_->buf4_close(&WmBiJ);
+    global_dpd_->buf4_close(&DIJAB_anti); global_dpd_->buf4_close(&DIjAb);
+    global_dpd_->file2_close(&FME); global_dpd_->file2_close(&Fme);
+    global_dpd_->buf4_close(&WAMEF); global_dpd_->buf4_close(&WaMeF); global_dpd_->buf4_close(&WAmEf);
+    global_dpd_->buf4_close(&WMNIE); global_dpd_->buf4_close(&WMnIe); global_dpd_->buf4_close(&WmNiE);
 
     /* beta-beta-alpha term 2 */ 
 
-    dpd_buf4_init(&Tijab, PSIF_CC_TAMPS, 0, 10, 15, 12, 17, 0, "tijab");
-    dpd_buf4_init(&TIjAb, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
-    dpd_buf4_init(&TiJaB, PSIF_CC_TAMPS, 0, 23, 29, 23, 29, 0, "tiJaB");
+    global_dpd_->buf4_init(&Tijab, PSIF_CC_TAMPS, 0, 10, 15, 12, 17, 0, "tijab");
+    global_dpd_->buf4_init(&TIjAb, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
+    global_dpd_->buf4_init(&TiJaB, PSIF_CC_TAMPS, 0, 23, 29, 23, 29, 0, "tiJaB");
 
-    dpd_buf4_init(&Wabei, PSIF_CC3_HC1ET1, C_irr, 30, 15, 30, 17, 0, "Ht_Wabei (ie,b>a)");
-    dpd_buf4_init(&WaBeI, PSIF_CC3_HC1ET1, C_irr, 24, 28, 24, 28, 0, "Ht_WaBeI (Ie,Ba)");
-    dpd_buf4_init(&WAbEi, PSIF_CC3_HC1ET1, C_irr, 27, 29, 27, 29, 0, "Ht_WAbEi (iE,bA)");
-    dpd_buf4_init(&Wmbij, PSIF_CC3_HC1ET1, C_irr, 10, 30, 12, 30, 0, "Ht_Wmbij (i>j,mb)");
-    dpd_buf4_init(&WMbIj, PSIF_CC3_HC1ET1, C_irr, 22, 24, 22, 24, 0, "Ht_WMbIj (Ij,Mb)");
-    dpd_buf4_init(&WmBiJ, PSIF_CC3_HC1ET1, C_irr, 23, 27, 23, 27, 0, "Ht_WmBiJ (iJ,mB)");
+    global_dpd_->buf4_init(&Wabei, PSIF_CC3_HC1ET1, C_irr, 30, 15, 30, 17, 0, "Ht_Wabei (ie,b>a)");
+    global_dpd_->buf4_init(&WaBeI, PSIF_CC3_HC1ET1, C_irr, 24, 28, 24, 28, 0, "Ht_WaBeI (Ie,Ba)");
+    global_dpd_->buf4_init(&WAbEi, PSIF_CC3_HC1ET1, C_irr, 27, 29, 27, 29, 0, "Ht_WAbEi (iE,bA)");
+    global_dpd_->buf4_init(&Wmbij, PSIF_CC3_HC1ET1, C_irr, 10, 30, 12, 30, 0, "Ht_Wmbij (i>j,mb)");
+    global_dpd_->buf4_init(&WMbIj, PSIF_CC3_HC1ET1, C_irr, 22, 24, 22, 24, 0, "Ht_WMbIj (Ij,Mb)");
+    global_dpd_->buf4_init(&WmBiJ, PSIF_CC3_HC1ET1, C_irr, 23, 27, 23, 27, 0, "Ht_WmBiJ (iJ,mB)");
 
-    dpd_buf4_init(&Dijab_anti, PSIF_CC_DINTS, 0, 10, 15, 10, 15, 0, "D <ij||ab>");
-    dpd_buf4_init(&DiJaB, PSIF_CC_DINTS, 0, 23, 29, 23, 29, 0, "D <iJ|aB>");
+    global_dpd_->buf4_init(&Dijab_anti, PSIF_CC_DINTS, 0, 10, 15, 10, 15, 0, "D <ij||ab>");
+    global_dpd_->buf4_init(&DiJaB, PSIF_CC_DINTS, 0, 23, 29, 23, 29, 0, "D <iJ|aB>");
 
-    dpd_file2_init(&FME, PSIF_CC_OEI, 0, 0, 1, "FME");
-    dpd_file2_init(&Fme, PSIF_CC_OEI, 0, 2, 3, "Fme");
-    dpd_buf4_init(&Wamef, PSIF_CC3_HET1, 0, 30, 15, 30, 17, 0, "CC3 Wamef (ma,f>e)");
-    dpd_buf4_init(&WaMeF, PSIF_CC3_HET1, 0, 24, 28, 24, 28, 0, "CC3 WaMeF (Ma,Fe)");
-    dpd_buf4_init(&WAmEf, PSIF_CC3_HET1, 0, 27, 29, 27, 29, 0, "CC3 WAmEf (mA,fE)");
-    dpd_buf4_init(&Wmnie, PSIF_CC3_HET1, 0, 10, 30, 12, 30, 0, "CC3 Wmnie (m>n,ie)");
-    dpd_buf4_init(&WMnIe, PSIF_CC3_HET1, 0, 22, 24, 22, 24, 0, "CC3 WMnIe (Mn,Ie)");
-    dpd_buf4_init(&WmNiE, PSIF_CC3_HET1, 0, 23, 27, 23, 27, 0, "CC3 WmNiE (mN,iE)");
+    global_dpd_->file2_init(&FME, PSIF_CC_OEI, 0, 0, 1, "FME");
+    global_dpd_->file2_init(&Fme, PSIF_CC_OEI, 0, 2, 3, "Fme");
+    global_dpd_->buf4_init(&Wamef, PSIF_CC3_HET1, 0, 30, 15, 30, 17, 0, "CC3 Wamef (ma,f>e)");
+    global_dpd_->buf4_init(&WaMeF, PSIF_CC3_HET1, 0, 24, 28, 24, 28, 0, "CC3 WaMeF (Ma,Fe)");
+    global_dpd_->buf4_init(&WAmEf, PSIF_CC3_HET1, 0, 27, 29, 27, 29, 0, "CC3 WAmEf (mA,fE)");
+    global_dpd_->buf4_init(&Wmnie, PSIF_CC3_HET1, 0, 10, 30, 12, 30, 0, "CC3 Wmnie (m>n,ie)");
+    global_dpd_->buf4_init(&WMnIe, PSIF_CC3_HET1, 0, 22, 24, 22, 24, 0, "CC3 WMnIe (Mn,Ie)");
+    global_dpd_->buf4_init(&WmNiE, PSIF_CC3_HET1, 0, 23, 27, 23, 27, 0, "CC3 WmNiE (mN,iE)");
 
          /* * <S| H    <T| (Utilde T2)c |0> |T> / (w-wt) -> sigma_1
             * <D| Hhat <T| (Utilde T2)c |0> |T> / (w-wt) -> sigma_2 */
 
-    cc3_sigma_UHF_BBA(&Tijab, &TIjAb, &TiJaB, &Wabei, &WaBeI, &WAbEi,
+    global_dpd_->cc3_sigma_UHF_BBA(&Tijab, &TIjAb, &TiJaB, &Wabei, &WaBeI, &WAbEi,
       &Wmbij, &WMbIj, &WmBiJ, 1, &Dijab_anti, &DiJaB, &SIA, &Sia,
       1, &FME, &Fme, &Wamef, &WaMeF, &WAmEf, &Wmnie, &WMnIe, &WmNiE,
       &Sijab, &SIjAb, moinfo.aoccpi, moinfo.aocc_off, moinfo.boccpi,
       moinfo.bocc_off, moinfo.avirtpi, moinfo.avir_off, moinfo.bvirtpi,
       moinfo.bvir_off, omega, outfile);
 
-    dpd_buf4_close(&Tijab); dpd_buf4_close(&TIjAb); dpd_buf4_close(&TiJaB);
-    dpd_buf4_close(&Wabei); dpd_buf4_close(&WaBeI); dpd_buf4_close(&WAbEi);
-    dpd_buf4_close(&Wmbij); dpd_buf4_close(&WMbIj); dpd_buf4_close(&WmBiJ);
-    dpd_buf4_close(&Dijab_anti); dpd_buf4_close(&DiJaB);
-    dpd_file2_close(&FME); dpd_file2_close(&Fme);
-    dpd_buf4_close(&Wamef); dpd_buf4_close(&WaMeF); dpd_buf4_close(&WAmEf);
-    dpd_buf4_close(&Wmnie); dpd_buf4_close(&WMnIe); dpd_buf4_close(&WmNiE);
+    global_dpd_->buf4_close(&Tijab); global_dpd_->buf4_close(&TIjAb); global_dpd_->buf4_close(&TiJaB);
+    global_dpd_->buf4_close(&Wabei); global_dpd_->buf4_close(&WaBeI); global_dpd_->buf4_close(&WAbEi);
+    global_dpd_->buf4_close(&Wmbij); global_dpd_->buf4_close(&WMbIj); global_dpd_->buf4_close(&WmBiJ);
+    global_dpd_->buf4_close(&Dijab_anti); global_dpd_->buf4_close(&DiJaB);
+    global_dpd_->file2_close(&FME); global_dpd_->file2_close(&Fme);
+    global_dpd_->buf4_close(&Wamef); global_dpd_->buf4_close(&WaMeF); global_dpd_->buf4_close(&WAmEf);
+    global_dpd_->buf4_close(&Wmnie); global_dpd_->buf4_close(&WMnIe); global_dpd_->buf4_close(&WmNiE);
 
 #ifdef EOM_DEBUG
   dpd_file2_close(&SIA);
@@ -528,129 +528,129 @@ void sigmaCC3(int i, int C_irr, double omega) {
 
     /*** alpha-alpha-alpha term 3 */
 
-    dpd_buf4_init(&TIJAB, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
-    dpd_buf4_init(&WABEI, PSIF_CC3_HET1, 0, 20, 5, 20, 7, 0, "CC3 WABEI (IE,B>A)");
-    dpd_buf4_init(&WMBIJ, PSIF_CC3_HET1, 0, 0, 20, 2, 20, 0, "CC3 WMBIJ (I>J,MB)");
-    dpd_file2_init(&FME, PSIF_CC3_HC1, C_irr, 0, 1, "HC1 FME");
-    dpd_buf4_init(&WAMEF, PSIF_CC3_HC1, C_irr, 20, 5, 20, 7, 0, "HC1 WAMEF (MA,F>E)");
-    dpd_buf4_init(&WMNIE, PSIF_CC3_HC1, C_irr, 0, 20, 2, 20, 0, "HC1 WMNIE (M>N,IE)");
+    global_dpd_->buf4_init(&TIJAB, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
+    global_dpd_->buf4_init(&WABEI, PSIF_CC3_HET1, 0, 20, 5, 20, 7, 0, "CC3 WABEI (IE,B>A)");
+    global_dpd_->buf4_init(&WMBIJ, PSIF_CC3_HET1, 0, 0, 20, 2, 20, 0, "CC3 WMBIJ (I>J,MB)");
+    global_dpd_->file2_init(&FME, PSIF_CC3_HC1, C_irr, 0, 1, "HC1 FME");
+    global_dpd_->buf4_init(&WAMEF, PSIF_CC3_HC1, C_irr, 20, 5, 20, 7, 0, "HC1 WAMEF (MA,F>E)");
+    global_dpd_->buf4_init(&WMNIE, PSIF_CC3_HC1, C_irr, 0, 20, 2, 20, 0, "HC1 WMNIE (M>N,IE)");
 
          /* <D| H'   <T| (Uhat T2)c   |0> |T> / (-wt) -> sigma_2 */
 
-    cc3_sigma_UHF_AAA(&TIJAB, &WABEI, &WMBIJ, 0, NULL, NULL,
+    global_dpd_->cc3_sigma_UHF_AAA(&TIJAB, &WABEI, &WMBIJ, 0, NULL, NULL,
         1, &FME, &WAMEF, &WMNIE, &SIJAB, moinfo.aoccpi, moinfo.aocc_off,
         moinfo.avirtpi, moinfo.avir_off, 0.0, outfile);
 
-    dpd_buf4_close(&TIJAB);
-    dpd_buf4_close(&WABEI);
-    dpd_buf4_close(&WMBIJ);
-    dpd_file2_close(&FME);
-    dpd_buf4_close(&WAMEF);
-    dpd_buf4_close(&WMNIE);
+    global_dpd_->buf4_close(&TIJAB);
+    global_dpd_->buf4_close(&WABEI);
+    global_dpd_->buf4_close(&WMBIJ);
+    global_dpd_->file2_close(&FME);
+    global_dpd_->buf4_close(&WAMEF);
+    global_dpd_->buf4_close(&WMNIE);
 
     /*** beta-beta-beta term 3 */
 
-    dpd_buf4_init(&Tijab, PSIF_CC_TAMPS, 0, 10, 15, 12, 17, 0, "tijab");
-    dpd_buf4_init(&Wabei, PSIF_CC3_HET1,0, 30, 15, 30, 17, 0, "CC3 Wabei (ie,b>a)");
-    dpd_buf4_init(&Wmbij, PSIF_CC3_HET1,0, 10, 30, 12, 30, 0, "CC3 Wmbij (i>j,mb)");
-    dpd_file2_init(&Fme, PSIF_CC3_HC1, C_irr, 2, 3, "HC1 Fme");
-    dpd_buf4_init(&Wamef, PSIF_CC3_HC1, C_irr, 30, 15, 30, 17, 0, "HC1 Wamef (ma,f>e)");
-    dpd_buf4_init(&Wmnie, PSIF_CC3_HC1, C_irr, 10, 30, 12, 30, 0, "HC1 Wmnie (m>n,ie)");
+    global_dpd_->buf4_init(&Tijab, PSIF_CC_TAMPS, 0, 10, 15, 12, 17, 0, "tijab");
+    global_dpd_->buf4_init(&Wabei, PSIF_CC3_HET1,0, 30, 15, 30, 17, 0, "CC3 Wabei (ie,b>a)");
+    global_dpd_->buf4_init(&Wmbij, PSIF_CC3_HET1,0, 10, 30, 12, 30, 0, "CC3 Wmbij (i>j,mb)");
+    global_dpd_->file2_init(&Fme, PSIF_CC3_HC1, C_irr, 2, 3, "HC1 Fme");
+    global_dpd_->buf4_init(&Wamef, PSIF_CC3_HC1, C_irr, 30, 15, 30, 17, 0, "HC1 Wamef (ma,f>e)");
+    global_dpd_->buf4_init(&Wmnie, PSIF_CC3_HC1, C_irr, 10, 30, 12, 30, 0, "HC1 Wmnie (m>n,ie)");
 
          /* <D| H'   <T| (Uhat T2)c   |0> |T> / (-wt) -> sigma_2 */
 
-    cc3_sigma_UHF_BBB(&Tijab, &Wabei, &Wmbij, 0, NULL, NULL,
+    global_dpd_->cc3_sigma_UHF_BBB(&Tijab, &Wabei, &Wmbij, 0, NULL, NULL,
         1, &Fme, &Wamef, &Wmnie, &Sijab, moinfo.boccpi, moinfo.bocc_off, 
         moinfo.bvirtpi, moinfo.bvir_off, 0.0, outfile);
 
-    dpd_buf4_close(&Tijab);
-    dpd_buf4_close(&Wabei);
-    dpd_buf4_close(&Wmbij);
-    dpd_file2_close(&Fme);
-    dpd_buf4_close(&Wamef);
-    dpd_buf4_close(&Wmnie);
+    global_dpd_->buf4_close(&Tijab);
+    global_dpd_->buf4_close(&Wabei);
+    global_dpd_->buf4_close(&Wmbij);
+    global_dpd_->file2_close(&Fme);
+    global_dpd_->buf4_close(&Wamef);
+    global_dpd_->buf4_close(&Wmnie);
 
     /*** alpha-alpha-beta term 3 */
 
-    dpd_buf4_init(&TIJAB, PSIF_CC_TAMPS, 0,  0,  5,  2,  7, 0, "tIJAB");
-    dpd_buf4_init(&TIjAb, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
-    dpd_buf4_init(&TiJaB, PSIF_CC_TAMPS, 0, 23, 29, 23, 29, 0, "tiJaB");
+    global_dpd_->buf4_init(&TIJAB, PSIF_CC_TAMPS, 0,  0,  5,  2,  7, 0, "tIJAB");
+    global_dpd_->buf4_init(&TIjAb, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
+    global_dpd_->buf4_init(&TiJaB, PSIF_CC_TAMPS, 0, 23, 29, 23, 29, 0, "tiJaB");
 
-    dpd_buf4_init(&WABEI, PSIF_CC3_HET1, 0, 20, 5, 20, 7, 0, "CC3 WABEI (IE,B>A)");
-    dpd_buf4_init(&WaBeI, PSIF_CC3_HET1, 0, 24, 28, 24, 28, 0, "CC3 WaBeI (Ie,Ba)");
-    dpd_buf4_init(&WAbEi, PSIF_CC3_HET1, 0, 27, 29, 27, 29, 0, "CC3 WAbEi (iE,bA)");
-    dpd_buf4_init(&WMBIJ, PSIF_CC3_HET1, 0, 0, 20, 2, 20, 0, "CC3 WMBIJ (I>J,MB)");
-    dpd_buf4_init(&WMbIj, PSIF_CC3_HET1, 0, 22, 24, 22, 24, 0, "CC3 WMbIj (Ij,Mb)");
-    dpd_buf4_init(&WmBiJ, PSIF_CC3_HET1, 0, 23, 27, 23, 27, 0, "CC3 WmBiJ (iJ,mB)");
+    global_dpd_->buf4_init(&WABEI, PSIF_CC3_HET1, 0, 20, 5, 20, 7, 0, "CC3 WABEI (IE,B>A)");
+    global_dpd_->buf4_init(&WaBeI, PSIF_CC3_HET1, 0, 24, 28, 24, 28, 0, "CC3 WaBeI (Ie,Ba)");
+    global_dpd_->buf4_init(&WAbEi, PSIF_CC3_HET1, 0, 27, 29, 27, 29, 0, "CC3 WAbEi (iE,bA)");
+    global_dpd_->buf4_init(&WMBIJ, PSIF_CC3_HET1, 0, 0, 20, 2, 20, 0, "CC3 WMBIJ (I>J,MB)");
+    global_dpd_->buf4_init(&WMbIj, PSIF_CC3_HET1, 0, 22, 24, 22, 24, 0, "CC3 WMbIj (Ij,Mb)");
+    global_dpd_->buf4_init(&WmBiJ, PSIF_CC3_HET1, 0, 23, 27, 23, 27, 0, "CC3 WmBiJ (iJ,mB)");
 
-    dpd_file2_init(&FME, PSIF_CC3_HC1, C_irr, 0, 1, "HC1 FME");
-    dpd_file2_init(&Fme, PSIF_CC3_HC1, C_irr, 2, 3, "HC1 Fme");
-    dpd_buf4_init(&WAMEF, PSIF_CC3_HC1, C_irr, 20, 5, 20, 7, 0, "HC1 WAMEF (MA,F>E)");
-    dpd_buf4_init(&WaMeF, PSIF_CC3_HC1, C_irr, 24, 28, 24, 28, 0, "HC1 WaMeF (Ma,Fe)");
-    dpd_buf4_init(&WAmEf, PSIF_CC3_HC1, C_irr, 27, 29, 27, 29, 0, "HC1 WAmEf (mA,fE)");
-    dpd_buf4_init(&WMNIE, PSIF_CC3_HC1, C_irr, 0, 20, 2, 20, 0, "HC1 WMNIE (M>N,IE)");
-    dpd_buf4_init(&WMnIe, PSIF_CC3_HC1, C_irr, 22, 24, 22, 24, 0, "HC1 WMnIe (Mn,Ie)");
-    dpd_buf4_init(&WmNiE, PSIF_CC3_HC1, C_irr, 23, 27, 23, 27, 0, "HC1 WmNiE (mN,iE)");
+    global_dpd_->file2_init(&FME, PSIF_CC3_HC1, C_irr, 0, 1, "HC1 FME");
+    global_dpd_->file2_init(&Fme, PSIF_CC3_HC1, C_irr, 2, 3, "HC1 Fme");
+    global_dpd_->buf4_init(&WAMEF, PSIF_CC3_HC1, C_irr, 20, 5, 20, 7, 0, "HC1 WAMEF (MA,F>E)");
+    global_dpd_->buf4_init(&WaMeF, PSIF_CC3_HC1, C_irr, 24, 28, 24, 28, 0, "HC1 WaMeF (Ma,Fe)");
+    global_dpd_->buf4_init(&WAmEf, PSIF_CC3_HC1, C_irr, 27, 29, 27, 29, 0, "HC1 WAmEf (mA,fE)");
+    global_dpd_->buf4_init(&WMNIE, PSIF_CC3_HC1, C_irr, 0, 20, 2, 20, 0, "HC1 WMNIE (M>N,IE)");
+    global_dpd_->buf4_init(&WMnIe, PSIF_CC3_HC1, C_irr, 22, 24, 22, 24, 0, "HC1 WMnIe (Mn,Ie)");
+    global_dpd_->buf4_init(&WmNiE, PSIF_CC3_HC1, C_irr, 23, 27, 23, 27, 0, "HC1 WmNiE (mN,iE)");
 
          /* <D| H'   <T| (Uhat T2)c   |0> |T> / (-wt) -> sigma_2 */
 
-    cc3_sigma_UHF_AAB(&TIJAB, &TIjAb, &TiJaB, &WABEI, &WaBeI, &WAbEi,
+    global_dpd_->cc3_sigma_UHF_AAB(&TIJAB, &TIjAb, &TiJaB, &WABEI, &WaBeI, &WAbEi,
        &WMBIJ, &WMbIj, &WmBiJ, 0, NULL, NULL, NULL, NULL,
        1, &FME, &Fme, &WAMEF, &WaMeF, &WAmEf, &WMNIE, &WMnIe, &WmNiE,
        &SIJAB, &SIjAb, moinfo.aoccpi, moinfo.aocc_off, moinfo.boccpi,
        moinfo.bocc_off, moinfo.avirtpi, moinfo.avir_off, moinfo.bvirtpi,
        moinfo.bvir_off, 0.0, outfile);
 
-    dpd_buf4_close(&TIJAB); dpd_buf4_close(&TIjAb); dpd_buf4_close(&TiJaB);
-    dpd_buf4_close(&WABEI); dpd_buf4_close(&WaBeI); dpd_buf4_close(&WAbEi);
-    dpd_buf4_close(&WMBIJ); dpd_buf4_close(&WMbIj); dpd_buf4_close(&WmBiJ);
-    dpd_file2_close(&FME); dpd_file2_close(&Fme);
-    dpd_buf4_close(&WAMEF); dpd_buf4_close(&WaMeF); dpd_buf4_close(&WAmEf);
-    dpd_buf4_close(&WMNIE); dpd_buf4_close(&WMnIe); dpd_buf4_close(&WmNiE);
+    global_dpd_->buf4_close(&TIJAB); global_dpd_->buf4_close(&TIjAb); global_dpd_->buf4_close(&TiJaB);
+    global_dpd_->buf4_close(&WABEI); global_dpd_->buf4_close(&WaBeI); global_dpd_->buf4_close(&WAbEi);
+    global_dpd_->buf4_close(&WMBIJ); global_dpd_->buf4_close(&WMbIj); global_dpd_->buf4_close(&WmBiJ);
+    global_dpd_->file2_close(&FME); global_dpd_->file2_close(&Fme);
+    global_dpd_->buf4_close(&WAMEF); global_dpd_->buf4_close(&WaMeF); global_dpd_->buf4_close(&WAmEf);
+    global_dpd_->buf4_close(&WMNIE); global_dpd_->buf4_close(&WMnIe); global_dpd_->buf4_close(&WmNiE);
 
     /*** beta-beta-alpha term 3 */ 
 
-    dpd_buf4_init(&Tijab, PSIF_CC_TAMPS, 0, 10, 15, 12, 17, 0, "tijab");
-    dpd_buf4_init(&TIjAb, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
-    dpd_buf4_init(&TiJaB, PSIF_CC_TAMPS, 0, 23, 29, 23, 29, 0, "tiJaB");
+    global_dpd_->buf4_init(&Tijab, PSIF_CC_TAMPS, 0, 10, 15, 12, 17, 0, "tijab");
+    global_dpd_->buf4_init(&TIjAb, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
+    global_dpd_->buf4_init(&TiJaB, PSIF_CC_TAMPS, 0, 23, 29, 23, 29, 0, "tiJaB");
 
-    dpd_buf4_init(&Wabei, PSIF_CC3_HET1, 0, 30, 15, 30, 17, 0, "CC3 Wabei (ie,b>a)");
-    dpd_buf4_init(&WaBeI, PSIF_CC3_HET1, 0, 24, 28, 24, 28, 0, "CC3 WaBeI (Ie,Ba)");
-    dpd_buf4_init(&WAbEi, PSIF_CC3_HET1, 0, 27, 29, 27, 29, 0, "CC3 WAbEi (iE,bA)");
-    dpd_buf4_init(&Wmbij, PSIF_CC3_HET1, 0, 10, 30, 12, 30, 0, "CC3 Wmbij (i>j,mb)");
-    dpd_buf4_init(&WMbIj, PSIF_CC3_HET1, 0, 22, 24, 22, 24, 0, "CC3 WMbIj (Ij,Mb)");
-    dpd_buf4_init(&WmBiJ, PSIF_CC3_HET1, 0, 23, 27, 23, 27, 0, "CC3 WmBiJ (iJ,mB)");
+    global_dpd_->buf4_init(&Wabei, PSIF_CC3_HET1, 0, 30, 15, 30, 17, 0, "CC3 Wabei (ie,b>a)");
+    global_dpd_->buf4_init(&WaBeI, PSIF_CC3_HET1, 0, 24, 28, 24, 28, 0, "CC3 WaBeI (Ie,Ba)");
+    global_dpd_->buf4_init(&WAbEi, PSIF_CC3_HET1, 0, 27, 29, 27, 29, 0, "CC3 WAbEi (iE,bA)");
+    global_dpd_->buf4_init(&Wmbij, PSIF_CC3_HET1, 0, 10, 30, 12, 30, 0, "CC3 Wmbij (i>j,mb)");
+    global_dpd_->buf4_init(&WMbIj, PSIF_CC3_HET1, 0, 22, 24, 22, 24, 0, "CC3 WMbIj (Ij,Mb)");
+    global_dpd_->buf4_init(&WmBiJ, PSIF_CC3_HET1, 0, 23, 27, 23, 27, 0, "CC3 WmBiJ (iJ,mB)");
 
-    dpd_file2_init(&FME, PSIF_CC3_HC1, C_irr, 0, 1, "HC1 FME");
-    dpd_file2_init(&Fme, PSIF_CC3_HC1, C_irr, 2, 3, "HC1 Fme");
-    dpd_buf4_init(&Wamef, PSIF_CC3_HC1, C_irr, 30, 15, 30, 17, 0, "HC1 Wamef (ma,f>e)");
-    dpd_buf4_init(&WaMeF, PSIF_CC3_HC1, C_irr, 24, 28, 24, 28, 0, "HC1 WaMeF (Ma,Fe)");
-    dpd_buf4_init(&WAmEf, PSIF_CC3_HC1, C_irr, 27, 29, 27, 29, 0, "HC1 WAmEf (mA,fE)");
-    dpd_buf4_init(&Wmnie, PSIF_CC3_HC1, C_irr, 10, 30, 12, 30, 0, "HC1 Wmnie (m>n,ie)");
-    dpd_buf4_init(&WMnIe, PSIF_CC3_HC1, C_irr, 22, 24, 22, 24, 0, "HC1 WMnIe (Mn,Ie)");
-    dpd_buf4_init(&WmNiE, PSIF_CC3_HC1, C_irr, 23, 27, 23, 27, 0, "HC1 WmNiE (mN,iE)");
+    global_dpd_->file2_init(&FME, PSIF_CC3_HC1, C_irr, 0, 1, "HC1 FME");
+    global_dpd_->file2_init(&Fme, PSIF_CC3_HC1, C_irr, 2, 3, "HC1 Fme");
+    global_dpd_->buf4_init(&Wamef, PSIF_CC3_HC1, C_irr, 30, 15, 30, 17, 0, "HC1 Wamef (ma,f>e)");
+    global_dpd_->buf4_init(&WaMeF, PSIF_CC3_HC1, C_irr, 24, 28, 24, 28, 0, "HC1 WaMeF (Ma,Fe)");
+    global_dpd_->buf4_init(&WAmEf, PSIF_CC3_HC1, C_irr, 27, 29, 27, 29, 0, "HC1 WAmEf (mA,fE)");
+    global_dpd_->buf4_init(&Wmnie, PSIF_CC3_HC1, C_irr, 10, 30, 12, 30, 0, "HC1 Wmnie (m>n,ie)");
+    global_dpd_->buf4_init(&WMnIe, PSIF_CC3_HC1, C_irr, 22, 24, 22, 24, 0, "HC1 WMnIe (Mn,Ie)");
+    global_dpd_->buf4_init(&WmNiE, PSIF_CC3_HC1, C_irr, 23, 27, 23, 27, 0, "HC1 WmNiE (mN,iE)");
 
          /* <D| H'   <T| (Uhat T2)c   |0> |T> / (-wt) -> sigma_2 */
 
-    cc3_sigma_UHF_BBA(&Tijab, &TIjAb, &TiJaB, &Wabei, &WaBeI, &WAbEi,
+    global_dpd_->cc3_sigma_UHF_BBA(&Tijab, &TIjAb, &TiJaB, &Wabei, &WaBeI, &WAbEi,
       &Wmbij, &WMbIj, &WmBiJ, 0, NULL, NULL, NULL, NULL,
       1, &FME, &Fme, &Wamef, &WaMeF, &WAmEf, &Wmnie, &WMnIe, &WmNiE,
       &Sijab, &SIjAb, moinfo.aoccpi, moinfo.aocc_off, moinfo.boccpi,
       moinfo.bocc_off, moinfo.avirtpi, moinfo.avir_off, moinfo.bvirtpi,
       moinfo.bvir_off, 0.0, outfile);
 
-    dpd_buf4_close(&Tijab); dpd_buf4_close(&TIjAb); dpd_buf4_close(&TiJaB);
-    dpd_buf4_close(&Wabei); dpd_buf4_close(&WaBeI); dpd_buf4_close(&WAbEi);
-    dpd_buf4_close(&Wmbij); dpd_buf4_close(&WMbIj); dpd_buf4_close(&WmBiJ);
-    dpd_file2_close(&FME); dpd_file2_close(&Fme);
-    dpd_buf4_close(&Wamef); dpd_buf4_close(&WaMeF); dpd_buf4_close(&WAmEf);
-    dpd_buf4_close(&Wmnie); dpd_buf4_close(&WMnIe); dpd_buf4_close(&WmNiE);
+    global_dpd_->buf4_close(&Tijab); global_dpd_->buf4_close(&TIjAb); global_dpd_->buf4_close(&TiJaB);
+    global_dpd_->buf4_close(&Wabei); global_dpd_->buf4_close(&WaBeI); global_dpd_->buf4_close(&WAbEi);
+    global_dpd_->buf4_close(&Wmbij); global_dpd_->buf4_close(&WMbIj); global_dpd_->buf4_close(&WmBiJ);
+    global_dpd_->file2_close(&FME); global_dpd_->file2_close(&Fme);
+    global_dpd_->buf4_close(&Wamef); global_dpd_->buf4_close(&WaMeF); global_dpd_->buf4_close(&WAmEf);
+    global_dpd_->buf4_close(&Wmnie); global_dpd_->buf4_close(&WMnIe); global_dpd_->buf4_close(&WmNiE);
 
-    dpd_file2_close(&SIA);
-    dpd_file2_close(&Sia);
-    dpd_buf4_close(&SIJAB);
-    dpd_buf4_close(&Sijab);
-    dpd_buf4_close(&SIjAb);
+    global_dpd_->file2_close(&SIA);
+    global_dpd_->file2_close(&Sia);
+    global_dpd_->buf4_close(&SIJAB);
+    global_dpd_->buf4_close(&Sijab);
+    global_dpd_->buf4_close(&SIjAb);
 
 #ifdef EOM_DEBUG
   check_sum("<Psi|H'<T|(Uhat T2)c|0>|T>/(w-wt)", i, C_irr);

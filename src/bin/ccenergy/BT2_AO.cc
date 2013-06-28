@@ -129,33 +129,33 @@ void BT2_AO(void)
     if(params.aobasis == "DISK") {
 
       dpd_set_default(1);
-      dpd_buf4_init(&tau1_AO, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjPq (1)");
-      dpd_buf4_scm(&tau1_AO, 0.0);
+      global_dpd_->buf4_init(&tau1_AO, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjPq (1)");
+      global_dpd_->buf4_scm(&tau1_AO, 0.0);
 
       dpd_set_default(0);
-      dpd_buf4_init(&tau, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjAb");
+      global_dpd_->buf4_init(&tau, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjAb");
 
       halftrans(&tau, 0, &tau1_AO, 1, C, C, nirreps, T2_cd_row_start, T2_pq_row_start, 
 		virtpi, virtpi, sopi, 0, 1.0, 0.0);
 
-      dpd_buf4_close(&tau);
-      dpd_buf4_close(&tau1_AO);
+      global_dpd_->buf4_close(&tau);
+      global_dpd_->buf4_close(&tau1_AO);
 
       /* Transpose tau1_AO for better memory access patterns */
       dpd_set_default(1);
-      dpd_buf4_init(&tau1_AO, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjPq (1)");
-      dpd_buf4_sort(&tau1_AO, PSIF_CC_TMP0, rspq, 5, 0, "tauPqIj (1)");
-      dpd_buf4_close(&tau1_AO);
+      global_dpd_->buf4_init(&tau1_AO, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjPq (1)");
+      global_dpd_->buf4_sort(&tau1_AO, PSIF_CC_TMP0, rspq, 5, 0, "tauPqIj (1)");
+      global_dpd_->buf4_close(&tau1_AO);
 
     
-      dpd_buf4_init(&tau1_AO, PSIF_CC_TMP0, 0, 5, 0, 5, 0, 0, "tauPqIj (1)");
-      dpd_buf4_init(&tau2_AO, PSIF_CC_TMP0, 0, 5, 0, 5, 0, 0, "tauPqIj (2)");
-      dpd_buf4_scm(&tau2_AO, 0.0);
+      global_dpd_->buf4_init(&tau1_AO, PSIF_CC_TMP0, 0, 5, 0, 5, 0, 0, "tauPqIj (1)");
+      global_dpd_->buf4_init(&tau2_AO, PSIF_CC_TMP0, 0, 5, 0, 5, 0, 0, "tauPqIj (2)");
+      global_dpd_->buf4_scm(&tau2_AO, 0.0);
         
       for(h=0; h < nirreps; h++) {
-	dpd_buf4_mat_irrep_init(&tau1_AO, h);
-	dpd_buf4_mat_irrep_rd(&tau1_AO, h);
-	dpd_buf4_mat_irrep_init(&tau2_AO, h);
+	global_dpd_->buf4_mat_irrep_init(&tau1_AO, h);
+	global_dpd_->buf4_mat_irrep_rd(&tau1_AO, h);
+	global_dpd_->buf4_mat_irrep_init(&tau2_AO, h);
       }
         
       iwl_buf_init(&InBuf, PSIF_SO_TEI, tolerance, 1, 1);
@@ -176,39 +176,39 @@ void BT2_AO(void)
       if(params.print & 2) fprintf(outfile, "     *** Processed %d SO integrals for <ab||cd> --> T2\n", counter);
         
       for(h=0; h < nirreps; h++) {
-	dpd_buf4_mat_irrep_wrt(&tau2_AO, h);
-	dpd_buf4_mat_irrep_close(&tau2_AO, h);
-	dpd_buf4_mat_irrep_close(&tau1_AO, h);
+	global_dpd_->buf4_mat_irrep_wrt(&tau2_AO, h);
+	global_dpd_->buf4_mat_irrep_close(&tau2_AO, h);
+	global_dpd_->buf4_mat_irrep_close(&tau1_AO, h);
       }
-      dpd_buf4_close(&tau1_AO);
-      dpd_buf4_close(&tau2_AO);
+      global_dpd_->buf4_close(&tau1_AO);
+      global_dpd_->buf4_close(&tau2_AO);
 
       /* Transpose tau2_AO for the half-backtransformation */
       dpd_set_default(1);
-      dpd_buf4_init(&tau2_AO, PSIF_CC_TMP0, 0, 5, 0, 5, 0, 0, "tauPqIj (2)");
-      dpd_buf4_sort(&tau2_AO, PSIF_CC_TAMPS, rspq, 0, 5, "tauIjPq (2)");
-      dpd_buf4_close(&tau2_AO);
+      global_dpd_->buf4_init(&tau2_AO, PSIF_CC_TMP0, 0, 5, 0, 5, 0, 0, "tauPqIj (2)");
+      global_dpd_->buf4_sort(&tau2_AO, PSIF_CC_TAMPS, rspq, 0, 5, "tauIjPq (2)");
+      global_dpd_->buf4_close(&tau2_AO);
 
-      dpd_buf4_init(&tau2_AO, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjPq (2)");
+      global_dpd_->buf4_init(&tau2_AO, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjPq (2)");
     
       dpd_set_default(0);
-      dpd_buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
+      global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
 
       halftrans(&t2, 0, &tau2_AO, 1, C, C, nirreps, T2_cd_row_start, T2_pq_row_start, 
 		virtpi, virtpi, sopi, 1, 1.0, 1.0);
 
-      dpd_buf4_close(&t2);
-      dpd_buf4_close(&tau2_AO);
+      global_dpd_->buf4_close(&t2);
+      global_dpd_->buf4_close(&tau2_AO);
 
     }
     else if(params.aobasis == "DIRECT") {
-      dpd_file4_init(&T, PSIF_CC_TAMPS, 0, 0, 5, "tauIjAb");
-      dpd_file4_cache_del(&T);
-      dpd_file4_close(&T);
+      global_dpd_->file4_init(&T, PSIF_CC_TAMPS, 0, 0, 5, "tauIjAb");
+      global_dpd_->file4_cache_del(&T);
+      global_dpd_->file4_close(&T);
 
-      dpd_file4_init(&T, PSIF_CC_TAMPS, 0, 0, 5, "New tIjAb");
-      dpd_file4_cache_del(&T);
-      dpd_file4_close(&T);
+      global_dpd_->file4_init(&T, PSIF_CC_TAMPS, 0, 0, 5, "New tIjAb");
+      global_dpd_->file4_cache_del(&T);
+      global_dpd_->file4_close(&T);
 
       /* close the CC_TAMPS file for cints to use it */
       psio_close(PSIF_CC_TAMPS, 1);
@@ -225,32 +225,32 @@ void BT2_AO(void)
     /************************************* AA *****************************************/
 
     dpd_set_default(1);
-    dpd_buf4_init(&tau1_AO, PSIF_CC_TAMPS, 0, 2, 5, 2, 5, 0, "tauIJPQ (1)");
-    dpd_buf4_scm(&tau1_AO, 0.0);
+    global_dpd_->buf4_init(&tau1_AO, PSIF_CC_TAMPS, 0, 2, 5, 2, 5, 0, "tauIJPQ (1)");
+    global_dpd_->buf4_scm(&tau1_AO, 0.0);
 
     dpd_set_default(0);
-    dpd_buf4_init(&tau, PSIF_CC_TAMPS, 0, 2, 5, 2, 7, 0, "tauIJAB");
+    global_dpd_->buf4_init(&tau, PSIF_CC_TAMPS, 0, 2, 5, 2, 7, 0, "tauIJAB");
 
     halftrans(&tau, 0, &tau1_AO, 1, C, C, nirreps, T2_cd_row_start, T2_pq_row_start, 
 	      virtpi, virtpi, sopi, 0, 1.0, 0.0);
 
-    dpd_buf4_close(&tau);
-    dpd_buf4_close(&tau1_AO);
+    global_dpd_->buf4_close(&tau);
+    global_dpd_->buf4_close(&tau1_AO);
 
     /* Transpose tau1_AO for better memory access patterns */
     dpd_set_default(1);
-    dpd_buf4_init(&tau1_AO, PSIF_CC_TAMPS, 0, 2, 5, 2, 5, 1, "tauIJPQ (1)");
-    dpd_buf4_sort(&tau1_AO, PSIF_CC_TMP0, rspq, 5, 2, "tauPQIJ (1)");
-    dpd_buf4_close(&tau1_AO);
+    global_dpd_->buf4_init(&tau1_AO, PSIF_CC_TAMPS, 0, 2, 5, 2, 5, 1, "tauIJPQ (1)");
+    global_dpd_->buf4_sort(&tau1_AO, PSIF_CC_TMP0, rspq, 5, 2, "tauPQIJ (1)");
+    global_dpd_->buf4_close(&tau1_AO);
 
-    dpd_buf4_init(&tau1_AO, PSIF_CC_TMP0, 0, 5, 2, 5, 2, 0, "tauPQIJ (1)");
-    dpd_buf4_init(&tau2_AO, PSIF_CC_TMP0, 0, 5, 2, 5, 2, 0, "tauPQIJ (2)");
-    dpd_buf4_scm(&tau2_AO, 0.0);
+    global_dpd_->buf4_init(&tau1_AO, PSIF_CC_TMP0, 0, 5, 2, 5, 2, 0, "tauPQIJ (1)");
+    global_dpd_->buf4_init(&tau2_AO, PSIF_CC_TMP0, 0, 5, 2, 5, 2, 0, "tauPQIJ (2)");
+    global_dpd_->buf4_scm(&tau2_AO, 0.0);
 
     for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&tau1_AO, h);
-      dpd_buf4_mat_irrep_rd(&tau1_AO, h);
-      dpd_buf4_mat_irrep_init(&tau2_AO, h);
+      global_dpd_->buf4_mat_irrep_init(&tau1_AO, h);
+      global_dpd_->buf4_mat_irrep_rd(&tau1_AO, h);
+      global_dpd_->buf4_mat_irrep_init(&tau2_AO, h);
     }
 
     iwl_buf_init(&InBuf, PSIF_SO_TEI, tolerance, 1, 1);
@@ -271,60 +271,60 @@ void BT2_AO(void)
     if(params.print & 2) fprintf(outfile, "     *** Processed %d SO integrals for <AB||CD> --> T2\n", counterAA);
 
     for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_wrt(&tau2_AO, h);
-      dpd_buf4_mat_irrep_close(&tau2_AO, h);
-      dpd_buf4_mat_irrep_close(&tau1_AO, h);
+      global_dpd_->buf4_mat_irrep_wrt(&tau2_AO, h);
+      global_dpd_->buf4_mat_irrep_close(&tau2_AO, h);
+      global_dpd_->buf4_mat_irrep_close(&tau1_AO, h);
     }
-    dpd_buf4_close(&tau1_AO);
-    dpd_buf4_close(&tau2_AO);
+    global_dpd_->buf4_close(&tau1_AO);
+    global_dpd_->buf4_close(&tau2_AO);
 
 
     /* Transpose tau2_AO for the half-backtransformation */
     dpd_set_default(1);
-    dpd_buf4_init(&tau2_AO, PSIF_CC_TMP0, 0, 5, 2, 5, 2, 0, "tauPQIJ (2)");
-    dpd_buf4_sort(&tau2_AO, PSIF_CC_TAMPS, rspq, 2, 5, "tauIJPQ (2)");
-    dpd_buf4_close(&tau2_AO);
+    global_dpd_->buf4_init(&tau2_AO, PSIF_CC_TMP0, 0, 5, 2, 5, 2, 0, "tauPQIJ (2)");
+    global_dpd_->buf4_sort(&tau2_AO, PSIF_CC_TAMPS, rspq, 2, 5, "tauIJPQ (2)");
+    global_dpd_->buf4_close(&tau2_AO);
 
-    dpd_buf4_init(&tau2_AO, PSIF_CC_TAMPS, 0, 2, 5, 2, 5, 0, "tauIJPQ (2)");
+    global_dpd_->buf4_init(&tau2_AO, PSIF_CC_TAMPS, 0, 2, 5, 2, 5, 0, "tauIJPQ (2)");
 
     dpd_set_default(0);
-    dpd_buf4_init(&t2, PSIF_CC_TAMPS, 0, 2, 5, 2, 7, 0, "New tIJAB");
+    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 2, 5, 2, 7, 0, "New tIJAB");
 
     halftrans(&t2, 0, &tau2_AO, 1, C, C, nirreps, T2_cd_row_start, T2_pq_row_start, 
 	      virtpi, virtpi, sopi, 1, 0.5, 1.0);
 
-    dpd_buf4_close(&t2);
-    dpd_buf4_close(&tau2_AO);
+    global_dpd_->buf4_close(&t2);
+    global_dpd_->buf4_close(&tau2_AO);
 
     /************************************* BB *****************************************/
 
     dpd_set_default(1);
-    dpd_buf4_init(&tau1_AO, PSIF_CC_TAMPS, 0, 2, 5, 2, 5, 0, "tauijpq (1)");
-    dpd_buf4_scm(&tau1_AO, 0.0);
+    global_dpd_->buf4_init(&tau1_AO, PSIF_CC_TAMPS, 0, 2, 5, 2, 5, 0, "tauijpq (1)");
+    global_dpd_->buf4_scm(&tau1_AO, 0.0);
 
     dpd_set_default(0);
-    dpd_buf4_init(&tau, PSIF_CC_TAMPS, 0, 2, 5, 2, 7, 0, "tauijab");
+    global_dpd_->buf4_init(&tau, PSIF_CC_TAMPS, 0, 2, 5, 2, 7, 0, "tauijab");
 
     halftrans(&tau, 0, &tau1_AO, 1, C, C, nirreps, T2_cd_row_start, T2_pq_row_start, 
 	      virtpi, virtpi, sopi, 0, 1.0, 0.0);
 
-    dpd_buf4_close(&tau);
-    dpd_buf4_close(&tau1_AO);
+    global_dpd_->buf4_close(&tau);
+    global_dpd_->buf4_close(&tau1_AO);
 
     /* Transpose tau1_AO for better memory access patterns */
     dpd_set_default(1);
-    dpd_buf4_init(&tau1_AO, PSIF_CC_TAMPS, 0, 2, 5, 2, 5, 1, "tauijpq (1)");
-    dpd_buf4_sort(&tau1_AO, PSIF_CC_TMP0, rspq, 5, 2, "taupqij (1)");
-    dpd_buf4_close(&tau1_AO);
+    global_dpd_->buf4_init(&tau1_AO, PSIF_CC_TAMPS, 0, 2, 5, 2, 5, 1, "tauijpq (1)");
+    global_dpd_->buf4_sort(&tau1_AO, PSIF_CC_TMP0, rspq, 5, 2, "taupqij (1)");
+    global_dpd_->buf4_close(&tau1_AO);
 
-    dpd_buf4_init(&tau1_AO, PSIF_CC_TMP0, 0, 5, 2, 5, 2, 0, "taupqij (1)");
-    dpd_buf4_init(&tau2_AO, PSIF_CC_TMP0, 0, 5, 2, 5, 2, 0, "taupqij (2)");
-    dpd_buf4_scm(&tau2_AO, 0.0);
+    global_dpd_->buf4_init(&tau1_AO, PSIF_CC_TMP0, 0, 5, 2, 5, 2, 0, "taupqij (1)");
+    global_dpd_->buf4_init(&tau2_AO, PSIF_CC_TMP0, 0, 5, 2, 5, 2, 0, "taupqij (2)");
+    global_dpd_->buf4_scm(&tau2_AO, 0.0);
 
     for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&tau1_AO, h);
-      dpd_buf4_mat_irrep_rd(&tau1_AO, h);
-      dpd_buf4_mat_irrep_init(&tau2_AO, h);
+      global_dpd_->buf4_mat_irrep_init(&tau1_AO, h);
+      global_dpd_->buf4_mat_irrep_rd(&tau1_AO, h);
+      global_dpd_->buf4_mat_irrep_init(&tau2_AO, h);
     }
 
     iwl_buf_init(&InBuf, PSIF_SO_TEI, tolerance, 1, 1);
@@ -345,61 +345,61 @@ void BT2_AO(void)
     if(params.print & 2) fprintf(outfile, "     *** Processed %d SO integrals for <ab||cd> --> T2\n", counterBB);
 
     for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_wrt(&tau2_AO, h);
-      dpd_buf4_mat_irrep_close(&tau2_AO, h);
-      dpd_buf4_mat_irrep_close(&tau1_AO, h);
+      global_dpd_->buf4_mat_irrep_wrt(&tau2_AO, h);
+      global_dpd_->buf4_mat_irrep_close(&tau2_AO, h);
+      global_dpd_->buf4_mat_irrep_close(&tau1_AO, h);
     }
-    dpd_buf4_close(&tau1_AO);
-    dpd_buf4_close(&tau2_AO);
+    global_dpd_->buf4_close(&tau1_AO);
+    global_dpd_->buf4_close(&tau2_AO);
 
 
     /* Transpose tau2_AO for the half-backtransformation */
     dpd_set_default(1);
-    dpd_buf4_init(&tau2_AO, PSIF_CC_TMP0, 0, 5, 2, 5, 2, 0, "taupqij (2)");
-    dpd_buf4_sort(&tau2_AO, PSIF_CC_TAMPS, rspq, 2, 5, "tauijpq (2)");
-    dpd_buf4_close(&tau2_AO);
+    global_dpd_->buf4_init(&tau2_AO, PSIF_CC_TMP0, 0, 5, 2, 5, 2, 0, "taupqij (2)");
+    global_dpd_->buf4_sort(&tau2_AO, PSIF_CC_TAMPS, rspq, 2, 5, "tauijpq (2)");
+    global_dpd_->buf4_close(&tau2_AO);
 
-    dpd_buf4_init(&tau2_AO, PSIF_CC_TAMPS, 0, 2, 5, 2, 5, 0, "tauijpq (2)");
+    global_dpd_->buf4_init(&tau2_AO, PSIF_CC_TAMPS, 0, 2, 5, 2, 5, 0, "tauijpq (2)");
 
     dpd_set_default(0);
-    dpd_buf4_init(&t2, PSIF_CC_TAMPS, 0, 2, 5, 2, 7, 0, "New tijab");
+    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 2, 5, 2, 7, 0, "New tijab");
 
     halftrans(&t2, 0, &tau2_AO, 1, C, C, nirreps, T2_cd_row_start, T2_pq_row_start, 
 	      virtpi, virtpi, sopi, 1, 0.5, 1.0);
 
-    dpd_buf4_close(&t2);
-    dpd_buf4_close(&tau2_AO);
+    global_dpd_->buf4_close(&t2);
+    global_dpd_->buf4_close(&tau2_AO);
 
     /************************************* AB *****************************************/
 
     dpd_set_default(1);
-    dpd_buf4_init(&tau1_AO, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjPq (1)");
-    dpd_buf4_scm(&tau1_AO, 0.0);
+    global_dpd_->buf4_init(&tau1_AO, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjPq (1)");
+    global_dpd_->buf4_scm(&tau1_AO, 0.0);
 
     dpd_set_default(0);
-    dpd_buf4_init(&tau, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjAb");
+    global_dpd_->buf4_init(&tau, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjAb");
 
     halftrans(&tau, 0, &tau1_AO, 1, C, C, nirreps, T2_cd_row_start, T2_pq_row_start, 
 	      virtpi, virtpi, sopi, 0, 1.0, 0.0);
 
-    dpd_buf4_close(&tau);
-    dpd_buf4_close(&tau1_AO);
+    global_dpd_->buf4_close(&tau);
+    global_dpd_->buf4_close(&tau1_AO);
 
 
     /* Transpose tau1_AO for better memory access patterns */
     dpd_set_default(1);
-    dpd_buf4_init(&tau1_AO, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjPq (1)");
-    dpd_buf4_sort(&tau1_AO, PSIF_CC_TMP0, rspq, 5, 0, "tauPqIj (1)");
-    dpd_buf4_close(&tau1_AO);
+    global_dpd_->buf4_init(&tau1_AO, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjPq (1)");
+    global_dpd_->buf4_sort(&tau1_AO, PSIF_CC_TMP0, rspq, 5, 0, "tauPqIj (1)");
+    global_dpd_->buf4_close(&tau1_AO);
 
-    dpd_buf4_init(&tau1_AO, PSIF_CC_TMP0, 0, 5, 0, 5, 0, 0, "tauPqIj (1)");
-    dpd_buf4_init(&tau2_AO, PSIF_CC_TMP0, 0, 5, 0, 5, 0, 0, "tauPqIj (2)");
-    dpd_buf4_scm(&tau2_AO, 0.0);
+    global_dpd_->buf4_init(&tau1_AO, PSIF_CC_TMP0, 0, 5, 0, 5, 0, 0, "tauPqIj (1)");
+    global_dpd_->buf4_init(&tau2_AO, PSIF_CC_TMP0, 0, 5, 0, 5, 0, 0, "tauPqIj (2)");
+    global_dpd_->buf4_scm(&tau2_AO, 0.0);
 
     for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&tau1_AO, h);
-      dpd_buf4_mat_irrep_rd(&tau1_AO, h);
-      dpd_buf4_mat_irrep_init(&tau2_AO, h);
+      global_dpd_->buf4_mat_irrep_init(&tau1_AO, h);
+      global_dpd_->buf4_mat_irrep_rd(&tau1_AO, h);
+      global_dpd_->buf4_mat_irrep_init(&tau2_AO, h);
     }
 
     iwl_buf_init(&InBuf, PSIF_SO_TEI, tolerance, 1, 1);
@@ -420,29 +420,29 @@ void BT2_AO(void)
     if(params.print & 2) fprintf(outfile, "     *** Processed %d SO integrals for <Ab|Cd> --> T2\n", counterAB);
 
     for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_wrt(&tau2_AO, h);
-      dpd_buf4_mat_irrep_close(&tau2_AO, h);
-      dpd_buf4_mat_irrep_close(&tau1_AO, h);
+      global_dpd_->buf4_mat_irrep_wrt(&tau2_AO, h);
+      global_dpd_->buf4_mat_irrep_close(&tau2_AO, h);
+      global_dpd_->buf4_mat_irrep_close(&tau1_AO, h);
     }
-    dpd_buf4_close(&tau1_AO);
-    dpd_buf4_close(&tau2_AO);
+    global_dpd_->buf4_close(&tau1_AO);
+    global_dpd_->buf4_close(&tau2_AO);
 
     /* Transpose tau2_AO for the half-backtransformation */
     dpd_set_default(1);
-    dpd_buf4_init(&tau2_AO, PSIF_CC_TMP0, 0, 5, 0, 5, 0, 0, "tauPqIj (2)");
-    dpd_buf4_sort(&tau2_AO, PSIF_CC_TAMPS, rspq, 0, 5, "tauIjPq (2)");
-    dpd_buf4_close(&tau2_AO);
+    global_dpd_->buf4_init(&tau2_AO, PSIF_CC_TMP0, 0, 5, 0, 5, 0, 0, "tauPqIj (2)");
+    global_dpd_->buf4_sort(&tau2_AO, PSIF_CC_TAMPS, rspq, 0, 5, "tauIjPq (2)");
+    global_dpd_->buf4_close(&tau2_AO);
 
-    dpd_buf4_init(&tau2_AO, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjPq (2)");
+    global_dpd_->buf4_init(&tau2_AO, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjPq (2)");
 
     dpd_set_default(0);
-    dpd_buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
+    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
 
     halftrans(&t2, 0, &tau2_AO, 1, C, C, nirreps, T2_cd_row_start, T2_pq_row_start, 
 	      virtpi, virtpi, sopi, 1, 1.0, 1.0);
 
-    dpd_buf4_close(&t2);
-    dpd_buf4_close(&tau2_AO);
+    global_dpd_->buf4_close(&t2);
+    global_dpd_->buf4_close(&tau2_AO);
 
   }  /** ROHF **/
   else if(params.ref == 2) { /** UHF **/
@@ -450,32 +450,32 @@ void BT2_AO(void)
     /************************************* AA *****************************************/
 
     dpd_set_default(1);
-    dpd_buf4_init(&tau1_AO, PSIF_CC_TAMPS, 0, 2, 5, 2, 5, 0, "tauIJPQ (1)");
-    dpd_buf4_scm(&tau1_AO, 0.0);
+    global_dpd_->buf4_init(&tau1_AO, PSIF_CC_TAMPS, 0, 2, 5, 2, 5, 0, "tauIJPQ (1)");
+    global_dpd_->buf4_scm(&tau1_AO, 0.0);
 
     dpd_set_default(0);
-    dpd_buf4_init(&tau, PSIF_CC_TAMPS, 0, 2, 5, 2, 7, 0, "tauIJAB");
+    global_dpd_->buf4_init(&tau, PSIF_CC_TAMPS, 0, 2, 5, 2, 7, 0, "tauIJAB");
 
     halftrans(&tau, 0, &tau1_AO, 1, Ca, Ca, nirreps, T2_CD_row_start, T2_pq_row_start,
               avirtpi, avirtpi, sopi, 0, 1.0, 0.0);
 
-    dpd_buf4_close(&tau);
-    dpd_buf4_close(&tau1_AO);
+    global_dpd_->buf4_close(&tau);
+    global_dpd_->buf4_close(&tau1_AO);
 
     /* Transpose tau1_AO for better memory access patterns */
     dpd_set_default(1);
-    dpd_buf4_init(&tau1_AO, PSIF_CC_TAMPS, 0, 2, 5, 2, 5, 1, "tauIJPQ (1)");
-    dpd_buf4_sort(&tau1_AO, PSIF_CC_TMP0, rspq, 5, 2, "tauPQIJ (1)");
-    dpd_buf4_close(&tau1_AO);
+    global_dpd_->buf4_init(&tau1_AO, PSIF_CC_TAMPS, 0, 2, 5, 2, 5, 1, "tauIJPQ (1)");
+    global_dpd_->buf4_sort(&tau1_AO, PSIF_CC_TMP0, rspq, 5, 2, "tauPQIJ (1)");
+    global_dpd_->buf4_close(&tau1_AO);
 
-    dpd_buf4_init(&tau1_AO, PSIF_CC_TMP0, 0, 5, 2, 5, 2, 0, "tauPQIJ (1)");
-    dpd_buf4_init(&tau2_AO, PSIF_CC_TMP0, 0, 5, 2, 5, 2, 0, "tauPQIJ (2)");
-    dpd_buf4_scm(&tau2_AO, 0.0);
+    global_dpd_->buf4_init(&tau1_AO, PSIF_CC_TMP0, 0, 5, 2, 5, 2, 0, "tauPQIJ (1)");
+    global_dpd_->buf4_init(&tau2_AO, PSIF_CC_TMP0, 0, 5, 2, 5, 2, 0, "tauPQIJ (2)");
+    global_dpd_->buf4_scm(&tau2_AO, 0.0);
 
     for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&tau1_AO, h);
-      dpd_buf4_mat_irrep_rd(&tau1_AO, h);
-      dpd_buf4_mat_irrep_init(&tau2_AO, h);
+      global_dpd_->buf4_mat_irrep_init(&tau1_AO, h);
+      global_dpd_->buf4_mat_irrep_rd(&tau1_AO, h);
+      global_dpd_->buf4_mat_irrep_init(&tau2_AO, h);
     }
 
     iwl_buf_init(&InBuf, PSIF_SO_TEI, tolerance, 1, 1);
@@ -496,60 +496,60 @@ void BT2_AO(void)
     if(params.print & 2) fprintf(outfile, "     *** Processed %d SO integrals for <AB||CD> --> T2\n", counterAA);
 
     for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_wrt(&tau2_AO, h);
-      dpd_buf4_mat_irrep_close(&tau2_AO, h);
-      dpd_buf4_mat_irrep_close(&tau1_AO, h);
+      global_dpd_->buf4_mat_irrep_wrt(&tau2_AO, h);
+      global_dpd_->buf4_mat_irrep_close(&tau2_AO, h);
+      global_dpd_->buf4_mat_irrep_close(&tau1_AO, h);
     }
-    dpd_buf4_close(&tau1_AO);
-    dpd_buf4_close(&tau2_AO);
+    global_dpd_->buf4_close(&tau1_AO);
+    global_dpd_->buf4_close(&tau2_AO);
 
 
     /* Transpose tau2_AO for the half-backtransformation */
     dpd_set_default(1);
-    dpd_buf4_init(&tau2_AO, PSIF_CC_TMP0, 0, 5, 2, 5, 2, 0, "tauPQIJ (2)");
-    dpd_buf4_sort(&tau2_AO, PSIF_CC_TAMPS, rspq, 2, 5, "tauIJPQ (2)");
-    dpd_buf4_close(&tau2_AO);
+    global_dpd_->buf4_init(&tau2_AO, PSIF_CC_TMP0, 0, 5, 2, 5, 2, 0, "tauPQIJ (2)");
+    global_dpd_->buf4_sort(&tau2_AO, PSIF_CC_TAMPS, rspq, 2, 5, "tauIJPQ (2)");
+    global_dpd_->buf4_close(&tau2_AO);
 
-    dpd_buf4_init(&tau2_AO, PSIF_CC_TAMPS, 0, 2, 5, 2, 5, 0, "tauIJPQ (2)");
+    global_dpd_->buf4_init(&tau2_AO, PSIF_CC_TAMPS, 0, 2, 5, 2, 5, 0, "tauIJPQ (2)");
 
     dpd_set_default(0);
-    dpd_buf4_init(&t2, PSIF_CC_TAMPS, 0, 2, 5, 2, 7, 0, "New tIJAB");
+    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 2, 5, 2, 7, 0, "New tIJAB");
 
     halftrans(&t2, 0, &tau2_AO, 1, Ca, Ca, nirreps, T2_CD_row_start, T2_pq_row_start,
               avirtpi, avirtpi, sopi, 1, 0.5, 1.0);
 
-    dpd_buf4_close(&t2);
-    dpd_buf4_close(&tau2_AO);
+    global_dpd_->buf4_close(&t2);
+    global_dpd_->buf4_close(&tau2_AO);
 
     /************************************* BB *****************************************/
 
     dpd_set_default(1);
-    dpd_buf4_init(&tau1_AO, PSIF_CC_TAMPS, 0, 12, 15, 12, 15, 0, "tauijpq (1)");
-    dpd_buf4_scm(&tau1_AO, 0.0);
+    global_dpd_->buf4_init(&tau1_AO, PSIF_CC_TAMPS, 0, 12, 15, 12, 15, 0, "tauijpq (1)");
+    global_dpd_->buf4_scm(&tau1_AO, 0.0);
 
     dpd_set_default(0);
-    dpd_buf4_init(&tau, PSIF_CC_TAMPS, 0, 12, 15, 12, 17, 0, "tauijab");
+    global_dpd_->buf4_init(&tau, PSIF_CC_TAMPS, 0, 12, 15, 12, 17, 0, "tauijab");
 
     halftrans(&tau, 0, &tau1_AO, 1, Cb, Cb, nirreps, T2_cd_row_start, T2_pq_row_start,
               bvirtpi, bvirtpi, sopi, 0, 1.0, 0.0);
 
-    dpd_buf4_close(&tau);
-    dpd_buf4_close(&tau1_AO);
+    global_dpd_->buf4_close(&tau);
+    global_dpd_->buf4_close(&tau1_AO);
 
     /* Transpose tau1_AO for better memory access patterns */
     dpd_set_default(1);
-    dpd_buf4_init(&tau1_AO, PSIF_CC_TAMPS, 0, 12, 15, 12, 15, 1, "tauijpq (1)");
-    dpd_buf4_sort(&tau1_AO, PSIF_CC_TMP0, rspq, 15, 12, "taupqij (1)");
-    dpd_buf4_close(&tau1_AO);
+    global_dpd_->buf4_init(&tau1_AO, PSIF_CC_TAMPS, 0, 12, 15, 12, 15, 1, "tauijpq (1)");
+    global_dpd_->buf4_sort(&tau1_AO, PSIF_CC_TMP0, rspq, 15, 12, "taupqij (1)");
+    global_dpd_->buf4_close(&tau1_AO);
 
-    dpd_buf4_init(&tau1_AO, PSIF_CC_TMP0, 0, 15, 12, 15, 12, 0, "taupqij (1)");
-    dpd_buf4_init(&tau2_AO, PSIF_CC_TMP0, 0, 15, 12, 15, 12, 0, "taupqij (2)");
-    dpd_buf4_scm(&tau2_AO, 0.0);
+    global_dpd_->buf4_init(&tau1_AO, PSIF_CC_TMP0, 0, 15, 12, 15, 12, 0, "taupqij (1)");
+    global_dpd_->buf4_init(&tau2_AO, PSIF_CC_TMP0, 0, 15, 12, 15, 12, 0, "taupqij (2)");
+    global_dpd_->buf4_scm(&tau2_AO, 0.0);
 
     for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&tau1_AO, h);
-      dpd_buf4_mat_irrep_rd(&tau1_AO, h);
-      dpd_buf4_mat_irrep_init(&tau2_AO, h);
+      global_dpd_->buf4_mat_irrep_init(&tau1_AO, h);
+      global_dpd_->buf4_mat_irrep_rd(&tau1_AO, h);
+      global_dpd_->buf4_mat_irrep_init(&tau2_AO, h);
     }
 
     iwl_buf_init(&InBuf, PSIF_SO_TEI, tolerance, 1, 1);
@@ -570,61 +570,61 @@ void BT2_AO(void)
     if(params.print & 2) fprintf(outfile, "     *** Processed %d SO integrals for <ab||cd> --> T2\n", counterBB);
 
     for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_wrt(&tau2_AO, h);
-      dpd_buf4_mat_irrep_close(&tau2_AO, h);
-      dpd_buf4_mat_irrep_close(&tau1_AO, h);
+      global_dpd_->buf4_mat_irrep_wrt(&tau2_AO, h);
+      global_dpd_->buf4_mat_irrep_close(&tau2_AO, h);
+      global_dpd_->buf4_mat_irrep_close(&tau1_AO, h);
     }
-    dpd_buf4_close(&tau1_AO);
-    dpd_buf4_close(&tau2_AO);
+    global_dpd_->buf4_close(&tau1_AO);
+    global_dpd_->buf4_close(&tau2_AO);
 
 
     /* Transpose tau2_AO for the half-backtransformation */
     dpd_set_default(1);
-    dpd_buf4_init(&tau2_AO, PSIF_CC_TMP0, 0, 15, 12, 15, 12, 0, "taupqij (2)");
-    dpd_buf4_sort(&tau2_AO, PSIF_CC_TAMPS, rspq, 12, 15, "tauijpq (2)");
-    dpd_buf4_close(&tau2_AO);
+    global_dpd_->buf4_init(&tau2_AO, PSIF_CC_TMP0, 0, 15, 12, 15, 12, 0, "taupqij (2)");
+    global_dpd_->buf4_sort(&tau2_AO, PSIF_CC_TAMPS, rspq, 12, 15, "tauijpq (2)");
+    global_dpd_->buf4_close(&tau2_AO);
 
-    dpd_buf4_init(&tau2_AO, PSIF_CC_TAMPS, 0, 12, 15, 12, 15, 0, "tauijpq (2)");
+    global_dpd_->buf4_init(&tau2_AO, PSIF_CC_TAMPS, 0, 12, 15, 12, 15, 0, "tauijpq (2)");
 
     dpd_set_default(0);
-    dpd_buf4_init(&t2, PSIF_CC_TAMPS, 0, 12, 15, 12, 17, 0, "New tijab");
+    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 12, 15, 12, 17, 0, "New tijab");
 
     halftrans(&t2, 0, &tau2_AO, 1, Cb, Cb, nirreps, T2_cd_row_start, T2_pq_row_start,
               bvirtpi, bvirtpi, sopi, 1, 0.5, 1.0);
 
-    dpd_buf4_close(&t2);
-    dpd_buf4_close(&tau2_AO);
+    global_dpd_->buf4_close(&t2);
+    global_dpd_->buf4_close(&tau2_AO);
 
     /************************************* AB *****************************************/
 
     dpd_set_default(1);
-    dpd_buf4_init(&tau1_AO, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tauIjPq (1)");
-    dpd_buf4_scm(&tau1_AO, 0.0);
+    global_dpd_->buf4_init(&tau1_AO, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tauIjPq (1)");
+    global_dpd_->buf4_scm(&tau1_AO, 0.0);
 
     dpd_set_default(0);
-    dpd_buf4_init(&tau, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tauIjAb");
+    global_dpd_->buf4_init(&tau, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tauIjAb");
 
     halftrans(&tau, 0, &tau1_AO, 1, Ca, Cb, nirreps, T2_Cd_row_start, T2_pq_row_start,
               avirtpi, bvirtpi, sopi, 0, 1.0, 0.0);
 
-    dpd_buf4_close(&tau);
-    dpd_buf4_close(&tau1_AO);
+    global_dpd_->buf4_close(&tau);
+    global_dpd_->buf4_close(&tau1_AO);
 
 
     /* Transpose tau1_AO for better memory access patterns */
     dpd_set_default(1);
-    dpd_buf4_init(&tau1_AO, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tauIjPq (1)");
-    dpd_buf4_sort(&tau1_AO, PSIF_CC_TMP0, rspq, 28, 22, "tauPqIj (1)");
-    dpd_buf4_close(&tau1_AO);
+    global_dpd_->buf4_init(&tau1_AO, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tauIjPq (1)");
+    global_dpd_->buf4_sort(&tau1_AO, PSIF_CC_TMP0, rspq, 28, 22, "tauPqIj (1)");
+    global_dpd_->buf4_close(&tau1_AO);
 
-    dpd_buf4_init(&tau1_AO, PSIF_CC_TMP0, 0, 28, 22, 28, 22, 0, "tauPqIj (1)");
-    dpd_buf4_init(&tau2_AO, PSIF_CC_TMP0, 0, 28, 22, 28, 22, 0, "tauPqIj (2)");
-    dpd_buf4_scm(&tau2_AO, 0.0);
+    global_dpd_->buf4_init(&tau1_AO, PSIF_CC_TMP0, 0, 28, 22, 28, 22, 0, "tauPqIj (1)");
+    global_dpd_->buf4_init(&tau2_AO, PSIF_CC_TMP0, 0, 28, 22, 28, 22, 0, "tauPqIj (2)");
+    global_dpd_->buf4_scm(&tau2_AO, 0.0);
 
     for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&tau1_AO, h);
-      dpd_buf4_mat_irrep_rd(&tau1_AO, h);
-      dpd_buf4_mat_irrep_init(&tau2_AO, h);
+      global_dpd_->buf4_mat_irrep_init(&tau1_AO, h);
+      global_dpd_->buf4_mat_irrep_rd(&tau1_AO, h);
+      global_dpd_->buf4_mat_irrep_init(&tau2_AO, h);
     }
 
     iwl_buf_init(&InBuf, PSIF_SO_TEI, tolerance, 1, 1);
@@ -645,29 +645,29 @@ void BT2_AO(void)
     if(params.print & 2) fprintf(outfile, "     *** Processed %d SO integrals for <Ab|Cd> --> T2\n", counterAB);
 
     for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_wrt(&tau2_AO, h);
-      dpd_buf4_mat_irrep_close(&tau2_AO, h);
-      dpd_buf4_mat_irrep_close(&tau1_AO, h);
+      global_dpd_->buf4_mat_irrep_wrt(&tau2_AO, h);
+      global_dpd_->buf4_mat_irrep_close(&tau2_AO, h);
+      global_dpd_->buf4_mat_irrep_close(&tau1_AO, h);
     }
-    dpd_buf4_close(&tau1_AO);
-    dpd_buf4_close(&tau2_AO);
+    global_dpd_->buf4_close(&tau1_AO);
+    global_dpd_->buf4_close(&tau2_AO);
 
     /* Transpose tau2_AO for the half-backtransformation */
     dpd_set_default(1);
-    dpd_buf4_init(&tau2_AO, PSIF_CC_TMP0, 0, 28, 22, 28, 22, 0, "tauPqIj (2)");
-    dpd_buf4_sort(&tau2_AO, PSIF_CC_TAMPS, rspq, 22, 28, "tauIjPq (2)");
-    dpd_buf4_close(&tau2_AO);
+    global_dpd_->buf4_init(&tau2_AO, PSIF_CC_TMP0, 0, 28, 22, 28, 22, 0, "tauPqIj (2)");
+    global_dpd_->buf4_sort(&tau2_AO, PSIF_CC_TAMPS, rspq, 22, 28, "tauIjPq (2)");
+    global_dpd_->buf4_close(&tau2_AO);
 
-    dpd_buf4_init(&tau2_AO, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tauIjPq (2)");
+    global_dpd_->buf4_init(&tau2_AO, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tauIjPq (2)");
 
     dpd_set_default(0);
-    dpd_buf4_init(&t2, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "New tIjAb");
+    global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "New tIjAb");
 
     halftrans(&t2, 0, &tau2_AO, 1, Ca, Cb, nirreps, T2_Cd_row_start, T2_pq_row_start,
               avirtpi, bvirtpi, sopi, 1, 1.0, 1.0);
 
-    dpd_buf4_close(&t2);
-    dpd_buf4_close(&tau2_AO);
+    global_dpd_->buf4_close(&t2);
+    global_dpd_->buf4_close(&tau2_AO);
 
   }  /** UHF **/
 

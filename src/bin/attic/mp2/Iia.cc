@@ -46,41 +46,41 @@ void rhf_sf_Iia(void)
   dpdbuf4 G, Eints;
 
   /* I'IA <-- sum_BJK <JK||IB> G(JK,AB) + 2 sum_bJk <Jk|Ib> G(Jk,Ab) */
-  dpd_file2_init(&I, PSIF_CC_OEI, 0, 0, 1, "I'IA");
+  global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 1, "I'IA");
 
-  dpd_buf4_init(&Eints, PSIF_CC_EINTS, 0, 2, 10, 2, 10, 0, "E <ij||ka> (i>j,ka)");
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 5, 2, 7, 0, "GIJAB");
-  dpd_contract442(&Eints, &G, &I, 2, 2, 2.0, 0.0);
-  dpd_buf4_close(&G);
-  dpd_buf4_close(&Eints);
+  global_dpd_->buf4_init(&Eints, PSIF_CC_EINTS, 0, 2, 10, 2, 10, 0, "E <ij||ka> (i>j,ka)");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 5, 2, 7, 0, "GIJAB");
+  global_dpd_->contract442(&Eints, &G, &I, 2, 2, 2.0, 0.0);
+  global_dpd_->buf4_close(&G);
+  global_dpd_->buf4_close(&Eints);
 
-  dpd_buf4_init(&Eints, PSIF_CC_EINTS, 0, 0, 10, 0, 10, 0, "E <ij|ka>");
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "GIjAb");
-  dpd_contract442(&Eints, &G, &I, 2, 2, 2.0, 1.0);
-  dpd_buf4_close(&G);
-  dpd_buf4_close(&Eints);
+  global_dpd_->buf4_init(&Eints, PSIF_CC_EINTS, 0, 0, 10, 0, 10, 0, "E <ij|ka>");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "GIjAb");
+  global_dpd_->contract442(&Eints, &G, &I, 2, 2, 2.0, 1.0);
+  global_dpd_->buf4_close(&G);
+  global_dpd_->buf4_close(&Eints);
 
-  dpd_file2_close(&I);
+  global_dpd_->file2_close(&I);
 
   /* I'ia <-- sum_bjk <jk||ib> G(jk,ab) + 2 sum_BjK <Kj|Bi> G(Kj,Ba) */
-  dpd_file2_init(&I, PSIF_CC_OEI, 0, 0, 1, "I'ia");
+  global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 1, "I'ia");
 
-  dpd_buf4_init(&Eints, PSIF_CC_EINTS, 0, 2, 10, 2, 10, 0, "E <ij||ka> (i>j,ka)");
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 5, 2, 7, 0, "Gijab");
-  dpd_contract442(&Eints, &G, &I, 2, 2, 2.0, 0.0);
-  dpd_buf4_close(&G);
-  dpd_buf4_close(&Eints);
+  global_dpd_->buf4_init(&Eints, PSIF_CC_EINTS, 0, 2, 10, 2, 10, 0, "E <ij||ka> (i>j,ka)");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 5, 2, 7, 0, "Gijab");
+  global_dpd_->contract442(&Eints, &G, &I, 2, 2, 2.0, 0.0);
+  global_dpd_->buf4_close(&G);
+  global_dpd_->buf4_close(&Eints);
 
-  dpd_buf4_init(&Eints, PSIF_CC_EINTS, 0, 0, 10, 0, 10, 0, "E <ij|ka>");
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "GIjAb");
-  dpd_buf4_sort(&G, PSIF_CC_TMP0, qpsr, 0, 5, "GjIbA");
-  dpd_buf4_close(&G);
-  dpd_buf4_init(&G, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "GjIbA");
-  dpd_contract442(&Eints, &G, &I, 2, 2, 2.0, 1.0);
-  dpd_buf4_close(&G);
-  dpd_buf4_close(&Eints);
+  global_dpd_->buf4_init(&Eints, PSIF_CC_EINTS, 0, 0, 10, 0, 10, 0, "E <ij|ka>");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "GIjAb");
+  global_dpd_->buf4_sort(&G, PSIF_CC_TMP0, qpsr, 0, 5, "GjIbA");
+  global_dpd_->buf4_close(&G);
+  global_dpd_->buf4_init(&G, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "GjIbA");
+  global_dpd_->contract442(&Eints, &G, &I, 2, 2, 2.0, 1.0);
+  global_dpd_->buf4_close(&G);
+  global_dpd_->buf4_close(&Eints);
 
-  dpd_file2_close(&I);
+  global_dpd_->file2_close(&I);
 }
 
 void uhf_sf_Iia(void)

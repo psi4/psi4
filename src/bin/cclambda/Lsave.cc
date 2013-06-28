@@ -40,46 +40,46 @@ void Lsave(int L_irr)
 
   if(params.ref == 0 || params.ref == 1) { /** ROHF **/
 
-    dpd_file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
-    dpd_file2_copy(&L1, PSIF_CC_LAMBDA, "LIA");
-    dpd_file2_close(&L1);
+    global_dpd_->file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
+    global_dpd_->file2_copy(&L1, PSIF_CC_LAMBDA, "LIA");
+    global_dpd_->file2_close(&L1);
 
-    dpd_file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "New Lia");
-    dpd_file2_copy(&L1, PSIF_CC_LAMBDA, "Lia");
-    dpd_file2_close(&L1);
+    global_dpd_->file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "New Lia");
+    global_dpd_->file2_copy(&L1, PSIF_CC_LAMBDA, "Lia");
+    global_dpd_->file2_close(&L1);
 
-    dpd_buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
-    dpd_buf4_copy(&L2, PSIF_CC_LAMBDA, "LIJAB");
-    dpd_buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
+    global_dpd_->buf4_copy(&L2, PSIF_CC_LAMBDA, "LIJAB");
+    global_dpd_->buf4_close(&L2);
 
-    dpd_buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New Lijab");
-    dpd_buf4_copy(&L2, PSIF_CC_LAMBDA, "Lijab");
-    dpd_buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New Lijab");
+    global_dpd_->buf4_copy(&L2, PSIF_CC_LAMBDA, "Lijab");
+    global_dpd_->buf4_close(&L2);
 
-    dpd_buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
-    dpd_buf4_copy(&L2, PSIF_CC_LAMBDA, "LIjAb");
-    dpd_buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
+    global_dpd_->buf4_copy(&L2, PSIF_CC_LAMBDA, "LIjAb");
+    global_dpd_->buf4_close(&L2);
   }
   else if(params.ref == 2) { /** UHF **/
-    dpd_file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
-    dpd_file2_copy(&L1, PSIF_CC_LAMBDA, "LIA");
-    dpd_file2_close(&L1);
+    global_dpd_->file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
+    global_dpd_->file2_copy(&L1, PSIF_CC_LAMBDA, "LIA");
+    global_dpd_->file2_close(&L1);
 
-    dpd_file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 2, 3, "New Lia");
-    dpd_file2_copy(&L1, PSIF_CC_LAMBDA, "Lia");
-    dpd_file2_close(&L1);
+    global_dpd_->file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 2, 3, "New Lia");
+    global_dpd_->file2_copy(&L1, PSIF_CC_LAMBDA, "Lia");
+    global_dpd_->file2_close(&L1);
 
-    dpd_buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
-    dpd_buf4_copy(&L2, PSIF_CC_LAMBDA, "LIJAB");
-    dpd_buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
+    global_dpd_->buf4_copy(&L2, PSIF_CC_LAMBDA, "LIJAB");
+    global_dpd_->buf4_close(&L2);
 
-    dpd_buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 12, 17, 12, 17, 0, "New Lijab");
-    dpd_buf4_copy(&L2, PSIF_CC_LAMBDA, "Lijab");
-    dpd_buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 12, 17, 12, 17, 0, "New Lijab");
+    global_dpd_->buf4_copy(&L2, PSIF_CC_LAMBDA, "Lijab");
+    global_dpd_->buf4_close(&L2);
 
-    dpd_buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "New LIjAb");
-    dpd_buf4_copy(&L2, PSIF_CC_LAMBDA, "LIjAb");
-    dpd_buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "New LIjAb");
+    global_dpd_->buf4_copy(&L2, PSIF_CC_LAMBDA, "LIjAb");
+    global_dpd_->buf4_close(&L2);
 
   }
 }

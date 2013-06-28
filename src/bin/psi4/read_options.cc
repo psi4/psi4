@@ -145,7 +145,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convergence criterion for energy. See Table :ref:`Post-SCF
     Convergence <table:conv_corl>` for default convergence criteria for
     different calculation types. -*/
-    options.add_double("E_CONVERGENCE", 1e-8);
+    options.add_double("E_CONVERGENCE", 1e-6);
 
     /*- Maximum number of iterations to diagonalize the Hamiltonian -*/
     options.add_int("MAXITER", 12);
@@ -985,12 +985,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convergence criterion for SCF energy. See Table :ref:`SCF
     Convergence & Algorithm <table:conv_scf>` for default convergence
     criteria for different calculation types. -*/
-    options.add_double("E_CONVERGENCE", 1e-8);
+    options.add_double("E_CONVERGENCE", 1e-6);
     /*- Convergence criterion for SCF density, which is defined as the RMS
     value of the orbital gradient.  See Table :ref:`SCF Convergence & Algorithm
     <table:conv_scf>` for default convergence criteria for different
     calculation types. -*/
-    options.add_double("D_CONVERGENCE", 1e-8);
+    options.add_double("D_CONVERGENCE", 1e-6);
     /*- The amount (percentage) of damping to apply to the early density updates.
         0 will result in a full update, 100 will completely stall the update.  A
         value around 20 (which corresponds to 20\% of the previous iteration's
@@ -1816,7 +1816,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     Davidson algorithm for CC-EOM. See Table :ref:`Post-SCF Convergence
     <table:conv_corl>` for default convergence criteria for different
     calculation types. -*/
-    options.add_double("E_CONVERGENCE", 1E-8);
+    options.add_double("E_CONVERGENCE", 1E-6);
     /*- Convergence criterion for excitation energy (change) in the Davidson algorithm for the CIS guess to CC-EOM. -*/
     options.add_double("SS_E_CONVERGENCE", 1E-6);
     /*- Number of important CC amplitudes to print -*/
@@ -1931,7 +1931,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Level shift to aid convergence -*/
     options.add_double("LEVEL_SHIFT",0.0);
     /*- Convergence criterion for energy. -*/
-    options.add_double("E_CONVERGENCE", 1e-8);
+    options.add_double("E_CONVERGENCE", 1e-6);
     /*- Convergence criterion for density. -*/
     options.add_double("D_CONVERGENCE", 1e-6);
     /*- Maximum number of iterations -*/
@@ -1979,7 +1979,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- MODULEDESCRIPTION Computes coupled cluster energies. Called as part of any coupled cluster computation. -*/
 
     /*- Wavefunction type !expert -*/
-    options.add_str("WFN", "NONE", "CCSD CCSD_T EOM_CCSD LEOM_CCSD BCCD BCCD_T CC2 CC3 EOM_CC2 EOM_CC3 CCSD_MVD");
+    options.add_str("WFN", "NONE", "CCSD CCSD_T CCSD_AT EOM_CCSD LEOM_CCSD BCCD BCCD_T CC2 CC3 EOM_CC2 EOM_CC3 CCSD_MVD");
     /*- Reference wavefunction type -*/
     options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
     /*- Do use new triples? -*/
@@ -1991,7 +1991,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convergence criterion for energy. See Table :ref:`Post-SCF
     Convergence <table:conv_corl>` for default convergence criteria for
     different calculation types. -*/
-    options.add_double("E_CONVERGENCE", 1e-8);
+    options.add_double("E_CONVERGENCE", 1e-6);
     /*- Convergence criterion for wavefunction (change) in CC amplitude equations. -*/
     options.add_double("R_CONVERGENCE", 1e-7);
     /*- Do restart the coupled-cluster iterations from old $t@@1$ and $t@@2$
@@ -2156,7 +2156,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convergence criterion for energy (change). See Table
     :ref:`Post-SCF Convergence <table:conv_corl>` for default convergence
     criteria for different calculation types. -*/
-    options.add_double("E_CONVERGENCE", 1e-8);
+    options.add_double("E_CONVERGENCE", 1e-6);
     /*- Convergence criterion for T2 amplitudes (RMS change). -*/
     options.add_double("R_CONVERGENCE", 1e-5);
     /*- Minimum absolute value below which parts of the Fock matrix are skipped. -*/
@@ -2246,7 +2246,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convergence criterion for energy. See Table :ref:`Post-SCF
     Convergence <table:conv_corl>` for default convergence criteria for
     different calculation types. -*/
-    options.add_double("E_CONVERGENCE", 1e-8);
+    options.add_double("E_CONVERGENCE", 1e-6);
     /*- Convergence criterion for amplitudes (residuals). -*/
     options.add_double("R_CONVERGENCE",1e-9);
     /*- Maximum number of iterations to determine the amplitudes -*/
@@ -2531,7 +2531,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convergence criterion for energy. See Table :ref:`Post-SCF
     Convergence <table:conv_corl>` for default convergence criteria for
     different calculation types. -*/
-    options.add_double("E_CONVERGENCE", 1e-8);
+    options.add_double("E_CONVERGENCE", 1e-6);
     /*- Convergence criterion for amplitudes (residuals). -*/
     options.add_double("R_CONVERGENCE",1e-5);
     /*- Convergence criterion for RMS orbital gradient. Default adjusts
@@ -2644,7 +2644,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       Convergence <table:conv_corl>` for default convergence criteria for
       different calculation types. This becomes ``tol`` (option \#16) in
       fort.56. -*/
-      options.add_double("E_CONVERGENCE", 1e-8);
+      options.add_double("E_CONVERGENCE", 1e-6);
 
       /*- Minimum absolute value below which integrals are neglected. -*/
       options.add_double("INTS_TOLERANCE",1.0E-12);
@@ -2720,7 +2720,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       different calculation types.  Note that convergence is
 	  met only when |fnocc__e_convergence| and |fnocc__r_convergence|
 	  are satisfied. -*/
-      options.add_double("E_CONVERGENCE", 1.0e-8);
+      options.add_double("E_CONVERGENCE", 1.0e-6);
       /*- Maximum number of iterations for Brueckner orbitals optimization -*/
       options.add_int("BRUECKNER_MAXITER", 20);
       /*- Convergence for the CC amplitudes.  Note that convergence is
@@ -2767,6 +2767,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("RUN_MP4",false);
       /*- do ccsd rather than qcisd? !expert -*/
       options.add_bool("RUN_CCSD",false);
+      /*- Use 3-index integrals to generate 4-index ERI's? 
+      This keyword is used for testing purposes only.  Changing its
+      value will have no effect on the computation.  !expert -*/
+      options.add_bool("USE_DF_INTS",false);
 
       /*- Do use density fitting or cholesky decomposition in CC? This 
       keyword is used internally by the driver. Changing its value 

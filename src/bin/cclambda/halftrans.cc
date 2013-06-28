@@ -59,18 +59,18 @@ void halftrans(dpdbuf4 *Buf1, int dpdnum1, dpdbuf4 *Buf2, int dpdnum2, double **
   for(h=0; h < nirreps; h++) {
 
     dpd_set_default(dpdnum1);
-    dpd_buf4_mat_irrep_init(Buf1, h);
+    global_dpd_->buf4_mat_irrep_init(Buf1, h);
 
     dpd_set_default(dpdnum2);
-    dpd_buf4_mat_irrep_init(Buf2, h);
+    global_dpd_->buf4_mat_irrep_init(Buf2, h);
 
     if(type==0) { /* alpha * Buf1 --> beta * Buf2 */
-      if(alpha != 0.0) { dpd_set_default(dpdnum1); dpd_buf4_mat_irrep_rd(Buf1, h); }
-      if(beta != 0.0) { dpd_set_default(dpdnum2); dpd_buf4_mat_irrep_rd(Buf2, h); }
+      if(alpha != 0.0) { dpd_set_default(dpdnum1); global_dpd_->buf4_mat_irrep_rd(Buf1, h); }
+      if(beta != 0.0) { dpd_set_default(dpdnum2); global_dpd_->buf4_mat_irrep_rd(Buf2, h); }
     }
     if(type==1) { /* alpha * Buf2 --> beta * Buf1 */
-      if(alpha != 0.0) { dpd_set_default(dpdnum2); dpd_buf4_mat_irrep_rd(Buf2, h); }
-      if(beta != 0.0) { dpd_set_default(dpdnum1); dpd_buf4_mat_irrep_rd(Buf1, h); }
+      if(alpha != 0.0) { dpd_set_default(dpdnum2); global_dpd_->buf4_mat_irrep_rd(Buf2, h); }
+      if(beta != 0.0) { dpd_set_default(dpdnum1); global_dpd_->buf4_mat_irrep_rd(Buf1, h); }
     }
 
     for(Gc=0; Gc < nirreps; Gc++) {
@@ -116,12 +116,12 @@ void halftrans(dpdbuf4 *Buf1, int dpdnum1, dpdbuf4 *Buf2, int dpdnum2, double **
     }
 
     dpd_set_default(dpdnum1);
-    if(type==1) dpd_buf4_mat_irrep_wrt(Buf1, h);
-    dpd_buf4_mat_irrep_close(Buf1, h);
+    if(type==1) global_dpd_->buf4_mat_irrep_wrt(Buf1, h);
+    global_dpd_->buf4_mat_irrep_close(Buf1, h);
 
     dpd_set_default(dpdnum2);
-    if(type==0) dpd_buf4_mat_irrep_wrt(Buf2, h);
-    dpd_buf4_mat_irrep_close(Buf2, h);
+    if(type==0) global_dpd_->buf4_mat_irrep_wrt(Buf2, h);
+    global_dpd_->buf4_mat_irrep_close(Buf2, h);
 
   }
 
