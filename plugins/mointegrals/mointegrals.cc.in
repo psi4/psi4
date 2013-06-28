@@ -60,11 +60,11 @@ mointegrals(Options &options)
     dpdbuf4 K;
     psio->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
     // To only process the permutationally unique integrals, change the ID("[A,A]") to ID("[A>=A]+")
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[A,A]"), ID("[A,A]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[A,A]"), ID("[A,A]"),
                   ID("[A>=A]+"), ID("[A>=A]+"), 0, "MO Ints (AA|AA)");
     for(int h = 0; h < nirrep; ++h){
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int pq = 0; pq < K.params->rowtot[h]; ++pq){
             int p = K.params->roworb[h][pq][0];
             int q = K.params->roworb[h][pq][1];
@@ -89,9 +89,9 @@ mointegrals(Options &options)
                                  prel, qrel, rrel, srel);
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
     }
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_close(&K);
     psio->close(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
     return Success;

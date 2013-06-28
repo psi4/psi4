@@ -22,13 +22,11 @@
 
 /*! \file
     \ingroup DPD
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <libciomr/libciomr.h>
 #include "dpd.h"
-#define EXTERN
-#include "dpd.gbl"
 
 namespace psi {
 
@@ -40,22 +38,22 @@ namespace psi {
 **   int irrep: The irrep number to be freed.
 */
 
-int dpd_file4_mat_irrep_close(dpdfile4 *File, int irrep)
+int DPD::file4_mat_irrep_close(dpdfile4 *File, int irrep)
 {
-  int my_irrep, rowtot, coltot;
-  long int size;
+    int my_irrep, rowtot, coltot;
+    long int size;
 
-  my_irrep = File->my_irrep;
+    my_irrep = File->my_irrep;
 
-  rowtot = File->params->rowtot[irrep];
-  coltot = File->params->coltot[irrep^my_irrep];
-  size = ((long) rowtot) * ((long) coltot);
+    rowtot = File->params->rowtot[irrep];
+    coltot = File->params->coltot[irrep^my_irrep];
+    size = ((long) rowtot) * ((long) coltot);
 
-  if(File->incore) return 0;  /* We need to keep the memory */
+    if(File->incore) return 0;  /* We need to keep the memory */
 
-  if(size) dpd_free_block(File->matrix[irrep], rowtot, coltot);
+    if(size) free_dpd_block(File->matrix[irrep], rowtot, coltot);
 
-  return 0;
+    return 0;
 }
 
 }

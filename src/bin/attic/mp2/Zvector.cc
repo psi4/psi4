@@ -62,9 +62,9 @@ void rhf_Zvector(void)
 
   nirreps = mo.nirreps;
 
-  dpd_file2_init(&L, PSIF_CC_OEI, 0, 1, 0, "LAI");
-  dpd_file2_mat_init(&L);
-  dpd_file2_mat_rd(&L);
+  global_dpd_->file2_init(&L, PSIF_CC_OEI, 0, 1, 0, "LAI");
+  global_dpd_->file2_mat_init(&L);
+  global_dpd_->file2_mat_rd(&L);
   num_ai = 0;
   for(h=0; h < nirreps; h++)
     num_ai += L.params->rowtot[h]*L.params->coltot[h];
@@ -75,28 +75,28 @@ void rhf_Zvector(void)
       for(i=0; i < L.params->coltot[h]; i++) 
 	Z[0][count++] = -L.matrix[h][a][i];
 
-  dpd_file2_mat_close(&L);
-  dpd_file2_close(&L);
+  global_dpd_->file2_mat_close(&L);
+  global_dpd_->file2_close(&L);
 
-  dpd_buf4_init(&A, PSIF_CC_MISC, 0, 11, 11, 11, 11, 0, "A(AI,BJ)");
-  dpd_buf4_mat_irrep_init(&A, 0);
-  dpd_buf4_mat_irrep_rd(&A, 0);
+  global_dpd_->buf4_init(&A, PSIF_CC_MISC, 0, 11, 11, 11, 11, 0, "A(AI,BJ)");
+  global_dpd_->buf4_mat_irrep_init(&A, 0);
+  global_dpd_->buf4_mat_irrep_rd(&A, 0);
 
   pople(A.matrix[0], Z[0], num_ai, 1, 1e-12, outfile, 0);
 
-  dpd_buf4_mat_irrep_close(&A, 0);
-  dpd_buf4_close(&A);
+  global_dpd_->buf4_mat_irrep_close(&A, 0);
+  global_dpd_->buf4_close(&A);
 
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 0, "DAI");
-  dpd_file2_mat_init(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 0, "DAI");
+  global_dpd_->file2_mat_init(&D);
   for(h=0,count=0; h < nirreps; h++)
     for(a=0; a < D.params->rowtot[h]; a++)
       for(i=0; i < D.params->coltot[h]; i++) 
 	D.matrix[h][a][i] = Z[0][count++];
 
-  dpd_file2_mat_wrt(&D);
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  global_dpd_->file2_mat_wrt(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
   free_block(Z);
 }
@@ -117,9 +117,9 @@ void rhf_sf_Zvector(void)
 
   /* Place all the elements of the orbital rotation gradient, X into a
      linear array, Z */
-  dpd_file2_init(&X1, PSIF_CC_MISC, 0, 1, 0, "X(A,I)");
-  dpd_file2_mat_init(&X1);
-  dpd_file2_mat_rd(&X1);
+  global_dpd_->file2_init(&X1, PSIF_CC_MISC, 0, 1, 0, "X(A,I)");
+  global_dpd_->file2_mat_init(&X1);
+  global_dpd_->file2_mat_rd(&X1);
   num_ai = 0;
   for(h=0; h < nirreps; h++)
     num_ai += X1.params->rowtot[h]*X1.params->coltot[h];
@@ -130,42 +130,42 @@ void rhf_sf_Zvector(void)
       for(i=0; i < X1.params->coltot[h]; i++) 
 	Z[0][count++] = -X1.matrix[h][a][i];
 
-  dpd_file2_mat_close(&X1);
-  dpd_file2_close(&X1);
+  global_dpd_->file2_mat_close(&X1);
+  global_dpd_->file2_close(&X1);
 
   /* Now, grab only irrep 0 of the orbital Hessian */
-  dpd_buf4_init(&A, PSIF_CC_MISC, 0, 11, 11, 11, 11, 0, "A(EM,AI)");
-  dpd_buf4_mat_irrep_init(&A, 0);
-  dpd_buf4_mat_irrep_rd(&A, 0);
+  global_dpd_->buf4_init(&A, PSIF_CC_MISC, 0, 11, 11, 11, 11, 0, "A(EM,AI)");
+  global_dpd_->buf4_mat_irrep_init(&A, 0);
+  global_dpd_->buf4_mat_irrep_rd(&A, 0);
 
   /* Trying out Matt's Pople code --- way to go, Matt! */
   pople(A.matrix[0], Z[0], num_ai, 1, 1e-12, outfile, 0);
 
-  dpd_buf4_mat_irrep_close(&A, 0);
-  dpd_buf4_close(&A);
+  global_dpd_->buf4_mat_irrep_close(&A, 0);
+  global_dpd_->buf4_close(&A);
 
   /* Build the orbital component of Dai --- we'll build these as separate
      spin cases for future simplicity (e.g., UHF-based codes)*/
 
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 0, "D(orb)(A,I)");
-  dpd_file2_mat_init(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 0, "D(orb)(A,I)");
+  global_dpd_->file2_mat_init(&D);
   for(h=0,count=0; h < nirreps; h++)
     for(a=0; a < D.params->rowtot[h]; a++)
       for(i=0; i < D.params->coltot[h]; i++) 
 	D.matrix[h][a][i] = Z[0][count++];
-  dpd_file2_mat_wrt(&D);
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  global_dpd_->file2_mat_wrt(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 0, "D(orb)(a,i)");
-  dpd_file2_mat_init(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 0, "D(orb)(a,i)");
+  global_dpd_->file2_mat_init(&D);
   for(h=0,count=0; h < nirreps; h++)
     for(a=0; a < D.params->rowtot[h]; a++) 
       for(i=0; i < D.params->coltot[h]; i++) 
 	D.matrix[h][a][i] = Z[0][count++];
-  dpd_file2_mat_wrt(&D);
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  global_dpd_->file2_mat_wrt(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
   free_block(Z);
 }

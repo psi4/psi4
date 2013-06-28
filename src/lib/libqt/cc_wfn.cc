@@ -50,12 +50,12 @@ namespace psi {
 */
 int cc_wfn(const char *wfn)
 {
-  if ( !strcmp(wfn, "CCSD")     || !strcmp(wfn, "CCSD_T") || 
+  if ( !strcmp(wfn, "CCSD")     || !strcmp(wfn, "CCSD_T") ||
        !strcmp(wfn, "BCCD")     || !strcmp(wfn, "BCCD_T") || 
        !strcmp(wfn, "CC2")      || !strcmp(wfn, "CC3")    ||
        !strcmp(wfn, "EOM_CCSD") || !strcmp(wfn, "LEOM_CCSD") ||
        !strcmp(wfn, "EOM_CC2")  || !strcmp(wfn, "EOM_CC3") ||
-       !strcmp(wfn, "CIS") ) {
+       !strcmp(wfn, "CIS")      || !strcmp(wfn, "CCSD_AT")) {
     return 1;
   }
   else {

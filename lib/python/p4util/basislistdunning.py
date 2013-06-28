@@ -609,4 +609,3 @@ def load_basfam_dunning():
     basis_augccpvqz.add_dualfit('aug-cc-pvqz-dual')
     basis_heavyaugccpvtz.add_dualfit('heavy-aug-cc-pvtz-dual')
     basis_heavyaugccpvqz.add_dualfit('heavy-aug-cc-pvqz-dual')
-

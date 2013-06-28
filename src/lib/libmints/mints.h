@@ -34,6 +34,8 @@
 #include <libmints/dipole.h>
 #include <libmints/electricfield.h>
 #include <libmints/electrostatic.h>
+#include <libmints/efpmultipolepotential.h>
+#include <libmints/potentialint.h>
 #include <libmints/eri.h>
 #include <libmints/factory.h>
 #include <libmints/fjt.h>
@@ -64,4 +66,3 @@
 #include <libmints/tracelessquadrupole.h>
 #include <libmints/extern.h>
 #include <libmints/cdsalclist.h>
-

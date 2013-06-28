@@ -92,49 +92,49 @@ namespace psi { namespace ccdensity {
 			 sizeof(double)*nmo*nmo);
 	psio_close(PSIF_MO_LAG, 1);
 
-	dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 0, 0, 0, 0, "GIjKl");
-	dpd_buf4_sort(&G, PSIF_CC_TMP0, prqs, 0, 0, "G(IK,JL)");
-	dpd_buf4_close(&G);
-	dpd_buf4_init(&G, PSIF_CC_TMP0, 0, 0, 0, 0, 0, 0, "G(IK,JL)");
-	dpd_buf4_dump(&G, OutBuf, qt_occ, qt_occ, qt_occ, qt_occ, 1, 0);
-	dpd_buf4_close(&G);
+	global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 0, 0, 0, 0, "GIjKl");
+	global_dpd_->buf4_sort(&G, PSIF_CC_TMP0, prqs, 0, 0, "G(IK,JL)");
+	global_dpd_->buf4_close(&G);
+	global_dpd_->buf4_init(&G, PSIF_CC_TMP0, 0, 0, 0, 0, 0, 0, "G(IK,JL)");
+	global_dpd_->buf4_dump(&G, OutBuf, qt_occ, qt_occ, qt_occ, qt_occ, 1, 0);
+	global_dpd_->buf4_close(&G);
 
-	dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 10, 0, 10, 0, "GIjKa");
-	dpd_buf4_sort(&G, PSIF_CC_TMP0, prqs, 0, 10, "G(IK,JA)");
-	dpd_buf4_close(&G);
-	dpd_buf4_init(&G, PSIF_CC_TMP0, 0, 0, 10, 0, 10, 0, "G(IK,JA)");
-	dpd_buf4_dump(&G, OutBuf, qt_occ, qt_occ, qt_occ, qt_vir, 0, 0);
-	dpd_buf4_close(&G);
+	global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 10, 0, 10, 0, "GIjKa");
+	global_dpd_->buf4_sort(&G, PSIF_CC_TMP0, prqs, 0, 10, "G(IK,JA)");
+	global_dpd_->buf4_close(&G);
+	global_dpd_->buf4_init(&G, PSIF_CC_TMP0, 0, 0, 10, 0, 10, 0, "G(IK,JA)");
+	global_dpd_->buf4_dump(&G, OutBuf, qt_occ, qt_occ, qt_occ, qt_vir, 0, 0);
+	global_dpd_->buf4_close(&G);
 
-	dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "GIjAb");
-	dpd_buf4_sort(&G, PSIF_CC_TMP9, prqs, 10, 10, "G(IA,JB)");
-	dpd_buf4_close(&G);
-	dpd_buf4_init(&G, PSIF_CC_TMP9, 0, 10, 10, 10, 10, 0, "G(IA,JB)");
-	dpd_buf4_symm(&G);
-	dpd_buf4_dump(&G, OutBuf, qt_occ, qt_vir, qt_occ, qt_vir, 1, 0);
-	dpd_buf4_close(&G);
+	global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "GIjAb");
+	global_dpd_->buf4_sort(&G, PSIF_CC_TMP9, prqs, 10, 10, "G(IA,JB)");
+	global_dpd_->buf4_close(&G);
+	global_dpd_->buf4_init(&G, PSIF_CC_TMP9, 0, 10, 10, 10, 10, 0, "G(IA,JB)");
+	global_dpd_->buf4_symm(&G);
+	global_dpd_->buf4_dump(&G, OutBuf, qt_occ, qt_vir, qt_occ, qt_vir, 1, 0);
+	global_dpd_->buf4_close(&G);
 
-	dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIbJa");
-	dpd_buf4_sort(&G, PSIF_CC_TMP0, prqs, 0, 5, "G(IJ,AB)");
-	dpd_buf4_close(&G);
-	dpd_buf4_init(&G, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "G(IJ,AB)");
+	global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIbJa");
+	global_dpd_->buf4_sort(&G, PSIF_CC_TMP0, prqs, 0, 5, "G(IJ,AB)");
+	global_dpd_->buf4_close(&G);
+	global_dpd_->buf4_init(&G, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "G(IJ,AB)");
 	//        dpd_buf4_scm(&G, 0.5);  /* why is this necessary? */
-	dpd_buf4_dump(&G, OutBuf, qt_occ, qt_occ, qt_vir, qt_vir, 0, 0);
-	dpd_buf4_close(&G);
+	global_dpd_->buf4_dump(&G, OutBuf, qt_occ, qt_occ, qt_vir, qt_vir, 0, 0);
+	global_dpd_->buf4_close(&G);
 
-	dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 5, 11, 5, 0, "GCiAb");
-	dpd_buf4_sort(&G, PSIF_CC_TMP0, prqs, 5, 10, "G(ca,IB)");
-	dpd_buf4_close(&G);
-	dpd_buf4_init(&G, PSIF_CC_TMP0, 0, 5, 10, 5, 10, 0, "G(ca,IB)");
-	dpd_buf4_dump(&G, OutBuf, qt_vir, qt_vir, qt_occ, qt_vir, 0, 0);
-	dpd_buf4_close(&G);
+	global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 5, 11, 5, 0, "GCiAb");
+	global_dpd_->buf4_sort(&G, PSIF_CC_TMP0, prqs, 5, 10, "G(ca,IB)");
+	global_dpd_->buf4_close(&G);
+	global_dpd_->buf4_init(&G, PSIF_CC_TMP0, 0, 5, 10, 5, 10, 0, "G(ca,IB)");
+	global_dpd_->buf4_dump(&G, OutBuf, qt_vir, qt_vir, qt_occ, qt_vir, 0, 0);
+	global_dpd_->buf4_close(&G);
 
-	dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 5, 5, 5, 5, 0, "GAbCd");
-	dpd_buf4_sort(&G, PSIF_CC_TMP0, prqs, 5, 5, "G(AC,BD)");
-	dpd_buf4_close(&G);
-	dpd_buf4_init(&G, PSIF_CC_TMP0, 0, 5, 5, 5, 5, 0, "G(AC,BD)");
-	dpd_buf4_dump(&G, OutBuf, qt_vir, qt_vir, qt_vir, qt_vir, 1, 0);
-	dpd_buf4_close(&G);
+	global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 5, 5, 5, 5, 0, "GAbCd");
+	global_dpd_->buf4_sort(&G, PSIF_CC_TMP0, prqs, 5, 5, "G(AC,BD)");
+	global_dpd_->buf4_close(&G);
+	global_dpd_->buf4_init(&G, PSIF_CC_TMP0, 0, 5, 5, 5, 5, 0, "G(AC,BD)");
+	global_dpd_->buf4_dump(&G, OutBuf, qt_vir, qt_vir, qt_vir, qt_vir, 1, 0);
+	global_dpd_->buf4_close(&G);
 
       }
     }

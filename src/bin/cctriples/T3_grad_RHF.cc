@@ -71,43 +71,43 @@ namespace psi { namespace cctriples {
       occ_off = moinfo.occ_off;
       vir_off = moinfo.vir_off;
 
-      dpd_file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
-      dpd_file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
-      dpd_file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
-      dpd_file2_mat_init(&fIJ);
-      dpd_file2_mat_init(&fAB);
-      dpd_file2_mat_init(&fIA);
-      dpd_file2_mat_rd(&fIJ);
-      dpd_file2_mat_rd(&fAB);
-      dpd_file2_mat_rd(&fIA);
+      global_dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+      global_dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
+      global_dpd_->file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
+      global_dpd_->file2_mat_init(&fIJ);
+      global_dpd_->file2_mat_init(&fAB);
+      global_dpd_->file2_mat_init(&fIA);
+      global_dpd_->file2_mat_rd(&fIJ);
+      global_dpd_->file2_mat_rd(&fAB);
+      global_dpd_->file2_mat_rd(&fIA);
 
-      dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
-      dpd_file2_mat_init(&T1);
-      dpd_file2_mat_rd(&T1);
+      global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
+      global_dpd_->file2_mat_init(&T1);
+      global_dpd_->file2_mat_rd(&T1);
 
-      dpd_file2_init(&S1, PSIF_CC_OEI, 0, 0, 1, "SIA");
-      dpd_file2_mat_init(&S1);
+      global_dpd_->file2_init(&S1, PSIF_CC_OEI, 0, 0, 1, "SIA");
+      global_dpd_->file2_mat_init(&S1);
 
-      dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-      dpd_buf4_init(&S2, PSIF_CC_MISC, 0, 0, 5, 0, 5, 0, "SIjAb");
-      dpd_buf4_init(&Fints, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
-      dpd_buf4_init(&F2ints, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
-      dpd_buf4_init(&Eints, PSIF_CC_EINTS, 0, 0, 10, 0, 10, 0, "E <ij|ka>");
-      dpd_buf4_init(&Dints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+      global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+      global_dpd_->buf4_init(&S2, PSIF_CC_MISC, 0, 0, 5, 0, 5, 0, "SIjAb");
+      global_dpd_->buf4_init(&Fints, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
+      global_dpd_->buf4_init(&F2ints, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
+      global_dpd_->buf4_init(&Eints, PSIF_CC_EINTS, 0, 0, 10, 0, 10, 0, "E <ij|ka>");
+      global_dpd_->buf4_init(&Dints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
       for(h=0; h < nirreps; h++) {
-	dpd_buf4_mat_irrep_init(&T2, h);
-	dpd_buf4_mat_irrep_rd(&T2, h);
+	global_dpd_->buf4_mat_irrep_init(&T2, h);
+	global_dpd_->buf4_mat_irrep_rd(&T2, h);
 
-	dpd_buf4_mat_irrep_init(&S2, h);
+	global_dpd_->buf4_mat_irrep_init(&S2, h);
 
-	dpd_buf4_mat_irrep_init(&Eints, h);
-	dpd_buf4_mat_irrep_rd(&Eints, h);
+	global_dpd_->buf4_mat_irrep_init(&Eints, h);
+	global_dpd_->buf4_mat_irrep_rd(&Eints, h);
 
-	dpd_buf4_mat_irrep_init(&F2ints, h);
-	dpd_buf4_mat_irrep_rd(&F2ints, h);
+	global_dpd_->buf4_mat_irrep_init(&F2ints, h);
+	global_dpd_->buf4_mat_irrep_rd(&F2ints, h);
 
-	dpd_buf4_mat_irrep_init(&Dints, h);
-	dpd_buf4_mat_irrep_rd(&Dints, h);
+	global_dpd_->buf4_mat_irrep_init(&Dints, h);
+	global_dpd_->buf4_mat_irrep_rd(&Dints, h);
       }
 
       /* Compute the number of IJK combinations */
@@ -179,10 +179,10 @@ namespace psi { namespace cctriples {
 		  for(Gab=0; Gab < nirreps; Gab++) {
 		    Gc = Gab ^ Gijk;
 
-		    W0[Gab] = dpd_block_matrix(Fints.params->coltot[Gab],virtpi[Gc]);
-		    W1[Gab] = dpd_block_matrix(Fints.params->coltot[Gab],virtpi[Gc]);
-		    V[Gab] = dpd_block_matrix(Fints.params->coltot[Gab],virtpi[Gc]);
-		    M[Gab] = dpd_block_matrix(Fints.params->coltot[Gab], virtpi[Gc]);
+		    W0[Gab] = global_dpd_->dpd_block_matrix(Fints.params->coltot[Gab],virtpi[Gc]);
+		    W1[Gab] = global_dpd_->dpd_block_matrix(Fints.params->coltot[Gab],virtpi[Gc]);
+		    V[Gab] = global_dpd_->dpd_block_matrix(Fints.params->coltot[Gab],virtpi[Gc]);
+		    M[Gab] = global_dpd_->dpd_block_matrix(Fints.params->coltot[Gab], virtpi[Gc]);
 		  }
 		  timer_off("malloc");
 
@@ -197,8 +197,8 @@ namespace psi { namespace cctriples {
 		    Gc = Gkj ^ Gd;
 
 		    /* Set up F integrals */
-		    Fints.matrix[Gid] = dpd_block_matrix(virtpi[Gd], Fints.params->coltot[Gid]);
-		    dpd_buf4_mat_irrep_rd_block(&Fints, Gid, Fints.row_offset[Gid][I], virtpi[Gd]);
+		    Fints.matrix[Gid] = global_dpd_->dpd_block_matrix(virtpi[Gd], Fints.params->coltot[Gid]);
+		    global_dpd_->buf4_mat_irrep_rd_block(&Fints, Gid, Fints.row_offset[Gid][I], virtpi[Gd]);
 
 		    /* Set up T2 amplitudes */
 		    cd = T2.col_offset[Gkj][Gc];
@@ -214,7 +214,7 @@ namespace psi { namespace cctriples {
 			      &(T2.matrix[Gkj][kj][cd]), nlinks, 0.0,
 			      &(W0[Gab][0][0]), ncols);
 
-		    dpd_free_block(Fints.matrix[Gid], virtpi[Gd], Fints.params->coltot[Gid]);
+		    global_dpd_->free_dpd_block(Fints.matrix[Gid], virtpi[Gd], Fints.params->coltot[Gid]);
 		  }
 
 		  /* -E_jklc * t_ilab */
@@ -242,7 +242,7 @@ namespace psi { namespace cctriples {
 		  }
 
 		  /* Sort W[ab][c] --> W[ac][b] */
-		  dpd_3d_sort(W0, W1, nirreps, Gijk, Fints.params->coltot, Fints.params->colidx, 
+          global_dpd_->sort_3d(W0, W1, nirreps, Gijk, Fints.params->coltot, Fints.params->colidx,
 			      Fints.params->colorb, Fints.params->rsym, Fints.params->ssym, 
 			      vir_off, vir_off, virtpi, vir_off, Fints.params->colidx, acb, 0);
 
@@ -252,8 +252,8 @@ namespace psi { namespace cctriples {
 		    Gac = Gid = Gi ^ Gd;
 		    Gb = Gjk ^ Gd;
 
-		    Fints.matrix[Gid] = dpd_block_matrix(virtpi[Gd], Fints.params->coltot[Gid]);
-		    dpd_buf4_mat_irrep_rd_block(&Fints, Gid, Fints.row_offset[Gid][I], virtpi[Gd]);
+		    Fints.matrix[Gid] = global_dpd_->dpd_block_matrix(virtpi[Gd], Fints.params->coltot[Gid]);
+		    global_dpd_->buf4_mat_irrep_rd_block(&Fints, Gid, Fints.row_offset[Gid][I], virtpi[Gd]);
 
 		    bd = T2.col_offset[Gjk][Gb];
 
@@ -267,7 +267,7 @@ namespace psi { namespace cctriples {
 			      &(T2.matrix[Gjk][jk][bd]), nlinks, 1.0,
 			      &(W1[Gac][0][0]), ncols);
 
-		    dpd_free_block(Fints.matrix[Gid], virtpi[Gd], Fints.params->coltot[Gid]);
+		    global_dpd_->free_dpd_block(Fints.matrix[Gid], virtpi[Gd], Fints.params->coltot[Gid]);
 		  }
 
 		  /* -E_kjlb * t_ilac */
@@ -292,7 +292,7 @@ namespace psi { namespace cctriples {
 		  }
 
 		  /* Sort W[ac][b] --> W[ca][b] */
-		  dpd_3d_sort(W1, W0, nirreps, Gijk, Fints.params->coltot, Fints.params->colidx, 
+          global_dpd_->sort_3d(W1, W0, nirreps, Gijk, Fints.params->coltot, Fints.params->colidx,
 			      Fints.params->colorb, Fints.params->rsym, Fints.params->ssym, 
 			      vir_off, vir_off, virtpi, vir_off, Fints.params->colidx, bac, 0);
 
@@ -302,8 +302,8 @@ namespace psi { namespace cctriples {
 		    Gca = Gkd = Gk ^ Gd;
 		    Gb = Gji ^ Gd;
 
-		    Fints.matrix[Gkd] = dpd_block_matrix(virtpi[Gd], Fints.params->coltot[Gkd]);
-		    dpd_buf4_mat_irrep_rd_block(&Fints, Gkd, Fints.row_offset[Gkd][K], virtpi[Gd]);
+		    Fints.matrix[Gkd] = global_dpd_->dpd_block_matrix(virtpi[Gd], Fints.params->coltot[Gkd]);
+		    global_dpd_->buf4_mat_irrep_rd_block(&Fints, Gkd, Fints.row_offset[Gkd][K], virtpi[Gd]);
 
 		    bd = T2.col_offset[Gji][Gb];
 
@@ -317,7 +317,7 @@ namespace psi { namespace cctriples {
 			      &(T2.matrix[Gji][ji][bd]), nlinks, 1.0,
 			      &(W0[Gca][0][0]), ncols);
 
-		    dpd_free_block(Fints.matrix[Gkd], virtpi[Gd], Fints.params->coltot[Gkd]);
+		    global_dpd_->free_dpd_block(Fints.matrix[Gkd], virtpi[Gd], Fints.params->coltot[Gkd]);
 		  }
 
 		  /* -E_ijlb * t_klca */
@@ -342,7 +342,7 @@ namespace psi { namespace cctriples {
 		  }
 
 		  /* Sort W[ca][b] --> W[cb][a] */
-		  dpd_3d_sort(W0, W1, nirreps, Gijk, Fints.params->coltot, Fints.params->colidx, 
+          global_dpd_->sort_3d(W0, W1, nirreps, Gijk, Fints.params->coltot, Fints.params->colidx,
 			      Fints.params->colorb, Fints.params->rsym, Fints.params->ssym, 
 			      vir_off, vir_off, virtpi, vir_off, Fints.params->colidx, acb, 0);
 
@@ -352,8 +352,8 @@ namespace psi { namespace cctriples {
 		    Gcb = Gkd = Gk ^ Gd;
 		    Ga = Gij ^ Gd;
 
-		    Fints.matrix[Gkd] = dpd_block_matrix(virtpi[Gd], Fints.params->coltot[Gkd]);
-		    dpd_buf4_mat_irrep_rd_block(&Fints, Gkd, Fints.row_offset[Gkd][K], virtpi[Gd]);
+		    Fints.matrix[Gkd] = global_dpd_->dpd_block_matrix(virtpi[Gd], Fints.params->coltot[Gkd]);
+		    global_dpd_->buf4_mat_irrep_rd_block(&Fints, Gkd, Fints.row_offset[Gkd][K], virtpi[Gd]);
 
 		    ad = T2.col_offset[Gij][Ga];
 
@@ -367,7 +367,7 @@ namespace psi { namespace cctriples {
 			      &(T2.matrix[Gij][ij][ad]), nlinks, 1.0,
 			      &(W1[Gcb][0][0]), ncols);
 
-		    dpd_free_block(Fints.matrix[Gkd], virtpi[Gd], Fints.params->coltot[Gkd]);
+		    global_dpd_->free_dpd_block(Fints.matrix[Gkd], virtpi[Gd], Fints.params->coltot[Gkd]);
 		  }
 
 		  /* -E_jila * t_klcb */
@@ -392,7 +392,7 @@ namespace psi { namespace cctriples {
 		  }
 
 		  /* Sort W[cb][a] --> W[bc][a] */
-		  dpd_3d_sort(W1, W0, nirreps, Gijk, Fints.params->coltot, Fints.params->colidx, 
+          global_dpd_->sort_3d(W1, W0, nirreps, Gijk, Fints.params->coltot, Fints.params->colidx,
 			      Fints.params->colorb, Fints.params->rsym, Fints.params->ssym, 
 			      vir_off, vir_off, virtpi, vir_off, Fints.params->colidx, bac, 0);
 
@@ -402,8 +402,8 @@ namespace psi { namespace cctriples {
 		    Gbc = Gjd = Gj ^ Gd;
 		    Ga = Gik ^ Gd;
 
-		    Fints.matrix[Gjd] = dpd_block_matrix(virtpi[Gd], Fints.params->coltot[Gjd]);
-		    dpd_buf4_mat_irrep_rd_block(&Fints, Gjd, Fints.row_offset[Gjd][J], virtpi[Gd]);
+		    Fints.matrix[Gjd] = global_dpd_->dpd_block_matrix(virtpi[Gd], Fints.params->coltot[Gjd]);
+		    global_dpd_->buf4_mat_irrep_rd_block(&Fints, Gjd, Fints.row_offset[Gjd][J], virtpi[Gd]);
 
 		    ad = T2.col_offset[Gik][Ga];
 
@@ -417,7 +417,7 @@ namespace psi { namespace cctriples {
 			      &(T2.matrix[Gik][ik][ad]), nlinks, 1.0,
 			      &(W0[Gbc][0][0]), ncols);
 
-		    dpd_free_block(Fints.matrix[Gjd], virtpi[Gd], Fints.params->coltot[Gjd]);
+		    global_dpd_->free_dpd_block(Fints.matrix[Gjd], virtpi[Gd], Fints.params->coltot[Gjd]);
 		  }
 
 		  /* -E_kila * t_jlbc */
@@ -442,7 +442,7 @@ namespace psi { namespace cctriples {
 		  }
 
 		  /* Sort W[bc][a] --> W[ba][c] */
-		  dpd_3d_sort(W0, W1, nirreps, Gijk, Fints.params->coltot, Fints.params->colidx, 
+          global_dpd_->sort_3d(W0, W1, nirreps, Gijk, Fints.params->coltot, Fints.params->colidx,
 			      Fints.params->colorb, Fints.params->rsym, Fints.params->ssym, 
 			      vir_off, vir_off, virtpi, vir_off, Fints.params->colidx, acb, 0);
 
@@ -452,8 +452,8 @@ namespace psi { namespace cctriples {
 		    Gba = Gjd = Gj ^ Gd;
 		    Gc = Gki ^ Gd;
 
-		    Fints.matrix[Gjd] = dpd_block_matrix(virtpi[Gd], Fints.params->coltot[Gjd]);
-		    dpd_buf4_mat_irrep_rd_block(&Fints, Gjd, Fints.row_offset[Gjd][J], virtpi[Gd]);
+		    Fints.matrix[Gjd] = global_dpd_->dpd_block_matrix(virtpi[Gd], Fints.params->coltot[Gjd]);
+		    global_dpd_->buf4_mat_irrep_rd_block(&Fints, Gjd, Fints.row_offset[Gjd][J], virtpi[Gd]);
 
 		    cd = T2.col_offset[Gki][Gc];
 
@@ -467,7 +467,7 @@ namespace psi { namespace cctriples {
 			      &(T2.matrix[Gki][ki][cd]), nlinks, 1.0,
 			      &(W1[Gba][0][0]), ncols);
 
-		    dpd_free_block(Fints.matrix[Gjd], virtpi[Gd], Fints.params->coltot[Gjd]);
+		    global_dpd_->free_dpd_block(Fints.matrix[Gjd], virtpi[Gd], Fints.params->coltot[Gjd]);
 		  }
 
 		  /* -E_iklc * t_jlba */
@@ -492,7 +492,7 @@ namespace psi { namespace cctriples {
 		  }
 
 		  /* Sort W[ba][c] --> W[ab][c] */
-		  dpd_3d_sort(W1, W0, nirreps, Gijk, Fints.params->coltot, Fints.params->colidx, 
+          global_dpd_->sort_3d(W1, W0, nirreps, Gijk, Fints.params->coltot, Fints.params->colidx,
 			      Fints.params->colorb, Fints.params->rsym, Fints.params->ssym, 
 			      vir_off, vir_off, virtpi, vir_off, Fints.params->colidx, bac, 0);
 
@@ -725,24 +725,24 @@ namespace psi { namespace cctriples {
 
 		    if(nrows && ncols && nlinks) {
 		      id = Fints.row_offset[Gid][I];
-		      Fints.matrix[Gid] = dpd_block_matrix(virtpi[Gd], Fints.params->coltot[Gid]);
-		      dpd_buf4_mat_irrep_rd_block(&Fints, Gid, id, virtpi[Gd]);
+		      Fints.matrix[Gid] = global_dpd_->dpd_block_matrix(virtpi[Gd], Fints.params->coltot[Gid]);
+		      global_dpd_->buf4_mat_irrep_rd_block(&Fints, Gid, id, virtpi[Gd]);
 		      cd = S2.col_offset[Gkj][Gc];
 
 		      C_DGEMM('t', 't', nrows, ncols, nlinks, 1.0, M[Gab][0], nrows, 
 			      Fints.matrix[Gid][0], nlinks, 1.0, &(S2.matrix[Gkj][kj][cd]), ncols);
 
-		      dpd_free_block(Fints.matrix[Gid], virtpi[Gd], Fints.params->coltot[Gid]);
+		      global_dpd_->free_dpd_block(Fints.matrix[Gid], virtpi[Gd], Fints.params->coltot[Gid]);
 		    }
 		  } /* Gd */
 
 		  timer_on("malloc");
 		  for(Gab=0; Gab < nirreps; Gab++) {
 		    Gc = Gab ^ Gijk;
-		    dpd_free_block(W0[Gab],Fints.params->coltot[Gab],virtpi[Gc]);
-		    dpd_free_block(W1[Gab],Fints.params->coltot[Gab],virtpi[Gc]);
-		    dpd_free_block(V[Gab],Fints.params->coltot[Gab],virtpi[Gc]);
-		    dpd_free_block(M[Gab],Fints.params->coltot[Gab],virtpi[Gc]);
+		    global_dpd_->free_dpd_block(W0[Gab],Fints.params->coltot[Gab],virtpi[Gc]);
+		    global_dpd_->free_dpd_block(W1[Gab],Fints.params->coltot[Gab],virtpi[Gc]);
+		    global_dpd_->free_dpd_block(V[Gab],Fints.params->coltot[Gab],virtpi[Gc]);
+		    global_dpd_->free_dpd_block(M[Gab],Fints.params->coltot[Gab],virtpi[Gc]);
 		  }
 		  timer_off("malloc");
 
@@ -761,35 +761,35 @@ namespace psi { namespace cctriples {
       fclose(ijkfile);
 
       for(h=0; h < nirreps; h++) {
-	dpd_buf4_mat_irrep_wrt(&S2, h);
-	dpd_buf4_mat_irrep_close(&S2, h);
-	dpd_buf4_mat_irrep_close(&T2, h);
-	dpd_buf4_mat_irrep_close(&Eints, h);
-	dpd_buf4_mat_irrep_close(&F2ints, h);
-	dpd_buf4_mat_irrep_close(&Dints, h);
+	global_dpd_->buf4_mat_irrep_wrt(&S2, h);
+	global_dpd_->buf4_mat_irrep_close(&S2, h);
+	global_dpd_->buf4_mat_irrep_close(&T2, h);
+	global_dpd_->buf4_mat_irrep_close(&Eints, h);
+	global_dpd_->buf4_mat_irrep_close(&F2ints, h);
+	global_dpd_->buf4_mat_irrep_close(&Dints, h);
       }
-      dpd_buf4_print(&S2, outfile, 1);
-      dpd_buf4_close(&S2);
-      dpd_buf4_close(&T2);
-      dpd_buf4_close(&Eints);
-      dpd_buf4_close(&Dints);
-      dpd_buf4_close(&F2ints);
-      dpd_buf4_close(&Fints);
+      global_dpd_->buf4_print(&S2, outfile, 1);
+      global_dpd_->buf4_close(&S2);
+      global_dpd_->buf4_close(&T2);
+      global_dpd_->buf4_close(&Eints);
+      global_dpd_->buf4_close(&Dints);
+      global_dpd_->buf4_close(&F2ints);
+      global_dpd_->buf4_close(&Fints);
 
-      dpd_file2_mat_wrt(&S1);
-      dpd_file2_mat_close(&S1);
-      dpd_file2_print(&S1, outfile);
-      dpd_file2_close(&S1);
+      global_dpd_->file2_mat_wrt(&S1);
+      global_dpd_->file2_mat_close(&S1);
+      global_dpd_->file2_print(&S1, outfile);
+      global_dpd_->file2_close(&S1);
 
-      dpd_file2_mat_close(&T1);
-      dpd_file2_close(&T1);
+      global_dpd_->file2_mat_close(&T1);
+      global_dpd_->file2_close(&T1);
 
-      dpd_file2_mat_close(&fIJ);
-      dpd_file2_mat_close(&fAB);
-      dpd_file2_mat_close(&fIA);
-      dpd_file2_close(&fIJ);
-      dpd_file2_close(&fAB);
-      dpd_file2_close(&fIA);
+      global_dpd_->file2_mat_close(&fIJ);
+      global_dpd_->file2_mat_close(&fAB);
+      global_dpd_->file2_mat_close(&fIA);
+      global_dpd_->file2_close(&fIJ);
+      global_dpd_->file2_close(&fAB);
+      global_dpd_->file2_close(&fIA);
     }
 
 

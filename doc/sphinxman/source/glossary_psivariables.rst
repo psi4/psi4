@@ -20,6 +20,10 @@ PSI Variables by Alpha
 
    The coupled-cluster perturbative triples correction [H].
 
+.. psivar:: A-(T) CORRECTION ENERGY
+
+   The coupled-cluster asymmetric perturbative triples correction [H].
+
 .. psivar:: MP4(T) CORRECTION ENERGY
 
    The MP4 triples component [H]. Quantity is second right-hand term in
@@ -30,7 +34,7 @@ PSI Variables by Alpha
    ABB (T) CORRECTION ENERGY
    BBB (T) CORRECTION ENERGY
 
-   Components of the coupled-cluster perturbative triples correction [H].
+   Spin components of the UHF-based coupled-cluster perturbative triples correction [H].
 
 .. psivar:: ACPF DIPOLE X
    ACPF DIPOLE Y
@@ -143,13 +147,15 @@ PSI Variables by Alpha
 
 .. psivar:: CCSD(T) TOTAL ENERGY
    CCSD(T) CORRELATION ENERGY
+   A-CCSD(T) TOTAL ENERGY
+   A-CCSD(T) CORRELATION ENERGY
    CCSDT(Q) TOTAL ENERGY
    CCSDT(Q) CORRELATION ENERGY
    CC(n-1)(n) TOTAL ENERGY
    CC(n-1)(n) CORRELATION ENERGY
 
    The total electronic energy [H] and correlation energy component [H]
-   for the perturbatively corrected coupled-cluster (CCSD(T), CCSDT(Q), 
+   for the perturbatively corrected coupled-cluster (CCSD(T), a-CCSD(T), CCSDT(Q), 
    up to CC(\ *n*\ -1)(\ *n*\ ) level of theory.
 
 .. psivar:: CCSDT-1a TOTAL ENERGY
