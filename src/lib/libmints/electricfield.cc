@@ -60,26 +60,26 @@ ElectricFieldInt::~ElectricFieldInt()
     delete[] buffer_;
 }
 
-SharedMatrix ElectricFieldInt::nuclear_contribution(boost::shared_ptr<Molecule> mol)
+Vector3 ElectricFieldInt::nuclear_contribution(const Vector3 &origin, boost::shared_ptr<Molecule> mol)
 {
     int natom = mol->natom();
-    SharedMatrix result(new Matrix("Nuclear contribution to electric field", mol->natom(), 3));
 
+    double Ex = 0.0;
+    double Ey = 0.0;
+    double Ez = 0.0;
     for (int i=0; i<natom; ++i) {
-        for (int j=0; j<natom; ++j) {
-            if (i != j) {
-                double x = mol->x(i) - mol->x(j);
-                double y = mol->y(i) - mol->y(j);
-                double z = mol->z(i) - mol->z(j);
-                double r2 = x*x + y*y + z*z;
-                double r = sqrt(r2);
+        double x = mol->x(i) - origin[0];
+        double y = mol->y(i) - origin[1];
+        double z = mol->z(i) - origin[2];
+        double r2 = x*x + y*y + z*z;
+        double r = sqrt(r2);
 
-                result->add(i, 0, mol->Z(j) * x / (r*r2));
-                result->add(i, 1, mol->Z(j) * y / (r*r2));
-                result->add(i, 2, mol->Z(j) * z / (r*r2));
-            }
-        }
+        Ex += mol->Z(i) * x / (r*r2);
+        Ey += mol->Z(i) * y / (r*r2);
+        Ez += mol->Z(i) * z / (r*r2);
     }
+
+    Vector3 result(Ex, Ey, Ez);
 
     return result;
 }
