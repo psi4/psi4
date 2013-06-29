@@ -35,6 +35,8 @@ PSI4.0B5, July 2013
 *   Alias sherrillgroup_gold_standard renamed to sherrill_gold_standard
 *   Make cbs() wrapper work with MRCC interface
 
+*   CC code can now be used to compute energies with applied external field. Charges must be set up using the QM/MM module.
+
 
 commit e9f19e9aa317fb894a699daebf65a0fc78db3861
 Author: Andy Simmonett <andy.simmonett@gmail.com>
@@ -606,13 +608,6 @@ Date:   Thu May 9 00:45:24 2013 -0400
 
     Thresh likes to be tighter for localization
 
-
-commit c49c8925ada9c4929bfb873bdde84f5297d99a08
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Wed May 8 23:02:49 2013 -0400
-
-    CC code can now be run with external potential from QMMM code. This commit modifies transqt2 to use the core hamiltonian a
-
 commit 32cc5f3cb2a9e4619ecef0c2af30889f3ba7e3e3
 Author: rparrish <robparrish@gmail.com>
 Date:   Wed May 8 14:19:39 2013 -0400
@@ -624,85 +619,6 @@ Author: David Sherrill <sherrill@gatech.edu>
 Date:   Wed May 8 14:03:27 2013 -0400
 
     Remove unnecessary comments about symmetry c1 and no_reorient in the SAPT tutorial, since these are set automagically
-
-commit b04397b8cc6bedeaeade3fc6dd2f7d8f8313c514
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Wed May 8 13:31:42 2013 -0400
-
-    Fock build in rotate.cc now takes the core hamiltonian from wavefunctino
-
-commit ebe85376fab085fd23b9b6afe0fca79bb8c48ac4
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Wed May 8 12:07:09 2013 -0400
-
-    Core Hamiltonian is now a Wavefunction object. Wfn also provides a getter function that returns core hamiltonian from SCF
-
-commit 5aeb17f99c288a2aced84c28240d63bfda7d431d
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Wed May 8 11:16:54 2013 -0400
-
-    All CC tests pass meaning that CC code can now be used with external potential. Still need to make sure the Brueckner code
-
-commit c8890eca9d3ed1a4f62925f699812d6b969e9770
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Tue May 7 16:11:56 2013 -0400
-
-    BCC now updates the orbitals and the fock matrix in Wavefunction
-
-commit b7119f3cf13e2edb7e4240609fdee84a00a27f7d
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Tue May 7 14:32:34 2013 -0400
-
-    Trying to figure out why Brueckner CC convergence got affected
-
-commit 8494626c758d00a4da563b71ad3f8983bc031acf
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Tue May 7 13:41:23 2013 -0400
-
-    Semicanonical orbitals are now taken from wavefunction in transqt2
-
-commit d50bbaf7c6a022ffcdc8380cc143c3b5c08d46a3
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Tue May 7 11:16:27 2013 -0400
-
-    Most of the test cases pass, but not the ones with semi-canonical orbitals
-
-commit 995252b566acab3c0b2f96ccad33794029d61f87
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Tue May 7 10:06:47 2013 -0400
-
-    Extra printing
-
-commit 9dc6576de056348a2c023fcb424c17825f7b30e8
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Tue May 7 09:50:57 2013 -0400
-
-    Frozen core is fixed in fock.cc in cc_sort
-
-commit 455fba692d6e6519daeb2685c8a89e1cdd0e197c
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Mon May 6 22:17:00 2013 -0400
-
-    Fock now work with ROHF referece in cc_sort, frozen core seems to have a bug
-
-commit 10536dbd1c47f32999f7fb3fba3e3f9bc9f54601
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Mon May 6 20:58:35 2013 -0400
-
-    CC_sort now reads the Fock matrix from the Wavefunction. Works for UHF reference
-
-commit 1763900a73b8345e928c47abdaff9be42be1fab1
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Mon May 6 10:12:52 2013 -0400
-
-    Working in fock.cc in ccsort
-
-
-commit e901fc4cd4448466c7e035b61985a9aa070d6cf4
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Tue May 7 14:51:15 2013 -0400
-
-    Modifies printing in SCF code to make sure user is aware when density-fitting is used
 
 commit be08fc7d7013b1e6944b0c91f3621c9efe81e24d
 Author: deprince <eugene.deprince@gmail.com>
@@ -1213,12 +1129,6 @@ Date:   Wed Apr 24 17:40:04 2013 -0400
     Add an exception in DETCI
 
 
-commit ba46f668f3e9aa1927eaa26315e3b59bb9a4fc08
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Wed Apr 24 14:58:09 2013 -0400
-
-    The tests for ODC methods contained incorrect energies, fixed that
-
 commit c7f4cc0ab325540ca62c07b2bc20d6c6b9583398
 Author: Ugur Bozkaya <ugrbzky@gmail.com>
 Date:   Wed Apr 24 14:10:11 2013 -0400
@@ -1358,13 +1268,6 @@ Date:   Mon Apr 22 22:21:38 2013 -0400
     OCC gradients G_abcd*<ab|cd> contraction problem is overcomed, but the problem persists for other modules, we still need an out-of-core algorithm for libdpd contract442 funct
 
 
-commit ebceb0f4d06b1ea0ec190a9dd673ef70d7877b01
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Mon Apr 22 15:25:52 2013 -0400
-
-    User can request DCFT to run DC-06 or DC-12 guess for ODC-06 and ODC-12 computations, respectively
-
-
 commit 49c4c9d71525d2c8f6d3f4b6b0a9cce458f369cc
 Author: Andy Simmonett <andy.simmonett@gmail.com>
 Date:   Mon Apr 22 15:01:54 2013 -0400
@@ -1378,30 +1281,12 @@ Date:   Mon Apr 22 14:28:08 2013 -0400
 
     Merge
 
-commit 6870c9a1626a10bfeb33843b4ec57c8246334faf
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Mon Apr 22 12:45:36 2013 -0400
-
-    DCFT can now read orbitals and cumulants from previous DCFT computation
-
 commit ee0d4fdead6f86f0f345bd5bb0529c7b4ddaf0af
 Author: Justin Turney <justin.turney@gmail.com>
 Date:   Mon Apr 22 11:38:49 2013 -0400
 
     Removes Boost.Thread global variable from libmints; might be causing segfaults on some machines
 
-
-commit 5d08042da69841ddd6362a6b436dd0900e871369
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Sun Apr 21 23:52:21 2013 -0400
-
-    Added DCFT test for analytic gradients
-
-commit 24e2643958d62561ef4d537d6d08b261e5237e8b
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Sun Apr 21 21:44:42 2013 -0400
-
-    Analytic gradients for ODC methods have been implemented in DCFT
 
 commit 5edfebb88f99e8ca97cc6e3139d0bd373c5ffd98
 Author: rparrish <robparrish@gmail.com>
@@ -1414,12 +1299,6 @@ Author: Andy Simmonett <andy.simmonett@gmail.com>
 Date:   Sat Apr 20 12:02:32 2013 -0400
 
     Libderiv and gitversion work with cmake.
-
-commit fcfdfe30d8b30d04ef51a2a1aaa6bf9a3af02ed4
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Sat Apr 20 00:03:02 2013 -0400
-
-    Cleaning up valgrind
 
 commit 7a1d1ad57d34765afefc4e965426421bf59bde66
 Author: David Hollman <david.s.hollman@gmail.com>
@@ -1460,31 +1339,11 @@ Date:   Fri Apr 19 09:27:03 2013 -0400
     can use frozen mp2 nos with mrcc.  note that there is no correction included in the energies to account for truncating the space
 
 
-commit ff8693efa43c64b0c60da3999a20a699dba7567d
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Fri Apr 19 01:34:48 2013 -0400
-
-    DC-06 analytic gradients can now be run with non-canonical reference. As a result gradients now work for QC algorithm
-
-
 commit 06554d26578b8a26fee17be098a41c9d7b8b086e
 Author: Rob Parrish <robparrish@gmail.com>
 Date:   Thu Apr 18 16:42:49 2013 -0400
 
     RHF Hessians finished, hooked in, no segfaults, clean valgrind, don't work (4 of 5 objectives met)
-
-commit 625683a26615aad024b2c744b0218c543136f0c5
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Thu Apr 18 15:23:53 2013 -0400
-
-    Accidentally renamed compute_gradient. Fixed it
-
-
-commit 95e70688417357de81741d29aed6494c33fee141
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Thu Apr 18 15:12:09 2013 -0400
-
-    Some work on the conjugate gradient algorithm
 
 commit da6d8411fee66716997820083a2188fcaf2e1be6
 Author: Justin Turney <justin.turney@gmail.com>
@@ -1519,21 +1378,6 @@ Date:   Wed Apr 17 16:30:06 2013 -0400
 
     Libdpd has not out of core psrq sorting. No problem! psrq = prsq + prqs.
 
-commit 311dc61045120e672f5a1a3092f2f79eebe75d68
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Wed Apr 17 16:07:23 2013 -0400
-
-    Fix in DiisManager
-
-
-
-commit 3b600e59c2c18648318ec4ee0c275d8762dd0240
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Wed Apr 17 15:34:24 2013 -0400
-
-    Playing with DIIS in QC DCFT
-
-
 commit 1fffbb784bddeacee797ff8020a0c132a9cd43fc
 Author: Andy Simmonett <andy.simmonett@gmail.com>
 Date:   Wed Apr 17 15:23:54 2013 -0400
@@ -1546,33 +1390,11 @@ Date:   Wed Apr 17 13:40:24 2013 -0400
 
     cleaner version of last commit
 
-commit 0363b5a5030fdeb2b3066956eb8802ff22d5875b
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Wed Apr 17 13:22:47 2013 -0400
-
-    User can now request DCFT QC algorithm with Jacobi solution of the cumulant equations
-
-
-
 commit 718c79e725a5bd7275c666c34c574221ce86b0a2
 Author: Eugene DePrince <deprince@Eugenes-MacBook-Pro.local>
 Date:   Wed Apr 17 11:02:56 2013 -0400
 
     FNO generation uses symmetry for non-DF FNOCC
-
-
-
-commit b5efb9fda884c19382443f1811bc767a2c0955f7
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Tue Apr 16 15:46:09 2013 -0400
-
-    DCFT QC algorithm now uses DIIS, which speeds it up significantly
-
-commit 7edde1f71ba63a394bfd0c2b9842ba591d65eb12
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Tue Apr 16 14:58:31 2013 -0400
-
-    DCFT QC algorithm can now be used only for orbitals with Jacobi cumulant updates
 
 
 commit 88b82a36ff4aec286274b77b31984a96a7aa9c48
@@ -1643,42 +1465,11 @@ Date:   Sat Apr 13 15:50:05 2013 -0400
     Missing #19 in S11
 
 
-commit 34a08a18ec629c7101fb3c094604432ddd7be82c
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Sat Apr 13 01:39:06 2013 -0400
-
-    Move all DCFT densities (relaxed and unrelaxed) to a single file
-
-commit fcfbe6c701e4eca18c8ec2c57370ce39d58274f6
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Sat Apr 13 00:42:39 2013 -0400
-
-    Added tests for the new orbital-optimized DCFT methods
-
-commit efd7f026dabfcd656c7058c5e9db8d35c06eb733
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Fri Apr 12 23:00:41 2013 -0400
-
-    More clean up in DCFT
-
 commit c43ed25a790be3228d8b1f2afdd26346bd3fdfc9
 Author: rparrish <robparrish@gmail.com>
 Date:   Fri Apr 12 21:29:42 2013 -0400
 
     FNOs implemented for SAPT(CCD) (vv|vv) term. Nuke 'em Rico!
-
-commit e565f8d0ec2745c3606c865cd9c6fa79fd655216
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Fri Apr 12 21:09:06 2013 -0400
-
-    Changing the variable names in DCFT
-
-commit 15957baf80a1f1aaedf6203e5ccbce4549b5b451
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Fri Apr 12 15:20:10 2013 -0400
-
-    The QC DCFT algorithm is hacked to work with orbital-optimized methods
-
 
 commit 63255d6aed1c0fe5c771ef0f1a9ab1524dc3802c
 Author: rparrish <robparrish@gmail.com>
@@ -1740,13 +1531,6 @@ Author: Jussi Lehtola <jussilehtola@fedoraproject.org>
 Date:   Fri Apr 12 13:54:05 2013 +0300
 
     Don't run doxygen install by default - just compile.
-
-
-commit f4c41122d4dca8b7c482b7e150175aba35a93034
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Thu Apr 11 15:11:00 2013 -0400
-
-    New DCFT orbital-optimized methods now work with DIIS
 
 commit 059c7e577d67d5014e83a28d3c7eadf4e225dda8
 Author: Jussi Lehtola <jussilehtola@fedoraproject.org>
@@ -1828,19 +1612,6 @@ Date:   Wed Apr 10 16:26:17 2013 -0400
     Removed ambiguity between boost::mutex and std::mutex that arises in C++11.
     To make psi4 compatible with older C++ standards we use boost::mutex.
 
-commit d80a7fc75429a040040a45efb1b656b682563d66
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Wed Apr 10 16:25:08 2013 -0400
-
-    Forgot to add the file for orbital-optimized code
-
-commit d3ba9608120af98671aa0ae477cc4115fff8409a
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Wed Apr 10 16:24:30 2013 -0400
-
-    Two new DCFT methods were added: orbital-optimized DC-06 and DC-12 (ODC-06 and ODC-12). Right now the methods work only with simultaneous algorithm and without DIIS
-
-
 commit c043ce9adce5c05d2bd47c5bb86e2339f3f39bd3
 Author: Rollin King <rking@bethel.edu>
 Date:   Wed Apr 10 14:56:36 2013 -0500
@@ -1893,12 +1664,6 @@ Date:   Mon Apr 8 21:38:21 2013 -0400
     fixes fnocc4 with clang
 
 
-commit 238ab455209e0e9fdc207989fd24ca51d36e46b1
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Mon Apr 8 15:59:52 2013 -0400
-
-    DCFT gradients can now be run with AO_BASIS = DISK
-
 commit 72cded155bd2b689a1d9a4a15866bb81a2231910
 Author: Justin Turney <justin.turney@gmail.com>
 Date:   Mon Apr 8 15:54:29 2013 -0400
@@ -1912,12 +1677,6 @@ Date:   Mon Apr 8 15:36:17 2013 -0400
 
     Possible fix for open-shell MRCC runs
 
-
-commit 5b72aaf8a4a251d009abd8f0b47ea825193327c8
-Author: Alexander Sokolov <alex@ccqc.uga.edu>
-Date:   Mon Apr 8 13:16:23 2013 -0400
-
-    Merging stuff from sirius
 
 commit ba44862a9588860cf5b6ea11082911be131963d4
 Author: Ugur Bozkaya <ugrbzky@gmail.com>
