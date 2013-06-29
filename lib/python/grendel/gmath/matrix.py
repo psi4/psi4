@@ -29,8 +29,8 @@ class Matrix(Tensor):
         the ``numpy.matrix`` constructor is called, and the Tensor constructor is called with the result and
         any remaining arguments.
 
-        Examples
-        --------
+        :Examples:
+
 
         >>> Matrix([[1,2,3],[4,5,6]])
         Matrix([[ 1.,  2.,  3.],
@@ -113,8 +113,8 @@ class Matrix(Tensor):
         that turns out to be 1, the result is not view cast as a ``Vector`` but remains a ``Matrix``.
         **Note that changing an entry in the returned object changes the corresponding entry in ``self``.**
 
-        Examples
-        --------
+        :Examples:
+
 
         >>> m = Matrix([[1,2,3],[4,5,6]])
         >>> m[0,0]

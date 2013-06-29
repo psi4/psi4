@@ -58,8 +58,8 @@ class ReadOnlyAttribute(SpecialAttribute):
     """ A read-only attribute.
     See `SpecialAttribute` for initialization variables standard to all `SpecialAttribute` subclasses.
 
-    Attributes
-    ----------
+    :Attributes:
+
     error_text : str
         The text for the error raised when setting of the attribute is attempted.  Defaults to "cannot set read-only attribute"
 
@@ -89,8 +89,8 @@ class TypeCheckedAttribute(SpecialAttribute):
     raised when an incorrect type is given.  Aliased as `type_checked`.
     See `read_only_attribute` for explaination of other arguments.
 
-    Examples
-    --------
+    :Examples:
+
     >>> class SuperSafe(object):
     ...     name = TypeCheckedAttribute('name', str)
     ...     number = TypeCheckedAttribute('number', (int, float, long), default=0.0)

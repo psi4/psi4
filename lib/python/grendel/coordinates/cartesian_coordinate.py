@@ -21,8 +21,8 @@ class CartesianCoordinate(Coordinate):
     CartesianCoordinate objects are immutable.  If you need a different cartesian coordinate, create a new
     CartesianCoordinate objects.
 
-    Attributes
-    ----------
+    :Attributes:
+
     atom : `Atom`
         The atom to which the cartesian coordinate refers
     direction : `int`
@@ -60,8 +60,8 @@ class CartesianCoordinate(Coordinate):
             **kwargs):
         """ Constructor
 
-        Parameters
-        ----------
+        :Parameters:
+
         atom : `Atom`
             The atom represented by the coordinate
         index : `int`
