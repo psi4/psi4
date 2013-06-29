@@ -67,8 +67,8 @@ class IndexRange(object):
     """ Allows for the definition of special indices that cover specific ranges and subranges of Tensor axes
     in einstein summations.
 
-    Examples
-    --------
+    :Examples:
+
     >>> IndexRange.clear_known_ranges()  # Don't do this in your program; this is just for the doctest
     >>> p = IndexRange('p,q,r,s', 5).with_subranges(
     ...   IndexRange('i,j,k,l', 0, 2),
@@ -332,8 +332,8 @@ class IndexRange(object):
         Note that this returns `subrange` (with `subrange.parent` modified) to allow for a 'pass-through' like usage
         (see examples below)
 
-        Examples
-        --------
+        :Examples:
+
         >>> IndexRange.reset_ranges()
         >>> p = IndexRange('p,q,r,s', 4, name="orbital space")
         >>> # Convenient "pass-through" usage for saving subranges:
@@ -372,8 +372,8 @@ class IndexRange(object):
         """ Basically the same thing as calling `add_subrange()` multiple times, except returns `self` instead of
         the subrange, allowing for a different syntax (see below)
 
-        Examples
-        --------
+        :Examples:
+
         >>> IndexRange.reset_ranges()
         >>> orb = DeclareIndexRange('p,q,r,s', 10, name="Orbital space").with_subranges(
         ...           DeclareIndexRange('i,j,k,l', 0, 3, name="Occupied space").with_subranges(
@@ -399,8 +399,8 @@ class IndexRange(object):
         """ Gets the slice of `parent_range` represented by self
         (`parent_range` need not be a *direct* parent of self, but it should be a parent.  See `is_subrange()`)
 
-        Examples
-        --------
+        :Examples:
+
         >>> IndexRange.reset_ranges()
         >>> p = IndexRange('p,q,r,s',4)
         >>> i = p.add_subrange(IndexRange('i,j,k,l',0,2))

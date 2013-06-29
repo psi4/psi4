@@ -16,8 +16,8 @@ class Representation(Freezable):
     """
     Superclass of all the representations types.
 
-    Attributes
-    ----------
+    :Attributes:
+
         molecule : `Molecule`
             The `Molecule` object represented by `self`.
         coords : list of `Coordinate`

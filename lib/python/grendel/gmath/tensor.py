@@ -67,8 +67,8 @@ class LightTensor(np.ndarray):
         """ Returns True if all elements of `self` have absolute values less than `cutoff`, which defaults
         to `Tensor.zero_cutoff`
         .. note::
-            Since `zero_cutoff` is a pseudo-class attribute in Tensor, not LightTensor, individual LightTensor
-            instances cannot set their own `zero_cutoff` attribute.
+           Since `zero_cutoff` is a pseudo-class attribute in Tensor, not LightTensor, individual LightTensor
+           instances cannot set their own `zero_cutoff` attribute.
         """
         cutoff = cutoff if cutoff is not None else Tensor.zero_cutoff
         return (abs(self) < cutoff).all()
@@ -382,8 +382,8 @@ class Tensor(LightTensor):
         If the resulting sub-``Tensor`` has a ``ndim`` attribute of 1, a ``Vector`` object is returned.
         If the resulting sub-``Tensor`` has a ``ndim`` attribute of 2, a ``Matrix`` object is returned.
 
-        Examples
-        --------
+        :Examples:
+
 
         TODO:  Write example test cases
         TODO: Move this to the class documentation since it doesn't show up in sphinx
@@ -775,9 +775,9 @@ class Tensor(LightTensor):
         """ Returns True if all elements of `self` have absolute values less than `cutoff`, which defaults
         to `Tensor.zero_cutoff`
         .. note::
-            `Tensor.zero_cutoff` is treated as a pseudo-class attribute for Tensor instances, meaning individual
-             instances can also set a `zero_cutoff` attribute which will take precidence over the class-level
-             default.
+           `Tensor.zero_cutoff` is treated as a pseudo-class attribute for Tensor instances, meaning individual
+            instances can also set a `zero_cutoff` attribute which will take precidence over the class-level
+            default.
 
         """
         if cutoff:
@@ -819,8 +819,8 @@ class Tensor(LightTensor):
     def flatten(self, order = 'C'):
         """ Same as `numpy.ndarray.flatten`, but modified to return a `Vector` object
 
-        Examples
-        --------
+        :Examples:
+
 
         >>> t = Tensor([[[1,2],[3,4]],[[5,6],[7,8]]])
         >>> t

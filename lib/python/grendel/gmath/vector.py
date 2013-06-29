@@ -23,8 +23,8 @@ def cross(v1, v2, *args, **kwargs):
     """ Wrapper to `numpy.cross`
     which viewcasts the result as a `Vector` if the first two arguments are `Vector`  objects
 
-    Examples
-    --------
+    :Examples:
+
     >>> cross( Vector(1, 2, 3), Vector(4, 5, 6) )
     Vector([-3.,  6., -3.])
     >>> # Can also be called as a method of Vector
@@ -51,8 +51,8 @@ def l_cross(v1, v2):
 def magnitude(v):
     """ Wrapper for `Vector.magnitude()`
 
-    Examples
-    --------
+    :Examples:
+
     >>> magnitude(Vector(3.0, 4.0))
     5.0
 
@@ -108,8 +108,8 @@ class LightVector(LightTensor):
     def normalize(self):
         """ Performs an in-place normalization of `self`.
 
-        Examples
-        --------
+        :Examples:
+
 
         >>> Vector(2.0, 0.0, 0.0).normalize()
         Vector([ 1.,  0.,  0.])
@@ -167,8 +167,8 @@ class Vector(LightVector, Tensor):
     Encapsulates a vector.  Most functionality gets passed up to Tensor, which in turn passes things up to
     ``numpy.ndarray``.  Special functionality for vectors gets implemented here.
 
-    Examples
-    --------
+    :Examples:
+
 
     * Multiplication *
     >>> from grendel.gmath import Matrix, Vector
@@ -269,8 +269,8 @@ class Vector(LightVector, Tensor):
     def x(self):
         """ The x component of a cartesian vector
 
-        Raises
-        ------
+        :Raises:
+
         IndexError
             If the vector is not cartesian (i.e. if it is not two or three dimensional)
 
@@ -291,8 +291,8 @@ class Vector(LightVector, Tensor):
     def y(self):
         """ The y component of a cartesian vector
 
-        Raises
-        ------
+        :Raises:
+
         IndexError
             If the vector is not cartesian (i.e. if it is not two or three dimensional)
 
@@ -313,8 +313,8 @@ class Vector(LightVector, Tensor):
     def z(self):
         """ The z component of a cartesian vector
 
-        Raises
-        ------
+        :Raises:
+
         IndexError
             If the vector is not three dimensional
 
@@ -348,8 +348,8 @@ class Vector(LightVector, Tensor):
     def reshape(self, newshape, order='C'):
         """ Overrides the `numpy.ndarray` reshape function to make things make sense.
 
-        Examples
-        --------
+        :Examples:
+
 
         >>> v = Vector([1,2,3,4])
         >>> v.reshape((2,2))
