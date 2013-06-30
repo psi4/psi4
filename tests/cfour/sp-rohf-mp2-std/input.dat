@@ -1,3 +1,5 @@
+print '        <<< Literal ZMAT to Cfour >>>'
+
 cfour {
 ROHF-MP2 energy calculation 
 N

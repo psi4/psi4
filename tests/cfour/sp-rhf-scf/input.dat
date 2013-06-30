@@ -1,3 +1,5 @@
+print '        <<< Literal ZMAT to Cfour >>>'
+
 cfour {
 HF-SCF single-point energy calculation
 O
@@ -10,6 +12,58 @@ A=104.5
 *ACES2(CALC=HF,BASIS=qz2p
 SCF_CONV=12
 MEMORY=20000000)
+}
+
+energy('cfour')
+
+compare_values(-76.0627484601, get_variable('scf total energy'), 6, 'SCF')
+compare_values(-76.0627484601, get_variable('current energy'), 6, 'SCF')
+
+clean()
+clean_variables()
+
+print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
+
+memory 200 mb
+
+molecule {
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+}
+
+set {
+cfour_calc_level hf
+cfour_basis qz2p
+cfour_scf_conv 12
+}
+
+energy('cfour')
+
+compare_values(-76.0627484601, get_variable('scf total energy'), 6, 'SCF')
+compare_values(-76.0627484601, get_variable('current energy'), 6, 'SCF')
+
+clean()
+clean_variables()
+
+print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
+
+molecule {
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+}
+
+set {
+cfour_CALC_level=HF
+cfour_BASIS=qz2p
+cfour_SCF_CONV=12
 }
 
 energy('cfour')
