@@ -50,6 +50,7 @@ def run_cfour(name, **kwargs):
     for a calculation calling Stanton and Gauss's CFOUR code.
 
     """
+    lowername = name.lower()
     # The parse_arbitrary_order method provides us the following information
     # We require that level be provided. level is a dictionary
     # of settings to be passed to psi4.cfour
@@ -75,11 +76,13 @@ def run_cfour(name, **kwargs):
     lenv['PATH'] = ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':')]) + ':' + lenv.get('PATH')
 
     # Need to move to the scratch directory, perferrably into a separate directory in that location
-    psi_io = psi4.IOManager.shared_object()
-    os.chdir(psi_io.get_default_path())
+    psioh = psi4.IOManager.shared_object()
+    psio = psi4.IO.shared_object()
+    os.chdir(psioh.get_default_path())
 
     # Make new directory specifically for cfour
-    cfour_tmpdir = 'cfour_' + str(os.getpid())
+    cfour_tmpdir = 'psi.' + str(os.getpid()) + '.' + psio.get_default_namespace() + \
+        '.cfour.' + str(random.randint(0, 99999))
     if 'path' in kwargs:
         cfour_tmpdir = kwargs['path']
 
@@ -93,9 +96,9 @@ def run_cfour(name, **kwargs):
     # Load the GENBAS file
     genbas_path = qcdb.search_file('GENBAS', lenv['PATH'])
     if genbas_path:
-        shutil.copy2(genbas_path, psi_io.get_default_path() + cfour_tmpdir)
+        shutil.copy2(genbas_path, psioh.get_default_path() + cfour_tmpdir)
         psi4.print_out("\n  GENBAS loaded from %s\n" % (genbas_path))
-        psi4.print_out("  CFOUR to be run from %s\n" % (psi_io.get_default_path() + cfour_tmpdir))
+        psi4.print_out("  CFOUR to be run from %s\n" % (psioh.get_default_path() + cfour_tmpdir))
     else:
         psi4.print_out('\nGENBAS file for CFOUR interface not found\n\n')
         psi4.print_out('Search path that was tried:\n')
@@ -105,7 +108,7 @@ def run_cfour(name, **kwargs):
 
     # Generate integrals and input file (dumps files to the current directory)
     with open("ZMAT", "w") as cfour_infile:
-        cfour_infile.write(write_zmat())
+        cfour_infile.write(write_zmat(lowername))
 
     # Load the ZMAT file
     # and dump a copy into the outfile
@@ -117,10 +120,6 @@ def run_cfour(name, **kwargs):
     # Close output file and reopen
     psi4.close_outfile()
     p4out = open(current_directory + '/' + psi4.outfile_name(), 'a')
-
-    # Modify the environment:
-    #    PGI Fortan prints warning to screen if STOP is used
-    #os.environ['NO_STOP_MESSAGE'] = '1'
 
     # Obtain user's OMP_NUM_THREADS so that we don't blow it away.
     omp_num_threads_found = 'OMP_NUM_THREADS' in os.environ
@@ -156,9 +155,13 @@ def run_cfour(name, **kwargs):
         if psi4.has_option_changed('CFOUR', 'CFOUR_OMP_NUM_THREADS') == True:
             os.environ['OMP_NUM_THREADS'] = omp_num_threads_user
 
-    psivars = qcprograms.cfour.cfour_harvest(c4out)
-    for key in psivars.keys():
-        psi4.set_variable(key.upper(), float(psivars[key]))
+    psivar, psivar_gradient = qcprograms.cfour.cfour_harvest(c4out)
+    for key in psivar.keys():
+        psi4.set_variable(key.upper(), float(psivar[key]))
+    p4mat = psi4.Matrix(3, 3)
+    p4mat.set(psivar_gradient)
+    psi4.set_gradient(p4mat)
+
 
     # Delete cfour tempdir
     os.chdir('..')
@@ -180,17 +183,22 @@ def run_cfour(name, **kwargs):
     # If we're told to keep the files or the user provided a path, do nothing.
     if (yes.match(str(keep)) or ('path' in kwargs)):
         psi4.print_out('\nCFOUR scratch files have been kept.\n')
-        psi4.print_out('They can be found in ' + psi_io.get_default_path() + cfour_tmpdir)
+        psi4.print_out('They can be found in ' + psioh.get_default_path() + cfour_tmpdir)
 
 
 def cfour_list():
     val = []
     val.append('cfour')
     val.append('c4-ccsd')
+    val.append('c4-scf')
+    val.append('c4-mp2')
     return val
 
+# Cfour lookup table
+#cfour_methods = {
+#    'cfour': run_cfour
 
-def write_zmat():
+def write_zmat(name):
     """
 
     """
@@ -198,8 +206,9 @@ def write_zmat():
     # Handle memory
     mem = int(0.000001 * psi4.get_memory())
     if mem == 256:
-        memcmd = ''
-        memkw = {}
+        memcmd, memkw = '', {}
+        #memcmd = ''
+        #memkw = {}
     else:
         memcmd, memkw = qcprograms.cfour.cfour_memory(mem)
 
@@ -215,12 +224,16 @@ def write_zmat():
         qcdbmolecule.tagline = molecule.name()
         molcmd, molkw = qcdbmolecule.format_molecule_for_cfour()
 
+    # Handle quantum chemical method
+    mtdcmd, mtdkw = qcprograms.cfour.cfour_method(name)
+
     # Handle psi4 keywords implying cfour keyword values (NYI)
 
     # Handle driver vs input/default keyword reconciliation
     userkw = p4util.prepare_options_for_modules()
     userkw = qcdb.options.reconcile_options(userkw, memkw)
     userkw = qcdb.options.reconcile_options(userkw, molkw)
+    userkw = qcdb.options.reconcile_options(userkw, mtdkw)
 
     # Handle conversion of psi4 keyword structure into cfour format
     optcmd = qcdb.options.prepare_options_for_cfour(userkw)
@@ -228,5 +241,5 @@ def write_zmat():
     # Handle text to be passed untouched to cfour
     litcmd = psi4.get_global_option('LITERAL_CFOUR')
 
-    zmat = memcmd + molcmd + optcmd + litcmd
+    zmat = memcmd + molcmd + optcmd + mtdcmd + litcmd
     return zmat
