@@ -65,3 +65,39 @@ compare_values(-0.2132980551718224, get_variable('ccsd correlation energy'), 6, 
 compare_values(-55.807811611842, get_variable('ccsd(t) total energy'), 6, 'CCSD(T)')  #TEST
 compare_values(-0.005166587884, get_variable('(t) correction energy'), 6, '(T)')  #TEST
 
+clean()
+clean_variables()
+
+print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
+
+banner('UHF-CCSD(T) energy calculation using xecc together with partial AO algorithms')
+
+molecule {
+0 2
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+}
+
+set {
+cfour_CALC_level=CCSD(T)
+cfour_BASIS=qz2p
+cfour_CC_PROGram=ECC
+cfour_ABCDTYPE=AOBASIS
+cfour_REFerence=UHF
+cfour_occupation [[3,1,1,0],[3,0,1,0]]
+cfour_SCF_CONV=12
+cfour_CC_CONV=12
+}
+
+energy('cfour')
+
+compare_values(-55.5893469688, get_variable('scf total energy'), 6, 'SCF')
+compare_values(-0.195530391306, get_variable('mp2 correlation energy'), 6, 'MP2 corl')
+compare_values(-0.2132980551718224, get_variable('ccsd correlation energy'), 6, 'CCSD corl')
+compare_values(-55.807811611842, get_variable('ccsd(t) total energy'), 6, 'CCSD(T)')
+compare_values(-0.005166587884, get_variable('(t) correction energy'), 6, '(T)')
+

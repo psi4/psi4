@@ -21,7 +21,7 @@ psi-a24-grad
 infra_subdirs = puream mints5 mints5-grad pywrap-cbs1 kw-1 kw-2 kw-3 kw-4 \
 kw-5 kw-6 kw-7 kw-8 psi-ghost-grad scf4 mp2-1 pywrap-db1 pywrap-basis dfmp2-1
 
-psi_subdirs = psi-scsmp2 psi-mp3 psi-mp4
+psi_subdirs = psi-mints5 psi-rhf-scsmp2 psi-uhf-scsmp2 psi-rohf-scsmp2 psi-mp3 psi-mp4
 
 subdirs = \
 $(infra_subdirs) \
