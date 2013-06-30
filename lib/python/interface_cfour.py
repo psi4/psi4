@@ -382,6 +382,9 @@ def cfour_list():
     """Form list of Cfour :py:func:`~driver.energy` arguments."""
     return qcdb.cfour.cfour_list()
 
+# Cfour lookup table
+#cfour_methods = {
+#    'cfour': run_cfour
 
 def cfour_gradient_list():
     """Form list of Cfour analytic :py:func:`~driver.gradient` arguments."""
