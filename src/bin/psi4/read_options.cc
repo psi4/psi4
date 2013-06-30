@@ -3230,7 +3230,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       UHF calculations, the appropriate orbitals are deleted for both spin
       cases. No dropped virtual MOs are currently allowed for gradient or
       property calculations. -*/
-      options.add("CFOUR_DROPMO", new ArrayType());
+      options.add_str("CFOUR_DROPMO", "");
 
       //EA_CALC
       //experimental use

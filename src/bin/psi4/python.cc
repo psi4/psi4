@@ -1048,6 +1048,11 @@ void py_psi_set_variable(const std::string & key, double val)
     Process::environment.globals[uppercase_key] = val;
 }
 
+void py_psi_clean_variable_map()
+{
+    Process::environment.globals.clear();
+}
+
 void py_psi_set_memory(unsigned long int mem)
 {
     Process::environment.set_memory(mem);
@@ -1305,6 +1310,7 @@ BOOST_PYTHON_MODULE(psi4)
     def("get_variable", py_psi_get_variable, "Returns one of the PSI variables set internally by the modules or python driver (see manual for full listing of variables available).");
     def("set_variable", py_psi_set_variable, "Sets a PSI variable, by name.");
     def("print_variables", py_psi_print_variable_map, "Prints all PSI variables that have been set internally.");
+    def("clean_variables", py_psi_clean_variable_map, "Empties all PSI variables that have set internally.");
 
     // Adds a custom user basis set file.
     def("add_user_basis_file", py_psi_add_user_specified_basis_file, "Adds a custom basis set file, provided by the user.");
