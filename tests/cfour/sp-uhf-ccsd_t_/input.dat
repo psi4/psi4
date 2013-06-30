@@ -1,3 +1,5 @@
+print '        <<< Literal ZMAT to Cfour >>>'
+
 cfour {
 UHF-CCSD(T) energy calculation 
 N
@@ -14,6 +16,50 @@ SCF_CONV=12
 PRINT=2
 CC_CONV=12
 MEMORY=20000000)
+}
+
+energy('cfour')
+
+compare_values(-55.5893469688, get_variable('scf total energy'), 6, 'SCF')
+compare_values(-55.784877360093, get_variable('mp2 total energy'), 6, 'MP2')
+compare_values(-55.802645023958, get_variable('ccsd total energy'), 6, 'CCSD')
+compare_values(-0.213298055172, get_variable('ccsd correlation energy'), 6, 'CCSD corl')
+compare_values(-0.173390809645, get_variable('ccsd opposite-spin energy'), 6, 'CCSD OS corl')
+compare_values(-0.039907245528, get_variable('ccsd same-spin energy'), 6, 'CCSD SS corl')
+compare_values(-55.807811611842, get_variable('ccsd(t) total energy'), 6, 'CCSD(T)')
+compare_values(-0.2184646435, get_variable('ccsd(t) correlation energy'), 6, 'CCSD(T) corl')
+compare_values(-0.0051665879, get_variable('(t) correction energy'), 6, '(T)')
+
+compare_values(-55.5893469688, get_variable('current reference energy'), 6, 'Current ref')
+compare_values(-0.2184646435, get_variable('current correlation energy'), 6, 'Current corl')
+compare_values(-55.807811611842, get_variable('current energy'), 6, 'Current')
+
+clean()
+clean_variables()
+
+print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
+
+banner('UHF-CCSD(T) energy calculation')
+
+molecule {
+0 2
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+}
+
+set {
+cfour_CALC_level=CCSD(T)
+cfour_BASIS=qz2p
+cfour_MULTiplicity=2
+cfour_REFerence=UHF
+cfour_OCCUPATION= [[3,1 ,1, 0] ,[ 3,0 ,1,0]    ]
+cfour_SCF_CONV=12
+cfour_PRINT=2
+cfour_CC_CONV=12
 }
 
 energy('cfour')

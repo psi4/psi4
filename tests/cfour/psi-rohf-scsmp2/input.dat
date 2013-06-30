@@ -1,0 +1,49 @@
+store = {}
+test_psivars = ['scf total energy', 'mp2 same-spin energy', 'mp2 opposite-spin energy', 'mp2 singles energy', 'mp2 correlation energy', 'mp2 total energy', 'current reference energy', 'current correlation energy', 'current energy']
+
+print '    <<<  ROHF  >>>'
+
+cfour {
+ROHF-MP2 energy calculation 
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+
+*ACES2(CALC=MP2,BASIS=AUG-PVDZ
+MULT=2,REF=ROHF
+OCCUPATION=3-1-1-0/3-0-1-0
+SCF_CONV=12
+CC_CONV=12
+MEMORY=20000000)
+}
+
+energy('cfour')
+
+for vari in test_psivars:
+    store[vari] = get_variable(vari)
+    set_variable(vari, 0.0)
+
+molecule {
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+}
+
+set reference rohf
+set basis aug-cc-pvdz
+set e_convergence 10
+set mp2_type conv
+
+energy('mp2')
+print_variables()
+clean()
+
+for vari in test_psivars:
+    compare_values(store[vari], get_variable(vari), 6, vari.upper())
+
