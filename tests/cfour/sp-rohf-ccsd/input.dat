@@ -74,3 +74,42 @@ compare_values(-55.802586766392, get_variable('ccsd total energy'), 6, 'CCSD')  
 compare_values(-0.217849506326, get_variable('current correlation energy'), 6, 'Current corl')  #TEST
 compare_values(-55.802586766392, get_variable('current energy'), 6, 'Current')  #TEST
 
+clean()
+clean_variables()
+
+print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
+
+molecule {
+0 2
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+}
+
+set {
+cfour_CALC_level=CCSD
+cfour_BASIS=qz2p
+cfour_REFerence=ROHF
+cfour_OCCUPATION= [[3,1,1,0],[3,0,1,0]]
+cfour_SCF_CONV=12
+cfour_PRINT=2
+}
+
+energy('cfour')
+
+compare_values(-55.5847372601, get_variable('scf total energy'), 6, 'SCF')
+compare_values(-0.002983751786, get_variable('mp2 singles energy'), 6, 'MP2 singles')
+compare_values(-0.155770420921, get_variable('mp2 opposite-spin energy'), 6, 'MP2 OS corl')
+compare_values(-0.041785354569, get_variable('mp2 same-spin energy'), 6, 'MP2 SS corl')
+compare_values(-0.200539527276, get_variable('mp2 correlation energy'), 6, 'MP2 corl')
+compare_values(-55.785276787341, get_variable('mp2 total energy'), 6, 'MP2')
+compare_values(-0.1745752, get_variable('ccsd opposite-spin energy'), 6, 'CCSD OS corl')
+compare_values(-0.0432743, get_variable('ccsd same-spin energy'), 6, 'CCSD SS corl')
+compare_values(-0.217849506326, get_variable('ccsd correlation energy'), 6, 'CCSD corl')
+compare_values(-55.802586766392, get_variable('ccsd total energy'), 6, 'CCSD')
+compare_values(-0.217849506326, get_variable('current correlation energy'), 6, 'Current corl')
+compare_values(-55.802586766392, get_variable('current energy'), 6, 'Current')
+
