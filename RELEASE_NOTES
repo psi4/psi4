@@ -34,9 +34,8 @@ PSI4.0B5, July 2013
 *   Allow more complex model chemistries through cbs() wrapper. Add alias for Wes Allen's focal point analysis
 *   Alias sherrillgroup_gold_standard renamed to sherrill_gold_standard
 *   Make cbs() wrapper work with MRCC interface
-
 *   CC code can now be used to compute energies with applied external field. Charges must be set up using the QM/MM module.
-
+*   DF-CC code now uses two sets of 3-index integrals: one for building the Fock matrix and one for all other ERI's
 
 commit e9f19e9aa317fb894a699daebf65a0fc78db3861
 Author: Andy Simmonett <andy.simmonett@gmail.com>
@@ -786,14 +785,6 @@ Date:   Thu May 2 12:18:10 2013 +0300
 
     Created LICENSE file from license boilerplates.
 
-
-commit eaafe81e86d6552e2d40791555e069c5beff6995
-Author: Eugene DePrince <deprince@Eugenes-MacBook-Pro.local>
-Date:   Wed May 1 21:06:31 2013 -0400
-
-    DFCC module now uses 2 sets of 3-index integrals, one for the Fock
-    matrix build, and one for all other instances of the TEIs.  This
-    procedure is more similar to that in DF-MP2 now.
 
 commit 08ae186ca6cfab0903b1cdc34ab26c27b59909cb
 Author: Justin Turney <justin.turney@gmail.com>
