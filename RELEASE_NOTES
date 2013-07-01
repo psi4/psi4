@@ -132,32 +132,11 @@ Date:   Thu Jun 20 17:02:35 2013 -0400
 
     Fixed strange error in DPD's destructor.
 
-
-commit 61346f80ec9f9854baca8de6601a564ed5adc370
-Author: deprince <eugene.deprince@gmail.com>
-Date:   Thu Jun 20 14:51:09 2013 -0400
-
-    fixed bug in CDJK.  mea culpa
-
-commit 2addb20a6406cee0ff8b17e55d4a2c7e95e4af60
-Author: Eugene DePrince <eugene.deprince@gmail.com>
-Date:   Thu Jun 20 11:07:46 2013 -0400
-
-    dfcc can use less memory by storing t2 on disk
-
-
 commit fff0fbd3e192d1323d96f0d32def38999084db68
 Author: Andy Simmonett <andy.simmonett@gmail.com>
 Date:   Thu Jun 20 08:12:50 2013 -0400
 
     Modified the DPD destructor, until a strange segfault can be isolated.
-
-commit edc171ba744f282e94dccb08b849e9cccb1a246e
-Author: Eugene DePrince <eugene.deprince@gmail.com>
-Date:   Wed Jun 19 22:02:23 2013 -0400
-
-    slightly smaller memory requirements for dfcc
-
 
 
 commit 7e9b35432ca128f59dac86d745bb103d02c82d0a
@@ -211,19 +190,6 @@ Author: Andy Simmonett <andy.simmonett@gmail.com>
 Date:   Thu Jun 13 08:18:26 2013 -0400
 
     DPD is now a class.  Members are currently public, so that the usage is most consistent with the existing standards.  Stil
-
-
-commit 8de20473baf1a2927de72a7c1757b7daf4773b08
-Author: Eugene DePrince <eugene.deprince@gmail.com>
-Date:   Tue Jun 11 14:54:07 2013 -0400
-
-    small changes related to previous commit
-
-commit b7a865c6209ce432ec8077ca8b1255a2096394d9
-Author: Eugene DePrince <eugene.deprince@gmail.com>
-Date:   Tue Jun 11 14:48:07 2013 -0400
-
-    adds function to conventional eri fnocc codes to build 4-index eri's from 3-index integrals
 
 
 commit e9f578d75f8bd4b66affdaf62d1e5b73ef602b80
@@ -423,18 +389,6 @@ Date:   Sun May 19 05:59:44 2013 +0200
     rectangular matrices..
 
 
-commit 3e923cf450b0b6b57502a4e02321d087bddf563b
-Author: Eugene DePrince <eugene.deprince@gmail.com>
-Date:   Sat May 18 09:33:04 2013 -0400
-
-    fixes bug in fnocc when t2 stored on disk
-
-commit 4cb27cd06195f81c0ed840f2531fac61fd442112
-Author: Eugene DePrince <eugene.deprince@gmail.com>
-Date:   Sat May 18 09:18:26 2013 -0400
-
-    fixes memory estimates for dfcc.  also, makes some functions virtual.
-
 commit b6547fedd0a7dd1558105eee6c9c686a22685df9
 Author: Ugur Bozkaya <ugrbzky@gmail.com>
 Date:   Sat May 18 05:23:46 2013 +0300
@@ -446,18 +400,6 @@ Author: Ugur Bozkaya <ugrbzky@gmail.com>
 Date:   Sat May 18 05:15:17 2013 +0300
 
     Working on EKT.
-
-commit e83118dab1f25d4c743213bb5a54fe5155c1117d
-Author: Eugene DePrince <eugene.deprince@gmail.com>
-Date:   Thu May 16 20:44:42 2013 -0400
-
-    reduced io in diis in fnocc.  thanks rob!
-
-commit a8869992743b7fa7198047eb508f4a819f2edd63
-Author: Eugene DePrince <eugene.deprince@gmail.com>
-Date:   Thu May 16 14:09:21 2013 -0400
-
-    removes some functions from oeprop that aren't necessary
 
 commit 0a62c374d225f005c0dacea191e58d1d804cd0f3
 Author: Justin Turney <justin.turney@gmail.com>
@@ -472,12 +414,6 @@ Date:   Wed May 15 19:45:19 2013 +0200
 
     Corrected for p4util and p4const subdirs.
 
-commit 893b389540e4650d89a4ff1424e9fc4b05b285da
-Author: Eugene DePrince <eugene.deprince@gmail.com>
-Date:   Wed May 15 12:59:47 2013 -0400
-
-    enable local (t) for cim-df-cc
-
 commit 083d48887fa16db7a21c8730bd0e630905fa9ca7
 Author: Andy Simmonett <andy.simmonett@gmail.com>
 Date:   Tue May 14 11:15:45 2013 -0400
@@ -489,24 +425,6 @@ Author: Andy Simmonett <andy.simmonett@gmail.com>
 Date:   Tue May 14 11:01:53 2013 -0400
 
     Added PCM preprocessor.
-
-commit c064e273416e96f7b0426d20e75ee449eed6311b
-Author: deprince <eugene.deprince@gmail.com>
-Date:   Mon May 13 15:30:43 2013 -0400
-
-    REALLY fixes cim-dfmp2 energy
-
-commit e322527ae2362fa2b0b25809344bcb7904c75b49
-Author: Eugene DePrince <eugene.deprince@gmail.com>
-Date:   Mon May 13 15:08:42 2013 -0400
-
-    fixes cim-df-mp2 energies
-
-commit 472222f5b9638f1fb84acfec83c13d0ab8fa5c27
-Author: Eugene DePrince <eugene.deprince@gmail.com>
-Date:   Mon May 13 13:40:55 2013 -0400
-
-    making my checkins in the "RELEASE_NOTES" more sensible
 
 commit 9fdab5fadfff7fbc2edc704119f430ba5b18319b
 Author: rparrish <robparrish@gmail.com>
@@ -588,13 +506,6 @@ Date:   Sat May 11 21:21:04 2013 -0400
     A-SAPT implemented through Elst, Exch, Disp
 
 
-commit 1342a735ef871e4952599ba45e6740ea3316808c
-Author: Eugene DePrince <eugene.deprince@gmail.com>
-Date:   Thu May 9 12:17:53 2013 -0400
-
-    resolves plugin issues after procutil and other pythong files moved
-
-
 commit 54fc0755f8d9192742275053de0b233b6e65bb6f
 Merge: f66b491 1c242fb
 Author: rparrish <robparrish@gmail.com>
@@ -620,25 +531,11 @@ Date:   Wed May 8 14:03:27 2013 -0400
 
     Remove unnecessary comments about symmetry c1 and no_reorient in the SAPT tutorial, since these are set automagically
 
-commit be08fc7d7013b1e6944b0c91f3621c9efe81e24d
-Author: deprince <eugene.deprince@gmail.com>
-Date:   Tue May 7 14:42:08 2013 -0400
-
-    dfcc: auxiliary basis respects PUREAM value of primary basis
-
-
 commit bbe46e5585e8af47118787267da78cf7bb8256bc
 Author: Justin Turney <justin.turney@gmail.com>
 Date:   Tue May 7 13:53:43 2013 -0400
 
     Adds interactive interface for psi4.
-
-
-commit 812f4b3bd16980392d25ba43ef32f84e7965e9f3
-Author: Eugene DePrince <eugene.deprince@gmail.com>
-Date:   Tue May 7 12:51:51 2013 -0400
-
-    dfcc works with cim plugin
 
 commit b0b58b31fa404fedeb091a3a984034067bb449b4
 Author: Ugur Bozkaya <ugrbzky@gmail.com>
@@ -732,24 +629,6 @@ Date:   Thu May 2 22:43:56 2013 -0400
 
     Added Boys Localizer (thanks to Eugene) for L-SAPT idea
 
-commit 852ce99b5930ac2a9f1f6662a1e157a8c5953000
-Author: Eugene DePrince <deprince@lawn-128-61-118-160.lawn.gatech.edu>
-Date:   Thu May 2 15:56:22 2013 -0400
-
-    fixes extra characters left in last commit
-
-commit 26262b62863f07c0211d0765726328149ffb2b67
-Author: Eugene DePrince <deprince@lawn-128-61-118-160.lawn.gatech.edu>
-Date:   Thu May 2 15:53:32 2013 -0400
-
-    whoops the make docs script stripped the license out of a couple of files.  make docs script needs updating i guess
-
-commit b2b1e0320c5cc2b776618a22bb134f807b31fec4
-Author: Eugene DePrince <deprince@lawn-128-61-118-160.lawn.gatech.edu>
-Date:   Thu May 2 15:49:43 2013 -0400
-
-    doc updates for dfcc procedure
-
 commit 047c5af09c204fc2e9279c745c0264e2637cef08
 Author: Justin Turney <justin.turney@gmail.com>
 Date:   Thu May 2 15:32:39 2013 -0400
@@ -767,12 +646,6 @@ Author: Justin Turney <justin.turney@gmail.com>
 Date:   Thu May 2 14:59:32 2013 -0400
 
     Cleanup compilers warnings
-
-commit 64484f9cac17cedccdf3d95a457c43f2521282ec
-Author: Eugene DePrince <deprince@lawn-128-61-118-160.lawn.gatech.edu>
-Date:   Thu May 2 14:45:52 2013 -0400
-
-    adds documentation for scf_type CD
 
 commit df9db30f95819db157f356fa36e39d3b4d7840dc
 Author: Justin Turney <justin.turney@gmail.com>
@@ -870,12 +743,6 @@ Date:   Thu May 2 12:42:35 2013 -0400
 
     Resolves conflicts
 
-
-commit 2aac2b3cdcc6489adca595f9ec93a4e4fbc25087
-Author: Eugene DePrince <deprince@lawn-128-61-118-160.lawn.gatech.edu>
-Date:   Thu May 2 12:21:43 2013 -0400
-
-    tweaking defaults and tests for dfcc
 
 commit a8667bbeb109da727691fd5d21fa5abd8317b2bc
 Author: David Hollman <david.s.hollman@gmail.com>
@@ -994,26 +861,6 @@ Date:   Wed May 1 10:49:25 2013 -0400
     Removes file from CMakeLists.txt
 
 
-commit d7844373820a2a3fc1f14e81c20efa852fbf53cb
-Author: Eugene DePrince <deprince@lawn-128-61-112-221.lawn.gatech.edu>
-Date:   Tue Apr 30 16:23:28 2013 -0400
-
-    eliminate some redundant code
-
-commit 0f54dc24aa8d65eff43cb1234d3890b8face748f
-Author: Eugene DePrince <deprince@lawn-128-61-112-221.lawn.gatech.edu>
-Date:   Tue Apr 30 15:05:19 2013 -0400
-
-    removes some print statements for debugging.
-
-
-commit 42be493d76151f1d322ba08aec160819eb028c25
-Author: Eugene DePrince <deprince@lawn-128-61-112-221.lawn.gatech.edu>
-Date:   Tue Apr 30 14:53:57 2013 -0400
-
-    scf_type cd is enabled for energies
-
-
 commit 4bbc17d765eb4ef41d0dc882c522c788a6bddb7d
 Author: Andy Simmonett <andy.simmonett@gmail.com>
 Date:   Tue Apr 30 13:38:10 2013 -0400
@@ -1059,12 +906,6 @@ Author: rparrish <robparrish@gmail.com>
 Date:   Sun Apr 28 23:50:55 2013 -0400
 
     Cleanup in DFT-SAPT (Currently the world's shortest SAPT0 code)
-
-commit 2300ed489d5f26b261c27a10069f2e2e335b53bb
-Author: deprince <eugene.deprince@gmail.com>
-Date:   Sun Apr 28 15:19:22 2013 -0400
-
-    sloppy.
 
 commit 144087bbef32471fa44789f1f248625b76b37b28
 Author: rparrish <robparrish@gmail.com>
@@ -1307,12 +1148,6 @@ Date:   Fri Apr 19 17:22:56 2013 -0400
     added *.pyo files (python files generated when python is run with the -O flag) to .gitignore
 
 
-commit 1b29532f287fa53341bdfbbfde57754839221be3
-Author: Eugene DePrince <deprince@lawn-128-61-125-221.lawn.gatech.edu>
-Date:   Fri Apr 19 16:27:10 2013 -0400
-
-    adds t1 and d1 diagnostics to fnocc codes
-
 commit d6b3c5b5f38a069f228ce7b53b540974620b55bf
 Author: Justin Turney <justin.turney@gmail.com>
 Date:   Fri Apr 19 14:14:24 2013 -0400
@@ -1330,13 +1165,6 @@ Author: Ugur Bozkaya <ugrbzky@gmail.com>
 Date:   Fri Apr 19 10:38:21 2013 -0400
 
     Minor revisons for the arrays class.
-
-
-commit 1d3cb93473a73e0927738fd2de8d39d9c18db347
-Author: deprince <eugene.deprince@gmail.com>
-Date:   Fri Apr 19 09:27:03 2013 -0400
-
-    can use frozen mp2 nos with mrcc.  note that there is no correction included in the energies to account for truncating the space
 
 
 commit 06554d26578b8a26fee17be098a41c9d7b8b086e
@@ -1384,19 +1212,6 @@ Date:   Wed Apr 17 15:23:54 2013 -0400
 
     Cutty pastey error.
 
-commit 3834fae67f5e0e5e96517421d437c3c2fc9d1f82
-Author: Eugene DePrince <deprince@Eugenes-MacBook-Pro.local>
-Date:   Wed Apr 17 13:40:24 2013 -0400
-
-    cleaner version of last commit
-
-commit 718c79e725a5bd7275c666c34c574221ce86b0a2
-Author: Eugene DePrince <deprince@Eugenes-MacBook-Pro.local>
-Date:   Wed Apr 17 11:02:56 2013 -0400
-
-    FNO generation uses symmetry for non-DF FNOCC
-
-
 commit 88b82a36ff4aec286274b77b31984a96a7aa9c48
 Author: Ugur Bozkaya <ugrbzky@gmail.com>
 Date:   Tue Apr 16 12:47:27 2013 -0400
@@ -1409,30 +1224,11 @@ Date:   Mon Apr 15 16:47:53 2013 -0400
 
     Tell the user which NO truncations are used
 
-commit f59745b9685440c8240d0200ec65f6328b938494
-Author: Eugene DePrince <deprince@lawn-128-61-116-92.lawn.gatech.edu>
-Date:   Mon Apr 15 16:26:00 2013 -0400
-
-    fixes problem with mp2 plugin.  inputalt.dat still doesn't work quite right
-
 commit 50dd30fe18a26005c1af3f05f9528bda53894160
 Author: rparrish <robparrish@gmail.com>
 Date:   Mon Apr 15 16:24:34 2013 -0400
 
     Separated rMBPT and lCCD NO approximations. Recommending NAT_ORBS_T3: TRUE NAT_ORBS_V4: TRUE NAT_ORBS_T2: FALSE
-
-commit d71dd1f55b3f843d54ca76dd2a93fc9ad13f7a82
-Author: Eugene DePrince <deprince@lawn-128-61-116-92.lawn.gatech.edu>
-Date:   Mon Apr 15 15:31:40 2013 -0400
-
-    replace old makefiles in example plugins with up-to-date ones.  the old makefiles hardcoded the path to boost, which wasn't necessarily correct
-
-commit eeb9e1e6a14b3087e619e9083889ed5eb00aec65
-Author: Eugene DePrince <deprince@lawn-128-61-116-92.lawn.gatech.edu>
-Date:   Mon Apr 15 13:59:03 2013 -0400
-
-    remove references to ccfiles.h in the example plugins
-
 
 commit e61a7cba8dcf70d26599ea59aae08281549c85a2
 Author: rparrish <robparrish@gmail.com>
@@ -1482,13 +1278,6 @@ Author: rparrish <robparrish@gmail.com>
 Date:   Fri Apr 12 14:06:56 2013 -0400
 
     Fix for PK-DFT gradients
-
-commit 75a01b5100d08f2687bffeddcb4414b892970a32
-Author: Eugene DePrince <deprince@lawn-128-61-112-203.lawn.gatech.edu>
-Date:   Fri Apr 12 12:44:24 2013 -0400
-
-    warns the user that saving file 32 might cause psi to fail for input files with multiple tasks
-
 
 commit 8f77d719b9e3301826ba0fd8b41700a925d77ae2
 Author: Anthony Coulter <anthony.coulter@lavabit.com>
@@ -1656,13 +1445,6 @@ Author: Justin Turney <justin.turney@gmail.com>
 Date:   Tue Apr 9 15:01:39 2013 -0400
 
     Updates INSTALL.rst
-
-commit 3a5ccd4d7b0881ea94e2c0711cd3b3e52aaf70e1
-Author: Eugene DePrince <deprince@Eugenes-MacBook-Pro.local>
-Date:   Mon Apr 8 21:38:21 2013 -0400
-
-    fixes fnocc4 with clang
-
 
 commit 72cded155bd2b689a1d9a4a15866bb81a2231910
 Author: Justin Turney <justin.turney@gmail.com>
