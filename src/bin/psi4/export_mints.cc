@@ -118,6 +118,9 @@ BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(f12_double_commutator_overloads, Integral
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(erf_eri_overloads, IntegralFactory::erf_eri, 1, 3);
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(erf_complement_eri_overloads, IntegralFactory::erf_complement_eri, 1, 3);
 
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(Ca_subset_overloads, Wavefunction::Ca_subset, 0, 2);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(Cb_subset_overloads, Wavefunction::Cb_subset, 0, 2);
+
 void export_mints()
 {
     def("nuclear_dipole", py_nuclear_dipole, "docstring");
@@ -657,6 +660,8 @@ void export_mints()
             def("nso", &Wavefunction::nso, "docstring").
             def("nmo", &Wavefunction::nmo, "docstring").
             def("nirrep", &Wavefunction::nirrep, "docstring").
+            def("Ca_subset", &Wavefunction::Ca_subset, "docstring").
+            def("Cb_subset", &Wavefunction::Cb_subset, "docstring").
             def("Ca", &Wavefunction::Ca, "docstring").
             def("Cb", &Wavefunction::Cb, "docstring").
             def("Fa", &Wavefunction::Fa, "docstring").
