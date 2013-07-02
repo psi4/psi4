@@ -1,0 +1,20 @@
+#! 6-31G H2O Test FCI Energy Point
+
+memory 250 mb
+
+
+molecule h2o {
+    O   0.0000000000   0.0000000000  -0.1252739752
+    H   0.0000000000   1.4294907237   0.9940944482
+    H   0.0000000000  -1.4294907237   0.9940944482
+units bohr
+}
+
+set globals {
+  basis 6-31G
+  dipmom true
+  print 2
+}
+
+thisenergy = energy('fci')
+

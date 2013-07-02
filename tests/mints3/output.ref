@@ -1,0 +1,597 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-beta1 Driver
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+memory 250 mb
+
+#! Test individual integral objects for correctness.
+print_stdout(' Case Study Test of Integrals')
+
+molecule h2o {
+  o
+  h 1 1.0
+  h 1 1.0 2 103.1
+}
+
+input_directory = get_input_directory() + "/"                        #TEST
+
+#################################################################### #TEST
+# Test Angular Momentum Integrals SO                                 #TEST
+#################################################################### #TEST
+
+set globals {
+  basis sto-3g
+}
+
+mints = MintsHelper()
+factory = mints.factory()                                            #TEST
+
+Li = mints.so_angular_momentum()
+
+#Li[0].save("Lx-STO-3G.dat", False, False, True)                     #TEST
+#Li[1].save("Ly-STO-3G.dat", False, False, True)                     #TEST
+#Li[2].save("Lz-STO-3G.dat", False, False, True)                     #TEST
+
+RefX = factory.create_matrix("Lx SO")                                #TEST
+RefY = factory.create_matrix("Ly SO")                                #TEST
+RefZ = factory.create_matrix("Lz SO")                                #TEST
+
+RefX.load(input_directory + "Lx-STO-3G.dat")                         #TEST
+RefY.load(input_directory + "Ly-STO-3G.dat")                         #TEST
+RefZ.load(input_directory + "Lz-STO-3G.dat")                         #TEST
+
+print_stdout("   -H2O STO-3G Angular Momentum Integrals:")           #TEST
+compare_matrices(RefX, Li[0], 12, "SO Lx")                           #TEST
+compare_matrices(RefY, Li[1], 12, "SO Ly")                           #TEST
+compare_matrices(RefZ, Li[2], 12, "SO Lz")                           #TEST
+
+set globals {
+  basis 6-311G**
+}
+
+mints = MintsHelper()
+factory = mints.factory()                                            #TEST
+
+Li = mints.so_angular_momentum()
+
+#Li[0].save("Lx-6-311Gss.dat", False, False, True)                   #TEST
+#Li[1].save("Ly-6-311Gss.dat", False, False, True)                   #TEST
+#Li[2].save("Lz-6-311Gss.dat", False, False, True)                   #TEST
+
+RefX = factory.create_matrix("Lx SO")                                #TEST
+RefY = factory.create_matrix("Ly SO")                                #TEST
+RefZ = factory.create_matrix("Lz SO")                                #TEST
+
+RefX.load(input_directory + "Lx-6-311Gss.dat")                       #TEST
+RefY.load(input_directory + "Ly-6-311Gss.dat")                       #TEST
+RefZ.load(input_directory + "Lz-6-311Gss.dat")                       #TEST
+
+print_stdout("   -H2O 6-311G** Angular Momentum Integrals:")         #TEST
+compare_matrices(RefX, Li[0], 12, "SO Lx")                           #TEST
+compare_matrices(RefY, Li[1], 12, "SO Ly")                           #TEST
+compare_matrices(RefZ, Li[2], 12, "SO Lz")                           #TEST
+
+set globals {
+  basis cc-pVTZ
+}
+
+mints = MintsHelper()
+factory = mints.factory()                                            #TEST
+
+Li = mints.so_angular_momentum()
+
+#Li[0].save("Lx-cc-pVTZ.dat", False, False, True)                    #TEST
+#Li[1].save("Ly-cc-pVTZ.dat", False, False, True)                    #TEST
+#Li[2].save("Lz-cc-pVTZ.dat", False, False, True)                    #TEST
+
+RefX = factory.create_matrix("Lx SO")                                #TEST
+RefY = factory.create_matrix("Ly SO")                                #TEST
+RefZ = factory.create_matrix("Lz SO")                                #TEST
+
+RefX.load(input_directory + "Lx-cc-pVTZ.dat")                        #TEST
+RefY.load(input_directory + "Ly-cc-pVTZ.dat")                        #TEST
+RefZ.load(input_directory + "Lz-cc-pVTZ.dat")                        #TEST
+
+print_stdout("   -H2O cc-pVTZ Angular Momentum Integrals:")          #TEST
+compare_matrices(RefX, Li[0], 12, "SO Lx")                           #TEST
+compare_matrices(RefY, Li[1], 12, "SO Ly")                           #TEST
+compare_matrices(RefZ, Li[2], 12, "SO Lz")                           #TEST
+
+#################################################################### #TEST
+# Test Nabla integrals                                               #TEST
+#################################################################### #TEST
+
+set globals {
+  basis sto-3g
+}
+
+mints = MintsHelper()
+factory = mints.factory()                                            #TEST
+
+Pi = mints.so_nabla()
+
+#Pi[0].save("Px-STO-3G.dat", False, False, True)                     #TEST
+#Pi[1].save("Py-STO-3G.dat", False, False, True)                     #TEST
+#Pi[2].save("Pz-STO-3G.dat", False, False, True)                     #TEST
+
+RefX = factory.create_matrix("Px SO")                                #TEST
+RefY = factory.create_matrix("Py SO")                                #TEST
+RefZ = factory.create_matrix("Pz SO")                                #TEST
+
+RefX.load(input_directory + "Px-STO-3G.dat")                         #TEST
+RefY.load(input_directory + "Py-STO-3G.dat")                         #TEST
+RefZ.load(input_directory + "Pz-STO-3G.dat")                         #TEST
+
+print_stdout("   -H2O STO-3G Nabla Integrals:")                      #TEST
+compare_matrices(RefX, Pi[0], 12, "SO Px")                           #TEST
+compare_matrices(RefY, Pi[1], 12, "SO Py")                           #TEST
+compare_matrices(RefZ, Pi[2], 12, "SO Pz")                           #TEST
+
+set globals {
+  basis 6-311G**
+}
+
+mints = MintsHelper()
+factory = mints.factory()                                            #TEST
+
+Pi = mints.so_nabla()
+
+#Pi[0].save("Px-6-311Gss.dat", False, False, True)                   #TEST
+#Pi[1].save("Py-6-311Gss.dat", False, False, True)                   #TEST
+#Pi[2].save("Pz-6-311Gss.dat", False, False, True)                   #TEST
+
+RefX = factory.create_matrix("Px SO")                                #TEST
+RefY = factory.create_matrix("Py SO")                                #TEST
+RefZ = factory.create_matrix("Pz SO")                                #TEST
+
+RefX.load(input_directory + "Px-6-311Gss.dat")                       #TEST
+RefY.load(input_directory + "Py-6-311Gss.dat")                       #TEST
+RefZ.load(input_directory + "Pz-6-311Gss.dat")                       #TEST
+
+print_stdout("   -H2O 6-311G** Nabla Integrals:")                    #TEST
+compare_matrices(RefX, Pi[0], 12, "SO Px")                           #TEST
+compare_matrices(RefY, Pi[1], 12, "SO Py")                           #TEST
+compare_matrices(RefZ, Pi[2], 12, "SO Pz")                           #TEST
+
+set globals {
+  basis cc-pVTZ
+}
+
+mints = MintsHelper()
+factory = mints.factory()                                            #TEST
+
+Pi = mints.so_nabla()
+
+#Pi[0].save("Px-cc-pVTZ.dat", False, False, True)                    #TEST
+#Pi[1].save("Py-cc-pVTZ.dat", False, False, True)                    #TEST
+#Pi[2].save("Pz-cc-pVTZ.dat", False, False, True)                    #TEST
+
+RefX = factory.create_matrix("Lx SO")                                #TEST
+RefY = factory.create_matrix("Ly SO")                                #TEST
+RefZ = factory.create_matrix("Lz SO")                                #TEST
+
+RefX.load(input_directory + "Px-cc-pVTZ.dat")                        #TEST
+RefY.load(input_directory + "Py-cc-pVTZ.dat")                        #TEST
+RefZ.load(input_directory + "Pz-cc-pVTZ.dat")                        #TEST
+
+print_stdout("   -H2O cc-pVTZ Nabla Integrals:")                     #TEST
+compare_matrices(RefX, Pi[0], 12, "SO Px")                           #TEST
+compare_matrices(RefY, Pi[1], 12, "SO Py")                           #TEST
+compare_matrices(RefZ, Pi[2], 12, "SO Pz")                           #TEST
+--------------------------------------------------------------------------
+
+  Memory set to 250.000 MiB by Python script.
+    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.069592187390
+           H          0.000000000000    -0.783151105291     0.552239257844
+           H         -0.000000000000     0.783151105291     0.552239257844
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 2 
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 5
+    Number of primitives   = 15
+    Number of AO           = 7
+    Number of SO           = 7
+    Maximum AM             = 1
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     6s 3p // 2s 1p 
+       2     H     3s // 1s 
+       3     H     3s // 1s 
+
+  -Basis set on unique center 1: O
+     S (        130.70932000           4.25194328)
+       (         23.80886100           4.11229372)
+       (          6.44360830           1.28162253)
+     S (          5.03315130          -0.23941300)
+       (          1.16959610           0.32023423)
+       (          0.38038900           0.24168557)
+     P (          5.03315130           1.67545012)
+       (          1.16959610           1.05356801)
+       (          0.38038900           0.16690290)
+
+  -Basis set on unique center 2: H
+     S (          3.42525091           0.27693436)
+       (          0.62391373           0.26783885)
+       (          0.16885540           0.08347367)
+
+  -Basis set on unique center 3: H
+     S (          3.42525091           0.27693436)
+       (          0.62391373           0.26783885)
+       (          0.16885540           0.08347367)
+
+    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O         -0.000000000000     0.000000000000    -0.069592187390
+           H          0.000000000000    -0.783151105291     0.552239257844
+           H         -0.000000000000     0.783151105291     0.552239257844
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 2 
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 16
+    Number of primitives   = 29
+    Number of AO           = 31
+    Number of SO           = 30
+    Maximum AM             = 2
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     11s 5p 1d // 4s 3p 1d 
+       2     H     5s 1p // 3s 1p 
+       3     H     5s 1p // 3s 1p 
+
+  -Basis set on unique center 1: O
+     S (       8588.50000000           1.20501289)
+       (       1297.23000000           2.21620477)
+       (        299.29600000           3.62745250)
+       (         87.37710000           4.88845231)
+       (         25.67890000           4.83572052)
+       (          3.74004000           0.53822949)
+     S (         42.11750000           1.34195780)
+       (          9.62837000           3.58711431)
+       (          2.85332000          -0.00512347)
+     P (         42.11750000           5.58401753)
+       (          9.62837000           5.73336569)
+       (          2.85332000           4.33295474)
+     S (          0.90566100           0.66165918)
+     P (          0.90566100           1.25935210)
+     S (          0.25561100           0.25620922)
+     P (          0.25561100           0.25906844)
+     D (          1.29200000           2.57702633)
+
+  -Basis set on unique center 2: H
+     S (         33.86500000           0.25506932)
+       (          5.09479000           0.46010866)
+       (          1.15879000           0.67832145)
+     S (          0.32584000           0.30737135)
+     S (          0.10274100           0.12933556)
+     P (          0.75000000           0.99487076)
+
+  -Basis set on unique center 3: H
+     S (         33.86500000           0.25506932)
+       (          5.09479000           0.46010866)
+       (          1.15879000           0.67832145)
+     S (          0.32584000           0.30737135)
+     S (          0.10274100           0.12933556)
+     P (          0.75000000           0.99487076)
+
+    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O         -0.000000000000     0.000000000000    -0.069592187390
+           H          0.000000000000    -0.783151105291     0.552239257844
+           H         -0.000000000000     0.783151105291     0.552239257844
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 2 
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 22
+    Number of primitives   = 42
+    Number of AO           = 65
+    Number of SO           = 58
+    Maximum AM             = 3
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     18s 5p 2d 1f // 4s 3p 2d 1f 
+       2     H     5s 2p 1d // 3s 2p 1d 
+       3     H     5s 2p 1d // 3s 2p 1d 
+
+  -Basis set on unique center 1: O
+     S (      15330.00000000           0.51078207)
+       (       2299.00000000           0.95203206)
+       (        522.40000000           1.61433092)
+       (        147.30000000           2.44336505)
+       (         47.55000000           3.04860619)
+       (         16.76000000           2.61834614)
+       (          6.20700000           1.00523399)
+       (          0.68820000          -0.00449647)
+     S (      15330.00000000          -0.19366579)
+       (       2299.00000000          -0.36322500)
+       (        522.40000000          -0.61921899)
+       (        147.30000000          -0.96771875)
+       (         47.55000000          -1.29402436)
+       (         16.76000000          -1.38171633)
+       (          6.20700000          -0.84475427)
+       (          0.68820000           0.55731756)
+     S (          1.75200000           1.08532715)
+     S (          0.23840000           0.24315868)
+     P (         34.46000000           4.89887506)
+       (          7.74900000           4.75026092)
+       (          2.28000000           3.20449795)
+     P (          0.71560000           0.93816236)
+     P (          0.21400000           0.20747095)
+     D (          2.31400000           7.14570901)
+     D (          0.64500000           0.76408022)
+     F (          1.42800000           3.28165496)
+
+  -Basis set on unique center 2: H
+     S (         33.87000000           0.25510806)
+       (          5.09500000           0.46009789)
+       (          1.15900000           0.67841407)
+     S (          0.32580000           0.30734305)
+     S (          0.10270000           0.12929684)
+     P (          1.40700000           2.18427698)
+     P (          0.38800000           0.43649547)
+     D (          1.05700000           1.81359656)
+
+  -Basis set on unique center 3: H
+     S (         33.87000000           0.25510806)
+       (          5.09500000           0.46009789)
+       (          1.15900000           0.67841407)
+     S (          0.32580000           0.30734305)
+     S (          0.10270000           0.12929684)
+     P (          1.40700000           2.18427698)
+     P (          0.38800000           0.43649547)
+     D (          1.05700000           1.81359656)
+
+    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O         -0.000000000000     0.000000000000    -0.069592187390
+           H          0.000000000000    -0.783151105291     0.552239257844
+           H         -0.000000000000     0.783151105291     0.552239257844
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 2 
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 5
+    Number of primitives   = 15
+    Number of AO           = 7
+    Number of SO           = 7
+    Maximum AM             = 1
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     6s 3p // 2s 1p 
+       2     H     3s // 1s 
+       3     H     3s // 1s 
+
+  -Basis set on unique center 1: O
+     S (        130.70932000           4.25194328)
+       (         23.80886100           4.11229372)
+       (          6.44360830           1.28162253)
+     S (          5.03315130          -0.23941300)
+       (          1.16959610           0.32023423)
+       (          0.38038900           0.24168557)
+     P (          5.03315130           1.67545012)
+       (          1.16959610           1.05356801)
+       (          0.38038900           0.16690290)
+
+  -Basis set on unique center 2: H
+     S (          3.42525091           0.27693436)
+       (          0.62391373           0.26783885)
+       (          0.16885540           0.08347367)
+
+  -Basis set on unique center 3: H
+     S (          3.42525091           0.27693436)
+       (          0.62391373           0.26783885)
+       (          0.16885540           0.08347367)
+
+    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O         -0.000000000000     0.000000000000    -0.069592187390
+           H          0.000000000000    -0.783151105291     0.552239257844
+           H         -0.000000000000     0.783151105291     0.552239257844
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 2 
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 16
+    Number of primitives   = 29
+    Number of AO           = 31
+    Number of SO           = 30
+    Maximum AM             = 2
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     11s 5p 1d // 4s 3p 1d 
+       2     H     5s 1p // 3s 1p 
+       3     H     5s 1p // 3s 1p 
+
+  -Basis set on unique center 1: O
+     S (       8588.50000000           1.20501289)
+       (       1297.23000000           2.21620477)
+       (        299.29600000           3.62745250)
+       (         87.37710000           4.88845231)
+       (         25.67890000           4.83572052)
+       (          3.74004000           0.53822949)
+     S (         42.11750000           1.34195780)
+       (          9.62837000           3.58711431)
+       (          2.85332000          -0.00512347)
+     P (         42.11750000           5.58401753)
+       (          9.62837000           5.73336569)
+       (          2.85332000           4.33295474)
+     S (          0.90566100           0.66165918)
+     P (          0.90566100           1.25935210)
+     S (          0.25561100           0.25620922)
+     P (          0.25561100           0.25906844)
+     D (          1.29200000           2.57702633)
+
+  -Basis set on unique center 2: H
+     S (         33.86500000           0.25506932)
+       (          5.09479000           0.46010866)
+       (          1.15879000           0.67832145)
+     S (          0.32584000           0.30737135)
+     S (          0.10274100           0.12933556)
+     P (          0.75000000           0.99487076)
+
+  -Basis set on unique center 3: H
+     S (         33.86500000           0.25506932)
+       (          5.09479000           0.46010866)
+       (          1.15879000           0.67832145)
+     S (          0.32584000           0.30737135)
+     S (          0.10274100           0.12933556)
+     P (          0.75000000           0.99487076)
+
+    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O         -0.000000000000     0.000000000000    -0.069592187390
+           H          0.000000000000    -0.783151105291     0.552239257844
+           H         -0.000000000000     0.783151105291     0.552239257844
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 2 
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 22
+    Number of primitives   = 42
+    Number of AO           = 65
+    Number of SO           = 58
+    Maximum AM             = 3
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     18s 5p 2d 1f // 4s 3p 2d 1f 
+       2     H     5s 2p 1d // 3s 2p 1d 
+       3     H     5s 2p 1d // 3s 2p 1d 
+
+  -Basis set on unique center 1: O
+     S (      15330.00000000           0.51078207)
+       (       2299.00000000           0.95203206)
+       (        522.40000000           1.61433092)
+       (        147.30000000           2.44336505)
+       (         47.55000000           3.04860619)
+       (         16.76000000           2.61834614)
+       (          6.20700000           1.00523399)
+       (          0.68820000          -0.00449647)
+     S (      15330.00000000          -0.19366579)
+       (       2299.00000000          -0.36322500)
+       (        522.40000000          -0.61921899)
+       (        147.30000000          -0.96771875)
+       (         47.55000000          -1.29402436)
+       (         16.76000000          -1.38171633)
+       (          6.20700000          -0.84475427)
+       (          0.68820000           0.55731756)
+     S (          1.75200000           1.08532715)
+     S (          0.23840000           0.24315868)
+     P (         34.46000000           4.89887506)
+       (          7.74900000           4.75026092)
+       (          2.28000000           3.20449795)
+     P (          0.71560000           0.93816236)
+     P (          0.21400000           0.20747095)
+     D (          2.31400000           7.14570901)
+     D (          0.64500000           0.76408022)
+     F (          1.42800000           3.28165496)
+
+  -Basis set on unique center 2: H
+     S (         33.87000000           0.25510806)
+       (          5.09500000           0.46009789)
+       (          1.15900000           0.67841407)
+     S (          0.32580000           0.30734305)
+     S (          0.10270000           0.12929684)
+     P (          1.40700000           2.18427698)
+     P (          0.38800000           0.43649547)
+     D (          1.05700000           1.81359656)
+
+  -Basis set on unique center 3: H
+     S (         33.87000000           0.25510806)
+       (          5.09500000           0.46009789)
+       (          1.15900000           0.67841407)
+     S (          0.32580000           0.30734305)
+     S (          0.10270000           0.12929684)
+     P (          1.40700000           2.18427698)
+     P (          0.38800000           0.43649547)
+     D (          1.05700000           1.81359656)
+
+
+*** PSI4 exiting successfully. Buy a developer a beer!

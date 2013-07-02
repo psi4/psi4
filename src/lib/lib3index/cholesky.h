@@ -1,0 +1,149 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
+#ifndef THREE_INDEX_CHOLESKY
+#define THREE_INDEX_CHOLESKY
+
+namespace psi {
+
+class Matrix;
+class Vector;
+class TwoBodyAOInt;
+
+class Cholesky {
+
+protected:
+    /// Maximum Chebyshev error allowed in the decomposition
+    double delta_;
+    /// Maximum memory to use, in doubles
+    unsigned long int memory_;
+    /// Full L (Q x n), if choleskify() called()
+    SharedMatrix L_;
+    /// Number of columns required, if choleskify() called
+    int Q_;
+
+public:
+    /*!
+     * Constructor, does not build decomposition.
+     * \param delta: maximum Chebyshev error allowed in the decomposition
+     * \param memory: maximum memory allowed, in doubles
+     **/
+    Cholesky(double delta, unsigned long int memory);
+    /// Destructor, resets L_
+    ~Cholesky();
+
+    /// Perform the cholesky decomposition (requires 2QN memory)
+    virtual void choleskify();
+
+    /// Shared pointer to decomposition (Q x N), if choleskify() called
+    SharedMatrix L() const { return L_; }
+    /// Number of columns required to reach accuracy delta, if choleskify() called
+    int Q() const { return Q_; }
+    /// Dimension of the original square tensor, provided by the subclass
+    virtual int N() = 0;
+    /// Maximum Chebyshev error allowed in the decomposition
+    double delta() const { return delta_; }
+
+    /// Diagonal of the original square tensor, provided by the subclass
+    virtual void compute_diagonal(double* target) = 0;
+    /// Row row of the original square tensor, provided by the subclass
+    virtual void compute_row(int row, double* target) = 0;
+};
+
+class CholeskyMatrix : public Cholesky {
+
+protected:
+    SharedMatrix A_;
+public:
+    CholeskyMatrix(SharedMatrix A, double delta, unsigned long int memory);
+    ~CholeskyMatrix();
+
+    virtual int N();
+    virtual void compute_diagonal(double* target);
+    virtual void compute_row(int row, double* target);
+};
+
+class CholeskyERI : public Cholesky {
+
+protected:
+    double schwarz_;
+    boost::shared_ptr<BasisSet> basisset_;
+    boost::shared_ptr<TwoBodyAOInt> integral_;
+public:
+    CholeskyERI(boost::shared_ptr<TwoBodyAOInt> integral, double schwarz, double delta, unsigned long int memory);
+    ~CholeskyERI();
+
+    virtual int N();
+    virtual void compute_diagonal(double* target);
+    virtual void compute_row(int row, double* target);
+};
+
+class CholeskyMP2 : public Cholesky {
+
+protected:
+    bool symmetric_;
+    SharedMatrix Qia_;
+    boost::shared_ptr<Vector> eps_aocc_;
+    boost::shared_ptr<Vector> eps_avir_;
+public:
+    CholeskyMP2(SharedMatrix Qia, boost::shared_ptr<Vector> eps_aocc,
+        boost::shared_ptr<Vector> eps_avir, bool symmetric,
+        double delta, unsigned long int memory);
+    ~CholeskyMP2();
+
+    virtual int N();
+    virtual void compute_diagonal(double* target);
+    virtual void compute_row(int row, double* target);
+};
+
+class CholeskyDelta : public Cholesky {
+
+protected:
+    boost::shared_ptr<Vector> eps_aocc_;
+    boost::shared_ptr<Vector> eps_avir_;
+public:
+    CholeskyDelta(boost::shared_ptr<Vector> eps_aocc,
+        boost::shared_ptr<Vector> eps_avir,
+        double delta, unsigned long int memory);
+    ~CholeskyDelta();
+
+    virtual int N();
+    virtual void compute_diagonal(double* target);
+    virtual void compute_row(int row, double* target);
+};
+
+class CholeskyLocal : public Cholesky {
+
+protected:
+    SharedMatrix C_;
+public:
+    CholeskyLocal(SharedMatrix C,
+        double delta, unsigned long int memory);
+    ~CholeskyLocal();
+
+    virtual int N();
+    virtual void compute_diagonal(double* target);
+    virtual void compute_row(int row, double* target);
+};
+
+} // Namespace psi
+#endif

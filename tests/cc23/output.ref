@@ -1,0 +1,1225 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-beta1 Driver
+
+                  Git: Rev 89639435f0a196fd7957b7b60cb5a9b756ed65c7
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! ROHF-EOM-CCSD/DZ geometry optimization of the lowest 2A1 excited
+#! state of H2O+ (B1 excitation).
+
+memory 250 mb
+
+molecule h2o {
+  1 2
+  H -0.107055195862289   0.000000000000000  -1.832806614599657
+  O -0.107055195862289   0.000000000000000   0.094714436481352
+  H  1.806098405595803   0.000000000000000   0.329620161376194
+  units bohr
+}
+
+set {
+  reference rohf
+  basis DZ
+  states_per_irrep [0, 0, 1, 0]
+}
+
+gradient('eom-ccsd')
+--------------------------------------------------------------------------
+
+  Memory set to 250.000 MiB by Python script.
+
+*** tstart() called on ganymede.local
+*** at Wed Feb  1 11:23:46 2012
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                             ROHF Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+
+    Geometry (in Bohr), charge = 1, multiplicity = 2:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           H          0.000000000000    -1.443627918148     1.134274838578
+           O         -0.000000000000     0.000000000000    -0.142939253226
+           H         -0.000000000000     1.443627918148     1.134274838578
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 2 
+       unique atom 1: 1 
+
+  Running in c2v symmetry.
+
+  Nuclear repulsion =    8.647166888151858
+
+  Charge       = 1
+  Multiplicity = 2
+  Electrons    = 9
+  Nalpha       = 5
+  Nbeta        = 4
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: DZ <==
+
+  Basis Set
+    Number of shells: 10
+    Number of basis function: 14
+    Number of Cartesian functions: 14
+    Spherical Harmonics?: true
+    Max angular momentum: 1
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 6.0756533921E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial ROHF energy:   -52.78677512567592
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1         8       8       3       3       3       0
+     A2         0       0       0       0       0       0
+     B1         2       2       1       0       0       1
+     B2         4       4       1       1       1       0
+   -------------------------------------------------------
+    Total      14      14       5       4       4       1
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              10
+      Number of SO shells:               8
+      Number of primitives:             22
+      Number of atomic orbitals:        14
+      Number of basis functions:        14
+
+      Number of irreps:                  4
+      Number of functions per irrep: [   8    0    2    4 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 1709 non-zero two-electron integrals.
+        Stored in file 33.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @ROHF iter   1:   -71.79500741995454   -1.90082e+01   2.40170e-314 
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    0,    1 ]
+	SOCC [     1,    0,    0,    0 ]
+   @ROHF iter   2:   -73.51457382482282   -1.71957e+00   8.45431e-01 DIIS
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    0,    1 ]
+	SOCC [     0,    0,    1,    0 ]
+   @ROHF iter   3:   -75.41946464293542   -1.90489e+00   6.42415e-01 DIIS
+   @ROHF iter   4:   -75.59280193995373   -1.73337e-01   6.52495e-02 DIIS
+   @ROHF iter   5:   -75.59654612502139   -3.74419e-03   9.92567e-03 DIIS
+   @ROHF iter   6:   -75.59667160197468   -1.25477e-04   2.32461e-03 DIIS
+   @ROHF iter   7:   -75.59667207656102   -4.74586e-07   1.23745e-04 DIIS
+   @ROHF iter   8:   -75.59667211171478   -3.51538e-08   4.11908e-05 DIIS
+   @ROHF iter   9:   -75.59667211496868   -3.25390e-09   1.43368e-05 DIIS
+   @ROHF iter  10:   -75.59667211502287   -5.41860e-11   1.94819e-06 DIIS
+   @ROHF iter  11:   -75.59667211502367   -7.95808e-13   2.27879e-07 DIIS
+   @ROHF iter  12:   -75.59667211502367    0.00000e+00   1.75197e-08 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1A1   -21.104066     2A1    -1.813380     1B2    -1.147058  
+	   3A1    -1.051937  
+
+	Singly Occupied:                                                      
+
+	   1B1    -0.690072  
+
+	Virtual:                                                              
+
+	   4A1    -0.141833     2B2    -0.064208     2B1     0.460457  
+	   5A1     0.502093     3B2     0.545323     4B2     0.756617  
+	   6A1     0.782858     7A1     1.244045     8A1    42.782181  
+
+	Final Occupation by Irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    0,    1 ]
+	SOCC [     0,    0,    1,    0 ]
+
+  Energy converged.
+
+  @ROHF Final Energy:   -75.59667211502367
+
+  ==> Properties <==
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.1250
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.2139
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.3389     Total:     1.3389
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     3.4031     Total:     3.4031
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on ganymede.local at Wed Feb  1 11:23:46 2012
+Module time:
+	user time   =       0.06 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.06 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on ganymede.local
+*** at Wed Feb  1 11:23:46 2012
+
+
+	**************************************************
+	* TRANSQT2: Program to transform integrals from  *
+	*           the SO basis to the MO basis.        *
+	*                                                *
+	*            Daniel, David, & Justin             *
+	**************************************************
+
+
+	Input parameters:
+	-----------------
+	Wave function   =	CCSD
+	Backtransform   =	No
+	Print Level     =	1
+	Print TEIs      =	No
+	Reference wfn   =	ROHF
+	Derivative      =	First
+	Delete TEI File =	Yes
+	Memory (Mbytes) =	250.0
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of SOs        = 14
+	Number of MOs        = 14
+	Number of active MOs = 14
+
+	Label	# SOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   8	    0	    3	    0	    5	    0
+	 A2	   0	    0	    0	    0	    0	    0
+	 B1	   2	    0	    0	    1	    1	    0
+	 B2	   4	    0	    1	    0	    3	    0
+
+	Nuclear Rep. energy (chkpt) =      8.64716688815186
+	SCF energy          (chkpt) =    -75.59667211502367
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (pq,rs) nbuckets = 1
+	Frozen-core energy =    0.000000000000000
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+*** tstop() called on ganymede.local at Wed Feb  1 11:23:46 2012
+Module time:
+	user time   =       0.00 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.06 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on ganymede.local
+*** at Wed Feb  1 11:23:46 2012
+
+
+			**************************
+			*                        *
+			*         CCSORT         *
+			*                        *
+			**************************
+
+
+	Input parameters:
+	-----------------
+	Wave function   =	CCSD
+	Reference wfn   =	ROHF
+	Derivative      =	First
+	Memory (Mbytes) =	250.0
+	AO Basis        =	NONE
+	Make (ab|cd)    =	True
+	Make unpacked (ab|cd) =	True
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Local CC        =     No
+
+
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of MOs        = 14
+	Number of active MOs = 14
+
+	Label	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   8	    0	    3	    0	    5	    0
+	 A2	   0	    0	    0	    0	    0	    0
+	 B1	   2	    0	    0	    1	    1	    0
+	 B2	   4	    0	    1	    0	    3	    0
+
+	Nuclear Rep. energy (chkpt) =      8.64716688815186
+	SCF energy          (chkpt) =    -75.59667211502367
+
+	Size of irrep 0 of <ab|cd> integrals:      0.001 (MW) /      0.012 (MB)
+	Size of irrep 1 of <ab|cd> integrals:      0.000 (MW) /      0.001 (MB)
+	Size of irrep 2 of <ab|cd> integrals:      0.000 (MW) /      0.003 (MB)
+	Size of irrep 3 of <ab|cd> integrals:      0.001 (MW) /      0.007 (MB)
+	Total:                                     0.003 (MW) /      0.023 (MB)
+
+	Size of irrep 0 of <ia|bc> integrals:      0.001 (MW) /      0.006 (MB)
+	Size of irrep 1 of <ia|bc> integrals:      0.000 (MW) /      0.000 (MB)
+	Size of irrep 2 of <ia|bc> integrals:      0.000 (MW) /      0.002 (MB)
+	Size of irrep 3 of <ia|bc> integrals:      0.000 (MW) /      0.003 (MB)
+	Total:                                     0.001 (MW) /      0.012 (MB)
+
+	Size of irrep 0 of tIjAb amplitudes:       0.000 (MW) /      0.003 (MB)
+	Size of irrep 1 of tIjAb amplitudes:       0.000 (MW) /      0.000 (MB)
+	Size of irrep 2 of tIjAb amplitudes:       0.000 (MW) /      0.001 (MB)
+	Size of irrep 3 of tIjAb amplitudes:       0.000 (MW) /      0.001 (MB)
+	Total:                                     0.001 (MW) /      0.006 (MB)
+
+
+	Sorting File: A <ij|kl> nbuckets = 1
+	Sorting File: B <ab|cd> nbuckets = 1
+	Sorting File: C <ia|jb> nbuckets = 1
+	Sorting File: D <ij|ab> nbuckets = 1
+	Sorting File: E <ai|jk> nbuckets = 1
+	Sorting File: F <ia|bc> nbuckets = 1
+	Sorting File: F <ai|bc> nbuckets = 1
+	One-electron energy          =   -117.14010978528256
+	Two-electron (AA) energy     =     15.41303671901570
+	Two-electron (BB) energy     =      9.33518748235980
+	Two-electron (AB) energy     =     20.52215868141930
+	Two-electron energy          =     32.89627078210705
+	Frozen-core energy (transqt) =      0.00000000000000
+	Reference energy             =    -75.59667211502365
+
+*** tstop() called on ganymede.local at Wed Feb  1 11:23:46 2012
+Module time:
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.08 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on ganymede.local
+*** at Wed Feb  1 11:23:46 2012
+
+			**************************
+			*                        *
+			*        CCENERGY        *
+			*                        *
+			**************************
+
+	Nuclear Rep. energy (chkpt)   =    8.647166888151858
+	SCF energy          (chkpt)   =  -75.596672115023665
+	Reference energy    (file100) =  -75.596672115023651
+
+	Input parameters:
+	-----------------
+	Wave function   =     CCSD
+	Reference wfn   =    ROHF
+	Memory (Mbytes) =     250.0
+	Maxiter         =     50
+	Convergence     =     1.0e-07
+	Restart         =     No
+	DIIS            =     Yes
+	AO Basis        =     NONE
+	ABCD            =     NEW
+	Cache Level     =     2
+	Cache Type      =     LOW
+	Print Level     =     1
+	Num. of threads =     1
+	# Amps to Print =     10
+	Print MP2 Amps? =     No
+	Analyze T2 Amps =     No
+	Print Pair Ener =     No
+	Local CC        =     No
+	SCS-MP2         =     False
+	SCSN-MP2        =     False
+	SCS-CCSD        =     False
+
+	            Solving CC Amplitude Equations
+	            ------------------------------
+  Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag
+  ----     ---------------------    ---------   ----------  ----------  ----------
+     0        -0.103569696048814    0.000e+00    0.000154    0.000452    0.000452
+     1        -0.111771016386862    4.000e-02    0.006340    0.011853    0.011853
+     2        -0.116057760795154    1.502e-02    0.007707    0.014629    0.014629
+     3        -0.117014007689262    5.657e-03    0.008317    0.016143    0.016143
+     4        -0.117097862167588    2.369e-03    0.008264    0.016162    0.016162
+     5        -0.117126152899395    8.858e-04    0.008258    0.016134    0.016134
+     6        -0.117137544903164    2.853e-04    0.008258    0.016130    0.016130
+     7        -0.117138549118370    9.235e-05    0.008258    0.016134    0.016134
+     8        -0.117139118981504    2.776e-05    0.008259    0.016137    0.016137
+     9        -0.117139054337657    8.950e-06    0.008259    0.016137    0.016137
+    10        -0.117139022770490    3.122e-06    0.008259    0.016137    0.016137
+    11        -0.117139010252043    8.247e-07    0.008259    0.016136    0.016136
+    12        -0.117138986213851    2.241e-07    0.008259    0.016136    0.016136
+    13        -0.117138982677853    5.580e-08    0.008259    0.016136    0.016136
+
+	Iterations converged.
+
+
+	Largest TIA Amplitudes:
+	          3   5        -0.0113988807
+	          1   0        -0.0102859079
+	          1   2        -0.0095030346
+	          2   0         0.0083153301
+	          4   8         0.0070960718
+	          4   9        -0.0070682645
+	          1   3         0.0034872607
+	          2   1         0.0031202511
+	          1   1         0.0027264716
+	          2   3         0.0024621909
+
+	Largest Tia Amplitudes:
+	          4   7         0.0321062943
+	          1   0         0.0209978128
+	          2   0         0.0171924916
+	          2   1        -0.0168047630
+	          1   2         0.0147755354
+	          4   9         0.0101495624
+	          2   3         0.0063791873
+	          1   1         0.0051303918
+	          4   8         0.0039696082
+	          2   2         0.0020776833
+
+	Largest TIJAB Amplitudes:
+	  3   2   5   1        -0.0233338237
+	  4   3   7   5         0.0195343679
+	  4   2   7   1         0.0177278226
+	  4   3   9   5         0.0147067254
+	  4   2   9   1         0.0134723390
+	  4   3   8   5        -0.0129131577
+	  3   2   5   0         0.0120955324
+	  4   2   8   1        -0.0113112133
+	  3   1   5   0         0.0111375520
+	  3   1   5   3        -0.0100753956
+
+	Largest Tijab Amplitudes:
+	  4   2   7   1         0.0181308340
+	  4   2   9   1         0.0130073213
+	  4   2   8   1        -0.0108998960
+	  2   1   1   0         0.0091927998
+	  4   2   7   0        -0.0090596979
+	  2   1   3   1         0.0084860035
+	  4   1   8   0         0.0073286522
+	  4   1   7   0        -0.0071186220
+	  4   1   7   3         0.0064364901
+	  4   2   8   0         0.0062958852
+
+	Largest TIjAb Amplitudes:
+	  4   4   7   7        -0.0526325826
+	  2   2   1   1        -0.0435528190
+	  4   4   9   7        -0.0352987243
+	  4   4   7   9        -0.0347954507
+	  3   4   7   6         0.0323853477
+	  3   2   5   1        -0.0313728260
+	  3   1   0   6         0.0301770134
+	  4   4   9   9        -0.0299912950
+	  2   4   1   7         0.0271711013
+	  4   2   7   1         0.0268068244
+
+	SCF energy       (chkpt)              =  -75.596672115023665
+	Reference energy (file100)            =  -75.596672115023651
+
+	Opposite-spin CCSD correlation energy =    0.000000000000000
+	Same-spin CCSD correlation energy     =    0.000000000000000
+	CCSD correlation energy               =   -0.117138982677853
+      * CCSD total energy                     =  -75.713811097701509
+
+
+*** tstop() called on ganymede.local at Wed Feb  1 11:23:46 2012
+Module time:
+	user time   =       0.27 seconds =       0.00 minutes
+	system time =       0.24 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.35 seconds =       0.01 minutes
+	system time =       0.28 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on ganymede.local
+*** at Wed Feb  1 11:23:46 2012
+
+
+			**************************
+			*                        *
+			*         CCHBAR         *
+			*                        *
+			**************************
+
+
+*** tstop() called on ganymede.local at Wed Feb  1 11:23:46 2012
+Module time:
+	user time   =       0.03 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.38 seconds =       0.01 minutes
+	system time =       0.31 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on ganymede.local
+*** at Wed Feb  1 11:23:46 2012
+
+
+	**********************************************************
+	*  CCEOM: An Equation of Motion Coupled Cluster Program  *
+	**********************************************************
+
+	Nuclear Rep. energy (chkpt)   =    8.647166888151858
+	SCF energy          (chkpt)   =  -75.596672115023665
+	Reference energy    (file100) =  -75.596672115023651
+	CCSD energy         (file100) =   -0.117138982677853
+
+	Input parameters:
+	-----------------
+	Reference wfn   =    ROHF
+	Reference EOM wfn=    ROHF
+	Memory (Mbytes) =  250.0
+	ABCD            =     NEW
+	Cache Level     =    2
+	Cache Type      =     LRU
+	Num. of threads =     1
+	Local CC        =     No
+
+
+	CCEOM parameters:
+	-----------------
+	States sought per irrep     = A1 0, A2 0, B1 1, B2 0,
+	Max. number of iterations   =    80
+	Vectors stored per root     =    12
+	Print HbarSS iterations?    =     0
+	Excitation range for HBarSS =     2
+	Eigenvalue tolerance        = 1.0e-08
+	Eigenvalue toleranceSS      = 1.0e-06
+	Residual vector tolerance   = 1.0e-06
+	Residual vector toleranceSS = 1.0e-06
+	Complex tolerance           = 1.0e-12
+	Root for properties         =     1
+	Sym of state for properties =     A1
+	Guess vectors taken from    = SINGLES
+	Restart EOM CC3             = NO
+	Collapse with last vector   = YES
+
+
+Symmetry of ground state: B1
+Symmetry of excited state: B1
+Symmetry of right eigenvector: A1
+Obtaining initial guess from singles-singles block of Hbar...Done.
+
+Iter=1    L=1     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.5244675723   5.24e-01    3.36e-01      N
+Iter=2    L=2     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4678544014  -5.66e-02    8.11e-02      N
+Iter=3    L=3     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4601005041  -7.75e-03    7.00e-02      N
+Iter=4    L=4     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4543023180  -5.80e-03    6.33e-02      N
+Iter=5    L=5     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4521270049  -2.18e-03    3.46e-02      N
+Iter=6    L=6     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4513061600  -8.21e-04    2.32e-02      N
+Iter=7    L=7     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4507472504  -5.59e-04    2.02e-02      N
+Iter=8    L=8     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4505471175  -2.00e-04    1.10e-02      N
+Iter=9    L=9     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4505040348  -4.31e-05    5.19e-03      N
+Iter=10   L=10    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4504775065  -2.65e-05    4.28e-03      N
+Iter=11   L=11    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4504674426  -1.01e-05    2.08e-03      N
+Iter=12   L=12    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4504643615  -3.08e-06    7.76e-04      N
+Iter=13   L=2     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4504643615   1.11e-16    7.76e-04      N
+Iter=14   L=3     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4504643413  -2.02e-08    6.28e-04      N
+Iter=15   L=4     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4504628700  -1.47e-06    4.08e-04      N
+Iter=16   L=5     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4504625580  -3.12e-07    1.58e-04      N
+Iter=17   L=6     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4504621629  -3.95e-07    6.79e-05      N
+Iter=18   L=7     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4504621523  -1.06e-08    2.96e-05      N
+Iter=19   L=8     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4504621651   1.28e-08    1.04e-05      N
+Iter=20   L=9     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4504621600  -5.06e-09    4.43e-06      N
+Iter=21   L=10    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4504621562  -3.82e-09    3.44e-06      N
+Iter=22   L=11    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4504621559  -2.65e-10    3.55e-06      N
+Iter=23   L=12    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4504621496  -6.38e-09    1.29e-06      N
+Iter=24   L=2     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4504621496  -5.13e-14    1.29e-06      N
+Iter=25   L=3     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4504621493  -2.60e-10    3.39e-07      Y
+Collapsing to only 1 vector(s).
+
+Procedure converged for 1 root(s).
+Energy written to chkpt:Etot  -75.2633489484
+States per irrep written to chkpt.
+<R|R> =   1.0000000000000002
+EOM CCSD R0 for root 0 =   0.00779842537
+
+Final Energetic Summary for Converged Roots of Irrep B1
+                     Excitation Energy              Total Energy
+                (eV)     (cm^-1)     (au)             (au)
+EOM State 1     12.258    98865.0   0.4504621493   -75.263348948402
+
+Largest components of excited wave function #1:
+ RIA (libdpd indices) : (cscf notation)
+         2 >   0      :       3a1 >    4a1 :    0.5428262325
+         0 >   0      :       1b2 >    2b2 :    0.1260840252
+         2 >   2      :       3a1 >    6a1 :    0.0659296146
+         2 >   1      :       3a1 >    5a1 :   -0.0578295558
+         1 >   0      :       2a1 >    4a1 :    0.0360528724
+ Ria (libdpd indices) : (cscf notation)
+         2 >   0      :       3a1 >    4a1 :   -0.7132566675
+         0 >   0      :       1b2 >    2b2 :   -0.1118780368
+         2 >   2      :       3a1 >    6a1 :   -0.0736572625
+         2 >   1      :       3a1 >    5a1 :    0.0574293153
+         0 >   2      :       1b2 >    4b2 :   -0.0297283725
+ RIjAb (libdpd indices)     : (cscf notation)
+        0   2 >   0   1     :    1b1    3a1 >    4a1    1b1 :    0.3213266105
+        0   0 >   0   1     :    1b1    1b2 >    2b2    1b1 :    0.0848219329
+        0   2 >   0   0     :    1b2    3a1 >    2b2    4a1 :    0.0696519031
+        2   2 >   1   0     :    3a1    3a1 >    5a1    4a1 :   -0.0553123807
+        2   0 >   0   0     :    3a1    1b2 >    4a1    2b2 :   -0.0541333423
+ RIJAB (libdpd indices)     : (cscf notation)
+        0   2 >   0   0     :    1b1    3a1 >    2b1    4a1 :    0.0281860707
+        0   2 >   0   0     :    1b2    3a1 >    2b2    4a1 :   -0.0278311803
+        0   2 >   2   0     :    1b2    3a1 >    4b2    4a1 :   -0.0165596332
+        2   1 >   2   0     :    3a1    2a1 >    6a1    4a1 :    0.0109583463
+        0   2 >   0   2     :    1b2    3a1 >    2b2    6a1 :    0.0097451755
+ Rijab (libdpd indices)     : (cscf notation)
+        0   2 >   0   0     :    1b2    3a1 >    2b2    4a1 :    0.0376311572
+        0   2 >   2   0     :    1b2    3a1 >    4b2    4a1 :    0.0224932099
+        2   1 >   1   0     :    3a1    2a1 >    1b1    2b1 :    0.0163404663
+        2   1 >   2   0     :    3a1    2a1 >    6a1    4a1 :   -0.0154078869
+        0   2 >   0   2     :    1b2    3a1 >    2b2    6a1 :   -0.0140777722
+
+	Putting into environment energy for root of R irrep 1 and root 1.
+	Putting into environment CURRENT ENERGY:              -75.2633489484
+	Putting into environment CURRENT CORRELATION ENERGY:    0.3333231666
+
+	Total # of sigma evaluations: 23
+
+*** tstop() called on ganymede.local at Wed Feb  1 11:23:47 2012
+Module time:
+	user time   =       0.30 seconds =       0.01 minutes
+	system time =       0.19 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.68 seconds =       0.01 minutes
+	system time =       0.50 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on ganymede.local
+*** at Wed Feb  1 11:23:47 2012
+
+
+			**************************
+			*        CCLAMBDA        *
+			**************************
+
+
+	Nuclear Rep. energy (chkpt)   =    8.647166888151858
+	Reference           (chkpt)   = 1
+	SCF energy          (chkpt)   =  -75.596672115023665
+	Reference energy    (CC_INFO) =  -75.596672115023651
+	CCSD energy         (CC_INFO) =   -0.117138982677853
+	Total CCSD energy   (CC_INFO) =  -75.713811097701509
+
+	Input parameters:
+	-----------------
+	Maxiter       =      50
+	Convergence   = 1.0e-07
+	Restart       =     No
+	Cache Level   =     2
+	Model III     =     No
+	DIIS          =     Yes
+	AO Basis      =     No
+	ABCD            =     NEW
+	Local CC        =     No
+	Paramaters for left-handed eigenvectors:
+	    Irr   Root  Ground-State?    EOM energy        R0
+	  1   0     1         No       0.4504621493   0.0077984254
+	Labels for eigenvector 1:
+	LIA 0 0, Lia 0 0, LIJAB 0 0, Lijab 0 0, LIjAb 0 0, 2LIjAb - LIjbA 0 0
+	Deleting old CC_LAMBDA data.
+	Symmetry of left-hand state: B1
+	Symmetry of left-hand eigenvector: A1
+	Initial overlap of initial guess <L|R> =    0.9998894034
+	Checking overlap of initial guess <L|R> =    1.0000000000
+
+	          Solving Lambda Equations
+	          ------------------------
+	Iter     PseudoEnergy or Norm         RMS  
+	----     ---------------------     --------
+	   0        -0.004888301598173    0.000e+00
+	   1        -0.001961537694864    3.482e-02
+	   2        -0.001416940434066    9.649e-03
+	   3        -0.000951877344917    4.971e-03
+	   4        -0.000876643407268    1.830e-03
+	   5        -0.000870119477764    9.719e-04
+	   6        -0.000886741381461    7.319e-04
+	   7        -0.000906143195460    5.331e-04
+	   8        -0.000920404563267    2.776e-04
+	   9        -0.000928144585582    1.720e-04
+	  10        -0.000941620178146    1.170e-04
+	  11        -0.000952650117461    6.296e-05
+	  12        -0.000955615208335    2.602e-05
+	  13        -0.000956395942760    1.526e-05
+	  14        -0.000956911678455    9.498e-06
+	  15        -0.000957009276297    4.871e-06
+	  16        -0.000957215529998    2.678e-06
+	  17        -0.000957282858237    1.651e-06
+	  18        -0.000957386351785    1.002e-06
+	  19        -0.000957409487902    2.884e-07
+	  20        -0.000957412078093    1.129e-07
+	  21        -0.000957412524657    5.002e-08
+
+	Initial  <L|R>  =        0.9867899275
+	Normalizing L...
+	L0 * R0 =        0.0000000000
+	L1 * R1 =        0.8467933604
+	L2 * R2 =        0.1532066396
+	 <L|R>  =        1.0000000000
+	Pseudoenergy or Norm of normalized L =   -0.000970229324377
+
+	Largest LIA Amplitudes:
+	          2   0         0.5526567864
+	          4   7         0.1248478419
+	          2   2         0.0655337978
+	          2   1        -0.0580717618
+	          1   0         0.0355850445
+	          4   9         0.0353698502
+	          2   3        -0.0261876010
+	          1   2         0.0192806578
+	          1   1        -0.0181767514
+	          1   3        -0.0059267300
+
+	Largest Lia Amplitudes:
+	          2   0        -0.6948937294
+	          4   7        -0.1123448005
+	          2   2        -0.0709179181
+	          2   1         0.0576016561
+	          4   9        -0.0301583421
+	          2   3         0.0277137299
+	          1   1         0.0186888033
+	          1   0        -0.0177316527
+	          1   2        -0.0169132734
+	          1   3         0.0040298403
+
+	Largest LIJAB Amplitudes:
+	  4   2   7   0        -0.0489011876
+	  3   2   5   0         0.0350484358
+	  4   2   9   0        -0.0288351775
+	  2   1   2   0         0.0195253415
+	  2   1   3   0        -0.0130899955
+	  4   2   7   1         0.0082033177
+	  4   2   8   0         0.0078506361
+	  4   2   7   2         0.0078214982
+	  4   2   8   1         0.0072721782
+	  4   3   7   5         0.0065705516
+
+	Largest Lijab Amplitudes:
+	  4   2   7   0         0.0368479343
+	  4   2   9   0         0.0223905116
+	  2   1   6   5         0.0161650558
+	  4   2   7   2        -0.0151870132
+	  2   1   3   0         0.0130678548
+	  2   1   2   0        -0.0105819276
+	  2   1   1   0         0.0104372768
+	  4   2   8   1        -0.0097064865
+	  4   1   9   0        -0.0082260920
+	  4   1   7   0        -0.0078120043
+
+	Largest LIjAb Amplitudes:
+	  3   2   0   6         0.3369869599
+	  4   2   7   0         0.0862628485
+	  3   4   7   6         0.0814415499
+	  2   2   1   0        -0.0654739761
+	  2   2   0   1         0.0494008669
+	  2   4   0   7        -0.0485150712
+	  3   2   2   6         0.0475875273
+	  4   2   9   0         0.0470803289
+	  3   2   5   0        -0.0443886703
+	  3   2   1   6        -0.0388528261
+
+	Iterations converged.
+
+
+*** tstop() called on ganymede.local at Wed Feb  1 11:23:47 2012
+Module time:
+	user time   =       0.15 seconds =       0.00 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.83 seconds =       0.01 minutes
+	system time =       0.59 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on ganymede.local
+*** at Wed Feb  1 11:23:47 2012
+
+
+			**************************
+			*                        *
+			*        CCDENSITY       *
+			*                        *
+			**************************
+
+
+	Input parameters:
+	-----------------
+	Wave function    = EOM_CCSD
+	Reference wfn    =  ROHF
+	Dertype          = 1
+	Tolerance        = 1.0e-14
+	Cache Level      = 2
+	AO Basis         = No
+	OPDM Only        = No
+	Relax OPDM       = Yes
+	Compute Xi       = Yes
+	Use Zeta         = No
+	Xi connected     = Yes
+
+	Nuclear Rep. energy (chkpt)   =    8.647166888151858
+	SCF energy          (chkpt)   =  -75.596672115023665
+	Reference energy    (file100) =  -75.596672115023651
+	CCSD energy         (CC_INFO) =   -0.117138982677853
+	Total CCSD energy   (CC_INFO) =  -75.713811097701509
+	Number of States = 1
+
+	Ground?  State     EOM Energy       R0
+	   No     1 A1    0.4504621493   0.00779843
+
+energy:    0.4504621493
+XIA amplitudes: norm=   0.181053811002040 dot=   0.032780482478362
+X1 amplitudes:  norm=   0.222868632162327 dot=   0.049670427201907
+Norm of Xi:    1.574310344253737
+
+*** tstop() called on ganymede.local at Wed Feb  1 11:23:47 2012
+Module time:
+	user time   =       0.03 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.86 seconds =       0.01 minutes
+	system time =       0.62 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on ganymede.local
+*** at Wed Feb  1 11:23:47 2012
+
+
+			**************************
+			*        CCLAMBDA        *
+			**************************
+
+
+	Nuclear Rep. energy (chkpt)   =    8.647166888151858
+	Reference           (chkpt)   = 1
+	SCF energy          (chkpt)   =  -75.596672115023665
+	Reference energy    (CC_INFO) =  -75.596672115023651
+	CCSD energy         (CC_INFO) =   -0.117138982677853
+	Total CCSD energy   (CC_INFO) =  -75.713811097701509
+	Irrep of Zeta       (CC_INFO) = 0
+
+	Input parameters:
+	-----------------
+	Maxiter       =      50
+	Convergence   = 1.0e-07
+	Restart       =     No
+	Cache Level   =     2
+	Model III     =     No
+	DIIS          =     Yes
+	AO Basis      =     No
+	ABCD            =     NEW
+	Local CC        =     No
+	Paramaters for left-handed eigenvectors:
+	    Irr   Root  Ground-State?    EOM energy        R0
+	  1   0     1         No       0.0000000000   0.0000000000
+	Labels for eigenvector 1:
+	ZIA, Zia, ZIJAB, Zijab, ZIjAb, 2ZIjAb - ZIjbA
+	Deleting old CC_LAMBDA data.
+	Symmetry of left-hand state: B1
+	Symmetry of left-hand eigenvector: A1
+
+	          Solving Lambda Equations
+	          ------------------------
+	Iter     PseudoEnergy or Norm         RMS  
+	----     ---------------------     --------
+	   0         0.155621412839830    5.002e-08
+	   1         0.170528594854404    4.002e-02
+	   2         0.179086749932491    1.434e-02
+	   3         0.182385929555069    4.643e-03
+	   4         0.183067996790075    1.576e-03
+	   5         0.183220178869992    6.766e-04
+	   6         0.183259939949780    2.693e-04
+	   7         0.183257244689193    7.628e-05
+	   8         0.183256937187050    2.093e-05
+	   9         0.183256741580198    6.870e-06
+	  10         0.183256936767934    2.188e-06
+	  11         0.183256974182674    7.315e-07
+	  12         0.183256978237991    2.114e-07
+	  13         0.183256975462227    4.973e-08
+
+	Largest LIA Amplitudes:
+	          4   7        -0.0811192591
+	          2   1         0.0563049595
+	          4   9        -0.0446889507
+	          3   5         0.0364885001
+	          1   2        -0.0213729689
+	          1   3         0.0174348092
+	          4   8         0.0143636917
+	          1   0        -0.0098489751
+	          2   3        -0.0082785233
+	          2   2        -0.0066499200
+
+	Largest Lia Amplitudes:
+	          4   7        -0.0486750293
+	          4   9        -0.0264899059
+	          2   1         0.0259234060
+	          1   3         0.0113857099
+	          4   8         0.0070404934
+	          1   1         0.0068309258
+	          2   0         0.0067741841
+	          1   2        -0.0065934854
+	          2   2        -0.0020183420
+	          1   0        -0.0017861795
+
+	Largest LIJAB Amplitudes:
+	  4   2   7   0         0.0186462524
+	  4   3   8   5        -0.0107430728
+	  4   3   9   5         0.0103152926
+	  4   2   9   0         0.0098110435
+	  4   3   7   5         0.0088871147
+	  4   2   7   2         0.0080306391
+	  3   1   5   3        -0.0079358552
+	  3   2   5   1        -0.0076942287
+	  3   1   5   0         0.0063864417
+	  4   2   8   1        -0.0057716677
+
+	Largest Lijab Amplitudes:
+	  4   2   7   0         0.0231976065
+	  4   2   9   0         0.0134440513
+	  4   2   7   2         0.0074591244
+	  4   1   9   3         0.0058305932
+	  4   1   7   3         0.0052807115
+	  4   2   7   1        -0.0051863237
+	  2   1   2   0        -0.0047743716
+	  2   1   1   0         0.0045813536
+	  4   1   8   3        -0.0045165462
+	  4   1   8   2         0.0041175610
+
+	Largest LIjAb Amplitudes:
+	  4   4   7   7        -0.0430201199
+	  4   4   9   7        -0.0316175566
+	  4   4   7   9        -0.0306564468
+	  4   4   9   9        -0.0276298206
+	  3   2   1   6        -0.0264928679
+	  3   1   2   6         0.0196907973
+	  3   4   5   7         0.0172473713
+	  4   4   8   8        -0.0162117364
+	  2   4   1   7         0.0154786838
+	  3   4   5   9         0.0154175967
+
+	Iterations converged.
+
+Norm of Zeta:    0.183256975462227
+
+*** tstop() called on ganymede.local at Wed Feb  1 11:23:47 2012
+Module time:
+	user time   =       0.10 seconds =       0.00 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.96 seconds =       0.02 minutes
+	system time =       0.68 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on ganymede.local
+*** at Wed Feb  1 11:23:47 2012
+
+
+			**************************
+			*                        *
+			*        CCDENSITY       *
+			*                        *
+			**************************
+
+
+	Input parameters:
+	-----------------
+	Wave function    = EOM_CCSD
+	Reference wfn    =  ROHF
+	Dertype          = 1
+	Tolerance        = 1.0e-14
+	Cache Level      = 2
+	AO Basis         = No
+	OPDM Only        = No
+	Relax OPDM       = Yes
+	Compute Xi       = No
+	Use Zeta         = Yes
+	Xi connected     = Yes
+
+	Nuclear Rep. energy (chkpt)   =    8.647166888151858
+	SCF energy          (chkpt)   =  -75.596672115023665
+	Reference energy    (file100) =  -75.596672115023651
+	CCSD energy         (CC_INFO) =   -0.117138982677853
+	Total CCSD energy   (CC_INFO) =  -75.713811097701509
+	Number of States = 1
+
+	Ground?  State     EOM Energy       R0
+	   No     1 A1    0.4504621493   0.00779843
+
+	Energies re-computed from CC density:
+	-------------------------------------
+	One-electron energy        =    1.162676356977657
+	IJKL energy                =    0.121996921402969
+	IJKA energy                =   -0.108679006761388
+	IJAB energy                =   -0.130612754606178
+	IBJA energy                =   -0.779107571636008
+	CIAB energy                =   -0.016315104387623
+	ABCD energy                =    0.083364328796188
+	Total two-electron energy  =   -0.829353187192039
+	Total EOM CCSD correlation energy        =    0.333323169785618
+	CCSD correlation + EOM excitation energy =    0.333323166621187
+	Total EOM CCSD energy                    =  -75.263348945238036
+
+	Virial Theorem Data:
+	--------------------
+	Kinetic energy (ref)   =   75.635518022849780
+	Kinetic energy (corr)  =    0.345597672930505
+	Kinetic energy (total) =   75.981115695780289
+	-V/T (ref)             =    1.999486406534369
+	-V/T (corr)            =    1.338946097884774
+	-V/T (total)           =    1.996481960081383
+
+	Energies re-computed from Fock-adjusted CC density:
+	---------------------------------------------------
+	One-electron energy        =    1.842115262743363
+	IJKL energy                =   -7.068706991394835
+	IJKA energy                =    0.874779327900015
+	IJAB energy                =   -0.130612754606178
+	IBJA energy                =    4.748699100741067
+	CIAB energy                =   -0.016315104387623
+	ABCD energy                =    0.083364328796188
+	Total two-electron energy  =   -1.508792092951365
+	Total EOM CCSD correlation energy        =    0.333323169791998
+	CCSD correlation + EOM excitation energy =    0.333323166621187
+	Total EOM CCSD energy                    =  -75.263348945231655
+
+	Energies re-computed from Mulliken density:
+	-------------------------------------------
+	One-electron energy        =    1.842115262743363
+	IJKL energy                =   -7.068706991394837
+	IJKA energy                =    0.874779327900015
+	IJAB energy                =   -0.328667709233336
+	IBJA energy                =    4.946754055368228
+	CIAB energy                =   -0.016315104387623
+	ABCD energy                =    0.083364328796188
+	Total two-electron energy  =   -1.508792092951365
+	Total EOM CCSD correlation energy        =    0.333323169791998
+	CCSD correlation + EOM excitation energy =    0.333323166621187
+	Total EOM CCSD energy                    =  -75.263348945231655
+
+*** tstop() called on ganymede.local at Wed Feb  1 11:23:47 2012
+Module time:
+	user time   =       0.08 seconds =       0.00 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.04 seconds =       0.02 minutes
+	system time =       0.76 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on ganymede.local
+*** at Wed Feb  1 11:23:47 2012
+
+ DERIV: Derivative code.
+   by Justin Turney
+
+  Cartesian Displacement SALCs
+  By SALC:
+  Number of SALCs: 3, nirreps: 1
+  Project out translations: False
+  Project out rotations: False
+	irrep = 0, ncomponent = 2
+		0: atom 0, direction y, coef 0.707107
+		1: atom 2, direction y, coef -0.707107
+	irrep = 0, ncomponent = 2
+		0: atom 0, direction z, coef 0.707107
+		1: atom 2, direction z, coef 0.707107
+	irrep = 0, ncomponent = 1
+		0: atom 1, direction z, coef 1.000000
+
+  By Atomic Center:
+  Number of atomic centers: 3
+   Atomic Center 0:
+	x component, size = 0
+	y component, size = 1
+		0: salc 0, irrep 0, coef 0.707107
+	z component, size = 1
+		0: salc 1, irrep 0, coef 0.707107
+   Atomic Center 1:
+	x component, size = 0
+	y component, size = 0
+	z component, size = 1
+		0: salc 2, irrep 0, coef 1.000000
+   Atomic Center 2:
+	x component, size = 0
+	y component, size = 1
+		0: salc 0, irrep 0, coef -0.707107
+	z component, size = 1
+		0: salc 1, irrep 0, coef 0.707107
+
+    Molecular point group: c2v
+
+    Geometry (in Bohr), charge = 1, multiplicity = 2:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           H          0.000000000000    -1.443627918148     1.134274838578
+           O         -0.000000000000     0.000000000000    -0.142939253226
+           H         -0.000000000000     1.443627918148     1.134274838578
+
+	Presorting MO-basis TPDM.
+	Sorting File: MO TPDM (AA|AA) nbuckets = 1
+	Starting first half-transformation.
+	Sorting half-transformed TPDM.
+	First half integral transformation complete.
+
+
+
+
+  -Nuclear Repulsion Energy 1st Derivatives:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     1.732636842258    -1.426777654799
+       2        0.000000000000     0.000000000000     2.853555309597
+       3        0.000000000000    -1.732636842258    -1.426777654799
+
+
+  -One-electron contribution to gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000    -2.315788215125     2.192980101422
+       2        0.000000000000     0.000000000000    -4.385960202844
+       3        0.000000000000     2.315788215125     2.192980101422
+
+
+  -Lagrangian contribution to gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.162284269735    -0.186376614957
+       2        0.000000000000     0.000000000000     0.372753229915
+       3        0.000000000000    -0.162284269735    -0.186376614957
+
+
+  -Two-electron contribution to gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.603371173737    -0.670456721155
+       2        0.000000000000     0.000000000000     1.340913442310
+       3        0.000000000000    -0.603371173737    -0.670456721155
+
+
+  -Total gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.182504070605    -0.090630889489
+       2        0.000000000000     0.000000000000     0.181261778978
+       3        0.000000000000    -0.182504070605    -0.090630889489
+
+
+*** tstop() called on ganymede.local at Wed Feb  1 11:23:48 2012
+Module time:
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       1.13 seconds =       0.02 minutes
+	system time =       0.77 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
+
+*** PSI4 exiting successfully. Buy a developer a beer!

@@ -1,0 +1,18 @@
+psi:(
+   label     = "blah"
+   wfn = scf
+   reference =  rhf
+   do_tei    = true
+   basis     = cc-pvdz
+   ri_basis  = "cc-pVDZ-RI"
+   zmat      = (
+      O
+      H 1 0.9
+      H 1 0.9 2 105.0
+   )
+)
+
+df-mp2:(
+   print  = 2
+)
+

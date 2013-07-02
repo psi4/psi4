@@ -1,0 +1,4810 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-beta1 Driver
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! Carbon/UHF Fractionally-Occupied SCF Test Case 
+
+# References
+reference_energies = {\
+    5.500E+00 : -3.7479827870463325E+01,\
+    5.600E+00 : -3.7519777157724391E+01,\
+    5.700E+00 : -3.7560494710854833E+01,\
+    5.800E+00 : -3.7602027729245712E+01,\
+    5.900E+00 : -3.7644429418258895E+01,\
+    6.000E+00 : -3.7687760545777166E+01,\
+    6.100E+00 : -3.7686231278907293E+01,\
+    6.200E+00 : -3.7591946718659159E+01,\
+    6.300E+00 : -3.7589357487772773E+01,\
+    6.400E+00 : -3.7684604177989534E+01,\
+    6.500E+00 :  0.0000000000000000E+00,\
+    6.600E+00 : -3.7686869113983775E+01,\
+    6.700E+00 : -3.7689386736023820E+01,\
+    6.800E+00 : -3.7693070640744025E+01,\
+    6.900E+00 : -3.7698159082829754E+01,\
+    7.000E+00 : -3.7704948149321964E+01,\
+}
+
+# => Cation Computation (Doublet) <= #
+
+# Specify molecule
+molecule {
+1 2         # Starting from the cation 
+C           # Single C in Z-mat (also takes xyz)
+symmetry c1 # C1 is best, otherwise the occupation gets squirrely
+}
+
+# Standard SCF options (this one is DF-UHF)
+set print 2                  # Higher print level for extra properties
+set basis aug-cc-pvdz        # Primary basis
+set scf_type df              # SCF algorithm is DF
+set reference uhf            # Reference is UHF
+
+# N-1-electron SCF
+Em1 = energy('scf')
+
+# => Anion Computation (Quartet) <= #
+
+# Specify molecule
+molecule {
+-1 4        # Starting from the anion 
+C           # Single C in Z-mat (also takes xyz)
+symmetry c1 # C1 is best, otherwise the occupation gets squirrely
+}
+
+# Standard SCF options (this one is DF-UHF)
+set print 2                  # Higher print level for extra properties
+set basis aug-cc-pvdz        # Primary basis
+set scf_type df              # SCF algorithm is DF
+set reference uhf            # Reference is UHF
+set d_convergence 7          # 8 digits seems unstable
+
+# N+1-electron SCF
+Ep1 = energy('scf')
+
+# => Neutral and cationic FO-UHF (Starting from the Neutral) <= #
+
+# Specify molecule
+molecule {
+0 3         # Starting from the neutral
+C           # Single C in Z-mat (also takes xyz)
+symmetry c1 # C1 is best, otherwise the occupation gets squirrely
+}
+
+# Standard SCF options (this one is DF-UHF)
+set print 2                  # Higher print level for extra properties
+set basis aug-cc-pvdz        # Primary basis
+set scf_type df              # SCF algorithm is DF
+set reference uhf            # Reference is UHF
+
+# N-electron SCF
+E0 = energy('scf')
+
+# Lists of occupation numbers 
+low_occs  = [0.5, 0.6, 0.7, 0.8, 0.9]
+high_occs = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+
+# Initialize the result lists
+occs = []
+energies = []
+
+# Do partially occupied HOMO
+for occ in low_occs:
+
+    # New options for FRAC
+    set frac_start 3
+    set mom_start 4
+    set frac_occ [4]
+    set frac_val [$occ]
+    
+    # Frac SCF
+    En = energy('scf')
+    
+    # Append results
+    occs.append(5.0 + occ)
+    energies.append(En)
+
+# Append the neutral species result
+occs.append(6.0)
+energies.append(E0) 
+
+# => Anionic FO-UHF (Starting from the Anion) <= #
+
+# Specify molecule
+molecule {
+-1 4        # Starting from the anion 
+C           # Single C in Z-mat (also takes xyz)
+symmetry c1 # C1 is best, otherwise the occupation gets squirrely
+}
+
+# Standard SCF options (this one is DF-UHF)
+set print 2                  # Higher print level for extra properties
+set basis aug-cc-pvdz        # Primary basis
+set scf_type df              # SCF algorithm is DF
+set reference uhf            # Reference is UHF
+set d_convergence 7          # 8 digits seems unstable
+
+# Do partially occupied LUMO
+for occ in high_occs:
+
+    # New options for FRAC
+    set frac_start 7
+    set mom_start 8
+    set frac_occ [5]
+    set frac_val [$occ]
+    
+    # Frac SCF
+    En = energy('scf')
+    
+    # Append results
+    occs.append(6.0 + occ)
+    energies.append(En)
+
+# Print the results out
+print '\n    ==> Fractional Occupation Traverse Results <==\n\n'
+
+print '\tCation  Energy = %24.16E\n' % Em1
+print '\tNeutral Energy = %24.16E\n' % E0
+print '\tAnion   Energy = %24.16E\n\n' % Ep1
+
+print '\t%-8s %-24s\n' %('Nelec', 'Energy') 
+for k in range(len(occs)):
+    print '\t%8.3E %24.16E\n' % (occs[k], energies[k])
+
+# Test the results 
+for k in range(len(occs)):
+    compare_values(reference_energies[occs[k]], energies[k], 8, "%11.3E electron energy" % occs[k])  
+
+--------------------------------------------------------------------------
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:51 2012
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              UHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = 1, multiplicity = 2:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000     0.000000000000
+
+    Number of unique atoms: 1
+
+    Atoms equivalency:
+       unique atom 0: 0 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 1
+  Multiplicity = 2
+  Electrons    = 5
+  Nalpha       = 3
+  Nbeta        = 2
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: AUG-CC-PVDZ <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 9
+    Number of primitives   = 25
+    Number of AO           = 25
+    Number of SO           = 23
+    Maximum AM             = 2
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     18s 5p 2d // 4s 3p 2d 
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 7.9241747161E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UHF energy:   -24.27194932122620
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         23      23       3       2       2       1
+   -------------------------------------------------------
+    Total      23      23       3       2       2       1
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ DFHF: Density-Fitted SCF Algorithms.
+   by Rob Parrish
+
+  No auxiliary basis selected, defaulting to AUG-CC-PVDZ-JKFIT
+
+  ==> Auxiliary Basis:  <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 28
+    Number of primitives   = 28
+    Number of AO           = 101
+    Number of SO           = 86
+    Maximum AM             = 3
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     11s 8p 6d 3f // 11s 8p 6d 3f 
+
+  Schwarz Cutoff is 0.000E+00
+   -Shell Pairs:              45 of           45 remain,   0% savings
+   -Function Pairs:          276 of          276 remain,   0% savings
+
+  Using Core Algorithm.
+
+    ----------------------------------------------
+     Quantity         Doubles              MiB   
+    ----------------------------------------------
+     Memory            22400000              179
+     (A|B)                 7396                0
+     (A|mn)               23736                0
+    ----------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @UHF iter   1:   -36.80735610003856   -1.25354e+01   0.00000e+00 
+   @UHF iter   2:   -37.27635930998014   -4.69003e-01   5.49387e-02 DIIS
+   @UHF iter   3:   -37.29004200266783   -1.36827e-02   6.60005e-03 DIIS
+   @UHF iter   4:   -37.29023006662848   -1.88064e-04   6.59508e-04 DIIS
+   @UHF iter   5:   -37.29025044542082   -2.03788e-05   1.73120e-04 DIIS
+   @UHF iter   6:   -37.29025068343668   -2.38016e-07   1.94762e-05 DIIS
+   @UHF iter   7:   -37.29025068683929   -3.40260e-09   2.79688e-06 DIIS
+   @UHF iter   8:   -37.29025068689422   -5.49321e-11   3.23612e-07 DIIS
+   @UHF iter   9:   -37.29025068689428   -6.39488e-14   1.04645e-08 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -11.924596     2A     -1.224754     3A     -0.912783  
+
+	Alpha Virtual:                                                        
+
+	   4A     -0.363861     5A     -0.363861     6A     -0.113988  
+	   7A     -0.077090     8A     -0.067366     9A     -0.067366  
+	  10A      0.156264    11A      0.156264    12A      0.156448  
+	  13A      0.157691    14A      0.157691    15A      0.377075  
+	  16A      0.435676    17A      0.435676    18A      0.596455  
+	  19A      1.216770    20A      1.221933    21A      1.221933  
+	  22A      1.242605    23A      1.242605  
+
+	Beta Occupied:                                                        
+
+	   1A    -11.894311     2A     -1.088800  
+
+	Beta Virtual:                                                         
+
+	   3A     -0.340872     4A     -0.340872     5A     -0.275046  
+	   6A     -0.107906     7A     -0.064562     8A     -0.064562  
+	   9A     -0.052024    10A      0.158326    11A      0.158326  
+	  12A      0.175456    13A      0.175456    14A      0.181369  
+	  15A      0.448644    16A      0.448644    17A      0.494243  
+	  18A      0.627120    19A      1.249803    20A      1.249803  
+	  21A      1.297182    22A      1.297182    23A      1.314488  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     2 ]
+	SOCC [     1 ]
+
+  Energy converged.
+
+  @UHF Final Energy:   -37.29025068689428
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
+
+  Quadrupole Moment: (Debye Ang)
+    XX:    -3.2506     YY:    -4.5664     ZZ:    -3.1657
+    XY:    -0.3455     XZ:     0.0044     YZ:     0.0179
+
+  Traceless Quadrupole Moment: (Debye Ang)
+    XX:     0.4103     YY:    -0.9055     ZZ:     0.4952
+    XY:    -0.3455     XZ:     0.0044     YZ:     0.0179
+
+  Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     C     3.00000  2.00000  1.00000  1.00000
+
+   Total alpha =  3.00000, Total beta =  2.00000, Total charge =  1.00000
+
+
+  @Spin Contamination Metric:  0.00621
+  @S^2 Expected:               0.75000
+  @S^2 Observed:               0.75621
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:51 2012
+Module time:
+	user time   =       0.11 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.11 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:51 2012
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              UHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = -1, multiplicity = 4:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000     0.000000000000
+
+    Number of unique atoms: 1
+
+    Atoms equivalency:
+       unique atom 0: 0 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = -1
+  Multiplicity = 4
+  Electrons    = 7
+  Nalpha       = 5
+  Nbeta        = 2
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-07
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: AUG-CC-PVDZ <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 9
+    Number of primitives   = 25
+    Number of AO           = 25
+    Number of SO           = 23
+    Maximum AM             = 2
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     18s 5p 2d // 4s 3p 2d 
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 7.9241747161E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UHF energy:   -28.38798693897903
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         23      23       5       2       2       3
+   -------------------------------------------------------
+    Total      23      23       5       2       2       3
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ DFHF: Density-Fitted SCF Algorithms.
+   by Rob Parrish
+
+  No auxiliary basis selected, defaulting to AUG-CC-PVDZ-JKFIT
+
+  ==> Auxiliary Basis:  <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 28
+    Number of primitives   = 28
+    Number of AO           = 101
+    Number of SO           = 86
+    Maximum AM             = 3
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     11s 8p 6d 3f // 11s 8p 6d 3f 
+
+  Schwarz Cutoff is 0.000E+00
+   -Shell Pairs:              45 of           45 remain,   0% savings
+   -Function Pairs:          276 of          276 remain,   0% savings
+
+  Using Core Algorithm.
+
+    ----------------------------------------------
+     Quantity         Doubles              MiB   
+    ----------------------------------------------
+     Memory            22400000              179
+     (A|B)                 7396                0
+     (A|mn)               23736                0
+    ----------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @UHF iter   1:   -35.85592530616875   -7.46794e+00   0.00000e+00 
+   @UHF iter   2:   -36.04018854256891   -1.84263e-01   9.43565e-02 DIIS
+   @UHF iter   3:   -37.51785974314176   -1.47767e+00   6.63610e-02 DIIS
+   @UHF iter   4:   -37.68344562288952   -1.65586e-01   1.18204e-02 DIIS
+   @UHF iter   5:   -37.70364702322498   -2.02014e-02   4.01875e-03 DIIS
+   @UHF iter   6:   -37.70470889725853   -1.06187e-03   1.45205e-03 DIIS
+   @UHF iter   7:   -37.70491969069437   -2.10793e-04   6.82345e-04 DIIS
+   @UHF iter   8:   -37.70494803570461   -2.83450e-05   2.78318e-04 DIIS
+   @UHF iter   9:   -37.70494813308514   -9.73805e-08   2.18126e-05 DIIS
+   @UHF iter  10:   -37.70494814899251   -1.59074e-08   6.45951e-06 DIIS
+   @UHF iter  11:   -37.70494814932043   -3.27923e-10   9.24586e-07 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -10.979988     2A     -0.526666     3A     -0.077549  
+	   4A     -0.077549     5A     -0.077549  
+
+	Alpha Virtual:                                                        
+
+	   6A      0.299509     7A      0.299509     8A      0.299509  
+	   9A      0.304980    10A      0.683475    11A      0.683475  
+	  12A      0.683475    13A      0.683475    14A      0.683475  
+	  15A      1.062479    16A      1.062479    17A      1.062479  
+	  18A      1.259188    19A      1.953152    20A      1.953152  
+	  21A      1.953152    22A      1.953152    23A      1.953152  
+
+	Beta Occupied:                                                        
+
+	   1A    -10.930212     2A     -0.215078  
+
+	Beta Virtual:                                                         
+
+	   3A      0.267552     4A      0.267552     5A      0.267552  
+	   6A      0.340452     7A      0.499201     8A      0.499201  
+	   9A      0.499201    10A      0.745509    11A      0.745509  
+	  12A      0.745509    13A      0.745509    14A      0.745509  
+	  15A      1.206462    16A      1.206462    17A      1.206462  
+	  18A      1.348886    19A      2.079665    20A      2.079665  
+	  21A      2.079665    22A      2.079665    23A      2.079665  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     2 ]
+	SOCC [     3 ]
+
+  Energy converged.
+
+  @UHF Final Energy:   -37.70494814932043
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
+
+  Quadrupole Moment: (Debye Ang)
+    XX:   -11.7116     YY:   -11.7116     ZZ:   -11.7116
+    XY:    -0.0000     XZ:    -0.0000     YZ:    -0.0000
+
+  Traceless Quadrupole Moment: (Debye Ang)
+    XX:    -0.0000     YY:     0.0000     ZZ:     0.0000
+    XY:    -0.0000     XZ:    -0.0000     YZ:    -0.0000
+
+  Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     C     5.00000  2.00000  3.00000 -1.00000
+
+   Total alpha =  5.00000, Total beta =  2.00000, Total charge = -1.00000
+
+
+  @Spin Contamination Metric:  0.00657
+  @S^2 Expected:               3.75000
+  @S^2 Observed:               3.75657
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:51 2012
+Module time:
+	user time   =       0.13 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.24 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:51 2012
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              UHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 3:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000     0.000000000000
+
+    Number of unique atoms: 1
+
+    Atoms equivalency:
+       unique atom 0: 0 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 3
+  Electrons    = 6
+  Nalpha       = 4
+  Nbeta        = 2
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-07
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: AUG-CC-PVDZ <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 9
+    Number of primitives   = 25
+    Number of AO           = 25
+    Number of SO           = 23
+    Maximum AM             = 2
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     18s 5p 2d // 4s 3p 2d 
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 7.9241747161E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UHF energy:   -26.32996813010262
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         23      23       4       2       2       2
+   -------------------------------------------------------
+    Total      23      23       4       2       2       2
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ DFHF: Density-Fitted SCF Algorithms.
+   by Rob Parrish
+
+  No auxiliary basis selected, defaulting to AUG-CC-PVDZ-JKFIT
+
+  ==> Auxiliary Basis:  <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 28
+    Number of primitives   = 28
+    Number of AO           = 101
+    Number of SO           = 86
+    Maximum AM             = 3
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     11s 8p 6d 3f // 11s 8p 6d 3f 
+
+  Schwarz Cutoff is 0.000E+00
+   -Shell Pairs:              45 of           45 remain,   0% savings
+   -Function Pairs:          276 of          276 remain,   0% savings
+
+  Using Core Algorithm.
+
+    ----------------------------------------------
+     Quantity         Doubles              MiB   
+    ----------------------------------------------
+     Memory            22400000              179
+     (A|B)                 7396                0
+     (A|mn)               23736                0
+    ----------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @UHF iter   1:   -36.69365367582448   -1.03637e+01   0.00000e+00 
+   @UHF iter   2:   -37.68006774113029   -9.86414e-01   6.68351e-02 DIIS
+   @UHF iter   3:   -37.68691010556222   -6.84236e-03   3.28728e-03 DIIS
+   @UHF iter   4:   -37.68768534885314   -7.75243e-04   9.17720e-04 DIIS
+   @UHF iter   5:   -37.68775748282130   -7.21340e-05   2.72935e-04 DIIS
+   @UHF iter   6:   -37.68776051862695   -3.03581e-06   7.39018e-05 DIIS
+   @UHF iter   7:   -37.68776054562359   -2.69966e-08   6.68376e-06 DIIS
+   @UHF iter   8:   -37.68776054577717   -1.53577e-10   4.73499e-07 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -11.351430     2A     -0.830389     3A     -0.438184  
+	   4A     -0.438184  
+
+	Alpha Virtual:                                                        
+
+	   5A      0.017330     6A      0.109121     7A      0.115047  
+	   8A      0.115047     9A      0.147992    10A      0.437849  
+	  11A      0.437849    12A      0.442479    13A      0.442479  
+	  14A      0.444790    15A      0.746379    16A      0.746379  
+	  17A      0.815563    18A      0.959415    19A      1.618634  
+	  20A      1.618634    21A      1.636710    22A      1.636710  
+	  23A      1.644095  
+
+	Beta Occupied:                                                        
+
+	   1A    -11.304952     2A     -0.586410  
+
+	Beta Virtual:                                                         
+
+	   3A      0.039746     4A      0.068189     5A      0.068189  
+	   6A      0.124243     7A      0.168081     8A      0.208957  
+	   9A      0.208957    10A      0.461658    11A      0.467532  
+	  12A      0.467532    13A      0.486044    14A      0.486044  
+	  15A      0.844719    16A      0.893596    17A      0.893596  
+	  18A      1.025344    19A      1.700968    20A      1.714830  
+	  21A      1.714830    22A      1.760507    23A      1.760507  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     2 ]
+	SOCC [     2 ]
+
+  Energy converged.
+
+  @UHF Final Energy:   -37.68776054577717
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Quadrupole Moment: (Debye Ang)
+    XX:    -5.0082     YY:    -6.7709     ZZ:    -6.8655
+    XY:    -0.4601     XZ:     0.1850     YZ:    -0.0454
+
+  Traceless Quadrupole Moment: (Debye Ang)
+    XX:     1.2066     YY:    -0.5560     ZZ:    -0.6506
+    XY:    -0.4601     XZ:     0.1850     YZ:    -0.0454
+
+  Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     C     4.00000  2.00000  2.00000 -0.00000
+
+   Total alpha =  4.00000, Total beta =  2.00000, Total charge = -0.00000
+
+
+  @Spin Contamination Metric:  0.00964
+  @S^2 Expected:               2.00000
+  @S^2 Observed:               2.00964
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:51 2012
+Module time:
+	user time   =       0.11 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.35 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:51 2012
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              UHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 3:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000     0.000000000000
+
+    Number of unique atoms: 1
+
+    Atoms equivalency:
+       unique atom 0: 0 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 3
+  Electrons    = 6
+  Nalpha       = 4
+  Nbeta        = 2
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM enabled.
+  Fractional occupation enabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-07
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: AUG-CC-PVDZ <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 9
+    Number of primitives   = 25
+    Number of AO           = 25
+    Number of SO           = 23
+    Maximum AM             = 2
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     18s 5p 2d // 4s 3p 2d 
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 7.9241747161E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UHF energy:   -26.32996813010262
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         23      23       4       2       2       2
+   -------------------------------------------------------
+    Total      23      23       4       2       2       2
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ DFHF: Density-Fitted SCF Algorithms.
+   by Rob Parrish
+
+  No auxiliary basis selected, defaulting to AUG-CC-PVDZ-JKFIT
+
+  ==> Auxiliary Basis:  <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 28
+    Number of primitives   = 28
+    Number of AO           = 101
+    Number of SO           = 86
+    Maximum AM             = 3
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     11s 8p 6d 3f // 11s 8p 6d 3f 
+
+  Schwarz Cutoff is 0.000E+00
+   -Shell Pairs:              45 of           45 remain,   0% savings
+   -Function Pairs:          276 of          276 remain,   0% savings
+
+  Using Core Algorithm.
+
+    ----------------------------------------------
+     Quantity         Doubles              MiB   
+    ----------------------------------------------
+     Memory            22400000              179
+     (A|B)                 7396                0
+     (A|mn)               23736                0
+    ----------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @UHF iter   1:   -36.69365367582448   -1.03637e+01   0.00000e+00 
+   @UHF iter   2:   -37.68006774113029   -9.86414e-01   6.68351e-02 DIIS
+   @UHF iter   3:   -37.68691010556222   -6.84236e-03   3.28728e-03 DIIS
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -11.351899     2A     -0.833274     3A     -0.439955  
+	   4A     -0.439955  
+
+	Alpha Virtual:                                                        
+
+	   5A      0.016844     6A      0.108811     7A      0.114833  
+	   8A      0.114833     9A      0.147481    10A      0.438271  
+	  11A      0.438271    12A      0.442717    13A      0.442717  
+	  14A      0.444970    15A      0.744751    16A      0.744751  
+	  17A      0.814702    18A      0.957972    19A      1.617622  
+	  20A      1.617622    21A      1.635647    22A      1.635647  
+	  23A      1.643028  
+
+	Beta Occupied:                                                        
+
+	   1A    -11.302242     2A     -0.581445  
+
+	Beta Virtual:                                                         
+
+	   3A      0.039353     4A      0.067459     5A      0.067459  
+	   6A      0.124735     7A      0.168760     8A      0.209239  
+	   9A      0.209239    10A      0.460936    11A      0.466738  
+	  12A      0.466738    13A      0.485045    14A      0.485045  
+	  15A      0.845725    16A      0.894743    17A      0.894743  
+	  18A      1.027330    19A      1.701139    20A      1.714948  
+	  21A      1.714948    22A      1.760480    23A      1.760480  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     2 ]
+	SOCC [     2 ]
+
+  ==> Fractionally-Occupied SCF Iterations <==
+
+    Alpha orbital    4 will contain   5.000E-01 electron.
+
+                        Total Energy        Delta E      Density RMS
+
+   @UHF iter   4:   -37.46831425148166    2.18596e-01   7.13286e-03 FRAC
+   @UHF iter   5:   -37.47906731931649   -1.07531e-02   3.89153e-03 MOM/FRAC
+   @UHF iter   6:   -37.47972514458841   -6.57825e-04   6.61397e-04 DIIS/MOM/FRAC
+   @UHF iter   7:   -37.47982720238213   -1.02058e-04   3.39579e-04 DIIS/MOM/FRAC
+   @UHF iter   8:   -37.47982784680993   -6.44428e-07   3.09773e-05 DIIS/MOM/FRAC
+   @UHF iter   9:   -37.47982786954267   -2.27327e-08   6.42722e-06 DIIS/MOM/FRAC
+   @UHF iter  10:   -37.47982787046332   -9.20650e-10   1.11203e-06 DIIS/MOM/FRAC
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -11.638850     2A     -1.025588     3A     -0.674758  
+	   4A     -0.395796  
+
+	Alpha Virtual:                                                        
+
+	   5A     -0.163253     6A     -0.001832     7A      0.019304  
+	   8A      0.024787     9A      0.034095    10A      0.297240  
+	  11A      0.297320    12A      0.299959    13A      0.300260  
+	  14A      0.301512    15A      0.556317    16A      0.593057  
+	  17A      0.622010    18A      0.776208    19A      1.419073  
+	  20A      1.420500    21A      1.428706    22A      1.440304  
+	  23A      1.441797  
+
+	Beta Occupied:                                                        
+
+	   1A    -11.601314     2A     -0.836872  
+
+	Beta Virtual:                                                         
+
+	   3A     -0.135180     4A     -0.108352     5A     -0.082271  
+	   6A      0.008607     7A      0.040605     8A      0.049794  
+	   9A      0.061323    10A      0.312740    11A      0.314315  
+	  12A      0.322200    13A      0.331905    14A      0.333053  
+	  15A      0.642176    16A      0.664324    17A      0.690177  
+	  18A      0.823089    19A      1.478466    20A      1.481216  
+	  21A      1.505918    22A      1.528156    23A      1.532828  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     2 ]
+	SOCC [     2 ]
+
+  Energy converged.
+
+  @UHF Final Energy:   -37.47982787046332
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:    -0.0000
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:    -0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -0.0000      Z:    -0.0000     Total:     0.0000
+
+  Quadrupole Moment: (Debye Ang)
+    XX:    -4.0893     YY:    -5.1516     ZZ:    -5.5258
+    XY:    -0.3044     XZ:     0.2022     YZ:     0.2086
+
+  Traceless Quadrupole Moment: (Debye Ang)
+    XX:     0.8329     YY:    -0.2294     ZZ:    -0.6035
+    XY:    -0.3044     XZ:     0.2022     YZ:     0.2086
+
+  Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     C     3.50000  2.00000  1.50000  0.50000
+
+   Total alpha =  3.50000, Total beta =  2.00000, Total charge =  0.50000
+
+
+  @Spin Contamination Metric:  0.00571
+  @S^2 Expected:               2.00000
+  @S^2 Observed:               2.00571
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:51 2012
+Module time:
+	user time   =       0.12 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.47 seconds =       0.01 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:51 2012
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              UHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 3:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000     0.000000000000
+
+    Number of unique atoms: 1
+
+    Atoms equivalency:
+       unique atom 0: 0 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 3
+  Electrons    = 6
+  Nalpha       = 4
+  Nbeta        = 2
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM enabled.
+  Fractional occupation enabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-07
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: AUG-CC-PVDZ <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 9
+    Number of primitives   = 25
+    Number of AO           = 25
+    Number of SO           = 23
+    Maximum AM             = 2
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     18s 5p 2d // 4s 3p 2d 
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 7.9241747161E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UHF energy:   -26.32996813010262
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         23      23       4       2       2       2
+   -------------------------------------------------------
+    Total      23      23       4       2       2       2
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ DFHF: Density-Fitted SCF Algorithms.
+   by Rob Parrish
+
+  No auxiliary basis selected, defaulting to AUG-CC-PVDZ-JKFIT
+
+  ==> Auxiliary Basis:  <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 28
+    Number of primitives   = 28
+    Number of AO           = 101
+    Number of SO           = 86
+    Maximum AM             = 3
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     11s 8p 6d 3f // 11s 8p 6d 3f 
+
+  Schwarz Cutoff is 0.000E+00
+   -Shell Pairs:              45 of           45 remain,   0% savings
+   -Function Pairs:          276 of          276 remain,   0% savings
+
+  Using Core Algorithm.
+
+    ----------------------------------------------
+     Quantity         Doubles              MiB   
+    ----------------------------------------------
+     Memory            22400000              179
+     (A|B)                 7396                0
+     (A|mn)               23736                0
+    ----------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @UHF iter   1:   -36.69365367582448   -1.03637e+01   0.00000e+00 
+   @UHF iter   2:   -37.68006774113029   -9.86414e-01   6.68351e-02 DIIS
+   @UHF iter   3:   -37.68691010556222   -6.84236e-03   3.28728e-03 DIIS
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -11.351899     2A     -0.833274     3A     -0.439955  
+	   4A     -0.439955  
+
+	Alpha Virtual:                                                        
+
+	   5A      0.016844     6A      0.108811     7A      0.114833  
+	   8A      0.114833     9A      0.147481    10A      0.438271  
+	  11A      0.438271    12A      0.442717    13A      0.442717  
+	  14A      0.444970    15A      0.744751    16A      0.744751  
+	  17A      0.814702    18A      0.957972    19A      1.617622  
+	  20A      1.617622    21A      1.635647    22A      1.635647  
+	  23A      1.643028  
+
+	Beta Occupied:                                                        
+
+	   1A    -11.302242     2A     -0.581445  
+
+	Beta Virtual:                                                         
+
+	   3A      0.039353     4A      0.067459     5A      0.067459  
+	   6A      0.124735     7A      0.168760     8A      0.209239  
+	   9A      0.209239    10A      0.460936    11A      0.466738  
+	  12A      0.466738    13A      0.485045    14A      0.485045  
+	  15A      0.845725    16A      0.894743    17A      0.894743  
+	  18A      1.027330    19A      1.701139    20A      1.714948  
+	  21A      1.714948    22A      1.760480    23A      1.760480  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     2 ]
+	SOCC [     2 ]
+
+  ==> Fractionally-Occupied SCF Iterations <==
+
+    Alpha orbital    4 will contain   6.000E-01 electron.
+
+                        Total Energy        Delta E      Density RMS
+
+   @UHF iter   4:   -37.51218847095596    1.74722e-01   5.71641e-03 FRAC
+   @UHF iter   5:   -37.51921159045875   -7.02312e-03   3.12559e-03 MOM/FRAC
+   @UHF iter   6:   -37.51968960181888   -4.78011e-04   5.75620e-04 DIIS/MOM/FRAC
+   @UHF iter   7:   -37.51977650742467   -8.69056e-05   3.22680e-04 DIIS/MOM/FRAC
+   @UHF iter   8:   -37.51977714163230   -6.34208e-07   3.04463e-05 DIIS/MOM/FRAC
+   @UHF iter   9:   -37.51977715714188   -1.55096e-08   5.28057e-06 DIIS/MOM/FRAC
+   @UHF iter  10:   -37.51977715772439   -5.82510e-10   9.50685e-07 DIIS/MOM/FRAC
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -11.581402     2A     -0.986140     3A     -0.627232  
+	   4A     -0.403260  
+
+	Alpha Virtual:                                                        
+
+	   5A     -0.124859     6A      0.020480     7A      0.038439  
+	   8A      0.042988     9A      0.055286    10A      0.325433  
+	  11A      0.325469    12A      0.328476    13A      0.328890  
+	  14A      0.330277    15A      0.593474    16A      0.624170  
+	  17A      0.660241    18A      0.812667    19A      1.459338  
+	  20A      1.460253    21A      1.470298    22A      1.479795  
+	  23A      1.482057  
+
+	Beta Occupied:                                                        
+
+	   1A    -11.542241     2A     -0.786562  
+
+	Beta Virtual:                                                         
+
+	   3A     -0.096658     4A     -0.066604     5A     -0.047909  
+	   6A      0.031761     7A      0.063330     8A      0.076199  
+	   9A      0.087309    10A      0.342954    11A      0.345228  
+	  12A      0.351421    13A      0.362963    14A      0.363646  
+	  15A      0.682032    16A      0.709127    17A      0.730356  
+	  18A      0.863097    19A      1.523661    20A      1.527858  
+	  21A      1.547795    22A      1.574627    23A      1.577619  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     2 ]
+	SOCC [     2 ]
+
+  Energy converged.
+
+  @UHF Final Energy:   -37.51977715772439
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:    -0.0000
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:    -0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -0.0000      Z:    -0.0000     Total:     0.0000
+
+  Quadrupole Moment: (Debye Ang)
+    XX:    -4.2654     YY:    -5.4768     ZZ:    -5.7800
+    XY:    -0.3366     XZ:     0.1953     YZ:     0.1460
+
+  Traceless Quadrupole Moment: (Debye Ang)
+    XX:     0.9087     YY:    -0.3028     ZZ:    -0.6059
+    XY:    -0.3366     XZ:     0.1953     YZ:     0.1460
+
+  Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     C     3.60000  2.00000  1.60000  0.40000
+
+   Total alpha =  3.60000, Total beta =  2.00000, Total charge =  0.40000
+
+
+  @Spin Contamination Metric:  0.00606
+  @S^2 Expected:               2.00000
+  @S^2 Observed:               2.00606
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:52 2012
+Module time:
+	user time   =       0.12 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.59 seconds =       0.01 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:52 2012
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              UHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 3:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000     0.000000000000
+
+    Number of unique atoms: 1
+
+    Atoms equivalency:
+       unique atom 0: 0 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 3
+  Electrons    = 6
+  Nalpha       = 4
+  Nbeta        = 2
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM enabled.
+  Fractional occupation enabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-07
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: AUG-CC-PVDZ <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 9
+    Number of primitives   = 25
+    Number of AO           = 25
+    Number of SO           = 23
+    Maximum AM             = 2
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     18s 5p 2d // 4s 3p 2d 
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 7.9241747161E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UHF energy:   -26.32996813010262
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         23      23       4       2       2       2
+   -------------------------------------------------------
+    Total      23      23       4       2       2       2
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ DFHF: Density-Fitted SCF Algorithms.
+   by Rob Parrish
+
+  No auxiliary basis selected, defaulting to AUG-CC-PVDZ-JKFIT
+
+  ==> Auxiliary Basis:  <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 28
+    Number of primitives   = 28
+    Number of AO           = 101
+    Number of SO           = 86
+    Maximum AM             = 3
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     11s 8p 6d 3f // 11s 8p 6d 3f 
+
+  Schwarz Cutoff is 0.000E+00
+   -Shell Pairs:              45 of           45 remain,   0% savings
+   -Function Pairs:          276 of          276 remain,   0% savings
+
+  Using Core Algorithm.
+
+    ----------------------------------------------
+     Quantity         Doubles              MiB   
+    ----------------------------------------------
+     Memory            22400000              179
+     (A|B)                 7396                0
+     (A|mn)               23736                0
+    ----------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @UHF iter   1:   -36.69365367582448   -1.03637e+01   0.00000e+00 
+   @UHF iter   2:   -37.68006774113029   -9.86414e-01   6.68351e-02 DIIS
+   @UHF iter   3:   -37.68691010556222   -6.84236e-03   3.28728e-03 DIIS
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -11.351899     2A     -0.833274     3A     -0.439955  
+	   4A     -0.439955  
+
+	Alpha Virtual:                                                        
+
+	   5A      0.016844     6A      0.108811     7A      0.114833  
+	   8A      0.114833     9A      0.147481    10A      0.438271  
+	  11A      0.438271    12A      0.442717    13A      0.442717  
+	  14A      0.444970    15A      0.744751    16A      0.744751  
+	  17A      0.814702    18A      0.957972    19A      1.617622  
+	  20A      1.617622    21A      1.635647    22A      1.635647  
+	  23A      1.643028  
+
+	Beta Occupied:                                                        
+
+	   1A    -11.302242     2A     -0.581445  
+
+	Beta Virtual:                                                         
+
+	   3A      0.039353     4A      0.067459     5A      0.067459  
+	   6A      0.124735     7A      0.168760     8A      0.209239  
+	   9A      0.209239    10A      0.460936    11A      0.466738  
+	  12A      0.466738    13A      0.485045    14A      0.485045  
+	  15A      0.845725    16A      0.894743    17A      0.894743  
+	  18A      1.027330    19A      1.701139    20A      1.714948  
+	  21A      1.714948    22A      1.760480    23A      1.760480  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     2 ]
+	SOCC [     2 ]
+
+  ==> Fractionally-Occupied SCF Iterations <==
+
+    Alpha orbital    4 will contain   7.000E-01 electron.
+
+                        Total Energy        Delta E      Density RMS
+
+   @UHF iter   4:   -37.55606269043026    1.30847e-01   4.30971e-03 FRAC
+   @UHF iter   5:   -37.56012159553173   -4.05891e-03   2.35824e-03 MOM/FRAC
+   @UHF iter   6:   -37.56042914855072   -3.07553e-04   4.71938e-04 DIIS/MOM/FRAC
+   @UHF iter   7:   -37.56049413478069   -6.49862e-05   2.88921e-04 DIIS/MOM/FRAC
+   @UHF iter   8:   -37.56049469982926   -5.65049e-07   2.89538e-05 DIIS/MOM/FRAC
+   @UHF iter   9:   -37.56049471059244   -1.07632e-08   4.41773e-06 DIIS/MOM/FRAC
+   @UHF iter  10:   -37.56049471085483   -2.62396e-10   6.65039e-07 DIIS/MOM/FRAC
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -11.523899     2A     -0.946865     3A     -0.579782  
+	   4A     -0.411169  
+
+	Alpha Virtual:                                                        
+
+	   5A     -0.087366     6A      0.042743     7A      0.057561  
+	   8A      0.061117     9A      0.077065    10A      0.353606  
+	  11A      0.353616    12A      0.357000    13A      0.357444  
+	  14A      0.358998    15A      0.631067    16A      0.655098  
+	  17A      0.698745    18A      0.849250    19A      1.499463  
+	  20A      1.499975    21A      1.511927    22A      1.519219  
+	  23A      1.522447  
+
+	Beta Occupied:                                                        
+
+	   1A    -11.483040     2A     -0.736325  
+
+	Beta Virtual:                                                         
+
+	   3A     -0.059574     4A     -0.027708     5A     -0.015614  
+	   6A      0.054890     7A      0.087142     8A      0.104990  
+	   9A      0.115029    10A      0.372949    11A      0.376023  
+	  12A      0.380581    13A      0.393923    14A      0.394278  
+	  15A      0.722240    16A      0.754472    17A      0.770822  
+	  18A      0.903350    19A      1.568552    20A      1.574574  
+	  21A      1.589664    22A      1.621137    23A      1.622812  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     2 ]
+	SOCC [     2 ]
+
+  Energy converged.
+
+  @UHF Final Energy:   -37.56049471085483
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:    -0.0000
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
+
+  Quadrupole Moment: (Debye Ang)
+    XX:    -4.4441     YY:    -5.8001     ZZ:    -6.0389
+    XY:    -0.3682     XZ:     0.1898     YZ:     0.0886
+
+  Traceless Quadrupole Moment: (Debye Ang)
+    XX:     0.9836     YY:    -0.3724     ZZ:    -0.6112
+    XY:    -0.3682     XZ:     0.1898     YZ:     0.0886
+
+  Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     C     3.70000  2.00000  1.70000  0.30000
+
+   Total alpha =  3.70000, Total beta =  2.00000, Total charge =  0.30000
+
+
+  @Spin Contamination Metric:  0.00660
+  @S^2 Expected:               2.00000
+  @S^2 Observed:               2.00660
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:52 2012
+Module time:
+	user time   =       0.11 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.70 seconds =       0.01 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:52 2012
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              UHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 3:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000     0.000000000000
+
+    Number of unique atoms: 1
+
+    Atoms equivalency:
+       unique atom 0: 0 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 3
+  Electrons    = 6
+  Nalpha       = 4
+  Nbeta        = 2
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM enabled.
+  Fractional occupation enabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-07
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: AUG-CC-PVDZ <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 9
+    Number of primitives   = 25
+    Number of AO           = 25
+    Number of SO           = 23
+    Maximum AM             = 2
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     18s 5p 2d // 4s 3p 2d 
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 7.9241747161E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UHF energy:   -26.32996813010262
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         23      23       4       2       2       2
+   -------------------------------------------------------
+    Total      23      23       4       2       2       2
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ DFHF: Density-Fitted SCF Algorithms.
+   by Rob Parrish
+
+  No auxiliary basis selected, defaulting to AUG-CC-PVDZ-JKFIT
+
+  ==> Auxiliary Basis:  <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 28
+    Number of primitives   = 28
+    Number of AO           = 101
+    Number of SO           = 86
+    Maximum AM             = 3
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     11s 8p 6d 3f // 11s 8p 6d 3f 
+
+  Schwarz Cutoff is 0.000E+00
+   -Shell Pairs:              45 of           45 remain,   0% savings
+   -Function Pairs:          276 of          276 remain,   0% savings
+
+  Using Core Algorithm.
+
+    ----------------------------------------------
+     Quantity         Doubles              MiB   
+    ----------------------------------------------
+     Memory            22400000              179
+     (A|B)                 7396                0
+     (A|mn)               23736                0
+    ----------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @UHF iter   1:   -36.69365367582448   -1.03637e+01   0.00000e+00 
+   @UHF iter   2:   -37.68006774113029   -9.86414e-01   6.68351e-02 DIIS
+   @UHF iter   3:   -37.68691010556222   -6.84236e-03   3.28728e-03 DIIS
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -11.351899     2A     -0.833274     3A     -0.439955  
+	   4A     -0.439955  
+
+	Alpha Virtual:                                                        
+
+	   5A      0.016844     6A      0.108811     7A      0.114833  
+	   8A      0.114833     9A      0.147481    10A      0.438271  
+	  11A      0.438271    12A      0.442717    13A      0.442717  
+	  14A      0.444970    15A      0.744751    16A      0.744751  
+	  17A      0.814702    18A      0.957972    19A      1.617622  
+	  20A      1.617622    21A      1.635647    22A      1.635647  
+	  23A      1.643028  
+
+	Beta Occupied:                                                        
+
+	   1A    -11.302242     2A     -0.581445  
+
+	Beta Virtual:                                                         
+
+	   3A      0.039353     4A      0.067459     5A      0.067459  
+	   6A      0.124735     7A      0.168760     8A      0.209239  
+	   9A      0.209239    10A      0.460936    11A      0.466738  
+	  12A      0.466738    13A      0.485045    14A      0.485045  
+	  15A      0.845725    16A      0.894743    17A      0.894743  
+	  18A      1.027330    19A      1.701139    20A      1.714948  
+	  21A      1.714948    22A      1.760480    23A      1.760480  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     2 ]
+	SOCC [     2 ]
+
+  ==> Fractionally-Occupied SCF Iterations <==
+
+    Alpha orbital    4 will contain   8.000E-01 electron.
+
+                        Total Energy        Delta E      Density RMS
+
+   @UHF iter   4:   -37.59993690990454    8.69732e-02   2.92686e-03 FRAC
+   @UHF iter   5:   -37.60182566866547   -1.88876e-03   1.58988e-03 MOM/FRAC
+   @UHF iter   6:   -37.60198780360307   -1.62135e-04   3.49438e-04 DIIS/MOM/FRAC
+   @UHF iter   7:   -37.60202733944978   -3.95358e-05   2.34040e-04 DIIS/MOM/FRAC
+   @UHF iter   8:   -37.60202772250257   -3.83053e-07   2.43655e-05 DIIS/MOM/FRAC
+   @UHF iter   9:   -37.60202772915765   -6.65508e-09   3.60504e-06 DIIS/MOM/FRAC
+   @UHF iter  10:   -37.60202772924571   -8.80647e-11   4.02017e-07 DIIS/MOM/FRAC
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -11.466372     2A     -0.907789     3A     -0.532435  
+	   4A     -0.419579  
+
+	Alpha Virtual:                                                        
+
+	   5A     -0.050992     6A      0.064946     7A      0.076688  
+	   8A      0.079172     9A      0.099622    10A      0.381745  
+	  11A      0.381745    12A      0.385518    13A      0.385906  
+	  14A      0.387665    15A      0.669089    16A      0.685807  
+	  17A      0.737495    18A      0.885928    19A      1.539414  
+	  20A      1.539639    21A      1.553564    22A      1.558544  
+	  23A      1.562943  
+
+	Beta Occupied:                                                        
+
+	   1A    -11.423733     2A     -0.686193  
+
+	Beta Virtual:                                                         
+
+	   3A     -0.024271     4A      0.007775     5A      0.014455  
+	   6A      0.078005     7A      0.112356     8A      0.136693  
+	   9A      0.144616    10A      0.402732    11A      0.406686  
+	  12A      0.409665    13A      0.424770    14A      0.424916  
+	  15A      0.762778    16A      0.800347    17A      0.811545  
+	  18A      0.943827    19A      1.613094    20A      1.621336  
+	  21A      1.631491    22A      1.667652    23A      1.668390  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     2 ]
+	SOCC [     2 ]
+
+  Energy converged.
+
+  @UHF Final Energy:   -37.60202772924571
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Quadrupole Moment: (Debye Ang)
+    XX:    -4.6264     YY:    -6.1225     ZZ:    -6.3044
+    XY:    -0.3992     XZ:     0.1861     YZ:     0.0370
+
+  Traceless Quadrupole Moment: (Debye Ang)
+    XX:     1.0581     YY:    -0.4381     ZZ:    -0.6200
+    XY:    -0.3992     XZ:     0.1861     YZ:     0.0370
+
+  Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     C     3.80000  2.00000  1.80000  0.20000
+
+   Total alpha =  3.80000, Total beta =  2.00000, Total charge =  0.20000
+
+
+  @Spin Contamination Metric:  0.00735
+  @S^2 Expected:               2.00000
+  @S^2 Observed:               2.00735
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:52 2012
+Module time:
+	user time   =       0.11 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.81 seconds =       0.01 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:52 2012
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              UHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 3:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000     0.000000000000
+
+    Number of unique atoms: 1
+
+    Atoms equivalency:
+       unique atom 0: 0 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 3
+  Electrons    = 6
+  Nalpha       = 4
+  Nbeta        = 2
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM enabled.
+  Fractional occupation enabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-07
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: AUG-CC-PVDZ <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 9
+    Number of primitives   = 25
+    Number of AO           = 25
+    Number of SO           = 23
+    Maximum AM             = 2
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     18s 5p 2d // 4s 3p 2d 
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 7.9241747161E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UHF energy:   -26.32996813010262
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         23      23       4       2       2       2
+   -------------------------------------------------------
+    Total      23      23       4       2       2       2
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ DFHF: Density-Fitted SCF Algorithms.
+   by Rob Parrish
+
+  No auxiliary basis selected, defaulting to AUG-CC-PVDZ-JKFIT
+
+  ==> Auxiliary Basis:  <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 28
+    Number of primitives   = 28
+    Number of AO           = 101
+    Number of SO           = 86
+    Maximum AM             = 3
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     11s 8p 6d 3f // 11s 8p 6d 3f 
+
+  Schwarz Cutoff is 0.000E+00
+   -Shell Pairs:              45 of           45 remain,   0% savings
+   -Function Pairs:          276 of          276 remain,   0% savings
+
+  Using Core Algorithm.
+
+    ----------------------------------------------
+     Quantity         Doubles              MiB   
+    ----------------------------------------------
+     Memory            22400000              179
+     (A|B)                 7396                0
+     (A|mn)               23736                0
+    ----------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @UHF iter   1:   -36.69365367582448   -1.03637e+01   0.00000e+00 
+   @UHF iter   2:   -37.68006774113029   -9.86414e-01   6.68351e-02 DIIS
+   @UHF iter   3:   -37.68691010556222   -6.84236e-03   3.28728e-03 DIIS
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -11.351899     2A     -0.833274     3A     -0.439955  
+	   4A     -0.439955  
+
+	Alpha Virtual:                                                        
+
+	   5A      0.016844     6A      0.108811     7A      0.114833  
+	   8A      0.114833     9A      0.147481    10A      0.438271  
+	  11A      0.438271    12A      0.442717    13A      0.442717  
+	  14A      0.444970    15A      0.744751    16A      0.744751  
+	  17A      0.814702    18A      0.957972    19A      1.617622  
+	  20A      1.617622    21A      1.635647    22A      1.635647  
+	  23A      1.643028  
+
+	Beta Occupied:                                                        
+
+	   1A    -11.302242     2A     -0.581445  
+
+	Beta Virtual:                                                         
+
+	   3A      0.039353     4A      0.067459     5A      0.067459  
+	   6A      0.124735     7A      0.168760     8A      0.209239  
+	   9A      0.209239    10A      0.460936    11A      0.466738  
+	  12A      0.466738    13A      0.485045    14A      0.485045  
+	  15A      0.845725    16A      0.894743    17A      0.894743  
+	  18A      1.027330    19A      1.701139    20A      1.714948  
+	  21A      1.714948    22A      1.760480    23A      1.760480  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     2 ]
+	SOCC [     2 ]
+
+  ==> Fractionally-Occupied SCF Iterations <==
+
+    Alpha orbital    4 will contain   9.000E-01 electron.
+
+                        Total Energy        Delta E      Density RMS
+
+   @UHF iter   4:   -37.64381112937885    4.30990e-02   1.62974e-03 FRAC
+   @UHF iter   5:   -37.64435483431716   -5.43705e-04   8.23412e-04 MOM/FRAC
+   @UHF iter   6:   -37.64441297430061   -5.81400e-05   2.08917e-04 DIIS/MOM/FRAC
+   @UHF iter   7:   -37.64442927880488   -1.63045e-05   1.55243e-04 DIIS/MOM/FRAC
+   @UHF iter   8:   -37.64442941562893   -1.36824e-07   1.53350e-05 DIIS/MOM/FRAC
+   @UHF iter   9:   -37.64442941823411   -2.60518e-09   2.47988e-06 DIIS/MOM/FRAC
+   @UHF iter  10:   -37.64442941825889   -2.47837e-11   2.14430e-07 DIIS/MOM/FRAC
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -11.408863     2A     -0.868949     3A     -0.485224  
+	   4A     -0.428556  
+
+	Alpha Virtual:                                                        
+
+	   5A     -0.015998     6A      0.087077     7A      0.095842  
+	   8A      0.097150     9A      0.123184    10A      0.409832  
+	  11A      0.409834    12A      0.414018    13A      0.414260  
+	  14A      0.416268    15A      0.707532    16A      0.716251  
+	  17A      0.776451    18A      0.922666    19A      1.579152  
+	  20A      1.579208    21A      1.595175    22A      1.597726  
+	  23A      1.603510  
+
+	Beta Occupied:                                                        
+
+	   1A    -11.364355     2A     -0.636205  
+
+	Beta Virtual:                                                         
+
+	   3A      0.008915     4A      0.039645     5A      0.042322  
+	   6A      0.101119     7A      0.139273     8A      0.171462  
+	   9A      0.176009    10A      0.432303    11A      0.437198  
+	  12A      0.438657    13A      0.455486    14A      0.455519  
+	  15A      0.803618    16A      0.846732    17A      0.852487  
+	  18A      0.984503    19A      1.657247    20A      1.668104  
+	  21A      1.673232    22A      1.714128    23A      1.714310  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     2 ]
+	SOCC [     2 ]
+
+  Energy converged.
+
+  @UHF Final Energy:   -37.64442941825889
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Quadrupole Moment: (Debye Ang)
+    XX:    -4.8138     YY:    -6.4455     ZZ:    -6.5788
+    XY:    -0.4299     XZ:     0.1844     YZ:    -0.0080
+
+  Traceless Quadrupole Moment: (Debye Ang)
+    XX:     1.1322     YY:    -0.4994     ZZ:    -0.6328
+    XY:    -0.4299     XZ:     0.1844     YZ:    -0.0080
+
+  Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     C     3.90000  2.00000  1.90000  0.10000
+
+   Total alpha =  3.90000, Total beta =  2.00000, Total charge =  0.10000
+
+
+  @Spin Contamination Metric:  0.00835
+  @S^2 Expected:               2.00000
+  @S^2 Observed:               2.00835
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:52 2012
+Module time:
+	user time   =       0.12 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.93 seconds =       0.02 minutes
+	system time =       0.11 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:52 2012
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              UHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = -1, multiplicity = 4:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000     0.000000000000
+
+    Number of unique atoms: 1
+
+    Atoms equivalency:
+       unique atom 0: 0 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = -1
+  Multiplicity = 4
+  Electrons    = 7
+  Nalpha       = 5
+  Nbeta        = 2
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM enabled.
+  Fractional occupation enabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-07
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: AUG-CC-PVDZ <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 9
+    Number of primitives   = 25
+    Number of AO           = 25
+    Number of SO           = 23
+    Maximum AM             = 2
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     18s 5p 2d // 4s 3p 2d 
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 7.9241747161E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UHF energy:   -28.38798693897903
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         23      23       5       2       2       3
+   -------------------------------------------------------
+    Total      23      23       5       2       2       3
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ DFHF: Density-Fitted SCF Algorithms.
+   by Rob Parrish
+
+  No auxiliary basis selected, defaulting to AUG-CC-PVDZ-JKFIT
+
+  ==> Auxiliary Basis:  <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 28
+    Number of primitives   = 28
+    Number of AO           = 101
+    Number of SO           = 86
+    Maximum AM             = 3
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     11s 8p 6d 3f // 11s 8p 6d 3f 
+
+  Schwarz Cutoff is 0.000E+00
+   -Shell Pairs:              45 of           45 remain,   0% savings
+   -Function Pairs:          276 of          276 remain,   0% savings
+
+  Using Core Algorithm.
+
+    ----------------------------------------------
+     Quantity         Doubles              MiB   
+    ----------------------------------------------
+     Memory            22400000              179
+     (A|B)                 7396                0
+     (A|mn)               23736                0
+    ----------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @UHF iter   1:   -35.85592530616875   -7.46794e+00   0.00000e+00 
+   @UHF iter   2:   -36.04018854256891   -1.84263e-01   9.43565e-02 DIIS
+   @UHF iter   3:   -37.51785974314176   -1.47767e+00   6.63610e-02 DIIS
+   @UHF iter   4:   -37.68344562288952   -1.65586e-01   1.18204e-02 DIIS
+   @UHF iter   5:   -37.70364702322498   -2.02014e-02   4.01875e-03 DIIS
+   @UHF iter   6:   -37.70470889725853   -1.06187e-03   1.45205e-03 DIIS
+   @UHF iter   7:   -37.70491969069437   -2.10793e-04   6.82345e-04 DIIS
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -10.979179     2A     -0.526212     3A     -0.077159  
+	   4A     -0.077159     5A     -0.077159  
+
+	Alpha Virtual:                                                        
+
+	   6A      0.299505     7A      0.299505     8A      0.299505  
+	   9A      0.304948    10A      0.683489    11A      0.683489  
+	  12A      0.683489    13A      0.683489    14A      0.683489  
+	  15A      1.062346    16A      1.062346    17A      1.062346  
+	  18A      1.259129    19A      1.953299    20A      1.953299  
+	  21A      1.953299    22A      1.953299    23A      1.953299  
+
+	Beta Occupied:                                                        
+
+	   1A    -10.929333     2A     -0.214748  
+
+	Beta Virtual:                                                         
+
+	   3A      0.267565     4A      0.267565     5A      0.267565  
+	   6A      0.340379     7A      0.499295     8A      0.499295  
+	   9A      0.499295    10A      0.745486    11A      0.745486  
+	  12A      0.745486    13A      0.745486    14A      0.745486  
+	  15A      1.206705    16A      1.206705    17A      1.206705  
+	  18A      1.348845    19A      2.079760    20A      2.079760  
+	  21A      2.079760    22A      2.079760    23A      2.079760  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     2 ]
+	SOCC [     3 ]
+
+  ==> Fractionally-Occupied SCF Iterations <==
+
+    Alpha orbital    5 will contain   1.000E-01 electron.
+
+                        Total Energy        Delta E      Density RMS
+
+   @UHF iter   8:   -37.63508291696224    6.98368e-02   1.11895e-02 FRAC
+   @UHF iter   9:   -37.68285999198711   -4.77771e-02   7.51117e-03 MOM/FRAC
+   @UHF iter  10:   -37.68581307101524   -2.95308e-03   2.15532e-03 DIIS/MOM/FRAC
+   @UHF iter  11:   -37.68618700234979   -3.73931e-04   6.47082e-04 DIIS/MOM/FRAC
+   @UHF iter  12:   -37.68622887523340   -4.18729e-05   2.67944e-04 DIIS/MOM/FRAC
+   @UHF iter  13:   -37.68623126844098   -2.39321e-06   6.61065e-05 DIIS/MOM/FRAC
+   @UHF iter  14:   -37.68623127867853   -1.02375e-08   2.92082e-06 DIIS/MOM/FRAC
+   @UHF iter  15:   -37.68623127890729   -2.28766e-10   6.05346e-07 DIIS/MOM/FRAC
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -11.317459     2A     -0.801222     3A     -0.405404  
+	   4A     -0.405404     5A      0.013163  
+
+	Alpha Virtual:                                                        
+
+	   6A      0.127722     7A      0.132312     8A      0.132312  
+	   9A      0.164065    10A      0.461768    11A      0.461768  
+	  12A      0.465502    13A      0.465502    14A      0.467410  
+	  15A      0.774981    16A      0.774981    17A      0.841178  
+	  18A      0.987591    19A      1.649625    20A      1.649625  
+	  21A      1.666967    22A      1.666967    23A      1.673953  
+
+	Beta Occupied:                                                        
+
+	   1A    -11.270968     2A     -0.552096  
+
+	Beta Virtual:                                                         
+
+	   3A      0.066462     4A      0.089445     5A      0.089445  
+	   6A      0.145239     7A      0.194700     8A      0.234924  
+	   9A      0.234924    10A      0.489220    11A      0.494492  
+	  12A      0.494492    13A      0.511019    14A      0.511019  
+	  15A      0.877351    16A      0.922860    17A      0.922860  
+	  18A      1.055358    19A      1.735574    20A      1.748532  
+	  21A      1.748532    22A      1.790966    23A      1.790966  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     2 ]
+	SOCC [     3 ]
+
+  Energy converged.
+
+  @UHF Final Energy:   -37.68623127890729
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:    -0.0000
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:    -0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -0.0000      Z:    -0.0000     Total:     0.0000
+
+  Quadrupole Moment: (Debye Ang)
+    XX:    -6.5752     YY:    -6.7998     ZZ:    -7.2669
+    XY:     0.6449     XZ:     0.2401     YZ:     0.2019
+
+  Traceless Quadrupole Moment: (Debye Ang)
+    XX:     0.3055     YY:     0.0809     ZZ:    -0.3863
+    XY:     0.6449     XZ:     0.2401     YZ:     0.2019
+
+  Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     C     4.10000  2.00000  2.10000 -0.10000
+
+   Total alpha =  4.10000, Total beta =  2.00000, Total charge = -0.10000
+
+
+  @Spin Contamination Metric:  0.00875
+  @S^2 Expected:               3.75000
+  @S^2 Observed:               3.75875
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:52 2012
+Module time:
+	user time   =       0.13 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.06 seconds =       0.02 minutes
+	system time =       0.12 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:52 2012
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              UHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = -1, multiplicity = 4:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000     0.000000000000
+
+    Number of unique atoms: 1
+
+    Atoms equivalency:
+       unique atom 0: 0 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = -1
+  Multiplicity = 4
+  Electrons    = 7
+  Nalpha       = 5
+  Nbeta        = 2
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM enabled.
+  Fractional occupation enabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-07
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: AUG-CC-PVDZ <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 9
+    Number of primitives   = 25
+    Number of AO           = 25
+    Number of SO           = 23
+    Maximum AM             = 2
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     18s 5p 2d // 4s 3p 2d 
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 7.9241747161E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UHF energy:   -28.38798693897903
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         23      23       5       2       2       3
+   -------------------------------------------------------
+    Total      23      23       5       2       2       3
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ DFHF: Density-Fitted SCF Algorithms.
+   by Rob Parrish
+
+  No auxiliary basis selected, defaulting to AUG-CC-PVDZ-JKFIT
+
+  ==> Auxiliary Basis:  <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 28
+    Number of primitives   = 28
+    Number of AO           = 101
+    Number of SO           = 86
+    Maximum AM             = 3
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     11s 8p 6d 3f // 11s 8p 6d 3f 
+
+  Schwarz Cutoff is 0.000E+00
+   -Shell Pairs:              45 of           45 remain,   0% savings
+   -Function Pairs:          276 of          276 remain,   0% savings
+
+  Using Core Algorithm.
+
+    ----------------------------------------------
+     Quantity         Doubles              MiB   
+    ----------------------------------------------
+     Memory            22400000              179
+     (A|B)                 7396                0
+     (A|mn)               23736                0
+    ----------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @UHF iter   1:   -35.85592530616875   -7.46794e+00   0.00000e+00 
+   @UHF iter   2:   -36.04018854256891   -1.84263e-01   9.43565e-02 DIIS
+   @UHF iter   3:   -37.51785974314176   -1.47767e+00   6.63610e-02 DIIS
+   @UHF iter   4:   -37.68344562288952   -1.65586e-01   1.18204e-02 DIIS
+   @UHF iter   5:   -37.70364702322498   -2.02014e-02   4.01875e-03 DIIS
+   @UHF iter   6:   -37.70470889725853   -1.06187e-03   1.45205e-03 DIIS
+   @UHF iter   7:   -37.70491969069437   -2.10793e-04   6.82345e-04 DIIS
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -10.979179     2A     -0.526212     3A     -0.077159  
+	   4A     -0.077159     5A     -0.077159  
+
+	Alpha Virtual:                                                        
+
+	   6A      0.299505     7A      0.299505     8A      0.299505  
+	   9A      0.304948    10A      0.683489    11A      0.683489  
+	  12A      0.683489    13A      0.683489    14A      0.683489  
+	  15A      1.062346    16A      1.062346    17A      1.062346  
+	  18A      1.259129    19A      1.953299    20A      1.953299  
+	  21A      1.953299    22A      1.953299    23A      1.953299  
+
+	Beta Occupied:                                                        
+
+	   1A    -10.929333     2A     -0.214748  
+
+	Beta Virtual:                                                         
+
+	   3A      0.267565     4A      0.267565     5A      0.267565  
+	   6A      0.340379     7A      0.499295     8A      0.499295  
+	   9A      0.499295    10A      0.745486    11A      0.745486  
+	  12A      0.745486    13A      0.745486    14A      0.745486  
+	  15A      1.206705    16A      1.206705    17A      1.206705  
+	  18A      1.348845    19A      2.079760    20A      2.079760  
+	  21A      2.079760    22A      2.079760    23A      2.079760  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     2 ]
+	SOCC [     3 ]
+
+  ==> Fractionally-Occupied SCF Iterations <==
+
+    Alpha orbital    5 will contain   2.000E-01 electron.
+
+                        Total Energy        Delta E      Density RMS
+
+   @UHF iter   8:   -37.64284570793361    6.20740e-02   9.94599e-03 FRAC
+   @UHF iter   9:   -37.68126691679988   -3.84212e-02   6.80581e-03 MOM/FRAC
+   @UHF iter  10:   -37.68457509615870   -3.30818e-03   2.11855e-03 DIIS/MOM/FRAC
+   @UHF iter  11:   -37.68505680103194   -4.81705e-04   6.42671e-04 DIIS/MOM/FRAC
+   @UHF iter  12:   -37.68514592517017   -8.91241e-05   4.00607e-04 DIIS/MOM/FRAC
+   @UHF iter  13:   -37.68514809078323   -2.16561e-06   6.17307e-05 DIIS/MOM/FRAC
+   @UHF iter  14:   -37.68514813047458   -3.96914e-08   6.50131e-06 DIIS/MOM/FRAC
+   @UHF iter  15:   -37.68514813100938   -5.34797e-10   6.66978e-07 DIIS/MOM/FRAC
+   @UHF iter  16:   -37.68514813102041   -1.10276e-11   1.52788e-07 DIIS/MOM/FRAC
+   @UHF iter  17:   -37.59194672578715    9.32014e-02   1.86903e-02 DIIS/MOM/FRAC
+   @UHF iter  18:   -37.59194671865916    7.12799e-09   6.22292e-10 DIIS/MOM/FRAC
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -11.282612     2A     -0.771592     4A     -0.371837  
+	   5A      0.008388     9A      0.179983  
+
+	Alpha Virtual:                                                        
+
+	   3A     -0.371837     6A      0.146630     7A      0.149782  
+	   8A      0.149782    10A      0.485969    11A      0.485969  
+	  12A      0.488847    13A      0.488847    14A      0.490370  
+	  15A      0.804295    16A      0.804295    17A      0.866950  
+	  18A      1.016324    19A      1.681311    20A      1.681311  
+	  21A      1.697762    22A      1.697762    23A      1.704292  
+
+	Beta Occupied:                                                        
+
+	   1A    -11.236072     2A     -0.516944  
+
+	Beta Virtual:                                                         
+
+	   3A      0.092380     4A      0.110392     5A      0.110392  
+	   6A      0.166407     7A      0.222932     8A      0.261847  
+	   9A      0.261847    10A      0.517130    11A      0.521791  
+	  12A      0.521791    13A      0.536338    14A      0.536338  
+	  15A      0.910838    16A      0.952755    17A      0.952755  
+	  18A      1.086045    19A      1.771061    20A      1.783043  
+	  21A      1.783043    22A      1.822017    23A      1.822017  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     2 ]
+	SOCC [     3 ]
+
+  Energy converged.
+
+  @UHF Final Energy:   -37.59194671865916
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Quadrupole Moment: (Debye Ang)
+    XX:   -14.1596     YY:   -13.1302     ZZ:   -10.7238
+    XY:    -4.2476     XZ:    -1.9949     YZ:    -0.4689
+
+  Traceless Quadrupole Moment: (Debye Ang)
+    XX:    -1.4884     YY:    -0.4590     ZZ:     1.9474
+    XY:    -4.2476     XZ:    -1.9949     YZ:    -0.4689
+
+  Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     C     4.20000  2.00000  2.20000 -0.20000
+
+   Total alpha =  4.20000, Total beta =  2.00000, Total charge = -0.20000
+
+
+  @Spin Contamination Metric:  0.00790
+  @S^2 Expected:               3.75000
+  @S^2 Observed:               3.75790
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:52 2012
+Module time:
+	user time   =       0.13 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.19 seconds =       0.02 minutes
+	system time =       0.15 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:52 2012
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              UHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = -1, multiplicity = 4:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000     0.000000000000
+
+    Number of unique atoms: 1
+
+    Atoms equivalency:
+       unique atom 0: 0 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = -1
+  Multiplicity = 4
+  Electrons    = 7
+  Nalpha       = 5
+  Nbeta        = 2
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM enabled.
+  Fractional occupation enabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-07
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: AUG-CC-PVDZ <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 9
+    Number of primitives   = 25
+    Number of AO           = 25
+    Number of SO           = 23
+    Maximum AM             = 2
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     18s 5p 2d // 4s 3p 2d 
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 7.9241747161E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UHF energy:   -28.38798693897903
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         23      23       5       2       2       3
+   -------------------------------------------------------
+    Total      23      23       5       2       2       3
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ DFHF: Density-Fitted SCF Algorithms.
+   by Rob Parrish
+
+  No auxiliary basis selected, defaulting to AUG-CC-PVDZ-JKFIT
+
+  ==> Auxiliary Basis:  <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 28
+    Number of primitives   = 28
+    Number of AO           = 101
+    Number of SO           = 86
+    Maximum AM             = 3
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     11s 8p 6d 3f // 11s 8p 6d 3f 
+
+  Schwarz Cutoff is 0.000E+00
+   -Shell Pairs:              45 of           45 remain,   0% savings
+   -Function Pairs:          276 of          276 remain,   0% savings
+
+  Using Core Algorithm.
+
+    ----------------------------------------------
+     Quantity         Doubles              MiB   
+    ----------------------------------------------
+     Memory            22400000              179
+     (A|B)                 7396                0
+     (A|mn)               23736                0
+    ----------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @UHF iter   1:   -35.85592530616875   -7.46794e+00   0.00000e+00 
+   @UHF iter   2:   -36.04018854256891   -1.84263e-01   9.43565e-02 DIIS
+   @UHF iter   3:   -37.51785974314176   -1.47767e+00   6.63610e-02 DIIS
+   @UHF iter   4:   -37.68344562288952   -1.65586e-01   1.18204e-02 DIIS
+   @UHF iter   5:   -37.70364702322498   -2.02014e-02   4.01875e-03 DIIS
+   @UHF iter   6:   -37.70470889725853   -1.06187e-03   1.45205e-03 DIIS
+   @UHF iter   7:   -37.70491969069437   -2.10793e-04   6.82345e-04 DIIS
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -10.979179     2A     -0.526212     3A     -0.077159  
+	   4A     -0.077159     5A     -0.077159  
+
+	Alpha Virtual:                                                        
+
+	   6A      0.299505     7A      0.299505     8A      0.299505  
+	   9A      0.304948    10A      0.683489    11A      0.683489  
+	  12A      0.683489    13A      0.683489    14A      0.683489  
+	  15A      1.062346    16A      1.062346    17A      1.062346  
+	  18A      1.259129    19A      1.953299    20A      1.953299  
+	  21A      1.953299    22A      1.953299    23A      1.953299  
+
+	Beta Occupied:                                                        
+
+	   1A    -10.929333     2A     -0.214748  
+
+	Beta Virtual:                                                         
+
+	   3A      0.267565     4A      0.267565     5A      0.267565  
+	   6A      0.340379     7A      0.499295     8A      0.499295  
+	   9A      0.499295    10A      0.745486    11A      0.745486  
+	  12A      0.745486    13A      0.745486    14A      0.745486  
+	  15A      1.206705    16A      1.206705    17A      1.206705  
+	  18A      1.348845    19A      2.079760    20A      2.079760  
+	  21A      2.079760    22A      2.079760    23A      2.079760  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     2 ]
+	SOCC [     3 ]
+
+  ==> Fractionally-Occupied SCF Iterations <==
+
+    Alpha orbital    5 will contain   3.000E-01 electron.
+
+                        Total Energy        Delta E      Density RMS
+
+   @UHF iter   8:   -37.65060849890499    5.43112e-02   8.70266e-03 FRAC
+   @UHF iter   9:   -37.68056966189255   -2.99612e-02   6.08033e-03 MOM/FRAC
+   @UHF iter  10:   -37.68383652770388   -3.26687e-03   2.04137e-03 DIIS/MOM/FRAC
+   @UHF iter  11:   -37.68441110857601   -5.74581e-04   6.69503e-04 DIIS/MOM/FRAC
+   @UHF iter  12:   -37.68457624265575   -1.65134e-04   5.68789e-04 DIIS/MOM/FRAC
+   @UHF iter  13:   -37.68457828392486   -2.04127e-06   6.70351e-05 DIIS/MOM/FRAC
+   @UHF iter  14:   -37.68457838704552   -1.03121e-07   1.12798e-05 DIIS/MOM/FRAC
+   @UHF iter  15:   -37.68457839162993   -4.58441e-09   2.38320e-06 DIIS/MOM/FRAC
+   @UHF iter  16:   -37.68457839180764   -1.77707e-10   6.09133e-07 DIIS/MOM/FRAC
+   @UHF iter  17:   -37.58935753698405    9.52209e-02   1.99579e-02 DIIS/MOM/FRAC
+   @UHF iter  18:   -37.58935748777869    4.92054e-08   4.37853e-09 DIIS/MOM/FRAC
+   @UHF iter  19:   -37.58935777489931   -2.87121e-07   1.45200e-03 DIIS/MOM/FRAC
+   @UHF iter  20:   -37.58935748762617    2.87273e-07   7.27195e-04 DIIS/MOM/FRAC
+   @UHF iter  21:   -37.58935748773557   -1.09402e-10   3.61991e-04 DIIS/MOM/FRAC
+   @UHF iter  22:   -37.58935748776452   -2.89546e-11   1.79352e-04 DIIS/MOM/FRAC
+   @UHF iter  23:   -37.58935748777071   -6.18883e-12   8.64750e-05 DIIS/MOM/FRAC
+   @UHF iter  24:   -37.58935748777490   -4.19220e-12   3.75720e-05 DIIS/MOM/FRAC
+   @UHF iter  25:   -37.58935748777414    7.67386e-13   1.14029e-05 DIIS/MOM/FRAC
+   @UHF iter  26:   -37.58935748777277    1.36424e-12   1.28379e-06 DIIS/MOM/FRAC
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -11.246854     2A     -0.741500     4A     -0.337442  
+	   5A      0.002871     9A      0.195731  
+
+	Alpha Virtual:                                                        
+
+	   3A     -0.337442     6A      0.165855     7A      0.167477  
+	   8A      0.167477    10A      0.510449    11A      0.510449  
+	  12A      0.512527    13A      0.512527    14A      0.513685  
+	  15A      0.834363    16A      0.834363    17A      0.892827  
+	  18A      1.045628    19A      1.713714    20A      1.713714  
+	  21A      1.729093    22A      1.729093    23A      1.735101  
+
+	Beta Occupied:                                                        
+
+	   1A    -11.200219     2A     -0.480927  
+
+	Beta Virtual:                                                         
+
+	   3A      0.117396     4A      0.131040     5A      0.131040  
+	   6A      0.187757     7A      0.252894     8A      0.289717  
+	   9A      0.289717    10A      0.545379    11A      0.549427  
+	  12A      0.549427    13A      0.562001    14A      0.562001  
+	  15A      0.945230    16A      0.983299    17A      0.983299  
+	  18A      1.117427    19A      1.807467    20A      1.818390  
+	  21A      1.818390    22A      1.853660    23A      1.853660  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     2 ]
+	SOCC [     3 ]
+
+  Energy converged.
+
+  @UHF Final Energy:   -37.58935748777277
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
+
+  Quadrupole Moment: (Debye Ang)
+    XX:   -15.6528     YY:   -14.3999     ZZ:   -11.6327
+    XY:    -4.8976     XZ:    -2.2189     YZ:    -0.6496
+
+  Traceless Quadrupole Moment: (Debye Ang)
+    XX:    -1.7577     YY:    -0.5047     ZZ:     2.2624
+    XY:    -4.8976     XZ:    -2.2189     YZ:    -0.6496
+
+  Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     C     4.30000  2.00000  2.30000 -0.30000
+
+   Total alpha =  4.30000, Total beta =  2.00000, Total charge = -0.30000
+
+
+  @Spin Contamination Metric:  0.00712
+  @S^2 Expected:               3.75000
+  @S^2 Observed:               3.75712
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:52 2012
+Module time:
+	user time   =       0.15 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.34 seconds =       0.02 minutes
+	system time =       0.18 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:52 2012
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              UHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = -1, multiplicity = 4:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000     0.000000000000
+
+    Number of unique atoms: 1
+
+    Atoms equivalency:
+       unique atom 0: 0 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = -1
+  Multiplicity = 4
+  Electrons    = 7
+  Nalpha       = 5
+  Nbeta        = 2
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM enabled.
+  Fractional occupation enabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-07
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: AUG-CC-PVDZ <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 9
+    Number of primitives   = 25
+    Number of AO           = 25
+    Number of SO           = 23
+    Maximum AM             = 2
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     18s 5p 2d // 4s 3p 2d 
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 7.9241747161E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UHF energy:   -28.38798693897903
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         23      23       5       2       2       3
+   -------------------------------------------------------
+    Total      23      23       5       2       2       3
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ DFHF: Density-Fitted SCF Algorithms.
+   by Rob Parrish
+
+  No auxiliary basis selected, defaulting to AUG-CC-PVDZ-JKFIT
+
+  ==> Auxiliary Basis:  <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 28
+    Number of primitives   = 28
+    Number of AO           = 101
+    Number of SO           = 86
+    Maximum AM             = 3
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     11s 8p 6d 3f // 11s 8p 6d 3f 
+
+  Schwarz Cutoff is 0.000E+00
+   -Shell Pairs:              45 of           45 remain,   0% savings
+   -Function Pairs:          276 of          276 remain,   0% savings
+
+  Using Core Algorithm.
+
+    ----------------------------------------------
+     Quantity         Doubles              MiB   
+    ----------------------------------------------
+     Memory            22400000              179
+     (A|B)                 7396                0
+     (A|mn)               23736                0
+    ----------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @UHF iter   1:   -35.85592530616875   -7.46794e+00   0.00000e+00 
+   @UHF iter   2:   -36.04018854256891   -1.84263e-01   9.43565e-02 DIIS
+   @UHF iter   3:   -37.51785974314176   -1.47767e+00   6.63610e-02 DIIS
+   @UHF iter   4:   -37.68344562288952   -1.65586e-01   1.18204e-02 DIIS
+   @UHF iter   5:   -37.70364702322498   -2.02014e-02   4.01875e-03 DIIS
+   @UHF iter   6:   -37.70470889725853   -1.06187e-03   1.45205e-03 DIIS
+   @UHF iter   7:   -37.70491969069437   -2.10793e-04   6.82345e-04 DIIS
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -10.979179     2A     -0.526212     3A     -0.077159  
+	   4A     -0.077159     5A     -0.077159  
+
+	Alpha Virtual:                                                        
+
+	   6A      0.299505     7A      0.299505     8A      0.299505  
+	   9A      0.304948    10A      0.683489    11A      0.683489  
+	  12A      0.683489    13A      0.683489    14A      0.683489  
+	  15A      1.062346    16A      1.062346    17A      1.062346  
+	  18A      1.259129    19A      1.953299    20A      1.953299  
+	  21A      1.953299    22A      1.953299    23A      1.953299  
+
+	Beta Occupied:                                                        
+
+	   1A    -10.929333     2A     -0.214748  
+
+	Beta Virtual:                                                         
+
+	   3A      0.267565     4A      0.267565     5A      0.267565  
+	   6A      0.340379     7A      0.499295     8A      0.499295  
+	   9A      0.499295    10A      0.745486    11A      0.745486  
+	  12A      0.745486    13A      0.745486    14A      0.745486  
+	  15A      1.206705    16A      1.206705    17A      1.206705  
+	  18A      1.348845    19A      2.079760    20A      2.079760  
+	  21A      2.079760    22A      2.079760    23A      2.079760  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     2 ]
+	SOCC [     3 ]
+
+  ==> Fractionally-Occupied SCF Iterations <==
+
+    Alpha orbital    5 will contain   4.000E-01 electron.
+
+                        Total Energy        Delta E      Density RMS
+
+   @UHF iter   8:   -37.65837128987636    4.65484e-02   7.45951e-03 FRAC
+   @UHF iter   9:   -37.68080873815052   -2.24374e-02   5.33083e-03 MOM/FRAC
+   @UHF iter  10:   -37.68374209453592   -2.93336e-03   1.90466e-03 DIIS/MOM/FRAC
+   @UHF iter  11:   -37.68435542646773   -6.13332e-04   6.85570e-04 DIIS/MOM/FRAC
+   @UHF iter  12:   -37.68460104616362   -2.45620e-04   7.35741e-04 DIIS/MOM/FRAC
+   @UHF iter  13:   -37.68460408557095   -3.03941e-06   9.47129e-05 DIIS/MOM/FRAC
+   @UHF iter  14:   -37.68460417057632   -8.50054e-08   1.01098e-05 DIIS/MOM/FRAC
+   @UHF iter  15:   -37.68460417741883   -6.84251e-09   3.00787e-06 DIIS/MOM/FRAC
+   @UHF iter  16:   -37.68460417798953   -5.70708e-10   1.18566e-06 DIIS/MOM/FRAC
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -11.210179     2A     -0.710974     3A     -0.302198  
+	   4A     -0.302198     5A     -0.003554  
+
+	Alpha Virtual:                                                        
+
+	   6A      0.185393     7A      0.185423     8A      0.185423  
+	   9A      0.211294    10A      0.535188    11A      0.535188  
+	  12A      0.536538    13A      0.536538    14A      0.537361  
+	  15A      0.865214    16A      0.865214    17A      0.918725  
+	  18A      1.075494    19A      1.746836    20A      1.746836  
+	  21A      1.760932    22A      1.760932    23A      1.766346  
+
+	Beta Occupied:                                                        
+
+	   1A    -11.163389     2A     -0.444049  
+
+	Beta Virtual:                                                         
+
+	   3A      0.141462     4A      0.151401     5A      0.151401  
+	   6A      0.209291     7A      0.284615     8A      0.318491  
+	   9A      0.318491    10A      0.573943    11A      0.577376  
+	  12A      0.577376    13A      0.587996    14A      0.587996  
+	  15A      0.980558    16A      1.014482    17A      1.014482  
+	  18A      1.149506    19A      1.844801    20A      1.854570  
+	  21A      1.854570    22A      1.885863    23A      1.885863  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     2 ]
+	SOCC [     3 ]
+
+  Energy converged.
+
+  @UHF Final Energy:   -37.68460417798953
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Quadrupole Moment: (Debye Ang)
+    XX:    -8.6347     YY:    -8.6343     ZZ:    -8.6337
+    XY:    -0.0009     XZ:    -0.0003     YZ:    -0.0003
+
+  Traceless Quadrupole Moment: (Debye Ang)
+    XX:    -0.0004     YY:    -0.0001     ZZ:     0.0005
+    XY:    -0.0009     XZ:    -0.0003     YZ:    -0.0003
+
+  Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     C     4.40000  2.00000  2.40000 -0.40000
+
+   Total alpha =  4.40000, Total beta =  2.00000, Total charge = -0.40000
+
+
+  @Spin Contamination Metric:  0.00644
+  @S^2 Expected:               3.75000
+  @S^2 Observed:               3.75644
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:53 2012
+Module time:
+	user time   =       0.13 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       1.47 seconds =       0.02 minutes
+	system time =       0.20 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:53 2012
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              UHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = -1, multiplicity = 4:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000     0.000000000000
+
+    Number of unique atoms: 1
+
+    Atoms equivalency:
+       unique atom 0: 0 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = -1
+  Multiplicity = 4
+  Electrons    = 7
+  Nalpha       = 5
+  Nbeta        = 2
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM enabled.
+  Fractional occupation enabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-07
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: AUG-CC-PVDZ <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 9
+    Number of primitives   = 25
+    Number of AO           = 25
+    Number of SO           = 23
+    Maximum AM             = 2
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     18s 5p 2d // 4s 3p 2d 
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 7.9241747161E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UHF energy:   -28.38798693897903
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         23      23       5       2       2       3
+   -------------------------------------------------------
+    Total      23      23       5       2       2       3
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ DFHF: Density-Fitted SCF Algorithms.
+   by Rob Parrish
+
+  No auxiliary basis selected, defaulting to AUG-CC-PVDZ-JKFIT
+
+  ==> Auxiliary Basis:  <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 28
+    Number of primitives   = 28
+    Number of AO           = 101
+    Number of SO           = 86
+    Maximum AM             = 3
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     11s 8p 6d 3f // 11s 8p 6d 3f 
+
+  Schwarz Cutoff is 0.000E+00
+   -Shell Pairs:              45 of           45 remain,   0% savings
+   -Function Pairs:          276 of          276 remain,   0% savings
+
+  Using Core Algorithm.
+
+    ----------------------------------------------
+     Quantity         Doubles              MiB   
+    ----------------------------------------------
+     Memory            22400000              179
+     (A|B)                 7396                0
+     (A|mn)               23736                0
+    ----------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @UHF iter   1:   -35.85592530616875   -7.46794e+00   0.00000e+00 
+   @UHF iter   2:   -36.04018854256891   -1.84263e-01   9.43565e-02 DIIS
+   @UHF iter   3:   -37.51785974314176   -1.47767e+00   6.63610e-02 DIIS
+   @UHF iter   4:   -37.68344562288952   -1.65586e-01   1.18204e-02 DIIS
+   @UHF iter   5:   -37.70364702322498   -2.02014e-02   4.01875e-03 DIIS
+   @UHF iter   6:   -37.70470889725853   -1.06187e-03   1.45205e-03 DIIS
+   @UHF iter   7:   -37.70491969069437   -2.10793e-04   6.82345e-04 DIIS
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -10.979179     2A     -0.526212     3A     -0.077159  
+	   4A     -0.077159     5A     -0.077159  
+
+	Alpha Virtual:                                                        
+
+	   6A      0.299505     7A      0.299505     8A      0.299505  
+	   9A      0.304948    10A      0.683489    11A      0.683489  
+	  12A      0.683489    13A      0.683489    14A      0.683489  
+	  15A      1.062346    16A      1.062346    17A      1.062346  
+	  18A      1.259129    19A      1.953299    20A      1.953299  
+	  21A      1.953299    22A      1.953299    23A      1.953299  
+
+	Beta Occupied:                                                        
+
+	   1A    -10.929333     2A     -0.214748  
+
+	Beta Virtual:                                                         
+
+	   3A      0.267565     4A      0.267565     5A      0.267565  
+	   6A      0.340379     7A      0.499295     8A      0.499295  
+	   9A      0.499295    10A      0.745486    11A      0.745486  
+	  12A      0.745486    13A      0.745486    14A      0.745486  
+	  15A      1.206705    16A      1.206705    17A      1.206705  
+	  18A      1.348845    19A      2.079760    20A      2.079760  
+	  21A      2.079760    22A      2.079760    23A      2.079760  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     2 ]
+	SOCC [     3 ]
+
+  ==> Fractionally-Occupied SCF Iterations <==
+
+    Alpha orbital    5 will contain   5.000E-01 electron.
+
+                        Total Energy        Delta E      Density RMS
+
+   @UHF iter   8:   -37.66613408084774    3.87856e-02   6.21666e-03 FRAC
+   @UHF iter   9:   -37.68202989142387   -1.58958e-02   4.55270e-03 MOM/FRAC
+   @UHF iter  10:   -37.68443740305383   -2.40751e-03   1.70875e-03 DIIS/MOM/FRAC
+   @UHF iter  11:   -37.68502241162582   -5.85009e-04   6.73914e-04 DIIS/MOM/FRAC
+   @UHF iter  12:   -37.58143764829546    1.03585e-01   2.43293e-02 DIIS/MOM/FRAC
+   @UHF iter  13:   -37.58182915384839   -3.91506e-04   3.23863e-05 DIIS/MOM/FRAC
+   @UHF iter  14:   -37.57922619569582    2.60296e-03   2.12668e-04 DIIS/MOM/FRAC
+   @UHF iter  15:   -37.57929876255670   -7.25669e-05   5.93601e-06 DIIS/MOM/FRAC
+   @UHF iter  16:   -37.57927952869943    1.92339e-05   1.65429e-05 DIIS/MOM/FRAC
+   @UHF iter  17:   -37.57977623941171   -4.96711e-04   8.28315e-05 DIIS/MOM/FRAC
+   @UHF iter  18:   -37.57978185573590   -5.61632e-06   1.40069e-04 DIIS/MOM/FRAC
+   @UHF iter  19:   -37.57987452499422   -9.26693e-05   6.95919e-05 DIIS/MOM/FRAC
+   @UHF iter  20:   -37.58009764865776   -2.23124e-04   1.91035e-05 DIIS/MOM/FRAC
+   @UHF iter  21:   -37.57972701595529    3.70633e-04   3.77717e-05 DIIS/MOM/FRAC
+   @UHF iter  22:   -37.57760803949794    2.11898e-03   1.71745e-04 DIIS/MOM/FRAC
+   @UHF iter  23:   -37.57803801069476   -4.29971e-04   3.31571e-05 DIIS/MOM/FRAC
+   @UHF iter  24:   -37.57842149030489   -3.83480e-04   3.33228e-05 DIIS/MOM/FRAC
+   @UHF iter  25:   -37.57852920349740   -1.07713e-04   6.06414e-05 DIIS/MOM/FRAC
+   @UHF iter  26:   -37.57859363667330   -6.44332e-05   1.93941e-04 DIIS/MOM/FRAC
+   @UHF iter  27:   -37.57863429131720   -4.06546e-05   2.39054e-04 DIIS/MOM/FRAC
+   @UHF iter  28:   -37.57860310448558    3.11868e-05   1.90198e-04 DIIS/MOM/FRAC
+   @UHF iter  29:   -37.57860407156540   -9.67080e-07   1.92423e-04 DIIS/MOM/FRAC
+   @UHF iter  30:   -37.57860380517248    2.66393e-07   1.92884e-04 DIIS/MOM/FRAC
+   @UHF iter  31:   -37.57860406364065   -2.58468e-07   1.93687e-04 DIIS/MOM/FRAC
+   @UHF iter  32:   -37.57860405853803    5.10261e-09   1.94205e-04 DIIS/MOM/FRAC
+   @UHF iter  33:   -37.57860413421831   -7.56803e-08   1.94716e-04 DIIS/MOM/FRAC
+   @UHF iter  34:   -37.57860417138748   -3.71692e-08   1.95124e-04 DIIS/MOM/FRAC
+   @UHF iter  35:   -37.57860420900498   -3.76175e-08   1.95482e-04 DIIS/MOM/FRAC
+   @UHF iter  36:   -37.57860424350831   -3.45033e-08   1.95781e-04 DIIS/MOM/FRAC
+   @UHF iter  37:   -37.57860426664667   -2.31384e-08   1.96035e-04 DIIS/MOM/FRAC
+   @UHF iter  38:   -37.57860429338485   -2.67382e-08   1.96248e-04 DIIS/MOM/FRAC
+   @UHF iter  39:   -37.57860430810852   -1.47237e-08   1.96427e-04 DIIS/MOM/FRAC
+   @UHF iter  40:   -37.57860432844112   -2.03326e-08   1.96578e-04 DIIS/MOM/FRAC
+   @UHF iter  41:   -37.57860433745775   -9.01664e-09   1.96704e-04 DIIS/MOM/FRAC
+   @UHF iter  42:   -37.57860435296934   -1.55116e-08   1.96810e-04 DIIS/MOM/FRAC
+   @UHF iter  43:   -37.57860435801047   -5.04113e-09   1.96898e-04 DIIS/MOM/FRAC
+   @UHF iter  44:   -37.57860437020292   -1.21925e-08   1.96972e-04 DIIS/MOM/FRAC
+   @UHF iter  45:   -37.57860437255313   -2.35021e-09   1.97034e-04 DIIS/MOM/FRAC
+   @UHF iter  46:   -37.57860438219186   -9.63873e-09   1.97086e-04 DIIS/MOM/FRAC
+   @UHF iter  47:   -37.57860438253619   -3.44329e-10   1.97129e-04 DIIS/MOM/FRAC
+   @UHF iter  48:   -37.57860439056331   -8.02711e-09   1.97165e-04 DIIS/MOM/FRAC
+   @UHF iter  49:   -37.57860438959410    9.69202e-10   1.97194e-04 DIIS/MOM/FRAC
+   @UHF iter  50:   -37.57860439639767   -6.80356e-09   1.97219e-04 DIIS/MOM/FRAC
+   @UHF iter  51:   -37.57860439435524    2.04243e-09   1.97240e-04 DIIS/MOM/FRAC
+   @UHF iter  52:   -37.57860440035660   -6.00136e-09   1.97257e-04 DIIS/MOM/FRAC
+   @UHF iter  53:   -37.57860439783037    2.52623e-09   1.97272e-04 DIIS/MOM/FRAC
+   @UHF iter  54:   -37.57860440317955   -5.34919e-09   1.97284e-04 DIIS/MOM/FRAC
+   @UHF iter  55:   -37.57860440012164    3.05791e-09   1.97294e-04 DIIS/MOM/FRAC
+   @UHF iter  56:   -37.57860440511482   -4.99318e-09   1.97302e-04 DIIS/MOM/FRAC
+   @UHF iter  57:   -37.57860440171526    3.39956e-09   1.97309e-04 DIIS/MOM/FRAC
+   @UHF iter  58:   -37.57860440651919   -4.80393e-09   1.97315e-04 DIIS/MOM/FRAC
+   @UHF iter  59:   -37.57860440288029    3.63890e-09   1.97320e-04 DIIS/MOM/FRAC
+   @UHF iter  60:   -37.57860440740966   -4.52937e-09   1.97324e-04 DIIS/MOM/FRAC
+   @UHF iter  61:   -37.57860440372795    3.68171e-09   1.97327e-04 DIIS/MOM/FRAC
+   @UHF iter  62:   -37.57860440805698   -4.32902e-09   1.97330e-04 DIIS/MOM/FRAC
+   @UHF iter  63:   -37.57860440423816    3.81881e-09   1.97332e-04 DIIS/MOM/FRAC
+   @UHF iter  64:   -37.57860440855475   -4.31658e-09   1.97334e-04 DIIS/MOM/FRAC
+   @UHF iter  65:   -37.57860440456394    3.99081e-09   1.97336e-04 DIIS/MOM/FRAC
+   @UHF iter  66:   -37.57860440878751   -4.22357e-09   1.97337e-04 DIIS/MOM/FRAC
+   @UHF iter  67:   -37.57860440487435    3.91316e-09   1.97338e-04 DIIS/MOM/FRAC
+   @UHF iter  68:   -37.57860440907120   -4.19686e-09   1.97339e-04 DIIS/MOM/FRAC
+   @UHF iter  69:   -37.57860440503094    4.04027e-09   1.97340e-04 DIIS/MOM/FRAC
+   @UHF iter  70:   -37.57860440917831   -4.14737e-09   1.97340e-04 DIIS/MOM/FRAC
+   @UHF iter  71:   -37.57860440516676    4.01155e-09   1.97341e-04 DIIS/MOM/FRAC
+   @UHF iter  72:   -37.57860440925261   -4.08586e-09   1.97341e-04 DIIS/MOM/FRAC
+   @UHF iter  73:   -37.57860440522781    4.02481e-09   1.97342e-04 DIIS/MOM/FRAC
+   @UHF iter  74:   -37.57860440925050   -4.02270e-09   1.97342e-04 DIIS/MOM/FRAC
+   @UHF iter  75:   -37.57860440529920    3.95131e-09   1.97342e-04 DIIS/MOM/FRAC
+   @UHF iter  76:   -37.57860440939762   -4.09842e-09   1.97343e-04 DIIS/MOM/FRAC
+   @UHF iter  77:   -37.57860440538396    4.01366e-09   1.97343e-04 DIIS/MOM/FRAC
+   @UHF iter  78:   -37.57860440946566   -4.08171e-09   1.97343e-04 DIIS/MOM/FRAC
+   @UHF iter  79:   -37.57860440531041    4.15525e-09   1.97343e-04 DIIS/MOM/FRAC
+   @UHF iter  80:   -37.57860440944749   -4.13708e-09   1.97343e-04 DIIS/MOM/FRAC
+   @UHF iter  81:   -37.57860440540500    4.04249e-09   1.97343e-04 DIIS/MOM/FRAC
+   @UHF iter  82:   -37.57860440941638   -4.01138e-09   1.97343e-04 DIIS/MOM/FRAC
+   @UHF iter  83:   -37.57860440549134    3.92504e-09   1.97343e-04 DIIS/MOM/FRAC
+   @UHF iter  84:   -37.57860440952554   -4.03420e-09   1.97343e-04 DIIS/MOM/FRAC
+   @UHF iter  85:   -37.57860440539641    4.12913e-09   1.97343e-04 DIIS/MOM/FRAC
+   @UHF iter  86:   -37.57860440947221   -4.07579e-09   1.97343e-04 DIIS/MOM/FRAC
+   @UHF iter  87:   -37.57860440540621    4.06600e-09   1.97343e-04 DIIS/MOM/FRAC
+   @UHF iter  88:   -37.57860440948416   -4.07795e-09   1.97344e-04 DIIS/MOM/FRAC
+   @UHF iter  89:   -37.57860440540992    4.07424e-09   1.97344e-04 DIIS/MOM/FRAC
+   @UHF iter  90:   -37.57860440944362   -4.03370e-09   1.97344e-04 DIIS/MOM/FRAC
+   @UHF iter  91:   -37.57860440540867    4.03495e-09   1.97344e-04 DIIS/MOM/FRAC
+   @UHF iter  92:   -37.57860440949092   -4.08225e-09   1.97344e-04 DIIS/MOM/FRAC
+   @UHF iter  93:   -37.57860440545095    4.03998e-09   1.97344e-04 DIIS/MOM/FRAC
+   @UHF iter  94:   -37.57860440943671   -3.98577e-09   1.97344e-04 DIIS/MOM/FRAC
+   @UHF iter  95:   -37.57860440540870    4.02802e-09   1.97344e-04 DIIS/MOM/FRAC
+   @UHF iter  96:   -37.57860440944061   -4.03191e-09   1.97344e-04 DIIS/MOM/FRAC
+   @UHF iter  97:   -37.57860440543509    4.00551e-09   1.97344e-04 DIIS/MOM/FRAC
+   @UHF iter  98:   -37.57860440952172   -4.08662e-09   1.97344e-04 DIIS/MOM/FRAC
+   @UHF iter  99:   -37.57860440551899    4.00273e-09   1.97344e-04 DIIS/MOM/FRAC
+   @UHF iter 100:   -37.57860440949329   -3.97431e-09   1.97344e-04 DIIS/MOM/FRAC
+
+  ==> Post-Iterations <==
+
+
+  Failed to converged.
+    NOTE: MO Coefficients will not be saved to Checkpoint.
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:53 2012
+Module time:
+	user time   =       0.31 seconds =       0.01 minutes
+	system time =       0.11 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.78 seconds =       0.03 minutes
+	system time =       0.31 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:53 2012
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              UHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = -1, multiplicity = 4:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000     0.000000000000
+
+    Number of unique atoms: 1
+
+    Atoms equivalency:
+       unique atom 0: 0 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = -1
+  Multiplicity = 4
+  Electrons    = 7
+  Nalpha       = 5
+  Nbeta        = 2
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM enabled.
+  Fractional occupation enabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-07
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: AUG-CC-PVDZ <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 9
+    Number of primitives   = 25
+    Number of AO           = 25
+    Number of SO           = 23
+    Maximum AM             = 2
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     18s 5p 2d // 4s 3p 2d 
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 7.9241747161E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UHF energy:   -28.38798693897903
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         23      23       5       2       2       3
+   -------------------------------------------------------
+    Total      23      23       5       2       2       3
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ DFHF: Density-Fitted SCF Algorithms.
+   by Rob Parrish
+
+  No auxiliary basis selected, defaulting to AUG-CC-PVDZ-JKFIT
+
+  ==> Auxiliary Basis:  <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 28
+    Number of primitives   = 28
+    Number of AO           = 101
+    Number of SO           = 86
+    Maximum AM             = 3
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     11s 8p 6d 3f // 11s 8p 6d 3f 
+
+  Schwarz Cutoff is 0.000E+00
+   -Shell Pairs:              45 of           45 remain,   0% savings
+   -Function Pairs:          276 of          276 remain,   0% savings
+
+  Using Core Algorithm.
+
+    ----------------------------------------------
+     Quantity         Doubles              MiB   
+    ----------------------------------------------
+     Memory            22400000              179
+     (A|B)                 7396                0
+     (A|mn)               23736                0
+    ----------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @UHF iter   1:   -35.85592530616875   -7.46794e+00   0.00000e+00 
+   @UHF iter   2:   -36.04018854256891   -1.84263e-01   9.43565e-02 DIIS
+   @UHF iter   3:   -37.51785974314176   -1.47767e+00   6.63610e-02 DIIS
+   @UHF iter   4:   -37.68344562288952   -1.65586e-01   1.18204e-02 DIIS
+   @UHF iter   5:   -37.70364702322498   -2.02014e-02   4.01875e-03 DIIS
+   @UHF iter   6:   -37.70470889725853   -1.06187e-03   1.45205e-03 DIIS
+   @UHF iter   7:   -37.70491969069437   -2.10793e-04   6.82345e-04 DIIS
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -10.979179     2A     -0.526212     3A     -0.077159  
+	   4A     -0.077159     5A     -0.077159  
+
+	Alpha Virtual:                                                        
+
+	   6A      0.299505     7A      0.299505     8A      0.299505  
+	   9A      0.304948    10A      0.683489    11A      0.683489  
+	  12A      0.683489    13A      0.683489    14A      0.683489  
+	  15A      1.062346    16A      1.062346    17A      1.062346  
+	  18A      1.259129    19A      1.953299    20A      1.953299  
+	  21A      1.953299    22A      1.953299    23A      1.953299  
+
+	Beta Occupied:                                                        
+
+	   1A    -10.929333     2A     -0.214748  
+
+	Beta Virtual:                                                         
+
+	   3A      0.267565     4A      0.267565     5A      0.267565  
+	   6A      0.340379     7A      0.499295     8A      0.499295  
+	   9A      0.499295    10A      0.745486    11A      0.745486  
+	  12A      0.745486    13A      0.745486    14A      0.745486  
+	  15A      1.206705    16A      1.206705    17A      1.206705  
+	  18A      1.348845    19A      2.079760    20A      2.079760  
+	  21A      2.079760    22A      2.079760    23A      2.079760  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     2 ]
+	SOCC [     3 ]
+
+  ==> Fractionally-Occupied SCF Iterations <==
+
+    Alpha orbital    5 will contain   6.000E-01 electron.
+
+                        Total Energy        Delta E      Density RMS
+
+   @UHF iter   8:   -37.67389687181911    3.10228e-02   4.97432e-03 FRAC
+   @UHF iter   9:   -37.68428497280895   -1.03881e-02   3.74048e-03 MOM/FRAC
+   @UHF iter  10:   -37.68606624818249   -1.78128e-03   1.45861e-03 DIIS/MOM/FRAC
+   @UHF iter  11:   -37.68655988345162   -4.93635e-04   6.27215e-04 DIIS/MOM/FRAC
+   @UHF iter  12:   -37.68686326797935   -3.03385e-04   9.20195e-04 DIIS/MOM/FRAC
+   @UHF iter  13:   -37.68686908420148   -5.81622e-06   1.46487e-04 DIIS/MOM/FRAC
+   @UHF iter  14:   -37.68686911321736   -2.90159e-08   7.09059e-06 DIIS/MOM/FRAC
+   @UHF iter  15:   -37.68686911397410   -7.56742e-10   1.14896e-06 DIIS/MOM/FRAC
+   @UHF iter  16:   -37.68686911398378   -9.67049e-12   1.14156e-07 DIIS/MOM/FRAC
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -11.134312     2A     -0.648918     3A     -0.229249  
+	   4A     -0.229249     5A     -0.020017  
+
+	Alpha Virtual:                                                        
+
+	   6A      0.222154     7A      0.222154     8A      0.225288  
+	   9A      0.241795    10A      0.585228    11A      0.585228  
+	  12A      0.585438    13A      0.585438    14A      0.585707  
+	  15A      0.929223    16A      0.929223    17A      0.970018  
+	  18A      1.136688    19A      1.815027    20A      1.815027  
+	  21A      1.825789    22A      1.825789    23A      1.829768  
+
+	Beta Occupied:                                                        
+
+	   1A    -11.086981     2A     -0.368008  
+
+	Beta Virtual:                                                         
+
+	   3A      0.186803     4A      0.191305     5A      0.191305  
+	   6A      0.252872     7A      0.352906     8A      0.378331  
+	   9A      0.378331    10A      0.631766    11A      0.633986  
+	  12A      0.633986    13A      0.640794    14A      0.640794  
+	  15A      1.053951    16A      1.078517    17A      1.078517  
+	  18A      1.215548    19A      1.922038    20A      1.929158  
+	  21A      1.929158    22A      1.951558    23A      1.951558  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     2 ]
+	SOCC [     3 ]
+
+  Energy converged.
+
+  @UHF Final Energy:   -37.68686911398378
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
+
+  Quadrupole Moment: (Debye Ang)
+    XX:    -9.7282     YY:    -9.6543     ZZ:    -9.5006
+    XY:    -0.2121     XZ:    -0.0790     YZ:    -0.0664
+
+  Traceless Quadrupole Moment: (Debye Ang)
+    XX:    -0.1005     YY:    -0.0266     ZZ:     0.1271
+    XY:    -0.2121     XZ:    -0.0790     YZ:    -0.0664
+
+  Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     C     4.60000  2.00000  2.60000 -0.60000
+
+   Total alpha =  4.60000, Total beta =  2.00000, Total charge = -0.60000
+
+
+  @Spin Contamination Metric:  0.00549
+  @S^2 Expected:               3.75000
+  @S^2 Observed:               3.75549
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:53 2012
+Module time:
+	user time   =       0.13 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.91 seconds =       0.03 minutes
+	system time =       0.33 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:53 2012
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              UHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = -1, multiplicity = 4:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000     0.000000000000
+
+    Number of unique atoms: 1
+
+    Atoms equivalency:
+       unique atom 0: 0 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = -1
+  Multiplicity = 4
+  Electrons    = 7
+  Nalpha       = 5
+  Nbeta        = 2
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM enabled.
+  Fractional occupation enabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-07
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: AUG-CC-PVDZ <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 9
+    Number of primitives   = 25
+    Number of AO           = 25
+    Number of SO           = 23
+    Maximum AM             = 2
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     18s 5p 2d // 4s 3p 2d 
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 7.9241747161E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UHF energy:   -28.38798693897903
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         23      23       5       2       2       3
+   -------------------------------------------------------
+    Total      23      23       5       2       2       3
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ DFHF: Density-Fitted SCF Algorithms.
+   by Rob Parrish
+
+  No auxiliary basis selected, defaulting to AUG-CC-PVDZ-JKFIT
+
+  ==> Auxiliary Basis:  <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 28
+    Number of primitives   = 28
+    Number of AO           = 101
+    Number of SO           = 86
+    Maximum AM             = 3
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     11s 8p 6d 3f // 11s 8p 6d 3f 
+
+  Schwarz Cutoff is 0.000E+00
+   -Shell Pairs:              45 of           45 remain,   0% savings
+   -Function Pairs:          276 of          276 remain,   0% savings
+
+  Using Core Algorithm.
+
+    ----------------------------------------------
+     Quantity         Doubles              MiB   
+    ----------------------------------------------
+     Memory            22400000              179
+     (A|B)                 7396                0
+     (A|mn)               23736                0
+    ----------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @UHF iter   1:   -35.85592530616875   -7.46794e+00   0.00000e+00 
+   @UHF iter   2:   -36.04018854256891   -1.84263e-01   9.43565e-02 DIIS
+   @UHF iter   3:   -37.51785974314176   -1.47767e+00   6.63610e-02 DIIS
+   @UHF iter   4:   -37.68344562288952   -1.65586e-01   1.18204e-02 DIIS
+   @UHF iter   5:   -37.70364702322498   -2.02014e-02   4.01875e-03 DIIS
+   @UHF iter   6:   -37.70470889725853   -1.06187e-03   1.45205e-03 DIIS
+   @UHF iter   7:   -37.70491969069437   -2.10793e-04   6.82345e-04 DIIS
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -10.979179     2A     -0.526212     3A     -0.077159  
+	   4A     -0.077159     5A     -0.077159  
+
+	Alpha Virtual:                                                        
+
+	   6A      0.299505     7A      0.299505     8A      0.299505  
+	   9A      0.304948    10A      0.683489    11A      0.683489  
+	  12A      0.683489    13A      0.683489    14A      0.683489  
+	  15A      1.062346    16A      1.062346    17A      1.062346  
+	  18A      1.259129    19A      1.953299    20A      1.953299  
+	  21A      1.953299    22A      1.953299    23A      1.953299  
+
+	Beta Occupied:                                                        
+
+	   1A    -10.929333     2A     -0.214748  
+
+	Beta Virtual:                                                         
+
+	   3A      0.267565     4A      0.267565     5A      0.267565  
+	   6A      0.340379     7A      0.499295     8A      0.499295  
+	   9A      0.499295    10A      0.745486    11A      0.745486  
+	  12A      0.745486    13A      0.745486    14A      0.745486  
+	  15A      1.206705    16A      1.206705    17A      1.206705  
+	  18A      1.348845    19A      2.079760    20A      2.079760  
+	  21A      2.079760    22A      2.079760    23A      2.079760  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     2 ]
+	SOCC [     3 ]
+
+  ==> Fractionally-Occupied SCF Iterations <==
+
+    Alpha orbital    5 will contain   7.000E-01 electron.
+
+                        Total Energy        Delta E      Density RMS
+
+   @UHF iter   8:   -37.68165966279049    2.32600e-02   3.73303e-03 FRAC
+   @UHF iter   9:   -37.68763288726078   -5.97322e-03   2.88781e-03 MOM/FRAC
+   @UHF iter  10:   -37.68877390897588   -1.14102e-03   1.15926e-03 DIIS/MOM/FRAC
+   @UHF iter  11:   -37.68912929185895   -3.55383e-04   5.40904e-04 DIIS/MOM/FRAC
+   @UHF iter  12:   -37.68938153293550   -2.52241e-04   8.87053e-04 DIIS/MOM/FRAC
+   @UHF iter  13:   -37.68938670721757   -5.17428e-06   1.45188e-04 DIIS/MOM/FRAC
+   @UHF iter  14:   -37.68938673445916   -2.72416e-08   7.68771e-06 DIIS/MOM/FRAC
+   @UHF iter  15:   -37.68938673589409   -1.43493e-09   1.71131e-06 DIIS/MOM/FRAC
+   @UHF iter  16:   -37.68938673601916   -1.25070e-10   5.62153e-07 DIIS/MOM/FRAC
+   @UHF iter  17:   -37.68938673602382   -4.66116e-12   1.04658e-07 DIIS/MOM/FRAC
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -11.095452     2A     -0.617681     3A     -0.191719  
+	   4A     -0.191719     5A     -0.030653  
+
+	Alpha Virtual:                                                        
+
+	   6A      0.240982     7A      0.240982     8A      0.245491  
+	   9A      0.256690    10A      0.610181    11A      0.610181  
+	  12A      0.610255    13A      0.610327    14A      0.610327  
+	  15A      0.962229    16A      0.962229    17A      0.994967  
+	  18A      1.167751    19A      1.849823    20A      1.849823  
+	  21A      1.858462    22A      1.858462    23A      1.861586  
+
+	Beta Occupied:                                                        
+
+	   1A    -11.047702     2A     -0.329215  
+
+	Beta Virtual:                                                         
+
+	   3A      0.208172     4A      0.210848     5A      0.210848  
+	   6A      0.274853     7A      0.388978     8A      0.408999  
+	   9A      0.408999    10A      0.660790    11A      0.662420  
+	  12A      0.662420    13A      0.667400    14A      0.667400  
+	  15A      1.091814    16A      1.111059    17A      1.111059  
+	  18A      1.249233    19A      1.961629    20A      1.967224  
+	  21A      1.967224    22A      1.984645    23A      1.984645  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     2 ]
+	SOCC [     3 ]
+
+  Energy converged.
+
+  @UHF Final Energy:   -37.68938673602382
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
+
+  Quadrupole Moment: (Debye Ang)
+    XX:   -10.2145     YY:   -10.1299     ZZ:    -9.9541
+    XY:    -0.2428     XZ:    -0.0904     YZ:    -0.0760
+
+  Traceless Quadrupole Moment: (Debye Ang)
+    XX:    -0.1150     YY:    -0.0304     ZZ:     0.1454
+    XY:    -0.2428     XZ:    -0.0904     YZ:    -0.0760
+
+  Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     C     4.70000  2.00000  2.70000 -0.70000
+
+   Total alpha =  4.70000, Total beta =  2.00000, Total charge = -0.70000
+
+
+  @Spin Contamination Metric:  0.00532
+  @S^2 Expected:               3.75000
+  @S^2 Observed:               3.75532
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:53 2012
+Module time:
+	user time   =       0.13 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       2.04 seconds =       0.03 minutes
+	system time =       0.35 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:53 2012
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              UHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = -1, multiplicity = 4:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000     0.000000000000
+
+    Number of unique atoms: 1
+
+    Atoms equivalency:
+       unique atom 0: 0 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = -1
+  Multiplicity = 4
+  Electrons    = 7
+  Nalpha       = 5
+  Nbeta        = 2
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM enabled.
+  Fractional occupation enabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-07
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: AUG-CC-PVDZ <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 9
+    Number of primitives   = 25
+    Number of AO           = 25
+    Number of SO           = 23
+    Maximum AM             = 2
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     18s 5p 2d // 4s 3p 2d 
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 7.9241747161E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UHF energy:   -28.38798693897903
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         23      23       5       2       2       3
+   -------------------------------------------------------
+    Total      23      23       5       2       2       3
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ DFHF: Density-Fitted SCF Algorithms.
+   by Rob Parrish
+
+  No auxiliary basis selected, defaulting to AUG-CC-PVDZ-JKFIT
+
+  ==> Auxiliary Basis:  <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 28
+    Number of primitives   = 28
+    Number of AO           = 101
+    Number of SO           = 86
+    Maximum AM             = 3
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     11s 8p 6d 3f // 11s 8p 6d 3f 
+
+  Schwarz Cutoff is 0.000E+00
+   -Shell Pairs:              45 of           45 remain,   0% savings
+   -Function Pairs:          276 of          276 remain,   0% savings
+
+  Using Core Algorithm.
+
+    ----------------------------------------------
+     Quantity         Doubles              MiB   
+    ----------------------------------------------
+     Memory            22400000              179
+     (A|B)                 7396                0
+     (A|mn)               23736                0
+    ----------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @UHF iter   1:   -35.85592530616875   -7.46794e+00   0.00000e+00 
+   @UHF iter   2:   -36.04018854256891   -1.84263e-01   9.43565e-02 DIIS
+   @UHF iter   3:   -37.51785974314176   -1.47767e+00   6.63610e-02 DIIS
+   @UHF iter   4:   -37.68344562288952   -1.65586e-01   1.18204e-02 DIIS
+   @UHF iter   5:   -37.70364702322498   -2.02014e-02   4.01875e-03 DIIS
+   @UHF iter   6:   -37.70470889725853   -1.06187e-03   1.45205e-03 DIIS
+   @UHF iter   7:   -37.70491969069437   -2.10793e-04   6.82345e-04 DIIS
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -10.979179     2A     -0.526212     3A     -0.077159  
+	   4A     -0.077159     5A     -0.077159  
+
+	Alpha Virtual:                                                        
+
+	   6A      0.299505     7A      0.299505     8A      0.299505  
+	   9A      0.304948    10A      0.683489    11A      0.683489  
+	  12A      0.683489    13A      0.683489    14A      0.683489  
+	  15A      1.062346    16A      1.062346    17A      1.062346  
+	  18A      1.259129    19A      1.953299    20A      1.953299  
+	  21A      1.953299    22A      1.953299    23A      1.953299  
+
+	Beta Occupied:                                                        
+
+	   1A    -10.929333     2A     -0.214748  
+
+	Beta Virtual:                                                         
+
+	   3A      0.267565     4A      0.267565     5A      0.267565  
+	   6A      0.340379     7A      0.499295     8A      0.499295  
+	   9A      0.499295    10A      0.745486    11A      0.745486  
+	  12A      0.745486    13A      0.745486    14A      0.745486  
+	  15A      1.206705    16A      1.206705    17A      1.206705  
+	  18A      1.348845    19A      2.079760    20A      2.079760  
+	  21A      2.079760    22A      2.079760    23A      2.079760  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     2 ]
+	SOCC [     3 ]
+
+  ==> Fractionally-Occupied SCF Iterations <==
+
+    Alpha orbital    5 will contain   8.000E-01 electron.
+
+                        Total Energy        Delta E      Density RMS
+
+   @UHF iter   8:   -37.68942245376186    1.54972e-02   2.49432e-03 FRAC
+   @UHF iter   9:   -37.69214056534043   -2.71811e-03   1.98731e-03 MOM/FRAC
+   @UHF iter  10:   -37.69271206741418   -5.71502e-04   8.14741e-04 DIIS/MOM/FRAC
+   @UHF iter  11:   -37.69290979487796   -1.97727e-04   4.10785e-04 DIIS/MOM/FRAC
+   @UHF iter  12:   -37.69306755185458   -1.57757e-04   7.40653e-04 DIIS/MOM/FRAC
+   @UHF iter  13:   -37.69307062314628   -3.07129e-06   1.17478e-04 DIIS/MOM/FRAC
+   @UHF iter  14:   -37.69307063925555   -1.61093e-08   6.17846e-06 DIIS/MOM/FRAC
+   @UHF iter  15:   -37.69307064055809   -1.30254e-09   1.63038e-06 DIIS/MOM/FRAC
+   @UHF iter  16:   -37.69307064074403   -1.85935e-10   7.19452e-07 DIIS/MOM/FRAC
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -11.056403     2A     -0.586634     3A     -0.153721  
+	   4A     -0.153721     5A     -0.043421  
+
+	Alpha Virtual:                                                        
+
+	   6A      0.260140     7A      0.260140     8A      0.265675  
+	   9A      0.271308    10A      0.634887    11A      0.634932  
+	  12A      0.634932    13A      0.635251    14A      0.635251  
+	  15A      0.995667    16A      0.995667    17A      1.019013  
+	  18A      1.198801    19A      1.884742    20A      1.884742  
+	  21A      1.890903    22A      1.890903    23A      1.893078  
+
+	Beta Occupied:                                                        
+
+	   1A    -11.008111     2A     -0.290377  
+
+	Beta Virtual:                                                         
+
+	   3A      0.228740     4A      0.230096     5A      0.230096  
+	   6A      0.296869     7A      0.425794     8A      0.439726  
+	   9A      0.439726    10A      0.689629    11A      0.690690  
+	  12A      0.690690    13A      0.693915    14A      0.693915  
+	  15A      1.130149    16A      1.143570    17A      1.143570  
+	  18A      1.283007    19A      2.001462    20A      2.005376  
+	  21A      2.005376    22A      2.017423    23A      2.017423  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     2 ]
+	SOCC [     3 ]
+
+  Energy converged.
+
+  @UHF Final Energy:   -37.69307064074403
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
+
+  Quadrupole Moment: (Debye Ang)
+    XX:   -10.6856     YY:   -10.6090     ZZ:   -10.4497
+    XY:    -0.2199     XZ:    -0.0819     YZ:    -0.0688
+
+  Traceless Quadrupole Moment: (Debye Ang)
+    XX:    -0.1041     YY:    -0.0276     ZZ:     0.1317
+    XY:    -0.2199     XZ:    -0.0819     YZ:    -0.0688
+
+  Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     C     4.80000  2.00000  2.80000 -0.80000
+
+   Total alpha =  4.80000, Total beta =  2.00000, Total charge = -0.80000
+
+
+  @Spin Contamination Metric:  0.00542
+  @S^2 Expected:               3.75000
+  @S^2 Observed:               3.75542
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:53 2012
+Module time:
+	user time   =       0.13 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       2.17 seconds =       0.04 minutes
+	system time =       0.37 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:53 2012
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              UHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = -1, multiplicity = 4:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000     0.000000000000
+
+    Number of unique atoms: 1
+
+    Atoms equivalency:
+       unique atom 0: 0 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = -1
+  Multiplicity = 4
+  Electrons    = 7
+  Nalpha       = 5
+  Nbeta        = 2
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM enabled.
+  Fractional occupation enabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-07
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: AUG-CC-PVDZ <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 9
+    Number of primitives   = 25
+    Number of AO           = 25
+    Number of SO           = 23
+    Maximum AM             = 2
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     18s 5p 2d // 4s 3p 2d 
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 7.9241747161E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UHF energy:   -28.38798693897903
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         23      23       5       2       2       3
+   -------------------------------------------------------
+    Total      23      23       5       2       2       3
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ DFHF: Density-Fitted SCF Algorithms.
+   by Rob Parrish
+
+  No auxiliary basis selected, defaulting to AUG-CC-PVDZ-JKFIT
+
+  ==> Auxiliary Basis:  <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 28
+    Number of primitives   = 28
+    Number of AO           = 101
+    Number of SO           = 86
+    Maximum AM             = 3
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     11s 8p 6d 3f // 11s 8p 6d 3f 
+
+  Schwarz Cutoff is 0.000E+00
+   -Shell Pairs:              45 of           45 remain,   0% savings
+   -Function Pairs:          276 of          276 remain,   0% savings
+
+  Using Core Algorithm.
+
+    ----------------------------------------------
+     Quantity         Doubles              MiB   
+    ----------------------------------------------
+     Memory            22400000              179
+     (A|B)                 7396                0
+     (A|mn)               23736                0
+    ----------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @UHF iter   1:   -35.85592530616875   -7.46794e+00   0.00000e+00 
+   @UHF iter   2:   -36.04018854256891   -1.84263e-01   9.43565e-02 DIIS
+   @UHF iter   3:   -37.51785974314176   -1.47767e+00   6.63610e-02 DIIS
+   @UHF iter   4:   -37.68344562288952   -1.65586e-01   1.18204e-02 DIIS
+   @UHF iter   5:   -37.70364702322498   -2.02014e-02   4.01875e-03 DIIS
+   @UHF iter   6:   -37.70470889725853   -1.06187e-03   1.45205e-03 DIIS
+   @UHF iter   7:   -37.70491969069437   -2.10793e-04   6.82345e-04 DIIS
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -10.979179     2A     -0.526212     3A     -0.077159  
+	   4A     -0.077159     5A     -0.077159  
+
+	Alpha Virtual:                                                        
+
+	   6A      0.299505     7A      0.299505     8A      0.299505  
+	   9A      0.304948    10A      0.683489    11A      0.683489  
+	  12A      0.683489    13A      0.683489    14A      0.683489  
+	  15A      1.062346    16A      1.062346    17A      1.062346  
+	  18A      1.259129    19A      1.953299    20A      1.953299  
+	  21A      1.953299    22A      1.953299    23A      1.953299  
+
+	Beta Occupied:                                                        
+
+	   1A    -10.929333     2A     -0.214748  
+
+	Beta Virtual:                                                         
+
+	   3A      0.267565     4A      0.267565     5A      0.267565  
+	   6A      0.340379     7A      0.499295     8A      0.499295  
+	   9A      0.499295    10A      0.745486    11A      0.745486  
+	  12A      0.745486    13A      0.745486    14A      0.745486  
+	  15A      1.206705    16A      1.206705    17A      1.206705  
+	  18A      1.348845    19A      2.079760    20A      2.079760  
+	  21A      2.079760    22A      2.079760    23A      2.079760  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     2 ]
+	SOCC [     3 ]
+
+  ==> Fractionally-Occupied SCF Iterations <==
+
+    Alpha orbital    5 will contain   9.000E-01 electron.
+
+                        Total Energy        Delta E      Density RMS
+
+   @UHF iter   8:   -37.69718524473324    7.73445e-03   1.26581e-03 FRAC
+   @UHF iter   9:   -37.69788385266195   -6.98608e-04   1.03051e-03 MOM/FRAC
+   @UHF iter  10:   -37.69804381596813   -1.59963e-04   4.27962e-04 DIIS/MOM/FRAC
+   @UHF iter  11:   -37.69810463883359   -6.08229e-05   2.32218e-04 DIIS/MOM/FRAC
+   @UHF iter  12:   -37.69815820314461   -5.35643e-05   4.55314e-04 DIIS/MOM/FRAC
+   @UHF iter  13:   -37.69815907875915   -8.75615e-07   6.54520e-05 DIIS/MOM/FRAC
+   @UHF iter  14:   -37.69815908245499   -3.69583e-09   3.11511e-06 DIIS/MOM/FRAC
+   @UHF iter  15:   -37.69815908277362   -3.18636e-10   8.12272e-07 DIIS/MOM/FRAC
+   @UHF iter  16:   -37.69815908282975   -5.61329e-11   3.94596e-07 DIIS/MOM/FRAC
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -11.017683     2A     -0.556140     3A     -0.115541  
+	   4A     -0.115541     5A     -0.058840  
+
+	Alpha Virtual:                                                        
+
+	   6A      0.279644     7A      0.279644     8A      0.285602  
+	   9A      0.285610    10A      0.659391    11A      0.659467  
+	  12A      0.659467    13A      0.659744    14A      0.659744  
+	  15A      1.029229    16A      1.029229    17A      1.041702  
+	  18A      1.229453    19A      1.919372    20A      1.919372  
+	  21A      1.922663    22A      1.922663    23A      1.923794  
+
+	Beta Occupied:                                                        
+
+	   1A    -10.968716     2A     -0.252068  
+
+	Beta Virtual:                                                         
+
+	   3A      0.248533     4A      0.249016     5A      0.249016  
+	   6A      0.318797     7A      0.462777     8A      0.470013  
+	   9A      0.470013    10A      0.717995    11A      0.718511  
+	  12A      0.718511    13A      0.720071    14A      0.720071  
+	  15A      1.168555    16A      1.175582    17A      1.175582  
+	  18A      1.316428    19A      2.041036    20A      2.043091  
+	  21A      2.043091    22A      2.049341    23A      2.049341  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     2 ]
+	SOCC [     3 ]
+
+  Energy converged.
+
+  @UHF Final Energy:   -37.69815908282975
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
+
+  Quadrupole Moment: (Debye Ang)
+    XX:   -11.1712     YY:   -11.1223     ZZ:   -11.0207
+    XY:    -0.1403     XZ:    -0.0522     YZ:    -0.0439
+
+  Traceless Quadrupole Moment: (Debye Ang)
+    XX:    -0.0665     YY:    -0.0176     ZZ:     0.0841
+    XY:    -0.1403     XZ:    -0.0522     YZ:    -0.0439
+
+  Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     C     4.90000  2.00000  2.90000 -0.90000
+
+   Total alpha =  4.90000, Total beta =  2.00000, Total charge = -0.90000
+
+
+  @Spin Contamination Metric:  0.00583
+  @S^2 Expected:               3.75000
+  @S^2 Observed:               3.75583
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:53 2012
+Module time:
+	user time   =       0.13 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       2.30 seconds =       0.04 minutes
+	system time =       0.39 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:53 2012
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              UHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = -1, multiplicity = 4:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000     0.000000000000
+
+    Number of unique atoms: 1
+
+    Atoms equivalency:
+       unique atom 0: 0 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = -1
+  Multiplicity = 4
+  Electrons    = 7
+  Nalpha       = 5
+  Nbeta        = 2
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM enabled.
+  Fractional occupation enabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-07
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: AUG-CC-PVDZ <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 9
+    Number of primitives   = 25
+    Number of AO           = 25
+    Number of SO           = 23
+    Maximum AM             = 2
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     18s 5p 2d // 4s 3p 2d 
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 7.9241747161E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UHF energy:   -28.38798693897903
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         23      23       5       2       2       3
+   -------------------------------------------------------
+    Total      23      23       5       2       2       3
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ DFHF: Density-Fitted SCF Algorithms.
+   by Rob Parrish
+
+  No auxiliary basis selected, defaulting to AUG-CC-PVDZ-JKFIT
+
+  ==> Auxiliary Basis:  <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 28
+    Number of primitives   = 28
+    Number of AO           = 101
+    Number of SO           = 86
+    Maximum AM             = 3
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     11s 8p 6d 3f // 11s 8p 6d 3f 
+
+  Schwarz Cutoff is 0.000E+00
+   -Shell Pairs:              45 of           45 remain,   0% savings
+   -Function Pairs:          276 of          276 remain,   0% savings
+
+  Using Core Algorithm.
+
+    ----------------------------------------------
+     Quantity         Doubles              MiB   
+    ----------------------------------------------
+     Memory            22400000              179
+     (A|B)                 7396                0
+     (A|mn)               23736                0
+    ----------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @UHF iter   1:   -35.85592530616875   -7.46794e+00   0.00000e+00 
+   @UHF iter   2:   -36.04018854256891   -1.84263e-01   9.43565e-02 DIIS
+   @UHF iter   3:   -37.51785974314176   -1.47767e+00   6.63610e-02 DIIS
+   @UHF iter   4:   -37.68344562288952   -1.65586e-01   1.18204e-02 DIIS
+   @UHF iter   5:   -37.70364702322498   -2.02014e-02   4.01875e-03 DIIS
+   @UHF iter   6:   -37.70470889725853   -1.06187e-03   1.45205e-03 DIIS
+   @UHF iter   7:   -37.70491969069437   -2.10793e-04   6.82345e-04 DIIS
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -10.979179     2A     -0.526212     3A     -0.077159  
+	   4A     -0.077159     5A     -0.077159  
+
+	Alpha Virtual:                                                        
+
+	   6A      0.299505     7A      0.299505     8A      0.299505  
+	   9A      0.304948    10A      0.683489    11A      0.683489  
+	  12A      0.683489    13A      0.683489    14A      0.683489  
+	  15A      1.062346    16A      1.062346    17A      1.062346  
+	  18A      1.259129    19A      1.953299    20A      1.953299  
+	  21A      1.953299    22A      1.953299    23A      1.953299  
+
+	Beta Occupied:                                                        
+
+	   1A    -10.929333     2A     -0.214748  
+
+	Beta Virtual:                                                         
+
+	   3A      0.267565     4A      0.267565     5A      0.267565  
+	   6A      0.340379     7A      0.499295     8A      0.499295  
+	   9A      0.499295    10A      0.745486    11A      0.745486  
+	  12A      0.745486    13A      0.745486    14A      0.745486  
+	  15A      1.206705    16A      1.206705    17A      1.206705  
+	  18A      1.348845    19A      2.079760    20A      2.079760  
+	  21A      2.079760    22A      2.079760    23A      2.079760  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     2 ]
+	SOCC [     3 ]
+
+  ==> Fractionally-Occupied SCF Iterations <==
+
+    Alpha orbital    5 will contain   1.000E+00 electron.
+
+                        Total Energy        Delta E      Density RMS
+
+   @UHF iter   8:   -37.70494803570461   -2.83450e-05   2.78318e-04 FRAC
+   @UHF iter   9:   -37.70494813172841   -9.60238e-08   1.42885e-05 MOM/FRAC
+   @UHF iter  10:   -37.70494814522510   -1.34967e-08   4.35183e-06 DIIS/MOM/FRAC
+   @UHF iter  11:   -37.70494814816870   -2.94359e-09   2.21356e-06 DIIS/MOM/FRAC
+   @UHF iter  12:   -37.70494814912422   -9.55524e-10   1.37188e-06 DIIS/MOM/FRAC
+   @UHF iter  13:   -37.70494814932196   -1.97744e-10   7.81462e-07 DIIS/MOM/FRAC
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -10.979988     2A     -0.526666     3A     -0.077549  
+	   4A     -0.077549     5A     -0.077549  
+
+	Alpha Virtual:                                                        
+
+	   6A      0.299509     7A      0.299509     8A      0.299509  
+	   9A      0.304980    10A      0.683475    11A      0.683475  
+	  12A      0.683475    13A      0.683475    14A      0.683475  
+	  15A      1.062479    16A      1.062479    17A      1.062479  
+	  18A      1.259188    19A      1.953152    20A      1.953152  
+	  21A      1.953152    22A      1.953152    23A      1.953152  
+
+	Beta Occupied:                                                        
+
+	   1A    -10.930211     2A     -0.215077  
+
+	Beta Virtual:                                                         
+
+	   3A      0.267552     4A      0.267552     5A      0.267552  
+	   6A      0.340452     7A      0.499201     8A      0.499201  
+	   9A      0.499201    10A      0.745509    11A      0.745509  
+	  12A      0.745509    13A      0.745509    14A      0.745509  
+	  15A      1.206463    16A      1.206463    17A      1.206463  
+	  18A      1.348887    19A      2.079665    20A      2.079665  
+	  21A      2.079665    22A      2.079665    23A      2.079665  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     2 ]
+	SOCC [     3 ]
+
+  Energy converged.
+
+  @UHF Final Energy:   -37.70494814932196
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
+
+  Quadrupole Moment: (Debye Ang)
+    XX:   -11.7116     YY:   -11.7116     ZZ:   -11.7116
+    XY:    -0.0000     XZ:    -0.0000     YZ:    -0.0000
+
+  Traceless Quadrupole Moment: (Debye Ang)
+    XX:    -0.0000     YY:     0.0000     ZZ:     0.0000
+    XY:    -0.0000     XZ:    -0.0000     YZ:    -0.0000
+
+  Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     C     5.00000  2.00000  3.00000 -1.00000
+
+   Total alpha =  5.00000, Total beta =  2.00000, Total charge = -1.00000
+
+
+  @Spin Contamination Metric:  0.00657
+  @S^2 Expected:               3.75000
+  @S^2 Observed:               3.75657
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:54 2012
+Module time:
+	user time   =       0.12 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       2.42 seconds =       0.04 minutes
+	system time =       0.40 seconds =       0.01 minutes
+	total time  =          3 seconds =       0.05 minutes
+
+    ==> Fractional Occupation Traverse Results <==
+
+	Cation  Energy =  -3.7290250686894282E+01
+	Neutral Energy =  -3.7687760545777166E+01
+	Anion   Energy =  -3.7704948149320430E+01
+
+	Nelec    Energy                  
+	5.500E+00  -3.7479827870463325E+01
+	5.600E+00  -3.7519777157724391E+01
+	5.700E+00  -3.7560494710854833E+01
+	5.800E+00  -3.7602027729245712E+01
+	5.900E+00  -3.7644429418258895E+01
+	6.000E+00  -3.7687760545777166E+01
+	6.100E+00  -3.7686231278907293E+01
+	6.200E+00  -3.7591946718659159E+01
+	6.300E+00  -3.7589357487772773E+01
+	6.400E+00  -3.7684604177989534E+01
+	6.500E+00   0.0000000000000000E+00
+	6.600E+00  -3.7686869113983775E+01
+	6.700E+00  -3.7689386736023820E+01
+	6.800E+00  -3.7693070640744025E+01
+	6.900E+00  -3.7698159082829754E+01
+	7.000E+00  -3.7704948149321964E+01
+
+*** PSI4 exiting successfully. Buy a developer a beer!

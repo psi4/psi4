@@ -1,0 +1,32 @@
+This is how to compile LIBDERIV:
+1) This compilation requires some significant scratch space.  If the user
+has defined the environmental variable SCRATCH, then the compilation
+proceeds in $(SCRATCH)/libderiv.  Otherwise, the default location is
+/tmp/$(USER)/libderiv.  You need to make sure this location has enough
+disk space.
+
+2) Edit input.dat and modify input parameters. The following parameters are
+valid:
+  NEW_AM - the desired maximum angular momentum times 2 (see an example
+ below);
+
+  *EXAMPLE*: if one wants LIBDERIV work for up to (ff|ff) integrals (the
+ current PSI 2.0 limit), NEW_AM has to be set
+ to 6 (f corresponds to l=3, (ff|ff) class will require at most the (k0|k0)
+ class to be computed using Level 0 VRR routines). Note that to compile
+ LIBDERIV with some NEW_AM=a one needs to have LIBINT with NEW_AM >=a+2
+ already in place.
+
+3) Type 'make' to begin compilation.  This might take awhile. Get a 
+cup of tea, or go get some sun.
+
+4) If you get any error messages - contact the author.
+
+Edward Valeev
+evaleev@ccqc.uga.edu
+
+July 1, 1999.
+
+Compilation directory determination modified by David Sherrill,
+Feb 10, 2000.
+

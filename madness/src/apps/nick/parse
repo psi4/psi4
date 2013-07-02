@@ -1,0 +1,10 @@
+#!/bin/bash
+
+thisDir=`pwd | sed 's/.*\///'`
+parse.py $thisDir.job.o*
+if [ -n "$1" ]; then
+    extract.py $1
+fi
+cp input input.dat
+gnuplot -persist ~/bin/makePlots.gp
+

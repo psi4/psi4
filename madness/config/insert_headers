@@ -1,0 +1,20 @@
+
+
+# This script goes thru all source files (*.h and *.cc only) in the
+# MADNESS tree nominally owned by the project and ensures that the
+# copyright header is installed
+
+# It must be run from the top of the madness tree (trunk directory)
+
+for file in `find . \( -name "*.h" -o -name "*.cc" \) -exec grep -L "This file is part of MADNESS" {} ";" | grep -v muParser | grep -v tinyxml | grep -v cfft | grep -v madness_config.h | grep -v mainpage.h`
+do
+   echo "Processing $file"
+   cp $file $file.bak
+   cat config/copyright_header > fredfred
+   cat $file >> fredfred
+   mv fredfred $file
+done
+
+
+
+

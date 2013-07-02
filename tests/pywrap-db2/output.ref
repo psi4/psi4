@@ -1,0 +1,75 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-beta2+ Driver
+
+               Git: Rev 35a99d94e312ddfef970e401f8de899948c66316
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+    Process ID:  59953
+    PSI4DATADIR: /Users/loriab/linux/psi4_efp_nowcurrent/psi4/lib
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! Database calculation, run in sow/reap mode.
+
+set {
+    BASIS 6-31+G*
+    DF_BASIS_SCF  cc-pVDZ-JKFIT
+    DF_BASIS_SAPT cc-pVDZ-RI
+    DF_BASIS_MP2  cc-pVDZ-RI
+    REFERENCE RHF
+    SCF_TYPE DF
+    PRINT 1
+    R_CONVERGENCE 11
+    JOBTYPE SP
+    GUESS CORE
+}
+
+db('scf','basic',mode='sow',subset=['ch4','nh3'],func=optimize,tabulate=['current energy','scf total energy'])
+
+--------------------------------------------------------------------------
+
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Database basic Computation    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+
+    The database sow/reap procedure has been selected through mode='sow'. In addition
+    to this output file (which contains no quantum chemical calculations), this job
+    has produced a number of input files (BASIC-*.in) for individual database members
+    and a single input file (BASIC-master.in) with a database(mode='reap') command.
+    The former may look very peculiar since processed and pickled python rather than
+    raw input is written. Follow the instructions below to continue.
+
+    (1)  Run all of the BASIC-*.in input files on any variety of computer architecture.
+       The output file names must be as given below.
+
+             psi4 -i BASIC-ch4-reagent.in        -o BASIC-ch4-reagent.out      
+             psi4 -i BASIC-nh3-reagent.in        -o BASIC-nh3-reagent.out      
+
+    (2)  Gather all the resulting output files in a directory. Place input file
+         BASIC-master.in into that directory and run it. The job will be trivial in
+         length and give summary results for the database in its output file.
+
+             psi4 -i BASIC-master.in             -o BASIC-master.out           
+
+    Alternatively, a single-job execution of the database may be accessed through
+    the database wrapper option mode='continuous'.
+
+
+*** PSI4 exiting successfully. Buy a developer a beer!

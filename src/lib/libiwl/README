@@ -1,0 +1,11 @@
+Ok, a note to future generations:  You MUST BE VERY CAREFUL in taking
+care of unusual cases.  Example: the current incarnation of yosh_read34()
+has the possibility of writing out an iwl buffer that contains all
+zeroes.  The read routines need to be able to handle such an eventuality.
+Always think about such unusual possibilities when modifying this code...
+what happens if the read stops at the exact last position in the buffer,
+what if there are empty buffers, etc, etc.
+Any mistake in this area will be nearly impossible to track down later.
+
+---David Sherrill, October 1995
+

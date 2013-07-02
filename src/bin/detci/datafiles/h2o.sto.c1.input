@@ -1,0 +1,73 @@
+% H2O
+% STO C1
+
+psi: (
+  opt =  false
+  nopt = 4
+  geomupdate = ("bmat" "ugeom")
+%   check = true
+  )
+
+default: (
+  label = "H2O STO"
+  memory = (8.0 MB)
+
+  symmetry = c1
+  wfn = scf
+  opentype = none
+  dertype = second
+%  docc = (3 0 1 1)
+  docc = (5)
+  frozen_docc = (3)
+  frozen_uocc = (0)
+
+files: (
+    default: ( name = "h2ostoc1" nvolume = 2
+      volume1 = "/tmp1/sherrill/"
+      volume2 = "/tmp2/sherrill/"
+      )
+    file30: ( nvolume = 1 volume1 = "./" )
+    file36: ( nvolume = 1 volume1 = "./" )
+    file61: ( nvolume = 1 volume1 = "./" )
+    file62: ( nvolume = 1 volume1 = "./" )
+    file63: ( nvolume = 1 volume1 = "./" )
+    file64: ( nvolume = 1 volume1 = "./" )
+    )
+  )
+input: (
+  atoms = (oxygen hydrogen hydrogen) 
+  basis = sto
+  charges = (8 1 1)
+  units = bohr
+% STO-3G SCF Optimized Geometry for H2O
+  geometry = (
+      (         .0000000000         .0000000000         .0609947951)
+      (         .0000000000        1.4325649220       -1.1404973976)
+      (         .0000000000       -1.4325649220       -1.1404973976)
+  )
+  origin = (0.0 0.0 0.0)
+)
+
+scf: (
+    maxiter = 50
+    convergence = 12
+    delete34 = false
+  )
+
+bmat: (
+   no_print = false
+   )
+cphf: convergence = 18
+
+intder: (
+   derlvl = 2
+   trans_type = c_to_i
+   freq_anal = false
+)
+
+detci: (
+   ex_lvl = 2
+   print = 2
+   max_det = 5000
+)
+

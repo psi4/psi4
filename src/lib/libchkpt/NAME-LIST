@@ -1,0 +1,74 @@
+List of names for checkpoint entries
+D. Sherrill 3/24/02
+
+Label - calculation label
+Nuclear charges - nuclear charges (double) for each atom
+ICT Table - num_atoms * sizeof(int)
+Shells per atom - num_atoms * sizeof(int)
+Shells per ang. mom. - (max_angmom+1)*sizeof(int)
+First shell per atom - num_atoms*sizeof(int)
+Exponents - num_prims*sizeof(double)
+Contraction coefficients - num_prims*MAXANGMOM*sizeof(double)
+First primitive per shell - num_shells*sizeof(int)
+Shell nucleus - num_shells*sizeof(int)
+Shell ang. mom. - num_shells*sizeof(int)
+Primitives per shell - num_shells*sizeof(int)
+First AO per shell - num_shells*sizeof(int)
+Irrep labels - array of irrep labels (one 4-char string per irrep)
+Atom class - num_atoms*sizeof(int)
+Symmetry block pointer - nirreps*sizeof(int)
+Cartesian SO's per irrep - nirreps*sizeof(int)
+AO Type Transmat - 3 * sizeof(double)
+Shell transmat - nirreps * sizeof(int)
+Atom labels - 8*sizeof(char)
+Full atom labels - 8*sizeof(char)
+SO's per irrep - nirreps*sizeof(int)
+Symmetry label - 4*sizeof(char)
+Atomic symm positions - num_atoms*sizeof(int)
+Unique shell -> full shell map - num_unique_shells*sizeof(int)
+SO->AO transmat - num_ao*sizeof(double)
+SO->BF transmat - num_so*sizeof(double)
+First BF per shell - num_shells*sizeof(int)
+Unique atom -> full atom map - num_uniques*sizeof(int)
+Cotton -> local map - nirreps*sizeof(int)
+Z-matrix - num_entries*sizeof(struct z_entry)
+Shells per am - (max_angmom+1)*sizeof(int)
+AM -> canonical shell map -  num_shells*sizeof(int)
+Transmat to reference frame - 9*sizeof(double)
+Full cartesian geometry - 3*sizeof(double)*num_entries
+Geometry - 3*sizeof(double)*num_atoms
+Nuclear rep. energy - double
+Num. unique atoms - int
+Num. unique shells - int
+Rotor type - int
+Max. AM - int
+Num. SO - int
+Num. AO - int
+Num. shells - int
+Num. irreps - int
+Num. primitives - int
+Num. atoms - int
+Num. entries - int
+Num. HF irreps - number of irreps with nonzero number of orbitals
+Mxcoef - int
+Num. MO's - int
+Iopen - int, ioff[num irreps w/ open shells] (- if twocon)
+Reference - int
+Phase check - int (1 if phase has been checked)
+Total energy - the total energy
+SCF energy - the SCF energy
+MOs alpha - The alpha molecular orbital coefficients
+MOs beta - The beta molecular orbital coefficients
+Orbital energies alpha - orbital eigenvalues for alpha
+Orbital energies beta - orbital eigenvalues for beta
+HF irrep labels - irrep labels for irreps w/ >0 orbitals
+Orbitals per HF irrep - orbitals per irrep w/ >0 orbitals
+Closed shells per HF irrep - closed shells per irrep w/ >0 orbitals
+Open shells per HF irrep - open shells per irrep w/ >0 orbitals
+Alpha coupling coeffs - coupling coefficients (double) per ioff[n_open]
+Beta coupling coeffs - coupling coefficients (double) per ioff[n_open]
+Alpha Lagrangian - nx*sizeof(double)
+Beta Lagrangian - nx*sizeof(double)
+
+
+ 

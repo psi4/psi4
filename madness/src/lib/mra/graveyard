@@ -1,0 +1,3756 @@
+//         /// Returns vector of keys of all local nodes where predicate is true
+//         template <typename predicateT>
+//         std::vector<keyT> keys (const predicateT& predicate) {
+//             std::vector<keyT> v;
+//             v.reserve(this->size());
+//             for (typename implT::iterator it = this->begin(); it != this->end(); ++it) {
+//                 if (predicate(*it)) v.push_back(it->first);
+//             }
+//             return v;
+//         };
+
+//         /// Returns vector of keys of all local nodes
+//         std::vector<keyT> keys () {
+//             return keys(true_predicate<datumT>());
+//         };
+
+
+//         /// Returns vector of keys of local leaf nodes
+//         std::vector<keyT> leaf_nodes () {
+//             return keys(is_leaf_predicate());
+//         };
+
+
+//         /// Returns vector of keys of all local nodes with coeff
+//         std::vector<keyT> coeff_nodes () {
+//             return keys(has_coeff_predicate());
+//         };
+
+
+        struct true_predicate {
+            bool operator()(const datumT& d) const {
+                return true;
+            };
+        };
+        
+
+        struct is_leaf_predicate {
+            bool operator()(const datumT& d) const {
+                return d.second.is_leaf();
+            };
+        };
+
+        struct is_not_leaf_predicate {
+            bool operator()(const datumT& d) const {
+                return !d.second.is_leaf();
+            };
+        };
+
+        struct  has_coeff_predicate {
+            bool operator()(const datumT& d) const {
+                return d.second.has_coeff();
+            };
+        };
+
+        struct  has_no_coeff_predicate {
+            bool operator()(const datumT& d) const {
+                return !d.second.has_coeff();
+            };
+        };
+
+
+
+//         void insert_weird_tree(const keyT& key) {
+// //       for (Level i = 0; i < key.level(); i++) cout << "  ";
+// //       print(key);
+//          Level Nmax = 1;
+//          if (is_local(key)) {
+//              bool has_children = ((key.level() < Nmax) || ((key.level() < 2*Nmax)&&
+//                      (key.translation()[0] == key.translation()[NDIM-1])));
+//              FunctionNode<T,NDIM> node(tensorT(0), has_children);
+//              this->insert(key,node);
+//              if (has_children) {
+//                     for (KeyChildIterator<NDIM> kit(key); kit; ++kit) {
+//                      insert_weird_tree(kit.key());
+//                     }
+//              }
+//          }
+//          else if (key.level() < Nmax) {
+//              for (KeyChildIterator<NDIM> kit(key); kit; ++kit) {
+//                  insert_weird_tree(kit.key());
+//              }
+//          }
+//         };
+
+
+        /// Optimized filter (inplace, contiguous, no err checking)
+
+        /// Transforms coefficients in s returning result also in s.
+        /// Uses work2 from common data to eliminate temporary creation and
+        /// to increase cache locality.
+        ///
+        /// No communication involved.
+//         inline void filter_inplace(tensorT& s) {
+//             transform_inplace(s, cdata.hgT, cdata.work2);
+//         };
+
+
+        /// Optimized unfilter (see info about filter_inplace)
+
+        /// No communication involved.
+//         inline void unfilter_inplace(tensorT& s) {
+//             transform_inplace(s, cdata.hg, cdata.work2);
+//         };
+#define WORLD_INSTANTIATE_STATIC_TEMPLATES
+#include <mra/loadbal.h>
+
+using namespace std;
+
+namespace madness {
+
+    typedef int Cost;
+    typedef double CompCost;
+
+    template <typename T, int D>
+    vector<typename DClass<D>::TreeCoords> LoadBalImpl<T,D>::findBestPartition() {
+        vector<typename DClass<D>::TreeCoords> klist;
+        if (this->f.impl->world.mpi.rank() != 0) {
+            print("findBestPartition: leave it to the expert");
+            this->f.impl->world.gop.fence();
+            print("about to do broadcast");
+            unsigned int ksize;
+            this->f.impl->world.gop.template broadcast<unsigned int>(ksize);
+            for (unsigned int i = 0; i < ksize; i++) {
+                typename DClass<D>::TreeCoords t;
+                this->f.impl->world.gop.template broadcast<typename DClass<D>::TreeCoords>(t);
+                klist.push_back(t);
+            }
+            print("done with broadcast");
+            return klist;
+        }
+        unsigned int npieces = this->f.impl->world.nproc();
+        bool notdone = true;
+        int count = 0;
+        vector<vector<typename DClass<D>::TreeCoords> > listoflist;
+        vector<typename DClass<D>::TreeCoords> emptylist;
+        vector<Cost> costlist;
+
+        listoflist.push_back(emptylist);
+        costlist.push_back(0);
+        Cost totalCost = 0;
+
+<<<<<<< .mine
+        madness::print("findBestPartition: about to fixCost");
+=======
+//madness::print("findBestPartition: about to fixCost");
+>>>>>>> .r223
+
+<<<<<<< .mine
+        typename DClass<D>::KeyD root(0);
+        this->skeltree->template fixCost(root);
+        madness::print("findBestPartition: about to depthFirstPartition");
+        //    this->skeltree->print(root);
+        totalCost = this->skeltree->template depthFirstPartition(root, &listoflist[count], npieces,
+                    totalCost, &costlist[count]);
+        //madness::print("findBestPartition: after depthFirstPartition");
+        int size = listoflist[count].size();
+        cout << "Partitioned tree " << count << ":" << endl;
+        for (int i = 0; i < size; i++)
+            listoflist[count][i].print();
+        cout << "Max cost for this tree = " << costlist[count] << endl;
+        cout << endl;
+        if (listoflist[count].size() < npieces)
+            notdone = false;
+        count++;
+=======
+    typename DClass<D>::KeyD root(0);
+    this->skeltree->fixCost(root);
+//madness::print("findBestPartition: about to depthFirstPartition");
+//    this->skeltree->print(root);
+    totalCost = this->skeltree->depthFirstPartition(root, &listoflist[count], npieces, 
+	totalCost, &costlist[count]);
+//madness::print("findBestPartition: after depthFirstPartition");
+    int size = listoflist[count].size();
+    cout << "Partitioned tree " << count << ":" << endl;
+    for (int i = 0; i < size; i++)
+	listoflist[count][i].print();
+    cout << "Max cost for this tree = " << costlist[count] << endl;
+    cout << endl;
+    if (listoflist[count].size() < npieces)
+	notdone = false;
+    count++;
+>>>>>>> .r223
+
+<<<<<<< .mine
+        while (notdone) {
+            //	this->skeltree.fixCost<D>(root);
+            this->skeltree->template fixCost(root);
+            //	this->skeltree.rollup<D>(root);
+            this->skeltree->template rollup(root);
+            listoflist.push_back(emptylist);
+            costlist.push_back(0);
+            this->skeltree->template depthFirstPartition(root, &listoflist[count], npieces, totalCost, &costlist[count]);
+            int size = listoflist[count].size();
+            cout << "Partitioned tree " << count << ":" << endl;
+            for (int i = 0; i < size; i++)
+                listoflist[count][i].print();
+            cout << "Max cost for this tree = " << costlist[count] << endl;
+            cout << endl;
+=======
+    while (notdone) {
+	this->skeltree->fixCost(root); 
+	this->skeltree->rollup(root);
+	listoflist.push_back(emptylist);
+	costlist.push_back(0);
+	this->skeltree->depthFirstPartition(root, &listoflist[count], npieces, totalCost, &costlist[count]);
+	int size = listoflist[count].size();
+	cout << "Partitioned tree " << count << ":" << endl;
+	for (int i = 0; i < size; i++)
+	    listoflist[count][i].print();
+	cout << "Max cost for this tree = " << costlist[count] << endl;
+	cout << endl;
+	
+    	typename DClass<D>::treeT::iterator it = this->skeltree->find(root);
+    	if (it == this->skeltree->end()) return klist;
+    	typename DClass<D>::NodeD node = it->second;
+	if (!(node.has_children()) || (listoflist[count].size() < npieces)) {
+	    notdone = false;
+	}
+	if (listoflist[count].size() < npieces) {
+	    listoflist.erase(listoflist.begin()+count);
+	    break;
+	}
+	count++;
+    }
+    unsigned int shortestList = 0, SL_index, LB_index;
+    Cost loadBalCost = 0;
+    vector<unsigned int> len;
+    for (int i = 0; i < count; i++) {
+	len.push_back(listoflist[i].size());
+	if ((len[i] < shortestList) || (shortestList == 0)) {
+	    shortestList = len[i];
+	    SL_index = i;
+	}
+	else if ((len[i] == shortestList) && (costlist[i] < costlist[SL_index])) {
+	// all things being equal, prefer better balance
+	    shortestList = len[i];
+	    SL_index = i;
+	}
+	if ((costlist[i] < loadBalCost) || (loadBalCost == 0)) {
+	    loadBalCost = costlist[i];
+	    LB_index = i;
+	}
+	else if ((costlist[i] == loadBalCost) && (len[i] < listoflist[LB_index].size())) {
+	// all things being equal, prefer fewer cuts
+	    loadBalCost = costlist[i];
+	    LB_index = i;
+	}
+    }
+>>>>>>> .r223
+
+            //    	typename DClass<D>::treeT::iterator it = this->skeltree.find(root);
+            typename DClass<D>::treeT::iterator it = this->skeltree->find(root);
+            //    	if (it == this->skeltree.end()) return klist;
+            if (it == this->skeltree->end()) return klist;
+            typename DClass<D>::NodeD node = it->second;
+            if (!(node.has_children()) || (listoflist[count].size() < npieces)) {
+                notdone = false;
+            }
+            if (listoflist[count].size() < npieces) {
+                listoflist.erase(listoflist.begin()+count);
+                break;
+            }
+            count++;
+        }
+        unsigned int shortestList = 0, SL_index, LB_index;
+        Cost loadBalCost = 0;
+        vector<unsigned int> len;
+        for (int i = 0; i < count; i++) {
+            len.push_back(listoflist[i].size());
+            if ((len[i] < shortestList) || (shortestList == 0)) {
+                shortestList = len[i];
+                SL_index = i;
+            } else if ((len[i] == shortestList) && (costlist[i] < costlist[SL_index])) {
+                // all things being equal, prefer better balance
+                shortestList = len[i];
+                SL_index = i;
+            }
+            if ((costlist[i] < loadBalCost) || (loadBalCost == 0)) {
+                loadBalCost = costlist[i];
+                LB_index = i;
+            } else if ((costlist[i] == loadBalCost) && (len[i] < listoflist[LB_index].size())) {
+                // all things being equal, prefer fewer cuts
+                loadBalCost = costlist[i];
+                LB_index = i;
+            }
+        }
+
+        cout << "The load balance with the fewest broken links has cost " << costlist[SL_index] <<
+        ", and " << shortestList-1 << " broken links" << endl;
+        for (unsigned int i = 0; i < shortestList; i++) {
+            listoflist[SL_index][i].print();
+        }
+        cout << endl;
+        cout << "The load balance with the best balance has cost " << loadBalCost << ", and " <<
+        listoflist[LB_index].size()-1 << " broken links" << endl;
+        for (unsigned int i = 0; i < listoflist[LB_index].size(); i++) {
+            listoflist[LB_index][i].print();
+        }
+        cout << endl;
+
+        CompCost ccleast = 0;
+        int cc_index;
+        for (int i = 0; i < count; i++) {
+            CompCost cctmp = computeCompCost(costlist[i], len[i]-1);
+            if ((i==0) || (cctmp < ccleast)) {
+                ccleast = cctmp;
+                cc_index = i;
+            }
+        }
+        cout << "The load balance with the best overall computational cost has cost " <<
+        costlist[cc_index] << " and " << len[cc_index]-1 << " broken links" << endl;
+        for (unsigned int i = 0; i < len[cc_index]; i++) {
+            listoflist[cc_index][i].print();
+        }
+        for (unsigned int i = 0; i < len[cc_index]; i++) {
+            klist.push_back(listoflist[cc_index][i]);
+        }
+
+        print("findBestPartition: about to do fence");
+        this->f.impl->world.gop.fence();
+        print("about to do broadcast");
+        unsigned int ksize = klist.size();
+        this->f.impl->world.gop.template broadcast<unsigned int>(ksize);
+        for (unsigned int i=0; i < ksize; i++) {
+            this->f.impl->world.gop.template broadcast<typename DClass<D>::TreeCoords>(klist[i]);
+        }
+        print("done with broadcast");
+
+        return klist;
+    }
+
+<<<<<<< .mine
+=======
+template <int D, typename Pmap>
+Cost LBTree<D,Pmap>::fixCost(typename DClass<D>::KeyDConst& key) {
+//    madness::print("fixCost: key =", key, " is about to be looked for");
+    typename DClass<D>::treeT::iterator it = this->find(key);
+//    madness::print("fixCost: key =", key, " was found (looked for),", (it == this->end()));
+    if (it == this->end()) return 0;
+//    madness::print("fixCost: tree it was found (exists)");
+>>>>>>> .r223
+
+<<<<<<< .mine
+    template <int D>
+    Cost LBTree<D>::fixCost(typename DClass<D>::KeyDConst& key) {
+        madness::print("fixCost: key =", key, " is about to be looked for");
+        typename DClass<D>::treeT::iterator it = this->find(key);
+        madness::print("fixCost: key =", key, " was found (looked for),", (it == this->end()));
+        if (it == this->end()) return 0;
+        madness::print("fixCost: tree it was found (exists)");
+
+        typename DClass<D>::NodeD node = it->second;
+        madness::print("fixCost: got node");
+        NodeData d = node.get_data();
+        madness::print("fixCost: got data from node");
+        d.subcost = d.cost;
+        madness::print("fixCost: assigned node cost to subcost");
+        if (node.has_children()) {
+            madness::print("fixCost: node has children");
+            for (KeyChildIterator<D> kit(key); kit; ++kit) {
+                d.subcost += this->template fixCost(kit.key());
+            }
+        }
+        node.set_data(d);
+        madness::print("fixCost: about to insert key =", key, ",", node.get_data());
+        this->insert(key,node);
+        madness::print("fixCost: inserted node");
+        return d.subcost;
+=======
+    typename DClass<D>::NodeD node = it->second;
+//    madness::print("fixCost: got node");
+    NodeData d = node.get_data();
+//    madness::print("fixCost: got data from node");
+    d.subcost = d.cost;
+//    madness::print("fixCost: assigned node cost to subcost");
+    if (node.has_children())
+    {
+//	madness::print("fixCost: node has children");
+	for (KeyChildIterator<D> kit(key); kit; ++kit) {
+	    d.subcost += this->fixCost(kit.key());
+	}
+>>>>>>> .r223
+    }
+<<<<<<< .mine
+=======
+    node.set_data(d);
+//madness::print("fixCost: about to insert key =", key, ",", node.get_data());
+    this->insert(key,node);
+//madness::print("fixCost: inserted node");
+    return d.subcost;
+}
+>>>>>>> .r223
+
+
+    template <int D>
+    Cost LBTree<D>::depthFirstPartition(typename DClass<D>::KeyDConst& key,
+            vector<typename DClass<D>::TreeCoords>* klist, unsigned int npieces,
+            Cost totalcost, Cost *maxcost) {
+//madness::print("depthFirstPartition: at very beginning");
+<<<<<<< .mine
+        if (totalcost == 0) {
+            totalcost = this->template computeCost(key);
+        }
+        madness::print("depthFirstPartition: totalcost =", totalcost);
+=======
+    if (totalcost == 0) {
+	totalcost = this->computeCost(key);
+    }
+//madness::print("depthFirstPartition: totalcost =", totalcost);
+>>>>>>> .r223
+
+        Cost costLeft = totalcost;
+        int partsLeft = npieces;
+        *maxcost = 0;
+        Cost partitionSize = 0;
+    double facter = 1.1;
+
+<<<<<<< .mine
+        for (int i = npieces-1; i >= 0; i--) {
+            cout << endl << "Beginning partition number " << i << endl;
+            vector<typename DClass<D>::KeyD> tmplist;
+            Cost tpart = computePartitionSize(costLeft, partsLeft);
+            if (tpart > partitionSize) {
+                partitionSize = tpart;
+            }
+            madness::print("depthFirstPartition: partitionSize =", partitionSize);
+            Cost usedUp = 0;
+            bool atleaf = false;
+            usedUp = this->template makePartition(key, &tmplist, partitionSize, (i==0), usedUp, &atleaf);
+            if (*maxcost < usedUp) *maxcost = usedUp;
+            costLeft -= usedUp;
+            partsLeft--;
+            for (unsigned int j = 0; j < tmplist.size(); j++) {
+                klist->push_back(typename DClass<D>::TreeCoords(typename DClass<D>::KeyD(tmplist[j]), i));
+            }
+        }
+        return totalcost;
+=======
+    for (int i = npieces-1; i >= 0; i--) {
+	cout << endl << "Beginning partition number " << i << endl;
+	vector<typename DClass<D>::KeyD> tmplist;
+	Cost tpart = computePartitionSize(costLeft, partsLeft);
+	if ((tpart > partitionSize) || (tpart*facter < partitionSize)) {
+	    partitionSize = tpart;
+	}
+//madness::print("depthFirstPartition: partitionSize =", partitionSize);
+	Cost usedUp = 0;
+	bool atleaf = false;
+	usedUp = this->makePartition(key, &tmplist, partitionSize, (i==0), usedUp, &atleaf);
+	if (*maxcost < usedUp) *maxcost = usedUp;
+	costLeft -= usedUp;
+	partsLeft--;
+	for (unsigned int j = 0; j < tmplist.size(); j++) {
+	    klist->push_back(typename DClass<D>::TreeCoords(typename DClass<D>::KeyD(tmplist[j]), i)); 
+	}
+>>>>>>> .r223
+    }
+
+    template <int D>
+    void LBTree<D>::rollup(typename DClass<D>::KeyDConst& key) {
+//    madness::print("rollup: at beginning");
+        typename DClass<D>::treeT::iterator it = this->find(key);
+        if (it == this->end()) return;
+
+//    madness::print("rollup: about to get node associated with key",key);
+        typename DClass<D>::NodeD node = it->second;
+        if (!node.has_children()) {
+//	madness::print("rollup: this node has no children; returning");
+            return; // no rolling to be done here.
+        }
+//    madness::print("rollup: this node has children");
+        bool hasleafchild = false;
+        for (KeyChildIterator<D> kit(key); kit; ++kit) {
+            typename DClass<D>::treeT::iterator itc = this->find(kit.key());
+            if (itc != this->end()) {
+//	    madness::print("rollup: found child", kit.key());
+                typename DClass<D>::NodeD c = itc->second;
+                if (!c.has_children()) {
+//		madness::print("rollup: child is leaf");
+                    hasleafchild = true;
+                    break;
+                } else {
+//		madness::print("rollup: child", kit.key(), "has children");
+                }
+            }
+        }
+        if (hasleafchild) {
+//	madness::print("rollup: about to meld with key",key);
+<<<<<<< .mine
+            this->template meld(key);
+        }
+        for (KeyChildIterator<D> kit(key); kit; ++kit) {
+            typename DClass<D>::treeT::iterator itc = this->find(kit.key());
+            if (itc != this->end()) {
+=======
+	this->meld(key);
+    }
+    for (KeyChildIterator<D> kit(key); kit; ++kit) {
+	typename DClass<D>::treeT::iterator itc = this->find(kit.key());
+	if (itc != this->end()) {
+>>>>>>> .r223
+//	    madness::print("rollup: found child", kit.key());
+                typename DClass<D>::NodeD c = itc->second;
+                if (c.has_children()) {
+//		madness::print("rollup: child", kit.key(), "has children");
+<<<<<<< .mine
+                    this->template rollup(kit.key());
+                }
+            }
+        }
+        it = this->find(key);
+        node = it->second;
+        NodeData d = node.get_data();
+        if (d.istaken) {
+            d.istaken = false;
+            node.set_data(d);
+            this->insert(key,node);
+        }
+=======
+		this->rollup(kit.key());
+	    }
+	}
+>>>>>>> .r223
+    }
+
+    template <int D>
+    void LBTree<D>::meld(typename DClass<D>::KeyDConst& key) {
+//    madness::print("meld: at beginning, finding key", key);
+        Cost cheapest = 0;
+        typename DClass<D>::treeT::iterator it = this->find(key);
+        if (it == this->end()) return;
+
+        vector<unsigned int> mylist;
+
+        typename DClass<D>::NodeD node = it->second;
+        unsigned int i = 0;
+//    madness::print("meld: about to iterate over children of key", key);
+        for (KeyChildIterator<D> kit(key); kit; ++kit) {
+//    	madness::print("    meld: iterating over child", i);
+            if (node.has_child(i)) {
+                typename DClass<D>::treeT::iterator itc = this->find(kit.key());
+                if (itc == this->end()) return;
+                typename DClass<D>::NodeD c = itc->second;
+                if (!c.has_children()) {
+//		madness::print("    meld: child",i,"has no children");
+                    Cost cost = c.get_data().cost;
+                    if ((cost < cheapest) || (cheapest == 0)) {
+                        cheapest = cost;
+                        mylist.clear();
+                        mylist.push_back(i);
+                    } else if (cost == cheapest) {
+                        mylist.push_back(i);
+                    }
+                }
+            }
+            i++;
+        }
+
+        if (cheapest == 0) {
+//	madness::print("meld: this node has no leaf children");
+            NodeData d = node.get_data();
+            d.istaken = false;
+            node.set_data(d);
+            this->insert(key,node);
+            return;
+        }
+
+        NodeData d = node.get_data();
+
+        i = 0;
+        int j = 0, mlsize = mylist.size();
+        for (KeyChildIterator<D> kit(key); kit; ++kit) {
+            if (mylist[j] == i) {
+//	    madness::print("meld: found a match, mylist[",j,"] =",i);
+                this->erase(kit.key());
+                node.set_child(mylist[j], false);
+                d.cost += cheapest;
+                j++;
+            }
+            i++;
+            if (j == mlsize) break;
+        }
+        d.istaken = false;
+        node.set_data(d);
+        this->insert(key,node);
+//    madness::print("meld: inserted node back into tree; goodbye!");
+    }
+
+
+    template <int D>
+    Cost LBTree<D>::computeCost(typename DClass<D>::KeyDConst& key) {
+        Cost cost = 0;
+        typename DClass<D>::treeT::iterator it = this->find(key);
+        if (it == this->end()) return cost;
+
+<<<<<<< .mine
+        typename DClass<D>::NodeD node = it->second;
+        for (KeyChildIterator<D> kit(key); kit; ++kit) {
+            cost += this->template computeCost(kit.key());
+        }
+        NodeData d = node.get_data();
+        cost += d.cost;
+
+        d.subcost = cost;
+        node.set_data(d);
+        this->insert(key,node);
+        return cost;
+=======
+    typename DClass<D>::NodeD node = it->second;
+    for (KeyChildIterator<D> kit(key); kit; ++kit) {
+	cost += this->computeCost(kit.key());
+>>>>>>> .r223
+    }
+
+
+    template <int D>
+    Cost LBTree<D>::makePartition(typename DClass<D>::KeyDConst& key,
+                                       vector<typename DClass<D>::KeyD>* klist, Cost partitionSize, bool lastPartition,
+                                       Cost usedUp, bool *atleaf) {
+//    madness::print("at beginning of makePartition: atleaf =", *atleaf);
+        double fudgeFactor = 0.1;
+        Cost maxAddl = (Cost) (fudgeFactor*partitionSize);
+
+        typename DClass<D>::treeT::iterator it = this->find(key);
+        if (it == this->end()) {
+            return usedUp;
+        }
+
+        typename DClass<D>::NodeD node = it->second;
+        NodeData d = node.get_data();
+
+        it = this->end();
+
+<<<<<<< .mine
+        madness::print("makePartition: data for key", key, ":", d);
+        madness::print("makePartition: partitionSize =", partitionSize, ", lastPartition =", lastPartition, ", usedUp =", usedUp);
+=======
+//    madness::print("makePartition: data for key", key, ":", d);
+//    madness::print("makePartition: partitionSize =", partitionSize, ", lastPartition =", lastPartition, ", usedUp =", usedUp);
+>>>>>>> .r223
+
+<<<<<<< .mine
+        if (d.istaken) {
+            madness::print("makePartition: this key is taken");
+            return usedUp;
+        }
+=======
+    if (d.istaken) {
+//	madness::print("makePartition: this key is taken"); 
+	return usedUp;
+    }
+>>>>>>> .r223
+
+<<<<<<< .mine
+        madness::print("makePartition: back to key", key);
+=======
+//    madness::print("makePartition: back to key", key);
+>>>>>>> .r223
+
+<<<<<<< .mine
+        // if either we're at the last partition, the partition is currently empty
+        // and this is a single item, or there is still room in the partition and
+        // adding this to it won't go above the fudge factor,
+        // then add this piece to the partition.
+        if ((lastPartition) || ((usedUp == 0) && (!node.has_children())) ||
+                ((usedUp < partitionSize) && (d.subcost+usedUp <= partitionSize+maxAddl))) {
+            // add to partition
+            madness::print("makePartition: adding to partition", key);
+            klist->push_back(typename DClass<D>::KeyD(key));
+            d.istaken = true;
+            usedUp += d.subcost;
+            // REMOVE COST FROM FOREPARENTS (implement this)
+            this->template removeCost(key.parent(), d.subcost);
+            node.set_data(d);
+            this->insert(key,node);
+        } else if (usedUp < partitionSize) {
+            // try this node's children (if any)
+            if (node.has_children()) {
+                int i = 0;
+                for (KeyChildIterator<D> kit(key); kit; ++kit) {
+                    if (node.has_child(i)) {
+                        madness::print("makePartition:", key, "recursively calling", kit.key());
+                        usedUp = this->template makePartition(kit.key(), klist, partitionSize, lastPartition,
+                                                              usedUp, atleaf);
+                        if ((*atleaf) || (usedUp >= partitionSize)) {
+                            break;
+                        }
+                    }
+                    i++;
+                }
+            } else {
+                madness::print("makePartition: about to set atleaf = true");
+                *atleaf = true;
+            }
+        }
+        return usedUp;
+=======
+    // if either we're at the last partition, the partition is currently empty
+    // and this is a single item, or there is still room in the partition and
+    // adding this to it won't go above the fudge factor,
+    // then add this piece to the partition.
+    if ((lastPartition) || ((usedUp == 0) && (!node.has_children())) || 
+	((usedUp < partitionSize) && (d.subcost+usedUp <= partitionSize+maxAddl))) {
+	// add to partition
+//	madness::print("makePartition: adding to partition", key);
+	klist->push_back(typename DClass<D>::KeyD(key));
+	d.istaken = true;
+	usedUp += d.subcost;
+	// REMOVE COST FROM FOREPARENTS (implement this)
+	this->removeCost(key.parent(), d.subcost);
+	node.set_data(d);
+	this->insert(key,node);
+>>>>>>> .r223
+    }
+<<<<<<< .mine
+=======
+    else if (usedUp < partitionSize) {
+	// try this node's children (if any) 
+	if (node.has_children()) {
+	    int i = 0;
+	    for (KeyChildIterator<D> kit(key); kit; ++kit) {
+		if (node.has_child(i)) {
+//		    madness::print("makePartition:", key, "recursively calling", kit.key());
+		    usedUp = this->makePartition(kit.key(), klist, partitionSize, lastPartition,
+			usedUp, atleaf);
+		    if ((*atleaf) || (usedUp >= partitionSize)) {
+			break;
+		    }
+		}
+		i++;
+	    }
+	}
+	else {
+//	    madness::print("makePartition: about to set atleaf = true");
+	    *atleaf = true;
+	}
+    }
+    return usedUp;
+}
+>>>>>>> .r223
+
+<<<<<<< .mine
+    template <int D>
+    void LBTree<D>::removeCost(typename DClass<D>::KeyDConst& key, Cost c) {
+        madness::print("removeCost: key", key, "owner =", owner(key));
+        this->get_mypmap().print();
+        if (((int) key.level()) < 0) return;
+        typename DClass<D>::treeT::iterator it = this->find(key);
+        madness::print("removeCost: found key");
+        if (it == this->end()) return;
+        typename DClass<D>::NodeD node = it->second;
+        NodeData d = node.get_data();
+        madness::print("removeCost: got data");
+        d.subcost -= c;
+        if (key.level() > 0) {
+            this->template removeCost(key.parent(), c);
+        }
+        madness::print("removeCost: before setting, data =", d);
+        node.set_data(d);
+        madness::print("removeCost: after setting, data =", node.get_data());
+        this->insert(key,node);
+        madness::print("removeCost: after inserting, data = ", node.get_data());
+=======
+template <int D, typename Pmap>
+void LBTree<D,Pmap>::removeCost(typename DClass<D>::KeyDConst& key, Cost c) {
+//madness::print("removeCost: key", key, "owner =", owner(key));
+//this->get_procmap().print();
+    if (((int) key.level()) < 0) return;
+    typename DClass<D>::treeT::iterator it = this->find(key);
+//madness::print("removeCost: found key");
+    if (it == this->end()) return;
+    typename DClass<D>::NodeD node = it->second;
+    NodeData d = node.get_data();
+//madness::print("removeCost: got data");
+    d.subcost -= c;
+    if (key.level() > 0) {
+    	this->removeCost(key.parent(), c);
+>>>>>>> .r223
+    }
+<<<<<<< .mine
+=======
+//madness::print("removeCost: before setting, data =", d);
+    node.set_data(d);
+//madness::print("removeCost: after setting, data =", node.get_data());
+    this->insert(key,node);
+//madness::print("removeCost: after inserting, data = ", node.get_data());
+}
+>>>>>>> .r223
+
+
+    Cost computePartitionSize(Cost cost, unsigned int parts) {
+        return (Cost) ceil(((double) cost)/((double) parts));
+    }
+
+
+    CompCost computeCompCost(Cost c, int n) {
+        CompCost compcost;
+        CompCost cfactor = 0.1, nfactor = 1.0;
+        compcost = cfactor*c + nfactor*n;
+        return compcost;
+    }
+
+
+    template <typename T, int D>
+    void migrate_data(SharedPtr<FunctionImpl<T,D> > tfrom, SharedPtr<FunctionImpl<T,D> > tto,
+                      typename DClass<D>::KeyD key) {
+        typename FunctionImpl<T,D>::iterator it = tfrom->find(key);
+        if (it == tfrom->end()) return;
+
+        FunctionNode<T,D> node = it->second;
+
+        if (node.has_children()) {
+            for (KeyChildIterator<D> kit(key); kit; ++kit) {
+                migrate_data<T,D>(tfrom, tto, kit.key());
+            }
+        }
+        tto->insert(key, node);
+    }
+
+
+<<<<<<< .mine
+    template <typename T, int D>
+    void migrate(SharedPtr<FunctionImpl<T,D> > tfrom, SharedPtr<FunctionImpl<T,D> > tto) {
+        typename DClass<D>::KeyD root(0);
+        print("migrate: at beginning");
+        migrate_data<T,D>(tfrom, tto, root);
+        print("migrate: at end");
+    }
+=======
+template <typename T, int D, typename Pmap>
+void migrate(SharedPtr<FunctionImpl<T,D,Pmap> > tfrom, SharedPtr<FunctionImpl<T,D,Pmap> > tto) {
+    typename DClass<D>::KeyD root(0);
+//print("migrate: at beginning");
+    migrate_data<T,D,Pmap>(tfrom, tto, root);
+//print("migrate: at end");
+}
+>>>>>>> .r223
+
+<<<<<<< .mine
+    // Explicit instantiations for D=1:6
+    template void migrate<double,3,MyPmap<3> >(SharedPtr<FunctionImpl<double,3,MyPmap<3> > > tfrom,
+            SharedPtr<FunctionImpl<double,3,MyPmap<3> > > tto);
+=======
+// Explicit instantiations for D=1:6
+>>>>>>> .r223
+
+<<<<<<< .mine
+    template void migrate_data<double,3>(SharedPtr<FunctionImpl<double,3,MyPmap<3> > > tfrom,
+                                         SharedPtr<FunctionImpl<double,3,MyPmap<3> > > tto, DClass<3>::KeyD key);
+=======
+>>>>>>> .r223
+
+<<<<<<< .mine
+
+// Who knows why these aren't cooperating, so commented out for now
+    /*
+    template void migrate_data<double,1>(SharedPtr<FunctionImpl<double,1,MyPmap<1> > > tfrom, 
+    	SharedPtr<FunctionImpl<double,1,MyPmap<1> > > tto, DClass<1>::KeyD key);
+    template void migrate_data<double,2>(SharedPtr<FunctionImpl<double,2,MyPmap<2> > > tfrom, 
+    	SharedPtr<FunctionImpl<double,2,MyPmap<2> > > tto, DClass<2>::KeyD key);
+    template void migrate_data<double,3>(SharedPtr<FunctionImpl<double,3,MyPmap<3> > > tfrom, 
+    	SharedPtr<FunctionImpl<double,3,MyPmap<3> > > tto, DClass<3>::KeyD key);
+    template void migrate_data<double,4>(SharedPtr<FunctionImpl<double,4,MyPmap<4> > > tfrom, 
+    	SharedPtr<FunctionImpl<double,4,MyPmap<4> > > tto, DClass<4>::KeyD key);
+    template void migrate_data<double,5>(SharedPtr<FunctionImpl<double,5,MyPmap<5> > > tfrom, 
+    	SharedPtr<FunctionImpl<double,5,MyPmap<5> > > tto, DClass<5>::KeyD key);
+    template void migrate_data<double,6>(SharedPtr<FunctionImpl<double,6,MyPmap<6> > > tfrom, 
+    	SharedPtr<FunctionImpl<double,6,MyPmap<6> > > tto, DClass<6>::KeyD key);
+     
+    template void migrate_data<std::complex<double>,1>(SharedPtr<FunctionImpl<std::complex<double>,1,MyPmap<1> > > tfrom, 
+    	SharedPtr<FunctionImpl<std::complex<double>,1,MyPmap<1> > > tto, DClass<1>::KeyD key);
+    template void migrate_data<std::complex<double>,2>(SharedPtr<FunctionImpl<std::complex<double>,2,MyPmap<2> > > tfrom, 
+    	SharedPtr<FunctionImpl<std::complex<double>,2,MyPmap<2> > > tto, DClass<2>::KeyD key);
+    template void migrate_data<std::complex<double>,3>(SharedPtr<FunctionImpl<std::complex<double>,3,MyPmap<3> > > tfrom, 
+    	SharedPtr<FunctionImpl<std::complex<double>,3,MyPmap<3> > > tto, DClass<3>::KeyD key);
+    template void migrate_data<std::complex<double>,4>(SharedPtr<FunctionImpl<std::complex<double>,4,MyPmap<4> > > tfrom, 
+    	SharedPtr<FunctionImpl<std::complex<double>,4,MyPmap<4> > > tto, DClass<4>::KeyD key);
+    template void migrate_data<std::complex<double>,5>(SharedPtr<FunctionImpl<std::complex<double>,5,MyPmap<5> > > tfrom, 
+    	SharedPtr<FunctionImpl<std::complex<double>,5,MyPmap<5> > > tto, DClass<5>::KeyD key);
+    template void migrate_data<std::complex<double>,6>(SharedPtr<FunctionImpl<std::complex<double>,6,MyPmap<6> > > tfrom, 
+    	SharedPtr<FunctionImpl<std::complex<double>,6,MyPmap<6> > > tto, DClass<6>::KeyD key);
+     
+    template void migrate<double,1,MyPmap<1> >(SharedPtr<FunctionImpl<double,1,MyPmap<1> > > tfrom, 
+    	SharedPtr<FunctionImpl<double,1,MyPmap<1> > > tto);
+    template void migrate<double,2,MyPmap<2> >(SharedPtr<FunctionImpl<double,2,MyPmap<2> > > tfrom, 
+    	SharedPtr<FunctionImpl<double,2,MyPmap<2> > > tto);
+    template void migrate<double,3,MyPmap<3> >(SharedPtr<FunctionImpl<double,3,MyPmap<3> > > tfrom, 
+    	SharedPtr<FunctionImpl<double,3,MyPmap<3> > > tto);
+    template void migrate<double,4,MyPmap<4> >(SharedPtr<FunctionImpl<double,4,MyPmap<4> > > tfrom, 
+    	SharedPtr<FunctionImpl<double,4,MyPmap<4> > > tto);
+    template void migrate<double,5,MyPmap<5> >(SharedPtr<FunctionImpl<double,5,MyPmap<5> > > tfrom, 
+    	SharedPtr<FunctionImpl<double,5,MyPmap<5> > > tto);
+    template void migrate<double,6,MyPmap<6> >(SharedPtr<FunctionImpl<double,6,MyPmap<6> > > tfrom, 
+    	SharedPtr<FunctionImpl<double,6,MyPmap<6> > > tto);
+     
+    template void migrate<std::complex<double>,1,MyPmap<1> >(SharedPtr<FunctionImpl<std::complex<double>,1,MyPmap<1> > tfrom, 
+    	SharedPtr<FunctionImpl<std::complex<double>,1,MyPmap<1> > > tto);
+    template void migrate<std::complex<double>,2,MyPmap<2> >(SharedPtr<FunctionImpl<std::complex<double>,2,MyPmap<2> > > tfrom, 
+    	SharedPtr<FunctionImpl<std::complex<double>,2,MyPmap<2> > > tto);
+    template void migrate<std::complex<double>,3,MyPmap<3> >(SharedPtr<FunctionImpl<std::complex<double>,3,MyPmap<3> > > tfrom, 
+    	SharedPtr<FunctionImpl<std::complex<double>,3,MyPmap<3> > > tto);
+    template void migrate<std::complex<double>,4,MyPmap<4> >(SharedPtr<FunctionImpl<std::complex<double>,4,MyPmap<4> > > tfrom, 
+    	SharedPtr<FunctionImpl<std::complex<double>,4,MyPmap<4> > > tto);
+    template void migrate<std::complex<double>,5,MyPmap<5> >(SharedPtr<FunctionImpl<std::complex<double>,5,MyPmap<5> > > tfrom, 
+    	SharedPtr<FunctionImpl<std::complex<double>,5,MyPmap<5> > > tto);
+    template void migrate<std::complex<double>,6,MyPmap<6> >(SharedPtr<FunctionImpl<std::complex<double>,6,MyPmap<6> > > tfrom, 
+    	SharedPtr<FunctionImpl<std::complex<double>,6,MyPmap<6> > > tto);
+    */
+=======
+template void migrate_data<double,1>(SharedPtr<FunctionImpl<double,1,MyProcmap<1> > > tfrom, 
+	SharedPtr<FunctionImpl<double,1,MyProcmap<1> > > tto, DClass<1>::KeyD key);
+template void migrate_data<double,2>(SharedPtr<FunctionImpl<double,2,MyProcmap<2> > > tfrom, 
+	SharedPtr<FunctionImpl<double,2,MyProcmap<2> > > tto, DClass<2>::KeyD key);
+template void migrate_data<double,3>(SharedPtr<FunctionImpl<double,3,MyProcmap<3> > > tfrom, 
+	SharedPtr<FunctionImpl<double,3,MyProcmap<3> > > tto, DClass<3>::KeyD key);
+template void migrate_data<double,4>(SharedPtr<FunctionImpl<double,4,MyProcmap<4> > > tfrom, 
+	SharedPtr<FunctionImpl<double,4,MyProcmap<4> > > tto, DClass<4>::KeyD key);
+template void migrate_data<double,5>(SharedPtr<FunctionImpl<double,5,MyProcmap<5> > > tfrom, 
+	SharedPtr<FunctionImpl<double,5,MyProcmap<5> > > tto, DClass<5>::KeyD key);
+template void migrate_data<double,6>(SharedPtr<FunctionImpl<double,6,MyProcmap<6> > > tfrom, 
+	SharedPtr<FunctionImpl<double,6,MyProcmap<6> > > tto, DClass<6>::KeyD key);
+>>>>>>> .r223
+
+    template class LoadBalImpl<double,1,MyPmap<1> >;
+    template class LoadBalImpl<double,2,MyPmap<2> >;
+    template class LoadBalImpl<double,3,MyPmap<3> >;
+    template class LoadBalImpl<double,4,MyPmap<4> >;
+    template class LoadBalImpl<double,5,MyPmap<5> >;
+    template class LoadBalImpl<double,6,MyPmap<6> >;
+
+    template class LoadBalImpl<std::complex<double>,1,MyPmap<1> >;
+    template class LoadBalImpl<std::complex<double>,2,MyPmap<2> >;
+    template class LoadBalImpl<std::complex<double>,3,MyPmap<3> >;
+    template class LoadBalImpl<std::complex<double>,4,MyPmap<4> >;
+    template class LoadBalImpl<std::complex<double>,5,MyPmap<5> >;
+    template class LoadBalImpl<std::complex<double>,6,MyPmap<6> >;
+
+<<<<<<< .mine
+    template class LBTree<1,MyPmap<1> >;
+    template class LBTree<2,MyPmap<2> >;
+    template class LBTree<3,MyPmap<3> >;
+    template class LBTree<4,MyPmap<4> >;
+    template class LBTree<5,MyPmap<5> >;
+    template class LBTree<6,MyPmap<6> >;
+=======
+// Who knows why this isn't cooperating, so commented out for now
+/*
+template void migrate<std::complex<double>,1,MyProcmap<1> >(SharedPtr<FunctionImpl<std::complex<double>,1,MyProcmap<1> > tfrom, 
+	SharedPtr<FunctionImpl<std::complex<double>,1,MyProcmap<1> > > tto);
+*/
+template void migrate<std::complex<double>,2,MyProcmap<2> >(SharedPtr<FunctionImpl<std::complex<double>,2,MyProcmap<2> > > tfrom, 
+	SharedPtr<FunctionImpl<std::complex<double>,2,MyProcmap<2> > > tto);
+template void migrate<std::complex<double>,3,MyProcmap<3> >(SharedPtr<FunctionImpl<std::complex<double>,3,MyProcmap<3> > > tfrom, 
+	SharedPtr<FunctionImpl<std::complex<double>,3,MyProcmap<3> > > tto);
+template void migrate<std::complex<double>,4,MyProcmap<4> >(SharedPtr<FunctionImpl<std::complex<double>,4,MyProcmap<4> > > tfrom, 
+	SharedPtr<FunctionImpl<std::complex<double>,4,MyProcmap<4> > > tto);
+template void migrate<std::complex<double>,5,MyProcmap<5> >(SharedPtr<FunctionImpl<std::complex<double>,5,MyProcmap<5> > > tfrom, 
+	SharedPtr<FunctionImpl<std::complex<double>,5,MyProcmap<5> > > tto);
+template void migrate<std::complex<double>,6,MyProcmap<6> >(SharedPtr<FunctionImpl<std::complex<double>,6,MyProcmap<6> > > tfrom, 
+	SharedPtr<FunctionImpl<std::complex<double>,6,MyProcmap<6> > > tto);
+
+
+template class LoadBalImpl<double,1,MyProcmap<1> >;
+template class LoadBalImpl<double,2,MyProcmap<2> >;
+template class LoadBalImpl<double,3,MyProcmap<3> >;
+template class LoadBalImpl<double,4,MyProcmap<4> >;
+template class LoadBalImpl<double,5,MyProcmap<5> >;
+template class LoadBalImpl<double,6,MyProcmap<6> >;
+
+template class LoadBalImpl<std::complex<double>,1,MyProcmap<1> >;
+template class LoadBalImpl<std::complex<double>,2,MyProcmap<2> >;
+template class LoadBalImpl<std::complex<double>,3,MyProcmap<3> >;
+template class LoadBalImpl<std::complex<double>,4,MyProcmap<4> >;
+template class LoadBalImpl<std::complex<double>,5,MyProcmap<5> >;
+template class LoadBalImpl<std::complex<double>,6,MyProcmap<6> >;
+
+template class LBTree<1,MyProcmap<1> >;
+template class LBTree<2,MyProcmap<2> >;
+template class LBTree<3,MyProcmap<3> >;
+template class LBTree<4,MyProcmap<4> >;
+template class LBTree<5,MyProcmap<5> >;
+template class LBTree<6,MyProcmap<6> >;
+>>>>>>> .r223
+}
+#define WORLD_INSTANTIATE_STATIC_TEMPLATES
+#ifndef LOADBAL_H
+#define LOADBAL_H
+
+#include <world/world.h>
+#include <mra/key.h>
+#include <mra/mra.h>
+using namespace std;
+
+namespace madness {
+
+    typedef int Cost;
+    typedef double CompCost;
+
+    inline int nearest_power(int me, int d) {
+        int k = 0;
+        while (me != 0) {
+            if (me%d == 0) {
+                k++;
+                me/=d;
+            } else {
+                break;
+            }
+        }
+        return k;
+    };
+
+    template <typename Data, int D> class LBNode;
+    template <int D> struct TreeCoords;
+    template <int D> struct Tree;
+    template <int D> class MyPmap;
+    template <int D> class LBTree;
+    class NodeData;
+
+    template <int D>
+    struct DClass {
+        typedef Key<D> KeyD;
+        typedef const Key<D> KeyDConst;
+        typedef TreeCoords<D> TreeCoords;
+        typedef Tree<D> Tree;
+        typedef LBNode<NodeData,D> NodeD;
+        typedef const LBNode<NodeData,D> NodeDConst;
+        typedef MyPmap<D> MyPmap;
+        typedef LBTree<D> treeT;
+    };
+
+    template <typename T, int D>
+    void migrate(SharedPtr<FunctionImpl<T,D> > tfrom, SharedPtr<FunctionImpl<T,D> > tto);
+
+<<<<<<< .mine
+    template <typename T, int D>
+    void migrate_data(SharedPtr<FunctionImpl<T,D> > tfrom, SharedPtr<FunctionImpl<T,D> > tto,
+                      typename DClass<D>::KeyD key);
+=======
+template <int D>
+struct DClass {
+    typedef Key<D> KeyD;
+    typedef const Key<D> KeyDConst;
+    typedef TreeCoords<D> TreeCoords;
+    typedef Tree<D> Tree;
+    typedef LBNode<NodeData,D> NodeD;
+    typedef const LBNode<NodeData,D> NodeDConst;
+    typedef MyProcmap<D> MyProcMap;
+    typedef LBTree<D,MyProcMap> treeT;
+};
+>>>>>>> .r223
+
+    template <typename Data, int D>
+    class LBNode {
+    private:
+        Data data;
+        std::vector<bool> c;
+
+        void allchildren(bool status=false) {
+            c.clear();
+            c.assign(dim, status);
+        };
+
+    public:
+        static int dim;
+
+        LBNode() {
+            data = Data();
+            allchildren();
+        };
+
+        LBNode(Data d, bool children=false) : data(d) {
+            allchildren(children);
+        };
+
+        bool has_children() const {
+            for (int i = 0; i < dim; i++)
+                if (c[i]) return true;
+            return false;
+        };
+
+        bool has_child(unsigned int i) const {
+            return c[i];
+        };
+
+        bool has_child(int i) const {
+            return c[i];
+        };
+
+        void set_child(int i, bool setto = true) {
+            c[i] = setto;
+        };
+
+        void set_data(Data d) {
+            data = d;
+        };
+
+        Data get_data() const {
+            return data;
+        };
+
+        vector<bool> get_c() const {
+            return c;
+        };
+
+        template <typename Archive>
+        void serialize(const Archive& ar) {
+            ar & data & c;
+        }
+    };
+
+
+    template <typename Data, int D>
+    std::ostream& operator<<(std::ostream& s, const LBNode<Data, D>& node) {
+        s << "data = " << node.get_data() << ", c = " << node.get_c();
+        return s;
+    };
+
+    template <int D>
+    std::ostream& operator<<(std::ostream& s, typename DClass<D>::NodeDConst& node) {
+        s << "data = " << node.get_data() << ", c = " << node.get_c();
+        return s;
+    };
+
+
+    template <typename Data, int D>
+    int LBNode<Data,D>::dim = power<D>();
+
+
+    class NodeData {
+        friend std::ostream& operator<<(std::ostream& s, const NodeData& nd);
+    public:
+        int cost;
+        int subcost;
+        bool istaken;
+        NodeData(int c = 1, int s = 1, bool i = false) : cost(c), subcost(s), istaken(i) {};
+        template <typename Archive>
+        void serialize(const Archive& ar) {
+            ar & cost & subcost & istaken;
+        };
+        void print() {
+            cout << "cost = " << cost << ", subcost = " << subcost << ", istaken = " << istaken << endl;
+        };
+    };
+
+
+    inline std::ostream& operator<<(std::ostream& s, const NodeData& nd) {
+        s << "cost " << nd.cost << ", subcost " << nd.subcost << ", istaken " << nd.istaken;
+        return s;
+    };
+
+
+
+    template <int D>
+    struct TreeCoords {
+        Key<D> key;
+        ProcessID owner;
+
+        TreeCoords(const Key<D> k, ProcessID o) : key(Key<D>(k)), owner(o) {};
+        TreeCoords(const TreeCoords& t) : key(Key<D>(t.key)), owner(t.owner) {};
+        TreeCoords() : key(Key<D>()), owner(-1) {};
+        void print() const {
+            madness::print(key, "   owner =", owner);
+        };
+
+        bool operator< (const TreeCoords t) const {
+            return (this->key < t.key);
+        };
+    };
+
+
+
+    template <int D>
+    struct Tree {
+        TreeCoords<D> data;
+        vector<SharedPtr<Tree> > children;
+        Tree* parent;
+
+        Tree() {};
+        Tree(TreeCoords<D> d) : data(d), parent(0) {};
+        Tree(TreeCoords<D> d, Tree* p) : data(d), parent(p) {};
+
+        Tree(const Tree<D>& tree) : data(tree.data), parent(0) {};
+        Tree(const Tree<D>& tree, Tree* p) : data(tree.data), parent(p) {};
+
+        Tree<D>& operator=(const Tree<D>& other) {
+            if (this != &other) {
+                this->data = other.data;
+                this->parent = other.parent;
+                this->children = other.children;
+            }
+            return *this;
+        };
+
+        void insertChild(TreeCoords<D> d) {
+            Tree* c = new Tree(d, this);
+            children.insert(children.begin(),SharedPtr<Tree<D> > (c));
+        };
+
+        void insertChild(const Tree<D>& tree) {
+            Tree* c = new Tree(tree, this);
+            children.insert(children.begin(),SharedPtr<Tree<D> > (c));
+        };
+
+        void print() {
+            data.print();
+            int csize = children.size();
+            for (int j = 0; j < csize; j++) {
+                children[j]->print();
+            }
+        };
+
+        bool isForeparentOf(Key<D> key) const {
+            return (this->data.key.is_parent_of(key));
+        };
+
+        void findOwner(const Key<D> key, ProcessID *ow) const {
+//madness::print("findOwner: at node", this->data.key);
+            if (this->isForeparentOf(key)) {
+//madness::print("findOwner: node", this->data.key, "is foreparent of", key, "so owner =", this->data.owner);
+                *ow = this->data.owner;
+                if (this->data.key.level() < key.level()) {
+                    int csize = children.size();
+                    for (int j = 0; j < csize; j++) {
+//madness::print("findOwner: recursively call on ", this->children[j]->data.key);
+                        children[j]->findOwner(key, ow);
+                    }
+                }
+            }
+        };
+
+        bool fill(TreeCoords<D> node) {
+            bool success = false;
+            if (this->isForeparentOf(node.key)) {
+                int csize = children.size();
+                for (int i = 0; i < csize; i++) {
+                    if (children[i]->isForeparentOf(node.key)) {
+                        success = children[i]->fill(node);
+                    }
+                }
+                if (!success) {
+                    this->insertChild(node);
+                    success = true;
+                }
+            }
+            return success;
+        }
+    };
+
+
+
+    template <int D>
+    class MyPmap : public WorldDCPmapInterface< Key<D> > {
+    private:
+        bool static_map;
+        const ProcessID staticmap_owner;
+        Tree<D>* treeMap;
+        typedef Key<D> KeyD;
+
+        void buildTreeMap(vector<TreeCoords<D> > v) {
+            sort(v.begin(), v.end());
+            int vlen = v.size();
+
+            if (vlen == 0) throw "empty map!!!";
+
+<<<<<<< .mine
+            treeMap = new Tree<D>(v[vlen-1]);
+            for (int j = vlen-2; j >= 0; j--) {
+                treeMap->fill(v[j]);
+            }
+        };
+=======
+    ProcessID getOwner(const KeyD& key) const {
+	ProcessID owner;
+	treeMap->findOwner(key, &owner);
+	return owner;
+    };
+>>>>>>> .r223
+
+
+    public:
+        MyPmap() : staticmap(false), staticmap_owner(0) {};
+
+        MyPmap(World& world) : staticmap(false), staticmap_owner(0) {
+            int NP = world.nproc();
+            int twotoD = power<D>();
+            const int level = nearest_power(NP, twotoD);
+            int NPin = (int) pow((double)twotoD,level);
+            vector<TreeCoords<D> > v;
+
+<<<<<<< .mine
+            for (Translation i=0; i < (Translation)NPin; i++) {
+                KeyD key(level,i);
+                if ((i%twotoD) == 0) {
+                    key = key.parent(nearest_power(NPin-i, twotoD));
+                }
+                v.push_back(TreeCoords<D>(key,i));
+            }
+            buildTreeMap(v);
+            madness::print("MyPmap constructor");
+            treeMap->print();
+        };
+=======
+	treeMap = new Tree<D>(v[vlen-1]);
+	for (int j = vlen-2; j >= 0; j--) {
+	    treeMap->fill(v[j]);
+	}
+    };
+	
+>>>>>>> .r223
+
+        MyPmap(World& world, ProcessID owner) : staticmap(true), owner(owner) {};
+
+        MyPmap(World& world, vector<TreeCoords<D> > v) : staticmap(false), owner(1) { // owner????????????????
+            buildTreeMap(v);
+            madness::print("");
+            treeMap->print();
+        };
+
+        MyPmap(const MyPmap<D>& other) : staticmap(other.staticmap), owner(other.owner), treeMap(other.treeMap) {};
+
+        MyPmap<D>& operator=(const MyPmap<D>& other) {
+            if (this != &other) {
+                staticmap = other.staticmap;
+                owner = other.owner;
+                treeMap = other.treeMap;
+            }
+            return *this;
+        };
+
+        void print() {
+            treeMap->print();
+        };
+
+        ProcessID Owner(const KeyD& key) const {
+            if (staticmap)
+                return staticmap_owner;
+            else {
+                ProcessID owner;
+                treeMap->findOwner(key, &owner);
+                return owner;
+            }
+        };
+    };
+
+    template <int D>
+    class LBTree : public WorldContainer<typename DClass<D>::KeyD,typename DClass<D>::NodeD> {
+        // No new variables necessary
+    public:
+<<<<<<< .mine
+        typedef WorldContainer<typename DClass<D>::KeyD,typename DClass<D>::NodeD> dcT;
+        LBTree() {};
+        LBTree(World& world, const SharedPtr< WorldDCPmapInterface<DClass<D>::KeyD> >& pmap) : dcT(world,pmap) {
+            madness::print("LBTree(world, pmap) constructor");
+            this->get_mypmap()->print();
+            madness::print("LBTree(world, pmap) constructor (goodbye)");
+        };
+        template <typename T>
+        inline void init_tree(SharedPtr< FunctionImpl<T,D> > f, typename DClass<D>::KeyDConst key) {
+            // find Node associated with key
+            typename FunctionImpl<T,D>::dcT::iterator it = f->coeffs.find(key);
+            if (it == f->coeffs.end()) return;
+            // convert Node to LBNode
+            NodeData nd;
+            if (!(it->second.has_children())) {
+                typename DClass<D>::NodeD lbnode(nd,false);
+                // insert into "this"
+                this->insert(key, lbnode);
+            } else {
+                typename DClass<D>::NodeD lbnode(nd,true);
+                // insert into "this"
+                this->insert(key, lbnode);
+                // then, call for each child
+                for (KeyChildIterator<D> kit(key); kit; ++kit) {
+                    this->init_tree<T>(f, kit.key());
+                }
+            }
+        };
+=======
+	typedef WorldContainer<typename DClass<D>::KeyD,typename DClass<D>::NodeD, Pmap> dcT;
+
+	LBTree() {};
+	LBTree(World& world, const Pmap& pmap) : dcT(world,pmap) {
+	    this->get_procmap().print();
+	};
+
+	template <typename T>
+	inline void init_tree(SharedPtr<FunctionImpl<T,D,Pmap> > f, typename DClass<D>::KeyDConst key) {
+	    // find Node associated with key
+	    typename FunctionImpl<T,D,Pmap>::iterator it = f->find(key);
+	    if (it == f->end()) return;
+	    // convert Node to LBNode
+	    NodeData nd;
+	    if (!(it->second.has_children())) {
+		typename DClass<D>::NodeD lbnode(nd,false);
+	        // insert into "this"
+		this->insert(key, lbnode);
+	    }
+	    else {
+		typename DClass<D>::NodeD lbnode(nd,true);
+	        // insert into "this"
+		this->insert(key, lbnode);
+		// then, call for each child
+		for (KeyChildIterator<D> kit(key); kit; ++kit) {
+		    this->init_tree<T>(f, kit.key());
+		}
+	    }
+	};
+>>>>>>> .r223
+
+        // Methods:
+        void print(typename DClass<D>::KeyDConst& key) {
+            typename DClass<D>::treeT::iterator it = this->find(key);
+            if (it == this->end()) return;
+            for (Level i = 0; i < key.level(); i++) cout << "  ";
+            madness::print(key, it->second);
+            for (KeyChildIterator<D> kit(key); kit; ++kit) {
+                print(kit.key());
+            }
+        };
+
+        Cost fixCost(typename DClass<D>::KeyDConst& key);
+
+        Cost depthFirstPartition(typename DClass<D>::KeyDConst& key,
+                                 vector<typename DClass<D>::TreeCoords>* klist, unsigned int npieces,
+                                 Cost totalcost = 0, Cost *maxcost = 0);
+
+        void rollup(typename DClass<D>::KeyDConst& key);
+
+        void meld(typename DClass<D>::KeyDConst& key);
+
+        Cost makePartition(typename DClass<D>::KeyDConst& key,
+                           vector<typename DClass<D>::KeyD>* klist, Cost partitionSize,
+                           bool lastPartition, Cost usedUp, bool *atleaf);
+
+        void removeCost(typename DClass<D>::KeyDConst& key, Cost c);
+
+        Cost computeCost(typename DClass<D>::KeyDConst& key);
+
+        // inherited methods
+        typename WorldContainer<typename DClass<D>::KeyD,typename DClass<D>::NodeD>::iterator 
+        end() {
+            return WorldContainer<typename DClass<D>::KeyD, typename DClass<D>::NodeD>::end();
+        };
+
+        typename WorldContainer<typename DClass<D>::KeyD,typename DClass<D>::NodeD>::iterator
+        find(typename DClass<D>::KeyDConst& key) {
+            return WorldContainer<typename DClass<D>::KeyD, typename DClass<D>::NodeD>::find(key);
+        };
+
+//         const SharedPtr<WorldDCPmapInterface< DClass<D>::KeyD >& get_pmap() {
+//             return WorldContainer<typename DClass<D>::KeyD, typename DClass<D>::NodeD>::get_pmap();
+//         };
+
+        MyPmap<D>& get_mypmap() {
+            return *static_cast< MyPmap<D>* >(get_pmap().get());
+        };
+
+    };
+
+    template <typename T, int D, typename Pmap=MyPmap<D> >
+    class LoadBalImpl {
+    private:
+        Function<T,D,Pmap> f;
+        SharedPtr<typename DClass<D>::treeT> skeltree;
+
+<<<<<<< .mine
+        void construct_skel(SharedPtr<FunctionImpl<T,D,Pmap> > f) {
+            skeltree = SharedPtr<typename DClass<D>::treeT>(new typename DClass<D>::treeT(f->world,
+                       f->coeffs.get_mypmap()));
+            typename DClass<D>::KeyD root(0);
+            madness::print("about to initialize tree");
+            if (f->world.mpi.rank() == 0) {
+                skeltree->template init_tree<T>(f,root);
+            }
+            madness::print("just initialized tree");
+        };
+=======
+	void construct_skel(SharedPtr<FunctionImpl<T,D,Pmap> > f) {
+	    skeltree = SharedPtr<typename DClass<D>::treeT>(new typename DClass<D>::treeT(f->world,
+		f->get_procmap()));
+	    typename DClass<D>::KeyD root(0);
+	    if (f->world.mpi.rank() == 0) {
+	    	skeltree->template init_tree<T>(f,root);
+	    }
+	};
+>>>>>>> .r223
+
+    public:
+<<<<<<< .mine
+        //Constructors
+        LoadBalImpl() {};
+=======
+	//Constructors
+	LoadBalImpl() {};
+	LoadBalImpl(Function<T,D,Pmap> f) : f(f) {
+	    construct_skel(f.impl);
+	};
+	~LoadBalImpl() {};
+>>>>>>> .r223
+
+        LoadBalImpl(Function<T,D> f) : f(f) {
+            madness::print("LoadBalImpl (Function) constructor: f.impl", &f.impl);
+            construct_skel(f.impl);
+        };
+
+        ~LoadBalImpl() {};
+
+<<<<<<< .mine
+        //Methods
+        inline void loadBalance() {
+            partition(findBestPartition());
+        };
+=======
+	void partition(vector<typename DClass<D>::TreeCoords> v) {
+	    // implement partition: copy to new FunctionImpl and replace within f
+	    Pmap pmap(f.impl->world, v);
+	    SharedPtr<FunctionImpl<T,D,Pmap> > newimpl(new FunctionImpl<T,D,Pmap>(*(f.impl.get()),pmap));
+	    if (f.impl->world.mpi.rank() == 0) {
+	    	madness::migrate<T,D,Pmap>(f.impl, newimpl);
+		Key<D> root(0);
+		newimpl->print(root);
+	    }
+	    f.impl->world.gop.fence();
+	    f.impl = newimpl;
+	};
+>>>>>>> .r223
+
+        vector<typename DClass<D>::TreeCoords> findBestPartition();
+
+        void partition(vector<typename DClass<D>::TreeCoords> v) {
+            // implement partition: copy to new FunctionImpl and replace within f
+            madness::print("partition: at beginning");
+            Pmap pmap(f.impl->world, v);
+            SharedPtr<FunctionImpl<T,D,Pmap> > newimpl(new FunctionImpl<T,D>(*(f.impl.get()),pmap)); // ???????????????????????????????????
+            if (f.impl->world.mpi.rank() == 0) {
+                madness::migrate<T,D,Pmap>(f.impl, newimpl);
+            }
+            madness::print("partition: at fence");
+            f.impl->world.gop.fence();
+            madness::print("partition: after fence");
+            f.impl = newimpl;
+        };
+
+    };
+
+    CompCost computeCompCost(Cost c, int n);
+
+    Cost computePartitionSize(Cost cost, unsigned int parts);
+
+}
+
+#endif
+
+
+    /// Simple distributed map for the tree
+    template <int NDIM>
+    class FunctionSimplePmap<NDIM> : public WorldDCPmapInterface< Key<NDIM> > {
+    private:
+        World* world;
+        Level n;
+
+    public:
+        FunctionSimplePmap() : world(0), n(2) {};
+
+        FunctionSimplePmap(
+
+
+
+
+
+
+// Who knows why these aren't cooperating, so commented out for now
+    /*
+    template void migrate_data<double,1>(SharedPtr<FunctionImpl<double,1> > tfrom, 
+    	SharedPtr<FunctionImpl<double,1> > tto, DClass<1>::KeyD key);
+    template void migrate_data<double,2>(SharedPtr<FunctionImpl<double,2> > tfrom, 
+    	SharedPtr<FunctionImpl<double,2> > tto, DClass<2>::KeyD key);
+    template void migrate_data<double,3>(SharedPtr<FunctionImpl<double,3> > tfrom, 
+    	SharedPtr<FunctionImpl<double,3> > tto, DClass<3>::KeyD key);
+    template void migrate_data<double,4>(SharedPtr<FunctionImpl<double,4> > tfrom, 
+    	SharedPtr<FunctionImpl<double,4> > tto, DClass<4>::KeyD key);
+    template void migrate_data<double,5>(SharedPtr<FunctionImpl<double,5> > tfrom, 
+    	SharedPtr<FunctionImpl<double,5> > tto, DClass<5>::KeyD key);
+    template void migrate_data<double,6>(SharedPtr<FunctionImpl<double,6> > tfrom, 
+    	SharedPtr<FunctionImpl<double,6> > tto, DClass<6>::KeyD key);
+     
+    template void migrate_data<std::complex<double>,1>(SharedPtr<FunctionImpl<std::complex<double>,1,MyPmap<1> > > tfrom, 
+    	SharedPtr<FunctionImpl<std::complex<double>,1,MyPmap<1> > > tto, DClass<1>::KeyD key);
+    template void migrate_data<std::complex<double>,2>(SharedPtr<FunctionImpl<std::complex<double>,2,MyPmap<2> > > tfrom, 
+    	SharedPtr<FunctionImpl<std::complex<double>,2,MyPmap<2> > > tto, DClass<2>::KeyD key);
+    template void migrate_data<std::complex<double>,3>(SharedPtr<FunctionImpl<std::complex<double>,3,MyPmap<3> > > tfrom, 
+    	SharedPtr<FunctionImpl<std::complex<double>,3,MyPmap<3> > > tto, DClass<3>::KeyD key);
+    template void migrate_data<std::complex<double>,4>(SharedPtr<FunctionImpl<std::complex<double>,4,MyPmap<4> > > tfrom, 
+    	SharedPtr<FunctionImpl<std::complex<double>,4,MyPmap<4> > > tto, DClass<4>::KeyD key);
+    template void migrate_data<std::complex<double>,5>(SharedPtr<FunctionImpl<std::complex<double>,5,MyPmap<5> > > tfrom, 
+    	SharedPtr<FunctionImpl<std::complex<double>,5,MyPmap<5> > > tto, DClass<5>::KeyD key);
+    template void migrate_data<std::complex<double>,6>(SharedPtr<FunctionImpl<std::complex<double>,6,MyPmap<6> > > tfrom, 
+    	SharedPtr<FunctionImpl<std::complex<double>,6,MyPmap<6> > > tto, DClass<6>::KeyD key);
+     
+    template void migrate<double,1,MyPmap<1> >(SharedPtr<FunctionImpl<double,1,MyPmap<1> > > tfrom, 
+    	SharedPtr<FunctionImpl<double,1,MyPmap<1> > > tto);
+    template void migrate<double,2,MyPmap<2> >(SharedPtr<FunctionImpl<double,2,MyPmap<2> > > tfrom, 
+    	SharedPtr<FunctionImpl<double,2,MyPmap<2> > > tto);
+    template void migrate<double,3,MyPmap<3> >(SharedPtr<FunctionImpl<double,3,MyPmap<3> > > tfrom, 
+    	SharedPtr<FunctionImpl<double,3,MyPmap<3> > > tto);
+    template void migrate<double,4,MyPmap<4> >(SharedPtr<FunctionImpl<double,4,MyPmap<4> > > tfrom, 
+    	SharedPtr<FunctionImpl<double,4,MyPmap<4> > > tto);
+    template void migrate<double,5,MyPmap<5> >(SharedPtr<FunctionImpl<double,5,MyPmap<5> > > tfrom, 
+    	SharedPtr<FunctionImpl<double,5,MyPmap<5> > > tto);
+    template void migrate<double,6,MyPmap<6> >(SharedPtr<FunctionImpl<double,6,MyPmap<6> > > tfrom, 
+    	SharedPtr<FunctionImpl<double,6,MyPmap<6> > > tto);
+     
+    template void migrate<std::complex<double>,1,MyPmap<1> >(SharedPtr<FunctionImpl<std::complex<double>,1,MyPmap<1> > tfrom, 
+    	SharedPtr<FunctionImpl<std::complex<double>,1,MyPmap<1> > > tto);
+    template void migrate<std::complex<double>,2,MyPmap<2> >(SharedPtr<FunctionImpl<std::complex<double>,2,MyPmap<2> > > tfrom, 
+    	SharedPtr<FunctionImpl<std::complex<double>,2,MyPmap<2> > > tto);
+    template void migrate<std::complex<double>,3,MyPmap<3> >(SharedPtr<FunctionImpl<std::complex<double>,3,MyPmap<3> > > tfrom, 
+    	SharedPtr<FunctionImpl<std::complex<double>,3,MyPmap<3> > > tto);
+    template void migrate<std::complex<double>,4,MyPmap<4> >(SharedPtr<FunctionImpl<std::complex<double>,4,MyPmap<4> > > tfrom, 
+    	SharedPtr<FunctionImpl<std::complex<double>,4,MyPmap<4> > > tto);
+    template void migrate<std::complex<double>,5,MyPmap<5> >(SharedPtr<FunctionImpl<std::complex<double>,5,MyPmap<5> > > tfrom, 
+    	SharedPtr<FunctionImpl<std::complex<double>,5,MyPmap<5> > > tto);
+    template void migrate<std::complex<double>,6,MyPmap<6> >(SharedPtr<FunctionImpl<std::complex<double>,6,MyPmap<6> > > tfrom, 
+    	SharedPtr<FunctionImpl<std::complex<double>,6,MyPmap<6> > > tto);
+    */
+
+
+
+
+
+
+template <typename T, int NDIM> 
+struct TestOp : WorldObject< TestOp<T,NDIM> > {
+    typedef T resultT;
+    typedef TestOp<T,NDIM> opT;
+    const int k;
+    std::vector<long> v2k;
+
+    TestOp(World& world, int k) : WorldObject<opT>(world), k(k), v2k(NDIM) {
+        this->process_pending();
+        for (int i=0; i<NDIM; i++) v2k[i] = 2*k;
+    };
+    
+
+    double norm(const Key<NDIM>& key, const Displacement<NDIM>& d) const {
+        if (d.distsq > 2) return 0.0;
+        else return 1.0;
+    }
+    
+    Tensor<T> apply(const Key<NDIM>& key, const Displacement<NDIM>& d, const Tensor<T>& c) const {
+        print("applying ", key, d);
+        return Tensor<resultT>(v2k);
+    }
+};
+
+
+
+    
+namespace madness {
+    namespace archive {
+        template <class Archive, class T, int NDIM>
+        struct ArchiveLoadImpl<Archive,const TestOp<T,NDIM>*> {
+            static inline void load(const Archive& ar, const TestOp<T,NDIM>*& ptr) {
+                WorldObject< TestOp<T,NDIM> >* p;
+                ar & p;
+                ptr = static_cast< const TestOp<T,NDIM>* >(p);
+            }
+        };
+        
+        template <class Archive, class T, int NDIM>
+        struct ArchiveStoreImpl<Archive,const TestOp<T,NDIM>*> {
+            static inline void store(const Archive& ar, const TestOp<T,NDIM>*const& ptr) {
+                ar & static_cast< const WorldObject< TestOp<T,NDIM> >* > (ptr);
+            }
+        };
+    }
+}
+
+
+
+    /// Holds info about displacement to neighbor for application of operators
+    template <int NDIM>
+    struct Displacement {
+        Vector<Translation,NDIM> d;
+        uint64_t distsq;
+        Displacement() {};
+        Displacement(const Vector<int, NDIM>& d) : d(d), distsq(0) {
+            for (int i=0; i<NDIM; i++) distsq += d[i]*d[i];
+        }
+
+        bool operator<(const Displacement<NDIM>& other) const {
+            return distsq < other.distsq;
+        }
+
+        Translation operator[](int i) const {return d[i];}
+
+        template <typename Archive>
+        void serialize(Archive& ar) {
+            ar & d & distsq;
+        }
+    };
+
+    template <int NDIM>
+    std::ostream& operator<<(std::ostream& s, const Displacement<NDIM>& disp) {
+        s << disp.d;
+        return s;
+    }
+
+
+
+    /// Simplified interface around hash_map to cache stuff
+
+    /// Since insertions into STL containers have the nasty habit of
+    /// invalidating iterators we actually store shared pointers
+    template <typename Q>
+    class SimpleCache {
+    private:
+        typedef HASH_MAP_NAMESPACE::hash_map< unsigned long, SharedPtr<Q> > mapT;
+        typedef std::pair< unsigned long, SharedPtr<Q> > pairT;
+        mapT cache;
+        
+        // Turns (n,lx) into key
+        inline unsigned long key(Level n, long lx) const {
+            return (n<<25) | (lx+16777216);
+        }
+        
+        // Turns (n,displacement) into key
+        template <int NDIM>
+        inline unsigned long key(Level n, const Key<NDIM>& d) const {
+            MADNESS_ASSERT((6+NDIM*4) <= sizeof(unsigned long)*8);
+            unsigned long k = n<<2;
+            for (int i=0; i<NDIM; i++) k = (k<<4) | (d.translation()[i]+7);
+            return k;
+        }
+        
+    public:
+        SimpleCache() : cache() {};
+        
+        SimpleCache(const SimpleCache& c) : cache(c.cache) {};
+        SimpleCache& operator=(const SimpleCache& c) {
+            if (this != &c) {
+                cache.clear();
+                cache = c.cache;
+            }
+            return *this;
+        }
+        
+        /// If (n,index) is present return pointer to cached value, otherwise return NULL
+        template <typename indexT>
+        inline const Q* getptr(Level n,  const indexT& index) const {
+            typename mapT::const_iterator test = cache.find(key(n,index));
+            if (test == cache.end()) return 0;
+            return test->second.get();
+        }
+        
+
+        /// Set value associated with (n,index)
+        template <typename indexT>
+        inline void set(Level n, const indexT& index, const Q& val) {
+            cache.insert(pairT(key(n,index),SharedPtr<Q>(new Q(val))));
+        }
+    };
+
+
+
+
+
+# You must define additional rules to link your test programs
+test: $(TEST1OBJ) $(THISLIBDEPEND) 
+	$(LTLINK) $(LD) $(LDFLAGS) -o $@ $^ $(SYSLIBS) $(LTLINKBINOPTS)
+
+testqm: $(TEST2OBJ) $(THISLIBDEPEND) 
+	$(LTLINK) $(LD) $(LDFLAGS) -o $@ $^ $(SYSLIBS) $(LTLINKBINOPTS)
+
+jjtests: jjtests.o $(THISLIBDEPEND) 
+	$(LTLINK) $(LD) $(LDFLAGS) -o $@ $^ $(SYSLIBS) $(LTLINKBINOPTS)
+
+jjtests.o:	sdc.h
+
+testsuite: $(TEST3OBJ) $(THISLIBDEPEND) 
+	$(LTLINK) $(LD) $(LDFLAGS) -o $@ $^ $(SYSLIBS) $(LTLINKBINOPTS)
+
+tests-hqi: $(TEST4OBJ) $(THISLIBDEPEND) 
+	$(LTLINK) $(LD) $(LDFLAGS) -o $@ $^ $(SYSLIBS) $(LTLINKBINOPTS)
+
+testperiodic: $(TEST5OBJ) $(THISLIBDEPEND)
+	$(LTLINK) $(LD) $(LDFLAGS) -o $@ $^ $(SYSLIBS) $(LTLINKBINOPTS)
+
+gfit: $(TEST6OBJ) $(THISLIBDEPEND)
+	$(LTLINK) $(LD) $(LDFLAGS) -o $@ $^ $(SYSLIBS) $(LTLINKBINOPTS)
+
+testbsh: $(TEST6OBJ) $(THISLIBDEPEND)
+	$(LTLINK) $(LD) $(LDFLAGS) -o $@ $^ $(SYSLIBS) $(LTLINKBINOPTS)
+
+runvalg2:
+	mpiexec -np 3 $(VALGRIND) $(VALGOPTS) ./tests-hqi -rio 
+
+
+
+
+    template <typename T, int NDIM>
+    Void FunctionImpl<T,NDIM>::ensure_exists(const keyT& key) {
+        PROFILE_MEMBER_FUNC(FunctionImpl);
+        if (!coeffs.probe(key)) {
+            keyT parent = key.parent();
+            // If the node does not exist this implies that it will
+            // be a leaf ... make it here so that we only send one
+            // request up the tree to make it.
+            coeffs.insert(key,nodeT(tensorT(),false));
+            //madness::print("ensure_exists: sending recur up from", key, "to", parent);
+            send(coeffs.owner(parent), &implT::recur_down_with_fill, key, parent);            
+        }
+        return None;
+    }
+
+
+    template <typename T, int NDIM>
+    void FunctionImpl<T,NDIM>::widen(bool fence, int ndiff) {
+        PROFILE_MEMBER_FUNC(FunctionImpl);
+        double tol = std::min(1e3*thresh, sqrt(thresh));
+        for(typename dcT::iterator it=coeffs.begin(); it!=coeffs.end(); ++it) {
+            const keyT& key = it->first;
+            const nodeT& node = it->second;
+            if (node.is_leaf() && node.coeff().normf()>tol) {
+                for (int axis=0; axis<NDIM; axis++) {
+                    for (int step=-1; step<=1; step+=2) {
+                        keyT neigh = neighbor(key, axis, step);
+                        if (neigh.is_valid()) {
+                            if (ndiff > 0) neigh = neigh.parent(ndiff);
+                            send(coeffs.owner(neigh), &implT::ensure_exists, neigh);
+                        }
+                    }
+                }
+            }
+        }
+        if (fence) world.gop.fence();
+    }
+
+
+        // Widens the support of the tree in preparation for integral operator
+        void widen(bool fence, int ndiff);
+
+
+        void widen(bool fence = true, int ndiff = 1) {
+            PROFILE_MEMBER_FUNC(Function);
+            verify();
+            if (is_compressed()) reconstruct();
+            impl->widen(fence, ndiff);
+            if (fence && VERIFY_TREE) verify_tree();
+        }
+
+
+
+
+        template <typename testT>
+        void conditional_refine_doit(const testT& test, const keyT& key) {
+          nodeT& node = coeffs[key];
+          if (node.has_coeff() && test(key, node.coeff())) {
+            tensorT s(cdata.v2k);
+            s(cdata.s0) = node.coeff();
+            s = unfilter(s);
+            node.clear_coeff();
+            node.set_has_children(true);
+            for (KeyChildIterator<NDIM> kit(key); kit; ++kit) {
+               const keyT& child = kit.key();
+               task(coeffs.owner(child), &implT:: template conditional_refine_insert_doit<testT>,
+                    test, child, copy(s(child_patch(child))));
+            }
+          }
+        }
+
+        template <typename testT>
+        void conditional_refine(const testT& test, bool fence) {
+          MADNESS_ASSERT(!compressed);
+          for(typename dcT::iterator it=coeffs.begin(); it!=coeffs.end(); ++it) {
+            const keyT& key = it->first;
+            conditional_refine_doit(test, key);
+          }
+          if (fence) world.gop.fence();
+        }
+
+
+
+        template <typename testT>
+        void conditional_refine(const testT& test, bool fence=true) {
+          if (is_compressed()) reconstruct();
+          impl->conditional_refine(test, fence);
+        }
+
+
+
+
+        template <typename opT, typename R>
+        Void do_apply_acc(const opT* op, const FunctionImpl<R,NDIM>* f, const keyT& key, const Tensor<T>& t) {
+            PROFILE_MEMBER_FUNC(FunctionImpl);
+            if (!coeffs.probe(key)) coeffs.replace(key, nodeT());
+            nodeT& node = coeffs[key];
+
+            // Accumulate into the box
+            if (node.has_coeff()) {
+                node.coeff().gaxpy(1.0,t,1.0);
+            }
+            else {
+                node.set_coeff(copy(t));
+                // No existing coeff and no children means the node is newly created for
+                // this operation and we must tell its parent that it exists.
+                if ((!node.has_children()) && (key.level() > 0)) {
+                    Key<NDIM> parent = key.parent();
+                    coeffs.send(parent, &FunctionNode<T,NDIM>::set_has_children_recursive, coeffs, parent);
+                }
+
+                if (op->dowiden1) {
+                    typename FunctionImpl<R,NDIM>::dcT::const_iterator it = f->coeffs.find(key);
+                    if ((it==f->coeffs.end() || it->second.is_invalid()) &&
+                        (t.normf() > truncate_tol(thresh,key))) {
+                        // We just made the first contribution to box that did not
+                        // exist in the source.  Make the source box with any
+                        // missing parents and apply the operator to each of them.
+                        recur_down_with_apply(op, f, key.parent(), key, Tensor<R>());
+                    }
+                }
+
+            }
+            return None;
+        }
+
+
+
+        // This routine MUST be executed in an AM handler for atomicity
+        template <typename opT, typename R>
+        Void recur_down_with_apply(const opT* op,
+                                   const FunctionImpl<R,NDIM>* cf,
+                                   const keyT& key,
+                                   const keyT& target,
+                                   const Tensor<R>& r) {
+
+            PROFILE_MEMBER_FUNC(FunctionImpl);
+            // We send the coeffs down in this routine so we have effectively
+            // atomic insert+apply to eliminate a race condition leading to
+            // double application of the operator.
+
+            FunctionImpl<R,NDIM>* f = const_cast<FunctionImpl<R,NDIM>*>(cf);
+
+            // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<  race condition??????
+
+            if (!f->coeffs.probe(key)) {
+                //madness::print("not there", key);
+                f->coeffs.replace(key,FunctionNode<R,NDIM>());
+            }
+            FunctionNode<R,NDIM>& node = f->coeffs[key];
+
+            if (r.size) {
+                // If r has data then it will be the coefficients for this node.
+                // If we don't already have coeffs courtesy of someone else then
+                // insert them and apply the operator.
+                if (!node.has_coeff()) {
+                    MADNESS_ASSERT(r.iscontiguous());
+                    node.set_coeff(r);
+                    //madness::print("EXTENDED APPLY", key, node.coeff().normf());
+                    task(world.rank(), &implT:: template do_apply<opT,R>, op, cf, key, node.coeff());
+                    if (key.level() == target.level()) return None; // Mission accomplished!
+                    if (!target.is_child_of(key)) return None; // This is a sibling of the correct path
+                }
+            }
+
+            // If r does not have data or we are not yet at our target then we
+            // must look at the node to see what to do
+
+            // - If key==target
+            //   The coeffs should already have been made (and the operator applied)
+            //   while someone else was making another node.
+            //
+            // - Otherwise
+            // a) Node does not exist ... forward up.  Accessing the node in the manner
+            //    above would have made an invalid node ... so this is captured by b)
+            // b) Node exists but is invalid ... forward up (this means that someone else
+            //    is already trying to make this node ... better would be to attach
+            //    a callback so that when the coeffs are set this task is initiated).
+            // c) Node exists and has children ... forward down
+            // d) Node exists and has no children  ... recur down
+
+            Tensor<R> empty;
+
+            if (node.has_coeff()) { // d ... recur down if appropriate
+                if (key.level() < target.level() && target.is_child_of(key)) {
+                    const Tensor<R>& r = node.coeff();
+                    Tensor<R> s;
+                    if (r.dim[0] == k) {
+                        Tensor<R> d(cdata.v2k);
+                        d(cdata.s0) = node.coeff()(cdata.s0);
+                        s = unfilter(d);
+                    }
+                    else if (r.dim[0] == 2*k) {
+                        s = unfilter(node.coeff());
+                    }
+                    else {
+                        MADNESS_EXCEPTION("Uh?",r.dim[0]);
+                    }
+
+                    node.set_has_children(true);
+                    for (KeyChildIterator<NDIM> kit(key); kit; ++kit) {
+                        const keyT& child = kit.key();
+                        Tensor<R> ss = copy(s(child_patch(child)));
+                        //madness::print("EXTENDED DOWN-2", key, "to", child, ss.normf());
+                        task(coeffs.owner(child), &implT:: template recur_down_with_apply<opT,R>,
+                             op, cf, child, target, ss);
+                    }
+                }
+            }
+            else { // a and b ... forward up
+                keyT parent = key.parent();
+                //madness::print("EXTENDED UP", key, "to", parent);
+                task(coeffs.owner(parent), &implT:: template recur_down_with_apply<opT,R>, op, cf, parent, target, empty);
+            }
+
+            return None;
+        }
+
+
+
+
+
+
+
+        /// Apply one of the separated terms, accumulating into the result
+
+        /// !!! Keep this routine exactly consistent with muopxvT so that
+        /// munorm converges correctly
+        template <typename T>
+        void muopxv(Level n,
+                    const ConvolutionData1D<Q>* const ops[NDIM],
+                    const Tensor<T>& f, const Tensor<T>& f0,
+                    Tensor<TENSOR_RESULT_TYPE(T,Q)>& result,
+                    const double tol,
+                    const double musign) const {
+            PROFILE_MEMBER_FUNC(SeparatedConvolution);
+
+            double Rnorm = 1.0;
+            for (int d=0; d<NDIM; d++) Rnorm *= ops[d]->Rnorm;
+            if (Rnorm == 0.0) return;
+
+            // Temporaries can be optimized away
+            Tensor<TENSOR_RESULT_TYPE(T,Q)> tmp = inner(f,ops[0]->R,0,0);
+            for (int d=1; d<NDIM; d++) {
+                tmp = inner(tmp,ops[d]->R,0,0);
+            }
+            result.gaxpy(1.0,tmp,musign);
+
+            if (n > 0) {
+                tmp = inner(f0,ops[0]->T,0,0);
+                for (int d=1; d<NDIM; d++) {
+                    tmp = inner(tmp,ops[d]->T,0,0);
+                }
+                result(s0).gaxpy(1.0,tmp,-musign);
+            }
+        }
+
+        /// Apply transpose of one of the separated terms, accumulating into the result
+
+        /// This is only used when computing the actual 2-norm by the power method
+        /// !!! Keep this routine exactly consistent with muopxv so that
+        /// munorm converges correctly
+        template <typename T>
+        void muopxvT(Level n,
+                     const ConvolutionData1D<Q>* ops[],
+                     const Tensor<T>& f, const Tensor<T>& f0,
+                     Tensor<TENSOR_RESULT_TYPE(T,Q)>& result,
+                     const double tol,
+                     const double musign) const {
+            PROFILE_MEMBER_FUNC(SeparatedConvolution);
+
+            double Rnorm = 1.0;
+            for (int d=0; d<NDIM; d++) Rnorm *= ops[d]->Rnorm;
+            if (Rnorm == 0.0) return;
+
+            // Temporaries can be optimized away
+            Tensor<TENSOR_RESULT_TYPE(T,Q)> tmp = inner(f,ops[0]->R,0,1);
+            for (int d=1; d<NDIM; d++) {
+                tmp = inner(tmp,ops[d]->R,0,1);
+            }
+            result.gaxpy(1.0,tmp,musign);
+
+            if (n > 0) {
+                tmp = inner(f0,ops[0]->T,0,1); // Slice+copy can be optimized away
+                for (int d=1; d<NDIM; d++) {
+                    tmp = inner(tmp,ops[d]->T,0,1);
+                }
+                result(s0).gaxpy(1.0,tmp,-musign);
+            }
+        }
+
+
+        /// Computes the 2-norm of one of the separated terms
+        double munorm(Level n, const ConvolutionData1D<Q>* ops[]) const {
+            PROFILE_MEMBER_FUNC(SeparatedConvolution);
+            Tensor<Q> f(v2k), f0, ff(v2k);
+
+            double tol = 1e-20;
+
+            f.fillrandom();
+            f.scale(1.0/f.normf());
+            double evalp = 1.0, eval, ratio=99.0;
+            for (int iter=0; iter<100; iter++) {
+                ff.fill(0.0);
+                f0 = copy(f(s0));
+                muopxv(n,ops,f,f0,ff,tol,1.0);
+                f.fill(0.0);
+                f0 = copy(ff(s0));
+                muopxvT(n,ops,ff,f0,f,tol,1.0);
+
+                eval = f.normf();
+                if (eval == 0.0) break;
+                f.scale(1.0/eval);
+                eval = sqrt(eval);
+                ratio = eval/evalp;
+                //std::printf("munorm: %d %10.2e %10.2e %10.2e \n", iter, eval, evalp, ratio);
+                if (iter>0 && ratio<1.2 && ratio>0.9999) break; // 1.2 was 1.02;  >0.9999 was >=1.0
+                if (iter>10 && eval<tol) break;
+                evalp = eval;
+                if (iter == 99) throw "munorm failed";
+            }
+            return eval*ratio;
+        }
+
+
+
+
+
+
+        /// Invoked by result to compute the pointwise product result=left*right
+
+        /// This version requires all three functions have the same distribution.
+        /// Should be straightforward to do an efficient version that does not
+        /// require this but I have not thought about that yet.
+        ///
+        /// Possible non-blocking communication and optional fence.
+        template <typename L, typename R>
+        void mul(const FunctionImpl<L,NDIM>& left, const FunctionImpl<R,NDIM>& right, bool fence) {
+            PROFILE_MEMBER_FUNC(FunctionImpl);
+            typedef std::pair< keyT,Tensor<R> > rpairT;
+            typedef std::pair< keyT,Tensor<L> > lpairT;
+            MADNESS_ASSERT(coeffs.get_pmap() == left.coeffs.get_pmap() && \
+                           coeffs.get_pmap() == right.coeffs.get_pmap());
+            // The three possibilities for the relative position of
+            // the left and right coefficients in the tree are:
+            //
+            // 1.  left==right
+            // 2.  left>right
+            // 3.  left<right
+            //
+            // First loop thru local coeff in left.  Handle right at the same level or above.
+	    for (typename FunctionImpl<L,NDIM>::dcT::const_iterator it=left.coeffs.begin();
+                it != left.coeffs.end();
+                ++it) {
+                const keyT& key = it->first;
+                const FunctionNode<L,NDIM>& left_node = it->second;
+
+                if (left_node.has_coeff()) {
+                    if (right.coeffs.probe(key)) {
+                        const FunctionNode<R,NDIM>& right_node = right.coeffs.find(key).get()->second;
+                        if (right_node.has_coeff()) {
+                            task(world.rank(), &implT:: template do_mul<L,R>, key, left_node.coeff(),
+                                 rpairT(key,right_node.coeff()));  // Case 1.
+                        }
+                    }
+                    else { // If right node does not exist then it must be further up the tree
+                        const keyT parent = key.parent();
+                        Future<rpairT> arg;
+                        right.task(coeffs.owner(parent), &FunctionImpl<R,NDIM>::sock_it_to_me,
+                                   parent, arg.remote_ref(world), TaskAttributes::hipri());
+                        task(world.rank(), &implT:: template do_mul<L,R>, key, left_node.coeff(), arg); // Case 2.
+                    }
+                }
+                else if (!coeffs.probe(key)) {
+                    // Interior node
+                    coeffs.replace(key,nodeT(tensorT(),true));
+                }
+
+            }
+
+            // Now loop thru local coeff in right and do case 3.
+	    for (typename FunctionImpl<R,NDIM>::dcT::const_iterator it=right.coeffs.begin();
+                it != right.coeffs.end();
+                ++it) {
+                const keyT& key = it->first;
+                const FunctionNode<R,NDIM>& right_node = it->second;
+                if (right_node.has_coeff()) {
+                    if (!left.coeffs.probe(key)) {
+                        Future<lpairT> arg;
+                        const keyT& parent = key.parent();
+                        left.task(coeffs.owner(parent), &FunctionImpl<L,NDIM>::sock_it_to_me,
+                                  parent, arg.remote_ref(world), TaskAttributes::hipri());
+                        task(world.rank(), &implT:: template do_mul<R,L>, key, right_node.coeff(), arg); // Case 3.
+                    }
+                }
+                else if (!coeffs.probe(key)) {
+                    // Interior node
+                    coeffs.replace(key,nodeT(tensorT(),true));
+                }
+
+            }
+            if (fence) world.gop.fence();
+        }
+
+
+
+        template <typename L, typename R>
+        Void do_mul_sparse2(const keyT& key,
+                            const std::pair< keyT,Tensor<L> >& larg,
+                            const std::pair< keyT,Tensor<R> >& rarg,
+                            const FunctionImpl<R,NDIM>* right) {
+            PROFILE_MEMBER_FUNC(FunctionImpl);
+
+            if (rarg.second.size > 0) {
+                if (larg.first == key) {
+                    //madness::print("L*R",key,larg.first,larg.second.size,rarg.first,rarg.second.size);
+                    do_mul(key, larg.second, rarg);
+                }
+                else {
+                    //madness::print("R*L",key,larg.first,larg.second.size,rarg.first,rarg.second.size);
+                    do_mul(key, rarg.second, larg);
+                }
+            }
+            else {
+                coeffs.replace(key, nodeT(tensorT(), true));  // Insert interior node
+                for (KeyChildIterator<NDIM> kit(key); kit; ++kit) {
+                    typedef std::pair< keyT,Tensor<R> > rpairT;
+                    Future<rpairT> rarg;
+                    right->task(coeffs.owner(kit.key()), &FunctionImpl<R,NDIM>::sock_it_to_me,
+                                kit.key(), rarg.remote_ref(world), TaskAttributes::hipri());
+
+
+                    task(world.rank(), &implT:: template do_mul_sparse2<L,R>,
+                         kit.key(),larg, rarg, right);
+                }
+            }
+            return None;
+        }
+
+        template <typename L, typename R>
+        Void do_mul_sparse(const Tensor<L>& left_coeff, const FunctionImpl<R,NDIM>* right, double tol,
+                           const keyT& key, double right_norm) {
+            PROFILE_MEMBER_FUNC(FunctionImpl);
+            if (left_coeff.normf()*right_norm > truncate_tol(tol,key)) {
+                typedef std::pair< keyT,Tensor<R> > rpairT;
+                typedef std::pair< keyT,Tensor<L> > lpairT;
+                Future<rpairT> rarg;
+                right->task(coeffs.owner(key), &FunctionImpl<R,NDIM>::sock_it_to_me,
+                            key, rarg.remote_ref(world), TaskAttributes::hipri());
+                task(world.rank(), &implT:: template do_mul_sparse2<L,R>,
+                     key ,lpairT(key,left_coeff), rarg, right);
+            }
+            else {
+                coeffs.replace(key, nodeT(tensorT(cdata.vk), false));  // Result is zero
+            }
+            return None;
+        }
+
+        template <typename L, typename R>
+        void mul_sparse(const FunctionImpl<L,NDIM>& left, const FunctionImpl<R,NDIM>& right, double tol, bool fence) {
+            // Loop thru leaf nodes in left
+	    for (typename FunctionImpl<L,NDIM>::dcT::const_iterator it=left.coeffs.begin();
+                it != left.coeffs.end();
+                ++it) {
+                const keyT& key = it->first;
+                const FunctionNode<L,NDIM>& left_node = it->second;
+
+                if (left_node.is_leaf()) {
+                    Future<double> rarg = right.task(right.coeffs.owner(key), &implT::get_norm_tree_recursive, key, TaskAttributes::hipri());
+                    task(world.rank(), &implT:: template do_mul_sparse<L,R>, left_node.coeff(), &right, tol, key, rarg);
+                }
+                else {
+                    coeffs.replace(key, nodeT(tensorT(), true));  // Insert interior node
+                }
+            }
+            if (fence) world.gop.fence();
+        }
+
+
+
+
+
+                    // reorder subspace in order of decreasing residual norm
+                    for (int i=0; i<=m; i++) {
+                        for (int j=0; j<i; j++) {
+                            if (rnorms[i] > rnorms[j]) {
+                                swap(rvec[i],rvec[j]);
+                                swap(fvec[i],fvec[j]);
+                                swap(rnorms[i],rnorms[j]);
+
+                                tensorT tmp;
+                                tmp = copy(Q(i,_)); Q(i,_) = Q(j,_); Q(j,_) = tmp;
+                                tmp = copy(Q(_,i)); Q(_,i) = Q(_,j); Q(_,j) = tmp;
+                            }
+                        }
+                    }
+                    print("reordered rnorms", rnorms);
+                    
+                    
+
+
+
+
+                            
+//                             tensorT result(cdata.vk);
+//                             if (axis == 2) {
+//                                 for (int p=0; p<k; p++) {
+//                                     for (int q=0; q<k; q++) {
+//                                         for (int r=0; r<k; r++) {
+//                                             for (int s=0; s<k; s++) {
+//                                                 result(p,q,r) += R(r,s)*c(p,q,s);
+//                                             }
+//                                         }
+//                                     }
+//                                 }
+//                             }
+//                             else if (axis == 1) {
+//                                 for (int p=0; p<k; p++) {
+//                                     for (int q=0; q<k; q++) {
+//                                         for (int r=0; r<k; r++) {
+//                                             for (int s=0; s<k; s++) {
+//                                                 result(p,r,q) += R(r,s)*c(p,s,q);
+//                                             }
+//                                         }
+//                                     }
+//                                 }
+//                             }
+//                             else if (axis == 0) {
+//                                 for (int p=0; p<k; p++) {
+//                                     for (int q=0; q<k; q++) {
+//                                         for (int r=0; r<k; r++) {
+//                                             for (int s=0; s<k; s++) {
+//                                                 result(r,p,q) += R(r,s)*c(s,p,q);
+//                                             }
+//                                         }
+//                                     }
+//                                 }
+//                             }
+
+//                             if ((result - Result).normf() > 1e-10) {
+//                                 print("BAD", key, axis, (result - Result).normf());
+//                             }
+
+
+
+
+
+    /// 1D Gaussian convolution summed over periodic translations
+
+    /// r_periodic(n,l) = sum(R=-maxR,+maxR)[r_nonperiodic(n,l+R*2^n)]
+    template <typename Q>
+    class PeriodicGaussianConvolution1D : public Convolution1D<Q> {
+    public:
+
+        const int k;
+        const int maxR;
+        GaussianConvolution1D<Q> g;
+
+        PeriodicGaussianConvolution1D(int k, int maxR, Q coeff, double expnt, double sign=1.0)
+                : Convolution1D<Q>(k,k,1.0), k(k), maxR(maxR), g(k,coeff,expnt,sign) {}
+
+        virtual ~PeriodicGaussianConvolution1D() {}
+
+        Level natural_level() const {
+            return g.natural_level();
+        }
+
+        Tensor<Q> rnlp(Level n, Translation lx) const {
+            Translation twon = Translation(1)<<n;
+            Tensor<Q> r(2*k);
+            for (int R=-maxR; R<=maxR; R++) {
+                r.gaxpy(1.0, g.get_rnlp(n,R*twon+lx), 1.0);
+            }
+            return r;
+        }
+
+        bool issmall(Level n, Translation lx) const {
+            Translation twon = Translation(1)<<n;
+            for (int R=-maxR; R<=maxR; R++) {
+                if (!g.issmall(n, R*twon+lx)) return false;
+            }
+            return true;
+        }
+    };
+/*
+  This file is part of MADNESS.
+
+  Copyright (C) <2007> <Oak Ridge National Laboratory>
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+
+  For more information please contact:
+
+  Robert J. Harrison
+  Oak Ridge National Laboratory
+  One Bethel Valley Road
+  P.O. Box 2008, MS-6367
+
+  email: harrisonrj@ornl.gov
+  tel:   865-241-3937
+  fax:   865-572-0680
+
+
+  $Id: graveyard 2235 2011-03-22 18:25:06Z jakiej $
+*/
+
+
+#define WORLD_INSTANTIATE_STATIC_TEMPLATES
+#include <mra/mra.h>
+#include <world/worldhashmap.h>
+
+
+extern "C" double round(double x);
+
+
+/// \file mra.cc
+/// \file Declaration and initialization of static data, some implementation, some instantiation
+
+namespace madness {
+
+    // Definition and initialization of FunctionDefaults static members
+    // It cannot be an instance of FunctionFactory since we want to
+    // set the defaults independent of the data type.
+
+    template <typename T, int NDIM>
+    void FunctionCommonData<T,NDIM>::_make_dc_periodic() {
+        // See ABGV for details
+        r0 = Tensor<double>(k,k);
+        rp = Tensor<double>(k,k);
+        rm = Tensor<double>(k,k);
+
+        double iphase = 1.0;
+        for (int i=0; i<k; i++) {
+            double jphase = 1.0;
+            for (int j=0; j<k; j++) {
+                double gammaij = sqrt(double((2*i+1)*(2*j+1)));
+                double Kij;
+                if (((i-j)>0) && (((i-j)%2)==1))
+                    Kij = 2.0;
+                else
+                    Kij = 0.0;
+
+                r0(i,j) = 0.5*(1.0 - iphase*jphase - 2.0*Kij)*gammaij;
+                rm(i,j) = 0.5*jphase*gammaij;
+                rp(i,j) =-0.5*iphase*gammaij;
+                jphase = -jphase;
+            }
+            iphase = -iphase;
+        }
+
+        // Make the rank-1 forms of rm and rp
+        rm_left = Tensor<double>(k);
+        rm_right = Tensor<double>(k);
+        rp_left = Tensor<double>(k);
+        rp_right = Tensor<double>(k);
+
+        iphase = 1.0;
+        for (int i=0; i<k; i++) {
+            double gamma = sqrt(0.5*(2*i+1));
+            rm_left(i)  = rp_right(i) = gamma;
+            rm_right(i) = rp_left(i)  = gamma*iphase;
+            iphase *= -1.0;
+        }
+        rp_left.scale(-1.0);
+
+//         Tensor<double> rm_test = outer(rm_left,rm_right);
+//         Tensor<double> rp_test = outer(rp_left,rp_right);
+    }
+
+    template <typename T, int NDIM>
+    void FunctionCommonData<T,NDIM>::_init_twoscale() {
+        if (! two_scale_hg(k, &hg)) throw "failed to get twoscale coefficients";
+        hgT = transpose(hg);
+        hgsonly = copy(hg(Slice(0,k-1),_));
+    }
+
+    template <typename T, int NDIM>
+    void FunctionCommonData<T,NDIM>::_init_quadrature
+    (int k, int npt, Tensor<double>& quad_x, Tensor<double>& quad_w,
+     Tensor<double>& quad_phi, Tensor<double>& quad_phiw, Tensor<double>& quad_phit) {
+        quad_x = Tensor<double>(npt);
+        quad_w = Tensor<double>(npt);
+        quad_phi = Tensor<double>(npt,k);
+        quad_phiw = Tensor<double>(npt,k);
+
+        gauss_legendre(npt,0.0,1.0,quad_x.ptr(),quad_w.ptr());
+        for (int mu=0; mu<npt; mu++) {
+            double phi[200];
+            legendre_scaling_functions(quad_x(mu),k,phi);
+            for (int j=0; j<k; j++) {
+                quad_phi(mu,j) = phi[j];
+                quad_phiw(mu,j) = quad_w(mu)*phi[j];
+            }
+        }
+        quad_phit = transpose(quad_phi);
+    }
+
+
+    template <typename T, int NDIM>
+    void FunctionImpl<T,NDIM>::verify_tree() const {
+        PROFILE_MEMBER_FUNC(FunctionImpl);
+        world.gop.fence();  // Make sure nothing is going on
+
+        // Verify consistency of compression status, existence and size of coefficients,
+        // and has_children() flag.
+        for(typename dcT::const_iterator it=coeffs.begin(); it!=coeffs.end(); ++it) {
+            const keyT& key = it->first;
+            const nodeT& node = it->second;
+            bool bad;
+
+            if (is_compressed()) {
+                if (node.has_children()) {
+                    bad = node.coeff().dim[0] != 2*cdata.k;
+                }
+                else {
+                    bad = node.coeff().size != 0;
+                }
+            }
+            else {
+                if (node.has_children()) {
+                    bad = node.coeff().size != 0;
+                }
+                else {
+                    bad = node.coeff().dim[0] != cdata.k;
+                }
+            }
+
+            if (bad) {
+                print(world.rank(), "FunctionImpl: verify: INCONSISTENT TREE NODE, key =", key, ", node =", node,
+                      ", dim[0] =",node.coeff().dim[0],", compressed =",is_compressed());
+                std::cout.flush();
+                MADNESS_EXCEPTION("FunctionImpl: verify: INCONSISTENT TREE NODE", 0);
+            }
+        }
+
+        // Ensure that parents and children exist appropriately
+        for(typename dcT::const_iterator it=coeffs.begin(); it!=coeffs.end(); ++it) {
+            const keyT& key = it->first;
+            const nodeT& node = it->second;
+
+            if (key.level() > 0) {
+                const keyT parent = key.parent();
+                typename dcT::const_iterator pit = coeffs.find(parent).get();
+                if (pit == coeffs.end()) {
+                    print(world.rank(), "FunctionImpl: verify: MISSING PARENT",key,parent);
+                    std::cout.flush();
+                    MADNESS_EXCEPTION("FunctionImpl: verify: MISSING PARENT", 0);
+                }
+                const nodeT& pnode = pit->second;
+                if (!pnode.has_children()) {
+                    print(world.rank(), "FunctionImpl: verify: PARENT THINKS IT HAS NO CHILDREN",key,parent);
+                    std::cout.flush();
+                    MADNESS_EXCEPTION("FunctionImpl: verify: PARENT THINKS IT HAS NO CHILDREN", 0);
+                }
+            }
+
+            for (KeyChildIterator<NDIM> kit(key); kit; ++kit) {
+                typename dcT::const_iterator cit = coeffs.find(kit.key()).get();
+                if (cit == coeffs.end()) {
+                    if (node.has_children()) {
+                        print(world.rank(), "FunctionImpl: verify: MISSING CHILD",key,kit.key());
+                        std::cout.flush();
+                        MADNESS_EXCEPTION("FunctionImpl: verify: MISSING CHILD", 0);
+                    }
+                }
+                else {
+                    if (! node.has_children()) {
+                        print(world.rank(), "FunctionImpl: verify: UNEXPECTED CHILD",key,kit.key());
+                        std::cout.flush();
+                        MADNESS_EXCEPTION("FunctionImpl: verify: UNEXPECTED CHILD", 0);
+                    }
+                }
+            }
+        }
+
+        world.gop.fence();
+    }
+
+    template <typename T, int NDIM>
+    T FunctionImpl<T,NDIM>::eval_cube(Level n, coordT x, const tensorT c) const {
+        PROFILE_MEMBER_FUNC(FunctionImpl);
+        const int k = cdata.k;
+        double px[NDIM][k];
+        T sum = T(0.0);
+
+        for (int i=0; i<NDIM; i++) legendre_scaling_functions(x[i],k,px[i]);
+
+        if (NDIM == 1) {
+            for (int p=0; p<k; p++)
+                sum += c(p)*px[0][p];
+        }
+        else if (NDIM == 2) {
+            for (int p=0; p<k; p++)
+                for (int q=0; q<k; q++)
+                    sum += c(p,q)*px[0][p]*px[1][q];
+        }
+        else if (NDIM == 3) {
+            for (int p=0; p<k; p++)
+                for (int q=0; q<k; q++)
+                    for (int r=0; r<k; r++)
+                        sum += c(p,q,r)*px[0][p]*px[1][q]*px[2][r];
+        }
+        else if (NDIM == 4) {
+            for (int p=0; p<k; p++)
+                for (int q=0; q<k; q++)
+                    for (int r=0; r<k; r++)
+                        for (int s=0; s<k; s++)
+                            sum += c(p,q,r,s)*px[0][p]*px[1][q]*px[2][r]*px[3][s];
+        }
+        else if (NDIM == 5) {
+            for (int p=0; p<k; p++)
+                for (int q=0; q<k; q++)
+                    for (int r=0; r<k; r++)
+                        for (int s=0; s<k; s++)
+                            for (int t=0; t<k; t++)
+                                sum += c(p,q,r,s,t)*px[0][p]*px[1][q]*px[2][r]*px[3][s]*px[4][t];
+        }
+        else if (NDIM == 6) {
+            for (int p=0; p<k; p++)
+                for (int q=0; q<k; q++)
+                    for (int r=0; r<k; r++)
+                        for (int s=0; s<k; s++)
+                            for (int t=0; t<k; t++)
+                                for (int u=0; u<k; u++)
+                                    sum += c(p,q,r,s,t,u)*px[0][p]*px[1][q]*px[2][r]*px[3][s]*px[4][t]*px[5][u];
+        }
+        else {
+            MADNESS_EXCEPTION("FunctionImpl:eval_cube:NDIM?",NDIM);
+        }
+        return sum*pow(2.0,0.5*NDIM*n)/sqrt(FunctionDefaults<NDIM>::get_cell_volume());
+    }
+
+    template <typename T, int NDIM>
+    Void FunctionImpl<T,NDIM>::reconstruct_op(const keyT& key, const tensorT& s) {
+        PROFILE_MEMBER_FUNC(FunctionImpl);
+        // Note that after application of an integral operator not all
+        // siblings may be present so it is necessary to check existence
+        // and if absent insert an empty leaf node.
+        //
+        // If summing the result of an integral operator (i.e., from
+        // non-standard form) there will be significant scaling function
+        // coefficients at all levels and possibly difference coefficients
+        // in leaves, hence the tree may refine as a result.
+        typename dcT::iterator it = coeffs.find(key).get();
+        if (it == coeffs.end()) {
+            coeffs.replace(key,nodeT(tensorT(),false));
+            it = coeffs.find(key).get();
+        }
+        nodeT& node = it->second;
+
+        // The integral operator will correctly connect interior nodes
+        // to children but may leave interior nodes without coefficients
+        // ... but they still need to sum down so just give them zeros
+        if (node.has_children() && !node.has_coeff()) {
+            node.set_coeff(tensorT(cdata.v2k));
+        }
+
+        if (node.has_children() || node.has_coeff()) { // Must allow for inconsistent state from transform, etc.
+            tensorT d = node.coeff();
+            if (d.size == 0) d = tensorT(cdata.v2k);
+            if (key.level() > 0) d(cdata.s0) += s; // -- note accumulate for NS summation
+            d = unfilter(d);
+            node.clear_coeff();
+            node.set_has_children(true);
+            for (KeyChildIterator<NDIM> kit(key); kit; ++kit) {
+                const keyT& child = kit.key();
+                tensorT ss = copy(d(child_patch(child)));
+                PROFILE_BLOCK(recon_send);
+                task(coeffs.owner(child), &implT::reconstruct_op, child, ss);
+            }
+        }
+        else {
+            if (key.level()) node.set_coeff(copy(s));
+            else node.set_coeff(s);
+        }
+        return None;
+    }
+
+
+    template <typename T, int NDIM, typename FF>
+    //~ void FunctionImpl<T,NDIM>::fcube(const keyT& key, const FunctionFunctorInterface<T,NDIM>& f, const Tensor<double>& qx, tensorT& fval) const {
+    void FunctionImpl<T,NDIM>::fcube(const keyT& key, const FF& f, const Tensor<double>& qx, tensorT& fval) const {
+        PROFILE_MEMBER_FUNC(FunctionImpl);
+        const Vector<Translation,NDIM>& l = key.translation();
+        const Level n = key.level();
+        const double h = std::pow(0.5,double(n));
+        coordT c; // will hold the point in user coordinates
+        const int npt = qx.dim[0];
+
+        const Tensor<double>& cell_width = FunctionDefaults<NDIM>::get_cell_width();
+        const Tensor<double>& cell = FunctionDefaults<NDIM>::get_cell();
+
+        if (NDIM == 1) {
+            for (int i=0; i<npt; i++) {
+                c[0] = cell(0,0) + h*cell_width[0]*(l[0] + qx(i)); // x
+                fval(i) = f(c);
+            }
+        }
+        else if (NDIM == 2) {
+            for (int i=0; i<npt; i++) {
+                c[0] = cell(0,0) + h*cell_width[0]*(l[0] + qx(i)); // x
+                for (int j=0; j<npt; j++) {
+                    c[1] = cell(1,0) + h*cell_width[1]*(l[1] + qx(j)); // y
+                    fval(i,j) = f(c);
+                }
+            }
+        }
+        else if (NDIM == 3) {
+            for (int i=0; i<npt; i++) {
+                c[0] = cell(0,0) + h*cell_width[0]*(l[0] + qx(i)); // x
+                for (int j=0; j<npt; j++) {
+                    c[1] = cell(1,0) + h*cell_width[1]*(l[1] + qx(j)); // y
+                    for (int k=0; k<npt; k++) {
+                        c[2] = cell(2,0) + h*cell_width[2]*(l[2] + qx(k)); // z
+                        fval(i,j,k) = f(c);
+                    }
+                }
+            }
+        }
+        else if (NDIM == 4) {
+            for (int i=0; i<npt; i++) {
+                c[0] = cell(0,0) + h*cell_width[0]*(l[0] + qx(i)); // x
+                for (int j=0; j<npt; j++) {
+                    c[1] = cell(1,0) + h*cell_width[1]*(l[1] + qx(j)); // y
+                    for (int k=0; k<npt; k++) {
+                        c[2] = cell(2,0) + h*cell_width[2]*(l[2] + qx(k)); // z
+                        for (int m=0; m<npt; m++) {
+                            c[3] = cell(3,0) + h*cell_width[3]*(l[3] + qx(m)); // xx
+                            fval(i,j,k,m) = f(c);
+                        }
+                    }
+                }
+            }
+        }
+        else if (NDIM == 5) {
+            for (int i=0; i<npt; i++) {
+                c[0] = cell(0,0) + h*cell_width[0]*(l[0] + qx(i)); // x
+                for (int j=0; j<npt; j++) {
+                    c[1] = cell(1,0) + h*cell_width[1]*(l[1] + qx(j)); // y
+                    for (int k=0; k<npt; k++) {
+                        c[2] = cell(2,0) + h*cell_width[2]*(l[2] + qx(k)); // z
+                        for (int m=0; m<npt; m++) {
+                            c[3] = cell(3,0) + h*cell_width[3]*(l[3] + qx(m)); // xx
+                            for (int n=0; n<npt; n++) {
+                                c[4] = cell(4,0) + h*cell_width[4]*(l[4] + qx(n)); // yy
+                                fval(i,j,k,m,n) = f(c);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else if (NDIM == 6) {
+            for (int i=0; i<npt; i++) {
+                c[0] = cell(0,0) + h*cell_width[0]*(l[0] + qx(i)); // x
+                for (int j=0; j<npt; j++) {
+                    c[1] = cell(1,0) + h*cell_width[1]*(l[1] + qx(j)); // y
+                    for (int k=0; k<npt; k++) {
+                        c[2] = cell(2,0) + h*cell_width[2]*(l[2] + qx(k)); // z
+                        for (int m=0; m<npt; m++) {
+                            c[3] = cell(3,0) + h*cell_width[3]*(l[3] + qx(m)); // xx
+                            for (int n=0; n<npt; n++) {
+                                c[4] = cell(4,0) + h*cell_width[4]*(l[4] + qx(n)); // yy
+                                for (int p=0; p<npt; p++) {
+                                    c[5] = cell(5,0) + h*cell_width[5]*(l[5] + qx(p)); // zz
+                                    fval(i,j,k,m,n,p) = f(c);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else {
+            MADNESS_EXCEPTION("FunctionImpl: fcube: confused about NDIM?",NDIM);
+        }
+    }
+
+    template <typename T, int NDIM>
+    Void FunctionImpl<T,NDIM>::project_refine_op(const keyT& key, bool do_refine) {
+        PROFILE_MEMBER_FUNC(FunctionImpl);
+        if (do_refine) {
+            // Make in r child scaling function coeffs at level n+1
+            tensorT r(cdata.v2k);
+            for (KeyChildIterator<NDIM> it(key); it; ++it) {
+                const keyT& child = it.key();
+                r(child_patch(child)) = project(child);
+            }
+            // Filter then test difference coeffs at level n
+            tensorT d = filter(r);
+            tensorT s0;
+            if (truncate_on_project) s0 = copy(d(cdata.s0));
+            d(cdata.s0) = T(0);
+
+            if (d.normf()<truncate_tol(thresh,key.level()) || key.level()>=max_refine_level) {
+                if (key.level()>=max_refine_level) print("MAX REFINE LEVEL",key);
+                if (truncate_on_project) {
+                    coeffs.replace(key,nodeT(s0,false));
+                }
+                else {
+                    coeffs.replace(key,nodeT(tensorT(),true)); // Insert empty node for parent
+                    for (KeyChildIterator<NDIM> it(key); it; ++it) {
+                        const keyT& child = it.key();
+                        coeffs.replace(child,nodeT(copy(r(child_patch(child))),false));
+                    }
+                }
+            }
+            else {
+                coeffs.replace(key,nodeT(tensorT(),true)); // Insert empty node for parent
+                for (KeyChildIterator<NDIM> it(key); it; ++it) {
+                    const keyT& child = it.key();
+                    ProcessID p;
+                    if (FunctionDefaults<NDIM>::get_project_randomize()) {
+                        p = world.random_proc();
+                    }
+                    else {
+                        p = coeffs.owner(child);
+                    }
+                    PROFILE_BLOCK(proj_refine_send);
+                    task(p, &implT::project_refine_op, child, do_refine); // ugh
+                }
+            }
+        }
+        else {
+            coeffs.replace(key,nodeT(project(key),false));
+        }
+        return None;
+    }
+
+    template <typename T, int NDIM>
+    void FunctionImpl<T,NDIM>::add_scalar_inplace(T t, bool fence) {
+        std::vector<long> v0(NDIM,0L);
+        if (is_compressed()) {
+            if (world.rank() == coeffs.owner(cdata.key0)) {
+                typename dcT::iterator it = coeffs.find(cdata.key0).get();
+                MADNESS_ASSERT(it != coeffs.end());
+                nodeT& node = it->second;
+                MADNESS_ASSERT(node.has_coeff());
+                node.coeff()(v0) += t*sqrt(FunctionDefaults<NDIM>::get_cell_volume());
+            }
+        }
+        else {
+            for(typename dcT::iterator it=coeffs.begin(); it!=coeffs.end(); ++it) {
+                Level n = it->first.level();
+                nodeT& node = it->second;
+                if (node.has_coeff()) {
+                    node.coeff()(v0) += t*sqrt(FunctionDefaults<NDIM>::get_cell_volume()*pow(0.5,double(NDIM*n)));
+                }
+            }
+        }
+        if (fence) world.gop.fence();
+    }
+    
+    template <typename T, int NDIM>
+    void FunctionImpl<T,NDIM>::insert_zero_down_to_initial_level(const keyT& key) {
+        PROFILE_MEMBER_FUNC(FunctionImpl);
+        if (compressed) initial_level = std::max(initial_level,1); // Otherwise zero function is confused
+        if (coeffs.is_local(key)) {
+            if (compressed) {
+                if (key.level() == initial_level) {
+                    coeffs.replace(key, nodeT(tensorT(), false));
+                }
+                else {
+                    coeffs.replace(key, nodeT(tensorT(cdata.v2k), true));
+                }
+            }
+            else {
+                if (key.level()<initial_level) {
+                    coeffs.replace(key, nodeT(tensorT(), true));
+                }
+                else {
+                    coeffs.replace(key, nodeT(tensorT(cdata.vk), false));
+                }
+            }
+        }
+        if (key.level() < initial_level) {
+            for (KeyChildIterator<NDIM> kit(key); kit; ++kit) {
+                insert_zero_down_to_initial_level(kit.key());
+            }
+        }
+
+    }
+
+
+    template <typename T, int NDIM>
+    Future<bool> FunctionImpl<T,NDIM>::truncate_spawn(const keyT& key, double tol) {
+        PROFILE_MEMBER_FUNC(FunctionImpl);
+        typename dcT::iterator it = coeffs.find(key).get();
+        if (it == coeffs.end()) {
+            // In a standard tree all children would exist but some ops (transform) 
+            // can leave the tree in a messy state.  Just make the missing node as an
+            // empty leaf.
+            coeffs.replace(key,nodeT());
+            it = coeffs.find(key).get();
+        }
+        nodeT& node = it->second;
+        if (node.has_children()) {
+            std::vector< Future<bool> > v = future_vector_factory<bool>(1<<NDIM);
+            int i=0;
+            for (KeyChildIterator<NDIM> kit(key); kit; ++kit,++i) {
+                v[i] = task(coeffs.owner(kit.key()), &implT::truncate_spawn, kit.key(), tol, TaskAttributes::generator());
+            }
+            return task(world.rank(),&implT::truncate_op, key, tol, v);
+        }
+        else {
+            // In compressed form leaves should not have coeffs ... however the
+            // transform op could leave the tree with leaves that do have coeffs
+            // in which case we want something sensible to happen
+            //MADNESS_ASSERT(!node.has_coeff());
+            if (node.has_coeff() && key.level()>1) {
+                double dnorm = node.coeff().normf();
+                if (dnorm < truncate_tol(tol,key)) {
+                    node.clear_coeff();
+                }
+            }
+            return Future<bool>(node.has_coeff());
+        }
+    }
+
+
+    template <typename T, int NDIM>
+    bool FunctionImpl<T,NDIM>::truncate_op(const keyT& key, double tol, const std::vector< Future<bool> >& v) {
+        PROFILE_MEMBER_FUNC(FunctionImpl);
+        // If any child has coefficients, a parent cannot truncate
+        for (int i=0; i<(1<<NDIM); i++) if (v[i].get()) return true;
+        nodeT& node = coeffs.find(key).get()->second;
+
+        // Interior nodes should always have coeffs but transform might
+        // leave empty interior nodes ... hence just force no coeffs to 
+        // be zero coeff unless it is a leaf.
+        if (node.has_children() && !node.has_coeff()) node.set_coeff(tensorT(cdata.v2k));
+
+        if (key.level() > 1) { // >1 rather >0 otherwise reconstruct might get confused
+            double dnorm = node.coeff().normf();
+            if (dnorm < truncate_tol(tol,key)) {
+                node.clear_coeff();
+                if (node.has_children()) {
+                    node.set_has_children(false);
+                    for (KeyChildIterator<NDIM> kit(key); kit; ++kit) {
+                        coeffs.erase(kit.key());
+                    }
+                }
+            }
+        }
+        return node.has_coeff();
+    }
+
+
+    template <typename T, int NDIM>
+    void FunctionImpl<T,NDIM>::print_tree(Level maxlevel) const {
+        if (world.rank() == 0) do_print_tree(cdata.key0, maxlevel);
+        world.gop.fence();
+        if (world.rank() == 0) std::cout.flush();
+        world.gop.fence();
+    }
+
+
+    template <typename T, int NDIM>
+    void FunctionImpl<T,NDIM>::do_print_tree(const keyT& key, Level maxlevel) const {
+        typename dcT::const_iterator it = coeffs.find(key).get();
+        if (it == coeffs.end()) {
+            MADNESS_EXCEPTION("FunctionImpl: do_print_tree: null node pointer",0);
+        }
+        const nodeT& node = it->second;
+        for (int i=0; i<key.level(); i++) std::cout << "  ";
+        std::cout << key << "  " << node << " --> " << coeffs.owner(key) << "\n";
+	for (int i=0; i<key.level(); i++) std::cout << "  ";
+	std::cout << node.coeff() << "\n";
+        if (key.level() < maxlevel  &&  node.has_children()) {
+            for (KeyChildIterator<NDIM> kit(key); kit; ++kit) {
+                do_print_tree(kit.key(),maxlevel);
+            }
+        }
+    }
+
+    template <typename T, int NDIM>
+    Tensor<T> FunctionImpl<T,NDIM>::project(const keyT& key) const {
+        PROFILE_MEMBER_FUNC(FunctionImpl);
+        MADNESS_ASSERT(cdata.npt == cdata.k); // only necessary due to use of fast transform
+        tensorT fval(cdata.vq,false); // this will be the returned result
+        tensorT work(cdata.vk,false); // initially evaluate the function in here
+        tensorT workq(cdata.vq,false); // initially evaluate the function in here
+
+        if (functor) {
+            fcube(key,*functor,cdata.quad_x,work);
+        }
+        else {
+            MADNESS_EXCEPTION("FunctionImpl: project: confusion about function?",0);
+        }
+
+        work.scale(sqrt(FunctionDefaults<NDIM>::get_cell_volume()*pow(0.5,double(NDIM*key.level()))));
+        //return transform(work,cdata.quad_phiw);
+        return fast_transform(work,cdata.quad_phiw,fval,workq);
+    }
+
+    template <typename T, int NDIM>
+    Future<double> FunctionImpl<T,NDIM>::get_norm_tree_recursive(const keyT& key) const {
+        if (coeffs.probe(key)) {
+            return Future<double>(coeffs.find(key).get()->second.get_norm_tree());
+        }
+        MADNESS_ASSERT(key.level());
+        keyT parent = key.parent();
+        return task(coeffs.owner(parent), &implT::get_norm_tree_recursive, parent, TaskAttributes::hipri());
+    }
+
+
+    template <typename T, int NDIM>
+    Void FunctionImpl<T,NDIM>::sock_it_to_me(const keyT& key,
+                                             const RemoteReference< FutureImpl< std::pair<keyT,tensorT> > >& ref) const {
+        PROFILE_MEMBER_FUNC(FunctionImpl);
+        if (coeffs.probe(key)) {
+            const nodeT& node = coeffs.find(key).get()->second;
+            Future< std::pair<keyT,tensorT> > result(ref);
+            if (node.has_coeff()) {
+                //madness::print("sock found it with coeff",key);
+                result.set(std::pair<keyT,tensorT>(key,node.coeff()));
+            }
+            else {
+                //madness::print("sock found it without coeff",key);
+                result.set(std::pair<keyT,tensorT>(key,tensorT()));
+            }
+        }
+        else {
+            keyT parent = key.parent();
+            //madness::print("sock forwarding to parent",key,parent);
+            PROFILE_BLOCK(sitome_send);
+            task(coeffs.owner(parent), &FunctionImpl<T,NDIM>::sock_it_to_me, parent, ref, TaskAttributes::hipri());
+        }
+        return None;
+    }
+
+    template <typename T, int NDIM>
+    Void FunctionImpl<T,NDIM>::eval(const Vector<double,NDIM>& xin,
+                                    const keyT& keyin,
+                                    const typename Future<T>::remote_refT& ref) {
+
+        PROFILE_MEMBER_FUNC(FunctionImpl);
+        // This is ugly.  We must figure out a clean way to use
+        // owner computes rule from the container.
+        Vector<double,NDIM> x = xin;
+        keyT key = keyin;
+        Vector<Translation,NDIM> l = key.translation();
+        ProcessID me = world.rank();
+        while (1) {
+            ProcessID owner = coeffs.owner(key);
+            if (owner != me) {
+                PROFILE_BLOCK(eval_send);
+                task(owner, &implT::eval, x, key, ref, TaskAttributes::hipri());
+                return None;
+            }
+            else {
+                typename dcT::futureT fut = coeffs.find(key);
+                typename dcT::iterator it = fut.get();
+                nodeT& node = it->second;
+                if (node.has_coeff()) {
+                    Future<T>(ref).set(eval_cube(key.level(), x, node.coeff()));
+                    return None;
+                }
+                else {
+                    for (int i=0; i<NDIM; i++) {
+                        double xi = x[i]*2.0;
+                        int li = int(xi);
+                        if (li == 2) li = 1;
+                        x[i] = xi - li;
+                        l[i] = 2*l[i] + li;
+                    }
+                    key = keyT(key.level()+1,l);
+                }
+            }
+        }
+        //MADNESS_EXCEPTION("should not be here",0);
+    }
+
+    template <typename T, int NDIM>
+    void FunctionImpl<T,NDIM>::tnorm(const tensorT& t, double* lo, double* hi) const {
+        PROFILE_MEMBER_FUNC(FunctionImpl);
+        // Chosen approach looks stupid but it is more accurate
+        // than the simple approach of summing everything and
+        // subtracting off the low-order stuff to get the high
+        // order (assuming the high-order stuff is small relative
+        // to the low-order)
+        tensorT work = copy(t);
+        tensorT tlo = work(cdata.sh);
+        *lo = tlo.normf();
+        tlo.fill(0.0);
+        *hi = work.normf();
+    }
+
+    namespace detail {
+        template <typename A, typename B>
+        struct noop {
+            void operator()(const A& a, const B& b) const {};
+
+            template <typename Archive> void serialize(Archive& ar) {}
+        };
+
+        template <typename T, int NDIM>
+        struct scaleinplace {
+            T q;
+            scaleinplace() {}
+            scaleinplace(T q) : q(q) {}
+            void operator()(const Key<NDIM>& key, Tensor<T>& t) const {t.scale(q);}
+            template <typename Archive> void serialize(Archive& ar) {ar & q;}
+        };
+
+        template <typename T, int NDIM>
+        struct squareinplace {
+            void operator()(const Key<NDIM>& key, Tensor<T>& t) const {t.emul(t);}
+            template <typename Archive> void serialize(Archive& ar) {}
+        };
+        
+        template <typename T, int NDIM>
+        struct absinplace {
+            void operator()(const Key<NDIM>& key, Tensor<T>& t) const {abs(t);}
+            template <typename Archive> void serialize(Archive& ar) {}
+        };
+     }
+
+    template <typename T, int NDIM>
+    void FunctionImpl<T,NDIM>::scale_inplace(const T q, bool fence)
+    {
+        unary_op_coeff_inplace(detail::scaleinplace<T,NDIM>(q), fence);
+    }
+
+    template <typename T, int NDIM>
+    void FunctionImpl<T,NDIM>::square_inplace(bool fence) {
+        //unary_op_value_inplace(&implT::autorefine_square_test, detail::squareinplace<T,NDIM>(), fence);
+        unary_op_value_inplace(detail::squareinplace<T,NDIM>(), fence);
+    }
+
+    template <typename T, int NDIM>
+    void FunctionImpl<T,NDIM>::phi_for_mul(Level np, Translation lp, Level nc, Translation lc, Tensor<double>& phi) const {
+        PROFILE_MEMBER_FUNC(FunctionImpl);
+        double p[200];
+        double scale = pow(2.0,double(np-nc));
+        for (int mu=0; mu<cdata.npt; mu++) {
+            double xmu = scale*(cdata.quad_x(mu)+lc) - lp;
+            MADNESS_ASSERT(xmu>-1e-15 && xmu<(1+1e-15));
+            legendre_scaling_functions(xmu,cdata.k,p);
+            for (int i=0; i<k; i++) phi(i,mu) = p[i];
+        }
+        phi.scale(pow(2.0,0.5*np));
+    }
+
+    template <typename T, int NDIM>
+    const Tensor<T> FunctionImpl<T,NDIM>::parent_to_child(const tensorT& s, const keyT& parent, const keyT& child) const {
+        PROFILE_MEMBER_FUNC(FunctionImpl);
+        // An invalid parent/child means that they are out of the box
+        // and it is the responsibility of the caller to worry about that
+        // ... most likely the coefficients (s) are zero to reflect
+        // zero B.C. so returning s makes handling this easy.
+        if (parent == child || parent.is_invalid() || child.is_invalid()) return s;
+
+        tensorT result = fcube_for_mul<T>(child, parent, s);
+        result.scale(sqrt(FunctionDefaults<NDIM>::get_cell_volume()*pow(0.5,double(NDIM*child.level()))));
+        result = transform(result,cdata.quad_phiw);
+
+        return result;
+    }
+
+
+    template <typename T, int NDIM>
+    T FunctionImpl<T,NDIM>::trace_local() const {
+        PROFILE_MEMBER_FUNC(FunctionImpl);
+        std::vector<long> v0(NDIM,0);
+        T sum = 0.0;
+        if (compressed) {
+            if (world.rank() == coeffs.owner(cdata.key0)) {
+                typename dcT::const_iterator it = coeffs.find(cdata.key0).get();
+                if (it != coeffs.end()) {
+                    const nodeT& node = it->second;
+                    if (node.has_coeff()) sum = node.coeff()(v0);
+                }
+            }
+        }
+        else {
+            for(typename dcT::const_iterator it=coeffs.begin(); it!=coeffs.end(); ++it) {
+                const keyT& key = it->first;
+                const nodeT& node = it->second;
+                if (node.has_coeff()) sum += node.coeff()(v0)*pow(0.5,NDIM*key.level()*0.5);
+            }
+        }
+        return sum*sqrt(FunctionDefaults<NDIM>::get_cell_volume());
+    }
+
+
+    template <typename T, int NDIM>
+    void FunctionImpl<T,NDIM>::diff(const implT& f, int axis, bool fence) {
+        PROFILE_MEMBER_FUNC(FunctionImpl);
+        typedef std::pair<keyT,tensorT> argT;
+        for(typename dcT::const_iterator it=f.coeffs.begin(); it!=f.coeffs.end(); ++it) {
+            const keyT& key = it->first;
+            const nodeT& node = it->second;
+            if (node.has_coeff()) {
+                Future<argT> left = f.find_neighbor(key,axis,-1);
+                argT center(key,node.coeff());
+                Future<argT> right  = f.find_neighbor(key,axis, 1);
+                task(world.rank(), &implT::do_diff1, &f, axis, key, left, center, right);
+            }
+            else {
+                // Internal empty node can be safely inserted
+                coeffs.replace(key,nodeT(tensorT(),true));
+            }
+        }
+        if (fence) world.gop.fence();
+    }
+
+    static bool enforce_bc(int bc_left, int bc_right, Level n, Translation& l) {
+        Translation two2n = 1ul << n;
+        if (l < 0) {
+            if (bc_left == 0) {
+                return false; // Zero BC
+            }
+            else if (bc_left == 1) {
+                l += two2n; // Periodic BC
+            }
+            else {
+                MADNESS_EXCEPTION("enforce_bc: confused left BC?",bc_left);
+            }
+        }
+        else if (l >= two2n) {
+            if (bc_right == 0) {
+                return false; // Zero BC
+            }
+            else if (bc_right == 1) {
+                l -= two2n; // Periodic BC
+            }
+            else {
+                MADNESS_EXCEPTION("enforce_bc: confused BC right?",bc_left);
+            }
+        }
+        return true;
+    }
+
+
+    template <typename T, int NDIM>
+    Key<NDIM> FunctionImpl<T,NDIM>::neighbor(const keyT& key, int axis, int step) const {
+        Vector<Translation,NDIM> l = key.translation();
+
+        l[axis] += step;
+
+        if (!enforce_bc(bc(axis,0), bc(axis,1), key.level(), l[axis])) {
+            return keyT::invalid();
+        }
+        else {
+            return keyT(key.level(),l);
+        }
+    }
+
+    template <typename T, int NDIM>
+    Key<NDIM> FunctionImpl<T,NDIM>::neighbor(const keyT& key, const Key<NDIM>& disp) const {
+        Vector<Translation,NDIM> l = key.translation();
+
+        for (int axis=0; axis<NDIM; axis++) {
+            l[axis] += disp.translation()[axis];
+
+            if (!enforce_bc(bc(axis,0), bc(axis,1), key.level(), l[axis])) {
+                return keyT::invalid();
+            }
+        }
+        return keyT(key.level(),l);
+    }
+
+    template <typename T, int NDIM>
+    Future< std::pair< Key<NDIM>,Tensor<T> > >
+    FunctionImpl<T,NDIM>::find_neighbor(const Key<NDIM>& key, int axis, int step) const {
+        PROFILE_MEMBER_FUNC(FunctionImpl);
+        typedef std::pair< Key<NDIM>,Tensor<T> > argT;
+        keyT neigh = neighbor(key, axis, step);
+        if (neigh.is_invalid()) {
+            return Future<argT>(argT(neigh,tensorT(cdata.vk))); // Zero bc
+        }
+        else {
+            Future<argT> result;
+            PROFILE_BLOCK(find_neigh_send);
+            task(coeffs.owner(neigh), &implT::sock_it_to_me, neigh, result.remote_ref(world), TaskAttributes::hipri());
+            return result;
+        }
+    }
+
+    template <typename T, int NDIM>
+    Void FunctionImpl<T,NDIM>::forward_do_diff1(const implT* f, int axis, const keyT& key,
+                                                const std::pair<keyT,tensorT>& left,
+                                                const std::pair<keyT,tensorT>& center,
+                                                const std::pair<keyT,tensorT>& right) {
+        PROFILE_MEMBER_FUNC(FunctionImpl);
+        ProcessID owner = coeffs.owner(key);
+        if (owner == world.rank()) {
+            if (left.second.size == 0) {
+                task(owner, &implT::do_diff1, f, axis, key, f->find_neighbor(key,axis,-1), center, right, TaskAttributes::hipri());
+            }
+            else if (right.second.size == 0) {
+                task(owner, &implT::do_diff1, f, axis, key, left, center, f->find_neighbor(key,axis,1), TaskAttributes::hipri());
+            }
+            else {
+                task(owner, &implT::do_diff2, f, axis, key, left, center, right);
+            }
+        }
+        else {
+            task(owner, &implT::forward_do_diff1, f, axis, key, left, center, right, TaskAttributes::hipri());
+        }
+        return None;
+    }
+
+    template <typename T, int NDIM>
+    Void FunctionImpl<T,NDIM>::do_diff1(const implT* f, int axis, const keyT& key,
+                                        const std::pair<keyT,tensorT>& left,
+                                        const std::pair<keyT,tensorT>& center,
+                                        const std::pair<keyT,tensorT>& right) {
+        PROFILE_MEMBER_FUNC(FunctionImpl);
+        typedef std::pair<keyT,tensorT> argT;
+
+        MADNESS_ASSERT(axis>=0 && axis<NDIM);
+
+        if (left.second.size==0 || right.second.size==0) {
+            // One of the neighbors is below us in the tree ... recur down
+            coeffs.replace(key,nodeT(tensorT(),true));
+            for (KeyChildIterator<NDIM> kit(key); kit; ++kit) {
+                const keyT& child = kit.key();
+                if ((child.translation()[axis]&1) == 0) {
+                    // leftmost child automatically has right sibling
+                    forward_do_diff1(f, axis, child, left, center, center);
+                }
+                else {
+                    // rightmost child automatically has left sibling
+                    forward_do_diff1(f, axis, child, center, center, right);
+                }
+            }
+        }
+        else {
+            forward_do_diff1(f, axis, key, left, center, right);
+        }
+        return None;
+    }
+
+    template <typename T, int NDIM>
+    Void FunctionImpl<T,NDIM>::do_diff2(const implT* f, int axis, const keyT& key,
+                                        const std::pair<keyT,tensorT>& left,
+                                        const std::pair<keyT,tensorT>& center,
+                                        const std::pair<keyT,tensorT>& right) {
+        PROFILE_MEMBER_FUNC(FunctionImpl);
+        typedef std::pair<keyT,tensorT> argT;
+
+        tensorT d = madness::inner(cdata.rp,
+                                   parent_to_child(left.second, left.first, neighbor(key,axis,-1)).swapdim(axis,0),
+                                   1, 0);
+        inner_result(cdata.r0,
+                     parent_to_child(center.second, center.first, key).swapdim(axis,0),
+                     1, 0, d);
+        inner_result(cdata.rm,
+                     parent_to_child(right.second, right.first, neighbor(key,axis,1)).swapdim(axis,0),
+                     1, 0, d);
+        if (axis) d = copy(d.swapdim(axis,0)); // make it contiguous
+        d.scale(FunctionDefaults<NDIM>::get_rcell_width()[axis]*pow(2.0,(double) key.level()));
+        coeffs.replace(key,nodeT(d,false));
+        return None;
+    }
+
+    template <typename T, int NDIM>
+    void FunctionImpl<T,NDIM>::mapdim(const implT& f, const std::vector<long>& map, bool fence) {
+        PROFILE_MEMBER_FUNC(FunctionImpl);
+        for(typename dcT::const_iterator it=f.coeffs.begin(); it!=f.coeffs.end(); ++it) {
+            const keyT& key = it->first;
+            const nodeT& node = it->second;
+
+            Vector<Translation,NDIM> l;
+            for (int i=0; i<NDIM; i++) l[map[i]] = key.translation()[i];
+            tensorT c = node.coeff();
+            if (c.size) c = copy(c.mapdim(map));
+
+            coeffs.replace(keyT(key.level(),l), nodeT(c,node.has_children()));
+        }
+        if (fence) world.gop.fence();
+    }
+
+    template <typename T, int NDIM>
+    Future< Tensor<T> > FunctionImpl<T,NDIM>::compress_spawn(const Key<NDIM>& key, bool nonstandard, bool keepleaves) {
+        PROFILE_MEMBER_FUNC(FunctionImpl);
+        MADNESS_ASSERT(coeffs.probe(key));
+        nodeT& node = coeffs.find(key).get()->second;
+        if (node.has_children()) {
+            std::vector< Future<tensorT> > v = future_vector_factory<tensorT>(1<<NDIM);
+            int i=0;
+            for (KeyChildIterator<NDIM> kit(key); kit; ++kit,++i) {
+                PROFILE_BLOCK(compress_send);
+                v[i] = task(coeffs.owner(kit.key()), &implT::compress_spawn, kit.key(), nonstandard, keepleaves, TaskAttributes::hipri());
+            }
+            return task(world.rank(),&implT::compress_op, key, v, nonstandard);
+        }
+        else {
+            Future<tensorT> result(node.coeff());
+            if (!keepleaves) node.clear_coeff();
+            return result;
+        }
+    }
+
+    template <typename T, int NDIM>
+    Tensor<T> FunctionImpl<T,NDIM>::eval_plot_cube(const coordT& plotlo,
+                                                   const coordT& plothi,
+                                                   const std::vector<long>& npt) const {
+        PROFILE_MEMBER_FUNC(FunctionImpl);
+        Tensor<T> r(NDIM, &npt[0]);
+        //         r(___) = 99.0;
+        MADNESS_ASSERT(!compressed);
+
+        coordT h; // Increment between points in each dimension
+        for (int i=0; i<NDIM; i++) {
+            if (npt[i] > 1) {
+                h[i] = (plothi[i]-plotlo[i])/(npt[i]-1);
+            }
+            else {
+                MADNESS_ASSERT(plotlo[i] == plothi[i]);
+                h[i] = 0.0;
+            }
+        }
+        //print("plot info", plotlo, plothi, npt, h);
+
+        // Loop thru local boxes ... THIS NEEDS MULTITHREADING !!!
+        for(typename dcT::const_iterator it=coeffs.begin(); it!=coeffs.end(); ++it) {
+            const keyT& key = it->first;
+            const nodeT& node = it->second;
+            if (node.has_coeff()) {
+                //print("Looking at", key);
+                // Determine the points, if any, of the plot grid that
+                // are contained within this box
+                coordT boxlo, boxhi;
+                Vector<int,NDIM> boxnpt;
+                double fac = pow(0.5,double(key.level()));
+                int npttotal = 1;
+                for (int d=0; d<NDIM; d++) {
+                    // Coords of box
+                    boxlo[d] = fac*key.translation()[d];
+                    boxhi[d] = boxlo[d]+fac;
+
+                    if (boxlo[d] > plothi[d] || boxhi[d] < plotlo[d]) {
+                        // Discard boxes out of the plot range
+                        npttotal = boxnpt[d] = 0;
+                        //print("OO range?");
+                        break;
+                    }
+                    else if (npt[d] == 1) {
+                        // This dimension is only a single point
+                        boxlo[d] = boxhi[d] = plotlo[d];
+                        boxnpt[d] = 1;
+                    }
+                    else {
+                        // Restrict to plot range
+//                         boxlo[d] = std::max(boxlo[d],plotlo[d]);
+//                         boxhi[d] = std::min(boxhi[d],plothi[d]);
+
+                        // Round lo up to next plot point; round hi down
+                        double xlo = long((boxlo[d]-plotlo[d])/h[d])*h[d] + plotlo[d];
+                        if (xlo < boxlo[d]) xlo += h[d];
+                        boxlo[d] =  xlo;
+                        double xhi = long((boxhi[d]-plotlo[d])/h[d])*h[d] + plotlo[d];
+                        if (xhi > boxhi[d]) xhi -= h[d];
+                        // MADNESS_ASSERT(xhi >= xlo);  // nope
+                        boxhi[d] = xhi;
+                        boxnpt[d] = long(round((boxhi[d] - boxlo[d])/h[d])) + 1;
+                    }
+                    npttotal *= boxnpt[d];
+                }
+                //print("    box", boxlo, boxhi, boxnpt, npttotal);
+                if (npttotal > 0) {
+                    const tensorT& coeff = node.coeff();
+                    const Level n = key.level();
+                    const Vector<Translation,NDIM>& l = key.translation();
+                    const double twon = pow(2.0,double(n));
+                    long ind[NDIM];
+                    coordT x;
+                    for (IndexIterator it(boxnpt); it; ++it) {
+                        for (int d=0; d<NDIM; d++) {
+                            double xd = boxlo[d] + it[d]*h[d]; // Sim. coords of point
+                            x[d] = twon*xd - l[d]; // Offset within box
+                            MADNESS_ASSERT(x[d]>=0.0 && x[d] <=1.0);  // sanity
+                            if (npt[d] > 1) {
+                                ind[d] = long(round((xd-plotlo[d])/h[d])); // Index of plot point
+                            }
+                            else {
+                                ind[d] = 0;
+                            }
+                            MADNESS_ASSERT(ind[d]>=0 && ind[d]<npt[d]); // sanity
+                        }
+                        r(ind) = eval_cube(n, x, coeff);
+                        //print("computing", n, x, ind, r(ind));
+                    }
+                }
+            }
+        }
+
+        //        ITERATOR(r, if (r(IND) == 99.0) {print("BAD", IND); error("bad",0);});
+
+        return r;
+    }
+
+    static void dxprintvalue(FILE* f, const double t) {
+        fprintf(f,"%.6e\n",t);
+    }
+
+    static void dxprintvalue(FILE* f, const double_complex& t) {
+        fprintf(f,"%.6e %.6e\n", t.real(), t.imag());
+    }
+
+    template <typename T, int NDIM>
+    void plotdx(const Function<T,NDIM>& function,
+                const char* filename,
+                const Tensor<double>& cell,
+                const std::vector<long>& npt,
+                bool binary) {
+        PROFILE_FUNC;
+        MADNESS_ASSERT(NDIM<=6);
+        const char* element[6] = {"lines","quads","cubes","cubes4D","cubes5D","cubes6D"};
+
+        function.verify();
+        World& world = const_cast< Function<T,NDIM>& >(function).world();
+        FILE *f=0;
+        if (world.rank() == 0) {
+            f = fopen(filename, "w");
+            if (!f) MADNESS_EXCEPTION("plotdx: failed to open the plot file", 0);
+
+            fprintf(f,"object 1 class gridpositions counts ");
+            for (int d=0; d<NDIM; d++) fprintf(f," %ld",npt[d]);
+            fprintf(f,"\n");
+
+            fprintf(f,"origin ");
+            for (int d=0; d<NDIM; d++) fprintf(f, " %.6e", cell(d,0));
+            fprintf(f,"\n");
+
+            for (int d=0; d<NDIM; d++) {
+                fprintf(f,"delta ");
+                for (int c=0; c<d; c++) fprintf(f, " 0");
+                double h = 0.0;
+                if (npt[d]>1) h = (cell(d,1)-cell(d,0))/(npt[d]-1);
+                fprintf(f," %.6e", h);
+                for (int c=d+1; c<NDIM; c++) fprintf(f, " 0");
+                fprintf(f,"\n");
+            }
+            fprintf(f,"\n");
+
+            fprintf(f,"object 2 class gridconnections counts ");
+            for (int d=0; d<NDIM; d++) fprintf(f," %ld",npt[d]);
+            fprintf(f,"\n");
+            fprintf(f, "attribute \"element type\" string \"%s\"\n", element[NDIM-1]);
+            fprintf(f, "attribute \"ref\" string \"positions\"\n");
+            fprintf(f,"\n");
+
+            int npoint = 1;
+            for (int d=0; d<NDIM; d++) npoint *= npt[d];
+            const char* iscomplex = "";
+            if (TensorTypeData<T>::iscomplex) iscomplex = "category complex";
+            const char* isbinary = "";
+            if (binary) isbinary = "binary";
+            fprintf(f,"object 3 class array type double %s rank 0 items %d %s data follows\n",
+                    iscomplex, npoint, isbinary);
+        }
+
+        world.gop.fence();
+        Tensor<T> r = function.eval_cube(cell, npt);
+
+        if (world.rank() == 0) {
+            if (binary) {
+                // This assumes that the values are double precision
+                fflush(f);
+                fwrite((void *) r.ptr(), sizeof(T), r.size, f);
+                fflush(f);
+            }
+            else {
+                for (IndexIterator it(npt); it; ++it) {
+                    //fprintf(f,"%.6e\n",r(*it));
+                    dxprintvalue(f,r(*it));
+                }
+            }
+            fprintf(f,"\n");
+
+            fprintf(f,"object \"%s\" class field\n",filename);
+            fprintf(f,"component \"positions\" value 1\n");
+            fprintf(f,"component \"connections\" value 2\n");
+            fprintf(f,"component \"data\" value 3\n");
+            fprintf(f,"\nend\n");
+            fclose(f);
+        }
+        world.gop.fence();
+    }
+
+    template <int NDIM>
+    void FunctionDefaults<NDIM>::set_defaults (World& world) {
+            k = 7;
+            thresh = 1e-5;
+            initial_level = 2;
+            max_refine_level = 30;
+            truncate_mode = 0;
+            refine = true;
+            autorefine = true;
+            debug = false;
+            truncate_on_project = false;
+            apply_randomize = false;
+            project_randomize = false;
+            bc = Tensor<int>(NDIM,2);
+            cell = Tensor<double>(NDIM,2);
+            cell(_,1) = 1.0;
+            recompute_cell_info();
+
+            //pmap = SharedPtr< WorldDCPmapInterface< Key<NDIM> > >(new WorldDCDefaultPmap< Key<NDIM> >(world));
+            pmap = SharedPtr< WorldDCPmapInterface< Key<NDIM> > >(new MyPmap<NDIM>(world));
+            //pmap = SharedPtr< WorldDCPmapInterface< Key<NDIM> > >(new SimpleMap< Key<NDIM> >(world));
+        }
+
+
+    //
+    // Below here we instantiate templates defined in this file
+    //
+
+
+    template <typename T, int NDIM>
+    FunctionCommonData<T,NDIM> FunctionCommonData<T,NDIM>::data[MAXK+1];
+
+    template <int NDIM> int FunctionDefaults<NDIM>::k;
+    template <int NDIM> double FunctionDefaults<NDIM>::thresh;
+    template <int NDIM> int FunctionDefaults<NDIM>::initial_level;
+    template <int NDIM> int FunctionDefaults<NDIM>::max_refine_level;
+    template <int NDIM> int FunctionDefaults<NDIM>::truncate_mode;
+    template <int NDIM> bool FunctionDefaults<NDIM>::refine;
+    template <int NDIM> bool FunctionDefaults<NDIM>::autorefine;
+    template <int NDIM> bool FunctionDefaults<NDIM>::debug;
+    template <int NDIM> bool FunctionDefaults<NDIM>::truncate_on_project;
+    template <int NDIM> bool FunctionDefaults<NDIM>::apply_randomize;
+    template <int NDIM> bool FunctionDefaults<NDIM>::project_randomize;
+    template <int NDIM> Tensor<int> FunctionDefaults<NDIM>::bc;
+    template <int NDIM> Tensor<double> FunctionDefaults<NDIM>::cell;
+    template <int NDIM> Tensor<double> FunctionDefaults<NDIM>::cell_width;
+    template <int NDIM> Tensor<double> FunctionDefaults<NDIM>::rcell_width;
+    template <int NDIM> double FunctionDefaults<NDIM>::cell_volume;
+    template <int NDIM> double FunctionDefaults<NDIM>::cell_min_width;
+    template <int NDIM> SharedPtr< WorldDCPmapInterface< Key<NDIM> > > FunctionDefaults<NDIM>::pmap;
+
+    template <int NDIM> std::vector< Key<NDIM> > Displacements<NDIM>::disp;
+    template <int NDIM> std::vector< Key<NDIM> > Displacements<NDIM>::disp_periodicsum[64];
+
+#ifdef FUNCTION_INSTANTIATE_1
+    template class FunctionDefaults<1>;
+    template class Function<double, 1>;
+    template class Function<std::complex<double>, 1>;
+    template class FunctionImpl<double, 1>;
+    template class FunctionImpl<std::complex<double>, 1>;
+    template class FunctionCommonData<double, 1>;
+    template class FunctionCommonData<double_complex, 1>;
+    template class Displacements<1>;
+
+    template void plotdx<double,1>(const Function<double,1>&, const char*, const Tensor<double>&,
+                                   const std::vector<long>&, bool binary);
+    template void plotdx<double_complex,1>(const Function<double_complex,1>&, const char*, const Tensor<double>&,
+                                           const std::vector<long>&, bool binary);
+#endif
+
+#ifdef FUNCTION_INSTANTIATE_2
+    template class FunctionDefaults<2>;
+    template class Function<double, 2>;
+    template class Function<std::complex<double>, 2>;
+    template class FunctionImpl<double, 2>;
+    template class FunctionImpl<std::complex<double>, 2>;
+    template class FunctionCommonData<double, 2>;
+    template class FunctionCommonData<double_complex, 2>;
+    template class Displacements<2>;
+
+    template void plotdx<double,2>(const Function<double,2>&, const char*, const Tensor<double>&,
+                                   const std::vector<long>&, bool binary);
+    template void plotdx<double_complex,2>(const Function<double_complex,2>&, const char*, const Tensor<double>&,
+                                   const std::vector<long>&, bool binary);
+#endif
+
+#ifdef FUNCTION_INSTANTIATE_3
+    template class FunctionDefaults<3>;
+    template class Function<double, 3>;
+    template class Function<std::complex<double>, 3>;
+    template class FunctionImpl<double, 3>;
+    template class FunctionImpl<std::complex<double>, 3>;
+    template class FunctionCommonData<double, 3>;
+    template class FunctionCommonData<double_complex, 3>;
+    template class Displacements<3>;
+
+    template void plotdx<double,3>(const Function<double,3>&, const char*, const Tensor<double>&,
+                                   const std::vector<long>&, bool binary);
+    template void plotdx<double_complex,3>(const Function<double_complex,3>&, const char*, const Tensor<double>&,
+                                   const std::vector<long>&, bool binary);
+#endif
+
+#ifdef FUNCTION_INSTANTIATE_4
+    template class FunctionDefaults<4>;
+    template class Function<double, 4>;
+    template class Function<std::complex<double>, 4>;
+    template class FunctionImpl<double, 4>;
+    template class FunctionImpl<std::complex<double>, 4>;
+    template class FunctionCommonData<double, 4>;
+    template class FunctionCommonData<double_complex, 4>;
+    template class Displacements<4>;
+
+    template void plotdx<double,4>(const Function<double,4>&, const char*, const Tensor<double>&,
+                                   const std::vector<long>&, bool binary);
+    template void plotdx<double_complex,4>(const Function<double_complex,4>&, const char*, const Tensor<double>&,
+                                   const std::vector<long>&, bool binary);
+#endif
+
+#ifdef FUNCTION_INSTANTIATE_5
+    template class FunctionDefaults<5>;
+    template class Function<double, 5>;
+    template class Function<std::complex<double>, 5>;
+    template class FunctionImpl<double, 5>;
+    template class FunctionImpl<std::complex<double>, 5>;
+    template class FunctionCommonData<double, 5>;
+    template class FunctionCommonData<double_complex, 5>;
+    template class Displacements<5>;
+
+    template void plotdx<double,5>(const Function<double,5>&, const char*, const Tensor<double>&,
+                                   const std::vector<long>&, bool binary);
+    template void plotdx<double_complex,5>(const Function<double_complex,5>&, const char*, const Tensor<double>&,
+                                   const std::vector<long>&, bool binary);
+#endif
+
+#ifdef FUNCTION_INSTANTIATE_6
+    template class FunctionDefaults<6>;
+    template class Function<double, 6>;
+    template class Function<std::complex<double>, 6>;
+    template class FunctionImpl<double, 6>;
+    template class FunctionImpl<std::complex<double>, 6>;
+    template class FunctionCommonData<double, 6>;
+    template class FunctionCommonData<double_complex, 6>;
+    template class Displacements<6>;
+
+    template void plotdx<double,6>(const Function<double,6>&, const char*, const Tensor<double>&,
+                                   const std::vector<long>&, bool binary);
+    template void plotdx<double_complex,6>(const Function<double_complex,6>&, const char*, const Tensor<double>&,
+                                   const std::vector<long>&, bool binary);
+#endif
+
+    template <>
+    ConcurrentHashMap< double, SharedPtr< GaussianConvolution1D<double> > >  GaussianConvolution1DCache<double>::map = ConcurrentHashMap< double, SharedPtr< GaussianConvolution1D<double> > >();
+
+    template <>
+    ConcurrentHashMap< double, SharedPtr< GaussianConvolution1D<double_complex> > > GaussianConvolution1DCache<double_complex>::map = ConcurrentHashMap< double, SharedPtr< GaussianConvolution1D<double_complex> > >();
+}
+
+/// Quietly used as a global lock when looking for bugs with multiple threads
+madness::Mutex THELOCK;
+

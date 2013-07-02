@@ -1,0 +1,157 @@
+LIBDPD: Written by Dr. T. Daniel Crawford
+
+Manual for the structure of and routines in libdpd.  This library is
+(probably permanently) under development and routines may change
+significantly without notice.
+
+Documentation started April 1997.
+
+==============================================================================
+I.  Library philosophy and structure
+==============================================================================
+
+The direct-product decomposition (DPD) library, libdpd, is designed to
+assist in the organization and manipulation of one- and two-electron integrals,
+intermediates, amplitudes, etc. for post-Hartree-Fock calculations.  The
+library allows the programmer to include Abelian point group symmetry, as well 
+as matrix-based storage in a relatively simple manner such that loops over
+orbitals are avoided.
+
+Four-index quantities are stored in symmetry-blocked matrices, based on the
+direct-product decomposition ideas discussed by Stanton, Gauss, and
+Bartlett [JCP _94_, 4334(1991)].  In the current version of the library, we
+make the assumption that all quantities are totally symmetric, i.e., that
+the direct product of the irreps associated with each index is the totally
+symmetric irrep of the Abelian point group.  This assumption must be removed
+if one wants to construct EOM-CC eigenvectors for symmetries oter than the
+ground state.  The storage of Dirac-notation, antisymmetrized, two-electron 
+integrals serves as a useful example of the library's methods.  Given a list 
+of integrals, <pq||rs>, the orbitals may be ordered such that the orbital
+index pairs (p,q) and (r,s) are each grouped by the direct product of their 
+associated irreps.  Since the cumulative direct product of the irreps of all
+four orbitals must be the totally symmetric irrep, the matrix resulting from
+taking the pair-index (p,q) as a row index, and the pair-index (r,s) as a
+column index is block diagonal (using C2v as an example):
+
+                               (r,s)
+                   A1       A2       B1       B2
+               _____________________________________
+               |XXXXXXXX|        |        |        |
+          A1   |XXXXXXXX|        |        |        |
+               |XXXXXXXX|________|________|________|
+               |        |XXXXXXXX|        |        |
+          A2   |        |XXXXXXXX|        |        |
+   (p,q)       |________|XXXXXXXX|________|________|
+               |        |        |XXXXXXXX|        |
+          B1   |        |        |XXXXXXXX|        |
+               |________|________|XXXXXXXX|________|
+               |        |        |        |XXXXXXXX|
+          B2   |        |        |        |XXXXXXXX|
+               |________|________|________|XXXXXXXX|
+
+The irrep labels along the rows and columns of the matrix refer to the
+direct product of the irreps of the (p,q) or (r,s) orbital pairs.  The 
+non-diagonal blocks in the matrix contain only zero elements and should be
+neither stored nor used for computation.  Given information about the number 
+of irreps in the point group, permutational symmetries within and between
+(p,q) and (r,s) pairs, number of orbitals within each irrep for each of the
+four indices, the set of submatrices above may be constructed in a very 
+automated manner.
+
+There are several fundmental structures (objects) in the library which
+represent the symmetry-factored two- and four-index quantities.  The central
+four-index object is the dpdparams struct, which contains all information
+about the various symmetries of the given quantity.  The members of this
+struct are:
+
+char label[80] -- A length-80 label given to the object.
+int nirreps    -- The number of irreducible representations/logical
+subfiles/symmetry-decomposed submatrices associated with the object.
+int *rowtot    -- The row dimension of each submatrix.
+int *coltot    -- The column dimension of each submatrix.
+int **rowidx   -- The row index in a submatrix for the two given leftmost
+indices (e.g. the orbital bra indices in a two-electron integral).
+int **colidx   -- The column index in a submatrix for the two given
+rightmost indices (e.g. the orbital ket indices in a two-electron integral.)
+int ***roworb  -- The two leftmost indices for a given row index in a given
+submatrix.
+int ***colorb  -- The two rightmost indices for a given column index in a
+given submatrix.
+int *ppi       -- The number of far-left index values for a given irrep.
+int *qpi       -- The number of next-to-far-left index values for a given
+irrep.
+int *rpi       -- The number of next-to-far-right index values for a given
+irrep.
+int *spi       -- The number of far-right index values for a given irrep.
+int *poff      -- The orbital offset for the far-left index for a given
+irrep (i.e. the cumulative number of index values for the preceeding
+irreps).
+int *qoff      -- The orbital offset for the next-to-far-left index for a 
+given irrep (i.e. the cumulative number of index values for the preceeding
+irreps).
+int *roff      -- The orbital offset for the next-to-far-right index for a 
+given irrep (i.e. the cumulative number of index values for the preceeding
+irreps).
+int *soff      -- The orbital offset for the far-right index for a given
+irrep (i.e. the cumulative number of index values for the preceeding
+irreps).
+int *psym      -- The irrep for a given value of the leftmost index.
+int *qsym      -- The irrep for a given value of the next-to-leftmost index.
+int *rsym      -- The irrep for a given value of the next-to-rightmost
+index.
+int *ssym      -- The irrep for a given value of the rightmost index.
+int perm_pq    -- Integer which indicates permutational symmetry of the
+leftmost two indices (-1 = anitsymmetric, 0 = nonsymmetric, +1 = symmetric).
+int perm_rs    -- Integer which indicates permutational symmetry of the
+rightmost two indices (-1 = anitsymmetric, 0 = nonsymmetric, +1 = symmetric).
+int perm_pr    -- Integer which indicates permutational symmetry of the
+first and third indices (-1 = anitsymmetric, 0 = nonsymmetric, +1 = symmetric).
+int perm_qs    -- Integer which indicates permutational symmetry of the
+second and fourth indices (-1 = anitsymmetric, 0 = nonsymmetric, 
++1 = symmetric).
+int perm_prqs  -- Integer which indicates simultaneous permutational 
+symmetry of the first-third and second-fourth indices (-1 = anitsymmetric, 
+0 = nonsymmetric, +1 = symmetric).
+int peq        -- Boolean which indicates whether the values of the first and 
+second indices can be equal.
+int res        -- Boolean which indicates whether the values of the third
+and fourth indices can be equal.
+double ***matrix -- The actual submatrices of values of the quantity in
+question.  This should probably be moved into higher-level structs.
+
+The routines with the prefix "dpd_params" all deal with the above struct
+directly.  For example, the dpd_params_init() function takes the necessary
+information from the programmer and prepares the members of structure.  The
+dpd_params_rd() and dpd_params_wrt() functions read and write, respectively,
+the struct information from a particular file.  That is, the parameter
+information contained in the struct is generally written as a header onto
+the direct-access file storing the data.
+
+The dpdfile struct contains information about the actual file-based storage
+of the four-index quantity.  Its members are:
+
+int filenum               -- The unit number for the direct-acess file.
+unsigned long int *lfiles -- Bytewise pointers to the beginning of each
+submatrix in the file.
+struct dpdparams params   -- The dpd parameters defining this particular
+four-index quantity.
+
+The routines with the prefix "dpd_file" all deal with the above struct
+directly.  For example, the dpd_file_init() function takes the necessary
+information from the programmer about the four-index quantity begin stored
+as well as unit-number data and prepares the lower-level dpdparams
+structure, opens the direct-access file, and writes the file header to disk. 
+
+The dpdshift struct is one of the more difficult elements to follow in the
+library, but perhaps one of the more useful.  The matrix-based storage of
+four-index quantities is always in a 2x2 format (i.e., the row and column 
+indices are both two-index composites).  However, sometimes that storage
+that is actually required is a 1x3 or 3x1 format.  For example, one may have
+stored the two-electron integrals in a bra-ket format (with pq labelling the
+rows and rs labelling the columns) but the equations may require a 1x3
+storage where the row index contains only p but the column index contains
+qrs.  The shift structure makes such non-conventional accessing of matrix
+elements possible without a re-sort of the integrals.  Given that a complete
+irrep of the integrals has been read into core (i.e., all integrals
+corresponding to G_pq = G_rs = h have been read from disk) the integrals may
+be accessed 

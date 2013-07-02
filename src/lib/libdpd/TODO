@@ -1,0 +1,16 @@
+Updated 6/29/00 by TDC.
+
+--- Rewrite all contractions involving a shift13 to avoid reassignment of
+pointers.
+
+--- Rewrite all contractions involving a shift31 to resort the data and use
+the BLAS DGEMM.
+
+--- Add checks for NULL pointers returned by dpd_block_matrix().  This will
+serve as the flag for out-of-core contraction algorithms.
+
+--- Add memcpy() or just a file pointer copy to "case 12" in
+dpd_buf4_mat_irrep_rd_block(), dpd_buf4_mat_irrep_wrt_block(),
+dpd_buf4_mat_irrep_row_rd(), dpd_buf4_mat_irrep_row_wrt(), others?
+
+--- Add documentation for file4_cache.c functions.

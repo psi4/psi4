@@ -1,0 +1,671 @@
+<html> <head>
+<title>LIBDPD --- The Direct-Product Decomposition Library</title>
+</head>
+
+<body>
+<hr>
+<center>
+<h1>Programmer's Manual for LIBDPD:<br> A Library for Including
+Spatial Symmetry in Quantum Chemistry Programs</h1>
+</center>
+
+<center>T. Daniel Crawford <br>
+Version: June 18, 2001 <br>
+<a href="mailto:crawdad@vt.edu">crawdad@vt.edu</a>
+</center><p>
+
+<hr>
+
+<h3>I. Introduction</h3>
+
+In many-body theories such as coupled cluster or MBPT, one finds many
+complicated algebraic expressions involving products of multi-index
+quantities such as one- and two-electron integrals, cluster
+amplitudes, density matrices, <em>etc.</em> Efficient evaluation of
+these products can require a great deal of effort, particularly if one
+wishes to use Abelian point-group symmetry to reduce the number of
+terms that must be computed and stored.  The direct-product
+decomposition library, LIBDPD, is designed to assist the programmer
+with this problem by providing (1) a symmetry-blocked, matrix-based
+storage scheme for all two- and four-index quantities, (2) a set of
+functions for evaluating various types of products among them, and (3)
+a set of utilities for sorting them to different index orderings. The
+library is currently used in the set of coupled cluster and
+perturbation theory energy and analytic gradient codes under
+development in the PSI package of quantum chemical programs.  This
+manual describes the design of the library and provides a set of
+examples for its use.  The header file <tt><font
+color=purple>dpd.h</font></tt> provides proper declarations for all
+structures and functions used in the library.
+
+<h3>II. Fundamental Symmetry Concepts</h3>
+
+In the current version of libdpd, I assume that all multi-index
+quantities are totally symmetric, <em>i.e.</em>, the direct product of
+the irreducible representations (irreps) associated with the component
+orbital indices corresponds to the totally symmetric irrep of the
+given point group.  (This assumption is in the process of being
+removed, however.) Furthermore, each orbital subset of interest
+(<em>e.g.</em>, occupied or virtual orbitals) must be grouped by
+symmetry.  This allows one to organize the given quantity in a
+symmetry-blocked matrix for which only the symmetry-allowed elements
+are actually stored on disk or in memory.
+
+As an example, consider the set of two-electron integrals (in
+antisymmetrized, Dirac notation) needed for the second-order MBPT
+energy expression, &#60;ij||ab&#62;, where i and j (a and b) represent
+occupied (virtual) orbitals.  In C<sub>2v</sub> symmetry, a given
+integral is zero unless the direct product of the four irreps
+corresponding to indices, i, j, a, and b is A<sub>1</sub>, that is
+<br><br> <center> <img
+src="http://zopyros.ccqc.uga.edu/Images/symbol_images/Gamma.gif"><sub>i</sub>
+&#215; <img
+src="http://zopyros.ccqc.uga.edu/Images/symbol_images/Gamma.gif"><sub>j</sub>
+&#215; <img
+src="http://zopyros.ccqc.uga.edu/Images/symbol_images/Gamma.gif"><sub>a</sub>
+&#215; <img
+src="http://zopyros.ccqc.uga.edu/Images/symbol_images/Gamma.gif"><sub>b</sub>
+= A<sub>1</sub>. </center><br>
+Since the direct product of any irrep with itself also gives the
+totally symmetric irrep, we may write
+<br><br><center> <img
+src="http://zopyros.ccqc.uga.edu/Images/symbol_images/Gamma.gif"><sub>i</sub>
+&#215; <img
+src="http://zopyros.ccqc.uga.edu/Images/symbol_images/Gamma.gif"><sub>j</sub>
+= <img
+src="http://zopyros.ccqc.uga.edu/Images/symbol_images/Gamma.gif"><sub>a</sub>
+&#215; <img
+src="http://zopyros.ccqc.uga.edu/Images/symbol_images/Gamma.gif"><sub>b</sub>
+</center><br>
+
+If we organize the occupied and virtual orbitals into symmetry groups,
+we may represent the storage of the complete list of &#60;ij||ab&#62;
+integrals as a block-diagonal supermatrix with the form <br><br>
+
+<center>
+<table width=80% border=1>
+<tr><td> </td><td> </td><td colspan=4 align=center>(a,b)</td></tr>
+
+<tr><td> </td><td> </td><td width=22% align=center>A<sub>1</sub></td><td
+align=center width=22%>A<sub>2</sub></td><td align=center width=22%>B<sub>1</sub></td><td
+align=center width=22%>B<sub>2</sub></td></tr>
+<tr></tr>
+<tr></tr>
+<tr><td> </td><td align=center>A<sub>1</sub></td> <td align=center> X
+</td><td align=center> 0 </td> <td align=center> 0 </td> <td
+align=center> 0 </td> </tr>
+<tr></tr>
+<tr></tr>
+<tr><td> </td><td align=center>A<sub>2</sub></td> <td align=center> 0
+</td><td align=center> X </td> <td align=center> 0 </td> <td
+align=center> 0 </td> </tr>
+<tr><td>(i,j)</td><td> </td><td> </td><td> </td><td> </td></tr>
+<tr><td> </td><td align=center>B<sub>1</sub></td> <td align=center> 0
+</td><td align=center> 0 </td> <td align=center> X </td> <td
+align=center> 0 </td> </tr>
+<tr></tr><tr></tr>
+<tr><td> </td><td align=center>B<sub>2</sub></td> <td align=center> 0
+</td><td align=center> 0 </td> <td align=center> 0 </td> <td
+align=center> X </td> </tr>
+</table>
+</center>
+<br>
+
+Here "X" and "0" indicate nonzero and zero submatrices, respectively,
+and the notation (p,q) is used to indicate the compound row or column
+indices.  The compound indices may be computed based on a knowledge of
+the permutational symmetry (or antisymmetry) of the index pairs; if
+the given integrals are antisymmetric with respect to permutation of i
+and j, for example, we may compute (i,j) from the individual indices
+keeping i&gt;j.  Since we may partition the indices into any grouping
+we desire, we may select any grouping of the indices to use as row and
+column indices.  For example, since <br><br><center> <img
+src="http://zopyros.ccqc.uga.edu/Images/symbol_images/Gamma.gif"><sub>i</sub>
+&#215; <img
+src="http://zopyros.ccqc.uga.edu/Images/symbol_images/Gamma.gif"><sub>j</sub>
+&#215; <img
+src="http://zopyros.ccqc.uga.edu/Images/symbol_images/Gamma.gif"><sub>a</sub>
+= <img
+src="http://zopyros.ccqc.uga.edu/Images/symbol_images/Gamma.gif"><sub>b</sub>
+</center><br>
+we could also construct a different supermatrix for these same
+integrals, using (i,j,a) as the compound row index and b as the column
+index.  These same concepts apply to any multi-index quantity.
+
+<h3>III. Library Initialization </h3>
+
+Before the library may be used, it must first be initialized
+<em>via</em> the <tt>dpd_init()</tt> function.  This function
+requires the following information (see <tt><font
+color=purple>dpd.h</font></tt> for proper syntax):<p>
+
+<tt><b><font color=darkblue>int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype, 
+int *cachefiles, int **cachelist, struct dpd_file4_cache_entry *priority, 
+int num_subspaces, int *orbspi, int *orbsym, ...);</font></b></tt>
+
+<ul>
+  <li> <tt>dpd_num</tt> - An integer identifier for the current DPD
+  setup.  Only two active DPD's are currently allowed, so this value
+  can be either 0 or 1.</li>
+  <li> <tt>nirreps</tt> - The number of irreducible representations in
+       the point group.</li>
+  <li> <tt>memory</tt> - The amount of available memory in bytes.</li>
+  <li> <tt>cachetype</tt> - The type of file cacheing desired (see below). If this
+  is 0, then a priority-based cache is used; if it's 1 then a
+  "least-recently-used" method is applied.</li>
+  <li> <tt>cachefiles</tt> - See below.</li>
+  <li> <tt>cachelist</tt> - See below.</li>
+  <li> <tt>priority</tt> - See below.</li>
+  <li> <tt>num_subspaces</tt> - The number of orbital subspaces to be
+       used.  If the programmer uses only occupied and virtual spaces,
+       for example, this would be set to 2.</li><br>
+
+       <br>For each value of <tt>num_subspaces</tt>, the following
+       two arrays must also be provided:<br><br>
+
+  <li> <tt>orbspi</tt> - An irrep population array,
+       <em>i.e.</em>, the number of orbitals per irrep in the current
+       subspace.</li>
+  <li> <tt>orbsym</tt> - An orbital symmetry array,
+       <em>i.e.</em>, the irrep value for each orbital in the current
+       subspace.</li>
+</ul>
+<p>
+
+For four-index quantities, the <tt>dpd_init()</tt> function
+pre-computes a number of orbital lookup arrays about all pairwise
+combinations of the given orbital subspaces, including information
+regarding possible permutational symmetry or antisymmetry among the
+orbitals.  <tt>libdpd</tt> then assigns a particular "pair number" to
+each possible combination of indices from the orbital subspace data
+provided to <tt>dpd_init()</tt>.  For example, given only occupied and
+virtual orbital subspaces (as would be the case for RHF and ROHF
+reference wave functions), <tt>libdpd</tt> will automatically
+construct the following twelve possible index pairings:<p>
+
+<center>
+<table width=80% border=1> <tr><td>Pair #</td><td>Left
+Subspace</td><td>Right Subspace</td><td>Permutational
+Symmetry</td><td>Index Packing</td></tr>
+
+<tr><td>0</td><td>occupied</td><td>occupied</td><td>None</td><td>All p,q</td></tr>
+
+<tr><td>1</td><td>occupied</td><td>occupied</td><td>Symmetric</td><td>p&gt;q</td></tr>
+
+<tr><td>2</td><td>occupied</td><td>occupied</td><td>Antisymmetric</td><td>p&gt;q</td></tr>
+
+<tr><td>3</td><td>occupied</td><td>occupied</td><td>Symmetric</td><td>p&gt;=q</td></tr>
+
+<tr><td>4</td><td>occupied</td><td>occupied</td><td>Antisymmetric</td><td>p&gt;=q</td></tr>
+
+<tr><td>5</td><td>virtual</td><td>virtual</td><td>None</td><td>All p,q</td></tr>
+
+<tr><td>6</td><td>virtual</td><td>virtual</td><td>Symmetric</td><td>p&gt;q</td></tr>
+
+<tr><td>7</td><td>virtual</td><td>virtual</td><td>Antisymmetric</td><td>p&gt;q</td></tr>
+
+<tr><td>8</td><td>virtual</td><td>virtual</td><td>Symmetric</td><td>p&gt;=q</td></tr>
+
+<tr><td>9</td><td>virtual</td><td>virtual</td><td>Antisymmetric</td><td>p&gt;=q</td></tr>
+
+<tr><td>10</td><td>occupied</td><td>virtual</td><td>None</td><td>All p,q</td></tr>
+
+<tr><td>11</td><td>virtual</td><td>occupied</td><td>None</td><td>All p,q</td></tr>
+</table>
+</center>
+<p>
+
+Given the two-electron integral group &lt;ij||ab&gt; for example, we
+may wish to store these integrals in a matrix with the compound row
+index (i,j) and compound column index (a,b), as described earlier.
+Furthermore, since these integrals have perumtational antiysmmetry
+between indices i and j and between indices a and b, we may wish to
+store the integrals in a manner which avoids redundancy.  To do this,
+we must choose from the above table the appropriate pair number for
+the row and column compound indices which reflects the desired
+permutational antisymmetry and index packing characteristics.  For the
+current example, we would choose pair #2 for the row index and pair #7
+for the column index (so that the i=j and a=b terms, which are zero,
+would be omitted from storage).  On the other hand, if we wished to
+store the "normal" Dirac notation integrals &lt;ia|jk&gt;, which
+contain three occupied indices and do not have permutational symmetry,
+we would choose pair #10 for the row index and pair #0 for the column
+index.<p>
+
+For UHF references, for example, where one must use <i>four</i>
+orbital subspaces (alpha occupied, alpha virtual, beta occupied, and
+bet virtual) <tt>libdpd</tt> will automatically construct the
+following 32 possible index pairings:</p>
+
+<center>
+<table width=80% border=1> <tr><td>Pair #</td><td>Left
+Subspace</td><td>Right Subspace</td><td>Permutational
+Symmetry</td><td>Index Packing (Shorthand)</td></tr>
+
+<tr><td>0</td><td>alpha occupied</td><td>alpha occupied</td><td>None</td><td>I,J</td></tr>
+
+<tr><td>1</td><td>alpha occupied</td><td>alpha occupied</td><td>Symmetric</td><td>I&gt;J</td></tr>
+
+<tr><td>2</td><td>alpha occupied</td><td>alpha occupied</td><td>Antisymmetric</td><td>I&gt;J</td></tr>
+
+<tr><td>3</td><td>alpha occupied</td><td>alpha occupied</td><td>Symmetric</td><td>I&gt;=J</td></tr>
+
+<tr><td>4</td><td>alpha occupied</td><td>alpha occupied</td><td>Antisymmetric</td><td>I&gt;=J</td></tr>
+
+<tr><td>5</td><td>alpha virtual</td><td>alpha virtual</td><td>None</td><td>A,B</td></tr>
+
+<tr><td>6</td><td>alpha virtual</td><td>alpha virtual</td><td>Symmetric</td><td>A&gt;B</td></tr>
+
+<tr><td>7</td><td>alpha virtual</td><td>alpha virtual</td><td>Antisymmetric</td><td>A&gt;B</td></tr>
+
+<tr><td>8</td><td>alpha virtual</td><td>alpha virtual</td><td>Symmetric</td><td>A&gt;=B</td></tr>
+
+<tr><td>9</td><td>alpha virtual</td><td>alpha virtual</td><td>Antisymmetric</td><td>A&gt;=B</td></tr>
+
+<tr><td>10</td><td>beta occupied</td><td>beta occupied</td><td>None</td><td>i,j</td></tr>
+
+<tr><td>11</td><td>beta occupied</td><td>beta occupied</td><td>Symmetric</td><td>i&gt;j</td></tr>
+
+<tr><td>12</td><td>beta occupied</td><td>beta occupied</td><td>Antisymmetric</td><td>i&gt;j</td></tr>
+
+<tr><td>13</td><td>beta occupied</td><td>beta occupied</td><td>Symmetric</td><td>i&gt;=j</td></tr>
+
+<tr><td>14</td><td>beta occupied</td><td>beta occupied</td><td>Antisymmetric</td><td>i&gt;=j</td></tr>
+
+<tr><td>15</td><td>beta virtual</td><td>beta virtual</td><td>None</td><td>a,b</td></tr>
+
+<tr><td>16</td><td>beta virtual</td><td>beta virtual</td><td>Symmetric</td><td>a&gt;b</td></tr>
+
+<tr><td>17</td><td>beta virtual</td><td>beta virtual</td><td>Antisymmetric</td><td>a&gt;b</td></tr>
+
+<tr><td>18</td><td>beta virtual</td><td>beta virtual</td><td>Symmetric</td><td>a&gt;=b</td></tr>
+
+<tr><td>19</td><td>beta virtual</td><td>beta virtual</td><td>Antisymmetric</td><td>a&gt;=b</td></tr>
+
+<tr><td>20</td><td>alpha occupied</td><td>alpha virtual</td><td>None</td><td>I,A</td></tr>
+
+<tr><td>21</td><td>alpha virtual</td><td>alpha occupied</td><td>None</td><td>A,I</td></tr>
+
+<tr><td>22</td><td>alpha occupied</td><td>beta occupied</td><td>None</td><td>I,j</td></tr>
+
+<tr><td>23</td><td>beta occupied</td><td>alpha occupied</td><td>None</td><td>j,I</td></tr>
+
+<tr><td>24</td><td>alpha occupied</td><td>beta virtual</td><td>None</td><td>I,a</td></tr>
+
+<tr><td>25</td><td>beta virtual</td><td>alpha occupied</td><td>None</td><td>a,I</td></tr>
+
+<tr><td>26</td><td>alpha virtual</td><td>beta occupied</td><td>None</td><td>A,i</td></tr>
+
+<tr><td>27</td><td>beta occupied</td><td>alpha virtual</td><td>None</td><td>i,A</td></tr>
+
+<tr><td>28</td><td>alpha virtual</td><td>beta virtual</td><td>None</td><td>A,b</td></tr>
+
+<tr><td>29</td><td>beta virtual</td><td>alpha virtual</td><td>None</td><td>b,A</td></tr>
+
+<tr><td>30</td><td>beta occupied</td><td>beta virtual</td><td>None</td><td>i,a</td></tr>
+
+<tr><td>31</td><td>beta virtual</td><td>beta occupied</td><td>None</td><td>a,i</td></tr>
+</table>
+</center>
+<p>
+
+
+When the program is finished with all <tt>libdpd</tt> tasks, the
+global memory used by the library is deallocated using the
+<tt><b><font color=darkblue>int dpd_close(int dpdnum)</font></b></tt>
+function, which takes the DPD id as its argument.<p>
+
+<h3>IV. Basic Data Structures and Storage Hierarchy</h3>
+
+Since one may need to store a given quantity in memory in a manner
+different from that which is used on disk (<em>e.g.</em>, one may need
+to pack or unpack indices), the library distinguishes between on-disk
+and in-memory storage of four-index quantities.  For example, one
+might choose to store &lt;ij|ab&gt; integrals on disk using an
+(i,j)x(a,b) matrix with all values of i, j, a, and b (pair numbers 0
+and 5 from the previous section).  However, these can be automatically
+antisymmetrized as they are read into memory and the resulting
+&lt;ij||ab&gt; stored in a packed form with i&gt;j and a&gt;b.  This
+section described the basic storage hierarchy that automates this
+process.
+
+For a general four-index quantity with dummy indices p, q, r, and s,
+the storage of the data (whether on disk or in memory) is defined by
+the <tt>dpdparams4</tt> structure.  Although the programmer should
+almost always be able to avoid direct interaction with the
+<tt>dpdparams4</tt> structure, the library isn't perfectly
+object-oriented and so access may be necessary in some cases.  The
+structure contains the following information:
+
+<pre><font color=green>
+typedef struct {
+    int nirreps;   <font color=red>   /* No. of irreps */</font>
+    int pqnum;     <font color=red>   /* Pair number for the row indices */</font>
+    int rsnum;     <font color=red>   /* Pair number for the column indices */</font>
+    int *rowtot;   <font color=red>   /* Row dimension for each submatrix */</font>
+    int *coltot;   <font color=red>   /* Column dimension for each submatrix */</font>
+    int **rowidx;  <font color=red>   /* Row index lookup array */</font>
+    int **colidx;  <font color=red>   /* Column index lookup array */</font>
+    int ***roworb; <font color=red>   /* Row index -> orbital index lookup array */</font>
+    int ***colorb; <font color=red>   /* Column index -> orbital index lookup array */</font>
+    int *ppi;      <font color=red>   /* Number of p indices per irrep */</font>
+    int *qpi;      <font color=red>   /* Number of q indices per irrep */</font>
+    int *rpi;      <font color=red>   /* Number of r indices per irrep */</font>
+    int *spi;      <font color=red>   /* Number of s indices per irrep */</font>
+    int *poff;     <font color=red>   /* Orbital offset for p */</font>
+    int *qoff;     <font color=red>   /* Orbital offset for q */</font>
+    int *roff;     <font color=red>   /* Orbital offset for r */</font>
+    int *soff;     <font color=red>   /* Orbital offset for s */</font>
+    int *psym;     <font color=red>   /* Orbital symmetry for index p */</font>
+    int *qsym;     <font color=red>   /* Orbital symmetry for index q */</font>
+    int *rsym;     <font color=red>   /* Orbital symmetry for index r */</font>
+    int *ssym;     <font color=red>   /* Orbital symmetry for index s */</font>
+    int perm_pq;   <font color=red>   /* Can p and q be permuted? (Boolean) */</font>
+    int perm_rs;   <font color=red>   /* Can r and s be permuted? (Boolean) */</font>
+    int peq;       <font color=red>   /* Can p and q be equal?  (Boolean) */</font>
+    int res;       <font color=red>   /* Can r and s be equal? (Boolean) */</font>
+} dpdparams4;
+</font></pre>
+
+It should be noted that the <tt>rowidx</tt> and <tt>colidx</tt> arrays
+require <em>absolute</em> orbital indices (within the appropriate
+subspace, of course), and <tt>rowborb</tt> and <tt>colorb</tt> arrays
+return absolute orbital indices. The offset arrays, <tt>poff</tt>,
+<tt>qoff</tt>, etc. may be used to compute the absolute indices from
+irrep-relative indices using a function of the form <tt>pabs =
+poff[irrep] + prel</tt>, where <tt>pabs</tt> is the absolute index and
+<tt>prel</tt> is the index within <tt>irrep</tt>.<p>
+
+For two-index quantities, the corresponding storage structure is:
+
+<pre><font color=green>
+typedef struct {
+    int nirreps;   <font color=red>   /* No. of irreps */</font>
+    int pnum;      <font color=red>   /* Orbital subspace for p */</font>
+    int qnum;      <font color=red>   /* Orbital subspace for q */</font>
+    int *rowtot;   <font color=red>   /* Row dimension for each submatrix */</font>
+    int *coltot;   <font color=red>   /* Column dimension for each submatrix */</font>
+    int *rowidx;   <font color=red>   /* Row index lookup array */</font>
+    int *colidx;   <font color=red>   /* Column index lookup array */</font>
+    int **roworb;  <font color=red>   /* Row index -> orbital index lookup array */</font>
+    int **colorb;  <font color=red>   /* Column index -> orbital index lookup array */</font>
+    int *ppi;      <font color=red>   /* Number of p indices per irrep */</font>
+    int *qpi;      <font color=red>   /* Number of q indices per irrep */</font>
+    int *poff;     <font color=red>   /* Orbital offset for p */</font>
+    int *qoff;     <font color=red>   /* Orbital offset for q */</font>
+    int *psym;     <font color=red>   /* Orbital symmetry for index p */</font>
+    int *qsym;     <font color=red>   /* Orbital symmetry for index q */</font>
+} dpdparams2;
+</font></pre>
+
+The library interacts with data stored on disk <em>via</em> the
+<tt>dpdfile4</tt> and <tt>dpdfile2</tt> structures, which have
+<tt>dpdparams4</tt> and <tt>dpdparams2</tt> structures, respectively,
+as members:
+
+<pre><font color=green>
+typedef struct {
+    char label[PSIO_KEYLEN]; <font color=red> /* Label needed by the I/O routines */</font>
+    int filenum;            <font color=red>  /* The PSI unit number */</font>
+    int my_irrep;           <font color=red>  /* Total irrep of this quantity */ </font>
+    psio_address *lfiles;   <font color=red>  /* The disk address of each irrep of data */</font>
+    dpdparams4 *params;     <font color=red>  /* The current parameter structure */</font>
+    int incore;             <font color=red>  /* Is this file4 already in memory? */ </font>
+    double ***matrix;       <font color=red>  /* Data */</font>
+} dpdfile4;
+</font></pre>
+
+The one-electron (two-index) counterpart of <tt>dpdfile4</tt> is:
+<pre>
+<font color=green>
+typedef struct {
+    char label[PSIO_KEYLEN]; <font color=red>    /* Label needed by the I/O routines */</font>
+    int filenum;   <font color=red>              /* The PSI unit number */</font>
+    int my_irrep    <font color=red>             /* The total irrep of this quantity */ </font>
+    psio_address *lfiles;  <font color=red>      /* The disk address of each irrep of data */</font>
+    dpdparams2 *params;         <font color=red> /* The current parameter structure */</font>
+    int incore;               <font color=red>   /* Is this file2 already in memory? */ </font>
+    double ***matrix;   <font color=red>         /* Data */</font>
+} dpdfile2;
+</font>
+</pre>
+
+As described above, one may need to store a given quantity in memory
+in a manner different from that which is used on disk.  The library
+distinguishes between on-disk and in-memory storage using the
+<tt>dpdbuf4</tt> structure (for four-index quantities only), which has
+a corresponding <tt>dpdfile4</tt> as a member:<p>
+
+<pre><font color=green>
+typedef struct {
+    int anti;                <font color=red> /* Boolean for on-the-fly antisymmetrization */</font>
+    dpdparams4 *params;      <font color=red> /* Parameters for in-memory storage */</font>
+    dpdfile4 file;           <font color=red> /* Structure for on-disk storage */</font>
+    dpdshift4 shift;         <font color=red> /* Structure for left or right index shifting */</font>
+    double ***matrix;        <font color=red> /* Data */</font>
+} dpdbuf4;
+</font></pre>
+
+The <tt>dpdbuf4</tt> struct is the most common way by which data are
+transferred between disk and memory.  The buffers are initialized using
+the <tt>dpd_buf4_init()</tt> function, which takes the following
+arguments (see <tt><font color=purple>dpd.h</font></tt> for the proper
+syntax):<p>
+
+<tt><b><font color=darkblue>int dpd_buf4_init(dpdbuf4 *Buf, int
+inputfile, int pqnum, int rsnum, int file_pqnum, int file_rsnum, int
+anti, char *label);</font></b></tt>
+
+<ul>
+  <li> <tt>Buf</tt> - A pointer to the <tt>dpdbuf</tt>.</li>
+  <li> <tt>inputfile</tt> - The PSI I/O unit number where the data are (to be)
+       stored.</li>
+  <li> <tt>irrep</tt> - The total irrep of the current quantity.  Usually 0 (A1).</li>
+  <li> <tt>pqnum</tt> - The pair number for the row indices as they will appear
+       in memory.</li>
+  <li> <tt>rsnum</tt> - The pair number for the column indices as they will
+       appear in memory.</li>
+  <li> <tt>file_pqnum</tt> - The pair number for the row indices as they (will)
+       appear on disk.</li>
+  <li> <tt>file_rsnum</tt> - The pair number for the column indices as they
+       (will) appear on disk.</li>
+  <li> <tt>anti</tt> - A boolean which indicates to the low-level read
+       functions that the data on disk must be antisymmetrized as it
+       is read into memory.  This is done by reading all (r,s) for a
+       given (p,q) (a row of the supermatrix) and then forming I(pq,rs)
+       = I(pq,rs) - I(pq,sr) on the fly.
+  <li> <tt>label</tt> - The PSI I/O table-of-contents string label which
+       identifies the data on disk.
+</ul>
+
+For example, consider again the Dirac-notation integrals &lt;ij|ab&gt;
+(which are not antisymmetrized) which are already stored on disk.  If
+we wish to read the antisymmetrized form of these integrals into
+memory but to also pack the i and j indices (<em>i.e.</em> keep
+i&gt;j), we might call <tt>dpd_buf4_init()</tt> in the following
+manner:<p>
+
+<tt><b><font color=darkblue>
+dpd_buf4_init(Buffer, PSIFILE, 0, 2, 5, 0, 5, 1, "&lt;ij|ab&gt; integrals");
+</font></b></tt><p>
+
+These argument indicate that while the integrals are stored as
+(pqnum,rsnum) = (0, 5) on disk, they will be stored in memory as (2,
+5), with the row indices packed.  In addition, the data will be
+antisymmetrized as it is read into memory.  Note, however, that the
+<tt>libdpd</tt> routines do not make sure that your intialization
+request makes sense (apart from some pre-processor defined debugging
+in a few high-level functions), and it is quite possible to
+erroneously pack indices for non-(anti)symmetric quantities.<p>
+
+When the program is finished with a given buffer, the <tt><b><font
+color=darkblue>int dpd_buf4_close(dpdbuf4 *Buf)</font></b></tt>
+function is called to deallocate the associated memory.
+
+<h3>V. Contraction Evaluation</h3>
+
+The library provides a number of high-level functions for evaluating a
+variety of products among two- and four-index buffers.  This section
+outlines these functions and provides simple examples of their use.<p>
+
+<tt><b><font color=darkblue>int dpd_contract444(dpdbuf4 *X,
+dpdbuf4 *Y, dpdbuf4 *Z, int target_X, int target_Y, double
+alpha, double beta):</font></b></tt>
+This function contracts two four-index buffers, <tt>X</tt> and
+<tt>Y</tt>, into a target four-index buffer, <tt>Z</tt>, using the
+general formula, <tt>alpha * X(pq,mn) * Y(mn,rs) = beta *
+Z(pq,rs)</tt>.  The current version of this function requires that the
+target (external) indices must both be contained in the bra (row) or
+ket (column) of <tt>X</tt> and <tt>Y</tt>.  The value of
+<tt>target_X</tt> indicates that the target indices of <tt>X</tt> are
+contained in its bra (0) or its ket (1); <tt>target_Y</tt> is defined
+similarly.<p>
+
+For example, we may use <tt>dpd_contract444()</tt> to evaluate the
+following contraction found in the T<sub>2</sub> amplitude equations
+from coupled cluster theory:<p>
+
+<center>
+t<sub>ij</sub><sup>ab</sup> = t<sub>ij</sub><sup>cd</sup> &lt;ab||cd&gt;
+</center><p>
+
+(A summation over the repeated indices c and d is implied.)  Assuming
+that the &lt;ab|cd&gt; integrals exist on disk in a (pqnum,rsnum) =
+(5,5) format and the right-hand-side T amplitudes exist on disk in a
+(2,7) format (with i&gt;j and c&gt;d), the following code block will
+evaluate this contraction (ignoring the complications of spin
+factors):<p>
+<pre><font color=darkblue><font color=red>   #include &lt;dpd.h&gt;</font>
+
+<font color=green>   dpdbuf4 T2, T2new, Ints;</font>
+
+   dpd_buf4_init(&T2, T2FILE, 0, 2, 7, 2, 7, 0, "T2(ij,ab)");
+   dpd_buf4_init(&T2new, T2newFile, 0, 2, 7, 2, 7, 0, "T2new(ij,ab)");
+   dpd_buf4_init(&Ints, INTSFILE, 0, 7, 7, 5, 5, 1, "&lt;ab|cd&gt; integrals");
+   dpd_contract444(&T2, &Ints, &T2new, 0, 1, 1.0, 1.0);
+   dpd_buf4_close(&Ints);
+   dpd_buf4_close(&T2new);
+   dpd_buf4_close(&T2);
+</font></pre>
+<p>
+
+The <tt>dpd_contract444()</tt> function will allocate memory for a
+single symmetry block of each of the two factors (<tt>T2</tt> and
+<tt>Ints</tt>) as well as for the target (<tt>T2new</tt>).  It then
+reads the data from disk for each buffer (including antisymmetrization
+and index packing for <tt>Ints</tt>), and then carries our the matrix
+multiplication.  The current symmetry block of the product
+<tt>T2new</tt> is then written out to disk and the memory for all
+three buffers is deallocated.  This procedure is repeated for all
+irreps.<p>
+
+<tt><b><font color=darkblue>int dpd_contract424(dpdbuf4 *X, dpdfile2
+*Y, dpdbuf4 *Z, int sum_X, int sum_Y, int trans_Z, double alpha,
+double beta):</font></b></tt> This function evaluates contractions of
+the form <tt>alpha * X(pq,rm) * Y(m,s) = beta * Z(pq,rs)</tt>.  The
+summation index on <tt>X</tt> and <tt>Y</tt> is identified using
+<tt>sum_X</tt> and <tt>sum_Y</tt>, respectively, and the function
+automatically takes care of any sorting needed to shift the indices
+into appropriate ordering for matrix multiplication.  In addition, the
+target, <tt>Z</tt> may be transposed using the <tt>trans_Z</tt>
+flag.<p>
+
+<tt><b><font color=darkblue>int dpd_contract244(dpdfile2 *X, dpdbuf4
+*Y, dpdbuf4 *Z, int sum_X, int sum_Y, int trans_Z, double alpha,
+double beta):</font></b></tt> This function evaluates contractions of
+the form <tt>alpha * X(p,m) * Y(mq,rs) = beta * Z(pq,rs)</tt>.  The
+summation index on <tt>X</tt> and <tt>Y</tt> is identified using
+<tt>sum_X</tt> and <tt>sum_Y</tt>, respectively, and the function
+automatically takes care of any sorting needed to shift the indices
+into appropriate ordering for matrix multiplication.  In addition, the
+target, <tt>Z</tt> may be transposed using the <tt>trans_Z</tt>
+flag.<p>
+
+<tt><b><font color=darkblue>int dpd_contract222(dpdfile2 *X, dpdfile2
+*Y, dpdfile2 *Z, int target_X, int target_Y, double alpha, double
+beta):</font></b></tt> This function evaluates contractions of the
+form <tt>alpha * X(p,m) * Y(m,q) = beta * Z(p,q)</tt>.  The target
+indices on <tt>X</tt> and <tt>Y</tt> are identified using
+<tt>target_X</tt> and <tt>target_Y</tt>, respectively.<p>
+
+<tt><b><font color=darkblue>int dpd_contract422(dpdbuf4 *X, dpdfile2
+*Y, dpdfile2 *Z, int trans_Y, int trans_Z, double alpha, double
+beta):</font></b></tt> This function evaluates contractions of the
+form <tt>alpha * X(pq,mn) * Y(m,n) = beta * Z(p,q)</tt>.  The bra
+indices on <tt>X</tt> must be the target indices and both indices of
+<tt>Y</tt> must be summed (of course).  The target, <tt>Z</tt>, may be
+transposed using the <tt>trans_Z</tt> flag.<p>
+
+<tt><b><font color=darkblue>int dpd_contract442(dpdbuf4 *X, dpdbuf4
+*Y, dpdfile2 *Z, int target_X, int target_Y, double alpha, double
+beta):</font></b></tt> This function evaluates contractions of the
+form <tt>alpha * X(pm,no) * Y(mn,oq) = beta * Z(p,q)</tt>.  The target
+indices on <tt>X</tt> and <tt>Y</tt> are identified using
+<tt>target_X</tt> and <tt>target_Y</tt>, respectively, and these
+factors are automatically sorted to the appropriate ordering for
+matrix multiplication to form <tt>Z</tt>.<p>
+
+<tt><b><font color=darkblue>int dpd_dot23(dpdfile2 *T, dpdbuf4 *I,
+dpdfile2 *Z, int transt, int transz, double alpha, double
+beta):</font></b></tt> This function evaluates contractions of the
+form <tt>alpha * T(q,r) * I(pq,rs) = beta * Z(p,s)</tt>, where the
+summation indices correspond to indices 2 and 3 on the four-index
+factor.  The <tt>transt</tt> and <tt>transz</tt> flags may be used to
+transpose the indices of the factor <tt>T</tt> or the target
+<tt>Z</tt>, as desired.  Similar functions exist for other index
+patterns, including <tt><b><font
+color=darkblue>dpd_dot13()</font></b></tt>, <tt><b><font
+color=darkblue>dpd_dot14()</font></b></tt>, and <tt><b><font
+color=darkblue>dpd_dot24()</font></b></tt>.<p>
+
+<tt><b><font color=darkblue>double dpd_buf4_dot(dpdbuf4 *BufA, dpdbuf4
+*BufB):</font></b></tt> This function evaluates a dot product between
+two four-index buffers.  That is, the function evaluates the sum of
+the products of coresponding elements of the two buffers.<p>
+
+<tt><b><font color=darkblue>int dpd_buf4_dirprd(dpdbuf4 *BufA, dpdbuf4
+*BufB):</font></b></tt> This function evaluates a direct product
+between two four-index buffers and places the output in <tt>BufB</tt>.
+That is, the function evaluates each of the products of coresponding
+elements of the two buffers and places the result in the second
+buffer.<p>
+
+<tt><b><font color=darkblue>int dpd_buf4_axpy(dpdbuf4 *BufX, dpdbuf4
+*BufY, double alpha):</font></b></tt> This function evaluates the
+standard "axpy" function, <tt>alpha * X(pq,rs) + Y(pq,rs) =
+Y(pq,rs)</tt>.<p>
+
+<h3>VI. Sorting Utilities</h3>
+
+There also exist a number of utilities for sorting two- and
+four-index quantities to various arrangements.
+
+<tt><b><font color=darkblue>int dpd_buf4_sort(dpdbuf4 *InBuf, int
+outfilenum, enum indices index, int pqnum, int rsnum, char
+*label):</font></b></tt> This function takes a given four-index
+<tt>InBuf</tt> and reorders indices according to the <tt>index</tt>
+variable, placing the result in <tt>outfilenum</tt> with pair values
+<tt>pqnum</tt> and <tt>rsnum</tt>.  The argument <tt>index</tt> is an
+enumerated type with possible values:
+
+<pre><font color=green>
+enum indices {pqrs, pqsr, prqs, prsq, psqr, psrq,
+	      qprs, qpsr, qrps, qrsp, qspr, qsrp,
+	      rqps, rqsp, rpqs, rpsq, rsqp, rspq,
+	      sqrp, sqpr, srqp, srpq, spqr, sprq};
+</font>
+</pre>
+<p>
+
+<tt><b><font color=darkblue>int dpd_buf4_copy(dpdbuf4 *InBuf, int
+outfilenum, char *label):</font></b></tt> This function copies a given
+buffer onto a new disk location identified by <tt>outfilenum</tt> and
+<tt>label</tt>.<p>
+
+<hr>
+<address><a
+href="http://www.chem.vt.edu/chem-dept/crawford/">T. Daniel
+Crawford</a>&#160; / <a
+href="mailto:crawdad@vt.edu">crawdad@vt.edu</a></address>
+<!-- hhmts start --> Last modified: Mon Jun 18 17:33:08 2001 <!--
+hhmts end --> </body> </html>

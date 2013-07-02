@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# The first argument is the name of a file.  If the
+# subversion keyword property is not set it sets it.
+
+(svn propget svn:keyword $1 2>&1 | grep -q Id)||(svn propset svn:keyword Id $1)
+
+

@@ -1,0 +1,21 @@
+PROGS="hello hatom_energy h2 he heat heat2 csqrt sdf_shape_tester test_gmres nonlinschro sininteg functionio laplace_sphere testpot"
+
+for prog in $PROGS
+do
+  echo ""
+  echo "Running $prog"
+  echo ""
+  time ./$prog
+done
+
+echo ""
+echo "Running interior_dirichlet 0.2 0"
+echo ""
+./interior_dirichlet 0.2 0
+
+echo ""
+echo dataloadbal requires circa 50 processors to illustrate loadbalancing
+echo vnucso is a little too big for most machines
+echo tdse and tdse1d are long and boring unless you are really interested in them
+echo ""
+

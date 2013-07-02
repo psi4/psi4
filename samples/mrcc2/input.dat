@@ -1,0 +1,20 @@
+#! CCSDT(Q) cc-pVDZ energy for the H2O molecule using MRCC.
+#! This example builds up from CCSD. First CCSD, then CCSDT,
+#! finally CCSDT(Q).
+
+memory 500 mb
+
+molecule h2o {
+    o
+    h 1 1.0
+    h 1 1.0 2 104.5
+}
+
+set {
+    basis cc-pvdz
+    freeze_core true
+    mrcc_restart 2
+}
+
+energy('mrccsdt(q)')
+

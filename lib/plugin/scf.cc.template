@@ -1,0 +1,110 @@
+#include <libplugin/plugin.h>
+#include <psi4-dec.h>
+#include <liboptions/liboptions.h>
+#include <libmints/mints.h>
+#include <scf.h>
+
+INIT_PLUGIN
+
+namespace psi{ namespace @plugin@ {
+
+extern "C"
+int read_options(std::string name, Options &options)
+{
+    if (name == "@PLUGIN@"|| options.read_globals()) {
+        /*- The amount of information printed
+            to the output file -*/
+        options.add_int("PRINT", 1);
+        /*- How tightly to converge the energy -*/
+        options.add_double("E_CONVERGENCE", 1.0E-10);
+        /*- How tightly to converge the density -*/
+        options.add_double("D_CONVERGENCE", 1.0E-6);
+        /*- How many iteration to allow -*/
+        options.add_int("SCF_MAXITER", 50);
+    }
+
+    return true;
+}
+
+extern "C"
+PsiReturnType @plugin@(Options &options)
+{
+
+    // Start with some demos of the matrix toolkit (no symmetry in this case)
+    if(options.get_int("PRINT") > 5){
+        // Make a 3 X 3 matrix
+        SharedMatrix matrix(new Matrix("A Matrix", 3, 3));
+        // Make a vector of length 3
+        SharedVector vector(new Vector("A Vector", 3));
+        // vector = [ 1, 2, 3 ]
+        for(int i = 0; i < 3; ++i)
+            vector->set(i, i+1);
+        fprintf(outfile, "After creating\n");
+        vector->print();
+        matrix->print();
+
+        // Assign the elements of the vector to the diagonal of matrix
+        matrix->set_diagonal(vector);
+        fprintf(outfile, "After assigning the diagonals\n");
+        matrix->print();
+
+        // Try some matrix multiplies
+        SharedMatrix identity(new Matrix("Identity", 3, 3));
+        SharedMatrix new_matrix(new Matrix("New Matrix", 3, 3));
+        identity->identity();
+        identity->scale(2.0);
+        new_matrix->gemm(false, false, 1.0, identity, matrix, 0.0);
+        fprintf(outfile, "The product, from the built-in function");
+        new_matrix->print();
+        // Now, do the same by hand
+        for(int row = 0; row < 3; ++row){
+            for(int col = 0; col < 0; ++col){
+                double val = 0.0;
+                for(int link = 0; link < 3; ++link){
+                    val += identity->get(row, link) * matrix->get(row, link);
+                }
+                new_matrix->set(row, col, val);
+            }
+        }
+        fprintf(outfile, "The product, from the hand computed version");
+        matrix->print();
+
+        // Now diagonalize the matrix, ordering by ascending order of eigenvalues
+        SharedMatrix evecs(new Matrix("Matrix Eigenvectors", 3, 3));
+        SharedVector evals(new Vector("Matrix Eigenvalues", 3));
+        matrix->diagonalize(evecs, evals, ascending);
+        fprintf(outfile, "After diagonalizing\n");
+        matrix->print();
+        evecs->print();
+        evals->print();
+        
+        // Compute U(t) D U, where U are the eigenvectors and D has the evals on the diagonal
+        // and (t) means the transpose. This should, yield the original matrix
+        // First, the hard(er) way
+        SharedMatrix D(new Matrix("D (Evals on diagonal)", 3, 3));
+        D->set_diagonal(evals);
+        SharedMatrix DU(new Matrix("D X U", 3, 3));
+        DU->gemm(false, false, 1.0, D, evecs, 0.0);
+        matrix->gemm(true, false, 1.0, evecs, DU, 0.0);
+        fprintf(outfile, "Matrix Reconstructed from the evecs/evals (the hard way)\n");
+        matrix->print();
+        // Now the easy way.  If we wanted U D U(t), we would call back_transform instead
+        // Also, D->transform(evecs) would do the same thing, but store the result in D itself.
+        matrix->transform(D, evecs);
+        fprintf(outfile, "Matrix Reconstructed from the evecs/evals (the easy way)\n");
+        matrix->print();
+
+        // Finally, zero out the matrix
+        matrix->zero();
+        fprintf(outfile, "After zeroing\n");
+        matrix->print();
+    }
+
+    // Build an SCF object, and tell it to compute its energy
+    SCF scf(options);
+    scf.compute_energy();
+
+    return Success;
+}
+
+}} // End Namespaces

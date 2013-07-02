@@ -1,0 +1,37 @@
+#! DCFT DC-06 gradient for the O2 molecule with cc-pVDZ basis set
+
+
+memory 250 mb
+
+molecule o2 {
+0 3
+O
+O 1 R
+
+units bohr
+R = 2.400
+}
+
+set {
+  basis           cc-pvdz
+  algorithm       simultaneous
+  ao_basis        none
+  dcft_functional dc-06
+  r_convergence   11
+}
+
+gradient('dcft')
+
+
+set algorithm qc
+gradient('dcft')
+
+
+set algorithm simultaneous
+set dcft_functional odc-06
+gradient('dcft')
+
+
+set dcft_functional odc-12
+gradient('dcft')
+

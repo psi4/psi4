@@ -1,0 +1,9 @@
+set terminal postscript
+set output 'fciplot.PS'
+set logscale
+set title "Timings for Full CI Benchmarks"
+set xlabel "Number of Determinants"                 
+set ylabel "Time per iteration (seconds)"           
+set key 25000000,1
+plot 't1.dat' title "GUGACI", 't2.dat' title "DETCI"
+

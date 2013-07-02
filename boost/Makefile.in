@@ -1,0 +1,28 @@
+srcdir = @srcdir@
+dont_compile_boost = @have_boost@
+
+PYTHON = @PYTHON@
+BOOSTVER = @BOOSTVER@
+
+all: default
+default: boost.compiled
+
+install:
+
+clean:
+	rm -f boost.compiled
+
+dclean:
+
+# Steps taken:
+#  1. If directory BOOSTVER does not exist, untar the source file.
+#  2. Build Boost with the components we need and move the libraries to a
+#     central location (bin.v2/libs)
+#  3. Touch the target file so that the above dependencies will be fulfilled.
+boost.compiled:
+ifeq ($(dont_compile_boost),0)
+	if [ ! -d $(BOOSTVER) ]; then tar zxf $(srcdir)/$(BOOSTVER).tar.gz; fi
+	(cd $(BOOSTVER) && ./bootstrap.sh --with-libraries=filesystem,python,regex,serialization,system,thread --with-python=$(PYTHON) && ./b2 && cd bin.v2/libs && find . -name '*.a' -exec cp {} . \;)
+	touch boost.compiled
+endif
+

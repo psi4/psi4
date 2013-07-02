@@ -1,0 +1,504 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-beta1 Driver
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! Symmetry tests for a range of molecules.  This doesn't actually compute any energies, but
+#! serves as an example of the many ways to specify geometries in Psi4.
+
+memory 250 mb
+
+# DinftyH Symmetry (D2h Abelian)
+molecule C2H2 {
+   C 0 0  r1
+   C 0 0 -r1
+   H 0 0  r2
+   H 0 0 -r2
+   r1 = 0.65
+   r2 = 1.75
+}
+
+print_out("\tC2H2 Test...")
+C2H2.update_geometry()
+C2H2.print_out()
+compare_strings("d2h", C2H2.schoenflies_symbol(), "C2H2 point group");  #TEST
+
+
+# C2h Symmetry
+molecule N2H2 {
+   N
+   N 1 rNN
+   H 1 rNH 2 aHNN
+   H 2 rNH 1 aHNN 3 180.0
+
+   rNH  = 1.0
+   rNN  = 1.4
+   aHNN = 140.0
+}
+
+print_out("\tN2H2 Test...")
+N2H2.update_geometry()
+N2H2.print_out()
+compare_strings("c2h", N2H2.schoenflies_symbol(), "N2H2 point group");  #TEST
+
+
+# CinftyV Symmetry (C2v Abelian)
+molecule CN {
+   0 2
+   C 0.0 0.0 0.0
+   N 0.0 0.0 r
+   r = 1.4
+}
+
+print_out("\tCN Test...")
+CN.update_geometry()
+CN.print_out()
+compare_strings("c2v", CN.schoenflies_symbol(), "CN point group");  #TEST
+
+
+# Td Symmetry (C2v Abelian)
+molecule CH4 {
+   C
+   H 1 r
+   H 1 r 2 TDA
+   H 1 r 2 TDA 3 120
+   H 1 r 2 TDA 4 120
+
+   r = 1.09
+}
+
+print_out("\tCH4 Test...")
+CH4.update_geometry()
+CH4.print_out()
+compare_strings("c2v", CH4.schoenflies_symbol(), "CH4 point group");  #TEST
+
+
+# CinftyV Symmetry (C2v Abelian)
+molecule CN {
+   0 2
+   C 0.0 0.0 0.0
+   N 0.0 0.0 r
+   r = 1.4
+}
+
+print_out("\tCN Test...")
+CN.update_geometry()
+CN.print_out()
+compare_strings("c2v", CN.schoenflies_symbol(), "CN point group");      #TEST
+
+
+# C3v Symmetry (Cs subgroup)
+molecule NH3 {
+    X
+    N 1 1.0
+    H 2 rNH 1 aXNH
+    H 2 rNH 1 aXNH 3 120.0
+    H 2 rNH 1 aXNH 4 120.0
+
+    rNH = 0.95
+    aXNH = 115.0
+}
+
+print_out("\tNH3 Test...")
+NH3.update_geometry()
+NH3.print_out()
+compare_strings("cs", NH3.schoenflies_symbol(), "NH3 point group");     #TEST
+
+
+# C2v Symmetry (could also be D2)
+molecule triplet_ethylene {
+    C1
+    C2 C1 rCC
+    H1 C1 rCH C2 aHCC
+    H2 C1 rCH C2 aHCC H1 180.0
+    H3 C2 rCH C1 aHCC H1 D
+    H4 C2 rCH C1 aHCC H3 180.0
+
+    rCC  = 1.41
+    rCH  = 1.09
+    aHCC = 122.0
+    D    = 90.0
+}
+
+print_out("\tTriplet Ethylene Test...")
+triplet_ethylene.update_geometry()
+triplet_ethylene.print_out()
+compare_strings("c2v", triplet_ethylene.schoenflies_symbol(), "Triplet Ethylene point group");  #TEST
+
+
+# D2h Symmetry
+molecule singlet_ethylene {
+    C1
+    C2 C1 rCC
+    H1 C1 rCH C2 aHCC
+    H2 C1 rCH C2 aHCC H1 180.0
+    H3 C2 rCH C1 aHCC H1 D
+    H4 C2 rCH C1 aHCC H3 180.0
+
+    rCC  = 1.41
+    rCH  = 1.09
+    aHCC = 122.0
+    D    = 0.0
+}
+
+print_out("\tSinglet Ethylene Test...")
+singlet_ethylene.update_geometry()
+singlet_ethylene.print_out()
+compare_strings("d2h", singlet_ethylene.schoenflies_symbol(), "Singlet Ethylene point group");  #TEST
+
+
+# D2 Symmetry
+molecule ethylene_cation {
+    C1
+    C2 C1 rCC
+    H1 C1 rCH C2 aHCC
+    H2 C1 rCH C2 aHCC H1 180.0
+    H3 C2 rCH C1 aHCC H1 D
+    H4 C2 rCH C1 aHCC H3 180.0
+
+    rCC  = 1.41
+    rCH  = 1.09
+    aHCC = 122.0
+    D    = 45.0
+}
+
+print_out("\tEthylene Cation Test...")
+ethylene_cation.update_geometry()
+ethylene_cation.print_out()
+compare_strings("d2", ethylene_cation.schoenflies_symbol(), "Ethylene cation point group");  #TEST
+
+
+# C2 Symmetry
+molecule H2O2 {
+   O1
+   O2, O1, rOO
+   H1, O1, rOH, O2, aHOO
+   H2, O2, rOH, O1, aHOO, H1, D
+
+   rOO  = 1.4
+   rOH  = 1.1
+   aHOO = 105.
+   D    = 95
+}
+
+print_out("\tH2O2 Test...")
+H2O2.update_geometry()
+H2O2.print_out()
+compare_strings("c2", H2O2.schoenflies_symbol(), "H2O2 point group");  #TEST
+
+# Ci Symmetry
+molecule C4H4Cl2F2 {
+units    bohr
+ C     0.432781050498     1.898774028282     0.810337938486
+ C    -1.658744642774     0.805191018766    -0.984829058337
+ C     1.658744642774    -0.805191018766     0.984829058337
+ C    -0.432781050498    -1.898774028282    -0.810337938486
+ H    -0.317971784026     2.532165941971     2.640915161238
+ H    -1.615729990528     1.614062700629    -2.881498569657
+ H     1.615729990528    -1.614062700629     2.881498569657
+ H     0.317971784026    -2.532165941971    -2.640915161238
+ Cl   -4.852178875691     1.024620478757     0.190249941464
+ Cl    4.852178875691    -1.024620478757    -0.190249941464
+ F    -1.913713787211    -3.739567959534     0.258534542158
+ F     1.913713787211     3.739567959534    -0.258534542158
+}
+
+print_out("\tC4H4Cl2F2 test...")
+C4H4Cl2F2.update_geometry()
+C4H4Cl2F2.print_out()
+compare_strings("ci", C4H4Cl2F2.schoenflies_symbol(), "C4H4Cl2F2 point group");  #TEST
+
+
+# S4 Symmetry (C2 Abelian)
+molecule Li_H2O_4_p {
+   1 1
+   X
+   Li 1 1.0
+   X 2 1.0 1 90.0
+   X 2 1.0 3 90.0 1 180.0
+   O 2 oli 1 olix 3 -90.0
+   O 2 oli 1 olix 3 90.0
+   O 2 oli 4 olix 3 0.0
+   O 2 oli 4 olix 3 180.0
+   H 5 oh1 2 lioh1 1 xlioh1
+   H 5 oh2 2 lioh2 1 xlioh2
+   H 6 oh1 2 lioh1 1 xlioh1
+   H 6 oh2 2 lioh2 1 xlioh2
+   H 7 oh1 2 lioh1 4 -xlioh1
+   H 7 oh2 2 lioh2 4 -xlioh2
+   H 8 oh1 2 lioh1 4 -xlioh1
+   H 8 oh2 2 lioh2 4 -xlioh2
+
+   olix=52.0
+   oli=1.9
+   oh1=0.952
+   oh2=0.950
+   lioh1=125.4
+   lioh2=124.8
+   xlioh1=-40.0
+   xlioh2=135.0
+}
+
+print_out("\tLi(H20)_4^+ Test...")
+Li_H2O_4_p.update_geometry()
+Li_H2O_4_p.print_out()
+compare_strings("c2", Li_H2O_4_p.schoenflies_symbol(), "Li(H20)_4^+ point group");  #TEST
+--------------------------------------------------------------------------
+
+  Memory set to 250.000 MiB by Python script.
+	C2H2 Test...    Molecular point group: d2h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000     0.650000000000
+           C          0.000000000000     0.000000000000    -0.650000000000
+           H          0.000000000000     0.000000000000     1.750000000000
+           H          0.000000000000     0.000000000000    -1.750000000000
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 1 
+       unique atom 1: 2 3 
+
+	N2H2 Test...    Molecular point group: c2h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           N         -0.000000000000     0.700000000000     0.000000000000
+           N          0.000000000000    -0.700000000000     0.000000000000
+           H         -0.642787609687     1.466044443119     0.000000000000
+           H          0.642787609687    -1.466044443119     0.000000000000
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 1 
+       unique atom 1: 2 3 
+
+	CN Test...    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000    -0.753922540200
+           N          0.000000000000     0.000000000000     0.646077459800
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+
+	CH4 Test...    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C         -0.000000000000    -0.000000000000     0.000000000000
+           H         -0.000000000000     0.889981273211    -0.629311793417
+           H          0.889981273211     0.000000000000     0.629311793417
+           H         -0.889981273211    -0.000000000000     0.629311793417
+           H          0.000000000000    -0.889981273211    -0.629311793417
+
+    Number of unique atoms: 3
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 4 
+       unique atom 2: 2 3 
+
+	CN Test...    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000    -0.753922540200
+           N          0.000000000000     0.000000000000     0.646077459800
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+
+	NH3 Test...    Molecular point group: cs
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           N          0.000000000000    -0.071293777318     0.000000000000
+           H         -0.430496198842     0.330193571336    -0.745641288860
+           H         -0.430496198842     0.330193571336     0.745641288860
+           H          0.860992397685     0.330193571336     0.000000000000
+
+    Number of unique atoms: 3
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 2 
+       unique atom 2: 3 
+
+	Triplet Ethylene Test...    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000    -0.705000000000
+           C          0.000000000000     0.000000000000     0.705000000000
+           H         -0.000000000000     0.924372424811    -1.282611998014
+           H          0.000000000000    -0.924372424811    -1.282611998014
+           H         -0.924372424811    -0.000000000000     1.282611998014
+           H          0.924372424811     0.000000000000     1.282611998014
+
+    Number of unique atoms: 4
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+       unique atom 2: 2 3 
+       unique atom 3: 4 5 
+
+	Singlet Ethylene Test...    Molecular point group: d2h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000    -0.705000000000
+           C          0.000000000000    -0.000000000000     0.705000000000
+           H         -0.000000000000     0.924372424811    -1.282611998014
+           H          0.000000000000    -0.924372424811    -1.282611998014
+           H         -0.000000000000     0.924372424811     1.282611998014
+           H          0.000000000000    -0.924372424811     1.282611998014
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 1 
+       unique atom 1: 2 3 4 5 
+
+	Ethylene Cation Test...    Molecular point group: d2
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000    -0.705000000000
+           C          0.000000000000     0.000000000000     0.705000000000
+           H          0.353742012310     0.854008763700    -1.282611998014
+           H         -0.353742012310    -0.854008763700    -1.282611998014
+           H         -0.353742012310     0.854008763700     1.282611998014
+           H          0.353742012310    -0.854008763700     1.282611998014
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 1 
+       unique atom 1: 2 3 4 5 
+
+	H2O2 Test...    Molecular point group: c2
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O         -0.000000000000     0.700000000000     0.042548675499
+           O          0.000000000000    -0.700000000000     0.042548675499
+           H         -0.783370742839     0.984700949613    -0.675278356978
+           H          0.783370742839    -0.984700949613    -0.675278356978
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 1 
+       unique atom 1: 2 3 
+
+	C4H4Cl2F2 test...    Molecular point group: ci
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.432781050498     1.898774028282     0.810337938486
+           C         -1.658744642774     0.805191018766    -0.984829058337
+           C          1.658744642774    -0.805191018766     0.984829058337
+           C         -0.432781050498    -1.898774028282    -0.810337938486
+           H         -0.317971784026     2.532165941971     2.640915161238
+           H         -1.615729990528     1.614062700629    -2.881498569657
+           H          1.615729990528    -1.614062700629     2.881498569657
+           H          0.317971784026    -2.532165941971    -2.640915161238
+          CL         -4.852178875691     1.024620478757     0.190249941464
+          CL          4.852178875691    -1.024620478757    -0.190249941464
+           F         -1.913713787211    -3.739567959534     0.258534542158
+           F          1.913713787211     3.739567959534    -0.258534542158
+
+    Number of unique atoms: 6
+
+    Atoms equivalency:
+       unique atom 0: 0 3 
+       unique atom 1: 1 2 
+       unique atom 2: 4 7 
+       unique atom 3: 5 6 
+       unique atom 4: 8 9 
+       unique atom 5: 10 11 
+
+	Li(H20)_4^+ Test...    Molecular point group: c2
+
+    Geometry (in Angstrom), charge = 1, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+          LI         -0.000000000000    -0.000000000000     0.000000000000
+           O         -0.000000000000     1.497220431853    -1.169756803119
+           O          0.000000000000    -1.497220431853    -1.169756803119
+           O         -1.497220431853    -0.000000000000     1.169756803119
+           O          1.497220431853     0.000000000000     1.169756803119
+           H          0.498804253130     1.565808146965    -1.977713511362
+           H         -0.551608165437     2.264066335924    -1.068881676192
+           H         -0.498804253130    -1.565808146965    -1.977713511362
+           H          0.551608165437    -2.264066335924    -1.068881676192
+           H         -1.565808146965     0.498804253130     1.977713511362
+           H         -2.264066335924    -0.551608165437     1.068881676192
+           H          1.565808146965    -0.498804253130     1.977713511362
+           H          2.264066335924     0.551608165437     1.068881676192
+
+    Number of unique atoms: 7
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 2 
+       unique atom 2: 3 4 
+       unique atom 3: 5 7 
+       unique atom 4: 6 8 
+       unique atom 5: 9 11 
+       unique atom 6: 10 12 
+
+
+*** PSI4 exiting successfully. Buy a developer a beer!

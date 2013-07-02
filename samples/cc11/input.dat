@@ -1,0 +1,21 @@
+#! Frozen-core CCSD(ROHF)/cc-pVDZ on CN radical with disk-based AO algorithm
+
+memory 250 mb
+
+molecule cn {
+  0 2
+  C
+  N 1 R
+  R = 1.175
+}
+
+set {
+  reference rohf
+  freeze_core true
+  ao_basis disk
+  delete_tei false
+  print 2
+  basis = "cc-pVDZ"
+}
+
+energy('ccsd')

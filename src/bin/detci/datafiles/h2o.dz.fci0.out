@@ -1,0 +1,142 @@
+******************************************************************************
+tstart called on harpagos.ccqc.uga.edu
+Wed Apr 17 18:58:56 1996
+
+
+******************************************************
+                      D E T C I  
+
+                    David Sherrill
+                      June 1995
+******************************************************
+
+
+
+
+PARAMETERS: 
+   EX_LVL       =      10      H0_BLOCKSIZE =      40
+   VAL_EX_LVL   =       0      H0_MP2GUESS  =       0
+   NPRINT       =      20      MAX_DET      =   1500000
+   MAXITER      =      10      FREEZE_CORE  =     yes
+   NUM_ROOTS    =       1      RAS          =      no
+   PRINT        =       2      FCI          =     yes
+   CONV         =       6      MIXED        =     yes
+   E_CONV       =       6      MIXED4       =     yes
+   OEI FILE     =      71      R4S          =      no
+   OEI ERASE    =      no      REPL_OTF     =      no
+   TEI FILE     =      72      DIAG_METHOD  =     SEM
+   TEI ERASE    =      no      MAXNVECT     =      12
+   RESTART      =      no      RESTART_VECS =       0
+   ICORE        =       1
+
+   FILES        =      90  91  92  93
+
+ORBITALS:
+   NBFSO        =      14      1ST ALP ACT  =       0
+   ORBS IN CI   =      14      LST ALP OCC  =       4
+   FROZEN CORE  =       0      1ST BET ACT  =       0
+   RESTR CORE   =       0      LST BET OCC  =       4
+   RAS1_LVL     =       4      A_RAS3_MAX   =       5
+   RAS1_MIN     =       0      B_RAS3_MAX   =       5
+   A_RAS1_LVL   =       4      RAS4_LVL     =      14
+   A_RAS1_MIN   =       0      A_RAS4_MAX   =       0
+   A_RAS1_MAX   =       5      B_RAS4_MAX   =       0
+   B_RAS1_LVL   =       4      RAS4_MAX     =       0
+   B_RAS1_MIN   =       0      A_RAS34_MAX  =       5
+   B_RAS1_MAX   =       5      B_RAS34_MAX  =       5
+   RAS3_LVL     =       5      RAS34_MAX    =      10
+   RAS3_MAX     =      10
+
+   DOCC         =  3  0  1  1 
+   SOCC         =  0  0  0  0 
+   FROZEN_DOCC  =  0  0  0  0 
+   FROZEN_UOCC  =  0  0  0  0 
+   RAS 1        =  3  0  1  1 
+   RAS 2        =  0  0  0  0 
+   RAS 3        =  5  0  1  3 
+   RAS 4        =  0  0  0  0 
+******************************************************
+
+
+There are 2002 alpha strings
+There are 2002 beta strings
+CI space contains    4 blocks
+
+CI space requires 1002708 determinants
+
+Check SCF Energy from 1- and 2-electron integrals
+
+SCF Energy (ref):            -76.0110023991
+Nuclear repulsion energy :     9.2342185209
+One-electron energy:        -123.0899318867
+Two-electron energy:          37.8447109667
+Frozen core energy:            0.0000000000
+Total electronic energy:     -85.2452209200
+Total SCF energy:            -76.0110023991
+
+Bendazzoli algorithm selected for sigma3
+
+Forming diagonal elements of H
+
+Forming H0 block
+
+*** H0 Block Eigenvalue = -76.01707791
+
+Find the roots by the Simultaneous Expansion Method 
+Energy convergence = 1e-06
+RMS CI vector convergence = 1e-06
+
+Using 1 initial trial vectors
+Iter   0  Root 1 = -76.017077907    Delta_E -8.525E+01   Delta_C 1.355E+00
+Iter   1  Root 1 = -76.143333383    Delta_E -1.263E-01   Delta_C 4.445E-01
+Iter   2  Root 1 = -76.155205462    Delta_E -1.187E-02   Delta_C 1.136E-01
+Iter   3  Root 1 = -76.156239370    Delta_E -1.034E-03   Delta_C 5.027E-02
+Iter   4  Root 1 = -76.156392901    Delta_E -1.535E-04   Delta_C 1.516E-02
+Iter   5  Root 1 = -76.156406529    Delta_E -1.363E-05   Delta_C 4.724E-03
+Iter   6  Root 1 = -76.156407911    Delta_E -1.382E-06   Delta_C 1.930E-03
+Iter   7  Root 1 = -76.156408156    Delta_E -2.454E-07   Delta_C 7.264E-04
+Iter   8  Root 1 = -76.156408192    Delta_E -3.574E-08   Delta_C 2.821E-04
+Iter   9  Root 1 = -76.156408197    Delta_E -4.809E-09   Delta_C 1.096E-04
+Iter  10  Root 1 = -76.156408197    Delta_E -6.520E-10   Delta_C 3.206E-05
+
+Maximum number of iterations reached
+
+
+ROOT 1 ECI = -76.1564081972336
+
+
+The 20 most important determinants
+
+    1    0.976353  (  504,  504)  1A1X  2A1X  3A1X  1B1X  1B2X  
+*   2   -0.056881  (  560,  560)  1A1X  2A1X  3A1X  1B2X  2B1X  
+*   3   -0.046472  (  508,  508)  1A1X  2A1X  1B1X  1B2X  5A1X  
+*   4   -0.039572  (  616,  616)  1A1X  2A1X  3A1X  1B1X  2B2X  
+*   5   -0.035354  (  508,  560)  1A1X  2A1X  3A1B  1B1A  1B2X  5A1A  2B1B  
+*   6   -0.035354  (  560,  508)  1A1X  2A1X  3A1A  1B1B  1B2X  5A1B  2B1A  
+*   7   -0.034812  (  856,  856)  1A1X  2A1X  3A1X  1B1X  4B2X  
+*   8   -0.029068  (  616,  856)  1A1X  2A1X  3A1X  1B1X  2B2A  4B2B  
+*   9   -0.029068  (  856,  616)  1A1X  2A1X  3A1X  1B1X  2B2B  4B2A  
+*  10   -0.027126  ( 1021, 1021)  1A1X  2A1X  3A1X  1B1X  6A1X  
+*  11    0.026361  (  560,  616)  1A1X  2A1X  3A1X  1B1B  1B2A  2B1A  2B2B  
+*  12    0.026361  (  616,  560)  1A1X  2A1X  3A1X  1B1A  1B2B  2B1B  2B2A  
+*  13    0.024570  (  504,  564)  1A1X  2A1X  3A1A  1B1A  1B2X  5A1B  2B1B  
+*  14    0.024570  (  564,  504)  1A1X  2A1X  3A1B  1B1B  1B2X  5A1A  2B1A  
+*  15    0.023958  (  508,  616)  1A1X  2A1X  3A1B  1B1X  1B2A  5A1A  2B2B  
+*  16    0.023958  (  616,  508)  1A1X  2A1X  3A1A  1B1X  1B2B  5A1B  2B2A  
+   17   -0.022774  ( 1016, 1016)  1A1X  2A1X  3A1X  1B1X  4A1X  
+*  18    0.021786  (  506,  560)  1A1X  2A1B  3A1X  1B1A  1B2X  4A1A  2B1B  
+*  19    0.021786  (  560,  506)  1A1X  2A1A  3A1X  1B1B  1B2X  4A1B  2B1A  
+*  20    0.021777  (  560,  856)  1A1X  2A1X  3A1X  1B1B  1B2A  2B1A  4B2B  
+
+
+******************************************************************************
+tstop called on harpagos.ccqc.uga.edu
+Wed Apr 17 19:12:17 1996
+
+user time   =     752.04 seconds
+system time =      34.68 seconds
+total time  =        801 seconds
+
+**  Nb. These timings from obsolete and slow version of code **
+**  should be more like 308s, 37s, 364s on a IBM 3CT         **
+

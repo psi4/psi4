@@ -1,0 +1,24 @@
+
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+include ../MakeVars
+
+PSITARGET = $(top_objdir)/lib/libPSI_3index.a
+
+TRUECXXSRC = $(notdir $(wildcard $(srcdir)/*.cc))
+DEPENDINCLUDE = $(notdir $(wildcard $(srcdir)/*.h))
+
+LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+install_inc:: $(DEPENDINCLUDE)
+	$(MKDIRS) $(DESTDIR)$(incdir)/lib3index
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/lib3index
+
+
+ifneq "$(MAKECMDGOALS)" "clean"
+include $(LIBOBJ:%.o=%.d)
+endif
+

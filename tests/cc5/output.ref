@@ -1,0 +1,175 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-beta1 Driver
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! RHF CCSD(T) aug-cc-pvtz frozen-core energy of C4NH4 Anion
+
+memory 250 mb
+
+refnuc   =  135.0921284884196    #TEST
+refscf   = -208.2159793502       #TEST
+refccsd  =   -0.884280512675734  #TEST
+ref_t    =   -0.048772959402886  #TEST
+reftotal = -209.149032822278599  #TEST
+
+molecule C4NH4 {
+  -1 1
+  C         0.00000000     0.00000000     2.13868804
+  N         0.00000000     0.00000000     4.42197911
+  C         0.00000000     0.00000000    -0.46134192
+  C        -1.47758582     0.00000000    -2.82593059
+  C         1.47758582     0.00000000    -2.82593059
+  H        -2.41269553    -1.74021190    -3.52915989
+  H        -2.41269553     1.74021190    -3.52915989
+  H         2.41269553     1.74021190    -3.52915989
+  H         2.41269553    -1.74021190    -3.52915989
+  units bohr
+}
+
+set globals {
+  docc        [10, 1, 4, 3]
+  basis       aug-cc-pVTZ
+  freeze_core true
+  dertype     none
+
+  r_convergence 10
+  e_convergence  10
+  d_convergence  10
+}
+
+energy('ccsd(t)')
+
+compare_values(refnuc,   C4NH4.nuclear_repulsion_energy(),        9, "Nuclear repulsion energy") #TEST
+compare_values(refscf,   get_variable("SCF total energy"),        9, "SCF energy")               #TEST
+compare_values(refccsd,  get_variable("CCSD correlation energy"), 9, "CCSD contribution")        #TEST
+compare_values(ref_t,    get_variable("(T) correction energy"),   9, "(T) contribution")         #TEST
+compare_values(reftotal, get_variable("Current energy"),          9, "Total energy")             #TEST
+--------------------------------------------------------------------------
+
+  Memory set to 250.000 MiB by Python script.
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 11:57:53 2012
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+
+    Geometry (in Bohr), charge = -1, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000     2.138687778202
+           N          0.000000000000     0.000000000000     4.421978848202
+           C          0.000000000000     0.000000000000    -0.461342181798
+           C         -1.477585820000    -0.000000000000    -2.825930851798
+           C          1.477585820000     0.000000000000    -2.825930851798
+           H         -2.412695530000    -1.740211900000    -3.529160151798
+           H         -2.412695530000     1.740211900000    -3.529160151798
+           H          2.412695530000     1.740211900000    -3.529160151798
+           H          2.412695530000    -1.740211900000    -3.529160151798
+
+    Number of unique atoms: 5
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+       unique atom 2: 2 
+       unique atom 3: 3 4 
+       unique atom 4: 5 6 7 8 
+
+  Running in c2v symmetry.
+
+  Nuclear repulsion =  135.092128488419604
+
+  Charge       = -1
+  Multiplicity = 1
+  Electrons    = 36
+  Nalpha       = 18
+  Nbeta        = 18
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-10
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: AUG-CC-PVTZ <==
+
+  Basis Set
+    Number of shells: 106
+    Number of basis function: 322
+    Number of Cartesian functions: 375
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 7.0218489348E-06.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial RHF energy:  -168.17103313619165
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1       110     110      10      10      10       0
+     A2        54      54       1       1       1       0
+     B1        86      86       4       4       4       0
+     B2        72      72       3       3       3       0
+   -------------------------------------------------------
+    Total     322     322      18      18      18       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   9
+      Number of AO shells:             106
+      Number of SO shells:              65
+      Number of primitives:            194
+      Number of atomic orbitals:       375
+      Number of basis functions:       322
+
+      Number of irreps:                  4
+      Number of functions per irrep: [ 110   54   86   72 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+      Computing two-electron integrals...

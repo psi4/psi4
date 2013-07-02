@@ -1,0 +1,32 @@
+#! BH single points, checking that program can run multiple instances of 
+#! DETCI in a single input, without an intervening clean() call
+
+molecule bh {
+  B
+  H 1 1.23
+}
+
+refnuc   =   2.1511268642      #TEST
+refscf   = -25.12532286332371  #TEST
+refcisd  = -25.2116609689696   #TEST
+refcisdt = -25.2134121049042   #TEST
+refmp3   = -25.2047480185847   #TEST
+refmp4   = -25.2109921859091   #TEST
+
+set globals {
+  basis cc-pVDZ
+  docc [3, 0, 0, 0]
+}
+
+ecisd  = energy('cisd')
+ecisdt = energy('cisdt')
+emp3   = energy('mp3')
+emp4   = energy('mp4')
+
+compare_values(refnuc, bh.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST 
+compare_values(refscf, get_variable("SCF total energy"),     8, "SCF energy") #TEST
+compare_values(refcisd,  ecisd,  6, "CISD energy")  #TEST
+compare_values(refcisdt, ecisdt, 6, "CISDT energy") #TEST
+compare_values(refmp3,    emp3,  6, "MP3 energy")   #TEST
+compare_values(refmp4,    emp4,  6, "MP4 energy")   #TEST
+

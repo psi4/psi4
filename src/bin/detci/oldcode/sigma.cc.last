@@ -1,0 +1,470 @@
+
+/*
+** sigma(): This function computes the sigma vector for a given C vector
+**    using the CIvector class.   Is somewhat intelligent about constructing
+**    the sigma vector blockwise; will attempt to reduce I/O for out-of-core
+**    cases.
+**
+** Parameters:
+**    alplist  = list of alpha strings with replacements
+**    betlist  = same for beta strings
+**    C        = current ci vector
+**    S        = sigma vector to be computed 
+**    oei      = one-electron integrals
+**    tei      = two-electron integrals
+**    fci      = full-ci flag (helps determine which sigma1 routine called)
+**    
+** Notes: assumes M_s = 0 for now
+*/
+void sigma(struct stringwr **alplist, struct stringwr **betlist,
+      CIvect& C, CIvect& S, double *oei, double *tei, int fci)
+{
+
+   int sblock, cblock;  /* id of sigma and C blocks */
+   int sairr;           /* irrep of alpha string for sigma block */
+   int cairr;           /* irrep of alpha string for C block */
+   int sbirr, cbirr;
+   int i,j,k;
+   int sac, sbc, nas, nbs;
+   int cac, cbc, cnas, cnbs;
+   static int first_call=1;
+   static int **s1_contrib, **s2_contrib, **s3_contrib;
+   static double *F;
+
+   static int **Jij[2];
+   static int **Joij[2];
+   static int **Jridx[2];
+   static signed char **Jsgn[2];
+   static int *Jcnt[2];
+   static unsigned char **Toccs;
+   int nsingles;
+
+   if (first_call) {
+      int max_dim=0;
+      for (i=0; i<C.num_blocks; i++) {
+         if (C.Ib_size[i] > max_dim) max_dim = C.Ib_size[i];
+         if (C.Ia_size[i] > max_dim) max_dim = C.Ia_size[i];
+         }
+      F = init_array(max_dim);
+
+      if (Parameters.repl_otf) {
+         max_dim += AlphaG->num_el_expl;
+         nsingles = AlphaG->num_el_expl * AlphaG->num_orb;
+         for (i=0; i<2; i++) {
+            Jcnt[i] = init_int_array(max_dim);
+            Jij[i] = init_int_matrix(max_dim, nsingles);
+            Joij[i] = init_int_matrix(max_dim, nsingles);
+            Jridx[i] = init_int_matrix(max_dim, nsingles);
+            Jsgn[i] = (signed char **) malloc (max_dim * sizeof(signed char *));
+            for (j=0; j<max_dim; j++) { 
+               Jsgn[i][j] = (signed char *) malloc (nsingles * 
+                  sizeof(signed char));
+               }
+            }
+
+         Toccs = (unsigned char **) malloc (sizeof(unsigned char *) * nsingles);
+
+         /* test out the on-the-fly replacement routines */
+         /*
+         b2brepl_test(Occs,Jcnt[0],Jij[0],Joij[0],Jridx[0],Jsgn[0],AlphaG);
+         */
+         }
+
+      /* figure out which C blocks contribute to s */
+      s1_contrib = init_int_matrix(S.num_blocks, C.num_blocks);
+      s2_contrib = init_int_matrix(S.num_blocks, C.num_blocks);
+      s3_contrib = init_int_matrix(S.num_blocks, C.num_blocks);
+      if (Parameters.repl_otf)
+         sigma_get_contrib_rotf(C, S, s1_contrib, s2_contrib, s3_contrib,
+            Jcnt, Jij, Joij, Jridx, Jsgn, Toccs);
+      else  
+         sigma_get_contrib(alplist, betlist, C, S, s1_contrib, s2_contrib,
+            s3_contrib);
+
+      first_call = 0;
+      }
+
+
+   /* this does an irrep at a time not a sigma subblock at a time */
+   /* should be appropriate for icore==1 or icore==2              */
+   for (sairr=0; sairr<S.nirreps; sairr++) {
+      sbirr = sairr ^ CalcInfo.ref_sym;
+      for (sblock=S.first_ablk[sairr];sblock<=S.last_ablk[sairr];sblock++) {
+         zero_mat(S.blocks[sblock], S.Ia_size[sblock], S.Ib_size[sblock]);
+         }
+      for (cairr=0; cairr<C.nirreps; cairr++) {
+         cbirr = cairr ^ CalcInfo.ref_sym;
+         for (sblock=S.first_ablk[sairr];sblock<=S.last_ablk[sairr];sblock++){
+            sac = S.Ia_code[sblock];
+            sbc = S.Ib_code[sblock];
+            nas = S.Ia_size[sblock];
+            nbs = S.Ib_size[sblock];
+
+            if (sac < sbc) continue;
+           
+            else if (sac == sbc) { /* begin diagonal sigma block */
+               for (cblock=C.first_ablk[cairr]; cblock <= C.last_ablk[cairr];
+                  cblock++) {
+                 cac = C.Ia_code[cblock];
+                 cbc = C.Ib_code[cblock];
+                 cnbs = C.Ib_size[cblock];
+                
+                 if (s1_contrib[sblock][cblock]) {
+                    if (fci) { 
+                       s1_block_fci(alplist, betlist, C.blocks[cblock],
+                          S.blocks[sblock], oei, tei, F, C.num_betcodes,
+                          nas, nbs, sbc, cbc, cnbs);
+                       } 
+                    else {
+                       if (Parameters.repl_otf) {
+                          s1_block_ras_rotf(Jcnt, Jij, Joij, Jridx, Jsgn,
+                             Toccs, C.blocks[cblock], S.blocks[sblock],
+                             oei, tei, F, C.num_betcodes, nas, nbs,
+                             sbc, cbc, cnbs);
+                          }
+                       else {
+                          s1_block_ras(alplist, betlist, C.blocks[cblock],
+                             S.blocks[sblock], oei, tei, F, C.num_betcodes,
+                             nas, nbs, sbc, cbc, cnbs);
+                          }
+                       }
+                    } 
+
+                 if (s3_contrib[sblock][cblock]) {
+                    if (Parameters.repl_otf) {
+                       b2brepl(Occs[sac], Jcnt[0], Jij[0], Joij[0], Jridx[0],
+                          Jsgn[0], AlphaG, sac, cac, nas);  
+                       b2brepl(Occs[sbc], Jcnt[1], Jij[1], Joij[1], Jridx[1],
+                          Jsgn[1], BetaG, sbc, cbc, nbs);  
+                       s3_block_diag_rotf(Jcnt, Jij, Jridx, Jsgn,
+                          C.blocks[cblock], S.blocks[sblock], tei, nas, nbs);
+                       }      
+                    else {
+                       s3_block_diag(alplist[sac], betlist[sbc], 
+                          C.blocks[cblock], S.blocks[sblock], tei, 
+                          nas, nbs, cac, cbc);
+                       }
+                    } 
+                 }
+              } /* end diagonal sigma block */
+
+           else { /* begin unique off-diagonal sigma block */
+              for (cblock=C.first_ablk[cairr]; cblock <= C.last_ablk[cairr];
+                  cblock++) {
+                 cac = C.Ia_code[cblock];
+                 cbc = C.Ib_code[cblock];
+                 cnas = C.Ia_size[cblock];
+                 cnbs = C.Ib_size[cblock];
+
+                 if (s1_contrib[sblock][cblock]) {
+                    if (fci) {
+                       s1_block_fci(alplist, betlist, C.blocks[cblock],
+                          S.blocks[sblock], oei, tei, F, C.num_betcodes,
+                          nas, nbs, sbc, cbc, cnbs);
+                       }
+                    else {
+                       if (Parameters.repl_otf) {
+                          s1_block_ras_rotf(Jcnt, Jij, Joij, Jridx, Jsgn,
+                             Toccs, C.blocks[cblock], S.blocks[sblock],
+                             oei, tei, F, C.num_betcodes, nas, nbs,
+                             sbc, cbc, cnbs);
+                          }
+                       else {
+                          s1_block_ras(alplist, betlist, C.blocks[cblock],
+                             S.blocks[sblock], oei, tei, F, C.num_betcodes,
+                             nas, nbs, sbc, cbc, cnbs);
+                          }
+                       }
+                    }
+                 if (s2_contrib[sblock][cblock]) {
+                    if (fci) { 
+                       s2_block_fci(alplist, betlist, C.blocks[cblock],
+                          S.blocks[sblock], oei, tei, F, C.num_alpcodes,
+                          nas, nbs, sac, cac, cnas);
+                       } 
+                    else {
+                       if (Parameters.repl_otf) {
+                          s2_block_ras_rotf(Jcnt, Jij, Joij, Jridx, Jsgn,
+                             Toccs, C.blocks[cblock], S.blocks[sblock],
+                             oei, tei, F, C.num_alpcodes, nas, nbs,
+                             sac, cac, cnas);
+                          }
+                       else {
+                          s2_block_ras(alplist, betlist, C.blocks[cblock],
+                             S.blocks[sblock], oei, tei, F, C.num_alpcodes,
+                             nas, nbs, sac, cac, cnas);
+                          }
+                       } 
+                    }
+                 if (s3_contrib[sblock][cblock]) {
+                    if (Parameters.repl_otf) {
+                       b2brepl(Occs[sac], Jcnt[0], Jij[0], Joij[0], Jridx[0],
+                          Jsgn[0], AlphaG, sac, cac, nas);  
+                       b2brepl(Occs[sbc], Jcnt[1], Jij[1], Joij[1], Jridx[1],
+                          Jsgn[1], BetaG, sbc, cbc, nbs);  
+                       s3_block_rotf(Jcnt, Jij, Jridx, Jsgn, 
+                          C.blocks[cblock], S.blocks[sblock], tei, nas, nbs);
+                       }      
+                    else {
+                       s3_block(alplist[sac], betlist[sbc], C.blocks[cblock],
+                          S.blocks[sblock], tei, nas, nbs, cac, cbc);
+                       }
+                    }
+                 }
+              } /* end unique off-diagonal sigma block */
+
+           } /* end loop over sigma blocks */
+        } /* end loop over C irrep */
+
+      /* transpose the diagonal sigma subblocks in this irrep */
+      for (sblock=S.first_ablk[sairr];sblock<=S.last_ablk[sairr];sblock++){
+         sac = S.Ia_code[sblock];
+         sbc = S.Ib_code[sblock];
+         nas = S.Ia_size[sblock];
+         nbs = S.Ib_size[sblock];
+         if (sac == sbc) transp_sigma(S.blocks[sblock], nas, nbs, 1); 
+
+         /* also gather the contributions from sigma to the H0block */
+         if (sac >= sbc) {
+            H0block_gather(S.blocks[sblock], sac, sbc, 1, 1, 1);
+            }
+         }
+
+     } /* end loop over sigma irrep */
+}
+
+
+
+/*
+** sigma(): This function computes the sigma vector for a given C vector
+**    using the CIvector class.   Is somewhat intelligent about constructing
+**    the sigma vector blockwise; will attempt to reduce I/O for out-of-core
+**    cases.
+**
+** Parameters:
+**    alplist  = list of alpha strings with replacements
+**    betlist  = same for beta strings
+**    C        = current ci vector
+**    S        = sigma vector to be computed 
+**    oei      = one-electron integrals
+**    tei      = two-electron integrals
+**    fci      = full-ci flag (helps determine which sigma1 routine called)
+**    
+** Notes: assumes M_s = 0 for now
+*/
+void sigma(struct stringwr **alplist, struct stringwr **betlist,
+      CIvect& C, CIvect& S, double *oei, double *tei, int fci)
+{
+
+   int sblock, cblock;  /* id of sigma and C blocks */
+   int sairr;           /* irrep of alpha string for sigma block */
+   int cairr;           /* irrep of alpha string for C block */
+   int sbirr, cbirr;
+   int i,j,k;
+   int sac, sbc, nas, nbs;
+   int cac, cbc, cnas, cnbs;
+   static int first_call=1;
+   static int **s1_contrib, **s2_contrib, **s3_contrib;
+   static double *F;
+
+   static int **Jij[2];
+   static int **Joij[2];
+   static int **Jridx[2];
+   static signed char **Jsgn[2];
+   static int *Jcnt[2];
+   static unsigned char **Toccs;
+   int nsingles;
+
+   if (first_call) {
+      int max_dim=0;
+      for (i=0; i<C.num_blocks; i++) {
+         if (C.Ib_size[i] > max_dim) max_dim = C.Ib_size[i];
+         if (C.Ia_size[i] > max_dim) max_dim = C.Ia_size[i];
+         }
+      F = init_array(max_dim);
+
+      if (Parameters.repl_otf) {
+         max_dim += AlphaG->num_el_expl;
+         nsingles = AlphaG->num_el_expl * AlphaG->num_orb;
+         for (i=0; i<2; i++) {
+            Jcnt[i] = init_int_array(max_dim);
+            Jij[i] = init_int_matrix(max_dim, nsingles);
+            Joij[i] = init_int_matrix(max_dim, nsingles);
+            Jridx[i] = init_int_matrix(max_dim, nsingles);
+            Jsgn[i] = (signed char **) malloc (max_dim * sizeof(signed char *));
+            for (j=0; j<max_dim; j++) { 
+               Jsgn[i][j] = (signed char *) malloc (nsingles * 
+                  sizeof(signed char));
+               }
+            }
+
+         Toccs = (unsigned char **) malloc (sizeof(unsigned char *) * nsingles);
+
+         /* test out the on-the-fly replacement routines */
+         /*
+         b2brepl_test(Occs,Jcnt[0],Jij[0],Joij[0],Jridx[0],Jsgn[0],AlphaG);
+         */
+         }
+
+      /* figure out which C blocks contribute to s */
+      s1_contrib = init_int_matrix(S.num_blocks, C.num_blocks);
+      s2_contrib = init_int_matrix(S.num_blocks, C.num_blocks);
+      s3_contrib = init_int_matrix(S.num_blocks, C.num_blocks);
+      if (Parameters.repl_otf)
+         sigma_get_contrib_rotf(C, S, s1_contrib, s2_contrib, s3_contrib,
+            Jcnt, Jij, Joij, Jridx, Jsgn, Toccs);
+      else  
+         sigma_get_contrib(alplist, betlist, C, S, s1_contrib, s2_contrib,
+            s3_contrib);
+
+      first_call = 0;
+      }
+
+
+   /* this does an irrep at a time not a sigma subblock at a time */
+   /* should be appropriate for icore==1 or icore==2              */
+   for (sairr=0; sairr<S.nirreps; sairr++) {
+      sbirr = sairr ^ CalcInfo.ref_sym;
+      for (sblock=S.first_ablk[sairr];sblock<=S.last_ablk[sairr];sblock++) {
+         zero_mat(S.blocks[sblock], S.Ia_size[sblock], S.Ib_size[sblock]);
+         }
+      for (cairr=0; cairr<C.nirreps; cairr++) {
+         cbirr = cairr ^ CalcInfo.ref_sym;
+         for (sblock=S.first_ablk[sairr];sblock<=S.last_ablk[sairr];sblock++){
+            sac = S.Ia_code[sblock];
+            sbc = S.Ib_code[sblock];
+            nas = S.Ia_size[sblock];
+            nbs = S.Ib_size[sblock];
+
+            if (sac < sbc) continue;
+           
+            else if (sac == sbc) { /* begin diagonal sigma block */
+               for (cblock=C.first_ablk[cairr]; cblock <= C.last_ablk[cairr];
+                  cblock++) {
+                 cac = C.Ia_code[cblock];
+                 cbc = C.Ib_code[cblock];
+                 cnbs = C.Ib_size[cblock];
+                
+                 if (s1_contrib[sblock][cblock]) {
+                    if (fci) { 
+                       s1_block_fci(alplist, betlist, C.blocks[cblock],
+                          S.blocks[sblock], oei, tei, F, C.num_betcodes,
+                          nas, nbs, sbc, cbc, cnbs);
+                       } 
+                    else {
+                       if (Parameters.repl_otf) {
+                          s1_block_ras_rotf(Jcnt, Jij, Joij, Jridx, Jsgn,
+                             Toccs, C.blocks[cblock], S.blocks[sblock],
+                             oei, tei, F, C.num_betcodes, nas, nbs,
+                             sbc, cbc, cnbs);
+                          }
+                       else {
+                          s1_block_ras(alplist, betlist, C.blocks[cblock],
+                             S.blocks[sblock], oei, tei, F, C.num_betcodes,
+                             nas, nbs, sbc, cbc, cnbs);
+                          }
+                       }
+                    } 
+
+                 if (s3_contrib[sblock][cblock]) {
+                    if (Parameters.repl_otf) {
+                       b2brepl(Occs[sac], Jcnt[0], Jij[0], Joij[0], Jridx[0],
+                          Jsgn[0], AlphaG, sac, cac, nas);  
+                       b2brepl(Occs[sbc], Jcnt[1], Jij[1], Joij[1], Jridx[1],
+                          Jsgn[1], BetaG, sbc, cbc, nbs);  
+                       s3_block_diag_rotf(Jcnt, Jij, Jridx, Jsgn,
+                          C.blocks[cblock], S.blocks[sblock], tei, nas, nbs);
+                       }      
+                    else {
+                       s3_block_diag(alplist[sac], betlist[sbc], 
+                          C.blocks[cblock], S.blocks[sblock], tei, 
+                          nas, nbs, cac, cbc);
+                       }
+                    } 
+                 }
+              } /* end diagonal sigma block */
+
+           else { /* begin unique off-diagonal sigma block */
+              for (cblock=C.first_ablk[cairr]; cblock <= C.last_ablk[cairr];
+                  cblock++) {
+                 cac = C.Ia_code[cblock];
+                 cbc = C.Ib_code[cblock];
+                 cnas = C.Ia_size[cblock];
+                 cnbs = C.Ib_size[cblock];
+
+                 if (s1_contrib[sblock][cblock]) {
+                    if (fci) {
+                       s1_block_fci(alplist, betlist, C.blocks[cblock],
+                          S.blocks[sblock], oei, tei, F, C.num_betcodes,
+                          nas, nbs, sbc, cbc, cnbs);
+                       }
+                    else {
+                       if (Parameters.repl_otf) {
+                          s1_block_ras_rotf(Jcnt, Jij, Joij, Jridx, Jsgn,
+                             Toccs, C.blocks[cblock], S.blocks[sblock],
+                             oei, tei, F, C.num_betcodes, nas, nbs,
+                             sbc, cbc, cnbs);
+                          }
+                       else {
+                          s1_block_ras(alplist, betlist, C.blocks[cblock],
+                             S.blocks[sblock], oei, tei, F, C.num_betcodes,
+                             nas, nbs, sbc, cbc, cnbs);
+                          }
+                       }
+                    }
+                 if (s2_contrib[sblock][cblock]) {
+                    if (fci) { 
+                       s2_block_fci(alplist, betlist, C.blocks[cblock],
+                          S.blocks[sblock], oei, tei, F, C.num_alpcodes,
+                          nas, nbs, sac, cac, cnas);
+                       } 
+                    else {
+                       if (Parameters.repl_otf) {
+                          s2_block_ras_rotf(Jcnt, Jij, Joij, Jridx, Jsgn,
+                             Toccs, C.blocks[cblock], S.blocks[sblock],
+                             oei, tei, F, C.num_alpcodes, nas, nbs,
+                             sac, cac, cnas);
+                          }
+                       else {
+                          s2_block_ras(alplist, betlist, C.blocks[cblock],
+                             S.blocks[sblock], oei, tei, F, C.num_alpcodes,
+                             nas, nbs, sac, cac, cnas);
+                          }
+                       } 
+                    }
+                 if (s3_contrib[sblock][cblock]) {
+                    if (Parameters.repl_otf) {
+                       b2brepl(Occs[sac], Jcnt[0], Jij[0], Joij[0], Jridx[0],
+                          Jsgn[0], AlphaG, sac, cac, nas);  
+                       b2brepl(Occs[sbc], Jcnt[1], Jij[1], Joij[1], Jridx[1],
+                          Jsgn[1], BetaG, sbc, cbc, nbs);  
+                       s3_block_rotf(Jcnt, Jij, Jridx, Jsgn, 
+                          C.blocks[cblock], S.blocks[sblock], tei, nas, nbs);
+                       }      
+                    else {
+                       s3_block(alplist[sac], betlist[sbc], C.blocks[cblock],
+                          S.blocks[sblock], tei, nas, nbs, cac, cbc);
+                       }
+                    }
+                 }
+              } /* end unique off-diagonal sigma block */
+
+           } /* end loop over sigma blocks */
+        } /* end loop over C irrep */
+
+      /* transpose the diagonal sigma subblocks in this irrep */
+      for (sblock=S.first_ablk[sairr];sblock<=S.last_ablk[sairr];sblock++){
+         sac = S.Ia_code[sblock];
+         sbc = S.Ib_code[sblock];
+         nas = S.Ia_size[sblock];
+         nbs = S.Ib_size[sblock];
+         if (sac == sbc) transp_sigma(S.blocks[sblock], nas, nbs, 1); 
+
+         /* also gather the contributions from sigma to the H0block */
+         if (sac >= sbc) {
+            H0block_gather(S.blocks[sblock], sac, sbc, 1, 1, 1);
+            }
+         }
+
+     } /* end loop over sigma irrep */
+}

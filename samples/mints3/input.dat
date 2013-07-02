@@ -1,0 +1,85 @@
+memory 250 mb
+
+#! Test individual integral objects for correctness.
+print_stdout(' Case Study Test of Integrals')
+
+molecule h2o {
+  o
+  h 1 1.0
+  h 1 1.0 2 103.1
+}
+
+
+
+set globals {
+  basis sto-3g
+}
+
+mints = MintsHelper()
+
+Li = mints.so_angular_momentum()
+
+
+
+
+
+set globals {
+  basis 6-311G**
+}
+
+mints = MintsHelper()
+
+Li = mints.so_angular_momentum()
+
+
+
+
+
+set globals {
+  basis cc-pVTZ
+}
+
+mints = MintsHelper()
+
+Li = mints.so_angular_momentum()
+
+
+
+
+
+
+set globals {
+  basis sto-3g
+}
+
+mints = MintsHelper()
+
+Pi = mints.so_nabla()
+
+
+
+
+
+set globals {
+  basis 6-311G**
+}
+
+mints = MintsHelper()
+
+Pi = mints.so_nabla()
+
+
+
+
+
+set globals {
+  basis cc-pVTZ
+}
+
+mints = MintsHelper()
+
+Pi = mints.so_nabla()
+
+
+
+

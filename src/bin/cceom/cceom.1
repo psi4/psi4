@@ -1,0 +1,68 @@
+.TH optking 1 "Sept 2002" "" ""
+.  \"
+.  \" Notice of Document Modification
+.  \"
+.  \"   man page created by Rollin King, Sept 2002
+.  \"
+.  \"
+.LP NAME
+cceom \- equation of motion coupled cluster energy program
+
+.LP 
+\fBDESCRIPTION\fP
+.LP
+The program
+.B cceom
+calculates EOM-CCSD energies using a Davidson algorithm to solve
+for the right-hand eigenvectors of the CC Hamiltonian.
+
+.LP
+\fBCOMMAND LINE ARGUMENTS\fP
+.LP
+After internal coordinates are detected or generated, optking will
+enter a run-time mode dependent on command line arguments. 
+.LP
+.nf
+--dot_with_Lg    \-  check the orthogonality of the excited right-hand eigenvector with
+                 \-  the ground state left eigenvector, lambda.  cclambda must be run
+                 \- first for this to work
+.fi
+
+.LP
+\fBREFERENCES\fP
+.IP "1."
+The equation of motion coupled-cluster method.  A systematic biorthogonal approach
+to molecular excitation energies, transition probabilities, and excited state properties,
+J. F. Stanton and R. J. Bartlett, J. Chem. Phys. 98, 7029 (1993).
+
+.IP "\fBEOM_REFERENCE =\fP \fIinteger\fP"
+specifies the algorithm used by cceom.  useful for debugging.  also
+must currently be set to ROHF, if you want to get triplet excited states
+from a singlet ground state.  The default is whatever "REFERENCE" is.
+
+.IP "\fBSTATES_PER_IRREP =\fP \fIarray of integers\fP"
+specifies the number of states of each irreducible representation
+desired.  For example, in C2v symmetry, (0 2 0 0) specifies two excited
+states of A2 symmetry to be solved, regardless of the symmetry of the
+ground state.
+
+.IP "\fBPROP_SYM =\fP \fIinteger\fP"
+specifies the symmetry of the state that should be used to compute properties.
+defaults to the last irrep for which states are requested.
+
+.IP "\fBPROP_ROOT =\fP \fIinteger\fP"
+specifies the number of the root (within its irrep) that should be used
+to compute properties.  defaults to the highest root requested.
+
+.IP "\fBEXCITATION_RANGE =\fP \fIexcitation_range\fP"
+used to generate initial guesses.  the larger the value, the more initial
+guesses are made in the Davidson algorithm.
+
+.IP "\fBRESIDUAL_TOL =\fP \fIinteger\fP"
+Davidson algorithm will converge until the norm of the residual vector is
+less than 10^(-integer).  default if 4.
+
+.IP "\fBEVAL_TOL =\fP \fIinteger\fP"
+Davidson algorithm will converge until the change in the excitation energy
+is less than 10^(-integer).  default if 6.
+

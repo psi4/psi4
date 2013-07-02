@@ -1,0 +1,21 @@
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+include ../MakeVars
+
+LDLIBS += $(BLAS)
+
+PSITARGET = $(top_objdir)/lib/libPSI_thermo.a
+
+CXXSRC = \
+thermo.cc
+
+BINOBJ = $(CXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+ifneq "$(MAKECMDGOALS)" "clean"
+$(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
+include $(BINOBJ:%.o=%.d)
+endif
+

@@ -1,0 +1,41 @@
+#! SAPT0 cc-pVDZ computation of the ethene-ethyne interaction energy, using the cc-pVDZ-JKFIT RI basis for SCF
+#! and cc-pVDZ-RI for SAPT.  Monomer geometries are specified using Cartesian coordinates.
+
+memory 250 mb
+
+
+molecule ethene_ethyne {
+     0 1
+     C     0.000000    -0.667578    -2.124659
+     C     0.000000     0.667578    -2.124659
+     H     0.923621    -1.232253    -2.126185
+     H    -0.923621    -1.232253    -2.126185
+     H    -0.923621     1.232253    -2.126185
+     H     0.923621     1.232253    -2.126185
+     --
+     0 1
+     C     0.000000     0.000000     2.900503
+     C     0.000000     0.000000     1.693240
+     H     0.000000     0.000000     0.627352
+     H     0.000000     0.000000     3.963929
+     units angstrom
+}
+
+set globals {
+    basis         cc-pvdz
+    guess         sad
+    scf_type      df
+    sad_print     2
+    d_convergence 11
+    puream        true
+    print         1
+}
+
+energy('sapt0')
+
+Eelst = psi4.get_variable("SAPT ELST ENERGY")
+Eexch = psi4.get_variable("SAPT EXCH ENERGY")
+Eind  = psi4.get_variable("SAPT IND ENERGY")
+Edisp = psi4.get_variable("SAPT DISP ENERGY")
+ET    = psi4.get_variable("SAPT SAPT0 ENERGY")
+

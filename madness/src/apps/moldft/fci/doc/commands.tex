@@ -1,0 +1,62 @@
+\newcommand{\abinitio}{\mbox{\em ab initio\/}}
+\newcommand{\Abinitio}{\mbox{\em Ab initio\/}}
+\newcommand{\AbInitio}{\mbox{\em Ab Initio\/}}
+
+\newcommand{\Eh}{\mbox{$E_{h}$}}
+\newcommand{\au}{\mbox{au.}}
+\newcommand{\MBs}{\mbox{~Mbytes/s}}
+\newcommand{\Mflops}{\mbox{~MFLOP/s}}
+\newcommand{\Gflops}{\mbox{~GFLOP/s}}
+
+
+% Stuff for slides
+
+\newcommand{\rline}{\noindent\rule{\textwidth}{1mm}} 
+
+\newcommand{\hpccg}{
+  \vfill 
+  \Red{\rline}\\
+  \NavyBlue{\large High Performance Computational Chemistry, EMSL}\\[0.1in]
+  \Black{{\footnotesize \hfill Robert J. Harrison, \today, page \thepage}}}
+
+\newcommand{\slidehead}{
+  \background{White}
+  \textNavyBlue
+  \Red{\rline}\\[0.25in]}
+  
+
+\newcommand{\slidefoot}{\hpccg}
+
+\newcommand{\slidebegin}[1]{\slidehead \LARGE \begin{centering} \Black{#1} \\[0.25in] \end{centering} \begin{list}{\labelitemi}{\setlength{\leftmargin}{0in}}}
+
+\newcommand{\slideend}{\end{list}\slidefoot\newpage}
+
+\newcommand{\slidelistbegin}{\textEmerald \Large \begin{list}{\labelitemii}{}}
+
+\newcommand{\slidelistend}{\end{list} \LARGE \textNavyBlue}
+
+\newcommand{\doublespace}{\renewcommand{\baselinestretch}{1.8}\LARGE\normalsize}
+\newcommand{\singlespace}{\renewcommand{\baselinestretch}{1.0}\LARGE\normalsize}
+
+\newcommand{\pderiv}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\ptwoderiv}[3]{\frac{\partial^2 #1}{\partial #2 \partial #3}}
+
+\newcommand{\support}{
+This work was supported by the U.S. Department of Energy, Office of
+Basic Energy Sciences, Division of Chemical Sciences, under contract
+W-31-109-ENG-38.}
+
+\newcommand{\license}{
+The submitted manuscript has been authored by a contractor of the U.S.
+Government under contract No. W-31-109-ENG-38. Accordingly, the U.S.
+Government retains a non-exclusive, royalty-free license to publish or
+reproduce the published form of this contribution, or allow others to
+do so, for U.S. Government purposes.}
+
+\newcommand{\blicense}{\fbox{\parbox{1.5in}{\tiny \sloppy
+The submitted manuscript has been authored by a contractor of the U.S.
+Government under contract No. W-31-109-ENG-38. Accordingly, the U.S.
+Government retains a non-exclusive, royalty-free license to publish or
+reproduce the published form of this contribution, or allow others to
+do so, for U.S. Government purposes.}}}
+

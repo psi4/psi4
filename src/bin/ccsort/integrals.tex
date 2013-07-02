@@ -1,0 +1,283 @@
+%\documentstyle[aps,preprint]{revtex4}
+\documentclass[12pt]{revtex4}
+
+\pagestyle{empty}
+
+\def\ket#1{$| #1 \rangle$}
+\def\bra#1{$\langle #1 |$}
+\def\Int#1#2{\bra{#1}$ #2 \rangle$}
+\def\AInt#1#2{\bra{#1}\ket{#2}}
+\def\alp#1{$#1$}
+\def\bet#1{$\overline{#1}$}
+
+\begin{document}
+
+\begin{table}
+\squeezetable
+\caption{Sorted integral and cluster amplitude lists for RHF and ROHF
+cases.  The storage of each integral type is given in parentheses, if
+necessary.  Pair indices are given for the DPD ordering: occupied and
+virtual.}
+\begin{center}
+\renewcommand{\arraystretch}{0.95}
+\begin{tabular}{llccl}
+File macro & Integral type & pq & rs & LIBPSIO Keyword \\
+\hline
+{\tt CC\_AINTS} & \Int{ij}{kl} &  0 &  0 & ``A \Int{ij}{kl}'' \\
+\hline
+{\tt CC\_BINTS} & \Int{ab}{cd} &  5 &  5 & ``B \Int{ab}{cd}'' \\
+                &\AInt{ab}{cd} (a$>$b,c$>$d) &  7 &  7 & ``B \AInt{ab}{cd} (a$>$b,c$>$d)'' \\
+\hline
+{\tt CC\_CINTS} & \Int{ia}{jb} & 10 & 10 & ``C \Int{ia}{jb}'' \\
+                &\AInt{ia}{jb} & 10 & 10 & ``C \AInt{ia}{jb}'' \\
+                & \Int{ia}{jb} (bi,ja) & 11 & 10 & ``C \Int{ia}{jb} (bi,ja)'' \\
+                & \Int{ia}{jb} (ia,bj) & 10 & 11 & ``C \Int{ia}{jb} (ia,bj)'' \\
+                &\AInt{ia}{jb} (bi,ja) & 11 & 10 & ``C \AInt{ia}{jb} (bi,ja)'' \\
+                &\AInt{ia}{jb} (ia,bj) & 10 & 11 & ``C \AInt{ia}{jb} (ia,bj)'' \\
+\hline
+{\tt CC\_DINTS} & \Int{ij}{ab} &  0 &  5 & ``D \Int{ij}{ab}'' \\
+                &\AInt{ij}{ab} (i$>$j,a$>$b) &  2 &  7 & ``D \AInt{ij}{ab} (i$>$j,a$>$b)'' \\
+                &\AInt{ij}{ab} (i$>$j,ab) &  2 &  5 & ``D \AInt{ij}{ab} (i$>$j,ab)'' \\
+                &\AInt{ij}{ab} (ij,a$>$b) &  0 &  7 & ``D \AInt{ij}{ab} (ij,a$>$b)'' \\
+                & \Int{ij}{ab} (ia,jb) & 10 & 10 & ``D \AInt{ij}{ab} (ia,jb)'' \\
+                & \Int{ij}{ab} (ai,jb) & 11 & 10 & ``D \AInt{ij}{ab} (ai,jb)'' \\
+                & \Int{ij}{ab} (ib,ja) & 10 & 10 & ``D \AInt{ij}{ab} (ib,ja)'' \\
+                & \Int{ij}{ab} (ib,aj) & 10 & 10 & ``D \AInt{ij}{ab} (ib,aj)'' \\
+                & \Int{ij}{ab} (ia,bj) & 10 & 11 & ``D \AInt{ij}{ab} (ia,bj)'' \\
+                &\AInt{ij}{ab} (ia,jb) & 10 & 10 & ``D \AInt{ij}{ab} (ia,jb)'' \\
+                &\AInt{ij}{ab} (ia,bj) & 10 & 11 & ``D \AInt{ij}{ab} (ia,bj)'' \\
+                &2\AInt{ij}{ab} - \AInt{ij}{ba} &  0 &  5 & ``D 2\AInt{ij}{ab} - \AInt{ij}{ba}'' \\
+                &2\AInt{ij}{ab} - \AInt{ij}{ba} (ia,jb) & 10 & 10 & ``D 2\AInt{ij}{ab} - \AInt{ij}{ba} (ia,jb)'' \\
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{table}
+\squeezetable
+\begin{center}
+\renewcommand{\arraystretch}{0.95}
+\begin{tabular}{llccl}
+File macro & Integral type & pq & rs & LIBPSIO Keyword \\
+\hline
+{\tt CC\_EINTS} & \Int{ai}{jk} & 11 &  0 & ``E \Int{ai}{jk}'' \\
+                & \Int{ij}{ka} &  0 & 10 & ``E \Int{ij}{ka}'' \\
+                &\AInt{ij}{ka} (i$>$j,ka) &  2 & 10 & ``E \AInt{ij}{ka} (i$>$j,ka)'' \\
+                &\AInt{ij}{ka} (i$>$j,ak) &  2 & 11 & ``E \AInt{ij}{ka} (i$>$j,ak)'' \\
+                & \Int{ij}{ka} (ij,ak) &  0 & 11 & ``E \Int{ij}{ka} (ij,ak)'' \\
+                & \Int{ia}{jk} & 10 &  0 & ``E \Int{ia}{jk}'' \\
+                & \Int{ij}{ak} &  0 & 11 & ``E \Int{ij}{ak}'' \\
+                & \Int{ai}{kj} & 11 &  0 & ``E \Int{ai}{kj}'' \\
+                &2\AInt{ai}{jk} - \AInt{ai}{kj} & 11 &  0 & ``E 2\AInt{ai}{jk} - \AInt{ai}{kj}'' \\
+\hline
+{\tt CC\_FINTS} & \Int{ia}{bc} & 10 &  5 & ``F \Int{ia}{bc}'' \\
+                & \Int{ia}{cb} & 10 &  5 & ``F \Int{ia}{cb}'' \\
+                & \Int{ai}{bc} & 11 &  5 & ``F \Int{ai}{bc}'' \\
+                &2\Int{ia}{bc} - \Int{ia}{cb} & 10 &  5 & ``2\Int{ia}{bc} - \Int{ia}{cb}'' \\
+                & \Int{Ab}{Ci} & 28 & 26 & ``F \Int{Ab}{Ci}'' \\
+                & \Int{iA}{bC} & 27 & 29 & ``F \Int{iA}{bC}'' \\
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{table}
+\squeezetable
+\caption{Sorted integral and cluster amplitude lists for UHF cases.
+Capital letters refer to alpha spin-orbitals and lower-case letters to
+beta spin-orbitals.  The storage of each integral type is given in
+parentheses, if necessary.  Pair indices are given for the DPD
+ordering: $\alpha$-occupied, $\alpha$-virtual, $\beta$-occupied,
+$\beta$-virtual.}
+\begin{center}
+\renewcommand{\arraystretch}{0.95}
+\begin{tabular}{llccl}
+File macro & Integral type & pq & rs & LIBPSIO Keyword \\
+\hline
+{\tt CC\_AINTS} & \Int{IJ}{KL} &  0 &  0 & ``A \Int{IJ}{KL}'' \\
+                & \Int{ij}{kl} & 10 & 10 & ``A \Int{ij}{kl}'' \\
+                & \Int{Ij}{Kl} & 22 & 22 & ``A \Int{Ij}{Kl}'' \\
+\hline
+{\tt CC\_BINTS} & \Int{AB}{CD} &  5 &  5 & ``B \Int{AB}{CD}'' \\
+                & \Int{ab}{cd} & 15 & 15 & ``B \Int{ab}{cd}'' \\
+                & \Int{Ab}{Cd} & 28 & 28 & ``B \Int{Ab}{Cd}'' \\
+\hline
+{\tt CC\_CINTS} & \Int{IA}{JB} & 20 & 20 & ``C \Int{IA}{JB}'' \\
+                & \AInt{IA}{JB} & 20 & 20 & ``C \AInt{IA}{JB}'' \\
+                & \AInt{IA}{JB} (IA,BJ) & 20 & 21 & ``C \AInt{IA}{JB} (IA,BJ)'' \\
+                & \Int{ia}{jb} & 30 & 30 & ``C \Int{ia}{jb}'' \\
+                & \AInt{ia}{jb} & 30 & 30 & ``C \AInt{ia}{jb}'' \\
+                & \AInt{ia}{jb} (ia,bj) & 30 & 31 & ``C \AInt{ia}{jb} (ia,bj)'' \\
+                & \Int{Ia}{Jb} & 24 & 24 & ``C \Int{Ia}{Jb}'' \\
+                & \Int{Ia}{Jb} (Ia,bJ) & 24 & 25 & ``C \Int{Ia}{Jb} (Ia,bJ)'' \\
+                & \Int{Ai}{Bj} & 26 & 26 & ``C \Int{Ai}{Bj}'' \\
+                & \Int{iA}{jB} & 27 & 27 & ``C \Int{iA}{jB}'' \\
+                & \Int{Ai}{Bj} (iA,Bj) & 27 & 26 & ``C \Int{Ai}{Bj}'' \\
+\hline
+{\tt CC\_DINTS} & \Int{IJ}{AB} &  0 &  5 & ``D \Int{IJ}{AB}'' \\
+                &\AInt{IJ}{AB} (I$>$J,A$>$B) & 2 & 7 & ``D \AInt{IJ}{AB} (I$>$J,A$>$B)'' \\
+                &\AInt{IJ}{AB} (I$>$J,AB) & 2 & 5 & ``D \AInt{IJ}{AB} (I$>$J,AB)''\\
+                &\AInt{IJ}{AB} (IJ,A$>$B) & 0 & 7 & ``D \AInt{IJ}{AB} (IJ,A$>$B)''\\
+                &\AInt{IJ}{AB} &  0 &  5 & ``D \AInt{IJ}{AB}'' \\
+                &\AInt{IJ}{AB} (IA,JB) & 20 & 20 & ``D \AInt{IJ}{AB} (IA,JB)'' \\
+                &\AInt{IJ}{AB} (IA,BJ) & 20 & 21 & ``D \AInt{IJ}{AB} (IA,BJ)''\\
+                & \Int{ij}{ab} & 10 & 15 & ``D \Int{ij}{ab}''\\
+                &\AInt{ij}{ab} (i$>$j,a$>$b) & 12 & 17 & ``D \AInt{ij}{ab} (i$>$j,a$>$b)'' \\
+                &\AInt{ij}{ab} (i$>$j,ab) & 12 & 15 & ``D \AInt{ij}{ab} (i$>$j,ab)''\\
+                &\AInt{ij}{ab} (ij,a$>$b) & 10 & 17 & ``D \AInt{ij}{ab} (ij,a$>$b)''\\
+                &\AInt{ij}{ab} & 10 & 15 & ``D \AInt{ij}{ab}'' \\
+                &\AInt{ij}{ab} (ia,jb) & 30 & 30 & ``D \AInt{ij}{ab} (ia,jb)'' \\
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{table}
+\squeezetable
+\begin{center}
+\renewcommand{\arraystretch}{0.95}
+\begin{tabular}{llccl}
+File macro & Integral type & pq & rs & LIBPSIO Keyword \\
+\hline
+{\tt CC\_DINTS} &\AInt{ij}{ab} (ia,bj) & 30 & 31 & ``D \AInt{ij}{ab} (ia,bj)''\\
+                & \Int{iJ}{aB} & 23 & 29 & ``D \Int{iJ}{aB}'' \\
+                & \Int{Ij}{Ab} & 22 & 28 & ``D \Int{Ij}{Ab}'' \\
+                & \Int{Ij}{Ab} (Ib,Aj) & 24 & 26 & ``D \Int{Ij}{Ab} (Ib,Aj)'' \\
+                & \Int{Ij}{Ab} (IA,jb) & 20 & 30 & ``D \Int{Ij}{Ab} (IA,jb)''\\
+                & \Int{Ij}{Ab} (ia,JB) & 30 & 20 & ``D \Int{Ij}{Ab} (ia,JB)''\\
+                & \Int{Ij}{Ab} (IA,bj) & 20 & 31 & ``D \Int{Ij}{Ab} (IA,bj)''\\
+                & \Int{Ij}{Ab} (ia,BJ) & 30 & 21 & ``D \Int{Ij}{Ab} (ia,BJ)''\\
+                & \Int{Ij}{Ab} (iB,aJ) & 27 & 25 & ``D \Int{Ij}{Ab} (iB,aJ)''\\
+                & \Int{Ij}{Ab} (Ib,jA) & 24 & 27 & ``D \Int{Ij}{Ab} (Ib,jA)''\\
+                & \Int{iJ}{aB} & 23 & 29 & ``D \Int{iJ}{aB}'' \\
+                & \Int{iJ}{aB} (iB,aJ) & 27 & 25 & ``D \Int{iJ}{aB} (iB,aJ)'' \\
+                & \Int{iJ}{aB} (iB,Ja) & 27 & 24 & ``D \Int{iJ}{aB} (iB,Ja)'' \\
+\hline
+{\tt CC\_EINTS} & \Int{AI}{JK} & 21 &  0 & ``E \Int{AI}{JK}'' \\
+                & \Int{IJ}{KA} &  0 & 20 & ``E \Int{IJ}{KA}'' \\
+                &\AInt{IJ}{KA} (I$>$J,KA) &  2 & 20 & ``E \AInt{IJ}{KA} (I$>$J,KA)'' \\
+                &\AInt{IJ}{KA} (I$>$J,AK) &  2 & 21 & ``E \AInt{IJ}{KA} (I$>$J,AK)'' \\
+                & \Int{ai}{jk} & 31 & 10 & ``E \Int{ai}{jk}'' \\
+                & \Int{ij}{ka} & 10 & 30 & ``E \Int{ij}{ka}'' \\
+                &\AInt{ij}{ka} (i$>$j,ka) & 12 & 30 & ``E \AInt{ij}{ka} (i$>$j,ka)'' \\
+                &\AInt{ij}{ka} (i$>$j,ak) & 12 & 31 & ``E \AInt{ij}{ka} (i$>$j,ak)'' \\
+                & \Int{Ai}{Jk} & 26 & 22 & ``E \Int{Ai}{Jk}'' \\
+                & \Int{Ij}{Ka} & 22 & 24 & ``E \Int{Ij}{Ka}'' \\
+                & \Int{iJ}{kA} & 23 & 27 & ``E \Int{iJ}{kA}'' \\
+                & \Int{Ij}{Ak} & 22 & 26 & ``E \Int{Ij}{Ak}'' \\
+                & \Int{iJ}{aK} & 23 & 25 & ``E \Int{iJ}{aK}'' \\
+                & \Int{Ia}{Jk} & 24 & 22 & ``E \Int{Ia}{Jk}'' \\
+\hline
+{\tt CC\_FINTS} & \Int{IA}{BC} & 20 &  5 & ``F \Int{IA}{BC}'' \\
+                & \Int{AI}{BC} & 21 &  5 & ``F \Int{AI}{BC}'' \\
+                & \Int{ia}{bc} & 30 & 15 & ``F \Int{ia}{bc}'' \\
+                & \Int{ai}{bc} & 31 & 15 & ``F \Int{ai}{bc}'' \\
+                & \Int{Ia}{Bc} & 24 & 28 & ``F \Int{Ia}{Bc}'' \\
+                & \Int{aI}{bC} & 25 & 29 & ``F \Int{aI}{bC}'' \\
+                & \Int{Ab}{Ci} & 28 & 26 & ``F \Int{Ab}{Ci}'' \\
+                & \Int{Ai}{Bc} & 26 & 28 & ``F \Int{Ai}{Bc}'' \\
+                & \Int{iA}{bC} & 27 & 29 & ``F \Int{iA}{bC}'' \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+                                                                                                                                                                                    
+\begin{table}
+\squeezetable
+\begin{center}
+\renewcommand{\arraystretch}{0.95}
+\begin{tabular}{llccl}
+File macro & Item Type & p & q & LIBPSIO Keyword \\
+\hline
+{\tt CC\_TAMPS} & T2(IJ,AB) (I$>$J,A$>$B) & 2 & 7 & ``tIJAB'' \\
+                & T2(IJ,AB) (IA,JB) & 20 & 20 & ``tIAJB'' \\
+                & T2(ij,ab) (i$>$j,a$>$b) & 12 & 17 & ``tijab'' \\
+                & T2(ij,ab) (ia,jb) & 30 & 30 & ``tiajb'' \\
+                & T2(Ij,Ab) (Ij,Ab) & 22 & 28 & ``tIjAb'' \\
+                & T2(Ij,Ab) (IA,jb) & 20 & 30 & ``tIAjb'' \\
+                & T2(iJ,aB) (ia,JB) & 30 & 20 & ``tiaJB'' \\
+                & T2(Ij,Ab) (Ib,jA) & 24 & 27 & ``tIbjA'' \\
+                & T2(iJ,aB) (iB,Ja) & 27 & 24 & ``tiBJa'' \\
+                & T2(iJ,aB) (iJ,aB) & 23 & 29 & ``tiJaB'' \\
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{table}
+\squeezetable
+\caption{One electron integrals for UHF cases.  Hamiltonian and diagonal 
+fock matrix elements and denominators for t amplitudes. Capital letters refer 
+to alpha spin-orbitals and lower-case letters to beta spin-orbitals.}
+\begin{center}
+\renewcommand{\arraystretch}{0.95}
+\begin{tabular}{llccl}
+File macro & Item Type & p & q & LIBPSIO Keyword \\
+\hline
+{\tt CC\_OEI} &h$_{IJ}$ &  0 &  0 & ``h(I,J)'' \\
+              &h$_{ij}$ &  2 &  2 & ``h(i,j)'' \\
+              &h$_{AB}$ &  1 &  1 & ``h(A,B)'' \\
+              &h$_{ab}$ &  3 &  3 & ``h(a,b)'' \\
+              &h$_{IA}$ &  0 &  1 & ``h(I,A)'' \\
+              &h$_{ia}$ &  0 &  2 & ``h(i,a)'' \\
+              &f$_{IJ}$ &  0 &  0 & ``fIJ'' \\
+              &f$_{ij}$ &  2 &  2 & ``fij'' \\
+              &f$_{AB}$ &  1 &  1 & ``fAB'' \\
+              &f$_{ab}$ &  3 &  3 & ``fab'' \\
+              &f$_{IA}$ &  0 &  1 & ``fIA'' \\
+              &f$_{ia}$ &  2 &  3 & ``fia'' \\
+              &D$_{IA}$ &  0 &  1 & ``dIA'' \\
+              &D$_{ia}$ &  2 &  3 & ``dia'' \\
+              &D$_{IJAB}$ &  1 &  6 & ``dIJAB'' \\
+              &D$_{ijab}$ & 11 & 16 & ``dijab'' \\
+              &D$_{IjAb}$ & 22 & 28 & ``dIjAb'' \\
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{table}
+\squeezetable
+\caption{One electron integrals for RHF and ROHF cases.  Diagonal fock 
+matrix elements and denominators for t amplitudes. Capital letters refer
+to alpha spin-orbitals and lower-case letters to beta spin-orbitals.}
+\begin{center}
+\renewcommand{\arraystretch}{0.95}
+\begin{tabular}{llccl}
+File macro & Item Type & p & q & LIBPSIO Keyword \\
+\hline
+{\tt CC\_OEI} &h$_{ij}$ & 0 & 0 & ``h(i,j)'' \\
+              &h$_{ab}$ & 1 & 1 & ``h(a,b)'' \\
+              &h$_{ia}$ & 0 & 1 & ``h(i,a)'' \\
+              &f$_{IJ}$ & 0 & 0 & ``fIJ'' \\
+              &f$_{ij}$ & 0 & 0 & ``fij'' \\
+              &f$_{AB}$ & 1 & 1 & ``fAB'' \\
+              &f$_{ab}$ & 1 & 1 & ``fab'' \\
+              &D$_{IA}$ & 0 & 1 & ``dIA'' \\
+              &D$_{ia}$ & 0 & 1 & ``dia'' \\
+              &D$_{IJAB}$ & 1 & 6 & ``dIJAB'' \\
+              &D$_{ijab}$ & 1 & 6 & ``dijab'' \\
+              &D$_{IjAb}$ & 0 & 5 & ``dIjAb'' \\
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{table}
+\squeezetable
+\caption{X-, Y- and Z-components of the dipole moment.}
+\begin{center}
+\renewcommand{\arraystretch}{0.95}
+\begin{tabular}{llccl}
+File macro & Item Type & p & q & LIBPSIO Keyword \\
+\hline
+{\tt CC\_OEI} &$\mu_x$(IJ) & 0 & 0 & ``Mu\_X\_IJ'' \\
+              &$\mu_x$(AB) & 1 & 1 & ``Mu\_X\_AB'' \\
+              &$\mu_x$(IA) & 0 & 1 & ``Mu\_X\_IA'' \\
+              &$\mu_x$(AI) & 1 & 0 & ``Mu\_X\_AI'' \\
+              &$\mu_y$(IJ) & 0 & 0 & ``Mu\_Y\_IJ'' \\
+              &$\mu_y$(AB) & 1 & 1 & ``Mu\_Y\_AB'' \\
+              &$\mu_y$(IA) & 0 & 1 & ``Mu\_Y\_IA'' \\
+              &$\mu_y$(AI) & 1 & 0 & ``Mu\_Y\_AI'' \\
+              &$\mu_z$(IJ) & 0 & 0 & ``Mu\_Z\_IJ'' \\
+              &$\mu_z$(AB) & 1 & 1 & ``Mu\_Z\_AB'' \\
+              &$\mu_z$(IA) & 0 & 1 & ``Mu\_Z\_IA'' \\
+              &$\mu_z$(AI) & 1 & 0 & ``Mu\_Z\_AI'' \\
+\end{tabular}
+\end{center}
+\end{table}
+\end{document}

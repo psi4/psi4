@@ -1,0 +1,31 @@
+
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+FC_SYMBOL = @FC_SYMBOL@
+
+include ../MakeVars
+
+PSITARGET = $(top_objdir)/lib/libPSI_yeti.a
+
+CXXDEF += -DFC_SYMBOL=$(FC_SYMBOL) -DHAVE_PSI=1
+HAVE_MADNESS=@HAVE_MPI@
+ifeq ($(HAVE_MADNESS),1)
+   CXXDEF += -DHAVE_MPI
+endif
+
+TRUECXXSRC = $(notdir $(wildcard $(srcdir)/*.cc))
+DEPENDINCLUDE = $(notdir $(wildcard $(srcdir)/*.h))
+
+LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+install_inc:: $(DEPENDINCLUDE)
+	$(MKDIRS) $(DESTDIR)$(incdir)/libyeti
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libyeti
+
+ifneq "$(MAKECMDGOALS)" "clean"
+include $(LIBOBJ:%.o=%.d)
+endif
+

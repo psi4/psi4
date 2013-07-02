@@ -1,0 +1,18 @@
+#! Single point energies of multiple excited states with EOM-CCSD
+
+memory 250 mb
+
+
+molecule h2o {
+  O
+  H 1 0.9
+  H 1 0.9 2 104.0
+}
+
+set {
+  basis cc-pVDZ
+  roots_per_irrep [2, 2, 2, 2]
+}
+
+energy('eom-ccsd')
+

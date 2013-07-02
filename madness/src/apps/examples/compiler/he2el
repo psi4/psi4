@@ -1,0 +1,18 @@
+Let
+  Omega = [-20, 20]^6
+  r1 = x -> sqrt(x_0^2 + x_1^2 + x_2^2)
+  r2 = x -> sqrt(x_3^2 + x_4^2 + x_5^2)
+  r12 = x -> sqrt((x_0 - x_3)^2 + (x_1 - x_4)^2 + (x_2 - x_5)^2)
+  g = x -> (1 + 1/2 * r12(x)) * exp(-2*(r1(x) + r2(x)))
+  v = x -> -2/r1(x) - 2/r2(x) + 1/r12(x)
+In
+  psi = F g
+  nu = F v  
+  S = < psi | psi >
+  V = < psi | nu * psi >
+  T = 1/2 * sum_i=0^5 < del_i psi | del_i psi >
+  print S, V, T, (T + V)/S
+End
+
+
+

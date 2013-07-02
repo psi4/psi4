@@ -1,0 +1,516 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-beta2+ Driver
+
+               Git: Rev 421ae702f531083adbef368dfae290b0fc25ec18
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+    Process ID:  38250
+    PSI4DATADIR: /Users/rking/psi4/lib
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! Tests to determine full point group symmetry.  Currently, these only matter
+#! for the rotational symmetry number in thermodynamic computations.
+
+memory 250 mb
+
+molecule C2H2 {
+  C 0 0  r1
+  C 0 0 -r1
+  H 0 0  r2
+  H 0 0 -r2
+  r1 = 0.65
+  r2 = 1.75
+}
+C2H2.update_geometry()
+print_out("\t" + C2H2.get_full_point_group() + "\n" )
+compare_strings("D_inf_h", C2H2.get_full_point_group(), "D_inf_h point group");  #TEST
+
+
+molecule N2 {
+  N 0.0 0.0 0.0
+  N 0.0 0.0 r
+  r = 1.1
+}
+N2.update_geometry()
+print_out("\t" + N2.get_full_point_group() + "\n" )
+compare_strings("D_inf_h", N2.get_full_point_group(), "D_inf_h point group");  #TEST
+
+
+molecule CN {
+  0 2
+  C 0.0 0.0 0.0
+  N 0.0 0.0 r
+  r = 1.4
+}
+CN.update_geometry()
+print_out("\t" + CN.get_full_point_group() + "\n" )
+compare_strings("C_inf_v", CN.get_full_point_group(), "C_inf_v point group");  #TEST
+
+
+molecule HCCCl {
+  H  0 0 -1.0
+  C  0 0  0.0
+  C  0 0  1.1
+  Cl 0 0  2.6
+}
+HCCCl.update_geometry()
+print_out("\t" + HCCCl.get_full_point_group() + "\n" )
+compare_strings("C_inf_v", HCCCl.get_full_point_group(), "C_inf_v point group");  #TEST
+
+
+molecule CHFClBr {
+  H
+  C  1 1.0
+  F  2 1.0 1 105.0
+  Cl 2 1.0 1 105.0 3  120.0
+  Br 2 1.0 1 105.0 3 -120.0
+}
+CHFClBr.update_geometry()
+print_out("\t" + CHFClBr.get_full_point_group() + "\n" )
+compare_strings("C1", CHFClBr.get_full_point_group(), "C1 point group");  #TEST
+
+
+molecule CH2ClBr {
+  Cl
+  C  1 1.0
+  Br 2 1.0 1 105.0
+  H  2 1.0 1 105.0 3  120.0
+  H  2 1.0 1 105.0 3 -120.0
+}
+CH2ClBr.update_geometry()
+print_out("\t" + CH2ClBr.get_full_point_group() + "\n" )
+compare_strings("Cs", CH2ClBr.get_full_point_group(), "Cs point group");  #TEST
+
+
+molecule HOCl {
+  H
+  O 1 1.0
+  Cl 2 1.7 1 110.0
+}
+HOCl.update_geometry()
+print_out("\t" + HOCl.get_full_point_group() + "\n" )
+compare_strings("Cs", HOCl.get_full_point_group(), "Cs point group");  #TEST
+
+
+molecule C4H4Cl2F2 {
+  units    bohr
+  C     0.432781050498     1.898774028282     0.810337938486
+  C    -1.658744642774     0.805191018766    -0.984829058337
+  C     1.658744642774    -0.805191018766     0.984829058337
+  C    -0.432781050498    -1.898774028282    -0.810337938486
+  H    -0.317971784026     2.532165941971     2.640915161238
+  H    -1.615729990528     1.614062700629    -2.881498569657
+  H     1.615729990528    -1.614062700629     2.881498569657
+  H     0.317971784026    -2.532165941971    -2.640915161238
+  Cl   -4.852178875691     1.024620478757     0.190249941464
+  Cl    4.852178875691    -1.024620478757    -0.190249941464
+  F    -1.913713787211    -3.739567959534     0.258534542158
+  F     1.913713787211     3.739567959534    -0.258534542158
+}
+C4H4Cl2F2.update_geometry()
+print_out("\t" + C4H4Cl2F2.get_full_point_group() + "\n" )
+compare_strings("Ci", C4H4Cl2F2.get_full_point_group(), "Ci point group");  #TEST
+
+
+molecule HOOH_dimer {
+  H   0.9911262285  -1.7979226333   0.1465182515
+  O   2.7691093095  -1.3485218649  -0.0071557684
+  O   2.5178030311   1.3808374923  -0.1154058014
+  H   3.2883200453   1.8308595095   1.4757706825
+  H  -3.2883200453  -1.8308595095  -1.4757706825
+  O  -2.5178030311  -1.3808374923   0.1154058014
+  O  -2.7691093095   1.3485218649   0.0071557684
+  H  -0.9911262285   1.7979226333  -0.1465182515
+}
+HOOH_dimer.update_geometry()
+print_out("\t" + HOOH_dimer.get_full_point_group() + "\n" )
+compare_strings("Ci", HOOH_dimer.get_full_point_group(), "Ci point group");  #TEST
+
+
+molecule HOOH {
+  H
+  O 1 1.0 
+  O 2 1.5 1 110.0
+  H 3 1.0 2 110.0 1 60.0
+}
+HOOH.update_geometry()
+print_out("\t" + HOOH.get_full_point_group() + "\n" )
+compare_strings("C2", HOOH.get_full_point_group(), "C2 point group");  #TEST
+
+
+molecule NOHOHOH {
+  X
+  N 1 1.0
+  O 2 1.5 1 100.0
+  O 2 1.5 1 100.0  3  120.0
+  O 2 1.5 1 100.0  3 -120.0
+  H 3 1.0 2 110.0 4 0.0
+  H 4 1.0 2 110.0 5 0.0
+  H 5 1.0 2 110.0 3 0.0
+}
+NOHOHOH.update_geometry()
+print_out("\t" + NOHOHOH.get_full_point_group() + "\n" )
+compare_strings("C3", NOHOHOH.get_full_point_group(), "C3 point group");  #TEST
+
+
+molecule H2O {
+  H
+  O 1 1.0
+  H 2 1.0 1 109.5
+}
+H2O.update_geometry()
+print_out("\t" + H2O.get_full_point_group() + "\n" )
+compare_strings("C2v", H2O.get_full_point_group(), "C2v point group"); # TEST
+
+
+molecule CH2F2 {
+  units au
+  C     0.0000000000  -0.0000000000   1.0890958457
+  F     0.0000000000  -2.1223155812  -0.4598161475
+  F    -0.0000000000   2.1223155812  -0.4598161475
+  H     1.7084139850   0.0000000000   2.1841068002
+  H    -1.7084139850  -0.0000000000   2.1841068002
+}
+CH2F2.update_geometry()
+print_out("\t" + CH2F2.get_full_point_group() + "\n" )
+compare_strings("C2v", CH2F2.get_full_point_group(), "C2v point group");  #TEST
+
+
+molecule NH3 {
+  X
+  N 1 1.0
+  H 2 rNH 1 aXNH
+  H 2 rNH 1 aXNH 3 120.0
+  H 2 rNH 1 aXNH 4 120.0
+
+  rNH = 0.95
+  aXNH = 115.0
+}
+NH3.update_geometry()
+print_out("\t" + NH3.get_full_point_group() + "\n" )
+compare_strings("C3v", NH3.get_full_point_group(), "C3v point group");     #TEST
+
+
+molecule BrF5 {
+ F
+ Br 1 r
+ F  2 r 1 90.0
+ F  2 r 3 90.0 1  90.0
+ F  2 r 3 90.0 1 -90.0
+ F  2 r 1 90.0 3 180.0
+ r = 1.7
+}
+BrF5.update_geometry()
+print_out("\t" + BrF5.get_full_point_group() + "\n" )
+compare_strings("C4v", BrF5.get_full_point_group(), "C4v point group");     #TEST
+
+
+molecule N2H2 {
+  N
+  N 1 rNN
+  H 1 rNH 2 aHNN
+  H 2 rNH 1 aHNN 3 180.0
+  rNH  = 1.0
+  rNN  = 1.4
+  aHNN = 140.0
+}
+N2H2.update_geometry()
+print_out("\t" + N2H2.get_full_point_group() + "\n" )
+compare_strings("C2h", N2H2.get_full_point_group(), "C2h point group");  #TEST
+
+
+molecule NOHOHOH {
+  X
+  N 1 1.0
+  O 2 1.5 1 90.0
+  O 2 1.5 1 90.0  3  120.0
+  O 2 1.5 1 90.0  3 -120.0
+  H 3 1.0 2 110.0 4 0.0
+  H 4 1.0 2 110.0 5 0.0
+  H 5 1.0 2 110.0 3 0.0
+}
+NOHOHOH.update_geometry()
+print_out("\t" + NOHOHOH.get_full_point_group() + "\n" )
+compare_strings("C3h", NOHOHOH.get_full_point_group(), "C3h point group");  #TEST
+
+
+# 1,3,5,7-tetrafluorocyclooctatetraene
+molecule TFCOT {
+  C       -1.618188     -0.437140     -0.409373
+  C       -1.394411      0.896360     -0.429596
+  C       -0.896360     -1.394411      0.429596
+  C       -0.437140      1.618188      0.409373
+  C        0.437140     -1.618188      0.409373
+  C        0.896360      1.394411      0.429596
+  C        1.394411     -0.896360     -0.429596
+  C        1.618188      0.437140     -0.409373
+  F        2.147277     -1.690111     -1.235043
+  F        1.690111      2.147277      1.235043
+  F       -2.147277      1.690111     -1.235043
+  F       -1.690111     -2.147277      1.235043
+  H        0.878010     -2.418132      1.029595
+  H       -2.418132     -0.878010     -1.029595
+  H       -0.878010      2.418132      1.029595
+  H        2.418132      0.878010     -1.029595
+}
+TFCOT.update_geometry()
+print_out("\t" + TFCOT.get_full_point_group() + "\n" )
+compare_strings("S4", TFCOT.get_full_point_group(), "S4 point group");  #TEST
+
+
+molecule Li_H2O_4_p {
+   1 1
+   X
+   Li 1 1.0
+   X 2 1.0 1 90.0
+   X 2 1.0 3 90.0 1 180.0
+   O 2 oli 1 olix 3 -90.0
+   O 2 oli 1 olix 3 90.0
+   O 2 oli 4 olix 3 0.0
+   O 2 oli 4 olix 3 180.0
+   H 5 oh1 2 lioh1 1 xlioh1
+   H 5 oh2 2 lioh2 1 xlioh2
+   H 6 oh1 2 lioh1 1 xlioh1
+   H 6 oh2 2 lioh2 1 xlioh2
+   H 7 oh1 2 lioh1 4 -xlioh1
+   H 7 oh2 2 lioh2 4 -xlioh2
+   H 8 oh1 2 lioh1 4 -xlioh1
+   H 8 oh2 2 lioh2 4 -xlioh2
+   olix=52.0
+   oli=1.9
+   oh1=0.952
+   oh2=0.950
+   lioh1=125.4
+   lioh2=124.8
+   xlioh1=-40.0
+   xlioh2=135.0
+}
+Li_H2O_4_p.update_geometry()
+print_out("\t" + Li_H2O_4_p.get_full_point_group() + "\n" )
+compare_strings("S4", Li_H2O_4_p.get_full_point_group(), "S4 point group");  #TEST
+
+
+molecule ethylene_cation {
+  C1
+  C2 C1 rCC
+  H1 C1 rCH C2 aHCC
+  H2 C1 rCH C2 aHCC H1 180.0
+  H3 C2 rCH C1 aHCC H1 D
+  H4 C2 rCH C1 aHCC H3 180.0
+  rCC  = 1.41
+  rCH  = 1.09
+  aHCC = 122.0
+  D    = 45.0
+}
+ethylene_cation.update_geometry()
+print_out("\t" + ethylene_cation.get_full_point_group() + "\n" )
+compare_strings("D2", ethylene_cation.get_full_point_group(), "D2 point group");  #TEST
+
+
+molecule ethane_gauche {
+  H
+  C 1 1.0
+  C 2 1.5 1 110.0
+  H 3 1.0 2 110.0 1   20.0
+  H 3 1.0 2 110.0 1  140.0
+  H 3 1.0 2 110.0 1 -100.0
+  H 2 1.0 3 110.0 1  120.0
+  H 2 1.0 3 110.0 1 -120.0
+}
+ethane_gauche.update_geometry()
+print_out("\t" + ethane_gauche.get_full_point_group() + "\n" )
+compare_strings("D3", ethane_gauche.get_full_point_group(), "D3 point group");  #TEST
+
+
+molecule triplet_ethylene {
+  C1
+  C2 C1 rCC
+  H1 C1 rCH C2 aHCC
+  H2 C1 rCH C2 aHCC H1 180.0
+  H3 C2 rCH C1 aHCC H1 D
+  H4 C2 rCH C1 aHCC H3 180.0
+  rCC  = 1.41
+  rCH  = 1.09
+  aHCC = 122.0
+  D    = 90.0
+}
+triplet_ethylene.update_geometry()
+print_out("\t" + triplet_ethylene.get_full_point_group() + "\n" )
+compare_strings("D2d", triplet_ethylene.get_full_point_group(), "D2d point group");  #TEST
+
+
+molecule allene {
+  H -2.0  0.0  1.0
+  H -2.0  0.0 -1.0
+  C -1.5  0.0  0.0
+  C  0.0  0.0  0.0
+  C  1.5  0.0  0.0
+  H  2.0  1.0  0.0
+  H  2.0 -1.0  0.0
+}
+allene.update_geometry()
+print_out("\t" + allene.get_full_point_group() + "\n" )
+compare_strings("D2d", allene.get_full_point_group(), "D2d point group");  #TEST
+
+
+molecule ethane_staggered {
+  H
+  C 1 1.0
+  C 2 1.5 1 110.0
+  H 3 1.0 2 110.0 1   60.0
+  H 3 1.0 2 110.0 1  -60.0
+  H 3 1.0 2 110.0 1  180.0
+  H 2 1.0 3 110.0 1  120.0
+  H 2 1.0 3 110.0 1 -120.0
+}
+ethane_staggered.update_geometry()
+print_out("\t" + ethane_staggered.get_full_point_group() + "\n" )
+compare_strings("D3d", ethane_staggered.get_full_point_group(), "D3d point group");  #TEST
+
+
+molecule singlet_ethylene {
+    C1
+    C2 C1 rCC
+    H1 C1 rCH C2 aHCC
+    H2 C1 rCH C2 aHCC H1 180.0
+    H3 C2 rCH C1 aHCC H1 D
+    H4 C2 rCH C1 aHCC H3 180.0
+    rCC  = 1.41
+    rCH  = 1.09
+    aHCC = 122.0
+    D    = 0.0
+}
+singlet_ethylene.update_geometry()
+print_out("\t" + singlet_ethylene.get_full_point_group() + "\n" )
+compare_strings("D2h", singlet_ethylene.get_full_point_group(), "D2h point group");  #TEST
+
+
+molecule ethane_eclipsed {
+  H
+  C 1 1.0
+  C 2 1.5 1 110.0
+  H 3 1.0 2 110.0 1   00.0
+  H 3 1.0 2 110.0 1  120.0
+  H 3 1.0 2 110.0 1 -120.0
+  H 2 1.0 3 110.0 1  120.0
+  H 2 1.0 3 110.0 1 -120.0
+}
+ethane_eclipsed.update_geometry()
+print_out("\t" + ethane_eclipsed.get_full_point_group() + "\n" )
+compare_strings("D3h", ethane_eclipsed.get_full_point_group(), "D3h point group");  #TEST
+
+
+molecule BH4p {
+ 1 1
+ X
+ B 1 1.0
+ H 2 1.0 1 90.0
+ H 2 1.0 1 90.0 3  90.0
+ H 2 1.0 1 90.0 3 180.0
+ H 2 1.0 1 90.0 3 -90.0
+}
+BH4p.update_geometry()
+print_out("\t" + BH4p.get_full_point_group() + "\n" )
+compare_strings("D4h", BH4p.get_full_point_group(), "D4h point group");  #TEST
+
+
+molecule CH4 {
+   C
+   H 1 r
+   H 1 r 2 TDA
+   H 1 r 2 TDA 3 120
+   H 1 r 2 TDA 4 120
+   r = 1.09
+}
+CH4.update_geometry()
+print_out("\t" + CH4.get_full_point_group() + "\n" )
+compare_strings("Td", CH4.get_full_point_group(), "Td point group");  #TEST
+
+
+molecule SF6 {
+  F
+  S 1 r
+  F 2 r 1 90.0
+  F 2 r 1 90.0 3  90.0
+  F 2 r 1 90.0 3 180.0
+  F 2 r 1 90.0 3 -90.0
+  F 2 r 5 90.0 1 180.0 
+  r = 1.8
+}
+SF6.update_geometry()
+print_out("\t" + SF6.get_full_point_group() + "\n" )
+compare_strings("Oh", SF6.get_full_point_group(), "Oh point group"); #TEST
+
+
+molecule Ih {
+  unit au
+  0 1
+  H   0   1   x
+  H   0  -1   x
+  H   0   1  -x
+  H   0  -1  -x
+  H   1   x   0
+  H  -1   x   0
+  H   1  -x   0
+  H  -1  -x   0
+  H   x   0   1
+  H   x   0  -1
+  H  -x   0   1
+  H  -x   0  -1
+  x = 1.618033988749894848
+}
+Ih.update_geometry()
+print_out("\t" + Ih.get_full_point_group() + "\n" )
+compare_strings("Ih", Ih.get_full_point_group(), "Ih point group"); #TEST
+
+--------------------------------------------------------------------------
+
+  Memory set to 250.000 MiB by Python script.
+	D_inf_h
+	D_inf_h
+	C_inf_v
+	C_inf_v
+	C1
+	Cs
+	Cs
+	Ci
+	Ci
+	C2
+	C3
+	C2v
+	C2v
+	C3v
+	C4v
+	C2h
+	C3h
+	S4
+	S4
+	D2
+	D3
+	D2d
+	D2d
+	D3d
+	D2h
+	D3h
+	D4h
+	Td
+	Oh
+	Ih
+
+*** PSI4 exiting successfully. Buy a developer a beer!

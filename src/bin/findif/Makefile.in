@@ -1,0 +1,25 @@
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+include ../MakeVars
+
+LDLIBS += $(BLAS)
+
+PSITARGET = $(top_objdir)/lib/libPSI_findif.a
+
+CXXSRC = \
+fd_misc.cc \
+fd_geoms_1_0.cc fd_1_0.cc \
+fd_geoms_freq_0.cc fd_freq_0.cc \
+fd_geoms_freq_1.cc fd_freq_1.cc \
+fd_geoms_hessian_0.cc fd_hessian_0.cc
+
+BINOBJ = $(CXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+ifneq "$(MAKECMDGOALS)" "clean"
+$(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
+include $(BINOBJ:%.o=%.d)
+endif
+

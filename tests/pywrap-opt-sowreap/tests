@@ -1,0 +1,5 @@
+
+compare_values(-76.1156711145371, get_variable('current energy'), 5, 'Finite difference optimization through sow/reap')  #TEST
+compare_values(9.045323855347, get_variable('nuclear repulsion energy'), 3, 'NRE')  #TEST
+print_variables()
+

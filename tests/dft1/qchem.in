@@ -1,0 +1,255 @@
+$molecule
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+$end
+
+$rem
+basis sto-3g
+exchange b
+scf_guess core
+xc_grid 000100000302
+$end
+
+@@@
+
+$molecule
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+$end
+
+$rem
+basis sto-3g
+exchange b3lyp
+scf_guess core
+xc_grid 000100000302
+$end
+
+@@@
+
+$molecule
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+$end
+
+$rem
+basis sto-3g
+exchange omegaB97
+scf_guess core
+xc_grid 000100000302
+$end
+
+@@@
+
+$molecule
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+$end
+
+$rem
+basis sto-3g
+exchange omegaB97X 
+scf_guess core
+xc_grid 000100000302
+$end
+
+@@@
+
+$molecule
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+$end
+
+$rem
+basis sto-3g
+exchange b
+scf_guess core
+xc_grid 000100000302
+$end
+
+@@@
+
+$molecule
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+$end
+
+$rem
+basis sto-3g
+exchange b3lyp
+scf_guess core
+xc_grid 000100000302
+$end
+
+@@@
+
+$molecule
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+$end
+
+$rem
+basis sto-3g
+exchange omegaB97
+scf_guess core
+xc_grid 000100000302
+$end
+
+@@@
+
+$molecule
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+$end
+
+$rem
+basis sto-3g
+exchange omegaB97X 
+scf_guess core
+xc_grid 000100000302
+$end
+
+@@@
+$molecule
+1 2
+O
+H 1 1.0
+H 1 1.0 2 104.5
+$end
+
+$rem
+basis sto-3g
+exchange b
+scf_guess core
+xc_grid 000100000302
+$end
+
+@@@
+
+$molecule
+1 2
+O
+H 1 1.0
+H 1 1.0 2 104.5
+$end
+
+$rem
+basis sto-3g
+exchange b3lyp
+scf_guess core
+xc_grid 000100000302
+$end
+
+@@@
+
+$molecule
+1 2
+O
+H 1 1.0
+H 1 1.0 2 104.5
+$end
+
+$rem
+basis sto-3g
+exchange omegaB97
+scf_guess core
+xc_grid 000100000302
+$end
+
+@@@
+
+$molecule
+1 2
+O
+H 1 1.0
+H 1 1.0 2 104.5
+$end
+
+$rem
+basis sto-3g
+exchange omegaB97X 
+scf_guess core
+xc_grid 000100000302
+$end
+
+@@@
+
+
+$molecule
+-1 2
+O
+H 1 1.0
+H 1 1.0 2 104.5
+$end
+
+$rem
+basis sto-3g
+exchange b
+scf_guess core
+xc_grid 000100000302
+$end
+
+@@@
+
+$molecule
+-1 2
+O
+H 1 1.0
+H 1 1.0 2 104.5
+$end
+
+$rem
+basis sto-3g
+exchange b3lyp
+scf_guess core
+xc_grid 000100000302
+$end
+
+@@@
+
+$molecule
+-1 2
+O
+H 1 1.0
+H 1 1.0 2 104.5
+$end
+
+$rem
+basis sto-3g
+exchange omegaB97
+scf_guess core
+xc_grid 000100000302
+$end
+
+@@@
+
+$molecule
+-1 2
+O
+H 1 1.0
+H 1 1.0 2 104.5
+$end
+
+$rem
+basis sto-3g
+exchange omegaB97X 
+scf_guess core
+xc_grid 000100000302
+$end
+
+

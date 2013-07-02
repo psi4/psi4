@@ -1,0 +1,68 @@
+#! DF-SCF cc-pVDZ multipole moments of benzene, up to 7th order and electrostatic potentials
+#! evaluated at the nuclear coordinates
+
+refs = {                                 #TEST
+ "QUADRUPOLE XX"     :     -23.4952157,  #TEST
+ "QUADRUPOLE YY"     :     -30.3835545,  #TEST
+ "QUADRUPOLE ZZ"     :     -23.4952156,  #TEST
+ "HEXADECAPOLE XXXX" :    -734.9573330,  #TEST
+ "HEXADECAPOLE XXYY" :    -173.3928642,  #TEST
+ "HEXADECAPOLE XXZZ" :    -244.9857786,  #TEST
+ "HEXADECAPOLE YYYY" :    -125.8099936,  #TEST
+ "HEXADECAPOLE YYZZ" :    -173.3928634,  #TEST
+ "HEXADECAPOLE ZZZZ" :    -734.9573332,  #TEST
+ "64-pole XXXXXX"    :  -21130.5034747,  #TEST
+ "64-pole XXXXYY"    :   -2311.6456652,  #TEST
+ "64-pole XXXXZZ"    :   -3874.2709600,  #TEST
+ "64-pole XXYYYY"    :    -719.9876535,  #TEST
+ "64-pole XXYYZZ"    :    -770.5485552,  #TEST
+ "64-pole XXZZZZ"    :   -4460.6538743,  #TEST
+ "64-pole YYYYYY"    :   -1078.4447403,  #TEST
+ "64-pole YYYYZZ"    :    -719.9876489,  #TEST
+ "64-pole YYZZZZ"    :   -2311.6456540,  #TEST
+ "64-pole ZZZZZZ"    :  -20544.1205697   #TEST
+}                                        #TEST
+esps =  [-14.719268873580, -14.719268873580, -14.719268878548, -14.719268873580, #TEST
+         -14.719268878548, -14.719268873580, -1.093963383542, -1.093963383542,   #TEST
+         -1.093963383542, -1.093963384104, -1.093963384104, -1.093963383542]     #TEST
+
+
+memory 250 mb
+ 
+molecule bz {
+    C          0.710500000000    0.000000000000   -1.230622098778
+    C          1.421000000000    0.000000000000    0.000000000000
+    C          0.710500000000    0.000000000000    1.230622098778
+    C         -0.710500000000    0.000000000000    1.230622098778
+    C         -0.710500000000    0.000000000000   -1.230622098778
+    C         -1.421000000000    0.000000000000    0.000000000000
+    H          1.254500000000    0.000000000000   -2.172857738095
+    H         -1.254500000000    0.000000000000    2.172857738095
+    H          2.509000000000    0.000000000000    0.000000000000
+    H          1.254500000000    0.000000000000    2.172857738095
+    H         -1.254500000000    0.000000000000   -2.172857738095
+    H         -2.509000000000    0.000000000000    0.000000000000
+}
+
+set {
+    basis cc-pVDZ
+    SCF_TYPE DF
+    REFERENCE RHF
+    e_convergence 9
+    d_convergence 9
+}
+
+
+energy('scf')
+
+oeprop("MULTIPOLES(7)", "ESP_AT_NUCLEI")
+
+for mpole,val in reversed(sorted(refs.iteritems())):    #TEST
+    compare_values(val, get_variable(mpole),  4, mpole) #TEST
+
+for n in range(1,13):                                   #TEST
+    st = "ESP AT CENTER %d" % n                         #TEST
+    compare_values(esps[n-1], get_variable(st),  4, st) #TEST
+    
+clean()
+

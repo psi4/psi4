@@ -1,0 +1,46 @@
+Let
+  k = 6
+  epsilon = 1e-4
+  Omega = [-20, 20]^3
+  r = x -> sqrt(x_0^2 + x_1^2 + x_2^2)
+  g = x -> exp(-r(x))
+  v = x -> -r(x)^-1
+In
+
+  if 2*2+3 == 7
+     print "1 OK"
+  else
+     print "1 FAIL"
+  end
+
+  r = sum_i=0^3 sum_j=0^5 i*j
+  if r == 90
+    print "1a OK"
+  else
+    print "1a FAIL"
+  end
+
+  psi = F g
+  S = < psi | psi >
+  if |S-3.1416| < 1e-4
+    print "2 OK"
+  else
+    print "2 FAIL"
+  end
+
+  nu = F v  
+  V = < psi | nu * psi >
+  if |V+3.1416| < 1e-4
+    print "2 OK"
+  else
+    print "2 FAIL"
+  end
+
+  T = 1/2 * sum_i=0^2 < del_i psi | del_i psi >
+  if |T - 1.5708| < 1e-4
+    print "3 OK"
+  else
+    print "3 FAIL"
+  end
+
+End

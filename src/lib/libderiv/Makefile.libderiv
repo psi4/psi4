@@ -1,0 +1,50 @@
+include $(top_objdir)/src/lib/MakeVars
+include $(top_objdir)/src/lib/libderiv/MakeVars
+
+PSITARGET = $(top_objdir)/lib/libPSI_deriv.a
+
+TRUESRC_C = $(shell echo `ls *.c`)
+TRUESRC_CXX = $(shell echo `ls *.cc`)
+LIBOBJ_C = $(TRUESRC_C:%.c=%.o)
+LIBOBJ_CXX = $(TRUESRC_CXX:%.cc=%.o)
+LIBOBJ = $(LIBOBJ_C) $(LIBOBJ_CXX)
+
+default:: $(PSITARGET) $(TARGET_HEADERS)
+
+%.$(OBJSUF): %.c
+	$(CC) $(CFLAGS) -c $< $(OUTPUT_OPTION)
+
+%.$(OBJSUF): %.cc
+	$(CXX) $(CXXFLAGS) -c $< $(OUTPUT_OPTION)
+
+#
+# do installations
+#
+
+$(PSITARGET): $(LIBOBJ)
+	$(MKDIRS) `dirname $(PSITARGET)`
+	rm -f $(PSITARGET)
+	$(AR) $(ARFLAGS) $(PSITARGET) $^
+	$(RANLIB) $(PSITARGET)
+
+$(top_objdir)/include/libderiv/%.h: %.h
+	$(MKDIRS) `dirname $@`
+	$(INSTALL_INCLUDE) $^ $@
+
+#
+# clean up
+#
+
+clean:: iclean oclean dclean targetclean
+
+iclean:
+	-rm -f *.gbl *.lcl
+
+oclean:
+	-rm -f *.o
+
+dclean:
+	-rm -f *.d
+
+targetclean:
+	-rm -f `basename $(PSITARGET)`

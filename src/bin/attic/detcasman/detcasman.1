@@ -1,0 +1,45 @@
+.TH detcasman 1 " 8 Oct, 1998" "" ""
+.  \"
+.  \" Notice of Document Modification
+.  \"
+.  \"   man page created by David Sherrill, 8 Oct 1998
+.  \"
+.  \"
+.SH NAME
+detcasman \- Determinant Configuration Interaction / 
+             Complete Active Space Self-Consistent-Field 
+             Program Manager
+
+.SH DESCRIPTION
+.LP
+The program
+.B detcasman
+manages the orbital optimization in a complete-active-space
+self-consistent field (CASSCF) procedure.  It is a very
+simple program that runs the integral transformation, 
+CI calculation, Lagrangian, and orbital rotation modules
+that work with the DETCI program.  The real work of
+orbital optimization is done in the program \fBdetcas\fP.
+
+.SH FILES REQUIRED
+.nf
+    input.dat          \- Input file
+.fi
+
+.SH FILES UPDATED
+.nf
+    output.dat         \- Output file
+.fi
+
+.SH INPUT FORMAT
+.LP
+.IP "\fBNCASITER =\fP \fIinteger\fP"
+The number of orbital optimization iterations to be carried out.  The
+driver will stop when this many iterations have been completed, or earlier
+if convergence has been achieved.  The default value is 30.  See the man 
+pages for \fBDETCI\fP and \fBDETCAS\fP for setting the convergence criteria.
+.IP "\fBSCALE_CONV =\fP \fIdouble\fP"
+The scale factor to be used to determine the CI convergence from the 
+previous iteration's orbital convergence.  We take the smaller of the
+scaled and unscaled orbital gradients, and multiply this by the scale
+factor to determine the CI vector convergence.  The default is 0.01.

@@ -1,0 +1,53 @@
+
+    for (int i=-1000; i<=1000; i++) {
+        double x = i*0.01*cut;
+        double h = 0.001;
+        coordT rm2(0.0); rm2[0] = x - 2.0*h;
+        coordT rm1(0.0); rm1[0] = x - h;
+        coordT  r0(0.0);  r0[0] = x;
+        coordT rp1(0.0); rp1[0] = x + h;
+        coordT rp2(0.0); rp2[0] = x + 2.0*h;
+        double dVnumeric = (8.0*(V(rp1) - V(rm1)) - (V(rp2)-V(rm2)))/(12.0*h);
+        double dVanal = dVdx(r0);
+        print(i, x, dVnumeric, dVanal, dVnumeric - dVanal);
+    }
+    return 0;
+        
+
+
+
+
+
+static inline double s(double x) {
+  /* Iterated first beta function to switch smoothly 
+     from 0->1 in [0,1].  n iterations produce 2*n-1 
+     zero derivatives at the end points. Order of polyn
+     is 3^n.
+
+     Currently use one iteration so that first deriv.
+     is zero at interior boundary and is exactly representable
+     by low order multiwavelet without refinement */
+#define B1(x) (x*x*(3.-2.*x))
+  x = B1(x);
+  return x;
+}
+
+double mask_function(const coordT& r) {
+    const double lo = 0.0625;
+    const double hi = 1.0-lo;
+    double result = 1.0;
+
+    coordT rsim;
+    user_to_sim(r, rsim);
+
+    for (int d=0; d<3; d++) {
+        double x = rsim[d];
+        if (x<lo)
+            result *= s(x/lo);
+        else if (x>hi)
+            result *= s((1.0-x)/lo);
+    }
+
+    return result;
+}
+

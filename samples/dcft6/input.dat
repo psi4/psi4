@@ -1,0 +1,39 @@
+#! DCFT calculation for the triplet O2 using DC-06, DC-12 and CEPA0 functionals. 
+#! Only two-step algorithm is tested.
+
+memory 250 mb
+
+
+# DC-06
+
+
+#CEPA0
+
+molecule OO {
+0 3
+O
+O 1 R
+
+units bohr
+R = 2.000
+}
+
+set globals {
+    r_convergence 12
+    d_convergence 12
+    ao_basis    none
+    algorithm   twostep
+    basis       cc-pcvtz
+}
+
+set dcft_functional dc-06
+energy('dcft')
+
+
+set dcft_functional dc-12
+energy('dcft')
+
+
+set dcft_functional cepa0
+energy('dcft')
+

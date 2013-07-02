@@ -1,0 +1,4 @@
+Makefile.in
+aclocal.m4
+include/madness_config.h.in
+config.*

@@ -1,0 +1,135 @@
+#! This checks that all energy methods can run with
+#! a minimal input and set symmetry.
+
+
+molecule water {
+  0 1
+  O
+  H  1  1.07
+  H  1  1.07  2  109.5
+  symmetry cs
+}
+
+set {
+  basis sto-3g
+  df_basis_scf cc-pvdz-jkfit
+  df_basis_mp2 cc-pvdz-ri
+  df_basis_cc cc-pvdz-ri
+  df_basis_sapt cc-pvdz-ri
+  df_basis_elst cc-pvdz-ri
+}
+
+Earray = [
+  'SCF',
+  'MP2',
+  'DF-MP2',
+  'MCSCF',
+#  'DFCC',  # method not available
+#  'MP2C',  # The sum of real- and ghost-atom subsets is greater than the number of subsets
+#  'MP2-DRPA',  # You want symmetry? Try ccenergy
+  'CC2',
+  'CCSD',
+  'BCCD',
+  'CC3',
+  'CCSD(T)',
+  'BCCD(T)',
+  'MP3',
+  'ZAPT3',
+  'CISD',
+  'FCI',
+]
+
+for method in Earray:
+   water.reset_point_group('cs')
+   water.fix_orientation(1)
+   water.update_geometry()
+
+   print_out('%s\t%s\t%s\t%s\n' % ('SYMMTOL BEFORE: ', method, water.schoenflies_symbol(), get_variable('CURRENT ENERGY')))
+   ans = energy(method)
+   print_out('%s\t%s\t%s\t%s\t%s\n' % ('SYMMTOL AFTER:  ', method, water.schoenflies_symbol(), get_variable('CURRENT ENERGY'), ans))
+
+#-------------------------------------------------------------------------------------------
+
+set reference uhf
+
+Earray = [
+  'DCFT',
+]
+
+for method in Earray:
+   water.reset_point_group('cs')
+   water.fix_orientation(1)
+   water.update_geometry()
+
+   print_out('%s\t%s\t%s\t%s\n' % ('SYMMTOL BEFORE: ', method, water.schoenflies_symbol(), get_variable('CURRENT ENERGY')))
+   ans = energy(method)
+   print_out('%s\t%s\t%s\t%s\t%s\n' % ('SYMMTOL AFTER:  ', method, water.schoenflies_symbol(), get_variable('CURRENT ENERGY'), ans))
+
+set reference rhf
+#-------------------------------------------------------------------------------------------
+
+set roots_per_irrep [1, 1]
+
+Earray = [
+#  'CPHF',  # Segmentation fault: 11
+#  'CPKS',  # PSIO Error in libfock
+#  'CIS',  #  "
+#  'TDA',  # "
+#  'TDHF',  # "
+#  'TDDFT',  # "
+  'ADC',
+  'EOM-CC2',
+  'EOM-CCSD',
+  'EOM-CC3',
+]
+
+for method in Earray:
+   water.reset_point_group('cs')
+   water.fix_orientation(1)
+   water.update_geometry()
+
+   print_out('%s\t%s\t%s\t%s\n' % ('SYMMTOL BEFORE: ', method, water.schoenflies_symbol(), get_variable('CURRENT ENERGY')))
+   ans = energy(method)
+   print_out('%s\t%s\t%s\t%s\t%s\n' % ('SYMMTOL AFTER:  ', method, water.schoenflies_symbol(), get_variable('CURRENT ENERGY'), ans))
+
+#-------------------------------------------------------------------------------------------
+
+clean()
+
+molecule water {
+0 1
+O  -1.551007  -0.114520   0.000000
+H  -1.934259   0.762503   0.000000
+H  -0.599677   0.040712   0.000000
+--
+0 1
+O   1.350625   0.111469   0.000000
+H   1.680398  -0.373741  -0.758561
+H   1.680398  -0.373741   0.758561
+units angstrom
+}
+
+
+set {
+  basis sto-3g
+  df_basis_scf cc-pvdz-jkfit
+  df_basis_mp2 cc-pvdz-ri
+  df_basis_cc cc-pvdz-ri
+  df_basis_sapt cc-pvdz-ri
+  df_basis_elst cc-pvdz-ri
+}
+
+energy('scf')
+
+Earray = [
+  'SAPT0',
+  'SAPT2+3',
+  'SAPT0-CT',
+  'SAPT2+(3)-CT',
+  ]
+
+for method in Earray:
+   print_out('%s\t%s\t%s\t%s\n' % ('SYMMTOL BEFORE: ', method, water.schoenflies_symbol(), get_variable('CURRENT ENERGY')))
+   ans = energy(method)
+   print_out('%s\t%s\t%s\t%s\t%s\n' % ('SYMMTOL AFTER:  ', method, water.schoenflies_symbol(), get_variable('CURRENT ENERGY'), ans))
+

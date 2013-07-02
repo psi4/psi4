@@ -1,0 +1,27 @@
+
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+FC_SYMBOL = @FC_SYMBOL@
+
+include ../MakeVars
+
+PSITARGET = $(top_objdir)/lib/libPSI_mints.a
+
+CXXDEF += -DFC_SYMBOL=$(FC_SYMBOL)
+
+TRUECXXSRC = $(notdir $(wildcard $(srcdir)/*.cc))
+DEPENDINCLUDE = $(notdir $(wildcard $(srcdir)/*.h))
+
+LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+install_inc:: $(DEPENDINCLUDE)
+	$(MKDIRS) $(DESTDIR)$(incdir)/libmints
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libmints
+
+ifneq "$(MAKECMDGOALS)" "clean"
+include $(LIBOBJ:%.o=%.d)
+endif
+

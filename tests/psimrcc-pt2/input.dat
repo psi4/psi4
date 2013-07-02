@@ -1,0 +1,45 @@
+#! Mk-MRPT2 single point. $^1A@@1$ F2 state described using
+#! the Ms = 0 component of the singlet.  Uses TCSCF singlet orbitals.
+
+memory 250 mb
+
+refnuc      =   30.357990246684  #TEST
+refscf      = -198.761465908975  #TEST
+refmkpt2    = -199.077889439219  #TEST
+
+molecule ch2 {
+  0 1
+  F
+  F 1 2.668160815054
+
+  units au
+}
+
+set {
+  basis cc-pvdz
+  e_convergence 10
+  d_convergence 10
+  r_convergence 10
+}
+
+set mcscf {
+  reference       twocon
+  docc            [2,0,1,1,0,2,1,1]      # Doubly occupied MOs
+  socc            [1,0,0,0,0,1,0,0]      # Singly occupied MOs
+}
+
+
+set psimrcc {
+  corr_wfn        pt2                    # Do Mk-MRPT2 
+  frozen_docc     [1,0,0,0,0,1,0,0]      # Frozen MOs
+  restricted_docc [1,0,1,1,0,1,1,1]      # Doubly occupied MOs
+  active          [1,0,0,0,0,1,0,0]      # Active MOs
+  frozen_uocc     [0,0,0,0,0,0,0,0]      # Frozen virtual MOs
+  corr_multp      1                      # Select the Ms = 0 component
+  wfn_sym         Ag                     # Select the Ag state
+}
+
+energy('psimrcc')
+compare_values(refnuc, ch2.nuclear_repulsion_energy()     , 9, "Nuclear repulsion energy") #TEST 
+compare_values(refscf, get_variable("SCF TOTAL ENERGY")  , 9, "SCF energy")               #TEST 
+compare_values(refmkpt2, get_variable("CURRENT ENERGY") , 8, "Mk-MRPT2 energy")            #TEST 

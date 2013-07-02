@@ -1,0 +1,53 @@
+#! Various basis set extrapolation tests
+
+memory 250 mb
+
+molecule {
+Li
+
+}
+
+set globals {
+    reference rohf
+    scf_type pk
+    df_scf_guess false
+}
+
+e_cbs = cbs('scf',scf_basis='aug-cc-pV[DTQ]Z',scf_scheme=scf_xtpl_helgaker_3)
+
+clean()
+
+
+# Here's another example
+molecule {
+H
+H 1 R
+
+R = 1
+}
+
+set globals {
+    reference rhf
+    guess core
+    mp2_type conv
+    df_scf_guess true
+}
+
+e_cbs = cbs('mp2',corl_basis='cc-pV[TQ]Z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='ccsd',delta_basis='cc-pV[DT]Z',delta_scheme=corl_xtpl_helgaker_2)
+
+clean()
+
+
+# One final example
+molecule {
+He
+}
+
+set globals {
+    reference rhf
+    df_scf_guess false
+}
+
+e_cbs = cbs(scf_basis='aug-cc-pV[DTQ]Z',scf_scheme=scf_xtpl_helgaker_3,name='ccsd',corl_basis='aug-cc-pV[DT]Z',corl_scheme=corl_xtpl_helgaker_2)
+
+

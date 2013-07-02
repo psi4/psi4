@@ -1,0 +1,9 @@
+
+compare_values(-40.195683412597, DB_RGT['BASIC-ch4-reagent']['SCF TOTAL ENERGY'], 5, 'methane reagent')  #TEST
+compare_values(-56.189487485398, DB_RGT['BASIC-nh3-reagent']['SCF TOTAL ENERGY'], 5, 'ammonia reagent')  #TEST
+compare_values(30241.3052, get_variable('basic database mean absolute deviation'), 2, 'Optimized database through sow/reap')  #TEST
+
+#from pprint import pprint
+#pprint(DB_RGT)
+#pprint(DB_RXN)
+

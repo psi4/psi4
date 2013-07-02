@@ -1,0 +1,73 @@
+#! SAPT2+3(CCD) aug-cc-pVDZ computation of the water dimer interaction energy, 
+#! using the aug-cc-pVDZ-JKFIT DF basis for SCF and aug-cc-pVDZ-RI for SAPT.
+
+memory 1 GB
+
+molecule dimer {
+0 1
+O  -1.551007  -0.114520   0.000000
+H  -1.934259   0.762503   0.000000
+H  -0.599677   0.040712   0.000000
+--
+0 1
+O   1.350625   0.111469   0.000000
+H   1.680398  -0.373741  -0.758561
+H   1.680398  -0.373741   0.758561
+}
+
+set {
+basis aug-cc-pvdz
+scf_type df
+e_convergence 10
+guess sad
+freeze_core true
+nat_orbs_t3 true
+}
+
+energy('sapt2+3(ccd)')
+
+Eref = [
+-0.013064288753073536, 
+ 0.013417916705157205, 
+-0.0039133249955681489, 
+-0.0035839111672335846, 
+-0.0085840890458735719, 
+-0.0067233919775079899, 
+-0.0073343251081937171, 
+-0.0070084937999213524,
+-0.0071800248651675766, 
+-0.0072979084537442042, 
+-0.0069720771454718396, 
+-0.0071436082107180637]
+
+Labels = [
+'SAPT Elst',
+'SAPT Exch',
+'SAPT Ind',
+'SAPT Disp',
+'SAPT0 Total',
+'SAPT2 Total',
+'SAPT2+ Total',
+'SAPT2+(3) Total',
+'SAPT2+3 Total',
+'SAPT2+(CCD) Total',
+'SAPT2+(3)(CCD) Total',
+'SAPT2+3(CCD) Total']
+
+Echeck = [];
+
+Echeck.append(psi4.get_variable("SAPT ELST ENERGY"))
+Echeck.append(psi4.get_variable("SAPT EXCH ENERGY"))
+Echeck.append(psi4.get_variable("SAPT IND ENERGY"))
+Echeck.append(psi4.get_variable("SAPT DISP ENERGY"))
+Echeck.append(psi4.get_variable("SAPT SAPT0 ENERGY"))
+Echeck.append(psi4.get_variable("SAPT SAPT2 ENERGY"))
+Echeck.append(psi4.get_variable("SAPT SAPT2+ ENERGY"))
+Echeck.append(psi4.get_variable("SAPT SAPT2+(3) ENERGY"))
+Echeck.append(psi4.get_variable("SAPT SAPT2+3 ENERGY"))
+Echeck.append(psi4.get_variable("SAPT SAPT2+(CCD) ENERGY"))
+Echeck.append(psi4.get_variable("SAPT SAPT2+(3)(CCD) ENERGY"))
+Echeck.append(psi4.get_variable("SAPT SAPT2+3(CCD) ENERGY"))
+
+for k in range(0,len(Labels)):
+    compare_values(Eref[k],Echeck[k],6,Labels[k])

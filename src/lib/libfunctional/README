@@ -1,0 +1,17 @@
+Master File Table:
+
+Global:
+
+superfunctional.h/.cc : Encapsulates complete functional specifications
+functional.h/.cc      : Encapsulates DFA specifications
+utility.h/.cc         : Defines unusual math functions needed for DFAs
+superfactory.cc       : Provides abstracted factory routines for superfunctionals
+factory.cc            : Provides abstracted factory routines for functionals
+
+Functional Types:
+
+xfunctional.h/.cc      : Generic exchange-type functionals
+wpbex_functional.h/.cc : SR-wPBE functional (HJS model)
+*_Xfunctional.h/.cc    : MATLAB-generated exchange-type functionals
+*_Cfunctional.h/.cc    : MATLAB-generated correlation-type functionals
+ 

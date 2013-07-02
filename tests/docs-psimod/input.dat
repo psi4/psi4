@@ -1,0 +1,8 @@
+#! This test is used to construct the documentation;
+#! it is not suitable for emulation by users. !nosample
+
+import pydoc
+
+with open("autodoc_man_psi4.txt", "w") as f:
+    f.write(pydoc.plain(pydoc.render_doc(psi4)))
+

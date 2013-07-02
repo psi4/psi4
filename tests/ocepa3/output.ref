@@ -1,0 +1,379 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-beta3+ Driver
+
+               Git: Rev {master} ae646e4342aedfa6ec06bb2190a62ca091f44c23
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+    Process ID:   6117
+    PSI4DATADIR: /home/ugur/psi4/lib
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! OCEPA cc-pVDZ energy with ROHF initial guess for the NO radical
+
+refnuc      =   25.59060766929188  #TEST
+refscf      = -129.25292774600291 #TEST
+refocepa    = -129.67619003025513 #TEST
+
+memory 250 mb
+
+molecule no {
+0 2
+n
+o 1 1.158
+}
+
+set global {
+  basis cc-pcvdz
+  reference rohf
+  guess gwh
+}
+energy('ocepa')
+
+compare_values(refnuc, get_variable("NUCLEAR REPULSION ENERGY"), 6, "Nuclear Repulsion Energy (a.u.)"); #TEST
+compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 6, "SCF Energy (a.u.)");             #TEST
+compare_values(refocepa, get_variable("OCEPA(0) TOTAL ENERGY"), 6, "OCEPA(0) Total Energy (a.u.)");                   #TEST
+--------------------------------------------------------------------------
+
+  Memory set to 250.000 MiB by Python script.
+
+*** tstart() called on bozkaya
+*** at Fri Apr  5 09:01:53 2013
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                             ROHF Reference
+                        4 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+    Full point group: C_inf_v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           N          0.000000000000     0.000000000000    -0.617445101450
+           O          0.000000000000     0.000000000000     0.540554898550
+
+  Running in c2v symmetry.
+
+  Nuclear repulsion =   25.590607669291881
+
+  Charge       = 0
+  Multiplicity = 2
+  Electrons    = 15
+  Nalpha       = 8
+  Nbeta        = 7
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is GWH.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PCVDZ
+    Number of shells: 16
+    Number of basis function: 36
+    Number of Cartesian functions: 38
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1        18      18       0       0       0       0
+     A2         2       2       0       0       0       0
+     B1         8       8       0       0       0       0
+     B2         8       8       0       0       0       0
+   -------------------------------------------------------
+    Total      36      36       8       7       7       1
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   2
+      Number of AO shells:              16
+      Number of SO shells:              16
+      Number of primitives:             48
+      Number of atomic orbitals:        38
+      Number of basis functions:        36
+
+      Number of irreps:                  4
+      Number of functions per irrep: [  18    2    8    8 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 50830 non-zero two-electron integrals.
+        Stored in file 33.
+
+	Batch   1 pq = [       0,     246] index = [             0,30381]
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               178
+    Schwarz Cutoff:          0E+00
+
+  Minimum eigenvalue in the overlap matrix is 1.4366348670E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Generalized Wolfsberg-Helmholtz.
+
+  Guess energy:   -82.17678471775447
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @ROHF iter   1:  -119.21648665423454   -1.19216e+02   1.59272e+00 
+   @ROHF iter   2:  -128.35518646196857   -9.13870e+00   1.33850e-01 DIIS
+   @ROHF iter   3:  -128.34065293212333    1.45335e-02   1.68174e-01 DIIS
+   @ROHF iter   4:  -129.21688040559968   -8.76227e-01   3.02368e-02 DIIS
+   @ROHF iter   5:  -129.25147978270132   -3.45994e-02   3.64715e-03 DIIS
+   @ROHF iter   6:  -129.25253953243899   -1.05975e-03   6.60374e-04 DIIS
+   @ROHF iter   7:  -129.25272474704988   -1.85215e-04   4.12135e-04 DIIS
+   @ROHF iter   8:  -129.25286320946827   -1.38462e-04   2.33265e-04 DIIS
+   @ROHF iter   9:  -129.25292154113762   -5.83317e-05   7.19977e-05 DIIS
+   @ROHF iter  10:  -129.25292735513719   -5.81400e-06   3.80012e-05 DIIS
+   @ROHF iter  11:  -129.25292773701236   -3.81875e-07   4.73026e-06 DIIS
+   @ROHF iter  12:  -129.25292774588468   -8.87232e-09   6.01405e-07 DIIS
+   @ROHF iter  13:  -129.25292774600078   -1.16103e-10   1.60869e-07 DIIS
+   @ROHF iter  14:  -129.25292774600271   -1.93268e-12   1.49052e-08 DIIS
+   @ROHF iter  15:  -129.25292774600291   -1.98952e-13   1.25886e-09 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1A1   -20.692458     2A1   -15.723703     3A1    -1.589190  
+	   4A1    -0.923210     1B1    -0.685673     5A1    -0.672465  
+	   1B2    -0.641597  
+
+	Singly Occupied:                                                      
+
+	   2B1    -0.118984  
+
+	Virtual:                                                              
+
+	   2B2     0.105599     6A1     0.515999     3B1     0.913058  
+	   3B2     0.928926     7A1     0.951819     8A1     0.972228  
+	   9A1     1.120578     4B1     1.197561     4B2     1.212811  
+	  10A1     1.866186     1A2     1.940385    11A1     1.940529  
+	   5B2     1.971229     5B1     1.973659    12A1     2.815202  
+	   2A2     2.924462    13A1     2.924473     6B2     3.496840  
+	   6B1     3.507097    14A1     3.858164    15A1    26.123746  
+	   7B2    30.336007     7B1    30.343090    16A1    30.945873  
+	  17A1    34.360222     8B2    39.092313     8B1    39.098440  
+	  18A1    39.701528  
+
+	Final Occupation by Irrep:
+	         A1    A2    B1    B2 
+	DOCC [     5,    0,    1,    1 ]
+	SOCC [     0,    0,    1,    0 ]
+
+  Energy converged.
+
+  @ROHF Final Energy:  -129.25292774600291
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =             25.5906076692918809
+    One-Electron Energy =                -227.4114180897488495
+    Two-Electron Energy =                  72.5678826744540686
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    Total Energy =                       -129.2529277460029107
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+  ==> Properties <==
+
+
+Properties computed using the SCF density density matrix
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0044
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.1535
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.1491     Total:     0.1491
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:    -0.3789     Total:     0.3789
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on bozkaya at Fri Apr  5 09:01:53 2013
+Module time:
+	user time   =       0.51 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.51 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on bozkaya
+*** at Fri Apr  5 09:01:53 2013
+
+
+ ============================================================================== 
+ ============================================================================== 
+ ============================================================================== 
+
+              Program Written by Ugur Bozkaya,
+              Latest Revision April 5, 2013.
+
+ ============================================================================== 
+ ============================================================================== 
+ ============================================================================== 
+
+	RMS orbital gradient is changed to :     1.00e-05
+	MAX orbital gradient is changed to :     3.16e-04
+	MO spaces per irreps... 
+
+	IRREP   FC   AOCC  BOCC  AVIR    BVIR  FV 
+	==========================================
+	  A1     0     5     5    13     13     0
+	  A2     0     0     0     2      2     0
+	  B1     0     2     1     6      7     0
+	  B2     0     1     1     7      7     0
+	==========================================
+
+	Computing MP2 energy using SCF MOs (Canonical MP2)... 
+	============================================================================== 
+	Nuclear Repulsion Energy (a.u.)    :    25.59060766929188
+	SCF Energy (a.u.)                  :  -129.25292774600291
+	REF Energy (a.u.)                  :  -129.25292774600280
+	Alpha-Alpha Contribution (a.u.)    :    -0.04689643209981
+	Alpha-Beta Contribution (a.u.)     :    -0.30742330612224
+	Beta-Beta Contribution (a.u.)      :    -0.05020849184138
+	Scaled_SS Correlation Energy (a.u.):    -0.03236830798039
+	Scaled_OS Correlation Energy (a.u.):    -0.36890796734669
+	SCS-MP2 Total Energy (a.u.)        :  -129.65420402132986
+	SOS-MP2 Total Energy (a.u.)        :  -129.65257804396171
+	SCSN-MP2 Total Energy (a.u.)       :  -129.42383241213926
+	SCS-MI-MP2 Total Energy (a.u.)     :  -129.50116242033579
+	SCS-MP2-VDW Total Energy (a.u.)    :  -129.69498203980984
+	SOS-PI-MP2 Total Energy (a.u.)     :  -129.68332037457392
+	MP2 Correlation Energy (a.u.)      :    -0.40452823006342
+	MP2 Total Energy (a.u.)            :  -129.65745597606622
+	============================================================================== 
+
+	Number of alpha independent-pairs: 84
+	Number of beta independent-pairs : 79
+
+ ============================================================================== 
+ ================ Performing OCEPA iterations... ============================== 
+ ============================================================================== 
+	            Minimizing CEPA-L Functional 
+	            --------------------------- 
+ Iter       E_total           DE           RMS MO Grad      MAX MO Grad      RMS T2    
+ ----    ---------------    ----------     -----------      -----------     ---------- 
+   1     -129.6602460689     -2.79e-03       7.33e-04         2.09e-02        4.49e-06 
+   2     -129.6723306595     -1.21e-02       5.09e-04         2.40e-02        4.02e-07 
+   3     -129.6736464818     -1.32e-03       4.98e-04         1.61e-02        5.16e-07 
+   4     -129.6747474841     -1.10e-03       4.65e-04         1.77e-02        3.54e-07 
+   5     -129.6752570175     -5.10e-04       4.65e-04         1.58e-02        2.02e-07 
+   6     -129.6756997845     -4.43e-04       2.68e-05         8.69e-04        1.87e-07 
+   7     -129.6758876227     -1.88e-04       8.95e-06         5.29e-04        1.03e-07 
+   8     -129.6759716678     -8.40e-05       5.27e-06         3.25e-04        7.69e-08 
+   9     -129.6760338115     -6.21e-05       4.94e-05         2.42e-03        6.49e-08 
+  10     -129.6760767780     -4.30e-05       4.32e-05         1.96e-03        3.18e-08 
+  11     -129.6761012856     -2.45e-05       4.36e-05         1.98e-03        2.10e-08 
+  12     -129.6761198269     -1.85e-05       4.83e-05         2.20e-03        1.50e-08 
+  13     -129.6761331138     -1.33e-05       5.21e-05         2.35e-03        8.83e-09 
+  14     -129.6761434854     -1.04e-05       4.42e-05         2.05e-03        5.72e-09 
+  15     -129.6761517177     -8.23e-06       6.11e-05         2.41e-03        1.61e-08 
+  16     -129.6761537914     -2.07e-06       1.12e-05         5.67e-04        1.25e-08 
+  17     -129.6761607622     -6.97e-06       4.74e-06         2.87e-04        7.09e-09 
+
+ ============================================================================== 
+ ======================== OCEPA ITERATIONS ARE CONVERGED ====================== 
+ ============================================================================== 
+
+	Orbitals are optimized now.
+	Switching to the standard CEPA computation... 
+
+  
+ ============================================================================== 
+ ================ Performing CEPA iterations... =============================== 
+ ============================================================================== 
+
+  Iter    E_corr           E_total            DE           T2 RMS        
+  ----   -------------    ---------------    ----------   ----------    
+   1     -0.4232371525    -129.6761648985     -4.14e-06     3.08e-09 
+   2     -0.4232630918    -129.6761908378     -2.59e-05     2.64e-09 
+   3     -0.4232615934    -129.6761893394      1.50e-06     2.15e-09 
+   4     -0.4232622843    -129.6761900303     -6.91e-07     1.91e-09 
+
+ ============================================================================== 
+ ======================== CEPA ITERATIONS ARE CONVERGED ======================= 
+ ============================================================================== 
+
+	============================================================================== 
+	================ OCEPA FINAL RESULTS ========================================= 
+	============================================================================== 
+	Nuclear Repulsion Energy (a.u.)    :    25.59060766929188
+	SCF Energy (a.u.)                  :  -129.25292774600291
+	REF Energy (a.u.)                  :  -129.25412629274089
+	SCS-OCEPA(0) Total Energy (a.u.)   :  -129.77870615154853
+	SOS-OCEPA(0) Total Energy (a.u.)   :  -129.69657047875180
+	OCEPA(0) Correlation Energy (a.u.) :    -0.42326228425222
+	Eocepa - Eref (a.u.)               :    -0.42206373751424
+	OCEPA(0) Total Energy (a.u.)       :  -129.67619003025513
+	============================================================================== 
+
+
+*** tstop() called on bozkaya at Fri Apr  5 09:01:58 2013
+Module time:
+	user time   =       5.82 seconds =       0.10 minutes
+	system time =       1.22 seconds =       0.02 minutes
+	total time  =          5 seconds =       0.08 minutes
+Total time:
+	user time   =       6.33 seconds =       0.11 minutes
+	system time =       1.23 seconds =       0.02 minutes
+	total time  =          5 seconds =       0.08 minutes
+
+*** PSI4 exiting successfully. Buy a developer a beer!

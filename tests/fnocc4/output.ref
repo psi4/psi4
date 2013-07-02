@@ -1,0 +1,1002 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-beta4+ Driver
+
+               Git: Rev {master} 32e25b94c698023aa810c0c05f7a1a9422e9d8df
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+    Process ID:   1001
+    PSI4DATADIR: /Users/deprince/psi4-devel/lib
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! Test FNO-DF-CCSD(T) energy
+molecule h2o {
+0 1
+O
+H 1 1.0 
+H 1 1.0 2 104.5
+symmetry c1
+}
+
+set {
+  basis aug-cc-pvdz
+  freeze_core         true
+  e_convergence      1e-12
+  d_convergence      1e-12
+  r_convergence      1e-12
+  cholesky_tolerance 1e-12
+  nat_orbs            true
+  occ_tolerance       1e-4
+  scf_type cd
+  df_basis_cc cholesky
+}
+energy('df-ccsd(t)')
+edfccsd  = get_variable("CCSD CORRELATION ENERGY")
+edfccsdt = get_variable("CCSD(T) CORRELATION ENERGY")
+
+refscf   = -76.03568944758564 #TEST
+refccsd  = -0.230820828839    #TEST
+refccsdt = -0.236177474967    #TEST
+
+compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 8, "SCF energy")  #TEST
+compare_values(refccsd, edfccsd, 8, "DF-CCSD correlation energy")          #TEST 
+compare_values(refccsdt, edfccsdt, 8, "DF-CCSD(T) correlation energy")     #TEST 
+
+# verify that DFCC and DFMP2 give the same MP2 results
+set scf_type df
+set df_basis_cc  aug-cc-pvdz-ri
+set df_basis_mp2 aug-cc-pvdz-ri
+set nat_orbs false
+set fnocc {
+    e_convergence 1e1
+    r_convergence 1e1
+}
+energy('df-ccsd')
+emp2    = get_variable("MP2 CORRELATION ENERGY")
+clean()
+energy('df-mp2')
+emp2_2  = get_variable("MP2 CORRELATION ENERGY")
+compare_values(emp2, emp2_2, 8, "MP2 correlation energy (DFMP2 vs. DFCC)")     #TEST 
+
+clean()
+--------------------------------------------------------------------------
+
+*** tstart() called on lawn-128-61-118-160.lawn.gatech.edu
+*** at Thu May  2 12:16:49 2013
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.068516219310
+           H          0.000000000000    -0.790689573744     0.543701060724
+           H          0.000000000000     0.790689573744     0.543701060724
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    8.801465529972067
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is CD.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-12
+  Density threshold  = 1.00e-12
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: AUG-CC-PVDZ
+    Number of shells: 19
+    Number of basis function: 41
+    Number of Cartesian functions: 43
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         41      41       0       0       0       0
+   -------------------------------------------------------
+    Total      41      41       5       5       5       0
+   -------------------------------------------------------
+
+ OEINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              19
+      Number of SO shells:              19
+      Number of primitives:             39
+      Number of atomic orbitals:        43
+      Number of basis functions:        41
+
+      Number of irreps:                  1
+      Number of functions per irrep: [  41 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+  ==> Integral Setup <==
+
+  ==> CDJK: Cholesky-decomposed J/K Matrices <==
+
+    J tasked:                     Yes
+    K tasked:                     Yes
+    wK tasked:                     No
+    OpenMP threads:                 1
+    Integrals threads:              1
+    Memory (MB):                  183
+    Algorithm:                   Core
+    Integral Cache:              SAVE
+    Schwarz Cutoff:             1E-12
+    Cholesky tolerance:      1.00E-12
+    No. Cholesky vectors:         644
+
+  Minimum eigenvalue in the overlap matrix is 3.1766171647E-03.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RHF iter   1:   -68.60316188068863   -6.86032e+01   7.87170e-02 
+   @RHF iter   2:   -66.44621896713439    2.15694e+00   6.45022e-02 DIIS
+   @RHF iter   3:   -75.27642589336638   -8.83021e+00   3.38233e-02 DIIS
+   @RHF iter   4:   -75.87161965921646   -5.95194e-01   1.51454e-02 DIIS
+   @RHF iter   5:   -76.03443574474463   -1.62816e-01   8.28795e-04 DIIS
+   @RHF iter   6:   -76.03532461741626   -8.88873e-04   7.55242e-04 DIIS
+   @RHF iter   7:   -76.03567394743959   -3.49330e-04   1.23951e-04 DIIS
+   @RHF iter   8:   -76.03568892611555   -1.49787e-05   1.46385e-05 DIIS
+   @RHF iter   9:   -76.03568942669195   -5.00576e-07   4.77142e-06 DIIS
+   @RHF iter  10:   -76.03568944703879   -2.03468e-08   5.78177e-07 DIIS
+   @RHF iter  11:   -76.03568944757554   -5.36744e-10   7.29178e-08 DIIS
+   @RHF iter  12:   -76.03568944758541   -9.87654e-12   1.04447e-08 DIIS
+   @RHF iter  13:   -76.03568944758577   -3.55271e-13   1.87244e-09 DIIS
+   @RHF iter  14:   -76.03568944758577    0.00000e+00   2.91742e-10 DIIS
+   @RHF iter  15:   -76.03568944758577    0.00000e+00   2.96225e-11 DIIS
+   @RHF iter  16:   -76.03568944758570    7.10543e-14   5.26560e-12 DIIS
+   @RHF iter  17:   -76.03568944758577   -7.10543e-14   6.01973e-13 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1A    -20.584242     2A     -1.335644     3A     -0.696477  
+	   4A     -0.577441     5A     -0.506115  
+
+	Virtual:                                                              
+
+	   6A      0.034638     7A      0.057685     8A      0.174873  
+	   9A      0.198741    10A      0.218991    11A      0.232717  
+	  12A      0.278530    13A      0.326042    14A      0.382596  
+	  15A      0.397838    16A      0.427440    17A      0.532830  
+	  18A      0.636757    19A      0.654113    20A      0.794630  
+	  21A      0.917421    22A      1.105329    23A      1.117326  
+	  24A      1.145003    25A      1.291882    26A      1.454162  
+	  27A      1.469924    28A      1.572034    29A      1.970895  
+	  30A      1.987693    31A      2.082183    32A      2.345806  
+	  33A      2.398639    34A      2.533727    35A      2.701071  
+	  36A      2.959052    37A      3.670709    38A      3.682736  
+	  39A      3.693890    40A      3.973957    41A      4.218940  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     5 ]
+
+  Energy converged.
+
+  @RHF Final Energy:   -76.03568944758577
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              8.8014655299720665
+    One-Electron Energy =                -122.2744713091366862
+    Two-Electron Energy =                  37.4373163315788560
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    Total Energy =                        -76.0356894475857672
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+  ==> Properties <==
+
+
+Properties computed using the SCF density density matrix
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0191
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:    -0.2197
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:     0.7994     Total:     0.7994
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:     0.0000      Z:     2.0319     Total:     2.0319
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on lawn-128-61-118-160.lawn.gatech.edu at Thu May  2 12:16:51 2013
+Module time:
+	user time   =       1.42 seconds =       0.02 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+Total time:
+	user time   =       1.42 seconds =       0.02 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+
+*** tstart() called on lawn-128-61-118-160.lawn.gatech.edu
+*** at Thu May  2 12:16:51 2013
+
+
+
+        *******************************************************
+        *                                                     *
+        *                       DF-CCSD                       *
+        *                 Density-fitted CCSD                 *
+        *                                                     *
+        *                   Eugene DePrince                   *
+        *                                                     *
+        *******************************************************
+
+
+  ==> 3-index integrals <==
+
+        Reading Cholesky vectors from disk ...
+        Cholesky decomposition threshold: 1.00e-12
+        Number of Cholesky vectors:            644
+
+  ==> Frozen Natural Orbitals <==
+
+        Doubles contribution to MP2 energy in full space:      -0.223147494068
+
+        Cutoff for significant NO occupancy: 1.000e-04
+
+        Number of virtual orbitals in original space:     36
+        Number of virtual orbitals in truncated space:    24
+
+  ==> Memory <==
+
+        Total memory requirements:           11.88 mb
+        3-index integrals:                    3.38 mb
+        CCSD intermediates:                   8.50 mb
+
+        memory requirements for CCSD(T):      0.47 mb
+
+
+  Begin singles and doubles coupled cluster iterations
+
+   Iter  DIIS          Energy       d(Energy)          |d(T)|     time
+      0   0 2   -0.2222360996   -0.2222360996    0.2140313913        1
+      1   1 3   -0.2238158926   -0.0015797930    0.0394025562        0
+      2   2 4   -0.2286675152   -0.0048516226    0.0131759019        0
+      3   3 5   -0.2299703824   -0.0013028672    0.0054372059        0
+      4   4 6   -0.2298859700    0.0000844124    0.0009504376        0
+      5   5 7   -0.2299119134   -0.0000259434    0.0002842777        0
+      6   6 8   -0.2299098142    0.0000020991    0.0000585554        1
+      7   7 9   -0.2299096000    0.0000002142    0.0000125873        0
+      8   8 1   -0.2299095216    0.0000000784    0.0000030938        0
+      9   8 3   -0.2299094269    0.0000000948    0.0000007140        0
+     10   8 2   -0.2299094356   -0.0000000087    0.0000001711        0
+     11   8 6   -0.2299094347    0.0000000008    0.0000000377        1
+     12   8 4   -0.2299094347    0.0000000001    0.0000000116        0
+     13   8 5   -0.2299094344    0.0000000003    0.0000000030        0
+     14   8 7   -0.2299094343    0.0000000000    0.0000000008        0
+     15   8 8   -0.2299094343   -0.0000000000    0.0000000002        0
+     16   8 1   -0.2299094343    0.0000000000    0.0000000001        1
+     17   8 3   -0.2299094343   -0.0000000000    0.0000000000        0
+     18   8 2   -0.2299094343    0.0000000000    0.0000000000        0
+     19   8 6   -0.2299094343    0.0000000000    0.0000000000        0
+
+  CCSD iterations converged!
+
+        T1 diagnostic:                        0.012604416163
+        D1 diagnostic:                        0.027705590360
+
+        OS MP2 FNO correction:               -0.000819116338
+        SS MP2 FNO correction:               -0.000092278159
+        MP2 FNO correction:                  -0.000911394496
+
+        OS MP2 correlation energy:           -0.166478414242
+        SS MP2 correlation energy:           -0.056669079826
+        MP2 correlation energy:              -0.223147494068
+      * MP2 total energy:                   -76.258836941654
+
+        OS CCSD correlation energy:          -0.181187220780
+        SS CCSD correlation energy:          -0.049633608060
+        CCSD correlation energy:             -0.230820828840
+      * CCSD total energy:                  -76.266510276425
+
+  Total time for CCSD iterations:       2.87 s (user)
+                                        0.21 s (system)
+                                           4 s (total)
+
+  Time per iteration:                   0.15 s (user)
+                                        0.01 s (system)
+                                        0.21 s (total)
+
+*** tstop() called on lawn-128-61-118-160.lawn.gatech.edu at Thu May  2 12:16:55 2013
+Module time:
+	user time   =       3.05 seconds =       0.05 minutes
+	system time =       0.25 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
+Total time:
+	user time   =       4.47 seconds =       0.07 minutes
+	system time =       0.27 seconds =       0.00 minutes
+	total time  =          6 seconds =       0.10 minutes
+
+*** tstart() called on lawn-128-61-118-160.lawn.gatech.edu
+*** at Thu May  2 12:16:55 2013
+
+
+        *******************************************************
+        *                                                     *
+        *                      CCSD(T)                        *
+        *                                                     *
+        *******************************************************
+
+        num_threads =                     1
+        available memory =        243.67 mb
+        memory requirements =       0.47 mb
+
+        Number of ijk combinations: 20
+
+        Computing (T) correction...
+
+        % complete  total time
+              10.0         0 s
+              20.0         0 s
+              30.0         0 s
+              40.0         0 s
+              50.0         0 s
+              60.0         0 s
+              70.0         0 s
+              80.0         0 s
+              90.0         0 s
+
+        (T) energy                            -0.005356646127
+
+        CCSD(T) correlation energy            -0.236177474967
+      * CCSD(T) total energy                 -76.271866922553
+
+
+*** tstop() called on lawn-128-61-118-160.lawn.gatech.edu at Thu May  2 12:16:55 2013
+Module time:
+	user time   =       0.03 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       4.51 seconds =       0.08 minutes
+	system time =       0.27 seconds =       0.00 minutes
+	total time  =          6 seconds =       0.10 minutes
+
+*** tstop() called on lawn-128-61-118-160.lawn.gatech.edu at Thu May  2 12:16:55 2013
+Module time:
+	user time   =       0.03 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       4.51 seconds =       0.08 minutes
+	system time =       0.27 seconds =       0.00 minutes
+	total time  =          6 seconds =       0.10 minutes
+
+*** tstart() called on lawn-128-61-118-160.lawn.gatech.edu
+*** at Thu May  2 12:16:55 2013
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.068516219310
+           H          0.000000000000    -0.790689573744     0.543701060724
+           H          0.000000000000     0.790689573744     0.543701060724
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    8.801465529972067
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-12
+  Density threshold  = 1.00e-12
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: AUG-CC-PVDZ
+    Number of shells: 19
+    Number of basis function: 41
+    Number of Cartesian functions: 43
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         41      41       0       0       0       0
+   -------------------------------------------------------
+    Total      41      41       5       5       5       0
+   -------------------------------------------------------
+
+ OEINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              19
+      Number of SO shells:              19
+      Number of primitives:             39
+      Number of atomic orbitals:        43
+      Number of basis functions:        41
+
+      Number of irreps:                  1
+      Number of functions per irrep: [  41 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               183
+    Algorithm:                Core
+    Integral Cache:           SAVE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: aug-cc-pvdz-jkfit
+    Number of shells: 52
+    Number of basis function: 150
+    Number of Cartesian functions: 171
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 3.1766171647E-03.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RHF iter   1:   -68.60307255290860   -6.86031e+01   7.87202e-02 
+   @RHF iter   2:   -66.46031032325007    2.14276e+00   6.44684e-02 DIIS
+   @RHF iter   3:   -75.27499078511205   -8.81468e+00   3.38545e-02 DIIS
+   @RHF iter   4:   -75.87096346407601   -5.95973e-01   1.51762e-02 DIIS
+   @RHF iter   5:   -76.03440667884604   -1.63443e-01   8.31381e-04 DIIS
+   @RHF iter   6:   -76.03530311308812   -8.96434e-04   7.57112e-04 DIIS
+   @RHF iter   7:   -76.03565407814941   -3.50965e-04   1.24492e-04 DIIS
+   @RHF iter   8:   -76.03566915974048   -1.50816e-05   1.46909e-05 DIIS
+   @RHF iter   9:   -76.03566966273351   -5.02993e-07   4.78534e-06 DIIS
+   @RHF iter  10:   -76.03566968318668   -2.04532e-08   5.81485e-07 DIIS
+   @RHF iter  11:   -76.03566968372780   -5.41121e-10   7.33821e-08 DIIS
+   @RHF iter  12:   -76.03566968373778   -9.97602e-12   1.04747e-08 DIIS
+   @RHF iter  13:   -76.03566968373799   -2.13163e-13   1.87909e-09 DIIS
+   @RHF iter  14:   -76.03566968373805   -5.68434e-14   2.93189e-10 DIIS
+   @RHF iter  15:   -76.03566968373811   -5.68434e-14   2.97144e-11 DIIS
+   @RHF iter  16:   -76.03566968373806    4.26326e-14   5.28554e-12 DIIS
+   @RHF iter  17:   -76.03566968373804    2.84217e-14   6.06375e-13 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1A    -20.584239     2A     -1.335647     3A     -0.696479  
+	   4A     -0.577439     5A     -0.506106  
+
+	Virtual:                                                              
+
+	   6A      0.034658     7A      0.057722     8A      0.174901  
+	   9A      0.198751    10A      0.219018    11A      0.232772  
+	  12A      0.278549    13A      0.326071    14A      0.382613  
+	  15A      0.397881    16A      0.427473    17A      0.532911  
+	  18A      0.636696    19A      0.654104    20A      0.794625  
+	  21A      0.917437    22A      1.105427    23A      1.117509  
+	  24A      1.145099    25A      1.291954    26A      1.454194  
+	  27A      1.470010    28A      1.572206    29A      1.971534  
+	  30A      1.988356    31A      2.082925    32A      2.346452  
+	  33A      2.398798    34A      2.533949    35A      2.701650  
+	  36A      2.959675    37A      3.671282    38A      3.683510  
+	  39A      3.694439    40A      3.974411    41A      4.219132  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     5 ]
+
+  Energy converged.
+
+  @RHF Final Energy:   -76.03566968373804
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              8.8014655299720665
+    One-Electron Energy =                -122.2744484212463476
+    Two-Electron Energy =                  37.4373132075362918
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    Total Energy =                        -76.0356696837379928
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+  ==> Properties <==
+
+
+Properties computed using the SCF density density matrix
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0191
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:    -0.2197
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:     0.7994     Total:     0.7994
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -0.0000      Z:     2.0319     Total:     2.0319
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on lawn-128-61-118-160.lawn.gatech.edu at Thu May  2 12:16:56 2013
+Module time:
+	user time   =       0.17 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       4.74 seconds =       0.08 minutes
+	system time =       0.29 seconds =       0.00 minutes
+	total time  =          7 seconds =       0.12 minutes
+
+*** tstart() called on lawn-128-61-118-160.lawn.gatech.edu
+*** at Thu May  2 12:16:56 2013
+
+
+
+        *******************************************************
+        *                                                     *
+        *                       DF-CCSD                       *
+        *                 Density-fitted CCSD                 *
+        *                                                     *
+        *                   Eugene DePrince                   *
+        *                                                     *
+        *******************************************************
+
+
+  ==> 3-index integrals <==
+
+  ==> DF Tensor (by Rob Parrish) <==
+
+ => Primary Basis Set <= 
+
+  Basis Set: AUG-CC-PVDZ
+    Number of shells: 19
+    Number of basis function: 41
+    Number of Cartesian functions: 43
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+ => Auxiliary Basis Set <= 
+
+  Basis Set: aug-cc-pvdz-ri
+    Number of shells: 40
+    Number of basis function: 118
+    Number of Cartesian functions: 136
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+        Number of auxiliary functions:         118
+
+  ==> Memory <==
+
+        Total memory requirements:            4.09 mb
+        3-index integrals:                    1.63 mb
+        CCSD intermediates:                   2.47 mb
+
+
+  Begin singles and doubles coupled cluster iterations
+
+   Iter  DIIS          Energy       d(Energy)          |d(T)|     time
+      0   0 2   -0.2231285261   -0.2231285261    0.2144301456        0
+
+  CCSD iterations converged!
+
+        T1 diagnostic:                        0.000000000000
+        D1 diagnostic:                        0.000000000000
+
+        OS MP2 correlation energy:           -0.166416232132
+        SS MP2 correlation energy:           -0.056712293992
+        MP2 correlation energy:              -0.223128526124
+      * MP2 total energy:                   -76.258798209862
+
+        OS CCSD correlation energy:          -0.166416232132
+        SS CCSD correlation energy:          -0.056712293992
+        CCSD correlation energy:             -0.223128526124
+      * CCSD total energy:                  -76.258798209862
+
+  Total time for CCSD iterations:       0.04 s (user)
+                                        0.01 s (system)
+                                           0 s (total)
+
+  Time per iteration:                    inf s (user)
+                                         inf s (system)
+                                         nan s (total)
+
+*** tstop() called on lawn-128-61-118-160.lawn.gatech.edu at Thu May  2 12:16:56 2013
+Module time:
+	user time   =       0.16 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       4.91 seconds =       0.08 minutes
+	system time =       0.30 seconds =       0.01 minutes
+	total time  =          7 seconds =       0.12 minutes
+
+*** tstop() called on lawn-128-61-118-160.lawn.gatech.edu at Thu May  2 12:16:56 2013
+Module time:
+	user time   =       0.16 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       4.91 seconds =       0.08 minutes
+	system time =       0.30 seconds =       0.01 minutes
+	total time  =          7 seconds =       0.12 minutes
+
+  No DF_BASIS_SCF auxiliary basis selected, defaulting to aug-cc-pvdz-jkfit
+
+
+*** tstart() called on lawn-128-61-118-160.lawn.gatech.edu
+*** at Thu May  2 12:16:56 2013
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.068516219310
+           H          0.000000000000    -0.790689573744     0.543701060724
+           H          0.000000000000     0.790689573744     0.543701060724
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    8.801465529972067
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-12
+  Density threshold  = 1.00e-12
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: AUG-CC-PVDZ
+    Number of shells: 19
+    Number of basis function: 41
+    Number of Cartesian functions: 43
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         41      41       0       0       0       0
+   -------------------------------------------------------
+    Total      41      41       5       5       5       0
+   -------------------------------------------------------
+
+ OEINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              19
+      Number of SO shells:              19
+      Number of primitives:             39
+      Number of atomic orbitals:        43
+      Number of basis functions:        41
+
+      Number of irreps:                  1
+      Number of functions per irrep: [  41 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               183
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: aug-cc-pvdz-jkfit
+    Number of shells: 52
+    Number of basis function: 150
+    Number of Cartesian functions: 171
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 3.1766171647E-03.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RHF iter   1:   -68.60307255290860   -6.86031e+01   7.87202e-02 
+   @RHF iter   2:   -66.46031032325007    2.14276e+00   6.44684e-02 DIIS
+   @RHF iter   3:   -75.27499078511205   -8.81468e+00   3.38545e-02 DIIS
+   @RHF iter   4:   -75.87096346407601   -5.95973e-01   1.51762e-02 DIIS
+   @RHF iter   5:   -76.03440667884604   -1.63443e-01   8.31381e-04 DIIS
+   @RHF iter   6:   -76.03530311308812   -8.96434e-04   7.57112e-04 DIIS
+   @RHF iter   7:   -76.03565407814941   -3.50965e-04   1.24492e-04 DIIS
+   @RHF iter   8:   -76.03566915974048   -1.50816e-05   1.46909e-05 DIIS
+   @RHF iter   9:   -76.03566966273351   -5.02993e-07   4.78534e-06 DIIS
+   @RHF iter  10:   -76.03566968318668   -2.04532e-08   5.81485e-07 DIIS
+   @RHF iter  11:   -76.03566968372780   -5.41121e-10   7.33821e-08 DIIS
+   @RHF iter  12:   -76.03566968373778   -9.97602e-12   1.04747e-08 DIIS
+   @RHF iter  13:   -76.03566968373799   -2.13163e-13   1.87909e-09 DIIS
+   @RHF iter  14:   -76.03566968373805   -5.68434e-14   2.93189e-10 DIIS
+   @RHF iter  15:   -76.03566968373811   -5.68434e-14   2.97144e-11 DIIS
+   @RHF iter  16:   -76.03566968373806    4.26326e-14   5.28554e-12 DIIS
+   @RHF iter  17:   -76.03566968373804    2.84217e-14   6.06375e-13 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1A    -20.584239     2A     -1.335647     3A     -0.696479  
+	   4A     -0.577439     5A     -0.506106  
+
+	Virtual:                                                              
+
+	   6A      0.034658     7A      0.057722     8A      0.174901  
+	   9A      0.198751    10A      0.219018    11A      0.232772  
+	  12A      0.278549    13A      0.326071    14A      0.382613  
+	  15A      0.397881    16A      0.427473    17A      0.532911  
+	  18A      0.636696    19A      0.654104    20A      0.794625  
+	  21A      0.917437    22A      1.105427    23A      1.117509  
+	  24A      1.145099    25A      1.291954    26A      1.454194  
+	  27A      1.470010    28A      1.572206    29A      1.971534  
+	  30A      1.988356    31A      2.082925    32A      2.346452  
+	  33A      2.398798    34A      2.533949    35A      2.701650  
+	  36A      2.959675    37A      3.671282    38A      3.683510  
+	  39A      3.694439    40A      3.974411    41A      4.219132  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     5 ]
+
+  Energy converged.
+
+  @RHF Final Energy:   -76.03566968373804
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              8.8014655299720665
+    One-Electron Energy =                -122.2744484212463476
+    Two-Electron Energy =                  37.4373132075362918
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    Total Energy =                        -76.0356696837379928
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+  ==> Properties <==
+
+
+Properties computed using the SCF density density matrix
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0191
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:    -0.2197
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:     0.7994     Total:     0.7994
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -0.0000      Z:     2.0319     Total:     2.0319
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on lawn-128-61-118-160.lawn.gatech.edu at Thu May  2 12:16:56 2013
+Module time:
+	user time   =       0.18 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       5.11 seconds =       0.09 minutes
+	system time =       0.31 seconds =       0.01 minutes
+	total time  =          7 seconds =       0.12 minutes
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //               DFMP2               //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+
+*** tstart() called on lawn-128-61-118-160.lawn.gatech.edu
+*** at Thu May  2 12:16:56 2013
+
+	 --------------------------------------------------------
+	                          DF-MP2                         
+	      2nd-Order Density-Fitted Moller-Plesset Theory     
+	              RMP2 Wavefunction,   1 Threads             
+	                                                         
+	        Rob Parrish, Justin Turney, Andy Simmonett,      
+	           Ed Hohenstein, and C. David Sherrill          
+	 --------------------------------------------------------
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: aug-cc-pvdz-ri
+    Number of shells: 40
+    Number of basis function: 118
+    Number of Cartesian functions: 136
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+	 --------------------------------------------------------
+	                 NBF =    41, NAUX =   118
+	 --------------------------------------------------------
+	   CLASS    FOCC     OCC    AOCC    AVIR     VIR    FVIR
+	   PAIRS       1       5       4      36      36       0
+	 --------------------------------------------------------
+
+	----------------------------------------------------------
+	 ==================> DF-MP2 Energies <=================== 
+	----------------------------------------------------------
+	 Reference Energy          =     -76.0356696837380355 [H]
+	 Singles Energy            =      -0.0000000000000000 [H]
+	 Same-Spin Energy          =      -0.0567122939923441 [H]
+	 Opposite-Spin Energy      =      -0.1664162321320638 [H]
+	 Correlation Energy        =      -0.2231285261244079 [H]
+	 Total Energy              =     -76.2587982098624479 [H]
+	----------------------------------------------------------
+	 ================> DF-SCS-MP2 Energies <================= 
+	----------------------------------------------------------
+	 SCS Same-Spin Scale       =       0.3333333333333333 [-]
+	 SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
+	 SCS Same-Spin Energy      =      -0.0189040979974480 [H]
+	 SCS Opposite-Spin Energy  =      -0.1996994785584766 [H]
+	 SCS Correlation Energy    =      -0.2186035765559246 [H]
+	 SCS Total Energy          =     -76.2542732602939566 [H]
+	----------------------------------------------------------
+
+
+*** tstop() called on lawn-128-61-118-160.lawn.gatech.edu at Thu May  2 12:16:56 2013
+Module time:
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       5.20 seconds =       0.09 minutes
+	system time =       0.31 seconds =       0.01 minutes
+	total time  =          7 seconds =       0.12 minutes
+
+*** PSI4 exiting successfully. Buy a developer a beer!

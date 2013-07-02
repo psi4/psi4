@@ -1,0 +1,226 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-beta1 Driver
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! ROHF 6-31G** energy of the $^3B@@1$ state of CH$@@2$, with Z-matrix input. The occupations
+#! are specified explicitly.
+
+memory 250 mb
+
+nucenergy =   6.64841891890875  #TEST
+refenergy = -38.91136934915929  #TEST
+
+molecule ch2 {
+    0 3
+    c
+    h 1 b1
+    h 1 b1 2 a1
+
+    b1 = 1.0
+    a1 = 125.0
+}
+
+set globals {
+    reference rohf
+    basis     6-31G**
+    docc      [2, 0, 0, 1]
+    socc      [1, 0, 1, 0]
+}
+
+thisenergy = energy('mcscf')
+
+compare_values(nucenergy, ch2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+compare_values(refenergy, thisenergy, 9, "Reference energy")                             #TEST
+--------------------------------------------------------------------------
+
+  Memory set to 250.000 MiB by Python script.
+
+         ------------------------------------------
+           MCSCF: a self-consistent field program
+            written by Francesco A. Evangelista
+         ------------------------------------------    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 3:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000    -0.066406025951
+           H          0.000000000000    -0.887010833178     0.395342587284
+           H         -0.000000000000     0.887010833178     0.395342587284
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 2 
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 12
+    Number of primitives   = 25
+    Number of AO           = 25
+    Number of SO           = 25
+    Maximum AM             = 2
+    Spherical Harmonics    = FALSE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     10s 4p 1d // 3s 2p 1d 
+       2     H     4s 1p // 2s 1p 
+       3     H     4s 1p // 2s 1p 
+
+  -Basis set on unique center 1: C
+     S (       3047.52490000           0.53633438)
+       (        457.36951000           0.98945061)
+       (        103.94869000           1.59728223)
+       (         29.21015500           2.07918706)
+       (          9.28666300           1.77417425)
+       (          3.16392700           0.61257983)
+     S (          7.86827240          -0.39955635)
+       (          1.88128850          -0.18415524)
+       (          0.54424930           0.51639038)
+     P (          7.86827240           1.29608272)
+       (          1.88128850           0.99375363)
+       (          0.54424930           0.49595271)
+     S (          0.16871440           0.18761787)
+     P (          0.16871440           0.15412755)
+     D (          0.80000000           1.11382493)
+
+  -Basis set on unique center 2: H
+     S (         18.73113700           0.21493542)
+       (          2.82539370           0.36457113)
+       (          0.64012170           0.41505143)
+     S (          0.16127780           0.18138068)
+     P (          1.10000000           1.60576114)
+
+  -Basis set on unique center 3: H
+     S (         18.73113700           0.21493542)
+       (          2.82539370           0.36457113)
+       (          0.64012170           0.41505143)
+     S (          0.16127780           0.18138068)
+     P (          1.10000000           1.60576114)
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:               9
+      Number of primitives:             25
+      Number of atomic orbitals:        25
+      Number of basis functions:        25
+
+      Number of irreps:                  4
+      Number of functions per irrep: [  12    2    4    7 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 13617 non-zero two-electron integrals.
+        Stored in file 33.
+
+
+
+  MOs per irrep:                                      A1  A2  B1  B2 Total
+  ----------------------------------------------------------------------------
+  Total                                               12    2    4    7    25
+  Doubly Occupied                                      2    0    0    1     3
+  Active/Singly Occupied                               1    0    1    0     2
+  ----------------------------------------------------------------------------
+
+  Running an SCF calculation
+
+  Generated 325 pairs
+  Distributed as [119 A1][52 A2][62 B1][92 B2]
+  batch   0 pq = [       0,     119] index = [               0,            7140]
+
+  Allocated the PK matrix (7140 elements) 
+  Allocated the  K matrix (7140 elements) 
+  Reading the two-electron integrals to form PK and K ... 
+  batch   0 ... done.
+
+
+  =========================================================================================
+         Cycle          Energy               D(Energy)            D(Density)            DIIS
+  =========================================================================================== S
+  @SCF    0      -34.696346902629     -34.696346902629       0.166385420394 S
+  @SCF    1      -37.884046534694      -3.187699632066       0.161764087176 S
+  @SCF    2      -38.784802325621      -0.900755790926       0.039393180808 S
+  @SCF    3      -38.896774636830      -0.111972311210       0.012732219388 S
+  @SCF    4      -38.909985920678      -0.013211283848       0.003224480021 S
+  @SCF    5      -38.911221454062      -0.001235533384       0.001307661826 S
+  @SCF    6      -38.911353360863      -0.000131906801       0.000269635960 S/E
+  @SCF    7      -38.911367547012      -0.000014186150       0.000141464713 S/E
+  @SCF    8      -38.911369348398      -0.000001801386       0.000028574008 S/E
+  @SCF    9      -38.911369349151      -0.000000000753       0.000002510595 S/E
+  @SCF   10      -38.911369349159      -0.000000000008       0.000000214095 S/E
+  @SCF   11      -38.911369349159      -0.000000000000       0.000000012585 S/E
+  @SCF   12      -38.911369349159      -0.000000000000       0.000000001134 S/E
+  @SCF   13      -38.911369349159       0.000000000000       0.000000000488 S/E
+  @SCF   14      -38.911369349159      -0.000000000000       0.000000000035 S/E
+  @SCF   15      -38.911369349159       0.000000000000       0.000000000009 S/E
+  @SCF   16      -38.911369349159       0.000000000000       0.000000000001
+  =========================================================================================
+
+      * SCF total energy   =     -38.911369349159
+
+
+  End of SCF
+  MOs orthonormality check passed.
+
+  Orbitals are canonicalized as:
+  inactive (docc + uocc) : Fock(core)
+  active   (actv)        : Fock(core)
+
+  =========================================================================
+  Eigenvalues (Eh)
+  -------------------------------------------------------------------------
+  Doubly occupied orbitals
+      1    -11.224505  A1      2     -0.878359  A1      3     -0.613624  B2
+  Active orbitals
+      4     -0.151326  A1      5     -0.098323  B1
+  Unoccupied orbitals
+      6      0.296721  A1      7      0.357858  B2      8      0.734452  B2
+      9      0.760837  A1     10      0.796233  B1     11      0.855675  A1
+     12      1.234191  A1     13      1.246294  B2     14      1.717171  A2
+     15      1.863755  A1     16      1.910934  B1     17      2.255346  B2
+     18      2.370734  A1     19      2.751634  B1     20      2.806851  B2
+     21      3.028144  A2     22      3.145449  A1     23      3.965054  A1
+     24      3.980318  B2     25      4.596242  A1
+  =========================================================================
+
+
+  MCSCF Execution Completed.
+
+
+*** tstop() called on QuickSilver.local at Mon Jan 23 15:20:53 2012
+Module time:
+	user time   =       0.17 seconds =       0.00 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  = 1327350053 seconds = 22122500.88 minutes
+Total time:
+	user time   =       0.17 seconds =       0.00 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  = 1327350053 seconds = 22122500.88 minutes
+
+*** PSI4 exiting successfully. Buy a developer a beer!

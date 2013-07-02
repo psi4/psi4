@@ -1,0 +1,64 @@
+% H2O
+% DZ C2V
+
+psi: (
+  jobtype = sp
+)
+
+default: (
+  label = "H2O DZ"
+  memory = (20.0 MB)
+  reference = rhf
+  charge = 0
+  multp = 1
+
+  symmetry = c2v
+  wfn = detci
+  ex_lvl = 10
+  opentype = none
+  dertype = none
+  docc = (3 0 1 1)
+  frozen_docc = (0 0 0 0)
+  frozen_uocc = (0 0 0 0)
+
+  files: (
+    default: ( name = "h2odz" nvolume = 1
+      volume1 = "/scratch/sherrill/"
+      )
+    file30: (nvolume = 1 volume1 = "./" )
+    file32: (nvolume = 1 volume1 = "./" )
+  )
+)
+
+input: (
+  basis = dz
+  units = bohr
+  % H2O DZ SCF Opt Geom
+  geometry = (
+    ( O       .0000000000         .0000000000        -.0742719254)
+    ( H       .0000000000       -1.4949589982       -1.0728640373)
+    ( H       .0000000000        1.4949589982       -1.0728640373)
+  )
+  origin = (0.0 0.0 0.0)
+)
+
+scf: (
+    maxiter = 50
+    convergence = 12
+    delete34 = false
+  )
+
+trans: (
+   delete34 = false
+)
+
+detci: (
+   fci = true
+   convergence = 6
+   print = 2
+   maxiter = 10
+   diag_method = SEM
+   h0_blocksize = 40
+   hd_ave = evangelisti
+)
+

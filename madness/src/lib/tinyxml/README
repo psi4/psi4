@@ -1,0 +1,20 @@
+This directory contains the *modified* source of TinyXML from
+http://www.grinninglizard.com/tinyxml/ and
+http://sourceforge.net/projects/tinyxml.  Its C++ source files, header
+files, and readme.txt have been extracted, and "*.cpp" renamed to
+"*.cc".  The TinyXML license information is contained in readme.txt.
+
+The vanilla TinyXML tar file is contained in this directory along with
+the tinyxml C++ source files (unmodified) and a MADNESS-specific
+Makefile.
+
+The only files in this directory that are part of MADNESS are
+README and Makefile.
+
+!! Message to MADNESS developers.  Please record below modifications
+to any TinyXML file.
+
+
+* RJH 2/2/2008.  Defined TIXML_USE_STL near top of tixml.h to
+  force use of STL without modifying MADNESS configuration files.
+

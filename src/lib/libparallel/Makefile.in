@@ -1,0 +1,25 @@
+
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+include ../MakeVars
+
+PSITARGET = $(top_objdir)/lib/libPSI_parallel.a
+CXXDEF += -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\"
+
+TRUECXXSRC = fprintf.cc process.cc parallel.cc
+
+INC = parallel.h local.h mad.h elem.h openmp.h
+
+LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+install_inc:: $(INC)
+	$(MKDIRS) $(DESTDIR)$(incdir)/libutil
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libutil
+
+ifneq "$(MAKECMDGOALS)" "clean"
+include $(LIBOBJ:%.o=%.d)
+endif
+

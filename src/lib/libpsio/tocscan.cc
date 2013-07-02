@@ -1,0 +1,99 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
+/*!
+ \file
+ \ingroup PSIO
+ */
+
+#include <cstring>
+#include <boost/shared_ptr.hpp>
+#include <libpsio/psio.h>
+#include <libpsio/psio.hpp>
+
+namespace psi {
+
+psio_tocentry*PSIO::tocscan(unsigned int unit, const char *key) {
+  psio_tocentry *this_entry;
+
+  if (key == NULL)
+    return (NULL);
+
+  if ((strlen(key)+1) > PSIO_KEYLEN)
+    psio_error(unit, PSIO_ERROR_KEYLEN);
+
+  this_entry = psio_unit[unit].toc;
+
+  while (this_entry != NULL) {
+    if (!strcmp(this_entry->key, key))
+      return (this_entry);
+    this_entry = this_entry->next;
+  }
+
+  return (NULL);
+}
+
+  /*!
+   ** PSIO_TOCSCAN(): Scans the TOC for a particular keyword and returns either
+   ** a pointer to the entry or NULL to the caller.
+   **
+   ** \ingroup PSIO
+   */
+
+  psio_tocentry *psio_tocscan(unsigned int unit, const char *key) {
+    return _default_psio_lib_->tocscan(unit, key);
+  }
+
+bool PSIO::tocentry_exists(unsigned int unit, const char *key) {
+  psio_tocentry *this_entry;
+
+  if (key == NULL)
+    return (true);
+
+  if ((strlen(key)+1) > PSIO_KEYLEN)
+    psio_error(unit, PSIO_ERROR_KEYLEN);
+
+  this_entry = psio_unit[unit].toc;
+
+  while (this_entry != NULL) {
+    if (!strcmp(this_entry->key, key))
+      return (true);
+    this_entry = this_entry->next;
+  }
+
+  return (false);
+}
+
+  /*!
+   ** PSIO_TOCSCAN(): Scans the TOC for a particular keyword and returns either
+   ** a pointer to the entry or NULL to the caller.
+   **
+   ** \ingroup PSIO
+   */
+
+  bool psio_tocentry_exists(unsigned int unit, const char *key) {
+    return _default_psio_lib_->tocentry_exists(unit, key);
+  }
+
+
+}
+

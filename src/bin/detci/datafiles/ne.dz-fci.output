@@ -1,0 +1,498 @@
+******************************************************************************
+tstart called on aurelius.chemistry.gatech.edu
+Mon Jun 24 15:16:49 2002
+
+                                --------------
+                                  WELCOME TO
+                                    PSI  3
+                                --------------
+
+  LABEL       =	Ne RAS Tests
+  SHOWNORM    =	0
+  PUREAM      =	1
+  PRINT_LVL   =	1
+
+  -Geometry before Center-of-Mass shift (a.u.):
+       Center              X                  Y                   Z
+    ------------   -----------------  -----------------  -----------------
+            NEON      0.000000000000     0.000000000000     0.000000000000
+
+    It is a spherical top.
+
+  -Geometry after Center-of-Mass shift and reorientation (a.u.):
+       Center              X                  Y                   Z
+    ------------   -----------------  -----------------  -----------------
+            NEON      0.000000000000     0.000000000000     0.000000000000
+
+
+  -SYMMETRY INFORMATION:
+    Computational point group is D2h 
+    Number of irr. rep.      = 8
+    Number of atoms          = 1
+    Number of unique atoms   = 1
+
+
+  -BASIS SETS:
+
+   -Basis set on unique center 1:
+      ( (S ( 12100.00000000     0.00120000)
+           (  1821.00000000     0.00909200)
+           (   432.80000000     0.04130500)
+           (   132.50000000     0.13786700)
+           (    43.77000000     0.36243300) )
+        (S (     5.12700000     0.13003500) )
+        (S (    14.91000000     1.00000000) )
+        (S (     1.49100000     1.00000000) )
+        (S (     0.44680000     1.00000000) )
+        (P (    56.45000000     0.02087500)
+           (    12.92000000     0.13003200)
+           (     3.86500000     0.39567900) )
+        (P (     1.20300000     0.62145000) )
+        (P (     0.34440000     1.00000000) )
+        (D (     2.15000000     1.00000000) )
+       )
+
+
+    Wrote 11268 bytes to FILE30
+
+  -BASIS SET INFORMATION:
+    Total number of shells = 9
+    Number of primitives   = 15
+    Number of AO           = 20
+    Number of SO           = 19
+
+    Irrep    Number of SO
+    -----    ------------
+      1            7
+      2            1
+      3            1
+      4            1
+      5            0
+      6            3
+      7            3
+      8            3
+
+
+  -Unique atoms in the canonical coordinate system (a.u.):
+       Center              X                  Y                   Z
+    ------------   -----------------  -----------------  -----------------
+            NEON      0.000000000000     0.000000000000     0.000000000000
+
+
+  -Geometry in the canonical coordinate system (a.u.):
+       Center              X                  Y                   Z
+    ------------   -----------------  -----------------  -----------------
+            NEON      0.000000000000     0.000000000000     0.000000000000
+
+
+  -Geometry in the canonical coordinate system (Angstrom):
+       Center              X                  Y                   Z
+    ------------   -----------------  -----------------  -----------------
+            NEON      0.000000000000     0.000000000000     0.000000000000
+
+
+  -Geometry in the reference coordinate system (a.u.):
+       Center              X                  Y                   Z
+    ------------   -----------------  -----------------  -----------------
+            NEON      0.000000000000     0.000000000000     0.000000000000
+
+
+  --------------------------------------------------------------------------
+******************************************************************************
+tstop called on aurelius.chemistry.gatech.edu
+Mon Jun 24 15:16:49 2002
+
+user time   =       0.10 seconds
+system time =       0.00 seconds
+total time  =          0 seconds
+******************************************************************************
+tstart called on aurelius.chemistry.gatech.edu
+Mon Jun 24 15:16:50 2002
+
+                  --------------------------------------------
+                    CINTS: An integrals program written in C
+                     Justin T. Fermann and Edward F. Valeev
+                  --------------------------------------------
+
+
+  -OPTIONS:
+    Print level                 = 1
+    Integral tolerance          = 1e-15
+    Max. memory to use          = 2500000 double words
+    Number of threads           = 1
+    LIBINT's real type length   = 64 bit
+
+  -CALCULATION CONSTANTS:
+    Label                       = Ne RAS Tests                                                                    
+    Number of atoms             = 1
+    Number of atomic orbitals   = 20
+    Number of symmetry orbitals = 19
+    Maximum AM in the basis     = 2
+
+  -SYMMETRY INFORMATION;
+    Computational point group        =  D2h
+    Number of irreps                 = 8
+    Wrote 2544 two-electron integrals to IWL file 33
+
+******************************************************************************
+tstop called on aurelius.chemistry.gatech.edu
+Mon Jun 24 15:16:50 2002
+
+user time   =       0.02 seconds
+system time =       0.00 seconds
+total time  =          0 seconds
+******************************************************************************
+tstart called on aurelius.chemistry.gatech.edu
+Mon Jun 24 15:16:50 2002
+
+
+             ------------------------------------------
+
+                CSCF3.0: An SCF program written in C
+
+              Written by too many people to mention here
+
+             ------------------------------------------
+
+
+  label       = Ne RAS Tests
+  wfn          = DETCI
+  reference    = RHF
+  multiplicity = 1
+  charge       = 0
+  direct SCF   = false
+  dertype      = NONE
+  convergence  = 10
+  maxiter      = 40
+  guess        = AUTO
+
+  nuclear repulsion energy        0.0000000000000
+  first run, so defaulting to core-hamiltonian guess
+
+  level shift                      = 0.100000
+  diis scale factor                = 1.000000
+  iterations before extrapolation  = 0
+  6 error matrices will be kept
+
+  keeping integrals in 19680 bytes of core
+
+  The lowest eigenvalue of the overlap matrix was 3.571099e-02
+
+
+  Using DOCC and SOCC to 
+  determine occupations
+
+
+  Symmetry block:   Ag    B1g   B2g   B3g   Au    B1u   B2u   B3u  
+  DOCC:              2     0     0     0     0     1     1     1   
+  SOCC:              0     0     0     0     0     0     0     0   
+
+  reading integrals in the IWL format from files 33,35,36,37
+  wrote 976 integrals to file92
+
+  iter       total energy        delta E         delta P          diiser
+    1      -113.4942435866    1.134942e+02    0.000000e+00    0.000000e+00
+    2      -122.2474533088    8.753210e+00    1.089410e-01    3.191080e+00
+    3      -127.3265845862    5.079131e+00    8.073439e-02    1.385693e+00
+    4      -128.5135397602    1.186955e+00    2.150755e-02    8.210789e-01
+    5      -128.5238566167    1.031686e-02    2.838908e-03    6.370154e-02
+    6      -128.5240128879    1.562712e-04    2.770506e-04    8.247475e-03
+    7      -128.5240130170    1.290596e-07    8.657647e-06    3.292812e-04
+    8      -128.5240130213    4.290598e-09    1.658234e-06    6.121972e-05
+    9      -128.5240130213    6.781420e-11    2.732875e-07    8.366924e-06
+   10      -128.5240130213    1.421085e-13    8.605894e-09    2.842900e-07
+   11      -128.5240130213    0.000000e+00    6.285998e-10    1.962657e-08
+   12      -128.5240130213    0.000000e+00    2.492985e-12    7.945495e-11
+
+Orbital energies (a.u.):
+
+  Doubly occupied orbitals
+   1Ag    -32.766993     2Ag     -1.923342     1B1u    -0.844461  
+   1B2u    -0.844461     1B3u    -0.844461  
+
+
+  Unoccupied orbitals
+   2B1u     1.161558     2B2u     1.161558     2B3u     1.161558  
+   3Ag      1.700202     4Ag      5.077717     1B1g     5.077717  
+   1B2g     5.077717     1B3g     5.077717     5Ag      5.077717  
+   3B2u     6.529057     3B1u     6.529057     3B3u     6.529057  
+   6Ag     13.035035     7Ag     82.779763  
+
+
+        total energy       =    -128.524013021329
+        kinetic energy     =     128.545262032203
+        nuc. attr. energy  =    -311.145854639588
+        elec. rep. energy  =      54.076579586056
+        potential energy   =    -257.069275053532
+        virial theorem     =       2.000165331057
+        wavefunction norm  =       1.000000000000
+******************************************************************************
+tstop called on aurelius.chemistry.gatech.edu
+Mon Jun 24 15:16:51 2002
+
+user time   =       0.01 seconds
+system time =       0.00 seconds
+total time  =          1 seconds
+******************************************************************************
+tstart called on aurelius.chemistry.gatech.edu
+Mon Jun 24 15:16:51 2002
+
+
+	**************************************************
+	* TRANSQT:  Program to transform integrals from  *
+	*           the SO basis to the MO basis.        *
+	*                                                *
+	*            Daniel, David, & Justin             *
+	*                   Sept  1995                   *
+	**************************************************
+
+	Input Parameters:
+	-----------------
+	Wavefunction           =  DETCI
+	Reference orbitals     =  RHF
+	Backtrans              =  No
+	Print MOs              =  No
+	Freeze Core            = Yes
+	Do All TEI             = No
+	Memory (Mbytes)        =   20.0
+	Max Buckets            =  199
+	First Tmp File         =  150
+	Presort File           =  41
+	Source TEI File        =  33
+	Opdm In File           =  73
+	Opdm Out File          =  76
+	Lag In File            =  75
+	Keep Presort           =  No
+	J File                 =  91
+	Keep J                 =  No
+	M File                 =  72
+	Bare OEI file          =  35
+	Frozen Core OEI file   =  35
+	Sorted TEI file        =  72
+	Delete TEI source file =  Yes
+	Add TPDM Ref Part      =  No
+	Do Bare OEI tranform   =  No
+	Do FZC  OEI tranform   =  Yes
+	Tolerance              =  1.0e-14
+	Print Level            =  1
+	Print TE Ints          =  No
+	Print OE Ints          =  No
+	Print Sorted TE Ints   =  No
+	Print Sorted OE Ints   =  No
+	Reorder MOs            =  No
+	Check C Orthonormality =  No
+	QRHF orbitals          =  No
+	IVO orbitals           =  No
+	Pitzer                 =  No
+
+	File30 Parameters:
+	------------------
+	Number of irreps = 8
+	Number of SOs    = 19
+	Number of MOs    = 19
+
+	Label	# SOs	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	-----	------	------	------	------	------
+	 Ag 	   7	   7	    0	    2	    0	    5	    0
+	 B1g	   1	   1	    0	    0	    0	    1	    0
+	 B2g	   1	   1	    0	    0	    0	    1	    0
+	 B3g	   1	   1	    0	    0	    0	    1	    0
+	 Au 	   0	   0	    0	    0	    0	    0	    0
+	 B1u	   3	   3	    0	    1	    0	    2	    0
+	 B2u	   3	   3	    0	    1	    0	    2	    0
+	 B3u	   3	   3	    0	    1	    0	    2	    0
+
+	Nuclear Repulsion Energy    =         0.0000000000
+	Total SCF Energy            =      -128.5240130213
+
+	Reading one-electron integrals...done.
+
+	Pre-sorting two-electron ints...
+
+
+	Frozen core energy =    0.000000000000000
+	Transforming two-electron ints...
+
+	Sorting half-transformed integrals...
+	Finished half-transform...
+	Working on second half...
+
+	Transformation finished.
+	Two-electron integrals written to file72.
+
+	Transforming one-electron integrals...
+	Frozen-core operator written to file 35.
+******************************************************************************
+tstop called on aurelius.chemistry.gatech.edu
+Mon Jun 24 15:16:51 2002
+
+user time   =       0.10 seconds
+system time =       0.06 seconds
+total time  =          0 seconds
+******************************************************************************
+tstart called on aurelius.chemistry.gatech.edu
+Mon Jun 24 15:16:51 2002
+
+
+*******************************************************
+                       D E T C I  
+
+                   C. David Sherrill
+                  Matt L. Leininger
+                     18 June 1999
+*******************************************************
+
+
+
+
+PARAMETERS: 
+   EX LVL        =       10      H0 BLOCKSIZE =      400
+   VAL EX LVL    =        0      H0 GUESS SIZE=      400
+   H0COUPLINGSIZE=        0      H0 COUPLING  =       no
+   NPRINT        =       20      MAX DET      =    10000
+   MAXITER       =       12      FREEZE CORE  =      yes
+   NUM ROOTS     =        1      ICORE        =        1
+   PRINT         =        1      FCI          =      yes
+   CONV          =        6      MIXED        =      yes
+   E CONV        =        6      MIXED4       =      yes
+   OEI FILE      =       35      R4S          =       no
+   OEI ERASE     =       no      REPL OTF     =       no
+   TEI FILE      =       72      DIAG METHOD  =      SEM
+   PRECONDITIONER= DAVIDSON      UPDATE       =   DAVIDSON
+   S             =        0      Ms0          =      yes
+   TEI ERASE     =       no      MAXNVECT     =       13
+   RESTART       =       no      RESTART VECS =        0
+   GUESS VECTOR  =  H0BLOCK      OPENTYPE     =     NONE
+   GENCI ALG     =       no      REF SYM      =     auto
+   COLLAPSE SIZE =        1      HD AVE       = EVANGELISTI
+   LSE           =       no      LSE ITER     =        0
+   HD OTF        =      yes      NO DFILE     =       no
+   MPN           =       no      MPN SCHMIDT  =       no
+   WIGNER        =       no      ZERO BLOCKS  =       no
+   PERT Z        =   1.0000      ROOT         =        0
+   PTHREADS      =       no      NTHREADS     =        1
+   SF_RESTRICT   =       no
+
+   FILES         =      50  51  52  53
+
+ORBITALS:
+   NMO          =       19      NUM ALP      =        5
+   ORBS IN CI   =       19      NUM ALP EXPL =        5
+   FROZEN CORE  =        0      NUM BET      =        5
+   RESTR CORE   =        0      NUM BET EXPL =        5
+   IOPEN        =       no
+   RAS1 LVL     =        4      A RAS3 MAX   =        5
+   RAS1 MIN     =        0      B RAS3 MAX   =        5
+   A RAS1 LVL   =        4      RAS4 LVL     =       19
+   A RAS1 MIN   =        0      A RAS4 MAX   =        0
+   A RAS1 MAX   =        5      B RAS4 MAX   =        0
+   B RAS1 LVL   =        4      RAS4 MAX     =        0
+   B RAS1 MIN   =        0      A RAS34 MAX  =        5
+   B RAS1 MAX   =        5      B RAS34 MAX  =        5
+   RAS3 LVL     =        5      RAS34 MAX    =       10
+   RAS3 MAX     =       10
+
+   DOCC         =  2  0  0  0  0  1  1  1 
+   SOCC         =  0  0  0  0  0  0  0  0 
+   FROZEN DOCC  =  0  0  0  0  0  0  0  0 
+   FROZEN UOCC  =  0  0  0  0  0  0  0  0 
+   RAS 1        =  2  0  0  0  0  1  1  1 
+   RAS 2        =  0  0  0  0  0  0  0  0 
+   RAS 3        =  5  1  1  1  0  2  2  2 
+   RAS 4        =  0  0  0  0  0  0  0  0 
+*******************************************************
+
+
+There are 11628 alpha strings
+There are 11628 beta strings
+CI space contains    8 blocks
+
+CI space requires 16919232 determinants
+
+Check SCF Energy from 1- and 2-electron integrals
+
+SCF Energy (ref):           -128.5240130213
+Nuclear repulsion energy:      0.0000000000
+One-electron energy:        -182.6005926074
+Two-electron energy:          54.0765795861
+Frozen core energy:            0.0000000000
+Total electronic energy:    -128.5240130213
+Total SCF energy:           -128.5240130213
+
+ CI vector/subblock length = 16919232
+
+*** H0 Block Eigenvalue = -128.61475490
+
+Find the roots by the Simultaneous Expansion Method (Block Davidson Method)
+Energy convergence = 1e-06
+RMS CI vector convergence = 1e-06
+
+Using 1 initial trial vectors
+Iter  0  Root  1 = -128.614754897   Delta_E -1.286E+02   Delta_C  2.041E+00  
+Iter  1  Root  1 = -128.759970994   Delta_E -1.452E-01   Delta_C  2.836E-01  
+Iter  2  Root  1 = -128.762745000   Delta_E -2.774E-03   Delta_C  6.655E-02  
+Iter  3  Root  1 = -128.762893849   Delta_E -1.488E-04   Delta_C  1.306E-02  
+Iter  4  Root  1 = -128.762900401   Delta_E -6.553E-06   Delta_C  3.218E-03  
+Iter  5  Root  1 = -128.762900748   Delta_E -3.467E-07   Delta_C  9.742E-04  
+Iter  6  Root  1 = -128.762900782   Delta_E -3.445E-08   Delta_C  2.346E-04  
+Iter  7  Root  1 = -128.762900784   Delta_E -1.767E-09   Delta_C  5.846E-05  
+Iter  8  Root  1 = -128.762900784   Delta_E -1.090E-10   Delta_C  1.262E-05  
+Iter  9  Root  1 = -128.762900784   Delta_E -5.002E-12   Delta_C  2.686E-06  
+Warning: Norm of correction (root 0) is < 1.0E-13
+Iter 10  Root  1 = -128.762900784   Delta_E -1.990E-13   Delta_C  5.903E-07 c
+
+ROOT 1 ECI = -128.7629007841444
+
+
+The 20 most important determinants
+
+    1   -0.984931  ( 5832, 5832)  1Ag X  2Ag X  1B1uX  1B2uX  1B3uX  
+    2    0.037659  ( 6021, 6021)  1Ag X  2Ag X  1B2uX  1B3uX  2B1uX  
+    3    0.037659  ( 6232, 6232)  1Ag X  2Ag X  1B1uX  1B3uX  2B2uX  
+    4    0.037659  ( 6627, 6627)  1Ag X  2Ag X  1B1uX  1B2uX  2B3uX  
+    5   -0.027245  ( 6021, 6232)  1Ag X  2Ag X  1B1uB  1B2uA  1B3uX  2B1uA  2B2uB  
+    6   -0.027245  ( 6232, 6021)  1Ag X  2Ag X  1B1uA  1B2uB  1B3uX  2B1uB  2B2uA  
+    7    0.027245  ( 6021, 6627)  1Ag X  2Ag X  1B1uB  1B2uX  1B3uA  2B1uA  2B3uB  
+    8    0.027245  ( 6627, 6021)  1Ag X  2Ag X  1B1uA  1B2uX  1B3uB  2B1uB  2B3uA  
+    9   -0.027245  ( 6232, 6627)  1Ag X  2Ag X  1B1uX  1B2uB  1B3uA  2B2uA  2B3uB  
+   10   -0.027245  ( 6627, 6232)  1Ag X  2Ag X  1B1uX  1B2uA  1B3uB  2B2uB  2B3uA  
+   11   -0.021659  ( 5833, 6232)  1Ag X  2Ag B  1B1uX  1B2uA  1B3uX  3Ag A  2B2uB  
+   12   -0.021659  ( 6232, 5833)  1Ag X  2Ag A  1B1uX  1B2uB  1B3uX  3Ag B  2B2uA  
+   13    0.021659  ( 5833, 6021)  1Ag X  2Ag B  1B1uA  1B2uX  1B3uX  3Ag A  2B1uB  
+   14    0.021659  ( 6021, 5833)  1Ag X  2Ag A  1B1uB  1B2uX  1B3uX  3Ag B  2B1uA  
+   15    0.021659  ( 5833, 6627)  1Ag X  2Ag B  1B1uX  1B2uX  1B3uA  3Ag A  2B3uB  
+   16    0.021659  ( 6627, 5833)  1Ag X  2Ag A  1B1uX  1B2uX  1B3uB  3Ag B  2B3uA  
+   17    0.020765  ( 5832, 6325)  1Ag X  2Ag X  1B1uA  1B2uA  1B3uX  2B1uB  2B2uB  
+   18    0.020765  ( 6325, 5832)  1Ag X  2Ag X  1B1uB  1B2uB  1B3uX  2B1uA  2B2uA  
+   19    0.020765  ( 5832, 6803)  1Ag X  2Ag X  1B1uX  1B2uA  1B3uA  2B2uB  2B3uB  
+   20    0.020765  ( 6803, 5832)  1Ag X  2Ag X  1B1uX  1B2uB  1B3uB  2B2uA  2B3uA  
+
+
+
+
+        Total Time (s)     %Time 		%Relative
+ -----------------------------------------------------
+ Read      654.456158
+ Write     65.028835
+ Sigma1    0.000000
+ Sigma2    419.969152
+ Sigma3    1788.805155
+ S1 Thread 0.000000
+ S2 Thread 0.000000
+ S3 Thread 0.000000
+
+		 "A good bug is a dead bug" 
+
+			 - Starship Troopers
+
+		 "I didn't write FORTRAN.  That's the problem."
+
+			 - Edward Valeev
+
+******************************************************************************
+tstop called on aurelius.chemistry.gatech.edu
+Mon Jun 24 16:09:18 2002
+
+user time   =    2396.24 seconds
+system time =     432.54 seconds
+total time  =       3147 seconds

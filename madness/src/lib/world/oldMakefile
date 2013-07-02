@@ -1,0 +1,56 @@
+
+# CYGWIN
+INCLUDES = -I. -I.. -Iarchive
+DEFINES =  -DHAS_XTERM_DEBUG -DHASH_MAP_NAMESPACE=__gnu_cxx -DX8632 -DUINT64_T="unsigned long long"
+CXXFLAGS = -O0 -ansi -g -Wall $(INCLUDES) $(DEFINES)
+LDFLAGS = 
+LIBS = -lm
+CXX = mpicxx
+
+
+# OINK
+#INCLUDES = -I. -I.. -Iarchive
+#DEFINES =  -DHAS_XTERM_DEBUG -DHASH_MAP_NAMESPACE=__gnu_cxx -DX8632  -DUINT64_T="unsigned long long"
+#CXXFLAGS = -O0 -ansi -g -Wall $(INCLUDES) $(DEFINES)
+#LDFLAGS = 
+#LIBS = -lm
+#CXX = mpicxx
+
+
+# JAGUAR
+#INCLUDES = -I. -I.. -Iarchive 
+#DEFINES = -DHASH_MAP_NAMESPACE=std  -DX8664  -DUINT64_T="unsigned long"
+#CXXFLAGS = -O2 -fast $(INCLUDES) $(DEFINES)
+#LDFLAGS = 
+#LIBS = -lm
+#CXX = mpicxx
+
+
+WORLD_HEADERS = world.h worldam.h worldmpi.h worldtask.h worldgop.h \
+                worlddc.h worldser.h worldref.h worldfut.h worldexc.h \
+                worldtask.h worlddep.h worldtime.h sharedptr.h  typestuff.h print.h \
+                worldhash.h \
+		archive/archive.h  archive/bufar.h     archive/vecar.h \
+		archive/binfsar.h  archive/textfsar.h
+
+
+world:	world.o worldstuff.o debug.o redirectio.o lookup3.o archive/archive_type_names.o
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
+
+hqi:	hqi.o worldstuff.o debug.o redirectio.o lookup3.o archive/archive_type_names.o
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
+
+world.o hqi.o worldstuff.o:	$(WORLD_HEADERS)
+
+doc:
+	(cd doc; make)
+
+runcpp:
+	$(CXX) $(CXXFLAGS) -E world.cc
+
+clean:
+	/bin/rm -rf *.o \#* world *.exe *~ core* *stackdump log* *out \
+		TAGS BROWSE archive/BROWSE archive/*.o archive/*~ 
+	(cd doc; make clean)
+
+

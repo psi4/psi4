@@ -1,0 +1,2537 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-beta1 Driver
+
+               Git: Rev 9c152a38fd42fd364c25c4a938d32638a8677a8b
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! RHF-CCSD 6-31G** all-electron optimization of the H2O molecule
+
+memory 250 mb
+
+molecule h2o {
+    O
+    H 1 0.97
+    H 1 0.97 2 103.0
+}
+
+set {
+    basis 6-31G**
+
+    r_convergence 11
+    e_convergence 11
+    d_convergence 11
+}
+
+optimize('ccsd')
+
+refnuc   =   9.1654609427539  #TEST
+refscf   = -76.0229306840181  #TEST
+refccsd  = -0.20824772787315  #TEST
+reftotal = -76.2311784118913  #TEST
+
+compare_values(refnuc,   h2o.nuclear_repulsion_energy(),          3, "Nuclear repulsion energy") #TEST
+compare_values(refscf,   get_variable("SCF total energy"),        5, "SCF energy")               #TEST
+compare_values(refccsd,  get_variable("CCSD correlation energy"), 4, "CCSD contribution")        #TEST
+compare_values(reftotal, get_variable("Current energy"),          7, "Total energy")             #TEST
+--------------------------------------------------------------------------
+
+  Memory set to 250.000 MiB by Python script.
+
+*** tstart() called on hypnos
+*** at Mon Feb 13 15:30:12 2012
+
+	There are an even number of electrons - assuming singlet.
+	Specify the multiplicity with the MULTP option in the
+	input if this is incorrect
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O         -0.000000000000     0.000000000000    -0.067578587269
+           H          0.000000000000    -0.759129912147     0.536260610269
+           H         -0.000000000000     0.759129912147     0.536260610269
+
+  Running in c2v symmetry.
+
+  Nuclear repulsion =    9.077238153630930
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-11
+  Density threshold  = 1.00e-11
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: 6-31G** <==
+
+  Basis Set
+    Number of shells: 12
+    Number of basis function: 25
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: false
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 2.2308645666E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial RHF energy:   -58.67612896328623
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1        12      12       3       3       3       0
+     A2         2       2       0       0       0       0
+     B1         4       4       1       1       1       0
+     B2         7       7       1       1       1       0
+   -------------------------------------------------------
+    Total      25      25       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:               9
+      Number of primitives:             25
+      Number of atomic orbitals:        25
+      Number of basis functions:        25
+
+      Number of irreps:                  4
+      Number of functions per irrep: [  12    2    4    7 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 13617 non-zero two-electron integrals.
+        Stored in file 33.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @RHF iter   1:   -68.29457538492363   -9.61845e+00   0.00000e+00 
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     4,    0,    0,    1 ]
+   @RHF iter   2:   -71.40214895176823   -3.10757e+00   5.21557e-01 DIIS
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+   @RHF iter   3:   -75.76849950140186   -4.36635e+00   4.95640e-01 DIIS
+   @RHF iter   4:   -76.00465639463511   -2.36157e-01   1.70838e-02 DIIS
+   @RHF iter   5:   -76.02157592921327   -1.69195e-02   7.74804e-03 DIIS
+   @RHF iter   6:   -76.02195844293949   -3.82514e-04   1.22994e-03 DIIS
+   @RHF iter   7:   -76.02199662644674   -3.81835e-05   5.22673e-04 DIIS
+   @RHF iter   8:   -76.02199779472276   -1.16828e-06   8.31744e-05 DIIS
+   @RHF iter   9:   -76.02199786640762   -7.16849e-08   2.41323e-05 DIIS
+   @RHF iter  10:   -76.02199786811579   -1.70817e-09   3.82411e-06 DIIS
+   @RHF iter  11:   -76.02199786812291   -7.11964e-12   1.86355e-07 DIIS
+   @RHF iter  12:   -76.02199786812308   -1.70530e-13   3.72443e-08 DIIS
+   @RHF iter  13:   -76.02199786812321   -1.27898e-13   6.40841e-09 DIIS
+   @RHF iter  14:   -76.02199786812328   -7.10543e-14   6.31960e-10 DIIS
+   @RHF iter  15:   -76.02199786812312    1.56319e-13   3.46983e-11 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1A1   -20.563756     2A1    -1.335128     1B2    -0.693868  
+	   3A1    -0.569546     1B1    -0.496894  
+
+	Virtual:                                                              
+
+	   4A1     0.209148     2B2     0.301190     3B2     0.992987  
+	   5A1     1.080901     6A1     1.131133     2B1     1.168613  
+	   4B2     1.294487     7A1     1.418369     1A2     1.805555  
+	   8A1     1.805556     3B1     1.919426     9A1     2.554725  
+	   5B2     2.571406     6B2     2.778746     2A2     2.955797  
+	   4B1     2.985114    10A1     3.349725    11A1     3.681198  
+	   7B2     3.913090    12A1     4.093637  
+
+	Final Occupation by Irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+
+  Energy converged.
+
+  @RHF Final Energy:   -76.02199786812312
+
+  ==> Properties <==
+
+  Nuclear Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:     1.0051
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.1315
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:     0.8736     Total:     0.8736
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:     0.0000      Z:     2.2205     Total:     2.2205
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on hypnos at Mon Feb 13 15:30:12 2012
+Module time:
+	user time   =       0.05 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.05 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on hypnos
+*** at Mon Feb 13 15:30:12 2012
+
+
+	**************************************************
+	* TRANSQT2: Program to transform integrals from  *
+	*           the SO basis to the MO basis.        *
+	*                                                *
+	*            Daniel, David, & Justin             *
+	**************************************************
+
+
+	Input parameters:
+	-----------------
+	Wave function   =	CCSD
+	Backtransform   =	No
+	Print Level     =	1
+	Print TEIs      =	No
+	Reference wfn   =	RHF
+	Derivative      =	First
+	Delete TEI File =	Yes
+	Memory (Mbytes) =	250.0
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of SOs        = 25
+	Number of MOs        = 25
+	Number of active MOs = 25
+
+	Label	# SOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   12	    0	    3	    0	    9	    0
+	 A2	   2	    0	    0	    0	    2	    0
+	 B1	   4	    0	    1	    0	    3	    0
+	 B2	   7	    0	    1	    0	    6	    0
+
+	Nuclear Rep. energy (chkpt) =      9.07723815363093
+	SCF energy          (chkpt) =    -76.02199786812312
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (pq,rs) nbuckets = 1
+	Frozen-core energy =    0.000000000000000
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+*** tstop() called on hypnos at Mon Feb 13 15:30:12 2012
+Module time:
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.06 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on hypnos
+*** at Mon Feb 13 15:30:12 2012
+
+
+			**************************
+			*                        *
+			*         CCSORT         *
+			*                        *
+			**************************
+
+
+	Input parameters:
+	-----------------
+	Wave function   =	CCSD
+	Reference wfn   =	RHF
+	Derivative      =	First
+	Memory (Mbytes) =	250.0
+	AO Basis        =	NONE
+	Make (ab|cd)    =	True
+	Make unpacked (ab|cd) =	True
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Local CC        =     No
+
+
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of MOs        = 25
+	Number of active MOs = 25
+
+	Label	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   12	    0	    3	    0	    9	    0
+	 A2	   2	    0	    0	    0	    2	    0
+	 B1	   4	    0	    1	    0	    3	    0
+	 B2	   7	    0	    1	    0	    6	    0
+
+	Nuclear Rep. energy (chkpt) =      9.07723815363093
+	SCF energy          (chkpt) =    -76.02199786812312
+
+	Size of irrep 0 of <ab|cd> integrals:      0.017 (MW) /      0.135 (MB)
+	Size of irrep 1 of <ab|cd> integrals:      0.005 (MW) /      0.041 (MB)
+	Size of irrep 2 of <ab|cd> integrals:      0.006 (MW) /      0.049 (MB)
+	Size of irrep 3 of <ab|cd> integrals:      0.014 (MW) /      0.115 (MB)
+	Total:                                     0.043 (MW) /      0.341 (MB)
+
+	Size of irrep 0 of <ia|bc> integrals:      0.005 (MW) /      0.037 (MB)
+	Size of irrep 1 of <ia|bc> integrals:      0.001 (MW) /      0.009 (MB)
+	Size of irrep 2 of <ia|bc> integrals:      0.002 (MW) /      0.012 (MB)
+	Size of irrep 3 of <ia|bc> integrals:      0.003 (MW) /      0.028 (MB)
+	Total:                                     0.011 (MW) /      0.086 (MB)
+
+	Size of irrep 0 of tijab amplitudes:       0.001 (MW) /      0.011 (MB)
+	Size of irrep 1 of tijab amplitudes:       0.000 (MW) /      0.001 (MB)
+	Size of irrep 2 of tijab amplitudes:       0.000 (MW) /      0.004 (MB)
+	Size of irrep 3 of tijab amplitudes:       0.001 (MW) /      0.006 (MB)
+	Total:                                     0.003 (MW) /      0.022 (MB)
+
+
+	Sorting File: A <ij|kl> nbuckets = 1
+	Sorting File: B <ab|cd> nbuckets = 1
+	Sorting File: B(+) <ab|cd> nbuckets = 1
+	Sorting File: C <ia|jb> nbuckets = 1
+	Sorting File: D <ij|ab> nbuckets = 1
+	Sorting File: E <ai|jk> nbuckets = 1
+	Sorting File: F <ia|bc> nbuckets = 1
+	Sorting File: F <ai|bc> nbuckets = 1
+	One-electron energy          =   -122.88008838060112
+	Two-electron (AA) energy     =     14.41616306336393
+	Two-electron (BB) energy     =     14.41616306336393
+	Two-electron (AB) energy     =     23.36468929548313
+	Two-electron energy          =     37.78085235884706
+	Frozen-core energy (transqt) =      0.00000000000000
+	Reference energy             =    -76.02199786812314
+
+*** tstop() called on hypnos at Mon Feb 13 15:30:12 2012
+Module time:
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.07 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on hypnos
+*** at Mon Feb 13 15:30:12 2012
+
+			**************************
+			*                        *
+			*        CCENERGY        *
+			*                        *
+			**************************
+
+	Nuclear Rep. energy (chkpt)   =    9.077238153630930
+	SCF energy          (chkpt)   =  -76.021997868123123
+	Reference energy    (file100) =  -76.021997868123137
+
+	Input parameters:
+	-----------------
+	Wave function   =     CCSD
+	Reference wfn   =     RHF
+	Memory (Mbytes) =     250.0
+	Maxiter         =     50
+	Convergence     =     1.0e-11
+	Restart         =     No
+	DIIS            =     Yes
+	AO Basis        =     NONE
+	ABCD            =     NEW
+	Cache Level     =     2
+	Cache Type      =     LOW
+	Print Level     =     1
+	Num. of threads =     1
+	# Amps to Print =     10
+	Print MP2 Amps? =     No
+	Analyze T2 Amps =     No
+	Print Pair Ener =     No
+	Local CC        =     No
+	SCS-MP2         =     False
+	SCSN-MP2        =     False
+	SCS-CCSD        =     False
+
+	            Solving CC Amplitude Equations
+	            ------------------------------
+  Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag
+  ----     ---------------------    ---------   ----------  ----------  ----------
+     0        -0.200284590972250    0.000e+00    0.000000    0.000000    0.000000
+     1        -0.204524507809241    2.733e-02    0.004508    0.008904    0.008904
+     2        -0.208454941716544    9.794e-03    0.005161    0.010333    0.010333
+     3        -0.208976359459464    2.795e-03    0.005693    0.011917    0.011917
+     4        -0.208980680931629    6.466e-04    0.005747    0.012228    0.012228
+     5        -0.208995521947254    2.053e-04    0.005786    0.012422    0.012422
+     6        -0.208991621203255    6.453e-05    0.005799    0.012493    0.012493
+     7        -0.208991063380955    1.565e-05    0.005803    0.012511    0.012511
+     8        -0.208991044227791    2.937e-06    0.005803    0.012514    0.012514
+     9        -0.208990967369754    7.070e-07    0.005803    0.012514    0.012514
+    10        -0.208990987591396    1.507e-07    0.005803    0.012514    0.012514
+    11        -0.208990985954203    2.941e-08    0.005803    0.012514    0.012514
+    12        -0.208990986573959    4.776e-09    0.005803    0.012514    0.012514
+    13        -0.208990986463526    1.062e-09    0.005803    0.012514    0.012514
+    14        -0.208990986454465    1.977e-10    0.005803    0.012514    0.012514
+    15        -0.208990986451198    5.170e-11    0.005803    0.012514    0.012514
+    16        -0.208990986451199    1.045e-11    0.005803    0.012514    0.012514
+    17        -0.208990986451373    2.791e-12    0.005803    0.012514    0.012514
+
+	Iterations converged.
+
+
+	Largest TIA Amplitudes:
+	          2   0         0.0108430094
+	          3  11        -0.0066539441
+	          4  14        -0.0062968551
+	          4  18         0.0053909633
+	          4  16         0.0049115272
+	          1   2         0.0043626420
+	          2   5         0.0040679854
+	          1   0        -0.0026726419
+	          1   7         0.0023396379
+	          2   1         0.0022229037
+
+	Largest TIjAb Amplitudes:
+	  3   3  11  11        -0.0518990471
+	  4   4  14  14        -0.0394129220
+	  2   2   2   2        -0.0298937646
+	  4   4  15  15        -0.0287516408
+	  2   3   2  11         0.0252440966
+	  3   2  11   2         0.0252440966
+	  3   4  11  16        -0.0248319621
+	  4   3  16  11        -0.0248319621
+	  4   4  16  16        -0.0246255030
+	  3   4  11  14        -0.0244548498
+
+	SCF energy       (chkpt)              =  -76.021997868123123
+	Reference energy (file100)            =  -76.021997868123137
+
+	Opposite-spin MP2 correlation energy  =   -0.149954968994723
+	Same-spin MP2 correlation energy      =   -0.050329621977527
+	MP2 correlation energy                =   -0.200284590972250
+      * MP2 total energy                      =  -76.222282459095382
+
+	Opposite-spin CCSD correlation energy =   -0.164400081317558
+	Same-spin CCSD correlation energy     =   -0.044590905133787
+	CCSD correlation energy               =   -0.208990986451373
+      * CCSD total energy                     =  -76.230988854574505
+
+
+*** tstop() called on hypnos at Mon Feb 13 15:30:12 2012
+Module time:
+	user time   =       0.23 seconds =       0.00 minutes
+	system time =       0.18 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.30 seconds =       0.01 minutes
+	system time =       0.21 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on hypnos
+*** at Mon Feb 13 15:30:12 2012
+
+
+			**************************
+			*                        *
+			*         CCHBAR         *
+			*                        *
+			**************************
+
+
+*** tstop() called on hypnos at Mon Feb 13 15:30:12 2012
+Module time:
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.32 seconds =       0.01 minutes
+	system time =       0.22 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on hypnos
+*** at Mon Feb 13 15:30:12 2012
+
+
+			**************************
+			*        CCLAMBDA        *
+			**************************
+
+
+	Nuclear Rep. energy (chkpt)   =    9.077238153630930
+	Reference           (chkpt)   = 0
+	SCF energy          (chkpt)   =  -76.021997868123123
+	Reference energy    (CC_INFO) =  -76.021997868123137
+	CCSD energy         (CC_INFO) =   -0.208990986451373
+	Total CCSD energy   (CC_INFO) =  -76.230988854574505
+
+	Input parameters:
+	-----------------
+	Maxiter       =      50
+	Convergence   = 1.0e-11
+	Restart       =     No
+	Cache Level   =     2
+	Model III     =     No
+	DIIS          =     Yes
+	AO Basis      =     No
+	ABCD            =     NEW
+	Local CC        =     No
+	Paramaters for left-handed eigenvectors:
+	    Irr   Root  Ground-State?    EOM energy        R0
+	  1   0     0        Yes       0.0000000000   1.0000000000
+	Labels for eigenvector 1:
+	LIA 0 -1, Lia 0 -1, LIJAB 0 -1, Lijab 0 -1, LIjAb 0 -1, 2LIjAb - LIjbA 0 -1
+	Symmetry of left-hand state: A1
+	Symmetry of left-hand eigenvector: A1
+
+	          Solving Lambda Equations
+	          ------------------------
+	Iter     PseudoEnergy or Norm         RMS  
+	----     ---------------------     --------
+	   0        -0.209027794069766    0.000e+00
+	   1        -0.206495158214497    7.993e-03
+	   2        -0.206067358875054    1.345e-03
+	   3        -0.205981813881242    6.208e-04
+	   4        -0.205975121495827    2.062e-04
+	   5        -0.205978821652373    6.254e-05
+	   6        -0.205978789388935    1.506e-05
+	   7        -0.205978877324901    3.417e-06
+	   8        -0.205978906796083    5.200e-07
+	   9        -0.205978905432600    9.017e-08
+	  10        -0.205978905143413    1.891e-08
+	  11        -0.205978905165754    3.916e-09
+	  12        -0.205978905189370    7.410e-10
+	  13        -0.205978905185352    1.618e-10
+	  14        -0.205978905185597    4.113e-11
+	  15        -0.205978905186238    1.296e-11
+	  16        -0.205978905186490    4.608e-12
+
+	Largest LIA Amplitudes:
+	          2   0         0.0072417713
+	          4  16         0.0050589325
+	          4  18         0.0046513023
+	          3  11        -0.0039991686
+	          2   5         0.0036194771
+	          1   2         0.0032129535
+	          4  14        -0.0031908058
+	          1   3        -0.0025293246
+	          1   7         0.0021477535
+	          4  15        -0.0021208344
+
+	Largest LIjAb Amplitudes:
+	  3   3  11  11        -0.0516330656
+	  4   4  14  14        -0.0384957383
+	  2   2   2   2        -0.0295153592
+	  4   4  15  15        -0.0280304817
+	  2   3   2  11         0.0250935129
+	  3   2  11   2         0.0250935129
+	  3   4  11  16        -0.0246412005
+	  4   3  16  11        -0.0246412005
+	  4   4  16  16        -0.0243635774
+	  3   4  11  14        -0.0241957745
+
+	Iterations converged.
+
+	Overlap <L|e^T> =        0.94273433031
+
+*** tstop() called on hypnos at Mon Feb 13 15:30:13 2012
+Module time:
+	user time   =       0.07 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.39 seconds =       0.01 minutes
+	system time =       0.25 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on hypnos
+*** at Mon Feb 13 15:30:13 2012
+
+
+			**************************
+			*                        *
+			*        CCDENSITY       *
+			*                        *
+			**************************
+
+
+	Input parameters:
+	-----------------
+	Wave function    =   CCSD
+	Reference wfn    =   RHF
+	Dertype          = 1
+	Tolerance        = 1.0e-14
+	Cache Level      = 2
+	AO Basis         = No
+	OPDM Only        = No
+	Relax OPDM       = Yes
+	Compute Xi       = No
+	Use Zeta         = No
+	Xi connected     = Yes
+
+	Nuclear Rep. energy (chkpt)   =    9.077238153630930
+	SCF energy          (chkpt)   =  -76.021997868123123
+	Reference energy    (file100) =  -76.021997868123137
+	CCSD energy         (CC_INFO) =   -0.208990986451373
+	Total CCSD energy   (CC_INFO) =  -76.230988854574505
+	Number of States = 1
+
+	Ground?  State     EOM Energy       R0
+	  Yes     0 A1    0.0000000000   1.00000000
+
+	Energies re-computed from CC density:
+	-------------------------------------
+	One-electron energy        =    0.221186778632421
+	IJKL energy                =    0.041993252484629
+	IJKA energy                =   -0.001393403181933
+	IJAB energy                =   -0.412136979055867
+	IBJA energy                =   -0.101198078799300
+	CIAB energy                =   -0.000203578178172
+	ABCD energy                =    0.042761021646725
+	Total two-electron energy  =   -0.430177765083918
+	CCSD correlation energy    =   -0.208990986451497
+	Total CCSD energy          =  -76.230988854574633
+
+	Virial Theorem Data:
+	--------------------
+	Kinetic energy (ref)   =   75.764057172420578
+	Kinetic energy (corr)  =    0.151616995086172
+	Kinetic energy (total) =   75.915674167506751
+	-V/T (ref)             =    2.003404525910163
+	-V/T (corr)            =    2.378413985401787
+	-V/T (total)           =    2.004153485963544
+
+	Energies re-computed from Fock-adjusted CC density:
+	---------------------------------------------------
+	One-electron energy        =    0.245781759396171
+	IJKL energy                =   -0.672858140984563
+	IJKA energy                =   -0.047236969995761
+	IJAB energy                =   -0.412136979055867
+	IBJA energy                =    0.634901900719967
+	CIAB energy                =   -0.000203578178172
+	ABCD energy                =    0.042761021646725
+	Total two-electron energy  =   -0.454772745847671
+	CCSD correlation energy    =   -0.208990986451500
+	Total CCSD energy          =  -76.230988854574647
+
+	Energies re-computed from Mulliken density:
+	-------------------------------------------
+	One-electron energy        =    0.245781759396171
+	IJKL energy                =   -0.672858140984563
+	IJKA energy                =   -0.047236969995761
+	IJAB energy                =   -0.381058776617439
+	IBJA energy                =    0.603823698281539
+	CIAB energy                =   -0.000203578178172
+	ABCD energy                =    0.042761021646725
+	Total two-electron energy  =   -0.454772745847671
+	CCSD correlation energy    =   -0.208990986451500
+	Total CCSD energy          =  -76.230988854574647
+
+*** tstop() called on hypnos at Mon Feb 13 15:30:13 2012
+Module time:
+	user time   =       0.05 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.44 seconds =       0.01 minutes
+	system time =       0.26 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on hypnos
+*** at Mon Feb 13 15:30:13 2012
+
+ DERIV: Derivative code.
+   by Justin Turney
+
+  Cartesian Displacement SALCs
+  By SALC:
+  Number of SALCs: 3, nirreps: 1
+  Project out translations: False
+  Project out rotations: False
+	irrep = 0, ncomponent = 1
+		0: atom 0, direction z, coef 1.000000
+	irrep = 0, ncomponent = 2
+		0: atom 1, direction y, coef 0.707107
+		1: atom 2, direction y, coef -0.707107
+	irrep = 0, ncomponent = 2
+		0: atom 1, direction z, coef 0.707107
+		1: atom 2, direction z, coef 0.707107
+
+  By Atomic Center:
+  Number of atomic centers: 3
+   Atomic Center 0:
+	x component, size = 0
+	y component, size = 0
+	z component, size = 1
+		0: salc 0, irrep 0, coef 1.000000
+   Atomic Center 1:
+	x component, size = 0
+	y component, size = 1
+		0: salc 1, irrep 0, coef 0.707107
+	z component, size = 1
+		0: salc 2, irrep 0, coef 0.707107
+   Atomic Center 2:
+	x component, size = 0
+	y component, size = 1
+		0: salc 1, irrep 0, coef -0.707107
+	z component, size = 1
+		0: salc 2, irrep 0, coef 0.707107
+
+    Molecular point group: c2v
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O         -0.000000000000     0.000000000000    -0.127705022386
+           H          0.000000000000    -1.434547633239     1.013385689263
+           H         -0.000000000000     1.434547633239     1.013385689263
+
+	Presorting MO-basis TPDM.
+	Sorting File: MO TPDM (AA|AA) nbuckets = 1
+	Starting first half-transformation.
+	Sorting half-transformed TPDM.
+	First half integral transformation complete.
+
+
+
+
+  -Nuclear Repulsion Energy 1st Derivatives:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000     2.964342245725
+       2        0.000000000000     1.984825954516    -1.482171122862
+       3        0.000000000000    -1.984825954516    -1.482171122862
+
+
+  -One-electron contribution to gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000    -6.872400548162
+       2        0.000000000000    -4.509660588931     3.436200274081
+       3        0.000000000000     4.509660588931     3.436200274081
+
+
+  -Lagrangian contribution to gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000     0.411443443480
+       2        0.000000000000     0.245759876713    -0.205721721740
+       3        0.000000000000    -0.245759876713    -0.205721721740
+
+
+  -Two-electron contribution to gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000     3.483428194700
+       2        0.000000000000     2.272612728134    -1.741714097350
+       3        0.000000000000    -2.272612728134    -1.741714097350
+
+
+  -Total gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000    -0.013186664257
+       2        0.000000000000    -0.006462029567     0.006593332129
+       3        0.000000000000     0.006462029567     0.006593332129
+
+
+*** tstop() called on hypnos at Mon Feb 13 15:30:13 2012
+Module time:
+	user time   =       0.10 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.54 seconds =       0.01 minutes
+	system time =       0.29 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+			----------------------------------
+			 OPTKING: for geometry optimizations  
+			  - R.A. King,  Bethel University   
+			------------------------------------
+
+	Internal coordinates to be generated automatically.
+	Detected frag with atoms:  1 2 3
+	---Fragment 1 Bond Connectivity---
+	 1 : 2 3
+	 2 : 1
+	 3 : 1
+
+	---Fragment 1 Geometry and Gradient---
+	 O          -0.0000000000        0.0000000000       -0.1277050224
+	 H           0.0000000000       -1.4345476332        1.0133856893
+	 H          -0.0000000000        1.4345476332        1.0133856893
+	             0.0000000000        0.0000000000       -0.0131866643
+	             0.0000000000       -0.0064620296        0.0065933321
+	             0.0000000000        0.0064620296        0.0065933321
+
+	Previous optimization step data not found.  Starting new optimization.
+
+	---Fragment 1 Intrafragment Coordinates---
+	 * Coordinate *           * BOHR/RAD *       * ANG/DEG *
+	 R(1,2)           =         1.833034	       0.970000
+	 R(1,3)           =         1.833034	       0.970000
+	 B(2,1,3)         =         1.797689	     103.000000
+
+	Current energy   :       -76.2309888546
+
+	Generating empirical Hessian (Schlegel '84) for each fragment.
+	Following RFO solution 0.
+	Projected energy change by RFO approximation:        -0.0001707038
+
+	Back-transformation to cartesian coordinates...
+	Successfully converged to displaced geometry.
+
+	---Internal Coordinate Step in ANG or DEG, aJ/ANG or AJ/DEG ---
+	 ----------------------------------------------------------------------
+	 Coordinate             Previous        Force       Change         New 
+	 ----------             --------       ------       ------       ------
+	 R(1,2)          =      0.970000    -0.075481    -0.009077     0.960923
+	 R(1,3)          =      0.970000    -0.075481    -0.009077     0.960923
+	 B(2,1,3)        =    103.000000     0.000159     0.744934   103.744934
+	 ----------------------------------------------------------------------
+
+  ==> Convergence Check <==
+
+  Measures of convergence in internal coordinates in au.
+  Criteria marked as inactive (o), active & met (*), and active & unmet ( ).
+  --------------------------------------------------------------------------------------------- ~
+   Step     Total Energy     Delta E     MAX Force     RMS Force      MAX Disp      RMS Disp    ~
+  --------------------------------------------------------------------------------------------- ~
+    Convergence Criteria    1.00e-06 *    3.00e-04 *             o    1.20e-03 *             o  ~
+  --------------------------------------------------------------------------------------------- ~
+      1     -76.23098885   -7.62e+01      9.16e-03      7.58e-03 o    1.72e-02      1.59e-02 o  ~
+  ---------------------------------------------------------------------------------------------
+
+	Writing optimization data to binary file.
+	Structure for next step:
+	Cartesian Geometry (au)
+	    O    -0.0000000000   0.0000000000  -0.1144114813
+	    H     0.0000000000  -1.4284419179   1.0067389187
+	    H    -0.0000000000   1.4284419179   1.0067389187
+			--------------------------
+			 OPTKING Finished Execution 
+			--------------------------
+
+*** tstart() called on hypnos
+*** at Mon Feb 13 15:30:13 2012
+
+	There are an even number of electrons - assuming singlet.
+	Specify the multiplicity with the MULTP option in the
+	input if this is incorrect
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O         -0.000000000000     0.000000000000    -0.066397666176
+           H          0.000000000000    -0.755898906773     0.526889572908
+           H         -0.000000000000     0.755898906773     0.526889572908
+
+  Running in c2v symmetry.
+
+  Nuclear repulsion =    9.161180832551008
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-11
+  Density threshold  = 1.00e-11
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: 6-31G** <==
+
+  Basis Set
+    Number of shells: 12
+    Number of basis function: 25
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: false
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 2.2007011577E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial RHF energy:   -58.65158086685584
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1        12      12       3       3       3       0
+     A2         2       2       0       0       0       0
+     B1         4       4       1       1       1       0
+     B2         7       7       1       1       1       0
+   -------------------------------------------------------
+    Total      25      25       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:               9
+      Number of primitives:             25
+      Number of atomic orbitals:        25
+      Number of basis functions:        25
+
+      Number of irreps:                  4
+      Number of functions per irrep: [  12    2    4    7 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 13617 non-zero two-electron integrals.
+        Stored in file 33.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @RHF iter   1:   -68.27623310071212   -9.62465e+00   0.00000e+00 
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     4,    0,    0,    1 ]
+   @RHF iter   2:   -71.40937660120738   -3.13314e+00   5.27377e-01 DIIS
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+   @RHF iter   3:   -75.76802244471152   -4.35865e+00   5.01708e-01 DIIS
+   @RHF iter   4:   -76.00563020113135   -2.37608e-01   1.71577e-02 DIIS
+   @RHF iter   5:   -76.02246461221007   -1.68344e-02   7.70097e-03 DIIS
+   @RHF iter   6:   -76.02283315353863   -3.68541e-04   1.21605e-03 DIIS
+   @RHF iter   7:   -76.02286917684937   -3.60233e-05   5.11588e-04 DIIS
+   @RHF iter   8:   -76.02287023449756   -1.05765e-06   8.04678e-05 DIIS
+   @RHF iter   9:   -76.02287029751321   -6.30156e-08   2.25997e-05 DIIS
+   @RHF iter  10:   -76.02287029902786   -1.51465e-09   3.66398e-06 DIIS
+   @RHF iter  11:   -76.02287029903299   -5.13012e-12   1.61405e-07 DIIS
+   @RHF iter  12:   -76.02287029903330   -3.12639e-13   3.08056e-08 DIIS
+   @RHF iter  13:   -76.02287029903327    2.84217e-14   5.68095e-09 DIIS
+   @RHF iter  14:   -76.02287029903316    1.13687e-13   6.50098e-10 DIIS
+   @RHF iter  15:   -76.02287029903334   -1.84741e-13   3.67128e-11 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1A1   -20.561713     2A1    -1.339083     1B2    -0.700031  
+	   3A1    -0.569655     1B1    -0.497204  
+
+	Virtual:                                                              
+
+	   4A1     0.211209     2B2     0.303715     3B2     0.999716  
+	   5A1     1.085843     6A1     1.132387     2B1     1.168726  
+	   4B2     1.294665     7A1     1.416760     1A2     1.804934  
+	   8A1     1.811543     3B1     1.922519     9A1     2.566521  
+	   5B2     2.577347     6B2     2.798940     2A2     2.971042  
+	   4B1     2.991295    10A1     3.369113    11A1     3.701471  
+	   7B2     3.923869    12A1     4.102790  
+
+	Final Occupation by Irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+
+  Energy converged.
+
+  @RHF Final Energy:   -76.02287029903334
+
+  ==> Properties <==
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.9876
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.1218
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.8658     Total:     0.8658
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     2.2006     Total:     2.2006
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on hypnos at Mon Feb 13 15:30:13 2012
+Module time:
+	user time   =       0.06 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.60 seconds =       0.01 minutes
+	system time =       0.29 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on hypnos
+*** at Mon Feb 13 15:30:13 2012
+
+
+	**************************************************
+	* TRANSQT2: Program to transform integrals from  *
+	*           the SO basis to the MO basis.        *
+	*                                                *
+	*            Daniel, David, & Justin             *
+	**************************************************
+
+
+	Input parameters:
+	-----------------
+	Wave function   =	CCSD
+	Backtransform   =	No
+	Print Level     =	1
+	Print TEIs      =	No
+	Reference wfn   =	RHF
+	Derivative      =	First
+	Delete TEI File =	Yes
+	Memory (Mbytes) =	250.0
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of SOs        = 25
+	Number of MOs        = 25
+	Number of active MOs = 25
+
+	Label	# SOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   12	    0	    3	    0	    9	    0
+	 A2	   2	    0	    0	    0	    2	    0
+	 B1	   4	    0	    1	    0	    3	    0
+	 B2	   7	    0	    1	    0	    6	    0
+
+	Nuclear Rep. energy (chkpt) =      9.16118083255101
+	SCF energy          (chkpt) =    -76.02287029903334
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (pq,rs) nbuckets = 1
+	Frozen-core energy =    0.000000000000000
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+*** tstop() called on hypnos at Mon Feb 13 15:30:13 2012
+Module time:
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.62 seconds =       0.01 minutes
+	system time =       0.29 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on hypnos
+*** at Mon Feb 13 15:30:13 2012
+
+
+			**************************
+			*                        *
+			*         CCSORT         *
+			*                        *
+			**************************
+
+
+	Input parameters:
+	-----------------
+	Wave function   =	CCSD
+	Reference wfn   =	RHF
+	Derivative      =	First
+	Memory (Mbytes) =	250.0
+	AO Basis        =	NONE
+	Make (ab|cd)    =	True
+	Make unpacked (ab|cd) =	True
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Local CC        =     No
+
+
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of MOs        = 25
+	Number of active MOs = 25
+
+	Label	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   12	    0	    3	    0	    9	    0
+	 A2	   2	    0	    0	    0	    2	    0
+	 B1	   4	    0	    1	    0	    3	    0
+	 B2	   7	    0	    1	    0	    6	    0
+
+	Nuclear Rep. energy (chkpt) =      9.16118083255101
+	SCF energy          (chkpt) =    -76.02287029903334
+
+	Size of irrep 0 of <ab|cd> integrals:      0.017 (MW) /      0.135 (MB)
+	Size of irrep 1 of <ab|cd> integrals:      0.005 (MW) /      0.041 (MB)
+	Size of irrep 2 of <ab|cd> integrals:      0.006 (MW) /      0.049 (MB)
+	Size of irrep 3 of <ab|cd> integrals:      0.014 (MW) /      0.115 (MB)
+	Total:                                     0.043 (MW) /      0.341 (MB)
+
+	Size of irrep 0 of <ia|bc> integrals:      0.005 (MW) /      0.037 (MB)
+	Size of irrep 1 of <ia|bc> integrals:      0.001 (MW) /      0.009 (MB)
+	Size of irrep 2 of <ia|bc> integrals:      0.002 (MW) /      0.012 (MB)
+	Size of irrep 3 of <ia|bc> integrals:      0.003 (MW) /      0.028 (MB)
+	Total:                                     0.011 (MW) /      0.086 (MB)
+
+	Size of irrep 0 of tijab amplitudes:       0.001 (MW) /      0.011 (MB)
+	Size of irrep 1 of tijab amplitudes:       0.000 (MW) /      0.001 (MB)
+	Size of irrep 2 of tijab amplitudes:       0.000 (MW) /      0.004 (MB)
+	Size of irrep 3 of tijab amplitudes:       0.001 (MW) /      0.006 (MB)
+	Total:                                     0.003 (MW) /      0.022 (MB)
+
+
+	Sorting File: A <ij|kl> nbuckets = 1
+	Sorting File: B <ab|cd> nbuckets = 1
+	Sorting File: B(+) <ab|cd> nbuckets = 1
+	Sorting File: C <ia|jb> nbuckets = 1
+	Sorting File: D <ij|ab> nbuckets = 1
+	Sorting File: E <ai|jk> nbuckets = 1
+	Sorting File: F <ia|bc> nbuckets = 1
+	Sorting File: F <ai|bc> nbuckets = 1
+	One-electron energy          =   -123.03273026408854
+	Two-electron (AA) energy     =     14.44512538284268
+	Two-electron (BB) energy     =     14.44512538284268
+	Two-electron (AB) energy     =     23.40355374966160
+	Two-electron energy          =     37.84867913250429
+	Frozen-core energy (transqt) =      0.00000000000000
+	Reference energy             =    -76.02287029903323
+
+*** tstop() called on hypnos at Mon Feb 13 15:30:13 2012
+Module time:
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.64 seconds =       0.01 minutes
+	system time =       0.31 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on hypnos
+*** at Mon Feb 13 15:30:13 2012
+
+			**************************
+			*                        *
+			*        CCENERGY        *
+			*                        *
+			**************************
+
+	Nuclear Rep. energy (chkpt)   =    9.161180832551008
+	SCF energy          (chkpt)   =  -76.022870299033343
+	Reference energy    (file100) =  -76.022870299033229
+
+	Input parameters:
+	-----------------
+	Wave function   =     CCSD
+	Reference wfn   =     RHF
+	Memory (Mbytes) =     250.0
+	Maxiter         =     50
+	Convergence     =     1.0e-11
+	Restart         =     No
+	DIIS            =     Yes
+	AO Basis        =     NONE
+	ABCD            =     NEW
+	Cache Level     =     2
+	Cache Type      =     LOW
+	Print Level     =     1
+	Num. of threads =     1
+	# Amps to Print =     10
+	Print MP2 Amps? =     No
+	Analyze T2 Amps =     No
+	Print Pair Ener =     No
+	Local CC        =     No
+	SCS-MP2         =     False
+	SCSN-MP2        =     False
+	SCS-CCSD        =     False
+
+	            Solving CC Amplitude Equations
+	            ------------------------------
+  Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag
+  ----     ---------------------    ---------   ----------  ----------  ----------
+     0        -0.199577929830914    2.791e-12    0.000000    0.000000    0.000000
+     1        -0.203943406368924    2.693e-02    0.004425    0.008687    0.008687
+     2        -0.207791733758625    9.554e-03    0.005058    0.010075    0.010075
+     3        -0.208290350722803    2.690e-03    0.005565    0.011583    0.011583
+     4        -0.208294921769842    6.205e-04    0.005616    0.011880    0.011880
+     5        -0.208308950754452    1.950e-04    0.005652    0.012063    0.012063
+     6        -0.208305324553402    6.138e-05    0.005665    0.012129    0.012129
+     7        -0.208304770778310    1.505e-05    0.005668    0.012147    0.012147
+     8        -0.208304761788381    2.796e-06    0.005669    0.012150    0.012150
+     9        -0.208304688587720    6.596e-07    0.005669    0.012150    0.012150
+    10        -0.208304707529464    1.392e-07    0.005669    0.012150    0.012150
+    11        -0.208304706083325    2.717e-08    0.005669    0.012150    0.012150
+    12        -0.208304706643972    4.395e-09    0.005669    0.012150    0.012150
+    13        -0.208304706542024    9.697e-10    0.005669    0.012150    0.012150
+    14        -0.208304706533372    1.785e-10    0.005669    0.012150    0.012150
+    15        -0.208304706530511    4.636e-11    0.005669    0.012150    0.012150
+    16        -0.208304706530673    9.474e-12    0.005669    0.012150    0.012150
+
+	Iterations converged.
+
+
+	Largest TIA Amplitudes:
+	          2   0         0.0104578536
+	          3  11        -0.0065599577
+	          4  14        -0.0062679762
+	          4  18         0.0052425994
+	          4  16         0.0046299426
+	          1   2         0.0042751573
+	          2   5         0.0039508040
+	          1   0        -0.0028721027
+	          1   7         0.0023730143
+	          2   1         0.0022659247
+
+	Largest TIjAb Amplitudes:
+	  3   3  11  11        -0.0518782954
+	  4   4  14  14        -0.0381048586
+	  2   2   2   2        -0.0288684549
+	  4   4  15  15        -0.0286603429
+	  3   4  11  16        -0.0248103170
+	  4   3  16  11        -0.0248103170
+	  4   4  16  16        -0.0246764506
+	  2   3   2  11         0.0246211686
+	  3   2  11   2         0.0246211686
+	  3   4  11  14        -0.0242303550
+
+	SCF energy       (chkpt)              =  -76.022870299033343
+	Reference energy (file100)            =  -76.022870299033229
+
+	Opposite-spin MP2 correlation energy  =   -0.149388403587785
+	Same-spin MP2 correlation energy      =   -0.050189526243129
+	MP2 correlation energy                =   -0.199577929830914
+      * MP2 total energy                      =  -76.222448228864138
+
+	Opposite-spin CCSD correlation energy =   -0.163737342115634
+	Same-spin CCSD correlation energy     =   -0.044567364415012
+	CCSD correlation energy               =   -0.208304706530673
+      * CCSD total energy                     =  -76.231175005563898
+
+
+*** tstop() called on hypnos at Mon Feb 13 15:30:13 2012
+Module time:
+	user time   =       0.23 seconds =       0.00 minutes
+	system time =       0.17 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.87 seconds =       0.01 minutes
+	system time =       0.48 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on hypnos
+*** at Mon Feb 13 15:30:13 2012
+
+
+			**************************
+			*                        *
+			*         CCHBAR         *
+			*                        *
+			**************************
+
+
+*** tstop() called on hypnos at Mon Feb 13 15:30:13 2012
+Module time:
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.88 seconds =       0.01 minutes
+	system time =       0.50 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on hypnos
+*** at Mon Feb 13 15:30:14 2012
+
+
+			**************************
+			*        CCLAMBDA        *
+			**************************
+
+
+	Nuclear Rep. energy (chkpt)   =    9.161180832551008
+	Reference           (chkpt)   = 0
+	SCF energy          (chkpt)   =  -76.022870299033343
+	Reference energy    (CC_INFO) =  -76.022870299033229
+	CCSD energy         (CC_INFO) =   -0.208304706530673
+	Total CCSD energy   (CC_INFO) =  -76.231175005563898
+
+	Input parameters:
+	-----------------
+	Maxiter       =      50
+	Convergence   = 1.0e-11
+	Restart       =     No
+	Cache Level   =     2
+	Model III     =     No
+	DIIS          =     Yes
+	AO Basis      =     No
+	ABCD            =     NEW
+	Local CC        =     No
+	Paramaters for left-handed eigenvectors:
+	    Irr   Root  Ground-State?    EOM energy        R0
+	  1   0     0        Yes       0.0000000000   1.0000000000
+	Labels for eigenvector 1:
+	LIA 0 -1, Lia 0 -1, LIJAB 0 -1, Lijab 0 -1, LIjAb 0 -1, 2LIjAb - LIjbA 0 -1
+	Symmetry of left-hand state: A1
+	Symmetry of left-hand eigenvector: A1
+
+	          Solving Lambda Equations
+	          ------------------------
+	Iter     PseudoEnergy or Norm         RMS  
+	----     ---------------------     --------
+	   0        -0.208341272679647    4.608e-12
+	   1        -0.205855817067176    7.969e-03
+	   2        -0.205434040041379    1.315e-03
+	   3        -0.205350569999217    6.037e-04
+	   4        -0.205344216683963    1.999e-04
+	   5        -0.205347757148695    6.066e-05
+	   6        -0.205347737508480    1.456e-05
+	   7        -0.205347817964679    3.263e-06
+	   8        -0.205347846116816    4.958e-07
+	   9        -0.205347844685183    8.424e-08
+	  10        -0.205347844464908    1.735e-08
+	  11        -0.205347844476721    3.577e-09
+	  12        -0.205347844497670    6.667e-10
+	  13        -0.205347844492614    1.433e-10
+	  14        -0.205347844492715    3.565e-11
+	  15        -0.205347844493252    1.131e-11
+	  16        -0.205347844493467    3.955e-12
+
+	Largest LIA Amplitudes:
+	          2   0         0.0069579845
+	          4  16         0.0048367098
+	          4  18         0.0045278785
+	          3  11        -0.0038906189
+	          2   5         0.0035178291
+	          4  14        -0.0031667171
+	          1   2         0.0031569117
+	          1   3        -0.0024467765
+	          1   7         0.0021792662
+	          4  15        -0.0020512010
+
+	Largest LIjAb Amplitudes:
+	  3   3  11  11        -0.0515965285
+	  4   4  14  14        -0.0372313899
+	  2   2   2   2        -0.0285001129
+	  4   4  15  15        -0.0279512432
+	  3   4  11  16        -0.0246236932
+	  4   3  16  11        -0.0246236932
+	  2   3   2  11         0.0244701819
+	  3   2  11   2         0.0244701819
+	  4   4  16  16        -0.0244234360
+	  3   4  11  14        -0.0239728049
+
+	Iterations converged.
+
+	Overlap <L|e^T> =        0.94342446350
+
+*** tstop() called on hypnos at Mon Feb 13 15:30:14 2012
+Module time:
+	user time   =       0.04 seconds =       0.00 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.92 seconds =       0.02 minutes
+	system time =       0.55 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
+
+*** tstart() called on hypnos
+*** at Mon Feb 13 15:30:14 2012
+
+
+			**************************
+			*                        *
+			*        CCDENSITY       *
+			*                        *
+			**************************
+
+
+	Input parameters:
+	-----------------
+	Wave function    =   CCSD
+	Reference wfn    =   RHF
+	Dertype          = 1
+	Tolerance        = 1.0e-14
+	Cache Level      = 2
+	AO Basis         = No
+	OPDM Only        = No
+	Relax OPDM       = Yes
+	Compute Xi       = No
+	Use Zeta         = No
+	Xi connected     = Yes
+
+	Nuclear Rep. energy (chkpt)   =    9.161180832551008
+	SCF energy          (chkpt)   =  -76.022870299033343
+	Reference energy    (file100) =  -76.022870299033229
+	CCSD energy         (CC_INFO) =   -0.208304706530673
+	Total CCSD energy   (CC_INFO) =  -76.231175005563898
+	Number of States = 1
+
+	Ground?  State     EOM Energy       R0
+	  Yes     0 A1    0.0000000000   1.00000000
+
+	Energies re-computed from CC density:
+	-------------------------------------
+	One-electron energy        =    0.220401430389637
+	IJKL energy                =    0.041624273349608
+	IJKA energy                =   -0.001380495868358
+	IJAB energy                =   -0.410871757806775
+	IBJA energy                =   -0.100224189514179
+	CIAB energy                =   -0.000154378103482
+	ABCD energy                =    0.042300411022725
+	Total two-electron energy  =   -0.428706136920461
+	CCSD correlation energy    =   -0.208304706530824
+	Total CCSD energy          =  -76.231175005564054
+
+	Virial Theorem Data:
+	--------------------
+	Kinetic energy (ref)   =   75.797290300671349
+	Kinetic energy (corr)  =    0.147813077735051
+	Kinetic energy (total) =   75.945103378406401
+	-V/T (ref)             =    2.002976095813809
+	-V/T (corr)            =    2.409244092082645
+	-V/T (total)           =    2.003766821222589
+
+	Energies re-computed from Fock-adjusted CC density:
+	---------------------------------------------------
+	One-electron energy        =    0.246368013015999
+	IJKL energy                =   -0.666765081427199
+	IJKA energy                =   -0.047671156477881
+	IJAB energy                =   -0.410871757806775
+	IBJA energy                =    0.628489243245787
+	CIAB energy                =   -0.000154378103482
+	ABCD energy                =    0.042300411022725
+	Total two-electron energy  =   -0.454672719546825
+	CCSD correlation energy    =   -0.208304706530827
+	Total CCSD energy          =  -76.231175005564054
+
+	Energies re-computed from Mulliken density:
+	-------------------------------------------
+	One-electron energy        =    0.246368013015999
+	IJKL energy                =   -0.666765081427199
+	IJKA energy                =   -0.047671156477881
+	IJAB energy                =   -0.379953585566519
+	IBJA energy                =    0.597571071005530
+	CIAB energy                =   -0.000154378103482
+	ABCD energy                =    0.042300411022725
+	Total two-electron energy  =   -0.454672719546825
+	CCSD correlation energy    =   -0.208304706530827
+	Total CCSD energy          =  -76.231175005564054
+
+*** tstop() called on hypnos at Mon Feb 13 15:30:14 2012
+Module time:
+	user time   =       0.03 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.95 seconds =       0.02 minutes
+	system time =       0.59 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
+
+*** tstart() called on hypnos
+*** at Mon Feb 13 15:30:14 2012
+
+ DERIV: Derivative code.
+   by Justin Turney
+
+  Cartesian Displacement SALCs
+  By SALC:
+  Number of SALCs: 3, nirreps: 1
+  Project out translations: False
+  Project out rotations: False
+	irrep = 0, ncomponent = 1
+		0: atom 0, direction z, coef 1.000000
+	irrep = 0, ncomponent = 2
+		0: atom 1, direction y, coef 0.707107
+		1: atom 2, direction y, coef -0.707107
+	irrep = 0, ncomponent = 2
+		0: atom 1, direction z, coef 0.707107
+		1: atom 2, direction z, coef 0.707107
+
+  By Atomic Center:
+  Number of atomic centers: 3
+   Atomic Center 0:
+	x component, size = 0
+	y component, size = 0
+	z component, size = 1
+		0: salc 0, irrep 0, coef 1.000000
+   Atomic Center 1:
+	x component, size = 0
+	y component, size = 1
+		0: salc 1, irrep 0, coef 0.707107
+	z component, size = 1
+		0: salc 2, irrep 0, coef 0.707107
+   Atomic Center 2:
+	x component, size = 0
+	y component, size = 1
+		0: salc 1, irrep 0, coef -0.707107
+	z component, size = 1
+		0: salc 2, irrep 0, coef 0.707107
+
+    Molecular point group: c2v
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O         -0.000000000000     0.000000000000    -0.125473404936
+           H          0.000000000000    -1.428441917948     0.995676995070
+           H         -0.000000000000     1.428441917948     0.995676995070
+
+	Presorting MO-basis TPDM.
+	Sorting File: MO TPDM (AA|AA) nbuckets = 1
+	Starting first half-transformation.
+	Sorting half-transformed TPDM.
+	First half integral transformation complete.
+
+
+
+
+  -Nuclear Repulsion Energy 1st Derivatives:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000     2.995860326893
+       2        0.000000000000     2.031013916557    -1.497930163446
+       3       -0.000000000000    -2.031013916557    -1.497930163446
+
+
+  -One-electron contribution to gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000    -6.905252291535
+       2        0.000000000000    -4.604556140715     3.452626145768
+       3        0.000000000000     4.604556140715     3.452626145768
+
+
+  -Lagrangian contribution to gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000     0.413316410547
+       2        0.000000000000     0.251209962207    -0.206658205274
+       3        0.000000000000    -0.251209962207    -0.206658205274
+
+
+  -Two-electron contribution to gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000     3.494694231096
+       2        0.000000000000     2.322323848516    -1.747347115548
+       3        0.000000000000    -2.322323848516    -1.747347115548
+
+
+  -Total gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000    -0.001381322999
+       2        0.000000000000    -0.000008413435     0.000690661499
+       3       -0.000000000000     0.000008413435     0.000690661499
+
+
+*** tstop() called on hypnos at Mon Feb 13 15:30:14 2012
+Module time:
+	user time   =       0.11 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.06 seconds =       0.02 minutes
+	system time =       0.60 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
+
+			----------------------------------
+			 OPTKING: for geometry optimizations  
+			  - R.A. King,  Bethel University   
+			------------------------------------
+
+	Previous internal coordinate definitions found.
+	---Fragment 1 Geometry and Gradient---
+	 O          -0.0000000000        0.0000000000       -0.1254734049
+	 H           0.0000000000       -1.4284419179        0.9956769951
+	 H          -0.0000000000        1.4284419179        0.9956769951
+	             0.0000000000        0.0000000000       -0.0013813230
+	             0.0000000000       -0.0000084134        0.0006906615
+	            -0.0000000000        0.0000084134        0.0006906615
+
+	---Fragment 1 Intrafragment Coordinates---
+	 * Coordinate *           * BOHR/RAD *       * ANG/DEG *
+	 R(1,2)           =         1.815881	       0.960923
+	 R(1,3)           =         1.815881	       0.960923
+	 B(2,1,3)         =         1.810691	     103.744934
+
+	Current energy   :       -76.2311750056
+
+	Energy change for the previous step:
+		Projected    :        -0.0001707038
+		Actual       :        -0.0001861510
+	Energy ratio indicates good step: Trust radius increased to 8.000e-01.
+
+
+	Performing BFGS update with previous 1 gradient(s).
+	Following RFO solution 0.
+	Projected energy change by RFO approximation:        -0.0000038376
+
+	Back-transformation to cartesian coordinates...
+	Successfully converged to displaced geometry.
+
+	---Internal Coordinate Step in ANG or DEG, aJ/ANG or AJ/DEG ---
+	 ----------------------------------------------------------------------
+	 Coordinate             Previous        Force       Change         New 
+	 ----------             --------       ------       ------       ------
+	 R(1,2)          =      0.960923    -0.003568    -0.000606     0.960317
+	 R(1,3)          =      0.960923    -0.003568    -0.000606     0.960317
+	 B(2,1,3)        =    103.744934     0.000074     0.391908   104.136842
+	 ----------------------------------------------------------------------
+
+  ==> Convergence Check <==
+
+  Measures of convergence in internal coordinates in au.
+  Criteria marked as inactive (o), active & met (*), and active & unmet ( ).
+  ---------------------------------------------------------------------------------------------
+   Step     Total Energy     Delta E     MAX Force     RMS Force      MAX Disp      RMS Disp   
+  ---------------------------------------------------------------------------------------------
+    Convergence Criteria    1.00e-06 *    3.00e-04 *             o    1.20e-03 *             o
+  ---------------------------------------------------------------------------------------------
+      2     -76.23117501   -1.86e-04      9.77e-04      6.66e-04 o    6.84e-03      4.06e-03 o  ~
+  ---------------------------------------------------------------------------------------------
+
+	Writing optimization data to binary file.
+	Structure for next step:
+	Cartesian Geometry (au)
+	    O     0.0000000000   0.0000000000  -0.1217430299
+	    H     0.0000000000  -1.4313650496   0.9938118075
+	    H    -0.0000000000   1.4313650496   0.9938118075
+			--------------------------
+			 OPTKING Finished Execution 
+			--------------------------
+
+*** tstart() called on hypnos
+*** at Mon Feb 13 15:30:14 2012
+
+	There are an even number of electrons - assuming singlet.
+	Specify the multiplicity with the MULTP option in the
+	input if this is incorrect
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.066066281291
+           H          0.000000000000    -0.757445761431     0.524259913607
+           H         -0.000000000000     0.757445761431     0.524259913607
+
+  Running in c2v symmetry.
+
+  Nuclear repulsion =    9.166023982656473
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-11
+  Density threshold  = 1.00e-11
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: 6-31G** <==
+
+  Basis Set
+    Number of shells: 12
+    Number of basis function: 25
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: false
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 2.1994436523E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial RHF energy:   -58.65053211089781
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1        12      12       3       3       3       0
+     A2         2       2       0       0       0       0
+     B1         4       4       1       1       1       0
+     B2         7       7       1       1       1       0
+   -------------------------------------------------------
+    Total      25      25       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:               9
+      Number of primitives:             25
+      Number of atomic orbitals:        25
+      Number of basis functions:        25
+
+      Number of irreps:                  4
+      Number of functions per irrep: [  12    2    4    7 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 13617 non-zero two-electron integrals.
+        Stored in file 33.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @RHF iter   1:   -68.27595647094738   -9.62542e+00   0.00000e+00 
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     4,    0,    0,    1 ]
+   @RHF iter   2:   -71.41294357538459   -3.13699e+00   5.27844e-01 DIIS
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+   @RHF iter   3:   -75.76855240013467   -4.35561e+00   5.02208e-01 DIIS
+   @RHF iter   4:   -76.00576704161159   -2.37215e-01   1.71482e-02 DIIS
+   @RHF iter   5:   -76.02253898099603   -1.67719e-02   7.68569e-03 DIIS
+   @RHF iter   6:   -76.02290576951881   -3.66789e-04   1.21542e-03 DIIS
+   @RHF iter   7:   -76.02294161622773   -3.58467e-05   5.11813e-04 DIIS
+   @RHF iter   8:   -76.02294266406450   -1.04784e-06   8.04111e-05 DIIS
+   @RHF iter   9:   -76.02294272594371   -6.18792e-08   2.24194e-05 DIIS
+   @RHF iter  10:   -76.02294272743835   -1.49464e-09   3.64622e-06 DIIS
+   @RHF iter  11:   -76.02294272744342   -5.07328e-12   1.59156e-07 DIIS
+   @RHF iter  12:   -76.02294272744362   -1.98952e-13   2.99907e-08 DIIS
+   @RHF iter  13:   -76.02294272744354    8.52651e-14   5.54194e-09 DIIS
+   @RHF iter  14:   -76.02294272744372   -1.84741e-13   6.55495e-10 DIIS
+   @RHF iter  15:   -76.02294272744354    1.84741e-13   3.76259e-11 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1A1   -20.561381     2A1    -1.339051     1B2    -0.701081  
+	   3A1    -0.568958     1B1    -0.497085  
+
+	Virtual:                                                              
+
+	   4A1     0.211398     2B2     0.303908     3B2     1.001473  
+	   5A1     1.085201     6A1     1.132402     2B1     1.168831  
+	   4B2     1.294708     7A1     1.415334     1A2     1.804140  
+	   8A1     1.814637     3B1     1.923918     9A1     2.567000  
+	   5B2     2.575439     6B2     2.800748     2A2     2.974152  
+	   4B1     2.989342    10A1     3.371075    11A1     3.703144  
+	   7B2     3.923362    12A1     4.105025  
+
+	Final Occupation by Irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+
+  Energy converged.
+
+  @RHF Final Energy:   -76.02294272744354
+
+  ==> Properties <==
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.9826
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.1197
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.8630     Total:     0.8630
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     2.1935     Total:     2.1935
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on hypnos at Mon Feb 13 15:30:14 2012
+Module time:
+	user time   =       0.05 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.11 seconds =       0.02 minutes
+	system time =       0.60 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
+
+*** tstart() called on hypnos
+*** at Mon Feb 13 15:30:14 2012
+
+
+	**************************************************
+	* TRANSQT2: Program to transform integrals from  *
+	*           the SO basis to the MO basis.        *
+	*                                                *
+	*            Daniel, David, & Justin             *
+	**************************************************
+
+
+	Input parameters:
+	-----------------
+	Wave function   =	CCSD
+	Backtransform   =	No
+	Print Level     =	1
+	Print TEIs      =	No
+	Reference wfn   =	RHF
+	Derivative      =	First
+	Delete TEI File =	Yes
+	Memory (Mbytes) =	250.0
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of SOs        = 25
+	Number of MOs        = 25
+	Number of active MOs = 25
+
+	Label	# SOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   12	    0	    3	    0	    9	    0
+	 A2	   2	    0	    0	    0	    2	    0
+	 B1	   4	    0	    1	    0	    3	    0
+	 B2	   7	    0	    1	    0	    6	    0
+
+	Nuclear Rep. energy (chkpt) =      9.16602398265647
+	SCF energy          (chkpt) =    -76.02294272744354
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (pq,rs) nbuckets = 1
+	Frozen-core energy =    0.000000000000000
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+*** tstop() called on hypnos at Mon Feb 13 15:30:14 2012
+Module time:
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.12 seconds =       0.02 minutes
+	system time =       0.62 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
+
+*** tstart() called on hypnos
+*** at Mon Feb 13 15:30:14 2012
+
+
+			**************************
+			*                        *
+			*         CCSORT         *
+			*                        *
+			**************************
+
+
+	Input parameters:
+	-----------------
+	Wave function   =	CCSD
+	Reference wfn   =	RHF
+	Derivative      =	First
+	Memory (Mbytes) =	250.0
+	AO Basis        =	NONE
+	Make (ab|cd)    =	True
+	Make unpacked (ab|cd) =	True
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Local CC        =     No
+
+
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of MOs        = 25
+	Number of active MOs = 25
+
+	Label	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   12	    0	    3	    0	    9	    0
+	 A2	   2	    0	    0	    0	    2	    0
+	 B1	   4	    0	    1	    0	    3	    0
+	 B2	   7	    0	    1	    0	    6	    0
+
+	Nuclear Rep. energy (chkpt) =      9.16602398265647
+	SCF energy          (chkpt) =    -76.02294272744354
+
+	Size of irrep 0 of <ab|cd> integrals:      0.017 (MW) /      0.135 (MB)
+	Size of irrep 1 of <ab|cd> integrals:      0.005 (MW) /      0.041 (MB)
+	Size of irrep 2 of <ab|cd> integrals:      0.006 (MW) /      0.049 (MB)
+	Size of irrep 3 of <ab|cd> integrals:      0.014 (MW) /      0.115 (MB)
+	Total:                                     0.043 (MW) /      0.341 (MB)
+
+	Size of irrep 0 of <ia|bc> integrals:      0.005 (MW) /      0.037 (MB)
+	Size of irrep 1 of <ia|bc> integrals:      0.001 (MW) /      0.009 (MB)
+	Size of irrep 2 of <ia|bc> integrals:      0.002 (MW) /      0.012 (MB)
+	Size of irrep 3 of <ia|bc> integrals:      0.003 (MW) /      0.028 (MB)
+	Total:                                     0.011 (MW) /      0.086 (MB)
+
+	Size of irrep 0 of tijab amplitudes:       0.001 (MW) /      0.011 (MB)
+	Size of irrep 1 of tijab amplitudes:       0.000 (MW) /      0.001 (MB)
+	Size of irrep 2 of tijab amplitudes:       0.000 (MW) /      0.004 (MB)
+	Size of irrep 3 of tijab amplitudes:       0.001 (MW) /      0.006 (MB)
+	Total:                                     0.003 (MW) /      0.022 (MB)
+
+
+	Sorting File: A <ij|kl> nbuckets = 1
+	Sorting File: B <ab|cd> nbuckets = 1
+	Sorting File: B(+) <ab|cd> nbuckets = 1
+	Sorting File: C <ia|jb> nbuckets = 1
+	Sorting File: D <ij|ab> nbuckets = 1
+	Sorting File: E <ai|jk> nbuckets = 1
+	Sorting File: F <ia|bc> nbuckets = 1
+	Sorting File: F <ai|bc> nbuckets = 1
+	One-electron energy          =   -123.04281932746518
+	Two-electron (AA) energy     =     14.44735702518646
+	Two-electron (BB) energy     =     14.44735702518646
+	Two-electron (AB) energy     =     23.40649559217858
+	Two-electron energy          =     37.85385261736504
+	Frozen-core energy (transqt) =      0.00000000000000
+	Reference energy             =    -76.02294272744365
+
+*** tstop() called on hypnos at Mon Feb 13 15:30:14 2012
+Module time:
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.13 seconds =       0.02 minutes
+	system time =       0.64 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
+
+*** tstart() called on hypnos
+*** at Mon Feb 13 15:30:14 2012
+
+			**************************
+			*                        *
+			*        CCENERGY        *
+			*                        *
+			**************************
+
+	Nuclear Rep. energy (chkpt)   =    9.166023982656473
+	SCF energy          (chkpt)   =  -76.022942727443535
+	Reference energy    (file100) =  -76.022942727443649
+
+	Input parameters:
+	-----------------
+	Wave function   =     CCSD
+	Reference wfn   =     RHF
+	Memory (Mbytes) =     250.0
+	Maxiter         =     50
+	Convergence     =     1.0e-11
+	Restart         =     No
+	DIIS            =     Yes
+	AO Basis        =     NONE
+	ABCD            =     NEW
+	Cache Level     =     2
+	Cache Type      =     LOW
+	Print Level     =     1
+	Num. of threads =     1
+	# Amps to Print =     10
+	Print MP2 Amps? =     No
+	Analyze T2 Amps =     No
+	Print Pair Ener =     No
+	Local CC        =     No
+	SCS-MP2         =     False
+	SCSN-MP2        =     False
+	SCS-CCSD        =     False
+
+	            Solving CC Amplitude Equations
+	            ------------------------------
+  Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag
+  ----     ---------------------    ---------   ----------  ----------  ----------
+     0        -0.199504006341727    9.474e-12    0.000000    0.000000    0.000000
+     1        -0.203883679280462    2.689e-02    0.004415    0.008665    0.008665
+     2        -0.207725428118121    9.534e-03    0.005047    0.010058    0.010058
+     3        -0.208221335932245    2.681e-03    0.005552    0.011563    0.011563
+     4        -0.208226012123223    6.192e-04    0.005604    0.011861    0.011861
+     5        -0.208239959183223    1.949e-04    0.005639    0.012044    0.012044
+     6        -0.208236327079463    6.141e-05    0.005652    0.012111    0.012111
+     7        -0.208235771578977    1.504e-05    0.005656    0.012129    0.012129
+     8        -0.208235763234828    2.790e-06    0.005656    0.012131    0.012131
+     9        -0.208235690205351    6.564e-07    0.005656    0.012131    0.012131
+    10        -0.208235709060333    1.384e-07    0.005656    0.012131    0.012131
+    11        -0.208235707620873    2.706e-08    0.005656    0.012131    0.012131
+    12        -0.208235708175440    4.379e-09    0.005656    0.012131    0.012131
+    13        -0.208235708073316    9.656e-10    0.005656    0.012131    0.012131
+    14        -0.208235708064604    1.773e-10    0.005656    0.012131    0.012131
+    15        -0.208235708061787    4.605e-11    0.005656    0.012131    0.012131
+    16        -0.208235708061960    9.462e-12    0.005656    0.012131    0.012131
+
+	Iterations converged.
+
+
+	Largest TIA Amplitudes:
+	          2   0         0.0104323160
+	          3  11        -0.0065456067
+	          4  14        -0.0062450439
+	          4  18         0.0052212206
+	          4  16         0.0045986039
+	          1   2         0.0042996552
+	          2   5         0.0039394162
+	          1   0        -0.0029165692
+	          1   7         0.0023786969
+	          2   1         0.0022535271
+
+	Largest TIjAb Amplitudes:
+	  3   3  11  11        -0.0518796276
+	  4   4  14  14        -0.0379246360
+	  2   2   2   2        -0.0294934802
+	  4   4  15  15        -0.0286548833
+	  2   3   2  11         0.0249912268
+	  3   2  11   2         0.0249912268
+	  3   4  11  16        -0.0247855674
+	  4   3  16  11        -0.0247855674
+	  4   4  16  16        -0.0246442492
+	  3   4  11  14        -0.0242044000
+
+	SCF energy       (chkpt)              =  -76.022942727443535
+	Reference energy (file100)            =  -76.022942727443649
+
+	Opposite-spin MP2 correlation energy  =   -0.149329780464953
+	Same-spin MP2 correlation energy      =   -0.050174225876775
+	MP2 correlation energy                =   -0.199504006341727
+      * MP2 total energy                      =  -76.222446733785375
+
+	Opposite-spin CCSD correlation energy =   -0.163672921472923
+	Same-spin CCSD correlation energy     =   -0.044562786589010
+	CCSD correlation energy               =   -0.208235708061960
+      * CCSD total energy                     =  -76.231178435505612
+
+
+*** tstop() called on hypnos at Mon Feb 13 15:30:15 2012
+Module time:
+	user time   =       0.24 seconds =       0.00 minutes
+	system time =       0.14 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       1.38 seconds =       0.02 minutes
+	system time =       0.78 seconds =       0.01 minutes
+	total time  =          3 seconds =       0.05 minutes
+
+*** tstart() called on hypnos
+*** at Mon Feb 13 15:30:15 2012
+
+
+			**************************
+			*                        *
+			*         CCHBAR         *
+			*                        *
+			**************************
+
+
+*** tstop() called on hypnos at Mon Feb 13 15:30:15 2012
+Module time:
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.40 seconds =       0.02 minutes
+	system time =       0.79 seconds =       0.01 minutes
+	total time  =          3 seconds =       0.05 minutes
+
+*** tstart() called on hypnos
+*** at Mon Feb 13 15:30:15 2012
+
+
+			**************************
+			*        CCLAMBDA        *
+			**************************
+
+
+	Nuclear Rep. energy (chkpt)   =    9.166023982656473
+	Reference           (chkpt)   = 0
+	SCF energy          (chkpt)   =  -76.022942727443535
+	Reference energy    (CC_INFO) =  -76.022942727443649
+	CCSD energy         (CC_INFO) =   -0.208235708061960
+	Total CCSD energy   (CC_INFO) =  -76.231178435505612
+
+	Input parameters:
+	-----------------
+	Maxiter       =      50
+	Convergence   = 1.0e-11
+	Restart       =     No
+	Cache Level   =     2
+	Model III     =     No
+	DIIS          =     Yes
+	AO Basis      =     No
+	ABCD            =     NEW
+	Local CC        =     No
+	Paramaters for left-handed eigenvectors:
+	    Irr   Root  Ground-State?    EOM energy        R0
+	  1   0     0        Yes       0.0000000000   1.0000000000
+	Labels for eigenvector 1:
+	LIA 0 -1, Lia 0 -1, LIJAB 0 -1, Lijab 0 -1, LIjAb 0 -1, 2LIjAb - LIjbA 0 -1
+	Symmetry of left-hand state: A1
+	Symmetry of left-hand eigenvector: A1
+
+	          Solving Lambda Equations
+	          ------------------------
+	Iter     PseudoEnergy or Norm         RMS  
+	----     ---------------------     --------
+	   0        -0.208272250592585    3.955e-12
+	   1        -0.205791571766621    7.966e-03
+	   2        -0.205370449819469    1.311e-03
+	   3        -0.205287149754014    6.018e-04
+	   4        -0.205280812258443    1.995e-04
+	   5        -0.205284337749628    6.063e-05
+	   6        -0.205284319180492    1.453e-05
+	   7        -0.205284399242187    3.249e-06
+	   8        -0.205284427344876    4.934e-07
+	   9        -0.205284425912041    8.358e-08
+	  10        -0.205284425698873    1.720e-08
+	  11        -0.205284425710756    3.545e-09
+	  12        -0.205284425731620    6.626e-10
+	  13        -0.205284425726617    1.424e-10
+	  14        -0.205284425726721    3.534e-11
+	  15        -0.205284425727253    1.122e-11
+	  16        -0.205284425727464    3.909e-12
+
+	Largest LIA Amplitudes:
+	          2   0         0.0069443328
+	          4  16         0.0048125100
+	          4  18         0.0045116200
+	          3  11        -0.0038738351
+	          2   5         0.0035067244
+	          1   2         0.0031832247
+	          4  14        -0.0031482852
+	          1   3        -0.0024367343
+	          1   7         0.0021847186
+	          4  15        -0.0020294354
+
+	Largest LIjAb Amplitudes:
+	  3   3  11  11        -0.0515962937
+	  4   4  14  14        -0.0370577477
+	  2   2   2   2        -0.0291206197
+	  4   4  15  15        -0.0279480020
+	  2   3   2  11         0.0248383027
+	  3   2  11   2         0.0248383027
+	  3   4  11  16        -0.0245997956
+	  4   3  16  11        -0.0245997956
+	  4   4  16  16        -0.0243928848
+	  3   4  11  14        -0.0239471070
+
+	Iterations converged.
+
+	Overlap <L|e^T> =        0.94348490405
+
+*** tstop() called on hypnos at Mon Feb 13 15:30:15 2012
+Module time:
+	user time   =       0.06 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.46 seconds =       0.02 minutes
+	system time =       0.83 seconds =       0.01 minutes
+	total time  =          3 seconds =       0.05 minutes
+
+*** tstart() called on hypnos
+*** at Mon Feb 13 15:30:15 2012
+
+
+			**************************
+			*                        *
+			*        CCDENSITY       *
+			*                        *
+			**************************
+
+
+	Input parameters:
+	-----------------
+	Wave function    =   CCSD
+	Reference wfn    =   RHF
+	Dertype          = 1
+	Tolerance        = 1.0e-14
+	Cache Level      = 2
+	AO Basis         = No
+	OPDM Only        = No
+	Relax OPDM       = Yes
+	Compute Xi       = No
+	Use Zeta         = No
+	Xi connected     = Yes
+
+	Nuclear Rep. energy (chkpt)   =    9.166023982656473
+	SCF energy          (chkpt)   =  -76.022942727443535
+	Reference energy    (file100) =  -76.022942727443649
+	CCSD energy         (CC_INFO) =   -0.208235708061960
+	Total CCSD energy   (CC_INFO) =  -76.231178435505612
+	Number of States = 1
+
+	Ground?  State     EOM Energy       R0
+	  Yes     0 A1    0.0000000000   1.00000000
+
+	Energies re-computed from CC density:
+	-------------------------------------
+	One-electron energy        =    0.220328522694147
+	IJKL energy                =    0.041592574747020
+	IJKA energy                =   -0.001379373962124
+	IJAB energy                =   -0.410744548074898
+	IBJA energy                =   -0.100141809530600
+	CIAB energy                =   -0.000149333519092
+	ABCD energy                =    0.042258259583434
+	Total two-electron energy  =   -0.428564230756259
+	CCSD correlation energy    =   -0.208235708062113
+	Total CCSD energy          =  -76.231178435505768
+
+	Virial Theorem Data:
+	--------------------
+	Kinetic energy (ref)   =   75.798953229664349
+	Kinetic energy (corr)  =    0.147421665410914
+	Kinetic energy (total) =   75.946374895075266
+	-V/T (ref)             =    2.002955047375135
+	-V/T (corr)            =    2.412517674939685
+	-V/T (total)           =    2.003750061024293
+
+	Energies re-computed from Fock-adjusted CC density:
+	---------------------------------------------------
+	One-electron energy        =    0.246470721068977
+	IJKL energy                =   -0.666215046945857
+	IJKA energy                =   -0.047742718945195
+	IJAB energy                =   -0.410744548074898
+	IBJA energy                =    0.627886958770515
+	CIAB energy                =   -0.000149333519092
+	ABCD energy                =    0.042258259583434
+	Total two-electron energy  =   -0.454706429131093
+	CCSD correlation energy    =   -0.208235708062116
+	Total CCSD energy          =  -76.231178435505768
+
+	Energies re-computed from Mulliken density:
+	-------------------------------------------
+	One-electron energy        =    0.246470721068977
+	IJKL energy                =   -0.666215046945857
+	IJKA energy                =   -0.047742718945195
+	IJAB energy                =   -0.379840537315839
+	IBJA energy                =    0.596982948011456
+	CIAB energy                =   -0.000149333519092
+	ABCD energy                =    0.042258259583434
+	Total two-electron energy  =   -0.454706429131093
+	CCSD correlation energy    =   -0.208235708062116
+	Total CCSD energy          =  -76.231178435505768
+
+*** tstop() called on hypnos at Mon Feb 13 15:30:15 2012
+Module time:
+	user time   =       0.04 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.50 seconds =       0.03 minutes
+	system time =       0.87 seconds =       0.01 minutes
+	total time  =          3 seconds =       0.05 minutes
+
+*** tstart() called on hypnos
+*** at Mon Feb 13 15:30:15 2012
+
+ DERIV: Derivative code.
+   by Justin Turney
+
+  Cartesian Displacement SALCs
+  By SALC:
+  Number of SALCs: 3, nirreps: 1
+  Project out translations: False
+  Project out rotations: False
+	irrep = 0, ncomponent = 1
+		0: atom 0, direction z, coef 1.000000
+	irrep = 0, ncomponent = 2
+		0: atom 1, direction y, coef 0.707107
+		1: atom 2, direction y, coef -0.707107
+	irrep = 0, ncomponent = 2
+		0: atom 1, direction z, coef 0.707107
+		1: atom 2, direction z, coef 0.707107
+
+  By Atomic Center:
+  Number of atomic centers: 3
+   Atomic Center 0:
+	x component, size = 0
+	y component, size = 0
+	z component, size = 1
+		0: salc 0, irrep 0, coef 1.000000
+   Atomic Center 1:
+	x component, size = 0
+	y component, size = 1
+		0: salc 1, irrep 0, coef 0.707107
+	z component, size = 1
+		0: salc 2, irrep 0, coef 0.707107
+   Atomic Center 2:
+	x component, size = 0
+	y component, size = 1
+		0: salc 1, irrep 0, coef -0.707107
+	z component, size = 1
+		0: salc 2, irrep 0, coef 0.707107
+
+    Molecular point group: c2v
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.124847178259
+           H          0.000000000000    -1.431365049619     0.990707659168
+           H         -0.000000000000     1.431365049619     0.990707659168
+
+	Presorting MO-basis TPDM.
+	Sorting File: MO TPDM (AA|AA) nbuckets = 1
+	Starting first half-transformation.
+	Sorting half-transformed TPDM.
+	First half integral transformation complete.
+
+
+
+
+  -Nuclear Repulsion Energy 1st Derivatives:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000     2.986552792762
+       2        0.000000000000     2.038040739158    -1.493276396381
+       3        0.000000000000    -2.038040739158    -1.493276396381
+
+
+  -One-electron contribution to gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000    -6.872925823494
+       2        0.000000000000    -4.625842234160     3.436462911747
+       3        0.000000000000     4.625842234160     3.436462911747
+
+
+  -Lagrangian contribution to gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000     0.411353806113
+       2        0.000000000000     0.252558748016    -0.205676903056
+       3        0.000000000000    -0.252558748016    -0.205676903056
+
+
+  -Two-electron contribution to gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000     3.475093962396
+       2        0.000000000000     2.335175537475    -1.737546981198
+       3        0.000000000000    -2.335175537475    -1.737546981198
+
+
+  -Total gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000     0.000074737776
+       2        0.000000000000    -0.000067209511    -0.000037368888
+       3        0.000000000000     0.000067209511    -0.000037368888
+
+
+*** tstop() called on hypnos at Mon Feb 13 15:30:15 2012
+Module time:
+	user time   =       0.11 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.61 seconds =       0.03 minutes
+	system time =       0.87 seconds =       0.01 minutes
+	total time  =          3 seconds =       0.05 minutes
+
+			----------------------------------
+			 OPTKING: for geometry optimizations  
+			  - R.A. King,  Bethel University   
+			------------------------------------
+
+	Previous internal coordinate definitions found.
+	---Fragment 1 Geometry and Gradient---
+	 O           0.0000000000        0.0000000000       -0.1248471783
+	 H           0.0000000000       -1.4313650496        0.9907076592
+	 H          -0.0000000000        1.4313650496        0.9907076592
+	             0.0000000000        0.0000000000        0.0000747378
+	             0.0000000000       -0.0000672095       -0.0000373689
+	             0.0000000000        0.0000672095       -0.0000373689
+
+	---Fragment 1 Intrafragment Coordinates---
+	 * Coordinate *           * BOHR/RAD *       * ANG/DEG *
+	 R(1,2)           =         1.814736	       0.960317
+	 R(1,3)           =         1.814736	       0.960317
+	 B(2,1,3)         =         1.817531	     104.136842
+
+	Current energy   :       -76.2311784355
+
+	Energy change for the previous step:
+		Projected    :        -0.0000038376
+		Actual       :        -0.0000034299
+	Energy ratio indicates good step: Trust radius increased to 1.000e+00.
+
+
+	Performing BFGS update with previous 1 gradient(s).
+	Following RFO solution 0.
+	Projected energy change by RFO approximation:        -0.0000000485
+
+	Back-transformation to cartesian coordinates...
+	Successfully converged to displaced geometry.
+
+	---Internal Coordinate Step in ANG or DEG, aJ/ANG or AJ/DEG ---
+	 ----------------------------------------------------------------------
+	 Coordinate             Previous        Force       Change         New 
+	 ----------             --------       ------       ------       ------
+	 R(1,2)          =      0.960317    -0.000247    -0.000010     0.960308
+	 R(1,3)          =      0.960317    -0.000247    -0.000010     0.960308
+	 B(2,1,3)        =    104.136842    -0.000010    -0.042734   104.094108
+	 ----------------------------------------------------------------------
+
+  ==> Convergence Check <==
+
+  Measures of convergence in internal coordinates in au.
+  Criteria marked as inactive (o), active & met (*), and active & unmet ( ).
+  ---------------------------------------------------------------------------------------------
+   Step     Total Energy     Delta E     MAX Force     RMS Force      MAX Disp      RMS Disp   
+  ---------------------------------------------------------------------------------------------
+    Convergence Criteria    1.00e-06 *    3.00e-04 *             o    1.20e-03 *             o
+  ---------------------------------------------------------------------------------------------
+      3     -76.23117844   -3.43e-06      1.28e-04 *    7.81e-05 o    7.46e-04 *    4.31e-04 o  ~
+  ---------------------------------------------------------------------------------------------
+
+
+	 **** Optimization is complete! ****
+
+	            ****  Optimization Summary  ****
+	----------------------------------------------------------------------------
+	 Step         Energy             Delta(E)      MAX force    MAX Delta(q)  
+	----------------------------------------------------------------------------
+	   1    -76.230988854575    -76.230988854575    9.16e-03     1.72e-02
+	   2    -76.231175005564     -0.000186150989    9.77e-04     6.84e-03
+	   3    -76.231178435506     -0.000003429942    1.28e-04     7.46e-04
+	----------------------------------------------------------------------
+
+	Writing optimization data to binary file.
+	Final energy is    -76.2311784355056
+	Final (previous) structure:
+	Cartesian Geometry (au)
+	    O     0.0000000000   0.0000000000  -0.1248471783
+	    H     0.0000000000  -1.4313650496   0.9907076592
+	    H    -0.0000000000   1.4313650496   0.9907076592
+	Saving final (previous) structure.
+			--------------------------
+			 OPTKING Finished Execution 
+			--------------------------
+
+	Final optimized geometry and variables (in Angstrom):
+
+	O
+	H     1    0.960317
+	H     1    0.960317     2  104.136842
+

@@ -1,0 +1,116 @@
+#! DCFT calculation for the HF+ using DC-06 functional. This performs both
+#! two-step and simultaneous update of the orbitals and cumulant using DIIS extrapolation.
+#! Four-virtual integrals are first handled in the MO Basis for the first two energy computations.
+#! In the next two the ao_basis=disk algorithm is used, where the transformation of integrals for 
+#! four-virtual case is avoided. 
+#! The computation is then repeated using the DC-12 functional with the same algorithms.
+
+memory 250 mb
+
+
+
+
+
+molecule HF {
+1 2
+H
+F 1 R
+
+R = 1.000
+}
+
+set globals {
+    r_convergence 12
+    d_convergence 12
+    ao_basis    none
+    algorithm   twostep
+    basis       sto-3g
+}
+
+energy('dcft')
+
+
+set algorithm simultaneous
+energy('dcft')
+
+
+set ao_basis disk
+set algorithm twostep
+energy('dcft')
+
+
+set algorithm simultaneous
+energy('dcft')
+
+
+set algorithm qc
+set ao_basis none
+set qc_type simultaneous
+energy('dcft')
+
+
+set ao_basis disk
+energy('dcft')
+
+
+set ao_basis none
+set qc_type twostep
+energy('dcft')
+
+
+set ao_basis disk
+energy('dcft')
+
+
+set dcft_functional dc-12
+set algorithm twostep
+set ao_basis none
+energy('dcft')
+
+
+set ao_basis disk
+energy('dcft')
+
+
+set algorithm simultaneous
+set ao_basis none
+energy('dcft')
+
+
+set ao_basis disk
+energy('dcft')
+
+
+set algorithm qc
+set ao_basis none
+set qc_type simultaneous
+energy('dcft')
+
+
+set ao_basis disk
+energy('dcft')
+
+
+set dcft_functional odc-06
+set algorithm simultaneous
+set ao_basis none
+energy('dcft')
+
+
+set algorithm qc
+set qc_type simultaneous
+energy('dcft')
+
+
+set qc_type twostep
+energy('dcft')
+
+
+set dcft_functional odc-12
+energy('dcft')
+
+
+set algorithm qc
+set qc_type simultaneous
+energy('dcft')
+

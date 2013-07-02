@@ -1,0 +1,27 @@
+#! RHF-CCSD-LR/cc-pVDZ static polarizability of HOF
+
+memory 250 mb
+
+molecule hof {
+          O          -0.947809457408    -0.132934425181     0.000000000000
+          H          -1.513924046286     1.610489987673     0.000000000000
+          F           0.878279174340     0.026485523618     0.000000000000
+unit bohr
+noreorient
+}
+
+set {
+   basis cc-pVDZ
+}
+
+property('ccsd', properties=['polarizability'])
+
+refnuc = 46.780362058359806     #TEST
+refscf = -174.41843300162472    #TEST
+refccsd = -0.368843103062227    #TEST
+reftotal = -174.787276104686754 #TEST
+
+compare_values(refnuc, hof.nuclear_repulsion_energy(),           9, "Nuclear repulsion energy") #TEST
+compare_values(refscf, get_variable("SCF total energy"),         9, "SCF energy")               #TEST
+compare_values(refccsd, get_variable("CCSD correlation energy"), 8, "CCSD correlation energy")  #TEST
+compare_values(reftotal, get_variable("Current energy"),         8, "CCSD total energy")        #TEST

@@ -1,0 +1,184 @@
+******************************************************************************
+tstart called on seldon
+Mon Nov 18 22:52:26 1996
+
+
+*******************************************************
+                      D E T C I  
+
+                    David Sherrill
+                     June 24 1996
+*******************************************************
+
+
+
+
+PARAMETERS: 
+   EX LVL       =        2      H0 BLOCKSIZE =        4
+   VAL EX LVL   =        0      H0 MP2GUESS  =       no
+   NPRINT       =       20      MAX DET      =     5000
+   MAXITER      =       10      FREEZE CORE  =      yes
+   NUM ROOTS    =        2      ICORE        =        1
+   PRINT        =        3      FCI          =       no
+   CONV         =        7      MIXED        =      yes
+   E CONV       =        2      MIXED4       =      yes
+   OEI FILE     =       71      R4S          =       no
+   OEI ERASE    =       no      REPL OTF     =       no
+   TEI FILE     =       72      DIAG METHOD  =      SEM
+   S            =        0      Ms0          =      yes
+   TEI ERASE    =       no      MAXNVECT     =       24
+   RESTART      =       no      RESTART VECS =        0
+   GUESS VECTOR =  H0BLOCK      OPENTYPE     =     NONE
+   GENCI ALG    =       no
+
+   FILES        =      50  51  52  53
+
+ORBITALS:
+   NBFSO        =        7      NUM ALP      =        5
+   ORBS IN CI   =        5      NUM ALP EXPL =        3
+   FROZEN CORE  =        2      NUM BET      =        5
+   RESTR CORE   =        0      NUM BET EXPL =        3
+   IOPEN        =       no
+   RAS1 LVL     =        2      A RAS3 MAX   =        2
+   RAS1 MIN     =        8      B RAS3 MAX   =        2
+   A RAS1 LVL   =        2      RAS4 LVL     =        5
+   A RAS1 MIN   =        3      A RAS4 MAX   =        0
+   A RAS1 MAX   =        5      B RAS4 MAX   =        0
+   B RAS1 LVL   =        2      RAS4 MAX     =        0
+   B RAS1 MIN   =        3      A RAS34 MAX  =        2
+   B RAS1 MAX   =        5      B RAS34 MAX  =        2
+   RAS3 LVL     =        3      RAS34 MAX    =        2
+   RAS3 MAX     =        2
+
+   DOCC         =  3  0  1  1 
+   SOCC         =  0  0  0  0 
+   FROZEN DOCC  =  2  0  0  0 
+   FROZEN UOCC  =  0  0  0  0 
+   RAS 1        =  1  0  1  1 
+   RAS 2        =  0  0  0  0 
+   RAS 3        =  1  0  0  1 
+   RAS 4        =  0  0  0  0 
+*******************************************************
+
+
+There are 10 alpha strings
+There are 10 beta strings
+CI space contains    9 blocks
+
+CI space requires 17 determinants
+
+Check SCF Energy from 1- and 2-electron integrals
+
+SCF Energy (ref):            -74.9659005602
+Nuclear repulsion energy:      8.9064885908
+One-electron energy:         -22.3667934571
+Two-electron energy:           9.7371949632
+Frozen core energy:          -71.2427906571
+Total electronic energy:     -83.8723891510
+Total SCF energy:            -74.9659005602
+
+Forming diagonal elements of H
+
+Forming H0 block
+H0block size reduced by 1 to ensure pairing.
+
+*** H0 Block Eigenvalue = -74.96590056
+
+H0 Block Eigenvectors
+
+           1           2           3
+
+    1   1.0000000   0.0000000  -0.0000000
+    2  -0.0000000  -0.7071068  -0.7071068
+    3  -0.0000000   0.7071068  -0.7071068
+
+      -74.9659006 -74.4758696 -74.3205123
+
+Members of H0 block:
+
+    1 [  1] -83.872389  Block  1 (   0,   0)  3A1 X  1B1 X  1B2 X  
+    2 [  3] -83.304680  Block  2 (   0,   0)  3A1 A  1B1 X  1B2 X  4A1 B  
+    3 [  2] -83.304680  Block  4 (   0,   0)  3A1 B  1B1 X  1B2 X  4A1 A  
+
+Find the roots by the Simultaneous Expansion Method 
+Energy convergence = 0.01
+RMS CI vector convergence = 1e-07
+
+Using 2 initial trial vectors
+Iter   0  Root 1 = -74.965900560    Delta_E -1.263E+01   Delta_C 2.534E-01
+Iter   0  Root 2 = -74.320512304    Delta_E -1.198E+01   Delta_C 2.360E-01
+
+Iter   1  Root 1 = -75.004194020    Delta_E -3.829E-02   Delta_C 2.076E-02
+Iter   1  Root 2 = -74.393263132    Delta_E -7.275E-02   Delta_C 6.867E-02
+
+Iter   2  Root 1 = -75.004477594    Delta_E -2.836E-04   Delta_C 1.558E-03
+Iter   2  Root 2 = -74.398580676    Delta_E -5.318E-03   Delta_C 6.596E-03
+
+Iter   3  Root 1 = -75.004479508    Delta_E -1.914E-06   Delta_C 1.980E-04
+Iter   3  Root 2 = -74.398632531    Delta_E -5.186E-05   Delta_C 9.444E-04
+
+Iter   4  Root 1 = -75.004479539    Delta_E -3.089E-08   Delta_C 1.104E-05
+Iter   4  Root 2 = -74.398633752    Delta_E -1.221E-06   Delta_C 1.252E-04
+
+Iter   5  Root 1 = -75.004479539    Delta_E -1.015E-10   Delta_C 4.555E-14
+Iter   5  Root 2 = -74.398633781    Delta_E -2.898E-08   Delta_C 5.789E-13
+
+
+ROOT 1 ECI = -75.0044795388563
+
+
+The 17 most important determinants
+
+    1    0.987974  (    2,    2)  3A1 X  1B1 X  1B2 X  
+*   2   -0.081913  (    4,    4)  3A1 X  1B1 X  2B2 X  
+*   3   -0.054073  (    3,    4)  3A1 B  1B1 X  1B2 A  4A1 A  2B2 B  
+*   4   -0.054073  (    4,    3)  3A1 A  1B1 X  1B2 B  4A1 B  2B2 A  
+*   5   -0.048007  (    7,    7)  1B1 X  1B2 X  2B2 X  
+*   6   -0.047471  (    3,    3)  1B1 X  1B2 X  4A1 X  
+*   7   -0.042145  (    6,    6)  3A1 X  1B1 X  4A1 X  
+*   8   -0.035644  (    6,    7)  3A1 A  1B1 X  1B2 B  4A1 A  2B2 B  
+*   9   -0.035644  (    7,    6)  3A1 B  1B1 X  1B2 A  4A1 B  2B2 A  
+*  10   -0.027083  (    8,    8)  3A1 X  1B2 X  4A1 X  
+   11   -0.021258  (    3,    2)  3A1 B  1B1 X  1B2 X  4A1 A  
+   12   -0.021258  (    2,    3)  3A1 A  1B1 X  1B2 X  4A1 B  
+*  13    0.018429  (    2,    5)  3A1 A  1B1 X  1B2 A  4A1 B  2B2 B  
+*  14    0.018429  (    5,    2)  3A1 B  1B1 X  1B2 B  4A1 A  2B2 A  
+*  15   -0.012474  (    0,    0)  3A1 X  1B2 X  2B2 X  
+*  16   -0.000934  (    2,    4)  3A1 X  1B1 X  1B2 A  2B2 B  
+*  17   -0.000934  (    4,    2)  3A1 X  1B1 X  1B2 B  2B2 A  
+
+
+
+
+ROOT 2 ECI = -74.3986337806599
+
+
+The 17 most important determinants
+
+    1    0.663074  (    3,    2)  3A1 B  1B1 X  1B2 X  4A1 A  
+    2    0.663074  (    2,    3)  3A1 A  1B1 X  1B2 X  4A1 B  
+*   3   -0.199030  (    2,    4)  3A1 X  1B1 X  1B2 A  2B2 B  
+*   4   -0.199030  (    4,    2)  3A1 X  1B1 X  1B2 B  2B2 A  
+*   5    0.111531  (    3,    3)  1B1 X  1B2 X  4A1 X  
+*   6    0.087043  (    7,    7)  1B1 X  1B2 X  2B2 X  
+*   7   -0.071796  (    6,    6)  3A1 X  1B1 X  4A1 X  
+*   8    0.067023  (    3,    4)  3A1 B  1B1 X  1B2 A  4A1 A  2B2 B  
+*   9    0.067023  (    4,    3)  3A1 A  1B1 X  1B2 B  4A1 B  2B2 A  
+   10    0.044962  (    2,    2)  3A1 X  1B1 X  1B2 X  
+*  11    0.041080  (    6,    7)  3A1 A  1B1 X  1B2 B  4A1 A  2B2 B  
+*  12    0.041080  (    7,    6)  3A1 B  1B1 X  1B2 A  4A1 B  2B2 A  
+*  13   -0.025943  (    2,    5)  3A1 A  1B1 X  1B2 A  4A1 B  2B2 B  
+*  14   -0.025943  (    5,    2)  3A1 B  1B1 X  1B2 B  4A1 A  2B2 A  
+*  15   -0.021542  (    0,    0)  3A1 X  1B2 X  2B2 X  
+*  16   -0.006734  (    4,    4)  3A1 X  1B1 X  2B2 X  
+*  17   -0.005816  (    8,    8)  3A1 X  1B2 X  4A1 X  
+
+
+
+******************************************************************************
+tstop called on seldon
+Mon Nov 18 22:52:27 1996
+
+user time   =       0.42 seconds
+system time =       0.11 seconds
+total time  =          1 seconds

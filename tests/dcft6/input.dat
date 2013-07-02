@@ -1,0 +1,54 @@
+#! DCFT calculation for the triplet O2 using DC-06, DC-12 and CEPA0 functionals. 
+#! Only two-step algorithm is tested.
+
+memory 250 mb
+
+refscf      = -149.65367728294785   #TEST
+refmp2      = -150.17316961260252   #TEST
+
+# DC-06
+refdcftscf  = -149.08581589084218   #TEST
+refdcft     = -150.190274002583237  #TEST
+
+# DC-12                             #TEST
+refdcftxscf = -149.101073338708972  #TEST
+refdcftx    = -150.185859013565732  #TEST
+
+#CEPA0
+refdcftcepa = -150.188254445548893  #TEST
+
+molecule HF {
+0 3
+O
+O 1 R
+
+units bohr
+R = 2.000
+}
+
+set globals {
+    r_convergence 12
+    d_convergence 12
+    ao_basis    none
+    algorithm   twostep
+    basis       cc-pcvtz
+}
+
+set dcft_functional dc-06
+energy('dcft')
+
+compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 10, "SCF Energy");                                       #TEST
+compare_values(refmp2, get_variable("MP2 TOTAL ENERGY"), 10, "MP2 Energy");                                             #TEST
+compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 10, "DC-06 SCF Energy (two-step, ao_basis=none)");     #TEST
+compare_values(refdcft, get_variable("DCFT TOTAL ENERGY"), 10, "DC-06 Energy (two-step, ao_basis=none)");                #TEST
+
+set dcft_functional dc-12
+energy('dcft')
+
+compare_values(refdcftxscf, get_variable("DCFT SCF ENERGY"), 10, "DC-12 SCF Energy (two-step, ao_basis=none)");     #TEST
+compare_values(refdcftx, get_variable("DCFT TOTAL ENERGY"), 10, "DC-12 Energy (two-step, ao_basis=none)");                #TEST
+
+set dcft_functional cepa0
+energy('dcft')
+
+compare_values(refdcftcepa, get_variable("DCFT TOTAL ENERGY"), 10, "CEPA0 Energy (two-step, ao_basis=none)");                #TEST

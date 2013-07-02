@@ -1,0 +1,25 @@
+#! cc-pvdz H2O Test CEPA(1) Energy
+molecule h2o {
+0 1
+O
+H 1 1.0 
+H 1 1.0 2 104.5
+}
+set {
+  e_convergence 1e-10
+  d_convergence 1e-10
+  r_convergence 1e-10
+  basis cc-pvdz
+  freeze_core true
+}
+energy('cepa(1)')
+
+refnuc     = 8.80146552997       #TEST
+refscf     = -76.02141844515494  #TEST
+refcepa1   = -0.214363572651     #TEST
+
+compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")                  #TEST 
+compare_values(refscf, get_variable("SCF TOTAL ENERGY"),     8, "SCF energy")                          #TEST
+compare_values(refcepa1, get_variable("CEPA(1) CORRELATION ENERGY"), 8, "CEPA(1) correlation energy")  #TEST
+
+clean()

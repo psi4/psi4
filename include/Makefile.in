@@ -1,0 +1,43 @@
+
+.PHONY:	default all install depend clean dclean targetclean
+
+default: all
+
+all:
+
+install_man:
+depend:
+clean:
+dclean:
+targetclean:
+
+top_srcdir = @top_srcdir@
+prefix = @prefix@
+srcdir = @srcdir@
+incdir = @includedir@
+VPATH = @srcdir@
+top_objdir = ..
+MKDIRS = @MKDIRS@
+INSTALL = @INSTALL@
+INSTALL_INCLUDE = @INSTALL_INCLUDE@
+
+HEADERS = \
+element_to_Z.h  molecular_system.h  psifiles.h  vdw_radii.h \
+chkpt_params.h  exception.h     physconst.h         psitypes.h  Z_to_element.h \
+compiler.h      fragment.h      psi4-dec.h          rgb.h \
+cov_radii.h     masses.h        psi4-def.h          symmetry.h
+
+install: install_inc
+
+install_inc: $(HEADERS)
+	$(MKDIRS) $(DESTDIR)$(incdir)
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)
+
+$(top_srcdir)/configure: $(top_srcdir)/configure.ac $(top_srcdir)/aclocal.m4
+	cd $(top_srcdir) && autoconf
+
+$(top_objdir)/config.status: $(top_srcdir)/configure
+	cd $(top_objdir) && ./config.status --recheck
+
+Makefile: $(srcdir)/Makefile.in $(top_objdir)/config.status
+	cd $(top_objdir) && CONFIG_FILES=include/Makefile ./config.status

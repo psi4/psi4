@@ -1,0 +1,67 @@
+include $(top_objdir)/src/lib/MakeVars
+include $(top_objdir)/src/lib/libint/MakeVars
+
+VPATH = .:$(top_srcdir)/src/lib/libint
+PSITARGET = $(top_objdir)/lib/libPSI_int.a
+
+#
+# List all generated routines. Do it in a safe way in case the list is too long
+#
+TRUESRC1 = $(shell echo `ls vrr_order_*.cc`)
+TRUESRC2 = $(shell echo `ls hrr_order_*.cc`)
+TRUESRC3 = $(shell echo `ls build_*.cc`)
+TRUESRC4 = $(shell echo `ls hrr[1,3]_build_*.cc`)
+TRUESRC5 = $(LIB_SRC)
+TRUESRC6 = init_libint.cc
+LIBOBJ1 = $(TRUESRC1:%.cc=%.o)
+LIBOBJ2 = $(TRUESRC2:%.cc=%.o)
+LIBOBJ3 = $(TRUESRC3:%.cc=%.o)
+LIBOBJ4 = $(TRUESRC4:%.cc=%.o)
+LIBOBJ5 = $(TRUESRC5:%.c=%.o)
+LIBOBJ6 = $(TRUESRC6:%.cc=%.o)
+LIBOBJ = $(LIBOBJ1) $(LIBOBJ2) $(LIBOBJ3) $(LIBOBJ4) $(LIBOBJ5) $(LIBOBJ6)
+
+default:: $(PSITARGET) $(TARGET_HEADERS)
+
+%.$(OBJSUF): %.c
+	$(CC) $(CFLAGS) -c $< $(OUTPUT_OPTION)
+
+%.$(OBJSUF): %.cc
+	$(CXX) $(CXXFLAGS) -c $< $(OUTPUT_OPTION)
+
+#
+# do installations
+#
+
+$(PSITARGET): $(LIBOBJ)
+	$(MKDIRS) `dirname $(TARGET)`
+	rm -f $(PSITARGET)
+	$(AR) $(ARFLAGS) $(PSITARGET) $(LIBOBJ1)
+	$(AR) $(ARFLAGS) $(PSITARGET) $(LIBOBJ2)
+	$(AR) $(ARFLAGS) $(PSITARGET) $(LIBOBJ3)
+	$(AR) $(ARFLAGS) $(PSITARGET) $(LIBOBJ4)
+	$(AR) $(ARFLAGS) $(PSITARGET) $(LIBOBJ5)
+	$(AR) $(ARFLAGS) $(PSITARGET) $(LIBOBJ6)
+	$(RANLIB) $(PSITARGET)
+
+$(top_objdir)/include/libint/%.h: %.h
+	$(MKDIRS) `dirname $@`
+	$(INSTALL_INCLUDE) $^ $@
+
+#
+# clean up
+#
+
+clean:: iclean oclean dclean targetclean
+
+iclean:
+	-rm -f *.gbl *.lcl
+
+oclean:
+	-rm -f *.o
+
+dclean:
+	-rm -f *.d
+
+targetclean:
+	-rm -f `basename $(PSITARGET)`
