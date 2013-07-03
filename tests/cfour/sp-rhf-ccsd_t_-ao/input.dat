@@ -57,6 +57,7 @@ compare_values(-76.345717549886, get_variable('ccsd(t) total energy'), 6, 'CCSD(
 
 clean()
 clean_variables()
+cfour {}
 
 print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
 

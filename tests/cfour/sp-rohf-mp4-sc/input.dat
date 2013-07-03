@@ -92,6 +92,7 @@ compare_values(-0.004761370505, get_variable('mp4(t) correction energy'), 6, 'MP
 
 clean()
 clean_variables()
+cfour {}
 
 print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
 
