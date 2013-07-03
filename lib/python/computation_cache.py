@@ -1604,6 +1604,7 @@ class CachedComputation(object):
         if self.owner is None:
             raise ValueError("Can't save computation because parent cache doesn't exist")
         self.owner.sync_computation(self)
+        self.owner.shelf.sync()
 
     def begin_parallel_use(self):
         self.parallel_ready = True
