@@ -962,7 +962,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
-    options.add_str("SCF_TYPE", "PK", "DIRECT DF PK OUT_OF_CORE FAST_DF CD");
+    options.add_str("SCF_TYPE", "PK", "DIRECT DF PK OUT_OF_CORE FAST_DF CD INDEPENDENT");
     /*- Tolerance for Cholesky decomposition of the ERI tensor -*/
     options.add_double("CHOLESKY_TOLERANCE",1e-4);
     /*- Use DF integrals tech to converge the SCF before switching to a conventional tech -*/
@@ -1253,6 +1253,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The schwarz cutoff value
      -*/
     options.add_double("SCHWARZ_CUTOFF", 1.0E-12);
+    /*- Do we do the QQR integral sieve of Maurer et al. When false, just uses
+     *  the Schwarz sieve.
+     -*/
+    options.add_bool("DO_QQR_SIEVE", false);
     /*- The maximum reciprocal condition allowed in the fitting metric
      -*/
     options.add_double("FITTING_CONDITION", 1.0E-12);
@@ -1261,7 +1265,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("FITTING_ALGORITHM", 0);
     /*- SCF Type
      -*/
-    options.add_str("SCF_TYPE", "DIRECT", "DIRECT DF PK OUT_OF_CORE PS");
+    options.add_str("SCF_TYPE", "DIRECT", "DIRECT DF PK OUT_OF_CORE PS INDEPENDENT");
+    /*- JK Independent options
+     -*/
+    options.add_str("INDEPENDENT_J_TYPE", "DIRECT_SCREENING", "DIRECT_SCREENING");
+    options.add_str("INDEPENDENT_K_TYPE", "DIRECT_SCREENING", "DIRECT_SCREENING LINK");
     /*- Auxiliary basis for SCF
      -*/
     options.add_str("DF_BASIS_SCF", "");
