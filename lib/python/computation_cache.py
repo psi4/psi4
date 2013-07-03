@@ -1,6 +1,6 @@
 from __future__ import print_function, division
 from abc import abstractmethod, abstractproperty, ABCMeta
-from collections import Iterable
+from collections import Iterable, defaultdict
 from inspect import getargspec
 import inspect
 from itertools import product
@@ -9,6 +9,8 @@ import os
 from os.path import exists, isdir, split as path_split, sep as path_sep, join as path_join
 import re
 import shelve
+import shutil
+import tempfile
 import traceback
 from warnings import warn
 import numpy as np
@@ -21,7 +23,6 @@ from functools import partial
 from hashlib import md5
 import psi4
 import atexit
-from grendel.util.sentinal_values import SentinalValue
 # Create a trivial molecule so psi4 doesn't freak out about not having a Molecule
 #psi4.geometry("H 0 0 0\nH 0 0 1")
 
@@ -643,6 +644,15 @@ class AOOEIGetterWithComputer(MemmapArrayGetter):
         #----------------------------------------#
         return
 
+    def get_shape(self, basis):
+        nbf = basis.nbf()
+        return nbf, nbf
+
+    def __call__(self, out, basis, correlation_factor=None):
+        self._compute_ints(out,
+            basis_sets=(basis, basis)
+        )
+
 class ArbitraryBasisAOOEIGetter(ArbitraryBasisDatumGetter, AOOEIGetterWithComputer):
 
     def __init__(self, integral_type, bs1, bs2=None):
@@ -702,7 +712,7 @@ class ComputationCache(object):
 
     # Sentinel value for optional attributes to not include in the
     #   key unless they are set by the user.
-    NoDefaultValue = SentinalValue("NoDefaultValue")
+    NoDefaultValue = "___NoDefaultValue___"
 
     optional_attributes = AliasedDict({
         'correlation_factor_exponent' : 1.0,
@@ -792,7 +802,7 @@ class ComputationCache(object):
         @type needed_data: NoneType, Iterable
         @rtype: CachedComputation
         """
-        molkey = self._get_molecule_key(molecule)
+        molkey = self.get_molecule_key(molecule)
         key = [molkey]
         key_mandatory = [molkey]
         optional_part = []
@@ -933,13 +943,10 @@ class ComputationCache(object):
                 rv.get_data(needed_data)
         return rv
 
-
     def sync_computation(self, comp, sync_writeback=None):
         self.shelf[comp.shelf_key] = comp
         if ((sync_writeback is None and self.do_writeback_on_sync) or sync_writeback) and self.writeback:
             self.shelf.sync()
-
-    #endregion
 
     def clear_datum(self, datum_name, fail_if_missing=False):
         """
@@ -993,6 +1000,8 @@ class ComputationCache(object):
             raise ValueError("No known computations have a datum matching '{0}'".format(re_string))
         return num_found, num_comps
 
+    #endregion
+
     #========================================#
 
     #region | Private Methods |
@@ -1024,8 +1033,14 @@ class ComputationCache(object):
         else:
             self.analogous_keys[key_mandatory] = [key_tuple]
 
+    #endregion
 
-    def _get_molecule_key(self, molecule):
+    #========================================#
+
+    #region | Class Methods |
+
+    @classmethod
+    def get_molecule_key(cls, molecule):
         """
         For now, this just returns the xyz string representation of the
         Molecule object.  A more sophisticated means could be devised if
@@ -1053,7 +1068,7 @@ class CachedComputation(object):
 
     #region | Class Attributes |
 
-    PICKLE_VERSION = (2,1,0)
+    PICKLE_VERSION = (2,1,1)
 
     parser = psi4.Gaussian94BasisSetParser()
 
@@ -1153,6 +1168,13 @@ class CachedComputation(object):
         self._basis_registry = AliasedDict()
         self._optional_argument_dependencies = dict()
         self._analogously_loaded_data = set()
+        self.parallel_ready = False
+        self._dependency_aliases = defaultdict(lambda: [])
+        # multiprocessing RLock object for locking
+        #   psi to avoid PSIO errors
+        self.psi_lock = None
+        self._required_locks = dict()
+        self._original_names = dict()
         #endregion
         #========================================#
         #region psi options
@@ -1231,7 +1253,11 @@ class CachedComputation(object):
             if psi4.options.basis.lower() != self.basis_name.lower():
                 psi4.options.basis = self.basis_name
             # run SCF
+            scratch_path = tempfile.mkdtemp()
+            psi4.IOManager.shared_object().set_default_path(scratch_path)
             psi4.energy("scf")
+            psi4.clean()
+            shutil.rmtree(scratch_path)
             # grab the wavefunction of the most recently run computation (scf, in this case)
             return psi4.wavefunction()
         self.register_dependency(
@@ -1239,7 +1265,8 @@ class CachedComputation(object):
             UninitializedDependency(
                 get_scf_wavefunction,
                 self, depends_on=['basis']
-            )
+            ),
+            required_locks=["psi_lock"]
         )
         self.register_dependency(
             "correlation_factor",
@@ -1292,7 +1319,7 @@ class CachedComputation(object):
     #region | Methods |
 
     def optional_argument_given(self, arg):
-        return self.optional_arguments[arg] is not ComputationCache.NoDefaultValue
+        return self.optional_arguments[arg] != ComputationCache.NoDefaultValue
 
     def construct_basis(self, basis_name=None):
         if basis_name is None:
@@ -1322,7 +1349,8 @@ class CachedComputation(object):
             dependency_object_or_function,
             depends_on=None,
             aliases=None,
-            dependent_optional_arguments=None
+            dependent_optional_arguments=None,
+            required_locks=tuple()
     ):
         if isinstance(dependency_object_or_function, UninitializedDependency):
             dependency_object = dependency_object_or_function
@@ -1342,12 +1370,13 @@ class CachedComputation(object):
             self._optional_argument_dependencies[attribute_name] = dependent_optional_arguments
         else:
             self._optional_argument_dependencies[attribute_name] = []
-
-
+        self._required_locks[attribute_name] = list(required_locks)
 
     def register_dependency_alias(self, alias, original_name):
-        # Use __dict__ instead of getattr in case we switch to a descriptor motif in the future
-        setattr(self, alias, self.__dict__[original_name])
+        attr = getattr(self, original_name)
+        self._dependency_aliases[attr].append(alias)
+        self._original_names[alias] = original_name
+        setattr(self, alias, attr)
 
     def register_basis(self, basis_name):
         if basis_name not in self._basis_registry:
@@ -1359,12 +1388,13 @@ class CachedComputation(object):
             pre_computation_callback=None,
             post_computation_callback=None,
             analogous_load_callback=lambda akey, fname=None: print(
-                "Loaded datum from analogous source file {0} with computation key {1}".format(
+                "Loaded datum from analogous source file {0} with computation attributes {1}".format(
                     "(no file)" if fname is None else fname,
-                    akey
+                    akey[1:]
             )),
             allow_analogous_load=True
     ):
+        #----------------------------------------#
         if name is None:
             if not hasattr(custom_getter, "name"):
                 raise TypeError()
@@ -1384,7 +1414,7 @@ class CachedComputation(object):
                 analogous_load_callback=analogous_load_callback
             )
             # Sync the parent shelf since self has been modified
-            if self.owner is not None:
+            if self.owner is not None and not self.parallel_ready:
                 self.owner.sync_computation(self)
         return self.cached_data[name]
 
@@ -1430,7 +1460,7 @@ class CachedComputation(object):
                 del self.cached_data[name]
                 self._analogously_loaded_data.remove(name)
             # Sync the parent shelf since self has been modified
-            if self.owner is not None:
+            if self.owner is not None and not self.parallel_ready:
                 self.owner.sync_computation(self)
             return True
         elif fail_if_missing:
@@ -1467,7 +1497,7 @@ class CachedComputation(object):
                 re_string, "    " + "\n    ".join(self.cached_data.keys())
             ))
         if found_count > 0:
-            if self.owner is not None:
+            if self.owner is not None and not self.parallel_ready:
                 self.owner.sync_computation(self)
         return found_count
 
@@ -1476,14 +1506,40 @@ class CachedComputation(object):
             self.clear_datum(datum_name)
 
     def get_lazy_attribute(self, needed_attr):
-        self._psi_options_use()
+        # Make sure we know how to get the attribute
         if not hasattr(self, needed_attr):
             raise NameError("Don't know how to get attribute '{0}'".format(needed_attr))
-        attr = getattr(self, needed_attr)
-        if isinstance(attr, UninitializedDependency):
-            attr = attr.initialize()
-            setattr(self, needed_attr, attr)
-        self._psi_options_restore()
+        #----------------------------------------#
+        if needed_attr in self._original_names:
+            needed_attr = self._original_names[needed_attr]
+        acquired = []
+        try:
+            for lock_name in self._required_locks[needed_attr]:
+                lock = getattr(self, lock_name)
+                if lock is not None:
+                    lock.acquire(blocking=True)
+                    acquired.append(lock)
+                elif self.parallel_ready:
+                    raise ValueError("Required lock named '{}' not set for"
+                                     " parallel ready CachedComputation".format(
+                        lock_name
+                    ))
+            if self.parallel_ready:
+                psi4.clean()
+            self._psi_options_use()
+            attr = getattr(self, needed_attr)
+            if isinstance(attr, UninitializedDependency):
+                aliases = self._dependency_aliases[attr]
+                attr = attr.initialize()
+                setattr(self, needed_attr, attr)
+                for alias in aliases:
+                    setattr(self, alias, attr)
+            if self.parallel_ready:
+                psi4.clean()
+            self._psi_options_restore()
+        finally:
+            for lock in acquired:
+                lock.release()
         return attr
 
     def get_file_path(self, datum_name):
@@ -1535,7 +1591,7 @@ class CachedComputation(object):
             self.cached_data[name] = out
         #----------------------------------------#
         # Sync the parent shelf since self has been modified
-        if self.owner is not None:
+        if self.owner is not None and not self.parallel_ready:
             self.owner.sync_computation(self)
 
     def has_datum(self, name):
@@ -1543,6 +1599,17 @@ class CachedComputation(object):
             and isinstance(self.cached_data[name], CachedDatum)
             and self.cached_data[name].filled
         )
+
+    def save_computation(self):
+        if self.owner is None:
+            raise ValueError("Can't save computation because parent cache doesn't exist")
+        self.owner.sync_computation(self)
+
+    def begin_parallel_use(self):
+        self.parallel_ready = True
+
+    def end_parallel_use(self):
+        self.parallel_ready = False
 
     #endregion
 
@@ -1553,6 +1620,10 @@ class CachedComputation(object):
     def __reduce_ex__(self, protocol):
         unloader = CachedComputationUnloader(self)
         return unloader, tuple()
+
+    def __del__(self):
+        if self.owner is not None:
+            self.owner.sync_computation(self)
 
     #endregion
 
@@ -1619,34 +1690,38 @@ class CachedComputation(object):
             load_successful = False
             # Try to load the memmap if we successfully retrieved a shape
             #   from the cached file.
-            tb = None
+            has_tb = False
             if shape is not None:
                 try:
                     # The shape and dtype arguments present redundant information,
                     #   (which is retrieved when the file is loaded anyway)
                     #   but including them here does no harm, and they may be used
                     #   for error checking or something else in the future.
-                    out = CachedMemmapArray(fname, shape=shape, dtype=dtype)
+                    out = CachedMemmapArray(fname,
+                        shape=shape,
+                        dtype=dtype
+                    )
                     load_successful = True
                 except ValueError:
                     # Raised if the data is invalid.  This means the file is corrupted
                     #   and needs to be rewritten
                     load_successful = False
                     out = None
-                    tb = sys.last_traceback
+                    has_tb = True
                 except IOError:
                     # Raised if the file cannot be opened correctly.  This should never
                     #   really happen unless the file changes between the call to
                     #   CachedMemmapArray.read_file_metadata() and here.
                     load_successful = False
                     out = None
-                    tb = sys.last_traceback
+                    has_tb = True
             # Only compute the shape using the getter if we need to.
             if not load_successful:
                 loaded_key = False
-                if allow_analogous_load:
+                # For now, if we are parallel ready, don't borrow data
+                if allow_analogous_load and not self.parallel_ready:
                     loaded_key = self._check_analogous_computation(needed_name, getter)
-                if allow_analogous_load and loaded_key is not False:
+                if loaded_key is not False:
                     # Another computatation has a compatible datum.  We can use it.
                     #   The helper function has already put it in our cached_data
                     #   dictionary, so all we need to do is use it.
@@ -1678,12 +1753,12 @@ class CachedComputation(object):
                     #   somehow corrupted and needs to be overwritten.  Warn the user
                     #   of the situation.
                     if exists(fname):
-                        if tb is not None:
+                        if has_tb:
                             raise_warning(
                                 "File '{0}' is corrupted and will be overwritten."
                                 " Its data will be recomputed.  Traceback:\n    {1}".format(
                                     fname,
-                                    "\n    ".join(traceback.format_tb(tb))),
+                                    "\n    ".join(traceback.format_exc())),
                                 FileOverwriteWarning
                             )
                         else:
@@ -1704,6 +1779,20 @@ class CachedComputation(object):
             #----------------------------------------#
             # Only fill it if we need to
             if not out.filled:
+                if out.read_only:
+                    # This shouldn't happen
+                    raise_warning(
+                        "File '{0}' exists, but was not marked as filled previously.  It's data"
+                        " will be recomputed.".format(
+                            fname
+                        ),
+                        FileOverwriteWarning
+                    )
+                    out = CachedMemmapArray(
+                        fname,
+                        shape=shape,
+                        force_overwrite=True
+                    )
                 if pre_computation_callback is not None:
                     pre_computation_callback()
                 getter_kwargs = self._fill_needed_kwargs(getter.needs, getter)
@@ -1727,9 +1816,10 @@ class CachedComputation(object):
             if not isinstance(getter, DatumGetter):
                 getter = CachedComputation.other_getters[needed_name]
             loaded_key = False
-            if allow_analogous_load:
+            # For now, if we are parallel ready, don't borrow data
+            if allow_analogous_load and not self.parallel_ready:
                 loaded_key = self._check_analogous_computation(needed_name, getter)
-            if allow_analogous_load and loaded_key is not False:
+            if loaded_key is not False:
                 self._analogously_loaded_data.add(needed_name)
                 if callable(analogous_load_callback):
                     analogous_load_callback(loaded_key)
@@ -1765,7 +1855,7 @@ class CachedComputation(object):
                     avalues = [v for k, v in akey[1:] if k == opt]
                     if len(avalues) == 0:
                         # A required optional argument was not given
-                        #   for the analogous computation, so we
+                        #   for the analogou,s computation, so we
                         #   can't use it
                         useable = False
                         break
@@ -1784,6 +1874,8 @@ class CachedComputation(object):
                         self.cached_data[needed_datum_name] = acomp.get_datum(needed_datum_name)
                         return akey
         return False
+
+
 
     def _fill_needed_kwargs(self, needed_kws, getter):
         rv = dict()
@@ -1811,7 +1903,6 @@ class CachedComputation(object):
     #========================================#
     # end CachedComputation class
     pass
-
 
 #================================================================================#
 
@@ -1860,6 +1951,7 @@ class CachedMemmapArray(CachedDatum):
         self.shape = shape
         self.write_mode = False
         self.force_overwrite = force_overwrite
+        self.read_only = not force_overwrite and exists(self.filename)
         self.filled = False
 
     ###################
