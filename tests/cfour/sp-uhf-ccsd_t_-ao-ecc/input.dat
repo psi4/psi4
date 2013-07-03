@@ -28,6 +28,7 @@ compare_values(-0.005166587884, get_variable('(t) correction energy'), 6, '(T)')
 
 clean()
 clean_variables()
+cfour {}
 
 print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
 

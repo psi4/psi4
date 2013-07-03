@@ -51,16 +51,6 @@ def run_cfour(name, **kwargs):
 
     """
     lowername = name.lower()
-    # The parse_arbitrary_order method provides us the following information
-    # We require that level be provided. level is a dictionary
-    # of settings to be passed to psi4.cfour
-    #if not('level' in kwargs):
-    #    raise ValidationError('level parameter was not provided.')
-
-    #level = kwargs['level']
-
-    # Fullname is the string we need to search for in iface
-    #fullname = level['fullname']
 
     # User can provide 'keep' to the method.
     # When provided, do not delete the CFOUR scratch directory.
@@ -155,13 +145,24 @@ def run_cfour(name, **kwargs):
         if psi4.has_option_changed('CFOUR', 'CFOUR_OMP_NUM_THREADS') == True:
             os.environ['OMP_NUM_THREADS'] = omp_num_threads_user
 
-    psivar, psivar_gradient = qcprograms.cfour.cfour_harvest(c4out)
+    psivar, c4coord, c4grad = qcprograms.cfour.cfour_harvest(c4out)
     for key in psivar.keys():
         psi4.set_variable(key.upper(), float(psivar[key]))
-    p4mat = psi4.Matrix(3, 3)
-    p4mat.set(psivar_gradient)
-    psi4.set_gradient(p4mat)
+    #p4mat = psi4.Matrix(len(c4grad), 3)
+    #p4mat.set(c4grad)
+    #psi4.set_gradient(p4mat)
 
+    # Awful Hack - Go Away TODO
+    if c4grad:
+        molecule = psi4.get_active_molecule()
+        molecule.update_geometry()
+        qcdbmolecule = qcdb.Molecule(molecule.create_psi4_string_from_molecule())
+        p4grad = qcdbmolecule.deorient_array_from_cfour_2(c4coord, c4grad)
+        #p4grad = qcdbmolecule.deorient_array_from_cfour(c4grad)
+
+        p4mat = psi4.Matrix(len(p4grad), 3)
+        p4mat.set(p4grad)
+        psi4.set_gradient(p4mat)
 
     # Delete cfour tempdir
     os.chdir('..')
@@ -179,6 +180,8 @@ def run_cfour(name, **kwargs):
     # Reopen output file
     psi4.reopen_outfile()
     psi4.print_variables()
+    if c4grad:
+        psi4.get_gradient().print_out()
 
     # If we're told to keep the files or the user provided a path, do nothing.
     if (yes.match(str(keep)) or ('path' in kwargs)):
@@ -192,6 +195,11 @@ def cfour_list():
     val.append('c4-ccsd')
     val.append('c4-scf')
     val.append('c4-mp2')
+    return val
+
+def cfour_gradient_list():
+    val = []
+    val.append('cfour')
     return val
 
 # Cfour lookup table
@@ -224,10 +232,24 @@ def write_zmat(name):
         qcdbmolecule.tagline = molecule.name()
         molcmd, molkw = qcdbmolecule.format_molecule_for_cfour()
 
-    # Handle quantum chemical method
-    mtdcmd, mtdkw = qcprograms.cfour.cfour_method(name)
+#optimize
+#    gradient
+#    run_cfour
+#    write_zmat
+#    xcfour
+#    optking
+#    ---
+#    gradient
+#    run_cfour
+#    write_zmat
+#    xcfour
+#    optking
+#    ---
 
     # Handle psi4 keywords implying cfour keyword values (NYI)
+
+    # Handle quantum chemical method
+    mtdcmd, mtdkw = qcprograms.cfour.cfour_method(name)
 
     # Handle driver vs input/default keyword reconciliation
     userkw = p4util.prepare_options_for_modules()
