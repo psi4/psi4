@@ -205,6 +205,9 @@ for ssuper in superfunctional_list():
 for ssuper in cfour_list():
     procedures['energy'][ssuper] = run_cfour
 
+for ssuper in cfour_gradient_list():
+    procedures['gradient'][ssuper] = run_cfour
+
 def energy(name, **kwargs):
     r"""Function to compute the single-point electronic energy.
 
@@ -705,7 +708,7 @@ def gradient(name, **kwargs):
 
         if 'mode' in kwargs and kwargs['mode'].lower() == 'sow':
             raise ValidationError('Optimize execution mode \'sow\' not valid for analytic gradient calculation.')
-        psi4.wavefunction().energy()
+        #psi4.wavefunction().energy()
 
         optstash.restore()
         return psi4.get_variable('CURRENT ENERGY')

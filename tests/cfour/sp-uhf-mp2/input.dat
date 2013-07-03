@@ -26,6 +26,7 @@ compare_values(-0.1539141, get_variable('mp2 opposite-spin energy'), 6, 'MP2 OS 
 
 clean()
 clean_variables()
+cfour {}
 
 print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
 

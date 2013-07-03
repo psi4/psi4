@@ -28,6 +28,7 @@ compare_values(-55.785276787341, get_variable('mp2 total energy'), 6, 'MP2')
 
 clean()
 clean_variables()
+cfour {}
 
 print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
 
