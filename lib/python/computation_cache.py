@@ -1292,7 +1292,8 @@ class CachedComputation(object):
                 get_scf_wavefunction,
                 self, depends_on=['basis']
             ),
-            required_locks=["psi_lock"]
+            required_locks=[],
+            #required_locks=["psi_lock"]
         )
         self.register_dependency(
             "correlation_factor",
