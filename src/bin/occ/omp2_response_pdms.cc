@@ -226,28 +226,28 @@ void OCCWave::omp2_g_int()
 	psio_->open(PSIF_OCC_DPD, PSIO_OPEN_OLD);  
         psio_->open(PSIF_OCC_DENSITY, PSIO_OPEN_OLD);
 	
-	dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+	global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T <OO|VV>");
-	dpd_buf4_init(&Tau, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+	global_dpd_->buf4_init(&Tau, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "Tau <OO|VV>");
 	
 	// G_mi = \sum{n,e,f} t_mn^ef * tau_in^ef
-	dpd_file2_init(&Go, PSIF_OCC_DENSITY, 0, ID('O'), ID('O'), "G <O|O>");  
-	dpd_contract442(&T, &Tau, &Go, 0, 0, 1.0, 0.0);
-	dpd_file2_close(&Go);
+	global_dpd_->file2_init(&Go, PSIF_OCC_DENSITY, 0, ID('O'), ID('O'), "G <O|O>");  
+	global_dpd_->contract442(&T, &Tau, &Go, 0, 0, 1.0, 0.0);
+	global_dpd_->file2_close(&Go);
 	
 	// G_ae = -\sum{m,n,f} t_mn^ef * tau_mn^af
-	dpd_file2_init(&Gv, PSIF_OCC_DENSITY, 0, ID('V'), ID('V'), "G <V|V>");  
-	dpd_contract442(&Tau, &T, &Gv, 2, 2, -1.0, 0.0); 
-	dpd_file2_close(&Gv);
+	global_dpd_->file2_init(&Gv, PSIF_OCC_DENSITY, 0, ID('V'), ID('V'), "G <V|V>");  
+	global_dpd_->contract442(&Tau, &T, &Gv, 2, 2, -1.0, 0.0); 
+	global_dpd_->file2_close(&Gv);
 	
-	dpd_buf4_close(&T);
-	dpd_buf4_close(&Tau);
+	global_dpd_->buf4_close(&T);
+	global_dpd_->buf4_close(&Tau);
 	
 	// Load dpd_file2 to Matrix (Goo)
-	dpd_file2_init(&Go, PSIF_OCC_DENSITY, 0, ID('O'), ID('O'), "G <O|O>");  
-	dpd_file2_mat_init(&Go);
-	dpd_file2_mat_rd(&Go);
+	global_dpd_->file2_init(&Go, PSIF_OCC_DENSITY, 0, ID('O'), ID('O'), "G <O|O>");  
+	global_dpd_->file2_mat_init(&Go);
+	global_dpd_->file2_mat_rd(&Go);
         #pragma omp parallel for
 	for(int h = 0; h < nirrep_; ++h){
 	  for(int i = 0 ; i < aoccpiA[h]; ++i){
@@ -256,13 +256,13 @@ void OCCWave::omp2_g_int()
             }
 	  }
 	}
-	dpd_file2_close(&Go);
+	global_dpd_->file2_close(&Go);
 	
 	
 	// Load dpd_file2 to Matrix (Gvv)
-	dpd_file2_init(&Gv, PSIF_OCC_DENSITY, 0, ID('V'), ID('V'), "G <V|V>"); 
-	dpd_file2_mat_init(&Gv);
-	dpd_file2_mat_rd(&Gv);
+	global_dpd_->file2_init(&Gv, PSIF_OCC_DENSITY, 0, ID('V'), ID('V'), "G <V|V>"); 
+	global_dpd_->file2_mat_init(&Gv);
+	global_dpd_->file2_mat_rd(&Gv);
         #pragma omp parallel for
 	for(int h = 0; h < nirrep_; ++h){
 	  for(int i = 0 ; i < avirtpiA[h]; ++i){
@@ -271,7 +271,7 @@ void OCCWave::omp2_g_int()
             }
 	  }
 	}
-	dpd_file2_close(&Gv);
+	global_dpd_->file2_close(&Gv);
 	
 	psio_->close(PSIF_OCC_DPD, 1);  
         psio_->close(PSIF_OCC_DENSITY, 1);
@@ -300,74 +300,74 @@ void OCCWave::omp2_g_int()
         psio_->open(PSIF_OCC_DENSITY, PSIO_OPEN_OLD);
 	
 	// Open amplitude files
-	dpd_buf4_init(&TAA, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+	global_dpd_->buf4_init(&TAA, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2_1 <OO|VV>");
-	dpd_buf4_init(&TBB, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+	global_dpd_->buf4_init(&TBB, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "T2_1 <oo|vv>");
-	dpd_buf4_init(&TAB, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+	global_dpd_->buf4_init(&TAB, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "T2_1 <Oo|Vv>");
-	dpd_buf4_init(&TAA2, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+	global_dpd_->buf4_init(&TAA2, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2_1 <OO|VV>");
-	dpd_buf4_init(&TBB2, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+	global_dpd_->buf4_init(&TBB2, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "T2_1 <oo|vv>");
-	dpd_buf4_init(&TAB2_, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+	global_dpd_->buf4_init(&TAB2_, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "T2_1 <Oo|Vv>");
 	
 	// Occupied-Occupied block
 	// Alpha-Alpha spin case
 	// G_IM = 1/2 \sum{N,E,F} t_IN^EF * l_EF^MN = 1/2 \sum{N,E,F} t_IN^EF * t_MN^EF
-	dpd_file2_init(&G, PSIF_OCC_DENSITY, 0, ID('O'), ID('O'), "G <O|O>");  
-	dpd_contract442(&TAA, &TAA2, &G, 0, 0, 0.5, 0.0);
+	global_dpd_->file2_init(&G, PSIF_OCC_DENSITY, 0, ID('O'), ID('O'), "G <O|O>");  
+	global_dpd_->contract442(&TAA, &TAA2, &G, 0, 0, 0.5, 0.0);
 	
 	// G_IM += \sum{n,E,f} t_In^Ef * l_Ef^Mn = \sum{N,E,F} t_In^Ef * t_Mn^Ef
-	dpd_contract442(&TAB, &TAB2_, &G, 0, 0, 1.0, 1.0);
-	dpd_file2_close(&G);
+	global_dpd_->contract442(&TAB, &TAB2_, &G, 0, 0, 1.0, 1.0);
+	global_dpd_->file2_close(&G);
 	
 	
 	// Beta-Beta spin case
 	// G_im = 1/2 \sum{n,e,f} t_in^ef * l_ef^mn = 1/2 \sum{n,e,f} t_in^ef * t_mn^ef
-	dpd_file2_init(&G, PSIF_OCC_DENSITY, 0, ID('o'), ID('o'), "G <o|o>");  
-	dpd_contract442(&TBB, &TBB2, &G, 0, 0, 0.5, 0.0);
+	global_dpd_->file2_init(&G, PSIF_OCC_DENSITY, 0, ID('o'), ID('o'), "G <o|o>");  
+	global_dpd_->contract442(&TBB, &TBB2, &G, 0, 0, 0.5, 0.0);
 	
 	// G_im  += \sum{N,e,F} t_Ni^Fe * l_Fe^Nm = \sum{N,e,F} t_Ni^Fe * t_Nm^Fe
-	dpd_contract442(&TAB, &TAB2_, &G, 1, 1, 1.0, 1.0);
-	dpd_file2_close(&G);
+	global_dpd_->contract442(&TAB, &TAB2_, &G, 1, 1, 1.0, 1.0);
+	global_dpd_->file2_close(&G);
 	
 	
 	
 	// Virtual-Virtual block
 	// Alpha-Alpha spin case
 	// G_EA = -1/2 \sum{M,N,F} t_MN^AF * l_EF^MN = -1/2 \sum{M,N,F} t_MN^AF * t_MN^EF
-	dpd_file2_init(&G, PSIF_OCC_DENSITY, 0, ID('V'), ID('V'), "G <V|V>");  
-	dpd_contract442(&TAA, &TAA2, &G, 2, 2, -0.5, 0.0); 
+	global_dpd_->file2_init(&G, PSIF_OCC_DENSITY, 0, ID('V'), ID('V'), "G <V|V>");  
+	global_dpd_->contract442(&TAA, &TAA2, &G, 2, 2, -0.5, 0.0); 
 	
 	// G_EA += - \sum{M,n,f} t_Mn^Af * l_Ef^Mn = - \sum{M,n,f} t_Mn^Af * t_Mn^Ef
-	dpd_contract442(&TAB, &TAB2_, &G, 2, 2, -1.0, 1.0); 
-	dpd_file2_close(&G);
+	global_dpd_->contract442(&TAB, &TAB2_, &G, 2, 2, -1.0, 1.0); 
+	global_dpd_->file2_close(&G);
 	
 	// Beta-Beta spin case
 	// G_ea = -1/2 \sum{m,n,f} t_mn^af * l_ef^mn = -1/2 \sum{m,n,f} t_mn^af * t_mn^ef
-	dpd_file2_init(&G, PSIF_OCC_DENSITY, 0, ID('v'), ID('v'), "G <v|v>");  
-	dpd_contract442(&TBB, &TBB2, &G, 2, 2, -0.5, 0.0); 
+	global_dpd_->file2_init(&G, PSIF_OCC_DENSITY, 0, ID('v'), ID('v'), "G <v|v>");  
+	global_dpd_->contract442(&TBB, &TBB2, &G, 2, 2, -0.5, 0.0); 
 	
 	// G_ea += - \sum{M,n,F} t_Mn^Fa * l_Fe^Mn = - \sum{M,n,F} t_Mn^Fa * t_Mn^Fe
-	dpd_contract442(&TAB, &TAB2_, &G, 3, 3, -1.0, 1.0); 
-	dpd_file2_close(&G);
+	global_dpd_->contract442(&TAB, &TAB2_, &G, 3, 3, -1.0, 1.0); 
+	global_dpd_->file2_close(&G);
 	
 	// Close amplitude files
-	dpd_buf4_close(&TAA);
-	dpd_buf4_close(&TBB);
-	dpd_buf4_close(&TAB);
-	dpd_buf4_close(&TAA2);
-	dpd_buf4_close(&TBB2);
-	dpd_buf4_close(&TAB2_);
+	global_dpd_->buf4_close(&TAA);
+	global_dpd_->buf4_close(&TBB);
+	global_dpd_->buf4_close(&TAB);
+	global_dpd_->buf4_close(&TAA2);
+	global_dpd_->buf4_close(&TBB2);
+	global_dpd_->buf4_close(&TAB2_);
 	
 	
 	// Load dpd_file2 to Matrix (Goo)
 	// Alpha-Alpha spin case
-	dpd_file2_init(&G, PSIF_OCC_DENSITY, 0, ID('O'), ID('O'), "G <O|O>");  
-	dpd_file2_mat_init(&G);
-	dpd_file2_mat_rd(&G);
+	global_dpd_->file2_init(&G, PSIF_OCC_DENSITY, 0, ID('O'), ID('O'), "G <O|O>");  
+	global_dpd_->file2_mat_init(&G);
+	global_dpd_->file2_mat_rd(&G);
         #pragma omp parallel for
 	for(int h = 0; h < nirrep_; ++h){
 	  for(int i = 0 ; i < aoccpiA[h]; ++i){
@@ -376,12 +376,12 @@ void OCCWave::omp2_g_int()
             }
 	  }
 	}
-	dpd_file2_close(&G);
+	global_dpd_->file2_close(&G);
 	
 	// Beta-Beta spin case
-	dpd_file2_init(&G, PSIF_OCC_DENSITY, 0, ID('o'), ID('o'), "G <o|o>");  
-	dpd_file2_mat_init(&G);
-	dpd_file2_mat_rd(&G);
+	global_dpd_->file2_init(&G, PSIF_OCC_DENSITY, 0, ID('o'), ID('o'), "G <o|o>");  
+	global_dpd_->file2_mat_init(&G);
+	global_dpd_->file2_mat_rd(&G);
         #pragma omp parallel for
 	for(int h = 0; h < nirrep_; ++h){
 	  for(int i = 0 ; i < aoccpiB[h]; ++i){
@@ -390,15 +390,15 @@ void OCCWave::omp2_g_int()
             }
 	  }
 	}
-	dpd_file2_close(&G);
+	global_dpd_->file2_close(&G);
 	
 	
 	
 	// Load dpd_file2 to Matrix (Gvv)
 	// Alpha-Alpha spin case
-	dpd_file2_init(&G, PSIF_OCC_DENSITY, 0, ID('V'), ID('V'), "G <V|V>"); 
-	dpd_file2_mat_init(&G);
-	dpd_file2_mat_rd(&G);
+	global_dpd_->file2_init(&G, PSIF_OCC_DENSITY, 0, ID('V'), ID('V'), "G <V|V>"); 
+	global_dpd_->file2_mat_init(&G);
+	global_dpd_->file2_mat_rd(&G);
         #pragma omp parallel for
 	for(int h = 0; h < nirrep_; ++h){
 	  for(int i = 0 ; i < avirtpiA[h]; ++i){
@@ -407,12 +407,12 @@ void OCCWave::omp2_g_int()
             }
 	  }
 	}
-	dpd_file2_close(&G);
+	global_dpd_->file2_close(&G);
 	
 	// Beta-Beta spin case
-	dpd_file2_init(&G, PSIF_OCC_DENSITY, 0, ID('v'), ID('v'), "G <v|v>");  
-	dpd_file2_mat_init(&G);
-	dpd_file2_mat_rd(&G);
+	global_dpd_->file2_init(&G, PSIF_OCC_DENSITY, 0, ID('v'), ID('v'), "G <v|v>");  
+	global_dpd_->file2_mat_init(&G);
+	global_dpd_->file2_mat_rd(&G);
         #pragma omp parallel for
 	for(int h = 0; h < nirrep_; ++h){
 	  for(int i = 0 ; i < avirtpiB[h]; ++i){
@@ -421,7 +421,7 @@ void OCCWave::omp2_g_int()
             }
 	  }
 	}
-	dpd_file2_close(&G);
+	global_dpd_->file2_close(&G);
 	
 	psio_->close(PSIF_OCC_DPD, 1);  
         psio_->close(PSIF_OCC_DENSITY, 1);

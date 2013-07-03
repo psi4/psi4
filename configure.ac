@@ -4,7 +4,7 @@
 #
 #
 
-define([psi_version],[4.0.0-beta4+])
+define([psi_version],[4.0.0-beta5+])
 define([psi_buildid],[alpha])
 define([psi_bugreport],[psicode@users.sourceforge.net])
 AC_PREREQ(2.57)
@@ -1060,12 +1060,14 @@ AC_CONFIG_FILES([
           tests/pywrap-all/Makefile
           tests/pywrap-alias/Makefile
           tests/pywrap-opt-sowreap/Makefile
+          tests/pywrap-freq-e-sowreap/Makefile
           tests/pywrap-basis/Makefile
           tests/pywrap-db3/Makefile
           tests/pywrap-checkrun-rhf/Makefile
           tests/pywrap-checkrun-uhf/Makefile
           tests/pywrap-checkrun-rohf/Makefile
           tests/pywrap-checkrun-convcrit/Makefile
+          tests/pywrap-molecule/Makefile
           tests/psithon1/Makefile
           tests/dftd3-energy/Makefile
           tests/dftd3-grad/Makefile
@@ -1151,6 +1153,7 @@ AC_CONFIG_FILES([
           tests/cc50/Makefile
           tests/cc51/Makefile
           tests/cc52/Makefile
+          tests/cc53/Makefile
           tests/mcscf1/Makefile
           tests/mcscf2/Makefile
           tests/mcscf3/Makefile
@@ -1168,6 +1171,7 @@ AC_CONFIG_FILES([
           tests/mints4/Makefile
           tests/mints5/Makefile
           tests/mints6/Makefile
+          tests/mints8/Makefile
           tests/omp2-1/Makefile
           tests/omp2-2/Makefile
           tests/omp2-3/Makefile

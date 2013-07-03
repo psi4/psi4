@@ -79,30 +79,30 @@ for rxn in HRXN:
 
 # <<< Reference Values [kcal/mol] >>>
 BIND = {}
-BIND['%s-%s'            % (dbse, 'ethene_Ar_C2v'         )] =    0.000
-BIND['%s-%s'            % (dbse, 'HF_HF_Cs'              )] =    0.000
-BIND['%s-%s'            % (dbse, 'ethene_formaldehyde_Cs' )] =    0.000
-BIND['%s-%s'            % (dbse, 'ethene_wat_Cs'         )] =    0.000
-BIND['%s-%s'            % (dbse, 'methane_methane_D3d'   )] =    0.000
-BIND['%s-%s'            % (dbse, 'ammmonia_methane_C3v'  )] =    0.000
-BIND['%s-%s'            % (dbse, 'methane_HF_C3v'        )] =    0.000
-BIND['%s-%s'            % (dbse, 'methane_ethene_Cs'     )] =    0.000
-BIND['%s-%s'            % (dbse, 'methane_ethane_C3'     )] =    0.000
-BIND['%s-%s'            % (dbse, 'ammonia_ammonia_C2h'   )] =    0.000
-BIND['%s-%s'            % (dbse, 'ethyne_ethyne_C2v'     )] =    0.000
-BIND['%s-%s'            % (dbse, 'ethene_ethene_C2v'     )] =    0.000
-BIND['%s-%s'            % (dbse, 'ethene_ethyne_C2v'     )] =    0.000
-BIND['%s-%s'            % (dbse, 'methane_Ar_C3v'        )] =    0.000
-BIND['%s-%s'            % (dbse, 'methane_water_Cs'      )] =    0.000
-BIND['%s-%s'            % (dbse, 'ethyne_ethyne_D2h'     )] =    0.000
-BIND['%s-%s'            % (dbse, 'borane_methane_Cs'     )] =    0.000
-BIND['%s-%s'            % (dbse, 'methane_ethane_Cs'     )] =    0.000
-BIND['%s-%s'            % (dbse, 'HCN_HCN_Cxv'           )] =    0.000
-BIND['%s-%s'            % (dbse, 'water_ammonia_Cs'      )] =    0.000
-BIND['%s-%s'            % (dbse, 'ethene_ammonia_Cs'     )] =    0.000
-BIND['%s-%s'            % (dbse, 'ethene_ethene_D2h'     )] =    0.000
-BIND['%s-%s'            % (dbse, 'formaldehyde_formaldehyde_Cs' )] =    0.000
-BIND['%s-%s'            % (dbse, 'water_water_Cs'        )] =    0.000
+BIND['%s-%s'            % (dbse, 1  )] =    0.000
+BIND['%s-%s'            % (dbse, 2  )] =    0.000
+BIND['%s-%s'            % (dbse, 3  )] =    0.000
+BIND['%s-%s'            % (dbse, 4  )] =    0.000
+BIND['%s-%s'            % (dbse, 5  )] =    0.000
+BIND['%s-%s'            % (dbse, 6  )] =    0.000
+BIND['%s-%s'            % (dbse, 7  )] =    0.000
+BIND['%s-%s'            % (dbse, 8  )] =    0.000
+BIND['%s-%s'            % (dbse, 9  )] =    0.000
+BIND['%s-%s'            % (dbse, 10 )] =    0.000
+BIND['%s-%s'            % (dbse, 11 )] =    0.000
+BIND['%s-%s'            % (dbse, 12 )] =    0.000
+BIND['%s-%s'            % (dbse, 13 )] =    0.000
+BIND['%s-%s'            % (dbse, 14 )] =    0.000
+BIND['%s-%s'            % (dbse, 15 )] =    0.000
+BIND['%s-%s'            % (dbse, 16 )] =    0.000
+BIND['%s-%s'            % (dbse, 17 )] =    0.000
+BIND['%s-%s'            % (dbse, 18 )] =    0.000
+BIND['%s-%s'            % (dbse, 19 )] =    0.000
+BIND['%s-%s'            % (dbse, 20 )] =    0.000
+BIND['%s-%s'            % (dbse, 21 )] =    0.000
+BIND['%s-%s'            % (dbse, 22 )] =    0.000
+BIND['%s-%s'            % (dbse, 23 )] =    0.000
+BIND['%s-%s'            % (dbse, 24 )] =    0.000
 
 # <<< Comment Lines >>>
 TAGL = {}

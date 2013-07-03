@@ -43,20 +43,20 @@ double pseudopolar(const char *pert, int irrep, double omega)
   double polar1, polar2;
 
   sprintf(lbl, "%sBAR_IA", pert);
-  dpd_file2_init(&mubar1, PSIF_CC_OEI, irrep, 0, 1, lbl);
+  global_dpd_->file2_init(&mubar1, PSIF_CC_OEI, irrep, 0, 1, lbl);
   sprintf(lbl, "X_%s_IA (%5.3f)", pert, omega);
-  dpd_file2_init(&X1, PSIF_CC_OEI, irrep, 0, 1, lbl);
-  polar1 = 2.0 * dpd_file2_dot(&mubar1, &X1);
-  dpd_file2_close(&mubar1);
-  dpd_file2_close(&X1);
+  global_dpd_->file2_init(&X1, PSIF_CC_OEI, irrep, 0, 1, lbl);
+  polar1 = 2.0 * global_dpd_->file2_dot(&mubar1, &X1);
+  global_dpd_->file2_close(&mubar1);
+  global_dpd_->file2_close(&X1);
 
   sprintf(lbl, "%sBAR_IjAb", pert);
-  dpd_buf4_init(&mubar2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
+  global_dpd_->buf4_init(&mubar2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
   sprintf(lbl, "X_%s_(2IjAb-IjbA) (%5.3f)", pert, omega);
-  dpd_buf4_init(&X2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
-  polar2 = dpd_buf4_dot(&mubar2, &X2);
-  dpd_buf4_close(&mubar2);
-  dpd_buf4_close(&X2);
+  global_dpd_->buf4_init(&X2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
+  polar2 = global_dpd_->buf4_dot(&mubar2, &X2);
+  global_dpd_->buf4_close(&mubar2);
+  global_dpd_->buf4_close(&X2);
 
 /*   if(params.print & 2) { */
 /*     fprintf(outfile, "\tpolar1 = %20.12f\n", -2.0*polar1); */

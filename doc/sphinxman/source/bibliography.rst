@@ -197,6 +197,10 @@ Bibliography
    J. A. Pople, M. Head-Gordon, and K. J. Raghavachari, 
    *Chem. Phys.* **87**, 5968 (1987).
 
+.. [Crawford:1997:instability]
+   T. D. Crawford, J. F. Stanton, W. D. Allen, and H. F. Schaefer,
+   *J. Chem. Phys.*, **107**, 10626 (1997).
+
 .. [Sherrill:1998:od]
    C. D. Sherrill, A. I. Krylov, E. F. C. Byrd, and M. Head-Gordon,
    *J. Chem. Phys.* **109**, 4171 (1998).
@@ -220,6 +224,10 @@ Bibliography
 .. [Bozkaya:2011:omp2]
    U. Bozkaya, J. M. Turney, Y. Yamaguchi, H. F. Schaefer, and C. D. Sherrill
    *J. Chem. Phys.* **135**, 104103 (2011).
+
+.. [Bozkaya:2013:omp2grad]
+   U. Bozkaya and C. D. Sherrill
+   *J. Chem. Phys.* **138**, 184103 (2013).
 
 .. [Bozkaya:2011:omp3]
    U. Bozkaya,

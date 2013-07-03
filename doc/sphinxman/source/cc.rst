@@ -107,6 +107,8 @@ can interface to K\ |a_acute|\ llay's MRCC code (see :ref:`MRCC <sec:mrcc>`).
    +               +------------+-----------+-----------+---------------+-----------+
    |               | ROHF       | Y         | ---       | n/a           | n/a       |
    +---------------+------------+-----------+-----------+---------------+-----------+
+   | a-CCSD(T)     | RHF        | Y         | ---       | n/a           | n/a       |
+   +---------------+------------+-----------+-----------+---------------+-----------+
    | CC3           | RHF        | Y         | ---       | Y             | ---       |
    +               +------------+-----------+-----------+---------------+-----------+
    |               | UHF        | Y         | ---       | Y             | ---       |
@@ -119,7 +121,7 @@ can interface to K\ |a_acute|\ llay's MRCC code (see :ref:`MRCC <sec:mrcc>`).
    +---------------+------------+-----------+-----------+---------------+-----------+
 
 The following wavefunctions are currently recognized by |PSIfour| as arguments
-to functions like :py:func:`~driver.energy`: ``'ccsd'``, ``'ccsd(t)'``, ``'cc2'``,
+to functions like :py:func:`~driver.energy`: ``'ccsd'``, ``'ccsd(t)'``, ``'a-ccsd(t)'``, ``'cc2'``,
 ``'cc3'``, ``'bccd'`` (CCD with Brueckner orbitals), ``'bccd(t)'`` (CCD(T) with
 Brueckner orbitals), ``'eom-ccsd'``, ``'eom-cc2'`` (CC2 for excited states),
 ``'eom-cc3'`` (CC3 for excited states).  Response properties can be obtained

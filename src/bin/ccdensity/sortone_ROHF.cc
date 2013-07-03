@@ -79,9 +79,9 @@ void sortone_ROHF(struct RHO_Params rho_params)
   O = block_matrix(nmo-nfzv, nmo-nfzv);
 
   /* Sort A components first */
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.DIJ_lbl);
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.DIJ_lbl);
+  global_dpd_->file2_mat_init(&D);
+  global_dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
       for(i=0; i < occpi[h]; i++) {
           I = qt_occ[occ_off[h] + i];
@@ -91,12 +91,12 @@ void sortone_ROHF(struct RHO_Params rho_params)
             }
         }
     }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 1, rho_params.DAB_lbl);
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, rho_params.DAB_lbl);
+  global_dpd_->file2_mat_init(&D);
+  global_dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
       for(a=0; a < (virtpi[h] - openpi[h]); a++) {
           A = qt_vir[vir_off[h] + a];
@@ -107,13 +107,13 @@ void sortone_ROHF(struct RHO_Params rho_params)
             }
         }
     }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
   /* Note that this component of the density is stored occ-vir */
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, rho_params.DAI_lbl);
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 1, rho_params.DAI_lbl);
+  global_dpd_->file2_mat_init(&D);
+  global_dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
       for(i=0; i < occpi[h]; i++) {
           I = qt_occ[occ_off[h] + i];
@@ -124,12 +124,12 @@ void sortone_ROHF(struct RHO_Params rho_params)
             }
         }
     }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, rho_params.DIA_lbl);
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 1, rho_params.DIA_lbl);
+  global_dpd_->file2_mat_init(&D);
+  global_dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
       for(i=0; i < occpi[h]; i++) {
           I = qt_occ[occ_off[h] + i];
@@ -140,13 +140,13 @@ void sortone_ROHF(struct RHO_Params rho_params)
             }
         }
     }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
   /* Sort B components */
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.Dij_lbl);
-  dpd_file2_mat_init(&D); 
-  dpd_file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.Dij_lbl);
+  global_dpd_->file2_mat_init(&D); 
+  global_dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
       for(i=0; i < (occpi[h] - openpi[h]); i++) { 
           I = qt_occ[occ_off[h] + i];
@@ -156,12 +156,12 @@ void sortone_ROHF(struct RHO_Params rho_params)
             }
         }
     }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 1, rho_params.Dab_lbl);
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, rho_params.Dab_lbl);
+  global_dpd_->file2_mat_init(&D);
+  global_dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
       for(a=0; a < virtpi[h]; a++) {
           A = qt_vir[vir_off[h] + a];
@@ -172,13 +172,13 @@ void sortone_ROHF(struct RHO_Params rho_params)
             }
         }
     }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
   /* Note that this component of the density is stored occ-vir */
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, rho_params.Dai_lbl);
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 1, rho_params.Dai_lbl);
+  global_dpd_->file2_mat_init(&D);
+  global_dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
       for(i=0; i < (occpi[h] - openpi[h]); i++) {
           I = qt_occ[occ_off[h] + i];
@@ -189,12 +189,12 @@ void sortone_ROHF(struct RHO_Params rho_params)
             }
         }
     }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, rho_params.Dia_lbl);
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 1, rho_params.Dia_lbl);
+  global_dpd_->file2_mat_init(&D);
+  global_dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
       for(i=0; i < (occpi[h] - openpi[h]); i++) {
           I = qt_occ[occ_off[h] + i];
@@ -205,8 +205,8 @@ void sortone_ROHF(struct RHO_Params rho_params)
             }
         }
     }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
   /* Symmetrize the onepdm */
 

@@ -259,6 +259,82 @@ public:
     virtual void compute(double PA[3], double PB[3], double PC[3], double zeta, int am1, int am2);
 };
 
+
+/*! \ingroup MINTS
+ *  \class ObaraSaikaTwoCenterEFPRecursion
+ *  \brief Obara and Saika recursion object for potential integrals, and electric derivatives thereof, required in EFP.
+ */
+class ObaraSaikaTwoCenterEFPRecursion
+{
+protected:
+    int max_am1_;
+    int max_am2_;
+    int size_;
+
+    double*** q_;
+    double*** x_;
+    double*** y_;
+    double*** z_;
+    double*** xx_;
+    double*** xy_;
+    double*** xz_;
+    double*** yy_;
+    double*** yz_;
+    double*** zz_;
+    double*** xxx_;
+    double*** xxy_;
+    double*** xxz_;
+    double*** xyy_;
+    double*** xyz_;
+    double*** xzz_;
+    double*** yyy_;
+    double*** yyz_;
+    double*** yzz_;
+    double*** zzz_;
+
+    // Forms Fm(U) from A20 (OS 1986)
+    void calculate_f(double *F, int n, double t);
+
+private:
+    // No default constructor
+    ObaraSaikaTwoCenterEFPRecursion();
+    // No assignment operator
+    ObaraSaikaTwoCenterEFPRecursion& operator=(const ObaraSaikaTwoCenterEFPRecursion&);
+
+public:
+    /// Constructor, max_am1 and max_am2 are the max angular momentum on center 1 and 2.
+    /// Needed to allocate enough memory.
+    ObaraSaikaTwoCenterEFPRecursion(int max_am1, int max_am2);
+    virtual ~ObaraSaikaTwoCenterEFPRecursion();
+
+    /// Returns the potential integral 3D matrix
+    double*** q  () const { return q_;   }
+    double*** x  () const { return x_;   }
+    double*** y  () const { return y_;   }
+    double*** z  () const { return z_;   }
+    double*** xx () const { return xx_;  }
+    double*** yy () const { return yy_;  }
+    double*** zz () const { return zz_;  }
+    double*** xy () const { return xy_;  }
+    double*** xz () const { return xz_;  }
+    double*** yz () const { return yz_;  }
+    double*** xxx() const { return xxx_; }
+    double*** yyy() const { return yyy_; }
+    double*** zzz() const { return zzz_; }
+    double*** xxy() const { return xxy_; }
+    double*** xxz() const { return xxz_; }
+    double*** xyy() const { return xyy_; }
+    double*** yyz() const { return yyz_; }
+    double*** xzz() const { return xzz_; }
+    double*** yzz() const { return yzz_; }
+    double*** xyz() const { return xyz_; }
+
+    /// Computes the potential integral 3D matrix using the data provided.
+    virtual void compute(double PA[3], double PB[3], double PC[3], double zeta, int am1, int am2);
+
+};
+
+
 /*! \ingroup MINTS
     \class ObaraSaikaThreeCenterRecursion
  */

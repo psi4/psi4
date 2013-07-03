@@ -1,3 +1,6 @@
+.:            Database calculation, so no molecule section in input file. 
+
+
 adc1:         ADC/6-31G** on H2O
 
 
@@ -158,6 +161,9 @@ cc51:         EOM-CC3/cc-pVTZ on H2O
 
 
 cc52:         CCSD Response for H2O2
+
+
+cc53:         Matches Table II a-CCSD(T)/cc-pVDZ H2O @ 2.5 * Re value from Crawford and Stanton,  IJQC 98, 601-611 (1998).
 
 
 cc54:         CCSD dipole with user-specified basis set
@@ -388,6 +394,9 @@ mints5:       Tests to determine full point group symmetry.  Currently, these on
 mints6:       Patch of a glycine with a methyl group, to make alanine, then DF-SCF  energy calculation with the cc-pVDZ basis set
 
 
+mints8:       Patch of a glycine with a methyl group, to make alanine, then DF-SCF  energy calculation with the cc-pVDZ basis set
+
+
 mom:          Maximum Overlap Method (MOM) Test. MOM is designed to stabilize SCF convergence and to target excited Slater determinants directly.
 
 
@@ -596,6 +605,9 @@ pywrap-db2:   Database calculation, run in sow/reap mode.
 
 
 pywrap-db3:   Test that Python Molecule class processes geometry like psi4 Molecule class.
+
+
+pywrap-freq-e-sowreap:  Finite difference of energies frequency, run in sow/reap mode.
 
 
 pywrap-opt-sowreap:  Finite difference optimization, run in sow/reap mode.

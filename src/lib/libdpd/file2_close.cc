@@ -22,14 +22,12 @@
 
 /*! \file
     \ingroup DPD
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
 #include <libciomr/libciomr.h>
 #include "dpd.h"
-#define EXTERN
-#include "dpd.gbl"
 
 namespace psi {
 
@@ -39,14 +37,14 @@ namespace psi {
 **   dpdfile2 *File: A pointer to the file to be closed.
 */
 
-int dpd_file2_close(dpdfile2 *File)
+int DPD::file2_close(dpdfile2 *File)
 {
-  free(File->lfiles);
+    free(File->lfiles);
 
-  if(!File->incore) free(File->matrix);
-  else File->matrix = NULL;
+    if(!File->incore) free(File->matrix);
+    else File->matrix = NULL;
 
-  return 0;
+    return 0;
 }
 
 }
