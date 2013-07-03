@@ -638,5 +638,62 @@ void CubicDensityGrid::drop_raw(const std::string& file, double clamp)
     fwrite(v2,sizeof(float),npoints_,fh);
     fclose(fh);
 }
+void CubicDensityGrid::drop_uvf(const std::string& file, double clamp)
+{
+    if (!npoints_) throw PSIEXCEPTION("CubicDensityGrid::drop_raw: call build_grid first");
+
+    double s = 1.0 / clamp;
+    double maxval = 0.0;
+
+    float* v2 = new float[npoints_];
+    size_t offset = 0L;
+    for (int istart = 0L; istart <= N_[0]; istart+=nxyz_) {
+        int ni = (istart + nxyz_ > N_[0] ? (N_[0] + 1) - istart : nxyz_);
+        for (int jstart = 0L; jstart <= N_[1]; jstart+=nxyz_) {
+            int nj = (jstart + nxyz_ > N_[1] ? (N_[1] + 1) - jstart : nxyz_);
+            for (int kstart = 0L; kstart <= N_[2]; kstart+=nxyz_) {
+                int nk = (kstart + nxyz_ > N_[2] ? (N_[2] + 1) - kstart : nxyz_);
+                for (int i = istart; i < istart + ni; i++) {
+                    for (int j = jstart; j < jstart + nj; j++) {
+                        for (int k = kstart; k < kstart + nk; k++) {
+                            size_t index = i * (N_[1] + 1L) * (N_[2] + 1L) + j * (N_[2] + 1L) + k;
+                            double val = v_[offset];
+                            maxval = (maxval >= fabs(val) ? maxval : fabs(val));
+                            val = (val <= clamp ? val : clamp);
+                            val = (val >= -clamp ? val : -clamp);
+                            val *= s;
+                            v2[index] = val;
+                            offset++;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fprintf(outfile,"    Max val = %11.3E out of %11.3E: %s.\n", maxval, clamp, (clamp >= maxval ? "No clamping" : "Clamped")); 
+
+    //Dirty Hack: I love it!
+    v2[npoints_-1L] =  0.0;
+    v2[npoints_-2L] =  0.0;
+    v2[npoints_-3L] =  1.0;
+    v2[npoints_-4L] = -1.0;
+    
+    FILE* fh = fopen(file.c_str(), "wb");
+    const char* header = "UVF-DATA";
+    fwrite(header,sizeof(char),8,fh);
+    const char* endian = "\0";
+    fwrite(endian,sizeof(char),1,fh);
+    unsigned long int version = 3L;
+    fwrite(&version,sizeof(unsigned long int),1,fh);
+    unsigned long int nchecksum = 0L;   
+    fwrite(&nchecksum,sizeof(unsigned long int),1,fh);
+    unsigned long int offset = 0L;
+    fwrite(&offset,sizeof(unsigned long int),1,fh);
+    
+    throw PSIEXCEPTION("Not implemented");
+ 
+    fclose(fh);
+}
 
 }}
