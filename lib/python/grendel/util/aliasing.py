@@ -74,7 +74,6 @@ def function_alias(alias, function):
         function.__doc__ = 'Aliased as `{0}()`'.format(alias)
     return aliaspart
 
-
 def bindablepartial(func, *args, **keywords):
     """ Since the default python partial is not bindable, we need to make our own...
     """

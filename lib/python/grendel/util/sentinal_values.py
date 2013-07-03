@@ -183,8 +183,10 @@ class Keyword(object):
                               "Check your code; you're doing something that doesn't make sense.")
 
 
+# TODO Remove this class
 class SentinalValue(object):
     """
+    DON'T USE THIS; IT BREAKS PARALLELISM
     SentinalValue objects mimic builtins like None and NotImplemented.  There is exactly
     one instance of a SentinalValue with a given name, so "is" and "is not" can be
     safely used, just as with None and NotImplemented.  SentinalValues can also be pickled
@@ -220,7 +222,7 @@ class SentinalValue(object):
             return SentinalValue(self.name)
 
     def __reduce__(self):
-        return SentinalValue._SVUnloader(self.name)
+        return SentinalValue._SVUnloader(self.name), tuple()
 
 ###############################################################
 # Some keywords that make sense to define for use many places #
