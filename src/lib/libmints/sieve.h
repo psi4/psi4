@@ -1,27 +1,9 @@
-/*
- *@BEGIN LICENSE
- *
- * PSI4: an ab initio quantum chemistry software package
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- *@END LICENSE
- */
-
 #ifndef SIEVE_H 
 #define SIEVE_H
+
+// need this for erfc^{-1} in the QQR sieve
+#include <boost/math/special_functions/erf.hpp>
+#include <cfloat>
 
 namespace boost {
 template<class T> class shared_ptr;
@@ -126,6 +108,32 @@ protected:
     std::vector<std::vector<int> > shell_to_shell_;
     /// Significant shell pairs, indexes by shell
     std::vector<std::vector<int> > function_to_function_;
+  
+  ///////////////////////////////////////
+  // adding stuff for QQR sieves
+  
+  bool do_qqr_;
+  
+  // erfc^{-1}(threshold), used in QQR sieving
+  double erfc_thresh_;
+  
+  // need an array of extents from the definition
+  
+  // key: how do I efficiently check integrals? without conditional on which
+  // screening I do
+  //
+  // 1) just a different function called outside - shell_significant_qqr()
+  
+  // integrals() - fills array of extents
+  
+  // r_{\mu \nu} in QQR paper (eqn. B2)
+  std::vector<Vector3> contracted_centers_;
+  
+  // ext'_{\mu \nu} (Eqn. B4)
+  // Extents of contracted charge distributions
+  std::vector<double> extents_;
+  
+  ////////////////////////////////////////
      
     /// Set initial indexing
     void common_init();
@@ -159,24 +167,29 @@ public:
                function_pair_values_[r * (unsigned long int) nbf_ + s]; } 
 
     /// Is the shell quartet (MN|RS) significant according to sieve? (no restriction on MNRS order)
-    inline bool shell_significant(int M, int N, int R, int S) { 
-        return shell_pair_values_[N * (unsigned long int) nshell_ + M] * 
-               shell_pair_values_[R * (unsigned long int) nshell_ + S] >= sieve2_; } 
-
+  
+  //inline bool shell_significant(int M, int N, int R, int S) {
+  bool shell_significant(int M, int N, int R, int S) {
+    
+    bool schwarz_bound =  shell_pair_values_[N * (unsigned long int) nshell_ + M] *
+               shell_pair_values_[R * (unsigned long int) nshell_ + S] >= sieve2_;
+    if (do_qqr_ && schwarz_bound) {
+      bool res = shell_significant_qqr(M, N, R, S);
+      //std::cout << "QQR prune: " << res << "\n";
+      return res;
+    }
+    else {
+      return schwarz_bound;
+    }
+  }
+  
+  // Implements the QQR sieve
+  bool shell_significant_qqr(int M, int N, int R, int S);
+  
     /// Is the integral (mn|rs) significant according to sieve? (no restriction on mnrs order)
     inline bool function_significant(int m, int n, int r, int s) { 
         return function_pair_values_[m * (unsigned long int) nbf_ + n] * 
                function_pair_values_[r * (unsigned long int) nbf_ + s] >= sieve2_; } 
-
-    /// Is the shell pair (MN| ever significant according to sieve (no restriction on MN order)
-    inline bool shell_pair_significant(int M, int N) {
-        return shell_pair_values_[M * (unsigned long int) nshell_ + N] *
-               max_ >= sieve2_; }
-
-    /// Is the function pair (mn| ever significant according to sieve (no restriction on mn order)
-    inline bool function_pair_significant(int m, int n) {
-        return function_pair_values_[m * (unsigned long int) nbf_ + n] *
-               max_ >= sieve2_; }
 
     // => Indexing [these change after a call to sieve()] <= //
 
@@ -193,6 +206,11 @@ public:
     /// Significant shell pairs, indexes by shell
     const std::vector<std::vector<int> >& shell_to_shell() const { return shell_to_shell_; }
 
+  //void shell_pair_values(std::vector<std::vector<std::pair<double, int> > >& values) const;
+  
+  // just return the value of the bound for pair m and n
+  double shell_pair_value(int m, int n) const;
+  
     /// Set debug flag (defaults to 0)
     void set_debug(int debug) { debug_ = debug; }
 
