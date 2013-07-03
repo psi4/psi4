@@ -173,6 +173,8 @@ public:
     void compute_atomic(boost::shared_ptr<Matrix> Q);
     // Drop a raw float32 variant of this dataset to disk
     void drop_raw(const std::string& file, double clamp);
+    // Drop a raw UVF variant of this dataset to disk
+    void drop_uvf(const std::string& file, double clamp);
 };
 
 }} // End namespace
