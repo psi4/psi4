@@ -101,6 +101,8 @@ cfour_basis qz2p
 cfour_scf_conv 12
 }
 
+cfour {}  # clear literal block since running sequentially
+
 energy('cfour')
 
 compare_values(-76.0627484601, get_variable('scf total energy'), 6, 'SCF')
@@ -108,6 +110,7 @@ compare_values(-76.0627484601, get_variable('current energy'), 6, 'SCF')
 
 clean()
 clean_variables()
+cfour {}
 
 print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
 

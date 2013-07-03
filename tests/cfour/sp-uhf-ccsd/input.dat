@@ -60,6 +60,7 @@ compare_values(-0.213298055172, get_variable('ccsd correlation energy'), 6, 'CCS
 
 clean()
 clean_variables()
+cfour {}
 
 print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
 

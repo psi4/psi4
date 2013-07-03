@@ -361,6 +361,8 @@ def run_cfour(name, **kwargs):
     p4out.close()
     psi4.reopen_outfile()
     psi4.print_variables()
+    if c4grad:
+        psi4.get_gradient().print_out()
 
     psi4.print_out('\n')
     p4util.banner(' Cfour %s %s Results ' % (name.lower(), calledby.capitalize()))
@@ -381,6 +383,11 @@ def run_cfour(name, **kwargs):
 def cfour_list():
     """Form list of Cfour :py:func:`~driver.energy` arguments."""
     return qcdb.cfour.cfour_list()
+
+def cfour_gradient_list():
+    val = []
+    val.append('cfour')
+    return val
 
 # Cfour lookup table
 #cfour_methods = {
@@ -441,6 +448,9 @@ def write_zmat(name, dertype):
 
     # Handle calc type and quantum chemical method
     mdccmd, mdckw = qcdb.cfour.muster_modelchem(name, dertype)
+
+    # Handle quantum chemical method
+    mtdcmd, mtdkw = qcprograms.cfour.cfour_method(name)
 
     # Handle driver vs input/default keyword reconciliation
     userkw = p4util.prepare_options_for_modules()

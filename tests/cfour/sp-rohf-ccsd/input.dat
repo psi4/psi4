@@ -76,6 +76,7 @@ compare_values(-55.802586766392, get_variable('current energy'), 6, 'Current')  
 
 clean()
 clean_variables()
+cfour {}
 
 print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
 
