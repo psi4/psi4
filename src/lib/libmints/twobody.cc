@@ -41,14 +41,16 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory* intsfactory, int deriv) :
     original_bs2_(integral_->basis2()),
     original_bs3_(integral_->basis3()),
     original_bs4_(integral_->basis4()),
-    deriv_(deriv)
+    deriv_(deriv),
+    target_(0),
+    target_pybuffer_(&target_, true)
 {
     // The derived classes allocate this memory.
     force_cartesian_ = false;
-    target_ = 0;
     tformbuf_ = 0;
     source_ = 0;
     natom_ = original_bs1_->molecule()->natom();  // This assumes the 4 bases come from the same molecule.
+    enable_pybuffer_ = false;
 }
 
 TwoBodyAOInt::~TwoBodyAOInt()

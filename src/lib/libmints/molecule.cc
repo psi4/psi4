@@ -1088,6 +1088,7 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
         }
         else if(numEntries == 7) {
             // This is line 4 onwards of a Z-Matrix
+            //zmatrix = true;
             rTo = mol->get_anchor_atom(splitLine[1], *line);
             if(rTo >= currentAtom)
                 throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
@@ -1132,6 +1133,78 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
         mol->symmetrize_to_abelian_group(1.0e-3);
 
     return mol;
+}
+
+std::string Molecule::create_psi4_string_from_molecule() const
+{
+    char buffer[120];
+    std::stringstream ss;
+
+    if (WorldComm->me() == 0) {
+        if (nallatom()) {
+            // append units and any other non-default molecule keywords
+            sprintf(buffer,"    units %-s\n", units_ == Angstrom ? "Angstrom" : "Bohr");
+            ss << buffer;
+
+            if (symmetry_from_input_ != "") {
+                sprintf(buffer,"    symmetry %s\n", symmetry_from_input_.c_str());
+                ss << buffer;
+            }
+            if (move_to_com_ == false) {
+                sprintf(buffer,"    no_com\n");
+                ss << buffer;
+            }
+            if (fix_orientation_ == true) {
+                sprintf(buffer,"    no_reorient\n");
+                ss << buffer;
+            }
+
+            // append atoms and coordentries and fragment separators with charge and multiplicity
+            int Pfr = 0;
+            for(int fr=0; fr<fragments_.size(); ++fr) {
+                if ((fragment_types_[fr] == Absent) && (zmat_ == false)) {
+                    continue;
+                } 
+                sprintf(buffer, "%s    %s%d %d\n",
+                    Pfr == 0 ? "" : "    --\n",
+                    (fragment_types_[fr] == Ghost || fragment_types_[fr] == Absent) ? "#" : "",
+                    fragment_charges_[fr], fragment_multiplicities_[fr]);
+                ss << buffer;
+                Pfr++;
+                for(int at=fragments_[fr].first; at<fragments_[fr].second; ++at) {
+                    if (fragment_types_[fr] == Absent) {
+                        sprintf(buffer, "    %-8s", "X");
+                        ss << buffer;
+                    }
+                    else if (fZ(at) || fsymbol(at) == "X") {
+                        sprintf(buffer, "    %-8s", fsymbol(at).c_str());
+                        ss << buffer;
+                    }
+                    else {
+                        std::string stmp = std::string("Gh(") + fsymbol(at) + ")";
+                        sprintf(buffer, "    %-8s", stmp.c_str());
+                        ss << buffer;
+                    }
+                    sprintf(buffer, "    %s", full_atoms_[at]->string_in_input_format().c_str());
+                    ss << buffer;
+                }
+            }
+            sprintf(buffer,"\n");
+            ss << buffer;
+
+            // append any coordinate variables
+            if(geometry_variables_.size()){
+                std::map<std::string, double>::const_iterator iter;
+                for(iter = geometry_variables_.begin(); iter!=geometry_variables_.end(); ++iter){
+                    sprintf(buffer, "    %-10s=%16.10f\n", iter->first.c_str(), iter->second);
+                    ss << buffer;
+                }
+                sprintf(buffer, "\n");
+                ss << buffer;
+            }
+        }
+    }
+    return ss.str();
 }
 
 void Molecule::symmetrize_to_abelian_group(double tol)
@@ -2791,7 +2864,7 @@ void Molecule::set_basis_by_number(int number, const std::string& name, const st
 void Molecule::set_basis_by_symbol(const std::string& symbol, const std::string& name, const std::string& type)
 {
     BOOST_FOREACH(boost::shared_ptr<CoordEntry> atom, full_atoms_) {
-        if (atom->symbol() == symbol)
+        if (boost::iequals(atom->symbol(),symbol))
             atom->set_basisset(name, type);
     }
 }
@@ -2799,7 +2872,7 @@ void Molecule::set_basis_by_symbol(const std::string& symbol, const std::string&
 void Molecule::set_basis_by_label(const std::string& label, const std::string& name, const std::string& type)
 {
     BOOST_FOREACH(boost::shared_ptr<CoordEntry> atom, full_atoms_) {
-        if (atom->label() == label)
+        if (boost::iequals(atom->label(),label))
             atom->set_basisset(name, type);
     }
 }

@@ -256,8 +256,8 @@ Matrix::Matrix(const Dimension& rows, const Dimension& cols, int symmetry)
 Matrix::Matrix(dpdfile2 *inFile)
     : name_(inFile->label), rowspi_(inFile->params->nirreps), colspi_(inFile->params->nirreps)
 {
-    dpd_file2_mat_init(inFile);
-    dpd_file2_mat_rd(inFile);
+    global_dpd_->file2_mat_init(inFile);
+    global_dpd_->file2_mat_rd(inFile);
     matrix_ = NULL;
     symmetry_ = inFile->my_irrep;
     nirrep_ = inFile->params->nirreps;
@@ -267,7 +267,7 @@ Matrix::Matrix(dpdfile2 *inFile)
     }
     alloc();
     copy_from(inFile->matrix);
-    dpd_file2_mat_close(inFile);
+    global_dpd_->file2_mat_close(inFile);
 }
 
 Matrix::~Matrix()
@@ -281,7 +281,7 @@ double** Matrix::matrix(int nrow, int ncol)
     double** mat = (double**) malloc(sizeof(double*)*nrow);
     const size_t size = sizeof(double)*nrow*ncol;
     mat[0] = (double*) malloc(size);
-    memset((void *)mat[0], 0, size);
+    ::memset((void *)mat[0], 0, size);
     for(int r=1; r<nrow; ++r) mat[r] = mat[r-1] + ncol;
     return mat;
 }
@@ -2838,7 +2838,7 @@ void Matrix::diagonalize(Matrix& eigvectors, Vector& eigvalues, int nMatz)
 
 void Matrix::write_to_dpdfile2(dpdfile2 *outFile)
 {
-    dpd_file2_mat_init(outFile);
+    global_dpd_->file2_mat_init(outFile);
 
     if(outFile->params->nirreps != nirrep_) {
         char *str = new char[100];
@@ -2874,8 +2874,8 @@ void Matrix::write_to_dpdfile2(dpdfile2 *outFile)
         }
     }
 
-    dpd_file2_mat_wrt(outFile);
-    dpd_file2_mat_close(outFile);
+    global_dpd_->file2_mat_wrt(outFile);
+    global_dpd_->file2_mat_close(outFile);
 }
 
 void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, bool saveSubBlocks)

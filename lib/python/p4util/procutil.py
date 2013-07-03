@@ -80,10 +80,12 @@ def format_molecule_for_input(mol):
         #   (and possibly no_com/no_reorient) info. but this is only available
         #   for qcdb Molecules. Since save_string_xyz was added to libmints just
         #   for the sow/reap purpose, may want to unify these fns sometime.
-        try:
-            mol_string = mol.save_string_for_psi4()
-        except AttributeError:
-            mol_string = mol.save_string_xyz()
+        # the time for unification is nigh
+        mol_string = mol.create_psi4_string_from_molecule()
+        #try:
+        #    mol_string = mol.save_string_for_psi4()
+        #except AttributeError:
+        #    mol_string = mol.save_string_xyz()
 
         mol_name = mol.name()
 
@@ -198,3 +200,50 @@ def import_ignorecase(module):
             break
 
     return modobj
+
+
+def extract_sowreap_from_output(sowout, quantity, sownum, linkage, allvital=False):
+    """Function to examine file *sowout* from a sow/reap distributed job
+    for formatted line with electronic energy information about index
+    *sownum* to be used for construction of *quantity* computations as
+    directed by master input file with *linkage* kwarg. When file *sowout*
+    is missing or incomplete files, function will either return zero
+    (*allvital* is ``False``) or terminate (*allvital* is ``True``) since
+    some sow/reap procedures can produce meaningful results (database)
+    from an incomplete set of sown files, while others cannot (gradient,
+    hessian).
+
+    """
+    E = 0.0
+
+    try:
+        freagent = open('%s.out' % (sowout), 'r')
+    except IOError:
+        if allvital:
+            raise ValidationError('Aborting upon output file \'%s.out\' not found.\n' % (sowout))
+        else:
+            ValidationError('Aborting upon output file \'%s.out\' not found.\n' % (sowout))
+            return 0.0
+    else:
+        while True:
+            line = freagent.readline()
+            if not line:
+                if E == 0.0:
+                    if allvital:
+                        raise ValidationError('Aborting upon output file \'%s.out\' has no %s RESULT line.\n' % (sowout, quantity))
+                    else:
+                        ValidationError('Aborting upon output file \'%s.out\' has no %s RESULT line.\n' % (sowout, quantity))
+                break
+            s = line.split()
+            if (len(s) != 0) and (s[0:3] == [quantity, 'RESULT:', 'computation']):
+                if int(s[3]) != linkage:
+                    raise ValidationError('Output file \'%s.out\' has linkage %s incompatible with master.in linkage %s.'
+                        % (sowout, str(s[3]), str(linkage)))
+                if s[6] != str(sownum + 1):
+                    raise ValidationError('Output file \'%s.out\' has nominal affiliation %s incompatible with item %s.'
+                        % (sowout, s[6], str(sownum + 1)))
+                if (s[8:10] == ['electronic', 'energy']):
+                    E = float(s[10])
+                    psi4.print_out('%s RESULT: electronic energy = %20.12f\n' % (quantity, E))
+        freagent.close()
+    return E

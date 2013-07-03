@@ -243,20 +243,23 @@ int psi_start(int argc, char *argv[])
 
     /* open input and output files */
 #if !defined(MAKE_PYTHON_MODULE)
-    if(ifname == "stdin") {
-        infile=stdin;
-        infile_directory = ".";
-    }
-    else {
-        infile = fopen(ifname.c_str(), "r");
+    infile = NULL;
+    if (!interactive_python) {
+        if(ifname == "stdin") {
+            infile=stdin;
+            infile_directory = ".";
+        }
+        else {
+            infile = fopen(ifname.c_str(), "r");
 
-        boost::filesystem::path ipath = boost::filesystem::system_complete(ifname);
-        infile_directory = ipath.parent_path().string();
-    }
+            boost::filesystem::path ipath = boost::filesystem::system_complete(ifname);
+            infile_directory = ipath.parent_path().string();
+        }
 
-    if(infile == NULL) {
-        fprintf(stderr, "Error: could not open input file %s\n",ifname.c_str());
-        return(PSI_RETURN_FAILURE);
+        if(infile == NULL) {
+            fprintf(stderr, "Error: could not open input file %s\n",ifname.c_str());
+            return(PSI_RETURN_FAILURE);
+        }
     }
 #endif
 

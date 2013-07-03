@@ -353,7 +353,23 @@ void HF::integrals()
         fprintf(outfile, "  ==> Integral Setup <==\n\n");
 
     // Build the JK from options, symmetric type
-    jk_ = JK::build_JK();
+    try {
+        jk_ = JK::build_JK();
+    }
+    catch(const BasisSetNotFound& e) {
+        if (options_.get_str("SCF_TYPE") == "DF" || options_.get_int("DF_SCF_GUESS") == 1) {
+            fprintf(outfile, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+            fprintf(outfile, "%s\n", e.what());
+            fprintf(outfile, "   Turning off DF and switching to PK method.\n");
+            fprintf(outfile, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+            options_.set_str("SCF", "SCF_TYPE", "PK");
+            options_.set_bool("SCF", "DF_SCF_GUESS", false);
+            jk_ = JK::build_JK();
+        }
+        else
+            throw; // rethrow the error
+    }
+
     // Tell the JK to print
     jk_->set_print(print_);
     // Give the JK 75% of the memory
@@ -1448,8 +1464,7 @@ double HF::compute_energy()
 
     if (WorldComm->me() == 0) {
         fprintf(outfile, "  ==> Iterations <==\n\n");
-        if (!df) fprintf(outfile, "                        Total Energy        Delta E     RMS |[F,P]|\n\n");
-        else     fprintf(outfile, "                           Total Energy        Delta E     RMS |[F,P]|\n\n");
+        fprintf(outfile, "%s                        Total Energy        Delta E     RMS |[F,P]|\n\n", df ? "   " : "");
     }
     fflush(outfile);
 

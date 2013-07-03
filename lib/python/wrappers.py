@@ -1140,9 +1140,9 @@ def database(name, db_name, **kwargs):
             else:
                 HRXN = database.HRXN_EQ
         else:
-            HRXN = getattr_ignorecase(database, db_subset)
+            HRXN = p4util.getattr_ignorecase(database, db_subset)
             if HRXN is None:
-                HRXN = getattr_ignorecase(database, 'HRXN_' + db_subset)
+                HRXN = p4util.getattr_ignorecase(database, 'HRXN_' + db_subset)
                 if HRXN is None:
                     raise ValidationError('Special subset \'%s\' not available for database %s.' % (db_subset, db_name))
     else:

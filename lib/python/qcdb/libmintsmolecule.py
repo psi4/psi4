@@ -40,10 +40,11 @@ NOISY_ZERO = 1.0E-8
 class LibmintsMolecule(object):
     """Class to store the elements, coordinates, fragmentation pattern,
     charge, multiplicity of a molecule. Largely replicates psi4's libmints
-    Molecule class, developed by Justin M. Turney with incremental
-    improvements by other psi4 developers. Major differences from the C++
-    class are: no basisset handling, no symmetry, no pubchem. This class
-    translated so that databases can function independently of psi4.
+    Molecule class, developed by Justin M. Turney and Andy M. Simmonett
+    with incremental improvements by other psi4 developers. Major
+    differences from the C++ class are: no basisset handling, no symmetry,
+    no pubchem, no efp, no discarding dummies. This class translated so
+    that databases can function independently of psi4.
 
     >>> H2OH2O = qcdb.Molecule(\"\"\"
         0 1
@@ -85,6 +86,8 @@ class LibmintsMolecule(object):
         self.PYunits = 'Angstrom'
         # The conversion factor to take input units to Bohr
         self.input_units_to_au = 1.0 / psi_bohr2angstroms
+        # Whether this molecule has at least one zmatrix entry
+        self.zmat = False
 
         # <<< Coordinates >>>
 
@@ -251,6 +254,23 @@ class LibmintsMolecule(object):
             self.PYunits = units
         else:
             raise ValidationError("""Argument to Molecule::set_units must be 'Angstrom' or 'Bohr'.""")
+
+    def has_zmatrix(self):
+        """Gets the presence of any zmatrix entry
+
+        >>> print H2OH2O.has_zmatrix()
+        False
+
+        """
+        return self.zmat
+
+    def set_has_zmatrix(self, tf):
+        """Sets the presence of any zmatrix entry
+
+        >>> H2OH2O.set_has_zmatrix(True)
+
+        """
+        self.zmat = tf
 
     # <<< Simple Methods for Coordinates >>>
 
@@ -641,6 +661,7 @@ class LibmintsMolecule(object):
         tempfrag = []
         atomSym = ""
         atomLabel = ""
+        zmatrix = False
         for line in glines:
 
             # handle fragment markers
@@ -688,12 +709,14 @@ class LibmintsMolecule(object):
 
                 # handle first line of Zmat
                 elif len(entries) == 1:
+                    zmatrix = True
                     tempfrag.append(iatom)
                     self.full_atoms.append(ZMatrixEntry(iatom, zVal, charge, \
                         el2masses[atomSym], atomSym, atomLabel))
 
                 # handle second line of Zmat
                 elif len(entries) == 3:
+                    zmatrix = True
                     tempfrag.append(iatom)
 
                     rTo = self.get_anchor_atom(entries[1], line)
@@ -710,6 +733,7 @@ class LibmintsMolecule(object):
 
                 # handle third line of Zmat
                 elif len(entries) == 5:
+                    zmatrix = True
                     tempfrag.append(iatom)
 
                     rTo = self.get_anchor_atom(entries[1], line)
@@ -735,6 +759,7 @@ class LibmintsMolecule(object):
 
                 # handle fourth line of Zmat
                 elif len(entries) == 7:
+                    zmatrix = True
                     tempfrag.append(iatom)
 
                     rTo = self.get_anchor_atom(entries[1], line)
@@ -774,6 +799,7 @@ class LibmintsMolecule(object):
 
         self.fragments.append([tempfrag[0], tempfrag[-1]])
         self.fragment_types.append('Real')
+        self.set_has_zmatrix(zmatrix)
 
     def init_with_checkpoint(self, chkpt):
         """ **NYI** Pull information from the *chkpt* object passed
@@ -950,7 +976,7 @@ class LibmintsMolecule(object):
 #            if self.full_pg:  TODO symmetry
 #                text += """    Full point group: %s\n\n""" % (self.full_point_group())  TODO symmetry
             text += """    Geometry (in %s), charge = %d, multiplicity = %d:\n\n""" % \
-                ('Bohr', self.molecular_charge(), self.multiplicity())
+                ('Angstrom', self.molecular_charge(), self.multiplicity())
             text += """       Center              X                  Y                   Z       \n"""
             text += """    ------------   -----------------  -----------------  -----------------\n"""
 
@@ -994,23 +1020,24 @@ class LibmintsMolecule(object):
 
     def print_in_input_format(self):
         """Print the molecule in the same format that the user provided.
-        Only returns if Zmat or variable input.
-
         """
         text = ""
         if self.nallatom():
-            # It's only worth echoing these if the user either input some variables,
-            #   or they used a Z matrix for input
-            if self.full_atoms[0].type() == 'ZMatrixCoord' or len(self.geometry_variables):
-                text += """\n\tFinal optimized geometry and variables (in %s):\n\n""" % \
-                        ("Angstrom" if self.units() == 'Angstrom' else "bohr")
-                for i in range(self.nallatom()):
-                    text += self.full_atoms[i].print_in_input_format()
+            text += "    Geometry (in %s), charge = %d, multiplicity = %d:\n\n" % \
+                    ("Angstrom" if self.units() == 'Angstrom' else "Bohr",
+                    self.molecular_charge(), self.multiplicity())
+            for i in range(self.nallatom()):
+                if self.fZ(i) or self.fsymbol(i) == "X":
+                    text += "    %-8s" % (self.fsymbol(i))
+                else:
+                    text += "    %-8s" % ("Gh(" + self.fsymbol(i) + ")")
+                text += self.full_atoms[i].print_in_input_format()
+            text += "\n"
+            if len(self.geometry_variables):
+                for vb, val in self.geometry_variables.items():
+                    text += """    %-10s=%16.10f\n""" % (vb, val)
                 text += "\n"
-                if len(self.geometry_variables):
-                    for vb, val in self.geometry_variables.items():
-                        text += """\t%-10s=%16.10f\n""" % (vb, val)
-                    text += "\n"
+
         print text
         # TODO outfile
 
@@ -1025,7 +1052,52 @@ class LibmintsMolecule(object):
         text += """  reinterpret?  %s\t\tlock_frame?    %s\n""" % (self.PYreinterpret_coordentries, self.lock_frame)
         text += """  input symm    %s\n""" % (self.symmetry_from_input())
         text += """  Nfragments    %d\t\tNactive        %d\n""" % (self.nfragments(), self.nactive_fragments())
+        text += """  zmat?         %s\n""" % (self.has_zmatrix())
         print text
+
+    def create_psi4_string_from_molecule(self):
+        """Regenerates a input file molecule specification string from the
+        current state of the Molecule. Contains geometry info,
+        fragmentation, charges and multiplicities, and any frame
+        restriction.
+        """
+        text = ""
+        if self.nallatom():
+
+            # append units and any other non-default molecule keywords
+            text += "    units %-s\n" % ("Angstrom" if self.units() == 'Angstrom' else "Bohr")
+            if not self.PYmove_to_com:
+                text += "    no_com\n"
+            if self.PYfix_orientation:
+                text += "    no_reorient\n"
+
+            # append atoms and coordentries and fragment separators with charge and multiplicity
+            Pfr = 0
+            for fr in range(self.nfragments()):
+                if self.fragment_types[fr] == 'Absent' and not self.has_zmatrix():
+                    continue
+                text += "%s    %s%d %d\n" % (
+                    "" if Pfr == 0 else "    --\n",
+                    "#" if self.fragment_types[fr] == 'Ghost' or self.fragment_types[fr] == 'Absent' else "",
+                    self.fragment_charges[fr], self.fragment_multiplicities[fr])
+                Pfr += 1
+                for at in range(self.fragments[fr][0], self.fragments[fr][1] + 1):
+                    if self.fragment_types[fr] == 'Absent':
+                        text += "    %-8s" % ("X")
+                    elif self.fZ(at) or self.fsymbol(at) == "X":
+                        text += "    %-8s" % (self.fsymbol(at))
+                    else:
+                        text += "    %-8s" % ("Gh(" + self.fsymbol(at) + ")")
+                    text += "    %s" % (self.full_atoms[at].print_in_input_format())
+            text += "\n"
+
+            # append any coordinate variables
+            if len(self.geometry_variables):
+                for vb, val in self.geometry_variables.items():
+                    text += """    %-10s=%16.10f\n""" % (vb, val)
+                text += "\n"
+
+        return text
 
     # <<< Involved Methods for Coordinates >>>
 
@@ -1583,39 +1655,41 @@ class LibmintsMolecule(object):
         """ **NYI** Assigns basis *name* to all atoms with *label*."""
         raise FeatureNotImplemented('Molecule::set_basis_by_label')  # FINAL
 
-    def nfrozen_core(self, depth="SMALL"):
+    def nfrozen_core(self, depth=False):
         """Number of frozen core for molecule given freezing state.
 
         >>> print H2OH2O.nfrozen_core()
         2
 
         """
-        if depth == False:
+        if depth == False or depth.upper() == 'FALSE':
             return 0
 
-        elif depth == True or depth.upper() == 'TRUE' or depth.upper() == 'SMALL':
+        elif depth == True or depth.upper() == 'TRUE':
+            # Freeze the number of core electrons corresponding to the
+            # nearest previous noble gas atom.  This means that the 4p block
+            # will still have 3d electrons active.  Alkali earth atoms will
+            # have one valence electron in this scheme.
             nfzc = 0
             for A in range(self.natom()):
-                if self.Z(A) > 2 and self.Z(A) <= 10:
+                if self.Z(A) > 2:
                     nfzc += 1
-                elif self.Z(A) > 10:
-                    nfzc += 2
-            return nfzc
-
-        elif depth.upper() == 'FALSE':
-            return 0
-
-        elif depth.upper() == 'LARGE':
-            nfzc = 0
-            for A in range(self.natom()):
-                if self.Z(A) > 2 and self.Z(A) <= 10:
-                    nfzc += 1
-                elif self.Z(A) > 10:
-                    nfzc += 5
+                if self.Z(A) > 10:
+                    nfzc += 4
+                if self.Z(A) > 18:
+                    nfzc += 4
+                if self.Z(A) > 36:
+                    nfzc += 9
+                if self.Z(A) > 54:
+                    nfzc += 9
+                if self.Z(A) > 86:
+                    nfzc += 16
+                if self.Z(A) > 108:
+                    raise ValidationError("Invalid atomic number")
             return nfzc
 
         else:
-            raise ValidationError("Frozen core '%s' is not supported, options are {true, false, small, large}." % (depth))
+            raise ValidationError("Frozen core '%s' is not supported, options are {true, false}." % (depth))
 
     # <<< Involved Methods for Frame >>>
 
@@ -1699,8 +1773,8 @@ class LibmintsMolecule(object):
     def rotational_constants(self, tol=FULL_PG_TOL):
         """Compute the rotational constants and return them in wavenumbers"""
 
-        evals = diagonalize3x3symmat(self.inertia_tensor())
-        evals = [evals[2], evals[1], evals[0]]  # order ascending
+        evals, evecs = diagonalize3x3symmat(self.inertia_tensor())
+        evals = sorted(evals)
         isLinear = True if evals[0] < ZERO else False
         isOne = True if evals[1] < ZERO else False
         isAtom = True if evals[2] < ZERO else False
@@ -1830,12 +1904,12 @@ class LibmintsMolecule(object):
 
     # <<< Methods for Saving >>>
 
-    def save_string_xyz(self):
+    def save_string_xyz(self, save_ghosts=True):
         """Save a string for a XYZ-style file.
 
         >>> H2OH2O.save_string_xyz()
         6
-        -2 3 water_dimer
+        _
          O   -1.551007000000   -0.114520000000    0.000000000000
          H   -1.934259000000    0.762503000000    0.000000000000
          H   -0.599677000000    0.040712000000    0.000000000000
@@ -1846,23 +1920,29 @@ class LibmintsMolecule(object):
         """
         factor = 1.0 if self.PYunits == 'Angstrom' else psi_bohr2angstroms
 
-        text = '%d\n' % (self.natom())
-        text += '%d %d %s\n' % (self.molecular_charge(), self.multiplicity(), self.name())
+        N = self.natom()
+        if not save_ghosts:
+            N = 0
+            for i in range(self.natom()):
+                if self.Z(i):
+                    N += 1
+        text = "%d\n\n" % (N)
 
         for i in range(self.natom()):
             [x, y, z] = self.atoms[i].compute()
-            text += '%2s %17.12f %17.12f %17.12f\n' % ((self.symbol(i) if self.Z(i) else "Gh"), \
-                x * factor, y * factor, z * factor)
+            if save_ghosts or self.Z(i):
+                text += '%2s %17.12f %17.12f %17.12f\n' % ((self.symbol(i) if self.Z(i) else "Gh"), \
+                    x * factor, y * factor, z * factor)
         return text
 
-    def save_xyz(self, filename):
+    def save_xyz(self, filename, save_ghosts=True):
         """Save an XYZ file.
 
         >>> H2OH2O.save_xyz('h2o.xyz')
 
         """
         outfile = open(filename, 'w')
-        outfile.write(self.save_string_xyz())
+        outfile.write(self.save_string_xyz(save_ghosts))
         outfile.close()
 
     def save_to_checkpoint(self, chkpt, prefix=""):

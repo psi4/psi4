@@ -35,7 +35,7 @@
 #include<libmints/matrix.h>
 #include<libtrans/mospace.h>
 #include<libtrans/integraltransform.h>
-#include<libiwl/iwl.h>
+#include<libiwl/iwl.hpp>
 #include"ccsd.h"
 #include"blas.h"
 #include"frozen_natural_orbitals.h"
@@ -160,27 +160,27 @@ void FrozenNO::ComputeNaturalOrbitals(){
         for(int b = doccpi_[h]; b < nmopi_[h]; ++b)               bVirEvals[bVirCount++] = epsB->get(h, b);
     }
 
-    dpd_buf4_init(&amps1, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
-    dpd_buf4_sort(&amps1, PSIF_LIBTRANS_DPD, prqs, ID("[O,O]"), ID("[V,V]"), "MO Ints <OO|VV>");
+    global_dpd_->buf4_init(&amps1, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
+    global_dpd_->buf4_sort(&amps1, PSIF_LIBTRANS_DPD, prqs, ID("[O,O]"), ID("[V,V]"), "MO Ints <OO|VV>");
 
     // T(ijab) -> T(jiab)
-    dpd_buf4_sort(&amps1, PSIF_LIBTRANS_DPD, prqs, ID("[O,O]"), ID("[V,V]"), "Tijab <OO|VV>");
-    dpd_buf4_sort(&amps1, PSIF_LIBTRANS_DPD, rpqs, ID("[O,O]"), ID("[V,V]"), "Tjiab <OO|VV>");
-    dpd_buf4_close(&amps1);
+    global_dpd_->buf4_sort(&amps1, PSIF_LIBTRANS_DPD, prqs, ID("[O,O]"), ID("[V,V]"), "Tijab <OO|VV>");
+    global_dpd_->buf4_sort(&amps1, PSIF_LIBTRANS_DPD, rpqs, ID("[O,O]"), ID("[V,V]"), "Tjiab <OO|VV>");
+    global_dpd_->buf4_close(&amps1);
 
     // only worry about alpha-beta
-    dpd_buf4_init(&amps1, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
-    dpd_buf4_init(&amps2, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "Tjiab <OO|VV>");
+    global_dpd_->buf4_init(&amps1, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
+    global_dpd_->buf4_init(&amps2, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "Tjiab <OO|VV>");
 
     double emp2_os = 0.0;
     double emp2_ss = 0.0;
     for(int h = 0; h < nirrep_; ++h){
 
-        dpd_buf4_mat_irrep_init(&amps1, h);
-        dpd_buf4_mat_irrep_rd(&amps1, h);
+        global_dpd_->buf4_mat_irrep_init(&amps1, h);
+        global_dpd_->buf4_mat_irrep_rd(&amps1, h);
 
-        dpd_buf4_mat_irrep_init(&amps2, h);
-        dpd_buf4_mat_irrep_rd(&amps2, h);
+        global_dpd_->buf4_mat_irrep_init(&amps2, h);
+        global_dpd_->buf4_mat_irrep_rd(&amps2, h);
 
         for(int ij = 0; ij < amps1.params->rowtot[h]; ++ij){
             int i = amps1.params->roworb[h][ij][0];
@@ -197,10 +197,10 @@ void FrozenNO::ComputeNaturalOrbitals(){
                 emp2_ss += val1 * ( val1 - val2 ) / denom;
             }
         }
-        dpd_buf4_mat_irrep_close(&amps1, h);
-        dpd_buf4_mat_irrep_close(&amps2, h);
+        global_dpd_->buf4_mat_irrep_close(&amps1, h);
+        global_dpd_->buf4_mat_irrep_close(&amps2, h);
     }
-    dpd_buf4_close(&amps1);
+    global_dpd_->buf4_close(&amps1);
 
     double escf = Process::environment.globals["SCF TOTAL ENERGY"];
     Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = emp2_os;
@@ -209,12 +209,12 @@ void FrozenNO::ComputeNaturalOrbitals(){
     Process::environment.globals["MP2 TOTAL ENERGY"] = emp2_os + emp2_ss + escf;
 
     // build amps1(ij,ab) = 2*T(ij,ab) - T(ji,ab)
-    dpd_buf4_init(&amps1, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
-    dpd_buf4_scm(&amps1, 2.0);
-    dpd_buf4_axpy(&amps2, &amps1, -1.0);
+    global_dpd_->buf4_init(&amps1, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
+    global_dpd_->buf4_scm(&amps1, 2.0);
+    global_dpd_->buf4_axpy(&amps2, &amps1, -1.0);
 
-    dpd_buf4_close(&amps1);
-    dpd_buf4_close(&amps2);
+    global_dpd_->buf4_close(&amps1);
+    global_dpd_->buf4_close(&amps2);
 
     fprintf(outfile,"        OS MP2 correlation energy:       %20.12lf\n",emp2_os);
     fprintf(outfile,"        SS MP2 correlation energy:       %20.12lf\n",emp2_ss);
@@ -223,15 +223,15 @@ void FrozenNO::ComputeNaturalOrbitals(){
     fprintf(outfile,"\n");
 
     // scale amps by denominator
-    dpd_buf4_init(&amps2, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
-    dpd_buf4_init(&amps1, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "Tijab <OO|VV>");
+    global_dpd_->buf4_init(&amps2, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
+    global_dpd_->buf4_init(&amps1, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "Tijab <OO|VV>");
     for(int h = 0; h < nirrep_; ++h){
 
-        dpd_buf4_mat_irrep_init(&amps1, h);
-        dpd_buf4_mat_irrep_rd(&amps1, h);
+        global_dpd_->buf4_mat_irrep_init(&amps1, h);
+        global_dpd_->buf4_mat_irrep_rd(&amps1, h);
 
-        dpd_buf4_mat_irrep_init(&amps2, h);
-        dpd_buf4_mat_irrep_rd(&amps2, h);
+        global_dpd_->buf4_mat_irrep_init(&amps2, h);
+        global_dpd_->buf4_mat_irrep_rd(&amps2, h);
 
         for(int ij = 0; ij < amps1.params->rowtot[h]; ++ij){
             int i = amps1.params->roworb[h][ij][0];
@@ -245,31 +245,31 @@ void FrozenNO::ComputeNaturalOrbitals(){
             }
         }
 
-        dpd_buf4_mat_irrep_wrt(&amps1, h);
-        dpd_buf4_mat_irrep_close(&amps1, h);
-        dpd_buf4_mat_irrep_wrt(&amps2, h);
-        dpd_buf4_mat_irrep_close(&amps2, h);
+        global_dpd_->buf4_mat_irrep_wrt(&amps1, h);
+        global_dpd_->buf4_mat_irrep_close(&amps1, h);
+        global_dpd_->buf4_mat_irrep_wrt(&amps2, h);
+        global_dpd_->buf4_mat_irrep_close(&amps2, h);
     }
-    dpd_buf4_close(&amps1);
-    dpd_buf4_close(&amps2);
+    global_dpd_->buf4_close(&amps1);
+    global_dpd_->buf4_close(&amps2);
 
     // build virtual-virtual block of opdm: sum(ijc) 2.0 * [ 2 t(ij,ac) - t(ji,ac) ] * t(ij,bc)
     dpdfile2 Dab;
-    dpd_file2_init(&Dab, PSIF_LIBTRANS_DPD,    0, 1, 1, "Dab");
-    dpd_buf4_init(&amps2, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
-    dpd_buf4_init(&amps1, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "Tijab <OO|VV>");
-    dpd_contract442(&amps1, &amps2, &Dab, 3, 3, 2.0, 0.0);
-    dpd_buf4_close(&amps1);
-    dpd_buf4_close(&amps2);
-    dpd_file2_close(&Dab);
+    global_dpd_->file2_init(&Dab, PSIF_LIBTRANS_DPD,    0, 1, 1, "Dab");
+    global_dpd_->buf4_init(&amps2, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
+    global_dpd_->buf4_init(&amps1, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "Tijab <OO|VV>");
+    global_dpd_->contract442(&amps1, &amps2, &Dab, 3, 3, 2.0, 0.0);
+    global_dpd_->buf4_close(&amps1);
+    global_dpd_->buf4_close(&amps2);
+    global_dpd_->file2_close(&Dab);
 
     // diagonalize virtual-virtual block of opdm
     int symmetry = Ca_->symmetry();
     boost::shared_ptr<Matrix> D (new Matrix("Dab",nirrep_,aVirOrbsPI,aVirOrbsPI,symmetry));
 
-    dpd_file2_init(&Dab, PSIF_LIBTRANS_DPD,    0, 1, 1, "Dab");
-    dpd_file2_mat_init(&Dab);
-    dpd_file2_mat_rd(&Dab);
+    global_dpd_->file2_init(&Dab, PSIF_LIBTRANS_DPD,    0, 1, 1, "Dab");
+    global_dpd_->file2_mat_init(&Dab);
+    global_dpd_->file2_mat_rd(&Dab);
     for (int h = 0; h < nirrep_; h++) {
         int v = Dab.params->rowtot[h];
 
@@ -280,7 +280,7 @@ void FrozenNO::ComputeNaturalOrbitals(){
             }
         }
     }
-    dpd_file2_close(&Dab);
+    global_dpd_->file2_close(&Dab);
 
     // done with dpd and ints ... reset
     psio->close(PSIF_LIBTRANS_DPD, 1);
@@ -569,6 +569,74 @@ void DFFrozenNO::ThreeIndexIntegrals() {
       Process::environment.globals["NAUX (CC)"] = (double)nQ;
   }
   fprintf(outfile,"\n");
+}
+
+/* 
+    build 4-index eri's from 3-index integrals 
+*/
+void DFFrozenNO::FourIndexIntegrals() {
+
+    fprintf(outfile,"  ==> Build 4-index ERI's from 3-index integrals <==\n");
+    fprintf(outfile,"\n");
+
+    long int o  = ndoccact;
+    long int v  = nvirt;
+    long int nQ = Process::environment.globals["NAUX (CC)"];
+
+    double ** Cap = Ca()->pointer();
+
+    // transform 3-index integrals to MO basis
+
+    psio_address addr1 = PSIO_ZERO;
+    psio_address addr2 = PSIO_ZERO;
+    double * buf1 = (double*)malloc(nso*nso*sizeof(double));
+    double * buf2 = (double*)malloc(nso*nso*sizeof(double));
+
+    boost::shared_ptr<PSIO> psio(new PSIO());
+    psio->open(PSIF_DCC_QSO,PSIO_OPEN_OLD);
+    for (int q = 0; q < nQ; q++) {
+        psio->read(PSIF_DCC_QSO,"Qso CC",(char*)&buf1[0],nso*nso*sizeof(double),addr1,&addr1);
+        F_DGEMM('n','n',nmo,nso,nso,1.0,&Cap[0][0],nmo,buf1,nso,0.0,buf2,nmo);
+        F_DGEMM('n','t',nmo,nmo,nso,1.0,&Cap[0][0],nmo,buf2,nmo,0.0,buf1,nmo);
+        for (int p = 0; p < nmo; p++) {
+            for (int q = p; q < nmo; q++) {
+                buf2[Position(p,q)] = buf1[p*nmo+q];
+            }
+        }
+        psio->write(PSIF_DCC_QSO,"Qmo CC",(char*)&buf2[0],nmo*(nmo+1)/2*sizeof(double),addr2,&addr2);
+    }
+    free(buf2);
+    free(buf1);
+
+    // hopefully nQ*nmo*(nmo+1)/2 will fit in memory
+    long int memory = Process::environment.get_memory();
+    if ( memory < nmo*(nmo+1)/2*nQ*sizeof(double) ) {
+        throw PsiException("Not enough memory (FourIndexIntegrals)",__FILE__,__LINE__);
+    }
+    double * Qmo = (double*)malloc(nmo*(nmo+1)/2*nQ*sizeof(double));
+
+    psio->read_entry(PSIF_DCC_QSO,"Qmo CC",(char*)&Qmo[0],nmo*(nmo+1)/2*nQ*sizeof(double));
+    psio->close(PSIF_DCC_QSO,1);
+
+    IWL * iwl = new IWL(psio.get(), PSIF_MO_TEI, 1.0e-16, 0, 0);
+    for (int p = nfzc; p < nmo; p++) {
+        for (int q = p; q < nmo; q++) {
+            int pq = Position(p,q);
+            for (int r = nfzc; r < nmo; r++) {
+                for (int s = r; s < nmo; s++) {
+                    int rs = Position(r,s);
+                    if ( rs > pq ) continue;
+                    double val = F_DDOT(nQ,Qmo+pq,nmo*(nmo+1)/2,Qmo+rs,nmo*(nmo+1)/2);
+                    iwl->write_value(p, q, r, s, val, false, outfile, 0);
+                }
+            }
+        }
+    }
+    iwl->flush(1);
+    iwl->set_keep_flag(1);
+    delete iwl;
+
+    free(Qmo);
 }
 
 /*

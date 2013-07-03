@@ -43,8 +43,7 @@ class list;
 
 namespace psi {
 
-struct _dpdfile2;
-typedef _dpdfile2 dpdfile2;
+struct dpdfile2;
 
 class PSIO;
 class Matrix;
