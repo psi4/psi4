@@ -733,11 +733,17 @@ class ComputationCache(object):
             make_directory=False,
             make_path=False,
             make_shelve=True,
-            writeback=True
+            writeback=None,
+            read_only=False
     ):
         #========================================#
         #region Check for the directory and make it if needed.
+        if writeback is None:
+            writeback = not read_only
+        if writeback and read_only:
+            raise ValueError("Writeback cache can't be read only")
         self.directory = str(directory).rstrip(path_sep)
+        self.read_only = read_only
         pth, dir_name = path_split(self.directory)
         if not isdir(pth):
             if exists(pth):
@@ -754,7 +760,10 @@ class ComputationCache(object):
         #endregion
         #----------------------------------------#
         #region Open the Shelf
-        flag = 'c' if make_shelve else 'w'
+        if read_only:
+            flag = 'r'
+        else:
+            flag = 'c' if make_shelve else 'w'
         self.shelf = shelve.open(
             path_join(self.directory, "computation_shelf.db"),
             flag=flag,
@@ -779,9 +788,26 @@ class ComputationCache(object):
             except ValueError:
                 # If it's already closed, it's okay
                 pass
-        atexit.register(close_shelf, self.shelf, self.analogous_keys)
+        if not self.read_only:
+            atexit.register(close_shelf, self.shelf, self.analogous_keys)
         #endregion
         #----------------------------------------#
+
+    #endregion
+
+    #========================================#
+
+    #region | Special Methods |
+
+    def __iter__(self):
+        for k in self.shelf:
+            yield k
+
+    def __getitem__(self, item):
+        return self.shelf[item]
+
+    def __setitem__(self, item, value):
+        self.shelf[item] = value
 
     #endregion
 
@@ -1623,7 +1649,7 @@ class CachedComputation(object):
         return unloader, tuple()
 
     def __del__(self):
-        if self.owner is not None:
+        if self.owner is not None and not self.owner.read_only:
             self.owner.sync_computation(self)
 
     #endregion
