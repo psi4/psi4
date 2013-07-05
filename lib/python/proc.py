@@ -909,8 +909,8 @@ def run_ccenergy(name, **kwargs):
     psi4.ccenergy()
 
     if (lowername == 'ccsd(at)' or lowername == 'a-ccsd(t)'):
-	psi4.cchbar()
-	psi4.cclambda()
+        psi4.cchbar()
+        psi4.cclambda()
 
     optstash.restore()
 
