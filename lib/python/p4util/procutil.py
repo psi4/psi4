@@ -28,6 +28,8 @@ import psi4
 import inputparser
 from psiexceptions import *
 
+if sys.version_info[0] > 2:
+    basestring = str
 
 def kwargs_lower(kwargs):
     """Function to rebuild and return *kwargs* dictionary
