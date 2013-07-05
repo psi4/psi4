@@ -56,6 +56,6 @@ for basisset in basissets:
 compare_values(refnuc, h2.nuclear_repulsion_energy(), 10, "Nuclear Repulsion Energy") #TEST
 
 print_out("\nSummary of results\n")
-print str(table)
+print_out(str(table))
 print_out("\nAnd again, but more precision\n")
-print str(longtable)
+print_out(str(longtable))
