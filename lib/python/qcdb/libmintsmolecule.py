@@ -1178,7 +1178,7 @@ class LibmintsMolecule(object):
         False
 
         """
-        return True if vstr.upper() in self.all_variables else False
+        return True if vstr.upper() in object.__getattribute__(self, 'all_variables ') else False
 
     def get_variable(self, vstr):
         """Checks to see if the variable str is in the list, sets it to
