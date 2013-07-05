@@ -139,28 +139,28 @@ class CustomHashDict(object):
     # Methods #
     ###########
 
-    def iteritems(self):
-        for pairs in self._dict.itervalues():
+    def items(self):
+        for pairs in self._dict.values():
             for pair in pairs:
                 yield pair
 
     def items(self):
-        return [i for i in self.iteritems()]
-
-    def iterkeys(self):
-        for pair in self.iteritems():
-            yield pair[0]
-    iter = iterkeys
+        return [i for i in self.items()]
 
     def keys(self):
-        return [k for k in self.iterkeys()]
+        for pair in self.items():
+            yield pair[0]
+    iter = keys
 
-    def itervalues(self):
-        for pair in self.iteritems():
+    def keys(self):
+        return [k for k in self.keys()]
+
+    def values(self):
+        for pair in self.items():
             yield pair[1]
 
     def values(self):
-        return [v for v in self.itervalues()]
+        return [v for v in self.values()]
 
     def has_key(self, key):
         return key in self
@@ -184,7 +184,7 @@ class CustomHashDict(object):
         # basically defer to super:
         to_add = dict(other, **kwargs) if other else dict(**kwargs)
         # then assign
-        for key, val in to_add.iteritems():
+        for key, val in to_add.items():
             self[key] = val
         return
 
@@ -286,18 +286,18 @@ class LRUDict:
             yield cur.me[1]
             cur = cur2
 
-    def iteritems(self):
+    def items(self):
         cur = self.first
         while cur is not None:
             cur2 = cur.next
             yield cur.me
             cur = cur2
 
-    def iterkeys(self):
+    def keys(self):
         return iter(self.d)
 
-    def itervalues(self):
-        for i,j in self.iteritems():
+    def values(self):
+        for i,j in self.items():
             yield j
 
     def keys(self):

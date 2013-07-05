@@ -66,9 +66,9 @@ class ComputationResultGetter(ResultGetter):
         kwargs.pop('molecule', None)
         # Check to see if an identical ComputationResultGetter exists
         try:
-            key = frozenset((k, v) for k, v in kwargs.iteritems())
+            key = frozenset((k, v) for k, v in kwargs.items())
         except TypeError:
-            key = frozenset((id(k), id(v)) for k, v in kwargs.iteritems())
+            key = frozenset((id(k), id(v)) for k, v in kwargs.items())
         if key in ComputationResultGetter.known_result_getters:
             ret_val = ComputationResultGetter.known_result_getters[key]
         else:
@@ -211,9 +211,9 @@ class ComputationOptimizationResultGetter(OptimizationResultGetter):
         kwargs.pop('molecule', None)
         # Check to see if an identical ComputationResultGetter exists
         try:
-            key = frozenset((k, v) for k, v in kwargs.iteritems())
+            key = frozenset((k, v) for k, v in kwargs.items())
         except TypeError:
-            key = frozenset((id(k), id(v)) for k, v in kwargs.iteritems())
+            key = frozenset((id(k), id(v)) for k, v in kwargs.items())
         if key in ComputationResultGetter.known_result_getters:
             ret_val = ComputationResultGetter.known_optimizers[key]
         else:

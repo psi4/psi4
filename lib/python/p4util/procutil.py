@@ -38,7 +38,7 @@ def kwargs_lower(kwargs):
     caseless_kwargs = {}
     if sys.hexversion < 0x03000000:
         # Python 2; we have to explicitly use an iterator
-        for key, value in kwargs.iteritems():
+        for key, value in kwargs.items():
             caseless_kwargs[key.lower()] = value
     else:
         # Python 3; an iterator is implicit

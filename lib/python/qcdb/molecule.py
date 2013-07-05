@@ -699,7 +699,7 @@ class Molecule(LibmintsMolecule):
                 # case where all param read from dashparam dict (which must have all correct keys)
                 func = 'custom'
                 dashcoeff[dashlvl][func] = {}
-                dashparam = dict((k.lower(), v) for k, v in dashparam.iteritems())
+                dashparam = dict((k.lower(), v) for k, v in dashparam.items())
                 for key in dashcoeff[dashlvl]['b3lyp'].keys():
                     if key in dashparam.keys():
                         dashcoeff[dashlvl][func][key] = dashparam[key]
@@ -714,7 +714,7 @@ class Molecule(LibmintsMolecule):
                 pass
             else:
                 # case where items in dashparam dict can override param taken from dashcoeff above
-                dashparam = dict((k.lower(), v) for k, v in dashparam.iteritems())
+                dashparam = dict((k.lower(), v) for k, v in dashparam.items())
                 for key in dashcoeff[dashlvl]['b3lyp'].keys():
                     if key in dashparam.keys():
                         dashcoeff[dashlvl][func][key] = dashparam[key]

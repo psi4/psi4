@@ -119,7 +119,7 @@ optgroup.add_argument('--without-opt',
 
 def dict_to_list(dictionary):
     l = [ ]
-    for k in sorted(dictionary.iterkeys()):
+    for k in sorted(dictionary.keys()):
         s = "-D" + k + "="
         if not dictionary[k]:
             s += '""'
@@ -139,7 +139,7 @@ def dict_to_list(dictionary):
 def dict_to_string(dictionary):
     """Converts a dictionary of keywords into a string of arguments to pass to CMake"""
     string = ""
-    for k in sorted(dictionary.iterkeys()):
+    for k in sorted(dictionary.keys()):
         string += " -D" + k + "="
         if not dictionary[k]:
             string += '""'
