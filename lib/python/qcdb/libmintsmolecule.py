@@ -150,7 +150,7 @@ class LibmintsMolecule(object):
     def name(self):
         """Get molecule name
 
-        >>> print H2OH2O.name()
+        >>> print(H2OH2O.name())
         water_dimer
 
         """
@@ -167,7 +167,7 @@ class LibmintsMolecule(object):
     def natom(self):
         """Number of atoms
 
-        >>> print H2OH2O.natom()
+        >>> print(H2OH2O.natom())
         6
 
         """
@@ -176,7 +176,7 @@ class LibmintsMolecule(object):
     def nallatom(self):
         """Number of all atoms (includes dummies)
 
-        >>> print H2OH2O.nallatom()
+        >>> print(H2OH2O.nallatom())
         7
 
         """
@@ -185,7 +185,7 @@ class LibmintsMolecule(object):
     def molecular_charge(self):
         """Gets the molecular charge
 
-        >>> print H2OH2O.molecular_charge()
+        >>> print(H2OH2O.molecular_charge())
         -2
 
         """
@@ -203,7 +203,7 @@ class LibmintsMolecule(object):
     def charge_specified(self):
         """Whether the charge was given by the user
 
-        >>> print H2OH2O.charge_specified()
+        >>> print(H2OH2O.charge_specified())
         True
 
         """
@@ -212,7 +212,7 @@ class LibmintsMolecule(object):
     def multiplicity(self):
         """Get the multiplicity (defined as 2Ms + 1)
 
-        >>> print H2OH2O.multiplicity()
+        >>> print(H2OH2O.multiplicity())
 
         """
         return self.PYmultiplicity
@@ -229,7 +229,7 @@ class LibmintsMolecule(object):
     def multiplicity_specified(self):
         """Whether the multiplicity was given by the user
 
-        >>> print H2OH2O.multiplicity_specified()
+        >>> print(H2OH2O.multiplicity_specified())
         True
 
         """
@@ -238,7 +238,7 @@ class LibmintsMolecule(object):
     def units(self):
         """Gets the geometry units
 
-        >>> print H2OH2O.units()
+        >>> print(H2OH2O.units())
         Angstrom
 
         """
@@ -258,7 +258,7 @@ class LibmintsMolecule(object):
     def has_zmatrix(self):
         """Gets the presence of any zmatrix entry
 
-        >>> print H2OH2O.has_zmatrix()
+        >>> print(H2OH2O.has_zmatrix())
         False
 
         """
@@ -277,7 +277,7 @@ class LibmintsMolecule(object):
     def Z(self, atom):
         """Nuclear charge of atom (0-indexed)
 
-        >>> print H2OH2O.Z(4)
+        >>> print(H2OH2O.Z(4))
         1
 
         """
@@ -286,7 +286,7 @@ class LibmintsMolecule(object):
     def x(self, atom):
         """x position of atom (0-indexed) in Bohr
 
-        >>> print H2OH2O.x(4)
+        >>> print(H2OH2O.x(4))
         3.17549201425
 
         """
@@ -295,7 +295,7 @@ class LibmintsMolecule(object):
     def y(self, atom):
         """y position of atom (0-indexed) in Bohr
 
-        >>> print H2OH2O.y(4)
+        >>> print(H2OH2O.y(4))
         -0.706268134631
 
         """
@@ -304,7 +304,7 @@ class LibmintsMolecule(object):
     def z(self, atom):
         """z position of atom (0-indexed) in Bohr
 
-        >>> print H2OH2O.z(4)
+        >>> print(H2OH2O.z(4))
         -1.43347254509
 
         """
@@ -314,7 +314,7 @@ class LibmintsMolecule(object):
         """Returns a Vector3 with x, y, z position of atom (0-indexed)
         in Bohr or coordinate at *posn*
 
-        >>> print H2OH2O.xyz(4)
+        >>> print(H2OH2O.xyz(4))
         [3.175492014248769, -0.7062681346308132, -1.4334725450878665]
 
         """
@@ -327,7 +327,7 @@ class LibmintsMolecule(object):
     def mass(self, atom):
         """Returns mass of atom (0-indexed)
 
-        >>> print H2OH2O.mass(4)
+        >>> print(H2OH2O.mass(4))
         1.00782503207
 
         """
@@ -335,14 +335,14 @@ class LibmintsMolecule(object):
             return self.atoms[atom].mass()
 
         if math.fabs(self.atoms[atom].Z() - int(self.atoms[atom].Z())) > 0.0:
-            print "WARNING: Obtaining masses from atom with fractional charge...may be incorrect!!!\n"
+            print("WARNING: Obtaining masses from atom with fractional charge...may be incorrect!!!\n")
             # TODO outfile
         return an2masses[int(self.atoms[atom].Z())]
 
     def symbol(self, atom):
         """Returns the cleaned up label of the atom (C2 => C, H4 = H) (0-indexed)
 
-        >>> print H2OH2O.symbol(4)
+        >>> print(H2OH2O.symbol(4))
         H
 
         """
@@ -351,7 +351,7 @@ class LibmintsMolecule(object):
     def label(self, atom):
         """Returns the original label of the atom (0-indexed) as given in the input file (C2, H4).
 
-        >>> print H2OH2O.label(4)
+        >>> print(H2OH2O.label(4))
         H3
 
         """
@@ -361,7 +361,7 @@ class LibmintsMolecule(object):
         """Returns charge of atom (0-indexed).
         Related to SAD guess in libmints version.
 
-        >>> print H2OH2O.charge(4)
+        >>> print(H2OH2O.charge(4))
         1.0
 
         """
@@ -370,7 +370,7 @@ class LibmintsMolecule(object):
     def fZ(self, atom):
         """Nuclear charge of atom (includes dummies)
 
-        >>> print H2OH2O.fZ(4)
+        >>> print(H2OH2O.fZ(4))
         8
 
         """
@@ -379,7 +379,7 @@ class LibmintsMolecule(object):
     def fx(self, atom):
         """x position of atom (0-indexed, includes dummies) in Bohr
 
-        >>> print H2OH2O.fx(4)
+        >>> print(H2OH2O.fx(4))
         2.55231135823
 
         """
@@ -388,7 +388,7 @@ class LibmintsMolecule(object):
     def fy(self, atom):
         """y position of atom (0-indexed, includes dummies) in Bohr
 
-        >>> print H2OH2O.fy(4)
+        >>> print(H2OH2O.fy(4))
         0.210645882307
 
         """
@@ -397,7 +397,7 @@ class LibmintsMolecule(object):
     def fz(self, atom):
         """z position of atom (0-indexed, includes dummies) in Bohr
 
-        >>> print H2OH2O.fz(4)
+        >>> print(H2OH2O.fz(4))
         0.0
 
         """
@@ -407,7 +407,7 @@ class LibmintsMolecule(object):
         """Returns a Vector3 with x, y, z position of atom
         (0-indexed) in Bohr (includes dummies)
 
-        >>> print H2OH2O.fxyz(4)
+        >>> print(H2OH2O.fxyz(4))
         [2.5523113582286716, 0.21064588230662976, 0.0]
 
         """
@@ -416,7 +416,7 @@ class LibmintsMolecule(object):
     def fmass(self, atom):
         """Returns mass of atom (0-indexed, includes dummies)
 
-        >>> print H2OH2O.fmass(4)
+        >>> print(H2OH2O.fmass(4))
         15.9949146196
 
         """
@@ -425,7 +425,7 @@ class LibmintsMolecule(object):
     def fsymbol(self, atom):
         """Returns the cleaned up label of the atom (C2 => C, H4 = H) (includes dummies)
 
-        >>> print H2OH2O.fsymbol(4)
+        >>> print(H2OH2O.fsymbol(4))
         O
 
         """
@@ -435,7 +435,7 @@ class LibmintsMolecule(object):
         """Returns the original label of the atom (0-indexed) as given in
         the input file (C2, H4) (includes dummies)
 
-        >>> print H2OH2O.flabel(4)
+        >>> print(H2OH2O.flabel(4))
         O2
 
         """
@@ -445,7 +445,7 @@ class LibmintsMolecule(object):
         """Returns charge of atom (0-indexed, includes dummies).
         Related to SAD guess in libmints version.
 
-        >>> print H2OH2O.fcharge(4)
+        >>> print(H2OH2O.fcharge(4))
         8.0
 
         """
@@ -456,7 +456,7 @@ class LibmintsMolecule(object):
     def nfragments(self):
         """The number of fragments in the molecule.
 
-        >>> print H2OH2O.nfragments()
+        >>> print(H2OH2O.nfragments())
         2
 
         """
@@ -465,7 +465,7 @@ class LibmintsMolecule(object):
     def nactive_fragments(self):
         """The number of active fragments in the molecule.
 
-        >>> print H2OH2O.nactive_fragments()
+        >>> print(H2OH2O.nactive_fragments())
         2
 
         """
@@ -478,9 +478,9 @@ class LibmintsMolecule(object):
     def activate_all_fragments(self):
         """Sets all fragments in the molecule to be active."""
         self.lock_frame = False
-        print 'it lives', 'activate all'
+        print('it lives activate all')
         for fr in range(self.nfragments()):
-            print 'reviving', fr
+            print('reviving %s' % fr)
             self.fragment_types[fr] = 'Real'
 
     def set_active_fragment(self, fr):
@@ -502,9 +502,9 @@ class LibmintsMolecule(object):
     def set_ghost_fragments(self, ghosts):
         """Tags the fragments in array *ghosts* as composed of ghost atoms."""
         self.lock_frame = False
-        print 'doomed', ghosts
+        print('doomed %s' % ghosts)
         for fr in ghosts:
-            print 'killing', fr - 1
+            print('killing %s' % fr - 1)
             self.fragment_types[fr - 1] = 'Ghost'
 
     def deactivate_all_fragments(self):
@@ -934,7 +934,7 @@ class LibmintsMolecule(object):
             text += "\n"
         else:
             text += "  No atoms in this molecule.\n"
-        print text
+        print(text)
         # TODO outfile
 
     def print_out_in_bohr(self):
@@ -961,7 +961,7 @@ class LibmintsMolecule(object):
             text += "\n"
         else:
             text += "  No atoms in this molecule.\n"
-        print text
+        print(text)
         # TODO outfile
 
     def print_out_in_angstrom(self):
@@ -988,7 +988,7 @@ class LibmintsMolecule(object):
             text += "\n"
         else:
             text += "  No atoms in this molecule.\n"
-        print text
+        print(text)
         # TODO outfile
 
     def print_full(self):
@@ -1015,7 +1015,7 @@ class LibmintsMolecule(object):
             text += "\n"
         else:
             text += "  No atoms in this molecule.\n"
-        print text
+        print(text)
         # TODO outfile
 
     def print_in_input_format(self):
@@ -1038,7 +1038,7 @@ class LibmintsMolecule(object):
                     text += """    %-10s=%16.10f\n""" % (vb, val)
                 text += "\n"
 
-        print text
+        print(text)
         # TODO outfile
 
     def everything(self):
@@ -1053,7 +1053,7 @@ class LibmintsMolecule(object):
         text += """  input symm    %s\n""" % (self.symmetry_from_input())
         text += """  Nfragments    %d\t\tNactive        %d\n""" % (self.nfragments(), self.nactive_fragments())
         text += """  zmat?         %s\n""" % (self.has_zmatrix())
-        print text
+        print(text)
 
     def create_psi4_string_from_molecule(self):
         """Regenerates a input file molecule specification string from the
@@ -1157,7 +1157,7 @@ class LibmintsMolecule(object):
     def atom_at_position(self, b, tol=0.05):
         """Tests to see of an atom is at the passed position *b* in Bohr with a tolerance *tol*.
 
-        >>> print H2OH2O.atom_at_position([1.35*(1.0/psi_bohr2angstroms), 0.10*(1.0/psi_bohr2angstroms), 0.0*(1.0/psi_bohr2angstroms)])
+        >>> print(H2OH2O.atom_at_position([1.35*(1.0/psi_bohr2angstroms), 0.10*(1.0/psi_bohr2angstroms), 0.0*(1.0/psi_bohr2angstroms)]))
         3
 
         """
@@ -1198,7 +1198,7 @@ class LibmintsMolecule(object):
         """
         self.__dict__['lock_frame'] = False
         self.__dict__['geometry_variables'][vstr.upper()] = val
-        print "Setting geometry variable %s to %f" % (vstr.upper(), val)
+        print("Setting geometry variable %s to %f" % (vstr.upper(), val))
         try:
             self.update_geometry()
         except IncompleteAtomError:
@@ -1252,7 +1252,7 @@ class LibmintsMolecule(object):
     def geometry(self):
         """Returns the geometry in Bohr as a N X 3 array.
 
-        >>> print H2OH2O.geometry()
+        >>> print(H2OH2O.geometry())
         [[-2.930978460188563, -0.21641143673806384, 0.0], [-3.655219780069251, 1.4409218455037016, 0.0], [-1.1332252981904638, 0.0769345303220403, 0.0], [2.5523113582286716, 0.21064588230662976, 0.0], [3.175492014248769, -0.7062681346308132, -1.4334725450878665], [3.175492014248769, -0.7062681346308132, 1.4334725450878665]]
 
         """
@@ -1264,7 +1264,7 @@ class LibmintsMolecule(object):
     def full_geometry(self):
         """Returns the full (dummies included) geometry in Bohr as a N X 3 array.
 
-        >>> print H2OH2O.full_geometry()
+        >>> print(H2OH2O.full_geometry())
         [[-2.930978460188563, -0.21641143673806384, 0.0], [-3.655219780069251, 1.4409218455037016, 0.0], [-1.1332252981904638, 0.0769345303220403, 0.0], [0.0, 0.0, 0.0], [2.5523113582286716, 0.21064588230662976, 0.0], [3.175492014248769, -0.7062681346308132, -1.4334725450878665], [3.175492014248769, -0.7062681346308132, 1.4334725450878665]]
 
         """
@@ -1333,7 +1333,7 @@ class LibmintsMolecule(object):
                     distm[j][i] = dist
             text += "\n"
         text += "\n\n"
-        print text
+        print(text)
         return distm
         # TODO outfile
 
@@ -1341,7 +1341,7 @@ class LibmintsMolecule(object):
         """Print the geometrical parameters (distances) of the molecule.
         suspect libmints version actually prints Bohr.
 
-        >>> print H2OH2O.print_distances()
+        >>> print(H2OH2O.print_distances())
         Interatomic Distances (Angstroms)
         Distance 1 to 2 0.957
         Distance 1 to 3 0.964
@@ -1362,7 +1362,7 @@ class LibmintsMolecule(object):
     def print_bond_angles(self):
         """Print the geometrical parameters (bond_angles) of the molecule.
 
-        >>> print H2OH2O.print_bond_angles()
+        >>> print(H2OH2O.print_bond_angles())
         Bond Angles (degrees)
         Angle 2-1-3:  104.337
         Angle 2-1-4:  109.152
@@ -1392,7 +1392,7 @@ class LibmintsMolecule(object):
     def print_dihedrals(self):
         """Print the geometrical parameters (dihedrals) of the molecule.
 
-        >>> print H2OH2O.print_dihedrals()
+        >>> print(H2OH2O.print_dihedrals())
         Dihedral Angles (Degrees)
         Dihedral 1-2-3-4:  180.000
         Dihedral 1-2-3-5:  133.511
@@ -1444,7 +1444,7 @@ class LibmintsMolecule(object):
     def print_out_of_planes(self):
         """Print the geometrical parameters (out_of_planes) of the molecule.
 
-        >>> print H2OH2O.print_out_of_planes()
+        >>> print(H2OH2O.print_out_of_planes())
         Out-Of-Plane Angles (Degrees)
         Out-of-plane 1-2-3-4:    0.000
         Out-of-plane 1-2-3-5:   -7.373
@@ -1537,10 +1537,10 @@ class LibmintsMolecule(object):
         This function must be called after first instantiation of Molecule.
 
         >>> H2 = qcdb.Molecule("H\\nH 1 0.74\\n")
-        >>> print H2.natom()
+        >>> print(H2.natom())
         0
         >>> H2.update_geometry()
-        >>> print H2.natom()
+        >>> print(H2.natom())
         2
 
         """
@@ -1551,16 +1551,16 @@ class LibmintsMolecule(object):
         if self.lock_frame:
             return
 
-        #print "beginning update_geometry:"
+        #print("beginning update_geometry:")
         #self.print_full()
         if self.PYreinterpret_coordentries:
             self.reinterpret_coordentries()
-        #print "after reinterpret_coordentries:"
+        #print("after reinterpret_coordentries:")
         #self.print_full()
 
         if self.PYmove_to_com:
             self.move_to_com()
-        #print "after com:"
+        #print("after com:")
         #self.print_full()
 
         # If the no_reorient command was given, don't reorient
@@ -1572,7 +1572,7 @@ class LibmintsMolecule(object):
             # the the user might have provided.
             frame = self.symmetry_frame()
             self.rotate_full(frame)
-            #print "after rotate:"
+            #print("after rotate:")
             #self.print_full()
 
         # Recompute point group of the molecule, so the symmetry info is updated to the new frame
@@ -1584,7 +1584,7 @@ class LibmintsMolecule(object):
         #   finite-differences the set geometry is not totally symmetric anyway.
         # Symmetrize the molecule to remove any noise
 # TODO        self.symmetrize()
-        #print "after symmetry:"
+        #print("after symmetry:")
         #self.print_full()
 
         self.lock_frame = True
@@ -1600,7 +1600,7 @@ class LibmintsMolecule(object):
     def nuclear_repulsion_energy(self):
         """Computes nuclear repulsion energy.
 
-        >>> print H2OH2O.nuclear_repulsion_energy()
+        >>> print(H2OH2O.nuclear_repulsion_energy())
         36.6628478528
 
         """
@@ -1617,7 +1617,7 @@ class LibmintsMolecule(object):
     def nuclear_repulsion_energy_deriv1(self):
         """Computes nuclear repulsion energy derivatives
 
-        >>> print H2OH2O.nuclear_repulsion_energy_deriv1()
+        >>> print(H2OH2O.nuclear_repulsion_energy_deriv1())
         [[3.9020946901323774, 2.76201566471991, 0.0], [1.3172905807089021, -2.3486366050337293, 0.0], [-1.8107598525022435, -0.32511212499256564, 0.0], [-1.217656141385739, -2.6120090867576717, 0.0], [-1.0954846384766488, 1.2618710760320282, 2.1130743287465603], [-1.0954846384766488, 1.2618710760320282, -2.1130743287465603]]
 
         """
@@ -1658,7 +1658,7 @@ class LibmintsMolecule(object):
     def nfrozen_core(self, depth=False):
         """Number of frozen core for molecule given freezing state.
 
-        >>> print H2OH2O.nfrozen_core()
+        >>> print(H2OH2O.nfrozen_core())
         2
 
         """
@@ -1741,7 +1741,7 @@ class LibmintsMolecule(object):
     def inertia_tensor(self):
         """Compute inertia tensor.
 
-        >>> print H2OH2O.inertia_tensor()
+        >>> print(H2OH2O.inertia_tensor())
         [[8.704574864178731, -8.828375721817082, 0.0], [-8.828375721817082, 280.82861714077666, 0.0], [0.0, 0.0, 281.249500988553]]
 
         """
@@ -1801,7 +1801,7 @@ class LibmintsMolecule(object):
             'A', '%16.8f' % (im_cm / evals[0]) if not isLinear else '*****', \
             'B', '%16.8f' % (im_cm / evals[1]) if not isOne else '*****', \
             'C', '%16.8f' % (im_cm / evals[2]) if not isAtom else '*****')
-        print text
+        print(text)
         # TODO outfile
         rot_const = []
         rot_const.append(im_cm / evals[0] if not isLinear else None)
@@ -1835,7 +1835,7 @@ class LibmintsMolecule(object):
                     rel = 0.0
                 if rel < tol:
                     degen += 1
-        #print "\tDegeneracy is %d\n" % (degen)
+        #print("\tDegeneracy is %d\n" % (degen))
 
         # Determine rotor type
         if self.natom() == 1:
@@ -2007,7 +2007,7 @@ class LibmintsMolecule(object):
     def is_linear_planar(self, tol=DEFAULT_SYM_TOL):
         """Is the molecule linear, or planar?
 
-        >>> print H2OH2O.is_linear_planar()
+        >>> print(H2OH2O.is_linear_planar())
         (False, False)
 
         """
@@ -2099,7 +2099,7 @@ class LibmintsMolecule(object):
         """Determine symmetry reference frame. If noreorient is not set,
         this is the rotation matrix applied to the geometry in update_geometry.
 
-        >>> print H2OH2O.symmetry_frame()
+        >>> print(H2OH2O.symmetry_frame())
         [[1.0, -0.0, 0.0], [0.0, 1.0, 0.0], [0.0, -0.0, 1.0]]
 
         """
@@ -2394,9 +2394,9 @@ class LibmintsMolecule(object):
         # the y is then -x cross z
         yaxis = scale(cross(xaxis, zaxis), -1.0)
 
-        #print "xaxis %20.14lf %20.14lf %20.14lf" % (xaxis[0], xaxis[1], xaxis[2])
-        #print "yaxis %20.14lf %20.14lf %20.14lf" % (yaxis[0], yaxis[1], yaxis[2])
-        #print "zaxis %20.14lf %20.14lf %20.14lf" % (zaxis[0], zaxis[1], zaxis[2])
+        #print("xaxis %20.14lf %20.14lf %20.14lf" % (xaxis[0], xaxis[1], xaxis[2]))
+        #print("yaxis %20.14lf %20.14lf %20.14lf" % (yaxis[0], yaxis[1], yaxis[2]))
+        #print("zaxis %20.14lf %20.14lf %20.14lf" % (zaxis[0], zaxis[1], zaxis[2]))
 
         frame = zero(3, 3)
         for i in range(3):
@@ -2427,7 +2427,7 @@ class LibmintsMolecule(object):
     def symmetry_from_input(self):
         """Returns the symmetry specified in the input.
 
-        >>> print H2OH2O.symmetry_from_input()
+        >>> print(H2OH2O.symmetry_from_input())
         C1
 
         """

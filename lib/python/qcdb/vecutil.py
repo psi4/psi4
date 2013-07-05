@@ -269,7 +269,7 @@ def zero(m, n):
 def show(matrix):
     """ Print out matrix"""
     for col in matrix:
-        print col
+        print(col)
 
 
 def mscale(matrix, d):
