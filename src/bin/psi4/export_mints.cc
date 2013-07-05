@@ -662,6 +662,8 @@ void export_mints()
             def("nirrep", &Wavefunction::nirrep, "docstring").
             def("Ca_subset", &Wavefunction::Ca_subset, "docstring").
             def("Cb_subset", &Wavefunction::Cb_subset, "docstring").
+            def("epsilon_a_subset", &Wavefunction::epsilon_a_subset, "docstring").
+            def("epsilon_b_subset", &Wavefunction::epsilon_b_subset, "docstring").
             def("Ca", &Wavefunction::Ca, "docstring").
             def("Cb", &Wavefunction::Cb, "docstring").
             def("Fa", &Wavefunction::Fa, "docstring").

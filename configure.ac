@@ -969,6 +969,7 @@ AC_CONFIG_FILES([
           src/bin/psi4/Makefile
           src/bin/psi4/gitversion.py
           src/bin/dcft/Makefile
+          src/bin/lmp2/Makefile
           src/bin/mcscf/Makefile
           src/bin/transqt2/Makefile
           src/bin/transqt/Makefile
