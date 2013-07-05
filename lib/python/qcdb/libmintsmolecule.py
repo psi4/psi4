@@ -319,7 +319,7 @@ class LibmintsMolecule(object):
 
         """
         temp = scale(self.atoms[atom].compute(), self.input_units_to_au)
-        if posn >= 0:
+        if posn and posn >= 0:
             return temp[posn]
         else:
             return temp
