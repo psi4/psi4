@@ -382,6 +382,9 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None):
     # Parse output (could go further and break into E6, E8, E10 and Cn coeff)
     success = False
     for line in out.splitlines():
+        # communicate in python 3 returns a byte array rather than a string.
+        # Convert to string--only need a simple encoding for comparison.
+        line = line.decode('utf-8')
         if re.match(' Edisp /kcal,au', line):
             sline = line.split()
             dashd = float(sline[3])
