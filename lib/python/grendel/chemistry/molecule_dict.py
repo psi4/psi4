@@ -198,29 +198,29 @@ class MoleculeDict(object):
     # Methods #
     ###########
 
-    def iterkeys(self):
+    def keys(self):
         for key in self:
             yield key
 
     def keys(self):
-        return list(self.iterkeys())
+        return list(self.keys())
 
-    def iteritems(self):
+    def items(self):
         for key in self:
             yield key, self[key]
 
     def items(self):
-        return list(self.iteritems())
+        return list(self.items())
 
-    def itervalues(self):
-        for k, v in self.iteritems():
+    def values(self):
+        for k, v in self.items():
             yield v
 
     def values(self):
-        return list(self.itervalues())
+        return list(self.values())
 
     def update(self, **kwargs):
-        for key, val in kwargs.iteritems():
+        for key, val in kwargs.items():
             self[key] = val
 
     ###################

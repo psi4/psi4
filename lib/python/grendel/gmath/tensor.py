@@ -526,7 +526,7 @@ class Tensor(LightTensor):
                             sanity_func(obj)
             if cls is Tensor:
                 break
-        for attr, val in attributes_to_transfer.iteritems():
+        for attr, val in attributes_to_transfer.items():
             setattr(self, attr, val)
         #========================================#
 

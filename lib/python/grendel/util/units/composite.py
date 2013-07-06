@@ -63,7 +63,7 @@ class CompositeUnit(object):
 
         """
         numsorted = sorted(
-            [(unit, exponent) for unit, exponent in self.composed.iteritems() if exponent > 0],
+            [(unit, exponent) for unit, exponent in self.composed.items() if exponent > 0],
             key=lambda x: (x[0].genre.__name__, x[0].__name__)
         )
         numstrs = []
@@ -78,7 +78,7 @@ class CompositeUnit(object):
                 numstrs.append('{}**{:.5f}'.format(unit.name, exp))
         #----------------------------------------#
         denomsorted = sorted(
-            [(unit, exponent) for unit, exponent in self.composed.iteritems() if exponent < 0],
+            [(unit, exponent) for unit, exponent in self.composed.items() if exponent < 0],
             key=lambda x: (x[0].genre.__name__, x[0].__name__)
         )
         denomstrs = []
@@ -137,7 +137,7 @@ class CompositeUnit(object):
     def __mul__(self, other):
         new_composed = copy(self.composed)
         if isinstance(other, CompositeUnit):
-            for unit, exp in other.composed.iteritems():
+            for unit, exp in other.composed.items():
                 new_composed[unit] += exp
             new_coeff = self.coefficient * other.coefficient
             return CompositeUnit(new_composed, coeff=new_coeff)
@@ -162,7 +162,7 @@ class CompositeUnit(object):
     def __div__(self, other):
         new_composed = copy(self.composed)
         if isinstance(other, CompositeUnit):
-            for unit, exp in other.composed.iteritems():
+            for unit, exp in other.composed.items():
                 new_composed[unit] -= exp
             new_coeff = self.coefficient / other.coefficient
             return CompositeUnit(new_composed, coeff=new_coeff)
@@ -177,7 +177,7 @@ class CompositeUnit(object):
 
     def __rdiv__(self, other):
         new_composed = defaultdict(lambda: 0)
-        for unit, exp in self.composed.iteritems():
+        for unit, exp in self.composed.items():
             new_composed[unit] = -exp
         if isinstance(other, Unit):
             new_composed[other] += 1
@@ -191,7 +191,7 @@ class CompositeUnit(object):
     def __pow__(self, power):
         if isinstance(power, Real):
             new_composed = copy(self.composed)
-            for unit, exp in self.composed.iteritems():
+            for unit, exp in self.composed.items():
                 new_composed[unit] = exp * power
             new_coeff = self.coefficient ** power
             return CompositeUnit(new_composed, coeff=new_coeff)
@@ -228,11 +228,11 @@ class CompositeUnit(object):
         """
         using_units = using_units or {}
         genre_groups = defaultdict(lambda: [])
-        for unit, exp in self.composed.iteritems():
+        for unit, exp in self.composed.items():
             genre_groups[unit.genre].append((unit, exp))
         new_coeff = self.coefficient
         new_composed = defaultdict(lambda: 0)
-        for genre, group in genre_groups.iteritems():
+        for genre, group in genre_groups.items():
             # Decide which unit to reduce each genre to
             if genre in using_units:
                 to_unit = using_units[genre]
@@ -280,8 +280,8 @@ class CompositeUnit(object):
         #----------------------------------------#
         conv_factor = self_red.coefficient / other.coefficient
         for (my_unit, my_exp), (o_unit, o_exp) in zip(
-                sorted(self_red.composed.iteritems(), key=lambda x: (x[0].genre, x[0].__name__)),
-                sorted(other.composed.iteritems(), key=lambda x: (x[0].genre, x[0].__name__))):
+                sorted(self_red.composed.items(), key=lambda x: (x[0].genre, x[0].__name__)),
+                sorted(other.composed.items(), key=lambda x: (x[0].genre, x[0].__name__))):
             if my_exp != o_exp:
                 raise IncompatibleUnitsError(self, other_in)
             conv_factor *= my_unit.to(o_unit) ** my_exp

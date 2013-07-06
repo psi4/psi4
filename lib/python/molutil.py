@@ -311,7 +311,7 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None):
             # case where all param read from dashparam dict (which must have all correct keys)
             func = 'custom'
             dashcoeff[dashlvl][func] = {}
-            dashparam = dict((k.lower(), v) for k, v in dashparam.iteritems())
+            dashparam = dict((k.lower(), v) for k, v in dashparam.items())
             for key in dashcoeff[dashlvl]['b3lyp'].keys():
                 if key in dashparam.keys():
                     dashcoeff[dashlvl][func][key] = dashparam[key]
@@ -326,7 +326,7 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None):
             pass
         else:
             # case where items in dashparam dict can override param taken from dashcoeff above
-            dashparam = dict((k.lower(), v) for k, v in dashparam.iteritems())
+            dashparam = dict((k.lower(), v) for k, v in dashparam.items())
             for key in dashcoeff[dashlvl]['b3lyp'].keys():
                 if key in dashparam.keys():
                     dashcoeff[dashlvl][func][key] = dashparam[key]
@@ -382,6 +382,9 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None):
     # Parse output (could go further and break into E6, E8, E10 and Cn coeff)
     success = False
     for line in out.splitlines():
+        # communicate in python 3 returns a byte array rather than a string.
+        # Convert to string--only need a simple encoding for comparison.
+        line = line.decode('utf-8')
         if re.match(' Edisp /kcal,au', line):
             sline = line.split()
             dashd = float(sline[3])
