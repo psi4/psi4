@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup CCENERGY
     \brief Enter brief description of file here 
@@ -40,10 +62,10 @@ void pair_energies(double** epair_aa, double** epair_ab)
     if (naa) {
       double* eaa = init_array(naa);
       
-      dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 2, 5, 0, 5, 1, "D <ij|ab>");
-      dpd_buf4_init(&tau, PSIF_CC_TAMPS, 0, 2, 5, 0, 5, 1, "tauIjAb");
-      dpd_buf4_init(&E, PSIF_CC_TMP0, 0, 2, 2, 2, 2, 0, "E <ij|kl>");
-      dpd_contract444(&D, &tau, &E, 0, 0, 1.0, 0.0);
+      global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 2, 5, 0, 5, 1, "D <ij|ab>");
+      global_dpd_->buf4_init(&tau, PSIF_CC_TAMPS, 0, 2, 5, 0, 5, 1, "tauIjAb");
+      global_dpd_->buf4_init(&E, PSIF_CC_TMP0, 0, 2, 2, 2, 2, 0, "E <ij|kl>");
+      global_dpd_->contract444(&D, &tau, &E, 0, 0, 1.0, 0.0);
 
       //dpd_buf4_print(&E, outfile, 1);
 
@@ -54,8 +76,8 @@ void pair_energies(double** epair_aa, double** epair_ab)
         int p;
         int np = Params->rowtot[irrep];
 
-        dpd_buf4_mat_irrep_init(&E, irrep);
-        dpd_buf4_mat_irrep_rd(&E, irrep);
+        global_dpd_->buf4_mat_irrep_init(&E, irrep);
+        global_dpd_->buf4_mat_irrep_rd(&E, irrep);
         block = E.matrix[irrep];
 
         for(p=0; p<np; p++) {
@@ -67,24 +89,24 @@ void pair_energies(double** epair_aa, double** epair_ab)
           ij = (i > j) ? i*(i-1)/2 + j : j*(j-1)/2 + i;
           eaa[ij] = block[p][p];
         }
-	dpd_buf4_mat_irrep_close(&E, irrep);
+	global_dpd_->buf4_mat_irrep_close(&E, irrep);
       }
 
       *epair_aa = eaa;
 
-      dpd_buf4_close(&tau);
-      dpd_buf4_close(&D);
-      dpd_buf4_close(&E);
+      global_dpd_->buf4_close(&tau);
+      global_dpd_->buf4_close(&D);
+      global_dpd_->buf4_close(&E);
     }
 
     /* Compute alpha-beta pair energies */
     if (nab) {
       double* eab = init_array(nab);
 
-      dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
-      dpd_buf4_init(&tau, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjAb");
-      dpd_buf4_init(&E, PSIF_CC_TMP0, 0, 0, 0, 0, 0, 0, "E <ij|kl>");
-      dpd_contract444(&D, &tau, &E, 0, 0, 1.0, 0.0);
+      global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+      global_dpd_->buf4_init(&tau, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjAb");
+      global_dpd_->buf4_init(&E, PSIF_CC_TMP0, 0, 0, 0, 0, 0, 0, "E <ij|kl>");
+      global_dpd_->contract444(&D, &tau, &E, 0, 0, 1.0, 0.0);
 
       //dpd_buf4_print(&E, outfile, 1);
 
@@ -95,8 +117,8 @@ void pair_energies(double** epair_aa, double** epair_ab)
         int p;
         int np = Params->rowtot[irrep];
 
-        dpd_buf4_mat_irrep_init(&E, irrep);
-        dpd_buf4_mat_irrep_rd(&E, irrep);
+        global_dpd_->buf4_mat_irrep_init(&E, irrep);
+        global_dpd_->buf4_mat_irrep_rd(&E, irrep);
         block = E.matrix[irrep];
 
         for(p=0; p<np; p++) {
@@ -108,14 +130,14 @@ void pair_energies(double** epair_aa, double** epair_ab)
           ij = i*nocc_act + j;
           eab[ij] = block[p][p];
         }
-	dpd_buf4_mat_irrep_close(&E, irrep);
+	global_dpd_->buf4_mat_irrep_close(&E, irrep);
       }
 
       *epair_ab = eab;
 
-      dpd_buf4_close(&tau);
-      dpd_buf4_close(&D);
-      dpd_buf4_close(&E);
+      global_dpd_->buf4_close(&tau);
+      global_dpd_->buf4_close(&D);
+      global_dpd_->buf4_close(&E);
     }
   }
   

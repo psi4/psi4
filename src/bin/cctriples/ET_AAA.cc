@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup CCTRIPLES
     \brief Enter brief description of file here 
@@ -42,33 +64,33 @@ double ET_AAA(void)
   occ_off = moinfo.occ_off;
   vir_off = moinfo.vir_off;
 
-  dpd_file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
-  dpd_file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
-  dpd_file2_mat_init(&fIJ);
-  dpd_file2_mat_init(&fAB);
-  dpd_file2_mat_rd(&fIJ);
-  dpd_file2_mat_rd(&fAB);
+  global_dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+  global_dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
+  global_dpd_->file2_mat_init(&fIJ);
+  global_dpd_->file2_mat_init(&fAB);
+  global_dpd_->file2_mat_rd(&fIJ);
+  global_dpd_->file2_mat_rd(&fAB);
 
-  dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
-  dpd_file2_mat_init(&T1);
-  dpd_file2_mat_rd(&T1);
+  global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
+  global_dpd_->file2_mat_init(&T1);
+  global_dpd_->file2_mat_rd(&T1);
 
-  dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
-  dpd_buf4_init(&Fints, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 1, "F <ia|bc>");
-  dpd_buf4_init(&Eints, PSIF_CC_EINTS, 0, 0, 10, 2, 10, 0, "E <ij||ka> (i>j,ka)");
-  dpd_buf4_init(&Dints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij||ab>");
+  global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
+  global_dpd_->buf4_init(&Fints, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 1, "F <ia|bc>");
+  global_dpd_->buf4_init(&Eints, PSIF_CC_EINTS, 0, 0, 10, 2, 10, 0, "E <ij||ka> (i>j,ka)");
+  global_dpd_->buf4_init(&Dints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij||ab>");
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&T2, h);
-    dpd_buf4_mat_irrep_rd(&T2, h);
+    global_dpd_->buf4_mat_irrep_init(&T2, h);
+    global_dpd_->buf4_mat_irrep_rd(&T2, h);
 
-    dpd_buf4_mat_irrep_init(&Fints, h);
-    dpd_buf4_mat_irrep_rd(&Fints, h);
+    global_dpd_->buf4_mat_irrep_init(&Fints, h);
+    global_dpd_->buf4_mat_irrep_rd(&Fints, h);
 
-    dpd_buf4_mat_irrep_init(&Eints, h);
-    dpd_buf4_mat_irrep_rd(&Eints, h);
+    global_dpd_->buf4_mat_irrep_init(&Eints, h);
+    global_dpd_->buf4_mat_irrep_rd(&Eints, h);
 
-    dpd_buf4_mat_irrep_init(&Dints, h);
-    dpd_buf4_mat_irrep_rd(&Dints, h);
+    global_dpd_->buf4_mat_irrep_init(&Dints, h);
+    global_dpd_->buf4_mat_irrep_rd(&Dints, h);
   }
 
   cnt = 0;
@@ -626,24 +648,24 @@ double ET_AAA(void)
   /*  fprintf(outfile, "ET_AAA = %20.14f\n", ET_AAA); */
 
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_close(&T2, h);
-    dpd_buf4_mat_irrep_close(&Fints, h);
-    dpd_buf4_mat_irrep_close(&Eints, h);
-    dpd_buf4_mat_irrep_close(&Dints, h);
+    global_dpd_->buf4_mat_irrep_close(&T2, h);
+    global_dpd_->buf4_mat_irrep_close(&Fints, h);
+    global_dpd_->buf4_mat_irrep_close(&Eints, h);
+    global_dpd_->buf4_mat_irrep_close(&Dints, h);
   }
 
-  dpd_buf4_close(&T2);
-  dpd_buf4_close(&Fints);
-  dpd_buf4_close(&Eints);
-  dpd_buf4_close(&Dints);
+  global_dpd_->buf4_close(&T2);
+  global_dpd_->buf4_close(&Fints);
+  global_dpd_->buf4_close(&Eints);
+  global_dpd_->buf4_close(&Dints);
 
-  dpd_file2_mat_close(&T1);
-  dpd_file2_close(&T1);
+  global_dpd_->file2_mat_close(&T1);
+  global_dpd_->file2_close(&T1);
 
-  dpd_file2_mat_close(&fIJ);
-  dpd_file2_mat_close(&fAB);
-  dpd_file2_close(&fIJ);
-  dpd_file2_close(&fAB);
+  global_dpd_->file2_mat_close(&fIJ);
+  global_dpd_->file2_mat_close(&fAB);
+  global_dpd_->file2_close(&fIJ);
+  global_dpd_->file2_close(&fAB);
 
   return ET_AAA;
 }

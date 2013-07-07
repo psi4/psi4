@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup CCDENSITY
     \brief Enter brief description of file here 
@@ -36,14 +58,14 @@ void resort_gamma(void)
 
   /* G(I,J) --> G'(I,J) */
   dpd_set_default(0);
-  dpd_file2_init(&g, PSIF_CC_OEI, 0, 0, 0, "DIJ");
+  global_dpd_->file2_init(&g, PSIF_CC_OEI, 0, 0, 0, "DIJ");
 
   dpd_set_default(1);
-  dpd_file2_init(&gnew, PSIF_CC_OEI_NEW, 0, 0, 0, "DIJ");
+  global_dpd_->file2_init(&gnew, PSIF_CC_OEI_NEW, 0, 0, 0, "DIJ");
 
-  dpd_file2_mat_init(&g);
-  dpd_file2_mat_rd(&g);
-  dpd_file2_mat_init(&gnew);
+  global_dpd_->file2_mat_init(&g);
+  global_dpd_->file2_mat_rd(&g);
+  global_dpd_->file2_mat_init(&gnew);
 
   for(h=0; h < nirreps; h++) {
       for(row=0; row < gnew.params->rowtot[h]; row++) {
@@ -68,23 +90,23 @@ void resort_gamma(void)
 	}
     }
 
-  dpd_file2_mat_wrt(&gnew);
-  dpd_file2_mat_close(&gnew);
-  dpd_file2_mat_close(&g);
+  global_dpd_->file2_mat_wrt(&gnew);
+  global_dpd_->file2_mat_close(&gnew);
+  global_dpd_->file2_mat_close(&g);
 
-  dpd_file2_close(&g);
-  dpd_file2_close(&gnew);
+  global_dpd_->file2_close(&g);
+  global_dpd_->file2_close(&gnew);
 
   /* G(i,j) --> G'(i,j) */
   dpd_set_default(0);
-  dpd_file2_init(&g, PSIF_CC_OEI, 0, 0, 0, "Dij");
+  global_dpd_->file2_init(&g, PSIF_CC_OEI, 0, 0, 0, "Dij");
 
   dpd_set_default(1);
-  dpd_file2_init(&gnew, PSIF_CC_OEI_NEW, 0, 0, 0, "Dij");
+  global_dpd_->file2_init(&gnew, PSIF_CC_OEI_NEW, 0, 0, 0, "Dij");
 
-  dpd_file2_mat_init(&g);
-  dpd_file2_mat_rd(&g);
-  dpd_file2_mat_init(&gnew);
+  global_dpd_->file2_mat_init(&g);
+  global_dpd_->file2_mat_rd(&g);
+  global_dpd_->file2_mat_init(&gnew);
 
   for(h=0; h < nirreps; h++) {
       for(row=0; row < gnew.params->rowtot[h]; row++) {
@@ -109,23 +131,23 @@ void resort_gamma(void)
 	}
     }
 
-  dpd_file2_mat_wrt(&gnew);
-  dpd_file2_mat_close(&gnew);
-  dpd_file2_mat_close(&g);
+  global_dpd_->file2_mat_wrt(&gnew);
+  global_dpd_->file2_mat_close(&gnew);
+  global_dpd_->file2_mat_close(&g);
 
-  dpd_file2_close(&g);
-  dpd_file2_close(&gnew);
+  global_dpd_->file2_close(&g);
+  global_dpd_->file2_close(&gnew);
 
   /* G(A,B) --> G'(A,B) */
   dpd_set_default(0);
-  dpd_file2_init(&g, PSIF_CC_OEI, 0, 1, 1, "DAB");
+  global_dpd_->file2_init(&g, PSIF_CC_OEI, 0, 1, 1, "DAB");
 
   dpd_set_default(1);
-  dpd_file2_init(&gnew, PSIF_CC_OEI_NEW, 0, 1, 1, "DAB");
+  global_dpd_->file2_init(&gnew, PSIF_CC_OEI_NEW, 0, 1, 1, "DAB");
 
-  dpd_file2_mat_init(&g);
-  dpd_file2_mat_rd(&g);
-  dpd_file2_mat_init(&gnew);
+  global_dpd_->file2_mat_init(&g);
+  global_dpd_->file2_mat_rd(&g);
+  global_dpd_->file2_mat_init(&gnew);
 
   for(h=0; h < nirreps; h++) {
       for(row=0; row < gnew.params->rowtot[h]; row++) {
@@ -150,23 +172,23 @@ void resort_gamma(void)
 	}
     }
 
-  dpd_file2_mat_wrt(&gnew);
-  dpd_file2_mat_close(&gnew);
-  dpd_file2_mat_close(&g);
+  global_dpd_->file2_mat_wrt(&gnew);
+  global_dpd_->file2_mat_close(&gnew);
+  global_dpd_->file2_mat_close(&g);
 
-  dpd_file2_close(&g);
-  dpd_file2_close(&gnew);
+  global_dpd_->file2_close(&g);
+  global_dpd_->file2_close(&gnew);
 
   /* G(a,b) --> G'(a,b) */
   dpd_set_default(0);
-  dpd_file2_init(&g, PSIF_CC_OEI, 0, 1, 1, "Dab");
+  global_dpd_->file2_init(&g, PSIF_CC_OEI, 0, 1, 1, "Dab");
 
   dpd_set_default(1);
-  dpd_file2_init(&gnew, PSIF_CC_OEI_NEW, 0, 1, 1, "Dab");
+  global_dpd_->file2_init(&gnew, PSIF_CC_OEI_NEW, 0, 1, 1, "Dab");
 
-  dpd_file2_mat_init(&g);
-  dpd_file2_mat_rd(&g);
-  dpd_file2_mat_init(&gnew);
+  global_dpd_->file2_mat_init(&g);
+  global_dpd_->file2_mat_rd(&g);
+  global_dpd_->file2_mat_init(&gnew);
 
   for(h=0; h < nirreps; h++) {
       for(row=0; row < gnew.params->rowtot[h]; row++) {
@@ -191,23 +213,23 @@ void resort_gamma(void)
 	}
     }
 
-  dpd_file2_mat_wrt(&gnew);
-  dpd_file2_mat_close(&gnew);
-  dpd_file2_mat_close(&g);
+  global_dpd_->file2_mat_wrt(&gnew);
+  global_dpd_->file2_mat_close(&gnew);
+  global_dpd_->file2_mat_close(&g);
 
-  dpd_file2_close(&g);
-  dpd_file2_close(&gnew);
+  global_dpd_->file2_close(&g);
+  global_dpd_->file2_close(&gnew);
 
   /* G(A,I) --> G'(A,I) */
   dpd_set_default(0);
-  dpd_file2_init(&g, PSIF_CC_OEI, 0, 0, 1, "DAI");
+  global_dpd_->file2_init(&g, PSIF_CC_OEI, 0, 0, 1, "DAI");
 
   dpd_set_default(1);
-  dpd_file2_init(&gnew, PSIF_CC_OEI_NEW, 0, 0, 1, "DAI");
+  global_dpd_->file2_init(&gnew, PSIF_CC_OEI_NEW, 0, 0, 1, "DAI");
 
-  dpd_file2_mat_init(&g);
-  dpd_file2_mat_rd(&g);
-  dpd_file2_mat_init(&gnew);
+  global_dpd_->file2_mat_init(&g);
+  global_dpd_->file2_mat_rd(&g);
+  global_dpd_->file2_mat_init(&gnew);
 
   for(h=0; h < nirreps; h++) {
       for(row=0; row < gnew.params->rowtot[h]; row++) {
@@ -233,23 +255,23 @@ void resort_gamma(void)
 	}
     }
 
-  dpd_file2_mat_wrt(&gnew);
-  dpd_file2_mat_close(&gnew);
-  dpd_file2_mat_close(&g);
+  global_dpd_->file2_mat_wrt(&gnew);
+  global_dpd_->file2_mat_close(&gnew);
+  global_dpd_->file2_mat_close(&g);
 
-  dpd_file2_close(&g);
-  dpd_file2_close(&gnew);
+  global_dpd_->file2_close(&g);
+  global_dpd_->file2_close(&gnew);
 
   /* G(a,i) --> G'(a,i) */
   dpd_set_default(0);
-  dpd_file2_init(&g, PSIF_CC_OEI, 0, 0, 1, "Dai");
+  global_dpd_->file2_init(&g, PSIF_CC_OEI, 0, 0, 1, "Dai");
 
   dpd_set_default(1);
-  dpd_file2_init(&gnew, PSIF_CC_OEI_NEW, 0, 0, 1, "Dai");
+  global_dpd_->file2_init(&gnew, PSIF_CC_OEI_NEW, 0, 0, 1, "Dai");
 
-  dpd_file2_mat_init(&g);
-  dpd_file2_mat_rd(&g);
-  dpd_file2_mat_init(&gnew);
+  global_dpd_->file2_mat_init(&g);
+  global_dpd_->file2_mat_rd(&g);
+  global_dpd_->file2_mat_init(&gnew);
 
   for(h=0; h < nirreps; h++) {
       for(row=0; row < gnew.params->rowtot[h]; row++) {
@@ -275,23 +297,23 @@ void resort_gamma(void)
 	}
     }
 
-  dpd_file2_mat_wrt(&gnew);
-  dpd_file2_mat_close(&gnew);
-  dpd_file2_mat_close(&g);
+  global_dpd_->file2_mat_wrt(&gnew);
+  global_dpd_->file2_mat_close(&gnew);
+  global_dpd_->file2_mat_close(&g);
 
-  dpd_file2_close(&g);
-  dpd_file2_close(&gnew);
+  global_dpd_->file2_close(&g);
+  global_dpd_->file2_close(&gnew);
 
   /* G(I,A) --> G'(I,A) */
   dpd_set_default(0);
-  dpd_file2_init(&g, PSIF_CC_OEI, 0, 0, 1, "DIA");
+  global_dpd_->file2_init(&g, PSIF_CC_OEI, 0, 0, 1, "DIA");
 
   dpd_set_default(1);
-  dpd_file2_init(&gnew, PSIF_CC_OEI_NEW, 0, 0, 1, "DIA");
+  global_dpd_->file2_init(&gnew, PSIF_CC_OEI_NEW, 0, 0, 1, "DIA");
 
-  dpd_file2_mat_init(&g);
-  dpd_file2_mat_rd(&g);
-  dpd_file2_mat_init(&gnew);
+  global_dpd_->file2_mat_init(&g);
+  global_dpd_->file2_mat_rd(&g);
+  global_dpd_->file2_mat_init(&gnew);
 
   for(h=0; h < nirreps; h++) {
       for(row=0; row < gnew.params->rowtot[h]; row++) {
@@ -316,23 +338,23 @@ void resort_gamma(void)
 	}
     }
 
-  dpd_file2_mat_wrt(&gnew);
-  dpd_file2_mat_close(&gnew);
-  dpd_file2_mat_close(&g);
+  global_dpd_->file2_mat_wrt(&gnew);
+  global_dpd_->file2_mat_close(&gnew);
+  global_dpd_->file2_mat_close(&g);
 
-  dpd_file2_close(&g);
-  dpd_file2_close(&gnew);
+  global_dpd_->file2_close(&g);
+  global_dpd_->file2_close(&gnew);
 
   /* G(i,a) --> G'(i,a) */
   dpd_set_default(0);
-  dpd_file2_init(&g, PSIF_CC_OEI, 0, 0, 1, "Dia");
+  global_dpd_->file2_init(&g, PSIF_CC_OEI, 0, 0, 1, "Dia");
 
   dpd_set_default(1);
-  dpd_file2_init(&gnew, PSIF_CC_OEI_NEW, 0, 0, 1, "Dia");
+  global_dpd_->file2_init(&gnew, PSIF_CC_OEI_NEW, 0, 0, 1, "Dia");
 
-  dpd_file2_mat_init(&g);
-  dpd_file2_mat_rd(&g);
-  dpd_file2_mat_init(&gnew);
+  global_dpd_->file2_mat_init(&g);
+  global_dpd_->file2_mat_rd(&g);
+  global_dpd_->file2_mat_init(&gnew);
 
   for(h=0; h < nirreps; h++) {
       for(row=0; row < gnew.params->rowtot[h]; row++) {
@@ -357,26 +379,26 @@ void resort_gamma(void)
 	}
     }
 
-  dpd_file2_mat_wrt(&gnew);
-  dpd_file2_mat_close(&gnew);
-  dpd_file2_mat_close(&g);
+  global_dpd_->file2_mat_wrt(&gnew);
+  global_dpd_->file2_mat_close(&gnew);
+  global_dpd_->file2_mat_close(&g);
 
-  dpd_file2_close(&g);
-  dpd_file2_close(&gnew);
+  global_dpd_->file2_close(&g);
+  global_dpd_->file2_close(&gnew);
 
   
   /* G(IJ,KL) --> G'(IJ,KL) */
   dpd_set_default(0);
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 2, 2, 2, 0, "GIJKL");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 2, 2, 2, 0, "GIJKL");
 
   dpd_set_default(1);
-  dpd_buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 2, 2, 2, 2, 0, "GIJKL");
+  global_dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 2, 2, 2, 2, 0, "GIJKL");
 
   for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&G, h);
-      dpd_buf4_mat_irrep_rd(&G, h);
+      global_dpd_->buf4_mat_irrep_init(&G, h);
+      global_dpd_->buf4_mat_irrep_rd(&G, h);
 
-      dpd_buf4_mat_irrep_init(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_init(&Gnew, h);
 
       for(row=0; row < Gnew.params->rowtot[h]; row++) {
 	  i = Gnew.params->roworb[h][row][0];
@@ -406,26 +428,26 @@ void resort_gamma(void)
 	    }
 	}
 
-      dpd_buf4_mat_irrep_wrt(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_wrt(&Gnew, h);
 
-      dpd_buf4_mat_irrep_close(&G, h);
+      global_dpd_->buf4_mat_irrep_close(&G, h);
     }
   
-  dpd_buf4_close(&G);
-  dpd_buf4_close(&Gnew);
+  global_dpd_->buf4_close(&G);
+  global_dpd_->buf4_close(&Gnew);
 
   /* G(ij,kl) --> G'(ij,kl) */
   dpd_set_default(0);
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 2, 2, 2, 0, "Gijkl");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 2, 2, 2, 0, "Gijkl");
 
   dpd_set_default(1);
-  dpd_buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 2, 2, 2, 2, 0, "Gijkl");
+  global_dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 2, 2, 2, 2, 0, "Gijkl");
 
   for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&G, h);
-      dpd_buf4_mat_irrep_rd(&G, h);
+      global_dpd_->buf4_mat_irrep_init(&G, h);
+      global_dpd_->buf4_mat_irrep_rd(&G, h);
 
-      dpd_buf4_mat_irrep_init(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_init(&Gnew, h);
 
       for(row=0; row < Gnew.params->rowtot[h]; row++) {
 	  i = Gnew.params->roworb[h][row][0];
@@ -454,26 +476,26 @@ void resort_gamma(void)
 	    }
 	}
 
-      dpd_buf4_mat_irrep_wrt(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_wrt(&Gnew, h);
 
-      dpd_buf4_mat_irrep_close(&G, h);
+      global_dpd_->buf4_mat_irrep_close(&G, h);
     }
   
-  dpd_buf4_close(&G);
-  dpd_buf4_close(&Gnew);
+  global_dpd_->buf4_close(&G);
+  global_dpd_->buf4_close(&Gnew);
 
   /* G(Ij,Kl) --> G'(Ij,Kl) */
   dpd_set_default(0);
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 0, 0, 0, 0, "GIjKl");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 0, 0, 0, 0, "GIjKl");
 
   dpd_set_default(1);
-  dpd_buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 0, 0, 0, 0, 0, "GIjKl");
+  global_dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 0, 0, 0, 0, 0, "GIjKl");
 
   for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&G, h);
-      dpd_buf4_mat_irrep_rd(&G, h);
+      global_dpd_->buf4_mat_irrep_init(&G, h);
+      global_dpd_->buf4_mat_irrep_rd(&G, h);
 
-      dpd_buf4_mat_irrep_init(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_init(&Gnew, h);
 
       for(row=0; row < Gnew.params->rowtot[h]; row++) {
 	  i = Gnew.params->roworb[h][row][0];
@@ -503,26 +525,26 @@ void resort_gamma(void)
 	    }
 	}
 
-      dpd_buf4_mat_irrep_wrt(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_wrt(&Gnew, h);
 
-      dpd_buf4_mat_irrep_close(&G, h);
+      global_dpd_->buf4_mat_irrep_close(&G, h);
     }
 
-  dpd_buf4_close(&G);
-  dpd_buf4_close(&Gnew);
+  global_dpd_->buf4_close(&G);
+  global_dpd_->buf4_close(&Gnew);
 
   /* G(IJ,KA) --> G'(IJ,KA) */
   dpd_set_default(0);
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 10, 2, 10, 0, "GIJKA");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 10, 2, 10, 0, "GIJKA");
 
   dpd_set_default(1);
-  dpd_buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 2, 10, 2, 10, 0, "GIJKA");
+  global_dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 2, 10, 2, 10, 0, "GIJKA");
 
   for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&G, h);
-      dpd_buf4_mat_irrep_rd(&G, h);
+      global_dpd_->buf4_mat_irrep_init(&G, h);
+      global_dpd_->buf4_mat_irrep_rd(&G, h);
 
-      dpd_buf4_mat_irrep_init(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_init(&Gnew, h);
 
       for(row=0; row < Gnew.params->rowtot[h]; row++) {
 	  i = Gnew.params->roworb[h][row][0];
@@ -552,26 +574,26 @@ void resort_gamma(void)
 	    }
 	}
 
-      dpd_buf4_mat_irrep_wrt(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_wrt(&Gnew, h);
 
-      dpd_buf4_mat_irrep_close(&G, h);
+      global_dpd_->buf4_mat_irrep_close(&G, h);
     }
 
-  dpd_buf4_close(&G);
-  dpd_buf4_close(&Gnew);
+  global_dpd_->buf4_close(&G);
+  global_dpd_->buf4_close(&Gnew);
 
   /* G(ij,ka) --> G'(ij,ka) */
   dpd_set_default(0);
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 10, 2, 10, 0, "Gijka");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 10, 2, 10, 0, "Gijka");
 
   dpd_set_default(1);
-  dpd_buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 2, 10, 2, 10, 0, "Gijka");
+  global_dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 2, 10, 2, 10, 0, "Gijka");
 
   for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&G, h);
-      dpd_buf4_mat_irrep_rd(&G, h);
+      global_dpd_->buf4_mat_irrep_init(&G, h);
+      global_dpd_->buf4_mat_irrep_rd(&G, h);
 
-      dpd_buf4_mat_irrep_init(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_init(&Gnew, h);
 
       for(row=0; row < Gnew.params->rowtot[h]; row++) {
 	  i = Gnew.params->roworb[h][row][0];
@@ -601,26 +623,26 @@ void resort_gamma(void)
 	    }
 	}
 
-      dpd_buf4_mat_irrep_wrt(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_wrt(&Gnew, h);
 
-      dpd_buf4_mat_irrep_close(&G, h);
+      global_dpd_->buf4_mat_irrep_close(&G, h);
     }
 
-  dpd_buf4_close(&G);
-  dpd_buf4_close(&Gnew);
+  global_dpd_->buf4_close(&G);
+  global_dpd_->buf4_close(&Gnew);
 
   /* G(Ij,Ka) --> G'(Ij,Ka) */
   dpd_set_default(0);
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 10, 0, 10, 0, "GIjKa");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 10, 0, 10, 0, "GIjKa");
 
   dpd_set_default(1);
-  dpd_buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 0, 10, 0, 10, 0, "GIjKa");
+  global_dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 0, 10, 0, 10, 0, "GIjKa");
 
   for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&G, h);
-      dpd_buf4_mat_irrep_rd(&G, h);
+      global_dpd_->buf4_mat_irrep_init(&G, h);
+      global_dpd_->buf4_mat_irrep_rd(&G, h);
 
-      dpd_buf4_mat_irrep_init(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_init(&Gnew, h);
 
       for(row=0; row < Gnew.params->rowtot[h]; row++) {
 	  i = Gnew.params->roworb[h][row][0];
@@ -650,26 +672,26 @@ void resort_gamma(void)
 	    }
 	}
 
-      dpd_buf4_mat_irrep_wrt(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_wrt(&Gnew, h);
 
-      dpd_buf4_mat_irrep_close(&G, h);
+      global_dpd_->buf4_mat_irrep_close(&G, h);
     }
 
-  dpd_buf4_close(&G);
-  dpd_buf4_close(&Gnew);
+  global_dpd_->buf4_close(&G);
+  global_dpd_->buf4_close(&Gnew);
 
   /* G(IJ,AB) --> G'(IJ,AB) */
   dpd_set_default(0);
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 7, 2, 7, 0, "GIJAB");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 7, 2, 7, 0, "GIJAB");
 
   dpd_set_default(1);
-  dpd_buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 2, 7, 2, 7, 0, "GIJAB");
+  global_dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 2, 7, 2, 7, 0, "GIJAB");
 
   for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&G, h);
-      dpd_buf4_mat_irrep_rd(&G, h);
+      global_dpd_->buf4_mat_irrep_init(&G, h);
+      global_dpd_->buf4_mat_irrep_rd(&G, h);
 
-      dpd_buf4_mat_irrep_init(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_init(&Gnew, h);
 
       for(row=0; row < Gnew.params->rowtot[h]; row++) {
 	  i = Gnew.params->roworb[h][row][0];
@@ -698,26 +720,26 @@ void resort_gamma(void)
 	    }
 	}
 
-      dpd_buf4_mat_irrep_wrt(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_wrt(&Gnew, h);
 
-      dpd_buf4_mat_irrep_close(&G, h);
+      global_dpd_->buf4_mat_irrep_close(&G, h);
     }
 
-  dpd_buf4_close(&G);
-  dpd_buf4_close(&Gnew);
+  global_dpd_->buf4_close(&G);
+  global_dpd_->buf4_close(&Gnew);
 
   /* G(ij,ab) --> G'(ij,ab) */
   dpd_set_default(0);
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 7, 2, 7, 0, "Gijab");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 7, 2, 7, 0, "Gijab");
 
   dpd_set_default(1);
-  dpd_buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 2, 7, 2, 7, 0, "Gijab");
+  global_dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 2, 7, 2, 7, 0, "Gijab");
 
   for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&G, h);
-      dpd_buf4_mat_irrep_rd(&G, h);
+      global_dpd_->buf4_mat_irrep_init(&G, h);
+      global_dpd_->buf4_mat_irrep_rd(&G, h);
 
-      dpd_buf4_mat_irrep_init(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_init(&Gnew, h);
 
       for(row=0; row < Gnew.params->rowtot[h]; row++) {
 	  i = Gnew.params->roworb[h][row][0];
@@ -746,26 +768,26 @@ void resort_gamma(void)
 	    }
 	}
 
-      dpd_buf4_mat_irrep_wrt(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_wrt(&Gnew, h);
 
-      dpd_buf4_mat_irrep_close(&G, h);
+      global_dpd_->buf4_mat_irrep_close(&G, h);
     }
 
-  dpd_buf4_close(&G);
-  dpd_buf4_close(&Gnew);
+  global_dpd_->buf4_close(&G);
+  global_dpd_->buf4_close(&Gnew);
 
   /* G(Ij,Ab) --> G'(Ij,Ab) */
   dpd_set_default(0);
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "GIjAb");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "GIjAb");
 
   dpd_set_default(1);
-  dpd_buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 0, 5, 0, 5, 0, "GIjAb");
+  global_dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 0, 5, 0, 5, 0, "GIjAb");
 
   for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&G, h);
-      dpd_buf4_mat_irrep_rd(&G, h);
+      global_dpd_->buf4_mat_irrep_init(&G, h);
+      global_dpd_->buf4_mat_irrep_rd(&G, h);
 
-      dpd_buf4_mat_irrep_init(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_init(&Gnew, h);
 
       for(row=0; row < Gnew.params->rowtot[h]; row++) {
 	  i = Gnew.params->roworb[h][row][0];
@@ -794,26 +816,26 @@ void resort_gamma(void)
 	    }
 	}
 
-      dpd_buf4_mat_irrep_wrt(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_wrt(&Gnew, h);
 
-      dpd_buf4_mat_irrep_close(&G, h);
+      global_dpd_->buf4_mat_irrep_close(&G, h);
     }
 
-  dpd_buf4_close(&G);
-  dpd_buf4_close(&Gnew);
+  global_dpd_->buf4_close(&G);
+  global_dpd_->buf4_close(&Gnew);
 
   /* G(IB,JA) --> G'(IB,JA) */
   dpd_set_default(0);
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIBJA");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIBJA");
 
   dpd_set_default(1);
-  dpd_buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 10, 10, 10, 10, 0, "GIBJA");
+  global_dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 10, 10, 10, 10, 0, "GIBJA");
 
   for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&G, h);
-      dpd_buf4_mat_irrep_rd(&G, h);
+      global_dpd_->buf4_mat_irrep_init(&G, h);
+      global_dpd_->buf4_mat_irrep_rd(&G, h);
 
-      dpd_buf4_mat_irrep_init(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_init(&Gnew, h);
 
       for(row=0; row < Gnew.params->rowtot[h]; row++) {
 	  i = Gnew.params->roworb[h][row][0];
@@ -842,26 +864,26 @@ void resort_gamma(void)
 	    }
 	}
 
-      dpd_buf4_mat_irrep_wrt(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_wrt(&Gnew, h);
 
-      dpd_buf4_mat_irrep_close(&G, h);
+      global_dpd_->buf4_mat_irrep_close(&G, h);
     }
 
-  dpd_buf4_close(&G);
-  dpd_buf4_close(&Gnew);
+  global_dpd_->buf4_close(&G);
+  global_dpd_->buf4_close(&Gnew);
 
   /* G(ib,ja) --> G'(ib,ja) */
   dpd_set_default(0);
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "Gibja");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "Gibja");
 
   dpd_set_default(1);
-  dpd_buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 10, 10, 10, 10, 0, "Gibja");
+  global_dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 10, 10, 10, 10, 0, "Gibja");
 
   for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&G, h);
-      dpd_buf4_mat_irrep_rd(&G, h);
+      global_dpd_->buf4_mat_irrep_init(&G, h);
+      global_dpd_->buf4_mat_irrep_rd(&G, h);
 
-      dpd_buf4_mat_irrep_init(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_init(&Gnew, h);
 
       for(row=0; row < Gnew.params->rowtot[h]; row++) {
 	  i = Gnew.params->roworb[h][row][0];
@@ -890,26 +912,26 @@ void resort_gamma(void)
 	    }
 	}
 
-      dpd_buf4_mat_irrep_wrt(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_wrt(&Gnew, h);
 
-      dpd_buf4_mat_irrep_close(&G, h);
+      global_dpd_->buf4_mat_irrep_close(&G, h);
     }
 
-  dpd_buf4_close(&G);
-  dpd_buf4_close(&Gnew);
+  global_dpd_->buf4_close(&G);
+  global_dpd_->buf4_close(&Gnew);
 
   /* G(Ib,Ja) --> G'(Ib,Ja) */
   dpd_set_default(0);
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIbJa");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIbJa");
 
   dpd_set_default(1);
-  dpd_buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 10, 10, 10, 10, 0, "GIbJa");
+  global_dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 10, 10, 10, 10, 0, "GIbJa");
 
   for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&G, h);
-      dpd_buf4_mat_irrep_rd(&G, h);
+      global_dpd_->buf4_mat_irrep_init(&G, h);
+      global_dpd_->buf4_mat_irrep_rd(&G, h);
 
-      dpd_buf4_mat_irrep_init(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_init(&Gnew, h);
 
       for(row=0; row < Gnew.params->rowtot[h]; row++) {
 	  i = Gnew.params->roworb[h][row][0];
@@ -938,26 +960,26 @@ void resort_gamma(void)
 	    }
 	}
 
-      dpd_buf4_mat_irrep_wrt(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_wrt(&Gnew, h);
 
-      dpd_buf4_mat_irrep_close(&G, h);
+      global_dpd_->buf4_mat_irrep_close(&G, h);
     }
 
-  dpd_buf4_close(&G);
-  dpd_buf4_close(&Gnew);
+  global_dpd_->buf4_close(&G);
+  global_dpd_->buf4_close(&Gnew);
 
   /* G(iB,jA) --> G'(iB,jA) */
   dpd_set_default(0);
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GiBjA");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GiBjA");
 
   dpd_set_default(1);
-  dpd_buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 10, 10, 10, 10, 0, "GiBjA");
+  global_dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 10, 10, 10, 10, 0, "GiBjA");
 
   for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&G, h);
-      dpd_buf4_mat_irrep_rd(&G, h);
+      global_dpd_->buf4_mat_irrep_init(&G, h);
+      global_dpd_->buf4_mat_irrep_rd(&G, h);
 
-      dpd_buf4_mat_irrep_init(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_init(&Gnew, h);
 
       for(row=0; row < Gnew.params->rowtot[h]; row++) {
 	  i = Gnew.params->roworb[h][row][0];
@@ -986,26 +1008,26 @@ void resort_gamma(void)
 	    }
 	}
 
-      dpd_buf4_mat_irrep_wrt(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_wrt(&Gnew, h);
 
-      dpd_buf4_mat_irrep_close(&G, h);
+      global_dpd_->buf4_mat_irrep_close(&G, h);
     }
 
-  dpd_buf4_close(&G);
-  dpd_buf4_close(&Gnew);
+  global_dpd_->buf4_close(&G);
+  global_dpd_->buf4_close(&Gnew);
 
   /* G(iB,Ja) --> G'(iB,Ja) */
   dpd_set_default(0);
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GiBJa");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GiBJa");
 
   dpd_set_default(1);
-  dpd_buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 10, 10, 10, 10, 0, "GiBJa");
+  global_dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 10, 10, 10, 10, 0, "GiBJa");
 
   for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&G, h);
-      dpd_buf4_mat_irrep_rd(&G, h);
+      global_dpd_->buf4_mat_irrep_init(&G, h);
+      global_dpd_->buf4_mat_irrep_rd(&G, h);
 
-      dpd_buf4_mat_irrep_init(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_init(&Gnew, h);
 
       for(row=0; row < Gnew.params->rowtot[h]; row++) {
 	  i = Gnew.params->roworb[h][row][0];
@@ -1034,26 +1056,26 @@ void resort_gamma(void)
 	    }
 	}
 
-      dpd_buf4_mat_irrep_wrt(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_wrt(&Gnew, h);
 
-      dpd_buf4_mat_irrep_close(&G, h);
+      global_dpd_->buf4_mat_irrep_close(&G, h);
     }
 
-  dpd_buf4_close(&G);
-  dpd_buf4_close(&Gnew);
+  global_dpd_->buf4_close(&G);
+  global_dpd_->buf4_close(&Gnew);
 
   /* G(Ib,jA) --> G'(Ib,jA) */
   dpd_set_default(0);
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIbjA");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIbjA");
 
   dpd_set_default(1);
-  dpd_buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 10, 10, 10, 10, 0, "GIbjA");
+  global_dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 10, 10, 10, 10, 0, "GIbjA");
 
   for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&G, h);
-      dpd_buf4_mat_irrep_rd(&G, h);
+      global_dpd_->buf4_mat_irrep_init(&G, h);
+      global_dpd_->buf4_mat_irrep_rd(&G, h);
 
-      dpd_buf4_mat_irrep_init(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_init(&Gnew, h);
 
       for(row=0; row < Gnew.params->rowtot[h]; row++) {
 	  i = Gnew.params->roworb[h][row][0];
@@ -1082,26 +1104,26 @@ void resort_gamma(void)
 	    }
 	}
 
-      dpd_buf4_mat_irrep_wrt(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_wrt(&Gnew, h);
 
-      dpd_buf4_mat_irrep_close(&G, h);
+      global_dpd_->buf4_mat_irrep_close(&G, h);
     }
 
-  dpd_buf4_close(&G);
-  dpd_buf4_close(&Gnew);
+  global_dpd_->buf4_close(&G);
+  global_dpd_->buf4_close(&Gnew);
 
   /* G(CI,AB) --> G'(CI,AB) */
   dpd_set_default(0);
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 7, 11, 7, 0, "GCIAB");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 7, 11, 7, 0, "GCIAB");
 
   dpd_set_default(1);
-  dpd_buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 11, 7, 11, 7, 0, "GCIAB");
+  global_dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 11, 7, 11, 7, 0, "GCIAB");
 
   for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&G, h);
-      dpd_buf4_mat_irrep_rd(&G, h);
+      global_dpd_->buf4_mat_irrep_init(&G, h);
+      global_dpd_->buf4_mat_irrep_rd(&G, h);
 
-      dpd_buf4_mat_irrep_init(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_init(&Gnew, h);
 
       for(row=0; row < Gnew.params->rowtot[h]; row++) {
 	  c = Gnew.params->roworb[h][row][0];
@@ -1131,26 +1153,26 @@ void resort_gamma(void)
 	    }
 	}
 
-      dpd_buf4_mat_irrep_wrt(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_wrt(&Gnew, h);
 
-      dpd_buf4_mat_irrep_close(&G, h);
+      global_dpd_->buf4_mat_irrep_close(&G, h);
     }
 
-  dpd_buf4_close(&G);
-  dpd_buf4_close(&Gnew);
+  global_dpd_->buf4_close(&G);
+  global_dpd_->buf4_close(&Gnew);
 
   /* G(ci,ab) --> G'(ci,ab) */
   dpd_set_default(0);
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 7, 11, 7, 0, "Gciab");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 7, 11, 7, 0, "Gciab");
 
   dpd_set_default(1);
-  dpd_buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 11, 7, 11, 7, 0, "Gciab");
+  global_dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 11, 7, 11, 7, 0, "Gciab");
 
   for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&G, h);
-      dpd_buf4_mat_irrep_rd(&G, h);
+      global_dpd_->buf4_mat_irrep_init(&G, h);
+      global_dpd_->buf4_mat_irrep_rd(&G, h);
 
-      dpd_buf4_mat_irrep_init(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_init(&Gnew, h);
 
       for(row=0; row < Gnew.params->rowtot[h]; row++) {
 	  c = Gnew.params->roworb[h][row][0];
@@ -1180,26 +1202,26 @@ void resort_gamma(void)
 	    }
 	}
 
-      dpd_buf4_mat_irrep_wrt(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_wrt(&Gnew, h);
 
-      dpd_buf4_mat_irrep_close(&G, h);
+      global_dpd_->buf4_mat_irrep_close(&G, h);
     }
 
-  dpd_buf4_close(&G);
-  dpd_buf4_close(&Gnew);
+  global_dpd_->buf4_close(&G);
+  global_dpd_->buf4_close(&Gnew);
 
   /* G(cI,aB) --> G'(cI,aB) */
   dpd_set_default(0);
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 5, 11, 5, 0, "GcIaB");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 5, 11, 5, 0, "GcIaB");
 
   dpd_set_default(1);
-  dpd_buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 11, 5, 11, 5, 0, "GcIaB");
+  global_dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 11, 5, 11, 5, 0, "GcIaB");
 
   for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&G, h);
-      dpd_buf4_mat_irrep_rd(&G, h);
+      global_dpd_->buf4_mat_irrep_init(&G, h);
+      global_dpd_->buf4_mat_irrep_rd(&G, h);
 
-      dpd_buf4_mat_irrep_init(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_init(&Gnew, h);
 
       for(row=0; row < Gnew.params->rowtot[h]; row++) {
 	  c = Gnew.params->roworb[h][row][0];
@@ -1229,26 +1251,26 @@ void resort_gamma(void)
 	    }
 	}
 
-      dpd_buf4_mat_irrep_wrt(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_wrt(&Gnew, h);
 
-      dpd_buf4_mat_irrep_close(&G, h);
+      global_dpd_->buf4_mat_irrep_close(&G, h);
     }
 
-  dpd_buf4_close(&G);
-  dpd_buf4_close(&Gnew);
+  global_dpd_->buf4_close(&G);
+  global_dpd_->buf4_close(&Gnew);
 
   /* G(Ci,Ab) --> G'(Ci,Ab) */
   dpd_set_default(0);
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 5, 11, 5, 0, "GCiAb");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 5, 11, 5, 0, "GCiAb");
 
   dpd_set_default(1);
-  dpd_buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 11, 5, 11, 5, 0, "GCiAb");
+  global_dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 11, 5, 11, 5, 0, "GCiAb");
 
   for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&G, h);
-      dpd_buf4_mat_irrep_rd(&G, h);
+      global_dpd_->buf4_mat_irrep_init(&G, h);
+      global_dpd_->buf4_mat_irrep_rd(&G, h);
 
-      dpd_buf4_mat_irrep_init(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_init(&Gnew, h);
 
       for(row=0; row < Gnew.params->rowtot[h]; row++) {
 	  c = Gnew.params->roworb[h][row][0];
@@ -1278,26 +1300,26 @@ void resort_gamma(void)
 	    }
 	}
 
-      dpd_buf4_mat_irrep_wrt(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_wrt(&Gnew, h);
 
-      dpd_buf4_mat_irrep_close(&G, h);
+      global_dpd_->buf4_mat_irrep_close(&G, h);
     }
 
-  dpd_buf4_close(&G);
-  dpd_buf4_close(&Gnew);
+  global_dpd_->buf4_close(&G);
+  global_dpd_->buf4_close(&Gnew);
 
   /* G(AB,CD) --> G'(AB,CD) */
   dpd_set_default(0);
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 7, 7, 7, 7, 0, "GABCD");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 7, 7, 7, 7, 0, "GABCD");
 
   dpd_set_default(1);
-  dpd_buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 7, 7, 7, 7, 0, "GABCD");
+  global_dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 7, 7, 7, 7, 0, "GABCD");
 
   for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&G, h);
-      dpd_buf4_mat_irrep_rd(&G, h);
+      global_dpd_->buf4_mat_irrep_init(&G, h);
+      global_dpd_->buf4_mat_irrep_rd(&G, h);
 
-      dpd_buf4_mat_irrep_init(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_init(&Gnew, h);
 
       for(row=0; row < Gnew.params->rowtot[h]; row++) {
 	  a = Gnew.params->roworb[h][row][0];
@@ -1327,26 +1349,26 @@ void resort_gamma(void)
 	    }
 	}
 
-      dpd_buf4_mat_irrep_wrt(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_wrt(&Gnew, h);
 
-      dpd_buf4_mat_irrep_close(&G, h);
+      global_dpd_->buf4_mat_irrep_close(&G, h);
     }
 
-  dpd_buf4_close(&G);
-  dpd_buf4_close(&Gnew);
+  global_dpd_->buf4_close(&G);
+  global_dpd_->buf4_close(&Gnew);
 
   /* G(ab,cd) --> G'(ab,cd) */
   dpd_set_default(0);
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 7, 7, 7, 7, 0, "Gabcd");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 7, 7, 7, 7, 0, "Gabcd");
 
   dpd_set_default(1);
-  dpd_buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 7, 7, 7, 7, 0, "Gabcd");
+  global_dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 7, 7, 7, 7, 0, "Gabcd");
 
   for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&G, h);
-      dpd_buf4_mat_irrep_rd(&G, h);
+      global_dpd_->buf4_mat_irrep_init(&G, h);
+      global_dpd_->buf4_mat_irrep_rd(&G, h);
 
-      dpd_buf4_mat_irrep_init(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_init(&Gnew, h);
 
       for(row=0; row < Gnew.params->rowtot[h]; row++) {
 	  a = Gnew.params->roworb[h][row][0];
@@ -1376,26 +1398,26 @@ void resort_gamma(void)
 	    }
 	}
 
-      dpd_buf4_mat_irrep_wrt(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_wrt(&Gnew, h);
 
-      dpd_buf4_mat_irrep_close(&G, h);
+      global_dpd_->buf4_mat_irrep_close(&G, h);
     }
 
-  dpd_buf4_close(&G);
-  dpd_buf4_close(&Gnew);
+  global_dpd_->buf4_close(&G);
+  global_dpd_->buf4_close(&Gnew);
 
   /* G(Ab,Cd) --> G'(Ab,Cd) */
   dpd_set_default(0);
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 5, 5, 5, 5, 0, "GAbCd");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 5, 5, 5, 5, 0, "GAbCd");
 
   dpd_set_default(1);
-  dpd_buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 5, 5, 5, 5, 0, "GAbCd");
+  global_dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 5, 5, 5, 5, 0, "GAbCd");
 
   for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&G, h);
-      dpd_buf4_mat_irrep_rd(&G, h);
+      global_dpd_->buf4_mat_irrep_init(&G, h);
+      global_dpd_->buf4_mat_irrep_rd(&G, h);
 
-      dpd_buf4_mat_irrep_init(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_init(&Gnew, h);
 
       for(row=0; row < Gnew.params->rowtot[h]; row++) {
 	  a = Gnew.params->roworb[h][row][0];
@@ -1425,13 +1447,13 @@ void resort_gamma(void)
 	    }
 	}
 
-      dpd_buf4_mat_irrep_wrt(&Gnew, h);
+      global_dpd_->buf4_mat_irrep_wrt(&Gnew, h);
 
-      dpd_buf4_mat_irrep_close(&G, h);
+      global_dpd_->buf4_mat_irrep_close(&G, h);
     }
 
-  dpd_buf4_close(&G);
-  dpd_buf4_close(&Gnew);
+  global_dpd_->buf4_close(&G);
+  global_dpd_->buf4_close(&Gnew);
 }
 
 }} // namespace psi::ccdensity

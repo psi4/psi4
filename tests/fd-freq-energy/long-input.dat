@@ -18,7 +18,7 @@ set findif { points 3 }
 #hessian('scf')
 h2o.update_geometry()
 
-displacements = PsiMod.fd_geoms_freq_0()
+displacements = psi4.fd_geoms_freq_0()
 
 ndisp = len(displacements)
 
@@ -29,17 +29,17 @@ for n, displacement in enumerate(displacements):
   banner("Loading displacement %d of %d" % (n+1, ndisp))
   print "    displacement %d" % (n+1)
 
-  PsiMod.get_active_molecule().set_geometry(displacement)
+  psi4.get_active_molecule().set_geometry(displacement)
 
   E = energy('scf')
   energies.append(E)
 
-PsiMod.fd_freq_0(energies)
+psi4.fd_freq_0(energies)
 
-fd_freqs = PsiMod.wavefunction().frequencies()
+fd_freqs = psi4.wavefunction().frequencies()
 
 # analytic second derivatives from PSI3 (for now)
-anal_freqs = PsiMod.Vector(3)
+anal_freqs = psi4.Vector(3)
 anal_freqs.set(0, 0, 2170.04)
 anal_freqs.set(0, 1, 4140.00)
 anal_freqs.set(0, 2, 4391.06)
@@ -73,7 +73,7 @@ set findif { points 5 }
 #hessian('scf')
 h2o.update_geometry()
 
-displacements = PsiMod.fd_geoms_freq_0()
+displacements = psi4.fd_geoms_freq_0()
 
 ndisp = len(displacements)
 
@@ -84,17 +84,17 @@ for n, displacement in enumerate(displacements):
   banner("Loading displacement %d of %d" % (n+1, ndisp))
   print "    displacement %d" % (n+1)
 
-  PsiMod.get_active_molecule().set_geometry(displacement)
+  psi4.get_active_molecule().set_geometry(displacement)
 
   E = energy('scf')
   energies.append(E)
 
-PsiMod.fd_freq_0(energies)
+psi4.fd_freq_0(energies)
 
-fd_freqs = PsiMod.wavefunction().frequencies()
+fd_freqs = psi4.wavefunction().frequencies()
 
 # analytic second derivatives from PSI3 (for now)
-anal_freqs = PsiMod.Vector(3)
+anal_freqs = psi4.Vector(3)
 anal_freqs.set(0, 0, 2170.04)
 anal_freqs.set(0, 1, 4140.00)
 anal_freqs.set(0, 2, 4391.06)

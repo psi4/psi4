@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup ccresponse
     \brief Enter brief description of file here 
@@ -26,30 +48,30 @@ void init_X(const char *pert, int irrep, double omega)
   dpdbuf4 X2, mu2;
 
   sprintf(lbl, "%sBAR_IA", pert);
-  dpd_file2_init(&mu1, PSIF_CC_OEI, irrep, 0, 1, lbl);
+  global_dpd_->file2_init(&mu1, PSIF_CC_OEI, irrep, 0, 1, lbl);
   sprintf(lbl, "X_%s_IA (%5.3f)", pert, omega);
   if(!params.restart || !psio_tocscan(PSIF_CC_OEI, lbl)) {
-    dpd_file2_copy(&mu1, PSIF_CC_OEI, lbl);
-    dpd_file2_init(&X1, PSIF_CC_OEI, irrep, 0, 1, lbl);
+    global_dpd_->file2_copy(&mu1, PSIF_CC_OEI, lbl);
+    global_dpd_->file2_init(&X1, PSIF_CC_OEI, irrep, 0, 1, lbl);
     if(params.local && local.filter_singles) local_filter_T1(&X1);
     else denom1(&X1, omega);
-    dpd_file2_close(&X1);
+    global_dpd_->file2_close(&X1);
   }
   else fprintf(outfile, "\tUsing existing %s amplitudes.\n", lbl);
-  dpd_file2_close(&mu1);
+  global_dpd_->file2_close(&mu1);
 
   sprintf(lbl, "%sBAR_IjAb", pert);
-  dpd_buf4_init(&mu2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
+  global_dpd_->buf4_init(&mu2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
   sprintf(lbl, "X_%s_IjAb (%5.3f)", pert, omega);
   if(!params.restart || !psio_tocscan(PSIF_CC_LR, lbl)) {
-    dpd_buf4_copy(&mu2, PSIF_CC_LR, lbl);
-    dpd_buf4_init(&X2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
+    global_dpd_->buf4_copy(&mu2, PSIF_CC_LR, lbl);
+    global_dpd_->buf4_init(&X2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
     if(params.local) local_filter_T2(&X2);
     else denom2(&X2, omega);
-    dpd_buf4_close(&X2);
+    global_dpd_->buf4_close(&X2);
   }
   else fprintf(outfile, "\tUsing existing %s amplitudes.\n", lbl);
-  dpd_buf4_close(&mu2);
+  global_dpd_->buf4_close(&mu2);
 }
 
 }} // namespace psi::ccresponse

@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include <libtrans/integraltransform.h>
 
 #include "defines.h"
@@ -89,12 +111,12 @@ void OCCWave::omp2_mp2_energy()
 
  if (reference_ == "RESTRICTED") {
      // Same-spin contribution
-     dpd_buf4_init(&Tss, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+     global_dpd_->buf4_init(&Tss, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "TAA <OO|VV>");
-     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
-     Emp2AA = 0.5 * dpd_buf4_dot(&Tss, &K);     
-     dpd_buf4_close(&Tss);
+     Emp2AA = 0.5 * global_dpd_->buf4_dot(&Tss, &K);     
+     global_dpd_->buf4_close(&Tss);
 
      Escsmp2AA = ss_scale * Emp2AA; 
      Escsnmp2AA = 1.76 * Emp2AA; 
@@ -108,11 +130,11 @@ void OCCWave::omp2_mp2_energy()
      Escsmp2vdwBB = 0.50 * Emp2BB; 
    
      // Opposite-spin contribution
-     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T <OO|VV>");
-     Emp2AB = dpd_buf4_dot(&T, &K);     
-     dpd_buf4_close(&T);
-     dpd_buf4_close(&K);
+     Emp2AB = global_dpd_->buf4_dot(&T, &K);     
+     global_dpd_->buf4_close(&T);
+     global_dpd_->buf4_close(&K);
 
      Escsmp2AB = os_scale * Emp2AB;  
      if (mo_optimized == 0) Esosmp2AB = sos_scale * Emp2AB; 
@@ -128,13 +150,13 @@ void OCCWave::omp2_mp2_energy()
 
      // Compute Energy
      // Alpha-Alpha spin contribution
-     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2_1 <OO|VV>");
-     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO||VV>");
-     Emp2AA = 0.25 * dpd_buf4_dot(&T, &K);     
-     dpd_buf4_close(&T);
-     dpd_buf4_close(&K);
+     Emp2AA = 0.25 * global_dpd_->buf4_dot(&T, &K);     
+     global_dpd_->buf4_close(&T);
+     global_dpd_->buf4_close(&K);
      
      Escsmp2AA = ss_scale * Emp2AA; 
      Escsnmp2AA = 1.76 * Emp2AA; 
@@ -143,13 +165,13 @@ void OCCWave::omp2_mp2_energy()
      
      
      // Alpha-Beta spin contribution
-     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                  ID("[O,o]"), ID("[V,v]"), 0, "T2_1 <Oo|Vv>");
-     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
-     Emp2AB = dpd_buf4_dot(&T, &K);     
-     dpd_buf4_close(&T);
-     dpd_buf4_close(&K);
+     Emp2AB = global_dpd_->buf4_dot(&T, &K);     
+     global_dpd_->buf4_close(&T);
+     global_dpd_->buf4_close(&K);
      
      Escsmp2AB = os_scale * Emp2AB;  
      if (mo_optimized == 0) Esosmp2AB = sos_scale * Emp2AB; 
@@ -160,13 +182,13 @@ void OCCWave::omp2_mp2_energy()
      
      
      // Beta-Beta spin contribution
-     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "T2_1 <oo|vv>");
-     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "MO Ints <oo||vv>");
-     Emp2BB = 0.25 * dpd_buf4_dot(&T, &K);     
-     dpd_buf4_close(&T);
-     dpd_buf4_close(&K);
+     Emp2BB = 0.25 * global_dpd_->buf4_dot(&T, &K);     
+     global_dpd_->buf4_close(&T);
+     global_dpd_->buf4_close(&K);
      
      Escsmp2BB = ss_scale * Emp2BB;  
      Escsnmp2BB = 1.76 * Emp2BB; 
@@ -251,12 +273,12 @@ void OCCWave::omp3_mp2_energy()
  if (reference_ == "RESTRICTED") {
      // Compute Energy
      // Alpha-Alpha spin contribution
-     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2_1AA <OO|VV>");
-     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
-     Emp2AA = 0.5 * dpd_buf4_dot(&T, &K);     
-     dpd_buf4_close(&T);
+     Emp2AA = 0.5 * global_dpd_->buf4_dot(&T, &K);     
+     global_dpd_->buf4_close(&T);
      Emp2BB = Emp2AA;  
      
      Escsmp2AA = ss_scale * Emp2AA; 
@@ -270,11 +292,11 @@ void OCCWave::omp3_mp2_energy()
      Escsmp2vdwBB = 0.50 * Emp2BB; 
      
      // Alpha-Beta spin contribution
-     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2_1 <OO|VV>");
-     Emp2AB = dpd_buf4_dot(&T, &K);     
-     dpd_buf4_close(&T);
-     dpd_buf4_close(&K);
+     Emp2AB = global_dpd_->buf4_dot(&T, &K);     
+     global_dpd_->buf4_close(&T);
+     global_dpd_->buf4_close(&K);
      
      Escsmp2AB = os_scale * Emp2AB;  
      Esosmp2AB = sos_scale * Emp2AB; 
@@ -291,13 +313,13 @@ void OCCWave::omp3_mp2_energy()
  else if (reference_ == "UNRESTRICTED") { 
      // Compute Energy
      // Alpha-Alpha spin contribution
-     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2_1 <OO|VV>");
-     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO||VV>");
-     Ecorr += 0.25 * dpd_buf4_dot(&T, &K);     
-     dpd_buf4_close(&T);
-     dpd_buf4_close(&K);
+     Ecorr += 0.25 * global_dpd_->buf4_dot(&T, &K);     
+     global_dpd_->buf4_close(&T);
+     global_dpd_->buf4_close(&K);
      
      Emp2AA = Ecorr;    
      Escsmp2AA = ss_scale * Emp2AA; 
@@ -307,13 +329,13 @@ void OCCWave::omp3_mp2_energy()
      
      
      // Alpha-Beta spin contribution
-     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                  ID("[O,o]"), ID("[V,v]"), 0, "T2_1 <Oo|Vv>");
-     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
-     Ecorr += dpd_buf4_dot(&T, &K);     
-     dpd_buf4_close(&T);
-     dpd_buf4_close(&K);
+     Ecorr += global_dpd_->buf4_dot(&T, &K);     
+     global_dpd_->buf4_close(&T);
+     global_dpd_->buf4_close(&K);
      
      Emp2AB = Ecorr - Emp2AA;
      Escsmp2AB = os_scale * Emp2AB;  
@@ -326,13 +348,13 @@ void OCCWave::omp3_mp2_energy()
      
      
      // Beta-Beta spin contribution
-     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "T2_1 <oo|vv>");
-     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "MO Ints <oo||vv>");
-     Ecorr += 0.25 * dpd_buf4_dot(&T, &K);     
-     dpd_buf4_close(&T);
-     dpd_buf4_close(&K);
+     Ecorr += 0.25 * global_dpd_->buf4_dot(&T, &K);     
+     global_dpd_->buf4_close(&T);
+     global_dpd_->buf4_close(&K);
      
      Emp2BB = Ecorr - Emp2AA - Emp2AB;  
      Escsmp2BB = ss_scale * Emp2BB;  
@@ -371,53 +393,53 @@ void OCCWave::mp3_energy()
  if (reference_ == "RESTRICTED") {
      // Compute Energy
      // Alpha-Alpha spin contribution
-     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2AA <OO|VV>");
-     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
-     Emp3AA = 0.5 * dpd_buf4_dot(&T, &K);     
-     dpd_buf4_close(&T);
+     Emp3AA = 0.5 * global_dpd_->buf4_dot(&T, &K);     
+     global_dpd_->buf4_close(&T);
      Emp3BB = Emp3AA;    
      
      
      // Alpha-Beta spin contribution
-     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
-     Emp3AB = dpd_buf4_dot(&T, &K);     
-     dpd_buf4_close(&T);
-     dpd_buf4_close(&K);     
+     Emp3AB = global_dpd_->buf4_dot(&T, &K);     
+     global_dpd_->buf4_close(&T);
+     global_dpd_->buf4_close(&K);     
 
  }// end rhf
 
  else if (reference_ == "UNRESTRICTED") {
      // Compute Energy
      // Alpha-Alpha spin contribution
-     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
-     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO||VV>");
-     Emp3AA = 0.25 * dpd_buf4_dot(&T, &K);     
-     dpd_buf4_close(&T);
-     dpd_buf4_close(&K);     
+     Emp3AA = 0.25 * global_dpd_->buf4_dot(&T, &K);     
+     global_dpd_->buf4_close(&T);
+     global_dpd_->buf4_close(&K);     
      
      
      // Alpha-Beta spin contribution
-     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                  ID("[O,o]"), ID("[V,v]"), 0, "T2 <Oo|Vv>");
-     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
-     Emp3AB = dpd_buf4_dot(&T, &K);     
-     dpd_buf4_close(&T);
-     dpd_buf4_close(&K);     
+     Emp3AB = global_dpd_->buf4_dot(&T, &K);     
+     global_dpd_->buf4_close(&T);
+     global_dpd_->buf4_close(&K);     
  
      // Beta-Beta spin contribution
-     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "T2 <oo|vv>");
-     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "MO Ints <oo||vv>");
-     Emp3BB = 0.25 * dpd_buf4_dot(&T, &K);     
-     dpd_buf4_close(&T);
-     dpd_buf4_close(&K);     
+     Emp3BB = 0.25 * global_dpd_->buf4_dot(&T, &K);     
+     global_dpd_->buf4_close(&T);
+     global_dpd_->buf4_close(&K);     
 
  }// end uhf
      
@@ -476,12 +498,12 @@ void OCCWave::ocepa_mp2_energy()
  if (reference_ == "RESTRICTED") {
      // Compute Energy
      // Alpha-Alpha spin contribution
-     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2AA <OO|VV>");
-     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
-     Emp2AA = 0.5 * dpd_buf4_dot(&T, &K);     
-     dpd_buf4_close(&T);
+     Emp2AA = 0.5 * global_dpd_->buf4_dot(&T, &K);     
+     global_dpd_->buf4_close(&T);
      Emp2BB = Emp2AA;  
      
      Escsmp2AA = ss_scale * Emp2AA; 
@@ -495,11 +517,11 @@ void OCCWave::ocepa_mp2_energy()
      Escsmp2vdwBB = 0.50 * Emp2BB; 
      
      // Alpha-Beta spin contribution
-     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
-     Emp2AB = dpd_buf4_dot(&T, &K);     
-     dpd_buf4_close(&T);
-     dpd_buf4_close(&K);
+     Emp2AB = global_dpd_->buf4_dot(&T, &K);     
+     global_dpd_->buf4_close(&T);
+     global_dpd_->buf4_close(&K);
      
      Escsmp2AB = os_scale * Emp2AB;  
      Esosmp2AB = sos_scale * Emp2AB; 
@@ -513,13 +535,13 @@ void OCCWave::ocepa_mp2_energy()
  else if (reference_ == "UNRESTRICTED") { 
      // Compute Energy
      // Alpha-Alpha spin contribution
-     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
-     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO||VV>");
-     Ecorr += 0.25 * dpd_buf4_dot(&T, &K);     
-     dpd_buf4_close(&T);
-     dpd_buf4_close(&K);
+     Ecorr += 0.25 * global_dpd_->buf4_dot(&T, &K);     
+     global_dpd_->buf4_close(&T);
+     global_dpd_->buf4_close(&K);
      
      Emp2AA = Ecorr;    
      Escsmp2AA = ss_scale * Emp2AA; 
@@ -529,13 +551,13 @@ void OCCWave::ocepa_mp2_energy()
      
      
      // Alpha-Beta spin contribution
-     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                  ID("[O,o]"), ID("[V,v]"), 0, "T2 <Oo|Vv>");
-     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
-     Ecorr += dpd_buf4_dot(&T, &K);     
-     dpd_buf4_close(&T);
-     dpd_buf4_close(&K);
+     Ecorr += global_dpd_->buf4_dot(&T, &K);     
+     global_dpd_->buf4_close(&T);
+     global_dpd_->buf4_close(&K);
      
      Emp2AB = Ecorr - Emp2AA;
      Escsmp2AB = os_scale * Emp2AB;  
@@ -546,13 +568,13 @@ void OCCWave::ocepa_mp2_energy()
      
      
      // Beta-Beta spin contribution
-     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "T2 <oo|vv>");
-     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "MO Ints <oo||vv>");
-     Ecorr += 0.25 * dpd_buf4_dot(&T, &K);     
-     dpd_buf4_close(&T);
-     dpd_buf4_close(&K);
+     Ecorr += 0.25 * global_dpd_->buf4_dot(&T, &K);     
+     global_dpd_->buf4_close(&T);
+     global_dpd_->buf4_close(&K);
      
      Emp2BB = Ecorr - Emp2AA - Emp2AB;  
      Escsmp2BB = ss_scale * Emp2BB;  
@@ -591,52 +613,52 @@ void OCCWave::cepa_energy()
  if (reference_ == "RESTRICTED") {
      // Compute Energy
      // Alpha-Alpha spin contribution
-     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2AA <OO|VV>");
-     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
-     EcepaAA = 0.5 * dpd_buf4_dot(&T, &K);     
-     dpd_buf4_close(&T);
+     EcepaAA = 0.5 * global_dpd_->buf4_dot(&T, &K);     
+     global_dpd_->buf4_close(&T);
      EcepaBB = EcepaAA;    
      
      // Alpha-Beta spin contribution
-     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
-     EcepaAB = dpd_buf4_dot(&T, &K);     
-     dpd_buf4_close(&T);
-     dpd_buf4_close(&K);     
+     EcepaAB = global_dpd_->buf4_dot(&T, &K);     
+     global_dpd_->buf4_close(&T);
+     global_dpd_->buf4_close(&K);     
 
  }// end rhf
 
  else if (reference_ == "UNRESTRICTED") {
      // Compute Energy
      // Alpha-Alpha spin contribution
-     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
-     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO||VV>");
-     EcepaAA = 0.25 * dpd_buf4_dot(&T, &K);     
-     dpd_buf4_close(&T);
-     dpd_buf4_close(&K);     
+     EcepaAA = 0.25 * global_dpd_->buf4_dot(&T, &K);     
+     global_dpd_->buf4_close(&T);
+     global_dpd_->buf4_close(&K);     
      
      
      // Alpha-Beta spin contribution
-     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                  ID("[O,o]"), ID("[V,v]"), 0, "T2 <Oo|Vv>");
-     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
-     EcepaAB = dpd_buf4_dot(&T, &K);     
-     dpd_buf4_close(&T);
-     dpd_buf4_close(&K);     
+     EcepaAB = global_dpd_->buf4_dot(&T, &K);     
+     global_dpd_->buf4_close(&T);
+     global_dpd_->buf4_close(&K);     
  
      // Beta-Beta spin contribution
-     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+     global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "T2 <oo|vv>");
-     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "MO Ints <oo||vv>");
-     EcepaBB = 0.25 * dpd_buf4_dot(&T, &K);     
-     dpd_buf4_close(&T);
-     dpd_buf4_close(&K);     
+     EcepaBB = 0.25 * global_dpd_->buf4_dot(&T, &K);     
+     global_dpd_->buf4_close(&T);
+     global_dpd_->buf4_close(&K);     
 
  }// end uhf
      

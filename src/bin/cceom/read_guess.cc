@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup CCEOM
     \brief Enter brief description of file here 
@@ -123,21 +145,21 @@ void read_guess(int C_irr)
   /* loop over number of initial guess of this symmetry */
   for(k=0; k < eom_params.cs_per_irrep[C_irr]; k++) {
     sprintf(lbl, "%s %d", "CME", k);
-    dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
-    dpd_file2_scm(&CME, 0);
-    dpd_file2_mat_init(&CME);
+    global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
+    global_dpd_->file2_scm(&CME, 0);
+    global_dpd_->file2_mat_init(&CME);
 
     if(params.eom_ref <= 1) {
       sprintf(lbl, "%s %d", "Cme", k);
-      dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 0, 1, lbl);
-      dpd_file2_scm(&Cme, 0);
-      dpd_file2_mat_init(&Cme);
+      global_dpd_->file2_init(&Cme, PSIF_EOM_Cme, C_irr, 0, 1, lbl);
+      global_dpd_->file2_scm(&Cme, 0);
+      global_dpd_->file2_mat_init(&Cme);
     }
     else if (params.eom_ref == 2) {
       sprintf(lbl, "%s %d", "Cme", k);
-      dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 2, 3, lbl);
-      dpd_file2_scm(&Cme, 0);
-      dpd_file2_mat_init(&Cme);
+      global_dpd_->file2_init(&Cme, PSIF_EOM_Cme, C_irr, 2, 3, lbl);
+      global_dpd_->file2_scm(&Cme, 0);
+      global_dpd_->file2_mat_init(&Cme);
     }
 
     norm = 0.0;
@@ -189,16 +211,16 @@ void read_guess(int C_irr)
 
       norm += value * value;
     }
-    dpd_file2_mat_wrt(&CME);
-    dpd_file2_mat_wrt(&Cme);
-    dpd_file2_mat_close(&CME);
-    dpd_file2_mat_close(&Cme);
+    global_dpd_->file2_mat_wrt(&CME);
+    global_dpd_->file2_mat_wrt(&Cme);
+    global_dpd_->file2_mat_close(&CME);
+    global_dpd_->file2_mat_close(&Cme);
 
-    dpd_file2_scm(&CME,1.0/sqrt(norm));
-    dpd_file2_scm(&Cme,1.0/sqrt(norm));
+    global_dpd_->file2_scm(&CME,1.0/sqrt(norm));
+    global_dpd_->file2_scm(&Cme,1.0/sqrt(norm));
 
-    dpd_file2_close(&CME);
-    dpd_file2_close(&Cme);
+    global_dpd_->file2_close(&CME);
+    global_dpd_->file2_close(&Cme);
   }
 
   return;

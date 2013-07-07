@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
@@ -485,7 +507,7 @@ void ROHF::form_G()
 
 void ROHF::stability_analysis()
 {
-    if(scf_type_ == "DF"){
+    if(scf_type_ == "DF" || scf_type_ == "CD"){
         throw PSIEXCEPTION("Stability analysis has not been implemented for density fitted wavefunctions yet.");
     }else{
         // Build the Fock Matrix
@@ -509,33 +531,33 @@ void ROHF::stability_analysis()
         dpdbuf4 Aaa, Aab, Aba, Abb, I, A;
         psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                       ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
         // A_IA_JB = (IA|JB)
-        dpd_buf4_scmcopy(&I, PSIF_LIBTRANS_DPD, "ROHF Hessian (IA|JB)", 1.0);
+        global_dpd_->buf4_scmcopy(&I, PSIF_LIBTRANS_DPD, "ROHF Hessian (IA|JB)", 1.0);
         // A_IA_jb = (IA|jb)
-        dpd_buf4_scmcopy(&I, PSIF_LIBTRANS_DPD, "ROHF Hessian (IA|jb)", 1.0);
+        global_dpd_->buf4_scmcopy(&I, PSIF_LIBTRANS_DPD, "ROHF Hessian (IA|jb)", 1.0);
 
         // A_IA_JB -= 0.5 (IB|JA)
-        dpd_buf4_sort_axpy(&I, PSIF_LIBTRANS_DPD, psrq,
+        global_dpd_->buf4_sort_axpy(&I, PSIF_LIBTRANS_DPD, psrq,
                            ID("[O,V]"), ID("[O,V]"), "ROHF Hessian (IA|JB)", -0.5);
-        dpd_buf4_close(&I);
+        global_dpd_->buf4_close(&I);
 
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                       ID("[O>=O]+"), ID("[V>=V]+"), 0, "MO Ints (OO|VV)");
         // A_IA_JB -= 0.5 (IJ|AB)
-        dpd_buf4_sort_axpy(&I, PSIF_LIBTRANS_DPD, prqs,
+        global_dpd_->buf4_sort_axpy(&I, PSIF_LIBTRANS_DPD, prqs,
                            ID("[O,V]"), ID("[O,V]"), "ROHF Hessian (IA|JB)", -0.5);
-        dpd_buf4_close(&I);
+        global_dpd_->buf4_close(&I);
 
-        dpd_buf4_init(&Aaa, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+        global_dpd_->buf4_init(&Aaa, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                       ID("[O,V]"), ID("[O,V]"), 0, "ROHF Hessian (IA|JB)");
 
         // A_ia_jb = A_IA_JB
-        dpd_buf4_copy(&Aaa, PSIF_LIBTRANS_DPD, "ROHF Hessian (ia|jb)");
+        global_dpd_->buf4_copy(&Aaa, PSIF_LIBTRANS_DPD, "ROHF Hessian (ia|jb)");
         for(int h = 0; h < Aaa.params->nirreps; ++h){
-            dpd_buf4_mat_irrep_init(&Aaa, h);
-            dpd_buf4_mat_irrep_rd(&Aaa, h);
+            global_dpd_->buf4_mat_irrep_init(&Aaa, h);
+            global_dpd_->buf4_mat_irrep_rd(&Aaa, h);
             for(int ia = 0; ia < Aaa.params->rowtot[h]; ++ia){
                 int iabs = Aaa.params->roworb[h][ia][0];
                 int aabs = Aaa.params->roworb[h][ia][1];
@@ -562,15 +584,15 @@ void ROHF::stability_analysis()
                     Aaa.matrix[h][ia][jb] = val;
                 }
             }
-            dpd_buf4_mat_irrep_wrt(&Aaa, h);
+            global_dpd_->buf4_mat_irrep_wrt(&Aaa, h);
         }
-        dpd_buf4_close(&Aaa);
+        global_dpd_->buf4_close(&Aaa);
 
-        dpd_buf4_init(&Abb, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+        global_dpd_->buf4_init(&Abb, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                       ID("[O,V]"), ID("[O,V]"), 0, "ROHF Hessian (ia|jb)");
         for(int h = 0; h < Abb.params->nirreps; ++h){
-            dpd_buf4_mat_irrep_init(&Abb, h);
-            dpd_buf4_mat_irrep_rd(&Abb, h);
+            global_dpd_->buf4_mat_irrep_init(&Abb, h);
+            global_dpd_->buf4_mat_irrep_rd(&Abb, h);
             for(int ia = 0; ia < Abb.params->rowtot[h]; ++ia){
                 int iabs = Abb.params->roworb[h][ia][0];
                 int aabs = Abb.params->roworb[h][ia][1];
@@ -597,15 +619,15 @@ void ROHF::stability_analysis()
                     Abb.matrix[h][ia][jb] = val;
                 }
             }
-            dpd_buf4_mat_irrep_wrt(&Abb, h);
+            global_dpd_->buf4_mat_irrep_wrt(&Abb, h);
         }
-        dpd_buf4_close(&Abb);
+        global_dpd_->buf4_close(&Abb);
 
-        dpd_buf4_init(&Aab, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+        global_dpd_->buf4_init(&Aab, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                       ID("[O,V]"), ID("[O,V]"), 0, "ROHF Hessian (IA|jb)");
         for(int h = 0; h < Aab.params->nirreps; ++h){
-            dpd_buf4_mat_irrep_init(&Aab, h);
-            dpd_buf4_mat_irrep_rd(&Aab, h);
+            global_dpd_->buf4_mat_irrep_init(&Aab, h);
+            global_dpd_->buf4_mat_irrep_rd(&Aab, h);
             for(int ia = 0; ia < Aab.params->rowtot[h]; ++ia){
                 int iabs = Aab.params->roworb[h][ia][0];
                 int aabs = Aab.params->roworb[h][ia][1];
@@ -629,42 +651,42 @@ void ROHF::stability_analysis()
                         Aab.matrix[h][ia][jb] = 0.0;
                 }
             }
-            dpd_buf4_mat_irrep_wrt(&Aab, h);
+            global_dpd_->buf4_mat_irrep_wrt(&Aab, h);
         }
 
         // A_ia_JB = A_IA_jb
-        dpd_buf4_sort(&Aab, PSIF_LIBTRANS_DPD, rspq, ID("[O,V]"), ID("[O,V]"), "ROHF Hessian (ia|JB)");
-        dpd_buf4_close(&Aab);
+        global_dpd_->buf4_sort(&Aab, PSIF_LIBTRANS_DPD, rspq, ID("[O,V]"), ID("[O,V]"), "ROHF Hessian (ia|JB)");
+        global_dpd_->buf4_close(&Aab);
 
         // Alpha-Alpha
-        dpd_buf4_init(&Aaa, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+        global_dpd_->buf4_init(&Aaa, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                       ID("[O,V]"), ID("[O,V]"), 0, "ROHF Hessian (IA|JB)");
-        dpd_buf4_copy(&Aaa, PSIF_LIBTRANS_DPD, "ROHF Hessian");
-        dpd_buf4_close(&Aaa);
-        dpd_buf4_init(&A, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+        global_dpd_->buf4_copy(&Aaa, PSIF_LIBTRANS_DPD, "ROHF Hessian");
+        global_dpd_->buf4_close(&Aaa);
+        global_dpd_->buf4_init(&A, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                       ID("[O,V]"), ID("[O,V]"), 0, "ROHF Hessian");
         // Alpha-Beta
-        dpd_buf4_init(&Aab, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+        global_dpd_->buf4_init(&Aab, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                       ID("[O,V]"), ID("[O,V]"), 0, "ROHF Hessian (IA|jb)");
-        dpd_buf4_axpy(&Aab, &A, 1.0);
-        dpd_buf4_close(&Aab);
+        global_dpd_->buf4_axpy(&Aab, &A, 1.0);
+        global_dpd_->buf4_close(&Aab);
         // Beta-Alpha
-        dpd_buf4_init(&Aba, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+        global_dpd_->buf4_init(&Aba, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                       ID("[O,V]"), ID("[O,V]"), 0, "ROHF Hessian (ia|JB)");
-        dpd_buf4_axpy(&Aba, &A, 1.0);
-        dpd_buf4_close(&Aba);
+        global_dpd_->buf4_axpy(&Aba, &A, 1.0);
+        global_dpd_->buf4_close(&Aba);
         // Beta-Beta
-        dpd_buf4_init(&Abb, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+        global_dpd_->buf4_init(&Abb, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                       ID("[O,V]"), ID("[O,V]"), 0, "ROHF Hessian (ia|jb)");
-        dpd_buf4_axpy(&Abb, &A, 1.0);
-        dpd_buf4_close(&Abb);
-        dpd_buf4_close(&A);
+        global_dpd_->buf4_axpy(&Abb, &A, 1.0);
+        global_dpd_->buf4_close(&Abb);
+        global_dpd_->buf4_close(&A);
 
         /*
          *  Perform the stability analysis
          */
         std::vector<std::pair<double, int> >eval_sym;
-        dpd_buf4_init(&A, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+        global_dpd_->buf4_init(&A, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                       ID("[O,V]"), ID("[O,V]"), 0, "ROHF Hessian");
         for(int h = 0; h < A.params->nirreps; ++h) {
             int npairs = A.params->rowtot[h];
@@ -697,8 +719,8 @@ void ROHF::stability_analysis()
             }
             if(rank == 0) continue;
 
-            dpd_buf4_mat_irrep_init(&A, h);
-            dpd_buf4_mat_irrep_rd(&A, h);
+            global_dpd_->buf4_mat_irrep_init(&A, h);
+            global_dpd_->buf4_mat_irrep_rd(&A, h);
 
             // Use the transformation matrix to rearrange the columns
             double **temp = block_matrix(npairs, npairs);
@@ -711,7 +733,7 @@ void ROHF::stability_analysis()
             double **evecs = block_matrix(rank, rank);
 
             sq_rsp(rank, rank, A.matrix[h], evals, 1, evecs, 1e-12);
-            dpd_buf4_mat_irrep_close(&A, h);
+            global_dpd_->buf4_mat_irrep_close(&A, h);
             int mindim = rank < 15 ? rank : 15;
             for(int i = 0; i < mindim; i++)
                 eval_sym.push_back(std::make_pair(evals[i], h));

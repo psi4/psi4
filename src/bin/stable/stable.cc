@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \defgroup STABLE stable: Perform MO Stability Analysis */
 
 /*! 
@@ -59,15 +81,26 @@ PsiReturnType stability(Options & options)
   if(params.ref == 2) { /*** UHF references ***/
     cachelist = cacheprep_uhf(params.cachelev, cachefiles);
 
-    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, 
-	     NULL, 4, moinfo.aoccpi, moinfo.aocc_sym, moinfo.avirtpi, moinfo.avir_sym,
-	     moinfo.boccpi, moinfo.bocc_sym, moinfo.bvirtpi, moinfo.bvir_sym);
+    std::vector<int*> spaces;
+    spaces.push_back(moinfo.aoccpi);
+    spaces.push_back(moinfo.aocc_sym);
+    spaces.push_back(moinfo.avirtpi);
+    spaces.push_back(moinfo.avir_sym);
+    spaces.push_back(moinfo.boccpi);
+    spaces.push_back(moinfo.bocc_sym);
+    spaces.push_back(moinfo.bvirtpi);
+    spaces.push_back(moinfo.bvir_sym);
+    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL, 4, spaces);
   } 
   else { /*** RHF/ROHF references ***/
     cachelist = cacheprep_rhf(params.cachelev, cachefiles);
 
-    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL,
-	     2, moinfo.occpi, moinfo.occ_sym, moinfo.virtpi, moinfo.vir_sym);
+    std::vector<int*> spaces;
+    spaces.push_back(moinfo.occpi);
+    spaces.push_back(moinfo.occ_sym);
+    spaces.push_back(moinfo.virtpi);
+    spaces.push_back(moinfo.vir_sym);
+    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL, 2, spaces);
   }
 
   /* Final list of evals for pretty output */

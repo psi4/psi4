@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /* This code includes reference and correlation opdm contributions. */
 #include <libtrans/integraltransform.h>
 
@@ -20,11 +42,11 @@ void OCCWave::tpdm_ref()
     psio_->open(PSIF_OCC_DENSITY, PSIO_OPEN_OLD);
 
  if (reference_ == "RESTRICTED") {
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
                   ID("[O,O]"), ID("[O,O]"), 0, "TPDM <OO|OO>");
       for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
-	if (wfn_type_ != "OMP2") dpd_buf4_mat_irrep_rd(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+	if (wfn_type_ != "OMP2") global_dpd_->buf4_mat_irrep_rd(&G, h);
         #pragma omp parallel for
         for(int ij = 0; ij < G.params->rowtot[h]; ++ij){
             int i = G.params->roworb[h][ij][0];
@@ -37,21 +59,21 @@ void OCCWave::tpdm_ref()
 		if (i == j && k == l) G.matrix[h][ij][kl] -= 0.25;
             }
         }
-        dpd_buf4_mat_irrep_wrt(&G, h);
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
     
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
     
  }// end RHF 
 
  else if (reference_ == "UNRESTRICTED") {
     // Alpha-Alpha spin case
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
                   ID("[O,O]"), ID("[O,O]"), 0, "TPDM <OO|OO>");
       for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
-	if (wfn_type_ != "OMP2") dpd_buf4_mat_irrep_rd(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+	if (wfn_type_ != "OMP2") global_dpd_->buf4_mat_irrep_rd(&G, h);
         #pragma omp parallel for
         for(int ij = 0; ij < G.params->rowtot[h]; ++ij){
             int i = G.params->roworb[h][ij][0];
@@ -63,18 +85,18 @@ void OCCWave::tpdm_ref()
 		if (i == l && j == k) G.matrix[h][ij][kl] -= 0.25;
             }
         }
-        dpd_buf4_mat_irrep_wrt(&G, h);
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }    
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
     
     
     // Beta-Beta spin case
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[o,o]"), ID("[o,o]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[o,o]"), ID("[o,o]"),
                   ID("[o,o]"), ID("[o,o]"), 0, "TPDM <oo|oo>");    
       for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
-	if (wfn_type_ != "OMP2") dpd_buf4_mat_irrep_rd(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+	if (wfn_type_ != "OMP2") global_dpd_->buf4_mat_irrep_rd(&G, h);
         #pragma omp parallel for
         for(int ij = 0; ij < G.params->rowtot[h]; ++ij){
             int i = G.params->roworb[h][ij][0];
@@ -86,18 +108,18 @@ void OCCWave::tpdm_ref()
 		if (i == l && j == k) G.matrix[h][ij][kl] -= 0.25;
             }
         }
-        dpd_buf4_mat_irrep_wrt(&G, h);
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }    
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
     
     
     // Alpha-Beta spin case
-     dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,o]"), ID("[O,o]"),
+     global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,o]"), ID("[O,o]"),
                  ID("[O,o]"), ID("[O,o]"), 0, "TPDM <Oo|Oo>"); 
       for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
-	if (wfn_type_ != "OMP2") dpd_buf4_mat_irrep_rd(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+	if (wfn_type_ != "OMP2") global_dpd_->buf4_mat_irrep_rd(&G, h);
         #pragma omp parallel for
         for(int ij = 0; ij < G.params->rowtot[h]; ++ij){
             int i = G.params->roworb[h][ij][0];
@@ -108,10 +130,10 @@ void OCCWave::tpdm_ref()
 		if (i == k && j == l) G.matrix[h][ij][kl] += 0.25;
             }
         }
-        dpd_buf4_mat_irrep_wrt(&G, h);
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }    
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
     
  }// end UHF 
 
@@ -132,11 +154,11 @@ void OCCWave::tpdm_corr_opdm()
 
  if (reference_ == "RESTRICTED") {
     // TPDM <OO|OO>
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
                   ID("[O,O]"), ID("[O,O]"), 0, "TPDM <OO|OO>");
       for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
-        dpd_buf4_mat_irrep_rd(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
         #pragma omp parallel for
         for(int ij = 0; ij < G.params->rowtot[h]; ++ij){
             int i = G.params->roworb[h][ij][0];
@@ -163,26 +185,26 @@ void OCCWave::tpdm_corr_opdm()
 		if (k == l && hi == hj) G.matrix[h][ij][kl] -= 0.125 * gamma1corr->get(hi,ii,jj);
             }
         }
-        dpd_buf4_mat_irrep_wrt(&G, h);
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
     
     //Print 
     if (print_ > 3) {
-      dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
+      global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
                   ID("[O,O]"), ID("[O,O]"), 0, "TPDM <OO|OO>");
-      dpd_buf4_print(&G, outfile, 1);
-      dpd_buf4_close(&G);
+      global_dpd_->buf4_print(&G, outfile, 1);
+      global_dpd_->buf4_close(&G);
     }
   
 
     // TPDM <OO|VV>
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "TPDM <OO|VV>");
       for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
-        dpd_buf4_mat_irrep_rd(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
         #pragma omp parallel for
         for(int ij = 0; ij < G.params->rowtot[h]; ++ij){
             int i = G.params->roworb[h][ij][0];
@@ -197,25 +219,25 @@ void OCCWave::tpdm_corr_opdm()
                 if (i == j && ha == hb) G.matrix[h][ij][ab] -= 0.125 * gamma1corr->get(ha, aa, bb);
             }
         }
-        dpd_buf4_mat_irrep_wrt(&G, h);
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
   
     //Print 
     if (print_ > 3) {
-      dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
+      global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "TPDM <OO|VV>");
-      dpd_buf4_print(&G, outfile, 1);
-      dpd_buf4_close(&G);
+      global_dpd_->buf4_print(&G, outfile, 1);
+      global_dpd_->buf4_close(&G);
     }
     
     // TPDM <OV|OV>
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "TPDM <OV|OV>");
       for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
-        if (wfn_type_ != "OMP2") dpd_buf4_mat_irrep_rd(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        if (wfn_type_ != "OMP2") global_dpd_->buf4_mat_irrep_rd(&G, h);
         #pragma omp parallel for
         for(int ia = 0; ia < G.params->rowtot[h]; ++ia){
             int i = G.params->roworb[h][ia][0];
@@ -235,17 +257,17 @@ void OCCWave::tpdm_corr_opdm()
                 }
             }
         }
-        dpd_buf4_mat_irrep_wrt(&G, h);
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
 
     //Print 
     if (print_ > 3) {
-      dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
+      global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "TPDM <OV|OV>");  
-      dpd_buf4_print(&G, outfile, 1);
-      dpd_buf4_close(&G);
+      global_dpd_->buf4_print(&G, outfile, 1);
+      global_dpd_->buf4_close(&G);
     }
 
  }// end if (reference_ == "RESTRICTED") 
@@ -253,11 +275,11 @@ void OCCWave::tpdm_corr_opdm()
  else if (reference_ == "UNRESTRICTED") {
     // TPDM OOOO-Block 
     // Alpha-Alpha spin case
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
                   ID("[O,O]"), ID("[O,O]"), 0, "TPDM <OO|OO>");    
       for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
-        dpd_buf4_mat_irrep_rd(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
         #pragma omp parallel for
         for(int ij = 0; ij < G.params->rowtot[h]; ++ij){
             int i = G.params->roworb[h][ij][0];
@@ -282,18 +304,18 @@ void OCCWave::tpdm_corr_opdm()
 		if (j == k && hi == hl) G.matrix[h][ij][kl] -= 0.25 * gamma1corrA->get(hi,ii,ll);
             }
         }
-        dpd_buf4_mat_irrep_wrt(&G, h);
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
     
   
     // Beta-Beta spin case
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[o,o]"), ID("[o,o]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[o,o]"), ID("[o,o]"),
                   ID("[o,o]"), ID("[o,o]"), 0, "TPDM <oo|oo>");    
       for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
-        dpd_buf4_mat_irrep_rd(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
         #pragma omp parallel for
         for(int ij = 0; ij < G.params->rowtot[h]; ++ij){
             int i = G.params->roworb[h][ij][0];
@@ -318,18 +340,18 @@ void OCCWave::tpdm_corr_opdm()
 		if (j == k && hi == hl) G.matrix[h][ij][kl] -= 0.25 * gamma1corrB->get(hi,ii,ll);
             }
         }
-        dpd_buf4_mat_irrep_wrt(&G, h);
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
     
     
     // Alpha-Beta spin case
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,o]"), ID("[O,o]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,o]"), ID("[O,o]"),
                  ID("[O,o]"), ID("[O,o]"), 0, "TPDM <Oo|Oo>");  
       for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
-        dpd_buf4_mat_irrep_rd(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
         #pragma omp parallel for
         for(int ij = 0; ij < G.params->rowtot[h]; ++ij){
             int i = G.params->roworb[h][ij][0];
@@ -352,36 +374,36 @@ void OCCWave::tpdm_corr_opdm()
 		if (j == l && hi == hk) G.matrix[h][ij][kl] += 0.25 * gamma1corrA->get(hi,ii,kk);
             }
         }
-        dpd_buf4_mat_irrep_wrt(&G, h);
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
     
     //Print 
     if (print_ > 3) {
-      dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
+      global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
                   ID("[O,O]"), ID("[O,O]"), 0, "TPDM <OO|OO>");
-      dpd_buf4_print(&G, outfile, 1);
-      dpd_buf4_close(&G);
+      global_dpd_->buf4_print(&G, outfile, 1);
+      global_dpd_->buf4_close(&G);
       
-      dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[o,o]"), ID("[o,o]"),
+      global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[o,o]"), ID("[o,o]"),
                   ID("[o,o]"), ID("[o,o]"), 0, "TPDM <oo|oo>");
-      dpd_buf4_print(&G, outfile, 1);
-      dpd_buf4_close(&G);
+      global_dpd_->buf4_print(&G, outfile, 1);
+      global_dpd_->buf4_close(&G);
       
-      dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,o]"), ID("[O,o]"),
+      global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,o]"), ID("[O,o]"),
                   ID("[O,o]"), ID("[O,o]"), 0, "TPDM <Oo|Oo>");
-      dpd_buf4_print(&G, outfile, 1);
-      dpd_buf4_close(&G);
+      global_dpd_->buf4_print(&G, outfile, 1);
+      global_dpd_->buf4_close(&G);
     }
  
     // TPDM <OV|OV>
     // Alpha-Alpha spin case
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "TPDM <OV|OV>");    
       for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
-        if (wfn_type_ != "OMP2") dpd_buf4_mat_irrep_rd(&G, h); 
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        if (wfn_type_ != "OMP2") global_dpd_->buf4_mat_irrep_rd(&G, h); 
         #pragma omp parallel for
         for(int ia = 0; ia < G.params->rowtot[h]; ++ia){
             int i = G.params->roworb[h][ia][0];
@@ -399,18 +421,18 @@ void OCCWave::tpdm_corr_opdm()
                 }
             }
         }
-        dpd_buf4_mat_irrep_wrt(&G, h);
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
     
     
     // Beta-Beta spin case
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[o,v]"), ID("[o,v]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[o,v]"), ID("[o,v]"),
                   ID("[o,v]"), ID("[o,v]"), 0, "TPDM <ov|ov>");    
       for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
-        if (wfn_type_ != "OMP2") dpd_buf4_mat_irrep_rd(&G, h); 
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        if (wfn_type_ != "OMP2") global_dpd_->buf4_mat_irrep_rd(&G, h); 
         #pragma omp parallel for
         for(int ia = 0; ia < G.params->rowtot[h]; ++ia){
             int i = G.params->roworb[h][ia][0];
@@ -428,18 +450,18 @@ void OCCWave::tpdm_corr_opdm()
                 }
             }
         }
-        dpd_buf4_mat_irrep_wrt(&G, h);
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
     
     
     // Alpha-Beta spin case
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,v]"), ID("[O,v]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,v]"), ID("[O,v]"),
                   ID("[O,v]"), ID("[O,v]"), 0, "TPDM <Ov|Ov>");    
       for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
-        if (wfn_type_ != "OMP2") dpd_buf4_mat_irrep_rd(&G, h); 
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        if (wfn_type_ != "OMP2") global_dpd_->buf4_mat_irrep_rd(&G, h); 
         #pragma omp parallel for
         for(int ia = 0; ia < G.params->rowtot[h]; ++ia){
             int i = G.params->roworb[h][ia][0];
@@ -457,37 +479,37 @@ void OCCWave::tpdm_corr_opdm()
                 }
             }
         }
-        dpd_buf4_mat_irrep_wrt(&G, h);
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
     
     //Print 
     if (print_ > 3) {
-      dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
+      global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "TPDM <OV|OV>");  
-      dpd_buf4_print(&G, outfile, 1);
-      dpd_buf4_close(&G);
+      global_dpd_->buf4_print(&G, outfile, 1);
+      global_dpd_->buf4_close(&G);
       
-      dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[o,v]"), ID("[o,v]"),
+      global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[o,v]"), ID("[o,v]"),
                   ID("[o,v]"), ID("[o,v]"), 0, "TPDM <ov|ov>");    
-      dpd_buf4_print(&G, outfile, 1);
-      dpd_buf4_close(&G);
+      global_dpd_->buf4_print(&G, outfile, 1);
+      global_dpd_->buf4_close(&G);
       
-      dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,v]"), ID("[O,v]"),
+      global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,v]"), ID("[O,v]"),
                   ID("[O,v]"), ID("[O,v]"), 0, "TPDM <Ov|Ov>");  
-      dpd_buf4_print(&G, outfile, 1);
-      dpd_buf4_close(&G);
+      global_dpd_->buf4_print(&G, outfile, 1);
+      global_dpd_->buf4_close(&G);
     }
     
     
     // TPDM <Vo|Vo>
     // Alpha-Beta spin case
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,o]"), ID("[V,o]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,o]"), ID("[V,o]"),
                   ID("[V,o]"), ID("[V,o]"), 0, "TPDM <Vo|Vo>");    
       for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
-	if (wfn_type_ != "OMP2") dpd_buf4_mat_irrep_rd(&G, h); 
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+	if (wfn_type_ != "OMP2") global_dpd_->buf4_mat_irrep_rd(&G, h); 
         #pragma omp parallel for
         for(int ai = 0; ai < G.params->rowtot[h]; ++ai){
             int a = G.params->roworb[h][ai][0];
@@ -505,30 +527,30 @@ void OCCWave::tpdm_corr_opdm()
                 }
             }
         }
-        dpd_buf4_mat_irrep_wrt(&G, h);
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
     
     //Print 
     if (print_ > 3) {
-      dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,o]"), ID("[V,o]"),
+      global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,o]"), ID("[V,o]"),
                   ID("[V,o]"), ID("[V,o]"), 0, "TPDM <Vo|Vo>");  
-      dpd_buf4_print(&G, outfile, 1);
-      dpd_buf4_close(&G);
+      global_dpd_->buf4_print(&G, outfile, 1);
+      global_dpd_->buf4_close(&G);
     }
    
 
     // G_IABJ = -GIAJB so I do not need to OVVO block,
     //  however for proper contraction (to avoid construction of <OV||VV>)  in the GFock.cc I need it. 
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "TPDM <OV|OV>");
-    dpd_buf4_sort(&G, PSIF_OCC_DENSITY , pqsr, ID("[O,V]"), ID("[V,O]"), "TPDM <OV|VO>");
-    dpd_buf4_close(&G);
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,V]"), ID("[V,O]"),
+    global_dpd_->buf4_sort(&G, PSIF_OCC_DENSITY , pqsr, ID("[O,V]"), ID("[V,O]"), "TPDM <OV|VO>");
+    global_dpd_->buf4_close(&G);
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,V]"), ID("[V,O]"),
                   ID("[O,V]"), ID("[V,O]"), 0, "TPDM <OV|VO>");
-    dpd_buf4_scm(&G, -1.0);
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_scm(&G, -1.0);
+    global_dpd_->buf4_close(&G);
 
     /*
     dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,V]"), ID("[V,O]"),
@@ -539,14 +561,14 @@ void OCCWave::tpdm_corr_opdm()
 
     // G_iabj = -Giajb so I do not need to ovvo block,
     //  however for proper contraction (to avoid construction of <ov||vv>)  in the GFock.cc I need it. 
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[o,v]"), ID("[o,v]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[o,v]"), ID("[o,v]"),
                   ID("[o,v]"), ID("[o,v]"), 0, "TPDM <ov|ov>");
-    dpd_buf4_sort(&G, PSIF_OCC_DENSITY , pqsr, ID("[o,v]"), ID("[v,o]"), "TPDM <ov|vo>");
-    dpd_buf4_close(&G);
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[o,v]"), ID("[v,o]"),
+    global_dpd_->buf4_sort(&G, PSIF_OCC_DENSITY , pqsr, ID("[o,v]"), ID("[v,o]"), "TPDM <ov|vo>");
+    global_dpd_->buf4_close(&G);
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[o,v]"), ID("[v,o]"),
                   ID("[o,v]"), ID("[v,o]"), 0, "TPDM <ov|vo>");
-    dpd_buf4_scm(&G, -1.0);
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_scm(&G, -1.0);
+    global_dpd_->buf4_close(&G);
  
     /*
     dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[o,v]"), ID("[v,o]"),

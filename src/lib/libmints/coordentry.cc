@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include <cmath>
 #include <libmints/vector3.h>
 #include <libmints/molecule.h>
@@ -128,6 +150,19 @@ void CartesianEntry::print_in_input_format()
     fprintf(outfile, "  %17s  %17s  %17s\n", xstr.c_str(), ystr.c_str(), zstr.c_str());
 }
 
+std::string CartesianEntry::string_in_input_format()
+{
+    std::string xstr(variable_to_string(x_, 15));
+    std::string ystr(variable_to_string(y_, 15));
+    std::string zstr(variable_to_string(z_, 15));
+
+    char buffer[120];
+    std::stringstream ss;
+    sprintf(buffer, "  %17s  %17s  %17s\n", xstr.c_str(), ystr.c_str(), zstr.c_str());
+    ss << buffer;
+    return ss.str();
+}
+
 const Vector3& CartesianEntry::compute()
 {
     if(computed_)
@@ -256,6 +291,54 @@ void ZMatrixEntry::print_in_input_format()
             rto, rval.c_str(), ato, aval.c_str(), dto, dval.c_str());
     }
 }
+
+
+std::string ZMatrixEntry::string_in_input_format()
+{
+    char buffer[120];
+    std::stringstream ss;
+
+    if(rto_ == 0 && ato_ == 0 && dto_ == 0){
+        /*
+         * The first atom
+         */
+        sprintf(buffer, "\n");
+        ss << buffer;
+    }else if(ato_ == 0 && dto_ == 0){
+        /*
+         * The second atom
+         */
+        int rto = rto_->entry_number() + 1;
+        std::string rval = variable_to_string(rval_, 10);
+        sprintf(buffer, "  %5d %11s\n", rto, rval.c_str());
+        ss << buffer;
+    }else if(dto_ == 0){
+        /*
+         * The third atom
+         */
+        int rto = rto_->entry_number() + 1;
+        std::string rval = variable_to_string(rval_, 10);
+        int ato = ato_->entry_number() + 1;
+        std::string aval = variable_to_string(aval_, 10);
+        sprintf(buffer, "  %5d %11s  %5d %11s\n", rto, rval.c_str(), ato, aval.c_str());
+        ss << buffer;
+    }else{
+        /*
+         * Remaining atoms
+         */
+        int rto = rto_->entry_number() + 1;
+        std::string rval = variable_to_string(rval_, 10);
+        int ato = ato_->entry_number() + 1;
+        std::string aval = variable_to_string(aval_, 10);
+        int dto = dto_->entry_number() + 1;
+        std::string dval = variable_to_string(dval_, 10);
+        sprintf(buffer, "  %5d %11s  %5d %11s  %5d %11s\n",
+            rto, rval.c_str(), ato, aval.c_str(), dto, dval.c_str());
+        ss << buffer;
+    }
+    return ss.str();
+}
+
 /**
  * Computes the coordinates of the current atom's entry
  * @Return The Cartesian Coordinates, in Bohr

@@ -1,9 +1,34 @@
-/*! \file frag_apply_constraint_list.cc
-    \ingroup optking
-    \brief read constraints from string for fragment
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
 
-     FRAG::add_constraint_list(string) parses string for the atoms that define bonds, bends, and angles
+/*! \file frag_apply_frozen_constraints.cc
+    \ingroup optking
+    \brief apply constraints specified by given strings
+
+     FRAG::apply_frozen_constraints(string) parses string for the atoms that define bonds, bends, and angles
      to be frozen.  Return false if there are none.
+
+     FRAG::apply_fixed_constraints(string) parses string for the atoms that define bonds, bends, and angles
+     to be fixed.  Return false if there are none.
 */
 
 #include "frag.h"
@@ -25,7 +50,13 @@ namespace opt {
 
 using std::string;
 
+struct fixed_coord {
+  std::vector<int> atoms;
+  double eq_val;
+};
+
 std::vector<int> split_to_ints(string &s);
+std::vector<fixed_coord> split_to_fixed_coord(string &str, int N);
 
 // R_string = integer list of atoms, each 2 of which are frozen
 // B_string = integer list of atoms, each 3 of which are frozen
@@ -130,22 +161,120 @@ bool FRAG::apply_frozen_constraints(string R_string, string B_string, string D_s
   return true;
 }
 
+bool FRAG::apply_fixed_constraints(string R_string, string B_string, string D_string)
+{
+  std::vector<fixed_coord> R = split_to_fixed_coord(R_string, 2);
+  std::vector<fixed_coord> B = split_to_fixed_coord(B_string, 3);
+  std::vector<fixed_coord> D = split_to_fixed_coord(D_string, 4);
+
+  if (!R.size() && !B.size() && !D.size())
+    return false;
+
+  if (R.size()) {
+    fprintf(outfile,"\tFixed distance atom list: \n");
+    for (int i=0; i<R.size(); ++i)
+      fprintf(outfile,"\t %5d %5d\n", R[i].atoms[0]+1, R[i].atoms[1]+1);
+  }
+
+  if (B.size()) {
+    fprintf(outfile,"\tFixed bend atom list: \n");
+    for (int i=0; i<B.size(); ++i)
+      fprintf(outfile,"\t %5d %5d %5d\n", B[i].atoms[0]+1, B[i].atoms[1]+1, B[i].atoms[2]+1);
+  }
+
+  if (D.size()) {
+    fprintf(outfile,"\tFixed dihedral atom list: \n");
+    for (int i=0; i<D.size(); ++i)
+      fprintf(outfile,"\t %5d %5d %5d %5d\n", D[i].atoms[0]+1, D[i].atoms[i+1]+1, D[i].atoms[2]+1, D[i].atoms[3]+1);
+  }
+  fflush(outfile);
+
+  // do fixed distances
+  for (int i=0; i<R.size(); ++i) {
+    int a = R[i].atoms[0];
+    int b = R[i].atoms[1];
+
+    if (a >= natom || b >= natom)
+      throw(INTCO_EXCEPT("Impossibly large index for atom in fixed distance string."));
+
+    STRE *one_stre = new STRE(a, b, 0);
+    // Insist on user-specified fixed coordinates to be given in Angstroms/radians
+    one_stre->set_fixed_eq_val(R[i].eq_val/_bohr2angstroms);
+
+    // check if intco is already present; returns 1 past the end if not found
+    int index = find(one_stre);
+
+    if (index == intcos.size())
+      intcos.push_back(one_stre);// add it
+    else { 
+      intcos[index]->set_fixed_eq_val(R[i].eq_val/_bohr2angstroms); // it's there already, add the fixed value
+      delete one_stre;
+    }
+  }
+  // do fixed bends
+  for (int i=0; i<B.size(); ++i) {
+    int a = B[i].atoms[0];
+    int b = B[i].atoms[1];
+    int c = B[i].atoms[2];
+    
+    if (a >= natom || b >= natom || c >= natom)
+      throw(INTCO_EXCEPT("Impossibly large index for atom in fixed bend string."));
+    
+    BEND *one_bend = new BEND(a, b, c, 0);
+    // Insist on user-specified fixed coordinates to be given in Angstroms/radians
+    one_bend->set_fixed_eq_val(B[i].eq_val/180.0*_pi);
+
+    // check if intco is already present; returns 1 past the end if not found
+    int index = find(one_bend);
+  
+    if (index == intcos.size())
+      intcos.push_back(one_bend);// add it
+    else {
+      intcos[index]->set_fixed_eq_val(B[i].eq_val/180.0*_pi); // it's there already, add the fixed value
+      delete one_bend;
+    }
+  }
+  // do fixed dihedrals
+  for (int i=0; i<D.size(); ++i) {
+    int a = D[i].atoms[0];
+    int b = D[i].atoms[1];
+    int c = D[i].atoms[2];
+    int d = D[i].atoms[3];
+
+    if (a >= natom || b >= natom || c >= natom || d >= natom)
+      throw(INTCO_EXCEPT("Impossibly large index for atom in fixed dihedral string."));
+
+    TORS *one_tors = new TORS(a, b, c, d, 0);
+    // Insist on user-specified fixed coordinates to be given in Angstroms/radians
+    one_tors->set_fixed_eq_val(D[i].eq_val/180.0*_pi);
+
+    // check if intco is already present; returns 1 past the end if not found
+    int index = find(one_tors);
+
+    if (index == intcos.size())
+      intcos.push_back(one_tors);// add it
+    else {
+      intcos[index]->set_fixed_eq_val(D[i].eq_val/180.0*_pi); // it's there already, add the fixed value
+      delete one_tors;
+    }
+  }
+
+  return true;
+}
+
+template <typename T>
+T StringToNumber ( const string & Text ) { 
+  stringstream ss(Text);
+  T result;
+  return ss >> result ? result : -1;
+}
+
 std::vector<int> split_to_ints(string &str) {
+
   // Replace commas and ( and ) with spaces so that commas don't break it
-  size_t pos = 0;
-  while ((pos = str.find(",", pos)) != string::npos) {
-     str.replace(pos, 1, " ");
-     pos += 1;
-  }
-  pos = 0;
-  while ((pos = str.find(")", pos)) != string::npos) {
-     str.replace(pos, 1, " ");
-     pos += 1;
-  }
-  pos = 0;
-  while ((pos = str.find("(", pos)) != string::npos) {
-     str.replace(pos, 1, " ");
-     pos += 1;
+  for (int i=0; i<str.size(); ++i) {
+    if ( str[i] == ',' || str[i] == '(' || str[i] == ')' )
+      str[i] = ' ';
   }
 
   char delim = ' ';
@@ -155,13 +284,55 @@ std::vector<int> split_to_ints(string &str) {
 
   while (std::getline(ss, item, delim)) {
     if (item.find_first_not_of(" ") != string::npos) { // Remove any empty entries (like first one)
-      int a = atoi(item.c_str());
-      if (!a) // change to int failed
+      int a = StringToNumber<int>(item);
+      if (a == -1) // change to int failed
         throw(INTCO_EXCEPT("Frozen atom string includes non-whole number."));
       elems.push_back(a-1); // start internal numbering at 0
     }
   }
   return elems;
+}
+
+// N = number of integers before each double/value
+std::vector<fixed_coord> split_to_fixed_coord(string &str, int N) {
+
+  // Replace commas and ( and ) with spaces so that commas don't break it
+  for (int i=0; i<str.size(); ++i)
+    if ( str[i] == ',' || str[i] == '(' || str[i] == ')' )
+      str[i] = ' ';
+
+  std::vector<fixed_coord> C;
+  fixed_coord one_coord;
+
+  char delim = ' ';
+  std::stringstream ss(str);
+  string item;
+  int atom_cnt = 0;
+
+  while (std::getline(ss, item, delim)) {
+    if (item.find_first_not_of(" ") != string::npos) { // Remove any empty entries (like first one)
+
+      if (atom_cnt < N) {
+        int a = StringToNumber<int>(item);
+        if (a == -1) // change to int failed
+          throw(INTCO_EXCEPT("Fixed atoms string includes non-whole number for atom."));
+        one_coord.atoms.push_back(a-1); // start internal numbering at 0
+        ++atom_cnt;
+      }
+      else { // read eq val
+        double val = StringToNumber<double>(item);
+        if (val == -1) // change to float failed
+          throw(INTCO_EXCEPT("Fixed atoms string includes non-float for value."));
+        one_coord.eq_val = val; // start internal numbering at 0
+        atom_cnt = 0;
+        C.push_back(one_coord);  // save this coordinate and clear
+        one_coord.eq_val = 0;
+        one_coord.atoms.clear();
+      }
+
+    }
+  }
+  return C;
 }
 
 } // namespace opt

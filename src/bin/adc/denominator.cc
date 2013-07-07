@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include <libtrans/integraltransform.h>
 #include <cmath>
 #include "adc.h"
@@ -11,14 +33,14 @@ ADC::shift_denom2(int root, int irrep, double omega)
     dpdfile2 D, L;
 
     sprintf(lbl, "D_[%d]12", irrep);
-    dpd_file2_init(&D, PSIF_ADC_SEM, irrep, ID('O'), ID('V'), lbl);
-    dpd_file2_mat_init(&D);
-    dpd_file2_mat_rd(&D);
+    global_dpd_->file2_init(&D, PSIF_ADC_SEM, irrep, ID('O'), ID('V'), lbl);
+    global_dpd_->file2_mat_init(&D);
+    global_dpd_->file2_mat_rd(&D);
     
     sprintf(lbl, "L^(%d)_[%d]12", root, irrep);
-    dpd_file2_init(&L, PSIF_ADC_SEM, irrep, ID('O'), ID('V'), lbl);
-    dpd_file2_mat_init(&L);
-    dpd_file2_mat_rd(&L);
+    global_dpd_->file2_init(&L, PSIF_ADC_SEM, irrep, ID('O'), ID('V'), lbl);
+    global_dpd_->file2_mat_init(&L);
+    global_dpd_->file2_mat_rd(&L);
     
     for(int Isym = 0;Isym < nirrep_;Isym++){
         for(int i = 0;i < D.params->rowtot[Isym];i++){
@@ -31,11 +53,11 @@ ADC::shift_denom2(int root, int irrep, double omega)
             }
         }
     }
-    dpd_file2_mat_wrt(&L);
-    dpd_file2_mat_close(&L);
-    dpd_file2_close(&L);
-    dpd_file2_mat_close(&D);
-    dpd_file2_close(&D);
+    global_dpd_->file2_mat_wrt(&L);
+    global_dpd_->file2_mat_close(&L);
+    global_dpd_->file2_close(&L);
+    global_dpd_->file2_mat_close(&D);
+    global_dpd_->file2_close(&D);
 }
     
 void 
@@ -45,9 +67,9 @@ ADC::shift_denom4(int irrep, double omega)
     dpdbuf4 D;
     
     sprintf(lbl, "D_[%d]1234", irrep);
-    dpd_buf4_init(&D, PSIF_ADC_SEM, irrep, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, lbl);
+    global_dpd_->buf4_init(&D, PSIF_ADC_SEM, irrep, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, lbl);
     for(int Gij = 0;Gij < nirrep_;Gij++){
-        dpd_buf4_mat_irrep_init(&D, Gij);
+        global_dpd_->buf4_mat_irrep_init(&D, Gij);
         
         for(int ij = 0;ij < D.params->rowtot[Gij];ij++){
             int i = D.params->roworb[Gij][ij][0];
@@ -59,10 +81,10 @@ ADC::shift_denom4(int irrep, double omega)
                 D.matrix[Gij][ij][ab] = 1.0 / (omega+aocce_[i]-avire_[a]+aocce_[j]-avire_[b]);
             }
         }
-        dpd_buf4_mat_irrep_wrt(&D, Gij);
-        dpd_buf4_mat_irrep_close(&D, Gij);
+        global_dpd_->buf4_mat_irrep_wrt(&D, Gij);
+        global_dpd_->buf4_mat_irrep_close(&D, Gij);
     }
-    dpd_buf4_close(&D);
+    global_dpd_->buf4_close(&D);
 }
 
 }} // End Namespaces

@@ -1,14 +1,14 @@
-import PsiMod
+import psi4
 import re
 import os
-import input
+import inputparser
 import math
 import warnings
 from driver import *
 from wrappers import *
 from molutil import *
-from text import *
-from procutil import *
+import p4util
+from psiexceptions import *
 
 
 def run_@plugin@(name, **kwargs):
@@ -19,14 +19,14 @@ def run_@plugin@(name, **kwargs):
 
     """
     lowername = name.lower()
-    kwargs = kwargs_lower(kwargs)
+    kwargs = p4util.kwargs_lower(kwargs)
 
-    # Your plugin's PsiMod run sequence goes here
-    PsiMod.set_global_option('BASIS', 'sto-3g')
-    PsiMod.set_local_option('@PLUGIN@', 'PRINT', 1)
+    # Your plugin's psi4 run sequence goes here
+    psi4.set_global_option('BASIS', 'sto-3g')
+    psi4.set_local_option('@PLUGIN@', 'PRINT', 1)
     scf_helper(name, **kwargs)
-    returnvalue = PsiMod.plugin('@plugin@.so')
-    PsiMod.set_variable('CURRENT ENERGY', returnvalue)
+    returnvalue = psi4.plugin('@plugin@.so')
+    psi4.set_variable('CURRENT ENERGY', returnvalue)
 
 
 # Integration with driver routines

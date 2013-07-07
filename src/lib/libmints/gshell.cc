@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include <cstdlib>
 #include <cmath>
 #include "vector3.h"
@@ -15,7 +37,7 @@ GaussianShell::GaussianShell(int am, const std::vector<double> &c,
                              const std::vector<double> &e, GaussianType pure,
                              int nc, const Vector3 &center, int start,
                              PrimitiveType pt)
-    : l_(am), puream_(pure), exp_(e), coef_(c),
+    : l_(am), puream_(pure), exp_(e), coef_(c), original_coef_(c),
       nc_(nc), center_(center), start_(start)
 {
     ncartesian_ = INT_NCART(l_);
@@ -97,22 +119,14 @@ int GaussianShell::nprimitive() const
 
 void GaussianShell::print(FILE *out) const
 {
-    fprintf(out, "      Number of primitives: %d\n", nprimitive());
-    fprintf(out, "      Number of Cartesian Gaussians: %d\n", ncartesian());
-    fprintf(out, "      Spherical Harmonics?: %s\n", is_pure() ? "true" : "false");
-    fprintf(out, "      Angular momentum: %d\n", am());
-    fprintf(out, "      Center: %d\n", nc_);
-    fprintf(out, "      Start index: %d\n", start_);
-    fprintf(out, "      # Cartesians: %d\n", ncartesian_);
-    fprintf(out, "      # functions: %d\n", nfunction_);
-    fprintf(out, "      Exponent       ");
-    fprintf(out, "\n");
-    for(int p=0; p<nprimitive(); p++) {
-        fprintf(out, "      %15.10f",exp_[p]);
-        fprintf(out, " %12.9f",coef_[p]);
-        fprintf(out, "\n");
+    if (WorldComm->me() == 0) {
+        fprintf(outfile, "    %c %3d 1.00\n", AMCHAR(), nprimitive());
     }
-    fprintf(out, "\n");
+    for (int K = 0; K < nprimitive(); K++) {
+        if (WorldComm->me() == 0) {
+            fprintf(outfile, "               %20.8f %20.8f\n",exp_[K], original_coef_[K]);
+        }
+    }
 }
 
 double GaussianShell::normalize(int l, int m, int n)
@@ -125,5 +139,5 @@ const Vector3& GaussianShell::center() const
     return center_;
 }
 
-const char *GaussianShell::amtypes = "spdfghiklmn";
-const char *GaussianShell::AMTYPES = "SPDFGHIKLMN";
+const char *GaussianShell::amtypes = "spdfghiklmnopqrtuvwxyz";
+const char *GaussianShell::AMTYPES = "SPDFGHIKLMNOPQRTUVWXYZ";

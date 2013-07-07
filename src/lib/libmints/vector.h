@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #ifndef _psi_src_lib_libmints_vector_h
 #define _psi_src_lib_libmints_vector_h
 
@@ -257,17 +279,23 @@ public:
     /// @{
     /** Returns the starting iterator for irrep h. */
     iterator begin_irrep(int h)
-        { return iterator(vector_[h]); }
-    const_iterator begin_irrep(int h) const
-        { return const_iterator(vector_[h]); }
+        {  iterator it = v_.begin();
+           for (int g = 0; g < h; ++g) it += dimpi_[h];
+           return it; }
+    // The following won't compile with clang++ and c++11
+    //const_iterator begin_irrep(int h) const
+      //  { return const_iterator(vector_[h]); }
     /// @}
-
+ 
     /// @{
     /** Returns the starting iterator for irrep h. */
     iterator end_irrep(int h)
-        { return iterator(vector_[h]) + dimpi_[h]; }
-    const_iterator end_irrep(int h) const
-        { return const_iterator(vector_[h]) + dimpi_[h]; }
+        {  iterator it = v_.begin();
+           for (int g = 0; g <= h; ++g) it += dimpi_[h];
+           return it; }
+    // The following won't compile with clang++ and c++11
+    //const_iterator end_irrep(int h) const
+    //    { return const_iterator(vector_[h]) + dimpi_[h]; }
     /// @}
 
     friend class Matrix;

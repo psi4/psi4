@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include <libmints/mints.h>
 #include <libqt/qt.h>
 #include <libpsio/psio.hpp>
@@ -49,7 +71,7 @@ void SCFGrad::common_init()
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");
 }
-SharedMatrix SCFGrad::compute_gradient_()
+SharedMatrix SCFGrad::compute_gradient()
 {
     // => Echo <= //
 
@@ -893,6 +915,8 @@ SharedMatrix SCFGrad::compute_hessian()
     timer_off("Hess: S");
 
     // => Two-Electron Hessian <= //
+    /**
+
     timer_on("Hess: JK");
 
     boost::shared_ptr<JKGrad> jk = JKGrad::build_JKGrad(2);
@@ -942,6 +966,8 @@ SharedMatrix SCFGrad::compute_hessian()
         hessians["Exchange"]->scale(-1.0);
     }
     timer_off("Hess: JK");
+    
+    **/
 
     // => XC Hessian <= //
     timer_on("Hess: XC");
@@ -982,11 +1008,11 @@ SharedMatrix SCFGrad::compute_hessian()
     if (print_ > 1) {
         for (int i = 0; i < hessian_terms.size(); i++) {
             if (hessians.count(hessian_terms[i])) {
-                hessians[hessian_terms[i]]->print_atom_vector(); 
+                hessians[hessian_terms[i]]->print();
             }
         }
     } else {
-        hessians["Total"]->print_atom_vector();
+        hessians["Total"]->print();
     }
 
     return hessians["Total"]; 

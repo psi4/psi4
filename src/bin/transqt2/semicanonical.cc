@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup TRANSQT2
     \brief Enter brief description of file here
@@ -12,6 +34,11 @@
 #include <exception.h>
 #define EXTERN
 #include "globals.h"
+
+#include <libmints/wavefunction.h>
+#include <libtrans/mospace.h>
+#include <libmints/matrix.h>
+#include <libmints/vector.h>
 
 /*
 ** semicanonical_fock(): Compute the alpha- and beta-spin Fock
@@ -36,211 +63,29 @@ void uhf_fock_build(double **fock_a, double **fock_b, double **D_a, double **D_b
 
 void semicanonical_fock(void)
 {
-  int h, p, q, i, j, a, b, I, J, A, B;
-  int stat, cnt;
-  int *mo_offset, *so_offset, *aoccpi, *boccpi, *avirtpi, *bvirtpi;
-  double **D_a, **D_b, **fock_a, **fock_b;
-  double **X;
-  double ***Foo, ***Fvv;
-  double *evals, *work;
+  int i, j;
   double *alpha_evals, *beta_evals;
-  double **C, **C_a, **C_b;
-  int nirreps, nmo, nso;
+  double **C_a, **C_b;
+  int nirreps, nmo, nso, ij, p, q;
 
   nirreps = moinfo.nirreps;
   nso = moinfo.nso;
   nmo = moinfo.nmo;
 
-  aoccpi = init_int_array(nirreps);
-  boccpi = init_int_array(nirreps);
-  avirtpi = init_int_array(nirreps);
-  bvirtpi = init_int_array(nirreps);
-  for(h=0; h < nirreps; h++) {
-    aoccpi[h] = moinfo.clsdpi[h] + moinfo.openpi[h];
-    boccpi[h] = moinfo.clsdpi[h];
-    avirtpi[h] = moinfo.uoccpi[h];
-    bvirtpi[h] = moinfo.uoccpi[h] + moinfo.openpi[h];
-  }
-
-  so_offset = init_int_array(nirreps);
-  mo_offset = init_int_array(nirreps);
-  for(h=1; h < nirreps; h++) mo_offset[h] = mo_offset[h-1] + moinfo.mopi[h-1];
-  for(h=1; h < nirreps; h++) so_offset[h] = so_offset[h-1] + moinfo.sopi[h-1];
-
-  /* build the SO-basis alpha and beta densities from the ROHF eigenvector */
-  chkpt_init(PSIO_OPEN_OLD);
-  C = chkpt_rd_scf();
-  chkpt_close();
-
-  D_a = block_matrix(nso, nso);
-  D_b = block_matrix(nso, nso);
-  for(h=0; h < nirreps; h++) {
-    for(p=so_offset[h]; p < so_offset[h]+moinfo.sopi[h]; p++) {
-      for(q=so_offset[h]; q < so_offset[h]+moinfo.sopi[h]; q++) {
-
-        for(i=mo_offset[h]; i < mo_offset[h]+aoccpi[h]; i++)
-          D_a[p][q] += C[p][i] * C[q][i];
-
-        for(i=mo_offset[h]; i < mo_offset[h]+boccpi[h]; i++)
-          D_b[p][q] += C[p][i] * C[q][i];
-      }
-    }
-  }
-
-  /* build the SO-basis Fock matrix */
-  fock_a = block_matrix(nso, nso);
-  fock_b = block_matrix(nso, nso);
-  uhf_fock_build(fock_a, fock_b, D_a, D_b);
-  free_block(D_a); free_block(D_b);
-
-  /* transform the fock matrices to the MO bases */
-  X = block_matrix(nso,nso);
-  C_DGEMM('n','n',nso,nmo,nso,1.0,fock_a[0],nso,C[0],nmo,0.0,X[0],nso);
-  C_DGEMM('t','n',nmo,nmo,nso,1.0,C[0],nmo,X[0],nso,0.0,fock_a[0],nso);
-
-  C_DGEMM('n','n',nso,nmo,nso,1.0,fock_b[0],nso,C[0],nmo,0.0,X[0],nso);
-  C_DGEMM('t','n',nmo,nmo,nso,1.0,C[0],nmo,X[0],nso,0.0,fock_b[0],nso);
-  free_block(X);
-
-  if(params.print_lvl > 2) {
-    fprintf(outfile,"Alpha Fock matrix (before canonicalization)");
-    print_mat(fock_a,nmo,nmo,outfile);
-    fprintf(outfile,"Beta Fock matrix (before canonicalization)");
-    print_mat(fock_b,nmo,nmo,outfile);
-  }
-
-  /** alpha Fock semicanonicalization **/
-
-  Foo = (double ***) malloc(nirreps * sizeof(double **));
-  Fvv = (double ***) malloc(nirreps * sizeof(double **));
-  X = block_matrix(nmo, nmo);
-  C_a = block_matrix(nso, nmo);
-  alpha_evals = init_array(nmo);
-  cnt = 0;
-  for(h=0; h < nirreps; h++) {
-
-    Foo[h] = block_matrix(aoccpi[h], aoccpi[h]);
-    Fvv[h] = block_matrix(avirtpi[h], avirtpi[h]);
-
-    for(i=mo_offset[h],I=0; i < mo_offset[h]+aoccpi[h]; i++,I++)
-      for(j=mo_offset[h],J=0; j < mo_offset[h]+aoccpi[h]; j++,J++)
-        Foo[h][I][J] = fock_a[i][j];
-
-    for(a=mo_offset[h]+aoccpi[h],A=0; a < mo_offset[h]+moinfo.mopi[h]; a++,A++)
-      for(b=mo_offset[h]+aoccpi[h],B=0; b < mo_offset[h]+moinfo.mopi[h]; b++,B++)
-        Fvv[h][A][B] = fock_a[a][b];
-
-    if(aoccpi[h]) {
-      evals = init_array(aoccpi[h]);
-      work = init_array(3*aoccpi[h]);
-      if(stat = C_DSYEV('v','u', aoccpi[h], Foo[h][0], aoccpi[h], evals, work, aoccpi[h]*3)) {
-        fprintf(outfile, "rotate(): Error in alpha Foo[%1d] diagonalization. stat = %d\n", h, stat);
-        throw PsiException("transqt2: semicanonicalization error", __FILE__, __LINE__);
-      }
-      for(i=0; i<aoccpi[h]; i++) alpha_evals[cnt++] = evals[i];
-      free(evals);
-      free(work);
-
-      for(i=mo_offset[h],I=0; i < mo_offset[h]+aoccpi[h]; i++,I++)
-        for(j=mo_offset[h],J=0; j < mo_offset[h]+aoccpi[h]; j++,J++)
-          X[i][j] = Foo[h][J][I];
-    }
-
-    if(avirtpi[h]) {
-      evals = init_array(avirtpi[h]);
-      work = init_array(3*avirtpi[h]);
-      if(stat = C_DSYEV('v','u', avirtpi[h], Fvv[h][0], avirtpi[h], evals, work, avirtpi[h]*3)) {
-        fprintf(outfile, "rotate(): Error in alpha Fvv[%1d] diagonalization. stat = %d\n", h, stat);
-        throw PsiException("transqt2: semicanonicalization error", __FILE__, __LINE__);
-      }
-      for(i=0; i<avirtpi[h]; i++) alpha_evals[cnt++] = evals[i];
-      free(evals);
-      free(work);
-
-      for(a=mo_offset[h]+aoccpi[h],A=0; a < mo_offset[h]+moinfo.mopi[h]; a++,A++)
-        for(b=mo_offset[h]+aoccpi[h],B=0; b < mo_offset[h]+moinfo.mopi[h]; b++,B++)
-          X[a][b] = Fvv[h][B][A];
-    }
-
-    free_block(Foo[h]);
-    free_block(Fvv[h]);
-  }
-  free(Foo);
-  free(Fvv);
-  free_block(fock_a);
-
-  C_DGEMM('n','n',nso,nmo,nmo,1.0,C[0],nmo,X[0],nmo,0.0,C_a[0],nmo);
-
-  free_block(X);
-
-  /** beta Fock semicanonicalization **/
-
-  Foo = (double ***) malloc(nirreps * sizeof(double **));
-  Fvv = (double ***) malloc(nirreps * sizeof(double **));
-  X = block_matrix(nmo, nmo);
-  C_b = block_matrix(nso, nmo);
-  beta_evals = init_array(nmo);
-  cnt = 0;
-  for(h=0; h < nirreps; h++) {
-    /* leave the frozen core orbitals alone */
-    for(i=mo_offset[h]; i < mo_offset[h]+moinfo.frdocc[h]; i++) X[i][i] = 1.0;
-
-    Foo[h] = block_matrix(boccpi[h], boccpi[h]);
-    Fvv[h] = block_matrix(bvirtpi[h], bvirtpi[h]);
-
-    for(i=mo_offset[h],I=0; i < mo_offset[h]+boccpi[h]; i++,I++)
-      for(j=mo_offset[h],J=0; j < mo_offset[h]+boccpi[h]; j++,J++)
-        Foo[h][I][J] = fock_b[i][j];
-
-    for(a=mo_offset[h]+boccpi[h],A=0; a < mo_offset[h]+moinfo.mopi[h]; a++,A++)
-      for(b=mo_offset[h]+boccpi[h],B=0; b < mo_offset[h]+moinfo.mopi[h]; b++,B++)
-        Fvv[h][A][B] = fock_b[a][b];
-
-    if(boccpi[h]) {
-      evals = init_array(boccpi[h]);
-      work = init_array(3*boccpi[h]);
-      if(stat = C_DSYEV('v','u', boccpi[h], Foo[h][0], boccpi[h], evals, work, boccpi[h]*3)) {
-        fprintf(outfile, "rotate(): Error in alpha Foo[%1d] diagonalization. stat = %d\n", h, stat);
-        throw PsiException("transqt2: semicanonicalization error", __FILE__, __LINE__);
-      }
-      for(i=0; i<boccpi[h]; i++) beta_evals[cnt++] = evals[i];
-      free(evals);
-      free(work);
-
-      for(i=mo_offset[h],I=0; i < mo_offset[h]+boccpi[h]; i++,I++)
-        for(j=mo_offset[h],J=0; j < mo_offset[h]+boccpi[h]; j++,J++)
-          X[i][j] = Foo[h][J][I];
-    }
-
-    if(bvirtpi[h]) {
-      evals = init_array(bvirtpi[h]);
-      work = init_array(3*bvirtpi[h]);
-      if(stat = C_DSYEV('v','u', bvirtpi[h], Fvv[h][0], bvirtpi[h], evals, work, bvirtpi[h]*3)) {
-        fprintf(outfile, "rotate(): Error in alpha Fvv[%1d] diagonalization. stat = %d\n", h, stat);
-        throw PsiException("transqt2: semicanonicalization error", __FILE__, __LINE__);
-      }
-      for(i=0; i<bvirtpi[h]; i++) beta_evals[cnt++] = evals[i];
-      free(evals);
-      free(work);
-
-      for(a=mo_offset[h]+boccpi[h],A=0; a < mo_offset[h]+moinfo.mopi[h]; a++,A++)
-        for(b=mo_offset[h]+boccpi[h],B=0; b < mo_offset[h]+moinfo.mopi[h]; b++,B++)
-          X[a][b] = Fvv[h][B][A];
-    }
-
-    free_block(Foo[h]);
-    free_block(Fvv[h]);
-  }
-  free(Foo);
-  free(Fvv);
-  free_block(fock_b);
-
-  C_DGEMM('n','n',nso,nmo,nmo,1.0,C[0],nmo,X[0],nmo,0.0,C_b[0],nmo);
-
-  free_block(X);
-
   /* Write Semicanonical Alpha and Beta Fock Matrix Eigenvectors
      and Eigenvalues to the Checkpoint File */
+
+  Process::environment.wavefunction()->semicanonicalize();
+
+  C_a = block_matrix(nmo,nmo);
+  C_b = block_matrix(nmo,nmo);
+  C_a = Process::environment.wavefunction()->Ca()->to_block_matrix();
+  C_b = Process::environment.wavefunction()->Cb()->to_block_matrix();
+  alpha_evals = init_array(nmo);
+  beta_evals = init_array(nmo);
+  alpha_evals = Process::environment.wavefunction()->epsilon_a()->to_block_vector();
+  beta_evals = Process::environment.wavefunction()->epsilon_b()->to_block_vector();
+
   chkpt_init(PSIO_OPEN_OLD);
   chkpt_wt_alpha_evals(alpha_evals);
   chkpt_wt_beta_evals(beta_evals);
@@ -265,11 +110,8 @@ void semicanonical_fock(void)
 
   free_block(C_a);
   free_block(C_b);
-  free_block(C);
   free(alpha_evals);
   free(beta_evals);
-  free(mo_offset);
-  free(so_offset);
 }
 
 
@@ -298,22 +140,14 @@ void uhf_fock_build(double **fock_a, double **fock_b, double **D_a, double **D_b
       Dt[p][q] = D_a[p][q] + D_b[p][q];
 
   /* one-electron contributions */
-  scratch = init_array(ntri);
-  stat = iwl_rdone(PSIF_OEI, PSIF_SO_T, scratch, ntri, 0, 0, outfile);
-  for(i=0, ij=0; i < nso; i++)
-    for(j=0; j <= i; j++, ij++) {
-      fock_a[i][j] = fock_a[j][i] = scratch[ij];
-      fock_b[i][j] = fock_b[j][i] = scratch[ij];
-    }
-  stat = iwl_rdone(PSIF_OEI, PSIF_SO_V, scratch, ntri, 0, 0, outfile);
-  for(i=0, ij=0; i < nso; i++)
-    for(j=0; j <= i; j++, ij++) {
-      fock_a[i][j] += scratch[ij];
-      if(i!=j) fock_a[j][i] += scratch[ij];
-      fock_b[i][j] += scratch[ij];
-      if(i!=j) fock_b[j][i] += scratch[ij];
-    }
-  free(scratch);
+  double **H = Process::environment.wavefunction()->H()->to_block_matrix();
+
+  for(i=0; i < nso; i++) {
+      for(j=0; j <= i; j++) {
+          fock_a[i][j] = fock_a[j][i] = H[i][j];
+          fock_b[i][j] = fock_b[j][i] = H[i][j];
+      }
+  }
 
   iwl_buf_init(&InBuf, PSIF_SO_TEI, 0.0, 1, 1);
   do {

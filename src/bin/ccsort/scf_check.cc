@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup CCSORT
     \brief Enter brief description of file here 
@@ -36,12 +58,12 @@ void scf_check_uhf(void)
   aocc_off = moinfo.aocc_off;
   bocc_off = moinfo.bocc_off;
 
-  dpd_file2_init(&hIJ, PSIF_CC_OEI, 0, 0, 0, "h(I,J)");
-  dpd_file2_init(&hij, PSIF_CC_OEI, 0, 2, 2, "h(i,j)");
-  dpd_file2_mat_init(&hIJ);
-  dpd_file2_mat_init(&hij);
-  dpd_file2_mat_rd(&hIJ);
-  dpd_file2_mat_rd(&hij);
+  global_dpd_->file2_init(&hIJ, PSIF_CC_OEI, 0, 0, 0, "h(I,J)");
+  global_dpd_->file2_init(&hij, PSIF_CC_OEI, 0, 2, 2, "h(i,j)");
+  global_dpd_->file2_mat_init(&hIJ);
+  global_dpd_->file2_mat_init(&hij);
+  global_dpd_->file2_mat_rd(&hIJ);
+  global_dpd_->file2_mat_rd(&hij);
 
   E1A = E1B = 0.0;
   for(h=0; h < nirreps; h++) {
@@ -52,14 +74,14 @@ void scf_check_uhf(void)
       E1B += hij.matrix[h][i][i];
   }
 
-  dpd_file2_mat_close(&hIJ);
-  dpd_file2_mat_close(&hij);
+  global_dpd_->file2_mat_close(&hIJ);
+  global_dpd_->file2_mat_close(&hij);
 
-  dpd_buf4_init(&A, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 1, "A <IJ|KL>");
+  global_dpd_->buf4_init(&A, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 1, "A <IJ|KL>");
   E2AA = 0.0;
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&A, h);
-    dpd_buf4_mat_irrep_rd(&A, h);
+    global_dpd_->buf4_mat_irrep_init(&A, h);
+    global_dpd_->buf4_mat_irrep_rd(&A, h);
     for(Gi=0; Gi < nirreps; Gi++) {
       Gj = Gi ^ h;
       for(i=0; i < aoccpi[Gi]; i++) {
@@ -71,15 +93,15 @@ void scf_check_uhf(void)
 	}
       }
     }
-    dpd_buf4_mat_irrep_close(&A, h);
+    global_dpd_->buf4_mat_irrep_close(&A, h);
   }
-  dpd_buf4_close(&A);
+  global_dpd_->buf4_close(&A);
 
-  dpd_buf4_init(&A, PSIF_CC_AINTS, 0, 10, 10, 10, 10, 1, "A <ij|kl>");
+  global_dpd_->buf4_init(&A, PSIF_CC_AINTS, 0, 10, 10, 10, 10, 1, "A <ij|kl>");
   E2BB = 0.0;
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&A, h);
-    dpd_buf4_mat_irrep_rd(&A, h);
+    global_dpd_->buf4_mat_irrep_init(&A, h);
+    global_dpd_->buf4_mat_irrep_rd(&A, h);
     for(Gi=0; Gi < nirreps; Gi++) {
       Gj = Gi ^ h;
       for(i=0; i < boccpi[Gi]; i++) {
@@ -91,15 +113,15 @@ void scf_check_uhf(void)
 	}
       }
     }
-    dpd_buf4_mat_irrep_close(&A, h);
+    global_dpd_->buf4_mat_irrep_close(&A, h);
   }
-  dpd_buf4_close(&A);
+  global_dpd_->buf4_close(&A);
 
-  dpd_buf4_init(&A, PSIF_CC_AINTS, 0, 22, 22, 22, 22, 0, "A <Ij|Kl>");
+  global_dpd_->buf4_init(&A, PSIF_CC_AINTS, 0, 22, 22, 22, 22, 0, "A <Ij|Kl>");
   E2AB = 0.0;
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&A, h);
-    dpd_buf4_mat_irrep_rd(&A, h);
+    global_dpd_->buf4_mat_irrep_init(&A, h);
+    global_dpd_->buf4_mat_irrep_rd(&A, h);
     for(Gi=0; Gi < nirreps; Gi++) {
       Gj = Gi ^ h;
       for(i=0; i < aoccpi[Gi]; i++) {
@@ -111,9 +133,9 @@ void scf_check_uhf(void)
 	}
       }
     }
-    dpd_buf4_mat_irrep_close(&A, h);
+    global_dpd_->buf4_mat_irrep_close(&A, h);
   }
-  dpd_buf4_close(&A);
+  global_dpd_->buf4_close(&A);
 
   moinfo.eref = E1A+ E1B+ E2AA+ E2BB+ E2AB + moinfo.enuc + moinfo.efzc;
 
@@ -146,9 +168,9 @@ void scf_check_rhf(void)
   openpi = moinfo.openpi;
 
   /* One-electron (frozen-core) contributions */
-  dpd_file2_init(&Hoo, PSIF_CC_OEI, 0, 0, 0, "h(i,j)");
-  dpd_file2_mat_init(&Hoo);
-  dpd_file2_mat_rd(&Hoo);
+  global_dpd_->file2_init(&Hoo, PSIF_CC_OEI, 0, 0, 0, "h(i,j)");
+  global_dpd_->file2_mat_init(&Hoo);
+  global_dpd_->file2_mat_rd(&Hoo);
 
   E1A = E1B = 0.0;
   for(h=0; h < nirreps; h++) {
@@ -160,20 +182,20 @@ void scf_check_rhf(void)
               E1B += Hoo.matrix[h][i][i];   
     }
 
-  dpd_file2_mat_close(&Hoo);
-  dpd_file2_close(&Hoo);
+  global_dpd_->file2_mat_close(&Hoo);
+  global_dpd_->file2_close(&Hoo);
 
   /* Two-electron contributions */
 
   /* Prepare the A integral buffers */
-  dpd_buf4_init(&AInts_anti, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 1, "A <ij|kl>");
-  dpd_buf4_init(&AInts, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 0, "A <ij|kl>");
+  global_dpd_->buf4_init(&AInts_anti, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 1, "A <ij|kl>");
+  global_dpd_->buf4_init(&AInts, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 0, "A <ij|kl>");
 
   E2AA = E2BB = E2AB = 0.0;
   for(h=0; h < nirreps; h++) {
 
-      dpd_buf4_mat_irrep_init(&AInts_anti, h);
-      dpd_buf4_mat_irrep_rd(&AInts_anti, h);
+      global_dpd_->buf4_mat_irrep_init(&AInts_anti, h);
+      global_dpd_->buf4_mat_irrep_rd(&AInts_anti, h);
 
       /* Loop over irreps of the target */
       for(Gi=0; Gi < nirreps; Gi++) {
@@ -206,10 +228,10 @@ void scf_check_rhf(void)
 
         }
       
-      dpd_buf4_mat_irrep_close(&AInts_anti, h);
+      global_dpd_->buf4_mat_irrep_close(&AInts_anti, h);
 
-      dpd_buf4_mat_irrep_init(&AInts, h);
-      dpd_buf4_mat_irrep_rd(&AInts, h);
+      global_dpd_->buf4_mat_irrep_init(&AInts, h);
+      global_dpd_->buf4_mat_irrep_rd(&AInts, h);
 
       /* Loop over irreps of the target */
       for(Gi=0; Gi < nirreps; Gi++) {
@@ -229,13 +251,13 @@ void scf_check_rhf(void)
 
         }
       
-      dpd_buf4_mat_irrep_close(&AInts, h);
+      global_dpd_->buf4_mat_irrep_close(&AInts, h);
 
     }
 
   /* Close the A Integral buffers */
-  dpd_buf4_close(&AInts_anti);
-  dpd_buf4_close(&AInts);
+  global_dpd_->buf4_close(&AInts_anti);
+  global_dpd_->buf4_close(&AInts);
 
   /*
   fprintf(outfile, "\n\tEFZC = %20.15f\n", moinfo.efzc);
@@ -248,6 +270,7 @@ void scf_check_rhf(void)
 
   moinfo.eref = E1A+E1B+0.5*(E2AA+E2BB)+E2AB + moinfo.enuc + moinfo.efzc;
 
+  fprintf(outfile, "\tNuclear energy               =  %20.14f\n", moinfo.enuc);
   fprintf(outfile, "\tOne-electron energy          =  %20.14f\n", E1A+E1B);
   fprintf(outfile, "\tTwo-electron (AA) energy     =  %20.14f\n", E2AA);
   fprintf(outfile, "\tTwo-electron (BB) energy     =  %20.14f\n", E2BB);

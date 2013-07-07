@@ -15,6 +15,11 @@ SAPT: Symmetry-Adapted Perturbation Theory
 
 *Module:* :ref:`Keywords <apdx:sapt>`, :ref:`PSI Variables <apdx:sapt_psivar>`, :source:`LIBSAPT_SOLVER <src/lib/libsapt_solver>`
 
+.. warning:: In rare cases with systems having a high degree of symmetry, 
+   |Psifour| gives (very obviously) wrong answers for SAPT computations 
+   when the specification is in Z-matrix format. Use a Cartesian representation 
+   to avoid this problem.
+
 Symmetry-adapted perturbation theory (SAPT) provides a means of directly
 computing the noncovalent interaction between two molecules, that is, the
 interaction energy is determined without computing the total energy of the
@@ -69,7 +74,8 @@ of the two-electron integrals. The factorization of the SAPT energy
 expressions, as implemented in |PSIfour|, assumes the use of density-fitted
 two-electron integrals, therefore, the SAPT module cannot be run with
 exact integrals. In practice, we have found that the density-fitting
-approximation introduces negligable errors into the SAPT energy and greatly
+approximation introduces negligible errors into the SAPT energy 
+(often less than 0.01 kcal/mol for small dimers) and greatly
 improves efficiency. 
 
 A First Example
@@ -228,13 +234,13 @@ cite the following: [Hohenstein:2010:104107]_.
 Basic Keywords Controlling MP2 NO Approximations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. include:: autodir_options_c/sapt__nat_orbs.rst
+.. include:: autodir_options_c/sapt__nat_orbs_t2.rst
 .. include:: autodir_options_c/sapt__occ_tolerance.rst
 
 Advanced Keywords Controlling MP2 NO Approximations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. include:: autodir_options_c/sapt__nat_orbs_t2.rst
+.. comment .. include:: autodir_options_c/sapt__nat_orbs_t2.rst
 
 .. index:: SAPT; charge-transfer
 
@@ -273,8 +279,28 @@ charge-transfer results::
 These results are for the water dimer geometry shown above computed with 
 SAPT0/aug-cc-pVDZ. 
 
+
 .. index:: 
    pair: SAPT; output
+
+Monomer-Centered Basis Computations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The charge-transfer analysis above is carried out by taking the
+difference between SAPT induction as calculated in the dimer-centered
+basis (i.e., each monomer sees the basis functions on both monomers)
+vs. the monomer-centered basis (i.e., each monomer utilizes only its
+own basis set).  It is also possible to run a SAPT computation at any
+level using only the monomer-centered basis.  To do this, simply add
+``sapt_basis='monomer'`` to the energy function, such as ::
+
+    energy('sapt2',sapt_basis='monomer')
+
+This procedure leads to faster compuations, but it converges more slowly
+towards the complete basis set limit than the default procedure, which uses
+the dimer-centered basis set.  Hence, monomer-centered basis SAPT
+computations are not recommended.
+
 
 Interpreting SAPT Results
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -304,14 +330,14 @@ input::
     
     set sapt {
         print          1
-        nat_orbs       true
+        nat_orbs_t2    true
         freeze_core    true
     }
     
     energy('sapt2+3')
 
 To reiterate some of the options mentioned above: the
-|sapt__nat_orbs| option will compute MP2 natural orbitals and use
+|sapt__nat_orbs_t2| option will compute MP2 natural orbitals and use
 them in the evaluation of the triples correction to dispersion, and the
 |sapt__freeze_core| option will freeze the core throughout the SAPT
 computation. This SAPT2+3/aug-cc-pVDZ computation produces the following

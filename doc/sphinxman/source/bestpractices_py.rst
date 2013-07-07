@@ -14,7 +14,7 @@ Best Practices for Python Functions
     if 'molecule' in kwargs:
         activate(kwargs['molecule'])
         del kwargs['molecule']
-    molecule = PsiMod.get_active_molecule()
+    molecule = psi4.get_active_molecule()
     molecule.update_geometry()
 
 - Preferrably, the python function signature (for functions intended to be called in input files) is ``function(name, **kwargs)``. For functions that have other positional keywords, please bundle them into kwargs at earliest convenience (see :ref:`sec:db()` argument db_name for example).
@@ -49,9 +49,9 @@ Best Practices for Python Functions
 
 - Be sure to set any new PSI variables through lines like those below. Especially if the function returns an energy, set the 'current energy' variable. This last is needed to communicate with the optimizer. ::
 
-    PsiMod.set_variable('MP2.5 CORRELATION ENERGY', ce_mp25)
-    PsiMod.set_variable('MP2.5 TOTAL ENERGY', e_mp25)
-    PsiMod.set_variable('CURRENT ENERGY', e_mp25)
+    psi4.set_variable('MP2.5 CORRELATION ENERGY', ce_mp25)
+    psi4.set_variable('MP2.5 TOTAL ENERGY', e_mp25)
+    psi4.set_variable('CURRENT ENERGY', e_mp25)
 
 - Once your python function is fairly stable on its own, it's potential for interoperability with energy()/opt()/cp()/db()/cbs()/etc. should be evaluated. If it makes physical sense that it should work, you should strive to make that interoperability a reality. Some steps:
 

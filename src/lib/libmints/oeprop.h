@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #ifndef _psi_src_lib_oeprop_h
 #define _psi_src_lib_oeprop_h
 
@@ -249,11 +271,6 @@ protected:
     /// Computes the center for a given property, for the current molecule
     Vector3 compute_center(const double *property) const;
 public:
-    /// Compute Mulliken Charges using a specialized Da
-    boost::shared_ptr<Vector> compute_mulliken_charges_custom_Da(boost::shared_ptr<Matrix>Da_so);
-//aed
-    double*Qa,*Qb;
-    SharedMatrix Da_ao_custom_Da_so(boost::shared_ptr<Matrix>Da_so);
     /// Constructor, uses globals
     OEProp(boost::shared_ptr<Wavefunction> wfn);
     /// Constructor, uses globals and Process::environment::reference wavefunction

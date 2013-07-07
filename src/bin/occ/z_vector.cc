@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include <libtrans/integraltransform.h>
 
 #include "occwave.h"
@@ -31,33 +53,33 @@ if (reference_ == "RESTRICTED") {
 
     // Sort some integrals
     // (OV|OV) -> (VO|VO)
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
-    dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , qpsr, ID("[V,O]"), ID("[V,O]"), "MO Ints (VO|VO)");
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , qpsr, ID("[V,O]"), ID("[V,O]"), "MO Ints (VO|VO)");
+    global_dpd_->buf4_close(&K);
 
     // (ai|bj) -> (aj|bi)
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
                   ID("[V,O]"), ID("[V,O]"), 0, "MO Ints (VO|VO)");
-    dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , psrq, ID("[V,O]"), ID("[V,O]"), "MO Ints (aj|bi)");
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , psrq, ID("[V,O]"), ID("[V,O]"), "MO Ints (aj|bi)");
+    global_dpd_->buf4_close(&K);
 
     // <OV|OV> -> <VO|VO>
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV>");
-    dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , qpsr, ID("[V,O]"), ID("[V,O]"), "MO Ints <VO|VO>");
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , qpsr, ID("[V,O]"), ID("[V,O]"), "MO Ints <VO|VO>");
+    global_dpd_->buf4_close(&K);
 
 
     // Build the MO Hessian
     Aorb = new Array2d("MO Hessian Matrix", nidpA, nidpA);
     Aorb->zero();
     // A(ai,bj) = 8*(ai|bj)
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
                   ID("[V,O]"), ID("[V,O]"), 0, "MO Ints (VO|VO)");
         int h =0;
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int ai = 0; ai < K.params->rowtot[h]; ++ai){
             int a = K.params->roworb[h][ai][0];
             int i = K.params->roworb[h][ai][1];
@@ -67,15 +89,15 @@ if (reference_ == "RESTRICTED") {
                 Aorb->set(ai, bj, 8.0 * K.matrix[h][ai][bj]);
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
-    dpd_buf4_close(&K);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
+    global_dpd_->buf4_close(&K);
 
     // A(ai,bj) -= 2*<ai|bj>
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
                   ID("[V,O]"), ID("[V,O]"), 0, "MO Ints <VO|VO>");
         h = 0;
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int ai = 0; ai < K.params->rowtot[h]; ++ai){
             int a = K.params->roworb[h][ai][0];
             int i = K.params->roworb[h][ai][1];
@@ -85,15 +107,15 @@ if (reference_ == "RESTRICTED") {
                 Aorb->add(ai, bj, -2.0 * K.matrix[h][ai][bj]);
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
-    dpd_buf4_close(&K);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
+    global_dpd_->buf4_close(&K);
 
     // A(ai,bj) -= 2*(aj|bi)
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
                   ID("[V,O]"), ID("[V,O]"), 0, "MO Ints (aj|bi)");
         h = 0;
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int ai = 0; ai < K.params->rowtot[h]; ++ai){
             int a = K.params->roworb[h][ai][0];
             int i = K.params->roworb[h][ai][1];
@@ -103,8 +125,8 @@ if (reference_ == "RESTRICTED") {
                 Aorb->add(ai, bj, -2.0 * K.matrix[h][ai][bj]);
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
-    dpd_buf4_close(&K);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
+    global_dpd_->buf4_close(&K);
 
     // Close dpd files
     psio_->close(PSIF_LIBTRANS_DPD, 1);
@@ -175,57 +197,57 @@ else if (reference_ == "UNRESTRICTED") {
 
     // Sort some integrals
     // (OV|OV) -> (VO|VO)
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
-    dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , qpsr, ID("[V,O]"), ID("[V,O]"), "MO Ints (VO|VO)");
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , qpsr, ID("[V,O]"), ID("[V,O]"), "MO Ints (VO|VO)");
+    global_dpd_->buf4_close(&K);
 
     // (ov|ov) -> (vo|vo)
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
                  ID("[o,v]"), ID("[o,v]"), 0, "MO Ints (ov|ov)");
-    dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , qpsr, ID("[v,o]"), ID("[v,o]"), "MO Ints (vo|vo)");
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , qpsr, ID("[v,o]"), ID("[v,o]"), "MO Ints (vo|vo)");
+    global_dpd_->buf4_close(&K);
 
     // (AI|BJ) -> (AJ|BI)
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
                   ID("[V,O]"), ID("[V,O]"), 0, "MO Ints (VO|VO)");
-    dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , psrq, ID("[V,O]"), ID("[V,O]"), "MO Ints (AJ|BI)");
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , psrq, ID("[V,O]"), ID("[V,O]"), "MO Ints (AJ|BI)");
+    global_dpd_->buf4_close(&K);
 
     // (ai|bj) -> (aj|bi)
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"),
                   ID("[v,o]"), ID("[v,o]"), 0, "MO Ints (vo|vo)");
-    dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , psrq, ID("[v,o]"), ID("[v,o]"), "MO Ints (aj|bi)");
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , psrq, ID("[v,o]"), ID("[v,o]"), "MO Ints (aj|bi)");
+    global_dpd_->buf4_close(&K);
 
     // <OV|OV> -> <VO|VO>
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV>");
-    dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , qpsr, ID("[V,O]"), ID("[V,O]"), "MO Ints <VO|VO>");
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , qpsr, ID("[V,O]"), ID("[V,O]"), "MO Ints <VO|VO>");
+    global_dpd_->buf4_close(&K);
 
     // <ov|ov> -> <vo|vo>
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
                  ID("[o,v]"), ID("[o,v]"), 0, "MO Ints <ov|ov>");
-    dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , qpsr, ID("[v,o]"), ID("[v,o]"), "MO Ints <vo|vo>");
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , qpsr, ID("[v,o]"), ID("[v,o]"), "MO Ints <vo|vo>");
+    global_dpd_->buf4_close(&K);
 
     // (OV|ov) -> (VO|vo)
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[o,v]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[o,v]"),
                  ID("[O,V]"), ID("[o,v]"), 0, "MO Ints (OV|ov)");
-    dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , qpsr, ID("[V,O]"), ID("[v,o]"), "MO Ints (VO|vo)");
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , qpsr, ID("[V,O]"), ID("[v,o]"), "MO Ints (VO|vo)");
+    global_dpd_->buf4_close(&K);
 
     // Build the MO Hessian
     // Alpha-Alpha spin cae
     AorbAA = new Array2d("Alpha-Alpha MO Hessian Matrix", nidpA, nidpA);
     AorbAA->zero();
     // A(AI,BJ) = 4*(AI|BJ)
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
                   ID("[V,O]"), ID("[V,O]"), 0, "MO Ints (VO|VO)");
         int h =0;
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int ai = 0; ai < K.params->rowtot[h]; ++ai){
             int a = K.params->roworb[h][ai][0];
             int i = K.params->roworb[h][ai][1];
@@ -235,15 +257,15 @@ else if (reference_ == "UNRESTRICTED") {
                 AorbAA->set(ai, bj, 4.0 * K.matrix[h][ai][bj]);
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
-    dpd_buf4_close(&K);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
+    global_dpd_->buf4_close(&K);
 
     // A(AI,BJ) -= 2*<AI|BJ>
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
                   ID("[V,O]"), ID("[V,O]"), 0, "MO Ints <VO|VO>");
         h = 0;
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int ai = 0; ai < K.params->rowtot[h]; ++ai){
             int a = K.params->roworb[h][ai][0];
             int i = K.params->roworb[h][ai][1];
@@ -253,15 +275,15 @@ else if (reference_ == "UNRESTRICTED") {
                 AorbAA->add(ai, bj, -2.0 * K.matrix[h][ai][bj]);
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
-    dpd_buf4_close(&K);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
+    global_dpd_->buf4_close(&K);
 
     // A(AI,BJ) -= 2*(AJ|BI)
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
                   ID("[V,O]"), ID("[V,O]"), 0, "MO Ints (AJ|BI)");
         h = 0;
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int ai = 0; ai < K.params->rowtot[h]; ++ai){
             int a = K.params->roworb[h][ai][0];
             int i = K.params->roworb[h][ai][1];
@@ -271,8 +293,8 @@ else if (reference_ == "UNRESTRICTED") {
                 AorbAA->add(ai, bj, -2.0 * K.matrix[h][ai][bj]);
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
-    dpd_buf4_close(&K);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
+    global_dpd_->buf4_close(&K);
 
     // Add Fock contribution
     for(int x = 0; x < nidpA; x++) {
@@ -299,11 +321,11 @@ else if (reference_ == "UNRESTRICTED") {
     AorbBB = new Array2d("Beta-Beta MO Hessian Matrix", nidpB, nidpB);
     AorbBB->zero();
     // A(ai,bj) = 4*(ai|bj)
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"),
                   ID("[v,o]"), ID("[v,o]"), 0, "MO Ints (vo|vo)");
         h =0;
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int ai = 0; ai < K.params->rowtot[h]; ++ai){
             int a = K.params->roworb[h][ai][0];
             int i = K.params->roworb[h][ai][1];
@@ -313,15 +335,15 @@ else if (reference_ == "UNRESTRICTED") {
                 AorbBB->set(ai, bj, 4.0 * K.matrix[h][ai][bj]);
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
-    dpd_buf4_close(&K);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
+    global_dpd_->buf4_close(&K);
 
     // A(ai,bj) -= 2*<ai|bj>
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"),
                   ID("[v,o]"), ID("[v,o]"), 0, "MO Ints <vo|vo>");
         h = 0;
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int ai = 0; ai < K.params->rowtot[h]; ++ai){
             int a = K.params->roworb[h][ai][0];
             int i = K.params->roworb[h][ai][1];
@@ -331,15 +353,15 @@ else if (reference_ == "UNRESTRICTED") {
                 AorbBB->add(ai, bj, -2.0 * K.matrix[h][ai][bj]);
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
-    dpd_buf4_close(&K);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
+    global_dpd_->buf4_close(&K);
 
     // A(ai,bj) -= 2*(aj|bi)
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"),
                   ID("[v,o]"), ID("[v,o]"), 0, "MO Ints (aj|bi)");
         h = 0;
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int ai = 0; ai < K.params->rowtot[h]; ++ai){
             int a = K.params->roworb[h][ai][0];
             int i = K.params->roworb[h][ai][1];
@@ -349,8 +371,8 @@ else if (reference_ == "UNRESTRICTED") {
                 AorbBB->add(ai, bj, -2.0 * K.matrix[h][ai][bj]);
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
-    dpd_buf4_close(&K);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
+    global_dpd_->buf4_close(&K);
 
     // Add Fock contribution
     for(int x = 0; x < nidpB; x++) {
@@ -375,11 +397,11 @@ else if (reference_ == "UNRESTRICTED") {
     AorbAB = new Array2d("Alpha-Beta MO Hessian Matrix", nidpA, nidpB);
     AorbAB->zero();
     // A(AI,bj) = 4*(AI|bj)
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[v,o]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[v,o]"),
                   ID("[V,O]"), ID("[v,o]"), 0, "MO Ints (VO|vo)");
         h = 0;
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int ai = 0; ai < K.params->rowtot[h]; ++ai){
             int a = K.params->roworb[h][ai][0];
             int i = K.params->roworb[h][ai][1];
@@ -389,8 +411,8 @@ else if (reference_ == "UNRESTRICTED") {
                 AorbAB->set(ai, bj, 4.0 * K.matrix[h][ai][bj]);
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
-    dpd_buf4_close(&K);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
+    global_dpd_->buf4_close(&K);
     if (print_ > 2) AorbAB->print();
 
     // Close dpd files

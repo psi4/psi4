@@ -1,4 +1,4 @@
-import PsiMod
+import psi4
 import re
 import os
 import input
@@ -21,10 +21,10 @@ def run_plugin_mp2(name, **kwargs):
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
 
-    # Your plugin's PsiMod run sequence goes here
-    PsiMod.set_local_option('PLUGIN_MP2', 'PRINT', 1)
-    scf_helper(name, **kwargs)
-    returnvalue = PsiMod.plugin('plugin_mp2.so')
+    # Your plugin's psi4 run sequence goes here
+    psi4.set_local_option('PLUGIN_MP2', 'PRINT', 1)
+    energy('scf', **kwargs)
+    returnvalue = psi4.plugin('plugin_mp2.so')
 
     return returnvalue
 

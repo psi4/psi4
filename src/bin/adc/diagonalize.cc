@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include "psi4-dec.h"
 #include <liboptions/liboptions.h>
 #include <libpsio/psio.h>
@@ -62,18 +84,18 @@ ADC::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, doubl
         // Making so called Davidson mini-Hamiltonian, or Rayleigh matrix
         for(int I = 0;I < length;I++){
             sprintf(lbl, "S^(%d)_[%d]12", I, irrep);
-            dpd_file2_init(&S, PSIF_ADC_SEM, irrep, ID('O'), ID('V'), lbl);
+            global_dpd_->file2_init(&S, PSIF_ADC_SEM, irrep, ID('O'), ID('V'), lbl);
             for(int J = 0;J <= I;J++){
                 sprintf(lbl, "B^(%d)_[%d]12", J, irrep);
-                dpd_file2_init(&B, PSIF_ADC, irrep, ID('O'), ID('V'), lbl);
-                double sum = dpd_file2_dot(&B, &S);
+                global_dpd_->file2_init(&B, PSIF_ADC, irrep, ID('O'), ID('V'), lbl);
+                double sum = global_dpd_->file2_dot(&B, &S);
                 if(I != J)
                     G[I][J] = G[J][I] = sum;
                 else
                     G[I][J] = sum;
-                dpd_file2_close(&B);
+                global_dpd_->file2_close(&B);
             }
-            dpd_file2_close(&S);
+            global_dpd_->file2_close(&S);
         }
         if(first && !iter)  poles_[irrep][num_root-1].ps_value = G[num_root-1][num_root-1];
         sq_rsp(length, length, G, lambda, 1, Alpha, 1e-12);
@@ -81,63 +103,63 @@ ADC::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, doubl
         // Constructing the corretion vectors
         for(int k = 0;k < rpi_[irrep];k++){
             sprintf(lbl, "F^(%d)_[%d]12", k, irrep);
-            dpd_file2_init(&F, PSIF_ADC_SEM, irrep, ID('O'), ID('V'), lbl);
-            dpd_file2_scm(&F, 0.0);
+            global_dpd_->file2_init(&F, PSIF_ADC_SEM, irrep, ID('O'), ID('V'), lbl);
+            global_dpd_->file2_scm(&F, 0.0);
             for(int I = 0;I < length;I++){
                 sprintf(lbl, "B^(%d)_[%d]12", I, irrep);
-                dpd_file2_init(&B, PSIF_ADC, irrep, ID('O'), ID('V'), lbl);
-                dpd_file2_axpy(&B, &F, -Alpha[I][k]*lambda[k], 0);
-                dpd_file2_close(&B);
+                global_dpd_->file2_init(&B, PSIF_ADC, irrep, ID('O'), ID('V'), lbl);
+                global_dpd_->file2_axpy(&B, &F, -Alpha[I][k]*lambda[k], 0);
+                global_dpd_->file2_close(&B);
                 sprintf(lbl, "S^(%d)_[%d]12", I, irrep);
-                dpd_file2_init(&S, PSIF_ADC_SEM, irrep, ID('O'), ID('V'), lbl);
-                dpd_file2_axpy(&S, &F, Alpha[I][k], 0);
-                dpd_file2_close(&S);
+                global_dpd_->file2_init(&S, PSIF_ADC_SEM, irrep, ID('O'), ID('V'), lbl);
+                global_dpd_->file2_axpy(&S, &F, Alpha[I][k], 0);
+                global_dpd_->file2_close(&S);
             }
             shift_denom2(k, irrep, lambda[k]);
             sprintf(lbl, "L^(%d)_[%d]12", k, irrep);
-            dpd_file2_init(&L, PSIF_ADC_SEM, irrep, ID('O'), ID('V'), lbl);
-            dpd_file2_dirprd(&L, &F);
-            dpd_file2_close(&L);
+            global_dpd_->file2_init(&L, PSIF_ADC_SEM, irrep, ID('O'), ID('V'), lbl);
+            global_dpd_->file2_dirprd(&L, &F);
+            global_dpd_->file2_close(&L);
         
-            double norm = dpd_file2_dot_self(&F);
+            double norm = global_dpd_->file2_dot_self(&F);
             residual_norm[k] = sqrt(norm);
-            if(residual_norm[k] > norm_tol_) dpd_file2_scm(&F, 1/residual_norm[k]);
+            if(residual_norm[k] > norm_tol_) global_dpd_->file2_scm(&F, 1/residual_norm[k]);
             else {
-                dpd_file2_scm(&F, 0.0);
+                global_dpd_->file2_scm(&F, 0.0);
                 residual_ok[k] = 1;
             }
-            dpd_file2_close(&F);
+            global_dpd_->file2_close(&F);
         }
 
         // Expand the Ritz space by orthogonalizing {F} to {B} according to Gram-Schmidt procedure
         for(int k = 0;k < rpi_[irrep];k++){
             sprintf(lbl, "F^(%d)_[%d]12", k, irrep);
-            dpd_file2_init(&F, PSIF_ADC_SEM, irrep, ID('O'), ID('V'), lbl);
+            global_dpd_->file2_init(&F, PSIF_ADC_SEM, irrep, ID('O'), ID('V'), lbl);
             sprintf(lbl, "Bpp_[%d]12", irrep);
-            dpd_file2_copy(&F, PSIF_ADC_SEM, lbl);
+            global_dpd_->file2_copy(&F, PSIF_ADC_SEM, lbl);
             for(int I = 0;I < length;I++){
                 sprintf(lbl, "B^(%d)_[%d]12", I, irrep);
-                dpd_file2_init(&B, PSIF_ADC, irrep, ID('O'), ID('V'), lbl);
-                double coeff = - dpd_file2_dot(&F, &B);
+                global_dpd_->file2_init(&B, PSIF_ADC, irrep, ID('O'), ID('V'), lbl);
+                double coeff = - global_dpd_->file2_dot(&F, &B);
                 sprintf(lbl, "Bpp_[%d]12", irrep);
-                dpd_file2_init(&Bp, PSIF_ADC_SEM, irrep, ID('O'), ID('V'), lbl);
-                dpd_file2_axpy(&B, &Bp, coeff, 0.0);
-                dpd_file2_close(&B);
-                dpd_file2_close(&Bp);
+                global_dpd_->file2_init(&Bp, PSIF_ADC_SEM, irrep, ID('O'), ID('V'), lbl);
+                global_dpd_->file2_axpy(&B, &Bp, coeff, 0.0);
+                global_dpd_->file2_close(&B);
+                global_dpd_->file2_close(&Bp);
             }
-            dpd_file2_close(&F);
+            global_dpd_->file2_close(&F);
             sprintf(lbl, "Bpp_[%d]12", irrep);
-            dpd_file2_init(&B, PSIF_ADC_SEM, irrep, ID('O'), ID('V'), lbl);
-            double norm = dpd_file2_dot_self(&B);
+            global_dpd_->file2_init(&B, PSIF_ADC_SEM, irrep, ID('O'), ID('V'), lbl);
+            double norm = global_dpd_->file2_dot_self(&B);
             norm = sqrt(norm);
         
             if(norm > norm_tol_){
-                dpd_file2_scm(&B, 1/norm);
+                global_dpd_->file2_scm(&B, 1/norm);
                 sprintf(lbl, "B^(%d)_[%d]12", length, irrep);
-                dpd_file2_copy(&B, PSIF_ADC, lbl);
+                global_dpd_->file2_copy(&B, PSIF_ADC, lbl);
                 length++;
             }
-            dpd_file2_close(&B);
+            global_dpd_->file2_close(&B);
         }
     
         if(maxdim-length < rpi_[irrep] || (nxspi_[irrep]-length) < rpi_[irrep]){
@@ -146,22 +168,22 @@ ADC::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, doubl
 
             for(int k = 0;k < rpi_[irrep];k++){
                 sprintf(lbl, "Bn^(%d)_[%d]12", k, irrep);
-                dpd_file2_init(&Bn, PSIF_ADC_SEM, irrep, ID('O'), ID('V'), lbl);
-                dpd_file2_scm(&Bn, 0.0);
+                global_dpd_->file2_init(&Bn, PSIF_ADC_SEM, irrep, ID('O'), ID('V'), lbl);
+                global_dpd_->file2_scm(&Bn, 0.0);
                 for(int I = 0;I < length;I++){
                     sprintf(lbl, "B^(%d)_[%d]12", I, irrep);
-                    dpd_file2_init(&B, PSIF_ADC, irrep, ID('O'), ID('V'), lbl);
-                    dpd_file2_axpy(&B, &Bn, Alpha[I][k], 0);
-                    dpd_file2_close(&B);
+                    global_dpd_->file2_init(&B, PSIF_ADC, irrep, ID('O'), ID('V'), lbl);
+                    global_dpd_->file2_axpy(&B, &Bn, Alpha[I][k], 0);
+                    global_dpd_->file2_close(&B);
                 }
-                dpd_file2_close(&Bn);
+                global_dpd_->file2_close(&Bn);
             }
             for(int k = 0;k < rpi_[irrep];k++){
                 sprintf(lbl, "Bn^(%d)_[%d]12", k, irrep);
-                dpd_file2_init(&Bn, PSIF_ADC_SEM, irrep, ID('O'), ID('V'), lbl);
+                global_dpd_->file2_init(&Bn, PSIF_ADC_SEM, irrep, ID('O'), ID('V'), lbl);
                 sprintf(lbl, "B^(%d)_[%d]12", k, irrep);
-                dpd_file2_copy(&Bn, PSIF_ADC, lbl);
-                dpd_file2_close(&Bn);
+                global_dpd_->file2_copy(&Bn, PSIF_ADC, lbl);
+                global_dpd_->file2_close(&Bn);
             }
             skip_check = 1;
             length = rpi_[irrep];
@@ -192,15 +214,15 @@ ADC::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, doubl
             for(int I = 0;I < num_root;I++){
                 eps[I] = lambda[I];
                 sprintf(lbl, "V^(%d)_[%d]12", I, irrep);
-                dpd_file2_init(&V, PSIF_ADC, irrep, ID('O'), ID('V'), lbl);
-                dpd_file2_scm(&V, 0.0);
+                global_dpd_->file2_init(&V, PSIF_ADC, irrep, ID('O'), ID('V'), lbl);
+                global_dpd_->file2_scm(&V, 0.0);
                 for(int k = 0;k < length;k++){
                     sprintf(lbl, "B^(%d)_[%d]12", k, irrep);
-                    dpd_file2_init(&B, PSIF_ADC, irrep, ID('O'), ID('V'), lbl);
-                    dpd_file2_axpy(&B, &V, Alpha[k][I], 0);
-                    dpd_file2_close(&B);
+                    global_dpd_->file2_init(&B, PSIF_ADC, irrep, ID('O'), ID('V'), lbl);
+                    global_dpd_->file2_axpy(&B, &V, Alpha[k][I], 0);
+                    global_dpd_->file2_close(&B);
                 }
-                dpd_file2_close(&V);
+                global_dpd_->file2_close(&V);
             }
             break;
         }

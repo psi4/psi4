@@ -1,6 +1,28 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup DPD
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -8,457 +30,457 @@
 
 namespace psi {
 
-int dpd_buf4_mat_irrep_row_rd(dpdbuf4 *Buf, int irrep, int pq)
+int DPD::buf4_mat_irrep_row_rd(dpdbuf4 *Buf, int irrep, int pq)
 {
-  int method, filerow, all_buf_irrep;
-  int rs;  /* dpdbuf row and column indices */
-  int p, q, r, s;  /* orbital indices */
-  int filepq, filers, filesr;  /* Input dpdfile row and column indices */
-  int rowtot, coltot;  /* dpdbuf row and column dimensions */
-  int b_perm_pq, b_perm_rs, b_peq, b_res;
-  int f_perm_pq, f_perm_rs, f_peq, f_res;
-  int pq_permute, permute;
-  double value; 
+    int method, filerow, all_buf_irrep;
+    int rs;  /* dpdbuf row and column indices */
+    int p, q, r, s;  /* orbital indices */
+    int filepq, filers, filesr;  /* Input dpdfile row and column indices */
+    int rowtot, coltot;  /* dpdbuf row and column dimensions */
+    int b_perm_pq, b_perm_rs, b_peq, b_res;
+    int f_perm_pq, f_perm_rs, f_peq, f_res;
+    int pq_permute, permute;
+    double value;
 
-  all_buf_irrep = Buf->file.my_irrep;
-  rowtot = Buf->params->rowtot[irrep];
-  coltot = Buf->params->coltot[irrep^all_buf_irrep];
+    all_buf_irrep = Buf->file.my_irrep;
+    rowtot = Buf->params->rowtot[irrep];
+    coltot = Buf->params->coltot[irrep^all_buf_irrep];
 
-  b_perm_pq = Buf->params->perm_pq; b_perm_rs = Buf->params->perm_rs;
-  f_perm_pq = Buf->file.params->perm_pq; f_perm_rs = Buf->file.params->perm_rs;
-  b_peq = Buf->params->peq; b_res = Buf->params->res;
-  f_peq = Buf->file.params->peq; f_res = Buf->file.params->res;
+    b_perm_pq = Buf->params->perm_pq; b_perm_rs = Buf->params->perm_rs;
+    f_perm_pq = Buf->file.params->perm_pq; f_perm_rs = Buf->file.params->perm_rs;
+    b_peq = Buf->params->peq; b_res = Buf->params->res;
+    f_peq = Buf->file.params->peq; f_res = Buf->file.params->res;
 
-  if((b_perm_pq == f_perm_pq) && (b_perm_rs == f_perm_rs) &&
-     (b_peq == f_peq) && (b_res == f_res)) {
-      if(Buf->anti) method = 11;
-      else method = 12;
-      }
-  else if((b_perm_pq != f_perm_pq) && (b_perm_rs == f_perm_rs) &&
-	  (b_res == f_res)) {
-      if(f_perm_pq && !b_perm_pq) {
-	  if(Buf->anti) {
-	      fprintf(stderr, "\n\tUnpack pq and antisymmetrize?\n");
-	      exit(PSI_RETURN_FAILURE);
-	    }
-	  method = 21;
-	}
-      else if(!f_perm_pq && b_perm_pq) {
-	  if(Buf->anti) method = 22;
-	  else method = 23;
-	}
-      else {
-	  fprintf(stderr, "\n\tInvalid second-level method!\n");
-	  exit(PSI_RETURN_FAILURE);
-	}
+    if((b_perm_pq == f_perm_pq) && (b_perm_rs == f_perm_rs) &&
+            (b_peq == f_peq) && (b_res == f_res)) {
+        if(Buf->anti) method = 11;
+        else method = 12;
     }
-  else if((b_perm_pq == f_perm_pq) && (b_perm_rs != f_perm_rs) &&
-	  (b_peq == f_peq)) {
-      if(f_perm_rs && !b_perm_rs) {
-	  if(Buf->anti) {
-	      fprintf(stderr, "\n\tUnpack rs and antisymmetrize?\n");
-	      exit(PSI_RETURN_FAILURE);
-	    }
-	  method = 31;
-	}
-      else if(!f_perm_rs && b_perm_rs) {
-	  if(Buf->anti) method = 32;
-	  else method = 33;
-	}
-      else {
-	  fprintf(stderr, "\n\tInvalid third-level method!\n");
-	  exit(PSI_RETURN_FAILURE);
-	}
+    else if((b_perm_pq != f_perm_pq) && (b_perm_rs == f_perm_rs) &&
+            (b_res == f_res)) {
+        if(f_perm_pq && !b_perm_pq) {
+            if(Buf->anti) {
+                fprintf(stderr, "\n\tUnpack pq and antisymmetrize?\n");
+                exit(PSI_RETURN_FAILURE);
+            }
+            method = 21;
+        }
+        else if(!f_perm_pq && b_perm_pq) {
+            if(Buf->anti) method = 22;
+            else method = 23;
+        }
+        else {
+            fprintf(stderr, "\n\tInvalid second-level method!\n");
+            exit(PSI_RETURN_FAILURE);
+        }
     }
-  else if((b_perm_pq != f_perm_pq) && (b_perm_rs != f_perm_rs)) {
-      if(f_perm_pq && !b_perm_pq) {
-	  if(f_perm_rs && !b_perm_rs) {
-	      if(Buf->anti) {
-		  fprintf(stderr, "\n\tUnpack pq and rs and antisymmetrize?\n");
-		  exit(PSI_RETURN_FAILURE);
-		}
-	      else method = 41;
-	    }
-	  else if(!f_perm_rs && b_perm_rs) {
-	      if(Buf->anti) {
-		  fprintf(stderr, "\n\tUnpack pq and antisymmetrize?\n");
-		  exit(PSI_RETURN_FAILURE);
-		}
-	      else method = 42;
-	    }
-	}
-      else if(!f_perm_pq && b_perm_pq) {
-	  if(f_perm_rs && !b_perm_rs) {
-	      if(Buf->anti) {
-		  fprintf(stderr, "\n\tUnpack rs and antisymmetrize?\n");
-		  exit(PSI_RETURN_FAILURE);
-		}
-	      else method = 43;
-	    }
-	  else if(!f_perm_rs && b_perm_rs) {
-	      if(Buf->anti) method = 44;
-	      else method = 45;
-	    }
-	}
-      else {
-	  fprintf(stderr, "\n\tInvalid fourth-level method!\n");
-	  exit(PSI_RETURN_FAILURE);
-	}
+    else if((b_perm_pq == f_perm_pq) && (b_perm_rs != f_perm_rs) &&
+            (b_peq == f_peq)) {
+        if(f_perm_rs && !b_perm_rs) {
+            if(Buf->anti) {
+                fprintf(stderr, "\n\tUnpack rs and antisymmetrize?\n");
+                exit(PSI_RETURN_FAILURE);
+            }
+            method = 31;
+        }
+        else if(!f_perm_rs && b_perm_rs) {
+            if(Buf->anti) method = 32;
+            else method = 33;
+        }
+        else {
+            fprintf(stderr, "\n\tInvalid third-level method!\n");
+            exit(PSI_RETURN_FAILURE);
+        }
     }
-  else {
-      fprintf(stderr, "\n\tInvalid method in dpd_buf_mat_irrep_rd!\n");
-      exit(PSI_RETURN_FAILURE);
+    else if((b_perm_pq != f_perm_pq) && (b_perm_rs != f_perm_rs)) {
+        if(f_perm_pq && !b_perm_pq) {
+            if(f_perm_rs && !b_perm_rs) {
+                if(Buf->anti) {
+                    fprintf(stderr, "\n\tUnpack pq and rs and antisymmetrize?\n");
+                    exit(PSI_RETURN_FAILURE);
+                }
+                else method = 41;
+            }
+            else if(!f_perm_rs && b_perm_rs) {
+                if(Buf->anti) {
+                    fprintf(stderr, "\n\tUnpack pq and antisymmetrize?\n");
+                    exit(PSI_RETURN_FAILURE);
+                }
+                else method = 42;
+            }
+        }
+        else if(!f_perm_pq && b_perm_pq) {
+            if(f_perm_rs && !b_perm_rs) {
+                if(Buf->anti) {
+                    fprintf(stderr, "\n\tUnpack rs and antisymmetrize?\n");
+                    exit(PSI_RETURN_FAILURE);
+                }
+                else method = 43;
+            }
+            else if(!f_perm_rs && b_perm_rs) {
+                if(Buf->anti) method = 44;
+                else method = 45;
+            }
+        }
+        else {
+            fprintf(stderr, "\n\tInvalid fourth-level method!\n");
+            exit(PSI_RETURN_FAILURE);
+        }
+    }
+    else {
+        fprintf(stderr, "\n\tInvalid method in dpd_buf_mat_irrep_rd!\n");
+        exit(PSI_RETURN_FAILURE);
     }
 
-  switch(method) {
-  case 11: /* No change in pq or rs; antisymmetrize */
+    switch(method) {
+    case 11: /* No change in pq or rs; antisymmetrize */
 
-      filerow = Buf->file.incore ? pq : 0;
-      
-      /* Prepare the input buffer from the input file */
-      dpd_file4_mat_irrep_row_init(&(Buf->file), irrep);
+        filerow = Buf->file.incore ? pq : 0;
 
-      /* Fill the buffer */
-      dpd_file4_mat_irrep_row_rd(&(Buf->file), irrep, pq);
+        /* Prepare the input buffer from the input file */
+        file4_mat_irrep_row_init(&(Buf->file), irrep);
 
-      /* Loop over the columns in the dpdbuf */
-      for(rs=0; rs < coltot; rs++) {
-	  r = Buf->params->colorb[irrep^all_buf_irrep][rs][0];
-	  s = Buf->params->colorb[irrep^all_buf_irrep][rs][1];
+        /* Fill the buffer */
+        file4_mat_irrep_row_rd(&(Buf->file), irrep, pq);
 
-	  /* Column indices in the dpdfile */
-	  filers = rs;
-	  filesr = Buf->file.params->colidx[s][r];
+        /* Loop over the columns in the dpdbuf */
+        for(rs=0; rs < coltot; rs++) {
+            r = Buf->params->colorb[irrep^all_buf_irrep][rs][0];
+            s = Buf->params->colorb[irrep^all_buf_irrep][rs][1];
 
-	  value = Buf->file.matrix[irrep][filerow][filers];
-	  value -= Buf->file.matrix[irrep][filerow][filesr];
+            /* Column indices in the dpdfile */
+            filers = rs;
+            filesr = Buf->file.params->colidx[s][r];
 
-	  /* Assign the value */
-	  Buf->matrix[irrep][0][rs] = value;
-	}
+            value = Buf->file.matrix[irrep][filerow][filers];
+            value -= Buf->file.matrix[irrep][filerow][filesr];
 
-      /* Close the input buffer */
-      dpd_file4_mat_irrep_row_close(&(Buf->file), irrep);
+            /* Assign the value */
+            Buf->matrix[irrep][0][rs] = value;
+        }
 
-      break;
-  
-  case 12: /* No change in pq or rs */
+        /* Close the input buffer */
+        file4_mat_irrep_row_close(&(Buf->file), irrep);
 
-      if(Buf->file.incore)
-	  for(rs=0; rs < coltot; rs++)
-	      Buf->matrix[irrep][0][rs] = Buf->file.matrix[irrep][pq][rs];
-      else {
-	  Buf->file.matrix[irrep] = Buf->matrix[irrep];
-	  dpd_file4_mat_irrep_row_rd(&(Buf->file), irrep, pq);
-	}
-      
-      break;
-  case 21: /* Unpack pq; no change in rs */
-      /* Prepare the input buffer from the input file */
-      dpd_file4_mat_irrep_row_init(&(Buf->file), irrep);
+        break;
 
-      p = Buf->params->roworb[irrep][pq][0];
-      q = Buf->params->roworb[irrep][pq][1];
-      filepq = Buf->file.params->rowidx[p][q];
+    case 12: /* No change in pq or rs */
 
-      filerow = Buf->file.incore ? filepq : 0;
+        if(Buf->file.incore)
+            for(rs=0; rs < coltot; rs++)
+                Buf->matrix[irrep][0][rs] = Buf->file.matrix[irrep][pq][rs];
+        else {
+            Buf->file.matrix[irrep] = Buf->matrix[irrep];
+            file4_mat_irrep_row_rd(&(Buf->file), irrep, pq);
+        }
 
-      /* Set the permutation operator's value */
-      permute = ((p < q) && (f_perm_pq < 0) ? -1 : 1);
+        break;
+    case 21: /* Unpack pq; no change in rs */
+        /* Prepare the input buffer from the input file */
+        file4_mat_irrep_row_init(&(Buf->file), irrep);
 
-      /* Fill the buffer */
-      if(filepq >= 0)
-	  dpd_file4_mat_irrep_row_rd(&(Buf->file), irrep, filepq);
-      else
-	  dpd_file4_mat_irrep_row_zero(&(Buf->file), irrep, filepq);
+        p = Buf->params->roworb[irrep][pq][0];
+        q = Buf->params->roworb[irrep][pq][1];
+        filepq = Buf->file.params->rowidx[p][q];
 
-      /* Loop over the columns in the dpdbuf */
-      for(rs=0; rs < coltot; rs++) {
-	  filers = rs;
+        filerow = Buf->file.incore ? filepq : 0;
 
-	  value = Buf->file.matrix[irrep][filerow][filers];
+        /* Set the permutation operator's value */
+        permute = ((p < q) && (f_perm_pq < 0) ? -1 : 1);
 
-	  /* Assign the value, keeping track of the sign */
-	  Buf->matrix[irrep][0][rs] = permute*value;
-	}
+        /* Fill the buffer */
+        if(filepq >= 0)
+            file4_mat_irrep_row_rd(&(Buf->file), irrep, filepq);
+        else
+            file4_mat_irrep_row_zero(&(Buf->file), irrep, filepq);
 
-      /* Close the input buffer */
-      dpd_file4_mat_irrep_row_close(&(Buf->file), irrep);
+        /* Loop over the columns in the dpdbuf */
+        for(rs=0; rs < coltot; rs++) {
+            filers = rs;
 
-      break;
-  case 22: /* Pack pq; no change in rs; antisymmetrize */
-      /* Prepare the input buffer from the input file */
-      dpd_file4_mat_irrep_row_init(&(Buf->file), irrep);
+            value = Buf->file.matrix[irrep][filerow][filers];
 
-      p = Buf->params->roworb[irrep][pq][0];
-      q = Buf->params->roworb[irrep][pq][1];
-      filepq = Buf->file.params->rowidx[p][q];
+            /* Assign the value, keeping track of the sign */
+            Buf->matrix[irrep][0][rs] = permute*value;
+        }
 
-      filerow = Buf->file.incore ? filepq : 0;
+        /* Close the input buffer */
+        file4_mat_irrep_row_close(&(Buf->file), irrep);
 
-      /* Fill the buffer */
-      dpd_file4_mat_irrep_row_rd(&(Buf->file), irrep, filepq);
+        break;
+    case 22: /* Pack pq; no change in rs; antisymmetrize */
+        /* Prepare the input buffer from the input file */
+        file4_mat_irrep_row_init(&(Buf->file), irrep);
 
-      /* Loop over the columns in the dpdbuf */
-      for(rs=0; rs < coltot; rs++) {
-	  r = Buf->params->colorb[irrep^all_buf_irrep][rs][0];
-	  s = Buf->params->colorb[irrep^all_buf_irrep][rs][1];
+        p = Buf->params->roworb[irrep][pq][0];
+        q = Buf->params->roworb[irrep][pq][1];
+        filepq = Buf->file.params->rowidx[p][q];
 
-	  /* Column indices in the dpdfile */
-	  filers = rs;
-	  filesr = Buf->file.params->colidx[s][r];
+        filerow = Buf->file.incore ? filepq : 0;
 
-	  value = Buf->file.matrix[irrep][filerow][filers];
+        /* Fill the buffer */
+        file4_mat_irrep_row_rd(&(Buf->file), irrep, filepq);
 
-	  value -= Buf->file.matrix[irrep][filerow][filesr];
+        /* Loop over the columns in the dpdbuf */
+        for(rs=0; rs < coltot; rs++) {
+            r = Buf->params->colorb[irrep^all_buf_irrep][rs][0];
+            s = Buf->params->colorb[irrep^all_buf_irrep][rs][1];
 
-	  /* Assign the value */
-	  Buf->matrix[irrep][0][rs] = value;
-	}
+            /* Column indices in the dpdfile */
+            filers = rs;
+            filesr = Buf->file.params->colidx[s][r];
 
-      /* Close the input buffer */
-      dpd_file4_mat_irrep_row_close(&(Buf->file), irrep);
+            value = Buf->file.matrix[irrep][filerow][filers];
 
-      break;
-  case 23: /* Pack pq; no change in rs */
-      /* Prepare the input buffer from the input file */
-      dpd_file4_mat_irrep_row_init(&(Buf->file), irrep);
+            value -= Buf->file.matrix[irrep][filerow][filesr];
 
-	  p = Buf->params->roworb[irrep][pq][0];
-	  q = Buf->params->roworb[irrep][pq][1];
-	  filepq = Buf->file.params->rowidx[p][q];
+            /* Assign the value */
+            Buf->matrix[irrep][0][rs] = value;
+        }
 
-	  filerow = Buf->file.incore ? filepq : 0;
+        /* Close the input buffer */
+        file4_mat_irrep_row_close(&(Buf->file), irrep);
 
-	  dpd_file4_mat_irrep_row_rd(&(Buf->file), irrep, filepq);
+        break;
+    case 23: /* Pack pq; no change in rs */
+        /* Prepare the input buffer from the input file */
+        file4_mat_irrep_row_init(&(Buf->file), irrep);
 
-	  /* Loop over the columns in the dpdbuf */
-	  for(rs=0; rs < coltot; rs++) {
-	      filers = rs;
+        p = Buf->params->roworb[irrep][pq][0];
+        q = Buf->params->roworb[irrep][pq][1];
+        filepq = Buf->file.params->rowidx[p][q];
 
-	      value = Buf->file.matrix[irrep][filerow][filers];
+        filerow = Buf->file.incore ? filepq : 0;
 
-	      /* Assign the value */
-	      Buf->matrix[irrep][0][rs] = value;
-	    }
+        file4_mat_irrep_row_rd(&(Buf->file), irrep, filepq);
 
-      /* Close the input buffer */
-      dpd_file4_mat_irrep_row_close(&(Buf->file), irrep);
+        /* Loop over the columns in the dpdbuf */
+        for(rs=0; rs < coltot; rs++) {
+            filers = rs;
 
-      break;
-  case 31: /* No change in pq; unpack rs */
-      /* Prepare the input buffer from the input file */
-      dpd_file4_mat_irrep_row_init(&(Buf->file), irrep);
+            value = Buf->file.matrix[irrep][filerow][filers];
 
-      filepq = pq;
+            /* Assign the value */
+            Buf->matrix[irrep][0][rs] = value;
+        }
 
-      filerow = Buf->file.incore ? filepq : 0;
+        /* Close the input buffer */
+        file4_mat_irrep_row_close(&(Buf->file), irrep);
 
-	  /* Fill the buffer */
-	  dpd_file4_mat_irrep_row_rd(&(Buf->file), irrep, filepq);
+        break;
+    case 31: /* No change in pq; unpack rs */
+        /* Prepare the input buffer from the input file */
+        file4_mat_irrep_row_init(&(Buf->file), irrep);
 
-	  /* Loop over the columns in the dpdbuf */
-	  for(rs=0; rs < coltot; rs++) {
-	      r = Buf->params->colorb[irrep^all_buf_irrep][rs][0];
-	      s = Buf->params->colorb[irrep^all_buf_irrep][rs][1];
-	      filers = Buf->file.params->colidx[r][s];
+        filepq = pq;
 
-	      /* rs permutation operator */
-	      permute = ((r < s) && (f_perm_rs < 0) ? -1 : 1);
+        filerow = Buf->file.incore ? filepq : 0;
 
-	      /* Is this fast enough? */
-	      value = ((filers < 0) ? 0 :
-		       Buf->file.matrix[irrep][filerow][filers]);
+        /* Fill the buffer */
+        file4_mat_irrep_row_rd(&(Buf->file), irrep, filepq);
 
-	      /* Assign the value */
-	      Buf->matrix[irrep][0][rs] = permute*value;
-	    }
+        /* Loop over the columns in the dpdbuf */
+        for(rs=0; rs < coltot; rs++) {
+            r = Buf->params->colorb[irrep^all_buf_irrep][rs][0];
+            s = Buf->params->colorb[irrep^all_buf_irrep][rs][1];
+            filers = Buf->file.params->colidx[r][s];
 
-      /* Close the input buffer */
-      dpd_file4_mat_irrep_row_close(&(Buf->file), irrep);
+            /* rs permutation operator */
+            permute = ((r < s) && (f_perm_rs < 0) ? -1 : 1);
 
-      break;
-  case 32: /* No change in pq; pack rs; antisymmetrize */
-      /* Prepare the input buffer from the input file */
-      dpd_file4_mat_irrep_row_init(&(Buf->file), irrep);
+            /* Is this fast enough? */
+            value = ((filers < 0) ? 0 :
+                                    Buf->file.matrix[irrep][filerow][filers]);
 
-      filepq = pq;
+            /* Assign the value */
+            Buf->matrix[irrep][0][rs] = permute*value;
+        }
 
-      filerow = Buf->file.incore ? filepq : 0;
+        /* Close the input buffer */
+        file4_mat_irrep_row_close(&(Buf->file), irrep);
 
-	  /* Fill the buffer */
-	  dpd_file4_mat_irrep_row_rd(&(Buf->file), irrep, filepq);
+        break;
+    case 32: /* No change in pq; pack rs; antisymmetrize */
+        /* Prepare the input buffer from the input file */
+        file4_mat_irrep_row_init(&(Buf->file), irrep);
 
-	  /* Loop over the columns in the dpdbuf */
-	  for(rs=0; rs < coltot; rs++) {
-	      r = Buf->params->colorb[irrep^all_buf_irrep][rs][0];
-	      s = Buf->params->colorb[irrep^all_buf_irrep][rs][1];
+        filepq = pq;
 
-	      /* Column indices in the dpdfile */
-	      filers = Buf->file.params->colidx[r][s];
-	      filesr = Buf->file.params->colidx[s][r];
+        filerow = Buf->file.incore ? filepq : 0;
 
-	      value = Buf->file.matrix[irrep][filerow][filers];
-	      value -= Buf->file.matrix[irrep][filerow][filesr];
+        /* Fill the buffer */
+        file4_mat_irrep_row_rd(&(Buf->file), irrep, filepq);
 
-	      /* Assign the value */
-	      Buf->matrix[irrep][0][rs] = value;
-	    }
+        /* Loop over the columns in the dpdbuf */
+        for(rs=0; rs < coltot; rs++) {
+            r = Buf->params->colorb[irrep^all_buf_irrep][rs][0];
+            s = Buf->params->colorb[irrep^all_buf_irrep][rs][1];
 
-      /* Close the input buffer */
-      dpd_file4_mat_irrep_row_close(&(Buf->file), irrep);
+            /* Column indices in the dpdfile */
+            filers = Buf->file.params->colidx[r][s];
+            filesr = Buf->file.params->colidx[s][r];
 
-      break;
-  case 33: /* No change in pq; pack rs */
-      /* Prepare the input buffer from the input file */
-      dpd_file4_mat_irrep_row_init(&(Buf->file), irrep);
+            value = Buf->file.matrix[irrep][filerow][filers];
+            value -= Buf->file.matrix[irrep][filerow][filesr];
 
-      filepq = pq;
-      filerow = Buf->file.incore ? filepq : 0;
+            /* Assign the value */
+            Buf->matrix[irrep][0][rs] = value;
+        }
 
-	  /* Fill the buffer */
-	  dpd_file4_mat_irrep_row_rd(&(Buf->file), irrep, filepq);
+        /* Close the input buffer */
+        file4_mat_irrep_row_close(&(Buf->file), irrep);
 
-	  /* Loop over the columns in the dpdbuf */
-	  for(rs=0; rs < coltot; rs++) {
-	      r = Buf->params->colorb[irrep^all_buf_irrep][rs][0];
-	      s = Buf->params->colorb[irrep^all_buf_irrep][rs][1];
-	      filers = Buf->file.params->colidx[r][s];
+        break;
+    case 33: /* No change in pq; pack rs */
+        /* Prepare the input buffer from the input file */
+        file4_mat_irrep_row_init(&(Buf->file), irrep);
 
-	      value = Buf->file.matrix[irrep][filerow][filers];
+        filepq = pq;
+        filerow = Buf->file.incore ? filepq : 0;
 
-	      /* Assign the value */
-	      Buf->matrix[irrep][0][rs] = value;
-	    }
+        /* Fill the buffer */
+        file4_mat_irrep_row_rd(&(Buf->file), irrep, filepq);
 
-      /* Close the input buffer */
-      dpd_file4_mat_irrep_row_close(&(Buf->file), irrep);
+        /* Loop over the columns in the dpdbuf */
+        for(rs=0; rs < coltot; rs++) {
+            r = Buf->params->colorb[irrep^all_buf_irrep][rs][0];
+            s = Buf->params->colorb[irrep^all_buf_irrep][rs][1];
+            filers = Buf->file.params->colidx[r][s];
 
-      break;
-  case 41: /* Unpack pq and rs */
-      /* Prepare the input buffer from the input file */
-      dpd_file4_mat_irrep_row_init(&(Buf->file), irrep);
+            value = Buf->file.matrix[irrep][filerow][filers];
 
-	  p = Buf->params->roworb[irrep][pq][0];
-	  q = Buf->params->roworb[irrep][pq][1];
-	  filepq = Buf->file.params->rowidx[p][q];
+            /* Assign the value */
+            Buf->matrix[irrep][0][rs] = value;
+        }
 
-	  filerow = Buf->file.incore ? filepq : 0;
+        /* Close the input buffer */
+        file4_mat_irrep_row_close(&(Buf->file), irrep);
 
-	  /* Set the value of the pq permutation operator */
-	  pq_permute = ((p < q) && (f_perm_pq < 0) ? -1 : 1);
+        break;
+    case 41: /* Unpack pq and rs */
+        /* Prepare the input buffer from the input file */
+        file4_mat_irrep_row_init(&(Buf->file), irrep);
 
-	  /* Fill the buffer */
-	  if(filepq >= 0)
-	      dpd_file4_mat_irrep_row_rd(&(Buf->file), irrep, filepq);
-	  else
-	      dpd_file4_mat_irrep_row_zero(&(Buf->file), irrep, filepq);
+        p = Buf->params->roworb[irrep][pq][0];
+        q = Buf->params->roworb[irrep][pq][1];
+        filepq = Buf->file.params->rowidx[p][q];
 
-	  /* Loop over the columns in the dpdbuf */
-	  for(rs=0; rs < coltot; rs++) {
-	      r = Buf->params->colorb[irrep^all_buf_irrep][rs][0];
-	      s = Buf->params->colorb[irrep^all_buf_irrep][rs][1];
-	      filers = Buf->file.params->colidx[r][s];
+        filerow = Buf->file.incore ? filepq : 0;
 
-	      /* Set the value of the pqrs permutation operator */
-	      permute = ((r < s) && (f_perm_rs < 0) ? -1 : 1)*pq_permute;
+        /* Set the value of the pq permutation operator */
+        pq_permute = ((p < q) && (f_perm_pq < 0) ? -1 : 1);
 
-              value = 0;
+        /* Fill the buffer */
+        if(filepq >= 0)
+            file4_mat_irrep_row_rd(&(Buf->file), irrep, filepq);
+        else
+            file4_mat_irrep_row_zero(&(Buf->file), irrep, filepq);
 
-	      if(filers >= 0)
-		  value = Buf->file.matrix[irrep][filerow][filers];
+        /* Loop over the columns in the dpdbuf */
+        for(rs=0; rs < coltot; rs++) {
+            r = Buf->params->colorb[irrep^all_buf_irrep][rs][0];
+            s = Buf->params->colorb[irrep^all_buf_irrep][rs][1];
+            filers = Buf->file.params->colidx[r][s];
 
-	      /* Assign the value */
-	      Buf->matrix[irrep][0][rs] = permute*value;
-	    }
+            /* Set the value of the pqrs permutation operator */
+            permute = ((r < s) && (f_perm_rs < 0) ? -1 : 1)*pq_permute;
 
-      /* Close the input buffer */
-      dpd_file4_mat_irrep_row_close(&(Buf->file), irrep);
+            value = 0;
 
-      break;
-  case 42: /* Pack pq; unpack rs */
-      fprintf(stderr, "\n\tHaven't programmed method 42 yet!\n");
-      exit(PSI_RETURN_FAILURE);
+            if(filers >= 0)
+                value = Buf->file.matrix[irrep][filerow][filers];
 
-      break;
-  case 43: /* Unpack pq; pack rs */
-      fprintf(stderr, "\n\tHaven't programmed method 43 yet!\n");
-      exit(PSI_RETURN_FAILURE);
+            /* Assign the value */
+            Buf->matrix[irrep][0][rs] = permute*value;
+        }
 
-      break;
-  case 44: /* Pack pq; pack rs; antisymmetrize */
-      /* Prepare the input buffer from the input file */
-      dpd_file4_mat_irrep_row_init(&(Buf->file), irrep);
+        /* Close the input buffer */
+        file4_mat_irrep_row_close(&(Buf->file), irrep);
 
-	  p = Buf->params->roworb[irrep][pq][0];
-	  q = Buf->params->roworb[irrep][pq][1];
-	  filepq = Buf->file.params->rowidx[p][q];
+        break;
+    case 42: /* Pack pq; unpack rs */
+        fprintf(stderr, "\n\tHaven't programmed method 42 yet!\n");
+        exit(PSI_RETURN_FAILURE);
 
-	  filerow = Buf->file.incore ? filepq : 0;
+        break;
+    case 43: /* Unpack pq; pack rs */
+        fprintf(stderr, "\n\tHaven't programmed method 43 yet!\n");
+        exit(PSI_RETURN_FAILURE);
 
-	  /* Fill the buffer */
-	  dpd_file4_mat_irrep_row_rd(&(Buf->file), irrep, filepq);
+        break;
+    case 44: /* Pack pq; pack rs; antisymmetrize */
+        /* Prepare the input buffer from the input file */
+        file4_mat_irrep_row_init(&(Buf->file), irrep);
 
-	  /* Loop over the columns in the dpdbuf */
-	  for(rs=0; rs < coltot; rs++) {
-	      r = Buf->params->colorb[irrep^all_buf_irrep][rs][0];
-	      s = Buf->params->colorb[irrep^all_buf_irrep][rs][1];
+        p = Buf->params->roworb[irrep][pq][0];
+        q = Buf->params->roworb[irrep][pq][1];
+        filepq = Buf->file.params->rowidx[p][q];
 
-	      /* Column indices in the dpdfile */
-	      filers = Buf->file.params->colidx[r][s];
-	      filesr = Buf->file.params->colidx[s][r];
+        filerow = Buf->file.incore ? filepq : 0;
 
-	      value = Buf->file.matrix[irrep][filerow][filers];
-	      value -= Buf->file.matrix[irrep][filerow][filesr];
+        /* Fill the buffer */
+        file4_mat_irrep_row_rd(&(Buf->file), irrep, filepq);
 
-	      /* Assign the value */
-	      Buf->matrix[irrep][0][rs] = value;
-	    }
+        /* Loop over the columns in the dpdbuf */
+        for(rs=0; rs < coltot; rs++) {
+            r = Buf->params->colorb[irrep^all_buf_irrep][rs][0];
+            s = Buf->params->colorb[irrep^all_buf_irrep][rs][1];
 
-      /* Close the input buffer */
-      dpd_file4_mat_irrep_row_close(&(Buf->file), irrep);
+            /* Column indices in the dpdfile */
+            filers = Buf->file.params->colidx[r][s];
+            filesr = Buf->file.params->colidx[s][r];
 
-      break;
-  case 45: /* Pack pq and rs */
-      /* Prepare the input buffer from the input file */
-      dpd_file4_mat_irrep_row_init(&(Buf->file), irrep);
+            value = Buf->file.matrix[irrep][filerow][filers];
+            value -= Buf->file.matrix[irrep][filerow][filesr];
 
-	  p = Buf->params->roworb[irrep][pq][0];
-	  q = Buf->params->roworb[irrep][pq][1];
-	  filepq = Buf->file.params->rowidx[p][q];
+            /* Assign the value */
+            Buf->matrix[irrep][0][rs] = value;
+        }
 
-	  filerow = Buf->file.incore ? filepq : 0;
+        /* Close the input buffer */
+        file4_mat_irrep_row_close(&(Buf->file), irrep);
 
-	  dpd_file4_mat_irrep_row_rd(&(Buf->file), irrep, filepq);
+        break;
+    case 45: /* Pack pq and rs */
+        /* Prepare the input buffer from the input file */
+        file4_mat_irrep_row_init(&(Buf->file), irrep);
 
-	  /* Loop over the columns in the dpdbuf */
-	  for(rs=0; rs < coltot; rs++) {
-	      r = Buf->params->colorb[irrep^all_buf_irrep][rs][0];
-	      s = Buf->params->colorb[irrep^all_buf_irrep][rs][1];
-	      filers = Buf->file.params->colidx[r][s];
+        p = Buf->params->roworb[irrep][pq][0];
+        q = Buf->params->roworb[irrep][pq][1];
+        filepq = Buf->file.params->rowidx[p][q];
 
-	      if(filers < 0) {
-		  fprintf(stderr, "\n\tNegative colidx in method 44?\n");
-		  exit(PSI_RETURN_FAILURE);
-		}
+        filerow = Buf->file.incore ? filepq : 0;
 
-	      value = Buf->file.matrix[irrep][filerow][filers];
+        file4_mat_irrep_row_rd(&(Buf->file), irrep, filepq);
 
-	      /* Assign the value */
-	      Buf->matrix[irrep][0][rs] = value;
-	    }
-  
-      /* Close the input buffer */
-      dpd_file4_mat_irrep_row_close(&(Buf->file), irrep);
+        /* Loop over the columns in the dpdbuf */
+        for(rs=0; rs < coltot; rs++) {
+            r = Buf->params->colorb[irrep^all_buf_irrep][rs][0];
+            s = Buf->params->colorb[irrep^all_buf_irrep][rs][1];
+            filers = Buf->file.params->colidx[r][s];
 
-      break;
-  default:  /* Error trapping */
-      fprintf(stderr, "\n\tInvalid switch case in dpd_buf_mat_irrep_rd!\n");
-      exit(PSI_RETURN_FAILURE);
-      break;
+            if(filers < 0) {
+                fprintf(stderr, "\n\tNegative colidx in method 44?\n");
+                exit(PSI_RETURN_FAILURE);
+            }
+
+            value = Buf->file.matrix[irrep][filerow][filers];
+
+            /* Assign the value */
+            Buf->matrix[irrep][0][rs] = value;
+        }
+
+        /* Close the input buffer */
+        file4_mat_irrep_row_close(&(Buf->file), irrep);
+
+        break;
+    default:  /* Error trapping */
+        fprintf(stderr, "\n\tInvalid switch case in dpd_buf_mat_irrep_rd!\n");
+        exit(PSI_RETURN_FAILURE);
+        break;
     }
-  
-  return 0;
+
+    return 0;
 
 }
 

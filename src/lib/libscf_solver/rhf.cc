@@ -1,4 +1,26 @@
 /*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
+/*
  *  rhf.cpp
  *  matrix
  *
@@ -367,7 +389,7 @@ void RHF::save_sapt_info()
 
 void RHF::stability_analysis()
 {
-    if(scf_type_ == "DF"){
+    if(scf_type_ == "DF" || scf_type_ == "CD"){
         throw PSIEXCEPTION("Stability analysis has not been implemented for density fitted wavefunctions yet.");
     }else{
 #define ID(x) ints.DPD_ID(x)
@@ -388,25 +410,25 @@ void RHF::stability_analysis()
         dpd_set_default(ints.get_dpd_id());
         dpdbuf4 Asing, Atrip,I;
         psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                       ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
         // Singlet A_ia_jb = 4 (ia|jb)
-        dpd_buf4_scmcopy(&I, PSIF_LIBTRANS_DPD, "RHF Singlet Hessian (IA|JB)", 4.0);
+        global_dpd_->buf4_scmcopy(&I, PSIF_LIBTRANS_DPD, "RHF Singlet Hessian (IA|JB)", 4.0);
         // Triplet A_ia_jb = -(ib|ja)
-        dpd_buf4_sort_axpy(&I, PSIF_LIBTRANS_DPD, psrq,
+        global_dpd_->buf4_sort_axpy(&I, PSIF_LIBTRANS_DPD, psrq,
                            ID("[O,V]"), ID("[O,V]"), "RHF Triplet Hessian (IA|JB)", -1.0);
-        dpd_buf4_close(&I);
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+        global_dpd_->buf4_close(&I);
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                       ID("[O>=O]+"), ID("[V>=V]+"), 0, "MO Ints (OO|VV)");
         // Triplet A_ia_jb -= (ij|ab)
-        dpd_buf4_sort_axpy(&I, PSIF_LIBTRANS_DPD, prqs,
+        global_dpd_->buf4_sort_axpy(&I, PSIF_LIBTRANS_DPD, prqs,
                            ID("[O,V]"), ID("[O,V]"), "RHF Triplet Hessian (IA|JB)", -1.0);
-        dpd_buf4_close(&I);
-        dpd_buf4_init(&Atrip, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+        global_dpd_->buf4_close(&I);
+        global_dpd_->buf4_init(&Atrip, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                       ID("[O,V]"), ID("[O,V]"), 0, "RHF Triplet Hessian (IA|JB)");
         for(int h = 0; h < Atrip.params->nirreps; ++h){
-            dpd_buf4_mat_irrep_init(&Atrip, h);
-            dpd_buf4_mat_irrep_rd(&Atrip, h);
+            global_dpd_->buf4_mat_irrep_init(&Atrip, h);
+            global_dpd_->buf4_mat_irrep_rd(&Atrip, h);
             for(int ia = 0; ia < Atrip.params->rowtot[h]; ++ia){
                 int iabs = Atrip.params->roworb[h][ia][0];
                 int aabs = Atrip.params->roworb[h][ia][1];
@@ -428,14 +450,14 @@ void RHF::stability_analysis()
                         Atrip.matrix[h][ia][jb] -= moF->get(isym, irel, jrel);
                 }
             }
-            dpd_buf4_mat_irrep_wrt(&Atrip, h);
+            global_dpd_->buf4_mat_irrep_wrt(&Atrip, h);
         }
         // Singlet A += Triplet A
-        dpd_buf4_init(&Asing, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+        global_dpd_->buf4_init(&Asing, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                       ID("[O,V]"), ID("[O,V]"), 0, "RHF Singlet Hessian (IA|JB)");
-        dpd_buf4_axpy(&Atrip, &Asing, 1.0);
-        dpd_buf4_close(&Atrip);
-        dpd_buf4_close(&Asing);
+        global_dpd_->buf4_axpy(&Atrip, &Asing, 1.0);
+        global_dpd_->buf4_close(&Atrip);
+        global_dpd_->buf4_close(&Asing);
 
         /*
          *  Perform the stability analysis
@@ -443,9 +465,9 @@ void RHF::stability_analysis()
         std::vector<std::pair<double, int> >singlet_eval_sym;
         std::vector<std::pair<double, int> >triplet_eval_sym;
 
-        dpd_buf4_init(&Asing, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+        global_dpd_->buf4_init(&Asing, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                       ID("[O,V]"), ID("[O,V]"), 0, "RHF Singlet Hessian (IA|JB)");
-        dpd_buf4_init(&Atrip, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+        global_dpd_->buf4_init(&Atrip, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                       ID("[O,V]"), ID("[O,V]"), 0, "RHF Triplet Hessian (IA|JB)");
         for(int h = 0; h < Asing.params->nirreps; ++h) {
             int dim = Asing.params->rowtot[h];
@@ -453,10 +475,10 @@ void RHF::stability_analysis()
             double *evals = init_array(dim);
             double **evecs = block_matrix(dim, dim);
 
-            dpd_buf4_mat_irrep_init(&Asing, h);
-            dpd_buf4_mat_irrep_rd(&Asing, h);
+            global_dpd_->buf4_mat_irrep_init(&Asing, h);
+            global_dpd_->buf4_mat_irrep_rd(&Asing, h);
             sq_rsp(dim, dim, Asing.matrix[h], evals, 1, evecs, 1e-12);
-            dpd_buf4_mat_irrep_close(&Asing, h);
+            global_dpd_->buf4_mat_irrep_close(&Asing, h);
 
             int mindim = dim < 5 ? dim : 5;
             for(int i = 0; i < mindim; i++)
@@ -465,10 +487,10 @@ void RHF::stability_analysis()
             zero_arr(evals, dim);
             zero_mat(evecs, dim, dim);
 
-            dpd_buf4_mat_irrep_init(&Atrip, h);
-            dpd_buf4_mat_irrep_rd(&Atrip, h);
+            global_dpd_->buf4_mat_irrep_init(&Atrip, h);
+            global_dpd_->buf4_mat_irrep_rd(&Atrip, h);
             sq_rsp(dim, dim, Atrip.matrix[h], evals, 1, evecs, 1e-12);
-            dpd_buf4_mat_irrep_close(&Atrip, h);
+            global_dpd_->buf4_mat_irrep_close(&Atrip, h);
 
             for(int i = 0; i < mindim; i++)
                 triplet_eval_sym.push_back(std::make_pair(evals[i], h));

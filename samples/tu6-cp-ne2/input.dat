@@ -22,11 +22,11 @@ for R in Rvals:
   dimer.R = R
   ecp[R] = cp('ccsd(t)')
 
-PsiMod.print_out("\n")
-PsiMod.print_out("CP-corrected CCSD(T)/aug-cc-pVDZ interaction energies\n\n")
-PsiMod.print_out("        R (Ang)         E_int (kcal/mol)             \n")
-PsiMod.print_out("-----------------------------------------------------\n")
+psi4.print_out("\n")
+psi4.print_out("CP-corrected CCSD(T)/aug-cc-pVDZ interaction energies\n\n")
+psi4.print_out("        R (Ang)         E_int (kcal/mol)             \n")
+psi4.print_out("-----------------------------------------------------\n")
 for R in Rvals:
   e = ecp[R] * 627.5095
-  PsiMod.print_out("        %3.1f            %10.6f\n" % (R, e))
+  psi4.print_out("        %3.1f            %10.6f\n" % (R, e))
 

@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include <boost/foreach.hpp>
 #include <stdexcept>
 #include <exception.h>
@@ -198,6 +220,10 @@ void OneBodyAOInt::compute_shell(int sh1, int sh2)
     if(!force_cartesian_){
         // Pure angular momentum (6d->5d, ...) transformation
         pure_transform(s1, s2, nchunk_);
+        buffer_size_ = nchunk_ * s1.nfunction() * s2.nfunction();
+    }
+    else{
+        buffer_size_ = nchunk_ * s1.ncartesian() * s2.ncartesian();
     }
 }
 

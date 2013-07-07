@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include <stdexcept>
 
 #include <compiler.h>
@@ -19,14 +41,16 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory* intsfactory, int deriv) :
     original_bs2_(integral_->basis2()),
     original_bs3_(integral_->basis3()),
     original_bs4_(integral_->basis4()),
-    deriv_(deriv)
+    deriv_(deriv),
+    target_(0),
+    target_pybuffer_(&target_, true)
 {
     // The derived classes allocate this memory.
     force_cartesian_ = false;
-    target_ = 0;
     tformbuf_ = 0;
     source_ = 0;
     natom_ = original_bs1_->molecule()->natom();  // This assumes the 4 bases come from the same molecule.
+    enable_pybuffer_ = false;
 }
 
 TwoBodyAOInt::~TwoBodyAOInt()

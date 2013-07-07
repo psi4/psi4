@@ -1,11 +1,33 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup DPD
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 
 /*! \defgroup DPD libdpd: The Direct-Product Decomposition Library */
 
-/* dpd_3d_sort(): Sorts a 3-index array stored as a two-by-one index
+/* sort_3d(): Sorts a 3-index array stored as a two-by-one index
 ** array, (ab,c), into any desired ordering.
 **
 ** Arguments:
@@ -48,155 +70,155 @@
 #include "dpd.h"
 
 namespace psi {
-	
-void dpd_3d_sort(double ***Win, double ***Wout, int nirreps, int h, int *rowtot, int **rowidx, 
-		 int ***roworb, int *asym, int *bsym, int *aoff, int *boff,
-		 int *cpi, int *coff, int **rowidx_out, enum pattern index, int sum)
+
+void DPD::sort_3d(double ***Win, double ***Wout, int nirreps, int h, int *rowtot, int **rowidx,
+                  int ***roworb, int *asym, int *bsym, int *aoff, int *boff,
+                  int *cpi, int *coff, int **rowidx_out, enum pattern index, int sum)
 {
-  int Ga, Gb, Gc;
-  int Gab, Gac, Gca, Gcb, Gbc, Gba;
-  int A, B, C, a, b, c;
-  int ab, ac, ca, cb, bc, ba;
+    int Ga, Gb, Gc;
+    int Gab, Gac, Gca, Gcb, Gbc, Gba;
+    int A, B, C, a, b, c;
+    int ab, ac, ca, cb, bc, ba;
 
-  switch(index) {
+    switch(index) {
 
-  case abc:
-    fprintf(stderr, "\ndpd_3d_sort: abc pattern is invalid.\n");
-    dpd_error("3d_sort", stderr);
-    break;
+    case abc:
+        fprintf(stderr, "\ndpd_3d_sort: abc pattern is invalid.\n");
+        dpd_error("3d_sort", stderr);
+        break;
 
-  case acb:
-    for(Gab=0; Gab < nirreps; Gab++) {
-      Gc = h ^ Gab;
+    case acb:
+        for(Gab=0; Gab < nirreps; Gab++) {
+            Gc = h ^ Gab;
 
-      for(ab=0; ab < rowtot[Gab]; ab++) {
+            for(ab=0; ab < rowtot[Gab]; ab++) {
 
-	A = roworb[Gab][ab][0];
-	B = roworb[Gab][ab][1];
+                A = roworb[Gab][ab][0];
+                B = roworb[Gab][ab][1];
 
-	Ga = asym[A]; Gb = bsym[B];
-	Gac = Ga ^ Gc;
+                Ga = asym[A]; Gb = bsym[B];
+                Gac = Ga ^ Gc;
 
-	b = B - boff[Gb];
+                b = B - boff[Gb];
 
-	for(c=0; c < cpi[Gc]; c++) {
-	  C = coff[Gc] + c;
+                for(c=0; c < cpi[Gc]; c++) {
+                    C = coff[Gc] + c;
 
-	  ac = rowidx_out[A][C];
+                    ac = rowidx_out[A][C];
 
-	  if(sum) Wout[Gac][ac][b] += Win[Gab][ab][c];
-	  else Wout[Gac][ac][b] = Win[Gab][ab][c];
-	}
-      }
+                    if(sum) Wout[Gac][ac][b] += Win[Gab][ab][c];
+                    else Wout[Gac][ac][b] = Win[Gab][ab][c];
+                }
+            }
+        }
+
+        break;
+
+    case cab:
+        for(Gab=0; Gab < nirreps; Gab++) {
+            Gc = h ^ Gab;
+
+            for(ab=0; ab < rowtot[Gab]; ab++) {
+
+                A = roworb[Gab][ab][0];
+                B = roworb[Gab][ab][1];
+
+                Ga = asym[A]; Gb = bsym[B];
+                Gca = Ga ^ Gc;
+
+                b = B - boff[Gb];
+
+                for(c=0; c < cpi[Gc]; c++) {
+                    C = coff[Gc] + c;
+
+                    ca = rowidx_out[C][A];
+
+                    if(sum) Wout[Gca][ca][b] += Win[Gab][ab][c];
+                    else Wout[Gca][ca][b] = Win[Gab][ab][c];
+                }
+            }
+        }
+
+        break;
+
+    case cba:
+        for(Gab=0; Gab < nirreps; Gab++) {
+            Gc = h ^ Gab;
+
+            for(ab=0; ab < rowtot[Gab]; ab++) {
+
+                A = roworb[Gab][ab][0];
+                B = roworb[Gab][ab][1];
+
+                Ga = asym[A]; Gb = bsym[B];
+                a = A - aoff[Ga];
+
+                Gcb = Gc ^ Gb;
+
+                for(c=0; c < cpi[Gc]; c++) {
+                    C = coff[Gc] + c;
+
+                    cb = rowidx_out[C][B];
+
+                    if(sum) Wout[Gcb][cb][a] += Win[Gab][ab][c];
+                    else Wout[Gcb][cb][a] = Win[Gab][ab][c];
+                }
+            }
+        }
+
+        break;
+
+    case bca:
+        for(Gab=0; Gab < nirreps; Gab++) {
+            Gc = h ^ Gab;
+
+            for(ab=0; ab < rowtot[Gab]; ab++) {
+
+                A = roworb[Gab][ab][0];
+                B = roworb[Gab][ab][1];
+
+                Ga = asym[A]; Gb = bsym[B];
+                a = A - aoff[Ga];
+
+                Gbc = Gb ^ Gc;
+
+                for(c=0; c < cpi[Gc]; c++) {
+                    C = coff[Gc] + c;
+
+                    bc = rowidx_out[B][C];
+
+                    if(sum) Wout[Gbc][bc][a] += Win[Gab][ab][c];
+                    else Wout[Gbc][bc][a] = Win[Gab][ab][c];
+                }
+            }
+        }
+
+        break;
+
+    case bac:
+        for(Gab=0; Gab < nirreps; Gab++) {
+            Gc = h ^ Gab;
+            Gba = Gab;
+
+            for(ab=0; ab < rowtot[Gab]; ab++) {
+
+                A = roworb[Gab][ab][0];
+                B = roworb[Gab][ab][1];
+
+                ba = rowidx_out[B][A];
+
+                for(c=0; c < cpi[Gc]; c++) {
+                    C = coff[Gc] + c;
+
+                    if(sum) Wout[Gba][ba][c] += Win[Gab][ab][c];
+                    else Wout[Gba][ba][c] = Win[Gab][ab][c];
+                }
+            }
+        }
+
+        break;
+
     }
-
-    break;
-
-  case cab:
-    for(Gab=0; Gab < nirreps; Gab++) {
-      Gc = h ^ Gab;
-
-      for(ab=0; ab < rowtot[Gab]; ab++) {
-
-	A = roworb[Gab][ab][0];
-	B = roworb[Gab][ab][1];
-
-	Ga = asym[A]; Gb = bsym[B];
-	Gca = Ga ^ Gc;
-
-	b = B - boff[Gb];
-
-	for(c=0; c < cpi[Gc]; c++) {
-	  C = coff[Gc] + c;
-
-	  ca = rowidx_out[C][A];
-
-	  if(sum) Wout[Gca][ca][b] += Win[Gab][ab][c];
-	  else Wout[Gca][ca][b] = Win[Gab][ab][c];
-	}
-      }
-    }
-
-    break;
-
-  case cba:
-    for(Gab=0; Gab < nirreps; Gab++) {
-      Gc = h ^ Gab;
-
-      for(ab=0; ab < rowtot[Gab]; ab++) {
-
-	A = roworb[Gab][ab][0];
-	B = roworb[Gab][ab][1];
-
-	Ga = asym[A]; Gb = bsym[B];
-	a = A - aoff[Ga];
-
-	Gcb = Gc ^ Gb;
-
-	for(c=0; c < cpi[Gc]; c++) {
-	  C = coff[Gc] + c;
-
-	  cb = rowidx_out[C][B];
-
-	  if(sum) Wout[Gcb][cb][a] += Win[Gab][ab][c];
-	  else Wout[Gcb][cb][a] = Win[Gab][ab][c];
-	}
-      }
-    }
-
-    break;
-
-  case bca:
-    for(Gab=0; Gab < nirreps; Gab++) {
-      Gc = h ^ Gab;
-
-      for(ab=0; ab < rowtot[Gab]; ab++) {
-
-	A = roworb[Gab][ab][0];
-	B = roworb[Gab][ab][1];
-
-	Ga = asym[A]; Gb = bsym[B];
-	a = A - aoff[Ga];
-
-	Gbc = Gb ^ Gc;
-
-	for(c=0; c < cpi[Gc]; c++) {
-	  C = coff[Gc] + c;
-
-	  bc = rowidx_out[B][C];
-
-	  if(sum) Wout[Gbc][bc][a] += Win[Gab][ab][c];
-	  else Wout[Gbc][bc][a] = Win[Gab][ab][c];
-	}
-      }
-    }
-
-    break;
-
-  case bac:
-    for(Gab=0; Gab < nirreps; Gab++) {
-      Gc = h ^ Gab;
-      Gba = Gab;
-
-      for(ab=0; ab < rowtot[Gab]; ab++) {
-
-	A = roworb[Gab][ab][0];
-	B = roworb[Gab][ab][1];
-
-	ba = rowidx_out[B][A];
-
-	for(c=0; c < cpi[Gc]; c++) {
-	  C = coff[Gc] + c;
-
-	  if(sum) Wout[Gba][ba][c] += Win[Gab][ab][c];
-	  else Wout[Gba][ba][c] = Win[Gab][ab][c];
-	}
-      }
-    }
-
-    break;
-
-  }
 }
 
 }

@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include "integraltransform.h"
 #include <libpsio/psio.h>
 #include <libciomr/libciomr.h>
@@ -25,7 +47,7 @@ void IntegralTransform::common_initialize()
     sosym_   = init_int_array(nso_);
     mosym_   = init_int_array(nmo_);
     zeros_   = init_int_array(nirreps_);
-    
+
     write_dpd_so_tpdm_ = false;
 
     int count = 0;
@@ -618,7 +640,7 @@ IntegralTransform::process_eigenvectors()
                 }
             }
             if(transformationType_ != Restricted){
-                name = "Beta orbitals for space " + label;
+                name = "Beta orbitals for space " + std::string(1, label);
                 Cb = SharedMatrix(new Matrix(name, nirreps_, sopi_, bOrbsPI_[label]));
                 for(int h = 0; h < nirreps_; ++h){
                     int count = 0;

@@ -151,7 +151,7 @@ reflect only whether the user has changed the value).
    ``has_changed()`` value only reflect what the user has explicitly set.
    This keyword should not be queried to find out the current
    |globals__puream| state for the active basis; use instead,
-   ``PsiMod.MintsHelper().basisset().has_puream()``.
+   ``psi4.MintsHelper().basisset().has_puream()``.
 
 
 
@@ -171,25 +171,25 @@ Options from the c-side Options object are accessible in the Python driver throu
 
 - get 
 
-  - :py:func:`~PsiMod.get_global_option()`
-  - :py:func:`~PsiMod.get_local_option()`
-  - :py:func:`~PsiMod.get_option()`
+  - :py:func:`~psi4.get_global_option()`
+  - :py:func:`~psi4.get_local_option()`
+  - :py:func:`~psi4.get_option()`
 
 - set 
 
-  - :py:func:`~PsiMod.set_global_option()` 
-  - :py:func:`~PsiMod.set_local_option()`
+  - :py:func:`~psi4.set_global_option()` 
+  - :py:func:`~psi4.set_local_option()`
 
 - has_changed 
 
-  - :py:func:`~PsiMod.has_global_option_changed()`
-  - :py:func:`~PsiMod.has_local_option_changed()`
-  - :py:func:`~PsiMod.has_option_changed()`
+  - :py:func:`~psi4.has_global_option_changed()`
+  - :py:func:`~psi4.has_local_option_changed()`
+  - :py:func:`~psi4.has_option_changed()`
 
 - revoke_changed 
 
-  - :py:func:`~PsiMod.revoke_global_option_changed()`
-  - :py:func:`~PsiMod.revoke_local_option_changed()`
+  - :py:func:`~psi4.revoke_global_option_changed()`
+  - :py:func:`~psi4.revoke_local_option_changed()`
 
 There's a pattern here. Setting something, either a value (set) or a
 negative changed status (revoke_changed), can only be done for a specific
@@ -220,33 +220,33 @@ There are two primary purposes for interacting with options in the python driver
   has_changed values, then restoring them at the end.  Below is an example
   of this procedure; don't actually do this. ::
 
-    g_user_scftype = PsiMod.get_global_option('SCF_TYPE')
-    l_user_scftype_scf = PsiMod.get_local_option('SCF', 'SCF_TYPE')
-    bg_user_scftype = PsiMod.has_global_option_changed('SCF_TYPE')
-    bl_user_scftype_scf = PsiMod.has_local_option_changed('SCF', 'SCF_TYPE')
+    g_user_scftype = psi4.get_global_option('SCF_TYPE')
+    l_user_scftype_scf = psi4.get_local_option('SCF', 'SCF_TYPE')
+    bg_user_scftype = psi4.has_global_option_changed('SCF_TYPE')
+    bl_user_scftype_scf = psi4.has_local_option_changed('SCF', 'SCF_TYPE')
 
-    g_user_wfn = PsiMod.get_global_option('WFN')
-    l_user_wfn = PsiMod.get_local_option('MP2', 'WFN')
-    bg_user_wfn = PsiMod.has_global_option_changed('WFN')
-    bl_user_wfn = PsiMod.has_local_option_changed('MP2', 'WFN')
+    g_user_wfn = psi4.get_global_option('WFN')
+    l_user_wfn = psi4.get_local_option('MP2', 'WFN')
+    bg_user_wfn = psi4.has_global_option_changed('WFN')
+    bl_user_wfn = psi4.has_local_option_changed('MP2', 'WFN')
 
     # body of function
     # scf_type and wfn are freely changed, LOCALLY
-    # PsiMod.scf() and PsiMod.mp2() are run
+    # psi4.scf() and psi4.mp2() are run
 
-    PsiMod.set_global_option('SCF_TYPE', g_user_scftype)
+    psi4.set_global_option('SCF_TYPE', g_user_scftype)
     if not bg_user_scftype:
-        PsiMod.revoke_global_option_changed('SCF_TYPE')
-    PsiMod.set_local_option('SCF', 'SCF_TYPE', l_user_scftype_scf)
+        psi4.revoke_global_option_changed('SCF_TYPE')
+    psi4.set_local_option('SCF', 'SCF_TYPE', l_user_scftype_scf)
     if not bl_user_scftype_scf:
-        PsiMod.revoke_local_option_changed('SCF', 'SCF_TYPE')
+        psi4.revoke_local_option_changed('SCF', 'SCF_TYPE')
 
-    PsiMod.set_global_option('WFN', g_user_wfn)
+    psi4.set_global_option('WFN', g_user_wfn)
     if not bg_user_wfn:
-        PsiMod.revoke_global_option_changed('WFN')
-    PsiMod.set_local_option('MP2', 'WFN', l_user_wfn_scf)
+        psi4.revoke_global_option_changed('WFN')
+    psi4.set_local_option('MP2', 'WFN', l_user_wfn_scf)
     if not bl_user_wfn_scf:
-        PsiMod.revoke_local_option_changed('MP2', 'WFN')
+        psi4.revoke_local_option_changed('MP2', 'WFN')
 
   Instead of cluttering the driver with the above boilerplate, use an
   :py:class:`~optproc.OptionsState` object that stores values and
@@ -262,7 +262,7 @@ There are two primary purposes for interacting with options in the python driver
     # body of function
     # scf_type and wfn are freely changed, LOCALLY
     # puream and df_basis_scf are freely changed, GLOBALLY
-    # PsiMod.scf() and PsiMod.mp2() are run
+    # psi4.scf() and psi4.mp2() are run
 
     optstash.restore()
 
@@ -278,19 +278,19 @@ There are two primary purposes for interacting with options in the python driver
   those to query what option value an upcoming c++ module is going to use
   (determined by user and defaults) and (b) those to set options to govern
   the course of a procedure. Finding out the intended option value for a
-  molecule should employ the :py:func:`~PsiMod.get_option` command 
-  (and :py:func:`~PsiMod.has_option_changed` for has_changed), which
+  molecule should employ the :py:func:`~psi4.get_option` command 
+  (and :py:func:`~psi4.has_option_changed` for has_changed), which
   (newly) requires a module for scope. *(Previously, this command used the
   "active module", which isn't well-defined in the context of the python
   driver, and consequently, the command gave variable results, depending
   on whether a get_local/set_local command had been previously executed to
   define the active module.)* ::
 
-    if (PsiMod.get_option('SCF', 'REFERENCE') == 'RHF'):
-        PsiMod.set_local_option('SCF', 'REFERENCE', 'RKS')
+    if (psi4.get_option('SCF', 'REFERENCE') == 'RHF'):
+        psi4.set_local_option('SCF', 'REFERENCE', 'RKS')
 
   Setting of options in python should use the
-  :py:func:`~PsiMod.set_local_option` command. Using the local, rather
+  :py:func:`~psi4.set_local_option` command. Using the local, rather
   than global, scope will ensure that the newly set option will be used by
   the module. Otherwise, if the python procedure set in the global scope
   and the user had happened to set that option in local scope, the local
@@ -299,22 +299,22 @@ There are two primary purposes for interacting with options in the python driver
   that and follow the new scheme outlined here.)*
 
 
-PsiMod Options Commands
+psi4 Options Commands
 -----------------------
 
-.. function:: PsiMod.get_global_option(keyword)
+.. function:: psi4.get_global_option(keyword)
 
    Given a string of *keyword* name, returns the value associated with the
    keyword from the global options. Returns error if keyword is not
    recognized.
 
-.. function:: PsiMod.get_local_option(module, keyword)
+.. function:: psi4.get_local_option(module, keyword)
 
    Given a string of *keyword* name and a particular *module*, returns the
    value associated with the keyword in the module options scope. Returns
    error if keyword is not recognized for the module.
 
-.. function:: PsiMod.get_option(module, keyword)
+.. function:: psi4.get_option(module, keyword)
 
    Given a string of *keyword* name and a particular *module*, returns the
    local value associated with the keyword if it's been set, else the global
@@ -322,36 +322,36 @@ PsiMod Options Commands
    keyword is not recognized globally or if keyword is not recognized for the
    module.
 
-.. function:: PsiMod.set_global_option(keyword, value)
+.. function:: psi4.set_global_option(keyword, value)
 
    Sets *value* to option *keyword* for all modules.
     
-.. function:: PsiMod.set_local_option(module, keyword, value)
+.. function:: psi4.set_local_option(module, keyword, value)
 
    Sets *value* to option *keyword* scoped only to specific *module*.
 
-.. function:: PsiMod.has_global_option_changed(keyword)
+.. function:: psi4.has_global_option_changed(keyword)
 
    Returns boolean for whether the *keyword* has been touched in the global
    scope, by either user or code. Notwithstanding, code is written such that
    in practice, this returns whether the option has been touched in the
    global scope by the user.
 
-.. function:: PsiMod.has_local_option_changed(module, keyword)
+.. function:: psi4.has_local_option_changed(module, keyword)
 
    Returns boolean for whether *keyword* has been touched in the scope of
    the specified *module*, by either user or code. Notwithstanding, code is
    written such that in practice, this returns whether the option has been
    touched in the module scope by the user.
 
-.. function:: PsiMod.has_option_changed(module, keyword)
+.. function:: psi4.has_option_changed(module, keyword)
 
    Returns boolean for whether *keyword* has been touched either locally
    to specified *module* or globally, by either user or code.
    Notwithstanding, code is written such that in practice, this returns
    whether the option has been touched by the user.
 
-.. function:: PsiMod.revoke_global_option_changed(keyword)
+.. function:: psi4.revoke_global_option_changed(keyword)
 
    Given a string of *keyword* name, sets the has_changed attribute in the
    global options scope to false. Used in python driver when a function
@@ -359,7 +359,7 @@ PsiMod Options Commands
    called on the option so that has_changed reflects whether the user (not
    the program) has touched the option.
 
-.. function:: PsiMod.revoke_local_option_changed(module, keyword)
+.. function:: psi4.revoke_local_option_changed(module, keyword)
 
    Given a string of *keyword* name and a particular *module*, sets the
    has_changed attribute in the module options scope to false. Used in

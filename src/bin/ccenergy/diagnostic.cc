@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup CCENERGY
     \brief Enter brief description of file here 
@@ -45,9 +67,9 @@ double diagnostic(void)
 
   if(params.ref == 0) { /** RHF **/
 
-    dpd_file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
-    t1diag = dpd_file2_dot_self(&T1A);
-    dpd_file2_close(&T1A);
+    global_dpd_->file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    t1diag = global_dpd_->file2_dot_self(&T1A);
+    global_dpd_->file2_close(&T1A);
 
     t1diag /= num_elec;
     t1diag = sqrt(t1diag);
@@ -55,12 +77,12 @@ double diagnostic(void)
   }
   else if(params.ref == 1) { /** ROHF **/
 
-    dpd_file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
-    dpd_file2_mat_init(&T1A);
-    dpd_file2_mat_rd(&T1A);
-    dpd_file2_init(&T1B, PSIF_CC_OEI, 0, 0, 1, "tia");
-    dpd_file2_mat_init(&T1B);
-    dpd_file2_mat_rd(&T1B);
+    global_dpd_->file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    global_dpd_->file2_mat_init(&T1A);
+    global_dpd_->file2_mat_rd(&T1A);
+    global_dpd_->file2_init(&T1B, PSIF_CC_OEI, 0, 0, 1, "tia");
+    global_dpd_->file2_mat_init(&T1B);
+    global_dpd_->file2_mat_rd(&T1B);
 
     t1diag = 0.0;
     for(h=0; h < nirreps; h++) {
@@ -94,20 +116,20 @@ double diagnostic(void)
     t1diag = sqrt(t1diag);
     t1diag *= 0.5;
 
-    dpd_file2_mat_close(&T1A);
-    dpd_file2_close(&T1A);
-    dpd_file2_mat_close(&T1B);
-    dpd_file2_close(&T1B);
+    global_dpd_->file2_mat_close(&T1A);
+    global_dpd_->file2_close(&T1A);
+    global_dpd_->file2_mat_close(&T1B);
+    global_dpd_->file2_close(&T1B);
 
   }
   else if(params.ref == 2) { /** UHF **/
 
-    dpd_file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
-    dpd_file2_mat_init(&T1A);
-    dpd_file2_mat_rd(&T1A);
-    dpd_file2_init(&T1B, PSIF_CC_OEI, 0, 2, 3, "tia");
-    dpd_file2_mat_init(&T1B);
-    dpd_file2_mat_rd(&T1B);
+    global_dpd_->file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    global_dpd_->file2_mat_init(&T1A);
+    global_dpd_->file2_mat_rd(&T1A);
+    global_dpd_->file2_init(&T1B, PSIF_CC_OEI, 0, 2, 3, "tia");
+    global_dpd_->file2_mat_init(&T1B);
+    global_dpd_->file2_mat_rd(&T1B);
 
     t1diag_a = 0.0;
     t1diag_b = 0.0;
@@ -125,10 +147,10 @@ double diagnostic(void)
 
     t1diag = sqrt((t1diag_a + t1diag_b)/(num_elec_a + num_elec_b));
 
-    dpd_file2_mat_close(&T1A);
-    dpd_file2_mat_close(&T1B);
-    dpd_file2_close(&T1A);
-    dpd_file2_close(&T1B);
+    global_dpd_->file2_mat_close(&T1A);
+    global_dpd_->file2_mat_close(&T1B);
+    global_dpd_->file2_close(&T1A);
+    global_dpd_->file2_close(&T1B);
 	      
   }
 

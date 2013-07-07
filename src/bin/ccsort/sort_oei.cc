@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup CCSORT
     \brief Enter brief description of file here 
@@ -87,19 +109,19 @@ void sort_oei_uhf(void)
   filter(tmp_oei,b_oei,ioff,nmo,moinfo.nfzc,moinfo.nfzv);
   free(tmp_oei);
 
-  dpd_file2_init(&hIJ, PSIF_CC_OEI, 0, 0, 0, "h(I,J)");
-  dpd_file2_init(&hij, PSIF_CC_OEI, 0, 2, 2, "h(i,j)");
-  dpd_file2_init(&hAB, PSIF_CC_OEI, 0, 1, 1, "h(A,B)");
-  dpd_file2_init(&hab, PSIF_CC_OEI, 0, 3, 3, "h(a,b)");
-  dpd_file2_init(&hIA, PSIF_CC_OEI, 0, 0, 1, "h(I,A)");
-  dpd_file2_init(&hia, PSIF_CC_OEI, 0, 2, 3, "h(i,a)");
+  global_dpd_->file2_init(&hIJ, PSIF_CC_OEI, 0, 0, 0, "h(I,J)");
+  global_dpd_->file2_init(&hij, PSIF_CC_OEI, 0, 2, 2, "h(i,j)");
+  global_dpd_->file2_init(&hAB, PSIF_CC_OEI, 0, 1, 1, "h(A,B)");
+  global_dpd_->file2_init(&hab, PSIF_CC_OEI, 0, 3, 3, "h(a,b)");
+  global_dpd_->file2_init(&hIA, PSIF_CC_OEI, 0, 0, 1, "h(I,A)");
+  global_dpd_->file2_init(&hia, PSIF_CC_OEI, 0, 2, 3, "h(i,a)");
 
-  dpd_file2_mat_init(&hIJ);
-  dpd_file2_mat_init(&hij);
-  dpd_file2_mat_init(&hAB);
-  dpd_file2_mat_init(&hab);
-  dpd_file2_mat_init(&hIA);
-  dpd_file2_mat_init(&hia);
+  global_dpd_->file2_mat_init(&hIJ);
+  global_dpd_->file2_mat_init(&hij);
+  global_dpd_->file2_mat_init(&hAB);
+  global_dpd_->file2_mat_init(&hab);
+  global_dpd_->file2_mat_init(&hIA);
+  global_dpd_->file2_mat_init(&hia);
 
   /* Loop over alpha QT indices and convert to CC ordering */
   for(p=0; p < nactive; p++) {
@@ -151,26 +173,26 @@ void sort_oei_uhf(void)
     }
   }
 
-  dpd_file2_mat_wrt(&hIJ);
-  dpd_file2_mat_wrt(&hij);
-  dpd_file2_mat_wrt(&hAB);
-  dpd_file2_mat_wrt(&hab);
-  dpd_file2_mat_wrt(&hIA);
-  dpd_file2_mat_wrt(&hia);
+  global_dpd_->file2_mat_wrt(&hIJ);
+  global_dpd_->file2_mat_wrt(&hij);
+  global_dpd_->file2_mat_wrt(&hAB);
+  global_dpd_->file2_mat_wrt(&hab);
+  global_dpd_->file2_mat_wrt(&hIA);
+  global_dpd_->file2_mat_wrt(&hia);
 
-  dpd_file2_mat_close(&hIJ);
-  dpd_file2_mat_close(&hij);
-  dpd_file2_mat_close(&hAB);
-  dpd_file2_mat_close(&hab);
-  dpd_file2_mat_close(&hIA);
-  dpd_file2_mat_close(&hia);
+  global_dpd_->file2_mat_close(&hIJ);
+  global_dpd_->file2_mat_close(&hij);
+  global_dpd_->file2_mat_close(&hAB);
+  global_dpd_->file2_mat_close(&hab);
+  global_dpd_->file2_mat_close(&hIA);
+  global_dpd_->file2_mat_close(&hia);
 
-  dpd_file2_close(&hIJ);
-  dpd_file2_close(&hij);
-  dpd_file2_close(&hAB);
-  dpd_file2_close(&hab);
-  dpd_file2_close(&hIA);
-  dpd_file2_close(&hia);
+  global_dpd_->file2_close(&hIJ);
+  global_dpd_->file2_close(&hij);
+  global_dpd_->file2_close(&hAB);
+  global_dpd_->file2_close(&hab);
+  global_dpd_->file2_close(&hIA);
+  global_dpd_->file2_close(&hia);
 
   free(a_oei);
   free(b_oei);
@@ -215,13 +237,13 @@ void sort_oei_rhf(void)
     print_array(oei, nactive, outfile);
   }
 
-  dpd_file2_init(&Hoo, PSIF_CC_OEI, 0, 0, 0, "h(i,j)");
-  dpd_file2_init(&Hvv, PSIF_CC_OEI, 0, 1, 1, "h(a,b)");
-  dpd_file2_init(&Hov, PSIF_CC_OEI, 0, 0, 1, "h(i,a)");
+  global_dpd_->file2_init(&Hoo, PSIF_CC_OEI, 0, 0, 0, "h(i,j)");
+  global_dpd_->file2_init(&Hvv, PSIF_CC_OEI, 0, 1, 1, "h(a,b)");
+  global_dpd_->file2_init(&Hov, PSIF_CC_OEI, 0, 0, 1, "h(i,a)");
 
-  dpd_file2_mat_init(&Hoo);
-  dpd_file2_mat_init(&Hvv);
-  dpd_file2_mat_init(&Hov);
+  global_dpd_->file2_mat_init(&Hoo);
+  global_dpd_->file2_mat_init(&Hvv);
+  global_dpd_->file2_mat_init(&Hov);
 
   /* Loop over QT indices and convert to CC ordering */
   for(p=0; p < nactive; p++) {
@@ -272,17 +294,17 @@ void sort_oei_rhf(void)
     }
   }
 
-  dpd_file2_mat_wrt(&Hoo);
-  dpd_file2_mat_wrt(&Hvv);
-  dpd_file2_mat_wrt(&Hov);
+  global_dpd_->file2_mat_wrt(&Hoo);
+  global_dpd_->file2_mat_wrt(&Hvv);
+  global_dpd_->file2_mat_wrt(&Hov);
 
-  dpd_file2_mat_close(&Hoo);
-  dpd_file2_mat_close(&Hvv);
-  dpd_file2_mat_close(&Hov);
+  global_dpd_->file2_mat_close(&Hoo);
+  global_dpd_->file2_mat_close(&Hvv);
+  global_dpd_->file2_mat_close(&Hov);
 
-  dpd_file2_close(&Hoo);
-  dpd_file2_close(&Hvv);
-  dpd_file2_close(&Hov);
+  global_dpd_->file2_close(&Hoo);
+  global_dpd_->file2_close(&Hvv);
+  global_dpd_->file2_close(&Hov);
 
   free(oei);
 }

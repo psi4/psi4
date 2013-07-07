@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup CCENERGY
     \brief Enter brief description of file here 
@@ -32,13 +54,13 @@ static double new_d1diag_t1_rohf(void)
 
   nirreps = moinfo.nirreps;
 
-  dpd_file2_init(&T1_a, PSIF_CC_OEI, 0, 0, 1, "tIA");
-  dpd_file2_mat_init(&T1_a);
-  dpd_file2_mat_rd(&T1_a);
+  global_dpd_->file2_init(&T1_a, PSIF_CC_OEI, 0, 0, 1, "tIA");
+  global_dpd_->file2_mat_init(&T1_a);
+  global_dpd_->file2_mat_rd(&T1_a);
       
-  dpd_file2_init(&T1_b, PSIF_CC_OEI, 0, 0, 1, "tia");
-  dpd_file2_mat_init(&T1_b);
-  dpd_file2_mat_rd(&T1_b);
+  global_dpd_->file2_init(&T1_b, PSIF_CC_OEI, 0, 0, 1, "tia");
+  global_dpd_->file2_mat_init(&T1_b);
+  global_dpd_->file2_mat_rd(&T1_b);
 
   for(h=0; h < nirreps; h++) {
     nclsd = moinfo.clsdpi[h];
@@ -106,11 +128,11 @@ static double new_d1diag_t1_rohf(void)
     }
   }
 
-  dpd_file2_mat_close(&T1_a);
-  dpd_file2_close(&T1_a);
+  global_dpd_->file2_mat_close(&T1_a);
+  global_dpd_->file2_close(&T1_a);
 
-  dpd_file2_mat_close(&T1_b);
-  dpd_file2_close(&T1_b);
+  global_dpd_->file2_mat_close(&T1_b);
+  global_dpd_->file2_close(&T1_b);
 
   max_hp = sqrt(max_hp);
   max_hx = sqrt(max_hx);

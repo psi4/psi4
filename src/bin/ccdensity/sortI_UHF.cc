@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup CCDENSITY
     \brief Enter brief description of file here 
@@ -58,9 +80,9 @@ void sortI_UHF(void)
   O_b = block_matrix(nmo,nmo);
 
   /* Sort alpha components first */
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "I(I,J)");
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "I(I,J)");
+  global_dpd_->file2_mat_init(&D);
+  global_dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(i=0; i < aoccpi[h]; i++) {
       I = qt_aocc[aocc_off[h] + i];
@@ -70,12 +92,12 @@ void sortI_UHF(void)
       }
     }
   }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "I'AB");
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "I'AB");
+  global_dpd_->file2_mat_init(&D);
+  global_dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(a=0; a < avirtpi[h]; a++) {
       A = qt_avir[avir_off[h] + a];
@@ -86,12 +108,12 @@ void sortI_UHF(void)
       }
     }
   }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "I(I,A)");
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "I(I,A)");
+  global_dpd_->file2_mat_init(&D);
+  global_dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(i=0; i < aoccpi[h]; i++) {
       I = qt_aocc[aocc_off[h] + i];
@@ -103,13 +125,13 @@ void sortI_UHF(void)
       }
     }
   }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
   /* Sort beta components */
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 2, 2, "I(i,j)");
-  dpd_file2_mat_init(&D); 
-  dpd_file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 2, 2, "I(i,j)");
+  global_dpd_->file2_mat_init(&D); 
+  global_dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(i=0; i < boccpi[h]; i++) { 
       I = qt_bocc[bocc_off[h] + i];
@@ -119,12 +141,12 @@ void sortI_UHF(void)
       }
     }
   }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 3, 3, "I'ab");
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 3, 3, "I'ab");
+  global_dpd_->file2_mat_init(&D);
+  global_dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(a=0; a < bvirtpi[h]; a++) {
       A = qt_bvir[bvir_off[h] + a];
@@ -135,12 +157,12 @@ void sortI_UHF(void)
       }
     }
   }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 2, 3, "I(i,a)");
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 2, 3, "I(i,a)");
+  global_dpd_->file2_mat_init(&D);
+  global_dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(i=0; i < boccpi[h]; i++) {
       I = qt_bocc[bocc_off[h] + i];
@@ -152,8 +174,8 @@ void sortI_UHF(void)
       }
     }
   }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
   /* Symmetrize the Lagrangians */
   for(p=0; p < nmo; p++) {

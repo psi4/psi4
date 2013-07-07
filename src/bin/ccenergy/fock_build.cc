@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup CCENERGY
     \brief Enter brief description of file here 
@@ -13,15 +35,18 @@
 #define EXTERN
 #include "globals.h"
 
+#include <libmints/wavefunction.h>
+#include <libtrans/mospace.h>
+#include <libmints/matrix.h>
+
 namespace psi { namespace ccenergy {
 
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
 
 void rhf_fock_build(double **fock, double  **D)
 {
-  int i, j, ij;
-  int nso, ntri, stat;
-  double *scratch;
+  int i, j;
+  int nso, ntri;
   int lastbuf, idx, p, q, r, s, pq, rs;
   double value;
   Value *valptr;
@@ -31,20 +56,15 @@ void rhf_fock_build(double **fock, double  **D)
   nso = moinfo.nso;
   ntri = nso * (nso+1)/2;
 
-  /* one-electron contributions */
-  scratch = init_array(ntri);
-  stat = iwl_rdone(PSIF_OEI, PSIF_SO_T, scratch, ntri, 0, 0, outfile);
-  for(i=0, ij=0; i < nso; i++)
-    for(j=0; j <= i; j++, ij++)
-      fock[i][j] = fock[j][i] = scratch[ij];
-  stat = iwl_rdone(PSIF_OEI, PSIF_SO_V, scratch, ntri, 0, 0, outfile);
-  for(i=0, ij=0; i < nso; i++)
-    for(j=0; j <= i; j++, ij++) {
-      fock[i][j] += scratch[ij];
-      if(i!=j) fock[j][i] += scratch[ij];
-    }
-  free(scratch);
+  double **H = Process::environment.wavefunction()->H()->to_block_matrix();
 
+  for(i=0; i < nso; i++) {
+      for(j=0; j <= i; j++) {
+          fock[i][j] = fock[j][i] = H[i][j];
+      }
+  }
+
+  /* two-electron contributions */
   iwl_buf_init(&InBuf, PSIF_SO_TEI, 0.0, 1, 1);
   do {
 
@@ -182,22 +202,15 @@ void uhf_fock_build(double **fock_a, double **fock_b, double **D_a, double **D_b
       Dt[p][q] = D_a[p][q] + D_b[p][q];
 
   /* one-electron contributions */
-  scratch = init_array(ntri);
-  stat = iwl_rdone(PSIF_OEI, PSIF_SO_T, scratch, ntri, 0, 0, outfile);
-  for(i=0, ij=0; i < nso; i++)
-    for(j=0; j <= i; j++, ij++) {
-      fock_a[i][j] = fock_a[j][i] = scratch[ij];
-      fock_b[i][j] = fock_b[j][i] = scratch[ij];
-    }
-  stat = iwl_rdone(PSIF_OEI, PSIF_SO_V, scratch, ntri, 0, 0, outfile);
-  for(i=0, ij=0; i < nso; i++)
-    for(j=0; j <= i; j++, ij++) {
-      fock_a[i][j] += scratch[ij];
-      if(i!=j) fock_a[j][i] += scratch[ij];
-      fock_b[i][j] += scratch[ij];
-      if(i!=j) fock_b[j][i] += scratch[ij];
-    }
-  free(scratch);
+
+  double **H = Process::environment.wavefunction()->H()->to_block_matrix();
+
+  for(i=0; i < nso; i++) {
+      for(j=0; j <= i; j++) {
+          fock_a[i][j] = fock_a[j][i] = H[i][j];
+          fock_b[i][j] = fock_b[j][i] = H[i][j];
+      }
+  }
 
   iwl_buf_init(&InBuf, PSIF_SO_TEI, 0.0, 1, 1);
   do {

@@ -21,7 +21,8 @@ set globals {
   basis       cc-pVDZ
   freeze_core true
   r_convergence 10
-  e_convergence  10
+  e_convergence 10
+  d_convergence 10
 }
 
 energy('ccsd(t)')

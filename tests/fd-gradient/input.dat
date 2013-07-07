@@ -14,18 +14,18 @@ set findif { print 2 }
 
 # In C1, test gradients by 3-point formula ; default is disp_size = .005
 gradient('scf')
-anal_grad = PsiMod.wavefunction().gradient() 
+anal_grad = psi4.wavefunction().gradient() 
 
 set findif { points 3 }
 gradient('scf', dertype=0)
-fd_grad = PsiMod.wavefunction().gradient() 
+fd_grad = psi4.wavefunction().gradient() 
 
 compare_matrices(fd_grad, anal_grad, 4, "3-point finite-difference vs. analytic gradient to 10^-4 (C1)") #TEST
 
 # Test gradient by 5-point formula
 set findif { points 5 }
 gradient('scf', dertype=0)
-fd_grad = PsiMod.wavefunction().gradient() 
+fd_grad = psi4.wavefunction().gradient() 
 
 compare_matrices(fd_grad, anal_grad, 8, "5-point finite-difference vs. analytic gradient to 10^-8 (C1)") #TEST
 
@@ -42,13 +42,13 @@ set globals { basis sto-3g }
 # In C2v, test gradient by 3-point formula ; default is disp_size = .005
 set findif { points 3 }
 gradient('scf', dertype=0)
-fd_grad = PsiMod.wavefunction().gradient() 
+fd_grad = psi4.wavefunction().gradient() 
 
 compare_matrices(fd_grad, anal_grad, 4, "3-point finite-difference vs. analytic gradient to 10^-4 (C2v)") #TEST
 
 # Test gradient by 5-point formula
 set findif { points 5 }
 gradient('scf', dertype=0)
-fd_grad = PsiMod.wavefunction().gradient() 
+fd_grad = psi4.wavefunction().gradient() 
 
 compare_matrices(fd_grad, anal_grad, 8, "5-point finite-difference vs. analytic gradient to 10^-8 (C2v)") #TEST

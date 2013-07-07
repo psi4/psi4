@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include <boost/shared_ptr.hpp>
 #include <libpsio/psio.hpp>
 #include "diismanager.h"
@@ -206,20 +228,20 @@ DIISManager::add_entry(int numQuantities, ...)
             case DIISEntry::DPDBuf4:
                 buf4 = va_arg(args, dpdbuf4*);
                 for(int h = 0; h < buf4->params->nirreps; ++h){
-                    dpd_buf4_mat_irrep_init(buf4, h);
-                    dpd_buf4_mat_irrep_rd(buf4, h);
+                    global_dpd_->buf4_mat_irrep_init(buf4, h);
+                    global_dpd_->buf4_mat_irrep_rd(buf4, h);
                     for(int row = 0; row < buf4->params->rowtot[h]; ++row){
                         for(int col = 0; col < buf4->params->coltot[h]; ++col){
                             *arrayPtr++ = buf4->matrix[h][row][col];
                         }
                     }
-                    dpd_buf4_mat_irrep_close(buf4, h);
+                    global_dpd_->buf4_mat_irrep_close(buf4, h);
                 }
                 break;
             case DIISEntry::DPDFile2:
                 file2 = va_arg(args, dpdfile2*);
-                dpd_file2_mat_init(file2);
-                dpd_file2_mat_rd(file2);
+                global_dpd_->file2_mat_init(file2);
+                global_dpd_->file2_mat_rd(file2);
                 for(int h = 0; h < file2->params->nirreps; ++h){
                     for(int row = 0; row < file2->params->rowtot[h]; ++row){
                         for(int col = 0; col < file2->params->coltot[h]; ++col){
@@ -227,7 +249,7 @@ DIISManager::add_entry(int numQuantities, ...)
                         }
                     }
                 }
-                dpd_file2_mat_close(file2);
+                global_dpd_->file2_mat_close(file2);
                 break;
             case DIISEntry::Matrix:
                 matrix = va_arg(args, Matrix*);
@@ -241,7 +263,7 @@ DIISManager::add_entry(int numQuantities, ...)
                 break;
             case DIISEntry::Vector:
                 vector = va_arg(args, Vector*);
-                for(int h = 0; h < matrix->nirrep(); ++h){
+                for(int h = 0; h < vector->nirrep(); ++h){
                     for(int row = 0; row < vector->dimpi()[h]; ++row){
                             *arrayPtr++ = vector->get(h, row);
                     }
@@ -435,24 +457,24 @@ DIISManager::extrapolate(int numQuantities, ...)
                     break;
                 case DIISEntry::DPDBuf4:
                     buf4 = va_arg(args, dpdbuf4*);
-                    if(!n) dpd_buf4_scm(buf4, 0.0);
+                    if(!n) global_dpd_->buf4_scm(buf4, 0.0);
                     for(int h = 0; h < buf4->params->nirreps; ++h){
-                        dpd_buf4_mat_irrep_init(buf4, h);
-                        dpd_buf4_mat_irrep_rd(buf4, h);
+                        global_dpd_->buf4_mat_irrep_init(buf4, h);
+                        global_dpd_->buf4_mat_irrep_rd(buf4, h);
                         for(int row = 0; row < buf4->params->rowtot[h]; ++row){
                             for(int col = 0; col < buf4->params->coltot[h]; ++col){
                                 buf4->matrix[h][row][col] += coefficient * *arrayPtr++;
                             }
                         }
-                        dpd_buf4_mat_irrep_wrt(buf4, h);
-                        dpd_buf4_mat_irrep_close(buf4, h);
+                        global_dpd_->buf4_mat_irrep_wrt(buf4, h);
+                        global_dpd_->buf4_mat_irrep_close(buf4, h);
                     }
                     break;
                 case DIISEntry::DPDFile2:
                     file2 = va_arg(args, dpdfile2*);
-                    if(!n) dpd_file2_scm(file2, 0.0);
-                    dpd_file2_mat_init(file2);
-                    dpd_file2_mat_rd(file2);
+                    if(!n) global_dpd_->file2_scm(file2, 0.0);
+                    global_dpd_->file2_mat_init(file2);
+                    global_dpd_->file2_mat_rd(file2);
                     for(int h = 0; h < file2->params->nirreps; ++h){
                         for(int row = 0; row < file2->params->rowtot[h]; ++row){
                             for(int col = 0; col < file2->params->coltot[h]; ++col){
@@ -460,8 +482,8 @@ DIISManager::extrapolate(int numQuantities, ...)
                             }
                         }
                     }
-                    dpd_file2_mat_wrt(file2);
-                    dpd_file2_mat_close(file2);
+                    global_dpd_->file2_mat_wrt(file2);
+                    global_dpd_->file2_mat_close(file2);
                     break;
                 case DIISEntry::Matrix:
                     matrix = va_arg(args, Matrix*);
@@ -477,13 +499,13 @@ DIISManager::extrapolate(int numQuantities, ...)
                 case DIISEntry::Vector:
                     vector = va_arg(args, Vector*);
                     if(!n){
-                        for(int h = 0; h < matrix->nirrep(); ++h){
+                        for(int h = 0; h < vector->nirrep(); ++h){
                             for(int row = 0; row < vector->dimpi()[h]; ++row){
                                 vector->set(h, row, 0.0);
                             }
                         }
                     }
-                    for(int h = 0; h < matrix->nirrep(); ++h){
+                    for(int h = 0; h < vector->nirrep(); ++h){
                         for(int row = 0; row < vector->dimpi()[h]; ++row){
                             double val = vector->get(h, row);
                             vector->set(h, row, coefficient * *arrayPtr++ + val);

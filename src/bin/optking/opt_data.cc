@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file    opt_data.cc
     \ingroup optking
     \brief   OPT_DATA associated functions that do not do i/o
@@ -126,7 +148,15 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
   double max_force = array_abs_max(f, Nintco);
   double rms_force = array_rms(f, Nintco);
 
-//#if defined(OPTKING_PACKAGE_PSI)
+/*
+  if (mol.has_fixed_eq_vals()) {
+    fprintf(outfile,"\t Forces are not used to judge convergence, since artificial forces were added according\n");
+    fprintf(outfile,"\t  to user-defined equilibrium values.\n");
+    Opt_params.i_max_force = false;
+    Opt_params.i_rms_force = false;
+  }
+*/
+
   fprintf(outfile, "\n  ==> Convergence Check <==\n\n");
   fprintf(outfile, "  Measures of convergence in internal coordinates in au.\n");
   fprintf(outfile, "  Criteria marked as inactive (o), active & met (*), and active & unmet ( ).\n");
@@ -164,29 +194,6 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
     rms_disp, (Opt_params.i_rms_disp ? ((fabs(rms_disp) < Opt_params.conv_rms_disp) ? "*" : "") : "o"));
 
   fprintf(outfile, "  ---------------------------------------------------------------------------------------------\n\n");
-
-/*
-#elif defined(OPTKING_PACKAGE_QCHEM)
-  printf("\tMAX Force %8.1e : Energy Change %8.1e : MAX Displacement %8.1e\n", max_force, DE, max_disp);
-  fprintf(outfile, "\n\tConvergence Check Cycle %4d: (using internal coordinates in au)\n", iteration);
-  fprintf(outfile, "\t                    Actual        Tolerance     Converged?\n");
-  fprintf(outfile, "\t----------------------------------------------------------\n");
-
-  if ( fabs(Opt_params.conv_max_force)< 1.0e-15 ) fprintf(outfile, "\tMAX Force        %10.1e\n", max_force);
-  else fprintf(outfile, "\tMAX Force        %10.1e %14.1e %11s\n", max_force, Opt_params.conv_max_force,
-       ((max_force < Opt_params.conv_max_force) ? "yes" : "no"));
-
-  if ( fabs(Opt_params.conv_max_DE)   < 1.0e-15 ) fprintf(outfile, "\tEnergy Change    %10.1e\n", fabs(DE));
-  else fprintf(outfile, "\tEnergy Change    %10.1e %14.1e %11s\n", DE, Opt_params.conv_max_DE,
-       ((fabs(DE) < Opt_params.conv_max_DE) ? "yes" : "no"));
-
-  if ( fabs(Opt_params.conv_max_disp) < 1.0e-15 ) fprintf(outfile, "\tMAX Displacement %10.1e\n", max_disp);
-  else fprintf(outfile, "\tMAX Displacement %10.1e %14.1e %11s\n", max_disp, Opt_params.conv_max_disp,
-       ((max_disp < Opt_params.conv_max_disp) ? "yes" : "no"));
-
-  fprintf(outfile, "\t----------------------------------------------------------\n");
-  printf("\tMAX Force %8.1e : Energy Change %8.1e : MAX Displacement %8.1e\n", max_force, DE, max_disp);
-#endif */
 
   // return all forces to canonical place
   if (Opt_params.opt_type == OPT_PARAMS::IRC) {

@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup DPD
     \brief Enter brief description of file here 
@@ -119,27 +141,27 @@ namespace psi { namespace cctriples {
       GF = GE =  F->file.my_irrep;
       GX3 = GC^GF;
 
-      dpd_file2_mat_init(C1);
-      dpd_file2_mat_rd(C1);
+      global_dpd_->file2_mat_init(C1);
+      global_dpd_->file2_mat_rd(C1);
 
-      dpd_file2_mat_init(fIJ);
-      dpd_file2_mat_init(fAB);
-      dpd_file2_mat_init(fIA);
-      dpd_file2_mat_rd(fIJ);
-      dpd_file2_mat_rd(fAB);
-      dpd_file2_mat_rd(fIA);
+      global_dpd_->file2_mat_init(fIJ);
+      global_dpd_->file2_mat_init(fAB);
+      global_dpd_->file2_mat_init(fIA);
+      global_dpd_->file2_mat_rd(fIJ);
+      global_dpd_->file2_mat_rd(fAB);
+      global_dpd_->file2_mat_rd(fIA);
 
       for(h=0; h < nirreps; h++) {
-	dpd_buf4_mat_irrep_init(C2, h);
-	dpd_buf4_mat_irrep_rd(C2, h);
+	global_dpd_->buf4_mat_irrep_init(C2, h);
+	global_dpd_->buf4_mat_irrep_rd(C2, h);
 
 	if(disc) {
-	  dpd_buf4_mat_irrep_init(D, h);
-	  dpd_buf4_mat_irrep_rd(D, h);
+	  global_dpd_->buf4_mat_irrep_init(D, h);
+	  global_dpd_->buf4_mat_irrep_rd(D, h);
 	}
 
-	dpd_buf4_mat_irrep_init(E, h);
-	dpd_buf4_mat_irrep_rd(E, h);
+	global_dpd_->buf4_mat_irrep_init(E, h);
+	global_dpd_->buf4_mat_irrep_rd(E, h);
       }
 
       i = I - occ_off[Gi];
@@ -168,7 +190,7 @@ namespace psi { namespace cctriples {
       for(Gab=0; Gab < nirreps; Gab++) {
 	Gc = Gab ^ Gijk ^ GX3; /* changed */
 
-	W2[Gab] = dpd_block_matrix(F->params->coltot[Gab], virtpi[Gc]);
+	W2[Gab] = global_dpd_->dpd_block_matrix(F->params->coltot[Gab], virtpi[Gc]);
 
 	if(F->params->coltot[Gab] && virtpi[Gc]) {
 	  memset(W[Gab][0], 0, F->params->coltot[Gab]*virtpi[Gc]*sizeof(double));
@@ -187,8 +209,8 @@ namespace psi { namespace cctriples {
 	cd = C2->col_offset[Gjk][Gc];
 	id = F->row_offset[Gid][I];
 
-	F->matrix[Gid] = dpd_block_matrix(virtpi[Gd], F->params->coltot[Gid^GF]);
-	dpd_buf4_mat_irrep_rd_block(F, Gid, id, virtpi[Gd]);
+	F->matrix[Gid] = global_dpd_->dpd_block_matrix(virtpi[Gd], F->params->coltot[Gid^GF]);
+	global_dpd_->buf4_mat_irrep_rd_block(F, Gid, id, virtpi[Gd]);
 
 	nrows = F->params->coltot[Gid^GF];
 	ncols = virtpi[Gc];
@@ -198,7 +220,7 @@ namespace psi { namespace cctriples {
 	  C_DGEMM('t','t',nrows, ncols, nlinks, 1.0, F->matrix[Gid][0], nrows,
 		  &(C2->matrix[Gjk][kj][cd]), nlinks, 1.0, W[Gab][0], ncols);
 
-	dpd_free_block(F->matrix[Gid], virtpi[Gd], F->params->coltot[Gid^GF]);
+	global_dpd_->free_dpd_block(F->matrix[Gid], virtpi[Gd], F->params->coltot[Gid^GF]);
 
 	/* +t_ikcd * F_jdab */
 	Gjd = Gj ^ Gd;
@@ -208,8 +230,8 @@ namespace psi { namespace cctriples {
 	cd = C2->col_offset[Gik][Gc];
 	jd = F->row_offset[Gjd][J];
 
-	F->matrix[Gjd] = dpd_block_matrix(virtpi[Gd], F->params->coltot[Gjd^GF]);
-	dpd_buf4_mat_irrep_rd_block(F, Gjd, jd, virtpi[Gd]);
+	F->matrix[Gjd] = global_dpd_->dpd_block_matrix(virtpi[Gd], F->params->coltot[Gjd^GF]);
+	global_dpd_->buf4_mat_irrep_rd_block(F, Gjd, jd, virtpi[Gd]);
 
 	nrows = F->params->coltot[Gjd^GF];
 	ncols = virtpi[Gc];
@@ -219,7 +241,7 @@ namespace psi { namespace cctriples {
 	  C_DGEMM('t','t',nrows, ncols, nlinks, 1.0, F->matrix[Gjd][0], nrows,
 		  &(C2->matrix[Gik][ik][cd]), nlinks, 1.0, W[Gab][0], ncols);
 
-	dpd_free_block(F->matrix[Gjd], virtpi[Gd], F->params->coltot[Gjd^GF]);
+	global_dpd_->free_dpd_block(F->matrix[Gjd], virtpi[Gd], F->params->coltot[Gjd^GF]);
 
 	/* -t_ijcd * F_kdab */
 	Gkd = Gk ^ Gd; /*changed */
@@ -229,8 +251,8 @@ namespace psi { namespace cctriples {
 	cd = C2->col_offset[Gij][Gc];
 	kd = F->row_offset[Gkd][K];
 
-	F->matrix[Gkd] = dpd_block_matrix(virtpi[Gd], F->params->coltot[Gkd^GF]);
-	dpd_buf4_mat_irrep_rd_block(F, Gkd, kd, virtpi[Gd]);
+	F->matrix[Gkd] = global_dpd_->dpd_block_matrix(virtpi[Gd], F->params->coltot[Gkd^GF]);
+	global_dpd_->buf4_mat_irrep_rd_block(F, Gkd, kd, virtpi[Gd]);
 
 	nrows = F->params->coltot[Gkd^GF];
 	ncols = virtpi[Gc];
@@ -240,7 +262,7 @@ namespace psi { namespace cctriples {
 	  C_DGEMM('t', 't', nrows, ncols, nlinks, -1.0, F->matrix[Gkd][0], nrows,
 		  &(C2->matrix[Gij][ij][cd]), nlinks, 1.0, W[Gab][0], ncols);
 
-	dpd_free_block(F->matrix[Gkd], virtpi[Gd], F->params->coltot[Gkd^GF]);
+	global_dpd_->free_dpd_block(F->matrix[Gkd], virtpi[Gd], F->params->coltot[Gkd^GF]);
 
       }
 
@@ -305,8 +327,8 @@ namespace psi { namespace cctriples {
 	bd = C2->col_offset[Gjk][Gb];
 	id = F->row_offset[Gid][I];
 
-	F->matrix[Gid] = dpd_block_matrix(virtpi[Gd], F->params->coltot[Gid^GF]);
-	dpd_buf4_mat_irrep_rd_block(F, Gid, id, virtpi[Gd]);
+	F->matrix[Gid] = global_dpd_->dpd_block_matrix(virtpi[Gd], F->params->coltot[Gid^GF]);
+	global_dpd_->buf4_mat_irrep_rd_block(F, Gid, id, virtpi[Gd]);
 
 	nrows = F->params->coltot[Gid^GF];
 	ncols = virtpi[Gb];
@@ -316,7 +338,7 @@ namespace psi { namespace cctriples {
 	  C_DGEMM('t','t',nrows, ncols, nlinks, 1.0, F->matrix[Gid][0], nrows,
 		  &(C2->matrix[Gjk][kj][bd]), nlinks, 1.0, W2[Gca][0], ncols);
 
-	dpd_free_block(F->matrix[Gid], virtpi[Gd], F->params->coltot[Gid^GF]);
+	global_dpd_->free_dpd_block(F->matrix[Gid], virtpi[Gd], F->params->coltot[Gid^GF]);
 
 	/* +t_ikbd * F_jdca */
 	Gjd = Gj ^ Gd; 
@@ -326,8 +348,8 @@ namespace psi { namespace cctriples {
 	bd = C2->col_offset[Gik][Gb];
 	jd = F->row_offset[Gjd][J];
 
-	F->matrix[Gjd] = dpd_block_matrix(virtpi[Gd], F->params->coltot[Gjd^GF]);
-	dpd_buf4_mat_irrep_rd_block(F, Gjd, jd, virtpi[Gd]);
+	F->matrix[Gjd] = global_dpd_->dpd_block_matrix(virtpi[Gd], F->params->coltot[Gjd^GF]);
+	global_dpd_->buf4_mat_irrep_rd_block(F, Gjd, jd, virtpi[Gd]);
 
 	nrows = F->params->coltot[Gjd^GF];
 	ncols = virtpi[Gb];
@@ -337,7 +359,7 @@ namespace psi { namespace cctriples {
 	  C_DGEMM('t','t',nrows, ncols, nlinks, 1.0, F->matrix[Gjd][0], nrows,
 		  &(C2->matrix[Gik][ik][bd]), nlinks, 1.0, W2[Gca][0], ncols);
 
-	dpd_free_block(F->matrix[Gjd], virtpi[Gd], F->params->coltot[Gjd^GF]);
+	global_dpd_->free_dpd_block(F->matrix[Gjd], virtpi[Gd], F->params->coltot[Gjd^GF]);
 
 	/* -t_ijbd * F_kdca */
 	Gkd = Gk ^ Gd; 
@@ -347,8 +369,8 @@ namespace psi { namespace cctriples {
 	bd = C2->col_offset[Gij][Gb];
 	kd = F->row_offset[Gkd][K];
 
-	F->matrix[Gkd] = dpd_block_matrix(virtpi[Gd], F->params->coltot[Gkd^GF]);
-	dpd_buf4_mat_irrep_rd_block(F, Gkd, kd, virtpi[Gd]);
+	F->matrix[Gkd] = global_dpd_->dpd_block_matrix(virtpi[Gd], F->params->coltot[Gkd^GF]);
+	global_dpd_->buf4_mat_irrep_rd_block(F, Gkd, kd, virtpi[Gd]);
 
 	nrows = F->params->coltot[Gkd^GF];
 	ncols = virtpi[Gb];
@@ -358,7 +380,7 @@ namespace psi { namespace cctriples {
 	  C_DGEMM('t','t',nrows, ncols, nlinks, -1.0, F->matrix[Gkd][0], nrows,
 		  &(C2->matrix[Gij][ij][bd]), nlinks, 1.0, W2[Gca][0], ncols);
 
-	dpd_free_block(F->matrix[Gkd], virtpi[Gd], F->params->coltot[Gkd^GF]);
+	global_dpd_->free_dpd_block(F->matrix[Gkd], virtpi[Gd], F->params->coltot[Gkd^GF]);
       }
 
       for(Gl=0; Gl < nirreps; Gl++) {
@@ -411,7 +433,7 @@ namespace psi { namespace cctriples {
 		  &(E->matrix[Gji][ji][lb]), ncols, 1.0, W2[Gca][0], ncols);
       }
 
-      dpd_3d_sort(W2, W, nirreps, Gijk^GX3, F->params->coltot, F->params->colidx,
+      global_dpd_->sort_3d(W2, W, nirreps, Gijk^GX3, F->params->coltot, F->params->colidx,
 		  F->params->colorb, F->params->rsym, F->params->ssym, vir_off, 
 		  vir_off, virtpi, vir_off, F->params->colidx, bca, 1);
 
@@ -431,8 +453,8 @@ namespace psi { namespace cctriples {
 	ad = C2->col_offset[Gkj][Ga];
 	id = F->row_offset[Gid][I];
 
-	F->matrix[Gid] = dpd_block_matrix(virtpi[Gd], F->params->coltot[Gid^GF]);
-	dpd_buf4_mat_irrep_rd_block(F, Gid, id, virtpi[Gd]);
+	F->matrix[Gid] = global_dpd_->dpd_block_matrix(virtpi[Gd], F->params->coltot[Gid^GF]);
+	global_dpd_->buf4_mat_irrep_rd_block(F, Gid, id, virtpi[Gd]);
 
 	nrows = F->params->coltot[Gid^GF];
 	ncols = virtpi[Ga];
@@ -442,7 +464,7 @@ namespace psi { namespace cctriples {
 	  C_DGEMM('t','t',nrows, ncols, nlinks, -1.0, F->matrix[Gid][0], nrows,
 		  &(C2->matrix[Gkj][kj][ad]), nlinks, 1.0, W2[Gcb][0], ncols);
 
-	dpd_free_block(F->matrix[Gid], virtpi[Gd], F->params->coltot[Gid^GF]);
+	global_dpd_->free_dpd_block(F->matrix[Gid], virtpi[Gd], F->params->coltot[Gid^GF]);
 
 	/* -t_ikad * F_jdcb */
 	Gjd = Gj ^ Gd;
@@ -452,8 +474,8 @@ namespace psi { namespace cctriples {
 	ad = C2->col_offset[Gik][Ga];
 	jd = F->row_offset[Gjd][J];
 
-	F->matrix[Gjd] = dpd_block_matrix(virtpi[Gd], F->params->coltot[Gjd^GF]);
-	dpd_buf4_mat_irrep_rd_block(F, Gjd, jd, virtpi[Gd]);
+	F->matrix[Gjd] = global_dpd_->dpd_block_matrix(virtpi[Gd], F->params->coltot[Gjd^GF]);
+	global_dpd_->buf4_mat_irrep_rd_block(F, Gjd, jd, virtpi[Gd]);
 
 	nrows = F->params->coltot[Gjd^GF];
 	ncols = virtpi[Ga];
@@ -463,7 +485,7 @@ namespace psi { namespace cctriples {
 	  C_DGEMM('t','t',nrows, ncols, nlinks, -1.0, F->matrix[Gjd][0], nrows,
 		  &(C2->matrix[Gik][ik][ad]), nlinks, 1.0, W2[Gcb][0], ncols);
 
-	dpd_free_block(F->matrix[Gjd], virtpi[Gd], F->params->coltot[Gjd^GF]);
+	global_dpd_->free_dpd_block(F->matrix[Gjd], virtpi[Gd], F->params->coltot[Gjd^GF]);
 
 	/* +t_ijad * F_kdcb */
 	Gkd = Gk ^ Gd;
@@ -473,8 +495,8 @@ namespace psi { namespace cctriples {
 	ad = C2->col_offset[Gij][Ga];
 	kd = F->row_offset[Gkd][K];
 
-	F->matrix[Gkd] = dpd_block_matrix(virtpi[Gd], F->params->coltot[Gkd^GF]);
-	dpd_buf4_mat_irrep_rd_block(F, Gkd, kd, virtpi[Gd]);
+	F->matrix[Gkd] = global_dpd_->dpd_block_matrix(virtpi[Gd], F->params->coltot[Gkd^GF]);
+	global_dpd_->buf4_mat_irrep_rd_block(F, Gkd, kd, virtpi[Gd]);
 
 	nrows = F->params->coltot[Gkd^GF];
 	ncols = virtpi[Ga];
@@ -484,7 +506,7 @@ namespace psi { namespace cctriples {
 	  C_DGEMM('t','t',nrows, ncols, nlinks, 1.0, F->matrix[Gkd][0], nrows,
 		  &(C2->matrix[Gij][ij][ad]), nlinks, 1.0, W2[Gcb][0], ncols);
 
-	dpd_free_block(F->matrix[Gkd], virtpi[Gd], F->params->coltot[Gkd^GF]);
+	global_dpd_->free_dpd_block(F->matrix[Gkd], virtpi[Gd], F->params->coltot[Gkd^GF]);
 
       }
 
@@ -539,7 +561,7 @@ namespace psi { namespace cctriples {
 
       }
 
-      dpd_3d_sort(W2, W, nirreps, Gijk^GX3, F->params->coltot, F->params->colidx,
+      global_dpd_->sort_3d(W2, W, nirreps, Gijk^GX3, F->params->coltot, F->params->colidx,
 		  F->params->colorb, F->params->rsym, F->params->ssym, vir_off, 
 		  vir_off, virtpi, vir_off, F->params->colidx, cba, 1);
 
@@ -750,21 +772,21 @@ namespace psi { namespace cctriples {
 
       for(Gab=0; Gab < nirreps; Gab++) {
 	Gc = Gab ^ Gijk ^ GX3; /* changed */
-	dpd_free_block(W2[Gab], F->params->coltot[Gab], virtpi[Gc]);
+	global_dpd_->free_dpd_block(W2[Gab], F->params->coltot[Gab], virtpi[Gc]);
       }
       free(W2);
 
-      dpd_file2_mat_close(fIJ);
-      dpd_file2_mat_close(fAB);
+      global_dpd_->file2_mat_close(fIJ);
+      global_dpd_->file2_mat_close(fAB);
       if(disc) {
-	dpd_file2_mat_close(fIA);
-	dpd_file2_mat_close(C1);
+	global_dpd_->file2_mat_close(fIA);
+	global_dpd_->file2_mat_close(C1);
       }
 
       for(h=0; h < nirreps; h++) {
-	dpd_buf4_mat_irrep_close(C2, h);
-	if(disc) dpd_buf4_mat_irrep_close(D, h);
-	dpd_buf4_mat_irrep_close(E, h);
+	global_dpd_->buf4_mat_irrep_close(C2, h);
+	if(disc) global_dpd_->buf4_mat_irrep_close(D, h);
+	global_dpd_->buf4_mat_irrep_close(E, h);
       }
     }
 

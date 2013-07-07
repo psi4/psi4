@@ -1,3 +1,6 @@
+.:            Database calculation, so no molecule section in input file. 
+
+
 adc1:         ADC/6-31G** on H2O
 
 
@@ -160,6 +163,9 @@ cc51:         EOM-CC3/cc-pVTZ on H2O
 cc52:         CCSD Response for H2O2
 
 
+cc53:         Matches Table II a-CCSD(T)/cc-pVDZ H2O @ 2.5 * Re value from Crawford and Stanton,  IJQC 98, 601-611 (1998).
+
+
 cc54:         CCSD dipole with user-specified basis set
 
 
@@ -226,7 +232,10 @@ cisd-sp:      6-31G** H2O Test CISD Energy Point
 cisd-sp-2:    6-31G** H2O Test CISD Energy Point
 
 
-dcft1:        DC-06 calculation for the He dimer. This performs a simultaneous update of the orbitals and cumulant, using DIIS extrapolation. Four-virtual integrals are handled in the MO Basis.
+dcft-grad1:   DCFT DC-06 gradient for the O2 molecule with cc-pVDZ basis set
+
+
+dcft1:        DC-06, DC-12, ODC-06 and ODC-12 calculation for the He dimer. This performs a simultaneous update of the orbitals and cumulant, using DIIS extrapolation. Four-virtual integrals are handled in the MO Basis.
 
 
 dcft2:        DC-06 calculation for the He dimer. This performs a two-step update of the orbitals and cumulant, using DIIS extrapolation. Four-virtual integrals are handled in the MO Basis.
@@ -242,6 +251,9 @@ dcft5:        DC-06 calculation for the O2 molecule (triplet ground state). This
 
 
 dcft6:        DCFT calculation for the triplet O2 using DC-06, DC-12 and CEPA0 functionals.  Only two-step algorithm is tested.
+
+
+dcft7:        DCFT calculation for the triplet O2 using ODC-06 and ODC-12 functionals.  Only simultaneous algorithm is tested.
 
 
 dfmp2-1:      Density fitted MP2 cc-PVDZ/cc-pVDZ-RI computation of formic acid dimer binding energy using automatic counterpoise correction.  Monomers are specified using Cartesian coordinates.
@@ -382,6 +394,9 @@ mints5:       Tests to determine full point group symmetry.  Currently, these on
 mints6:       Patch of a glycine with a methyl group, to make alanine, then DF-SCF  energy calculation with the cc-pVDZ basis set
 
 
+mints8:       Patch of a glycine with a methyl group, to make alanine, then DF-SCF  energy calculation with the cc-pVDZ basis set
+
+
 mom:          Maximum Overlap Method (MOM) Test. MOM is designed to stabilize SCF convergence and to target excited Slater determinants directly.
 
 
@@ -517,6 +532,9 @@ opt5:         6-31G** UHF CH2 3B1 optimization.  Uses a Z-Matrix with dummy atom
 opt6:         Various constrained energy minimizations of HOOH with cc-pvdz RHF
 
 
+opt7:         Various constrained energy minimizations of HOOH with cc-pvdz RHF. For the "frozen" bonds, angles and dihedrals, these coordinates are constrained to remain at their initial values.  For "fixed" bonds, angles, or dihedrals, the equilibrium (final) value of the coordinate is provided by the user.
+
+
 props1:       RHF STO-3G dipole moment computation, performed by applying a finite electric field and numerical differentiation.
 
 
@@ -586,7 +604,10 @@ pywrap-db1:   Database calculation, so no molecule section in input file. Portio
 pywrap-db2:   Database calculation, run in sow/reap mode.
 
 
-pywrap-db3:   Test that Python Molecule class processes geometry like PsiMod Molecule class.
+pywrap-db3:   Test that Python Molecule class processes geometry like psi4 Molecule class.
+
+
+pywrap-freq-e-sowreap:  Finite difference of energies frequency, run in sow/reap mode.
 
 
 pywrap-opt-sowreap:  Finite difference optimization, run in sow/reap mode.

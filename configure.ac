@@ -4,7 +4,7 @@
 #
 #
 
-define([psi_version],[4.0.0-beta4+])
+define([psi_version],[4.0.0-beta5+])
 define([psi_buildid],[alpha])
 define([psi_bugreport],[psicode@users.sourceforge.net])
 AC_PREREQ(2.57)
@@ -301,8 +301,14 @@ AC_CHECK_PROGS(PERL,perl,perl) AC_SUBST(PERL)
 # Check for python interpreter and libraries
 #  Version 2.6 is required because we import Python3 printing from future
 AC_PYTHON([2.6])
-
-
+AC_ARG_ENABLE([python-module],
+    [AC_HELP_STRING([--enable-python-module],
+      [Enable building PSI4 as a Python module. @<:@default=no@:>@]) ],
+    [
+      MAKE_PYTHON_MODULE=1
+      AC_DEFINE([MAKE_PYTHON_MODULE])
+      AC_SUBST([MAKE_PYTHON_MODULE])
+    ])
 
 AC_PROG_PDFLATEX
 AC_PROG_LATEX
@@ -688,11 +694,11 @@ AC_CHECK_FUNC(putenv,[AC_DEFINE_UNQUOTED(HAVE_PUTENV,1)])
 AC_CHECK_DECLS([setenv],[AC_DEFINE_UNQUOTED(HAVE_DECL_SETENV,1)])
 AC_CHECK_FUNC(setenv,[AC_DEFINE_UNQUOTED(HAVE_SETENV,1)])
 
-AC_CHECK_LIB(m,isinf,[AC_DEFINE_UNQUOTED(HAVE_FUNC_ISINF,1)],[
-  AC_CHECK_LIB(m,finite,[AC_DEFINE_UNQUOTED(HAVE_FUNC_FINITE,1)],[
-    AC_MSG_ERROR([Did not find isinf() or finite() functions.])
-  ])
-])
+#AC_CHECK_LIB(m,isinf,[AC_DEFINE_UNQUOTED(HAVE_FUNC_ISINF,1)],[
+#  AC_CHECK_LIB(m,finite,[AC_DEFINE_UNQUOTED(HAVE_FUNC_FINITE,1)],[
+#    AC_MSG_ERROR([Did not find isinf() or finite() functions.])
+#  ])
+#])
 
 AC_CHECK_LIB(m,erf,[AC_DEFINE_UNQUOTED(HAVE_FUNC_ERF,1)])
 
@@ -913,7 +919,7 @@ FFLAGS='$(FDBG) $(FOPT) $(FOTH) $(FSTATIC)' AC_SUBST(FFLAGS)
 
 ########
 ## Output
-######## 
+########
 
 AC_CONFIG_FILES([
           boost/Makefile
@@ -948,11 +954,9 @@ AC_CONFIG_FILES([
           src/lib/liboptions/Makefile
           src/lib/libmoinfo/Makefile
           src/lib/libmints/Makefile
-          src/lib/libmatrix/Makefile
-          src/lib/libdist_matrix/Makefile
+          src/lib/libthce/Makefile
           src/lib/libfock/Makefile
           src/lib/libscf_solver/Makefile
-          src/lib/liblmp2_solver/Makefile
           src/lib/libtrans/Makefile
           src/lib/libparallel/Makefile
           src/lib/libsapt_solver/Makefile
@@ -960,20 +964,16 @@ AC_CONFIG_FILES([
           src/lib/libdisp/Makefile
           src/lib/libplugin/Makefile
           src/lib/lib3index/Makefile
-          src/lib/libsmartptr/Makefile
-          src/lib/libyeti/Makefile
           src/util/tocprint/Makefile
 
           src/bin/psi4/Makefile
           src/bin/psi4/gitversion.py
-          src/bin/response/Makefile
           src/bin/dcft/Makefile
+          src/bin/lmp2/Makefile
           src/bin/mcscf/Makefile
           src/bin/transqt2/Makefile
           src/bin/transqt/Makefile
           src/bin/detci/Makefile
-          src/bin/mp2/Makefile
-          src/bin/clag/Makefile
           src/bin/stable/Makefile
           src/bin/fnocc/Makefile
           src/bin/ccsort/Makefile
@@ -984,16 +984,14 @@ AC_CONFIG_FILES([
           src/bin/cclambda/Makefile
           src/bin/ccdensity/Makefile
           src/bin/cceom/Makefile
-          src/bin/cis/Makefile
           src/bin/scf/Makefile
-          src/bin/lmp2/Makefile
           src/bin/psimrcc/Makefile
           src/bin/mrcc/Makefile
           src/bin/dfmp2/Makefile
           src/bin/sapt/Makefile
           src/bin/dftsapt/Makefile
-          src/bin/mints/Makefile
-          src/bin/deriv/Makefile
+          src/bin/mints_wrapper/Makefile
+          src/bin/deriv_wrapper/Makefile
           src/bin/scfgrad/Makefile
           src/bin/optking/Makefile
           src/bin/findif/Makefile
@@ -1017,6 +1015,8 @@ AC_CONFIG_FILES([
           tests/dcft4/Makefile
           tests/dcft5/Makefile
           tests/dcft6/Makefile
+          tests/dcft7/Makefile
+          tests/dcft-grad1/Makefile
           tests/scf1/Makefile
           tests/scf2/Makefile
           tests/scf3/Makefile
@@ -1034,6 +1034,7 @@ AC_CONFIG_FILES([
           tests/opt4/Makefile
           tests/opt5/Makefile
           tests/opt6/Makefile
+          tests/opt7/Makefile
           tests/sad1/Makefile
           tests/fd-gradient/Makefile
           tests/fd-freq-energy/Makefile
@@ -1060,12 +1061,14 @@ AC_CONFIG_FILES([
           tests/pywrap-all/Makefile
           tests/pywrap-alias/Makefile
           tests/pywrap-opt-sowreap/Makefile
+          tests/pywrap-freq-e-sowreap/Makefile
           tests/pywrap-basis/Makefile
           tests/pywrap-db3/Makefile
           tests/pywrap-checkrun-rhf/Makefile
           tests/pywrap-checkrun-uhf/Makefile
           tests/pywrap-checkrun-rohf/Makefile
           tests/pywrap-checkrun-convcrit/Makefile
+          tests/pywrap-molecule/Makefile
           tests/psithon1/Makefile
           tests/dftd3-energy/Makefile
           tests/dftd3-grad/Makefile
@@ -1151,6 +1154,7 @@ AC_CONFIG_FILES([
           tests/cc50/Makefile
           tests/cc51/Makefile
           tests/cc52/Makefile
+          tests/cc53/Makefile
           tests/mcscf1/Makefile
           tests/mcscf2/Makefile
           tests/mcscf3/Makefile
@@ -1168,6 +1172,7 @@ AC_CONFIG_FILES([
           tests/mints4/Makefile
           tests/mints5/Makefile
           tests/mints6/Makefile
+          tests/mints8/Makefile
           tests/omp2-1/Makefile
           tests/omp2-2/Makefile
           tests/omp2-3/Makefile
@@ -1257,13 +1262,3 @@ AC_CONFIG_COMMANDS([psi4-config], [chmod +x bin/psi4-config])
 #fi
 
 AC_OUTPUT
-
-if test "$have_boost" == "0"; then
-    echo "====================================================================="
-    echo "Either your Boost is too old, missing components, missing altogether,"
-    echo "or you disabled use of system provided version."
-    echo ""
-    echo "The Boost provided in Psi4 will be compiled."
-    echo "====================================================================="
-fi
-

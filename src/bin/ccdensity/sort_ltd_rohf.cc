@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup CCDENSITY
     \brief Enter brief description of file here 
@@ -37,9 +59,9 @@ void sort_ltd_rohf(struct TD_Params S)
 
   moinfo.ltd = block_matrix(nmo, nmo);
 
-  dpd_file2_init(&D, PSIF_CC_TMP, S.irrep, 0, 0, "LTDIJ");
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_TMP, S.irrep, 0, 0, "LTDIJ");
+  global_dpd_->file2_mat_init(&D);
+  global_dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(i=0; i < occpi[h]; i++) {
       I = qt_occ[occ_off[h] + i];
@@ -49,12 +71,12 @@ void sort_ltd_rohf(struct TD_Params S)
       }
     }
   }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
-  dpd_file2_init(&D, PSIF_CC_TMP, S.irrep, 1, 1, "LTDAB");
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_TMP, S.irrep, 1, 1, "LTDAB");
+  global_dpd_->file2_mat_init(&D);
+  global_dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(a=0; a < (virtpi[h] - openpi[h]); a++) {
       A = qt_vir[vir_off[h] + a];
@@ -64,13 +86,13 @@ void sort_ltd_rohf(struct TD_Params S)
       }
     }
   }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
   /* Note that this component of the density is stored occ-vir */
-  dpd_file2_init(&D, PSIF_CC_TMP, S.irrep, 0, 1, "LTDAI");
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_TMP, S.irrep, 0, 1, "LTDAI");
+  global_dpd_->file2_mat_init(&D);
+  global_dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(i=0; i < occpi[h]; i++) {
       I = qt_occ[occ_off[h] + i];
@@ -80,12 +102,12 @@ void sort_ltd_rohf(struct TD_Params S)
       }
     }
   }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
-  dpd_file2_init(&D, PSIF_CC_TMP, S.irrep, 0, 1, "LTDIA");
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_TMP, S.irrep, 0, 1, "LTDIA");
+  global_dpd_->file2_mat_init(&D);
+  global_dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(i=0; i < occpi[h]; i++) {
       I = qt_occ[occ_off[h] + i];
@@ -95,12 +117,12 @@ void sort_ltd_rohf(struct TD_Params S)
       }
     }
   }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
-  dpd_file2_init(&D, PSIF_CC_TMP, S.irrep, 0, 0, "LTDij");
-  dpd_file2_mat_init(&D); 
-  dpd_file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_TMP, S.irrep, 0, 0, "LTDij");
+  global_dpd_->file2_mat_init(&D); 
+  global_dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(i=0; i < (occpi[h] - openpi[h]); i++) { 
       I = qt_occ[occ_off[h] + i];
@@ -110,12 +132,12 @@ void sort_ltd_rohf(struct TD_Params S)
       }
     }
   }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
-  dpd_file2_init(&D, PSIF_CC_TMP, S.irrep, 1, 1, "LTDab");
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_TMP, S.irrep, 1, 1, "LTDab");
+  global_dpd_->file2_mat_init(&D);
+  global_dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(a=0; a < virtpi[h]; a++) {
       A = qt_vir[vir_off[h] + a];
@@ -125,13 +147,13 @@ void sort_ltd_rohf(struct TD_Params S)
       }
     }
   }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
   /* Note that this component of the density is stored occ-vir */
-  dpd_file2_init(&D, PSIF_CC_TMP, S.irrep, 0, 1, "LTDai");
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_TMP, S.irrep, 0, 1, "LTDai");
+  global_dpd_->file2_mat_init(&D);
+  global_dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(i=0; i < (occpi[h] - openpi[h]); i++) {
       I = qt_occ[occ_off[h] + i];
@@ -141,12 +163,12 @@ void sort_ltd_rohf(struct TD_Params S)
       }
     }
   }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
-  dpd_file2_init(&D, PSIF_CC_TMP, S.irrep, 0, 1, "LTDia");
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_TMP, S.irrep, 0, 1, "LTDia");
+  global_dpd_->file2_mat_init(&D);
+  global_dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(i=0; i < (occpi[h] - openpi[h]); i++) {
       I = qt_occ[occ_off[h] + i];
@@ -156,8 +178,8 @@ void sort_ltd_rohf(struct TD_Params S)
       }
     }
   }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
   /*mat_print(moinfo.ltd,nmo,nmo,outfile);*/
 

@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup CCDENSITY
     \brief Enter brief description of file here 
@@ -64,74 +86,74 @@ void fold_ROHF(struct RHO_Params rho_params)
     fprintf(outfile, "\n\tEnergies re-computed from Fock-adjusted CC density:\n");
     fprintf(outfile,   "\t---------------------------------------------------\n");
 
-    dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.DIJ_lbl);
-    dpd_file2_init(&F, PSIF_CC_OEI, 0, 0, 0, "h(i,j)");
-    this_energy = dpd_file2_dot(&D, &F);
-    dpd_file2_close(&F);
-    dpd_file2_close(&D);
+    global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.DIJ_lbl);
+    global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 0, "h(i,j)");
+    this_energy = global_dpd_->file2_dot(&D, &F);
+    global_dpd_->file2_close(&F);
+    global_dpd_->file2_close(&D);
 
     /*    fprintf(outfile, "\tDIJ = %20.15f\n", this_energy); */
     one_energy += this_energy;
 
-    dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.Dij_lbl);
-    dpd_file2_init(&F, PSIF_CC_OEI, 0, 0, 0, "h(i,j)");
-    this_energy = dpd_file2_dot(&D, &F);
-    dpd_file2_close(&F);
-    dpd_file2_close(&D);
+    global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.Dij_lbl);
+    global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 0, "h(i,j)");
+    this_energy = global_dpd_->file2_dot(&D, &F);
+    global_dpd_->file2_close(&F);
+    global_dpd_->file2_close(&D);
 
     /*    fprintf(outfile, "\tDij = %20.15f\n", this_energy); */
     one_energy += this_energy;
 
-    dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 1, rho_params.DAB_lbl);
-    dpd_file2_init(&F, PSIF_CC_OEI, 0, 1, 1, "h(a,b)");
-    this_energy = dpd_file2_dot(&D, &F);
-    dpd_file2_close(&F);
-    dpd_file2_close(&D);
+    global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, rho_params.DAB_lbl);
+    global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 1, 1, "h(a,b)");
+    this_energy = global_dpd_->file2_dot(&D, &F);
+    global_dpd_->file2_close(&F);
+    global_dpd_->file2_close(&D);
 
     /*    fprintf(outfile, "\tDAB = %20.15f\n", this_energy); */
     one_energy += this_energy;
 
-    dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 1, rho_params.Dab_lbl);
-    dpd_file2_init(&F, PSIF_CC_OEI, 0, 1, 1, "h(a,b)");
-    this_energy = dpd_file2_dot(&D, &F);
-    dpd_file2_close(&F);
-    dpd_file2_close(&D);
+    global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, rho_params.Dab_lbl);
+    global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 1, 1, "h(a,b)");
+    this_energy = global_dpd_->file2_dot(&D, &F);
+    global_dpd_->file2_close(&F);
+    global_dpd_->file2_close(&D);
 
     /*    fprintf(outfile, "\tDab = %20.15f\n", this_energy); */
     one_energy += this_energy;
 
-    dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, rho_params.DIA_lbl);
-    dpd_file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "h(i,a)");
-    this_energy = dpd_file2_dot(&D, &F);
-    dpd_file2_close(&F);
-    dpd_file2_close(&D);
+    global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 1, rho_params.DIA_lbl);
+    global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "h(i,a)");
+    this_energy = global_dpd_->file2_dot(&D, &F);
+    global_dpd_->file2_close(&F);
+    global_dpd_->file2_close(&D);
 
     /*    fprintf(outfile, "\tDIA = %20.15f\n", this_energy); */
     one_energy += this_energy;
 
-    dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, rho_params.Dia_lbl);
-    dpd_file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "h(i,a)");
-    this_energy = dpd_file2_dot(&D, &F);
-    dpd_file2_close(&F);
-    dpd_file2_close(&D);
+    global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 1, rho_params.Dia_lbl);
+    global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "h(i,a)");
+    this_energy = global_dpd_->file2_dot(&D, &F);
+    global_dpd_->file2_close(&F);
+    global_dpd_->file2_close(&D);
 
     /*    fprintf(outfile, "\tDia = %20.15f\n", this_energy); */
     one_energy += this_energy;
 
-    dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, rho_params.DAI_lbl);
-    dpd_file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "h(i,a)");
-    this_energy = dpd_file2_dot(&D, &F);
-    dpd_file2_close(&F);
-    dpd_file2_close(&D);
+    global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 1, rho_params.DAI_lbl);
+    global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "h(i,a)");
+    this_energy = global_dpd_->file2_dot(&D, &F);
+    global_dpd_->file2_close(&F);
+    global_dpd_->file2_close(&D);
 
     /*    fprintf(outfile, "\tDAI = %20.15f\n", this_energy); */
     one_energy += this_energy;
 
-    dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, rho_params.Dai_lbl);
-    dpd_file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "h(i,a)");
-    this_energy = dpd_file2_dot(&D, &F);
-    dpd_file2_close(&F);
-    dpd_file2_close(&D);
+    global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 1, rho_params.Dai_lbl);
+    global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "h(i,a)");
+    this_energy = global_dpd_->file2_dot(&D, &F);
+    global_dpd_->file2_close(&F);
+    global_dpd_->file2_close(&D);
 
     /*    fprintf(outfile, "\tDai = %20.15f\n", this_energy); */
     one_energy += this_energy;
@@ -140,14 +162,14 @@ void fold_ROHF(struct RHO_Params rho_params)
     fflush(outfile);
   }
 
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.DIJ_lbl);
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.DIJ_lbl);
+  global_dpd_->file2_mat_init(&D);
+  global_dpd_->file2_mat_rd(&D);
 
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 0, 2, 2, 0, "GIJKL");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 0, 2, 2, 0, "GIJKL");
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&G, h);
-    dpd_buf4_mat_irrep_rd(&G, h);
+    global_dpd_->buf4_mat_irrep_init(&G, h);
+    global_dpd_->buf4_mat_irrep_rd(&G, h);
 
     for(Gm=0; Gm < nirreps; Gm++) {
       Gi = Gj = h^Gm;
@@ -173,30 +195,30 @@ void fold_ROHF(struct RHO_Params rho_params)
       }
     }
 
-    dpd_buf4_mat_irrep_wrt(&G, h);
-    dpd_buf4_mat_irrep_close(&G, h);
+    global_dpd_->buf4_mat_irrep_wrt(&G, h);
+    global_dpd_->buf4_mat_irrep_close(&G, h);
   }
       
   if(!params.aobasis) {
     two_energy = 0.0;
-    dpd_buf4_init(&Aints, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 1, "A <ij|kl>");
-    two_energy += 0.25 * dpd_buf4_dot(&Aints, &G);
-    dpd_buf4_close(&Aints);
+    global_dpd_->buf4_init(&Aints, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 1, "A <ij|kl>");
+    two_energy += 0.25 * global_dpd_->buf4_dot(&Aints, &G);
+    global_dpd_->buf4_close(&Aints);
   }
 
-  dpd_buf4_close(&G);
+  global_dpd_->buf4_close(&G);
 
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.Dij_lbl);
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.Dij_lbl);
+  global_dpd_->file2_mat_init(&D);
+  global_dpd_->file2_mat_rd(&D);
 
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 0, 2, 2, 0, "Gijkl");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 0, 2, 2, 0, "Gijkl");
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&G, h);
-    dpd_buf4_mat_irrep_rd(&G, h);
+    global_dpd_->buf4_mat_irrep_init(&G, h);
+    global_dpd_->buf4_mat_irrep_rd(&G, h);
 
     for(Gm=0; Gm < nirreps; Gm++) {
       Gi = Gj = h^Gm;
@@ -222,29 +244,29 @@ void fold_ROHF(struct RHO_Params rho_params)
       }
     }
 
-    dpd_buf4_mat_irrep_wrt(&G, h);
-    dpd_buf4_mat_irrep_close(&G, h);
+    global_dpd_->buf4_mat_irrep_wrt(&G, h);
+    global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
   if(!params.aobasis) {
-    dpd_buf4_init(&Aints, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 1, "A <ij|kl>");
-    two_energy += 0.25 * dpd_buf4_dot(&Aints, &G);
-    dpd_buf4_close(&Aints);
+    global_dpd_->buf4_init(&Aints, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 1, "A <ij|kl>");
+    two_energy += 0.25 * global_dpd_->buf4_dot(&Aints, &G);
+    global_dpd_->buf4_close(&Aints);
   }
 
-  dpd_buf4_close(&G);
+  global_dpd_->buf4_close(&G);
 
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.DIJ_lbl);
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.DIJ_lbl);
+  global_dpd_->file2_mat_init(&D);
+  global_dpd_->file2_mat_rd(&D);
 
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 0, 0, 0, 0, "GIjKl");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 0, 0, 0, 0, "GIjKl");
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&G, h);
-    dpd_buf4_mat_irrep_rd(&G, h);
+    global_dpd_->buf4_mat_irrep_init(&G, h);
+    global_dpd_->buf4_mat_irrep_rd(&G, h);
 
     for(Gm=0; Gm < nirreps; Gm++) {
       Gi = Gj = h^Gm;
@@ -265,23 +287,23 @@ void fold_ROHF(struct RHO_Params rho_params)
       }
     }
 
-    dpd_buf4_mat_irrep_wrt(&G, h); 
-    dpd_buf4_mat_irrep_close(&G, h);
+    global_dpd_->buf4_mat_irrep_wrt(&G, h); 
+    global_dpd_->buf4_mat_irrep_close(&G, h);
   }
-  dpd_buf4_close(&G);
+  global_dpd_->buf4_close(&G);
 
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
 
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.Dij_lbl);
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.Dij_lbl);
+  global_dpd_->file2_mat_init(&D);
+  global_dpd_->file2_mat_rd(&D);
 
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 0, 0, 0, 0, "GIjKl");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 0, 0, 0, 0, "GIjKl");
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&G, h);
-    dpd_buf4_mat_irrep_rd(&G, h);
+    global_dpd_->buf4_mat_irrep_init(&G, h);
+    global_dpd_->buf4_mat_irrep_rd(&G, h);
 
     for(Gm=0; Gm < nirreps; Gm++) {
       Gk = Gl = h^Gm;
@@ -302,17 +324,17 @@ void fold_ROHF(struct RHO_Params rho_params)
       }
     }
 
-    dpd_buf4_mat_irrep_wrt(&G, h);
-    dpd_buf4_mat_irrep_close(&G, h);
+    global_dpd_->buf4_mat_irrep_wrt(&G, h);
+    global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
   if(!params.aobasis) {
-    dpd_buf4_init(&Aints, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 0, "A <ij|kl>");
-    two_energy += dpd_buf4_dot(&Aints, &G);
-    dpd_buf4_close(&Aints);
+    global_dpd_->buf4_init(&Aints, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 0, "A <ij|kl>");
+    two_energy += global_dpd_->buf4_dot(&Aints, &G);
+    global_dpd_->buf4_close(&Aints);
   }
 
-  dpd_buf4_close(&G);
+  global_dpd_->buf4_close(&G);
 
   if(!params.aobasis) {
     total_two_energy += two_energy;
@@ -320,20 +342,20 @@ void fold_ROHF(struct RHO_Params rho_params)
     fflush(outfile);
   }
 
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
-  dpd_file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, rho_params.DIA_lbl);
-  dpd_file2_mat_init(&D1);
-  dpd_file2_mat_rd(&D1);
-  dpd_file2_init(&D2, PSIF_CC_OEI, 0, 0, 1, rho_params.DAI_lbl);
-  dpd_file2_mat_init(&D2);
-  dpd_file2_mat_rd(&D2);
+  global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, rho_params.DIA_lbl);
+  global_dpd_->file2_mat_init(&D1);
+  global_dpd_->file2_mat_rd(&D1);
+  global_dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 0, 1, rho_params.DAI_lbl);
+  global_dpd_->file2_mat_init(&D2);
+  global_dpd_->file2_mat_rd(&D2);
 
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 10, 2, 10, 0, "GIJKA");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 10, 2, 10, 0, "GIJKA");
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&G, h);
-    dpd_buf4_mat_irrep_rd(&G, h);
+    global_dpd_->buf4_mat_irrep_init(&G, h);
+    global_dpd_->buf4_mat_irrep_rd(&G, h);
 
     for(Gm=0; Gm < nirreps; Gm++) {
       Gi = Ga = h^Gm;
@@ -358,35 +380,35 @@ void fold_ROHF(struct RHO_Params rho_params)
       }
     }
 
-    dpd_buf4_mat_irrep_wrt(&G, h);
-    dpd_buf4_mat_irrep_close(&G, h);
+    global_dpd_->buf4_mat_irrep_wrt(&G, h);
+    global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
   if(!params.aobasis) {
     two_energy = 0.0;
-    dpd_buf4_init(&E, PSIF_CC_EINTS, 0, 0, 10, 2, 10, 0, "E <ij||ka> (i>j,ka)");
-    two_energy += dpd_buf4_dot(&E, &G);
-    dpd_buf4_close(&E);
+    global_dpd_->buf4_init(&E, PSIF_CC_EINTS, 0, 0, 10, 2, 10, 0, "E <ij||ka> (i>j,ka)");
+    two_energy += global_dpd_->buf4_dot(&E, &G);
+    global_dpd_->buf4_close(&E);
   }
 
-  dpd_buf4_close(&G);
+  global_dpd_->buf4_close(&G);
 
-  dpd_file2_mat_close(&D1);
-  dpd_file2_close(&D1);
-  dpd_file2_mat_close(&D2);
-  dpd_file2_close(&D2);
+  global_dpd_->file2_mat_close(&D1);
+  global_dpd_->file2_close(&D1);
+  global_dpd_->file2_mat_close(&D2);
+  global_dpd_->file2_close(&D2);
 
-  dpd_file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, rho_params.Dia_lbl);
-  dpd_file2_mat_init(&D1);
-  dpd_file2_mat_rd(&D1);
-  dpd_file2_init(&D2, PSIF_CC_OEI, 0, 0, 1, rho_params.Dai_lbl);
-  dpd_file2_mat_init(&D2);
-  dpd_file2_mat_rd(&D2);
+  global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, rho_params.Dia_lbl);
+  global_dpd_->file2_mat_init(&D1);
+  global_dpd_->file2_mat_rd(&D1);
+  global_dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 0, 1, rho_params.Dai_lbl);
+  global_dpd_->file2_mat_init(&D2);
+  global_dpd_->file2_mat_rd(&D2);
 
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 10, 2, 10, 0, "Gijka");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 10, 2, 10, 0, "Gijka");
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&G, h);
-    dpd_buf4_mat_irrep_rd(&G, h);
+    global_dpd_->buf4_mat_irrep_init(&G, h);
+    global_dpd_->buf4_mat_irrep_rd(&G, h);
 
     for(Gm=0; Gm < nirreps; Gm++) {
       Gi = Ga = h^Gm;
@@ -411,33 +433,33 @@ void fold_ROHF(struct RHO_Params rho_params)
       }
     }
 
-    dpd_buf4_mat_irrep_wrt(&G, h);
-    dpd_buf4_mat_irrep_close(&G, h);
+    global_dpd_->buf4_mat_irrep_wrt(&G, h);
+    global_dpd_->buf4_mat_irrep_close(&G, h);
   }
   if(!params.aobasis) {
-    dpd_buf4_init(&E, PSIF_CC_EINTS, 0, 0, 10, 2, 10, 0, "E <ij||ka> (i>j,ka)");
-    two_energy += dpd_buf4_dot(&E, &G);
-    dpd_buf4_close(&E);
+    global_dpd_->buf4_init(&E, PSIF_CC_EINTS, 0, 0, 10, 2, 10, 0, "E <ij||ka> (i>j,ka)");
+    two_energy += global_dpd_->buf4_dot(&E, &G);
+    global_dpd_->buf4_close(&E);
   }
 
-  dpd_buf4_close(&G);
+  global_dpd_->buf4_close(&G);
 
-  dpd_file2_mat_close(&D1);
-  dpd_file2_close(&D1);
-  dpd_file2_mat_close(&D2);
-  dpd_file2_close(&D2);
+  global_dpd_->file2_mat_close(&D1);
+  global_dpd_->file2_close(&D1);
+  global_dpd_->file2_mat_close(&D2);
+  global_dpd_->file2_close(&D2);
 
-  dpd_file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, rho_params.DIA_lbl);
-  dpd_file2_mat_init(&D1);
-  dpd_file2_mat_rd(&D1);
-  dpd_file2_init(&D2, PSIF_CC_OEI, 0, 0, 1, rho_params.DAI_lbl);
-  dpd_file2_mat_init(&D2);
-  dpd_file2_mat_rd(&D2);
+  global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, rho_params.DIA_lbl);
+  global_dpd_->file2_mat_init(&D1);
+  global_dpd_->file2_mat_rd(&D1);
+  global_dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 0, 1, rho_params.DAI_lbl);
+  global_dpd_->file2_mat_init(&D2);
+  global_dpd_->file2_mat_rd(&D2);
 
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 10, 0, 10, 0, "GiJkA");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 10, 0, 10, 0, "GiJkA");
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&G, h);
-    dpd_buf4_mat_irrep_rd(&G, h);
+    global_dpd_->buf4_mat_irrep_init(&G, h);
+    global_dpd_->buf4_mat_irrep_rd(&G, h);
 
     for(Gm=0; Gm < nirreps; Gm++) {
       Gi = Ga = h^Gm;
@@ -459,35 +481,35 @@ void fold_ROHF(struct RHO_Params rho_params)
       }
     }
 
-    dpd_buf4_mat_irrep_wrt(&G, h);
-    dpd_buf4_mat_irrep_close(&G, h);
+    global_dpd_->buf4_mat_irrep_wrt(&G, h);
+    global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
   if(!params.aobasis) {
-    dpd_buf4_init(&E, PSIF_CC_EINTS, 0, 0, 10, 0, 10, 0, "E <ij|ka>");
-    two_energy += 2 * dpd_buf4_dot(&E, &G);
-    dpd_buf4_close(&E);
+    global_dpd_->buf4_init(&E, PSIF_CC_EINTS, 0, 0, 10, 0, 10, 0, "E <ij|ka>");
+    two_energy += 2 * global_dpd_->buf4_dot(&E, &G);
+    global_dpd_->buf4_close(&E);
   }
 
-  dpd_buf4_close(&G);
+  global_dpd_->buf4_close(&G);
 
-  dpd_file2_mat_close(&D1);
-  dpd_file2_close(&D1);
-  dpd_file2_mat_close(&D2);
-  dpd_file2_close(&D2);
+  global_dpd_->file2_mat_close(&D1);
+  global_dpd_->file2_close(&D1);
+  global_dpd_->file2_mat_close(&D2);
+  global_dpd_->file2_close(&D2);
 
 
-  dpd_file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, rho_params.Dia_lbl);
-  dpd_file2_mat_init(&D1);
-  dpd_file2_mat_rd(&D1);
-  dpd_file2_init(&D2, PSIF_CC_OEI, 0, 0, 1, rho_params.Dai_lbl);
-  dpd_file2_mat_init(&D2);
-  dpd_file2_mat_rd(&D2);
+  global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, rho_params.Dia_lbl);
+  global_dpd_->file2_mat_init(&D1);
+  global_dpd_->file2_mat_rd(&D1);
+  global_dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 0, 1, rho_params.Dai_lbl);
+  global_dpd_->file2_mat_init(&D2);
+  global_dpd_->file2_mat_rd(&D2);
 
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 10, 0, 10, 0, "GIjKa");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 10, 0, 10, 0, "GIjKa");
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&G, h);
-    dpd_buf4_mat_irrep_rd(&G, h);
+    global_dpd_->buf4_mat_irrep_init(&G, h);
+    global_dpd_->buf4_mat_irrep_rd(&G, h);
 
     for(Gm=0; Gm < nirreps; Gm++) {
       Gi = Ga = h^Gm;
@@ -509,17 +531,17 @@ void fold_ROHF(struct RHO_Params rho_params)
       }
     }
 
-    dpd_buf4_mat_irrep_wrt(&G, h);
-    dpd_buf4_mat_irrep_close(&G, h);
+    global_dpd_->buf4_mat_irrep_wrt(&G, h);
+    global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
   if(!params.aobasis) {
-    dpd_buf4_init(&E, PSIF_CC_EINTS, 0, 0, 10, 0, 10, 0, "E <ij|ka>");
-    two_energy += 2 * dpd_buf4_dot(&E, &G);
-    dpd_buf4_close(&E);
+    global_dpd_->buf4_init(&E, PSIF_CC_EINTS, 0, 0, 10, 0, 10, 0, "E <ij|ka>");
+    two_energy += 2 * global_dpd_->buf4_dot(&E, &G);
+    global_dpd_->buf4_close(&E);
   }
 
-  dpd_buf4_close(&G);
+  global_dpd_->buf4_close(&G);
 
   if(!params.aobasis) {
     total_two_energy += two_energy;
@@ -527,26 +549,26 @@ void fold_ROHF(struct RHO_Params rho_params)
     fflush(outfile);
   }
 
-  dpd_file2_mat_close(&D1);
-  dpd_file2_close(&D1);
-  dpd_file2_mat_close(&D2);
-  dpd_file2_close(&D2);
+  global_dpd_->file2_mat_close(&D1);
+  global_dpd_->file2_close(&D1);
+  global_dpd_->file2_mat_close(&D2);
+  global_dpd_->file2_close(&D2);
 
   if(!params.aobasis) {
     two_energy = 0.0;
-    dpd_buf4_init(&DInts, PSIF_CC_DINTS, 0, 2, 7, 2, 7, 0, "D <ij||ab> (i>j,a>b)");
-    dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 7, 2, 7, 0, "GIJAB");
-    two_energy += dpd_buf4_dot(&G, &DInts);
-    dpd_buf4_close(&G);
-    dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 7, 2, 7, 0, "Gijab");
-    two_energy += dpd_buf4_dot(&G, &DInts); 
-    dpd_buf4_close(&G);
-    dpd_buf4_close(&DInts);
-    dpd_buf4_init(&DInts, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
-    dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "GIjAb");
-    two_energy += dpd_buf4_dot(&G, &DInts);
-    dpd_buf4_close(&G);
-    dpd_buf4_close(&DInts);
+    global_dpd_->buf4_init(&DInts, PSIF_CC_DINTS, 0, 2, 7, 2, 7, 0, "D <ij||ab> (i>j,a>b)");
+    global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 7, 2, 7, 0, "GIJAB");
+    two_energy += global_dpd_->buf4_dot(&G, &DInts);
+    global_dpd_->buf4_close(&G);
+    global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 7, 2, 7, 0, "Gijab");
+    two_energy += global_dpd_->buf4_dot(&G, &DInts); 
+    global_dpd_->buf4_close(&G);
+    global_dpd_->buf4_close(&DInts);
+    global_dpd_->buf4_init(&DInts, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+    global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "GIjAb");
+    two_energy += global_dpd_->buf4_dot(&G, &DInts);
+    global_dpd_->buf4_close(&G);
+    global_dpd_->buf4_close(&DInts);
 
     two_energy *= 2;
     total_two_energy += two_energy;
@@ -554,14 +576,14 @@ void fold_ROHF(struct RHO_Params rho_params)
     fflush(outfile);
   }
 
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 1, rho_params.DAB_lbl);
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, rho_params.DAB_lbl);
+  global_dpd_->file2_mat_init(&D);
+  global_dpd_->file2_mat_rd(&D);
 
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIBJA");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIBJA");
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&G, h);
-    dpd_buf4_mat_irrep_rd(&G, h);
+    global_dpd_->buf4_mat_irrep_init(&G, h);
+    global_dpd_->buf4_mat_irrep_rd(&G, h);
 
     for(Gm=0; Gm < nirreps; Gm++) {
       Ga = Gb = h^Gm;
@@ -582,31 +604,31 @@ void fold_ROHF(struct RHO_Params rho_params)
       }
     }
 
-    dpd_buf4_mat_irrep_wrt(&G, h);
-    dpd_buf4_mat_irrep_close(&G, h);
+    global_dpd_->buf4_mat_irrep_wrt(&G, h);
+    global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
   if(!params.aobasis) {
     two_energy = 0.0;
-    dpd_buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia||jb>");
-    two_energy += dpd_buf4_dot(&C, &G);
-    dpd_buf4_close(&C);
+    global_dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia||jb>");
+    two_energy += global_dpd_->buf4_dot(&C, &G);
+    global_dpd_->buf4_close(&C);
   }
 
-  dpd_buf4_close(&G);
+  global_dpd_->buf4_close(&G);
 
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
 
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 1, rho_params.Dab_lbl);
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, rho_params.Dab_lbl);
+  global_dpd_->file2_mat_init(&D);
+  global_dpd_->file2_mat_rd(&D);
 
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "Gibja");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "Gibja");
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&G, h);
-    dpd_buf4_mat_irrep_rd(&G, h);
+    global_dpd_->buf4_mat_irrep_init(&G, h);
+    global_dpd_->buf4_mat_irrep_rd(&G, h);
 
     for(Gm=0; Gm < nirreps; Gm++) {
       Ga = Gb = h^Gm;
@@ -627,30 +649,30 @@ void fold_ROHF(struct RHO_Params rho_params)
       }
     }
 
-    dpd_buf4_mat_irrep_wrt(&G, h);
-    dpd_buf4_mat_irrep_close(&G, h);
+    global_dpd_->buf4_mat_irrep_wrt(&G, h);
+    global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
   if(!params.aobasis) {
-    dpd_buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia||jb>");
-    two_energy += dpd_buf4_dot(&C, &G);
-    dpd_buf4_close(&C);
+    global_dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia||jb>");
+    two_energy += global_dpd_->buf4_dot(&C, &G);
+    global_dpd_->buf4_close(&C);
   }
 
-  dpd_buf4_close(&G);
+  global_dpd_->buf4_close(&G);
 
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
 
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 1, rho_params.Dab_lbl);
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, rho_params.Dab_lbl);
+  global_dpd_->file2_mat_init(&D);
+  global_dpd_->file2_mat_rd(&D);
 
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIbJa");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIbJa");
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&G, h);
-    dpd_buf4_mat_irrep_rd(&G, h);
+    global_dpd_->buf4_mat_irrep_init(&G, h);
+    global_dpd_->buf4_mat_irrep_rd(&G, h);
 
     for(Gm=0; Gm < nirreps; Gm++) {
       Ga = Gb = h^Gm;
@@ -671,30 +693,30 @@ void fold_ROHF(struct RHO_Params rho_params)
       }
     }
 
-    dpd_buf4_mat_irrep_wrt(&G, h);
-    dpd_buf4_mat_irrep_close(&G, h);
+    global_dpd_->buf4_mat_irrep_wrt(&G, h);
+    global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
   if(!params.aobasis) {
-    dpd_buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia|jb>");
-    two_energy += dpd_buf4_dot(&C, &G);
-    dpd_buf4_close(&C);
+    global_dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia|jb>");
+    two_energy += global_dpd_->buf4_dot(&C, &G);
+    global_dpd_->buf4_close(&C);
   }
 
-  dpd_buf4_close(&G);
+  global_dpd_->buf4_close(&G);
 
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
 
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 1, rho_params.DAB_lbl);
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, rho_params.DAB_lbl);
+  global_dpd_->file2_mat_init(&D);
+  global_dpd_->file2_mat_rd(&D);
 
-  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GiBjA");
+  global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GiBjA");
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&G, h);
-    dpd_buf4_mat_irrep_rd(&G, h);
+    global_dpd_->buf4_mat_irrep_init(&G, h);
+    global_dpd_->buf4_mat_irrep_rd(&G, h);
 
     for(Gm=0; Gm < nirreps; Gm++) {
       Ga = Gb = h^Gm;
@@ -714,31 +736,31 @@ void fold_ROHF(struct RHO_Params rho_params)
 	}
       }
     }
-    dpd_buf4_mat_irrep_wrt(&G, h);
-    dpd_buf4_mat_irrep_close(&G, h);
+    global_dpd_->buf4_mat_irrep_wrt(&G, h);
+    global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
   if(!params.aobasis) {
-    dpd_buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia|jb>");
-    two_energy += dpd_buf4_dot(&C, &G); 
-    dpd_buf4_close(&C);
+    global_dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia|jb>");
+    two_energy += global_dpd_->buf4_dot(&C, &G); 
+    global_dpd_->buf4_close(&C);
   }
 
-  dpd_buf4_close(&G);
+  global_dpd_->buf4_close(&G);
 
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
 
   if(!params.aobasis) {
-    dpd_buf4_init(&DInts, PSIF_CC_DINTS, 0, 10, 10, 10, 10, 0, "D <ij|ab> (ib,ja)");
-    dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIbjA");
-    two_energy -= dpd_buf4_dot(&G, &DInts);
-    dpd_buf4_close(&G);
-    dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GiBJa");
-    two_energy -= dpd_buf4_dot(&G, &DInts);
-    dpd_buf4_close(&G);
-    dpd_buf4_close(&DInts);
+    global_dpd_->buf4_init(&DInts, PSIF_CC_DINTS, 0, 10, 10, 10, 10, 0, "D <ij|ab> (ib,ja)");
+    global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIbjA");
+    two_energy -= global_dpd_->buf4_dot(&G, &DInts);
+    global_dpd_->buf4_close(&G);
+    global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GiBJa");
+    two_energy -= global_dpd_->buf4_dot(&G, &DInts);
+    global_dpd_->buf4_close(&G);
+    global_dpd_->buf4_close(&DInts);
 
     total_two_energy += two_energy;
     fprintf(outfile, "\tIBJA energy                = %20.15f\n", two_energy);
@@ -747,31 +769,31 @@ void fold_ROHF(struct RHO_Params rho_params)
 
   if(!params.aobasis) {
     two_energy = 0.0;
-    dpd_buf4_init(&FInts, PSIF_CC_FINTS, 0, 10, 7, 10, 5, 1, "F <ia|bc>");
-    dpd_buf4_sort(&FInts, PSIF_CC_TMP0, qprs, 11, 7, "F(CI,AB)");
-    dpd_buf4_close(&FInts);
-    dpd_buf4_init(&FInts, PSIF_CC_TMP0, 0, 11, 7, 11, 7, 0, "F(CI,AB)");
-    dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 7, 11, 7, 0, "GCIAB");
-    two_energy = -1.0 * dpd_buf4_dot(&G, &FInts);
-    dpd_buf4_close(&G);
-    dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 7, 11, 7, 0, "Gciab");
-    two_energy -= dpd_buf4_dot(&G, &FInts); 
-    dpd_buf4_close(&G);
-    dpd_buf4_close(&FInts);
-    dpd_buf4_init(&FInts, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
-    dpd_buf4_sort(&FInts, PSIF_CC_TMP0, qprs, 11, 5, "F(cI,Ba)");
-    dpd_buf4_close(&FInts);
-    dpd_buf4_init(&FInts, PSIF_CC_TMP0, 0, 11, 5, 11, 5, 0, "F(cI,Ba)");
-    dpd_buf4_sort(&FInts, PSIF_CC_TMP1, pqsr, 11, 5, "F(cI,aB)");
-    dpd_buf4_close(&FInts);
-    dpd_buf4_init(&FInts, PSIF_CC_TMP1, 0, 11, 5, 11, 5, 0, "F(cI,aB)");
-    dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 5, 11, 5, 0, "GcIaB");
-    two_energy += dpd_buf4_dot(&G, &FInts);
-    dpd_buf4_close(&G);
-    dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 5, 11, 5, 0, "GCiAb");
-    two_energy += dpd_buf4_dot(&G, &FInts); 
-    dpd_buf4_close(&G);
-    dpd_buf4_close(&FInts);
+    global_dpd_->buf4_init(&FInts, PSIF_CC_FINTS, 0, 10, 7, 10, 5, 1, "F <ia|bc>");
+    global_dpd_->buf4_sort(&FInts, PSIF_CC_TMP0, qprs, 11, 7, "F(CI,AB)");
+    global_dpd_->buf4_close(&FInts);
+    global_dpd_->buf4_init(&FInts, PSIF_CC_TMP0, 0, 11, 7, 11, 7, 0, "F(CI,AB)");
+    global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 7, 11, 7, 0, "GCIAB");
+    two_energy = -1.0 * global_dpd_->buf4_dot(&G, &FInts);
+    global_dpd_->buf4_close(&G);
+    global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 7, 11, 7, 0, "Gciab");
+    two_energy -= global_dpd_->buf4_dot(&G, &FInts); 
+    global_dpd_->buf4_close(&G);
+    global_dpd_->buf4_close(&FInts);
+    global_dpd_->buf4_init(&FInts, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
+    global_dpd_->buf4_sort(&FInts, PSIF_CC_TMP0, qprs, 11, 5, "F(cI,Ba)");
+    global_dpd_->buf4_close(&FInts);
+    global_dpd_->buf4_init(&FInts, PSIF_CC_TMP0, 0, 11, 5, 11, 5, 0, "F(cI,Ba)");
+    global_dpd_->buf4_sort(&FInts, PSIF_CC_TMP1, pqsr, 11, 5, "F(cI,aB)");
+    global_dpd_->buf4_close(&FInts);
+    global_dpd_->buf4_init(&FInts, PSIF_CC_TMP1, 0, 11, 5, 11, 5, 0, "F(cI,aB)");
+    global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 5, 11, 5, 0, "GcIaB");
+    two_energy += global_dpd_->buf4_dot(&G, &FInts);
+    global_dpd_->buf4_close(&G);
+    global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 5, 11, 5, 0, "GCiAb");
+    two_energy += global_dpd_->buf4_dot(&G, &FInts); 
+    global_dpd_->buf4_close(&G);
+    global_dpd_->buf4_close(&FInts);
 
     two_energy *= 2;
     total_two_energy += two_energy;
@@ -781,19 +803,19 @@ void fold_ROHF(struct RHO_Params rho_params)
 
   if(!params.aobasis) {
     two_energy = 0.0;
-    dpd_buf4_init(&BInts, PSIF_CC_BINTS, 0, 7, 7, 5, 5, 1, "B <ab|cd>");
-    dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 7, 7, 7, 7, 0, "GABCD");
-    two_energy += dpd_buf4_dot(&G, &BInts);
-    dpd_buf4_close(&G);
-    dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 7, 7, 7, 7, 0, "Gabcd");
-    two_energy += dpd_buf4_dot(&G, &BInts);
-    dpd_buf4_close(&G);
-    dpd_buf4_close(&BInts);
-    dpd_buf4_init(&BInts, PSIF_CC_BINTS, 0, 5, 5, 5, 5, 0, "B <ab|cd>");
-    dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 5, 5, 5, 5, 0, "GAbCd");
-    two_energy += dpd_buf4_dot(&G, &BInts);
-    dpd_buf4_close(&G);
-    dpd_buf4_close(&BInts);
+    global_dpd_->buf4_init(&BInts, PSIF_CC_BINTS, 0, 7, 7, 5, 5, 1, "B <ab|cd>");
+    global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 7, 7, 7, 7, 0, "GABCD");
+    two_energy += global_dpd_->buf4_dot(&G, &BInts);
+    global_dpd_->buf4_close(&G);
+    global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 7, 7, 7, 7, 0, "Gabcd");
+    two_energy += global_dpd_->buf4_dot(&G, &BInts);
+    global_dpd_->buf4_close(&G);
+    global_dpd_->buf4_close(&BInts);
+    global_dpd_->buf4_init(&BInts, PSIF_CC_BINTS, 0, 5, 5, 5, 5, 0, "B <ab|cd>");
+    global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 5, 5, 5, 5, 0, "GAbCd");
+    two_energy += global_dpd_->buf4_dot(&G, &BInts);
+    global_dpd_->buf4_close(&G);
+    global_dpd_->buf4_close(&BInts);
   }
 
   if(!params.aobasis) {

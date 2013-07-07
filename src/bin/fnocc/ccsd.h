@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #ifndef CCSD_H
 #define CCSD_H
 
@@ -146,7 +168,7 @@ class CoupledCluster: public Wavefunction{
     void TwoJminusK(CCTaskParams params);
 
     /// DIIS functions
-    void DIIS(double*c,long int nvec,long int n);
+    void DIIS(double*c,long int nvec,long int n,int replace_diis_iter);
     void DIISOldVector(long int iter,int diis_iter,int replace_diis_iter);
     double DIISErrorVector(int diis_iter,int replace_diis_iter,int iter);
     void DIISNewAmplitudes(int diis_iter,int&replace_diis_iter);
@@ -216,7 +238,7 @@ class DFCoupledCluster : public CoupledCluster{
     void UpdateT1();
 
     /// update t2 amplitudes
-    void UpdateT2();
+    virtual void UpdateT2();
 
     /// v^4 CC diagram
     virtual void Vabcd1();
@@ -225,12 +247,13 @@ class DFCoupledCluster : public CoupledCluster{
     double*Abij,*Sbij;
 
     /// check energy
-    double CheckEnergy();
+    virtual double CheckEnergy();
 
     ///  3-index integrals for density fitting.
     bool ischolesky_;
     long int nQ;
-    double*Qmo,*Qov,*Qvv,*Qoo;
+    long int nQ_scf;
+    double*Qov,*Qvv,*Qoo;
     void  ThreeIndexIntegrals();
 
     /// more 3-index stuff for t1-transformed integrals
@@ -240,18 +263,21 @@ class DFCoupledCluster : public CoupledCluster{
 
     /// generate t1-transformed 3-index integrals
     virtual void T1Integrals();
+    /// generate t1-transformed Fock matrix
+    virtual void T1Fock();
 
     /// evaluate cc diagrams
     virtual void CCResidual();
 
-    /// evaluate triples
-    PsiReturnType triples();
-
     /// SCS-MP2 function and variables
-    void SCS_MP2();
+    virtual void SCS_MP2();
 
     /// SCS-CCSD function and variables
-    void SCS_CCSD();
+    virtual void SCS_CCSD();
+
+    /// CIM SCS-CCSD function and variables
+    virtual void Local_SCS_CCSD();
+    virtual void Local_SCS_MP2();
 };
 
 // coupled pair class

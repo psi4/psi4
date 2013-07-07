@@ -1,3 +1,27 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
+// Latest revision on April 25, 2013.
+
 #include <stdio.h>
 #include <libqt/qt.h>
 #include "arrays.h"
@@ -97,7 +121,7 @@ void Array1d::print(FILE *out)
 void Array1d::release()
 {    
    if (!A1d_) return;
-   free(A1d_);  
+   delete [] A1d_;
    A1d_ = NULL;
 }//
 
@@ -386,11 +410,20 @@ void Array2d::set(int i, int j, double value)
   A2d_[i][j]=value;  
 }//
 
+void Array2d::set(double **A)
+{
+      if (A == NULL) return;
+      for (int i=0; i<dim1_; ++i) {
+        for (int j=0; j<dim2_; ++j) {
+          A2d_[i][j] = A[i][j];
+        }
+      }
+}//
+
 double Array2d::get(int i, int j)
 { 
   return A2d_[i][j];
 }//
-
 
 void Array2d::gemm(bool transa, bool transb, double alpha, const Array2d* a, const Array2d* b, double beta)
 {
@@ -889,13 +922,6 @@ Array3d::Array3d(string name, int d1,int d2, int d3)
 Array3d::Array3d()
 {
   A3d_ = NULL;
-  
-  /*
-  dim1_ = NULL; 
-  dim2_ = NULL; 
-  dim3_ = NULL; 
-  */
-  
   dim1_ = 0; 
   dim2_ = 0; 
   dim3_ = 0; 
@@ -1066,7 +1092,7 @@ void Array1i::print()
 void Array1i::release()
 {    
    if (!A1i_) return;
-   free(A1i_);  
+   delete [] A1i_;
    A1i_ = NULL;
 }//
 

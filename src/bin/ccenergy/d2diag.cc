@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup CCENERGY
     \brief Enter brief description of file here 
@@ -33,31 +55,31 @@ double d2diag_rhf(void)
   nirreps = moinfo.nirreps;
   max = 0.0;
 
-  dpd_buf4_init(&Tikab, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-  dpd_buf4_init(&Tjkab, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-  dpd_file2_init(&To, PSIF_CC_TMP0, 0, 0, 0, "To");
-  dpd_buf4_init(&Tijac, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-  dpd_buf4_init(&Tijbc, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-  dpd_file2_init(&Tv, PSIF_CC_TMP0, 0, 1, 1, "Tv");
+  global_dpd_->buf4_init(&Tikab, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  global_dpd_->buf4_init(&Tjkab, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  global_dpd_->file2_init(&To, PSIF_CC_TMP0, 0, 0, 0, "To");
+  global_dpd_->buf4_init(&Tijac, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  global_dpd_->buf4_init(&Tijbc, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  global_dpd_->file2_init(&Tv, PSIF_CC_TMP0, 0, 1, 1, "Tv");
 
   // Build diagnostic matrices To and Tv //
-  dpd_contract442(&Tikab, &Tjkab, &To, 0, 0, 1, 0);
-  dpd_contract442(&Tijac, &Tijbc, &Tv, 3, 3, 1, 0);
+  global_dpd_->contract442(&Tikab, &Tjkab, &To, 0, 0, 1, 0);
+  global_dpd_->contract442(&Tijac, &Tijbc, &Tv, 3, 3, 1, 0);
 
-  dpd_buf4_close(&Tikab);
-  dpd_buf4_close(&Tjkab);
-  dpd_file2_close(&To);
-  dpd_buf4_close(&Tijac);
-  dpd_buf4_close(&Tijbc);
-  dpd_file2_close(&Tv);
+  global_dpd_->buf4_close(&Tikab);
+  global_dpd_->buf4_close(&Tjkab);
+  global_dpd_->file2_close(&To);
+  global_dpd_->buf4_close(&Tijac);
+  global_dpd_->buf4_close(&Tijbc);
+  global_dpd_->file2_close(&Tv);
 
-  dpd_file2_init(&To, PSIF_CC_TMP0, 0, 0, 0, "To");
-  dpd_file2_mat_init(&To);
-  dpd_file2_mat_rd(&To);
+  global_dpd_->file2_init(&To, PSIF_CC_TMP0, 0, 0, 0, "To");
+  global_dpd_->file2_mat_init(&To);
+  global_dpd_->file2_mat_rd(&To);
 
-  dpd_file2_init(&Tv, PSIF_CC_TMP0, 0, 1, 1, "Tv");
-  dpd_file2_mat_init(&Tv);
-  dpd_file2_mat_rd(&Tv);
+  global_dpd_->file2_init(&Tv, PSIF_CC_TMP0, 0, 1, 1, "Tv");
+  global_dpd_->file2_mat_init(&Tv);
+  global_dpd_->file2_mat_rd(&Tv);
 
   for(h=0; h < nirreps; h++) {
     if(To.params->rowtot[h]) {
@@ -89,10 +111,10 @@ double d2diag_rhf(void)
     }
   }
 
-  dpd_file2_mat_close(&To);
-  dpd_file2_mat_close(&Tv);
-  dpd_file2_close(&To);
-  dpd_file2_close(&Tv);
+  global_dpd_->file2_mat_close(&To);
+  global_dpd_->file2_mat_close(&Tv);
+  global_dpd_->file2_close(&To);
+  global_dpd_->file2_close(&Tv);
 
   /*
   // Original algorithm

@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 #include <libdpd/dpd.h>
@@ -354,14 +376,14 @@ void SymBlockMatrix::set(double **Asq)
 void SymBlockMatrix::set(dpdbuf4 G)
 {
     for(int h = 0; h < nirreps_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
-        dpd_buf4_mat_irrep_rd(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
         for(int row = 0; row < G.params->rowtot[h]; ++row){
             for(int col = 0; col < G.params->coltot[h]; ++col){
                 matrix_[h][row][col] = G.matrix[h][row][col];
             }
         }
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
 }//
 
@@ -475,21 +497,21 @@ bool SymBlockMatrix::load(PSIO* psio, int itap, const char *label, int dim)
 {
     int ntri = 0.5 * dim * (dim  + 1);
     double *mybuffer=init_array(ntri);
-    memset(mybuffer, 0.0, sizeof(double)*ntri);         
+    memset(mybuffer, 0.0, sizeof(double)*ntri);
     IWL::read_one(psio, itap, label, mybuffer, ntri, 0, 0, outfile);
     
     double **Asq;
     Asq=block_matrix(dim,dim);
-    memset(Asq[0], 0.0, sizeof(double)*dim*dim); 
-    tri_to_sq(mybuffer,Asq,dim); 
+    memset(Asq[0], 0.0, sizeof(double)*dim*dim);
+    tri_to_sq(mybuffer,Asq,dim);
     free(mybuffer);
     
-    set(Asq);    
-    free_block(Asq);    
-    return true;  
+    set(Asq);
+    free_block(Asq);
+    return true;
 }//
 
-bool SymBlockMatrix::load(shared_ptr<psi::PSIO> psio, int itap, const char *label, int dim)
+bool SymBlockMatrix::load(boost::shared_ptr<psi::PSIO> psio, int itap, const char *label, int dim)
 {  
     int ntri = 0.5 * dim * (dim  + 1);
     double *mybuffer=init_array(ntri);
@@ -653,12 +675,12 @@ void SymBlockMatrix::write(PSIO* psio, int itap, bool saveSubBlocks)
     if (!already_open) psio->close(itap, 1);     // Close and keep
 }//
 
-void SymBlockMatrix::write(shared_ptr<psi::PSIO> psio, int itap, bool saveSubBlocks)
+void SymBlockMatrix::write(boost::shared_ptr<psi::PSIO> psio, int itap, bool saveSubBlocks)
 {
     write(psio.get(), itap, saveSubBlocks);
 }//
 
-void SymBlockMatrix::read(shared_ptr<psi::PSIO> psio, int itap, bool readSubBlocks)
+void SymBlockMatrix::read(boost::shared_ptr<psi::PSIO> psio, int itap, bool readSubBlocks)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -691,7 +713,7 @@ void SymBlockMatrix::read(shared_ptr<psi::PSIO> psio, int itap, bool readSubBloc
 
 }//
 
-void SymBlockMatrix::read(shared_ptr<psi::PSIO> psio, int itap, const char *label, bool readSubBlocks)
+void SymBlockMatrix::read(boost::shared_ptr<psi::PSIO> psio, int itap, const char *label, bool readSubBlocks)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -724,7 +746,7 @@ void SymBlockMatrix::read(shared_ptr<psi::PSIO> psio, int itap, const char *labe
 
 }//
 
-void SymBlockMatrix::read_oooo(shared_ptr<psi::PSIO> psio, int itap, int *mosym, int *qt2pitzer, int *occ_off, int *occpi, Array3i *oo_pairidx)
+void SymBlockMatrix::read_oooo(boost::shared_ptr<psi::PSIO> psio, int itap, int *mosym, int *qt2pitzer, int *occ_off, int *occpi, Array3i *oo_pairidx)
 {
    	IWL ERIIN(psio.get(), itap, 0.0, 1, 1);
 	int ilsti,nbuf,index,fi;
@@ -773,7 +795,7 @@ void SymBlockMatrix::read_oooo(shared_ptr<psi::PSIO> psio, int itap, int *mosym,
  } while(!ilsti);
 }//
 
-void SymBlockMatrix::read_oovv(shared_ptr<psi::PSIO> psio, int itap, int nocc, int *mosym, int *qt2pitzer, int *occ_off, int *vir_off, int *occpi, 
+void SymBlockMatrix::read_oovv(boost::shared_ptr<psi::PSIO> psio, int itap, int nocc, int *mosym, int *qt2pitzer, int *occ_off, int *vir_off, int *occpi,
                                int *virpi, Array3i *oo_pairidx, Array3i *vv_pairidx)
 {
    	IWL ERIIN(psio.get(), itap, 0.0, 1, 1);

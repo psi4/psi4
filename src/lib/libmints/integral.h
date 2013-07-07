@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #ifndef _psi_src_lib_libmints_integral_h_
 #define _psi_src_lib_libmints_integral_h_
 
@@ -437,11 +459,19 @@ public:
     virtual OneBodyAOInt* ao_angular_momentum(int deriv=0);
     virtual OneBodySOInt* so_angular_momentum(int deriv=0);
 
+    /// Returns a OneBodyInt that computes the multipole potential integrals for EFP
+    virtual OneBodyAOInt* ao_efp_multipole_potential(int deriv=0);
+    virtual OneBodySOInt* so_efp_multipole_potential(int deriv=0);
+
     /// Returns an OneBodyInt that computes the electric field
     virtual OneBodyAOInt *electric_field();
 
     /// Returns an OneBodyInt that computes the point electrostatic potential
     virtual OneBodyAOInt *electrostatic();
+
+    /// Returns an OneBodyInt that computes the electrostatic potential at desired points
+    /// Want to change the name of this after the PCM dust settles
+    virtual OneBodyAOInt *pcm_potentialint();
 
     /// Returns an ERI integral object
     virtual TwoBodyAOInt* eri(int deriv=0, bool use_shell_pairs=false);
@@ -469,6 +499,7 @@ public:
 
     /// Returns an ERI iterator object, only coded for standard ERIs
     AOShellCombinationsIterator shells_iterator();
+    AOShellCombinationsIterator* shells_iterator_ptr();
 
     /// Initializes spherical harmonic transformations
     virtual void init_spherical_harmonics(int max_am);

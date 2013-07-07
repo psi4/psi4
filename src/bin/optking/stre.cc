@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file stre.cc
     \ingroup optking
     \brief stretch class definition
@@ -142,16 +164,19 @@ std::string STRE::get_definition_string(int off) const {
 void STRE::print_intco_dat(FILE *fp, int off) const {
   if (hbond) {
     if (s_frozen)
-      fprintf(fp, "H*%6d%6d\n", s_atom[0]+1+off, s_atom[1]+1+off);
+      fprintf(fp, "H*%6d%6d", s_atom[0]+1+off, s_atom[1]+1+off);
     else
-      fprintf(fp, "H %6d%6d\n", s_atom[0]+1+off, s_atom[1]+1+off);
+      fprintf(fp, "H %6d%6d", s_atom[0]+1+off, s_atom[1]+1+off);
   }
   else {
     if (s_frozen)
-      fprintf(fp, "R*%6d%6d\n", s_atom[0]+1+off, s_atom[1]+1+off);
+      fprintf(fp, "R*%6d%6d", s_atom[0]+1+off, s_atom[1]+1+off);
     else
-      fprintf(fp, "R %6d%6d\n", s_atom[0]+1+off, s_atom[1]+1+off);
+      fprintf(fp, "R %6d%6d", s_atom[0]+1+off, s_atom[1]+1+off);
   }
+  if (s_has_fixed_eq_val)
+    fprintf(fp, "%10.5lf", s_fixed_eq_val);
+  fprintf(fp, "\n");
   fflush(fp);
 }
 
