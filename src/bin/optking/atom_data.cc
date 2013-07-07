@@ -25,6 +25,8 @@
     \brief atom_data.cc : initialize static class members in atom_data.h
 */
 
+#include "atom_data.h"
+
 #include <string>
 #include <map>
 
