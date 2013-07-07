@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup CCSORT
     \brief Enter brief description of file here
@@ -766,23 +788,23 @@ void local_init(Options & options)
   /* Grab the MO-basis Fock matrix */
   Fmo = block_matrix(nso, nso);
   for(i=0; i < nfzc; i++) Fmo[i][i] = eps_all[i];
-  dpd_file2_init(&fock, PSIF_CC_OEI, 0, 0, 0, "fIJ");
-  dpd_file2_mat_init(&fock);
-  dpd_file2_mat_rd(&fock);
+  global_dpd_->file2_init(&fock, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+  global_dpd_->file2_mat_init(&fock);
+  global_dpd_->file2_mat_rd(&fock);
   for(i=0; i < nocc; i++)
     for(j=0; j < nocc; j++)
       Fmo[i+nfzc][j+nfzc] = fock.matrix[0][i][j];
-  dpd_file2_mat_close(&fock);
-  dpd_file2_close(&fock);
+  global_dpd_->file2_mat_close(&fock);
+  global_dpd_->file2_close(&fock);
 
-  dpd_file2_init(&fock, PSIF_CC_OEI, 0, 1, 1, "fAB");
-  dpd_file2_mat_init(&fock);
-  dpd_file2_mat_rd(&fock);
+  global_dpd_->file2_init(&fock, PSIF_CC_OEI, 0, 1, 1, "fAB");
+  global_dpd_->file2_mat_init(&fock);
+  global_dpd_->file2_mat_rd(&fock);
   for(i=0; i < nvir; i++)
     for(j=0; j < nvir; j++)
       Fmo[i+nfzc+nocc][j+nfzc+nocc] = fock.matrix[0][i][j];
-  dpd_file2_mat_close(&fock);
-  dpd_file2_close(&fock);
+  global_dpd_->file2_mat_close(&fock);
+  global_dpd_->file2_close(&fock);
 
   /*
     fprintf(outfile, "\n\tMO Basis Fock matrix:\n");

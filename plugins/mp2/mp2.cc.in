@@ -3,7 +3,7 @@
 #include <liboptions/liboptions.h>
 #include <libplugin/plugin.h>
 #include "libchkpt/chkpt.h"
-#include "ccfiles.h"
+#include "psifiles.h"
 #include "globals.h"
 
 INIT_PLUGIN

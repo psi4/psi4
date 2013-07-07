@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include <psi4-dec.h>
 #include <psiconfig.h>
 #include <libmints/molecule.h>
@@ -15,6 +37,11 @@
 #include <omp.h>
 #endif
 
+// Apple doesn't provide the environ global variable
+#if defined(__APPLE__) && !defined(environ)
+#   include <crt_externs.h>
+#   define environ (*_NSGetEnviron())
+#endif
 
 using namespace std;
 using namespace psi;
@@ -25,8 +52,10 @@ Process::Arguments Process::arguments;
 const std::string empty_;
 
 // Need to split each entry by the first '=', left side is key, right the value
-void Process::Environment::init(char **envp)
+void Process::Environment::initialize()
 {
+    // If envp is NULL, try to obtain envp from enviorn in unistd.h
+
     string psi4datadir;
 
     // First set some defaults:
@@ -35,17 +64,19 @@ void Process::Environment::init(char **envp)
 
     // Go through user provided environment overwriting defaults if necessary
     int i=0;
-    while (envp[i] != NULL) {
-        std::vector<std::string> strs;
-        boost::split(strs, envp[i], boost::is_any_of("="));
-        environment_[strs[0]] = strs[1];
+    if (environ) {
+        while (environ[i] != NULL) {
+            std::vector<std::string> strs;
+            boost::split(strs, environ[i], boost::is_any_of("="));
+            environment_[strs[0]] = strs[1];
 
-        // I'm tired of having to (re)set PSIDATADIR for PSI3/4
-        // If PSI4DATADIR is set it overrides PSIDATADIR
-        if (strs[0] == "PSI4DATADIR")
-            psi4datadir = strs[1];
+            // I'm tired of having to (re)set PSIDATADIR for PSI3/4
+            // If PSI4DATADIR is set it overrides PSIDATADIR
+            if (strs[0] == "PSI4DATADIR")
+                psi4datadir = strs[1];
 
-        ++i;
+            ++i;
+        }
     }
 
     if (psi4datadir.empty() == false)
@@ -56,21 +87,6 @@ void Process::Environment::init(char **envp)
 #ifdef _OPENMP
     nthread_ = omp_get_max_threads();
 #endif
-
-//    // If madness and or MPI is not set up, COMMUNICATOR is changed to a value
-//    // that makes sense. (i.e. MPI or LOCAL)
-//#ifdef HAVE_MADNESS
-//    if ( (Process::environment("COMMUNICATOR") != "MADNESS") &&
-//         (Process::environment("COMMUNICATOR") != "LOCAL") )
-//    {
-//        environment_["COMMUNICATOR"] = "MADNESS";
-//        std::cout << "WARNING: COMMUNICATOR was changed to MADNESS" << std::endl;
-//    }
-//#else
-//    if (Process::environment("COMMUNICATOR") != "LOCAL") {
-//        environment_["COMMUNICATOR"] = "LOCAL";
-//    }
-//#endif
 }
 
 void Process::Environment::set_n_threads(int nthread)
@@ -152,7 +168,7 @@ boost::shared_ptr<Wavefunction> Process::Environment::wavefunction() const
     return wavefunction_;
 }
 
-void Process::Arguments::init(int argc, char **argv)
+void Process::Arguments::initialize(int argc, char **argv)
 {
     argc_ = argc;
     argv_ = argv;

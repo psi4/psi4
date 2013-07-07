@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup TRANSQT2
     \brief Enter brief description of file here
@@ -52,8 +74,8 @@ void transtwo_uhf(void)
 
   C = C_a; /* Use alpha MOs for this half-transformation */
 
-  dpd_buf4_init(&J, PSIF_SO_PRESORT, 0, 3, 0, 3, 3, 0, "SO Ints (pq,rs)");
-  dpd_buf4_init(&K, PSIF_HALFT0, 0, 3, 5, 3, 8, 0, "Half-Transformed Ints (pq,ij)");
+  global_dpd_->buf4_init(&J, PSIF_SO_PRESORT, 0, 3, 0, 3, 3, 0, "SO Ints (pq,rs)");
+  global_dpd_->buf4_init(&K, PSIF_HALFT0, 0, 3, 5, 3, 8, 0, "Half-Transformed Ints (pq,ij)");
   for(h=0; h < nirreps; h++) {
 
     memfree = (unsigned long int) (dpd_memfree() - J.params->coltot[h] - K.params->coltot[h]);
@@ -77,13 +99,13 @@ void transtwo_uhf(void)
       fflush(outfile);
     }
 
-    dpd_buf4_mat_irrep_init_block(&J, h, rows_per_bucket);
-    dpd_buf4_mat_irrep_init_block(&K, h, rows_per_bucket);
+    global_dpd_->buf4_mat_irrep_init_block(&J, h, rows_per_bucket);
+    global_dpd_->buf4_mat_irrep_init_block(&K, h, rows_per_bucket);
 
     for(n=0; n < nbuckets; n++) {
       if(nbuckets == 1) this_bucket_rows = rows_per_bucket;
       else this_bucket_rows = (n < nbuckets-1) ? rows_per_bucket : rows_left;
-      dpd_buf4_mat_irrep_rd_block(&J, h, n*rows_per_bucket, this_bucket_rows);
+      global_dpd_->buf4_mat_irrep_rd_block(&J, h, n*rows_per_bucket, this_bucket_rows);
       for(pq=0; pq < this_bucket_rows; pq++) {
         for(Gr=0; Gr < nirreps; Gr++) {
           Gs = h^Gr;
@@ -104,13 +126,13 @@ void transtwo_uhf(void)
                     0.0,&K.matrix[h][pq][rs],ncols);
         } /* Gr */
       } /* pq */
-      dpd_buf4_mat_irrep_wrt_block(&K, h, n*rows_per_bucket, this_bucket_rows);
+      global_dpd_->buf4_mat_irrep_wrt_block(&K, h, n*rows_per_bucket, this_bucket_rows);
     }
-    dpd_buf4_mat_irrep_close_block(&J, h, rows_per_bucket);
-    dpd_buf4_mat_irrep_close_block(&K, h, rows_per_bucket);
+    global_dpd_->buf4_mat_irrep_close_block(&J, h, rows_per_bucket);
+    global_dpd_->buf4_mat_irrep_close_block(&K, h, rows_per_bucket);
   }
-  dpd_buf4_close(&K);
-  dpd_buf4_close(&J);
+  global_dpd_->buf4_close(&K);
+  global_dpd_->buf4_close(&J);
 
   psio_close(PSIF_SO_PRESORT, 1); /* must keep the presort file for the upcoming BB transformation */
 
@@ -121,9 +143,9 @@ void transtwo_uhf(void)
 
   psio_open(PSIF_HALFT1, PSIO_OPEN_NEW);
 
-  dpd_buf4_init(&K, PSIF_HALFT0, 0, 3, 8, 3, 8, 0, "Half-Transformed Ints (pq,ij)");
-  dpd_buf4_sort(&K, PSIF_HALFT1, rspq, 8, 3, "Half-Transformed Ints (ij,pq)");
-  dpd_buf4_close(&K);
+  global_dpd_->buf4_init(&K, PSIF_HALFT0, 0, 3, 8, 3, 8, 0, "Half-Transformed Ints (pq,ij)");
+  global_dpd_->buf4_sort(&K, PSIF_HALFT1, rspq, 8, 3, "Half-Transformed Ints (ij,pq)");
+  global_dpd_->buf4_close(&K);
 
   psio_close(PSIF_HALFT0, 0);
 
@@ -135,8 +157,8 @@ void transtwo_uhf(void)
 
   C = C_a; /* Usa alpha MOs for this half-transformation */
 
-  dpd_buf4_init(&J, PSIF_HALFT1, 0, 8, 0, 8, 3, 0, "Half-Transformed Ints (ij,pq)");
-  dpd_buf4_init(&K, PSIF_CC_MISC, 0, 8, 5, 8, 8, 0, "MO Ints (ij,kl)");
+  global_dpd_->buf4_init(&J, PSIF_HALFT1, 0, 8, 0, 8, 3, 0, "Half-Transformed Ints (ij,pq)");
+  global_dpd_->buf4_init(&K, PSIF_CC_MISC, 0, 8, 5, 8, 8, 0, "MO Ints (ij,kl)");
   for(h=0; h < nirreps; h++) {
 
     memfree = (unsigned long int) (dpd_memfree() - J.params->coltot[h] - K.params->coltot[h]);
@@ -160,13 +182,13 @@ void transtwo_uhf(void)
       fflush(outfile);
     }
 
-    dpd_buf4_mat_irrep_init_block(&J, h, rows_per_bucket);
-    dpd_buf4_mat_irrep_init_block(&K, h, rows_per_bucket);
+    global_dpd_->buf4_mat_irrep_init_block(&J, h, rows_per_bucket);
+    global_dpd_->buf4_mat_irrep_init_block(&K, h, rows_per_bucket);
 
     for(n=0; n < nbuckets; n++) {
       if(nbuckets == 1) this_bucket_rows = rows_per_bucket;
       else this_bucket_rows = (n < nbuckets-1) ? rows_per_bucket : rows_left;
-      dpd_buf4_mat_irrep_rd_block(&J, h, n*rows_per_bucket, this_bucket_rows);
+      global_dpd_->buf4_mat_irrep_rd_block(&J, h, n*rows_per_bucket, this_bucket_rows);
       for(pq=0; pq < this_bucket_rows; pq++) {
         for(Gr=0; Gr < nirreps; Gr++) {
           Gs = h^Gr;
@@ -199,11 +221,11 @@ void transtwo_uhf(void)
         } /* rs */
       } /* pq */
     }
-    dpd_buf4_mat_irrep_close_block(&J, h, rows_per_bucket);
-    dpd_buf4_mat_irrep_close_block(&K, h, rows_per_bucket);
+    global_dpd_->buf4_mat_irrep_close_block(&J, h, rows_per_bucket);
+    global_dpd_->buf4_mat_irrep_close_block(&K, h, rows_per_bucket);
   }
-  dpd_buf4_close(&K);
-  dpd_buf4_close(&J);
+  global_dpd_->buf4_close(&K);
+  global_dpd_->buf4_close(&J);
 
   iwl_buf_flush(&MBuff, 1);
   iwl_buf_close(&MBuff, 1);
@@ -216,8 +238,8 @@ void transtwo_uhf(void)
 
   C = C_b; /* Usa beta MOs for this half-transformation */
 
-  dpd_buf4_init(&J, PSIF_HALFT1, 0, 8, 0, 8, 3, 0, "Half-Transformed Ints (ij,pq)");
-  dpd_buf4_init(&K, PSIF_CC_MISC, 0, 8, 5, 8, 8, 0, "MO Ints (ij,kl)");
+  global_dpd_->buf4_init(&J, PSIF_HALFT1, 0, 8, 0, 8, 3, 0, "Half-Transformed Ints (ij,pq)");
+  global_dpd_->buf4_init(&K, PSIF_CC_MISC, 0, 8, 5, 8, 8, 0, "MO Ints (ij,kl)");
   for(h=0; h < nirreps; h++) {
 
     if (J.params->coltot[h]) {
@@ -241,13 +263,13 @@ void transtwo_uhf(void)
       fflush(outfile);
     }
 
-    dpd_buf4_mat_irrep_init_block(&J, h, rows_per_bucket);
-    dpd_buf4_mat_irrep_init_block(&K, h, rows_per_bucket);
+    global_dpd_->buf4_mat_irrep_init_block(&J, h, rows_per_bucket);
+    global_dpd_->buf4_mat_irrep_init_block(&K, h, rows_per_bucket);
 
     for(n=0; n < nbuckets; n++) {
       if(nbuckets == 1) this_bucket_rows = rows_per_bucket;
       else this_bucket_rows = (n < nbuckets-1) ? rows_per_bucket : rows_left;
-      dpd_buf4_mat_irrep_rd_block(&J, h, n*rows_per_bucket, this_bucket_rows);
+      global_dpd_->buf4_mat_irrep_rd_block(&J, h, n*rows_per_bucket, this_bucket_rows);
       for(pq=0; pq < this_bucket_rows; pq++) {
         for(Gr=0; Gr < nirreps; Gr++) {
           Gs = h^Gr;
@@ -280,11 +302,11 @@ void transtwo_uhf(void)
         } /* rs */
       } /* pq */
     }
-    dpd_buf4_mat_irrep_close_block(&J, h, rows_per_bucket);
-    dpd_buf4_mat_irrep_close_block(&K, h, rows_per_bucket);
+    global_dpd_->buf4_mat_irrep_close_block(&J, h, rows_per_bucket);
+    global_dpd_->buf4_mat_irrep_close_block(&K, h, rows_per_bucket);
   }
-  dpd_buf4_close(&K);
-  dpd_buf4_close(&J);
+  global_dpd_->buf4_close(&K);
+  global_dpd_->buf4_close(&J);
 
   iwl_buf_flush(&MBuff, 1);
   iwl_buf_close(&MBuff, 1);
@@ -305,8 +327,8 @@ void transtwo_uhf(void)
 
   C = C_b; /* Use beta MOs for this half-transformation */
 
-  dpd_buf4_init(&J, PSIF_SO_PRESORT, 0, 3, 0, 3, 3, 0, "SO Ints (pq,rs)");
-  dpd_buf4_init(&K, PSIF_HALFT0, 0, 3, 5, 3, 8, 0, "Half-Transformed Ints (pq,ij)");
+  global_dpd_->buf4_init(&J, PSIF_SO_PRESORT, 0, 3, 0, 3, 3, 0, "SO Ints (pq,rs)");
+  global_dpd_->buf4_init(&K, PSIF_HALFT0, 0, 3, 5, 3, 8, 0, "Half-Transformed Ints (pq,ij)");
   for(h=0; h < nirreps; h++) {
 
     if (J.params->coltot[h]) {
@@ -330,13 +352,13 @@ void transtwo_uhf(void)
       fflush(outfile);
     }
 
-    dpd_buf4_mat_irrep_init_block(&J, h, rows_per_bucket);
-    dpd_buf4_mat_irrep_init_block(&K, h, rows_per_bucket);
+    global_dpd_->buf4_mat_irrep_init_block(&J, h, rows_per_bucket);
+    global_dpd_->buf4_mat_irrep_init_block(&K, h, rows_per_bucket);
 
     for(n=0; n < nbuckets; n++) {
       if(nbuckets == 1) this_bucket_rows = rows_per_bucket;
       else this_bucket_rows = (n < nbuckets-1) ? rows_per_bucket : rows_left;
-      dpd_buf4_mat_irrep_rd_block(&J, h, n*rows_per_bucket, this_bucket_rows);
+      global_dpd_->buf4_mat_irrep_rd_block(&J, h, n*rows_per_bucket, this_bucket_rows);
       for(pq=0; pq < this_bucket_rows; pq++) {
         for(Gr=0; Gr < nirreps; Gr++) {
           Gs = h^Gr;
@@ -357,13 +379,13 @@ void transtwo_uhf(void)
                     0.0,&K.matrix[h][pq][rs],ncols);
         } /* Gr */
       } /* pq */
-      dpd_buf4_mat_irrep_wrt_block(&K, h, n*rows_per_bucket, this_bucket_rows);
+      global_dpd_->buf4_mat_irrep_wrt_block(&K, h, n*rows_per_bucket, this_bucket_rows);
     }
-    dpd_buf4_mat_irrep_close_block(&J, h, rows_per_bucket);
-    dpd_buf4_mat_irrep_close_block(&K, h, rows_per_bucket);
+    global_dpd_->buf4_mat_irrep_close_block(&J, h, rows_per_bucket);
+    global_dpd_->buf4_mat_irrep_close_block(&K, h, rows_per_bucket);
   }
-  dpd_buf4_close(&K);
-  dpd_buf4_close(&J);
+  global_dpd_->buf4_close(&K);
+  global_dpd_->buf4_close(&J);
 
   psio_close(PSIF_SO_PRESORT, 0);
 
@@ -374,9 +396,9 @@ void transtwo_uhf(void)
 
   psio_open(PSIF_HALFT1, PSIO_OPEN_NEW);
 
-  dpd_buf4_init(&K, PSIF_HALFT0, 0, 3, 8, 3, 8, 0, "Half-Transformed Ints (pq,ij)");
-  dpd_buf4_sort(&K, PSIF_HALFT1, rspq, 8, 3, "Half-Transformed Ints (ij,pq)");
-  dpd_buf4_close(&K);
+  global_dpd_->buf4_init(&K, PSIF_HALFT0, 0, 3, 8, 3, 8, 0, "Half-Transformed Ints (pq,ij)");
+  global_dpd_->buf4_sort(&K, PSIF_HALFT1, rspq, 8, 3, "Half-Transformed Ints (ij,pq)");
+  global_dpd_->buf4_close(&K);
 
   psio_close(PSIF_HALFT0, 0);
 
@@ -388,8 +410,8 @@ void transtwo_uhf(void)
 
   C = C_b; /* Usa beta MOs for this half-transformation */
 
-  dpd_buf4_init(&J, PSIF_HALFT1, 0, 8, 0, 8, 3, 0, "Half-Transformed Ints (ij,pq)");
-  dpd_buf4_init(&K, PSIF_CC_MISC, 0, 8, 5, 8, 8, 0, "MO Ints (ij,kl)");
+  global_dpd_->buf4_init(&J, PSIF_HALFT1, 0, 8, 0, 8, 3, 0, "Half-Transformed Ints (ij,pq)");
+  global_dpd_->buf4_init(&K, PSIF_CC_MISC, 0, 8, 5, 8, 8, 0, "MO Ints (ij,kl)");
   for(h=0; h < nirreps; h++) {
 
     if (J.params->coltot[h]) {
@@ -413,13 +435,13 @@ void transtwo_uhf(void)
       fflush(outfile);
     }
 
-    dpd_buf4_mat_irrep_init_block(&J, h, rows_per_bucket);
-    dpd_buf4_mat_irrep_init_block(&K, h, rows_per_bucket);
+    global_dpd_->buf4_mat_irrep_init_block(&J, h, rows_per_bucket);
+    global_dpd_->buf4_mat_irrep_init_block(&K, h, rows_per_bucket);
 
     for(n=0; n < nbuckets; n++) {
       if(nbuckets == 1) this_bucket_rows = rows_per_bucket;
       else this_bucket_rows = (n < nbuckets-1) ? rows_per_bucket : rows_left;
-      dpd_buf4_mat_irrep_rd_block(&J, h, n*rows_per_bucket, this_bucket_rows);
+      global_dpd_->buf4_mat_irrep_rd_block(&J, h, n*rows_per_bucket, this_bucket_rows);
       for(pq=0; pq < this_bucket_rows; pq++) {
         for(Gr=0; Gr < nirreps; Gr++) {
           Gs = h^Gr;
@@ -452,11 +474,11 @@ void transtwo_uhf(void)
         } /* rs */
       } /* pq */
     }
-    dpd_buf4_mat_irrep_close_block(&J, h, rows_per_bucket);
-    dpd_buf4_mat_irrep_close_block(&K, h, rows_per_bucket);
+    global_dpd_->buf4_mat_irrep_close_block(&J, h, rows_per_bucket);
+    global_dpd_->buf4_mat_irrep_close_block(&K, h, rows_per_bucket);
   }
-  dpd_buf4_close(&K);
-  dpd_buf4_close(&J);
+  global_dpd_->buf4_close(&K);
+  global_dpd_->buf4_close(&J);
 
   iwl_buf_flush(&MBuff, 1);
   iwl_buf_close(&MBuff, 1);

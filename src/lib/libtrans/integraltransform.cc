@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include "integraltransform.h"
 #include "mospace.h"
 #include <libdpd/dpd.h>
@@ -250,8 +272,7 @@ IntegralTransform::initialize()
     cacheFiles_ = init_int_array(PSIO_MAXUNIT);
     cacheList_  = init_int_matrix(numIndexArrays, numIndexArrays);
     int currentActiveDPD = psi::dpd_default;
-    dpd_init(myDPDNum_, nirreps_, memory_, 0, cacheFiles_,
-            cacheList_, NULL, numSpaces, spaceArray_);
+    dpd_init(myDPDNum_, nirreps_, memory_, 0, cacheFiles_, cacheList_, NULL, numSpaces, spaceArray_);
 
     // We have to redefine the MO coefficients for a UHF-like treatment
     if(transformationType_ == SemiCanonical){

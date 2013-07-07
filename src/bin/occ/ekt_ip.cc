@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include <libqt/qt.h>
 #include <libtrans/integraltransform.h>
 
@@ -29,6 +51,13 @@ void OCCWave::ekt_ip()
      SharedVector Diag_g1A = boost::shared_ptr<Vector>(new Vector("Diag OO-block OPDM", nirrep_, nmopi_));
      SharedVector ps_vecA = boost::shared_ptr<Vector>(new Vector("alpha pole strength vector", nirrep_, nmopi_));
      SharedVector eorbA = boost::shared_ptr<Vector>(new Vector("eorbA", nirrep_, nmopi_));
+
+     // For Non-OO methods
+     if (orb_opt_ == "FALSE" && reference_ == "RESTRICTED") GFock->scale(0.5);  
+     else if (orb_opt_ == "FALSE" && reference_ == "UNRESTRICTED") {
+              GFockA->scale(0.5);  
+              GFockB->scale(0.5);  
+     }
 
      // Diagonalize OPDM
      UvecA->zero();
@@ -382,6 +411,13 @@ if (reference_ == "UNRESTRICTED") {
        delete eoccB;
 
 }// if (reference_ == "UNRESTRICTED") 
+
+     // For Non-OO methods
+     if (orb_opt_ == "FALSE" && reference_ == "RESTRICTED" && dertype == "FIRST") GFock->scale(2.0);  
+     else if (orb_opt_ == "FALSE" && reference_ == "UNRESTRICTED" && dertype == "FIRST") {
+              GFockA->scale(2.0);  
+              GFockB->scale(2.0);  
+     }
 
        GFock_primeA.reset();
        g1HalfA.reset();

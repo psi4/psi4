@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #ifndef COORDENTRY_H
 #define COORDENTRY_H
 
@@ -161,6 +183,8 @@ public:
     virtual CoordEntryType type() =0;
     /// Prints the updated geometry, in the format provided by the user
     virtual void print_in_input_format() = 0;
+    /// String of the updated geometry, in the format provided by the user (analog of print_in_input_format)
+    virtual std::string string_in_input_format() = 0;
     /// Whether the current atom's coordinates are up-to-date.
     bool is_computed() const { return computed_; }
     /// Whether this atom has the same mass and basis sets as another atom
@@ -217,6 +241,7 @@ public:
     void set_coordinates(double x, double y, double z);
     CoordEntryType type() { return CartesianCoord; }
     void print_in_input_format();
+    std::string string_in_input_format();
     void invalidate () { computed_ = false; x_->invalidate(); y_->invalidate(); z_->invalidate(); }
     boost::shared_ptr<CoordEntry> clone( std::vector<boost::shared_ptr<CoordEntry> > &atoms, std::map<std::string, double>& map){
         boost::shared_ptr<CoordEntry> temp(new CartesianEntry(entry_number_, Z_, charge_, mass_, symbol_, label_, x_->clone(map), y_->clone(map), z_->clone(map), basissets_));
@@ -256,6 +281,7 @@ public:
                                          if(dval_ != 0) dval_->invalidate(); }
     const Vector3& compute();
     void print_in_input_format();
+    std::string string_in_input_format();
     void set_coordinates(double x, double y, double z);
     CoordEntryType type() { return ZMatrixCoord; }
     boost::shared_ptr<CoordEntry> clone( std::vector<boost::shared_ptr<CoordEntry> > &atoms, std::map<std::string, double>& map){

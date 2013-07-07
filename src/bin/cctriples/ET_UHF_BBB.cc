@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup CCTRIPLES
     \brief Enter brief description of file here 
@@ -50,33 +72,33 @@ double ET_UHF_BBB(void)
   occ_off = moinfo.bocc_off;
   vir_off = moinfo.bvir_off;
 
-  dpd_file2_init(&fIJ, PSIF_CC_OEI, 0, 2, 2, "fij");
-  dpd_file2_init(&fAB, PSIF_CC_OEI, 0, 3, 3, "fab");
-  dpd_file2_init(&fIA, PSIF_CC_OEI, 0, 2, 3, "fia");
-  dpd_file2_mat_init(&fIJ);
-  dpd_file2_mat_init(&fAB);
-  dpd_file2_mat_init(&fIA);
-  dpd_file2_mat_rd(&fIJ);
-  dpd_file2_mat_rd(&fAB);
-  dpd_file2_mat_rd(&fIA);
+  global_dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 2, 2, "fij");
+  global_dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 3, 3, "fab");
+  global_dpd_->file2_init(&fIA, PSIF_CC_OEI, 0, 2, 3, "fia");
+  global_dpd_->file2_mat_init(&fIJ);
+  global_dpd_->file2_mat_init(&fAB);
+  global_dpd_->file2_mat_init(&fIA);
+  global_dpd_->file2_mat_rd(&fIJ);
+  global_dpd_->file2_mat_rd(&fAB);
+  global_dpd_->file2_mat_rd(&fIA);
 
-  dpd_file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia");
-  dpd_file2_mat_init(&T1); 
-  dpd_file2_mat_rd(&T1);
+  global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia");
+  global_dpd_->file2_mat_init(&T1); 
+  global_dpd_->file2_mat_rd(&T1);
 
-  dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 15, 12, 17, 0, "tijab");
-  dpd_buf4_init(&Fints, PSIF_CC_FINTS, 0, 30, 15, 30, 15, 1, "F <ia|bc>");
-  dpd_buf4_init(&Eints, PSIF_CC_EINTS, 0, 10, 30, 12, 30, 0, "E <ij||ka> (i>j,ka)");
-  dpd_buf4_init(&Dints, PSIF_CC_DINTS, 0, 10, 15, 10, 15, 0, "D <ij||ab>");
+  global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 15, 12, 17, 0, "tijab");
+  global_dpd_->buf4_init(&Fints, PSIF_CC_FINTS, 0, 30, 15, 30, 15, 1, "F <ia|bc>");
+  global_dpd_->buf4_init(&Eints, PSIF_CC_EINTS, 0, 10, 30, 12, 30, 0, "E <ij||ka> (i>j,ka)");
+  global_dpd_->buf4_init(&Dints, PSIF_CC_DINTS, 0, 10, 15, 10, 15, 0, "D <ij||ab>");
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&T2, h);
-    dpd_buf4_mat_irrep_rd(&T2, h);
+    global_dpd_->buf4_mat_irrep_init(&T2, h);
+    global_dpd_->buf4_mat_irrep_rd(&T2, h);
 
-    dpd_buf4_mat_irrep_init(&Eints, h);
-    dpd_buf4_mat_irrep_rd(&Eints, h);
+    global_dpd_->buf4_mat_irrep_init(&Eints, h);
+    global_dpd_->buf4_mat_irrep_rd(&Eints, h);
 
-    dpd_buf4_mat_irrep_init(&Dints, h);
-    dpd_buf4_mat_irrep_rd(&Dints, h);
+    global_dpd_->buf4_mat_irrep_init(&Dints, h);
+    global_dpd_->buf4_mat_irrep_rd(&Dints, h);
   }
 
   /* Compute the number of IJK combinations in this spin case */
@@ -151,7 +173,7 @@ double ET_UHF_BBB(void)
 		for(Gab=0; Gab < nirreps; Gab++) {
 		  Gc = Gab ^ Gijk;
 
-		  WABC[Gab] = dpd_block_matrix(Fints.params->coltot[Gab], virtpi[Gc]);
+		  WABC[Gab] = global_dpd_->dpd_block_matrix(Fints.params->coltot[Gab], virtpi[Gc]);
 		}
 
 		for(Gd=0; Gd < nirreps; Gd++) {
@@ -162,8 +184,8 @@ double ET_UHF_BBB(void)
 		  cd = T2.col_offset[Gjk][Gc];
 		  id = Fints.row_offset[Gid][I];
 
-		  Fints.matrix[Gid] = dpd_block_matrix(virtpi[Gd], Fints.params->coltot[Gid]);
-		  dpd_buf4_mat_irrep_rd_block(&Fints, Gid, id, virtpi[Gd]);
+		  Fints.matrix[Gid] = global_dpd_->dpd_block_matrix(virtpi[Gd], Fints.params->coltot[Gid]);
+		  global_dpd_->buf4_mat_irrep_rd_block(&Fints, Gid, id, virtpi[Gd]);
 
 		  nrows = Fints.params->coltot[Gid];
 		  ncols = virtpi[Gc];
@@ -175,7 +197,7 @@ double ET_UHF_BBB(void)
 			    &(T2.matrix[Gjk][jk][cd]), nlinks, 1.0,
 			    &(WABC[Gab][0][0]), ncols);
 
-		  dpd_free_block(Fints.matrix[Gid], virtpi[Gd], Fints.params->coltot[Gid]);
+		  global_dpd_->free_dpd_block(Fints.matrix[Gid], virtpi[Gd], Fints.params->coltot[Gid]);
 
 		  /* +t_ikcd * F_jdab */
 		  Gab = Gjd = Gj ^ Gd;
@@ -184,8 +206,8 @@ double ET_UHF_BBB(void)
 		  cd = T2.col_offset[Gik][Gc];
 		  jd = Fints.row_offset[Gjd][J];
 
-		  Fints.matrix[Gjd] = dpd_block_matrix(virtpi[Gd], Fints.params->coltot[Gjd]);
-		  dpd_buf4_mat_irrep_rd_block(&Fints, Gjd, jd, virtpi[Gd]);
+		  Fints.matrix[Gjd] = global_dpd_->dpd_block_matrix(virtpi[Gd], Fints.params->coltot[Gjd]);
+		  global_dpd_->buf4_mat_irrep_rd_block(&Fints, Gjd, jd, virtpi[Gd]);
 
 		  nrows = Fints.params->coltot[Gjd];
 		  ncols = virtpi[Gc];
@@ -197,7 +219,7 @@ double ET_UHF_BBB(void)
 			    &(T2.matrix[Gik][ik][cd]), nlinks, 1.0,
 			    &(WABC[Gab][0][0]), ncols);
 
-		  dpd_free_block(Fints.matrix[Gjd], virtpi[Gd], Fints.params->coltot[Gjd]);
+		  global_dpd_->free_dpd_block(Fints.matrix[Gjd], virtpi[Gd], Fints.params->coltot[Gjd]);
 
 		  /* +t_jicd * F_kdab */
 		  Gab = Gkd = Gk ^ Gd;
@@ -206,8 +228,8 @@ double ET_UHF_BBB(void)
 		  cd = T2.col_offset[Gji][Gc];
 		  kd = Fints.row_offset[Gkd][K];
 
-		  Fints.matrix[Gkd] = dpd_block_matrix(virtpi[Gd], Fints.params->coltot[Gkd]);
-		  dpd_buf4_mat_irrep_rd_block(&Fints, Gkd, kd, virtpi[Gd]);
+		  Fints.matrix[Gkd] = global_dpd_->dpd_block_matrix(virtpi[Gd], Fints.params->coltot[Gkd]);
+		  global_dpd_->buf4_mat_irrep_rd_block(&Fints, Gkd, kd, virtpi[Gd]);
 
 		  nrows = Fints.params->coltot[Gkd];
 		  ncols = virtpi[Gc];
@@ -219,7 +241,7 @@ double ET_UHF_BBB(void)
 			    &(T2.matrix[Gji][ji][cd]), nlinks, 1.0,
 			    &(WABC[Gab][0][0]), ncols);
 
-		  dpd_free_block(Fints.matrix[Gkd], virtpi[Gd], Fints.params->coltot[Gkd]);
+		  global_dpd_->free_dpd_block(Fints.matrix[Gkd], virtpi[Gd], Fints.params->coltot[Gkd]);
 
 		}
 
@@ -279,7 +301,7 @@ double ET_UHF_BBB(void)
 		for(Gab=0; Gab < nirreps; Gab++) {
 		  Gc = Gab ^ Gijk;
 
-		  WBCA[Gab] = dpd_block_matrix(Fints.params->coltot[Gab], virtpi[Gc]);
+		  WBCA[Gab] = global_dpd_->dpd_block_matrix(Fints.params->coltot[Gab], virtpi[Gc]);
 		}
 
 		for(Gd=0; Gd < nirreps; Gd++) {
@@ -290,8 +312,8 @@ double ET_UHF_BBB(void)
 		  ad = T2.col_offset[Gjk][Ga];
 		  id = Fints.row_offset[Gid][I];
 
-		  Fints.matrix[Gid] = dpd_block_matrix(virtpi[Gd], Fints.params->coltot[Gid]);
-		  dpd_buf4_mat_irrep_rd_block(&Fints, Gid, id, virtpi[Gd]);
+		  Fints.matrix[Gid] = global_dpd_->dpd_block_matrix(virtpi[Gd], Fints.params->coltot[Gid]);
+		  global_dpd_->buf4_mat_irrep_rd_block(&Fints, Gid, id, virtpi[Gd]);
 
 		  nrows = Fints.params->coltot[Gid];
 		  ncols = virtpi[Ga];
@@ -303,7 +325,7 @@ double ET_UHF_BBB(void)
 			    &(T2.matrix[Gjk][jk][ad]), nlinks, 1.0,
 			    &(WBCA[Gbc][0][0]), ncols);
 
-		  dpd_free_block(Fints.matrix[Gid], virtpi[Gd], Fints.params->coltot[Gid]);
+		  global_dpd_->free_dpd_block(Fints.matrix[Gid], virtpi[Gd], Fints.params->coltot[Gid]);
 
 		  /* +t_ikad * F_jdbc */
 		  Gbc = Gjd = Gj ^ Gd;
@@ -312,8 +334,8 @@ double ET_UHF_BBB(void)
 		  ad = T2.col_offset[Gik][Ga];
 		  jd = Fints.row_offset[Gjd][J];
 
-		  Fints.matrix[Gjd] = dpd_block_matrix(virtpi[Gd], Fints.params->coltot[Gjd]);
-		  dpd_buf4_mat_irrep_rd_block(&Fints, Gjd, jd, virtpi[Gd]);
+		  Fints.matrix[Gjd] = global_dpd_->dpd_block_matrix(virtpi[Gd], Fints.params->coltot[Gjd]);
+		  global_dpd_->buf4_mat_irrep_rd_block(&Fints, Gjd, jd, virtpi[Gd]);
 
 		  nrows = Fints.params->coltot[Gjd];
 		  ncols = virtpi[Ga];
@@ -325,7 +347,7 @@ double ET_UHF_BBB(void)
 			    &(T2.matrix[Gik][ik][ad]), nlinks, 1.0,
 			    &(WBCA[Gbc][0][0]), ncols);
 
-		  dpd_free_block(Fints.matrix[Gjd], virtpi[Gd], Fints.params->coltot[Gjd]);
+		  global_dpd_->free_dpd_block(Fints.matrix[Gjd], virtpi[Gd], Fints.params->coltot[Gjd]);
 
 		  /* +t_jiad * F_kdbc */
 		  Gbc = Gkd = Gk ^ Gd;
@@ -334,8 +356,8 @@ double ET_UHF_BBB(void)
 		  ad = T2.col_offset[Gji][Ga];
 		  kd = Fints.row_offset[Gkd][K];
 
-		  Fints.matrix[Gkd] = dpd_block_matrix(virtpi[Gd], Fints.params->coltot[Gkd]);
-		  dpd_buf4_mat_irrep_rd_block(&Fints, Gkd, kd, virtpi[Gd]);
+		  Fints.matrix[Gkd] = global_dpd_->dpd_block_matrix(virtpi[Gd], Fints.params->coltot[Gkd]);
+		  global_dpd_->buf4_mat_irrep_rd_block(&Fints, Gkd, kd, virtpi[Gd]);
 
 		  nrows = Fints.params->coltot[Gkd];
 		  ncols = virtpi[Ga];
@@ -347,7 +369,7 @@ double ET_UHF_BBB(void)
 			    &(T2.matrix[Gji][ji][ad]), nlinks, 1.0,
 			    &(WBCA[Gbc][0][0]), ncols);
 
-		  dpd_free_block(Fints.matrix[Gkd], virtpi[Gd], Fints.params->coltot[Gkd]);
+		  global_dpd_->free_dpd_block(Fints.matrix[Gkd], virtpi[Gd], Fints.params->coltot[Gkd]);
 
 		}
 
@@ -404,16 +426,16 @@ double ET_UHF_BBB(void)
 			    &(WBCA[Gbc][0][0]), ncols);
 		}
 
-		dpd_3d_sort(WBCA, WABC, nirreps, Gijk, Fints.params->coltot, Fints.params->colidx,
+        global_dpd_->sort_3d(WBCA, WABC, nirreps, Gijk, Fints.params->coltot, Fints.params->colidx,
 		       Fints.params->colorb, Fints.params->rsym, Fints.params->ssym,
 		       vir_off, vir_off, virtpi, vir_off, Fints.params->colidx, cab, 1);
 
 		for(Gab=0; Gab < nirreps; Gab++) {
 		  Gc = Gab ^ Gijk;
 
-		  dpd_free_block(WBCA[Gab], Fints.params->coltot[Gab], virtpi[Gc]);
+		  global_dpd_->free_dpd_block(WBCA[Gab], Fints.params->coltot[Gab], virtpi[Gc]);
 
-		  WACB[Gab] = dpd_block_matrix(Fints.params->coltot[Gab], virtpi[Gc]);
+		  WACB[Gab] = global_dpd_->dpd_block_matrix(Fints.params->coltot[Gab], virtpi[Gc]);
 		}
 
 		for(Gd=0; Gd < nirreps; Gd++) {
@@ -424,8 +446,8 @@ double ET_UHF_BBB(void)
 		  bd = T2.col_offset[Gjk][Gb];
 		  id = Fints.row_offset[Gid][I];
 
-		  Fints.matrix[Gid] = dpd_block_matrix(virtpi[Gd], Fints.params->coltot[Gid]);
-		  dpd_buf4_mat_irrep_rd_block(&Fints, Gid, id, virtpi[Gd]);
+		  Fints.matrix[Gid] = global_dpd_->dpd_block_matrix(virtpi[Gd], Fints.params->coltot[Gid]);
+		  global_dpd_->buf4_mat_irrep_rd_block(&Fints, Gid, id, virtpi[Gd]);
 
 		  nrows = Fints.params->coltot[Gid];
 		  ncols = virtpi[Gb];
@@ -437,7 +459,7 @@ double ET_UHF_BBB(void)
 			    &(T2.matrix[Gjk][jk][bd]), nlinks, 1.0,
 			    &(WACB[Gac][0][0]), ncols);
 
-		  dpd_free_block(Fints.matrix[Gid], virtpi[Gd], Fints.params->coltot[Gid]);
+		  global_dpd_->free_dpd_block(Fints.matrix[Gid], virtpi[Gd], Fints.params->coltot[Gid]);
 
 		  /* -t_ikbd * F_jdac */
 		  Gac = Gjd = Gj ^ Gd;
@@ -446,8 +468,8 @@ double ET_UHF_BBB(void)
 		  bd = T2.col_offset[Gik][Gb];
 		  jd = Fints.row_offset[Gjd][J];
 
-		  Fints.matrix[Gjd] = dpd_block_matrix(virtpi[Gd], Fints.params->coltot[Gjd]);
-		  dpd_buf4_mat_irrep_rd_block(&Fints, Gjd, jd, virtpi[Gd]);
+		  Fints.matrix[Gjd] = global_dpd_->dpd_block_matrix(virtpi[Gd], Fints.params->coltot[Gjd]);
+		  global_dpd_->buf4_mat_irrep_rd_block(&Fints, Gjd, jd, virtpi[Gd]);
 
 		  nrows = Fints.params->coltot[Gjd];
 		  ncols = virtpi[Gb];
@@ -459,7 +481,7 @@ double ET_UHF_BBB(void)
 			    &(T2.matrix[Gik][ik][bd]), nlinks, 1.0,
 			    &(WACB[Gac][0][0]), ncols);
 
-		  dpd_free_block(Fints.matrix[Gjd], virtpi[Gd], Fints.params->coltot[Gjd]);
+		  global_dpd_->free_dpd_block(Fints.matrix[Gjd], virtpi[Gd], Fints.params->coltot[Gjd]);
 
 		  /* -t_jibd * F_kdac */
 		  Gac = Gkd = Gk ^ Gd;
@@ -468,8 +490,8 @@ double ET_UHF_BBB(void)
 		  bd = T2.col_offset[Gji][Gb];
 		  kd = Fints.row_offset[Gkd][K];
 
-		  Fints.matrix[Gkd] = dpd_block_matrix(virtpi[Gd], Fints.params->coltot[Gkd]);
-		  dpd_buf4_mat_irrep_rd_block(&Fints, Gkd, kd, virtpi[Gd]);
+		  Fints.matrix[Gkd] = global_dpd_->dpd_block_matrix(virtpi[Gd], Fints.params->coltot[Gkd]);
+		  global_dpd_->buf4_mat_irrep_rd_block(&Fints, Gkd, kd, virtpi[Gd]);
 
 		  nrows = Fints.params->coltot[Gkd];
 		  ncols = virtpi[Gb];
@@ -481,7 +503,7 @@ double ET_UHF_BBB(void)
 			    &(T2.matrix[Gji][ji][bd]), nlinks, 1.0,
 			    &(WACB[Gac][0][0]), ncols);
 
-		  dpd_free_block(Fints.matrix[Gkd], virtpi[Gd], Fints.params->coltot[Gkd]);
+		  global_dpd_->free_dpd_block(Fints.matrix[Gkd], virtpi[Gd], Fints.params->coltot[Gkd]);
 
 		}
 
@@ -538,21 +560,21 @@ double ET_UHF_BBB(void)
 			    &(WACB[Gac][0][0]), ncols);
 		}
 
-		dpd_3d_sort(WACB, WABC, nirreps, Gijk, Fints.params->coltot, Fints.params->colidx,
+        global_dpd_->sort_3d(WACB, WABC, nirreps, Gijk, Fints.params->coltot, Fints.params->colidx,
 		       Fints.params->colorb, Fints.params->rsym, Fints.params->ssym,
 		       vir_off, vir_off, virtpi, vir_off, Fints.params->colidx, acb, 1);
 
 		for(Gab=0; Gab < nirreps; Gab++) {
 		  Gc = Gab ^ Gijk;
 
-		  dpd_free_block(WACB[Gab], Fints.params->coltot[Gab], virtpi[Gc]);
+		  global_dpd_->free_dpd_block(WACB[Gab], Fints.params->coltot[Gab], virtpi[Gc]);
 		}
 
 		/* Add disconnected triples and finish W and V */
 		for(Gab=0; Gab < nirreps; Gab++) {
 		  Gc = Gab ^ Gijk;
 
-		  VABC[Gab] = dpd_block_matrix(Fints.params->coltot[Gab], virtpi[Gc]);
+		  VABC[Gab] = global_dpd_->dpd_block_matrix(Fints.params->coltot[Gab], virtpi[Gc]);
 
 		  for(ab=0; ab < Fints.params->coltot[Gab]; ab++) {
 		    A = Fints.params->colorb[Gab][ab][0];
@@ -750,8 +772,8 @@ double ET_UHF_BBB(void)
 		for(Gab=0; Gab < nirreps; Gab++) {
 		  Gc = Gab ^ Gijk;
 		  ET += dot_block(WABC[Gab], VABC[Gab], Fints.params->coltot[Gab], virtpi[Gc], 1.0/6.0);
-		  dpd_free_block(WABC[Gab], Fints.params->coltot[Gab], virtpi[Gc]);
-		  dpd_free_block(VABC[Gab], Fints.params->coltot[Gab], virtpi[Gc]);
+		  global_dpd_->free_dpd_block(WABC[Gab], Fints.params->coltot[Gab], virtpi[Gc]);
+		  global_dpd_->free_dpd_block(VABC[Gab], Fints.params->coltot[Gab], virtpi[Gc]);
 		}
 
 	      } /* I >= J >= K */
@@ -772,25 +794,25 @@ double ET_UHF_BBB(void)
   fclose(ijkfile);
 
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_close(&T2, h);
-    dpd_buf4_mat_irrep_close(&Eints, h);
-    dpd_buf4_mat_irrep_close(&Dints, h);
+    global_dpd_->buf4_mat_irrep_close(&T2, h);
+    global_dpd_->buf4_mat_irrep_close(&Eints, h);
+    global_dpd_->buf4_mat_irrep_close(&Dints, h);
   }
 
-  dpd_buf4_close(&T2);
-  dpd_buf4_close(&Fints);
-  dpd_buf4_close(&Eints);
-  dpd_buf4_close(&Dints);
+  global_dpd_->buf4_close(&T2);
+  global_dpd_->buf4_close(&Fints);
+  global_dpd_->buf4_close(&Eints);
+  global_dpd_->buf4_close(&Dints);
 
-  dpd_file2_mat_close(&T1);
-  dpd_file2_close(&T1);
+  global_dpd_->file2_mat_close(&T1);
+  global_dpd_->file2_close(&T1);
 
-  dpd_file2_mat_close(&fIJ);
-  dpd_file2_mat_close(&fAB);
-  dpd_file2_mat_close(&fIA);
-  dpd_file2_close(&fIJ);
-  dpd_file2_close(&fAB);
-  dpd_file2_close(&fIA);
+  global_dpd_->file2_mat_close(&fIJ);
+  global_dpd_->file2_mat_close(&fAB);
+  global_dpd_->file2_mat_close(&fIA);
+  global_dpd_->file2_close(&fIJ);
+  global_dpd_->file2_close(&fAB);
+  global_dpd_->file2_close(&fIA);
 
   return ET;
 }

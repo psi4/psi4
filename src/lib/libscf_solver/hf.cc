@@ -1,4 +1,26 @@
 /*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
+/*
  *  hf.cpp
  *  matrix
  *
@@ -29,7 +51,7 @@
 #include <libparallel/parallel.h>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
-#include <liboptions/python.h>
+#include <liboptions/liboptions_python.h>
 #include <psifiles.h>
 #include <libfock/jk.h>
 
@@ -331,7 +353,23 @@ void HF::integrals()
         fprintf(outfile, "  ==> Integral Setup <==\n\n");
 
     // Build the JK from options, symmetric type
-    jk_ = JK::build_JK();
+    try {
+        jk_ = JK::build_JK();
+    }
+    catch(const BasisSetNotFound& e) {
+        if (options_.get_str("SCF_TYPE") == "DF" || options_.get_int("DF_SCF_GUESS") == 1) {
+            fprintf(outfile, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+            fprintf(outfile, "%s\n", e.what());
+            fprintf(outfile, "   Turning off DF and switching to PK method.\n");
+            fprintf(outfile, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+            options_.set_str("SCF", "SCF_TYPE", "PK");
+            options_.set_bool("SCF", "DF_SCF_GUESS", false);
+            jk_ = JK::build_JK();
+        }
+        else
+            throw; // rethrow the error
+    }
+
     // Tell the JK to print
     jk_->set_print(print_);
     // Give the JK 75% of the memory
@@ -380,7 +418,6 @@ void HF::finalize()
 
     //Sphalf_.reset();
     X_.reset();
-    H_.reset();
     T_.reset();
     V_.reset();
     diag_temp_.reset();
@@ -1133,8 +1170,9 @@ void HF::guess()
         Fb_->print();
     }
 
-    if (print_ && (WorldComm->me() == 0))
-        fprintf(outfile, "  Guess energy: %20.14f\n\n", guess_E);
+    // This is confusing the user and valgrind.
+    //if (print_ && (WorldComm->me() == 0))
+    //    fprintf(outfile, "  Guess energy: %20.14f\n\n", guess_E);
 
     E_ = 0.0; // don't use this guess in our convergence checks
 }
@@ -1310,7 +1348,7 @@ void HF::dump_to_checkpoint()
     chkpt_->wt_etot(E_);
     chkpt_->wt_escf(E_);
     chkpt_->wt_eref(E_);
-    chkpt_->wt_enuc(molecule_->nuclear_repulsion_energy());
+    chkpt_->wt_enuc(nuclearrep_);
     chkpt_->wt_orbspi(nmopi_);
     chkpt_->wt_clsdpi(doccpi_);
     chkpt_->wt_openpi(soccpi_);
@@ -1388,7 +1426,7 @@ double HF::compute_energy()
 
     // Andy trick 2.0
     std::string old_scf_type = options_.get_str("SCF_TYPE");
-    if (options_.get_bool("DF_SCF_GUESS") && !(old_scf_type == "DF")) {
+    if (options_.get_bool("DF_SCF_GUESS") && !(old_scf_type == "DF" || old_scf_type == "CD")) {
          fprintf(outfile, "  Starting with a DF guess...\n\n");
          if(!options_["DF_BASIS_SCF"].has_changed()) {
              // TODO: Match Dunning basis sets 
@@ -1422,11 +1460,11 @@ double HF::compute_energy()
         E_ = compute_initial_E();
     }
 
-
+    bool df = (options_.get_str("SCF_TYPE") == "DF");
 
     if (WorldComm->me() == 0) {
         fprintf(outfile, "  ==> Iterations <==\n\n");
-        fprintf(outfile, "                        Total Energy        Delta E     RMS |[F,P]|\n\n");
+        fprintf(outfile, "%s                        Total Energy        Delta E     RMS |[F,P]|\n\n", df ? "   " : "");
     }
     fflush(outfile);
 
@@ -1539,8 +1577,10 @@ double HF::compute_energy()
 
         converged = test_convergency();
 
+        df = (options_.get_str("SCF_TYPE") == "DF");
+
         if (WorldComm->me() == 0) {
-            fprintf(outfile, "   @%s iter %3d: %20.14f   %12.5e   %-11.5e %s\n",
+            fprintf(outfile, "   @%s%s iter %3d: %20.14f   %12.5e   %-11.5e %s\n", df ? "DF-" : "",
                               reference.c_str(), iteration_, E_, E_ - Eold_, Drms_, status.c_str());
             fflush(outfile);
         }
@@ -1552,7 +1592,7 @@ double HF::compute_energy()
         if (frac_enabled_ && !frac_performed_) converged = false;
 
         // If a DF Guess environment, reset the JK object, and keep running
-        if (converged && options_.get_bool("DF_SCF_GUESS") && !(old_scf_type == "DF")) {
+        if (converged && options_.get_bool("DF_SCF_GUESS") && !(old_scf_type == "DF" || old_scf_type == "CD")) {
             fprintf(outfile, "\n  DF guess converged.\n\n"); // Be cool dude. 
             converged = false;
             if(initialized_diis_manager_)
@@ -1591,7 +1631,7 @@ double HF::compute_energy()
             fprintf(outfile, "  Energy did not converge, but proceeding anyway.\n\n");
         }
         if (WorldComm->me() == 0) {
-            fprintf(outfile, "  @%s Final Energy: %20.14f",reference.c_str(), E_);
+            fprintf(outfile, "  @%s%s Final Energy: %20.14f", df ? "DF-" : "", reference.c_str(), E_);
             if (perturb_h_) {
                 fprintf(outfile, " with %f perturbation", lambda_);
             }

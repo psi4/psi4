@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #ifndef JK_H
 #define JK_H
 
@@ -592,6 +614,7 @@ public:
     virtual void print_header() const;
 };
 
+
 /**
  * Class DFJK
  *
@@ -740,6 +763,54 @@ public:
     */
     virtual void print_header() const;
 };
+/**
+ * Class CDJK
+ *
+ * JK implementation using 
+ * cholesky decomposition technology
+ */
+class CDJK : public DFJK {
+
+protected:
+    // the number of cholesky vectors
+    long int ncholesky_;
+
+    // => Required Algorithm-Specific Methods <= //
+
+    virtual bool is_core() { return true; }
+
+    // => J <= //
+    virtual void initialize_JK_core();
+    virtual void initialize_JK_disk();
+    virtual void manage_JK_core();
+
+    double cholesky_tolerance_;
+
+    // => Accessors <= //
+
+    /**
+    * Print header information regarding JK
+    * type on output file
+    */
+    virtual void print_header() const;
+
+public:
+    // => Constructors < = //
+
+    /**
+     * @param primary primary basis set for this system.
+     *        AO2USO transforms will be built with the molecule
+     *        contained in this basis object, so the incoming
+     *        C matrices must have the same spatial symmetry
+     *        structure as this molecule
+     * @param tol tolerance for cholesky decomposition.
+     */
+    CDJK( boost::shared_ptr<BasisSet> primary, double cholesky_tolerance);
+
+    /// Destructor
+    virtual ~CDJK();
+
+};
 
 /**
  * Class FastDFJK
@@ -769,6 +840,16 @@ protected:
     bool is_core_;
     /// Sieve, must be static throughout the life of the object
     boost::shared_ptr<ERISieve> sieve_;
+    /// Fitting metric (COULOMB or EWALD) [EWALD is SR]
+    std::string metric_;
+    /// Ewald metric range parameter
+    double theta_;
+    /// Geometric atom domain selection algorithm
+    std::string domains_;
+    /// Flat radius in MHG bump function
+    double bump_R0_;
+    /// Annihilation radius in MHG bump function
+    double bump_R1_;
 
     // => Required Algorithm-Specific Methods <= //
 
@@ -792,6 +873,8 @@ protected:
     std::vector<std::vector<std::pair<int, int> > > shell_pairs_;
     /// Auxiliary basis centers for each atom pair
     std::vector<std::vector<int> > auxiliary_atoms_;
+    /// Modified MHG bump function, by atom pair and auxiliary basis center
+    std::vector<std::vector<double> > bump_atoms_;
     /// Three-index tensors (pq|A)(A|B)^-1 for each atom pair
     std::vector<boost::shared_ptr<Matrix> > Bpq_;
 
@@ -805,6 +888,10 @@ protected:
     void build_shell_pairs();
     void build_auxiliary_partition();
     void build_Bpq();
+    void bump(boost::shared_ptr<Matrix> J,
+              const std::vector<double>& bump_atoms, 
+              const std::vector<int>& auxiliary_atoms, 
+              bool bump_diagonal);
     void build_J(boost::shared_ptr<Matrix> Z,
                  const std::vector<boost::shared_ptr<Matrix> >& D,
                  const std::vector<boost::shared_ptr<Matrix> >& J);
@@ -839,6 +926,34 @@ public:
      *        defaults to 1.0E-12
      */
     void set_condition(double condition) { condition_ = condition; }
+    /**
+     * Metric for FastDF fitting 
+     * @param metric, COULOMB or EWALD,
+     *       defaults to COULOMB
+     */
+    void set_df_metric(const std::string& metric) { metric_ = metric; }
+    /**
+     * Fitting domain selection algorithm
+     * @param domain, DIATOMIC, SPHERES
+     *       defaults to DIATOMIC
+     */
+    void set_df_domains(const std::string domains) { domains_ = domains; }
+    /**
+     * Bump function R0 parameter in a.u. (should be <= R1)
+     * @param R0, defaults to 0.0
+     */
+    void set_df_bump_R0(double R0) { bump_R0_ = R0; }
+    /**
+     * Bump function R1 parameter in a.u. (should be <= R1)
+     * @param R1, defaults to 0.0
+     */
+    void set_df_bump_R1(double R1) { bump_R1_ = R1; }
+    /**
+     * Range-Separation parameter for EWALD metric fitting 
+     * @param theta, theta ~ 0 is COULOMB, theta ~ INF is OVERLAP,
+     *       defaults to 1.0
+     */
+    void set_df_theta(double theta) { theta_ = theta; }
     /**
      * Which file number should the (Q|mn) integrals go in
      * @param unit Unit number

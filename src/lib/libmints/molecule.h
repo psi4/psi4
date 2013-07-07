@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #ifndef _psi_src_lib_libmints_molecule_h_
 #define _psi_src_lib_libmints_molecule_h_
 
@@ -382,7 +404,7 @@ public:
     void print_out_of_planes() const;
 
     /// Save an XYZ file
-    void save_xyz(const std::string & filename) const;
+    void save_xyz(const std::string & filename, bool save_ghosts = true) const;
 
     /// Save an XYZ string
     std::string save_string_xyz() const;
@@ -462,6 +484,14 @@ public:
      * @param text: a string providing the user's input
      */
     static boost::shared_ptr<Molecule> create_molecule_from_string(const std::string &geom);
+
+    /**
+     * Regenerates a input file molecule specification string
+     * from the current state of the Molecule. Contains Cartesian
+     * geometry info, fragmentation, charges and multiplicities, 
+     * and any frame restriction.
+     */
+    std::string create_psi4_string_from_molecule() const;
 
     /**
      * Sets all fragments in the molecule to be active.

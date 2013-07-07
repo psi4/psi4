@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include "integraltransform.h"
 #include <libpsio/psio.hpp>
 #include <libciomr/libciomr.h>
@@ -36,7 +58,7 @@ IntegralTransform::presort_mo_tpdm_restricted()
 
     dpdfile4 I;
     psio_->open(PSIF_TPDM_PRESORT, PSIO_OPEN_NEW);
-    dpd_file4_init(&I, PSIF_TPDM_PRESORT, 0, DPD_ID("[A>=A]+"), DPD_ID("[A>=A]+"), "MO TPDM (AA|AA)");
+    global_dpd_->file4_init(&I, PSIF_TPDM_PRESORT, 0, DPD_ID("[A>=A]+"), DPD_ID("[A>=A]+"), "MO TPDM (AA|AA)");
 
     size_t memoryd = memory_ / sizeof(double);
 
@@ -153,7 +175,7 @@ IntegralTransform::presort_mo_tpdm_restricted()
 
     tpdmAlreadyPresorted_ = true;
 
-    dpd_file4_close(&I);
+    global_dpd_->file4_close(&I);
     psio_->close(PSIF_TPDM_PRESORT, 1);
 }
 
@@ -178,7 +200,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
 
     dpdfile4 I;
     psio_->open(PSIF_TPDM_PRESORT, PSIO_OPEN_NEW);
-    dpd_file4_init(&I, PSIF_TPDM_PRESORT, 0, DPD_ID("[A>=A]+"), DPD_ID("[A>=A]+"), "MO TPDM (AA|AA)");
+    global_dpd_->file4_init(&I, PSIF_TPDM_PRESORT, 0, DPD_ID("[A>=A]+"), DPD_ID("[A>=A]+"), "MO TPDM (AA|AA)");
 
     size_t memoryd = memory_ / sizeof(double);
 
@@ -281,7 +303,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
     psio_->close(PSIF_MO_AA_TPDM, keepIwlMoTpdm_);
 
     // The alpha - beta spin case
-    dpd_file4_init(&I, PSIF_TPDM_PRESORT, 0, DPD_ID("[A>=A]+"), DPD_ID("[a>=a]+"), "MO TPDM (AA|aa)");
+    global_dpd_->file4_init(&I, PSIF_TPDM_PRESORT, 0, DPD_ID("[A>=A]+"), DPD_ID("[a>=a]+"), "MO TPDM (AA|aa)");
     if(print_) {
         fprintf(outfile, "\tSorting File: %s nbuckets = %d\n", I.label, nBuckets);
         fflush(outfile);
@@ -328,7 +350,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
     psio_->close(PSIF_MO_AB_TPDM, keepIwlMoTpdm_);
 
     // The beta - beta spin case
-    dpd_file4_init(&I, PSIF_TPDM_PRESORT, 0, DPD_ID("[a>=a]+"), DPD_ID("[a>=a]+"), "MO TPDM (aa|aa)");
+    global_dpd_->file4_init(&I, PSIF_TPDM_PRESORT, 0, DPD_ID("[a>=a]+"), DPD_ID("[a>=a]+"), "MO TPDM (aa|aa)");
     if(print_) {
         fprintf(outfile, "\tSorting File: %s nbuckets = %d\n", I.label, nBuckets);
         fflush(outfile);
@@ -389,6 +411,6 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
 
     tpdmAlreadyPresorted_ = true;
 
-    dpd_file4_close(&I);
+    global_dpd_->file4_close(&I);
     psio_->close(PSIF_TPDM_PRESORT, 1);
 }

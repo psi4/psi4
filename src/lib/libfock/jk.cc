@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include <libmints/mints.h>
 #include <lib3index/3index.h>
 #include <libpsio/psio.hpp>
@@ -11,6 +33,8 @@
 #include "jk.h"
 #include "cubature.h"
 #include "points.h"
+
+#include<lib3index/cholesky.h>
 
 #include <sstream>
 
@@ -37,7 +61,28 @@ boost::shared_ptr<JK> JK::build_JK()
     boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
     boost::shared_ptr<BasisSet> primary = BasisSet::construct(parser, Process::environment.molecule(), "BASIS");
 
-    if (options.get_str("SCF_TYPE") == "DF") {
+    if (options.get_str("SCF_TYPE") == "CD") {
+
+        CDJK* jk = new CDJK(primary,options.get_double("CHOLESKY_TOLERANCE"));
+
+        if (options["INTS_TOLERANCE"].has_changed())
+            jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
+        if (options["PRINT"].has_changed())
+            jk->set_print(options.get_int("PRINT"));
+        if (options["DEBUG"].has_changed())
+            jk->set_debug(options.get_int("DEBUG"));
+        if (options["BENCH"].has_changed())
+            jk->set_bench(options.get_int("BENCH"));
+        if (options["DF_INTS_IO"].has_changed())
+            jk->set_df_ints_io(options.get_str("DF_INTS_IO"));
+        if (options["DF_FITTING_CONDITION"].has_changed())
+            jk->set_condition(options.get_double("DF_FITTING_CONDITION"));
+        if (options["DF_INTS_NUM_THREADS"].has_changed())
+            jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
+
+        return boost::shared_ptr<JK>(jk);
+
+    } else if (options.get_str("SCF_TYPE") == "DF") {
 
         boost::shared_ptr<BasisSet> auxiliary = BasisSet::construct(parser, primary->molecule(), "DF_BASIS_SCF");
 
@@ -80,6 +125,16 @@ boost::shared_ptr<JK> JK::build_JK()
             jk->set_condition(options.get_double("DF_FITTING_CONDITION"));
         if (options["DF_INTS_NUM_THREADS"].has_changed())
             jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
+        if (options["DF_METRIC"].has_changed())
+            jk->set_df_metric(options.get_str("DF_METRIC"));
+        if (options["DF_THETA"].has_changed())
+            jk->set_df_theta(options.get_double("DF_THETA"));
+        if (options["DF_DOMAINS"].has_changed())
+            jk->set_df_domains(options.get_str("DF_DOMAINS"));
+        if (options["DF_BUMP_R0"].has_changed())
+            jk->set_df_bump_R0(options.get_double("DF_BUMP_R0"));
+        if (options["DF_BUMP_R1"].has_changed())
+            jk->set_df_bump_R1(options.get_double("DF_BUMP_R1"));
 
         return boost::shared_ptr<JK>(jk);
 
@@ -177,7 +232,7 @@ void JK::common_init()
     #ifdef _OPENMP
     omp_nthread_ = omp_get_max_threads();
     #endif
-    cutoff_ = 0.0;
+    cutoff_ = 1.0E-12;
 
     do_J_ = true;
     do_K_ = true;
@@ -1129,7 +1184,7 @@ void PKJK::preiterations()
     psio_ = _default_psio_lib_;
 
     bool file_was_open = psio_->open_check(pk_file_);
-    if(!file_was_open);
+//    if(!file_was_open);
         psio_->open(pk_file_, PSIO_OPEN_NEW);
 
     // Start by generating conventional integrals on disk
@@ -1427,7 +1482,7 @@ void PKJK::preiterations()
 
     delete [] orb_offset;
 
-    if(!file_was_open);
+//    if(!file_was_open);
         psio_->close(pk_file_, 1);
 
 }
@@ -1438,7 +1493,7 @@ void PKJK::compute_JK()
     int *sopi   = Process::environment.wavefunction()->nsopi();
 
     bool file_was_open = psio_->open_check(pk_file_);
-    if(!file_was_open);
+//    if(!file_was_open);
         psio_->open(pk_file_, PSIO_OPEN_OLD);
 
 
@@ -1690,7 +1745,7 @@ void PKJK::compute_JK()
         delete [] wK_vectors[N];
     }
 
-    if(!file_was_open);
+//    if(!file_was_open);
         psio_->close(pk_file_, 1);
 }
 
@@ -1746,7 +1801,7 @@ void DirectJK::compute_JK()
             ints.push_back(boost::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_)));
         }
         // TODO: Fast K algorithm
-        if (do_J_) { 
+        if (do_J_) {
             build_JK(ints,D_ao_,J_ao_,wK_ao_);
         } else {
             std::vector<boost::shared_ptr<Matrix> > temp;
@@ -1762,7 +1817,7 @@ void DirectJK::compute_JK()
         for (int thread = 0; thread < df_ints_num_threads_; thread++) {
             ints.push_back(boost::shared_ptr<TwoBodyAOInt>(factory->eri()));
         }
-        if (do_J_ && do_K_) { 
+        if (do_J_ && do_K_) {
             build_JK(ints,D_ao_,J_ao_,K_ao_);
         } else if (do_J_) {
             std::vector<boost::shared_ptr<Matrix> > temp;
@@ -1784,7 +1839,7 @@ void DirectJK::postiterations()
 {
     sieve_.reset();
 }
-void DirectJK::build_JK(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints, 
+void DirectJK::build_JK(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints,
                         std::vector<boost::shared_ptr<Matrix> >& D,
                         std::vector<boost::shared_ptr<Matrix> >& J,
                         std::vector<boost::shared_ptr<Matrix> >& K)
@@ -1798,7 +1853,7 @@ void DirectJK::build_JK(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints,
         K[ind]->zero();
     }
 
-    // => Sizing <= // 
+    // => Sizing <= //
 
     int nso     = primary_->nbf();
     int nshell  = primary_->nshell();
@@ -1816,22 +1871,22 @@ void DirectJK::build_JK(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints,
         if (primary_->shell(P).ncenter() > atomic_ind) {
             task_starts.push_back(P);
             atomic_ind++;
-        } 
+        }
         task_shells.push_back(P);
     }
     task_starts.push_back(nshell);
 
     // < End Atomic Blocking > //
-    
+
     size_t ntask = task_starts.size() - 1;
     size_t ntask2 = ntask * ntask;
-    size_t ntask4 = ntask * ntask * ntask * ntask; 
+    size_t ntask4 = ntask * ntask * ntask * ntask;
 
     std::vector<int> task_offsets;
     task_offsets.push_back(0);
     for (int P2 = 0; P2 < primary_->nshell(); P2++) {
         task_offsets.push_back(task_offsets[P2] + primary_->shell(task_shells[P2]).nfunction());
-    } 
+    }
 
     size_t max_task = 0L;
     for (int task = 0; task < ntask; task++) {
@@ -1850,7 +1905,7 @@ void DirectJK::build_JK(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints,
                 int P = task_shells[P2];
                 int size = primary_->shell(P).nfunction();
                 int off  = primary_->shell(P).function_index();
-                int off2 = task_offsets[P2]; 
+                int off2 = task_offsets[P2];
                 fprintf(outfile, "    Index %4d, Shell: %4d, Size: %4d, Offset: %4d, Offset2: %4d\n", P2, P, size, off, off2);
             }
         }
@@ -1861,7 +1916,7 @@ void DirectJK::build_JK(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints,
 
     std::vector<std::pair<int, int> > task_pairs;
     for (int Ptask = 0; Ptask < ntask; Ptask++) {
-        for (int Qtask = 0; Qtask < ntask; Qtask++) {   
+        for (int Qtask = 0; Qtask < ntask; Qtask++) {
             if (Qtask > Ptask) continue;
             bool found = false;
             for (int P2 = task_starts[Ptask]; P2 < task_starts[Ptask+1]; P2++) {
@@ -1870,7 +1925,7 @@ void DirectJK::build_JK(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints,
                     int Q = task_shells[Q2];
                     if (sieve_->shell_pair_significant(P,Q)) {
                         found = true;
-                        task_pairs.push_back(std::pair<int,int>(Ptask,Qtask)); 
+                        task_pairs.push_back(std::pair<int,int>(Ptask,Qtask));
                         break;
                     }
                 }
@@ -1900,10 +1955,10 @@ void DirectJK::build_JK(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints,
 
     #pragma omp parallel for num_threads(nthread) schedule(dynamic) reduction(+: computed_shells)
     for (size_t task = 0L; task < ntask_pair2; task++) {
-         
-        size_t task1 = task / ntask_pair;    
-        size_t task2 = task % ntask_pair;    
-        
+
+        size_t task1 = task / ntask_pair;
+        size_t task2 = task % ntask_pair;
+
         int Ptask = task_pairs[task1].first;
         int Qtask = task_pairs[task1].second;
         int Rtask = task_pairs[task2].first;
@@ -1914,7 +1969,7 @@ void DirectJK::build_JK(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints,
         // This is an artifact that multiple shells on each task allow
         // for for the Ptask's index to possibly trump any RStask pair,
         // regardless of Qtask's index
-        if (Rtask > Ptask) continue; 
+        if (Rtask > Ptask) continue;
 
         //printf("Task: %2d %2d %2d %2d\n", Ptask, Qtask, Rtask, Stask);
 
@@ -1940,7 +1995,7 @@ void DirectJK::build_JK(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints,
 
         // => Master shell quartet loops <= //
 
-        bool touched = false; 
+        bool touched = false;
         for (int P2 = P2start; P2 < P2start + nPtask; P2++) {
         for (int Q2 = Q2start; Q2 < Q2start + nQtask; Q2++) {
             if (Q2 > P2) continue;
@@ -1983,24 +2038,24 @@ void DirectJK::build_JK(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints,
             //if (thread == 0) timer_on("JK: GEMV");
             for (int ind = 0; ind < D.size(); ind++) {
                 double** Dp = D[ind]->pointer();
-                double** JKTp = JKT[thread][ind]->pointer();     
+                double** JKTp = JKT[thread][ind]->pointer();
                 const double* buffer2 = buffer;
 
                 if (!touched) {
-                    ::memset((void*) JKTp[0L * max_task], '\0', dPsize * dQsize * sizeof(double));    
-                    ::memset((void*) JKTp[1L * max_task], '\0', dRsize * dSsize * sizeof(double));    
-                    ::memset((void*) JKTp[2L * max_task], '\0', dPsize * dRsize * sizeof(double));    
-                    ::memset((void*) JKTp[3L * max_task], '\0', dPsize * dSsize * sizeof(double));    
-                    ::memset((void*) JKTp[4L * max_task], '\0', dQsize * dRsize * sizeof(double));    
-                    ::memset((void*) JKTp[5L * max_task], '\0', dQsize * dSsize * sizeof(double));    
+                    ::memset((void*) JKTp[0L * max_task], '\0', dPsize * dQsize * sizeof(double));
+                    ::memset((void*) JKTp[1L * max_task], '\0', dRsize * dSsize * sizeof(double));
+                    ::memset((void*) JKTp[2L * max_task], '\0', dPsize * dRsize * sizeof(double));
+                    ::memset((void*) JKTp[3L * max_task], '\0', dPsize * dSsize * sizeof(double));
+                    ::memset((void*) JKTp[4L * max_task], '\0', dQsize * dRsize * sizeof(double));
+                    ::memset((void*) JKTp[5L * max_task], '\0', dQsize * dSsize * sizeof(double));
                     if (!lr_symmetric_) {
-                        ::memset((void*) JKTp[6L * max_task], '\0', dRsize * dPsize * sizeof(double));    
-                        ::memset((void*) JKTp[7L * max_task], '\0', dSsize * dPsize * sizeof(double));    
-                        ::memset((void*) JKTp[8L * max_task], '\0', dRsize * dQsize * sizeof(double));    
-                        ::memset((void*) JKTp[9L * max_task], '\0', dSsize * dQsize * sizeof(double));    
+                        ::memset((void*) JKTp[6L * max_task], '\0', dRsize * dPsize * sizeof(double));
+                        ::memset((void*) JKTp[7L * max_task], '\0', dSsize * dPsize * sizeof(double));
+                        ::memset((void*) JKTp[8L * max_task], '\0', dRsize * dQsize * sizeof(double));
+                        ::memset((void*) JKTp[9L * max_task], '\0', dSsize * dQsize * sizeof(double));
                     }
                 }
-                
+
                 double* J1p = JKTp[0L * max_task];
                 double* J2p = JKTp[1L * max_task];
                 double* K1p = JKTp[2L * max_task];
@@ -2041,8 +2096,8 @@ void DirectJK::build_JK(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints,
                     }
                     buffer2++;
                 }}}}
- 
-            } 
+
+            }
             touched = true;
             //if (thread == 0) timer_off("JK: GEMV");
 
@@ -2092,8 +2147,8 @@ void DirectJK::build_JK(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints,
                     #pragma omp atomic
                     Jp[p + Poff][q + Qoff] += J1p[(p + Poff2) * dQsize + q + Qoff2];
                 }}
-            }}    
-            
+            }}
+
             // > J_RS < //
 
             for (int R2 = 0; R2 < nRtask; R2++) {
@@ -2111,10 +2166,10 @@ void DirectJK::build_JK(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints,
                     #pragma omp atomic
                     Jp[r + Roff][s + Soff] += J2p[(r + Roff2) * dSsize + s + Soff2];
                 }}
-            }}    
-            
+            }}
+
             // > K_PR < //
-            
+
             for (int P2 = 0; P2 < nPtask; P2++) {
             for (int R2 = 0; R2 < nRtask; R2++) {
                 int P = task_shells[P2start + P2];
@@ -2134,8 +2189,8 @@ void DirectJK::build_JK(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints,
                         Kp[r + Roff][p + Poff] += K5p[(r + Roff2) * dPsize + p + Poff2];
                     }
                 }}
-            }}    
-            
+            }}
+
             // > K_PS < //
 
             for (int P2 = 0; P2 < nPtask; P2++) {
@@ -2153,14 +2208,14 @@ void DirectJK::build_JK(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints,
                     #pragma omp atomic
                     Kp[p + Poff][s + Soff] += K2p[(p + Poff2) * dSsize + s + Soff2];
                     if (!lr_symmetric_) {
-                        #pragma omp atomic 
+                        #pragma omp atomic
                         Kp[s + Soff][p + Poff] += K6p[(s + Soff2) * dPsize + p + Poff2];
                     }
                 }}
-            }}    
-            
+            }}
+
             // > K_QR < //
-            
+
             for (int Q2 = 0; Q2 < nQtask; Q2++) {
             for (int R2 = 0; R2 < nRtask; R2++) {
                 int Q = task_shells[Q2start + Q2];
@@ -2180,8 +2235,8 @@ void DirectJK::build_JK(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints,
                         Kp[r + Roff][q + Qoff] += K7p[(r + Roff2) * dQsize + q + Qoff2];
                     }
                 }}
-            }}    
-            
+            }}
+
             // > K_QS < //
 
             for (int Q2 = 0; Q2 < nQtask; Q2++) {
@@ -2203,11 +2258,11 @@ void DirectJK::build_JK(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints,
                         Kp[s + Soff][q + Qoff] += K8p[(s + Soff2) * dQsize + q + Qoff2];
                     }
                 }}
-            }}    
-            
-        } // End stripe out 
+            }}
+
+        } // End stripe out
         //if (thread == 0) timer_off("JK: Atomic");
-     
+
     } // End master task list
 
     for (int ind = 0; ind < D.size(); ind++) {
@@ -2588,6 +2643,7 @@ void DFJK::free_w_temps()
 }
 void DFJK::preiterations()
 {
+
     // DF requires constant sieve, must be static throughout object life
     if (!sieve_) {
         sieve_ = boost::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
@@ -2595,6 +2651,7 @@ void DFJK::preiterations()
 
     // Core or disk?
     is_core_ =  is_core();
+
 
     if (is_core_)
         initialize_JK_core();
@@ -2608,6 +2665,7 @@ void DFJK::preiterations()
             initialize_wK_disk();
     }
 }
+
 void DFJK::compute_JK()
 {
     max_nocc_ = max_nocc();
@@ -3930,7 +3988,6 @@ void DFJK::block_J(double** Qmnp, int naux)
         timer_on("JK: J2");
         C_DGEMV('T',naux,num_nm,1.0,Qmnp[0],num_nm,dp,1,0.0,J2p,1);
         timer_off("JK: J2");
-
         for (unsigned long int mn = 0; mn < num_nm; ++mn) {
             int m = function_pairs[mn].first;
             int n = function_pairs[mn].second;
@@ -4127,6 +4184,104 @@ void DFJK::block_wK(double** Qlmnp, double** Qrmnp, int naux)
     }
 }
 
+CDJK::CDJK(boost::shared_ptr<BasisSet> primary, double cholesky_tolerance):
+    DFJK(primary,primary), cholesky_tolerance_(cholesky_tolerance)
+{
+}
+CDJK::~CDJK()
+{
+}
+void CDJK::initialize_JK_disk()
+{
+    throw PsiException("Disk algorithm for CD JK not implemented.",__FILE__,__LINE__);
+}
+
+void CDJK::initialize_JK_core()
+{
+    // generate CD integrals with lib3index
+    timer_on("CD: cholesky decomposition");
+    boost::shared_ptr<IntegralFactory> integral (new IntegralFactory(primary_,primary_,primary_,primary_));
+    boost::shared_ptr<CholeskyERI> Ch (new CholeskyERI(boost::shared_ptr<TwoBodyAOInt>(integral->eri()),0.0,cholesky_tolerance_,memory_));
+    Ch->choleskify();
+    ncholesky_  = Ch->Q();
+
+    boost::shared_ptr<Matrix> L = Ch->L();
+    double ** Lp = L->pointer();
+    timer_off("CD: cholesky decomposition");
+
+    int ntri = sieve_->function_pairs().size();
+    ULI three_memory = ncholesky_ * ntri;
+    ULI nbf = primary_->nbf();
+
+    // This math results in an unsigned data type which will never be less than zero.
+    if ( memory_ - (ULI)sizeof(double) * three_memory - (ULI)sizeof(double)* ncholesky_ * nbf * nbf < 0)
+        throw PsiException("Not enough memory for CD.",__FILE__,__LINE__);
+
+    Qmn_ = SharedMatrix(new Matrix("Qmn (CD Integrals)", ncholesky_ , ntri));
+
+    double** Qmnp = Qmn_->pointer();
+
+    const std::vector<long int>& schwarz_fun_pairs = sieve_->function_pairs_reverse();
+
+    timer_on("CD: schwarz");
+    for (long int mu = 0; mu < nbf; mu++) {
+        for (long int nu = mu; nu < nbf; nu++) {
+            if ( schwarz_fun_pairs[nu*(nu+1)/2+mu] < 0 ) continue;
+            for (long int P = 0; P < ncholesky_; P++) {
+                Qmnp[P][schwarz_fun_pairs[nu*(nu+1)/2+mu]] = Lp[P][mu * nbf + nu];
+            }
+        }
+    }
+    timer_off("CD: schwarz");
+
+    if (df_ints_io_ == "SAVE") {
+        // stick ncholesky in process environment for other codes that may use the integrals
+        Process::environment.globals["NAUX (SCF)"] = (double)ncholesky_;
+
+        psio_->open(unit_,PSIO_OPEN_NEW);
+        psio_->write_entry(unit_, "(Q|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri * ncholesky_);
+        psio_->close(unit_,1);
+    }
+}
+void CDJK::manage_JK_core()
+{
+    for (int Q = 0 ; Q < ncholesky_; Q += max_rows_) {
+        int naux = (ncholesky_ - Q <= max_rows_ ? ncholesky_ - Q : max_rows_);
+        if (do_J_) {
+            timer_on("JK: J");
+            block_J(&Qmn_->pointer()[Q],naux);
+            timer_off("JK: J");
+        }
+        if (do_K_) {
+            timer_on("JK: K");
+            block_K(&Qmn_->pointer()[Q],naux);
+            timer_off("JK: K");
+        }
+    }
+}
+void CDJK::print_header() const
+{
+    if (print_) {
+        fprintf(outfile, "  ==> CDJK: Cholesky-decomposed J/K Matrices <==\n\n");
+
+        fprintf(outfile, "    J tasked:             %11s\n", (do_J_ ? "Yes" : "No"));
+        fprintf(outfile, "    K tasked:             %11s\n", (do_K_ ? "Yes" : "No"));
+        fprintf(outfile, "    wK tasked:            %11s\n", (do_wK_ ? "Yes" : "No"));
+        if (do_wK_) {
+            throw PsiException("no wk for scf_type cd.",__FILE__,__LINE__);
+            //fprintf(outfile, "    Omega:                %11.3E\n", omega_);
+        }
+        fprintf(outfile, "    OpenMP threads:       %11d\n", omp_nthread_);
+        fprintf(outfile, "    Integrals threads:    %11d\n", df_ints_num_threads_);
+        fprintf(outfile, "    Memory (MB):          %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        fprintf(outfile, "    Algorithm:            %11s\n",  (is_core_ ? "Core" : "Disk"));
+        fprintf(outfile, "    Integral Cache:       %11s\n",  df_ints_io_.c_str());
+        fprintf(outfile, "    Schwarz Cutoff:       %11.0E\n", cutoff_);
+        fprintf(outfile, "    Cholesky tolerance:   %11.2E\n", cholesky_tolerance_);
+        fprintf(outfile, "    No. Cholesky vectors: %11li\n\n", ncholesky_);
+    }
+}
+
 FastDFJK::FastDFJK(boost::shared_ptr<BasisSet> primary,
    boost::shared_ptr<BasisSet> auxiliary) :
    JK(primary), auxiliary_(auxiliary)
@@ -4147,6 +4302,12 @@ void FastDFJK::common_init()
     unit_ = PSIF_DFSCF_BJ;
     is_core_ = true;
     psio_ = PSIO::shared_object();
+    metric_ = "COULOMB";
+    theta_ = 1.0;
+    domains_ = "DIATOMIC";
+    bump_R0_ = 0.0;
+    bump_R1_ = 0.0;
+
 }
 void FastDFJK::print_header() const
 {
@@ -4164,7 +4325,17 @@ void FastDFJK::print_header() const
         fprintf(outfile, "    Algorithm:         %11s\n",  (is_core_ ? "Core" : "Disk"));
         fprintf(outfile, "    Integral Cache:    %11s\n",  df_ints_io_.c_str());
         fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n", cutoff_);
-        fprintf(outfile, "    Fitting Condition: %11.0E\n\n", condition_);
+        fprintf(outfile, "    Fitting Condition: %11.0E\n", condition_);
+        fprintf(outfile, "    Fitting Metric:    %11s\n", metric_.c_str());
+        if (metric_ == "EWALD")
+            fprintf(outfile, "    Theta:             %11.3E\n", theta_);
+        fprintf(outfile, "    Fitting Domains:   %11s\n", domains_.c_str());
+        if (domains_ != "DIATOMIC") {
+            fprintf(outfile, "    Bump R0:           %11.3E\n", bump_R0_);
+            fprintf(outfile, "    Bump R1:           %11.3E\n", bump_R1_);
+        }
+
+        fprintf(outfile, "\n");
 
         fprintf(outfile, "   => Auxiliary Basis Set <=\n\n");
         auxiliary_->print_by_level(outfile, print_);
@@ -4177,23 +4348,24 @@ void FastDFJK::preiterations()
         sieve_ = boost::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
     }
 
-    Z_ = build_Z(0.0);
-    if (do_wK_) 
-        Z_LR_ = build_Z(omega_);    
-
     build_atom_pairs();
     build_shell_pairs();
     build_auxiliary_partition();
     build_Bpq();
 
-    if (debug_) {
+    Z_ = build_Z(0.0);
+    if (do_wK_)
+        Z_LR_ = build_Z(omega_);
+
+    if (print_ > 1) {
         fprintf(outfile,"  ==> Atom Pair Tasks <==\n\n");
         for (size_t pair = 0L; pair < atom_pairs_.size(); pair++) {
-            fprintf(outfile,"  Task %8zu: Atom Pair (%4d,%4d)\n", pair, atom_pairs_[pair].first, atom_pairs_[pair].second); 
+            fprintf(outfile,"  Task %8zu: Atom Pair (%4d,%4d)\n", pair, atom_pairs_[pair].first, atom_pairs_[pair].second);
             const std::vector<int>& auxiliary_atoms = auxiliary_atoms_[pair];
-            fprintf(outfile,"   Auxiliary Atoms:\n");
+            const std::vector<double>& bump_atoms = bump_atoms_[pair];
+            fprintf(outfile,"   Auxiliary Atoms/Bump Functions:\n");
             for (int A = 0; A < auxiliary_atoms.size(); A++) {
-                fprintf(outfile,"    %4d\n", auxiliary_atoms[A]);
+                fprintf(outfile,"    %4d: %11.3E\n", auxiliary_atoms[A],bump_atoms[A]);
             }
             if (debug_ > 1) {
                 fprintf(outfile,"   Primary Shell Pairs:\n");
@@ -4209,8 +4381,8 @@ void FastDFJK::preiterations()
     if (debug_ > 3) {
         fprintf(outfile,"  ==> Atom Pair Tensors <==\n\n");
         for (size_t pair = 0L; pair < atom_pairs_.size(); pair++) {
-            fprintf(outfile,"  Task %8zu: Atom Pair (%4d,%4d)\n", pair, atom_pairs_[pair].first, atom_pairs_[pair].second); 
-            Bpq_[pair]->print(); 
+            fprintf(outfile,"  Task %8zu: Atom Pair (%4d,%4d)\n", pair, atom_pairs_[pair].first, atom_pairs_[pair].second);
+            Bpq_[pair]->print();
         }
         fprintf(outfile, "\n");
         Z_->print();
@@ -4219,7 +4391,7 @@ void FastDFJK::preiterations()
 }
 void FastDFJK::compute_JK()
 {
-    if (do_J_) { 
+    if (do_J_) {
         build_J(Z_,D_ao_,J_ao_);
     }
     if (do_K_) {
@@ -4227,7 +4399,7 @@ void FastDFJK::compute_JK()
     }
     if (do_wK_) {
         build_K(Z_LR_,D_ao_,wK_ao_);
-    } 
+    }
 }
 void FastDFJK::postiterations()
 {
@@ -4236,6 +4408,7 @@ void FastDFJK::postiterations()
     atom_pairs_.clear();
     shell_pairs_.clear();
     auxiliary_atoms_.clear();
+    bump_atoms_.clear();
     Bpq_.clear();
 }
 boost::shared_ptr<Matrix> FastDFJK::build_Z(double omega)
@@ -4246,16 +4419,16 @@ boost::shared_ptr<Matrix> FastDFJK::build_Z(double omega)
     #ifdef _OPENMP
         nthread = df_ints_num_threads_;
     #endif
-    
+
     boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set(),auxiliary_,BasisSet::zero_ao_basis_set()));
     std::vector<boost::shared_ptr<TwoBodyAOInt> > ints;
     for (int thread = 0; thread < nthread; thread++) {
         if (omega != 0.0) {
             ints.push_back(boost::shared_ptr<TwoBodyAOInt>(fact->erf_eri(omega)));
-        } else { 
+        } else {
             ints.push_back(boost::shared_ptr<TwoBodyAOInt>(fact->eri()));
         }
-    } 
+    }
 
     boost::shared_ptr<Matrix> Z(new Matrix((omega != 0.0 ? "Z_LR" : "Z"), naux, naux));
     double** Zp = Z->pointer();
@@ -4269,10 +4442,10 @@ boost::shared_ptr<Matrix> FastDFJK::build_Z(double omega)
         const double* buffer = ints[thread]->buffer();
         for (int Q = 0; Q <= P; Q++) {
             ints[thread]->compute_shell(P,0,Q,0);
-            int nP = auxiliary_->shell(P).nfunction(); 
-            int nQ = auxiliary_->shell(Q).nfunction(); 
-            int oP = auxiliary_->shell(P).function_index(); 
-            int oQ = auxiliary_->shell(Q).function_index(); 
+            int nP = auxiliary_->shell(P).nfunction();
+            int nQ = auxiliary_->shell(Q).nfunction();
+            int oP = auxiliary_->shell(P).function_index();
+            int oQ = auxiliary_->shell(Q).function_index();
             for (int p = 0, index = 0; p < nP; p++) {
                 for (int q = 0; q < nQ; q++, index++) {
                     Zp[p + oP][q + oQ] = Zp[q + oQ][p + oP] = buffer[index];
@@ -4284,7 +4457,7 @@ boost::shared_ptr<Matrix> FastDFJK::build_Z(double omega)
 }
 void FastDFJK::build_atom_pairs()
 {
-    atom_pairs_.clear(); 
+    atom_pairs_.clear();
 
     int natom = auxiliary_->molecule()->natom();
     for (int A = 0; A < natom; A++) {
@@ -4303,7 +4476,7 @@ void FastDFJK::build_atom_pairs()
                     }
                 }
                 if (found) break;
-            } 
+            }
         }
     }
 }
@@ -4323,62 +4496,187 @@ void FastDFJK::build_shell_pairs()
             for (int Q = 0; Q < nB; Q++) {
                 if (Q + oB > P + oA) continue;
                 if (sieve_->shell_pair_significant(P + oA, Q + oB)) {
-                    pairs.push_back(std::pair<int,int>(P + oA, Q + oB));            
+                    pairs.push_back(std::pair<int,int>(P + oA, Q + oB));
                 }
             }
-        } 
+        }
         shell_pairs_.push_back(pairs);
     }
 }
 void FastDFJK::build_auxiliary_partition()
 {
     auxiliary_atoms_.clear();
+    bump_atoms_.clear();
 
-    // Diatomic partition for now
-    for (size_t pair = 0L; pair < atom_pairs_.size(); pair++) {
-        int A = atom_pairs_[pair].first;
-        int B = atom_pairs_[pair].second;
-        std::vector<int> task;
-        if (A == B) {
-            task.push_back(A);
-        } else {
-            task.push_back(A);
-            task.push_back(B);
+    // Atomic distance matrix
+    boost::shared_ptr<Molecule> mol = auxiliary_->molecule();
+    int natom = mol->natom();
+    boost::shared_ptr<Matrix> RAB(new Matrix("RAB",natom,natom));
+    double** RABp = RAB->pointer();
+    for (int A = 0; A < natom; A++) {
+        for (int B = A; B < natom; B++) {
+            RABp[A][B] = RABp[B][A] =
+                mol->xyz(A).distance(mol->xyz(B));
         }
-        auxiliary_atoms_.push_back(task);
+    }
+    double R0 = bump_R0_;
+    double R1 = bump_R1_;
+
+    if (domains_ == "DIATOMIC") {
+
+        for (size_t pair = 0L; pair < atom_pairs_.size(); pair++) {
+            int A = atom_pairs_[pair].first;
+            int B = atom_pairs_[pair].second;
+            std::vector<int> task;
+            std::vector<double> bump;
+            if (A == B) {
+                task.push_back(A);
+                bump.push_back(1.0);
+            } else {
+                task.push_back(A);
+                task.push_back(B);
+                bump.push_back(1.0);
+                bump.push_back(1.0);
+            }
+            auxiliary_atoms_.push_back(task);
+            bump_atoms_.push_back(bump);
+        }
+
+    } else if (domains_ == "SPHERES") {
+
+        // Significant atom pairs list
+        std::vector<std::vector<int> > sig;
+        for (int A = 0; A < natom; A++) {
+            std::vector<int> task;
+            for (int B = 0; B < natom; B++) {
+                if (RABp[A][B] < R1) {
+                    task.push_back(B);
+                }
+            }
+            sig.push_back(task);
+        }
+
+        for (size_t pair = 0L; pair < atom_pairs_.size(); pair++) {
+
+            int A = atom_pairs_[pair].first;
+            int B = atom_pairs_[pair].second;
+            std::vector<int> task;
+            std::vector<double> bump;
+
+            // Diatomic frame
+            if (A == B) {
+                task.push_back(A);
+                bump.push_back(1.0);
+            } else {
+                task.push_back(A);
+                task.push_back(B);
+                bump.push_back(1.0);
+                bump.push_back(1.0);
+            }
+
+            // Unique augmentation atoms
+            std::set<int> aug;
+            const std::vector<int>& sigA = sig[A];
+            const std::vector<int>& sigB = sig[B];
+            for (int C2 = 0; C2 < sigA.size(); C2++) {
+                int C = sigA[C2];
+                if (! (C == A || C == B)) {
+                    aug.insert(C);
+                }
+            }
+            for (int C2 = 0; C2 < sigB.size(); C2++) {
+                int C = sigB[C2];
+                if (! (C == A || C == B)) {
+                    aug.insert(C);
+                }
+            }
+
+            // Augmentation and bump computation
+            for (std::set<int>::const_iterator it = aug.begin();
+                it != aug.end(); ++it) {
+                int C = (*it);
+                double bAC = 0.0;
+                if (RABp[A][C] <= R0) {
+                    bAC = 1.0;
+                } else {
+                    double R = RABp[A][C];
+                    bAC = 1.0 / (1.0 + exp((R1 - R0) / (R1 - R) - (R1 - R0) / (R - R0)));
+                }
+                double bBC = 0.0;
+                if (RABp[B][C] <= R0) {
+                    bBC = 1.0;
+                } else {
+                    double R = RABp[B][C];
+                    bBC = 1.0 / (1.0 + exp((R1 - R0) / (R1 - R) - (R1 - R0) / (R - R0)));
+                }
+                double b = sqrt(bAC * bBC); // Looks more like MHG in an atom-pair frame
+                task.push_back(C);
+                bump.push_back(b);
+            }
+
+            auxiliary_atoms_.push_back(task);
+            bump_atoms_.push_back(bump);
+        }
+
+    } else {
+        throw PSIEXCEPTION("Unrecognized fitting domain algorithm");
     }
 }
 void FastDFJK::build_Bpq()
 {
     Bpq_.clear();
     Bpq_.resize(atom_pairs_.size());
-    double** Zp = Z_->pointer();
 
     int nthread = 1;
     #ifdef _OPENMP
         nthread = df_ints_num_threads_;
     #endif
-    
-    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set(),primary_,primary_));
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > ints;
+
+    boost::shared_ptr<IntegralFactory>  fact1(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set(),primary_,primary_));
+    boost::shared_ptr<IntegralFactory> Jfact1(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set(),auxiliary_,BasisSet::zero_ao_basis_set()));
+    std::vector<boost::shared_ptr<TwoBodyAOInt> >  ints1;
+    std::vector<boost::shared_ptr<TwoBodyAOInt> > Jints1;
+
+    boost::shared_ptr<IntegralFactory>  fact2(new IntegralFactory(auxiliary_,primary_,primary_,primary_));
+    boost::shared_ptr<IntegralFactory> Jfact2(new IntegralFactory(auxiliary_));
+    std::vector<boost::shared_ptr<ThreeCenterOverlapInt> >  ints2;
+    std::vector<boost::shared_ptr<OneBodyAOInt> >          Jints2;
+
+    bool algorithm;
     for (int thread = 0; thread < nthread; thread++) {
-        ints.push_back(boost::shared_ptr<TwoBodyAOInt>(fact->eri()));
-    } 
+        if (metric_ == "COULOMB") {
+            ints1.push_back(boost::shared_ptr<TwoBodyAOInt>(fact1->eri()));
+            Jints1.push_back(boost::shared_ptr<TwoBodyAOInt>(Jfact1->eri()));
+            algorithm = false;
+        } else if (metric_ == "EWALD") {
+            ints1.push_back(boost::shared_ptr<TwoBodyAOInt>(fact1->erf_complement_eri(theta_)));
+            Jints1.push_back(boost::shared_ptr<TwoBodyAOInt>(Jfact1->erf_complement_eri(theta_)));
+            algorithm = false;
+        } else if (metric_ == "OVERLAP") {
+            ints2.push_back(boost::shared_ptr<ThreeCenterOverlapInt>(fact2->overlap_3c()));
+            Jints2.push_back(boost::shared_ptr<OneBodyAOInt>(Jfact2->ao_overlap()));
+            algorithm = true;
+        } else {
+            throw PSIEXCEPTION("Unknown fitting metric");
+        }
+    }
 
     #pragma omp parallel for schedule(dynamic) num_threads(nthread)
     for (size_t pair = 0L; pair < atom_pairs_.size(); pair++) {
-    
+
         int thread = 0;
         #ifdef _OPENMP
             thread = omp_get_thread_num();
         #endif
-        const double* buffer = ints[thread]->buffer();
+        const double* buffer  = (algorithm ?  ints2[thread]->buffer() :  ints1[thread]->buffer());
+        const double* Jbuffer = (algorithm ? Jints2[thread]->buffer() : Jints1[thread]->buffer());
 
         const std::vector<std::pair<int,int> >& shell_pairs = shell_pairs_[pair];
         const std::vector<int>& auxiliary_atoms = auxiliary_atoms_[pair];
-        
+        const std::vector<double>& bump_atoms = bump_atoms_[pair];
+
         // => Sizing <= //
-    
+
         int npq = 0;
         for (int PQ = 0; PQ < shell_pairs.size(); PQ++) {
             int P = shell_pairs[PQ].first;
@@ -4386,23 +4684,23 @@ void FastDFJK::build_Bpq()
             npq += primary_->shell(P).nfunction() * primary_->shell(Q).nfunction();;
         }
 
-        int nA = 0;
+        int naux = 0;
         for (int C = 0; C < auxiliary_atoms.size(); C++) {
             int C2 = auxiliary_atoms[C];
             int nC = auxiliary_->nshell_on_center(C2);
             int oC = auxiliary_->shell_on_center(C2,0);
             for (int A = 0; A < nC; A++) {
-                nA += auxiliary_->shell(A + oC).nfunction();
+                naux += auxiliary_->shell(A + oC).nfunction();
             }
         }
 
         // => Tensor Allocation <= //
 
-        boost::shared_ptr<Matrix> Apq(new Matrix("Apq", nA, npq));
+        boost::shared_ptr<Matrix> Apq(new Matrix("Apq", naux, npq));
         double** Ap = Apq->pointer();
-        boost::shared_ptr<Matrix> Bpq(new Matrix("Bpq", nA, npq));
+        boost::shared_ptr<Matrix> Bpq(new Matrix("Bpq", naux, npq));
         double** Bp = Bpq->pointer();
-        boost::shared_ptr<Matrix> J(new Matrix("J", nA, nA));
+        boost::shared_ptr<Matrix> J(new Matrix("J", naux, naux));
         double** Jp = J->pointer();
 
         // => Generate Integrals <= //
@@ -4417,7 +4715,11 @@ void FastDFJK::build_Bpq()
                 for (int PQ = 0, dPQ = 0; PQ < shell_pairs.size(); PQ++) {
                     int P = shell_pairs[PQ].first;
                     int Q = shell_pairs[PQ].second;
-                    ints[thread]->compute_shell(A,0,P,Q);
+                    if (algorithm) {
+                        ints2[thread]->compute_shell(A,P,Q);
+                    } else {
+                        ints1[thread]->compute_shell(A,0,P,Q);
+                    }
                     int nP = primary_->shell(P).nfunction();
                     int oP = primary_->shell(P).function_index();
                     int nQ = primary_->shell(Q).nfunction();
@@ -4437,41 +4739,90 @@ void FastDFJK::build_Bpq()
 
         // => Generate Metric <= //
 
-        for (int C = 0,dA=0; C < auxiliary_atoms.size(); C++) {
+        for (int C = 0, dA = 0; C < auxiliary_atoms.size(); C++) {
             int C2 = auxiliary_atoms[C];
             int nC = auxiliary_->nshell_on_center(C2);
             int oC = auxiliary_->shell_on_center(C2,0);
             for (int A = oC; A < oC + nC; A++) {
                 int nA = auxiliary_->shell(A).nfunction();
                 int oA = auxiliary_->shell(A).function_index();
-                for (int a = 0; a < nA; a++,dA++) {
-                    for (int D = 0, dB = 0; D < auxiliary_atoms.size(); D++) {
+                for (int D = 0, dB = 0; D < auxiliary_atoms.size(); D++) {
                     int D2 = auxiliary_atoms[D];
                     int nD = auxiliary_->nshell_on_center(D2);
                     int oD = auxiliary_->shell_on_center(D2,0);
                     for (int B = oD; B < oD + nD; B++) {
                         int nB = auxiliary_->shell(B).nfunction();
                         int oB = auxiliary_->shell(B).function_index();
-                            for (int b = 0; b < nB; b++,dB++) {
-                                Jp[dA][dB] = Zp[a + oA][b + oB];
+                        if (B > A) { dB += nB; continue; }
+                        if (algorithm) {
+                            Jints2[thread]->compute_shell(A,B);
+                        } else {
+                            Jints1[thread]->compute_shell(A,0,B,0);
+                        }
+                        for (int a = 0, index = 0; a < nA; a++) {
+                            for (int b = 0; b < nB; b++) {
+                                Jp[a + dA][b + dB] = Jp[b + dB][a + dA] = Jbuffer[index++];
                             }
-                        } 
+                        }
+                        dB += nB;
                     }
                 }
+                dA += nA;
             }
         }
+
+        // => "Bump" the metric <= //
+
+        bump(J,bump_atoms,auxiliary_atoms, false);
 
         // => Invert Metric <= //
 
         J->power(-1.0,condition_);
 
+        // => "Bump" the inverse metric <= //
+
+        bump(J,bump_atoms,auxiliary_atoms, true);
+
         // => Apply Metric <= //
 
-        C_DGEMM('N','N',nA,npq,nA,1.0,Jp[0],nA,Ap[0],npq,0.0,Bp[0],npq);
+        C_DGEMM('N','N',naux,npq,naux,1.0,Jp[0],naux,Ap[0],npq,0.0,Bp[0],npq);
 
         Bpq_[pair] = Bpq;
     }
 }
+void FastDFJK::bump(boost::shared_ptr<Matrix> J, const std::vector<double>& bump_atoms, const std::vector<int>& auxiliary_atoms, bool bump_diagonal)
+{
+    double** Jp = J->pointer();
+    for (int C = 0, dA = 0; C < auxiliary_atoms.size(); C++) {
+        int C2 = auxiliary_atoms[C];
+        int nC = auxiliary_->nshell_on_center(C2);
+        int oC = auxiliary_->shell_on_center(C2,0);
+        for (int A = oC; A < oC + nC; A++) {
+            int nA = auxiliary_->shell(A).nfunction();
+            int oA = auxiliary_->shell(A).function_index();
+            for (int D = 0, dB = 0; D < auxiliary_atoms.size(); D++) {
+
+                double scale = ((!bump_diagonal && C == D) ? 1.0 : bump_atoms[C] * bump_atoms[D]);
+
+                int D2 = auxiliary_atoms[D];
+                int nD = auxiliary_->nshell_on_center(D2);
+                int oD = auxiliary_->shell_on_center(D2,0);
+                for (int B = oD; B < oD + nD; B++) {
+                    int nB = auxiliary_->shell(B).nfunction();
+                    int oB = auxiliary_->shell(B).function_index();
+                    for (int a = 0, index = 0; a < nA; a++) {
+                        for (int b = 0; b < nB; b++) {
+                            Jp[a + dA][b + dB] *= scale;
+                        }
+                    }
+                    dB += nB;
+                }
+            }
+            dA += nA;
+        }
+    }
+}
+
 void FastDFJK::build_J(boost::shared_ptr<Matrix> Z,
                        const std::vector<boost::shared_ptr<Matrix> >& D,
                        const std::vector<boost::shared_ptr<Matrix> >& J)
@@ -4496,7 +4847,7 @@ void FastDFJK::build_J(boost::shared_ptr<Matrix> Z,
     }
     int max_atom = 0;
     for (size_t pair = 0L; pair < auxiliary_atoms_.size(); pair++) {
-        max_atom = (max_atom >= auxiliary_atoms_[pair].size() ? max_atom : auxiliary_atoms_[pair].size()); 
+        max_atom = (max_atom >= auxiliary_atoms_[pair].size() ? max_atom : auxiliary_atoms_[pair].size());
     }
     int max_nso2 = max_nso_per_atom * max_nso_per_atom;
     int max_naux = max_atom * max_naux_per_atom;
@@ -4514,7 +4865,7 @@ void FastDFJK::build_J(boost::shared_ptr<Matrix> Z,
     for (int thread = 0; thread < nthread; thread++) {
         vs.push_back(boost::shared_ptr<Vector>(new Vector("vs", max_nso2)));
         cs.push_back(boost::shared_ptr<Vector>(new Vector("cs", max_naux)));
-        c.push_back( boost::shared_ptr<Vector>(new Vector("c", naux))); 
+        c.push_back( boost::shared_ptr<Vector>(new Vector("c", naux)));
     }
     boost::shared_ptr<Vector> d(new Vector("d",naux));
 
@@ -4523,7 +4874,7 @@ void FastDFJK::build_J(boost::shared_ptr<Matrix> Z,
     for (int ind = 0; ind < D.size(); ind++) {
 
         double** Zp = Z->pointer();
-        double** Dp = D[ind]->pointer(); 
+        double** Dp = D[ind]->pointer();
         double** Jp = J[ind]->pointer();
 
         // => B_rs^A D_rs -> c_A <= //
@@ -4542,7 +4893,7 @@ void FastDFJK::build_J(boost::shared_ptr<Matrix> Z,
 
             const std::vector<std::pair<int,int> >& shell_pairs = shell_pairs_[pair];
             const std::vector<int>& auxiliary_atoms = auxiliary_atoms_[pair];
-            boost::shared_ptr<Matrix> B = Bpq_[pair];        
+            boost::shared_ptr<Matrix> B = Bpq_[pair];
 
             int nauxs = B->rowspi()[0];
             int nso2s = B->colspi()[0];
@@ -4555,10 +4906,10 @@ void FastDFJK::build_J(boost::shared_ptr<Matrix> Z,
             for (int PQ = 0, dPQ = 0; PQ < shell_pairs.size(); PQ++) {
                 int P = shell_pairs[PQ].first;
                 int Q = shell_pairs[PQ].second;
-                int nP = primary_->shell(P).nfunction(); 
-                int nQ = primary_->shell(Q).nfunction(); 
-                int oP = primary_->shell(P).function_index(); 
-                int oQ = primary_->shell(Q).function_index(); 
+                int nP = primary_->shell(P).nfunction();
+                int nQ = primary_->shell(Q).nfunction();
+                int oP = primary_->shell(P).function_index();
+                int oQ = primary_->shell(Q).function_index();
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         vsp[p * nQ + q + dPQ] = Dp[p + oP][q + oQ];
@@ -4581,21 +4932,21 @@ void FastDFJK::build_J(boost::shared_ptr<Matrix> Z,
                     int oA = auxiliary_->shell(A + oC).function_index();
                     for (int a = 0; a < nA; a++) {
                         cp[a + oA] += csp[a + dA];
-                    } 
+                    }
                     dA += nA;
-                } 
+                }
             }
         }
 
         for (int thread = 1; thread < nthread; thread++) {
-            c[0]->add(c[thread]);    
+            c[0]->add(c[thread]);
         }
 
         // => Z^BA c_A -> d_B <= //
 
         double* c2p = c[0]->pointer();
         double* dp = d->pointer();
-        C_DGEMV('N',naux,naux,1.0,Zp[0],naux,c2p,1,0.0,dp,1); 
+        C_DGEMV('N',naux,naux,1.0,Zp[0],naux,c2p,1,0.0,dp,1);
 
         // => B_pq^B d_B -> J_pq <= //
 
@@ -4609,7 +4960,7 @@ void FastDFJK::build_J(boost::shared_ptr<Matrix> Z,
 
             const std::vector<std::pair<int,int> >& shell_pairs = shell_pairs_[pair];
             const std::vector<int>& auxiliary_atoms = auxiliary_atoms_[pair];
-            boost::shared_ptr<Matrix> B = Bpq_[pair];        
+            boost::shared_ptr<Matrix> B = Bpq_[pair];
 
             int nauxs = B->rowspi()[0];
             int nso2s = B->colspi()[0];
@@ -4627,9 +4978,9 @@ void FastDFJK::build_J(boost::shared_ptr<Matrix> Z,
                     int oA = auxiliary_->shell(A + oC).function_index();
                     for (int a = 0; a < nA; a++) {
                         csp[a + dA] = dp[a + oA];
-                    } 
+                    }
                     dA += nA;
-                } 
+                }
             }
 
             C_DGEMV('T',nauxs,nso2s,1.0,Bp[0],nso2s,csp,1,0.0,vsp,1);
@@ -4637,10 +4988,10 @@ void FastDFJK::build_J(boost::shared_ptr<Matrix> Z,
             for (int PQ = 0, dPQ = 0; PQ < shell_pairs.size(); PQ++) {
                 int P = shell_pairs[PQ].first;
                 int Q = shell_pairs[PQ].second;
-                int nP = primary_->shell(P).nfunction(); 
-                int nQ = primary_->shell(Q).nfunction(); 
-                int oP = primary_->shell(P).function_index(); 
-                int oQ = primary_->shell(Q).function_index(); 
+                int nP = primary_->shell(P).nfunction();
+                int nQ = primary_->shell(Q).nfunction();
+                int oP = primary_->shell(P).function_index();
+                int oQ = primary_->shell(Q).function_index();
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         Jp[p + oP][q + oQ] = vsp[p * nQ + q + dPQ];
@@ -4652,7 +5003,7 @@ void FastDFJK::build_J(boost::shared_ptr<Matrix> Z,
                 dPQ += nP * nQ;
             }
         }
-    } 
+    }
 }
 void FastDFJK::build_K(boost::shared_ptr<Matrix> Z,
                        const std::vector<boost::shared_ptr<Matrix> >& D,

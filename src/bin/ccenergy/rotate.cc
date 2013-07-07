@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup CCENERGY
     \brief Enter brief description of file here 
@@ -15,6 +37,10 @@
 #include "MOInfo.h"
 #define EXTERN
 #include "globals.h"
+
+#include <libmints/wavefunction.h>
+#include <libtrans/mospace.h>
+#include <libmints/matrix.h>
 
 namespace psi { namespace ccenergy {
 
@@ -56,43 +82,43 @@ int rotate(void)
   /* First check to see if we've already converged the orbitals */
   max = 0.0;
   if(params.ref == 0) { /** RHF **/
-    dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
-    dpd_file2_mat_init(&T1);
-    dpd_file2_mat_rd(&T1);
+    global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    global_dpd_->file2_mat_init(&T1);
+    global_dpd_->file2_mat_rd(&T1);
 
     for(h=0; h < nirreps; h++)
       for(i=0; i < moinfo.occpi[h]; i++)
 	for(a=0; a < moinfo.virtpi[h]; a++)
 	  if(fabs(T1.matrix[h][i][a]) > max) max = fabs(T1.matrix[h][i][a]);
 
-    dpd_file2_mat_close(&T1);
-    dpd_file2_close(&T1);
+    global_dpd_->file2_mat_close(&T1);
+    global_dpd_->file2_close(&T1);
   }
   else if(params.ref == 2) { /** UHF **/
 
-    dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
-    dpd_file2_mat_init(&T1);
-    dpd_file2_mat_rd(&T1);
+    global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    global_dpd_->file2_mat_init(&T1);
+    global_dpd_->file2_mat_rd(&T1);
 
     for(h=0; h < nirreps; h++)
       for(i=0; i < moinfo.aoccpi[h]; i++)
 	for(a=0; a < moinfo.avirtpi[h]; a++)
 	  if(fabs(T1.matrix[h][i][a]) > max) max = fabs(T1.matrix[h][i][a]);
 
-    dpd_file2_mat_close(&T1);
-    dpd_file2_close(&T1);
+    global_dpd_->file2_mat_close(&T1);
+    global_dpd_->file2_close(&T1);
 
-    dpd_file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia");
-    dpd_file2_mat_init(&T1);
-    dpd_file2_mat_rd(&T1);
+    global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia");
+    global_dpd_->file2_mat_init(&T1);
+    global_dpd_->file2_mat_rd(&T1);
 
     for(h=0; h < nirreps; h++)
       for(i=0; i < moinfo.boccpi[h]; i++)
 	for(a=0; a < moinfo.bvirtpi[h]; a++)
 	  if(fabs(T1.matrix[h][i][a]) > max) max = fabs(T1.matrix[h][i][a]);
 
-    dpd_file2_mat_close(&T1);
-    dpd_file2_close(&T1);
+    global_dpd_->file2_mat_close(&T1);
+    global_dpd_->file2_close(&T1);
   }
 
   if(fabs(max) <= params.bconv) {
@@ -121,9 +147,9 @@ int rotate(void)
     for(i=0; i < nmo; i++) U[i][i] = 1.0;
 
     max = 0.0;
-    dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
-    dpd_file2_mat_init(&T1);
-    dpd_file2_mat_rd(&T1);
+    global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    global_dpd_->file2_mat_init(&T1);
+    global_dpd_->file2_mat_rd(&T1);
     for(h=0; h < nirreps; h++) {
       for(i=0; i < moinfo.occpi[h]; i++) {
 	ii = moinfo.qt2pitzer[moinfo.qt_occ[i] + moinfo.occ_off[h]];
@@ -135,8 +161,8 @@ int rotate(void)
 	}
       }
     }
-    dpd_file2_mat_close(&T1);
-    dpd_file2_close(&T1);
+    global_dpd_->file2_mat_close(&T1);
+    global_dpd_->file2_close(&T1);
 
     scf = chkpt_rd_scf();
     scf_orig = chkpt_rd_scf();
@@ -196,6 +222,9 @@ int rotate(void)
     fock = block_matrix(nso, nso);
     rhf_fock_build(fock, D);
     free_block(D);
+
+    Process::environment.wavefunction()->Fa()->set(fock);
+    Process::environment.wavefunction()->Fb()->set(fock);
 
     /*
     fprintf(outfile, "\n\tSO-basis Fock matrix:\n");
@@ -349,6 +378,9 @@ int rotate(void)
     mat_print(scf_new, nso, nmo, outfile);
     */
 
+    Process::environment.wavefunction()->Ca()->set(scf_new);
+    Process::environment.wavefunction()->Cb()->set(scf_new);
+
     chkpt_wt_scf(scf_new);
     free_block(scf_new);
     free_block(scf_orig);
@@ -360,9 +392,9 @@ int rotate(void)
     U = block_matrix(nmo, nmo);
     for(i=0; i < nmo; i++) U[i][i] = 1.0;
 
-    dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
-    dpd_file2_mat_init(&T1);
-    dpd_file2_mat_rd(&T1);
+    global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    global_dpd_->file2_mat_init(&T1);
+    global_dpd_->file2_mat_rd(&T1);
     for(h=0; h < nirreps; h++) {
       for(i=0; i < moinfo.aoccpi[h]; i++) {
 	ii = moinfo.qt2pitzer_a[moinfo.qt_aocc[i] + moinfo.aocc_off[h]];
@@ -374,8 +406,8 @@ int rotate(void)
 	}
       }
     }
-    dpd_file2_mat_close(&T1);
-    dpd_file2_close(&T1);
+    global_dpd_->file2_mat_close(&T1);
+    global_dpd_->file2_close(&T1);
 
     scf = chkpt_rd_alpha_scf();
     scf_a_orig = chkpt_rd_alpha_scf();
@@ -430,9 +462,9 @@ int rotate(void)
     U = block_matrix(nmo, nmo);
     for(i=0; i < nmo; i++) U[i][i] = 1.0;
 
-    dpd_file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia");
-    dpd_file2_mat_init(&T1);
-    dpd_file2_mat_rd(&T1);
+    global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia");
+    global_dpd_->file2_mat_init(&T1);
+    global_dpd_->file2_mat_rd(&T1);
     for(h=0; h < nirreps; h++) {
       for(i=0; i < moinfo.boccpi[h]; i++) {
 	ii = moinfo.qt2pitzer_b[moinfo.qt_bocc[i] + moinfo.bocc_off[h]];
@@ -444,8 +476,8 @@ int rotate(void)
 	}
       }
     }
-    dpd_file2_mat_close(&T1);
-    dpd_file2_close(&T1);
+    global_dpd_->file2_mat_close(&T1);
+    global_dpd_->file2_close(&T1);
 
     scf = chkpt_rd_beta_scf();
     scf_b_orig = chkpt_rd_beta_scf();
@@ -514,6 +546,9 @@ int rotate(void)
     uhf_fock_build(fock_a, fock_b, D_a, D_b);
     free_block(D_a);
     free_block(D_b);
+
+    Process::environment.wavefunction()->Fa()->set(fock_a);
+    Process::environment.wavefunction()->Fb()->set(fock_b);
 
     /* transform the fock matrices to the new alpha and beta MO bases */
     X = block_matrix(nso,nso);
@@ -626,6 +661,9 @@ int rotate(void)
     free_block(MO_S);
 
     chkpt_wt_alpha_scf(scf_new);
+
+    Process::environment.wavefunction()->Ca()->set(scf_new);
+
     free_block(scf_new);
     free_block(scf_a_orig);
 
@@ -727,6 +765,9 @@ int rotate(void)
     free_block(MO_S);
 
     chkpt_wt_beta_scf(scf_new);
+
+    Process::environment.wavefunction()->Cb()->set(scf_new);
+
     free_block(scf_new);
     free_block(scf_b_orig);
 

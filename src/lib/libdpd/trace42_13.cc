@@ -1,6 +1,28 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup DPD
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <libqt/qt.h>
@@ -24,76 +46,76 @@ namespace psi {
 **   double beta: Prefactor for B.
 */
 
-int dpd_trace42_13(dpdbuf4 *A, dpdfile2 *B, int transb, double alpha, double beta)
+int DPD::trace42_13(dpdbuf4 *A, dpdfile2 *B, int transb, double alpha, double beta)
 {
-  int h, Gp, Gq, Gr, Gs;
-  int p, q, r, s;
-  int P, Q, R, S;
-  int pq, rs;
-  int nirreps;
+    int h, Gp, Gq, Gr, Gs;
+    int p, q, r, s;
+    int P, Q, R, S;
+    int pq, rs;
+    int nirreps;
 
-  nirreps = A->params->nirreps;
+    nirreps = A->params->nirreps;
 
-  dpd_file2_scm(B, beta);
-  dpd_file2_mat_init(B);
-  dpd_file2_mat_rd(B);
+    file2_scm(B, beta);
+    file2_mat_init(B);
+    file2_mat_rd(B);
 
 #ifdef DPD_TIMER
-  timer_on("trace42");
+    timer_on("trace42");
 #endif
 
-  /* Read all of A into core */
-  for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(A, h);
-    dpd_buf4_mat_irrep_rd(A, h);
-  }
+    /* Read all of A into core */
+    for(h=0; h < nirreps; h++) {
+        buf4_mat_irrep_init(A, h);
+        buf4_mat_irrep_rd(A, h);
+    }
 
-  for(h=0; h < nirreps; h++) {
+    for(h=0; h < nirreps; h++) {
 
-    for(Gp=0; Gp < nirreps; Gp++) {
-      Gq = Gp ^ h;
-      Gr = Gp;
-      Gs = Gq;
+        for(Gp=0; Gp < nirreps; Gp++) {
+            Gq = Gp ^ h;
+            Gr = Gp;
+            Gs = Gq;
 
-      /* Loop over target indices */
-      for(q=0; q < A->params->qpi[Gq]; q++) {
-	Q = A->params->qoff[Gq] + q;
+            /* Loop over target indices */
+            for(q=0; q < A->params->qpi[Gq]; q++) {
+                Q = A->params->qoff[Gq] + q;
 
-	for(s=0; s < A->params->spi[Gs]; s++) {
-	  S = A->params->soff[Gs] + s;
+                for(s=0; s < A->params->spi[Gs]; s++) {
+                    S = A->params->soff[Gs] + s;
 
-	  /* Loop over elements for which P==R */
-	  for(p=0; p < A->params->ppi[Gp]; p++) {
-	    P = A->params->poff[Gp] + p;
-	    R = P;
+                    /* Loop over elements for which P==R */
+                    for(p=0; p < A->params->ppi[Gp]; p++) {
+                        P = A->params->poff[Gp] + p;
+                        R = P;
 
-	    pq = A->params->rowidx[P][Q];
-	    rs = A->params->colidx[R][S];
+                        pq = A->params->rowidx[P][Q];
+                        rs = A->params->colidx[R][S];
 
-	    if(!transb)  B->matrix[Gq][q][s] += alpha * A->matrix[h][pq][rs];
-	    else  B->matrix[Gq][s][q] += alpha * A->matrix[h][pq][rs];
+                        if(!transb)  B->matrix[Gq][q][s] += alpha * A->matrix[h][pq][rs];
+                        else  B->matrix[Gq][s][q] += alpha * A->matrix[h][pq][rs];
 
-	  }
-	}
-      }
+                    }
+                }
+            }
+
+        }
 
     }
 
-  }
-
-  for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_close(A, h);
-  }
+    for(h=0; h < nirreps; h++) {
+        buf4_mat_irrep_close(A, h);
+    }
 
 #ifdef DPD_TIMER
-  timer_off("trace42");
+    timer_off("trace42");
 #endif
 
-  /* Close the two-index quantities */
-  dpd_file2_mat_wrt(B);
-  dpd_file2_mat_close(B);
+    /* Close the two-index quantities */
+    file2_mat_wrt(B);
+    file2_mat_close(B);
 
-  return 0;
+    return 0;
 }
 
 }

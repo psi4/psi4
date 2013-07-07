@@ -1,0 +1,47 @@
+#! DCFT calculation for the triplet O2 using ODC-06 and ODC-12 functionals. 
+#! Only simultaneous algorithm is tested.
+
+memory 250 mb
+
+refscf      = -149.65367728294785   #TEST
+refmp2      = -150.17316961260252   #TEST
+
+# ODC-06
+refdcftscf  = -149.074169972872937  #TEST
+refdcft     = -150.194310452116127  #TEST
+
+# ODC-12                             #TEST
+refdcftxscf = -149.090539944500989  #TEST
+refdcftx    = -150.189699136183066  #TEST
+
+molecule OO {
+0 3
+O
+O 1 R
+
+units bohr
+R = 2.000
+}
+
+set globals {
+    r_convergence 12
+    d_convergence 12
+    ao_basis    none
+    algorithm   simultaneous
+    basis       cc-pcvtz
+}
+
+set dcft_functional odc-06
+energy('dcft')
+
+compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 10, "SCF Energy");                                       #TEST
+compare_values(refmp2, get_variable("MP2 TOTAL ENERGY"), 10, "MP2 Energy");                                             #TEST
+compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 10, "ODC-06 SCF Energy (simultaneous, ao_basis=none)");     #TEST
+compare_values(refdcft, get_variable("DCFT TOTAL ENERGY"), 10, "ODC-06 Energy (simultaneous, ao_basis=none)");                #TEST
+
+set dcft_functional odc-12
+energy('dcft')
+
+compare_values(refdcftxscf, get_variable("DCFT SCF ENERGY"), 10, "ODC-12 SCF Energy (simultaneous, ao_basis=none)");     #TEST
+compare_values(refdcftx, get_variable("DCFT TOTAL ENERGY"), 10, "ODC-12 Energy (simultaneous, ao_basis=none)");                #TEST
+

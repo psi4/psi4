@@ -36,8 +36,8 @@ density matrices (PDMs). Moreover, active space approximations can be readily in
 [Krylov:2000:vod]_. Additionally, orbital-optimized coupled-cluster avoids spurious second-order 
 poles in its response function, and its transition dipole moments are gauge invarianti [Pedersen:1999:od]_.
 
-Another advantage is that the orbital-optimized methods does not suffer from the artifactual symmetry-breaking 
-instabilities [Sherrill:1998:od]_, [Bozkaya:2011:omp2]_, and [Bozkaya:2011:omp3]_.
+Another advantage is that the orbital-optimized methods does not suffer from artifactual symmetry-breaking 
+instabilities [Crawford:1997:instability]_, [Sherrill:1998:od]_, [Bozkaya:2011:omp2]_, and [Bozkaya:2011:omp3]_.
 Further, Kurlancheek and Head-Gordon [Kurlancek:2009]_ demonstrated that first order properties such as 
 forces or dipole moments are discontinuous along nuclear coordinates when such a symmetry breaking occurs. 
 They also observed that although the energy appears well behaved, the MP2 method can have natural occupation 
@@ -146,9 +146,9 @@ yields
 
 This final equation corresponds to the usual Newton-Raphson step.
 
-Publications resulting from the use of the OMP2 code should cite the following publication(s): 
+Publications resulting from the use of the OMP2 code should cite the following publications: 
 
-[Bozkaya:2011:omp2]_.
+[Bozkaya:2011:omp2]_ and [Bozkaya:2013:omp2grad]_.
 
 Publications resulting from the use of the OMP3 code should cite the following publications: 
 
@@ -178,6 +178,14 @@ Publications resulting from the use of the CEPA0 code should cite the following 
 
 [Bozkaya:2011:omp2]_.
 
+
+Convergence Problems
+~~~~~~~~~~~~~~~~~~~~
+
+For problematic open-shell systems, we recommend to use the ROHF or DFT orbitals as an initial guess for orbital-optimized methods. Both ROHF and 
+DFT orbitals generally provide much better initial guesses than UHF orbitals, hence convergence may be significantly speeded up with ROHF or DFT orbitals. 
+In order to use ROHF orbitals we can simply use "reference rohf" option. For DFT orbitals one should use "reference uks" and "dft_functional b3lyp" options. Of 
+course users can use any DFT functional available in Psi4. 
 
 
 Methods

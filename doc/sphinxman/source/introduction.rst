@@ -125,7 +125,8 @@ and reaction energies, is discussed in
 * "Accuracy and Efficiency of Coupled-Cluster Theory Using
   Density Fitting / Cholesky Decomposition, Frozen Natural Orbitals,
   and a T1-Transformed Hamiltonian," A. E. DePrince and C. D. Sherrill,
-  submitted.
+  *J. Chem. Theory Comput.* in press.
+  (doi: `10.1021/ct400250u <http://dx.doi.org/10.1021/ct400250u>`_).
  
 Mukherjee State-Specific Multi-Reference Coupled Cluster (Mk-MRCC)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -233,7 +234,8 @@ Orbital-optimized second-order perturbation theory (OMP2)
 
 * "Analytic energy gradients for the orbital-optimized second-order 
   M\ |o_slash|\ ller--Plesset perturbation theory," U. Bozkaya and 
-  C. D. Sherrill, (unpublished).
+  C. D. Sherrill, *J. Chem. Phys.* **138**, 184103 (2013).
+  (doi: `10.1063/1.4803662 <http://dx.doi.org/10.1063/1.4803662>`_).
 
 Orbital-optimized third-order perturbation theory (OMP3)
 

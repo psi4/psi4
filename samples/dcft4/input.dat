@@ -9,6 +9,8 @@ memory 250 mb
 
 
 
+
+
 molecule HF {
 1 2
 H
@@ -43,6 +45,16 @@ energy('dcft')
 
 set algorithm qc
 set ao_basis none
+set qc_type simultaneous
+energy('dcft')
+
+
+set ao_basis disk
+energy('dcft')
+
+
+set ao_basis none
+set qc_type twostep
 energy('dcft')
 
 
@@ -71,9 +83,34 @@ energy('dcft')
 
 set algorithm qc
 set ao_basis none
+set qc_type simultaneous
 energy('dcft')
 
 
 set ao_basis disk
+energy('dcft')
+
+
+set dcft_functional odc-06
+set algorithm simultaneous
+set ao_basis none
+energy('dcft')
+
+
+set algorithm qc
+set qc_type simultaneous
+energy('dcft')
+
+
+set qc_type twostep
+energy('dcft')
+
+
+set dcft_functional odc-12
+energy('dcft')
+
+
+set algorithm qc
+set qc_type simultaneous
 energy('dcft')
 

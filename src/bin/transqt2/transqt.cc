@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \defgroup TRANSQT2 transqt2: Integral Transformation Program */
 
 
@@ -43,6 +65,11 @@
 #include <psi4-dec.h>
 #include "globals.h"
 
+#include <libmints/wavefunction.h>
+#include <libtrans/mospace.h>
+#include <libmints/matrix.h>
+#include <libpsio/psio.hpp>
+
 namespace psi {
   namespace transqt2 {
 
@@ -87,8 +114,12 @@ PsiReturnType transqt2(Options & options)
   cachefiles = init_int_array(PSIO_MAXUNIT);
   cachelist = cacheprep_rhf(params.cachelev, cachefiles); /* really just a placeholder */
 
-  dpd_init(0, nirreps, params.memory, 0, cachefiles, cachelist,
-       NULL, 2, moinfo.sopi, moinfo.sosym, moinfo.actpi, moinfo.actsym);
+  std::vector<int*> spaces;
+  spaces.push_back(moinfo.sopi);
+  spaces.push_back(moinfo.sosym);
+  spaces.push_back(moinfo.actpi);
+  spaces.push_back(moinfo.actsym);
+  dpd_init(0, nirreps, params.memory, 0, cachefiles, cachelist, NULL, 2, spaces);
 
   /*** Starting one-electron transforms and presort ***/
 
@@ -157,24 +188,29 @@ PsiReturnType transqt2(Options & options)
     fflush(outfile);
   }
   psio_open(PSIF_SO_PRESORT, 0);
-  dpd_file4_init(&I, PSIF_SO_PRESORT, 0, 3, 3, "SO Ints (pq,rs)");
+  global_dpd_->file4_init(&I, PSIF_SO_PRESORT, 0, 3, 3, "SO Ints (pq,rs)");
   if(params.ref == 0 || params.ref == 1)
     file_build_presort(&I, PSIF_SO_TEI, params.tolerance, params.memory,
     !params.delete_tei, moinfo.ncore, D, NULL, F, NULL, params.ref);
   else
     file_build_presort(&I, PSIF_SO_TEI, params.tolerance, params.memory,
     !params.delete_tei, moinfo.ncore, D_a, D_b, F_a, F_b, params.ref);
-  dpd_file4_close(&I);
+  global_dpd_->file4_close(&I);
   psio_close(PSIF_SO_PRESORT, 1);
   timer_off("presort");
 
   /* read the bare one-electron integrals */
+
+  boost::shared_ptr<PSIO> psio_;
+  psio_ = Process::environment.wavefunction()->psio();
+
+  SharedMatrix H_so = Process::environment.wavefunction()->H()->clone();
+  H_so->set_name(PSIF_SO_H);
+  H_so->save(psio_, PSIF_OEI);
+
   oei = init_array(ntri_so);
   H = init_array(ntri_so);
-  stat = iwl_rdone(PSIF_OEI, PSIF_SO_T, H, ntri_so, 0, 0, outfile);
-  stat = iwl_rdone(PSIF_OEI, PSIF_SO_V, oei, ntri_so, 0, 0, outfile);
-  for(pq=0; pq < ntri_so; pq++)
-    H[pq] += oei[pq];
+  stat = iwl_rdone(PSIF_OEI, PSIF_SO_H, H, ntri_so, 0, 0, outfile);
 
   /* add the remaining one-electron terms to the fzc operator(s) */
   if(params.ref == 0 || params.ref == 1) {

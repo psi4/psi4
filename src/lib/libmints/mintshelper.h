@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #ifndef _psi_src_lib_libmints_helper_h
 #define _psi_src_lib_libmints_helper_h
 
@@ -25,7 +47,11 @@ private:
     boost::shared_ptr<IntegralFactory> integral_;
     boost::shared_ptr<BasisSet> basisset_;
     boost::shared_ptr<SOBasisSet> sobasis_;
+    boost::shared_ptr<TwoBodyAOInt> eriInts_;
     int print_;
+
+    /// Value which any two-electron integral is below is discarded
+    double cutoff_;
 
     // In-core O(N^5) transqt
     SharedMatrix mo_eri_helper(SharedMatrix Iso, SharedMatrix Co, SharedMatrix Cv);
@@ -34,11 +60,15 @@ private:
                                                  SharedMatrix C3, SharedMatrix C4);
 
     SharedMatrix ao_helper(const std::string& label, boost::shared_ptr<TwoBodyAOInt> ints);
+    SharedMatrix ao_shell_getter(const std::string& label, boost::shared_ptr<TwoBodyAOInt> ints, int M, int N, int P, int Q);
+
+
+    void common_init();
 
 public:
 
     void init_helper(boost::shared_ptr<Wavefunction> wavefunction = boost::shared_ptr<Wavefunction>());
-    void init_helper_2(boost::shared_ptr<BasisSet> basis);
+    void init_helper(boost::shared_ptr<BasisSet> basis);
 
     /// Constructor, just lines references up
     MintsHelper(Options&, int print = 1);
@@ -92,6 +122,8 @@ public:
 
     /// AO ERI Integrals (Full matrix, not recommended for large systems)
     SharedMatrix ao_eri();
+    /// AO ERI Shell
+    SharedMatrix ao_eri_shell(int M, int N, int P, int Q);
     /// AO ERF Integrals
     SharedMatrix ao_erf_eri(double omega);
     /// MO ERFC Omega Integrals

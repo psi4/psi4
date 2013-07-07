@@ -1,6 +1,28 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup DPD
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -10,76 +32,76 @@
 
 namespace psi {
 
-int dpd_buf4_mat_irrep_shift13(dpdbuf4 *Buf, int buf_block)
+int DPD::buf4_mat_irrep_shift13(dpdbuf4 *Buf, int buf_block)
 {
-  int h, i, nirreps, all_buf_irrep;
-  int *count;
-  int *dataoff;
-  int rowtot, coltot;
-  double *data;
+    int h, i, nirreps, all_buf_irrep;
+    int *count;
+    int *dataoff;
+    int rowtot, coltot;
+    double *data;
 
 #ifdef DPD_TIMER
-  timer_on("shift");
+    timer_on("shift");
 #endif
 
-  all_buf_irrep = Buf->file.my_irrep;
+    all_buf_irrep = Buf->file.my_irrep;
 
-  if(Buf->shift.shift_type) {
-      fprintf(stderr, "\n\tShift is already on! %d\n",
-	      Buf->shift.shift_type);
-      exit(PSI_RETURN_FAILURE);
+    if(Buf->shift.shift_type) {
+        fprintf(stderr, "\n\tShift is already on! %d\n",
+                Buf->shift.shift_type);
+        exit(PSI_RETURN_FAILURE);
     }
-  else Buf->shift.shift_type = 13;
-  
-  Buf->shift.shift_type = 13;
+    else Buf->shift.shift_type = 13;
 
-  nirreps = Buf->params->nirreps;
-  rowtot = Buf->params->rowtot[buf_block];
-  coltot = Buf->params->coltot[buf_block^all_buf_irrep];
-  if (rowtot == 0 || coltot == 0) data = 0;
-  else data = Buf->matrix[buf_block][0];
+    Buf->shift.shift_type = 13;
 
-  /* Calculate row and column dimensions of each new sub-block */
-  for(h=0; h < nirreps; h++) {
-      Buf->shift.rowtot[buf_block][h] = Buf->params->ppi[h];
-      Buf->shift.coltot[buf_block][h] = coltot * Buf->params->qpi[h^buf_block];
+    nirreps = Buf->params->nirreps;
+    rowtot = Buf->params->rowtot[buf_block];
+    coltot = Buf->params->coltot[buf_block^all_buf_irrep];
+    if (rowtot == 0 || coltot == 0) data = 0;
+    else data = Buf->matrix[buf_block][0];
+
+    /* Calculate row and column dimensions of each new sub-block */
+    for(h=0; h < nirreps; h++) {
+        Buf->shift.rowtot[buf_block][h] = Buf->params->ppi[h];
+        Buf->shift.coltot[buf_block][h] = coltot * Buf->params->qpi[h^buf_block];
     }
 
-  /* Malloc the pointers to the rows for the shifted access matrix */
-  Buf->shift.matrix[buf_block] = (double ***) malloc(nirreps * sizeof(double **));
-  for(h=0; h < nirreps; h++)
-      Buf->shift.matrix[buf_block][h] =
-	   ((!Buf->shift.rowtot[buf_block][h]) ? NULL :
-	    (double **) malloc(Buf->shift.rowtot[buf_block][h] * sizeof(double *)));
+    /* Malloc the pointers to the rows for the shifted access matrix */
+    Buf->shift.matrix[buf_block] = (double ***) malloc(nirreps * sizeof(double **));
+    for(h=0; h < nirreps; h++)
+        Buf->shift.matrix[buf_block][h] =
+                ((!Buf->shift.rowtot[buf_block][h]) ? NULL :
+                                                      (double **) malloc(Buf->shift.rowtot[buf_block][h] * sizeof(double *)));
 
-  /* Calculate the data offset */
-  dataoff = init_int_array(nirreps);
-  dataoff[0] = 0;
-  for(h=1; h < nirreps; h++)
-      dataoff[h] = dataoff[h-1] +
-		   ((long) Buf->shift.rowtot[buf_block][h-1]) * 
-	           ((long) Buf->shift.coltot[buf_block][h-1]);
-		     
+    /* Calculate the data offset */
+    dataoff = init_int_array(nirreps);
+    dataoff[0] = 0;
+    for(h=1; h < nirreps; h++)
+        dataoff[h] = dataoff[h-1] +
+                ((long) Buf->shift.rowtot[buf_block][h-1]) *
+                ((long) Buf->shift.coltot[buf_block][h-1]);
 
-  /* The row counter for each sub-block */
-  count = init_int_array(nirreps);
 
-  /* Loop over irreps of isolated index */
-  for(h=0; h < Buf->params->nirreps; h++) {
-      for(i=0; (i < Buf->shift.rowtot[buf_block][h]) && Buf->shift.coltot[buf_block][h];
-	  i++,count[h]++) {
-          Buf->shift.matrix[buf_block][h][count[h]] =
-		    &(data[dataoff[h]+((long) (Buf->shift.coltot[buf_block][h]))*((long) i)]);
+    /* The row counter for each sub-block */
+    count = init_int_array(nirreps);
+
+    /* Loop over irreps of isolated index */
+    for(h=0; h < Buf->params->nirreps; h++) {
+        for(i=0; (i < Buf->shift.rowtot[buf_block][h]) && Buf->shift.coltot[buf_block][h];
+            i++,count[h]++) {
+            Buf->shift.matrix[buf_block][h][count[h]] =
+                    &(data[dataoff[h]+((long) (Buf->shift.coltot[buf_block][h]))*((long) i)]);
         }
     }
 
-  free(count); free(dataoff);
+    free(count); free(dataoff);
 
 #ifdef DPD_TIMER
-  timer_off("shift");
+    timer_off("shift");
 #endif
 
-  return 0;
+    return 0;
 }
 
 }

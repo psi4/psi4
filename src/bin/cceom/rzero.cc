@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup CCEOM
     \brief Enter brief description of file here 
@@ -90,52 +112,52 @@ void rzero(int C_irr, int *converged) {
 
     /* Calculate <0| Hbar R |0> */
     if (C_irr == H_IRR) {
-      dpd_file2_init(&FIA, PSIF_CC_OEI, H_IRR, A_OCC, A_VIR, "FME");
-      dpd_file2_init(&RIA, PSIF_CC_RAMPS, C_irr, A_OCC, A_VIR, R1A_lbl);
-      dot_IA = dpd_file2_dot(&FIA, &RIA);
-      dpd_file2_close(&RIA);
-      dpd_file2_close(&FIA);
+      global_dpd_->file2_init(&FIA, PSIF_CC_OEI, H_IRR, A_OCC, A_VIR, "FME");
+      global_dpd_->file2_init(&RIA, PSIF_CC_RAMPS, C_irr, A_OCC, A_VIR, R1A_lbl);
+      dot_IA = global_dpd_->file2_dot(&FIA, &RIA);
+      global_dpd_->file2_close(&RIA);
+      global_dpd_->file2_close(&FIA);
   
-      dpd_file2_init(&Fia, PSIF_CC_OEI, H_IRR, B_OCC, B_VIR, "Fme");
-      dpd_file2_init(&Ria, PSIF_CC_RAMPS, C_irr, B_OCC, B_VIR, R1B_lbl);
-      dot_ia = dpd_file2_dot(&Fia, &Ria);
-      dpd_file2_close(&Ria);
-      dpd_file2_close(&Fia);
+      global_dpd_->file2_init(&Fia, PSIF_CC_OEI, H_IRR, B_OCC, B_VIR, "Fme");
+      global_dpd_->file2_init(&Ria, PSIF_CC_RAMPS, C_irr, B_OCC, B_VIR, R1B_lbl);
+      dot_ia = global_dpd_->file2_dot(&Fia, &Ria);
+      global_dpd_->file2_close(&Ria);
+      global_dpd_->file2_close(&Fia);
 
       if (params.eom_ref == 1) {
-        dpd_buf4_init(&D, PSIF_CC_DINTS, H_IRR, 2, 7, 2, 7, 0, "D <ij||ab> (i>j,a>b)");
-        dpd_buf4_init(&RIJAB, PSIF_CC_RAMPS, C_irr, 2, 7, 2, 7, 0, R2AA_lbl);
-        dot_IJAB = dpd_buf4_dot(&D, &RIJAB);
-        dpd_buf4_close(&RIJAB);
-        dpd_buf4_init(&Rijab, PSIF_CC_RAMPS, C_irr, 2, 7, 2, 7, 0, R2BB_lbl);
-        dot_ijab = dpd_buf4_dot(&D, &Rijab);
-        dpd_buf4_close(&Rijab);
-        dpd_buf4_close(&D);
+        global_dpd_->buf4_init(&D, PSIF_CC_DINTS, H_IRR, 2, 7, 2, 7, 0, "D <ij||ab> (i>j,a>b)");
+        global_dpd_->buf4_init(&RIJAB, PSIF_CC_RAMPS, C_irr, 2, 7, 2, 7, 0, R2AA_lbl);
+        dot_IJAB = global_dpd_->buf4_dot(&D, &RIJAB);
+        global_dpd_->buf4_close(&RIJAB);
+        global_dpd_->buf4_init(&Rijab, PSIF_CC_RAMPS, C_irr, 2, 7, 2, 7, 0, R2BB_lbl);
+        dot_ijab = global_dpd_->buf4_dot(&D, &Rijab);
+        global_dpd_->buf4_close(&Rijab);
+        global_dpd_->buf4_close(&D);
     
-        dpd_buf4_init(&D, PSIF_CC_DINTS, H_IRR, 0, 5, 0, 5, 0, "D <ij|ab>");
-        dpd_buf4_init(&RIjAb, PSIF_CC_RAMPS, C_irr, 0, 5, 0, 5, 0, R2AB_lbl);
-        dot_IjAb = dpd_buf4_dot(&D, &RIjAb);
-        dpd_buf4_close(&RIjAb);
-        dpd_buf4_close(&D);
+        global_dpd_->buf4_init(&D, PSIF_CC_DINTS, H_IRR, 0, 5, 0, 5, 0, "D <ij|ab>");
+        global_dpd_->buf4_init(&RIjAb, PSIF_CC_RAMPS, C_irr, 0, 5, 0, 5, 0, R2AB_lbl);
+        dot_IjAb = global_dpd_->buf4_dot(&D, &RIjAb);
+        global_dpd_->buf4_close(&RIjAb);
+        global_dpd_->buf4_close(&D);
       }
       else if (params.eom_ref == 2) {
-        dpd_buf4_init(&D, PSIF_CC_DINTS, H_IRR, 2, 7, 2, 7, 0, "D <IJ||AB> (I>J,A>B)");
-        dpd_buf4_init(&RIJAB, PSIF_CC_RAMPS, C_irr, 2, 7, 2, 7, 0, R2AA_lbl);
-        dot_IJAB = dpd_buf4_dot(&D, &RIJAB);
-        dpd_buf4_close(&RIJAB);
-        dpd_buf4_close(&D);
+        global_dpd_->buf4_init(&D, PSIF_CC_DINTS, H_IRR, 2, 7, 2, 7, 0, "D <IJ||AB> (I>J,A>B)");
+        global_dpd_->buf4_init(&RIJAB, PSIF_CC_RAMPS, C_irr, 2, 7, 2, 7, 0, R2AA_lbl);
+        dot_IJAB = global_dpd_->buf4_dot(&D, &RIJAB);
+        global_dpd_->buf4_close(&RIJAB);
+        global_dpd_->buf4_close(&D);
   
-        dpd_buf4_init(&D, PSIF_CC_DINTS, H_IRR, 12, 17, 12, 17, 0, "D <ij||ab> (i>j,a>b)");
-        dpd_buf4_init(&Rijab, PSIF_CC_RAMPS, C_irr, 12, 17, 12, 17, 0, R2BB_lbl);
-        dot_ijab = dpd_buf4_dot(&D, &Rijab);
-        dpd_buf4_close(&Rijab);
-        dpd_buf4_close(&D);
+        global_dpd_->buf4_init(&D, PSIF_CC_DINTS, H_IRR, 12, 17, 12, 17, 0, "D <ij||ab> (i>j,a>b)");
+        global_dpd_->buf4_init(&Rijab, PSIF_CC_RAMPS, C_irr, 12, 17, 12, 17, 0, R2BB_lbl);
+        dot_ijab = global_dpd_->buf4_dot(&D, &Rijab);
+        global_dpd_->buf4_close(&Rijab);
+        global_dpd_->buf4_close(&D);
                            
-        dpd_buf4_init(&D, PSIF_CC_DINTS, H_IRR, 22, 28, 22, 28, 0, "D <Ij|Ab>");
-        dpd_buf4_init(&RIjAb, PSIF_CC_RAMPS, C_irr, 22, 28, 22, 28, 0, R2AB_lbl);
-        dot_IjAb = dpd_buf4_dot(&D, &RIjAb);
-        dpd_buf4_close(&RIjAb);
-        dpd_buf4_close(&D);
+        global_dpd_->buf4_init(&D, PSIF_CC_DINTS, H_IRR, 22, 28, 22, 28, 0, "D <Ij|Ab>");
+        global_dpd_->buf4_init(&RIjAb, PSIF_CC_RAMPS, C_irr, 22, 28, 22, 28, 0, R2AB_lbl);
+        dot_IjAb = global_dpd_->buf4_dot(&D, &RIjAb);
+        global_dpd_->buf4_close(&RIjAb);
+        global_dpd_->buf4_close(&D);
       }
       rzero = (dot_IA + dot_ia + dot_IJAB + dot_ijab + dot_IjAb)/energy;
     }
@@ -144,11 +166,11 @@ void rzero(int C_irr, int *converged) {
     }
 
     /* Now normalize so that <R|R> = 1 */
-    dpd_file2_init(&RIA, PSIF_CC_RAMPS, C_irr, A_OCC, A_VIR, R1A_lbl);
-    dpd_file2_init(&Ria, PSIF_CC_RAMPS, C_irr, B_OCC, B_VIR, R1B_lbl);
-    dpd_buf4_init(&fRIJAB, PSIF_CC_RAMPS, C_irr, AA_OCC, AA_VIR, AA_OCC, AA_VIR, 0, R2AA_lbl);
-    dpd_buf4_init(&fRijab, PSIF_CC_RAMPS, C_irr, BB_OCC, BB_VIR, BB_OCC, BB_VIR, 0, R2BB_lbl);
-    dpd_buf4_init(&fRIjAb, PSIF_CC_RAMPS, C_irr, AB_OCC, AB_VIR, AB_OCC, AB_VIR, 0, R2AB_lbl);
+    global_dpd_->file2_init(&RIA, PSIF_CC_RAMPS, C_irr, A_OCC, A_VIR, R1A_lbl);
+    global_dpd_->file2_init(&Ria, PSIF_CC_RAMPS, C_irr, B_OCC, B_VIR, R1B_lbl);
+    global_dpd_->buf4_init(&fRIJAB, PSIF_CC_RAMPS, C_irr, AA_OCC, AA_VIR, AA_OCC, AA_VIR, 0, R2AA_lbl);
+    global_dpd_->buf4_init(&fRijab, PSIF_CC_RAMPS, C_irr, BB_OCC, BB_VIR, BB_OCC, BB_VIR, 0, R2BB_lbl);
+    global_dpd_->buf4_init(&fRIjAb, PSIF_CC_RAMPS, C_irr, AB_OCC, AB_VIR, AB_OCC, AB_VIR, 0, R2AB_lbl);
 
     /* make R0 a positive number */
     /*
@@ -187,11 +209,11 @@ dpd_buf4_copy(&fRIjAb, EOM_CMnEf, "CMnEf 0");
 /* end debugging stuff */ 
 
 
-    dpd_file2_close(&RIA);
-    dpd_file2_close(&Ria);
-    dpd_buf4_close(&fRIJAB);
-    dpd_buf4_close(&fRijab);
-    dpd_buf4_close(&fRIjAb);
+    global_dpd_->file2_close(&RIA);
+    global_dpd_->file2_close(&Ria);
+    global_dpd_->buf4_close(&fRIJAB);
+    global_dpd_->buf4_close(&fRijab);
+    global_dpd_->buf4_close(&fRIjAb);
 
     if(params.wfn == "EOM_CC2") {
       fprintf(outfile,"EOM CC2 R0 for root %d = %15.11lf\n", R_index, rzero);
@@ -212,43 +234,43 @@ dpd_buf4_copy(&fRIjAb, EOM_CMnEf, "CMnEf 0");
     if (eom_params.dot_with_L) {
       /* evaluate check <R|L> == 0 */
       if (C_irr == L_irr ) {
-        dpd_file2_init(&RIA, PSIF_CC_RAMPS, C_irr, A_OCC, A_VIR, R1A_lbl);
-        dpd_file2_init(&Ria, PSIF_CC_RAMPS, C_irr, B_OCC, B_VIR, R1B_lbl);
-        dpd_buf4_init(&RIJAB, PSIF_CC_RAMPS, C_irr, AA_OCC, AA_VIR, AA_OCC, AA_VIR, 0, R2AA_lbl);
-        dpd_buf4_init(&Rijab, PSIF_CC_RAMPS, C_irr, BB_OCC, BB_VIR, BB_OCC, BB_VIR, 0, R2BB_lbl);
-        dpd_buf4_init(&RIjAb, PSIF_CC_RAMPS, C_irr, AB_OCC, AB_VIR, AB_OCC, AB_VIR, 0, R2AB_lbl);
+        global_dpd_->file2_init(&RIA, PSIF_CC_RAMPS, C_irr, A_OCC, A_VIR, R1A_lbl);
+        global_dpd_->file2_init(&Ria, PSIF_CC_RAMPS, C_irr, B_OCC, B_VIR, R1B_lbl);
+        global_dpd_->buf4_init(&RIJAB, PSIF_CC_RAMPS, C_irr, AA_OCC, AA_VIR, AA_OCC, AA_VIR, 0, R2AA_lbl);
+        global_dpd_->buf4_init(&Rijab, PSIF_CC_RAMPS, C_irr, BB_OCC, BB_VIR, BB_OCC, BB_VIR, 0, R2BB_lbl);
+        global_dpd_->buf4_init(&RIjAb, PSIF_CC_RAMPS, C_irr, AB_OCC, AB_VIR, AB_OCC, AB_VIR, 0, R2AB_lbl);
   
-        dpd_file2_init(&LIA, PSIF_CC_OEI, L_irr, A_OCC, A_VIR, "LIA");
-        dpd_file2_init(&Lia, PSIF_CC_OEI, L_irr, B_OCC, B_VIR, "Lia");
-        dpd_buf4_init(&LIJAB, PSIF_CC_LAMPS, L_irr, AA_OCC, AA_VIR, AA_OCC, AA_VIR, 0, "LIJAB");
-        dpd_buf4_init(&Lijab, PSIF_CC_LAMPS, L_irr, BB_OCC, BB_VIR, BB_OCC, BB_VIR, 0, "Lijab");
-        dpd_buf4_init(&LIjAb, PSIF_CC_LAMPS, L_irr, AB_OCC, AB_VIR, AB_OCC, AB_VIR, 0, "LIjAb");
+        global_dpd_->file2_init(&LIA, PSIF_CC_OEI, L_irr, A_OCC, A_VIR, "LIA");
+        global_dpd_->file2_init(&Lia, PSIF_CC_OEI, L_irr, B_OCC, B_VIR, "Lia");
+        global_dpd_->buf4_init(&LIJAB, PSIF_CC_LAMPS, L_irr, AA_OCC, AA_VIR, AA_OCC, AA_VIR, 0, "LIJAB");
+        global_dpd_->buf4_init(&Lijab, PSIF_CC_LAMPS, L_irr, BB_OCC, BB_VIR, BB_OCC, BB_VIR, 0, "Lijab");
+        global_dpd_->buf4_init(&LIjAb, PSIF_CC_LAMPS, L_irr, AB_OCC, AB_VIR, AB_OCC, AB_VIR, 0, "LIjAb");
   
         fprintf(outfile,"\nROHF orthogonality test\n");
         fprintf(outfile,"<L0|R0>            = %15.10lf\n", eom_params.L0 * rzero);
-        dot_IA = dpd_file2_dot(&LIA, &RIA);
+        dot_IA = global_dpd_->file2_dot(&LIA, &RIA);
         fprintf(outfile,"<LIA|RIA>          = %15.10lf\n", dot_IA);
-        dot_ia = dpd_file2_dot(&Lia, &Ria);
+        dot_ia = global_dpd_->file2_dot(&Lia, &Ria);
         fprintf(outfile,"<Lia|Ria>          = %15.10lf\n", dot_ia);
-        dot_IJAB = dpd_buf4_dot(&LIJAB, &RIJAB);
+        dot_IJAB = global_dpd_->buf4_dot(&LIJAB, &RIJAB);
         fprintf(outfile,"<LIJAB|RIJAB>      = %15.10lf\n", dot_IJAB);
-        dot_ijab = dpd_buf4_dot(&Lijab, &Rijab);
+        dot_ijab = global_dpd_->buf4_dot(&Lijab, &Rijab);
         fprintf(outfile,"<Lijab|Rijab>      = %15.10lf\n", dot_ijab);
-        dot_IjAb = dpd_buf4_dot(&LIjAb, &RIjAb);
+        dot_IjAb = global_dpd_->buf4_dot(&LIjAb, &RIjAb);
         fprintf(outfile,"<LIjAb|RIjAb>      = %15.10lf\n", dot_IjAb);
         fprintf(outfile,"<L|R>              = %15.10lf\n", (eom_params.L0 * rzero)
             + dot_IA + dot_ia + dot_IJAB + dot_ijab + dot_IjAb);
   
-        dpd_file2_close(&LIA);
-        dpd_file2_close(&Lia);
-        dpd_buf4_close(&LIJAB);
-        dpd_buf4_close(&Lijab);
-        dpd_buf4_close(&LIjAb);
-        dpd_file2_close(&RIA);
-        dpd_file2_close(&Ria);
-        dpd_buf4_close(&RIJAB);
-        dpd_buf4_close(&Rijab);
-        dpd_buf4_close(&RIjAb);
+        global_dpd_->file2_close(&LIA);
+        global_dpd_->file2_close(&Lia);
+        global_dpd_->buf4_close(&LIJAB);
+        global_dpd_->buf4_close(&Lijab);
+        global_dpd_->buf4_close(&LIjAb);
+        global_dpd_->file2_close(&RIA);
+        global_dpd_->file2_close(&Ria);
+        global_dpd_->buf4_close(&RIJAB);
+        global_dpd_->buf4_close(&Rijab);
+        global_dpd_->buf4_close(&RIjAb);
       }
       else {
         fprintf(outfile,"\nOverlap <R|L> zero by symmetry\n");
@@ -310,35 +332,35 @@ void rzero_rhf(int C_irr, int *converged) {
     sprintf(R2BB_lbl, "Rijab %d %d", C_irr, R_index);
 
     /* produce RIjbA and 2RIjAb-RIjbA copies - not yet normalized */
-    dpd_buf4_init(&RIjAb, PSIF_CC_RAMPS, C_irr, 0, 5, 0, 5, 0, R2AB_lbl);
-    dpd_buf4_sort(&RIjAb, PSIF_CC_TMP, pqsr, 0, 5, "RIjbA");
+    global_dpd_->buf4_init(&RIjAb, PSIF_CC_RAMPS, C_irr, 0, 5, 0, 5, 0, R2AB_lbl);
+    global_dpd_->buf4_sort(&RIjAb, PSIF_CC_TMP, pqsr, 0, 5, "RIjbA");
     sprintf(lbl, "%s %d %d", "2RIjAb - RIjbA", C_irr, R_index);
-    dpd_buf4_copy(&RIjAb, PSIF_CC_RAMPS, lbl);
-    dpd_buf4_close(&RIjAb);
+    global_dpd_->buf4_copy(&RIjAb, PSIF_CC_RAMPS, lbl);
+    global_dpd_->buf4_close(&RIjAb);
 
     sprintf(lbl, "%s %d %d", "2RIjAb - RIjbA", C_irr, R_index);
-    dpd_buf4_init(&RIjAb, PSIF_CC_RAMPS, C_irr, 0, 5, 0, 5, 0, lbl);
-    dpd_buf4_scm(&RIjAb, 2.0);
-    dpd_buf4_init(&RIjbA, PSIF_CC_TMP, C_irr, 0, 5, 0, 5, 0, "RIjbA");
-    dpd_buf4_axpy(&RIjbA, &RIjAb, -1.0);
-    dpd_buf4_close(&RIjbA);
-    dpd_buf4_close(&RIjAb);
+    global_dpd_->buf4_init(&RIjAb, PSIF_CC_RAMPS, C_irr, 0, 5, 0, 5, 0, lbl);
+    global_dpd_->buf4_scm(&RIjAb, 2.0);
+    global_dpd_->buf4_init(&RIjbA, PSIF_CC_TMP, C_irr, 0, 5, 0, 5, 0, "RIjbA");
+    global_dpd_->buf4_axpy(&RIjbA, &RIjAb, -1.0);
+    global_dpd_->buf4_close(&RIjbA);
+    global_dpd_->buf4_close(&RIjAb);
 
     /* calculate <0| hbar | 0> */
     if (!params.full_matrix) {
       if (C_irr == H_IRR) {
-        dpd_file2_init(&FIA, PSIF_CC_OEI, H_IRR, 0, 1, "FME");
-        dpd_file2_init(&RIA, PSIF_CC_RAMPS, C_irr, 0, 1, R1A_lbl);
-        r1 = 2.0 * dpd_file2_dot(&FIA, &RIA);
-        dpd_file2_close(&RIA);
-        dpd_file2_close(&FIA);
+        global_dpd_->file2_init(&FIA, PSIF_CC_OEI, H_IRR, 0, 1, "FME");
+        global_dpd_->file2_init(&RIA, PSIF_CC_RAMPS, C_irr, 0, 1, R1A_lbl);
+        r1 = 2.0 * global_dpd_->file2_dot(&FIA, &RIA);
+        global_dpd_->file2_close(&RIA);
+        global_dpd_->file2_close(&FIA);
     
         sprintf(lbl, "%s %d %d", "2RIjAb - RIjbA", C_irr, R_index);
-        dpd_buf4_init(&RIjAb, PSIF_CC_RAMPS, C_irr, 0, 5, 0, 5, 0, lbl);
-        dpd_buf4_init(&D, PSIF_CC_DINTS, H_IRR, 0, 5, 0, 5, 0, "D <ij|ab>");
-        r2 = dpd_buf4_dot(&D, &RIjAb);
-        dpd_buf4_close(&D);
-        dpd_buf4_close(&RIjAb);
+        global_dpd_->buf4_init(&RIjAb, PSIF_CC_RAMPS, C_irr, 0, 5, 0, 5, 0, lbl);
+        global_dpd_->buf4_init(&D, PSIF_CC_DINTS, H_IRR, 0, 5, 0, 5, 0, "D <ij|ab>");
+        r2 = global_dpd_->buf4_dot(&D, &RIjAb);
+        global_dpd_->buf4_close(&D);
+        global_dpd_->buf4_close(&RIjAb);
         rzero = (r1 + r2)/energy;
       }
       else {
@@ -351,9 +373,9 @@ void rzero_rhf(int C_irr, int *converged) {
     }
 
     /* Now normalize R so that <R|R> = 1 */
-    dpd_file2_init(&RIA, PSIF_CC_RAMPS, C_irr, 0, 1, R1A_lbl);
-    dpd_buf4_init(&RIjAb, PSIF_CC_RAMPS, C_irr, 0, 5, 0, 5, 0, R2AB_lbl);
-    dpd_buf4_init(&RIjbA, PSIF_CC_TMP, C_irr, 0, 5, 0, 5, 0, "RIjbA");
+    global_dpd_->file2_init(&RIA, PSIF_CC_RAMPS, C_irr, 0, 1, R1A_lbl);
+    global_dpd_->buf4_init(&RIjAb, PSIF_CC_RAMPS, C_irr, 0, 5, 0, 5, 0, R2AB_lbl);
+    global_dpd_->buf4_init(&RIjbA, PSIF_CC_TMP, C_irr, 0, 5, 0, 5, 0, "RIjbA");
 
     /*
     if (rzero < 0.0) {
@@ -369,9 +391,9 @@ void rzero_rhf(int C_irr, int *converged) {
     norm += rzero * rzero;
     norm = sqrt(norm);
     rzero = rzero / norm;
-    dpd_file2_scm(&RIA, 1.0/norm);
-    dpd_buf4_scm(&RIjAb, 1.0/norm);
-    dpd_buf4_scm(&RIjbA, 1.0/norm);
+    global_dpd_->file2_scm(&RIA, 1.0/norm);
+    global_dpd_->buf4_scm(&RIjAb, 1.0/norm);
+    global_dpd_->buf4_scm(&RIjbA, 1.0/norm);
 
 /* just for debugging cc3 put normalized vector back into C as well */
 /*
@@ -380,9 +402,9 @@ dpd_buf4_copy(&RIjAb, EOM_CMnEf, "CMnEf 0");
 */
 /* end debugging stuff */ 
 
-    dpd_file2_close(&RIA);
-    dpd_buf4_close(&RIjAb);
-    dpd_buf4_close(&RIjbA);
+    global_dpd_->file2_close(&RIA);
+    global_dpd_->buf4_close(&RIjAb);
+    global_dpd_->buf4_close(&RIjbA);
 
     if(params.wfn == "EOM_CC2") {
       fprintf(outfile,"EOM CC2 R0 for root %d = %15.11lf\n", R_index, rzero);
@@ -401,45 +423,45 @@ dpd_buf4_copy(&RIjAb, EOM_CMnEf, "CMnEf 0");
     }
 
     /* produce ROHF like quantities and 2RIjAb-RIjbA */
-    dpd_file2_init(&RIA, PSIF_CC_RAMPS, C_irr, 0, 1, R1A_lbl);
-    dpd_file2_copy(&RIA, PSIF_CC_RAMPS, R1B_lbl);
-    dpd_file2_close(&RIA);
+    global_dpd_->file2_init(&RIA, PSIF_CC_RAMPS, C_irr, 0, 1, R1A_lbl);
+    global_dpd_->file2_copy(&RIA, PSIF_CC_RAMPS, R1B_lbl);
+    global_dpd_->file2_close(&RIA);
 
-    dpd_buf4_init(&RIjAb, PSIF_CC_RAMPS, C_irr, 0, 5, 0, 5, 0, R2AB_lbl);
+    global_dpd_->buf4_init(&RIjAb, PSIF_CC_RAMPS, C_irr, 0, 5, 0, 5, 0, R2AB_lbl);
     sprintf(lbl, "%s %d %d", "2RIjAb - RIjbA", C_irr, R_index);
-    dpd_buf4_copy(&RIjAb, PSIF_CC_RAMPS, lbl);
-    dpd_buf4_close(&RIjAb);
+    global_dpd_->buf4_copy(&RIjAb, PSIF_CC_RAMPS, lbl);
+    global_dpd_->buf4_close(&RIjAb);
 
-    dpd_buf4_init(&RIjAb, PSIF_CC_RAMPS, C_irr, 2, 7, 0, 5, 1, R2AB_lbl);
-    dpd_buf4_copy(&RIjAb, PSIF_CC_RAMPS, R2AA_lbl);
-    dpd_buf4_copy(&RIjAb, PSIF_CC_RAMPS, R2BB_lbl);
-    dpd_buf4_close(&RIjAb);
+    global_dpd_->buf4_init(&RIjAb, PSIF_CC_RAMPS, C_irr, 2, 7, 0, 5, 1, R2AB_lbl);
+    global_dpd_->buf4_copy(&RIjAb, PSIF_CC_RAMPS, R2AA_lbl);
+    global_dpd_->buf4_copy(&RIjAb, PSIF_CC_RAMPS, R2BB_lbl);
+    global_dpd_->buf4_close(&RIjAb);
       
-    dpd_buf4_init(&RIjbA, PSIF_CC_TMP, C_irr, 0, 5, 0, 5, 0, "RIjbA");
+    global_dpd_->buf4_init(&RIjbA, PSIF_CC_TMP, C_irr, 0, 5, 0, 5, 0, "RIjbA");
     sprintf(lbl, "%s %d %d", "2RIjAb - RIjbA", C_irr, R_index);
-    dpd_buf4_init(&RIjAb, PSIF_CC_RAMPS, C_irr, 0, 5, 0, 5, 0, lbl);
-    dpd_buf4_scm(&RIjAb, 2.0);
-    dpd_buf4_axpy(&RIjbA, &RIjAb, -1.0);
-    dpd_buf4_close(&RIjAb);
-    dpd_buf4_close(&RIjbA);
+    global_dpd_->buf4_init(&RIjAb, PSIF_CC_RAMPS, C_irr, 0, 5, 0, 5, 0, lbl);
+    global_dpd_->buf4_scm(&RIjAb, 2.0);
+    global_dpd_->buf4_axpy(&RIjbA, &RIjAb, -1.0);
+    global_dpd_->buf4_close(&RIjAb);
+    global_dpd_->buf4_close(&RIjbA);
   
     /* test normalization with produced ROHF-like quantities */
 
-    dpd_file2_init(&RIA, PSIF_CC_RAMPS, C_irr, 0, 1, R1A_lbl);
-    norm = dpd_file2_dot_self(&RIA);
-    dpd_file2_close(&RIA);
-    dpd_file2_init(&Ria, PSIF_CC_RAMPS, C_irr, 0, 1, R1B_lbl);
-    norm += dpd_file2_dot_self(&Ria);
-    dpd_file2_close(&Ria);
-    dpd_buf4_init(&RIJAB, PSIF_CC_RAMPS, C_irr, 2, 7, 2, 7, 0, R2AA_lbl);
-    norm += dpd_buf4_dot_self(&RIJAB);
-    dpd_buf4_close(&RIJAB);
-    dpd_buf4_init(&Rijab, PSIF_CC_RAMPS, C_irr, 2, 7, 2, 7, 0, R2BB_lbl);
-    norm += dpd_buf4_dot_self(&Rijab);
-    dpd_buf4_close(&Rijab);
-    dpd_buf4_init(&RIjAb, PSIF_CC_RAMPS, C_irr, 0, 5, 0, 5, 0, R2AB_lbl);
-    norm += dpd_buf4_dot_self(&RIjAb);
-    dpd_buf4_close(&RIjAb);
+    global_dpd_->file2_init(&RIA, PSIF_CC_RAMPS, C_irr, 0, 1, R1A_lbl);
+    norm = global_dpd_->file2_dot_self(&RIA);
+    global_dpd_->file2_close(&RIA);
+    global_dpd_->file2_init(&Ria, PSIF_CC_RAMPS, C_irr, 0, 1, R1B_lbl);
+    norm += global_dpd_->file2_dot_self(&Ria);
+    global_dpd_->file2_close(&Ria);
+    global_dpd_->buf4_init(&RIJAB, PSIF_CC_RAMPS, C_irr, 2, 7, 2, 7, 0, R2AA_lbl);
+    norm += global_dpd_->buf4_dot_self(&RIJAB);
+    global_dpd_->buf4_close(&RIJAB);
+    global_dpd_->buf4_init(&Rijab, PSIF_CC_RAMPS, C_irr, 2, 7, 2, 7, 0, R2BB_lbl);
+    norm += global_dpd_->buf4_dot_self(&Rijab);
+    global_dpd_->buf4_close(&Rijab);
+    global_dpd_->buf4_init(&RIjAb, PSIF_CC_RAMPS, C_irr, 0, 5, 0, 5, 0, R2AB_lbl);
+    norm += global_dpd_->buf4_dot_self(&RIjAb);
+    global_dpd_->buf4_close(&RIjAb);
     norm += rzero * rzero;
 
 #ifdef EOM_DEBUG
@@ -452,18 +474,18 @@ dpd_buf4_copy(&RIjAb, EOM_CMnEf, "CMnEf 0");
     /* check orthogonality with L */
     if (eom_params.dot_with_L) {
       if (C_irr == L_irr) {
-        dpd_file2_init(&LIA, PSIF_CC_OEI, L_irr, 0, 1, "LIA");
-        dpd_file2_init(&RIA, PSIF_CC_RAMPS, C_irr, 0, 1, R1A_lbl);
-        r1 = 2.0 * dpd_file2_dot(&LIA, &RIA);
-        dpd_file2_close(&RIA);
-        dpd_file2_close(&LIA);
+        global_dpd_->file2_init(&LIA, PSIF_CC_OEI, L_irr, 0, 1, "LIA");
+        global_dpd_->file2_init(&RIA, PSIF_CC_RAMPS, C_irr, 0, 1, R1A_lbl);
+        r1 = 2.0 * global_dpd_->file2_dot(&LIA, &RIA);
+        global_dpd_->file2_close(&RIA);
+        global_dpd_->file2_close(&LIA);
   
-        dpd_buf4_init(&LIjAb, PSIF_CC_LAMPS, L_irr, 0, 5, 0, 5, 0, "LIjAb");
+        global_dpd_->buf4_init(&LIjAb, PSIF_CC_LAMPS, L_irr, 0, 5, 0, 5, 0, "LIjAb");
         sprintf(lbl, "%s %d %d", "2RIjAb - RIjbA", C_irr, R_index);
-        dpd_buf4_init(&RIjAb, PSIF_CC_RAMPS, C_irr, 0, 5, 0, 5, 0, lbl);
-        r2 = dpd_buf4_dot(&LIjAb, &RIjAb);
-        dpd_buf4_close(&RIjAb);
-        dpd_buf4_close(&LIjAb);
+        global_dpd_->buf4_init(&RIjAb, PSIF_CC_RAMPS, C_irr, 0, 5, 0, 5, 0, lbl);
+        r2 = global_dpd_->buf4_dot(&LIjAb, &RIjAb);
+        global_dpd_->buf4_close(&RIjAb);
+        global_dpd_->buf4_close(&LIjAb);
   
         dotval = r1 + r2 + (eom_params.L0 * rzero);
         fprintf(outfile,"Performing RHF orthogonality test\n");
@@ -477,35 +499,35 @@ dpd_buf4_copy(&RIjAb, EOM_CMnEf, "CMnEf 0");
       }
       if (C_irr == L_irr ) {
        /* double check orthogonality rohf-like */
-        dpd_file2_init(&RIA, PSIF_CC_RAMPS, C_irr, 0, 1, R1A_lbl);
-        dpd_file2_init(&Ria, PSIF_CC_RAMPS, C_irr, 0, 1, R1B_lbl);
-        dpd_buf4_init(&RIJAB, PSIF_CC_RAMPS, C_irr, 2, 7, 2, 7, 0, R2AA_lbl);
-        dpd_buf4_init(&Rijab, PSIF_CC_RAMPS, C_irr, 2, 7, 2, 7, 0, R2BB_lbl);
-        dpd_buf4_init(&RIjAb, PSIF_CC_RAMPS, C_irr, 0, 5, 0, 5, 0, R2AB_lbl);
+        global_dpd_->file2_init(&RIA, PSIF_CC_RAMPS, C_irr, 0, 1, R1A_lbl);
+        global_dpd_->file2_init(&Ria, PSIF_CC_RAMPS, C_irr, 0, 1, R1B_lbl);
+        global_dpd_->buf4_init(&RIJAB, PSIF_CC_RAMPS, C_irr, 2, 7, 2, 7, 0, R2AA_lbl);
+        global_dpd_->buf4_init(&Rijab, PSIF_CC_RAMPS, C_irr, 2, 7, 2, 7, 0, R2BB_lbl);
+        global_dpd_->buf4_init(&RIjAb, PSIF_CC_RAMPS, C_irr, 0, 5, 0, 5, 0, R2AB_lbl);
   
-        dpd_file2_init(&LIA, PSIF_CC_OEI, L_irr, 0, 1, "LIA");
-        dpd_file2_init(&Lia, PSIF_CC_OEI, L_irr, 0, 1, "Lia");
-        dpd_buf4_init(&LIJAB, PSIF_CC_LAMPS, L_irr, 2, 7, 2, 7, 0, "LIJAB");
-        dpd_buf4_init(&Lijab, PSIF_CC_LAMPS, L_irr, 2, 7, 2, 7, 0, "Lijab");
-        dpd_buf4_init(&LIjAb, PSIF_CC_LAMPS, L_irr, 0, 5, 0, 5, 0, "LIjAb");
+        global_dpd_->file2_init(&LIA, PSIF_CC_OEI, L_irr, 0, 1, "LIA");
+        global_dpd_->file2_init(&Lia, PSIF_CC_OEI, L_irr, 0, 1, "Lia");
+        global_dpd_->buf4_init(&LIJAB, PSIF_CC_LAMPS, L_irr, 2, 7, 2, 7, 0, "LIJAB");
+        global_dpd_->buf4_init(&Lijab, PSIF_CC_LAMPS, L_irr, 2, 7, 2, 7, 0, "Lijab");
+        global_dpd_->buf4_init(&LIjAb, PSIF_CC_LAMPS, L_irr, 0, 5, 0, 5, 0, "LIjAb");
   
-        dot_IA = dpd_file2_dot(&LIA, &RIA);
-        dot_ia = dpd_file2_dot(&Lia, &Ria);
-        dot_IJAB = dpd_buf4_dot(&LIJAB, &RIJAB);
-        dot_ijab = dpd_buf4_dot(&Lijab, &Rijab);
-        dot_IjAb = dpd_buf4_dot(&LIjAb, &RIjAb);
+        dot_IA = global_dpd_->file2_dot(&LIA, &RIA);
+        dot_ia = global_dpd_->file2_dot(&Lia, &Ria);
+        dot_IJAB = global_dpd_->buf4_dot(&LIJAB, &RIJAB);
+        dot_ijab = global_dpd_->buf4_dot(&Lijab, &Rijab);
+        dot_IjAb = global_dpd_->buf4_dot(&LIjAb, &RIjAb);
   
-        dpd_file2_close(&RIA);
-        dpd_file2_close(&Ria);
-        dpd_buf4_close(&RIJAB);
-        dpd_buf4_close(&Rijab);
-        dpd_buf4_close(&RIjAb);
+        global_dpd_->file2_close(&RIA);
+        global_dpd_->file2_close(&Ria);
+        global_dpd_->buf4_close(&RIJAB);
+        global_dpd_->buf4_close(&Rijab);
+        global_dpd_->buf4_close(&RIjAb);
   
-        dpd_file2_close(&LIA);
-        dpd_file2_close(&Lia);
-        dpd_buf4_close(&LIJAB);
-        dpd_buf4_close(&Lijab);
-        dpd_buf4_close(&LIjAb);
+        global_dpd_->file2_close(&LIA);
+        global_dpd_->file2_close(&Lia);
+        global_dpd_->buf4_close(&LIJAB);
+        global_dpd_->buf4_close(&Lijab);
+        global_dpd_->buf4_close(&LIjAb);
 
         fprintf(outfile,"\nROHF-like orthogonality test\n");
         fprintf(outfile,"<L0|R0>              = %15.10lf\n", eom_params.L0 * rzero);

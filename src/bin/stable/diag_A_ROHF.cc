@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup STABLE
     \brief Enter brief description of file here
@@ -29,7 +51,7 @@ void diag_A_ROHF(void)
     virtpi = moinfo.virtpi;
     rank = moinfo.rank;
 
-    dpd_buf4_init(&A, PSIF_MO_HESS, 0, 11, 11, 11, 11, 0, "A(EM,AI)");
+    global_dpd_->buf4_init(&A, PSIF_MO_HESS, 0, 11, 11, 11, 11, 0, "A(EM,AI)");
     /* Construct binary direct product array */
     dp = (int ***) malloc(nirreps * sizeof(int **));
     num_ai = init_int_array(nirreps);
@@ -99,8 +121,8 @@ void diag_A_ROHF(void)
 
         /* Apply T to move the zero rows and cols of the Hessian to the
        bottom */
-        dpd_buf4_mat_irrep_init(&A, h);
-        dpd_buf4_mat_irrep_rd(&A, h);
+        global_dpd_->buf4_mat_irrep_init(&A, h);
+        global_dpd_->buf4_mat_irrep_rd(&A, h);
 
         Y = block_matrix(num_ai[h], num_ai[h]); /* Scratch array */
         if(num_ai[h]) {
@@ -131,7 +153,7 @@ void diag_A_ROHF(void)
         free_int_matrix(dp[h]);
     free(dp);
 
-    dpd_buf4_close(&A);
+    global_dpd_->buf4_close(&A);
 }
 
 

@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include "psi4-dec.h"
 #include <libqt/qt.h>
 #include <cmath>
@@ -24,8 +46,8 @@ ADC::amps_write(dpdfile2 *B, int length, FILE *outfile)
     t1stack = (struct onestack*)malloc(length*sizeof(struct onestack));
     for(int m = 0; m < length; m++) { t1stack[m].value = 0; t1stack[m].i = 0; t1stack[m].a = 0; }
     
-    dpd_file2_mat_init(B);
-    dpd_file2_mat_rd(B);
+    global_dpd_->file2_mat_init(B);
+    global_dpd_->file2_mat_rd(B);
     
     int numt1 = 0;
     for(int h = 0;h < nirrep_;h++){
@@ -44,7 +66,7 @@ ADC::amps_write(dpdfile2 *B, int length, FILE *outfile)
             }
         }
     }
-    dpd_file2_mat_close(B);
+    global_dpd_->file2_mat_close(B);
     
     for(int m = 0;m < ((numt1 < length) ? numt1 : length);m++){
         if(fabs(t1stack[m].value) > 1e-6){

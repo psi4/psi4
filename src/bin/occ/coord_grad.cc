@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include <libtrans/integraltransform.h>
 
 #include "occwave.h"
@@ -11,18 +33,36 @@ namespace psi{ namespace occwave{
   
 void OCCWave::coord_grad()
 {
-      if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") omp3_tpdm_vvvv();
-      else if (wfn_type_ == "OCEPA") ocepa_tpdm_vvvv();
+      if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") {
+          fprintf(outfile,"\tComputing G_abcd...\n");
+          fflush(outfile);
+          omp3_tpdm_vvvv();
+      }
+      else if (wfn_type_ == "OCEPA") { 
+          fprintf(outfile,"\tComputing G_abcd...\n");
+          fflush(outfile);
+          ocepa_tpdm_vvvv();
+      }
+      fprintf(outfile,"\tComputing diagonal blocks of GFM...\n");
+      fflush(outfile);
       gfock_diag();
      
       // For Standard methods  
       if (orb_opt_ == "FALSE") {
+          fprintf(outfile,"\tSolving orbital Z-vector equations...\n");
+          fflush(outfile);
           z_vector();
+          fprintf(outfile,"\tForming relaxed response density matrices...\n");
+          fflush(outfile);
           effective_pdms();
+          fprintf(outfile,"\tForming relaxed GFM...\n");
+          fflush(outfile);
           effective_gfock();
       }
 
       dump_ints();
+      fprintf(outfile,"\tWriting particle density matrices and GFM to disk...\n");
+      fflush(outfile);
       dump_pdms();
 }// 
 
@@ -37,8 +77,8 @@ void OCCWave::dump_ints()
 
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
-    dpd_file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "H <O|O>");
-    dpd_file2_mat_init(&H);
+    global_dpd_->file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "H <O|O>");
+    global_dpd_->file2_mat_init(&H);
     for(int h = 0; h < nirrep_; ++h){
         for(int i = 0 ; i < occpiA[h]; ++i){
             for(int j = 0 ; j < occpiA[h]; ++j){
@@ -46,11 +86,11 @@ void OCCWave::dump_ints()
             }
         }
     }
-    dpd_file2_mat_wrt(&H);
-    dpd_file2_close(&H);
+    global_dpd_->file2_mat_wrt(&H);
+    global_dpd_->file2_close(&H);
 
-    dpd_file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "H <V|V>");
-    dpd_file2_mat_init(&H);
+    global_dpd_->file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "H <V|V>");
+    global_dpd_->file2_mat_init(&H);
     for(int h = 0; h < nirrep_; ++h){
         for(int a = 0 ; a < virtpiA[h]; ++a){
             for(int b = 0 ; b < virtpiA[h]; ++b){
@@ -58,11 +98,11 @@ void OCCWave::dump_ints()
             }
         }
     }
-    dpd_file2_mat_wrt(&H);
-    dpd_file2_close(&H);
+    global_dpd_->file2_mat_wrt(&H);
+    global_dpd_->file2_close(&H);
 
-    dpd_file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('V'), "H <O|V>");
-    dpd_file2_mat_init(&H);
+    global_dpd_->file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('V'), "H <O|V>");
+    global_dpd_->file2_mat_init(&H);
     for(int h = 0; h < nirrep_; ++h){
         for(int i = 0 ; i < occpiA[h]; ++i){
             for(int j = 0 ; j < virtpiA[h]; ++j){
@@ -70,13 +110,13 @@ void OCCWave::dump_ints()
             }
         }
     }
-    dpd_file2_mat_wrt(&H);
-    dpd_file2_close(&H);
+    global_dpd_->file2_mat_wrt(&H);
+    global_dpd_->file2_close(&H);
 
  // Write beta-integrals if ref is UHF
  if (reference_ == "UNRESTRICTED") {
-    dpd_file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('o'), "H <o|o>");
-    dpd_file2_mat_init(&H);
+    global_dpd_->file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('o'), "H <o|o>");
+    global_dpd_->file2_mat_init(&H);
     for(int h = 0; h < nirrep_; ++h){
         for(int i = 0 ; i < occpiB[h]; ++i){
             for(int j = 0 ; j < occpiB[h]; ++j){
@@ -84,11 +124,11 @@ void OCCWave::dump_ints()
             }
         }
     }
-    dpd_file2_mat_wrt(&H);
-    dpd_file2_close(&H);
+    global_dpd_->file2_mat_wrt(&H);
+    global_dpd_->file2_close(&H);
 
-    dpd_file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('v'), ID('v'), "H <v|v>");
-    dpd_file2_mat_init(&H);
+    global_dpd_->file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('v'), ID('v'), "H <v|v>");
+    global_dpd_->file2_mat_init(&H);
     for(int h = 0; h < nirrep_; ++h){
         for(int a = 0 ; a < virtpiB[h]; ++a){
             for(int b = 0 ; b < virtpiB[h]; ++b){
@@ -96,11 +136,11 @@ void OCCWave::dump_ints()
             }
         }
     }
-    dpd_file2_mat_wrt(&H);
-    dpd_file2_close(&H);
+    global_dpd_->file2_mat_wrt(&H);
+    global_dpd_->file2_close(&H);
 
-    dpd_file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('v'), "H <o|v>");
-    dpd_file2_mat_init(&H);
+    global_dpd_->file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('v'), "H <o|v>");
+    global_dpd_->file2_mat_init(&H);
     for(int h = 0; h < nirrep_; ++h){
         for(int i = 0 ; i < occpiB[h]; ++i){
             for(int j = 0 ; j < virtpiB[h]; ++j){
@@ -108,8 +148,8 @@ void OCCWave::dump_ints()
             }
         }
     }
-    dpd_file2_mat_wrt(&H);
-    dpd_file2_close(&H);
+    global_dpd_->file2_mat_wrt(&H);
+    global_dpd_->file2_close(&H);
  }// end uhf
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
@@ -215,11 +255,11 @@ if (reference_ == "RESTRICTED") {
     iwl_buf_init(&AA, PSIF_MO_TPDM, 1.0E-15, 0, 0);
 
     // OOOO block
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
               ID("[O,O]"), ID("[O,O]"), 0, "TPDM <OO|OO>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
-        dpd_buf4_mat_irrep_rd(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
         for(size_t ij = 0; ij < G.params->rowtot[h]; ++ij){
             int i = G.params->roworb[h][ij][0];
             int j = G.params->roworb[h][ij][1];
@@ -240,17 +280,17 @@ if (reference_ == "RESTRICTED") {
                 }
             }
         }
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
 
 if (wfn_type_ != "OMP2") { 
     // VVVV block
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
               ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
-        dpd_buf4_mat_irrep_rd(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
         for(size_t ab = 0; ab < G.params->rowtot[h]; ++ab){
             int a = G.params->roworb[h][ab][0];
             int b = G.params->roworb[h][ab][1];
@@ -271,17 +311,17 @@ if (wfn_type_ != "OMP2") {
                 }
             }
         }
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
 }// end if (wfn_type_ != "OMP2") { 
 
     // OOVV
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
               ID("[O,O]"), ID("[V,V]"), 0, "TPDM <OO|VV>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
-        dpd_buf4_mat_irrep_rd(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
         for(int ij = 0; ij < G.params->rowtot[h]; ++ij){
             int i = G.params->roworb[h][ij][0];
             int j = G.params->roworb[h][ij][1];
@@ -300,25 +340,25 @@ if (wfn_type_ != "OMP2") {
                 }
             }
         }
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
 
     // OVOV
     // Alpha-Alpha spin-case
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
               ID("[O,V]"), ID("[O,V]"), 0, "TPDM <OV|OV>");
-    dpd_buf4_scm(&G, 2.0);
-    dpd_buf4_dump(&G, &AA, aocc_qt, avir_qt, aocc_qt, avir_qt, 0, 1);
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_scm(&G, 2.0);
+    global_dpd_->buf4_dump(&G, &AA, aocc_qt, avir_qt, aocc_qt, avir_qt, 0, 1);
+    global_dpd_->buf4_close(&G);
 
    // For the standard methods I need the following contribution
    if (orb_opt_ == "FALSE") { 
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,O]"), ID("[O,O]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,O]"), ID("[O,O]"),
                   ID("[V,O]"), ID("[O,O]"), 0, "TPDM <VO|OO>");
-    dpd_buf4_scm(&G, 0.5);
-    dpd_buf4_dump(&G, &AA, avir_qt, aocc_qt, aocc_qt, aocc_qt, 0, 1);
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_scm(&G, 0.5);
+    global_dpd_->buf4_dump(&G, &AA, avir_qt, aocc_qt, aocc_qt, aocc_qt, 0, 1);
+    global_dpd_->buf4_close(&G);
    }// if (orb_opt_ == "FALSE")  
 
     delete [] aocc_qt;
@@ -470,24 +510,24 @@ else if (reference_ == "UNRESTRICTED") {
     iwl_buf_init(&BB, PSIF_MO_BB_TPDM, 1.0E-15, 0, 0);
 
     // OOOO: Alpha-Alpha spin-case
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
               ID("[O,O]"), ID("[O,O]"), 0, "TPDM <OO|OO>");
     // Dump tpdm in chemist notation, 0 means no pack, 1 means swap indices 23
-    dpd_buf4_dump(&G, &AA, aocc_qt, aocc_qt, aocc_qt, aocc_qt, 0, 1);
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_dump(&G, &AA, aocc_qt, aocc_qt, aocc_qt, aocc_qt, 0, 1);
+    global_dpd_->buf4_close(&G);
 
     // OOOO: Beta-Beta spin-case
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[o,o]"), ID("[o,o]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[o,o]"), ID("[o,o]"),
               ID("[o,o]"), ID("[o,o]"), 0, "TPDM <oo|oo>");
-    dpd_buf4_dump(&G, &BB, bocc_qt, bocc_qt, bocc_qt, bocc_qt, 0, 1);
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_dump(&G, &BB, bocc_qt, bocc_qt, bocc_qt, bocc_qt, 0, 1);
+    global_dpd_->buf4_close(&G);
 
     // OOOO: Alpha-Beta spin-case
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,o]"), ID("[O,o]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,o]"), ID("[O,o]"),
               ID("[O,o]"), ID("[O,o]"), 0, "TPDM <Oo|Oo>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
-        dpd_buf4_mat_irrep_rd(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
         for(size_t ij = 0; ij < G.params->rowtot[h]; ++ij){
             int i = G.params->roworb[h][ij][0];
             int j = G.params->roworb[h][ij][1];
@@ -502,56 +542,56 @@ else if (reference_ == "UNRESTRICTED") {
                 iwl_buf_wrt_val(&AB, I, K, J, L, value, 0, (FILE *) NULL, 0);
             }
         }
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
  
 //if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA") { 
 if (wfn_type_ != "OMP2") { 
     // VVVV: Alpha-Alpha spin-case
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
               ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>");
-    dpd_buf4_dump(&G, &AA, avir_qt, avir_qt, avir_qt, avir_qt, 0, 1);
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_dump(&G, &AA, avir_qt, avir_qt, avir_qt, avir_qt, 0, 1);
+    global_dpd_->buf4_close(&G);
     
     // VVVV: Beta-Beta spin-case
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[v,v]"), ID("[v,v]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[v,v]"), ID("[v,v]"),
               ID("[v,v]"), ID("[v,v]"), 0, "TPDM <vv|vv>");
-    dpd_buf4_dump(&G, &BB, bvir_qt, bvir_qt, bvir_qt, bvir_qt, 0, 1);
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_dump(&G, &BB, bvir_qt, bvir_qt, bvir_qt, bvir_qt, 0, 1);
+    global_dpd_->buf4_close(&G);
 
     // VVVV: Alpha-Beta spin-case
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,v]"), ID("[V,v]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,v]"), ID("[V,v]"),
               ID("[V,v]"), ID("[V,v]"), 0, "TPDM <Vv|Vv>");
-    dpd_buf4_sort(&G, PSIF_OCC_DENSITY , prqs, ID("[V,V]"), ID("[v,v]"), "TPDM (VV|vv)");
-    dpd_buf4_close(&G);
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[v,v]"),
+    global_dpd_->buf4_sort(&G, PSIF_OCC_DENSITY , prqs, ID("[V,V]"), ID("[v,v]"), "TPDM (VV|vv)");
+    global_dpd_->buf4_close(&G);
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[v,v]"),
               ID("[V,V]"), ID("[v,v]"), 0, "TPDM (VV|vv)");
-    dpd_buf4_scm(&G, 4.0);
-    dpd_buf4_dump(&G, &AB, avir_qt, avir_qt, bvir_qt, bvir_qt, 0, 0);
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_scm(&G, 4.0);
+    global_dpd_->buf4_dump(&G, &AB, avir_qt, avir_qt, bvir_qt, bvir_qt, 0, 0);
+    global_dpd_->buf4_close(&G);
 }// end if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA") { 
 
     // OOVV: Alpha-Alpha spin-case
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
               ID("[O,O]"), ID("[V,V]"), 0, "TPDM <OO|VV>");
-    dpd_buf4_scm(&G, 2.0);
-    dpd_buf4_dump(&G, &AA, aocc_qt, aocc_qt, avir_qt, avir_qt, 0, 1);
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_scm(&G, 2.0);
+    global_dpd_->buf4_dump(&G, &AA, aocc_qt, aocc_qt, avir_qt, avir_qt, 0, 1);
+    global_dpd_->buf4_close(&G);
 
     // OOVV: Beta-Beta spin-case
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[o,o]"), ID("[v,v]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[o,o]"), ID("[v,v]"),
               ID("[o,o]"), ID("[v,v]"), 0, "TPDM <oo|vv>");
-    dpd_buf4_scm(&G, 2.0);
-    dpd_buf4_dump(&G, &BB, bocc_qt, bocc_qt, bvir_qt, bvir_qt, 0, 1);
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_scm(&G, 2.0);
+    global_dpd_->buf4_dump(&G, &BB, bocc_qt, bocc_qt, bvir_qt, bvir_qt, 0, 1);
+    global_dpd_->buf4_close(&G);
 
     // OOVV: Alpha-Beta spin-case
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,o]"), ID("[V,v]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,o]"), ID("[V,v]"),
               ID("[O,o]"), ID("[V,v]"), 0, "TPDM <Oo|Vv>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
-        dpd_buf4_mat_irrep_rd(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
         for(size_t ij = 0; ij < G.params->rowtot[h]; ++ij){
             int i = G.params->roworb[h][ij][0];
             int j = G.params->roworb[h][ij][1];
@@ -566,17 +606,17 @@ if (wfn_type_ != "OMP2") {
                 iwl_buf_wrt_val(&AB, I, A, J, B, value, 0, (FILE *) NULL, 0);
             }
         }
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
 
 
     // OVOV: Alpha-Alpha spin-case
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
               ID("[O,V]"), ID("[O,V]"), 0, "TPDM <OV|OV>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
-        dpd_buf4_mat_irrep_rd(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
         for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
             int i = G.params->roworb[h][ia][0];
             int a = G.params->roworb[h][ia][1];
@@ -591,16 +631,16 @@ if (wfn_type_ != "OMP2") {
                 iwl_buf_wrt_val(&AA, I, J, A, B, value, 0, (FILE *) NULL, 0);
             }
         }
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
 
     // OVOV: Beta-Beta spin-case
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[o,v]"), ID("[o,v]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[o,v]"), ID("[o,v]"),
               ID("[o,v]"), ID("[o,v]"), 0, "TPDM <ov|ov>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
-        dpd_buf4_mat_irrep_rd(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
         for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
             int i = G.params->roworb[h][ia][0];
             int a = G.params->roworb[h][ia][1];
@@ -615,16 +655,16 @@ if (wfn_type_ != "OMP2") {
                 iwl_buf_wrt_val(&BB, I, J, A, B, value, 0, (FILE *) NULL, 0);
             }
         }
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
 
     // OVOV: Alpha-Beta spin-case
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,v]"), ID("[O,v]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,v]"), ID("[O,v]"),
                   ID("[O,v]"), ID("[O,v]"), 0, "TPDM <Ov|Ov>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
-        dpd_buf4_mat_irrep_rd(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
         for(int ia = 0; ia < G.params->rowtot[h]; ++ia){
             int i = G.params->roworb[h][ia][0];
             int a = G.params->roworb[h][ia][1];
@@ -639,18 +679,18 @@ if (wfn_type_ != "OMP2") {
                 iwl_buf_wrt_val(&AB, I, J, A, B, value, 0, (FILE *) NULL, 0);
             }
         }
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
 
 
 
     // OVVO: Alpha-Alpha spin-case
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
               ID("[O,V]"), ID("[O,V]"), 0, "TPDM <OV|OV>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
-        dpd_buf4_mat_irrep_rd(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
         for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
             int i = G.params->roworb[h][ia][0];
             int a = G.params->roworb[h][ia][1];
@@ -665,17 +705,17 @@ if (wfn_type_ != "OMP2") {
                 iwl_buf_wrt_val(&AA, I, B, A, J, value, 0, (FILE *) NULL, 0);
             }
         }
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
 
 
     // OVVO: Beta-Beta spin-case
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[o,v]"), ID("[o,v]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[o,v]"), ID("[o,v]"),
               ID("[o,v]"), ID("[o,v]"), 0, "TPDM <ov|ov>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
-        dpd_buf4_mat_irrep_rd(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
         for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
             int i = G.params->roworb[h][ia][0];
             int a = G.params->roworb[h][ia][1];
@@ -690,18 +730,18 @@ if (wfn_type_ != "OMP2") {
                 iwl_buf_wrt_val(&BB, I, B, A, J, value, 0, (FILE *) NULL, 0);
             }
         }
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
 
 //if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA") { 
 if (wfn_type_ != "OMP2") { 
     // OVVO: Alpha-Beta spin-case
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,v]"), ID("[V,o]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,v]"), ID("[V,o]"),
               ID("[O,v]"), ID("[V,o]"), 0, "TPDM <Ov|Vo>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
-        dpd_buf4_mat_irrep_rd(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
         for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
             int i = G.params->roworb[h][ia][0];
             int a = G.params->roworb[h][ia][1];
@@ -716,18 +756,18 @@ if (wfn_type_ != "OMP2") {
                 iwl_buf_wrt_val(&AB, I, B, A, J, value, 0, (FILE *) NULL, 0);
             }
         }
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
 }// end if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA") { 
 
 
     // VOVO: Alpha-Beta spin-case
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,o]"), ID("[V,o]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,o]"), ID("[V,o]"),
                   ID("[V,o]"), ID("[V,o]"), 0, "TPDM <Vo|Vo>"); 
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
-        dpd_buf4_mat_irrep_rd(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
         for(int ai = 0; ai < G.params->rowtot[h]; ++ai){
             int a = G.params->roworb[h][ai][0];
             int i = G.params->roworb[h][ai][1];
@@ -742,32 +782,32 @@ if (wfn_type_ != "OMP2") {
                 iwl_buf_wrt_val(&AB, A, B, I, J, value, 0, (FILE *) NULL, 0);
             }
         }
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
 
    // For the standard methods I need the following contribution
    if (orb_opt_ == "FALSE") { 
     // VOOO: Alpha-Alpha Spin-Case
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,O]"), ID("[O,O]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,O]"), ID("[O,O]"),
                   ID("[V,O]"), ID("[O,O]"), 0, "TPDM <VO|OO>");
-    dpd_buf4_scm(&G, 0.5);
-    dpd_buf4_dump(&G, &AA, avir_qt, aocc_qt, aocc_qt, aocc_qt, 0, 1);
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_scm(&G, 0.5);
+    global_dpd_->buf4_dump(&G, &AA, avir_qt, aocc_qt, aocc_qt, aocc_qt, 0, 1);
+    global_dpd_->buf4_close(&G);
 
     // VOOO: Beta-Beta Spin-Case
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[v,o]"), ID("[o,o]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[v,o]"), ID("[o,o]"),
                   ID("[v,o]"), ID("[o,o]"), 0, "TPDM <vo|oo>");
-    dpd_buf4_scm(&G, 0.5);
-    dpd_buf4_dump(&G, &BB, bvir_qt, bocc_qt, bocc_qt, bocc_qt, 0, 1);
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_scm(&G, 0.5);
+    global_dpd_->buf4_dump(&G, &BB, bvir_qt, bocc_qt, bocc_qt, bocc_qt, 0, 1);
+    global_dpd_->buf4_close(&G);
 
     // VOOO: Alpha-Beta Spin-Case
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,o]"), ID("[O,o]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,o]"), ID("[O,o]"),
                   ID("[V,o]"), ID("[O,o]"), 0, "TPDM <Vo|Oo>");
       for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
-        dpd_buf4_mat_irrep_rd(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
         for(int am = 0; am < G.params->rowtot[h]; ++am){
             int a = G.params->roworb[h][am][0];
             int m = G.params->roworb[h][am][1];
@@ -782,17 +822,17 @@ if (wfn_type_ != "OMP2") {
                 iwl_buf_wrt_val(&AB, A, I, M, N, value, 0, (FILE *) NULL, 0);
             }
         }
-        dpd_buf4_mat_irrep_wrt(&G, h);
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
 
     // OVOO: Alpha-Beta Spin-Case
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,v]"), ID("[O,o]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,v]"), ID("[O,o]"),
                   ID("[O,v]"), ID("[O,o]"), 0, "TPDM <Ov|Oo>");
       for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
-        dpd_buf4_mat_irrep_rd(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
         for(int ma = 0; ma < G.params->rowtot[h]; ++ma){
             int m = G.params->roworb[h][ma][0];
             int a = G.params->roworb[h][ma][1];
@@ -807,10 +847,10 @@ if (wfn_type_ != "OMP2") {
                 iwl_buf_wrt_val(&AB, M, N, A, I, value, 0, (FILE *) NULL, 0);
             }
         }
-        dpd_buf4_mat_irrep_wrt(&G, h);
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
    }// if (orb_opt_ == "FALSE")  
 
     delete [] aocc_qt;
@@ -850,10 +890,10 @@ void OCCWave::effective_pdms()
     dpdbuf4 G, G2;
     psio_->open(PSIF_OCC_DENSITY, PSIO_OPEN_OLD);
     // G_amin = 8 z_ai delta_mn
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,O]"), ID("[O,O]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,O]"), ID("[O,O]"),
                   ID("[V,O]"), ID("[O,O]"), 0, "TPDM <VO|OO>");
       for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&G, h);
         #pragma omp parallel for
         for(int am = 0; am < G.params->rowtot[h]; ++am){
             int a = G.params->roworb[h][am][0];
@@ -868,17 +908,17 @@ void OCCWave::effective_pdms()
 		if (m == n && ha == hi) G.matrix[h][am][in] = 8.0*ZmatA->get(ha,aa,ii);
             }
         }
-        dpd_buf4_mat_irrep_wrt(&G, h);
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
    
     // G_amni += -4 z_ai delta_mn
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,O]"), ID("[O,O]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,O]"), ID("[O,O]"),
                   ID("[V,O]"), ID("[O,O]"), 0, "TPDM <VO|OO>");
       for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
-        dpd_buf4_mat_irrep_rd(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
         #pragma omp parallel for
         for(int am = 0; am < G.params->rowtot[h]; ++am){
             int a = G.params->roworb[h][am][0];
@@ -893,10 +933,10 @@ void OCCWave::effective_pdms()
 		if (m == n && ha == hi) G.matrix[h][am][ni] -= 4.0*ZmatA->get(ha,aa,ii);
             }
         }
-        dpd_buf4_mat_irrep_wrt(&G, h);
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
     psio_->close(PSIF_OCC_DENSITY, 1);
  
  }// if (reference_ == "RESTRICTED") {
@@ -925,10 +965,10 @@ void OCCWave::effective_pdms()
     psio_->open(PSIF_OCC_DENSITY, PSIO_OPEN_OLD);
 
     // G_AMIN = 2 * Z_AI delta_MN
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,O]"), ID("[O,O]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,O]"), ID("[O,O]"),
                   ID("[V,O]"), ID("[O,O]"), 0, "TPDM <VO|OO>");
       for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&G, h);
         #pragma omp parallel for
         for(int am = 0; am < G.params->rowtot[h]; ++am){
             int a = G.params->roworb[h][am][0];
@@ -943,17 +983,17 @@ void OCCWave::effective_pdms()
 		if (m == n && ha == hi) G.matrix[h][am][in] = 2.0*ZmatA->get(ha,aa,ii);
             }
         }
-        dpd_buf4_mat_irrep_wrt(&G, h);
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
    
     // G_AMNI += -2*Z_AI delta_MN
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,O]"), ID("[O,O]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,O]"), ID("[O,O]"),
                   ID("[V,O]"), ID("[O,O]"), 0, "TPDM <VO|OO>");
       for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
-        dpd_buf4_mat_irrep_rd(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
         #pragma omp parallel for
         for(int am = 0; am < G.params->rowtot[h]; ++am){
             int a = G.params->roworb[h][am][0];
@@ -968,16 +1008,16 @@ void OCCWave::effective_pdms()
 		if (m == n && ha == hi) G.matrix[h][am][ni] -= 2.0*ZmatA->get(ha,aa,ii);
             }
         }
-        dpd_buf4_mat_irrep_wrt(&G, h);
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
 
     // G_amin = 2 * Z_ai delta_mn
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[v,o]"), ID("[o,o]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[v,o]"), ID("[o,o]"),
                   ID("[v,o]"), ID("[o,o]"), 0, "TPDM <vo|oo>");
       for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&G, h);
         #pragma omp parallel for
         for(int am = 0; am < G.params->rowtot[h]; ++am){
             int a = G.params->roworb[h][am][0];
@@ -992,17 +1032,17 @@ void OCCWave::effective_pdms()
 		if (m == n && ha == hi) G.matrix[h][am][in] = 2.0*ZmatB->get(ha,aa,ii);
             }
         }
-        dpd_buf4_mat_irrep_wrt(&G, h);
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
 
     // G_amni += -2*Z_ai delta_mn
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[v,o]"), ID("[o,o]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[v,o]"), ID("[o,o]"),
                   ID("[v,o]"), ID("[o,o]"), 0, "TPDM <vo|oo>");
       for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
-        dpd_buf4_mat_irrep_rd(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
         #pragma omp parallel for
         for(int am = 0; am < G.params->rowtot[h]; ++am){
             int a = G.params->roworb[h][am][0];
@@ -1017,16 +1057,16 @@ void OCCWave::effective_pdms()
 		if (m == n && ha == hi) G.matrix[h][am][ni] -= 2.0*ZmatB->get(ha,aa,ii);
             }
         }
-        dpd_buf4_mat_irrep_wrt(&G, h);
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
 
     // G_AmIn = 2 * Z_AI delta_mn
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,o]"), ID("[O,o]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,o]"), ID("[O,o]"),
                   ID("[V,o]"), ID("[O,o]"), 0, "TPDM <Vo|Oo>");
       for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&G, h);
         #pragma omp parallel for
         for(int am = 0; am < G.params->rowtot[h]; ++am){
             int a = G.params->roworb[h][am][0];
@@ -1041,16 +1081,16 @@ void OCCWave::effective_pdms()
 		if (m == n && ha == hi) G.matrix[h][am][in] = 2.0*ZmatA->get(ha,aa,ii);
             }
         }
-        dpd_buf4_mat_irrep_wrt(&G, h);
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
 
     // G_MaNi += 2 * Z_ai delta_MN
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,v]"), ID("[O,o]"),
+    global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,v]"), ID("[O,o]"),
                   ID("[O,v]"), ID("[O,o]"), 0, "TPDM <Ov|Oo>");
       for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_init(&G, h);
         #pragma omp parallel for
         for(int ma = 0; ma < G.params->rowtot[h]; ++ma){
             int m = G.params->roworb[h][ma][0];
@@ -1065,10 +1105,10 @@ void OCCWave::effective_pdms()
 		if (m == n && ha == hi) G.matrix[h][ma][ni] = 2.0*ZmatB->get(ha,aa,ii);
             }
         }
-        dpd_buf4_mat_irrep_wrt(&G, h);
-        dpd_buf4_mat_irrep_close(&G, h);
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&G);
     psio_->close(PSIF_OCC_DENSITY, 1);
 
  }// else if (reference_ == "UNRESTRICTED") 
@@ -1108,11 +1148,11 @@ void OCCWave::effective_gfock()
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
     // F_ai += 8 \sum_{e,m} Z_em <mi|ea> 	
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int mi = 0; mi < K.params->rowtot[h]; ++mi){
             int m = K.params->roworb[h][mi][0];
             int i = K.params->roworb[h][mi][1];
@@ -1133,16 +1173,16 @@ void OCCWave::effective_gfock()
                 }
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
     }
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_close(&K);
 
     // F_ai += -2 \sum_{e,m} Z_em <im|ea> 	
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int im = 0; im < K.params->rowtot[h]; ++im){
             int i = K.params->roworb[h][im][0];
             int m = K.params->roworb[h][im][1];
@@ -1163,16 +1203,16 @@ void OCCWave::effective_gfock()
                 }
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
     }
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_close(&K);
 
     // F_ai += -2 \sum_{e,m} Z_em <ie|ma> 	
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int ie = 0; ie < K.params->rowtot[h]; ++ie){
             int i = K.params->roworb[h][ie][0];
             int e = K.params->roworb[h][ie][1];
@@ -1193,16 +1233,16 @@ void OCCWave::effective_gfock()
                 }
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
     }
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_close(&K);
 
     // F_ij += 8 \sum_{e,m} Z_em <jm|ie> 	
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
                   ID("[O,O]"), ID("[O,V]"), 0, "MO Ints <OO|OV>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int jm = 0; jm < K.params->rowtot[h]; ++jm){
             int j = K.params->roworb[h][jm][0];
             int m = K.params->roworb[h][jm][1];
@@ -1223,16 +1263,16 @@ void OCCWave::effective_gfock()
                 }
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
     }
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_close(&K);
 
     // F_ij += -2 \sum_{e,m} Z_em <mj|ie> 	
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
                   ID("[O,O]"), ID("[O,V]"), 0, "MO Ints <OO|OV>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int mj = 0; mj < K.params->rowtot[h]; ++mj){
             int m = K.params->roworb[h][mj][0];
             int j = K.params->roworb[h][mj][1];
@@ -1253,16 +1293,16 @@ void OCCWave::effective_gfock()
                 }
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
     }
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_close(&K);
 
     // F_ij += -2 \sum_{e,m} Z_em <mi|je> 	
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
                   ID("[O,O]"), ID("[O,V]"), 0, "MO Ints <OO|OV>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int mi = 0; mi < K.params->rowtot[h]; ++mi){
             int m = K.params->roworb[h][mi][0];
             int i = K.params->roworb[h][mi][1];
@@ -1283,9 +1323,9 @@ void OCCWave::effective_gfock()
                 }
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
     }
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_close(&K);
 
     // close 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
@@ -1348,11 +1388,11 @@ void OCCWave::effective_gfock()
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
     // F_AI += 2 \sum_{E,M} Z_EM <MI|EA> 	
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int mi = 0; mi < K.params->rowtot[h]; ++mi){
             int m = K.params->roworb[h][mi][0];
             int i = K.params->roworb[h][mi][1];
@@ -1373,16 +1413,16 @@ void OCCWave::effective_gfock()
                 }
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
     }
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_close(&K);
 
     // F_AI += -\sum_{E,M} Z_EM <IM|EA> 	
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int im = 0; im < K.params->rowtot[h]; ++im){
             int i = K.params->roworb[h][im][0];
             int m = K.params->roworb[h][im][1];
@@ -1403,16 +1443,16 @@ void OCCWave::effective_gfock()
                 }
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
     }
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_close(&K);
 
     // F_AI += -\sum_{E,M} Z_EM <IE|MA> 	
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int ie = 0; ie < K.params->rowtot[h]; ++ie){
             int i = K.params->roworb[h][ie][0];
             int e = K.params->roworb[h][ie][1];
@@ -1433,17 +1473,17 @@ void OCCWave::effective_gfock()
                 }
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
     }
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_close(&K);
 
     // F_AI += 2 \sum_{e,m} Z_em <Im|Ae> 	
     //fprintf(outfile, "\tI am here\n"); fflush(outfile);
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                  ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int im = 0; im < K.params->rowtot[h]; ++im){
             int i = K.params->roworb[h][im][0];
             int m = K.params->roworb[h][im][1];
@@ -1464,17 +1504,17 @@ void OCCWave::effective_gfock()
                 }
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
     }
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_close(&K);
 
     // Beta
     // F_ai += 2 \sum_{e,m} Z_em <mi|ea> 	
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "MO Ints <oo|vv>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int mi = 0; mi < K.params->rowtot[h]; ++mi){
             int m = K.params->roworb[h][mi][0];
             int i = K.params->roworb[h][mi][1];
@@ -1495,16 +1535,16 @@ void OCCWave::effective_gfock()
                 }
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
     }
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_close(&K);
 
     // F_ai += -\sum_{e,m} Z_em <im|ea> 	
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "MO Ints <oo|vv>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int im = 0; im < K.params->rowtot[h]; ++im){
             int i = K.params->roworb[h][im][0];
             int m = K.params->roworb[h][im][1];
@@ -1525,16 +1565,16 @@ void OCCWave::effective_gfock()
                 }
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
     }
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_close(&K);
 
     // F_ai += -\sum_{e,m} Z_em <ie|ma> 	
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
                   ID("[o,v]"), ID("[o,v]"), 0, "MO Ints <ov|ov>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int ie = 0; ie < K.params->rowtot[h]; ++ie){
             int i = K.params->roworb[h][ie][0];
             int e = K.params->roworb[h][ie][1];
@@ -1555,16 +1595,16 @@ void OCCWave::effective_gfock()
                 }
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
     }
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_close(&K);
 
     // F_ai += 2 \sum_{E,M} Z_EM <Mi|Ea> 	
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                  ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int mi = 0; mi < K.params->rowtot[h]; ++mi){
             int m = K.params->roworb[h][mi][0];
             int i = K.params->roworb[h][mi][1];
@@ -1585,16 +1625,16 @@ void OCCWave::effective_gfock()
                 }
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
     }
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_close(&K);
 
     // F_IJ += 2 \sum_{E,M} Z_EM <JM|IE> 	
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
                   ID("[O,O]"), ID("[O,V]"), 0, "MO Ints <OO|OV>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int jm = 0; jm < K.params->rowtot[h]; ++jm){
             int j = K.params->roworb[h][jm][0];
             int m = K.params->roworb[h][jm][1];
@@ -1615,16 +1655,16 @@ void OCCWave::effective_gfock()
                 }
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
     }
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_close(&K);
 
     // F_IJ += -\sum_{EM} Z_EM <MJ|IE> 	
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
                   ID("[O,O]"), ID("[O,V]"), 0, "MO Ints <OO|OV>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int mj = 0; mj < K.params->rowtot[h]; ++mj){
             int m = K.params->roworb[h][mj][0];
             int j = K.params->roworb[h][mj][1];
@@ -1645,16 +1685,16 @@ void OCCWave::effective_gfock()
                 }
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
     }
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_close(&K);
 
     // F_IJ += -\sum_{EM} Z_EM <MI|JE> 	
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
                   ID("[O,O]"), ID("[O,V]"), 0, "MO Ints <OO|OV>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int mi = 0; mi < K.params->rowtot[h]; ++mi){
             int m = K.params->roworb[h][mi][0];
             int i = K.params->roworb[h][mi][1];
@@ -1675,16 +1715,16 @@ void OCCWave::effective_gfock()
                 }
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
     }
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_close(&K);
 
     // F_IJ += 2 \sum_{em} Z_em <Jm|Ie> 	
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[O,v]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[O,v]"),
                   ID("[O,o]"), ID("[O,v]"), 0, "MO Ints <Oo|Ov>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int jm = 0; jm < K.params->rowtot[h]; ++jm){
             int j = K.params->roworb[h][jm][0];
             int m = K.params->roworb[h][jm][1];
@@ -1705,17 +1745,17 @@ void OCCWave::effective_gfock()
                 }
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
     }
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_close(&K);
 
     // Beta
     // F_ij += 2 \sum_{em} Z_em <jm|ie> 	
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,v]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,v]"),
                   ID("[o,o]"), ID("[o,v]"), 0, "MO Ints <oo|ov>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int jm = 0; jm < K.params->rowtot[h]; ++jm){
             int j = K.params->roworb[h][jm][0];
             int m = K.params->roworb[h][jm][1];
@@ -1736,16 +1776,16 @@ void OCCWave::effective_gfock()
                 }
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
     }
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_close(&K);
 
     // F_ij += -\sum_{em} Z_em <mj|ie> 	
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,v]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,v]"),
                   ID("[o,o]"), ID("[o,v]"), 0, "MO Ints <oo|ov>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int mj = 0; mj < K.params->rowtot[h]; ++mj){
             int m = K.params->roworb[h][mj][0];
             int j = K.params->roworb[h][mj][1];
@@ -1766,16 +1806,16 @@ void OCCWave::effective_gfock()
                 }
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
     }
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_close(&K);
 
     // F_ij += -\sum_{em} Z_em <mi|je> 	
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,v]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,v]"),
                   ID("[o,o]"), ID("[o,v]"), 0, "MO Ints <oo|ov>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int mi = 0; mi < K.params->rowtot[h]; ++mi){
             int m = K.params->roworb[h][mi][0];
             int i = K.params->roworb[h][mi][1];
@@ -1796,16 +1836,16 @@ void OCCWave::effective_gfock()
                 }
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
     }
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_close(&K);
 
     // F_ij += 2 \sum_{EM} Z_EM <Mj|Ei> 	
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,o]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,o]"),
                   ID("[O,o]"), ID("[V,o]"), 0, "MO Ints <Oo|Vo>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int mj = 0; mj < K.params->rowtot[h]; ++mj){
             int m = K.params->roworb[h][mj][0];
             int j = K.params->roworb[h][mj][1];
@@ -1826,9 +1866,9 @@ void OCCWave::effective_gfock()
                 }
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
     }
-    dpd_buf4_close(&K);
+    global_dpd_->buf4_close(&K);
 
     // close 
     psio_->close(PSIF_LIBTRANS_DPD, 1);

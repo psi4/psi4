@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include <psi4-dec.h>
 #include <libparallel/parallel.h>
 #include <liboptions/liboptions.h>
@@ -12,6 +34,8 @@
 #include <libfock/apps.h>
 #include <libqt/qt.h>
 #include <vector>
+
+#include <../bin/fnocc/frozen_natural_orbitals.h>
 
 #include <psifiles.h>
 
@@ -44,8 +68,8 @@ void write_oei_to_disk(FILE* fort55, SharedMatrix moH)
 void write_tei_to_disk(FILE* fort55, int nirrep, dpdbuf4& K, double ints_tolerance)
 {
     for(int h = 0; h < nirrep; ++h){
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        global_dpd_->buf4_mat_irrep_init(&K, h);
+        global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int pq = 0; pq < K.params->rowtot[h]; ++pq){
             int p = K.params->roworb[h][pq][0];
             int q = K.params->roworb[h][pq][1];
@@ -58,7 +82,7 @@ void write_tei_to_disk(FILE* fort55, int nirrep, dpdbuf4& K, double ints_toleran
                             K.matrix[h][pq][rs], p+1, q+1, r+1, s+1);
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
+        global_dpd_->buf4_mat_irrep_close(&K, h);
     }
 }
 
@@ -368,13 +392,13 @@ void load_restricted(FILE* ccdensities, double tolerance, const Dimension& activ
 
     // Just in case the buffer exists, delete it now
     dpdbuf4 Ibuf;
-    dpd_buf4_init(&Ibuf, PSIF_TPDM_PRESORT, 0, ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"),
+    global_dpd_->buf4_init(&Ibuf, PSIF_TPDM_PRESORT, 0, ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"),
                   ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), 0, "MO TPDM (AA|AA)");
-    dpd_buf4_scm(&Ibuf, 0.0);
-    dpd_buf4_close(&Ibuf);
+    global_dpd_->buf4_scm(&Ibuf, 0.0);
+    global_dpd_->buf4_close(&Ibuf);
 
 
-    dpd_file4_init(&I, PSIF_TPDM_PRESORT, 0,
+    global_dpd_->file4_init(&I, PSIF_TPDM_PRESORT, 0,
                    ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), "MO TPDM (AA|AA)");
 
     SharedMatrix one_particle(new Matrix("MO-basis OPDM", active_mopi, active_mopi));
@@ -388,7 +412,7 @@ void load_restricted(FILE* ccdensities, double tolerance, const Dimension& activ
     bucket(mrccreader);
 
     // Close DPD file
-    dpd_file4_close(&I);
+    global_dpd_->file4_close(&I);
 
 
     /****START OF HACK****/
@@ -420,23 +444,23 @@ void load_restricted(FILE* ccdensities, double tolerance, const Dimension& activ
 
     _default_psio_lib_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
     _default_psio_lib_->tocprint(PSIF_LIBTRANS_DPD);
-    dpd_buf4_init(&G,PSIF_LIBTRANS_DPD, 0, ints.DPD_ID("[A,A]"), ints.DPD_ID("[A,A]"),
+    global_dpd_->buf4_init(&G,PSIF_LIBTRANS_DPD, 0, ints.DPD_ID("[A,A]"), ints.DPD_ID("[A,A]"),
                   ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), 0, "MO Ints (AA|AA)");
-    dpd_buf4_init(&D,PSIF_TPDM_PRESORT, 0, ints.DPD_ID("[A,A]"), ints.DPD_ID("[A,A]"),
+    global_dpd_->buf4_init(&D,PSIF_TPDM_PRESORT, 0, ints.DPD_ID("[A,A]"), ints.DPD_ID("[A,A]"),
                   ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), 0, "MO TPDM (AA|AA)");
-    dpd_file2_init(&X2, PSIF_LIBTRANS_DPD, 0, ints.DPD_ID('A'), ints.DPD_ID('A'),
+    global_dpd_->file2_init(&X2, PSIF_LIBTRANS_DPD, 0, ints.DPD_ID('A'), ints.DPD_ID('A'),
                    "X (2e contribution)");
 
     // Check energy
     double enuc = Process::environment.molecule()->nuclear_repulsion_energy();
     double E1e = one_particle->vector_dot(H);
-    double E2e = dpd_buf4_dot(&G, &D);
+    double E2e = global_dpd_->buf4_dot(&G, &D);
     fprintf(outfile, "\tEnergies recomputed from MRCC's density matrices:\n");
     fprintf(outfile, "\t\tOne-electron energy = %16.10f\n",E1e);
     fprintf(outfile, "\t\tTwo-electron energy = %16.10f\n",E2e);
     fprintf(outfile, "\t\tTotal energy        = %16.10f\n",enuc + E1e + E2e);
 
-    dpd_contract442(&G, &D, &X2, 0, 0, 2.0, 0.0);
+    global_dpd_->contract442(&G, &D, &X2, 0, 0, 2.0, 0.0);
     SharedMatrix X2mat(new Matrix(&X2));
 X->print();
 X2mat->print();
@@ -458,8 +482,8 @@ X->print();
     Lxy->subtract(X->transpose());
     Lxy->print();
 
-    dpd_buf4_close(&D);
-    dpd_buf4_close(&G);
+    global_dpd_->buf4_close(&D);
+    global_dpd_->buf4_close(&G);
 
     // At this point, the OPDM is the response OPDM
     if (debug) {
@@ -626,7 +650,15 @@ PsiReturnType mrcc_generate_input(Options& options, const boost::python::dict& l
     fprintf(outfile, "        method %d\n        exlevel %d\n        fullname %s\n\n",
             method, exlevel, fullname.c_str());
 
-    boost::shared_ptr<Wavefunction> wave     = Process::environment.wavefunction();
+    boost::shared_ptr<Wavefunction> wave;
+    //   freeze MP2 natural virtual orbitals?
+    if ( options.get_bool("NAT_ORBS") ) {
+        boost::shared_ptr<psi::fnocc::FrozenNO> fno(new psi::fnocc::FrozenNO(Process::environment.wavefunction(),options));
+        fno->ComputeNaturalOrbitals();
+        wave = (boost::shared_ptr<Wavefunction>)fno;
+    }else {
+        wave = Process::environment.wavefunction();
+    }
     boost::shared_ptr<Molecule>     molecule = wave->molecule();
 
     // Orbitals spaces
@@ -707,13 +739,13 @@ PsiReturnType mrcc_generate_input(Options& options, const boost::python::dict& l
     if (restricted) {
 
         // We want only the permutationally unique integrals, hence [A>=A]+, see libtrans documenation for details
-        dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0,
+        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0,
                       ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), // In memory
                       ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), // On disk
                       0,
                       "MO Ints (AA|AA)");
         write_tei_to_disk(fort55, nirrep, K, ints_tolerance);
-        dpd_buf4_close(&K);
+        global_dpd_->buf4_close(&K);
 
         // Load in frozen core operator, in the event of FREEZE_CORE = FALSE this is the MO OEI
         SharedMatrix moH(new Matrix(PSIF_MO_FZC, wave->nmopi(), wave->nmopi()));
@@ -731,37 +763,37 @@ PsiReturnType mrcc_generate_input(Options& options, const boost::python::dict& l
         // We want only the permutationally unique integrals, hence [A>=A]+, see libtrans documenation for details
 
         // Load up alpha alpha
-        dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0,
+        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0,
                       ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), // In memory
                       ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), // On disk
                       0,
                       "MO Ints (AA|AA)");
         write_tei_to_disk(fort55, nirrep, K, ints_tolerance);
-        dpd_buf4_close(&K);
+        global_dpd_->buf4_close(&K);
 
         // Write out separator
         fprintf(fort55, "%28.20E%4d%4d%4d%4d\n", 0.0, 0, 0, 0, 0);
 
         // Load up beta beta
-        dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0,
+        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0,
                       ints.DPD_ID("[a>=a]+"), ints.DPD_ID("[a>=a]+"), // In memory
                       ints.DPD_ID("[a>=a]+"), ints.DPD_ID("[a>=a]+"), // On disk
                       0,
                       "MO Ints (aa|aa)");
         write_tei_to_disk(fort55, nirrep, K, ints_tolerance);
-        dpd_buf4_close(&K);
+        global_dpd_->buf4_close(&K);
 
         // Write out separator
         fprintf(fort55, "%28.20E%4d%4d%4d%4d\n", 0.0, 0, 0, 0, 0);
 
         // Load up alpha beta
-        dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0,
+        global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0,
                       ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[a>=a]+"), // In memory
                       ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[a>=a]+"), // On disk
                       0,
                       "MO Ints (AA|aa)");
         write_tei_to_disk(fort55, nirrep, K, ints_tolerance);
-        dpd_buf4_close(&K);
+        global_dpd_->buf4_close(&K);
 
         // Write out separator
         fprintf(fort55, "%28.20E%4d%4d%4d%4d\n", 0.0, 0, 0, 0, 0);
@@ -817,22 +849,21 @@ PsiReturnType mrcc_generate_input(Options& options, const boost::python::dict& l
     if (options["MRCC_LEVEL"].has_changed())
         exlevel = options.get_int("MRCC_LEVEL");
 
-    int nsing = 1;
+    // defaults pertaining to closed shell calculation
     int closed_shell = 1;
     int spatial_orbitals = 1;
+    int nsing = 1;
     int ndoub = 0;
-    if (pertcc && (options.get_str("REFERENCE") == "ROHF" || options.get_str("REFERENCE") == "UHF")) {
-        nsing = 0;
-        closed_shell = 0;
-        spatial_orbitals = 0;
-        ndoub = 1;
-    }
-
-    if (options.get_str("REFERENCE") == "ROHF" || options.get_str("REFERENCE") == "UHF")
-        closed_shell = 0;
+    int ntrip = 0;
 
     int nsocc = active_socc.sum();
-    int ntrip = 0;
+
+    if (options.get_str("REFERENCE") == "ROHF" || options.get_str("REFERENCE") == "UHF") {
+        closed_shell = 0;
+        nsing = 0;
+        spatial_orbitals = 0;
+    }
+
     if (nsocc == 0) {
         nsing = 1;
         ntrip = 0;

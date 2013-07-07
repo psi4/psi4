@@ -1,3 +1,25 @@
+#
+#@BEGIN LICENSE
+#
+# PSI4: an ab initio quantum chemistry software package
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+#@END LICENSE
+#
+
 """Module with utility functions that act on molecule objects."""
 import os
 import re
@@ -6,9 +28,10 @@ import socket
 import shutil
 import random
 import math
-import PsiMod
-import physconst
-from text import *
+import psi4
+import p4const
+import p4util
+from p4regex import *
 from dashparam import *
 
 
@@ -164,7 +187,7 @@ def extract_cluster_indexing(mol, cluster_size=0):
 
 
 def new_set_attr(self, name, value):
-    """Function to redefine set_attr method of molecule class."""
+    """Function to redefine __setattr__ method of molecule class."""
     fxn = object.__getattribute__(self, "is_variable")
     isvar = fxn(name)
     if isvar:
@@ -174,9 +197,8 @@ def new_set_attr(self, name, value):
 
     object.__setattr__(self, name, value)
 
-
 def new_get_attr(self, name):
-    """Function to redefine get_attr method of molecule class."""
+    """Function to redefine __getattr__ method of molecule class."""
     fxn = object.__getattribute__(self, "is_variable")
     isvar = fxn(name)
 
@@ -233,7 +255,7 @@ def BFS(self):
         while len(Queue) > 0:                # BFS within a fragment
             for u in Queue:                  # find all (still white) nearest neighbors to vertex u
                 for i in White:
-                    dist = physconst.psi_bohr2angstroms * math.sqrt((self.x(i) - self.x(u)) ** 2 + \
+                    dist = p4const.psi_bohr2angstroms * math.sqrt((self.x(i) - self.x(u)) ** 2 + \
                         (self.y(i) - self.y(u)) ** 2 + (self.z(i) - self.z(u)) ** 2)
                     if dist < vdW_diameter[self.symbol(u)] + vdW_diameter[self.symbol(i)]:
                         Queue.append(i)      # if you find you, put in the queue
@@ -257,13 +279,13 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None):
     a full set of dispersion parameters in the absense of *func* or to supply
     individual overrides in the presence of *func*. Returns energy if *dertype* is 0,
     gradient if *dertype* is 1, else tuple of energy and gradient if *dertype*
-    unspecified. The dftd3 executable must be independently compiled and found in 
+    unspecified. The dftd3 executable must be independently compiled and found in
     :envvar:`PATH`.
 
     """
     # Validate arguments
     if self is None:
-        self = PsiMod.get_active_molecule()
+        self = psi4.get_active_molecule()
 
     dashlvl = dashlvl.lower()
     dashlvl = dash_alias['-' + dashlvl][1:] if ('-' + dashlvl) in dash_alias.keys() else dashlvl
@@ -318,8 +340,8 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None):
 
     # Setup unique scratch directory and move in
     current_directory = os.getcwd()
-    psioh = PsiMod.IOManager.shared_object()
-    psio = PsiMod.IO.shared_object()
+    psioh = psi4.IOManager.shared_object()
+    psio = psi4.IO.shared_object()
     os.chdir(psioh.get_default_path())
     dftd3_tmpdir = 'psi.' + str(os.getpid()) + '.' + psio.get_default_namespace() + \
         '.dftd3.' + str(random.randint(0, 99999))
@@ -388,18 +410,18 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None):
     if len(dashdderiv) != self.natom():
         raise ValidationError('Program dftd3 gradient file has %d atoms- %d expected.' % \
             (len(dashdderiv), self.natom()))
-    psi_dashdderiv = PsiMod.Matrix(self.natom(), 3)
+    psi_dashdderiv = psi4.Matrix(self.natom(), 3)
     psi_dashdderiv.set(dashdderiv)
 
     # Print program output to file if verbose
-    verbose = PsiMod.get_option('SCF', 'PRINT')
+    verbose = psi4.get_option('SCF', 'PRINT')
     if verbose >= 3:
-        PsiMod.print_out('\n  ==> DFTD3 Output <==\n')
-        PsiMod.print_out(out)
+        psi4.print_out('\n  ==> DFTD3 Output <==\n')
+        psi4.print_out(out)
         dfile = open(derivfile, 'r')
-        PsiMod.print_out(dfile.read().replace('D', 'E'))
+        psi4.print_out(dfile.read().replace('D', 'E'))
         dfile.close()
-        PsiMod.print_out('\n')
+        psi4.print_out('\n')
 
     # Clean up files and remove scratch directory
     os.unlink(paramfile)
@@ -416,7 +438,7 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None):
     os.chdir(current_directory)
 
     # return -D & d(-D)/dx
-    PsiMod.set_variable('DISPERSION CORRECTION ENERGY', dashd)
+    psi4.set_variable('DISPERSION CORRECTION ENERGY', dashd)
     if dertype == -1:
         return dashd, dashdderiv
     elif dertype == 0:
@@ -427,7 +449,7 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None):
 
 def dynamic_variable_bind(cls):
     """Function to dynamically add extra members to
-    the PsiMod.Molecule class.
+    the psi4.Molecule class.
 
     """
     cls.__setattr__ = new_set_attr
@@ -436,7 +458,7 @@ def dynamic_variable_bind(cls):
     cls.run_dftd3 = run_dftd3
 
 
-dynamic_variable_bind(PsiMod.Molecule)  # pass class type, not class instance
+dynamic_variable_bind(psi4.Molecule)  # pass class type, not class instance
 
 
 #
@@ -453,7 +475,7 @@ def geometry(geom, name="default"):
     from the geometry in string *geom*.
 
     """
-    molecule = PsiMod.Molecule.create_molecule_from_string(geom)
+    molecule = psi4.Molecule.create_molecule_from_string(geom)
     molecule.set_name(name)
 
     activate(molecule)
@@ -463,5 +485,5 @@ def geometry(geom, name="default"):
 
 def activate(mol):
     """Function to set molecule object *mol* as the current active molecule."""
-    PsiMod.set_active_molecule(mol)
-    #PsiMod.IO.set_default_namespace(mol.get_name())
+    psi4.set_active_molecule(mol)
+    #psi4.IO.set_default_namespace(mol.get_name())

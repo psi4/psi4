@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #ifndef _psi_src_bin_occ_arrays_h_
 #define _psi_src_bin_occ_arrays_h_
 
@@ -17,8 +39,6 @@ class Array2d;
 class Array3d;
 class Array1i;
 class Array3i;
-
-
   
 class Array1d
 {
@@ -51,19 +71,28 @@ class Array1d
   void subtract(const Array1d* Adum);
   void subtract(int i, double value);
   double get(int i); 
+  // rms:  rms of A1d_ 
   double rms(); 
-  double rms(const Array1d* Atemp);//  rms of (A1d_ - Atemp)
-  double dot(const Array1d *y); // return result of A1d_' * y
+  // rms:  rms of (A1d_ - Atemp)
+  double rms(const Array1d* Atemp);
+  // dot: return result of A1d_' * y
+  double dot(const Array1d *y); 
+  // gemv: A1d_ = alpha * A * b + beta, where A is a general matrix
   void gemv(bool transa, double alpha, const Array2d* a, const Array1d* b, double beta);
-  void gbmv(bool transa, double alpha, const Array2d* a, const Array1d* b, double beta);//This function may NOT working correctly!!!!
-  double xay(const Array2d *a, const Array1d *y); // return result of A1d_' * A * y
+  // gbmv: This function may NOT working correctly!!!!
+  void gbmv(bool transa, double alpha, const Array2d* a, const Array1d* b, double beta);
+  // xay: return result of A1d_' * A * y
+  double xay(const Array2d *a, const Array1d *y); 
   void scale(double a);
   void copy(double *x);
   void copy(const Array1d *x);
-  void row_vector(Array2d *A, int n); // set A1d to nth row of A, dim1_ = A->dim2
-  void column_vector(Array2d *A, int n); // set A1d to nth column of A, dim1_ = A->dim1
+  // row_vector: set A1d to nth row of A, dim1_ = A->dim2
+  void row_vector(Array2d *A, int n); 
+  // column_vector: set A1d to nth column of A, dim1_ = A->dim1
+  void column_vector(Array2d *A, int n); 
   int dim1() const { return dim1_; }
-  void dirprd(Array1d *a, Array1d *b);// A1d_i = a_i * b_i
+  // dirprd: A1d_[i] = a[i] * b[i]
+  void dirprd(Array1d *a, Array1d *b);
   
   friend class Array2d;
   friend class Array3d;
@@ -95,6 +124,7 @@ class Array2d
   void print(FILE *out);
   void release();
   void set(int i, int j, double value);
+  void set(double **A);
   double get(int i, int j);
   void add(const Array2d* Adum);
   void add(int i, int j, double value);
@@ -103,31 +133,60 @@ class Array2d
   Array2d* transpose();
   void copy(const Array2d* Adum);
   void copy(double **a);
+  // diagonalize: diagonalize via rsp
   void diagonalize(Array2d* eigvectors, Array1d* eigvalues, double cutoff);
-  void cdsyev(char jobz, char uplo, Array2d* eigvectors, Array1d* eigvalues); // diagonalize via acml
+  // cdsyev: diagonalize via lapack
+  void cdsyev(char jobz, char uplo, Array2d* eigvectors, Array1d* eigvalues); 
+  // davidson: diagonalize via davidson algorithm
   void davidson(int n_eigval, Array2d* eigvectors, Array1d* eigvalues, double cutoff, int print); 
-  void cdgesv(Array1d* Xvec); // solve lineq via acml
-  void cdgesv(double* Xvec); // solve lineq via acml
+  // cdgesv: solve a linear equation via lapack
+  void cdgesv(Array1d* Xvec); 
+  void cdgesv(double* Xvec);
   void cdgesv(Array1d* Xvec, int errcod);
   void cdgesv(double* Xvec, int errcod);
-  void lineq_flin(Array1d* Xvec, double *det); // solve lineq via flin
-  void lineq_flin(double* Xvec, double *det); // solve lineq via flin
-  void lineq_pople(Array1d* Xvec, int num_vecs, double cutoff); // solve lineq via pople  
-  void lineq_pople(double* Xvec, int num_vecs, double cutoff); // solve lineq via pople  
+  // lineq_flin: solve a linear equation via FLIN
+  void lineq_flin(Array1d* Xvec, double *det);  
+  void lineq_flin(double* Xvec, double *det);  
+  // lineq_pople: solve a linear equation via Pople's algorithm
+  void lineq_pople(Array1d* Xvec, int num_vecs, double cutoff);   
+  void lineq_pople(double* Xvec, int num_vecs, double cutoff);   
+  // gemm: matrix multiplication
   void gemm(bool transa, bool transb, double alpha, const Array2d* a, const Array2d* b, double beta);
+  // level_shift: A[i][i] = A[i][i] - value
   void level_shift(double value);
-  void outer_product(const Array1d *x, const Array1d *y); // A = x * y' 
+  // outer_product: A = x * y' 
+  void outer_product(const Array1d *x, const Array1d *y); 
   void scale(double a);
-  void scale_row(int m, double a);// scales mth row with a
-  void scale_column(int n, double a);// scales nth column with a
+  // scale_row: scales mth row with a
+  void scale_row(int m, double a);
+  // scale_column: scales nth column with a
+  void scale_column(int n, double a);
+  // identity: A = I
   void identity();
   double trace();
-  void transform(const Array2d* a, const Array2d* transformer);// A = L' * B * L
-  void back_transform(const Array2d* a, const Array2d* transformer);// A = L * B * L'
-  void pseudo_transform(const Array2d* a, const Array2d* transformer);// A = L * B * L
-  void triple_gemm(const Array2d* a, const Array2d* b, const Array2d* c);// A2d_ = a * b * c
+  // transform: A = L' * B * L
+  void transform(const Array2d* a, const Array2d* transformer);
+  // back_transform: A = L * B * L'
+  void back_transform(const Array2d* a, const Array2d* transformer);
+  // pseudo_transform: A = L * B * L
+  void pseudo_transform(const Array2d* a, const Array2d* transformer);
+  // triple_gemm: A2d_ = a * b * c
+  void triple_gemm(const Array2d* a, const Array2d* b, const Array2d* c);
+  // vector_dot: value = Tr(A' * B)
   double vector_dot(Array2d *rhs);
   double vector_dot(double **rhs);
+  double **to_block_matrix(); 
+  double *to_lower_triangle();
+  // mgs: orthogonalize with a Modified Gram-Schmid algorithm
+  void mgs();
+  // gs: orthogonalize with a Classical Gram-Schmid algorithm
+  void gs();
+  // row_vector: return nth row as a vector
+  double *row_vector(int n);
+  // column_vector: return nth column as a vector
+  double *column_vector(int n);
+  int dim1() const { return dim1_; }
+  int dim2() const { return dim2_; }
   /*
   void write(psi::PSIO* psio, unsigned int fileno);
   void write(shared_ptr<psi::PSIO> psio, unsigned int fileno);
@@ -137,15 +196,6 @@ class Array2d
   bool read(PSIO* psio, int itap, const char *label, int dim);
   bool read(shared_ptr<psi::PSIO> psio, int itap, const char *label, int dim);
   */
-  double **to_block_matrix(); 
-  double *to_lower_triangle();
-  void mgs();
-  void gs();
-  int dim1() const { return dim1_; }
-  int dim2() const { return dim2_; }
-  double *row_vector(int n);// return nth row as a vector
-  double *column_vector(int n);// return nth column as a vector
-  
   
   friend class Array1d;
   friend class Array3d;

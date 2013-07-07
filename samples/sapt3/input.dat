@@ -21,7 +21,7 @@ scf_type df
 e_convergence 10
 guess sad
 freeze_core true
-nat_orbs true
+nat_orbs_t3 true
 }
 
 energy('sapt2+3(ccd)')
@@ -56,18 +56,18 @@ Labels = [
 
 Echeck = [];
 
-Echeck.append(PsiMod.get_variable("SAPT ELST ENERGY"))
-Echeck.append(PsiMod.get_variable("SAPT EXCH ENERGY"))
-Echeck.append(PsiMod.get_variable("SAPT IND ENERGY"))
-Echeck.append(PsiMod.get_variable("SAPT DISP ENERGY"))
-Echeck.append(PsiMod.get_variable("SAPT SAPT0 ENERGY"))
-Echeck.append(PsiMod.get_variable("SAPT SAPT2 ENERGY"))
-Echeck.append(PsiMod.get_variable("SAPT SAPT2+ ENERGY"))
-Echeck.append(PsiMod.get_variable("SAPT SAPT2+(3) ENERGY"))
-Echeck.append(PsiMod.get_variable("SAPT SAPT2+3 ENERGY"))
-Echeck.append(PsiMod.get_variable("SAPT SAPT2+(CCD) ENERGY"))
-Echeck.append(PsiMod.get_variable("SAPT SAPT2+(3)(CCD) ENERGY"))
-Echeck.append(PsiMod.get_variable("SAPT SAPT2+3(CCD) ENERGY"))
+Echeck.append(psi4.get_variable("SAPT ELST ENERGY"))
+Echeck.append(psi4.get_variable("SAPT EXCH ENERGY"))
+Echeck.append(psi4.get_variable("SAPT IND ENERGY"))
+Echeck.append(psi4.get_variable("SAPT DISP ENERGY"))
+Echeck.append(psi4.get_variable("SAPT SAPT0 ENERGY"))
+Echeck.append(psi4.get_variable("SAPT SAPT2 ENERGY"))
+Echeck.append(psi4.get_variable("SAPT SAPT2+ ENERGY"))
+Echeck.append(psi4.get_variable("SAPT SAPT2+(3) ENERGY"))
+Echeck.append(psi4.get_variable("SAPT SAPT2+3 ENERGY"))
+Echeck.append(psi4.get_variable("SAPT SAPT2+(CCD) ENERGY"))
+Echeck.append(psi4.get_variable("SAPT SAPT2+(3)(CCD) ENERGY"))
+Echeck.append(psi4.get_variable("SAPT SAPT2+3(CCD) ENERGY"))
 
 for k in range(0,len(Labels)):
     compare_values(Eref[k],Echeck[k],6,Labels[k])

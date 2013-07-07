@@ -1,9 +1,31 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file read_calculation_options
     \defgroup PSI4
 */
 
 #include <liboptions/liboptions.h>
-#include <liboptions/python.h>
+#include <liboptions/liboptions_python.h>
 #include <libparallel/parallel.h>
 #include <physconst.h>
 #include <psifiles.h>
@@ -22,7 +44,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 {
 //  options.clear();
 
-  // name == "GLOBALS" fake line to make document_options_and_tests.pl generate a GLOBALS doc section
+  // dodoc == "GLOBALS" fake line to make document_options_and_tests.pl generate a GLOBALS doc section
 
   /*- Units used in geometry specification -*/
   options.add_str("UNITS", "ANGSTROMS", "BOHR AU A.U. ANGSTROMS ANG ANGSTROM");
@@ -123,7 +145,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convergence criterion for energy. See Table :ref:`Post-SCF
     Convergence <table:conv_corl>` for default convergence criteria for
     different calculation types. -*/
-    options.add_double("E_CONVERGENCE", 1e-8);
+    options.add_double("E_CONVERGENCE", 1e-6);
 
     /*- Maximum number of iterations to diagonalize the Hamiltonian -*/
     options.add_int("MAXITER", 12);
@@ -685,6 +707,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("MAXITER",50);
     /*- Do CCD dispersion correction in SAPT2+, SAPT2+(3) or SAPT2+3? !expert -*/
     options.add_bool("DO_CCD_DISP",false);
+    /*- Do MBPT dispersion correction in SAPT2+, SAPT2+(3) or SAPT2+3, if also doing CCD? !expert -*/
+    options.add_bool("DO_MBPT_DISP",true);
     /*- E converge value for CCD -*/
     options.add_double("CCD_E_CONVERGENCE",1E-8);
     /*- Convergence tolerance for CCD amplitudes -*/
@@ -700,15 +724,19 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do natural orbitals to speed up evaluation of the triples
     contribution to dispersion by truncating the virtual orbital space?
     Recommended true for all SAPT computations. -*/
-    options.add_bool("NAT_ORBS",false);
+    options.add_bool("NAT_ORBS_T3",false);
     /*- Do use MP2 natural orbital approximations for the $v^4$ block of
     two-electron integrals in the evaluation of second-order T2 amplitudes?
-    This approximation is promising for accuracy and computational savings,
-    but it has not been rigorously tested. -*/
+    Recommended true for all SAPT computations. -*/
     options.add_bool("NAT_ORBS_T2",false);
+    /*- Do use MP2 natural orbital approximations for the $v^4$ block of
+    two-electron integrals in the evaluation of CCD T2 amplitudes?
+    Recommended true for all SAPT computations. -*/
+    options.add_bool("NAT_ORBS_V4",false);
+
     /*- Minimum occupation (eigenvalues of the MP2 OPDM) below which virtual
-    natural orbitals are discarded for evaluating the triples contribution
-    to dispersion. -*/
+    natural orbitals are discarded for in each of the above three truncations
+    -*/
     options.add_double("OCC_TOLERANCE",1.0E-6);
     /*- Minimum absolute value below which all three-index DF integrals
     and those contributing to four-index integrals are neglected. The
@@ -767,15 +795,34 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_str("BASIS", "");
   /*- The name of the response auxiliary basis set -*/
   options.add_str("DF_BASIS_SAPT", "");
-  /*- The name of the electrostatic/exchange auxiliary basis set -*/
-  options.add_str("DF_BASIS_ELST", "");
   /*- The maximum number of iterations in CPKS -*/
   options.add_int("MAXITER", 100);
   /*- Convergence criterion for residual of the CPKS coefficients in the SAPT
   * $E@@{ind,resp}^{(20)}$ term. -*/
   options.add_double("D_CONVERGENCE",1e-8);
+  /*- Number of frequency points in Casimir-Poldar integral -*/
+  options.add_int("FREQ_POINTS",8);
+  /*- Frequency scale in Casimir-Poldar integral -*/
+  options.add_double("FREQ_SCALE",0.1);
+  /*- Maximum number of terms in susceptibility coupling -*/
+  options.add_int("FREQ_MAX_K",2);
   /*- Lambda in Pauli Blockade -*/
   options.add_double("PB_LAMBDA",1E5);
+  /*- Fork pathway, until I properly subclass these things -*/
+  options.add_str("DFT_SAPT_TYPE", "SAPT0", "SAPT0 DFT-SAPT");
+  /*- Relative convergence in orbital localization -*/
+  options.add_double("LOCAL_CONVERGENCE",1.0E-12);
+  /*- Maximum iterations in localization -*/
+  options.add_int("LOCAL_MAXITER", 50);
+  /*- Localization algorithm -*/
+  options.add_str("LOCAL_TYPE", "BOYS", "BOYS PIPEK_MEZEY");
+  /*- Atomic population type -*/
+  options.add_str("ASAPT_POPULATION_TYPE", "LOWDIN", "MULLIKEN LOWDIN");
+  /*- The name of the monomer-local electrostatics auxiliary basis set -*/
+  options.add_str("DF_BASIS_ELST", "");
+  /*- The name of the monomer-local electrostatics primary basis set -*/
+  options.add_str("BASIS_ELST", "");
+
   }
   if(name == "DCFT"|| options.read_globals()) {
       /*-MODULEDESCRIPTION Performs Density Cumulant Functional Theory
@@ -789,25 +836,21 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       In the cases where the convergence problems are encountered (especially
       for highly symmetric systems) QC algorithm can be used. -*/
       options.add_str("ALGORITHM", "TWOSTEP", "TWOSTEP SIMULTANEOUS QC");
-      /*- The algorithm to use for the solution of the response equations for the analytic gradients and properties.-*/
+      /*- The algorithm to use for the solution of the response equations for the analytic gradients and properties-*/
       options.add_str("RESPONSE_ALGORITHM", "TWOSTEP", "TWOSTEP SIMULTANEOUS");
+      /*- Chooses the type of the quadratically-convergent algorithm (effective for ALGORITHM = QC).
+      If set to TWOSTEP the Newton-Raphson equations are only solved for the orbital updates,
+      the cumulant is updated using the standard Jacobi algorithm. If set to SIMULTANEOUS both cumulant
+      and orbitals are updated in a single Newton-Raphson step. -*/
+      options.add_str("QC_TYPE", "SIMULTANEOUS", "TWOSTEP SIMULTANEOUS");
       /*- Convergence criterion for the RMS of the residual vector in the density cumulant updates, as well as
       the solution of the density cumulant and orbital response equations. In the orbital updates controls
       the RMS of the SCF error vector -*/
       options.add_double("R_CONVERGENCE", 1e-10);
-      /*- Maximum number of density cumulant update micro-iterations per
-      macro-iteration (for ALOGRITHM = TWOSTEP). Same keyword controls the
-      maximum number of density cumulant response micro-iterations per
-      macro-iteration for the solution of the response equations
-      (for RESPONSE_ALOGRITHM = TWOSTEP) -*/
-      options.add_int("LAMBDA_MAXITER", 50);
-      /*- Maximum number of the orbital update micro-iterations per
-      macro-iteration (for ALOGRITHM = TWOSTEP). Same keyword controls the
-      maximum number of orbital response micro-iterations per
-      macro-iteration for the solution of the response equations
-      (for RESPONSE_ALOGRITHM = TWOSTEP) -*/
-      options.add_int("SCF_MAXITER", 50);
-      /*- Maximum number of the macro-iterations for both the energy and the solution of the response equations -*/
+      /*- Convergence criterion for the density cumulant and orbital guess for the
+      variationally orbital-optimized DCFT methods. Currently only available for ALGORITHM = SIMULTANEOUS. -*/
+      options.add_double("GUESS_R_CONVERGENCE", 1e-3);
+      /*- Maximum number of the macro- or micro-iterations for both the energy and the solution of the response equations -*/
       options.add_int("MAXITER", 40);
       /*- Value of RMS of the density cumulant residual and SCF error vector below which DIIS extrapolation starts.
       Same keyword controls the DIIS extrapolation for the solution of the response equations. -*/
@@ -830,10 +873,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("DAMPING_PERCENTAGE",0.0);
       /*- The shift applied to the denominator in the density cumulant update iterations !expert-*/
       options.add_double("TIKHONOW_OMEGA", 0.0);
-//      /* Controls whether to compute the DCFT energy with the Tau^2 correction to Tau !expert*/
-//      options.add_bool("TAU_SQUARED", false);
-      /*- Controls whether to compute unrelaxed two-particle density matrix at the end of the energy computation !expert-*/
-      options.add_bool("TPDM", false);
       /*- Controls whether to relax the orbitals during the energy computation or not (for debug puproses only).
       For practical applications only the default must be used !expert-*/
       options.add_bool("MO_RELAX", true);
@@ -844,16 +883,17 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_int("CACHELEVEL", 2);
       /*- Minimum absolute value below which integrals are neglected !expert-*/
       options.add_double("INTS_TOLERANCE", 1e-14);
-      /*- Controls whether to force the occupation to be that of the SCF guess.
-          For practical applications only the default must be used !expert-*/
-      options.add_bool("LOCK_OCC", true);
       /*- Whether to read the orbitals from a previous computation, or to compute
           an MP2 guess !expert -*/
-      options.add_str("DCFT_GUESS", "MP2", "CC BCC MP2");
+      options.add_str("DCFT_GUESS", "MP2", "CC BCC MP2 DCFT");
+      /*- Whether to perform a guess DC-06 or DC-12 computation for ODC-06 or ODC-12 methods, respectively.
+          Currently only available for ALGORITHM = SIMULTANEOUS. -*/
+      options.add_bool("ODC_GUESS", false);
       /*- Controls whether to relax the guess orbitals by taking the guess density cumulant
       and performing orbital update on the first macroiteration (for ALOGRITHM = TWOSTEP only) !expert-*/
       options.add_bool("RELAX_GUESS_ORBITALS", false);
-      /*- Controls whether to include the coupling terms in the DCFT electronic Hessian (for ALOGRITHM = QC only) -*/
+      /*- Controls whether to include the coupling terms in the DCFT electronic Hessian (for ALOGRITHM = QC
+      with QC_TYPE = SIMULTANEOUS only) -*/
       options.add_bool("QC_COUPLING", true);
       /*- Performs stability analysis of the DCFT energy !expert-*/
       options.add_bool("STABILITY_CHECK", false);
@@ -874,9 +914,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Controls whether to relax tau during the cumulant updates or not !expert-*/
       options.add_bool("RELAX_TAU", true);
       /*- Chooses appropriate DCFT method -*/
-      options.add_str("DCFT_FUNCTIONAL", "DC-06", "DC-06 DC-12 CEPA0");
-      //      /* Specify orbital basis to be used in the DCFT iterations !expert */
-      //      options.add_str("DCFT_BASIS", "MO", "MO NSO");
+      options.add_str("DCFT_FUNCTIONAL", "DC-06", "DC-06 DC-12 ODC-06 ODC-12 CEPA0");
 
   }
   if (name == "MINTS"|| options.read_globals()) {
@@ -907,7 +945,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
-    options.add_str("SCF_TYPE", "PK", "DIRECT DF PK OUT_OF_CORE FAST_DF");
+    options.add_str("SCF_TYPE", "PK", "DIRECT DF PK OUT_OF_CORE FAST_DF CD");
+    /*- Tolerance for Cholesky decomposition of the ERI tensor -*/
+    options.add_double("CHOLESKY_TOLERANCE",1e-4);
     /*- Use DF integrals tech to converge the SCF before switching to a conventional tech -*/
     options.add_bool("DF_SCF_GUESS", true);
     /*- Keep JK object for later use? -*/
@@ -945,12 +985,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convergence criterion for SCF energy. See Table :ref:`SCF
     Convergence & Algorithm <table:conv_scf>` for default convergence
     criteria for different calculation types. -*/
-    options.add_double("E_CONVERGENCE", 1e-8);
+    options.add_double("E_CONVERGENCE", 1e-6);
     /*- Convergence criterion for SCF density, which is defined as the RMS
     value of the orbital gradient.  See Table :ref:`SCF Convergence & Algorithm
     <table:conv_scf>` for default convergence criteria for different
     calculation types. -*/
-    options.add_double("D_CONVERGENCE", 1e-8);
+    options.add_double("D_CONVERGENCE", 1e-6);
     /*- The amount (percentage) of damping to apply to the early density updates.
         0 will result in a full update, 100 will completely stall the update.  A
         value around 20 (which corresponds to 20\% of the previous iteration's
@@ -1058,6 +1098,16 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("DF_INTS_IO", "NONE", "NONE SAVE LOAD");
     /*- Fitting Condition !expert -*/
     options.add_double("DF_FITTING_CONDITION", 1.0E-12);
+    /*- FastDF Fitting Metric -*/
+    options.add_str("DF_METRIC", "COULOMB", "COULOMB EWALD OVERLAP");
+    /*- FastDF SR Ewald metric range separation parameter -*/
+    options.add_double("DF_THETA", 1.0);
+    /*- FastDF geometric fitting domain selection algorithm -*/
+    options.add_str("DF_DOMAINS", "DIATOMIC", "DIATOMIC SPHERES");
+    /*- Bump function min radius -*/
+    options.add_double("DF_BUMP_R0", 0.0);
+    /*- Bump function max radius -*/
+    options.add_double("DF_BUMP_R1", 0.0);
 
     /*- SUBSECTION SAD Guess Algorithm -*/
 
@@ -1238,35 +1288,35 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("SOLVER_EXACT_DIAGONAL", false);
 
   }
-  if (name == "MP2"|| options.read_globals()) {
-      /*- MODULEDESCRIPTION Performs second order Moller-Plesset perturbation theory (MP2) computations.  This code can
-          compute RHF/ROHF/UHF energies, and RHF gradient/property computations.  However, given the small errors introduced,
-          we recommend using the new density fitted MP2 codes instead, which are much more efficient. -*/
-    /*- Wavefunction type !expert -*/
-    options.add_str("WFN", "MP2", "MP2");
-    /*- Reference wavefunction type -*/
-    options.add_str("REFERENCE", "RHF", "RHF UHF ROHF");
-    /*- Type of job being performed !expert -*/
-    options.add_str("JOBTYPE", "SP");
-    /*- Do compute the one particle density matrix, for properties? -*/
-    options.add_bool("OPDM", false);
-    /*- Do add relaxation terms to the one particle density matrix, for properties? -*/
-    options.add_bool("OPDM_RELAX", false);
-    /*- The amount of cacheing of data to perform -*/
-    options.add_int("CACHELEVEL", 2);
-    /*- The criterion used to retain/release cached data -*/
-    options.add_str("CACHETYPE", "LRU", "LRU LOW");
-    /*- Do perform a spin component scaled MP2 computation? -*/
-    options.add_bool("SCS", false);
-    /*- Do perform a spin component scaled (N) MP2 computation? -*/
-    options.add_bool("SCS_N", false);
-    /*- The scale factor used for opposite-spin pairs in SCS computations -*/
-    options.add_double("MP2_OS_SCALE", 6.0/5.0);
-    /*- The scale factor used for same-spin pairs in SCS computations-*/
-    options.add_double("MP2_SS_SCALE", 1.0/3.0);
-    /*- What algorithm to use for the MP2 computation -*/
-    options.add_str("MP2_TYPE", "DF", "DF CONV");
-  }
+//  if (name == "MP2"|| options.read_globals()) {
+//      /*- MODULEDESCRIPTION Performs second order Moller-Plesset perturbation theory (MP2) computations.  This code can
+//          compute RHF/ROHF/UHF energies, and RHF gradient/property computations.  However, given the small errors introduced,
+//          we recommend using the new density fitted MP2 codes instead, which are much more efficient. -*/
+//    /*- Wavefunction type !expert -*/
+//    options.add_str("WFN", "MP2", "MP2");
+//    /*- Reference wavefunction type -*/
+//    options.add_str("REFERENCE", "RHF", "RHF UHF ROHF");
+//    /*- Type of job being performed !expert -*/
+//    options.add_str("JOBTYPE", "SP");
+//    /*- Do compute the one particle density matrix, for properties? -*/
+//    options.add_bool("OPDM", false);
+//    /*- Do add relaxation terms to the one particle density matrix, for properties? -*/
+//    options.add_bool("OPDM_RELAX", false);
+//    /*- The amount of cacheing of data to perform -*/
+//    options.add_int("CACHELEVEL", 2);
+//    /*- The criterion used to retain/release cached data -*/
+//    options.add_str("CACHETYPE", "LRU", "LRU LOW");
+//    /*- Do perform a spin component scaled MP2 computation? -*/
+//    options.add_bool("SCS", false);
+//    /*- Do perform a spin component scaled (N) MP2 computation? -*/
+//    options.add_bool("SCS_N", false);
+//    /*- The scale factor used for opposite-spin pairs in SCS computations -*/
+//    options.add_double("MP2_OS_SCALE", 6.0/5.0);
+//    /*- The scale factor used for same-spin pairs in SCS computations-*/
+//    options.add_double("MP2_SS_SCALE", 1.0/3.0);
+//    /*- What algorithm to use for the MP2 computation -*/
+//    options.add_str("MP2_TYPE", "DF", "DF CONV");
+//  }
   // Options of this module not standardized since it's bound for deletion
   if(name == "TRANSQT2"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Performs transformations of integrals into the molecular orbital (MO) basis.  This
@@ -1602,15 +1652,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do use zeta?  -*/
     options.add_bool("ZETA",false);
   }
-  if(name == "CLAG"|| options.read_globals()) {
-     /*- MODULEDESCRIPTION Solves for the CI Lagrangian. Called whenever CI properties or gradients are requested. -*/
-    /*- Wavefunction type !expert -*/
-    options.add_str("WFN","NONE");
-    /*- Do write the OEI, TEI, OPDM, TPDM, and Lagrangian files in canonical form, Pitzer order? -*/
-    options.add_bool("CAS_FILES_WRITE",0);
-    /*- Root to get OPDM -*/
-    options.add_int("FOLLOW_ROOT",1);
-  }
+//  if(name == "CLAG"|| options.read_globals()) {
+//     /*- MODULEDESCRIPTION Solves for the CI Lagrangian. Called whenever CI properties or gradients are requested. -*/
+//    /*- Wavefunction type !expert -*/
+//    options.add_str("WFN","NONE");
+//    /*- Do write the OEI, TEI, OPDM, TPDM, and Lagrangian files in canonical form, Pitzer order? -*/
+//    options.add_bool("CAS_FILES_WRITE",0);
+//    /*- Root to get OPDM -*/
+//    options.add_int("FOLLOW_ROOT",1);
+//  }
   if(name == "STABILITY"|| options.read_globals()) {
      /*- MODULEDESCRIPTION Performs wavefunction stability analysis. Called when specifically requested
          by the user. -*/
@@ -1766,7 +1816,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     Davidson algorithm for CC-EOM. See Table :ref:`Post-SCF Convergence
     <table:conv_corl>` for default convergence criteria for different
     calculation types. -*/
-    options.add_double("E_CONVERGENCE", 1E-8);
+    options.add_double("E_CONVERGENCE", 1E-6);
     /*- Convergence criterion for excitation energy (change) in the Davidson algorithm for the CIS guess to CC-EOM. -*/
     options.add_double("SS_E_CONVERGENCE", 1E-6);
     /*- Number of important CC amplitudes to print -*/
@@ -1852,27 +1902,27 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     element of the array.  Acceptable units are ``HZ``, ``NM``, ``EV``, and ``AU``. -*/
     options.add("OMEGA",new ArrayType());
   }
-  if(name == "RESPONSE"|| options.read_globals()){
-     /*- MODULEDESCRIPTION Performs SCF linear response computations. -*/
-    /*- Reference wavefunction type -*/
-    options.add_str("REFERENCE", "RHF");
-    /*- Array that specifies the desired frequencies of the incident
-    radiation field in CCLR calculations.  If only one element is
-    given, the units will be assumed to be atomic units.  If more
-    than one element is given, then the units must be specified as the final
-    element of the array.  Acceptable units are ``HZ``, ``NM``, ``EV``, and ``AU``. -*/
-    options.add("OMEGA", new ArrayType());
-    /*- Array that specifies the desired frequencies of the incident
-    radiation field in CCLR calculations.  If only one element is
-    given, the units will be assumed to be atomic units.  If more
-    than one element is given, then the units must be specified as the final
-    element of the array.  Acceptable units are HZ, NM, EV, and AU. -*/
-    /*- The response property desired.  Acceptable values are POLARIZABILITY
-    (default) for dipole-polarizabilities, ROTATION for specific rotations,
-    ROA for Raman Optical Activity, and ALL for all of the above.
-    -*/
-    options.add_str("PROPERTY","POLARIZABILITY","POLARIZABILITY ROTATION ROA ALL");
-  }
+//  if(name == "RESPONSE"|| options.read_globals()){
+//     /*- MODULEDESCRIPTION Performs SCF linear response computations. -*/
+//    /*- Reference wavefunction type -*/
+//    options.add_str("REFERENCE", "RHF");
+//    /*- Array that specifies the desired frequencies of the incident
+//    radiation field in CCLR calculations.  If only one element is
+//    given, the units will be assumed to be atomic units.  If more
+//    than one element is given, then the units must be specified as the final
+//    element of the array.  Acceptable units are ``HZ``, ``NM``, ``EV``, and ``AU``. -*/
+//    options.add("OMEGA", new ArrayType());
+//    /*- Array that specifies the desired frequencies of the incident
+//    radiation field in CCLR calculations.  If only one element is
+//    given, the units will be assumed to be atomic units.  If more
+//    than one element is given, then the units must be specified as the final
+//    element of the array.  Acceptable units are HZ, NM, EV, and AU. -*/
+//    /*- The response property desired.  Acceptable values are POLARIZABILITY
+//    (default) for dipole-polarizabilities, ROTATION for specific rotations,
+//    ROA for Raman Optical Activity, and ALL for all of the above.
+//    -*/
+//    options.add_str("PROPERTY","POLARIZABILITY","POLARIZABILITY ROTATION ROA ALL");
+//  }
   if(name == "MCSCF"|| options.read_globals()) {
      /*- MODULEDESCRIPTION Performs RHF/UHF/ROHF/TCSCF and more general MCSCF computations. Called
          as the starting point for multireference coupled cluster computations. -*/
@@ -1881,7 +1931,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Level shift to aid convergence -*/
     options.add_double("LEVEL_SHIFT",0.0);
     /*- Convergence criterion for energy. -*/
-    options.add_double("E_CONVERGENCE", 1e-8);
+    options.add_double("E_CONVERGENCE", 1e-6);
     /*- Convergence criterion for density. -*/
     options.add_double("D_CONVERGENCE", 1e-6);
     /*- Maximum number of iterations -*/
@@ -1929,7 +1979,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- MODULEDESCRIPTION Computes coupled cluster energies. Called as part of any coupled cluster computation. -*/
 
     /*- Wavefunction type !expert -*/
-    options.add_str("WFN", "NONE", "CCSD CCSD_T EOM_CCSD LEOM_CCSD BCCD BCCD_T CC2 CC3 EOM_CC2 EOM_CC3 CCSD_MVD");
+    options.add_str("WFN", "NONE", "CCSD CCSD_T CCSD_AT EOM_CCSD LEOM_CCSD BCCD BCCD_T CC2 CC3 EOM_CC2 EOM_CC3 CCSD_MVD");
     /*- Reference wavefunction type -*/
     options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
     /*- Do use new triples? -*/
@@ -1941,7 +1991,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convergence criterion for energy. See Table :ref:`Post-SCF
     Convergence <table:conv_corl>` for default convergence criteria for
     different calculation types. -*/
-    options.add_double("E_CONVERGENCE", 1e-8);
+    options.add_double("E_CONVERGENCE", 1e-6);
     /*- Convergence criterion for wavefunction (change) in CC amplitude equations. -*/
     options.add_double("R_CONVERGENCE", 1e-7);
     /*- Do restart the coupled-cluster iterations from old $t@@1$ and $t@@2$
@@ -2045,101 +2095,101 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convert ROHF MOs to semicanonical MOs -*/
     options.add_bool("SEMICANONICAL", true);
   }
-  if(name == "CIS"|| options.read_globals()) {
-    /*- MODULEDESCRIPTION Performs configuration interaction singles (CIS) computations. Currently unused in
-        Psi4. -*/
-
-    /*- Wavefunction type !expert -*/
-    options.add_str("WFN", "CIS", "CCSD CCSD_T EOM_CCSD CIS");
-    /*- Reference wavefunction type -*/
-    options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
-    /*- Cutoff value for printing local amplitudes -*/
-    options.add_double("LOCAL_AMPS_PRINT_CUTOFF", 0.60);
-    /*- Maximum number of iterations -*/
-    options.add_int("MAXITER", 500);
-    /*- Convergence criterion for CIS wavefunction. -*/
-    options.add_double("R_CONVERGENCE", 1e-7);
-    /*- The number of electronic states to computed, per irreducible
-    representation-*/
-    options.add("ROOTS_PER_IRREP", new ArrayType());
-    /*- Diagonalization method for the CI matrix -*/
-    options.add_str("DIAG_METHOD", "DAVIDSON", "DAVIDSON FULL");
-    /*- Do simulate the effects of local correlation techniques? -*/
-    options.add_bool("LOCAL", false);
-    /*- Value (always between one and zero) for the Broughton-Pulay completeness
-    check used to contruct orbital domains for local-CC calculations. See
-    J. Broughton and P. Pulay, J. Comp. Chem. 14, 736-740 (1993) and C. Hampel
-    and H.-J. Werner, J. Chem. Phys. 104, 6286-6297 (1996). -*/
-    options.add_double("LOCAL_CUTOFF", 0.02);
-    /*- Type of local-CIS scheme to be simulated. ``WERNER`` selects the method
-    developed by H.-J. Werner and co-workers, and ``AOBASIS`` selects the method
-    developed by G.E. Scuseria and co-workers. -*/
-    options.add_str("LOCAL_METHOD", "WERNER", "AOBASIS WERNER");
-    /*- Desired treatment of "weak pairs" in the local-CIS method. A value of
-    ``NEGLECT`` ignores weak pairs entirely. A value of ``NONE`` treats weak pairs in
-    the same manner as strong pairs. A value of MP2 uses second-order perturbation
-    theory to correct the local-CIS energy computed with weak pairs ignored. -*/
-    options.add_str("LOCAL_WEAKP", "MP2", "MP2 NEGLECT NONE");
-    /*- -*/
-    options.add_int("LOCAL_GHOST", -1);
-    /*- -*/
-    options.add("DOMAINS", new ArrayType());
-    /*- Do print the domains? -*/
-    options.add_bool("DOMAIN_PRINT", 0);
-  }
-  if(name == "LMP2"|| options.read_globals()) {
-    /*- MODULEDESCRIPTION Performs local MP2 computations for RHF reference functions. -*/
-
-    /*- Wavefunction type !expert -*/
-    options.add_str("WFN", "LMP2");
-    /*- Reference wavefunction type -*/
-    options.add_str("REFERENCE", "RHF", "RHF");
-    /*- Auxiliary basis set for MP2 density fitting calculations -*/
-    options.add_str("DF_BASIS_MP2", "");
-    /*- Do use density fitting? Turned on with specification of fitting basis. -*/
-    if(options.get_str("DF_BASIS_MP2") != "")
-      options.add_bool("DF_LMP2", true);
-    else
-      options.add_bool("DF_LMP2", false);
-    /*- Maximum number of iterations -*/
-    options.add_int("MAXITER", 50);
-    /*- Convergence criterion for energy (change). See Table
-    :ref:`Post-SCF Convergence <table:conv_corl>` for default convergence
-    criteria for different calculation types. -*/
-    options.add_double("E_CONVERGENCE", 1e-8);
-    /*- Convergence criterion for T2 amplitudes (RMS change). -*/
-    options.add_double("R_CONVERGENCE", 1e-5);
-    /*- Minimum absolute value below which parts of the Fock matrix are skipped. -*/
-    options.add_double("FOCK_TOLERANCE", 1e-2);
-    /*- Do use DIIS extrapolation to accelerate convergence? -*/
-    options.add_bool("DIIS", 1);
-    /*- Do neglect distant pairs? -*/
-    options.add_bool("NEGLECT_DISTANT_PAIR", 1);
-    /*-  Distant pair cutoff -*/
-    options.add_double("DISTANT_PAIR_CUTOFF", 8.0);
-    /*- Iteration at which to start DIIS extrapolation -*/
-    options.add_int("DIIS_START_ITER", 3);
-    /*- Maximum number of error vectors stored for DIIS extrapolation -*/
-    options.add_int("DIIS_MAX_VECS", 5);
-    /*- Localization cutoff -*/
-    options.add_double("LOCAL_CUTOFF", 0.02);
-    /*- The amount of memory available (in Mb) -*/
-    options.add_int("MEMORY", 2000);
-    /*- Do spin-component-scaled MP2 (SCS-MP2)? -*/
-    options.add_bool("SCS", false);
-    /*- Do SCS-MP2 with parameters optimized for nucleic acids? -*/
-    options.add_bool("SCS_N", false);
-    /*- The scale factor used for opposite-spin pairs in SCS computations -*/
-    options.add_double("MP2_OS_SCALE", 6.0/5.0);
-    /*- The scale factor used for same-spin pairs in SCS computations-*/
-    options.add_double("MP2_SS_SCALE", 1.0/3.0);
-    /*- Do screen integrals? -*/
-    options.add_bool("SCREEN_INTS", false);
-    /*- Minimum absolute value below which integrals are neglected. -*/
-    options.add_double("INTS_TOLERANCE", 1e-7);
-    /*- Do exit after printing the domains? -*/
-    options.add_bool("DOMAIN_PRINT_EXIT", 0);
-   }
+//  if(name == "CIS"|| options.read_globals()) {
+//    /*- MODULEDESCRIPTION Performs configuration interaction singles (CIS) computations. Currently unused in
+//        Psi4. -*/
+//
+//    /*- Wavefunction type !expert -*/
+//    options.add_str("WFN", "CIS", "CCSD CCSD_T EOM_CCSD CIS");
+//    /*- Reference wavefunction type -*/
+//    options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
+//    /*- Cutoff value for printing local amplitudes -*/
+//    options.add_double("LOCAL_AMPS_PRINT_CUTOFF", 0.60);
+//    /*- Maximum number of iterations -*/
+//    options.add_int("MAXITER", 500);
+//    /*- Convergence criterion for CIS wavefunction. -*/
+//    options.add_double("R_CONVERGENCE", 1e-7);
+//    /*- The number of electronic states to computed, per irreducible
+//    representation-*/
+//    options.add("ROOTS_PER_IRREP", new ArrayType());
+//    /*- Diagonalization method for the CI matrix -*/
+//    options.add_str("DIAG_METHOD", "DAVIDSON", "DAVIDSON FULL");
+//    /*- Do simulate the effects of local correlation techniques? -*/
+//    options.add_bool("LOCAL", false);
+//    /*- Value (always between one and zero) for the Broughton-Pulay completeness
+//    check used to contruct orbital domains for local-CC calculations. See
+//    J. Broughton and P. Pulay, J. Comp. Chem. 14, 736-740 (1993) and C. Hampel
+//    and H.-J. Werner, J. Chem. Phys. 104, 6286-6297 (1996). -*/
+//    options.add_double("LOCAL_CUTOFF", 0.02);
+//    /*- Type of local-CIS scheme to be simulated. ``WERNER`` selects the method
+//    developed by H.-J. Werner and co-workers, and ``AOBASIS`` selects the method
+//    developed by G.E. Scuseria and co-workers. -*/
+//    options.add_str("LOCAL_METHOD", "WERNER", "AOBASIS WERNER");
+//    /*- Desired treatment of "weak pairs" in the local-CIS method. A value of
+//    ``NEGLECT`` ignores weak pairs entirely. A value of ``NONE`` treats weak pairs in
+//    the same manner as strong pairs. A value of MP2 uses second-order perturbation
+//    theory to correct the local-CIS energy computed with weak pairs ignored. -*/
+//    options.add_str("LOCAL_WEAKP", "MP2", "MP2 NEGLECT NONE");
+//    /*- -*/
+//    options.add_int("LOCAL_GHOST", -1);
+//    /*- -*/
+//    options.add("DOMAINS", new ArrayType());
+//    /*- Do print the domains? -*/
+//    options.add_bool("DOMAIN_PRINT", 0);
+//  }
+//  if(name == "LMP2"|| options.read_globals()) {
+//    /*- MODULEDESCRIPTION Performs local MP2 computations for RHF reference functions. -*/
+//
+//    /*- Wavefunction type !expert -*/
+//    options.add_str("WFN", "LMP2");
+//    /*- Reference wavefunction type -*/
+//    options.add_str("REFERENCE", "RHF", "RHF");
+//    /*- Auxiliary basis set for MP2 density fitting calculations -*/
+//    options.add_str("DF_BASIS_MP2", "");
+//    /*- Do use density fitting? Turned on with specification of fitting basis. -*/
+//    if(options.get_str("DF_BASIS_MP2") != "")
+//      options.add_bool("DF_LMP2", true);
+//    else
+//      options.add_bool("DF_LMP2", false);
+//    /*- Maximum number of iterations -*/
+//    options.add_int("MAXITER", 50);
+//    /*- Convergence criterion for energy (change). See Table
+//    :ref:`Post-SCF Convergence <table:conv_corl>` for default convergence
+//    criteria for different calculation types. -*/
+//    options.add_double("E_CONVERGENCE", 1e-6);
+//    /*- Convergence criterion for T2 amplitudes (RMS change). -*/
+//    options.add_double("R_CONVERGENCE", 1e-5);
+//    /*- Minimum absolute value below which parts of the Fock matrix are skipped. -*/
+//    options.add_double("FOCK_TOLERANCE", 1e-2);
+//    /*- Do use DIIS extrapolation to accelerate convergence? -*/
+//    options.add_bool("DIIS", 1);
+//    /*- Do neglect distant pairs? -*/
+//    options.add_bool("NEGLECT_DISTANT_PAIR", 1);
+//    /*-  Distant pair cutoff -*/
+//    options.add_double("DISTANT_PAIR_CUTOFF", 8.0);
+//    /*- Iteration at which to start DIIS extrapolation -*/
+//    options.add_int("DIIS_START_ITER", 3);
+//    /*- Maximum number of error vectors stored for DIIS extrapolation -*/
+//    options.add_int("DIIS_MAX_VECS", 5);
+//    /*- Localization cutoff -*/
+//    options.add_double("LOCAL_CUTOFF", 0.02);
+//    /*- The amount of memory available (in Mb) -*/
+//    options.add_int("MEMORY", 2000);
+//    /*- Do spin-component-scaled MP2 (SCS-MP2)? -*/
+//    options.add_bool("SCS", false);
+//    /*- Do SCS-MP2 with parameters optimized for nucleic acids? -*/
+//    options.add_bool("SCS_N", false);
+//    /*- The scale factor used for opposite-spin pairs in SCS computations -*/
+//    options.add_double("MP2_OS_SCALE", 6.0/5.0);
+//    /*- The scale factor used for same-spin pairs in SCS computations-*/
+//    options.add_double("MP2_SS_SCALE", 1.0/3.0);
+//    /*- Do screen integrals? -*/
+//    options.add_bool("SCREEN_INTS", false);
+//    /*- Minimum absolute value below which integrals are neglected. -*/
+//    options.add_double("INTS_TOLERANCE", 1e-7);
+//    /*- Do exit after printing the domains? -*/
+//    options.add_bool("DOMAIN_PRINT_EXIT", 0);
+//   }
   if(name == "DFMP2"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs density-fitted MP2 computations for RHF/UHF/ROHF reference wavefunctions. -*/
 
@@ -2196,7 +2246,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convergence criterion for energy. See Table :ref:`Post-SCF
     Convergence <table:conv_corl>` for default convergence criteria for
     different calculation types. -*/
-    options.add_double("E_CONVERGENCE", 1e-8);
+    options.add_double("E_CONVERGENCE", 1e-6);
     /*- Convergence criterion for amplitudes (residuals). -*/
     options.add_double("R_CONVERGENCE",1e-9);
     /*- Maximum number of iterations to determine the amplitudes -*/
@@ -2302,12 +2352,18 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("INTERFRAG_STEP_LIMIT", 0.4);
       /*- Set number of consecutive backward steps allowed in optimization -*/
       options.add_int("CONSECUTIVE_BACKSTEPS", 0);
-      /*- Specify distances between atoms to be frozen -*/
+      /*- Specify distances between atoms to be frozen (unchanged) -*/
       options.add_str("FROZEN_DISTANCE", "");
-      /*- Specify angles between atoms to be frozen -*/
+      /*- Specify angles between atoms to be frozen (unchanged) -*/
       options.add_str("FROZEN_BEND", "");
-      /*- Specify dihedral angles between atoms to be frozen -*/
+      /*- Specify dihedral angles between atoms to be frozen (unchanged) -*/
       options.add_str("FROZEN_DIHEDRAL", "");
+      /*- Specify distances between atoms to be fixed (eq. value specified) -*/
+      options.add_str("FIXED_DISTANCE", "");
+      /*- Specify angles between atoms to be fixed (eq. value specified) -*/
+      options.add_str("FIXED_BEND", "");
+      /*- Specify dihedral angles between atoms to be fixed (eq. value specified) -*/
+      options.add_str("FIXED_DIHEDRAL", "");
 
       /*- SUBSECTION Convergence Control -*/
 
@@ -2406,13 +2462,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("TEST_DERIVATIVE_B", false);
       /*- Keep internal coordinate definition file. -*/
       options.add_bool("KEEP_INTCOS", false);
-      /*- In constrained optimizations, for internal coordinates with user-specified
+      /*In constrained optimizations, for internal coordinates with user-specified
       equilibrium values, this is the force constant (in au) used to apply an additional
       force to each coordinate.  If the user is only concerned to satify the desired constraint,
       then the user need only ensure that this value is sufficiently large.  Alternatively,
       the user may specify this value to apply a force of a particular magnitude, in which case the
-      given equilibrium value may or may not be reached by the optimization. -*/
-      options.add_double("INTCO_FIXED_EQ_FORCE_CONSTANT", 2.0);
+      given equilibrium value may or may not be reached by the optimization.
+      Currently, we specify the value of eq. not the force applied, so this keyword may go away.
+      options.add_double("INTCO_FIXED_EQ_FORCE_CONSTANT", 2.0); */
       /*- If doing a static line search, scan this many points. -*/
       options.add_int("LINESEARCH_STATIC_N", 8);
       /*- If doing a static line search, this fixes the shortest step, whose largest
@@ -2474,7 +2531,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convergence criterion for energy. See Table :ref:`Post-SCF
     Convergence <table:conv_corl>` for default convergence criteria for
     different calculation types. -*/
-    options.add_double("E_CONVERGENCE", 1e-8);
+    options.add_double("E_CONVERGENCE", 1e-6);
     /*- Convergence criterion for amplitudes (residuals). -*/
     options.add_double("R_CONVERGENCE",1e-5);
     /*- Convergence criterion for RMS orbital gradient. Default adjusts
@@ -2587,7 +2644,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       Convergence <table:conv_corl>` for default convergence criteria for
       different calculation types. This becomes ``tol`` (option \#16) in
       fort.56. -*/
-      options.add_double("E_CONVERGENCE", 1e-8);
+      options.add_double("E_CONVERGENCE", 1e-6);
 
       /*- Minimum absolute value below which integrals are neglected. -*/
       options.add_double("INTS_TOLERANCE",1.0E-12);
@@ -2663,7 +2720,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       different calculation types.  Note that convergence is
 	  met only when |fnocc__e_convergence| and |fnocc__r_convergence|
 	  are satisfied. -*/
-      options.add_double("E_CONVERGENCE", 1.0e-8);
+      options.add_double("E_CONVERGENCE", 1.0e-6);
       /*- Maximum number of iterations for Brueckner orbitals optimization -*/
       options.add_int("BRUECKNER_MAXITER", 20);
       /*- Convergence for the CC amplitudes.  Note that convergence is
@@ -2710,10 +2767,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("RUN_MP4",false);
       /*- do ccsd rather than qcisd? !expert -*/
       options.add_bool("RUN_CCSD",false);
+      /*- Use 3-index integrals to generate 4-index ERI's?
+      This keyword is used for testing purposes only.  Changing its
+      value will have no effect on the computation.  !expert -*/
+      options.add_bool("USE_DF_INTS",false);
 
-      /*- Do use density fitting in CC? This keyword is used internally
-          by the driver. Changing its value will have no effect on the
-          computation. -*/
+      /*- Do use density fitting or cholesky decomposition in CC? This
+      keyword is used internally by the driver. Changing its value
+      will have no effect on the computation. -*/
       options.add_bool("DFCC",false);
       /*- Auxilliary basis for df-ccsd(t). -*/
       options.add_str("DF_BASIS_CC","");
@@ -2742,6 +2803,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Pressure in Pascal for thermodynamic analysis. -*/
       options.add_double("P", 101325);
   }
+    if (name == "LMP2"|| options.read_globals()) {
+        /*- The localization scheme to use. -*/
+        options.add_str("LOCAL_TYPE", "BOYS", "BOYS PIPEK_MEZEY");
+        options.add_int("MAXITER", 50);
+    }
   return true;
 }
 

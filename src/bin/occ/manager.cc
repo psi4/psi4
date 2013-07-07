@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include <libqt/qt.h>
 #include "occwave.h"
 
@@ -49,7 +71,6 @@ void OCCWave::omp2_manager()
 	fprintf(outfile,"\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
 	fprintf(outfile,"\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
 	fprintf(outfile,"\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
-//	fprintf(outfile,"\tSCS-MI-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmimp2);
 	fprintf(outfile,"\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
 	fprintf(outfile,"\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
 	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
@@ -60,7 +81,6 @@ void OCCWave::omp2_manager()
 	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
 	Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
 	Process::environment.globals["SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
-//	Process::environment.globals["SCS-MI-MP2 TOTAL ENERGY"] = Escsmimp2;
 	Process::environment.globals["SCS-MP2-VDW TOTAL ENERGY"] = Escsmp2vdw;
 	Process::environment.globals["SOS-PI-MP2 TOTAL ENERGY"] = Esospimp2;
 
@@ -68,12 +88,11 @@ void OCCWave::omp2_manager()
         Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
         Process::environment.globals["SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
         Process::environment.globals["SCSN-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
-//        Process::environment.globals["SCS-MI-MP2 CORRELATION ENERGY"] = Escsmimp2 - Escf;
         Process::environment.globals["SCS-MP2-VDW CORRELATION ENERGY"] = Escsmp2vdw - Escf;
         Process::environment.globals["SOS-PI-MP2 CORRELATION ENERGY"] = Esospimp2 - Escf;
 
-       Process::environment.globals["MP2 OPPOSITE-SPIN ENERGY"] = Emp2AB;
-       Process::environment.globals["MP2 SAME-SPIN ENERGY"] = Emp2AA+Emp2BB;
+       Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
+       Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
 	omp2_response_pdms();
 	gfock();
@@ -150,7 +169,6 @@ void OCCWave::omp2_manager()
 	fprintf(outfile,"\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
 	fprintf(outfile,"\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
 	fprintf(outfile,"\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
-//	fprintf(outfile,"\tSCS-MI-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmimp2);
 	fprintf(outfile,"\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
 	fprintf(outfile,"\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
 	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
@@ -169,7 +187,6 @@ void OCCWave::omp2_manager()
 	fprintf(outfile,"\tSCS-OMP2 Total Energy (a.u.)       : %20.14f\n", Escsmp2);
 	fprintf(outfile,"\tSOS-OMP2 Total Energy (a.u.)       : %20.14f\n", Esosmp2);
 	fprintf(outfile,"\tSCSN-OMP2 Total Energy (a.u.)      : %20.14f\n", Escsnmp2);
-//	fprintf(outfile,"\tSCS-MI-OMP2 Total Energy (a.u.)    : %20.14f\n", Escsmimp2);
 	fprintf(outfile,"\tSCS-OMP2-VDW Total Energy (a.u.)   : %20.14f\n", Escsmp2vdw);
 	fprintf(outfile,"\tSOS-PI-OMP2 Total Energy (a.u.)    : %20.14f\n", Esospimp2);
 	fprintf(outfile,"\tOMP2 Correlation Energy (a.u.)     : %20.14f\n", Emp2L-Escf);
@@ -184,7 +201,6 @@ void OCCWave::omp2_manager()
 	Process::environment.globals["SCS-OMP2 TOTAL ENERGY"] =  Escsmp2;
 	Process::environment.globals["SOS-OMP2 TOTAL ENERGY"] =  Esosmp2;
 	Process::environment.globals["SCSN-OMP2 TOTAL ENERGY"] = Escsnmp2;
-//	Process::environment.globals["SCS-MI-OMP2 TOTAL ENERGY"] = Escsmimp2;
 	Process::environment.globals["SCS-OMP2-VDW TOTAL ENERGY"] = Escsmp2vdw;
 	Process::environment.globals["SOS-PI-OMP2 TOTAL ENERGY"] = Esospimp2;
 	Process::environment.globals["CURRENT ENERGY"] = Emp2L;
@@ -195,7 +211,6 @@ void OCCWave::omp2_manager()
         Process::environment.globals["SCS-OMP2 CORRELATION ENERGY"] =  Escsmp2 - Escf;
         Process::environment.globals["SOS-OMP2 CORRELATION ENERGY"] =  Esosmp2 - Escf;
         Process::environment.globals["SCSN-OMP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
-//        Process::environment.globals["SCS-MI-OMP2 CORRELATION ENERGY"] = Escsmimp2 - Escf;
         Process::environment.globals["SCS-OMP2-VDW CORRELATION ENERGY"] = Escsmp2vdw - Escf;
         Process::environment.globals["SOS-PI-OMP2 CORRELATION ENERGY"] = Esospimp2 - Escf;
 
@@ -211,10 +226,6 @@ void OCCWave::omp2_manager()
 	       Process::environment.globals["CURRENT CORRELATION ENERGY"] = Escsnmp2 - Escf;
             }
 
-//	    else if (scs_type_ == "SCSMI") {
-//	       Process::environment.globals["CURRENT ENERGY"] = Escsmimp2;
-//	       Process::environment.globals["CURRENT CORRELATION ENERGY"] = Escsmimp2 - Escf;
-//            }
 
 	    else if (scs_type_ == "SCSVDW") {
 	       Process::environment.globals["CURRENT ENERGY"] = Escsmp2vdw;
@@ -297,7 +308,6 @@ void OCCWave::mp2_manager()
 	fprintf(outfile,"\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
 	fprintf(outfile,"\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
 	fprintf(outfile,"\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
-//	fprintf(outfile,"\tSCS-MI-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmimp2);
 	fprintf(outfile,"\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
 	fprintf(outfile,"\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
 	if (reference == "ROHF") fprintf(outfile,"\tMP2 Singles Energy (a.u.)          : %20.14f\n", Emp2_t1);
@@ -311,7 +321,6 @@ void OCCWave::mp2_manager()
 	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
 	Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
 	Process::environment.globals["SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
-//	Process::environment.globals["SCS-MI-MP2 TOTAL ENERGY"] = Escsmimp2;
 	Process::environment.globals["SCS-MP2-VDW TOTAL ENERGY"] = Escsmp2vdw;
 	Process::environment.globals["SOS-PI-MP2 TOTAL ENERGY"] = Esospimp2;
 
@@ -321,26 +330,11 @@ void OCCWave::mp2_manager()
         Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
         Process::environment.globals["SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
         Process::environment.globals["SCSN-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
-//        Process::environment.globals["SCS-MI-MP2 CORRELATION ENERGY"] = Escsmimp2 - Escf;
         Process::environment.globals["SCS-MP2-VDW CORRELATION ENERGY"] = Escsmp2vdw - Escf;
         Process::environment.globals["SOS-PI-MP2 CORRELATION ENERGY"] = Esospimp2 - Escf;
 
-       Process::environment.globals["MP2 OPPOSITE-SPIN ENERGY"] = Emp2AB;
-       Process::environment.globals["MP2 SAME-SPIN ENERGY"] = Emp2AA+Emp2BB;
-	//omp2_response_pdms();
-	//gfock();
-	//idp();
-	//mograd();
-
-        // EKT
-        /*
-        if (ekt_ip_ == "TRUE") { 
-	    omp2_response_pdms();
-	    gfock();
-            gfock_diag();
-            ekt_ip();
-        }
-	*/
+       Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
+       Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
         // if scs on	
 	if (do_scs == "TRUE") {
@@ -353,11 +347,6 @@ void OCCWave::mp2_manager()
 	       Process::environment.globals["CURRENT ENERGY"] = Escsnmp2;
 	       Process::environment.globals["CURRENT CORRELATION ENERGY"] = Escsnmp2 - Escf;
             }
-
-//	    else if (scs_type_ == "SCSMI") {
-//	       Process::environment.globals["CURRENT ENERGY"] = Escsmimp2;
-//	       Process::environment.globals["CURRENT CORRELATION ENERGY"] = Escsmimp2 - Escf;
-//            }
 
 	    else if (scs_type_ == "SCSVDW") {
 	       Process::environment.globals["CURRENT ENERGY"] = Escsmp2vdw;
@@ -381,13 +370,27 @@ void OCCWave::mp2_manager()
         // Compute Analytic Gradients
         if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
 	    fprintf(outfile,"\tAnalytic gradient computation is starting...\n");
+	    fprintf(outfile,"\tComputing response density matrices...\n");
 	    fflush(outfile);
 	    omp2_response_pdms();
+            fprintf(outfile,"\tComputing off-diagonal blocks of GFM...\n");
+            fflush(outfile);
 	    gfock();
+            fprintf(outfile,"\tForming independent-pairs...\n");
+            fflush(outfile);
 	    idp2();
+            fprintf(outfile,"\tComputing orbital gradient...\n");
+            fflush(outfile);
 	    mograd();
             coord_grad();
-            if (ekt_ip_ == "TRUE") ekt_ip();
+
+            if (ekt_ip_ == "TRUE") {
+                ekt_ip();
+                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
+                tstop();
+                exit(EXIT_SUCCESS);
+            }
+
 	    fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
 	    fflush(outfile);
         }
@@ -432,7 +435,6 @@ void OCCWave::omp3_manager()
 	fprintf(outfile,"\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
 	fprintf(outfile,"\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
 	fprintf(outfile,"\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
-//	fprintf(outfile,"\tSCS-MI-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmimp2);
 	fprintf(outfile,"\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
 	fprintf(outfile,"\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
 	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
@@ -444,7 +446,6 @@ void OCCWave::omp3_manager()
 	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
 	Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
 	Process::environment.globals["SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
-//	Process::environment.globals["SCS-MI-MP2 TOTAL ENERGY"] = Escsmimp2;
 	Process::environment.globals["SCS-MP2-VDW TOTAL ENERGY"] = Escsmp2vdw;
 	Process::environment.globals["SOS-PI-MP2 TOTAL ENERGY"] = Esospimp2;
 
@@ -452,12 +453,11 @@ void OCCWave::omp3_manager()
         Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
         Process::environment.globals["SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
         Process::environment.globals["SCSN-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
-//        Process::environment.globals["SCS-MI-MP2 CORRELATION ENERGY"] = Escsmimp2 - Escf;
         Process::environment.globals["SCS-MP2-VDW CORRELATION ENERGY"] = Escsmp2vdw - Escf;
         Process::environment.globals["SOS-PI-MP2 CORRELATION ENERGY"] = Esospimp2 - Escf;
 
-        Process::environment.globals["MP2 OPPOSITE-SPIN ENERGY"] = Emp2AB;
-        Process::environment.globals["MP2 SAME-SPIN ENERGY"] = Emp2AA+Emp2BB;
+        Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
+        Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
         timer_on("T2(2)");
 	t2_2nd_sc();
@@ -484,7 +484,6 @@ void OCCWave::omp3_manager()
 	fprintf(outfile,"\tSCS-MP3 Total Energy (a.u.)        : %20.14f\n", Escsmp3);
 	fprintf(outfile,"\tSOS-MP3 Total Energy (a.u.)        : %20.14f\n", Esosmp3);
 	fprintf(outfile,"\tSCSN-MP3 Total Energy (a.u.)       : %20.14f\n", Escsnmp3);
-//	fprintf(outfile,"\tSCS-MI-MP3 Total Energy (a.u.)     : %20.14f\n", Escsmimp3);
 	fprintf(outfile,"\tSCS-MP3-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp3vdw);
 	fprintf(outfile,"\tSOS-PI-MP3 Total Energy (a.u.)     : %20.14f\n", Esospimp3);
 	fprintf(outfile,"\t3rd Order Energy (a.u.)            : %20.14f\n", Emp3-Emp2);
@@ -497,7 +496,6 @@ void OCCWave::omp3_manager()
 	Process::environment.globals["SCS-MP3 TOTAL ENERGY"] = Escsmp3;
 	Process::environment.globals["SOS-MP3 TOTAL ENERGY"] = Esosmp3;
 	Process::environment.globals["SCSN-MP3 TOTAL ENERGY"] = Escsnmp3;
-//	Process::environment.globals["SCS-MI-MP3 TOTAL ENERGY"] = Escsmimp3;
 	Process::environment.globals["SCS-MP3-VDW TOTAL ENERGY"] = Escsmp3vdw;
 	Process::environment.globals["SOS-PI-MP3 TOTAL ENERGY"] = Esospimp3;
 
@@ -507,7 +505,6 @@ void OCCWave::omp3_manager()
 	Process::environment.globals["SCS-MP3 CORRELATION ENERGY"] = Escsmp3 - Escf;
 	Process::environment.globals["SOS-MP3 CORRELATION ENERGY"] = Esosmp3 - Escf;
 	Process::environment.globals["SCSN-MP3 CORRELATION ENERGY"] = Escsnmp3 - Escf;
-//	Process::environment.globals["SCS-MI-MP3 CORRELATION ENERGY"] = Escsmimp3 - Escf;
 	Process::environment.globals["SCS-MP3-VDW CORRELATION ENERGY"] = Escsmp3vdw - Escf;
 	Process::environment.globals["SOS-PI-MP3 CORRELATION ENERGY"] = Esospimp3 - Escf;
 
@@ -579,7 +576,6 @@ void OCCWave::omp3_manager()
 	fprintf(outfile,"\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
 	fprintf(outfile,"\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
 	fprintf(outfile,"\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
-//	fprintf(outfile,"\tSCS-MI-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmimp2);
 	fprintf(outfile,"\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
 	fprintf(outfile,"\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
 	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
@@ -602,7 +598,6 @@ void OCCWave::omp3_manager()
 	fprintf(outfile,"\tSCS-MP3 Total Energy (a.u.)        : %20.14f\n", Escsmp3);
 	fprintf(outfile,"\tSOS-MP3 Total Energy (a.u.)        : %20.14f\n", Esosmp3);
 	fprintf(outfile,"\tSCSN-MP3 Total Energy (a.u.)       : %20.14f\n", Escsnmp3);
-//	fprintf(outfile,"\tSCS-MI-MP3 Total Energy (a.u.)     : %20.14f\n", Escsmimp3);
 	fprintf(outfile,"\tSCS-MP3-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp3vdw);
 	fprintf(outfile,"\tSOS-PI-MP3 Total Energy (a.u.)     : %20.14f\n", Esospimp3);
 	fprintf(outfile,"\t3rd Order Energy (a.u.)            : %20.14f\n", Emp3-Emp2);
@@ -623,7 +618,6 @@ void OCCWave::omp3_manager()
 	fprintf(outfile,"\tSCS-OMP3 Total Energy (a.u.)       : %20.14f\n", Escsmp3);
 	fprintf(outfile,"\tSOS-OMP3 Total Energy (a.u.)       : %20.14f\n", Esosmp3);
 	fprintf(outfile,"\tSCSN-OMP3 Total Energy (a.u.)      : %20.14f\n", Escsnmp3);
-//	fprintf(outfile,"\tSCS-MI-OMP3 Total Energy (a.u.)    : %20.14f\n", Escsmimp3);
 	fprintf(outfile,"\tSCS-OMP3-VDW Total Energy (a.u.    : %20.14f\n", Escsmp3vdw);
 	fprintf(outfile,"\tSOS-PI-OMP3 Total Energy (a.u.)    : %20.14f\n", Esospimp3);
 	fprintf(outfile,"\tOMP3 Correlation Energy (a.u.)     : %20.14f\n", Emp3L-Escf);
@@ -638,7 +632,6 @@ void OCCWave::omp3_manager()
 	Process::environment.globals["SCS-OMP3 TOTAL ENERGY"] =  Escsmp3;
 	Process::environment.globals["SOS-OMP3 TOTAL ENERGY"] =  Esosmp3;
 	Process::environment.globals["SCSN-OMP3 TOTAL ENERGY"] = Escsnmp3;
-//	Process::environment.globals["SCS-MI-OMP3 TOTAL ENERGY"] = Escsmimp3;
 	Process::environment.globals["SCS-OMP3-VDW TOTAL ENERGY"] = Escsmp3vdw;
 	Process::environment.globals["SOS-PI-OMP3 TOTAL ENERGY"] = Esospimp3;
 	Process::environment.globals["CURRENT ENERGY"] = Emp3L;
@@ -649,7 +642,6 @@ void OCCWave::omp3_manager()
 	Process::environment.globals["SCS-OMP3 CORRELATION ENERGY"] =  Escsmp3 - Escf;
 	Process::environment.globals["SOS-OMP3 CORRELATION ENERGY"] =  Esosmp3 - Escf;
 	Process::environment.globals["SCSN-OMP3 CORRELATION ENERGY"] = Escsnmp3 - Escf;
-//	Process::environment.globals["SCS-MI-OMP3 CORRELATION ENERGY"] = Escsmimp3 - Escf;
 	Process::environment.globals["SCS-OMP3-VDW CORRELATION ENERGY"] = Escsmp3vdw - Escf;
 	Process::environment.globals["SOS-PI-OMP3 CORRELATION ENERGY"] = Esospimp3 - Escf;
 
@@ -664,11 +656,6 @@ void OCCWave::omp3_manager()
 	       Process::environment.globals["CURRENT ENERGY"] = Escsnmp3;
 	       Process::environment.globals["CURRENT CORRELATION ENERGY"] = Escsnmp3 - Escf;
             }
-
-//	    else if (scs_type_ == "SCSMI") {
-//	       Process::environment.globals["CURRENT ENERGY"] = Escsmimp3;
-//	       Process::environment.globals["CURRENT CORRELATION ENERGY"] = Escsmimp3 - Escf;
-//            }
 
 	    else if (scs_type_ == "SCSVDW") {
 	       Process::environment.globals["CURRENT ENERGY"] = Escsmp3vdw;
@@ -737,7 +724,6 @@ void OCCWave::mp3_manager()
 	fprintf(outfile,"\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
 	fprintf(outfile,"\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
 	fprintf(outfile,"\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
-//	fprintf(outfile,"\tSCS-MI-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmimp2);
 	fprintf(outfile,"\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
 	fprintf(outfile,"\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
 	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
@@ -749,7 +735,6 @@ void OCCWave::mp3_manager()
 	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
 	Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
 	Process::environment.globals["SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
-//	Process::environment.globals["SCS-MI-MP2 TOTAL ENERGY"] = Escsmimp2;
 	Process::environment.globals["SCS-MP2-VDW TOTAL ENERGY"] = Escsmp2vdw;
 	Process::environment.globals["SOS-PI-MP2 TOTAL ENERGY"] = Esospimp2;
 
@@ -757,12 +742,11 @@ void OCCWave::mp3_manager()
         Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
         Process::environment.globals["SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
         Process::environment.globals["SCSN-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
-//        Process::environment.globals["SCS-MI-MP2 CORRELATION ENERGY"] = Escsmimp2 - Escf;
         Process::environment.globals["SCS-MP2-VDW CORRELATION ENERGY"] = Escsmp2vdw - Escf;
         Process::environment.globals["SOS-PI-MP2 CORRELATION ENERGY"] = Esospimp2 - Escf;
 
-        Process::environment.globals["MP2 OPPOSITE-SPIN ENERGY"] = Emp2AB;
-        Process::environment.globals["MP2 SAME-SPIN ENERGY"] = Emp2AA+Emp2BB;
+        Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
+        Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
         timer_on("T2(2)");
 	t2_2nd_sc();
@@ -789,7 +773,6 @@ void OCCWave::mp3_manager()
 	fprintf(outfile,"\tSCS-MP3 Total Energy (a.u.)        : %20.14f\n", Escsmp3);
 	fprintf(outfile,"\tSOS-MP3 Total Energy (a.u.)        : %20.14f\n", Esosmp3);
 	fprintf(outfile,"\tSCSN-MP3 Total Energy (a.u.)       : %20.14f\n", Escsnmp3);
-//	fprintf(outfile,"\tSCS-MI-MP3 Total Energy (a.u.)     : %20.14f\n", Escsmimp3);
 	fprintf(outfile,"\tSCS-MP3-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp3vdw);
 	fprintf(outfile,"\tSOS-PI-MP3 Total Energy (a.u.)     : %20.14f\n", Esospimp3);
 	fprintf(outfile,"\t3rd Order Energy (a.u.)            : %20.14f\n", Emp3-Emp2);
@@ -806,7 +789,6 @@ void OCCWave::mp3_manager()
 	Process::environment.globals["SCS-MP3 TOTAL ENERGY"] = Escsmp3;
 	Process::environment.globals["SOS-MP3 TOTAL ENERGY"] = Esosmp3;
 	Process::environment.globals["SCSN-MP3 TOTAL ENERGY"] = Escsnmp3;
-//	Process::environment.globals["SCS-MI-MP3 TOTAL ENERGY"] = Escsmimp3;
 	Process::environment.globals["SCS-MP3-VDW TOTAL ENERGY"] = Escsmp3vdw;
 	Process::environment.globals["SOS-PI-MP3 TOTAL ENERGY"] = Esospimp3;
 
@@ -816,22 +798,8 @@ void OCCWave::mp3_manager()
 	Process::environment.globals["SCS-MP3 CORRELATION ENERGY"] = Escsmp3 - Escf;
 	Process::environment.globals["SOS-MP3 CORRELATION ENERGY"] = Esosmp3 - Escf;
 	Process::environment.globals["SCSN-MP3 CORRELATION ENERGY"] = Escsnmp3 - Escf;
-//	Process::environment.globals["SCS-MI-MP3 CORRELATION ENERGY"] = Escsmimp3 - Escf;
 	Process::environment.globals["SCS-MP3-VDW CORRELATION ENERGY"] = Escsmp3vdw - Escf;
 	Process::environment.globals["SOS-PI-MP3 CORRELATION ENERGY"] = Esospimp3 - Escf;
-
-	//omp3_response_pdms();
-	//gfock();
-	//idp();
-	//mograd();
-
-        // EKT
-        if (ekt_ip_ == "TRUE") { 
-	    omp3_response_pdms();
-	    gfock();
-            gfock_diag();
-            ekt_ip();
-        }
 
         // if scs on	
 	if (do_scs == "TRUE") {
@@ -844,11 +812,6 @@ void OCCWave::mp3_manager()
 	       Process::environment.globals["CURRENT ENERGY"] = Escsnmp3;
 	       Process::environment.globals["CURRENT CORRELATION ENERGY"] = Escsnmp3 - Escf;
             }
-
-//	    else if (scs_type_ == "SCSMI") {
-//	       Process::environment.globals["CURRENT ENERGY"] = Escsmimp3;
-//	       Process::environment.globals["CURRENT CORRELATION ENERGY"] = Escsmimp3 - Escf;
-//            }
 
 	    else if (scs_type_ == "SCSVDW") {
 	       Process::environment.globals["CURRENT ENERGY"] = Escsmp3vdw;
@@ -873,13 +836,27 @@ void OCCWave::mp3_manager()
         if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
             time4grad = 1;
 	    fprintf(outfile,"\tAnalytic gradient computation is starting...\n");
-	    fflush(outfile);
+            fprintf(outfile,"\tComputing response density matrices...\n");
+            fflush(outfile);
 	    omp3_response_pdms();
+            fprintf(outfile,"\tComputing off-diagonal blocks of GFM...\n");
+            fflush(outfile);
 	    gfock();
+            fprintf(outfile,"\tForming independent-pairs...\n");
+            fflush(outfile);
 	    idp2();
+            fprintf(outfile,"\tComputing orbital gradient...\n");
+            fflush(outfile);
 	    mograd();
             coord_grad();
-            if (ekt_ip_ == "TRUE") ekt_ip();
+
+            if (ekt_ip_ == "TRUE") {
+                ekt_ip();
+                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
+                tstop();
+                exit(EXIT_SUCCESS);
+            }
+
 	    fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
 	    fflush(outfile);
         }
@@ -928,7 +905,6 @@ void OCCWave::ocepa_manager()
 	fprintf(outfile,"\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
 	fprintf(outfile,"\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
 	fprintf(outfile,"\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
-//	fprintf(outfile,"\tSCS-MI-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmimp2);
 	fprintf(outfile,"\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
 	fprintf(outfile,"\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
 	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
@@ -939,7 +915,6 @@ void OCCWave::ocepa_manager()
 	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
 	Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
 	Process::environment.globals["SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
-//	Process::environment.globals["SCS-MI-MP2 TOTAL ENERGY"] = Escsmimp2;
 	Process::environment.globals["SCS-MP2-VDW TOTAL ENERGY"] = Escsmp2vdw;
 	Process::environment.globals["SOS-PI-MP2 TOTAL ENERGY"] = Esospimp2;
 
@@ -947,12 +922,11 @@ void OCCWave::ocepa_manager()
 	Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
 	Process::environment.globals["SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
 	Process::environment.globals["SCSN-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
-//	Process::environment.globals["SCS-MI-MP2 CORRELATION ENERGY"] = Escsmimp2 - Escf;
 	Process::environment.globals["SCS-MP2-VDW CORRELATION ENERGY"] = Escsmp2vdw - Escf;
 	Process::environment.globals["SOS-PI-MP2 CORRELATION ENERGY"] = Esospimp2 - Escf;
 
-        Process::environment.globals["MP2 OPPOSITE-SPIN ENERGY"] = Emp2AB;
-        Process::environment.globals["MP2 SAME-SPIN ENERGY"] = Emp2AA+Emp2BB;
+        Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
+        Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
 	ocepa_response_pdms();
 	gfock();
@@ -1091,7 +1065,6 @@ void OCCWave::cepa_manager()
 	fprintf(outfile,"\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
 	fprintf(outfile,"\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
 	fprintf(outfile,"\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
-//	fprintf(outfile,"\tSCS-MI-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmimp2);
 	fprintf(outfile,"\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
 	fprintf(outfile,"\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
 	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
@@ -1102,7 +1075,6 @@ void OCCWave::cepa_manager()
 	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
 	Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
 	Process::environment.globals["SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
-//	Process::environment.globals["SCS-MI-MP2 TOTAL ENERGY"] = Escsmimp2;
 	Process::environment.globals["SCS-MP2-VDW TOTAL ENERGY"] = Escsmp2vdw;
 	Process::environment.globals["SOS-PI-MP2 TOTAL ENERGY"] = Esospimp2;
 
@@ -1110,12 +1082,11 @@ void OCCWave::cepa_manager()
 	Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
 	Process::environment.globals["SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
 	Process::environment.globals["SCSN-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
-//	Process::environment.globals["SCS-MI-MP2 CORRELATION ENERGY"] = Escsmimp2 - Escf;
 	Process::environment.globals["SCS-MP2-VDW CORRELATION ENERGY"] = Escsmp2vdw - Escf;
 	Process::environment.globals["SOS-PI-MP2 CORRELATION ENERGY"] = Esospimp2 - Escf;
 
-        Process::environment.globals["MP2 OPPOSITE-SPIN ENERGY"] = Emp2AB;
-        Process::environment.globals["MP2 SAME-SPIN ENERGY"] = Emp2AA+Emp2BB;
+        Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
+        Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
         // Perform CEPA iterations
         cepa_iterations();
@@ -1144,13 +1115,27 @@ void OCCWave::cepa_manager()
         if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
             time4grad = 1;
 	    fprintf(outfile,"\tAnalytic gradient computation is starting...\n");
-	    fflush(outfile);
+            fprintf(outfile,"\tComputing response density matrices...\n");
+            fflush(outfile);
 	    ocepa_response_pdms();
+            fprintf(outfile,"\tComputing off-diagonal blocks of GFM...\n");
+            fflush(outfile);
 	    gfock();
+            fprintf(outfile,"\tForming independent-pairs...\n");
+            fflush(outfile);
 	    idp2();
+            fprintf(outfile,"\tComputing orbital gradient...\n");
+            fflush(outfile);
 	    mograd();
             coord_grad();
-            if (ekt_ip_ == "TRUE") ekt_ip();
+
+            if (ekt_ip_ == "TRUE") {
+                ekt_ip();
+                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
+                tstop();
+                exit(EXIT_SUCCESS);
+            }
+
 	    fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
 	    fflush(outfile);
         }
@@ -1194,7 +1179,6 @@ void OCCWave::omp2_5_manager()
 	fprintf(outfile,"\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
 	fprintf(outfile,"\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
 	fprintf(outfile,"\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
-//	fprintf(outfile,"\tSCS-MI-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmimp2);
 	fprintf(outfile,"\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
 	fprintf(outfile,"\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
 	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
@@ -1206,7 +1190,6 @@ void OCCWave::omp2_5_manager()
 	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
 	Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
 	Process::environment.globals["SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
-//	Process::environment.globals["SCS-MI-MP2 TOTAL ENERGY"] = Escsmimp2;
 	Process::environment.globals["SCS-MP2-VDW TOTAL ENERGY"] = Escsmp2vdw;
 	Process::environment.globals["SOS-PI-MP2 TOTAL ENERGY"] = Esospimp2;
 
@@ -1214,12 +1197,11 @@ void OCCWave::omp2_5_manager()
 	Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
 	Process::environment.globals["SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
 	Process::environment.globals["SCSN-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
-//	Process::environment.globals["SCS-MI-MP2 CORRELATION ENERGY"] = Escsmimp2 - Escf;
 	Process::environment.globals["SCS-MP2-VDW CORRELATION ENERGY"] = Escsmp2vdw - Escf;
 	Process::environment.globals["SOS-PI-MP2 CORRELATION ENERGY"] = Esospimp2 - Escf;
 
-        Process::environment.globals["MP2 OPPOSITE-SPIN ENERGY"] = Emp2AB;
-        Process::environment.globals["MP2 SAME-SPIN ENERGY"] = Emp2AA+Emp2BB;
+        Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
+        Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
         timer_on("T2(2)");
 	t2_2nd_sc();
@@ -1318,7 +1300,6 @@ void OCCWave::omp2_5_manager()
 	fprintf(outfile,"\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
 	fprintf(outfile,"\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
 	fprintf(outfile,"\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
-//	fprintf(outfile,"\tSCS-MI-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmimp2);
 	fprintf(outfile,"\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
 	fprintf(outfile,"\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
 	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
@@ -1414,7 +1395,6 @@ void OCCWave::mp2_5_manager()
 	fprintf(outfile,"\tSCS-MP2 Total Energy (a.u.)        : %20.14f\n", Escsmp2);
 	fprintf(outfile,"\tSOS-MP2 Total Energy (a.u.)        : %20.14f\n", Esosmp2);
 	fprintf(outfile,"\tSCSN-MP2 Total Energy (a.u.)       : %20.14f\n", Escsnmp2);
-//	fprintf(outfile,"\tSCS-MI-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmimp2);
 	fprintf(outfile,"\tSCS-MP2-VDW Total Energy (a.u.)    : %20.14f\n", Escsmp2vdw);
 	fprintf(outfile,"\tSOS-PI-MP2 Total Energy (a.u.)     : %20.14f\n", Esospimp2);
 	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %20.14f\n", Ecorr);
@@ -1426,7 +1406,6 @@ void OCCWave::mp2_5_manager()
 	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
 	Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
 	Process::environment.globals["SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
-//	Process::environment.globals["SCS-MI-MP2 TOTAL ENERGY"] = Escsmimp2;
 	Process::environment.globals["SCS-MP2-VDW TOTAL ENERGY"] = Escsmp2vdw;
 	Process::environment.globals["SOS-PI-MP2 TOTAL ENERGY"] = Esospimp2;
 
@@ -1434,12 +1413,11 @@ void OCCWave::mp2_5_manager()
 	Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
 	Process::environment.globals["SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
 	Process::environment.globals["SCSN-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
-//	Process::environment.globals["SCS-MI-MP2 CORRELATION ENERGY"] = Escsmimp2 - Escf;
 	Process::environment.globals["SCS-MP2-VDW CORRELATION ENERGY"] = Escsmp2vdw - Escf;
 	Process::environment.globals["SOS-PI-MP2 CORRELATION ENERGY"] = Esospimp2 - Escf;
 
-        Process::environment.globals["MP2 OPPOSITE-SPIN ENERGY"] = Emp2AB;
-        Process::environment.globals["MP2 SAME-SPIN ENERGY"] = Emp2AA+Emp2BB;
+        Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
+        Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
         timer_on("T2(2)");
 	t2_2nd_sc();
@@ -1473,23 +1451,31 @@ void OCCWave::mp2_5_manager()
 	Process::environment.globals["CURRENT REFERENCE ENERGY"] = Eref;
 	Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp3L-Escf;
 
-	//omp3_response_pdms();
-	//gfock();
-        //ccl_energy();
-	//idp();
-	//mograd();
-	
         // Compute Analytic Gradients
         if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
             time4grad = 1;
 	    fprintf(outfile,"\tAnalytic gradient computation is starting...\n");
-	    fflush(outfile);
+            fprintf(outfile,"\tComputing response density matrices...\n");
+            fflush(outfile);
 	    omp3_response_pdms();
+            fprintf(outfile,"\tComputing off-diagonal blocks of GFM...\n");
+            fflush(outfile);
 	    gfock();
+            fprintf(outfile,"\tForming independent-pairs...\n");
+            fflush(outfile);
 	    idp2();
+            fprintf(outfile,"\tComputing orbital gradient...\n");
+            fflush(outfile);
 	    mograd();
             coord_grad();
-            if (ekt_ip_ == "TRUE") ekt_ip();
+
+            if (ekt_ip_ == "TRUE") {
+                ekt_ip();
+                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
+                tstop();
+                exit(EXIT_SUCCESS);
+            }
+
 	    fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
 	    fflush(outfile);
         }

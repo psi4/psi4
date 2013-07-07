@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup CCEOM
     \brief Enter brief description of file here 
@@ -29,22 +51,22 @@ int follow_root(int L, double **alpha, int C_irr) {
 
   /* open CCSD vector "R" from CC3_MISC */
   if (params.eom_ref == 0) {
-    dpd_file2_init(&RME, PSIF_CC3_MISC, C_irr, 0, 1, "CCSD CME");
-    dpd_buf4_init(&RMnEf, PSIF_CC3_MISC, C_irr, 0, 5, 0, 5, 0, "CCSD CMnEf");
+    global_dpd_->file2_init(&RME, PSIF_CC3_MISC, C_irr, 0, 1, "CCSD CME");
+    global_dpd_->buf4_init(&RMnEf, PSIF_CC3_MISC, C_irr, 0, 5, 0, 5, 0, "CCSD CMnEf");
   }
   else if (params.eom_ref == 1) {
-    dpd_file2_init(&RME, PSIF_CC3_MISC, C_irr, 0, 1, "CCSD CME");
-    dpd_file2_init(&Rme, PSIF_CC3_MISC, C_irr, 0, 1, "CCSD Cme");
-    dpd_buf4_init(&RMNEF, PSIF_CC3_MISC, C_irr, 2, 7, 2, 7, 0, "CCSD CMNEF");
-    dpd_buf4_init(&Rmnef, PSIF_CC3_MISC, C_irr, 2, 7, 2, 7, 0, "CCSD Cmnef");
-    dpd_buf4_init(&RMnEf, PSIF_CC3_MISC, C_irr, 0, 5, 0, 5, 0, "CCSD CMnEf");
+    global_dpd_->file2_init(&RME, PSIF_CC3_MISC, C_irr, 0, 1, "CCSD CME");
+    global_dpd_->file2_init(&Rme, PSIF_CC3_MISC, C_irr, 0, 1, "CCSD Cme");
+    global_dpd_->buf4_init(&RMNEF, PSIF_CC3_MISC, C_irr, 2, 7, 2, 7, 0, "CCSD CMNEF");
+    global_dpd_->buf4_init(&Rmnef, PSIF_CC3_MISC, C_irr, 2, 7, 2, 7, 0, "CCSD Cmnef");
+    global_dpd_->buf4_init(&RMnEf, PSIF_CC3_MISC, C_irr, 0, 5, 0, 5, 0, "CCSD CMnEf");
   }
   else if (params.eom_ref == 2) {
-    dpd_file2_init(&RME, PSIF_CC3_MISC, C_irr, 0, 1, "CCSD CME");
-    dpd_file2_init(&Rme, PSIF_CC3_MISC, C_irr, 2, 3, "CCSD Cme");
-    dpd_buf4_init(&RMNEF, PSIF_CC3_MISC, C_irr, 2, 7, 2, 7, 0, "CCSD CMNEF");
-    dpd_buf4_init(&Rmnef, PSIF_CC3_MISC, C_irr, 12, 17, 12, 17, 0, "CCSD Cmnef");
-    dpd_buf4_init(&RMnEf, PSIF_CC3_MISC, C_irr, 22, 28, 22, 28, 0, "CCSD CMnEf");
+    global_dpd_->file2_init(&RME, PSIF_CC3_MISC, C_irr, 0, 1, "CCSD CME");
+    global_dpd_->file2_init(&Rme, PSIF_CC3_MISC, C_irr, 2, 3, "CCSD Cme");
+    global_dpd_->buf4_init(&RMNEF, PSIF_CC3_MISC, C_irr, 2, 7, 2, 7, 0, "CCSD CMNEF");
+    global_dpd_->buf4_init(&Rmnef, PSIF_CC3_MISC, C_irr, 12, 17, 12, 17, 0, "CCSD Cmnef");
+    global_dpd_->buf4_init(&RMnEf, PSIF_CC3_MISC, C_irr, 22, 28, 22, 28, 0, "CCSD CMnEf");
   }
 
   /* loop over trial C vectors */
@@ -53,54 +75,54 @@ int follow_root(int L, double **alpha, int C_irr) {
     /* read C vector from EOM_Cxxx */
     if (params.eom_ref == 0) {
       sprintf(lbl, "%s %d", "CME", i);
-      dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
+      global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
       sprintf(lbl, "%s %d", "CMnEf", i);
-      dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
+      global_dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
     }
     else if (params.eom_ref == 1) {
       sprintf(lbl, "%s %d", "CME", i);
-      dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
+      global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
       sprintf(lbl, "%s %d", "Cme", i);
-      dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 0, 1, lbl);
+      global_dpd_->file2_init(&Cme, PSIF_EOM_Cme, C_irr, 0, 1, lbl);
       sprintf(lbl, "%s %d", "CMNEF", i);
-      dpd_buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 2, 7, 2, 7, 0, lbl);
+      global_dpd_->buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 2, 7, 2, 7, 0, lbl);
       sprintf(lbl, "%s %d", "Cmnef", i);
-      dpd_buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 2, 7, 2, 7, 0, lbl);
+      global_dpd_->buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 2, 7, 2, 7, 0, lbl);
       sprintf(lbl, "%s %d", "CMnEf", i);
-      dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
+      global_dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
     }
     else if (params.eom_ref == 2) {
       sprintf(lbl, "%s %d", "CME", i);
-      dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
+      global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
       sprintf(lbl, "%s %d", "Cme", i);
-      dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 2, 3, lbl);
+      global_dpd_->file2_init(&Cme, PSIF_EOM_Cme, C_irr, 2, 3, lbl);
       sprintf(lbl, "%s %d", "CMNEF", i);
-      dpd_buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 2, 7, 2, 7, 0, lbl);
+      global_dpd_->buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 2, 7, 2, 7, 0, lbl);
       sprintf(lbl, "%s %d", "Cmnef", i);
-      dpd_buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 12, 17, 12, 17, 0, lbl);
+      global_dpd_->buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 12, 17, 12, 17, 0, lbl);
       sprintf(lbl, "%s %d", "CMnEf", i);
-      dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 22, 28, 22, 28, 0, lbl);
+      global_dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 22, 28, 22, 28, 0, lbl);
     }
 
     /* dot C vector with R vector */
     tval = 0.0;
     if (params.eom_ref == 0) {
-      tval = 2.0 * dpd_file2_dot(&CME, &RME);
-      tval += dpd_buf4_dot(&CMnEf, &RMnEf);
+      tval = 2.0 * global_dpd_->file2_dot(&CME, &RME);
+      tval += global_dpd_->buf4_dot(&CMnEf, &RMnEf);
     }
     else if (params.eom_ref == 1) {
-      tval = dpd_file2_dot(&CME, &RME);
-      tval += dpd_file2_dot(&Cme, &Rme);
-      tval += dpd_buf4_dot(&CMNEF, &RMNEF);
-      tval += dpd_buf4_dot(&Cmnef, &Rmnef);
-      tval += dpd_buf4_dot(&CMnEf, &RMnEf);
+      tval = global_dpd_->file2_dot(&CME, &RME);
+      tval += global_dpd_->file2_dot(&Cme, &Rme);
+      tval += global_dpd_->buf4_dot(&CMNEF, &RMNEF);
+      tval += global_dpd_->buf4_dot(&Cmnef, &Rmnef);
+      tval += global_dpd_->buf4_dot(&CMnEf, &RMnEf);
     }
     else if (params.eom_ref == 2) {
-      tval = dpd_file2_dot(&CME, &RME);
-      tval += dpd_file2_dot(&Cme, &Rme);
-      tval += dpd_buf4_dot(&CMNEF, &RMNEF);
-      tval += dpd_buf4_dot(&Cmnef, &Rmnef);
-      tval += dpd_buf4_dot(&CMnEf, &RMnEf);
+      tval = global_dpd_->file2_dot(&CME, &RME);
+      tval += global_dpd_->file2_dot(&Cme, &Rme);
+      tval += global_dpd_->buf4_dot(&CMNEF, &RMNEF);
+      tval += global_dpd_->buf4_dot(&Cmnef, &Rmnef);
+      tval += global_dpd_->buf4_dot(&CMnEf, &RMnEf);
     }
 
     /* loop over roots and add in overlap */
@@ -108,28 +130,28 @@ int follow_root(int L, double **alpha, int C_irr) {
       CR_overlap[j] += alpha[i][j] * tval;
 
     if (params.eom_ref == 0) {
-      dpd_file2_close(&CME);
-      dpd_buf4_close(&CMnEf);
+      global_dpd_->file2_close(&CME);
+      global_dpd_->buf4_close(&CMnEf);
     }
     else {
-      dpd_file2_close(&CME);
-      dpd_file2_close(&Cme);
-      dpd_buf4_close(&CMNEF);
-      dpd_buf4_close(&Cmnef);
-      dpd_buf4_close(&CMnEf);
+      global_dpd_->file2_close(&CME);
+      global_dpd_->file2_close(&Cme);
+      global_dpd_->buf4_close(&CMNEF);
+      global_dpd_->buf4_close(&Cmnef);
+      global_dpd_->buf4_close(&CMnEf);
     }
   }
 
   if (params.eom_ref == 0) {
-    dpd_file2_close(&RME);
-    dpd_buf4_close(&RMnEf);
+    global_dpd_->file2_close(&RME);
+    global_dpd_->buf4_close(&RMnEf);
   } 
   else {
-    dpd_file2_close(&RME);
-    dpd_file2_close(&Rme);
-    dpd_buf4_close(&RMNEF);
-    dpd_buf4_close(&Rmnef);
-    dpd_buf4_close(&RMnEf);
+    global_dpd_->file2_close(&RME);
+    global_dpd_->file2_close(&Rme);
+    global_dpd_->buf4_close(&RMNEF);
+    global_dpd_->buf4_close(&Rmnef);
+    global_dpd_->buf4_close(&RMnEf);
   }
 
   fprintf(outfile,"Overlaps of Rs with EOM CCSD eigenvector:\n");

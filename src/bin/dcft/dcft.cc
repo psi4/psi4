@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include "dcft.h"
 #include "defines.h"
 #include <vector>
@@ -18,26 +40,28 @@ DCFTSolver::DCFTSolver(boost::shared_ptr<Wavefunction> reference_wavefunction, O
         Wavefunction(options, _default_psio_lib_)
 {
     reference_wavefunction_ = reference_wavefunction;
-    scfmaxiter_       = options.get_int("SCF_MAXITER");
-    lambdamaxiter_    = options.get_int("LAMBDA_MAXITER");
-    maxiter_          = options.get_int("MAXITER");
-    print_            = options.get_int("PRINT");
-    maxdiis_          = options.get_int("DIIS_MAX_VECS");
-    mindiisvecs_      = options.get_int("DIIS_MIN_VECS");
-    regularizer_      = options.get_double("TIKHONOW_OMEGA");
-    diis_start_thresh_ = options.get_double("DIIS_START_CONVERGENCE");
-    scf_threshold_     = options.get_double("R_CONVERGENCE");
-    lambda_threshold_  = options.get_double("R_CONVERGENCE");
-    int_tolerance_     = options.get_double("INTS_TOLERANCE");
-    lock_occupation_   = options.get_bool("LOCK_OCC");
+    maxiter_            = options.get_int("MAXITER");
+    print_              = options.get_int("PRINT");
+    maxdiis_            = options.get_int("DIIS_MAX_VECS");
+    mindiisvecs_        = options.get_int("DIIS_MIN_VECS");
+    regularizer_        = options.get_double("TIKHONOW_OMEGA");
+    diis_start_thresh_  = options.get_double("DIIS_START_CONVERGENCE");
+    orbitals_threshold_ = options.get_double("R_CONVERGENCE");
+    cumulant_threshold_ = options.get_double("R_CONVERGENCE");
+    int_tolerance_      = options.get_double("INTS_TOLERANCE");
+
     psio_->open(PSIF_DCFT_DPD, PSIO_OPEN_OLD);
 
-    if(options.get_str("REFERENCE") != "UHF") throw PSIEXCEPTION("You must have reference=UHF in the input file");
+    if(options.get_str("REFERENCE") != "UHF") throw PSIEXCEPTION("You must have REFERENCE = UHF in the input file");
+
+    if (options.get_str("DCFT_FUNCTIONAL") == "DC-12" || options.get_str("DCFT_FUNCTIONAL") == "ODC-12") exact_tau_ = true;
+    else exact_tau_ = false;
+
+    if (options.get_str("DCFT_FUNCTIONAL") == "ODC-06" || options.get_str("DCFT_FUNCTIONAL") == "ODC-12") orbital_optimized_ = true;
+    else orbital_optimized_ = false;
 
     // Sets up the memory, and orbital info
     init();
-
-    energy_tau_squared_ = 0.0;
 }
 
 /**
@@ -47,10 +71,10 @@ void
 DCFTSolver::dpd_buf4_add(dpdbuf4 *A, dpdbuf4 *B, double alpha)
 {
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(A, h);
-        dpd_buf4_mat_irrep_init(B, h);
-        dpd_buf4_mat_irrep_rd(A, h);
-        dpd_buf4_mat_irrep_rd(B, h);
+        global_dpd_->buf4_mat_irrep_init(A, h);
+        global_dpd_->buf4_mat_irrep_init(B, h);
+        global_dpd_->buf4_mat_irrep_rd(A, h);
+        global_dpd_->buf4_mat_irrep_rd(B, h);
 
         #pragma omp parallel for
         for(int row = 0; row < A->params->rowtot[h]; ++row){
@@ -58,9 +82,9 @@ DCFTSolver::dpd_buf4_add(dpdbuf4 *A, dpdbuf4 *B, double alpha)
                 A->matrix[h][row][col] += alpha * B->matrix[h][row][col];
             }
         }
-        dpd_buf4_mat_irrep_wrt(A, h);
-        dpd_buf4_mat_irrep_close(A, h);
-        dpd_buf4_mat_irrep_close(B, h);
+        global_dpd_->buf4_mat_irrep_wrt(A, h);
+        global_dpd_->buf4_mat_irrep_close(A, h);
+        global_dpd_->buf4_mat_irrep_close(B, h);
     }
 }
 

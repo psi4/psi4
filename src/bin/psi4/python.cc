@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 // This tells us the Python version number
 #include <boost/python/detail/wrap_python.hpp>
 #include <boost/python/module.hpp>
@@ -16,7 +38,8 @@
 #include <libplugin/plugin.h>
 #include <libparallel/parallel.h>
 #include <liboptions/liboptions.h>
-#include <liboptions/python.h>
+#include <liboptions/liboptions_python.h>
+#include <libutil/libutil.h>
 #include <psiconfig.h>
 
 #include <psi4-dec.h>
@@ -24,7 +47,20 @@
 #include "psi4.h"
 
 #include "../ccenergy/ccwave.h"
-#include "../mp2/mp2wave.h"
+#include "../cclambda/cclambda.h"
+//#include "../mp2/mp2wave.h"
+
+#if defined(MAKE_PYTHON_MODULE)
+#include <libqt/qt.h>
+#include <libpsio/psio.h>
+#include <libmints/wavefunction.h>
+#include <psifiles.h>
+#include <libparallel/parallel.h>
+namespace psi {
+    int psi_start(int argc, char *argv[]);
+    int psi_stop(FILE* infile, FILE* outfile, char* psi_file_prefix);
+}
+#endif
 
 using namespace psi;
 using namespace boost;
@@ -46,6 +82,12 @@ void py_psi_plugin_close_all();
 
 extern std::map<std::string, plugin_info> plugins;
 
+#define PY_TRY(ptr, command)  \
+     if(!(ptr = command)){    \
+         PyErr_Print();       \
+         exit(1);             \
+     }
+
 namespace opt {
   psi::PsiReturnType optking(psi::Options &);
   void opt_clean(void);
@@ -55,14 +97,17 @@ namespace psi {
     namespace mints      { PsiReturnType mints(Options &);    }
     namespace deriv      { PsiReturnType deriv(Options &);    }
     namespace scfgrad    { PsiReturnType scfgrad(Options &);  }
+    namespace scfgrad    { PsiReturnType scfhess(Options &);  }
     namespace scf        { PsiReturnType scf(Options &, PyObject* pre, PyObject* post);   }
     namespace libfock    { PsiReturnType libfock(Options &);  }
     namespace dfmp2      { PsiReturnType dfmp2(Options &);    }
     namespace dfmp2      { PsiReturnType dfmp2grad(Options &);}
     namespace sapt       { PsiReturnType sapt(Options &);     }
     namespace dftsapt    { PsiReturnType dftsapt(boost::shared_ptr<Wavefunction> dimer, boost::shared_ptr<Wavefunction> mA, boost::shared_ptr<Wavefunction> mB); }
+    namespace dftsapt    { PsiReturnType asapt(boost::shared_ptr<Wavefunction> dimer, boost::shared_ptr<Wavefunction> mA, boost::shared_ptr<Wavefunction> mB, boost::shared_ptr<Wavefunction> eA, boost::shared_ptr<Wavefunction> eB); }
     namespace dftsapt    { PsiReturnType infsapt(boost::shared_ptr<Wavefunction> dimer, boost::shared_ptr<Wavefunction> mA, boost::shared_ptr<Wavefunction> mB); }
     namespace dcft       { PsiReturnType dcft(Options &);     }
+    namespace lmp2       { PsiReturnType lmp2(Options &);     }
     namespace mcscf      { PsiReturnType mcscf(Options &);    }
     namespace psimrcc    { PsiReturnType psimrcc(Options &);  }
     namespace transqt    { PsiReturnType transqt(Options &);  }
@@ -100,6 +145,7 @@ namespace psi {
     }
 
     extern int read_options(const std::string &name, Options & options, bool suppress_printing = false);
+    extern void print_version(FILE *myout);
     extern FILE *outfile;
 }
 
@@ -176,6 +222,12 @@ int py_psi_scfgrad()
 {
     py_psi_prepare_options_for_module("SCF");
     return scfgrad::scfgrad(Process::environment.options);
+}
+
+int py_psi_scfhess()
+{
+    py_psi_prepare_options_for_module("SCF");
+    return scfgrad::scfhess(Process::environment.options);
 }
 
 int py_psi_deriv()
@@ -318,6 +370,16 @@ double py_psi_dcft()
         return 0.0;
 }
 
+double py_psi_lmp2()
+{
+    py_psi_prepare_options_for_module("LMP2");
+    if (lmp2::lmp2(Process::environment.options) == Success) {
+        return Process::environment.globals["CURRENT ENERGY"];
+    }
+    else
+        return 0.0;
+}
+
 double py_psi_dfmp2()
 {
     py_psi_prepare_options_for_module("DFMP2");
@@ -352,6 +414,16 @@ double py_psi_dftsapt(boost::shared_ptr<Wavefunction> dimer, boost::shared_ptr<W
 {
     py_psi_prepare_options_for_module("DFTSAPT");
     if (dftsapt::dftsapt(dimer, mA, mB) == Success) {
+        return Process::environment.globals["SAPT ENERGY"];
+    }
+    else
+        return 0.0;
+}
+
+double py_psi_asapt(boost::shared_ptr<Wavefunction> dimer, boost::shared_ptr<Wavefunction> mA, boost::shared_ptr<Wavefunction> mB, boost::shared_ptr<Wavefunction> eA, boost::shared_ptr<Wavefunction> eB)
+{
+    py_psi_prepare_options_for_module("DFTSAPT");
+    if (dftsapt::asapt(dimer, mA, mB, eA, eB) == Success) {
         return Process::environment.globals["SAPT ENERGY"];
     }
     else
@@ -408,6 +480,7 @@ double py_psi_ccenergy()
 //        return 0.0;
 }
 
+/*
 double py_psi_mp2()
 {
     py_psi_prepare_options_for_module("MP2");
@@ -420,6 +493,7 @@ double py_psi_mp2()
     double energy = mp2wave->compute_energy();
     return energy;
 }
+*/
 
 double py_psi_cctriples()
 {
@@ -457,12 +531,26 @@ double py_psi_cchbar()
     return 0.0;
 }
 
+// double py_psi_cclambda()
+// {
+//     py_psi_prepare_options_for_module("CCLAMBDA");
+//     cclambda::cclambda(Process::environment.options);
+//     return 0.0;
+// }
+
 double py_psi_cclambda()
 {
     py_psi_prepare_options_for_module("CCLAMBDA");
-    cclambda::cclambda(Process::environment.options);
-    return 0.0;
+    boost::shared_ptr<Wavefunction> cclambda(new cclambda::CCLambdaWavefunction(
+                                               Process::environment.wavefunction(),
+                                               Process::environment.options)
+                                           );
+    Process::environment.set_wavefunction(cclambda);
+
+    double energy = cclambda->compute_energy();
+    return energy;
 }
+
 
 double py_psi_ccdensity()
 {
@@ -820,6 +908,8 @@ object py_psi_get_local_option(std::string const & module, std::string const & k
         return object(data.to_integer());
     else if (data.type() == "double")
         return object(data.to_double());
+    else if (data.type() == "array")
+        return object(data.to_list());
 
     return object();
 }
@@ -835,6 +925,8 @@ object py_psi_get_global_option(std::string const & key)
         return object(data.to_integer());
     else if (data.type() == "double")
         return object(data.to_double());
+    else if (data.type() == "array")
+        return object(data.to_list());
 
     return object();
 }
@@ -852,6 +944,8 @@ object py_psi_get_option(std::string const & module, std::string const & key)
         return object(data.to_integer());
     else if (data.type() == "double")
         return object(data.to_double());
+    else if (data.type() == "array")
+        return object(data.to_list());
 
     return object();
 }
@@ -893,6 +987,25 @@ SharedMatrix py_psi_get_gradient()
         return wf->gradient();
     } else {
         return Process::environment.gradient();
+    }
+}
+
+void py_psi_set_frequencies(boost::shared_ptr<Vector> freq)
+{
+    if (Process::environment.wavefunction()) {
+        Process::environment.wavefunction()->set_frequencies(freq);
+    } else {
+        Process::environment.set_frequencies(freq);
+    }
+}
+
+boost::shared_ptr<Vector> py_psi_get_frequencies()
+{
+    if (Process::environment.wavefunction()) {
+        boost::shared_ptr<Wavefunction> wf = Process::environment.wavefunction();
+        return wf->frequencies();
+    } else {
+        return Process::environment.frequencies();
     }
 }
 
@@ -984,12 +1097,107 @@ std::string py_psi_top_srcdir()
     return PSI_TOP_SRCDIR;
 }
 
+#if defined(MAKE_PYTHON_MODULE)
+bool psi4_python_module_initialize()
+{
+    static bool initialized = false;
+
+    if (initialized) {
+        printf("Psi4 already initialized.\n");
+        return true;
+    }
+
+    print_version(stdout);
+
+    // Track down the location of PSI4's python script directory.
+    std::string psiDataDirName = Process::environment("PSIDATADIR");
+    std::string psiDataDirWithPython = psiDataDirName + "/python";
+    boost::filesystem::path bf_path;
+    bf_path = boost::filesystem::system_complete(psiDataDirWithPython);
+    if(!boost::filesystem::is_directory(bf_path)) {
+        printf("Unable to read the PSI4 Python folder - check the PSIDATADIR environmental variable\n"
+                "      Current value of PSIDATADIR is %s\n", psiDataDirName.c_str());
+        return false;
+    }
+
+    // Add PSI library python path
+    PyObject *path, *sysmod, *str;
+    PY_TRY(sysmod , PyImport_ImportModule("sys"));
+    PY_TRY(path   , PyObject_GetAttrString(sysmod, "path"));
+#if PY_MAJOR_VERSION == 2
+    PY_TRY(str    , PyString_FromString(psiDataDirWithPython.c_str()));
+#else
+    PY_TRY(str    , PyBytes_FromString(psiDataDirWithPython.c_str()));
+#endif
+    PyList_Append(path, str);
+    Py_DECREF(str);
+    Py_DECREF(path);
+    Py_DECREF(sysmod);
+
+    initialized = true;
+
+    return true;
+}
+
+void psi4_python_module_finalize()
+{
+    Process::environment.wavefunction().reset();
+    py_psi_plugin_close_all();
+
+    // Shut things down:
+    WorldComm->sync();
+    // There is only one timer:
+    timer_done();
+
+    psi_stop(infile, outfile, psi_file_prefix);
+    Script::language->finalize();
+
+    WorldComm->sync();
+    WorldComm->finalize();
+}
+#endif
+
+void translate_psi_exception(const PsiException& e)
+{
+    PyErr_SetString(PyExc_RuntimeError, e.what());
+}
+
 // Tell python about the default final argument to the array setting functions
 BOOST_PYTHON_FUNCTION_OVERLOADS(set_global_option_overloads, py_psi_set_global_option_array, 2, 3)
 BOOST_PYTHON_FUNCTION_OVERLOADS(set_local_option_overloads, py_psi_set_local_option_array, 3, 4)
 
-BOOST_PYTHON_MODULE(PsiMod)
+BOOST_PYTHON_MODULE(psi4)
 {
+#if defined(MAKE_PYTHON_MODULE)
+    // Setup the environment
+    Process::arguments.initialize(0, 0);
+    Process::environment.initialize(); // Defaults to obtaining the environment from the global environ variable
+
+    // Initialize the world communicator
+    WorldComm = initialize_communicator(0, 0);
+
+    // There is only one timer:
+    timer_init();
+
+    // There should only be one of these in Psi4
+    Wavefunction::initialize_singletons();
+
+    if(psi_start(0, 0) == PSI_RETURN_FAILURE) return;
+
+    // Initialize the I/O library
+    psio_init();
+
+    // Setup globals options
+    Process::environment.options.set_read_globals(true);
+    read_options("", Process::environment.options, true);
+    Process::environment.options.set_read_globals(false);
+
+    def("initialize", &psi4_python_module_initialize);
+    def("finalize", &psi4_python_module_finalize);
+#endif
+
+    register_exception_translator<PsiException>(&translate_psi_exception);
+
     docstring_options sphx_doc_options(true, true, false);
 
     enum_<PsiReturnType>("PsiReturnType", "docstring")
@@ -998,6 +1206,7 @@ BOOST_PYTHON_MODULE(PsiMod)
             .value("Balk", Balk)
             .value("EndLoop", EndLoop)
             .export_values();
+
 
     def("version", py_psi_version, "Returns the version ID of this copy of Psi.");
     def("clean", py_psi_clean, "Function to remove scratch files. Call between independent jobs.");
@@ -1022,6 +1231,8 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("wavefunction", py_psi_wavefunction, "Returns the current wavefunction object from the most recent computation.");
     def("get_gradient", py_psi_get_gradient, "Returns the most recently computed gradient, as a N by 3 Matrix object.");
     def("set_gradient", py_psi_set_gradient, "Assigns the global gradient to the values stored in the N by 3 Matrix argument.");
+    def("get_frequencies", py_psi_get_frequencies, "Returns the most recently computed frequencies, as a 3N-6 Vector object.");
+    def("set_frequencies", py_psi_set_frequencies, "Assigns the global frequencies to the values stored in the 3N-6 Vector argument.");
     def("set_memory", py_psi_set_memory, "Sets the memory available to Psi (in bytes).");
     def("get_memory", py_psi_get_memory, "Returns the amount of memory available to Psi (in bytes).");
     def("set_nthread", &py_psi_set_n_threads, "Sets the number of threads to use in SMP parallel computations.");
@@ -1086,6 +1297,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("mints", py_psi_mints, "Runs mints, which generate molecular integrals on disk.");
     def("deriv", py_psi_deriv, "Runs deriv, which contracts density matrices with derivative integrals, to compute gradients.");
     def("scfgrad", py_psi_scfgrad, "Run scfgrad, which is a specialized DF-SCF gradient program.");
+    def("scfhess", py_psi_scfhess, "Run scfhess, which is a specialized DF-SCF hessian program.");
 
     typedef double (*scf_module_none)();
     typedef double (*scf_module_two)(PyObject*, PyObject*);
@@ -1093,11 +1305,11 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("scf", py_psi_scf_callbacks, "Runs the SCF code.");
     def("scf", py_psi_scf, "Runs the SCF code.");
     def("dcft", py_psi_dcft, "Runs the density cumulant functional theory code.");
+    def("lmp2", py_psi_lmp2, "Runs the local MP2 code.");
     def("libfock", py_psi_libfock, "Runs a CPHF calculation, using libfock.");
     def("dfmp2", py_psi_dfmp2, "Runs the DF-MP2 code.");
     def("dfmp2grad", py_psi_dfmp2grad, "Runs the DF-MP2 gradient.");
-//    def("lmp2", py_psi_lmp2, "docstring");
-    def("mp2", py_psi_mp2, "Runs the conventional (slow) MP2 code.");
+//    def("mp2", py_psi_mp2, "Runs the conventional (slow) MP2 code.");
     def("mcscf", py_psi_mcscf, "Runs the MCSCF code, (N.B. restricted to certain active spaces).");
     def("mrcc_generate_input", py_psi_mrcc_generate_input, "Generates an input for Kallay's MRCC code.");
     def("mrcc_load_densities", py_psi_mrcc_load_densities, "Reads in the density matrices from Kallay's MRCC code.");
@@ -1113,6 +1325,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("fd_hessian_0", py_psi_fd_hessian_0, "Performs a finite difference frequency computation, from energy points.");
     def("sapt", py_psi_sapt, "Runs the symmetry adapted perturbation theory code.");
     def("dftsapt", py_psi_dftsapt, "Runs the DFT variant of the symmetry adapted perturbation theory code.");
+    def("asapt", py_psi_asapt, "Runs the atomic variant of the symmetry adapted perturbation theory code.");
     def("infsapt", py_psi_infsapt, "Runs the infinite-order variant of the symmetry adapted perturbation theory code.");
     def("stability", py_psi_stability, "Runs the (experimental version) of HF stability analysis.");
     def("psimrcc", py_psi_psimrcc, "Runs the multireference coupled cluster code.");
@@ -1170,30 +1383,29 @@ void Python::initialize()
 
 void Python::finalize()
 {
-    Py_Finalize();
+//    Py_Finalize();
 }
-
-#define PY_TRY(ptr, command)  \
-     if(!(ptr = command)){    \
-         PyErr_Print();       \
-         exit(1);             \
-     }
-
 
 void Python::run(FILE *input)
 {
     using namespace boost::python;
     char *s = 0;
-    if (input == NULL)
-        return;
-
-    // Setup globals options
-    Process::environment.options.set_read_globals(true);
-    read_options("", Process::environment.options, true);
-    Process::environment.options.set_read_globals(false);
 
     if (!Py_IsInitialized()) {
         s = strdup("psi");
+
+#if PY_MAJOR_VERSION == 2
+        if (PyImport_AppendInittab(strdup("psi4"), initpsi4) == -1) {
+            fprintf(stderr, "Unable to register psi4 with your Python.\n");
+            abort();
+        }
+#else
+        if (PyImport_AppendInittab(strdup("psi4"), PyInit_psi4) == -1) {
+            fprintf(stderr, "Unable to register psi4 with your Python.\n");
+            abort();
+        }
+#endif
+
         // Py_InitializeEx(0) causes sig handlers to not be installed.
         Py_InitializeEx(0);
         #if PY_VERSION_HEX >= 0x03000000
@@ -1220,59 +1432,76 @@ void Python::run(FILE *input)
 #if PY_MAJOR_VERSION == 2
         PY_TRY(str    , PyString_FromString(psiDataDirWithPython.c_str()));
 #else
-        PY_TRY(str    , PyBytes_FromString(psiDataDirWithPython.c_str()));
+        PY_TRY(str    , PyUnicode_FromString(psiDataDirWithPython.c_str()));
 #endif
+
+        // Append to the path list
         PyList_Append(path, str);
+
         Py_DECREF(str);
         Py_DECREF(path);
         Py_DECREF(sysmod);
     }
     if (Py_IsInitialized()) {
-        // Stupid way to read in entire file.
-        char line[256];
-        std::stringstream file;
-        while(fgets(line, sizeof(line), input)) {
-            file << line;
-        }
 
         try {
-#if PY_MAJOR_VERSION == 2
-            PyImport_AppendInittab(strdup("PsiMod"), initPsiMod);
-#else
-            PyImport_AppendInittab(strdup("PsiMod"), PyInit_PsiMod);
-#endif
+            string inputfile;
             object objectMain(handle<>(borrowed(PyImport_AddModule("__main__"))));
             object objectDict = objectMain.attr("__dict__");
-            s = strdup("import PsiMod");
+            s = strdup("import psi4");
             PyRun_SimpleString(s);
 
-            // Process the input file
-            PyObject *input;
-            PY_TRY(input, PyImport_ImportModule("input") );
-            PyObject *function;
-            PY_TRY(function, PyObject_GetAttrString(input, "process_input"));
-            PyObject *pargs;
-            PY_TRY(pargs, Py_BuildValue("(s)", file.str().c_str()) );
-            PyObject *ret;
-            PY_TRY( ret, PyEval_CallObject(function, pargs) );
+            if (!interactive_python) {
 
-            char *val;
-            PyArg_Parse(ret, "s", &val);
-            string inputfile = val;
+                // Stupid way to read in entire file.
+                char line[256];
+                std::stringstream file;
+                while(fgets(line, sizeof(line), input)) {
+                    file << line;
+                }
 
-            Py_DECREF(ret);
-            Py_DECREF(pargs);
-            Py_DECREF(function);
-            Py_DECREF(input);
+                if (!skip_input_preprocess) {
+                    // Process the input file
+                    PyObject *input;
+                    PY_TRY(input, PyImport_ImportModule("inputparser") );
+                    PyObject *function;
+                    PY_TRY(function, PyObject_GetAttrString(input, "process_input"));
+                    PyObject *pargs;
+                    PY_TRY(pargs, Py_BuildValue("(s)", file.str().c_str()) );
+                    PyObject *ret;
+                    PY_TRY( ret, PyEval_CallObject(function, pargs) );
 
-            if (verbose) {
-                fprintf(outfile, "\n Input file to run:\n%s", inputfile.c_str());
-                fflush(outfile);
+                    char *val;
+                    PyArg_Parse(ret, "s", &val);
+                    inputfile = val;
+
+                    Py_DECREF(ret);
+                    Py_DECREF(pargs);
+                    Py_DECREF(function);
+                    Py_DECREF(input);
+                }
+                else
+                    inputfile = file.str();
+
+                if (verbose) {
+                    fprintf(outfile, "\n Input file to run:\n%s", inputfile.c_str());
+                    fflush(outfile);
+                }
+
+                str strStartScript(inputfile);
+
+                object objectScriptInit = exec( strStartScript, objectDict, objectDict );
             }
+            else { // interactive python
+                // Process the input file
+                PyObject *input;
 
-            str strStartScript(inputfile);
-
-            object objectScriptInit = exec( strStartScript, objectDict, objectDict );
+                PY_TRY(input, PyImport_ImportModule("interactive") );
+                PyObject *function;
+                PY_TRY(function, PyObject_GetAttrString(input, "run"));
+                PyObject *ret;
+                PY_TRY( ret, PyEval_CallObject(function, NULL) );
+            }
         }
         catch (error_already_set const& e)
         {
@@ -1287,6 +1516,7 @@ void Python::run(FILE *input)
 
     if (s)
       free(s);
+    Process::environment.molecule().reset();
     Process::environment.wavefunction().reset();
     py_psi_plugin_close_all();
 }

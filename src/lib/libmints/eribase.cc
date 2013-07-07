@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include <stdexcept>
 #include <string>
 #include <libciomr/libciomr.h>
@@ -7,6 +29,7 @@
 
 #include <physconst.h>
 #include <exception.h>
+#include <boost/python/tuple.hpp>
 
 // Cancel out restrict keyword for timings
 #undef restrict
@@ -1455,6 +1478,10 @@ void TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4)
         n3 = original_bs3_->shell(sh3).nfunction();
         n4 = original_bs4_->shell(sh4).nfunction();
     }
+    curr_buff_size_ = n1 * n2 * n3 * n4;
+    if(enable_pybuffer_){
+        target_pybuffer_.set_shape(boost::python::make_tuple(n1, n2, n3, n4));
+    }
 
     // Save the original requested shell ordering. The pre-computed shell pair information
     // requires the original ordering.
@@ -2314,7 +2341,7 @@ void TwoElectronInt::compute_quartet_deriv2(int sh1, int sh2, int sh3, int sh4)
     int nprim2 = s2.nprimitive();
     int nprim3 = s3.nprimitive();
     int nprim4 = s4.nprimitive();
-    size_t nprim;
+    size_t nprim = 0;
 
     double A[3], B[3], C[3], D[3];
     A[0] = s1.center()[0];

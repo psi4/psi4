@@ -14,17 +14,17 @@ set findif { print 2 }
 
 # In C1, test gradients by 3-point formula ; default is disp_size = .005
 gradient('scf')
-anal_grad = PsiMod.wavefunction().gradient() 
+anal_grad = psi4.wavefunction().gradient() 
 
 set findif { points 3 }
 gradient('scf', dertype=0)
-fd_grad = PsiMod.wavefunction().gradient() 
+fd_grad = psi4.wavefunction().gradient() 
 
 
 # Test gradient by 5-point formula
 set findif { points 5 }
 gradient('scf', dertype=0)
-fd_grad = PsiMod.wavefunction().gradient() 
+fd_grad = psi4.wavefunction().gradient() 
 
 
 clean()
@@ -40,11 +40,11 @@ set globals { basis sto-3g }
 # In C2v, test gradient by 3-point formula ; default is disp_size = .005
 set findif { points 3 }
 gradient('scf', dertype=0)
-fd_grad = PsiMod.wavefunction().gradient() 
+fd_grad = psi4.wavefunction().gradient() 
 
 
 # Test gradient by 5-point formula
 set findif { points 5 }
 gradient('scf', dertype=0)
-fd_grad = PsiMod.wavefunction().gradient() 
+fd_grad = psi4.wavefunction().gradient() 
 

@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup CCDENSITY
     \brief Enter brief description of file here 
@@ -43,47 +65,47 @@ void x_xi_check(char *term_lbl) {
   */
  
   if (params.ref == 0) {
-    dpd_file2_init(&XIA, PSIF_EOM_XI, irrep, 0, 1, "XIA");
-    dpd_buf4_init(&XIjAb, PSIF_EOM_XI, irrep, 0, 5, 0, 5, 0, "XIjAb");
-    dpd_buf4_sort(&XIjAb, PSIF_EOM_XI, pqsr, 0, 5, "XIjbA");
-    dpd_buf4_init(&XIjbA, PSIF_EOM_XI, irrep, 0, 5, 0, 5, 0, "XIjbA");
+    global_dpd_->file2_init(&XIA, PSIF_EOM_XI, irrep, 0, 1, "XIA");
+    global_dpd_->buf4_init(&XIjAb, PSIF_EOM_XI, irrep, 0, 5, 0, 5, 0, "XIjAb");
+    global_dpd_->buf4_sort(&XIjAb, PSIF_EOM_XI, pqsr, 0, 5, "XIjbA");
+    global_dpd_->buf4_init(&XIjbA, PSIF_EOM_XI, irrep, 0, 5, 0, 5, 0, "XIjbA");
     
     norm = norm_C_rhf(&XIA, &XIjAb, &XIjbA);
     
-    dpd_file2_close(&XIA);
-    dpd_buf4_close(&XIjAb);
-    dpd_buf4_close(&XIjbA);
+    global_dpd_->file2_close(&XIA);
+    global_dpd_->buf4_close(&XIjAb);
+    global_dpd_->buf4_close(&XIjbA);
   }
   else if (params.ref == 1) {
-    dpd_file2_init(&XIA, PSIF_EOM_XI, irrep, 0, 1, "XIA");
-    dpd_file2_init(&Xia, PSIF_EOM_XI, irrep, 0, 1, "Xia");
-    dpd_buf4_init(&XIJAB, PSIF_EOM_XI, irrep, 2, 7, 2, 7, 0, "XIJAB");
-    dpd_buf4_init(&Xijab, PSIF_EOM_XI, irrep, 2, 7, 2, 7, 0, "Xijab");
-    dpd_buf4_init(&XIjAb, PSIF_EOM_XI, irrep, 0, 5, 0, 5, 0, "XIjAb");
+    global_dpd_->file2_init(&XIA, PSIF_EOM_XI, irrep, 0, 1, "XIA");
+    global_dpd_->file2_init(&Xia, PSIF_EOM_XI, irrep, 0, 1, "Xia");
+    global_dpd_->buf4_init(&XIJAB, PSIF_EOM_XI, irrep, 2, 7, 2, 7, 0, "XIJAB");
+    global_dpd_->buf4_init(&Xijab, PSIF_EOM_XI, irrep, 2, 7, 2, 7, 0, "Xijab");
+    global_dpd_->buf4_init(&XIjAb, PSIF_EOM_XI, irrep, 0, 5, 0, 5, 0, "XIjAb");
 
     c_clean(&XIA, &Xia, &XIJAB, &Xijab, &XIjAb);
     norm = norm_C(&XIA, &Xia, &XIJAB, &Xijab, &XIjAb);
     
-    dpd_file2_close(&XIA);
-    dpd_file2_close(&Xia);
-    dpd_buf4_close(&XIJAB);
-    dpd_buf4_close(&Xijab);
-    dpd_buf4_close(&XIjAb);
+    global_dpd_->file2_close(&XIA);
+    global_dpd_->file2_close(&Xia);
+    global_dpd_->buf4_close(&XIJAB);
+    global_dpd_->buf4_close(&Xijab);
+    global_dpd_->buf4_close(&XIjAb);
   }
   else if (params.ref == 2) {
-    dpd_file2_init(&XIA, PSIF_EOM_XI, irrep, 0, 1, "XIA");
-    dpd_file2_init(&Xia, PSIF_EOM_XI, irrep, 2, 3, "Xia");
-    dpd_buf4_init(&XIJAB, PSIF_EOM_XI, irrep, 2, 7, 2, 7, 0, "XIJAB");
-    dpd_buf4_init(&Xijab, PSIF_EOM_XI, irrep, 12, 17, 12, 17, 0, "Xijab");
-    dpd_buf4_init(&XIjAb, PSIF_EOM_XI, irrep, 22, 28, 22, 28, 0, "XIjAb");
+    global_dpd_->file2_init(&XIA, PSIF_EOM_XI, irrep, 0, 1, "XIA");
+    global_dpd_->file2_init(&Xia, PSIF_EOM_XI, irrep, 2, 3, "Xia");
+    global_dpd_->buf4_init(&XIJAB, PSIF_EOM_XI, irrep, 2, 7, 2, 7, 0, "XIJAB");
+    global_dpd_->buf4_init(&Xijab, PSIF_EOM_XI, irrep, 12, 17, 12, 17, 0, "Xijab");
+    global_dpd_->buf4_init(&XIjAb, PSIF_EOM_XI, irrep, 22, 28, 22, 28, 0, "XIjAb");
     
     norm = norm_C(&XIA, &Xia, &XIJAB, &Xijab, &XIjAb);
     
-    dpd_file2_close(&XIA);
-    dpd_file2_close(&Xia);
-    dpd_buf4_close(&XIJAB);
-    dpd_buf4_close(&Xijab);
-    dpd_buf4_close(&XIjAb);
+    global_dpd_->file2_close(&XIA);
+    global_dpd_->file2_close(&Xia);
+    global_dpd_->buf4_close(&XIJAB);
+    global_dpd_->buf4_close(&Xijab);
+    global_dpd_->buf4_close(&XIjAb);
   }
 
   fprintf(outfile,"%7s, D(norm sigma)=%15.10lf\n", term_lbl, norm - old_norm);

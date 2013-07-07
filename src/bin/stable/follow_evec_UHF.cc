@@ -1,6 +1,28 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup STABLE
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -22,7 +44,7 @@ namespace psi { namespace stable {
 
 /*
 ** Follow the eigenvector of the MO Hessian downhill.  This version
-** is based on orbital rotations as found in the detcas code.  It 
+** is based on orbital rotations as found in the detcas code.  It
 ** appears to be working better than the antisymmetric matrix
 ** alternative found below.
 **
@@ -44,10 +66,10 @@ void follow_evec_UHF(double *vf, int dim_A, int dim_B)
   dim = dim_A + dim_B;
   v_A = vf;
   v_B = vf + dim_A;
- 
+
   scale = HALFPI;  /* full step would be Pi/2 */
-  scale *= params.scale;  
- 
+  scale *= params.scale;
+
   /* rotate the alpha orbitals */
   scf = chkpt_rd_alpha_scf();
 
@@ -60,7 +82,7 @@ void follow_evec_UHF(double *vf, int dim_A, int dim_B)
     for (a=0; a<moinfo.avirtpi[h]; a++) {
       /* to rotate the C matrix we need to convert indices to Piter order */
       aa = moinfo.qt2pitzer_a[moinfo.qt_avir[a] + moinfo.avir_off[h]];
-      /* i must have same irrep if rotation is totally symmetric */ 
+      /* i must have same irrep if rotation is totally symmetric */
       for (i=0; i<moinfo.aoccpi[h]; i++) {
         ii = moinfo.qt2pitzer_a[moinfo.qt_aocc[i] + moinfo.aocc_off[h]];
         /* The sign on theta doesn't appear to matter, which is good... */
@@ -93,7 +115,7 @@ void follow_evec_UHF(double *vf, int dim_A, int dim_B)
     for (a=0; a<moinfo.bvirtpi[h]; a++) {
       /* to rotate the C matrix we need to convert indices to Piter order */
       aa = moinfo.qt2pitzer_b[moinfo.qt_bvir[a] + moinfo.bvir_off[h]];
-      /* i must have same irrep if rotation is totally symmetric */ 
+      /* i must have same irrep if rotation is totally symmetric */
       for (i=0; i<moinfo.boccpi[h]; i++) {
         ii = moinfo.qt2pitzer_b[moinfo.qt_bocc[i] + moinfo.bocc_off[h]];
         theta = *v_B++ * scale;
@@ -118,7 +140,7 @@ void follow_evec_UHF(double *vf, int dim_A, int dim_B)
 }
 
 
-/* 
+/*
 ** Just for fun, compare this alternative way to get the rotation.
 ** This version is based on Daniel's orbital rotation code in
 ** ccenergy/rotate.c
@@ -154,7 +176,7 @@ void follow_evec_UHF2(double *vf, int dim_A, int dim_B)
       SO_S[i][j] = SO_S[j][i] = scratch[ij];
     }
   free(scratch);
- 
+
   /* rotate the alpha orbitals */
   U = block_matrix(nmo, nmo);
   for(i=0; i < nmo; i++) U[i][i] = 1.0;
@@ -172,7 +194,7 @@ void follow_evec_UHF2(double *vf, int dim_A, int dim_B)
     for (a=0; a<moinfo.avirtpi[h]; a++) {
       /* to rotate the C matrix we need to convert indices to Piter order */
       aa = moinfo.qt2pitzer_a[moinfo.qt_avir[a] + moinfo.avir_off[h]];
-      /* i must have same irrep if rotation is totally symmetric */ 
+      /* i must have same irrep if rotation is totally symmetric */
       for (i=0; i<moinfo.aoccpi[h]; i++,ai++) {
         ii = moinfo.qt2pitzer_a[moinfo.qt_aocc[i] + moinfo.aocc_off[h]];
         U[ii][aa] = v_A[ai];
@@ -195,11 +217,11 @@ void follow_evec_UHF2(double *vf, int dim_A, int dim_B)
   C_DGEMM('n','n',nmo, nmo, nso, 1, &(X[0][0]), nso, &(scf_new[0][0]),
           nmo, 0, &(MO_S[0][0]), nmo);
   free_block(X);
-                                                                               
+
   evals = init_array(nmo);
   work = init_array(nmo*3);
-  if(stat = C_DSYEV('v','u', nmo,&(MO_S[0][0]),nmo,evals,work,nmo*3)) {
-    fprintf(outfile, 
+  if((stat = C_DSYEV('v','u', nmo,&(MO_S[0][0]),nmo,evals,work,nmo*3))) {
+    fprintf(outfile,
       "rotate(): Error in overlap diagonalization. stat = %d\n", stat);
     exit(PSI_RETURN_FAILURE);
   }
@@ -218,7 +240,7 @@ void follow_evec_UHF2(double *vf, int dim_A, int dim_B)
   C_DGEMM('n','n', nmo, nmo, nmo, 1, &(X[0][0]), nmo, &(MO_S[0][0]), nso,
           0, &(S[0][0]), nmo);
   free_block(X);
-                                                                                
+
   /* orthogonalize the basis */
   scf_a = block_matrix(nso, nmo);
   C_DGEMM('n','n',nmo,nmo,nmo,1,&(scf_new[0][0]),nmo,&(S[0][0]),nmo,
@@ -252,11 +274,11 @@ void follow_evec_UHF2(double *vf, int dim_A, int dim_B)
     for (a=0; a<moinfo.bvirtpi[h]; a++) {
       /* to rotate the C matrix we need to convert indices to Piter order */
       aa = moinfo.qt2pitzer_b[moinfo.qt_bvir[a] + moinfo.bvir_off[h]];
-      /* i must have same irrep if rotation is totally symmetric */ 
+      /* i must have same irrep if rotation is totally symmetric */
       for (i=0; i<moinfo.boccpi[h]; i++,ai++) {
         ii = moinfo.qt2pitzer_b[moinfo.qt_bocc[i] + moinfo.bocc_off[h]];
         U[ii][aa] = v_B[ai];
-        U[aa][ii] = -v_B[ai];        
+        U[aa][ii] = -v_B[ai];
       } /* end loop over i */
     } /* end loop over a */
   }  /* end loop over h */
@@ -266,9 +288,9 @@ void follow_evec_UHF2(double *vf, int dim_A, int dim_B)
           0,&(scf_new[0][0]),nmo);
   free_block(U);
   free_block(scf);
-                                                                                
+
   MO_S = block_matrix(nmo, nmo);
-                                                                                
+
   /* transform the overlap into the new beta MO basis */
   X = block_matrix(nso, nso);
   C_DGEMM('t','n',nmo, nso, nso, 1, &(scf_new[0][0]), nmo, &(SO_S[0][0]),
@@ -276,15 +298,15 @@ void follow_evec_UHF2(double *vf, int dim_A, int dim_B)
   C_DGEMM('n','n',nmo, nmo, nso, 1, &(X[0][0]), nso, &(scf_new[0][0]),
           nmo, 0, &(MO_S[0][0]), nmo);
   free_block(X);
-                                                                                
+
   evals = init_array(nmo);
   work = init_array(nmo*3);
-  if(stat = C_DSYEV('v','u', nmo,&(MO_S[0][0]),nmo,evals,work,nmo*3)) {
-    fprintf(outfile, 
+  if((stat = C_DSYEV('v','u', nmo,&(MO_S[0][0]),nmo,evals,work,nmo*3))) {
+    fprintf(outfile,
       "rotate(): Error in overlap diagonalization. stat = %d\n", stat);
     exit(PSI_RETURN_FAILURE);
   }
-                                                                                
+
   /* build S^-1/2 for this basis */
   S = block_matrix(nmo, nmo);
   for(i=0; i < nmo; i++) {
@@ -299,7 +321,7 @@ void follow_evec_UHF2(double *vf, int dim_A, int dim_B)
   C_DGEMM('n','n', nmo, nmo, nmo, 1, &(X[0][0]), nmo, &(MO_S[0][0]), nso,
           0, &(S[0][0]), nmo);
   free_block(X);
-                                                                                
+
   /* orthogonalize the basis */
   scf_b = block_matrix(nso, nmo);
   C_DGEMM('n','n',nmo,nmo,nmo,1,&(scf_new[0][0]),nmo,&(S[0][0]),nmo,

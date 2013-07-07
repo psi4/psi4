@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup ccresponse
     \brief Enter brief description of file here 
@@ -32,8 +54,8 @@ void sort_pert(const char *pert, double **pertints, int irrep)
   char prefix[32], lbl[32];
 
   sprintf(lbl, "%s_IJ", pert);
-  dpd_file2_init(&f, PSIF_CC_OEI, irrep, 0, 0, lbl);
-  dpd_file2_mat_init(&f);
+  global_dpd_->file2_init(&f, PSIF_CC_OEI, irrep, 0, 0, lbl);
+  global_dpd_->file2_mat_init(&f);
   for(Gp=0; Gp < moinfo.nirreps; Gp++) { /* irrep of left-hand MO */
     Gq = irrep ^ Gp;
 
@@ -45,13 +67,13 @@ void sort_pert(const char *pert, double **pertints, int irrep)
       }
     }
   }
-  dpd_file2_mat_wrt(&f);
-  dpd_file2_mat_close(&f);
-  dpd_file2_close(&f);
+  global_dpd_->file2_mat_wrt(&f);
+  global_dpd_->file2_mat_close(&f);
+  global_dpd_->file2_close(&f);
 
   sprintf(lbl, "%s_AB", pert);
-  dpd_file2_init(&f, PSIF_CC_OEI, irrep, 1, 1, lbl);
-  dpd_file2_mat_init(&f);
+  global_dpd_->file2_init(&f, PSIF_CC_OEI, irrep, 1, 1, lbl);
+  global_dpd_->file2_mat_init(&f);
   for(Gp=0; Gp < moinfo.nirreps; Gp++) { /* irrep of left-hand MO */
     Gq = irrep ^ Gp;
 
@@ -63,13 +85,13 @@ void sort_pert(const char *pert, double **pertints, int irrep)
       }
     }
   }
-  dpd_file2_mat_wrt(&f);
-  dpd_file2_mat_close(&f);
-  dpd_file2_close(&f);
+  global_dpd_->file2_mat_wrt(&f);
+  global_dpd_->file2_mat_close(&f);
+  global_dpd_->file2_close(&f);
 
   sprintf(lbl, "%s_IA", pert);
-  dpd_file2_init(&f, PSIF_CC_OEI, irrep, 0, 1, lbl);
-  dpd_file2_mat_init(&f);
+  global_dpd_->file2_init(&f, PSIF_CC_OEI, irrep, 0, 1, lbl);
+  global_dpd_->file2_mat_init(&f);
   for(Gp=0; Gp < moinfo.nirreps; Gp++) { /* irrep of left-hand MO */
     Gq = irrep ^ Gp;
 
@@ -81,9 +103,9 @@ void sort_pert(const char *pert, double **pertints, int irrep)
       }
     }
   }
-  dpd_file2_mat_wrt(&f);
-  dpd_file2_mat_close(&f);
-  dpd_file2_close(&f);
+  global_dpd_->file2_mat_wrt(&f);
+  global_dpd_->file2_mat_close(&f);
+  global_dpd_->file2_close(&f);
 
 }
 

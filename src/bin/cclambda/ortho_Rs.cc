@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup CCLAMBDA
     \brief Enter brief description of file here 
@@ -61,18 +83,18 @@ double LRi_dot(int IRR, int R_index) {
   char R1A_lbl[32], lbl[32];
 
   sprintf(R1A_lbl, "RIA %d %d", IRR, R_index);
-  dpd_file2_init(&R1, PSIF_CC_RAMPS, IRR, 0, 1, R1A_lbl);
-  dpd_file2_init(&L1, PSIF_CC_LAMBDA, IRR, 0, 1, "New LIA");
-  overlap = 2.0 * dpd_file2_dot(&L1, &R1);
-  dpd_file2_close(&R1);
-  dpd_file2_close(&L1);
+  global_dpd_->file2_init(&R1, PSIF_CC_RAMPS, IRR, 0, 1, R1A_lbl);
+  global_dpd_->file2_init(&L1, PSIF_CC_LAMBDA, IRR, 0, 1, "New LIA");
+  overlap = 2.0 * global_dpd_->file2_dot(&L1, &R1);
+  global_dpd_->file2_close(&R1);
+  global_dpd_->file2_close(&L1);
 
   sprintf(lbl, "2RIjAb - RIjbA %d %d", IRR, R_index);
-  dpd_buf4_init(&R2, PSIF_CC_RAMPS, IRR, 0, 5, 0, 5, 0, lbl);
-  dpd_buf4_init(&L2, PSIF_CC_LAMBDA, IRR, 0, 5, 0, 5, 0, "New LIjAb");
-  overlap += dpd_buf4_dot(&L2, &R2);
-  dpd_buf4_close(&L2);
-  dpd_buf4_close(&R2);
+  global_dpd_->buf4_init(&R2, PSIF_CC_RAMPS, IRR, 0, 5, 0, 5, 0, lbl);
+  global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, IRR, 0, 5, 0, 5, 0, "New LIjAb");
+  overlap += global_dpd_->buf4_dot(&L2, &R2);
+  global_dpd_->buf4_close(&L2);
+  global_dpd_->buf4_close(&R2);
 
   return overlap;
 }
@@ -83,22 +105,22 @@ void LRi_minus(int IRR, int R_index, double overlap, double R0) {
   char L1A_lbl[32], R1A_lbl[32], lbl[32];
 
   sprintf(R1A_lbl, "RIA %d %d", IRR, R_index);
-  dpd_file2_init(&R1, PSIF_CC_RAMPS, IRR, 0, 1, R1A_lbl);
-  dpd_file2_init(&L1, PSIF_CC_LAMBDA, IRR, 0, 1, "New LIA");
-  dpd_file2_axpy(&R1, &L1, -overlap/(1.0 - R0*R0), 0);
-  dpd_file2_close(&R1);
-  dpd_file2_close(&L1);
+  global_dpd_->file2_init(&R1, PSIF_CC_RAMPS, IRR, 0, 1, R1A_lbl);
+  global_dpd_->file2_init(&L1, PSIF_CC_LAMBDA, IRR, 0, 1, "New LIA");
+  global_dpd_->file2_axpy(&R1, &L1, -overlap/(1.0 - R0*R0), 0);
+  global_dpd_->file2_close(&R1);
+  global_dpd_->file2_close(&L1);
 
   sprintf(lbl, "RIjAb %d %d", IRR, R_index);
-  dpd_buf4_init(&R2, PSIF_CC_RAMPS, IRR, 0, 5, 0, 5, 0, lbl);
-  dpd_buf4_init(&L2, PSIF_CC_LAMBDA, IRR, 0, 5, 0, 5, 0, "New LIjAb");
-  dpd_buf4_axpy(&R2, &L2, -overlap/(1.0 - R0*R0));
-  dpd_buf4_close(&L2);
-  dpd_buf4_close(&R2);
+  global_dpd_->buf4_init(&R2, PSIF_CC_RAMPS, IRR, 0, 5, 0, 5, 0, lbl);
+  global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, IRR, 0, 5, 0, 5, 0, "New LIjAb");
+  global_dpd_->buf4_axpy(&R2, &L2, -overlap/(1.0 - R0*R0));
+  global_dpd_->buf4_close(&L2);
+  global_dpd_->buf4_close(&R2);
 
-  dpd_file2_init(&L1, PSIF_CC_LAMBDA, IRR, 0, 1, "New LIA");
-  dpd_file2_copy(&L1, PSIF_CC_LAMBDA, "New Lia");
-  dpd_file2_close(&L1);
+  global_dpd_->file2_init(&L1, PSIF_CC_LAMBDA, IRR, 0, 1, "New LIA");
+  global_dpd_->file2_copy(&L1, PSIF_CC_LAMBDA, "New Lia");
+  global_dpd_->file2_close(&L1);
   /*
   dpd_buf4_init(&L2, CC_LAMBDA, IRR, 2, 7, 0, 5, 1, "New LIjAb");
   dpd_buf4_copy(&L2, CC_LAMBDA, "New LIJAB");

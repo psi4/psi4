@@ -1,0 +1,66 @@
+Psi4 can now be configured with CMAKE.  Users familiar with configure scripts will
+probably prefer to use the configure.cmake script, which will call CMake with the
+appropriate options (run
+
+configure.cmake -h
+
+to see which options are available and how it should be used).  CMake can also be 
+invoked directly, as described below.  Builds must be performed in a separate
+build directory, and can be customized through command line arguments or by
+passing definitions to cmake.  As an example, we'll consider building the code
+from $PSI4/obj.  The basic cmake invocation would be
+
+    cmake ..
+
+To set the installation directory and C++ compiler to use, we can do either
+
+    cmake .. -D PREFIX=/path/to/psi -D CXX=g++
+
+or
+    # on BASH-like shells
+    export PREFIX="/path/to/psi" 
+    export CXX=g++
+    # on CSH-like shells
+    setenv PREFIX "/path/to/psi"
+    setenv CXX=g++
+
+    cmake ..
+
+These can be mixed in any order, with -D commands taking precedence.  Psi4
+currently recognizes the following options:-
+
+CXX              The C++ compiler. N.B. This must be set as an environmental variable, not a -D flag. (string)
+                 default:whichever compiler is first detected by cmake
+
+CXXFLAGS         Extra C++ compiler flags to be used in compilation (string)
+                 default:""
+
+F77SYMBOL        The Fortran compiler name mangling convention, used for linking external Fortran libraries,
+                 such as BLAS. Values are lcu (lower case with traling underscore), lc (lower case), 
+                 ucu (upper case with trailing underscore), uc (upper case). If omitted CMake will detect it
+                 automatically if a Fortran compiler is present, if not it will use lcu. (string)
+
+LDFLAGS          Extra flags to be used in linking (string)
+                 default:""
+
+LAPACK           Linker flags to use for Lapack (and BLAS), instead of detecting system library (string)
+                 default:""
+
+MAX_AM_ERI       The maximum angular momentum to allow for integrals (1=p,2=d,3=f, etc.).  First and second
+                 derivatives are supported up to MAX_AM_ERI-1 and MAX_AM_ERI-2, respectively. (int)
+
+PREFIX           The installation directory for psi4 (string)
+                 default:/usr/local/psi4
+
+PYTHON           Full path to python interpreter to use. If omitted Python will be detected. There should be
+                 a corresponding python-config script in this location for Psi to work, i.e. Python development
+                 version. (string)
+                 default:""
+
+USE_SYSTEM_BOOST Whether to use system boost, if detected. False forces Psi to build its own Boost. (boolean)
+                 default:true
+
+
+It is strongly recommended that you delete the CMakeCache.txt in the object
+directory when changing build parameters, to prevent previous cached values
+being used instead of those being passed to cmake.

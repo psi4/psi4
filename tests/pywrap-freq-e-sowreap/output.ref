@@ -1,0 +1,351 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-beta4+ Driver
+
+               Git: Rev {master} e9f19e9aa317fb894a699daebf65a0fc78db3861
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+    Process ID:  19785
+    PSI4DATADIR: /Users/loriab/linux/psihub/master/psi4/lib
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+# This is a psi4 input file auto-generated from the hessian() wrapper.
+
+from psi4 import *
+from p4const import *
+from p4util import *
+from molutil import *
+from driver import *
+from wrappers import *
+from gaussian_n import *
+from aliases import *
+from functional import *
+from qmmm import *
+psi4_io = psi4.IOManager.shared_object()
+
+
+#psi4_io.set_specific_path(PSIF_CHKPT, './')
+#psi4_io.set_specific_retention(PSIF_CHKPT, True)
+
+
+geometry("""
+0 1
+H
+H 1 0.74
+""","blank_molecule_psi4_yo")
+
+h2o = geometry("""
+    units Angstrom
+    symmetry c1
+    no_reorient
+    0 1
+    O           
+    H                 1    0.9894093000
+    H                 1    0.9894093000      2  100.0268800000
+""","h2o")
+psi4.IO.set_default_namespace("h2o")
+
+psi4.set_memory(256000000)
+
+psi4.set_global_option('BASIS', 'STO-3G')
+psi4.set_global_option('D_CONVERGENCE', 1e-11)
+psi4.set_global_option('POINTS', 3)
+psi4.set_global_option('SCF_TYPE', 'PK')
+
+pickle_kw = ("""(dp0
+S'linkage'
+p1
+I19755
+sS'mode'
+p2
+S'reap'
+p3
+sS'dertype'
+p4
+S'energy'
+p5
+s.""")
+
+kwargs = pickle.loads(pickle_kw)
+frequency('scf', **kwargs)
+
+
+#    Follow the instructions below to carry out this frequency computation.
+#
+#    (1)  Run all of the FREQ-*.in input files on any variety of computer architecture.
+#       The output file names must be as given below (these are the defaults when executed
+#       as `psi4 FREQ-1.in`, etc.).
+#
+#             psi4 -i FREQ-1.in                   -o FREQ-1.out                 
+#             psi4 -i FREQ-2.in                   -o FREQ-2.out                 
+#             psi4 -i FREQ-3.in                   -o FREQ-3.out                 
+#             psi4 -i FREQ-4.in                   -o FREQ-4.out                 
+#             psi4 -i FREQ-5.in                   -o FREQ-5.out                 
+#             psi4 -i FREQ-6.in                   -o FREQ-6.out                 
+#             psi4 -i FREQ-7.in                   -o FREQ-7.out                 
+#             psi4 -i FREQ-8.in                   -o FREQ-8.out                 
+#             psi4 -i FREQ-9.in                   -o FREQ-9.out                 
+#             psi4 -i FREQ-10.in                  -o FREQ-10.out                
+#             psi4 -i FREQ-11.in                  -o FREQ-11.out                
+#             psi4 -i FREQ-12.in                  -o FREQ-12.out                
+#             psi4 -i FREQ-13.in                  -o FREQ-13.out                
+#
+#    (2)  Gather all the resulting output files in a directory. Place input file
+#         FREQ-master.in into that directory and run it. The job will be minimal in
+#         length and give summary results for the frequency computation in its output file.
+#
+#             psi4 -i FREQ-master.in              -o FREQ-master.out            
+#
+
+
+anal_freqs = psi4.Vector(3)  #TEST
+anal_freqs.set(0, 0, 2170.045)  #TEST
+anal_freqs.set(0, 1, 4140.001)  #TEST
+anal_freqs.set(0, 2, 4391.065)  #TEST
+ref_zpve = 0.024378893351  #TEST
+ref_eq_nre = 8.90648922437  #TEST
+ref_eq_e = -74.9659011923  #TEST
+
+fd_freqs = get_frequencies()  #TEST
+compare_vectors(anal_freqs, fd_freqs, 1, 'Frequencies')  #TEST
+compare_values(ref_zpve, get_variable('ZPVE'), 4, 'ZPVE')  #TEST
+compare_values(ref_eq_e, get_variable('current energy'), 6, 'SP energy')  #TEST
+compare_values(ref_eq_nre, get_active_molecule().nuclear_repulsion_energy(), 6, 'SP NRE')  #TEST
+compare_values(ref_eq_nre, h2o.nuclear_repulsion_energy(), 6, 'SP NRE')  #TEST
+compare_values(ref_eq_nre, get_variable('nuclear repulsion energy'), 6, 'SP NRE')  #TEST
+
+print_variables()
+
+--------------------------------------------------------------------------
+
+  Memory set to 256.000 MiB by Python script.
+
+-------------------------------------------------------------
+
+  Using finite-differences of energies to determine vibrational frequencies and 
+  normal modes.  Resulting frequencies are only valid at stationary points.
+	Generating geometries for use with 3-point formula.
+	Displacement size will be 5.00e-03.
+	Number of atoms is 3.
+	Number of irreps is 1.
+	Number of SALCS is 3.
+	 Number of SALC's per irrep:
+	  Irrep 1: 3
+	Number of geometries (including reference) is 12.
+	Number of displacements per irrep:
+	  Irrep 1: 12
+
+-------------------------------------------------------------
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  // Hessian Computation: Energy Displacement 1 //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+HESSIAN RESULT: electronic energy =     -74.965892071240
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  // Hessian Computation: Energy Displacement 2 //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+HESSIAN RESULT: electronic energy =     -74.965892071240
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  // Hessian Computation: Energy Displacement 3 //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+HESSIAN RESULT: electronic energy =     -74.965896762369
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  // Hessian Computation: Energy Displacement 4 //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+HESSIAN RESULT: electronic energy =     -74.965896755297
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  // Hessian Computation: Energy Displacement 5 //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+HESSIAN RESULT: electronic energy =     -74.965895303903
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  // Hessian Computation: Energy Displacement 6 //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+HESSIAN RESULT: electronic energy =     -74.965895276844
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  // Hessian Computation: Energy Displacement 7 //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+HESSIAN RESULT: electronic energy =     -74.965887569915
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  // Hessian Computation: Energy Displacement 8 //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+HESSIAN RESULT: electronic energy =     -74.965887705353
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  // Hessian Computation: Energy Displacement 9 //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+HESSIAN RESULT: electronic energy =     -74.965886086891
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  // Hessian Computation: Energy Displacement 10 //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+HESSIAN RESULT: electronic energy =     -74.965886251353
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  // Hessian Computation: Energy Displacement 11 //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+HESSIAN RESULT: electronic energy =     -74.965885083347
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  // Hessian Computation: Energy Displacement 12 //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+HESSIAN RESULT: electronic energy =     -74.965885242130
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  // Hessian Computation: Energy Displacement 13 //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+HESSIAN RESULT: electronic energy =     -74.965901192300
+
+-------------------------------------------------------------
+
+  Computing second-derivative from energies using projected, 
+  symmetry-adapted, cartesian coordinates (fd_freq_0).
+	13 energies passed in, including the reference energy.
+	Using 3-point formula.
+	Energy without displacement:  -74.9659011923
+	Check energies below for precision!
+	    1 :       -74.9658920712
+	    2 :       -74.9658920712
+	    3 :       -74.9658967624
+	    4 :       -74.9658967553
+	    5 :       -74.9658953039
+	    6 :       -74.9658952768
+	    7 :       -74.9658875699
+	    8 :       -74.9658877054
+	    9 :       -74.9658860869
+	   10 :       -74.9658862514
+	   11 :       -74.9658850833
+	   12 :       -74.9658852421
+	   13 :       -74.9659011923
+
+
+	  Irrep      Harmonic Frequency   
+	                  (cm-1)          
+	-----------------------------------------------
+	      A         2169.9735  
+	      A         4140.0378  
+	      A         4391.0859  
+	-----------------------------------------------
+
+	Normal Modes (mass-weighted).
+	Molecular mass is   18.01056 amu.
+	Frequencies in cm^-1; force constants in au.
+
+   Frequency:       2169.97
+   Force constant:   0.1782
+	     X       Y       Z           mass	
+  O 	   0.000   0.000   0.066      15.994915
+  H 	   0.000  -0.431  -0.525       1.007825
+  H 	   0.000   0.431  -0.525       1.007825
+
+   Frequency:       4140.04
+   Force constant:   0.6486
+	     X       Y       Z           mass	
+  O 	   0.000  -0.000   0.051      15.994915
+  H 	   0.000   0.557  -0.407       1.007825
+  H 	   0.000  -0.557  -0.407       1.007825
+
+   Frequency:       4391.09
+   Force constant:   0.7297
+	     X       Y       Z           mass	
+  O 	   0.000  -0.066  -0.000      15.994915
+  H 	   0.000   0.521  -0.437       1.007825
+  H 	   0.000   0.521   0.437       1.007825
+
+-------------------------------------------------------------
+
+            *********************************************
+            * Thermodynamic Analysis by R.A. King, 2012 *
+            *********************************************
+
+    Full point group: Cnv (C2v)
+
+    Data used to determine thermochemical information:
+    Temperature (K):          298.15
+    Pressure (Pa)  :       101325.00
+    Multiplicity   :               1
+    Rotor type     :  ASYMMETRIC_TOP
+    Rotational symmetry number :   2
+
+    Rotational constants:
+           wavenumbers          GHz
+        A:   23.296070    698.39861
+        B:   14.552933    436.28595
+        C:    8.957334    268.53410
+
+    Nuclear masses:
+         15.994915  1.007825  1.007825
+
+    No.    Vib. Freq. (cm^-1)      Vib. Temp. (K)
+      1              2169.973            3122.104
+      2              4140.038            5956.584
+      3              4391.086            6317.785
+
+    Component        Thermal Energy             Cv              S
+                           kcal/mol    cal/(mol K)    cal/(mol K) 
+    Electronic                0.000          0.000          0.000
+    Translational             0.889          2.981         34.608
+    Rotational                0.889          2.981         10.673
+    Vibrational              15.298          0.006          0.001
+    Total                    17.076          5.968         45.282
+
+                               cm^(-1)              au        kcal/mol
+    Zero-point energy        5350.5486      0.02437889         15.2980
+
+    Energies in Hartree/particle:   Correction            Total
+    Energy (0 K)                    0.02437889     -74.94152230
+    Internal energy                 0.02721173     -74.93868946
+    Enthalpy                        0.02815592     -74.93774528
+    Gibbs Free Energy               0.00664119     -74.95926000
+
+
+  Variable Map:
+  ----------------------------------------------------------------------------
+  "CURRENT ENERGY"               =>     -74.965901192300
+  "ENTHALPY"                     =>     -74.937745276958
+  "ENTHALPY CORRECTION"          =>       0.028155915342
+  "GIBBS FREE ENERGY"            =>     -74.959260004153
+  "GIBBS FREE ENERGY CORRECTION" =>       0.006641188147
+  "INTERNAL ENERGY"              =>     -74.938689462940
+  "INTERNAL ENERGY CORRECTION"   =>       0.027211729360
+  "NUCLEAR REPULSION ENERGY"     =>       8.906489224370
+  "ZERO K ENTHALPHY"             =>     -74.941522299505
+  "ZPVE"                         =>       0.024378892795
+
+
+
+*** PSI4 exiting successfully. Buy a developer a beer!

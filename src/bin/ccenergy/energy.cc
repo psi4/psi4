@@ -1,6 +1,28 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup CCENERGY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -20,9 +42,12 @@ double uhf_energy(void);
 
 double energy(void)
 {
-  if(params.ref == 0) return(rhf_energy());
-  else if(params.ref == 1) return(rohf_energy());
-  else if(params.ref == 2) return(uhf_energy());
+  double e = 0.0;
+  if(params.ref == 0) e = rhf_energy();
+  else if(params.ref == 1) e = rohf_energy();
+  else if(params.ref == 2) e = uhf_energy();
+
+  return e;
 }
 
 double rhf_energy(void)
@@ -33,28 +58,28 @@ double rhf_energy(void)
   dpdbuf4 S;
   double os_energy, ss_energy, Energy;
 
-  dpd_file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
-  dpd_file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
+  global_dpd_->file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
+  global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
   /*   dpd_file2_print(&tIA, outfile); */
-  tIA_energy = 2.0 * dpd_file2_dot(&fIA, &tIA);
-  dpd_file2_close(&fIA);
-  dpd_file2_close(&tIA);
+  tIA_energy = 2.0 * global_dpd_->file2_dot(&fIA, &tIA);
+  global_dpd_->file2_close(&fIA);
+  global_dpd_->file2_close(&tIA);
 
-  dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
-  dpd_buf4_init(&tauIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjAb");
-  tauIjAb_energy = dpd_buf4_dot(&D, &tauIjAb);
+  global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
+  global_dpd_->buf4_init(&tauIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjAb");
+  tauIjAb_energy = global_dpd_->buf4_dot(&D, &tauIjAb);
 
-  dpd_buf4_init(&S, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
-  os_energy = dpd_buf4_dot(&S, &tauIjAb);
+  global_dpd_->buf4_init(&S, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+  os_energy = global_dpd_->buf4_dot(&S, &tauIjAb);
   ss_energy = (tauIjAb_energy - os_energy);
 
   moinfo.ecc_ss = ss_energy;
   moinfo.ecc_os = os_energy;
- 
-  dpd_buf4_close(&S);
-  dpd_buf4_close(&tauIjAb);
-  dpd_buf4_close(&D);
-  
+
+  global_dpd_->buf4_close(&S);
+  global_dpd_->buf4_close(&tauIjAb);
+  global_dpd_->buf4_close(&D);
+
   /*
     fprintf(outfile, "Two AB Energy = %20.14f\n", tauIjAb_energy);
   */
@@ -68,37 +93,37 @@ double rohf_energy(void)
   dpdfile2 tIA, tia, fIA, fia;
   dpdbuf4 tauIJAB, tauijab, tauIjAb, D;
 
-  dpd_file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
-  dpd_file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
+  global_dpd_->file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
+  global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
 /*  dpd_file2_print(&tIA, outfile);  */
-  tIA_energy = dpd_file2_dot(&fIA, &tIA);
-  dpd_file2_close(&fIA);
-  dpd_file2_close(&tIA);
+  tIA_energy = global_dpd_->file2_dot(&fIA, &tIA);
+  global_dpd_->file2_close(&fIA);
+  global_dpd_->file2_close(&tIA);
 
-  dpd_file2_init(&fia, PSIF_CC_OEI, 0, 0, 1, "fia");
-  dpd_file2_init(&tia, PSIF_CC_OEI, 0, 0, 1, "tia");
+  global_dpd_->file2_init(&fia, PSIF_CC_OEI, 0, 0, 1, "fia");
+  global_dpd_->file2_init(&tia, PSIF_CC_OEI, 0, 0, 1, "tia");
 /*  dpd_file2_print(&tia, outfile); */
-  tia_energy = dpd_file2_dot(&fia, &tia);
-  dpd_file2_close(&fia);
-  dpd_file2_close(&tia);
+  tia_energy = global_dpd_->file2_dot(&fia, &tia);
+  global_dpd_->file2_close(&fia);
+  global_dpd_->file2_close(&tia);
 
-  dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 2, 7, 2, 7, 0, "D <ij||ab> (i>j,a>b)");
-  dpd_buf4_init(&tauIJAB, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tauIJAB");
+  global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 2, 7, 2, 7, 0, "D <ij||ab> (i>j,a>b)");
+  global_dpd_->buf4_init(&tauIJAB, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tauIJAB");
 /*  dpd_buf4_print(&tauIJAB, outfile);  */
-  tauIJAB_energy = dpd_buf4_dot(&D, &tauIJAB);
-  dpd_buf4_close(&tauIJAB);
-  dpd_buf4_init(&tauijab, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tauijab");
+  tauIJAB_energy = global_dpd_->buf4_dot(&D, &tauIJAB);
+  global_dpd_->buf4_close(&tauIJAB);
+  global_dpd_->buf4_init(&tauijab, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tauijab");
 /*  dpd_buf4_print(&tauijab, outfile); */
-  tauijab_energy = dpd_buf4_dot(&D, &tauijab);
-  dpd_buf4_close(&tauijab);
-  dpd_buf4_close(&D);
+  tauijab_energy = global_dpd_->buf4_dot(&D, &tauijab);
+  global_dpd_->buf4_close(&tauijab);
+  global_dpd_->buf4_close(&D);
 
-  dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
-  dpd_buf4_init(&tauIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjAb");
+  global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+  global_dpd_->buf4_init(&tauIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjAb");
 /*  dpd_buf4_print(&tauIjAb, outfile);  */
-  tauIjAb_energy = dpd_buf4_dot(&D, &tauIjAb);
-  dpd_buf4_close(&tauIjAb);
-  dpd_buf4_close(&D);
+  tauIjAb_energy = global_dpd_->buf4_dot(&D, &tauIjAb);
+  global_dpd_->buf4_close(&tauIjAb);
+  global_dpd_->buf4_close(&D);
 
   /*
   fprintf(outfile, "One A Energy = %20.14f\n", tIA_energy);
@@ -114,7 +139,7 @@ double rohf_energy(void)
   moinfo.ecc_os = tauIjAb_energy;
 
   return (tIA_energy + tia_energy +
-	  tauIJAB_energy + tauijab_energy + tauIjAb_energy);
+      tauIJAB_energy + tauijab_energy + tauIjAb_energy);
 }
 
 double uhf_energy(void)
@@ -123,37 +148,37 @@ double uhf_energy(void)
   dpdbuf4 T2, D;
   dpdfile2 T1, F;
 
-  dpd_file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "fIA");
-  dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
+  global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "fIA");
+  global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
 /*  dpd_file2_print(&tIA, outfile);  */
-  T1A = dpd_file2_dot(&F, &T1);
-  dpd_file2_close(&F);
-  dpd_file2_close(&T1);
+  T1A = global_dpd_->file2_dot(&F, &T1);
+  global_dpd_->file2_close(&F);
+  global_dpd_->file2_close(&T1);
 
-  dpd_file2_init(&F, PSIF_CC_OEI, 0, 2, 3, "fia");
-  dpd_file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia");
+  global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 2, 3, "fia");
+  global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia");
 /*  dpd_file2_print(&tIA, outfile);  */
-  T1B = dpd_file2_dot(&F, &T1);
-  dpd_file2_close(&F);
-  dpd_file2_close(&T1);
+  T1B = global_dpd_->file2_dot(&F, &T1);
+  global_dpd_->file2_close(&F);
+  global_dpd_->file2_close(&T1);
 
-  dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tauIJAB");
-  dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 2, 7, 2, 7, 0, "D <IJ||AB> (I>J,A>B)");
-  E2AA = dpd_buf4_dot(&D, &T2);
-  dpd_buf4_close(&D);
-  dpd_buf4_close(&T2);
+  global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tauIJAB");
+  global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 2, 7, 2, 7, 0, "D <IJ||AB> (I>J,A>B)");
+  E2AA = global_dpd_->buf4_dot(&D, &T2);
+  global_dpd_->buf4_close(&D);
+  global_dpd_->buf4_close(&T2);
 
-  dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "tauijab");
-  dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 12, 17, 12, 17, 0, "D <ij||ab> (i>j,a>b)");
-  E2BB = dpd_buf4_dot(&D, &T2);
-  dpd_buf4_close(&D);
-  dpd_buf4_close(&T2);
+  global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "tauijab");
+  global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 12, 17, 12, 17, 0, "D <ij||ab> (i>j,a>b)");
+  E2BB = global_dpd_->buf4_dot(&D, &T2);
+  global_dpd_->buf4_close(&D);
+  global_dpd_->buf4_close(&T2);
 
-  dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tauIjAb");
-  dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
-  E2AB = dpd_buf4_dot(&D, &T2);
-  dpd_buf4_close(&D);
-  dpd_buf4_close(&T2);
+  global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tauIjAb");
+  global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
+  E2AB = global_dpd_->buf4_dot(&D, &T2);
+  global_dpd_->buf4_close(&D);
+  global_dpd_->buf4_close(&T2);
 
   /*
   fprintf(outfile, "One A Energy = %20.14f\n", T1A);
@@ -162,12 +187,12 @@ double uhf_energy(void)
   fprintf(outfile, "Two BB Energy = %20.14f\n", E2BB);
   fprintf(outfile, "Two AB Energy = %20.14f\n", E2AB);
   */
-  
+
   /*
   fprintf(outfile,"\n\tOpposite-spin energy  = %20.15f\n",E2AB);
   fprintf(outfile,"\tSame-spin energy  = %20.15f\n",E2AA+E2BB);
   */
- 
+
   // Store the same-spin and opposite-spin pair energies
   // (not including singles here)
   moinfo.ecc_ss = E2AA + E2BB;

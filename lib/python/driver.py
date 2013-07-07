@@ -1,3 +1,25 @@
+#
+#@BEGIN LICENSE
+#
+# PSI4: an ab initio quantum chemistry software package
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+#@END LICENSE
+#
+
 from __future__ import print_function
 """Module with a *procedures* dictionary specifying available quantum
 chemical methods and functions driving the main quantum chemical
@@ -6,14 +28,13 @@ properties, and vibrational frequency calculations.
 
 """
 import sys
-import PsiMod
+import psi4
+import p4util
+import p4const
 from proc import *
-from text import *
-from procutil import *
 from functional import *
-from psifiles import *
+from p4regex import *
 # never import wrappers or aliases into this file
-
 
 # Procedure lookup tables
 procedures = {
@@ -21,6 +42,7 @@ procedures = {
             'scf'           : run_scf,
             'mcscf'         : run_mcscf,
             'dcft'          : run_dcft,
+            'lmp2'          : run_lmp2,
             'oldmp2'        : run_oldmp2,
             'dfmp2'         : run_dfmp2,
             'df-mp2'        : run_dfmp2,
@@ -46,6 +68,8 @@ procedures = {
             'cepa0'         : run_cepa0,
             'omp2.5'        : run_omp2_5,
             'dftsapt'       : run_dftsapt,
+            'saptdft'       : run_dftsapt,
+            'asapt'         : run_asapt,
             'infsapt'       : run_infsapt,
             'sapt0'         : run_sapt,
             'sapt2'         : run_sapt,
@@ -67,6 +91,8 @@ procedures = {
             'ccenergy'      : run_ccenergy,  # full control over ccenergy
             'ccsd'          : run_ccenergy,
             'ccsd(t)'       : run_ccenergy,
+            'ccsd(at)'      : run_ccenergy,
+            'a-ccsd(t)'      : run_ccenergy,
             'cc2'           : run_ccenergy,
             'cc3'           : run_ccenergy,
             'mrcc'          : run_mrcc,      # interface to Kallay's MRCC program
@@ -174,6 +200,7 @@ for ssuper in superfunctional_list():
 for ssuper in superfunctional_list():
     if ((not ssuper.is_c_hybrid()) and (not ssuper.is_c_lrc()) and (not ssuper.is_x_lrc())):
         procedures['gradient'][ssuper.name().lower()] = run_dft_gradient
+
 
 def energy(name, **kwargs):
     r"""Function to compute the single-point electronic energy.
@@ -487,9 +514,9 @@ def energy(name, **kwargs):
 
     """
     lowername = name.lower()
-    kwargs = kwargs_lower(kwargs)
+    kwargs = p4util.kwargs_lower(kwargs)
 
-    optstash = OptionsState(
+    optstash = p4util.OptionsState(
         ['SCF', 'E_CONVERGENCE'],
         ['SCF', 'D_CONVERGENCE'],
         ['E_CONVERGENCE'])
@@ -498,7 +525,7 @@ def energy(name, **kwargs):
     if 'molecule' in kwargs:
         activate(kwargs['molecule'])
         del kwargs['molecule']
-    molecule = PsiMod.get_active_molecule()
+    molecule = psi4.get_active_molecule()
     molecule.update_geometry()
 
     # Allow specification of methods to arbitrary order
@@ -508,21 +535,21 @@ def energy(name, **kwargs):
 
     try:
         # Set method-dependent scf convergence criteria
-        if not PsiMod.has_option_changed('SCF', 'E_CONVERGENCE'):
+        if not psi4.has_option_changed('SCF', 'E_CONVERGENCE'):
             if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
-                PsiMod.set_local_option('SCF', 'E_CONVERGENCE', 6)
+                psi4.set_local_option('SCF', 'E_CONVERGENCE', 6)
             else:
-                PsiMod.set_local_option('SCF', 'E_CONVERGENCE', 8)
-        if not PsiMod.has_option_changed('SCF', 'D_CONVERGENCE'):
+                psi4.set_local_option('SCF', 'E_CONVERGENCE', 8)
+        if not psi4.has_option_changed('SCF', 'D_CONVERGENCE'):
             if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
-                PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 6)
+                psi4.set_local_option('SCF', 'D_CONVERGENCE', 6)
             else:
-                PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 8)
+                psi4.set_local_option('SCF', 'D_CONVERGENCE', 8)
 
         # Set post-scf convergence criteria (global will cover all correlated modules)
-        if not PsiMod.has_global_option_changed('E_CONVERGENCE'):
+        if not psi4.has_global_option_changed('E_CONVERGENCE'):
             if not procedures['energy'][lowername] == run_scf and not procedures['energy'][lowername] == run_dft:
-                PsiMod.set_global_option('E_CONVERGENCE', 6)
+                psi4.set_global_option('E_CONVERGENCE', 6)
 
         procedures['energy'][lowername](lowername, **kwargs)
 
@@ -530,7 +557,7 @@ def energy(name, **kwargs):
         raise ValidationError('Energy method %s not available.' % (lowername))
 
     optstash.restore()
-    return PsiMod.get_variable('CURRENT ENERGY')
+    return psi4.get_variable('CURRENT ENERGY')
 
 
 def gradient(name, **kwargs):
@@ -539,10 +566,10 @@ def gradient(name, **kwargs):
 
     """
     lowername = name.lower()
-    kwargs = kwargs_lower(kwargs)
+    kwargs = p4util.kwargs_lower(kwargs)
     dertype = 1
 
-    optstash = OptionsState(
+    optstash = p4util.OptionsState(
         ['SCF', 'E_CONVERGENCE'],
         ['SCF', 'D_CONVERGENCE'],
         ['E_CONVERGENCE'])
@@ -595,13 +622,18 @@ def gradient(name, **kwargs):
         raise ValidationError('Requested method \'name\' %s and derivative level \'dertype\' %s are not available.'
             % (lowername, dertype))
 
+    # no analytic derivatives for scf_type cd
+    if psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
+        if (dertype == 1):
+            raise ValidationError('No analytic derivatives for SCF_TYPE CD.')
+
     # Make sure the molecule the user provided is the active one
     if ('molecule' in kwargs):
         activate(kwargs['molecule'])
         del kwargs['molecule']
-    molecule = PsiMod.get_active_molecule()
+    molecule = psi4.get_active_molecule()
     molecule.update_geometry()
-    PsiMod.set_global_option('BASIS', PsiMod.get_global_option('BASIS'))
+    psi4.set_global_option('BASIS', psi4.get_global_option('BASIS'))
 
     # S/R: Mode of operation- whether finite difference opt run in one job or files farmed out
     opt_mode = 'continuous'
@@ -621,21 +653,21 @@ def gradient(name, **kwargs):
         raise ValidationError('Optimize execution mode \'%s\' not valid.' % (opt_mode))
 
     # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
-    if not PsiMod.has_option_changed('SCF', 'E_CONVERGENCE'):
+    if not psi4.has_option_changed('SCF', 'E_CONVERGENCE'):
         if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
-            PsiMod.set_local_option('SCF', 'E_CONVERGENCE', 8)
+            psi4.set_local_option('SCF', 'E_CONVERGENCE', 8)
         else:
-            PsiMod.set_local_option('SCF', 'E_CONVERGENCE', 10)
-    if not PsiMod.has_option_changed('SCF', 'D_CONVERGENCE'):
+            psi4.set_local_option('SCF', 'E_CONVERGENCE', 10)
+    if not psi4.has_option_changed('SCF', 'D_CONVERGENCE'):
         if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
-            PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 8)
+            psi4.set_local_option('SCF', 'D_CONVERGENCE', 8)
         else:
-            PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 10)
+            psi4.set_local_option('SCF', 'D_CONVERGENCE', 10)
 
     # Set post-scf convergence criteria (global will cover all correlated modules)
-    if not PsiMod.has_global_option_changed('E_CONVERGENCE'):
+    if not psi4.has_global_option_changed('E_CONVERGENCE'):
         if not procedures['energy'][lowername] == run_scf and not procedures['energy'][lowername] == run_dft:
-            PsiMod.set_global_option('E_CONVERGENCE', 8)
+            psi4.set_global_option('E_CONVERGENCE', 8)
 
     # Does dertype indicate an analytic procedure both exists and is wanted?
     if (dertype == 1):
@@ -645,10 +677,10 @@ def gradient(name, **kwargs):
 
         if 'mode' in kwargs and kwargs['mode'].lower() == 'sow':
             raise ValidationError('Optimize execution mode \'sow\' not valid for analytic gradient calculation.')
-        PsiMod.wavefunction().energy()
+        psi4.wavefunction().energy()
 
         optstash.restore()
-        return PsiMod.get_variable('CURRENT ENERGY')
+        return psi4.get_variable('CURRENT ENERGY')
 
     else:
         # If not, perform finite difference of energies
@@ -661,7 +693,7 @@ def gradient(name, **kwargs):
             print('Performing finite difference calculations')
 
         # Obtain list of displacements
-        displacements = PsiMod.fd_geoms_1_0()
+        displacements = psi4.fd_geoms_1_0()
         ndisp = len(displacements)
 
         # This version is pretty dependent on the reference geometry being last (as it is now)
@@ -678,7 +710,7 @@ def gradient(name, **kwargs):
             instructionsO += """    rather than normal input. Follow the instructions in OPT-master.in to continue.\n\n"""
             instructionsO += """    Alternatively, a single-job execution of the gradient may be accessed through\n"""
             instructionsO += """    the optimization wrapper option mode='continuous'.\n\n"""
-            PsiMod.print_out(instructionsO)
+            psi4.print_out(instructionsO)
 
             instructionsM = """\n#    Follow the instructions below to carry out this optimization cycle.\n#\n"""
             instructionsM += """#    (1)  Run all of the OPT-%s-*.in input files on any variety of computer architecture.\n""" % (str(opt_iter))
@@ -700,9 +732,9 @@ def gradient(name, **kwargs):
 
             fmaster = open('OPT-master.in', 'w')
             fmaster.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n')
-            fmaster.write(format_molecule_for_input(molecule))
-            fmaster.write(format_options_for_input())
-            format_kwargs_for_input(fmaster, 2, **kwargs)
+            fmaster.write(p4util.format_molecule_for_input(molecule))
+            fmaster.write(p4util.format_options_for_input())
+            p4util.format_kwargs_for_input(fmaster, 2, **kwargs)
             fmaster.write("""%s('%s', **kwargs)\n\n""" % (optimize.__name__, lowername))
             fmaster.write(instructionsM)
             fmaster.close()
@@ -713,14 +745,14 @@ def gradient(name, **kwargs):
 
             # Build string of title banner
             banners = ''
-            banners += """PsiMod.print_out('\\n')\n"""
-            banners += """banner(' Gradient %d Computation: Displacement %d')\n""" % (opt_iter, n + 1)
-            banners += """PsiMod.print_out('\\n')\n\n"""
+            banners += """psi4.print_out('\\n')\n"""
+            banners += """p4util.banner(' Gradient %d Computation: Displacement %d ')\n""" % (opt_iter, n + 1)
+            banners += """psi4.print_out('\\n')\n\n"""
 
             if (opt_mode.lower() == 'continuous'):
                 # Print information to output.dat
-                PsiMod.print_out('\n')
-                banner('Loading displacement %d of %d' % (n + 1, ndisp))
+                psi4.print_out('\n')
+                p4util.banner('Loading displacement %d of %d' % (n + 1, ndisp))
 
                 # Print information to the screen
                 print(' %d' % (n + 1), end="")
@@ -728,12 +760,12 @@ def gradient(name, **kwargs):
                     print('\n', end="")
 
                 # Load in displacement into the active molecule
-                PsiMod.get_active_molecule().set_geometry(displacement)
+                psi4.get_active_molecule().set_geometry(displacement)
 
                 # Perform the energy calculation
                 #E = func(lowername, **kwargs)
                 func(lowername, **kwargs)
-                E = PsiMod.get_variable('CURRENT ENERGY')
+                E = psi4.get_variable('CURRENT ENERGY')
                 #E = func(**kwargs)
 
                 # Save the energy
@@ -741,51 +773,26 @@ def gradient(name, **kwargs):
 
             # S/R: Write each displaced geometry to an input file
             elif (opt_mode.lower() == 'sow'):
-                PsiMod.get_active_molecule().set_geometry(displacement)
+                psi4.get_active_molecule().set_geometry(displacement)
 
                 # S/R: Prepare molecule, options, and kwargs
                 freagent = open('%s.in' % (rfile), 'w')
                 freagent.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n')
-                freagent.write(format_molecule_for_input(molecule))
-                freagent.write(format_options_for_input())
-                format_kwargs_for_input(freagent, **kwargs)
+                freagent.write(p4util.format_molecule_for_input(molecule))
+                freagent.write(p4util.format_options_for_input())
+                p4util.format_kwargs_for_input(freagent, **kwargs)
 
                 # S/R: Prepare function call and energy save
                 freagent.write("""electronic_energy = %s('%s', **kwargs)\n\n""" % (func.__name__, lowername))
-                freagent.write("""PsiMod.print_out('\\nGRADIENT RESULT: computation %d for item %d """ % (os.getpid(), n + 1))
+                freagent.write("""psi4.print_out('\\nGRADIENT RESULT: computation %d for item %d """ % (os.getpid(), n + 1))
                 freagent.write("""yields electronic energy %20.12f\\n' % (electronic_energy))\n\n""")
                 freagent.close()
 
             # S/R: Read energy from each displaced geometry output file and save in energies array
             elif (opt_mode.lower() == 'reap'):
-                E = 0.0
                 exec(banners)
-
-                try:
-                    freagent = open('%s.out' % (rfile), 'r')
-                except IOError:
-                    ValidationError('Aborting upon output file \'%s.out\' not found.\n' % (rfile))
-                    return 0.0
-                else:
-                    while 1:
-                        line = freagent.readline()
-                        if not line:
-                            if E == 0.0:
-                                ValidationError('Aborting upon output file \'%s.out\' has no %s RESULT line.\n' % (rfile, 'GRADIENT'))
-                            break
-                        s = line.split()
-                        if (len(s) != 0) and (s[0:3] == ['GRADIENT', 'RESULT:', 'computation']):
-                            if int(s[3]) != opt_linkage:
-                                raise ValidationError('Output file \'%s.out\' has linkage %s incompatible with master.in linkage %s.'
-                                    % (rfile, str(s[3]), str(opt_linkage)))
-                            if s[6] != str(n + 1):
-                                raise ValidationError('Output file \'%s.out\' has nominal affiliation %s incompatible with item %s.'
-                                    % (rfile, s[6], str(n + 1)))
-                            if (s[8:10] == ['electronic', 'energy']):
-                                E = float(s[10])
-                                PsiMod.print_out('%s RESULT: electronic energy = %20.12f\n' % ('GRADIENT', E))
-                    freagent.close()
-                energies.append(E)
+                psi4.set_variable('NUCLEAR REPULSION ENERGY', molecule.nuclear_repulsion_energy())
+                energies.append(p4util.extract_sowreap_from_output(rfile, 'GRADIENT', n, opt_linkage, True))
 
         # S/R: Quit sow after writing files
         if (opt_mode.lower() == 'sow'):
@@ -793,11 +800,10 @@ def gradient(name, **kwargs):
             return 0.0
 
         if (opt_mode.lower() == 'reap'):
-            PsiMod.set_variable('CURRENT ENERGY', energies[-1])
+            psi4.set_variable('CURRENT ENERGY', energies[-1])
 
         # Obtain the gradient
-        PsiMod.fd_1_0(energies)
-        
+        psi4.fd_1_0(energies)
         # The last item in the list is the reference energy, return it
         optstash.restore()
         return energies[-1]
@@ -854,9 +860,9 @@ def property(name, **kwargs):
 
     """
     lowername = name.lower()
-    kwargs = kwargs_lower(kwargs)
+    kwargs = p4util.kwargs_lower(kwargs)
 
-    optstash = OptionsState(
+    optstash = p4util.OptionsState(
         ['SCF', 'E_CONVERGENCE'],
         ['SCF', 'D_CONVERGENCE'],
         ['E_CONVERGENCE'])
@@ -865,9 +871,9 @@ def property(name, **kwargs):
     if ('molecule' in kwargs):
         activate(kwargs['molecule'])
         del kwargs['molecule']
-    molecule = PsiMod.get_active_molecule()
+    molecule = psi4.get_active_molecule()
     molecule.update_geometry()
-    #PsiMod.set_global_option('BASIS', PsiMod.get_global_option('BASIS'))
+    #psi4.set_global_option('BASIS', psi4.get_global_option('BASIS'))
 
     # Allow specification of methods to arbitrary order
     lowername, level = parse_arbitrary_order(lowername)
@@ -876,23 +882,23 @@ def property(name, **kwargs):
 
     try:
         # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
-        #   SCF properties have been set as 6/5 so as to match those 
+        #   SCF properties have been set as 6/5 so as to match those
         #       run normally through OEProp so subject to change
-        if not PsiMod.has_option_changed('SCF', 'E_CONVERGENCE'):
+        if not psi4.has_option_changed('SCF', 'E_CONVERGENCE'):
             if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
-                PsiMod.set_local_option('SCF', 'E_CONVERGENCE', 6)
+                psi4.set_local_option('SCF', 'E_CONVERGENCE', 6)
             else:
-                PsiMod.set_local_option('SCF', 'E_CONVERGENCE', 10)
-        if not PsiMod.has_option_changed('SCF', 'D_CONVERGENCE'):
+                psi4.set_local_option('SCF', 'E_CONVERGENCE', 10)
+        if not psi4.has_option_changed('SCF', 'D_CONVERGENCE'):
             if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
-                PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 6)
+                psi4.set_local_option('SCF', 'D_CONVERGENCE', 6)
             else:
-                PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 10)
+                psi4.set_local_option('SCF', 'D_CONVERGENCE', 10)
 
         # Set post-scf convergence criteria (global will cover all correlated modules)
-        if not PsiMod.has_global_option_changed('E_CONVERGENCE'):
+        if not psi4.has_global_option_changed('E_CONVERGENCE'):
             if not procedures['energy'][lowername] == run_scf and not procedures['energy'][lowername] == run_dft:
-                PsiMod.set_global_option('E_CONVERGENCE', 8)
+                psi4.set_global_option('E_CONVERGENCE', 8)
 
         returnvalue = procedures['property'][lowername](lowername, **kwargs)
 
@@ -963,7 +969,7 @@ def optimize(name, **kwargs):
 
     .. include:: autodoc_dft_opt.rst
 
-    .. warning:: Optimizations where the molecule is specified in Z-matrix format 
+    .. warning:: Optimizations where the molecule is specified in Z-matrix format
        with dummy atoms will result in the geometry being converted to a Cartesian representation.
 
     :type name: string
@@ -1016,9 +1022,9 @@ def optimize(name, **kwargs):
 
     """
     lowername = name.lower()
-    kwargs = kwargs_lower(kwargs)
+    kwargs = p4util.kwargs_lower(kwargs)
 
-    full_hess_every = PsiMod.get_local_option('OPTKING', 'FULL_HESS_EVERY')
+    full_hess_every = psi4.get_local_option('OPTKING', 'FULL_HESS_EVERY')
     steps_since_last_hessian = 0
 
     # are we in sow/reap mode?
@@ -1027,31 +1033,31 @@ def optimize(name, **kwargs):
         isSowReap = True
     if ('mode' in kwargs) and (kwargs['mode'].lower() == 'reap'):
         isSowReap = True
-    optstash = OptionsState(
+    optstash = p4util.OptionsState(
         ['SCF', 'GUESS'])
 
     n = 1
     if ('opt_iter' in kwargs):
         n = kwargs['opt_iter']
 
-    PsiMod.get_active_molecule().update_geometry()
-    mol = PsiMod.get_active_molecule()
+    psi4.get_active_molecule().update_geometry()
+    mol = psi4.get_active_molecule()
     mol.update_geometry()
     initial_sym = mol.schoenflies_symbol()
-    while n <= PsiMod.get_global_option('GEOM_MAXITER'):
-        mol = PsiMod.get_active_molecule()
+    while n <= psi4.get_global_option('GEOM_MAXITER'):
+        mol = psi4.get_active_molecule()
         mol.update_geometry()
         current_sym = mol.schoenflies_symbol()
         if initial_sym != current_sym:
             raise Exception("Point group changed!  You should restart using " +\
-                            "the last geometry in the output, after carefully "+\
-                            "making sure all symmetry-dependent information in "+\
+                            "the last geometry in the output, after carefully " +\
+                            "making sure all symmetry-dependent information in " +\
                             "the input, such as DOCC, is correct.")
         kwargs['opt_iter'] = n
 
         # Use orbitals from previous iteration as a guess
         if (n > 1) and (not isSowReap):
-            PsiMod.set_local_option('SCF', 'GUESS', 'READ')
+            psi4.set_local_option('SCF', 'GUESS', 'READ')
 
         # Compute the gradient
         thisenergy = gradient(name, **kwargs)
@@ -1064,39 +1070,39 @@ def optimize(name, **kwargs):
 
         # S/R: Move opt data file from last pass into namespace for this pass
         if ('mode' in kwargs) and (kwargs['mode'].lower() == 'reap') and (n != 0):
-            PsiMod.IOManager.shared_object().set_specific_retention(1, True)
-            PsiMod.IOManager.shared_object().set_specific_path(1, './')
+            psi4.IOManager.shared_object().set_specific_retention(1, True)
+            psi4.IOManager.shared_object().set_specific_path(1, './')
             if 'opt_datafile' in kwargs:
                 restartfile = kwargs.pop('opt_datafile')
-                if(PsiMod.me() == 0):
-                    shutil.copy(restartfile, get_psifile(1))
+                if(psi4.me() == 0):
+                    shutil.copy(restartfile, p4util.get_psifile(1))
 
         # compute Hessian as requested; frequency wipes out gradient so stash it
         if ((full_hess_every > -1) and (n == 1)) or (steps_since_last_hessian + 1 == full_hess_every):
-            G = PsiMod.get_gradient()
-            PsiMod.IOManager.shared_object().set_specific_retention(1, True)
-            PsiMod.IOManager.shared_object().set_specific_path(1, './')
+            G = psi4.get_gradient()
+            psi4.IOManager.shared_object().set_specific_retention(1, True)
+            psi4.IOManager.shared_object().set_specific_path(1, './')
             frequencies(name, **kwargs)
             steps_since_last_hessian = 0
-            PsiMod.set_gradient(G)
-            PsiMod.set_global_option('CART_HESS_READ', True)
-        elif ((full_hess_every == -1) and (PsiMod.get_global_option('CART_HESS_READ')) and (n == 1)):
+            psi4.set_gradient(G)
+            psi4.set_global_option('CART_HESS_READ', True)
+        elif ((full_hess_every == -1) and (psi4.get_global_option('CART_HESS_READ')) and (n == 1)):
             pass
             # Do nothing; user said to read existing hessian once
         else:
-            PsiMod.set_global_option('CART_HESS_READ', False)
+            psi4.set_global_option('CART_HESS_READ', False)
             steps_since_last_hessian += 1
 
-        # print 'cart_hess_read', PsiMod.get_global_option('CART_HESS_READ')
+        # print 'cart_hess_read', psi4.get_global_option('CART_HESS_READ')
         # Take step
-        if PsiMod.optking() == PsiMod.PsiReturnType.EndLoop:
+        if psi4.optking() == psi4.PsiReturnType.EndLoop:
             print('Optimizer: Optimization complete!')
-            PsiMod.print_out('\n    Final optimized geometry and variables:\n')
-            PsiMod.get_active_molecule().print_in_input_format()
+            psi4.print_out('\n    Final optimized geometry and variables:\n')
+            psi4.get_active_molecule().print_in_input_format()
             # Check if user wants to see the intcos; if so, don't delete them.
-            if (PsiMod.get_option('OPTKING', 'INTCOS_GENERATE_EXIT') == False):
-                PsiMod.opt_clean()
-            PsiMod.clean()
+            if (psi4.get_option('OPTKING', 'INTCOS_GENERATE_EXIT') == False):
+                psi4.opt_clean()
+            psi4.clean()
 
             # S/R: Clean up opt input file
             if ('mode' in kwargs) and (kwargs['mode'].lower() == 'reap'):
@@ -1107,17 +1113,17 @@ def optimize(name, **kwargs):
 
             optstash.restore()
             return thisenergy
-        PsiMod.print_out('\n    Structure for next step:\n')
-        PsiMod.get_active_molecule().print_in_input_format()
+        psi4.print_out('\n    Structure for next step:\n')
+        psi4.get_active_molecule().print_in_input_format()
 
         # S/R: Preserve opt data file for next pass and switch modes to get new displacements
         if ('mode' in kwargs) and (kwargs['mode'].lower() == 'reap'):
-            kwargs['opt_datafile'] = get_psifile(1)
+            kwargs['opt_datafile'] = p4util.get_psifile(1)
             kwargs['mode'] = 'sow'
 
         n += 1
 
-    PsiMod.print_out('\tOptimizer: Did not converge!')
+    psi4.print_out('\tOptimizer: Did not converge!')
 
     optstash.restore()
     return 0.0
@@ -1189,7 +1195,7 @@ def parse_arbitrary_order(name):
                 return namelower, None
             # Let 'mp4' be redirected to fnocc module if rhf
             elif (namestump == 'mp') and (namelevel == 4):
-                if PsiMod.get_option('SCF','REFERENCE') == 'RHF':
+                if psi4.get_option('SCF', 'REFERENCE') == 'RHF':
                     return 'fnocc-mp', 4
                 else:
                     return 'detci-mp', 4
@@ -1202,62 +1208,17 @@ def parse_arbitrary_order(name):
         return namelower, None
 
 
-def frequency(name, **kwargs):
-    r"""Function to compute harmonic vibrational frequencies.
-
-    :aliases: frequencies(), freq()
-
-    :returns: (*float*) Total electronic energy in Hartrees.
-
-    .. note:: Analytic hessians are not available. Frequencies will proceed through
-        finite differences according to availability of gradients or energies.
-
-    .. caution:: Some features are not yet implemented. Buy a developer a coffee.
-
-       - Make frequency look analogous to gradient, especially in matching derivative levels. Make dertype actually a dertype type.
-
-    .. _`table:freq_gen`:
-
-    :type name: string
-    :param name: ``'scf'`` || ``'df-mp2'`` || ``'ci5'`` || etc.
-
-        First argument, usually unlabeled. Indicates the computational method
-        to be applied to the system.
-
-    :type dertype: :ref:`dertype <op_py_dertype>`
-    :param dertype: |dl| ``'hessian'`` |dr| || ``'gradient'`` || ``'energy'``
-
-        Indicates whether analytic (if available- they're not), finite
-        difference of gradients (if available) or finite difference of
-        energies is to be performed.
-
-    :type irrep: int or string
-    :param irrep: |dl| ``-1`` |dr| || ``1`` || ``'b2'`` || ``'App'`` || etc.
-
-        Indicates which symmetry block (:ref:`Cotton <table:irrepOrdering>` ordering) of vibrational
-        frequencies to be computed. ``1``, ``'1'``, or ``'a1'`` represents
-        :math:`a_1`, requesting only the totally symmetric modes.
-        ``-1`` indicates a full frequency calculation.
-
-    :type molecule: :ref:`molecule <op_py_molecule>`
-    :param molecule: ``h2o`` || etc.
-
-        The target molecule, if not the last molecule defined.
-
-    :examples:
-
-    >>> # [1] <example description>
-    >>> <example python command>
-
-    >>> # [2] Frequency calculation for b2 modes through finite difference of gradients
-    >>> frequencies('scf', dertype=1, irrep=4)
+def hessian(name, **kwargs):
+    r"""Function complementary to :py:func:`~frequency`. Computes force
+    constants, deciding analytic, finite difference of gradients, or
+    finite difference of energies.
 
     """
     lowername = name.lower()
-    kwargs = kwargs_lower(kwargs)
+    kwargs = p4util.kwargs_lower(kwargs)
     dertype = 2
 
-    optstash = OptionsState(
+    optstash = p4util.OptionsState(
         ['SCF', 'E_CONVERGENCE'],
         ['SCF', 'D_CONVERGENCE'],
         ['E_CONVERGENCE'])
@@ -1324,26 +1285,43 @@ def frequency(name, **kwargs):
     if ('molecule' in kwargs):
         activate(kwargs['molecule'])
         del kwargs['molecule']
-    molecule = PsiMod.get_active_molecule()
+    molecule = psi4.get_active_molecule()
     molecule.update_geometry()
-    PsiMod.set_global_option('BASIS', PsiMod.get_global_option('BASIS'))
+    psi4.set_global_option('BASIS', psi4.get_global_option('BASIS'))
+
+    # S/R: Mode of operation- whether finite difference opt run in one job or files farmed out
+    freq_mode = 'continuous'
+    if ('mode' in kwargs) and ((dertype == 0) or (dertype == 1)):
+        freq_mode = kwargs['mode']
+
+    if (freq_mode.lower() == 'continuous'):
+        pass
+    elif (freq_mode.lower() == 'sow'):
+        pass
+    elif (freq_mode.lower() == 'reap'):
+        if('linkage' in kwargs):
+            freq_linkage = kwargs['linkage']
+        else:
+            raise ValidationError('Frequency execution mode \'reap\' requires a linkage option.')
+    else:
+        raise ValidationError('Frequency execution mode \'%s\' not valid.' % (freq_mode))
 
     # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
-    if not PsiMod.has_option_changed('SCF', 'E_CONVERGENCE'):
+    if not psi4.has_option_changed('SCF', 'E_CONVERGENCE'):
         if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
-            PsiMod.set_local_option('SCF', 'E_CONVERGENCE', 8)
+            psi4.set_local_option('SCF', 'E_CONVERGENCE', 8)
         else:
-            PsiMod.set_local_option('SCF', 'E_CONVERGENCE', 10)
-    if not PsiMod.has_option_changed('SCF', 'D_CONVERGENCE'):
+            psi4.set_local_option('SCF', 'E_CONVERGENCE', 10)
+    if not psi4.has_option_changed('SCF', 'D_CONVERGENCE'):
         if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
-            PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 8)
+            psi4.set_local_option('SCF', 'D_CONVERGENCE', 8)
         else:
-            PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 10)
+            psi4.set_local_option('SCF', 'D_CONVERGENCE', 10)
 
     # Set post-scf convergence criteria (global will cover all correlated modules)
-    if not PsiMod.has_global_option_changed('E_CONVERGENCE'):
+    if not psi4.has_global_option_changed('E_CONVERGENCE'):
         if not procedures['energy'][lowername] == run_scf and not procedures['energy'][lowername] == run_dft:
-            PsiMod.set_global_option('E_CONVERGENCE', 8)
+            psi4.set_global_option('E_CONVERGENCE', 8)
 
     # Select certain irreps
     if 'irrep' in kwargs:
@@ -1357,25 +1335,30 @@ def frequency(name, **kwargs):
         procedures['hessian'][lowername](lowername, **kwargs)
         optstash.restore()
 
-        # call thermo module
-        PsiMod.thermo()
+        if 'mode' in kwargs and kwargs['mode'].lower() == 'sow':
+            raise ValidationError('Frequency execution mode \'sow\' not valid for analytic frequency calculation.')
 
-        return PsiMod.wavefunction().energy()
+        # TODO: check that current energy's being set to the right figure when this code is actually used
+        psi4.set_variable('CURRENT ENERGY', psi4.wavefunction().energy())
+
+        # TODO: return hessian matrix
 
     elif (dertype == 1):
         # Ok, we're doing frequencies by gradients
-        info = 'Performing finite difference by gradient calculations'
-        print(info)
+        print('Performing finite difference by gradient calculations')
 
         func = procedures['gradient'][lowername]
 
+        if 'mode' in kwargs and kwargs['mode'].lower() == 'sow':
+            raise ValidationError('Frequency execution mode \'sow\' not yet implemented for finite difference of analytic gradient calculation.')
+
         # Obtain list of displacements
-        displacements = PsiMod.fd_geoms_freq_1(irrep)
+        displacements = psi4.fd_geoms_freq_1(irrep)
 
         molecule.reinterpret_coordentry(False)
         molecule.fix_orientation(True)
         # Make a note of the undisplaced molecule's symmetry
-        PsiMod.set_parent_symmetry(molecule.schoenflies_symbol())
+        psi4.set_parent_symmetry(molecule.schoenflies_symbol())
 
         ndisp = len(displacements)
         print(' %d displacements needed.' % ndisp)
@@ -1387,8 +1370,8 @@ def frequency(name, **kwargs):
         gradients = []
         for n, displacement in enumerate(displacements):
             # Print information to output.dat
-            PsiMod.print_out('\n')
-            banner('Loading displacement %d of %d' % (n + 1, ndisp))
+            psi4.print_out('\n')
+            p4util.banner('Loading displacement %d of %d' % (n + 1, ndisp))
 
             # Print information to the screen
             print(' %d' % (n + 1), end="")
@@ -1403,124 +1386,258 @@ def frequency(name, **kwargs):
             func(lowername, **kwargs)
 
             # Save the gradient
-            G = PsiMod.get_gradient()
+            G = psi4.get_gradient()
             gradients.append(G)
 
             # clean may be necessary when changing irreps of displacements
-            PsiMod.clean()
+            psi4.clean()
 
-        PsiMod.fd_freq_1(gradients, irrep)
+        psi4.fd_freq_1(gradients, irrep)
 
         print(' Computation complete.')
 
         # Clear the "parent" symmetry now
-        PsiMod.set_parent_symmetry("")
+        psi4.set_parent_symmetry("")
 
         # TODO: These need to be restored to the user specified setting
-        PsiMod.get_active_molecule().fix_orientation(False)
+        psi4.get_active_molecule().fix_orientation(False)
         # But not this one, it always goes back to True
-        PsiMod.get_active_molecule().reinterpret_coordentry(True)
-
-        # call thermo module
-        PsiMod.thermo()
+        psi4.get_active_molecule().reinterpret_coordentry(True)
 
         optstash.restore()
-        # TODO: add return statement
+        # TODO: add return statement of hessian matrix
+        # TODO: set current energy to un-displaced energy
 
-    else:  # Assume energy points
+    else:
         # If not, perform finite difference of energies
-        info = 'Performing finite difference calculations by energies'
-        print(info)
+        print('Performing finite difference calculations by energies')
 
         # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
         optstash.restore()
-        if not PsiMod.has_option_changed('SCF', 'E_CONVERGENCE'):
+        if not psi4.has_option_changed('SCF', 'E_CONVERGENCE'):
             if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
-                PsiMod.set_local_option('SCF', 'E_CONVERGENCE', 10)
+                psi4.set_local_option('SCF', 'E_CONVERGENCE', 10)
             else:
-                PsiMod.set_local_option('SCF', 'E_CONVERGENCE', 11)
-        if not PsiMod.has_option_changed('SCF', 'D_CONVERGENCE'):
+                psi4.set_local_option('SCF', 'E_CONVERGENCE', 11)
+        if not psi4.has_option_changed('SCF', 'D_CONVERGENCE'):
             if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
-                PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 10)
+                psi4.set_local_option('SCF', 'D_CONVERGENCE', 10)
             else:
-                PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 11)
+                psi4.set_local_option('SCF', 'D_CONVERGENCE', 11)
 
         # Set post-scf convergence criteria (global will cover all correlated modules)
-        if not PsiMod.has_global_option_changed('E_CONVERGENCE'):
+        if not psi4.has_global_option_changed('E_CONVERGENCE'):
             if not procedures['energy'][lowername] == run_scf and not procedures['energy'][lowername] == run_dft:
-                PsiMod.set_global_option('E_CONVERGENCE', 10)
+                psi4.set_global_option('E_CONVERGENCE', 10)
 
         # Obtain list of displacements
-        displacements = PsiMod.fd_geoms_freq_0(irrep)
+        displacements = psi4.fd_geoms_freq_0(irrep)
         molecule.fix_orientation(True)
         molecule.reinterpret_coordentry(False)
         # Make a note of the undisplaced molecule's symmetry
-        PsiMod.set_parent_symmetry(molecule.schoenflies_symbol())
+        psi4.set_parent_symmetry(molecule.schoenflies_symbol())
 
         ndisp = len(displacements)
 
         # This version is pretty dependent on the reference geometry being last (as it is now)
         print(' %d displacements needed.' % ndisp)
         energies = []
+
+        # S/R: Write instructions for sow/reap procedure to output file and reap input file
+        if (freq_mode.lower() == 'sow'):
+            instructionsO = """\n#    The frequency sow/reap procedure has been selected through mode='sow'. In addition\n"""
+            instructionsO += """#    to this output file (which contains no quantum chemical calculations), this job\n"""
+            instructionsO += """#    has produced a number of input files (FREQ-*.in) for individual components\n"""
+            instructionsO += """#    and a single input file (FREQ-master.in) with a frequency(mode='reap') command.\n"""
+            instructionsO += """#    These files may look very peculiar since they contain processed and pickled python\n"""
+            instructionsO += """#    rather than normal input. Follow the instructions below (repeated in FREQ-master.in)\n"""
+            instructionsO += """#    to continue.\n#\n"""
+            instructionsO += """#    Alternatively, a single-job execution of the hessian may be accessed through\n"""
+            instructionsO += """#    the frequency wrapper option mode='continuous'.\n#\n"""
+            psi4.print_out(instructionsO)
+
+            instructionsM = """\n#    Follow the instructions below to carry out this frequency computation.\n#\n"""
+            instructionsM += """#    (1)  Run all of the FREQ-*.in input files on any variety of computer architecture.\n"""
+            instructionsM += """#       The output file names must be as given below (these are the defaults when executed\n"""
+            instructionsM += """#       as `psi4 FREQ-1.in`, etc.).\n#\n"""
+            for rgt in range(ndisp):
+                pre = 'FREQ-' + str(rgt + 1)
+                instructionsM += """#             psi4 -i %-27s -o %-27s\n""" % (pre + '.in', pre + '.out')
+            instructionsM += """#\n#    (2)  Gather all the resulting output files in a directory. Place input file\n"""
+            instructionsM += """#         FREQ-master.in into that directory and run it. The job will be minimal in\n"""
+            instructionsM += """#         length and give summary results for the frequency computation in its output file.\n#\n"""
+            instructionsM += """#             psi4 -i %-27s -o %-27s\n#\n\n""" % ('FREQ-master.in', 'FREQ-master.out')
+
+            fmaster = open('FREQ-master.in', 'w')
+            fmaster.write('# This is a psi4 input file auto-generated from the hessian() wrapper.\n\n')
+            fmaster.write(p4util.format_molecule_for_input(molecule))
+            fmaster.write(p4util.format_options_for_input())
+            p4util.format_kwargs_for_input(fmaster, 2, **kwargs)
+            fmaster.write("""%s('%s', **kwargs)\n\n""" % (frequency.__name__, lowername))
+            fmaster.write(instructionsM)
+            fmaster.close()
+            psi4.print_out(instructionsM)
+
         for n, displacement in enumerate(displacements):
-            # Print information to output.dat
-            PsiMod.print_out('\n')
-            banner('Loading displacement %d of %d' % (n + 1, ndisp))
+            rfile = 'FREQ-%s' % (n + 1)
 
-            # Print information to the screen
-            print(' %d' % (n + 1), end="")
-            if (n + 1) == ndisp:
-                print('\n', end='')
-            sys.stdout.flush()
+            # Build string of title banner
+            banners = ''
+            banners += """psi4.print_out('\\n')\n"""
+            banners += """p4util.banner(' Hessian Computation: Energy Displacement %d ')\n""" % (n + 1)
+            banners += """psi4.print_out('\\n')\n\n"""
 
-            # Load in displacement into the active molecule
-            molecule.set_geometry(displacement)
+            if (freq_mode.lower() == 'continuous'):
+                # Print information to output.dat
+                psi4.print_out('\n')
+                p4util.banner('Loading displacement %d of %d' % (n + 1, ndisp))
 
-            # Perform the energy calculation
-            E = func(lowername, **kwargs)
+                # Print information to the screen
+                print(' %d' % (n + 1), end="")
+                if (n + 1) == ndisp:
+                    print('\n', end='')
+                sys.stdout.flush()
 
-            # Save the energy
-            energies.append(E)
+                # Load in displacement into the active molecule
+                molecule.set_geometry(displacement)
 
-            # clean may be necessary when changing irreps of displacements
-            PsiMod.clean()
+                # Perform the energy calculation
+                func(lowername, **kwargs)
+
+                # Save the energy
+                energies.append(psi4.get_variable('CURRENT ENERGY'))
+
+                # clean may be necessary when changing irreps of displacements
+                psi4.clean()
+
+            # S/R: Write each displaced geometry to an input file
+            elif (freq_mode.lower() == 'sow'):
+                molecule.set_geometry(displacement)
+
+                # S/R: Prepare molecule, options, and kwargs
+                freagent = open('%s.in' % (rfile), 'w')
+                freagent.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n')
+                freagent.write(p4util.format_molecule_for_input(molecule))
+                freagent.write(p4util.format_options_for_input())
+                p4util.format_kwargs_for_input(freagent, **kwargs)
+
+                # S/R: Prepare function call and energy save
+                freagent.write("""electronic_energy = %s('%s', **kwargs)\n\n""" % (func.__name__, lowername))
+                freagent.write("""psi4.print_out('\\nHESSIAN RESULT: computation %d for item %d """ % (os.getpid(), n + 1))
+                freagent.write("""yields electronic energy %20.12f\\n' % (electronic_energy))\n\n""")
+                freagent.close()
+
+            # S/R: Read energy from each displaced geometry output file and save in energies array
+            elif (freq_mode.lower() == 'reap'):
+                exec(banners)
+                psi4.set_variable('NUCLEAR REPULSION ENERGY', molecule.nuclear_repulsion_energy())
+                energies.append(p4util.extract_sowreap_from_output(rfile, 'HESSIAN', n, freq_linkage, True))
+
+        # S/R: Quit sow after writing files
+        if (freq_mode.lower() == 'sow'):
+            optstash.restore()
+            return None
 
         # Obtain the gradient. This function stores the gradient in the wavefunction.
-        PsiMod.fd_freq_0(energies, irrep)
+        psi4.fd_freq_0(energies, irrep)
 
         print(' Computation complete.')
 
         # Clear the "parent" symmetry now
-        PsiMod.set_parent_symmetry("")
+        psi4.set_parent_symmetry("")
 
         # TODO: These need to be restored to the user specified setting
-        PsiMod.get_active_molecule().fix_orientation(False)
+        psi4.get_active_molecule().fix_orientation(False)
         # But not this one, it always goes back to True
-        PsiMod.get_active_molecule().reinterpret_coordentry(True)
+        psi4.get_active_molecule().reinterpret_coordentry(True)
+
+        # Clear the "parent" symmetry now
+        psi4.set_parent_symmetry("")
 
         # The last item in the list is the reference energy, return it
         optstash.restore()
+        psi4.set_variable('CURRENT ENERGY', energies[-1])
 
-        # Clear the "parent" symmetry now
-        PsiMod.set_parent_symmetry("")
+        #TODO: return hessian matrix
 
+
+def frequency(name, **kwargs):
+    r"""Function to compute harmonic vibrational frequencies.
+
+    :aliases: frequencies(), freq()
+
+    :returns: (*float*) Total electronic energy in Hartrees.
+
+    .. note:: Analytic hessians are not available. Frequencies will proceed through
+        finite differences according to availability of gradients or energies.
+
+    .. caution:: Some features are not yet implemented. Buy a developer a coffee.
+
+       - Implement sow/reap mode for finite difference of gradients. Presently only for findif of energies.
+
+    .. _`table:freq_gen`:
+
+    :type name: string
+    :param name: ``'scf'`` || ``'df-mp2'`` || ``'ci5'`` || etc.
+
+        First argument, usually unlabeled. Indicates the computational method
+        to be applied to the system.
+
+    :type dertype: :ref:`dertype <op_py_dertype>`
+    :param dertype: |dl| ``'hessian'`` |dr| || ``'gradient'`` || ``'energy'``
+
+        Indicates whether analytic (if available- they're not), finite
+        difference of gradients (if available) or finite difference of
+        energies is to be performed.
+
+    :type mode: string
+    :param mode: |dl| ``'continuous'`` |dr| || ``'sow'`` || ``'reap'``
+
+        For a finite difference of energies or gradients frequency, indicates
+        whether the calculations required to complet the frequency are to be run
+        in one file (``'continuous'``) or are to be farmed out in an
+        embarrassingly parallel fashion (``'sow'``/``'reap'``)/ For the latter,
+        run an initial job with ``'sow'`` and follow instructions in its output file.
+
+    :type irrep: int or string
+    :param irrep: |dl| ``-1`` |dr| || ``1`` || ``'b2'`` || ``'App'`` || etc.
+
+        Indicates which symmetry block (:ref:`Cotton <table:irrepOrdering>` ordering) of vibrational
+        frequencies to be computed. ``1``, ``'1'``, or ``'a1'`` represents
+        :math:`a_1`, requesting only the totally symmetric modes.
+        ``-1`` indicates a full frequency calculation.
+
+    :type molecule: :ref:`molecule <op_py_molecule>`
+    :param molecule: ``h2o`` || etc.
+
+        The target molecule, if not the last molecule defined.
+
+    :examples:
+
+    >>> # [1] <example description>
+    >>> <example python command>
+
+    >>> # [2] Frequency calculation for b2 modes through finite difference of gradients
+    >>> frequencies('scf', dertype=1, irrep=4)
+
+    """
+    lowername = name.lower()
+    kwargs = p4util.kwargs_lower(kwargs)
+
+    # Compute the hessian
+    hessian(name, **kwargs)
+
+    if not (('mode' in kwargs) and (kwargs['mode'].lower() == 'sow')):
         # call thermo module
-        PsiMod.thermo()
+        psi4.thermo()
 
-        optstash.restore()
-        return energies[-1]
+    #TODO add return current energy once satisfied that's set to energy at eq, not a findif
+    return psi4.get_variable('CURRENT ENERGY')
+
 
 ##  Aliases  ##
 frequencies = frequency
 freq = frequency
-
-
-# hessian to be changed later to compute force constants
-def hessian(name, **kwargs):
-    r"""Function to compute force constants. Presently identical to frequency()."""
-    lowername = name.lower()
-    kwargs = kwargs_lower(kwargs)
-    frequencies(name, **kwargs)
 
 
 def molden(filename):
@@ -1528,7 +1645,7 @@ def molden(filename):
     format to *filename*
 
     """
-    m = PsiMod.MoldenWriter(PsiMod.wavefunction())
+    m = psi4.MoldenWriter(psi4.wavefunction())
     m.write(filename)
 
 
@@ -1610,7 +1727,7 @@ def parse_cotton_irreps(irrep):
         }
     }
 
-    point_group = PsiMod.get_active_molecule().schoenflies_symbol().lower()
+    point_group = psi4.get_active_molecule().schoenflies_symbol().lower()
     irreducible_representation = str(irrep).lower()
 
     try:

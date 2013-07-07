@@ -1,4 +1,26 @@
 /*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
+/*
  *  matrix.cc
  *  matrix
  *
@@ -234,8 +256,8 @@ Matrix::Matrix(const Dimension& rows, const Dimension& cols, int symmetry)
 Matrix::Matrix(dpdfile2 *inFile)
     : name_(inFile->label), rowspi_(inFile->params->nirreps), colspi_(inFile->params->nirreps)
 {
-    dpd_file2_mat_init(inFile);
-    dpd_file2_mat_rd(inFile);
+    global_dpd_->file2_mat_init(inFile);
+    global_dpd_->file2_mat_rd(inFile);
     matrix_ = NULL;
     symmetry_ = inFile->my_irrep;
     nirrep_ = inFile->params->nirreps;
@@ -245,7 +267,7 @@ Matrix::Matrix(dpdfile2 *inFile)
     }
     alloc();
     copy_from(inFile->matrix);
-    dpd_file2_mat_close(inFile);
+    global_dpd_->file2_mat_close(inFile);
 }
 
 Matrix::~Matrix()
@@ -259,7 +281,7 @@ double** Matrix::matrix(int nrow, int ncol)
     double** mat = (double**) malloc(sizeof(double*)*nrow);
     const size_t size = sizeof(double)*nrow*ncol;
     mat[0] = (double*) malloc(size);
-    memset((void *)mat[0], 0, size);
+    ::memset((void *)mat[0], 0, size);
     for(int r=1; r<nrow; ++r) mat[r] = mat[r-1] + ncol;
     return mat;
 }
@@ -1226,7 +1248,7 @@ void Matrix::transform(const SharedMatrix& L,
 
 void Matrix::back_transform(const Matrix* const a, const Matrix* const transformer)
 {
-    Matrix temp(a);
+    Matrix temp(a->nirrep(),a->rowspi(),this->colspi());
 
     temp.gemm(false, true, 1.0, a, transformer, 0.0);
     gemm(false, false, 1.0, transformer, &temp, 0.0);
@@ -2724,7 +2746,7 @@ void Matrix::diagonalize(Matrix& eigvectors, Vector& eigvalues, int nMatz)
 
 void Matrix::write_to_dpdfile2(dpdfile2 *outFile)
 {
-    dpd_file2_mat_init(outFile);
+    global_dpd_->file2_mat_init(outFile);
 
     if(outFile->params->nirreps != nirrep_) {
         char *str = new char[100];
@@ -2760,8 +2782,8 @@ void Matrix::write_to_dpdfile2(dpdfile2 *outFile)
         }
     }
 
-    dpd_file2_mat_wrt(outFile);
-    dpd_file2_mat_close(outFile);
+    global_dpd_->file2_mat_wrt(outFile);
+    global_dpd_->file2_mat_close(outFile);
 }
 
 void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, bool saveSubBlocks)

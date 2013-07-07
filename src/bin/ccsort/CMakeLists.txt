@@ -1,0 +1,2 @@
+set(SRC b_sort.cc build_abcd_packed.cc build_B_RHF.cc build_F_RHF.cc c_sort.cc cache.cc cc_memcheck.cc ccsort.cc classify.cc cphf_B.cc cphf_F.cc d_sort.cc d_spinad.cc denom.cc distribute.cc domain_print.cc e_sort.cc e_spinad.cc f_sort.cc f_spinad.cc file_build.cc file_build_multipass.cc file_build_presort.cc fock.cc get_moinfo.cc get_params.cc idx_error.cc idx_permute.cc idx_permute_multipass.cc idx_permute_presort.cc local.cc local_magnetic.cc local_polar.cc scf_check.cc sort_oei.cc sort_pert.cc sort_tei.cc transpert.cc)
+add_library(ccsort ${SRC})

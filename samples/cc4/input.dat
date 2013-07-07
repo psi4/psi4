@@ -23,5 +23,5 @@ energy('ccsd(t)')
 
 #Here's a demonstration of how to print an manipulate the files used by Psi
 psi4_io.print_out()
-PsiMod.IO.change_file_namespace(32, 'bh', 'cool')
+psi4.IO.change_file_namespace(32, 'bh', 'cool')
 psi4_io.print_out()

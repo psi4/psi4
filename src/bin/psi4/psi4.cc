@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file psi4.cc
 \defgroup PSI4 The new PSI4 driver.
 */
@@ -33,21 +55,24 @@ namespace psi {
     int psi4_driver();
     void psiclean(void);
 
+    extern int read_options(const std::string &name, Options & options, bool suppress_printing = false);
+
     PSIO *psio = NULL;
 
 }
 
+#if !defined(MAKE_PYTHON_MODULE)
 // This is the ONLY main function in PSI
-int main(int argc, char **argv, char **envp)
+int main(int argc, char **argv)
 {
     using namespace psi;
 
     // Setup the environment
-    Process::arguments.init(argc, argv);
-    Process::environment.init(envp);
+    Process::arguments.initialize(argc, argv);
+    Process::environment.initialize();   // grabs the environment from the global environ variable
 
     // Initialize the world communicator
-    WorldComm = boost::shared_ptr<worldcomm>(Init_Communicator(argc, argv));
+    WorldComm = initialize_communicator(argc, argv);
 
     // There is only one timer:
     timer_init();
@@ -76,6 +101,11 @@ int main(int argc, char **argv, char **envp)
         exit(EXIT_SUCCESS);
     }
 
+    // Setup global options
+    Process::environment.options.set_read_globals(true);
+    read_options("", Process::environment.options, true);
+    Process::environment.options.set_read_globals(false);
+
     // Finish linking Psi4 into Python, preprocess the input file,
     // and then run the input file.
     Script::language->run(infile);
@@ -100,3 +130,4 @@ int main(int argc, char **argv, char **envp)
     // This needs to be changed to a return value from the processed script
     return EXIT_SUCCESS;
 }
+#endif

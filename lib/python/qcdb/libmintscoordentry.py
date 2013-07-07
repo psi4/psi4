@@ -1,3 +1,25 @@
+#
+#@BEGIN LICENSE
+#
+# PSI4: an ab initio quantum chemistry software package
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+#@END LICENSE
+#
+
 r"""Module to largely replicate in python the psi4 libmints
 CoordValue and CoordEntry classes, which were developed by
 Justin M. Turney, with incremental improvements by other
@@ -297,10 +319,10 @@ class CartesianEntry(CoordEntry):
 
     def print_in_input_format(self):
         """Prints the updated geometry, in the format provided by the user."""
-        xstr = self.x.variable_to_string(10)
-        ystr = self.y.variable_to_string(10)
-        zstr = self.z.variable_to_string(10)
-        return "\t%16s %16s %16s\n" % (xstr, ystr, zstr)
+        xstr = self.x.variable_to_string(12)
+        ystr = self.y.variable_to_string(12)
+        zstr = self.z.variable_to_string(12)
+        return "  %17s  %17s  %17s\n" % (xstr, ystr, zstr)
         # should go to outfile
 
     def invalidate(self):
@@ -349,19 +371,19 @@ class ZMatrixEntry(CoordEntry):
         text = ""
         if self.rto == None and self.ato == None and self.dto == None:
             # The first atom
-            text += "\t%s\n" % (self.symbol())
+            text += "\n"
         elif self.ato == None and self.dto == None:
             # The second atom
             now_rto = self.rto.entry_number() + 1
             now_rval = self.rval.variable_to_string(6)
-            text += "\t%s %5d %s\n" % (self.symbol(), now_rto, now_rval)
+            text += "  %5d %11s\n" % (now_rto, now_rval)
         elif self.dto == None:
             # The third atom
             now_rto = self.rto.entry_number() + 1
             now_rval = self.rval.variable_to_string(6)
             now_ato = self.ato.entry_number() + 1
             now_aval = self.aval.variable_to_string(6)
-            text += "\t%s %5d %s %5d %s\n" % (self.symbol(), now_rto, now_rval, now_ato, now_aval)
+            text += "  %5d %11s  %5d %11s\n" % (now_rto, now_rval, now_ato, now_aval)
         else:
             # Remaining atoms
             now_rto = self.rto.entry_number() + 1
@@ -370,8 +392,8 @@ class ZMatrixEntry(CoordEntry):
             now_aval = self.aval.variable_to_string(6)
             now_dto = self.dto.entry_number() + 1
             now_dval = self.dval.variable_to_string(6)
-            text += "\t%s %5d %s %5d %s %5d %s\n" % \
-                (self.symbol(), now_rto, now_rval, now_ato, now_aval, now_dto, now_dval)
+            text += "  %5d %11s  %5d %11s  %5d %11s\n" % \
+                (now_rto, now_rval, now_ato, now_aval, now_dto, now_dval)
         return text
 #        outfile
 

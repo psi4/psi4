@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include "occwave.h"
 
 using namespace boost;
@@ -32,7 +54,6 @@ if (reference_ == "RESTRICTED") {
       wogA->zero();
       kappaA->zero();
       kappa_barA->zero();
-    }
     
     // allocate memory 
     idprowA = new int[nidpA]; 
@@ -63,6 +84,13 @@ if (reference_ == "RESTRICTED") {
 	fflush(outfile);
       }
     }
+    }// end if nidpA != 0
+
+    else if (nidpA == 0) {
+            fprintf(outfile,"\tThere is not any non-redundant orbital rotation pair! \n");
+            tstop();
+            exit(EXIT_SUCCESS);
+    }
      
 }// end if (reference_ == "RESTRICTED") 
 
@@ -80,6 +108,12 @@ else if (reference_ == "UNRESTRICTED") {
     fprintf(outfile,"\n\tNumber of alpha independent-pairs:%3d\n", nidpA);
     fprintf(outfile,"\tNumber of beta independent-pairs :%3d\n", nidpB);
     fflush(outfile);  
+
+    if (nidpA == 0 && nidpB == 0) {
+        fprintf(outfile,"\tThere is not any non-redundant orbital rotation pair! \n");
+        tstop();
+        exit(EXIT_SUCCESS);
+    }
     
     if (nidpA != 0) {
       idp_returnA = 1;

@@ -1,7 +1,30 @@
+#
+#@BEGIN LICENSE
+#
+# PSI4: an ab initio quantum chemistry software package
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+#@END LICENSE
+#
+
 """
-| Database of <description of members and reference energy type>.
-| Geometries from <Reference>.
-| Reference interaction energies from <Reference>.
+| Database (Truhlar) of several classes of noncovalent interactions.
+| Geometries from Truhlar and coworkers at site http://comp.chem.umn.edu/database_noncov/noncovalent.htm
+| Reference energies from Truhlar and coworkers at site http://comp.chem.umn.edu/database_noncov/noncovalent.htm
+| First comprehensive citation JPCA 109 5656 (2005). 
 
 - **cp**  ``'off'`` || ``'on'``
 
@@ -14,13 +37,13 @@
 
 - **subset**
 
-  - ``'small'``
-  - ``'large'``
+  - ``'small'`` 3: HF-HF, He-Ne, HCCH-HCCH
+  - ``'large'`` 1: BzBz_PD
   - ``'HB6'`` hydrogen-bonded
   - ``'CT7'`` charge-transfer
-  - ``'DI6'``
+  - ``'DI6'`` dipole-interacting
   - ``'WI7'`` weakly interacting
-  - ``'PPS5'``
+  - ``'PPS5'`` pi-pi stacking
 
 """
 import qcdb

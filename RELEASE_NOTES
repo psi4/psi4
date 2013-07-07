@@ -1,0 +1,1481 @@
+Making up some guidelines on the fly
+------------------------------------
+
+[1] Delete any merge commits. 
+
+[2] Don't bother documenting any fixes that were both introduced and
+solved during the release interim.
+
+[3] If your commit is going to show up in the release, summarize it
+together with however many others into the bulleted list at the top, and
+delete the commits.
+
+[4] Document addition of features, expansion of features, fixing of bugs.
+
+[5] If your commit is not going to show up in the release, because it's
+getting removed from the beta branch, but you want to keep the commit log
+below as a reminder, leave it.
+
+
+===================
+PSI4.0B5, July 2013
+===================
+
+*   !!! WARNING !!!
+    There has been a name change in the python driver from PsiMod --> psi4
+    that has the potential to utterly prevent new code from running. If
+    you get any error complaining about one of those words, immediately
+    check your .psi4rc or .psirc files and rename any PsiMod to psi4.
+
+*   Standardize psi variable naming for mp2 modules
+*   Add capability to compute frequencies by finite difference of energies in embarrasingly parallel fashion
+*   Fix problem in database wrapper where named subsets (other than small/large) wouldn't run
+*   Fix problem with computing multiplicity in database with fragmented open-shell molecules
+*   Allow more complex model chemistries through cbs() wrapper. Add alias for Wes Allen's focal point analysis
+*   Alias sherrillgroup_gold_standard renamed to sherrill_gold_standard
+*   Make cbs() wrapper work with MRCC interface
+*   CC code can now be used to compute energies with applied external field. Charges must be set up using the QM/MM module.
+*   DF-CC code now uses two sets of 3-index integrals: one for building the Fock matrix and one for all other ERI's
+*   Implementation of libefp is in progress
+*   Improved documentation of CC codes
+*   Improved handling of certain out-of-core contractions in CC code
+*   Added HTR40 database of hydrogen transfer reactions
+*   Partial fix to fallback to non-DF SCF when DF basis not available
+*   Allows PSI4 to be run interactively
+*   Updated naming of external files such as MOLDEN files
+*   Initial work to make PSI4 work with cmake
+*   Some changes to make more compatible with C++11
+*   Allow user-specified fixed geometry coordinates
+*   Added Hobza's A24 database
+
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Fri Jun 28 12:10:07 2013 -0400
+
+    Fixed ElectricFieldInts to handle arbitrary origin properly.
+
+
+commit c2789c04c4670b4058c41f1f49bfee582d8f9377
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Fri Jun 28 11:45:03 2013 -0400
+
+    Fixed ElectricFieldInts to properly compute nuclear contributions at an arbitrary origin.
+
+
+commit 0be03e5d193e83af648e76a755dd98ac9c92ee8d
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Tue Jun 25 11:19:19 2013 -0400
+
+    Modified EFP integrals to use the origin_ member inherited from OneBodyAOInt
+
+commit 24a129622a675dfd37311bd486b5d8321a7f5e4e
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Tue Jun 25 10:09:57 2013 -0400
+
+    Oops, I forgot to add default arguments to the EFP integral factory.
+
+
+commit b661be60195a783def1814674b9b1b39f1141f3f
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Tue Jun 25 09:20:45 2013 -0400
+
+    Added multipole potential integrals for EFP, along with IntegralFactory constructor.
+
+commit e873819fa3102791218ecde7cd245fcfd38a6471
+Merge: 32d5f34 545d0df
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Mon Jun 24 17:09:56 2013 -0400
+
+    Merge
+
+commit 32d5f342f9448420ab36a3ec84819254ab3e5c04
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Mon Jun 24 17:09:18 2013 -0400
+
+    Mods MintsHelper slightly
+
+commit 545d0dff9ad1ddae9c16a2ee3bfdd6fe59320fd4
+Author: crawdad <crawdad@vt.edu>
+Date:   Fri Jun 21 13:28:34 2013 -0400
+
+    Added new RadiiSet keyword for compatibility with pcmsolver module.
+
+
+commit abd0434c015fd3703a17e82c8a33da03cad3eafe
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Fri Jun 21 12:13:03 2013 -0400
+
+    Just experimenting with CMake for plugins.
+
+
+commit 8978c845e4f84ebb2eade43c4b490078e4b67cb7
+Author: crawdad <crawdad@vt.edu>
+Date:   Fri Jun 21 11:47:33 2013 -0400
+
+    Added some documentation to PSI4 CC codes.
+
+commit 1ea68618e110e24dc418dfde0f27b644e421c9e8
+Author: crawdad <crawdad@vt.edu>
+Date:   Fri Jun 21 11:17:04 2013 -0400
+
+    Added a-CCSD(T) to CC documentation.
+
+commit e87e6e7025a848d237d8e0b0603b12df261f1d1f
+Author: crawdad <crawdad@vt.edu>
+Date:   Fri Jun 21 10:31:36 2013 -0400
+
+    Finished moving PCM electrostatic integrals to factory.
+
+
+
+commit 508487178987176db03cdb3be6e30cdde2c62489
+Author: Daniel Crawford <crawdad@vt.edu>
+Date:   Fri Jun 21 09:19:20 2013 -0400
+
+    Shifting electrostatic potential integrals for PCM code into libmints
+    factory.
+
+
+commit 2971e11996d0180e70affc60cfe20e5a6eb7c860
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Thu Jun 20 17:02:35 2013 -0400
+
+    Fixed strange error in DPD's destructor.
+
+commit fff0fbd3e192d1323d96f0d32def38999084db68
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Thu Jun 20 08:12:50 2013 -0400
+
+    Modified the DPD destructor, until a strange segfault can be isolated.
+
+
+commit 7e9b35432ca128f59dac86d745bb103d02c82d0a
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Wed Jun 19 16:13:36 2013 -0400
+
+    Refactored dpd_ to global_dpd_, to avoid potential clashes.
+
+commit d6fae959290020bd265b5945ea93aca7f29a5548
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Wed Jun 19 15:47:57 2013 -0400
+
+    Updated aCC code, to handle new DPD calling conventions.
+
+
+commit cdaa7d56b2fae91ebf31b22c257a90e831be8d5a
+Merge: 7214f44 63d9e9f
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Wed Jun 19 10:22:41 2013 -0400
+
+    Merge
+
+commit a556dc924513842a660b2667ce73cd927ca3f5e7
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Tue Jun 18 18:55:57 2013 -0400
+
+    Removed shared_ptrs from the DPD tracking mechanisms.  Only the DCFT code fails at this point.
+
+commit 63d9e9fa90128915f0b662ee9103668410b6d1cd
+Author: Daniel Crawford <crawdad@vt.edu>
+Date:   Mon Jun 17 11:50:16 2013 -0400
+
+    Fixed minor bug in B-CCD(T) code introduced by new a-CCSD(T) capabilities.
+
+commit 8c48986ad106c531b0162879fcabe906f1748239
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Mon Jun 17 09:08:50 2013 -0400
+
+    More tweaks to the statics in DPD.
+
+
+commit cf7d1ec0de28dfd667f826e13683f3ddab957b32
+Author: Daniel Crawford <crawdad@vt.edu>
+Date:   Fri Jun 14 17:08:35 2013 -0400
+
+    Added production-level a-CCSD(T) energies with test case.
+
+
+commit ddbdfef3a621de48920ebc9f99e2fe8888259da3
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Thu Jun 13 08:18:26 2013 -0400
+
+    DPD is now a class.  Members are currently public, so that the usage is most consistent with the existing standards.  Stil
+
+
+commit e9f578d75f8bd4b66affdaf62d1e5b73ef602b80
+Author: David Hollman <david.s.hollman@gmail.com>
+Date:   Mon Jun 10 16:57:00 2013 -0400
+
+    fixed problem with PyBuffer and threads.  PyBuffer is now basically off by default (which it probably should have been to 
+
+
+commit f7cd275693ff3fe750b9c7f2f12f04f26080f9d5
+Author: David Hollman <david.s.hollman@gmail.com>
+Date:   Mon Jun 10 11:49:02 2013 -0400
+
+    fixed gcc problem.  Strange; not what I thought the problem would be
+
+
+commit 9dccfa78b77b670b77294f1833349447fb4d7c9c
+Author: Daniel Crawford <crawdad@vt.edu>
+Date:   Sun Jun 9 19:04:13 2013 +0200
+
+    Modifications to out-of-core calls in dpd_contract444().
+
+commit 48c5bd571c03294e3e2ffa97c2462c32cee5bff5
+Author: Ugur Bozkaya <ugrbzky@gmail.com>
+Date:   Sun Jun 9 18:16:30 2013 +0300
+
+    Really fix HTR40, now mode=sow works.
+
+commit a6bb6f5a370b28f0c38de7ffe4015f8752f5e0ae
+Author: Ugur Bozkaya <ugrbzky@gmail.com>
+Date:   Sun Jun 9 11:07:52 2013 +0300
+
+    A quick fix for HTR40.
+
+commit 0fdf1c27a45288a51c182eba4b2d1fa0b7cc5df2
+Author: Ugur Bozkaya <ugrbzky@gmail.com>
+Date:   Sun Jun 9 10:56:30 2013 +0300
+
+    OO methods will not cause segfault for Hydrogen atom any more. Adding a new database of hydrogen transfer reactions, HTR40
+
+commit 1782b4ca08973837fbcaefc22de0ef72392687fa
+Author: David Hollman <david.s.hollman@gmail.com>
+Date:   Wed Jun 5 19:04:43 2013 -0400
+
+    changes to grendel
+
+commit 7da440506219e025020ad5eb7f393a2cd7ada81b
+Author: David Hollman <david.s.hollman@gmail.com>
+Date:   Wed Jun 5 12:45:07 2013 -0400
+
+    Went ahead and added grendel to psi.  Added tests to tests/testgrendel.  The tests require the package 'nose'; grendel its
+
+commit 7f86cb6956a0bf53e65dd3cd84494b4a7a59a5cd
+Merge: 9afd852 c2869f8
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Wed Jun 5 08:21:16 2013 +0200
+
+    Merge
+
+commit c2869f8f9be5a635431da2fb083b70c0d3d78a1a
+Author: David Hollman <david.s.hollman@gmail.com>
+Date:   Tue Jun 4 17:30:31 2013 -0400
+
+    more numpy __array_interface__, this time with Matrix
+
+commit 9e513d46ff3042ff6c00f142e87d8b0ce625de66
+Author: David Hollman <david.s.hollman@gmail.com>
+Date:   Tue Jun 4 16:34:04 2013 -0400
+
+    Added the PyBuffer class that supports the numpy __array_interface__ protocol so that buffer pointers can be used by pytho
+
+commit 9afd8529c04d0279e9fd555a8f358cad08b89af3
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Tue Jun 4 17:39:12 2013 +0200
+
+    stuff
+
+commit adb3f21f8def02fce3df27c8da410f24786ead6e
+Author: David Sherrill <sherrill@gatech.edu>
+Date:   Tue Jun 4 09:09:14 2013 -0400
+
+    Some stuff changed as docs updated
+
+commit d908a192c4a166437b9f4b9904ea0668ac7fca1f
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Tue Jun 4 14:31:10 2013 +0200
+
+    Andy's still working on this
+
+commit b379279d8b46c60a9892a8bb505c499ceea29dcc
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Tue Jun 4 08:29:08 2013 -0400
+
+    Oops.
+
+
+commit fad8dcc9966d5eb9ee67e5d414d30eba38889a3b
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Tue Jun 4 08:23:28 2013 -0400
+
+    More changes to cmake stuff.
+
+commit 4b0347f5b56710e8b924cc2012558ae57efc7f93
+Author: David Hollman <david.s.hollman@gmail.com>
+Date:   Thu May 30 16:22:04 2013 -0400
+
+    fixed export_mints so it compiles
+
+
+commit 788f9277bbbd9e3160da22f6ddf98b84ee6739f6
+Author: David Hollman <david.s.hollman@gmail.com>
+Date:   Thu May 30 10:17:35 2013 -0400
+
+    more python hooks for one body ints
+
+
+commit f9014296f12c7f8682dd504a9d22c25824c55318
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Thu May 30 06:23:52 2013 -0400
+
+    Added CMake functionality, including Fortran linkage detection.
+
+commit e95e29c28d5af94c3878cdc32c7213f95f367f99
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Thu May 30 06:23:18 2013 -0400
+
+    Added configure-like wrapper to cmake.
+
+commit c09a7d2a4d9716437f883f439dffe40b87b83069
+Author: David Sherrill <sherrill@gatech.edu>
+Date:   Mon May 27 14:43:42 2013 -0400
+
+    Merge my docs on monomer-centered basis sets with Lori's
+
+
+commit 157326091393e2d689b45cf6ce35d655e108211a
+Author: David Sherrill <sherrill@gatech.edu>
+Date:   Mon May 27 14:39:10 2013 -0400
+
+    Add documentation on monomer-centered basis sets in SAPT
+
+
+commit 5cb38629a820ec3b5dee858d1eddd2fee8bc9ed9
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Wed May 22 11:49:48 2013 -0400
+
+    Only fall back to PK method when the SCF_TYPE is DF, else error out
+
+commit eec18cb98873204ecd610ce226c6c14aac60344d
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Wed May 22 11:41:48 2013 -0400
+
+    Fixes #77 Falls back to non-DF SCF method when basis set is unavailable
+
+commit 71dc180dd39cec3e2e04bd37403e5b31a131989f
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Wed May 22 11:06:55 2013 -0400
+
+    Fixes interactive Psi4 when an input file does not exist
+
+commit 17721528513ac839382d6a79afc296faed79ef56
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Wed May 22 11:06:29 2013 -0400
+
+    Patches the python wrapping for the dimension object
+
+commit 57cae015bb00d46a81d516118ce04e9444f35f83
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Tue May 21 13:03:58 2013 -0400
+
+    Fixes #49
+
+
+commit c6f7fcff88c2f8824f016d2cab19b2b10bc699df
+Author: David Hollman <david.s.hollman@gmail.com>
+Date:   Mon May 20 17:50:08 2013 -0400
+
+    put one electron ints back in export_mints.cc
+
+commit 2c3b9213cf14a99703e412ebb87f726ae2008cb1
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Mon May 20 15:16:16 2013 -0400
+
+    Wrapper the Localizers
+
+commit 7ae03d620055612a56408fa9399db73139d2b01d
+Author: rparrish <robparrish@gmail.com>
+Date:   Sun May 19 20:05:01 2013 -0400
+
+    Local electrostatic sources added to A-SAPT. Frozen-core Disp fixed
+
+commit d5001150fb7f8807ccff24606046c1ad726e1a37
+Author: Daniel Crawford <crawdad@vt.edu>
+Date:   Sun May 19 05:59:44 2013 +0200
+
+    Corrected temp matrix dimensions in matrix.back_transform() to allow for
+    rectangular matrices..
+
+
+commit b6547fedd0a7dd1558105eee6c9c686a22685df9
+Author: Ugur Bozkaya <ugrbzky@gmail.com>
+Date:   Sat May 18 05:23:46 2013 +0300
+
+    More EKT for mp2.5
+
+commit cbbdf6b984a430a99797ec4c71b2fba00fc44aac
+Author: Ugur Bozkaya <ugrbzky@gmail.com>
+Date:   Sat May 18 05:15:17 2013 +0300
+
+    Working on EKT.
+
+commit 0a62c374d225f005c0dacea191e58d1d804cd0f3
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Wed May 15 16:39:42 2013 -0400
+
+    Fixes MRCC interface for UHF references
+
+
+commit b2b6e53b14afadc46b58907e5ed504ae5e3c3627
+Author: Daniel Crawford <crawdad@vt.edu>
+Date:   Wed May 15 19:45:19 2013 +0200
+
+    Corrected for p4util and p4const subdirs.
+
+commit 083d48887fa16db7a21c8730bd0e630905fa9ca7
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Tue May 14 11:15:45 2013 -0400
+
+    Trivial cleanup of PCM parser.
+
+commit 90f0b2bb357f58fe39fcb7a37017aec65e05ada2
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Tue May 14 11:01:53 2013 -0400
+
+    Added PCM preprocessor.
+
+commit 9fdab5fadfff7fbc2edc704119f430ba5b18319b
+Author: rparrish <robparrish@gmail.com>
+Date:   Mon May 13 04:33:54 2013 -0400
+
+    Whoops, thread safety
+
+commit dcfd5f71e4930d64b7ca08374608c1ac64e02a8c
+Author: rparrish <robparrish@gmail.com>
+Date:   Mon May 13 03:05:31 2013 -0400
+
+    Minor bug fix
+
+commit e414e3320c2d13e13440be3ac146a417a2eac44f
+Author: rparrish <robparrish@gmail.com>
+Date:   Sun May 12 23:02:54 2013 -0400
+
+    Added SAPT0 analysis to ASAPT output
+
+
+commit c5396052361315eea8e8c750fed8196f6069f21a
+Author: rparrish <robparrish@gmail.com>
+Date:   Sun May 12 22:42:55 2013 -0400
+
+    ASAPT working in the uncoupled induction picture. Time to visualize some stuff!
+
+commit 0e16158c147e57b69b03e961b9cc63e7a0730bbf
+Author: rparrish <robparrish@gmail.com>
+Date:   Sun May 12 22:29:47 2013 -0400
+
+    Useful breakdown of ExchInd terms
+
+commit cc38505a6c9ffe8eb4d46bf93342f28c4739291c
+Author: rparrish <robparrish@gmail.com>
+Date:   Sun May 12 21:56:21 2013 -0400
+
+    Almost done. Little bug in Exch-Ind20,u (B<-A), need to checkpoint to roll back and go term by term
+
+commit 7abe14363767bd7735a8c7d5ef226dddbb016699
+Author: rparrish <robparrish@gmail.com>
+Date:   Sun May 12 19:22:27 2013 -0400
+
+    About to get aggressive with ExchInd, let's checkpoint
+
+commit 467f7ea63e8e047084388ca630707f6fd9cd6398
+Author: rparrish <robparrish@gmail.com>
+Date:   Sun May 12 17:04:39 2013 -0400
+
+    Ind20,u working in ASAPT
+
+commit d18b0ab235de90d1289a1aad4d67eb31c3798ca4
+Author: rparrish <robparrish@gmail.com>
+Date:   Sun May 12 14:33:26 2013 -0400
+
+    Some improvements to DFTensor
+
+commit dbbcf06124a79c56a30bbe5bd6f0f932ac9d3cda
+Author: Taylor Mach <mactay@vt.edu>
+Date:   Sun May 12 13:50:01 2013 -0400
+
+    changes libqt/mat_print to fix Gprime and polarizability overflows
+
+commit 41efaf3823471e0f55e7bd9796ec548bcf63533e
+Author: rparrish <robparrish@gmail.com>
+Date:   Sun May 12 02:29:50 2013 -0400
+
+    Better look and feel, ready for some induction
+
+commit fbbd6d8598a212d9df133eaf7af1d3ec415ce41e
+Author: Francesco Evangelista <francesco@Francescos-MacBook-Pro.local>
+Date:   Sat May 11 23:31:15 2013 -0400
+
+    Added instructions to copy /lib/python/p4const and /lib/python/p4util when installing psi4.
+
+commit fc82dab356095d06814f33aea3d1a8d2ec50d034
+Author: rparrish <robparrish@gmail.com>
+Date:   Sat May 11 21:21:04 2013 -0400
+
+    A-SAPT implemented through Elst, Exch, Disp
+
+
+commit 54fc0755f8d9192742275053de0b233b6e65bb6f
+Merge: f66b491 1c242fb
+Author: rparrish <robparrish@gmail.com>
+Date:   Thu May 9 00:47:38 2013 -0400
+
+    Random merge conflict? Never commit after 12 AM
+
+commit f66b491ed8035aacbd8ab3f8d0bf881adb03f6cc
+Author: rparrish <robparrish@gmail.com>
+Date:   Thu May 9 00:45:24 2013 -0400
+
+    Thresh likes to be tighter for localization
+
+commit 32cc5f3cb2a9e4619ecef0c2af30889f3ba7e3e3
+Author: rparrish <robparrish@gmail.com>
+Date:   Wed May 8 14:19:39 2013 -0400
+
+    Pipek-Mezey implemented (works the first time, very scary)
+
+commit e5c62106fefb6eb35878b14ed5bffda1597be4d5
+Author: David Sherrill <sherrill@gatech.edu>
+Date:   Wed May 8 14:03:27 2013 -0400
+
+    Remove unnecessary comments about symmetry c1 and no_reorient in the SAPT tutorial, since these are set automagically
+
+commit bbe46e5585e8af47118787267da78cf7bb8256bc
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Tue May 7 13:53:43 2013 -0400
+
+    Adds interactive interface for psi4.
+
+commit b0b58b31fa404fedeb091a3a984034067bb449b4
+Author: Ugur Bozkaya <ugrbzky@gmail.com>
+Date:   Tue May 7 07:02:46 2013 -0400
+
+    Moving definitions of OCC files to psifiles.h
+
+commit ce057f69a595c4edb1dd3681531d3cb41684f847
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Sun May 5 17:28:27 2013 -0400
+
+    Resolves error when using the external block
+
+commit f1f9ddabe46a2127d6f41c7ff49e13a8e7ca51d7
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Sun May 5 16:18:01 2013 -0400
+
+    Fixes issue preventing sapt5 from working
+
+commit d0a45f9bf7e23588faf9883fcf25bbea2e22cc83
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Sun May 5 07:00:37 2013 -0400
+
+    Resolves most warning generated by clang
+
+commit 403f2aa03ac683e612b1d1c5ac136a2d1c9a46ab
+Author: rparrish <robparrish@gmail.com>
+Date:   Fri May 3 15:03:17 2013 -0400
+
+    L-SAPT0 Elst, Exch, Disp, Exch-Disp working
+
+commit 0dff415c23de7d864d5b803adb88836be4641bc3
+Author: David Hollman <david.s.hollman@gmail.com>
+Date:   Fri May 3 14:05:51 2013 -0400
+
+    added back in a couple of functions for standalone version; don't know if they're still necessary, but it makes the code compile
+
+commit a15e85f97a1f4a0383ce50b63858b1e86e26c5b3
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Fri May 3 10:48:02 2013 -0400
+
+    Removes all references to PsiMod and replaces them with psi4
+
+commit 37d1005dceeba252ae384fd8facb7aef76b97534
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Fri May 3 09:12:05 2013 -0400
+
+    Found a PsiMod hiding
+
+commit 84fcdf9dd4ee7c6c258cc3948463d87ac12ec82f
+Merge: b55c058 0c9dc36
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Fri May 3 08:40:59 2013 -0400
+
+    Resolves conflict
+
+commit b55c05849ead987137c0a23ae159ba1dfd6273d6
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Fri May 3 08:32:05 2013 -0400
+
+    Fixes typo in method name
+
+commit 7f056b921d0d0482c4b5dd8e5774e5c18ea680ce
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Fri May 3 08:10:20 2013 -0400
+
+    Restores python scripts that got nuked when I rebased/merged standalone
+
+commit 4aec4da68298a5188cc5e93ce64a19495da77ee5
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Fri May 3 08:09:45 2013 -0400
+
+    Fixes test cases to use 'psi4' not 'PsiMod'
+
+commit 78d2dd7f28b7325bb13fac35e5da08820df4bd4e
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Fri May 3 08:09:05 2013 -0400
+
+    Finally gets rid of all the deprecated string conversions
+
+
+commit 14ebe88cb9b4e90befa225caa56e3d06b9a91ffd
+Author: rparrish <robparrish@gmail.com>
+Date:   Thu May 2 22:44:49 2013 -0400
+
+    Some L-SAPT setup
+
+commit 0c9dc36e4ba89baafecd3141339bd66068f43b80
+Author: Rob Parrish <robparrish@gmail.com>
+Date:   Thu May 2 22:43:56 2013 -0400
+
+    Added Boys Localizer (thanks to Eugene) for L-SAPT idea
+
+commit 047c5af09c204fc2e9279c745c0264e2637cef08
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Thu May 2 15:32:39 2013 -0400
+
+    Removes compiler warnings
+
+commit 35c22f51f89d489844ffa02400492cea77d7cf38
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Thu May 2 14:59:49 2013 -0400
+
+    Cleanup compiler warnings
+
+commit 409ef06195d298126ce5bc7f3bfcd1e233abe03a
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Thu May 2 14:59:32 2013 -0400
+
+    Cleanup compilers warnings
+
+commit df9db30f95819db157f356fa36e39d3b4d7840dc
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Thu May 2 14:16:12 2013 -0400
+
+    Resolves conflicts
+
+commit b0c9a2efbd8c5d5758a66655b3b59364d87aa1aa
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Wed Oct 17 16:56:00 2012 -0400
+
+    Reordering of added basis sets
+
+commit 1b0c6d75afbd0af36d6f283befd02d3a5f25234d
+Author: David Hollman <david.s.hollman@gmail.com>
+Date:   Wed Oct 17 10:24:14 2012 -0400
+
+    oops...brain fart
+
+commit 1ada72cab3e9cc76947fb0d4326787b419fd742a
+Author: David Hollman <david.s.hollman@gmail.com>
+Date:   Wed Oct 17 09:57:59 2012 -0400
+
+    a few more small changes to export_mints.cc
+
+commit 2bd072e8d909428f35fea09f9d95e5aacd726ca4
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Thu May 2 12:55:00 2013 -0400
+
+    Resolves conflicts
+
+commit 739e9974a3ef5ec355447182262d4c0977e51145
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Thu May 2 12:54:20 2013 -0400
+
+    Resolves conflicts
+
+commit afc5f7d2187983dbf0ecdb17ad4806d5e6c15823
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Thu May 2 12:52:35 2013 -0400
+
+    Resolves conflicts
+
+commit f03c1f8dcbde187f7cc644d9be54412c5be22265
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Wed Oct 10 06:12:56 2012 -0400
+
+    Updated process.cc to properly handle when the environment is empty.
+
+commit 172cd173f02df89626f9215f0b114871b9fa4cf0
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Thu May 2 12:51:52 2013 -0400
+
+    Resolves conflict
+
+commit 2243062a55cf765ab5c05a9040b548a976b1b272
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Thu May 2 12:51:06 2013 -0400
+
+    Resolves conflicts
+
+commit fa2741274c2e8367f1f97c86ea8bba4263d296e2
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Thu May 2 12:49:45 2013 -0400
+
+    Resolves conflicts
+
+commit 5f67eb00c6e88d2037037d41c3baadc0f96c2d72
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Wed Oct 10 17:34:11 2012 -0400
+
+    Adds initial p4const
+
+commit c3ff4a752c87abc3b050c7f9c1f4fa1189fcc742
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Wed Oct 10 17:21:49 2012 -0400
+
+    Initial reorganization of python files
+
+commit 3c39f6e94781fce70bfaccd2142b029d61fd0cf5
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Wed Oct 10 17:12:43 2012 -0400
+
+    Replaces PsiMod with psi in documentation script
+
+commit 6db2c88d9f2d410e8fa8491e9968d21bea958100
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Thu May 2 12:43:26 2013 -0400
+
+    Forgot to add one to the resolution
+
+commit 8445ce37df3b5c882b6a2b67bb5a705afcce0eb3
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Thu May 2 12:42:35 2013 -0400
+
+    Resolves conflicts
+
+
+commit a8667bbeb109da727691fd5d21fa5abd8317b2bc
+Author: David Hollman <david.s.hollman@gmail.com>
+Date:   Tue Oct 16 15:09:12 2012 -0400
+
+    Python hooks for all available integral types in IntegralFactory()
+
+commit 3c92590df48bd873537825178c9792e9b20bcbf7
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Thu May 2 11:22:05 2013 -0400
+
+    Resolves conflict
+
+commit 7ad994d9621173e6f8ebc735dca03454f4d1166a
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Thu May 2 11:12:32 2013 -0400
+
+    Resolves conflict
+
+commit 47333c6667bc6a6ce3643e4aa4d3da135e359663
+Author: David Hollman <david.s.hollman@gmail.com>
+Date:   Tue Oct 9 15:55:46 2012 -0400
+
+    options hack?
+
+commit 229c7d4c4dcb7dce6a7a8ebfd67282029c26140a
+Author: David Hollman <david.s.hollman@gmail.com>
+Date:   Tue Oct 9 15:19:20 2012 -0400
+
+    stand-alone kind of working
+
+commit 0c4e6fcfc4bec5c4d92fb7f4f8da3d66158c334a
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Thu May 2 11:00:34 2013 -0400
+
+    Adds license header to include/*.h
+
+commit 32e25b94c698023aa810c0c05f7a1a9422e9d8df
+Author: Susi Lehtola <jussilehtola@fedoraproject.org>
+Date:   Thu May 2 12:18:10 2013 +0300
+
+    Created LICENSE file from license boilerplates.
+
+
+commit 08ae186ca6cfab0903b1cdc34ab26c27b59909cb
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Wed May 1 18:55:07 2013 -0400
+
+    Adds GPL2 license info to PSI4
+
+
+commit 930093814f5211a958b2f9cc3063a6bf321d9f8e
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Wed May 1 17:27:52 2013 -0400
+
+    cmake recognizes custom python interpreter.
+
+
+commit 49548e6515b9380229292554362869f47f2ed3fe
+Author: Andy Simmonett <andysim@vortex.ccqc.uga.edu>
+Date:   Wed May 1 17:09:30 2013 -0400
+
+    Fixed order of libraries for multipass linkers, and allowed custom BLAS specification.
+
+
+commit 25652a104791233803c923e6d4421d397c1cb775
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Wed May 1 16:37:49 2013 -0400
+
+    Better error message when a basis set can't be found
+
+
+commit 028006af9b80ec892ab75a4b07946a3e319ba039
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Wed May 1 15:55:54 2013 -0400
+
+    Fixes PSI4 to work on Ubuntu systems
+
+commit e3666169a2df32d088a50e030a51f6056bce14f1
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Wed May 1 15:07:13 2013 -0400
+
+    Custom compile and linker flags for cmake.
+
+commit c7bf29ccbb43db8a0d1638964fe2ec07ec7ff2ca
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Wed May 1 13:58:36 2013 -0400
+
+    Fixed libint cmake build.
+
+
+commit 07ae87e1c021c2f081f559fc5f1ce74eab57ee14
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Wed May 1 13:43:39 2013 -0400
+
+    CMake can parse some command line options, and now has some instructions.
+
+commit 709940323e3011770906c8f5864ef620f2c863d2
+Author: rparrish <robparrish@gmail.com>
+Date:   Wed May 1 12:21:54 2013 -0400
+
+    Some cleanup
+
+commit 09505021d0343fc6eff8d6f176d4fdf09e7f9894
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Wed May 1 10:49:25 2013 -0400
+
+    Removes file from CMakeLists.txt
+
+
+commit 4bbc17d765eb4ef41d0dc882c522c788a6bddb7d
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Tue Apr 30 13:38:10 2013 -0400
+
+    CMake works: Added libthce and fixed boost include path.
+
+
+commit dc0354297987ffca52cf2ae1fdc1406cc3d29365
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Tue Apr 30 12:01:13 2013 -0400
+
+    Tells the user that a cartesian hessian was read in...if indeed it was.
+
+
+commit 734d8c44c087ad813c36a874f5e36a06fc74a212
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Tue Apr 30 11:32:34 2013 -0400
+
+    Liboptions arrays are now available to Python.
+
+commit ca671333c6c77447960f924d6c76d1f717885f81
+Author: rparrish <robparrish@gmail.com>
+Date:   Tue Apr 30 03:56:51 2013 -0400
+
+    TDHF Dispersion working in dumb mode. Preparing for the jump to lightspeed
+
+commit c8ceea31c32c84037827fa30c6778525434e9850
+Author: rparrish <robparrish@gmail.com>
+Date:   Tue Apr 30 02:49:14 2013 -0400
+
+    Exciting work on Casimir-Poldar via Bukowski
+
+
+commit 0b193b7ad5a2b8ac9389186d4dcaa0e2ca551b84
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Mon Apr 29 12:52:23 2013 -0400
+
+    Restored older python detection mechanism in CMake.
+
+
+commit 55f9cac4cf80d62e970b2a0e62a6617e24e9b38f
+Author: rparrish <robparrish@gmail.com>
+Date:   Sun Apr 28 23:50:55 2013 -0400
+
+    Cleanup in DFT-SAPT (Currently the world's shortest SAPT0 code)
+
+commit 144087bbef32471fa44789f1f248625b76b37b28
+Author: rparrish <robparrish@gmail.com>
+Date:   Sat Apr 27 21:30:54 2013 -0400
+
+    Exch-Disp20 working. Very PANACHE-like.
+
+commit f6b7d9a422cedd06d7cc77b4dfc22fc765a48958
+Author: rparrish <robparrish@gmail.com>
+Date:   Sat Apr 27 01:34:21 2013 -0400
+
+    Generalized ERI terms coded in Exch-Disp20
+
+commit 49ee8dc948ded1c56ee6ecde45d637a9d8ede810
+Author: rparrish <robparrish@gmail.com>
+Date:   Sat Apr 27 00:11:02 2013 -0400
+
+    Disp20 working. Like a Corvette.
+
+commit 16f92aa2f16c53282f20adf86e52cab23153e5bb
+Author: rparrish <robparrish@gmail.com>
+Date:   Fri Apr 26 17:53:58 2013 -0400
+
+    Initial commit of the THCE, for DFT-SAPT use.
+
+
+commit 22fdd7112a5342ea7f21fe581df8ddc837e40025
+Author: rparrish <robparrish@gmail.com>
+Date:   Fri Apr 26 00:57:59 2013 -0400
+
+    Exch-Ind20 working. Lightspeed.
+
+commit de6503839d810264bc0b24f21b6fe73b3585f808
+Author: rparrish <robparrish@gmail.com>
+Date:   Thu Apr 25 14:26:36 2013 -0400
+
+    Exch(1) working in S^2 and S^\infty variants
+
+commit d2f213b70b3764fcd1c819c0f238924b3cd53e87
+Author: rparrish <robparrish@gmail.com>
+Date:   Thu Apr 25 12:13:31 2013 -0400
+
+    Timer for amplitudes
+
+commit 44d95bd5261291d7f8fde6ec2be2a342def34eae
+Author: Ugur Bozkaya <ugrbzky@gmail.com>
+Date:   Thu Apr 25 10:56:23 2013 -0400
+
+    A minor change in OCC.
+
+commit cd61f8d8755544783beec0eb2f8872d53d308087
+Author: David Sherrill <sherrill@gatech.edu>
+Date:   Wed Apr 24 17:41:50 2013 -0400
+
+    Expunge references to MPI in install instructions to avoid confusing users
+
+
+commit e589f3584640d735696e187e915f2321ff4349c1
+Author: David Sherrill <sherrill@gatech.edu>
+Date:   Wed Apr 24 17:40:04 2013 -0400
+
+    Add an exception in DETCI
+
+
+commit c7f4cc0ab325540ca62c07b2bc20d6c6b9583398
+Author: Ugur Bozkaya <ugrbzky@gmail.com>
+Date:   Wed Apr 24 14:10:11 2013 -0400
+
+    Some minor chnages in OCC.
+
+commit 5aa04f10d49dfaff39a5ef327cee8ff027f180f7
+Author: Ugur Bozkaya <ugrbzky@gmail.com>
+Date:   Wed Apr 24 11:44:17 2013 -0400
+
+    Revising PDM symmetrization issue for RHF ref.
+
+commit 8d3a0729e6b6f501b44e44eb3c25c4088fcd49e0
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Wed Apr 24 07:51:07 2013 -0400
+
+    Sorts orbitals in Molden file by energy
+
+commit 2ca2f491b6834ec64455ad8fd71a763b026faf6e
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Wed Apr 24 06:16:28 2013 -0400
+
+    Adds CMake target dependencies to bin
+
+commit 741c053542fa2d3ad3ad0483aaaf057cf877bc96
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Wed Apr 24 06:03:09 2013 -0400
+
+    Adds CMake target dependencies to libs
+
+commit 1569ebf10a373d54a85689bd330e66f9566bcba7
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Wed Apr 24 05:53:26 2013 -0400
+
+    Cleanup CMakeLists.txt
+
+
+commit 98f493d2768bee8889f684f0d67d3d4ff5411012
+Author: rparrish <robparrish@gmail.com>
+Date:   Tue Apr 23 14:50:46 2013 -0400
+
+    Reduces memory to acceptable level for Disp30
+
+commit 3e4605696e4ca09d4cc5529bccbbc7b340ccc806
+Author: rparrish <robparrish@gmail.com>
+Date:   Tue Apr 23 14:44:24 2013 -0400
+
+    Back to normal
+
+commit a8ee0805c1db24b04b4c6594f0f2a2d95ae4f26a
+Author: rparrish <robparrish@gmail.com>
+Date:   Tue Apr 23 14:31:45 2013 -0400
+
+    Failed Disp30 NOs
+
+
+commit 2f4333aee544271172fa5c3c30a5a47e8e9174ac
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Tue Apr 23 13:53:34 2013 -0400
+
+    CMake handles OpenMP flags properly now.
+
+commit 76f5b92633cceb8e75f0f1eb49ea99773415da1e
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Tue Apr 23 13:39:47 2013 -0400
+
+    Adds missing deriv_wrapper
+
+
+commit 99ecaba25af6072a8cff397738c1e13ff38281e5
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Tue Apr 23 13:16:58 2013 -0400
+
+    Copies vrr_build.cc to objdir
+
+commit ae2bee2662ebb52107e8ecbdd0477226ebc73095
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Tue Apr 23 13:11:01 2013 -0400
+
+    Changed libint default A.M., for debugging.
+
+
+commit 464a08e2a7700cafe2864af8f2aa312e87b3898c
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Tue Apr 23 13:00:13 2013 -0400
+
+    Use Boost static libraries
+
+commit 85b134065ba8564a9a7ba2f976e60bea3776a1ac
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Tue Apr 23 13:00:12 2013 -0400
+
+    Small fix for libint and CMake.
+
+commit c51d9c8d98bf65b2c85128f848e81ef745e74c9f
+Merge: 1b8d939 22a5af8
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Tue Apr 23 12:45:32 2013 -0400
+
+    Resolves conflict
+
+commit 1b8d9398846a0fc96c94f8abda0462d238c51e86
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Tue Apr 23 12:44:50 2013 -0400
+
+    Reorders libint/libderiv in CMakeLists
+
+commit 22a5af8c4e07e388390e6fd76dd4b3c7fbf3fe87
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Tue Apr 23 12:17:54 2013 -0400
+
+    CMake tests for OpenMP.
+
+
+commit 6766dfa18dc75a0c3107cdba3770276e2f04655c
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Tue Apr 23 12:00:55 2013 -0400
+
+    Renamed some libraries to prevent name clashes. Many new CMake features.  It almost links now, but there are still a couple of small problems with undefined references.
+
+commit 1d1f73c742911c0cccc7dc620eed20e1cba4c718
+Author: Ugur Bozkaya <ugrbzky@gmail.com>
+Date:   Tue Apr 23 10:20:37 2013 -0400
+
+    A minor trick for more confortable usage of libdpd.
+
+commit 3d0cc6344a7f72a18b7a224ced32cd1e75d23aa6
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Tue Apr 23 09:16:39 2013 -0400
+
+    Moved more unused libraries to the attic.
+
+commit 7b86758c804e94d769abb1c936be10a69ef6acfd
+Author: Ugur Bozkaya <ugrbzky@gmail.com>
+Date:   Mon Apr 22 22:21:38 2013 -0400
+
+    OCC gradients G_abcd*<ab|cd> contraction problem is overcomed, but the problem persists for other modules, we still need an out-of-core algorithm for libdpd contract442 funct
+
+
+commit 49c4c9d71525d2c8f6d3f4b6b0a9cce458f369cc
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Mon Apr 22 15:01:54 2013 -0400
+
+    More CMake stuff: C++11, and compiler features.
+
+commit d46c538b7367e44d02367c44d5f3d903d70dda59
+Merge: ee0d4fd 6870c9a
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Mon Apr 22 14:28:08 2013 -0400
+
+    Merge
+
+commit ee0d4fdead6f86f0f345bd5bb0529c7b4ddaf0af
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Mon Apr 22 11:38:49 2013 -0400
+
+    Removes Boost.Thread global variable from libmints; might be causing segfaults on some machines
+
+
+commit 5edfebb88f99e8ca97cc6e3139d0bd373c5ffd98
+Author: rparrish <robparrish@gmail.com>
+Date:   Sat Apr 20 20:48:55 2013 -0400
+
+    Ed-worthy hack to save memory when un-gimping the DF integrals
+
+commit 257a23037716bbe83cd1cca8603276afc295e0d2
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Sat Apr 20 12:02:32 2013 -0400
+
+    Libderiv and gitversion work with cmake.
+
+commit 7a1d1ad57d34765afefc4e965426421bf59bde66
+Author: David Hollman <david.s.hollman@gmail.com>
+Date:   Fri Apr 19 17:22:56 2013 -0400
+
+    added *.pyo files (python files generated when python is run with the -O flag) to .gitignore
+
+
+commit d6b3c5b5f38a069f228ce7b53b540974620b55bf
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Fri Apr 19 14:14:24 2013 -0400
+
+    Forgot to remove libraries I moved to the attic
+
+commit 0fdac7e9cff1d6ecd578fd1e320339de80b7df51
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Fri Apr 19 13:55:43 2013 -0400
+
+    Initial version of cmake.  Boost and libint seem to be working.
+
+commit 2f3e376069f93a380a30dd72f320e5c6bc5b5c49
+Author: Ugur Bozkaya <ugrbzky@gmail.com>
+Date:   Fri Apr 19 10:38:21 2013 -0400
+
+    Minor revisons for the arrays class.
+
+
+commit 06554d26578b8a26fee17be098a41c9d7b8b086e
+Author: Rob Parrish <robparrish@gmail.com>
+Date:   Thu Apr 18 16:42:49 2013 -0400
+
+    RHF Hessians finished, hooked in, no segfaults, clean valgrind, don't work (4 of 5 objectives met)
+
+commit da6d8411fee66716997820083a2188fcaf2e1be6
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Thu Apr 18 15:02:44 2013 -0400
+
+    Forgot to remove lmp2 from configure.ac
+
+commit 44eba2f1931e22a5c273e49196c1e2ca228528cb
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Thu Apr 18 14:36:44 2013 -0400
+
+    Moves unused code into the 'attic'
+
+
+commit 3cf1aad4e68aba3238e82e9117f0632428620bd9
+Author: crawdad <crawdad@vt.edu>
+Date:   Thu Apr 18 11:31:49 2013 -0400
+
+    Corrected property call in test cc48.
+
+
+
+commit 701897f4bc713988cd72ae7f60252c9b6f823bdc
+Author: rparrish <robparrish@gmail.com>
+Date:   Wed Apr 17 21:08:58 2013 -0400
+
+    Fixes awful memory abuse in SAPT2+3(CCD), now 5o^2v^2
+
+commit 070adf3a186bf0198b0fb328d683bd4a0af6f215
+Author: Ugur Bozkaya <ugrbzky@gmail.com>
+Date:   Wed Apr 17 16:30:06 2013 -0400
+
+    Libdpd has not out of core psrq sorting. No problem! psrq = prsq + prqs.
+
+commit 1fffbb784bddeacee797ff8020a0c132a9cd43fc
+Author: Andy Simmonett <andy.simmonett@gmail.com>
+Date:   Wed Apr 17 15:23:54 2013 -0400
+
+    Cutty pastey error.
+
+commit 88b82a36ff4aec286274b77b31984a96a7aa9c48
+Author: Ugur Bozkaya <ugrbzky@gmail.com>
+Date:   Tue Apr 16 12:47:27 2013 -0400
+
+    Updating OCC.
+
+commit 46ce1177454a677c9a8a0536573f56a7d9bf864a
+Author: rparrish <robparrish@gmail.com>
+Date:   Mon Apr 15 16:47:53 2013 -0400
+
+    Tell the user which NO truncations are used
+
+commit 50dd30fe18a26005c1af3f05f9528bda53894160
+Author: rparrish <robparrish@gmail.com>
+Date:   Mon Apr 15 16:24:34 2013 -0400
+
+    Separated rMBPT and lCCD NO approximations. Recommending NAT_ORBS_T3: TRUE NAT_ORBS_V4: TRUE NAT_ORBS_T2: FALSE
+
+commit e61a7cba8dcf70d26599ea59aae08281549c85a2
+Author: rparrish <robparrish@gmail.com>
+Date:   Sun Apr 14 20:41:01 2013 -0400
+
+    Sensible addition
+
+commit d722af8aa71f23fd06c01b349cc5b488bb1a2875
+Author: rparrish <robparrish@gmail.com>
+Date:   Sun Apr 14 18:20:56 2013 -0400
+
+    Allows deactivation of MBPT Disp while using CCD Disp
+
+commit 8161a1b146dcce78b0851d9501c6600944f2bb2a
+Author: rparrish <robparrish@gmail.com>
+Date:   Sun Apr 14 18:12:18 2013 -0400
+
+    SAPT(CCD) call not idempotent
+
+commit 220582aeb799b1d110a8e3979221d6f13507427a
+Author: rparrish <robparrish@gmail.com>
+Date:   Sat Apr 13 15:50:49 2013 -0400
+
+    Flag to do a really stupid thing. Appropriately named I think.
+
+commit ad6f9d078da6a2a3b551c3207d77a29eb9e5f745
+Author: rparrish <robparrish@gmail.com>
+Date:   Sat Apr 13 15:50:05 2013 -0400
+
+    Missing #19 in S11
+
+
+commit c43ed25a790be3228d8b1f2afdd26346bd3fdfc9
+Author: rparrish <robparrish@gmail.com>
+Date:   Fri Apr 12 21:29:42 2013 -0400
+
+    FNOs implemented for SAPT(CCD) (vv|vv) term. Nuke 'em Rico!
+
+commit 63255d6aed1c0fe5c771ef0f1a9ab1524dc3802c
+Author: rparrish <robparrish@gmail.com>
+Date:   Fri Apr 12 14:07:25 2013 -0400
+
+    More work on FastDF
+
+commit 22b6a338553bf93dfa974a26c31302a4a379f38c
+Author: rparrish <robparrish@gmail.com>
+Date:   Fri Apr 12 14:06:56 2013 -0400
+
+    Fix for PK-DFT gradients
+
+commit 8f77d719b9e3301826ba0fd8b41700a925d77ae2
+Author: Anthony Coulter <anthony.coulter@lavabit.com>
+Date:   Fri Apr 12 11:20:27 2013 -0400
+
+    Fixed an incorrect array size that was causing segfaults. Sorry!
+
+commit 96533475253f246d219eafc0a90189e24f2f1236
+Author: Jussi Lehtola <jussilehtola@fedoraproject.org>
+Date:   Fri Apr 12 15:52:18 2013 +0300
+
+    Added install target to sphinx documentation.
+
+commit 487b5e89d127c85d9a8b27905dceb791d541662a
+Author: Jussi Lehtola <jussilehtola@fedoraproject.org>
+Date:   Fri Apr 12 15:45:27 2013 +0300
+
+    Added copy of GPLv2 license.
+
+commit f9d5d53f5ceecf3811869f3fe547e55da319faa2
+Author: Jussi Lehtola <jussilehtola@fedoraproject.org>
+Date:   Fri Apr 12 14:34:05 2013 +0300
+
+    Use DOXYDIR macro consistently in Makefile.in.
+
+commit abf41105bbe83ec2613db2f95da1cced438d7dd8
+Author: Jussi Lehtola <jussilehtola@fedoraproject.org>
+Date:   Fri Apr 12 14:00:44 2013 +0300
+
+    Added install-doc target.
+
+commit 6ee107377073699954444e5e3c5c4f6922e3a8bf
+Author: Jussi Lehtola <jussilehtola@fedoraproject.org>
+Date:   Fri Apr 12 13:56:25 2013 +0300
+
+    DESTDIR support for doxygen.
+
+commit 13e89f7f79253ff2ac040297d0f7733b9ea7eff3
+Author: Jussi Lehtola <jussilehtola@fedoraproject.org>
+Date:   Fri Apr 12 13:54:05 2013 +0300
+
+    Don't run doxygen install by default - just compile.
+
+commit 059c7e577d67d5014e83a28d3c7eadf4e225dda8
+Author: Jussi Lehtola <jussilehtola@fedoraproject.org>
+Date:   Thu Apr 11 19:49:30 2013 +0300
+
+    Updated FSF address.
+
+commit 6f6b08ae7918e2b05139d7dc947235fe6b44ecf0
+Author: Jussi Lehtola <jussilehtola@fedoraproject.org>
+Date:   Thu Apr 11 19:45:00 2013 +0300
+
+    Remove shebang from pep8.py which is anyway installed without executable permissions.
+
+commit 93e350aad4bd74c77c1dcfb88e2d731b0c7780cc
+Author: Jussi Lehtola <jussilehtola@fedoraproject.org>
+Date:   Thu Apr 11 19:42:06 2013 +0300
+
+    Removed spurious executable permissions.
+
+
+commit a6e9a869bf9b88d12d24de2e32b0abe7fc79daaa
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Thu Apr 11 12:11:41 2013 -0400
+
+    Forgot a \n in the printing
+
+commit 1c78465498c21b16688626d3df28dd26119808a7
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Thu Apr 11 11:31:49 2013 -0400
+
+    Adds Roos ANO basis sets
+
+commit aebf201d1ffd5109a90a3722d70bdcf4813f81f2
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Thu Apr 11 07:52:27 2013 -0400
+
+    MintsHelper uses INTS_TOLERANCE keyword
+
+
+commit 0cf4d022e4d65c7746c77f5a096f1b98e1b2a9e3
+Author: Francesco Evangelista <francesco.evangelista@gmail.com>
+Date:   Wed Apr 10 16:39:17 2013 -0400
+
+    This commit allows to compile psi4 using clang++ and the new C++11 standard.
+    I had to chop a few heads to make this work.
+    1) Libyeti is no longer compiled.
+    2) Configure does no longer check for isinf() or finite(). These two
+       functions are required by madness.
+    3) The const_iterator over vector was eliminated, and the non-const version
+       reworked because it was not compiling.
+    
+    All these changes are not sufficient to compile psi4 directly with clang++.
+    Boost needs to be modified and compiled separately.
+    
+    This bit of code must be added to boost/config/stdlib/libcpp.hpp
+    to make boost work with clang++
+    
+     #if _LIBCPP_VERSION < 1002
+       define BOOST_NO_CXX11_NUMERIC_LIMITS
+     #endif
+    
+    In principle this could be added to our local copy of boost but
+    I decided it was better to not mess up with it.
+    
+    I know, this was supposed to be a short message but it ended up
+    becoming a short essay.
+
+
+commit 1c7e92c3b7a5338f1ba73ce85f4e44697374d788
+Author: Francesco Evangelista <francesco.evangelista@gmail.com>
+Date:   Wed Apr 10 16:29:47 2013 -0400
+
+    Removed more ambiguous calls to boost:: functions that clash with C++11.
+
+commit 79e431e205b2a5782173e7696ee48c533369b014
+Author: Francesco Evangelista <francesco.evangelista@gmail.com>
+Date:   Wed Apr 10 16:26:17 2013 -0400
+
+    Removed ambiguity between boost::mutex and std::mutex that arises in C++11.
+    To make psi4 compatible with older C++ standards we use boost::mutex.
+
+commit c043ce9adce5c05d2bd47c5bb86e2339f3f39bd3
+Author: Rollin King <rking@bethel.edu>
+Date:   Wed Apr 10 14:56:36 2013 -0500
+
+    modified to optking to allow user-specified "fixed" coordinates.
+    The user can specify a final equilibrium value for an internal
+    coordinate to reach.  For an example, see opt7 test case.
+
+
+commit bff8b7a972aa5cd6ec878ca8f86acc9743d288d5
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Wed Apr 10 12:29:04 2013 -0400
+
+    Removes several headers that are not needed
+
+commit aff980339574694df7b9176a4d34967722dd03ec
+Author: Francesco Evangelista <francesco.evangelista@gmail.com>
+Date:   Wed Apr 10 11:58:02 2013 -0400
+
+    Now all integers are converted to strings using boost::lexical_cast. The previous code did not compile using clang++ using the c++11 standard.
+
+commit 4191c5559122f5348dc8548672095c194e68f89d
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Mon Apr 8 11:35:50 2013 -0400
+
+    adds usage of ints_tolerance into libmints...slight oversight before
+
+commit 5b4b0970fed8b0e3cd25e6291d852856f9ca1237
+Author: Ugur Bozkaya <ugrbzky@gmail.com>
+Date:   Tue Apr 9 22:52:15 2013 -0400
+
+    Fixing free/delete issue, which may cause trouble on some OS.
+
+commit f141921fdc5aca3f7b7f23bafa3a6016034bd2f2
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Tue Apr 9 15:39:10 2013 -0400
+
+    Adds remarks about ACML to INSTALL.rst
+
+commit bc74bc8fcc241ddeb3979f86e4b45d5cba4e5c81
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Tue Apr 9 15:01:39 2013 -0400
+
+    Updates INSTALL.rst
+
+commit 72cded155bd2b689a1d9a4a15866bb81a2231910
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Mon Apr 8 15:54:29 2013 -0400
+
+    Forgot the CS keyword in MRCC
+
+
+commit 551c6088d13f17105d362dcf5e6cebbc260c7406
+Author: Justin Turney <justin.turney@gmail.com>
+Date:   Mon Apr 8 15:36:17 2013 -0400
+
+    Possible fix for open-shell MRCC runs
+
+
+commit ba44862a9588860cf5b6ea11082911be131963d4
+Author: Ugur Bozkaya <ugrbzky@gmail.com>
+Date:   Mon Apr 8 12:02:41 2013 -0400
+
+    Fixing OCC title function that I broke last week.
+
+commit fa889480affd3ec58699bed9f77ea83f2baba2d2
+Author: Ugur Bozkaya <ugrbzky@gmail.com>
+Date:   Mon Apr 8 00:48:21 2013 -0400
+
+    Adding a new database, A24, of interaction energies for bimolecular complexes.
+
+commit 05eba8219884bca23f9de0110dca8ed51f1eaedd
+Author: Rob Parrish <robparrish@gmail.com>
+Date:   Sun Apr 7 16:23:35 2013 -0400
+
+    Super slick DF-J
+

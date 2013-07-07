@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
  *  \ingroup DETCI
  *  \brief Thread pools
@@ -19,7 +41,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <cstring>
-
+#include <boost/lexical_cast.hpp>
 #include <pthread.h>
 #include "tpool.h"
 #include "structs.h"
@@ -90,7 +112,7 @@ void tpool_init(tpool_t   *tpoolp,
 			      tpool_thread,
 			      (void *)tpool)) != 0){
       str = "pthread_create ";
-      str += static_cast<std::ostringstream*>( &(std::ostringstream() << rtn) )->str();
+      str += boost::lexical_cast<std::string>( rtn) ;
       throw PsiException(str,__FILE__,__LINE__);
   }
     tpool->threads_awake++;
@@ -110,7 +132,7 @@ int tpool_add_work(
 
   if ((rtn = pthread_mutex_lock(&(tpool->queue_lock))) != 0){
     str = "pthread_mutex_lock ";
-    str += static_cast<std::ostringstream*>( &(std::ostringstream() << rtn) )->str();
+    str += boost::lexical_cast<std::string>( rtn) ;
     throw PsiException(str,__FILE__,__LINE__);
   }
 
@@ -119,7 +141,7 @@ int tpool_add_work(
       tpool->do_not_block_when_full) {
     if ((rtn = pthread_mutex_unlock(&(tpool->queue_lock))) != 0){
       str = "pthread_mutex_unlock ";
-      str += static_cast<std::ostringstream*>( &(std::ostringstream() << rtn) )->str();
+      str += boost::lexical_cast<std::string>( rtn) ;
       throw PsiException(str,__FILE__,__LINE__);
     }
 
@@ -132,7 +154,7 @@ int tpool_add_work(
     if ((rtn = pthread_cond_wait(&(tpool->queue_not_full),
 				 &(tpool->queue_lock))) != 0){
       str = "pthread_cond_wait ";
-      str += static_cast<std::ostringstream*>( &(std::ostringstream() << rtn) )->str();
+      str += boost::lexical_cast<std::string>( rtn) ;
       throw PsiException(str,__FILE__,__LINE__);
     }
 
@@ -142,7 +164,7 @@ int tpool_add_work(
   if (tpool->shutdown || tpool->queue_closed) {
     if ((rtn = pthread_mutex_unlock(&(tpool->queue_lock))) != 0){
       str = "pthread_mutex_unlock ";
-      str += static_cast<std::ostringstream*>( &(std::ostringstream() << rtn) )->str();
+      str += boost::lexical_cast<std::string>( rtn) ;
       throw PsiException(str,__FILE__,__LINE__);
     }
  
@@ -164,7 +186,7 @@ int tpool_add_work(
 
     if ((rtn = pthread_cond_broadcast(&(tpool->queue_not_empty))) != 0){
       str = "pthread_cond_signal ";
-      str += static_cast<std::ostringstream*>( &(std::ostringstream() << rtn) )->str();
+      str += boost::lexical_cast<std::string>( rtn) ;
       throw PsiException(str,__FILE__,__LINE__);
     }
   } else {
@@ -175,7 +197,7 @@ int tpool_add_work(
   tpool->cur_queue_size++; 
   if ((rtn = pthread_mutex_unlock(&(tpool->queue_lock))) != 0){
     str = "pthread_mutex_unlock ";
-    str += static_cast<std::ostringstream*>( &(std::ostringstream() << rtn) )->str();
+    str += boost::lexical_cast<std::string>( rtn) ;
     throw PsiException(str,__FILE__,__LINE__);
   }
   return 1;
@@ -191,7 +213,7 @@ int tpool_destroy(tpool_t          tpool,
 
   if ((rtn = pthread_mutex_lock(&(tpool->queue_lock))) != 0){
     str = "pthread_mutex_lock ";
-    str += static_cast<std::ostringstream*>( &(std::ostringstream() << rtn) )->str();
+    str += boost::lexical_cast<std::string>( rtn) ;
     throw PsiException(str,__FILE__,__LINE__);
   }
 
@@ -199,7 +221,7 @@ int tpool_destroy(tpool_t          tpool,
   if (tpool->queue_closed && tpool->shutdown) {
     if ((rtn = pthread_mutex_unlock(&(tpool->queue_lock))) != 0){
       str = "pthread_mutex_unlock ";
-      str += static_cast<std::ostringstream*>( &(std::ostringstream() << rtn) )->str();
+      str += boost::lexical_cast<std::string>( rtn) ;
       throw PsiException(str,__FILE__,__LINE__);
     }
     return 0;
@@ -214,7 +236,7 @@ int tpool_destroy(tpool_t          tpool,
       if ((rtn = pthread_cond_wait(&(tpool->queue_empty),
 				   &(tpool->queue_lock))) != 0){
         str = "pthread_cond_wait ";
-        str += static_cast<std::ostringstream*>( &(std::ostringstream() << rtn) )->str();
+        str += boost::lexical_cast<std::string>( rtn) ;
         throw PsiException(str,__FILE__,__LINE__);
       }
     }
@@ -224,7 +246,7 @@ int tpool_destroy(tpool_t          tpool,
 
   if ((rtn = pthread_mutex_unlock(&(tpool->queue_lock))) != 0){
     str = "pthread_mutex_unlock ";
-    str += static_cast<std::ostringstream*>( &(std::ostringstream() << rtn) )->str();
+    str += boost::lexical_cast<std::string>( rtn) ;
     throw PsiException(str,__FILE__,__LINE__);
   }
 
@@ -232,12 +254,12 @@ int tpool_destroy(tpool_t          tpool,
   /* Wake up any workers so they recheck shutdown flag */
   if ((rtn = pthread_cond_broadcast(&(tpool->queue_not_empty))) != 0){
     str = "pthread_cond_broadcast ";
-    str += static_cast<std::ostringstream*>( &(std::ostringstream() << rtn) )->str();
+    str += boost::lexical_cast<std::string>( rtn) ;
     throw PsiException(str,__FILE__,__LINE__);
   }
   if ((rtn = pthread_cond_broadcast(&(tpool->queue_not_full))) != 0){
     str = "pthread_cond_broadcast ";
-    str += static_cast<std::ostringstream*>( &(std::ostringstream() << rtn) )->str();
+    str += boost::lexical_cast<std::string>( rtn) ;
     throw PsiException(str,__FILE__,__LINE__);
   }
 
@@ -246,7 +268,7 @@ int tpool_destroy(tpool_t          tpool,
   for(i=0; i < tpool->num_threads; i++) {
       if ((rtn = pthread_join(tpool->threads[i],NULL)) != 0){
           str = "pthread_join ";
-          str += static_cast<std::ostringstream*>( &(std::ostringstream() << rtn) )->str();
+          str += boost::lexical_cast<std::string>( rtn) ;
           throw PsiException(str,__FILE__,__LINE__);
       }
     }
@@ -281,7 +303,7 @@ void tpool_queue_close(tpool_t tpool, int finish)
       if (tpool->cur_queue_size !=0 || tpool->threads_awake != 0) {
           if ((rtn = pthread_cond_wait(&(tpool->all_work_done), &(tpool->queue_lock))) !=0){
               str = "pthread_cond_wait ";
-              str += static_cast<std::ostringstream*>( &(std::ostringstream() << rtn) )->str();
+              str += boost::lexical_cast<std::string>( rtn) ;
               throw PsiException(str,__FILE__,__LINE__);
           }
         }
@@ -304,7 +326,7 @@ void *tpool_thread(void *arg)
     /* Check queue for work */ 
     if ((rtn = pthread_mutex_lock(&(tpool->queue_lock))) != 0){
       str = "pthread_mutex_lock ";
-      str += static_cast<std::ostringstream*>( &(std::ostringstream() << rtn) )->str();
+      str += boost::lexical_cast<std::string>( rtn) ;
       throw PsiException(str,__FILE__,__LINE__);
     }
 
@@ -315,7 +337,7 @@ void *tpool_thread(void *arg)
         if (tpool->threads_awake == 0 && tpool->queue_closed) {
             if ((rtn = pthread_cond_signal(&(tpool->all_work_done))) != 0){
                 str = "pthread_cond_signal ";
-                str += static_cast<std::ostringstream*>( &(std::ostringstream() << rtn) )->str();
+                str += boost::lexical_cast<std::string>( rtn) ;
                 throw PsiException(str,__FILE__,__LINE__);
             }
           }
@@ -323,7 +345,7 @@ void *tpool_thread(void *arg)
         if ((rtn = pthread_cond_wait(&(tpool->queue_not_empty),
                                      &(tpool->queue_lock))) != 0){
             str = "pthread_cond_wait ";
-            str += static_cast<std::ostringstream*>( &(std::ostringstream() << rtn) )->str();
+            str += boost::lexical_cast<std::string>( rtn) ;
             throw PsiException(str,__FILE__,__LINE__);
         }
         
@@ -336,7 +358,7 @@ void *tpool_thread(void *arg)
         tpool->threads_awake--;
         if ((rtn = pthread_mutex_unlock(&(tpool->queue_lock))) != 0){
             str = "pthread_mutex_unlock ";
-            str += static_cast<std::ostringstream*>( &(std::ostringstream() << rtn) )->str();
+            str += boost::lexical_cast<std::string>( rtn) ;
             throw PsiException(str,__FILE__,__LINE__);
         }
         pthread_exit(NULL);
@@ -357,7 +379,7 @@ void *tpool_thread(void *arg)
 
       if ((rtn = pthread_cond_broadcast(&(tpool->queue_not_full))) != 0){
         str = "pthread_cond_broadcast ";
-        str += static_cast<std::ostringstream*>( &(std::ostringstream() << rtn) )->str();
+        str += boost::lexical_cast<std::string>( rtn) ;
         throw PsiException(str,__FILE__,__LINE__);
       }
 
@@ -365,13 +387,13 @@ void *tpool_thread(void *arg)
     if (tpool->cur_queue_size == 0)
       if ((rtn = pthread_cond_signal(&(tpool->queue_empty))) != 0){
         str = "pthread_cond_signal ";
-        str += static_cast<std::ostringstream*>( &(std::ostringstream() << rtn) )->str();
+        str += boost::lexical_cast<std::string>( rtn) ;
         throw PsiException(str,__FILE__,__LINE__);
       }
 
     if ((rtn = pthread_mutex_unlock(&(tpool->queue_lock))) != 0){
       str = "pthread_mutex_unlock ";
-      str += static_cast<std::ostringstream*>( &(std::ostringstream() << rtn) )->str();
+      str += boost::lexical_cast<std::string>( rtn) ;
       throw PsiException(str,__FILE__,__LINE__);
     }
       

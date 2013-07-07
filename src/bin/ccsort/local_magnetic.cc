@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup CCSORT
     \brief Enter brief description of file here 
@@ -76,9 +98,9 @@ void local_magnetic(const char *cart, int **domain, int *domain_len,
     C_DGEMM('n', 'n', nso, moinfo.occpi[0], nso, 1, &(TMP[0][0]), nao, &(C[0][0]), moinfo.occpi[0],
 	    0, &(L[0][0]), moinfo.occpi[0]);
 
-    dpd_file2_init(&U, PSIF_CC_OEI, 0, 1, 0, "CPHF Ub_X_AI");
-    dpd_file2_mat_init(&U);
-    dpd_file2_mat_rd(&U);
+    global_dpd_->file2_init(&U, PSIF_CC_OEI, 0, 1, 0, "CPHF Ub_X_AI");
+    global_dpd_->file2_mat_init(&U);
+    global_dpd_->file2_mat_rd(&U);
 
     C_DGEMM('n', 'n', nso,moinfo.occpi[0],moinfo.virtpi[0], 1, &(moinfo.C[0][0][0]), moinfo.virtpi[0],
 	    &(U.matrix[0][0][0]), moinfo.occpi[0], 0, &(Z[0][0]), moinfo.occpi[0]);
@@ -150,8 +172,8 @@ void local_magnetic(const char *cart, int **domain, int *domain_len,
       }
     }
 
-    dpd_file2_mat_close(&U);
-    dpd_file2_close(&U);
+    global_dpd_->file2_mat_close(&U);
+    global_dpd_->file2_close(&U);
   }
 
   if (!strcmp(cart, "Y")) {
@@ -170,9 +192,9 @@ void local_magnetic(const char *cart, int **domain, int *domain_len,
     C_DGEMM('n', 'n', nso, moinfo.occpi[0], nso, 1, &(TMP[0][0]), nao, &(C[0][0]), moinfo.occpi[0],
 	    0, &(L[0][0]), moinfo.occpi[0]);
 
-    dpd_file2_init(&U, PSIF_CC_OEI, 0, 1, 0, "CPHF Ub_Y_AI");
-    dpd_file2_mat_init(&U);
-    dpd_file2_mat_rd(&U);
+    global_dpd_->file2_init(&U, PSIF_CC_OEI, 0, 1, 0, "CPHF Ub_Y_AI");
+    global_dpd_->file2_mat_init(&U);
+    global_dpd_->file2_mat_rd(&U);
 
     C_DGEMM('n', 'n', nso,moinfo.occpi[0],moinfo.virtpi[0], 1, &(moinfo.C[0][0][0]), moinfo.virtpi[0],
 	    &(U.matrix[0][0][0]), moinfo.occpi[0], 0, &(Z[0][0]), moinfo.occpi[0]);
@@ -243,8 +265,8 @@ void local_magnetic(const char *cart, int **domain, int *domain_len,
       }
     }
 
-    dpd_file2_mat_close(&U);
-    dpd_file2_close(&U);
+    global_dpd_->file2_mat_close(&U);
+    global_dpd_->file2_close(&U);
   }
 
   if (!strcmp(cart, "Z")) {
@@ -263,9 +285,9 @@ void local_magnetic(const char *cart, int **domain, int *domain_len,
     C_DGEMM('n', 'n', nso, moinfo.occpi[0], nso, 1, &(TMP[0][0]), nao, &(C[0][0]), moinfo.occpi[0],
 	    0, &(L[0][0]), moinfo.occpi[0]);
 
-    dpd_file2_init(&U, PSIF_CC_OEI, 0, 1, 0, "CPHF Ub_Z_AI");
-    dpd_file2_mat_init(&U);
-    dpd_file2_mat_rd(&U);
+    global_dpd_->file2_init(&U, PSIF_CC_OEI, 0, 1, 0, "CPHF Ub_Z_AI");
+    global_dpd_->file2_mat_init(&U);
+    global_dpd_->file2_mat_rd(&U);
 
     C_DGEMM('n', 'n', nso,moinfo.occpi[0],moinfo.virtpi[0], 1, &(moinfo.C[0][0][0]), moinfo.virtpi[0],
 	    &(U.matrix[0][0][0]), moinfo.occpi[0], 0, &(Z[0][0]), moinfo.occpi[0]);
@@ -336,8 +358,8 @@ void local_magnetic(const char *cart, int **domain, int *domain_len,
       }
     }
 
-    dpd_file2_mat_close(&U);
-    dpd_file2_close(&U);
+    global_dpd_->file2_mat_close(&U);
+    global_dpd_->file2_close(&U);
   }
 
   free_block(TMP);

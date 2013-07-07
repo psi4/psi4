@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup CCDENSITY
     \brief  Calculates the one- and two-electron CC energies using the
@@ -27,74 +49,74 @@ namespace psi { namespace ccdensity {
       fprintf(outfile, "\n\tEnergies re-computed from CC density:\n");
       fprintf(outfile,   "\t-------------------------------------\n");
 
-      dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.DIJ_lbl);
-      dpd_file2_init(&F, PSIF_CC_OEI, 0, 0, 0, "fIJ");
-      this_energy = dpd_file2_dot(&D, &F);
-      dpd_file2_close(&F);
-      dpd_file2_close(&D);
+      global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.DIJ_lbl);
+      global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+      this_energy = global_dpd_->file2_dot(&D, &F);
+      global_dpd_->file2_close(&F);
+      global_dpd_->file2_close(&D);
 
       /*  fprintf(outfile, "\tDIJ = %20.15f\n", this_energy); */
       one_energy += this_energy;
 
-      dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.Dij_lbl);
-      dpd_file2_init(&F, PSIF_CC_OEI, 0, 0, 0, "fij");
-      this_energy = dpd_file2_dot(&D, &F);
-      dpd_file2_close(&F);
-      dpd_file2_close(&D);
+      global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.Dij_lbl);
+      global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 0, "fij");
+      this_energy = global_dpd_->file2_dot(&D, &F);
+      global_dpd_->file2_close(&F);
+      global_dpd_->file2_close(&D);
 
       /* fprintf(outfile, "\tDij = %20.15f\n", this_energy); */
       one_energy += this_energy;
 
-      dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 1, rho_params.DAB_lbl);
-      dpd_file2_init(&F, PSIF_CC_OEI, 0, 1, 1, "fAB");
-      this_energy = dpd_file2_dot(&D, &F);
-      dpd_file2_close(&F);
-      dpd_file2_close(&D);
+      global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, rho_params.DAB_lbl);
+      global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 1, 1, "fAB");
+      this_energy = global_dpd_->file2_dot(&D, &F);
+      global_dpd_->file2_close(&F);
+      global_dpd_->file2_close(&D);
 
       /*fprintf(outfile, "\tDAB = %20.15f\n", this_energy); */
       one_energy += this_energy;
 
-      dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 1, rho_params.Dab_lbl);
-      dpd_file2_init(&F, PSIF_CC_OEI, 0, 1, 1, "fab");
-      this_energy = dpd_file2_dot(&D, &F);
-      dpd_file2_close(&F);
-      dpd_file2_close(&D);
+      global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, rho_params.Dab_lbl);
+      global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 1, 1, "fab");
+      this_energy = global_dpd_->file2_dot(&D, &F);
+      global_dpd_->file2_close(&F);
+      global_dpd_->file2_close(&D);
 
       /*fprintf(outfile, "\tDab = %20.15f\n", this_energy); */
       one_energy += this_energy;
 
-      dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, rho_params.DIA_lbl);
-      dpd_file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "fIA");
-      this_energy = dpd_file2_dot(&D, &F);
-      dpd_file2_close(&F);
-      dpd_file2_close(&D);
+      global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 1, rho_params.DIA_lbl);
+      global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "fIA");
+      this_energy = global_dpd_->file2_dot(&D, &F);
+      global_dpd_->file2_close(&F);
+      global_dpd_->file2_close(&D);
 
       /*fprintf(outfile, "\tDIA = %20.15f\n", this_energy); */
       one_energy += this_energy;
 
-      dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, rho_params.Dia_lbl);
-      dpd_file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "fia");
-      this_energy = dpd_file2_dot(&D, &F);
-      dpd_file2_close(&F);
-      dpd_file2_close(&D);
+      global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 1, rho_params.Dia_lbl);
+      global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "fia");
+      this_energy = global_dpd_->file2_dot(&D, &F);
+      global_dpd_->file2_close(&F);
+      global_dpd_->file2_close(&D);
 
       /*fprintf(outfile, "\tDia = %20.15f\n", this_energy); */
       one_energy += this_energy;
 
-      dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, rho_params.DAI_lbl);
-      dpd_file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "fIA");
-      this_energy = dpd_file2_dot(&D, &F);
-      dpd_file2_close(&F);
-      dpd_file2_close(&D);
+      global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 1, rho_params.DAI_lbl);
+      global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "fIA");
+      this_energy = global_dpd_->file2_dot(&D, &F);
+      global_dpd_->file2_close(&F);
+      global_dpd_->file2_close(&D);
 
       /*fprintf(outfile, "\tDAI = %20.15f\n", this_energy); */
       one_energy += this_energy;
 
-      dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, rho_params.Dai_lbl);
-      dpd_file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "fia");
-      this_energy = dpd_file2_dot(&D, &F);
-      dpd_file2_close(&F);
-      dpd_file2_close(&D);
+      global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 1, rho_params.Dai_lbl);
+      global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "fia");
+      this_energy = global_dpd_->file2_dot(&D, &F);
+      global_dpd_->file2_close(&F);
+      global_dpd_->file2_close(&D);
       /*fprintf(outfile, "\tDai = %20.15f\n", this_energy); */
       one_energy += this_energy;
 
@@ -106,19 +128,19 @@ namespace psi { namespace ccdensity {
 
       two_energy = 0.0;
 
-      dpd_buf4_init(&A, PSIF_CC_AINTS, 0, 2, 2, 0, 0, 1, "A <ij|kl>");
-      dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 2, 2, 2, 0, "GIJKL");
-      two_energy += dpd_buf4_dot(&G, &A);
-      dpd_buf4_close(&G);
-      dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 2, 2, 2, 0, "Gijkl");
-      two_energy += dpd_buf4_dot(&G, &A);
-      dpd_buf4_close(&G);
-      dpd_buf4_close(&A);
-      dpd_buf4_init(&A, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 0, "A <ij|kl>");
-      dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 0, 0, 0, 0, "GIjKl");
-      two_energy += dpd_buf4_dot(&G, &A);
-      dpd_buf4_close(&G);
-      dpd_buf4_close(&A);
+      global_dpd_->buf4_init(&A, PSIF_CC_AINTS, 0, 2, 2, 0, 0, 1, "A <ij|kl>");
+      global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 2, 2, 2, 0, "GIJKL");
+      two_energy += global_dpd_->buf4_dot(&G, &A);
+      global_dpd_->buf4_close(&G);
+      global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 2, 2, 2, 0, "Gijkl");
+      two_energy += global_dpd_->buf4_dot(&G, &A);
+      global_dpd_->buf4_close(&G);
+      global_dpd_->buf4_close(&A);
+      global_dpd_->buf4_init(&A, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 0, "A <ij|kl>");
+      global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 0, 0, 0, 0, "GIjKl");
+      two_energy += global_dpd_->buf4_dot(&G, &A);
+      global_dpd_->buf4_close(&G);
+      global_dpd_->buf4_close(&A);
 
       total_two_energy += two_energy;
       fprintf(outfile, "\tIJKL energy                = %20.15f\n", two_energy);
@@ -126,22 +148,22 @@ namespace psi { namespace ccdensity {
 
       two_energy = 0.0;
 
-      dpd_buf4_init(&E, PSIF_CC_EINTS, 0, 2, 10, 2, 10, 0, "E <ij||ka> (i>j,ka)");
-      dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 10, 2, 10, 0, "GIJKA");
-      two_energy += dpd_buf4_dot(&G, &E);
-      dpd_buf4_close(&G);
-      dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 10, 2, 10, 0, "Gijka");
-      two_energy += dpd_buf4_dot(&G, &E);
-      dpd_buf4_close(&G);
-      dpd_buf4_close(&E);
-      dpd_buf4_init(&E, PSIF_CC_EINTS, 0, 0, 10, 0, 10, 0, "E <ij|ka>");
-      dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 10, 0, 10, 0, "GIjKa");
-      two_energy += dpd_buf4_dot(&G, &E);
-      dpd_buf4_close(&G);
-      dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 10, 0, 10, 0, "GiJkA");
-      two_energy += dpd_buf4_dot(&G, &E);
-      dpd_buf4_close(&G);
-      dpd_buf4_close(&E);
+      global_dpd_->buf4_init(&E, PSIF_CC_EINTS, 0, 2, 10, 2, 10, 0, "E <ij||ka> (i>j,ka)");
+      global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 10, 2, 10, 0, "GIJKA");
+      two_energy += global_dpd_->buf4_dot(&G, &E);
+      global_dpd_->buf4_close(&G);
+      global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 10, 2, 10, 0, "Gijka");
+      two_energy += global_dpd_->buf4_dot(&G, &E);
+      global_dpd_->buf4_close(&G);
+      global_dpd_->buf4_close(&E);
+      global_dpd_->buf4_init(&E, PSIF_CC_EINTS, 0, 0, 10, 0, 10, 0, "E <ij|ka>");
+      global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 10, 0, 10, 0, "GIjKa");
+      two_energy += global_dpd_->buf4_dot(&G, &E);
+      global_dpd_->buf4_close(&G);
+      global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 10, 0, 10, 0, "GiJkA");
+      two_energy += global_dpd_->buf4_dot(&G, &E);
+      global_dpd_->buf4_close(&G);
+      global_dpd_->buf4_close(&E);
 
       two_energy *= 2;
       total_two_energy += two_energy;
@@ -150,19 +172,19 @@ namespace psi { namespace ccdensity {
 
       two_energy = 0.0;
 
-      dpd_buf4_init(&DInts, PSIF_CC_DINTS, 0, 2, 7, 2, 7, 0, "D <ij||ab> (i>j,a>b)");
-      dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 7, 2, 7, 0, "GIJAB");
-      two_energy += dpd_buf4_dot(&G, &DInts);
-      dpd_buf4_close(&G);
-      dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 7, 2, 7, 0, "Gijab");
-      two_energy += dpd_buf4_dot(&G, &DInts);
-      dpd_buf4_close(&G);
-      dpd_buf4_close(&DInts);
-      dpd_buf4_init(&DInts, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
-      dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "GIjAb");
-      two_energy += dpd_buf4_dot(&G, &DInts);
-      dpd_buf4_close(&G);
-      dpd_buf4_close(&DInts);
+      global_dpd_->buf4_init(&DInts, PSIF_CC_DINTS, 0, 2, 7, 2, 7, 0, "D <ij||ab> (i>j,a>b)");
+      global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 7, 2, 7, 0, "GIJAB");
+      two_energy += global_dpd_->buf4_dot(&G, &DInts);
+      global_dpd_->buf4_close(&G);
+      global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 7, 2, 7, 0, "Gijab");
+      two_energy += global_dpd_->buf4_dot(&G, &DInts);
+      global_dpd_->buf4_close(&G);
+      global_dpd_->buf4_close(&DInts);
+      global_dpd_->buf4_init(&DInts, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+      global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "GIjAb");
+      two_energy += global_dpd_->buf4_dot(&G, &DInts);
+      global_dpd_->buf4_close(&G);
+      global_dpd_->buf4_close(&DInts);
 
       two_energy *= 2;
       total_two_energy += two_energy;
@@ -183,30 +205,30 @@ namespace psi { namespace ccdensity {
 
       two_energy = 0.0;
 
-      dpd_buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia||jb>");
-      dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIBJA");
-      two_energy += dpd_buf4_dot(&G, &C);
-      dpd_buf4_close(&G);
-      dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "Gibja");
-      two_energy += dpd_buf4_dot(&G, &C);
-      dpd_buf4_close(&G);
-      dpd_buf4_close(&C);
-      dpd_buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia|jb>");
-      dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIbJa");
-      two_energy += dpd_buf4_dot(&G, &C);
-      dpd_buf4_close(&G);
-      dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GiBjA");
-      two_energy += dpd_buf4_dot(&G, &C);
-      dpd_buf4_close(&G);
-      dpd_buf4_close(&C);
-      dpd_buf4_init(&DInts, PSIF_CC_DINTS, 0, 10, 10, 10, 10, 0, "D <ij|ab> (ib,ja)");
-      dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIbjA");
-      two_energy -= dpd_buf4_dot(&G, &DInts);
-      dpd_buf4_close(&G);
-      dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GiBJa");
-      two_energy -= dpd_buf4_dot(&G, &DInts);
-      dpd_buf4_close(&G);
-      dpd_buf4_close(&DInts);
+      global_dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia||jb>");
+      global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIBJA");
+      two_energy += global_dpd_->buf4_dot(&G, &C);
+      global_dpd_->buf4_close(&G);
+      global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "Gibja");
+      two_energy += global_dpd_->buf4_dot(&G, &C);
+      global_dpd_->buf4_close(&G);
+      global_dpd_->buf4_close(&C);
+      global_dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia|jb>");
+      global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIbJa");
+      two_energy += global_dpd_->buf4_dot(&G, &C);
+      global_dpd_->buf4_close(&G);
+      global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GiBjA");
+      two_energy += global_dpd_->buf4_dot(&G, &C);
+      global_dpd_->buf4_close(&G);
+      global_dpd_->buf4_close(&C);
+      global_dpd_->buf4_init(&DInts, PSIF_CC_DINTS, 0, 10, 10, 10, 10, 0, "D <ij|ab> (ib,ja)");
+      global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIbjA");
+      two_energy -= global_dpd_->buf4_dot(&G, &DInts);
+      global_dpd_->buf4_close(&G);
+      global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GiBJa");
+      two_energy -= global_dpd_->buf4_dot(&G, &DInts);
+      global_dpd_->buf4_close(&G);
+      global_dpd_->buf4_close(&DInts);
 
       total_two_energy += two_energy;
       fprintf(outfile, "\tIBJA energy                = %20.15f\n", two_energy);
@@ -214,31 +236,31 @@ namespace psi { namespace ccdensity {
 
       two_energy = 0.0;
 
-      dpd_buf4_init(&FInts, PSIF_CC_FINTS, 0, 10, 7, 10, 5, 1, "F <ia|bc>");
-      dpd_buf4_sort(&FInts, PSIF_CC_TMP0, qprs, 11, 7, "F(CI,AB)");
-      dpd_buf4_close(&FInts);
-      dpd_buf4_init(&FInts, PSIF_CC_TMP0, 0, 11, 7, 11, 7, 0, "F(CI,AB)");
-      dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 7, 11, 7, 0, "GCIAB");
-      two_energy -= dpd_buf4_dot(&G, &FInts);
-      dpd_buf4_close(&G);
-      dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 7, 11, 7, 0, "Gciab");
-      two_energy -= dpd_buf4_dot(&G, &FInts);
-      dpd_buf4_close(&G);
-      dpd_buf4_close(&FInts);
-      dpd_buf4_init(&FInts, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
-      dpd_buf4_sort(&FInts, PSIF_CC_TMP0, qprs, 11, 5, "F(cI,Ba)");
-      dpd_buf4_close(&FInts);
-      dpd_buf4_init(&FInts, PSIF_CC_TMP0, 0, 11, 5, 11, 5, 0, "F(cI,Ba)");
-      dpd_buf4_sort(&FInts, PSIF_CC_TMP1, pqsr, 11, 5, "F(cI,aB)");
-      dpd_buf4_close(&FInts);
-      dpd_buf4_init(&FInts, PSIF_CC_TMP1, 0, 11, 5, 11, 5, 0, "F(cI,aB)");
-      dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 5, 11, 5, 0, "GcIaB");
-      two_energy += dpd_buf4_dot(&G, &FInts);
-      dpd_buf4_close(&G);
-      dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 5, 11, 5, 0, "GCiAb");
-      two_energy += dpd_buf4_dot(&G, &FInts); 
-      dpd_buf4_close(&G);
-      dpd_buf4_close(&FInts);
+      global_dpd_->buf4_init(&FInts, PSIF_CC_FINTS, 0, 10, 7, 10, 5, 1, "F <ia|bc>");
+      global_dpd_->buf4_sort(&FInts, PSIF_CC_TMP0, qprs, 11, 7, "F(CI,AB)");
+      global_dpd_->buf4_close(&FInts);
+      global_dpd_->buf4_init(&FInts, PSIF_CC_TMP0, 0, 11, 7, 11, 7, 0, "F(CI,AB)");
+      global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 7, 11, 7, 0, "GCIAB");
+      two_energy -= global_dpd_->buf4_dot(&G, &FInts);
+      global_dpd_->buf4_close(&G);
+      global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 7, 11, 7, 0, "Gciab");
+      two_energy -= global_dpd_->buf4_dot(&G, &FInts);
+      global_dpd_->buf4_close(&G);
+      global_dpd_->buf4_close(&FInts);
+      global_dpd_->buf4_init(&FInts, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
+      global_dpd_->buf4_sort(&FInts, PSIF_CC_TMP0, qprs, 11, 5, "F(cI,Ba)");
+      global_dpd_->buf4_close(&FInts);
+      global_dpd_->buf4_init(&FInts, PSIF_CC_TMP0, 0, 11, 5, 11, 5, 0, "F(cI,Ba)");
+      global_dpd_->buf4_sort(&FInts, PSIF_CC_TMP1, pqsr, 11, 5, "F(cI,aB)");
+      global_dpd_->buf4_close(&FInts);
+      global_dpd_->buf4_init(&FInts, PSIF_CC_TMP1, 0, 11, 5, 11, 5, 0, "F(cI,aB)");
+      global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 5, 11, 5, 0, "GcIaB");
+      two_energy += global_dpd_->buf4_dot(&G, &FInts);
+      global_dpd_->buf4_close(&G);
+      global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 5, 11, 5, 0, "GCiAb");
+      two_energy += global_dpd_->buf4_dot(&G, &FInts); 
+      global_dpd_->buf4_close(&G);
+      global_dpd_->buf4_close(&FInts);
 
       two_energy *= 2;
       total_two_energy += two_energy;
@@ -247,19 +269,19 @@ namespace psi { namespace ccdensity {
 
       two_energy = 0.0;
 
-      dpd_buf4_init(&B, PSIF_CC_BINTS, 0, 7, 7, 5, 5, 1, "B <ab|cd>");
-      dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 7, 7, 7, 7, 0, "GABCD");
-      two_energy += dpd_buf4_dot(&G, &B);
-      dpd_buf4_close(&G);
-      dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 7, 7, 7, 7, 0, "Gabcd");
-      two_energy += dpd_buf4_dot(&G, &B);
-      dpd_buf4_close(&G);
-      dpd_buf4_close(&B);
-      dpd_buf4_init(&B, PSIF_CC_BINTS, 0, 5, 5, 5, 5, 0, "B <ab|cd>");
-      dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 5, 5, 5, 5, 0, "GAbCd");
-      two_energy += dpd_buf4_dot(&G, &B);
-      dpd_buf4_close(&G);
-      dpd_buf4_close(&B);
+      global_dpd_->buf4_init(&B, PSIF_CC_BINTS, 0, 7, 7, 5, 5, 1, "B <ab|cd>");
+      global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 7, 7, 7, 7, 0, "GABCD");
+      two_energy += global_dpd_->buf4_dot(&G, &B);
+      global_dpd_->buf4_close(&G);
+      global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 7, 7, 7, 7, 0, "Gabcd");
+      two_energy += global_dpd_->buf4_dot(&G, &B);
+      global_dpd_->buf4_close(&G);
+      global_dpd_->buf4_close(&B);
+      global_dpd_->buf4_init(&B, PSIF_CC_BINTS, 0, 5, 5, 5, 5, 0, "B <ab|cd>");
+      global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 5, 5, 5, 5, 0, "GAbCd");
+      two_energy += global_dpd_->buf4_dot(&G, &B);
+      global_dpd_->buf4_close(&G);
+      global_dpd_->buf4_close(&B);
 
       total_two_energy += two_energy;
       fprintf(outfile, "\tABCD energy                = %20.15f\n", two_energy);

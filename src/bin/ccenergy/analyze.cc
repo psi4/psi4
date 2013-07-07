@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup CCENERGY
     \brief Enter brief description of file here 
@@ -41,9 +63,9 @@ void analyze(void)
   nocc = moinfo.occpi[0];
   nso = moinfo.nso;
 
-  dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-  dpd_buf4_mat_irrep_init(&T2, 0);
-  dpd_buf4_mat_irrep_rd(&T2, 0);
+  global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  global_dpd_->buf4_mat_irrep_init(&T2, 0);
+  global_dpd_->buf4_mat_irrep_rd(&T2, 0);
   T2trans = block_matrix(nocc*nocc, nso*nso);
   tmp = block_matrix(nvir, nso);
   tot1 = 0;
@@ -73,8 +95,8 @@ void analyze(void)
       }
     }
   }
-  dpd_buf4_mat_irrep_close(&T2, 0);
-  dpd_buf4_close(&T2);
+  global_dpd_->buf4_mat_irrep_close(&T2, 0);
+  global_dpd_->buf4_close(&T2);
   free_block(tmp);
   free_block(T2trans);
 
@@ -97,10 +119,10 @@ void analyze(void)
   ffile(&efile, (char *) "t1amps.dat", 1);
   amp_array = init_array(num_div);
 
-  dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
-  dpd_file2_print(&T1, outfile);
-  dpd_file2_mat_init(&T1);
-  dpd_file2_mat_rd(&T1);
+  global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
+  global_dpd_->file2_print(&T1, outfile);
+  global_dpd_->file2_mat_init(&T1);
+  global_dpd_->file2_mat_rd(&T1);
   /*
   T1trans = block_matrix(nocc, nso);
 
@@ -131,8 +153,8 @@ void analyze(void)
   }
   /*  free_block(T1trans); */
 
-  dpd_file2_mat_close(&T1);
-  dpd_file2_close(&T1);
+  global_dpd_->file2_mat_close(&T1);
+  global_dpd_->file2_close(&T1);
 
   value2 = 0;
   for (i = num_div-1; i >= 0; i--) {

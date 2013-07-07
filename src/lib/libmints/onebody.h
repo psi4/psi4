@@ -1,9 +1,33 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #ifndef _psi_src_lib_libmints_onebody_h_
 #define _psi_src_lib_libmints_onebody_h_
 
 #include <vector>
 #include "typedefs.h"
 #include "vector3.h"
+#include <boost/python/list.hpp>
+#include "exception.h"
 
 namespace psi {
 
@@ -39,6 +63,8 @@ protected:
 
     int nchunk_;
 
+    int buffer_size_;
+
     OneBodyAOInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2, int deriv=0);
 
     virtual void compute_pair(const GaussianShell& s1, const GaussianShell& s2) = 0;
@@ -69,6 +95,15 @@ public:
 
     /// Buffer where the integrals are placed.
     const double *buffer() const;
+
+    /// Get a python list version of the current buffer
+    const boost::python::list py_buffer() const {
+        boost::python::list ret_val;
+        //TODO: Just change over the pointer rather than copying, or at least do a memcopy
+        for(int i = 0; i < buffer_size_; ++i)
+            ret_val.append(buffer_[i]);
+        return ret_val;
+    }
 
     /// Compute the integrals between basis function in the given shell pair.
     void compute_shell(int, int);
