@@ -756,6 +756,7 @@ void EFP::set_options() {
 
     std::string elst_damping = options_.get_str("EFP_ELST_DAMPING");
     std::string disp_damping = options_.get_str("EFP_DISP_DAMPING");
+    std::string pol_damping = options_.get_str("EFP_POL_DAMPING");
 
     if (elst_damping == "SCREEN")
         opts.elec_damp = EFP_ELEC_DAMP_SCREEN;
@@ -770,6 +771,11 @@ void EFP::set_options() {
         opts.disp_damp = EFP_DISP_DAMP_OVERLAP;
     else if (disp_damping == "OFF")
         opts.disp_damp = EFP_DISP_DAMP_OFF;
+
+    if (pol_damping == "TT")
+        opts.pol_damp = EFP_POL_DAMP_TT;
+    else if (pol_damping == "OFF")
+        opts.pol_damp = EFP_POL_DAMP_OFF;
 
     enum efp_result res;
     if (res = efp_set_opts(efp_, &opts))
