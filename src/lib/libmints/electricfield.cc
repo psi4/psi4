@@ -141,7 +141,7 @@ void ElectricFieldInt::compute_pair(const GaussianShell& s1,
     AB2 += (A[1] - B[1]) * (A[1] - B[1]);
     AB2 += (A[2] - B[2]) * (A[2] - B[2]);
 
-    memset(buffer_, 0, 3 * natom_ * size * sizeof(double));
+    memset(buffer_, 0, 3 * size * sizeof(double));
 
     double ***ex = efield_recur_.vx();
     double ***ey = efield_recur_.vy();
@@ -251,7 +251,7 @@ void ElectricFieldInt::compute_pair_deriv1(const GaussianShell& s1,
     AB2 += (A[1] - B[1]) * (A[1] - B[1]);
     AB2 += (A[2] - B[2]) * (A[2] - B[2]);
 
-    memset(buffer_, 0, 6 * natom_ * size * sizeof(double));
+    memset(buffer_, 0, 6  * size * sizeof(double));
 
     double ***exx = efield_recur_.vxx();
     double ***exy = efield_recur_.vxy();
