@@ -205,7 +205,7 @@ std::vector< SharedMatrix > atomic_displacements(Options &options) {
 
   // This is the size in bohr because geometry is in bohr at this point
   // This equals 0.1 angstrom displacement
-  double disp_size = 0.1 / pc_bohr2angstroms;
+  double disp_size = options.get_double("DISP_SIZE");
 
   int natom = mol->natom();
 
