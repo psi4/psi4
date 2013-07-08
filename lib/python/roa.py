@@ -36,13 +36,14 @@ def run_roa(name, **kwargs):
         synthesize_opt_rot(db,opt_rot_list)
         synthesize_dip_quad_polar(db,dip_quad_polar_list)
         # Compute Scattering
-    #    roa_scatterize(dip_polar_list, opt_rot_list, dip_quad_polar_list)
+    	# Run new function (scatter.cc)
+	print('Running scatter function')
+	step = psi4.get_local_option('FINDIF','DISP_SIZE')
+    	psi4.scatter(step, dip_polar_list, opt_rot_list, dip_quad_polar_list)
 
         #psi4.print_list(dip_polar_list)
         #print(dip_quad_polar_list)
     db.close()
-    # Run new function (scatter.cc)
-    psi4.scatter(dip_polar_list, opt_rot_list, dip_quad_polar_list)
 
 def initialize_database(database):
     database['inputs_generated'] = False
