@@ -181,7 +181,7 @@ void ElectricFieldInt::compute_pair(const GaussianShell& s1,
             PC[2] = P[2] - C[2];
 
             // Get recursive
-            efield_recur_.compute(PA, PB, PC, gamma, am1, am2);
+            efield_recur_.compute(PA, PB, PC, gamma, am1+1, am2+1);
 
             // Gather contributions.
             ao12 = 0;
@@ -251,7 +251,7 @@ void ElectricFieldInt::compute_pair_deriv1(const GaussianShell& s1,
     AB2 += (A[1] - B[1]) * (A[1] - B[1]);
     AB2 += (A[2] - B[2]) * (A[2] - B[2]);
 
-    memset(buffer_, 0, 6  * size * sizeof(double));
+    memset(buffer_, 0, 6 * size * sizeof(double));
 
     double ***exx = efield_recur_.vxx();
     double ***exy = efield_recur_.vxy();
@@ -294,7 +294,7 @@ void ElectricFieldInt::compute_pair_deriv1(const GaussianShell& s1,
             PC[2] = P[2] - C[2];
 
             // Get recursive
-            efield_recur_.compute(PA, PB, PC, gamma, am1, am2);
+            efield_recur_.compute(PA, PB, PC, gamma, am1+2, am2+2);
 
             // Gather contributions.
             ao12 = 0;
