@@ -91,6 +91,8 @@ ADC::rhf_differentiate_omega(int irrep, int root)
     
     global_dpd_->file2_close(&S);
     global_dpd_->file2_close(&D);
+
+    //std::cout << "DIFF:: " << dot << std::endl;
         
     return dot;
 }
