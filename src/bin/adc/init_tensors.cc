@@ -160,6 +160,12 @@ ADC::rhf_init_tensors()
     global_dpd_->buf4_close(&V);
     global_dpd_->buf4_init(&V, PSIF_ADC, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "tilde K1234");
     sq_norm = 1 + global_dpd_->buf4_dot(&V, &K);
+
+#if DEBUG_
+    fprintf(outfile, ">> In init_tensor <<\n");
+    global_dpd_->buf4_print(&K, outfile, 1);
+#endif
+
     global_dpd_->buf4_close(&K);
     global_dpd_->buf4_close(&V);
     
@@ -168,7 +174,7 @@ ADC::rhf_init_tensors()
     fprintf(outfile, "\t[Squared-norm of PR-MP1 wavefunction = %10.7f]\n\n", sq_norm);
     fflush(outfile);
     
-    if(options_.get_bool("PR")) energy = ePR2;
+    if(do_pr) energy = ePR2;
     
     // Reordering each ERIs other than (OO|VV) type from Mulliken to Dirac notation 
     // for convenience of the evaluation of the sigma tensor
