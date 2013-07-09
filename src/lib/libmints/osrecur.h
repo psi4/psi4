@@ -207,9 +207,10 @@ public:
 class ObaraSaikaTwoCenterElectricField : public ObaraSaikaTwoCenterVIRecursion
 {
 protected:
-    double ***ex_;
-    double ***ey_;
-    double ***ez_;
+    double ***q_;
+    double ***x_;
+    double ***y_;
+    double ***z_;
 
 private:
     // No default constructor
@@ -221,9 +222,10 @@ public:
     ObaraSaikaTwoCenterElectricField(int max_am1, int max_am2);
     virtual ~ObaraSaikaTwoCenterElectricField();
 
-    double ***ex() const { return ex_; }
-    double ***ey() const { return ey_; }
-    double ***ez() const { return ez_; }
+    // We could also add the getter for the q_ (potential ints here)
+    double ***x() const { return x_; }
+    double ***y() const { return y_; }
+    double ***z() const { return z_; }
 
     virtual void compute(double PA[3], double PB[3], double PC[3], double zeta, int am1, int am2);
 };
@@ -252,9 +254,9 @@ public:
     ObaraSaikaTwoCenterElectricFieldGradient(int max_am1, int max_am2);
     virtual ~ObaraSaikaTwoCenterElectricFieldGradient();
 
-    double ***ex() const { return ex_; }
-    double ***ey() const { return ey_; }
-    double ***ez() const { return ez_; }
+    double ***ex() const { return x_; }
+    double ***ey() const { return y_; }
+    double ***ez() const { return z_; }
 
     virtual void compute(double PA[3], double PB[3], double PC[3], double zeta, int am1, int am2);
 };
