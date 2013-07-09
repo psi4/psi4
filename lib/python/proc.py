@@ -921,8 +921,8 @@ def run_ccenergy(name, **kwargs):
     psi4.ccenergy()
 
     if (lowername == 'ccsd(at)' or lowername == 'a-ccsd(t)'):
-	psi4.cchbar()
-	psi4.cclambda()
+        psi4.cchbar()
+        psi4.cclambda()
 
     optstash.restore()
 
@@ -1439,7 +1439,7 @@ def run_detci(name, **kwargs):
         psi4.set_local_option('TRANSQT2', 'WFN', 'ZAPTN')
         psi4.set_local_option('DETCI', 'WFN', 'ZAPTN')
         level = kwargs['level']
-        maxnvect = (level + 1) / 2 + (level + 1) % 2
+        maxnvect = int((level + 1) / 2) + (level + 1) % 2
         psi4.set_local_option('DETCI', 'MAX_NUM_VECS', maxnvect)
         if ((level + 1) % 2):
             psi4.set_local_option('DETCI', 'MPN_ORDER_SAVE', 2)
@@ -1451,7 +1451,7 @@ def run_detci(name, **kwargs):
         psi4.set_local_option('DETCI', 'MPN', 'TRUE')
 
         level = kwargs['level']
-        maxnvect = (level + 1) / 2 + (level + 1) % 2
+        maxnvect = int((level + 1) / 2) + (level + 1) % 2
         psi4.set_local_option('DETCI', 'MAX_NUM_VECS', maxnvect)
         if ((level + 1) % 2):
             psi4.set_local_option('DETCI', 'MPN_ORDER_SAVE', 2)
