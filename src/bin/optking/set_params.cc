@@ -155,6 +155,11 @@ void set_params(void)
     else if (s == "POWELL") Opt_params.H_update = OPT_PARAMS::POWELL;
     else if (s == "BOFILL") Opt_params.H_update = OPT_PARAMS::BOFILL;
 
+// Set Bofill as default for TS optimizations
+    if (Opt_params.opt_type == OPT_PARAMS::TS)
+      if (!options["HESS_UPDATE"].has_changed())
+        Opt_params.H_update = OPT_PARAMS::BOFILL;
+
 //  How many previous steps' data to use in Hessian update; 0=use them all ; {integer}
 //  Opt_params.H_update_use_last = 6;
     Opt_params.H_update_use_last = options.get_int("HESS_UPDATE_USE_LAST");
