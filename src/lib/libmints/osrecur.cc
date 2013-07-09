@@ -173,27 +173,27 @@ ObaraSaikaTwoCenterEFPRecursion::ObaraSaikaTwoCenterEFPRecursion(int max_am1, in
 
     size_ = max_am1 > max_am2 ? max_am1 : max_am2;
     size_ += 1;
-    size_ = (size_-1)*size_*(size_+1)+3;
+    size_ = (size_-1)*size_*(size_+1)+1;
     q_   = init_box(size_, size_, max_am1_ + max_am2_ + 4);
-    x_   = init_box(size_, size_, max_am1_ + max_am2_ + 4);
-    y_   = init_box(size_, size_, max_am1_ + max_am2_ + 4);
-    z_   = init_box(size_, size_, max_am1_ + max_am2_ + 4);
-    xx_  = init_box(size_, size_, max_am1_ + max_am2_ + 4);
-    yy_  = init_box(size_, size_, max_am1_ + max_am2_ + 4);
-    zz_  = init_box(size_, size_, max_am1_ + max_am2_ + 4);
-    xy_  = init_box(size_, size_, max_am1_ + max_am2_ + 4);
-    xz_  = init_box(size_, size_, max_am1_ + max_am2_ + 4);
-    yz_  = init_box(size_, size_, max_am1_ + max_am2_ + 4);
-    xxx_ = init_box(size_, size_, max_am1_ + max_am2_ + 4);
-    yyy_ = init_box(size_, size_, max_am1_ + max_am2_ + 4);
-    zzz_ = init_box(size_, size_, max_am1_ + max_am2_ + 4);
-    xxy_ = init_box(size_, size_, max_am1_ + max_am2_ + 4);
-    xxz_ = init_box(size_, size_, max_am1_ + max_am2_ + 4);
-    xyy_ = init_box(size_, size_, max_am1_ + max_am2_ + 4);
-    yyz_ = init_box(size_, size_, max_am1_ + max_am2_ + 4);
-    xzz_ = init_box(size_, size_, max_am1_ + max_am2_ + 4);
-    yzz_ = init_box(size_, size_, max_am1_ + max_am2_ + 4);
-    xyz_ = init_box(size_, size_, max_am1_ + max_am2_ + 4);
+    x_   = init_box(size_, size_, max_am1_ + max_am2_ + 3);
+    y_   = init_box(size_, size_, max_am1_ + max_am2_ + 3);
+    z_   = init_box(size_, size_, max_am1_ + max_am2_ + 3);
+    xx_  = init_box(size_, size_, max_am1_ + max_am2_ + 2);
+    yy_  = init_box(size_, size_, max_am1_ + max_am2_ + 2);
+    zz_  = init_box(size_, size_, max_am1_ + max_am2_ + 2);
+    xy_  = init_box(size_, size_, max_am1_ + max_am2_ + 2);
+    xz_  = init_box(size_, size_, max_am1_ + max_am2_ + 2);
+    yz_  = init_box(size_, size_, max_am1_ + max_am2_ + 2);
+    xxx_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    yyy_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    zzz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    xxy_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    xxz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    xyy_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    yyz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    xzz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    yzz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    xyz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
 }
 
 ObaraSaikaTwoCenterEFPRecursion::~ObaraSaikaTwoCenterEFPRecursion()
