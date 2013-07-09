@@ -496,19 +496,32 @@ void EFP::Compute() {
         }
         fprintf(outfile, "\n");
 
+//        torque_ = smgrad;
+//        psi::Process::environment.set_efp_torque(smgrad);
         psi::Process::environment.set_gradient(smgrad);
         //smgrad->print();
     }
 
     fprintf(outfile, "  ==> Energetics <==\n\n");
 
-    fprintf(outfile, "  Electrostatics Energy = %24.16f [H] %s\n", energy.electrostatic, elst_enabled_ ? "*" : "");
-    fprintf(outfile, "  Polarization Energy =   %24.16f [H] %s\n", energy.polarization, pol_enabled_ ? "*" : "");
-    fprintf(outfile, "  Dispersion Energy =     %24.16f [H] %s\n", energy.dispersion, disp_enabled_ ? "*" : "");
-    fprintf(outfile, "  Exchange Energy =       %24.16f [H] %s\n", energy.exchange_repulsion, exch_enabled_ ? "*" : "");
-    fprintf(outfile, "  Total Energy =          %24.16f [H] %s\n", energy.total, "*");
+    fprintf(outfile, "  EFP-EFP Electrostatics Energy = %24.16f [H] %s\n", 
+        energy.electrostatic + energy.charge_penetration, elst_enabled_ ? "*" : "");
+    if (do_qm_) {
+        fprintf(outfile, "  QM Nuc-EFP Electrostatics Energy = %24.16f [H] %s\n", 
+            energy.electrostatic_point_charges, elst_enabled_ ? "*" : "");
+        fprintf(outfile, "  Total Electrostatics Energy = %24.16f [H] %s\n", 
+            energy.electrostatic + energy.charge_penetration + energy.electrostatic_point_charges, elst_enabled_ ? "*" : "");
+    }
+    fprintf(outfile, "  %7s Polarization Energy =   %24.16f [H] %s\n", 
+        do_qm_ ? "" : "EFP-EFP", energy.polarization, pol_enabled_ ? "*" : "");
+    fprintf(outfile, "  EFP-EFP Dispersion Energy =     %24.16f [H] %s\n", 
+        energy.dispersion, disp_enabled_ ? "*" : "");
+    fprintf(outfile, "  EFP-EFP Exchange Energy =       %24.16f [H] %s\n", 
+        energy.exchange_repulsion, exch_enabled_ ? "*" : "");
+    fprintf(outfile, "  Total Energy =          %24.16f [H] %s\n", 
+        energy.total, "*");
 
-    Process::environment.globals["EFP ELST ENERGY"] = energy.electrostatic;
+    Process::environment.globals["EFP ELST ENERGY"] = energy.electrostatic + energy.charge_penetration + energy.electrostatic_point_charges;
     Process::environment.globals["EFP POL ENERGY"] = energy.polarization;
     Process::environment.globals["EFP DISP ENERGY"] = energy.dispersion;
     Process::environment.globals["EFP EXCH ENERGY"] = energy.exchange_repulsion;
