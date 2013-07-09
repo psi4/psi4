@@ -1,6 +1,6 @@
-# generated automatically by aclocal 1.12.3 -*- Autoconf -*-
+# generated automatically by aclocal 1.14 -*- Autoconf -*-
 
-# Copyright (C) 1996-2012 Free Software Foundation, Inc.
+# Copyright (C) 1996-2013 Free Software Foundation, Inc.
 
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -11,13 +11,11 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
+m4_ifndef([AC_CONFIG_MACRO_DIRS], [m4_defun([_AM_CONFIG_MACRO_DIRS], [])m4_defun([AC_CONFIG_MACRO_DIRS], [_AM_CONFIG_MACRO_DIRS($@)])])
 m4_include([m4/ac_prog_latex.m4])
 m4_include([m4/ac_prog_pdflatex.m4])
 m4_include([m4/ac_prog_sphinx.m4])
-m4_include([m4/acx_elemental.m4])
-m4_include([m4/acx_madness.m4])
 m4_include([m4/acx_mpi.m4])
-m4_include([m4/acx_scalapack.m4])
 m4_include([m4/ax_boost_base.m4])
 m4_include([m4/ax_boost_filesystem.m4])
 m4_include([m4/ax_boost_python.m4])
