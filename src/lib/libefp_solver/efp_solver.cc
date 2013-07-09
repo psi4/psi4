@@ -382,21 +382,21 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
     }
 
     // induced dipole contributions to Fock matrix
-//    xyz_p  = xyz_id->pointer();
-//    mult_p = id->pointer();
-//    for (int n = 0; n < n_id; n++) {
-//        for(int i=0; i < 20; ++i){
-//           mats[i]->zero();
-//        }
-//        Vector3 coords(xyz_p[n*3],xyz_p[n*3+1],xyz_p[n*3+2]);
-//        efp_ints->set_origin(coords);
-//        efp_ints->compute(mats);
-//        // only dealing with dipoles here:
-//        for(int i=0; i < 3; ++i){
-//            mats[i+1]->scale( -prefacs[i+1] * mult_p[3*n+i] );
-//            V->add(mats[i]);
-//        }
-//    }
+    xyz_p  = xyz_id->pointer();
+    mult_p = id->pointer();
+    for (int n = 0; n < n_id; n++) {
+        for(int i=0; i < 20; ++i){
+           mats[i]->zero();
+        }
+        Vector3 coords(xyz_p[n*3],xyz_p[n*3+1],xyz_p[n*3+2]);
+        efp_ints->set_origin(coords);
+        efp_ints->compute(mats);
+        // only dealing with dipoles here:
+        for(int i=0; i < 3; ++i){
+            mats[i+1]->scale( -prefacs[i+1] * mult_p[3*n+i] );
+            V->add(mats[i]);
+        }
+    }
 
     V->print();
     return V;
@@ -719,12 +719,48 @@ void EFP::print_out() {
 }
 
 
-efp_result field_callback_function(int n_pt, const double *xyz, double *field, void *user_data) {
-    memset((void*)field,'\0',3*n_pt*sizeof(double));
-    for (int i = 0; i < n_pt; i++) {
-        double x = xyz[3*i];
-        double y = xyz[3*i+1];
-        double z = xyz[3*i+2];
+efp_result electron_density_field_fn(int n_pt, const double *xyz, double *field, void *user_data) {
+    // These should all be members of the SCF class in the final implementation.
+    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
+    boost::shared_ptr<Molecule> mol = wfn->molecule();
+    boost::shared_ptr<BasisSet> basis = wfn->basisset();
+    boost::shared_ptr<OneBodyAOInt> field_ints(wfn->integral()->electric_field());
+
+    int nbf = basis->nbf();
+    std::vector<SharedMatrix> intmats;
+    intmats.push_back(SharedMatrix(new Matrix("Ex integrals", nbf, nbf)));
+    intmats.push_back(SharedMatrix(new Matrix("Ey integrals", nbf, nbf)));
+    intmats.push_back(SharedMatrix(new Matrix("Ez integrals", nbf, nbf)));
+
+    SharedMatrix Da = wfn->Da_subset("AO");
+    SharedMatrix Db;
+    if(!wfn->same_a_b_orbs())
+        Db = wfn->Db_subset("AO");
+
+    for(int n = 0; n < n_pt; ++n){
+        field_ints->set_origin(Vector3(xyz[3*n], xyz[3*n+1],xyz[3*n+2]));
+        for(int m = 0; m < 3; ++m)
+            intmats[m]->zero();
+        field_ints->compute(intmats);
+        double Ex = Da->vector_dot(intmats[0]);
+        double Ey = Da->vector_dot(intmats[1]);
+        double Ez = Da->vector_dot(intmats[2]);
+        if(wfn->same_a_b_dens()){
+            Ex *= 2.0;
+            Ey *= 2.0;
+            Ez *= 2.0;
+        }else{
+            Ex += Db->vector_dot(intmats[0]);
+            Ey += Db->vector_dot(intmats[1]);
+            Ez += Db->vector_dot(intmats[2]);
+        }
+        Vector3 nucterms = ElectricFieldInt::nuclear_contribution(field_ints->origin(), mol);
+        Ex += nucterms[0];
+        Ey += nucterms[1];
+        Ez += nucterms[2];
+        field[3*n]   = Ex;
+        field[3*n+1] = Ey;
+        field[3*n+2] = Ez;
     }
     return EFP_RESULT_SUCCESS;
 }
@@ -813,7 +849,7 @@ void EFP::set_options() {
     fprintf(outfile, "\n");
 
     // sets call-back function to provide electric field from electrons
-    efp_set_electron_density_field_fn( efp_, field_callback_function );
+    efp_set_electron_density_field_fn( efp_, electron_density_field_fn );
 
 }
 
