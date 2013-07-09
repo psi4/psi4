@@ -394,7 +394,7 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
         // only dealing with dipoles here:
         for(int i=0; i < 3; ++i){
             mats[i+1]->scale( -prefacs[i+1] * mult_p[3*n+i] );
-            V->add(mats[i]);
+            V->add(mats[i+1]);
         }
     }
 
@@ -754,10 +754,10 @@ efp_result electron_density_field_fn(int n_pt, const double *xyz, double *field,
             Ey += Db->vector_dot(intmats[1]);
             Ez += Db->vector_dot(intmats[2]);
         }
-        Vector3 nucterms = ElectricFieldInt::nuclear_contribution(field_ints->origin(), mol);
-        Ex += nucterms[0];
-        Ey += nucterms[1];
-        Ez += nucterms[2];
+        // Vector3 nucterms = ElectricFieldInt::nuclear_contribution(field_ints->origin(), mol);
+        // Ex += nucterms[0];
+        // Ey += nucterms[1];
+        // Ez += nucterms[2];
         field[3*n]   = Ex;
         field[3*n+1] = Ey;
         field[3*n+2] = Ez;
