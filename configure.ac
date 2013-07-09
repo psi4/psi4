@@ -1079,6 +1079,8 @@ AC_CONFIG_FILES([
           tests/libefp/efp2/Makefile
           tests/libefp/efp3/Makefile
           tests/libefp/efp6/Makefile
+          tests/libefp/qc-efpefp-sp1/Makefile
+          tests/libefp/qc-scfefp-sp1/Makefile
           tests/pywrap-opt-sowreap/Makefile
           tests/pywrap-freq-e-sowreap/Makefile
           tests/pywrap-basis/Makefile

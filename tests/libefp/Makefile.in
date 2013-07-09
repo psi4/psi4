@@ -1,11 +1,11 @@
 
 .PHONY: tests quicktests cc_tests clean quicktestsclean longtests longtestsclean
 
-efpefp_sp_subdirs = efp1 efp2
+efpefp_sp_subdirs = efp1 efp2 qc-efpefp-sp1
 
 efpefp_opt_subdirs = efp3
 
-efpscf_sp_subdirs =
+efpscf_sp_subdirs = qc-scfefp-sp1
 
 efpscf_opt_subdirs =
 
