@@ -1,0 +1,59 @@
+#! EFP on mixed QM (water) and EFP (water + 2 * ammonia) system.
+#! An EFP-only calc performed first to test vales against q-chem.
+
+memory 200 mb
+
+molecule qmefp {
+
+# QM fragment
+0 1
+O    0                  0   0.22434930339977222
+H   -1.423343188634522  0  -0.89739424378197596
+H    1.423343188634522  0  -0.89739424378197596
+
+# EFP as EFP fragments
+--
+efp h2o_l -2.12417561  1.22597097 -0.95332054 -2.902133 1.734999 -1.953647
+--
+efp NH3_l  1.04358758  1.90477190  2.88279926 -1.105309 2.033306 -1.488582
+--
+efp NH3_l -4.16795656 -0.98129149 -1.27785935  2.526442 1.658262 -2.742084
+
+
+# EFP as QM fragments
+#--
+#     O  -2.180061   1.208365  -0.976550
+#     H  -1.980913   1.409865  -0.080218
+#     H  -1.380492   1.321499  -1.457761
+#--
+#     N   1.094112   1.930150   2.910988
+#     H   0.271685   2.461657   3.109157
+#     H   0.942096   0.994975   3.227998
+#     H   1.214983   1.905068   1.919566
+#--
+#     N  -4.204276  -1.032690  -1.272341
+#     H  -4.047415  -0.610467  -0.380557
+#     H  -4.636175  -0.353779  -1.864539
+#     H  -3.315648  -1.265474  -1.665164
+}
+
+set basis 6-31g*
+set scf_type cd
+set efp_disp_damping tt
+
+energy('efp')
+
+compare_values(4.8579195608, qmefp.nuclear_repulsion_energy(), 6, 'QM NRE')
+compare_values(-0.000490133271, get_variable('efp elst energy'), 6, 'EFP-EFP Elst')
+compare_values(-0.001598697924, get_variable('efp disp energy'), 6, 'EFP-EFP Disp')
+
+clean()
+
+energy('scfefp')
+
+compare_values(0.203988551760, get_variable('efp elst energy'), 6, 'SCF-EFP Elst')
+compare_values(0.005680845705, get_variable('efp exch energy'), 6, 'SCF-EFP Exch')
+compare_values(-0.048469356121, get_variable('efp pol energy'), 6, 'SCF-EFP Pol')
+compare_values(-0.001598697924, get_variable('efp disp energy'), 6, 'SCF-EFP Disp')
+compare_values(-75.6694104096, get_variable('scf total energy'), 6, 'SCF-EFP SCF')
+
