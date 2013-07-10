@@ -1007,6 +1007,25 @@ SharedMatrix py_psi_get_gradient()
     }
 }
 
+void py_psi_set_efp_torque(SharedMatrix torq)
+{
+    if (Process::environment.get_efp()->get_frag_count() > 0) {
+        Process::environment.get_efp()->set_torque(torq);
+    } else {
+        Process::environment.set_efp_torque(torq);
+    }
+}
+
+SharedMatrix py_psi_get_efp_torque()
+{
+    if (Process::environment.get_efp()->get_frag_count() > 0) {
+        boost::shared_ptr<psi::efp::EFP> efp = Process::environment.get_efp();
+        return efp->torque();
+    } else {
+        return Process::environment.efp_torque();
+    }
+}
+
 void py_psi_set_frequencies(boost::shared_ptr<Vector> freq)
 {
     if (Process::environment.wavefunction()) {
@@ -1251,6 +1270,8 @@ BOOST_PYTHON_MODULE(psi4)
     def("get_active_efp", &py_psi_get_active_efp, "Returns the currently active EFP object.");
     def("get_gradient", py_psi_get_gradient, "Returns the most recently computed gradient, as a N by 3 Matrix object.");
     def("set_gradient", py_psi_set_gradient, "Assigns the global gradient to the values stored in the N by 3 Matrix argument.");
+    def("get_efp_torque", py_psi_get_efp_torque, "Returns the most recently computed gradient for the EFP portion, as a Nefp by 6 Matrix object.");
+    def("set_efp_torque", py_psi_set_efp_torque, "Assigns the global EFP gradient to the values stored in the Nefp by 6 Matrix argument.");
     def("get_frequencies", py_psi_get_frequencies, "Returns the most recently computed frequencies, as a 3N-6 Vector object.");
     def("set_frequencies", py_psi_set_frequencies, "Assigns the global frequencies to the values stored in the 3N-6 Vector argument.");
     def("set_memory", py_psi_set_memory, "Sets the memory available to Psi (in bytes).");

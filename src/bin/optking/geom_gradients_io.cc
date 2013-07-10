@@ -99,12 +99,22 @@ void MOLECULE::read_geom_grad(void) {
   using namespace psi;
 
   SharedMatrix pgradient;
-  //if (g_natom() > 0) {
+
+  // QM
+  if (nfrag > 0) {
     if (psi::Process::environment.wavefunction())
       pgradient = psi::Process::environment.wavefunction()->gradient();
     else
       pgradient = psi::Process::environment.gradient();
-  //}
+  }
+
+  // EFP
+  if (EFPfrag > 0) {
+    if (psi::Process::environment.get_efp()->get_frag_count() > 0)
+      pgradient = psi::Process::environment.get_efp()->torque();
+    else
+      pgradient = psi::Process::environment.efp_torque();
+  }
 
   SharedMatrix grad = pgradient->clone();
   grad->print_out();
