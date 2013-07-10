@@ -504,21 +504,22 @@ void EFP::Compute() {
 
     fprintf(outfile, "  ==> Energetics <==\n\n");
 
-    fprintf(outfile, "  EFP-EFP Electrostatics Energy = %24.16f [H] %s\n", 
+    fprintf(outfile, "  EFP/EFP Electrostatics Energy = %20.12f [H] %s\n", 
         energy.electrostatic + energy.charge_penetration, elst_enabled_ ? "*" : "");
     if (do_qm_) {
-        fprintf(outfile, "  QM Nuc-EFP Electrostatics Energy = %24.16f [H] %s\n", 
-            energy.electrostatic_point_charges, elst_enabled_ ? "*" : "");
-        fprintf(outfile, "  Total Electrostatics Energy = %24.16f [H] %s\n", 
-            energy.electrostatic + energy.charge_penetration + energy.electrostatic_point_charges, elst_enabled_ ? "*" : "");
+        fprintf(outfile, "  QM-Nuc/EFP Electrostatics Energy = %20.12f [H] %s\n", 
+            energy.electrostatic_point_charges, qm_elst_enabled_ ? "*" : "");
+        fprintf(outfile, "  Total Electrostatics Energy = %20.12f [H] %s\n", 
+            energy.electrostatic + energy.charge_penetration + energy.electrostatic_point_charges, 
+            (elst_enabled_ || qm_elst_enabled_) ? "*" : "");
     }
-    fprintf(outfile, "  %7s Polarization Energy =   %24.16f [H] %s\n", 
-        do_qm_ ? "" : "EFP-EFP", energy.polarization, pol_enabled_ ? "*" : "");
-    fprintf(outfile, "  EFP-EFP Dispersion Energy =     %24.16f [H] %s\n", 
+    fprintf(outfile, "  %7s Polarization Energy =   %20.12f [H] %s\n", do_qm_ ? "" : "EFP/EFP", 
+        energy.polarization, pol_enabled_ ? "*" : "");
+    fprintf(outfile, "  EFP/EFP Dispersion Energy =     %20.12f [H] %s\n", 
         energy.dispersion, disp_enabled_ ? "*" : "");
-    fprintf(outfile, "  EFP-EFP Exchange Energy =       %24.16f [H] %s\n", 
+    fprintf(outfile, "  EFP/EFP Exchange Energy =       %20.12f [H] %s\n", 
         energy.exchange_repulsion, exch_enabled_ ? "*" : "");
-    fprintf(outfile, "  Total Energy =          %24.16f [H] %s\n", 
+    fprintf(outfile, "  Total Energy =                  %20.12f [H] %s\n", 
         energy.total, "*");
 
     Process::environment.globals["EFP ELST ENERGY"] = energy.electrostatic + energy.charge_penetration + energy.electrostatic_point_charges;
@@ -705,17 +706,35 @@ std::vector<std::string> EFP::get_frag_atom_label(int frag_idx) {
  */
 void EFP::print_out() {
 
-    fprintf(outfile, "  Number of efp fragments: %12d\n", nfrag_);
-    fprintf(outfile, "  Electrostatics enabled:  %12d\n", elst_enabled_);
-    fprintf(outfile, "  Polarization enabled:    %12d\n", pol_enabled_);
-    fprintf(outfile, "  Dispersion enabled:      %12d\n", disp_enabled_);
-    fprintf(outfile, "  Exchange enabled:        %12d\n", exch_enabled_);
-    fprintf(outfile, "  Gradient enabled:        %12d\n", do_grad_);
-    fprintf(outfile, "  QM/EFP enabled:          %12d\n", do_qm_);
-    fprintf(outfile, "\n");
+    fprintf(outfile, "  ==> EFP/EFP Setup <==\n\n");
+    fprintf(outfile, "  Number of EFP fragments: %12d\n", nfrag_);
+    fprintf(outfile, "  Electrostatics enabled?: %12s\n", elst_enabled_ ? "true" : "false");
+    fprintf(outfile, "  Polarization enabled?:   %12s\n", pol_enabled_ ? "true" : "false");
+    fprintf(outfile, "  Dispersion enabled?:     %12s\n", disp_enabled_ ? "true" : "false");
+    fprintf(outfile, "  Exchange enabled?:       %12s\n", exch_enabled_ ? "true" : "false");
+    if (elst_enabled_)
+        fprintf(outfile, "  Electrostatics damping:  %12s\n", elst_damping_.c_str());
+    if (pol_enabled_)
+        fprintf(outfile, "  Polarization damping:    %12s\n", pol_damping_.c_str());
+    if (disp_enabled_)
+        fprintf(outfile, "  Dispersion damping:      %12s\n", disp_damping_.c_str());
+    fprintf(outfile, "  Gradient enabled?:       %12s\n", do_grad_ ? "true" : "false");
+
+    if (do_qm_) {
+        fprintf(outfile, "\n  ==> QM/EFP Setup <==\n\n");
+        fprintf(outfile, "  Number of QM fragments:  %12d\n", molecule_->nfragments());
+        fprintf(outfile, "  Electrostatics enabled?: %12s\n", qm_elst_enabled_ ? "true" : "false");
+        fprintf(outfile, "  Polarization enabled?:   %12s\n", qm_pol_enabled_ ? "true" : "false");
+        fprintf(outfile, "  Dispersion enabled?:     %12s\n", "undefined");
+        fprintf(outfile, "  Exchange enabled?:       %12s\n", "undefined");
+    }
 
     print_efp_geometry();
-    //molecule_->print();  // TODO: used to work, broken now?
+
+    if (do_qm_) {
+        fprintf(outfile,"  ==> QM Geometry <==\n\n");
+        molecule_->print();
+    }
 }
 
 
@@ -777,11 +796,13 @@ void EFP::set_options() {
     struct efp_opts opts;
     memset(&opts, 0, sizeof(struct efp_opts));
 
-    elst_enabled_ = options_.get_bool("EFP_ELST");
-    pol_enabled_  = options_.get_bool("EFP_POL");
-    disp_enabled_ = options_.get_bool("EFP_DISP");
-    exch_enabled_ = options_.get_bool("EFP_EXCH");
-    do_qm_        = options_.get_bool("QMEFP");
+    elst_enabled_    = options_.get_bool("EFP_ELST");
+    pol_enabled_     = options_.get_bool("EFP_POL");
+    disp_enabled_    = options_.get_bool("EFP_DISP");
+    exch_enabled_    = options_.get_bool("EFP_EXCH");
+    do_qm_           = options_.get_bool("QMEFP");
+    qm_elst_enabled_ = do_qm_ && options_.get_bool("QMEFP_ELST");
+    qm_pol_enabled_  = do_qm_ && options_.get_bool("QMEFP_POL");
 
     std::string dertype = options_.get_str("DERTYPE");
     do_grad_ = false;
@@ -789,11 +810,12 @@ void EFP::set_options() {
         do_grad_ = true;
 
     // AI_DISP, AI_XR, AI_CHTR may be enabled in a future libefp release
-    if (do_qm_) {
+    if (qm_elst_enabled_)
         opts.terms |= EFP_TERM_AI_ELEC;
+    if (qm_pol_enabled_)
         opts.terms |= EFP_TERM_AI_POL;
-    }
 
+    // CHTR may be enabled in a future libefp release
     if (elst_enabled_)
         opts.terms |= EFP_TERM_ELEC;
     if (pol_enabled_)
@@ -803,27 +825,27 @@ void EFP::set_options() {
     if (exch_enabled_)
         opts.terms |= EFP_TERM_XR;
 
-    std::string elst_damping = options_.get_str("EFP_ELST_DAMPING");
-    std::string disp_damping = options_.get_str("EFP_DISP_DAMPING");
-    std::string pol_damping = options_.get_str("EFP_POL_DAMPING");
+    elst_damping_ = options_.get_str("EFP_ELST_DAMPING");
+    disp_damping_ = options_.get_str("EFP_DISP_DAMPING");
+    pol_damping_ = options_.get_str("EFP_POL_DAMPING");
 
-    if (elst_damping == "SCREEN")
+    if (elst_damping_ == "SCREEN")
         opts.elec_damp = EFP_ELEC_DAMP_SCREEN;
-    else if (elst_damping == "OVERLAP")
+    else if (elst_damping_ == "OVERLAP")
         opts.elec_damp = EFP_ELEC_DAMP_OVERLAP;
-    else if (elst_damping == "OFF")
+    else if (elst_damping_ == "OFF")
         opts.elec_damp = EFP_ELEC_DAMP_OFF;
 
-    if (disp_damping == "TT")
+    if (disp_damping_ == "TT")
         opts.disp_damp = EFP_DISP_DAMP_TT;
-    else if (disp_damping == "OVERLAP")
+    else if (disp_damping_ == "OVERLAP")
         opts.disp_damp = EFP_DISP_DAMP_OVERLAP;
-    else if (disp_damping == "OFF")
+    else if (disp_damping_ == "OFF")
         opts.disp_damp = EFP_DISP_DAMP_OFF;
 
-    if (pol_damping == "TT")
+    if (pol_damping_ == "TT")
         opts.pol_damp = EFP_POL_DAMP_TT;
-    else if (pol_damping == "OFF")
+    else if (pol_damping_ == "OFF")
         opts.pol_damp = EFP_POL_DAMP_OFF;
 
     enum efp_result res;
@@ -833,20 +855,20 @@ void EFP::set_options() {
     fprintf(outfile, "\n\n");
     fprintf(outfile, "%s", efp_banner());
     fprintf(outfile, "\n\n");
-    fprintf(outfile, "  ==> Calculation Information <==\n\n");
-    fprintf(outfile, "  Electrostatics damping: %12s\n", elst_damping.c_str());
+    //fprintf(outfile, "  ==> Calculation Information (This section going away) <==\n\n");
+    //fprintf(outfile, "  Electrostatics damping: %12s\n", elst_damping_.c_str());
 
-    if (disp_enabled_)
-        fprintf(outfile, "  Dispersion damping:     %12s\n", disp_damping.c_str());
+    //if (disp_enabled_)
+    //    fprintf(outfile, "  Dispersion damping:     %12s\n", disp_damping_.c_str());
 
-    fprintf(outfile, "  Electrostatics enabled:  %12d\n", elst_enabled_);
-    fprintf(outfile, "  Polarization enabled:    %12d\n", pol_enabled_);
-    fprintf(outfile, "  Dispersion enabled:      %12d\n", disp_enabled_);
-    fprintf(outfile, "  Exchange enabled:        %12d\n", exch_enabled_);
-    fprintf(outfile, "  Gradient enabled:        %12d\n", do_grad_);
-    fprintf(outfile, "\n");
+    //fprintf(outfile, "  Electrostatics enabled:  %12d\n", elst_enabled_);
+    //fprintf(outfile, "  Polarization enabled:    %12d\n", pol_enabled_);
+    //fprintf(outfile, "  Dispersion enabled:      %12d\n", disp_enabled_);
+    //fprintf(outfile, "  Exchange enabled:        %12d\n", exch_enabled_);
+    //fprintf(outfile, "  Gradient enabled:        %12d\n", do_grad_);
+    //fprintf(outfile, "\n");
 
-    fprintf(outfile, "\n");
+    //fprintf(outfile, "\n");
 
     // sets call-back function to provide electric field from electrons
     efp_set_electron_density_field_fn( efp_, electron_density_field_fn );

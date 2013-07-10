@@ -43,7 +43,6 @@ set efp_disp_damping tt
 
 energy('efp')
 
-qmefp.print_out()
 compare_values(4.8579195608, qmefp.nuclear_repulsion_energy(), 6, 'QM NRE')
 compare_values(-0.000490133271, get_variable('efp elst energy'), 6, 'EFP-EFP Elst')
 compare_values(-0.001598697924, get_variable('efp disp energy'), 6, 'EFP-EFP Disp')
