@@ -362,8 +362,8 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
 
     SharedMatrix V(new Matrix("EFP contribution to the Fock Matrix", nbf, nbf));
 
-    // e-Nu contributions from fragments (TODO: this should be computed once only at beggining of the SCF)
-    V->add( EFP_nuclear_potential() );
+    // e-Nu contributions from fragments ( this is now done below with the other multipoles ).
+    //V->add( EFP_nuclear_potential() );
 
     // multipole contributions to Fock matrix
     double * xyz_p  = xyz->pointer();
@@ -375,6 +375,30 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
         Vector3 coords(xyz_p[n*3],xyz_p[n*3+1],xyz_p[n*3+2]);
         efp_ints->set_origin(coords);
         efp_ints->compute(mats);
+
+        // add point charges from atoms to multipoles at atom center
+        for (int frag = 0; frag < nfrag_; frag++) {
+            int natom = 0;
+            if ( efp_get_frag_atom_count(efp_,frag,&natom) != EFP_RESULT_SUCCESS ) {
+                throw PsiException("libefp failed to return the number of atoms",__FILE__,__LINE__);
+            }
+            efp_atom * atoms = (efp_atom*)malloc(natom*sizeof(efp_atom));
+            if ( efp_get_frag_atoms(efp_, frag, natom, atoms) != EFP_RESULT_SUCCESS ) {
+                throw PsiException("libefp failed to return atom charges",__FILE__,__LINE__);
+            }
+            for (int i = 0; i < natom; i++) {
+                double dx = atoms[i].x - xyz_p[n*3];
+                if ( fabs(dx) > 1e-10 ) continue;
+                double dy = atoms[i].y - xyz_p[n*3+1];
+                if ( fabs(dy) > 1e-10 ) continue;
+                double dz = atoms[i].z - xyz_p[n*3+2];
+                if ( fabs(dz) > 1e-10 ) continue;
+
+                mult_p[20*n] += atoms[i].znuc;
+                break;
+            }
+        }
+
         for(int i=0; i < 20; ++i){
             mats[i]->scale( -prefacs[i] * mult_p[20*n+i] );
             V->add(mats[i]);
