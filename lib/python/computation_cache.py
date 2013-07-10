@@ -23,6 +23,7 @@ from functools import partial
 from hashlib import md5
 import psi4
 import atexit
+import resource
 # Create a trivial molecule so psi4 doesn't freak out about not having a Molecule
 #psi4.geometry("H 0 0 0\nH 0 0 1")
 
@@ -1096,6 +1097,13 @@ class CachedComputation(object):
 
     PICKLE_VERSION = (2,1,2)
     allow_analogous_load_ever = True
+    # For now, set a hard max of 4 GB
+    default_memory = min(resource.getrlimit(resource.RLIMIT_RSS)[0], 4*1024*1024*1024)
+    if default_memory <= 0:
+        # Just set to 4 GB and hope...
+        default_memory = 4*1024*1024*1024
+
+    psi4.set_memory(default_memory)
 
     parser = psi4.Gaussian94BasisSetParser()
 
@@ -1637,6 +1645,8 @@ class CachedComputation(object):
         )
 
     def save_computation(self):
+        if self.parallel_ready:
+            raise IOError("Cannot save computation during parallel computation")
         if self.owner is None:
             raise ValueError("Can't save computation because parent cache doesn't exist")
         self.owner.sync_computation(self)
@@ -1647,6 +1657,9 @@ class CachedComputation(object):
 
     def end_parallel_use(self):
         self.parallel_ready = False
+
+    def set_psi_memory(self, value):
+        psi4.set_memory(value)
 
     #endregion
 
