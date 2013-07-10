@@ -32,7 +32,17 @@ class EFP {
         int nfrag_;
         struct efp * efp_;
         boost::shared_ptr<Molecule>molecule_;
-        bool elst_enabled_, pol_enabled_, disp_enabled_, exch_enabled_, do_grad_, do_qm_;
+
+        /// Flags for EFP/EFP options
+        bool elst_enabled_, pol_enabled_, disp_enabled_, exch_enabled_;
+        std::string elst_damping_, pol_damping_, disp_damping_;
+
+        /// Flags for QM/EFP options
+        bool qm_elst_enabled_, qm_pol_enabled_;
+
+        /// Flags for flow control options
+        bool do_grad_, do_qm_;
+
         /// Initialize options
         void common_init();
     public:

@@ -2830,8 +2830,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         options.add_str("EFP_POL_DAMPING", "TT", "TT OFF");
         /* Do EFP gradient. !expert */
         options.add_str("DERTYPE", "NONE", "NONE FIRST");
-        /* Do turn on QM/EFP terms. !expert */
+        /* Do turn on QM/EFP terms? !expert */
         options.add_bool("QMEFP", false);
+        /*- Do include electrostatics energy term in QM/EFP computation? !expert -*/
+        options.add_bool("QMEFP_ELST", true);
+        /*- Do include polarization energy term in EFP computation? !expert -*/
+        options.add_bool("QMEFP_POL", true);
     }
   return true;
 }
