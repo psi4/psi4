@@ -804,7 +804,7 @@ class ComputationCache(object):
             yield k
 
     def __getitem__(self, item):
-        return self.shelf[item]
+        return self._get_existing_computation(item)
 
     def __setitem__(self, item, value):
         self.shelf[item] = value
@@ -1094,7 +1094,8 @@ class CachedComputation(object):
 
     #region | Class Attributes |
 
-    PICKLE_VERSION = (2,1,1)
+    PICKLE_VERSION = (2,1,2)
+    allow_analogous_load_ever = True
 
     parser = psi4.Gaussian94BasisSetParser()
 
@@ -1201,6 +1202,7 @@ class CachedComputation(object):
         self.psi_lock = None
         self._required_locks = dict()
         self._original_names = dict()
+        self.allow_analogous_load = True
         #endregion
         #========================================#
         #region psi options
@@ -1419,8 +1421,12 @@ class CachedComputation(object):
                     "(no file)" if fname is None else fname,
                     akey[1:]
             )),
-            allow_analogous_load=True
+            allow_analogous_load=None
     ):
+        if allow_analogous_load is None:
+            allow_analogous_load = self.allow_analogous_load
+        if not CachedComputation.allow_analogous_load_ever:
+            allow_analogous_load = False
         #----------------------------------------#
         if name is None:
             if not hasattr(custom_getter, "name"):
@@ -1451,7 +1457,7 @@ class CachedComputation(object):
             rv.append(self.get_datum(name))
         return rv
 
-    def clear_datum(self, name, fail_if_missing=False):
+    def clear_datum(self, name, fail_if_missing=False, clear_analogous=False):
         """
         Clear a datum from the computation.  If the datum has a file
         associated with it, delete the file.
@@ -1465,7 +1471,10 @@ class CachedComputation(object):
         @rtype: bool
         """
         if name in self.cached_data:
-            if name not in self._analogously_loaded_data:
+            if name not in self._analogously_loaded_data or clear_analogous:
+                # In the clear_analogous case, the analogous computation will see the data
+                #   as corrupted next time it is loaded.  This is probably what we want in
+                #   this case anyway
                 d = self.cached_data[name]
                 if isinstance(d, CachedMemmapArray):
                     fname = d.filename
@@ -1483,7 +1492,7 @@ class CachedComputation(object):
                 else:
                     del self.cached_data[name]
             else:
-                # Just remove the reference from the dictionary
+                # Just remove the name from the cache
                 del self.cached_data[name]
                 self._analogously_loaded_data.remove(name)
             # Sync the parent shelf since self has been modified
@@ -1528,9 +1537,9 @@ class CachedComputation(object):
                 self.owner.sync_computation(self)
         return found_count
 
-    def clear_all_data(self):
+    def clear_all_data(self, clear_analogous=False):
         for datum_name in list(self.cached_data.keys()):
-            self.clear_datum(datum_name)
+            self.clear_datum(datum_name, clear_analogous)
 
     def get_lazy_attribute(self, needed_attr):
         # Make sure we know how to get the attribute
@@ -1903,8 +1912,6 @@ class CachedComputation(object):
                         return akey
         return False
 
-
-
     def _fill_needed_kwargs(self, needed_kws, getter):
         rv = dict()
         for needed_attr in needed_kws:
@@ -2109,6 +2116,7 @@ class CachedComputationUnloader(object):
             directory=comp.directory
         )
         self.basis_sets_to_register = tuple(comp._basis_registry.keys())
+        self.allow_analogous_load = comp.allow_analogous_load
         if hasattr(comp, "minimal_shelf_key"):
             self.minimal_shelf_key = comp.minimal_shelf_key
         else:
@@ -2142,6 +2150,9 @@ class CachedComputationUnloader(object):
                     rv.minimal_shelf_key = self.minimal_shelf_key
                 if self.shelf_key is not None:
                     rv.shelf_key = self.shelf_key
+            #----------------------------------------#
+            if self.pickler_version >= (2, 1, 2):
+                rv.allow_analogous_load = self.allow_analogous_load
         #========================================#
         return rv
 
