@@ -29,8 +29,14 @@ class EFP {
     // proper efp options outside of common_init()
     Options & options_;
     protected:
+
+        /// Number of fragments
         int nfrag_;
+
+        /// EFP struct for libefp
         struct efp * efp_;
+
+        /// active QM molecule
         boost::shared_ptr<Molecule>molecule_;
 
         /// Flags for EFP/EFP options
@@ -45,6 +51,10 @@ class EFP {
 
         /// Initialize options
         void common_init();
+
+        /// If a gradient is available it will be here:
+        SharedMatrix torque_;
+
     public:
         EFP(Options& options);
         ~EFP();
@@ -121,6 +131,12 @@ class EFP {
 
         /// Computes the nuclear potential integrals from the EFP fragments
         boost::shared_ptr<Matrix> EFP_nuclear_potential();
+
+        /// Returns the gradient
+        SharedMatrix torque() const;
+        /// Set the gradient for the EFP
+        void set_torque(SharedMatrix& torque);
+
 };
 
 }

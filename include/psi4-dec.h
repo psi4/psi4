@@ -65,6 +65,7 @@ public:
 
         boost::shared_ptr<Molecule> molecule_;
         SharedMatrix gradient_;
+        SharedMatrix efp_torque_;
         boost::shared_ptr<Vector> frequencies_;
         boost::shared_ptr<Wavefunction> wavefunction_;
         boost::shared_ptr<PointGroup> parent_symmetry_;
@@ -104,6 +105,11 @@ public:
         void set_efp(const boost::shared_ptr<psi::efp::EFP>& efp);
         /// Get EFP 
         boost::shared_ptr<psi::efp::EFP> get_efp() const;
+
+        /// Set EFP gradient manually
+        void set_efp_torque(const SharedMatrix g) { efp_torque_ = g; }
+        /// Get EFP gradient manually
+        SharedMatrix efp_torque() const { return efp_torque_; }
 
         /// Map containing current energies
         std::map<std::string, double> globals;

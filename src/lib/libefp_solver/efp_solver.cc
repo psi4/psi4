@@ -520,10 +520,10 @@ void EFP::Compute() {
         }
         fprintf(outfile, "\n");
 
-//        torque_ = smgrad;
-//        psi::Process::environment.set_efp_torque(smgrad);
-        psi::Process::environment.set_gradient(smgrad);
-        //smgrad->print();
+        torque_ = smgrad;
+        psi::Process::environment.set_efp_torque(smgrad);
+        //psi::Process::environment.set_gradient(smgrad);
+        smgrad->print();
     }
 
     fprintf(outfile, "  ==> Energetics <==\n\n");
@@ -983,8 +983,15 @@ boost::shared_ptr<Matrix> EFP::EFP_nuclear_potential() {
     return V;
 }
 
-
+SharedMatrix EFP::torque() const
+{
+    return torque_;
 }
 
-} // End namespaces
+void EFP::set_torque(SharedMatrix& torq)
+{
+    torque_ = torq;
+}
+
+} } // End namespaces
 
