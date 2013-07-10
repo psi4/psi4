@@ -1,3 +1,7 @@
+#! Test whether all the info about the current state of
+#! a Molecule gets embodied in the create_psi4_string_from_molecule
+#! function. Tests qcdb Molecule and libmints Molecule !nosample
+
 import qcdb
 
 mol1 = """

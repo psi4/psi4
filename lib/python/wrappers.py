@@ -111,7 +111,7 @@ def auto_fragments(name, **kwargs):
     numatoms = molecule.natom()
     VdW = [1.2, 1.7, 1.5, 1.55, 1.52, 1.9, 1.85, 1.8]
 
-    symbol = range(numatoms)
+    symbol = list(range(numatoms))
     X = [0.0] * numatoms
     Y = [0.0] * numatoms
     Z = [0.0] * numatoms

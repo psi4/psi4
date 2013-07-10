@@ -53,8 +53,8 @@ def distinct(*args):
 def is_near_integer(num, cutoff=1e-14):
     """ `True` if and only if `num` is within `cutoff` of an integer (`False` otherwise).
 
-    Examples
-    --------
+    :Examples:
+
     >>> is_near_integer(1)
     True
     >>> is_near_integer(-5)

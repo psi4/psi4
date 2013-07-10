@@ -25,8 +25,8 @@ class Atom(object):
     """
     Encapsulates an atom.  Molecules are made up of Atoms.
 
-    Attributes
-    ----------
+    :Attributes:
+
     position : `Vector`
         The atom's Cartesian coordinates [x y z] as a :py:class:`~grendel.math.vector.Vector` object.
     parent_molecule : `Molecule`
@@ -92,8 +92,8 @@ class Atom(object):
             * ``Atom(symbol, x, y, z)``
 
 
-        Parameters
-        ----------
+        :Parameters:
+
         symbol : str
             The atomic symbol for the atom object
         position : Vector
@@ -107,8 +107,8 @@ class Atom(object):
 
 
 
-        Examples
-        --------
+        :Examples:
+
         >>> Atom('H', [0,0,0])
         Atom('H', [  0.00000000,  0.00000000,  0.00000000 ] )
         >>> Atom(position=(1.5, 0., 0.), symbol='H')
@@ -262,10 +262,10 @@ class Atom(object):
         `base_atom` or a non-orphaned `Atom` is found).
 
         .. note::
-        This is a cached property.  Be sure and reset it (by setting atom._index to None) if you
-         reorder the atoms in the parent molecule (which is a disasterous thing to do for many other
-         parts of the program as well.  If you really need to reorder atoms in a `Molecule`, you
-         should create a new `Molecule` instance and copy the atoms to the new instance.)
+           This is a cached property.  Be sure and reset it (by setting atom._index to None) if you
+           reorder the atoms in the parent molecule (which is a disasterous thing to do for many other
+           parts of the program as well.  If you really need to reorder atoms in a `Molecule`, you
+           should create a new `Molecule` instance and copy the atoms to the new instance.)
 
         """
         if self.is_orphaned():

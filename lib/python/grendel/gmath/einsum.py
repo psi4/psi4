@@ -285,8 +285,8 @@ class EinsumTensor(object):
     def split_indices(in_indices, include_sub=False):
         """ Split a string or list/tuple into a tuple of indices
 
-        Examples
-        --------
+        :Examples:
+
         >>> EinsumTensor.split_indices("i,j,k,l")
         ('i', 'j', 'k', 'l')
         >>> EinsumTensor.split_indices(("i,j","k,l"))

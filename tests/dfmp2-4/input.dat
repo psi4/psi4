@@ -33,8 +33,8 @@ set basis cc-pvdz
 print('   Testing mp2 (df) ...')
 val = energy('mp2')
 compare_values(df_ref, get_variable('SCF TOTAL ENERGY'), 5, 'mp2 ref')                       #TEST
-compare_values(df_mp2ss, get_variable('MP2 SAME-SPIN ENERGY'), 5, 'mp2 ss')                  #TEST
-compare_values(df_mp2os, get_variable('MP2 OPPOSITE-SPIN ENERGY'), 5, 'mp2 os')              #TEST
+compare_values(df_mp2ss, get_variable('MP2 SAME-SPIN CORRELATION ENERGY'), 5, 'mp2 ss')                  #TEST
+compare_values(df_mp2os, get_variable('MP2 OPPOSITE-SPIN CORRELATION ENERGY'), 5, 'mp2 os')              #TEST
 compare_values(df_mp2corl, get_variable('MP2 CORRELATION ENERGY'), 5, 'mp2 corl')            #TEST
 compare_values(df_mp2tot, get_variable('MP2 TOTAL ENERGY'), 5, 'mp2 tot')                    #TEST
 compare_values(df_scscorl, get_variable('SCS-MP2 CORRELATION ENERGY'), 5, 'mp2 scscorl')     #TEST
@@ -51,8 +51,8 @@ set mp2_type conv
 print('   Testing mp2 (conv) ...')
 val = energy('mp2')
 compare_values(conv_ref, get_variable('SCF TOTAL ENERGY'), 5, 'mp2 ref')                     #TEST
-compare_values(conv_mp2ss, get_variable('MP2 SAME-SPIN ENERGY'), 5, 'mp2 ss')                #TEST
-compare_values(conv_mp2os, get_variable('MP2 OPPOSITE-SPIN ENERGY'), 5, 'mp2 os')            #TEST
+compare_values(conv_mp2ss, get_variable('MP2 SAME-SPIN CORRELATION ENERGY'), 5, 'mp2 ss')                #TEST
+compare_values(conv_mp2os, get_variable('MP2 OPPOSITE-SPIN CORRELATION ENERGY'), 5, 'mp2 os')            #TEST
 compare_values(conv_mp2corl, get_variable('MP2 CORRELATION ENERGY'), 5, 'mp2 corl')          #TEST
 compare_values(conv_mp2tot, get_variable('MP2 TOTAL ENERGY'), 5, 'mp2 tot')                  #TEST
 compare_values(conv_scscorl, get_variable('SCS-MP2 CORRELATION ENERGY'), 5, 'mp2 scscorl')   #TEST
@@ -72,8 +72,8 @@ set mp2_type df
 print('   Testing explicit scs mp2 (df) ...')
 val = energy('mp2')
 compare_values(df_ref, get_variable('SCF TOTAL ENERGY'), 5, 'mp2 ref')                       #TEST
-compare_values(df_mp2ss, get_variable('MP2 SAME-SPIN ENERGY'), 5, 'mp2 ss')                  #TEST
-compare_values(df_mp2os, get_variable('MP2 OPPOSITE-SPIN ENERGY'), 5, 'mp2 os')              #TEST
+compare_values(df_mp2ss, get_variable('MP2 SAME-SPIN CORRELATION ENERGY'), 5, 'mp2 ss')                  #TEST
+compare_values(df_mp2os, get_variable('MP2 OPPOSITE-SPIN CORRELATION ENERGY'), 5, 'mp2 os')              #TEST
 compare_values(df_mp2corl, get_variable('MP2 CORRELATION ENERGY'), 5, 'mp2 corl')            #TEST
 compare_values(df_mp2tot, get_variable('MP2 TOTAL ENERGY'), 5, 'mp2 tot')                    #TEST
 compare_values(df_scscorl, get_variable('SCS-MP2 CORRELATION ENERGY'), 5, 'mp2 scscorl')     #TEST
@@ -90,8 +90,8 @@ set mp2_type conv
 print('   Testing explicit mp2 (conv) ...')
 val = energy('mp2')
 compare_values(conv_ref, get_variable('SCF TOTAL ENERGY'), 5, 'mp2 ref')                     #TEST
-compare_values(conv_mp2ss, get_variable('MP2 SAME-SPIN ENERGY'), 5, 'mp2 ss')                #TEST
-compare_values(conv_mp2os, get_variable('MP2 OPPOSITE-SPIN ENERGY'), 5, 'mp2 os')            #TEST
+compare_values(conv_mp2ss, get_variable('MP2 SAME-SPIN CORRELATION ENERGY'), 5, 'mp2 ss')                #TEST
+compare_values(conv_mp2os, get_variable('MP2 OPPOSITE-SPIN CORRELATION ENERGY'), 5, 'mp2 os')            #TEST
 compare_values(conv_mp2corl, get_variable('MP2 CORRELATION ENERGY'), 5, 'mp2 corl')          #TEST
 compare_values(conv_mp2tot, get_variable('MP2 TOTAL ENERGY'), 5, 'mp2 tot')                  #TEST
 compare_values(conv_scscorl, get_variable('SCS-MP2 CORRELATION ENERGY'), 5, 'mp2 scscorl')   #TEST
@@ -112,8 +112,8 @@ set mp2_type df
 print('   Testing user-def scs mp2 (df) ...')
 val = energy('mp2')
 compare_values(df_ref, get_variable('SCF TOTAL ENERGY'), 5, 'mp2 ref')                       #TEST
-compare_values(df_mp2ss, get_variable('MP2 SAME-SPIN ENERGY'), 5, 'mp2 ss')                  #TEST
-compare_values(df_mp2os, get_variable('MP2 OPPOSITE-SPIN ENERGY'), 5, 'mp2 os')              #TEST
+compare_values(df_mp2ss, get_variable('MP2 SAME-SPIN CORRELATION ENERGY'), 5, 'mp2 ss')                  #TEST
+compare_values(df_mp2os, get_variable('MP2 OPPOSITE-SPIN CORRELATION ENERGY'), 5, 'mp2 os')              #TEST
 compare_values(df_mp2corl, get_variable('MP2 CORRELATION ENERGY'), 5, 'mp2 corl')            #TEST
 compare_values(df_mp2tot, get_variable('MP2 TOTAL ENERGY'), 5, 'mp2 tot')                    #TEST
 compare_values(df_5050corl, get_variable('SCS-MP2 CORRELATION ENERGY'), 5, 'mp2 scscorl')    #TEST
@@ -130,8 +130,8 @@ set mp2_type conv
 print('   Testing user-def scs mp2 (conv) ...')
 val = energy('mp2')
 compare_values(conv_ref, get_variable('SCF TOTAL ENERGY'), 5, 'mp2 ref')                     #TEST
-compare_values(conv_mp2ss, get_variable('MP2 SAME-SPIN ENERGY'), 5, 'mp2 ss')                #TEST
-compare_values(conv_mp2os, get_variable('MP2 OPPOSITE-SPIN ENERGY'), 5, 'mp2 os')            #TEST
+compare_values(conv_mp2ss, get_variable('MP2 SAME-SPIN CORRELATION ENERGY'), 5, 'mp2 ss')                #TEST
+compare_values(conv_mp2os, get_variable('MP2 OPPOSITE-SPIN CORRELATION ENERGY'), 5, 'mp2 os')            #TEST
 compare_values(conv_mp2corl, get_variable('MP2 CORRELATION ENERGY'), 5, 'mp2 corl')          #TEST
 compare_values(conv_mp2tot, get_variable('MP2 TOTAL ENERGY'), 5, 'mp2 tot')                  #TEST
 compare_values(conv_5050corl, get_variable('SCS-MP2 CORRELATION ENERGY'), 5, 'mp2 scscorl')  #TEST

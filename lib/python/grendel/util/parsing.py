@@ -39,8 +39,8 @@ class Regex(object):
     considered a Regex object.  You can't instantiate a `Regex` object; the `__new__()` just returns `re.compile()`
     with the same arguments.
 
-    Examples
-    --------
+    :Examples:
+
     >>> import re
     >>> isinstance(re.compile(r'test123'), Regex)
     True

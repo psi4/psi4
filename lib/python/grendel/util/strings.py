@@ -76,8 +76,8 @@ def camel_to_lower(instr, divider = "_"):
     """ Converts a CamalCase string to a lower_case_string_with_underscores
     If the `divider` argument is given, it is used instead of underscores to join words.
 
-    Examples
-    --------
+    :Examples:
+
 
     """
     new_str = instr[0].lower()

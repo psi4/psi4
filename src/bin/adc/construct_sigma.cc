@@ -39,7 +39,8 @@ namespace psi{ namespace adc{
 void 
 ADC::rhf_construct_sigma(int irrep, int root)
 {
-    char lbl[32];
+    bool do_pr = options_.get_bool("PR");
+    char lbl[32], ampname[32];
     dpdfile2 B, S, D, E, Bt, C;
     dpdbuf4 A, V, K, Z, BT, XT;
             
@@ -54,7 +55,9 @@ ADC::rhf_construct_sigma(int irrep, int root)
     global_dpd_->buf4_close(&A);
     
     // Evaluation of the remaining one 3h-3p diagram
-    global_dpd_->buf4_init(&K, PSIF_ADC,          0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "2 K1234 - K1243");
+    if(do_pr) strcpy(ampname, "tilde 2 K1234 - K1243");
+    else      strcpy(ampname, "2 K1234 - K1243");
+    global_dpd_->buf4_init(&K, PSIF_ADC,          0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, ampname);
     global_dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "MO Ints 2 V1234 - V1243");
     
     sprintf(lbl, "DOV_[%d]12", irrep);
@@ -72,7 +75,13 @@ ADC::rhf_construct_sigma(int irrep, int root)
     // \sigma_{ia} <-- \sum_{jb} (2 <ij|ab> - <ij|ba>) E_{jb}
     global_dpd_->dot24(&E, &V, &S, 0, 0, 0.5, 1);
     global_dpd_->file2_close(&E);
-    
+ 
+#if DEBUG_
+    fprintf(outfile, ">> In construction of sigma <<\n");
+    global_dpd_->buf4_print(&K, outfile, 1);
+    //abort();
+#endif
+   
     global_dpd_->buf4_close(&K);
     global_dpd_->buf4_close(&V);
 
@@ -101,7 +110,7 @@ ADC::rhf_construct_sigma(int irrep, int root)
     global_dpd_->buf4_init(&A, PSIF_ADC_SEM, irrep, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, lbl);
     global_dpd_->buf4_dirprd(&A, &Z);
     global_dpd_->buf4_close(&A);
- 
+    
     global_dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"), ID("[O,V]"), ID("[V,V]"), 0, "MO Ints <OV|VV>");
     // \sigma_{ia} <-- \sum_{jbc} B_{jicb} <ja|cb>
     global_dpd_->contract442(&Z, &V, &S, 1, 1, 1, 1);
@@ -112,7 +121,7 @@ ADC::rhf_construct_sigma(int irrep, int root)
     global_dpd_->contract442(&V, &Z, &S, 3, 3, -1, 1); //This is genuine
     global_dpd_->buf4_close(&V);
     global_dpd_->buf4_close(&Z);
-
+    
     global_dpd_->file2_close(&S);
     global_dpd_->file2_close(&B);
 }

@@ -149,8 +149,8 @@ def cached_method(func):
     For now, this can only be used.  The decorator creates a method that stores the return value of the method call
     in a variable named _[func_name] (where [func_name] is the name of the function.
 
-    Examples
-    --------
+    :Examples:
+
 
     >>> class Factorializer(object):
     ...
@@ -211,8 +211,8 @@ class CachedProperty(object):
     The decorator creates a property that stores the return value of the method call
     in a variable named _[func_name] (where [func_name] is the name of the function).
 
-    Examples
-    --------
+    :Examples:
+
 
     >>> class Factorializer(object):
     ...
@@ -296,8 +296,8 @@ def forwardable(cls):
     """ Class decorator that allows for the definition of delegators (in conjunction with `def_delegators`),
     just like the Forwardable module in Ruby.  *Note that this pattern does not work for nested classes*
 
-    Examples
-    --------
+    :Examples:
+
     >>> class NameContainer(object):
     ...     name = ""
     ...     def __init__(self, name):
@@ -393,8 +393,8 @@ def with_attributes(**kwargs):
 def with_flexible_arguments(required=None, optional=None, what_to_call_it=None):
     """ Allows the creation of functions with case insensative, alternately named keyword arguments.
 
-    Examples
-    --------
+    :Examples:
+
     >>> @with_flexible_arguments(
     ...     required=[
     ...         ('name', 'greet', 'name_to_greet'),
@@ -718,8 +718,8 @@ see_abstract_doc.__doc__ = """
 Add to the documentation of the method (or create it, if it is empty) a reference
 to the documentation of the first abstractmethod in the containing class's __mro__.
 
-Examples
---------
+:Examples:
+
 >>> from abc import ABCMeta, abstractmethod
 >>> class A(object):
 ...     __metaclass__ = ABCMeta

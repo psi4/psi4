@@ -16,7 +16,8 @@ class Keyword(object):
     .. WARNING::
       Since there is exactly one instance of every unique keyword (with
       two keywords that differ by capitalization *not* being unique), storing a value can have some
-      unexpected consequences.  For instance:
+      unexpected consequences.  For instance::
+
           >>> Hello = Keyword('Hello')
           >>> foo = Hello.World
           >>> foo.value = "good bye"
@@ -31,8 +32,8 @@ class Keyword(object):
       else is fair game.
 
 
-    Examples
-    --------
+    :Examples:
+
     >>> Hello = Keyword('Hello')
     >>> Hello.World
     Hello.World
@@ -228,5 +229,7 @@ class SentinalValue(object):
 # Some keywords that make sense to define for use many places #
 ###############################################################
 
+# DEPRECATED: Don't use these.  They don't work as expected 
+#   in parallel contexts
 All = SentinalValue("All")
 ArgumentNotGiven = SentinalValue("ArgumentNotGiven")
