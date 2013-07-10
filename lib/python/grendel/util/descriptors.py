@@ -9,8 +9,8 @@ class RaiseOnAccessDescriptor(object):
     Useful for optional features that require external packages but are not required for core functionality.
     A `RaiseOnAccessDescriptor` can be stored in place of some variable that requires an optional package.
 
-    Examples
-    --------
+    :Examples:
+
     >>> class AwesomeThingDoer(object):
     ...     try:
     ...         from awesome_module_that_no_one_has import thing

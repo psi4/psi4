@@ -30,8 +30,8 @@ class SimpleInternalCoordinate(InternalCoordinate):
     """
     Superclass for all types of simple (non-symmetry, non-normal) internal coordinates.
 
-    Attributes
-    ----------
+    :Attributes:
+
     atoms : list of `Atom`
         `list` of `Atom` objects that the coordinate refers to
 
@@ -259,8 +259,8 @@ class SimpleInternalCoordinate(InternalCoordinate):
         """ Get the value of the coordinate position vectors xyz.
 
         .. note::
-        For angular coordinates, this *always* returns a value in Radians.  `value`, `value_with_units`, and
-         `value_for_molecule`, however, return values in `self.units`
+           For angular coordinates, this *always* returns a value in Radians.  `value`, `value_with_units`, and
+           `value_for_molecule`, however, return values in `self.units`
 
         """
         return cls.value_for_xyz(posvects)

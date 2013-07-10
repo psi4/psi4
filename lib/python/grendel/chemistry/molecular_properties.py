@@ -20,8 +20,8 @@ class ValueNotAvailableError(Exception):
 class MolecularProperty(Differentiable):
     """ Abstract base class for all properties
 
-    Attributes
-    ----------
+    :Attributes:
+
     molecule : Molecule
     units : CompositeUnit or class with Unit metaclass
 

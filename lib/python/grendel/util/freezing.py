@@ -2,8 +2,8 @@
 Protocol which, if carefully implemented for a class, allows instances of the class to be "frozen", or at least
 act as such to some extent or another.
 
-Examples
---------
+:Examples:
+
 >>> class Foo(Freezable):
 ...     bar = FreezableAttribute('bar')
 ...     lst = FreezableListAttribute('lst')

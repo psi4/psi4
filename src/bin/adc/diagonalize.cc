@@ -44,7 +44,7 @@ void
 ADC::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, double *eps)
 {
     char lbl[32];
-    int iter, converged, length, *conv, skip_check, maxdim, *residual_ok;
+    int iter, converged, prev_length, length, *conv, skip_check, maxdim, *residual_ok;
     double **Alpha, **G, *lambda, *lambda_o, *residual_norm, cutoff;
     dpdfile2 B, S, Bp, Bn, F, L, V;
     dpdfile4 A;
@@ -55,7 +55,8 @@ ADC::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, doubl
     converged = 0;
     cutoff = conv_;
     length = rpi_[irrep];
-    
+    prev_length = 0;
+
     residual_ok   = init_int_array(rpi_[irrep]);
     residual_norm = init_array(rpi_[irrep]);
     conv          = init_int_array(rpi_[irrep]);
@@ -77,12 +78,12 @@ ADC::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, doubl
 
         // Evaluating the sigma vectors
         timer_on("Sigma construction");
-        for(int I = 0;I < length;I++)
+        for(int I = prev_length;I < length;I++)
             if(!nopen_) rhf_construct_sigma(irrep, I);
         timer_off("Sigma construction");
 
         // Making so called Davidson mini-Hamiltonian, or Rayleigh matrix
-        for(int I = 0;I < length;I++){
+        for(int I = prev_length;I < length;I++){
             sprintf(lbl, "S^(%d)_[%d]12", I, irrep);
             global_dpd_->file2_init(&S, PSIF_ADC_SEM, irrep, ID('O'), ID('V'), lbl);
             for(int J = 0;J <= I;J++){
@@ -131,6 +132,8 @@ ADC::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, doubl
             global_dpd_->file2_close(&F);
         }
 
+	prev_length = length;
+
         // Expand the Ritz space by orthogonalizing {F} to {B} according to Gram-Schmidt procedure
         for(int k = 0;k < rpi_[irrep];k++){
             sprintf(lbl, "F^(%d)_[%d]12", k, irrep);
@@ -170,7 +173,7 @@ ADC::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, doubl
                 sprintf(lbl, "Bn^(%d)_[%d]12", k, irrep);
                 global_dpd_->file2_init(&Bn, PSIF_ADC_SEM, irrep, ID('O'), ID('V'), lbl);
                 global_dpd_->file2_scm(&Bn, 0.0);
-                for(int I = 0;I < length;I++){
+                for(int I = 0;I < prev_length;I++){
                     sprintf(lbl, "B^(%d)_[%d]12", I, irrep);
                     global_dpd_->file2_init(&B, PSIF_ADC, irrep, ID('O'), ID('V'), lbl);
                     global_dpd_->file2_axpy(&B, &Bn, Alpha[I][k], 0);
@@ -187,6 +190,7 @@ ADC::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, doubl
             }
             skip_check = 1;
             length = rpi_[irrep];
+	    prev_length = 0;
         }
     
         if(!skip_check){

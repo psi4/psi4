@@ -34,8 +34,8 @@ def listify_args(*args, **kwargs):
     for this purpose is that if an Iterable is given as the only argument, `list(args)` will return a list of Iterables
     rather than a single Iterable.
 
-    Examples
-    --------
+    :Examples:
+
     >>> def test(*args):
     ...     return listify_args(*args)
     ...
@@ -88,8 +88,8 @@ def pop_multikwarg(kwarg_dict, *args):
     that value off of the kwarg dictionary.  If the None of the keywords given are found in `kwarg_dict`, `None` is
      returned.
 
-     See Also
-     --------
+     :See Also:
+
      get_multikwarg
 
     """
@@ -111,14 +111,14 @@ pop_kwarg = pop_multikwarg
 def caller():
     """ Get the name of the calling function as a `str`
 
-    Returns
-    -------
+    :Returns:
+
     out : str
         The name of the function that called the function whose context `caller()` is called from.  (Hopefully the
         examples makes this clearer.)
 
-    Examples
-    --------
+    :Examples:
+
 
     >>> def foo():
     ...     print caller()
@@ -151,8 +151,8 @@ class overloaded(MethodLike):
     Types can be specified using the `overloaded` instance decorator method `overload_with` (which is aliased as
     `overload`, `submethod`, and `subfunction`).
 
-    Examples
-    --------
+    :Examples:
+
     >>> @overloaded
     ... def test():
     ...     raise TypeError

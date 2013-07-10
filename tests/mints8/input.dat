@@ -36,8 +36,6 @@ molecule alanine {
 no_reorient
 }
 
-#alanine.update_geometry()      # Test the nuclear repulsion energy, before SCF           #TEST
-
 set  {
     basis cc-pVDZ
     scf_type df
@@ -49,12 +47,12 @@ compare_values(eNuc, alanine.nuclear_repulsion_energy(), 6, "Mol1: Nuclear repul
 compare_values(eSCF, E, 6, "Mol1: SCF Energy")                                      #TEST 
 gorig = alanine.geometry()
 
-gstr = alanine.create_psi4_string_from_molecule()
-nalanine = geometry(gstr)
+str = alanine.create_psi4_string_from_molecule()
+nalanine = geometry(str)
 nalanine.update_geometry()
 gnew = nalanine.geometry()
-print_out(gstr)
-compare_matrices(gorig, gnew, 5, "Mol1: String recreates molecule")
+print_out(str)
+compare_matrices(gorig, gnew, 5, "Mol1: String recreates molecule")  #TEST
 
 eNuc =  256.652780316346650  #TEST
 eSCF = -321.8674683375353425 #TEST
@@ -85,12 +83,12 @@ compare_values(eNuc, trimer.nuclear_repulsion_energy(), 6, "Mol2: Nuclear repuls
 compare_values(eSCF, E, 6, "Mol2: SCF Energy")  #TEST 
 gorig = trimer.geometry()
 
-gstr = trimer.create_psi4_string_from_molecule()
-ntrimer= geometry(gstr)
+str = trimer.create_psi4_string_from_molecule()
+ntrimer= geometry(str)
 ntrimer.update_geometry()
 gnew = ntrimer.geometry()
-print_out(gstr)
-compare_matrices(gorig, gnew, 5, "Mol2: String recreates molecule")
+print_out(str)
+compare_matrices(gorig, gnew, 5, "Mol2: String recreates molecule")  #TEST
 
 
 molecule test14 {
@@ -105,13 +103,13 @@ H        -1.70882231       1.00055573       0.00000000
 
 set basis sto-3g
 energy('uhf')
-compare_integers(2, test14.multiplicity(), "Mol3: Dimer multiplicity")
+compare_integers(2, test14.multiplicity(), "Mol3: Dimer multiplicity")  #TEST
 
 test14.set_ghost_fragment(2)
 test14.update_geometry()
 
-gstr = test14.create_psi4_string_from_molecule()
-atest14 = geometry(gstr)
+str = test14.create_psi4_string_from_molecule()
+atest14 = geometry(str)
 atest14.update_geometry()
 print_out("monoA\n")
 atest14.print_out()
@@ -120,8 +118,8 @@ test14.set_active_fragment(2)
 test14.set_ghost_fragment(1)
 test14.update_geometry()
 
-gstr = test14.create_psi4_string_from_molecule()
-btest14 = geometry(gstr)
+str = test14.create_psi4_string_from_molecule()
+btest14 = geometry(str)
 btest14.update_geometry()
 print_out("monoB\n")
 btest14.print_out()
@@ -162,6 +160,5 @@ molecule zmat {
 }
 
 zmat.update_geometry()
-gstr = zmat.create_psi4_string_from_molecule()
-#print gstr
+str = zmat.create_psi4_string_from_molecule()
 zmat.print_in_input_format()
