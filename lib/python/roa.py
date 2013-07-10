@@ -39,7 +39,9 @@ def run_roa(name, **kwargs):
     	# Run new function (scatter.cc)
 	print('Running scatter function')
 	step = psi4.get_local_option('FINDIF','DISP_SIZE')
-    	psi4.scatter(step, dip_polar_list, opt_rot_list, dip_quad_polar_list)
+	for gauge in opt_rot_list:
+		print('%%%%%%%%%% {} %%%%%%%%%%'.format(gauge))
+    	psi4.scatter(step, dip_polar_list, gauge, dip_quad_polar_list)
 
         #psi4.print_list(dip_polar_list)
         #print(dip_quad_polar_list)
@@ -128,9 +130,21 @@ def synthesize_dipole_polar(db,dip_polar_list):
                                                    'Polarizability', 3))
 
 def synthesize_opt_rot(db, opt_rot_list):
+    length = []
+    velocity = []
     for job in db['job_status']:
         with open('{}/output.dat'.format(job)) as outfile:
-            opt_rot_list.append(grab_psi4_matrix(outfile, 'Optical Rotation Tensor (Modified Velocity Gauge)', 3))
+            if psi4.get_local_option('CCRESPONSE','GAUGE') == 'LENGTH':
+                length.append(grab_psi4_matrix(outfile, 'Optical Rotation Tensor (Length Gauge)', 3))
+            elif psi4.get_local_option('CCRESPONSE','GAUGE') == 'VELOCITY':
+                velocity.append(grab_psi4_matrix(outfile, 'Optical Rotation Tensor (Modified Velocity Gauge)', 3))
+            elif psi4.get_local_option('CCRESPONSE','GAUGE') == 'BOTH':
+                length.append(grab_psi4_matrix(outfile, 'Optical Rotation Tensor (Length Gauge)', 3))
+                velocity.append(grab_psi4_matrix(outfile, 'Optical Rotation Tensor (Modified Velocity Gauge)', 3))
+    if length:
+        opt_rot_list.append(length)
+    if velocity:
+        opt_rot_list.append(velocity)
 
 def synthesize_dip_quad_polar(db, dip_quad_polar_list):
     for job in db['job_status']:
