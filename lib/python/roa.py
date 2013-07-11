@@ -40,7 +40,7 @@ def run_roa(name, **kwargs):
 	print('Running scatter function')
 	step = psi4.get_local_option('FINDIF','DISP_SIZE')
 	for gauge in opt_rot_list:
-		print('%%%%%%%%%% {} %%%%%%%%%%'.format(gauge))
+		#print('%%%%%%%%%% {} %%%%%%%%%%'.format(gauge))
     	psi4.scatter(step, dip_polar_list, gauge, dip_quad_polar_list)
 
         #psi4.print_list(dip_polar_list)
@@ -87,13 +87,17 @@ def generate_inputs(name,db):
         mol_open = 'molecule ' + molecule.name() + '_' + entry + ' {\n'
         mol_close = '}'
         molecule.set_geometry(displacement_geoms[n])
+        molecule.fix_orientation(True)
+        molecule.fix_com(True)
 
         # Write input file
         inputfile = open('{0}/input.dat'.format(entry), 'w')
         inputfile.write("# This is a psi4 input file auto-generated for "
                         "computing Raman Optical Activity.\n\n")
+		#inputfile.write(basic_molecule_for_input(molecule))
         inputfile.write("{}{}{}"
-                        .format(mol_open,molecule.save_string_xyz(),mol_close))
+						.format(mol_open,molecule.create_psi4_string_from_molecule(),mol_close))
+                        #.format(mol_open,molecule.save_string_xyz(),mol_close))
         inputfile.write('\n')
         inputfile.write(p4util.format_options_for_input())
         inputfile.write('\n')
