@@ -1473,12 +1473,14 @@ double HF::compute_energy()
     fflush(outfile);
 
     // SCF iterations
-
-    // EFP energies   
-    double efp_total_energy = 0.0; 
-    double efp_wfn_dependent_energy = 0.0;
     double efp_only_energy = 0.0;
-
+    if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
+        Process::environment.get_efp()->Compute();
+        double efp_elst = Process::environment.globals["EFP ELST ENERGY"];
+        double efp_exch = Process::environment.globals["EFP EXCH ENERGY"];
+        double efp_disp = Process::environment.globals["EFP DISP ENERGY"];
+        efp_only_energy = efp_elst + efp_exch + efp_disp;
+    }
     do {
         iteration_++;
 
@@ -1508,11 +1510,11 @@ double HF::compute_energy()
 
         // add efp contribuation to energy
         if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
-            efp_total_energy         = Process::environment.get_efp()->ComputeEnergy();
-            efp_wfn_dependent_energy = Process::environment.get_efp()->scf_energy_update();
-	        fprintf(outfile,"    EFP SCF energy contribution: %20.12lf\n",efp_wfn_dependent_energy);
-            efp_only_energy = efp_total_energy - efp_wfn_dependent_energy;
-	        E_ += efp_total_energy;
+
+            double efp_wfn_dependent_energy = Process::environment.get_efp()->scf_energy_update();
+            fprintf(outfile, "  Wfn dependent Energy =  %24.16f [H]\n", efp_wfn_dependent_energy);
+
+	        E_ += efp_wfn_dependent_energy + efp_only_energy;
         }   
 
         timer_on("DIIS");
@@ -1609,6 +1611,26 @@ double HF::compute_energy()
         call_postiteration_callbacks();
 
     } while (!converged && iteration_ < maxiter_ );
+
+    if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
+        double efp_wfn_dependent_energy = Process::environment.get_efp()->scf_energy_update();
+
+        Process::environment.get_efp()->Compute();
+
+        double efp_elst         = Process::environment.globals["EFP ELST ENERGY"];
+        double efp_exch         = Process::environment.globals["EFP EXCH ENERGY"];
+        double efp_pol          = Process::environment.globals["EFP POL ENERGY"];
+        double efp_disp         = Process::environment.globals["EFP DISP ENERGY"];
+        double efp_total_energy = efp_elst + efp_exch + efp_pol + efp_disp;
+
+        fprintf(outfile, "  EFP Electrostatics Energy = %24.16f [H]\n", efp_elst);
+        fprintf(outfile, "  EFP Polarization Energy =   %24.16f [H]\n", efp_pol);
+        fprintf(outfile, "  EFP Dispersion Energy =     %24.16f [H]\n", efp_disp);
+        fprintf(outfile, "  EFP Exchange Energy =       %24.16f [H]\n", efp_exch);
+        fprintf(outfile, "  EFP Wfn dependent Energy =  %24.16f [H]\n", efp_wfn_dependent_energy);
+        fprintf(outfile, "  EFP Total Energy =          %24.16f [H]\n", efp_total_energy);
+        fprintf(outfile, "  Total SCF Energy =          %24.16f [H]\n", E_);
+    }
 
     if (WorldComm->me() == 0)
         fprintf(outfile, "\n  ==> Post-Iterations <==\n\n");
