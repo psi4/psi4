@@ -113,8 +113,8 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
         quad_grad.push_back(grad_mat);
     }
    
-    printf("START \n"); 
-    quad_grad[0]->print(stdout);
+    //printf("START \n"); 
+    //quad_grad[0]->print(stdout);
 
     boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
     int natom = molecule->natom();
@@ -175,7 +175,7 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
       }
     }
 
-    quadder->print(stdout);
+    //quadder->print(stdout);
 
     for (i=0;i<pol_grad.size();i++)
     {
