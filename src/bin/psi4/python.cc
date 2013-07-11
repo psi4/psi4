@@ -173,6 +173,14 @@ void py_reopen_outfile()
     }
 }
 
+void py_be_quiet()
+{
+	py_close_outfile();
+	outfile = fopen("/dev/null", "a");
+	if (outfile == NULL)
+		throw PSIEXCEPTION("PSI4: Unable to redirect output to /dev/null.");
+}
+
 std::string py_get_outfile_name()
 {
     return outfile_name;
@@ -1292,6 +1300,7 @@ BOOST_PYTHON_MODULE(psi4)
     def("close_outfile", py_close_outfile, "Closes the output file.");
     def("reopen_outfile", py_reopen_outfile, "Reopens the output file.");
     def("outfile_name", py_get_outfile_name, "Returns the name of the output file.");
+    def("be_quiet", py_be_quiet, "Redirects output to /dev/null.  To switch back to regular output mode, use reopen_outfile()");
 
     // modules
     def("mints", py_psi_mints, "Runs mints, which generate molecular integrals on disk.");

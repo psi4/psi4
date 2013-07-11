@@ -1503,13 +1503,15 @@ class CachedComputation(object):
                 # Just remove the name from the cache
                 del self.cached_data[name]
                 self._analogously_loaded_data.remove(name)
+            if name in self._custom_getters:
+                del self._custom_getters[name]
             # Sync the parent shelf since self has been modified
             if self.owner is not None and not self.parallel_ready:
                 self.owner.sync_computation(self)
             return True
         elif fail_if_missing:
             raise ValueError("Datum '{0}' does not exist.  Known data names are:\n{1}".format(
-                name, "    " + "\n    ".join(self.cached_data.keys())
+                name, "    " + "\n    ".join(sorted(self.cached_data.keys()))
             ))
         return False
 
