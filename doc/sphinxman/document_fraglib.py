@@ -104,13 +104,13 @@ def canvas(fragname, molxyz):
     return text
 
 
-# Available fragments in psi4/libefp/libefp/fraglib
-fdriver = open('source/autodoc_available_efpfragments.rst', 'w')
+# Available fragments in psi4/lib/fraglib
+fdriver = open('source/autodoc_available_fraglib.rst', 'w')
 fdriver.write('\n\n')
 fdriver.write(chemdoodle)
 fdriver.write('\n\n')
 
-for pyfile in glob.glob(DriverPath + '../../libefp/libefp/fraglib/*.efp'):
+for pyfile in glob.glob(DriverPath + '../../lib/fraglib/*.efp'):
     filename = os.path.split(pyfile)[1]
     basename = os.path.splitext(filename)[0]
     div = '=' * len(basename)

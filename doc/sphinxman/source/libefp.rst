@@ -162,8 +162,8 @@ blocks.
 .. toctree::
    :hidden:
 
-   autodoc_available_efpfragments
+   autodoc_available_fraglib
 
-.. include:: autodoc_available_efpfragments.rst
+.. include:: autodoc_available_fraglib.rst
 
 
