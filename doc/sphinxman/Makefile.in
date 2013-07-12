@@ -256,12 +256,24 @@ $(autotarget13): %: $(autodepend13)
 	@srcdir@/document_psifiles.py @srcdir@
 
 
+# Autodoc efp fragments
+autodepend14 = \
+@top_srcdir@/libefp/libefp/fraglib/*.efp\
+@srcdir@/document_efpfragments.py
+
+autotarget14 = \
+$(SOURCEDIR)/autodoc_available_efpfragments.rst
+
+$(autotarget14): %: $(autodepend14)
+	@srcdir@/document_efpfragments.py @srcdir@
+
+
 #autodoc: $(autotarget1) $(autotarget2) $(autotarget3) $(autotarget4) \
 
 autodoc: $(autotarget1) $(autotarget3) $(autotarget4) \
          $(autotarget5) $(autotarget6) $(autotarget7) $(autotarget8) \
          $(autotarget9) $(autotarget10) $(autotarget11) $(autotarget12) \
-         $(autotarget13)
+         $(autotarget13) $(autotarget14)
 
 
 #####  static docs  #####

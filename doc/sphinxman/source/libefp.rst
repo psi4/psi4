@@ -142,3 +142,28 @@ At this time, |PSIfour| is only able to perform pure-efp single-points and geome
 Molecule Specification
 ~~~~~~~~~~~~~~~~~~~~~~
 
+
+.. index:: EFP; library fragments
+
+.. _`sec:availableEFPFragments`:
+
+Fragment Library
+~~~~~~~~~~~~~~~~
+
+Below are documented the EFP fragments available from the LIBEFP library.
+These are the molecules accessible with ``_l`` in ``molecule {...}``
+blocks.
+
+----
+
+.. comment This toctree directive only here to suppress warning at build time.
+   include line below is doing the work.
+
+.. toctree::
+   :hidden:
+
+   autodoc_available_efpfragments
+
+.. include:: autodoc_available_efpfragments.rst
+
+
