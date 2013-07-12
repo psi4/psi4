@@ -168,29 +168,39 @@ public:
 
     /// Is the shell quartet (MN|RS) significant according to sieve? (no restriction on MNRS order)
   
-  //inline bool shell_significant(int M, int N, int R, int S) {
-  bool shell_significant(int M, int N, int R, int S) {
+    //inline bool shell_significant(int M, int N, int R, int S) {
+    bool shell_significant(int M, int N, int R, int S) {
+      
+      bool schwarz_bound =  shell_pair_values_[N * (unsigned long int) nshell_ + M] *
+                 shell_pair_values_[R * (unsigned long int) nshell_ + S] >= sieve2_;
+      if (do_qqr_ && schwarz_bound) {
+        bool res = shell_significant_qqr(M, N, R, S);
+        //std::cout << "QQR prune: " << res << "\n";
+        return res;
+      }
+      else {
+        return schwarz_bound;
+      }
+    }
     
-    bool schwarz_bound =  shell_pair_values_[N * (unsigned long int) nshell_ + M] *
-               shell_pair_values_[R * (unsigned long int) nshell_ + S] >= sieve2_;
-    if (do_qqr_ && schwarz_bound) {
-      bool res = shell_significant_qqr(M, N, R, S);
-      //std::cout << "QQR prune: " << res << "\n";
-      return res;
-    }
-    else {
-      return schwarz_bound;
-    }
-  }
-  
-  // Implements the QQR sieve
-  bool shell_significant_qqr(int M, int N, int R, int S);
+    // Implements the QQR sieve
+    bool shell_significant_qqr(int M, int N, int R, int S);
   
     /// Is the integral (mn|rs) significant according to sieve? (no restriction on mnrs order)
     inline bool function_significant(int m, int n, int r, int s) { 
         return function_pair_values_[m * (unsigned long int) nbf_ + n] * 
                function_pair_values_[r * (unsigned long int) nbf_ + s] >= sieve2_; } 
 
+
+    /// Is the shell pair (MN| ever significant according to sieve (no restriction on MN order)
+    inline bool shell_pair_significant(int M, int N) {
+        return shell_pair_values_[M * (unsigned long int) nshell_ + N] *
+               max_ >= sieve2_; }
+
+    /// Is the function pair (mn| ever significant according to sieve (no restriction on mn order)
+    inline bool function_pair_significant(int m, int n) {
+        return function_pair_values_[m * (unsigned long int) nbf_ + n] *
+               max_ >= sieve2_; }
     // => Indexing [these change after a call to sieve()] <= //
 
     /// Significant unique bra- function pairs, in reduced triangular indexing
