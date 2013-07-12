@@ -30,7 +30,7 @@ import ast
 
 
 def useful():
-    print "in qcdb.useful()"
+    print("in qcdb.useful()")
     return 'qcdb successfully accessed'
 
 

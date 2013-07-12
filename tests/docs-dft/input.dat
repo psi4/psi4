@@ -200,7 +200,7 @@ fopt.write('+-%27s-+-%140s-+\n' % (27 * '-', 140 * '-'))
 fopt.write('| %-27s | %-140s |\n' % ('name', 'calls method DFT :ref:`[manual] <sec:dft>`'))
 fopt.write('+=%27s=+=%140s=+\n' % (27 * '=', 140 * '='))
 
-for fctl in sorted(funcdict.iterkeys()):
+for fctl in sorted(funcdict.keys()):
 
     if fctl.lower().endswith(('-d2p4', '-d2gr', '-d2', '-d3zero')):
         pass

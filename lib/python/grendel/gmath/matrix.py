@@ -224,7 +224,10 @@ class Matrix(Tensor):
 
     @classmethod
     def diagonal(cls, iterable):
-        return Matrix(np.diagflat(iterable))
+        if isinstance(iterable, (Vector, np.ndarray)):
+            return np.diagflat(iterable.view(Matrix))
+        else:
+            return Matrix(np.diagflat(iterable))
 
     @classmethod
     def identity(cls, n):
@@ -234,7 +237,7 @@ class Matrix(Tensor):
     # Methods #
     ###########
 
-    def eigensystem(self):
+    def eigensystem(self, sort=False):
         """
         Wrapper to `numpy.eigh` and `numpy.eig` for symmetric and non-symmetric
         matrices, respectively.  Note that the eigenvectors are column vectors
@@ -244,17 +247,32 @@ class Matrix(Tensor):
             evals, evecs = np.linalg.eigh(self)
         else:
             evals, evecs = np.linalg.eig(self)
-        evals = evals.view(Vector)
-        evecs = evecs.view(Matrix)
+            evals = np.real_if_close(evals)
+            evecs = np.real_if_close(evecs)
+        if sort:
+            evals, evecs = zip(*sorted((val, tuple(vec)) for val, vec in zip(evals.ravel(), evecs.col_iter)))
+            evecs = Matrix(evecs).T
+            evals = Vector(evals)
+        else:
+            evals = evals.view(Vector)
+            evecs = evecs.view(Matrix)
         return evals, evecs
 
     def sqrt_matrix(self):
         evals, evecs = self.eigensystem()
-        sqrtevals = Matrix.diagonal([math.sqrt(e) for e in evals])
+        sqrtevals = Matrix.diagonal(np.sqrt(evals))
         return sqrtevals.transformed(evecs)
+
+    def inverse_sqrt_matrix(self):
+        evals, evecs = self.eigensystem()
+        inv_sqrtevals = Matrix.diagonal(1.0/np.sqrt(evals))
+        return inv_sqrtevals.transformed(evecs)
 
     def transformed(self, other):
         return self.linearly_transformed(other) #other * self * other.T
+
+    def back_transformed(self, other):
+        return self.linearly_transformed(other.T) #other.T * self * other
 
     def symmetrized(self):
         return 0.5 * (self + self.T)
