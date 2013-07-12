@@ -256,17 +256,16 @@ $(autotarget13): %: $(autodepend13)
 	@srcdir@/document_psifiles.py @srcdir@
 
 
-# Autodoc efp fragments
+# Autodoc fraglib efp fragments
 autodepend14 = \
-@top_srcdir@/libefp/libefp/fraglib/*.efp\
-@srcdir@/document_efpfragments.py
+@top_srcdir@/lib/fraglib/*.efp \
+@srcdir@/document_fraglib.py
 
 autotarget14 = \
-$(SOURCEDIR)/autodoc_available_efpfragments.rst
+$(SOURCEDIR)/autodoc_available_fraglib.rst
 
 $(autotarget14): %: $(autodepend14)
-	@srcdir@/document_efpfragments.py @srcdir@
-
+	@srcdir@/document_fraglib.py @srcdir@
 
 #autodoc: $(autotarget1) $(autotarget2) $(autotarget3) $(autotarget4) \
 
