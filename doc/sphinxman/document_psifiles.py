@@ -16,7 +16,7 @@ if (len(sys.argv) == 2):
 
 
 def pts(category, pyfile):
-    print 'Auto-documenting %s file %s' % (category, pyfile)
+    print('Auto-documenting %s file %s' % (category, pyfile))
 
 # License file psi4/lib/python/source.template
 fhead = open(DriverPath + '../../lib/python/source.template')
@@ -73,7 +73,7 @@ frst.write('   | %-4s | %-27s | %-120s |\n' %
 frst.write('   +=%4s=+=%27s=+=%120s=+\n' % 
     (4 * '=', 27 * '=', 120 * '='))
 
-for key in sorted(psifDict.iterkeys()):
+for key in sorted(psifDict.keys()):
     frst.write('   | %4d | %-27s | %-120s |\n' % 
         (key, psifDict[key]['label'], psifDict[key]['notes']))
     frst.write('   +-%-4s-+-%-27s-+-%-120s-+\n' % 

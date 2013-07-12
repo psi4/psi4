@@ -9,6 +9,7 @@ from collections import Iterable
 from fractions import Fraction
 from itertools import product, permutations, combinations
 import os
+import sys
 
 from grendel.util.metaclasses import SubscriptableClass
 
@@ -84,6 +85,13 @@ def full_path(path):
     if not os.path.isabs(ret_val):
         ret_val = os.path.abspath(ret_val)
     return os.path.normpath(ret_val)
+
+def python_version_at_least(*args):
+    return sys.version_info >= args
+python_minimum_version = python_version_at_least
+python_version_geq = python_version_at_least
+
+have_python3 = python_minimum_version((3,))
 
 #####################
 # Dependent Imports #

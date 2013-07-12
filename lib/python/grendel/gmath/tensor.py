@@ -765,7 +765,7 @@ class Tensor(LightTensor):
     def max_abs(self):
         if all(s == 1 for s in self.shape):
             return abs(self).ravel()[0]
-        return max(*abs(self).ravel())
+        return np.amax(abs(self))
 
     #-----------------#
     # Inquiry methods #

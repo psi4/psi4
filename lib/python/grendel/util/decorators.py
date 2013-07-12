@@ -193,6 +193,19 @@ def cached_method(func):
 
     return decorated
 
+# Simpler than CachedProperty, but does essentially the same thing...
+class LazyProperty(object):
+
+    def __init__(self, func):
+        self._func = func
+        self.__name__ = func.__name__
+        self.__doc__ = func.__doc__
+
+    def __get__(self, obj, klass=None):
+        if obj is None: return None
+        result = obj.__dict__[self.__name__] = self._func(obj)
+        return result
+
 class CachedProperty(object):
     """ Decorator for properties with cached return values.
     The decorator creates a property that stores the return value of the method call

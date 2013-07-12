@@ -97,6 +97,7 @@ boost::shared_ptr<MatrixFactory> get_matrix_factory()
     return matfac;
 }
 
+
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(CanonicalOrthog, Matrix::canonical_orthogonalization, 1, 2);
 
 /* IntegralFactory overloads */
@@ -198,7 +199,7 @@ void export_mints()
             .export_values();
 
     class_<PyBuffer<double>, shared_ptr<PyBuffer<double> > >("DoublePyBuffer", "Buffer interface to NumPy arrays").
-    		def("__array_interface__", &PyBuffer<double>::array_interface, "docstring");
+    		add_property("__array_interface__", &PyBuffer<double>::array_interface, "docstring");
 
     typedef void   (Matrix::*matrix_multiply)(bool, bool, double, const SharedMatrix&, const SharedMatrix&, double);
     typedef void   (Matrix::*matrix_diagonalize)(SharedMatrix&, boost::shared_ptr<Vector>&, diagonalize_order);
@@ -269,7 +270,7 @@ void export_mints()
             def("load", matrix_load(&Matrix::load), "docstring").
             def("load_mpqc", matrix_load(&Matrix::load_mpqc), "docstring").
             def("remove_symmetry", &Matrix::remove_symmetry, "docstring").
-            def("__array_interface__", matrix_array_interface_c1, "docstring");
+            add_property("__array_interface__", matrix_array_interface_c1, "docstring");
 
     class_<View, boost::noncopyable>("View", no_init).
             def(init<SharedMatrix, const Dimension&, const Dimension&>()).
@@ -314,6 +315,8 @@ void export_mints()
             add_property("basis", &OneBodyAOInt::basis, "The basis set on center one").
             add_property("basis1", &OneBodyAOInt::basis1, "The basis set on center one").
             add_property("basis2", &OneBodyAOInt::basis2, "The basis set on center two").
+            add_property("py_buffer_object", make_function(&OneBodyAOInt::py_buffer_object, return_internal_reference<>()), "docstring").
+            def("set_enable_pybuffer", &OneBodyAOInt::set_enable_pybuffer, "docstring").
             add_property("py_buffer", &OneBodyAOInt::py_buffer, "docstring");
 
     //typedef void (OneBodySOInt::*matrix_version)(SharedMatrix) const;
@@ -618,6 +621,8 @@ void export_mints()
             staticmethod("make_filename").
             def("construct", &BasisSet::construct, "docstring").
             staticmethod("construct").
+            def("zero_ao_basis_set", &BasisSet::zero_ao_basis_set, "Returns a BasisSet object that actually has a single s-function at the origin with an exponent of 0.0 and contraction of 1.0.").
+            staticmethod("zero_ao_basis_set").
             def("nbf", &BasisSet::nbf, "docstring").
             def("nao", &BasisSet::nao, "docstring").
             def("nprimitive", &BasisSet::nprimitive, "docstring").
@@ -662,6 +667,8 @@ void export_mints()
             def("nirrep", &Wavefunction::nirrep, "docstring").
             def("Ca_subset", &Wavefunction::Ca_subset, "docstring").
             def("Cb_subset", &Wavefunction::Cb_subset, "docstring").
+            def("epsilon_a_subset", &Wavefunction::epsilon_a_subset, "docstring").
+            def("epsilon_b_subset", &Wavefunction::epsilon_b_subset, "docstring").
             def("Ca", &Wavefunction::Ca, "docstring").
             def("Cb", &Wavefunction::Cb, "docstring").
             def("Fa", &Wavefunction::Fa, "docstring").

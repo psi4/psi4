@@ -16,6 +16,9 @@ from grendel.util.decorators import forwardable, def_delegators
 
 __all__ = []
 
+# TODO This should have raised an error???
+#j["µ,ν"] += D["ρ,σ"] * Cdf["Y,ρ,σ"] * g3["µ,ν,X"]
+
 @forwardable
 class EinsumTensor(object):
     """ A Tensor with indices, for performing contractions.

@@ -733,7 +733,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     two-electron integrals in the evaluation of CCD T2 amplitudes?
     Recommended true for all SAPT computations. -*/
     options.add_bool("NAT_ORBS_V4",false);
-    
+
     /*- Minimum occupation (eigenvalues of the MP2 OPDM) below which virtual
     natural orbitals are discarded for in each of the above three truncations
     -*/
@@ -2796,13 +2796,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("RUN_MP4",false);
       /*- do ccsd rather than qcisd? !expert -*/
       options.add_bool("RUN_CCSD",false);
-      /*- Use 3-index integrals to generate 4-index ERI's? 
+      /*- Use 3-index integrals to generate 4-index ERI's?
       This keyword is used for testing purposes only.  Changing its
       value will have no effect on the computation.  !expert -*/
       options.add_bool("USE_DF_INTS",false);
 
-      /*- Do use density fitting or cholesky decomposition in CC? This 
-      keyword is used internally by the driver. Changing its value 
+      /*- Do use density fitting or cholesky decomposition in CC? This
+      keyword is used internally by the driver. Changing its value
       will have no effect on the computation. -*/
       options.add_bool("DFCC",false);
       /*- Auxilliary basis for df-ccsd(t). -*/
@@ -2832,6 +2832,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Pressure in Pascal for thermodynamic analysis. -*/
       options.add_double("P", 101325);
   }
+    if (name == "LMP2"|| options.read_globals()) {
+        /*- The localization scheme to use. -*/
+        options.add_str("LOCAL_TYPE", "BOYS", "BOYS PIPEK_MEZEY");
+        options.add_int("MAXITER", 50);
+    }
   return true;
 }
 

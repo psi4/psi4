@@ -603,6 +603,29 @@ class Molecule(object):
     # Special Methods #
     ###################
 
+    def __add__(self, other):
+        if isinstance(other, Molecule):
+            new_atoms = list(self.atoms) + list(other.atoms)
+            if self.description is None or other.description is None:
+                new_desc = None
+            else:
+                new_desc = self.description + " + " + other.description
+            if self.cartesian_units != other.cartesian_units:
+                raise NotImplementedError()
+            if self.multiplicity != 1 or other.multiplicity != 1:
+                raise NotImplementedError()
+            new_charge = self.charge + other.charge
+            return Molecule(
+                atoms=new_atoms,
+                description=new_desc,
+                units=self.cartesian_units,
+                charge=new_charge
+            )
+        else:
+            return NotImplemented
+
+
+
     def __contains__(self, item):
         for atom in self:
             if atom == item:
@@ -1130,7 +1153,6 @@ class Molecule(object):
             com /= sum(atom.mass for atom in self)
             return magnitude(com) < tol
 
-
     def is_linear(self, tol=None):
         """ True if the molecule is linear to within `tol`.  All diatomics should return True.
 
@@ -1558,6 +1580,13 @@ class Molecule(object):
         ret_val = deepcopy(self)
         ret_val.rotate(axis, angle)
         return ret_val
+
+    def translate(self, translation):
+        translation = strip_units(translation, self.cartesian_units, assume_units=self.cartesian_units)
+        for atom in self:
+            atom.position += translation
+        self.update_cartesian_representation()
+        return self
 
     def inertial_system(self):
         """ Returns a tuple of the principal moments of inertia vector and the principal axes matrix.

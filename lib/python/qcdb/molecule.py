@@ -171,7 +171,7 @@ class Molecule(LibmintsMolecule):
 #        """Returns a string of Molecule formatted for psi4.
 #        Includes fragments and reorienting, if specified.
 #
-#        >>> print H2OH2O.save_string_for_psi4()
+#        >>> print(H2OH2O.save_string_for_psi4())
 #        6
 #        0 1
 #        O         -1.55100700      -0.11452000       0.00000000
@@ -286,7 +286,7 @@ class Molecule(LibmintsMolecule):
 
         """
         if self.nfragments() != 1:
-            print 'Molecule already fragmented so no further action by auto_fragments().'
+            print('Molecule already fragmented so no further action by auto_fragments().')
             return self
 
         flist = self.BFS()
@@ -400,7 +400,7 @@ class Molecule(LibmintsMolecule):
     def inertia_tensor(self, masswt=True):
         """Compute inertia tensor.
 
-        >>> print H2OH2O.inertia_tensor()
+        >>> print(H2OH2O.inertia_tensor())
         [[8.704574864178731, -8.828375721817082, 0.0], [-8.828375721817082, 280.82861714077666, 0.0], [0.0, 0.0, 281.249500988553]]
 
         """
@@ -513,7 +513,7 @@ class Molecule(LibmintsMolecule):
             text += '  Eqn. of Plane: %14.8f %14.8f %14.8f %14.8f   [Ai + Bj + Ck + D = 0]\n' % \
                 (xplane[0], xplane[1], xplane[2], xplane[3])
             dtemp = math.sqrt(evecs[0][midx] * evecs[0][midx] + evecs[1][midx] * evecs[1][midx] + evecs[2][midx] * evecs[2][midx])
-            print 'denom', dtemp
+            print('denom %s' % dtemp)
             hessplane = [evecs[0][midx] / dtemp, evecs[1][midx] / dtemp, evecs[2][midx] / dtemp, xplane[3] / dtemp]
             hessplane2 = [xplane[0] / dtemp, xplane[1] / dtemp, xplane[2] / dtemp, xplane[3] / dtemp]
             text += '  Eqn. of Plane: %14.8f %14.8f %14.8f %14.8f   [Ai + Bj + Ck + D = 0] H\n' % \
@@ -558,7 +558,7 @@ class Molecule(LibmintsMolecule):
             text += '  Distance from Center of %s to Center of %s along Plane of %s:  %14.8f   [Angstrom]\n' % \
                 ('2', '1', '1', distCPC * psi_bohr2angstroms)
 
-        print text
+        print(text)
 
 #        text = "        Interatomic Distances (Angstroms)\n\n"
 #        for i in range(self.natom()):
@@ -699,7 +699,7 @@ class Molecule(LibmintsMolecule):
                 # case where all param read from dashparam dict (which must have all correct keys)
                 func = 'custom'
                 dashcoeff[dashlvl][func] = {}
-                dashparam = dict((k.lower(), v) for k, v in dashparam.iteritems())
+                dashparam = dict((k.lower(), v) for k, v in dashparam.items())
                 for key in dashcoeff[dashlvl]['b3lyp'].keys():
                     if key in dashparam.keys():
                         dashcoeff[dashlvl][func][key] = dashparam[key]
@@ -714,7 +714,7 @@ class Molecule(LibmintsMolecule):
                 pass
             else:
                 # case where items in dashparam dict can override param taken from dashcoeff above
-                dashparam = dict((k.lower(), v) for k, v in dashparam.iteritems())
+                dashparam = dict((k.lower(), v) for k, v in dashparam.items())
                 for key in dashcoeff[dashlvl]['b3lyp'].keys():
                     if key in dashparam.keys():
                         dashcoeff[dashlvl][func][key] = dashparam[key]
@@ -767,7 +767,7 @@ class Molecule(LibmintsMolecule):
             raise ValidationError('Program dftd3 not found in path.')
         out, err = dashout.communicate()
         if verbosity >= 3:
-            print out
+            print(out)
 
         # Parse output (could go further and break into E6, E8, E10 and Cn coeff)
         success = False

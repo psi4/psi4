@@ -19,7 +19,7 @@ PSILIBS = \
 -lPSI_transqt2 -lPSI_cctriples -lPSI_scf_solver -lPSI_fock -lPSI_dcft -lPSI_mcscf -lPSI_sapt -lPSI_dftsapt \
 -lPSI_sapt_solver -lPSI_cchbar -lPSI_cclambda -lPSI_ccdensity -lPSI_transqt \
 -lPSI_ccresponse -lPSI_detci -lPSI_occ -lPSI_mrcc -lPSI_fnocc \
--lPSI_cceom -lPSI_adc -lPSI_thermo \
+-lPSI_cceom -lPSI_adc -lPSI_thermo -lPSI_lmp2 \
 -lPSI_functional -lPSI_disp -lPSI_thce -lPSI_3index -lPSI_mints_deriv -lPSI_optking -lPSI_findif \
 -lPSI_mints -lPSI_trans -lPSI_dpd -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_qt \
 -lPSI_ciomr -lPSI_options -lPSI_moinfo -lPSI_util \

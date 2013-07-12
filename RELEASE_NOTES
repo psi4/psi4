@@ -36,8 +36,18 @@ PSI4.0B5, July 2013
 *   Make cbs() wrapper work with MRCC interface
 *   CC code can now be used to compute energies with applied external field. Charges must be set up using the QM/MM module.
 *   DF-CC code now uses two sets of 3-index integrals: one for building the Fock matrix and one for all other ERI's
+*   Implementation of libefp is in progress
+*   Improved documentation of CC codes
+*   Improved handling of certain out-of-core contractions in CC code
+*   Added HTR40 database of hydrogen transfer reactions
+*   Partial fix to fallback to non-DF SCF when DF basis not available
+*   Allows PSI4 to be run interactively
+*   Updated naming of external files such as MOLDEN files
+*   Initial work to make PSI4 work with cmake
+*   Some changes to make more compatible with C++11
+*   Allow user-specified fixed geometry coordinates
+*   Added Hobza's A24 database
 
-commit e9f19e9aa317fb894a699daebf65a0fc78db3861
 Author: Andy Simmonett <andy.simmonett@gmail.com>
 Date:   Fri Jun 28 12:10:07 2013 -0400
 

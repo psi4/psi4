@@ -173,27 +173,27 @@ ObaraSaikaTwoCenterEFPRecursion::ObaraSaikaTwoCenterEFPRecursion(int max_am1, in
 
     size_ = max_am1 > max_am2 ? max_am1 : max_am2;
     size_ += 1;
-    size_ = (size_-1)*size_*(size_+1)+3;
-    q_   = init_box(size_, size_, max_am1_ + max_am2_ + 3);
+    size_ = (size_-1)*size_*(size_+1)+1;
+    q_   = init_box(size_, size_, max_am1_ + max_am2_ + 4);
     x_   = init_box(size_, size_, max_am1_ + max_am2_ + 3);
     y_   = init_box(size_, size_, max_am1_ + max_am2_ + 3);
     z_   = init_box(size_, size_, max_am1_ + max_am2_ + 3);
-    xx_  = init_box(size_, size_, max_am1_ + max_am2_ + 3);
-    yy_  = init_box(size_, size_, max_am1_ + max_am2_ + 3);
-    zz_  = init_box(size_, size_, max_am1_ + max_am2_ + 3);
-    xy_  = init_box(size_, size_, max_am1_ + max_am2_ + 3);
-    xz_  = init_box(size_, size_, max_am1_ + max_am2_ + 3);
-    yz_  = init_box(size_, size_, max_am1_ + max_am2_ + 3);
-    xxx_ = init_box(size_, size_, max_am1_ + max_am2_ + 3);
-    yyy_ = init_box(size_, size_, max_am1_ + max_am2_ + 3);
-    zzz_ = init_box(size_, size_, max_am1_ + max_am2_ + 3);
-    xxy_ = init_box(size_, size_, max_am1_ + max_am2_ + 3);
-    xxz_ = init_box(size_, size_, max_am1_ + max_am2_ + 3);
-    xyy_ = init_box(size_, size_, max_am1_ + max_am2_ + 3);
-    yyz_ = init_box(size_, size_, max_am1_ + max_am2_ + 3);
-    xzz_ = init_box(size_, size_, max_am1_ + max_am2_ + 3);
-    yzz_ = init_box(size_, size_, max_am1_ + max_am2_ + 3);
-    xyz_ = init_box(size_, size_, max_am1_ + max_am2_ + 3);
+    xx_  = init_box(size_, size_, max_am1_ + max_am2_ + 2);
+    yy_  = init_box(size_, size_, max_am1_ + max_am2_ + 2);
+    zz_  = init_box(size_, size_, max_am1_ + max_am2_ + 2);
+    xy_  = init_box(size_, size_, max_am1_ + max_am2_ + 2);
+    xz_  = init_box(size_, size_, max_am1_ + max_am2_ + 2);
+    yz_  = init_box(size_, size_, max_am1_ + max_am2_ + 2);
+    xxx_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    yyy_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    zzz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    xxy_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    xxz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    xyy_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    yyz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    xzz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    yzz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    xyz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
 }
 
 ObaraSaikaTwoCenterEFPRecursion::~ObaraSaikaTwoCenterEFPRecursion()
@@ -1903,18 +1903,19 @@ void ObaraSaikaTwoCenterVIDeriv2Recursion::compute(double PA[3], double PB[3], d
 }
 
 ObaraSaikaTwoCenterElectricField::ObaraSaikaTwoCenterElectricField(int max_am1, int max_am2)
-    : ObaraSaikaTwoCenterVIRecursion(max_am1+2, max_am2+2)
+    : ObaraSaikaTwoCenterVIRecursion(max_am1, max_am2) // This is not used, because the elec deriv (3rd arg) needed is different
 {
-    ex_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
-    ey_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
-    ez_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    q_   = init_box(size_, size_, max_am1_ + max_am2_ + 2);
+    x_   = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    y_   = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    z_   = init_box(size_, size_, max_am1_ + max_am2_ + 1);
 }
 
 ObaraSaikaTwoCenterElectricField::~ObaraSaikaTwoCenterElectricField()
 {
-    free_box(ex_, size_, size_);
-    free_box(ey_, size_, size_);
-    free_box(ez_, size_, size_);
+    free_box(x_, size_, size_);
+    free_box(y_, size_, size_);
+    free_box(z_, size_, size_);
 }
 
 void ObaraSaikaTwoCenterElectricField::compute(double PA[3], double PB[3], double PC[3], double zeta, int am1, int am2)
@@ -1929,84 +1930,100 @@ void ObaraSaikaTwoCenterElectricField::compute(double PA[3], double PB[3], doubl
     int ax, ay, az, bx, by, bz;
     int aind, bind;
     double ooz = 1.0/(2.0 * zeta);
-    int mmax = am1 + am2;
+    int mmax = am1 + am2 + 1;
 
-    // Call our super class to compute potential integrals
-    ObaraSaikaTwoCenterVIRecursion::compute(PA, PB, PC, zeta, max_am1_+1, max_am2_+1);
+    // Prefactor from A20
+    double tmp = sqrt(zeta) * M_2_SQRTPI;
+    // U from A21
+    double u = zeta * (PC[0] * PC[0] + PC[1] * PC[1] + PC[2] * PC[2]);
+    double *F = new double[mmax+1]; // TODO: Move this allocation into constructor
 
-    // Compute starting integrals using A25
-    fprintf(outfile, "setup:\n");
+    // Zero out F
+    memset(F, 0, sizeof(double) * (mmax+1));
+
+    // Form Fm(U) from A20
+    calculate_f(F, mmax, u);
+
+    // Perform recursion in m for (a|A(0)|s) using A20
     for (m=0; m<=mmax; ++m) {
-        ex_[0][0][m] = 2.0 * zeta * PC[0] * vi_[0][0][m+1];
-        ey_[0][0][m] = 2.0 * zeta * PC[1] * vi_[0][0][m+1];
-        ez_[0][0][m] = 2.0 * zeta * PC[2] * vi_[0][0][m+1];
-
-        fprintf(outfile, "1 ex_[0][0][%d] = %lf\tey_[0][0][%d] = %lf\tez_[0][0][%d] = %lf\n", m, ex_[0][0][m], m, ey_[0][0][m], m, ez_[0][0][m]);
+        q_[0][0][m] = tmp * F[m];
+    }
+    for (m=0; m<=mmax-1; ++m) {
+        x_[0][0][m] = 2.0*zeta*PC[0]*q_[0][0][m+1];
+        y_[0][0][m] = 2.0*zeta*PC[1]*q_[0][0][m+1];
+        z_[0][0][m] = 2.0*zeta*PC[2]*q_[0][0][m+1];
     }
 
     // Perform recursion in b with a=0
-    //    subset of A24
-    fprintf(outfile, "upward in j with i=0:\n");
+    //  subset of A19
     for (b=1; b<=am2; ++b) {
         for (bx=0; bx<=b; ++bx) {
             for (by=0; by<=b-bx; ++by) {
                 bz = b-bx-by;
 
-                // Compute the index into ex_, ey_, ez_ for bx, by, bz
+                // Compute the index into VI for bx,by,bz
                 bind = bx*bxm + by*bym + bz*bzm;
 
                 // Compute each x, y, z contribution
                 if (bz > 0) {
-                    for (m=0; m<=am2-b; ++m) {
-                        ex_[0][bind][m] = PB[2] * ex_[0][bind-bzm][m] - PC[2] * ex_[0][bind-bzm][m+1];
-                        ey_[0][bind][m] = PB[2] * ey_[0][bind-bzm][m] - PC[2] * ey_[0][bind-bzm][m+1];
-                        ez_[0][bind][m] = PB[2] * ez_[0][bind-bzm][m] - PC[2] * ez_[0][bind-bzm][m+1] + vi_[0][bind-bzm][m+1];
-
-                        fprintf(outfile, "2 ex_[0][%d][%d] = %lf\tey_[0][%d][%d] = %lf\tez_[0][%d][%d] = %lf\n", bind, m, ex_[0][bind][m], bind, m, ey_[0][bind][m], bind, m, ez_[0][bind][m]);
+                    for (m=0; m<=mmax-b; ++m) { /* Electrostatic potential integrals */
+                        q_[0][bind][m] = PB[2] * q_[0][bind-bzm][m] - PC[2] * q_[0][bind-bzm][m+1];
+                    }
+                    for (m=0; m<=mmax-b-1; ++m) { /* Electric field integrals */
+                        x_[0][bind][m] = PB[2] * x_[0][bind-bzm][m] - PC[2] * x_[0][bind-bzm][m+1];
+                        y_[0][bind][m] = PB[2] * y_[0][bind-bzm][m] - PC[2] * y_[0][bind-bzm][m+1];
+                        z_[0][bind][m] = PB[2] * z_[0][bind-bzm][m] - PC[2] * z_[0][bind-bzm][m+1] + q_[0][bind-bzm][m+1];
                     }
                     if (bz > 1) {
-                        for (m=0; m<=am2-b; ++m) {
-                            ex_[0][bind][m] += ooz * (bz-1) * (ex_[0][bind-2*bzm][m] - ex_[0][bind-2*bzm][m+1]);
-                            ey_[0][bind][m] += ooz * (bz-1) * (ey_[0][bind-2*bzm][m] - ey_[0][bind-2*bzm][m+1]);
-                            ez_[0][bind][m] += ooz * (bz-1) * (ez_[0][bind-2*bzm][m] - ez_[0][bind-2*bzm][m+1]);
-
-                            fprintf(outfile, "3 ex_[0][%d][%d] = %lf\tey_[0][%d][%d] = %lf\tez_[0][%d][%d] = %lf\n", bind, m, ex_[0][bind][m], bind, m, ey_[0][bind][m], bind, m, ez_[0][bind][m]);
+                        for (m=0; m<=mmax-b; ++m) {
+                            q_[0][bind][m] += ooz * (bz-1) * (q_[0][bind-2*bzm][m] - q_[0][bind-2*bzm][m+1]);
+                        }
+                        for (m=0; m<=mmax-b-1; ++m) {
+                            x_[0][bind][m] += ooz * (bz-1) * (x_[0][bind-2*bzm][m] - x_[0][bind-2*bzm][m+1]);
+                            y_[0][bind][m] += ooz * (bz-1) * (y_[0][bind-2*bzm][m] - y_[0][bind-2*bzm][m+1]);
+                            z_[0][bind][m] += ooz * (bz-1) * (z_[0][bind-2*bzm][m] - z_[0][bind-2*bzm][m+1]);
                         }
                     }
                 }
                 else if (by > 0) {
-                    for (m=0; m<=am2-b; ++m) {
-                        ex_[0][bind][m] = PB[1] * ex_[0][bind-bym][m] - PC[1] * ex_[0][bind-bym][m+1];
-                        ey_[0][bind][m] = PB[1] * ey_[0][bind-bym][m] - PC[1] * ey_[0][bind-bym][m+1] + vi_[0][bind-bym][m+1];
-                        ez_[0][bind][m] = PB[1] * ez_[0][bind-bym][m] - PC[1] * ez_[0][bind-bym][m+1];
-
-                        fprintf(outfile, "4 ex_[0][%d][%d] = %lf\tey_[0][%d][%d] = %lf\tez_[0][%d][%d] = %lf\n", bind, m, ex_[0][bind][m], bind, m, ey_[0][bind][m], bind, m, ez_[0][bind][m]);
+                    for (m=0; m<=mmax-b; ++m) {
+                        q_[0][bind][m] = PB[1] * q_[0][bind-bym][m] - PC[1] * q_[0][bind-bym][m+1];
                     }
-                    if (by > 1) {
-                        for (m=0; m<=am2-b; ++m) {
-                            ex_[0][bind][m] += ooz * (by-1) * (ex_[0][bind-2*bym][m] - ex_[0][bind-2*bym][m+1]);
-                            ey_[0][bind][m] += ooz * (by-1) * (ey_[0][bind-2*bym][m] - ey_[0][bind-2*bym][m+1]);
-                            ez_[0][bind][m] += ooz * (by-1) * (ez_[0][bind-2*bym][m] - ez_[0][bind-2*bym][m+1]);
+                    for (m=0; m<=mmax-b-1; ++m) {
+                        x_[0][bind][m] = PB[1] * x_[0][bind-bym][m] - PC[1] * x_[0][bind-bym][m+1];
+                        y_[0][bind][m] = PB[1] * y_[0][bind-bym][m] - PC[1] * y_[0][bind-bym][m+1] + q_[0][bind-bym][m+1];
+                        z_[0][bind][m] = PB[1] * z_[0][bind-bym][m] - PC[1] * z_[0][bind-bym][m+1];
+                    }
 
-                            fprintf(outfile, "5 ex_[0][%d][%d] = %lf\tey_[0][%d][%d] = %lf\tez_[0][%d][%d] = %lf\n", bind, m, ex_[0][bind][m], bind, m, ey_[0][bind][m], bind, m, ez_[0][bind][m]);
+                    if (by > 1) {
+                        for (m=0; m<=mmax-b; ++m) {
+                            q_[0][bind][m] += ooz * (by-1) * (q_[0][bind-2*bym][m] - q_[0][bind-2*bym][m+1]);
+                        }
+                        for (m=0; m<=mmax-b-1; ++m) {
+                            x_[0][bind][m] += ooz * (by-1) * (x_[0][bind-2*bym][m] - x_[0][bind-2*bym][m+1]);
+                            y_[0][bind][m] += ooz * (by-1) * (y_[0][bind-2*bym][m] - y_[0][bind-2*bym][m+1]);
+                            z_[0][bind][m] += ooz * (by-1) * (z_[0][bind-2*bym][m] - z_[0][bind-2*bym][m+1]);
                         }
                     }
                 }
                 else if (bx > 0) {
-                    for (m=0; m<=am2-b; ++m) {
-                        ex_[0][bind][m] = PB[0] * ex_[0][bind-bxm][m] - PC[0] * ex_[0][bind-bxm][m+1] + vi_[0][bind-bxm][m+1];
-                        ey_[0][bind][m] = PB[0] * ey_[0][bind-bxm][m] - PC[0] * ey_[0][bind-bxm][m+1];
-                        ez_[0][bind][m] = PB[0] * ez_[0][bind-bxm][m] - PC[0] * ez_[0][bind-bxm][m+1];
-
-                        fprintf(outfile, "6 ex_[0][%d][%d] = %lf\tey_[0][%d][%d] = %lf\tez_[0][%d][%d] = %lf\n", bind, m, ex_[0][bind][m], bind, m, ey_[0][bind][m], bind, m, ez_[0][bind][m]);
+                    for (m=0; m<=mmax-b; ++m) {
+                        q_[0][bind][m] = PB[0] * q_[0][bind-bxm][m] - PC[0] * q_[0][bind-bxm][m+1];
                     }
-                    if (bx > 1) {
-                        for (m=0; m<=am2-b; ++m) {
-                            ex_[0][bind][m] += ooz * (bx-1) * (ex_[0][bind-2*bxm][m] - ex_[0][bind-2*bxm][m+1]);
-                            ey_[0][bind][m] += ooz * (bx-1) * (ey_[0][bind-2*bxm][m] - ey_[0][bind-2*bxm][m+1]);
-                            ez_[0][bind][m] += ooz * (bx-1) * (ez_[0][bind-2*bxm][m] - ez_[0][bind-2*bxm][m+1]);
+                    for (m=0; m<=mmax-b-1; ++m) {
+                        x_[0][bind][m] = PB[0] * x_[0][bind-bxm][m] - PC[0] * x_[0][bind-bxm][m+1] + q_[0][bind-bxm][m+1];
+                        y_[0][bind][m] = PB[0] * y_[0][bind-bxm][m] - PC[0] * y_[0][bind-bxm][m+1];
+                        z_[0][bind][m] = PB[0] * z_[0][bind-bxm][m] - PC[0] * z_[0][bind-bxm][m+1];
+                    }
 
-                            fprintf(outfile, "7 ex_[0][%d][%d] = %lf\tey_[0][%d][%d] = %lf\tez_[0][%d][%d] = %lf\n", bind, m, ex_[0][bind][m], bind, m, ey_[0][bind][m], bind, m, ez_[0][bind][m]);
+                    if (bx > 1) {
+                        for (m=0; m<=mmax-b; ++m) {
+                            q_[0][bind][m] += ooz * (bx-1) * (q_[0][bind-2*bxm][m] - q_[0][bind-2*bxm][m+1]);
+                        }
+                        for (m=0; m<=mmax-b-1; ++m) {
+                            x_[0][bind][m] += ooz * (bx-1) * (x_[0][bind-2*bxm][m] - x_[0][bind-2*bxm][m+1]);
+                            y_[0][bind][m] += ooz * (bx-1) * (y_[0][bind-2*bxm][m] - y_[0][bind-2*bxm][m+1]);
+                            z_[0][bind][m] += ooz * (bx-1) * (z_[0][bind-2*bxm][m] - z_[0][bind-2*bxm][m+1]);
                         }
                     }
                 }
@@ -2015,92 +2032,110 @@ void ObaraSaikaTwoCenterElectricField::compute(double PA[3], double PB[3], doubl
     }
 
     // Perform upward recursion in a with all b's
-    for (b=0; b<=am2; ++b) {
+    for (b=0; b<=am2; b++) {
         for (bx=0; bx<=b; bx++) {
             for (by=0; by<=b-bx;by++) {
                 bz = b-bx-by;
                 bind = bx*bxm + by*bym + bz*bzm;
 
                 for (a=1; a<=am1; a++) {
+                    // This next for loop was for (ax=0; ax<=b; ax++)
+                    // this could explain why dx2 was not being computed.
+                    // change for for(ax=0; ax<a; ax++) on 2005-09-15 4:11pm
                     for (ax=0; ax<=a; ax++) {
                         for (ay=0; ay<=a-ax; ay++) {
                             az = a-ax-ay;
                             aind = ax*axm + ay*aym + az*azm;
 
                             if (az > 0) {
-                                for (m=0; m<=mmax-a-b; ++m) {
-                                    //                                    AIX[iind][jind][m] = paz*AIX[iind-izm][jind][m] - pcz*AIX[iind-izm][jind][m+1];
-                                    //                                    AIY[iind][jind][m] = paz*AIY[iind-izm][jind][m] - pcz*AIY[iind-izm][jind][m+1];
-                                    //                                    AIZ[iind][jind][m] = paz*AIZ[iind-izm][jind][m] - pcz*AIZ[iind-izm][jind][m+1] + AI0[iind-izm][jind][m+1];
-
-                                    ex_[aind][bind][m] = PA[2] * ex_[aind-azm][bind][m] - PC[2] * ex_[aind-azm][bind][m+1];
-                                    ey_[aind][bind][m] = PA[2] * ey_[aind-azm][bind][m] - PC[2] * ey_[aind-azm][bind][m+1];
-                                    ez_[aind][bind][m] = PA[2] * ez_[aind-azm][bind][m] - PC[2] * ez_[aind-azm][bind][m+1] + vi_[aind-azm][bind][m+1];
-
-                                    fprintf(outfile, "8 ex_[%d][%d][%d] = %lf\tey_[%d][%d][%d] = %lf\tez_[%d][%d][%d] = %lf\tvi_ = %lf %d %d %d\n", aind, bind, m, ex_[aind][bind][m], aind, bind, m, ey_[aind][bind][m], aind, bind, m, ez_[aind][bind][m], vi_[aind-azm][bind][m+1], aind-azm, bind, m+1);
+                                for (m=0; m<=mmax-a-b; m++) {
+                                    q_[aind][bind][m] = PA[2] * q_[aind-azm][bind][m] - PC[2] * q_[aind-azm][bind][m+1];
                                 }
+                                for (m=0; m<=mmax-a-b-1; ++m) {
+                                    x_[aind][bind][m] = PA[2] * x_[aind-azm][bind][m] - PC[2] * x_[aind-azm][bind][m+1];
+                                    y_[aind][bind][m] = PA[2] * y_[aind-azm][bind][m] - PC[2] * y_[aind-azm][bind][m+1];
+                                    z_[aind][bind][m] = PA[2] * z_[aind-azm][bind][m] - PC[2] * z_[aind-azm][bind][m+1] + q_[aind-azm][bind][m+1];
+                                }
+
                                 if (az > 1) {
-                                    for (m=0; m<=mmax-a-b; ++m) {
-                                        ex_[aind][bind][m] += ooz * (az-1) * (ex_[aind-2*azm][bind][m] - ex_[aind-2*azm][bind][m+1]);
-                                        ey_[aind][bind][m] += ooz * (az-1) * (ey_[aind-2*azm][bind][m] - ey_[aind-2*azm][bind][m+1]);
-                                        ez_[aind][bind][m] += ooz * (az-1) * (ez_[aind-2*azm][bind][m] - ez_[aind-2*azm][bind][m+1]);
-                                        fprintf(outfile, "9 ex_[%d][%d][%d] = %lf\tey_[%d][%d][%d] = %lf\tez_[%d][%d][%d] = %lf\n", aind, bind, m, ex_[aind][bind][m], aind, bind, m, ey_[aind][bind][m], aind, bind, m, ez_[aind][bind][m]);
+                                    for (m=0; m<= mmax-a-b; m++) {
+                                        q_[aind][bind][m] += ooz * (az-1) * (q_[aind-2*azm][bind][m] - q_[aind-2*azm][bind][m+1]);
+                                    }
+                                    for (m=0; m<=mmax-a-b-1; ++m) {
+                                        x_[aind][bind][m] += ooz * (az-1) * (x_[aind-2*azm][bind][m] - x_[aind-2*azm][bind][m+1]);
+                                        y_[aind][bind][m] += ooz * (az-1) * (y_[aind-2*azm][bind][m] - y_[aind-2*azm][bind][m+1]);
+                                        z_[aind][bind][m] += ooz * (az-1) * (z_[aind-2*azm][bind][m] - z_[aind-2*azm][bind][m+1]);
                                     }
                                 }
                                 if (bz > 0) {
-                                    for (m=0; m<=mmax-a-b; ++m) {
-                                        ex_[aind][bind][m] += ooz * bz * (ex_[aind-azm][bind-bzm][m] - ex_[aind-azm][bind-bzm][m+1]);
-                                        ey_[aind][bind][m] += ooz * bz * (ey_[aind-azm][bind-bzm][m] - ey_[aind-azm][bind-bzm][m+1]);
-                                        ez_[aind][bind][m] += ooz * bz * (ez_[aind-azm][bind-bzm][m] - ez_[aind-azm][bind-bzm][m+1]);
-                                        fprintf(outfile, "10 ex_[%d][%d][%d] = %lf\tey_[%d][%d][%d] = %lf\tez_[%d][%d][%d] = %lf\n", aind, bind, m, ex_[aind][bind][m], aind, bind, m, ey_[aind][bind][m], aind, bind, m, ez_[aind][bind][m]);
+                                    for (m=0; m<= mmax-a-b; m++) {
+                                        q_[aind][bind][m] += ooz * bz * (q_[aind-azm][bind-bzm][m] - q_[aind-azm][bind-bzm][m+1]);
+                                    }
+                                    for (m=0; m<=mmax-a-b-1; ++m) {
+                                        x_[aind][bind][m] += ooz * bz * (x_[aind-azm][bind-bzm][m] - x_[aind-azm][bind-bzm][m+1]);
+                                        y_[aind][bind][m] += ooz * bz * (y_[aind-azm][bind-bzm][m] - y_[aind-azm][bind-bzm][m+1]);
+                                        z_[aind][bind][m] += ooz * bz * (z_[aind-azm][bind-bzm][m] - z_[aind-azm][bind-bzm][m+1]);
                                     }
                                 }
                             }
                             else if (ay > 0) {
-                                for (m=0; m<=mmax-a-b; ++m) {
-                                    ex_[aind][bind][m] = PA[1] * ex_[aind-aym][bind][m] - PC[1] * ex_[aind-aym][bind][m+1];
-                                    ey_[aind][bind][m] = PA[1] * ey_[aind-aym][bind][m] - PC[1] * ey_[aind-aym][bind][m+1] + vi_[aind-aym][bind][m+1];
-                                    ez_[aind][bind][m] = PA[1] * ez_[aind-aym][bind][m] - PC[1] * ez_[aind-aym][bind][m+1];
-                                    fprintf(outfile, "11 ex_[%d][%d][%d] = %lf\tey_[%d][%d][%d] = %lf\tez_[%d][%d][%d] = %lf\n", aind, bind, m, ex_[aind][bind][m], aind, bind, m, ey_[aind][bind][m], aind, bind, m, ez_[aind][bind][m]);
+                                for (m=0; m<=mmax-a-b; m++) {
+                                    q_[aind][bind][m] = PA[1] * q_[aind-aym][bind][m] - PC[1] * q_[aind-aym][bind][m+1];
+                                }
+                                for (m=0; m<=mmax-a-b-1; ++m) {
+                                    x_[aind][bind][m] = PA[1] * x_[aind-aym][bind][m] - PC[1] * x_[aind-aym][bind][m+1];
+                                    y_[aind][bind][m] = PA[1] * y_[aind-aym][bind][m] - PC[1] * y_[aind-aym][bind][m+1] + q_[aind-aym][bind][m+1];
+                                    z_[aind][bind][m] = PA[1] * z_[aind-aym][bind][m] - PC[1] * z_[aind-aym][bind][m+1];
                                 }
                                 if (ay > 1) {
-                                    for (m=0; m<=mmax-a-b; ++m) {
-                                        ex_[aind][bind][m] += ooz * (ay-1) * (ex_[aind-2*aym][bind][m] - ex_[aind-2*aym][bind][m+1]);
-                                        ey_[aind][bind][m] += ooz * (ay-1) * (ey_[aind-2*aym][bind][m] - ey_[aind-2*aym][bind][m+1]);
-                                        ez_[aind][bind][m] += ooz * (ay-1) * (ez_[aind-2*aym][bind][m] - ez_[aind-2*aym][bind][m+1]);
-                                        fprintf(outfile, "12 ex_[%d][%d][%d] = %lf\tey_[%d][%d][%d] = %lf\tez_[%d][%d][%d] = %lf\n", aind, bind, m, ex_[aind][bind][m], aind, bind, m, ey_[aind][bind][m], aind, bind, m, ez_[aind][bind][m]);
+                                    for (m=0; m<= mmax-a-b; m++) {
+                                        q_[aind][bind][m] += ooz * (ay-1) * (q_[aind-2*aym][bind][m] - q_[aind-2*aym][bind][m+1]);
+                                    }
+                                    for (m=0; m<=mmax-a-b-1; ++m) {
+                                        x_[aind][bind][m] += ooz * (ay-1) * (x_[aind-2*aym][bind][m] - x_[aind-2*aym][bind][m+1]);
+                                        y_[aind][bind][m] += ooz * (ay-1) * (y_[aind-2*aym][bind][m] - y_[aind-2*aym][bind][m+1]);
+                                        z_[aind][bind][m] += ooz * (ay-1) * (z_[aind-2*aym][bind][m] - z_[aind-2*aym][bind][m+1]);
                                     }
                                 }
                                 if (by > 0) {
-                                    for (m=0; m<=mmax-a-b; ++m) {
-                                        ex_[aind][bind][m] += ooz * by * (ex_[aind-aym][bind-bym][m] - ex_[aind-aym][bind-bym][m+1]);
-                                        ey_[aind][bind][m] += ooz * by * (ey_[aind-aym][bind-bym][m] - ey_[aind-aym][bind-bym][m+1]);
-                                        ez_[aind][bind][m] += ooz * by * (ez_[aind-aym][bind-bym][m] - ez_[aind-aym][bind-bym][m+1]);
-                                        fprintf(outfile, "13 ex_[%d][%d][%d] = %lf\tey_[%d][%d][%d] = %lf\tez_[%d][%d][%d] = %lf\n", aind, bind, m, ex_[aind][bind][m], aind, bind, m, ey_[aind][bind][m], aind, bind, m, ez_[aind][bind][m]);
+                                    for (m=0; m<= mmax-a-b; m++) {
+                                        q_[aind][bind][m] += ooz * by * (q_[aind-aym][bind-bym][m] - q_[aind-aym][bind-bym][m+1]);
+                                    }
+                                    for (m=0; m<=mmax-a-b-1; ++m) {
+                                        x_[aind][bind][m] += ooz * by * (x_[aind-aym][bind-bym][m] - x_[aind-aym][bind-bym][m+1]);
+                                        y_[aind][bind][m] += ooz * by * (y_[aind-aym][bind-bym][m] - y_[aind-aym][bind-bym][m+1]);
+                                        z_[aind][bind][m] += ooz * by * (z_[aind-aym][bind-bym][m] - z_[aind-aym][bind-bym][m+1]);
                                     }
                                 }
                             }
                             else if (ax > 0) {
-                                for (m=0; m<=mmax-a-b; ++m) {
-                                    ex_[aind][bind][m] = PA[0] * ex_[aind-axm][bind][m] - PC[0] * ex_[aind-axm][bind][m+1] + vi_[aind-axm][bind][m+1];
-                                    ey_[aind][bind][m] = PA[0] * ey_[aind-axm][bind][m] - PC[0] * ey_[aind-axm][bind][m+1];
-                                    ez_[aind][bind][m] = PA[0] * ez_[aind-axm][bind][m] - PC[0] * ez_[aind-axm][bind][m+1];
-                                    fprintf(outfile, "14 ex_[%d][%d][%d] = %lf\tey_[%d][%d][%d] = %lf\tez_[%d][%d][%d] = %lf\n", aind, bind, m, ex_[aind][bind][m], aind, bind, m, ey_[aind][bind][m], aind, bind, m, ez_[aind][bind][m]);
+                                for (m=0; m<=mmax-a-b; m++) {
+                                    q_[aind][bind][m] = PA[0] * q_[aind-axm][bind][m] - PC[0] * q_[aind-axm][bind][m+1];
                                 }
+                                for (m=0; m<=mmax-a-b-1; ++m) {
+                                    x_[aind][bind][m] = PA[0] * x_[aind-axm][bind][m] - PC[0] * x_[aind-axm][bind][m+1] + q_[aind-axm][bind][m+1];
+                                    y_[aind][bind][m] = PA[0] * y_[aind-axm][bind][m] - PC[0] * y_[aind-axm][bind][m+1];
+                                    z_[aind][bind][m] = PA[0] * z_[aind-axm][bind][m] - PC[0] * z_[aind-axm][bind][m+1];
+                                }
+
                                 if (ax > 1) {
-                                    for (m=0; m<=mmax-a-b; ++m) {
-                                        ex_[aind][bind][m] += ooz * (ax-1) * (ex_[aind-2*axm][bind][m] - ex_[aind-2*axm][bind][m+1]);
-                                        ey_[aind][bind][m] += ooz * (ax-1) * (ey_[aind-2*axm][bind][m] - ey_[aind-2*axm][bind][m+1]);
-                                        ez_[aind][bind][m] += ooz * (ax-1) * (ez_[aind-2*axm][bind][m] - ez_[aind-2*axm][bind][m+1]);
-                                        fprintf(outfile, "15 ex_[%d][%d][%d] = %lf\tey_[%d][%d][%d] = %lf\tez_[%d][%d][%d] = %lf\n", aind, bind, m, ex_[aind][bind][m], aind, bind, m, ey_[aind][bind][m], aind, bind, m, ez_[aind][bind][m]);
+                                    for (m=0; m<= mmax-a-b; m++) {
+                                        q_[aind][bind][m] += ooz * (ax-1) * (q_[aind-2*axm][bind][m] - q_[aind-2*axm][bind][m+1]);
+                                    }
+                                    for (m=0; m<=mmax-a-b-1; ++m) {
+                                        x_[aind][bind][m] += ooz * (ax-1) * (x_[aind-2*axm][bind][m] - x_[aind-2*axm][bind][m+1]);
+                                        y_[aind][bind][m] += ooz * (ax-1) * (y_[aind-2*axm][bind][m] - y_[aind-2*axm][bind][m+1]);
+                                        z_[aind][bind][m] += ooz * (ax-1) * (z_[aind-2*axm][bind][m] - z_[aind-2*axm][bind][m+1]);
                                     }
                                 }
                                 if (bx > 0) {
-                                    for (m=0; m<=mmax-a-b; ++m) {
-                                        ex_[aind][bind][m] += ooz * bx * (ex_[aind-axm][bind-bxm][m] - ex_[aind-axm][bind-bxm][m+1]);
-                                        ey_[aind][bind][m] += ooz * bx * (ey_[aind-axm][bind-bxm][m] - ey_[aind-axm][bind-bxm][m+1]);
-                                        ez_[aind][bind][m] += ooz * bx * (ez_[aind-axm][bind-bxm][m] - ez_[aind-axm][bind-bxm][m+1]);
-                                        fprintf(outfile, "16 ex_[%d][%d][%d] = %lf\tey_[%d][%d][%d] = %lf\tez_[%d][%d][%d] = %lf\n", aind, bind, m, ex_[aind][bind][m], aind, bind, m, ey_[aind][bind][m], aind, bind, m, ez_[aind][bind][m]);
+                                    for (m=0; m<= mmax-a-b; m++) {
+                                        q_[aind][bind][m] += ooz * bx * (q_[aind-axm][bind-bxm][m] - q_[aind-axm][bind-bxm][m+1]);
+                                    }
+                                    for (m=0; m<=mmax-a-b-1; ++m) {
+                                        x_[aind][bind][m] += ooz * bx * (x_[aind-axm][bind-bxm][m] - x_[aind-axm][bind-bxm][m+1]);
+                                        y_[aind][bind][m] += ooz * bx * (y_[aind-axm][bind-bxm][m] - y_[aind-axm][bind-bxm][m+1]);
+                                        z_[aind][bind][m] += ooz * bx * (z_[aind-axm][bind-bxm][m] - z_[aind-axm][bind-bxm][m+1]);
                                     }
                                 }
                             }
@@ -2110,6 +2145,7 @@ void ObaraSaikaTwoCenterElectricField::compute(double PA[3], double PB[3], doubl
             }
         }
     }
+    delete[] F;
 }
 
 ObaraSaikaTwoCenterElectricFieldGradient::ObaraSaikaTwoCenterElectricFieldGradient(int max_am1, int max_am2)
@@ -2176,10 +2212,10 @@ void ObaraSaikaTwoCenterElectricFieldGradient::compute(double PA[3], double PB[3
                     for (m=0; m<=mmax-b-2; ++m) {
                         exx_[0][bind][m] = PB[2] * exx_[0][bind-bzm][m] - PC[2] * exx_[0][bind-bzm][m+1];
                         eyy_[0][bind][m] = PB[2] * eyy_[0][bind-bzm][m] - PC[2] * eyy_[0][bind-bzm][m+1];
-                        ezz_[0][bind][m] = PB[2] * ezz_[0][bind-bzm][m] - PC[2] * ezz_[0][bind-bzm][m+1] + 2.0 * ez_[0][bind-bzm][m+1];
+                        ezz_[0][bind][m] = PB[2] * ezz_[0][bind-bzm][m] - PC[2] * ezz_[0][bind-bzm][m+1] + 2.0 * z_[0][bind-bzm][m+1];
                         exy_[0][bind][m] = PB[2] * exy_[0][bind-bzm][m] - PC[2] * exy_[0][bind-bzm][m+1];
-                        exz_[0][bind][m] = PB[2] * exz_[0][bind-bzm][m] - PC[2] * exz_[0][bind-bzm][m+1] + ex_[0][bind-bzm][m+1];
-                        eyz_[0][bind][m] = PB[2] * eyz_[0][bind-bzm][m] - PC[2] * eyz_[0][bind-bzm][m+1] + ey_[0][bind-bzm][m+1];
+                        exz_[0][bind][m] = PB[2] * exz_[0][bind-bzm][m] - PC[2] * exz_[0][bind-bzm][m+1] + x_[0][bind-bzm][m+1];
+                        eyz_[0][bind][m] = PB[2] * eyz_[0][bind-bzm][m] - PC[2] * eyz_[0][bind-bzm][m+1] + y_[0][bind-bzm][m+1];
                     }
                     if (bz > 1) {
                         for (m=0; m<=mmax-b-2; ++m) {
@@ -2195,11 +2231,11 @@ void ObaraSaikaTwoCenterElectricFieldGradient::compute(double PA[3], double PB[3
                 else if (by > 0) {
                     for (m=0; m<=mmax-b-2; ++m) {
                         exx_[0][bind][m] = PB[1] * exx_[0][bind-bym][m] - PC[1] * exx_[0][bind-bym][m+1];
-                        eyy_[0][bind][m] = PB[1] * eyy_[0][bind-bym][m] - PC[1] * eyy_[0][bind-bym][m+1] + 2.0 * ey_[0][bind-bym][m+1];
+                        eyy_[0][bind][m] = PB[1] * eyy_[0][bind-bym][m] - PC[1] * eyy_[0][bind-bym][m+1] + 2.0 * y_[0][bind-bym][m+1];
                         ezz_[0][bind][m] = PB[1] * ezz_[0][bind-bym][m] - PC[1] * ezz_[0][bind-bym][m+1];
-                        exy_[0][bind][m] = PB[1] * exy_[0][bind-bym][m] - PC[1] * exy_[0][bind-bym][m+1] - ex_[0][bind-bym][m+1];
+                        exy_[0][bind][m] = PB[1] * exy_[0][bind-bym][m] - PC[1] * exy_[0][bind-bym][m+1] - x_[0][bind-bym][m+1];
                         exz_[0][bind][m] = PB[1] * exz_[0][bind-bym][m] - PC[1] * exz_[0][bind-bym][m+1];
-                        eyz_[0][bind][m] = PB[1] * eyz_[0][bind-bym][m] - PC[1] * eyz_[0][bind-bym][m+1] - ez_[0][bind-bym][m+1];
+                        eyz_[0][bind][m] = PB[1] * eyz_[0][bind-bym][m] - PC[1] * eyz_[0][bind-bym][m+1] - z_[0][bind-bym][m+1];
                     }
                     if (by > 1) {
                         for (m=0; m<=mmax-b-2; ++m) {
@@ -2214,11 +2250,11 @@ void ObaraSaikaTwoCenterElectricFieldGradient::compute(double PA[3], double PB[3
                 }
                 else if (bx > 0) {
                     for (m=0; m<=mmax-b-2; ++m) {
-                        exx_[0][bind][m] = PB[0] * exx_[0][bind-bxm][m] - PC[0] * exx_[0][bind-bxm][m+1] + 2.0 * ex_[0][bind-bxm][m+1];
+                        exx_[0][bind][m] = PB[0] * exx_[0][bind-bxm][m] - PC[0] * exx_[0][bind-bxm][m+1] + 2.0 * x_[0][bind-bxm][m+1];
                         eyy_[0][bind][m] = PB[0] * eyy_[0][bind-bxm][m] - PC[0] * eyy_[0][bind-bxm][m+1];
                         ezz_[0][bind][m] = PB[0] * ezz_[0][bind-bxm][m] - PC[0] * ezz_[0][bind-bxm][m+1];
-                        exy_[0][bind][m] = PB[0] * exy_[0][bind-bxm][m] - PC[0] * exy_[0][bind-bxm][m+1] - ey_[0][bind-bxm][m+1];
-                        exz_[0][bind][m] = PB[0] * exz_[0][bind-bxm][m] - PC[0] * exz_[0][bind-bxm][m+1] - ez_[0][bind-bxm][m+1];
+                        exy_[0][bind][m] = PB[0] * exy_[0][bind-bxm][m] - PC[0] * exy_[0][bind-bxm][m+1] - y_[0][bind-bxm][m+1];
+                        exz_[0][bind][m] = PB[0] * exz_[0][bind-bxm][m] - PC[0] * exz_[0][bind-bxm][m+1] - z_[0][bind-bxm][m+1];
                         eyz_[0][bind][m] = PB[0] * eyz_[0][bind-bxm][m] - PC[0] * eyz_[0][bind-bxm][m+1];
                     }
                     if (bx > 1) {
@@ -2253,10 +2289,10 @@ void ObaraSaikaTwoCenterElectricFieldGradient::compute(double PA[3], double PB[3
                                 for (m=0; m<=mmax-a-b-2; ++m) {
                                     exx_[aind][bind][m] = PA[2] * exx_[aind-azm][bind][m] - PC[2] * exx_[aind-azm][bind][m+1];
                                     eyy_[aind][bind][m] = PA[2] * eyy_[aind-azm][bind][m] - PC[2] * eyy_[aind-azm][bind][m+1];
-                                    ezz_[aind][bind][m] = PA[2] * ezz_[aind-azm][bind][m] - PC[2] * ezz_[aind-azm][bind][m+1] - 2.0 * ez_[aind-azm][bind][m+1];
+                                    ezz_[aind][bind][m] = PA[2] * ezz_[aind-azm][bind][m] - PC[2] * ezz_[aind-azm][bind][m+1] - 2.0 * z_[aind-azm][bind][m+1];
                                     exy_[aind][bind][m] = PA[2] * exy_[aind-azm][bind][m] - PC[2] * exy_[aind-azm][bind][m+1];
-                                    exz_[aind][bind][m] = PA[2] * exz_[aind-azm][bind][m] - PC[2] * exz_[aind-azm][bind][m+1] + ex_[aind-azm][bind][m+1];
-                                    eyz_[aind][bind][m] = PA[2] * eyz_[aind-azm][bind][m] - PC[2] * eyz_[aind-azm][bind][m+1] + ey_[aind-azm][bind][m+1];
+                                    exz_[aind][bind][m] = PA[2] * exz_[aind-azm][bind][m] - PC[2] * exz_[aind-azm][bind][m+1] + x_[aind-azm][bind][m+1];
+                                    eyz_[aind][bind][m] = PA[2] * eyz_[aind-azm][bind][m] - PC[2] * eyz_[aind-azm][bind][m+1] + y_[aind-azm][bind][m+1];
                                 }
                                 if (az > 1) {
                                     for (m=0; m<=mmax-a-b-2; ++m) {
@@ -2282,11 +2318,11 @@ void ObaraSaikaTwoCenterElectricFieldGradient::compute(double PA[3], double PB[3
                             else if (ay > 0) {
                                 for (m=0; m<=mmax-a-b-2; ++m) {
                                     exx_[aind][bind][m] = PA[1] * exx_[aind-aym][bind][m] - PC[1] * exx_[aind-aym][bind][m+1];
-                                    eyy_[aind][bind][m] = PA[1] * eyy_[aind-aym][bind][m] - PC[1] * eyy_[aind-aym][bind][m+1] - 2.0 * ey_[aind-aym][bind][m+1];
+                                    eyy_[aind][bind][m] = PA[1] * eyy_[aind-aym][bind][m] - PC[1] * eyy_[aind-aym][bind][m+1] - 2.0 * y_[aind-aym][bind][m+1];
                                     ezz_[aind][bind][m] = PA[1] * ezz_[aind-aym][bind][m] - PC[1] * ezz_[aind-aym][bind][m+1];
-                                    exy_[aind][bind][m] = PA[1] * exy_[aind-aym][bind][m] - PC[1] * exy_[aind-aym][bind][m+1] + ex_[aind-aym][bind][m+1];
+                                    exy_[aind][bind][m] = PA[1] * exy_[aind-aym][bind][m] - PC[1] * exy_[aind-aym][bind][m+1] + x_[aind-aym][bind][m+1];
                                     exz_[aind][bind][m] = PA[1] * exz_[aind-aym][bind][m] - PC[1] * exz_[aind-aym][bind][m+1];
-                                    eyz_[aind][bind][m] = PA[1] * eyz_[aind-aym][bind][m] - PC[1] * eyz_[aind-aym][bind][m+1] + ez_[aind-aym][bind][m+1];
+                                    eyz_[aind][bind][m] = PA[1] * eyz_[aind-aym][bind][m] - PC[1] * eyz_[aind-aym][bind][m+1] + z_[aind-aym][bind][m+1];
                                 }
                                 if (ay > 1) {
                                     for (m=0; m<=mmax-a-b-1; ++m) {
@@ -2311,11 +2347,11 @@ void ObaraSaikaTwoCenterElectricFieldGradient::compute(double PA[3], double PB[3
                             }
                             else if (ax > 0) {
                                 for (m=0; m<=mmax-a-b-2; ++m) {
-                                    exx_[aind][bind][m] = PA[0] * exx_[aind-axm][bind][m] - PC[0] * exx_[aind-axm][bind][m+1] - 2.0 * ex_[aind-axm][bind][m+1];
+                                    exx_[aind][bind][m] = PA[0] * exx_[aind-axm][bind][m] - PC[0] * exx_[aind-axm][bind][m+1] - 2.0 * x_[aind-axm][bind][m+1];
                                     eyy_[aind][bind][m] = PA[0] * eyy_[aind-axm][bind][m] - PC[0] * eyy_[aind-axm][bind][m+1];
                                     ezz_[aind][bind][m] = PA[0] * ezz_[aind-axm][bind][m] - PC[0] * ezz_[aind-axm][bind][m+1];
-                                    exy_[aind][bind][m] = PA[0] * exy_[aind-axm][bind][m] - PC[0] * exy_[aind-axm][bind][m+1] + ey_[aind-axm][bind][m+1];
-                                    exz_[aind][bind][m] = PA[0] * exz_[aind-axm][bind][m] - PC[0] * exz_[aind-axm][bind][m+1] + ez_[aind-axm][bind][m+1];
+                                    exy_[aind][bind][m] = PA[0] * exy_[aind-axm][bind][m] - PC[0] * exy_[aind-axm][bind][m+1] + y_[aind-axm][bind][m+1];
+                                    exz_[aind][bind][m] = PA[0] * exz_[aind-axm][bind][m] - PC[0] * exz_[aind-axm][bind][m+1] + z_[aind-axm][bind][m+1];
                                     eyz_[aind][bind][m] = PA[0] * eyz_[aind-axm][bind][m] - PC[0] * eyz_[aind-axm][bind][m+1];
                                 }
                                 if (ax > 1) {
