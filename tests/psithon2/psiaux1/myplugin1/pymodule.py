@@ -6,11 +6,11 @@ import math
 import warnings
 from driver import *
 from wrappers import *
-from extend_Molecule import *
+#from molutil import *
 #from text import *
 #from procutil import *
 from p4const import *
-from p4util.infileutil import *
+#from p4util.infileutil import *
 
 
 
