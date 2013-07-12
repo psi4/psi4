@@ -1148,7 +1148,7 @@ bool psi4_python_module_initialize()
 
     // Track down the location of PSI4's python script directory.
     std::string psiDataDirName = Process::environment("PSIDATADIR");
-    std::string psiDataDirWithPython = psiDataDirName + "/psi4";
+    std::string psiDataDirWithPython = psiDataDirName + "/python";
     boost::filesystem::path bf_path;
     bf_path = boost::filesystem::system_complete(psiDataDirWithPython);
     if(!boost::filesystem::is_directory(bf_path)) {
@@ -1497,7 +1497,6 @@ void Python::run(FILE *input)
         }
 
         // Add PSI library python path
-        PyObject *path, *sysmod, *str;
         PY_TRY(sysmod , PyImport_ImportModule("sys"));
         PY_TRY(path   , PyObject_GetAttrString(sysmod, "path"));
 #if PY_MAJOR_VERSION == 2
