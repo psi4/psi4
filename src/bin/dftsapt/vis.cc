@@ -688,8 +688,8 @@ void CubicDensityGrid::drop_uvf(const std::string& file, double clamp)
     fwrite(&version,sizeof(unsigned long int),1,fh);
     unsigned long int nchecksum = 0L;   
     fwrite(&nchecksum,sizeof(unsigned long int),1,fh);
-    unsigned long int offset = 0L;
-    fwrite(&offset,sizeof(unsigned long int),1,fh);
+    unsigned long int offset2 = 0L;
+    fwrite(&offset2,sizeof(unsigned long int),1,fh);
     
     throw PSIEXCEPTION("Not implemented");
  
