@@ -81,7 +81,7 @@ int read_natoms(void) {
     natom -= n;
   }
 #endif
-  fprintf(outfile, "\nNumber of atoms besides EFP fragments %d\n", natom);
+  fprintf(outfile, "\n\tNumber of atoms besides EFP fragments %d\n", natom);
   return natom;
 }
 
@@ -98,40 +98,45 @@ void MOLECULE::read_geom_grad(void) {
 
   using namespace psi;
 
-  SharedMatrix pgradient;
+  fprintf(outfile,"\tReading geometry and gradient...\n");
 
-  // QM
-  if (nfrag > 0) {
-    if (psi::Process::environment.wavefunction())
-      pgradient = psi::Process::environment.wavefunction()->gradient();
-    else
-      pgradient = psi::Process::environment.gradient();
-  }
-
-  // EFP
-  if (EFPfrag > 0) {
-    if (psi::Process::environment.get_efp()->get_frag_count() > 0)
-      pgradient = psi::Process::environment.get_efp()->torque();
-    else
-      pgradient = psi::Process::environment.efp_torque();
-  }
-
-  SharedMatrix grad = pgradient->clone();
-  grad->print_out();
-fflush(outfile);
-
+  // Read geometry from molecule object
   boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
   Matrix geometry = mol->geometry();
-fprintf(outfile,"QM geometry:\n");
-geometry.print_out();
-fflush(outfile);
 
+  fprintf(outfile,"\n\tQM geometry from molecule object:\n");
+  geometry.print_out(); fflush(outfile);
+
+  // Read CURRENT ENERGY from environment
   energy = psi::Process::environment.globals["CURRENT ENERGY"];
+  fprintf(outfile,"\n\tCurrent energy from environment: %15.10lf\n", energy);
+  fflush(outfile);
 
-fprintf(outfile,"energy %15.10lf\n", energy);
-fflush(outfile);
+  SharedMatrix qm_grad, efp_grad;
 
-  // Put center of mass in each efp fragment
+  // Read QM gradient from wavefunction or environment
+  if (nfrag > 0) {
+    if (psi::Process::environment.wavefunction())
+      qm_grad = psi::Process::environment.wavefunction()->gradient();
+    else
+      qm_grad = psi::Process::environment.gradient();
+    fprintf(outfile,"\tQM gradient:\n");
+    qm_grad->print_out(); fflush(outfile);
+  }
+
+  // Read EFP gradient from wavefunction or environment
+  if (EFPfrag > 0) {
+    if (psi::Process::environment.get_efp()->get_frag_count() > 0)
+      efp_grad = psi::Process::environment.get_efp()->torque();
+    else
+      efp_grad = psi::Process::environment.efp_torque();
+
+    fprintf(outfile,"\tEFP gradient\n");
+    efp_grad->print_out();
+    efp_grad->print_out(); fflush(outfile);
+  }
+
+  // Get EFP centers-of-mass and put into optking efp fragments
   for (int f=0; f<EFPfrag; ++f) {
     double *f_com  = efp_fragments[f]->get_com_pointer();
     double *tmp_com = p_efp->get_com(f);
@@ -140,12 +145,12 @@ fflush(outfile);
     delete [] tmp_com;
   }
 
-  // Put forces into each efp fragment
+  // Put forces into local efp fragments
   for (int f=0; f<EFPfrag; ++f) {
     double *f_force = efp_fragments[f]->get_forces_pointer();
 
     for(int i=0; i<6; i++)
-      f_force[i] = - grad->get(f,i);
+      f_force[i] = - efp_grad->get(f,i);
   }
 
   // Put geometry into each efp fragment
@@ -162,35 +167,21 @@ fflush(outfile);
     delete [] tmp_geom;
   }
 
-/*
+  // Put forces and geometry into each regular fragment
   for (int f=0; f<nfrag; ++f) {
-      double *Z = fragments[f]->g_Z_pointer();
-      double **geom = fragments[f]->g_geom_pointer();
-      double **grad = fragments[f]->g_grad_pointer();
+    double *Z = fragments[f]->g_Z_pointer();
+    double **geom = fragments[f]->g_geom_pointer();
+    double **grad = fragments[f]->g_grad_pointer();
 
-      for (int i=0; i<fragments[f]->g_natom(); ++i) {
-          Z[i] = mol->Z(fragments[f]->get_libmints_geom_index()+i);
+    for (int i=0; i<fragments[f]->g_natom(); ++i) {
+      Z[i] = mol->Z(i);
 
-          geom[i][0] = geometry(fragments[f]->get_libmints_geom_index()+i, 0);
-          geom[i][1] = geometry(fragments[f]->get_libmints_geom_index()+i, 1);
-          geom[i][2] = geometry(fragments[f]->get_libmints_geom_index()+i, 2);
-
-          grad[i][0] = gradient(fragments[f]->get_libmints_grad_index()+i, 0);
-          grad[i][1] = gradient(fragments[f]->get_libmints_grad_index()+i, 1);
-          grad[i][2] = gradient(fragments[f]->get_libmints_grad_index()+i, 2);
-
-          atom++;
+      for(int xyz=0; xyz<3; ++xyz) {
+        geom[i][xyz] = geometry(i, xyz);
+        grad[i][xyz] = qm_grad->get(i, xyz);
       }
-fprintf(outfile, "\nQM Fragment:\n"); fflush(outfile);
-fprintf(outfile, "Z\n");
-print_array(outfile, Z, fragments[f]->g_natom());
-fprintf(outfile, "geom\n");
-print_matrix(outfile, geom, fragments[f]->g_natom(), 3); fprintf(outfile, "\n");
-fprintf(outfile, "grad\n");
-print_matrix(outfile, grad, fragments[f]->g_natom(), 3); fprintf(outfile, "\n");
+    }
   }
-*/
-
 
 #if 0
   // for now read from file 11
