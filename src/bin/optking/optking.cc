@@ -142,13 +142,11 @@ fprintf(outfile,"done reading geom and grad\n"); fflush(outfile);
     fprintf(outfile,"Creating molecule with %d atoms\n", read_natoms()); fflush(outfile);
     mol1 = new MOLECULE( read_natoms() );
 
-    fprintf(outfile, "Adding EFP fragments to molecule.\n"); fflush(outfile);
     if (Opt_params.efp_fragments)
       mol1->add_efp_fragments();
 
     // read geometry and gradient into fragment
     mol1->read_geom_grad();
-fprintf(outfile,"Done with read_geom_grad()\n"); fflush(outfile);
 
     // Quit nicely if there is only one atom present
     if (mol1->g_natom() == 1) {
@@ -157,12 +155,10 @@ fprintf(outfile,"Done with read_geom_grad()\n"); fflush(outfile);
       return OptReturnEndloop;
     }
 
-fprintf(outfile, "\njust before mol1->set_masses()\n"); fflush(outfile);
     mol1->set_masses();
 
     // use covalent radii to define bonds
     mol1->update_connectivity_by_distances();
-fprintf(outfile, "\ndone with mol1->update_connectivity_by_distances()\n"); fflush(outfile);
 
     // if fragment_mode == SINGLE, connects all separated groups of atoms by modifying frag.connectivity
     // if fragment_mode == MULTI, splits into fragments and makes interfragment coordinates
