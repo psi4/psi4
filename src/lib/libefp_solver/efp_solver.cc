@@ -3,6 +3,8 @@
  */ 
 
 #include <boost/regex.hpp>
+#include <boost/tokenizer.hpp>
+#include <boost/filesystem.hpp>
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
@@ -50,17 +52,17 @@ EFP::~EFP(){
 	efp_shutdown(efp_);
 }
 
-static bool is_lib(const char *name)
-{
-	size_t len = strlen(name);
+//static bool is_lib(const char *name)
+//{
+//	size_t len = strlen(name);
+//
+//	return name[len - 2] == '_' && (name[len - 1] == 'l' || name[len - 1] == 'L');
+//}
 
-	return name[len - 2] == '_' && (name[len - 1] == 'l' || name[len - 1] == 'L');
-}
-
-static size_t name_len(const char *name)
-{
-	return is_lib(name) ? strlen(name) - 2 : strlen(name);
-}
+//static size_t name_len(const char *name)
+//{
+//	return is_lib(name) ? strlen(name) - 2 : strlen(name);
+//}
 
 /**
  * Basic creation of EFP object and reading of options
@@ -150,12 +152,15 @@ void EFP::add_fragments(std::vector<std::string> fnames)
 {
     enum efp_result res;
 	int n_uniq;
-	char path[256];
 	std::vector<std::string> uniq;
+    bool not_found = true;
 
     std::string psi_data_dir = Process::environment("PSIDATADIR");
     std::string fraglib_path = psi_data_dir + "/fraglib";
-    std::string userlib_path = ".";
+    std::string psi_path = fraglib_path + ":" + Process::environment("PSIPATH") + ":./";
+    boost::char_separator<char> sep(":");
+    typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+    tokenizer tokens(psi_path, sep);
 
     nfrag_ = fnames.size();
 
@@ -172,20 +177,39 @@ void EFP::add_fragments(std::vector<std::string> fnames)
 		if (uniq[i - 1] != uniq[i])
 			uniq[n_uniq++] = uniq[i];
 
+    // Loop over unique fragments
 	for (int i = 0; i < n_uniq; i++) {
 		std::string name = uniq[i];
-		const char *prefix = is_lib(name.c_str()) ? fraglib_path.c_str() : userlib_path.c_str();
+        not_found = true;
 
-		strcat(strncat(strcat(strcpy(path, prefix), "/"), name.c_str(),
-			name_len(name.c_str())), ".efp");
-		if (res = efp_add_potential(efp_, path))
-            throw PsiException("EFP::add_fragments(): " + std::string (efp_result_to_string(res)) + name,__FILE__,__LINE__);
-	}
+        // Loop over possible locations
+        for(tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter) {
+            std::string psiPathWithFragment = *tok_iter + "/" + name + ".efp";
+            boost::filesystem::path bf_path = boost::filesystem::system_complete(psiPathWithFragment);
+    
+    	    if (res = efp_add_potential(efp_, bf_path.string().c_str())) {
+                if (WorldComm->me() == 0)
+                    fprintf(outfile, "  Unable to find EFP fragment %s in %s.\n",
+                        name.c_str(), bf_path.string().c_str());
+            }
+            else {
+                if (WorldComm->me() == 0)
+                    fprintf(outfile, "  EFP fragment %s read from %s\n",
+                        name.c_str(), bf_path.string().c_str());
+                not_found = false;
+                break;
+            }
+	    }
+        if (not_found)
+            throw PsiException("EFP::add_fragments(): Fragment " + name + " not located in " + psi_path,__FILE__,__LINE__);
+    }
 
+    // Initialize each fragment (not just unique)
     for (int i = 0; i < fnames.size(); i++)
         if (res = efp_add_fragment(efp_, fnames[i].c_str()))
             throw PsiException("EFP::add_fragments(): " + std::string (efp_result_to_string(res)) + " " + fnames[i],__FILE__,__LINE__);
 }
+
 
 /**
  * Get gradient of the interaction energy of the EFP electrostatics with the QM nuclei (point charges)
@@ -235,7 +259,7 @@ void EFP::set_qm_atoms(){
 
     enum efp_result res;
     if ( res = efp_set_point_charges(efp_,natom,q_p,xyz_p) ) {
-        throw PsiException("EFP::SetQMAtoms(): " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
+        throw PsiException("EFP::set_qm_atoms(): " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
     }
 }
 
