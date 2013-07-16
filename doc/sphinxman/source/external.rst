@@ -318,7 +318,12 @@ These environment variables will influence |PSIfours| behavior.
 
 .. envvar:: PATH
 
-   Path for executables. To run K\ |a_acute|\ llay's MRCC program 
+   Path for interfaced executables. 
+
+   .. note:: Configuring |PSIfour| through :envvar:`PSIPATH` is preferred
+      to modifying this environment variable.
+
+   To run K\ |a_acute|\ llay's MRCC program 
    (see :ref:`MRCC <sec:mrcc>`), the ``dmrcc`` executable must be in :envvar:`PATH`.
    Likewise to run Grimme's dftd3 program (see :ref:`dftd3 <sec:dftd3>`), the 
    ``dftd3`` executable must be in :envvar:`PATH`.
@@ -327,10 +332,45 @@ These environment variables will influence |PSIfours| behavior.
 
    Directory where scratch files are written. Overrides settings in |psirc|.
 
+.. envvar:: PSIPATH
+
+   Path in which |PSIfour| looks for user extensions to the built-in
+   libraries. Specifically, directories containing 
+   :ref:`user basis sets <sec:basisUserDefined>`,
+   :ref:`EFP fragments <sec:findingEFPFragments>`,
+   :ref:`databases <sec:createDatabase>`, 
+   :ref:`plugins <sec:plugins>`, and 
+   interfaced executables (
+   ``dmrcc`` for :ref:`MRCC <sec:mrcc>` and 
+   ``dftd3`` for :ref:`DFTD3 <sec:dftd3>`
+   ) should be placed in this colon-separated list.
+
+   |PSIfour| is designed so that user extensions that are findable through
+   :envvar:`PSIPATH` can be used in input files entirely like their
+   built-in counterparts, without additional tagging as non-standard.
+
+   The typical search path is first the built-in libraries, next each
+   :envvar:`PSIPATH` directory in order, and finally the execution
+   directory (I won't swear everything tacks on the execution directory).
+
+   Path in which the Python interpreter looks for modules to import. For 
+   |PSIfour|, these are generally plugins (see :ref:`sec:plugins`) or databases.
+
+   Modify :envvar:`PSIPATH` though normal Linux shell commands before invoking ``psi4`` ::
+
+      # csh, tcsh
+      >>> setenv PSIPATH /home/user/psiadditions:/home/user/gbs
+
+      # bash
+      >>> export PSIPATH=/home/user/psiadditions:/home/user/gbs
+
 .. envvar:: PYTHONPATH
 
    Path in which the Python interpreter looks for modules to import. For 
    |PSIfour|, these are generally plugins (see :ref:`sec:plugins`) or databases.
+
+   .. note:: Configuring |PSIfour| through :envvar:`PSIPATH` is preferred
+      to modifying this environment variable.
 
    Modification of :envvar:`PYTHONPATH` can be done in three ways, equivalently.
 
