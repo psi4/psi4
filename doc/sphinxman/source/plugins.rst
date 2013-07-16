@@ -102,7 +102,8 @@ In addition to the main ``myplugin.cc`` file, a fresh plugin directory contains 
   Since the ``__init__.py`` file makes the plugin directory look like a
   Python module, the plugin can be treated as such in an input file. The
   location of the plugin directory must be included in :envvar:`PYTHONPATH`,
-  either externally in the calling shell or defined in the input file. Then,
+  either externally in the calling shell or defined in the input file. 
+  This is usually done by manipulating :envvar:`PSIPATH`. Then,
   the plugin can be loaded as ``import myplugin`` and executed as
   ``energy('myplugin')``. Any other Python functions are also available from
   the input file, *e.g.* ``myplugin.testfunction()``, note the namespace

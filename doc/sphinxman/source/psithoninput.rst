@@ -92,6 +92,8 @@ Molecule and Geometry Specification
 
    psithonmol
 
+To add EFP fragments to a molecule, see :ref:`sec:usingEFPFragments`.
+
 .. index::
    triple: setting; keywords; general
 .. _`sec:jobControl`:
