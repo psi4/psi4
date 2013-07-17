@@ -31,6 +31,10 @@
 
   -TDC, August 2009
 */
+//#include <stdio.h>
+//#include <stdlib.h>
+//#include <math.h>
+#include <cmath>
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
@@ -61,6 +65,9 @@ double raman_linear(double alpha, double beta2);
 double depolar_linear(double alpha, double beta2);
 double raman_circular(double alpha, double beta2);
 double depolar_circular(double alpha, double beta2);
+void rs(int nm, int n, double **array, double *e_vals, int matz,
+        double **e_vecs, double toler);
+
 
 namespace psi { namespace ccresponse {
 
@@ -91,6 +98,13 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
     
     SharedMatrix denom_rot(new Matrix(3,3));
     denom_rot->set(2.0 * step);
+	/* 
+	 *  PSI4's OR Tensor is opposite in sign compared to PSI3.
+	 *  If we tried the trick below to match PSI3 OR tensor signs,
+     *  AND read in the normal coord. transform, we could match TDC's
+	 *  numbers spot on, basically.
+	 */
+    //denom_rot->set(-2.0 * step);
     std::vector <SharedMatrix> rot_grad;
     for(std::vector<SharedMatrix>::iterator it_rot=rot.begin(); it_rot != rot.end(); ++it_rot) {
         SharedMatrix grad_mat(new Matrix(3,3));
@@ -124,7 +138,6 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
     FILE* hessian;
     FILE* dipole_moment;
     hessian=fopen("file15.dat","r");
-    dipole_moment=fopen("file17.dat","r");
     SharedMatrix F(new Matrix(natom*3,natom*3));
     double Fval;
     SharedMatrix M(new Matrix(natom*3,natom*3));
@@ -135,7 +148,9 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
         fscanf(hessian,"%lf",&F->pointer()[i][j]);
       }
     }
+    fclose(hessian);
   
+    dipole_moment=fopen("file17.dat","r");
     SharedMatrix dipder(new Matrix(3, natom*3));
     for(i=0; i < 3; i++)
     {
@@ -144,8 +159,6 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
         fscanf(dipole_moment, "%lf %lf %lf", &dipder->pointer()[i][j*3], &dipder->pointer()[i][j*3+1], &dipder->pointer()[i][j*3+2]);
       }
     }
-    
-    fclose(hessian);
     fclose(dipole_moment);
 
     SharedMatrix polder(new Matrix(natom*3, 9));
@@ -188,6 +201,13 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
     geom->copy(molecule->geometry());
     SharedMatrix geom_orig(new Matrix(natom,3));
     geom_orig->copy(geom);
+
+	// Translate Molecule to Center of Mass
+	printf("\tInput coordinates (bohr):\n");
+	molecule->geometry().print(stdout);
+	molecule->move_to_com();
+	geom_orig->copy(molecule->geometry());
+	printf("\tCoordinates relative to center of mass:\n");
     
     //Reading the Z-vals
     int zvals[natom];
@@ -207,13 +227,19 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
             geom->set(i,j, geom_orig->get(i,j) * sqrt(massi[i]));
         }
     }
+	printf("\tMass-Weighted coordinates relative to the center of mass:\n");
+	geom->print(stdout);
  
     //Generating the inertia tensor
    
     SharedMatrix I(new Matrix(3,3));
     I->copy(molecule->inertia_tensor());
-    //I->print();
+    //I = molecule->inertia_tensor();
+	printf("\tMoment of Inertia Tensor:\n");
+	fflush(stdout);
+    I->print(stdout);
     
+/*
     for(i=0; i < 3; i++) 
     {
       for(j=0; j <= i; j++) 
@@ -230,6 +256,7 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
       }
     }
     //I->print();
+*/
 
     //Diagonalising the inertia tensor
    
@@ -237,6 +264,7 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
     SharedVector Ievals(new Vector("Ieigenval",3));
 
     I->diagonalize(Ievecs,Ievals);
+	//rs(3,3,I->pointer(),Ievals->pointer(),1,Ievecs->pointer(),1e-12);
 
     //Constructing I-inverse matrix
 
@@ -252,7 +280,11 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
     Itmp->gemm(0,1,1.0,Iinv,Ievecs,0.0);
     Iinv->gemm(0,0,1.0,Ievecs,Itmp,0.0);
 
-    //Iinv->print();
+	printf("\tIegv, Ievec, I^-1 matrix\n");
+	fflush(stdout);
+	Ievecs->print(stdout);
+	Ievals->print(stdout);
+    Iinv->print(stdout);
  
     //Generating the 6 pure rotation and translation vectors
     SharedMatrix P(new Matrix(natom*3,natom*3));
@@ -262,7 +294,8 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
     total_mass=0.0;
     for(i=0;i<natom;i++)
     {
-      total_mass+=an2mass[(int)zvals[iatom]];
+      //total_mass+=an2mass[(int)zvals[iatom]];
+      total_mass+=an2mass[(int)zvals[i]];
     }
 
     for(i=0; i < natom*3; i++)
@@ -302,6 +335,8 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
         M->set((i*3+j),(i*3+j),1/sqrt(an2mass[(int)zvals[i]]/_au2amu));
       }
     }
+    //printf("Mass-Weighting Matrix (for Hessian):\n");
+	//M->print(stdout);
 
     T->gemm(0,0,1.0,M,F,0.0);
     F->gemm(0,0,1.0,T,M,0.0);
@@ -310,6 +345,9 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
     T->zero();
     T->gemm(0,0,1.0,F,P,0.0);
     F->gemm(0,0,1.0,P,T,0.0);
+	printf("\tProjected, Mass-Weighted Hessian:\n");
+	F->print(stdout);
+	fflush(stdout);
 
     // Diagonalize projected mass-weighted Hessian //
     SharedMatrix Fevecs(new Matrix(3*natom,3*natom));
@@ -319,8 +357,23 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
     double norm=0.0;
 
     F->diagonalize(Fevecs,Fevals);
+	//rs(3*natom,3*natom,F->pointer(),Fevals->pointer(),1,Fevecs->pointer(),1e-12);
+	Fevals->print(stdout);
+	Fevecs->print(stdout);
 
     Lx->gemm(0,0,1.0,M,Fevecs,0.0);
+/*
+	FILE* lxf = fopen("lx.dat","r");
+    for(i=0; i < (3*natom); i++)
+    {
+      for(j=0; j < (3*natom); j++)
+      {
+        fscanf(lxf,"%lf",&Lx->pointer()[i][j]);
+      }
+    }
+    fclose(lxf);
+*/
+	Lx->print(stdout);
 
     for(i=0; i < 3*natom; i++)
     {
@@ -359,6 +412,9 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
    // Transform polarizability derivatives to normal coordinates //
    SharedMatrix polder_q(new Matrix(9,3*natom));
    polder_q->gemm(1,0,1.0,polder,Lx,0.0);
+   printf("\tPolarizability Derivatives, normal\n");
+   //polder->print(stdout);
+   polder_q->print(stdout);
    int jk=0;
    std::vector<SharedMatrix> alpha_der(3*natom);
    for(i=0; i < alpha_der.size(); ++i)
@@ -382,6 +438,9 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
    // Transform optical rotation tensor derivatives to normal coordinates //
    SharedMatrix optder_q(new Matrix(9,3*natom));
    optder_q->gemm(1,0,1.0,optder,Lx,0.0);
+   printf("\tOptical Rotation Tensor Derivatives, normal\n");
+   //optder->print(stdout);
+   optder_q->print(stdout);
   
    std::vector<SharedMatrix> G_der(3*natom);
    for(i=0; i < G_der.size(); ++i)
@@ -405,6 +464,9 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
    // Transform dipole/quarupole tensor derivatives to normal coordinates //
    SharedMatrix quadder_q(new Matrix(27,3*natom));
    quadder_q->gemm(1,0,1.0,quadder,Lx,0.0);
+   printf("\tDipole/Quadrupole Tensor Derivatives, normal\n");
+   //quadder->print(stdout);
+   quadder_q->print(stdout);
  
    int jkl,l;
    double**** Q_der = (double ****) malloc(natom*3*sizeof(double ***));
@@ -679,55 +741,634 @@ double depolar_circular(double alpha, double beta2)
 
 
 
+#define DSIGN(a,b) ((b) >= 0.0) ? (fabs(a)) : (-fabs(a))
+void tred2(int, double **, double *, double *, int);
+//int tqli(int, double *, double **, double *, int, double);
+void tqli(int, double *, double **, double *, int, double);
+void new_eigsort(double *, double **, int);
+
+double *init_array(int n)
+{
+  int i;
+  double *A;
+  A = (double*) malloc (n * sizeof(double));
+  for(i=0; i < n; i++) A[i] = 0.0;
+  return(A);
+}
+
+double **init_matrix(int n, int m)
+{
+  int i, j;
+  double **A;
+  A = (double**) malloc (n * sizeof(double*));
+  for (i=0; i < n; i++) {
+    A[i] = (double*) malloc (m * sizeof(double));
+    for(j=0; j < m; j++) A[i][j] = 0.0;
+  }
+  return(A);
+}
+
+void free_matrix(double **A, int n)
+{
+  int i;
+  for (i=0; i < n; i++) free(A[i]);
+  free(A);
+}
 
 
+/*
+** rs(): Diagonalize a symmetric matrix and return its eigenvalues and 
+** eigenvectors.
+**
+** int nm: The row/column dimension of the matrix.
+** int n:  Ditto.
+** double **array: The matrix
+** double *e_vals: A vector, which will contain the eigenvalues.
+** int matz: Boolean for returning the eigenvectors.
+** double **e_vecs: A matrix whose columns are the eigenvectors.
+** double toler: A tolerance limit for the iterative procedure.  Rec: 1e-13
+**
+*/
 
 
+/* translation into c of a translation into FORTRAN77 of the EISPACK */
+/* matrix diagonalization routines */
+
+void rs(int nm, int n, double **array, double *e_vals, int matz,
+        double **e_vecs, double toler)
+   {
+      int i, j, ii, ij, ierr;
+      int ascend_order;
+      double *fv1, **temp;
+      double zero = 0.0;
+      double one = 1.0;
+
+/* Modified by Ed - matz can have the values 0 through 3 */
+      
+      if ((matz > 3) || (matz < 0)) {
+        matz = 0;
+        ascend_order = 1;
+        }
+      else
+        if (matz < 2)
+          ascend_order = 1;	/* Eigenvalues in ascending order */
+        else {
+          matz -= 2;
+          ascend_order = 0;	/* Eigenvalues in descending order */
+          }
+
+      fv1 = init_array(n);
+      temp = init_matrix(n,n);
+
+      if (n > nm) {
+         ierr = 10*n;
+         fprintf(stderr,"n = %d is greater than nm = %d in rsp\n",n,nm);
+         exit(ierr);
+         }
+
+      for (i=0; i < n; i++) {
+         for (j=0; j < n; j++) {
+            e_vecs[i][j] = array[i][j];
+            }
+          }
+
+      tred2(n,e_vecs,e_vals,fv1,matz);
+
+      for (i=0; i < n; i++)
+         for (j=0; j < n; j++)
+            temp[i][j]=e_vecs[j][i];
+
+      tqli(n,e_vals,temp,fv1,matz,toler);
+
+      for (i=0; i < n; i++)
+         for (j=0; j < n; j++)
+            e_vecs[i][j]=temp[j][i];
+
+      if (ascend_order)
+        new_eigsort(e_vals,e_vecs,n);
+      else
+        new_eigsort(e_vals,e_vecs,(-1)*n);
+
+      free(fv1);
+      free_matrix(temp,n);
+
+      }
 
 
+/* converts symmetric matrix to a tridagonal form for use in tqli */
+/* if matz = 0, only find eigenvalues, else find both eigenvalues and */
+/* eigenvectors */
+
+void tred2(int n, double **a, double *d, double *e, int matz)
+   {
+      int i,j,k,l,il,ik,jk,kj;
+      double f,g,h,hh,scale,scale_inv,h_inv;
+      double temp;
+
+      if (n == 1) return;
+
+      for (i=n-1; i > 0; i--) {
+         l = i-1;
+         h = 0.0;
+         scale = 0.0;
+         if (l) {
+            for (k=0; k <= l; k++) {
+               scale += fabs(a[i][k]);
+               }
+            if (scale == 0.0) {
+               e[i] = a[i][l];
+               }
+            else {
+               scale_inv=1.0/scale;
+               for (k=0; k <= l; k++) {
+                  a[i][k] *= scale_inv;
+                  h += a[i][k]*a[i][k];
+                  }
+               f=a[i][l];
+               g= -(DSIGN(sqrt(h),f));
+               e[i] = scale*g;
+               h -= f*g;
+               a[i][l] = f-g;
+               f = 0.0;
+               h_inv=1.0/h;
+               for (j=0; j <= l; j++) {
+                  if (matz) a[j][i] = a[i][j]*h_inv;
+                  g = 0.0;
+                  for (k=0; k <= j; k++) {
+                     g += a[j][k]*a[i][k];
+                     }
+                  if (l > j) {
+                     for (k=j+1; k <= l; k++) {
+                        g += a[k][j]*a[i][k];
+                        }
+                     }
+                  e[j] = g*h_inv;
+                  f += e[j]*a[i][j];
+                  }
+               hh = f/(h+h);
+               for (j=0; j <= l; j++) {
+                  f = a[i][j];
+                  g = e[j] - hh*f;
+                  e[j] = g;
+                  for (k=0; k <= j; k++) {
+                     a[j][k] -= (f*e[k] + g*a[i][k]);
+                     }
+                  }
+               }
+            }
+         else {
+            e[i] = a[i][l];
+            }
+         d[i] = h;
+         }
+      if (matz) d[0] = 0.0;
+      e[0] = 0.0;
+
+      for (i=0; i < n; i++) {
+         l = i-1;
+         if (matz) {
+            if (d[i]) {
+               for (j=0; j <= l; j++) {
+                  g = 0.0;
+                  for (k=0; k <= l; k++) {
+                     g += a[i][k]*a[k][j];
+                     }
+                  for (k=0; k <= l; k++) {
+                     a[k][j] -= g*a[k][i];
+                     }
+                  }
+               }
+            }
+         d[i] = a[i][i];
+         if (matz) {
+            a[i][i] = 1.0;
+            if (l >= 0) {
+               for (j=0; j<= l; j++) {
+                  a[i][j] = 0.0;
+                  a[j][i] = 0.0;
+                  }
+               }
+            }
+         }
+      }
+
+/* diagonalizes tridiagonal matrix output by tred2 */
+/* gives only eigenvalues if matz = 0, both eigenvalues and eigenvectors */
+/* if matz = 1 */
+
+//int tqli(int n, double *d, double **z, double *e, int matz, double toler)
+void tqli(int n, double *d, double **z, double *e, int matz, double toler)
+   {
+      register int k;
+      int i,j,l,m,iter;
+      double dd,g,r,s,c,p,f,b,h;
+      double azi;
+
+      f=0.0;
+      if (n == 1) {
+         d[0]=z[0][0];
+         z[0][0] = 1.0;
+         return;
+         }
+
+      for (i=1; i < n ; i++) {
+         e[i-1] = e[i];
+         }
+      e[n-1] = 0.0;
+      for (l=0; l < n; l++) {
+         iter = 0;
+L1:
+         for (m=l; m < n-1;m++) {
+            dd = fabs(d[m]) + fabs(d[m+1]);
+#if 0
+            if (fabs(e[m])+dd == dd) goto L2;
+#else
+            if (fabs(e[m]) < toler) goto L2;
+#endif
+            }
+         m=n-1;
+L2:
+         if (m != l) {
+            if (iter++ == 30) {
+               fprintf (stderr,"tqli not converging\n");
+                continue;
+#if 0
+               exit(30);
+#endif
+               }
+
+            g = (d[l+1]-d[l])/(2.0*e[l]);
+            r = sqrt(g*g + 1.0);
+            g = d[m] - d[l] + e[l]/((g + DSIGN(r,g)));
+            s=1.0;
+            c=1.0;
+            p=0.0;
+            for (i=m-1; i >= l; i--) {
+               f = s*e[i];
+               b = c*e[i];
+               if (fabs(f) >= fabs(g)) {
+                  c = g/f;
+                  r = sqrt(c*c + 1.0);
+                  e[i+1] = f*r;
+                  s=1.0/r;
+                  c *= s;
+                  }
+               else {
+                  s = f/g;
+                  r = sqrt(s*s + 1.0);
+                  e[i+1] = g*r;
+                  c = 1.0/r;
+                  s *= c;
+                  }
+               g = d[i+1] - p;
+               r = (d[i]-g)*s + 2.0*c*b;
+               p = s*r;
+               d[i+1] = g+p;
+               g = c*r-b;
+
+               if (matz) {
+                  double *zi = z[i];
+                  double *zi1 = z[i+1];
+                  for (k=n; k ; k--,zi++,zi1++) {
+                     azi = *zi;
+                     f = *zi1;
+                     *zi1 = azi*s + c*f;
+                     *zi = azi*c - s*f;
+                     }
+                  }
+               }
+
+            d[l] -= p;
+            e[l] = g;
+            e[m] = 0.0;
+            goto L1;
+            }
+         }
+   }
+
+void new_eigsort(double *d, double **v, int n)
+{
+      int i,j,k;
+      double p;
+
+/// Modified by Ed - if n is negative - sort eigenvalues in descending order
+
+      if (n >= 0) {
+        for (i=0; i < n-1 ; i++) {
+           k=i;
+           p=d[i];
+           for (j=i+1; j < n; j++) {
+              if (d[j] < p) {
+                 k=j;
+                 p=d[j];
+                 }
+              }
+           if (k != i) {
+              d[k]=d[i];
+              d[i]=p;
+              for (j=0; j < n; j++) {
+                 p=v[j][i];
+                 v[j][i]=v[j][k];
+                 v[j][k]=p;
+                 }
+               }
+            }
+        }
+      else {
+        n = abs(n);
+        for (i=0; i < n-1 ; i++) {
+           k=i;
+           p=d[i];
+           for (j=i+1; j < n; j++) {
+              if (d[j] > p) {
+                 k=j;
+                 p=d[j];
+                 }
+              }
+           if (k != i) {
+              d[k]=d[i];
+              d[i]=p;
+              for (j=0; j < n; j++) {
+                  p=v[j][i];
+                  v[j][i]=v[j][k];
+                  v[j][k]=p;
+                  }
+              }
+           }
+        }
+   }
+
+void print_mat(double **a, int m, int n,FILE *out)
+{
+      int ii,jj,kk,nn,ll;
+      int i,j,k;
+
+      ii=0;jj=0;
+L200:
+      ii++;
+      jj++;
+      kk=10*jj;
+      nn=n;
+      if (nn > kk) nn=kk;
+      ll = 2*(nn-ii+1)+1;
+      fprintf (out,"\n");
+      for (i=ii; i <= nn; i++) fprintf(out,"       %5d",i);
+      fprintf (out,"\n");
+      for (i=0; i < m; i++) {
+         fprintf (out,"\n%5d",i+1);
+         for (j=ii-1; j < nn; j++) {
+            fprintf (out,"%12.7f",a[i][j]);
+            }
+         }
+      fprintf (out,"\n");
+      if (n <= kk) {
+         fflush(out);
+         return;
+         }
+      ii=kk; goto L200;
+}
+
+/*!
+** eigout(): Print out eigenvectors and eigenvalues.  Prints an n x m
+** matrix of eigenvectors.  Under each eigenvector, the corresponding
+** elements of an array, b, will also be printed.  This is useful for
+** printing, for example, the SCF eigenvectors with their associated
+** eigenvalues (orbital energies).
+*/
+void eigout(double **a, double *b, int m, int n, FILE *out)
+   {
+      int ii,jj,kk,nn;
+      int i,j;
+
+      ii=0;jj=0;
+L200:
+      ii++;
+      jj++;
+      kk=10*jj;
+      nn=n;
+      if (nn > kk) nn=kk;
+      fprintf (out,"\n");
+      for (i=ii; i <= nn; i++) fprintf(out,"       %5d",i);
+      fprintf (out,"\n");
+      for (i=0; i < m; i++) {
+         fprintf (out,"\n%5d",i+1);
+         for (j=ii-1; j < nn; j++) {
+            fprintf (out,"%12.7f",a[i][j]);
+            }
+         }
+      fprintf (out,"\n");
+      fprintf (out,"\n     ");
+      for (j=ii-1; j < nn; j++) {
+         fprintf(out,"%12.7f",b[j]);
+         }
+      fprintf (out,"\n");
+      if (n <= kk) {
+         fflush(out);
+         return;
+         }
+      ii=kk; goto L200;
+      }
+
+double dot(double *A, double *B, int len) 
+{
+  int i;
+  double value = 0.0;
+
+  for(i=0; i < len; i++) value += A[i] * B[i];
+  return value;
+}
 
 
+/*!
+**                                                             
+** mmult():
+** a reasonably fast matrix multiply (at least on the DEC3100) 
+** written by ETS                                              
+**                                                             
+** AF,BF,and CF are fortran arrays                             
+**                                                             
+** ta,tb and tc indicate whether the corresponding arrays are  
+**              to be converted to their transpose             
+**                                                             
+** nr,nl,nc are the number of rows,links,and columns in the    
+**          final matrices to be multiplied together           
+**          if ta=0 AF should have the dimensions nr x nl      
+**          if ta=1 AF should have the dimensions nl x nr      
+**          if tb=0 BF should have the dimensions nl x nc      
+**          if tb=1 BF should have the dimensions nc x nl      
+**          if tc=0 CF should have the dimensions nr x nc      
+**          if tc=1 CF should have the dimensions nc x nr      
+**                                                             
+** add is 1 if this matrix is to be added to the one passed    
+**        in as CF, 0 otherwise                                
+**
+** \ingroup (CIOMR)
+*/
+void mmult(double **AF, int ta, double **BF, int tb, double **CF, int tc,
+	   int nr, int nl, int nc, int add)
+{
+  int odd_nr,odd_nc,odd_nl;
+  int i,j,k,ij;
+  double t00,t01,t10,t11;
+  double **a,**b;
+  double *att,*bt;
+  double *at1,*bt1;
+  static int keep_nr=0;
+  static int keep_nl=0;
+  static int keep_nc=0;
+  static double **aa,**bb;
 
+  if(!aa) {
+    aa = (double **) init_matrix(nr,nl);
+    bb = (double **) init_matrix(nc,nl);
+    keep_nr = nr;
+    keep_nl = nl;
+    keep_nc = nc;
+  }
 
+  if(nl > keep_nl) {
+    free_matrix(aa,keep_nr);
+    free_matrix(bb,keep_nc);
+    keep_nl = nl;
+    keep_nr = (nr > keep_nr) ? nr : keep_nr;
+    keep_nc = (nc > keep_nc) ? nc : keep_nc;
+    aa = (double **) init_matrix(keep_nr,keep_nl);
+    bb = (double **) init_matrix(keep_nc,keep_nl);
+  }
+  if(nr > keep_nr) {
+    free_matrix(aa,keep_nr);
+    keep_nr = nr;
+    aa = (double **) init_matrix(keep_nr,keep_nl);
+  }
+  if(nc > keep_nc) {
+    free_matrix(bb,keep_nc);
+    keep_nc = nc;
+    bb = (double **) init_matrix(keep_nc,keep_nl);
+  }
 
+  odd_nr = (nr)%2;
+  odd_nc = (nc)%2;
+  odd_nl = (nl)%2;
 
+  a=aa;
+  if(ta)
+    for(i=0; i < nr ; i++)
+      for(j=0; j < nl ; j++)
+	a[i][j] = AF[j][i];
+  else
+    a=AF;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  b=bb;
+  if(tb)
+    b=BF;
+  else
+    for(i=0; i < nc ; i++)
+      for(j=0; j < nl ; j++)
+	b[i][j] = BF[j][i];
+      
+  for(j=0; j < nc-1 ; j+=2) {
+    for(i=0; i < nr-1 ; i+=2) {
+      att=a[i]; bt=b[j];
+      at1=a[i+1]; bt1=b[j+1];
+      if(add) {
+	if(tc) {
+	  t00 = CF[j][i];
+	  t01 = CF[j+1][i];
+	  t10 = CF[j][i+1];
+	  t11 = CF[j+1][i+1];
+	}
+	else {
+	  t00 = CF[i][j];
+	  t01 = CF[i][j+1];
+	  t10 = CF[i+1][j];
+	  t11 = CF[i+1][j+1];
+	}
+      }
+      else t00=t01=t10=t11=0.0;
+      for(k=nl; k ; k--,att++,bt++,at1++,bt1++) {
+	t00 += *att * *bt;
+	t01 += *att * *bt1;
+	t10 += *at1 * *bt;
+	t11 += *at1 * *bt1;
+      }
+      if(tc) {
+	CF[j][i]=t00;
+	CF[j+1][i]=t01;
+	CF[j][i+1]=t10;
+	CF[j+1][i+1]=t11;
+      }
+      else {
+	CF[i][j]=t00;
+	CF[i][j+1]=t01;
+	CF[i+1][j]=t10;
+	CF[i+1][j+1]=t11;
+      }
+    }
+    if(odd_nr) {
+      att=a[i]; bt=b[j];
+      bt1=b[j+1];
+      if(add) {
+	if(tc) {
+	  t00 = CF[j][i];
+	  t01 = CF[j+1][i];
+	}
+	else {
+	  t00 = CF[i][j];
+	  t01 = CF[i][j+1];
+	}
+      }
+      else t00=t01=0.0;
+      for(k= nl; k ; k--,att++,bt++,bt1++) {
+	t00 += *att * *bt;
+	t01 += *att * *bt1;
+      }
+      if(tc) {
+	CF[j][i]=t00;
+	CF[j+1][i]=t01;
+      }
+      else {
+	CF[i][j]=t00;
+	CF[i][j+1]=t01;
+      }
+    }
+  }
+  if(odd_nc) {
+    for(i=0; i < nr-1 ; i+=2) {
+      att=a[i]; bt=b[j];
+      at1=a[i+1];
+      if(add) {
+	if(tc) {
+	  t00 = CF[j][i];
+	  t10 = CF[j][i+1];
+	}
+	else {
+	  t00 = CF[i][j];
+	  t10 = CF[i+1][j];
+	}
+      }
+      else t00=t10=0.0;
+      for(k= nl; k ; k--,att++,bt++,at1++) {
+	t00 += *att * *bt;
+	t10 += *at1 * *bt;
+      }
+      if(tc) {
+	CF[j][i]=t00;
+	CF[j][i+1]=t10;
+      }
+      else {
+	CF[i][j]=t00;
+	CF[i+1][j]=t10;
+      }
+    }
+    if(odd_nr) {
+      att=a[i]; bt=b[j];
+      if(add)
+	t00 = (tc) ? CF[j][i] : CF[i][j];
+      else t00=0.0;
+      for(k=nl; k ; k--,att++,bt++)
+	t00 += *att * *bt;
+      if(tc) CF[j][i]=t00;
+      else CF[i][j]=t00;
+    }
+  }
+}
