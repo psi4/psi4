@@ -56,6 +56,10 @@ void OCCWave::ekt_ip()
 
      // For Non-OO methods
      if (orb_opt_ == "FALSE" && reference_ == "RESTRICTED") GFock->scale(0.5);  
+     else if (orb_opt_ == "FALSE" && reference_ == "UNRESTRICTED") {
+              GFockA->scale(0.5);  
+              GFockB->scale(0.5);  
+     }
 
      // Make sure GFM is symmetric
      if (sym_gfm_ == "TRUE" && reference_ == "RESTRICTED") {
@@ -283,13 +287,6 @@ if (reference_ == "UNRESTRICTED") {
      SharedVector Diag_g1B = boost::shared_ptr<Vector>(new Vector("DiagA OO-block OPDM", nirrep_, nmopi_));
      SharedVector ps_vecB = boost::shared_ptr<Vector>(new Vector("Beta pole strength vector", nirrep_, nmopi_));
      SharedVector eorbB = boost::shared_ptr<Vector>(new Vector("eorbB", nirrep_, nmopi_));
-
-     // For non-OO methods, set Gfock back which was scaled by 2 in coord_grad.cc
-     if (orb_opt_ == "FALSE") {
-              GFockA->scale(0.5);  
-              GFockB->scale(0.5);  
-     }
-
 
      // Make sure GFM is symmetric
      if (sym_gfm_ == "TRUE") {
