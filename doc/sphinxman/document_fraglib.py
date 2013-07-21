@@ -22,8 +22,11 @@ def pts(category, pyfile):
 def extract_xyz(pyfile):
     text1line = ''
     textMline = ''
+    comment = ''
     b2a = 0.52917720859
-    efpAtomSymbol = re.compile(r"^\s*A\d*([A-Z]{1,2})\d*", re.IGNORECASE)
+    efpCoord = re.compile(r"\s*COORDINATES\s+\(BOHR\)\s*")
+    efpAtomSymbol = re.compile(r"^\s*A\d*([A-Z]{1,2})\d*")
+    pastComment = False
 
     ffrag = open(pyfile, 'r')
     contents = ffrag.readlines()
@@ -34,7 +37,13 @@ def extract_xyz(pyfile):
     while (ii < len(contents)):
         line = contents[ii]
 
-        if 'MONOPOLES' in line:
+        if efpCoord.search(line):
+            pastComment = True
+
+        if ii > 0 and not pastComment:
+            comment += '   ' + line
+
+        if 'STOP' in line:
             break
 
         if efpAtomSymbol.search(line):
@@ -49,7 +58,7 @@ def extract_xyz(pyfile):
         text1line += r"""%-6s %12.6f %12.6f %12.6f\n""" % (atom[0], atom[1], atom[2], atom[3])
         textMline += """   %-6s %12.6f %12.6f %12.6f\n""" % (atom[0], atom[1], atom[2], atom[3])
 
-    return text1line, textMline
+    return text1line, textMline, comment
 
 
 chemdoodle = r"""
@@ -120,8 +129,9 @@ for pyfile in glob.glob(DriverPath + '../../lib/fraglib/*.efp'):
         pts('efp fragment', basename)
     
         fdriver.write(':srcefpfrag:`%s`\n%s\n\n' % (basename, '"' * (14 + len(basename))))
-        molstr, molMstr = extract_xyz(pyfile)
+        molstr, molMstr, comment = extract_xyz(pyfile)
         fdriver.write(canvas(basename, molstr))
+        fdriver.write('\n\nComment ::\n\n%s\n\n' % (comment))
         fdriver.write('\n\nFull Geometry in Angstroms ::\n\n%s\n\n' % (molMstr))
         fdriver.write('----\n')
 
