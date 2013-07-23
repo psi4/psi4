@@ -25,23 +25,29 @@ def run_roa(name, **kwargs):
     if db['inputs_generated'] and not db['jobs_complete']:
         print('Checking status')
         roa_stat(db)
+        for job,status in db['job_status'].items():
+            print("{} --> {}".format(job,status))
 
     # Compute ROA Scattering
     if db['jobs_complete']:
         dip_polar_list = []
         opt_rot_list = []
+        gauge_list = []
         dip_quad_polar_list = []
         # Gather data
         synthesize_dipole_polar(db,dip_polar_list)
-        synthesize_opt_rot(db,opt_rot_list)
+        synthesize_opt_rot(db,opt_rot_list,gauge_list)
         synthesize_dip_quad_polar(db,dip_quad_polar_list)
         # Compute Scattering
-    	# Run new function (scatter.cc)
-    print('Running scatter function')
-    step = psi4.get_local_option('FINDIF','DISP_SIZE')
-    for gauge in opt_rot_list:
-		#print('%%%%%%%%%% {} %%%%%%%%%%'.format(gauge))
-        psi4.scatter(step, dip_polar_list, gauge, dip_quad_polar_list)
+    	# Run new function (src/bin/ccresponse/scatter.cc)
+        print('Running scatter function')
+        step = psi4.get_local_option('FINDIF','DISP_SIZE')
+        for gauge in opt_rot_list:
+            g_idx = opt_rot_list.index(gauge)
+            print('\n\n----------------------------------------------------------------------')
+            print('\t%%%%%%%%%% {} %%%%%%%%%%'.format(gauge_list[g_idx]))
+            print('----------------------------------------------------------------------\n\n')
+            psi4.scatter(step, dip_polar_list, gauge, dip_quad_polar_list)
 
         #psi4.print_list(dip_polar_list)
         #print(dip_quad_polar_list)
@@ -133,22 +139,38 @@ def synthesize_dipole_polar(db,dip_polar_list):
             dip_polar_list.append(grab_psi4_matrix(outfile, 'Dipole '
                                                    'Polarizability', 3))
 
-def synthesize_opt_rot(db, opt_rot_list):
+def synthesize_opt_rot(db, opt_rot_list, gauge_list):
     length = []
     velocity = []
     for job in db['job_status']:
         with open('{}/output.dat'.format(job)) as outfile:
-            if psi4.get_local_option('CCRESPONSE','GAUGE') == 'LENGTH':
+            mygauge = psi4.get_option('CCRESPONSE', 'GAUGE')
+            #if psi4.get_local_option('CCRESPONSE','GAUGE') == 'LENGTH':
+            if mygauge == 'LENGTH':
                 length.append(grab_psi4_matrix(outfile, 'Optical Rotation Tensor (Length Gauge)', 3))
-            elif psi4.get_local_option('CCRESPONSE','GAUGE') == 'VELOCITY':
+            #elif psi4.get_local_option('CCRESPONSE','GAUGE') == 'VELOCITY':
+            elif mygauge == 'VELOCITY':
                 velocity.append(grab_psi4_matrix(outfile, 'Optical Rotation Tensor (Modified Velocity Gauge)', 3))
-            elif psi4.get_local_option('CCRESPONSE','GAUGE') == 'BOTH':
+            #elif psi4.get_local_option('CCRESPONSE','GAUGE') == 'BOTH':
+            elif mygauge == 'BOTH':
                 length.append(grab_psi4_matrix(outfile, 'Optical Rotation Tensor (Length Gauge)', 3))
                 velocity.append(grab_psi4_matrix(outfile, 'Optical Rotation Tensor (Modified Velocity Gauge)', 3))
+            else:
+                print("There is no optical rotation tensor - something is wrong.")	
     if length:
         opt_rot_list.append(length)
+        gauge_list.append('Length Gauge Results')
     if velocity:
         opt_rot_list.append(velocity)
+        gauge_list.append('Modified Velocity Gauge Results')
+
+    #print(mygauge)
+    #print("Length gauge list:")
+    #print(length)
+    #print("Velocity gauge list:")
+    #print(velocity)
+    #print("Op. rot. list:")
+    #print(opt_rot_list)
 
 def synthesize_dip_quad_polar(db, dip_quad_polar_list):
     for job in db['job_status']:
