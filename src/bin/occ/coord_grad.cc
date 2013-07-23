@@ -48,7 +48,7 @@ void OCCWave::coord_grad()
       gfock_diag();
      
       // For Standard methods  
-      if (orb_opt_ == "FALSE") {
+      if (orb_opt_ == "FALSE" && relaxed_ == "TRUE") {
           fprintf(outfile,"\tSolving orbital Z-vector equations...\n");
           fflush(outfile);
           z_vector();

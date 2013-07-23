@@ -783,46 +783,63 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("PRINT", 1);
   }
   if (name == "DFTSAPT"|| options.read_globals()) {
-  /*- The amount of information printed to the output file -*/
-  options.add_int("PRINT", 1);
-  /*- Debug level -*/
-  options.add_int("DEBUG", 0);
-  /*- Bench level -*/
-  options.add_int("BENCH", 0);
-  /*- \% of memory for DF-MP2 three-index buffers -*/
-  options.add_double("SAPT_MEM_FACTOR", 0.9);
-  /*- The name of the orbital basis set -*/
-  options.add_str("BASIS", "");
-  /*- The name of the response auxiliary basis set -*/
-  options.add_str("DF_BASIS_SAPT", "");
-  /*- The maximum number of iterations in CPKS -*/
-  options.add_int("MAXITER", 100);
-  /*- Convergence criterion for residual of the CPKS coefficients in the SAPT
-  * $E@@{ind,resp}^{(20)}$ term. -*/
-  options.add_double("D_CONVERGENCE",1e-8);
-  /*- Number of frequency points in Casimir-Poldar integral -*/
-  options.add_int("FREQ_POINTS",8);
-  /*- Frequency scale in Casimir-Poldar integral -*/
-  options.add_double("FREQ_SCALE",0.1);
-  /*- Maximum number of terms in susceptibility coupling -*/
-  options.add_int("FREQ_MAX_K",2);
-  /*- Lambda in Pauli Blockade -*/
-  options.add_double("PB_LAMBDA",1E5);
-  /*- Fork pathway, until I properly subclass these things -*/
-  options.add_str("DFT_SAPT_TYPE", "SAPT0", "SAPT0 DFT-SAPT");
-  /*- Relative convergence in orbital localization -*/
-  options.add_double("LOCAL_CONVERGENCE",1.0E-12);
-  /*- Maximum iterations in localization -*/
-  options.add_int("LOCAL_MAXITER", 50);
-  /*- Localization algorithm -*/
-  options.add_str("LOCAL_TYPE", "BOYS", "BOYS PIPEK_MEZEY");
-  /*- Atomic population type -*/
-  options.add_str("ASAPT_POPULATION_TYPE", "LOWDIN", "MULLIKEN LOWDIN");
-  /*- The name of the monomer-local electrostatics auxiliary basis set -*/
-  options.add_str("DF_BASIS_ELST", "");
-  /*- The name of the monomer-local electrostatics primary basis set -*/
-  options.add_str("BASIS_ELST", "");
-
+    /*- The amount of information printed to the output file -*/
+    options.add_int("PRINT", 1);
+    /*- Debug level -*/
+    options.add_int("DEBUG", 0);
+    /*- Bench level -*/
+    options.add_int("BENCH", 0);
+    /*- \% of memory for DF-MP2 three-index buffers -*/
+    options.add_double("SAPT_MEM_FACTOR", 0.9);
+    /*- The name of the orbital basis set -*/
+    options.add_str("BASIS", "");
+    /*- The name of the response auxiliary basis set -*/
+    options.add_str("DF_BASIS_SAPT", "");
+    /*- The maximum number of iterations in CPKS -*/
+    options.add_int("MAXITER", 100);
+    /*- Convergence criterion for residual of the CPKS coefficients in the SAPT
+    * $E@@{ind,resp}^{(20)}$ term. -*/
+    options.add_double("D_CONVERGENCE",1e-8);
+    /*- Number of frequency points in Casimir-Poldar integral -*/
+    options.add_int("FREQ_POINTS",8);
+    /*- Frequency scale in Casimir-Poldar integral -*/
+    options.add_double("FREQ_SCALE",0.1);
+    /*- Maximum number of terms in susceptibility coupling -*/
+    options.add_int("FREQ_MAX_K",2);
+    /*- Lambda in Pauli Blockade -*/
+    options.add_double("PB_LAMBDA",1E5);
+    /*- Fork pathway, until I properly subclass these things -*/
+    options.add_str("DFT_SAPT_TYPE", "SAPT0", "SAPT0 DFT-SAPT");
+    /*- Relative convergence in orbital localization -*/
+    options.add_double("LOCAL_CONVERGENCE",1.0E-12);
+    /*- Maximum iterations in localization -*/
+    options.add_int("LOCAL_MAXITER", 50);
+    /*- Localization algorithm -*/
+    options.add_str("LOCAL_TYPE", "BOYS", "BOYS PIPEK_MEZEY");
+    /*- The name of the monomer-local electrostatics auxiliary basis set -*/
+    options.add_str("DF_BASIS_ELST", "");
+    /*- The name of the monomer-local electrostatics primary basis set -*/
+    options.add_str("BASIS_ELST", "");
+    /*- ASAPT Atomic population type -*/
+    options.add_str("ASAPT_POPULATION_TYPE", "LOWDIN", "MULLIKEN LOWDIN");
+    /*- ASAPT analysis tasking -*/
+    options.add("ASAPT_TASKS", new ArrayType());
+    /*- Do ASAPT exchange scaling? (ratio of S^\infty to S^2) -*/
+    options.add_bool("ASAPT_EXCH_SCALE", true);
+    /*- Do ASAPT induction scaling? (ratio of HF induction to ASAPT induction) -*/
+    options.add_bool("ASAPT_IND_SCALE", true);
+    /*- Do ASAPT coupled response? (not recommended) -*/
+    options.add_bool("ASAPT_IND_RESPONSE", false);
+    /*- Voxel ASAPT density saturation (for uniform transfer functions) -*/
+    options.add_double("ASAPT_DENSITY_CLAMP", 0.5);
+    /*- Voxel ASAPT energy saturation (for uniform transfer functions) -*/
+    options.add_double("ASAPT_ENERGY_CLAMP", 0.005);
+    /*- Voxel ASAPT Gaussian scale for electrostatics (larger => tigher Gaussians) -*/
+    options.add_double("ASAPT_GAUSSIAN_SCALE", 2.0);
+    /*- ASAPT minimum grid overages in bohr (LX, LY, LZ) -*/
+    options.add("CUBIC_GRID_OVERAGE", new ArrayType());
+    /*- ASAPT voxel spacing in bohr (DX, DY, DZ) -*/
+    options.add("CUBIC_GRID_SPACING", new ArrayType());
   }
   if(name == "DCFT"|| options.read_globals()) {
       /*-MODULEDESCRIPTION Performs Density Cumulant Functional Theory
@@ -945,7 +962,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
-    options.add_str("SCF_TYPE", "PK", "DIRECT DF PK OUT_OF_CORE FAST_DF CD");
+    options.add_str("SCF_TYPE", "PK", "DIRECT DF PK OUT_OF_CORE FAST_DF CD INDEPENDENT");
+    /*- JK Independent options
+     -*/
+    options.add_str("INDEPENDENT_J_TYPE", "DIRECT_SCREENING", "DIRECT_SCREENING");
+    options.add_str("INDEPENDENT_K_TYPE", "DIRECT_SCREENING", "DIRECT_SCREENING LINK");
     /*- Tolerance for Cholesky decomposition of the ERI tensor -*/
     options.add_double("CHOLESKY_TOLERANCE",1e-4);
     /*- Use DF integrals tech to converge the SCF before switching to a conventional tech -*/
@@ -1236,6 +1257,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The schwarz cutoff value
      -*/
     options.add_double("SCHWARZ_CUTOFF", 1.0E-12);
+    /*- Do we do the QQR integral sieve of Maurer et al. When false, just uses
+     *  the Schwarz sieve.
+     -*/
+    options.add_bool("DO_QQR_SIEVE", false);
     /*- The maximum reciprocal condition allowed in the fitting metric
      -*/
     options.add_double("FITTING_CONDITION", 1.0E-12);
@@ -1244,7 +1269,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("FITTING_ALGORITHM", 0);
     /*- SCF Type
      -*/
-    options.add_str("SCF_TYPE", "DIRECT", "DIRECT DF PK OUT_OF_CORE PS");
+    options.add_str("SCF_TYPE", "DIRECT", "DIRECT DF PK OUT_OF_CORE PS INDEPENDENT");
+    /*- JK Independent options
+     -*/
+    options.add_str("INDEPENDENT_J_TYPE", "DIRECT_SCREENING", "DIRECT_SCREENING");
+    options.add_str("INDEPENDENT_K_TYPE", "DIRECT_SCREENING", "DIRECT_SCREENING LINK");
     /*- Auxiliary basis for SCF
      -*/
     options.add_str("DF_BASIS_SCF", "");
@@ -2628,6 +2657,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("EKT_EA",false);
     /*- Do optimize the orbitals?  -*/
     options.add_bool("ORB_OPT",true);
+    /*- Do consider orbital response contributions for PDMs and GFM?  -*/
+    options.add_bool("RELAXED",true);
+    /*- Do symmetrize the GFM and OPDM in the EKT computations?  -*/
+    options.add_bool("SYMMETRIZE",false);
   }
   if (name == "MRCC"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/

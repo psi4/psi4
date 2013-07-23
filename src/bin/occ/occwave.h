@@ -383,6 +383,8 @@ protected:
      string ekt_ip_;
      string ekt_ea_;
      string orb_opt_;
+     string relaxed_;
+     string sym_gfm_;
 
 
      int *mopi; 		/* number of all MOs per irrep */

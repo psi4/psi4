@@ -1241,7 +1241,8 @@ def database(name, db_name, **kwargs):
                 elif isinstance(chgdoptval, int) or isinstance(chgdoptval, float):
                     commands += """psi4.set_global_option('%s', %s)\n""" % (chgdopt, chgdoptval)
                 else:
-                    raise ValidationError('Option \'%s\' is not of a type (string, int, float, bool) that can be processed by database wrapper.' % (chgdopt))
+                    pass
+                    #raise ValidationError('Option \'%s\' is not of a type (string, int, float, bool) that can be processed by database wrapper.' % (chgdopt))
 
         # build string of molecule and commands that are dependent on the database
         commands += '\n'
