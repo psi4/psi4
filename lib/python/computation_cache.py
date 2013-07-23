@@ -21,6 +21,7 @@ from grendel.util.containers import AliasedDict
 from grendel.util.decorators import typecheck, LazyProperty
 from functools import partial
 from hashlib import md5
+import hashlib
 import psi4
 import atexit
 import resource
@@ -1589,7 +1590,7 @@ class CachedComputation(object):
         return attr
 
     def get_file_path(self, datum_name):
-        return path_join(self.directory, datum_name + ".npy")
+        return CachedMemmapArray.normalized_name(path_join(self.directory, datum_name + ".npy"))
 
     def store_datum(self, name, value):
         """
@@ -1753,6 +1754,7 @@ class CachedComputation(object):
                         shape=shape,
                         dtype=dtype
                     )
+                    fname = out.filename
                     load_successful = True
                 except ValueError:
                     # Raised if the data is invalid.  This means the file is corrupted
@@ -1778,6 +1780,7 @@ class CachedComputation(object):
                     #   The helper function has already put it in our cached_data
                     #   dictionary, so all we need to do is use it.
                     out = self.cached_data[needed_name]
+                    fname = out.filename
                     # We should check that there isn't a file in our own directory,
                     #   and if so, delete it.
                     if exists(fname):
@@ -1993,7 +1996,7 @@ class CachedMemmapArray(CachedDatum):
             force_overwrite=False,
             mmap_load_mode=DEFAULT_MMAP_LOAD_MODE
     ):
-        self.filename = filename
+        self.filename = CachedMemmapArray.normalized_name(filename)
         self.dtype = dtype
         # Note:  mmap_load_mode is the mode used when loading.  When creating,
         #   "w+" is always used.
@@ -2025,6 +2028,20 @@ class CachedMemmapArray(CachedDatum):
     #################
     # Class Methods #
     #################
+
+    @classmethod
+    def normalized_name(cls, filename):
+        spl = path_split(filename)
+        dirname, endname = path_join(*spl[:-1]), spl[-1]
+        if len(endname) > 240:
+            # The filename will be too long; we need to make a hash of the name and basically
+            #   hope for no collisions.  If collisions happen (very low probability),
+            #   the data will just be overwritten from some other data value
+            # Combine two hashing techniques to further avoid collisions
+            hash_name = hashlib.sha224(endname).hexdigest() + hashlib.md5(endname).hexdigest() + ".npy"
+            return path_join(dirname, hash_name)
+        else:
+            return filename
 
     @classmethod
     def read_file_metadata(cls, filename):
