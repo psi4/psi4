@@ -83,6 +83,48 @@ boost::shared_ptr<Localizer> Localizer::build(boost::shared_ptr<BasisSet> primar
 {
     return Localizer::build(options.get_str("LOCAL_TYPE"), primary, C, options);
 }
+boost::shared_ptr<Matrix> Localizer::fock_update(boost::shared_ptr<Matrix> Fc)
+{
+    if (!L_ || !U_) {
+        throw PSIEXCEPTION("Localizer: run compute() first");
+    }
+
+    int nso = L_->rowspi()[0];
+    int nmo = L_->colspi()[0];
+
+    boost::shared_ptr<Matrix> Fl = Matrix::triplet(U_, Fc, U_, true, false, false);
+    double** Fp = Fl->pointer();
+    double** Lp = L_->pointer();
+    double** Up = U_->pointer();
+
+    std::vector<std::pair<double, int> > order;
+    for (int i = 0; i < nmo; i++) {
+        order.push_back(std::pair<double, int>(Fp[i][i],i)); 
+    }
+    std::sort(order.begin(), order.end());
+
+    boost::shared_ptr<Matrix> Fl2(Fl->clone());
+    Fl2->copy(Fl);
+    double** F2p = Fl2->pointer();
+    for (int i = 0; i < nmo; i++) {
+        for (int j = 0; j < nmo; j++) {
+             Fp[i][j] = F2p[order[i].second][order[j].second];
+        }
+    }
+    
+    boost::shared_ptr<Matrix> L2(L_->clone());
+    L2->copy(L_);
+    double** L2p = L2->pointer();
+    boost::shared_ptr<Matrix> U2(U_->clone());
+    U2->copy(U_);
+    double** U2p = U2->pointer();
+    for (int i = 0; i < nmo; i++) {
+        C_DCOPY(nso,&L2p[0][order[i].second],nmo,&Lp[0][i],nmo);
+        C_DCOPY(nmo,&U2p[0][order[i].second],nmo,&Up[0][i],nmo);
+    }   
+ 
+    return Fl;
+}
 
 BoysLocalizer::BoysLocalizer(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<Matrix> C) :
     Localizer(primary,C)
