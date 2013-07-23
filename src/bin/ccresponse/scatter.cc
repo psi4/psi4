@@ -71,11 +71,14 @@ void rs(int nm, int n, double **array, double *e_vals, int matz,
 
 namespace psi { namespace ccresponse {
 
+void print_tensor_der(FILE *myfile, std::vector<SharedMatrix> my_tensor_list);
+
 //void scatter(Options &options, std::vector <SharedMatrix> pol, std::vector <SharedMatrix> rot, std::vector <SharedMatrix> quad)
 void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMatrix> rot, std::vector <SharedMatrix> quad)
 {
     //double step = options.get_double("DISP_SIZE");
-    printf("STEP == %lf \n",step);
+    printf("STEPSIZE = %lf bohr\n\n",step);
+	int quiet = 1;
     int i,j,k;
     int a,b,c,d;
     double omega = 0.085645;
@@ -127,14 +130,29 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
         quad_grad.push_back(grad_mat);
     }
    
-    //printf("START \n"); 
-    //quad_grad[0]->print(stdout);
+	// Write Out the Tensor Derivatives to File tender.dat //
+	FILE *derivs = fopen("tender.dat", "w");
+	fprintf(derivs, "******************************************************\n");
+	fprintf(derivs, "**********                                  **********\n");
+	fprintf(derivs, "**********        TENSOR DERIVATIVES        **********\n");
+	fprintf(derivs, "**********   FOR COMPUTING ROA SCATTERING   **********\n");
+	fprintf(derivs, "**********                                  **********\n");
+	fprintf(derivs, "******************************************************\n\n\n");
+	fprintf(derivs, "\t*** Dipole Polarizability Derivative Tensors ***\n\n");
+	print_tensor_der(derivs, pol_grad);
+	fprintf(derivs, "*********************************************************\n\n");
+	fprintf(derivs, "\t*** Optical Rotation Derivative Tensors ***\n\n");
+	print_tensor_der(derivs, rot_grad);
+	fprintf(derivs, "*********************************************************\n\n");
+	fprintf(derivs, "\t*** Dipole/Quadrupole Derivative Tensors ***\n\n");
+	print_tensor_der(derivs, quad_grad);
+	fclose(derivs);
 
     boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
     int natom = molecule->natom();
     SharedMatrix geom(new Matrix(natom,3));
     
-    //Reading in the Hessian//
+    // Reading in the Hessian //
     FILE* hessian;
     FILE* dipole_moment;
     hessian=fopen("file15.dat","r");
@@ -150,6 +168,7 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
     }
     fclose(hessian);
   
+	// Read in the Dipole-Moment Derivatives //
     dipole_moment=fopen("file17.dat","r");
     SharedMatrix dipder(new Matrix(3, natom*3));
     for(i=0; i < 3; i++)
@@ -161,6 +180,7 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
     }
     fclose(dipole_moment);
 
+	// Convert Vectors of SharedMatrices to Single SuperMatrix //
     SharedMatrix polder(new Matrix(natom*3, 9));
     for (i=0;i<3*natom;i++)
     {
@@ -188,35 +208,35 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
       }
     }
 
+	// Probably delete all these?
     //quadder->print(stdout);
-
-    for (i=0;i<pol_grad.size();i++)
-    {
+    //for (i=0;i<pol_grad.size();i++)
+    //{
       //pol_grad[i]->print(stdout);
-    }
+    //}
     //polder->print(stdout);
-
     //F->print(stdout);
 
     geom->copy(molecule->geometry());
     SharedMatrix geom_orig(new Matrix(natom,3));
     geom_orig->copy(geom);
 
-	// Translate Molecule to Center of Mass
-	printf("\tInput coordinates (bohr):\n");
-	molecule->geometry().print(stdout);
+	// Translate Molecule to Center of Mass //
+	if(!quiet)  {
+      printf("\tInput coordinates (bohr):\n");
+	  molecule->geometry().print(stdout);
+    }
 	molecule->move_to_com();
 	geom_orig->copy(molecule->geometry());
-	printf("\tCoordinates relative to center of mass:\n");
     
-    //Reading the Z-vals
+    // Reading the Z-vals //
     int zvals[natom];
     for(i=0; i<natom; i++)
     {
         zvals[i]=molecule->Z(i);
     }
     
-    //Mass-weighting the co-ordinates
+    // Mass-weighting the co-ordinates //
     double massi[natom];
 
     for(i=0; i<natom; i++)
@@ -227,17 +247,21 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
             geom->set(i,j, geom_orig->get(i,j) * sqrt(massi[i]));
         }
     }
-	printf("\tMass-Weighted coordinates relative to the center of mass:\n");
-	geom->print(stdout);
+	if(!quiet)  {
+	  printf("\tMass-Weighted coordinates relative to the center of mass:\n");
+	  geom->print(stdout);
+    }
  
     //Generating the inertia tensor
    
     SharedMatrix I(new Matrix(3,3));
     I->copy(molecule->inertia_tensor());
     //I = molecule->inertia_tensor();
-	printf("\tMoment of Inertia Tensor:\n");
-	fflush(stdout);
-    I->print(stdout);
+	if(!quiet)  {
+	  printf("\tMoment of Inertia Tensor:\n");
+      I->print(stdout);
+	  fflush(stdout);
+    }
     
 /*
     for(i=0; i < 3; i++) 
@@ -258,7 +282,7 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
     //I->print();
 */
 
-    //Diagonalising the inertia tensor
+    // Diagonalizing the inertia tensor //
    
     SharedMatrix Ievecs(new Matrix(3,3));
     SharedVector Ievals(new Vector("Ieigenval",3));
@@ -266,7 +290,7 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
     I->diagonalize(Ievecs,Ievals);
 	//rs(3,3,I->pointer(),Ievals->pointer(),1,Ievecs->pointer(),1e-12);
 
-    //Constructing I-inverse matrix
+    // Constructing I-inverse matrix //
 
     SharedMatrix Iinv(new Matrix(3,3));
     SharedMatrix Itmp(new Matrix(3,3));
@@ -280,13 +304,15 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
     Itmp->gemm(0,1,1.0,Iinv,Ievecs,0.0);
     Iinv->gemm(0,0,1.0,Ievecs,Itmp,0.0);
 
-	printf("\tIegv, Ievec, I^-1 matrix\n");
-	fflush(stdout);
-	Ievecs->print(stdout);
-	Ievals->print(stdout);
-    Iinv->print(stdout);
+	if(!quiet)  {
+	  printf("\tIegv, Ievec, I^-1 matrix\n");
+	  Ievecs->print(stdout);
+	  Ievals->print(stdout);
+      Iinv->print(stdout);
+	  fflush(stdout);
+    }
  
-    //Generating the 6 pure rotation and translation vectors
+    // Generating the 6 pure rotation and translation vectors //
     SharedMatrix P(new Matrix(natom*3,natom*3));
     int icart,jcart,iatom,jatom;
     double imass,jmass,total_mass;
@@ -345,21 +371,26 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
     T->zero();
     T->gemm(0,0,1.0,F,P,0.0);
     F->gemm(0,0,1.0,P,T,0.0);
-	printf("\tProjected, Mass-Weighted Hessian:\n");
-	F->print(stdout);
-	fflush(stdout);
+	if(!quiet)  {
+	  printf("\tProjected, Mass-Weighted Hessian:\n");
+	  F->print(stdout);
+	  fflush(stdout);
+    }
 
     // Diagonalize projected mass-weighted Hessian //
     SharedMatrix Fevecs(new Matrix(3*natom,3*natom));
     SharedVector Fevals(new Vector("Feigenval",3*natom));
-    SharedMatrix Lx(new Matrix(3*natom,3*natom));
+    SharedMatrix Lx(new Matrix("Normal Transform Matrix",3*natom,3*natom));
     SharedVector redmass(new Vector("ReducedMass",3*natom));
     double norm=0.0;
 
     F->diagonalize(Fevecs,Fevals);
 	//rs(3*natom,3*natom,F->pointer(),Fevals->pointer(),1,Fevecs->pointer(),1e-12);
-	Fevals->print(stdout);
-	Fevecs->print(stdout);
+	if(!quiet)  {
+	  Fevals->print(stdout);
+	  Fevecs->print(stdout);
+      fflush(stdout);
+    }
 
     Lx->gemm(0,0,1.0,M,Fevecs,0.0);
 /*
@@ -373,7 +404,10 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
     }
     fclose(lxf);
 */
-	Lx->print(stdout);
+	if(!quiet)  {
+	  Lx->print(stdout);
+      fflush(stdout);
+    }
 
     for(i=0; i < 3*natom; i++)
     {
@@ -390,11 +424,11 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
 
    //redmass->print();
 
-   /* Transform dipole-moment derivatives to normal coordinates */
+   // Transform dipole-moment derivatives to normal coordinates //
    SharedMatrix dipder_q(new Matrix(3,3*natom));
    dipder_q->gemm(0,0,1.0,dipder,Lx,0.0);
 
-   //Compute IR intensities in projected normal coordinates //
+   // Compute IR intensities in projected normal coordinates //
    double dipder_conv;
    dipder_conv = _dipmom_debye2si*_dipmom_debye2si/(1e-20 * _amu2kg * _au2amu);
    dipder_conv *= _na * _pi/(3.0 * _c * _c * 4.0 * _pi * _e0 * 1000.0);
@@ -412,9 +446,9 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
    // Transform polarizability derivatives to normal coordinates //
    SharedMatrix polder_q(new Matrix(9,3*natom));
    polder_q->gemm(1,0,1.0,polder,Lx,0.0);
-   printf("\tPolarizability Derivatives, normal\n");
+   fprintf(outfile,"\n\tPolarizability Derivatives, normal\n");
    //polder->print(stdout);
-   polder_q->print(stdout);
+   polder_q->print();
    int jk=0;
    std::vector<SharedMatrix> alpha_der(3*natom);
    for(i=0; i < alpha_der.size(); ++i)
@@ -438,9 +472,9 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
    // Transform optical rotation tensor derivatives to normal coordinates //
    SharedMatrix optder_q(new Matrix(9,3*natom));
    optder_q->gemm(1,0,1.0,optder,Lx,0.0);
-   printf("\tOptical Rotation Tensor Derivatives, normal\n");
+   fprintf(outfile,"\tOptical Rotation Tensor Derivatives, normal\n");
    //optder->print(stdout);
-   optder_q->print(stdout);
+   optder_q->print();
   
    std::vector<SharedMatrix> G_der(3*natom);
    for(i=0; i < G_der.size(); ++i)
@@ -464,9 +498,9 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
    // Transform dipole/quarupole tensor derivatives to normal coordinates //
    SharedMatrix quadder_q(new Matrix(27,3*natom));
    quadder_q->gemm(1,0,1.0,quadder,Lx,0.0);
-   printf("\tDipole/Quadrupole Tensor Derivatives, normal\n");
+   fprintf(outfile,"\tDipole/Quadrupole Tensor Derivatives, normal\n");
    //quadder->print(stdout);
-   quadder_q->print(stdout);
+   quadder_q->print();
  
    int jkl,l;
    double**** Q_der = (double ****) malloc(natom*3*sizeof(double ***));
@@ -619,6 +653,18 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
   }
 
 }
+
+	void print_tensor_der(FILE *myfile, std::vector<SharedMatrix> my_tensor_list)
+	{
+        for(int i=0; i < my_tensor_list.size(); ++i)  {
+            int atom_num  = i/3;
+            int xyz       = i%3;
+            if(xyz==0) fprintf(myfile, "\tAtom #%d, X-coord.:\n", atom_num);
+            if(xyz==1) fprintf(myfile, "\tAtom #%d, Y-coord.:\n", atom_num);
+            if(xyz==2) fprintf(myfile, "\tAtom #%d, Z-coord.:\n", atom_num);
+            my_tensor_list[i]->print(myfile);
+        }
+	}
 
 }} // namespace psi::ccresponse
 
