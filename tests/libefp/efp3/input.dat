@@ -33,7 +33,6 @@ molecule efp_spec {
 }
 
 set {
-  step_type nr
   geom_maxiter 200
 }
 
