@@ -165,6 +165,7 @@ protected:
 
     /// Core Hamiltonian matrix
     SharedMatrix H_;
+    SharedMatrix Horig_;
 
     /// Alpha MO coefficients
     SharedMatrix Ca_;

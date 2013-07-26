@@ -1450,6 +1450,10 @@ double HF::compute_energy()
         form_H(); //Core Hamiltonian
         timer_off("Form H");
 
+	int nbf = Process::environment.wavefunction()->basisset()->nbf();
+	Horig_ = SharedMatrix(new Matrix("H orig Matrix", nbf, nbf));
+	Horig_->copy(H_);
+
         timer_on("Form S/X");
         form_Shalf(); //S and X Matrix
         timer_off("Form S/X");
@@ -1472,15 +1476,15 @@ double HF::compute_energy()
     }
     fflush(outfile);
 
-    // SCF iterations
-    double efp_only_energy = 0.0;
     if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
-        Process::environment.get_efp()->Compute();
-        double efp_elst = Process::environment.globals["EFP ELST ENERGY"];
-        double efp_exch = Process::environment.globals["EFP EXCH ENERGY"];
-        double efp_disp = Process::environment.globals["EFP DISP ENERGY"];
-        efp_only_energy = efp_elst + efp_exch + efp_disp;
+        Process::environment.get_efp()->set_qm_atoms();
+        double efp_wfn_dependent_energy =
+		    Process::environment.get_efp()->scf_energy_update();
+        fprintf(outfile, "  Wfn dependent Energy =  %24.16f [H]\n",
+		    efp_wfn_dependent_energy);
     }
+
+    // SCF iterations
     do {
         iteration_++;
 
@@ -1488,6 +1492,17 @@ double HF::compute_energy()
 
         // Call any preiteration callbacks
         call_preiteration_callbacks();
+
+        H_->copy(Horig_);
+        H_->print(outfile);
+
+        // add efp contribuation to Fock matrix
+        if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
+    	    boost::shared_ptr<Matrix> Vefp = Process::environment.get_efp()->modify_Fock();
+    	    H_->add(Vefp);
+        }
+
+	E_ = 0.0;
 
         timer_on("Form G");
         form_G();
@@ -1506,15 +1521,16 @@ double HF::compute_energy()
             Fb_->print(outfile);
         }
 
-        E_ = compute_E();
+        E_ += compute_E();
 
         // add efp contribuation to energy
         if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
+            double efp_wfn_dependent_energy =
+		    Process::environment.get_efp()->scf_energy_update();
+            fprintf(outfile, "  Wfn dependent Energy =  %24.16f [H]\n",
+			    efp_wfn_dependent_energy);
 
-            double efp_wfn_dependent_energy = Process::environment.get_efp()->scf_energy_update();
-            fprintf(outfile, "  Wfn dependent Energy =  %24.16f [H]\n", efp_wfn_dependent_energy);
-
-	        E_ += efp_wfn_dependent_energy + efp_only_energy;
+            E_ += efp_wfn_dependent_energy;
         }   
 
         timer_on("DIIS");
@@ -1613,8 +1629,6 @@ double HF::compute_energy()
     } while (!converged && iteration_ < maxiter_ );
 
     if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
-        double efp_wfn_dependent_energy = Process::environment.get_efp()->scf_energy_update();
-
         Process::environment.get_efp()->Compute();
 
         double efp_elst         = Process::environment.globals["EFP ELST ENERGY"];
@@ -1622,6 +1636,9 @@ double HF::compute_energy()
         double efp_pol          = Process::environment.globals["EFP POL ENERGY"];
         double efp_disp         = Process::environment.globals["EFP DISP ENERGY"];
         double efp_total_energy = efp_elst + efp_exch + efp_pol + efp_disp;
+        double efp_wfn_dependent_energy = efp_pol;
+
+	E_ += efp_total_energy - efp_wfn_dependent_energy;
 
         fprintf(outfile, "  EFP Electrostatics Energy = %24.16f [H]\n", efp_elst);
         fprintf(outfile, "  EFP Polarization Energy =   %24.16f [H]\n", efp_pol);

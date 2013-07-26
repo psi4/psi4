@@ -340,9 +340,9 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
 //    // xxx, xxy, xxz, xyy, xyz, xzz, yyy, yyz, yzz, zzz
 //    // presumably the new integrals will be ordered similarly
 //
-//    // arrays to map our multipole ordering to Ilya's
-//    int mapq[6]  = { 0, 3, 4, 1, 5, 2};
-//    int mapo[10] = { 0, 3, 4, 5, 9, 7, 1, 6, 8, 2};
+//    // arrays to map libefp to our multipole ordering
+//    int mapq[6]  = { 0, 3, 5, 1, 2, 4 };
+//    int mapo[10] = { 0, 6, 9, 1, 2, 3, 7, 5, 8, 4 };
 
     // contract/dot/something multipoles with multipole integrals.  the result goes into V
     boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
