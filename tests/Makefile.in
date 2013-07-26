@@ -41,7 +41,7 @@ scf_subdirs = scf1 scf2 scf3 scf4 scf5 scf6 scf-guess-read sad1 castup1 mom prop
 
 python_test_subdirs = pywrap-db1 pywrap-db2 pywrap-cbs1 pywrap-all pywrap-alias pywrap-opt-sowreap pywrap-freq-e-sowreap pywrap-basis pywrap-db3 psithon1 pywrap-molecule pywrap-checkrun-rohf pywrap-checkrun-uhf pywrap-checkrun-rhf pywrap-checkrun-convcrit
 
-dftd3_subdirs = dftd3-energy dftd3-grad
+dftd3_subdirs = dftd3-energy dftd3-grad psithon2
 
 mrcc_subdirs = 
 
@@ -64,6 +64,8 @@ $(python_test_subdirs) \
 $(mcscf_subdirs) \
 $(psimrcc_subdirs) \
 $(dcft_subdirs)
+
+interface_subdirs = libefp
 
 # Compile the plugins, if we activated them
 HAVE_PLUGINS=@HAVE_PLUGINS@
@@ -94,7 +96,7 @@ endif
 have_dftd3 := $(shell which dftd3)
 ifneq ($(have_dftd3),)
    subdirs += $(dftd3_subdirs)
-   quicktestdirs += dftd3-energy
+   quicktestdirs += dftd3-energy psithon2
 endif
 
 have_dmrcc := $(shell which dmrcc)
@@ -137,6 +139,13 @@ freq_tests: $(freq_subdirs)
 
 quicktests: $(quicktestdirs)
 	$(call gatherresults, $(quicktestdirs))
+	for dir in $(interface_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+libefp_tests:
+	(cd libefp && $(MAKE) tests) || exit 1;
 
 cepa_tests: $(cepa_subdirs)
 	$(call gatherresults, $(cepa_subdirs))
@@ -198,6 +207,10 @@ clean:
 	 (cd $${dir} && echo ...Cleaning $${dir}... && $(MAKE) clean) || exit 1; \
 	done
 	rm -f ../test-case-results
+	for dir in $(interface_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Cleaning $${dir}... && $(MAKE) clean) || exit 1; \
+	done
 
 quicktestsclean:
 	for dir in $(quicktestdirs); \
