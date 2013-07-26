@@ -58,6 +58,10 @@ the energy call as ::
 
     energy('fno-ccsd(t)')
 
+If you wish to specify the number of active natural orbitals manually, use
+the keyword |fnocc__active_nat_orbs|.  This keyword will override the 
+keyword |fnocc__occ_tolerance|.
+
 QCISD(T), CCSD(T), MP4, and CEPA
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
