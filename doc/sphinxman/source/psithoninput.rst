@@ -514,6 +514,8 @@ complexes, arrays can be used, e.g. ``extract_subsets(2,[1,3])``::
    mAcp = eneyne.extract_subsets(1,2)
    energy('scf')
 
+To add EFP fragments to a molecule, see :ref:`sec:usingEFPFragments`.
+
 .. index::
    single: basis set; specification
    triple: setting; keywords; C-side

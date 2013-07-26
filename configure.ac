@@ -1091,6 +1091,7 @@ AC_CONFIG_FILES([
           tests/pywrap-checkrun-convcrit/Makefile
           tests/pywrap-molecule/Makefile
           tests/psithon1/Makefile
+          tests/psithon2/Makefile
           tests/dftd3-energy/Makefile
           tests/dftd3-grad/Makefile
           tests/cisd-h2o+-0/Makefile

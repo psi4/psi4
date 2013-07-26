@@ -103,6 +103,7 @@ void MOLECULE::sd_step(void) {
   }
 
   apply_intrafragment_step_limit(dq);
+  apply_efpfragment_step_limit(dq);
 
   // norm of step
   double sd_dqnorm = sqrt( array_dot(dq, dq, dim) );
@@ -138,13 +139,12 @@ void MOLECULE::sd_step(void) {
                                         &(fq[g_interfragment_intco_offset(I)]) );
   }
 
-#if defined(OPTKING_PACKAGE_QCHEM)
   // fix rotation matrix for rotations in QCHEM EFP code
   for (int I=0; I<efp_fragments.size(); ++I)
     efp_fragments[I]->displace( I, &(dq[g_efp_fragment_intco_offset(I)]) );
-#endif
 
-  symmetrize_geom(); // now symmetrize the geometry for next step
+  if (!Opt_params.efp_fragments)
+    symmetrize_geom(); // now symmetrize the geometry for next step
 
   // save values in step data
   p_Opt_data->save_step_info(DE_projected, sd_u, sd_dqnorm, sd_g, sd_h);

@@ -280,7 +280,7 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None):
     individual overrides in the presence of *func*. Returns energy if *dertype* is 0,
     gradient if *dertype* is 1, else tuple of energy and gradient if *dertype*
     unspecified. The dftd3 executable must be independently compiled and found in
-    :envvar:`PATH`.
+    :envvar:`PATH` or :envvar:`PSIPATH`.
 
     """
     # Validate arguments
@@ -338,6 +338,10 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None):
         os.rename(defaultfile, defaultfile + '_hide')
         defmoved = True
 
+    # Find environment by merging PSIPATH and PATH environment variables
+    lenv = os.environ
+    lenv['PATH'] = ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':')]) + ':' + lenv.get('PATH')
+
     # Setup unique scratch directory and move in
     current_directory = os.getcwd()
     psioh = psi4.IOManager.shared_object()
@@ -374,7 +378,7 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None):
 
     # Call dftd3 program
     try:
-        dashout = subprocess.Popen(['dftd3', geomfile, '-grad'], stdout=subprocess.PIPE)
+        dashout = subprocess.Popen(['dftd3', geomfile, '-grad'], stdout=subprocess.PIPE, env=lenv)
     except OSError:
         raise ValidationError('Program dftd3 not found in path.')
     out, err = dashout.communicate()

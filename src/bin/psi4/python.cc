@@ -24,6 +24,7 @@
 #include <boost/python/detail/wrap_python.hpp>
 #include <boost/python/module.hpp>
 #include <boost/python.hpp>
+#include <boost/tokenizer.hpp>
 #include <boost/python/list.hpp>
 #include <boost/python/dict.hpp>
 #include <boost/algorithm/string.hpp>
@@ -1456,6 +1457,33 @@ void Python::run(FILE *input)
         #else
         Py_SetProgramName(s);
         #endif
+        
+        // Track down the location of PSI4's auxiliary directories path
+        std::string psiPath = Process::environment("PSIPATH") + ":./";
+        boost::char_separator<char> sep(":");
+        typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+        tokenizer tokens(psiPath, sep);
+        PyObject *path, *sysmod, *str;
+        PY_TRY(sysmod , PyImport_ImportModule("sys"));
+        PY_TRY(path   , PyObject_GetAttrString(sysmod, "path"));
+        for( tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter) {
+            boost::filesystem::path bf_path2;
+            bf_path2 = boost::filesystem::system_complete(*tok_iter);
+            if(!boost::filesystem::is_directory(bf_path2)) {
+                printf("Unable to read the PSI4 Auxililary folder - check the PSIPATH environmental variable\n"
+                        "      Current value of PSIPATH is %s\n", psiPath.c_str());
+                exit(1);
+            }
+#if PY_MAJOR_VERSION == 2
+            PY_TRY(str    , PyString_FromString((*tok_iter).c_str()));
+#else
+            PY_TRY(str    , PyBytes_FromString((*tok_iter).c_str()));
+#endif
+            PyList_Append(path, str);
+        }
+        Py_DECREF(str);
+        Py_DECREF(path);
+        Py_DECREF(sysmod);
 
         // Track down the location of PSI4's python script directory.
         std::string psiDataDirName = Process::environment("PSIDATADIR");
@@ -1469,7 +1497,6 @@ void Python::run(FILE *input)
         }
 
         // Add PSI library python path
-        PyObject *path, *sysmod, *str;
         PY_TRY(sysmod , PyImport_ImportModule("sys"));
         PY_TRY(path   , PyObject_GetAttrString(sysmod, "path"));
 #if PY_MAJOR_VERSION == 2

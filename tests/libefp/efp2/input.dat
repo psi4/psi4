@@ -15,23 +15,21 @@
 
 
 molecule efp_spec {
-efp nh3_l 0.0 0.0 5.0 5 2 8
+efp nh3 0.0 0.0 5.0 5 2 8
 --
-C  0.0 0.0 0.0  # H2O 
+C  0.0 0.0 0.0
 O  0.0 1.5 0.0
 O  0.0 -1.5 0.0
  --
- efp h2o_l 5.0 0.0 0.0 5 2 8
+ efp water 5.0 0.0 0.0 5 2 8  # water not in fraglib library
 --
 He  -3.0 4.0 4.0
 He  -4.0 5.0 4.0
  --
-efp ch3oh_l
-  1.275    -2.447    -4.673  # CH3OH
+efp ch3oh
+  1.275    -2.447    -4.673
   0.709    -3.191    -3.592
   2.213    -1.978    -4.343
-no_reorient
-no_com
 }
 
 
@@ -54,6 +52,8 @@ compare_values(53.3950916194, efp_spec.nuclear_repulsion_energy(), 6, "    QM Nu
 #compare_values(53.3950916194, efp_spec.nuclear_repulsion_energy(), 6, "    QM Nuclear Repulsion Energy")
 
 compare_values(0.0000275429423564, get_variable('CURRENT ENERGY'), 6, 'EFP/QM EFP Energy Total')  #TEST
+compare_values(0.0000275429423564, get_variable('CURRENT ENERGY'), 6, 'PSIPATH fraglib')  #TEST
+
 
 
 #print efp_spec.nfragments()

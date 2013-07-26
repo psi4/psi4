@@ -134,7 +134,8 @@ fprintf(outfile, "\nin molecule_nr_step.cc line 85, Nintco = %d\n", Nintco); ffl
   for (int I=0; I<efp_fragments.size(); ++I)
     efp_fragments[I]->displace( I, &(dq[g_efp_fragment_intco_offset(I)]) );
 
-//  symmetrize_geom(); // now symmetrize the geometry for next step
+  if (!Opt_params.efp_fragments)
+    symmetrize_geom(); // now symmetrize the geometry for next step
 
   // save values in step data
   p_Opt_data->save_step_info(DE_projected, nr_u, nr_dqnorm, nr_g, nr_h);

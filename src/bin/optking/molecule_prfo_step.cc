@@ -211,6 +211,7 @@ void MOLECULE::prfo_step(void) {
   print_matrix(outfile, &dq, 1, Nintco);
  
   apply_intrafragment_step_limit(dq);
+  apply_efpfragment_step_limit(dq);
 
   // try to get but with a single extrapolated energy change
  
@@ -275,13 +276,12 @@ double rfo_dqnorm_min;
                                         &(fq[g_interfragment_intco_offset(I)]) );
   }
 
-#if defined(OPTKING_PACKAGE_QCHEM)
   // fix rotation matrix for rotations in QCHEM EFP code
   for (int I=0; I<efp_fragments.size(); ++I)
     efp_fragments[I]->displace( I, &(dq[g_efp_fragment_intco_offset(I)]) );
-#endif
 
-  symmetrize_geom(); // now symmetrize the geometry for next step
+  if (!Opt_params.efp_fragments)
+    symmetrize_geom(); // now symmetrize the geometry for next step
 
   // save values in step data
   p_Opt_data->save_step_info(DE_projected, dq, rfo_dqnorm, rfo_g, rfo_h);

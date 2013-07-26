@@ -274,6 +274,16 @@ fprintf(outfile, "\ndone with fragmentize and connectivity 1\n"); fflush(outfile
   // project out constraints for fixed intcos and unphysical displacements
   mol1->project_f_and_H();
 
+// Temporary halt for diatomic EFPs
+  if (Opt_params.efp_fragments) {
+    for (int f=0; f<p_efp->get_frag_count(); ++f)
+      if (p_efp->get_frag_atom_count(f) < 3) {
+        fprintf(outfile,"optking halting optimization b/c diatomic efp fragments unsupported.\n");
+        throw(INTCO_EXCEPT("Halting optimization.  Diatomic EFP fragments unsupported."));
+      }
+  }
+//
+
   // step functions put dq in p_Opt_data->step
   if (Opt_params.opt_type == OPT_PARAMS::IRC)
     mol1->irc_step();
