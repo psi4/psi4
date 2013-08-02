@@ -58,6 +58,10 @@ def run_cfour(name, **kwargs):
     if 'keep' in kwargs:
         keep = kwargs['keep']
 
+    # Because this fn's called for energy('cfour'), opt('cfour'), etc.,
+    # need this to figure out who called (better way?)
+    dertype = kwargs['c4_dertype'] if 'c4_dertype' in kwargs else 0
+
     # Save current directory location
     current_directory = os.getcwd()
 
@@ -97,8 +101,8 @@ def run_cfour(name, **kwargs):
         raise ValidationError("GENBAS file loading problem")
 
     # Generate integrals and input file (dumps files to the current directory)
-    with open("ZMAT", "w") as cfour_infile:
-        cfour_infile.write(write_zmat(lowername))
+    with open('ZMAT', 'w') as cfour_infile:
+        cfour_infile.write(write_zmat(lowername, dertype))
 
     # Load the ZMAT file
     # and dump a copy into the outfile
@@ -148,17 +152,17 @@ def run_cfour(name, **kwargs):
     psivar, c4coord, c4grad = qcprograms.cfour.cfour_harvest(c4out)
     for key in psivar.keys():
         psi4.set_variable(key.upper(), float(psivar[key]))
-    #p4mat = psi4.Matrix(len(c4grad), 3)
-    #p4mat.set(c4grad)
-    #psi4.set_gradient(p4mat)
 
     # Awful Hack - Go Away TODO
     if c4grad:
         molecule = psi4.get_active_molecule()
         molecule.update_geometry()
-        qcdbmolecule = qcdb.Molecule(molecule.create_psi4_string_from_molecule())
-        p4grad = qcdbmolecule.deorient_array_from_cfour_2(c4coord, c4grad)
-        #p4grad = qcdbmolecule.deorient_array_from_cfour(c4grad)
+
+        if molecule.name() == 'blank_molecule_psi4_yo':
+            p4grad = c4grad
+        else:
+            qcdbmolecule = qcdb.Molecule(molecule.create_psi4_string_from_molecule())
+            p4grad = qcdbmolecule.deorient_array_from_cfour_2(c4coord, c4grad)
 
         p4mat = psi4.Matrix(len(p4grad), 3)
         p4mat.set(p4grad)
@@ -206,7 +210,7 @@ def cfour_gradient_list():
 #cfour_methods = {
 #    'cfour': run_cfour
 
-def write_zmat(name):
+def write_zmat(name, dertype):
     """
 
     """
@@ -215,22 +219,22 @@ def write_zmat(name):
     mem = int(0.000001 * psi4.get_memory())
     if mem == 256:
         memcmd, memkw = '', {}
-        #memcmd = ''
-        #memkw = {}
     else:
         memcmd, memkw = qcprograms.cfour.cfour_memory(mem)
 
     # Handle molecule
     molecule = psi4.get_active_molecule()
     if molecule.name() == 'blank_molecule_psi4_yo':
-        molcmd = ''
-        molkw = {}
+        molcmd, molkw = '', {}
     else:
         molecule.update_geometry()
         #print(molecule.create_psi4_string_from_molecule())
         qcdbmolecule = qcdb.Molecule(molecule.create_psi4_string_from_molecule())
         qcdbmolecule.tagline = molecule.name()
         molcmd, molkw = qcdbmolecule.format_molecule_for_cfour()
+
+    # Handle calc type
+    clvcmd, clvkw = qcprograms.cfour.cfour_calclevel(dertype)
 
 #optimize
 #    gradient
@@ -256,6 +260,7 @@ def write_zmat(name):
     userkw = qcdb.options.reconcile_options(userkw, memkw)
     userkw = qcdb.options.reconcile_options(userkw, molkw)
     userkw = qcdb.options.reconcile_options(userkw, mtdkw)
+    userkw = qcdb.options.reconcile_options(userkw, clvkw)
 
     # Handle conversion of psi4 keyword structure into cfour format
     optcmd = qcdb.options.prepare_options_for_cfour(userkw)
