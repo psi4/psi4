@@ -620,7 +620,7 @@ def gradient(name, **kwargs):
         if len(alt_lowername) > 0:
             alternatives = " Did you mean? %s" % (" ".join(alt_lowername))
         raise ValidationError('Derivative method \'name\' %s and derivative level \'dertype\' %s are not available.%s'
-            % (lowername, dertype,alternatives))
+            % (lowername, dertype, alternatives))
 
     # no analytic derivatives for scf_type cd
     if psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
