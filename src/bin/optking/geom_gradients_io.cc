@@ -416,12 +416,13 @@ print_matrix(outfile, geom_2D, efp_fragments.size()*3, 3); fflush(outfile);
 
   // rotation matrix is already updated by displace()
   double *geom = g_geom_array();
-  if (!Opt_params.efp_fragments_only) {
+  // TODO debug for EFP ?
+  //if (!Opt_params.efp_fragments_only) {
     int NoReor = rem_read(REM_NO_REORIENT);  // save state
     rem_write(1, REM_NO_REORIENT); // write cartesians ; do NOT reorient
     ::set_carts(geom, true);
     rem_write(NoReor, REM_NO_REORIENT); // replace to original state
-  }
+  //}
 
 #endif
 }
