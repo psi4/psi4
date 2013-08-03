@@ -108,7 +108,7 @@ struct OPT_PARAMS {
   bool read_cartesian_H;
 
   bool efp_fragments;
-  bool efp_fragments_only;
+  //bool efp_fragments_only;
 
   int consecutive_backsteps_allowed;
 
