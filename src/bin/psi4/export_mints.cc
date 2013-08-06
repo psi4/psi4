@@ -368,6 +368,10 @@ void export_mints()
             def("next", &AOShellCombinationsIterator::next, "docstring").
             def("is_done", &AOShellCombinationsIterator::is_done, "docstring");
 
+    class_<ThreeCenterOverlapInt, boost::shared_ptr<ThreeCenterOverlapInt>, boost::noncopyable>("ThreeCenterOverlapInt", "docstring", no_init).
+    		def("compute_shell", &ThreeCenterOverlapInt::compute_shell, "docstring").
+    		add_property("py_buffer_object", make_function(&ThreeCenterOverlapInt::py_buffer_object, return_internal_reference<>()), "docstring").
+            def("set_enable_pybuffer", &ThreeCenterOverlapInt::set_enable_pybuffer, "docstring");
 
     class_<IntegralFactory, boost::shared_ptr<IntegralFactory>, boost::noncopyable>("IntegralFactory", "docstring", no_init).
             def(init<boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet> >()).
@@ -394,7 +398,8 @@ void export_mints()
             def("so_multipoles", &IntegralFactory::so_multipoles, return_value_policy<manage_new_object>(), "docstring").
             def("ao_traceless_quadrupole", &IntegralFactory::ao_traceless_quadrupole, return_value_policy<manage_new_object>(), "docstring").
             def("electric_field", &IntegralFactory::electric_field, return_value_policy<manage_new_object>(), "docstring").
-            def("electrostatic", &IntegralFactory::electrostatic, return_value_policy<manage_new_object>(), "docstring");
+            def("electrostatic", &IntegralFactory::electrostatic, return_value_policy<manage_new_object>(), "docstring").
+            def("overlap_3c", &IntegralFactory::overlap_3c, return_value_policy<manage_new_object>(), "docstring");
 
     typedef boost::shared_ptr<PetiteList> (MintsHelper::*petite_list_0)() const;
     typedef boost::shared_ptr<PetiteList> (MintsHelper::*petite_list_1)(bool) const;
@@ -735,4 +740,5 @@ void export_mints()
     class_<FittedSlaterCorrelationFactor, bases<CorrelationFactor>, boost::noncopyable>("FittedSlaterCorrelationFactor", "docstring", no_init).
             def(init<double>()).
             def("exponent", &FittedSlaterCorrelationFactor::exponent);
+
 }

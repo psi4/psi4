@@ -952,7 +952,7 @@ class Tensor(LightTensor):
             else:
                 raise NotImplementedError
             for row in xrange(self.shape[-2]):
-                ret_val += "\n" + ("{:>"+str(row_label_width)+"d} ").format(row+1)
+                ret_val += "\n" + ("{:>"+str(row_label_width)+"d} ").format(row+(1 if one_based else 0))
                 for col in xrange(self.shape[-1]):
                     idxs = topidxs + (row, col)
                     val = self[idxs]

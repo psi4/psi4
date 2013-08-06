@@ -32,6 +32,7 @@ RegexType = type(re.compile(''))
 
 #TODO test suite
 #TODO move to grendel
+#TODO function to find analogous/duplicate data and remove the extra files
 
 xproduct = lambda *args: product(*[xrange(i) for i in args])
 lambda_type = type(lambda x: x)
@@ -521,6 +522,32 @@ class AOTEIGetterWithComputer(MemmapArrayGetter):
         #----------------------------------------#
         return
 
+class ThreeCenterOverlapGetter(MemmapArrayGetter):
+
+    def __init__(self):
+        self.zero_basis_set = lambda: psi4.BasisSet.zero_ao_basis_set()
+
+    def __call__(self, out, basis):
+        # Only create the zero_basis_set instance once we get here and need it
+        if isinstance(self.zero_basis_set, lambda_type): self.zero_basis_set = self.zero_basis_set()
+        self._compute_ints(out, (basis, basis, basis, self.zero_basis_set))
+
+    def _compute_ints(self, out, basis_sets):
+        factory = psi4.IntegralFactory(*basis_sets)
+        computer = factory.overlap_3c()
+        computer.set_enable_pybuffer(True)
+        pybuffer = computer.py_buffer_object
+        # Leave out the zero basis set
+        for shell_nums in xproduct(*[bs.nshell() for bs in basis_sets[:-1]]):
+            computer.compute_shell(*shell_nums)
+            slices = tuple(
+                AOTEIGetterWithComputer.shell_slice(bs, ish)
+                    for bs, ish in zip(basis_sets, shell_nums) if bs is not self.zero_basis_set
+            )
+            buff = np.array(pybuffer)
+            out.value[slices] = buff
+        return
+
 class DFThreeCenterAOTEIGetter(AOTEIGetterWithComputer):
 
     def __init__(self, two_center_bra, integral_type='eri'):
@@ -568,6 +595,29 @@ class ArbitraryBasisDatumGetter(DatumGetter):
     @abstractproperty
     def name(self):
         return NotImplemented
+
+class ArbitraryBasisThreeCenterOverlapGetter(ArbitraryBasisDatumGetter, ThreeCenterOverlapGetter):
+
+    def __init__(self, bs1, bs2, bs3):
+        super(ArbitraryBasisThreeCenterOverlapGetter, self).__init__((bs1, bs2, bs3))
+        ThreeCenterOverlapGetter.__init__(self)
+
+    @property
+    def name(self):
+        return (
+            "ao__"
+            + "__".join(self.basis_set_names[:2])
+            + "___overlap___"
+            + "__".join(self.basis_set_names[2:])
+        )
+
+    def get_shape(self, basis_sets):
+        return tuple(bs.nbf() for bs in basis_sets)
+
+    def __call__(self, out, basis_sets):
+        # Only create the zero_basis_set instance once we get here and need it
+        if isinstance(self.zero_basis_set, lambda_type): self.zero_basis_set = self.zero_basis_set()
+        self._compute_ints(out, list(basis_sets) + [self.zero_basis_set])
 
 class ArbitraryBasisAOTEIGetter(ArbitraryBasisDatumGetter, AOTEIGetterWithComputer):
 
@@ -1516,7 +1566,7 @@ class CachedComputation(object):
             ))
         return False
 
-    def clear_data_regex(self, regex, fail_if_missing=False, flags=0):
+    def clear_data_regex(self, regex, fail_if_missing=False, flags=0, clear_analogous=False):
         """
         Clear all data matching regex
 
@@ -1538,7 +1588,7 @@ class CachedComputation(object):
         for name in list(self.cached_data.keys()):
             if regex.search(name) is not None:
                 found_count += 1
-                self.clear_datum(name)
+                self.clear_datum(name, clear_analogous=clear_analogous)
         if fail_if_missing and found_count == 0:
             raise ValueError("No data matching '{0}' found.  Known data names are:\n{1}".format(
                 re_string, "    " + "\n    ".join(self.cached_data.keys())
