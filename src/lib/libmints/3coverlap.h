@@ -74,6 +74,10 @@ public:
                           boost::shared_ptr<BasisSet> bs2,
                           boost::shared_ptr<BasisSet> bs3);
 
+    ThreeCenterOverlapInt(boost::shared_ptr<BasisSet> bs1,
+                          boost::shared_ptr<BasisSet> bs2,
+                          boost::shared_ptr<BasisSet> bs3);
+
     virtual ~ThreeCenterOverlapInt();
 
     /// Basis set on center one.
