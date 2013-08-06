@@ -345,7 +345,7 @@ class EinsumTensor(object):
     def _get_slices(self):
         if self._tensor.indices is None:
             # Not using index ranges
-            return tuple([Ellipsis] * len(self._tensor.shape))
+            return tuple([slice(None)] * len(self._tensor.shape))
         else:
             # make sure all of the indices are well-known...
             if len(self.indices) != len(self._tensor.indices):
@@ -356,7 +356,7 @@ class EinsumTensor(object):
                     arange = self._tensor.index_range_set.known_ranges[aidx]
                     myrange = self._tensor.index_range_set.known_ranges[myidx]
                     if arange is myrange:
-                        slices.append(Ellipsis)
+                        slices.append(slice(None))
                     elif is_subrange(arange, myrange):
                         slices.append(arange.slice_in(myrange))
                 return tuple(slices)

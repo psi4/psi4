@@ -875,7 +875,7 @@ class ComputationCache(object):
         """
 
         @param molecule:
-        @type molecule: Molecule
+        @type molecule: Molecule, str, or anything for which Molecule(molecule) is sensible
         @param needed_data:
         @type needed_data: NoneType, Iterable
         @rtype: CachedComputation
@@ -1125,9 +1125,10 @@ class ComputationCache(object):
         constant recomputation becomes a problem, but it would be a total
         mess (see my attempts in the MoleculeStub class in grendel)
         """
-        if isinstance(molecule, str):
-            return str
-        return molecule.xyz_string(header=False)
+        if not isinstance(molecule, Molecule):
+            return Molecule(molecule).xyz_string(header=False)
+        else:
+            return molecule.xyz_string(header=False)
 
     #endregion
 
@@ -1696,6 +1697,12 @@ class CachedComputation(object):
             and isinstance(self.cached_data[name], CachedDatum)
             and self.cached_data[name].filled
         )
+
+    def has_data(self, *args):
+        for name in args:
+            if not self.has_datum(name):
+                return False
+        return True
 
     def save_computation(self):
         if self.parallel_ready:
