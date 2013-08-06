@@ -319,16 +319,25 @@ void FrozenNO::ComputeNaturalOrbitals(){
     // determine how many orbitals will be retained
     double cutoff = options_.get_double("OCC_TOLERANCE");
     int * newVirOrbsPI = new int[nirrep_];
-    for (int h = 0; h < nirrep_; h++) {
-        newVirOrbsPI[h] = 0;
-        double * vec = eigval->pointer(h);
-        for (int a = 0; a < aVirOrbsPI[h]; a++) {
-            if ( vec[a] > cutoff ) newVirOrbsPI[h]++;
+
+    if (!options_["ACTIVE_NAT_ORBS"].has_changed()) {
+        // use occupancy tolerance:
+        for (int h = 0; h < nirrep_; h++) {
+            newVirOrbsPI[h] = 0;
+            double * vec = eigval->pointer(h);
+            for (int a = 0; a < aVirOrbsPI[h]; a++) {
+                if ( vec[a] > cutoff ) newVirOrbsPI[h]++;
+            }
+        }
+        fprintf(outfile,"        Cutoff for significant NO occupancy: %5.3le\n",cutoff);
+        fprintf(outfile,"\n");
+    }else{
+        // use user-specified number of virtuals
+        for (int h = 0; h < nirrep_; h++) {
+            newVirOrbsPI[h] = (long int)options_["ACTIVE_NAT_ORBS"][h].to_double();
         }
     }
 
-    fprintf(outfile,"        Cutoff for significant NO occupancy: %5.3le\n",cutoff);
-    fprintf(outfile,"\n");
     fprintf(outfile,"        No. virtuals per irrep (original):  [");
     for (int h = 0; h < nirrep_; h++) fprintf(outfile,"%4i",aVirOrbsPI[h]);
     fprintf(outfile," ]\n");
@@ -759,10 +768,17 @@ void DFFrozenNO::ComputeNaturalOrbitals(){
   // establish cutoff for frozen virtuals
   double cutoff = options_.get_double("OCC_TOLERANCE");
   nvirt_no = 0;
-  for (long int i=0; i<v; i++) if (eigvalDab[i]>cutoff) nvirt_no++;
 
-  fprintf(outfile,"        Cutoff for significant NO occupancy: %5.3le\n",cutoff);
-  fprintf(outfile,"\n");
+  if (!options_["ACTIVE_NAT_ORBS"].has_changed()) {
+      // use occupancy tolerance:
+      for (long int i=0; i<v; i++) if (eigvalDab[i]>cutoff) nvirt_no++;
+      fprintf(outfile,"        Cutoff for significant NO occupancy: %5.3le\n",cutoff);
+      fprintf(outfile,"\n");
+  }else{
+      // use user-specified number of virtuals
+      nvirt_no = (long int)options_["ACTIVE_NAT_ORBS"][0].to_double();
+  }
+
   fprintf(outfile,"        Number of virtual orbitals in original space:  %5li\n",v);
   fprintf(outfile,"        Number of virtual orbitals in truncated space: %5li\n",nvirt_no);
   fprintf(outfile,"\n");
