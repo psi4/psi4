@@ -3015,6 +3015,7 @@ void DFCoupledCluster::T1Fock(){
         nrows++;
         rowsize = nQ_scf / nrows;
         if (nrows * rowsize < nQ_scf) rowsize++;
+        if (rowsize == 1) break;
     }
     long int lastrowsize = nQ_scf - (nrows - 1L) * rowsize;
     long int * rowdims = new long int [nrows];
@@ -3074,6 +3075,7 @@ void DFCoupledCluster::T1Fock(){
         nrows++;
         rowsize = nQ_scf / nrows;
         if (nrows * rowsize < nQ_scf) rowsize++;
+        if (rowsize == 1) break;
     }
     lastrowsize = nQ_scf - (nrows - 1L) * rowsize;
     rowdims = new long int [nrows];
@@ -3190,6 +3192,7 @@ void DFCoupledCluster::T1Integrals(){
         nrows++;
         rowsize = nQ / nrows;
         if (nrows * rowsize < nQ) rowsize++;
+        if (rowsize == 1) break;
     }
     long int lastrowsize = nQ - (nrows - 1L) * rowsize;
     long int * rowdims = new long int [nrows];
@@ -3432,7 +3435,11 @@ void DFCoupledCluster::AllocateMemory() {
   if (nQmax*v*v>dim)     dim = nQmax*v*v;
   if (nQmax*nso*nso>dim) dim = nQmax*nso*nso;
 
-  double total_memory = dim+(o*o*v*v+o*v)+(o*(o+1)*v*(v+1)+o*v)+o*o*v*v+2.*o*v+2.*v*v;
+  long int tempvdim = o*o*v*v+o*v;
+  if ( nQ * o * v > tempvdim) tempvdim = nQ * o * v;
+  if ( nso * nso > tempvdim)  tempvdim = nso * nso;
+
+  double total_memory = dim+tempvdim+(o*(o+1)*v*(v+1)+o*v)+o*o*v*v+2.*o*v+2.*v*v;
   long int max = nvirt*nvirt*nQmax > (nfzv+ndocc+nvirt)*ndocc*nQmax ? nvirt*nvirt*nQmax : (nfzv+ndocc+nvirt)*ndocc*nQmax;
   double df_memory    = nQ*(o*o+o*v)+max;
 
@@ -3490,8 +3497,6 @@ void DFCoupledCluster::AllocateMemory() {
 
   integrals = (double*)malloc(dim*sizeof(double));
   tempt     = (double*)malloc((o*(o+1)*v*(v+1)+o*v)*sizeof(double));
-  long int tempvdim = o*o*v*v+o*v;
-  if ( nQ * o * v > tempvdim) tempvdim = nQ * o * v;
   tempv     = (double*)malloc(tempvdim*sizeof(double));
   Abij      = (double*)malloc(o*(o+1)/2*v*sizeof(double));
   Sbij      = (double*)malloc(o*(o+1)/2*v*sizeof(double));

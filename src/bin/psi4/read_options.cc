@@ -2777,6 +2777,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Cutoff for occupation of MP2 NO orbitals in FNO-QCISD/CCSD(T)
           ( only valid if |fnocc__nat_orbs| = true ) -*/
       options.add_double("OCC_TOLERANCE", 1.0e-6);
+      /*- An array containing the number of virtual natural orbitals per irrep
+      (in Cotton order) so a user can specify the number of retained 
+      natural orbitals rather than determining them with |fnocc__occ_tolerance|.
+      This keyword overrides |fnocc__occ_tolerance|. -*/
+      options.add("ACTIVE_NAT_ORBS", new ArrayType());
       /*- Do SCS-MP2? -*/
       options.add_bool("SCS_MP2", false);
       /*- Do SCS-CCSD? -*/
