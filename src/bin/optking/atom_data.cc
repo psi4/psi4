@@ -26,6 +26,8 @@
 */
 
 #include "atom_data.h"
+
+#include <string>
 #include <map>
 
 namespace opt {
@@ -192,6 +194,7 @@ double Element_to_Z(std::string lbl) {
   return opt::element_to_Z_map[lbl];
 }
 
+/*
 map<string,double> create_isotope_to_mass_map() {
   map<string,double> m;
 
@@ -3503,5 +3506,6 @@ static map<string,double> isotope_to_mass_map = create_isotope_to_mass_map();
 double Isotope_to_mass(std::string lbl) {
   return opt::isotope_to_mass_map[lbl];
 }
+*/
 
 }

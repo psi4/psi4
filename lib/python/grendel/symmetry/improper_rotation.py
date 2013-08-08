@@ -14,8 +14,8 @@ __all__ = [
 class ImproperRotation(SymmetryOperation):
     """ An improper rotation (S_n^m) element of a point group.
 
-    Attributes
-    ----------
+    :Attributes:
+
     n : int
         The order of the rotation (e.g. for a S_3 operation, `n`=3)
     axis : Vector
@@ -41,8 +41,8 @@ class ImproperRotation(SymmetryOperation):
     def __init__(self, n, axis, exponent = 1, point_group = None):
         """ Create a new ImproperRotation about `axis` with order `n` and exponent `exponent`
 
-        Parameters
-        ----------
+        :Parameters:
+
         n : int
             The order of the rotation (e.g. for a S_3 operation, `n`=3)
         axis : Vector

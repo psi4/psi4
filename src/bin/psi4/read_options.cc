@@ -44,7 +44,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 {
 //  options.clear();
 
-  // name == "GLOBALS" fake line to make document_options_and_tests.pl generate a GLOBALS doc section
+  // dodoc == "GLOBALS" fake line to make document_options_and_tests.pl generate a GLOBALS doc section
 
   /*- Units used in geometry specification -*/
   options.add_str("UNITS", "ANGSTROMS", "BOHR AU A.U. ANGSTROMS ANG ANGSTROM");
@@ -733,7 +733,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     two-electron integrals in the evaluation of CCD T2 amplitudes?
     Recommended true for all SAPT computations. -*/
     options.add_bool("NAT_ORBS_V4",false);
-    
+
     /*- Minimum occupation (eigenvalues of the MP2 OPDM) below which virtual
     natural orbitals are discarded for in each of the above three truncations
     -*/
@@ -783,46 +783,63 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("PRINT", 1);
   }
   if (name == "DFTSAPT"|| options.read_globals()) {
-  /*- The amount of information printed to the output file -*/
-  options.add_int("PRINT", 1);
-  /*- Debug level -*/
-  options.add_int("DEBUG", 0);
-  /*- Bench level -*/
-  options.add_int("BENCH", 0);
-  /*- \% of memory for DF-MP2 three-index buffers -*/
-  options.add_double("SAPT_MEM_FACTOR", 0.9);
-  /*- The name of the orbital basis set -*/
-  options.add_str("BASIS", "");
-  /*- The name of the response auxiliary basis set -*/
-  options.add_str("DF_BASIS_SAPT", "");
-  /*- The maximum number of iterations in CPKS -*/
-  options.add_int("MAXITER", 100);
-  /*- Convergence criterion for residual of the CPKS coefficients in the SAPT
-  * $E@@{ind,resp}^{(20)}$ term. -*/
-  options.add_double("D_CONVERGENCE",1e-8);
-  /*- Number of frequency points in Casimir-Poldar integral -*/
-  options.add_int("FREQ_POINTS",8);
-  /*- Frequency scale in Casimir-Poldar integral -*/
-  options.add_double("FREQ_SCALE",0.1);
-  /*- Maximum number of terms in susceptibility coupling -*/
-  options.add_int("FREQ_MAX_K",2);
-  /*- Lambda in Pauli Blockade -*/
-  options.add_double("PB_LAMBDA",1E5);
-  /*- Fork pathway, until I properly subclass these things -*/
-  options.add_str("DFT_SAPT_TYPE", "SAPT0", "SAPT0 DFT-SAPT");
-  /*- Relative convergence in orbital localization -*/
-  options.add_double("LOCAL_CONVERGENCE",1.0E-12);
-  /*- Maximum iterations in localization -*/
-  options.add_int("LOCAL_MAXITER", 50);
-  /*- Localization algorithm -*/
-  options.add_str("LOCAL_TYPE", "BOYS", "BOYS PIPEK_MEZEY");
-  /*- Atomic population type -*/
-  options.add_str("ASAPT_POPULATION_TYPE", "LOWDIN", "MULLIKEN LOWDIN");
-  /*- The name of the monomer-local electrostatics auxiliary basis set -*/
-  options.add_str("DF_BASIS_ELST", "");
-  /*- The name of the monomer-local electrostatics primary basis set -*/
-  options.add_str("BASIS_ELST", "");
-  
+    /*- The amount of information printed to the output file -*/
+    options.add_int("PRINT", 1);
+    /*- Debug level -*/
+    options.add_int("DEBUG", 0);
+    /*- Bench level -*/
+    options.add_int("BENCH", 0);
+    /*- \% of memory for DF-MP2 three-index buffers -*/
+    options.add_double("SAPT_MEM_FACTOR", 0.9);
+    /*- The name of the orbital basis set -*/
+    options.add_str("BASIS", "");
+    /*- The name of the response auxiliary basis set -*/
+    options.add_str("DF_BASIS_SAPT", "");
+    /*- The maximum number of iterations in CPKS -*/
+    options.add_int("MAXITER", 100);
+    /*- Convergence criterion for residual of the CPKS coefficients in the SAPT
+    * $E@@{ind,resp}^{(20)}$ term. -*/
+    options.add_double("D_CONVERGENCE",1e-8);
+    /*- Number of frequency points in Casimir-Poldar integral -*/
+    options.add_int("FREQ_POINTS",8);
+    /*- Frequency scale in Casimir-Poldar integral -*/
+    options.add_double("FREQ_SCALE",0.1);
+    /*- Maximum number of terms in susceptibility coupling -*/
+    options.add_int("FREQ_MAX_K",2);
+    /*- Lambda in Pauli Blockade -*/
+    options.add_double("PB_LAMBDA",1E5);
+    /*- Fork pathway, until I properly subclass these things -*/
+    options.add_str("DFT_SAPT_TYPE", "SAPT0", "SAPT0 DFT-SAPT");
+    /*- Relative convergence in orbital localization -*/
+    options.add_double("LOCAL_CONVERGENCE",1.0E-12);
+    /*- Maximum iterations in localization -*/
+    options.add_int("LOCAL_MAXITER", 50);
+    /*- Localization algorithm -*/
+    options.add_str("LOCAL_TYPE", "BOYS", "BOYS PIPEK_MEZEY");
+    /*- The name of the monomer-local electrostatics auxiliary basis set -*/
+    options.add_str("DF_BASIS_ELST", "");
+    /*- The name of the monomer-local electrostatics primary basis set -*/
+    options.add_str("BASIS_ELST", "");
+    /*- ASAPT Atomic population type -*/
+    options.add_str("ASAPT_POPULATION_TYPE", "LOWDIN", "MULLIKEN LOWDIN");
+    /*- ASAPT analysis tasking -*/
+    options.add("ASAPT_TASKS", new ArrayType());
+    /*- Do ASAPT exchange scaling? (ratio of S^\infty to S^2) -*/
+    options.add_bool("ASAPT_EXCH_SCALE", true);
+    /*- Do ASAPT induction scaling? (ratio of HF induction to ASAPT induction) -*/
+    options.add_bool("ASAPT_IND_SCALE", true);
+    /*- Do ASAPT coupled response? (not recommended) -*/
+    options.add_bool("ASAPT_IND_RESPONSE", false);
+    /*- Voxel ASAPT density saturation (for uniform transfer functions) -*/
+    options.add_double("ASAPT_DENSITY_CLAMP", 0.5);
+    /*- Voxel ASAPT energy saturation (for uniform transfer functions) -*/
+    options.add_double("ASAPT_ENERGY_CLAMP", 0.005);
+    /*- Voxel ASAPT Gaussian scale for electrostatics (larger => tigher Gaussians) -*/
+    options.add_double("ASAPT_GAUSSIAN_SCALE", 2.0);
+    /*- ASAPT minimum grid overages in bohr (LX, LY, LZ) -*/
+    options.add("CUBIC_GRID_OVERAGE", new ArrayType());
+    /*- ASAPT voxel spacing in bohr (DX, DY, DZ) -*/
+    options.add("CUBIC_GRID_SPACING", new ArrayType());
   }
   if(name == "DCFT"|| options.read_globals()) {
       /*-MODULEDESCRIPTION Performs Density Cumulant Functional Theory
@@ -945,7 +962,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
-    options.add_str("SCF_TYPE", "PK", "DIRECT DF PK OUT_OF_CORE FAST_DF CD");
+    options.add_str("SCF_TYPE", "PK", "DIRECT DF PK OUT_OF_CORE FAST_DF CD INDEPENDENT");
+    /*- JK Independent options
+     -*/
+    options.add_str("INDEPENDENT_J_TYPE", "DIRECT_SCREENING", "DIRECT_SCREENING");
+    options.add_str("INDEPENDENT_K_TYPE", "DIRECT_SCREENING", "DIRECT_SCREENING LINK");
     /*- Tolerance for Cholesky decomposition of the ERI tensor -*/
     options.add_double("CHOLESKY_TOLERANCE",1e-4);
     /*- Use DF integrals tech to converge the SCF before switching to a conventional tech -*/
@@ -1236,6 +1257,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The schwarz cutoff value
      -*/
     options.add_double("SCHWARZ_CUTOFF", 1.0E-12);
+    /*- Do we do the QQR integral sieve of Maurer et al. When false, just uses
+     *  the Schwarz sieve.
+     -*/
+    options.add_bool("DO_QQR_SIEVE", false);
     /*- The maximum reciprocal condition allowed in the fitting metric
      -*/
     options.add_double("FITTING_CONDITION", 1.0E-12);
@@ -1244,7 +1269,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("FITTING_ALGORITHM", 0);
     /*- SCF Type
      -*/
-    options.add_str("SCF_TYPE", "DIRECT", "DIRECT DF PK OUT_OF_CORE PS");
+    options.add_str("SCF_TYPE", "DIRECT", "DIRECT DF PK OUT_OF_CORE PS INDEPENDENT");
+    /*- JK Independent options
+     -*/
+    options.add_str("INDEPENDENT_J_TYPE", "DIRECT_SCREENING", "DIRECT_SCREENING");
+    options.add_str("INDEPENDENT_K_TYPE", "DIRECT_SCREENING", "DIRECT_SCREENING LINK");
     /*- Auxiliary basis for SCF
      -*/
     options.add_str("DF_BASIS_SCF", "");
@@ -1288,35 +1317,35 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("SOLVER_EXACT_DIAGONAL", false);
 
   }
-  if (name == "MP2"|| options.read_globals()) {
-      /*- MODULEDESCRIPTION Performs second order Moller-Plesset perturbation theory (MP2) computations.  This code can
-          compute RHF/ROHF/UHF energies, and RHF gradient/property computations.  However, given the small errors introduced,
-          we recommend using the new density fitted MP2 codes instead, which are much more efficient. -*/
-    /*- Wavefunction type !expert -*/
-    options.add_str("WFN", "MP2", "MP2");
-    /*- Reference wavefunction type -*/
-    options.add_str("REFERENCE", "RHF", "RHF UHF ROHF");
-    /*- Type of job being performed !expert -*/
-    options.add_str("JOBTYPE", "SP");
-    /*- Do compute the one particle density matrix, for properties? -*/
-    options.add_bool("OPDM", false);
-    /*- Do add relaxation terms to the one particle density matrix, for properties? -*/
-    options.add_bool("OPDM_RELAX", false);
-    /*- The amount of cacheing of data to perform -*/
-    options.add_int("CACHELEVEL", 2);
-    /*- The criterion used to retain/release cached data -*/
-    options.add_str("CACHETYPE", "LRU", "LRU LOW");
-    /*- Do perform a spin component scaled MP2 computation? -*/
-    options.add_bool("SCS", false);
-    /*- Do perform a spin component scaled (N) MP2 computation? -*/
-    options.add_bool("SCS_N", false);
-    /*- The scale factor used for opposite-spin pairs in SCS computations -*/
-    options.add_double("MP2_OS_SCALE", 6.0/5.0);
-    /*- The scale factor used for same-spin pairs in SCS computations-*/
-    options.add_double("MP2_SS_SCALE", 1.0/3.0);
-    /*- What algorithm to use for the MP2 computation -*/
-    options.add_str("MP2_TYPE", "DF", "DF CONV");
-  }
+//  if (name == "MP2"|| options.read_globals()) {
+//      /*- MODULEDESCRIPTION Performs second order Moller-Plesset perturbation theory (MP2) computations.  This code can
+//          compute RHF/ROHF/UHF energies, and RHF gradient/property computations.  However, given the small errors introduced,
+//          we recommend using the new density fitted MP2 codes instead, which are much more efficient. -*/
+//    /*- Wavefunction type !expert -*/
+//    options.add_str("WFN", "MP2", "MP2");
+//    /*- Reference wavefunction type -*/
+//    options.add_str("REFERENCE", "RHF", "RHF UHF ROHF");
+//    /*- Type of job being performed !expert -*/
+//    options.add_str("JOBTYPE", "SP");
+//    /*- Do compute the one particle density matrix, for properties? -*/
+//    options.add_bool("OPDM", false);
+//    /*- Do add relaxation terms to the one particle density matrix, for properties? -*/
+//    options.add_bool("OPDM_RELAX", false);
+//    /*- The amount of cacheing of data to perform -*/
+//    options.add_int("CACHELEVEL", 2);
+//    /*- The criterion used to retain/release cached data -*/
+//    options.add_str("CACHETYPE", "LRU", "LRU LOW");
+//    /*- Do perform a spin component scaled MP2 computation? -*/
+//    options.add_bool("SCS", false);
+//    /*- Do perform a spin component scaled (N) MP2 computation? -*/
+//    options.add_bool("SCS_N", false);
+//    /*- The scale factor used for opposite-spin pairs in SCS computations -*/
+//    options.add_double("MP2_OS_SCALE", 6.0/5.0);
+//    /*- The scale factor used for same-spin pairs in SCS computations-*/
+//    options.add_double("MP2_SS_SCALE", 1.0/3.0);
+//    /*- What algorithm to use for the MP2 computation -*/
+//    options.add_str("MP2_TYPE", "DF", "DF CONV");
+//  }
   // Options of this module not standardized since it's bound for deletion
   if(name == "TRANSQT2"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Performs transformations of integrals into the molecular orbital (MO) basis.  This
@@ -1652,15 +1681,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do use zeta?  -*/
     options.add_bool("ZETA",false);
   }
-  if(name == "CLAG"|| options.read_globals()) {
-     /*- MODULEDESCRIPTION Solves for the CI Lagrangian. Called whenever CI properties or gradients are requested. -*/
-    /*- Wavefunction type !expert -*/
-    options.add_str("WFN","NONE");
-    /*- Do write the OEI, TEI, OPDM, TPDM, and Lagrangian files in canonical form, Pitzer order? -*/
-    options.add_bool("CAS_FILES_WRITE",0);
-    /*- Root to get OPDM -*/
-    options.add_int("FOLLOW_ROOT",1);
-  }
+//  if(name == "CLAG"|| options.read_globals()) {
+//     /*- MODULEDESCRIPTION Solves for the CI Lagrangian. Called whenever CI properties or gradients are requested. -*/
+//    /*- Wavefunction type !expert -*/
+//    options.add_str("WFN","NONE");
+//    /*- Do write the OEI, TEI, OPDM, TPDM, and Lagrangian files in canonical form, Pitzer order? -*/
+//    options.add_bool("CAS_FILES_WRITE",0);
+//    /*- Root to get OPDM -*/
+//    options.add_int("FOLLOW_ROOT",1);
+//  }
   if(name == "STABILITY"|| options.read_globals()) {
      /*- MODULEDESCRIPTION Performs wavefunction stability analysis. Called when specifically requested
          by the user. -*/
@@ -1902,27 +1931,27 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     element of the array.  Acceptable units are ``HZ``, ``NM``, ``EV``, and ``AU``. -*/
     options.add("OMEGA",new ArrayType());
   }
-  if(name == "RESPONSE"|| options.read_globals()){
-     /*- MODULEDESCRIPTION Performs SCF linear response computations. -*/
-    /*- Reference wavefunction type -*/
-    options.add_str("REFERENCE", "RHF");
-    /*- Array that specifies the desired frequencies of the incident
-    radiation field in CCLR calculations.  If only one element is
-    given, the units will be assumed to be atomic units.  If more
-    than one element is given, then the units must be specified as the final
-    element of the array.  Acceptable units are ``HZ``, ``NM``, ``EV``, and ``AU``. -*/
-    options.add("OMEGA", new ArrayType());
-    /*- Array that specifies the desired frequencies of the incident
-    radiation field in CCLR calculations.  If only one element is
-    given, the units will be assumed to be atomic units.  If more
-    than one element is given, then the units must be specified as the final
-    element of the array.  Acceptable units are HZ, NM, EV, and AU. -*/
-    /*- The response property desired.  Acceptable values are POLARIZABILITY
-    (default) for dipole-polarizabilities, ROTATION for specific rotations,
-    ROA for Raman Optical Activity, and ALL for all of the above.
-    -*/
-    options.add_str("PROPERTY","POLARIZABILITY","POLARIZABILITY ROTATION ROA ALL");
-  }
+//  if(name == "RESPONSE"|| options.read_globals()){
+//     /*- MODULEDESCRIPTION Performs SCF linear response computations. -*/
+//    /*- Reference wavefunction type -*/
+//    options.add_str("REFERENCE", "RHF");
+//    /*- Array that specifies the desired frequencies of the incident
+//    radiation field in CCLR calculations.  If only one element is
+//    given, the units will be assumed to be atomic units.  If more
+//    than one element is given, then the units must be specified as the final
+//    element of the array.  Acceptable units are ``HZ``, ``NM``, ``EV``, and ``AU``. -*/
+//    options.add("OMEGA", new ArrayType());
+//    /*- Array that specifies the desired frequencies of the incident
+//    radiation field in CCLR calculations.  If only one element is
+//    given, the units will be assumed to be atomic units.  If more
+//    than one element is given, then the units must be specified as the final
+//    element of the array.  Acceptable units are HZ, NM, EV, and AU. -*/
+//    /*- The response property desired.  Acceptable values are POLARIZABILITY
+//    (default) for dipole-polarizabilities, ROTATION for specific rotations,
+//    ROA for Raman Optical Activity, and ALL for all of the above.
+//    -*/
+//    options.add_str("PROPERTY","POLARIZABILITY","POLARIZABILITY ROTATION ROA ALL");
+//  }
   if(name == "MCSCF"|| options.read_globals()) {
      /*- MODULEDESCRIPTION Performs RHF/UHF/ROHF/TCSCF and more general MCSCF computations. Called
          as the starting point for multireference coupled cluster computations. -*/
@@ -2095,101 +2124,101 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convert ROHF MOs to semicanonical MOs -*/
     options.add_bool("SEMICANONICAL", true);
   }
-  if(name == "CIS"|| options.read_globals()) {
-    /*- MODULEDESCRIPTION Performs configuration interaction singles (CIS) computations. Currently unused in
-        Psi4. -*/
-
-    /*- Wavefunction type !expert -*/
-    options.add_str("WFN", "CIS", "CCSD CCSD_T EOM_CCSD CIS");
-    /*- Reference wavefunction type -*/
-    options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
-    /*- Cutoff value for printing local amplitudes -*/
-    options.add_double("LOCAL_AMPS_PRINT_CUTOFF", 0.60);
-    /*- Maximum number of iterations -*/
-    options.add_int("MAXITER", 500);
-    /*- Convergence criterion for CIS wavefunction. -*/
-    options.add_double("R_CONVERGENCE", 1e-7);
-    /*- The number of electronic states to computed, per irreducible
-    representation-*/
-    options.add("ROOTS_PER_IRREP", new ArrayType());
-    /*- Diagonalization method for the CI matrix -*/
-    options.add_str("DIAG_METHOD", "DAVIDSON", "DAVIDSON FULL");
-    /*- Do simulate the effects of local correlation techniques? -*/
-    options.add_bool("LOCAL", false);
-    /*- Value (always between one and zero) for the Broughton-Pulay completeness
-    check used to contruct orbital domains for local-CC calculations. See
-    J. Broughton and P. Pulay, J. Comp. Chem. 14, 736-740 (1993) and C. Hampel
-    and H.-J. Werner, J. Chem. Phys. 104, 6286-6297 (1996). -*/
-    options.add_double("LOCAL_CUTOFF", 0.02);
-    /*- Type of local-CIS scheme to be simulated. ``WERNER`` selects the method
-    developed by H.-J. Werner and co-workers, and ``AOBASIS`` selects the method
-    developed by G.E. Scuseria and co-workers. -*/
-    options.add_str("LOCAL_METHOD", "WERNER", "AOBASIS WERNER");
-    /*- Desired treatment of "weak pairs" in the local-CIS method. A value of
-    ``NEGLECT`` ignores weak pairs entirely. A value of ``NONE`` treats weak pairs in
-    the same manner as strong pairs. A value of MP2 uses second-order perturbation
-    theory to correct the local-CIS energy computed with weak pairs ignored. -*/
-    options.add_str("LOCAL_WEAKP", "MP2", "MP2 NEGLECT NONE");
-    /*- -*/
-    options.add_int("LOCAL_GHOST", -1);
-    /*- -*/
-    options.add("DOMAINS", new ArrayType());
-    /*- Do print the domains? -*/
-    options.add_bool("DOMAIN_PRINT", 0);
-  }
-  if(name == "LMP2"|| options.read_globals()) {
-    /*- MODULEDESCRIPTION Performs local MP2 computations for RHF reference functions. -*/
-
-    /*- Wavefunction type !expert -*/
-    options.add_str("WFN", "LMP2");
-    /*- Reference wavefunction type -*/
-    options.add_str("REFERENCE", "RHF", "RHF");
-    /*- Auxiliary basis set for MP2 density fitting calculations -*/
-    options.add_str("DF_BASIS_MP2", "");
-    /*- Do use density fitting? Turned on with specification of fitting basis. -*/
-    if(options.get_str("DF_BASIS_MP2") != "")
-      options.add_bool("DF_LMP2", true);
-    else
-      options.add_bool("DF_LMP2", false);
-    /*- Maximum number of iterations -*/
-    options.add_int("MAXITER", 50);
-    /*- Convergence criterion for energy (change). See Table
-    :ref:`Post-SCF Convergence <table:conv_corl>` for default convergence
-    criteria for different calculation types. -*/
-    options.add_double("E_CONVERGENCE", 1e-6);
-    /*- Convergence criterion for T2 amplitudes (RMS change). -*/
-    options.add_double("R_CONVERGENCE", 1e-5);
-    /*- Minimum absolute value below which parts of the Fock matrix are skipped. -*/
-    options.add_double("FOCK_TOLERANCE", 1e-2);
-    /*- Do use DIIS extrapolation to accelerate convergence? -*/
-    options.add_bool("DIIS", 1);
-    /*- Do neglect distant pairs? -*/
-    options.add_bool("NEGLECT_DISTANT_PAIR", 1);
-    /*-  Distant pair cutoff -*/
-    options.add_double("DISTANT_PAIR_CUTOFF", 8.0);
-    /*- Iteration at which to start DIIS extrapolation -*/
-    options.add_int("DIIS_START_ITER", 3);
-    /*- Maximum number of error vectors stored for DIIS extrapolation -*/
-    options.add_int("DIIS_MAX_VECS", 5);
-    /*- Localization cutoff -*/
-    options.add_double("LOCAL_CUTOFF", 0.02);
-    /*- The amount of memory available (in Mb) -*/
-    options.add_int("MEMORY", 2000);
-    /*- Do spin-component-scaled MP2 (SCS-MP2)? -*/
-    options.add_bool("SCS", false);
-    /*- Do SCS-MP2 with parameters optimized for nucleic acids? -*/
-    options.add_bool("SCS_N", false);
-    /*- The scale factor used for opposite-spin pairs in SCS computations -*/
-    options.add_double("MP2_OS_SCALE", 6.0/5.0);
-    /*- The scale factor used for same-spin pairs in SCS computations-*/
-    options.add_double("MP2_SS_SCALE", 1.0/3.0);
-    /*- Do screen integrals? -*/
-    options.add_bool("SCREEN_INTS", false);
-    /*- Minimum absolute value below which integrals are neglected. -*/
-    options.add_double("INTS_TOLERANCE", 1e-7);
-    /*- Do exit after printing the domains? -*/
-    options.add_bool("DOMAIN_PRINT_EXIT", 0);
-   }
+//  if(name == "CIS"|| options.read_globals()) {
+//    /*- MODULEDESCRIPTION Performs configuration interaction singles (CIS) computations. Currently unused in
+//        Psi4. -*/
+//
+//    /*- Wavefunction type !expert -*/
+//    options.add_str("WFN", "CIS", "CCSD CCSD_T EOM_CCSD CIS");
+//    /*- Reference wavefunction type -*/
+//    options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
+//    /*- Cutoff value for printing local amplitudes -*/
+//    options.add_double("LOCAL_AMPS_PRINT_CUTOFF", 0.60);
+//    /*- Maximum number of iterations -*/
+//    options.add_int("MAXITER", 500);
+//    /*- Convergence criterion for CIS wavefunction. -*/
+//    options.add_double("R_CONVERGENCE", 1e-7);
+//    /*- The number of electronic states to computed, per irreducible
+//    representation-*/
+//    options.add("ROOTS_PER_IRREP", new ArrayType());
+//    /*- Diagonalization method for the CI matrix -*/
+//    options.add_str("DIAG_METHOD", "DAVIDSON", "DAVIDSON FULL");
+//    /*- Do simulate the effects of local correlation techniques? -*/
+//    options.add_bool("LOCAL", false);
+//    /*- Value (always between one and zero) for the Broughton-Pulay completeness
+//    check used to contruct orbital domains for local-CC calculations. See
+//    J. Broughton and P. Pulay, J. Comp. Chem. 14, 736-740 (1993) and C. Hampel
+//    and H.-J. Werner, J. Chem. Phys. 104, 6286-6297 (1996). -*/
+//    options.add_double("LOCAL_CUTOFF", 0.02);
+//    /*- Type of local-CIS scheme to be simulated. ``WERNER`` selects the method
+//    developed by H.-J. Werner and co-workers, and ``AOBASIS`` selects the method
+//    developed by G.E. Scuseria and co-workers. -*/
+//    options.add_str("LOCAL_METHOD", "WERNER", "AOBASIS WERNER");
+//    /*- Desired treatment of "weak pairs" in the local-CIS method. A value of
+//    ``NEGLECT`` ignores weak pairs entirely. A value of ``NONE`` treats weak pairs in
+//    the same manner as strong pairs. A value of MP2 uses second-order perturbation
+//    theory to correct the local-CIS energy computed with weak pairs ignored. -*/
+//    options.add_str("LOCAL_WEAKP", "MP2", "MP2 NEGLECT NONE");
+//    /*- -*/
+//    options.add_int("LOCAL_GHOST", -1);
+//    /*- -*/
+//    options.add("DOMAINS", new ArrayType());
+//    /*- Do print the domains? -*/
+//    options.add_bool("DOMAIN_PRINT", 0);
+//  }
+//  if(name == "LMP2"|| options.read_globals()) {
+//    /*- MODULEDESCRIPTION Performs local MP2 computations for RHF reference functions. -*/
+//
+//    /*- Wavefunction type !expert -*/
+//    options.add_str("WFN", "LMP2");
+//    /*- Reference wavefunction type -*/
+//    options.add_str("REFERENCE", "RHF", "RHF");
+//    /*- Auxiliary basis set for MP2 density fitting calculations -*/
+//    options.add_str("DF_BASIS_MP2", "");
+//    /*- Do use density fitting? Turned on with specification of fitting basis. -*/
+//    if(options.get_str("DF_BASIS_MP2") != "")
+//      options.add_bool("DF_LMP2", true);
+//    else
+//      options.add_bool("DF_LMP2", false);
+//    /*- Maximum number of iterations -*/
+//    options.add_int("MAXITER", 50);
+//    /*- Convergence criterion for energy (change). See Table
+//    :ref:`Post-SCF Convergence <table:conv_corl>` for default convergence
+//    criteria for different calculation types. -*/
+//    options.add_double("E_CONVERGENCE", 1e-6);
+//    /*- Convergence criterion for T2 amplitudes (RMS change). -*/
+//    options.add_double("R_CONVERGENCE", 1e-5);
+//    /*- Minimum absolute value below which parts of the Fock matrix are skipped. -*/
+//    options.add_double("FOCK_TOLERANCE", 1e-2);
+//    /*- Do use DIIS extrapolation to accelerate convergence? -*/
+//    options.add_bool("DIIS", 1);
+//    /*- Do neglect distant pairs? -*/
+//    options.add_bool("NEGLECT_DISTANT_PAIR", 1);
+//    /*-  Distant pair cutoff -*/
+//    options.add_double("DISTANT_PAIR_CUTOFF", 8.0);
+//    /*- Iteration at which to start DIIS extrapolation -*/
+//    options.add_int("DIIS_START_ITER", 3);
+//    /*- Maximum number of error vectors stored for DIIS extrapolation -*/
+//    options.add_int("DIIS_MAX_VECS", 5);
+//    /*- Localization cutoff -*/
+//    options.add_double("LOCAL_CUTOFF", 0.02);
+//    /*- The amount of memory available (in Mb) -*/
+//    options.add_int("MEMORY", 2000);
+//    /*- Do spin-component-scaled MP2 (SCS-MP2)? -*/
+//    options.add_bool("SCS", false);
+//    /*- Do SCS-MP2 with parameters optimized for nucleic acids? -*/
+//    options.add_bool("SCS_N", false);
+//    /*- The scale factor used for opposite-spin pairs in SCS computations -*/
+//    options.add_double("MP2_OS_SCALE", 6.0/5.0);
+//    /*- The scale factor used for same-spin pairs in SCS computations-*/
+//    options.add_double("MP2_SS_SCALE", 1.0/3.0);
+//    /*- Do screen integrals? -*/
+//    options.add_bool("SCREEN_INTS", false);
+//    /*- Minimum absolute value below which integrals are neglected. -*/
+//    options.add_double("INTS_TOLERANCE", 1e-7);
+//    /*- Do exit after printing the domains? -*/
+//    options.add_bool("DOMAIN_PRINT_EXIT", 0);
+//   }
   if(name == "DFMP2"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs density-fitted MP2 computations for RHF/UHF/ROHF reference wavefunctions. -*/
 
@@ -2628,6 +2657,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("EKT_EA",false);
     /*- Do optimize the orbitals?  -*/
     options.add_bool("ORB_OPT",true);
+    /*- Do consider orbital response contributions for PDMs and GFM?  -*/
+    options.add_bool("RELAXED",true);
+    /*- Do symmetrize the GFM and OPDM in the EKT computations?  -*/
+    options.add_bool("SYMMETRIZE",false);
   }
   if (name == "MRCC"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/
@@ -2744,6 +2777,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Cutoff for occupation of MP2 NO orbitals in FNO-QCISD/CCSD(T)
           ( only valid if |fnocc__nat_orbs| = true ) -*/
       options.add_double("OCC_TOLERANCE", 1.0e-6);
+      /*- An array containing the number of virtual natural orbitals per irrep
+      (in Cotton order) so a user can specify the number of retained 
+      natural orbitals rather than determining them with |fnocc__occ_tolerance|.
+      This keyword overrides |fnocc__occ_tolerance|. -*/
+      options.add("ACTIVE_NAT_ORBS", new ArrayType());
       /*- Do SCS-MP2? -*/
       options.add_bool("SCS_MP2", false);
       /*- Do SCS-CCSD? -*/
@@ -2767,13 +2805,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("RUN_MP4",false);
       /*- do ccsd rather than qcisd? !expert -*/
       options.add_bool("RUN_CCSD",false);
-      /*- Use 3-index integrals to generate 4-index ERI's? 
+      /*- Use 3-index integrals to generate 4-index ERI's?
       This keyword is used for testing purposes only.  Changing its
       value will have no effect on the computation.  !expert -*/
       options.add_bool("USE_DF_INTS",false);
 
-      /*- Do use density fitting or cholesky decomposition in CC? This 
-      keyword is used internally by the driver. Changing its value 
+      /*- Do use density fitting or cholesky decomposition in CC? This
+      keyword is used internally by the driver. Changing its value
       will have no effect on the computation. -*/
       options.add_bool("DFCC",false);
       /*- Auxilliary basis for df-ccsd(t). -*/
@@ -2803,6 +2841,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Pressure in Pascal for thermodynamic analysis. -*/
       options.add_double("P", 101325);
   }
+    if (name == "LMP2"|| options.read_globals()) {
+        /*- The localization scheme to use. -*/
+        options.add_str("LOCAL_TYPE", "BOYS", "BOYS PIPEK_MEZEY");
+        options.add_int("MAXITER", 50);
+    }
   return true;
 }
 

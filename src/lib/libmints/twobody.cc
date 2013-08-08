@@ -623,3 +623,11 @@ static void transform2e_4(int am, SphericalTransformIter& sti, double *s, double
         }
     }
 }
+
+
+const boost::python::list TwoBodyAOInt::py_buffer() const {
+    boost::python::list ret_val;
+    for(int i = 0; i < curr_buff_size_; ++i)
+        ret_val.append(target_[i]);
+    return ret_val;
+}

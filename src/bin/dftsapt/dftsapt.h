@@ -35,6 +35,8 @@ class Tensor;
 
 namespace dftsapt {
 
+class ASAPTVis;
+
 class DFTSAPT {
 
 protected:
@@ -217,11 +219,6 @@ protected:
         double alpha = 1.0,
         double beta = 1.0);
 
-    // Double GEMM
-    boost::shared_ptr<Matrix> doublet(boost::shared_ptr<Matrix> A, boost::shared_ptr<Matrix> B, bool tA = false, bool tB = false);
-    // Triple GEMM
-    boost::shared_ptr<Matrix> triplet(boost::shared_ptr<Matrix> A, boost::shared_ptr<Matrix> B, boost::shared_ptr<Matrix> C, bool tA = false, bool tB = false, bool tC = false);
-
     void common_init();
 public:
     DFTSAPT();
@@ -241,11 +238,18 @@ class ASAPT : public DFTSAPT {
 
 friend class DFTSAPT;
 
+    // Local analysis and visualization helper
+    boost::shared_ptr<ASAPTVis> vis_;
+
     // Local orbital population type
     std::string population_type_;
+    // Exchange scaling trick?
+    bool exch_scale_;
+    // Induction scaling trick?
+    bool ind_scale_;
+    // Induction response?
+    bool ind_resp_;
 
-    // Local analysis results
-    std::map<std::string, boost::shared_ptr<Matrix> > local_vars_;
     // 3-index tensors
     std::map<std::string, boost::shared_ptr<Tensor> > tensors_;
 

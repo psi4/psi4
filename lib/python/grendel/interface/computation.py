@@ -361,8 +361,8 @@ class Computation(object):
         Strings with spaces, underscore_joined_strings, Uppercase_Underscore_Strings, and
         lowerCamelCase strings are all converted to UpperCamelCase.
 
-        Examples
-        --------
+        :Examples:
+
         >>> Computation.standardize_attribute("basis_set")
         'BasisSet'
         >>> Computation.standardize_attribute("basis set")

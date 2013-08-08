@@ -107,6 +107,8 @@ void OCCWave::common_init()
     ep_ea_poles=options_.get_str("EP_EA_POLES");
     ekt_ip_=options_.get_str("EKT_IP");
     ekt_ea_=options_.get_str("EKT_EA");
+    relaxed_=options_.get_str("RELAXED");
+    sym_gfm_=options_.get_str("SYMMETRIZE");
 
     //   Tying orbital convergence to the desired e_conv,
     //   particularly important for sane numerical frequencies by energy
@@ -360,7 +362,7 @@ void OCCWave::title()
    else if (wfn_type_ == "OMP2.5" && orb_opt_ == "TRUE") fprintf(outfile,"                       OMP2.5 (OO-MP2.5)   \n");
    else if (wfn_type_ == "OMP2.5" && orb_opt_ == "FALSE") fprintf(outfile,"                       MP2.5  \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ;
-   fprintf(outfile,"              Latest Revision Jun 09, 2013.\n") ;
+   fprintf(outfile,"              Latest Revision Jul 18, 2013.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");

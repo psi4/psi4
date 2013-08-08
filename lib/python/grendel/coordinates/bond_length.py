@@ -67,8 +67,8 @@ class BondLength(SimpleInternalCoordinate):
             * ``BondLength(atoms, parent, index)``
             * ``BondLength(atoms, index)``
 
-        Parameters
-        ----------
+        :Parameters:
+
         atom1 : `Atom`
             The first atom that the bond length coordinate is composed of.
         atom2 : `Atom`

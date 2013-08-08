@@ -111,7 +111,7 @@ def auto_fragments(name, **kwargs):
     numatoms = molecule.natom()
     VdW = [1.2, 1.7, 1.5, 1.55, 1.52, 1.9, 1.85, 1.8]
 
-    symbol = range(numatoms)
+    symbol = list(range(numatoms))
     X = [0.0] * numatoms
     Y = [0.0] * numatoms
     Z = [0.0] * numatoms
@@ -1241,7 +1241,8 @@ def database(name, db_name, **kwargs):
                 elif isinstance(chgdoptval, int) or isinstance(chgdoptval, float):
                     commands += """psi4.set_global_option('%s', %s)\n""" % (chgdopt, chgdoptval)
                 else:
-                    raise ValidationError('Option \'%s\' is not of a type (string, int, float, bool) that can be processed by database wrapper.' % (chgdopt))
+                    pass
+                    #raise ValidationError('Option \'%s\' is not of a type (string, int, float, bool) that can be processed by database wrapper.' % (chgdopt))
 
         # build string of molecule and commands that are dependent on the database
         commands += '\n'

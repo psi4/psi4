@@ -29,7 +29,6 @@ import re
 import os
 import sys
 import math
-import string
 import copy
 from psiexceptions import *
 from dashparam import *
@@ -3190,7 +3189,7 @@ superfunctionals = {
 #for key in superfunctionals.keys():
 #    for al in dash_alias.keys():
 #        if key.endswith(dash_alias[al]):
-#            superfunctionals[string.replace(key, dash_alias[al], al)] = superfunctionals[key]
+#            superfunctionals[key.replace(dash_alias[al], al)] = superfunctionals[key]
 
 
 def build_superfunctional(alias, npoints, deriv):
@@ -3201,7 +3200,7 @@ def build_superfunctional(alias, npoints, deriv):
         # Return -D/-D2/-D3 aliases
         for al in dash_alias.keys():
             if name.endswith(al):
-                aliasedname = string.replace(name, al, dash_alias[al])
+                aliasedname = name.replace(al, dash_alias[al])
                 sup = superfunctionals[aliasedname](aliasedname, npoints, deriv)
                 sup.set_name(name.upper())
                 return sup
@@ -3218,7 +3217,7 @@ def superfunctional_list():
         for al in dash_alias.keys():
             if key.endswith(dash_alias[al]):
                 sup2 = superfunctionals[key](key, 1, 1)
-                sup2.set_name(string.replace(key, dash_alias[al], al).upper())
+                sup2.set_name(key.replace(dash_alias[al], al).upper())
                 val.append(sup2)
     return val
 

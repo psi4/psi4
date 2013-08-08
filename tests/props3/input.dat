@@ -57,7 +57,7 @@ energy('scf')
 
 oeprop("MULTIPOLES(7)", "ESP_AT_NUCLEI")
 
-for mpole,val in reversed(sorted(refs.iteritems())):    #TEST
+for mpole,val in reversed(sorted(refs.items())):        #TEST
     compare_values(val, get_variable(mpole),  4, mpole) #TEST
 
 for n in range(1,13):                                   #TEST
