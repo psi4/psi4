@@ -15,8 +15,8 @@ from grendel.util.sentinal_values import ArgumentNotGiven
 def stutter(iterable, ntimes):
     """ repeat each element n times before moving on.
 
-    Examples
-    --------
+    :Examples:
+
     >>> [s for s in stutter([1, 2, 3, 4], 3)]
     [1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4]
     >>> ''.join(a for a in stutter('hello', 2))
@@ -28,8 +28,8 @@ def stutter(iterable, ntimes):
 def flattened(iterable, keep_types=None, debug=False):
     """ Flatten across all levels of iteration.
 
-    Examples
-    --------
+    :Examples:
+
     >>> [f for f in flattened([1,2,3,[4,5,[6]]])]
     [1, 2, 3, 4, 5, 6]
     >>> [f for f in flattened([1,2,3,[4,5,[6],[[xrange(1,17)]]]])]
@@ -104,8 +104,8 @@ def ordered_partitions_iter(sequence, length):
     See the explanation of its funtion therein.  This is needed for the arbitrary order B
     tensor formulae.
 
-    Examples
-    --------
+    :Examples:
+
 
     >>> [tuple(''.join(part) for part in parts) for parts in ordered_partitions_iter('ABCD', 2)]
     [('A', 'BCD'), ('AB', 'CD')]
@@ -125,8 +125,8 @@ def all_partitions_iter(sequence, length, allow_zero=True):
     """
     Iterate over all possible partitions of a sequence
 
-    Examples
-    --------
+    :Examples:
+
 
     """
     n = len(sequence)
@@ -148,8 +148,8 @@ def brace_notation_iter(sequence_of_sequences):
     See the explanation of its funtion therein.  This is needed for the arbitrary order B
     tensor formulae.
 
-    Examples
-    --------
+    :Examples:
+
     >>> [tuple(''.join(part) for part in parts) for parts in brace_notation_iter(['AB', 'C', 'D'])]
     [('AB', 'C', 'D'), ('AC', 'B', 'D'), ('AD', 'B', 'C'), ('BC', 'A', 'D'), ('BD', 'A', 'C'), ('CD', 'A', 'B')]
 
@@ -168,8 +168,8 @@ def partitioned(iterable, partitions):
     last item yielded will be shorter (just as if a slice running over
     the end of the list were taken).
 
-    Examples
-    --------
+    :Examples:
+
 
     >>> [''.join(a) for a in partitioned('ABCDEFG', (1, 3, 2, 1))]
     ['A', 'BCD', 'EF', 'G']
@@ -200,8 +200,8 @@ def partitioned(iterable, partitions):
 def cummulative_sum(iterable, initial_value=0, op=operator.add):
     """ Iterate over the progressive cumulative sum of the items in the iterable.
 
-    Examples
-    --------
+    :Examples:
+
 
     >>> [i for i in cummulative_sum(xrange(6))]
     [0, 1, 3, 6, 10, 15]

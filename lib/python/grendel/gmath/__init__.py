@@ -11,8 +11,8 @@ __all__ = [
 def divisors(n):
     """Generate the factors of an integer.
 
-    Examples
-    --------
+    :Examples:
+
     >>> for i in divisors(12): print i
     ...
     1

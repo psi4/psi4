@@ -172,15 +172,16 @@ void SAPT2::print_header()
   fprintf(outfile,"\n");
   fprintf(outfile,"      Orbital Information\n");
   fprintf(outfile,"  --------------------------\n");
-  fprintf(outfile,"    NSO        = %9d\n",nso_);
-  if (nsoA_ != nsoB_) {
+  if (nsoA_ != nso_ || nsoB_ != nso_) {
+    fprintf(outfile,"    NSO        = %9d\n",nso_);
     fprintf(outfile,"    NSO A      = %9d\n",nsoA_);
     fprintf(outfile,"    NSO B      = %9d\n",nsoB_);
-  }
-  fprintf(outfile,"    NMO        = %9d\n",nmo_);
-  if (nmoA_ != nmoB_) {
+    fprintf(outfile,"    NMO        = %9d\n",nmo_);
     fprintf(outfile,"    NMO A      = %9d\n",nmoA_);
     fprintf(outfile,"    NMO B      = %9d\n",nmoB_);
+  } else {
+    fprintf(outfile,"    NSO        = %9d\n",nso_);
+    fprintf(outfile,"    NMO        = %9d\n",nmo_);
   }
   fprintf(outfile,"    NRI        = %9d\n",ndf_);
   fprintf(outfile,"    NOCC A     = %9d\n",noccA_);

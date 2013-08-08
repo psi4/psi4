@@ -45,7 +45,8 @@ namespace psi{ namespace adc{
 void 
 ADC::rhf_prepare_tensors()
 {    
-    char lbl[32];
+    bool do_pr = options_.get_bool("PR");
+    char lbl[32], ampname[32];
     double *omega, **lambda;
     dpdbuf4 Aovov, K, V;
     dpdfile2 Xoo, Xvv, Aoo, Avv, Dov, Cocc, Cvir, B;
@@ -120,9 +121,14 @@ ADC::rhf_prepare_tensors()
     global_dpd_->buf4_init(&Aovov, PSIF_ADC, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "A1234");
     global_dpd_->buf4_copy(&Aovov, PSIF_ADC_SEM, "A3h3p1234");
     global_dpd_->buf4_close(&Aovov);
+
+    if(do_pr) strcpy(ampname, "tilde 2 K1234 - K1243");
+    else      strcpy(ampname, "2 K1234 - K1243");
     
     global_dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
-    global_dpd_->buf4_init(&K, PSIF_ADC, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "2 K1234 - K1243");
+    //global_dpd_->buf4_init(&K, PSIF_ADC, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "2 K1234 - K1243");
+    //global_dpd_->buf4_init(&K, PSIF_ADC, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "tilde 2 K1234 - K1243");
+    global_dpd_->buf4_init(&K, PSIF_ADC, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, ampname);
     
     global_dpd_->file2_init(&Xoo, PSIF_ADC_SEM, 0, ID('O'), ID('O'), "XOO12");
     // XOO_{ij} <-- - \sum_{kab} (2K_{ikab} - K_{ikba}) <jk|ab>
@@ -145,6 +151,12 @@ ADC::rhf_prepare_tensors()
     global_dpd_->file2_mat_init(&Avv);
     global_dpd_->file2_mat_rd(&Avv);
     global_dpd_->file2_close(&Xvv);
+
+#if DEBUG_
+    fprintf(outfile, ">> In prepare_tensor <<\n");
+    global_dpd_->buf4_print(&K, outfile, 1);
+    //abort();
+#endif
     
     global_dpd_->buf4_close(&K);
     global_dpd_->buf4_close(&V);

@@ -1,8 +1,10 @@
 """ Special containers that don't logically belong somewhere else
 """
+from __future__ import print_function
 import __builtin__
 from collections import defaultdict
 from grendel.util.decorators import typechecked, IterableOf
+from grendel.util.misc import have_python3
 from grendel.util.sentinal_values import ArgumentNotGiven
 
 
@@ -206,13 +208,9 @@ class CustomHashDict(object):
         else:
             return self._dict[hsh]
 
-
-
-
 #--------------------------------------------------------------------------------#
 #                   Least-recently-used Dictionary                               #
 #--------------------------------------------------------------------------------#
-
 
 ## {{{ http://code.activestate.com/recipes/252524/ (r3)
 class Node(object):
@@ -302,7 +300,287 @@ class LRUDict:
 
     def keys(self):
         return self.d.keys()
-
 # end of http://code.activestate.com/recipes/252524/ }}}
 
 
+#--------------------------------------------------------------------------------#
+#                              AliasedDict                                       #
+#--------------------------------------------------------------------------------#
+
+class AliasedDict(dict):
+    """
+    A dictionary with multiple keys pointing to a given value
+    """
+
+    _sequence_key_types = (tuple, set, frozenset)
+
+    #region | Initialization |
+
+    def __init__(self, initial_dict=None):
+        self._equivalent_keys = {}
+        self._key_sets = set()
+        self._first_keys = dict()
+        super(AliasedDict, self).__init__()
+        if initial_dict is not None:
+            for keys, value in initial_dict.items():
+                if isinstance(keys, AliasedDict._sequence_key_types):
+                    keyset = frozenset(keys)
+                    if isinstance(keys, tuple):
+                        self._first_keys[keyset] = keys[0]
+                    self._key_sets.add(keyset)
+                    for key in keys:
+                        if key in self._equivalent_keys:
+                            raise KeyError("Key '{0}' is in multiple key lists".format(key))
+                        if isinstance(key, AliasedDict._sequence_key_types):
+                            raise KeyError("For simplicity, a key in an AliasedDict cannot be one of {0}".format(
+                                AliasedDict._sequence_key_types
+                            ))
+                        self._equivalent_keys[key] = keyset
+                        super(AliasedDict, self).__setitem__(key, value)
+                else:
+                    key = keys
+                    keyset = frozenset((key,))
+                    self._first_keys[keyset] = key
+                    self._equivalent_keys[key] = keyset
+                    self._key_sets.add(keyset)
+                    super(AliasedDict, self).__setitem__(key, value)
+
+    #endregion
+
+    #========================================#
+
+    #region | Special Methods |
+
+    # The methods in this section and the next correspond to the
+    #   order in which the mapping type operations are introduced in
+    #   the python language documentation,
+    #   http://docs.python.org/2/library/stdtypes.html#mapping-types-dict
+
+    class _AliasedDictUnloader(object):
+        def __init__(self, adict):
+            self.pickled_state = dict()
+            for keyset in adict._key_sets:
+                if keyset in adict._first_keys:
+                    key = [adict._first_keys[keyset]]
+                    key += [k for k in keyset if k is not key[0]]
+                    key = tuple(key)
+                else:
+                    key = keyset
+                self.pickled_state[key] = adict[keyset]
+        def __call__(self):
+            return AliasedDict(self.pickled_state)
+
+    def __reduce__(self):
+        return AliasedDict._AliasedDictUnloader(self)
+
+    def __len__(self):
+        return len(self._key_sets)
+
+    def __getitem__(self, item):
+        if isinstance(item, AliasedDict._sequence_key_types):
+            item = frozenset(item)
+            if item not in self._key_sets:
+                raise KeyError("Key '{0}' not found".format(item))
+                # Just retrieve the first value
+            return super(AliasedDict, self).__getitem__(list(item)[0])
+        else:
+            return super(AliasedDict, self).__getitem__(item)
+
+    def __setitem__(self, key, value):
+        if isinstance(key, AliasedDict._sequence_key_types):
+            keyset = frozenset(key)
+            if isinstance(key, tuple):
+                self._first_keys[keyset] = key[0]
+            if keyset not in self._key_sets:
+                # It's a new set of aliases
+                self._key_sets.add(keyset)
+                for k in key:
+                    if k in self._equivalent_keys:
+                        raise KeyError("Key '{0}' is already in key list {1}, and"
+                                         " {1} is not the same as given key list {2}".format(
+                            k, self._equivalent_keys[k], key
+                        ))
+                    if isinstance(k, AliasedDict._sequence_key_types):
+                        raise KeyError("For simplicity, a key in an AliasedDict cannot be one of {0}".format(
+                            AliasedDict._sequence_key_types
+                        ))
+                    self._equivalent_keys[k] = keyset
+                    super(AliasedDict, self).__setitem__(k, value)
+            else:
+                # we already have a value for the keyset, just assign each alias
+                for k in keyset:
+                    super(AliasedDict, self).__setitem__(k, value)
+        elif key in self._equivalent_keys:
+            # It's an existing key.  Set all of the aliases
+            for k in self._equivalent_keys[key]:
+                super(AliasedDict, self).__setitem__(k, value)
+        else:
+            # It's a single key that we don't already have.  Just set the value
+            keyset = frozenset((key,))
+            self._equivalent_keys[key] = keyset
+            self._key_sets.add(keyset)
+            self._first_keys[keyset] = key
+            super(AliasedDict, self).__setitem__(key, value)
+
+    def __delitem__(self, key):
+        if isinstance(key, AliasedDict._sequence_key_types):
+            keyset = frozenset(key)
+        elif key in self._equivalent_keys:
+            keyset = self._equivalent_keys[key]
+        else:
+            keyset = frozenset((key,))
+        if keyset not in self._key_sets:
+            raise KeyError("Key '{0}' not found.".format(key))
+        for k in keyset:
+            super(AliasedDict, self).__delitem__(k)
+            del self._equivalent_keys[k]
+        if keyset in self._first_keys:
+            del self._first_keys[keyset]
+        self._key_sets.remove(keyset)
+
+    def __contains__(self, item):
+        if isinstance(item, AliasedDict._sequence_key_types):
+            return frozenset(item) in self._key_sets
+        else:
+            return item in self._equivalent_keys
+
+    def __repr__(self):
+        rv = type(self).__name__ + "("
+        rv += repr(dict(
+            (tuple(ks), self[ks]) for ks in self._key_sets
+        ))
+        return rv + ")"
+
+    #endregion
+
+    #========================================#
+
+    #region | Methods |
+
+    def iterkeys(self):
+        for keyset in self._key_sets:
+            yield keyset
+    __iter__ = iterkeys
+
+    def clear(self):
+        self._key_sets.clear()
+        self._equivalent_keys.clear()
+        super(AliasedDict, self).clear()
+
+    def copy(self):
+        init_dict = dict([
+            (keyset, self[keyset]) for keyset in self._key_sets
+        ])
+        return type(self)(init_dict)
+
+    def get(self, k, d=None):
+        if k in self:
+            return self[k]
+        else:
+            return d
+
+    def has_key(self, k):
+        return k in self
+
+    # TODO Return dictview objects for items(), keys(), and values() if have_python3
+
+    def items(self):
+        return list(self.iteritems())
+
+    def iteritems(self):
+        for keyset in self.iterkeys():
+            yield keyset, self[keyset]
+
+    def iterkeys(self):
+        return iter(self._key_sets)
+
+    def itervalues(self):
+        for keyset, value in self.iteritems():
+            yield value
+
+    def keys(self):
+        return list(self.iterkeys())
+
+    def pop(self, k, d=ArgumentNotGiven):
+        if k not in self:
+            if d is ArgumentNotGiven:
+                # This will raise an error.  Let it:
+                return self[k]
+            else:
+                return d
+        else:
+            rv = self[k]
+            del self[k]
+            return rv
+
+    def popitem(self):
+        if len(self) == 0:
+            raise KeyError("popitem(): dictionary is empty")
+        key, val = self.items()[0]
+        del self[key]
+        return key, val
+
+    def setdefault(self, k, d=None):
+        if k in self:
+            return self[k]
+        else:
+            self[k] = d
+            return d
+
+    def update(self, E=None, **F):
+        if E is not None:
+            for key, val in E.items():
+                self[key] = val
+        for key, val in F.items():
+            self[key] = val
+
+    def values(self):
+        return list(self.itervalues())
+
+    # TODO viewitems(), viewkeys(), viewvalues()
+
+    def viewkeys(self):
+        raise NotImplementedError()
+
+    def viewitems(self):
+        raise NotImplementedError()
+
+    def viewvalues(self):
+        raise NotImplementedError()
+
+    def firstkey(self, key):
+        if isinstance(key, AliasedDict._sequence_key_types):
+            keyset = frozenset(key)
+        else:
+            if key not in self._equivalent_keys:
+                raise KeyError("Key not found: {0}".format(key))
+            keyset = self._equivalent_keys[key]
+        if keyset in self._first_keys:
+            return self._first_keys[keyset]
+        elif keyset in self._key_sets:
+            raise KeyError("Set of keys {0} was not ordered when it was passed in".format(keyset))
+        else:
+            raise KeyError("Keyset not found: {0}".format(keyset))
+
+    def get_simple_dict(self):
+        rv = dict()
+        for keyset, value in self.items():
+            if keyset in self._first_keys:
+                rv[self._first_keys[keyset]] = value
+            else:
+                # Just choose one
+                rv[iter(keyset).next()] = value
+        return rv
+
+
+
+    #endregion
+
+    #========================================#
+
+    # End of AliasedDict class
+    pass
+
+
+
+#TODO AccessibleSet as a dict of item->item acting as a subclass of set

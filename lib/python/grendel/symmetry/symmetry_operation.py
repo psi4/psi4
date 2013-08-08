@@ -19,8 +19,8 @@ class SymmetryOperation(object):
     """ The abstract superclass for elements of point groups.
 
 
-    Attributes
-    ----------
+    :Attributes:
+
     name : str
         An attempt at creating a human-readable name for the operation.
 

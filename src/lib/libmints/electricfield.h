@@ -37,7 +37,7 @@ namespace psi {
 class ElectricFieldInt : public OneBodyAOInt
 {
     //! Obara and Saika recursion object to be used.
-    ObaraSaikaTwoCenterVIDeriv2Recursion efield_recur_;
+    ObaraSaikaTwoCenterElectricField efield_recur_;
 
     //! Number of atoms.
     int natom_;

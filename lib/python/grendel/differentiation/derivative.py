@@ -6,8 +6,8 @@ class Derivative(object):
     This may later be expanded (in a backwards compatible manner) to include other types of derivatives,
     e.g. dipole moment derivatives
 
-    Attributes
-    ----------
+    :Attributes:
+
     of : subclass of Differentiable
         The entity that the derivative is being taken of (usually the energy of the molecule, but can be anything
         that is a subclass of the abstract base class Differentiable

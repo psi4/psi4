@@ -141,7 +141,7 @@ def verify_medium(section):
 		if (not GIF or not GOF or not PRF):
 			sys.exit(1)
 	solventFound = False
-	for i, v in allowedSolvents.iteritems():
+	for i, v in allowedSolvents.items():
 		if (solvent.get() in v):
 			solventName = i
 			solventFound = True

@@ -16,6 +16,9 @@ from grendel.util.decorators import forwardable, def_delegators
 
 __all__ = []
 
+# TODO This should have raised an error???
+#j["µ,ν"] += D["ρ,σ"] * Cdf["Y,ρ,σ"] * g3["µ,ν,X"]
+
 @forwardable
 class EinsumTensor(object):
     """ A Tensor with indices, for performing contractions.
@@ -282,8 +285,8 @@ class EinsumTensor(object):
     def split_indices(in_indices, include_sub=False):
         """ Split a string or list/tuple into a tuple of indices
 
-        Examples
-        --------
+        :Examples:
+
         >>> EinsumTensor.split_indices("i,j,k,l")
         ('i', 'j', 'k', 'l')
         >>> EinsumTensor.split_indices(("i,j","k,l"))
@@ -342,7 +345,7 @@ class EinsumTensor(object):
     def _get_slices(self):
         if self._tensor.indices is None:
             # Not using index ranges
-            return tuple([Ellipsis] * len(self._tensor.shape))
+            return tuple([slice(None)] * len(self._tensor.shape))
         else:
             # make sure all of the indices are well-known...
             if len(self.indices) != len(self._tensor.indices):
@@ -353,7 +356,7 @@ class EinsumTensor(object):
                     arange = self._tensor.index_range_set.known_ranges[aidx]
                     myrange = self._tensor.index_range_set.known_ranges[myidx]
                     if arange is myrange:
-                        slices.append(Ellipsis)
+                        slices.append(slice(None))
                     elif is_subrange(arange, myrange):
                         slices.append(arange.slice_in(myrange))
                 return tuple(slices)

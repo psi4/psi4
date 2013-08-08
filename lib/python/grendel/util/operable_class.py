@@ -7,8 +7,8 @@ def operable_class(*ops):
      This only works with new-style classes, as far as I can tell.
 
 
-    Examples
-    --------
+    :Examples:
+
     >>> @operable_class('or', 'and')
     ... class Awesome(object):
     ...     def __or__(self, other):
@@ -91,8 +91,8 @@ def operable_class(*ops):
     >>> TheNewerAwesome() + a
     instance add
 
-    Raises
-    ------
+    :Raises:
+
     TypeError :  If the method `__class_<op>__` is not defined as a classmethod.  For instance,
 
         >>> @operable_class('mul')

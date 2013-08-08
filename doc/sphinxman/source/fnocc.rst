@@ -58,6 +58,10 @@ the energy call as ::
 
     energy('fno-ccsd(t)')
 
+If you wish to specify the number of active natural orbitals manually, use
+the keyword |fnocc__active_nat_orbs|.  This keyword will override the 
+keyword |fnocc__occ_tolerance|.
+
 QCISD(T), CCSD(T), MP4, and CEPA
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -264,7 +268,7 @@ the computation and storage of the 4-index electron repulsion integral
 (ERI) tensor and even to reduce the computational scaling of some terms.
 DF/CD-CCSD(T) computations are available in |Psifour|, with or without the
 use of FNOs, through the FNOCC module.  The implementation and accuracy of
-the DF/CD-CCSD(T) method are described in Ref. [DePrince:2013:inpress]_\.
+the DF/CD-CCSD(T) method are described in Ref. [DePrince:2013:2687]_\.
 
 The DF-CCSD(T) procedure uses two auxiliary basis sets.  The first set is
 that used in the SCF procedure, defined by the |scf__df_basis_scf|
