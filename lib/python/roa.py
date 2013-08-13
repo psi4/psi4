@@ -8,38 +8,66 @@ from p4const import *
 
 def run_roa(name, **kwargs):
 
-    psi4.print_out('Running ROA computation. Subdirectories for each '
-              'required displaced geometry have been created.')
+    # Get list of omega values -> Make sure we only have one wavelength
+    # Catch this now before any real work gets done
+    omega = psi4.get_option('CCRESPONSE','OMEGA')
+    if len(omega) > 2:
+        raise Exception('ROA scattering can only be performed for one wavelength.')
+    else:
+        pass
 
-    # Initialize database
+    psi4.print_out('Running ROA computation. Subdirectories for each '
+              'required displaced geometry have been created.\n\n')
+
+    ### Initialize database
     db = shelve.open('database',writeback=True)
     if not db.has_key('inputs_generated'):
         initialize_database(db)
 
-    # Generate input files
+    ### Generate input files
     if not db['inputs_generated']:
         generate_inputs(name, db)
         db['inputs_generated'] = True
     
-    # Check job status
+    ### Check job status
     if db['inputs_generated'] and not db['jobs_complete']:
         print('Checking status')
         roa_stat(db)
         for job,status in db['job_status'].items():
             print("{} --> {}".format(job,status))
 
-    # Compute ROA Scattering
+    ### Compute ROA Scattering
     if db['jobs_complete']:
+#   SAVE this for when multiple wavelengths works
+#        # Get list of omega values
+#        omega = psi4.get_option('CCRESPONSE','OMEGA')
+#        if len(omega) > 1:
+#            units = copy.copy(omega[-1])
+#            omega.pop()
+#        else:
+#            units = 'atomic'
+#        wavelength = copy.copy(omega[0])
+#        # Set up units for scatter.cc
+#        if units == 'NM':
+#            wavelength = (psi_c * psi_h * 1*(10**-9))/(wavelength * psi_hartree2J)
+#        if units == 'HZ':
+#            wavelength = wavelength * psi_h / psi_hartree2J
+#        if units == 'EV':
+#            wavelength = wavelength / psi_hartree2ev
+#        if units == 'atomic':
+#            pass
+        # Initialize tensor lists
         dip_polar_list = []
         opt_rot_list = []
-        gauge_list = []
         dip_quad_polar_list = []
+        gauge_list = []
+        make_gauge_list(gauge_list)
         # Gather data
         synthesize_dipole_polar(db,dip_polar_list)
-        synthesize_opt_rot(db,opt_rot_list,gauge_list)
+        synthesize_opt_rot(db,opt_rot_list)
         synthesize_dip_quad_polar(db,dip_quad_polar_list)
         # Compute Scattering
-    	# Run new function (src/bin/ccresponse/scatter.cc)
+	    # Run new function (src/bin/ccresponse/scatter.cc)
         print('Running scatter function')
         step = psi4.get_local_option('FINDIF','DISP_SIZE')
         for gauge in opt_rot_list:
@@ -47,10 +75,11 @@ def run_roa(name, **kwargs):
             print('\n\n----------------------------------------------------------------------')
             print('\t%%%%%%%%%% {} %%%%%%%%%%'.format(gauge_list[g_idx]))
             print('----------------------------------------------------------------------\n\n')
+            psi4.print_out('\n\n----------------------------------------------------------------------\n')
+            psi4.print_out('\t%%%%%%%%%% {} %%%%%%%%%%\n'.format(gauge_list[g_idx]))
+            psi4.print_out('----------------------------------------------------------------------\n\n')
             psi4.scatter(step, dip_polar_list, gauge, dip_quad_polar_list)
 
-        #psi4.print_list(dip_polar_list)
-        #print(dip_quad_polar_list)
     db.close()
 
 def initialize_database(database):
@@ -139,19 +168,16 @@ def synthesize_dipole_polar(db,dip_polar_list):
             dip_polar_list.append(grab_psi4_matrix(outfile, 'Dipole '
                                                    'Polarizability', 3))
 
-def synthesize_opt_rot(db, opt_rot_list, gauge_list):
+def synthesize_opt_rot(db, opt_rot_list):
     length = []
     velocity = []
     for job in db['job_status']:
         with open('{}/output.dat'.format(job)) as outfile:
             mygauge = psi4.get_option('CCRESPONSE', 'GAUGE')
-            #if psi4.get_local_option('CCRESPONSE','GAUGE') == 'LENGTH':
             if mygauge == 'LENGTH':
                 length.append(grab_psi4_matrix(outfile, 'Optical Rotation Tensor (Length Gauge)', 3))
-            #elif psi4.get_local_option('CCRESPONSE','GAUGE') == 'VELOCITY':
             elif mygauge == 'VELOCITY':
                 velocity.append(grab_psi4_matrix(outfile, 'Optical Rotation Tensor (Modified Velocity Gauge)', 3))
-            #elif psi4.get_local_option('CCRESPONSE','GAUGE') == 'BOTH':
             elif mygauge == 'BOTH':
                 length.append(grab_psi4_matrix(outfile, 'Optical Rotation Tensor (Length Gauge)', 3))
                 velocity.append(grab_psi4_matrix(outfile, 'Optical Rotation Tensor (Modified Velocity Gauge)', 3))
@@ -159,18 +185,22 @@ def synthesize_opt_rot(db, opt_rot_list, gauge_list):
                 print("There is no optical rotation tensor - something is wrong.")	
     if length:
         opt_rot_list.append(length)
-        gauge_list.append('Length Gauge Results')
     if velocity:
         opt_rot_list.append(velocity)
-        gauge_list.append('Modified Velocity Gauge Results')
+#    if length and not velocity:
+#        opt_rot_list.append(length)
+#        gauge_list.append('Length Gauge Results')
+#    if velocity and not length:
+#        opt_rot_list.append(velocity)
+#        gauge_list.append('Modified Velocity Gauge Results')
+#    if length and velocity:
+#        gauge_list.append('Length Gauge Results')
+#        gauge_list.append('Modified Velocity Gauge Results')
+#        temp_list = []
+#        temp_list.append(length)
+#        temp_list.append(velocity)
+#        opt_rot_list.append(temp_list)
 
-    #print(mygauge)
-    #print("Length gauge list:")
-    #print(length)
-    #print("Velocity gauge list:")
-    #print(velocity)
-    #print("Op. rot. list:")
-    #print(opt_rot_list)
 
 def synthesize_dip_quad_polar(db, dip_quad_polar_list):
     for job in db['job_status']:
@@ -208,6 +238,61 @@ def grab_psi4_matrix(outfile, matrix_name, row_tot):
         if len(matrix_data) == 3*row_tot:
             return matrix_data
 
+# THIS IS UNECESSARY SINCE ONLY PURE VELOCITY GAUGE IS EVALUATED AT ZERO WAVELENGTH
+# AND WHEN THE FUNCTION IS CALLED, IT IS PASSED MVG AS THE MATRIX NAME
+#def grab_psi4_matrix(outfile, matrix_name, row_tot):
+#    collect_matrix = False
+#    collect_omega  = False
+#    n_rows = 0
+#    n_tries = 0
+#    matrix_data = []
+#    omega_zero = 'omega = 0.00'
+#    #mygauge = psi4.get_option('CCRESPONSE','GAUGE')
+#    for line in outfile:
+#        # Quick gauge check
+
+#            collect_omega = True
+#        # Are we at the right kind of tensor?
+#        if matrix_name in line:
+#            collect_matrix = True
+#        # Is this the zero wavelength data for MVG?
+#        if omega_zero in line:
+#            collect_omega  = True
+#            collect_matrix = False
+#        if collect_matrix and collect_omega and (n_rows < row_tot):
+#            try:
+#                n_tries += 1
+#                if n_tries > (row_tot + 13):
+#                    raise Exception('{} matrix was unreadable. Scanned {} '
+#                                    'lines'.format(matrix_name, n_tries))
+#                else:
+#                    (index, x, y, z) = line.split()
+#                    matrix_data.append(float(x))
+#                    matrix_data.append(float(y))
+#                    matrix_data.append(float(z))
+#                    n_rows += 1
+#            except:
+#                pass
+#
+#        if (n_rows == row_tot) and (len(matrix_data) != 3*row_tot):
+#            raise Exception('Collecting matrix data failed!')
+#
+#        if len(matrix_data) == 3*row_tot:
+#            return matrix_data
+
+def make_gauge_list(gauge_list):
+    mygauge = psi4.get_option('CCRESPONSE', 'GAUGE')
+    if mygauge == 'LENGTH':
+        gauge_list.append('Length Gauge Results')
+    elif mygauge == 'VELOCITY':
+        gauge_list.append('Modified Velocity Gauge Results')
+    elif mygauge == 'BOTH':
+        gauge_list.append('Length Gauge Results')
+        gauge_list.append('Modified Velocity Gauge Results')
+    else:
+        print("There is no optical rotation tensor - something is wrong.")
+       
+    
 
 
 
