@@ -118,7 +118,7 @@ namespace psi {
     namespace ccdensity  { PsiReturnType ccdensity(Options&); }
     namespace ccresponse { 
 		PsiReturnType ccresponse(Options&);
-		void scatter(double step, std::vector<SharedMatrix> dip, std::vector<SharedMatrix> rot, std::vector<SharedMatrix> quad);
+		void scatter(Options&, double step, std::vector<SharedMatrix> dip, std::vector<SharedMatrix> rot, std::vector<SharedMatrix> quad);
 	}
     namespace cceom      { PsiReturnType cceom(Options&);     }
     namespace detci      { PsiReturnType detci(Options&);     }
@@ -568,7 +568,7 @@ void py_psi_print_list(python::list py_list)
 
 void py_psi_scatter(double step, python::list dip_polar_list, python::list opt_rot_list, python::list dip_quad_polar_list)
 {
-    //py_psi_prepare_options_for_module("CCRESPONSE");
+    py_psi_prepare_options_for_module("CCRESPONSE");
 
     // Convert python tensor lists into vectors of sharedmatrices
     std::vector <SharedMatrix> dip_polar_tensors;
@@ -606,7 +606,7 @@ void py_psi_scatter(double step, python::list dip_polar_list, python::list opt_r
 //    for(std::vector<SharedMatrix>::iterator i=dip_quad_polar_tensors.begin(); i != dip_quad_polar_tensors.end(); ++i)
 //        (*i)->print(stdout);
     
-    ccresponse::scatter(step, dip_polar_tensors, opt_rot_tensors, dip_quad_polar_tensors);
+    ccresponse::scatter(Process::environment.options, step, dip_polar_tensors, opt_rot_tensors, dip_quad_polar_tensors);
 }
 
 double py_psi_cceom()

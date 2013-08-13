@@ -41,7 +41,6 @@
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h> 
 #include <libqt/qt.h>
-#include "physconst.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
@@ -50,7 +49,10 @@
 #include <vector>
 #include <psi4-dec.h>
 #include <libmints/mints.h>
-#include "mass.h"
+#include <physconst.h>
+#include <liboptions/liboptions.h>
+//#include "oldphysconst.h"
+//#include "mass.h"
 
 using namespace boost;
 using namespace psi;
@@ -73,15 +75,64 @@ namespace psi { namespace ccresponse {
 
 void print_tensor_der(FILE *myfile, std::vector<SharedMatrix> my_tensor_list);
 
-//void scatter(Options &options, std::vector <SharedMatrix> pol, std::vector <SharedMatrix> rot, std::vector <SharedMatrix> quad)
-void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMatrix> rot, std::vector <SharedMatrix> quad)
+//void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMatrix> rot, std::vector <SharedMatrix> quad)
+void scatter(Options &options, double step, std::vector <SharedMatrix> pol, std::vector <SharedMatrix> rot, std::vector <SharedMatrix> quad)
 {
-    //double step = options.get_double("DISP_SIZE");
-    printf("STEPSIZE = %lf bohr\n\n",step);
-	int quiet = 1;
+    double mstep = options.get_double("DISP_SIZE");
+    //-> This is troublesome, need to decide if option should be set as global or local-"FINDIF"
+    printf("STEPSIZE from Options Object = %lf bohr\n\n",mstep);
+    printf("STEPSIZE passed from roa.py and used = %lf bohr\n\n",step);
+
+    int print = options.get_int("PRINT");
+    printf("Print Level = %d\n", print);
     int i,j,k;
     int a,b,c,d;
-    double omega = 0.085645;
+
+    // grab the field freqs from input -- a few units are converted to E_h
+    //-> Do I want to handle an array of omega values,
+    //-> OR do a separate scatter call for each one??
+    //double omega = 0.085645;
+    //double omega = params.omega[0];
+    int count, nomega;
+    double omega;
+    count = options["OMEGA"].size();
+    if(count == 0) { // Assume 0.0 E_h for field energy
+      nomega = 1;
+      params.omega = init_array(1);
+      params.omega[0] = 0.0;
+      omega = params.omega[0];
+    }
+    else if(count == 1) { // Assume E_h for field energy and read value
+      params.nomega = 1;
+      params.omega = init_array(1);
+      params.omega[0] = options["OMEGA"][0].to_double();
+      omega = params.omega[0];
+    }
+    else if(count == 2) {
+      params.nomega = count-1;
+      params.omega = init_array(params.nomega);
+      std::string units = options["OMEGA"][count-1].to_string();
+      for(i=0; i < (count-1); i++) {
+        params.omega[i] = options["OMEGA"][i].to_double();
+        if(units == "HZ" || units == "Hz" || units == "hz")
+          params.omega[i] *= pc_h / pc_hartree2J;
+        else if(units == "AU" || units == "Au" || units == "au") continue; // do nothing
+        else if(units == "NM" || units == "nm")
+          params.omega[i] = (pc_c*pc_h*1e9)/(params.omega[i]*pc_hartree2J);
+        else if(units == "EV" || units == "ev" || units == "eV")
+          params.omega[i] /= pc_hartree2ev;
+        else
+          throw PsiException("Error in unit for input field frequencies, should be au, Hz, nm, or eV", __FILE__,__LINE__);
+      }
+      omega = params.omega[0];
+    }
+    else if (count > 2) {
+      throw PsiException("ROA Scattering only working for one wavelength at a time", __FILE__,__LINE__);
+    }
+    // Print the Wavelength
+    printf("Omega = %20.12f\n\n", omega);
+    fprintf(outfile, "\t Wavelength (in au): = %20.12f\n\n", omega);
+    fflush(stdout);
 
     // COMPUTE TENSOR DERIVATIVES
     // Replicate the part of the roa.pl code that does this here in C++
@@ -222,45 +273,50 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
     geom_orig->copy(geom);
 
 	// Translate Molecule to Center of Mass //
-	if(!quiet)  {
-      printf("\tInput coordinates (bohr):\n");
-	  molecule->geometry().print(stdout);
+	if(print >= 1)  {
+      fprintf(outfile, "\tInput coordinates (bohr):\n");
+	  molecule->geometry().print();
     }
 	molecule->move_to_com();
 	geom_orig->copy(molecule->geometry());
     
     // Reading the Z-vals //
+    //-> Just use the Molecule's mass(x) function to get appropriate mass
+    //   of atom.
+/*
     int zvals[natom];
     for(i=0; i<natom; i++)
     {
         zvals[i]=molecule->Z(i);
     }
+*/
     
     // Mass-weighting the co-ordinates //
-    double massi[natom];
-
+    //double massi[natom];
     for(i=0; i<natom; i++)
     {
-        massi[i] = molecule->mass(i);
+        //massi[i] = molecule->mass(i);
         for(j=0; j<3; j++)
         {
-            geom->set(i,j, geom_orig->get(i,j) * sqrt(massi[i]));
+            //geom->set(i,j, geom_orig->get(i,j) * sqrt(massi[i]));
+            geom->set(i,j, geom_orig->get(i,j) * sqrt(molecule->mass(i)));
         }
     }
-	if(!quiet)  {
-	  printf("\tMass-Weighted coordinates relative to the center of mass:\n");
-	  geom->print(stdout);
+	if(print >= 1)  {
+	  fprintf(outfile, "\tMass-Weighted coordinates relative to the center of mass:\n");
+	  geom->print();
     }
+    //delete[] massi;
  
     //Generating the inertia tensor
    
     SharedMatrix I(new Matrix(3,3));
     I->copy(molecule->inertia_tensor());
     //I = molecule->inertia_tensor();
-	if(!quiet)  {
-	  printf("\tMoment of Inertia Tensor:\n");
-      I->print(stdout);
-	  fflush(stdout);
+	if(print >= 2)  {
+	  fprintf(outfile, "\tMoment of Inertia Tensor:\n");
+      I->print();
+	  fflush(outfile);
     }
     
 /*
@@ -284,15 +340,15 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
 
     // Diagonalizing the inertia tensor //
    
-    SharedMatrix Ievecs(new Matrix(3,3));
-    SharedVector Ievals(new Vector("Ieigenval",3));
+    SharedMatrix Ievecs(new Matrix("Inertia Eigenvectors",3,3));
+    SharedVector Ievals(new Vector("Inertia Eigenvalues",3));
 
     I->diagonalize(Ievecs,Ievals);
 	//rs(3,3,I->pointer(),Ievals->pointer(),1,Ievecs->pointer(),1e-12);
 
     // Constructing I-inverse matrix //
 
-    SharedMatrix Iinv(new Matrix(3,3));
+    SharedMatrix Iinv(new Matrix("I-Inverse",3,3));
     SharedMatrix Itmp(new Matrix(3,3));
      
     Iinv->zero();
@@ -304,12 +360,12 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
     Itmp->gemm(0,1,1.0,Iinv,Ievecs,0.0);
     Iinv->gemm(0,0,1.0,Ievecs,Itmp,0.0);
 
-	if(!quiet)  {
-	  printf("\tIegv, Ievec, I^-1 matrix\n");
-	  Ievecs->print(stdout);
-	  Ievals->print(stdout);
-      Iinv->print(stdout);
-	  fflush(stdout);
+	if(print >= 2)  {
+	  fprintf(outfile,"\tInertia Tensor EigenData\n\n");
+	  Ievecs->print();
+	  Ievals->print();
+      Iinv->print();
+	  fflush(outfile);
     }
  
     // Generating the 6 pure rotation and translation vectors //
@@ -320,15 +376,16 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
     total_mass=0.0;
     for(i=0;i<natom;i++)
     {
-      //total_mass+=an2mass[(int)zvals[iatom]];
-      total_mass+=an2mass[(int)zvals[i]];
+      //total_mass+=an2mass[(int)zvals[i]];
+      total_mass+=molecule->mass(i);
     }
 
     for(i=0; i < natom*3; i++)
     {
       icart = i % 3;
       iatom = i/3;
-      imass = an2mass[(int)zvals[iatom]];
+      //imass = an2mass[(int)zvals[iatom]];
+      imass = molecule->mass(iatom);
 
       P->set(i,i,1.0);
 
@@ -336,7 +393,8 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
       {
         jcart = j % 3;
         jatom = j/3;
-        jmass = an2mass[(int)zvals[jatom]];
+        //jmass = an2mass[(int)zvals[jatom]];
+        jmass = molecule->mass(jatom);
 
         P->add(i,j,-1.0*sqrt(imass*jmass)/total_mass*(icart==jcart));
 
@@ -358,7 +416,8 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
     {
       for(j=0; j < 3; j++)
       {
-        M->set((i*3+j),(i*3+j),1/sqrt(an2mass[(int)zvals[i]]/_au2amu));
+        //M->set((i*3+j),(i*3+j),1/sqrt(an2mass[(int)zvals[i]]/_au2amu));
+        M->set((i*3+j),(i*3+j),1/sqrt((molecule->mass(i))/pc_au2amu));
       }
     }
     //printf("Mass-Weighting Matrix (for Hessian):\n");
@@ -371,10 +430,10 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
     T->zero();
     T->gemm(0,0,1.0,F,P,0.0);
     F->gemm(0,0,1.0,P,T,0.0);
-	if(!quiet)  {
-	  printf("\tProjected, Mass-Weighted Hessian:\n");
-	  F->print(stdout);
-	  fflush(stdout);
+	if(print >= 2)  {
+	  fprintf(outfile,"\tProjected, Mass-Weighted Hessian:\n");
+	  F->print();
+	  fflush(outfile);
     }
 
     // Diagonalize projected mass-weighted Hessian //
@@ -386,10 +445,10 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
 
     F->diagonalize(Fevecs,Fevals);
 	//rs(3*natom,3*natom,F->pointer(),Fevals->pointer(),1,Fevecs->pointer(),1e-12);
-	if(!quiet)  {
-	  Fevals->print(stdout);
-	  Fevecs->print(stdout);
-      fflush(stdout);
+	if(print >= 3)  {
+	  Fevals->print();
+	  Fevecs->print();
+      fflush(outfile);
     }
 
     Lx->gemm(0,0,1.0,M,Fevecs,0.0);
@@ -404,9 +463,9 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
     }
     fclose(lxf);
 */
-	if(!quiet)  {
-	  Lx->print(stdout);
-      fflush(stdout);
+	if(print >= 2)  {
+	  Lx->print();
+      fflush(outfile);
     }
 
     for(i=0; i < 3*natom; i++)
@@ -414,7 +473,7 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
        norm = 0.0;
        for(j=0; j < 3*natom; j++)
        {
-         norm += Lx->get(j,i)*Lx->get(j,i)/_au2amu;
+         norm += Lx->get(j,i)*Lx->get(j,i)/pc_au2amu;
        }
        if(norm > 1e-3)
        {
@@ -430,8 +489,8 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
 
    // Compute IR intensities in projected normal coordinates //
    double dipder_conv;
-   dipder_conv = _dipmom_debye2si*_dipmom_debye2si/(1e-20 * _amu2kg * _au2amu);
-   dipder_conv *= _na * _pi/(3.0 * _c * _c * 4.0 * _pi * _e0 * 1000.0);
+   dipder_conv = pc_dipmom_debye2si*pc_dipmom_debye2si/(1e-20 * pc_amu2kg * pc_au2amu);
+   dipder_conv *= pc_na * pc_pi/(3.0 * pc_c * pc_c * 4.0 * pc_pi * pc_e0 * 1000.0);
    SharedVector IRint(new Vector("IRint",3*natom));
    for(i=0; i < natom*3; i++)
    {
@@ -441,14 +500,17 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
      }
    }
 
-   
 
    // Transform polarizability derivatives to normal coordinates //
    SharedMatrix polder_q(new Matrix(9,3*natom));
    polder_q->gemm(1,0,1.0,polder,Lx,0.0);
-   fprintf(outfile,"\n\tPolarizability Derivatives, normal\n");
-   //polder->print(stdout);
-   polder_q->print();
+   if(print >=2) {
+     fprintf(outfile,"\n\tPolarizability Derivatives in Cart. Coord.\n");
+     polder->print();
+     fprintf(outfile,"\n\tPolarizability Derivatives in Normal Coord.\n");
+     polder_q->print();
+     fflush(outfile);
+   }
    int jk=0;
    std::vector<SharedMatrix> alpha_der(3*natom);
    for(i=0; i < alpha_der.size(); ++i)
@@ -472,9 +534,13 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
    // Transform optical rotation tensor derivatives to normal coordinates //
    SharedMatrix optder_q(new Matrix(9,3*natom));
    optder_q->gemm(1,0,1.0,optder,Lx,0.0);
-   fprintf(outfile,"\tOptical Rotation Tensor Derivatives, normal\n");
-   //optder->print(stdout);
-   optder_q->print();
+   if(print >=2) {
+     fprintf(outfile,"\n\tOptical Rotation Tensor Derivatives in Cart. Coord..\n");
+     optder->print();
+     fprintf(outfile,"\n\tOptical Rotation Tensor Derivatives in Normal Coord.\n");
+     optder_q->print();
+     fflush(outfile);
+   }
   
    std::vector<SharedMatrix> G_der(3*natom);
    for(i=0; i < G_der.size(); ++i)
@@ -498,9 +564,13 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
    // Transform dipole/quarupole tensor derivatives to normal coordinates //
    SharedMatrix quadder_q(new Matrix(27,3*natom));
    quadder_q->gemm(1,0,1.0,quadder,Lx,0.0);
-   fprintf(outfile,"\tDipole/Quadrupole Tensor Derivatives, normal\n");
-   //quadder->print(stdout);
-   quadder_q->print();
+   if(print >=2) {
+     fprintf(outfile,"\n\tDipole/Quadrupole Tensor Derivatives in Cart. Coord..\n");
+     quadder->print();
+     fprintf(outfile,"\n\tDipole/Quadrupole Tensor Derivatives in Normal Coord.\n");
+     quadder_q->print();
+     fflush(outfile);
+   }
  
    int jkl,l;
    double**** Q_der = (double ****) malloc(natom*3*sizeof(double ***));
@@ -522,9 +592,9 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
    }
  
    // Compute the Raman scattering activity //
-   double raman_conv = _bohr2angstroms * _bohr2angstroms * _bohr2angstroms * _bohr2angstroms / _au2amu;
-   double km_convert = _hartree2J/(_bohr2m * _bohr2m * _amu2kg * _au2amu);
-   double cm_convert = 1.0/(2.0 * _pi * _c * 100.0);
+   double raman_conv = pc_bohr2angstroms * pc_bohr2angstroms * pc_bohr2angstroms * pc_bohr2angstroms / pc_au2amu;
+   double km_convert = pc_hartree2J/(pc_bohr2m * pc_bohr2m * pc_amu2kg * pc_au2amu);
+   double cm_convert = 1.0/(2.0 * pc_pi * pc_c * 100.0);
 
    SharedVector alpha(new Vector("Alpha",3*natom));
    SharedVector betaalpha2(new Vector("BetaAlpha2",3*natom));
@@ -600,7 +670,7 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
   double cvel;
   double roa_conv;
 
-  cvel = _c * _me * _bohr2angstroms * 1e-10 / (_h/(2.0*_pi));
+  cvel = pc_c * pc_me * pc_bohr2angstroms * 1e-10 / (pc_h/(2.0*pc_pi));
   printf("cvel = %20.14f\n", cvel);
   roa_conv = raman_conv * 1e6 / cvel;
 //  roa_conv /= _c * _me * _bohr2angstroms * 1e-10;
@@ -652,8 +722,122 @@ void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMat
        delta_z*raman_conv*1e3, delta_x*raman_conv*1e3, delta_0*raman_conv*1e3, delta_180*raman_conv*1e3);
   }
 
+
+  /* compute the frequencies and spit them out in a nice table in the output file*/
+  /* I know, very inefficient, recalculating everything. But it's only temporary.*/
+  fprintf(outfile, "\n\t     Harmonic Freq.  IR Intensity   Red. Mass       Alpha^2        Beta^2    Raman Int.  Depol. Ratio\n");
+  fprintf(outfile, "\t        (cm-1)         (km/mol)       (amu) \n");
+  fprintf(outfile, "\t---------------------------------------------------------------------------------------------------\n");
+  for(i=natom*3-1; i >= 0; i--)
+  {
+    if(Fevals->get(i) < 0.0)
+      fprintf(outfile, "\t  %3d  %9.3fi    %9.4f       %7.4f      %9.4f     %9.4f    %9.4f    %9.4f\n",
+       (natom*3-i), cm_convert*sqrt(-km_convert*Fevals->get(i)), IRint->get(i),
+       redmass->get(i), alpha->get(i)*alpha->get(i)*raman_conv, betaalpha2->get(i)*raman_conv,
+       ramint_linear->get(i)*raman_conv, depol_linear->get(i));
+    else
+      fprintf(outfile, "\t  %3d  %9.3f     %9.4f       %7.4f      %9.4f     %9.4f    %9.4f    %9.4f\n",
+       (natom*3-i), cm_convert*sqrt(km_convert*Fevals->get(i)), IRint->get(i),
+       redmass->get(i), alpha->get(i)*alpha->get(i)*raman_conv, betaalpha2->get(i)*raman_conv,
+       ramint_linear->get(i)*raman_conv, depol_linear->get(i));
+  }
+  fprintf(outfile, "\t---------------------------------------------------------------------------------------------------\n");
+
+  /* compute the frequencies and spit them out in a nice table */
+  fprintf(outfile, "----------------------------------------------------------------------------------------------\n");
+  fprintf(outfile, "                                Raman Scattering Parameters\n");
+  fprintf(outfile, "----------------------------------------------------------------------------------------------\n");
+  fprintf(outfile, "     Harmonic Freq.  Alpha^2   Beta^2    Raman Act.   Dep. Ratio  Raman Act.  Dep. Ratio\n");
+  fprintf(outfile, "        (cm-1)                           (linear)      (linear)   (natural)   (natural)\n");
+  fprintf(outfile, "----------------------------------------------------------------------------------------------\n");
+  for(i=natom*3-1; i >= 0; i--)
+  {
+    if(Fevals->get(i) < 0.0)
+      fprintf(outfile, "  %3d  %9.3fi %9.4f   %9.4f  %9.4f  %9.4f    %9.4f  %9.4f\n",
+       (natom*3-i), cm_convert*sqrt(-km_convert*Fevals->get(i)),
+       alpha->get(i)*alpha->get(i)*raman_conv, betaalpha2->get(i)*raman_conv,
+       ramint_linear->get(i)*raman_conv, depol_linear->get(i),
+       ramint_circular->get(i)*raman_conv, depol_circular->get(i));
+    else
+      fprintf(outfile, "  %3d  %9.3f  %9.4f   %9.4f  %9.4f  %9.4f    %9.4f  %9.4f\n",
+       (natom*3-i), cm_convert*sqrt(km_convert*Fevals->get(i)),
+       alpha->get(i)*alpha->get(i)*raman_conv, betaalpha2->get(i)*raman_conv,
+       ramint_linear->get(i)*raman_conv, depol_linear->get(i),
+       ramint_circular->get(i)*raman_conv, depol_circular->get(i));
+  }
+  fprintf(outfile, "----------------------------------------------------------------------------------------------\n");
+
+  //SharedVector G(new Vector("G",3*natom));
+  //SharedVector betaG2(new Vector("betaG2",3*natom));
+  //SharedVector betaA2(new Vector("betaA2",3*natom));
+  G->zero();
+  betaG2->zero();
+  betaA2->zero();
+  
+  for(i=0; i < natom*3; i++) {
+    G->set(i,tensor_mean(G_der[i]));
+    betaG2->set(i,beta_G2(alpha_der[i], G_der[i]));
+    betaA2->set(i,beta_A2(alpha_der[i], Q_der[i], omega));
+  }
+
+  //double cvel;
+  //double roa_conv;
+
+  cvel = pc_c * pc_me * pc_bohr2angstroms * 1e-10 / (pc_h/(2.0*pc_pi));
+  fprintf(outfile, "cvel = %20.14f\n", cvel);
+  roa_conv = raman_conv * 1e6 / cvel;
+//  roa_conv /= _c * _me * _bohr2angstroms * 1e-10;
+//  roa_conv *= _h /(2.0 * _pi);
+  fprintf(outfile, "-----------------------------------------------------\n");
+  fprintf(outfile, "               ROA Scattering Invariants\n");
+  fprintf(outfile, "-----------------------------------------------------\n");
+  fprintf(outfile, "     Harmonic Freq.  AlphaG   Beta(G)^2  Beta(A)^2\n");
+  fprintf(outfile, "        (cm-1)\n");
+  fprintf(outfile, "-----------------------------------------------------\n");
+  for(i=natom*3-1; i >= 0; i--) {
+    if(Fevals->get(i) < 0.0)
+      fprintf(outfile, "  %3d  %9.3fi %9.4f   %10.4f  %10.4f\n",
+       (natom*3-i), cm_convert*sqrt(-km_convert*Fevals->get(i)),
+       alpha->get(i)*G->get(i)*roa_conv, betaG2->get(i)*roa_conv, betaA2->get(i)*roa_conv);
+    else
+      fprintf(outfile, "  %3d  %9.3f  %9.4f   %10.4f  %10.4f\n",
+       (natom*3-i), cm_convert*sqrt(km_convert*Fevals->get(i)),
+       alpha->get(i)*G->get(i)*roa_conv, betaG2->get(i)*roa_conv, betaA2->get(i)*roa_conv);
+  }
+  fprintf(outfile, "-----------------------------------------------------\n");
+
+  fprintf(outfile, "\n----------------------------------------------------------------------\n");
+  fprintf(outfile, "         ROA Difference Parameter R-L (Angstrom^4/amu * 1000) \n");
+  fprintf(outfile, "----------------------------------------------------------------------\n");
+  fprintf(outfile, "     Harmonic Freq. Delta_z(90) Delta_x(90)   Delta(0)  Delta(180)\n");
+  fprintf(outfile, "        (cm-1)\n");
+  fprintf(outfile, "----------------------------------------------------------------------\n");
+  
+  //double delta_0,delta_180,delta_x,delta_z;
+  for(i=natom*3-1; i >= 0; i--)
+  {
+
+    delta_0 = 4.0 * (180.0*alpha->get(i)*G->get(i) + 4.0*betaG2->get(i) - 4.0*betaA2->get(i));
+    delta_0 *= 1.0 / cvel;
+    delta_180 = 4.0 * (24.0 * betaG2->get(i) + 8.0 * betaA2->get(i));
+    delta_180 *= 1.0 / cvel;
+    delta_x = 4.0 * (45.0 * alpha->get(i) * G->get(i) + 7.0 * betaG2->get(i) + betaA2->get(i));
+    delta_x *= 1.0 / cvel;
+    delta_z = 4.0 * (6.0 * betaG2->get(i) - 2.0 * betaA2->get(i));
+    delta_z *= 1.0 / cvel;
+    if(Fevals->get(i) < 0.0)
+      fprintf(outfile, "  %3d  %9.3fi %10.4f   %10.4f   %10.4f   %10.4f\n",
+       (natom*3-i), cm_convert*sqrt(-km_convert*Fevals->get(i)),
+       delta_z*raman_conv*1e3, delta_x*raman_conv*1e3, delta_0*raman_conv*1e3, delta_180*raman_conv*1e3);
+    else
+      fprintf(outfile, "  %3d  %9.3f  %10.4f   %10.4f   %10.4f   %10.4f\n",
+       (natom*3-i), cm_convert*sqrt(km_convert*Fevals->get(i)),
+       delta_z*raman_conv*1e3, delta_x*raman_conv*1e3, delta_0*raman_conv*1e3, delta_180*raman_conv*1e3);
+  }
+
 }
 
+    // Handy Tensor Derivative Array Printer
 	void print_tensor_der(FILE *myfile, std::vector<SharedMatrix> my_tensor_list)
 	{
         for(int i=0; i < my_tensor_list.size(); ++i)  {
@@ -785,636 +969,3 @@ double depolar_circular(double alpha, double beta2)
   else return 0.0;
 }
 
-
-
-#define DSIGN(a,b) ((b) >= 0.0) ? (fabs(a)) : (-fabs(a))
-void tred2(int, double **, double *, double *, int);
-//int tqli(int, double *, double **, double *, int, double);
-void tqli(int, double *, double **, double *, int, double);
-void new_eigsort(double *, double **, int);
-
-double *init_array(int n)
-{
-  int i;
-  double *A;
-  A = (double*) malloc (n * sizeof(double));
-  for(i=0; i < n; i++) A[i] = 0.0;
-  return(A);
-}
-
-double **init_matrix(int n, int m)
-{
-  int i, j;
-  double **A;
-  A = (double**) malloc (n * sizeof(double*));
-  for (i=0; i < n; i++) {
-    A[i] = (double*) malloc (m * sizeof(double));
-    for(j=0; j < m; j++) A[i][j] = 0.0;
-  }
-  return(A);
-}
-
-void free_matrix(double **A, int n)
-{
-  int i;
-  for (i=0; i < n; i++) free(A[i]);
-  free(A);
-}
-
-
-/*
-** rs(): Diagonalize a symmetric matrix and return its eigenvalues and 
-** eigenvectors.
-**
-** int nm: The row/column dimension of the matrix.
-** int n:  Ditto.
-** double **array: The matrix
-** double *e_vals: A vector, which will contain the eigenvalues.
-** int matz: Boolean for returning the eigenvectors.
-** double **e_vecs: A matrix whose columns are the eigenvectors.
-** double toler: A tolerance limit for the iterative procedure.  Rec: 1e-13
-**
-*/
-
-
-/* translation into c of a translation into FORTRAN77 of the EISPACK */
-/* matrix diagonalization routines */
-
-void rs(int nm, int n, double **array, double *e_vals, int matz,
-        double **e_vecs, double toler)
-   {
-      int i, j, ii, ij, ierr;
-      int ascend_order;
-      double *fv1, **temp;
-      double zero = 0.0;
-      double one = 1.0;
-
-/* Modified by Ed - matz can have the values 0 through 3 */
-      
-      if ((matz > 3) || (matz < 0)) {
-        matz = 0;
-        ascend_order = 1;
-        }
-      else
-        if (matz < 2)
-          ascend_order = 1;	/* Eigenvalues in ascending order */
-        else {
-          matz -= 2;
-          ascend_order = 0;	/* Eigenvalues in descending order */
-          }
-
-      fv1 = init_array(n);
-      temp = init_matrix(n,n);
-
-      if (n > nm) {
-         ierr = 10*n;
-         fprintf(stderr,"n = %d is greater than nm = %d in rsp\n",n,nm);
-         exit(ierr);
-         }
-
-      for (i=0; i < n; i++) {
-         for (j=0; j < n; j++) {
-            e_vecs[i][j] = array[i][j];
-            }
-          }
-
-      tred2(n,e_vecs,e_vals,fv1,matz);
-
-      for (i=0; i < n; i++)
-         for (j=0; j < n; j++)
-            temp[i][j]=e_vecs[j][i];
-
-      tqli(n,e_vals,temp,fv1,matz,toler);
-
-      for (i=0; i < n; i++)
-         for (j=0; j < n; j++)
-            e_vecs[i][j]=temp[j][i];
-
-      if (ascend_order)
-        new_eigsort(e_vals,e_vecs,n);
-      else
-        new_eigsort(e_vals,e_vecs,(-1)*n);
-
-      free(fv1);
-      free_matrix(temp,n);
-
-      }
-
-
-/* converts symmetric matrix to a tridagonal form for use in tqli */
-/* if matz = 0, only find eigenvalues, else find both eigenvalues and */
-/* eigenvectors */
-
-void tred2(int n, double **a, double *d, double *e, int matz)
-   {
-      int i,j,k,l,il,ik,jk,kj;
-      double f,g,h,hh,scale,scale_inv,h_inv;
-      double temp;
-
-      if (n == 1) return;
-
-      for (i=n-1; i > 0; i--) {
-         l = i-1;
-         h = 0.0;
-         scale = 0.0;
-         if (l) {
-            for (k=0; k <= l; k++) {
-               scale += fabs(a[i][k]);
-               }
-            if (scale == 0.0) {
-               e[i] = a[i][l];
-               }
-            else {
-               scale_inv=1.0/scale;
-               for (k=0; k <= l; k++) {
-                  a[i][k] *= scale_inv;
-                  h += a[i][k]*a[i][k];
-                  }
-               f=a[i][l];
-               g= -(DSIGN(sqrt(h),f));
-               e[i] = scale*g;
-               h -= f*g;
-               a[i][l] = f-g;
-               f = 0.0;
-               h_inv=1.0/h;
-               for (j=0; j <= l; j++) {
-                  if (matz) a[j][i] = a[i][j]*h_inv;
-                  g = 0.0;
-                  for (k=0; k <= j; k++) {
-                     g += a[j][k]*a[i][k];
-                     }
-                  if (l > j) {
-                     for (k=j+1; k <= l; k++) {
-                        g += a[k][j]*a[i][k];
-                        }
-                     }
-                  e[j] = g*h_inv;
-                  f += e[j]*a[i][j];
-                  }
-               hh = f/(h+h);
-               for (j=0; j <= l; j++) {
-                  f = a[i][j];
-                  g = e[j] - hh*f;
-                  e[j] = g;
-                  for (k=0; k <= j; k++) {
-                     a[j][k] -= (f*e[k] + g*a[i][k]);
-                     }
-                  }
-               }
-            }
-         else {
-            e[i] = a[i][l];
-            }
-         d[i] = h;
-         }
-      if (matz) d[0] = 0.0;
-      e[0] = 0.0;
-
-      for (i=0; i < n; i++) {
-         l = i-1;
-         if (matz) {
-            if (d[i]) {
-               for (j=0; j <= l; j++) {
-                  g = 0.0;
-                  for (k=0; k <= l; k++) {
-                     g += a[i][k]*a[k][j];
-                     }
-                  for (k=0; k <= l; k++) {
-                     a[k][j] -= g*a[k][i];
-                     }
-                  }
-               }
-            }
-         d[i] = a[i][i];
-         if (matz) {
-            a[i][i] = 1.0;
-            if (l >= 0) {
-               for (j=0; j<= l; j++) {
-                  a[i][j] = 0.0;
-                  a[j][i] = 0.0;
-                  }
-               }
-            }
-         }
-      }
-
-/* diagonalizes tridiagonal matrix output by tred2 */
-/* gives only eigenvalues if matz = 0, both eigenvalues and eigenvectors */
-/* if matz = 1 */
-
-//int tqli(int n, double *d, double **z, double *e, int matz, double toler)
-void tqli(int n, double *d, double **z, double *e, int matz, double toler)
-   {
-      register int k;
-      int i,j,l,m,iter;
-      double dd,g,r,s,c,p,f,b,h;
-      double azi;
-
-      f=0.0;
-      if (n == 1) {
-         d[0]=z[0][0];
-         z[0][0] = 1.0;
-         return;
-         }
-
-      for (i=1; i < n ; i++) {
-         e[i-1] = e[i];
-         }
-      e[n-1] = 0.0;
-      for (l=0; l < n; l++) {
-         iter = 0;
-L1:
-         for (m=l; m < n-1;m++) {
-            dd = fabs(d[m]) + fabs(d[m+1]);
-#if 0
-            if (fabs(e[m])+dd == dd) goto L2;
-#else
-            if (fabs(e[m]) < toler) goto L2;
-#endif
-            }
-         m=n-1;
-L2:
-         if (m != l) {
-            if (iter++ == 30) {
-               fprintf (stderr,"tqli not converging\n");
-                continue;
-#if 0
-               exit(30);
-#endif
-               }
-
-            g = (d[l+1]-d[l])/(2.0*e[l]);
-            r = sqrt(g*g + 1.0);
-            g = d[m] - d[l] + e[l]/((g + DSIGN(r,g)));
-            s=1.0;
-            c=1.0;
-            p=0.0;
-            for (i=m-1; i >= l; i--) {
-               f = s*e[i];
-               b = c*e[i];
-               if (fabs(f) >= fabs(g)) {
-                  c = g/f;
-                  r = sqrt(c*c + 1.0);
-                  e[i+1] = f*r;
-                  s=1.0/r;
-                  c *= s;
-                  }
-               else {
-                  s = f/g;
-                  r = sqrt(s*s + 1.0);
-                  e[i+1] = g*r;
-                  c = 1.0/r;
-                  s *= c;
-                  }
-               g = d[i+1] - p;
-               r = (d[i]-g)*s + 2.0*c*b;
-               p = s*r;
-               d[i+1] = g+p;
-               g = c*r-b;
-
-               if (matz) {
-                  double *zi = z[i];
-                  double *zi1 = z[i+1];
-                  for (k=n; k ; k--,zi++,zi1++) {
-                     azi = *zi;
-                     f = *zi1;
-                     *zi1 = azi*s + c*f;
-                     *zi = azi*c - s*f;
-                     }
-                  }
-               }
-
-            d[l] -= p;
-            e[l] = g;
-            e[m] = 0.0;
-            goto L1;
-            }
-         }
-   }
-
-void new_eigsort(double *d, double **v, int n)
-{
-      int i,j,k;
-      double p;
-
-/// Modified by Ed - if n is negative - sort eigenvalues in descending order
-
-      if (n >= 0) {
-        for (i=0; i < n-1 ; i++) {
-           k=i;
-           p=d[i];
-           for (j=i+1; j < n; j++) {
-              if (d[j] < p) {
-                 k=j;
-                 p=d[j];
-                 }
-              }
-           if (k != i) {
-              d[k]=d[i];
-              d[i]=p;
-              for (j=0; j < n; j++) {
-                 p=v[j][i];
-                 v[j][i]=v[j][k];
-                 v[j][k]=p;
-                 }
-               }
-            }
-        }
-      else {
-        n = abs(n);
-        for (i=0; i < n-1 ; i++) {
-           k=i;
-           p=d[i];
-           for (j=i+1; j < n; j++) {
-              if (d[j] > p) {
-                 k=j;
-                 p=d[j];
-                 }
-              }
-           if (k != i) {
-              d[k]=d[i];
-              d[i]=p;
-              for (j=0; j < n; j++) {
-                  p=v[j][i];
-                  v[j][i]=v[j][k];
-                  v[j][k]=p;
-                  }
-              }
-           }
-        }
-   }
-
-void print_mat(double **a, int m, int n,FILE *out)
-{
-      int ii,jj,kk,nn,ll;
-      int i,j,k;
-
-      ii=0;jj=0;
-L200:
-      ii++;
-      jj++;
-      kk=10*jj;
-      nn=n;
-      if (nn > kk) nn=kk;
-      ll = 2*(nn-ii+1)+1;
-      fprintf (out,"\n");
-      for (i=ii; i <= nn; i++) fprintf(out,"       %5d",i);
-      fprintf (out,"\n");
-      for (i=0; i < m; i++) {
-         fprintf (out,"\n%5d",i+1);
-         for (j=ii-1; j < nn; j++) {
-            fprintf (out,"%12.7f",a[i][j]);
-            }
-         }
-      fprintf (out,"\n");
-      if (n <= kk) {
-         fflush(out);
-         return;
-         }
-      ii=kk; goto L200;
-}
-
-/*!
-** eigout(): Print out eigenvectors and eigenvalues.  Prints an n x m
-** matrix of eigenvectors.  Under each eigenvector, the corresponding
-** elements of an array, b, will also be printed.  This is useful for
-** printing, for example, the SCF eigenvectors with their associated
-** eigenvalues (orbital energies).
-*/
-void eigout(double **a, double *b, int m, int n, FILE *out)
-   {
-      int ii,jj,kk,nn;
-      int i,j;
-
-      ii=0;jj=0;
-L200:
-      ii++;
-      jj++;
-      kk=10*jj;
-      nn=n;
-      if (nn > kk) nn=kk;
-      fprintf (out,"\n");
-      for (i=ii; i <= nn; i++) fprintf(out,"       %5d",i);
-      fprintf (out,"\n");
-      for (i=0; i < m; i++) {
-         fprintf (out,"\n%5d",i+1);
-         for (j=ii-1; j < nn; j++) {
-            fprintf (out,"%12.7f",a[i][j]);
-            }
-         }
-      fprintf (out,"\n");
-      fprintf (out,"\n     ");
-      for (j=ii-1; j < nn; j++) {
-         fprintf(out,"%12.7f",b[j]);
-         }
-      fprintf (out,"\n");
-      if (n <= kk) {
-         fflush(out);
-         return;
-         }
-      ii=kk; goto L200;
-      }
-
-double dot(double *A, double *B, int len) 
-{
-  int i;
-  double value = 0.0;
-
-  for(i=0; i < len; i++) value += A[i] * B[i];
-  return value;
-}
-
-
-/*!
-**                                                             
-** mmult():
-** a reasonably fast matrix multiply (at least on the DEC3100) 
-** written by ETS                                              
-**                                                             
-** AF,BF,and CF are fortran arrays                             
-**                                                             
-** ta,tb and tc indicate whether the corresponding arrays are  
-**              to be converted to their transpose             
-**                                                             
-** nr,nl,nc are the number of rows,links,and columns in the    
-**          final matrices to be multiplied together           
-**          if ta=0 AF should have the dimensions nr x nl      
-**          if ta=1 AF should have the dimensions nl x nr      
-**          if tb=0 BF should have the dimensions nl x nc      
-**          if tb=1 BF should have the dimensions nc x nl      
-**          if tc=0 CF should have the dimensions nr x nc      
-**          if tc=1 CF should have the dimensions nc x nr      
-**                                                             
-** add is 1 if this matrix is to be added to the one passed    
-**        in as CF, 0 otherwise                                
-**
-** \ingroup (CIOMR)
-*/
-void mmult(double **AF, int ta, double **BF, int tb, double **CF, int tc,
-	   int nr, int nl, int nc, int add)
-{
-  int odd_nr,odd_nc,odd_nl;
-  int i,j,k,ij;
-  double t00,t01,t10,t11;
-  double **a,**b;
-  double *att,*bt;
-  double *at1,*bt1;
-  static int keep_nr=0;
-  static int keep_nl=0;
-  static int keep_nc=0;
-  static double **aa,**bb;
-
-  if(!aa) {
-    aa = (double **) init_matrix(nr,nl);
-    bb = (double **) init_matrix(nc,nl);
-    keep_nr = nr;
-    keep_nl = nl;
-    keep_nc = nc;
-  }
-
-  if(nl > keep_nl) {
-    free_matrix(aa,keep_nr);
-    free_matrix(bb,keep_nc);
-    keep_nl = nl;
-    keep_nr = (nr > keep_nr) ? nr : keep_nr;
-    keep_nc = (nc > keep_nc) ? nc : keep_nc;
-    aa = (double **) init_matrix(keep_nr,keep_nl);
-    bb = (double **) init_matrix(keep_nc,keep_nl);
-  }
-  if(nr > keep_nr) {
-    free_matrix(aa,keep_nr);
-    keep_nr = nr;
-    aa = (double **) init_matrix(keep_nr,keep_nl);
-  }
-  if(nc > keep_nc) {
-    free_matrix(bb,keep_nc);
-    keep_nc = nc;
-    bb = (double **) init_matrix(keep_nc,keep_nl);
-  }
-
-  odd_nr = (nr)%2;
-  odd_nc = (nc)%2;
-  odd_nl = (nl)%2;
-
-  a=aa;
-  if(ta)
-    for(i=0; i < nr ; i++)
-      for(j=0; j < nl ; j++)
-	a[i][j] = AF[j][i];
-  else
-    a=AF;
-
-  b=bb;
-  if(tb)
-    b=BF;
-  else
-    for(i=0; i < nc ; i++)
-      for(j=0; j < nl ; j++)
-	b[i][j] = BF[j][i];
-      
-  for(j=0; j < nc-1 ; j+=2) {
-    for(i=0; i < nr-1 ; i+=2) {
-      att=a[i]; bt=b[j];
-      at1=a[i+1]; bt1=b[j+1];
-      if(add) {
-	if(tc) {
-	  t00 = CF[j][i];
-	  t01 = CF[j+1][i];
-	  t10 = CF[j][i+1];
-	  t11 = CF[j+1][i+1];
-	}
-	else {
-	  t00 = CF[i][j];
-	  t01 = CF[i][j+1];
-	  t10 = CF[i+1][j];
-	  t11 = CF[i+1][j+1];
-	}
-      }
-      else t00=t01=t10=t11=0.0;
-      for(k=nl; k ; k--,att++,bt++,at1++,bt1++) {
-	t00 += *att * *bt;
-	t01 += *att * *bt1;
-	t10 += *at1 * *bt;
-	t11 += *at1 * *bt1;
-      }
-      if(tc) {
-	CF[j][i]=t00;
-	CF[j+1][i]=t01;
-	CF[j][i+1]=t10;
-	CF[j+1][i+1]=t11;
-      }
-      else {
-	CF[i][j]=t00;
-	CF[i][j+1]=t01;
-	CF[i+1][j]=t10;
-	CF[i+1][j+1]=t11;
-      }
-    }
-    if(odd_nr) {
-      att=a[i]; bt=b[j];
-      bt1=b[j+1];
-      if(add) {
-	if(tc) {
-	  t00 = CF[j][i];
-	  t01 = CF[j+1][i];
-	}
-	else {
-	  t00 = CF[i][j];
-	  t01 = CF[i][j+1];
-	}
-      }
-      else t00=t01=0.0;
-      for(k= nl; k ; k--,att++,bt++,bt1++) {
-	t00 += *att * *bt;
-	t01 += *att * *bt1;
-      }
-      if(tc) {
-	CF[j][i]=t00;
-	CF[j+1][i]=t01;
-      }
-      else {
-	CF[i][j]=t00;
-	CF[i][j+1]=t01;
-      }
-    }
-  }
-  if(odd_nc) {
-    for(i=0; i < nr-1 ; i+=2) {
-      att=a[i]; bt=b[j];
-      at1=a[i+1];
-      if(add) {
-	if(tc) {
-	  t00 = CF[j][i];
-	  t10 = CF[j][i+1];
-	}
-	else {
-	  t00 = CF[i][j];
-	  t10 = CF[i+1][j];
-	}
-      }
-      else t00=t10=0.0;
-      for(k= nl; k ; k--,att++,bt++,at1++) {
-	t00 += *att * *bt;
-	t10 += *at1 * *bt;
-      }
-      if(tc) {
-	CF[j][i]=t00;
-	CF[j][i+1]=t10;
-      }
-      else {
-	CF[i][j]=t00;
-	CF[i+1][j]=t10;
-      }
-    }
-    if(odd_nr) {
-      att=a[i]; bt=b[j];
-      if(add)
-	t00 = (tc) ? CF[j][i] : CF[i][j];
-      else t00=0.0;
-      for(k=nl; k ; k--,att++,bt++)
-	t00 += *att * *bt;
-      if(tc) CF[j][i]=t00;
-      else CF[i][j]=t00;
-    }
-  }
-}
