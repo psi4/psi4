@@ -1,0 +1,100 @@
+#! EFP on mixed QM (water) and EFP (water + 2 * ammonia) system.
+#! An EFP-only calc performed first to test vales against q-chem.
+
+memory 200 mb
+
+molecule qmefp {
+
+# QM fragment
+0 1
+O1    0         0     0.118720
+H2   -0.753299, 0.0, -0.474880
+H3    0.753299, 0.0, -0.474880
+
+# EFP as EFP fragments
+--
+efp h2o -2.12417561  1.22597097 -0.95332054 -2.902133 1.734999 -1.953647
+--
+efp NH3  1.04358758  1.90477190  2.88279926 -1.105309 2.033306 -1.488582
+--
+efp NH3 -4.16795656 -0.98129149 -1.27785935  2.526442 1.658262 -2.742084
+
+
+# EFP as QM fragments
+#--
+#     O  -2.180061   1.208365  -0.976550
+#     H  -1.980913   1.409865  -0.080218
+#     H  -1.380492   1.321499  -1.457761
+#--
+#     N   1.094112   1.930150   2.910988
+#     H   0.271685   2.461657   3.109157
+#     H   0.942096   0.994975   3.227998
+#     H   1.214983   1.905068   1.919566
+#--
+#     N  -4.204276  -1.032690  -1.272341
+#     H  -4.047415  -0.610467  -0.380557
+#     H  -4.636175  -0.353779  -1.864539
+#     H  -3.315648  -1.265474  -1.665164
+}
+
+set basis 6-31g*
+set scf_type cd
+set efp_disp_damping tt
+
+energy('efp')
+
+compare_values(9.1793879214, qmefp.nuclear_repulsion_energy(), 6, 'QM NRE')
+compare_values(-0.000490133271, get_variable('efp elst energy'), 6, 'EFP-EFP Elst')
+compare_values(-0.001598697924, get_variable('efp disp energy'), 6, 'EFP-EFP Disp')
+
+#REL COM  -4.014109679030   2.316749517068  -1.801514536543 =
+#REL COM   1.972094319481   3.599497024158   5.447700867397 =
+#REL COM  -7.876296127607  -1.854371762346  -2.414804236366 =
+# Nuclear - Fragment Charge Energy      =   0.198669847489
+# Nuclear - Fragment Dipole Energy      =   0.109161626017
+# Nuclear - Fragment Quadrupole Energy  =  -0.050180083333
+# Nuclear - Fragment Octupole Energy    =   0.001611177290
+# Nuclear - Fragment Total Energy       =   0.259262567463
+# Charge - Charge Energy                =  -0.000759434112
+# Charge - Dipole Energy                =  -0.002471403562
+# Charge - Quadrupole Energy            =   0.002582287155
+# Charge - Octupole Energy              =   0.000088465251
+# Dipole - Dipole Energy                =   0.000088975788
+# Dipole - Quadrupole Energy            =  -0.000118815550
+# Quadrupole - Quadrupole Energy        =   0.000099791759
+# Fragment - Fragment Total Energy      =  -0.000490133271
+# EFP Electrostatics Energy             =   0.258772434191
+# EFP Polarization Energy EPol2             =  -0.859297227701
+# Dispersion Energy is damped and multiplied by 4.0/3.0
+
+
+clean()
+
+set diis 0
+set e_convergence 6  # comment out this and d_conv then frep '@RHF' to see final conv problem
+set d_convergence 5
+energy('scfefp')
+
+#compare_values(0.203988551760, get_variable('efp elst energy'), 6, 'SCF-EFP Elst')
+#compare_values(0.005680845705, get_variable('efp exch energy'), 6, 'SCF-EFP Exch')
+#compare_values(-0.048469356121, get_variable('efp pol energy'), 6, 'SCF-EFP Pol')  #TEST  # Q-Chem only prints as Pol2
+compare_values(-0.001598697924, get_variable('efp disp energy'), 6, 'SCF-EFP Disp')
+#compare_values(-75.6694104096, get_variable('scf total energy'), 6, 'SCF-EFP SCF')
+
+compare_values(0.258772434191, get_variable('efp elst energy'), 6, 'SCF-EFP Elst')
+compare_values(0.005680820937, get_variable('efp exch energy'), 5, 'SCF-EFP Exch')  # 5
+compare_values(-76.0133416150, get_variable('scf total energy'), 6, 'SCF-EFP SCF')
+
+#          Summary of EFP interfragment interaction energies
+#
+#           Electrostatics Energy            =   0.258772434191
+#           Exchange-Repulsion Energy        =   0.005680820937
+#           Polarization Energy              =  -0.006425765416
+#           Dispersion Energy                =  -0.001598697924
+#           Total Interfragment Energy       =   0.256428791788
+#
+# SCF   energy in the final basis set = -76.0133416150
+# Total energy in the final basis set = -76.0133416150
+# Analysis of SCF Wavefunction
+
+
