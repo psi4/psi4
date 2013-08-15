@@ -72,7 +72,7 @@ MoldenWriter::MoldenWriter(boost::shared_ptr<Wavefunction> wavefunction)
 
 }
 
-void MoldenWriter::write(const std::string &filename)
+void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> Ca, boost::shared_ptr<Matrix> Cb, boost::shared_ptr<Vector> Ea, boost::shared_ptr<Vector> Eb, boost::shared_ptr<Vector> OccA, boost::shared_ptr<Vector> OccB)
 {
     FILE *molden = fopen(filename.c_str(), "a");
     int atom;
@@ -119,21 +119,16 @@ void MoldenWriter::write(const std::string &filename)
     }
 
     // Convert Ca & Cb
-    // make copies
-    Matrix Ca(wavefunction_->Ca());
-    Matrix Cb(wavefunction_->Cb());
-    Vector& Ea = *wavefunction_->epsilon_a().get();
-    Vector& Eb = *wavefunction_->epsilon_b().get();
-
     boost::shared_ptr<PetiteList> pl(new PetiteList(wavefunction_->basisset(), wavefunction_->integral()));
     // get the "aotoso" transformation matrix, ao by so
     SharedMatrix aotoso = pl->aotoso();
     // need dimensions
     const Dimension aos = pl->AO_basisdim();
     const Dimension sos = pl->SO_basisdim();
+    const Dimension nmo = Ca->ncol();
 
-    SharedMatrix Ca_ao_mo(new Matrix("Ca AO x MO", aos, sos));
-    SharedMatrix Cb_ao_mo(new Matrix("Cb AO x MO", aos, sos));
+    SharedMatrix Ca_ao_mo(new Matrix("Ca AO x MO", aos, nmo));
+    SharedMatrix Cb_ao_mo(new Matrix("Cb AO x MO", aos, nmo));
 
     // do the half transform
     Ca_ao_mo->gemm(false, false, 1.0, aotoso, Ca, 0.0);
@@ -208,9 +203,12 @@ void MoldenWriter::write(const std::string &filename)
     std::vector<std::pair<double, std::pair<int, int> > > mos;
 
     // do alpha's
+    bool SameOcc = true;
     for (int h=0; h<wavefunction_->nirrep(); ++h) {
         for (int n=0; n<wavefunction_->nmopi()[h]; ++n) {
-            mos.push_back(make_pair(Ea.get(h, n), make_pair(h, n)));
+            mos.push_back(make_pair(Ea->get(h, n), make_pair(h, n)));
+            if(OccA->get(h,n) != OccB->get(h,n))
+              SameOcc = false;
         }
     }
     std::sort(mos.begin(), mos.end());
@@ -220,24 +218,22 @@ void MoldenWriter::write(const std::string &filename)
         int n = mos[i].second.second;
 
         fprintf(molden, " Sym= %s\n", ct.gamma(h).symbol());
-        fprintf(molden, " Ene= %20.10f\n", Ea.get(h, n));
+        fprintf(molden, " Ene= %20.10f\n", Ea->get(h, n));
         fprintf(molden, " Spin= Alpha\n");
-        int occ = n < (wavefunction_->nalphapi()[h]) ? 1.0 : 0.0;
-        if (wavefunction_->same_a_b_orbs() && occ == 1.0)
-          fprintf(molden, " Occup= 2\n");
+        if(Ca == Cb && Ea == Eb && SameOcc)
+          fprintf(molden, " Occup= 2.0\n");
         else
-          fprintf(molden, " Occup= %3.1d\n", occ);
+          fprintf(molden, " Occup= %3.1d\n", OccA->get(h,n));
         for (int so=0; so<wavefunction_->nso(); ++so)
            fprintf(molden, "%3d %20.12f\n", so+1, Ca_ao_mo->get(h, so, n));
     }
 
     // do beta's
     mos.clear();
-    
-    if (wavefunction_->same_a_b_orbs() == false) {
+    if (Ca != Cb || Ea != Eb || !SameOcc) {
       for (int h=0; h<wavefunction_->nirrep(); ++h) {
         for (int n=0; n<wavefunction_->nmopi()[h]; ++n) {
-          mos.push_back(make_pair(Eb.get(h, n), make_pair(h, n)));
+          mos.push_back(make_pair(Eb->get(h, n), make_pair(h, n)));
         }
       }
       std::sort(mos.begin(), mos.end());
@@ -247,10 +243,9 @@ void MoldenWriter::write(const std::string &filename)
         int n = mos[i].second.second;
 
         fprintf(molden, " Sym= %s\n", ct.gamma(h).symbol());
-        fprintf(molden, " Ene= %20.10f\n", Eb.get(h, n));
+        fprintf(molden, " Ene= %20.10f\n", Eb->get(h, n));
         fprintf(molden, " Spin= Beta\n");
-        int occ = n < (wavefunction_->nbetapi()[h]) ? 1.0 : 0.0;
-        fprintf(molden, " Occup= %3.1d\n", occ);
+        fprintf(molden, " Occup= %3.1d\n", OccB->get(h,n));
         for (int so=0; so<wavefunction_->nso(); ++so)
           fprintf(molden, "%3d %20.12f\n", so+1, Cb_ao_mo->get(h, so, n));
       }
