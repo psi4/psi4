@@ -111,7 +111,10 @@ PsiReturnType scf(Options & options, PyObject* pre, PyObject* post)
     if ( options.get_bool("MOLDEN_WRITE") ) {
        boost::shared_ptr<MoldenWriter> molden(new MoldenWriter(scf));
        std::string filename = get_writer_file_prefix() + ".molden";
-       molden->write(filename);
+       HF* hf = (HF*)scf.get();
+       SharedVector occA = hf->occupation_a();
+       SharedVector occB = hf->occupation_b();
+       molden->write(filename, scf->Ca(), scf->Cb(), scf->epsilon_a(), scf->epsilon_b(),occA,occB);
     }
 
     // Print molecular orbitals
