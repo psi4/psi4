@@ -31,17 +31,17 @@ EFP Fragments
 ~~~~~~~~~~~~~
 
 LIBEFP comes with a couple dozen ready-to-use fragments (water, benzene,
-common solvents, etc.) listed :ref:`here <sec:availableEFPFragments>` with source :source:`lib/libfrag`.
-Any of these may be used directly in a |PSIfour| input files as described
-:ref:`here <sec:usingEFPFragments>`.
+common solvents, etc.) listed :ref:`here <sec:availableEFPFragments>`
+with source :source:`lib/libfrag`.  Any of these may be used directly in
+a |PSIfour| input file as described :ref:`here <sec:usingEFPFragments>`.
 
 .. note:: The built-in fragment library distributed with Q-Chem (as of version 4.0.1) is *not*
    equivalent to that distributed with LIBEFP. Although many of the same
    molecules are present and should perform similarly in computations,
    exact matches of fragment geometries or efp energies should not be
    expected. See files in test case directories :source:`qc-efpefp-sp1
-   <tests/libefp/qc-efpefp-sp1>` and :source:`qc-scfefp-sp1
-   <tests/libefp/qc-scfefp-sp1>` for equivalent Q-Chem and |PSIfour|
+   <tests/libefp/qc-efpefp-sp1>` and :source:`qc-scfefp-sp2
+   <tests/libefp/qc-scfefp-sp2>` for equivalent Q-Chem and |PSIfour|
    EFP input files.
 
 Creating new efp fragments requires the `GAMESS
@@ -75,25 +75,31 @@ fragment section that includes the label ``efp``, the name of the file
 *fragname* from which EFP parameters are to be read, and the position
 specification for the fragment in one of two ways, XYZABC or POINTS. For
 XYZABC, the fragment specification is all on one line. ``efp`` and
-*fragname* are followed by two sets of three numbers: the coordinates of
-the center of mass of the fragment and the three Euler angles that specify
-orientation about the center of mass. (Ilya- aren't there different
-conventions for Euler angles?) ::
+*fragname* are followed by two sets of three numbers: the coordinates
+of the center of mass of the fragment and the three Euler angles that
+specify orientation about the center of mass. This format is compact
+but not readily generated from molecule viewing software. ::
 
     efp  nh3  0.0 0.0 5.0  5 2 8
 
-For POINTS, the fragment specification is four lines, the first of which
-is ``efp`` and *fragname*. The next lines are the coordinates
-(without element labels) of the first three atoms in the fragment. Note
-that EFP fragment geometries are rigid, so the first atom will be placed
-exactly where specified by the first point, the second atom will be placed
-along the vector between the first and second points, and the third atom
-will be placed in the plane formed by the three points. ::
+More convenient is the POINTS fragment specification. This consists of
+four lines, the first of which is ``efp`` and *fragname*. The next lines
+are the coordinates (without element labels) of the first three atoms
+in the fragment. Note that EFP fragment geometries are rigid, so the
+first atom will be placed exactly where specified by the first point,
+the second atom will be placed along the vector between the first and
+second points, and the third atom will be placed in the plane formed
+by the three points. ::
 
     efp ch3oh
     1.275    -2.447    -4.673
     0.709    -3.191    -3.592
     2.213    -1.978    -4.343
+
+.. note:: At present, |PSIfour| has limited support for diatomic
+   and monoatomic EFP fragments. Single points are allowed when the
+   di-/mono-atomic fragments are specified in XYZABC format. Optimizations
+   are not allowed.
 
 :ref:`Just as for QM <sec:moleculeKeywords>`, the center of mass
 coordinates in the XYZABC format and all coordinates in the POINTS format are
@@ -102,9 +108,9 @@ Charge and multiplicity specifications are encoded in the fragment file
 and so are not read from input.
 
 Any combination of EFP and QM fragments can be placed in a molecule; even
-the oddity below is legitimate. Note that reorientation is automatically
-turned off when EFP fragments are present (``no_com`` and ``no_reorient``
-are implied). ::
+the oddity below is legitimate. Note that symmetry and reorientation are
+automatically turned off when EFP fragments are present (``symmetry c1``
+and ``no_com`` and ``no_reorient`` are implied). ::
 
     molecule qmefp {
       efp nh3 0.0 0.0 5.0 5 2 8
@@ -146,7 +152,7 @@ performed entirely by the LIBEFP library.  |PSIfour| can also handle mixed
 systems of quantum mechanical (QM) and EFP fragments through the native
 :ref:`SCF <sec:scf>` code augmented by calls to the LIBEFP library. For
 example, turning one of the waters in the example above into a QM
-fragment, can be done below. ::
+fragment is shown below. ::
 
    molecule {
      efp c6h6  0.0 0.0 0.0   0.0 0.0 0.0
@@ -163,19 +169,26 @@ fragment, can be done below. ::
 Anytime an EFP fragment is present in the active molecule, the SCF energy
 will include EFP contributions.
 
-ACK, I don't think it's even possible to discard the EFP fragments
-once molecule's been defined. There's no deactivate. If one wrote a
-mol.qmonly or mol.efponly function, I don't see how to recall the EFP
-instance back. At present, to run a plain scf, then an efpscf, you'd
-have to define a molecule with only qm fragments, run energy('scf'),
-then define the molecule again with qm and efp fragments. yikes.
+.. warning:: Although the EFP geometry is specified alongside the QM
+   geometry in a ``molecule name {...}`` block, internally the handling
+   of EFP is not so clean. In straightforward input files that involve
+   any number of [molecule block, energy/opt/etc, clean()] portions,
+   there should be no problem; the energy/opt computation will always
+   be run on the molecule defined in the preceding block. For advanced
+   users, unexpected difficulties may arise due to: (1) the EFP fragment
+   from the last molecule block executed will always be active (and
+   potentially interfering with SCF) and (2) recalling a molecule
+   through ``activate(name)`` (where ``name`` was the python handle
+   in the molecule block) will not load up any EFP portion of that
+   molecule. This divergent treatment is a stopgap while we determine
+   how best to handle molecules with different domains.
 
 At this time, |PSIfour| is only able to perform pure-efp single-points and
 geometry optimizations and mixed qm/efp SCF single-points.
 
 .. _`table:libefpauto`:
 
-    .. _`table:fnocc_methods`:
+    .. _`table:libefp_methods`:
 
     +-------------------------+-------------------------------------------------------------+
     | name                    | calls method                                                |

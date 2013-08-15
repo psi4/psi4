@@ -192,6 +192,9 @@ def process_molecule_command(matchobj):
     pubchemre = re.compile(r'^(\s*pubchem\s*:\s*(.*)\n)$', re.MULTILINE | re.IGNORECASE)
     geometry = pubchemre.sub(process_pubchem_command, geometry)
     molecule = spaces
+
+    molecule += 'psi4.efp_init()\n'  # clear EFP object before Molecule read in
+
     if name != "":
         molecule += '%s = ' % (name)
 
