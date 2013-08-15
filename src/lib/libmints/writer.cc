@@ -223,7 +223,7 @@ void MoldenWriter::write(const std::string &filename)
         fprintf(molden, " Ene= %20.10f\n", Ea.get(h, n));
         fprintf(molden, " Spin= Alpha\n");
         int occ = n < (wavefunction_->nalphapi()[h]) ? 1.0 : 0.0;
-        if (wavefunction_->same_a_b_orbs())
+        if (wavefunction_->same_a_b_orbs() && occ == 1.0)
           fprintf(molden, " Occup= 2\n");
         else
           fprintf(molden, " Occup= %3.1d\n", occ);
