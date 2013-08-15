@@ -223,21 +223,26 @@ void MoldenWriter::write(const std::string &filename)
         fprintf(molden, " Ene= %20.10f\n", Ea.get(h, n));
         fprintf(molden, " Spin= Alpha\n");
         int occ = n < (wavefunction_->nalphapi()[h]) ? 1.0 : 0.0;
-        fprintf(molden, " Occup= %3.1d\n", occ);
+        if (wavefunction_->same_a_b_orbs())
+          fprintf(molden, " Occup= 2\n");
+        else
+          fprintf(molden, " Occup= %3.1d\n", occ);
         for (int so=0; so<wavefunction_->nso(); ++so)
            fprintf(molden, "%3d %20.12f\n", so+1, Ca_ao_mo->get(h, so, n));
     }
 
     // do beta's
     mos.clear();
-    for (int h=0; h<wavefunction_->nirrep(); ++h) {
+    
+    if (wavefunction_->same_a_b_orbs() == false) {
+      for (int h=0; h<wavefunction_->nirrep(); ++h) {
         for (int n=0; n<wavefunction_->nmopi()[h]; ++n) {
-            mos.push_back(make_pair(Eb.get(h, n), make_pair(h, n)));
+          mos.push_back(make_pair(Eb.get(h, n), make_pair(h, n)));
         }
-    }
-    std::sort(mos.begin(), mos.end());
+      }
+      std::sort(mos.begin(), mos.end());
 
-    for (int i=0; i<mos.size(); ++i) {
+      for (int i=0; i<mos.size(); ++i) {
         int h = mos[i].second.first;
         int n = mos[i].second.second;
 
@@ -247,7 +252,8 @@ void MoldenWriter::write(const std::string &filename)
         int occ = n < (wavefunction_->nbetapi()[h]) ? 1.0 : 0.0;
         fprintf(molden, " Occup= %3.1d\n", occ);
         for (int so=0; so<wavefunction_->nso(); ++so)
-            fprintf(molden, "%3d %20.12f\n", so+1, Cb_ao_mo->get(h, so, n));
+          fprintf(molden, "%3d %20.12f\n", so+1, Cb_ao_mo->get(h, so, n));
+      }
     }
 
     fclose(molden);
