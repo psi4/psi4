@@ -810,6 +810,24 @@ public:
               const unsigned long& offset_c = 0);
     /// @}
 
+    /** Simple doublet GEMM with on-the-fly allocation
+    * \param A The first matrix
+    * \param B The second matrix
+    * \param transA Transpose the first matrix
+    * \param transB Transpose the second matrix
+    */
+    static SharedMatrix doublet(const SharedMatrix& A, const SharedMatrix& B, bool transA = false, bool transB = false);
+
+    /** Simple triplet GEMM with on-the-fly allocation
+    * \param A The first matrix
+    * \param B The second matrix
+    * \param C The third matrix
+    * \param transA Transpose the first matrix
+    * \param transB Transpose the second matrix
+    * \param transC Transpose the third matrix
+    */
+    static SharedMatrix triplet(const SharedMatrix& A, const SharedMatrix& B, const SharedMatrix& C, bool transA = false, bool transB = false, bool transC = false);
+
     /// @{
     /// Diagonalizes this, eigvectors and eigvalues must be created by caller.  Only for symmetric matrices.
     void diagonalize(Matrix* eigvectors, Vector* eigvalues, diagonalize_order nMatz = ascending);
