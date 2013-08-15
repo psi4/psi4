@@ -37,9 +37,12 @@ GaussianShell::GaussianShell(int am, const std::vector<double> &c,
                              const std::vector<double> &e, GaussianType pure,
                              int nc, const Vector3 &center, int start,
                              PrimitiveType pt)
-    : l_(am), puream_(pure), exp_(e), coef_(c), original_coef_(c),
+    : l_(am), puream_(pure), exp_(e), coef_(c),
       nc_(nc), center_(center), start_(start)
 {
+    for(int n = 0; n < c.size(); ++n)
+        original_coef_.push_back(c[n]);
+
     ncartesian_ = INT_NCART(l_);
     nfunction_  = INT_NFUNC(puream_, l_);
 
@@ -50,16 +53,16 @@ GaussianShell::GaussianShell(int am, const std::vector<double> &c,
 
 GaussianShell GaussianShell::copy()
 {
-    return GaussianShell(l_, coef_, exp_,
+    return GaussianShell(l_, original_coef_, exp_,
                          GaussianType(puream_),
-                         nc_, center_, start_);
+                         nc_, center_, start_, Unnormalized);
 }
 
 GaussianShell GaussianShell::copy(int nc, const Vector3& c)
 {
-    return GaussianShell(l_, coef_, exp_,
+    return GaussianShell(l_, original_coef_, exp_,
                          GaussianType(puream_),
-                         nc, c, start_);
+                         nc, c, start_, Unnormalized);
 }
 
 double GaussianShell::primitive_normalization(int p)
