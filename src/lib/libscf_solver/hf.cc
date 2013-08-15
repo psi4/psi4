@@ -1771,6 +1771,28 @@ void HF::print_occupation()
     }
 }
 
+//  Returns a vector of the occupation of the a orbitals
+boost::shared_ptr<Vector> HF::occupation_a() const
+{
+  SharedVector occA = SharedVector(new Vector(nmopi_));
+  for(int h=0; h < nirrep_;++h) 
+    for(int n=0; n < nalphapi()[h]; n++)
+      occA->set(h, n, 1.0);
+
+  return occA;
+}
+
+//  Returns a vector of the occupation of the b orbitals
+boost::shared_ptr<Vector> HF::occupation_b() const
+{
+  SharedVector occB = SharedVector(new Vector(nmopi_));
+  for(int h=0; h < nirrep_;++h) 
+    for(int n=0; n < nbetapi()[h]; n++)
+      occB->set(h, n, 1.0);
+
+  return occB;
+}
+
 void HF::diagonalize_F(const SharedMatrix& Fm, SharedMatrix& Cm, boost::shared_ptr<Vector>& epsm)
 {
     //Form F' = X'FX for canonical orthogonalization
