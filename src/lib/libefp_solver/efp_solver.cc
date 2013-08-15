@@ -373,7 +373,7 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
     boost::shared_ptr<OneBodyAOInt> efp_ints(wfn->integral()->ao_efp_multipole_potential());
 
     int nbf = wfn->basisset()->nbf();
-
+    int nao = wfn->basisset()->nao();
                                // 0    X    Y    Z      XX       YY       ZZ       XY       XZ       YZ
     const double prefacs[20] = { 1.0, 1.0, 1.0, 1.0, 1.0/3.0, 1.0/3.0, 1.0/3.0, 2.0/3.0, 2.0/3.0, 2.0/3.0,
     //   XXX       YYY       ZZZ       XXY       XXZ       XYY       YYZ       XZZ       YZZ       XYZ  
@@ -381,13 +381,11 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
 
     std::vector<SharedMatrix> mats;
     for(int i=0; i < 20; ++i) {
-        mats.push_back(SharedMatrix(new Matrix(nbf, nbf)));
+        mats.push_back(SharedMatrix(new Matrix(nao, nao)));
     }
 
-    SharedMatrix V(new Matrix("EFP contribution to the Fock Matrix", nbf, nbf));
-
-    // e-Nu contributions from fragments ( this is now done below with the other multipoles ).
-    //V->add( EFP_nuclear_potential() );
+    // Cartesian basis one-electron EFP perturbation
+    SharedMatrix V2(new Matrix("EFP contribution to the Fock Matrix", nao, nao));
 
     // multipole contributions to Fock matrix
     double * xyz_p  = xyz->pointer();
@@ -406,13 +404,13 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
             if ( efp_get_frag_atom_count(efp_,frag,&natom) != EFP_RESULT_SUCCESS ) {
                 throw PsiException("libefp failed to return the number of atoms",__FILE__,__LINE__);
             }
-            efp_atom * atoms = (efp_atom*)malloc(natom*sizeof(efp_atom));
+            efp_atom * atoms = (efp_atom*)malloc(natom*sizeof(efp_atom)); // TODO: Whoever wrote this, you be bleeding memory, yo?
             if ( efp_get_frag_atoms(efp_, frag, natom, atoms) != EFP_RESULT_SUCCESS ) {
                 throw PsiException("libefp failed to return atom charges",__FILE__,__LINE__);
             }
             for (int i = 0; i < natom; i++) {
                 double dx = atoms[i].x - xyz_p[n*3];
-                if ( fabs(dx) > 1e-10 ) continue;
+                if ( fabs(dx) > 1e-10 ) continue; 
                 double dy = atoms[i].y - xyz_p[n*3+1];
                 if ( fabs(dy) > 1e-10 ) continue;
                 double dz = atoms[i].z - xyz_p[n*3+2];
@@ -425,7 +423,7 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
 
         for(int i=0; i < 20; ++i){
             mats[i]->scale( -prefacs[i] * mult_p[20*n+i] );
-            V->add(mats[i]);
+            V2->add(mats[i]);
         }
     }
 
@@ -442,10 +440,17 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
         // only dealing with dipoles here:
         for(int i=0; i < 3; ++i){
             mats[i+1]->scale( -prefacs[i+1] * mult_p[3*n+i] );
-            V->add(mats[i+1]);
+            V2->add(mats[i+1]);
         }
     }
 
+    boost::shared_ptr<PetiteList> pet(new PetiteList(wfn->basisset(),wfn->integral(),true));
+    boost::shared_ptr<Matrix> U = pet->aotoso();
+
+    boost::shared_ptr<Matrix> V = Matrix::triplet(U,V2,U,true,false,false);  
+    V->set_name("EFP contribution to the Fock Matrix");
+
+    V2->print();
     V->print();
     return V;
 }
