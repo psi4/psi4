@@ -272,6 +272,11 @@ public:
      */
     std::string print_detail_cfour() const;
 
+    /** Returns a string in CFOUR-style of the basis (per-atom)
+     *  Format from http://slater.chemie.uni-mainz.de/cfour/index.php?n=Main.OldFormatOfAnEntryInTheGENBASFile
+     */
+    std::string print_detail_cfour() const;
+
     /** Refresh internal basis set data. Useful if someone has pushed to shells_.
      *  Pushing to shells_ happens in the BasisSetParsers, so the parsers will
      *  call refresh().
