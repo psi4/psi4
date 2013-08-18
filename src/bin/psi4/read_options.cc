@@ -830,6 +830,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("ASAPT_IND_SCALE", true);
     /*- Do ASAPT coupled response? (not recommended) -*/
     options.add_bool("ASAPT_IND_RESPONSE", false);
+    /*- Do ASAPT core-valence localization separation? -*/
+    options.add_bool("ASAPT_SEPARATE_CORE", true);
     /*- Voxel ASAPT density saturation (for uniform transfer functions) -*/
     options.add_double("ASAPT_DENSITY_CLAMP", 0.5);
     /*- Voxel ASAPT energy saturation (for uniform transfer functions) -*/
