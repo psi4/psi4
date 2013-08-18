@@ -297,6 +297,124 @@ void BasisSet::print_detail(FILE* out) const
     }
 }
 
+std::string BasisSet::print_detail_cfour() const
+{
+    char buffer[120];
+    std::stringstream ss;
+
+    for (int uA = 0; uA < molecule_->nunique(); uA++) {
+        const int A = molecule_->unique(uA);
+        if (WorldComm->me() == 0) {
+            sprintf(buffer, "%s:P4_%s_%d\n", molecule_->symbol(A).c_str(), 
+                boost::to_upper_copy(name_).c_str(), A+1);
+            ss << buffer;
+            sprintf(buffer, "PSI4 basis %s for element %s atom %d\n\n",
+                name_.c_str(), molecule_->symbol(A).c_str(), A+1);
+            ss << buffer;
+        }
+
+        int first_shell = center_to_shell_[A];
+        int n_shell = center_to_nshell_[A];
+
+        int max_am_center = 0;
+        for (int Q = 0; Q < n_shell; Q++)
+            max_am_center = (shells_[Q + first_shell].am() > max_am_center) ? shells_[Q + first_shell].am() : max_am_center;
+
+        std::vector< std::vector<int> > shell_per_am (max_am_center + 1);
+        for (int Q = 0; Q < n_shell; Q++)
+            shell_per_am[shells_[Q + first_shell].am()].push_back(Q);
+
+        if (WorldComm->me() == 0) {
+            // Write number of shells in the basis set
+            sprintf(buffer, "%3d\n", max_am_center + 1);
+            ss << buffer;
+
+            // Write angular momentum for each shell
+            for (int am = 0; am <= max_am_center; am++) {
+                sprintf(buffer, "%5d", am);
+                ss << buffer;
+            }
+            sprintf(buffer, "\n");
+            ss << buffer;
+
+            // Write number of contracted basis functions for each shell
+            for (int am = 0; am <= max_am_center; am++) {
+                sprintf(buffer, "%5d", shell_per_am[am].size());
+                ss << buffer;
+            }
+            sprintf(buffer, "\n");
+            ss << buffer;
+        }
+
+        std::vector< std::vector <double> > exp_per_am(max_am_center + 1);
+        std::vector< std::vector <double> > coef_per_am(max_am_center + 1);
+        for (int am = 0; am <= max_am_center; am++) {
+            // TODO: std::find safe on floats? seems to work
+            // Collect unique exponents among all functions
+            for (int Q = 0; Q < shell_per_am[am].size(); Q++) {
+                for (int K = 0; K < shells_[shell_per_am[am][Q] + first_shell].nprimitive(); K++) {
+                    if (!(std::find(exp_per_am[am].begin(), exp_per_am[am].end(),
+                          shells_[shell_per_am[am][Q] + first_shell].exp(K)) != exp_per_am[am].end())) {
+                        exp_per_am[am].push_back(shells_[shell_per_am[am][Q] + first_shell].exp(K));
+                    }
+                }
+            }
+
+            // Collect coefficients for each exp among all functions, zero otherwise
+            for (int Q = 0; Q < shell_per_am[am].size(); Q++) {
+                for (int ep = 0, K = 0; ep < exp_per_am[am].size(); ep++) {
+                    if (abs(exp_per_am[am][ep] - shells_[shell_per_am[am][Q] + first_shell].exp(K)) < 1.0e-8) {
+                        coef_per_am[am].push_back(shells_[shell_per_am[am][Q] + first_shell].original_coef(K));
+                        if ((K+1) != shells_[shell_per_am[am][Q] + first_shell].nprimitive()) {
+                            K++;
+                        }
+                    }
+                    else {
+                        coef_per_am[am].push_back(0.0);
+                    }
+                }
+            }
+        }
+
+        if (WorldComm->me() == 0) {
+            // Write number of exponents for each shell
+            for (int am = 0; am <= max_am_center; am++) {
+                sprintf(buffer, "%5d", exp_per_am[am].size());
+                ss << buffer;
+            }
+            sprintf(buffer, "\n\n");
+            ss << buffer;
+
+            for (int am = 0; am <= max_am_center; am++) {
+                // Write exponents for each shell
+                for (int ep = 0; ep < exp_per_am[am].size(); ep++) {
+                    sprintf(buffer, "%14.7f", exp_per_am[am][ep]);
+                    ss << buffer;
+                    if (((ep+1) % 5 == 0) || ((ep+1) == exp_per_am[am].size())) {
+                        sprintf(buffer, "\n");
+                        ss << buffer;
+                    }
+                }
+                sprintf(buffer, "\n");
+                ss << buffer;
+
+                // Write contraction coefficients for each shell
+                for (int ep = 0; ep < exp_per_am[am].size(); ep++) {
+                    for (int bf = 0; bf < shell_per_am[am].size(); bf++) {
+                        sprintf(buffer, "%10.7f ", coef_per_am[am][bf*exp_per_am[am].size()+ep]);
+                        ss << buffer;
+                    }
+                    sprintf(buffer, "\n");
+                    ss << buffer;
+                }
+                sprintf(buffer, "\n");
+                ss << buffer;
+            }
+        }
+    }
+    return ss.str();
+}
+
 const GaussianShell& BasisSet::shell(int si) const
 {
     if (si < 0 || si > nshell()) {
@@ -818,23 +936,23 @@ void BasisSet::refresh()
 //        }
 //    }
 
-//    // Create a map that has a key/value pair
-//    // The key is the angular momentum function of the shell arranged in decending order
-//    // The value is the actual shell number
-//    typedef std::pair<int, int> am_to_shell_pair;
-//    std::multimap< int, int, std::less<int> > am_to_shell_list;
-//    for (int i=0; i < shells_.size(); i++) {
-//        am_to_shell_list.insert(am_to_shell_pair(shells_[i].nfunction(), i));
-//    }
-//    // This puts the sorted shell values into the sorted_shell_list_ vector
-//    // This can be used by the integral iterator to look up the value of the sorted shells
-//    std::multimap< int, int, std::less<int> >::iterator it;
-//    sorted_ao_shell_list_.clear();
-//    for (it=am_to_shell_list.begin(); it != am_to_shell_list.end(); it++) {
-//        //std::cout << "sorted shell size = " << it->first <<
-//        //        "\t, which belongs to shell number " << it->second << std::endl;
-//        sorted_ao_shell_list_.push_back(it->second);
-//    }
+////    // Create a map that has a key/value pair
+////    // The key is the angular momentum function of the shell arranged in decending order
+////    // The value is the actual shell number
+////    typedef std::pair<int, int> am_to_shell_pair;
+////    std::multimap< int, int, std::less<int> > am_to_shell_list;
+////    for (int i=0; i < shells_.size(); i++) {
+////        am_to_shell_list.insert(am_to_shell_pair(shells_[i].nfunction(), i));
+////    }
+////    // This puts the sorted shell values into the sorted_shell_list_ vector
+////    // This can be used by the integral iterator to look up the value of the sorted shells
+////    std::multimap< int, int, std::less<int> >::iterator it;
+////    sorted_ao_shell_list_.clear();
+////    for (it=am_to_shell_list.begin(); it != am_to_shell_list.end(); it++) {
+////        //std::cout << "sorted shell size = " << it->first <<
+////        //        "\t, which belongs to shell number " << it->second << std::endl;
+////        sorted_ao_shell_list_.push_back(it->second);
+////    }
 }
 
 std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > BasisSet::test_basis_set(int max_am)

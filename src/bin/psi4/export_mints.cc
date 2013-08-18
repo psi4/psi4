@@ -633,6 +633,7 @@ void export_mints()
     class_<BasisSet, boost::shared_ptr<BasisSet>, boost::noncopyable>("BasisSet", "docstring", no_init).
             def("print_out", basis_print_out(&BasisSet::print), "docstring").
             def("print_detail_out", basis_print_out(&BasisSet::print_detail), "docstring").
+            def("genbas", &BasisSet::print_detail_cfour, "Returns basis set per atom in CFOUR format").
             def("make_filename", &BasisSet::make_filename, "docstring").
             staticmethod("make_filename").
             def("construct", &BasisSet::construct, "docstring").
