@@ -379,19 +379,19 @@ void HF::integrals()
     if ((options_.get_str("REFERENCE") == "UKS" || options_.get_str("REFERENCE") == "RKS")) {
 
         // Need a temporary functional
-        boost::shared_ptr<SuperFunctional> functional = 
+        boost::shared_ptr<SuperFunctional> functional =
             SuperFunctional::current(options_);
-        
+
         // K matrices
         jk_->set_do_K(functional->is_x_hybrid());
-        // wK matrices 
+        // wK matrices
         jk_->set_do_wK(functional->is_x_lrc());
         // w Value
         jk_->set_omega(functional->x_omega());
     }
 
     // Initialize
-    jk_->initialize(); 
+    jk_->initialize();
     // Print the header
     jk_->print_header();
 }
@@ -619,7 +619,7 @@ void HF::form_H()
             // Transform phi_ao to SO basis
             C_DGEMV('t', nao, nso, 1.0, &(u[0][0]), nso, &(phi_ao[0]), 1, 0.0, &(phi_so[0]), 1);
             for(int i=0; i < nso; i++)
-              for(int j=0; j < nso; j++)                
+              for(int j=0; j < nso; j++)
                 V_eff[i][j] += w * v * phi_so[i] * phi_so[j];
           } // npoints
 
@@ -628,7 +628,7 @@ void HF::form_H()
 
         } // embpot
         else if(perturb_ == dx) {
-          dx_read(V_eff, phi_ao, phi_so, nao, nso, u);             
+          dx_read(V_eff, phi_ao, phi_so, nao, nso, u);
 
         } // dx file
         else if(perturb_ == sphere) {
@@ -691,6 +691,8 @@ void HF::form_H()
         free_block(V_eff);
       }  // embpot or sphere
       else {
+          // The following perturbations are handled by MintsHelper.
+#if 0
         OperatorSymmetry msymm(1, molecule_, integral_, factory_);
         vector<SharedMatrix> dipoles = msymm.create_matrices("Dipole");
         OneBodySOInt *so_dipole = integral_->so_dipole();
@@ -729,11 +731,8 @@ void HF::form_H()
                 V_->add(dipoles[2]);
             }
         }
-
+#endif
       } // end dipole perturbations
-
-      // Dumped modified V integrals to disk to be propagated throughout PSI
-      V_->save(psio_, PSIF_OEI);
     } // end perturb_h_
 
     // If an external field exists, add it to the one-electron Hamiltonian
@@ -1095,7 +1094,7 @@ void HF::guess()
     // a false positive test for convergence on the first iteration (that
     // was happening before in tests/scf-guess-read before I removed
     // the statements putting this into E_).  -CDS 3/25/13
-    double guess_E; 
+    double guess_E;
 
     //What does the user want?
     //Options will be:
@@ -1432,7 +1431,7 @@ double HF::compute_energy()
     if (options_.get_bool("DF_SCF_GUESS") && !(old_scf_type == "DF" || old_scf_type == "CD")) {
          fprintf(outfile, "  Starting with a DF guess...\n\n");
          if(!options_["DF_BASIS_SCF"].has_changed()) {
-             // TODO: Match Dunning basis sets 
+             // TODO: Match Dunning basis sets
              molecule_->set_basis_all_atoms("CC-PVDZ-JKFIT", "DF_BASIS_SCF");
          }
          scf_type_ = "DF";
@@ -1596,7 +1595,7 @@ double HF::compute_energy()
 
         // If a DF Guess environment, reset the JK object, and keep running
         if (converged && options_.get_bool("DF_SCF_GUESS") && !(old_scf_type == "DF" || old_scf_type == "CD")) {
-            fprintf(outfile, "\n  DF guess converged.\n\n"); // Be cool dude. 
+            fprintf(outfile, "\n  DF guess converged.\n\n"); // Be cool dude.
             converged = false;
             if(initialized_diis_manager_)
                 diis_manager_->reset_subspace();
@@ -1717,23 +1716,23 @@ void HF::print_energies()
     fprintf(outfile, "    Nuclear Repulsion Energy =        %24.16f\n", energies_["Nuclear"]);
     fprintf(outfile, "    One-Electron Energy =             %24.16f\n", energies_["One-Electron"]);
     fprintf(outfile, "    Two-Electron Energy =             %24.16f\n", energies_["Two-Electron"]);
-    fprintf(outfile, "    DFT Exchange-Correlation Energy = %24.16f\n", energies_["XC"]); 
+    fprintf(outfile, "    DFT Exchange-Correlation Energy = %24.16f\n", energies_["XC"]);
     fprintf(outfile, "    Empirical Dispersion Energy =     %24.16f\n", energies_["-D"]);
-    fprintf(outfile, "    Total Energy =                    %24.16f\n", energies_["Nuclear"] + 
-        energies_["One-Electron"] + energies_["Two-Electron"] + energies_["XC"] + energies_["-D"]); 
+    fprintf(outfile, "    Total Energy =                    %24.16f\n", energies_["Nuclear"] +
+        energies_["One-Electron"] + energies_["Two-Electron"] + energies_["XC"] + energies_["-D"]);
     fprintf(outfile, "\n");
-    
+
     Process::environment.globals["NUCLEAR REPULSION ENERGY"] = energies_["Nuclear"];
     Process::environment.globals["ONE-ELECTRON ENERGY"] = energies_["One-Electron"];
     Process::environment.globals["TWO-ELECTRON ENERGY"] = energies_["Two-Electron"];
     if (fabs(energies_["XC"]) > 1.0e-14) {
         Process::environment.globals["DFT XC ENERGY"] = energies_["XC"];
-        Process::environment.globals["DFT FUNCTIONAL TOTAL ENERGY"] = energies_["Nuclear"] + 
+        Process::environment.globals["DFT FUNCTIONAL TOTAL ENERGY"] = energies_["Nuclear"] +
             energies_["One-Electron"] + energies_["Two-Electron"] + energies_["XC"];
-        Process::environment.globals["DFT TOTAL ENERGY"] = energies_["Nuclear"] + 
+        Process::environment.globals["DFT TOTAL ENERGY"] = energies_["Nuclear"] +
             energies_["One-Electron"] + energies_["Two-Electron"] + energies_["XC"] + energies_["-D"];
     } else {
-        Process::environment.globals["HF TOTAL ENERGY"] = energies_["Nuclear"] + 
+        Process::environment.globals["HF TOTAL ENERGY"] = energies_["Nuclear"] +
             energies_["One-Electron"] + energies_["Two-Electron"];
     }
     if (fabs(energies_["-D"]) > 1.0e-14) {
@@ -1778,7 +1777,7 @@ void HF::print_occupation()
 boost::shared_ptr<Vector> HF::occupation_a() const
 {
   SharedVector occA = SharedVector(new Vector(nmopi_));
-  for(int h=0; h < nirrep_;++h) 
+  for(int h=0; h < nirrep_;++h)
     for(int n=0; n < nalphapi()[h]; n++)
       occA->set(h, n, 1.0);
 
@@ -1789,7 +1788,7 @@ boost::shared_ptr<Vector> HF::occupation_a() const
 boost::shared_ptr<Vector> HF::occupation_b() const
 {
   SharedVector occB = SharedVector(new Vector(nmopi_));
-  for(int h=0; h < nirrep_;++h) 
+  for(int h=0; h < nirrep_;++h)
     for(int n=0; n < nbetapi()[h]; n++)
       occB->set(h, n, 1.0);
 
