@@ -137,19 +137,19 @@ public:
     const IntegralFactory* integral() const { return integral_; }
 
     /// Compute ERIs between 4 shells. Result is stored in buffer.
-    virtual void compute_shell(const AOShellCombinationsIterator&) = 0;
+    virtual size_t compute_shell(const AOShellCombinationsIterator&) = 0;
 
     /// Compute the integrals
-    virtual void compute_shell(int, int, int, int) = 0;
+    virtual size_t compute_shell(int, int, int, int) = 0;
 
     /// Is the shell zero?
     virtual int shell_is_zero(int,int,int,int) { return 0; }
 
     /// Compute the first derivatives
-    virtual void compute_shell_deriv1(int, int, int, int) = 0;
+    virtual size_t compute_shell_deriv1(int, int, int, int) = 0;
 
     /// Compute the second derivatives
-    virtual void compute_shell_deriv2(int, int, int, int) = 0;
+    virtual size_t compute_shell_deriv2(int, int, int, int) = 0;
 
     /// Normalize Cartesian functions based on angular momentum
     void normalize_am(boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>, int nchunk=1);

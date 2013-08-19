@@ -1435,12 +1435,12 @@ size_t TwoElectronInt::memory_to_store_shell_pairs(const shared_ptr<BasisSet> &b
     return mem;
 }
 
-void TwoElectronInt::compute_shell(const AOShellCombinationsIterator& shellIter)
+size_t TwoElectronInt::compute_shell(const AOShellCombinationsIterator& shellIter)
 {
-    compute_shell(shellIter.p(), shellIter.q(), shellIter.r(), shellIter.s());
+    return compute_shell(shellIter.p(), shellIter.q(), shellIter.r(), shellIter.s());
 }
 
-void TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4)
+size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4)
 {
 #ifdef MINTS_TIMER
     timer_on("ERI::compute_shell");
@@ -1452,7 +1452,7 @@ void TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4)
     timer_on("reorder");
 #endif
 
-    int s1, s2, s3, s4;
+    int s1, s2, s3, s4, c1, c2, c3, c4;
     int am1, am2, am3, am4, temp;
     shared_ptr<BasisSet> bs_temp;
 
@@ -1463,7 +1463,22 @@ void TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4)
     am2 = original_bs2_->shell(sh2).am();
     am3 = original_bs3_->shell(sh3).am();
     am4 = original_bs4_->shell(sh4).am();
-
+	temp = am1+am2+am3+am4;
+	
+	c1 = original_bs1_->shell(sh1).ncenter();
+	c2 = original_bs1_->shell(sh2).ncenter();
+	c3 = original_bs1_->shell(sh3).ncenter();
+	c4 = original_bs1_->shell(sh4).ncenter();
+	
+	// TODO: Check this!
+//	if (c1 == c2 && c1 == c3 && c1 && c4 && temp % 2 != 0) {
+//#ifdef MINTS_TIMER
+//		timer_off("reorder");
+//		timer_off("ERI::compute_shell");
+//#endif
+//		return 0;
+//	}
+	
     int n1, n2, n3, n4;
 
     if (force_cartesian_) {
@@ -1549,35 +1564,39 @@ void TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4)
 #endif
 
     // s1, s2, s3, s4 contain the shells to do in libint order
-    compute_quartet(s1, s2, s3, s4);
-
-    // Permute integrals back, if needed
-    if (p12_ || p34_ || p13p24_) {
+	size_t ncomputed = compute_quartet(s1, s2, s3, s4);
+    if (ncomputed) {
+		// Only do the following if we did any work.
+		
+    	// Permute integrals back, if needed
+    	if (p12_ || p34_ || p13p24_) {
 #ifdef MINTS_TIMER
-        timer_on("permute_target");
+        	timer_on("permute_target");
 #endif
-        permute_target(source_, target_, s1, s2, s3, s4, p12_, p34_, p13p24_);
+        	permute_target(source_, target_, s1, s2, s3, s4, p12_, p34_, p13p24_);
 #ifdef MINTS_TIMER
-        timer_off("permute_target");
+        	timer_off("permute_target");
 #endif
-    }
-    else {
+    	}
+		else {
 #ifdef MINTS_TIMER
-        timer_on("memcpy - no resort");
+        	timer_on("memcpy - no resort");
 #endif
-        // copy the integrals to the target_
-        memcpy(target_, source_, n1 * n2 * n3 * n4 *sizeof(double));
+        	// copy the integrals to the target_
+        	memcpy(target_, source_, n1 * n2 * n3 * n4 *sizeof(double));
 #ifdef MINTS_TIMER
-        timer_off("memcpy - no resort");
+        	timer_off("memcpy - no resort");
 #endif
-    }
+    	}
+	}
 
 #ifdef MINTS_TIMER
     timer_off("ERI::compute_shell");
 #endif
+	return ncomputed;
 }
 
-void TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
+size_t TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
 {
 #ifdef MINTS_TIMER
     timer_on("setup");
@@ -1814,9 +1833,10 @@ void TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
         pure_transform(sh1, sh2, sh3, sh4, 1);
 
     // Results are in source_
+	return size;
 }
 
-void TwoElectronInt::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4)
+size_t TwoElectronInt::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4)
 {
     if (deriv_ < 1) {
         fprintf(stderr, "ERROR - ERI: ERI object not initialized to handle derivatives.\n");
@@ -1963,9 +1983,11 @@ void TwoElectronInt::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4)
         // copy the integrals to the target_, 3n of them
         memcpy(target_, source_, ERI_1DER_NTYPE * size *sizeof(double));
     }
+	
+	return size;
 }
 
-void TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
+size_t TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
 {
     const GaussianShell& s1 = bs1_->shell(sh1);
     const GaussianShell& s2 = bs2_->shell(sh2);
@@ -2172,9 +2194,10 @@ void TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
         pure_transform(sh1, sh2, sh3, sh4, ERI_1DER_NTYPE);
 
     // Results are in source_
+	return size;
 }
 
-void TwoElectronInt::compute_shell_deriv2(int sh1, int sh2, int sh3, int sh4)
+size_t TwoElectronInt::compute_shell_deriv2(int sh1, int sh2, int sh3, int sh4)
 {
     if (deriv_ < 2)
         throw PSIEXCEPTION("ERROR - ERI: ERI object not initialized to handle second derivatives.\n");
@@ -2322,9 +2345,10 @@ void TwoElectronInt::compute_shell_deriv2(int sh1, int sh2, int sh3, int sh4)
     else {
         memcpy(target_, source_, ERI_2DER_NTYPE * size * sizeof(double));
     }
+	return size;
 }
 
-void TwoElectronInt::compute_quartet_deriv2(int sh1, int sh2, int sh3, int sh4)
+size_t TwoElectronInt::compute_quartet_deriv2(int sh1, int sh2, int sh3, int sh4)
 {
     const GaussianShell& s1 = bs1_->shell(sh1);
     const GaussianShell& s2 = bs2_->shell(sh2);
@@ -2510,6 +2534,7 @@ void TwoElectronInt::compute_quartet_deriv2(int sh1, int sh2, int sh3, int sh4)
         pure_transform(sh1, sh2, sh3, sh4, ERI_2DER_NTYPE);
 
     // Results are in source_
+	return size;
 }
 
 

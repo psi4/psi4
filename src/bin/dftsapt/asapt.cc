@@ -70,6 +70,7 @@ boost::shared_ptr<ASAPT> ASAPT::build(boost::shared_ptr<Wavefunction> d,
     sapt->exch_scale_      = options.get_bool("ASAPT_EXCH_SCALE");
     sapt->ind_scale_       = options.get_bool("ASAPT_IND_SCALE");
     sapt->ind_resp_        = options.get_bool("ASAPT_IND_RESPONSE");
+    sapt->sep_core_        = options.get_bool("ASAPT_SEPARATE_CORE");
     
     sapt->elst_primary_A_ = eA->basisset();
     sapt->elst_primary_B_ = eB->basisset();
@@ -106,8 +107,10 @@ boost::shared_ptr<ASAPT> ASAPT::build(boost::shared_ptr<Wavefunction> d,
     sapt->eps_occ_A_  = mA->epsilon_a_subset("AO","OCC");
     sapt->eps_vir_A_  = mA->epsilon_a_subset("AO","VIR");
 
+    sapt->Cfocc_A_    = mA->Ca_subset("AO","FROZEN_OCC");
     sapt->Caocc_A_    = mA->Ca_subset("AO","ACTIVE_OCC");
     sapt->Cavir_A_    = mA->Ca_subset("AO","ACTIVE_VIR");
+    sapt->Cfvir_A_    = mA->Ca_subset("AO","FROZEN_VIR");
 
     sapt->eps_focc_A_ = mA->epsilon_a_subset("AO","FROZEN_OCC");
     sapt->eps_aocc_A_ = mA->epsilon_a_subset("AO","ACTIVE_OCC");
@@ -119,8 +122,10 @@ boost::shared_ptr<ASAPT> ASAPT::build(boost::shared_ptr<Wavefunction> d,
     sapt->eps_occ_B_  = mB->epsilon_a_subset("AO","OCC");
     sapt->eps_vir_B_  = mB->epsilon_a_subset("AO","VIR");
 
+    sapt->Cfocc_B_    = mB->Ca_subset("AO","FROZEN_OCC");
     sapt->Caocc_B_    = mB->Ca_subset("AO","ACTIVE_OCC");
     sapt->Cavir_B_    = mB->Ca_subset("AO","ACTIVE_VIR");
+    sapt->Cfvir_B_    = mB->Ca_subset("AO","FROZEN_VIR");
 
     sapt->eps_focc_B_ = mB->epsilon_a_subset("AO","FROZEN_OCC");
     sapt->eps_aocc_B_ = mB->epsilon_a_subset("AO","ACTIVE_OCC");
@@ -266,42 +271,131 @@ void ASAPT::localize()
 {
     fprintf(outfile," LOCALIZATION:\n\n");
 
-    fprintf(outfile,"  Local Orbitals for Monomer A:\n\n");
+    if (sep_core_) {
 
-    boost::shared_ptr<Localizer> localA = Localizer::build(primary_, Cocc_A_, Process::environment.options);
-    localA->localize();
+        fprintf(outfile,"  Local Core Orbitals for Monomer A:\n\n");
+        boost::shared_ptr<Localizer> localfA = Localizer::build(primary_, Cfocc_A_, Process::environment.options);
+        localfA->localize();
+        boost::shared_ptr<Matrix> Lfocc_A = localfA->L();
+        boost::shared_ptr<Matrix> Ufocc_A = localfA->U();
 
-    int na = eps_occ_A_->dimpi()[0];
-    boost::shared_ptr<Matrix> FcA(new Matrix("FcA", na, na));
-    FcA->set_diagonal(eps_occ_A_); 
-    boost::shared_ptr<Matrix> FlA = localA->fock_update(FcA);
-    FlA->set_name("FlA");    
+        int nfA = eps_focc_A_->dimpi()[0];
+        boost::shared_ptr<Matrix> FcfA(new Matrix("FcfA", nfA, nfA));
+        FcfA->set_diagonal(eps_focc_A_); 
+        boost::shared_ptr<Matrix> FlfA = localfA->fock_update(FcfA);
+        FlfA->set_name("FlfA");    
+        //FcfA->print();
+        //FlfA->print();
 
-    //FcA->print();
-    //FlA->print();
+        fprintf(outfile,"  Local Valence Orbitals for Monomer A:\n\n");
+        boost::shared_ptr<Localizer> localaA = Localizer::build(primary_, Caocc_A_, Process::environment.options);
+        localaA->localize();
+        boost::shared_ptr<Matrix> Laocc_A = localaA->L();
+        boost::shared_ptr<Matrix> Uaocc_A = localaA->U();
 
-    Locc_A_ = localA->L();
-    Uocc_A_ = localA->U();;
+        int naA = eps_aocc_A_->dimpi()[0];
+        boost::shared_ptr<Matrix> FcaA(new Matrix("FcaA", naA, naA));
+        FcaA->set_diagonal(eps_aocc_A_); 
+        boost::shared_ptr<Matrix> FlaA = localaA->fock_update(FcaA);
+        FlaA->set_name("FlaA");    
+        //FcaA->print();
+        //FlaA->print();
 
-    fprintf(outfile,"  Local Orbitals for Monomer B:\n\n");
+        std::vector<boost::shared_ptr<Matrix> > LAlist;
+        LAlist.push_back(Lfocc_A);
+        LAlist.push_back(Laocc_A);
+        Locc_A_ = Matrix::horzcat(LAlist); 
 
-    boost::shared_ptr<Localizer> localB = Localizer::build(primary_, Cocc_B_, Process::environment.options);
-    localB->localize();
+        Uocc_A_ = boost::shared_ptr<Matrix>(new Matrix("Uocc A", nfA + naA, nfA + naA));
+        double** Uocc_Ap = Uocc_A_->pointer();
+        double** Ufocc_Ap = Ufocc_A->pointer();
+        double** Uaocc_Ap = Uaocc_A->pointer();
+        for (int i = 0; i < nfA; i++) {
+            ::memcpy(&Uocc_Ap[i][0],&Ufocc_Ap[i][0],sizeof(double)*nfA);
+        }
+        for (int i = 0; i < naA; i++) {
+            ::memcpy(&Uocc_Ap[i+nfA][nfA],&Uaocc_Ap[i][0],sizeof(double)*naA);
+        }
 
-    int nb = eps_occ_B_->dimpi()[0];
-    boost::shared_ptr<Matrix> FcB(new Matrix("FcB", nb, nb));
-    FcB->set_diagonal(eps_occ_B_); 
-    boost::shared_ptr<Matrix> FlB = localB->fock_update(FcB);
-    FlB->set_name("FlB");    
+        fprintf(outfile,"  Local Core Orbitals for Monomer B:\n\n");
+        boost::shared_ptr<Localizer> localfB = Localizer::build(primary_, Cfocc_B_, Process::environment.options);
+        localfB->localize();
+        boost::shared_ptr<Matrix> Lfocc_B = localfB->L();
+        boost::shared_ptr<Matrix> Ufocc_B = localfB->U();
 
-    //FcB->print();
-    //FlB->print();
+        int nfB = eps_focc_B_->dimpi()[0];
+        boost::shared_ptr<Matrix> FcfB(new Matrix("FcfB", nfB, nfB));
+        FcfB->set_diagonal(eps_focc_B_); 
+        boost::shared_ptr<Matrix> FlfB = localfB->fock_update(FcfB);
+        FlfB->set_name("FlfB");    
+        //FcfB->print();
+        //FlfB->print();
 
-    Locc_B_ = localB->L();
-    Uocc_B_ = localB->U();
+        fprintf(outfile,"  Local Valence Orbitals for Monomer B:\n\n");
+        boost::shared_ptr<Localizer> localaB = Localizer::build(primary_, Caocc_B_, Process::environment.options);
+        localaB->localize();
+        boost::shared_ptr<Matrix> Laocc_B = localaB->L();
+        boost::shared_ptr<Matrix> Uaocc_B = localaB->U();
+
+        int naB = eps_aocc_B_->dimpi()[0];
+        boost::shared_ptr<Matrix> FcaB(new Matrix("FcaA", naB, naB));
+        FcaB->set_diagonal(eps_aocc_B_); 
+        boost::shared_ptr<Matrix> FlaB = localaB->fock_update(FcaB);
+        FlaB->set_name("FlaB");    
+        //FcaB->print();
+        //FlaB->print();
+
+        std::vector<boost::shared_ptr<Matrix> > LBlist;
+        LBlist.push_back(Lfocc_B);
+        LBlist.push_back(Laocc_B);
+        Locc_B_ = Matrix::horzcat(LBlist); 
+
+        Uocc_B_ = boost::shared_ptr<Matrix>(new Matrix("Uocc B", nfB + naB, nfB + naB));
+        double** Uocc_Bp = Uocc_B_->pointer();
+        double** Ufocc_Bp = Ufocc_B->pointer();
+        double** Uaocc_Bp = Uaocc_B->pointer();
+        for (int i = 0; i < nfB; i++) {
+            ::memcpy(&Uocc_Bp[i][0],&Ufocc_Bp[i][0],sizeof(double)*nfB);
+        }
+        for (int i = 0; i < naB; i++) {
+            ::memcpy(&Uocc_Bp[i+nfB][nfB],&Uaocc_Bp[i][0],sizeof(double)*naB);
+        }
+
+    } else {
+
+        fprintf(outfile,"  Local Orbitals for Monomer A:\n\n");
+        boost::shared_ptr<Localizer> localA = Localizer::build(primary_, Cocc_A_, Process::environment.options);
+        localA->localize();
+        Locc_A_ = localA->L();
+        Uocc_A_ = localA->U();
+
+        int na = eps_occ_A_->dimpi()[0];
+        boost::shared_ptr<Matrix> FcA(new Matrix("FcA", na, na));
+        FcA->set_diagonal(eps_occ_A_); 
+        boost::shared_ptr<Matrix> FlA = localA->fock_update(FcA);
+        FlA->set_name("FlA");    
+
+        //FcA->print();
+        //FlA->print();
+
+        fprintf(outfile,"  Local Orbitals for Monomer B:\n\n");
+        boost::shared_ptr<Localizer> localB = Localizer::build(primary_, Cocc_B_, Process::environment.options);
+        localB->localize();
+        Locc_B_ = localB->L();
+        Uocc_B_ = localB->U();
+
+        int nb = eps_occ_B_->dimpi()[0];
+        boost::shared_ptr<Matrix> FcB(new Matrix("FcB", nb, nb));
+        FcB->set_diagonal(eps_occ_B_); 
+        boost::shared_ptr<Matrix> FlB = localB->fock_update(FcB);
+        FlB->set_name("FlB");    
+
+        //FcB->print();
+        //FlB->print();
+
+    }
 
     fflush(outfile);
-
 }
 void ASAPT::populate()
 {

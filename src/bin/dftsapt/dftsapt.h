@@ -113,6 +113,15 @@ protected:
     // Monomer B C matrix (active vir)
     boost::shared_ptr<Matrix> Cavir_B_;
 
+    // Monomer A C matrix (frozen occ)
+    boost::shared_ptr<Matrix> Cfocc_A_;
+    // Monomer B C matrix (frozen occ)
+    boost::shared_ptr<Matrix> Cfocc_B_;
+    // Monomer A C matrix (frozen vir)
+    boost::shared_ptr<Matrix> Cfvir_A_;
+    // Monomer B C matrix (frozen vir)
+    boost::shared_ptr<Matrix> Cfvir_B_;
+
     // Monomer A eps vector (active occ)
     boost::shared_ptr<Vector> eps_aocc_A_;
     // Monomer B eps vector (active occ)
@@ -249,6 +258,8 @@ friend class DFTSAPT;
     bool ind_scale_;
     // Induction response?
     bool ind_resp_;
+    // Separate core and valence?
+    bool sep_core_;
 
     // 3-index tensors
     std::map<std::string, boost::shared_ptr<Tensor> > tensors_;

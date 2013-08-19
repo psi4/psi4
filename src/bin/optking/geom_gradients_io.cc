@@ -341,6 +341,8 @@ double ** OPT_DATA::read_cartesian_H(void) const {
 
 #if defined(OPTKING_PACKAGE_PSI)
   std::ifstream if_Hcart;
+  // Need to enable exceptions in ifstream.
+  if_Hcart.exceptions(std::ifstream::failbit | std::ifstream::badbit);
   try {
     std::string hess_fname = psi::get_writer_file_prefix() + ".hess";
     if_Hcart.open(hess_fname.c_str(), ios_base::in);
