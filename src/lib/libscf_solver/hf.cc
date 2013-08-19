@@ -731,6 +731,9 @@ void HF::form_H()
         }
 
       } // end dipole perturbations
+
+      // Dumped modified V integrals to disk to be propagated throughout PSI
+      V_->save(psio_, PSIF_OEI);
     } // end perturb_h_
 
     // If an external field exists, add it to the one-electron Hamiltonian
