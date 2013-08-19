@@ -476,6 +476,9 @@ public:
     /// Returns an ERI integral object
     virtual TwoBodyAOInt* eri(int deriv=0, bool use_shell_pairs=false);
 
+    /// Returns an ERD ERI integral object, if available.  Otherwise returns a libint integral object
+    virtual TwoBodyAOInt* erd_eri(int deriv=0, bool use_shell_pairs=false);
+
     /// Returns an erf ERI integral object (omega integral)
     virtual TwoBodyAOInt* erf_eri(double omega, int deriv=0, bool use_shell_pairs=false);
 
