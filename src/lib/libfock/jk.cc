@@ -1820,7 +1820,7 @@ void DirectJK::compute_JK()
     if (do_J_ || do_K_) {
         std::vector<boost::shared_ptr<TwoBodyAOInt> > ints;
         for (int thread = 0; thread < df_ints_num_threads_; thread++) {
-            ints.push_back(boost::shared_ptr<TwoBodyAOInt>(factory->eri()));
+            ints.push_back(boost::shared_ptr<TwoBodyAOInt>(factory->erd_eri()));
         }
         if (do_J_ && do_K_) {
             build_JK(ints,D_ao_,J_ao_,K_ao_);

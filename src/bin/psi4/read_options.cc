@@ -106,7 +106,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- PSI4 dies if energy does not converge. !expert -*/
   options.add_bool("DIE_IF_NOT_CONVERGED", true);
   /*- Integral package to use. If compiled with ERD support, ERD is used where possible; LibInt is used otherwise. -*/
-  options.add_str("INTEGRAL_PACKAGE", "ERD", "ERD LIBMINTS");
+  options.add_str("INTEGRAL_PACKAGE", "ERD", "ERD LIBINT");
 
   /*- Base filename for text files written by PSI, such as the
   MOLDEN output file, the Hessian file, the internal coordinate file,

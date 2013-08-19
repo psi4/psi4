@@ -62,6 +62,12 @@ erdgroup.add_argument('--with-erd',
 erdgroup.add_argument('--without-erd',
                         action="store_false",
                         help='Do not use the ERD integral package.')
+# F77FLAGS flags
+parser.add_argument('--with-f77flags',
+                    metavar='= F77FLAGS',
+                    type=str,
+                    default=blankstring,
+                    help="Any extra flags to pass to the Fortran compiler.")
 # F77 symbol
 parser.add_argument('--with-f77symbol',
                     metavar='= lcu | lc | uc | ucu | detect',
@@ -166,16 +172,21 @@ cmakeflags = {}
 cmakeflags['PREFIX'] = args.prefix
 # MAX-AM-ERI
 cmakeflags['MAX_AM_ERI'] = args.with_max_am_eri
-# CXXFLAGS
+# CXX/F77 FLAGS
 if args.without_opt:
     cmakeflags['CXXFLAGS'] = ["-O0"]
+    cmakeflags['F77FLAGS'] = ["-O0"]
 else:
     cmakeflags['CXXFLAGS'] = ["-O2"]
+    cmakeflags['F77FLAGS'] = ["-O2"]
 
 if args.with_debug:
     cmakeflags['CXXFLAGS'].append("-g")
+    cmakeflags['F77FLAGS'].append("-g")
 if args.with_cxxflags != blankstring:
     cmakeflags['CXXFLAGS'].append(args.with_cxxflags)
+if args.with_f77flags != blankstring:
+    cmakeflags['F77FLAGS'].append(args.with_f77flags)
 # LDFLAGS
 if args.with_ldflags != blankstring:
     cmakeflags['LDFLAGS'] = [args.with_ldflags]
