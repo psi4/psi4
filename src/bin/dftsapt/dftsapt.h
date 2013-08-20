@@ -302,6 +302,8 @@ friend class DFTSAPT;
     void populate();
     // Compute Elst
     void elst();
+    // Compute Elst in the new way
+    void elst2();
     // Compute Exch
     void exch();
     // Compute Ind
