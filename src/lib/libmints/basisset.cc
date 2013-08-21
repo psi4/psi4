@@ -422,11 +422,10 @@ std::string BasisSet::print_detail_cfour() const
     for (int uA = 0; uA < molecule_->nunique(); uA++) {
         const int A = molecule_->unique(uA);
         if (WorldComm->me() == 0) {
-            sprintf(buffer, "%s:P4_%s_%d\n", molecule_->symbol(A).c_str(), 
-                boost::to_upper_copy(name_).c_str(), A+1);
+            sprintf(buffer, "%s:P4_%d\n", molecule_->symbol(A).c_str(), A+1);
             ss << buffer;
             sprintf(buffer, "PSI4 basis %s for element %s atom %d\n\n",
-                name_.c_str(), molecule_->symbol(A).c_str(), A+1);
+                boost::to_upper_copy(name_).c_str(), molecule_->symbol(A).c_str(), A+1);
             ss << buffer;
         }
 
