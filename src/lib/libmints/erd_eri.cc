@@ -11,8 +11,6 @@
 #define DEBUG 0
 
 // Name mangling
-#define FC_SYMBOL 2
-
 #if FC_SYMBOL == 1
 #define C_ERD__GENER_ERI_BATCH erd__gener_eri_batch
 #define C_ERD__MEMORY_CSGTO erd__memory_csgto
@@ -32,9 +30,6 @@
 #else
 #error FC_SYMBOL is not defined
 #endif
-
-typedef int F_INT;
-typedef int F_BOOL;
 
 extern "C" {
 void C_ERD__GENER_ERI_BATCH(const F_INT &imax, const F_INT &zmax, const F_INT &nalpha, const F_INT &ncoeff,
@@ -102,10 +97,28 @@ ERDTwoElectronInt::ERDTwoElectronInt(const IntegralFactory* integral, int deriv,
     new_cc_2_ = new double[original_bs2_->nprimitive()];
     new_cc_3_ = new double[original_bs3_->nprimitive()];
     new_cc_4_ = new double[original_bs4_->nprimitive()];
-    cc_shell_offsets_1_ = new int[original_bs1_->nshell()];
-    cc_shell_offsets_2_ = new int[original_bs2_->nshell()];
-    cc_shell_offsets_3_ = new int[original_bs3_->nshell()];
-    cc_shell_offsets_4_ = new int[original_bs4_->nshell()];
+    alpha_1_ = new double[original_bs1_->nprimitive()];
+    alpha_2_ = new double[original_bs2_->nprimitive()];
+    alpha_3_ = new double[original_bs3_->nprimitive()];
+    alpha_4_ = new double[original_bs4_->nprimitive()];
+    xyz_1_ = new double[3*original_bs1_->nshell()];
+    xyz_2_ = new double[3*original_bs2_->nshell()];
+    xyz_3_ = new double[3*original_bs3_->nshell()];
+    xyz_4_ = new double[3*original_bs4_->nshell()];
+    npgto_1_ = new int[original_bs1_->nshell()];
+    npgto_2_ = new int[original_bs2_->nshell()];
+    npgto_3_ = new int[original_bs3_->nshell()];
+    npgto_4_ = new int[original_bs4_->nshell()];
+    am_1_ = new int[original_bs1_->nshell()];
+    am_2_ = new int[original_bs2_->nshell()];
+    am_3_ = new int[original_bs3_->nshell()];
+    am_4_ = new int[original_bs4_->nshell()];
+    pgto_offsets_1_ = new int[original_bs1_->nshell()];
+    pgto_offsets_2_ = new int[original_bs2_->nshell()];
+    pgto_offsets_3_ = new int[original_bs3_->nshell()];
+    pgto_offsets_4_ = new int[original_bs4_->nshell()];
+    screen_ = 0;
+    spheric_ = 0;
 
     // Ask ERD for the maximum amount of scratch it'll need
     compute_scratch_size();
@@ -134,10 +147,26 @@ ERDTwoElectronInt::~ERDTwoElectronInt()
 {
     delete[] alpha_;
     delete[] cc_;
-    delete[] cc_shell_offsets_1_;
-    delete[] cc_shell_offsets_2_;
-    delete[] cc_shell_offsets_3_;
-    delete[] cc_shell_offsets_4_;
+    delete[] alpha_1_;
+    delete[] alpha_2_;
+    delete[] alpha_3_;
+    delete[] alpha_4_;
+    delete[] am_1_;
+    delete[] am_2_;
+    delete[] am_3_;
+    delete[] am_4_;
+    delete[] npgto_1_;
+    delete[] npgto_2_;
+    delete[] npgto_3_;
+    delete[] npgto_4_;
+    delete[] xyz_1_;
+    delete[] xyz_2_;
+    delete[] xyz_3_;
+    delete[] xyz_4_;
+    delete[] pgto_offsets_1_;
+    delete[] pgto_offsets_2_;
+    delete[] pgto_offsets_3_;
+    delete[] pgto_offsets_4_;
     delete[] new_cc_1_;
     delete[] new_cc_2_;
     delete[] new_cc_3_;
@@ -207,7 +236,6 @@ void ERDTwoElectronInt::compute_scratch_size()
     F_INT ncgto4 = 1;
     F_INT ncgto = 4;
     F_INT npgto = npgto1 + npgto2 + npgto3 + npgto4;
-    F_INT ncoeff = npgto;
     F_INT am1 = original_bs1_->max_am();
     F_INT am2 = original_bs2_->max_am();
     F_INT am3 = original_bs3_->max_am();
@@ -217,8 +245,6 @@ void ERDTwoElectronInt::compute_scratch_size()
     F_INT zmin = 0;
     F_INT zopt = 0;
     F_INT last_pgto = 0;
-    F_BOOL screen = 1;
-    F_BOOL spheric = 0;
     for(int pgto1 = 0; pgto1 < npgto1; ++pgto1){
         cc_[last_pgto] = gs1.coef(pgto1);
         alpha_[last_pgto] = gs1.exp(pgto1);
@@ -241,12 +267,12 @@ void ERDTwoElectronInt::compute_scratch_size()
     }
     long int nbatch = 0;
     // Compute the amount of memory needed for the largest quartet
-    C_ERD__MEMORY_ERI_BATCH(npgto, ncoeff, ncgto1, ncgto2, ncgto3, ncgto4,
+    C_ERD__MEMORY_ERI_BATCH(npgto, npgto, ncgto1, ncgto2, ncgto3, ncgto4,
                             npgto1, npgto2, npgto3, npgto4, am1, am2, am3, am4,
                             x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4, 
-                            alpha_, cc_, spheric, imin, iopt, zmin, zopt);
+                            alpha_, cc_, spheric_, imin, iopt, zmin, zopt);
 #if DEBUG
-    fprintf(outfile, "\timin %ld iopt %ld zmin %ld zopt %ld\n", imin, iopt, zmin, zopt);
+    fprintf(outfile, "\timin %d iopt %d zmin %d zopt %d\n", imin, iopt, zmin, zopt);
 #endif
     i_buffer_size_ = iopt;
     d_buffer_size_ = zopt;
@@ -255,13 +281,14 @@ void ERDTwoElectronInt::compute_scratch_size()
 /**
  * Applies the normalization needed for ERD, with psi4.  Note that all calls to
  * erd__normalize_cartesian must be eliminated in the ERD code for this to work.
+ * While we're at it, we populate the flattened data arrays containing basis info.
  */
 void ERDTwoElectronInt::normalize_basis()
 {
     // Basis set 1
     int count = 0;
     for(int shell = 0; shell < original_bs1_->nshell(); ++shell){
-        cc_shell_offsets_1_[shell] = count;
+        pgto_offsets_1_[shell] = count;
         const GaussianShell &gs = original_bs1_->shell(shell);
         int L = gs.am();
         double sum = 0.0;
@@ -283,13 +310,21 @@ void ERDTwoElectronInt::normalize_basis()
         if(L > 1)
             prefac =pow(2.0, 2*L) / df[2*L]; 
         double norm = sqrt(prefac / sum);
-        for(int j = 0; j < gs.nprimitive(); j++)
+        for(int j = 0; j < gs.nprimitive(); j++){
+            alpha_1_[count] = gs.exp(j);
             new_cc_1_[count++] = gs.original_coef(j) * norm;
+        }
+        Vector3 xyz = gs.center();
+        xyz_1_[3*shell+0] = xyz[0];
+        xyz_1_[3*shell+1] = xyz[1];
+        xyz_1_[3*shell+2] = xyz[2];
+        npgto_1_[shell] = gs.nprimitive();
+        am_1_[shell] = gs.am();
     }
     // Basis set 2
     count = 0;
     for(int shell = 0; shell < original_bs2_->nshell(); ++shell){
-        cc_shell_offsets_2_[shell] = count;
+        pgto_offsets_2_[shell] = count;
         const GaussianShell &gs = original_bs2_->shell(shell);
         int L = gs.am();
         double sum = 0.0;
@@ -311,13 +346,21 @@ void ERDTwoElectronInt::normalize_basis()
         if(L > 1)
             prefac =pow(2.0, 2*L) / df[2*L]; 
         double norm = sqrt(prefac / sum);
-        for(int j = 0; j < gs.nprimitive(); j++)
+        for(int j = 0; j < gs.nprimitive(); j++){
+            alpha_2_[count] = gs.exp(j);
             new_cc_2_[count++] = gs.original_coef(j) * norm;
+        }
+        Vector3 xyz = gs.center();
+        xyz_2_[3*shell+0] = xyz[0];
+        xyz_2_[3*shell+1] = xyz[1];
+        xyz_2_[3*shell+2] = xyz[2];
+        npgto_2_[shell] = gs.nprimitive();
+        am_2_[shell] = gs.am();
     }
     // Basis set 3
     count = 0;
     for(int shell = 0; shell < original_bs3_->nshell(); ++shell){
-        cc_shell_offsets_3_[shell] = count;
+        pgto_offsets_3_[shell] = count;
         const GaussianShell &gs = original_bs3_->shell(shell);
         int L = gs.am();
         double sum = 0.0;
@@ -339,13 +382,21 @@ void ERDTwoElectronInt::normalize_basis()
         if(L > 1)
             prefac =pow(2.0, 2*L) / df[2*L]; 
         double norm = sqrt(prefac / sum);
-        for(int j = 0; j < gs.nprimitive(); j++)
+        for(int j = 0; j < gs.nprimitive(); j++){
+            alpha_3_[count] = gs.exp(j);
             new_cc_3_[count++] = gs.original_coef(j) * norm;
+        }
+        Vector3 xyz = gs.center();
+        xyz_3_[3*shell+0] = xyz[0];
+        xyz_3_[3*shell+1] = xyz[1];
+        xyz_3_[3*shell+2] = xyz[2];
+        npgto_3_[shell] = gs.nprimitive();
+        am_3_[shell] = gs.am();
     }
     // Basis set 4
     count = 0;
     for(int shell = 0; shell < original_bs4_->nshell(); ++shell){
-        cc_shell_offsets_4_[shell] = count;
+        pgto_offsets_4_[shell] = count;
         const GaussianShell &gs = original_bs4_->shell(shell);
         int L = gs.am();
         double sum = 0.0;
@@ -367,105 +418,112 @@ void ERDTwoElectronInt::normalize_basis()
         if(L > 1)
             prefac =pow(2.0, 2*L) / df[2*L]; 
         double norm = sqrt(prefac / sum);
-        for(int j = 0; j < gs.nprimitive(); j++)
+        for(int j = 0; j < gs.nprimitive(); j++){
+            alpha_4_[count] = gs.exp(j);
             new_cc_4_[count++] = gs.original_coef(j) * norm;
+        }
+        Vector3 xyz = gs.center();
+        xyz_4_[3*shell+0] = xyz[0];
+        xyz_4_[3*shell+1] = xyz[1];
+        xyz_4_[3*shell+2] = xyz[2];
+        npgto_4_[shell] = gs.nprimitive();
+        am_4_[shell] = gs.am();
     }
+
+    // We always treat basis sets as segmented, right now.
+    ccbeg_[0] = 1;
+    ccbeg_[1] = 1;
+    ccbeg_[2] = 1;
+    ccbeg_[3] = 1;
 }
 
 size_t ERDTwoElectronInt::compute_shell(int shell_i, int shell_j, int shell_k, int shell_l)
 {
-    const GaussianShell &gs1 = original_bs1_->shell(shell_i);
-    const GaussianShell &gs2 = original_bs2_->shell(shell_j);
-    const GaussianShell &gs3 = original_bs3_->shell(shell_k);
-    const GaussianShell &gs4 = original_bs4_->shell(shell_l);
-    Vector3 xyz1 = gs1.center();
-    Vector3 xyz2 = gs2.center();
-    Vector3 xyz3 = gs3.center();
-    Vector3 xyz4 = gs4.center();
-    double x1 = xyz1[0];
-    double y1 = xyz1[1];
-    double z1 = xyz1[2];
-    double x2 = xyz2[0];
-    double y2 = xyz2[1];
-    double z2 = xyz2[2];
-    double x3 = xyz3[0];
-    double y3 = xyz3[1];
-    double z3 = xyz3[2];
-    double x4 = xyz4[0];
-    double y4 = xyz4[1];
-    double z4 = xyz4[2];
+    double *xyzptr1 = &xyz_1_[3*shell_i];
+    double x1 = *(xyzptr1++);
+    double y1 = *(xyzptr1++);
+    double z1 = *(xyzptr1);
+    double *xyzptr2 = &xyz_2_[3*shell_j];
+    double x2 = *(xyzptr2++);
+    double y2 = *(xyzptr2++);
+    double z2 = *(xyzptr2);
+    double *xyzptr3 = &xyz_3_[3*shell_k];
+    double x3 = *(xyzptr3++);
+    double y3 = *(xyzptr3++);
+    double z3 = *(xyzptr3);
+    double *xyzptr4 = &xyz_4_[3*shell_l];
+    double x4 = *(xyzptr4++);
+    double y4 = *(xyzptr4++);
+    double z4 = *(xyzptr4);
     F_INT ncgto1 = 1;
     F_INT ncgto2 = 1;
     F_INT ncgto3 = 1;
     F_INT ncgto4 = 1;
     F_INT ncgto = 4;
-    F_INT npgto1 = gs1.nprimitive();
-    F_INT npgto2 = gs2.nprimitive();
-    F_INT npgto3 = gs3.nprimitive();
-    F_INT npgto4 = gs4.nprimitive();
+    F_INT npgto1 = npgto_1_[shell_i];
+    F_INT npgto2 = npgto_2_[shell_j];
+    F_INT npgto3 = npgto_3_[shell_k];
+    F_INT npgto4 = npgto_4_[shell_l];
     F_INT npgto = npgto1 + npgto2 + npgto3 + npgto4;
-    F_INT ncoeff = npgto;
-    F_INT am1 = gs1.am();
-    F_INT am2 = gs2.am();
-    F_INT am3 = gs3.am();
-    F_INT am4 = gs4.am();
-    F_INT ccbeg[4] = {1, 1, 1, 1};
-    F_INT ccend[4] = {npgto4, npgto3, npgto2, npgto1};
-    F_INT nbatch;
+    F_INT am1 = am_1_[shell_i];
+    F_INT am2 = am_2_[shell_j];
+    F_INT am3 = am_3_[shell_k];
+    F_INT am4 = am_4_[shell_l];
+    ccend_[0] = npgto4;
+    ccend_[1] = npgto3;
+    ccend_[2] = npgto2;
+    ccend_[3] = npgto1;
     int offset_i = 0;
     int offset_j = offset_i + npgto4;
     int offset_k = offset_j + npgto3;
     int offset_l = offset_k + npgto2;
-    F_BOOL spheric = 0;
-    F_BOOL screen = 1;
 
     // Copy exponents and coefficients over
-    ::memcpy(&(cc_[offset_i]), &(new_cc_4_[cc_shell_offsets_4_[shell_l]]), sizeof(double)*npgto4);
-    ::memcpy(&(cc_[offset_j]), &(new_cc_3_[cc_shell_offsets_3_[shell_k]]), sizeof(double)*npgto3);
-    ::memcpy(&(cc_[offset_k]), &(new_cc_2_[cc_shell_offsets_2_[shell_j]]), sizeof(double)*npgto2);
-    ::memcpy(&(cc_[offset_l]), &(new_cc_1_[cc_shell_offsets_1_[shell_i]]), sizeof(double)*npgto1);
-    int pgto = 0;
-    for(int pgto4 = 0; pgto4 < npgto4; ++pgto4) alpha_[pgto++] = gs4.exp(pgto4);
-    for(int pgto3 = 0; pgto3 < npgto3; ++pgto3) alpha_[pgto++] = gs3.exp(pgto3);
-    for(int pgto2 = 0; pgto2 < npgto2; ++pgto2) alpha_[pgto++] = gs2.exp(pgto2);
-    for(int pgto1 = 0; pgto1 < npgto1; ++pgto1) alpha_[pgto++] = gs1.exp(pgto1);
-#if DEBUG
-    fprintf(outfile, "\n\nShell (%2d %2d | %2d %2d) - center (%2d %2d | %2d %2d) - angular momentum (%ld %ld | %ld %ld)\n",
-                    shell_i, shell_j, shell_k, shell_l,
-                    gs1.ncenter(), gs2.ncenter(), gs3.ncenter(), gs4.ncenter(), 
-                    am1, am2, am3, am4);
-    fprintf(outfile, "Indices %ld -> %ld\n", ccbeg[0], ccend[0]);
+    ::memcpy(&(alpha_[offset_i]), &(alpha_4_[pgto_offsets_4_[shell_l]]), sizeof(double)*npgto4);
+    ::memcpy(&(alpha_[offset_j]), &(alpha_3_[pgto_offsets_3_[shell_k]]), sizeof(double)*npgto3);
+    ::memcpy(&(alpha_[offset_k]), &(alpha_2_[pgto_offsets_2_[shell_j]]), sizeof(double)*npgto2);
+    ::memcpy(&(alpha_[offset_l]), &(alpha_1_[pgto_offsets_1_[shell_i]]), sizeof(double)*npgto1);
+    ::memcpy(&(cc_[offset_i]), &(new_cc_4_[pgto_offsets_4_[shell_l]]), sizeof(double)*npgto4);
+    ::memcpy(&(cc_[offset_j]), &(new_cc_3_[pgto_offsets_3_[shell_k]]), sizeof(double)*npgto3);
+    ::memcpy(&(cc_[offset_k]), &(new_cc_2_[pgto_offsets_2_[shell_j]]), sizeof(double)*npgto2);
+    ::memcpy(&(cc_[offset_l]), &(new_cc_1_[pgto_offsets_1_[shell_i]]), sizeof(double)*npgto1);
 
-    fprintf(outfile, "Number of primitives: %ld %ld %ld %ld\n", npgto1, npgto2, npgto3, npgto4);
+#if DEBUG
+    fprintf(outfile, "\n\nShell (%2d %2d | %2d %2d) - center (%2d %2d | %2d %2d) - angular momentum (%d %d | %d %d)\n",
+                    shell_i, shell_j, shell_k, shell_l,
+                    bs1_->shell(shell_i).ncenter(), bs2_->shell(shell_j).ncenter(), bs3_->shell(shell_k).ncenter(), bs4_->shell(shell_l).ncenter(), 
+                    am1, am2, am3, am4);
+    fprintf(outfile, "XYZ1: %16.10f %16.10f %16.10f\n", x1, y1, z1);
+    fprintf(outfile, "XYZ2: %16.10f %16.10f %16.10f\n", x2, y2, z2);
+    fprintf(outfile, "XYZ3: %16.10f %16.10f %16.10f\n", x3, y3, z3);
+    fprintf(outfile, "XYZ4: %16.10f %16.10f %16.10f\n", x4, y4, z4);
+    fprintf(outfile, "Indices  -> %d\n", ccbeg_[0], ccend_[0]);
+
+    fprintf(outfile, "Number of primitives: %d %d %d %d\n", npgto1, npgto2, npgto3, npgto4);
     fprintf(outfile, "Coefficients: ");
-    for(int n = 0; n < ncoeff; ++n)
+    for(int n = 0; n < npgto; ++n)
         fprintf(outfile, "%14.10f ", cc_[n]);
     fprintf(outfile, "\n");
     fprintf(outfile, "Exponents:    ");
-    for(int n = 0; n < ncoeff; ++n)
+    for(int n = 0; n < npgto; ++n)
         fprintf(outfile, "%14.10f ", alpha_[n]);
     fprintf(outfile, "\n");
-    fprintf(outfile, "CCBEG %3ld %3ld %3ld %3ld\n", ccbeg[0], ccbeg[1], ccbeg[2], ccbeg[3]);
-    fprintf(outfile, "CCEND %3ld %3ld %3ld %3ld\n", ccend[0], ccend[1], ccend[2], ccend[3]);
 #endif
+
+    F_INT nbatch;
     // Call ERD.  N.B. We reverse the shell ordering, because the first index is
     // the fastest running index in the buffer, which should be l for us.
-    C_ERD__GENER_ERI_BATCH(i_buffer_size_, d_buffer_size_, npgto, ncoeff, ncgto,
+    C_ERD__GENER_ERI_BATCH(i_buffer_size_, d_buffer_size_, npgto, npgto, ncgto,
                            ncgto4, ncgto3, ncgto2, ncgto1,
                            npgto4, npgto3, npgto2, npgto1,
                            am4, am3, am2, am1,
                            x4, y4, z4, x3, y3, z3, x2, y2, z2, x1, y1, z1,
-                           alpha_, cc_, ccbeg, ccend, spheric, screen,
+                           alpha_, cc_, ccbeg_, ccend_, spheric_, screen_,
                            iscratch_, nbatch, buffer_offset_, dscratch_);
 
 #if DEBUG
-    fprintf(outfile, "The buffer: ");
-    for(int n=0; n<d_buffer_size_;++n)
-        fprintf(outfile, "%10.6f ", dscratch_[n]);
-    fprintf(outfile, "\n");
-
-    fprintf(outfile, "Buffer offset is %ld\n", buffer_offset_-1);
-    fprintf(outfile, "%ld integrals were computed\n", nbatch);
+    fprintf(outfile, "Buffer offset is %d\n", buffer_offset_-1);
+    fprintf(outfile, "%d integrals were computed\n", nbatch);
 #endif
 
     if(nbatch == 0){
