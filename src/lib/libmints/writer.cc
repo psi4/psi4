@@ -125,7 +125,7 @@ void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> 
     // need dimensions
     const Dimension aos = pl->AO_basisdim();
     const Dimension sos = pl->SO_basisdim();
-    const Dimension nmo = Ca->ncol();
+    const Dimension nmo = Ca->colspi();
 
     SharedMatrix Ca_ao_mo(new Matrix("Ca AO x MO", aos, nmo));
     SharedMatrix Cb_ao_mo(new Matrix("Cb AO x MO", aos, nmo));
@@ -221,11 +221,12 @@ void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> 
         fprintf(molden, " Ene= %20.10f\n", Ea->get(h, n));
         fprintf(molden, " Spin= Alpha\n");
         if(Ca == Cb && Ea == Eb && SameOcc)
-          fprintf(molden, " Occup= 2.0\n");
+          fprintf(molden, " Occup= %7.4lf\n", OccA->get(h,n)+OccB->get(h,n));
         else
-          fprintf(molden, " Occup= %3.1d\n", OccA->get(h,n));
+          fprintf(molden, " Occup= %7.4lf\n", OccA->get(h,n));
+        fflush(molden);
         for (int so=0; so<wavefunction_->nso(); ++so)
-           fprintf(molden, "%3d %20.12f\n", so+1, Ca_ao_mo->get(h, so, n));
+          fprintf(molden, "%3d %20.12f\n", so+1, Ca_ao_mo->get(h, so, n));
     }
 
     // do beta's
