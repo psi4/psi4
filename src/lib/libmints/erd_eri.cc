@@ -218,7 +218,7 @@ void ERDTwoElectronInt::compute_scratch_size()
     F_INT zopt = 0;
     F_INT last_pgto = 0;
     F_BOOL screen = 1;
-    F_BOOL spheric = 1;
+    F_BOOL spheric = 0;
     for(int pgto1 = 0; pgto1 < npgto1; ++pgto1){
         cc_[last_pgto] = gs1.coef(pgto1);
         alpha_[last_pgto] = gs1.exp(pgto1);
@@ -417,7 +417,7 @@ size_t ERDTwoElectronInt::compute_shell(int shell_i, int shell_j, int shell_k, i
     int offset_k = offset_j + npgto3;
     int offset_l = offset_k + npgto2;
     F_BOOL spheric = 0;
-    F_BOOL screen = 0;
+    F_BOOL screen = 1;
 
     // Copy exponents and coefficients over
     ::memcpy(&(cc_[offset_i]), &(new_cc_4_[cc_shell_offsets_4_[shell_l]]), sizeof(double)*npgto4);
@@ -469,7 +469,8 @@ size_t ERDTwoElectronInt::compute_shell(int shell_i, int shell_j, int shell_k, i
 #endif
 
     if(nbatch == 0){
-        ::memset(target_, 0, sizeof(double)*gs1.nfunction() *gs2.nfunction() *gs3.nfunction() *gs4.nfunction());
+        // The code should check the return value, and ignore the integrals in the buffer if we get here
+        //::memset(target_, 0, sizeof(double)*gs1.nfunction() *gs2.nfunction() *gs3.nfunction() *gs4.nfunction());
         return 0;
     }
 
