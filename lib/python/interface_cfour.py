@@ -94,13 +94,22 @@ def run_cfour(name, **kwargs):
         psi4.print_out("\n  GENBAS loaded from %s\n" % (genbas_path))
         psi4.print_out("  CFOUR to be run from %s\n" % (psioh.get_default_path() + cfour_tmpdir))
     else:
-        psi4.print_out('\nGENBAS file for CFOUR interface not found\n\n')
-        psi4.print_out('Search path that was tried:\n')
+        message = """
+  GENBAS file for CFOUR interface not found. Either:
+  [1] Supply a GENBAS
+      [1a] Use cfour {} block with molecule and basis directives.
+      [1b] Use molecule {} block and CFOUR_BASIS keyword.
+  [2] Allow PSI4's internal basis sets to convert to GENBAS
+      [2a] Use molecule {} block and BASIS keyword.
+
+"""
+        psi4.print_out(message)
+        psi4.print_out('  Search path that was tried:\n')
         temp = lenv['PATH']
         psi4.print_out(temp.replace(':', ', '))
-        raise ValidationError("GENBAS file loading problem")
+        #raise ValidationError("GENBAS file loading problem")
 
-    # Generate integrals and input file (dumps files to the current directory)
+    # Generate input file (dumps files to the current directory)
     with open('ZMAT', 'w') as cfour_infile:
         cfour_infile.write(write_zmat(lowername, dertype))
 
@@ -222,10 +231,11 @@ def write_zmat(name, dertype):
     else:
         memcmd, memkw = qcprograms.cfour.cfour_memory(mem)
 
-    # Handle molecule
+    # Handle molecule and basis set
     molecule = psi4.get_active_molecule()
     if molecule.name() == 'blank_molecule_psi4_yo':
         molcmd, molkw = '', {}
+        bascmd, baskw = '', {}
     else:
         molecule.update_geometry()
         #print(molecule.create_psi4_string_from_molecule())
@@ -233,22 +243,20 @@ def write_zmat(name, dertype):
         qcdbmolecule.tagline = molecule.name()
         molcmd, molkw = qcdbmolecule.format_molecule_for_cfour()
 
+        if psi4.get_global_option('BASIS') == '':
+            bascmd, baskw = '', {}
+        else:
+            user_pg = molecule.schoenflies_symbol()
+            molecule.reset_point_group('c1')
+            with open('GENBAS', 'w') as cfour_basfile:
+                cfour_basfile.write(psi4.BasisSet.construct(psi4.Gaussian94BasisSetParser(), molecule, "BASIS").genbas())
+            psi4.print_out('\n  GENBAS loaded from PSI4 LibMints for basis %s\n' % (psi4.get_global_option('BASIS')))
+            molecule.reset_point_group(user_pg)
+            molecule.update_geometry()
+            bascmd, baskw = qcdbmolecule.format_basis_for_cfour(psi4.MintsHelper().basisset().has_puream())
+
     # Handle calc type
     clvcmd, clvkw = qcprograms.cfour.cfour_calclevel(dertype)
-
-#optimize
-#    gradient
-#    run_cfour
-#    write_zmat
-#    xcfour
-#    optking
-#    ---
-#    gradient
-#    run_cfour
-#    write_zmat
-#    xcfour
-#    optking
-#    ---
 
     # Handle psi4 keywords implying cfour keyword values (NYI)
 
@@ -259,6 +267,7 @@ def write_zmat(name, dertype):
     userkw = p4util.prepare_options_for_modules()
     userkw = qcdb.options.reconcile_options(userkw, memkw)
     userkw = qcdb.options.reconcile_options(userkw, molkw)
+    userkw = qcdb.options.reconcile_options(userkw, baskw)
     userkw = qcdb.options.reconcile_options(userkw, mtdkw)
     userkw = qcdb.options.reconcile_options(userkw, clvkw)
 
@@ -268,5 +277,5 @@ def write_zmat(name, dertype):
     # Handle text to be passed untouched to cfour
     litcmd = psi4.get_global_option('LITERAL_CFOUR')
 
-    zmat = memcmd + molcmd + optcmd + mtdcmd + litcmd
+    zmat = memcmd + molcmd + optcmd + mtdcmd + bascmd + litcmd
     return zmat
