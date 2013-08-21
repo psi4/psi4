@@ -16,7 +16,10 @@ psi_subdirs = psi-mints5 psi-rhf-scsmp2 psi-uhf-scsmp2 psi-rohf-scsmp2 psi-mp3 p
 
 opt_subdirs = opt-rhf-scf opt-rhf-mp2 opt-rhf-ccsd_t_ opt-rhf-ccsd_t_-ecc
 
+infra_subdirs = puream
+
 subdirs = \
+$(infra_subdirs) \
 $(sp_rhf_subdirs) \
 $(sp_uhf_subdirs) \
 $(sp_rohf_subdirs) \
@@ -97,6 +100,9 @@ opt_tests: $(opt_subdirs)
 
 psi_tests: $(psi_subdirs)
 	$(call gatherresults, $(psi_subdirs))
+
+infra_tests: $(infra_subdirs)
+	$(call gatherresults, $(infra_subdirs))
 
 plugins:
 	for dir in $(plugin_subdirs); \

@@ -1271,6 +1271,7 @@ AC_CONFIG_FILES([
           tests/cfour/opt-rhf-ccsd_t_/Makefile
           tests/cfour/opt-rhf-mp2/Makefile
           tests/cfour/opt-rhf-scf/Makefile
+          tests/cfour/puream/Makefile
           plugins/Makefile
           plugins/aointegrals/Makefile
           plugins/backtrans/Makefile
