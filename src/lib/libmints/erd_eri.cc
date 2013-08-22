@@ -11,6 +11,8 @@
 #define DEBUG 0
 
 // Name mangling
+#define FC_SYMBOL 2
+
 #if FC_SYMBOL == 1
 #define C_ERD__GENER_ERI_BATCH erd__gener_eri_batch
 #define C_ERD__MEMORY_CSGTO erd__memory_csgto
@@ -65,6 +67,8 @@ ERDTwoElectronInt::ERDTwoElectronInt(const IntegralFactory* integral, int deriv,
     bs2_ = original_bs2_;
     bs3_ = original_bs3_;
     bs4_ = original_bs4_;
+    same_bs_ = (bs1_ == bs2_ && bs1_ == bs3_ && bs1_ == bs4_);
+
     size_t max_cart = INT_NCART(basis1()->max_am()) * INT_NCART(basis2()->max_am()) *
                       INT_NCART(basis3()->max_am()) * INT_NCART(basis4()->max_am());
 
@@ -93,30 +97,54 @@ ERDTwoElectronInt::ERDTwoElectronInt(const IntegralFactory* integral, int deriv,
                        basis4()->max_nprimitive();
     cc_ = new double[max_nprim];
     alpha_ = new double[max_nprim];
+
+    // Basis set dependent info
     new_cc_1_ = new double[original_bs1_->nprimitive()];
-    new_cc_2_ = new double[original_bs2_->nprimitive()];
-    new_cc_3_ = new double[original_bs3_->nprimitive()];
-    new_cc_4_ = new double[original_bs4_->nprimitive()];
     alpha_1_ = new double[original_bs1_->nprimitive()];
-    alpha_2_ = new double[original_bs2_->nprimitive()];
-    alpha_3_ = new double[original_bs3_->nprimitive()];
-    alpha_4_ = new double[original_bs4_->nprimitive()];
-    xyz_1_ = new double[3*original_bs1_->nshell()];
-    xyz_2_ = new double[3*original_bs2_->nshell()];
-    xyz_3_ = new double[3*original_bs3_->nshell()];
-    xyz_4_ = new double[3*original_bs4_->nshell()];
     npgto_1_ = new int[original_bs1_->nshell()];
-    npgto_2_ = new int[original_bs2_->nshell()];
-    npgto_3_ = new int[original_bs3_->nshell()];
-    npgto_4_ = new int[original_bs4_->nshell()];
+    xyz_1_ = new double[3*original_bs1_->nshell()];
     am_1_ = new int[original_bs1_->nshell()];
-    am_2_ = new int[original_bs2_->nshell()];
-    am_3_ = new int[original_bs3_->nshell()];
-    am_4_ = new int[original_bs4_->nshell()];
     pgto_offsets_1_ = new int[original_bs1_->nshell()];
-    pgto_offsets_2_ = new int[original_bs2_->nshell()];
-    pgto_offsets_3_ = new int[original_bs3_->nshell()];
-    pgto_offsets_4_ = new int[original_bs4_->nshell()];
+    if(same_bs_){
+        new_cc_2_ = new_cc_1_;
+        new_cc_3_ = new_cc_1_;
+        new_cc_4_ = new_cc_1_;
+        alpha_2_ = alpha_1_;
+        alpha_3_ = alpha_1_;
+        alpha_4_ = alpha_1_;
+        xyz_2_ = xyz_1_;
+        xyz_3_ = xyz_1_;
+        xyz_4_ = xyz_1_;
+        npgto_2_ = npgto_1_;
+        npgto_3_ = npgto_1_;
+        npgto_4_ = npgto_1_;
+        am_2_ = am_1_;
+        am_3_ = am_1_;
+        am_4_ = am_1_;
+        pgto_offsets_2_ = pgto_offsets_1_;
+        pgto_offsets_3_ = pgto_offsets_1_;
+        pgto_offsets_4_ = pgto_offsets_1_;
+    }else{
+        new_cc_2_ = new double[original_bs2_->nprimitive()];
+        new_cc_3_ = new double[original_bs3_->nprimitive()];
+        new_cc_4_ = new double[original_bs4_->nprimitive()];
+        alpha_2_ = new double[original_bs2_->nprimitive()];
+        alpha_3_ = new double[original_bs3_->nprimitive()];
+        alpha_4_ = new double[original_bs4_->nprimitive()];
+        xyz_2_ = new double[3*original_bs2_->nshell()];
+        xyz_3_ = new double[3*original_bs3_->nshell()];
+        xyz_4_ = new double[3*original_bs4_->nshell()];
+        npgto_2_ = new int[original_bs2_->nshell()];
+        npgto_3_ = new int[original_bs3_->nshell()];
+        npgto_4_ = new int[original_bs4_->nshell()];
+        am_2_ = new int[original_bs2_->nshell()];
+        am_3_ = new int[original_bs3_->nshell()];
+        am_4_ = new int[original_bs4_->nshell()];
+        pgto_offsets_2_ = new int[original_bs2_->nshell()];
+        pgto_offsets_3_ = new int[original_bs3_->nshell()];
+        pgto_offsets_4_ = new int[original_bs4_->nshell()];
+    }
+
     screen_ = 0;
     spheric_ = 0;
 
@@ -147,30 +175,33 @@ ERDTwoElectronInt::~ERDTwoElectronInt()
 {
     delete[] alpha_;
     delete[] cc_;
+
     delete[] alpha_1_;
-    delete[] alpha_2_;
-    delete[] alpha_3_;
-    delete[] alpha_4_;
     delete[] am_1_;
-    delete[] am_2_;
-    delete[] am_3_;
-    delete[] am_4_;
     delete[] npgto_1_;
-    delete[] npgto_2_;
-    delete[] npgto_3_;
-    delete[] npgto_4_;
     delete[] xyz_1_;
-    delete[] xyz_2_;
-    delete[] xyz_3_;
-    delete[] xyz_4_;
     delete[] pgto_offsets_1_;
-    delete[] pgto_offsets_2_;
-    delete[] pgto_offsets_3_;
-    delete[] pgto_offsets_4_;
     delete[] new_cc_1_;
-    delete[] new_cc_2_;
-    delete[] new_cc_3_;
-    delete[] new_cc_4_;
+    if(!same_bs_){
+        delete[] alpha_2_;
+        delete[] alpha_3_;
+        delete[] alpha_4_;
+        delete[] am_2_;
+        delete[] am_3_;
+        delete[] am_4_;
+        delete[] npgto_2_;
+        delete[] npgto_3_;
+        delete[] npgto_4_;
+        delete[] xyz_2_;
+        delete[] xyz_3_;
+        delete[] xyz_4_;
+        delete[] pgto_offsets_2_;
+        delete[] pgto_offsets_3_;
+        delete[] pgto_offsets_4_;
+        delete[] new_cc_2_;
+        delete[] new_cc_3_;
+        delete[] new_cc_4_;
+    }
     delete[] tformbuf_;
     delete[] target_;
     delete[] dscratch_;
@@ -321,6 +352,8 @@ void ERDTwoElectronInt::normalize_basis()
         npgto_1_[shell] = gs.nprimitive();
         am_1_[shell] = gs.am();
     }
+    if(!same_bs_) return;
+
     // Basis set 2
     count = 0;
     for(int shell = 0; shell < original_bs2_->nshell(); ++shell){
