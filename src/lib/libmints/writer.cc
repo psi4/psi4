@@ -134,9 +134,9 @@ void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> 
     Ca_ao_mo->gemm(false, false, 1.0, aotoso, Ca, 0.0);
     Cb_ao_mo->gemm(false, false, 1.0, aotoso, Cb, 0.0);
 
-//    aotoso->print();
-//    Ca_ao_mo->print();
-//    Cb_ao_mo->print();
+    //    aotoso->print();
+    //    Ca_ao_mo->print();
+    //    Cb_ao_mo->print();
 
     // The order Molden expects
     //     P: x, y, z
@@ -208,7 +208,7 @@ void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> 
         for (int n=0; n<wavefunction_->nmopi()[h]; ++n) {
             mos.push_back(make_pair(Ea->get(h, n), make_pair(h, n)));
             if(OccA->get(h,n) != OccB->get(h,n))
-              SameOcc = false;
+                SameOcc = false;
         }
     }
     std::sort(mos.begin(), mos.end());
@@ -221,35 +221,35 @@ void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> 
         fprintf(molden, " Ene= %20.10f\n", Ea->get(h, n));
         fprintf(molden, " Spin= Alpha\n");
         if(Ca == Cb && Ea == Eb && SameOcc)
-          fprintf(molden, " Occup= %7.4lf\n", OccA->get(h,n)+OccB->get(h,n));
+            fprintf(molden, " Occup= %7.4lf\n", OccA->get(h,n)+OccB->get(h,n));
         else
-          fprintf(molden, " Occup= %7.4lf\n", OccA->get(h,n));
+            fprintf(molden, " Occup= %7.4lf\n", OccA->get(h,n));
         fflush(molden);
         for (int so=0; so<wavefunction_->nso(); ++so)
-          fprintf(molden, "%3d %20.12f\n", so+1, Ca_ao_mo->get(h, so, n));
+            fprintf(molden, "%3d %20.12lf\n", so+1, Ca_ao_mo->get(h, so, n));
     }
 
     // do beta's
     mos.clear();
     if (Ca != Cb || Ea != Eb || !SameOcc) {
-      for (int h=0; h<wavefunction_->nirrep(); ++h) {
-        for (int n=0; n<wavefunction_->nmopi()[h]; ++n) {
-          mos.push_back(make_pair(Eb->get(h, n), make_pair(h, n)));
+        for (int h=0; h<wavefunction_->nirrep(); ++h) {
+            for (int n=0; n<wavefunction_->nmopi()[h]; ++n) {
+                mos.push_back(make_pair(Eb->get(h, n), make_pair(h, n)));
+            }
         }
-      }
-      std::sort(mos.begin(), mos.end());
+        std::sort(mos.begin(), mos.end());
 
-      for (int i=0; i<mos.size(); ++i) {
-        int h = mos[i].second.first;
-        int n = mos[i].second.second;
+        for (int i=0; i<mos.size(); ++i) {
+            int h = mos[i].second.first;
+            int n = mos[i].second.second;
 
-        fprintf(molden, " Sym= %s\n", ct.gamma(h).symbol());
-        fprintf(molden, " Ene= %20.10f\n", Eb->get(h, n));
-        fprintf(molden, " Spin= Beta\n");
-        fprintf(molden, " Occup= %3.1d\n", OccB->get(h,n));
-        for (int so=0; so<wavefunction_->nso(); ++so)
-          fprintf(molden, "%3d %20.12f\n", so+1, Cb_ao_mo->get(h, so, n));
-      }
+            fprintf(molden, " Sym= %s\n", ct.gamma(h).symbol());
+            fprintf(molden, " Ene= %20.10lf\n", Eb->get(h, n));
+            fprintf(molden, " Spin= Beta\n");
+            fprintf(molden, " Occup= %7.4lf\n", OccB->get(h,n));
+            for (int so=0; so<wavefunction_->nso(); ++so)
+                fprintf(molden, "%3d %20.12lf\n", so+1, Cb_ao_mo->get(h, so, n));
+        }
     }
 
     fclose(molden);
@@ -685,12 +685,12 @@ void MOWriter::write()
             for (int n = 0; n<wavefunction_->nmopi()[h]; n++) {
 
                 if ( skip[count] ) {
-                   count++;
-                   continue;
+                    count++;
+                    continue;
                 }
                 if ( Ea.get(h,n) <= minen ) {
-                   minen = Ea.get(h,n);
-                   minorb = count;
+                    minen = Ea.get(h,n);
+                    minorb = count;
                 }
 
                 count++;
@@ -729,9 +729,9 @@ void MOWriter::write()
     // dump to output file
     fprintf(outfile,"\n");
     if ( isrestricted )
-       fprintf(outfile,"  ==> Molecular Orbitals <==\n");
+        fprintf(outfile,"  ==> Molecular Orbitals <==\n");
     else
-       fprintf(outfile,"  ==> Alpha-Spin Molecular Orbitals <==\n");
+        fprintf(outfile,"  ==> Alpha-Spin Molecular Orbitals <==\n");
     fprintf(outfile,"\n");
 
     write_mos(mol);
@@ -740,55 +740,55 @@ void MOWriter::write()
     if ( !isrestricted ) {
 
 
-       // order orbitals in terms of energy
-       for (int orb = 0; orb < nmo; orb++) skip[orb] = false;
-       for (int orb = 0; orb < nmo; orb++) {
+        // order orbitals in terms of energy
+        for (int orb = 0; orb < nmo; orb++) skip[orb] = false;
+        for (int orb = 0; orb < nmo; orb++) {
 
-           int count = 0;
-           double minen = 1.0e9;
-           for (int h = 0; h < nirrep; h++) {
-               for (int n = 0; n<wavefunction_->nmopi()[h]; n++) {
+            int count = 0;
+            double minen = 1.0e9;
+            for (int h = 0; h < nirrep; h++) {
+                for (int n = 0; n<wavefunction_->nmopi()[h]; n++) {
 
-                   if ( skip[count] ) {
-                      count++;
-                      continue;
-                   }
+                    if ( skip[count] ) {
+                        count++;
+                        continue;
+                    }
 
-                   if ( Eb.get(h,n) <= minen ) {
-                      minen = Eb.get(h,n);
-                      minorb = count;
-                   }
-                   count++;
+                    if ( Eb.get(h,n) <= minen ) {
+                        minen = Eb.get(h,n);
+                        minorb = count;
+                    }
+                    count++;
 
-               }
-           }
-           map[ orb ] = minorb;
-           skip[ minorb ] = true;
-       }
+                }
+            }
+            map[ orb ] = minorb;
+            skip[ minorb ] = true;
+        }
 
 
-       // reorder orbitals:
-       for (int i = 0; i < nmo * nso; i++) Ca_pointer[i] = 0.0;
-       count = 0;
-       for (int h = 0; h < nirrep; h++) {
-           double ** Ca_old = Cb_ao_mo->pointer(h);
-           for (int n = 0; n<wavefunction_->nmopi()[h]; n++) {
-               occ[ count ] = n < wavefunction_->doccpi()[h] ? 1 : 0;
-               eps[ count ] = Eb.get(h,n);
-               sym[ count ] = h;
-               for (int mu = 0; mu < nso; mu++) {
-                   Ca_pointer[mu*nmo + count] = Ca_old[mu][n];
-               }
-               count++;
+        // reorder orbitals:
+        for (int i = 0; i < nmo * nso; i++) Ca_pointer[i] = 0.0;
+        count = 0;
+        for (int h = 0; h < nirrep; h++) {
+            double ** Ca_old = Cb_ao_mo->pointer(h);
+            for (int n = 0; n<wavefunction_->nmopi()[h]; n++) {
+                occ[ count ] = n < wavefunction_->doccpi()[h] ? 1 : 0;
+                eps[ count ] = Eb.get(h,n);
+                sym[ count ] = h;
+                for (int mu = 0; mu < nso; mu++) {
+                    Ca_pointer[mu*nmo + count] = Ca_old[mu][n];
+                }
+                count++;
 
-           }
-       }
+            }
+        }
 
-       // dump to output file
-       fprintf(outfile,"\n");
-       fprintf(outfile,"  ==> Beta-Spin Molecular Orbitals <==\n");
-       fprintf(outfile,"\n");
-       write_mos(mol);
+        // dump to output file
+        fprintf(outfile,"\n");
+        fprintf(outfile,"  ==> Beta-Spin Molecular Orbitals <==\n");
+        fprintf(outfile,"\n");
+        write_mos(mol);
     }
 
     delete skip;
