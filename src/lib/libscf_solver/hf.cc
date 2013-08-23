@@ -664,7 +664,7 @@ void HF::form_H()
 
                 for(int i=0; i < nso; i++)
                   for(int j=0; j < nso; j++)
-                    V_eff[i][j] += jacobian * 1.0e6 * phi_so[i] * phi_so[j];
+                    V_eff[i][j] += jacobian * (-1.0e6) * phi_so[i] * phi_so[j];
               }
             }
           }
