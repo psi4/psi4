@@ -9,6 +9,7 @@ autom4te.cache
 *.creator*
 *.files
 *.includes
+CMakeLists.txt.user
 
 # Files resulting from compilation
 *.o

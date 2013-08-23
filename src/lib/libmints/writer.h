@@ -24,6 +24,7 @@
 #define WRITER_H
 
 #include <boost/shared_ptr.hpp>
+#include <libmints/vector.h>
 #include <string>
 
 namespace psi {
@@ -50,9 +51,9 @@ class MoldenWriter
     boost::shared_ptr<Wavefunction> wavefunction_;
 
 public:
+    void write(const std::string &filename, boost::shared_ptr<Matrix> Ca, boost::shared_ptr<Matrix> Cb, boost::shared_ptr<Vector> Ea, boost::shared_ptr<Vector> Eb, boost::shared_ptr<Vector> OccA, boost::shared_ptr<Vector> OccB);
     MoldenWriter(boost::shared_ptr<Wavefunction> wavefunction);
 
-    void write(const std::string& filename);
 };
 
 class MOWriter

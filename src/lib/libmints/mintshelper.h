@@ -175,7 +175,7 @@ public:
     /// SO Kinetic Integrals
     SharedMatrix so_kinetic();
     /// SO Potential Integrals
-    SharedMatrix so_potential();
+    SharedMatrix so_potential(bool include_perturbations = true);
     /// Vector SO Dipole Integrals
     std::vector<SharedMatrix > so_dipole();
     /// Vector SO Nabla Integrals

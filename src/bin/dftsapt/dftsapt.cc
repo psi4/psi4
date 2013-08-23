@@ -109,8 +109,10 @@ boost::shared_ptr<DFTSAPT> DFTSAPT::build(boost::shared_ptr<Wavefunction> d,
     sapt->eps_occ_A_  = mA->epsilon_a_subset("AO","OCC");
     sapt->eps_vir_A_  = mA->epsilon_a_subset("AO","VIR");
 
+    sapt->Cfocc_A_    = mA->Ca_subset("AO","FROZEN_OCC");
     sapt->Caocc_A_    = mA->Ca_subset("AO","ACTIVE_OCC");
     sapt->Cavir_A_    = mA->Ca_subset("AO","ACTIVE_VIR");
+    sapt->Cfvir_A_    = mA->Ca_subset("AO","FROZEN_VIR");
 
     sapt->eps_focc_A_ = mA->epsilon_a_subset("AO","FROZEN_OCC");
     sapt->eps_aocc_A_ = mA->epsilon_a_subset("AO","ACTIVE_OCC");
@@ -122,8 +124,10 @@ boost::shared_ptr<DFTSAPT> DFTSAPT::build(boost::shared_ptr<Wavefunction> d,
     sapt->eps_occ_B_  = mB->epsilon_a_subset("AO","OCC");
     sapt->eps_vir_B_  = mB->epsilon_a_subset("AO","VIR");
 
+    sapt->Cfocc_B_    = mB->Ca_subset("AO","FROZEN_OCC");
     sapt->Caocc_B_    = mB->Ca_subset("AO","ACTIVE_OCC");
     sapt->Cavir_B_    = mB->Ca_subset("AO","ACTIVE_VIR");
+    sapt->Cfvir_B_    = mB->Ca_subset("AO","FROZEN_VIR");
 
     sapt->eps_focc_B_ = mB->epsilon_a_subset("AO","FROZEN_OCC");
     sapt->eps_aocc_B_ = mB->epsilon_a_subset("AO","ACTIVE_OCC");

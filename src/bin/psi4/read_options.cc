@@ -105,6 +105,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
   /*- PSI4 dies if energy does not converge. !expert -*/
   options.add_bool("DIE_IF_NOT_CONVERGED", true);
+  /*- Integral package to use. If compiled with ERD support, ERD is used where possible; LibInt is used otherwise. -*/
+  options.add_str("INTEGRAL_PACKAGE", "ERD", "ERD LIBINT");
 
   /*- Base filename for text files written by PSI, such as the
   MOLDEN output file, the Hessian file, the internal coordinate file,
@@ -830,6 +832,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("ASAPT_IND_SCALE", true);
     /*- Do ASAPT coupled response? (not recommended) -*/
     options.add_bool("ASAPT_IND_RESPONSE", false);
+    /*- Do ASAPT core-valence localization separation? -*/
+    options.add_bool("ASAPT_SEPARATE_CORE", true);
     /*- Voxel ASAPT density saturation (for uniform transfer functions) -*/
     options.add_double("ASAPT_DENSITY_CLAMP", 0.5);
     /*- Voxel ASAPT energy saturation (for uniform transfer functions) -*/
