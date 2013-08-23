@@ -187,6 +187,10 @@ public:
 
     /// The RMS error in the density
     double rms_density_error() {return Drms_;}
+    
+    /// Returns the occupation vectors
+    boost::shared_ptr<Vector> occupation_a() const;
+    boost::shared_ptr<Vector> occupation_b() const;
 protected:
 
     /// Formation of H is the same regardless of RHF, ROHF, UHF
@@ -198,6 +202,7 @@ protected:
 
     /// Prints the orbital occupation
     void print_occupation();
+    
 
     /// Perform casting of C from old basis to new basis if desired.
     SharedMatrix BasisProjection(SharedMatrix Cold, int* napi, boost::shared_ptr<BasisSet> old_basis, boost::shared_ptr<BasisSet> new_basis);
