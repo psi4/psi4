@@ -159,7 +159,7 @@ vector<string> BasisSetParser::string_to_vector(const std::string &data)
     return lines;
 }
 
-std::vector<GaussianShell>
+std::vector<ShellInfo>
 Gaussian94BasisSetParser::parse(const string& symbol, const std::vector<std::string> &lines)
 {
     // Regular expressions that we'll be checking for.
@@ -194,7 +194,7 @@ Gaussian94BasisSetParser::parse(const string& symbol, const std::vector<std::str
     // Need a dummy center for the shell.
     Vector3 center;
 
-    vector<GaussianShell> shell_list;
+    vector<ShellInfo> shell_list;
 
     int lineno = 0;
     bool found = false;
@@ -293,7 +293,7 @@ Gaussian94BasisSetParser::parse(const string& symbol, const std::vector<std::str
 
                             //                                printf("Adding new shell. nprimitive = %d\n", nprimitive);
                             // We have a full shell, push it to the basis set
-                            shell_list.push_back(GaussianShell(am, contractions, exponents, gaussian_type, 0, center, 0, Unnormalized));
+                            shell_list.push_back(ShellInfo(am, contractions, exponents, gaussian_type, 0, center, 0, Unnormalized));
                         }
                         else if (shell_type.size() == 2) {
                             // This is to handle instances of SP, PD, DF, FG, ...
@@ -343,8 +343,8 @@ Gaussian94BasisSetParser::parse(const string& symbol, const std::vector<std::str
                             }
 
                             //                                printf("Adding 2 new shells. nprimitive = %d\n", nprimitive);
-                            shell_list.push_back(GaussianShell(am1, contractions1, exponents, gaussian_type, 0, center, 0, Unnormalized));
-                            shell_list.push_back(GaussianShell(am2, contractions2, exponents, gaussian_type, 0, center, 0, Unnormalized));
+                            shell_list.push_back(ShellInfo(am1, contractions1, exponents, gaussian_type, 0, center, 0, Unnormalized));
+                            shell_list.push_back(ShellInfo(am2, contractions2, exponents, gaussian_type, 0, center, 0, Unnormalized));
                         }
                         else {
                             throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Unable to parse basis sets with spd, or higher grouping\n");
