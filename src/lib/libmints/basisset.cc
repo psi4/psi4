@@ -324,8 +324,8 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
 
     // Map of GaussianShells
     //  basis           atom        gaussian shells
-    typedef map<string, map<string, vector<GaussianShell> > > map_ssv;
-    typedef map<string, vector<GaussianShell> > map_sv;
+    typedef map<string, map<string, vector<ShellInfo> > > map_ssv;
+    typedef map<string, vector<ShellInfo> > map_sv;
     map_ssv basis_atom_shell;
 
     map<string, int> names;
@@ -405,19 +405,22 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
             throw PSIEXCEPTION("  Unable to load "+ filename + " from the default Psi4 basis set library.");
         }
     }
+    //////
+    ////  FIX THIS TO USE THE NEW FLATTENED DATA STRUCTURES
+    //////
 
-    // Go through the atoms and copy the shells to the basis set.
-    for (int atom=0; atom<mol->natom(); ++atom) {
-        string basis = mol->atom_entry(atom)->basisset(type);
-        string symbol = mol->atom_entry(atom)->symbol();
-        Vector3 center = mol->xyz(atom);
+    //// Go through the atoms and copy the shells to the basis set.
+    //for (int atom=0; atom<mol->natom(); ++atom) {
+    //    string basis = mol->atom_entry(atom)->basisset(type);
+    //    string symbol = mol->atom_entry(atom)->symbol();
+    //    Vector3 center = mol->xyz(atom);
 
-        vector<GaussianShell>& shells = basis_atom_shell[basis][symbol];
+    //    vector<ShellInfo>& shells = basis_atom_shell[basis][symbol];
 
-        for (int i=0; i<shells.size(); ++i) {
-            basisset->shells_.push_back(shells[i].copy(atom, center));
-        }
-    }
+    //    for (int i=0; i<shells.size(); ++i) {
+    //        basisset->shells_.push_back(shells[i].copy(atom, center));
+    //    }
+    //}
 
     // This step is very important. Without it the basis set is useless.
     basisset->refresh();
