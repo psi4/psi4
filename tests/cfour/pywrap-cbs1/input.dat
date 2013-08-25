@@ -1,0 +1,45 @@
+#! Various basis set extrapolation tests only in Cfour instead of Psi4
+
+memory 250 mb
+
+molecule {
+0 2
+Li
+
+}
+
+set cfour_reference rohf
+
+e_cbs = cbs('c4-scf',scf_basis='aug-cc-pV[DTQ]Z',scf_scheme=scf_xtpl_helgaker_3)
+
+compare_values(-7.4326961561955551, e_cbs, 7, "Li ROHF extrapolated energy")  #TEST
+clean()
+
+
+# Here's another example
+molecule {
+H
+H 1 R
+
+R = 1
+}
+
+set cfour_reference rhf
+#set scf_type pk
+#set mp2_type conv
+
+e_cbs = cbs('c4-mp2',corl_basis='cc-pV[TQ]Z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='c4-ccsd',delta_basis='cc-pV[DT]Z',delta_scheme=corl_xtpl_helgaker_2)
+compare_values(-1.148287763304, e_cbs, 7, "H2 mp2 extrapolated energy with ccsd delta correction")  #TEST
+
+clean()
+
+
+# One final example
+molecule {
+He
+}
+
+e_cbs = cbs(scf_basis='aug-cc-pV[DTQ]Z',scf_scheme=scf_xtpl_helgaker_3,name='c4-ccsd',corl_basis='aug-cc-pV[DT]Z',corl_scheme=corl_xtpl_helgaker_2)
+
+compare_values(-2.9033043421572055642, e_cbs, 7, "He ccsd extrapolated energy")  #TEST
+
