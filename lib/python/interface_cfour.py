@@ -142,16 +142,26 @@ def run_cfour(name, **kwargs):
         sys.exit(1)
 
     c4out = ""
-    while retcode.returncode == None:
-        #data = retcode.stdout.read(1)
+    while True:
         data = retcode.stdout.readline()
+        if not data:
+            break
         if psi4.outfile_name() == 'stdout':
             sys.stdout.write(data)
         else:
             p4out.write(data)
             p4out.flush()
         c4out += data
-        retcode.poll()
+#    while retcode.returncode == None:
+#        #data = retcode.stdout.read(1)
+#        data = retcode.stdout.readline()
+#        if psi4.outfile_name() == 'stdout':
+#            sys.stdout.write(data)
+#        else:
+#            p4out.write(data)
+#            p4out.flush()
+#        c4out += data
+#        retcode.poll()
 
     # Restore the OMP_NUM_THREADS that the user set.
     if omp_num_threads_found == True:
@@ -203,27 +213,18 @@ def run_cfour(name, **kwargs):
 
 
 def cfour_list():
-    val = []
-    val.append('cfour')
-    val.append('c4-ccsd')
-    val.append('c4-scf')
-    val.append('c4-mp2')
-    return val
+    return qcprograms.cfour.cfour_list()
 
 def cfour_gradient_list():
-    val = []
-    val.append('cfour')
-    return val
+    return qcprograms.cfour.cfour_gradient_list()
 
-# Cfour lookup table
-#cfour_methods = {
-#    'cfour': run_cfour
+def cfour_psivar_list():
+    return qcprograms.cfour.cfour_psivar_list()
 
 def write_zmat(name, dertype):
     """
 
     """
-
     # Handle memory
     mem = int(0.000001 * psi4.get_memory())
     if mem == 256:
@@ -250,7 +251,7 @@ def write_zmat(name, dertype):
             molecule.reset_point_group('c1')
             with open('GENBAS', 'w') as cfour_basfile:
                 cfour_basfile.write(psi4.BasisSet.construct(psi4.Gaussian94BasisSetParser(), molecule, "BASIS").genbas())
-            psi4.print_out('\n  GENBAS loaded from PSI4 LibMints for basis %s\n' % (psi4.get_global_option('BASIS')))
+            psi4.print_out('  GENBAS loaded from PSI4 LibMints for basis %s\n' % (psi4.get_global_option('BASIS')))
             molecule.reset_point_group(user_pg)
             molecule.update_geometry()
             bascmd, baskw = qcdbmolecule.format_basis_for_cfour(psi4.MintsHelper().basisset().has_puream())
