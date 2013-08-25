@@ -25,7 +25,7 @@ psi_subdirs = psi-mints5 psi-rhf-scsmp2 psi-uhf-scsmp2 psi-rohf-scsmp2 psi-mp3 p
 
 opt_subdirs = opt-rhf-scf opt-rhf-mp2 opt-rhf-ccsd_t_ opt-rhf-ccsd_t_-ecc
 
-infra_subdirs = puream
+infra_subdirs = puream pywrap-cbs1
 
 subdirs = \
 $(infra_subdirs) \
