@@ -12,7 +12,8 @@ sp_rohf_subdirs = sp-rohf-scf sp-rohf-mp2-sc sp-rohf-mp4-sc sp-rohf-ccsd \
 sp-rohf-ccsd_t_ sp-rohf-ccsdt sp-rohf-ccsd-ao sp-rohf-ccsd_t_-ao \
 sp-rohf-ccsd_t_-ao-ecc sp-rohf-ccsd_t_-fc
 
-psi_subdirs = psi-mints5 psi-rhf-scsmp2 psi-uhf-scsmp2 psi-rohf-scsmp2 psi-mp3 psi-mp4
+psi_subdirs = psi-mints5 psi-rhf-scsmp2 psi-uhf-scsmp2 psi-rohf-scsmp2 psi-rhf-mp3 \
+psi-uhf-mp3 psi-mp4
 
 opt_subdirs = opt-rhf-scf opt-rhf-mp2 opt-rhf-ccsd_t_ opt-rhf-ccsd_t_-ecc
 

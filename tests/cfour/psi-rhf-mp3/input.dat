@@ -1,0 +1,55 @@
+store = {}
+test_psivars = ['nuclear repulsion energy', 'scf total energy', 'mp2 singles energy', 'mp2 correlation energy', 'mp2 total energy', 'mp3 correlation energy', 'mp3 total energy', 'current energy', 'current correlation energy', 'current reference energy']
+
+print '    <<<  RHF  >>>'
+
+cfour {
+MP3 single-point energy calculation
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+
+*ACES2(CALC=MP3,BASIS=AUG-PVDZ
+SCF_CONV=12
+MEMORY=20000000)
+}
+
+energy('cfour')
+
+for vari in test_psivars:
+    store[vari] = get_variable(vari)
+    set_variable(vari, 0.0)
+    #print(store[vari], get_variable(vari))
+    #print get_variable(vari)
+
+clean()
+clean_variables()
+cfour{}
+
+molecule h2o {
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+}
+
+set basis aug-cc-pvdz
+set e_convergence 10
+#set mp2_type conv
+
+energy('mp3')
+
+print test_psivars
+print_variables()
+for vari in test_psivars:
+    if vari == 'nuclear repulsion energy':
+        compare_values(store[vari], get_variable(vari), 4, vari.upper())
+    else:
+        compare_values(store[vari], get_variable(vari), 6, vari.upper())
+
+

@@ -60,7 +60,7 @@ def run_cfour(name, **kwargs):
 
     # Because this fn's called for energy('cfour'), opt('cfour'), etc.,
     # need this to figure out who called (better way?)
-    dertype = kwargs['c4_dertype'] if 'c4_dertype' in kwargs else 0
+    dertype = kwargs['job_dertype'] if 'job_dertype' in kwargs else 0
 
     # Save current directory location
     current_directory = os.getcwd()

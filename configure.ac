@@ -1261,7 +1261,8 @@ AC_CONFIG_FILES([
           tests/cfour/psi-rhf-scsmp2/Makefile
           tests/cfour/psi-uhf-scsmp2/Makefile
           tests/cfour/psi-rohf-scsmp2/Makefile
-          tests/cfour/psi-mp3/Makefile
+          tests/cfour/psi-rhf-mp3/Makefile
+          tests/cfour/psi-uhf-mp3/Makefile
           tests/cfour/psi-mp4/Makefile
           tests/cfour/sp-rohf-ccsd-ao/Makefile
           tests/cfour/sp-rohf-ccsd_t_-ao/Makefile
