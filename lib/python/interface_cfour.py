@@ -385,13 +385,10 @@ def cfour_list():
     return qcdb.cfour.cfour_list()
 
 def cfour_gradient_list():
-    val = []
-    val.append('cfour')
-    return val
+    return qcprograms.cfour.cfour_gradient_list()
 
-# Cfour lookup table
-#cfour_methods = {
-#    'cfour': run_cfour
+def cfour_psivar_list():
+    return qcprograms.cfour.cfour_psivar_list()
 
 def cfour_gradient_list():
     """Form list of Cfour analytic :py:func:`~driver.gradient` arguments."""
