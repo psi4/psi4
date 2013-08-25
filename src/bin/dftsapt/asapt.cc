@@ -22,6 +22,7 @@
 
 #include "dftsapt.h"
 #include "vis.h"
+#include "atomic.h"
 #include <libmints/mints.h>
 #include <libmints/sieve.h>
 #include <libmints/local.h>
@@ -1042,20 +1043,28 @@ void ASAPT::elst2()
 
     df.reset();
 
-    // ==> Atomic Charges and Grid (TODO) <== //
+    // ==> Atomic Charges and Grid <== //
 
-    // Grid Definition (TODO)
-    int nP;
-    double* xp;
-    double* yp;
-    double* zp;
-    double* wp;
-
-    // Charge targets (TODO)
-    boost::shared_ptr<Matrix> QAP(new Matrix("Q_A^P", nA, nP));
-    boost::shared_ptr<Matrix> QBQ(new Matrix("Q_B^Q", nB, nP));
+    boost::shared_ptr<AtomicDensity> atomicA = AtomicDensity::build("STOCKHOLDER", primary_A_, Matrix::doublet(Cocc_A_,Cocc_A_,false,true), Process::environment.options);
+    atomicA->compute();
+    boost::shared_ptr<Matrix> QAP = atomicA->Q();
     double** QAPp = QAP->pointer();
+
+    boost::shared_ptr<AtomicDensity> atomicB = AtomicDensity::build("STOCKHOLDER", primary_B_, Matrix::doublet(Cocc_B_,Cocc_B_,false,true), Process::environment.options);
+    atomicB->compute();
+    boost::shared_ptr<Matrix> QBQ = atomicB->Q();
     double** QBQp = QBQ->pointer();
+
+    // Grid Definition
+    boost::shared_ptr<Vector> x = atomicA->x();
+    boost::shared_ptr<Vector> y = atomicA->y();
+    boost::shared_ptr<Vector> z = atomicA->z();
+    boost::shared_ptr<Vector> w = atomicA->w();
+    int nP = x->dimpi()[0];
+    double* xp = x->pointer();
+    double* yp = y->pointer();
+    double* zp = z->pointer();
+    double* wp = w->pointer();
 
     // ==> Auxiliary basis representation of atomic ESP <== //
     
