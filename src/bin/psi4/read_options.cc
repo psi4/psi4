@@ -812,12 +812,25 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("PB_LAMBDA",1E5);
     /*- Fork pathway, until I properly subclass these things -*/
     options.add_str("DFT_SAPT_TYPE", "SAPT0", "SAPT0 DFT-SAPT");
+
     /*- Relative convergence in orbital localization -*/
     options.add_double("LOCAL_CONVERGENCE",1.0E-12);
     /*- Maximum iterations in localization -*/
     options.add_int("LOCAL_MAXITER", 50);
     /*- Localization algorithm -*/
     options.add_str("LOCAL_TYPE", "BOYS", "BOYS PIPEK_MEZEY");
+
+    /*- ISA convergence criterion -*/
+    options.add_double("ISA_CONVERGENCE",1.0E-6);
+    /*- Maximum iterations in ISA -*/
+    options.add_int("ISA_MAXITER", 50);
+    /*- Do use DIIS extrapolation to accelerate ISA convergence? -*/
+    options.add_bool("ISA_DIIS", true);
+    /*- Minimum number of error vectors stored for ISA DIIS extrapolation -*/
+    options.add_int("ISA_DIIS_MIN_VECS", 2);
+    /*- Maximum number of error vectors stored for ISA DIIS extrapolation -*/
+    options.add_int("ISA_DIIS_MAX_VECS", 5);
+
     /*- The name of the monomer-local electrostatics auxiliary basis set -*/
     options.add_str("DF_BASIS_ELST", "");
     /*- The name of the monomer-local electrostatics primary basis set -*/

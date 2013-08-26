@@ -150,7 +150,8 @@ double ASAPT::compute_energy()
 
     populate();
 
-    elst();
+    //elst();
+    elst2();
     
     exch();
 
@@ -1045,13 +1046,13 @@ void ASAPT::elst2()
 
     // ==> Atomic Charges and Grid <== //
 
-    boost::shared_ptr<AtomicDensity> atomicA = AtomicDensity::build("STOCKHOLDER", primary_A_, Matrix::doublet(Cocc_A_,Cocc_A_,false,true), Process::environment.options);
-    atomicA->compute();
+    boost::shared_ptr<AtomicDensity> atomicA = AtomicDensity::build("STOCKHOLDER", primary_A_, Process::environment.options);
+    atomicA->compute(Matrix::doublet(Cocc_A_,Cocc_A_,false,true));
     boost::shared_ptr<Matrix> QAP = atomicA->Q();
     double** QAPp = QAP->pointer();
 
-    boost::shared_ptr<AtomicDensity> atomicB = AtomicDensity::build("STOCKHOLDER", primary_B_, Matrix::doublet(Cocc_B_,Cocc_B_,false,true), Process::environment.options);
-    atomicB->compute();
+    boost::shared_ptr<AtomicDensity> atomicB = AtomicDensity::build("STOCKHOLDER", primary_B_, Process::environment.options);
+    atomicB->compute(Matrix::doublet(Cocc_B_,Cocc_B_,false,true));
     boost::shared_ptr<Matrix> QBQ = atomicB->Q();
     double** QBQp = QBQ->pointer();
 

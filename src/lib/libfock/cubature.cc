@@ -4241,6 +4241,23 @@ void MolecularGrid::print(FILE* out, int print) const
     fprintf(out,"    Max Points       = %14d\n", max_points_);
     fprintf(out,"    Max Functions    = %14d\n", max_functions_);
     fprintf(out,"\n");
+
+}
+void MolecularGrid::print_details(FILE* out, int print) const 
+{
+    fprintf(out,"   > Grid Details <\n\n");
+    for (int A = 0; A < radial_grids_.size(); A++) {
+        fprintf(out,"    Atom: %4d, Nrad = %6d, Alpha = %11.3E:\n", A, radial_grids_[A]->npoints(), radial_grids_[A]->alpha());
+        for (int R = 0; R < spherical_grids_[A].size(); R++) {
+            double Rval = radial_grids_[A]->r()[R];        
+            double Wval = radial_grids_[A]->w()[R];        
+            int Nsphere = spherical_grids_[A][R]->npoints();
+            int Lsphere = spherical_grids_[A][R]->order();
+            fprintf(out,"    Node: %4d, R = %11.3E, WR = %11.3E, Nsphere = %6d, Lsphere = %6d\n",
+                R, Rval, Wval, Nsphere, Lsphere);
+        }
+    }
+    fprintf(out,"\n");
 }
 
 GridBlocker::GridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
