@@ -14,7 +14,7 @@
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
-    Process ID:  16410
+    Process ID:  20880
     PSI4DATADIR: /theoryfs2/ds/loriab/chem/psi4_trials/c4/psi4/lib
 
     Using LocalCommunicator (Number of processes = 1)
@@ -38,7 +38,7 @@ set cfour_reference rohf
 
 e_cbs = cbs('c4-scf',scf_basis='aug-cc-pV[DTQ]Z',scf_scheme=scf_xtpl_helgaker_3)
 
-compare_values(-7.4326961561955551, e_cbs, 7, "Li ROHF extrapolated energy")  #TEST
+compare_values(-7.4326961561955551, e_cbs, 7, "[1] Li ROHF extrapolated energy")  #TEST
 clean()
 
 
@@ -55,7 +55,7 @@ set cfour_reference rhf
 #set mp2_type conv
 
 e_cbs = cbs('c4-mp2',corl_basis='cc-pV[TQ]Z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='c4-ccsd',delta_basis='cc-pV[DT]Z',delta_scheme=corl_xtpl_helgaker_2)
-compare_values(-1.148287763304, e_cbs, 7, "H2 mp2 extrapolated energy with ccsd delta correction")  #TEST
+compare_values(-1.148287763304, e_cbs, 7, "[2] H2 mp2 extrapolated energy with ccsd delta correction")  #TEST
 
 clean()
 
@@ -67,7 +67,12 @@ He
 
 e_cbs = cbs(scf_basis='aug-cc-pV[DTQ]Z',scf_scheme=scf_xtpl_helgaker_3,name='c4-ccsd',corl_basis='aug-cc-pV[DT]Z',corl_scheme=corl_xtpl_helgaker_2)
 
-compare_values(-2.9033043421572055642, e_cbs, 7, "He ccsd extrapolated energy")  #TEST
+compare_values(-2.9033043421572055642, e_cbs, 7, "[3] He ccsd extrapolated energy")  #TEST
+
+# Example with default extrapolation schemes
+e_cbs = cbs('c4-mp2', corl_basis='cc-pv[dt]z', delta_wfn='mp5', delta_basis='cc-pVDZ')
+
+compare_values(-2.90394676, e_cbs, 6, '[4] MP5: minimal info')  #TEST
 
 --------------------------------------------------------------------------
 
@@ -93,7 +98,7 @@ compare_values(-2.9033043421572055642, e_cbs, 7, "He ccsd extrapolated energy") 
 
 
   GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.16410..cfour.28844
+  CFOUR to be run from /scratch/loriab//psi.20880..cfour.87463
   GENBAS loaded from PSI4 LibMints for basis AUG-CC-PVTZ
 
 ====== Begin ZMAT input for CFOUR ======
@@ -140,7 +145,7 @@ LI:P4_1
                        version 1.2
  
                      john2                                             
-                     Sun Aug 25 02:36:42 EDT 2013                      
+                     Mon Aug 26 01:44:31 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -455,15 +460,15 @@ LI:P4_1
   required memory for a1 array                3088344  words 
   required memory for a2 array                2321804  words 
  basis number:   3    55
-  @MOLECU-I, One electron integrals required         0.00000 seconds.
+  @MOLECU-I, One electron integrals required         0.01000 seconds.
   @TWOEL-I,       2721 integrals of symmetry type  I I I I
   @TWOEL-I,      17243 integrals of symmetry type  I J I J
   @TWOEL-I,      11408 integrals of symmetry type  I I J J
   @TWOEL-I,      29966 integrals of symmetry type  I J K L
   @TWOEL-I, Total number of 2-e integrals      61338.
   @MOLECU-I, Two electron integrals required         0.35000 seconds.
-  @CHECKOUT-I, Total execution time :       0.3500 seconds.
-                0.25 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.3600 seconds.
+                0.00 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -684,9 +689,19 @@ LI:P4_1
 
   VSCF finished.
 
-  @CHECKOUT-I, Total execution time :       0.3900 seconds.
+  @CHECKOUT-I, Total execution time :       0.3800 seconds.
                 0.25 seconds walltime passed
  --executable xvscf finished with status            0
+
+
+  Variable Map:
+  ----------------------------------------------------------------------------
+  "CURRENT ENERGY"           =>      -7.432682117646
+  "CURRENT REFERENCE ENERGY" =>      -7.432682117646
+  "NUCLEAR REPULSION ENERGY" =>       0.000000000000
+  "SCF TOTAL ENERGY"         =>      -7.432682117646
+
+
 
 
   Variable Map:
@@ -704,7 +719,7 @@ LI:P4_1
 
 
   GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.16410..cfour.4157
+  CFOUR to be run from /scratch/loriab//psi.20880..cfour.80603
   GENBAS loaded from PSI4 LibMints for basis AUG-CC-PVQZ
 
 ====== Begin ZMAT input for CFOUR ======
@@ -751,7 +766,7 @@ LI:P4_1
                        version 1.2
  
                      john2                                             
-                     Sun Aug 25 02:36:47 EDT 2013                      
+                     Mon Aug 26 01:44:36 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -973,7 +988,7 @@ LI:P4_1
 ********************************************************************************
   There are   80 basis functions.
  @GEOPT-W, Archive file not created for single-point calculation.
-                0.25 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xjoda finished with status            0
   flag is                      5
  --invoking executable xvmol
@@ -1098,8 +1113,8 @@ LI:P4_1
   @TWOEL-I,      80662 integrals of symmetry type  I I J J
   @TWOEL-I,     284715 integrals of symmetry type  I J K L
   @TWOEL-I, Total number of 2-e integrals     514165.
-  @MOLECU-I, Two electron integrals required         4.04000 seconds.
-  @CHECKOUT-I, Total execution time :       4.0700 seconds.
+  @MOLECU-I, Two electron integrals required         4.03000 seconds.
+  @CHECKOUT-I, Total execution time :       4.0600 seconds.
                 2.25 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
@@ -1404,9 +1419,19 @@ LI:P4_1
 
   VSCF finished.
 
-  @CHECKOUT-I, Total execution time :       1.5300 seconds.
-                1.00 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       1.5200 seconds.
+                1.25 seconds walltime passed
  --executable xvscf finished with status            0
+
+
+  Variable Map:
+  ----------------------------------------------------------------------------
+  "CURRENT ENERGY"           =>      -7.432695429194
+  "CURRENT REFERENCE ENERGY" =>      -7.432695429194
+  "NUCLEAR REPULSION ENERGY" =>       0.000000000000
+  "SCF TOTAL ENERGY"         =>      -7.432695429194
+
+
 
 
   Variable Map:
@@ -1424,7 +1449,7 @@ LI:P4_1
 
 
   GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.16410..cfour.75113
+  CFOUR to be run from /scratch/loriab//psi.20880..cfour.4905
   GENBAS loaded from PSI4 LibMints for basis AUG-CC-PVDZ
 
 ====== Begin ZMAT input for CFOUR ======
@@ -1471,7 +1496,7 @@ LI:P4_1
                        version 1.2
  
                      john2                                             
-                     Sun Aug 25 02:36:55 EDT 2013                      
+                     Mon Aug 26 01:44:44 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -1947,9 +1972,19 @@ LI:P4_1
 
   VSCF finished.
 
-  @CHECKOUT-I, Total execution time :       0.0300 seconds.
+  @CHECKOUT-I, Total execution time :       0.0200 seconds.
                 0.00 seconds walltime passed
  --executable xvscf finished with status            0
+
+
+  Variable Map:
+  ----------------------------------------------------------------------------
+  "CURRENT ENERGY"           =>      -7.432425072801
+  "CURRENT REFERENCE ENERGY" =>      -7.432425072801
+  "NUCLEAR REPULSION ENERGY" =>       0.000000000000
+  "SCF TOTAL ENERGY"         =>      -7.432425072801
+
+
 
 
   Variable Map:
@@ -2026,7 +2061,7 @@ LI:P4_1
 
 
   GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.16410..cfour.23053
+  CFOUR to be run from /scratch/loriab//psi.20880..cfour.13224
   GENBAS loaded from PSI4 LibMints for basis CC-PVQZ
 
 ====== Begin ZMAT input for CFOUR ======
@@ -2075,7 +2110,7 @@ H:P4_2
                        version 1.2
  
                      john2                                             
-                     Sun Aug 25 02:36:59 EDT 2013                      
+                     Mon Aug 26 01:44:49 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -2318,7 +2353,7 @@ H:P4_2
     1002910.4863891181             0.0000000000
   There are   60 basis functions.
  @GEOPT-W, Archive file not created for single-point calculation.
-                0.00 seconds walltime passed
+                0.25 seconds walltime passed
  --executable xjoda finished with status            0
   flag is                      5
  --invoking executable xvmol
@@ -2378,15 +2413,15 @@ H:P4_2
   required memory for a1 array                3112344  words 
   required memory for a2 array                2041837  words 
  basis number:   1    35
-  @MOLECU-I, One electron integrals required         0.01000 seconds.
+  @MOLECU-I, One electron integrals required         0.00000 seconds.
   @TWOEL-I,       6419 integrals of symmetry type  I I I I
   @TWOEL-I,      47587 integrals of symmetry type  I J I J
   @TWOEL-I,      30167 integrals of symmetry type  I I J J
   @TWOEL-I,      97642 integrals of symmetry type  I J K L
   @TWOEL-I, Total number of 2-e integrals     181815.
-  @MOLECU-I, Two electron integrals required         0.80000 seconds.
-  @CHECKOUT-I, Total execution time :       0.8100 seconds.
-                0.50 seconds walltime passed
+  @MOLECU-I, Two electron integrals required         0.78000 seconds.
+  @CHECKOUT-I, Total execution time :       0.7800 seconds.
+                0.25 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -2683,13 +2718,31 @@ H:P4_2
 
 
 
+
+  Variable Map:
+  ----------------------------------------------------------------------------
+  "CBS CORRELATION ENERGY"     =>       0.000000000000
+  "CBS REFERENCE ENERGY"       =>      -7.432696156207
+  "CBS TOTAL ENERGY"           =>      -7.432696156207
+  "CURRENT CORRELATION ENERGY" =>      -0.034594100569
+  "CURRENT ENERGY"             =>      -1.137053806692
+  "CURRENT REFERENCE ENERGY"   =>      -1.102459706123
+  "MP2 CORRELATION ENERGY"     =>      -0.034594100569
+  "MP2 OPPOSITE-SPIN ENERGY"   =>      -0.034594100569
+  "MP2 SAME-SPIN ENERGY"       =>       0.000000000000
+  "MP2 TOTAL ENERGY"           =>      -1.137053806692
+  "NUCLEAR REPULSION ENERGY"   =>       0.529177100000
+  "SCF TOTAL ENERGY"           =>      -1.102459706123
+
+
+
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   // CBS Computation: C4-CCSD / CC-PVDZ //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
   GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.16410..cfour.57252
+  CFOUR to be run from /scratch/loriab//psi.20880..cfour.90283
   GENBAS loaded from PSI4 LibMints for basis CC-PVDZ
 
 ====== Begin ZMAT input for CFOUR ======
@@ -2739,7 +2792,7 @@ H:P4_2
                        version 1.2
  
                      john2                                             
-                     Sun Aug 25 02:37:05 EDT 2013                      
+                     Mon Aug 26 01:44:54 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -2983,7 +3036,7 @@ H:P4_2
     1002910.4863891181             0.0000000000
   There are   10 basis functions.
  @GEOPT-W, Archive file not created for single-point calculation.
-                0.25 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xjoda finished with status            0
   flag is                      5
  --invoking executable xvmol
@@ -3402,9 +3455,23 @@ H:P4_2
 
   Variable Map:
   ----------------------------------------------------------------------------
-  "CBS CORRELATION ENERGY"     =>       0.000000000000
-  "CBS REFERENCE ENERGY"       =>      -7.432696156207
-  "CBS TOTAL ENERGY"           =>      -7.432696156207
+  "CCSD CORRELATION ENERGY"    =>      -0.039919697544
+  "CCSD TOTAL ENERGY"          =>      -1.140073424761
+  "CURRENT CORRELATION ENERGY" =>      -0.039919697544
+  "CURRENT ENERGY"             =>      -1.140073424761
+  "CURRENT REFERENCE ENERGY"   =>      -1.100153727216
+  "MP2 CORRELATION ENERGY"     =>      -0.028705904550
+  "MP2 OPPOSITE-SPIN ENERGY"   =>      -0.028705904550
+  "MP2 SAME-SPIN ENERGY"       =>       0.000000000000
+  "MP2 TOTAL ENERGY"           =>      -1.128859631766
+  "NUCLEAR REPULSION ENERGY"   =>       0.529177100000
+  "SCF TOTAL ENERGY"           =>      -1.100153727216
+
+
+
+
+  Variable Map:
+  ----------------------------------------------------------------------------
   "CCSD CORRELATION ENERGY"    =>      -0.039919697544
   "CCSD TOTAL ENERGY"          =>      -1.140073424761
   "CURRENT CORRELATION ENERGY" =>      -0.039919697544
@@ -3425,7 +3492,7 @@ H:P4_2
 
 
   GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.16410..cfour.28482
+  CFOUR to be run from /scratch/loriab//psi.20880..cfour.23202
   GENBAS loaded from PSI4 LibMints for basis CC-PVTZ
 
 ====== Begin ZMAT input for CFOUR ======
@@ -3475,7 +3542,7 @@ H:P4_2
                        version 1.2
  
                      john2                                             
-                     Sun Aug 25 02:37:09 EDT 2013                      
+                     Mon Aug 26 01:44:59 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -3776,9 +3843,9 @@ H:P4_2
   @TWOEL-I,       2217 integrals of symmetry type  I I J J
   @TWOEL-I,       4494 integrals of symmetry type  I J K L
   @TWOEL-I, Total number of 2-e integrals      10381.
-  @MOLECU-I, Two electron integrals required         0.01000 seconds.
-  @CHECKOUT-I, Total execution time :       0.0100 seconds.
-                0.00 seconds walltime passed
+  @MOLECU-I, Two electron integrals required         0.02000 seconds.
+  @CHECKOUT-I, Total execution time :       0.0200 seconds.
+                0.25 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -4199,9 +4266,23 @@ H:P4_2
 
   Variable Map:
   ----------------------------------------------------------------------------
-  "CBS CORRELATION ENERGY"     =>       0.000000000000
-  "CBS REFERENCE ENERGY"       =>      -7.432696156207
-  "CBS TOTAL ENERGY"           =>      -7.432696156207
+  "CCSD CORRELATION ENERGY"    =>      -0.043696528276
+  "CCSD TOTAL ENERGY"          =>      -1.145758813828
+  "CURRENT CORRELATION ENERGY" =>      -0.043696528276
+  "CURRENT ENERGY"             =>      -1.145758813828
+  "CURRENT REFERENCE ENERGY"   =>      -1.102062285553
+  "MP2 CORRELATION ENERGY"     =>      -0.033189738209
+  "MP2 OPPOSITE-SPIN ENERGY"   =>      -0.033189738209
+  "MP2 SAME-SPIN ENERGY"       =>       0.000000000000
+  "MP2 TOTAL ENERGY"           =>      -1.135252023762
+  "NUCLEAR REPULSION ENERGY"   =>       0.529177100000
+  "SCF TOTAL ENERGY"           =>      -1.102062285553
+
+
+
+
+  Variable Map:
+  ----------------------------------------------------------------------------
   "CCSD CORRELATION ENERGY"    =>      -0.043696528276
   "CCSD TOTAL ENERGY"          =>      -1.145758813828
   "CURRENT CORRELATION ENERGY" =>      -0.043696528276
@@ -4308,7 +4389,7 @@ H:P4_2
 
 
 *** tstart() called on john2
-*** at Sun Aug 25 02:37:10 2013
+*** at Mon Aug 26 01:44:59 2013
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -4400,7 +4481,7 @@ H:P4_2
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 sanity check failed! Gaussian94BasisSetParser::parser: Unable to find the basis set for HE in /theoryfs2/ds/loriab/chem/psi4_trials/c4/psi4/lib/basis/aug-cc-pvqz-jkfit.gbs
 file: /theoryfs2/ds/loriab/chem/psi4_trials/c4/psi4/src/lib/libmints/basisset_parser.cc
-line0
+line: 362
    Turning off DF and switching to PK method.
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  MINTS: Wrapper to libmints.
@@ -4468,7 +4549,7 @@ line0
 	   4B2u    3.003209     4B3u    3.003209     4B1u    3.003209  
 	   7Ag     4.577315     2B1g    4.577315     2B3g    4.577315  
 	   2B2g    4.577315     8Ag     4.577315     5B2u    5.130345  
-	   5B3u    5.130345     5B1u    5.130345     6B3u   12.535762  
+	   5B1u    5.130345     5B3u    5.130345     6B3u   12.535762  
 	   6B1u   12.535762     2Au    12.535762     7B3u   12.535762  
 	   6B2u   12.535762     7B2u   12.535762     7B1u   12.535762  
 	   9Ag    13.621517    10Ag    16.643632    11Ag    16.643632  
@@ -4514,15 +4595,36 @@ Properties computed using the SCF density density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on john2 at Sun Aug 25 02:37:10 2013
+*** tstop() called on john2 at Mon Aug 26 01:45:00 2013
 Module time:
-	user time   =       0.32 seconds =       0.01 minutes
+	user time   =       0.28 seconds =       0.00 minutes
 	system time =       0.02 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.32 seconds =       0.01 minutes
+	user time   =       0.28 seconds =       0.00 minutes
 	system time =       0.02 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+
+  Variable Map:
+  ----------------------------------------------------------------------------
+  "CBS CORRELATION ENERGY"     =>      -0.045828010158
+  "CBS REFERENCE ENERGY"       =>      -1.102459706123
+  "CBS TOTAL ENERGY"           =>      -1.148287716281
+  "CURRENT CORRELATION ENERGY" =>      -0.045828010158
+  "CURRENT ENERGY"             =>      -2.861521995339
+  "CURRENT REFERENCE ENERGY"   =>      -2.861521995339
+  "HF TOTAL ENERGY"            =>      -2.861521995339
+  "NUCLEAR REPULSION ENERGY"   =>       0.000000000000
+  "ONE-ELECTRON ENERGY"        =>      -3.887179072055
+  "SCF DIPOLE X"               =>       0.000000000000
+  "SCF DIPOLE Y"               =>       0.000000000000
+  "SCF DIPOLE Z"               =>       0.000000000000
+  "SCF ITERATION ENERGY"       =>      -2.861521995339
+  "SCF TOTAL ENERGY"           =>      -2.861521995339
+  "TWO-ELECTRON ENERGY"        =>       1.025657076715
+
+
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   // CBS Computation: C4-CCSD / AUG-CC-PVDZ //
@@ -4530,7 +4632,7 @@ Total time:
 
 
   GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.16410..cfour.47794
+  CFOUR to be run from /scratch/loriab//psi.20880..cfour.62876
   GENBAS loaded from PSI4 LibMints for basis AUG-CC-PVDZ
 
 ====== Begin ZMAT input for CFOUR ======
@@ -4578,7 +4680,7 @@ HE:P4_1
                        version 1.2
  
                      john2                                             
-                     Sun Aug 25 02:37:15 EDT 2013                      
+                     Mon Aug 26 01:45:04 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -5237,27 +5339,34 @@ HE:P4_1
 
   Variable Map:
   ----------------------------------------------------------------------------
-  "CBS CORRELATION ENERGY"     =>      -0.045828010158
-  "CBS REFERENCE ENERGY"       =>      -1.102459706123
-  "CBS TOTAL ENERGY"           =>      -1.148287716281
   "CCSD CORRELATION ENERGY"    =>      -0.033843817801
   "CCSD TOTAL ENERGY"          =>      -2.889548485511
   "CURRENT CORRELATION ENERGY" =>      -0.033843817801
   "CURRENT ENERGY"             =>      -2.889548485511
   "CURRENT REFERENCE ENERGY"   =>      -2.855704667710
-  "HF TOTAL ENERGY"            =>      -2.861521995339
   "MP2 CORRELATION ENERGY"     =>      -0.026962511560
   "MP2 OPPOSITE-SPIN ENERGY"   =>      -0.026962511560
   "MP2 SAME-SPIN ENERGY"       =>       0.000000000000
   "MP2 TOTAL ENERGY"           =>      -2.882667179271
   "NUCLEAR REPULSION ENERGY"   =>       0.000000000000
-  "ONE-ELECTRON ENERGY"        =>      -3.887179072055
-  "SCF DIPOLE X"               =>       0.000000000000
-  "SCF DIPOLE Y"               =>       0.000000000000
-  "SCF DIPOLE Z"               =>       0.000000000000
-  "SCF ITERATION ENERGY"       =>      -2.861521995339
   "SCF TOTAL ENERGY"           =>      -2.855704667710
-  "TWO-ELECTRON ENERGY"        =>       1.025657076715
+
+
+
+
+  Variable Map:
+  ----------------------------------------------------------------------------
+  "CCSD CORRELATION ENERGY"    =>      -0.033843817801
+  "CCSD TOTAL ENERGY"          =>      -2.889548485511
+  "CURRENT CORRELATION ENERGY" =>      -0.033843817801
+  "CURRENT ENERGY"             =>      -2.889548485511
+  "CURRENT REFERENCE ENERGY"   =>      -2.855704667710
+  "MP2 CORRELATION ENERGY"     =>      -0.026962511560
+  "MP2 OPPOSITE-SPIN ENERGY"   =>      -0.026962511560
+  "MP2 SAME-SPIN ENERGY"       =>       0.000000000000
+  "MP2 TOTAL ENERGY"           =>      -2.882667179271
+  "NUCLEAR REPULSION ENERGY"   =>       0.000000000000
+  "SCF TOTAL ENERGY"           =>      -2.855704667710
 
 
 
@@ -5267,7 +5376,7 @@ HE:P4_1
 
 
   GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.16410..cfour.25592
+  CFOUR to be run from /scratch/loriab//psi.20880..cfour.21976
   GENBAS loaded from PSI4 LibMints for basis AUG-CC-PVTZ
 
 ====== Begin ZMAT input for CFOUR ======
@@ -5315,7 +5424,7 @@ HE:P4_1
                        version 1.2
  
                      john2                                             
-                     Sun Aug 25 02:37:20 EDT 2013                      
+                     Mon Aug 26 01:45:10 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -5538,7 +5647,7 @@ HE:P4_1
 ********************************************************************************
   There are   23 basis functions.
  @GEOPT-W, Archive file not created for single-point calculation.
-                0.00 seconds walltime passed
+                0.25 seconds walltime passed
  --executable xjoda finished with status            0
   flag is                      5
  --invoking executable xvmol
@@ -5999,27 +6108,34 @@ HE:P4_1
 
   Variable Map:
   ----------------------------------------------------------------------------
-  "CBS CORRELATION ENERGY"     =>      -0.045828010158
-  "CBS REFERENCE ENERGY"       =>      -1.102459706123
-  "CBS TOTAL ENERGY"           =>      -1.148287716281
   "CCSD CORRELATION ENERGY"    =>      -0.039414498644
   "CCSD TOTAL ENERGY"          =>      -2.900597924759
   "CURRENT CORRELATION ENERGY" =>      -0.039414498644
   "CURRENT ENERGY"             =>      -2.900597924759
   "CURRENT REFERENCE ENERGY"   =>      -2.861183426116
-  "HF TOTAL ENERGY"            =>      -2.861521995339
   "MP2 CORRELATION ENERGY"     =>      -0.033620815004
   "MP2 OPPOSITE-SPIN ENERGY"   =>      -0.033620815004
   "MP2 SAME-SPIN ENERGY"       =>       0.000000000000
   "MP2 TOTAL ENERGY"           =>      -2.894804241119
   "NUCLEAR REPULSION ENERGY"   =>       0.000000000000
-  "ONE-ELECTRON ENERGY"        =>      -3.887179072055
-  "SCF DIPOLE X"               =>       0.000000000000
-  "SCF DIPOLE Y"               =>       0.000000000000
-  "SCF DIPOLE Z"               =>       0.000000000000
-  "SCF ITERATION ENERGY"       =>      -2.861521995339
   "SCF TOTAL ENERGY"           =>      -2.861183426116
-  "TWO-ELECTRON ENERGY"        =>       1.025657076715
+
+
+
+
+  Variable Map:
+  ----------------------------------------------------------------------------
+  "CCSD CORRELATION ENERGY"    =>      -0.039414498644
+  "CCSD TOTAL ENERGY"          =>      -2.900597924759
+  "CURRENT CORRELATION ENERGY" =>      -0.039414498644
+  "CURRENT ENERGY"             =>      -2.900597924759
+  "CURRENT REFERENCE ENERGY"   =>      -2.861183426116
+  "MP2 CORRELATION ENERGY"     =>      -0.033620815004
+  "MP2 OPPOSITE-SPIN ENERGY"   =>      -0.033620815004
+  "MP2 SAME-SPIN ENERGY"       =>       0.000000000000
+  "MP2 TOTAL ENERGY"           =>      -2.894804241119
+  "NUCLEAR REPULSION ENERGY"   =>       0.000000000000
+  "SCF TOTAL ENERGY"           =>      -2.861183426116
 
 
 
@@ -6075,6 +6191,1106 @@ HE:P4_1
         scf                  scf / aug-cc-pv[dtq]z                     -2.86154430   scf_xtpl_helgaker_3
        corl              c4-ccsd / aug-cc-pv[dt]z                      -0.04176005   corl_xtpl_helgaker_2
       total                  CBS                                       -2.90330434   
+  ---------------------------------------------------------------------------------------------------------
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //             CBS Setup             //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+    Naive listing of computations required.
+            scf / cc-pvtz                  for  SCF TOTAL ENERGY
+         c4-mp2 / cc-pvdz                  for  MP2 CORRELATION ENERGY
+         c4-mp2 / cc-pvtz                  for  MP2 CORRELATION ENERGY
+            mp5 / cc-pvdz                  for  MP5 CORRELATION ENERGY
+         c4-mp2 / cc-pvdz                  for  MP2 CORRELATION ENERGY
+
+    Enlightened listing of computations required.
+         c4-mp2 / cc-pvtz                  for  MP2 CORRELATION ENERGY
+            mp5 / cc-pvdz                  for  MP5 CORRELATION ENERGY
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  // CBS Computation: C4-MP2 / CC-PVTZ //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+
+  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.20880..cfour.22900
+  GENBAS loaded from PSI4 LibMints for basis CC-PVTZ
+
+====== Begin ZMAT input for CFOUR ======
+auto-generated by qcdb from molecule default
+HE    0.000000000000    0.000000000000    0.000000000000
+
+*CFOUR(BASIS=SPECIAL
+SPHERICAL=1
+MULTIPLICITY=1
+REFERENCE=RHF
+COORDINATES=CARTESIAN
+UNITS=ANGSTROM
+MEMORY_SIZE=250
+CALC_LEVEL=MP2
+MEM_UNIT=MB
+CHARGE=0)
+
+HE:P4_1
+
+======= End ZMAT input for CFOUR =======
+
+ --invoking executable xjoda
+
+
+   *************************************************************************
+         <<<     CCCCCC     CCCCCC   |||     CCCCCC     CCCCCC   >>>
+       <<<      CCC        CCC       |||    CCC        CCC         >>>
+      <<<      CCC        CCC        |||   CCC        CCC            >>>
+    <<<        CCC        CCC        |||   CCC        CCC              >>>
+      <<<      CCC        CCC        |||   CCC        CCC            >>>
+       <<<      CCC        CCC       |||    CCC        CCC         >>>
+         <<<     CCCCCC     CCCCCC   |||     CCCCCC     CCCCCC   >>>
+   *************************************************************************
+
+     ****************************************************************
+     * CFOUR Coupled-Cluster techniques for Computational Chemistry *
+     ****************************************************************
+ 
+
+   Department of Chemistry                Institut fuer Physikalische Chemie
+   University of Texas at Austin          Universitaet Mainz
+   Austin, TX  48792, USA                 D-55099 Mainz, Germany
+ 
+                       version 1.2
+ 
+                     john2                                             
+                     Mon Aug 26 01:45:15 EDT 2013                      
+                     integer*8 version is running
+ 
+    -------------------------------------------------------------------
+                    Input from ZMAT file
+    -------------------------------------------------------------------
+ 
+ auto-generated by qcdb from molecule default                                   
+ HE    0.000000000000    0.000000000000    0.000000000000                       
+                                                                                
+ *CFOUR(BASIS=SPECIAL                                                           
+ SPHERICAL=1                                                                    
+ MULTIPLICITY=1                                                                 
+ REFERENCE=RHF                                                                  
+ COORDINATES=CARTESIAN                                                          
+ UNITS=ANGSTROM                                                                 
+ MEMORY_SIZE=250                                                                
+ CALC_LEVEL=MP2                                                                 
+ MEM_UNIT=MB                                                                    
+ CHARGE=0)                                                                      
+                                                                                
+ HE:P4_1                                                                        
+                                                                                
+ 
+    -------------------------------------------------------------------
+                    CFOUR Control Parameters 
+    -------------------------------------------------------------------
+        External           Internal           Value            Units
+          Name               Name
+    -------------------------------------------------------------------
+       PRINT                IPRNT               0               ***   
+       CALCLEVEL            ICLLVL           MBPT(2)    [  1]   ***   
+       DERIV_LEV            IDRLVL            ZERO      [  0]   ***   
+       CC_CONV              ICCCNV          10D-  7             ***   
+       SCF_CONV             ISCFCV          10D-  7             ***   
+       XFORM_TOL            IXFTOL          10D- 11             ***   
+       CC_MAXCYC            ICCCYC              0              cycles 
+       LINDEP_TOL           ILINDP              8               ***   
+       RDO                  IRDOFM             OFF      [  0]   ***   
+  
+       SCF_EXTRAPO          IRPP                ON      [  1]   ***   
+       REFERENCE            IREFNC             RHF      [  0]   ***   
+       CC_EXPORDER          ICCEOR              0               ***   
+       TAMP_SUM             IEVERY              0               ***   
+       NTOP_TAMP            ITOPT2             15               ***   
+       CCORBOPT             ICCORB             OFF      [  0] x 0.01  
+       SCF_MAXCYC           ISCFCY            150              cycles 
+       OCCUPATION           IOCCU   ESTIMATED BY SCF 
+       PROPS                IPROPS             OFF      [  0]   ***   
+       RELAX_DENS           IRDENS             OFF      [  0]   ***   
+  
+       SCF_EXPORDE          IRPPOR              6               ***   
+       CC_EXTRAPOL          ICCEXT             DIIS     [  1]   ***   
+       BRUECKNER            IBRKNR             OFF      [  0]   ***   
+       XFIELD               IXEFLD              0             x 10-6  
+       YFIELD               IYEFLD              0             x 10-6  
+       ZFIELD               IZEFLD              0             x 10-6  
+       SAVE_INTS            ISVINT             OFF      [  0]   ***   
+       DROPMO               IDRPMO      NONE         
+       CHARGE               ICHRGE              0               ***   
+       MULTIPLICTY          IMULTP              1               ***   
+  
+       CPHF_CONVER          ICPHFT          10D- 16             ***   
+       CPHF_MAXCYC          ICPHFC             64              cycles 
+       INCORE               INCORE             OFF      [  0]   ***   
+       MEMORY_SIZE          IMEMSZ          31250000           words  
+       FILE_RECSIZ          IFLREC              4096           words  
+       NON-HF               INONHF             OFF      [  0]   ***   
+       ORBITALS             IORBTP           STANDARD   [  0]   ***   
+  
+       SCF_EXPSTAR          IRPPLS              8               ***   
+       LOCK_ORBOCC          ILOCOC             OFF      [  0]   ***   
+       HBAR                 IHBAR              OFF      [  0]   ***   
+       CACHE_RECS           ICHREC             10               ***   
+       GUESS                IGUESS            MOREAD    [  0]   ***   
+       JODA_PRINT           IJPRNT              0               ***   
+       GEO_METHOD           INR            SINGLE_POINT [  5]   ***   
+       GEO_CONV             ICONTL              5              H/bohr 
+       EIGENVECTOR          IVEC                1               ***   
+  
+       NEGEVAL              IDIE             ABORT      [  0]   ***   
+       CURVILINEAR          ICURVY            OFF       [  0]   ***   
+       SCALE_ON             ISTCRT              0               ***   
+       GEO_MAXSTEP          IMXSTP            300            millibohr
+       VIBRATION            IVIB              NO        [  0]   ***   
+       EVAL_HESS            IRECAL              0            # of cyc.
+       INTEGRALS            INTTYP             VMOL     [  1]   ***   
+       FD_STEPSIZE          IDISFD              0            10-4 bohr
+       POINTS               IGRDFD              0               ***   
+       CONTRACTION          ICNTYP          GENERAL     [  1]   ***   
+  
+       SYMMETRY             ISYM             ON         [  0]   ***   
+       BASIS                IBASIS         SPECIAL      [  0]   ***   
+       SPHERICAL            IDFGHI             ON       [  1]   ***   
+       RESET_FLAGS          IRESET             OFF      [  0]   ***   
+       PERT_ORB             IPTORB         STANDARD     [  0]   ***   
+       GENBAS_1             IGNBS1              0               ***   
+       GENBAS_2             IGNBS2              0               ***   
+       GENBAS_3             IGNBS3              0               ***   
+       COORDINATES          ICOORD         CARTESIAN    [  1]   ***   
+       SYM_CHECK            ISYMCK         OVERRIDE     [  1]   ***   
+  
+       SCF_PRINT            ISCFPR              0               ***   
+       ECP                  IECP           OFF          [  0]   ***   
+       RESTART_CC           ICCRES         OFF          [  0]   ***   
+       TRANS_INV            ITRAIN         USE          [  0]   ***   
+       HFSTABILITY          ISTABL         OFF          [  0]   ***   
+       ROT_EVEC             ROTVEC              0               ***   
+       BRUCK_CONV           IBRTOL          10D-  4             ***   
+       UNITS                IUNITS         ANGSTROM     [  0]   ***   
+       FD_USEGROUP          IFDGRP         FULL         [  0]   ***   
+  
+       FD_PROJECT           IFDPRJ         ON           [  0]   ***   
+       FD_CALTYPE           IFDCAL         GRADONLY     [  0]   ***   
+       VTRAN                IVTRAN         FULL/PARTIAL [  0]   ***   
+       HF2_FILE             IHF2Fl         USE          [  1]   ***   
+       SUBGROUP             ISUBGP         DEFAULT      [  0]   ***   
+       SUBGRPAXIS           ISBXYZ         X            [  0]   ***   
+       EXCITE               IEXCIT         NONE         [  0]   ***   
+       LINEQ_CONV           IZTACN          10D-  7           cycles  
+  
+       TREAT_PERT           ITREAT         SIMULTANEOUS [  0]   ***   
+       ESTATE_PROP          IEXPRP         OFF          [  0]   ***   
+       GEO_MAXCYC           IOPTCY             50               ***   
+       ABCDTYPE             IABCDT         STANDARD     [  0]   ***   
+       AO_LADDERS           IAOLAD         SINGLEPASS   [  1]   ***   
+       FOCK                 IFOCK          AO           [  1]   ***   
+       ESTATE_MAXC          IEXMXC             20               ***   
+       ESTATE_CONV          IEXTOL          10D-  5             ***   
+       DIRECT               IDIRCT         OFF          [  0]   ***   
+  
+       GAMMA_ABCD           IGABCD         STORE        [  0]   ***   
+       LINEQ_TYPE           ILTYPE         DIIS         [  1]   ***   
+       LINEQ_MAXCY          ILMAXC             50               ***   
+       TRANGRAD             IRESRM         OFF          [  0]   ***   
+       PSI                  IPSI           OFF          [  0]   ***   
+       GAMMA_ABCI           IGABCI         STORE        [  0]   ***   
+       ESTATE_DIAG          IEXDIG         ITERATIVE    [  0]   ***   
+       FC_FIELD             IFINFC              0             x 10-6  
+       SD_FIELD             IFINSD              0             x 10-6  
+       DIFF_TYPE            IDIFTY         RELAXED      [  0]   ***   
+  
+       LINEQ_EXPOR          ILMAXD              5               ***   
+       FINITE_PERT          IFIPER              0             x 10-6  
+       ANHARMONIC           IANHAR         OFF          [  0]   ***   
+       CC_PROGRAM           ICCPRO         VCC          [  0]   ***   
+       OPEN-SHELL           IOPEN          SPIN-ORBITAL [  0]   ***   
+       UIJ_THRESHO          IUIJTH             25               ***   
+       SCF_DAMPING          IDAMP               0             x 10-3  
+       PROP_INTEGR          IINTYP         INTERNAL     [  0]   ***   
+       ANH_SYMMETR          IANHSM         ABELIAN      [  0]   ***   
+       ANH_ALGORIT          IANALG         STANDARD     [  0]   ***   
+  
+       EOM_NONIT            EOMNON         OFF          [  0]   ***   
+       VIB_ALGORIT          IGEALG         STANDARD     [  0]   ***   
+       ANH_DERIVAT          IANDER         SECOND       [  1]   ***   
+       SPINROTATIO          ISRCON         OFF          [  0]   ***   
+       CIS_CONV             ICISTL              5               ***   
+       ANH_STEPSIZ          ICUBST             50000          x 10-6  
+       SPIN_FLIP            ISPFLP         OFF          [  0]   ***   
+       GRID                 IGRID          OFF          [  0]   ***   
+  
+       DBOC                 IDBOC          OFF          [  0]   ***   
+       EOMFOLLOW            IEOMSR         ENERGY       [  0]   ***   
+       T3_EXTRAPOL          IT3EXT         OFF          [  0]   ***   
+       ESTATE_LOCK          IESLOC         OFF          [  0]   ***   
+       UNOS                 IUNOS          OFF          [  0]   ***   
+       FREQ_ALGORI          IVIALG         STANDARD     [  0]   ***   
+       RELATIVIST           IRELAT         OFF          [  0]   ***   
+       FROZEN_CORE          IFROCO         OFF          [  0]   ***   
+       EXCITATION           IEXCIT              0               ***   
+       INPUT_MRCC           IMRCC          ON           [  1]   ***   
+  
+       GIAO                 IGIAO          OFF          [  1]   ***   
+       EOM_NSING            IEOMSI          10D-  0             ***   
+       EOM_NTRIP            IEOMTR          10D-  0             ***   
+       EOM_NSTATES          IMRCCD         DAVIDSON     [  0]   ***   
+       DIAG_MRCC            IEOMST          10D-  0             ***   
+       NEWNORM              INEWNO         OFF          [  0]   ***   
+       TESTSUITE            ITESTS         OFF          [  0]   ***   
+       BUFFERSIZE           IBUFFS            600               ***   
+       SPINORBIT            ISOCAL         OFF          [  0]   ***   
+       DCT                  IDCT           OFF          [  0]   ***   
+  
+       PARALLEL             IPARAL         ON           [  1]   ***   
+       PARA_PRINT           IPPRIN              0               ***   
+       COMM_SIZE            IPSIZE            ***               ***   
+       PARA_INT             IPINTS         ON           [  1]   ***   
+       RAMAN_INT            IRAMIN         OFF          [  0]   ***   
+       RAMAN_ORB            IRAMRE         UNRELAXED    [  0]   ***   
+       BREIT                IBREIT         OFF          [  0]   ***   
+       MEM_UNIT             IMEMU          MB           [  2]   ***   
+       SPIN_ORBIT           ISPORB         OFF          [  0]   ***   
+       GENBAS_4             IGNBS4              0               ***   
+  
+       SPIN_SCAL            ISCSMP         OFF          [  0]   ***   
+       GRID_ALGO            IGALGO         SERIAL       [  0]   ***   
+       VIBPHASE             ISETPH         STANDARD     [  0]   ***   
+       SEQUENCE             ISEQUE         OFF          [  0]   ***   
+       HESS_TYPE            IHESTP         SCF          [  0]   ***   
+       CONTINUUM            ICONTU         NONE         [  0]   ***   
+       SCF_NOSTOP           ISCFST         OFF          [  0]   ***   
+       CONSTANT             ICONST         OLD          [  1]   ***   
+  
+       EOM_MRCC             IMRCCE         OLD          [  0]   ***   
+       EOM_ORDER            IEXORD         ENERGY       [  0]   ***   
+       GIMIC                IGIMIC         OFF          [  0]   ***   
+    -------------------------------------------------------------------
+  @GETXYZ-I,     1 atoms read from ZMAT.
+  1  HE         2     4.00260
+  1  HE         2     4.00260
+   Rotational constants (in cm-1): 
+
+   Rotational constants (in MHz): 
+
+********************************************************************************
+   The full molecular point group is I h .
+   The largest Abelian subgroup of the full molecular point group is D2h .
+   The computational point group is D2h .
+********************************************************************************
+  There are   14 basis functions.
+ @GEOPT-W, Archive file not created for single-point calculation.
+                0.00 seconds walltime passed
+ --executable xjoda finished with status            0
+  flag is                      5
+ --invoking executable xvmol
+ Serial version of molecule started
+ 
+    -------------------------------------------------------------------
+                    Input from MOL file
+    -------------------------------------------------------------------
+ INTGRL        1    0    1    0    0    0    0    0    0                        
+          *** CFOUR Program System (Release V0.1) ***                           
+ auto-generated by qcdb from molecule default                                   
+     1    3 X  Y   Z   0.10E-08              0    0                             
+    9999.00      3.00                                                           
+           2.00000000    1    3    1    1    1                                  
+ HE#1      0.000000000000      0.000000000000      0.000000000000               
+     6    3                                                                     
+    234.000000000000       2.587000000000000E-003  0.000000000000000E+000       
+   0.000000000000000E+000                                                       
+    35.1600000000000       1.953300000000000E-002  0.000000000000000E+000       
+   0.000000000000000E+000                                                       
+    7.98900000000000       9.099800000000000E-002  0.000000000000000E+000       
+   0.000000000000000E+000                                                       
+    2.21200000000000       0.272050000000000       0.000000000000000E+000       
+   0.000000000000000E+000                                                       
+   0.666900000000000       0.000000000000000E+000   1.00000000000000            
+   0.000000000000000E+000                                                       
+   0.208900000000000       0.000000000000000E+000  0.000000000000000E+000       
+    1.00000000000000                                                            
+     2    2                                                                     
+    3.04400000000000        1.00000000000000       0.000000000000000E+000       
+   0.758000000000000       0.000000000000000E+000   1.00000000000000            
+     1    1                                                                     
+    1.96500000000000        1.00000000000000                                    
+ FINISH                                                                         
+ 
+    -------------------------------------------------------------------
+ 
+ One- and two-electron integrals over symmetry-adapted AOs are calculated.
+
+  Spherical harmonics are used.
+  
+  Integrals less than  0.10E-13 are neglected.
+
+   Basis function not normalized: 
+   Center (as ordered in MOL file):   1
+   Angular Momentum type          : s
+   Offset within angular momentum :  1
+   <chi|chi>                      :    2.8184989863
+  Nuclear repulsion energy :    0.0000000000 a.u.
+  required memory for a1 array                3002674  words 
+  required memory for a2 array                2009205  words 
+ basis number:   2    15
+  @MOLECU-I, One electron integrals required         0.00000 seconds.
+  @TWOEL-I,         79 integrals of symmetry type  I I I I
+  @TWOEL-I,        250 integrals of symmetry type  I J I J
+  @TWOEL-I,        221 integrals of symmetry type  I I J J
+  @TWOEL-I,        226 integrals of symmetry type  I J K L
+  @TWOEL-I, Total number of 2-e integrals        776.
+  @MOLECU-I, Two electron integrals required         0.00000 seconds.
+  @CHECKOUT-I, Total execution time :       0.0000 seconds.
+                0.00 seconds walltime passed
+ --executable xvmol finished with status            0
+ --invoking executable xvmol2ja
+  @CHECKOUT-I, Total execution time :       0.0000 seconds.
+                0.00 seconds walltime passed
+ --executable xvmol2ja finished with status            0
+ --invoking executable xvscf
+ NSOSCF                     0
+  There are   14 functions in the AO basis.
+
+  There are 8 irreducible representations.
+
+       Irrep        # of functions
+         1                  5
+         2                  2
+         3                  2
+         4                  1
+         5                  2
+         6                  1
+         7                  1
+         8                  0
+
+
+  Parameters for SCF calculation: 
+        SCF reference function:  RHF  
+  Maximum number of iterations:  150
+     Full symmetry point group: I h 
+     Computational point group: D2h 
+        Initial density matrix: MOREAD                 
+     SCF convergence tolerance: 10**(- 7)
+  DIIS convergence acceleration:  ON
+          Latest start for DIIS:   8
+                     DIIS order:   6
+
+  Memory information:      49456 words required.
+  Fock matrices are constructed from AO integral file.
+  Initialization and symmetry analysis required      0.000 seconds.
+
+  @INITGES-I, Occupancies from core Hamiltonian:
+
+          Alpha population by irrep:   1    0    0    0    0    0    0    0
+           Beta population by irrep:   1    0    0    0    0    0    0    0
+
+
+ total no. of electrons in initial guess :  0.000000000000000E+000
+  --------------------------------------------------------------------
+  Iteration         Total Energy            Largest Density Difference
+  --------------------------------------------------------------------
+       0             0.000000000000000              0.0000000000D+00
+   current occupation vector 
+     1  0  0  0  0  0  0  0
+     1  0  0  0  0  0  0  0
+       1            -2.752096322841999              0.6233573379D+00
+   current occupation vector 
+     1  0  0  0  0  0  0  0
+     1  0  0  0  0  0  0  0
+       2            -2.859775660678974              0.1739970193D+00
+   current occupation vector 
+     1  0  0  0  0  0  0  0
+     1  0  0  0  0  0  0  0
+       3            -2.861135821763487              0.4193552492D-01
+   current occupation vector 
+     1  0  0  0  0  0  0  0
+     1  0  0  0  0  0  0  0
+       4            -2.861153341244378              0.7383456045D-02
+   current occupation vector 
+     1  0  0  0  0  0  0  0
+     1  0  0  0  0  0  0  0
+       5            -2.861153344784377              0.8131710854D-04
+   current occupation vector 
+     1  0  0  0  0  0  0  0
+     1  0  0  0  0  0  0  0
+       6            -2.861153344784122              0.3604434361D-06
+   current occupation vector 
+     1  0  0  0  0  0  0  0
+     1  0  0  0  0  0  0  0
+       7            -2.861153344784290              0.9704379287D-06
+   current occupation vector 
+     1  0  0  0  0  0  0  0
+     1  0  0  0  0  0  0  0
+       8            -2.861153344784420              0.3896112601D-06
+   current occupation vector 
+     1  0  0  0  0  0  0  0
+     1  0  0  0  0  0  0  0
+
+  SCF has converged.
+
+ save density matrix on hard disk
+ total electron number:   2.00000000000000     
+     E(SCF)=        -2.861153344784422              0.4010323185D-09
+
+  Eigenvector printing suppressed.
+
+ @PUTMOS-I, Writing converged MOs to NEWMOS. 
+ @PUTMOS-I, Symmetry   1 Full   1 Partial   1
+ @PUTMOS-I, Symmetry   2 Full   0 Partial   2
+ @PUTMOS-I, Symmetry   3 Full   0 Partial   2
+ @PUTMOS-I, Symmetry   4 Full   0 Partial   1
+ @PUTMOS-I, Symmetry   5 Full   0 Partial   2
+ @PUTMOS-I, Symmetry   6 Full   0 Partial   1
+ @PUTMOS-I, Symmetry   7 Full   0 Partial   1
+ @PUTMOS-I, Symmetry   8 Full   0 Partial   0
+
+
+ 
+  ORBITAL EIGENVALUES (ALPHA)  (1H = 27.2113838 eV)
+
+       MO #        E(hartree)               E(eV)           FULLSYM    COMPSYM
+       ----   --------------------   --------------------   -------   ---------
+    1     1          -0.9176250754         -24.9698481284      Ag        Ag (1)
+  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    2     2           0.6366427990          17.3239315590      Ag        Ag (1)
+    3     6           1.5005136883          40.8310538978     T1u       B2u (2)
+    4     8           1.5005136883          40.8310538978     T1u       B3u (3)
+    5    11           1.5005136883          40.8310538978     T1u       B1u (5)
+    6     3           4.6085632067         125.4053822745      Ag        Ag (1)
+    7     4           6.3576044231         172.9992141313      Hg        Ag (1)
+    8     5           6.3576044231         172.9992141313      Hg        Ag (1)
+    9    10           6.3576044231         172.9992141313      Hg       B1g (4)
+   10    13           6.3576044231         172.9992141313      Hg       B3g (6)
+   11    14           6.3576044231         172.9992141313      Hg       B2g (7)
+   12    12           7.8483591496         213.5647131748     T1u       B2u (5)
+   13     9           7.8483591496         213.5647131748     T1u       B3u (3)
+   14     7           7.8483591496         213.5647131748     T1u       B1u (2)
+
+
+  VSCF finished.
+
+  @CHECKOUT-I, Total execution time :       0.0000 seconds.
+                0.00 seconds walltime passed
+ --executable xvscf finished with status            0
+ --invoking executable xvtran
+  Partial RHF integral transformation
+  Transformation of IIII integrals :
+  1 pass through the AO integral file was required.
+          79 AO integrals were read.
+          30 MO integrals were written to HF2.
+  Transformation of IIJJ integrals :
+  1 pass through the AO integral file was required.
+         221 AO integrals were read.
+          56 MO integrals were written to HF2.
+  Transformation of IJIJ integrals :
+  1 pass through the AO integral file was required.
+         250 AO integrals were read.
+          67 MO integrals were written to HF2.
+  Transformation of IJKL integrals :
+  1 pass through the AO integral file was required.
+         226 AO integrals were read.
+          39 MO integrals were written to HF2.
+  Summary of active molecular orbitals: 
+------------------------------------------------------------------------
+ 
+  Index      Eigenvalue    Symmetry    Index      Eigenvalue    Symmetry
+------------------------------------------------------------------------
+     1        -0.9176251        1         8         1.5005137        3
+     2         0.6366428        1         9         7.8483591        3
+     3         4.6085632        1        10         6.3576044        4
+     4         6.3576044        1        11         1.5005137        5
+     5         6.3576044        1        12         7.8483591        5
+     6         1.5005137        2        13         6.3576044        6
+     7         7.8483591        2        14         6.3576044        7
+------------------------------------------------------------------------
+  @CHECKOUT-I, Total execution time :       0.0000 seconds.
+                0.00 seconds walltime passed
+ --executable xvtran finished with status            0
+ --invoking executable xintprc
+  Processing integrals for MBPT(2) calculation.
+  @GMOIAA-I, Processing MO integrals for spin case AA.
+  @GMOIAA-I, Generation of integral list completed.
+                      TYPE                NUMBER
+                      ----               --------
+                      PPPP                     0
+                      PPPH                     0
+                      PPHH                    17
+                      PHPH                     0
+                      PHHH                     0
+                      HHHH                     0
+
+                     TOTAL                    17
+
+  @FORMT2-I, Second-order MP correlation energies:
+              ----------------------------------------------
+              E(SCF)                =   -2.861153344784 a.u.
+              E2(AA)                =    0.000000000000 a.u.
+              E2(AB)                =   -0.033137561757 a.u.
+              E2(TOT)               =   -0.033137561757 a.u.
+              Total MP2 energy      =   -2.894290906542 a.u.
+              ----------------------------------------------
+   Largest T2 amplitudes for spin case AB:
+       _       _                 _       _                 _       _
+   i   j   a   b             i   j   a   b             i   j   a   b
+-----------------------------------------------------------------------------
+[  1   1   2   2]-0.03756 [  1   1   6   6]-0.02692 [  1   1   8   8]-0.02692
+[  1   1  11  11]-0.02692 [  1   1   3   3]-0.01985 [  1   1   3   2]-0.01708
+[  1   1   2   3]-0.01708 [  1   1   7   7]-0.00880 [  1   1   9   9]-0.00880
+[  1   1  12  12]-0.00880 [  1   1   7   6] 0.00721 [  1   1   6   7] 0.00721
+[  1   1   9   8] 0.00721 [  1   1   8   9] 0.00721 [  1   1  12  11] 0.00721
+-----------------------------------------------------------------------------
+   Norm of T2AB vector (       31 symmetry allowed elements):  0.0725047337.
+-----------------------------------------------------------------------------
+  @CHECKOUT-I, Total execution time :       0.0000 seconds.
+                0.00 seconds walltime passed
+ --executable xintprc finished with status            0
+ --invoking executable xvcc
+   MBPT(2) energy will be calculated.
+  -----------------------------------------------------------
+       Correction         Increment           Cumulative
+  -----------------------------------------------------------
+        D-MBPT(2)       -0.033137561757    -2.894290906542
+  -----------------------------------------------------------
+  Total MBPT(2)       energy:    -2.894290906542 a.u.
+  @CHECKOUT-I, Total execution time :       0.0000 seconds.
+ --executable xvcc finished with status            0
+
+
+  Variable Map:
+  ----------------------------------------------------------------------------
+  "CBS CORRELATION ENERGY"     =>      -0.041760048473
+  "CBS REFERENCE ENERGY"       =>      -2.861544295903
+  "CBS TOTAL ENERGY"           =>      -2.903304344376
+  "CURRENT CORRELATION ENERGY" =>      -0.033137561757
+  "CURRENT ENERGY"             =>      -2.894290906542
+  "CURRENT REFERENCE ENERGY"   =>      -2.861153344784
+  "MP2 CORRELATION ENERGY"     =>      -0.033137561757
+  "MP2 OPPOSITE-SPIN ENERGY"   =>      -0.033137561757
+  "MP2 SAME-SPIN ENERGY"       =>       0.000000000000
+  "MP2 TOTAL ENERGY"           =>      -2.894290906542
+  "NUCLEAR REPULSION ENERGY"   =>       0.000000000000
+  "SCF TOTAL ENERGY"           =>      -2.861153344784
+
+
+
+
+  Variable Map:
+  ----------------------------------------------------------------------------
+  "CBS CORRELATION ENERGY"     =>      -0.041760048473
+  "CBS REFERENCE ENERGY"       =>      -2.861544295903
+  "CBS TOTAL ENERGY"           =>      -2.903304344376
+  "CURRENT CORRELATION ENERGY" =>      -0.033137561757
+  "CURRENT ENERGY"             =>      -2.894290906542
+  "CURRENT REFERENCE ENERGY"   =>      -2.861153344784
+  "MP2 CORRELATION ENERGY"     =>      -0.033137561757
+  "MP2 OPPOSITE-SPIN ENERGY"   =>      -0.033137561757
+  "MP2 SAME-SPIN ENERGY"       =>       0.000000000000
+  "MP2 TOTAL ENERGY"           =>      -2.894290906542
+  "NUCLEAR REPULSION ENERGY"   =>       0.000000000000
+  "SCF TOTAL ENERGY"           =>      -2.861153344784
+
+
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //   CBS Computation: MP5 / CC-PVDZ  //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+
+*** tstart() called on john2
+*** at Mon Aug 26 01:45:15 2013
+
+	There are an even number of electrons - assuming singlet.
+	Specify the multiplicity with the MULTP option in the
+	input if this is incorrect
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        2 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+          HE          0.000000000000     0.000000000000     0.000000000000
+
+  Running in d2h symmetry.
+
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 2
+  Nalpha       = 1
+  Nbeta        = 1
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Number of shells: 3
+    Number of basis function: 5
+    Number of Cartesian functions: 5
+    Spherical Harmonics?: true
+    Max angular momentum: 1
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag         2       2       0       0       0       0
+     B1g        0       0       0       0       0       0
+     B2g        0       0       0       0       0       0
+     B3g        0       0       0       0       0       0
+     Au         0       0       0       0       0       0
+     B1u        1       1       0       0       0       0
+     B2u        1       1       0       0       0       0
+     B3u        1       1       0       0       0       0
+   -------------------------------------------------------
+    Total       5       5       1       1       1       0
+   -------------------------------------------------------
+
+ OEINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   1
+      Number of AO shells:               3
+      Number of SO shells:               3
+      Number of primitives:              5
+      Number of atomic orbitals:         5
+      Number of basis functions:         5
+
+      Number of irreps:                  8
+      Number of functions per irrep: [   2    0    0    0    0    1    1    1 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   1
+      Number of AO shells:               3
+      Number of SO shells:               3
+      Number of primitives:              5
+      Number of atomic orbitals:         5
+      Number of basis functions:         5
+
+      Number of irreps:                  8
+      Integral cutoff                 0.00e+00
+      Number of functions per irrep: [   2    0    0    0    0    1    1    1 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 33 non-zero two-electron integrals.
+        Stored in file 33.
+
+	Batch   1 pq = [       0,       6] index = [             0,21]
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               178
+    Schwarz Cutoff:          1E-12
+
+  Minimum eigenvalue in the overlap matrix is 3.6583226831E-01.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RHF iter   1:    -2.74189680632999   -2.74190e+00   1.80274e-01 
+   @RHF iter   2:    -2.85440990349123   -1.12513e-01   1.51220e-02 DIIS
+   @RHF iter   3:    -2.85516044565469   -7.50542e-04   9.81900e-05 DIIS
+   @RHF iter   4:    -2.85516047724238   -3.15877e-08   3.32428e-07 DIIS
+   @RHF iter   5:    -2.85516047724274   -3.62821e-13   7.53620e-10 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1Ag    -0.914148  
+
+	Virtual:                                                              
+
+	   2Ag     1.397442     1B1u    2.524372     1B3u    2.524372  
+	   1B2u    2.524372  
+
+	Final Occupation by Irrep:
+	         Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+	DOCC [     1,    0,    0,    0,    0,    0,    0,    0 ]
+
+  Energy converged.
+
+  @RHF Final Energy:    -2.85516047724274
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.0000000000000000
+    One-Electron Energy =                  -3.8820251017722445
+    Two-Electron Energy =                   1.0268646245295039
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    Total Energy =                         -2.8551604772427406
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+  ==> Properties <==
+
+
+Properties computed using the SCF density density matrix
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on john2 at Mon Aug 26 01:45:15 2013
+Module time:
+	user time   =       0.10 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =      15.13 seconds =       0.25 minutes
+	system time =       0.13 seconds =       0.00 minutes
+	total time  =         16 seconds =       0.27 minutes
+
+*** tstart() called on john2
+*** at Mon Aug 26 01:45:15 2013
+
+
+	**************************************************
+	* TRANSQT2: Program to transform integrals from  *
+	*           the SO basis to the MO basis.        *
+	*                                                *
+	*            Daniel, David, & Justin             *
+	**************************************************
+
+
+	Input parameters:
+	-----------------
+	Wave function   =	DETCI
+	Backtransform   =	No
+	Print Level     =	1
+	Print TEIs      =	No
+	Reference wfn   =	RHF
+	Derivative      =	None
+	Delete TEI File =	Yes
+	Memory (Mbytes) =	250.0
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 8
+	Number of SOs        = 5
+	Number of MOs        = 5
+	Number of active MOs = 5
+
+	Label	# SOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 Ag	   2	    0	    1	    0	    1	    0
+	 B1g	   0	    0	    0	    0	    0	    0
+	 B2g	   0	    0	    0	    0	    0	    0
+	 B3g	   0	    0	    0	    0	    0	    0
+	 Au	   0	    0	    0	    0	    0	    0
+	 B1u	   1	    0	    0	    0	    1	    0
+	 B2u	   1	    0	    0	    0	    1	    0
+	 B3u	   1	    0	    0	    0	    1	    0
+
+	Nuclear Rep. energy (chkpt) =      0.00000000000000
+	SCF energy          (chkpt) =     -2.85516047724274
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (pq,rs) nbuckets = 1
+	Frozen-core energy =    0.000000000000000
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+*** tstop() called on john2 at Mon Aug 26 01:45:16 2013
+Module time:
+	user time   =       0.07 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =      15.20 seconds =       0.25 minutes
+	system time =       0.14 seconds =       0.00 minutes
+	total time  =         17 seconds =       0.28 minutes
+
+*** tstart() called on john2
+*** at Mon Aug 26 01:45:16 2013
+
+
+*******************************************************
+                       D E T C I  
+
+                   C. David Sherrill
+                   Matt L. Leininger
+                     18 June 1999
+*******************************************************
+
+
+
+
+PARAMETERS: 
+   EX LEVEL      =        2      H0 BLOCKSIZE =        1
+   VAL EX LEVEL  =        0      H0 GUESS SIZE=        1
+   H0COUPLINGSIZE=        0      H0 COUPLING  =       no
+   NUM PRINT     =       20
+   MAXITER       =       12      FREEZE CORE  =      yes
+   NUM ROOTS     =        1      ICORE        =        1
+   PRINT         =        1      FCI          =      yes
+   R CONV        =   1.00e-04      MIXED        =      yes
+   E CONV        =   1.00e-06      MIXED4       =      yes
+   OEI FILE      =       35      R4S          =       no
+   REPL OTF      =       no
+   TEI FILE      =       72      DIAG METHOD  =      SEM
+   PRECONDITIONER= DAVIDSON      UPDATE       =   DAVIDSON
+   S             =   0.0000      Ms0          =      yes
+   MAX NUM VECS  =        3
+   RESTART       =       no
+   GUESS VECTOR  =     UNIT      OPENTYPE     =     NONE
+   REF SYM       =     auto
+   COLLAPSE SIZE =        1      HD AVG       =    ORB_ENER
+   LSE           =       no      LSE ITER     =        0
+   HD OTF        =      yes      NO DFILE     =      yes
+   MPN           =      yes      MPN SCHMIDT  =       no
+   ZAPTN         =       no      MPN WIGNER   =      yes
+   PERT Z        =   1.0000    FOLLOW ROOT  =        0
+   NUM THREADS   =        2
+   VECS WRITE    =       no      NUM VECS WRITE =        0
+   FILTER GUESS  =       no      SF RESTRICT  =       no
+   OPDM          =       no      TRANS DENSITY=       no
+
+   FILES         =  50 51 52 53
+
+   EX ALLOW      =  1  1 
+   STATE AVERAGE =  1(1.00) 
+   STATE AVERAGE =  1(1.00) 
+
+ORBITALS:
+   NMO          =        5      NUM ALP      =        1
+   ORBS IN CI   =        5      NUM ALP EXPL =        1
+   FROZEN CORE  =        0      NUM BET      =        1
+   RESTR CORE   =        0      NUM BET EXPL =        1
+   IOPEN        =       no
+   RAS1 LVL     =        0      A RAS3 MAX   =        1
+   RAS1 MIN     =        0      B RAS3 MAX   =        1
+   A RAS1 LVL   =        0      RAS4 LVL     =        5
+   A RAS1 MIN   =        0      A RAS4 MAX   =        0
+   A RAS1 MAX   =        1      B RAS4 MAX   =        0
+   B RAS1 LVL   =        0      RAS4 MAX     =        0
+   B RAS1 MIN   =        0      A RAS34 MAX  =        1
+   B RAS1 MAX   =        1      B RAS34 MAX  =        1
+   RAS3 LVL     =        1      RAS34 MAX    =        2
+   RAS3 MAX     =        2
+
+   DOCC         =  1  0  0  0  0  0  0  0 
+   SOCC         =  0  0  0  0  0  0  0  0 
+   FROZEN DOCC  =  0  0  0  0  0  0  0  0 
+   FROZEN UOCC  =  0  0  0  0  0  0  0  0 
+   RAS 1        =  1  0  0  0  0  0  0  0 
+   RAS 2        =  0  0  0  0  0  0  0  0 
+   RAS 3        =  1  0  0  0  0  1  1  1 
+   RAS 4        =  0  0  0  0  0  0  0  0 
+*******************************************************
+
+
+There are 5 alpha strings
+There are 5 beta strings
+CI space contains    7 blocks
+
+CI space requires 7 determinants
+
+Check SCF Energy from 1- and 2-electron integrals
+
+SCF Energy (ref):             -2.8551604772
+Nuclear repulsion energy:      0.0000000000
+One-electron energy:          -3.8820251026
+Two-electron energy:           1.0268646254
+Frozen core energy:            0.0000000000
+Total electronic energy:      -2.8551604772
+Total SCF energy:             -2.8551604772
+
+ CI vector/subblock length = 7
+   CalcInfo.escf =        -2.855160477242741
+   CalcInfo.e0   =        -1.828295851844693
+   CalcInfo.enuc =         0.000000000000000
+   CalcInfo.e1   =        -1.026864625398048
+
+   n         Corr. Energy 		 E(MPn) 		   n         Corr. Energy 		 E(MPn)
+
+   0          0.000000000000000        -1.828295851844693
+   1         -1.026864625398048        -2.855160477242741
+   1         -1.026864625398046        -2.855160477242740
+   2         -0.025828339551631        -2.880988816794372	  2        -0.025828339551631        -2.880988816794372
+								  3        -0.005372370755800        -2.886361187550172
+   3         -0.005372370755800        -2.886361187550172	  4        -0.001029136233860        -2.887390323784032
+								  5        -0.000176783601766        -2.887567107385799
+
+MP5 energy saved
+
+EMPn =  -2.8875671073858
+
+
+        Total Time (s)     %Time 		%Relative
+ -----------------------------------------------------
+ Read      0.000059
+ Write     0.000065
+ Sigma1    0.000086
+ Sigma2    0.000477
+ Sigma3    0.001959
+ S1 Thread 0.000081
+ S2 Thread 0.000461
+ S3 Thread 0.001835
+
+		 "A good bug is a dead bug" 
+
+			 - Starship Troopers
+
+		 "I didn't write FORTRAN.  That's the problem."
+
+			 - Edward Valeev
+
+
+*** tstop() called on john2 at Mon Aug 26 01:45:16 2013
+Module time:
+	user time   =       0.03 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =      15.23 seconds =       0.25 minutes
+	system time =       0.14 seconds =       0.00 minutes
+	total time  =         17 seconds =       0.28 minutes
+
+
+  Variable Map:
+  ----------------------------------------------------------------------------
+  "CURRENT CORRELATION ENERGY"   =>      -0.032406630143
+  "CURRENT ENERGY"               =>      -2.887567107386
+  "CURRENT REFERENCE ENERGY"     =>      -2.855160477243
+  "HF TOTAL ENERGY"              =>      -2.855160477243
+  "MP2 CORRELATION ENERGY"       =>      -0.025828339552
+  "MP2 TOTAL ENERGY"             =>      -2.880988816794
+  "MP3 CORRELATION ENERGY"       =>      -0.031200710307
+  "MP3 TOTAL ENERGY"             =>      -2.886361187550
+  "MP4 CORRELATION ENERGY"       =>      -0.032229846541
+  "MP4 TOTAL ENERGY"             =>      -2.887390323784
+  "MP4(SDTQ) CORRELATION ENERGY" =>       0.000000000000
+  "MP5 CORRELATION ENERGY"       =>      -0.032406630143
+  "MP5 TOTAL ENERGY"             =>      -2.887567107386
+  "NUCLEAR REPULSION ENERGY"     =>       0.000000000000
+  "ONE-ELECTRON ENERGY"          =>      -3.882025101772
+  "SCF DIPOLE X"                 =>       0.000000000000
+  "SCF DIPOLE Y"                 =>       0.000000000000
+  "SCF DIPOLE Z"                 =>       0.000000000000
+  "SCF ITERATION ENERGY"         =>      -2.855160477243
+  "SCF TOTAL ENERGY"             =>      -2.855160477243
+  "TWO-ELECTRON ENERGY"          =>       1.026864624530
+
+
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //            CBS Results            //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+
+   ==> highest_1 <==
+
+   HI-zeta (3) Total Energy:             -2.86115334
+
+   ==> corl_xtpl_helgaker_2 <==
+
+   LO-zeta (2) Correlation Energy:       -0.02582834
+   HI-zeta (3) Correlation Energy:       -0.03313756
+   Extrapolated Correlation Energy:      -0.03621513
+   Beta (coefficient) Value:              0.08309432
+
+   ==> highest_1 <==
+
+   HI-zeta (0) Correlation Energy:       -0.03240663
+
+   ==> highest_1 <==
+
+   HI-zeta (0) Correlation Energy:       -0.02582834
+
+   ==> Components <==
+
+  ---------------------------------------------------------------------------------------------------------
+                          Method / Basis                      Rqd       Energy [H]   Variable
+  ---------------------------------------------------------------------------------------------------------
+                          c4-mp2 / cc-pvtz                      *      -0.03313756   MP2 CORRELATION ENERGY
+                          c4-scf / cc-pvtz                             -2.86115334   SCF TOTAL ENERGY
+                             mp5 / cc-pvdz                      *      -0.03240663   MP5 CORRELATION ENERGY
+                             scf / cc-pvdz                             -2.85516048   SCF TOTAL ENERGY
+                             mp2 / cc-pvdz                             -0.02582834   MP2 CORRELATION ENERGY
+                             mp4 / cc-pvdz                              0.00000000   MP4(SDTQ) CORRELATION ENERGY
+                             mp3 / cc-pvdz                             -0.03120071   MP3 CORRELATION ENERGY
+  ---------------------------------------------------------------------------------------------------------
+
+   ==> Stages <==
+
+  ---------------------------------------------------------------------------------------------------------
+      Stage               Method / Basis                       Wt       Energy [H]   Scheme
+  ---------------------------------------------------------------------------------------------------------
+        scf                  scf / cc-pvtz                      1      -2.86115334   highest_1
+       corl               c4-mp2 / cc-pv[dt]z                   1      -0.03621513   corl_xtpl_helgaker_2
+      delta                  mp5 / cc-pvdz                      1      -0.03240663   highest_1
+      delta               c4-mp2 / cc-pvdz                     -1      -0.02582834   highest_1
+  ---------------------------------------------------------------------------------------------------------
+
+   ==> CBS <==
+
+  ---------------------------------------------------------------------------------------------------------
+      Stage               Method / Basis                                Energy [H]   Scheme
+  ---------------------------------------------------------------------------------------------------------
+        scf                  scf / cc-pvtz                             -2.86115334   highest_1
+       corl               c4-mp2 / cc-pv[dt]z                          -0.03621513   corl_xtpl_helgaker_2
+      delta         mp5 - c4-mp2 / cc-pvdz                             -0.00657829   highest_1
+      total                  CBS                                       -2.90394676   
   ---------------------------------------------------------------------------------------------------------
 
 *** PSI4 exiting successfully. Buy a developer a beer!

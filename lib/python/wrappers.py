@@ -1559,10 +1559,6 @@ def complete_basis_set(name, **kwargs):
 
     .. caution:: Some features are not yet implemented. Buy a developer a coffee.
 
-       - Not all methods hooked in through PSI variables, configuration interaction and arbitrary order MP in particular.
-
-       - No scheme defaults for given basis zeta number, so scheme must be specified explicitly.
-
        - No way to tell function to boost fitting basis size for all calculations.
 
        - No way to extrapolate def2 family basis sets
@@ -1597,6 +1593,7 @@ def complete_basis_set(name, **kwargs):
            * mp3
            * mp4(sdq)
            * mp4
+           * mp\ *n*
            * omp2
            * omp3
            * ocepa
@@ -1765,41 +1762,56 @@ def complete_basis_set(name, **kwargs):
     :param scf_scheme: |dl| ``highest_1`` |dr| || ``scf_xtpl_helgaker_3`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the reference energy.
+        Defaults to :py:func:`~wrappers.scf_xtpl_helgaker_3` if three valid basis sets
+        present in ``scf_basis``, :py:func:`~wrappers.scf_xtpl_helgaker_2` if two valid basis
+        sets present in ``scf_basis``, and :py:func:`~wrappers.highest_1` otherwise.
 
     :type corl_scheme: function
     :param corl_scheme: |dl| ``highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the correlation energy.
+        Defaults to :py:func:`~wrappers.corl_xtpl_helgaker_2` if two valid basis sets
+        present in ``corl_basis`` and :py:func:`~wrappers.highest_1` otherwise.
 
     :type delta_scheme: function
     :param delta_scheme: |dl| ``highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the delta correction
         to the correlation energy.
+        Defaults to :py:func:`~wrappers.corl_xtpl_helgaker_2` if two valid basis sets
+        present in ``delta_basis`` and :py:func:`~wrappers.highest_1` otherwise.
 
     :type delta2_scheme: function
     :param delta2_scheme: |dl| ``highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the second delta correction
         to the correlation energy.
+        Defaults to :py:func:`~wrappers.corl_xtpl_helgaker_2` if two valid basis sets
+        present in ``delta2_basis`` and :py:func:`~wrappers.highest_1` otherwise.
 
     :type delta3_scheme: function
     :param delta3_scheme: |dl| ``highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the third delta correction
         to the correlation energy.
+        Defaults to :py:func:`~wrappers.corl_xtpl_helgaker_2` if two valid basis sets
+        present in ``delta3_basis`` and :py:func:`~wrappers.highest_1` otherwise.
 
     :type delta4_scheme: function
     :param delta4_scheme: |dl| ``highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the fourth delta correction
         to the correlation energy.
+        Defaults to :py:func:`~wrappers.corl_xtpl_helgaker_2` if two valid basis sets
+        present in ``delta4_basis`` and :py:func:`~wrappers.highest_1` otherwise.
 
     :type delta5_scheme: function
     :param delta5_scheme: |dl| ``highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the fifth delta correction
         to the correlation energy.
+        Defaults to :py:func:`~wrappers.corl_xtpl_helgaker_2` if two valid basis sets
+        present in ``delta5_basis`` and :py:func:`~wrappers.highest_1` otherwise.
 
     :type molecule: :ref:`molecule <op_py_molecule>`
     :param molecule: ``h2o`` || etc.
@@ -2009,6 +2021,14 @@ def complete_basis_set(name, **kwargs):
                             'scftot': 'SCF TOTAL ENERGY',
          'ci%scorl' % (str(cilevel)): 'CI CORRELATION ENERGY'}
 
+    for mplevel in range(5, 99):
+        VARH['mp%s' % (str(mplevel))] = {
+                            'scftot': 'SCF TOTAL ENERGY',
+         'mp%scorl' % (str(mplevel)): 'MP%s CORRELATION ENERGY' % (str(mplevel))}
+        for mplevel2 in range(2, mplevel):
+            VARH['mp%s' % (str(mplevel))]['mp%scorl' % (str(mplevel2))] = \
+                                      'MP%s CORRELATION ENERGY' % (str(mplevel2))
+
     # Integrate CFOUR methods
     VARH.update(cfour_psivar_list())
 
@@ -2206,39 +2226,68 @@ def complete_basis_set(name, **kwargs):
             raise ValidationError('DELTA5 basis sets through keyword \'%s\' are required.' % ('delta5_basis'))
 
     # Establish treatment for scf energy (validity check useless since python will catch it long before here)
-    cbs_scf_scheme = highest_1
+    if (len(BSTR) == 3) and ('scf_basis' in kwargs):
+        cbs_scf_scheme = scf_xtpl_helgaker_3
+    elif (len(BSTR) == 2) and ('scf_basis' in kwargs):
+        cbs_scf_scheme = scf_xtpl_helgaker_2
+    else:
+        cbs_scf_scheme = highest_1
     if 'scf_scheme' in kwargs:
         cbs_scf_scheme = kwargs['scf_scheme']
 
     # Establish treatment for correlation energy
-    cbs_corl_scheme = highest_1
-    if 'corl_scheme' in kwargs:
-        cbs_corl_scheme = kwargs['corl_scheme']
+    if do_corl:
+        if len(BSTC) == 2:
+            cbs_corl_scheme = corl_xtpl_helgaker_2
+        else:
+            cbs_corl_scheme = highest_1
+        if 'corl_scheme' in kwargs:
+            cbs_corl_scheme = kwargs['corl_scheme']
 
     # Establish treatment for delta correction energy
-    cbs_delta_scheme = highest_1
-    if 'delta_scheme' in kwargs:
-        cbs_delta_scheme = kwargs['delta_scheme']
+    if do_delta:
+        if len(BSTD) == 2:
+            cbs_delta_scheme = corl_xtpl_helgaker_2
+        else:
+            cbs_delta_scheme = highest_1
+        if 'delta_scheme' in kwargs:
+            cbs_delta_scheme = kwargs['delta_scheme']
 
     # Establish treatment for delta2 correction energy
-    cbs_delta2_scheme = highest_1
-    if 'delta2_scheme' in kwargs:
-        cbs_delta2_scheme = kwargs['delta2_scheme']
+    if do_delta2:
+        if len(BSTD2) == 2:
+            cbs_delta2_scheme = corl_xtpl_helgaker_2
+        else:
+            cbs_delta2_scheme = highest_1
+        if 'delta2_scheme' in kwargs:
+            cbs_delta2_scheme = kwargs['delta2_scheme']
 
     # Establish treatment for delta3 correction energy
-    cbs_delta3_scheme = highest_1
-    if 'delta3_scheme' in kwargs:
-        cbs_delta3_scheme = kwargs['delta3_scheme']
+    if do_delta3:
+        if len(BSTD3) == 2:
+            cbs_delta3_scheme = corl_xtpl_helgaker_2
+        else:
+            cbs_delta3_scheme = highest_1
+        if 'delta3_scheme' in kwargs:
+            cbs_delta3_scheme = kwargs['delta3_scheme']
 
     # Establish treatment for delta4 correction energy
-    cbs_delta4_scheme = highest_1
-    if 'delta4_scheme' in kwargs:
-        cbs_delta4_scheme = kwargs['delta4_scheme']
+    if do_delta4:
+        if len(BSTD4) == 2:
+            cbs_delta4_scheme = corl_xtpl_helgaker_2
+        else:
+            cbs_delta4_scheme = highest_1
+        if 'delta4_scheme' in kwargs:
+            cbs_delta4_scheme = kwargs['delta4_scheme']
 
     # Establish treatment for delta5 correction energy
-    cbs_delta5_scheme = highest_1
-    if 'delta5_scheme' in kwargs:
-        cbs_delta5_scheme = kwargs['delta5_scheme']
+    if do_delta5:
+        if len(BSTD5) == 2:
+            cbs_delta5_scheme = corl_xtpl_helgaker_2
+        else:
+            cbs_delta5_scheme = highest_1
+        if 'delta5_scheme' in kwargs:
+            cbs_delta5_scheme = kwargs['delta5_scheme']
 
     # Build string of title banner
     cbsbanners = ''
@@ -2398,6 +2447,8 @@ def complete_basis_set(name, **kwargs):
             for job in JOBS_EXT:
                 if (temp_wfn == job['f_wfn']) and (temp_portion == job['f_portion']) and (mc['f_basis'] == job['f_basis']):
                     job['f_energy'] = psi4.get_variable(VARH[temp_wfn][menial])
+        psi4.print_variables()
+        psi4.clean_variables()
         psi4.clean()
 
     psioh.set_specific_retention(p4const.PSIF_SCF_MOS, False)
@@ -2416,8 +2467,8 @@ def complete_basis_set(name, **kwargs):
 
             for job in JOBS_EXT:
                 if (((lvl[1]['f_wfn'] == job['f_wfn']) or
-                     (lvl[1]['f_wfn'][3:] == job['f_wfn']) or
-                     (lvl[1]['f_wfn'][3:] == job['f_wfn'][3:]) or
+                     ((lvl[1]['f_wfn'][3:] == job['f_wfn']) and lvl[1]['f_wfn'].startswith('c4-')) or
+                     ((lvl[1]['f_wfn'] == job['f_wfn'][3:]) and job['f_wfn'].startswith('c4-')) or
                      (('c4-' + lvl[1]['f_wfn']) == job['f_wfn']) or
                      (lvl[1]['f_wfn'] == ('c4-' + job['f_wfn']))) and
                     (lvl[1]['f_portion'] == job['f_portion']) and
