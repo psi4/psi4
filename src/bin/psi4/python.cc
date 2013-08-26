@@ -104,7 +104,7 @@ namespace psi {
     namespace dfmp2      { PsiReturnType dfmp2grad(Options &);}
     namespace sapt       { PsiReturnType sapt(Options &);     }
     namespace dftsapt    { PsiReturnType dftsapt(boost::shared_ptr<Wavefunction> dimer, boost::shared_ptr<Wavefunction> mA, boost::shared_ptr<Wavefunction> mB); }
-    namespace dftsapt    { PsiReturnType asapt(boost::shared_ptr<Wavefunction> dimer, boost::shared_ptr<Wavefunction> mA, boost::shared_ptr<Wavefunction> mB, boost::shared_ptr<Wavefunction> eA, boost::shared_ptr<Wavefunction> eB); }
+    namespace dftsapt    { PsiReturnType asapt(boost::shared_ptr<Wavefunction> dimer, boost::shared_ptr<Wavefunction> mA, boost::shared_ptr<Wavefunction> mB); }
     namespace dftsapt    { PsiReturnType infsapt(boost::shared_ptr<Wavefunction> dimer, boost::shared_ptr<Wavefunction> mA, boost::shared_ptr<Wavefunction> mB); }
     namespace dcft       { PsiReturnType dcft(Options &);     }
     namespace lmp2       { PsiReturnType lmp2(Options &);     }
@@ -428,10 +428,10 @@ double py_psi_dftsapt(boost::shared_ptr<Wavefunction> dimer, boost::shared_ptr<W
         return 0.0;
 }
 
-double py_psi_asapt(boost::shared_ptr<Wavefunction> dimer, boost::shared_ptr<Wavefunction> mA, boost::shared_ptr<Wavefunction> mB, boost::shared_ptr<Wavefunction> eA, boost::shared_ptr<Wavefunction> eB)
+double py_psi_asapt(boost::shared_ptr<Wavefunction> dimer, boost::shared_ptr<Wavefunction> mA, boost::shared_ptr<Wavefunction> mB)
 {
     py_psi_prepare_options_for_module("DFTSAPT");
-    if (dftsapt::asapt(dimer, mA, mB, eA, eB) == Success) {
+    if (dftsapt::asapt(dimer, mA, mB) == Success) {
         return Process::environment.globals["SAPT ENERGY"];
     }
     else

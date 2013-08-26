@@ -263,15 +263,6 @@ friend class DFTSAPT;
 
     // 3-index tensors
     std::map<std::string, boost::shared_ptr<Tensor> > tensors_;
-
-    // Monomer electrostatics evaluation basis
-    boost::shared_ptr<BasisSet> elst_primary_A_; 
-    // Monomer electrostatics evaluation basis
-    boost::shared_ptr<BasisSet> elst_primary_B_; 
-    // Monomer A occupied C matric
-    boost::shared_ptr<Matrix> elst_Cocc_A_;
-    // Monomer B occupied C matric
-    boost::shared_ptr<Matrix> elst_Cocc_B_;
     
     // Localized occupied orbitals of monomer A (n x a)
     boost::shared_ptr<Matrix> Locc_A_;
@@ -302,8 +293,6 @@ friend class DFTSAPT;
     void populate();
     // Compute Elst
     void elst();
-    // Compute Elst in the new way
-    void elst2();
     // Compute Exch
     void exch();
     // Compute Ind
@@ -324,9 +313,7 @@ public:
     // Factory constructor, call this with 5 converged SCF jobs (dimer, monomer A, monomer B, electrostatics A, electrostatics B)
     static boost::shared_ptr<ASAPT> build(boost::shared_ptr<Wavefunction> d,
                                           boost::shared_ptr<Wavefunction> mA,
-                                          boost::shared_ptr<Wavefunction> mB,
-                                          boost::shared_ptr<Wavefunction> eA,
-                                          boost::shared_ptr<Wavefunction> eB);
+                                          boost::shared_ptr<Wavefunction> mB);
 };
 
 class CPKS_SAPT {
