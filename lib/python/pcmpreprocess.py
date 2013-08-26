@@ -3,6 +3,9 @@ from copy import deepcopy
 
 isAngstrom = False
 
+toAngstrom =  0.52917721092; # CODATA 2010 recommended data
+toAtomicUnits = 1.0/toAngstrom;
+
 def	setup_keywords():
 	top=getkw.Section('toplevel', callback=verify_top)
 	top.set_status(True)
