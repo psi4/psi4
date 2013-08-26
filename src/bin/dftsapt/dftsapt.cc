@@ -1671,6 +1671,11 @@ boost::shared_ptr<Matrix> DFTSAPT::build_ind_pot(std::map<std::string, boost::sh
     W->copy(J_B);
     W->scale(2.0);
     W->add(V_B);
+
+    Matrix::triplet(Ca,V_B,Cr,true,false,false)->print();
+    Matrix::triplet(Ca,J_B,Cr,true,false,false)->print();
+    Matrix::triplet(Ca,W,Cr,true,false,false)->print();
+
     return Matrix::triplet(Ca,W,Cr,true,false,false);
 }
 boost::shared_ptr<Matrix> DFTSAPT::build_exch_ind_pot(std::map<std::string, boost::shared_ptr<Matrix> >& vars)
