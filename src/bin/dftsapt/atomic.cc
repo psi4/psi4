@@ -414,6 +414,7 @@ void StockholderDensity::compute(boost::shared_ptr<Matrix> D)
     }
     fprintf(outfile,"    %8s %11.3E %11.3E %11.3E\n", 
             "Total", Ztot, Qtot, Ztot + Qtot);
+    fprintf(outfile,"\n");
     fflush(outfile);
 }
 

@@ -1195,7 +1195,7 @@ void ASAPT::elst2()
     // => Nuclear Part (PITA) <= //
     
     boost::shared_ptr<IntegralFactory> Vfact2(new IntegralFactory(primary_));
-    boost::shared_ptr<PotentialInt> Vint2(static_cast<PotentialInt*>(Vfact->ao_potential()));
+    boost::shared_ptr<PotentialInt> Vint2(static_cast<PotentialInt*>(Vfact2->ao_potential()));
     Vint2->set_charge_field(Zxyz);
     boost::shared_ptr<Matrix> Vtemp2(new Matrix("Vtemp2",nn,nn));
 
