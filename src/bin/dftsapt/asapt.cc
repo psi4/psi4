@@ -1199,6 +1199,11 @@ void ASAPT::elst2()
     Vint2->set_charge_field(Zxyz);
     boost::shared_ptr<Matrix> Vtemp2(new Matrix("Vtemp2",nn,nn));
 
+    boost::shared_ptr<Matrix> Var2(new Matrix("Var2", na, nr));
+    double** Var2p = Var2->pointer();
+    boost::shared_ptr<Matrix> Vbs2(new Matrix("Vbs2", nb, ns));
+    double** Vbs2p = Vbs2->pointer();
+
     for (int A = 0; A < nA; A++) {
         Vtemp2->zero();
         Zxyzp[0][0] = monomer_A_->Z(cA[A]);
@@ -1209,6 +1214,7 @@ void ASAPT::elst2()
         boost::shared_ptr<Matrix> Vbs = Matrix::triplet(Cocc_B_,Vtemp2,Cvir_B_,true,false,false);
         double** Vbsp = Vbs->pointer();
         fwrite(Vbsp[0],sizeof(double),nb*ns,WAbsf);
+        C_DAXPY(nb*ns,1.0,Vbsp[0],1,Vbs2p[0],1);
     }
 
     for (int B = 0; B < nB; B++) {
@@ -1221,7 +1227,11 @@ void ASAPT::elst2()
         boost::shared_ptr<Matrix> Var = Matrix::triplet(Cocc_A_,Vtemp2,Cvir_A_,true,false,false);
         double** Varp = Var->pointer();
         fwrite(Varp[0],sizeof(double),na*nr,WBarf);
+        C_DAXPY(na*nr,1.0,Varp[0],1,Var2p[0],1);
     }
+
+    Var2->print();
+    Vbs2->print();
 
     // => Electronic Part (Massive PITA) <= //
 
