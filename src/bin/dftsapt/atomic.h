@@ -56,7 +56,7 @@ protected:
     /// MolecularGrid to collocate on (Becke-style, yo?)
     boost::shared_ptr<MolecularGrid> grid_;
 
-    // ==> Targets <== //
+    // ==> Targets (All reordered) <== //
 
     /// X coordinates of grid
     boost::shared_ptr<Vector> x_;
@@ -73,6 +73,9 @@ protected:
 
     // ==> Utility Routines <== //
 
+    /// Allocate grid and total density, evaluate, and sort to classical ordering
+    void compute_total_density();
+        
     /// Ubiqitous header
     virtual void print_header() const = 0;
    
@@ -86,10 +89,9 @@ public:
     virtual ~AtomicDensity();
 
     /// Master builder
-    static boost::shared_ptr<AtomicDensity> build(const std::string& type, boost::shared_ptr<BasisSet> basis, boost::shared_ptr<Matrix> D, Options& options);
-
+    static boost::shared_ptr<AtomicDensity> build(const std::string& type, boost::shared_ptr<BasisSet> basis, Options& options);
     /// Master compute routine
-    virtual void compute() = 0;
+    virtual void compute(boost::shared_ptr<Matrix> D) = 0;
 
     // ==> Accessors <== //
 
@@ -115,7 +117,22 @@ public:
 
 class StockholderDensity : public AtomicDensity {
 
+friend class AtomicDensity;
+
 protected:
+
+    // => Convergence Stuff <= //
+
+    /// Convergence criterion
+    double convergence_;
+    /// Maximum iterations
+    int maxiter_;
+    /// Use DIIS?
+    bool diis_;
+    /// Minimum iterations to DIIS at?
+    int diis_min_vecs_; 
+    /// Maximum DIIS subspace size?
+    int diis_max_vecs_; 
 
     /// Ubiqitous header
     virtual void print_header() const;
@@ -127,7 +144,7 @@ public:
     virtual ~StockholderDensity();
 
     /// Master compute routine
-    virtual void compute();
+    virtual void compute(boost::shared_ptr<Matrix> D);
 };
 
 } // End namespace

@@ -123,6 +123,7 @@ public:
 
     /// Print information about the grid
     void print(FILE* out = outfile, int print = 2) const;
+    void print_details(FILE* out = outfile, int print = 2) const;
 
     /// Orientation matrix
     boost::shared_ptr<Matrix> orientation() const { return orientation_; }
