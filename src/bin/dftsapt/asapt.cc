@@ -139,6 +139,8 @@ double ASAPT::compute_energy()
 
     fock_terms();
 
+    atomize();
+
     localize();
 
     populate();
@@ -260,6 +262,18 @@ void ASAPT::print_trailer()
     fprintf(outfile, "  To the optimist, the glass is half full.\n");
     fprintf(outfile, "  To the engineer, the glass is twice as big as it needs to be.\n");
     fprintf(outfile, "\n");
+}
+void ASAPT::atomize()
+{
+    fprintf(outfile," ATOMIZATION:\n\n");
+    
+    atomic_A_ = AtomicDensity::build("STOCKHOLDER", primary_A_, Process::environment.options);
+    atomic_A_->compute(Matrix::doublet(Cocc_A_,Cocc_A_,false,true));
+    atomic_A_->compute_charges();
+
+    atomic_B_ = AtomicDensity::build("STOCKHOLDER", primary_B_, Process::environment.options);
+    atomic_B_->compute(Matrix::doublet(Cocc_B_,Cocc_B_,false,true));
+    atomic_B_->compute_charges();
 }
 void ASAPT::localize()
 {
@@ -571,7 +585,7 @@ void ASAPT::populate()
     R_B_ = Matrix::doublet(Q_B_,Uocc_B_,false,true);
 
     // The ASAPT visualization and analysis container
-    vis_ = boost::shared_ptr<ASAPTVis>(new ASAPTVis(primary_,monomer_A_,monomer_B_,Locc_A_,Locc_B_,Q_A_,Q_B_));
+    vis_ = boost::shared_ptr<ASAPTVis>(new ASAPTVis(primary_,monomer_A_,monomer_B_,Locc_A_,Locc_B_,Q_A_,Q_B_,atomic_A_,atomic_B_));
 }
 void ASAPT::elst()
 {
@@ -645,31 +659,27 @@ void ASAPT::elst()
 
     df.reset();
 
-    // ==> Atomic Charges and Grid <== //
-
-    boost::shared_ptr<AtomicDensity> atomicA = AtomicDensity::build("STOCKHOLDER", primary_A_, Process::environment.options);
-    atomicA->compute(Matrix::doublet(Cocc_A_,Cocc_A_,false,true));
-    boost::shared_ptr<Matrix> QAP = atomicA->Q();
+    // ==> Auxiliary basis representation of atomic ESP <== //
+    
+    // Grid charges
+    boost::shared_ptr<Matrix> QAP = atomic_A_->Q();
     double** QAPp = QAP->pointer();
 
-    boost::shared_ptr<AtomicDensity> atomicB = AtomicDensity::build("STOCKHOLDER", primary_B_, Process::environment.options);
-    atomicB->compute(Matrix::doublet(Cocc_B_,Cocc_B_,false,true));
-    boost::shared_ptr<Matrix> QBQ = atomicB->Q();
+    boost::shared_ptr<Matrix> QBQ = atomic_B_->Q();
     double** QBQp = QBQ->pointer();
 
     // Grid Definition
-    boost::shared_ptr<Vector> x = atomicA->x();
-    boost::shared_ptr<Vector> y = atomicA->y();
-    boost::shared_ptr<Vector> z = atomicA->z();
-    boost::shared_ptr<Vector> w = atomicA->w();
+    boost::shared_ptr<Vector> x = atomic_A_->x();
+    boost::shared_ptr<Vector> y = atomic_A_->y();
+    boost::shared_ptr<Vector> z = atomic_A_->z();
+    boost::shared_ptr<Vector> w = atomic_A_->w();
     int nP = x->dimpi()[0];
     double* xp = x->pointer();
     double* yp = y->pointer();
     double* zp = z->pointer();
     double* wp = w->pointer();
 
-    // ==> Auxiliary basis representation of atomic ESP <== //
-    
+    // Targets
     boost::shared_ptr<Matrix> QAC(new Matrix("Q_A^C", nA, nQ));
     boost::shared_ptr<Matrix> QBD(new Matrix("Q_B^D", nB, nQ));
     double** QACp = QAC->pointer();

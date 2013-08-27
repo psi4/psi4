@@ -34,6 +34,7 @@ class Options;
 class BasisExtents;
 class RKSFunctions;
 class BlockOPoints;
+class AtomicDensity;
 
 namespace dftsapt {
 
@@ -72,10 +73,14 @@ protected:
     boost::shared_ptr<Matrix> Locc_A_;
     /// Local orbitals for B
     boost::shared_ptr<Matrix> Locc_B_;
-    /// Charges for A
+    /// Local orbital charges for A
     boost::shared_ptr<Matrix> Q_A_;
-    /// Charges for B
+    /// Local orbital charges for B
     boost::shared_ptr<Matrix> Q_B_;
+    /// Atomic densities for A
+    boost::shared_ptr<AtomicDensity> atomic_A_;
+    /// Atomic densities for B 
+    boost::shared_ptr<AtomicDensity> atomic_B_; 
 
     /// Map of Component partitions
     std::map<std::string, boost::shared_ptr<Matrix> > vars_;
@@ -105,7 +110,9 @@ public:
         boost::shared_ptr<Matrix> Locc_A, 
         boost::shared_ptr<Matrix> Locc_B, 
         boost::shared_ptr<Matrix> Q_A, 
-        boost::shared_ptr<Matrix> Q_B
+        boost::shared_ptr<Matrix> Q_B,
+        boost::shared_ptr<AtomicDensity> atomic_A,
+        boost::shared_ptr<AtomicDensity> atomic_B
         );
     virtual ~ASAPTVis();
 

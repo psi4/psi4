@@ -32,6 +32,7 @@ namespace psi {
 class JK;
 class Options;
 class Tensor;
+class AtomicDensity;
 
 namespace dftsapt {
 
@@ -263,6 +264,8 @@ friend class DFTSAPT;
 
     // 3-index tensors
     std::map<std::string, boost::shared_ptr<Tensor> > tensors_;
+
+    // => Electronic Response Localization <= //
     
     // Localized occupied orbitals of monomer A (n x a)
     boost::shared_ptr<Matrix> Locc_A_;
@@ -273,20 +276,29 @@ friend class DFTSAPT;
     // Localization transformation for monomer B (b x \bar b)
     boost::shared_ptr<Matrix> Uocc_B_;
 
-    // Local occupied orbital atomic population (renormalized) of monomer A (A x a)
+    // Local occupied orbital atomic population of monomer A (A x a)
     boost::shared_ptr<Matrix> Q_A_;
-    // Local occupied orbital atomic population (renormalized) of monomer B (B x b)
+    // Local occupied orbital atomic population of monomer B (B x b)
     boost::shared_ptr<Matrix> Q_B_;
-    // Molecular occupied orbital atomic assignment (renormalized) of monomer A (A x a)
+    // Molecular occupied orbital atomic assignment of monomer A (A x a)
     boost::shared_ptr<Matrix> R_A_;
-    // Molecular occupied orbital atomic assignment (renormalized) of monomer B (B x b)
+    // Molecular occupied orbital atomic assignment of monomer B (B x b)
     boost::shared_ptr<Matrix> R_B_;
+
+    // => Electrostatic Localization <= //
+
+    // ISA partition for monomer A
+    boost::shared_ptr<AtomicDensity> atomic_A_;
+    // ISA partition for monomer B
+    boost::shared_ptr<AtomicDensity> atomic_B_;
 
     // Print author/sizing/spec info
     virtual void print_header() const;
     // Obligatory
     virtual void print_trailer();
 
+    // Compute the atomic density partition
+    void atomize();
     // Compute L and U according to Localizer algorithm and tolerances
     void localize(); 
     // Compute Q and R
