@@ -835,8 +835,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("DF_BASIS_ELST", "");
     /*- The name of the monomer-local electrostatics primary basis set -*/
     options.add_str("BASIS_ELST", "");
-    /*- ASAPT Atomic population type -*/
-    options.add_str("ASAPT_POPULATION_TYPE", "LOWDIN", "MULLIKEN LOWDIN");
     /*- ASAPT analysis tasking -*/
     options.add("ASAPT_TASKS", new ArrayType());
     /*- Do ASAPT exchange scaling? (ratio of S^\infty to S^2) -*/
@@ -851,8 +849,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("ASAPT_DENSITY_CLAMP", 0.5);
     /*- Voxel ASAPT energy saturation (for uniform transfer functions) -*/
     options.add_double("ASAPT_ENERGY_CLAMP", 0.005);
-    /*- Voxel ASAPT Gaussian scale for electrostatics (larger => tigher Gaussians) -*/
-    options.add_double("ASAPT_GAUSSIAN_SCALE", 2.0);
     /*- ASAPT minimum grid overages in bohr (LX, LY, LZ) -*/
     options.add("CUBIC_GRID_OVERAGE", new ArrayType());
     /*- ASAPT voxel spacing in bohr (DX, DY, DZ) -*/

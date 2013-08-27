@@ -27,6 +27,8 @@
 #include <libmints/sieve.h>
 #include <libmints/local.h>
 #include <libfock/jk.h>
+#include <libfock/points.h>
+#include <libfock/cubature.h>
 #include <libthce/thce.h>
 #include <libthce/lreri.h>
 #include <libqt/qt.h>
@@ -65,7 +67,6 @@ boost::shared_ptr<ASAPT> ASAPT::build(boost::shared_ptr<Wavefunction> d,
 
     ASAPT* sapt = new ASAPT();
 
-    sapt->population_type_ = options.get_str("ASAPT_POPULATION_TYPE");
     sapt->exch_scale_      = options.get_bool("ASAPT_EXCH_SCALE");
     sapt->ind_scale_       = options.get_bool("ASAPT_IND_SCALE");
     sapt->ind_resp_        = options.get_bool("ASAPT_IND_RESPONSE");
@@ -432,155 +433,92 @@ void ASAPT::populate()
         }
     }
 
-    // => S matrix <= //
-
-    boost::shared_ptr<Matrix> S = vars_["S"];
-
-    // => Raw population metrics <= //
-
-    boost::shared_ptr<Matrix> QA(new Matrix("QA (atoms x a)",dimer_->natom(), na)); 
-    boost::shared_ptr<Matrix> QB(new Matrix("QB (atoms x b)",dimer_->natom(), nb)); 
-    double** QAp = QA->pointer();
-    double** QBp = QB->pointer();
-
-    boost::shared_ptr<Matrix> L_A = Locc_A_;
-    boost::shared_ptr<Matrix> L_B = Locc_B_;
-
-    if (population_type_ == "LOWDIN") {
-
-        boost::shared_ptr<Matrix> S12(S->clone());
-        S12->copy(S);
-        S12->power(0.5);
-        boost::shared_ptr<Matrix> S12A = Matrix::doublet(S12,L_A);
-        boost::shared_ptr<Matrix> S12B = Matrix::doublet(S12,L_B);
-        double** S12Ap = S12A->pointer();
-        double** S12Bp = S12B->pointer();
-        
-        for (int a = 0; a < na; a++) {
-            for (int M = 0; M < primary_->nshell(); M++) {
-                int aM = primary_->shell(M).ncenter();
-                int nM = primary_->shell(M).nfunction();
-                int oM = primary_->shell(M).function_index();
-                for (int m = 0; m < nM; m++) {
-                    QAp[aM][a] += (S12Ap[m+oM][a]*S12Ap[m+oM][a]);
-                }
-            }
-        }
-
-        for (int b = 0; b < nb; b++) {
-            for (int M = 0; M < primary_->nshell(); M++) {
-                int aM = primary_->shell(M).ncenter();
-                int nM = primary_->shell(M).nfunction();
-                int oM = primary_->shell(M).function_index();
-                for (int m = 0; m < nM; m++) {
-                    QBp[aM][b] += (S12Bp[m+oM][b]*S12Bp[m+oM][b]);
-                }
-            }
-        }
-
-    } else if (population_type_ == "MULLIKEN") {
-        
-        boost::shared_ptr<Matrix> SA = Matrix::doublet(S,L_A);
-        boost::shared_ptr<Matrix> SB = Matrix::doublet(S,L_B);
-        double** SAp = SA->pointer();
-        double** SBp = SB->pointer();
-        double** LAp = L_A->pointer();
-        double** LBp = L_B->pointer();
-
-        for (int a = 0; a < na; a++) {
-            for (int M = 0; M < primary_->nshell(); M++) {
-                int aM = primary_->shell(M).ncenter();
-                int nM = primary_->shell(M).nfunction();
-                int oM = primary_->shell(M).function_index();
-                for (int m = 0; m < nM; m++) {
-                    QAp[aM][a] += (SAp[m+oM][a]*LAp[m+oM][a]);
-                }
-            }
-        }
-
-        for (int b = 0; b < nb; b++) {
-            for (int M = 0; M < primary_->nshell(); M++) {
-                int aM = primary_->shell(M).ncenter();
-                int nM = primary_->shell(M).nfunction();
-                int oM = primary_->shell(M).function_index();
-                for (int m = 0; m < nM; m++) {
-                    QBp[aM][b] += (SBp[m+oM][b]*LBp[m+oM][b]);
-                }
-            }
-        }
-
-    }  
+    // => Targets <= //
 
     boost::shared_ptr<Matrix> Q2A(new Matrix("QA (A x a)", nA, na));
     boost::shared_ptr<Matrix> Q2B(new Matrix("QB (B x b)", nB, nb));
     double** Q2Ap = Q2A->pointer();
     double** Q2Bp = Q2B->pointer();
 
-    for (int A = 0; A < nA; A++) {
+    // => Molecular Grid <= //
+    
+    boost::shared_ptr<MolecularGrid> grid = atomic_A_->grid();
+    int max_points = grid->max_points();
+    double* xp = grid->x();
+    double* yp = grid->y();
+    double* zp = grid->z();
+    double* wp = grid->w();
+        
+    // => Temps <= //
+    
+    boost::shared_ptr<Matrix> WA(new Matrix("WA", nA, max_points));
+    boost::shared_ptr<Matrix> WB(new Matrix("WB", nB, max_points));
+    double** WAp = WA->pointer();
+    double** WBp = WB->pointer();
+    
+    // => Local orbital collocation computer <= //
+
+    boost::shared_ptr<UKSFunctions> points = boost::shared_ptr<UKSFunctions>(new UKSFunctions(primary_,grid->max_points(),grid->max_functions()));
+    points->set_ansatz(0);
+    points->set_Cs(Locc_A_,Locc_B_);
+    double** psiap = points->orbital_value("PSI_A")->pointer();
+    double** psibp = points->orbital_value("PSI_B")->pointer();
+
+    // => Master Loop <= //
+
+    const std::vector<boost::shared_ptr<BlockOPoints> >& blocks = grid->blocks();
+    size_t offset = 0L;
+    for (int ind = 0; ind < blocks.size(); ind++) {
+        int npoints = blocks[ind]->npoints();
+        points->compute_orbitals(blocks[ind]);
         for (int a = 0; a < na; a++) {
-            Q2Ap[A][a] = QAp[cA[A]][a];
+            for (int P = 0; P < npoints; P++) {
+                psiap[a][P] *= psiap[a][P];
+            }
         }
-    }
-
-    for (int B = 0; B < nB; B++) {
         for (int b = 0; b < nb; b++) {
-            Q2Bp[B][b] = QBp[cB[B]][b];
+            for (int P = 0; P < npoints; P++) {
+                psibp[b][P] *= psibp[b][P];
+            }
         }
+        atomic_A_->compute_weights(npoints,&xp[offset],&yp[offset],&zp[offset],WAp,&wp[offset]);
+        atomic_B_->compute_weights(npoints,&xp[offset],&yp[offset],&zp[offset],WBp,&wp[offset]);
+        C_DGEMM('N','T',nA,na,npoints,1.0,WAp[0],max_points,psiap[0],max_points,1.0,Q2Ap[0],na); 
+        C_DGEMM('N','T',nB,nb,npoints,1.0,WBp[0],max_points,psibp[0],max_points,1.0,Q2Bp[0],nb); 
+        offset += npoints;
     }
 
-    std::vector<double> normA;
-    std::vector<double> normB;
-    double maxA = 0.0;   
-    double maxB = 0.0;
- 
+    fprintf(outfile,"    Grid-based orbital charges.\n\n");
+
+    fprintf(outfile,"    Monomer A Grid Errors (Orbital Normalizations):\n");
     for (int a = 0; a < na; a++) {
         double val = 0.0;
         for (int A = 0; A < nA; A++) {
-            val += Q2Ap[A][a];
-        }
-        normA.push_back(1.0 - val);
-        maxA = (maxA > fabs(1.0 - val) ? maxA : fabs(1.0 - val));
+            val += Q2Ap[A][a]; 
+        } 
         C_DSCAL(nA,1.0/val,&Q2Ap[0][a],na);
+        fprintf(outfile,"    %4d: %11.3E\n", a+1, fabs(1.0 - val));
     }
+    fprintf(outfile,"\n");
+
+    fprintf(outfile,"    Monomer B Grid Errors (Orbital Normalizations):\n");
     for (int b = 0; b < nb; b++) {
         double val = 0.0;
         for (int B = 0; B < nB; B++) {
-            val += Q2Bp[B][b];
-        }
-        normB.push_back(1.0 - val);
-        maxB = (maxB > fabs(1.0 - val) ? maxB : fabs(1.0 - val));
+            val += Q2Bp[B][b]; 
+        } 
         C_DSCAL(nB,1.0/val,&Q2Bp[0][b],nb);
+        fprintf(outfile,"    %4d: %11.3E\n", b+1, fabs(1.0 - val));
     }
-    
-    if (print_ >= 0) {
-        fprintf(outfile,"    Population type        = %11s\n", population_type_.c_str());
-        fprintf(outfile,"    Max ghost population A = %11.3E\n",maxA);
-        fprintf(outfile,"    Max ghost population B = %11.3E\n",maxB);
-        fprintf(outfile,"\n");
-    }
-    if (print_ >= 1) {
-        fprintf(outfile,"    Ghost populations for Monomer A:\n");
-        for (int a = 0; a < na; a++) {
-            fprintf(outfile,"    %4d %11.3E\n", a+1, normA[a]);
-        } 
-        fprintf(outfile,"\n");
+    fprintf(outfile,"\n");
 
-        fprintf(outfile,"    Ghost populations for Monomer B:\n");
-        for (int b = 0; b < nb; b++) {
-            fprintf(outfile,"    %4d %11.3E\n", b+1, normB[b]);
-        } 
-        fprintf(outfile,"\n");
-    }
-    if (print_ >= 2) {
-        Q2A->print(); 
-        Q2B->print(); 
-    }
+    fprintf(outfile,"    Orbital charges renormalized.\n\n");
 
-    fflush(outfile);
+    // => Globals <= //
 
     Q_A_ = Q2A; 
     Q_B_ = Q2B; 
-
+    
     R_A_ = Matrix::doublet(Q_A_,Uocc_A_,false,true);
     R_B_ = Matrix::doublet(Q_B_,Uocc_B_,false,true);
 

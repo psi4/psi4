@@ -91,8 +91,8 @@ void AtomicDensity::compute_total_density()
     const std::vector<boost::shared_ptr<BlockOPoints> >& blocks = grid_->blocks();    
     size_t offset = 0L;
     for (int ind = 0; ind < blocks.size(); ind++) {
-        points->compute_points(blocks[ind]);
         int npoints = blocks[ind]->npoints();
+        points->compute_points(blocks[ind]);
         C_DAXPY(npoints,1.0,rho3p,1,&rho2p[offset],1);        
         offset += npoints;
     }

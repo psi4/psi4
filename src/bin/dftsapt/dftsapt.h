@@ -251,8 +251,6 @@ friend class DFTSAPT;
     // Local analysis and visualization helper
     boost::shared_ptr<ASAPTVis> vis_;
 
-    // Local orbital population type
-    std::string population_type_;
     // Exchange scaling trick?
     bool exch_scale_;
     // Induction scaling trick?
