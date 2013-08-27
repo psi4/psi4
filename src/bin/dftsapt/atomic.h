@@ -92,6 +92,10 @@ public:
     static boost::shared_ptr<AtomicDensity> build(const std::string& type, boost::shared_ptr<BasisSet> basis, Options& options);
     /// Master compute routine
     virtual void compute(boost::shared_ptr<Matrix> D) = 0;
+    /// Compute weights for npoints at (x,y,z), and place in w (nA x npoints). Also multiplies in rhop if not NULL
+    virtual void compute_weights(int npoints, double* x, double* y, double* z, double** w, double* rhop = NULL) = 0;
+    /// Compute and disply the atomic charges, multiplying the electronic part by scale
+    virtual void compute_charges(double scale = 2.0) = 0; 
 
     // ==> Accessors <== //
 
@@ -134,6 +138,13 @@ protected:
     /// Maximum DIIS subspace size?
     int diis_max_vecs_; 
 
+    // => State variables <= //
+
+    /// Shell radii
+    std::vector<std::vector<double> > rs_;
+    /// Shell densities
+    std::vector<std::vector<double> > ws_;
+
     /// Ubiqitous header
     virtual void print_header() const;
     /// Protected constructor
@@ -145,6 +156,11 @@ public:
 
     /// Master compute routine
     virtual void compute(boost::shared_ptr<Matrix> D);
+    /// Compute weights for npoints at (x,y,z), and place in w (nA x npoints). Also multiplies in rhop if not NULL
+    virtual void compute_weights(int npoints, double* x, double* y, double* z, double** w, double* rhop = NULL);
+    /// Compute and disply the atomic charges, multiplying the electronic part by scale
+    virtual void compute_charges(double scale = 2.0); 
+
 };
 
 } // End namespace

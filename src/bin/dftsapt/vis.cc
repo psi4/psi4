@@ -63,7 +63,9 @@ ASAPTVis::ASAPTVis(
         boost::shared_ptr<Matrix> Locc_A, 
         boost::shared_ptr<Matrix> Locc_B, 
         boost::shared_ptr<Matrix> Q_A, 
-        boost::shared_ptr<Matrix> Q_B
+        boost::shared_ptr<Matrix> Q_B,
+        boost::shared_ptr<AtomicDensity> atomic_A,
+        boost::shared_ptr<AtomicDensity> atomic_B
         ) : 
         primary_(primary),
         monomer_A_(monomer_A),
@@ -72,6 +74,8 @@ ASAPTVis::ASAPTVis(
         Locc_B_(Locc_B),
         Q_A_(Q_A),
         Q_B_(Q_B),
+        atomic_A_(atomic_A),
+        atomic_B_(atomic_B),
         options_(Process::environment.options)
 {
     for (int i = 0; i < options_["ASAPT_TASKS"].size(); i++) {

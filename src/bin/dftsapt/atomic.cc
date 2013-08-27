@@ -171,7 +171,6 @@ void StockholderDensity::compute(boost::shared_ptr<Matrix> D)
             Aind2.push_back(-1);
         }
     }
-    
     int nA = Aind.size();
     int nA2 = molecule_->natom();
 
@@ -388,6 +387,10 @@ void StockholderDensity::compute(boost::shared_ptr<Matrix> D)
 
     delete[] wA;
 
+    // Store targets
+    rs_ = rs;
+    ws_ = ws;
+
     fprintf(outfile,"\n");
     if (converged) { 
         fprintf(outfile,"    ISA Converged.\n\n"); 
@@ -395,9 +398,137 @@ void StockholderDensity::compute(boost::shared_ptr<Matrix> D)
         fprintf(outfile,"    ISA Failed.\n\n"); 
     }
     fflush(outfile);
+}
+void StockholderDensity::compute_weights(int nP, double* xp, double* yp, double* zp, double** wp, double* rhop)
+{
+    // Where are the true atoms?
+    std::vector<int> Aind;
+    std::vector<int> Aind2;
+    for (int A = 0; A < molecule_->natom(); A++) {
+        if (molecule_->Z(A) != 0) {
+            Aind2.push_back(Aind.size());
+            Aind.push_back(A);
+        } else {
+            Aind2.push_back(-1);
+        }
+    }
+    int nA = Aind.size();
+    int nA2 = molecule_->natom();
+    
+    // Temps 
+    double wT;
+    double* wA = new double[nA];
 
-    // => Postprocessing <= //
+    // Compute Q_A^P via W_A^P
+    for (int P = 0; P < nP; P++) {
+        double xc = xp[P];
+        double yc = yp[P];
+        double zc = zp[P];
+        wT = 0.0;
+        for (int A = 0; A < nA; A++) {
+            int Aabs = Aind[A];
 
+            // Default value
+            wA[A] = 0.0;
+
+            // What is R_A^P?
+            double xA = molecule_->x(Aabs);
+            double yA = molecule_->y(Aabs);
+            double zA = molecule_->z(Aabs);
+            double R = sqrt((xA - xc) * (xA - xc) +
+                            (yA - yc) * (yA - yc) +
+                            (zA - zc) * (zA - zc));
+
+            // What is the closest radial node? (could be faster)
+            double dR = std::numeric_limits<double>::max();
+            int ind = 0;
+            for (int k = 0; k < rs_[A].size(); k++) {
+                double d2R = fabs(rs_[A][k] - R);
+                if (d2R < dR) {
+                    dR = d2R;
+                    ind = k;
+                }
+            }
+
+            // Edge cases (and unique ind, ind+1 terp pair)
+            if (ind == 0 && (R - rs_[A][0]) * (R - rs_[A][1]) > 0.0) continue; // Too close inside
+            if (ind == rs_[A].size() - 1) {
+                if ((R - rs_[A][rs_[A].size()-1]) * (R - rs_[A][rs_[A].size()-2]) > 0.0) { 
+                    continue; // Too far outside
+                } else {
+                    ind--; // Decrement to use last two indices
+                }
+            }
+
+            // Exponential interpolation pair
+            double Rl = rs_[A][ind];
+            double Rr = rs_[A][ind+1];
+            double wl = ws_[A][ind];
+            double wr = ws_[A][ind+1];
+
+            if (wl == 0.0 || wr == 0.0) continue;
+
+            double lwl = log(wl);
+            double lwr = log(wr);
+
+            wA[A] = exp(lwl + (lwr - lwl)*(R - Rl)/(Rr - Rl));
+
+            wT += wA[A];
+        }
+        if (wT == 0.0) wT = 1.0; // Don't NaN due to no density, yo?
+        if (rhop != NULL) {
+            for (int A = 0; A < nA; A++) {
+                wp[A][P] = wA[A] / wT * rhop[P];
+            }
+        } else {
+            for (int A = 0; A < nA; A++) {
+                wp[A][P] = wA[A] / wT;
+            }
+        }
+    }
+    delete[] wA;
+}
+void StockholderDensity::compute_charges(double scale) 
+{
+    // Where are the true atoms?
+    std::vector<int> Aind;
+    std::vector<int> Aind2;
+    for (int A = 0; A < molecule_->natom(); A++) {
+        if (molecule_->Z(A) != 0) {
+            Aind2.push_back(Aind.size());
+            Aind.push_back(A);
+        } else {
+            Aind2.push_back(-1);
+        }
+    }
+    int nA = Aind.size();
+    int nA2 = molecule_->natom();
+
+    // Target
+    boost::shared_ptr<Vector> Q2(new Vector("Q2", nA));
+    double* Q2p = Q2->pointer();
+
+    int max_points = grid_->max_points();
+    boost::shared_ptr<Matrix> v(new Matrix("v", nA, max_points));    
+    double** vp = v->pointer();
+   
+    int npoints = rho_->dimpi()[0];
+    double* rhop = rho_->pointer();
+    double* xp = x_->pointer(); 
+    double* yp = y_->pointer(); 
+    double* zp = z_->pointer(); 
+    double* wp = w_->pointer(); 
+
+    for (int index = 0; index < npoints; index+=max_points) {
+        int points = (index + max_points >= npoints ? npoints - index : max_points);
+        compute_weights(points,&xp[index],&yp[index],&zp[index],vp,&rhop[index]);
+        for (int A = 0; A < nA; A++) {
+            Q2p[A] += C_DDOT(points,&wp[index],1,vp[A],1);
+        }
+    }
+    Q2->scale(-scale);
+
+    // Print    
     fprintf(outfile,"   > Atomic Charges <\n\n");
     fprintf(outfile,"    %4s %3s %11s %11s %11s\n", 
         "N", "Z", "Nuclear", "Electronic", "Atomic");
@@ -406,7 +537,7 @@ void StockholderDensity::compute(boost::shared_ptr<Matrix> D)
     for (int A = 0; A < nA; A++) {
         int Aabs = Aind[A];
         double Z = molecule_->Z(Aabs);
-        double Q = -2.0 * C_DDOT(nP,Qp[A],1,wp,1);
+        double Q = Q2p[A];
         fprintf(outfile,"    %4d %3s %11.3E %11.3E %11.3E\n", 
             Aabs, molecule_->symbol(Aabs).c_str(), Z, Q, Z + Q);
         Ztot += Z;
