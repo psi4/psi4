@@ -179,13 +179,25 @@ def run_cfour(name, **kwargs):
 
         if molecule.name() == 'blank_molecule_psi4_yo':
             p4grad = c4grad
+            p4coord = c4coord
         else:
             qcdbmolecule = qcdb.Molecule(molecule.create_psi4_string_from_molecule())
-            p4grad = qcdbmolecule.deorient_array_from_cfour_2(c4coord, c4grad)
+            p4grad = qcdbmolecule.deorient_array_from_cfour(c4coord, c4grad)
+            p4coord = qcdbmolecule.deorient_array_from_cfour(c4coord, c4coord)
 
         p4mat = psi4.Matrix(len(p4grad), 3)
         p4mat.set(p4grad)
         psi4.set_gradient(p4mat)
+
+    #print('    <<<  P4 PSIVAR  >>>')
+    #for item in psivar:
+    #    print('       %30s %16.8f' % (item, psivar[item]))
+    print('    <<<  P4 COORD   >>>')
+    for item in p4coord:
+        print('       %16.8f %16.8f %16.8f' % (item[0], item[1], item[2]))
+    print('    <<<   P4 GRAD   >>>')
+    for item in p4grad:
+        print('       %16.8f %16.8f %16.8f' % (item[0], item[1], item[2]))
 
     # Delete cfour tempdir
     os.chdir('..')
@@ -208,8 +220,7 @@ def run_cfour(name, **kwargs):
 
     # If we're told to keep the files or the user provided a path, do nothing.
     if (yes.match(str(keep)) or ('path' in kwargs)):
-        psi4.print_out('\nCFOUR scratch files have been kept.\n')
-        psi4.print_out('They can be found in ' + psioh.get_default_path() + cfour_tmpdir)
+        psi4.print_out('\n  CFOUR scratch files have been kept in %s\n' % (psioh.get_default_path() + cfour_tmpdir))
 
 
 def cfour_list():
