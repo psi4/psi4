@@ -68,6 +68,8 @@ protected:
     boost::shared_ptr<Vector> w_;
     /// Total density of grid
     boost::shared_ptr<Vector> rho_;
+    /// Atomic normalizations (true atoms)
+    boost::shared_ptr<Vector> N_;
     /// Matrix of atomic densities (true atoms x grid points)
     boost::shared_ptr<Matrix> Q_;
 
@@ -104,6 +106,7 @@ public:
     boost::shared_ptr<Vector> z()   const { return z_; }
     boost::shared_ptr<Vector> w()   const { return w_; }
     boost::shared_ptr<Vector> rho() const { return rho_; }
+    boost::shared_ptr<Vector> N()   const { return N_; }
     boost::shared_ptr<Matrix> Q()   const { return Q_; }
 
     boost::shared_ptr<Molecule> molecule() const { return molecule_; }

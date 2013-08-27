@@ -176,8 +176,8 @@ public:
     void zero();
     // Compute a generalized electronic density on this grid
     void compute_electronic(boost::shared_ptr<Matrix> D);
-    // Compute an atom-centered Normalized Gaussian property on this grid. Q rows are(x,y,z,V,\alpha) in a.u.
-    void compute_atomic(boost::shared_ptr<Matrix> Q);
+    // Compute an atomic-density weighted value on the grid
+    void compute_atomic(boost::shared_ptr<Vector> V, boost::shared_ptr<AtomicDensity> atomic);
     // Drop a raw float32 variant of this dataset to disk
     void drop_raw(const std::string& file, double clamp);
     // Drop a raw UVF variant of this dataset to disk

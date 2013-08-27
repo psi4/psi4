@@ -398,6 +398,24 @@ void StockholderDensity::compute(boost::shared_ptr<Matrix> D)
         fprintf(outfile,"    ISA Failed.\n\n"); 
     }
     fflush(outfile);
+
+    // => Compute normalizations for later <= //
+    
+    // Target
+    N_ = boost::shared_ptr<Vector>(new Vector("N", nA));
+    double* Q2p = N_->pointer();
+
+    int max_points = grid_->max_points();
+    boost::shared_ptr<Matrix> v(new Matrix("v", nA, max_points));    
+    double** vp = v->pointer();
+   
+    for (int index = 0; index < nP; index+=max_points) {
+        int points = (index + max_points >= nP ? nP - index : max_points);
+        compute_weights(points,&xp[index],&yp[index],&zp[index],vp,&rhop[index]);
+        for (int A = 0; A < nA; A++) {
+            Q2p[A] += C_DDOT(points,&wp[index],1,vp[A],1);
+        }
+    }
 }
 void StockholderDensity::compute_weights(int nP, double* xp, double* yp, double* zp, double** wp, double* rhop)
 {
@@ -504,29 +522,8 @@ void StockholderDensity::compute_charges(double scale)
     int nA = Aind.size();
     int nA2 = molecule_->natom();
 
-    // Target
-    boost::shared_ptr<Vector> Q2(new Vector("Q2", nA));
-    double* Q2p = Q2->pointer();
-
-    int max_points = grid_->max_points();
-    boost::shared_ptr<Matrix> v(new Matrix("v", nA, max_points));    
-    double** vp = v->pointer();
-   
-    int npoints = rho_->dimpi()[0];
-    double* rhop = rho_->pointer();
-    double* xp = x_->pointer(); 
-    double* yp = y_->pointer(); 
-    double* zp = z_->pointer(); 
-    double* wp = w_->pointer(); 
-
-    for (int index = 0; index < npoints; index+=max_points) {
-        int points = (index + max_points >= npoints ? npoints - index : max_points);
-        compute_weights(points,&xp[index],&yp[index],&zp[index],vp,&rhop[index]);
-        for (int A = 0; A < nA; A++) {
-            Q2p[A] += C_DDOT(points,&wp[index],1,vp[A],1);
-        }
-    }
-    Q2->scale(-scale);
+    // Where are the atomic charges?
+    double* Np = N_->pointer();
 
     // Print    
     fprintf(outfile,"   > Atomic Charges <\n\n");
@@ -537,7 +534,7 @@ void StockholderDensity::compute_charges(double scale)
     for (int A = 0; A < nA; A++) {
         int Aabs = Aind[A];
         double Z = molecule_->Z(Aabs);
-        double Q = Q2p[A];
+        double Q = -scale * Np[A];
         fprintf(outfile,"    %4d %3s %11.3E %11.3E %11.3E\n", 
             Aabs, molecule_->symbol(Aabs).c_str(), Z, Q, Z + Q);
         Ztot += Z;
