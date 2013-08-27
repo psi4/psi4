@@ -182,7 +182,7 @@ void RKSFunctions::compute_points(boost::shared_ptr<BlockOPoints> block)
 void RKSFunctions::set_Cs(SharedMatrix C_AO)
 {
     C_AO_ = C_AO;
-    C_local_ = boost::shared_ptr<Matrix>(new Matrix("C local", max_functions_, max_points_));
+    C_local_ = boost::shared_ptr<Matrix>(new Matrix("C local", max_functions_, C_AO_->colspi()[0]));
     orbital_values_["PSI_A"] = boost::shared_ptr<Matrix>(new Matrix("PSI_A", C_AO_->colspi()[0], max_points_));
     orbital_values_["PSI_B"] = orbital_values_["PSI_A"];
 }
@@ -455,8 +455,8 @@ void UKSFunctions::set_Cs(SharedMatrix Ca_AO, SharedMatrix Cb_AO)
 {
     Ca_AO_ = Ca_AO;
     Cb_AO_ = Cb_AO;
-    Ca_local_ = boost::shared_ptr<Matrix>(new Matrix("Ca local", max_functions_, max_points_));
-    Cb_local_ = boost::shared_ptr<Matrix>(new Matrix("Cb local", max_functions_, max_points_));
+    Ca_local_ = boost::shared_ptr<Matrix>(new Matrix("Ca local", max_functions_, Ca_AO_->colspi()[0]));
+    Cb_local_ = boost::shared_ptr<Matrix>(new Matrix("Cb local", max_functions_, Cb_AO_->colspi()[0]));
     orbital_values_["PSI_A"] = boost::shared_ptr<Matrix>(new Matrix("PSI_A", Ca_AO_->colspi()[0], max_points_));
     orbital_values_["PSI_B"] = boost::shared_ptr<Matrix>(new Matrix("PSI_B", Ca_AO_->colspi()[0], max_points_));
 }
