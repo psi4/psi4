@@ -188,20 +188,51 @@ void StockholderDensity::compute(boost::shared_ptr<Matrix> D)
     const std::vector<std::vector<boost::shared_ptr<SphericalGrid> > >& spheres = grid_->spherical_grids();
 
     // True atom spherical quadratures 
+    std::vector<std::vector<int> > orders;
     std::vector<std::vector<double> > rs;
     std::vector<std::vector<double> > ws;
     rs.resize(nA);
     ws.resize(nA);
+    orders.resize(nA);
     int nstate = 0;
     for (int A = 0; A < nA; A++) {
         int Aabs = Aind[A];
+        std::vector<double> rs2;
+        std::vector<double> ws2;
+        std::vector<std::pair<double, int> > index;
         for (int R = 0; R < rads[Aabs]->npoints(); R++) {
-            rs[A].push_back(rads[Aabs]->r()[R]);
-            ws[A].push_back(1.0); // Initial guess
+            rs2.push_back(rads[Aabs]->r()[R]);
+            ws2.push_back(1.0); // Initial guess
+            index.push_back(std::pair<double, int>(rs2[R],R));
             nstate++;
+        } 
+        std::sort(index.begin(), index.end());
+        for (int R = 0; R < rads[Aabs]->npoints(); R++) {
+            int Rold = index[R].second;
+            rs[A].push_back(rs2[Rold]);
+            ws[A].push_back(ws2[Rold]);
+            orders[A].push_back(Rold);
         } 
     }
 
+    std::vector<std::vector<int> > orders2;
+    orders2.resize(nA);
+    for (int A = 0; A < nA; A++) {
+        orders2[A].resize(orders[A].size());
+        for (int R = 0; R < orders[A].size(); R++) {
+            orders2[A][orders[A][R]] = R;
+        }
+    }    
+
+    // I like to work in log space for interpolation window root finding
+    std::vector<std::vector<double> > ls;
+    ls.resize(nA);
+    for (int A = 0; A < rs.size(); A++) {
+        for (int R = 0; R < rs[A].size(); R++) {
+            ls[A].push_back(log(rs[A][R]));
+        }
+    }
+    
     // Target
     Q_ = boost::shared_ptr<Matrix>(new Matrix("Q", nA, nP));
     double** Qp = Q_->pointer();
@@ -250,7 +281,7 @@ void StockholderDensity::compute(boost::shared_ptr<Matrix> D)
                 // Default value
                 wA[A] = 0.0;
 
-                // What is R_A^P?
+                // Compute R_A^P
                 double xA = molecule_->x(Aabs);
                 double yA = molecule_->y(Aabs);
                 double zA = molecule_->z(Aabs);
@@ -258,27 +289,60 @@ void StockholderDensity::compute(boost::shared_ptr<Matrix> D)
                                 (yA - yc) * (yA - yc) +
                                 (zA - zc) * (zA - zc));
 
-                // What is the closest radial node? (could be faster)
-                double dR = std::numeric_limits<double>::max();
+                // Interpolation problem
+                const std::vector<double>& rv = rs[A];
+                const std::vector<double>& lv = ls[A];
+                const std::vector<double>& wv = ws[A];
+                int nR = rv.size();
+
+                // Too close inside or outside
+                if (R < rv[0] || R > rv[nR-1]) continue;
+
+                // Root solving to determine window (log-transformed Regula Falsi/Illinois, like a ninja)
                 int ind = 0;
-                for (int k = 0; k < rs[A].size(); k++) {
-                    double d2R = fabs(rs[A][k] - R);
-                    if (d2R < dR) {
-                        dR = d2R;
-                        ind = k;
-                    }
+                double lR = log(R);
+                if (R == rv[0]) {
+                    ind = 0; 
+                } else if (R == rv[nR - 1]) {
+                    ind = nR - 2;
+                } else {
+                    double dl = lv[0] - lR; // Negative
+                    double dr = lv[nR - 1] - lR; // Positive
+                    double xl = 0;
+                    double xr = nR-1;
+                    int retl = 0;
+                    int retr = 0;
+                    do {
+                        double xc = xr - dr * (xr - xl) / (dr - dl);
+                        int xind = (int) xc;
+                        if (xind == nR - 1 && lv[xind - 1] - lR <= 0.0) {
+                            ind = nR - 2;
+                            break;
+                        } else if (lv[xind] - lR <= 0.0 && lv[xind + 1] - lR > 0.0) {
+                            ind = xind;
+                            break;
+                        }
+                        double dc = lv[xind] - lR;
+                        if (dc <= 0.0) {
+                            xl = (double) xind;
+                            dl = dc;
+                            retl = 0;
+                            retr++;
+                        } else {
+                            xr = (double) xind;
+                            dr = dc;
+                            retr = 0;
+                            retl++;
+                        }
+                        if (retr > 1) {
+                            dr *= 0.5;
+                        } 
+                        if (retl > 1) {
+                            dl *= 0.5;
+                        } 
+                    } while (true);
                 }
-
-                // Edge cases (and unique ind, ind+1 terp pair)
-                if (ind == 0 && (R - rs[A][0]) * (R - rs[A][1]) > 0.0) continue; // Too close inside
-                if (ind == rs[A].size() - 1) {
-                    if ((R - rs[A][rs[A].size()-1]) * (R - rs[A][rs[A].size()-2]) > 0.0) { 
-                        continue; // Too far outside
-                    } else {
-                        ind--; // Decrement to use last two indices
-                    }
-                }
-
+                
                 // Exponential interpolation pair
                 double Rl = rs[A][ind];
                 double Rr = rs[A][ind+1];
@@ -300,19 +364,6 @@ void StockholderDensity::compute(boost::shared_ptr<Matrix> D)
             }
         }
 
-        // Debug printing (only for isotropic radial counts)
-        //boost::shared_ptr<Matrix> wtemp(new Matrix("W", ws.size(), ws[0].size()));
-        //double** wtempp = wtemp->pointer();
-        //for (int A = 0; A < ws.size(); A++) {
-        //    for (int R = 0; R < ws[0].size(); R++) {    
-        //        wtempp[A][R] = ws[A][R];
-        //    }
-        //}
-        //wtemp->print();
-        
-        // Debug printing
-        //Q_->print();
-
         // Perform spherical averaging
         int offset = 0;
         for (int A = 0; A < nA2; A++) {
@@ -324,7 +375,7 @@ void StockholderDensity::compute(boost::shared_ptr<Matrix> D)
                         val += Qp[Arel][i + offset];
                     }
                     val /= spheres[A][R]->npoints();
-                    ws[Arel][R] = val; 
+                    ws[Arel][orders2[Arel][R]] = val; 
                 }
                 offset += spheres[A][R]->npoints();
             }
