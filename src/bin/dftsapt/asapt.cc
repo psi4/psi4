@@ -675,7 +675,7 @@ void ASAPT::elst()
                 if (R < 1.0E-12) continue;
                 double Q = Z * wp[Pabs] / R; 
                 for (int A = 0; A < nA; A++) {
-                    VABp[A][B] = -2.0 * Q * QAPp[A][P]; 
+                    VABp[A][B] += -2.0 * Q * QAPp[A][P]; 
                 }
             }
             
@@ -692,7 +692,7 @@ void ASAPT::elst()
                 if (R < 1.0E-12) continue;
                 double Q = Z * wp[Pabs] / R; 
                 for (int B = 0; B < nB; B++) {
-                    VBAp[B][A] = -2.0 * Q * QBQp[B][P]; 
+                    VBAp[B][A] += -2.0 * Q * QBQp[B][P]; 
                 }
             }
 
@@ -730,7 +730,7 @@ void ASAPT::elst()
     for (int A = 0; A < nA; A++) {
         for (int B = 0; B < nB; B++) {
             double val = 4.0 * Elst10_3p[A][B];
-            Elst10_terms[3] += val;
+            Elst10_terms[2] += val;
             Elst_atomsp[A][B] += val;
         }
     }
