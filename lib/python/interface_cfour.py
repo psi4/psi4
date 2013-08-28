@@ -34,7 +34,6 @@ import psi4
 import p4const
 import p4util
 import qcdb
-import qcprograms
 from p4regex import *
 #from extend_Molecule import *
 from molutil import *
@@ -168,9 +167,13 @@ def run_cfour(name, **kwargs):
         if psi4.has_option_changed('CFOUR', 'CFOUR_OMP_NUM_THREADS') == True:
             os.environ['OMP_NUM_THREADS'] = omp_num_threads_user
 
-    psivar, c4coord, c4grad = qcprograms.cfour.cfour_harvest(c4out)
+    psivar, c4coord, c4grad = qcdb.cfour.cfour_harvest(c4out)
     for key in psivar.keys():
         psi4.set_variable(key.upper(), float(psivar[key]))
+    with open(psioh.get_default_path() + cfour_tmpdir + '/GRD', 'r') as cfour_grdfile:
+        c4outgrd = cfour_grdfile.read()
+    print('GRD\n',c4outgrd)
+    c4coordGRD, c4gradGRD = qcdb.cfour.cfour_harvest_GRD(c4outgrd)
 
     # Awful Hack - Go Away TODO
     if c4grad:
@@ -224,13 +227,13 @@ def run_cfour(name, **kwargs):
 
 
 def cfour_list():
-    return qcprograms.cfour.cfour_list()
+    return qcdb.cfour.cfour_list()
 
 def cfour_gradient_list():
-    return qcprograms.cfour.cfour_gradient_list()
+    return qcdb.cfour.cfour_gradient_list()
 
 def cfour_psivar_list():
-    return qcprograms.cfour.cfour_psivar_list()
+    return qcdb.cfour.cfour_psivar_list()
 
 def write_zmat(name, dertype):
     """
@@ -241,7 +244,7 @@ def write_zmat(name, dertype):
     if mem == 256:
         memcmd, memkw = '', {}
     else:
-        memcmd, memkw = qcprograms.cfour.cfour_memory(mem)
+        memcmd, memkw = qcdb.cfour.cfour_memory(mem)
 
     # Handle molecule and basis set
     molecule = psi4.get_active_molecule()
@@ -268,12 +271,12 @@ def write_zmat(name, dertype):
             bascmd, baskw = qcdbmolecule.format_basis_for_cfour(psi4.MintsHelper().basisset().has_puream())
 
     # Handle calc type
-    clvcmd, clvkw = qcprograms.cfour.cfour_calclevel(dertype)
+    clvcmd, clvkw = qcdb.cfour.cfour_calclevel(dertype)
 
     # Handle psi4 keywords implying cfour keyword values (NYI)
 
     # Handle quantum chemical method
-    mtdcmd, mtdkw = qcprograms.cfour.cfour_method(name)
+    mtdcmd, mtdkw = qcdb.cfour.cfour_method(name)
 
     # Handle driver vs input/default keyword reconciliation
     userkw = p4util.prepare_options_for_modules()
