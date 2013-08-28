@@ -252,6 +252,10 @@ def run_cfour(name, **kwargs):
     # Absorb results into psi4 data structures
     for key in psivar.keys():
         psi4.set_variable(key.upper(), float(psivar[key]))
+    with open(psioh.get_default_path() + cfour_tmpdir + '/GRD', 'r') as cfour_grdfile:
+        c4outgrd = cfour_grdfile.read()
+    print('GRD\n',c4outgrd)
+    c4coordGRD, c4gradGRD = qcdb.cfour.cfour_harvest_GRD(c4outgrd)
 
     if qcdbmolecule is None and c4mol is not None:
         molecule = geometry(c4mol.create_psi4_string_from_molecule(), name='blank_molecule_psi4_yo')
@@ -385,10 +389,10 @@ def cfour_list():
     return qcdb.cfour.cfour_list()
 
 def cfour_gradient_list():
-    return qcprograms.cfour.cfour_gradient_list()
+    return qcdb.cfour.cfour_gradient_list()
 
 def cfour_psivar_list():
-    return qcprograms.cfour.cfour_psivar_list()
+    return qcdb.cfour.cfour_psivar_list()
 
 def cfour_gradient_list():
     """Form list of Cfour analytic :py:func:`~driver.gradient` arguments."""
@@ -447,7 +451,7 @@ def write_zmat(name, dertype):
     mdccmd, mdckw = qcdb.cfour.muster_modelchem(name, dertype)
 
     # Handle quantum chemical method
-    mtdcmd, mtdkw = qcprograms.cfour.cfour_method(name)
+    mtdcmd, mtdkw = qcdb.cfour.cfour_method(name)
 
     # Handle driver vs input/default keyword reconciliation
     userkw = p4util.prepare_options_for_modules()
