@@ -632,9 +632,30 @@ void ASAPT::elst()
     double** VABp = VAB->pointer();
     double** VBAp = VBA->pointer();
 
+    // Threading 
+    int nthreads = 0;
+    #ifdef _OPENMP
+        nthreads = omp_get_max_threads();
+    #endif
+
+    // Integral computers and thread-safe targets
+    boost::shared_ptr<IntegralFactory> Vfact(new IntegralFactory(jkfit,BasisSet::zero_ao_basis_set()));
+    std::vector<boost::shared_ptr<Matrix> > ZxyzT;
+    std::vector<boost::shared_ptr<Matrix> > VtempT;
+    std::vector<boost::shared_ptr<Matrix> > QACT;
+    std::vector<boost::shared_ptr<Matrix> > QBDT;
+    std::vector<boost::shared_ptr<PotentialInt> > VintT;
+    for (int thread = 0; thread < nthreads; thread++) {
+        ZxyzT.push_back(boost::shared_ptr<Matrix>(new Matrix("Zxyz",1,4)));
+        VtempT.push_back(boost::shared_ptr<Matrix>(new Matrix("Vtemp",nQ,1)));
+        QACT.push_back(boost::shared_ptr<Matrix>(new Matrix("QACT",nA,nQ)));
+        QBDT.push_back(boost::shared_ptr<Matrix>(new Matrix("QBDT",nB,nQ)));
+        VintT.push_back(boost::shared_ptr<PotentialInt>(static_cast<PotentialInt*>(Vfact->ao_potential())));
+        VintT[thread]->set_charge_field(ZxyzT[thread]);
+    }
+
     boost::shared_ptr<Matrix> Zxyz(new Matrix("Zxyz",1,4));
     double** Zxyzp = Zxyz->pointer();
-    boost::shared_ptr<IntegralFactory> Vfact(new IntegralFactory(jkfit,BasisSet::zero_ao_basis_set()));
     boost::shared_ptr<PotentialInt> Vint(static_cast<PotentialInt*>(Vfact->ao_potential()));
     Vint->set_charge_field(Zxyz);
     boost::shared_ptr<Matrix> Vtemp(new Matrix("Vtemp",nQ,1));
@@ -645,23 +666,45 @@ void ASAPT::elst()
         int npoints = (offset + max_points >= nP ? nP - offset : max_points);
         atomic_A_->compute_weights(npoints,&xp[offset],&yp[offset],&zp[offset],QAPp,&rhoap[offset]);
         atomic_B_->compute_weights(npoints,&xp[offset],&yp[offset],&zp[offset],QBQp,&rhobp[offset]);
+
+        #pragma omp parallel for schedule(dynamic)
         for (int P = 0; P < npoints; P++) {
-        
+
+            // Thread info
+            int thread = 0;
+            #ifdef _OPENMP
+                thread = omp_get_thread_num();
+            #endif
+
+            // Pointers
+            double** ZxyzTp = ZxyzT[thread]->pointer();
+            double** VtempTp = VtempT[thread]->pointer();
+            double** QACTp = QACT[thread]->pointer();       
+            double** QBDTp = QBDT[thread]->pointer();       
+ 
             // Absolute point indexing
             int Pabs = P + offset;
             
             // => Q_A^P and Q_B^Q <= //
 
-            Vtemp->zero();
-            Zxyzp[0][0] = 1.0;
-            Zxyzp[0][1] = xp[Pabs];
-            Zxyzp[0][2] = yp[Pabs];
-            Zxyzp[0][3] = zp[Pabs]; 
-            Vint->compute(Vtemp);
-            // Potential integrals add a spurios minus sign
-            C_DGER(nA,nQ,-wp[Pabs],&QAPp[0][P],max_points,Vtempp[0],1,QACp[0],nQ);
-            C_DGER(nB,nQ,-wp[Pabs],&QBQp[0][P],max_points,Vtempp[0],1,QBDp[0],nQ);
+            VtempT[thread]->zero();
+            ZxyzTp[0][0] = 1.0;
+            ZxyzTp[0][1] = xp[Pabs];
+            ZxyzTp[0][2] = yp[Pabs];
+            ZxyzTp[0][3] = zp[Pabs]; 
+            VintT[thread]->compute(VtempT[thread]);
 
+            // Potential integrals add a spurios minus sign
+            C_DGER(nA,nQ,-wp[Pabs],&QAPp[0][P],max_points,VtempTp[0],1,QACTp[0],nQ);
+            C_DGER(nB,nQ,-wp[Pabs],&QBQp[0][P],max_points,VtempTp[0],1,QBDTp[0],nQ);
+
+        }
+
+        for (int P = 0; P < npoints; P++) {
+        
+            // Absolute point indexing
+            int Pabs = P + offset;
+            
             // => V_A^B <= //
 
             for (int B = 0; B < nB; B++) {
@@ -697,6 +740,11 @@ void ASAPT::elst()
             }
 
         }
+    }
+
+    for (int thread = 0; thread < nthreads; thread++) {
+        QAC->add(QACT[thread]);
+        QBD->add(QBDT[thread]);
     }
 
     boost::shared_ptr<Matrix> RAC = Matrix::doublet(QAC,Jm12);
@@ -779,17 +827,19 @@ void ASAPT::elst()
 
     // => Nuclear Part (PITA) <= //
     
+    boost::shared_ptr<Matrix> Zxyz2(new Matrix("Zxyz",1,4));
+    double** Zxyz2p = Zxyz2->pointer();
     boost::shared_ptr<IntegralFactory> Vfact2(new IntegralFactory(primary_));
     boost::shared_ptr<PotentialInt> Vint2(static_cast<PotentialInt*>(Vfact2->ao_potential()));
-    Vint2->set_charge_field(Zxyz);
+    Vint2->set_charge_field(Zxyz2);
     boost::shared_ptr<Matrix> Vtemp2(new Matrix("Vtemp2",nn,nn));
 
     for (int A = 0; A < nA; A++) {
         Vtemp2->zero();
-        Zxyzp[0][0] = monomer_A_->Z(cA[A]);
-        Zxyzp[0][1] = monomer_A_->x(cA[A]);
-        Zxyzp[0][2] = monomer_A_->y(cA[A]);
-        Zxyzp[0][3] = monomer_A_->z(cA[A]); 
+        Zxyz2p[0][0] = monomer_A_->Z(cA[A]);
+        Zxyz2p[0][1] = monomer_A_->x(cA[A]);
+        Zxyz2p[0][2] = monomer_A_->y(cA[A]);
+        Zxyz2p[0][3] = monomer_A_->z(cA[A]); 
         Vint2->compute(Vtemp2);
         boost::shared_ptr<Matrix> Vbs = Matrix::triplet(Cocc_B_,Vtemp2,Cvir_B_,true,false,false);
         double** Vbsp = Vbs->pointer();
@@ -798,10 +848,10 @@ void ASAPT::elst()
 
     for (int B = 0; B < nB; B++) {
         Vtemp2->zero();
-        Zxyzp[0][0] = monomer_B_->Z(cB[B]);
-        Zxyzp[0][1] = monomer_B_->x(cB[B]);
-        Zxyzp[0][2] = monomer_B_->y(cB[B]);
-        Zxyzp[0][3] = monomer_B_->z(cB[B]); 
+        Zxyz2p[0][0] = monomer_B_->Z(cB[B]);
+        Zxyz2p[0][1] = monomer_B_->x(cB[B]);
+        Zxyz2p[0][2] = monomer_B_->y(cB[B]);
+        Zxyz2p[0][3] = monomer_B_->z(cB[B]); 
         Vint2->compute(Vtemp2);
         boost::shared_ptr<Matrix> Var = Matrix::triplet(Cocc_A_,Vtemp2,Cvir_A_,true,false,false);
         double** Varp = Var->pointer();
