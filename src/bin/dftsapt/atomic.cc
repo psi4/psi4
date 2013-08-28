@@ -536,7 +536,7 @@ void StockholderDensity::compute_charges(double scale)
         double Z = molecule_->Z(Aabs);
         double Q = -scale * Np[A];
         fprintf(outfile,"    %4d %3s %11.3E %11.3E %11.3E\n", 
-            Aabs, molecule_->symbol(Aabs).c_str(), Z, Q, Z + Q);
+            Aabs+1, molecule_->symbol(Aabs).c_str(), Z, Q, Z + Q);
         Ztot += Z;
         Qtot += Q;
     }
