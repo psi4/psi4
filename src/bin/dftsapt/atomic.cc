@@ -415,17 +415,32 @@ void StockholderDensity::compute_weights(int nP, double* xp, double* yp, double*
             ls[A].push_back(log(rs_[A][R]));
         }
     }
-    
-    double wT = 0.0;
-    double wA[nA];
+
+    // Doesn't like being on the stack?
+    int nthreads = 1;
+    #ifdef _OPENMP
+        nthreads = omp_get_max_threads();
+    #endif
+
+    std::vector<double* > wA2;
+    for (int thread = 0; thread < nthreads; thread++) {
+        wA2.push_back(new double[nA]);
+    }
     
     // Compute Q_A^P via W_A^P
-    //#pragma omp parallel for schedule(dynamic) (TODO)
+    #pragma omp parallel for schedule(dynamic) 
     for (int P = 0; P < nP; P++) {
         double xc = xp[P];
         double yc = yp[P];
         double zc = zp[P];
-        wT = 0.0;
+
+        int thread = 0;
+        #ifdef _OPENMP
+            thread = omp_get_thread_num();
+        #endif
+        double* wA = wA2[thread];
+        double wT = 0.0;
+    
         for (int A = 0; A < nA; A++) {
             int Aabs = Aind[A];
 
@@ -521,6 +536,10 @@ void StockholderDensity::compute_weights(int nP, double* xp, double* yp, double*
         } else {
             wp[0][P] = wA[atom] * scale;
         }
+    }
+
+    for (int thread = 0; thread < nthreads; thread++) {
+        delete[] wA2[thread];
     }
 }
 void StockholderDensity::compute_charges(double scale) 
