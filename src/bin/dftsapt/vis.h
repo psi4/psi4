@@ -99,6 +99,8 @@ protected:
     void drop_orbital_2();
     /// Drop the voxel analysis to disk
     void drop_voxel();
+    /// Drop the debug voxel analysis to disk (orbitals and atoms)
+    void drop_debug();
     /// Drop a matrix in vars to disk
     void drop(const std::string& val);
     
@@ -172,16 +174,25 @@ public:
     void build_grid();
     void print_header();
     
+    // => Production-Level Visualization <= //
+
     // Zero the grid property
     void zero();
     // Compute a generalized electronic density on this grid
     void compute_electronic(boost::shared_ptr<Matrix> D);
     // Compute an atomic-density weighted value on the grid
     void compute_atomic(boost::shared_ptr<Vector> V, boost::shared_ptr<AtomicDensity> atomic);
-    // Drop a raw float32 variant of this dataset to disk
-    void drop_raw(const std::string& file, double clamp);
-    // Drop a raw UVF variant of this dataset to disk
-    void drop_uvf(const std::string& file, double clamp);
+    // Drop a raw float32 variant of this dataset to disk (uses internal v_ if v == NULL) 
+    void drop_raw(const std::string& file, double clamp, double* v = NULL);
+    // Drop a raw UVF variant of this dataset to disk (uses internal v_ if v == NULL) 
+    void drop_uvf(const std::string& file, double clamp, double* v = NULL);
+
+    // => Debugging-Level Visualization <= //
+
+    // Drop all atomic densities to raw files, using labeling [label "qN.raw"] and [label "wN.raw"]
+    void compute_atomic_densities(boost::shared_ptr<AtomicDensity> atomic, double clamp, const std::string& label);
+    // Drop all orbitals to raw files, using labeling [label "fN.raw"]
+    void compute_orbitals(boost::shared_ptr<Matrix> Cocc, double clamp, const std::string& label);
 };
 
 }} // End namespace

@@ -831,10 +831,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Maximum number of error vectors stored for ISA DIIS extrapolation -*/
     options.add_int("ISA_DIIS_MAX_VECS", 5);
 
-    /*- The name of the monomer-local electrostatics auxiliary basis set -*/
-    options.add_str("DF_BASIS_ELST", "");
-    /*- The name of the monomer-local electrostatics primary basis set -*/
-    options.add_str("BASIS_ELST", "");
     /*- ASAPT analysis tasking -*/
     options.add("ASAPT_TASKS", new ArrayType());
     /*- Do ASAPT exchange scaling? (ratio of S^\infty to S^2) -*/
@@ -847,6 +843,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("ASAPT_SEPARATE_CORE", true);
     /*- Voxel ASAPT density saturation (for uniform transfer functions) -*/
     options.add_double("ASAPT_DENSITY_CLAMP", 0.5);
+    /*- Voxel ASAPT orbital saturation (for uniform transfer functions) -*/
+    options.add_double("ASAPT_ORBITAL_CLAMP", 0.5);
     /*- Voxel ASAPT energy saturation (for uniform transfer functions) -*/
     options.add_double("ASAPT_ENERGY_CLAMP", 0.005);
     /*- ASAPT minimum grid overages in bohr (LX, LY, LZ) -*/
