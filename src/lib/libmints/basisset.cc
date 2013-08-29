@@ -265,34 +265,35 @@ boost::shared_ptr<BasisSet> BasisSet::zero_ao_basis_set()
 {
     boost::shared_ptr<BasisSet> new_basis(new BasisSet());
 
-    // Setup all the parameters needed for a zero basis set
-    new_basis->shell_center_.push_back(0);
-    new_basis->function_center_.push_back(0);
-    new_basis->max_nprimitive_ = 1;
-    new_basis->max_am_ = 0;
+    //TODO FIXME!!!
+//    // Setup all the parameters needed for a zero basis set
+//    new_basis->shell_center_.push_back(0);
+//    new_basis->function_center_.push_back(0);
+//    new_basis->max_nprimitive_ = 1;
+//    new_basis->max_am_ = 0;
 
-    new_basis->puream_ = false;
+//    new_basis->puream_ = false;
 
-    // Add "ghost" atom to the molecule for this basis
-    new_basis->molecule_ = boost::shared_ptr<Molecule>(new Molecule);
-    // Ghost atoms are now handled differently, they are not added to the normal xyz information array,
-    // but to the fxyz array.
-    new_basis->molecule_->add_atom(0, 0.0, 0.0, 0.0);
-    Vector3 center = new_basis->molecule_->fxyz(0);
+//    // Add "ghost" atom to the molecule for this basis
+//    new_basis->molecule_ = boost::shared_ptr<Molecule>(new Molecule);
+//    // Ghost atoms are now handled differently, they are not added to the normal xyz information array,
+//    // but to the fxyz array.
+//    new_basis->molecule_->add_atom(0, 0.0, 0.0, 0.0);
+//    Vector3 center = new_basis->molecule_->fxyz(0);
 
-    new_basis->nprimitive_ = 1;
-    new_basis->nao_ = 1;
-    new_basis->nbf_ = 1;
+//    new_basis->nprimitive_ = 1;
+//    new_basis->nao_ = 1;
+//    new_basis->nbf_ = 1;
 
-    // Create shell array
-    std::vector<double> e(1);
-    std::vector<double> c(1);
-    e[0] = 0.0;
-    c[0] = 1.0;
+//    // Create shell array
+//    std::vector<double> e(1);
+//    std::vector<double> c(1);
+//    e[0] = 0.0;
+//    c[0] = 1.0;
 
-    new_basis->shells_.push_back(GaussianShell(0, c, e, Cartesian, 0, center, 0));
+//    new_basis->shells_.push_back(GaussianShell(0, c, e, Cartesian, 0, center, 0));
 
-    new_basis->refresh();
+//    new_basis->refresh();
 
     return new_basis;
 }
@@ -405,6 +406,7 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
             throw PSIEXCEPTION("  Unable to load "+ filename + " from the default Psi4 basis set library.");
         }
     }
+
     //////
     ////  FIX THIS TO USE THE NEW FLATTENED DATA STRUCTURES
     //////
@@ -436,6 +438,160 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
         basisset->name_ = basisset->name_.substr(0, basisset->name_.length()-3);
 
     return basisset;
+}
+
+BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
+                   std::map<std::string, std::map<std::string, std::vector<ShellInfo> > > &shell_map):
+    molecule_(mol)
+{
+    int natom = molecule_->natom();
+    int nunique = molecule_->nunique();
+
+    /// This will tell us where the primitives for [basis][symbol] start, in the compact array
+    std::map<std::string, std::map<std::string, int > >::iterator  primitive_offsets;
+
+    /*
+     * First, loop over the unique primitives, and store them
+     */
+    std::vector<double> uexps;
+    std::vector<double> ucoefs;
+    std::vector<double> uoriginal_coefs;
+    n_uprimitive_ = 0;
+    std::map<std::string, std::map<std::string, std::vector<ShellInfo> > >::iterator  basis_iter;
+    for(basis_iter = shell_map.begin(); basis_iter != shell_map.end(); ++basis_iter){
+        const std::string &basis = basis_iter->first;
+        std::map<std::string, std::vector<ShellInfo> > &symbol_map = shell_map[basis];
+        std::map<std::string, std::vector<ShellInfo> >::iterator symbol_iter;
+        for(symbol_iter = symbol_map.begin(); symbol_iter != symbol_map.end(); ++symbol_iter){
+            const std::string &symbol = symbol_iter->first;
+            vector<ShellInfo>& shells = symbol_map[symbol];
+            primitive_offsets[basis][symbol] = n_uprimitive_;
+            for (int i=0; i<shells.size(); ++i) {
+                const ShellInfo &shell = shells[i];
+                for(int prim = 0; prim < shell.nprimitive(); ++prim){
+                    uexps.push_back(shell.exp(prim));
+                    ucoefs.push_back(shell.coef(prim));
+                    uoriginal_coefs.push_back(shell.original_coef(prim));
+                    n_uprimitive_++;
+                }
+            }
+        }
+    }
+
+    /*
+     * Count basis functions, shells and primitives
+     */
+    n_ushells_ = 0;
+    n_uprimitive_ = 0;
+    n_shells_ = 0;
+    nprimitive_ = 0;
+    nao_ = 0;
+    nbf_ = 0;
+    for (int n=0; n < nunique; ++n) {
+        const boost::shared_ptr<CoordEntry> &atom = molecule_->atom_entry(molecule_->unique(n));
+        int nequivalent = molecule_->nequivalent(n);
+        string basis = atom->basisset(basistype);
+        string symbol = atom->symbol();
+        vector<ShellInfo>& shells = shell_map[basis][symbol];
+        for (int i=0; i<shells.size(); ++i) {
+            const ShellInfo &shell = shells[i];
+            int nprim = shell.nprimitive();
+            n_uprimitive_ += nprim;
+            nprimitive_ += nequivalent * nprim;
+            n_ushells_++;
+            n_shells_ += nequivalent;
+            nao_ += shell.ncartesian();
+            nbf_ += shell.nfunction();
+        }
+    }
+
+    /*
+     * Allocate arrays
+     */
+    uatom_ushell_offsets_ = new int[molecule_->natom()];
+    uprimitive_offsets_ = new int[n_ushells_];
+    n_prim_per_ushell_ = new int[n_ushells_];
+
+
+    // The unique primitives
+    uexponents_ = new double[n_uprimitive_];
+    ucoefficients_ = new double[n_uprimitive_];
+    uoriginal_coefficients_ = new double[n_uprimitive_];
+    for(int i = 0; i < n_uprimitive_; ++i){
+        uexponents_[i] = uexps[i];
+        ucoefficients_[i] = ucoefs[i];
+        uoriginal_coefficients_[i] = uoriginal_coefs[i];
+    }
+
+    shell_first_ao_ = new int[n_shells_];
+    shell_first_basis_function_ = new int[n_shells_];
+    ao_to_shell_ = new int[nao_];
+    function_to_shell_ = new int[nbf_];
+    function_center_ = new int[nbf_];
+    shell_center_ = new int[n_shells_];
+    center_to_nshell_ = new int[natom];
+    center_to_shell_ = new int[natom];
+
+    /*
+     * Copy basis set info into arrays
+     */
+    int uprimitive = 0;
+    int ushell = 0;
+    max_am_ = 0;
+    max_nprimitive_ = 0;
+    for (int n=0; n < nunique; ++n) {
+        const boost::shared_ptr<CoordEntry> &atom = molecule_->atom_entry(molecule_->unique(n));
+        string basis = atom->basisset(basistype);
+        string symbol = atom->symbol();
+        vector<ShellInfo>& shells = shell_map[basis][symbol];
+        puream_ = shells[0].is_pure();
+        uatom_ushell_offsets_[n] = ushell;
+        for (int i=0; i<shells.size(); ++i) {
+            const ShellInfo &shell = shells[i];
+            int nprim = shell.nprimitive();
+            uprimitive_offsets_[ushell] = uprimitive;
+            max_am_ = max_am_ > shell.am() ? max_am_ : shell.am();
+            max_nprimitive_ = max_nprimitive_ > shell.nprimitive() ? max_nprimitive_ : shell.nprimitive();
+            for(int prim = 0; prim > nprim; ++prim){
+                ucoefficients_[uprimitive] = shell.coef(prim);
+                uexponents_[uprimitive] = shell.exp(prim);
+                uprimitive++;
+            }
+            n_prim_per_ushell_[ushell];
+        }
+        ushell++;
+    }
+
+    /*
+     * Now loop over all atoms, and point to the appropriate unique data
+     */
+    int shell = 0;
+    int ao = 0;
+    int bf = 0;
+    for (int n = 0; n < natom; ++n) {
+        int unique_atom = molecule_->atom_to_unique(n);
+        const boost::shared_ptr<CoordEntry> &atom = molecule_->atom_entry(molecule_->unique(n));
+        string basis = atom->basisset(basistype);
+        string symbol = atom->symbol();
+        vector<ShellInfo>& shells = shell_map[basis][symbol];
+        int nshells = shells.size();
+        center_to_nshell_[n] = nshells;
+        center_to_shell_[n] = shell;
+        for (int i = 0; i < nshells; ++i) {
+            const ShellInfo &thisshell = shells[i];
+            shell_first_ao_[shell] = ao;
+            shell_first_basis_function_[shell] = bf;
+            shell_center_[shell] = n;
+            for(int thisbf = 0; thisbf < thisshell.nfunction(); ++thisbf){
+                function_to_shell_[bf] = shell;
+                function_center_[bf++] = n;
+            }
+            for(int thisao = 0; thisao < thisshell.ncartesian(); ++thisao){
+                ao_to_shell_[ao++] = shell;
+            }
+            shell++;
+        }
+    }
 }
 
 std::string BasisSet::make_filename(const std::string& name)
@@ -477,94 +633,96 @@ std::string BasisSet::make_filename(const std::string& name)
 
 void BasisSet::refresh()
 {
-    // Reset data to initial values
-    nprimitive_ = 0;
-    nao_ = 0;
-    nbf_ = 0;
-    max_am_ = 0;
-    max_nprimitive_ = 0;
-    puream_ = false;
+    //TODO FIXME!!!
+//    // Reset data to initial values
+//    nprimitive_ = 0;
+//    nao_ = 0;
+//    nbf_ = 0;
+//    max_am_ = 0;
+//    max_nprimitive_ = 0;
+//    puream_ = false;
 
-    shell_first_basis_function_.clear(); shell_first_basis_function_.resize(nshell(), 0);
-    shell_first_ao_.clear();             shell_first_ao_.resize(nshell(), 0);
-    shell_center_.clear();               shell_center_.resize(nshell(), 0);
-    function_center_.clear();
-    center_to_nshell_.clear();           center_to_nshell_.resize(molecule_->natom(), 0);
-    center_to_shell_.clear();            center_to_shell_.resize(molecule_->natom(), 0);
-    center_to_shell_[0] = 0;
+//    shell_first_basis_function_.clear(); shell_first_basis_function_.resize(nshell(), 0);
+//    shell_first_ao_.clear();             shell_first_ao_.resize(nshell(), 0);
+//    shell_center_.clear();               shell_center_.resize(nshell(), 0);
+//    function_center_.clear();
+//    center_to_nshell_.clear();           center_to_nshell_.resize(molecule_->natom(), 0);
+//    center_to_shell_.clear();            center_to_shell_.resize(molecule_->natom(), 0);
+//    center_to_shell_[0] = 0;
 
-    int current_center = 0;
+//    int current_center = 0;
 
-    for (int i=0; i<nshell(); ++i) {
-        shell_center_[i]   = shells_[i].ncenter();
-        shell_first_ao_[i] = nao_;
-        shell_first_basis_function_[i] = nbf_;
-        shells_[i].set_function_index(nbf_);
+//    for (int i=0; i<nshell(); ++i) {
+//        shell_center_[i]   = shells_[i].ncenter();
+//        shell_first_ao_[i] = nao_;
+//        shell_first_basis_function_[i] = nbf_;
+//        shells_[i].set_function_index(nbf_);
 
-        center_to_nshell_[shell_center_[i]]++;
-        if (current_center != shell_center_[i]) {
-            center_to_shell_[shell_center_[i]] = i;
-            current_center = shell_center_[i];
-        }
+//        center_to_nshell_[shell_center_[i]]++;
+//        if (current_center != shell_center_[i]) {
+//            center_to_shell_[shell_center_[i]] = i;
+//            current_center = shell_center_[i];
+//        }
 
-        nprimitive_ += shells_[i].nprimitive();
-        nao_        += shells_[i].ncartesian();
-        nbf_        += shells_[i].nfunction();
+//        nprimitive_ += shells_[i].nprimitive();
+//        nao_        += shells_[i].ncartesian();
+//        nbf_        += shells_[i].nfunction();
 
-        for (int m = 0; m < shells_[i].nfunction(); m++) {
-            function_center_.push_back(shells_[i].ncenter());
-        }
+//        for (int m = 0; m < shells_[i].nfunction(); m++) {
+//            function_center_.push_back(shells_[i].ncenter());
+//        }
 
-        if (max_am_ < shells_[i].am())
-            max_am_ = shells_[i].am();
+//        if (max_am_ < shells_[i].am())
+//            max_am_ = shells_[i].am();
 
-        if (max_nprimitive_ < shells_[i].nprimitive())
-            max_nprimitive_ = shells_[i].nprimitive();
+//        if (max_nprimitive_ < shells_[i].nprimitive())
+//            max_nprimitive_ = shells_[i].nprimitive();
 
-        if (puream_ == false && shells_[i].is_pure())
-            puream_ = true;
-    }
+//        if (puream_ == false && shells_[i].is_pure())
+//            puream_ = true;
+//    }
 
-    function_to_shell_.resize(nbf());
-    int ifunc = 0;
-    for (int i=0; i<nshell(); ++i) {
-        int nfun = shells_[i].nfunction();
-        for (int j=0; j<nfun; ++j) {
-            function_to_shell_[ifunc] = i;
-            ifunc++;
-        }
-    }
-    ao_to_shell_.resize(nao());
-    ifunc = 0;
-    for (int i=0; i<nshell(); ++i) {
-        int nfun = shells_[i].ncartesian();
-        for (int j=0; j<nfun; ++j) {
-            ao_to_shell_[ifunc] = i;
-            ifunc++;
-        }
-    }
+//    function_to_shell_.resize(nbf());
+//    int ifunc = 0;
+//    for (int i=0; i<nshell(); ++i) {
+//        int nfun = shells_[i].nfunction();
+//        for (int j=0; j<nfun; ++j) {
+//            function_to_shell_[ifunc] = i;
+//            ifunc++;
+//        }
+//    }
+//    ao_to_shell_.resize(nao());
+//    ifunc = 0;
+//    for (int i=0; i<nshell(); ++i) {
+//        int nfun = shells_[i].ncartesian();
+//        for (int j=0; j<nfun; ++j) {
+//            ao_to_shell_[ifunc] = i;
+//            ifunc++;
+//        }
+//    }
 
-    // Create a map that has a key/value pair
-    // The key is the angular momentum function of the shell arranged in decending order
-    // The value is the actual shell number
-    typedef std::pair<int, int> am_to_shell_pair;
-    std::multimap< int, int, std::less<int> > am_to_shell_list;
-    for (int i=0; i < shells_.size(); i++) {
-        am_to_shell_list.insert(am_to_shell_pair(shells_[i].nfunction(), i));
-    }
-    // This puts the sorted shell values into the sorted_shell_list_ vector
-    // This can be used by the integral iterator to look up the value of the sorted shells
-    std::multimap< int, int, std::less<int> >::iterator it;
-    sorted_ao_shell_list_.clear();
-    for (it=am_to_shell_list.begin(); it != am_to_shell_list.end(); it++) {
-        //std::cout << "sorted shell size = " << it->first <<
-        //        "\t, which belongs to shell number " << it->second << std::endl;
-        sorted_ao_shell_list_.push_back(it->second);
-    }
+//    // Create a map that has a key/value pair
+//    // The key is the angular momentum function of the shell arranged in decending order
+//    // The value is the actual shell number
+//    typedef std::pair<int, int> am_to_shell_pair;
+//    std::multimap< int, int, std::less<int> > am_to_shell_list;
+//    for (int i=0; i < shells_.size(); i++) {
+//        am_to_shell_list.insert(am_to_shell_pair(shells_[i].nfunction(), i));
+//    }
+//    // This puts the sorted shell values into the sorted_shell_list_ vector
+//    // This can be used by the integral iterator to look up the value of the sorted shells
+//    std::multimap< int, int, std::less<int> >::iterator it;
+//    sorted_ao_shell_list_.clear();
+//    for (it=am_to_shell_list.begin(); it != am_to_shell_list.end(); it++) {
+//        //std::cout << "sorted shell size = " << it->first <<
+//        //        "\t, which belongs to shell number " << it->second << std::endl;
+//        sorted_ao_shell_list_.push_back(it->second);
+//    }
 }
 
 std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > BasisSet::test_basis_set(int max_am)
 {
+#if 0
     int max_centers = 4;
     int max_primitives = 10;
     int max_shells;
@@ -736,6 +894,7 @@ std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > BasisSet::test
     new_basis->refresh();
 
     return make_pair(labels, new_basis);
+#endif
 }
 
 boost::shared_ptr<BasisSet> BasisSet::atomic_basis_set(int center)

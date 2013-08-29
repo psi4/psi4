@@ -63,39 +63,39 @@ namespace psi {
 class BasisSet
 {
     friend class BasisSetParser;
-    //! Number of primitives.
-    int nprimitive_;
-    //! Number of atomic orbitals.
-    int nao_;
-    //! Number of basis functions (either cartesian or spherical)
-    int nbf_;
-    //! Maximum angular momentum
-    int max_am_;
-    //! Maximum number of primitives.
-    int max_nprimitive_;
-    //! Shell number to first basis function index.
-    std::vector<int> shell_first_basis_function_;           // Is this used?
-    //! Shell number to first atomic function index.
-    std::vector<int> shell_first_ao_;
-    //! Shell number to atomic center.
-    std::vector<int> shell_center_;
-    //! Function number to atomic center.
-    std::vector<int> function_center_;
+//    //! Number of primitives.
+//    int nprimitive_;
+//    //! Number of atomic orbitals.
+//    int nao_;
+//    //! Number of basis functions (either cartesian or spherical)
+//    int nbf_;
+//    //! Maximum angular momentum
+//    int max_am_;
+//    //! Maximum number of primitives.
+//    int max_nprimitive_;
+//    //! Shell number to first basis function index.
+//    std::vector<int> shell_first_basis_function_;           // Is this used?
+//    //! Shell number to first atomic function index.
+//    std::vector<int> shell_first_ao_;
+//    //! Shell number to atomic center.
+//    std::vector<int> shell_center_;
+//    //! Function number to atomic center.
+//    std::vector<int> function_center_;
 
-    //! Map function number to shell
-    std::vector<int> function_to_shell_;
-    //! Map Cartesian function number to shell
-    std::vector<int> ao_to_shell_;
+//    //! Map function number to shell
+//    std::vector<int> function_to_shell_;
+//    //! Map Cartesian function number to shell
+//    std::vector<int> ao_to_shell_;
 
-    //! Does the loaded basis set contain pure angular momentum functions?
-    bool puream_;
+//    //! Does the loaded basis set contain pure angular momentum functions?
+//    bool puream_;
 
     //! The name of this basis set (e.g. "BASIS", "RI BASIS")
     std::string name_;
-    //! Number of shells per center
-    std::vector<int> center_to_nshell_;
-    //! For a given center, its first shell.
-    std::vector<int> center_to_shell_;
+//    //! Number of shells per center
+//    std::vector<int> center_to_nshell_;
+//    //! For a given center, its first shell.
+//    std::vector<int> center_to_shell_;
 
     //! Array of gaussian shells
     std::vector<GaussianShell> shells_;
@@ -109,8 +109,72 @@ class BasisSet
     // Has static information been initialized?
     static bool initialized_shared_;
 
+    ///////// NEW THINGS, the above can be deleted when this is complete
+    /*
+     * Scalars
+     */
+    /// Number of atomic orbitals (Cartesian)
+    int nao_;
+    /// Number of basis functions (either cartesian or spherical)
+    int nbf_;
+    /// The number of unique shells
+    int n_ushells_;
+    /// The number of unique primitives
+    int n_uprimitive_;
+    /// The number of shells
+    int n_shells_;
+    /// The number of primitives
+    int nprimitive_;
+    /// The maximum angular momentum
+    int max_am_;
+    /// The maximum number of primitives in a shell
+    int max_nprimitive_;
+    /// Whether the basis set is uses spherical basis functions or not
+    bool puream_;
+
+    /*
+     * Arrays
+     */
+    /// Start address of each unique shell's primitives
+    int *uprimitive_offsets_;
+    /// First shell for each unique atom
+    int *uatom_ushell_offsets_;
+    /// The number of primitives (and exponents) in each unique shell
+    int *n_prim_per_ushell_;
+    /// The first (Cartesian) atomic orbital in each shell
+    int *shell_first_ao_;
+    /// The first (Cartesian / spherical) basis function in each shell
+    int *shell_first_basis_function_;
+    /// Shell number to atomic center.
+    int *shell_center_;
+    /// Which shell does a given (Cartesian / spherical) function belong to?
+    int *function_to_shell_;
+    /// Which shell does a given Cartesian function belong to?
+    int *ao_to_shell_;
+    /// Which center is a given function on?
+    int *function_center_;
+    /// How many shells are there on each center?
+    int *center_to_nshell_;
+    /// What's the first shell on each center?
+    int *center_to_shell_;
+
+    /// The flattened lists of unique exponents
+    double *uexponents_;
+    /// The flattened lists of unique contraction coefficients (normalized)
+    double *ucoefficients_;
+    /// The flattened lists of unique contraction coefficients (as provided by the user)
+    double *uoriginal_coefficients_;
+    /// The flattened list of Cartesian coordinates for each unique atom
+    double *uxyz_;
+
+
+
+
 public:
     BasisSet();
+
+    BasisSet(const std::string &basistype, SharedMolecule mol,
+             std::map<std::string, std::map<std::string, std::vector<ShellInfo> > > &shell_map);
 
     /** Builder factory method
      * @param molecule the molecule to build the BasisSet around
