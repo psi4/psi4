@@ -20,15 +20,6 @@
  *@END LICENSE
  */
 
-/*
- *  rhf.h
- *  matrix
- *
- *  Created by Justin Turney on 4/10/08.
- *  Copyright 2008 __MyCompanyName__. All rights reserved.
- *
- */
-
 #ifndef RHF_H
 #define RHF_H
 

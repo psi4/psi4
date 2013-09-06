@@ -37,6 +37,20 @@ class IntVector;
 class Vector3;
 class BasisExtents;
 class BlockOPoints;
+class RadialGrid;
+class SphericalGrid;
+
+// This is an auxiliary structure used internally by the grid-builder class.
+// Apparently, for performance reasons, it is not good for the final molecular grid
+// to consist of structures like this one.
+//
+// RMP: You got that right. Calling nuclear weights one point at a time is another 
+// great way to get a 1000x slowdown. What an incredible smell you've discovered!
+//
+struct MassPoint {
+    double x,y,z,w;
+};
+
 
 class MolecularGrid {
 protected:
@@ -44,7 +58,9 @@ protected:
 
     /// The molecule this grid is built on
     boost::shared_ptr<Molecule> molecule_;
-    
+
+    // ==> Fast Grid Specification <== //    
+
     /// Total points for this molecule 
     int npoints_;
     /// Maximum number of points in a block
@@ -59,6 +75,17 @@ protected:
     double* z_;
     /// Full weights
     double* w_;
+
+    // ==> Clean Grid Specification <== //
+
+    /// Orientation matrix
+    boost::shared_ptr<Matrix> orientation_;
+    /// Radial grids, per atom
+    std::vector<boost::shared_ptr<RadialGrid> > radial_grids_;
+    /// Spherical grids, per atom and radial point
+    std::vector<std::vector<boost::shared_ptr<SphericalGrid> > > spherical_grids_;
+    /// index_[fast_index] = slow_index
+    int* index_;
  
     /// Vector of blocks 
     std::vector<boost::shared_ptr<BlockOPoints> > blocks_;
@@ -96,7 +123,17 @@ public:
 
     /// Print information about the grid
     void print(FILE* out = outfile, int print = 2) const;
+    void print_details(FILE* out = outfile, int print = 2) const;
 
+    /// Orientation matrix
+    boost::shared_ptr<Matrix> orientation() const { return orientation_; }
+    /// Radial grids, per atom
+    const std::vector<boost::shared_ptr<RadialGrid> >& radial_grids() const { return radial_grids_; }
+    /// Spherical grids, per atom and radial point
+    const std::vector<std::vector<boost::shared_ptr<SphericalGrid> > >& spherical_grids() const { return spherical_grids_; }
+    /// index_[fast_index] = slow_index. You do not own this
+    int* index() const { return index_; }
+ 
     /// Number of grid points
     int npoints() const { return npoints_; } 
     /// Maximum number of grid points in a block
@@ -166,6 +203,156 @@ public:
             boost::shared_ptr<BasisSet> primary,
             Options& options);
     virtual ~DFTGrid();
+};
+
+class RadialGrid {
+
+protected:
+
+    /// Scheme
+    std::string scheme_;
+    /// Number of points in radial grid
+    int npoints_;
+    /// Alpha scale (for user reference)
+    double alpha_;
+    /// Nodes (including alpha)
+    double* r_;
+    /// Weights (including alpha and r^2)
+    double* w_;
+
+    // ==> Standard Radial Grids <== //
+
+    /// Build the Becke 1988 radial grid
+    static boost::shared_ptr<RadialGrid> build_becke(int npoints, double alpha);
+    /// Build the Treutler-Ahlrichs 1995 radial grid (scale power = 0.6)
+    static boost::shared_ptr<RadialGrid> build_treutler(int npoints, double alpha);
+    // TODO: Add more grids
+
+    /// Protected constructor
+    RadialGrid();
+public:
+    // ==> Initializers <== //
+
+    /// Destructor
+    virtual ~RadialGrid();
+
+    /// Master build routine
+    static boost::shared_ptr<RadialGrid> build(const std::string& scheme, int npoints, double alpha);
+    /// Hack build routine (TODO: Remove ASAP)
+    static boost::shared_ptr<RadialGrid> build(const std::string& scheme, int npoints, double* r, double* wr, double alpha); 
+     
+    // ==> Accessors <== //
+
+    /// Scheme of this radial grid
+    std::string scheme() const { return scheme_; }
+    /// Number of points in radial grid
+    int npoints() const { return npoints_; }
+    /// Alpha scale (for user reference)
+    double alpha() const { return alpha_; }
+    /// Radial nodes (including alpha scale). You do not own this.
+    double* r() const { return r_; }
+    /// Radial weights (including alpha scale and r^2). You do not own this.
+    double* w() const { return w_; }
+
+    /// Reflection
+    void print(FILE* out = outfile, int level = 1) const; 
+};
+
+class SphericalGrid {
+
+protected:
+
+    /// Scheme
+    std::string scheme_;
+    /// Number of points in radial grid
+    int npoints_;
+    /// Order of spherical harmonics in spherical grid (integrates products up to L_tot = 2 * order_ + 1)
+    int order_;
+    /// Spherical nodes, on the unit sphere
+    double* x_; 
+    /// Spherical nodes, on the unit sphere
+    double* y_; 
+    /// Spherical nodes, on the unit sphere
+    double* z_; 
+    /// Spherical weights, normalized to 4\pi
+    double* w_; 
+
+    /// Spherical nodes, in spherical coordinates (azimuth)
+    double* phi_;
+    /// Spherical nodes, in spherical coordinates (inclination) 
+    double* theta_;
+
+    // ==> Unique Lebedev Grids (statically stored) <== //
+
+    /// Unique Lebedev grids, accessed by number of points
+    static std::map<int, boost::shared_ptr<SphericalGrid> > lebedev_npoints_;
+    /// Unique Lebedev grids, accessed by order (integrating to 2 * order + 1)
+    static std::map<int, boost::shared_ptr<SphericalGrid> > lebedev_orders_;
+    /// Grid npoints to order map
+    static std::map<int, int> lebedev_mapping_;
+    /// Initialize the above arrays with the unique Lebedev grids 
+    static void initialize_lebedev();
+    /// Build a Lebedev grid given a valid number of points
+    static boost::shared_ptr<SphericalGrid> build_lebedev(int npoints);
+    /// Perform Lebedev grid reccurence
+    static int lebedev_reccurence(int type, int start, double a, double b, double v, SphericalGrid* leb);
+    /// Print valid Lebedev grids and error out (throws)
+    static void lebedev_error();
+
+    // ==> Utility Routines <== //
+
+    /// Build the spherical angles from <x,y,z>, for reference
+    void build_angles();
+    
+    /// Protected constructor
+    SphericalGrid();
+public:
+    // ==> Initializers <== //
+
+    /// Destructor
+    virtual ~SphericalGrid();
+
+    /// Master build routines
+    static boost::shared_ptr<SphericalGrid> build_npoints(const std::string& scheme, int npoints);
+    static boost::shared_ptr<SphericalGrid> build_order(const std::string& scheme, int order);
+    /// Hack build routine (TODO: Remove ASAP)
+    static boost::shared_ptr<SphericalGrid> build(const std::string& scheme, int npoints, const MassPoint* points); 
+     
+    // ==> Accessors <== //
+
+    /// Scheme of this radial grid
+    std::string scheme() const { return scheme_; }
+    /// Number of points in radial grid
+    int npoints() const { return npoints_; }
+    /// Order of spherical harmonics in spherical grid (integrates products up to L_tot = 2 * order_ + 1)
+    int order() const { return order_; }
+    /// Spherical nodes, on the unit sphere
+    double* x() const { return x_; }
+    /// Spherical nodes, on the unit sphere
+    double* y() const { return y_; }
+    /// Spherical nodes, on the unit sphere
+    double* z() const { return z_; }
+    /// Spherical weights, normalized to 4\pi
+    double* w() const { return w_; }
+
+    /// Spherical nodes, in spherical coordinates (azimuth)
+    double* phi() const { return phi_; }
+    /// Spherical nodes, in spherical coordinates (inclination)
+    double* theta() const { return theta_; }
+
+    /// Reflection
+    void print(FILE* out = outfile, int level = 1) const; 
+    
+    // ==> Unique Lebedev Grids (statically stored) <== //
+
+    /// Unique Lebedev grids, accessed by number of points
+    static std::map<int, boost::shared_ptr<SphericalGrid> >& lebedev_npoints();
+    /// Unique Lebedev grids, accessed by order (integrating to 2 * order + 1)
+    static std::map<int, boost::shared_ptr<SphericalGrid> >& lebedev_orders();
+    /// Next largest valid Lebedev grid npoints, or -1 if guess is larger than biggest Lebedev grid
+    static int lebedev_next_npoints(int npoints_guess);
+    /// Next largest valid Lebedev grid order, or -1 if guess is larger than biggest Lebedev grid
+    static int lebedev_next_order(int order_guess);
 };
 
 class BlockOPoints {

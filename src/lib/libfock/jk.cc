@@ -1820,7 +1820,7 @@ void DirectJK::compute_JK()
     if (do_J_ || do_K_) {
         std::vector<boost::shared_ptr<TwoBodyAOInt> > ints;
         for (int thread = 0; thread < df_ints_num_threads_; thread++) {
-            ints.push_back(boost::shared_ptr<TwoBodyAOInt>(factory->eri()));
+            ints.push_back(boost::shared_ptr<TwoBodyAOInt>(factory->erd_eri()));
         }
         if (do_J_ && do_K_) {
             build_JK(ints,D_ao_,J_ao_,K_ao_);
@@ -2019,7 +2019,8 @@ void DirectJK::build_JK(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints,
             //printf("Quartet: %2d %2d %2d %2d\n", P, Q, R, S);
 
             //if (thread == 0) timer_on("JK: Ints");
-            ints[thread]->compute_shell(P,Q,R,S);
+            if(ints[thread]->compute_shell(P,Q,R,S) == 0)
+                continue; // No integrals in this shell quartet
             computed_shells++;
             //if (thread == 0) timer_off("JK: Ints");
 
@@ -5708,7 +5709,7 @@ void DirectJK::preiterations()
     factory_= boost::shared_ptr<IntegralFactory>(new IntegralFactory(primary_,primary_,primary_,primary_));
     eri_.clear();
     for (int thread = 0; thread < omp_nthread_; thread++) {
-        eri_.push_back(boost::shared_ptr<TwoBodyAOInt>(factory_->eri()));
+        eri_.push_back(boost::shared_ptr<TwoBodyAOInt>(factory_->erd_eri()));
     }
 }
 void DirectJK::compute_JK()
@@ -5720,7 +5721,8 @@ void DirectJK::compute_JK()
     for (int R = 0; R < primary_->nshell(); ++R) {
     for (int S = 0; S < primary_->nshell(); ++S) {
 
-        eri_[0]->compute_shell(M,N,R,S);
+        if(eri_[0]->compute_shell(M,N,R,S) == 0)
+            continue; // No integrals were computed here
 
         int nM = primary_->shell(M).nfunction();
         int nN = primary_->shell(N).nfunction();

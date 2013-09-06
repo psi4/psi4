@@ -105,6 +105,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
   /*- PSI4 dies if energy does not converge. !expert -*/
   options.add_bool("DIE_IF_NOT_CONVERGED", true);
+  /*- Integral package to use. If compiled with ERD support, ERD is used where possible; LibInt is used otherwise. -*/
+  options.add_str("INTEGRAL_PACKAGE", "ERD", "ERD LIBINT");
 
   /*- Base filename for text files written by PSI, such as the
   MOLDEN output file, the Hessian file, the internal coordinate file,
@@ -810,18 +812,25 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("PB_LAMBDA",1E5);
     /*- Fork pathway, until I properly subclass these things -*/
     options.add_str("DFT_SAPT_TYPE", "SAPT0", "SAPT0 DFT-SAPT");
+
     /*- Relative convergence in orbital localization -*/
     options.add_double("LOCAL_CONVERGENCE",1.0E-12);
     /*- Maximum iterations in localization -*/
     options.add_int("LOCAL_MAXITER", 50);
     /*- Localization algorithm -*/
     options.add_str("LOCAL_TYPE", "BOYS", "BOYS PIPEK_MEZEY");
-    /*- The name of the monomer-local electrostatics auxiliary basis set -*/
-    options.add_str("DF_BASIS_ELST", "");
-    /*- The name of the monomer-local electrostatics primary basis set -*/
-    options.add_str("BASIS_ELST", "");
-    /*- ASAPT Atomic population type -*/
-    options.add_str("ASAPT_POPULATION_TYPE", "LOWDIN", "MULLIKEN LOWDIN");
+
+    /*- ISA convergence criterion -*/
+    options.add_double("ISA_CONVERGENCE",1.0E-6);
+    /*- Maximum iterations in ISA -*/
+    options.add_int("ISA_MAXITER", 50);
+    /*- Do use DIIS extrapolation to accelerate ISA convergence? -*/
+    options.add_bool("ISA_DIIS", true);
+    /*- Minimum number of error vectors stored for ISA DIIS extrapolation -*/
+    options.add_int("ISA_DIIS_MIN_VECS", 2);
+    /*- Maximum number of error vectors stored for ISA DIIS extrapolation -*/
+    options.add_int("ISA_DIIS_MAX_VECS", 5);
+
     /*- ASAPT analysis tasking -*/
     options.add("ASAPT_TASKS", new ArrayType());
     /*- Do ASAPT exchange scaling? (ratio of S^\infty to S^2) -*/
@@ -830,12 +839,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("ASAPT_IND_SCALE", true);
     /*- Do ASAPT coupled response? (not recommended) -*/
     options.add_bool("ASAPT_IND_RESPONSE", false);
+    /*- Do ASAPT core-valence localization separation? -*/
+    options.add_bool("ASAPT_SEPARATE_CORE", true);
     /*- Voxel ASAPT density saturation (for uniform transfer functions) -*/
     options.add_double("ASAPT_DENSITY_CLAMP", 0.5);
+    /*- Voxel ASAPT orbital saturation (for uniform transfer functions) -*/
+    options.add_double("ASAPT_ORBITAL_CLAMP", 0.5);
     /*- Voxel ASAPT energy saturation (for uniform transfer functions) -*/
     options.add_double("ASAPT_ENERGY_CLAMP", 0.005);
-    /*- Voxel ASAPT Gaussian scale for electrostatics (larger => tigher Gaussians) -*/
-    options.add_double("ASAPT_GAUSSIAN_SCALE", 2.0);
     /*- ASAPT minimum grid overages in bohr (LX, LY, LZ) -*/
     options.add("CUBIC_GRID_OVERAGE", new ArrayType());
     /*- ASAPT voxel spacing in bohr (DX, DY, DZ) -*/

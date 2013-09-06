@@ -102,6 +102,11 @@ protected:
     /// Map of value names to Vectors containing values
     std::map<std::string, boost::shared_ptr<Vector> > point_values_;
 
+    // => Orbital Collocation <= //
+
+    /// Map of value names to Matrices containing values
+    std::map<std::string, boost::shared_ptr<Matrix> > orbital_values_;
+
 public:
     // => Constructors <= //
 
@@ -116,7 +121,7 @@ public:
 
     boost::shared_ptr<Vector> point_value(const std::string& key);
     std::map<std::string, SharedVector>& point_values() { return point_values_; }
-
+    
     virtual std::vector<SharedMatrix> scratch() = 0;
     virtual std::vector<SharedMatrix> D_scratch() = 0;
 
@@ -128,6 +133,14 @@ public:
     virtual void set_pointers(SharedMatrix Da_occ_AO) = 0; 
     virtual void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Db_occ_AO) = 0;
 
+    // => Orbital Collocation <= //
+
+    boost::shared_ptr<Matrix> orbital_value(const std::string& key);
+    std::map<std::string, SharedMatrix>& orbital_values() { return orbital_values_; }
+
+    virtual void compute_orbitals(boost::shared_ptr<BlockOPoints> block) = 0;
+    virtual void set_Cs(SharedMatrix Cocc) = 0;
+    virtual void set_Cs(SharedMatrix Caocc, SharedMatrix Cbocc) = 0;
 }; 
 
 class RKSFunctions : public PointFunctions {
@@ -150,6 +163,13 @@ protected:
     /// Allocate registers
     void allocate();
 
+    // => Orbital Collocation <= //
+
+    /// Orbital coefficients, AO
+    SharedMatrix C_AO_;
+    /// Orbital coefficeints, local AO
+    SharedMatrix C_local_;
+
 public:
     RKSFunctions(boost::shared_ptr<BasisSet> primary, int max_points, int max_functions);
     virtual ~RKSFunctions();
@@ -163,6 +183,10 @@ public:
     std::vector<SharedMatrix> D_scratch();
 
     void print(FILE* out = outfile, int print = 2) const;
+
+    void compute_orbitals(boost::shared_ptr<BlockOPoints> block);
+    void set_Cs(SharedMatrix Cocc);
+    void set_Cs(SharedMatrix Caocc, SharedMatrix Cbocc);
 };
 
 class UKSFunctions : public PointFunctions {
@@ -190,6 +214,17 @@ protected:
     void build_temps();
     /// Allocate registers
     void allocate();
+    
+    // => Orbital Collocation <= //
+
+    /// Orbital coefficients, AO
+    SharedMatrix Ca_AO_;
+    /// Orbital coefficients, AO
+    SharedMatrix Cb_AO_;
+    /// Orbital coefficeints, local AO
+    SharedMatrix Ca_local_;
+    /// Orbital coefficeints, local AO
+    SharedMatrix Cb_local_;
 
 public:
     UKSFunctions(boost::shared_ptr<BasisSet> primary, int max_points, int max_functions);
@@ -204,6 +239,10 @@ public:
     std::vector<SharedMatrix> D_scratch();
 
     void print(FILE* out = outfile, int print = 2) const;
+
+    void compute_orbitals(boost::shared_ptr<BlockOPoints> block);
+    void set_Cs(SharedMatrix Cocc);
+    void set_Cs(SharedMatrix Caocc, SharedMatrix Cbocc);
 };
 
 
