@@ -32,6 +32,7 @@ namespace psi {
 class JK;
 class Options;
 class Tensor;
+class AtomicDensity;
 
 namespace dftsapt {
 
@@ -112,6 +113,15 @@ protected:
     boost::shared_ptr<Matrix> Cavir_A_;
     // Monomer B C matrix (active vir)
     boost::shared_ptr<Matrix> Cavir_B_;
+
+    // Monomer A C matrix (frozen occ)
+    boost::shared_ptr<Matrix> Cfocc_A_;
+    // Monomer B C matrix (frozen occ)
+    boost::shared_ptr<Matrix> Cfocc_B_;
+    // Monomer A C matrix (frozen vir)
+    boost::shared_ptr<Matrix> Cfvir_A_;
+    // Monomer B C matrix (frozen vir)
+    boost::shared_ptr<Matrix> Cfvir_B_;
 
     // Monomer A eps vector (active occ)
     boost::shared_ptr<Vector> eps_aocc_A_;
@@ -241,26 +251,19 @@ friend class DFTSAPT;
     // Local analysis and visualization helper
     boost::shared_ptr<ASAPTVis> vis_;
 
-    // Local orbital population type
-    std::string population_type_;
     // Exchange scaling trick?
     bool exch_scale_;
     // Induction scaling trick?
     bool ind_scale_;
     // Induction response?
     bool ind_resp_;
+    // Separate core and valence?
+    bool sep_core_;
 
     // 3-index tensors
     std::map<std::string, boost::shared_ptr<Tensor> > tensors_;
 
-    // Monomer electrostatics evaluation basis
-    boost::shared_ptr<BasisSet> elst_primary_A_; 
-    // Monomer electrostatics evaluation basis
-    boost::shared_ptr<BasisSet> elst_primary_B_; 
-    // Monomer A occupied C matric
-    boost::shared_ptr<Matrix> elst_Cocc_A_;
-    // Monomer B occupied C matric
-    boost::shared_ptr<Matrix> elst_Cocc_B_;
+    // => Electronic Response Localization <= //
     
     // Localized occupied orbitals of monomer A (n x a)
     boost::shared_ptr<Matrix> Locc_A_;
@@ -271,20 +274,29 @@ friend class DFTSAPT;
     // Localization transformation for monomer B (b x \bar b)
     boost::shared_ptr<Matrix> Uocc_B_;
 
-    // Local occupied orbital atomic population (renormalized) of monomer A (A x a)
+    // Local occupied orbital atomic population of monomer A (A x a)
     boost::shared_ptr<Matrix> Q_A_;
-    // Local occupied orbital atomic population (renormalized) of monomer B (B x b)
+    // Local occupied orbital atomic population of monomer B (B x b)
     boost::shared_ptr<Matrix> Q_B_;
-    // Molecular occupied orbital atomic assignment (renormalized) of monomer A (A x a)
+    // Molecular occupied orbital atomic assignment of monomer A (A x a)
     boost::shared_ptr<Matrix> R_A_;
-    // Molecular occupied orbital atomic assignment (renormalized) of monomer B (B x b)
+    // Molecular occupied orbital atomic assignment of monomer B (B x b)
     boost::shared_ptr<Matrix> R_B_;
+
+    // => Electrostatic Localization <= //
+
+    // ISA partition for monomer A
+    boost::shared_ptr<AtomicDensity> atomic_A_;
+    // ISA partition for monomer B
+    boost::shared_ptr<AtomicDensity> atomic_B_;
 
     // Print author/sizing/spec info
     virtual void print_header() const;
     // Obligatory
     virtual void print_trailer();
 
+    // Compute the atomic density partition
+    void atomize();
     // Compute L and U according to Localizer algorithm and tolerances
     void localize(); 
     // Compute Q and R
@@ -311,9 +323,7 @@ public:
     // Factory constructor, call this with 5 converged SCF jobs (dimer, monomer A, monomer B, electrostatics A, electrostatics B)
     static boost::shared_ptr<ASAPT> build(boost::shared_ptr<Wavefunction> d,
                                           boost::shared_ptr<Wavefunction> mA,
-                                          boost::shared_ptr<Wavefunction> mB,
-                                          boost::shared_ptr<Wavefunction> eA,
-                                          boost::shared_ptr<Wavefunction> eB);
+                                          boost::shared_ptr<Wavefunction> mB);
 };
 
 class CPKS_SAPT {

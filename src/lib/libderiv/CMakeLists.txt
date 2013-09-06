@@ -23,7 +23,6 @@ foreach(abcval ${ABC})
     endforeach()
 endforeach()
 add_library(deriv STATIC ${LD_SRC})
-add_dependencies(deriv int)
 
 #
 # Build the compiler
@@ -31,6 +30,7 @@ add_dependencies(deriv int)
 set(COMPILER_SRC build_libderiv.c emit_d1hrr_build_macro.c emit_deriv1_managers.c emit_deriv_build_macro.c
                  emit_d1hrr_build.c emit_deriv12_managers.c emit_deriv_build.c mem_man.c)
 add_executable(libderiv_compiler ${COMPILER_SRC})
+add_dependencies(libderiv_compiler int)
 
 #
 # Generate the libderiv files, after building the compiler, only if libderiv.compiled doesn't exist

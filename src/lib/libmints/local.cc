@@ -92,6 +92,8 @@ boost::shared_ptr<Matrix> Localizer::fock_update(boost::shared_ptr<Matrix> Fc)
     int nso = L_->rowspi()[0];
     int nmo = L_->colspi()[0];
 
+    if (nmo < 1) return Fc;
+
     boost::shared_ptr<Matrix> Fl = Matrix::triplet(U_, Fc, U_, true, false, false);
     double** Fp = Fl->pointer();
     double** Lp = L_->pointer();
@@ -180,8 +182,11 @@ void BoysLocalizer::localize()
     
     L_ = boost::shared_ptr<Matrix>(new Matrix("L",nso,nmo)); 
     U_ = boost::shared_ptr<Matrix>(new Matrix("U",nmo,nmo)); 
+    L_->copy(C_);
     U_->identity();
     converged_ = false;
+
+    if (nmo < 1) return;
 
     // => Pointers <= //
 
@@ -380,6 +385,8 @@ void PMLocalizer::localize()
     L_->copy(C_);
     U_->identity();
     converged_ = false;
+
+    if (nmo < 1) return;
 
     // => Pointers <= //
 
