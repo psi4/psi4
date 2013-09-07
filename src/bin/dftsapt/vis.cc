@@ -684,6 +684,8 @@ void CubicDensityGrid::drop_raw(const std::string& file, double clamp, double* v
     double s = 1.0 / clamp;
     double maxval = 0.0;
 
+    //double total = 0.0;
+
     float* v2 = new float[npoints_];
     size_t offset = 0L;
     for (int istart = 0L; istart <= N_[0]; istart+=nxyz_) {
@@ -698,6 +700,7 @@ void CubicDensityGrid::drop_raw(const std::string& file, double clamp, double* v
                             size_t index = i * (N_[1] + 1L) * (N_[2] + 1L) + j * (N_[2] + 1L) + k;
                             double val = v[offset];
                             maxval = (maxval >= fabs(val) ? maxval : fabs(val));
+                            //total += val;
                             val = (val <= clamp ? val : clamp);
                             val = (val >= -clamp ? val : -clamp);
                             val *= s;
@@ -711,6 +714,9 @@ void CubicDensityGrid::drop_raw(const std::string& file, double clamp, double* v
     }
 
     fprintf(outfile,"    Max val = %11.3E out of %11.3E: %s.\n", maxval, clamp, (clamp >= maxval ? "No clamping" : "Clamped")); 
+
+    //total *= D_[0] * D_[1] * D_[2];
+    //fprintf(outfile,"    Integral value is %24.16E\n", total);
 
     //Dirty Hack: I love it!
     v2[npoints_-1L] =  0.0;
