@@ -298,7 +298,7 @@ void StockholderDensity::compute(boost::shared_ptr<Matrix> D)
                 offset += spheres[A][R]->npoints();
             }
         }
-        
+
         // Spherical averaging
         for (int A = 0; A < Q.size(); A++) {
             for (int R = 0; R < Q[A].size(); R++) { 
@@ -461,16 +461,21 @@ void StockholderDensity::compute_weights(int nP, double* xp, double* yp, double*
             const std::vector<double>& wv = ws_[A];
             int nR = rv.size();
 
-            // Too close inside or outside
-            if (R < rv[0] || R > rv[nR-1]) continue;
-
             // Root solving to determine window (log-transformed Regula Falsi/Illinois, like a ninja)
             int ind = 0;
             double lR = log(R);
-            if (R == rv[0]) {
-                ind = 0; 
-            } else if (R == rv[nR - 1]) {
-                ind = nR - 2;
+            if (R <= rv[0]) {
+                if (fabs(R - rv[0]) < 1.0E-12 * rv[0]) {
+                    ind = 0; // Within epsilon of the inside shell
+                } else {
+                    continue; // Too close inside
+                }
+            } else if (R >= rv[nR - 1]) {
+                if (fabs(R - rv[nR - 1]) < 1.0E-12 * rv[nR - 1]) {
+                    ind = nR - 2; // Within epsilon of the outside shell
+                } else {
+                    continue; // Too far outside
+                }
             } else {
                 double dl = lv[0] - lR; // Negative
                 double dr = lv[nR - 1] - lR; // Positive
