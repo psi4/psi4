@@ -137,6 +137,8 @@ protected:
     int diis_min_vecs_; 
     /// Maximum DIIS subspace size?
     int diis_max_vecs_; 
+    /// Number of iterations between flushes
+    int diis_flush_;
 
     // => State variables <= //
 

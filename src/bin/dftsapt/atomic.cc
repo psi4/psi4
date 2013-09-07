@@ -58,6 +58,7 @@ boost::shared_ptr<AtomicDensity> AtomicDensity::build(const std::string& type, b
         isa->diis_ = options.get_bool("ISA_DIIS");
         isa->diis_min_vecs_ = options.get_int("ISA_DIIS_MIN_VECS");
         isa->diis_max_vecs_ = options.get_int("ISA_DIIS_MAX_VECS");
+        isa->diis_flush_ = options.get_int("ISA_DIIS_FLUSH");
         target = static_cast<AtomicDensity*>(isa); 
     } else {
         throw PSIEXCEPTION("AtomicDensity::build: Unrecognized Atomic Density Type");
@@ -274,12 +275,16 @@ void StockholderDensity::compute(boost::shared_ptr<Matrix> D)
     fprintf(outfile, "    DIIS:               %11s\n", (diis_ ? "Yes" : "No"));
     fprintf(outfile, "    DIIS Min Vecs:      %11d\n", diis_min_vecs_);
     fprintf(outfile, "    DIIS Max Vecs:      %11d\n", diis_max_vecs_);
+    fprintf(outfile, "    DIIS Flush Vecs:    %11d\n", diis_flush_);
     fprintf(outfile, "\n");
     fflush(outfile);
 
     bool converged = false;
-    for (int iter = 0; iter <= maxiter_; iter++) {
+    for (int iter = 0, diis_iter = 0; iter <= maxiter_; iter++) {
 
+        // Checkpoint last iteration
+        ws_old = ws_;
+    
         // Needed atomic weights
         int offset = 0;
         for (int A = 0; A < nA2; A++) {
@@ -316,14 +321,11 @@ void StockholderDensity::compute(boost::shared_ptr<Matrix> D)
         std::vector<std::vector<double> > dws = ws_;
         for (int A = 0; A < ws_.size(); A++) {
             for (int R = 0; R < ws_[A].size(); R++) {
-                dws[A][R] = ws_[A][R] - ws_old[A][R];
-                norm += abs(dws[A][R]) * rs_[A][R] * rs_[A][R];
+                dws[A][R] = (ws_[A][R] - ws_old[A][R]) * rs_[A][R] * rs_[A][R];
+                norm += abs(dws[A][R]);
             }
         }
 
-        // Checkpoint last iteration
-        ws_old = ws_;
-    
         // Print iterative trace
         fprintf(outfile,"    @ISA Iter %4d %24.16E ", iter, norm);
         fflush(outfile);
@@ -335,26 +337,35 @@ void StockholderDensity::compute(boost::shared_ptr<Matrix> D)
             break; 
         }
 
+        // Periodically flush the DIIS subspace
+        if (diis_ && iter > 0 && iter % diis_flush_ == 0) {
+            diis_manager->reset_subspace();
+            diis_iter = 0;
+        }
+
         // DIIS Add
         if (diis_ && iter > 0) {
             int offset2 = 0;
             for (int A = 0; A < ws_.size(); A++) {
                 for (int R = 0; R < ws_[A].size(); R++) {
-                    statep[0][offset2] = ws_[A][R];
+                    statep[0][offset2] = (ws_[A][R] == 0.0 ? -std::numeric_limits<double>::infinity() : log(ws_[A][R]));
+                    //statep[0][offset2] = ws_[A][R];
                     errorp[0][offset2] = dws[A][R];
                     offset2++;
                 }
             }
             diis_manager->add_entry(2,error.get(),state.get());
+            diis_iter++;
         }
 
         // DIIS Extrapolate
-        if (diis_ && iter >= diis_min_vecs_) {
+        if (diis_ && diis_iter >= diis_min_vecs_) {
             diis_manager->extrapolate(1,state.get());
             int offset2 = 0;
             for (int A = 0; A < ws_.size(); A++) {
                 for (int R = 0; R < ws_[A].size(); R++) {
-                    ws_[A][R] = statep[0][offset2];
+                    ws_[A][R] = exp(statep[0][offset2]);
+                    //ws_[A][R] = statep[0][offset2];
                     offset2++;
                 }
             }
@@ -365,6 +376,8 @@ void StockholderDensity::compute(boost::shared_ptr<Matrix> D)
         fflush(outfile);
  
     }
+
+    diis_manager->delete_diis_file();
 
     fprintf(outfile,"\n");
     if (converged) { 

@@ -829,7 +829,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Minimum number of error vectors stored for ISA DIIS extrapolation -*/
     options.add_int("ISA_DIIS_MIN_VECS", 2);
     /*- Maximum number of error vectors stored for ISA DIIS extrapolation -*/
-    options.add_int("ISA_DIIS_MAX_VECS", 5);
+    options.add_int("ISA_DIIS_MAX_VECS", 6);
+    /*- Maximum number of vectors between subspace flushes -*/ 
+    options.add_int("ISA_DIIS_FLUSH", 10);
 
     /*- ASAPT analysis tasking -*/
     options.add("ASAPT_TASKS", new ArrayType());
