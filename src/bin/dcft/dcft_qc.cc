@@ -384,7 +384,7 @@ void DCFTSolver::form_idps(){
         for(int h = 0; h < nirrep_; ++h){
             global_dpd_->buf4_mat_irrep_init(&R, h);
             global_dpd_->buf4_mat_irrep_rd(&R, h);
-            #pragma omp parallel for
+            //#pragma omp parallel for
             for(size_t ij = 0; ij < R.params->rowtot[h]; ++ij){
                 size_t i = R.params->roworb[h][ij][0];
                 int isym = R.params->psym[i];
@@ -422,7 +422,7 @@ void DCFTSolver::form_idps(){
         for(int h = 0; h < nirrep_; ++h){
             global_dpd_->buf4_mat_irrep_init(&R, h);
             global_dpd_->buf4_mat_irrep_rd(&R, h);
-            #pragma omp parallel for
+            //#pragma omp parallel for
             for(size_t ij = 0; ij < R.params->rowtot[h]; ++ij){
                 size_t i = R.params->roworb[h][ij][0];
                 int isym = R.params->psym[i];
@@ -460,7 +460,7 @@ void DCFTSolver::form_idps(){
         for(int h = 0; h < nirrep_; ++h){
             global_dpd_->buf4_mat_irrep_init(&R, h);
             global_dpd_->buf4_mat_irrep_rd(&R, h);
-            #pragma omp parallel for
+            //#pragma omp parallel for
             for(size_t ij = 0; ij < R.params->rowtot[h]; ++ij){
                 size_t i = R.params->roworb[h][ij][0];
                 int isym = R.params->psym[i];
@@ -1582,7 +1582,7 @@ DCFTSolver::compute_sigma_vector_cum_orb() {
     global_dpd_->file2_mat_init(&DIsym);
     global_dpd_->file2_mat_rd(&DI);
     for(int h = 0; h < nirrep_; ++h){
-        #pragma omp parallel for
+        //#pragma omp parallel for
         for(int i = 0 ; i < naoccpi_[h]; ++i){
             for(int j = 0 ; j <= i; ++j){
                 DIsym.matrix[h][i][j] = DIsym.matrix[h][j][i] = DI.matrix[h][i][j] + DI.matrix[h][j][i];
@@ -1600,7 +1600,7 @@ DCFTSolver::compute_sigma_vector_cum_orb() {
     global_dpd_->file2_mat_init(&DIsym);
     global_dpd_->file2_mat_rd(&DI);
     for(int h = 0; h < nirrep_; ++h){
-        #pragma omp parallel for
+        //#pragma omp parallel for
         for(int i = 0 ; i < nboccpi_[h]; ++i){
             for(int j = 0 ; j <= i; ++j){
                 DIsym.matrix[h][i][j] = DIsym.matrix[h][j][i] = DI.matrix[h][i][j] + DI.matrix[h][j][i];
@@ -1618,7 +1618,7 @@ DCFTSolver::compute_sigma_vector_cum_orb() {
     global_dpd_->file2_mat_init(&DIsym);
     global_dpd_->file2_mat_rd(&DI);
     for(int h = 0; h < nirrep_; ++h){
-        #pragma omp parallel for
+        //#pragma omp parallel for
         for(int i = 0 ; i < navirpi_[h]; ++i){
             for(int j = 0 ; j <= i; ++j){
                 DIsym.matrix[h][i][j] = DIsym.matrix[h][j][i] = DI.matrix[h][i][j] + DI.matrix[h][j][i];
@@ -1636,7 +1636,7 @@ DCFTSolver::compute_sigma_vector_cum_orb() {
     global_dpd_->file2_mat_init(&DIsym);
     global_dpd_->file2_mat_rd(&DI);
     for(int h = 0; h < nirrep_; ++h){
-        #pragma omp parallel for
+        //#pragma omp parallel for
         for(int i = 0 ; i < nbvirpi_[h]; ++i){
             for(int j = 0 ; j <= i; ++j){
                 DIsym.matrix[h][i][j] = DIsym.matrix[h][j][i] = DI.matrix[h][i][j] + DI.matrix[h][j][i];
@@ -1997,7 +1997,7 @@ DCFTSolver::update_cumulant_nr() {
     for(int h = 0; h < nirrep_; ++h){
         global_dpd_->buf4_mat_irrep_init(&L, h);
         global_dpd_->buf4_mat_irrep_rd(&L, h);
-        #pragma omp parallel for
+        //#pragma omp parallel for
         for(size_t ij = 0; ij < L.params->rowtot[h]; ++ij){
             for(size_t ab = 0; ab < L.params->coltot[h]; ++ab){
                 if (lookup_cumulant_[cumulant_address]) {
@@ -2018,7 +2018,7 @@ DCFTSolver::update_cumulant_nr() {
     for(int h = 0; h < nirrep_; ++h){
         global_dpd_->buf4_mat_irrep_init(&L, h);
         global_dpd_->buf4_mat_irrep_rd(&L, h);
-        #pragma omp parallel for
+        //#pragma omp parallel for
         for(size_t ij = 0; ij < L.params->rowtot[h]; ++ij){
             for(size_t ab = 0; ab < L.params->coltot[h]; ++ab){
                 if (lookup_cumulant_[cumulant_address]) {
@@ -2039,7 +2039,7 @@ DCFTSolver::update_cumulant_nr() {
     for(int h = 0; h < nirrep_; ++h){
         global_dpd_->buf4_mat_irrep_init(&L, h);
         global_dpd_->buf4_mat_irrep_rd(&L, h);
-        #pragma omp parallel for
+        //#pragma omp parallel for
         for(size_t ij = 0; ij < L.params->rowtot[h]; ++ij){
             for(size_t ab = 0; ab < L.params->coltot[h]; ++ab){
                 if (lookup_cumulant_[cumulant_address]) {
