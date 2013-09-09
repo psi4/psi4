@@ -124,32 +124,33 @@ OneBodyAOInt* OneBodyAOInt::clone()
 
 void OneBodyAOInt::normalize_am(const GaussianShell& s1, const GaussianShell& s2, int nchunk)
 {
-    // Integrals are done. Normalize for angular momentum
-    int am1 = s1.am();
-    int am2 = s2.am();
-    int length = INT_NCART(am1) * INT_NCART(am2);
+    // ACS removed this; the normalize function just returns 1.0
+//    // Integrals are done. Normalize for angular momentum
+//    int am1 = s1.am();
+//    int am2 = s2.am();
+//    int length = INT_NCART(am1) * INT_NCART(am2);
 
-    int ao12 = 0;
-    for(int ii = 0; ii <= am1; ii++) {
-        int l1 = am1 - ii;
-        for(int jj = 0; jj <= ii; jj++) {
-            int m1 = ii - jj;
-            int n1 = jj;
-            /*--- create all am components of sj ---*/
-            for(int kk = 0; kk <= am2; kk++) {
-                int l2 = am2 - kk;
-                for(int ll = 0; ll <= kk; ll++) {
-                    int m2 = kk - ll;
-                    int n2 = ll;
+//    int ao12 = 0;
+//    for(int ii = 0; ii <= am1; ii++) {
+//        int l1 = am1 - ii;
+//        for(int jj = 0; jj <= ii; jj++) {
+//            int m1 = ii - jj;
+//            int n1 = jj;
+//            /*--- create all am components of sj ---*/
+//            for(int kk = 0; kk <= am2; kk++) {
+//                int l2 = am2 - kk;
+//                for(int ll = 0; ll <= kk; ll++) {
+//                    int m2 = kk - ll;
+//                    int n2 = ll;
 
-                    for (int chunk=0; chunk<nchunk; ++chunk) {
-                        buffer_[ao12+(chunk*length)] *= GaussianShell::normalize(l1, m1, n1) * GaussianShell::normalize(l2, m2, n2);
-                    }
-                    ao12++;
-                }
-            }
-        }
-    }
+//                    for (int chunk=0; chunk<nchunk; ++chunk) {
+//                        buffer_[ao12+(chunk*length)] *= GaussianShell::normalize(l1, m1, n1) * GaussianShell::normalize(l2, m2, n2);
+//                    }
+//                    ao12++;
+//                }
+//            }
+//        }
+//    }
 }
 
 void OneBodyAOInt::pure_transform(const GaussianShell& s1,
