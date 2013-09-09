@@ -557,8 +557,8 @@ void BasisFunctions::compute_functions(boost::shared_ptr<BlockOPoints> block)
             int L         = Qshell.am();
             int nQ        = Qshell.nfunction();
             int nprim     = Qshell.nprimitive();
-            const std::vector<double>& alpha = Qshell.exps();
-            const std::vector<double>& norm  = Qshell.coefs();
+            const double *alpha = Qshell.exps();
+            const double *norm  = Qshell.coefs();
 
             const std::vector<boost::tuple<int,int,double> >& transform = spherical_transforms_[L];
 
@@ -638,8 +638,8 @@ void BasisFunctions::compute_functions(boost::shared_ptr<BlockOPoints> block)
             int L         = Qshell.am();
             int nQ        = Qshell.nfunction();
             int nprim     = Qshell.nprimitive();
-            const std::vector<double>& alpha = Qshell.exps();
-            const std::vector<double>& norm  = Qshell.coefs();
+            const double *alpha = Qshell.exps();
+            const double *norm  = Qshell.coefs();
 
             const std::vector<boost::tuple<int,int,double> >& transform = spherical_transforms_[L];
 
@@ -763,8 +763,8 @@ void BasisFunctions::compute_functions(boost::shared_ptr<BlockOPoints> block)
             int L         = Qshell.am();
             int nQ        = Qshell.nfunction();
             int nprim     = Qshell.nprimitive();
-            const std::vector<double>& alpha = Qshell.exps();
-            const std::vector<double>& norm  = Qshell.coefs();
+            const double *alpha = Qshell.exps();
+            const double *norm  = Qshell.coefs();
 
             const std::vector<boost::tuple<int,int,double> >& transform = spherical_transforms_[L];
 

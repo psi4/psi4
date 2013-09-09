@@ -84,12 +84,13 @@ BasisSet::BasisSet()
 }
 
 boost::shared_ptr<BasisSet> BasisSet::build(boost::shared_ptr<Molecule> molecule,
-                                            const std::vector<GaussianShell>& shells)
+                                            const std::vector<ShellInfo>& shells)
 {
+    //TODO fixme!!!
     boost::shared_ptr<BasisSet> basis(new BasisSet());
-    basis->molecule_ = molecule;
-    basis->shells_ = shells;
-    basis->refresh();
+//    basis->molecule_ = molecule;
+//    basis->shells_ = shells;
+//    basis->refresh();
 
     return basis;
 }
@@ -309,16 +310,8 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
         const boost::shared_ptr<Molecule>& mol,
         const std::string& type)
 {
-    boost::shared_ptr<BasisSet> basisset(new BasisSet);
-
     // Update geometry in molecule, if there is a problem an exception is thrown.
     mol->update_geometry();
-
-    // Set the default name to just the type
-    basisset->set_name(type);
-
-    // Assign the molecule to the basis set
-    basisset->molecule_ = mol;
 
     // For each one try to load the basis set
     const list<string>& user_list = Process::environment.user_basis_files;
@@ -424,6 +417,15 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
     //    }
     //}
 
+    boost::shared_ptr<BasisSet> basisset(new BasisSet(type, mol, basis_atom_shell));
+
+//    // Set the default name to just the type
+//    basisset->set_name(type);
+
+//    // Assign the molecule to the basis set
+//    basisset->molecule_ = mol;
+
+    //TODO ACS is this still needed?
     // This step is very important. Without it the basis set is useless.
     basisset->refresh();
 
@@ -442,13 +444,20 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
 
 BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
                    std::map<std::string, std::map<std::string, std::vector<ShellInfo> > > &shell_map):
-    molecule_(mol)
+    molecule_(mol),
+    name_(basistype)
 {
+    // Singletons
+    if (initialized_shared_ == false)
+        initialize_singletons();
+    initialized_shared_ = true;
+
     int natom = molecule_->natom();
     int nunique = molecule_->nunique();
 
-    /// This will tell us where the primitives for [basis][symbol] start, in the compact array
-    std::map<std::string, std::map<std::string, int > >::iterator  primitive_offsets;
+    /// These will tell us where the primitives for [basis][symbol] start and end, in the compact array
+    std::map<std::string, std::map<std::string, int > >  primitive_start;
+    std::map<std::string, std::map<std::string, int > >  primitive_end;
 
     /*
      * First, loop over the unique primitives, and store them
@@ -465,7 +474,8 @@ BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
         for(symbol_iter = symbol_map.begin(); symbol_iter != symbol_map.end(); ++symbol_iter){
             const std::string &symbol = symbol_iter->first;
             vector<ShellInfo>& shells = symbol_map[symbol];
-            primitive_offsets[basis][symbol] = n_uprimitive_;
+            primitive_start[basis][symbol] = n_uprimitive_;
+            fprintf(outfile, "BAsis start %d basis %s symbol %s\n", n_uprimitive_, basis.c_str(), symbol.c_str());
             for (int i=0; i<shells.size(); ++i) {
                 const ShellInfo &shell = shells[i];
                 for(int prim = 0; prim < shell.nprimitive(); ++prim){
@@ -475,6 +485,8 @@ BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
                     n_uprimitive_++;
                 }
             }
+            fprintf(outfile, "BAsis end %d basis %s symbol %s\n", n_uprimitive_, basis.c_str(), symbol.c_str());
+            primitive_end[basis][symbol] = n_uprimitive_;
         }
     }
 
@@ -487,9 +499,8 @@ BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
     nprimitive_ = 0;
     nao_ = 0;
     nbf_ = 0;
-    for (int n=0; n < nunique; ++n) {
-        const boost::shared_ptr<CoordEntry> &atom = molecule_->atom_entry(molecule_->unique(n));
-        int nequivalent = molecule_->nequivalent(n);
+    for (int n=0; n < natom; ++n) {
+        const boost::shared_ptr<CoordEntry> &atom = molecule_->atom_entry(n);
         string basis = atom->basisset(basistype);
         string symbol = atom->symbol();
         vector<ShellInfo>& shells = shell_map[basis][symbol];
@@ -497,9 +508,9 @@ BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
             const ShellInfo &shell = shells[i];
             int nprim = shell.nprimitive();
             n_uprimitive_ += nprim;
-            nprimitive_ += nequivalent * nprim;
+            nprimitive_ += nprim;
             n_ushells_++;
-            n_shells_ += nequivalent;
+            n_shells_++;
             nao_ += shell.ncartesian();
             nbf_ += shell.nfunction();
         }
@@ -508,11 +519,7 @@ BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
     /*
      * Allocate arrays
      */
-    uatom_ushell_offsets_ = new int[molecule_->natom()];
-    uprimitive_offsets_ = new int[n_ushells_];
-    n_prim_per_ushell_ = new int[n_ushells_];
-
-
+    n_prim_per_shell_ = new int[n_ushells_];
     // The unique primitives
     uexponents_ = new double[n_uprimitive_];
     ucoefficients_ = new double[n_uprimitive_];
@@ -525,42 +532,14 @@ BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
 
     shell_first_ao_ = new int[n_shells_];
     shell_first_basis_function_ = new int[n_shells_];
+    shells_ = new GaussianShell[n_shells_];
     ao_to_shell_ = new int[nao_];
     function_to_shell_ = new int[nbf_];
     function_center_ = new int[nbf_];
     shell_center_ = new int[n_shells_];
     center_to_nshell_ = new int[natom];
     center_to_shell_ = new int[natom];
-
-    /*
-     * Copy basis set info into arrays
-     */
-    int uprimitive = 0;
-    int ushell = 0;
-    max_am_ = 0;
-    max_nprimitive_ = 0;
-    for (int n=0; n < nunique; ++n) {
-        const boost::shared_ptr<CoordEntry> &atom = molecule_->atom_entry(molecule_->unique(n));
-        string basis = atom->basisset(basistype);
-        string symbol = atom->symbol();
-        vector<ShellInfo>& shells = shell_map[basis][symbol];
-        puream_ = shells[0].is_pure();
-        uatom_ushell_offsets_[n] = ushell;
-        for (int i=0; i<shells.size(); ++i) {
-            const ShellInfo &shell = shells[i];
-            int nprim = shell.nprimitive();
-            uprimitive_offsets_[ushell] = uprimitive;
-            max_am_ = max_am_ > shell.am() ? max_am_ : shell.am();
-            max_nprimitive_ = max_nprimitive_ > shell.nprimitive() ? max_nprimitive_ : shell.nprimitive();
-            for(int prim = 0; prim > nprim; ++prim){
-                ucoefficients_[uprimitive] = shell.coef(prim);
-                uexponents_[uprimitive] = shell.exp(prim);
-                uprimitive++;
-            }
-            n_prim_per_ushell_[ushell];
-        }
-        ushell++;
-    }
+    xyz_ = new double[natom];
 
     /*
      * Now loop over all atoms, and point to the appropriate unique data
@@ -568,20 +547,33 @@ BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
     int shell = 0;
     int ao = 0;
     int bf = 0;
+    double *xyz_ptr = xyz_;
+    max_am_ = 0;
+    max_nprimitive_ = 0;
     for (int n = 0; n < natom; ++n) {
-        int unique_atom = molecule_->atom_to_unique(n);
         const boost::shared_ptr<CoordEntry> &atom = molecule_->atom_entry(molecule_->unique(n));
         string basis = atom->basisset(basistype);
         string symbol = atom->symbol();
         vector<ShellInfo>& shells = shell_map[basis][symbol];
+        int ustart = primitive_start[basis][symbol];
+        int uend = primitive_end[basis][symbol];
         int nshells = shells.size();
         center_to_nshell_[n] = nshells;
         center_to_shell_[n] = shell;
+        int atom_nprim = 0;
         for (int i = 0; i < nshells; ++i) {
             const ShellInfo &thisshell = shells[i];
             shell_first_ao_[shell] = ao;
             shell_first_basis_function_[shell] = bf;
+            int nprim = thisshell.nprimitive();
+            int am = thisshell.am();
+            max_nprimitive_ = nprim > max_nprimitive_ ? nprim : max_nprimitive_;
+            max_am_ = max_am_ > am ? max_am_ : am;
             shell_center_[shell] = n;
+            GaussianType puream = thisshell.is_pure() ? Pure : Cartesian;
+            fprintf(outfile, "atom %d basis %s shell %d nprim %d atom_nprim %d\n", n, basis.c_str(), i, nprim, atom_nprim);
+            shells_[shell] = GaussianShell(am, nprim, &uoriginal_coefficients_[ustart+atom_nprim],
+                    &ucoefficients_[ustart+atom_nprim], &uexponents_[ustart+atom_nprim], puream, n, xyz_ptr, bf);
             for(int thisbf = 0; thisbf < thisshell.nfunction(); ++thisbf){
                 function_to_shell_[bf] = shell;
                 function_center_[bf++] = n;
@@ -589,9 +581,21 @@ BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
             for(int thisao = 0; thisao < thisshell.ncartesian(); ++thisao){
                 ao_to_shell_[ao++] = shell;
             }
+            atom_nprim += nprim;
             shell++;
         }
+        Vector3 xyz = molecule_->xyz(n);
+        xyz_ptr[0] = xyz[0];
+        xyz_ptr[1] = xyz[1];
+        xyz_ptr[2] = xyz[2];
+        xyz_ptr += 3;
+        if(atom_nprim != uend-ustart){
+            fprintf(outfile, "nprim %d uend %d\n", atom_nprim, uend);
+            throw PSIEXCEPTION("Problem with nprimitive in basis set construction!");
+        }
     }
+    print_detail(outfile);
+//    exit(1);
 }
 
 std::string BasisSet::make_filename(const std::string& name)
@@ -899,104 +903,107 @@ std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > BasisSet::test
 
 boost::shared_ptr<BasisSet> BasisSet::atomic_basis_set(int center)
 {
-    //May only work in C1!!!!
-    //Construct a blank BasisSet on the heap
-    boost::shared_ptr<BasisSet> bas(new BasisSet);
-    //Construct a blank Molecule on the heap
-    boost::shared_ptr<Molecule> mol(new Molecule);
+      //TODO fixme!!
+//    //May only work in C1!!!!
+//    //Construct a blank BasisSet on the heap
+//    boost::shared_ptr<BasisSet> bas(new BasisSet);
+//    //Construct a blank Molecule on the heap
+//    boost::shared_ptr<Molecule> mol(new Molecule);
 
-    int Z = molecule_->Z(center);
-    double x = molecule_->x(center);
-    double y = molecule_->y(center);
-    double z = molecule_->z(center);
-    double mass = molecule_->mass(center);
-    double charge = molecule_->charge(center);
-    std::string lab = molecule_->label(center);
-    char* label = new char[lab.length() + 1];
-    strcpy(label,lab.c_str());
+//    int Z = molecule_->Z(center);
+//    double x = molecule_->x(center);
+//    double y = molecule_->y(center);
+//    double z = molecule_->z(center);
+//    double mass = molecule_->mass(center);
+//    double charge = molecule_->charge(center);
+//    std::string lab = molecule_->label(center);
+//    char* label = new char[lab.length() + 1];
+//    strcpy(label,lab.c_str());
 
-    //Put the atomic info into mol
-    mol->add_atom(Z, 0.0, 0.0, 0.0, label, mass, charge);
-    Vector3 v(0.0,0.0,0.0);
+//    //Put the atomic info into mol
+//    mol->add_atom(Z, 0.0, 0.0, 0.0, label, mass, charge);
+//    Vector3 v(0.0,0.0,0.0);
 
-    //Assign the atomic molecule to bas
-    bas->molecule_ = mol;
+//    //Assign the atomic molecule to bas
+//    bas->molecule_ = mol;
 
-    //Go through shells in current basis set
-    //Push shells that belong to center
-    //to bas
-    int current_shells = 0;
-    int shell_start = -1;
-    int ao_start = 0;
-    int so_start = 0;
-    for (int i = 0; i<nshell(); i++) {
-        if (shell_center_[i] < center) {
-            ao_start += shells_[i].ncartesian();
-            so_start += shells_[i].nfunction();
-        }
-        if (shell_center_[i] == center) {
-            if (shell_start == -1)
-                shell_start = i;
-            int nprm = shells_[i].nprimitive();
-            int am = shells_[i].am();
-            GaussianType harmonics = (shells_[i].is_pure() ? Pure : Cartesian);
-            int nc = 0; // In the atomic basis, always on the 0th atom
-            int start = 0; //Will be reset later
-            const std::vector<double>& e = shells_[i].exps();
-            const std::vector<double>& c = shells_[i].coefs();
+//    //Go through shells in current basis set
+//    //Push shells that belong to center
+//    //to bas
+//    int current_shells = 0;
+//    int shell_start = -1;
+//    int ao_start = 0;
+//    int so_start = 0;
+//    for (int i = 0; i<nshell(); i++) {
+//        if (shell_center_[i] < center) {
+//            ao_start += shells_[i].ncartesian();
+//            so_start += shells_[i].nfunction();
+//        }
+//        if (shell_center_[i] == center) {
+//            if (shell_start == -1)
+//                shell_start = i;
+//            int nprm = shells_[i].nprimitive();
+//            int am = shells_[i].am();
+//            GaussianType harmonics = (shells_[i].is_pure() ? Pure : Cartesian);
+//            int nc = 0; // In the atomic basis, always on the 0th atom
+//            int start = 0; //Will be reset later
+//            const std::vector<double>& e = shells_[i].exps();
+//            const std::vector<double>& c = shells_[i].coefs();
 
-            bas->shells_.push_back(GaussianShell(am, c, e, harmonics, nc, v, start));
-            current_shells++;
-        }
-        if (shell_center_[i] > center)
-            break;
-    }
+//            bas->shells_.push_back(GaussianShell(am, c, e, harmonics, nc, v, start));
+//            current_shells++;
+//        }
+//        if (shell_center_[i] > center)
+//            break;
+//    }
 
-    //Setup the indexing in the atomic basis
-    bas->refresh();
+//    //Setup the indexing in the atomic basis
+//    bas->refresh();
 
-    //And ... return
-    return bas;
+//    //And ... return
+//    return bas;
 }
 
 void BasisSet::compute_phi(double *phi_ao, double x, double y, double z)
 {
-  zero_arr(phi_ao, nao());
+    //TODO fixme!!!!
+//  zero_arr(phi_ao, nao());
 
-  int ao = 0;
-  for(int ns=0; ns < nshell(); ns++) {
-    const GaussianShell& shell = shells_[ns];
-    int am = shell.am();
-    int nprim = shell.nprimitive();
-    const std::vector<double>& a = shell.exps();
-    const std::vector<double>& c = shell.coefs();
+//  int ao = 0;
+//  for(int ns=0; ns < nshell(); ns++) {
+//    const GaussianShell& shell = shells_[ns];
+//    int am = shell.am();
+//    int nprim = shell.nprimitive();
+//    const std::vector<double>& a = shell.exps();
+//    const std::vector<double>& c = shell.coefs();
 
-    int atom = shell_to_center(ns);
-    double dx = x - molecule_->xyz(atom, 0);
-    double dy = y - molecule_->xyz(atom, 1);
-    double dz = z - molecule_->xyz(atom, 2);
-    double rr = dx*dx + dy*dy + dz*dz;
+//    int atom = shell_to_center(ns);
+//    double dx = x - molecule_->xyz(atom, 0);
+//    double dy = y - molecule_->xyz(atom, 1);
+//    double dz = z - molecule_->xyz(atom, 2);
+//    double rr = dx*dx + dy*dy + dz*dz;
 
-    double cexpr = 0;
-    for(int np=0; np < nprim; np++)
-      cexpr += c[np] * exp(-a[np] * rr);
+//    double cexpr = 0;
+//    for(int np=0; np < nprim; np++)
+//      cexpr += c[np] * exp(-a[np] * rr);
 
-    for(int l=0; l < INT_NCART(am); l++) {
-      Vector3& components = exp_ao[am][l];
-      phi_ao[ao+l] += pow(dx, (double) components[0]) *
-                      pow(dy, (double) components[1]) *
-                      pow(dz, (double) components[2]) *
-                      cexpr;
-    }
+//    for(int l=0; l < INT_NCART(am); l++) {
+//      Vector3& components = exp_ao[am][l];
+//      phi_ao[ao+l] += pow(dx, (double) components[0]) *
+//                      pow(dy, (double) components[1]) *
+//                      pow(dz, (double) components[2]) *
+//                      cexpr;
+//    }
 
-      ao += INT_NCART(am);
-  } // nshell
+//      ao += INT_NCART(am);
+//  } // nshell
 }
 
 BasisSet BasisSet::concatenate(const BasisSet& b) const {
 
     BasisSet temp;
-
+//TODO fixme!!!
+#if 0
     temp.name_ = name_ + " + " + b.name_;
     temp.molecule_ = molecule();
 
@@ -1008,7 +1015,7 @@ BasisSet BasisSet::concatenate(const BasisSet& b) const {
 
     // Call refresh to regenerate center_to_shell and center_to_nshell
     temp.refresh();
-
+#endif
     return temp;
 }
 
@@ -1019,7 +1026,8 @@ boost::shared_ptr<BasisSet> BasisSet::concatenate(const boost::shared_ptr<BasisS
 BasisSet BasisSet::add(const BasisSet& b) const {
 
     BasisSet temp;
-
+//TODO fixme!!
+#if 0
     temp.name_ = name_ + " + " + b.name_;
     temp.molecule_ = molecule();
 
@@ -1057,7 +1065,7 @@ BasisSet BasisSet::add(const BasisSet& b) const {
 //                  temp.shells_.begin()+temp.center_to_shell_[atom]+temp.center_to_nshell_[atom],
 //                  shell_sorter_am);
 //    }
-
+#endif
     return temp;
 }
 

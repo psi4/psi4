@@ -178,21 +178,23 @@ private:
     /// Flag for pure angular momentum
     int puream_;
     /// Exponents (of length nprimitives_)
-    std::vector<double> exp_;
-    /// Contraction coefficients (of length nprimitives_)
-    std::vector<double> coef_;
+    const double* exp_;
     /// Original (un-normalized) contraction coefficients (of length nprimitives)
-    /// Only used in printing.
-    std::vector<double> original_coef_;
+    const double* original_coef_;
+    /// Contraction coefficients (of length nprimitives_)
+    const double* coef_;
 
     /// Atom number this shell goes to. Needed when indexing integral derivatives.
     int nc_;
     /// Atomic center number in the Molecule
-    Vector3 center_;
+    const double *center_;
+    /// First basis function in this shell
     int start_;
 
     /// How many cartesian functions? (1=s, 3=p, 6=d, ...)
     int ncartesian_;
+    /// The number of primitives in this shell
+    int nprimitive_;
     /** How many functions? (1=s, 3=p, 5/6=d, ...)
      * Dependent on the value of puream_
      */
@@ -225,22 +227,23 @@ public:
      *  @param pt Is the shell already normalized?
      */
     GaussianShell(int am,
-                  const std::vector<double>& c,
-                  const std::vector<double>& e,
+                  int nprimitive,
+                  const double *oc,
+                  const double *c,
+                  const double *e,
                   GaussianType pure,
                   int nc,
-                  const Vector3& center,
-                  int start,
-                  PrimitiveType pt = Normalized);
+                  const double* center,
+                  int start);
 
-    /** Handles calling primitive_normalization and contraction_normalization for you. */
-    void normalize_shell();
+    ///Builds and empty GShell
+    GaussianShell() {};
 
     /// Make a copy of the GaussianShell.
     GaussianShell copy();
 
     /// Make a copy of the GaussianShell.
-    GaussianShell copy(int nc, const Vector3& c);
+    GaussianShell copy(int nc, const double *center);
 
     /// The number of primitive Gaussians
     int nprimitive() const;
@@ -260,7 +263,7 @@ public:
     bool is_pure() const            { return puream_; }
 
     /// Returns the center of the Molecule this shell is on
-    const Vector3& center() const;
+    const double* center() const;
     /// Returns the atom number this shell is on. Used by integral derivatives for indexing.
     int ncenter() const             { return nc_; }
 
@@ -271,17 +274,14 @@ public:
     /// Return unnormalized coefficient of pi'th primitive and ci'th contraction
     double original_coef(int pi) const { return original_coef_[pi]; }
     /// Returns the exponent of the given primitive
-    const std::vector<double>& exps() const { return exp_; }
+    const double* exps() const { return exp_; }
     /// Return coefficient of pi'th primitive and ci'th contraction
-    const std::vector<double>& coefs() const { return coef_; }
+    const double* coefs() const { return coef_; }
     /// Return unnormalized coefficient of pi'th primitive and ci'th contraction
-    const std::vector<double>& original_coefs() const { return original_coef_; }
+    const double* original_coefs() const { return original_coef_; }
 
     /// Print out the shell
     void print(FILE *out) const;
-
-    /// Normalize the angular momentum component
-    static double normalize(int l, int m, int n);
 
     /// Basis function index where this shell starts.
     int function_index() const      { return start_; }

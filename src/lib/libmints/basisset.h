@@ -98,7 +98,7 @@ class BasisSet
 //    std::vector<int> center_to_shell_;
 
     //! Array of gaussian shells
-    std::vector<GaussianShell> shells_;
+    GaussianShell *shells_;
 
     //! vector of shells numbers sorted in acending AM order.
     std::vector<int> sorted_ao_shell_list_;
@@ -135,12 +135,8 @@ class BasisSet
     /*
      * Arrays
      */
-    /// Start address of each unique shell's primitives
-    int *uprimitive_offsets_;
-    /// First shell for each unique atom
-    int *uatom_ushell_offsets_;
-    /// The number of primitives (and exponents) in each unique shell
-    int *n_prim_per_ushell_;
+    /// The number of primitives (and exponents) in each shell
+    int *n_prim_per_shell_;
     /// The first (Cartesian) atomic orbital in each shell
     int *shell_first_ao_;
     /// The first (Cartesian / spherical) basis function in each shell
@@ -164,8 +160,8 @@ class BasisSet
     double *ucoefficients_;
     /// The flattened lists of unique contraction coefficients (as provided by the user)
     double *uoriginal_coefficients_;
-    /// The flattened list of Cartesian coordinates for each unique atom
-    double *uxyz_;
+    /// The flattened list of Cartesian coordinates for each atom
+    double *xyz_;
 
 
 
@@ -182,7 +178,7 @@ public:
      * @return BasisSet corresponding to this molecule and set of shells
      */
     static boost::shared_ptr<BasisSet> build(boost::shared_ptr<Molecule> molecule,
-                                             const std::vector<GaussianShell>& shells);
+                                             const std::vector<ShellInfo> &shells);
 
     /** Initialize singleton values that are shared by all basis set objects. */
     static void initialize_singletons();
@@ -200,7 +196,7 @@ public:
     /** Number of shells.
      *  @return Number of shells.
      */
-    int nshell() const                 { return shells_.size();  }
+    int nshell() const                 { return n_shells_;  }
     /** Number of atomic orbitals (Cartesian).
      * @return The number of atomic orbitals (Cartesian orbitals, always).
      */
@@ -421,6 +417,7 @@ BasisSet operator +(const BasisSet& a, const BasisSet& b) {
     }
     BasisSet temp;
 
+#if 0 //TODO fixme!
     temp.name_ = a.name_ + " + " + b.name_;
     temp.molecule_ = a.molecule();
 
@@ -444,7 +441,7 @@ BasisSet operator +(const BasisSet& a, const BasisSet& b) {
 //    }
 
 //    temp.refresh();
-
+#endif
     return temp;
 }
 
