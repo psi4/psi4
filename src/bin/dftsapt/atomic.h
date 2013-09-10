@@ -96,6 +96,8 @@ public:
     virtual void compute_weights(int npoints, double* x, double* y, double* z, double** w, double* rhop = NULL, int atom = -1) = 0;
     /// Compute and disply the atomic charges, multiplying the electronic part by scale
     virtual void compute_charges(double scale = 2.0) = 0; 
+    /// Compute and return the atomic charges, multiplying the electronic part by scale
+    virtual boost::shared_ptr<Matrix> charges(double scale = 2.0) = 0;
 
     // ==> Accessors <== //
 
@@ -162,6 +164,8 @@ public:
     virtual void compute_weights(int npoints, double* x, double* y, double* z, double** w, double* rhop = NULL, int atom = -1);
     /// Compute and disply the atomic charges, multiplying the electronic part by scale
     virtual void compute_charges(double scale = 2.0); 
+    /// Compute and return the atomic charges, multiplying the electronic part by scale
+    virtual boost::shared_ptr<Matrix> charges(double scale = 2.0);
 
 };
 

@@ -73,8 +73,14 @@ void ASAPTVis::analyze()
 {
     fprintf(outfile, "  ANALYSIS:\n\n");
 
+    monomer_A_->save_xyz("d.xyz", true);
     monomer_A_->save_xyz("mA.xyz",false);
     monomer_B_->save_xyz("mB.xyz",false);
+
+    vars_["Charge_A"] = atomic_A_->charges(2.0);
+    vars_["Charge_B"] = atomic_B_->charges(2.0);
+    drop("Charge_A");
+    drop("Charge_B");
 
     summations();
     if (tasks_.count("ATOMIC1")) {

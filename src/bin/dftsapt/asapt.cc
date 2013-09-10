@@ -816,6 +816,15 @@ void ASAPT::elst()
     fprintf(outfile,"\n");
     fflush(outfile);
 
+    // Grid error analysis 
+    fprintf(outfile,"  ==> Grid Errors <==\n\n");
+    fprintf(outfile,"    True Elst10,r       = %18.12lf H\n",energies_["Elst10,r"]);
+    fprintf(outfile,"    Grid Elst10,r       = %18.12lf H\n",Elst10);
+    fprintf(outfile,"    Grid Elst10,r Error = %18.12lf H\n",Elst10 - energies_["Elst10,r"]);
+    fprintf(outfile,"    Grid Elst10,r Rel   = %18.3E -\n",(Elst10 - energies_["Elst10,r"]) / energies_["Elst10,r"]);
+    fprintf(outfile,"\n");
+    fflush(outfile);
+
     vis_->vars()["Elst_AB"] = Elst_atoms;
 
     // ==> Setup Atomic Electrostatic Fields for Induction <== //

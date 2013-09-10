@@ -597,7 +597,44 @@ void StockholderDensity::compute_charges(double scale)
     fprintf(outfile,"    %8s %11.3E %11.3E %11.3E\n", 
             "Total", Ztot, Qtot, Ztot + Qtot);
     fprintf(outfile,"\n");
+
+    fprintf(outfile,"    True Molecular Charge: %11.3E\n", (double) molecule_->molecular_charge());
+    fprintf(outfile,"    Grid Molecular Charge: %11.3E\n", Ztot + Qtot);
+    fprintf(outfile,"    Grid Error:            %11.3E\n", Ztot + Qtot - (double) molecule_->molecular_charge());
+    fprintf(outfile,"\n");
+
     fflush(outfile);
+}
+boost::shared_ptr<Matrix> StockholderDensity::charges(double scale) 
+{
+    // Where are the true atoms?
+    std::vector<int> Aind;
+    std::vector<int> Aind2;
+    for (int A = 0; A < molecule_->natom(); A++) {
+        if (molecule_->Z(A) != 0) {
+            Aind2.push_back(Aind.size());
+            Aind.push_back(A);
+        } else {
+            Aind2.push_back(-1);
+        }
+    }
+    int nA = Aind.size();
+    int nA2 = molecule_->natom();
+
+    // Where are the atomic charges?
+    double* Np = N_->pointer();
+
+    boost::shared_ptr<Matrix> T(new Matrix("Q", nA, 1));
+    double* Tp = T->pointer()[0];
+
+    for (int A = 0; A < nA; A++) {
+        int Aabs = Aind[A];
+        double Z = molecule_->Z(Aabs);
+        double Q = -scale * Np[A];
+        Tp[A] = Z + Q;
+    }
+    
+    return T;
 }
 
 }
