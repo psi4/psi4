@@ -37,7 +37,7 @@ namespace psi {
 class ElectricFieldInt : public OneBodyAOInt
 {
     //! Obara and Saika recursion object to be used.
-    ObaraSaikaTwoCenterVIDeriv2Recursion efield_recur_;
+    ObaraSaikaTwoCenterElectricField efield_recur_;
 
     //! Number of atoms.
     int natom_;
@@ -57,8 +57,8 @@ public:
     //! Does the method provide first derivatives?
     bool has_deriv1() { return true; }
 
-    static SharedMatrix nuclear_contribution(boost::shared_ptr<Molecule> mol);
-    static SharedMatrix nuclear_contribution_to_gradient(boost::shared_ptr<Molecule> mol);
+    static Vector3 nuclear_contribution(const Vector3 &origin, boost::shared_ptr<Molecule> mol);
+    static SharedMatrix nuclear_contribution_to_gradient(const Vector3 &origin, boost::shared_ptr<Molecule> mol);
 };
 
 }

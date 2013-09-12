@@ -8,8 +8,8 @@ def function_alias(alias, function):
     "Alias for <function>()" and add "Aliased as <alias>()" to the documentation of
     `function`.  Not inteded to be used as a decorator.
 
-    Examples
-    --------
+    :Examples:
+
     >>> def foo(a, b, c):
     ...     '''Print a test message.'''
     ...     print "testing {0}, {1}, {2}".format(a, b, c)
@@ -73,7 +73,6 @@ def function_alias(alias, function):
     else:
         function.__doc__ = 'Aliased as `{0}()`'.format(alias)
     return aliaspart
-
 
 def bindablepartial(func, *args, **keywords):
     """ Since the default python partial is not bindable, we need to make our own...

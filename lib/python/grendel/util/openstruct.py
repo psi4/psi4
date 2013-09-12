@@ -7,8 +7,8 @@ class DescriptorCallingOpenStruct(type):
     (Note: most of this is trivially available for all instances in Python, but things like iteration and
     the `CaseInsensativeOpenStruct` subclass are not; this is why this is here).
 
-    Examples
-    --------
+    :Examples:
+
     >>> hello = DescriptorCallingOpenStruct()
     >>> hello.world = 'foo'
     >>> hello.moon = 'bar'
@@ -86,8 +86,8 @@ class DescriptorCallingOpenStruct(type):
 class CaseInsensativeOpenStruct(DescriptorCallingOpenStruct):
     """ Acts like an open struct, but attribute access is case-insensative.
 
-    Examples
-    --------
+    :Examples:
+
     >>> hello = CaseInsensativeOpenStruct()
     >>> hello.World = "foo"
     >>> hello.mOOn = "bar"

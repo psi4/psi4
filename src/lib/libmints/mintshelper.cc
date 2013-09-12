@@ -438,7 +438,7 @@ SharedMatrix MintsHelper::ao_overlap()
 SharedMatrix MintsHelper::ao_kinetic()
 {
     boost::shared_ptr<OneBodyAOInt> T(integral_->ao_kinetic());
-    SharedMatrix       kinetic_mat(new Matrix( basisset_->nbf (), basisset_->nbf ()));
+    SharedMatrix       kinetic_mat(new Matrix("AO-basis Kinetic Ints", basisset_->nbf (), basisset_->nbf ()));
     T->compute(kinetic_mat);
     return kinetic_mat;
 }
@@ -446,7 +446,7 @@ SharedMatrix MintsHelper::ao_kinetic()
 SharedMatrix MintsHelper::ao_potential()
 {
     boost::shared_ptr<OneBodyAOInt> V(integral_->ao_potential());
-    SharedMatrix       potential_mat(new Matrix(basisset_->nbf (), basisset_->nbf ()));
+    SharedMatrix       potential_mat(new Matrix("AO-basis Potential Ints", basisset_->nbf (), basisset_->nbf ()));
     V->compute(potential_mat);
     return potential_mat;
 }
@@ -769,11 +769,58 @@ SharedMatrix MintsHelper::so_kinetic()
     return kinetic_mat;
 }
 
-SharedMatrix MintsHelper::so_potential()
+SharedMatrix MintsHelper::so_potential(bool include_perturbations)
 {
     boost::shared_ptr<OneBodySOInt> V(integral_->so_potential());
     SharedMatrix       potential_mat(factory_->create_matrix(PSIF_SO_V));
     V->compute(potential_mat);
+
+    // Handle addition of any perturbations here and not in SCF code.
+    if (include_perturbations) {
+        if (options_.get_bool("PERTURB_H")) {
+            std::string perturb_with = options_.get_str("PERTURB_WITH");
+            double lambda = options_.get_double("PERTURB_MAGNITUDE");
+
+            OperatorSymmetry msymm(1, molecule_, integral_, factory_);
+            std::vector<SharedMatrix> dipoles = msymm.create_matrices("Dipole");
+            OneBodySOInt *so_dipole = integral_->so_dipole();
+            so_dipole->compute(dipoles);
+
+            if (perturb_with == "DIPOLE_X") {
+                if (msymm.component_symmetry(0) != 0) {
+                    fprintf(outfile, "  WARNING: Requested mu(x) perturbation, but mu(x) is not symmetric.\n");
+                }
+                else {
+                    fprintf(outfile, "  Perturbing V by %f mu(x).\n", lambda);
+                    dipoles[0]->scale(lambda);
+                    potential_mat->add(dipoles[0]);
+                }
+            }
+            else if (perturb_with == "DIPOLE_Y") {
+                if (msymm.component_symmetry(1) != 0) {
+                    fprintf(outfile, "  WARNING: Requested mu(y) perturbation, but mu(y) is not symmetric.\n");
+                }
+                else {
+                    fprintf(outfile, "  Perturbing V by %f mu(y).\n", lambda);
+                    dipoles[1]->scale(lambda);
+                    potential_mat->add(dipoles[1]);
+                }
+            }
+            else if (perturb_with == "DIPOLE_Z") {
+                if (msymm.component_symmetry(2) != 0) {
+                    fprintf(outfile, "  WARNING: Requested mu(z) perturbation, but mu(z) is not symmetric.\n");
+                }
+                else {
+                    fprintf(outfile, "  Perturbing V by %f mu(z).\n", lambda);
+                    dipoles[2]->scale(lambda);
+                    potential_mat->add(dipoles[2]);
+                }
+            }
+            else {
+                fprintf(outfile, "  MintsHelper doesn't understand the requested perturbation, might be done in SCF.");
+            }
+        }
+    }
     return potential_mat;
 }
 

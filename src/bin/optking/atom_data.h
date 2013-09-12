@@ -44,7 +44,7 @@ extern const double Z_to_mass[];
 extern double Element_to_Z(std::string lbl);
 
 // convert isotope name to mass
-extern double Isotope_to_mass(std::string lbl);
+//extern double Isotope_to_mass(std::string lbl);
 
 }
 

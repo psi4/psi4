@@ -13,7 +13,7 @@ Interface to DFTD3 by S. Grimme
 .. *Module:* :ref:`Keywords <apdx:mrcc>`, :ref:`PSI Variables <apdx:mrcc_psivar>`, :source:`MRCC <src/bin/mrcc>`
 
 |PSIfour| contains code to interface to the DFTD3 program of S. Grimme, which is freely
-downloadable from `http://toc.uni-muenster.de/DFTD3/ <http://toc.uni-muenster.de/DFTD3/>`_).
+downloadable from `http://www.thch.uni-bonn.de/tc/index.php?section=downloads&subsection=getd3&lang=english <http://www.thch.uni-bonn.de/tc/index.php?section=downloads&subsection=getd3&lang=english>`_).
 
 Installation
 ~~~~~~~~~~~~
@@ -21,7 +21,7 @@ Installation
 Follow the instructions provided with the source to build the DFTD3
 program (essentially, unpack the source, edit the Makefile to select a
 Fortran compiler, and run make). For the moment, you must apply a patch,
-:source:`lib/scripts/patch_grimme_dftd3`, to the dftd3 source before building.
+:source:`lib/scripts/patch_grimme_dftd3.3.0.2`, to the dftd3 source before building.
 To be used by |PSIfour|, the program binary (``dftd3``) must be found in
 your :envvar:`PATH`. If |PSIfour| is unable to execute the binary, an
 error will be reported.
@@ -29,7 +29,7 @@ error will be reported.
     >>> cd dftd3
     >>> ls 
     dftd3.tar
-    patch_grimme_dftd3
+    patch_grimme_dftd3.3.0.2
     >>> tar -xvf dftd3.tar
     copyc6.f
     dftd3.f
@@ -37,17 +37,16 @@ error will be reported.
     man.pdf
     pars.f
     param
-    >>> patch < patch_grimme_dftd3 
-    patching file Makefile
+    >>> patch < patch_grimme_dftd3.3.0.2
     patching file dftd3.f
     >>> make
     making dftd3.o from dftd3.f
-    gfortran   -O  -c dftd3.f -o dftd3.o
+    ifort -O  -c dftd3.f -o dftd3.o
     making copyc6.o from copyc6.f
-    gfortran   -O  -c copyc6.f -o copyc6.o
-    gfortran dftd3.o copyc6.o    -o ./dftd3 
+    ifort -O  -c copyc6.f -o copyc6.o
+    ifort dftd3.o copyc6.o    -o ./dftd3  
     >>> ls
-    Makefile           copyc6.o           dftd3.f            dftd3.tar          param              patch_grimme_dftd3
+    Makefile           copyc6.o           dftd3.f            dftd3.tar          param              patch_grimme_dftd3.3.0.2
     copyc6.f           dftd3              dftd3.o            man.pdf            pars.f
 
 Theory

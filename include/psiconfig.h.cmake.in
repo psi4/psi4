@@ -2,6 +2,8 @@
 #ifndef _psi_include_psiconfig_h
 #define _psi_include_psiconfig_h
 
+#define CMAKE_BUILD
+
 /* Define if you have <stdint.h>.  */
 #cmakedefine HAVE_STDINT_H
 
@@ -34,7 +36,7 @@
 
 /* Defined if we are using an MKL with mkl_malloc (MKL version 10+ supposedly) */
 #cmakedefine HAVE_MKL_MALLOC
-
+#cmakedefine HAVE_FUNC_ERF
 #cmakedefine HAVE_CMATH
 #cmakedefine HAVE_CSTDIO
 #cmakedefine HAVE_CSTDLIB
@@ -61,6 +63,9 @@
 
 /* Restrict keyword definition */
 #cmakedefine restrict
+
+/* Whether to compile the ERD integral module */
+#cmakedefine HAVE_ERD
 
 #endif /* _psi_src_psiconfig_h */
 

@@ -111,8 +111,8 @@ def raises_error(callable_obj, *args, **kwargs):
     directly) will be recognized.  According to the python users manual, you should never implement a user exception
     that subclasses from BaseException directly.*
 
-    Examples
-    --------
+    :Examples:
+
 
     >>> raises_error(int, "5")
     False

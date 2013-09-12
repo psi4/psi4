@@ -262,7 +262,7 @@ compiling and installing the PSI4 package.
        
           ../configure --with-plugins --with-cxx=llvm-g++
 
-       .. warning:: If you still happen to encouter an error like::
+       .. warning:: If you still happen to encounter an error like::
 
              checking Fortran symbols... giving up
              configure: error: could not determine fortran symbol names
@@ -270,6 +270,14 @@ compiling and installing the PSI4 package.
           adding the following tag to your configure may help ::
 
              --with-f77symbol=lcu
+
+       .. warning:: An error like the one below has been seen
+          when inadvertantly linking to 32-bit libraries ::
+
+             Undefined symbols:
+             "_omp_get_num_threads", referenced from:
+                 __ZN3psi5dfmp26UDFMP28form_AiaEv.omp_fn.4 in libPSI_dfmp2.a(mp2.o)
+                 ...
 
   B. List of Specific Configuration Options
 

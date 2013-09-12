@@ -179,6 +179,49 @@ void RKSFunctions::compute_points(boost::shared_ptr<BlockOPoints> block)
         }
     }
 }
+void RKSFunctions::set_Cs(SharedMatrix C_AO)
+{
+    C_AO_ = C_AO;
+    C_local_ = boost::shared_ptr<Matrix>(new Matrix("C local", max_functions_, C_AO_->colspi()[0]));
+    orbital_values_["PSI_A"] = boost::shared_ptr<Matrix>(new Matrix("PSI_A", C_AO_->colspi()[0], max_points_));
+    orbital_values_["PSI_B"] = orbital_values_["PSI_A"];
+}
+void RKSFunctions::set_Cs(SharedMatrix Ca_AO, SharedMatrix Cb_AO)
+{
+    throw PSIEXCEPTION("RKSFunctions::unrestricted pointers are not appropriate. Read the source.");
+}
+void RKSFunctions::compute_orbitals(boost::shared_ptr<BlockOPoints> block)
+{
+    // => Build basis function values <= //
+
+    timer_on("Points");
+    BasisFunctions::compute_functions(block);
+    timer_off("Points");
+
+    // => Global information <= //
+
+    int npoints = block->npoints();
+    const std::vector<int>& function_map = block->functions_local_to_global();
+    int nglobal = max_functions_;
+    int nlocal  = function_map.size();
+
+    // => Build local C matrix <= //
+
+    int na = C_AO_->colspi()[0];
+    double** Cap  = C_AO_->pointer();
+    double** Ca2p = C_local_->pointer();
+    for (int ml = 0; ml < nlocal; ml++) {
+        int mg = function_map[ml];
+        ::memcpy(Ca2p[ml],Cap[mg],na*sizeof(double));
+    }
+
+    // => Build orbitals <= //
+
+    double** phip = basis_values_["PHI"]->pointer();
+    double** psiap = orbital_values_["PSI_A"]->pointer();
+
+    C_DGEMM('T','T',na,npoints,nlocal,1.0,Ca2p[0],na,phip[0],nglobal,0.0,psiap[0],max_points_);
+}
 void RKSFunctions::print(FILE* out, int print) const
 {
     std::string ans;
@@ -275,7 +318,7 @@ void UKSFunctions::set_pointers(SharedMatrix Da_AO, SharedMatrix Db_AO)
 void UKSFunctions::compute_points(boost::shared_ptr<BlockOPoints> block)
 {
     if (!Da_AO_) 
-        throw PSIEXCEPTION("RKSFunctions: call set_pointers.");
+        throw PSIEXCEPTION("UKSFunctions: call set_pointers.");
     
     // => Build basis function values <= //
     timer_on("Points");
@@ -404,6 +447,61 @@ void UKSFunctions::compute_points(boost::shared_ptr<BlockOPoints> block)
         }
     }
 }
+void UKSFunctions::set_Cs(SharedMatrix Ca_AO)
+{
+    throw PSIEXCEPTION("UKSFunctions::restricted pointers are not appropriate. Read the source.");
+}
+void UKSFunctions::set_Cs(SharedMatrix Ca_AO, SharedMatrix Cb_AO)
+{
+    Ca_AO_ = Ca_AO;
+    Cb_AO_ = Cb_AO;
+    Ca_local_ = boost::shared_ptr<Matrix>(new Matrix("Ca local", max_functions_, Ca_AO_->colspi()[0]));
+    Cb_local_ = boost::shared_ptr<Matrix>(new Matrix("Cb local", max_functions_, Cb_AO_->colspi()[0]));
+    orbital_values_["PSI_A"] = boost::shared_ptr<Matrix>(new Matrix("PSI_A", Ca_AO_->colspi()[0], max_points_));
+    orbital_values_["PSI_B"] = boost::shared_ptr<Matrix>(new Matrix("PSI_B", Ca_AO_->colspi()[0], max_points_));
+}
+void UKSFunctions::compute_orbitals(boost::shared_ptr<BlockOPoints> block)
+{
+    // => Build basis function values <= //
+
+    timer_on("Points");
+    BasisFunctions::compute_functions(block);
+    timer_off("Points");
+
+    // => Global information <= //
+
+    int npoints = block->npoints();
+    const std::vector<int>& function_map = block->functions_local_to_global();
+    int nglobal = max_functions_;
+    int nlocal  = function_map.size();
+
+    // => Build local C matrix <= //
+
+    int na = Ca_AO_->colspi()[0];
+    double** Cap  = Ca_AO_->pointer();
+    double** Ca2p = Ca_local_->pointer();
+    for (int ml = 0; ml < nlocal; ml++) {
+        int mg = function_map[ml];
+        ::memcpy(Ca2p[ml],Cap[mg],na*sizeof(double));
+    }
+
+    int nb = Cb_AO_->colspi()[0];
+    double** Cbp  = Cb_AO_->pointer();
+    double** Cb2p = Cb_local_->pointer();
+    for (int ml = 0; ml < nlocal; ml++) {
+        int mg = function_map[ml];
+        ::memcpy(Cb2p[ml],Cbp[mg],nb*sizeof(double));
+    }
+
+    // => Build orbitals <= //
+
+    double** phip = basis_values_["PHI"]->pointer();
+    double** psiap = orbital_values_["PSI_A"]->pointer();
+    double** psibp = orbital_values_["PSI_B"]->pointer();
+
+    C_DGEMM('T','T',na,npoints,nlocal,1.0,Ca2p[0],na,phip[0],nglobal,0.0,psiap[0],max_points_);
+    C_DGEMM('T','T',nb,npoints,nlocal,1.0,Cb2p[0],nb,phip[0],nglobal,0.0,psibp[0],max_points_);
+}
 void UKSFunctions::print(FILE* out, int print) const
 {
     std::string ans;
@@ -441,6 +539,10 @@ PointFunctions::~PointFunctions()
 SharedVector PointFunctions::point_value(const std::string& key)
 {
     return point_values_[key];
+}
+SharedMatrix PointFunctions::orbital_value(const std::string& key)
+{
+    return orbital_values_[key];
 }
 
 BasisFunctions::BasisFunctions(boost::shared_ptr<BasisSet> primary, int max_points, int max_functions) :

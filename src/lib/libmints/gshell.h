@@ -143,10 +143,14 @@ public:
     double exp(int prim) const      { return exp_[prim]; }
     /// Return coefficient of pi'th primitive and ci'th contraction
     double coef(int pi) const       { return coef_[pi]; }
+    /// Return unnormalized coefficient of pi'th primitive and ci'th contraction
+    double original_coef(int pi) const { return original_coef_[pi]; }
     /// Returns the exponent of the given primitive
     const std::vector<double>& exps() const { return exp_; }
     /// Return coefficient of pi'th primitive and ci'th contraction
     const std::vector<double>& coefs() const { return coef_; }
+    /// Return unnormalized coefficient of pi'th primitive and ci'th contraction
+    const std::vector<double>& original_coefs() const { return original_coef_; }
 
     /// Print out the shell
     void print(FILE *out) const;

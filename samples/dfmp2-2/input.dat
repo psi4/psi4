@@ -48,6 +48,6 @@ for basisset in basissets:
     clean()
 
 print_out("\nSummary of results\n")
-print str(table)
+print_out(str(table))
 print_out("\nAnd again, but more precision\n")
-print str(longtable)
+print_out(str(longtable))

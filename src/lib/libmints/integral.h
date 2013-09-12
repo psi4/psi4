@@ -459,6 +459,10 @@ public:
     virtual OneBodyAOInt* ao_angular_momentum(int deriv=0);
     virtual OneBodySOInt* so_angular_momentum(int deriv=0);
 
+    /// Returns a OneBodyInt that computes the multipole potential integrals for EFP
+    virtual OneBodyAOInt* ao_efp_multipole_potential(int deriv=0);
+    virtual OneBodySOInt* so_efp_multipole_potential(int deriv=0);
+
     /// Returns an OneBodyInt that computes the electric field
     virtual OneBodyAOInt *electric_field();
 
@@ -471,6 +475,9 @@ public:
 
     /// Returns an ERI integral object
     virtual TwoBodyAOInt* eri(int deriv=0, bool use_shell_pairs=false);
+
+    /// Returns an ERD ERI integral object, if available.  Otherwise returns a libint integral object
+    virtual TwoBodyAOInt* erd_eri(int deriv=0, bool use_shell_pairs=false);
 
     /// Returns an erf ERI integral object (omega integral)
     virtual TwoBodyAOInt* erf_eri(double omega, int deriv=0, bool use_shell_pairs=false);
