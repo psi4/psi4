@@ -22,6 +22,7 @@
 
 #if defined(HAVE_MPI)
 
+#include <cstring>
 #include <mpi.h>
 
 namespace psi {
@@ -99,7 +100,7 @@ public:
     void sum(double* data, size_t nelem) {
         double *receive_buffer = new double[nelem];
         MPI_Allreduce(static_cast<void*>(data), static_cast<void*>(receive_buffer), nelem, MPI_DOUBLE, MPI_SUM, comm_);
-        ::memcpy(static_cast<void*>(data), static_cast<void*>(receive_buffer), sizeof(double)*nelem);
+        std::memcpy(static_cast<void*>(data), static_cast<void*>(receive_buffer), sizeof(double)*nelem);
         delete[] receive_buffer;
     }
 
@@ -118,7 +119,7 @@ public:
             MPI_Allreduce(static_cast<void*>(data), static_cast<void*>(receive_buffer), n, M, MPI_SUM, comm_); \
      \
         if (alloc) { \
-            ::memcpy(static_cast<void*>(data), static_cast<void*>(receive_buffer), sizeof(T)*n); \
+            std::memcpy(static_cast<void*>(data), static_cast<void*>(receive_buffer), sizeof(T)*n); \
             delete[] receive_buffer; \
         } \
     }
