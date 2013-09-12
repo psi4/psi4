@@ -140,7 +140,7 @@ public:
             if (receive_buffer == 0) {
                 receive_buffer = new type[nelem];
                 elem::mpi::AllReduce(&data[0], receive_buffer, nelem, elem::mpi::SUM, comm_);
-                ::memcpy(data, receive_buffer, nelem*sizeof(type));
+                std::memcpy(data, receive_buffer, nelem*sizeof(type));
                 delete receive_buffer;
             }
             else
