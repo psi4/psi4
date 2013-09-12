@@ -185,13 +185,13 @@ Bibliography
    A. E. DePrince III and C. D. Sherrill,
    *J. Chem. Theory Comput.* **9**, 293-299 (2013).
 
-.. [DePrince:2013:inpress]
+.. [DePrince:2013:2687]
    A. E. DePrince III and C. D. Sherrill,
-   *J. Chem. Theory Comput.* in press.
+   *J. Chem. Theory Comput.* **9**, 2687-2696 (2013).
 
 .. [Curtiss:1991:7221]
    L. A. Curtiss, K. Raghavachari, G. W. Trucks, and J. A. Pople, 
-   *J. Chem. Phys.* **94** 7221-7230 (1991).
+   *J. Chem. Phys.* **94**, 7221-7230 (1991).
 
 .. [Pople:1987:5968]
    J. A. Pople, M. Head-Gordon, and K. J. Raghavachari, 

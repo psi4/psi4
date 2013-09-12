@@ -58,26 +58,32 @@ void MOLECULE::prfo_step(void) {
   // don't use Horig anymore -it's the pointer to the good, original Hessian
   double **H = matrix_return_copy(Horig, Nintco, Nintco);
 
-  fprintf(outfile,"\nHessian matrix\n");  
-  print_matrix(outfile, H, Nintco, Nintco);
+  if (Opt_params.print_lvl >= 3) {
+    fprintf(outfile,"\nHessian matrix\n");  
+    print_matrix(outfile, H, Nintco, Nintco);
+  }
 
   // diagonalize H (technically, only have to semi-diagonalize)
   double * lambda = init_array(Nintco);
   opt_symm_matrix_eig(H, Nintco, lambda);
   double **H_evects = H; // rename for clarity
  
-  fprintf(outfile,"\n\tEigenvalues of Hessian \n");
-  print_matrix(outfile, &lambda, 1, Nintco);
-  fprintf(outfile, "\n\tEigenvectors of Hessian (rows) \n");
-  print_matrix(outfile, H_evects, Nintco, Nintco);
+  if (Opt_params.print_lvl >= 3) {
+    fprintf(outfile,"\n\tEigenvalues of Hessian \n");
+    print_matrix(outfile, &lambda, 1, Nintco);
+    fprintf(outfile, "\n\tEigenvectors of Hessian (rows) \n");
+    print_matrix(outfile, H_evects, Nintco, Nintco);
+  }
 
   // construct diagonalized Hessian with evals on diagonal
   double **H_diag = init_matrix(Nintco,Nintco);
   for (int i=0; i<Nintco; ++i)
     H_diag[i][i] = lambda[i];
 
-  fprintf(outfile,"\n\tH_diag\n");
-  print_matrix(outfile, H_diag, Nintco, Nintco);
+  if (Opt_params.print_lvl >= 3) {
+    fprintf(outfile,"\n\tH_diag\n");
+    print_matrix(outfile, H_diag, Nintco, Nintco);
+  }
 
   // the number of degrees along which to MAXIMIZE; assume 1 for now
   int mu = 1;
@@ -115,8 +121,10 @@ void MOLECULE::prfo_step(void) {
   rfo_max[0][1] = -f_q_Hevect_basis[rfo_root];
   rfo_max[1][0] = -f_q_Hevect_basis[rfo_root];
 
-  fprintf(outfile,"\n RFO max \n");
-  print_matrix(outfile,rfo_max,mu+1,mu+1);
+  if (Opt_params.print_lvl >= 2) {
+    fprintf(outfile,"\n RFO max \n");
+    print_matrix(outfile,rfo_max,mu+1,mu+1);
+  }
 
   // Build RFO-min.
   double **rfo_min = init_matrix(Nintco-mu+1,Nintco-mu+1);
@@ -137,8 +145,10 @@ void MOLECULE::prfo_step(void) {
     }
   }
    
-  fprintf(outfile,"\n RFO min \n");
-  print_matrix(outfile, rfo_min, Nintco-mu+1 , Nintco-mu+1);
+  if (Opt_params.print_lvl >= 2) {
+    fprintf(outfile,"\n RFO min \n");
+    print_matrix(outfile, rfo_min, Nintco-mu+1 , Nintco-mu+1);
+  }
  
   double* max_evals = init_array(mu+1);
   double* min_evals = init_array(Nintco-mu+1);
@@ -148,17 +158,21 @@ void MOLECULE::prfo_step(void) {
   opt_symm_matrix_eig(rfo_max, mu+1,max_evals);
   opt_symm_matrix_eig(rfo_min, Nintco-mu+1,min_evals);
  
-  fprintf(outfile,"\n RFO min eigenvectors (rows) before normalization\n");
-  print_matrix(outfile, rfo_min, Nintco-mu+1, Nintco-mu+1);
+  if (Opt_params.print_lvl >= 3) {
+    fprintf(outfile,"\n RFO min eigenvectors (rows) before normalization\n");
+    print_matrix(outfile, rfo_min, Nintco-mu+1, Nintco-mu+1);
 
-  fprintf(outfile,"\n RFO max eigenvectors (rows) before normalization\n");
-  print_matrix(outfile, rfo_max, mu+1, mu+1);
+    fprintf(outfile,"\n RFO max eigenvectors (rows) before normalization\n");
+    print_matrix(outfile, rfo_max, mu+1, mu+1);
+  }
 
-  fprintf(outfile,"\n RFO min eigenvalues\n");
-  print_matrix(outfile, &min_evals,1, Nintco-mu+1);
+  if (Opt_params.print_lvl >= 1) {
+    fprintf(outfile,"\n RFO min eigenvalues\n");
+    print_matrix(outfile, &min_evals,1, Nintco-mu+1);
 
-  fprintf(outfile,"\n RFO max eigenvalues\n");
-  print_matrix(outfile, &max_evals,1, mu+1);
+    fprintf(outfile,"\n RFO max eigenvalues\n");
+    print_matrix(outfile, &max_evals,1, mu+1);
+  }
 
   //Normalize all eigenvectors.
   for (int i=0; i<mu+1; ++i) {
@@ -200,15 +214,19 @@ void MOLECULE::prfo_step(void) {
     }
   }
   
-  fprintf(outfile, "\nRFO step in Hevect basis\n"); 
-  print_matrix(outfile, &rfo_step_Hevect_basis, 1, Nintco);
+  if (Opt_params.print_lvl >= 2) {
+    fprintf(outfile, "\nRFO step in Hevect basis\n"); 
+    print_matrix(outfile, &rfo_step_Hevect_basis, 1, Nintco);
+  }
  
   // transform back into original basis.
   // write to old dq pointer ? 
   opt_matrix_mult(H_evects, 1, &rfo_step_Hevect_basis, 1, &dq, 1, Nintco, Nintco, 1, 0);
 
-  fprintf(outfile, "\nRFO step in original basis\n"); 
-  print_matrix(outfile, &dq, 1, Nintco);
+  if (Opt_params.print_lvl >= 2) {
+    fprintf(outfile, "\nRFO step in original basis\n"); 
+    print_matrix(outfile, &dq, 1, Nintco);
+  }
  
   apply_intrafragment_step_limit(dq);
 

@@ -69,8 +69,8 @@ class Molecule(object):
         * ``Molecule(atom_names, cart_mat)``
 
 
-    Parameters
-    ----------
+    :Parameters:
+
     xyz_string : str
         a string in the format of a standard .xyz file
     atoms : list of Atom
@@ -81,14 +81,14 @@ class Molecule(object):
         an Nx3 `Matrix` of positions
 
 
-    Other Parameters
-    ----------------
+    :Other Parameters:
+
     description : str
         optional keyword argument that works with all forms.  See the `description` attribute
 
 
-    Attributes
-    ----------
+    :Attributes:
+
     atoms : list of Atom
     internal_representations : list of InternalRepresentation
     normal_representation : NormalRepresentation
@@ -96,8 +96,8 @@ class Molecule(object):
     description : str
 
 
-    Examples
-    --------
+    :Examples:
+
 
     *Constructor*
 
@@ -442,15 +442,15 @@ class Molecule(object):
     def A_e(self):
         """ The (non-zero-point-corrected) rotational constant A_e.
         .. note::
-            This property is cached, and the cached value gets flushed in
-            `update_cartesian_representation()`.  If you change an atom's position
-            (or mass) and forget to call `update_cartesian_representation()`, you may
-            get some funny results for this property. You can detect whether caching
-            is causing your problems by setting the environment variable
-            `GRENDEL_NO_CACHE` to 1 and rerunning your tests.  If tests that were failing
-            subsequently succeed, you probably forgot to call `update_cartesian_representation()`
-            somewhere, or you were assuming that it was automatically called somewhere when
-            in fact it was not getting called.
+           This property is cached, and the cached value gets flushed in
+           `update_cartesian_representation()`.  If you change an atom's position
+           (or mass) and forget to call `update_cartesian_representation()`, you may
+           get some funny results for this property. You can detect whether caching
+           is causing your problems by setting the environment variable
+           `GRENDEL_NO_CACHE` to 1 and rerunning your tests.  If tests that were failing
+           subsequently succeed, you probably forgot to call `update_cartesian_representation()`
+           somewhere, or you were assuming that it was automatically called somewhere when
+           in fact it was not getting called.
         """
         I = self.pmi()[0]
         units = element_data.MASS_UNIT * self.cartesian_units**2
@@ -465,7 +465,7 @@ class Molecule(object):
         """ The (non-zero-point-corrected) rotational constant B_e.
 
         .. note::
-        This property is cached.  See discussion of caching in `A_e`
+           This property is cached.  See discussion of caching in `A_e`
 
         """
         I = self.pmi()[1]
@@ -481,7 +481,7 @@ class Molecule(object):
         """ The (non-zero-point-corrected) rotational constant C_e.
 
         .. note::
-        This property is cached.  See discussion of caching in `A_e`
+           This property is cached.  See discussion of caching in `A_e`
 
         """
         I = self.pmi()[2]
@@ -497,8 +497,8 @@ class Molecule(object):
         """ The first principal axis of rotation, a.  The positive phase is always chosen.
 
         .. note::
-        This property depends directly on `Molecule.principal_axes()`, which is cached.  See discussion of
-        caching in `A_e`
+           This property depends directly on `Molecule.principal_axes()`, which is cached.  See discussion of
+           caching in `A_e`
 
         """
         rv = self.principal_axes()[:,0]
@@ -515,8 +515,8 @@ class Molecule(object):
 
 
         .. note::
-        This property depends directly on `Molecule.principal_axes()`, which is cached.  See discussion of
-        caching in `A_e`
+           This property depends directly on `Molecule.principal_axes()`, which is cached.  See discussion of
+           caching in `A_e`
 
         """
         rv = self.principal_axes()[:,1]
@@ -532,8 +532,8 @@ class Molecule(object):
         """ The third principal axis of rotation, c.  The positive phase is always chosen.
 
         .. note::
-        This property depends directly on `Molecule.principal_axes()`, which is cached.  See discussion of
-        caching in `A_e`
+           This property depends directly on `Molecule.principal_axes()`, which is cached.  See discussion of
+           caching in `A_e`
 
         """
         rv = self.principal_axes()[:,2]
@@ -602,6 +602,29 @@ class Molecule(object):
     ###################
     # Special Methods #
     ###################
+
+    def __add__(self, other):
+        if isinstance(other, Molecule):
+            new_atoms = list(self.atoms) + list(other.atoms)
+            if self.description is None or other.description is None:
+                new_desc = None
+            else:
+                new_desc = self.description + " + " + other.description
+            if self.cartesian_units != other.cartesian_units:
+                raise NotImplementedError()
+            if self.multiplicity != 1 or other.multiplicity != 1:
+                raise NotImplementedError()
+            new_charge = self.charge + other.charge
+            return Molecule(
+                atoms=new_atoms,
+                description=new_desc,
+                units=self.cartesian_units,
+                charge=new_charge
+            )
+        else:
+            return NotImplemented
+
+
 
     def __contains__(self, item):
         for atom in self:
@@ -708,8 +731,8 @@ class Molecule(object):
             * Molecule.from_z_matrix(atoms, create_representation = False)
 
 
-        Examples
-        --------
+        :Examples:
+
 
         >>> Molecule.from_z_matrix(\"""
         ... O
@@ -1049,8 +1072,8 @@ class Molecule(object):
 
         Note:  `Molecule.get()` is a *very* useful alias for this.
 
-        Examples
-        --------
+        :Examples:
+
         TODO
 
         """
@@ -1111,8 +1134,8 @@ class Molecule(object):
         This actually computes the vector from the origin to the center of mass and then determines if the magnitude of
         that vector is less than `tol`.
 
-        Parameters
-        ----------
+        :Parameters:
+
         tol : float or ValueWithUnits
             The maximum 'off-centeredness' that will be tolerated and still return True.  If a `float` is given,
             the units are assumed to be DistanceUnit.default
@@ -1130,7 +1153,6 @@ class Molecule(object):
             com /= sum(atom.mass for atom in self)
             return magnitude(com) < tol
 
-
     def is_linear(self, tol=None):
         """ True if the molecule is linear to within `tol`.  All diatomics should return True.
 
@@ -1142,13 +1164,13 @@ class Molecule(object):
         `tol` is assumed to have units of AngularUnit.default and the method proceeds as if `tol.units` was an
         `AngularUnit` subclass.
 
-        Parameters
-        ----------
+        :Parameters:
+
         tol : float or ValueWithUnits
             The linearity tolerance.
 
-        Examples
-        --------
+        :Examples:
+
         >>> from grendel.chemistry import SampleMolecules, init_sample_molecules
         >>> init_sample_molecules()
         >>> SampleMolecules['water'].is_linear()
@@ -1187,8 +1209,8 @@ class Molecule(object):
         and the `reoriented()` versions of `self` and `other` have no atoms whose pairwise
         position difference has a magnitude greater than `tol` (which defaults to 1e-8 Angstroms)
 
-        Examples
-        --------
+        :Examples:
+
         >>> mol = Molecule('''
         ...     O 1.5 0.0 0.0
         ...     H 0.2 0.0 0.0
@@ -1379,8 +1401,8 @@ class Molecule(object):
         """ Recenters the molecule about the center of mass
         This modifies the molecule in place.
 
-        Examples
-        --------
+        :Examples:
+
 
         >>> m = Molecule([Atom("O", [1.1, 1.3, 1.7])])
         >>> m
@@ -1418,8 +1440,8 @@ class Molecule(object):
     def recentered(self):
         """ Same as `recenter`, but makes returns a copy.  `self` is not modified.
 
-        Examples
-        --------
+        :Examples:
+
 
         >>> foo = Molecule([Atom("O", [1.3, 1.7, 2.0])])
         >>> bar = foo.recentered()
@@ -1443,14 +1465,14 @@ class Molecule(object):
     def reorient(self, representation = "II"):
         """ Reorient the molecule to align the x, y, and z axes with the principal axes of rotation.
 
-        Parameters
-        ----------
+        :Parameters:
+
         representation : str, optional
             Must be one of "I", "II", or "III".  "I" means {x,y,z} = {b,c,a}.  "II" (the default) means
             {x,y,z} = {c,a,b}.  "III" means {x,y,z} = {a,b,c}
 
-        Examples
-        --------
+        :Examples:
+
 
         >>> from grendel.chemistry import SampleMolecules, init_sample_molecules
         >>> init_sample_molecules()
@@ -1512,8 +1534,8 @@ class Molecule(object):
     def reoriented(self, representation = "II"):
         """ Same as `reorient`, but makes returns a copy.  `self` is not modified.
 
-        Examples
-        --------
+        :Examples:
+
 
         >>> from grendel.chemistry import SampleMolecules, init_sample_molecules
         >>> init_sample_molecules()
@@ -1559,6 +1581,13 @@ class Molecule(object):
         ret_val.rotate(axis, angle)
         return ret_val
 
+    def translate(self, translation):
+        translation = strip_units(translation, self.cartesian_units, assume_units=self.cartesian_units)
+        for atom in self:
+            atom.position += translation
+        self.update_cartesian_representation()
+        return self
+
     def inertial_system(self):
         """ Returns a tuple of the principal moments of inertia vector and the principal axes matrix.
 
@@ -1567,20 +1596,20 @@ class Molecule(object):
         Computes the principal moments of inertia and the principal axes.
 
         .. note::
-        This funtion `mol.recenter()` if the molecule is not centered, so any `CartesianRepresentations`
-        that are not both `frozen` and referenced elsewhere (e.g. in a `RepresentationDependentProperty`)
-        will be lost forever.
+           This funtion `mol.recenter()` if the molecule is not centered, so any `CartesianRepresentations`
+           that are not both `frozen` and referenced elsewhere (e.g. in a `RepresentationDependentProperty`)
+           will be lost forever.
 
         .. note::
-        This method is cached.  See discussion of the consequences of caching in `Molecule.center_of_mass()`
+           This method is cached.  See discussion of the consequences of caching in `Molecule.center_of_mass()`
 
-        Returns
-        -------
+        :Returns:
+
         A tuple with types (`Vector`, `Matrix`) containing the principal moments of inertia and the principal axes,
         respectively.  These should be aligned (i.e. ret_val[0][1] corresponds to the vector ret_val[1][1])
 
-        Examples
-        --------
+        :Examples:
+
 
         >>> hnco = Molecule.from_z_matrix(\"""
         ... N
@@ -1642,15 +1671,15 @@ class Molecule(object):
         """ The principal moments of inertia, as a `Vector`
 
         .. note::
-        This funtion `mol.recenter()` if the molecule is not centered, so any `CartesianRepresentations`
-        that are not both `frozen` and referenced elsewhere (e.g. in a `RepresentationDependentProperty`)
-        will be lost forever.
+           This funtion `mol.recenter()` if the molecule is not centered, so any `CartesianRepresentations`
+           that are not both `frozen` and referenced elsewhere (e.g. in a `RepresentationDependentProperty`)
+           will be lost forever.
 
         .. note::
-        This method is cached.  See discussion of the consequences of caching in `Molecule.center_of_mass()`
+           This method is cached.  See discussion of the consequences of caching in `Molecule.center_of_mass()`
 
-        Examples
-        --------
+        :Examples:
+
 
         >>> hnco = Molecule.from_z_matrix(\"""
         ... N
@@ -1665,8 +1694,8 @@ class Molecule(object):
         Vector([  0.60187342,  45.48378728,  46.0856607 ])
 
 
-        See Also
-        --------
+        :See Also:
+
         principal_axes, inertial_system, A_e, B_e, C_e
 
         """
@@ -1682,15 +1711,15 @@ class Molecule(object):
         mol.principal_axes()
 
         .. note::
-        This funtion `mol.recenter()` if the molecule is not centered, so any `CartesianRepresentations`
-        that are not both `frozen` and referenced elsewhere (e.g. in a `RepresentationDependentProperty`)
-        will be lost forever.
+           This funtion `mol.recenter()` if the molecule is not centered, so any `CartesianRepresentations`
+           that are not both `frozen` and referenced elsewhere (e.g. in a `RepresentationDependentProperty`)
+           will be lost forever.
 
         .. note::
-        This method is cached.  See discussion of the consequences of caching in `Molecule.center_of_mass()`
+           This method is cached.  See discussion of the consequences of caching in `Molecule.center_of_mass()`
 
-        Examples
-        --------
+        :Examples:
+
 
         >>> hnco = Molecule.from_z_matrix(\"""
         ... N
@@ -1705,8 +1734,8 @@ class Molecule(object):
                 [ 0.9951168 ,  0.09870438,  0.        ]])
 
 
-        See Also
-        --------
+        :See Also:
+
         principal_moments_of_inertia, inertial_system, A_e, B_e, C_e
         """
         return self.inertial_system()[1]
@@ -1756,16 +1785,16 @@ class Molecule(object):
         """ Returns the index of `atom` in the atoms array of the molecule
 
         .. note::
-        This method returns a cached property `Atom.index`.  If you reorder the atoms in a molecule,
-        be sure and flush this cache by setting `atom._index` to `None` for all of the atoms in the
-        reordered molecule.
+           This method returns a cached property `Atom.index`.  If you reorder the atoms in a molecule,
+           be sure and flush this cache by setting `atom._index` to `None` for all of the atoms in the
+           reordered molecule.
 
-        Raises
-        ------
+        :Raises:
+
         IndexError : if `atom` is not found in `self`
 
-        Examples
-        --------
+        :Examples:
+
         >>> from grendel.chemistry import SampleMolecules, init_sample_molecules
         >>> init_sample_molecules()
         >>> h2o = SampleMolecules['water']
@@ -1800,8 +1829,8 @@ class Molecule(object):
 
         See `Molecule.xyz_string() for more details.
 
-        See Also
-        --------
+        :See Also:
+
         xyz_string
 
         """
@@ -1820,8 +1849,8 @@ class Molecule(object):
         The second line (which is a comment in the xyz specification) is filled by the
         description first line of the `description` attribute.
 
-        Parameters
-        ----------
+        :Parameters:
+
         format_str : str, optional
             The format to apply to the lines of the xyz output.  The default is `"%-3s %12.8f %12.8f %12.8f"`, which
             should be fine for most purposes.
@@ -1829,8 +1858,8 @@ class Molecule(object):
             Whether or not to include the standard two-line header which is part of the standard xyz format (defaults to True)
 
 
-        Examples
-        --------
+        :Examples:
+
 
         >>> from __future__ import print_function
         >>> from grendel.chemistry import SampleMolecules, init_sample_molecules

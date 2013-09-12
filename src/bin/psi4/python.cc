@@ -104,9 +104,10 @@ namespace psi {
     namespace dfmp2      { PsiReturnType dfmp2grad(Options &);}
     namespace sapt       { PsiReturnType sapt(Options &);     }
     namespace dftsapt    { PsiReturnType dftsapt(boost::shared_ptr<Wavefunction> dimer, boost::shared_ptr<Wavefunction> mA, boost::shared_ptr<Wavefunction> mB); }
-    namespace dftsapt    { PsiReturnType asapt(boost::shared_ptr<Wavefunction> dimer, boost::shared_ptr<Wavefunction> mA, boost::shared_ptr<Wavefunction> mB, boost::shared_ptr<Wavefunction> eA, boost::shared_ptr<Wavefunction> eB); }
+    namespace dftsapt    { PsiReturnType asapt(boost::shared_ptr<Wavefunction> dimer, boost::shared_ptr<Wavefunction> mA, boost::shared_ptr<Wavefunction> mB); }
     namespace dftsapt    { PsiReturnType infsapt(boost::shared_ptr<Wavefunction> dimer, boost::shared_ptr<Wavefunction> mA, boost::shared_ptr<Wavefunction> mB); }
     namespace dcft       { PsiReturnType dcft(Options &);     }
+    namespace lmp2       { PsiReturnType lmp2(Options &);     }
     namespace mcscf      { PsiReturnType mcscf(Options &);    }
     namespace psimrcc    { PsiReturnType psimrcc(Options &);  }
     namespace transqt    { PsiReturnType transqt(Options &);  }
@@ -170,6 +171,14 @@ void py_reopen_outfile()
         if (outfile == NULL)
             throw PSIEXCEPTION("PSI4: Unable to reopen output file.");
     }
+}
+
+void py_be_quiet()
+{
+	py_close_outfile();
+	outfile = fopen("/dev/null", "a");
+	if (outfile == NULL)
+		throw PSIEXCEPTION("PSI4: Unable to redirect output to /dev/null.");
 }
 
 std::string py_get_outfile_name()
@@ -369,6 +378,16 @@ double py_psi_dcft()
         return 0.0;
 }
 
+double py_psi_lmp2()
+{
+    py_psi_prepare_options_for_module("LMP2");
+    if (lmp2::lmp2(Process::environment.options) == Success) {
+        return Process::environment.globals["CURRENT ENERGY"];
+    }
+    else
+        return 0.0;
+}
+
 double py_psi_dfmp2()
 {
     py_psi_prepare_options_for_module("DFMP2");
@@ -409,10 +428,10 @@ double py_psi_dftsapt(boost::shared_ptr<Wavefunction> dimer, boost::shared_ptr<W
         return 0.0;
 }
 
-double py_psi_asapt(boost::shared_ptr<Wavefunction> dimer, boost::shared_ptr<Wavefunction> mA, boost::shared_ptr<Wavefunction> mB, boost::shared_ptr<Wavefunction> eA, boost::shared_ptr<Wavefunction> eB)
+double py_psi_asapt(boost::shared_ptr<Wavefunction> dimer, boost::shared_ptr<Wavefunction> mA, boost::shared_ptr<Wavefunction> mB)
 {
     py_psi_prepare_options_for_module("DFTSAPT");
-    if (dftsapt::asapt(dimer, mA, mB, eA, eB) == Success) {
+    if (dftsapt::asapt(dimer, mA, mB) == Success) {
         return Process::environment.globals["SAPT ENERGY"];
     }
     else
@@ -1281,6 +1300,7 @@ BOOST_PYTHON_MODULE(psi4)
     def("close_outfile", py_close_outfile, "Closes the output file.");
     def("reopen_outfile", py_reopen_outfile, "Reopens the output file.");
     def("outfile_name", py_get_outfile_name, "Returns the name of the output file.");
+    def("be_quiet", py_be_quiet, "Redirects output to /dev/null.  To switch back to regular output mode, use reopen_outfile()");
 
     // modules
     def("mints", py_psi_mints, "Runs mints, which generate molecular integrals on disk.");
@@ -1294,10 +1314,10 @@ BOOST_PYTHON_MODULE(psi4)
     def("scf", py_psi_scf_callbacks, "Runs the SCF code.");
     def("scf", py_psi_scf, "Runs the SCF code.");
     def("dcft", py_psi_dcft, "Runs the density cumulant functional theory code.");
+    def("lmp2", py_psi_lmp2, "Runs the local MP2 code.");
     def("libfock", py_psi_libfock, "Runs a CPHF calculation, using libfock.");
     def("dfmp2", py_psi_dfmp2, "Runs the DF-MP2 code.");
     def("dfmp2grad", py_psi_dfmp2grad, "Runs the DF-MP2 gradient.");
-//    def("lmp2", py_psi_lmp2, "docstring");
 //    def("mp2", py_psi_mp2, "Runs the conventional (slow) MP2 code.");
     def("mcscf", py_psi_mcscf, "Runs the MCSCF code, (N.B. restricted to certain active spaces).");
     def("mrcc_generate_input", py_psi_mrcc_generate_input, "Generates an input for Kallay's MRCC code.");

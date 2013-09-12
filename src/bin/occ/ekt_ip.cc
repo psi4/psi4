@@ -41,7 +41,9 @@ void OCCWave::ekt_ip()
 //========================= RHF =============================================================
 //===========================================================================================
      // Memory allocation
-     SharedMatrix GFock_primeA = boost::shared_ptr<Matrix>(new Matrix("Alpha OO-block GF prime", nirrep_, nmopi_, nmopi_));
+     SharedMatrix GFock_primeA = boost::shared_ptr<Matrix>(new Matrix("Alpha GF prime", nirrep_, nmopi_, nmopi_));
+     SharedMatrix GFock_copyA = boost::shared_ptr<Matrix>(new Matrix("Alpha GF copy", nirrep_, nmopi_, nmopi_));
+     SharedMatrix g1symm_copyA = boost::shared_ptr<Matrix>(new Matrix("Alpha OPDM copy", nirrep_, nmopi_, nmopi_));
      SharedMatrix g1HalfA = boost::shared_ptr<Matrix>(new Matrix("g^-1/2", nirrep_, nmopi_, nmopi_));
      SharedMatrix UvecA = boost::shared_ptr<Matrix>(new Matrix("UvecA", nirrep_, nmopi_, nmopi_));
      SharedMatrix Uvec_primeA = boost::shared_ptr<Matrix>(new Matrix("Uvec_primeA", nirrep_, nmopi_, nmopi_));
@@ -59,11 +61,57 @@ void OCCWave::ekt_ip()
               GFockB->scale(0.5);  
      }
 
+     // Make sure GFM is symmetric
+     if (sym_gfm_ == "TRUE" && reference_ == "RESTRICTED") {
+         SharedMatrix temp(GFock->transpose());
+         GFock_copyA->copy(GFock);
+         GFock_copyA->add(temp);
+         GFock_copyA->scale(0.5);
+         GFock->copy(GFock_copyA);
+         if (print_ >=2 ) GFock->print();
+
+         // Symm OPDM
+         SharedMatrix temp2(g1symm->transpose());
+         g1symm_copyA->copy(g1symm);
+         g1symm_copyA->add(temp2);
+         g1symm_copyA->scale(0.5);
+         g1symm->copy(g1symm_copyA);
+         if (print_ >=2 ) g1symm->print();
+     } 
+
+
      // Diagonalize OPDM
      UvecA->zero();
      Diag_g1A->zero();
      if (reference_ == "RESTRICTED") g1symm->diagonalize(UvecA, Diag_g1A);
      else if (reference_ == "UNRESTRICTED") g1symmA->diagonalize(UvecA, Diag_g1A);
+
+     /*
+     // Print g^(-1/2)
+     for (int h = 0; h < nirrep_; ++h) {
+          for (int i = 0; i < nmopi_[h]; ++i) {
+               fprintf(outfile,"\t h, i, Diag_g1A: %3d %3d %20.14f \n", h, i, Diag_g1A->get(h, i));
+               fflush(outfile);
+          }
+     }
+     */
+
+     // Make sure all eigenvalues are positive
+     for (int h = 0; h < nirrep_; ++h) {
+          for (int i = 0; i < nmopi_[h]; ++i) {
+               if (Diag_g1A->get(h, i) < 0.0) Diag_g1A->set(h, i, -1.0*Diag_g1A->get(h, i));
+          }
+     }
+
+     /*
+     // Again Print g^(-1/2)
+     for (int h = 0; h < nirrep_; ++h) {
+          for (int i = 0; i < nmopi_[h]; ++i) {
+               fprintf(outfile,"\t h, i, Diag_g1A: %3d %3d %20.14f \n", h, i, Diag_g1A->get(h, i));
+               fflush(outfile);
+          }
+     }
+     */
 
      // Form g^(-1/2)
      for (int h = 0; h < nirrep_; ++h) {
@@ -228,6 +276,8 @@ void OCCWave::ekt_ip()
 if (reference_ == "UNRESTRICTED") {
      // Memory allocation
      SharedMatrix GFock_primeB = boost::shared_ptr<Matrix>(new Matrix("Beta OO-block GF prime", nirrep_, nmopi_, nmopi_));
+     SharedMatrix GFock_copyB = boost::shared_ptr<Matrix>(new Matrix("Beta GF copy", nirrep_, nmopi_, nmopi_));
+     SharedMatrix g1symm_copyB = boost::shared_ptr<Matrix>(new Matrix("Alpha OPDM copy", nirrep_, nmopi_, nmopi_));
      SharedMatrix g1HalfB = boost::shared_ptr<Matrix>(new Matrix("g^-1/2", nirrep_, nmopi_, nmopi_));
      SharedMatrix UvecB = boost::shared_ptr<Matrix>(new Matrix("UvecB", nirrep_, nmopi_, nmopi_));
      SharedMatrix Uvec_primeB = boost::shared_ptr<Matrix>(new Matrix("Uvec_primeB", nirrep_, nmopi_, nmopi_));
@@ -238,10 +288,50 @@ if (reference_ == "UNRESTRICTED") {
      SharedVector ps_vecB = boost::shared_ptr<Vector>(new Vector("Beta pole strength vector", nirrep_, nmopi_));
      SharedVector eorbB = boost::shared_ptr<Vector>(new Vector("eorbB", nirrep_, nmopi_));
 
+     // Make sure GFM is symmetric
+     if (sym_gfm_ == "TRUE") {
+         // alpha spin
+         SharedMatrix temp_A(GFockA->transpose());
+         GFock_copyA->copy(GFockA);
+         GFock_copyA->add(temp_A);
+         GFock_copyA->scale(0.5);
+         GFockA->copy(GFock_copyA);
+
+         // beta spin
+         SharedMatrix temp_B(GFockB->transpose());
+         GFock_copyB->copy(GFockB);
+         GFock_copyB->add(temp_B);
+         GFock_copyB->scale(0.5);
+         GFockB->copy(GFock_copyB);
+
+         // Symm OPDM alpha
+         SharedMatrix temp2A(g1symmA->transpose());
+         g1symm_copyA->copy(g1symmA);
+         g1symm_copyA->add(temp2A);
+         g1symm_copyA->scale(0.5);
+         g1symmA->copy(g1symm_copyA);
+         if (print_ >=2 ) g1symmA->print();
+
+         // Symm OPDM alpha
+         SharedMatrix temp2B(g1symmB->transpose());
+         g1symm_copyB->copy(g1symmB);
+         g1symm_copyB->add(temp2B);
+         g1symm_copyB->scale(0.5);
+         g1symmB->copy(g1symm_copyB);
+         if (print_ >=2 ) g1symmB->print();
+     } 
+
      // Diagonalize OPDM
      UvecB->zero();
      Diag_g1B->zero();
      g1symmB->diagonalize(UvecB, Diag_g1B);
+
+     // Make sure all eigenvalues are positive
+     for (int h = 0; h < nirrep_; ++h) {
+          for (int i = 0; i < nmopi_[h]; ++i) {
+               if (Diag_g1B->get(h, i) < 0.0) Diag_g1B->set(h, i, -1.0*Diag_g1B->get(h, i));
+          }
+     }
 
      // Form g^(-1/2)
      for (int h = 0; h < nirrep_; ++h) {

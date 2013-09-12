@@ -32,7 +32,7 @@ for pyfile in glob.glob(DriverPath + '../../lib/python/*.py'):
     basename = os.path.splitext(filename)[0]
     div = '=' * len(basename)
 
-    if basename not in ['inpsight', 'pep8', 'sampmod', 'psifiles', 'diatomic_fits']:
+    if basename not in ['inpsight', 'pep8', 'sampmod', 'psifiles', 'diatomic_fits', 'pyparsing']:
 
         pts('driver', basename)
         fdriver.write(basename + '\n')

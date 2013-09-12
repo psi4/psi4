@@ -94,8 +94,8 @@ class InternalRepresentation(Representation):
             * ``InternalRepresentation(molecule, coords_string, one_based=True)``
             * ``InternalRepresentation(molecule, coords=None)``
 
-        Parameters
-        ----------
+        :Parameters:
+
         molecule: `Molecule`
             The molecule to be represented
         coords_string : `str`
@@ -108,8 +108,8 @@ class InternalRepresentation(Representation):
             to an empty list.
 
 
-        Examples
-        --------
+        :Examples:
+
 
         >>> from grendel import SampleMolecules
         >>> mol = SampleMolecules["H2"]

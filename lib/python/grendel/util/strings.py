@@ -76,8 +76,8 @@ def camel_to_lower(instr, divider = "_"):
     """ Converts a CamalCase string to a lower_case_string_with_underscores
     If the `divider` argument is given, it is used instead of underscores to join words.
 
-    Examples
-    --------
+    :Examples:
+
 
     """
     new_str = instr[0].lower()
@@ -129,6 +129,25 @@ def orjoin(iterable, fxn=str, oxford_comma=True):
     else:
         return ', '.join(fxn(i) for i in l[:-1]) + (',' if oxford_comma else '') + ' or ' + fxn(l[-1])
 
+def simple_banner(
+        text,
+        width=100,
+        top='-',
+        left='|',
+        right='|',
+        bottom='-',
+        top_left='+',
+        top_right=None,
+        bottom_left=None,
+        bottom_right=None
+):
+    if top_right is None: top_right = top_left
+    if bottom_left is None: bottom_left = top_left
+    if bottom_right is None: bottom_right = top_right
+    rv = top_left + (top*(width-2)) + top_right + "\n"
+    rv += left + "{{0:^{0}}}".format(width-2).format(text) + right + "\n"
+    rv += bottom_left + (bottom*(width-2)) + bottom_right
+    return rv
 
 #####################
 # Dependent Imports #

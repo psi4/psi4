@@ -119,12 +119,8 @@ public:
     const double *buffer() const { return target_; }
 
     /// Get a python list version of the current buffer
-    const boost::python::list py_buffer() const {
-        boost::python::list ret_val;
-        for(int i = 0; i < curr_buff_size_; ++i)
-            ret_val.append(target_[i]);
-        return ret_val;
-    }
+    /// DEPRECATED Use py_buffer_object when possible
+    const boost::python::list py_buffer() const;
 
     const PyBuffer<double>* py_buffer_object() const {
         if(!enable_pybuffer_) {
@@ -141,19 +137,19 @@ public:
     const IntegralFactory* integral() const { return integral_; }
 
     /// Compute ERIs between 4 shells. Result is stored in buffer.
-    virtual void compute_shell(const AOShellCombinationsIterator&) = 0;
+    virtual size_t compute_shell(const AOShellCombinationsIterator&) = 0;
 
     /// Compute the integrals
-    virtual void compute_shell(int, int, int, int) = 0;
+    virtual size_t compute_shell(int, int, int, int) = 0;
 
     /// Is the shell zero?
     virtual int shell_is_zero(int,int,int,int) { return 0; }
 
     /// Compute the first derivatives
-    virtual void compute_shell_deriv1(int, int, int, int) = 0;
+    virtual size_t compute_shell_deriv1(int, int, int, int) = 0;
 
     /// Compute the second derivatives
-    virtual void compute_shell_deriv2(int, int, int, int) = 0;
+    virtual size_t compute_shell_deriv2(int, int, int, int) = 0;
 
     /// Normalize Cartesian functions based on angular momentum
     void normalize_am(boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>, int nchunk=1);

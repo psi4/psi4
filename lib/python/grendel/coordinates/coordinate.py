@@ -41,7 +41,7 @@ class Coordinate(Unitized):
     classes.[#f1]_  Let me say that again a bit louder:
 
     .. note::
-        All coordinates are immutable!
+       All coordinates are immutable!
 
     Parentage and the `molecule` attribute
     --------------------------------------
@@ -244,9 +244,9 @@ class Coordinate(Unitized):
         the end of this method (if they do not, a SuperCallMissingError is raised).
 
         .. note::
-        This method should not make any modifications to the `Coordinate` itself, since it is
-        only called when `sanity_checking_enabled` is `True`.  Use `_finilize_initialization()`
-        for this purpose.
+           This method should not make any modifications to the `Coordinate` itself, since it is
+           only called when `sanity_checking_enabled` is `True`.  Use `_finilize_initialization()`
+           for this purpose.
         """
         #--------------------------------------------------------------------------------#
         # Type 1 coordinate: non-orphaned
@@ -417,15 +417,15 @@ class Coordinate(Unitized):
         indexing scheme, it would have to have all of this structure in place just to get a value.
 
         .. note::
-        Since all `Coordinate`s depend on `Atom`s and `Atom`s are not immutible, a `Coordinate`s
-        `value` and other properties such as its `b_vector` *can* change even if the `Coordinate`
-        itself cannot.  The one way around this is to specify `freeze_value` as `True` in the
-        `Coordinate`'s constructor.  If that is done, the value of the `Coordinate` will not
-        change over the life of the instance, even if the positions of the constituant atoms
-        does change (so if you use this, make sure you know what you are doing).  This behavior
-        is useful, for instance, in the use of `CartesianRepresentation`s as "snapshots" of
-        a `Molecule` instance to be used for the parsing of a particular
-        `RepresentationDependentProperty`.
+           Since all `Coordinate`s depend on `Atom`s and `Atom`s are not immutible, a `Coordinate`s
+           `value` and other properties such as its `b_vector` *can* change even if the `Coordinate`
+           itself cannot.  The one way around this is to specify `freeze_value` as `True` in the
+           `Coordinate`'s constructor.  If that is done, the value of the `Coordinate` will not
+           change over the life of the instance, even if the positions of the constituant atoms
+           does change (so if you use this, make sure you know what you are doing).  This behavior
+           is useful, for instance, in the use of `CartesianRepresentation`s as "snapshots" of
+           a `Molecule` instance to be used for the parsing of a particular
+           `RepresentationDependentProperty`.
         """
         return NotImplemented
 
@@ -466,8 +466,8 @@ class Coordinate(Unitized):
         The molecule associated with the `Coordinate`.
 
         .. note::
-        The molecule's atoms' positions may not correspond to the positions of the atoms the
-        coordinate describes.  See the class documentation for `Coordinate` for details.
+           The molecule's atoms' positions may not correspond to the positions of the atoms the
+           coordinate describes.  See the class documentation for `Coordinate` for details.
 
         """
         if not self.is_orphaned():
@@ -565,8 +565,8 @@ class Coordinate(Unitized):
         the parent `Molecule`'s indexing scheme, not the `Coordinate`'s own indexing scheme.
 
         .. note::
-        For angular coordinates, this *always* returns a value in Radians.  `value`,
-        `value_with_units`, and `value_for_molecule`, however, return values in `self.units`
+           For angular coordinates, this *always* returns a value in Radians.  `value`,
+           `value_with_units`, and `value_for_molecule`, however, return values in `self.units`
 
         """
         return NotImplemented

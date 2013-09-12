@@ -109,8 +109,10 @@ boost::shared_ptr<DFTSAPT> DFTSAPT::build(boost::shared_ptr<Wavefunction> d,
     sapt->eps_occ_A_  = mA->epsilon_a_subset("AO","OCC");
     sapt->eps_vir_A_  = mA->epsilon_a_subset("AO","VIR");
 
+    sapt->Cfocc_A_    = mA->Ca_subset("AO","FROZEN_OCC");
     sapt->Caocc_A_    = mA->Ca_subset("AO","ACTIVE_OCC");
     sapt->Cavir_A_    = mA->Ca_subset("AO","ACTIVE_VIR");
+    sapt->Cfvir_A_    = mA->Ca_subset("AO","FROZEN_VIR");
 
     sapt->eps_focc_A_ = mA->epsilon_a_subset("AO","FROZEN_OCC");
     sapt->eps_aocc_A_ = mA->epsilon_a_subset("AO","ACTIVE_OCC");
@@ -122,8 +124,10 @@ boost::shared_ptr<DFTSAPT> DFTSAPT::build(boost::shared_ptr<Wavefunction> d,
     sapt->eps_occ_B_  = mB->epsilon_a_subset("AO","OCC");
     sapt->eps_vir_B_  = mB->epsilon_a_subset("AO","VIR");
 
+    sapt->Cfocc_B_    = mB->Ca_subset("AO","FROZEN_OCC");
     sapt->Caocc_B_    = mB->Ca_subset("AO","ACTIVE_OCC");
     sapt->Cavir_B_    = mB->Ca_subset("AO","ACTIVE_VIR");
+    sapt->Cfvir_B_    = mB->Ca_subset("AO","FROZEN_VIR");
 
     sapt->eps_focc_B_ = mB->epsilon_a_subset("AO","FROZEN_OCC");
     sapt->eps_aocc_B_ = mB->epsilon_a_subset("AO","ACTIVE_OCC");
@@ -217,13 +221,13 @@ void DFTSAPT::fock_terms()
 
     // => Compute the D matrices <= //
 
-    boost::shared_ptr<Matrix> D_A    = doublet(Cocc_A_, Cocc_A_,false,true);
-    boost::shared_ptr<Matrix> D_B    = doublet(Cocc_B_, Cocc_B_,false,true);
+    boost::shared_ptr<Matrix> D_A    = Matrix::doublet(Cocc_A_, Cocc_A_,false,true);
+    boost::shared_ptr<Matrix> D_B    = Matrix::doublet(Cocc_B_, Cocc_B_,false,true);
 
     // => Compute the P matrices <= //
 
-    boost::shared_ptr<Matrix> P_A    = doublet(Cvir_A_, Cvir_A_,false,true);
-    boost::shared_ptr<Matrix> P_B    = doublet(Cvir_B_, Cvir_B_,false,true);
+    boost::shared_ptr<Matrix> P_A    = Matrix::doublet(Cvir_A_, Cvir_A_,false,true);
+    boost::shared_ptr<Matrix> P_B    = Matrix::doublet(Cvir_B_, Cvir_B_,false,true);
 
     // => Compute the S matrix <= //
 
@@ -267,7 +271,7 @@ void DFTSAPT::fock_terms()
     Sij.reset();
     Sij_n.reset();
 
-    boost::shared_ptr<Matrix> C_AS = triplet(P_B,S,Cocc_A_);
+    boost::shared_ptr<Matrix> C_AS = Matrix::triplet(P_B,S,Cocc_A_);
 
     // => Load the JK Object <= //
 
@@ -351,10 +355,10 @@ void DFTSAPT::fock_terms()
 
     // => Compute the T matrices <= //
 
-    boost::shared_ptr<Matrix> T_A_n  = doublet(Cocc_A_, C_T_A_n, false, true);
-    boost::shared_ptr<Matrix> T_B_n  = doublet(Cocc_B_, C_T_B_n, false, true);
-    boost::shared_ptr<Matrix> T_BA_n = doublet(Cocc_B_, C_T_BA_n, false, true);
-    boost::shared_ptr<Matrix> T_AB_n = doublet(Cocc_A_, C_T_AB_n, false, true);
+    boost::shared_ptr<Matrix> T_A_n  = Matrix::doublet(Cocc_A_, C_T_A_n, false, true);
+    boost::shared_ptr<Matrix> T_B_n  = Matrix::doublet(Cocc_B_, C_T_B_n, false, true);
+    boost::shared_ptr<Matrix> T_BA_n = Matrix::doublet(Cocc_B_, C_T_BA_n, false, true);
+    boost::shared_ptr<Matrix> T_AB_n = Matrix::doublet(Cocc_A_, C_T_AB_n, false, true);
 
     C_T_A_n.reset();
     C_T_B_n.reset();
@@ -411,11 +415,11 @@ void DFTSAPT::fock_terms()
     double Exch10_2 = 0.0;
     std::vector<double> Exch10_2_terms;
     Exch10_2_terms.resize(3);
-    Exch10_2_terms[0] -= 2.0 * triplet(triplet(D_A,S,D_B),S,P_A)->vector_dot(V_B);
-    Exch10_2_terms[0] -= 4.0 * triplet(triplet(D_A,S,D_B),S,P_A)->vector_dot(J_B);
-    Exch10_2_terms[1] -= 2.0 * triplet(triplet(D_B,S,D_A),S,P_B)->vector_dot(V_A);
-    Exch10_2_terms[1] -= 4.0 * triplet(triplet(D_B,S,D_A),S,P_B)->vector_dot(J_A);
-    Exch10_2_terms[2] -= 2.0 * triplet(P_A,S,D_B)->vector_dot(K_AS);
+    Exch10_2_terms[0] -= 2.0 * Matrix::triplet(Matrix::triplet(D_A,S,D_B),S,P_A)->vector_dot(V_B);
+    Exch10_2_terms[0] -= 4.0 * Matrix::triplet(Matrix::triplet(D_A,S,D_B),S,P_A)->vector_dot(J_B);
+    Exch10_2_terms[1] -= 2.0 * Matrix::triplet(Matrix::triplet(D_B,S,D_A),S,P_B)->vector_dot(V_A);
+    Exch10_2_terms[1] -= 4.0 * Matrix::triplet(Matrix::triplet(D_B,S,D_A),S,P_B)->vector_dot(J_A);
+    Exch10_2_terms[2] -= 2.0 * Matrix::triplet(P_A,S,D_B)->vector_dot(K_AS);
     for (int k = 0; k < Exch10_2_terms.size(); k++) {
         Exch10_2 += Exch10_2_terms[k];
     }
@@ -437,9 +441,9 @@ void DFTSAPT::fock_terms()
 
     // => ExchInd pertubations <= //
 
-    boost::shared_ptr<Matrix> C_O_A = triplet(D_B,S,Cocc_A_);
-    boost::shared_ptr<Matrix> C_P_A = triplet(triplet(D_B,S,D_A),S,Cocc_B_);
-    boost::shared_ptr<Matrix> C_P_B = triplet(triplet(D_A,S,D_B),S,Cocc_A_);
+    boost::shared_ptr<Matrix> C_O_A = Matrix::triplet(D_B,S,Cocc_A_);
+    boost::shared_ptr<Matrix> C_P_A = Matrix::triplet(Matrix::triplet(D_B,S,D_A),S,Cocc_B_);
+    boost::shared_ptr<Matrix> C_P_B = Matrix::triplet(Matrix::triplet(D_A,S,D_B),S,Cocc_A_);
 
     Cl.clear();
     Cr.clear();
@@ -666,75 +670,75 @@ void DFTSAPT::mp2_terms()
 
     // => Auxiliary C matrices <= //
 
-    boost::shared_ptr<Matrix> Cr1 = triplet(D_B,S,Cavir_A_);
+    boost::shared_ptr<Matrix> Cr1 = Matrix::triplet(D_B,S,Cavir_A_);
     Cr1->scale(-1.0);
     Cr1->add(Cavir_A_);
-    boost::shared_ptr<Matrix> Cs1 = triplet(D_A,S,Cavir_B_);
+    boost::shared_ptr<Matrix> Cs1 = Matrix::triplet(D_A,S,Cavir_B_);
     Cs1->scale(-1.0);
     Cs1->add(Cavir_B_);
-    boost::shared_ptr<Matrix> Ca2 = triplet(D_B,S,Caocc_A_);
-    boost::shared_ptr<Matrix> Cb2 = triplet(D_A,S,Caocc_B_);
-    boost::shared_ptr<Matrix> Cr3 = triplet(D_B,S,Cavir_A_);
-    boost::shared_ptr<Matrix> CrX = triplet(triplet(D_A,S,D_B),S,Cavir_A_);
+    boost::shared_ptr<Matrix> Ca2 = Matrix::triplet(D_B,S,Caocc_A_);
+    boost::shared_ptr<Matrix> Cb2 = Matrix::triplet(D_A,S,Caocc_B_);
+    boost::shared_ptr<Matrix> Cr3 = Matrix::triplet(D_B,S,Cavir_A_);
+    boost::shared_ptr<Matrix> CrX = Matrix::triplet(Matrix::triplet(D_A,S,D_B),S,Cavir_A_);
     Cr3->subtract(CrX);
     Cr3->scale(2.0);
-    boost::shared_ptr<Matrix> Cs3 = triplet(D_A,S,Cavir_B_);
-    boost::shared_ptr<Matrix> CsX = triplet(triplet(D_B,S,D_A),S,Cavir_B_);
+    boost::shared_ptr<Matrix> Cs3 = Matrix::triplet(D_A,S,Cavir_B_);
+    boost::shared_ptr<Matrix> CsX = Matrix::triplet(Matrix::triplet(D_B,S,D_A),S,Cavir_B_);
     Cs3->subtract(CsX);
     Cs3->scale(2.0);
-    boost::shared_ptr<Matrix> Ca4 = triplet(triplet(D_A,S,D_B),S,Caocc_A_);
+    boost::shared_ptr<Matrix> Ca4 = Matrix::triplet(Matrix::triplet(D_A,S,D_B),S,Caocc_A_);
     Ca4->scale(-2.0);
-    boost::shared_ptr<Matrix> Cb4 = triplet(triplet(D_B,S,D_A),S,Caocc_B_);
+    boost::shared_ptr<Matrix> Cb4 = Matrix::triplet(Matrix::triplet(D_B,S,D_A),S,Caocc_B_);
     Cb4->scale(-2.0);
 
     // => Auxiliary V matrices <= //
 
-    boost::shared_ptr<Matrix> Jbr = triplet(Caocc_B_,J_A,Cavir_A_,true,false,false);
+    boost::shared_ptr<Matrix> Jbr = Matrix::triplet(Caocc_B_,J_A,Cavir_A_,true,false,false);
     Jbr->scale(2.0);
-    boost::shared_ptr<Matrix> Kbr = triplet(Caocc_B_,K_A,Cavir_A_,true,false,false);
+    boost::shared_ptr<Matrix> Kbr = Matrix::triplet(Caocc_B_,K_A,Cavir_A_,true,false,false);
     Kbr->scale(-1.0);
 
-    boost::shared_ptr<Matrix> Jas = triplet(Caocc_A_,J_B,Cavir_B_,true,false,false);
+    boost::shared_ptr<Matrix> Jas = Matrix::triplet(Caocc_A_,J_B,Cavir_B_,true,false,false);
     Jas->scale(2.0);
-    boost::shared_ptr<Matrix> Kas = triplet(Caocc_A_,K_B,Cavir_B_,true,false,false);
+    boost::shared_ptr<Matrix> Kas = Matrix::triplet(Caocc_A_,K_B,Cavir_B_,true,false,false);
     Kas->scale(-1.0);
 
-    boost::shared_ptr<Matrix> KOas = triplet(Caocc_A_,K_O,Cavir_B_,true,false,false);
+    boost::shared_ptr<Matrix> KOas = Matrix::triplet(Caocc_A_,K_O,Cavir_B_,true,false,false);
     KOas->scale(1.0);
-    boost::shared_ptr<Matrix> KObr = triplet(Caocc_B_,K_O,Cavir_A_,true,true,false);
+    boost::shared_ptr<Matrix> KObr = Matrix::triplet(Caocc_B_,K_O,Cavir_A_,true,true,false);
     KObr->scale(1.0);
 
-    boost::shared_ptr<Matrix> JBas = triplet(triplet(Caocc_A_,S,D_B,true,false,false),J_A,Cavir_B_);
+    boost::shared_ptr<Matrix> JBas = Matrix::triplet(Matrix::triplet(Caocc_A_,S,D_B,true,false,false),J_A,Cavir_B_);
     JBas->scale(-2.0);
-    boost::shared_ptr<Matrix> JAbr = triplet(triplet(Caocc_B_,S,D_A,true,false,false),J_B,Cavir_A_);
+    boost::shared_ptr<Matrix> JAbr = Matrix::triplet(Matrix::triplet(Caocc_B_,S,D_A,true,false,false),J_B,Cavir_A_);
     JAbr->scale(-2.0);
 
-    boost::shared_ptr<Matrix> Jbs = triplet(Caocc_B_,J_A,Cavir_B_,true,false,false);
+    boost::shared_ptr<Matrix> Jbs = Matrix::triplet(Caocc_B_,J_A,Cavir_B_,true,false,false);
     Jbs->scale(4.0);
-    boost::shared_ptr<Matrix> Jar = triplet(Caocc_A_,J_B,Cavir_A_,true,false,false);
+    boost::shared_ptr<Matrix> Jar = Matrix::triplet(Caocc_A_,J_B,Cavir_A_,true,false,false);
     Jar->scale(4.0);
 
-    boost::shared_ptr<Matrix> JAas = triplet(triplet(Caocc_A_,J_B,D_A,true,false,false),S,Cavir_B_);
+    boost::shared_ptr<Matrix> JAas = Matrix::triplet(Matrix::triplet(Caocc_A_,J_B,D_A,true,false,false),S,Cavir_B_);
     JAas->scale(-2.0);
-    boost::shared_ptr<Matrix> JBbr = triplet(triplet(Caocc_B_,J_A,D_B,true,false,false),S,Cavir_A_);
+    boost::shared_ptr<Matrix> JBbr = Matrix::triplet(Matrix::triplet(Caocc_B_,J_A,D_B,true,false,false),S,Cavir_A_);
     JBbr->scale(-2.0);
 
     // Get your signs right Hesselmann!
-    boost::shared_ptr<Matrix> Vbs = triplet(Caocc_B_,V_A,Cavir_B_,true,false,false);
+    boost::shared_ptr<Matrix> Vbs = Matrix::triplet(Caocc_B_,V_A,Cavir_B_,true,false,false);
     Vbs->scale(2.0);
-    boost::shared_ptr<Matrix> Var = triplet(Caocc_A_,V_B,Cavir_A_,true,false,false);
+    boost::shared_ptr<Matrix> Var = Matrix::triplet(Caocc_A_,V_B,Cavir_A_,true,false,false);
     Var->scale(2.0);
-    boost::shared_ptr<Matrix> VBas = triplet(triplet(Caocc_A_,S,D_B,true,false,false),V_A,Cavir_B_);
+    boost::shared_ptr<Matrix> VBas = Matrix::triplet(Matrix::triplet(Caocc_A_,S,D_B,true,false,false),V_A,Cavir_B_);
     VBas->scale(-1.0);
-    boost::shared_ptr<Matrix> VAbr = triplet(triplet(Caocc_B_,S,D_A,true,false,false),V_B,Cavir_A_);
+    boost::shared_ptr<Matrix> VAbr = Matrix::triplet(Matrix::triplet(Caocc_B_,S,D_A,true,false,false),V_B,Cavir_A_);
     VAbr->scale(-1.0);
-    boost::shared_ptr<Matrix> VRas = triplet(triplet(Caocc_A_,V_B,P_A,true,false,false),S,Cavir_B_);
+    boost::shared_ptr<Matrix> VRas = Matrix::triplet(Matrix::triplet(Caocc_A_,V_B,P_A,true,false,false),S,Cavir_B_);
     VRas->scale(1.0);
-    boost::shared_ptr<Matrix> VSbr = triplet(triplet(Caocc_B_,V_A,P_B,true,false,false),S,Cavir_A_);
+    boost::shared_ptr<Matrix> VSbr = Matrix::triplet(Matrix::triplet(Caocc_B_,V_A,P_B,true,false,false),S,Cavir_A_);
     VSbr->scale(1.0);
 
-    boost::shared_ptr<Matrix> Sas = triplet(Caocc_A_,S,Cavir_B_,true,false,false);
-    boost::shared_ptr<Matrix> Sbr = triplet(Caocc_B_,S,Cavir_A_,true,false,false);
+    boost::shared_ptr<Matrix> Sas = Matrix::triplet(Caocc_A_,S,Cavir_B_,true,false,false);
+    boost::shared_ptr<Matrix> Sbr = Matrix::triplet(Caocc_B_,S,Cavir_A_,true,false,false);
 
     boost::shared_ptr<Matrix> Qbr(Jbr->clone());
     Qbr->zero();
@@ -756,8 +760,8 @@ void DFTSAPT::mp2_terms()
     Qas->add(VBas);
     Qas->add(VRas);
 
-    boost::shared_ptr<Matrix> SBar = triplet(triplet(Caocc_A_,S,D_B,true,false,false),S,Cavir_A_);
-    boost::shared_ptr<Matrix> SAbs = triplet(triplet(Caocc_B_,S,D_A,true,false,false),S,Cavir_B_);
+    boost::shared_ptr<Matrix> SBar = Matrix::triplet(Matrix::triplet(Caocc_A_,S,D_B,true,false,false),S,Cavir_A_);
+    boost::shared_ptr<Matrix> SAbs = Matrix::triplet(Matrix::triplet(Caocc_B_,S,D_A,true,false,false),S,Cavir_B_);
 
     boost::shared_ptr<Matrix> Qar(Jar->clone());
     Qar->zero();
@@ -1207,20 +1211,20 @@ void DFTSAPT::tdhf_demo()
     for (int w = 0; w < omega.size(); w++) {
 
         boost::shared_ptr<Matrix> UA = uncoupled_susceptibility(omega[w],eps_aocc_A_,eps_avir_A_,DarT);
-        boost::shared_ptr<Matrix> UAJ = doublet(UA,J);
+        boost::shared_ptr<Matrix> UAJ = Matrix::doublet(UA,J);
         UA.reset();
         boost::shared_ptr<Matrix> UB = uncoupled_susceptibility(omega[w],eps_aocc_B_,eps_avir_B_,DbsT);
-        boost::shared_ptr<Matrix> UBJ = doublet(UB,J);
+        boost::shared_ptr<Matrix> UBJ = Matrix::doublet(UB,J);
         UB.reset();
         Disp20_terms[w] -= 1.0 / (2.0 * M_PI) * alpha[w] * UAJ->vector_dot(UBJ->transpose());
         UAJ.reset();
         UBJ.reset();
 
         boost::shared_ptr<Matrix> CA = coupled_susceptibility_debug(omega[w],eps_aocc_A_,eps_avir_A_,AaaT,AarT,ArrT,DarT);
-        boost::shared_ptr<Matrix> CAJ = doublet(CA,J);
+        boost::shared_ptr<Matrix> CAJ = Matrix::doublet(CA,J);
         CA.reset();
         boost::shared_ptr<Matrix> CB = coupled_susceptibility_debug(omega[w],eps_aocc_B_,eps_avir_B_,AbbT,AbsT,AssT,DbsT);
-        boost::shared_ptr<Matrix> CBJ = doublet(CB,J);
+        boost::shared_ptr<Matrix> CBJ = Matrix::doublet(CB,J);
         CB.reset();
         Disp2C_terms[w] -= 1.0 / (2.0 * M_PI) * alpha[w] * CAJ->vector_dot(CBJ->transpose());
         CAJ.reset();
@@ -1311,7 +1315,7 @@ boost::shared_ptr<Matrix> DFTSAPT::coupled_susceptibility(
     // => k = 0 <= //
 
     boost::shared_ptr<Matrix> T = inner(vars["DarT"],vars["H2DarT"],L);
-    boost::shared_ptr<Matrix> U = doublet(IDF,T);
+    boost::shared_ptr<Matrix> U = Matrix::doublet(IDF,T);
     boost::shared_ptr<Tensor> S = fitting("SarT",vars["FparT"],U);
     axpy(vars["H2DarT"],S,1.0,1.0);
     boost::shared_ptr<Matrix> C = inner(vars["DarT"],S,L);
@@ -1327,7 +1331,7 @@ boost::shared_ptr<Matrix> DFTSAPT::coupled_susceptibility(
         //boost::shared_ptr<Tensor> R = R_product("RQarT",S,vars); // TODO
         S.reset();
         boost::shared_ptr<Matrix> T = inner(vars["DarT"],R,L);
-        boost::shared_ptr<Matrix> U = doublet(IDF,T);
+        boost::shared_ptr<Matrix> U = Matrix::doublet(IDF,T);
         T.reset();
         S = fitting("SarT",vars["FparT"],U);
         U.reset();
@@ -1667,7 +1671,8 @@ boost::shared_ptr<Matrix> DFTSAPT::build_ind_pot(std::map<std::string, boost::sh
     W->copy(J_B);
     W->scale(2.0);
     W->add(V_B);
-    return triplet(Ca,W,Cr,true,false,false);
+
+    return Matrix::triplet(Ca,W,Cr,true,false,false);
 }
 boost::shared_ptr<Matrix> DFTSAPT::build_exch_ind_pot(std::map<std::string, boost::shared_ptr<Matrix> >& vars)
 {
@@ -1697,7 +1702,7 @@ boost::shared_ptr<Matrix> DFTSAPT::build_exch_ind_pot(std::map<std::string, boos
     W->scale(-1.0);
 
     // 2
-    T = triplet(S,D_B,J_A);
+    T = Matrix::triplet(S,D_B,J_A);
     T->scale(-2.0);
     W->add(T);    
 
@@ -1712,32 +1717,32 @@ boost::shared_ptr<Matrix> DFTSAPT::build_exch_ind_pot(std::map<std::string, boos
     W->add(T);
 
     // 5
-    T = triplet(S,D_B,K_A);
+    T = Matrix::triplet(S,D_B,K_A);
     T->scale(1.0);
     W->add(T);
 
     // 6
-    T = triplet(J_B,D_B,S);
+    T = Matrix::triplet(J_B,D_B,S);
     T->scale(-2.0);
     W->add(T);
 
     // 7
-    T = triplet(K_B,D_B,S);
+    T = Matrix::triplet(K_B,D_B,S);
     T->scale(1.0);
     W->add(T);
 
     // 8
-    T = triplet(triplet(S,D_B,J_A),D_B,S);
+    T = Matrix::triplet(Matrix::triplet(S,D_B,J_A),D_B,S);
     T->scale(2.0);
     W->add(T);
 
     // 9
-    T = triplet(triplet(J_B,D_A,S),D_B,S);
+    T = Matrix::triplet(Matrix::triplet(J_B,D_A,S),D_B,S);
     T->scale(2.0);
     W->add(T);
 
     // 10
-    T = triplet(K_O,D_B,S);
+    T = Matrix::triplet(K_O,D_B,S);
     T->scale(-1.0);
     W->add(T);
 
@@ -1747,41 +1752,41 @@ boost::shared_ptr<Matrix> DFTSAPT::build_exch_ind_pot(std::map<std::string, boos
     W->add(T);
     
     // 12
-    T = triplet(triplet(S,D_B,S),D_A,J_B);
+    T = Matrix::triplet(Matrix::triplet(S,D_B,S),D_A,J_B);
     T->scale(2.0);
     W->add(T);
 
     // 13
-    T = triplet(S,D_B,K_O,false,false,true);
+    T = Matrix::triplet(S,D_B,K_O,false,false,true);
     T->scale(-1.0);
     W->add(T);
 
     // 14
-    T = triplet(S,D_B,V_A);
+    T = Matrix::triplet(S,D_B,V_A);
     T->scale(-1.0);
     W->add(T);    
     
     // 15
-    T = triplet(V_B,D_B,S);
+    T = Matrix::triplet(V_B,D_B,S);
     T->scale(-1.0);
     W->add(T);
     
     // 16
-    T = triplet(triplet(S,D_B,V_A),D_B,S);
+    T = Matrix::triplet(Matrix::triplet(S,D_B,V_A),D_B,S);
     T->scale(1.0);
     W->add(T);
 
     // 17
-    T = triplet(triplet(V_B,D_A,S),D_B,S);
+    T = Matrix::triplet(Matrix::triplet(V_B,D_A,S),D_B,S);
     T->scale(1.0);
     W->add(T);
 
     // 18
-    T = triplet(triplet(S,D_B,S),D_A,V_B);
+    T = Matrix::triplet(Matrix::triplet(S,D_B,S),D_A,V_B);
     T->scale(1.0);
     W->add(T);
 
-    return triplet(Ca,W,Cr,true,false,false);
+    return Matrix::triplet(Ca,W,Cr,true,false,false);
 }
 boost::shared_ptr<Matrix> DFTSAPT::build_S(boost::shared_ptr<BasisSet> basis)
 {
@@ -1887,37 +1892,6 @@ std::map<std::string, boost::shared_ptr<Matrix> > DFTSAPT::build_Cbar(boost::sha
     C_DGEMM('N','N',nso,nA,nB,1.0,CBp[0],nB,&Sp[nA][0],no,0.0,Cp[0],nA);
 
     return Cbar;
-}
-boost::shared_ptr<Matrix> DFTSAPT::doublet(boost::shared_ptr<Matrix> A, boost::shared_ptr<Matrix> B, bool tA, bool tB)
-{
-    int Ar = A->nrow();
-    int Ac = A->ncol();
-    int Br = B->nrow();
-    int Bc = B->ncol();
-
-    int Al = Ac;
-    int Bl = Bc;
-
-    if (tA) { int T = Ar; Ar = Ac; Ac = T; }
-    if (tB) { int T = Br; Br = Bc; Bc = T; }
-
-    if (Ac != Br) throw PSIEXCEPTION("Nonconforming GEMM");
-
-    boost::shared_ptr<Matrix> D(new Matrix("T",Ar,Bc));
-
-    double** Ap = A->pointer();
-    double** Bp = B->pointer();
-    double** Dp = D->pointer();
-
-    C_DGEMM((tA ? 'T' : 'N'),(tB ? 'T' : 'N'),Ar,Bc,Ac,1.0,Ap[0],Al,Bp[0],Bl,0.0,Dp[0],Bc);
-
-    return D;
-}
-boost::shared_ptr<Matrix> DFTSAPT::triplet(boost::shared_ptr<Matrix> A, boost::shared_ptr<Matrix> B, boost::shared_ptr<Matrix> C, bool tA, bool tB, bool tC)
-{
-    boost::shared_ptr<Matrix> AB = doublet(A,B,tA,tB);
-    boost::shared_ptr<Matrix> ABC = doublet(AB,C,false,tC);
-    return ABC;
 }
 std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix> > DFTSAPT::compute_x(boost::shared_ptr<JK> jk, boost::shared_ptr<Matrix> w_B, boost::shared_ptr<Matrix> w_A)
 {

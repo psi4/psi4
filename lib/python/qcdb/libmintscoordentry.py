@@ -58,7 +58,7 @@ class CoordValue(object):
         self.computed = False
 
     def everything(self):
-        print '\nCoordValue\n  Fixed = %s\n  Computed = %s\n\n' % (self.PYfixed, self.computed)
+        print('\nCoordValue\n  Fixed = %s\n  Computed = %s\n\n' % (self.PYfixed, self.computed))
 
 
 class NumberValue(CoordValue):
@@ -91,8 +91,8 @@ class NumberValue(CoordValue):
         return "%*.*f" % (precision + 5, precision, self.compute())
 
     def everything(self):
-        print '\nNumberValue\n  Fixed = %s\n  Computed = %s\n  Type = %s\n  Value = %f\n  FValue = %s\n\n' % \
-            (self.PYfixed, self.computed, self.type(), self.value, self.variable_to_string(4))
+        print('\nNumberValue\n  Fixed = %s\n  Computed = %s\n  Type = %s\n  Value = %f\n  FValue = %s\n\n' % \
+            (self.PYfixed, self.computed, self.type(), self.value, self.variable_to_string(4)))
 
 
 class VariableValue(CoordValue):
@@ -151,8 +151,8 @@ class VariableValue(CoordValue):
             return self.PYname
 
     def everything(self):
-        print '\nVariableValue\n  Fixed = %s\n  Computed = %s\n  Type = %s\n  Value = %f\n  FValue = %s\n  Name = %s\n  Negated = %s\n  Map = %s\n\n' % \
-            (self.PYfixed, self.computed, self.type(), self.compute(), self.variable_to_string(4), self.name(), self.negated(), self.geometryVariables)
+        print('\nVariableValue\n  Fixed = %s\n  Computed = %s\n  Type = %s\n  Value = %f\n  FValue = %s\n  Name = %s\n  Negated = %s\n  Map = %s\n\n' % \
+            (self.PYfixed, self.computed, self.type(), self.compute(), self.variable_to_string(4), self.name(), self.negated(), self.geometryVariables))
 
 
 class CoordEntry(object):
@@ -270,8 +270,8 @@ class CoordEntry(object):
         return self.PYentry_number
 
     def everything(self):
-        print '\nCoordEntry\n  Entry Number = %d\n  Computed = %s\n  Z = %d\n  Charge = %f\n  Mass = %f\n  Symbol = %s\n  Label = %s\n  Ghosted = %s\n  Coordinates = %s\n\n' % \
-            (self.entry_number(), self.is_computed(), self.Z(), self.charge(), self.mass(), self.symbol(), self.label(), self.is_ghosted(), self.coordinates)
+        print('\nCoordEntry\n  Entry Number = %d\n  Computed = %s\n  Z = %d\n  Charge = %f\n  Mass = %f\n  Symbol = %s\n  Label = %s\n  Ghosted = %s\n  Coordinates = %s\n\n' % \
+            (self.entry_number(), self.is_computed(), self.Z(), self.charge(), self.mass(), self.symbol(), self.label(), self.is_ghosted(), self.coordinates))
 
 
 class CartesianEntry(CoordEntry):
@@ -338,7 +338,7 @@ class CartesianEntry(CoordEntry):
 
     def everything(self):
         CoordEntry.everything(self)
-        print '\nCartesianEntry\n  Type = %s\n  x = %s\n  y = %s\n  z = %s\n\n' % (self.type(), self.x.variable_to_string(8), self.y.variable_to_string(8), self.z.variable_to_string(8))
+        print('\nCartesianEntry\n  Type = %s\n  x = %s\n  y = %s\n  z = %s\n\n' % (self.type(), self.x.variable_to_string(8), self.y.variable_to_string(8), self.z.variable_to_string(8)))
 
 
 class ZMatrixEntry(CoordEntry):
@@ -522,5 +522,5 @@ class ZMatrixEntry(CoordEntry):
 
     def everything(self):
         CoordEntry.everything(self)
-        print '\nZMatrixEntry\n  Type = %s\n\n' % (self.type())
-        print self.print_in_input_format()
+        print('\nZMatrixEntry\n  Type = %s\n\n' % (self.type()))
+        print(self.print_in_input_format())

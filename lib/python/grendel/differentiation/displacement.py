@@ -203,8 +203,8 @@ class DisplacementGenerator(object):
 class Displacement(object):
     """ Encapsulates a displacement from a base molecule.
 
-    Attributes
-    ----------
+    :Attributes:
+
     base_molecule : `Molecule`
         The Molecule object that the displacement is relative to.
     representation : `Representation`

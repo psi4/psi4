@@ -97,6 +97,7 @@ boost::shared_ptr<MatrixFactory> get_matrix_factory()
     return matfac;
 }
 
+
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(CanonicalOrthog, Matrix::canonical_orthogonalization, 1, 2);
 
 /* IntegralFactory overloads */
@@ -117,6 +118,9 @@ BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(f12_squared_overloads, IntegralFactory::f
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(f12_double_commutator_overloads, IntegralFactory::f12_double_commutator, 1, 3);
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(erf_eri_overloads, IntegralFactory::erf_eri, 1, 3);
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(erf_complement_eri_overloads, IntegralFactory::erf_complement_eri, 1, 3);
+
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(Ca_subset_overloads, Wavefunction::Ca_subset, 0, 2);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(Cb_subset_overloads, Wavefunction::Cb_subset, 0, 2);
 
 void export_mints()
 {
@@ -195,7 +199,7 @@ void export_mints()
             .export_values();
 
     class_<PyBuffer<double>, shared_ptr<PyBuffer<double> > >("DoublePyBuffer", "Buffer interface to NumPy arrays").
-    		def("__array_interface__", &PyBuffer<double>::array_interface, "docstring");
+    		add_property("__array_interface__", &PyBuffer<double>::array_interface, "docstring");
 
     typedef void   (Matrix::*matrix_multiply)(bool, bool, double, const SharedMatrix&, const SharedMatrix&, double);
     typedef void   (Matrix::*matrix_diagonalize)(SharedMatrix&, boost::shared_ptr<Vector>&, diagonalize_order);
@@ -266,7 +270,7 @@ void export_mints()
             def("load", matrix_load(&Matrix::load), "docstring").
             def("load_mpqc", matrix_load(&Matrix::load_mpqc), "docstring").
             def("remove_symmetry", &Matrix::remove_symmetry, "docstring").
-            def("__array_interface__", matrix_array_interface_c1, "docstring");
+            add_property("__array_interface__", matrix_array_interface_c1, "docstring");
 
     class_<View, boost::noncopyable>("View", no_init).
             def(init<SharedMatrix, const Dimension&, const Dimension&>()).
@@ -311,6 +315,8 @@ void export_mints()
             add_property("basis", &OneBodyAOInt::basis, "The basis set on center one").
             add_property("basis1", &OneBodyAOInt::basis1, "The basis set on center one").
             add_property("basis2", &OneBodyAOInt::basis2, "The basis set on center two").
+            add_property("py_buffer_object", make_function(&OneBodyAOInt::py_buffer_object, return_internal_reference<>()), "docstring").
+            def("set_enable_pybuffer", &OneBodyAOInt::set_enable_pybuffer, "docstring").
             add_property("py_buffer", &OneBodyAOInt::py_buffer, "docstring");
 
     //typedef void (OneBodySOInt::*matrix_version)(SharedMatrix) const;
@@ -335,7 +341,7 @@ void export_mints()
     class_<NablaInt, boost::shared_ptr<NablaInt>, bases<OneBodyAOInt>, boost::noncopyable>("NablaInt", "docstring", no_init);
     class_<AngularMomentumInt, boost::shared_ptr<AngularMomentumInt>, bases<OneBodyAOInt>, boost::noncopyable>("AngularMomentumInt", "docstring", no_init);
 
-    typedef void (TwoBodyAOInt::*compute_shell_ints)(int, int, int, int);
+    typedef size_t (TwoBodyAOInt::*compute_shell_ints)(int, int, int, int);
     class_<TwoBodyAOInt, boost::shared_ptr<TwoBodyAOInt>, boost::noncopyable>("TwoBodyAOInt", "docstring", no_init).
             def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell), "docstring").
             add_property("py_buffer_object", make_function(&TwoBodyAOInt::py_buffer_object, return_internal_reference<>()), "docstring").
@@ -362,6 +368,10 @@ void export_mints()
             def("next", &AOShellCombinationsIterator::next, "docstring").
             def("is_done", &AOShellCombinationsIterator::is_done, "docstring");
 
+    class_<ThreeCenterOverlapInt, boost::shared_ptr<ThreeCenterOverlapInt>, boost::noncopyable>("ThreeCenterOverlapInt", "docstring", no_init).
+    		def("compute_shell", &ThreeCenterOverlapInt::compute_shell, "docstring").
+    		add_property("py_buffer_object", make_function(&ThreeCenterOverlapInt::py_buffer_object, return_internal_reference<>()), "docstring").
+            def("set_enable_pybuffer", &ThreeCenterOverlapInt::set_enable_pybuffer, "docstring");
 
     class_<IntegralFactory, boost::shared_ptr<IntegralFactory>, boost::noncopyable>("IntegralFactory", "docstring", no_init).
             def(init<boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet> >()).
@@ -388,7 +398,8 @@ void export_mints()
             def("so_multipoles", &IntegralFactory::so_multipoles, return_value_policy<manage_new_object>(), "docstring").
             def("ao_traceless_quadrupole", &IntegralFactory::ao_traceless_quadrupole, return_value_policy<manage_new_object>(), "docstring").
             def("electric_field", &IntegralFactory::electric_field, return_value_policy<manage_new_object>(), "docstring").
-            def("electrostatic", &IntegralFactory::electrostatic, return_value_policy<manage_new_object>(), "docstring");
+            def("electrostatic", &IntegralFactory::electrostatic, return_value_policy<manage_new_object>(), "docstring").
+            def("overlap_3c", &IntegralFactory::overlap_3c, return_value_policy<manage_new_object>(), "docstring");
 
     typedef boost::shared_ptr<PetiteList> (MintsHelper::*petite_list_0)() const;
     typedef boost::shared_ptr<PetiteList> (MintsHelper::*petite_list_1)(bool) const;
@@ -615,6 +626,8 @@ void export_mints()
             staticmethod("make_filename").
             def("construct", &BasisSet::construct, "docstring").
             staticmethod("construct").
+            def("zero_ao_basis_set", &BasisSet::zero_ao_basis_set, "Returns a BasisSet object that actually has a single s-function at the origin with an exponent of 0.0 and contraction of 1.0.").
+            staticmethod("zero_ao_basis_set").
             def("nbf", &BasisSet::nbf, "docstring").
             def("nao", &BasisSet::nao, "docstring").
             def("nprimitive", &BasisSet::nprimitive, "docstring").
@@ -657,6 +670,10 @@ void export_mints()
             def("nso", &Wavefunction::nso, "docstring").
             def("nmo", &Wavefunction::nmo, "docstring").
             def("nirrep", &Wavefunction::nirrep, "docstring").
+            def("Ca_subset", &Wavefunction::Ca_subset, "docstring").
+            def("Cb_subset", &Wavefunction::Cb_subset, "docstring").
+            def("epsilon_a_subset", &Wavefunction::epsilon_a_subset, "docstring").
+            def("epsilon_b_subset", &Wavefunction::epsilon_b_subset, "docstring").
             def("Ca", &Wavefunction::Ca, "docstring").
             def("Cb", &Wavefunction::Cb, "docstring").
             def("Fa", &Wavefunction::Fa, "docstring").
@@ -723,4 +740,5 @@ void export_mints()
     class_<FittedSlaterCorrelationFactor, bases<CorrelationFactor>, boost::noncopyable>("FittedSlaterCorrelationFactor", "docstring", no_init).
             def(init<double>()).
             def("exponent", &FittedSlaterCorrelationFactor::exponent);
+
 }

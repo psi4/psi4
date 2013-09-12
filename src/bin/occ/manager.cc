@@ -91,8 +91,8 @@ void OCCWave::omp2_manager()
         Process::environment.globals["SCS-MP2-VDW CORRELATION ENERGY"] = Escsmp2vdw - Escf;
         Process::environment.globals["SOS-PI-MP2 CORRELATION ENERGY"] = Esospimp2 - Escf;
 
-       Process::environment.globals["MP2 OPPOSITE-SPIN ENERGY"] = Emp2AB;
-       Process::environment.globals["MP2 SAME-SPIN ENERGY"] = Emp2AA+Emp2BB;
+       Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
+       Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
 	omp2_response_pdms();
 	gfock();
@@ -333,8 +333,8 @@ void OCCWave::mp2_manager()
         Process::environment.globals["SCS-MP2-VDW CORRELATION ENERGY"] = Escsmp2vdw - Escf;
         Process::environment.globals["SOS-PI-MP2 CORRELATION ENERGY"] = Esospimp2 - Escf;
 
-       Process::environment.globals["MP2 OPPOSITE-SPIN ENERGY"] = Emp2AB;
-       Process::environment.globals["MP2 SAME-SPIN ENERGY"] = Emp2AA+Emp2BB;
+       Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
+       Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
         // if scs on	
 	if (do_scs == "TRUE") {
@@ -456,8 +456,8 @@ void OCCWave::omp3_manager()
         Process::environment.globals["SCS-MP2-VDW CORRELATION ENERGY"] = Escsmp2vdw - Escf;
         Process::environment.globals["SOS-PI-MP2 CORRELATION ENERGY"] = Esospimp2 - Escf;
 
-        Process::environment.globals["MP2 OPPOSITE-SPIN ENERGY"] = Emp2AB;
-        Process::environment.globals["MP2 SAME-SPIN ENERGY"] = Emp2AA+Emp2BB;
+        Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
+        Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
         timer_on("T2(2)");
 	t2_2nd_sc();
@@ -745,8 +745,8 @@ void OCCWave::mp3_manager()
         Process::environment.globals["SCS-MP2-VDW CORRELATION ENERGY"] = Escsmp2vdw - Escf;
         Process::environment.globals["SOS-PI-MP2 CORRELATION ENERGY"] = Esospimp2 - Escf;
 
-        Process::environment.globals["MP2 OPPOSITE-SPIN ENERGY"] = Emp2AB;
-        Process::environment.globals["MP2 SAME-SPIN ENERGY"] = Emp2AA+Emp2BB;
+        Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
+        Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
         timer_on("T2(2)");
 	t2_2nd_sc();
@@ -925,8 +925,8 @@ void OCCWave::ocepa_manager()
 	Process::environment.globals["SCS-MP2-VDW CORRELATION ENERGY"] = Escsmp2vdw - Escf;
 	Process::environment.globals["SOS-PI-MP2 CORRELATION ENERGY"] = Esospimp2 - Escf;
 
-        Process::environment.globals["MP2 OPPOSITE-SPIN ENERGY"] = Emp2AB;
-        Process::environment.globals["MP2 SAME-SPIN ENERGY"] = Emp2AA+Emp2BB;
+        Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
+        Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
 	ocepa_response_pdms();
 	gfock();
@@ -1085,8 +1085,8 @@ void OCCWave::cepa_manager()
 	Process::environment.globals["SCS-MP2-VDW CORRELATION ENERGY"] = Escsmp2vdw - Escf;
 	Process::environment.globals["SOS-PI-MP2 CORRELATION ENERGY"] = Esospimp2 - Escf;
 
-        Process::environment.globals["MP2 OPPOSITE-SPIN ENERGY"] = Emp2AB;
-        Process::environment.globals["MP2 SAME-SPIN ENERGY"] = Emp2AA+Emp2BB;
+        Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
+        Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
         // Perform CEPA iterations
         cepa_iterations();
@@ -1200,8 +1200,8 @@ void OCCWave::omp2_5_manager()
 	Process::environment.globals["SCS-MP2-VDW CORRELATION ENERGY"] = Escsmp2vdw - Escf;
 	Process::environment.globals["SOS-PI-MP2 CORRELATION ENERGY"] = Esospimp2 - Escf;
 
-        Process::environment.globals["MP2 OPPOSITE-SPIN ENERGY"] = Emp2AB;
-        Process::environment.globals["MP2 SAME-SPIN ENERGY"] = Emp2AA+Emp2BB;
+        Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
+        Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
         timer_on("T2(2)");
 	t2_2nd_sc();
@@ -1416,8 +1416,8 @@ void OCCWave::mp2_5_manager()
 	Process::environment.globals["SCS-MP2-VDW CORRELATION ENERGY"] = Escsmp2vdw - Escf;
 	Process::environment.globals["SOS-PI-MP2 CORRELATION ENERGY"] = Esospimp2 - Escf;
 
-        Process::environment.globals["MP2 OPPOSITE-SPIN ENERGY"] = Emp2AB;
-        Process::environment.globals["MP2 SAME-SPIN ENERGY"] = Emp2AA+Emp2BB;
+        Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
+        Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
         timer_on("T2(2)");
 	t2_2nd_sc();

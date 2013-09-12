@@ -1,0 +1,21 @@
+--- dftd3.f_orig	2013-09-06 18:11:00.751723184 -0400
++++ dftd3.f	2013-09-06 18:12:34.253497341 -0400
+@@ -790,6 +790,7 @@
+       write(*,*) '-bj   (DFT-D3 with Becke-Johnson finite-damping)' 
+       write(*,*) '-tz (use special parameters for TZ-type calculations)'
+       write(*,*) 'variable parameters read from ~/.dftd3par.<hostname>'
++      write(*,*) '     else ./dftd3_parameters'
+       write(*,*) 'if -func is used, -zero or -bj or -old is required!"'
+       stop
+       end subroutine printoptions
+@@ -1274,6 +1275,10 @@
+       close(43,status='delete')
+       write(dtmp,'(''~/.dftd3par.'',a)')trim(ftmp)
+       inquire(file=dtmp,exist=ex)
++      if(.not.ex)then
++         write(dtmp,'(''./dftd3_parameters'')')
++         inquire(file=dtmp,exist=ex)
++      endif
+       s6 =0
+       s18=0
+       rs6=0

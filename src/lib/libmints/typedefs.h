@@ -59,6 +59,7 @@ class Matrix;
 class Molecule;
 class ObaraSaikaTwoCenterRecursion;
 class ObaraSaikaTwoCenterVIDeriv2Recursion;
+class ObaraSaikaTwoCenterElectricField;
 class OneBodyAOInt;
 class TwoBodyAOInt;
 class PointGroup;

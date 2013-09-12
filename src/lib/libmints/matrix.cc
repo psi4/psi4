@@ -1416,6 +1416,98 @@ void Matrix::gemm(bool transa, bool transb, double alpha,
     gemm(transa, transb, alpha, &a, &b, beta);
 }
 
+SharedMatrix Matrix::doublet(const SharedMatrix& A, const SharedMatrix& B, bool transA, bool transB)
+{
+    if (A->symmetry() || B->symmetry()) {
+        throw PSIEXCEPTION("Matrix::doublet is not supported for this non-totally-symmetric thing.");
+    }
+    
+    if (A->nirrep() != B->nirrep()) {
+        throw PSIEXCEPTION("Matrix::doublet: Matrices do not have the same nirreps");
+    } 
+
+    int nirrep = A->nirrep();
+    int m[nirrep];
+    int n[nirrep];
+    int k[nirrep];
+    int k2[nirrep];
+
+    for (int h = 0; h < nirrep; h++) {
+        m[h]  = (transA ? A->colspi()[h] : A->rowspi()[h]);
+        n[h]  = (transB ? B->rowspi()[h] : B->colspi()[h]);
+        k[h]  = (!transA ? A->colspi()[h] : A->rowspi()[h]);
+        k2[h] = (!transB ? B->rowspi()[h] : B->colspi()[h]);
+        if (k[h] != k2[h]) {
+            throw PSIEXCEPTION("Matrix::doublet: Dimension mismatch");
+        } 
+    }
+
+    SharedMatrix T(new Matrix("T", nirrep, m, n));
+
+    for (int h = 0; h < nirrep; h++) {
+        C_DGEMM(
+            (transA ? 'T' : 'N'),
+            (transB ? 'T' : 'N'),
+            m[h],   
+            n[h],
+            k[h],
+            1.0,
+            A->pointer(h)[0],
+            A->colspi()[h],
+            B->pointer(h)[0],
+            B->colspi()[h],
+            0.0,
+            T->pointer(h)[0],
+            T->colspi()[h]);
+    }
+
+    return T;
+}
+SharedMatrix Matrix::triplet(const SharedMatrix& A, const SharedMatrix& B, const SharedMatrix& C, bool transA, bool transB, bool transC)
+{
+    SharedMatrix T = Matrix::doublet(A,B,transA,transB);
+    SharedMatrix S = Matrix::doublet(T,C,false,transC);
+    return S;
+}
+SharedMatrix Matrix::collapse(int dim)
+{
+    if (dim < 0 || dim > 1) throw PSIEXCEPTION("Matrix::collapse: dim must be 0 (row sum) or 1 (col sum)");
+
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::collapse is not supported for this non-totally-symmetric thing.");
+    }
+
+
+    Dimension ones(nirrep_);
+    for (int h = 0; h < nirrep_; h++) {
+        ones[h] = 1;
+    }
+
+    boost::shared_ptr<Matrix> T(new Matrix("T",((dim == 0) ? colspi_ : rowspi_),ones));
+
+    for (int h = 0; h < nirrep_; h++) {
+        int nrow = rowspi_[h];
+        int ncol = colspi_[h];
+        double** Mp = matrix_[h];
+        double** Tp = T->pointer(h);        
+        if (dim == 0) {
+            for (int j = 0; j < ncol; j++) {
+                for (int i = 0; i < nrow; i++) {
+                    Tp[j][0] += Mp[i][j];
+                }
+            }
+        } else {
+            for (int i = 0; i < nrow; i++) {
+                for (int j = 0; j < ncol; j++) {
+                    Tp[i][0] += Mp[i][j];
+                }
+            }
+        }
+    }
+    
+    return T;
+}
+
 namespace {
 
 int mat_schmidt_tol(double **C, double **S, int nrow, int ncol, double tolerance, double* res)

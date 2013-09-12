@@ -31,6 +31,9 @@
 #include <libmints/sieve.h>
 #include <libiwl/iwl.hpp>
 #include "jk.h"
+#include "jk_independent.h"
+#include "link.h"
+#include "direct_screening.h"
 #include "cubature.h"
 #include "points.h"
 
@@ -183,34 +186,36 @@ boost::shared_ptr<JK> JK::build_JK()
 
         return boost::shared_ptr<JK>(jk);
 
-#if 0
-    } else if (options.get_str("SCF_TYPE") == "PS") {
+      } else if (options.get_str("SCF_TYPE") == "INDEPENDENT") {
 
-        PSJK* jk = new PSJK(primary,options);
+      // available types: right now:
+      // direct with screening (does either or both)
+      // LinK (only does K) - will need another with it
+      JK* jk;
+      
+      std::string J_type = options.get_str("INDEPENDENT_J_TYPE");
+      
+      std::string K_type = options.get_str("INDEPENDENT_K_TYPE");
 
-        if (options["INTS_TOLERANCE"].has_changed())
-            jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
-        if (options["PRINT"].has_changed())
-            jk->set_print(options.get_int("PRINT"));
-        if (options["DEBUG"].has_changed())
-            jk->set_debug(options.get_int("DEBUG"));
-        if (options["BENCH"].has_changed())
-            jk->set_bench(options.get_int("BENCH"));
-        if (options["DF_INTS_NUM_THREADS"].has_changed())
-            jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
-        if (options["PS_THETA"].has_changed())
-            jk->set_theta(options.get_double("PS_THETA"));
-        if (options["PS_DEALIASING"].has_changed())
-            jk->set_dealiasing(options.get_str("PS_DEALIASING"));
-        if (options["DEALIAS_BASIS_SCF"].has_changed()) {
-            if (options.get_str("DEALIAS_BASIS_SCF") != "") {
-                boost::shared_ptr<BasisSet> dealias = BasisSet::construct(parser, primary->molecule(), "DEALIAS_BASIS_SCF");
-                jk->set_dealias_basis(dealias);
-            }
-        }
-
-        return boost::shared_ptr<JK>(jk);
-#endif
+      if (J_type == "DIRECT_SCREENING" && K_type == "DIRECT_SCREENING") {
+          jk = new JKIndependent<DirectScreening, DirectScreening>(primary, false);
+      } else if (J_type == "DIRECT_SCREENING" && K_type == "LINK") {
+          jk = new JKIndependent<DirectScreening, LinK>(primary, true);
+      } else {
+          throw PSIEXCEPTION("Bad INDEPENDENT_J/K_TYPE pair.");
+      }
+      
+      if (options["INTS_TOLERANCE"].has_changed())
+        jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
+      if (options["PRINT"].has_changed())
+        jk->set_print(options.get_int("PRINT"));
+      if (options["DEBUG"].has_changed())
+        jk->set_debug(options.get_int("DEBUG"));
+      if (options["BENCH"].has_changed())
+        jk->set_bench(options.get_int("BENCH"));
+      
+      return boost::shared_ptr<JK>(jk);
+      
     } else {
         throw PSIEXCEPTION("JK::build_JK: Unknown SCF Type");
     }
@@ -1815,7 +1820,7 @@ void DirectJK::compute_JK()
     if (do_J_ || do_K_) {
         std::vector<boost::shared_ptr<TwoBodyAOInt> > ints;
         for (int thread = 0; thread < df_ints_num_threads_; thread++) {
-            ints.push_back(boost::shared_ptr<TwoBodyAOInt>(factory->eri()));
+            ints.push_back(boost::shared_ptr<TwoBodyAOInt>(factory->erd_eri()));
         }
         if (do_J_ && do_K_) {
             build_JK(ints,D_ao_,J_ao_,K_ao_);
@@ -2014,7 +2019,8 @@ void DirectJK::build_JK(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints,
             //printf("Quartet: %2d %2d %2d %2d\n", P, Q, R, S);
 
             //if (thread == 0) timer_on("JK: Ints");
-            ints[thread]->compute_shell(P,Q,R,S);
+            if(ints[thread]->compute_shell(P,Q,R,S) == 0)
+                continue; // No integrals in this shell quartet
             computed_shells++;
             //if (thread == 0) timer_off("JK: Ints");
 
@@ -5703,7 +5709,7 @@ void DirectJK::preiterations()
     factory_= boost::shared_ptr<IntegralFactory>(new IntegralFactory(primary_,primary_,primary_,primary_));
     eri_.clear();
     for (int thread = 0; thread < omp_nthread_; thread++) {
-        eri_.push_back(boost::shared_ptr<TwoBodyAOInt>(factory_->eri()));
+        eri_.push_back(boost::shared_ptr<TwoBodyAOInt>(factory_->erd_eri()));
     }
 }
 void DirectJK::compute_JK()
@@ -5715,7 +5721,8 @@ void DirectJK::compute_JK()
     for (int R = 0; R < primary_->nshell(); ++R) {
     for (int S = 0; S < primary_->nshell(); ++S) {
 
-        eri_[0]->compute_shell(M,N,R,S);
+        if(eri_[0]->compute_shell(M,N,R,S) == 0)
+            continue; // No integrals were computed here
 
         int nM = primary_->shell(M).nfunction();
         int nN = primary_->shell(N).nfunction();

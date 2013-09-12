@@ -2864,7 +2864,7 @@ void Molecule::set_basis_by_number(int number, const std::string& name, const st
 void Molecule::set_basis_by_symbol(const std::string& symbol, const std::string& name, const std::string& type)
 {
     BOOST_FOREACH(boost::shared_ptr<CoordEntry> atom, full_atoms_) {
-        if (atom->symbol() == symbol)
+        if (boost::iequals(atom->symbol(),symbol))
             atom->set_basisset(name, type);
     }
 }
@@ -2872,7 +2872,7 @@ void Molecule::set_basis_by_symbol(const std::string& symbol, const std::string&
 void Molecule::set_basis_by_label(const std::string& label, const std::string& name, const std::string& type)
 {
     BOOST_FOREACH(boost::shared_ptr<CoordEntry> atom, full_atoms_) {
-        if (atom->label() == label)
+        if (boost::iequals(atom->label(),label))
             atom->set_basisset(name, type);
     }
 }

@@ -44,8 +44,8 @@ class CartesianRepresentation(Representation):
         """
         CartesianRepresentation(molecule, coords)
 
-        Parameters
-        ----------
+        :Parameters:
+
         molecule : `Molecule`
             The molecule that the representation refers to.
         coords : list of `CartesianCoordinate`
@@ -124,13 +124,13 @@ class CartesianRepresentation(Representation):
     def index(self, atom_or_coordinate):
         """ Returns the index of the parameter `atom` in the representation self.
 
-        Parameters
-        ----------
+        :Parameters:
+
         atom_or_coordinate : `Atom` or `CartesianCoordinate`
             The atom or cartesian coordinate to obtain the index of.  If an atom is passed in, the index of the X coordinate of the atom is returned.
 
-        Raises
-        ------
+        :Raises:
+
         IndexError
             If the parameter `atom_or_coordinate` is not found.
 

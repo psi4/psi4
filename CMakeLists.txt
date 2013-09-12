@@ -7,7 +7,6 @@ enable_language(Fortran)
 get_filename_component(ROOT_SRC_DIR ${CMAKE_CURRENT_LIST_FILE} PATH)
 set(CMAKE_MODULE_PATH "${ROOT_SRC_DIR}/cmake/")
 
-
 #
 # Command line options
 #
@@ -17,6 +16,8 @@ set(EMPTY "\"\"")
 include(cmake/GetValue.cmake)
 #OPTION CXXFLAGS        Extra C++ compiler flags to be used in compilation (string)
 get_value(useroptCXX_FLAGS CXXFLAGS   ${EMPTY})
+#OPTION F77FLAGS        Extra Fortran compiler flags to be used in compilation (string)
+get_value(useroptF77_FLAGS F77FLAGS   ${EMPTY})
 #OPTION F77SYMBOL       The Fortran compiler name mangling convention, used for linking external Fortran libraries, such as BLAS. Values are lcu (lower case with traling underscore), lc (lower case), ucu (upper case with trailing underscore), uc (upper case). If omitted CMake will detect it automatically if a Fortran compiler is present, if not it will use lcu. (string)
 get_value(useroptF77SYMBOL F77SYMBOL  "detect")
 #OPTION LAPACK           Linker flags to use for Lapack (and BLAS), instead of detecting system library (string)
@@ -34,6 +35,7 @@ get_value(useroptLIBINT_MAX_AM  MAX_AM_ERI  5)
 
 set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${useroptLDFLAGS}")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${useroptCXX_FLAGS}")
+set (CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${useroptF77_FLAGS}")
 # This will be echoed at the end of configure, and also output to a file so the build can be replicated
 set(CONFIGURE_CMD "${CMAKE_COMMAND} ${PROJECT_SOURCE_DIR}")
 foreach(opt ${ALL_USEROPTS})
@@ -76,6 +78,7 @@ check_include_files(dlfcn.h HAVE_DLFCN)
 
 include(CheckFunctionExists)
 check_function_exists(MKL_Free_Buffers HAVE_MKL) # NEEDS TO BE TESTED
+check_function_exists(erf HAVE_FUNC_ERF)
 
 include(CheckSymbolExists)
 check_symbol_exists(MPI_Finalize mpi.h HAVE_MPI) # NEEDS TO BE TESTED
@@ -83,6 +86,9 @@ check_symbol_exists(MPI_Finalize mpi.h HAVE_MPI) # NEEDS TO BE TESTED
 include(cmake/Restrict.cmake)
 test_restrict(restrict)
 
+if(CMAKE_Fortran_COMPILER)
+    set(HAVE_ERD 1)
+endif()
 configure_file(include/psiconfig.h.cmake.in include/psiconfig.h)
 
 # Is this needed for the script?
@@ -123,7 +129,7 @@ include_directories(
 #    find_package(BLAS REQUIRED)
 #endif()
 if(NOT useroptLAPACK STREQUAL EMPTY)
-    set(LAPACK_Libraries ${useroptLAPACK})
+    set(LAPACK_LIBRARIES ${useroptLAPACK})
     message(WARNING "Skipping LAPACK detection and using these flags: ${useroptLAPACK}")
 else()
     find_package(LAPACK REQUIRED)
@@ -228,17 +234,10 @@ file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
-set(PSILIB mints_wrapper dfmp2 scf ccenergy ccsort psimrcc transqt2 cctriples mp2 scf_solver fock dcft mcscf sapt dftsapt sapt_solver cchbar cclambda ccdensity transqt ccresponse detci occ mrcc fnocc cceom adc thermo functional disp thce 3index deriv_wrapper optking findif mints trans dpd chkpt iwl psio qt ciomr options moinfo util stable deriv scfgrad int util diis plugin parallel)
-
-#
-# The ERD integrals package
-#
-#set(ERDPATH http://sirius.chem.vt.edu/psi4extras/erd.tgz)
-#include(ExternalProject)
-#ExternalProject_Add(erd
-#    URL = ${ERDPATH}
-#    PREFIX = ${PROJECT_BINARY_DIR}/erd
-#)
+set(PSILIB mints_wrapper dfmp2 scf ccenergy ccsort psimrcc transqt2 cctriples scf_solver fock dcft lmp2 mcscf sapt dftsapt sapt_solver cchbar cclambda ccdensity transqt ccresponse detci occ mrcc fnocc cceom adc thermo functional disp thce 3index deriv_wrapper optking findif mints trans dpd chkpt iwl psio qt ciomr options moinfo util stable deriv scfgrad int util diis plugin parallel)
+if(CMAKE_Fortran_COMPILER)
+    set(PSILIB ${PSILIB} erd)
+endif()
 
 #
 # Recursively add source directories
@@ -252,6 +251,12 @@ set(RECONFIGURE_PSI "${PROJECT_BINARY_DIR}/reconfigure.sh")
 message("The following command can be used to exactly reproduce this build. It can also be found in ${RECONFIGURE_PSI}:\n")
 message("${CONFIGURE_CMD}\n")
 configure_file(cmake/reconfigure.sh.in reconfigure.sh)
+
+#
+# Output the build settings, for plugins to read later
+#
+#set(buildsettingsfile ${PROJECT_BINARY_DIR}/buildsettings.cmake)
+#export(TARGETS psi4 FILE ${buildsettingsfile})
 
 #get_cmake_property(_variableNames VARIABLES)
 #foreach (_variableName ${_variableNames})

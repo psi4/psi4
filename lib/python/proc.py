@@ -42,6 +42,18 @@ from functional import *
 # ATTN NEW ADDITIONS!
 # consult http://sirius.chem.vt.edu/psi4manual/master/proc_py.html
 
+def run_lmp2(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an LMP2 theory calculation.
+
+    """
+
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
+    psi4.lmp2()
+
+
 def run_dcft(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a density cumulant functional theory calculation.
@@ -909,8 +921,8 @@ def run_ccenergy(name, **kwargs):
     psi4.ccenergy()
 
     if (lowername == 'ccsd(at)' or lowername == 'a-ccsd(t)'):
-	psi4.cchbar()
-	psi4.cclambda()
+        psi4.cchbar()
+        psi4.cclambda()
 
     optstash.restore()
 
@@ -1427,7 +1439,7 @@ def run_detci(name, **kwargs):
         psi4.set_local_option('TRANSQT2', 'WFN', 'ZAPTN')
         psi4.set_local_option('DETCI', 'WFN', 'ZAPTN')
         level = kwargs['level']
-        maxnvect = (level + 1) / 2 + (level + 1) % 2
+        maxnvect = int((level + 1) / 2) + (level + 1) % 2
         psi4.set_local_option('DETCI', 'MAX_NUM_VECS', maxnvect)
         if ((level + 1) % 2):
             psi4.set_local_option('DETCI', 'MPN_ORDER_SAVE', 2)
@@ -1439,7 +1451,7 @@ def run_detci(name, **kwargs):
         psi4.set_local_option('DETCI', 'MPN', 'TRUE')
 
         level = kwargs['level']
-        maxnvect = (level + 1) / 2 + (level + 1) % 2
+        maxnvect = int((level + 1) / 2) + (level + 1) % 2
         psi4.set_local_option('DETCI', 'MAX_NUM_VECS', maxnvect)
         if ((level + 1) % 2):
             psi4.set_local_option('DETCI', 'MPN_ORDER_SAVE', 2)
@@ -1900,7 +1912,7 @@ def run_dftsapt(name, **kwargs):
 
 def run_asapt(name, **kwargs):
     """Function encoding sequence of PSI module calls for
-    an A-SAPT calculation of any level. A bit of a mess right now.
+    a A-SAPT calculation of any level.
 
     """
     optstash = p4util.OptionsState(
@@ -1915,7 +1927,7 @@ def run_asapt(name, **kwargs):
     user_pg = molecule.schoenflies_symbol()
     molecule.reset_point_group('c1')
     molecule.fix_orientation(True)
-    molecule.fix_com(True)
+    molecule.fix_com(True) # This should always have been set, very dangerous bug here
     molecule.update_geometry()
     if user_pg != 'c1':
         psi4.print_out('  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
@@ -1927,26 +1939,40 @@ def run_asapt(name, **kwargs):
     if nfrag != 2:
         raise ValidationError('SAPT requires active molecule to have 2 fragments, not %s.' % (nfrag))
 
-    dimer = molecule
-    monomerA = molecule.extract_subsets(1, 2)
-    monomerB = molecule.extract_subsets(2, 1)
-    elstA = molecule.extract_subsets(1)
-    elstB = molecule.extract_subsets(2)
+    sapt_basis = 'dimer'
+    if 'sapt_basis' in kwargs:
+        sapt_basis = kwargs.pop('sapt_basis')
+    sapt_basis = sapt_basis.lower()
+
+    if (sapt_basis == 'dimer'):
+        molecule.update_geometry()
+        monomerA = molecule.extract_subsets(1, 2)
+        monomerA.set_name('monomerA')
+        monomerB = molecule.extract_subsets(2, 1)
+        monomerB.set_name('monomerB')
+    elif (sapt_basis == 'monomer'):
+        molecule.update_geometry()
+        monomerA = molecule.extract_subsets(1)
+        monomerA.set_name('monomerA')
+        monomerB = molecule.extract_subsets(2)
+        monomerB.set_name('monomerB')
 
     ri = psi4.get_option('SCF', 'SCF_TYPE')
+    # inquire if above at all applies to dfmp2
 
-    activate(dimer)
     psi4.IO.set_default_namespace('dimer')
     psi4.print_out('\n')
     p4util.banner('Dimer HF')
     psi4.print_out('\n')
-    psi4.set_global_option('DF_INTS_IO', 'SAVE')
+    if (sapt_basis == 'dimer'):
+        psi4.set_global_option('DF_INTS_IO', 'SAVE')
     e_dimer = scf_helper('RHF', **kwargs)
     wfn_dimer = psi4.wavefunction()
-    psi4.set_global_option('DF_INTS_IO', 'LOAD')
+    if (sapt_basis == 'dimer'):
+        psi4.set_global_option('DF_INTS_IO', 'LOAD')
 
     activate(monomerA)
-    if (ri == 'DF'):
+    if (ri == 'DF' and sapt_basis == 'dimer'):
         psi4.IO.change_file_namespace(97, 'dimer', 'monomerA')
     psi4.IO.set_default_namespace('monomerA')
     psi4.print_out('\n')
@@ -1956,7 +1982,7 @@ def run_asapt(name, **kwargs):
     wfn_monomerA = psi4.wavefunction()
 
     activate(monomerB)
-    if (ri == 'DF'):
+    if (ri == 'DF' and sapt_basis == 'dimer'):
         psi4.IO.change_file_namespace(97, 'monomerA', 'monomerB')
     psi4.IO.set_default_namespace('monomerB')
     psi4.print_out('\n')
@@ -1964,66 +1990,12 @@ def run_asapt(name, **kwargs):
     psi4.print_out('\n')
     e_monomerB = scf_helper('RHF', **kwargs)
     wfn_monomerB = psi4.wavefunction()
-    if (ri == 'DF'):
+
+    if (ri == 'DF' and sapt_basis == 'dimer'):
         psi4.IO.change_file_namespace(97, 'monomerB', 'dimer')
 
-    psi4.set_global_option('DF_INTS_IO', 'NONE')
-    optstash2 = p4util.OptionsState(
-        ['SCF', 'BASIS'],
-        ['SCF', 'DF_BASIS_SCF']
-        )
-
-    # Don't know what is going on around here. 
-
-    psi4.set_global_option('BASIS', psi4.get_global_option('BASIS_ELST'))
-    psi4.set_global_option('DF_BASIS_SCF', psi4.get_global_option('DF_BASIS_ELST'))
-    psi4.set_local_option('SCF', 'DF_BASIS_SCF', psi4.get_global_option('DF_BASIS_ELST'))
-
-    activate(elstA)
-    psi4.set_global_option('BASIS', psi4.get_global_option('BASIS_ELST'))
-    psi4.set_global_option('DF_BASIS_SCF', psi4.get_global_option('DF_BASIS_ELST'))
-    psi4.set_local_option('SCF', 'DF_BASIS_SCF', psi4.get_global_option('DF_BASIS_ELST'))
-    psi4.IO.set_default_namespace('elstA')
-    psi4.print_out('\n')
-    p4util.banner('Elst A HF')
-    psi4.print_out('\n')
-    e_elstA = scf_helper('RHF', **kwargs)
-    wfn_elstA = psi4.wavefunction()
-
-    activate(elstB)
-    psi4.set_global_option('BASIS', psi4.get_global_option('BASIS_ELST'))
-    psi4.set_global_option('DF_BASIS_SCF', psi4.get_global_option('DF_BASIS_ELST'))
-    psi4.set_local_option('SCF', 'DF_BASIS_SCF', psi4.get_global_option('DF_BASIS_ELST'))
-    psi4.IO.set_default_namespace('elstB')
-    psi4.print_out('\n')
-    p4util.banner('Elst B HF')
-    psi4.print_out('\n')
-    e_elstB = scf_helper('RHF', **kwargs)
-    wfn_elstB = psi4.wavefunction()
-
-    optstash2.restore()
-    psi4.set_global_option('DF_INTS_IO', 'LOAD')
-
-    activate(dimer)
+    activate(molecule)
     psi4.IO.set_default_namespace('dimer')
-
-    # if the df_basis_elst basis is not set, pick a sensible one.
-    if psi4.get_global_option('DF_BASIS_ELST') == '':
-        ribasis = p4util.corresponding_jkfit(psi4.get_global_option('BASIS_ELST'))
-        if ribasis:
-            psi4.set_global_option('DF_BASIS_ELST', ribasis)
-            psi4.print_out('  No DF_BASIS_ELST auxiliary basis selected, defaulting to %s\n' % (ribasis))
-        else:
-            raise ValidationError('Keyword DF_BASIS_ELST is required.')
-
-    # if the df_basis_scf basis is not set, pick a sensible one.
-    if psi4.get_global_option('DF_BASIS_SCF') == '':
-        ribasis = p4util.corresponding_jkfit(psi4.get_global_option('BASIS'))
-        if ribasis:
-            psi4.set_global_option('DF_BASIS_SCF', ribasis)
-            psi4.print_out('  No DF_BASIS_SCF auxiliary basis selected, defaulting to %s\n' % (ribasis))
-        else:
-            raise ValidationError('Keyword DF_BASIS_SCF is required.')
 
     # if the df_basis_sapt basis is not set, pick a sensible one.
     if psi4.get_global_option('DF_BASIS_SAPT') == '':
@@ -2038,7 +2010,7 @@ def run_asapt(name, **kwargs):
     p4util.banner(name.upper())
     psi4.print_out('\n')
 
-    e_sapt = psi4.asapt(wfn_dimer,wfn_monomerA,wfn_monomerB,wfn_elstA,wfn_elstB)
+    e_sapt = psi4.asapt(wfn_dimer,wfn_monomerA,wfn_monomerB)
 
     molecule.reset_point_group(user_pg)
     molecule.update_geometry()

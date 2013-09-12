@@ -23,6 +23,8 @@
 #ifndef _psi_src_lib_libmints_3coverlap_h
 #define _psi_src_lib_libmints_3coverlap_h
 
+#include "pybuffer.h"
+
 namespace boost {
 template<class T> class shared_ptr;
 }
@@ -56,12 +58,23 @@ protected:
     /// Vector of Sphericaltransforms
     std::vector<SphericalTransform> st_;
 
+    /// Whether or not to activate the PyBuffer 
+    bool enable_pybuffer_;
+
     void compute_pair(const GaussianShell& s1,
                       const GaussianShell& s2,
                       const GaussianShell& s3);
+    
+    /// The PyBuffer object used for sharing the target_ buffer without copying data
+    PyBuffer<double> pybuffer_;
+
 public:
     ThreeCenterOverlapInt(std::vector<SphericalTransform>&,
                           boost::shared_ptr<BasisSet> bs1,
+                          boost::shared_ptr<BasisSet> bs2,
+                          boost::shared_ptr<BasisSet> bs3);
+
+    ThreeCenterOverlapInt(boost::shared_ptr<BasisSet> bs1,
                           boost::shared_ptr<BasisSet> bs2,
                           boost::shared_ptr<BasisSet> bs3);
 
@@ -78,6 +91,17 @@ public:
 
     /// Buffer where the integrals are placed.
     const double *buffer() const { return buffer_; }
+
+    const PyBuffer<double>* py_buffer_object() const {
+        if(!enable_pybuffer_) {
+            throw PSIEXCEPTION("py_buffer object not enabled.  Used set_enable_pybuffer() first.");
+        }
+    	return &pybuffer_;
+    }
+
+    void set_enable_pybuffer(bool enable = true) {
+        enable_pybuffer_ = enable;
+    }
 
     /// Compute the integrals of the form (a|c|b).
     virtual void compute_shell(int, int, int);
