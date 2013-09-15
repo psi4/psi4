@@ -252,10 +252,6 @@ def run_cfour(name, **kwargs):
     # Absorb results into psi4 data structures
     for key in psivar.keys():
         psi4.set_variable(key.upper(), float(psivar[key]))
-    with open(psioh.get_default_path() + cfour_tmpdir + '/GRD', 'r') as cfour_grdfile:
-        c4outgrd = cfour_grdfile.read()
-    print('GRD\n',c4outgrd)
-    c4coordGRD, c4gradGRD = qcdb.cfour.cfour_harvest_GRD(c4outgrd)
 
     if qcdbmolecule is None and c4mol is not None:
         molecule = geometry(c4mol.create_psi4_string_from_molecule(), name='blank_molecule_psi4_yo')
@@ -364,6 +360,7 @@ def run_cfour(name, **kwargs):
     os.chdir(current_directory)
     p4out.close()
     psi4.reopen_outfile()
+
     psi4.print_variables()
     if c4grad:
         psi4.get_gradient().print_out()
