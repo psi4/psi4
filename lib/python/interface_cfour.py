@@ -51,40 +51,29 @@ def run_cfour(name, **kwargs):
     """
     lowername = name.lower()
 
-    # User can provide 'keep' to the method.
-    # When provided, do not delete the CFOUR scratch directory.
-    keep = False
-    if 'keep' in kwargs:
-        keep = kwargs['keep']
-
     # Because this fn's called for energy('cfour'), opt('cfour'), etc.,
     # need this to figure out who called (better way?)
     dertype = kwargs['job_dertype'] if 'job_dertype' in kwargs else 0
 
-    # Save current directory location
+    # Save submission directory
     current_directory = os.getcwd()
 
-    # Find environment by merging PSIPATH and PATH environment variables
-    lenv = os.environ
-    lenv['PATH'] = ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':')]) + ':' + lenv.get('PATH')
-
-    # Need to move to the scratch directory, perferrably into a separate directory in that location
+    # Move into job scratch directory
     psioh = psi4.IOManager.shared_object()
     psio = psi4.IO.shared_object()
     os.chdir(psioh.get_default_path())
 
-    # Make new directory specifically for cfour
-    cfour_tmpdir = 'psi.' + str(os.getpid()) + '.' + psio.get_default_namespace() + \
+    # Construct and move into cfour subdirectory of job scratch directory
+    cfour_tmpdir = kwargs['path'] if 'path' in kwargs else \
+        'psi.' + str(os.getpid()) + '.' + psio.get_default_namespace() + \
         '.cfour.' + str(random.randint(0, 99999))
-    if 'path' in kwargs:
-        cfour_tmpdir = kwargs['path']
-
-    # Check to see if directory already exists, if not, create.
-    if os.path.exists(cfour_tmpdir) == False:
+    if not os.path.exists(cfour_tmpdir):
         os.mkdir(cfour_tmpdir)
-
-    # Move into the new directory
     os.chdir(cfour_tmpdir)
+
+    # Find environment by merging PSIPATH and PATH environment variables
+    lenv = os.environ
+    lenv['PATH'] = ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':')]) + ':' + lenv.get('PATH')
 
     # Load the GENBAS file
     genbas_path = qcdb.search_file('GENBAS', lenv['PATH'])
@@ -95,7 +84,7 @@ def run_cfour(name, **kwargs):
     else:
         message = """
   GENBAS file for CFOUR interface not found. Either:
-  [1] Supply a GENBAS
+  [1] Supply a GENBAS by placing it in PATH or PSIPATH
       [1a] Use cfour {} block with molecule and basis directives.
       [1b] Use molecule {} block and CFOUR_BASIS keyword.
   [2] Allow PSI4's internal basis sets to convert to GENBAS
@@ -104,35 +93,30 @@ def run_cfour(name, **kwargs):
 """
         psi4.print_out(message)
         psi4.print_out('  Search path that was tried:\n')
-        temp = lenv['PATH']
-        psi4.print_out(temp.replace(':', ', '))
-        #raise ValidationError("GENBAS file loading problem")
+        psi4.print_out(lenv['PATH'].replace(':', ', '))
 
-    # Generate input file (dumps files to the current directory)
+    # Generate the ZMAT input file in scratch and write to outfile
     with open('ZMAT', 'w') as cfour_infile:
         cfour_infile.write(write_zmat(lowername, dertype))
-
-    # Load the ZMAT file
-    # and dump a copy into the outfile
     psi4.print_out('\n====== Begin ZMAT input for CFOUR ======\n')
     psi4.print_out(open('ZMAT', 'r').read())
     psi4.print_out('======= End ZMAT input for CFOUR =======\n\n')
-    print('\n====== Begin ZMAT input for CFOUR ======\n', open('ZMAT', 'r').read(), '======= End ZMAT input for CFOUR =======\n\n')
+    #print('\n====== Begin ZMAT input for CFOUR ======\n', open('ZMAT', 'r').read(), \
+    #    '======= End ZMAT input for CFOUR =======\n\n')
 
-    # Close output file and reopen
+    # Close psi4 output file and reopen with filehandle
     psi4.close_outfile()
     p4out = open(current_directory + '/' + psi4.outfile_name(), 'a')
 
-    # Obtain user's OMP_NUM_THREADS so that we don't blow it away.
+    # Handle user's OMP_NUM_THREADS and CFOUR_OMP_NUM_THREADS
     omp_num_threads_found = 'OMP_NUM_THREADS' in os.environ
     if omp_num_threads_found == True:
         omp_num_threads_user = os.environ['OMP_NUM_THREADS']
-
-    # If the user provided CFOUR_OMP_NUM_THREADS set the environ to it
     if psi4.has_option_changed('CFOUR', 'CFOUR_OMP_NUM_THREADS') == True:
         os.environ['OMP_NUM_THREADS'] = str(psi4.get_option('CFOUR', 'CFOUR_OMP_NUM_THREADS'))
 
-    # Call xcfour, directing all screen output to the output file
+    print("""\n\n<<<<<  RUNNING CFOUR ...  >>>>>\n\n""")
+    # Call executable xcfour, directing cfour output to the psi4 output file
     try:
         retcode = subprocess.Popen(['xcfour'], bufsize=0, stdout=subprocess.PIPE, env=lenv)
     except OSError as e:
@@ -140,7 +124,7 @@ def run_cfour(name, **kwargs):
         p4out.write('Program xcfour not found in path or execution failed: %s\n' % (e.strerror))
         sys.exit(1)
 
-    c4out = ""
+    c4out = ''
     while True:
         data = retcode.stdout.readline()
         if not data:
@@ -151,79 +135,162 @@ def run_cfour(name, **kwargs):
             p4out.write(data)
             p4out.flush()
         c4out += data
-#    while retcode.returncode == None:
-#        #data = retcode.stdout.read(1)
-#        data = retcode.stdout.readline()
-#        if psi4.outfile_name() == 'stdout':
-#            sys.stdout.write(data)
-#        else:
-#            p4out.write(data)
-#            p4out.flush()
-#        c4out += data
-#        retcode.poll()
 
-    # Restore the OMP_NUM_THREADS that the user set.
+    # Restore user's OMP_NUM_THREADS
     if omp_num_threads_found == True:
         if psi4.has_option_changed('CFOUR', 'CFOUR_OMP_NUM_THREADS') == True:
             os.environ['OMP_NUM_THREADS'] = omp_num_threads_user
 
-    psivar, c4coord, c4grad = qcdb.cfour.cfour_harvest(c4out)
+
+
+
+
+
+    c4files = {}
+    p4out.write('\n')
+    for item in ['GRD', 'FCMFINAL']:
+        try:
+            with open(psioh.get_default_path() + cfour_tmpdir + '/' + item, 'r') as handle:
+                c4files[item] = handle.read()
+                p4out.write('  CFOUR scratch file %s has been read\n' % (item))
+                p4out.write('%s\n' % c4files[item])
+        except IOError:
+            pass
+    p4out.write('\n')
+
+    molecule = psi4.get_active_molecule()
+    if molecule.name() == 'blank_molecule_psi4_yo':
+        qcdbmolecule = None
+    else:
+        molecule.update_geometry()
+        #print('ZZZZ')
+        #print(molecule.save_string_xyz())
+        #print(molecule.create_psi4_string_from_molecule())
+        qcdbmolecule = qcdb.Molecule(molecule.create_psi4_string_from_molecule())
+        qcdbmolecule.update_geometry()
+        #print('zzzz')
+        #qcdbmolecule.print_out_in_bohr()
+
+
+
+
+
+
+    psivar, c4grad = qcdb.cfour.harvest(qcdbmolecule, c4out, **c4files)
+
+
+
+
+    # Absorb results into psi4 data structures
     for key in psivar.keys():
         psi4.set_variable(key.upper(), float(psivar[key]))
-    with open(psioh.get_default_path() + cfour_tmpdir + '/GRD', 'r') as cfour_grdfile:
-        c4outgrd = cfour_grdfile.read()
-    print('GRD\n',c4outgrd)
-    c4coordGRD, c4gradGRD = qcdb.cfour.cfour_harvest_GRD(c4outgrd)
 
-    # Awful Hack - Go Away TODO
     if c4grad:
-        molecule = psi4.get_active_molecule()
-        molecule.update_geometry()
+        mat = psi4.Matrix(len(c4grad), 3)
+        mat.set(c4grad)
+        psi4.set_gradient(mat)
 
-        if molecule.name() == 'blank_molecule_psi4_yo':
-            p4grad = c4grad
-            p4coord = c4coord
-        else:
-            qcdbmolecule = qcdb.Molecule(molecule.create_psi4_string_from_molecule())
-            p4grad = qcdbmolecule.deorient_array_from_cfour(c4coord, c4grad)
-            p4coord = qcdbmolecule.deorient_array_from_cfour(c4coord, c4coord)
+        #print '    <<<   [3] C4-GRD-GRAD   >>>'
+        #mat.print()
 
-        p4mat = psi4.Matrix(len(p4grad), 3)
-        p4mat.set(p4grad)
-        psi4.set_gradient(p4mat)
+#    exit(1)
 
-    #print('    <<<  P4 PSIVAR  >>>')
-    #for item in psivar:
-    #    print('       %30s %16.8f' % (item, psivar[item]))
-    print('    <<<  P4 COORD   >>>')
-    for item in p4coord:
-        print('       %16.8f %16.8f %16.8f' % (item[0], item[1], item[2]))
-    print('    <<<   P4 GRAD   >>>')
-    for item in p4grad:
-        print('       %16.8f %16.8f %16.8f' % (item[0], item[1], item[2]))
+    # # Things needed psi4.so module to do
+    # collect c4out string
+    # read GRD
+    # read FCMFINAL
+    # see if theres an active molecule
+    # 
+    # # Things delegatable to qcdb
+    # parsing c4out
+    # reading GRD and FCMFINAL strings
+    # reconciling p4 and c4 molecules (orient)
+# reconciling c4out and GRD and FCMFINAL results
+# transforming frame of results back to p4
+    # 
+    # # Things run_cfour needs to have back
+    # psivar
+# qcdb.Molecule of c4?
+# coordinates?
+# gradient in p4 frame
 
-    # Delete cfour tempdir
+
+
+
+
+#    # Process the cfour output
+#    psivar, c4coord, c4grad = qcdb.cfour.cfour_harvest(c4out)
+#    for key in psivar.keys():
+#        psi4.set_variable(key.upper(), float(psivar[key]))
+#
+#    # Awful Hack - Go Away TODO
+#    if c4grad:
+#        molecule = psi4.get_active_molecule()
+#        molecule.update_geometry()
+#
+#        if molecule.name() == 'blank_molecule_psi4_yo':
+#            p4grad = c4grad
+#            p4coord = c4coord
+#        else:
+#            qcdbmolecule = qcdb.Molecule(molecule.create_psi4_string_from_molecule())
+#            #p4grad = qcdbmolecule.deorient_array_from_cfour(c4coord, c4grad)
+#            #p4coord = qcdbmolecule.deorient_array_from_cfour(c4coord, c4coord)
+#
+#            with open(psioh.get_default_path() + cfour_tmpdir + '/GRD', 'r') as cfour_grdfile:
+#                c4outgrd = cfour_grdfile.read()
+#            print('GRD\n',c4outgrd)
+#            c4coordGRD, c4gradGRD = qcdb.cfour.cfour_harvest_files(qcdbmolecule, grd=c4outgrd)
+#
+#        p4mat = psi4.Matrix(len(p4grad), 3)
+#        p4mat.set(p4grad)
+#        psi4.set_gradient(p4mat)
+
+#    print('    <<<  P4 PSIVAR  >>>')
+#    for item in psivar:
+#        print('       %30s %16.8f' % (item, psivar[item]))
+    #print('    <<<  P4 COORD   >>>')
+    #for item in p4coord:
+    #    print('       %16.8f %16.8f %16.8f' % (item[0], item[1], item[2]))
+#    print('    <<<   P4 GRAD   >>>')
+#    for item in c4grad:
+#        print('       %16.8f %16.8f %16.8f' % (item[0], item[1], item[2]))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    # Clean up cfour scratch directory unless user instructs otherwise
+    keep = yes.match(str(kwargs['keep'])) if 'keep' in kwargs else False
     os.chdir('..')
     try:
-        # Delete unless we're told not to
-        if (keep == False and not('path' in kwargs)):
+        if keep or ('path' in kwargs):
+            p4out.write('\n  CFOUR scratch files have been kept in %s\n' % (psioh.get_default_path() + cfour_tmpdir))
+        else:
             shutil.rmtree(cfour_tmpdir)
     except OSError as e:
         print('Unable to remove CFOUR temporary directory %s' % e, file=sys.stderr)
         exit(1)
 
-    # Revert to previous current directory location
+    # Return to submission directory and reopen output file
     os.chdir(current_directory)
-
-    # Reopen output file
     psi4.reopen_outfile()
+
     psi4.print_variables()
     if c4grad:
         psi4.get_gradient().print_out()
 
-    # If we're told to keep the files or the user provided a path, do nothing.
-    if (yes.match(str(keep)) or ('path' in kwargs)):
-        psi4.print_out('\n  CFOUR scratch files have been kept in %s\n' % (psioh.get_default_path() + cfour_tmpdir))
+    # Quit if Cfour threw error
+    if psi4.get_variable('CFOUR ERROR CODE'):
+        raise ValidationError("""Cfour exited abnormally.""")
 
 
 def cfour_list():
@@ -272,6 +339,7 @@ def write_zmat(name, dertype):
 
     # Handle calc type
     clvcmd, clvkw = qcdb.cfour.cfour_calclevel(dertype)
+    # consider combining calclevel and method so can set ecc/vcc diff by dertype
 
     # Handle psi4 keywords implying cfour keyword values (NYI)
 
