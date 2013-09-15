@@ -319,9 +319,12 @@ void print_usage(void)
     printf(" -d  --debug              Flush the outfile at every fprintf.\n"
            "                          Default: true iff --with-debug.\n");
     printf(" -h  --help               Display this usage information.\n");
-    printf(" -i  --input filename     Input file name. Default: input.dat\n");
+    printf(" -i  --input filename     Input file name. Default: filename\n");
     printf(" -k  --skip-preprocessor  Skips input preprocessing. Expert mode.\n");
-    printf(" -o  --output filename    Redirect output elsewhere. Default: output.dat\n");
+    printf(" -o  --output filename    Redirect output elsewhere. Default:\n");
+    printf("                          filename.out if input is filename\n");
+    printf("                          filename.out if input is filename.in\n");
+    printf("                          output.dat if input is input.dat\n");
     printf(" -m  --messy              Leave temporary files after the run is completed.\n");
     printf(" -n  --nthread            Number of threads to use (overrides OMP_NUM_THREADS)\n");
     printf("     --new-plugin name    Creates a new directory with files for writing a\n"
@@ -333,6 +336,10 @@ void print_usage(void)
     printf(" -v  --verbose            Print a lot of information.\n");
     printf(" -V  --version            Print version information.\n");
     printf(" -w  --wipe               Clean out your scratch area.\n");
+    printf("\n");
+    printf("Environment Variables\n");
+    printf("     PSI_SCRATCH          Directory where scratch files are written. Default: /tmp/\n");
+    printf("                          This should be a local, not network, disk\n");
 
     exit(EXIT_FAILURE);
 }
