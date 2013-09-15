@@ -15,7 +15,8 @@ sp-rohf-ccsd_t_-ao-ecc sp-rohf-ccsd_t_-fc
 psi_subdirs = psi-mints5 psi-rhf-scsmp2 psi-uhf-scsmp2 psi-rohf-scsmp2 psi-rhf-mp3 \
 psi-uhf-mp3 psi-mp4
 
-opt_subdirs = opt-rhf-scf opt-rhf-mp2 opt-rhf-ccsd_t_ opt-rhf-ccsd_t_-ecc
+opt_subdirs = opt-rhf-scf opt-rhf-mp2 opt-rhf-ccsd_t_ opt-rhf-ccsd_t_-ecc \
+psi-mints5-grad psi-a24-grad
 
 infra_subdirs = puream pywrap-cbs1
 

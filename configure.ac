@@ -1274,6 +1274,8 @@ AC_CONFIG_FILES([
           tests/cfour/opt-rhf-scf/Makefile
           tests/cfour/puream/Makefile
           tests/cfour/pywrap-cbs1/Makefile
+          tests/cfour/psi-mints5-grad/Makefile
+          tests/cfour/psi-a24-grad/Makefile
           plugins/Makefile
           plugins/aointegrals/Makefile
           plugins/backtrans/Makefile
