@@ -1300,6 +1300,8 @@ def database(name, db_name, **kwargs):
                 VRGT[rgt][envv.upper()] = psi4.get_variable(envv)
             psi4.set_global_option("REFERENCE", user_reference)
             psi4.clean()
+            psi4.opt_clean()
+            psi4.clean_variables()
 
         elif (db_mode.lower() == 'sow'):
             freagent = open('%s.in' % (rgt), 'w')
