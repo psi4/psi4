@@ -321,37 +321,37 @@ energy('cfour')
 compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[20] NRE: cartesian, pure')
 
 
-#molecule Li_H2O_4_p  {
-#   1 1
-#   X
-#   Li 1 1.0
-#   X 2 1.0 1 90.0
-#   X 2 1.0 3 90.0 1 180.0
-#   O 2 oli 1 olix 3 -90.0
-#   O 2 oli 1 olix 3 90.0
-#   O 2 oli 4 olix 3 0.0
-#   O 2 oli 4 olix 3 180.0
-#   H 5 oh1 2 lioh1 1 xlioh1
-#   H 5 oh2 2 lioh2 1 xlioh2
-#   H 6 oh1 2 lioh1 1 xlioh1
-#   H 6 oh2 2 lioh2 1 xlioh2
-#   H 7 oh1 2 lioh1 4 -xlioh1
-#   H 7 oh2 2 lioh2 4 -xlioh2
-#   H 8 oh1 2 lioh1 4 -xlioh1
-#   H 8 oh2 2 lioh2 4 -xlioh2
-#   olix=52.0
-#   oli=1.9
-#   oh1=0.952
-#   oh2=0.950
-#   lioh1=125.4
-#   lioh2=124.8
-#   xlioh1=-40.0
-#   xlioh2=135.0
-#}
-#Li_H2O_4_p.update_geometry()
-#nre = Li_H2O_4_p.nuclear_repulsion_energy()
-#energy('cfour')
-#compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[21] NRE: zmat, external and internal values, +/-, w/dummy')
+molecule Li_H2O_4_p  {
+   1 1
+   X
+   Li 1 1.0
+   X 2 1.0 1 90.0
+   X 2 1.0 3 90.0 1 180.0
+   O 2 oli 1 olix 3 -90.0
+   O 2 oli 1 olix 3 90.0
+   O 2 oli 4 olix 3 0.0
+   O 2 oli 4 olix 3 180.0
+   H 5 oh1 2 lioh1 1 xlioh1
+   H 5 oh2 2 lioh2 1 xlioh2
+   H 6 oh1 2 lioh1 1 xlioh1
+   H 6 oh2 2 lioh2 1 xlioh2
+   H 7 oh1 2 lioh1 4 -xlioh1
+   H 7 oh2 2 lioh2 4 -xlioh2
+   H 8 oh1 2 lioh1 4 -xlioh1
+   H 8 oh2 2 lioh2 4 -xlioh2
+   olix=52.0
+   oli=1.9
+   oh1=0.952
+   oh2=0.950
+   lioh1=125.4
+   lioh2=124.8
+   xlioh1=-40.0
+   xlioh2=135.0
+}
+Li_H2O_4_p.update_geometry()
+nre = Li_H2O_4_p.nuclear_repulsion_energy()
+energy('cfour')
+compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[21] NRE: zmat, external and internal values, +/-, w/dummy')
 
 
 molecule ethylene_cation  {
@@ -406,19 +406,19 @@ compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[23] NRE: zmat
 #compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[24] NRE: zmat, external values')
 
 
-#molecule allene  {
-#  H -2.0  0.0  1.0
-#  H -2.0  0.0 -1.0
-#  C -1.5  0.0  0.0
-#  C  0.0  0.0  0.0
-#  C  1.5  0.0  0.0
-#  H  2.0  1.0  0.0
-#  H  2.0 -1.0  0.0
-#}
-#allene.update_geometry()
-#nre = allene.nuclear_repulsion_energy()
-#energy('cfour')
-#compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[25] NRE: cartesian, pure')
+molecule allene  {
+  H -2.0  0.0  1.0
+  H -2.0  0.0 -1.0
+  C -1.5  0.0  0.0
+  C  0.0  0.0  0.0
+  C  1.5  0.0  0.0
+  H  2.0  1.0  0.0
+  H  2.0 -1.0  0.0
+}
+allene.update_geometry()
+nre = allene.nuclear_repulsion_energy()
+energy('cfour')
+compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[25] NRE: cartesian, pure')
 
 
 molecule ethane_staggered  {
@@ -516,26 +516,26 @@ energy('cfour')
 compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[31] NRE: zmat, external and internal values')
 
 
-#molecule Ih  {
-#  unit = au
-#  0 1
-#  H   0   1   x
-#  H   0  -1   x
-#  H   0   1  -x
-#  H   0  -1  -x
-#  H   1   x   0
-#  H  -1   x   0
-#  H   1  -x   0
-#  H  -1  -x   0
-#  H   x   0   1
-#  H   x   0  -1
-#  H  -x   0   1
-#  H  -x   0  -1
-#  x = 1.618033988749894848
-#}
-#Ih.update_geometry()
-#nre = Ih.nuclear_repulsion_energy()
-#energy('cfour')
-#compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[32] NRE: cartesian, external and internal, +/-')
+molecule Ih  {
+  unit = au
+  0 1
+  H   0   1   x
+  H   0  -1   x
+  H   0   1  -x
+  H   0  -1  -x
+  H   1   x   0
+  H  -1   x   0
+  H   1  -x   0
+  H  -1  -x   0
+  H   x   0   1
+  H   x   0  -1
+  H  -x   0   1
+  H  -x   0  -1
+  x = 1.618033988749894848
+}
+Ih.update_geometry()
+nre = Ih.nuclear_repulsion_energy()
+energy('cfour')
+compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[32] NRE: cartesian, external and internal, +/-')
 
 
