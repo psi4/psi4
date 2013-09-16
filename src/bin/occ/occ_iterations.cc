@@ -61,19 +61,21 @@ fflush(outfile);
       itr_diis = 0;
 
       // If diis?
-      if (do_diis_ == 1) {
-	nvar = num_vecs +1;
-        vecsA = new Array2d("Alpha MO DIIS Vectors", num_vecs, nidpA);
-        errvecsA = new Array2d("Alpha MO DIIS Error Vectors", num_vecs, nidpA);
-        vecsA->zero();
-        errvecsA->zero();
+      if (nooA + nooB != 1) {
+          if (do_diis_ == 1) {
+              nvar = num_vecs +1;
+              vecsA = new Array2d("Alpha MO DIIS Vectors", num_vecs, nidpA);
+              errvecsA = new Array2d("Alpha MO DIIS Error Vectors", num_vecs, nidpA);
+              vecsA->zero();
+              errvecsA->zero();
 
-        if (reference_ == "UNRESTRICTED") {
-            vecsB = new Array2d("Beta MO DIIS Vectors", num_vecs, nidpB);
-            errvecsB = new Array2d("Beta MO DIIS Vectors", num_vecs, nidpB);
-            vecsB->zero();
-            errvecsB->zero();
-        }
+              if (reference_ == "UNRESTRICTED") {
+                  vecsB = new Array2d("Beta MO DIIS Vectors", num_vecs, nidpB);
+                  errvecsB = new Array2d("Beta MO DIIS Vectors", num_vecs, nidpB);
+                  vecsB->zero();
+                  errvecsB->zero();
+              }
+          }
       }
 
       // Set up the orb-resp algorithm
