@@ -1070,6 +1070,7 @@ def optimize(name, **kwargs):
     if ('mode' in kwargs) and (kwargs['mode'].lower() == 'reap'):
         isSowReap = True
     optstash = p4util.OptionsState(
+        ['OPTKING', 'INTRAFRAG_STEP_LIMIT'],
         ['SCF', 'GUESS'])
 
     n = 1
