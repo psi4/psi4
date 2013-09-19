@@ -49,7 +49,7 @@ while(<DRIVER>){
         push @{$ModuleSubsections{$CurrentModule}}, $CurrentSubsection;
     }elsif(/\/\*-\s*MODULEDESCRIPTION/ and $CurrentModule){
         $ModuleDescriptions{$CurrentModule} = get_description($_);
-    }elsif(/\/\*-/ and $CurrentModule){
+    }elsif(/^\s*\/\*-/ and $CurrentModule){
         ($CommentString, $Expert) = determine_comment($_);
         $CommentString =~ s/_/\\_/g;
         # process @@ as math mode subscript in tex
@@ -318,6 +318,7 @@ sub determine_keyword_type_and_default
  while(<DRIVER>){
      # Ignore blank lines
      next unless /\w+/;
+     next if /^\s*\/\//;
      if(/add_str\(\s*\"(.*)\"\s*\,\s*\"(.*)\"\s*\,\s*\"(.*)\"\s*\)/){
          # This is a string, with default and options
          $Type = "str";
