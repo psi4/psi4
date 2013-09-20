@@ -146,13 +146,14 @@ void OCCWave::omp2_manager()
         }
 
         // EKT
-        if (ekt_ip_ == "TRUE") { 
+        if (ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") { 
             if (orbs_already_sc == 1) {
 	        omp2_response_pdms();
 	        gfock();
             }
             gfock_diag();
-            ekt_ip();
+            if (ekt_ip_ == "TRUE") ekt_ip();
+            if (ekt_ea_ == "TRUE") ekt_ea();
         }
 	
 	fprintf(outfile,"\n"); 
@@ -368,7 +369,7 @@ void OCCWave::mp2_manager()
 	}
  
         // Compute Analytic Gradients
-        if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
+        if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
 	    fprintf(outfile,"\tAnalytic gradient computation is starting...\n");
 	    fprintf(outfile,"\tComputing response density matrices...\n");
 	    fflush(outfile);
@@ -384,8 +385,23 @@ void OCCWave::mp2_manager()
 	    mograd();
             coord_grad();
 
-            if (ekt_ip_ == "TRUE") {
+            if (ekt_ip_ == "TRUE" && ekt_ea_ == "TRUE") {
                 ekt_ip();
+                ekt_ea();
+                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
+                tstop();
+                exit(EXIT_SUCCESS);
+            }
+
+            else if (ekt_ip_ == "TRUE" && ekt_ea_ == "FALSE") {
+                ekt_ip();
+                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
+                tstop();
+                exit(EXIT_SUCCESS);
+            }
+
+            else if (ekt_ip_ == "FALSE" && ekt_ea_ == "TRUE") {
+                ekt_ea();
                 fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
                 tstop();
                 exit(EXIT_SUCCESS);
@@ -559,7 +575,8 @@ void OCCWave::omp3_manager()
 	        gfock();
             }
             gfock_diag();
-            ekt_ip();
+            if (ekt_ip_ == "TRUE") ekt_ip();
+            if (ekt_ea_ == "TRUE") ekt_ea();
         }
 
         fprintf(outfile,"\n"); 
@@ -833,7 +850,7 @@ void OCCWave::mp3_manager()
 	}
 
         // Compute Analytic Gradients
-        if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
+        if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
             time4grad = 1;
 	    fprintf(outfile,"\tAnalytic gradient computation is starting...\n");
             fprintf(outfile,"\tComputing response density matrices...\n");
@@ -850,8 +867,23 @@ void OCCWave::mp3_manager()
 	    mograd();
             coord_grad();
 
-            if (ekt_ip_ == "TRUE") {
+            if (ekt_ip_ == "TRUE" && ekt_ea_ == "TRUE") {
                 ekt_ip();
+                ekt_ea();
+                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
+                tstop();
+                exit(EXIT_SUCCESS);
+            }
+
+            else if (ekt_ip_ == "TRUE" && ekt_ea_ == "FALSE") {
+                ekt_ip();
+                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
+                tstop();
+                exit(EXIT_SUCCESS);
+            }
+
+            else if (ekt_ip_ == "FALSE" && ekt_ea_ == "TRUE") {
+                ekt_ea();
                 fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
                 tstop();
                 exit(EXIT_SUCCESS);
@@ -971,7 +1003,8 @@ void OCCWave::ocepa_manager()
 	        gfock();
             }
             gfock_diag();
-            ekt_ip();
+            if (ekt_ip_ == "TRUE") ekt_ip();
+            if (ekt_ea_ == "TRUE") ekt_ea();
         }
 
 	fprintf(outfile,"\n");
@@ -1112,7 +1145,7 @@ void OCCWave::cepa_manager()
         //EcepaL = Ecepa;
         
         // Compute Analytic Gradients
-        if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
+        if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
             time4grad = 1;
 	    fprintf(outfile,"\tAnalytic gradient computation is starting...\n");
             fprintf(outfile,"\tComputing response density matrices...\n");
@@ -1129,8 +1162,23 @@ void OCCWave::cepa_manager()
 	    mograd();
             coord_grad();
 
-            if (ekt_ip_ == "TRUE") {
+            if (ekt_ip_ == "TRUE" && ekt_ea_ == "TRUE") {
                 ekt_ip();
+                ekt_ea();
+                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
+                tstop();
+                exit(EXIT_SUCCESS);
+            }
+
+            else if (ekt_ip_ == "TRUE" && ekt_ea_ == "FALSE") {
+                ekt_ip();
+                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
+                tstop();
+                exit(EXIT_SUCCESS);
+            }
+
+            else if (ekt_ip_ == "FALSE" && ekt_ea_ == "TRUE") {
+                ekt_ea();
                 fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
                 tstop();
                 exit(EXIT_SUCCESS);
@@ -1283,7 +1331,8 @@ void OCCWave::omp2_5_manager()
 	        gfock();
             }
             gfock_diag();
-            ekt_ip();
+            if (ekt_ip_ == "TRUE") ekt_ip();
+            if (ekt_ea_ == "TRUE") ekt_ea();
         }
 
         fprintf(outfile,"\n"); 
@@ -1452,7 +1501,7 @@ void OCCWave::mp2_5_manager()
 	Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp3L-Escf;
 
         // Compute Analytic Gradients
-        if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
+        if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
             time4grad = 1;
 	    fprintf(outfile,"\tAnalytic gradient computation is starting...\n");
             fprintf(outfile,"\tComputing response density matrices...\n");
@@ -1469,8 +1518,23 @@ void OCCWave::mp2_5_manager()
 	    mograd();
             coord_grad();
 
-            if (ekt_ip_ == "TRUE") {
+            if (ekt_ip_ == "TRUE" && ekt_ea_ == "TRUE") {
                 ekt_ip();
+                ekt_ea();
+                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
+                tstop();
+                exit(EXIT_SUCCESS);
+            }
+
+            else if (ekt_ip_ == "TRUE" && ekt_ea_ == "FALSE") {
+                ekt_ip();
+                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
+                tstop();
+                exit(EXIT_SUCCESS);
+            }
+
+            else if (ekt_ip_ == "FALSE" && ekt_ea_ == "TRUE") {
+                ekt_ea();
                 fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
                 tstop();
                 exit(EXIT_SUCCESS);

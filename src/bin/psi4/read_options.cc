@@ -2671,7 +2671,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do consider orbital response contributions for PDMs and GFM?  -*/
     options.add_bool("RELAXED",true);
     /*- Do symmetrize the GFM and OPDM in the EKT computations?  -*/
-    options.add_bool("SYMMETRIZE",false);
+    options.add_bool("SYMMETRIZE",true);
   }
   if (name == "MRCC"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/
