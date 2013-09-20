@@ -251,19 +251,18 @@ Orbital-optimized third-order perturbation theory (OMP3)
   *J. Chem. Theory Comput.* **9**, 1452 (2013).
   (doi: `10.1021/ct301078q <http://dx.doi.org/10.1021/ct301078q>`_).
 
+* "Analytic energy gradients for the orbital-optimized third-orderM\ |o_slash|\ ller--Plesset 
+  Perturbation Theory," U. Bozkaya,  
+  *J. Chem. Phys.* **139**, 104116 (2013).
+  (doi: `10.1063/1.4820877 <http://dx.doi.org/10.1063/1.4820877>`_).
+
 Orbital-optimized coupled electron pair approximation (OCEPA)
 
-* "Quadratically convergent algorithm for orbital optimization in the 
-  orbital-optimized coupled-cluster doubles method and in orbital-optimized 
-  second-order  M\ |o_slash|\ ller--Plesset perturbation theory," 
-  U. Bozkaya, J. M. Turney, Y. Yamaguchi, H. F. Schaefer, and C. D. Sherrill,
-  *J. Chem. Phys.* **135**, 104103 (2011).
-  (doi: `10.1063/1.3631129 <http://dx.doi.org/10.1063/1.3631129>`_).
-
-* "Orbital-optimized coupled electron pair theory and its analytic gradients:
-  Applications to equilibrium geometries, harmonic vibrational frequencies, 
-  and hydrogen transfer reactions," U. Bozkaya and C. D. Sherrill, 
-  (unpublished).
+* "Orbital-optimized coupled-electron pair theory and its analytic gradients: 
+  Accurate equilibrium geometries, harmonic vibrational frequencies, and hydrogen transfer 
+  reactions," U. Bozkaya and C. D. Sherrill,
+  *J. Chem. Phys.* **139**, 054104 (2013).
+  (doi: `10.1063/1.4816628 <http://dx.doi.org/10.1063/1.4816628>`_).
 
 Orbital-optimized MP2.5 (OMP2.5)
 
