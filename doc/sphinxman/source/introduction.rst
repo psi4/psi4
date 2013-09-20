@@ -251,7 +251,7 @@ Orbital-optimized third-order perturbation theory (OMP3)
   *J. Chem. Theory Comput.* **9**, 1452 (2013).
   (doi: `10.1021/ct301078q <http://dx.doi.org/10.1021/ct301078q>`_).
 
-* "Analytic energy gradients for the orbital-optimized third-orderM\ |o_slash|\ ller--Plesset 
+* "Analytic energy gradients for the orbital-optimized third-order M\ |o_slash|\ ller--Plesset 
   Perturbation Theory," U. Bozkaya,  
   *J. Chem. Phys.* **139**, 104116 (2013).
   (doi: `10.1063/1.4820877 <http://dx.doi.org/10.1063/1.4820877>`_).
