@@ -1,11 +1,11 @@
     -----------------------------------------------------------------------
           PSI4: An Open-Source Ab Initio Electronic Structure Package
-                              PSI 4.0.0-beta1 Driver
+                              PSI 4.0.0-beta4+ Driver
 
-               Git: Rev 1cf931c477e54ec32038dc3cd0c6841725398c4d
+               Git: Rev {c4} c0893a71ce4011b25d8c27b3872c397e90453e5b
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
     M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
     W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
     and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
@@ -14,6 +14,8 @@
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
+    Process ID:  10776
+    PSI4DATADIR: /Users/loriab/linux/psihub/c4/psi4/objdir/../lib
 
     Using LocalCommunicator (Number of processes = 1)
 
@@ -22,13 +24,64 @@
   ==> Input File <==
 
 --------------------------------------------------------------------------
-#! This test is used to construct the documentation;
-#! it is not suitable for emulation by users.
 
 import pydoc
+import inspect
 
+def pts(category, pyfile):
+    print 'Auto-documenting %s file %s' % (category, pyfile)
+
+# Boost Python psi4 module in psi4/src/bin/psi4 -- pure text, all
 with open("autodoc_man_psi4.txt", "w") as f:
     f.write(pydoc.plain(pydoc.render_doc(psi4)))
+
+# Boost Python psi4 module in psi4/src/bin/psi4 -- linkable, veneer
+f = open('autodoc_psimod.rst', 'w')
+f.write('\n.. include:: /autodoc_abbr_options_c.rst\n\n')
+f.write('.. _`sec:psimod`:\n\n')
+f.write('============================\n')
+f.write('psi4: Linking C++ and Python\n')
+f.write('============================\n\n')
+
+classes = []
+psi4fns = []
+for item in sorted(dir(psi4)):
+    if inspect.isclass(getattr(psi4, item)):
+        if item not in []:
+            classes.append(item)
+    else:
+        if item not in ['Bohr', 'Balk', 'Ascending', 'Angstrom', 'Descending', 'Failues', 'Success']:
+            psi4fns.append(item)
+
+pts('psi4 module class', 'psi4')
+f.write('psi4\n')
+f.write('====\n\n')
+for item in psi4fns:
+    if not item.startswith('__'):
+        f.write('\n\n.. function:: %s.%s\n\n' % ('psi4', item))
+
+        docstring = pydoc.plain(pydoc.render_doc(getattr(psi4, item)))
+        for elem in docstring.splitlines():
+            f.write('   ' + elem + '\n\n')
+
+for item in classes:
+    pts('psi4 module class', item)
+    div = '=' * len(item)
+    f.write('\n\n' + item + '\n')
+    f.write(div + '\n\n')
+
+    for item2 in sorted(dir(getattr(psi4, item))):
+        if not item2.startswith('__'):
+            f.write('\n\n.. function:: %s.%s.%s\n\n' % ('psi4', item, item2))
+
+            docstring = pydoc.plain(pydoc.render_doc(getattr(getattr(psi4, item), item2)))
+            for elem in docstring.splitlines():
+                f.write('   ' + elem + '\n\n')
+
+f.write('\n\nFull Docs Output\n')
+f.write('================\n\n')
+f.write('.. literalinclude:: autodoc_man_psi4.txt\n\n')
+f.close()
 
 --------------------------------------------------------------------------
 

@@ -23,6 +23,7 @@
    interfacing
    psithonfunc
    customizing
+   appendices
 .. #####  LATEX-USER STOP
 .. #####  HTML-USER STOP
 .. #####  LATEX-PROG START
@@ -31,14 +32,11 @@
    programming
    autodoc_available_plugins
    autodoc_driver
-.. #####  LATEX-PROG STOP
-.. #####  HTML-PROG STOP
-   psimod
+   autodoc_psimod
 .. #####  LATEX-PROG START
 .. #####  HTML-PROG START
 .. #####  LATEX-USER START
 .. #####  HTML-USER START
-   appendices
 
 * Indices
 

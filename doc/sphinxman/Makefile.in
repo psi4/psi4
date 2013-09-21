@@ -140,7 +140,8 @@ autodepend5 = \
 @top_srcdir@/tests/docs-psimod/input.dat
 
 autotarget5 = \
-$(SOURCEDIR)/autodoc_man_psi4.txt
+$(SOURCEDIR)/autodoc_man_psi4.txt \
+$(SOURCEDIR)/autodoc_psimod.rst
 
 $(autotarget5): %: $(autodepend5)
 	cd ../../tests/docs-psimod; $(MAKE) clean; $(MAKE)
@@ -275,7 +276,7 @@ bestpractices_py.rst bibliography.rst cbs.rst cbs_eqn.rst contributing.rst \
 cp.rst customizing.rst db.rst detci.rst dfmp2.rst diatomic.rst documentation.rst \
 energy.rst external.rst freq.rst glossary_psivariables.rst intercalls.rst \
 interfacing.rst introduction.rst methods.rst notes_c.rst notes_py.rst \
-oeprop.rst opt.rst optking.rst plugins.rst programming.rst prop.rst psimod.rst \
+oeprop.rst opt.rst optking.rst plugins.rst programming.rst prop.rst \
 psithonfunc.rst psithoninput.rst quickaddalias.rst quickaddbasis.rst \
 quickadddatabase.rst sapt.rst sowreap.rst testsuite.rst tutorial.rst \
 dft_byfunctional.rst scf.rst mrcc.rst psimrcc.rst cc.rst dft.rst fnocc.rst \
