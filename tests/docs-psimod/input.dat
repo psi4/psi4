@@ -1,8 +1,59 @@
-#! This test is used to construct the documentation;
-#! it is not suitable for emulation by users. !nosample
 
 import pydoc
+import inspect
 
+def pts(category, pyfile):
+    print 'Auto-documenting %s file %s' % (category, pyfile)
+
+# Boost Python psi4 module in psi4/src/bin/psi4 -- pure text, all
 with open("autodoc_man_psi4.txt", "w") as f:
     f.write(pydoc.plain(pydoc.render_doc(psi4)))
+
+# Boost Python psi4 module in psi4/src/bin/psi4 -- linkable, veneer
+f = open('autodoc_psimod.rst', 'w')
+f.write('\n.. include:: /autodoc_abbr_options_c.rst\n\n')
+f.write('.. _`sec:psimod`:\n\n')
+f.write('============================\n')
+f.write('psi4: Linking C++ and Python\n')
+f.write('============================\n\n')
+
+classes = []
+psi4fns = []
+for item in sorted(dir(psi4)):
+    if inspect.isclass(getattr(psi4, item)):
+        if item not in []:
+            classes.append(item)
+    else:
+        if item not in ['Bohr', 'Balk', 'Ascending', 'Angstrom', 'Descending', 'Failure', 'Success', 'EndLoop']:
+            psi4fns.append(item)
+
+pts('psi4 module class', 'psi4')
+f.write('psi4\n')
+f.write('====\n\n')
+for item in psi4fns:
+    if not item.startswith('__'):
+        f.write('\n\n.. function:: %s.%s\n\n' % ('psi4', item))
+
+        docstring = pydoc.plain(pydoc.render_doc(getattr(psi4, item)))
+        for elem in docstring.splitlines():
+            f.write('   ' + elem + '\n\n')
+
+for item in classes:
+    pts('psi4 module class', item)
+    div = '=' * len(item)
+    f.write('\n\n' + item + '\n')
+    f.write(div + '\n\n')
+
+    for item2 in sorted(dir(getattr(psi4, item))):
+        if not item2.startswith('__'):
+            f.write('\n\n.. function:: %s.%s.%s\n\n' % ('psi4', item, item2))
+
+            docstring = pydoc.plain(pydoc.render_doc(getattr(getattr(psi4, item), item2)))
+            for elem in docstring.splitlines():
+                f.write('   ' + elem + '\n\n')
+
+f.write('\n\nFull Docs Output\n')
+f.write('================\n\n')
+f.write('.. literalinclude:: autodoc_man_psi4.txt\n\n')
+f.close()
 
