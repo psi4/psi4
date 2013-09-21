@@ -569,7 +569,7 @@ void OCCWave::omp3_manager()
         }
 
         // EKT
-        if (ekt_ip_ == "TRUE") { 
+        if (ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") { 
             if (orbs_already_sc == 1) {
 	        omp3_response_pdms();
 	        gfock();
@@ -997,7 +997,7 @@ void OCCWave::ocepa_manager()
         if (orbs_already_opt == 1) EcepaL = Ecepa;
 
         // EKT
-        if (ekt_ip_ == "TRUE") { 
+        if (ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") { 
             if (orbs_already_opt == 1) {
 	        ocepa_response_pdms();
 	        gfock();
@@ -1325,7 +1325,7 @@ void OCCWave::omp2_5_manager()
         }
 
         // EKT
-        if (ekt_ip_ == "TRUE") { 
+        if (ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") { 
             if (orbs_already_sc == 1) {
 	        omp3_response_pdms();
 	        gfock();
