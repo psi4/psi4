@@ -1,5 +1,3 @@
-#! This test is used to construct the documentation;
-#! it is not suitable for emulation by users. !nosample
 
 import pydoc
 import inspect
