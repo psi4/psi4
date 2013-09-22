@@ -257,12 +257,25 @@ $(autotarget13): %: $(autodepend13)
 	@srcdir@/document_psifiles.py @srcdir@
 
 
+# Autodoc Cfour PSI variables
+autodepend15 = \
+@top_srcdir@/lib/python/qcdb/cfour.py \
+@srcdir@/document_cfour.py
+
+autotarget15 = \
+$(SOURCEDIR)/autodoc_psivariables_bymodule.rst \
+$(SOURCEDIR)/autodir_psivariables/module__cfour.rst
+
+$(autotarget15): %: $(autodepend15) | $(subdirs)
+	@srcdir@/document_cfour.py @srcdir@
+
+
 #autodoc: $(autotarget1) $(autotarget2) $(autotarget3) $(autotarget4) \
 
 autodoc: $(autotarget1) $(autotarget3) $(autotarget4) \
          $(autotarget5) $(autotarget6) $(autotarget7) $(autotarget8) \
          $(autotarget9) $(autotarget10) $(autotarget11) $(autotarget12) \
-         $(autotarget13)
+         $(autotarget13) $(autotarget15)
 
 
 #####  static docs  #####

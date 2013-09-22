@@ -20,9 +20,10 @@
 #@END LICENSE
 #
 
-"""Module with functions that encode the sequence of PSI module
-calls for each of the *name* values of the energy(), optimize(),
-response(), and frequency() function.
+"""Module with functions for Psi4/Cfour interface. Portions that require
+calls to Boost Python psi4 module are here, otherwise in qcdb module.
+Also calls to qcdb module are here and not elsewhere in driver.
+Organizationally, this module isolates qcdb code from psi4 code.
 
 """
 from __future__ import print_function
@@ -40,13 +41,35 @@ from molutil import *
 from functional import *
 # never import driver, wrappers, or aliases into this file
 
-# ATTN NEW ADDITIONS!
-# consult http://sirius.chem.vt.edu/psi4manual/master/proc_py.html
-
 
 def run_cfour(name, **kwargs):
     """Function that prepares environment and input files
     for a calculation calling Stanton and Gauss's CFOUR code.
+    Also processes results back into Psi4 format.
+
+    This function is not called directly but is instead called by
+    :py:func:`~driver.energy` or :py:func:`~driver.optimize` when a Cfour
+    method is requested (through *name* argument). In order to function
+    correctly, the Cfour executable ``xcfour`` must be present in
+    :envvar:`PATH` or :envvar:`PSIPATH`.
+
+    :type name: string
+    :param name: ``'c4-scf'`` || ``'c4-ccsd(t)'`` || ``'cfour'`` || etc.
+
+	    First argument, usually unlabeled. Indicates the computational
+	    method to be applied to the system.
+
+    :type keep: :ref:`boolean <op_py_boolean>`
+    :param keep: ``'on'`` || |dl| ``'off'`` |dr|
+
+	    Indicates whether to delete the Cfour scratch directory upon
+	    completion of the Cfour job.
+
+    :type path: string
+    :param path:
+
+	    Indicates path to Cfour scratch directory. Otherwise, the
+	    default is a subdirectory within the Psi4 scratch directory.
 
     """
     lowername = name.lower()
@@ -284,6 +307,8 @@ def run_cfour(name, **kwargs):
     os.chdir(current_directory)
     psi4.reopen_outfile()
 
+    d2d = ['Energy', 'Gradient', 'Hessian']
+    p4util.banner(' Cfour %s %s Results \n' % (name.lower(), d2d[dertype]))
     psi4.print_variables()
     if c4grad:
         psi4.get_gradient().print_out()
