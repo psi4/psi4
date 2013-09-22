@@ -2797,30 +2797,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
           calculation is performed automatically for the excited states.
           This overrides all automatic determination of method
           and will only work with :py:func:`~driver.energy`.
-          This becomes CC/CI (option \#5) in fort.56
-
-          .. table:: MRCC methods
-
-             +-------+--------------+-------------------------------------------------------------+
-             + Value + Method       + Description                                                 +
-             +=======+==============+=============================================================+
-             + 1     + CC           +                                                             +
-             +-------+--------------+-------------------------------------------------------------+
-             + 2     + CC(n-1)[n]   +                                                             +
-             +-------+--------------+-------------------------------------------------------------+
-             + 3     + CC(n-1)(n)   + (CC(n-1)[n] energy is also calculated)                      +
-             +-------+--------------+-------------------------------------------------------------+
-             + 4     + CC(n-1)(n)_L + (CC(n-1)[n] and CC(n-1)(n) energies are also calculated)    +
-             +-------+--------------+-------------------------------------------------------------+
-             + 5     + CC(n)-1a     +                                                             +
-             +-------+--------------+-------------------------------------------------------------+
-             + 6     + CC(n)-1b     +                                                             +
-             +-------+--------------+-------------------------------------------------------------+
-             + 7     + CCn          +                                                             +
-             +-------+--------------+-------------------------------------------------------------+
-             + 8     + CC(n)-3      +                                                             +
-             +-------+--------------+-------------------------------------------------------------+
-
+          This becomes ``CC/CI`` (option \#5) in fort.56.
+          See Table :ref:`MRCC_METHOD <table:mrcc__mrcc_method>` for details.
           !expert -*/
       options.add_int("MRCC_METHOD", 1);
   }
