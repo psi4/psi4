@@ -325,7 +325,8 @@ Table :ref:`Methods <table:methods>` displays the range of theoretical methods
 available in |PSIfour|.
 For more details, see Tables :ref:`Energy <table:energy_gen>`, 
 :ref:`Energy (DFT) <table:energy_dft>`, :ref:`Energy (MRCC) <table:energy_mrcc>`,
-:ref:`Gradient <table:grad_gen>`, and :ref:`Frequency <table:freq_gen>`.
+:ref:`Energy (CFOUR) <table:energy_cfour>`, :ref:`Gradient <table:grad_gen>`, 
+:ref:`Gradient (CFOUR) <table:grad_cfour>`, and :ref:`Frequency <table:freq_gen>`.
 
 .. _`table:methods`:
 

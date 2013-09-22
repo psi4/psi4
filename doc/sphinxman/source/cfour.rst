@@ -101,3 +101,10 @@ parsed
 
 .. autofunction:: interface_cfour.run_cfour(name [, keep, path])
 
+Functionality
+~~~~~~~~~~~~~
+
+.. include:: cfour_table_energy.rst
+
+.. include:: cfour_table_grad.rst
+
