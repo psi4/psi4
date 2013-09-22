@@ -401,6 +401,8 @@ def energy(name, **kwargs):
 
     .. include:: mrcc_table_energy.rst
 
+    .. include:: cfour_table_energy.rst
+
     :type name: string
     :param name: ``'scf'`` || ``'df-mp2'`` || ``'ci5'`` || etc.
 
@@ -940,6 +942,8 @@ def optimize(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
 
     .. include:: autodoc_dft_opt.rst
+
+    .. include:: cfour_table_grad.rst
 
     .. warning:: Optimizations where the molecule is specified in Z-matrix format
        with dummy atoms will result in the geometry being converted to a Cartesian representation.
