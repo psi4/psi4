@@ -361,6 +361,8 @@ def run_cfour(name, **kwargs):
     p4out.close()
     psi4.reopen_outfile()
 
+    d2d = ['Energy', 'Gradient', 'Hessian']
+    p4util.banner(' Cfour %s %s Results \n' % (name.lower(), d2d[dertype]))
     psi4.print_variables()
     if c4grad:
         psi4.get_gradient().print_out()
