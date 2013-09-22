@@ -499,3 +499,12 @@ If the molecule contains fragments but is not conveniently ordered for the
 :srcsample:`pywrap-basis`, to return as active molecule the previous
 active molecule, only fragmented.
 
+Advanced Python
+===============
+
+A named molecule in an input file is a full-fledged instance of the
+powerful :ref:`C++ Molecule class <sec:psimod_Molecule>`. Thus, all member
+functions (that have been exported via Boost Python) documented thereat
+are accessible through the handle :samp:`{option_molecule_name}` in
+:samp:`molecule {optional_molecule_name} \\{...\\}`.
+

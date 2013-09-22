@@ -1228,7 +1228,7 @@ BOOST_PYTHON_MODULE(psi4)
 
     register_exception_translator<PsiException>(&translate_psi_exception);
 
-    docstring_options sphx_doc_options(true, true, false);
+//    docstring_options sphx_doc_options(true, true, false);
 
     enum_<PsiReturnType>("PsiReturnType", "docstring")
             .value("Success", Success)
@@ -1278,16 +1278,16 @@ BOOST_PYTHON_MODULE(psi4)
     def("print_out", py_psi_print_out, "Prints a string (using sprintf-like notation) to the output file.");
 
     // Set the different local option types
-    def("set_local_option", py_psi_set_local_option_string, "Sets a string option scoped only to a specific module.");
-    def("set_local_option", py_psi_set_local_option_double, "Sets a double option scoped only to a specific module.");
-    def("set_local_option", py_psi_set_local_option_int, "Sets an integer option scoped only to a specific module.");
+    def("set_local_option", py_psi_set_local_option_string, "Sets value *arg3* to string keyword *arg2* scoped only to a specific module *arg1*.");
+    def("set_local_option", py_psi_set_local_option_double, "Sets value *arg3* to double keyword *arg2* scoped only to a specific module *arg1*.");
+    def("set_local_option", py_psi_set_local_option_int, "Sets value *arg3* to integer keyword *arg2* scoped only to a specific module *arg1*.");
     def("set_local_option", py_psi_set_local_option_array, set_local_option_overloads());
     def("set_local_option_python", py_psi_set_local_option_python, "Sets an option to a Python object, but scoped only to a single module.");
 
     // Set the different global option types
-    def("set_global_option", py_psi_set_global_option_string, "Sets a string option for all modules.");
-    def("set_global_option", py_psi_set_global_option_double, "Sets a double option for all modules.");
-    def("set_global_option", py_psi_set_global_option_int, "Sets an integer option for all modules.");
+    def("set_global_option", py_psi_set_global_option_string, "Sets value *arg2* to string keyword *arg1* for all modules.");
+    def("set_global_option", py_psi_set_global_option_double, "Sets value *arg2* to double keyword *arg1* for all modules.");
+    def("set_global_option", py_psi_set_global_option_int, "Sets value *arg2* to integer keyword *arg1* for all modules.");
     def("set_global_option", py_psi_set_global_option_array, set_global_option_overloads());
     def("set_global_option_python", py_psi_set_global_option_python, "Sets a global option to a Python object type.");
 
@@ -1295,16 +1295,16 @@ BOOST_PYTHON_MODULE(psi4)
     def("get_global_option_list", py_psi_get_global_option_list, "Returns a list of all global options.");
 
     // Get the option; either global or local or let liboptions decide whether to use global or local
-    def("get_global_option", py_psi_get_global_option, "Given a string of a keyword name, returns the value associated with the keyword from the global options. Returns error if keyword is not recognized.");
-    def("get_local_option", py_psi_get_local_option, "Given a string of a keyword name and a particular module, returns the value associated with the keyword in the module options scope. Returns error if keyword is not recognized for the module.");
-    def("get_option", py_psi_get_option, "Given a string of a keyword name and a particular module, returns the local value associated with the keyword if it's been set, else the global value if it's been set, else the local default value. Returns error if keyword is not recognized globally or if keyword is not recognized for the module.");
+    def("get_global_option", py_psi_get_global_option, "Given a string of a keyword name *arg1*, returns the value associated with the keyword from the global options. Returns error if keyword is not recognized.");
+    def("get_local_option", py_psi_get_local_option, "Given a string of a keyword name *arg2* and a particular module *arg1*, returns the value associated with the keyword in the module options scope. Returns error if keyword is not recognized for the module.");
+    def("get_option", py_psi_get_option, "Given a string of a keyword name *arg2* and a particular module *arg1*, returns the local value associated with the keyword if it's been set, else the global value if it's been set, else the local default value. Returns error if keyword is not recognized globally or if keyword is not recognized for the module.");
 
     // Returns whether the option has changed/revoke has changed for silent resets
-    def("has_global_option_changed", py_psi_has_global_option_changed, "Returns boolean for whether the option has been touched in the global scope, by either user or code. Notwithstanding, code is written such that in practice, this returns whether the option has been touched in the global scope by the user.");
-    def("has_local_option_changed", py_psi_has_local_option_changed, "Returns boolean for whether the option has been touched in the scope of the specified module, by either user or code. Notwithstanding, code is written such that in practice, this returns whether the option has been touched in the module scope by the user.");
-    def("has_option_changed", py_psi_has_option_changed, "Returns boolean for whether the option has been touched either locally to the specified module or globally, by either user or code. Notwithstanding, code is written such that in practice, this returns whether the option has been touched by the user.");
-    def("revoke_global_option_changed", py_psi_revoke_global_option_changed, "Given a string of a keyword name, sets the has_changed attribute in the global options scope to false. Used in python driver when a function sets the value of an option. Before the function exits, this command is called on the option so that has_changed reflects whether the user (not the program) has touched the option.");
-    def("revoke_local_option_changed", py_psi_revoke_local_option_changed, "Given a string of a keyword name and a particular module, sets the has_changed attribute in the module options scope to false. Used in python driver when a function sets the value of an option. Before the function exits, this command is called on the option so that has_changed reflects whether the user (not the program) has touched the option.");
+    def("has_global_option_changed", py_psi_has_global_option_changed, "Returns boolean for whether the keyword *arg1* has been touched in the global scope, by either user or code. Notwithstanding, code is written such that in practice, this returns whether the option has been touched in the global scope by the user.");
+    def("has_local_option_changed", py_psi_has_local_option_changed, "Returns boolean for whether the keyword *arg2* has been touched in the scope of the specified module *arg1*, by either user or code. Notwithstanding, code is written such that in practice, this returns whether the option has been touched in the module scope by the user.");
+    def("has_option_changed", py_psi_has_option_changed, "Returns boolean for whether the option *arg2* has been touched either locally to the specified module *arg1* or globally, by either user or code. Notwithstanding, code is written such that in practice, this returns whether the option has been touched by the user.");
+    def("revoke_global_option_changed", py_psi_revoke_global_option_changed, "Given a string of a keyword name *arg1*, sets the has_changed attribute in the global options scope to false. Used in python driver when a function sets the value of an option. Before the function exits, this command is called on the option so that has_changed reflects whether the user (not the program) has touched the option.");
+    def("revoke_local_option_changed", py_psi_revoke_local_option_changed, "Given a string of a keyword name *arg2* and a particular module *arg1*, sets the has_changed attribute in the module options scope to false. Used in python driver when a function sets the value of an option. Before the function exits, this command is called on the option so that has_changed reflects whether the user (not the program) has touched the option.");
 
     // These return/set/print PSI variables found in Process::environment.globals
     def("get_variable", py_psi_get_variable, "Returns one of the PSI variables set internally by the modules or python driver (see manual for full listing of variables available).");

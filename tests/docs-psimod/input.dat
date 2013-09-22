@@ -41,6 +41,7 @@ for item in psi4fns:
 for item in classes:
     pts('psi4 module class', item)
     div = '=' * len(item)
+    f.write('\n\n.. _`sec:psimod_%s`:\n\n' % (item))
     f.write('\n\n' + item + '\n')
     f.write(div + '\n\n')
 
