@@ -121,6 +121,7 @@ BasisSet::BasisSet()
     center_to_shell_[0] = 0;
     puream_ = 0;
     max_am_ = 0;
+    max_nprimitive_ = 1;
     xyz_[0] = 0.0;
     xyz_[1] = 0.0;
     xyz_[2] = 0.0;
@@ -498,7 +499,6 @@ BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
     initialized_shared_ = true;
 
     int natom = molecule_->natom();
-    int nunique = molecule_->nunique();
 
     /// These will tell us where the primitives for [basis][symbol] start and end, in the compact array
     std::map<std::string, std::map<std::string, int > >  primitive_start;
@@ -520,7 +520,6 @@ BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
             const std::string &symbol = symbol_iter->first;
             vector<ShellInfo>& shells = symbol_map[symbol];
             primitive_start[basis][symbol] = n_uprimitive_;
-            fprintf(outfile, "BAsis start %d basis %s symbol %s\n", n_uprimitive_, basis.c_str(), symbol.c_str());
             for (int i=0; i<shells.size(); ++i) {
                 const ShellInfo &shell = shells[i];
                 for(int prim = 0; prim < shell.nprimitive(); ++prim){
@@ -530,7 +529,6 @@ BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
                     n_uprimitive_++;
                 }
             }
-            fprintf(outfile, "BAsis end %d basis %s symbol %s\n", n_uprimitive_, basis.c_str(), symbol.c_str());
             primitive_end[basis][symbol] = n_uprimitive_;
         }
     }
@@ -597,7 +595,7 @@ BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
     max_am_ = 0;
     max_nprimitive_ = 0;
     for (int n = 0; n < natom; ++n) {
-        const boost::shared_ptr<CoordEntry> &atom = molecule_->atom_entry(molecule_->unique(n));
+        const boost::shared_ptr<CoordEntry> &atom = molecule_->atom_entry(n);
         string basis = atom->basisset(basistype);
         string symbol = atom->symbol();
         vector<ShellInfo>& shells = shell_map[basis][symbol];
@@ -619,7 +617,7 @@ BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
             GaussianType puream = thisshell.is_pure() ? Pure : Cartesian;
             if(puream)
                 puream_ = true;
-            fprintf(outfile, "atom %d basis %s shell %d nprim %d atom_nprim %d\n", n, basis.c_str(), i, shell_nprim, atom_nprim);
+//            fprintf(outfile, "atom %d basis %s shell %d nprim %d atom_nprim %d\n", n, basis.c_str(), i, shell_nprim, atom_nprim);
             shells_[shell_count] = GaussianShell(am, shell_nprim, &uoriginal_coefficients_[ustart+atom_nprim],
                     &ucoefficients_[ustart+atom_nprim], &uexponents_[ustart+atom_nprim], puream, n, xyz_ptr, bf_count);
             for(int thisbf = 0; thisbf < thisshell.nfunction(); ++thisbf){
@@ -638,20 +636,9 @@ BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
         xyz_ptr[2] = xyz[2];
         xyz_ptr += 3;
         if(atom_nprim != uend-ustart){
-            fprintf(outfile, "nprim %d uend %d\n", atom_nprim, uend);
             throw PSIEXCEPTION("Problem with nprimitive in basis set construction!");
         }
     }
-
-    for(int i = 0; i < n_shells_; ++i){
-        fprintf(outfile, "shell %d first ao %d forst bf %d center %d\n", i, shell_first_ao_[i], shell_first_basis_function_[i], shell_center_[i]);
-    }
-    for(int i = 0; i < natom; ++i){
-        fprintf(outfile, "center %d nshell %d shell %d\n", i, center_to_nshell_[i], center_to_shell_[i]);
-    }
-
-    print_detail(outfile);
-//    exit(1);
 }
 
 std::string BasisSet::make_filename(const std::string& name)
