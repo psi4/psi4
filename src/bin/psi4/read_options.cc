@@ -2931,7 +2931,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       `CFOUR Website <http://slater.chemie.uni-mainz.de/cfour/index.php?n=Main.ListOfKeywordsInAlphabeticalOrder>`_ 
       and extended by interface comments. -*/
 
-      /*- SUBSECTION PSI4 Control of CFOUR-*/
+      /*- SUBSECTION PSI4 Control of CFOUR -*/
 
       /*- Sets the OMP_NUM_THREADS environment variable before calling CFOUR.
           If the environment variable :envvar:`OMP_NUM_THREADS` is set prior to calling PSI4 then
@@ -2941,7 +2941,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
           !expert -*/
       options.add_int("CFOUR_OMP_NUM_THREADS", 1);
 
-      /*- SUBSECTION CFOUR Internal-*/
+      /*- SUBSECTION CFOUR Internal -*/
 
       /*- Specifies the way the :math:`\langle ab||cd \rangle` molecular orbital
       integrals are handled in post-MP2 calculations. STANDARD (= 0) uses

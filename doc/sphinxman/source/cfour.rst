@@ -29,6 +29,14 @@ basis sets the "Cfour way", ``GENBAS``, too, must be in :envvar:`PATH` or
 :envvar:`PSIPATH`. If |PSIfour| is unable to execute the binary, an error
 will be reported.
 
+.. warning:: The p4c4 interface isn't in the master branch nor will it be in
+   the near future. To run this code, (1) build the ``c4`` branch of psi4, (2) 
+   find a copy of cfour and put it in :envvar:`PATH` or :envvar:`PSIPATH`, and
+   (3) clone https://github.com/loriab/qcdb.git python module and prepend
+   :envvar:`PYTHONPATH` with the top qcdb directory (the path added to
+   PYTHONPATH should have one qcdb in it; the cloned qcdb is what needs to be
+   imported in preference to the one already in psi4). Execute psi4 as usual.
+
 NOTE: Need to check in a GENBAS so tests can run?
 
 Cfour for |PSIfour| Users
@@ -66,8 +74,6 @@ Cfour for |PSIfour| Users
   ``optimize('c4-ccsd(t)')``.
 
 
-
-
 |PSIfour| for Cfour Users
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -75,3 +81,23 @@ friendly abbreviations CALC, ANHARM, CONV don't work if they're not the full key
 
 Output
 ~~~~~~
+
+The output of ``xcfour`` invoked from a |PSIfour| input file is written to
+the |PSIfour| output file as the computation progresses. Additionally, the
+output string is extensively parsed and appropriate results are stored in
+:ref:`PSI Variables <apdx:cfour_psivar>`. The formation of further regexes
+for properties, excited states, etc. is one of the primary areas in which
+this interface requires further work. If a Cfour module terminates with a
+non-zero error code, the value will show up in :psivar:`CFOUR ERROR CODE
+<CFOURERRORCODE>`.
+
+In addition to parsing the output stream, results are collected from files
+written to the scratch directory. Presently, the ``GRD`` file is
+parsed 
+
+
+
+.. :py:func:`~interface_cfour.run_cfour`
+
+.. autofunction:: interface_cfour.run_cfour(name [, keep, path])
+

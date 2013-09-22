@@ -231,6 +231,10 @@ PSI Variables by Alpha
    The total electronic energy [H] and correlation energy component [H]
    for the requested variant of coupled electron pair approximation level of theory.
 
+.. psivar:: CFOUR ERROR CODE
+
+   The non-zero return value from a Cfour execution.
+
 .. psivar:: CI DIPOLE X
    CI DIPOLE Y
    CI DIPOLE Z
