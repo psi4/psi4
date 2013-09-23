@@ -202,16 +202,36 @@ for :py:func:`~driver.optimize` to trigger an optimization.  Setting
 convergence criteria.  Several sample inputs in :source:`test/cfour/`
 starting with ``opt-`` show basic geometry optimizations.
 
-The example above also shows the total memory for the computation being
+The above example also shows the total memory for the computation being
 set in |PSIfour| format. See :ref:`sec:memory` for details. When
 specified, the memory value is passed on to Cfour by setting keywords
 |cfour__cfour_memory_size| and |cfour__cfour_mem_unit| =MB.
+
+|PSIfour| has an extensive :ref:`basis set library <apdx:basisElement>` in
+Gaussian94 format. See :ref:`sec:basisBuiltIn` for details.  Contrasts to
+Cfour basis handling include identifying basis sets by standard name
+(aug-cc-pVDZ instead of AUG-PVDZ), direct handles for diffuse-fn-pruned
+sets (*e.g.*, jun-cc-pVDZ), case insensitivity, appropriate setting of
+spherical/Cartesian depending on basis set design, and syntax to set
+different basis sets to different classes of atoms without listing each
+atom. All of these features are available to Cfour by using the
+|libmints__basis| keyword instead of |cfour__cfour_basis| (accompanied, of
+course, by specifying the molecule |PSIfour|-style). Internally, |PSIfour|
+processes the basis set as usual, then translates the basis set format and
+writes out a ``GENBAS`` file with an entry for each atom. The p4c4
+interface sets keyword |cfour__cfour_basis| =SPECIAL and
+|cfour__cfour_spherical| as appropriate, then writes the basis section
+necessary for SPECIAL below the ``*CFOUR(...)`` block. (I'm sorry that the
+name of the basis doesn't appear in ``ZMAT``, but the combination of the
+~14 character basis name limit and the absense of a comment line marker
+rather preclude that helpful label.)
+
 
 * Basis Sets
 * other names to energy, optimize
 * multiple jobs in file
 * ref translation, more to come
-* wrappers
+* wrappers (must use psi4 basis for cbs)
 
 .. warning:: Because p4c4 does not inspect the contents of the ``cfour {...}``
    block, once the user specifies a |PSIfour|-style molecule, the
