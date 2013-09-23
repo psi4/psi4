@@ -1489,7 +1489,6 @@ void Python::run(FILE *input)
         }
 
         // Add PSI library python path
-        PyObject *path, *sysmod, *str;
         PY_TRY(sysmod , PyImport_ImportModule("sys"));
         PY_TRY(path   , PyObject_GetAttrString(sysmod, "path"));
 #if PY_MAJOR_VERSION == 2
