@@ -63,39 +63,9 @@ namespace psi {
 class BasisSet
 {
     friend class BasisSetParser;
-//    //! Number of primitives.
-//    int nprimitive_;
-//    //! Number of atomic orbitals.
-//    int nao_;
-//    //! Number of basis functions (either cartesian or spherical)
-//    int nbf_;
-//    //! Maximum angular momentum
-//    int max_am_;
-//    //! Maximum number of primitives.
-//    int max_nprimitive_;
-//    //! Shell number to first basis function index.
-//    std::vector<int> shell_first_basis_function_;           // Is this used?
-//    //! Shell number to first atomic function index.
-//    std::vector<int> shell_first_ao_;
-//    //! Shell number to atomic center.
-//    std::vector<int> shell_center_;
-//    //! Function number to atomic center.
-//    std::vector<int> function_center_;
-
-//    //! Map function number to shell
-//    std::vector<int> function_to_shell_;
-//    //! Map Cartesian function number to shell
-//    std::vector<int> ao_to_shell_;
-
-//    //! Does the loaded basis set contain pure angular momentum functions?
-//    bool puream_;
 
     //! The name of this basis set (e.g. "BASIS", "RI BASIS")
     std::string name_;
-//    //! Number of shells per center
-//    std::vector<int> center_to_nshell_;
-//    //! For a given center, its first shell.
-//    std::vector<int> center_to_shell_;
 
     //! Array of gaussian shells
     GaussianShell *shells_;
@@ -109,7 +79,6 @@ class BasisSet
     // Has static information been initialized?
     static bool initialized_shared_;
 
-    ///////// NEW THINGS, the above can be deleted when this is complete
     /*
      * Scalars
      */
@@ -117,8 +86,6 @@ class BasisSet
     int nao_;
     /// Number of basis functions (either cartesian or spherical)
     int nbf_;
-    /// The number of unique shells
-    int n_ushells_;
     /// The number of unique primitives
     int n_uprimitive_;
     /// The number of shells
@@ -171,6 +138,12 @@ public:
 
     BasisSet(const std::string &basistype, SharedMolecule mol,
              std::map<std::string, std::map<std::string, std::vector<ShellInfo> > > &shell_map);
+    /**
+     * Creates a new basis set object for an atom, from an existing basis set
+     * bs: the basis set to copy data from
+     * center: the atom in bs to copy over
+     */
+    BasisSet(const BasisSet *bs, const int center);
 
     /** Builder factory method
      * @param molecule the molecule to build the BasisSet around
@@ -348,6 +321,7 @@ public:
     static boost::shared_ptr<BasisSet> construct(const boost::shared_ptr<BasisSetParser>& parser,
         const boost::shared_ptr<Molecule>& mol,
         const std::string& type);
+
 
     /** Converts basis set name to a compatible filename.
      * @param basisname Basis name

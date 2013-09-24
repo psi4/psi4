@@ -186,7 +186,7 @@ private:
 
     /// Atom number this shell goes to. Needed when indexing integral derivatives.
     int nc_;
-    /// Atomic center number in the Molecule
+    /// Atomic coordinates of this center
     const double *center_;
     /// First basis function in this shell
     int start_;
