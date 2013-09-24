@@ -699,14 +699,11 @@ BasisSet::BasisSet(const BasisSet *bs, const int center)
             for(int thisao = 0; thisao < shell.ncartesian(); ++thisao){
                 ao_to_shell_[ao_count++] = shell_count;
             }
-            const double *xyz = shell.center();
-            xyz_[0] = xyz[0];
-            xyz_[1] = xyz[1];
-            xyz_[2] = xyz[2];
             shell_count++;
             prim_count += shell_nprim;
         }
     }
+    xyz_[0] = xyz_[1] = xyz_[2] = 0.0;
 }
 
 std::string BasisSet::make_filename(const std::string& name)
