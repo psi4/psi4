@@ -414,12 +414,6 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
 
     boost::shared_ptr<BasisSet> basisset(new BasisSet(type, mol, basis_atom_shell));
 
-//    // Set the default name to just the type
-//    basisset->set_name(type);
-
-//    // Assign the molecule to the basis set
-//    basisset->molecule_ = mol;
-
     //TODO ACS is this still needed?
     // This step is very important. Without it the basis set is useless.
     basisset->refresh();
@@ -430,7 +424,6 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
          ++iter) {
         basisset->name_ += (*iter).first + " + ";
     }
-
     if (has_ending(basisset->name_, " + "))
         basisset->name_ = basisset->name_.substr(0, basisset->name_.length()-3);
 
