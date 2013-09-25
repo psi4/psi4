@@ -63,42 +63,12 @@ namespace psi {
 class BasisSet
 {
     friend class BasisSetParser;
-    //! Number of primitives.
-    int nprimitive_;
-    //! Number of atomic orbitals.
-    int nao_;
-    //! Number of basis functions (either cartesian or spherical)
-    int nbf_;
-    //! Maximum angular momentum
-    int max_am_;
-    //! Maximum number of primitives.
-    int max_nprimitive_;
-    //! Shell number to first basis function index.
-    std::vector<int> shell_first_basis_function_;           // Is this used?
-    //! Shell number to first atomic function index.
-    std::vector<int> shell_first_ao_;
-    //! Shell number to atomic center.
-    std::vector<int> shell_center_;
-    //! Function number to atomic center.
-    std::vector<int> function_center_;
-
-    //! Map function number to shell
-    std::vector<int> function_to_shell_;
-    //! Map Cartesian function number to shell
-    std::vector<int> ao_to_shell_;
-
-    //! Does the loaded basis set contain pure angular momentum functions?
-    bool puream_;
 
     //! The name of this basis set (e.g. "BASIS", "RI BASIS")
     std::string name_;
-    //! Number of shells per center
-    std::vector<int> center_to_nshell_;
-    //! For a given center, its first shell.
-    std::vector<int> center_to_shell_;
 
     //! Array of gaussian shells
-    std::vector<GaussianShell> shells_;
+    GaussianShell *shells_;
 
     //! vector of shells numbers sorted in acending AM order.
     std::vector<int> sorted_ao_shell_list_;
@@ -109,8 +79,71 @@ class BasisSet
     // Has static information been initialized?
     static bool initialized_shared_;
 
+    /*
+     * Scalars
+     */
+    /// Number of atomic orbitals (Cartesian)
+    int nao_;
+    /// Number of basis functions (either cartesian or spherical)
+    int nbf_;
+    /// The number of unique primitives
+    int n_uprimitive_;
+    /// The number of shells
+    int n_shells_;
+    /// The number of primitives
+    int nprimitive_;
+    /// The maximum angular momentum
+    int max_am_;
+    /// The maximum number of primitives in a shell
+    int max_nprimitive_;
+    /// Whether the basis set is uses spherical basis functions or not
+    bool puream_;
+
+    /*
+     * Arrays
+     */
+    /// The number of primitives (and exponents) in each shell
+    int *n_prim_per_shell_;
+    /// The first (Cartesian) atomic orbital in each shell
+    int *shell_first_ao_;
+    /// The first (Cartesian / spherical) basis function in each shell
+    int *shell_first_basis_function_;
+    /// Shell number to atomic center.
+    int *shell_center_;
+    /// Which shell does a given (Cartesian / spherical) function belong to?
+    int *function_to_shell_;
+    /// Which shell does a given Cartesian function belong to?
+    int *ao_to_shell_;
+    /// Which center is a given function on?
+    int *function_center_;
+    /// How many shells are there on each center?
+    int *center_to_nshell_;
+    /// What's the first shell on each center?
+    int *center_to_shell_;
+
+    /// The flattened lists of unique exponents
+    double *uexponents_;
+    /// The flattened lists of unique contraction coefficients (normalized)
+    double *ucoefficients_;
+    /// The flattened lists of unique contraction coefficients (as provided by the user)
+    double *uoriginal_coefficients_;
+    /// The flattened list of Cartesian coordinates for each atom
+    double *xyz_;
+
+
+
+
 public:
     BasisSet();
+
+    BasisSet(const std::string &basistype, SharedMolecule mol,
+             std::map<std::string, std::map<std::string, std::vector<ShellInfo> > > &shell_map);
+    /**
+     * Creates a new basis set object for an atom, from an existing basis set
+     * bs: the basis set to copy data from
+     * center: the atom in bs to copy over
+     */
+    BasisSet(const BasisSet *bs, const int center);
 
     /** Builder factory method
      * @param molecule the molecule to build the BasisSet around
@@ -118,7 +151,7 @@ public:
      * @return BasisSet corresponding to this molecule and set of shells
      */
     static boost::shared_ptr<BasisSet> build(boost::shared_ptr<Molecule> molecule,
-                                             const std::vector<GaussianShell>& shells);
+                                             const std::vector<ShellInfo> &shells);
 
     /** Initialize singleton values that are shared by all basis set objects. */
     static void initialize_singletons();
@@ -136,7 +169,7 @@ public:
     /** Number of shells.
      *  @return Number of shells.
      */
-    int nshell() const                 { return shells_.size();  }
+    int nshell() const                 { return n_shells_;  }
     /** Number of atomic orbitals (Cartesian).
      * @return The number of atomic orbitals (Cartesian orbitals, always).
      */
@@ -266,7 +299,7 @@ public:
      *  at the origin with an exponent of 0.0 and contraction of 1.0.
      *  @return A new empty SOBasis object.
      */
-//    static boost::shared_ptr<SOBasisSet> zero_so_basis_set(const boost::shared_ptr<IntegralFactory>& factory);
+    static boost::shared_ptr<SOBasisSet> zero_so_basis_set(const boost::shared_ptr<IntegralFactory>& factory);
 
     /** Returns a shell-labeled test basis set object
      *
@@ -288,6 +321,7 @@ public:
     static boost::shared_ptr<BasisSet> construct(const boost::shared_ptr<BasisSetParser>& parser,
         const boost::shared_ptr<Molecule>& mol,
         const std::string& type);
+
 
     /** Converts basis set name to a compatible filename.
      * @param basisname Basis name
@@ -357,6 +391,7 @@ BasisSet operator +(const BasisSet& a, const BasisSet& b) {
     }
     BasisSet temp;
 
+#if 0 //TODO fixme!
     temp.name_ = a.name_ + " + " + b.name_;
     temp.molecule_ = a.molecule();
 
@@ -380,7 +415,7 @@ BasisSet operator +(const BasisSet& a, const BasisSet& b) {
 //    }
 
 //    temp.refresh();
-
+#endif
     return temp;
 }
 
