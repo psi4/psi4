@@ -216,42 +216,43 @@ void ThreeCenterOverlapInt::normalize_am(const GaussianShell& sA,
                                          const GaussianShell& sB,
                                          const GaussianShell& sC)
 {
-    // Assume integrals are done. Normalize for angular momentum
-    int amA = sA.am();
-    int amB = sB.am();
-    int amC = sC.am();
+    /// ACS commented this out.  The normalize:: function just returns 1.0, so this is not needed.
+//    // Assume integrals are done. Normalize for angular momentum
+//    int amA = sA.am();
+//    int amB = sB.am();
+//    int amC = sC.am();
 
-    size_t ao123 = 0;
-    for(int ii = 0; ii <= amA; ii++) {
-        int lA = amA - ii;
-        for(int jj = 0; jj <= ii; jj++) {
-            int mA = ii - jj;
-            int nA = jj;
+//    size_t ao123 = 0;
+//    for(int ii = 0; ii <= amA; ii++) {
+//        int lA = amA - ii;
+//        for(int jj = 0; jj <= ii; jj++) {
+//            int mA = ii - jj;
+//            int nA = jj;
 
-            double normA = GaussianShell::normalize(lA, mA, nA);
+//            double normA = GaussianShell::normalize(lA, mA, nA);
 
-            for(int mm = 0; mm <= amB; mm++) {
-                int lB = amB - mm;
-                for(int nn = 0; nn <= mm; nn++) {
-                    int mB = mm - nn;
-                    int nB = nn;
+//            for(int mm = 0; mm <= amB; mm++) {
+//                int lB = amB - mm;
+//                for(int nn = 0; nn <= mm; nn++) {
+//                    int mB = mm - nn;
+//                    int nB = nn;
 
-                    double normB = GaussianShell::normalize(lB, mB, nB);
+//                    double normB = GaussianShell::normalize(lB, mB, nB);
 
-                    for(int kk = 0; kk <= amC; kk++) {
-                        int lC = amC - kk;
-                        for(int ll = 0; ll <= kk; ll++) {
-                            int mC = kk - ll;
-                            int nC = ll;
+//                    for(int kk = 0; kk <= amC; kk++) {
+//                        int lC = amC - kk;
+//                        for(int ll = 0; ll <= kk; ll++) {
+//                            int mC = kk - ll;
+//                            int nC = ll;
 
-                            buffer_[ao123] *= normA * normB * GaussianShell::normalize(lC, mC, nC);
-                            ao123++;
-                        }
-                    }
-                }
-            }
-        }
-    }
+//                            buffer_[ao123] *= normA * normB * GaussianShell::normalize(lC, mC, nC);
+//                            ao123++;
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
 }
 
 void ThreeCenterOverlapInt::pure_transform(const GaussianShell& s1,
