@@ -212,7 +212,16 @@ Taylor_Fjt::values(int l, double T)
      Compute Fj(T) from l down to jrecur
    -------------------------------------*/
     if (T_gt_Tcrit) {
+#define AVOID_POW 1
+#if AVOID_POW
+        double X = 1.0/two_T;
+        double pow_two_T_to_minusjp05 = X;
+        for(int i = 0; i < l; ++i)
+            pow_two_T_to_minusjp05 *= X*X;
+        pow_two_T_to_minusjp05 = sqrt(pow_two_T_to_minusjp05);
+#else
         double pow_two_T_to_minusjp05 = std::pow(two_T,-l-0.5);
+#endif
         for(int j=l; j>=jrecur; --j) {
             /*--- Asymptotic formula ---*/
             F_[j] = df[2*j] * M_SQRT_PI_2 * pow_two_T_to_minusjp05;
