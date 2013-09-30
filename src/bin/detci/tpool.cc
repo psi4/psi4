@@ -78,7 +78,7 @@ void tpool_init(tpool_t   *tpoolp,
   tpool->queue_tail = NULL;
   tpool->queue_closed = 0;  
   tpool->shutdown = 0; 
-  tpool->threads_awake = 0;
+  tpool->threads_awake = num_worker_threads;
   if ((rtn = pthread_mutex_init(&(tpool->queue_lock), NULL)) != 0){
     str = "pthread_mutex_init ";
     str += strerror(rtn);
@@ -115,7 +115,6 @@ void tpool_init(tpool_t   *tpoolp,
       str += boost::lexical_cast<std::string>( rtn) ;
       throw PsiException(str,__FILE__,__LINE__);
   }
-    tpool->threads_awake++;
   }
 
   *tpoolp = tpool;
