@@ -1,9 +1,0 @@
-This directory contains 
-
- - autocorr.mw ... a Maple worksheet to generate the autocorrelation coefficients
-
- - dump2.py with dependencies ... a Python program to generate the two-scale coefficients
-
-   Run with "python dump2.py"
-
- - quadrature.py can be easily modified to generate the full-precision Gauss-Legendre coeffs 
