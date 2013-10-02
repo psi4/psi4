@@ -69,8 +69,7 @@ void OCCWave::trans_ints_rhf()
     ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::vir, MOSpace::vir, IntegralTransform::ReadAndNuke);
     timer_off("Trans (OV|VV)");
     
-//if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA" || wfn_type_ == "CEPA") { 
-if (wfn_type_ != "OMP2") { 
+if (wfn_type_ != "OMP2" || ekt_ea_ == "TRUE") { 
     // Trans (VV|VV)
     timer_on("Trans (VV|VV)");
     ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::vir, MOSpace::vir);
@@ -137,8 +136,7 @@ else {
      timer_off("Sort (OV|VV) -> <OV|VV>");
      
        
-//if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA" || wfn_type_ == "CEPA") { 
-if (wfn_type_ != "OMP2") { 
+if (wfn_type_ != "OMP2" || ekt_ea_ == "TRUE") { 
      timer_on("Sort (VV|VV) -> <VV|VV>");
      // (VV|VV) -> <VV|VV>
      global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),

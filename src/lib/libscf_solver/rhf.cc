@@ -20,14 +20,6 @@
  *@END LICENSE
  */
 
-/*
- *  rhf.cpp
- *  matrix
- *
- *  Created by Justin Turney on 4/10/08.
- *
- */
-
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -141,7 +133,7 @@ void RHF::form_G()
     std::vector<SharedMatrix> & C = jk_->C_left();
     C.clear();
     C.push_back(Ca_subset("SO", "OCC"));
-    
+
     // Run the JK object
     jk_->compute();
 
@@ -209,7 +201,7 @@ void RHF::form_F()
         J_->print();
         K_->print();
         G_->print();
-        
+
     }
 }
 
@@ -266,11 +258,11 @@ double RHF::compute_initial_E()
 double RHF::compute_E()
 {
     double one_electron_E = 2.0 * D_->vector_dot(H_);
-    double two_electron_E = D_->vector_dot(Fa_) - 0.5 * one_electron_E;   
- 
+    double two_electron_E = D_->vector_dot(Fa_) - 0.5 * one_electron_E;
+
     energies_["Nuclear"] = nuclearrep_;
     energies_["One-Electron"] = one_electron_E;
-    energies_["Two-Electron"] = two_electron_E; 
+    energies_["Two-Electron"] = two_electron_E;
     energies_["XC"] = 0.0;
     energies_["-D"] = 0.0;
 

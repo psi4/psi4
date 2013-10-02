@@ -96,6 +96,7 @@ protected:
     void z_vector();
     void effective_pdms();
     void effective_gfock();
+    void gfock_ea();
 
     // OMP2
     void omp2_manager();
@@ -509,6 +510,9 @@ protected:
      SharedMatrix GFock;
      SharedMatrix GFockA;
      SharedMatrix GFockB;
+     SharedMatrix Ftilde;
+     SharedMatrix FtildeA;
+     SharedMatrix FtildeB;
      SharedMatrix UorbA;
      SharedMatrix UorbB;
      SharedMatrix UorbrotA;
@@ -526,6 +530,9 @@ protected:
      SharedMatrix g1symm;
      SharedMatrix g1symmA;
      SharedMatrix g1symmB;
+     SharedMatrix G1tilde;
+     SharedMatrix G1tildeA;
+     SharedMatrix G1tildeB;
      SharedMatrix Worb;
      SharedMatrix WorbA;
      SharedMatrix WorbB;

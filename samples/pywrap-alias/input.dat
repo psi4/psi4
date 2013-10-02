@@ -21,7 +21,7 @@ set scf {
     e_convergence 8
 }
 
-set mp2 scs on
+set occ do_scs on
 
 banner('gold standard')
 energy('sherrill_gold_standard')

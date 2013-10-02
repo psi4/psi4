@@ -474,28 +474,28 @@ public:
     virtual OneBodyAOInt *pcm_potentialint();
 
     /// Returns an ERI integral object
-    virtual TwoBodyAOInt* eri(int deriv=0, bool use_shell_pairs=false);
+    virtual TwoBodyAOInt* eri(int deriv=0, bool use_shell_pairs=true);
 
     /// Returns an ERD ERI integral object, if available.  Otherwise returns a libint integral object
-    virtual TwoBodyAOInt* erd_eri(int deriv=0, bool use_shell_pairs=false);
+    virtual TwoBodyAOInt* erd_eri(int deriv=0, bool use_shell_pairs=true);
 
     /// Returns an erf ERI integral object (omega integral)
-    virtual TwoBodyAOInt* erf_eri(double omega, int deriv=0, bool use_shell_pairs=false);
+    virtual TwoBodyAOInt* erf_eri(double omega, int deriv=0, bool use_shell_pairs=true);
 
     /// Returns an erf complement ERI integral object (omega integral)
-    virtual TwoBodyAOInt* erf_complement_eri(double omega, int deriv=0, bool use_shell_pairs=false);
+    virtual TwoBodyAOInt* erf_complement_eri(double omega, int deriv=0, bool use_shell_pairs=true);
 
     /// Returns an F12 integral object
-    virtual TwoBodyAOInt* f12(boost::shared_ptr<CorrelationFactor> cf, int deriv=0, bool use_shell_pairs=false);
+    virtual TwoBodyAOInt* f12(boost::shared_ptr<CorrelationFactor> cf, int deriv=0, bool use_shell_pairs=true);
 
     /// Returns an F12 squared integral object
-    virtual TwoBodyAOInt* f12_squared(boost::shared_ptr<CorrelationFactor> cf, int deriv=0, bool use_shell_pairs=false);
+    virtual TwoBodyAOInt* f12_squared(boost::shared_ptr<CorrelationFactor> cf, int deriv=0, bool use_shell_pairs=true);
 
     /// Returns an F12G12 integral object
-    virtual TwoBodyAOInt* f12g12(boost::shared_ptr<CorrelationFactor> cf, int deriv=0, bool use_shell_pairs=false);
+    virtual TwoBodyAOInt* f12g12(boost::shared_ptr<CorrelationFactor> cf, int deriv=0, bool use_shell_pairs=true);
 
     /// Returns an F12 double commutator integral object
-    virtual TwoBodyAOInt* f12_double_commutator(boost::shared_ptr<CorrelationFactor> cf, int deriv=0, bool use_shell_pairs=false);
+    virtual TwoBodyAOInt* f12_double_commutator(boost::shared_ptr<CorrelationFactor> cf, int deriv=0, bool use_shell_pairs=true);
 
     /// Returns a general ERI iterator object for any (P Q | R S) in shells
     AOIntegralsIterator integrals_iterator(int p, int q, int r, int s);

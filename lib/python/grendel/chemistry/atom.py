@@ -376,6 +376,9 @@ class Atom(object):
     def is_orphaned(self):
         return self.parent_molecule is None
 
+    def is_ghost(self):
+        return self._element == Elements['X']
+
     #---------------#
     # Other methods #
     #---------------#
