@@ -55,8 +55,7 @@ I. Compilation Prerequisites
   * autoconf (version 2.52 or higher)
 
     .. note:: autoconf is only needed for special
-       architectures, to compile with MADNESS, or to compile the 
-       development branch.
+       architectures or to compile the development branch.
 
   * aclocal
   * fileutils (esp. install)
@@ -66,10 +65,6 @@ I. Compilation Prerequisites
   * latex
   * sphinx (version 1.1 or higher)
   * dvipng (for latex math in html)
-
-* To make a distributed-parallel version with MADNESS, you may also need:
-
-  * libtool (called by autoreconf)
 
 For Ubuntu users, you will need the following packages installed:
 gfortran [for linking to BLAS/LAPACK], g++, autoconf, python-dev 
@@ -262,7 +257,7 @@ compiling and installing the PSI4 package.
        
           ../configure --with-plugins --with-cxx=llvm-g++
 
-       .. warning:: If you still happen to encouter an error like::
+       .. warning:: If you still happen to encounter an error like::
 
              checking Fortran symbols... giving up
              configure: error: could not determine fortran symbol names
@@ -270,6 +265,14 @@ compiling and installing the PSI4 package.
           adding the following tag to your configure may help ::
 
              --with-f77symbol=lcu
+
+       .. warning:: An error like the one below has been seen
+          when inadvertantly linking to 32-bit libraries ::
+
+             Undefined symbols:
+             "_omp_get_num_threads", referenced from:
+                 __ZN3psi5dfmp26UDFMP28form_AiaEv.omp_fn.4 in libPSI_dfmp2.a(mp2.o)
+                 ...
 
   B. List of Specific Configuration Options
 

@@ -1674,14 +1674,14 @@ size_t TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
         nprim = fill_primitive_data(libint_.PrimQuartet, fjt_, p12, p34, am, nprim1, nprim2, nprim3, nprim4, sh1 == sh2, sh3 == sh4, 0);
     }
     else {
-        const std::vector<double>& a1s = s1.exps();
-        const std::vector<double>& a2s = s2.exps();
-        const std::vector<double>& a3s = s3.exps();
-        const std::vector<double>& a4s = s4.exps();
-        const std::vector<double>& c1s = s1.coefs();
-        const std::vector<double>& c2s = s2.coefs();
-        const std::vector<double>& c3s = s3.coefs();
-        const std::vector<double>& c4s = s4.coefs();
+        const double *a1s = s1.exps();
+        const double *a2s = s2.exps();
+        const double *a3s = s3.exps();
+        const double *a4s = s4.exps();
+        const double *c1s = s1.coefs();
+        const double *c2s = s2.coefs();
+        const double *c3s = s3.coefs();
+        const double *c4s = s4.coefs();
 
         // Old version - without ShellPair - STILL USED BY RI CODES
         for (int p1=0; p1<nprim1; ++p1) {

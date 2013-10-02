@@ -20,15 +20,6 @@
  *@END LICENSE
  */
 
-/*
- *  hf.cpp
- *  matrix
- *
- *  Created by Justin Turney on 4/9/08.
- *  Copyright 2008 by Justin M. Turney, Ph.D.. All rights reserved.
- *
- */
-
 #include <cstdlib>
 #include <cstdio>
 #include <iostream>
@@ -1496,24 +1487,24 @@ double HF::compute_energy()
             Fb_->print(outfile);
         }
 
-	//bool has_efp = options.get("HAS_EFP");
+    //bool has_efp = options.get("HAS_EFP");
 
-	// XXX
-	//if (has_efp) {
-	//efp_get_multipole_count
-	// allocate arrays
-	//efp_get_multipoles
-	// compute 1e contributions
-	//}
+    // XXX
+    //if (has_efp) {
+    //efp_get_multipole_count
+    // allocate arrays
+    //efp_get_multipoles
+    // compute 1e contributions
+    //}
 
         E_ = compute_E();
 
-	// XXX
-	//if (has_efp) {
-	//double efp_energy;
-	//efp_scf_update(efp, &efp_energy);
-	//E_ += efp_energy;
-	//}
+    // XXX
+    //if (has_efp) {
+    //double efp_energy;
+    //efp_scf_update(efp, &efp_energy);
+    //E_ += efp_energy;
+    //}
 
         timer_on("DIIS");
         bool add_to_diis_subspace = false;

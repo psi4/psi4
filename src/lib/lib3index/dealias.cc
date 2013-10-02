@@ -205,7 +205,7 @@ void DealiasBasisSet::form_cap()
 
 void DealiasBasisSet::form_basis()
 {
-    std::vector<GaussianShell> shells;
+    std::vector<ShellInfo> shells;
     int natom = primary_->molecule()->natom();
     int max_am = primary_->max_am();
     int max_l = max_am + nl_;
@@ -218,7 +218,7 @@ void DealiasBasisSet::form_basis()
                 std::vector<double> e;
                 e.push_back(dealias_alpha_[A][l][i]);
                 Vector3 v = primary_->molecule()->xyz(A);
-                shells.push_back(GaussianShell(l, weight, e, primary_->has_puream() ? Pure : Cartesian, A, v, 0, Unnormalized));
+                shells.push_back(ShellInfo(l, weight, e, primary_->has_puream() ? Pure : Cartesian, A, v, 0, Unnormalized));
             }
         }
     }
