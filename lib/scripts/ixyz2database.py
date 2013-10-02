@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 #
 #@BEGIN LICENSE
 #
@@ -20,14 +22,18 @@
 #@END LICENSE
 #
 
-#!/usr/bin/env python
-#TODO - more sophisticated path machinations
 import sys
-sys.path.append('./../python')
 import re
 import os
 import glob
-import qcdb
+
+sys.path.append(os.path.dirname(__file__) + '/../python')
+sys.path.append(os.environ.get('PSIDATADIR')+'/python')
+try:
+    import qcdb
+except ImportError:
+    print """Cannot load qcdb python module. Run this script in situ or append the psi4/lib/python directory to $PYTHONPATH.""" 
+    exit(1)
 
 """
 Utility: This script converts a set of geometry files in XYZ format into
@@ -40,7 +46,7 @@ Instructions: Detailed instructions may be found at
     then copy it into psi4/lib/databases/ . Its contents can be accessed as
     normal through the db() wrapper with no further configuration or recompiling.
 Created: Monday, December 21, 2009, LAB
-Last Modified: Friday, September 7, 2012, LAB
+Last Modified: Tuesday, September 10, 2013, LAB
 """
 
 # instructions

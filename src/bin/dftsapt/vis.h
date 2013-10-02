@@ -34,6 +34,7 @@ class Options;
 class BasisExtents;
 class RKSFunctions;
 class BlockOPoints;
+class AtomicDensity;
 
 namespace dftsapt {
 
@@ -72,10 +73,14 @@ protected:
     boost::shared_ptr<Matrix> Locc_A_;
     /// Local orbitals for B
     boost::shared_ptr<Matrix> Locc_B_;
-    /// Charges for A
+    /// Local orbital charges for A
     boost::shared_ptr<Matrix> Q_A_;
-    /// Charges for B
+    /// Local orbital charges for B
     boost::shared_ptr<Matrix> Q_B_;
+    /// Atomic densities for A
+    boost::shared_ptr<AtomicDensity> atomic_A_;
+    /// Atomic densities for B 
+    boost::shared_ptr<AtomicDensity> atomic_B_; 
 
     /// Map of Component partitions
     std::map<std::string, boost::shared_ptr<Matrix> > vars_;
@@ -94,6 +99,8 @@ protected:
     void drop_orbital_2();
     /// Drop the voxel analysis to disk
     void drop_voxel();
+    /// Drop the debug voxel analysis to disk (orbitals and atoms)
+    void drop_debug();
     /// Drop a matrix in vars to disk
     void drop(const std::string& val);
     
@@ -105,7 +112,9 @@ public:
         boost::shared_ptr<Matrix> Locc_A, 
         boost::shared_ptr<Matrix> Locc_B, 
         boost::shared_ptr<Matrix> Q_A, 
-        boost::shared_ptr<Matrix> Q_B
+        boost::shared_ptr<Matrix> Q_B,
+        boost::shared_ptr<AtomicDensity> atomic_A,
+        boost::shared_ptr<AtomicDensity> atomic_B
         );
     virtual ~ASAPTVis();
 
@@ -165,16 +174,25 @@ public:
     void build_grid();
     void print_header();
     
+    // => Production-Level Visualization <= //
+
     // Zero the grid property
     void zero();
     // Compute a generalized electronic density on this grid
     void compute_electronic(boost::shared_ptr<Matrix> D);
-    // Compute an atom-centered Normalized Gaussian property on this grid. Q rows are(x,y,z,V,\alpha) in a.u.
-    void compute_atomic(boost::shared_ptr<Matrix> Q);
-    // Drop a raw float32 variant of this dataset to disk
-    void drop_raw(const std::string& file, double clamp);
-    // Drop a raw UVF variant of this dataset to disk
-    void drop_uvf(const std::string& file, double clamp);
+    // Compute an atomic-density weighted value on the grid
+    void compute_atomic(boost::shared_ptr<Vector> V, boost::shared_ptr<AtomicDensity> atomic);
+    // Drop a raw float32 variant of this dataset to disk (uses internal v_ if v == NULL) 
+    void drop_raw(const std::string& file, double clamp, double* v = NULL);
+    // Drop a raw UVF variant of this dataset to disk (uses internal v_ if v == NULL) 
+    void drop_uvf(const std::string& file, double clamp, double* v = NULL);
+
+    // => Debugging-Level Visualization <= //
+
+    // Drop all atomic densities to raw files, using labeling [label "qN.raw"] and [label "wN.raw"]
+    void compute_atomic_densities(boost::shared_ptr<AtomicDensity> atomic, double clamp, const std::string& label);
+    // Drop all orbitals to raw files, using labeling [label "fN.raw"]
+    void compute_orbitals(boost::shared_ptr<Matrix> Cocc, double clamp, const std::string& label);
 };
 
 }} // End namespace

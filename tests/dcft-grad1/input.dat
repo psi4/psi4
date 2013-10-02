@@ -50,6 +50,7 @@ grad_qc = psi4.wavefunction().gradient()                                        
 compare_matrices(ref_dc06, grad_qc, 8, "DC-06 analytic gradient (qc)")                 #TEST
 
 set algorithm simultaneous
+set diis_start_convergence 1e-2
 set dcft_functional odc-06
 gradient('dcft')
 

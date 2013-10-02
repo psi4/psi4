@@ -299,12 +299,12 @@ void export_mints()
             add_property("AMCHAR", &GaussianShell::AMCHAR, "docstring").
             add_property("ncenter", &GaussianShell::ncenter, "docstring").
             add_property("function_index", &GaussianShell::function_index, &GaussianShell::set_function_index, "Basis function index where this shell starts.").
-            add_property("center", make_function(&GaussianShell::center, return_value_policy<return_by_value>()), "A Vector3 representing the center of the GaussianShell.").
-            add_property("exps", make_function(&GaussianShell::exps, return_value_policy<copy_const_reference>()), "The exponents of all the primitives").
-            add_property("coefs", make_function(&GaussianShell::coefs, return_value_policy<copy_const_reference>()), "The coefficients of all the primitives").
+//            add_property("center", &GaussianShell::center, "A double* representing the center of the GaussianShell.").
+//            add_property("exps", &GaussianShell::exps, "The exponents of all the primitives").
+//            add_property("coefs", &GaussianShell::coefs, "The coefficients of all the primitives").
             def("is_cartesian", &GaussianShell::is_cartesian, "docstring").
             def("is_pure", &GaussianShell::is_pure, "docstring").
-            def("normalize_shell", &GaussianShell::normalize_shell, "docstring").
+//            def("normalize_shell", &GaussianShell::normalize_shell, "docstring").
             def("exp", &GaussianShell::exp, "Returns the exponent of the given primitive").
             def("coef", &GaussianShell::coef, "docstring");
 
@@ -341,7 +341,7 @@ void export_mints()
     class_<NablaInt, boost::shared_ptr<NablaInt>, bases<OneBodyAOInt>, boost::noncopyable>("NablaInt", "docstring", no_init);
     class_<AngularMomentumInt, boost::shared_ptr<AngularMomentumInt>, bases<OneBodyAOInt>, boost::noncopyable>("AngularMomentumInt", "docstring", no_init);
 
-    typedef void (TwoBodyAOInt::*compute_shell_ints)(int, int, int, int);
+    typedef size_t (TwoBodyAOInt::*compute_shell_ints)(int, int, int, int);
     class_<TwoBodyAOInt, boost::shared_ptr<TwoBodyAOInt>, boost::noncopyable>("TwoBodyAOInt", "docstring", no_init).
             def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell), "docstring").
             add_property("py_buffer_object", make_function(&TwoBodyAOInt::py_buffer_object, return_internal_reference<>()), "docstring").

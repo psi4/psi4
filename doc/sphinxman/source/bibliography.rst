@@ -241,6 +241,14 @@ Bibliography
    U. Bozkaya and H. F. Schaefer,
    *J. Chem. Phys.* **136**, 204114 (2012).
 
+.. [Bozkaya:2013:ocepa]
+   U. Bozkaya and C. D. Sherrill
+   *J. Chem. Phys.* **139**, 054104 (2013).
+
+.. [Bozkaya:2013:omp3grad]
+   U. Bozkaya,
+   *J. Chem. Phys.* **139**, 104116 (2013).
+
 .. [Grimme:2004:1463]
    S. Grimme, *J. Comp. Chem.* **25** 1463-1473 (2004).
 

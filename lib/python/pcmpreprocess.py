@@ -3,6 +3,9 @@ from copy import deepcopy
 
 isAngstrom = False
 
+toAngstrom =  0.52917721092; # CODATA 2010 recommended data
+toAtomicUnits = 1.0/toAngstrom;
+
 def	setup_keywords():
 	top=getkw.Section('toplevel', callback=verify_top)
 	top.set_status(True)
@@ -13,8 +16,8 @@ def	setup_keywords():
 	cavity.add_kw('PatchLevel', 'INT', 2)
 	cavity.add_kw('Coarsity', 'DBL', 0.5)
 	cavity.add_kw('Area','DBL', 0.3)
-	cavity.add_kw('Scaling', 'STR', 'Yes')
-	cavity.add_kw('AddSpheres', 'STR', 'Yes')
+	cavity.add_kw('Scaling', 'BOOL', True)
+	cavity.add_kw('AddSpheres', 'BOOL', True)
         cavity.add_kw('Mode','STR','Explicit')
         cavity.add_kw('Atoms','INT_ARRAY')
         cavity.add_kw('Radii','DBL_ARRAY')
@@ -80,6 +83,11 @@ def verify_cavity(section):
         	if (key.get() < 0.0 or key.get() >= 1.0):
         		print "Coarsity has to be within ]0,1["
         		sys.exit(1)
+        radiiSet = section.get('RadiiSet')
+        allowed_sets = ('Bondi', 'UFF')
+        if (radiiSet.get() not in allowed_sets):
+                print "Allowed radii sets are: ", allowed_sets
+                sys.exit(1)
 	allowed_modes = ("Explicit", "Atoms", "Implicit")
 	mode = section.get('Mode')
 	if (mode.get() not in allowed_modes):
@@ -141,7 +149,7 @@ def verify_medium(section):
 		if (not GIF or not GOF or not PRF):
 			sys.exit(1)
 	solventFound = False
-	for i, v in allowedSolvents.items():
+	for i, v in allowedSolvents.iteritems():
 		if (solvent.get() in v):
 			solventName = i
 			solventFound = True

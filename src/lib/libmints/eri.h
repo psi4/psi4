@@ -85,13 +85,13 @@ protected:
     Fjt *fjt_;
 
     //! Computes the ERIs between four shells.
-    void compute_quartet(int, int, int, int);
+    size_t compute_quartet(int, int, int, int);
 
     //! Computes the ERI derivatives between four shells.
-    void compute_quartet_deriv1(int, int, int, int);
+    size_t compute_quartet_deriv1(int, int, int, int);
 
     //! Computes the ERI second derivative between four shells.
-    void compute_quartet_deriv2(int, int, int, int);
+    size_t compute_quartet_deriv2(int, int, int, int);
 
     //! Form shell pair information. Must be smart enough to handle arbitrary basis sets
     void init_shell_pairs12();
@@ -127,16 +127,16 @@ public:
     virtual ~TwoElectronInt();
 
     /// Compute ERIs between 4 shells. Result is stored in buffer.
-    void compute_shell(const AOShellCombinationsIterator&);
+    size_t compute_shell(const AOShellCombinationsIterator&);
 
     /// Compute ERIs between 4 shells. Result is stored in buffer.
-    virtual void compute_shell(int, int, int, int);
+    virtual size_t compute_shell(int, int, int, int);
 
     /// Compute ERI derivatives between 4 shells. Result is stored in buffer.
-    virtual void compute_shell_deriv1(int, int, int, int);
+    virtual size_t compute_shell_deriv1(int, int, int, int);
 
     /// Compute ERI second derivatives between 4 sheels. Result is stored in buffer.
-    virtual void compute_shell_deriv2(int, int, int, int);
+    virtual size_t compute_shell_deriv2(int, int, int, int);
 };
 
 class ERI : public TwoElectronInt

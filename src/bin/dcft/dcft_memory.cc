@@ -92,8 +92,8 @@ DCFTSolver::init()
     s_half_inv_  = SharedMatrix(new Matrix("SO Basis Inverse Square Root Overlap Matrix", nirrep_, nsopi_, nsopi_));
     epsilon_a_   = boost::shared_ptr<Vector>(new Vector(nirrep_, nsopi_));
     epsilon_b_   = boost::shared_ptr<Vector>(new Vector(nirrep_, nsopi_));
-    kappa_mo_a_  = SharedMatrix(new Matrix("MO basis Kappa (Alpha)", nirrep_, naoccpi_, naoccpi_));
-    kappa_mo_b_  = SharedMatrix(new Matrix("MO basis Kappa (Beta)", nirrep_, nboccpi_, nboccpi_));
+    kappa_mo_a_  = SharedMatrix(new Matrix("MO basis Kappa (Alpha)", nirrep_, nmopi_, nmopi_));
+    kappa_mo_b_  = SharedMatrix(new Matrix("MO basis Kappa (Beta)", nirrep_, nmopi_, nmopi_));
     tau_so_a_    = SharedMatrix(new Matrix("Alpha Tau Matrix", nirrep_, nsopi_, nsopi_));
     tau_so_b_    = SharedMatrix(new Matrix("Beta Tau Matrix", nirrep_, nsopi_, nsopi_));
     aocc_tau_    = SharedMatrix(new Matrix("MO basis Tau (Alpha Occupied)", nirrep_, naoccpi_, naoccpi_));
