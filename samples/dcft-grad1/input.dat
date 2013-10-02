@@ -28,6 +28,7 @@ gradient('dcft')
 
 
 set algorithm simultaneous
+set diis_start_convergence 1e-2
 set dcft_functional odc-06
 gradient('dcft')
 
