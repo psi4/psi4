@@ -189,17 +189,21 @@ void StockholderDensity::compute(boost::shared_ptr<Matrix> D)
 
     // True atom spherical quadratures 
     std::vector<std::vector<int> > orders;
+    std::vector<std::vector<double> > wrs;
     rs_.resize(nA);
     ws_.resize(nA);
+    wrs.resize(nA);
     orders.resize(nA);
     int nstate = 0;
     for (int A = 0; A < nA; A++) {
         int Aabs = Aind[A];
         std::vector<double> rs2;
         std::vector<double> ws2;
+        std::vector<double> wrs2;
         std::vector<std::pair<double, int> > index;
         for (int R = 0; R < rads[Aabs]->npoints(); R++) {
             rs2.push_back(rads[Aabs]->r()[R]);
+            wrs2.push_back(rads[Aabs]->w()[R]);
             ws2.push_back(1.0); // Initial guess
             index.push_back(std::pair<double, int>(rs2[R],R));
             nstate++;
@@ -209,6 +213,7 @@ void StockholderDensity::compute(boost::shared_ptr<Matrix> D)
             int Rold = index[R].second;
             rs_[A].push_back(rs2[Rold]);
             ws_[A].push_back(ws2[Rold]);
+            wrs[A].push_back(wrs2[Rold]);
             orders[A].push_back(Rold);
         } 
     }
@@ -225,16 +230,20 @@ void StockholderDensity::compute(boost::shared_ptr<Matrix> D)
     // Low-memory atomic charges target
     int max_points = 0;
     std::vector<std::vector<std::vector<double> > > Q;
+    std::vector<std::vector<std::vector<double> > > P;
     std::vector<int> atomic_points;
     Q.resize(nA);
+    P.resize(nA);
     atomic_points.resize(nA);
     for (int A = 0; A < nA; A++) {
         int Aabs = Aind[A];
         Q[A].resize(orders[A].size());
+        P[A].resize(orders[A].size());
         int atom_points = 0;
         for (int R = 0; R < orders[A].size(); R++) {
             int Rabs = orders[A][R];
             Q[A][R].resize(spheres[Aabs][Rabs]->npoints());
+            P[A][R].resize(spheres[Aabs][Rabs]->npoints());
             atom_points += spheres[Aabs][Rabs]->npoints();
         }
         atomic_points[A] = atom_points;
@@ -244,15 +253,6 @@ void StockholderDensity::compute(boost::shared_ptr<Matrix> D)
     // Temps 
     boost::shared_ptr<Matrix> Q2(new Matrix("Q2", 1, max_points));
     double** Q2p = Q2->pointer();
-
-    // I like to work in log space for interpolation window root finding
-    std::vector<std::vector<double> > ls;
-    ls.resize(nA);
-    for (int A = 0; A < rs_.size(); A++) {
-        for (int R = 0; R < rs_[A].size(); R++) {
-            ls[A].push_back(log(rs_[A][R]));
-        }
-    }
 
     // DIIS Setup
     boost::shared_ptr<Matrix> state(new Matrix("State", nstate, 1));
@@ -266,6 +266,9 @@ void StockholderDensity::compute(boost::shared_ptr<Matrix> D)
 
     // Store last iteration
     std::vector<std::vector<double> > ws_old = ws_;
+
+    // New DIIS vector
+    std::vector<std::vector<double> > ws_diis = ws_;
 
     // => Master Loop <= //
 
@@ -295,6 +298,7 @@ void StockholderDensity::compute(boost::shared_ptr<Matrix> D)
                 for (int R = 0; R < orders[Arel].size(); R++) {
                     for (int k = 0; k < spheres[A][orders[Arel][R]]->npoints(); k++) {
                         Q[Arel][orders[Arel][R]][k] = Q2p[0][offset2];
+                        P[Arel][orders[Arel][R]][k] = rhop[offset2 + offset];
                         offset2++; 
                     }
                 }
@@ -313,6 +317,18 @@ void StockholderDensity::compute(boost::shared_ptr<Matrix> D)
                 }
                 val /= Q[A][R].size();
                 ws_[A][R] = val;
+            }
+        }
+
+        // DIIS error
+        for (int A = 0; A < Q.size(); A++) {
+            for (int R = 0; R < Q[A].size(); R++) { 
+                double val = 0.0;
+                for (int k = 0; k < Q[A][R].size(); k++) {
+                    val += 1.0 - P[A][R][k] / ws_[A][R];
+                }
+                val /= Q[A][R].size();
+                ws_diis[A][R] = wrs[A][R] * val;
             }
         }
 
@@ -350,7 +366,7 @@ void StockholderDensity::compute(boost::shared_ptr<Matrix> D)
                 for (int R = 0; R < ws_[A].size(); R++) {
                     statep[0][offset2] = (ws_[A][R] == 0.0 ? -std::numeric_limits<double>::infinity() : log(ws_[A][R]));
                     //statep[0][offset2] = ws_[A][R];
-                    errorp[0][offset2] = dws[A][R];
+                    errorp[0][offset2] = ws_diis[A][R];
                     offset2++;
                 }
             }
