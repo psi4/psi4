@@ -36,6 +36,7 @@
 #include <libmints/electrostatic.h>
 #include <libmints/efpmultipolepotential.h>
 #include <libmints/potentialint.h>
+#include <libmints/erd_eri.h>
 #include <libmints/eri.h>
 #include <libmints/factory.h>
 #include <libmints/fjt.h>

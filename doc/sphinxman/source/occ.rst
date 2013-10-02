@@ -152,38 +152,26 @@ Publications resulting from the use of the OMP2 code should cite the following p
 
 Publications resulting from the use of the OMP3 code should cite the following publications: 
 
-[Bozkaya:2011:omp3]_ and [Bozkaya:2013:omp3]_.
+[Bozkaya:2011:omp3]_ , [Bozkaya:2013:omp3]_, and [Bozkaya:2013:omp3grad]_.
 
 Publications resulting from the use of the OMP2.5 code should cite the following publications: 
 
-[Bozkaya:2011:omp3]_ and [Bozkaya:2013:omp3]_.
+[Bozkaya:2011:omp3]_.
 
 Publications resulting from the use of the OCEPA code should cite the following publication(s): 
 
-[Bozkaya:2011:omp2]_.
-
-Publications resulting from the use of the MP2 code should cite the following publication(s): 
-
-[Bozkaya:2011:omp2]_.
-
-Publications resulting from the use of the MP3 code should cite the following publications: 
-
-[Bozkaya:2011:omp3]_ and [Bozkaya:2013:omp3]_.
-
-Publications resulting from the use of the MP2.5 code should cite the following publications: 
-
-[Bozkaya:2011:omp3]_ and [Bozkaya:2013:omp3]_.
+[Bozkaya:2013:ocepa]_.
 
 Publications resulting from the use of the CEPA0 code should cite the following publication(s): 
 
-[Bozkaya:2011:omp2]_.
+[Bozkaya:2013:ocepa]_.
 
 
 Convergence Problems
 ~~~~~~~~~~~~~~~~~~~~
 
 For problematic open-shell systems, we recommend to use the ROHF or DFT orbitals as an initial guess for orbital-optimized methods. Both ROHF and 
-DFT orbitals generally provide much better initial guesses than UHF orbitals, hence convergence may be significantly speeded up with ROHF or DFT orbitals. 
+DFT orbitals may provide better initial guesses than UHF orbitals, hence convergence may be significantly speeded up with ROHF or DFT orbitals. 
 In order to use ROHF orbitals we can simply use "reference rohf" option. For DFT orbitals one should use "reference uks" and "dft_functional b3lyp" options. Of 
 course users can use any DFT functional available in Psi4. 
 

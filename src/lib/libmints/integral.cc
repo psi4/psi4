@@ -20,7 +20,10 @@
  *@END LICENSE
  */
 
+#include "psiconfig.h"
+#include "psi4-dec.h"
 #include "mints.h"
+#include "liboptions/liboptions.h"
 #include <libint/libint.h>
 
 using namespace boost;
@@ -220,6 +223,15 @@ OneBodySOInt* IntegralFactory::so_traceless_quadrupole()
 OneBodyAOInt* IntegralFactory::electric_field()
 {
     return new ElectricFieldInt(spherical_transforms_, bs1_, bs2_);
+}
+
+TwoBodyAOInt* IntegralFactory::erd_eri(int deriv, bool use_shell_pairs)
+{
+#ifdef HAVE_ERD
+    if(deriv == 0 && Process::environment.options.get_str("INTEGRAL_PACKAGE") == "ERD")
+        return new ERDERI(this, deriv, use_shell_pairs);
+#endif
+    return new ERI(this, deriv, use_shell_pairs);
 }
 
 TwoBodyAOInt* IntegralFactory::eri(int deriv, bool use_shell_pairs)

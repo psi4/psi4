@@ -52,39 +52,41 @@ fflush(outfile);
       itr_occ = 0;
       conver = 1; // Assuming that the iterations will converge
  // DIIS
- if (reference_ == "RESTRICTED") {  
-    dpdbuf4 T; 
-    psio_->open(PSIF_OCC_DPD, PSIO_OPEN_OLD);
-    global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
-    t2DiisManager = new DIISManager(cc_maxdiis_, "CEPA DIIS T2 Amps", DIISManager::LargestError, DIISManager::InCore);
-    t2DiisManager->set_error_vector_size(1, DIISEntry::DPDBuf4, &T);
-    t2DiisManager->set_vector_size(1, DIISEntry::DPDBuf4, &T);
-    global_dpd_->buf4_close(&T);
-    psio_->close(PSIF_OCC_DPD, 1);
- }
+      if (nooA + nooB != 1) {
+          if (reference_ == "RESTRICTED") {
+              dpdbuf4 T;
+              psio_->open(PSIF_OCC_DPD, PSIO_OPEN_OLD);
+              global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                                     ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
+              t2DiisManager = new DIISManager(cc_maxdiis_, "CEPA DIIS T2 Amps", DIISManager::LargestError, DIISManager::InCore);
+              t2DiisManager->set_error_vector_size(1, DIISEntry::DPDBuf4, &T);
+              t2DiisManager->set_vector_size(1, DIISEntry::DPDBuf4, &T);
+              global_dpd_->buf4_close(&T);
+              psio_->close(PSIF_OCC_DPD, 1);
+          }
 
- else if (reference_ == "UNRESTRICTED") {  
-    dpdbuf4 Taa, Tbb, Tab; 
-    psio_->open(PSIF_OCC_DPD, PSIO_OPEN_OLD);
-    global_dpd_->buf4_init(&Taa, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
-    global_dpd_->buf4_init(&Tbb, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                  ID("[o,o]"), ID("[v,v]"), 0, "T2 <oo|vv>");
-    global_dpd_->buf4_init(&Tab, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                  ID("[O,o]"), ID("[V,v]"), 0, "T2 <Oo|Vv>");
-    t2DiisManager = new DIISManager(cc_maxdiis_, "CEPA DIIS T2 Amps", DIISManager::LargestError, DIISManager::InCore);
-    t2DiisManager->set_error_vector_size(3, DIISEntry::DPDBuf4, &Taa,
-                                           DIISEntry::DPDBuf4, &Tbb,
-                                           DIISEntry::DPDBuf4, &Tab);
-    t2DiisManager->set_vector_size(3, DIISEntry::DPDBuf4, &Taa,
-                                     DIISEntry::DPDBuf4, &Tbb,
-                                     DIISEntry::DPDBuf4, &Tab);
-    global_dpd_->buf4_close(&Taa);
-    global_dpd_->buf4_close(&Tbb);
-    global_dpd_->buf4_close(&Tab);
-    psio_->close(PSIF_OCC_DPD, 1);
- }
+          else if (reference_ == "UNRESTRICTED") {
+              dpdbuf4 Taa, Tbb, Tab;
+              psio_->open(PSIF_OCC_DPD, PSIO_OPEN_OLD);
+              global_dpd_->buf4_init(&Taa, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                                     ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
+              global_dpd_->buf4_init(&Tbb, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                                     ID("[o,o]"), ID("[v,v]"), 0, "T2 <oo|vv>");
+              global_dpd_->buf4_init(&Tab, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                                     ID("[O,o]"), ID("[V,v]"), 0, "T2 <Oo|Vv>");
+              t2DiisManager = new DIISManager(cc_maxdiis_, "CEPA DIIS T2 Amps", DIISManager::LargestError, DIISManager::InCore);
+              t2DiisManager->set_error_vector_size(3, DIISEntry::DPDBuf4, &Taa,
+                                                   DIISEntry::DPDBuf4, &Tbb,
+                                                   DIISEntry::DPDBuf4, &Tab);
+              t2DiisManager->set_vector_size(3, DIISEntry::DPDBuf4, &Taa,
+                                             DIISEntry::DPDBuf4, &Tbb,
+                                             DIISEntry::DPDBuf4, &Tab);
+              global_dpd_->buf4_close(&Taa);
+              global_dpd_->buf4_close(&Tbb);
+              global_dpd_->buf4_close(&Tab);
+              psio_->close(PSIF_OCC_DPD, 1);
+          }
+      }
 
 // head of loop      
 do

@@ -212,12 +212,39 @@ Taylor_Fjt::values(int l, double T)
      Compute Fj(T) from l down to jrecur
    -------------------------------------*/
     if (T_gt_Tcrit) {
-        double pow_two_T_to_minusjp05 = std::pow(two_T,-l-0.5);
-        for(int j=l; j>=jrecur; --j) {
-            /*--- Asymptotic formula ---*/
-            F_[j] = df[2*j] * M_SQRT_PI_2 * pow_two_T_to_minusjp05;
-            pow_two_T_to_minusjp05 *= two_T;
+#define UPWARD_RECURSION 1
+#define AVOID_POW 1 // Pow is only used in the downwards recursion case
+#if UPWARD_RECURSION
+    #if TAYLOR_INTERPOLATION_AND_RECURSION
+        #error upward recursion cannot be used with taylor interpolation
+    #endif
+        double X = 1.0/two_T;
+        double dffac = 1.0;
+        double jfac = 1.0; // (j!! X^-j)
+        double Fj = M_SQRT_PI_2 * sqrt(X); // Start with F0; this is why interpolation can't be used
+        for(int j=0; j<l; ++j) {
+            /*--- Asymptotic formula, c.f. IJQC 40 745 (1991) ---*/
+            F_[j] = jfac * Fj;
+            jfac *= dffac * X;
+            dffac += 2.0;
         }
+        F_[l] = jfac * Fj;
+#else
+    #if AVOID_POW
+        double X = 1.0/two_T;
+        double pow_two_T_to_minusjp05 = X;
+        for(int i = 0; i < l; ++i)
+            pow_two_T_to_minusjp05 *= X*X;
+        pow_two_T_to_minusjp05 = sqrt(pow_two_T_to_minusjp05);
+    #else
+        double pow_two_T_to_minusjp05 = std::pow(two_T,-l-0.5);
+    #endif
+    for(int j=l; j>=jrecur; --j) {
+        /*--- Asymptotic formula ---*/
+        F_[j] = df[2*j] * M_SQRT_PI_2 * pow_two_T_to_minusjp05;
+        pow_two_T_to_minusjp05 *= two_T;
+    }
+#endif
     }
     else {
         const int T_ind = (int)std::floor(0.5+T*oodelT_);

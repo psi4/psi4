@@ -60,13 +60,11 @@ PsiReturnType dftsapt(boost::shared_ptr<Wavefunction> dimer,
 
 PsiReturnType asapt(boost::shared_ptr<Wavefunction> dimer, 
                       boost::shared_ptr<Wavefunction> mA, 
-                      boost::shared_ptr<Wavefunction> mB,
-                      boost::shared_ptr<Wavefunction> eA,
-                      boost::shared_ptr<Wavefunction> eB)
+                      boost::shared_ptr<Wavefunction> mB)
 {
     tstart();
 
-    boost::shared_ptr<ASAPT> sapt = ASAPT::build(dimer,mA,mB,eA,eB);
+    boost::shared_ptr<ASAPT> sapt = ASAPT::build(dimer,mA,mB);
     sapt->compute_energy();
 
     tstop();

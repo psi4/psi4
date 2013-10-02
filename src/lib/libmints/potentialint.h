@@ -165,8 +165,7 @@ void PCMPotentialInt::compute(PCMPotentialIntFunctor &functor)
                                 int n2 = ll;
                                 // Compute location in the recursion
                                 int jind = l2 * jxm + m2 * jym + n2 * jzm;
-                                double norm = GaussianShell::normalize(l1, m1, n1) * GaussianShell::normalize(l2, m2, n2);
-                                double val = norm * buffer_[ao12++];
+                                double val = buffer_[ao12++];
                                 // Hand the work off to the functor
                                 functor(ao1+bf1_offset, ao2+bf2_offset, atom, val);
                                 ao2++;
