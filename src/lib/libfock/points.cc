@@ -462,7 +462,7 @@ void UKSFunctions::set_Cs(SharedMatrix Ca_AO, SharedMatrix Cb_AO)
     Ca_local_ = boost::shared_ptr<Matrix>(new Matrix("Ca local", max_functions_, Ca_AO_->colspi()[0]));
     Cb_local_ = boost::shared_ptr<Matrix>(new Matrix("Cb local", max_functions_, Cb_AO_->colspi()[0]));
     orbital_values_["PSI_A"] = boost::shared_ptr<Matrix>(new Matrix("PSI_A", Ca_AO_->colspi()[0], max_points_));
-    orbital_values_["PSI_B"] = boost::shared_ptr<Matrix>(new Matrix("PSI_B", Ca_AO_->colspi()[0], max_points_));
+    orbital_values_["PSI_B"] = boost::shared_ptr<Matrix>(new Matrix("PSI_B", Cb_AO_->colspi()[0], max_points_));
 }
 void UKSFunctions::compute_orbitals(boost::shared_ptr<BlockOPoints> block)
 {
