@@ -263,6 +263,10 @@ void ASAPT::print_trailer()
     fprintf(outfile, "  To the optimist, the glass is half full.\n");
     fprintf(outfile, "  To the engineer, the glass is twice as big as it needs to be.\n");
     fprintf(outfile, "\n");
+
+    fprintf(outfile, "  WARNING: ASAPT is not a finished/published code.\n");
+    fprintf(outfile, "  If you would like to use this feature, please contact the Sherrill group.\n");
+    fprintf(outfile, "\n");
 }
 void ASAPT::atomize()
 {
