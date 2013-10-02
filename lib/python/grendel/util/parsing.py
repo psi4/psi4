@@ -23,7 +23,7 @@ __all__ = [
     "RepeatedRegex"
 ]
 
-re_float = r'-?\d+\.\d+'
+re_float = r'-?\d+\.\d*'
 re_int = r'-?\d+'
 re_scientific = r'-?\d+\.\d+[dDeE][-\+]?\d+'
 re_float_or_int = r'(?:{float}|{int})'.format(float=re_float, int=re_int)

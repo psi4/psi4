@@ -553,6 +553,17 @@ class Molecule(object):
         self._compute_point_group()
         return self._point_group
 
+    @CachedProperty
+    def nelectrons(self):
+        return self.Z - self.charge
+
+    @CachedProperty
+    def Z(self):
+        """
+        @return: The total nuclear charge of the molecule.  Molecule.charge is not taken into account.
+        """
+        return sum(atom.element.atomic_number for atom in self)
+
     @property
     def cartesian_representation(self):
         """ The current default cartesian representation associated with the molecule.
@@ -624,8 +635,6 @@ class Molecule(object):
         else:
             return NotImplemented
 
-
-
     def __contains__(self, item):
         for atom in self:
             if atom == item:
@@ -649,8 +658,7 @@ class Molecule(object):
         return my_atoms < other_atoms
 
     def __copy__(self):
-        new_atoms = [copy(atom) for atom in self]
-        copied = Molecule(new_atoms, units=self.cartesian_units)
+        copied = self.copy_with_atoms(self.atoms)
         # copied Molecules have their own cartesian_representations, internal_representations,
         # and normal_representation, so don't copy these by default.
         copied.description = self.description
@@ -663,12 +671,7 @@ class Molecule(object):
         return copied
 
     def __deepcopy__(self, memo):
-        new_atoms = deepcopy(self.atoms, memo)
-        copied = Molecule(new_atoms, units=self.cartesian_units)
-        # copy attributes...
-        copied.description = self.description
-        copied.multiplicity = self.multiplicity
-        copied.charge = self.charge
+        copied = self.copy_with_atoms(self.atoms, deep_copy=True, deep_copy_memo=memo)
         # copy over cached variables, since the atom's positions will not have changed (yet, at least)
         if caching_enabled:
             copied._pmi = self._pmi
@@ -723,7 +726,7 @@ class Molecule(object):
         ]
     )
     def from_z_matrix(cls, *args, **kwargs):
-        """
+        '''
         TODO Document this more
 
         **Signatures :**
@@ -738,7 +741,7 @@ class Molecule(object):
         ... O
         ... H1 O 1.0
         ... H2 O 1.0 H1 90.0
-        ... \""")
+        ... """)
         Molecule([
             Atom('O', [  0.00000000,  0.00000000,  0.00000000 ] ),
             Atom('H', [  0.00000000,  0.00000000,  1.00000000 ] ),
@@ -767,7 +770,7 @@ class Molecule(object):
             Atom('O', [  0.00000000,  0.00000000,  0.90000000 ] )
         ])
 
-        """
+        '''
         # Pop off optional keyword arguments
         create_representation = kwargs.pop("create_representation", False)
         one_based = kwargs.pop("one_based", True)
@@ -936,34 +939,46 @@ class Molecule(object):
         # Finally, parse any remaining lines, all of which should have 7 parts
         #TODO check for linear part in torsion angle raise an appropriate error
         for idx, zatom in enumerate(zatoms[3:]):
-            if len(zatom) != 7:
+            # Allow the "alternate z-matrix format" from Gaussian
+            if len(zatom) not in (7, 8):
                 raise InvalidZMatrixException(zlines[idx])
+            if len(zatom) == 8 and int(zatom[7]) != 0:
+                alternate_format = True
+            else:
+                alternate_format = False
+            #----------------------------------------#
             # get the data about the atom using the helper functions...
+            # common to both normal and alternate format
             dist_atom, dist = _get_zatom(zatom[1]), float(zatom[2])
             dvect = dist_atom.position
             ang_atom,  ang  = _get_zatom(zatom[3]), float(zatom[4]) * ang_conv
             avect = ang_atom.position
-            tors_atom, tors = _get_zatom(zatom[5]), float(zatom[6]) * ang_conv
-            tvect = tors_atom.position
-            # Check and make sure they are all different
-            if not distinct(tors_atom, dist_atom, ang_atom):
-                raise InvalidZMatrixException("atom indices in z-matrix line '{}' must"\
-                                              " all be distinct".format(
-                    zlines[3].strip()
-                ))
-            # place the atom: first displace from origin by bond length, then apply rotations
-            #   for both the angle and the torsion, then translate it into position
-            axis = cross(tvect-avect, dvect-avect)
-            pos = (avect - dvect).normalize() * dist
-            pos = rotate_point_about_axis(pos, axis, ang)
-            tors_axis = dvect - avect
-            pos = dvect + rotate_point_about_axis(pos, tors_axis, tors) * dist_units
-            atoms.append(_labeled_atom(zatom[0], pos))
-            # create BondLength, BondAngle, and Torsion coordinates, if necessary
-            if create_representation:
-                coords_to_make.append((BondLength, dist_atom, atoms[-1]))
-                coords_to_make.append((BondAngle, ang_atom, dist_atom, atoms[-1]))
-                coords_to_make.append((Torsion, tors_atom, ang_atom, dist_atom, atoms[-1]))
+            #----------------------------------------#
+            if not alternate_format:
+                tors_atom, tors = _get_zatom(zatom[5]), float(zatom[6]) * ang_conv
+                tvect = tors_atom.position
+                # Check and make sure they are all different
+                if not distinct(tors_atom, dist_atom, ang_atom):
+                    raise InvalidZMatrixException("atom indices in z-matrix line '{}' must"\
+                                                  " all be distinct".format(
+                        zlines[3].strip()
+                    ))
+                # place the atom: first displace from origin by bond length, then apply rotations
+                #   for both the angle and the torsion, then translate it into position
+                axis = cross(tvect-avect, dvect-avect)
+                pos = (avect - dvect).normalize() * dist
+                pos = rotate_point_about_axis(pos, axis, ang)
+                tors_axis = dvect - avect
+                pos = dvect + rotate_point_about_axis(pos, tors_axis, tors) * dist_units
+                atoms.append(_labeled_atom(zatom[0], pos))
+                # create BondLength, BondAngle, and Torsion coordinates, if necessary
+                if create_representation:
+                    coords_to_make.append((BondLength, dist_atom, atoms[-1]))
+                    coords_to_make.append((BondAngle, ang_atom, dist_atom, atoms[-1]))
+                    coords_to_make.append((Torsion, tors_atom, ang_atom, dist_atom, atoms[-1]))
+            #----------------------------------------#
+            else:
+                raise NotImplementedError("Gaussian alternate Z-matrix format not yet implemented")
         #--------------------------------------------------------------------------------#
         ret_val = Molecule(atoms)
         if create_representation:
@@ -982,6 +997,56 @@ class Molecule(object):
                      units={DistanceUnit:dist_units, AngularUnit:ang_units})
         return ret_val
 
+    @classmethod
+    def from_zmatrix_with_labels(cls, string, *args, **kwargs):
+        """
+
+        @param string: String containing a z-matrix with labels defined at the end using e.g. a234=8.5
+        @param args: Passed on to Molecule.from_z_matrix
+        @param kwargs: Passed on to Molecule.from_z_matrix
+        @return: Molecule object corresponding to the z-matrix passed in
+        """
+
+        string = string.strip()
+        lines = string.splitlines()
+        vars = dict()
+        zmat_lines = []
+        for line in reversed(lines):
+            splitline = re.split(r'\s*,?\s*', line.strip())
+            if '=' in line:
+                varname, val = line.split('=')
+                vars[varname.strip()] = val.strip()
+            elif len(splitline) == 2:
+                vars[splitline[0]] = splitline[1]
+            elif "ariables:" in line:
+                continue
+            elif len(line.strip()) > 0:
+                zmat_lines.insert(0, line)
+
+
+        new_zmat = ''
+        for line in zmat_lines:
+            new_vals = []
+            for i, entry in enumerate(re.split(r'\s*,?\s*', line.strip())):
+                if i == 7:
+                    # skip the eighth entry; I don't know what it does
+                    continue
+                elif i == 0 or i % 2 == 1:
+                    new_vals.append(entry.title())
+                else:
+                    entry_no_minus = entry[1:] if entry[0] == '-' else entry
+                    if entry in vars:
+                        new_vals.append(vars[entry])
+                    elif entry_no_minus in vars:
+                        new_vals.append(entry.replace(entry_no_minus, vars[entry_no_minus]))
+                    else:
+                        new_vals.append(entry)
+            new_zmat += ' '.join(new_vals) + "\n"
+
+        # remove double negatives
+        new_zmat = new_zmat.replace('--', '')
+
+        return Molecule.from_z_matrix(new_zmat, *args, **kwargs)
 
     @classmethod
     def linear_alkane(cls, length,
@@ -1777,9 +1842,65 @@ class Molecule(object):
             atom.displace(disp)
         self.update_cartesian_representation()
 
+
     #----------------------------#
     # Other unclassified methods #
     #----------------------------#
+
+    def copy_with_atoms(self,
+            new_atoms,
+            deep_copy=False,
+            deep_copy_memo=None,
+            new_charge=None,
+            new_multiplicity=None,
+            new_description=None
+    ):
+        if deep_copy:
+            new_atoms = deepcopy(new_atoms, deep_copy_memo)
+        else:
+            new_atoms = [copy(atom) for atom in new_atoms]
+        #----------------------------------------#
+        copied = Molecule(
+            new_atoms,
+            units=self.cartesian_units
+        )
+        #----------------------------------------#
+        for atom in copied:
+            atom.parent_molecule = copied
+        #----------------------------------------#
+        # copy attributes...
+        if new_description is None:
+            copied.description = self.description
+        else:
+            copied.description = new_description
+        if new_charge is None:
+            copied.charge = self.charge
+        else:
+            copied.charge = new_charge
+        if new_multiplicity is None:
+            copied.multiplicity = self.multiplicity
+        else:
+            copied.multiplicity = new_multiplicity
+        #----------------------------------------#
+        return copied
+
+    def fragment(self,
+            atom_numbers,
+            charge=None,
+            multiplicity=None,
+            description=None
+    ):
+        if description is None:
+            description = ("fragment of " + self.description) if self.description is not None else None
+        fatoms = [self.atoms[n] for n in atom_numbers]
+        return self.copy_with_atoms(fatoms,
+            new_charge=charge,
+            new_multiplicity=multiplicity,
+            new_description=description
+        )
+
+    def copy_without_ghost_atoms(self):
+        return self.copy_with_atoms([a for a in self if not a.is_ghost()])
 
     def index(self, atom):
         """ Returns the index of `atom` in the atoms array of the molecule
