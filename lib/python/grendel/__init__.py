@@ -40,15 +40,15 @@ __submodules__ = [
     "chemistry",
     "symmetry",
     "interface",
-    ]
+]
 
 __all__ = [
 ]
 
 # TODO Propagate this pattern throughout grendel packages
 for name in __submodules__:
-    __import__(__name__ + "." + name)
-    m = sys.modules[__name__ + "." + name]
+    __import__("grendel." + name)
+    m = sys.modules["grendel." + name]
     globals()[name] = m
     if hasattr(m, '__all__'):
         attrlist = copy(m.__all__)
