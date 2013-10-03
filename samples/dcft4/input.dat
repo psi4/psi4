@@ -50,7 +50,6 @@ energy('dcft')
 set ao_basis none
 set algorithm qc
 set qc_type simultaneous
-set print 6
 energy('dcft')
 
 
