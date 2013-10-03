@@ -31,6 +31,7 @@ import shutil
 import os
 import subprocess
 import re
+import inspect
 import psi4
 import p4const
 import p4util
@@ -74,9 +75,12 @@ def run_cfour(name, **kwargs):
     """
     lowername = name.lower()
 
-    # Because this fn's called for energy('cfour'), opt('cfour'), etc.,
-    # need this to figure out who called (better way?)
-    dertype = kwargs['job_dertype'] if 'job_dertype' in kwargs else 0
+    # Because this fn is called for energy('cfour'), opt('cfour'), etc.,
+    # need this to figure out who called
+    dertype_dict = {'energy': 0, 'gradient': 1, 'hessian': 2}
+    dertype = dertype_dict[inspect.stack()[1][3]]
+    print('I am %s called by %s called by %s.\n' % 
+        (inspect.stack()[0][3], inspect.stack()[1][3], inspect.stack()[2][3]))
 
     # Save submission directory
     current_directory = os.getcwd()
