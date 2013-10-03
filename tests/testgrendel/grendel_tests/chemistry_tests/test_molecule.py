@@ -168,7 +168,7 @@ class moleculeTest(unittest.TestCase):
         )
 
     def test_errors_10(self):
-        self.assertRaises(InvalidZMatrixException,
+        self.assertRaises(NotImplementedError,
             Molecule.from_z_matrix,
             """
             O
