@@ -523,6 +523,7 @@ void UHF::stability_analysis()
             }
             attempt_number_++;
             fprintf(outfile, "\tRe-running the SCF, using the rotated orbitals\n");
+            diis_manager_->reset_subspace();
             compute_energy();
         }
 

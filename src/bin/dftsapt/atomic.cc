@@ -58,6 +58,7 @@ boost::shared_ptr<AtomicDensity> AtomicDensity::build(const std::string& type, b
         isa->diis_ = options.get_bool("ISA_DIIS");
         isa->diis_min_vecs_ = options.get_int("ISA_DIIS_MIN_VECS");
         isa->diis_max_vecs_ = options.get_int("ISA_DIIS_MAX_VECS");
+        isa->diis_flush_ = options.get_int("ISA_DIIS_FLUSH");
         target = static_cast<AtomicDensity*>(isa); 
     } else {
         throw PSIEXCEPTION("AtomicDensity::build: Unrecognized Atomic Density Type");
@@ -146,7 +147,6 @@ void StockholderDensity::print_header() const
     molecule_->print();
     primary_->print();
     grid_->print();
-    //grid_->print_details();
 
     fflush(outfile);
 }
@@ -188,27 +188,71 @@ void StockholderDensity::compute(boost::shared_ptr<Matrix> D)
     const std::vector<std::vector<boost::shared_ptr<SphericalGrid> > >& spheres = grid_->spherical_grids();
 
     // True atom spherical quadratures 
-    std::vector<std::vector<double> > rs;
-    std::vector<std::vector<double> > ws;
-    rs.resize(nA);
-    ws.resize(nA);
+    std::vector<std::vector<int> > orders;
+    std::vector<std::vector<double> > wrs;
+    rs_.resize(nA);
+    ws_.resize(nA);
+    wrs.resize(nA);
+    orders.resize(nA);
     int nstate = 0;
     for (int A = 0; A < nA; A++) {
         int Aabs = Aind[A];
+        std::vector<double> rs2;
+        std::vector<double> ws2;
+        std::vector<double> wrs2;
+        std::vector<std::pair<double, int> > index;
         for (int R = 0; R < rads[Aabs]->npoints(); R++) {
-            rs[A].push_back(rads[Aabs]->r()[R]);
-            ws[A].push_back(1.0); // Initial guess
+            rs2.push_back(rads[Aabs]->r()[R]);
+            wrs2.push_back(rads[Aabs]->w()[R]);
+            ws2.push_back(1.0); // Initial guess
+            index.push_back(std::pair<double, int>(rs2[R],R));
             nstate++;
+        } 
+        std::sort(index.begin(), index.end());
+        for (int R = 0; R < rads[Aabs]->npoints(); R++) {
+            int Rold = index[R].second;
+            rs_[A].push_back(rs2[Rold]);
+            ws_[A].push_back(ws2[Rold]);
+            wrs[A].push_back(wrs2[Rold]);
+            orders[A].push_back(Rold);
         } 
     }
 
-    // Target
-    Q_ = boost::shared_ptr<Matrix>(new Matrix("Q", nA, nP));
-    double** Qp = Q_->pointer();
+    std::vector<std::vector<int> > orders2;
+    orders2.resize(nA);
+    for (int A = 0; A < nA; A++) {
+        orders2[A].resize(orders[A].size());
+        for (int R = 0; R < orders[A].size(); R++) {
+            orders2[A][orders[A][R]] = R;
+        }
+    }    
 
+    // Low-memory atomic charges target
+    int max_points = 0;
+    std::vector<std::vector<std::vector<double> > > Q;
+    std::vector<std::vector<std::vector<double> > > P;
+    std::vector<int> atomic_points;
+    Q.resize(nA);
+    P.resize(nA);
+    atomic_points.resize(nA);
+    for (int A = 0; A < nA; A++) {
+        int Aabs = Aind[A];
+        Q[A].resize(orders[A].size());
+        P[A].resize(orders[A].size());
+        int atom_points = 0;
+        for (int R = 0; R < orders[A].size(); R++) {
+            int Rabs = orders[A][R];
+            Q[A][R].resize(spheres[Aabs][Rabs]->npoints());
+            P[A][R].resize(spheres[Aabs][Rabs]->npoints());
+            atom_points += spheres[Aabs][Rabs]->npoints();
+        }
+        atomic_points[A] = atom_points;
+        max_points = (max_points >= atom_points ? max_points : atom_points);
+    }
+    
     // Temps 
-    double wT;
-    double* wA = new double[nA];
+    boost::shared_ptr<Matrix> Q2(new Matrix("Q2", 1, max_points));
+    double** Q2p = Q2->pointer();
 
     // DIIS Setup
     boost::shared_ptr<Matrix> state(new Matrix("State", nstate, 1));
@@ -221,7 +265,10 @@ void StockholderDensity::compute(boost::shared_ptr<Matrix> D)
     diis_manager->set_vector_size(1, DIISEntry::Matrix, state.get());
 
     // Store last iteration
-    std::vector<std::vector<double> > ws_old = ws;
+    std::vector<std::vector<double> > ws_old = ws_;
+
+    // New DIIS vector
+    std::vector<std::vector<double> > ws_diis = ws_;
 
     // => Master Loop <= //
 
@@ -231,118 +278,70 @@ void StockholderDensity::compute(boost::shared_ptr<Matrix> D)
     fprintf(outfile, "    DIIS:               %11s\n", (diis_ ? "Yes" : "No"));
     fprintf(outfile, "    DIIS Min Vecs:      %11d\n", diis_min_vecs_);
     fprintf(outfile, "    DIIS Max Vecs:      %11d\n", diis_max_vecs_);
+    fprintf(outfile, "    DIIS Flush Vecs:    %11d\n", diis_flush_);
     fprintf(outfile, "\n");
     fflush(outfile);
 
     bool converged = false;
-    for (int iter = 0; iter < maxiter_; iter++) {
+    for (int iter = 0, diis_iter = 0; iter <= maxiter_; iter++) {
 
-        // Compute Q_A^P via W_A^P
-        for (int P = 0; P < nP; P++) {
-            double xc = xp[P];
-            double yc = yp[P];
-            double zc = zp[P];
-            double rhoc = rhop[P];
-            wT = 0.0;
-            for (int A = 0; A < nA; A++) {
-                int Aabs = Aind[A];
-
-                // Default value
-                wA[A] = 0.0;
-
-                // What is R_A^P?
-                double xA = molecule_->x(Aabs);
-                double yA = molecule_->y(Aabs);
-                double zA = molecule_->z(Aabs);
-                double R = sqrt((xA - xc) * (xA - xc) +
-                                (yA - yc) * (yA - yc) +
-                                (zA - zc) * (zA - zc));
-
-                // What is the closest radial node? (could be faster)
-                double dR = std::numeric_limits<double>::max();
-                int ind = 0;
-                for (int k = 0; k < rs[A].size(); k++) {
-                    double d2R = fabs(rs[A][k] - R);
-                    if (d2R < dR) {
-                        dR = d2R;
-                        ind = k;
+        // Checkpoint last iteration
+        ws_old = ws_;
+    
+        // Needed atomic weights
+        int offset = 0;
+        for (int A = 0; A < nA2; A++) {
+            if (molecule_->Z(A) != 0) {
+                int Arel = Aind2[A]; 
+                compute_weights(atomic_points[Arel],&xp[offset],&yp[offset],&zp[offset],Q2p,&rhop[offset],Arel);
+                int offset2 = 0;
+                for (int R = 0; R < orders[Arel].size(); R++) {
+                    for (int k = 0; k < spheres[A][orders[Arel][R]]->npoints(); k++) {
+                        Q[Arel][orders[Arel][R]][k] = Q2p[0][offset2];
+                        P[Arel][orders[Arel][R]][k] = rhop[offset2 + offset];
+                        offset2++; 
                     }
                 }
-
-                // Edge cases (and unique ind, ind+1 terp pair)
-                if (ind == 0 && (R - rs[A][0]) * (R - rs[A][1]) > 0.0) continue; // Too close inside
-                if (ind == rs[A].size() - 1) {
-                    if ((R - rs[A][rs[A].size()-1]) * (R - rs[A][rs[A].size()-2]) > 0.0) { 
-                        continue; // Too far outside
-                    } else {
-                        ind--; // Decrement to use last two indices
-                    }
-                }
-
-                // Exponential interpolation pair
-                double Rl = rs[A][ind];
-                double Rr = rs[A][ind+1];
-                double wl = ws[A][ind];
-                double wr = ws[A][ind+1];
-
-                if (wl == 0.0 || wr == 0.0) continue;
-
-                double lwl = log(wl);
-                double lwr = log(wr);
-
-                wA[A] = exp(lwl + (lwr - lwl)*(R - Rl)/(Rr - Rl));
-
-                wT += wA[A];
             }
-            if (wT == 0.0) wT = 1.0; // Don't NaN due to no density, yo?
-            for (int A = 0; A < nA; A++) {
-                Qp[A][P] = wA[A] / wT * rhoc;
+            for (int R = 0; R < spheres[A].size(); R++) {
+                offset += spheres[A][R]->npoints();
             }
         }
 
-        // Debug printing (only for isotropic radial counts)
-        //boost::shared_ptr<Matrix> wtemp(new Matrix("W", ws.size(), ws[0].size()));
-        //double** wtempp = wtemp->pointer();
-        //for (int A = 0; A < ws.size(); A++) {
-        //    for (int R = 0; R < ws[0].size(); R++) {    
-        //        wtempp[A][R] = ws[A][R];
-        //    }
-        //}
-        //wtemp->print();
-        
-        // Debug printing
-        //Q_->print();
-
-        // Perform spherical averaging
-        int offset = 0;
-        for (int A = 0; A < nA2; A++) {
-            for (int R = 0; R < spheres[A].size(); R++) {
-                if (molecule_->Z(A) != 0) {
-                    int Arel = Aind2[A]; 
-                    double val = 0.0;
-                    for (int i = 0; i < spheres[A][R]->npoints(); i++) {
-                        val += Qp[Arel][i + offset];
-                    }
-                    val /= spheres[A][R]->npoints();
-                    ws[Arel][R] = val; 
+        // Spherical averaging
+        for (int A = 0; A < Q.size(); A++) {
+            for (int R = 0; R < Q[A].size(); R++) { 
+                double val = 0.0;
+                for (int k = 0; k < Q[A][R].size(); k++) {
+                    val += Q[A][R][k];
                 }
-                offset += spheres[A][R]->npoints();
+                val /= Q[A][R].size();
+                ws_[A][R] = val;
+            }
+        }
+
+        // DIIS error
+        for (int A = 0; A < Q.size(); A++) {
+            for (int R = 0; R < Q[A].size(); R++) { 
+                double val = 0.0;
+                for (int k = 0; k < Q[A][R].size(); k++) {
+                    val += 1.0 - P[A][R][k] / ws_[A][R];
+                }
+                val /= Q[A][R].size();
+                ws_diis[A][R] = wrs[A][R] * val;
             }
         }
 
         // Residual and error norm
         double norm = 0.0;
-        std::vector<std::vector<double> > dws = ws;
-        for (int A = 0; A < ws.size(); A++) {
-            for (int R = 0; R < ws[A].size(); R++) {
-                dws[A][R] = ws[A][R] - ws_old[A][R];
-                norm += abs(dws[A][R]) * rs[A][R] * rs[A][R];
+        std::vector<std::vector<double> > dws = ws_;
+        for (int A = 0; A < ws_.size(); A++) {
+            for (int R = 0; R < ws_[A].size(); R++) {
+                dws[A][R] = (ws_[A][R] - ws_old[A][R]) * rs_[A][R] * rs_[A][R];
+                norm += abs(dws[A][R]);
             }
         }
 
-        // Checkpoint last iteration
-        ws_old = ws;
-    
         // Print iterative trace
         fprintf(outfile,"    @ISA Iter %4d %24.16E ", iter, norm);
         fflush(outfile);
@@ -354,26 +353,35 @@ void StockholderDensity::compute(boost::shared_ptr<Matrix> D)
             break; 
         }
 
+        // Periodically flush the DIIS subspace
+        if (diis_ && iter > 0 && iter % diis_flush_ == 0) {
+            diis_manager->reset_subspace();
+            diis_iter = 0;
+        }
+
         // DIIS Add
         if (diis_ && iter > 0) {
             int offset2 = 0;
-            for (int A = 0; A < ws.size(); A++) {
-                for (int R = 0; R < ws[A].size(); R++) {
-                    statep[0][offset2] = ws[A][R];
-                    errorp[0][offset2] = dws[A][R];
+            for (int A = 0; A < ws_.size(); A++) {
+                for (int R = 0; R < ws_[A].size(); R++) {
+                    statep[0][offset2] = (ws_[A][R] == 0.0 ? -std::numeric_limits<double>::infinity() : log(ws_[A][R]));
+                    //statep[0][offset2] = ws_[A][R];
+                    errorp[0][offset2] = ws_diis[A][R];
                     offset2++;
                 }
             }
             diis_manager->add_entry(2,error.get(),state.get());
+            diis_iter++;
         }
 
         // DIIS Extrapolate
-        if (diis_ && iter >= diis_min_vecs_) {
+        if (diis_ && diis_iter >= diis_min_vecs_) {
             diis_manager->extrapolate(1,state.get());
             int offset2 = 0;
-            for (int A = 0; A < ws.size(); A++) {
-                for (int R = 0; R < ws[A].size(); R++) {
-                    ws[A][R] = statep[0][offset2];
+            for (int A = 0; A < ws_.size(); A++) {
+                for (int R = 0; R < ws_[A].size(); R++) {
+                    ws_[A][R] = exp(statep[0][offset2]);
+                    //ws_[A][R] = statep[0][offset2];
                     offset2++;
                 }
             }
@@ -385,11 +393,7 @@ void StockholderDensity::compute(boost::shared_ptr<Matrix> D)
  
     }
 
-    delete[] wA;
-
-    // Store targets
-    rs_ = rs;
-    ws_ = ws;
+    diis_manager->delete_diis_file();
 
     fprintf(outfile,"\n");
     if (converged) { 
@@ -403,21 +407,20 @@ void StockholderDensity::compute(boost::shared_ptr<Matrix> D)
     
     // Target
     N_ = boost::shared_ptr<Vector>(new Vector("N", nA));
-    double* Q2p = N_->pointer();
+    double* Np = N_->pointer();
+    
+    boost::shared_ptr<Matrix> Q3(new Matrix("Q3", nA, max_points));
+    double** Q3p = Q3->pointer();
 
-    int max_points = grid_->max_points();
-    boost::shared_ptr<Matrix> v(new Matrix("v", nA, max_points));    
-    double** vp = v->pointer();
-   
     for (int index = 0; index < nP; index+=max_points) {
         int points = (index + max_points >= nP ? nP - index : max_points);
-        compute_weights(points,&xp[index],&yp[index],&zp[index],vp,&rhop[index]);
+        compute_weights(points,&xp[index],&yp[index],&zp[index],Q3p,&rhop[index]);
         for (int A = 0; A < nA; A++) {
-            Q2p[A] += C_DDOT(points,&wp[index],1,vp[A],1);
+            Np[A] += C_DDOT(points,&wp[index],1,Q3p[A],1);
         }
     }
 }
-void StockholderDensity::compute_weights(int nP, double* xp, double* yp, double* zp, double** wp, double* rhop)
+void StockholderDensity::compute_weights(int nP, double* xp, double* yp, double* zp, double** wp, double* rhop, int atom)
 {
     // Where are the true atoms?
     std::vector<int> Aind;
@@ -433,16 +436,40 @@ void StockholderDensity::compute_weights(int nP, double* xp, double* yp, double*
     int nA = Aind.size();
     int nA2 = molecule_->natom();
     
-    // Temps 
-    double wT;
-    double* wA = new double[nA];
+    // I like to work in log space for interpolation window root finding
+    std::vector<std::vector<double> > ls;
+    ls.resize(nA);
+    for (int A = 0; A < rs_.size(); A++) {
+        for (int R = 0; R < rs_[A].size(); R++) {
+            ls[A].push_back(log(rs_[A][R]));
+        }
+    }
 
+    // Doesn't like being on the stack?
+    int nthreads = 1;
+    #ifdef _OPENMP
+        nthreads = omp_get_max_threads();
+    #endif
+
+    std::vector<double* > wA2;
+    for (int thread = 0; thread < nthreads; thread++) {
+        wA2.push_back(new double[nA]);
+    }
+    
     // Compute Q_A^P via W_A^P
+    #pragma omp parallel for schedule(dynamic) 
     for (int P = 0; P < nP; P++) {
         double xc = xp[P];
         double yc = yp[P];
         double zc = zp[P];
-        wT = 0.0;
+
+        int thread = 0;
+        #ifdef _OPENMP
+            thread = omp_get_thread_num();
+        #endif
+        double* wA = wA2[thread];
+        double wT = 0.0;
+    
         for (int A = 0; A < nA; A++) {
             int Aabs = Aind[A];
 
@@ -457,25 +484,63 @@ void StockholderDensity::compute_weights(int nP, double* xp, double* yp, double*
                             (yA - yc) * (yA - yc) +
                             (zA - zc) * (zA - zc));
 
-            // What is the closest radial node? (could be faster)
-            double dR = std::numeric_limits<double>::max();
-            int ind = 0;
-            for (int k = 0; k < rs_[A].size(); k++) {
-                double d2R = fabs(rs_[A][k] - R);
-                if (d2R < dR) {
-                    dR = d2R;
-                    ind = k;
-                }
-            }
+            // Interpolation problem
+            const std::vector<double>& rv = rs_[A];
+            const std::vector<double>& lv = ls[A];
+            const std::vector<double>& wv = ws_[A];
+            int nR = rv.size();
 
-            // Edge cases (and unique ind, ind+1 terp pair)
-            if (ind == 0 && (R - rs_[A][0]) * (R - rs_[A][1]) > 0.0) continue; // Too close inside
-            if (ind == rs_[A].size() - 1) {
-                if ((R - rs_[A][rs_[A].size()-1]) * (R - rs_[A][rs_[A].size()-2]) > 0.0) { 
-                    continue; // Too far outside
+            // Root solving to determine window (log-transformed Regula Falsi/Illinois, like a ninja)
+            int ind = 0;
+            double lR = log(R);
+            if (R <= rv[0]) {
+                if (fabs(R - rv[0]) < 1.0E-12 * rv[0]) {
+                    ind = 0; // Within epsilon of the inside shell
                 } else {
-                    ind--; // Decrement to use last two indices
+                    continue; // Too close inside
                 }
+            } else if (R >= rv[nR - 1]) {
+                if (fabs(R - rv[nR - 1]) < 1.0E-12 * rv[nR - 1]) {
+                    ind = nR - 2; // Within epsilon of the outside shell
+                } else {
+                    continue; // Too far outside
+                }
+            } else {
+                double dl = lv[0] - lR; // Negative
+                double dr = lv[nR - 1] - lR; // Positive
+                double xl = 0;
+                double xr = nR-1;
+                int retl = 0;
+                int retr = 0;
+                do {
+                    double xc = xr - dr * (xr - xl) / (dr - dl);
+                    int xind = (int) xc;
+                    if (xind == nR - 1 && lv[xind - 1] - lR <= 0.0) {
+                        ind = nR - 2;
+                        break;
+                    } else if (lv[xind] - lR <= 0.0 && lv[xind + 1] - lR > 0.0) {
+                        ind = xind;
+                        break;
+                    }
+                    double dc = lv[xind] - lR;
+                    if (dc <= 0.0) {
+                        xl = (double) xind;
+                        dl = dc;
+                        retl = 0;
+                        retr++;
+                    } else {
+                        xr = (double) xind;
+                        dr = dc;
+                        retr = 0;
+                        retl++;
+                    }
+                    if (retr > 1) {
+                        dr *= 0.5;
+                    } 
+                    if (retl > 1) {
+                        dl *= 0.5;
+                    } 
+                } while (true);
             }
 
             // Exponential interpolation pair
@@ -494,17 +559,22 @@ void StockholderDensity::compute_weights(int nP, double* xp, double* yp, double*
             wT += wA[A];
         }
         if (wT == 0.0) wT = 1.0; // Don't NaN due to no density, yo?
-        if (rhop != NULL) {
+        
+        // => Output <= //
+
+        double scale = (rhop == NULL ? 1.0 / wT : rhop[P] / wT);
+        if (atom == -1) {
             for (int A = 0; A < nA; A++) {
-                wp[A][P] = wA[A] / wT * rhop[P];
+                wp[A][P] = wA[A] * scale;
             }
         } else {
-            for (int A = 0; A < nA; A++) {
-                wp[A][P] = wA[A] / wT;
-            }
+            wp[0][P] = wA[atom] * scale;
         }
     }
-    delete[] wA;
+
+    for (int thread = 0; thread < nthreads; thread++) {
+        delete[] wA2[thread];
+    }
 }
 void StockholderDensity::compute_charges(double scale) 
 {
@@ -543,7 +613,44 @@ void StockholderDensity::compute_charges(double scale)
     fprintf(outfile,"    %8s %11.3E %11.3E %11.3E\n", 
             "Total", Ztot, Qtot, Ztot + Qtot);
     fprintf(outfile,"\n");
+
+    fprintf(outfile,"    True Molecular Charge: %11.3E\n", (double) molecule_->molecular_charge());
+    fprintf(outfile,"    Grid Molecular Charge: %11.3E\n", Ztot + Qtot);
+    fprintf(outfile,"    Grid Error:            %11.3E\n", Ztot + Qtot - (double) molecule_->molecular_charge());
+    fprintf(outfile,"\n");
+
     fflush(outfile);
+}
+boost::shared_ptr<Matrix> StockholderDensity::charges(double scale) 
+{
+    // Where are the true atoms?
+    std::vector<int> Aind;
+    std::vector<int> Aind2;
+    for (int A = 0; A < molecule_->natom(); A++) {
+        if (molecule_->Z(A) != 0) {
+            Aind2.push_back(Aind.size());
+            Aind.push_back(A);
+        } else {
+            Aind2.push_back(-1);
+        }
+    }
+    int nA = Aind.size();
+    int nA2 = molecule_->natom();
+
+    // Where are the atomic charges?
+    double* Np = N_->pointer();
+
+    boost::shared_ptr<Matrix> T(new Matrix("Q", nA, 1));
+    double* Tp = T->pointer()[0];
+
+    for (int A = 0; A < nA; A++) {
+        int Aabs = Aind[A];
+        double Z = molecule_->Z(Aabs);
+        double Q = -scale * Np[A];
+        Tp[A] = Z + Q;
+    }
+    
+    return T;
 }
 
 }
