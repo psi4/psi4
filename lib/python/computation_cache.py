@@ -3,6 +3,7 @@ from abc import abstractmethod, abstractproperty, ABCMeta
 from collections import Iterable, defaultdict
 from inspect import getargspec
 import inspect
+import tempfile
 from itertools import product
 from os import makedirs, mkdir, remove, unlink
 import os
@@ -1154,10 +1155,29 @@ class CachedComputation(object):
     if default_memory <= 0:
         # Just set to 4 GB and hope...
         default_memory = 4*1024*1024*1024
+    _statics_initialized = False
 
-    psi4.set_memory(default_memory)
-
-    parser = psi4.Gaussian94BasisSetParser()
+    @classmethod
+    def _init_statics(cls):
+        """
+        Initialize static variables.  This gets called the
+        first time a CachedComputation object is constructed.
+        Wrapping initialization of various things in this class
+        method keeps them from being initialized when the module
+        is loaded, which can be a problem in some cases (particularly
+        when generating documentation)
+        """
+        #----------------------------------------#
+        # Initialize Psi4 Memory to a reasonable value
+        try:
+            psi4.be_quiet()
+            psi4.set_memory(cls.default_memory)
+        finally:
+            psi4.reopen_outfile()
+        #----------------------------------------#
+        # Initialize the basis set parser
+        cls.parser = psi4.Gaussian94BasisSetParser()
+        #----------------------------------------#
 
     array_getters = dict()
     # Add the AO and MO TEI getters to the known getters
@@ -1225,6 +1245,11 @@ class CachedComputation(object):
             owner=None,
             psi_options=None,
     ):
+        #========================================#
+        # only initialize static class variables once
+        if not CachedComputation._statics_initialized:
+            CachedComputation._init_statics()
+            CachedComputation._statics_initialized = True
         #========================================#
         #region Set up arguments and attributes
         if isinstance(molecule, str):
@@ -1402,6 +1427,14 @@ class CachedComputation(object):
         #========================================#
 
     #endregion
+
+    #========================================#
+
+    @classmethod
+    def get_nbasis(cls, mol, basis):
+        directory = tempfile.gettempdir()
+        cc = CachedComputation(mol, basis, directory, {})
+        return cc.get_lazy_attribute("basis").nbf()
 
     #========================================#
 

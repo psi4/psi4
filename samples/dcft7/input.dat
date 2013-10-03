@@ -19,7 +19,7 @@ R = 2.000
 set globals {
     r_convergence 12
     d_convergence 12
-    ao_basis    none
+    ao_basis    disk
     algorithm   simultaneous
     basis       cc-pcvtz
 }
