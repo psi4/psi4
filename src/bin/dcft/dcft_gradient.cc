@@ -274,7 +274,7 @@ DCFTSolver::gradient_init()
 
     if ((options_.get_str("DCFT_FUNCTIONAL") == "DC-06" && options_.get_str("ALGORITHM") != "QC")
      || (options_.get_str("DCFT_FUNCTIONAL") == "DC-06" && options_.get_str("ALGORITHM") == "QC"
-     && !options_.get_bool("QC_COUPLING") && options_.get_str("QC_TYPE") != "SIMULTANEOUS")) {
+     && (!options_.get_bool("QC_COUPLING") || options_.get_str("QC_TYPE") != "SIMULTANEOUS"))) {
         _ints->transform_tei(MOSpace::vir, MOSpace::occ, MOSpace::occ, MOSpace::occ);
         _ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::occ);
         _ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::vir, MOSpace::vir);
@@ -293,7 +293,7 @@ DCFTSolver::gradient_init()
 
     if ((options_.get_str("DCFT_FUNCTIONAL") == "DC-06" && options_.get_str("ALGORITHM") != "QC")
             || (options_.get_str("DCFT_FUNCTIONAL") == "DC-06" && options_.get_str("ALGORITHM") == "QC"
-                && !options_.get_bool("QC_COUPLING") && options_.get_str("QC_TYPE") != "SIMULTANEOUS")) {
+            && (!options_.get_bool("QC_COUPLING") || options_.get_str("QC_TYPE") != "SIMULTANEOUS"))) {
 
         sort_OOOV_integrals();
 
