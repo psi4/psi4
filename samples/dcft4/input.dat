@@ -25,6 +25,7 @@ set globals {
     ao_basis    none
     algorithm   twostep
     basis       sto-3g
+    qc_coupling true
 }
 
 #DC-06
@@ -49,6 +50,7 @@ energy('dcft')
 set ao_basis none
 set algorithm qc
 set qc_type simultaneous
+set print 6
 energy('dcft')
 
 
