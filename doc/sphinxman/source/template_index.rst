@@ -4,16 +4,10 @@
    contain the root `toctree` directive.
 
 .. #####  HTML-ALL START
-.. #####  HTML-USER START
-.. #####  HTML-PROG START
-.. #####  LATEX-USER START
-.. #####  LATEX-PROG START
 
 .. toctree::
    :maxdepth: 2
    
-.. #####  LATEX-PROG STOP
-.. #####  HTML-PROG STOP
    introduction
    external
    tutorial
@@ -23,20 +17,24 @@
    interfacing
    psithonfunc
    customizing
+
+.. toctree::
+   :maxdepth: 3
+
    appendices
-.. #####  LATEX-USER STOP
-.. #####  HTML-USER STOP
-.. #####  LATEX-PROG START
-.. #####  HTML-PROG START
+
+===================
+Programmers' Manual
+===================
+
+.. toctree::
+   :maxdepth: 2
+
    contributing
    programming
    autodoc_available_plugins
    autodoc_driver
    autodoc_psimod
-.. #####  LATEX-PROG START
-.. #####  HTML-PROG START
-.. #####  LATEX-USER START
-.. #####  HTML-USER START
 
 * Indices
 
@@ -45,8 +43,4 @@
  - :ref:`search`
 
 .. #####  HTML-ALL STOP
-.. #####  HTML-USER STOP
-.. #####  HTML-PROG STOP
-.. #####  LATEX-USER STOP
-.. #####  LATEX-PROG STOP
 

@@ -1,9 +1,5 @@
 
 .. #####  HTML-ALL START
-.. #####  HTML-USER START
-.. #####  HTML-PROG START
-.. #####  LATEX-USER START
-.. #####  LATEX-PROG START
 
 .. _`sec:appendices`:
 
@@ -11,29 +7,43 @@
 Appendices
 ==========
 
+Keywords
+========
+
 .. toctree::
    :maxdepth: 2
 
-   bibliography
-   testsuite
+   autodoc_glossary_options_c
+   autodoc_options_c_bymodule
+
+Basis Sets
+==========
+
+.. toctree::
+   :maxdepth: 2
+
    basissets_byelement
    basissets_byfamily
-   dft_byfunctional
-   autodoc_psifiles
-.. #####  LATEX-PROG STOP
-.. #####  HTML-PROG STOP
-   autodoc_glossary_options_c
-.. #####  LATEX-USER STOP
-.. #####  HTML-USER STOP
-   autodoc_options_c_bymodule
-.. #####  LATEX-USER START
-.. #####  HTML-USER START
+
+PSI Variables
+=============
+
+.. toctree::
+   :maxdepth: 2
+
    glossary_psivariables
    autodoc_psivariables_bymodule
 
+Miscellaneous
+=============
+
+.. toctree::
+   :maxdepth: 2
+
+   testsuite
+   dft_byfunctional
+   autodoc_psifiles
+   bibliography
+
 .. #####  HTML-ALL STOP
-.. #####  HTML-USER STOP
-.. #####  HTML-PROG STOP
-.. #####  LATEX-USER STOP
-.. #####  LATEX-PROG STOP
 

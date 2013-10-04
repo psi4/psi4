@@ -10,6 +10,8 @@ Interface to DFTD3 by S. Grimme
 .. codeauthor:: Lori A. Burns
 .. sectionauthor:: Lori A. Burns
 
+*Module:* :ref:`Samples <apdx:testSuitedftd3>`
+
 |PSIfour| contains code to interface to the DFTD3 program of S. Grimme, which is freely
 downloadable from `http://www.thch.uni-bonn.de/tc/index.php?section=downloads&subsection=getd3&lang=english <http://www.thch.uni-bonn.de/tc/index.php?section=downloads&subsection=getd3&lang=english>`_).
 
