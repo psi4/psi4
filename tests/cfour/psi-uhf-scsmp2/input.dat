@@ -1,5 +1,8 @@
-store = {}
-test_psivars = ['scf total energy', 'mp2 same-spin energy', 'mp2 opposite-spin energy', 'mp2 singles energy', 'mp2 correlation energy', 'mp2 total energy', 'current reference energy', 'current correlation energy', 'current energy']
+#! UHF MP2 energy components. Checks that computed identically
+#! between cfour and psi4
+
+store = {}  #TEST
+test_psivars = ['scf total energy', 'mp2 same-spin energy', 'mp2 opposite-spin energy', 'mp2 singles energy', 'mp2 correlation energy', 'mp2 total energy', 'current reference energy', 'current correlation energy', 'current energy']  #TEST
 
 print '    <<<  UHF  >>>'
 
@@ -22,9 +25,9 @@ MEMORY=20000000)
 
 energy('cfour')
 
-for vari in test_psivars:
-    store[vari] = get_variable(vari)
-    set_variable(vari, 0.0)
+for vari in test_psivars:  #TEST
+    store[vari] = get_variable(vari)  #TEST
+    set_variable(vari, 0.0)  #TEST
 
 molecule nh2 {
 N
@@ -49,6 +52,6 @@ set socc [0, 0, 1, 0]  #OCCUPATION=3-1-1-0/3-0-1-0
 energy('mp2')
 print_variables()
 
-for vari in test_psivars:
-    compare_values(store[vari], get_variable(vari), 6, vari.upper())
+for vari in test_psivars:  #TEST
+    compare_values(store[vari], get_variable(vari), 6, vari.upper())  #TEST
 

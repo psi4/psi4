@@ -1,3 +1,5 @@
+#! optimization CCSD(T)/dzp on water
+
 print '        <<< Literal ZMAT to Cfour >>>'
 
 cfour {
@@ -18,14 +20,14 @@ SCF_CONV=12)
 
 energy('cfour')
 
-compare_values(9.132052626900, get_variable('NUCLEAR REPULSION ENERGY'), 6, 'NRE')
-compare_values(-76.013878694840, get_variable('current reference energy'), 6, 'SCF')
-compare_values(-0.217565923762, get_variable('mp2 correlation energy'), 6, 'MP2 corl')
-compare_values(-0.227372475715, get_variable("CCSD CORRELATION ENERGY"), 6, 'CCSD corl')
-compare_values(-76.241251170555, get_variable("CCSD TOTAL ENERGY"), 6, 'CCSD')
-compare_values(-0.003103546371, get_variable('(T) CORRECTION ENERGY'), 6, '(T)')
-compare_values(-0.230476022086, get_variable('current correlation energy'), 6, 'CCSD(T) corl')
-compare_values(-76.244354716926, get_variable('current energy'), 6, 'CCSD(T)')
+compare_values(9.132052626900, get_variable('NUCLEAR REPULSION ENERGY'), 6, 'NRE')  #TEST
+compare_values(-76.013878694840, get_variable('current reference energy'), 6, 'SCF')  #TEST
+compare_values(-0.217565923762, get_variable('mp2 correlation energy'), 6, 'MP2 corl')  #TEST
+compare_values(-0.227372475715, get_variable("CCSD CORRELATION ENERGY"), 6, 'CCSD corl')  #TEST
+compare_values(-76.241251170555, get_variable("CCSD TOTAL ENERGY"), 6, 'CCSD')  #TEST
+compare_values(-0.003103546371, get_variable('(T) CORRECTION ENERGY'), 6, '(T)')  #TEST
+compare_values(-0.230476022086, get_variable('current correlation energy'), 6, 'CCSD(T) corl')  #TEST
+compare_values(-76.244354716926, get_variable('current energy'), 6, 'CCSD(T)')  #TEST
 
 clean()
 clean_variables()
@@ -56,12 +58,12 @@ rms_force_g_convergence 6
 
 optimize('cfour')
 
-compare_values(9.132052626900, get_variable('NUCLEAR REPULSION ENERGY'), 3, 'NRE')
-compare_values(-76.013878694840, get_variable('current reference energy'), 6, 'SCF')
-compare_values(-0.217565923762, get_variable('mp2 correlation energy'), 6, 'MP2 corl')
-compare_values(-0.227372475715, get_variable("CCSD CORRELATION ENERGY"), 6, 'CCSD corl')
-compare_values(-76.241251170555, get_variable("CCSD TOTAL ENERGY"), 6, 'CCSD')
-compare_values(-0.003103546371, get_variable('(T) CORRECTION ENERGY'), 6, '(T)')
-compare_values(-0.230476022086, get_variable('current correlation energy'), 6, 'CCSD(T) corl')
-compare_values(-76.244354716926, get_variable('current energy'), 6, 'CCSD(T)')
+compare_values(9.132052626900, get_variable('NUCLEAR REPULSION ENERGY'), 3, 'NRE')  #TEST
+compare_values(-76.013878694840, get_variable('current reference energy'), 6, 'SCF')  #TEST
+compare_values(-0.217565923762, get_variable('mp2 correlation energy'), 6, 'MP2 corl')  #TEST
+compare_values(-0.227372475715, get_variable("CCSD CORRELATION ENERGY"), 6, 'CCSD corl')  #TEST
+compare_values(-76.241251170555, get_variable("CCSD TOTAL ENERGY"), 6, 'CCSD')  #TEST
+compare_values(-0.003103546371, get_variable('(T) CORRECTION ENERGY'), 6, '(T)')  #TEST
+compare_values(-0.230476022086, get_variable('current correlation energy'), 6, 'CCSD(T) corl')  #TEST
+compare_values(-76.244354716926, get_variable('current energy'), 6, 'CCSD(T)')  #TEST
 
