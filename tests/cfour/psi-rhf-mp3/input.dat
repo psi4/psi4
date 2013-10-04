@@ -1,5 +1,8 @@
-store = {}
-test_psivars = ['nuclear repulsion energy', 'scf total energy', 'mp2 singles energy', 'mp2 correlation energy', 'mp2 total energy', 'mp3 correlation energy', 'mp3 total energy', 'current energy', 'current correlation energy', 'current reference energy']
+#! MP3 energy components. Checks that computed identically
+#! between cfour and psi4
+
+store = {}  #TEST
+test_psivars = ['nuclear repulsion energy', 'scf total energy', 'mp2 singles energy', 'mp2 correlation energy', 'mp2 total energy', 'mp3 correlation energy', 'mp3 total energy', 'current energy', 'current correlation energy', 'current reference energy']  #TEST
 
 print '    <<<  RHF  >>>'
 
@@ -19,11 +22,11 @@ MEMORY=20000000)
 
 energy('cfour')
 
-for vari in test_psivars:
-    store[vari] = get_variable(vari)
-    set_variable(vari, 0.0)
-    #print(store[vari], get_variable(vari))
-    #print get_variable(vari)
+for vari in test_psivars:  #TEST
+    store[vari] = get_variable(vari)  #TEST
+    set_variable(vari, 0.0)  #TEST
+    #print(store[vari], get_variable(vari))  #TEST
+    #print get_variable(vari)  #TEST
 
 clean()
 clean_variables()
@@ -44,12 +47,12 @@ set e_convergence 10
 
 energy('mp3')
 
-print test_psivars
+print test_psivars  #TEST
 print_variables()
-for vari in test_psivars:
-    if vari == 'nuclear repulsion energy':
-        compare_values(store[vari], get_variable(vari), 4, vari.upper())
-    else:
-        compare_values(store[vari], get_variable(vari), 6, vari.upper())
+for vari in test_psivars:  #TEST
+    if vari == 'nuclear repulsion energy':  #TEST
+        compare_values(store[vari], get_variable(vari), 4, vari.upper())  #TEST
+    else:  #TEST
+        compare_values(store[vari], get_variable(vari), 6, vari.upper())  #TEST
 
 

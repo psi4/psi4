@@ -1,5 +1,7 @@
-store = {}
-test_psivars = ['scf total energy', 'mp2 same-spin energy', 'mp2 opposite-spin energy', 'mp2 singles energy', 'mp2 correlation energy', 'mp2 total energy', 'current reference energy', 'current correlation energy', 'current energy']
+#! Basis set spherical/Cartesian behavior in cfour
+
+store = {}  #TEST
+test_psivars = ['scf total energy', 'mp2 same-spin energy', 'mp2 opposite-spin energy', 'mp2 singles energy', 'mp2 correlation energy', 'mp2 total energy', 'current reference energy', 'current correlation energy', 'current energy']  #TEST
 
 sph_ccpvdz = -76.2307777348
 cart_ccpvdz = -76.2346763972
@@ -21,7 +23,7 @@ MEMORY=20000000)
 }
 
 energy('cfour')
-compare_values(sph_ccpvdz, get_variable('CURRENT ENERGY'), 6, 'cc-pVDZ Default (Sph)')
+compare_values(sph_ccpvdz, get_variable('CURRENT ENERGY'), 6, 'cc-pVDZ Default (Sph)')  #TEST
 
 clean()
 clean_variables()
@@ -42,7 +44,7 @@ MEMORY=20000000)
 }
 
 energy('cfour')
-compare_values(sph_631gs, get_variable('CURRENT ENERGY'), 6, '6-31G* Default (Sph)')
+compare_values(sph_631gs, get_variable('CURRENT ENERGY'), 6, '6-31G* Default (Sph)')  #TEST
 
 clean()
 clean_variables()
@@ -61,7 +63,7 @@ set cfour_CALC_level=MP2
 set basis 6-31g*
 
 energy('cfour')
-compare_values(cart_631gs, get_variable('CURRENT ENERGY'), 6, '6-31G* P4 Default (Cart)')
+compare_values(cart_631gs, get_variable('CURRENT ENERGY'), 6, '6-31G* P4 Default (Cart)')  #TEST
 
 clean()
 clean_variables()
@@ -70,7 +72,7 @@ cfour {}
 set basis cc-pvdz
 
 energy('cfour')
-compare_values(sph_ccpvdz, get_variable('CURRENT ENERGY'), 6, 'cc-pVDZ P4 Default (Sph)')
+compare_values(sph_ccpvdz, get_variable('CURRENT ENERGY'), 6, 'cc-pVDZ P4 Default (Sph)')  #TEST
 
 clean()
 clean_variables()
@@ -80,5 +82,5 @@ cfour {}
 set puream false
 
 energy('cfour')
-compare_values(cart_ccpvdz, get_variable('CURRENT ENERGY'), 6, 'cc-pVDZ P4 Forced (Cart)')
+compare_values(cart_ccpvdz, get_variable('CURRENT ENERGY'), 6, 'cc-pVDZ P4 Forced (Cart)')  #TEST
 

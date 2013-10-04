@@ -1,6 +1,9 @@
-store = {}
-#test_psivars = ['scf total energy', 'mp2 singles energy', 'mp2 opposite-spin energy', 'mp2 same-spin energy', 'mp2 correlation energy', 'mp2 total energy', 'mp3 correlation energy', 'mp3 total energy', 'mp4 total energy', 'mp4 correlation energy', 'current energy', 'current correlation energy', 'current reference energy', 'mp4(sdq) correlation energy', 'mp4(sdq) total energy', 'mp4(t) correction energy']
-test_psivars = ['scf total energy', 'mp2 singles energy', 'mp2 correlation energy', 'mp2 total energy', 'mp3 correlation energy', 'mp3 total energy', 'mp4 total energy', 'mp4 correlation energy', 'current energy', 'current correlation energy', 'current reference energy', 'mp4(sdq) correlation energy', 'mp4(sdq) total energy', 'mp4(t) correction energy']
+#! MP4 energy components. Checks that computed identically
+#! between cfour and psi4
+
+store = {}  #TEST
+#test_psivars = ['scf total energy', 'mp2 singles energy', 'mp2 opposite-spin energy', 'mp2 same-spin energy', 'mp2 correlation energy', 'mp2 total energy', 'mp3 correlation energy', 'mp3 total energy', 'mp4 total energy', 'mp4 correlation energy', 'current energy', 'current correlation energy', 'current reference energy', 'mp4(sdq) correlation energy', 'mp4(sdq) total energy', 'mp4(t) correction energy']  #TEST
+test_psivars = ['scf total energy', 'mp2 singles energy', 'mp2 correlation energy', 'mp2 total energy', 'mp3 correlation energy', 'mp3 total energy', 'mp4 total energy', 'mp4 correlation energy', 'current energy', 'current correlation energy', 'current reference energy', 'mp4(sdq) correlation energy', 'mp4(sdq) total energy', 'mp4(t) correction energy']  #TEST
 
 print '    <<<  RHF  >>>'
 
@@ -22,11 +25,11 @@ energy('cfour')
 print_variables()
 clean()
 
-for vari in test_psivars:
-    store[vari] = get_variable(vari)
-    set_variable(vari, 0.0)
-    #print(store[vari], get_variable(vari))
-    #print get_variable(vari)
+for vari in test_psivars:  #TEST
+    store[vari] = get_variable(vari)  #TEST
+    set_variable(vari, 0.0)  #TEST
+    #print(store[vari], get_variable(vari))  #TEST
+    #print get_variable(vari)  #TEST
 
 molecule h2o {
 O
@@ -45,8 +48,8 @@ energy('mp4')
 print_variables()
 clean()
 
-for vari in test_psivars:
-    compare_values(store[vari], get_variable(vari), 6, vari.upper())
+for vari in test_psivars:  #TEST
+    compare_values(store[vari], get_variable(vari), 6, vari.upper())  #TEST
 
 
 #print '    <<<  UHF  >>>'
