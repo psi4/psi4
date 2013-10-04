@@ -197,10 +197,12 @@ $(autotarget8): %: $(autodepend8)
 # Autodoc test cases
 autodepend9 = \
 $(filter-out $(wildcard @top_srcdir@/tests/docs-*/input.dat), $(wildcard @top_srcdir@/tests/*/input.dat)) \
+@top_srcdir@/tests/*/*/input.dat \
 @srcdir@/document_tests.pl
 
 autotarget9 = \
-$(SOURCEDIR)/autodoc_testsuite.rst
+$(SOURCEDIR)/autodoc_testsuite_corepsi4.rst \
+$(SOURCEDIR)/autodoc_testsuite_dftd3.rst
 
 $(autotarget9): %: $(autodepend9)
 	@srcdir@/document_tests.pl @srcdir@

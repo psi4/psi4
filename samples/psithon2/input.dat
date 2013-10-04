@@ -14,13 +14,8 @@ molecule h2o {
 set basis cc-pVDZ
 energy('scf')
 
-compare_values(-76.0266327341067125, get_variable('SCF TOTAL ENERGY'), 6, 'Built-in energy')  #TEST
 clean()
 
-refS22AmadSAPT0 = 2.105857433479                                                            #TEST
-refS22BmadSAPT0 = 2.063857730160                                                            #TEST
-refNBCmadDFMP2  = 0.117344794875                                                            #TEST
-refNBCmadSCF    = 0.149827452337                                                            #TEST
 
 set globals {
     BASIS sto-3g
@@ -36,9 +31,7 @@ set globals {
 }
 
 S22mad = database('sapt0','s44',subset=[2,8],BENCHMARK='s22A')
-compare_values(refS22AmadSAPT0, S22mad, 5, "PSIPATH database")  #TEST
 S22mad = database('sapt0','s22',subset=[2,8],BENCHMARK='s22A')
-compare_values(refS22AmadSAPT0, S22mad, 5, "Built-in database")  #TEST
 clean()
 
 ###########################
@@ -90,7 +83,6 @@ set basis cc-pVDZ
 set df_basis_scf cc-pVDZ-JKFIT
 energy('scf')
 
-compare_values(-76.0266327341067125, get_variable('SCF TOTAL ENERGY'), 6, 'Built-in energy again')  #TEST
 clean()
 
 

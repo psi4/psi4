@@ -18,28 +18,53 @@ if ($#ARGV == 0) { $DriverPath = $ARGV[0] . "/"; }
 
 
 #
+# Loop over all the test case subdirectories
+#
+
+my %ExeFolder = (
+   "."          => "corepsi4",
+   "dftd3/"     => "dftd3",
+   #"mrcc/"      => "mrcc",
+   #"cfour/"     => "cfour",
+   #"libefp/"    => "efp",
+);
+
+foreach my $exe (keys %ExeFolder) {
+
+#
 # Raid the test cases looking for tags
 #
 
-my $SamplesFolder = $DriverPath . "../../samples";
+my $SamplesFolder = $DriverPath . "../../samples/" . $exe;
 opendir(SAMPLES, $SamplesFolder) or die "I can't read $SamplesFolder\n";
 foreach my $File(readdir SAMPLES){
     next unless $File =~ /\w+/; # Make sure we don't nuke .. or . !
     next if $File =~ /example_psi4rc_file/; # Keep the example psi4rc file
+    next if $File =~ /^dftd3$/;  # Keep the interface subdirectories
+    #next if $File =~ /^mrcc$/;
+    #next if $File =~ /^cfour$/;
+    #next if $File =~ /^libefp$/;
+    next if (-d $File);  # Don't remove subdirectories
     remove_tree("$SamplesFolder/$File");
 }
 
-my $TestsFolder = $DriverPath . "../../tests";
+my $TestsFolder = $DriverPath . "../../tests/" . $exe;
 opendir(TESTS, $TestsFolder) or die "I can't read $TestsFolder\n";
-my $TexSummary = "tests_descriptions.tex";
-my $RstSummary = "source/autodoc_testsuite.rst";
+my $TexSummary = "tests_descriptions_" . $ExeFolder{$exe} . ".tex";
+my $RstSummary = "source/autodoc_testsuite_" . $ExeFolder{$exe} . ".rst";
 # Create a plain-text summary in the samples directory
 my $Summary = $SamplesFolder."/SUMMARY";
 open(SUMMARY,">$Summary") or die "I can't write to $Summary\n";
 # Make a LaTeX version for the manual, too
 open(TEXSUMMARY,">$TexSummary") or die "I can't write to $TexSummary\n";
 open(RSTSUMMARY,">$RstSummary") or die "I can't write to $RstSummary\n";
-print "Auto-documenting samples directory inputs\n";
+print "Auto-documenting samples/" . $exe . " directory inputs\n";
+if ($ExeFolder{$exe} ne "corepsi4") {
+   print RSTSUMMARY "\n.. _`apdx:testSuite$ExeFolder{$exe}`:\n";
+   print RSTSUMMARY "\n=============================================\n";
+   print RSTSUMMARY   uc($ExeFolder{$exe});
+   print RSTSUMMARY "\n=============================================\n";
+}
 print RSTSUMMARY "\n=============================================   ============\n";
 print RSTSUMMARY   "Input File                                      Description \n";
 print RSTSUMMARY   "=============================================   ============\n";
@@ -98,7 +123,12 @@ foreach my $Dir(readdir TESTS){
             print TEXSUMMARY "\\begin{tabular*}{\\textwidth}[tb]{p{0.2\\textwidth}p{0.8\\textwidth}}\n";
             print TEXSUMMARY "{\\bf $Dir_tex} & $Description_tex \\\\\n\\\\\n";
             print TEXSUMMARY "\\end{tabular*}\n";
-            my $srcfilename = ":srcsample:`" . $Dir_tex . "`";
+            my $srcfilename = "";
+            if ($ExeFolder{$exe} eq "corepsi4") {
+                $srcfilename = ":srcsample:`" . $Dir_tex . "`";
+            } else {
+                $srcfilename = ":srcsample:`" . $exe . $Dir_tex . "`";
+            }
             printf RSTSUMMARY "%-45s  %s\n", $srcfilename, $Description_rst;
             printf SUMMARY "%-12s %s\n\n\n", $Dir.":", $Description;
         }
@@ -110,5 +140,7 @@ print RSTSUMMARY "=============================================   ============\n
 close TEXSUMMARY ;
 close RSTSUMMARY;
 close SUMMARY;
+unlink($SamplesFolder."/SUMMARY");
 closedir TESTS;
 
+}
