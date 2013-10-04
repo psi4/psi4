@@ -25,7 +25,7 @@ my %ExeFolder = (
    "."          => "corepsi4",
    "dftd3/"     => "dftd3",
    #"mrcc/"      => "mrcc",
-   #"cfour/"     => "cfour",
+   "cfour/"     => "cfour",
    #"libefp/"    => "efp",
 );
 
@@ -42,7 +42,7 @@ foreach my $File(readdir SAMPLES){
     next if $File =~ /example_psi4rc_file/; # Keep the example psi4rc file
     next if $File =~ /^dftd3$/;  # Keep the interface subdirectories
     #next if $File =~ /^mrcc$/;
-    #next if $File =~ /^cfour$/;
+    next if $File =~ /^cfour$/;
     #next if $File =~ /^libefp$/;
     next if (-d $File);  # Don't remove subdirectories
     remove_tree("$SamplesFolder/$File");
