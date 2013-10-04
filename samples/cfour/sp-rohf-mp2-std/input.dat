@@ -1,0 +1,28 @@
+#! single-point MP2/qz2p on NH2
+
+print '        <<< Literal ZMAT to Cfour >>>'
+
+cfour {
+ROHF-MP2 energy calculation 
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+
+*ACES2(CALC=MP2,BASIS=qz2p
+MULT=2,REF=ROHF
+OCCUPATION=3-1-1-0/3-0-1-0
+SCF_CONV=12
+CC_CONV=12
+ORBITALS=STANDARD
+MEMORY=20000000)
+}
+
+energy('cfour')
+#
+
+
+# MESSED UP
+

@@ -10,7 +10,7 @@ Interface to CFOUR by J. Stanton and J. Gauss
 .. codeauthor:: Lori A. Burns
 .. sectionauthor:: Lori A. Burns
 
-*Module:* :ref:`Keywords <apdx:cfour>`, :ref:`PSI Variables <apdx:cfour_psivar>`, :source:`CFOUR <src/bin/cfour>`
+*Module:* :ref:`Keywords <apdx:cfour>`, :ref:`PSI Variables <apdx:cfour_psivar>`, :source:`CFOUR <src/bin/cfour>`, :ref:`Samples <apdx:testSuitecfour>`
 
 |PSIfour| contains code to interface to the Cfour quantum chemistry suite of
 John F. Stanton (U. Texas, Austin) and J\ |u_dots|\ rgen Gauss (U. Mainz),
