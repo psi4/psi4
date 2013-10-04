@@ -953,7 +953,7 @@ def run_cc_gradient(name, **kwargs):
         psi4.set_local_option('CCDENSITY', 'WFN', 'CCSD_T')
 
         user_ref = psi4.get_option('CCENERGY', 'REFERENCE')
-        if (user_ref != 'RHF') and (user_ref != 'UHF'):
+        if (user_ref != 'UHF'):
             raise ValidationError('Reference %s for CCSD(T) gradients is not available.' % user_ref)
 
     psi4.cchbar()
