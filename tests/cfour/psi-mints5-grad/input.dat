@@ -1,57 +1,55 @@
+#! geometry after three optimization cycles for a variety of input formats, references from psi4
 
 #set cfour_calc_level scf
 #set cfour_basis 4-31g
 
-nre3_ref = [
-49.1441698413,
-12.0891596247,
-73.9000847604,
-24.836652243,
-23.807599017,
-19.9795607127,
-504.721963841141132,
-#521.012403734,
-134.966173378,
-#148.931965534,
-134.966173378,
-#136.744724994,
-49.144169841,
-538.403833151,
-132.222592076,
-#131.967720296,
-#76.8576348019,
-36.9639630541,
-#36.9547511363,
-142.740441157,
-9.25491884172,
-76.1734296255,
-12.0891596247,
-None,
-32.7782868,
-#32.1980739067,
-134.127078824,
-681.590244351,
-163.272061621,
-33.3564651138,
-42.2958900587,
-32.327514332,
-59.7322811068,
-42.3977342041,
-33.5621423763,
-42.2599426018,
-10.7662273734,
-13.5332213203,
-531.446251975,
-89.3086779113
-#22.8048425842,
-]
+nre3_ref = [  #TEST
+49.1441698413,  #TEST
+12.0891596247,  #TEST
+73.9000847604,  #TEST
+24.836652243,  #TEST
+23.807599017,  #TEST
+19.9795607127,  #TEST
+504.7219638411,  #TEST
+#521.012403734,  #TEST
+134.966173378,  #TEST
+#148.931965534,  #TEST
+134.966173378,  #TEST
+#136.744724994,  #TEST
+49.144169841,  #TEST
+538.403833151,  #TEST
+132.222592076,  #TEST
+#131.967720296,  #TEST
+#76.8576348019,  #TEST
+36.9639630541,  #TEST
+#36.9547511363,  #TEST
+142.740441157,  #TEST
+9.25491884172,  #TEST
+76.1734296255,  #TEST
+12.0891596247,  #TEST
+None,  #TEST
+32.7782868,  #TEST
+#32.1980739067,  #TEST
+134.127078824,  #TEST
+681.590244351,  #TEST
+163.272061621,  #TEST
+33.3564651138,  #TEST
+42.2958900587,  #TEST
+32.327514332,  #TEST
+59.7322811068,  #TEST
+42.3977342041,  #TEST
+33.5621423763,  #TEST
+42.2599426018,  #TEST
+10.7662273734,  #TEST
+13.5332213203,  #TEST
+531.446251975,  #TEST
+89.3086779113  #TEST
+#22.8048425842,  #TEST
+]  #TEST
 
 set geom_maxiter 3
 set basis 6-31g
 set scf_type pk
-
-#! Tests to determine full point group symmetry.  Currently, these only matter
-#! for the rotational symmetry number in thermodynamic computations.
 
 
 molecule HOCl {
@@ -63,8 +61,8 @@ r2 = 1.7
 a1 = 110.0
 }
 opt('c4-scf')
-print get_variable('nuclear repulsion energy')
-compare_values(nre3_ref[0], get_variable('nuclear repulsion energy'), 3, '[1]  NRE: zmat, external values')
+print get_variable('nuclear repulsion energy')  #TEST
+compare_values(nre3_ref[0], get_variable('nuclear repulsion energy'), 3, '[1]  NRE: zmat, external values')  #TEST
 clean()
 opt_clean()
 
@@ -82,8 +80,8 @@ molecule NH3  {
   a1 = 120.0
 }
 opt('c4-scf')
-print get_variable('nuclear repulsion energy')
-compare_values(nre3_ref[1], get_variable('nuclear repulsion energy'), 3, '[2]  NRE: zmat, external values, w/dummy')
+print get_variable('nuclear repulsion energy')  #TEST
+compare_values(nre3_ref[1], get_variable('nuclear repulsion energy'), 3, '[2]  NRE: zmat, external values, w/dummy')  #TEST
 clean()
 opt_clean()
 
@@ -95,8 +93,8 @@ molecule HCCCl  {
   Cl 0 0  2.6
 }
 opt('c4-scf')
-print get_variable('nuclear repulsion energy')
-compare_values(nre3_ref[2], get_variable('nuclear repulsion energy'), 3, '[3]  NRE: cartesian, pure')
+print get_variable('nuclear repulsion energy')  #TEST
+compare_values(nre3_ref[2], get_variable('nuclear repulsion energy'), 3, '[3]  NRE: cartesian, pure')  #TEST
 clean()
 opt_clean()
 
@@ -110,8 +108,8 @@ molecule C2H2 {
   r2 = 1.75
 }
 opt('c4-scf')
-print get_variable('nuclear repulsion energy')
-compare_values(nre3_ref[3], get_variable('nuclear repulsion energy'), 3, '[4]  NRE: cartesian, external values, +/-')
+print get_variable('nuclear repulsion energy')  #TEST
+compare_values(nre3_ref[3], get_variable('nuclear repulsion energy'), 3, '[4]  NRE: cartesian, external values, +/-')  #TEST
 clean()
 opt_clean()
 
@@ -123,8 +121,8 @@ molecule N2 {
 }
 
 opt('c4-scf')
-print get_variable('nuclear repulsion energy')
-compare_values(nre3_ref[4], get_variable('nuclear repulsion energy'), 3, '[5]  NRE: cartesian, external values')
+print get_variable('nuclear repulsion energy')  #TEST
+compare_values(nre3_ref[4], get_variable('nuclear repulsion energy'), 3, '[5]  NRE: cartesian, external values')  #TEST
 clean()
 opt_clean()
 
@@ -138,8 +136,8 @@ opt_clean()
 ###}
 ###set reference uhf
 ###opt('c4-scf')
-###print get_variable('nuclear repulsion energy')
-###compare_values(nre3_ref[5], get_variable('nuclear repulsion energy'), 3, '[6]  NRE: cartesian, external values')
+###print get_variable('nuclear repulsion energy')  #TEST
+###compare_values(nre3_ref[5], get_variable('nuclear repulsion energy'), 3, '[6]  NRE: cartesian, external values')  #TEST
 ###clean()
 ###opt_clean()
 ###set reference rhf
@@ -154,8 +152,8 @@ molecule CHFClBr  {
 }
 set basis 3-21g
 opt('c4-scf')
-print get_variable('nuclear repulsion energy')
-compare_values(nre3_ref[6], get_variable('nuclear repulsion energy'), 3, '[7]  NRE: zmat, internal values')
+print get_variable('nuclear repulsion energy')  #TEST
+compare_values(nre3_ref[6], get_variable('nuclear repulsion energy'), 3, '[7]  NRE: zmat, internal values')  #TEST
 clean()
 opt_clean()
 set basis 6-31g
@@ -169,8 +167,8 @@ molecule CH2ClBr  {
   H  2 1.0 1 105.0 3 -120.0
 }
 opt('c4-scf')
-print get_variable('nuclear repulsion energy')
-compare_values(nre3_ref[7], get_variable('nuclear repulsion energy'), 3, '[8]  NRE: zmat, internal values')
+print get_variable('nuclear repulsion energy')  #TEST
+compare_values(nre3_ref[7], get_variable('nuclear repulsion energy'), 3, '[8]  NRE: zmat, internal values')  #TEST
 clean()
 opt_clean()
 
@@ -184,8 +182,8 @@ molecule CH2ClBr  {
     D1 = 120.0
 }
 opt('c4-scf')
-print get_variable('nuclear repulsion energy')
-compare_values(nre3_ref[8], get_variable('nuclear repulsion energy'), 3, '[8b]  NRE: zmat, external and internal values, +/-')
+print get_variable('nuclear repulsion energy')  #TEST
+compare_values(nre3_ref[8], get_variable('nuclear repulsion energy'), 3, '[8b]  NRE: zmat, external and internal values, +/-')  #TEST
 clean()
 opt_clean()
 
@@ -196,8 +194,8 @@ molecule HOCl  {
   Cl 2 1.7 1 110.0
 }
 opt('c4-scf')
-print get_variable('nuclear repulsion energy')
-compare_values(nre3_ref[9], get_variable('nuclear repulsion energy'), 3, '[9]  NRE: zmat, internal values')
+print get_variable('nuclear repulsion energy')  #TEST
+compare_values(nre3_ref[9], get_variable('nuclear repulsion energy'), 3, '[9]  NRE: zmat, internal values')  #TEST
 clean()
 opt_clean()
 
@@ -218,8 +216,8 @@ molecule C4H4Cl2F2  {
   F     1.913713787211     3.739567959534    -0.258534542158
 }
 opt('c4-scf')
-print get_variable('nuclear repulsion energy')
-compare_values(nre3_ref[10], get_variable('nuclear repulsion energy'), 3, '[10] NRE: cartesian, pure, bohr')
+print get_variable('nuclear repulsion energy')  #TEST
+compare_values(nre3_ref[10], get_variable('nuclear repulsion energy'), 3, '[10] NRE: cartesian, pure, bohr')  #TEST
 clean()
 opt_clean()
 
@@ -236,8 +234,8 @@ molecule HOOH_dimer  {
   units au
 }
 opt('c4-scf')
-print get_variable('nuclear repulsion energy')
-compare_values(nre3_ref[11], get_variable('nuclear repulsion energy'), 3, '[11] NRE: cartesian, pure')
+print get_variable('nuclear repulsion energy')  #TEST
+compare_values(nre3_ref[11], get_variable('nuclear repulsion energy'), 3, '[11] NRE: cartesian, pure')  #TEST
 clean()
 opt_clean()
 
@@ -249,8 +247,8 @@ molecule HOOH  {
   H 3 1.0 2 110.0 1 60.0
 }
 opt('c4-scf')
-print get_variable('nuclear repulsion energy')
-compare_values(nre3_ref[12], get_variable('nuclear repulsion energy'), 3, '[12] NRE: zmat, internal values')
+print get_variable('nuclear repulsion energy')  #TEST
+compare_values(nre3_ref[12], get_variable('nuclear repulsion energy'), 3, '[12] NRE: zmat, internal values')  #TEST
 clean()
 opt_clean()
 
@@ -266,8 +264,8 @@ opt_clean()
 ###  H 5 1.0 2 110.0 3 0.0
 ###}
 ###opt('c4-scf')
-###print get_variable('nuclear repulsion energy')
-###compare_values(nre3_ref[13], get_variable('nuclear repulsion energy'), 3, '[13] NRE: zmat, internal values, w/dummy')
+###print get_variable('nuclear repulsion energy')  #TEST
+###compare_values(nre3_ref[13], get_variable('nuclear repulsion energy'), 3, '[13] NRE: zmat, internal values, w/dummy')  #TEST
 ###clean()
 ###opt_clean()
 
@@ -278,8 +276,8 @@ molecule H2O  {
   H 2 1.0 1 109.5
 }
 opt('c4-scf')
-print get_variable('nuclear repulsion energy')
-compare_values(nre3_ref[14], get_variable('nuclear repulsion energy'), 3, '[14] NRE: zmat, internal values')
+print get_variable('nuclear repulsion energy')  #TEST
+compare_values(nre3_ref[14], get_variable('nuclear repulsion energy'), 3, '[14] NRE: zmat, internal values')  #TEST
 clean()
 opt_clean()
 
@@ -293,8 +291,8 @@ molecule CH2F2  {
   H    -1.7084139850  -0.0000000000   2.1841068002
 }
 opt('c4-scf')
-print get_variable('nuclear repulsion energy')
-compare_values(nre3_ref[15], get_variable('nuclear repulsion energy'), 3, '[15] NRE: cartesian, pure, bohr')
+print get_variable('nuclear repulsion energy')  #TEST
+compare_values(nre3_ref[15], get_variable('nuclear repulsion energy'), 3, '[15] NRE: cartesian, pure, bohr')  #TEST
 clean()
 opt_clean()
 
@@ -310,8 +308,8 @@ molecule NH3  {
   aXNH = 115.0
 }
 opt('c4-scf')
-print get_variable('nuclear repulsion energy')
-compare_values(nre3_ref[16], get_variable('nuclear repulsion energy'), 3, '[16] NRE: zmat, external & internal values, w/dummy')
+print get_variable('nuclear repulsion energy')  #TEST
+compare_values(nre3_ref[16], get_variable('nuclear repulsion energy'), 3, '[16] NRE: zmat, external & internal values, w/dummy')  #TEST
 clean()
 opt_clean()
 
@@ -327,8 +325,8 @@ opt_clean()
 #####}
 #####set basis 3-21g
 #####opt('c4-scf')
-#####print get_variable('nuclear repulsion energy')
-######compare_values(nre3_ref[17], get_variable('nuclear repulsion energy'), 3, '[17] NRE: zmat, external & internal values')
+#####print get_variable('nuclear repulsion energy')  #TEST
+######compare_values(nre3_ref[17], get_variable('nuclear repulsion energy'), 3, '[17] NRE: zmat, external & internal values')  #TEST
 #####clean()
 #####opt_clean()
 #####set basis 6-31g
@@ -345,8 +343,8 @@ molecule N2H2  {
 }
 set guess gwh
 opt('c4-scf')
-print get_variable('nuclear repulsion energy')
-compare_values(nre3_ref[18], get_variable('nuclear repulsion energy'), 3, '[18] NRE: zmat, external values')
+print get_variable('nuclear repulsion energy')  #TEST
+compare_values(nre3_ref[18], get_variable('nuclear repulsion energy'), 3, '[18] NRE: zmat, external values')  #TEST
 clean()
 opt_clean()
 set guess sad
@@ -363,8 +361,8 @@ set guess sad
 ###  H 5 1.0 2 110.0 3 0.0
 ###}
 ###opt('c4-scf')
-###print get_variable('nuclear repulsion energy')
-###compare_values(nre3_ref[19], get_variable('nuclear repulsion energy'), 3, '[19] NRE: zmat, internal values, w/dummy')
+###print get_variable('nuclear repulsion energy')  #TEST
+###compare_values(nre3_ref[19], get_variable('nuclear repulsion energy'), 3, '[19] NRE: zmat, internal values, w/dummy')  #TEST
 ###clean()
 ###opt_clean()
 
@@ -388,8 +386,8 @@ molecule TFCOT {
   H        2.418132      0.878010     -1.029595
 }
 opt('c4-scf')
-print get_variable('nuclear repulsion energy')
-compare_values(nre3_ref[20], get_variable('nuclear repulsion energy'), 3, '[20] NRE: cartesian, pure')
+print get_variable('nuclear repulsion energy')  #TEST
+compare_values(nre3_ref[20], get_variable('nuclear repulsion energy'), 3, '[20] NRE: cartesian, pure')  #TEST
 clean()
 opt_clean()
 
@@ -422,8 +420,8 @@ molecule Li_H2O_4_p  {
    xlioh2=135.0
 }
 opt('c4-scf')
-print get_variable('nuclear repulsion energy')
-compare_values(nre3_ref[21], get_variable('nuclear repulsion energy'), 3, '[21] NRE: zmat, external and internal values, +/-, w/dummy')
+print get_variable('nuclear repulsion energy')  #TEST
+compare_values(nre3_ref[21], get_variable('nuclear repulsion energy'), 3, '[21] NRE: zmat, external and internal values, +/-, w/dummy')  #TEST
 clean()
 opt_clean()
 
@@ -441,8 +439,8 @@ molecule ethylene_cation  {
   D    = 45.0
 }
 opt('c4-scf')
-print get_variable('nuclear repulsion energy')
-compare_values(nre3_ref[22], get_variable('nuclear repulsion energy'), 3, '[22] NRE: zmat, external values')
+print get_variable('nuclear repulsion energy')  #TEST
+compare_values(nre3_ref[22], get_variable('nuclear repulsion energy'), 3, '[22] NRE: zmat, external values')  #TEST
 clean()
 opt_clean()
 
@@ -458,8 +456,8 @@ molecule ethane_gauche  {
   H 2 1.0 3 110.0 1 -120.0
 }
 opt('c4-scf')
-print get_variable('nuclear repulsion energy')
-compare_values(nre3_ref[23], get_variable('nuclear repulsion energy'), 3, '[23] NRE: zmat, internal values')
+print get_variable('nuclear repulsion energy')  #TEST
+compare_values(nre3_ref[23], get_variable('nuclear repulsion energy'), 3, '[23] NRE: zmat, internal values')  #TEST
 clean()
 opt_clean()
 
@@ -477,8 +475,8 @@ opt_clean()
 ###  D    = 90.0
 ###}
 ###opt('c4-scf')
-###print get_variable('nuclear repulsion energy')
-###compare_values(nre3_ref[24], get_variable('nuclear repulsion energy'), 3, '[24] NRE: zmat, external values')
+###print get_variable('nuclear repulsion energy')  #TEST
+###compare_values(nre3_ref[24], get_variable('nuclear repulsion energy'), 3, '[24] NRE: zmat, external values')  #TEST
 ###clean()
 ###opt_clean()
 
@@ -493,8 +491,8 @@ molecule allene  {
   H  2.0 -1.0  0.0
 }
 opt('c4-scf')
-print get_variable('nuclear repulsion energy')
-compare_values(nre3_ref[25], get_variable('nuclear repulsion energy'), 3, '[25] NRE: cartesian, pure')
+print get_variable('nuclear repulsion energy')  #TEST
+compare_values(nre3_ref[25], get_variable('nuclear repulsion energy'), 3, '[25] NRE: cartesian, pure')  #TEST
 clean()
 opt_clean()
 
@@ -510,8 +508,8 @@ molecule ethane_staggered  {
   H 2 1.0 3 110.0 1 -120.0
 }
 opt('c4-scf')
-print get_variable('nuclear repulsion energy')
-compare_values(nre3_ref[26], get_variable('nuclear repulsion energy'), 3, '[26] NRE: zmat, internal values')
+print get_variable('nuclear repulsion energy')  #TEST
+compare_values(nre3_ref[26], get_variable('nuclear repulsion energy'), 3, '[26] NRE: zmat, internal values')  #TEST
 clean()
 opt_clean()
 
@@ -529,8 +527,8 @@ molecule singlet_ethylene  {
     D    = 0.0
 }
 opt('c4-scf')
-print get_variable('nuclear repulsion energy')
-compare_values(nre3_ref[27], get_variable('nuclear repulsion energy'), 3, '[27] NRE: zmat, external values')
+print get_variable('nuclear repulsion energy')  #TEST
+compare_values(nre3_ref[27], get_variable('nuclear repulsion energy'), 3, '[27] NRE: zmat, external values')  #TEST
 clean()
 opt_clean()
 
@@ -546,8 +544,8 @@ molecule ethane_eclipsed  {
   H 2 1.0 3 110.0 1 -120.0
 }
 opt('c4-scf')
-print get_variable('nuclear repulsion energy')
-compare_values(nre3_ref[28], get_variable('nuclear repulsion energy'), 3, '[28] NRE: zmat, internal values')
+print get_variable('nuclear repulsion energy')  #TEST
+compare_values(nre3_ref[28], get_variable('nuclear repulsion energy'), 3, '[28] NRE: zmat, internal values')  #TEST
 clean()
 opt_clean()
 
@@ -562,8 +560,8 @@ opt_clean()
 ### H 2 1.0 1 90.0 3 -90.0
 ###}
 ###opt('c4-scf')
-###print get_variable('nuclear repulsion energy')
-###compare_values(nre3_ref[29], get_variable('nuclear repulsion energy'), 3, '[29] NRE: zmat, internal values, w/dummy')
+###print get_variable('nuclear repulsion energy')  #TEST
+###compare_values(nre3_ref[29], get_variable('nuclear repulsion energy'), 3, '[29] NRE: zmat, internal values, w/dummy')  #TEST
 ###clean()
 ###opt_clean()
 
@@ -577,8 +575,8 @@ molecule CH4  {
    r = 1.09
 }
 opt('c4-scf')
-print get_variable('nuclear repulsion energy')
-compare_values(nre3_ref[30], get_variable('nuclear repulsion energy'), 3, '[30] NRE: zmat, external and internal values, w/TDA')
+print get_variable('nuclear repulsion energy')  #TEST
+compare_values(nre3_ref[30], get_variable('nuclear repulsion energy'), 3, '[30] NRE: zmat, external and internal values, w/TDA')  #TEST
 clean()
 opt_clean()
 
@@ -594,8 +592,8 @@ molecule SF6  {
   r = 1.8
 }
 opt('c4-scf')
-print get_variable('nuclear repulsion energy')
-compare_values(nre3_ref[31], get_variable('nuclear repulsion energy'), 3, '[31] NRE: zmat, external and internal values')
+print get_variable('nuclear repulsion energy')  #TEST
+compare_values(nre3_ref[31], get_variable('nuclear repulsion energy'), 3, '[31] NRE: zmat, external and internal values')  #TEST
 clean()
 opt_clean()
 
@@ -618,8 +616,8 @@ molecule Ih  {
   x = 1.618033988749894848
 }
 opt('c4-scf')
-print get_variable('nuclear repulsion energy')
-compare_values(nre3_ref[32], get_variable('nuclear repulsion energy'), 3, '[32] NRE: cartesian, external and internal, +/-')
+print get_variable('nuclear repulsion energy')  #TEST
+compare_values(nre3_ref[32], get_variable('nuclear repulsion energy'), 3, '[32] NRE: cartesian, external and internal, +/-')  #TEST
 clean()
 opt_clean()
 

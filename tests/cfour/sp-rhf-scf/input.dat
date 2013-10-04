@@ -105,8 +105,8 @@ cfour {}  # clear literal block since running sequentially
 
 energy('cfour')
 
-compare_values(-76.0627484601, get_variable('scf total energy'), 6, 'SCF')
-compare_values(-76.0627484601, get_variable('current energy'), 6, 'SCF')
+compare_values(-76.0627484601, get_variable('scf total energy'), 6, 'SCF')  #TEST
+compare_values(-76.0627484601, get_variable('current energy'), 6, 'SCF')  #TEST
 
 clean()
 clean_variables()
@@ -131,6 +131,6 @@ cfour_SCF_CONV=12
 
 energy('cfour')
 
-compare_values(-76.0627484601, get_variable('scf total energy'), 6, 'SCF')
-compare_values(-76.0627484601, get_variable('current energy'), 6, 'SCF')
+compare_values(-76.0627484601, get_variable('scf total energy'), 6, 'SCF')  #TEST
+compare_values(-76.0627484601, get_variable('current energy'), 6, 'SCF')  #TEST
 
