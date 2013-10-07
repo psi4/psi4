@@ -60,7 +60,7 @@ def run_dcft(name, **kwargs):
 
     """
 
-    if (psi4.get_option('GLOBALS', 'FREEZE_CORE')):
+    if (psi4.get_global_option('FREEZE_CORE') == 'TRUE'):
         raise ValidationError('Frozen core is not available for DCFT.')
 
     flag = False
@@ -947,7 +947,7 @@ def run_cc_gradient(name, **kwargs):
 
     psi4.set_global_option('DERTYPE', 'FIRST')
 
-    if (psi4.get_option('GLOBALS', 'FREEZE_CORE')):
+    if (psi4.get_global_option('FREEZE_CORE') == 'TRUE'):
         raise ValidationError('Frozen core is not available for the CC gradients.')
 
     run_ccenergy(name, **kwargs)
