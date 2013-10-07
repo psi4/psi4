@@ -795,7 +795,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       systems, but for large systems the simultaneous algorithm is recommended.
       In the cases where the convergence problems are encountered (especially
       for highly symmetric systems) QC algorithm can be used. -*/
-      options.add_str("ALGORITHM", "TWOSTEP", "TWOSTEP SIMULTANEOUS QC");
+      options.add_str("ALGORITHM", "SIMULTANEOUS", "TWOSTEP SIMULTANEOUS QC");
       /*- The algorithm to use for the solution of the response equations for the analytic gradients and properties-*/
       options.add_str("RESPONSE_ALGORITHM", "TWOSTEP", "TWOSTEP SIMULTANEOUS");
       /*- Chooses the type of the quadratically-convergent algorithm (effective for ALGORITHM = QC).
@@ -824,7 +824,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       requirements and can significantly reduce the cost of the energy computation if SIMULTANEOUS
       algorithm is used. For the TWOSTEP algorithm, however, AO_BASIS = DISK
       option is not recommended due to the extra I/O. -*/
-      options.add_str("AO_BASIS", "NONE", "NONE DISK");
+      options.add_str("AO_BASIS", "DISK", "NONE DISK");
       /*- The amount (percentage) of damping to apply to the orbital update procedure:
       0 will result in a full update, 100 will completely stall the
       update. A value around 20 (which corresponds to 20\% of the previous
@@ -854,7 +854,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("RELAX_GUESS_ORBITALS", false);
       /*- Controls whether to include the coupling terms in the DCFT electronic Hessian (for ALOGRITHM = QC
       with QC_TYPE = SIMULTANEOUS only) -*/
-      options.add_bool("QC_COUPLING", true);
+      options.add_bool("QC_COUPLING", false);
       /*- Performs stability analysis of the DCFT energy !expert-*/
       options.add_bool("STABILITY_CHECK", false);
       /*- The value of the rms of the residual in Schmidt orthogonalization which is used as a threshold

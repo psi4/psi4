@@ -14,24 +14,87 @@ R = 2.400
 
 set {
   basis           cc-pvdz
-  algorithm       simultaneous
-  ao_basis        none
-  dcft_functional dc-06
   r_convergence   11
+  diis_start_convergence 1e-2
+  qc_coupling     true
 }
 
+#AO_BASIS = NONE
+set ao_basis        none
+set dcft_functional dc-06
+set algorithm       simultaneous
 gradient('dcft')
 
-
-set algorithm qc
+set ao_basis        none
+set dcft_functional dc-06
+set algorithm       qc
 gradient('dcft')
 
-
-set algorithm simultaneous
+set ao_basis        none
 set dcft_functional odc-06
+set algorithm simultaneous
 gradient('dcft')
 
+set ao_basis        none
+set dcft_functional odc-06
+set algorithm       qc
+gradient('dcft')
 
+set ao_basis        none
 set dcft_functional odc-12
+set algorithm       simultaneous
 gradient('dcft')
 
+set ao_basis        none
+set dcft_functional odc-12
+set algorithm       qc
+gradient('dcft')
+
+#AO_BASIS = DISK
+set ao_basis        disk
+set dcft_functional dc-06
+set algorithm       simultaneous
+gradient('dcft')
+
+set ao_basis        disk
+set dcft_functional dc-06
+set algorithm       qc
+gradient('dcft')
+
+set ao_basis        disk
+set dcft_functional odc-06
+set algorithm simultaneous
+gradient('dcft')
+
+set ao_basis        disk
+set dcft_functional odc-06
+set algorithm       qc
+gradient('dcft')
+
+set ao_basis        disk
+set dcft_functional odc-12
+set algorithm       simultaneous
+gradient('dcft')
+
+set ao_basis        disk
+set dcft_functional odc-12
+set algorithm       qc
+gradient('dcft')
+
+set ao_basis        disk
+set dcft_functional dc-06
+set algorithm       qc
+set qc_coupling     false
+gradient('dcft')
+
+set ao_basis        disk
+set dcft_functional odc-06
+set algorithm       qc
+set qc_coupling     false
+gradient('dcft')
+
+set ao_basis        disk
+set dcft_functional odc-12
+set algorithm       qc
+set qc_coupling     false
+gradient('dcft')

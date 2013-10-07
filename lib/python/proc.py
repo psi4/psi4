@@ -60,6 +60,9 @@ def run_dcft(name, **kwargs):
 
     """
 
+    if (psi4.get_global_option('FREEZE_CORE') == 'TRUE'):
+        raise ValidationError('Frozen core is not available for DCFT.')
+
     flag = False
     if psi4.get_option('SCF', 'REFERENCE') == 'RHF':
         optstash = p4util.OptionsState(
@@ -947,6 +950,9 @@ def run_cc_gradient(name, **kwargs):
 
     psi4.set_global_option('DERTYPE', 'FIRST')
 
+    if (psi4.get_global_option('FREEZE_CORE') == 'TRUE'):
+        raise ValidationError('Frozen core is not available for the CC gradients.')
+
     run_ccenergy(name, **kwargs)
     if (name.lower() == 'ccsd'):
         psi4.set_local_option('CCLAMBDA', 'WFN', 'CCSD')
@@ -956,7 +962,7 @@ def run_cc_gradient(name, **kwargs):
         psi4.set_local_option('CCDENSITY', 'WFN', 'CCSD_T')
 
         user_ref = psi4.get_option('CCENERGY', 'REFERENCE')
-        if (user_ref != 'RHF') and (user_ref != 'UHF'):
+        if (user_ref != 'UHF'):
             raise ValidationError('Reference %s for CCSD(T) gradients is not available.' % user_ref)
 
     psi4.cchbar()
