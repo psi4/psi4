@@ -77,8 +77,9 @@ def run_cfour(name, **kwargs):
 
     # Because this fn is called for energy('cfour'), opt('cfour'), etc.,
     # need this to figure out who called
-    dertype_dict = {'energy': 0, 'gradient': 1, 'hessian': 2}
-    dertype = dertype_dict[inspect.stack()[1][3]]
+    d2d = ['energy', 'gradient', 'hessian']
+    calledby = inspect.stack()[1][3]
+    dertype = d2d.index(calledby)
     print('I am %s called by %s called by %s.\n' % 
         (inspect.stack()[0][3], inspect.stack()[1][3], inspect.stack()[2][3]))
 
@@ -100,7 +101,7 @@ def run_cfour(name, **kwargs):
 
     # Find environment by merging PSIPATH and PATH environment variables
     lenv = os.environ
-    lenv['PATH'] = ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':')]) + ':' + lenv.get('PATH')
+    lenv['PATH'] = ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':')]) + ':' + lenv.get('PATH') + ':' + psi4.Process.environment["PSIDATADIR"] + '/basis' + ':' + psi4.psi_top_srcdir() + '/lib/basis'
 
     # Load the GENBAS file
     genbas_path = qcdb.search_file('GENBAS', lenv['PATH'])
@@ -312,7 +313,8 @@ def run_cfour(name, **kwargs):
     psi4.reopen_outfile()
 
     d2d = ['Energy', 'Gradient', 'Hessian']
-    p4util.banner(' Cfour %s %s Results \n' % (name.lower(), d2d[dertype]))
+    psi4.print_out('\n')
+    p4util.banner(' Cfour %s %s Results ' % (name.lower(), calledby.capitalize()))
     psi4.print_variables()
     if c4grad:
         psi4.get_gradient().print_out()

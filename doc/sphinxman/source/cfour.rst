@@ -37,7 +37,7 @@ will be reported.
    PYTHONPATH should have one qcdb in it; the cloned qcdb is what needs to be
    imported in preference to the one already in psi4). Execute psi4 as usual.
 
-NOTE: Need to check in a GENBAS so tests can run?
+NOTE: Test checked-in GENBAS on installed copy
 
 Cfour for |PSIfour| Users
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -50,7 +50,7 @@ Cfour for |PSIfour| Users
   bases)
 
 * For the type of computation intended, find appropriate options at
-  :ref:`Keywords <apdx:cfour>` which contains the same information as the
+  :ref:`Keywords <apdx:cfour>`. These keyword summaries contain the same information as the
   `proper CFOUR options list
   <http://slater.chemie.uni-mainz.de/cfour/index.php?n=Main.ListOfKeywordsInAlphabeticalOrder>`_
   plus notes on keyword relevance when run through |PSIfour|.  Information
@@ -59,7 +59,7 @@ Cfour for |PSIfour| Users
   also be useful, as may the many samples at :source:`samples/cfour`.
 
 * Generally, the p4c4 interface will handle best practices for path of
-  execution: ``vcc``/``ecc``, derivative type, *etc.* Whereas the user is
+  execution: ``vcc``/``ecc``, derivative type, *etc.* The user is
   still responsible for setting convergence, frozen core, guess, diis,
   *etc.*
 
@@ -99,15 +99,16 @@ illustrated in the following example::
     
     energy('cfour')
 
-Here, the contents of the ``cfour {...}`` block are written directly to a
-``ZMAT`` file. This is joined by a default ``GENBAS`` file (to use your
-own, place it in :envvar:`PATH` or :envvar:`PSIPATH`). The line calling
-:py:func:`~driver.energy` with argument ``'cfour'`` invokes ``xcfour``.
+Here, the contents of the ``cfour {...}`` block are written directly
+to a ``ZMAT`` file. This is joined by a default ``GENBAS`` file
+(:source:`lib/basis/GENBAS`).  To preferentially use your own ``GENBAS``,
+place it in :envvar:`PATH` or :envvar:`PSIPATH`. The line calling
+:py:func:`~driver.energy` with argument ``'cfour'`` invokes :program:`xcfour`.
 
 After execution of the ``energy('cfour')`` line completes, Cfour results
 are read back into |PSIfour| format and are thereafter accessible for
 further processing in the input file. See :ref:`sec:cfouroutput` for
-details. This variable and array storage of results (as opposed to only
+details. This in-memory variable and array storage of results (as opposed to only
 file storage) is the only advantage thus far incurred by the p4c4
 interface. We'll call this mode of basic utility the "sandwich" mode.
 
@@ -121,10 +122,16 @@ form and the |cfour__cfour_coordinates| =CARTESIAN, |cfour__cfour_units|
 =ANGSTROM, |cfour__cfour_charge|, and |cfour__cfour_multiplicity| keywords
 are set appropriately in the ``*CFOUR(...)`` directive.
 
+.. warning:: There exist molecules (*e.g.*, allene) where the
+   inertial frame is not unique (planes along atoms or between
+   atoms). The orientation reconciling machinery currently does not
+   handle these cases and will fail with "Axis unreconcilable between
+   QC programs". I will get to this soon.
+
 Whenever the molecule is supplied in |PSIfour| format, the job control
 keywords must be too. All :ref:`Cfour keywords <apdx:cfour>` are the usual
 ones, prepended by ``cfour_`` to avoid any possible name conflicts.  As
-detailed in :ref:`sec:jobControl`, setting keywords is, too, flexible in
+detailed in :ref:`sec:jobControl`, setting keywords is flexible in
 format. The previous example translates to::
 
     # UHF-SCF energy calculation 
@@ -197,10 +204,14 @@ Below is an example of a geometry optimization::
     optimize('cfour')
 
 Note that the primary change is the exchange of :py:func:`~driver.energy`
-for :py:func:`~driver.optimize` to trigger an optimization.  Setting
-|optking__g_convergence| =CFOUR provides a good imitation of Cfour default
-convergence criteria.  Several sample inputs in :source:`test/cfour/`
-starting with ``opt-`` show basic geometry optimizations.
+for :py:func:`~driver.optimize` to trigger an optimization.
+Setting |optking__g_convergence| =CFOUR provides a good imitation
+of Cfour default convergence criteria.  Several sample inputs
+in :source:`test/cfour/` starting with ``opt-`` show basic
+geometry optimizations. :srcsample:`cfour/psi-mints5-grad`
+shows optimizations from a variety of molecule input formats, and
+:srcsample:`cfour/psi-ghost-grad` shows an optimization with ghosted
+atoms.
 
 The above example also shows the total memory for the computation being
 set in |PSIfour| format. See :ref:`sec:memory` for details. When
@@ -215,7 +226,7 @@ sets (*e.g.*, jun-cc-pVDZ), case insensitivity, appropriate setting of
 spherical/Cartesian depending on basis set design, and syntax to set
 different basis sets to different classes of atoms without listing each
 atom. All of these features are available to Cfour by using the
-|libmints__basis| keyword instead of |cfour__cfour_basis| (accompanied, of
+|mints__basis| keyword instead of |cfour__cfour_basis| (accompanied, of
 course, by specifying the molecule |PSIfour|-style). Internally, |PSIfour|
 processes the basis set as usual, then translates the basis set format and
 writes out a ``GENBAS`` file with an entry for each atom. The p4c4
@@ -226,8 +237,6 @@ name of the basis doesn't appear in ``ZMAT``, but the combination of the
 ~14 character basis name limit and the absense of a comment line marker
 rather preclude that helpful label.)
 
-
-* Basis Sets
 * other names to energy, optimize
 * multiple jobs in file
 * ref translation, more to come
@@ -235,12 +244,12 @@ rather preclude that helpful label.)
 
 .. warning:: Because p4c4 does not inspect the contents of the ``cfour {...}``
    block, once the user specifies a |PSIfour|-style molecule, the
-   interface cannot judge whether a sandwich (drop the |PSIfour| molecule
-   and use the cfour block as the entirety of the ``ZMAT``) or a standard
+   interface cannot judge whether a sandwich mode (drop the |PSIfour| molecule
+   and use the cfour block as the entirety of the ``ZMAT``) or a standard mode
    (translate the |PSIfour| molecule and append additional input from the
-   cfour block) mode is intended. The latter is what actually occurs. If
+   cfour block) is intended. The latter is what actually occurs. If
    there is both a |PSIfour| molecule and a molecule in the cfour block,
-   ``ZMAT`` *will* end up with multiple molecules and ``*CFOUR(...)``
+   ``ZMAT`` *will* end up with multiple molecules and multiple ``*CFOUR(...)``
    blocks, and it *will not* run.  Therefore, if mixing sandwich and
    standard or pure-\ |PSIfour| computations in an input file, place all
    the sandwich jobs at the beginning before declaring |PSIfour|
