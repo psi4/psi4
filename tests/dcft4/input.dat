@@ -38,6 +38,7 @@ set globals {
     ao_basis    none
     algorithm   twostep
     basis       sto-3g
+    qc_coupling true
 }
 
 #DC-06
