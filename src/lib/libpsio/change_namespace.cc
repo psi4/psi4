@@ -52,7 +52,7 @@ void PSIO::change_file_namespace(unsigned int unit, const std::string & ns1, con
     if (ns2 == "") {    
         sprintf(new_fullpath, "%s%s.%u", path, new_name, unit);
     } else {
-        sprintf(new_fullpath, "%s%s.%s.%u", path, new_name, ns1.c_str(), unit);
+        sprintf(new_fullpath, "%s%s.%s.%u", path, new_name, ns2.c_str(), unit);
     }
 
     //printf("%s\n",old_fullpath);
