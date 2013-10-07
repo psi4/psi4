@@ -45,7 +45,8 @@ using namespace std;
 namespace psi { namespace ccdensity {
 #include <physconst.h>
 
-void ex_oscillator_strength(struct TD_Params *S, struct TD_Params *U)
+//void ex_oscillator_strength(struct TD_Params *S, struct TD_Params *U)
+void ex_oscillator_strength(struct TD_Params *S, struct TD_Params *U, struct XTD_Params *xtd_data)
 {
   int nmo, nso, i, I, h, j, nirreps;
   int *order, *order_A, *order_B, *doccpi, *clsdpi, *openpi, *orbspi;
@@ -271,13 +272,20 @@ void ex_oscillator_strength(struct TD_Params *S, struct TD_Params *U)
 
   /* Use |w2 - w1| for oscillator strengths */
   delta_ee = fabs(S->cceom_energy - U->cceom_energy);
-  fflush(outfile);
+
   f_x = (2*delta_ee*ds_x)/3;
   f_y = (2*delta_ee*ds_y)/3;
   f_z = (2*delta_ee*ds_z)/3;
 
   f = f_x + f_y + f_z;
-  S->OS = f;
+  //S->OS = f;
+  /* Fill in XTD_Params for this Transition */
+  xtd_data->root1        = S->root;
+  xtd_data->root2        = U->root;
+  xtd_data->irrep1       = S->irrep;
+  xtd_data->irrep2       = U->irrep;
+  xtd_data->cceom_energy = delta_ee;
+  xtd_data->OS           = f;
 
   /* Compute Einstein A,B Coefficients */
   double hartree2Hz = pc_hartree2MHz * (1.0e6);

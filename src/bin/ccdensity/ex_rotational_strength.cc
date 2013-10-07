@@ -49,7 +49,8 @@ void transdip(void);
 void transp(double sign);
 void transL(double sign);
 
-void ex_rotational_strength(struct TD_Params *S, struct TD_Params *U)
+//void ex_rotational_strength(struct TD_Params *S, struct TD_Params *U)
+void ex_rotational_strength(struct TD_Params *S, struct TD_Params *U, struct XTD_Params *xtd_data)
 {
   int i, j, k;
   int no, nv, nt;
@@ -140,7 +141,10 @@ void ex_rotational_strength(struct TD_Params *S, struct TD_Params *U)
   rs_z = 0.5 * ( rs_lz + rs_rz);
 
   rs = rs_x + rs_y + rs_z;
-  S->RS_length = rs;
+
+  //S->RS_length = rs;
+  /* Fill in XTD Data */
+  xtd_data->RS_length = rs;
 
   fprintf(outfile,"\n");
   fprintf(outfile,"\tRotational Strength (au)                 %11.8lf\n",rs);
@@ -239,7 +243,9 @@ void ex_rotational_strength(struct TD_Params *S, struct TD_Params *U)
   rs_z = rs_z / delta_ee;
 
   rs = rs_x + rs_y + rs_z;
-  S->RS_velocity = rs;
+  //S->RS_velocity = rs;
+  /* Fill in XTD Data */
+  xtd_data->RS_velocity = rs;
 
   fprintf(outfile,"\n");
   fprintf(outfile,"\tRotational Strength (au)                 %11.8lf\n",rs);

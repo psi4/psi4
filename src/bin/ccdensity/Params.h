@@ -124,5 +124,16 @@ struct TD_Params {
   double RS_velocity;
 };
 
+struct XTD_Params {
+  int irrep1;
+  int irrep2;
+  int root1;
+  int root2;
+  double cceom_energy;
+  double OS;
+  double RS_length;
+  double RS_velocity;
+};
+
 
 }} // namespace psi::ccdensity
