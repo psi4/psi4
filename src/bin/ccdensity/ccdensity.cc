@@ -116,6 +116,12 @@ void x_oe_intermediates_rhf(struct RHO_Params rho_params);
 void x_te_intermediates_rhf(void);
 void x_xi_intermediates(void);
 void V_build(void);
+void ex_tdensity(char hand, struct TD_Params S, struct TD_Params U);
+void ex_td_setup(struct TD_Params S, struct TD_Params U);
+void ex_td_cleanup();
+void ex_oscillator_strength(struct TD_Params *S, struct TD_Params *U);
+void ex_rotational_strength(struct TD_Params *S, struct TD_Params *U);
+
 PsiReturnType ccdensity(Options& options)
 {
   int i;
@@ -359,7 +365,57 @@ PsiReturnType ccdensity(Options& options)
       td_cleanup();
     }
     td_print();
-  }
+
+    /* Excited State Transition Data */
+       //  The convention is that the transition is one of absorption.
+       //  That is to say - we always go from a lower excited state 
+       //  to a higher one - which maintains a defintion for 
+       //  labeling the LTD and the RTD.
+    int j;
+    if(params.nstates > 1) {      // Can't do this with one excited state.
+      fprintf(outfile,"\n\t*********************************************************\n");
+      fprintf(outfile,"\t*********************************************************\n");
+      fprintf(outfile,"\t******                                             ******\n");
+      fprintf(outfile,"\t****** Excited State-Excited State Transition Data ******\n");
+      fprintf(outfile,"\t******                                             ******\n");
+      fprintf(outfile,"\t*********************************************************\n");
+      fprintf(outfile,"\t*********************************************************\n\n");
+      fflush(outfile);
+      for(i=0; i < (params.nstates-1); i++) {
+        for(j=0; j <= i; j++) {
+
+          //- <Lx|O|Ry> (y>x)
+          ex_td_setup(td_params[j],td_params[i+1]);
+          fprintf(outfile,"\t*** LTD Setup complete.\n");
+          fprintf(outfile,"\t*** Computing <%d|X{pq}}|%d> (LEFT) Transition Density ***\n", j+1,i+2);
+          fflush(outfile);
+
+          ex_tdensity('l',td_params[j],td_params[i+1]);
+
+          //- Clean out Amp Files (Might not be necessary)
+          //ex_td_cleanup();
+
+          //- <Ly|O|Rx> (y>x) 
+          ex_td_setup(td_params[i+1],td_params[j]);
+          fprintf(outfile,"\t*** RTD Setup complete.\n");
+          fprintf(outfile,"\t*** Computing <%d|X{pq}}|%d> (RIGHT) Transition Density ***\n", i+2,j+1);
+          fflush(outfile);
+
+          ex_tdensity('r',td_params[i+1],td_params[j]);
+
+          fprintf(outfile,"\t*** Excited State -> Excited State Transition densities complete.\n");
+          fflush(outfile);
+          ex_oscillator_strength(&(td_params[j]),&(td_params[i+1]));
+          if(params.ref == 0) {
+            ex_rotational_strength(&(td_params[j]),&(td_params[i+1]));
+          }
+
+          td_cleanup();
+        }
+      }
+    }
+
+  }  // End params.transition IF loop
 
   dpd_close(0);
 
