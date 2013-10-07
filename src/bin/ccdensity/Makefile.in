@@ -49,6 +49,10 @@ dump_UHF.cc       sortone_ROHF.cc \
 dump_RHF.cc add_ref_RHF.cc deanti_RHF.cc fold_RHF.cc sortI_RHF.cc sortone_RHF.cc \
 relax_I_RHF.cc build_Z_RHF.cc build_A_RHF.cc energy_RHF.cc energy_ROHF.cc energy_UHF.cc \
 Gijab_RHF.cc ael.cc densgrid_RHF.cc \
+ex_td_setup.cc    ex_tdensity.cc              ex_td_cleanup.cc \
+ex_tdensity.cc    build_ex_tdensity.cc        ex_tdensity_intermediates.cc \
+ex_sort_td_rohf.cc     ex_sort_td_uhf.cc  \
+ex_oscillator_strength.cc         ex_rotational_strength.cc    \
 
 BINOBJ = $(CXXSRC:%.cc=%.o)
 
