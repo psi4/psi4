@@ -119,8 +119,12 @@ void V_build(void);
 void ex_tdensity(char hand, struct TD_Params S, struct TD_Params U);
 void ex_td_setup(struct TD_Params S, struct TD_Params U);
 void ex_td_cleanup();
-void ex_oscillator_strength(struct TD_Params *S, struct TD_Params *U);
-void ex_rotational_strength(struct TD_Params *S, struct TD_Params *U);
+void ex_oscillator_strength(struct TD_Params *S, struct TD_Params *U, struct XTD_Params *xtd_data);
+void ex_rotational_strength(struct TD_Params *S, struct TD_Params *U, struct XTD_Params *xtd_data);
+//void ex_td_print();
+void ex_td_print(std::vector<struct XTD_Params>);
+//void ex_oscillator_strength(struct TD_Params *S, struct TD_Params *U);
+//void ex_rotational_strength(struct TD_Params *S, struct TD_Params *U);
 
 PsiReturnType ccdensity(Options& options)
 {
@@ -372,6 +376,7 @@ PsiReturnType ccdensity(Options& options)
        //  to a higher one - which maintains a defintion for 
        //  labeling the LTD and the RTD.
     int j;
+
     if(params.nstates > 1) {      // Can't do this with one excited state.
       fprintf(outfile,"\n\t*********************************************************\n");
       fprintf(outfile,"\t*********************************************************\n");
@@ -381,6 +386,10 @@ PsiReturnType ccdensity(Options& options)
       fprintf(outfile,"\t*********************************************************\n");
       fprintf(outfile,"\t*********************************************************\n\n");
       fflush(outfile);
+
+      std::vector<struct XTD_Params> xtd_params;
+      struct XTD_Params xtd_data;
+
       for(i=0; i < (params.nstates-1); i++) {
         for(j=0; j <= i; j++) {
 
@@ -405,15 +414,23 @@ PsiReturnType ccdensity(Options& options)
 
           fprintf(outfile,"\t*** Excited State -> Excited State Transition densities complete.\n");
           fflush(outfile);
-          ex_oscillator_strength(&(td_params[j]),&(td_params[i+1]));
+          //ex_oscillator_strength(&(td_params[j]),&(td_params[i+1]));
+          ex_oscillator_strength(&(td_params[j]),&(td_params[i+1]), &xtd_data);
           if(params.ref == 0) {
-            ex_rotational_strength(&(td_params[j]),&(td_params[i+1]));
+            //ex_rotational_strength(&(td_params[j]),&(td_params[i+1]));
+            ex_rotational_strength(&(td_params[j]),&(td_params[i+1]), &xtd_data);
           }
+
+          xtd_params.push_back(xtd_data);
 
           td_cleanup();
         }
       }
+      td_print();
+      ex_td_print(xtd_params);
     }
+    //ex_td_print(xtd_params);
+    //ex_td_print();
 
   }  // End params.transition IF loop
 

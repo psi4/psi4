@@ -51,7 +51,7 @@ relax_I_RHF.cc build_Z_RHF.cc build_A_RHF.cc energy_RHF.cc energy_ROHF.cc energy
 Gijab_RHF.cc ael.cc densgrid_RHF.cc \
 ex_td_setup.cc    ex_tdensity.cc              ex_td_cleanup.cc \
 ex_tdensity.cc    build_ex_tdensity.cc        ex_tdensity_intermediates.cc \
-ex_sort_td_rohf.cc     ex_sort_td_uhf.cc  \
+ex_sort_td_rohf.cc     ex_sort_td_uhf.cc  ex_td_print.cc  \
 ex_oscillator_strength.cc         ex_rotational_strength.cc    \
 
 BINOBJ = $(CXXSRC:%.cc=%.o)
