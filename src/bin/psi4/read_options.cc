@@ -3330,7 +3330,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       computational subgroup having four symmetry species, the string
       3/1/0/2 specifies that 6 total roots should be searched
       for, three in the first block, one in the second block, and two in
-      the fourth block. It is also important to note that the ``%excite``
+      the fourth block. It is also important to note that the ``%excite*``
       input, if present, takes precedence over this keyword.
       Default: All zeros. -*/ 
       options.add("CFOUR_ESTATE_SYM", new ArrayType());
