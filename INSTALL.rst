@@ -55,8 +55,7 @@ I. Compilation Prerequisites
   * autoconf (version 2.52 or higher)
 
     .. note:: autoconf is only needed for special
-       architectures, to compile with MADNESS, or to compile the 
-       development branch.
+       architectures or to compile the development branch.
 
   * aclocal
   * fileutils (esp. install)
@@ -66,10 +65,6 @@ I. Compilation Prerequisites
   * latex
   * sphinx (version 1.1 or higher)
   * dvipng (for latex math in html)
-
-* To make a distributed-parallel version with MADNESS, you may also need:
-
-  * libtool (called by autoreconf)
 
 For Ubuntu users, you will need the following packages installed:
 gfortran [for linking to BLAS/LAPACK], g++, autoconf, python-dev 

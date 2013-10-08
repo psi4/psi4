@@ -70,8 +70,6 @@ protected:
     boost::shared_ptr<Vector> rho_;
     /// Atomic normalizations (true atoms)
     boost::shared_ptr<Vector> N_;
-    /// Matrix of atomic densities (true atoms x grid points)
-    boost::shared_ptr<Matrix> Q_;
 
     // ==> Utility Routines <== //
 
@@ -95,9 +93,11 @@ public:
     /// Master compute routine
     virtual void compute(boost::shared_ptr<Matrix> D) = 0;
     /// Compute weights for npoints at (x,y,z), and place in w (nA x npoints). Also multiplies in rhop if not NULL
-    virtual void compute_weights(int npoints, double* x, double* y, double* z, double** w, double* rhop = NULL) = 0;
+    virtual void compute_weights(int npoints, double* x, double* y, double* z, double** w, double* rhop = NULL, int atom = -1) = 0;
     /// Compute and disply the atomic charges, multiplying the electronic part by scale
     virtual void compute_charges(double scale = 2.0) = 0; 
+    /// Compute and return the atomic charges, multiplying the electronic part by scale
+    virtual boost::shared_ptr<Matrix> charges(double scale = 2.0) = 0;
 
     // ==> Accessors <== //
 
@@ -107,7 +107,6 @@ public:
     boost::shared_ptr<Vector> w()   const { return w_; }
     boost::shared_ptr<Vector> rho() const { return rho_; }
     boost::shared_ptr<Vector> N()   const { return N_; }
-    boost::shared_ptr<Matrix> Q()   const { return Q_; }
 
     boost::shared_ptr<Molecule> molecule() const { return molecule_; }
     boost::shared_ptr<BasisSet> primary() const { return primary_; }
@@ -140,6 +139,8 @@ protected:
     int diis_min_vecs_; 
     /// Maximum DIIS subspace size?
     int diis_max_vecs_; 
+    /// Number of iterations between flushes
+    int diis_flush_;
 
     // => State variables <= //
 
@@ -160,9 +161,11 @@ public:
     /// Master compute routine
     virtual void compute(boost::shared_ptr<Matrix> D);
     /// Compute weights for npoints at (x,y,z), and place in w (nA x npoints). Also multiplies in rhop if not NULL
-    virtual void compute_weights(int npoints, double* x, double* y, double* z, double** w, double* rhop = NULL);
+    virtual void compute_weights(int npoints, double* x, double* y, double* z, double** w, double* rhop = NULL, int atom = -1);
     /// Compute and disply the atomic charges, multiplying the electronic part by scale
     virtual void compute_charges(double scale = 2.0); 
+    /// Compute and return the atomic charges, multiplying the electronic part by scale
+    virtual boost::shared_ptr<Matrix> charges(double scale = 2.0);
 
 };
 

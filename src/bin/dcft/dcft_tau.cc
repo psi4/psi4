@@ -392,6 +392,10 @@ DCFTSolver::refine_tau() {
 
     } // end of macroiterations
 
+    // Test the trace of Tau
+    // double trace = aocc_tau_->trace() + avir_tau_->trace() + bocc_tau_->trace() + bvir_tau_->trace();
+    // fprintf(outfile, "\t Trace of Tau: %8.7e\n", trace);
+
     // If exact tau iterations failed, throw a message about it and compute it non-iteratively
     if (failed) {
         fprintf(outfile, "\t Exact Tau didn't converge. Evaluating it non-iteratively\n");

@@ -362,7 +362,7 @@ void OCCWave::title()
    else if (wfn_type_ == "OMP2.5" && orb_opt_ == "TRUE") fprintf(outfile,"                       OMP2.5 (OO-MP2.5)   \n");
    else if (wfn_type_ == "OMP2.5" && orb_opt_ == "FALSE") fprintf(outfile,"                       MP2.5  \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ;
-   fprintf(outfile,"              Latest Revision Jul 18, 2013.\n") ;
+   fprintf(outfile,"              Latest Revision Sep 21, 2013.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");

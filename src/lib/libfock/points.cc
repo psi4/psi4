@@ -179,6 +179,7 @@ void RKSFunctions::compute_points(boost::shared_ptr<BlockOPoints> block)
         }
     }
 }
+
 void RKSFunctions::set_Cs(SharedMatrix C_AO)
 {
     C_AO_ = C_AO;
@@ -222,6 +223,8 @@ void RKSFunctions::compute_orbitals(boost::shared_ptr<BlockOPoints> block)
 
     C_DGEMM('T','T',na,npoints,nlocal,1.0,Ca2p[0],na,phip[0],nglobal,0.0,psiap[0],max_points_);
 }
+
+
 void RKSFunctions::print(FILE* out, int print) const
 {
     std::string ans;
@@ -319,7 +322,7 @@ void UKSFunctions::compute_points(boost::shared_ptr<BlockOPoints> block)
 {
     if (!Da_AO_) 
         throw PSIEXCEPTION("UKSFunctions: call set_pointers.");
-    
+
     // => Build basis function values <= //
     timer_on("Points");
     BasisFunctions::compute_functions(block);
@@ -447,6 +450,7 @@ void UKSFunctions::compute_points(boost::shared_ptr<BlockOPoints> block)
         }
     }
 }
+
 void UKSFunctions::set_Cs(SharedMatrix Ca_AO)
 {
     throw PSIEXCEPTION("UKSFunctions::restricted pointers are not appropriate. Read the source.");
@@ -458,7 +462,7 @@ void UKSFunctions::set_Cs(SharedMatrix Ca_AO, SharedMatrix Cb_AO)
     Ca_local_ = boost::shared_ptr<Matrix>(new Matrix("Ca local", max_functions_, Ca_AO_->colspi()[0]));
     Cb_local_ = boost::shared_ptr<Matrix>(new Matrix("Cb local", max_functions_, Cb_AO_->colspi()[0]));
     orbital_values_["PSI_A"] = boost::shared_ptr<Matrix>(new Matrix("PSI_A", Ca_AO_->colspi()[0], max_points_));
-    orbital_values_["PSI_B"] = boost::shared_ptr<Matrix>(new Matrix("PSI_B", Ca_AO_->colspi()[0], max_points_));
+    orbital_values_["PSI_B"] = boost::shared_ptr<Matrix>(new Matrix("PSI_B", Cb_AO_->colspi()[0], max_points_));
 }
 void UKSFunctions::compute_orbitals(boost::shared_ptr<BlockOPoints> block)
 {
@@ -502,6 +506,8 @@ void UKSFunctions::compute_orbitals(boost::shared_ptr<BlockOPoints> block)
     C_DGEMM('T','T',na,npoints,nlocal,1.0,Ca2p[0],na,phip[0],nglobal,0.0,psiap[0],max_points_);
     C_DGEMM('T','T',nb,npoints,nlocal,1.0,Cb2p[0],nb,phip[0],nglobal,0.0,psibp[0],max_points_);
 }
+
+
 void UKSFunctions::print(FILE* out, int print) const
 {
     std::string ans;
@@ -540,6 +546,7 @@ SharedVector PointFunctions::point_value(const std::string& key)
 {
     return point_values_[key];
 }
+
 SharedMatrix PointFunctions::orbital_value(const std::string& key)
 {
     return orbital_values_[key];
@@ -659,8 +666,8 @@ void BasisFunctions::compute_functions(boost::shared_ptr<BlockOPoints> block)
             int L         = Qshell.am();
             int nQ        = Qshell.nfunction();
             int nprim     = Qshell.nprimitive();
-            const std::vector<double>& alpha = Qshell.exps();
-            const std::vector<double>& norm  = Qshell.coefs();
+            const double *alpha = Qshell.exps();
+            const double *norm  = Qshell.coefs();
 
             const std::vector<boost::tuple<int,int,double> >& transform = spherical_transforms_[L];
 
@@ -740,8 +747,8 @@ void BasisFunctions::compute_functions(boost::shared_ptr<BlockOPoints> block)
             int L         = Qshell.am();
             int nQ        = Qshell.nfunction();
             int nprim     = Qshell.nprimitive();
-            const std::vector<double>& alpha = Qshell.exps();
-            const std::vector<double>& norm  = Qshell.coefs();
+            const double *alpha = Qshell.exps();
+            const double *norm  = Qshell.coefs();
 
             const std::vector<boost::tuple<int,int,double> >& transform = spherical_transforms_[L];
 
@@ -865,8 +872,8 @@ void BasisFunctions::compute_functions(boost::shared_ptr<BlockOPoints> block)
             int L         = Qshell.am();
             int nQ        = Qshell.nfunction();
             int nprim     = Qshell.nprimitive();
-            const std::vector<double>& alpha = Qshell.exps();
-            const std::vector<double>& norm  = Qshell.coefs();
+            const double *alpha = Qshell.exps();
+            const double *norm  = Qshell.coefs();
 
             const std::vector<boost::tuple<int,int,double> >& transform = spherical_transforms_[L];
 

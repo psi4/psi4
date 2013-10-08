@@ -33,7 +33,7 @@
 
 using namespace psi;
 
-GaussianShell::GaussianShell(int am, const std::vector<double> &c,
+ShellInfo::ShellInfo(int am, const std::vector<double> &c,
                              const std::vector<double> &e, GaussianType pure,
                              int nc, const Vector3 &center, int start,
                              PrimitiveType pt)
@@ -51,21 +51,21 @@ GaussianShell::GaussianShell(int am, const std::vector<double> &c,
         normalize_shell();
 }
 
-GaussianShell GaussianShell::copy()
+ShellInfo ShellInfo::copy()
 {
-    return GaussianShell(l_, original_coef_, exp_,
+    return ShellInfo(l_, original_coef_, exp_,
                          GaussianType(puream_),
                          nc_, center_, start_, Unnormalized);
 }
 
-GaussianShell GaussianShell::copy(int nc, const Vector3& c)
+ShellInfo ShellInfo::copy(int nc, const Vector3& c)
 {
-    return GaussianShell(l_, original_coef_, exp_,
+    return ShellInfo(l_, original_coef_, exp_,
                          GaussianType(puream_),
                          nc, c, start_, Unnormalized);
 }
 
-double GaussianShell::primitive_normalization(int p)
+double ShellInfo::primitive_normalization(int p)
 {
     double tmp1 = l_ + 1.5;
     double g = 2.0 * exp_[p];
@@ -74,7 +74,7 @@ double GaussianShell::primitive_normalization(int p)
     return normg;
 }
 
-void GaussianShell::contraction_normalization()
+void ShellInfo::contraction_normalization()
 {
     int i, j;
     double e_sum = 0.0, g, z;
@@ -99,7 +99,7 @@ void GaussianShell::contraction_normalization()
             coef_[i] = 1.0;
 }
 
-void GaussianShell::normalize_shell()
+void ShellInfo::normalize_shell()
 {
     int i;
 
@@ -110,6 +110,66 @@ void GaussianShell::normalize_shell()
     contraction_normalization();
 }
 
+int ShellInfo::nfunction() const
+{
+    return INT_NFUNC(puream_, l_);
+}
+
+int ShellInfo::nprimitive() const
+{
+    return exp_.size();
+}
+
+void ShellInfo::print(FILE *out) const
+{
+    if (WorldComm->me() == 0) {
+        fprintf(outfile, "    %c %3d 1.00\n", AMCHAR(), nprimitive());
+    }
+    for (int K = 0; K < nprimitive(); K++) {
+        if (WorldComm->me() == 0) {
+            fprintf(outfile, "               %20.8f %20.8f\n",exp_[K], original_coef_[K]);
+        }
+    }
+}
+
+double ShellInfo::normalize(int l, int m, int n)
+{
+    return 1.0;
+}
+
+const Vector3& ShellInfo::center() const
+{
+    return center_;
+}
+
+const char *ShellInfo::amtypes = "spdfghiklmnopqrtuvwxyz";
+const char *ShellInfo::AMTYPES = "SPDFGHIKLMNOPQRTUVWXYZ";
+
+
+GaussianShell::GaussianShell(int am, int nprimitive, const double *oc, const double *c,
+                             const double *e, GaussianType pure,
+                             int nc, const double *center, int start)
+    : l_(am), nprimitive_(nprimitive), puream_(pure), exp_(e), original_coef_(oc), coef_(c),
+      nc_(nc), center_(center), start_(start)
+{
+    ncartesian_ = INT_NCART(l_);
+    nfunction_  = INT_NFUNC(puream_, l_);
+}
+
+GaussianShell GaussianShell::copy()
+{
+    return GaussianShell(l_, nprimitive_, original_coef_, coef_, exp_,
+                         GaussianType(puream_),
+                         nc_, center_, start_);
+}
+
+GaussianShell GaussianShell::copy(int nc, const double *center)
+{
+    return GaussianShell(l_, nprimitive_, original_coef_, coef_, exp_,
+                         GaussianType(puream_),
+                         nc, center, start_);
+}
+
 int GaussianShell::nfunction() const
 {
     return INT_NFUNC(puream_, l_);
@@ -117,7 +177,7 @@ int GaussianShell::nfunction() const
 
 int GaussianShell::nprimitive() const
 {
-    return exp_.size();
+    return nprimitive_;
 }
 
 void GaussianShell::print(FILE *out) const
@@ -132,12 +192,8 @@ void GaussianShell::print(FILE *out) const
     }
 }
 
-double GaussianShell::normalize(int l, int m, int n)
-{
-    return 1.0;
-}
 
-const Vector3& GaussianShell::center() const
+const double* GaussianShell::center() const
 {
     return center_;
 }
