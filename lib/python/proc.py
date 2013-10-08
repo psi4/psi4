@@ -729,7 +729,10 @@ def scf_helper(name, **kwargs):
 
         # Switch to the guess namespace
         namespace = psi4.IO.get_default_namespace()
-        psi4.IO.set_default_namespace((namespace + '.guess'))
+        guesspace = namespace + '.guess'
+        if namespace == '':
+            guesspace = 'guess'
+        psi4.IO.set_default_namespace(guesspace)
 
         # Setup initial SCF
         psi4.set_global_option('BASIS', guessbasis)
@@ -760,7 +763,7 @@ def scf_helper(name, **kwargs):
     if (cast):
 
         # Move files to proper namespace
-        psi4.IO.change_file_namespace(180, (namespace + '.guess'), namespace)
+        psi4.IO.change_file_namespace(180, guesspace, namespace)
         psi4.IO.set_default_namespace(namespace)
 
         # Set to read and project, and reset bases to final ones
