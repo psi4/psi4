@@ -784,74 +784,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     printed. -*/
     options.add_int("PRINT", 1);
   }
-  if (name == "DFTSAPT"|| options.read_globals()) {
-    /*- The amount of information printed to the output file -*/
-    options.add_int("PRINT", 1);
-    /*- Debug level -*/
-    options.add_int("DEBUG", 0);
-    /*- Bench level -*/
-    options.add_int("BENCH", 0);
-    /*- \% of memory for DF-MP2 three-index buffers -*/
-    options.add_double("SAPT_MEM_FACTOR", 0.9);
-    /*- The name of the orbital basis set -*/
-    options.add_str("BASIS", "");
-    /*- The name of the response auxiliary basis set -*/
-    options.add_str("DF_BASIS_SAPT", "");
-    /*- The maximum number of iterations in CPKS -*/
-    options.add_int("MAXITER", 100);
-    /*- Convergence criterion for residual of the CPKS coefficients in the SAPT
-    * $E@@{ind,resp}^{(20)}$ term. -*/
-    options.add_double("D_CONVERGENCE",1e-8);
-    /*- Number of frequency points in Casimir-Poldar integral -*/
-    options.add_int("FREQ_POINTS",8);
-    /*- Frequency scale in Casimir-Poldar integral -*/
-    options.add_double("FREQ_SCALE",0.1);
-    /*- Maximum number of terms in susceptibility coupling -*/
-    options.add_int("FREQ_MAX_K",2);
-    /*- Lambda in Pauli Blockade -*/
-    options.add_double("PB_LAMBDA",1E5);
-    /*- Fork pathway, until I properly subclass these things -*/
-    options.add_str("DFT_SAPT_TYPE", "SAPT0", "SAPT0 DFT-SAPT");
-
-    /*- Relative convergence in orbital localization -*/
-    options.add_double("LOCAL_CONVERGENCE",1.0E-12);
-    /*- Maximum iterations in localization -*/
-    options.add_int("LOCAL_MAXITER", 50);
-    /*- Localization algorithm -*/
-    options.add_str("LOCAL_TYPE", "BOYS", "BOYS PIPEK_MEZEY");
-
-    /*- ISA convergence criterion -*/
-    options.add_double("ISA_CONVERGENCE",1.0E-6);
-    /*- Maximum iterations in ISA -*/
-    options.add_int("ISA_MAXITER", 50);
-    /*- Do use DIIS extrapolation to accelerate ISA convergence? -*/
-    options.add_bool("ISA_DIIS", true);
-    /*- Minimum number of error vectors stored for ISA DIIS extrapolation -*/
-    options.add_int("ISA_DIIS_MIN_VECS", 2);
-    /*- Maximum number of error vectors stored for ISA DIIS extrapolation -*/
-    options.add_int("ISA_DIIS_MAX_VECS", 5);
-
-    /*- ASAPT analysis tasking -*/
-    options.add("ASAPT_TASKS", new ArrayType());
-    /*- Do ASAPT exchange scaling? (ratio of S^\infty to S^2) -*/
-    options.add_bool("ASAPT_EXCH_SCALE", true);
-    /*- Do ASAPT induction scaling? (ratio of HF induction to ASAPT induction) -*/
-    options.add_bool("ASAPT_IND_SCALE", true);
-    /*- Do ASAPT coupled response? (not recommended) -*/
-    options.add_bool("ASAPT_IND_RESPONSE", false);
-    /*- Do ASAPT core-valence localization separation? -*/
-    options.add_bool("ASAPT_SEPARATE_CORE", true);
-    /*- Voxel ASAPT density saturation (for uniform transfer functions) -*/
-    options.add_double("ASAPT_DENSITY_CLAMP", 0.5);
-    /*- Voxel ASAPT orbital saturation (for uniform transfer functions) -*/
-    options.add_double("ASAPT_ORBITAL_CLAMP", 0.5);
-    /*- Voxel ASAPT energy saturation (for uniform transfer functions) -*/
-    options.add_double("ASAPT_ENERGY_CLAMP", 0.005);
-    /*- ASAPT minimum grid overages in bohr (LX, LY, LZ) -*/
-    options.add("CUBIC_GRID_OVERAGE", new ArrayType());
-    /*- ASAPT voxel spacing in bohr (DX, DY, DZ) -*/
-    options.add("CUBIC_GRID_SPACING", new ArrayType());
-  }
   if(name == "DCFT"|| options.read_globals()) {
       /*-MODULEDESCRIPTION Performs Density Cumulant Functional Theory
       computations -*/
@@ -863,7 +795,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       systems, but for large systems the simultaneous algorithm is recommended.
       In the cases where the convergence problems are encountered (especially
       for highly symmetric systems) QC algorithm can be used. -*/
-      options.add_str("ALGORITHM", "TWOSTEP", "TWOSTEP SIMULTANEOUS QC");
+      options.add_str("ALGORITHM", "SIMULTANEOUS", "TWOSTEP SIMULTANEOUS QC");
       /*- The algorithm to use for the solution of the response equations for the analytic gradients and properties-*/
       options.add_str("RESPONSE_ALGORITHM", "TWOSTEP", "TWOSTEP SIMULTANEOUS");
       /*- Chooses the type of the quadratically-convergent algorithm (effective for ALGORITHM = QC).
@@ -892,7 +824,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       requirements and can significantly reduce the cost of the energy computation if SIMULTANEOUS
       algorithm is used. For the TWOSTEP algorithm, however, AO_BASIS = DISK
       option is not recommended due to the extra I/O. -*/
-      options.add_str("AO_BASIS", "NONE", "NONE DISK");
+      options.add_str("AO_BASIS", "DISK", "NONE DISK");
       /*- The amount (percentage) of damping to apply to the orbital update procedure:
       0 will result in a full update, 100 will completely stall the
       update. A value around 20 (which corresponds to 20\% of the previous
@@ -922,7 +854,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("RELAX_GUESS_ORBITALS", false);
       /*- Controls whether to include the coupling terms in the DCFT electronic Hessian (for ALOGRITHM = QC
       with QC_TYPE = SIMULTANEOUS only) -*/
-      options.add_bool("QC_COUPLING", true);
+      options.add_bool("QC_COUPLING", false);
       /*- Performs stability analysis of the DCFT energy !expert-*/
       options.add_bool("STABILITY_CHECK", false);
       /*- The value of the rms of the residual in Schmidt orthogonalization which is used as a threshold
@@ -2671,7 +2603,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do consider orbital response contributions for PDMs and GFM?  -*/
     options.add_bool("RELAXED",true);
     /*- Do symmetrize the GFM and OPDM in the EKT computations?  -*/
-    options.add_bool("SYMMETRIZE",false);
+    options.add_bool("SYMMETRIZE",true);
   }
   if (name == "MRCC"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/

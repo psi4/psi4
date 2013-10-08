@@ -738,12 +738,18 @@ else if (reference_ == "UNRESTRICTED") {
     global_dpd_->buf4_axpy(&T, &R, -1.0); // -1.0*T + R -> R
     global_dpd_->buf4_close(&T);
     
-    nElements = 0;
-    for(int h = 0; h < nirrep_; h++) nElements += R.params->coltot[h] * R.params->rowtot[h];
-    rms_t2AA = 0.0;
-    rms_t2AA = global_dpd_->buf4_dot_self(&R);
-    global_dpd_->buf4_close(&R);
-    rms_t2AA = sqrt(rms_t2AA) / nElements;
+    if (nooA + nooB != 1) {
+        nElements = 0;
+        for(int h = 0; h < nirrep_; h++) nElements += R.params->coltot[h] * R.params->rowtot[h];
+        rms_t2AA = 0.0;
+        rms_t2AA = global_dpd_->buf4_dot_self(&R);
+        global_dpd_->buf4_close(&R);
+        rms_t2AA = sqrt(rms_t2AA) / nElements;
+    }
+    else {
+        rms_t2AA = 0.0;
+    }
+
     
     // Reset
     global_dpd_->buf4_copy(&Tnew, PSIF_OCC_DPD, "T2 <OO|VV>");
@@ -762,13 +768,18 @@ else if (reference_ == "UNRESTRICTED") {
     global_dpd_->buf4_axpy(&T, &R, -1.0); // -1.0*T + R -> R
     global_dpd_->buf4_close(&T);
     
-    nElements = 0;
-    for(int h = 0; h < nirrep_; h++) nElements += R.params->coltot[h] * R.params->rowtot[h];
-    rms_t2BB = 0.0;
-    rms_t2BB = global_dpd_->buf4_dot_self(&R);
-    global_dpd_->buf4_close(&R);
-    rms_t2BB = sqrt(rms_t2BB) / nElements;
-    
+    if (nooA + nooB != 1) {
+        nElements = 0;
+        for(int h = 0; h < nirrep_; h++) nElements += R.params->coltot[h] * R.params->rowtot[h];
+        rms_t2BB = 0.0;
+        rms_t2BB = global_dpd_->buf4_dot_self(&R);
+        global_dpd_->buf4_close(&R);
+        rms_t2BB = sqrt(rms_t2BB) / nElements;
+    }
+    else {
+        rms_t2BB = 0.0;
+    }
+
     
     // Reset
     global_dpd_->buf4_copy(&Tnew, PSIF_OCC_DPD, "T2 <oo|vv>");
@@ -787,41 +798,48 @@ else if (reference_ == "UNRESTRICTED") {
     global_dpd_->buf4_axpy(&T, &R, -1.0); // -1.0*T + R -> R
     global_dpd_->buf4_close(&T);
     
-    nElements = 0;
-    for(int h = 0; h < nirrep_; h++) nElements += R.params->coltot[h] * R.params->rowtot[h];
-    rms_t2AB = 0.0;
-    rms_t2AB = global_dpd_->buf4_dot_self(&R);
-    global_dpd_->buf4_close(&R);
-    rms_t2AB = sqrt(rms_t2AA) / nElements;
-    
+    if (nooA + nooB != 1) {
+        nElements = 0;
+        for(int h = 0; h < nirrep_; h++) nElements += R.params->coltot[h] * R.params->rowtot[h];
+        rms_t2AB = 0.0;
+        rms_t2AB = global_dpd_->buf4_dot_self(&R);
+        global_dpd_->buf4_close(&R);
+        rms_t2AB = sqrt(rms_t2AA) / nElements;
+    }
+    else {
+        rms_t2AB = 0.0;
+    }
+
     // Reset
     global_dpd_->buf4_copy(&Tnew, PSIF_OCC_DPD, "T2 <Oo|Vv>");
     if (print_ > 3) global_dpd_->buf4_print(&Tnew, outfile, 1);
     global_dpd_->buf4_close(&Tnew);
     
     // DIIS
-    if (orb_opt_ == "FALSE" || mo_optimized == 1) {
-    dpdbuf4 Raa, Rbb, Rab, Taa, Tbb, Tab;
-    global_dpd_->buf4_init(&Raa, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "RT2 <OO|VV>");
-    global_dpd_->buf4_init(&Taa, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
-    global_dpd_->buf4_init(&Rbb, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                  ID("[o,o]"), ID("[v,v]"), 0, "RT2 <oo|vv>");
-    global_dpd_->buf4_init(&Tbb, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                  ID("[o,o]"), ID("[v,v]"), 0, "T2 <oo|vv>");
-    global_dpd_->buf4_init(&Rab, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                  ID("[O,o]"), ID("[V,v]"), 0, "RT2 <Oo|Vv>");
-    global_dpd_->buf4_init(&Tab, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                  ID("[O,o]"), ID("[V,v]"), 0, "T2 <Oo|Vv>");
-    t2DiisManager->add_entry(6, &Raa, &Rbb, &Rab, &Taa, &Tbb, &Tab);
-    if (t2DiisManager->subspace_size() >= cc_mindiis_) t2DiisManager->extrapolate(3, &Taa, &Tbb, &Tab);
-    global_dpd_->buf4_close(&Raa);
-    global_dpd_->buf4_close(&Rbb);
-    global_dpd_->buf4_close(&Rab);
-    global_dpd_->buf4_close(&Taa);
-    global_dpd_->buf4_close(&Tbb);
-    global_dpd_->buf4_close(&Tab);
+    if (nooA + nooB != 1) {
+        if (orb_opt_ == "FALSE" || mo_optimized == 1) {
+            dpdbuf4 Raa, Rbb, Rab, Taa, Tbb, Tab;
+            global_dpd_->buf4_init(&Raa, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                                   ID("[O,O]"), ID("[V,V]"), 0, "RT2 <OO|VV>");
+            global_dpd_->buf4_init(&Taa, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                                   ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
+            global_dpd_->buf4_init(&Rbb, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                                   ID("[o,o]"), ID("[v,v]"), 0, "RT2 <oo|vv>");
+            global_dpd_->buf4_init(&Tbb, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                                   ID("[o,o]"), ID("[v,v]"), 0, "T2 <oo|vv>");
+            global_dpd_->buf4_init(&Rab, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                                   ID("[O,o]"), ID("[V,v]"), 0, "RT2 <Oo|Vv>");
+            global_dpd_->buf4_init(&Tab, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                                   ID("[O,o]"), ID("[V,v]"), 0, "T2 <Oo|Vv>");
+            t2DiisManager->add_entry(6, &Raa, &Rbb, &Rab, &Taa, &Tbb, &Tab);
+            if (t2DiisManager->subspace_size() >= cc_mindiis_) t2DiisManager->extrapolate(3, &Taa, &Tbb, &Tab);
+            global_dpd_->buf4_close(&Raa);
+            global_dpd_->buf4_close(&Rbb);
+            global_dpd_->buf4_close(&Rab);
+            global_dpd_->buf4_close(&Taa);
+            global_dpd_->buf4_close(&Tbb);
+            global_dpd_->buf4_close(&Tab);
+        }
     }
 
     // Build amplitudes in chemist notation

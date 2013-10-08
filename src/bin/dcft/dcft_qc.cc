@@ -89,6 +89,7 @@ DCFTSolver::run_qc_dcft()
         build_cumulant_intermediates();
         // Compute the residuals for density cumulant equations
         cumulant_convergence_ = compute_cumulant_residual();
+        if (fabs(cumulant_convergence_) > 100.0) throw PSIEXCEPTION("DCFT density cumulant equations diverged");
         // Save the old energy
         old_total_energy_ = new_total_energy_;
         // Compute new SCF energy
@@ -1849,18 +1850,25 @@ DCFTSolver::iterate_nr_conjugate_gradients() {
         // Check convergence
         converged = (residual_rms < cumulant_threshold_);
 
-        if (print_ > 3) fprintf(outfile, "%d RMS = %8.5e\n", cycle, residual_rms);
-        if (cycle > maxiter_) throw PSIEXCEPTION ("Solution of the Newton-Raphson equations did not converge");
+        if (print_ > 1) fprintf(outfile, "%d RMS = %8.5e\n", cycle, residual_rms);
+        if (cycle > maxiter_) {
+//            throw PSIEXCEPTION ("Solution of the Newton-Raphson equations did not converge");
+            fprintf(outfile, "\tN-R equations did not converge, made a Jacobi step \n");
+            for (int p = 0; p < nidp_; ++p) {
+                X_->set(p, gradient_->get(p)/Hd_->get(p));
+            }
+            break;
+        }
 
     }
 
     // Some attempt to use augmented Hessian approach. Think if it's needed
-    double *gp = gradient_->pointer();
-    double *xp = X_->pointer();
-    double epsilon = C_DDOT(nidp_, gp, 1, xp, 1);
-    for (int p = 0; p < nidp_; ++p) {
-        X_->add(p, -epsilon * X_->get(p));
-    }
+//    double *gp = gradient_->pointer();
+//    double *xp = X_->pointer();
+//    double epsilon = C_DDOT(nidp_, gp, 1, xp, 1);
+//    for (int p = 0; p < nidp_; ++p) {
+//        X_->add(p, -epsilon * X_->get(p));
+//    }
 
     return cycle;
 
@@ -1912,7 +1920,7 @@ DCFTSolver::iterate_nr_jacobi() {
         }
         // Check convergence
         converged_micro = (residual_rms < cumulant_threshold_);
-        if (print_ > 3) fprintf(outfile, "%d RMS = %8.5e \n", counter, residual_rms);
+        if (print_ > 1) fprintf(outfile, "%d RMS = %8.5e \n", counter, residual_rms);
         if (counter > maxiter_) throw PSIEXCEPTION ("Solution of the Newton-Raphson equations did not converge");
     }
 

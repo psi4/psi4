@@ -30,10 +30,21 @@ class Isotope(object):
     # Initialization #
     ##################
 
-    def __init__(self, mass, abundance, element):
+    def __init__(self,
+            mass,
+            mass_uncertainty,
+            abundance,
+            abundance_uncertainty,
+            mass_number,
+            special_symbol=None
+    ):
         self.mass = mass
+        self.mass_uncertainty = mass_uncertainty
         self.abundance = abundance
-        self.element = element
+        self.abundance_uncertainty = abundance_uncertainty
+        self.element = None
+        self.mass_number = mass_number
+        self.special_symbol = special_symbol
 
     ##############
     # Properties #
@@ -41,7 +52,13 @@ class Isotope(object):
 
     @property
     def symbol(self):
-        return str(int(round(self.mass))) + self.element.symbol
+        if self.special_symbol is not None:
+            return self.special_symbol
+        else:
+            if self.element is not None:
+                return str(self.mass_number) + self.element.symbol
+            else:
+                return str(self.mass_number) + "(unknown element)"
 
     ###################
     # Special Methods #
@@ -85,28 +102,24 @@ class Element(object):
     symbol = None
     atomic_number = None
 
-    def __init__(self, symbol, atomic_number, isotopes):
+    def __init__(self,
+            symbol,
+            atomic_number,
+            isotopes,
+            atomic_weight,
+            atomic_weight_uncertainty=None,
+            is_synthetic=False
+    ):
         """
-            The following example is pretty self explanitory hopefully:
-
-            Element("H", 1,
-                (
-                    ( 1.00782503207, 0.999885 ),
-                    ( 2.0141017778, 0.000115 ),
-                    ( 3.0160492777, None )
-                )
-            )
         """
         self.symbol = symbol
         self.atomic_number = atomic_number
         self.isotopes = []
-        for tup in isotopes:
-            if isinstance(tup, tuple):
-                self.isotopes.append(Isotope(tup[0], tup[1], self))
-            elif isinstance(tup, Isotope):
-                self.isotopes.append(tup)
-            else:
-                raise TypeError
+        self.atomic_weight = atomic_weight
+        self.atomic_weight_uncertainty = atomic_weight_uncertainty
+        self.is_synthetic = is_synthetic
+        for iso in isotopes:
+            self.add_isotope(iso)
 
     ##############
     # Properties #
@@ -141,4 +154,7 @@ class Element(object):
     def __hash__(self):
         return hash(self.symbol)
 
+    def add_isotope(self, iso):
+        iso.element = self
+        self.isotopes.append(iso)
 

@@ -73,21 +73,6 @@ DCFTSolver::run_simult_dcft_oo()
     while((!orbitalsDone_ || !cumulantDone_ || !densityConverged_ || !energyConverged_)
             && cycle++ < maxiter_){
         std::string diisString;
-        // Save the old energy
-        old_total_energy_ = new_total_energy_;
-        // Build G and F intermediates needed for the density cumulant residual equations and DCFT energy computation
-        build_cumulant_intermediates();
-        // Compute the residuals for density cumulant equations
-        cumulant_convergence_ = compute_cumulant_residual();
-        if (fabs(cumulant_convergence_) > 100.0) throw PSIEXCEPTION("DCFT density cumulant equations diverged");
-        // Check convergence for density cumulant iterations
-        cumulantDone_ = cumulant_convergence_ < cumulant_threshold_;
-        // Update density cumulant tensor
-        update_cumulant_jacobi();
-        // Compute new DCFT energy (lambda contribution)
-        compute_dcft_energy();
-        // Add lambda energy to the DCFT total energy
-        new_total_energy_ = lambda_energy_;
         // Build new Tau from the density cumulant in the MO basis and transform it the SO basis
         build_tau();
         if (exact_tau_) {
@@ -110,8 +95,23 @@ DCFTSolver::run_simult_dcft_oo()
         moFb_->transform(Cb_);
         // Compute new SCF energy
         compute_scf_energy();
+        // Save the old energy
+        old_total_energy_ = new_total_energy_;
         // Add SCF energy contribution to the total DCFT energy
-        new_total_energy_ += scf_energy_;
+        new_total_energy_ = scf_energy_;
+        // Build G and F intermediates needed for the density cumulant residual equations and DCFT energy computation
+        build_cumulant_intermediates();
+        // Compute the residuals for density cumulant equations
+        cumulant_convergence_ = compute_cumulant_residual();
+        if (fabs(cumulant_convergence_) > 100.0) throw PSIEXCEPTION("DCFT density cumulant equations diverged");
+        // Check convergence for density cumulant iterations
+        cumulantDone_ = cumulant_convergence_ < cumulant_threshold_;
+        // Update density cumulant tensor
+        update_cumulant_jacobi();
+        // Compute new DCFT energy (lambda contribution)
+        compute_dcft_energy();
+        // Add lambda energy to the DCFT total energy
+        new_total_energy_ += lambda_energy_;
         // Compute orbital gradient and check convergence
         orbitals_convergence_ = compute_orbital_residual();
         orbitalsDone_ = orbitals_convergence_ < orbitals_threshold_;

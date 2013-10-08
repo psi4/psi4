@@ -3641,8 +3641,8 @@ void BasisExtents::computeExtents()
         const GaussianShell& Pshell = primary_->shell(P);
         int l         = Pshell.am();
         int nprim     = Pshell.nprimitive();
-        const std::vector<double>& alpha = Pshell.exps();
-        const std::vector<double>& norm  = Pshell.coefs();
+        const double *alpha = Pshell.exps();
+        const double *norm  = Pshell.coefs();
 
         double norm_max = norm[0];
         double alpha_max = alpha[0];
