@@ -390,6 +390,17 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
     // multipole contributions to Fock matrix
     double * xyz_p  = xyz->pointer();
     double * mult_p = mult->pointer();
+
+    int max_natom = 0;
+    for (int frag = 0; frag < nfrag_; frag++) {
+        int natom = 0;
+        if ( efp_get_frag_atom_count(efp_,frag,&natom) != EFP_RESULT_SUCCESS ) {
+            throw PsiException("libefp failed to return the number of atoms",__FILE__,__LINE__);
+        }
+        if ( natom > max_natom ) max_natom = natom;
+    }
+    efp_atom * atoms = (efp_atom*)malloc(max_natom*sizeof(efp_atom));
+
     for (int n = 0; n < n_multipole; n++) {
         for(int i=0; i < 20; ++i){
            mats[i]->zero();
@@ -404,7 +415,6 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
             if ( efp_get_frag_atom_count(efp_,frag,&natom) != EFP_RESULT_SUCCESS ) {
                 throw PsiException("libefp failed to return the number of atoms",__FILE__,__LINE__);
             }
-            efp_atom * atoms = (efp_atom*)malloc(natom*sizeof(efp_atom)); // TODO: Whoever wrote this, you be bleeding memory, yo?
             if ( efp_get_frag_atoms(efp_, frag, natom, atoms) != EFP_RESULT_SUCCESS ) {
                 throw PsiException("libefp failed to return atom charges",__FILE__,__LINE__);
             }
@@ -426,6 +436,7 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
             V2->add(mats[i]);
         }
     }
+    free(atoms);
 
     // induced dipole contributions to Fock matrix
     xyz_p  = xyz_id->pointer();
