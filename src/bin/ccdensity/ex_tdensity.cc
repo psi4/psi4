@@ -34,9 +34,12 @@
 
 namespace psi { namespace ccdensity {
 
-void ex_tdensity_rohf(struct TD_Params S, struct TD_Params U);
-void ex_tdensity_uhf(struct TD_Params S, struct TD_Params U);
-void ex_tdensity_intermediates(struct TD_Params S, struct TD_Params U);
+//void ex_tdensity_rohf(struct TD_Params S, struct TD_Params U);
+//void ex_tdensity_uhf(struct TD_Params S, struct TD_Params U);
+//void ex_tdensity_intermediates(struct TD_Params S, struct TD_Params U);
+void ex_tdensity_rohf(char hand, struct TD_Params S, struct TD_Params U);
+void ex_tdensity_uhf(char hand, struct TD_Params S, struct TD_Params U);
+void ex_tdensity_intermediates(char hand, struct TD_Params S, struct TD_Params U);
 void ex_sort_td_rohf(char hand, struct TD_Params S);
 void ex_sort_td_uhf(char hand, struct TD_Params S);
 
@@ -49,16 +52,22 @@ void ex_tdensity(char hand, struct TD_Params S, struct TD_Params U) {
    *  2) Which state's irrep to use for sorting -> MAYBE THIS
    */
   if(params.ref == 0 || params.ref == 1) {
-    ex_tdensity_rohf(S,U);
+    //ex_tdensity_rohf(S,U);
+    //ex_sort_td_rohf(hand,U);
+    ex_tdensity_rohf(hand,S,U);
     fprintf(outfile, "    *** A density has been built.\n");
     fflush(outfile);
-    ex_sort_td_rohf(hand, U);
+    if(hand=='l') ex_sort_td_rohf(hand,U);
+    if(hand=='r') ex_sort_td_rohf(hand,S);
     fprintf(outfile, "    *** A density has been sorted.\n");
     fflush(outfile);
   }
   else if(params.ref == 2) {
-    ex_tdensity_uhf(S,U);
-    ex_sort_td_uhf(hand, U);
+    //ex_tdensity_uhf(S,U);
+    //ex_sort_td_uhf(hand, U);
+    ex_tdensity_uhf(hand,S,U);
+    if(hand=='l') ex_sort_td_uhf(hand,U);
+    if(hand=='r') ex_sort_td_uhf(hand,S);
   }
 
   return;

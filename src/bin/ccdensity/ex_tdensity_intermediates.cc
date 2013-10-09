@@ -64,7 +64,8 @@ namespace psi { namespace ccdensity {
 /* LT_OO = LT1_OO + LT2_OO */
 /* LT_oo = LT1_oo + LT2_oo */
 
-void ex_tdensity_intermediates(struct TD_Params S, struct TD_Params U)
+//void ex_tdensity_intermediates(struct TD_Params S, struct TD_Params U)
+void ex_tdensity_intermediates(char hand, struct TD_Params S, struct TD_Params U)
 {
   dpdfile2 L1, R1, T1, I, LR1, LR2, LT1, LT2;
   dpdbuf4 L2, T2, R2;
@@ -75,11 +76,14 @@ void ex_tdensity_intermediates(struct TD_Params S, struct TD_Params U)
   /* Convenient Irrep Handles */
   int Lirrep = S.irrep;
   int Rirrep = U.irrep;
+  int Tirrep;
+  if(hand=='l') Tirrep = Rirrep;
+  if(hand=='r') Tirrep = Lirrep;
 
   if ( (params.ref == 0) || (params.ref == 1) ) rohf = 1;
 
   /* LR1_OO(I,J)  =  LIE * RJE */
-  global_dpd_->file2_init(&I, PSIF_EOM_TMP, S.irrep, 0, 0, "LR1_OO");
+  global_dpd_->file2_init(&I, PSIF_EOM_TMP, Tirrep, 0, 0, "LR1_OO");
   global_dpd_->file2_init(&L1, LHS, Lirrep, 0, 1, "LIA");
   global_dpd_->file2_init(&R1, PSIF_CC_GR, Rirrep, 0, 1, "RIA");
   global_dpd_->contract222(&L1, &R1, &I, 0, 0, 1.0, 0.0);
@@ -90,7 +94,7 @@ void ex_tdensity_intermediates(struct TD_Params S, struct TD_Params U)
   /* LR1_oo(i,j)  = Lia * Rje */
 
   if (rohf) {
-    global_dpd_->file2_init(&I, PSIF_EOM_TMP, S.irrep, 0, 0, "LR1_oo");
+    global_dpd_->file2_init(&I, PSIF_EOM_TMP, Tirrep, 0, 0, "LR1_oo");
     global_dpd_->file2_init(&L1, LHS, Lirrep, 0, 1, "Lia");
     global_dpd_->file2_init(&R1, PSIF_CC_GR, Rirrep, 0, 1, "Ria");
     global_dpd_->contract222(&L1, &R1, &I, 0, 0, 1.0, 0.0);
@@ -99,7 +103,7 @@ void ex_tdensity_intermediates(struct TD_Params S, struct TD_Params U)
     global_dpd_->file2_close(&I);
   }
   else {
-    global_dpd_->file2_init(&I, PSIF_EOM_TMP, S.irrep, 2, 2, "LR1_oo");
+    global_dpd_->file2_init(&I, PSIF_EOM_TMP, Tirrep, 2, 2, "LR1_oo");
     global_dpd_->file2_init(&L1, LHS, Lirrep, 2, 3, "Lia");
     global_dpd_->file2_init(&R1, PSIF_CC_GR, Rirrep, 2, 3, "Ria");
     global_dpd_->contract222(&L1, &R1, &I, 0, 0, 1.0, 0.0);
@@ -110,7 +114,7 @@ void ex_tdensity_intermediates(struct TD_Params S, struct TD_Params U)
 
   /* LR1_VV(A,B) = LMA * RMB */
 
-  global_dpd_->file2_init(&I, PSIF_EOM_TMP, S.irrep, 1, 1, "LR1_VV");
+  global_dpd_->file2_init(&I, PSIF_EOM_TMP, Tirrep, 1, 1, "LR1_VV");
   global_dpd_->file2_init(&L1, LHS, Lirrep, 0, 1, "LIA");
   global_dpd_->file2_init(&R1, PSIF_CC_GR, Rirrep, 0, 1, "RIA");
   global_dpd_->contract222(&L1, &R1, &I, 1, 1, 1.0, 0.0);
@@ -121,7 +125,7 @@ void ex_tdensity_intermediates(struct TD_Params S, struct TD_Params U)
   /* LR1_vv(a,b) = Lma * Rmb */
 
   if (rohf) {
-    global_dpd_->file2_init(&I, PSIF_EOM_TMP, S.irrep, 1, 1, "LR1_vv");
+    global_dpd_->file2_init(&I, PSIF_EOM_TMP, Tirrep, 1, 1, "LR1_vv");
     global_dpd_->file2_init(&L1, LHS, Lirrep, 0, 1, "Lia");
     global_dpd_->file2_init(&R1, PSIF_CC_GR, Rirrep, 0, 1, "Ria");
     global_dpd_->contract222(&L1, &R1, &I, 1, 1, 1.0, 0.0);
@@ -130,7 +134,7 @@ void ex_tdensity_intermediates(struct TD_Params S, struct TD_Params U)
     global_dpd_->file2_close(&I);
   }
   else {
-    global_dpd_->file2_init(&I, PSIF_EOM_TMP, S.irrep, 3, 3, "LR1_vv");
+    global_dpd_->file2_init(&I, PSIF_EOM_TMP, Tirrep, 3, 3, "LR1_vv");
     global_dpd_->file2_init(&L1, LHS, Lirrep, 2, 3, "Lia");
     global_dpd_->file2_init(&R1, PSIF_CC_GR, Rirrep, 2, 3, "Ria");
     global_dpd_->contract222(&L1, &R1, &I, 1, 1, 1.0, 0.0);
@@ -204,7 +208,7 @@ void ex_tdensity_intermediates(struct TD_Params S, struct TD_Params U)
   /* L2R1_OV(I,A) = RME * LIMAE + Rme + LImAe */
 
   if (rohf) {
-    global_dpd_->file2_init(&I, PSIF_EOM_TMP, S.irrep, 0, 1, "L2R1_OV");
+    global_dpd_->file2_init(&I, PSIF_EOM_TMP, Tirrep, 0, 1, "L2R1_OV");
     global_dpd_->buf4_init(&L2, LHS, Lirrep, 0, 5, 2, 7, 0, "LIJAB");
     global_dpd_->file2_init(&R1, PSIF_CC_GR, Rirrep, 0, 1, "RIA");
     global_dpd_->dot24(&R1, &L2, &I, 0, 0, 1.0, 0.0);
@@ -218,7 +222,7 @@ void ex_tdensity_intermediates(struct TD_Params S, struct TD_Params U)
     global_dpd_->file2_close(&I);
   }
   else {
-    global_dpd_->file2_init(&I, PSIF_EOM_TMP, S.irrep, 0, 1, "L2R1_OV");
+    global_dpd_->file2_init(&I, PSIF_EOM_TMP, Tirrep, 0, 1, "L2R1_OV");
     global_dpd_->buf4_init(&L2, LHS, Lirrep, 0, 5, 2, 7, 0, "LIJAB");
     global_dpd_->file2_init(&R1, PSIF_CC_GR, Rirrep, 0, 1, "RIA");
     global_dpd_->dot24(&R1, &L2, &I, 0, 0, 1.0, 0.0);
@@ -235,7 +239,7 @@ void ex_tdensity_intermediates(struct TD_Params S, struct TD_Params U)
   /* L2R1_OV(i,a) = Rme * Limae + RME + LiMaE */
 
   if (rohf) {
-    global_dpd_->file2_init(&I, PSIF_EOM_TMP, S.irrep, 0, 1, "L2R1_ov");
+    global_dpd_->file2_init(&I, PSIF_EOM_TMP, Tirrep, 0, 1, "L2R1_ov");
     global_dpd_->buf4_init(&L2, LHS, Lirrep, 0, 5, 2, 7, 0, "Lijab");
     global_dpd_->file2_init(&R1, PSIF_CC_GR, Rirrep, 0, 1, "Ria");
     global_dpd_->dot24(&R1, &L2, &I, 0, 0, 1.0, 0.0);
@@ -249,7 +253,7 @@ void ex_tdensity_intermediates(struct TD_Params S, struct TD_Params U)
     global_dpd_->file2_close(&I);
   }
   else {
-    global_dpd_->file2_init(&I, PSIF_EOM_TMP, S.irrep, 2, 3, "L2R1_ov");
+    global_dpd_->file2_init(&I, PSIF_EOM_TMP, Tirrep, 2, 3, "L2R1_ov");
     global_dpd_->buf4_init(&L2, LHS, Lirrep, 10, 15, 12, 17, 0, "Lijab");
     global_dpd_->file2_init(&R1, PSIF_CC_GR, Rirrep, 2, 3, "Ria");
     global_dpd_->dot24(&R1, &L2, &I, 0, 0, 1.0, 0.0);
@@ -266,7 +270,7 @@ void ex_tdensity_intermediates(struct TD_Params S, struct TD_Params U)
   /* L1R2_OV(I,A) = LME * RIMAE + Lme * RImAe */
 
   if (rohf) {
-    global_dpd_->file2_init(&I, PSIF_EOM_TMP, S.irrep, 0, 1, "L1R2_OV");
+    global_dpd_->file2_init(&I, PSIF_EOM_TMP, Tirrep, 0, 1, "L1R2_OV");
     global_dpd_->buf4_init(&R2, PSIF_CC_GR, Rirrep, 0, 5, 2, 7, 0, "RIJAB");
     global_dpd_->file2_init(&L1, LHS, Lirrep, 0, 1, "LIA");
     global_dpd_->dot24(&L1, &R2, &I, 0, 0, 1.0, 0.0);
@@ -280,7 +284,7 @@ void ex_tdensity_intermediates(struct TD_Params S, struct TD_Params U)
     global_dpd_->file2_close(&I);
   }
   else {
-    global_dpd_->file2_init(&I, PSIF_EOM_TMP, S.irrep, 0, 1, "L1R2_OV");
+    global_dpd_->file2_init(&I, PSIF_EOM_TMP, Tirrep, 0, 1, "L1R2_OV");
     global_dpd_->buf4_init(&R2, PSIF_CC_GR, Rirrep, 0, 5, 2, 7, 0, "RIJAB");
     global_dpd_->file2_init(&L1, LHS, Lirrep, 0, 1, "LIA");
     global_dpd_->dot24(&L1, &R2, &I, 0, 0, 1.0, 0.0);
@@ -297,7 +301,7 @@ void ex_tdensity_intermediates(struct TD_Params S, struct TD_Params U)
   /* L1R2_ov(i,a) = Lme * Rimae + LME * RiMaE */
 
   if (rohf) {
-    global_dpd_->file2_init(&I, PSIF_EOM_TMP, S.irrep, 0, 1, "L1R2_ov");
+    global_dpd_->file2_init(&I, PSIF_EOM_TMP, Tirrep, 0, 1, "L1R2_ov");
     global_dpd_->buf4_init(&R2, PSIF_CC_GR, Rirrep, 0, 5, 2, 7, 0, "Rijab");
     global_dpd_->file2_init(&L1, LHS, Lirrep, 0, 1, "Lia");
     global_dpd_->dot24(&L1, &R2, &I, 0, 0, 1.0, 0.0);
@@ -311,7 +315,7 @@ void ex_tdensity_intermediates(struct TD_Params S, struct TD_Params U)
     global_dpd_->file2_close(&I);
   }
   else {
-    global_dpd_->file2_init(&I, PSIF_EOM_TMP, S.irrep, 2, 3, "L1R2_ov");
+    global_dpd_->file2_init(&I, PSIF_EOM_TMP, Tirrep, 2, 3, "L1R2_ov");
     global_dpd_->buf4_init(&R2, PSIF_CC_GR, Rirrep, 10, 15, 12, 17, 0, "Rijab");
     global_dpd_->file2_init(&L1, LHS, Lirrep, 2, 3, "Lia");
     global_dpd_->dot24(&L1, &R2, &I, 0, 0, 1.0, 0.0);
@@ -390,7 +394,7 @@ void ex_tdensity_intermediates(struct TD_Params S, struct TD_Params U)
   /* LR2_OO(I,J)  = 0.5 * LIMEF * RJMEF + LImEf * RJmEf */
 
   if (rohf) {
-    global_dpd_->file2_init(&I, PSIF_EOM_TMP, S.irrep, 0, 0, "LR2_OO");
+    global_dpd_->file2_init(&I, PSIF_EOM_TMP, Tirrep, 0, 0, "LR2_OO");
     global_dpd_->buf4_init(&L2, LHS, Lirrep, 0, 7, 2, 7, 0, "LIJAB");
     global_dpd_->buf4_init(&R2, PSIF_CC_GR, Rirrep, 0, 7, 2, 7, 0, "RIJAB");
     global_dpd_->contract442(&L2, &R2, &I, 0, 0, 1.0, 0.0);
@@ -404,7 +408,7 @@ void ex_tdensity_intermediates(struct TD_Params S, struct TD_Params U)
     global_dpd_->file2_close(&I);
   }
   else {
-    global_dpd_->file2_init(&I, PSIF_EOM_TMP, S.irrep, 0, 0, "LR2_OO");
+    global_dpd_->file2_init(&I, PSIF_EOM_TMP, Tirrep, 0, 0, "LR2_OO");
     global_dpd_->buf4_init(&L2, LHS, Lirrep, 0, 7, 2, 7, 0, "LIJAB");
     global_dpd_->buf4_init(&R2, PSIF_CC_GR, Rirrep, 0, 7, 2, 7, 0, "RIJAB");
     global_dpd_->contract442(&L2, &R2, &I, 0, 0, 1.0, 0.0);
@@ -421,7 +425,7 @@ void ex_tdensity_intermediates(struct TD_Params S, struct TD_Params U)
   /* LR2_oo(i,j)  = 0.5 * Limef * Rjmef + LiMeF * RjMeF */
 
   if (rohf) {
-    global_dpd_->file2_init(&I, PSIF_EOM_TMP, S.irrep, 0, 0, "LR2_oo");
+    global_dpd_->file2_init(&I, PSIF_EOM_TMP, Tirrep, 0, 0, "LR2_oo");
     global_dpd_->buf4_init(&L2, LHS, Lirrep, 0, 7, 2, 7, 0, "Lijab");
     global_dpd_->buf4_init(&R2, PSIF_CC_GR, Rirrep, 0, 7, 2, 7, 0, "Rijab");
     global_dpd_->contract442(&L2, &R2, &I, 0, 0, 1.0, 0.0);
@@ -435,7 +439,7 @@ void ex_tdensity_intermediates(struct TD_Params S, struct TD_Params U)
     global_dpd_->file2_close(&I);
   }
   else {
-    global_dpd_->file2_init(&I, PSIF_EOM_TMP, S.irrep, 2, 2, "LR2_oo");
+    global_dpd_->file2_init(&I, PSIF_EOM_TMP, Tirrep, 2, 2, "LR2_oo");
     global_dpd_->buf4_init(&L2, LHS, Lirrep, 10, 17, 12, 17, 0, "Lijab");
     global_dpd_->buf4_init(&R2, PSIF_CC_GR, Rirrep, 10, 17, 12, 17, 0, "Rijab");
     global_dpd_->contract442(&L2, &R2, &I, 0, 0, 1.0, 0.0);
@@ -452,7 +456,7 @@ void ex_tdensity_intermediates(struct TD_Params S, struct TD_Params U)
   /* LR2_VV(A,B) = 0.5 * LMNEA * RMNEB + LmNeA * RmNeB */
 
   if (rohf) {
-    global_dpd_->file2_init(&I, PSIF_EOM_TMP, S.irrep, 1, 1, "LR2_VV");
+    global_dpd_->file2_init(&I, PSIF_EOM_TMP, Tirrep, 1, 1, "LR2_VV");
     global_dpd_->buf4_init(&L2, LHS, Lirrep, 2, 5, 2, 7, 0, "LIJAB");
     global_dpd_->buf4_init(&R2, PSIF_CC_GR, Rirrep, 2, 5, 2, 7, 0, "RIJAB");
     global_dpd_->contract442(&L2, &R2, &I, 3, 3, 1.0, 0.0);
@@ -466,7 +470,7 @@ void ex_tdensity_intermediates(struct TD_Params S, struct TD_Params U)
     global_dpd_->file2_close(&I);
   }
   else {
-    global_dpd_->file2_init(&I, PSIF_EOM_TMP, S.irrep, 1, 1, "LR2_VV");
+    global_dpd_->file2_init(&I, PSIF_EOM_TMP, Tirrep, 1, 1, "LR2_VV");
     global_dpd_->buf4_init(&L2, LHS, Lirrep, 2, 5, 2, 7, 0, "LIJAB");
     global_dpd_->buf4_init(&R2, PSIF_CC_GR, Rirrep, 2, 5, 2, 7, 0, "RIJAB");
     global_dpd_->contract442(&L2, &R2, &I, 3, 3, 1.0, 0.0);
@@ -483,7 +487,7 @@ void ex_tdensity_intermediates(struct TD_Params S, struct TD_Params U)
   /* LR2_vv(a,b) = 0.5 * Lmnea * Rmneb + LMnEa * RMnEb */
 
   if (rohf) {
-    global_dpd_->file2_init(&I, PSIF_EOM_TMP, S.irrep, 1, 1, "LR2_vv");
+    global_dpd_->file2_init(&I, PSIF_EOM_TMP, Tirrep, 1, 1, "LR2_vv");
     global_dpd_->buf4_init(&L2, LHS, Lirrep, 2, 5, 2, 7, 0, "Lijab");
     global_dpd_->buf4_init(&R2, PSIF_CC_GR, Rirrep, 2, 5, 2, 7, 0, "Rijab");
     global_dpd_->contract442(&L2, &R2, &I, 3, 3, 1.0, 0.0);
@@ -497,7 +501,7 @@ void ex_tdensity_intermediates(struct TD_Params S, struct TD_Params U)
     global_dpd_->file2_close(&I);
   }
   else {
-    global_dpd_->file2_init(&I, PSIF_EOM_TMP, S.irrep, 3, 3, "LR2_vv");
+    global_dpd_->file2_init(&I, PSIF_EOM_TMP, Tirrep, 3, 3, "LR2_vv");
     global_dpd_->buf4_init(&L2, LHS, Lirrep, 12, 15, 12, 17, 0, "Lijab");
     global_dpd_->buf4_init(&R2, PSIF_CC_GR, Rirrep, 12, 15, 12, 17, 0, "Rijab");
     global_dpd_->contract442(&L2, &R2, &I, 3, 3, 1.0, 0.0);
@@ -640,54 +644,54 @@ void ex_tdensity_intermediates(struct TD_Params S, struct TD_Params U)
   /* LR_VV = LR1_VV + LR2_VV */
   /* LR_vv = LR1_vv + LR2_vv */
 
-  global_dpd_->file2_init(&I, PSIF_EOM_TMP, S.irrep, 0, 0, "LR_OO");
-  global_dpd_->file2_init(&LR1, PSIF_EOM_TMP, S.irrep, 0, 0, "LR1_OO");
-  global_dpd_->file2_init(&LR2, PSIF_EOM_TMP, S.irrep, 0, 0, "LR2_OO");
+  global_dpd_->file2_init(&I, PSIF_EOM_TMP, Tirrep, 0, 0, "LR_OO");
+  global_dpd_->file2_init(&LR1, PSIF_EOM_TMP, Tirrep, 0, 0, "LR1_OO");
+  global_dpd_->file2_init(&LR2, PSIF_EOM_TMP, Tirrep, 0, 0, "LR2_OO");
   global_dpd_->file2_axpbycz(&LR1, &LR2, &I, 1.0, 1.0, 0.0);
   global_dpd_->file2_close(&LR2);
   global_dpd_->file2_close(&LR1);
   global_dpd_->file2_close(&I);
 
   if (rohf) {
-    global_dpd_->file2_init(&I, PSIF_EOM_TMP, S.irrep, 0, 0, "LR_oo");
-    global_dpd_->file2_init(&LR1, PSIF_EOM_TMP, S.irrep, 0, 0, "LR1_oo");
-    global_dpd_->file2_init(&LR2, PSIF_EOM_TMP, S.irrep, 0, 0, "LR2_oo");
+    global_dpd_->file2_init(&I, PSIF_EOM_TMP, Tirrep, 0, 0, "LR_oo");
+    global_dpd_->file2_init(&LR1, PSIF_EOM_TMP, Tirrep, 0, 0, "LR1_oo");
+    global_dpd_->file2_init(&LR2, PSIF_EOM_TMP, Tirrep, 0, 0, "LR2_oo");
     global_dpd_->file2_axpbycz(&LR1, &LR2, &I, 1.0, 1.0, 0.0);
     global_dpd_->file2_close(&LR2);
     global_dpd_->file2_close(&LR1);
     global_dpd_->file2_close(&I);
   }
   else {
-    global_dpd_->file2_init(&I, PSIF_EOM_TMP, S.irrep, 2, 2, "LR_oo");
-    global_dpd_->file2_init(&LR1, PSIF_EOM_TMP, S.irrep, 2, 2, "LR1_oo");
-    global_dpd_->file2_init(&LR2, PSIF_EOM_TMP, S.irrep, 2, 2, "LR2_oo");
+    global_dpd_->file2_init(&I, PSIF_EOM_TMP, Tirrep, 2, 2, "LR_oo");
+    global_dpd_->file2_init(&LR1, PSIF_EOM_TMP, Tirrep, 2, 2, "LR1_oo");
+    global_dpd_->file2_init(&LR2, PSIF_EOM_TMP, Tirrep, 2, 2, "LR2_oo");
     global_dpd_->file2_axpbycz(&LR1, &LR2, &I, 1.0, 1.0, 0.0);
     global_dpd_->file2_close(&LR2);
     global_dpd_->file2_close(&LR1);
     global_dpd_->file2_close(&I);
   }
 
-  global_dpd_->file2_init(&I, PSIF_EOM_TMP, S.irrep, 1, 1, "LR_VV");
-  global_dpd_->file2_init(&LR1, PSIF_EOM_TMP, S.irrep, 1, 1, "LR1_VV");
-  global_dpd_->file2_init(&LR2, PSIF_EOM_TMP, S.irrep, 1, 1, "LR2_VV");
+  global_dpd_->file2_init(&I, PSIF_EOM_TMP, Tirrep, 1, 1, "LR_VV");
+  global_dpd_->file2_init(&LR1, PSIF_EOM_TMP, Tirrep, 1, 1, "LR1_VV");
+  global_dpd_->file2_init(&LR2, PSIF_EOM_TMP, Tirrep, 1, 1, "LR2_VV");
   global_dpd_->file2_axpbycz(&LR1, &LR2, &I, 1.0, 1.0, 0.0);
   global_dpd_->file2_close(&LR2);
   global_dpd_->file2_close(&LR1);
   global_dpd_->file2_close(&I);
 
   if (rohf) {
-    global_dpd_->file2_init(&I, PSIF_EOM_TMP, S.irrep, 1, 1, "LR_vv");
-    global_dpd_->file2_init(&LR1, PSIF_EOM_TMP, S.irrep, 1, 1, "LR1_vv");
-    global_dpd_->file2_init(&LR2, PSIF_EOM_TMP, S.irrep, 1, 1, "LR2_vv");
+    global_dpd_->file2_init(&I, PSIF_EOM_TMP, Tirrep, 1, 1, "LR_vv");
+    global_dpd_->file2_init(&LR1, PSIF_EOM_TMP, Tirrep, 1, 1, "LR1_vv");
+    global_dpd_->file2_init(&LR2, PSIF_EOM_TMP, Tirrep, 1, 1, "LR2_vv");
     global_dpd_->file2_axpbycz(&LR1, &LR2, &I, 1.0, 1.0, 0.0);
     global_dpd_->file2_close(&LR2);
     global_dpd_->file2_close(&LR1);
     global_dpd_->file2_close(&I);
   }
   else {
-    global_dpd_->file2_init(&I, PSIF_EOM_TMP, S.irrep, 3, 3, "LR_vv");
-    global_dpd_->file2_init(&LR1, PSIF_EOM_TMP, S.irrep, 3, 3, "LR1_vv");
-    global_dpd_->file2_init(&LR2, PSIF_EOM_TMP, S.irrep, 3, 3, "LR2_vv");
+    global_dpd_->file2_init(&I, PSIF_EOM_TMP, Tirrep, 3, 3, "LR_vv");
+    global_dpd_->file2_init(&LR1, PSIF_EOM_TMP, Tirrep, 3, 3, "LR1_vv");
+    global_dpd_->file2_init(&LR2, PSIF_EOM_TMP, Tirrep, 3, 3, "LR2_vv");
     global_dpd_->file2_axpbycz(&LR1, &LR2, &I, 1.0, 1.0, 0.0);
     global_dpd_->file2_close(&LR2);
     global_dpd_->file2_close(&LR1);
