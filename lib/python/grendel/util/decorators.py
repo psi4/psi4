@@ -9,6 +9,7 @@ from collections import Iterable, Sequence, MutableSequence, Set, Mapping
 from functools import wraps
 
 #from new import instancemethod
+from itertools import tee
 from types import MethodType as instancemethod
 import inspect
 from inspect import getargspec
@@ -945,7 +946,9 @@ class argtypespec(object):
             if not ty.arg_type_okay(arg):
                 return False
             else:
-                return all(argtypespec.arg_is_instance_of(a, ty.types, globals) for a in arg)
+                argi = iter(arg)
+                argi, argi_copy = tee(argi)
+                return all(argtypespec.arg_is_instance_of(a, ty.types, globals) for a in argi_copy)
         elif callable(ty):
             if ty(arg):
                 # It responded True to the call, so assume it's the right type
@@ -1106,7 +1109,7 @@ class argtypespec(object):
 
 AnyType = object()
 
-#TODO @URGENT serious bug: generators passed in don't get reset
+#TODO @URGENT serious bug: generators passed in don't get reset => Should be fixed now, need to test it and remove NotImplementedErrors
 class IterableOf(object):
     collection_type = Iterable
     types = None
@@ -1137,6 +1140,19 @@ class ListOf(IterableOf):
 
 class TupleOf(IterableOf):
     collection_type = tuple
+
+class PairOf(IterableOf):
+    collection_type = Sequence
+
+    def arg_type_okay(self, arg):
+        return super(PairOf, self).arg_type_okay(arg) and len(arg) == 2
+
+class TripleOf(IterableOf):
+    collection_type = Sequence
+
+    def arg_type_okay(self, arg):
+        return super(TripleOf, self).arg_type_okay(arg) and len(arg) == 3
+
 
 if type_checking_enabled:
     # TODO documentation and testing

@@ -1,6 +1,6 @@
 
 from grendel.chemistry.element import Element, Isotope
-from grendel.util.units import AtomicMassUnit
+from grendel.util.units import AtomicMassUnit, ElectronVolt, Picometers, KilojoulesPerMole
 
 MASS_UNIT = AtomicMassUnit
 
@@ -32,6 +32,9 @@ H = Element(
     atomic_number=1,
     atomic_weight=1.00794,
     atomic_weight_uncertainty=0.00007,
+    vdw_radius=120. * Picometers,
+    ionization_energies=[1312. * KilojoulesPerMole],
+    electronegativity=2.2,
     isotopes=[
         Isotope(
             mass=1.00782503207,
@@ -99,6 +102,8 @@ He = Element(
     atomic_number=2,
     atomic_weight=4.002602,
     atomic_weight_uncertainty=0.000002,
+    vdw_radius=140. * Picometers,
+    ionization_energies=[2372.3 * KilojoulesPerMole, 5250.5 * KilojoulesPerMole],
     isotopes=[
         Isotope(
             mass=3.0160293191,
@@ -174,6 +179,9 @@ Li = Element(
     atomic_number=3,
     atomic_weight=6.941,
     atomic_weight_uncertainty=0.002,
+    vdw_radius=182. * Picometers,
+    ionization_energies=[520.2 * KilojoulesPerMole, 7298.1 * KilojoulesPerMole, 11815. * KilojoulesPerMole],
+    electronegativity=0.98,
     isotopes=[
         Isotope(
             mass=3.03078,
@@ -265,6 +273,8 @@ Be = Element(
     atomic_number=4,
     atomic_weight=9.012182,
     atomic_weight_uncertainty=0.000003,
+    ionization_energies=[899.5 * KilojoulesPerMole, 1757.1 * KilojoulesPerMole, 14848.7 * KilojoulesPerMole, 21006.6 * KilojoulesPerMole],
+    electronegativity=1.57,
     isotopes=[
         Isotope(
             mass=5.04079,
@@ -372,6 +382,8 @@ B = Element(
     atomic_number=5,
     atomic_weight=10.811,
     atomic_weight_uncertainty=0.007,
+    ionization_energies=[800.6 * KilojoulesPerMole, 2427.1 * KilojoulesPerMole, 3659.7 * KilojoulesPerMole, 25025.8 * KilojoulesPerMole, 32826.7 * KilojoulesPerMole],
+    electronegativity=2.04,
     isotopes=[
         Isotope(
             mass=6.04681,
@@ -495,6 +507,9 @@ C = Element(
     atomic_number=6,
     atomic_weight=12.0107,
     atomic_weight_uncertainty=0.0008,
+    vdw_radius=170. * Picometers,
+    ionization_energies=[1086.5 * KilojoulesPerMole, 2352.6 * KilojoulesPerMole, 4620.5 * KilojoulesPerMole, 6222.7 * KilojoulesPerMole, 37831. * KilojoulesPerMole, 47277. * KilojoulesPerMole],
+    electronegativity=2.55,
     isotopes=[
         Isotope(
             mass=8.037675,
@@ -626,6 +641,9 @@ N = Element(
     atomic_number=7,
     atomic_weight=14.0067,
     atomic_weight_uncertainty=0.0002,
+    vdw_radius=155. * Picometers,
+    ionization_energies=[1402.3 * KilojoulesPerMole, 2856. * KilojoulesPerMole, 4578.1 * KilojoulesPerMole, 7475. * KilojoulesPerMole, 9444.9 * KilojoulesPerMole, 53266.6 * KilojoulesPerMole, 64360. * KilojoulesPerMole],
+    electronegativity=3.04,
     isotopes=[
         Isotope(
             mass=10.04165,
@@ -765,6 +783,9 @@ O = Element(
     atomic_number=8,
     atomic_weight=15.9994,
     atomic_weight_uncertainty=0.0003,
+    vdw_radius=152. * Picometers,
+    ionization_energies=[1313.9 * KilojoulesPerMole, 3388.3 * KilojoulesPerMole, 5300.5 * KilojoulesPerMole, 7469.2 * KilojoulesPerMole, 10989.5 * KilojoulesPerMole, 13326.5 * KilojoulesPerMole, 71330. * KilojoulesPerMole, 84078. * KilojoulesPerMole],
+    electronegativity=3.44,
     isotopes=[
         Isotope(
             mass=12.034405,
@@ -912,6 +933,9 @@ F = Element(
     atomic_number=9,
     atomic_weight=18.9984032,
     atomic_weight_uncertainty=0.0000005,
+    vdw_radius=147. * Picometers,
+    ionization_energies=[1681. * KilojoulesPerMole, 3374.2 * KilojoulesPerMole, 6050.4 * KilojoulesPerMole, 8407.7 * KilojoulesPerMole, 11022.7 * KilojoulesPerMole, 15164.1 * KilojoulesPerMole, 17868. * KilojoulesPerMole, 92038.1 * KilojoulesPerMole, 106434.3 * KilojoulesPerMole],
+    electronegativity=3.98,
     isotopes=[
         Isotope(
             mass=14.03506,
@@ -1067,6 +1091,8 @@ Ne = Element(
     atomic_number=10,
     atomic_weight=20.1797,
     atomic_weight_uncertainty=0.0006,
+    vdw_radius=154. * Picometers,
+    ionization_energies=[2080.7 * KilojoulesPerMole, 3952.3 * KilojoulesPerMole, 6122. * KilojoulesPerMole, 9371. * KilojoulesPerMole, 12177. * KilojoulesPerMole, 15238. * KilojoulesPerMole, 19999. * KilojoulesPerMole, 23069.5 * KilojoulesPerMole, 115379.5 * KilojoulesPerMole, 131432. * KilojoulesPerMole],
     isotopes=[
         Isotope(
             mass=16.025761,
@@ -1230,6 +1256,9 @@ Na = Element(
     atomic_number=11,
     atomic_weight=22.98976928,
     atomic_weight_uncertainty=0.00000002,
+    vdw_radius=227. * Picometers,
+    ionization_energies=[495.8 * KilojoulesPerMole, 4562. * KilojoulesPerMole, 6910.3 * KilojoulesPerMole, 9543. * KilojoulesPerMole, 13354. * KilojoulesPerMole, 16613. * KilojoulesPerMole, 20117. * KilojoulesPerMole, 25496. * KilojoulesPerMole, 28932. * KilojoulesPerMole, 141362. * KilojoulesPerMole],
+    electronegativity=0.93,
     isotopes=[
         Isotope(
             mass=18.025970,
@@ -1401,6 +1430,9 @@ Mg = Element(
     atomic_number=12,
     atomic_weight=24.3050,
     atomic_weight_uncertainty=0.0006,
+    vdw_radius=173. * Picometers,
+    ionization_energies=[737.7 * KilojoulesPerMole, 1450.7 * KilojoulesPerMole, 7732.7 * KilojoulesPerMole, 10542.5 * KilojoulesPerMole, 13630. * KilojoulesPerMole, 18020. * KilojoulesPerMole, 21711. * KilojoulesPerMole, 25661. * KilojoulesPerMole, 31653. * KilojoulesPerMole, 35458. * KilojoulesPerMole],
+    electronegativity=1.31,
     isotopes=[
         Isotope(
             mass=19.03547,
@@ -1588,6 +1620,8 @@ Al = Element(
     atomic_number=13,
     atomic_weight=26.9815386,
     atomic_weight_uncertainty=0.0000008,
+    ionization_energies=[577.5 * KilojoulesPerMole, 1816.7 * KilojoulesPerMole, 2744.8 * KilojoulesPerMole, 11577. * KilojoulesPerMole, 14842. * KilojoulesPerMole, 18379. * KilojoulesPerMole, 23326. * KilojoulesPerMole, 27465. * KilojoulesPerMole, 31853. * KilojoulesPerMole, 38473. * KilojoulesPerMole],
+    electronegativity=1.61,
     isotopes=[
         Isotope(
             mass=21.02804,
@@ -1775,6 +1809,9 @@ Si = Element(
     atomic_number=14,
     atomic_weight=28.0855,
     atomic_weight_uncertainty=0.0003,
+    vdw_radius=210. * Picometers,
+    ionization_energies=[786.5 * KilojoulesPerMole, 1577.1 * KilojoulesPerMole, 3231.6 * KilojoulesPerMole, 4355.5 * KilojoulesPerMole, 16091. * KilojoulesPerMole, 19805. * KilojoulesPerMole, 23780. * KilojoulesPerMole, 29287. * KilojoulesPerMole, 33878. * KilojoulesPerMole, 38726. * KilojoulesPerMole],
+    electronegativity=1.9,
     isotopes=[
         Isotope(
             mass=22.03453,
@@ -1970,6 +2007,9 @@ P = Element(
     atomic_number=15,
     atomic_weight=30.973762,
     atomic_weight_uncertainty=0.000002,
+    vdw_radius=180. * Picometers,
+    ionization_energies=[1011.8 * KilojoulesPerMole, 1907. * KilojoulesPerMole, 2914.1 * KilojoulesPerMole, 4963.6 * KilojoulesPerMole, 6273.9 * KilojoulesPerMole, 21267. * KilojoulesPerMole, 25431. * KilojoulesPerMole, 29872. * KilojoulesPerMole, 35905. * KilojoulesPerMole, 40950. * KilojoulesPerMole],
+    electronegativity=2.19,
     isotopes=[
         Isotope(
             mass=24.03435,
@@ -2165,6 +2205,9 @@ S = Element(
     atomic_number=16,
     atomic_weight=32.065,
     atomic_weight_uncertainty=0.005,
+    vdw_radius=180. * Picometers,
+    ionization_energies=[999.6 * KilojoulesPerMole, 2252. * KilojoulesPerMole, 3357. * KilojoulesPerMole, 4556. * KilojoulesPerMole, 7004.3 * KilojoulesPerMole, 8495.8 * KilojoulesPerMole, 27107. * KilojoulesPerMole, 31719. * KilojoulesPerMole, 36621. * KilojoulesPerMole, 43177. * KilojoulesPerMole],
+    electronegativity=2.58,
     isotopes=[
         Isotope(
             mass=26.02788,
@@ -2368,6 +2411,9 @@ Cl = Element(
     atomic_number=17,
     atomic_weight=35.453,
     atomic_weight_uncertainty=0.002,
+    vdw_radius=175. * Picometers,
+    ionization_energies=[1251.2 * KilojoulesPerMole, 2298. * KilojoulesPerMole, 3822. * KilojoulesPerMole, 5158.6 * KilojoulesPerMole, 6542. * KilojoulesPerMole, 9362. * KilojoulesPerMole, 11018. * KilojoulesPerMole, 33604. * KilojoulesPerMole, 38600. * KilojoulesPerMole, 43961. * KilojoulesPerMole],
+    electronegativity=3.16,
     isotopes=[
         Isotope(
             mass=28.02851,
@@ -2571,6 +2617,8 @@ Ar = Element(
     atomic_number=18,
     atomic_weight=39.948,
     atomic_weight_uncertainty=0.001,
+    vdw_radius=188. * Picometers,
+    ionization_energies=[1520.6 * KilojoulesPerMole, 2665.8 * KilojoulesPerMole, 3931. * KilojoulesPerMole, 5771. * KilojoulesPerMole, 7238. * KilojoulesPerMole, 8781. * KilojoulesPerMole, 11995. * KilojoulesPerMole, 13842. * KilojoulesPerMole, 40760. * KilojoulesPerMole, 46186. * KilojoulesPerMole],
     isotopes=[
         Isotope(
             mass=30.02156,
@@ -2774,6 +2822,9 @@ K = Element(
     atomic_number=19,
     atomic_weight=39.0983,
     atomic_weight_uncertainty=0.0001,
+    vdw_radius=275. * Picometers,
+    ionization_energies=[418.8 * KilojoulesPerMole, 3052. * KilojoulesPerMole, 4420. * KilojoulesPerMole, 5877. * KilojoulesPerMole, 7975. * KilojoulesPerMole, 9590. * KilojoulesPerMole, 11343. * KilojoulesPerMole, 14944. * KilojoulesPerMole, 16963.7 * KilojoulesPerMole, 48610. * KilojoulesPerMole],
+    electronegativity=0.82,
     isotopes=[
         Isotope(
             mass=32.02192,
@@ -2977,6 +3028,8 @@ Ca = Element(
     atomic_number=20,
     atomic_weight=40.078,
     atomic_weight_uncertainty=0.004,
+    ionization_energies=[589.8 * KilojoulesPerMole, 1145.4 * KilojoulesPerMole, 4912.4 * KilojoulesPerMole, 6491. * KilojoulesPerMole, 8153. * KilojoulesPerMole, 10496. * KilojoulesPerMole, 12270. * KilojoulesPerMole, 14206. * KilojoulesPerMole, 18191. * KilojoulesPerMole, 20385. * KilojoulesPerMole, 57110. * KilojoulesPerMole],
+    electronegativity=1.,
     isotopes=[
         Isotope(
             mass=34.01412,
@@ -3180,6 +3233,8 @@ Sc = Element(
     atomic_number=21,
     atomic_weight=44.955912,
     atomic_weight_uncertainty=0.000006,
+    ionization_energies=[633.1 * KilojoulesPerMole, 1235. * KilojoulesPerMole, 2388.6 * KilojoulesPerMole, 7090.6 * KilojoulesPerMole, 8843. * KilojoulesPerMole, 10679. * KilojoulesPerMole, 13310. * KilojoulesPerMole, 15250. * KilojoulesPerMole, 17370. * KilojoulesPerMole, 21726. * KilojoulesPerMole, 24102. * KilojoulesPerMole, 66320. * KilojoulesPerMole, 73010. * KilojoulesPerMole, 80160. * KilojoulesPerMole, 89490. * KilojoulesPerMole, 97400. * KilojoulesPerMole, 105600. * KilojoulesPerMole, 117000. * KilojoulesPerMole, 124270. * KilojoulesPerMole, 547530. * KilojoulesPerMole, 582163. * KilojoulesPerMole],
+    electronegativity=1.36,
     isotopes=[
         Isotope(
             mass=36.01492,
@@ -3391,6 +3446,8 @@ Ti = Element(
     atomic_number=22,
     atomic_weight=47.867,
     atomic_weight_uncertainty=0.001,
+    ionization_energies=[658.8 * KilojoulesPerMole, 1309.8 * KilojoulesPerMole, 2652.5 * KilojoulesPerMole, 4174.6 * KilojoulesPerMole, 9581. * KilojoulesPerMole, 11533. * KilojoulesPerMole, 13590. * KilojoulesPerMole, 16440. * KilojoulesPerMole, 18530. * KilojoulesPerMole, 20833. * KilojoulesPerMole, 25575. * KilojoulesPerMole, 28125. * KilojoulesPerMole, 76015. * KilojoulesPerMole, 83280. * KilojoulesPerMole, 90880. * KilojoulesPerMole, 100700. * KilojoulesPerMole, 109100. * KilojoulesPerMole, 117800. * KilojoulesPerMole, 129900. * KilojoulesPerMole, 137530. * KilojoulesPerMole, 602930. * KilojoulesPerMole],
+    electronegativity=1.54,
     isotopes=[
         Isotope(
             mass=38.00977,
@@ -3610,6 +3667,8 @@ V = Element(
     atomic_number=23,
     atomic_weight=50.9415,
     atomic_weight_uncertainty=0.0001,
+    ionization_energies=[650.9 * KilojoulesPerMole, 1414. * KilojoulesPerMole, 2830. * KilojoulesPerMole, 4507. * KilojoulesPerMole, 6298.7 * KilojoulesPerMole, 12363. * KilojoulesPerMole, 14530. * KilojoulesPerMole, 16730. * KilojoulesPerMole, 19860. * KilojoulesPerMole, 22240. * KilojoulesPerMole, 24670. * KilojoulesPerMole, 29730. * KilojoulesPerMole, 32446. * KilojoulesPerMole, 86450. * KilojoulesPerMole, 94170. * KilojoulesPerMole, 102300. * KilojoulesPerMole, 112700. * KilojoulesPerMole, 121600. * KilojoulesPerMole, 130700. * KilojoulesPerMole, 143400. * KilojoulesPerMole, 151440. * KilojoulesPerMole],
+    electronegativity=1.63,
     isotopes=[
         Isotope(
             mass=40.01109,
@@ -3829,6 +3888,8 @@ Cr = Element(
     atomic_number=24,
     atomic_weight=51.9961,
     atomic_weight_uncertainty=0.0006,
+    ionization_energies=[652.9 * KilojoulesPerMole, 1590.6 * KilojoulesPerMole, 2987. * KilojoulesPerMole, 4743. * KilojoulesPerMole, 6702. * KilojoulesPerMole, 8744.9 * KilojoulesPerMole, 15455. * KilojoulesPerMole, 17820. * KilojoulesPerMole, 20190. * KilojoulesPerMole, 23580. * KilojoulesPerMole, 26130. * KilojoulesPerMole, 28750. * KilojoulesPerMole, 34230. * KilojoulesPerMole, 37066. * KilojoulesPerMole, 97510. * KilojoulesPerMole, 105800. * KilojoulesPerMole, 114300. * KilojoulesPerMole, 125300. * KilojoulesPerMole, 134700. * KilojoulesPerMole, 144300. * KilojoulesPerMole, 157700. * KilojoulesPerMole],
+    electronegativity=1.66,
     isotopes=[
         Isotope(
             mass=42.00643,
@@ -4048,6 +4109,8 @@ Mn = Element(
     atomic_number=25,
     atomic_weight=54.938045,
     atomic_weight_uncertainty=0.000005,
+    ionization_energies=[717.3 * KilojoulesPerMole, 1509. * KilojoulesPerMole, 3248. * KilojoulesPerMole, 4940. * KilojoulesPerMole, 6990. * KilojoulesPerMole, 9220. * KilojoulesPerMole, 11500. * KilojoulesPerMole, 18770. * KilojoulesPerMole, 21400. * KilojoulesPerMole, 23960. * KilojoulesPerMole, 27590. * KilojoulesPerMole, 30330. * KilojoulesPerMole, 33150. * KilojoulesPerMole, 38880. * KilojoulesPerMole, 41987. * KilojoulesPerMole, 109480. * KilojoulesPerMole, 118100. * KilojoulesPerMole, 127100. * KilojoulesPerMole, 138600. * KilojoulesPerMole, 148500. * KilojoulesPerMole, 158600. * KilojoulesPerMole],
+    electronegativity=1.55,
     isotopes=[
         Isotope(
             mass=44.00687,
@@ -4267,6 +4330,8 @@ Fe = Element(
     atomic_number=26,
     atomic_weight=55.845,
     atomic_weight_uncertainty=0.002,
+    ionization_energies=[762.5 * KilojoulesPerMole, 1561.9 * KilojoulesPerMole, 2957. * KilojoulesPerMole, 5290. * KilojoulesPerMole, 7240. * KilojoulesPerMole, 9560. * KilojoulesPerMole, 12060. * KilojoulesPerMole, 14580. * KilojoulesPerMole, 22540. * KilojoulesPerMole, 25290. * KilojoulesPerMole, 28000. * KilojoulesPerMole, 31920. * KilojoulesPerMole, 34830. * KilojoulesPerMole, 37840. * KilojoulesPerMole, 44100. * KilojoulesPerMole, 47206. * KilojoulesPerMole, 122200. * KilojoulesPerMole, 131000. * KilojoulesPerMole, 140500. * KilojoulesPerMole, 152600. * KilojoulesPerMole, 163000. * KilojoulesPerMole],
+    electronegativity=1.83,
     isotopes=[
         Isotope(
             mass=45.01458,
@@ -4502,6 +4567,8 @@ Co = Element(
     atomic_number=27,
     atomic_weight=58.933195,
     atomic_weight_uncertainty=0.000005,
+    ionization_energies=[760.4 * KilojoulesPerMole, 1648. * KilojoulesPerMole, 3232. * KilojoulesPerMole, 4950. * KilojoulesPerMole, 7670. * KilojoulesPerMole, 9840. * KilojoulesPerMole, 12440. * KilojoulesPerMole, 15230. * KilojoulesPerMole, 17959. * KilojoulesPerMole, 26570. * KilojoulesPerMole, 29400. * KilojoulesPerMole, 32400. * KilojoulesPerMole, 36600. * KilojoulesPerMole, 39700. * KilojoulesPerMole, 42800. * KilojoulesPerMole, 49396. * KilojoulesPerMole, 52737. * KilojoulesPerMole, 134810. * KilojoulesPerMole, 145170. * KilojoulesPerMole, 154700. * KilojoulesPerMole, 167400. * KilojoulesPerMole],
+    electronegativity=1.88,
     isotopes=[
         Isotope(
             mass=47.01149,
@@ -4745,6 +4812,9 @@ Ni = Element(
     atomic_number=28,
     atomic_weight=58.6934,
     atomic_weight_uncertainty=0.0004,
+    vdw_radius=163. * Picometers,
+    ionization_energies=[737.1 * KilojoulesPerMole, 1753. * KilojoulesPerMole, 3395. * KilojoulesPerMole, 5300. * KilojoulesPerMole, 7339. * KilojoulesPerMole, 10400. * KilojoulesPerMole, 12800. * KilojoulesPerMole, 15600. * KilojoulesPerMole, 18600. * KilojoulesPerMole, 21670. * KilojoulesPerMole, 30970. * KilojoulesPerMole, 34000. * KilojoulesPerMole, 37100. * KilojoulesPerMole, 41500. * KilojoulesPerMole, 44800. * KilojoulesPerMole, 48100. * KilojoulesPerMole, 55101. * KilojoulesPerMole, 58570. * KilojoulesPerMole, 148700. * KilojoulesPerMole, 159000. * KilojoulesPerMole, 169400. * KilojoulesPerMole],
+    electronegativity=1.91,
     isotopes=[
         Isotope(
             mass=48.01975,
@@ -5004,6 +5074,9 @@ Cu = Element(
     atomic_number=29,
     atomic_weight=63.546,
     atomic_weight_uncertainty=0.003,
+    vdw_radius=140. * Picometers,
+    ionization_energies=[745.5 * KilojoulesPerMole, 1957.9 * KilojoulesPerMole, 3555. * KilojoulesPerMole, 5536. * KilojoulesPerMole, 7700. * KilojoulesPerMole, 9900. * KilojoulesPerMole, 13400. * KilojoulesPerMole, 16000. * KilojoulesPerMole, 19200. * KilojoulesPerMole, 22400. * KilojoulesPerMole, 25600. * KilojoulesPerMole, 35600. * KilojoulesPerMole, 38700. * KilojoulesPerMole, 42000. * KilojoulesPerMole, 46700. * KilojoulesPerMole, 50200. * KilojoulesPerMole, 53700. * KilojoulesPerMole, 61100. * KilojoulesPerMole, 64702. * KilojoulesPerMole, 163700. * KilojoulesPerMole, 174100. * KilojoulesPerMole],
+    electronegativity=1.9,
     isotopes=[
         Isotope(
             mass=51.99718,
@@ -5247,6 +5320,9 @@ Zn = Element(
     atomic_number=30,
     atomic_weight=65.38,
     atomic_weight_uncertainty=0.02,
+    vdw_radius=139. * Picometers,
+    ionization_energies=[906.4 * KilojoulesPerMole, 1733.3 * KilojoulesPerMole, 3833. * KilojoulesPerMole, 5731. * KilojoulesPerMole, 7970. * KilojoulesPerMole, 10400. * KilojoulesPerMole, 12900. * KilojoulesPerMole, 16800. * KilojoulesPerMole, 19600. * KilojoulesPerMole, 23000. * KilojoulesPerMole, 26400. * KilojoulesPerMole, 29990. * KilojoulesPerMole, 40490. * KilojoulesPerMole, 43800. * KilojoulesPerMole, 47300. * KilojoulesPerMole, 52300. * KilojoulesPerMole, 55900. * KilojoulesPerMole, 59700. * KilojoulesPerMole, 67300. * KilojoulesPerMole, 71200. * KilojoulesPerMole, 179100. * KilojoulesPerMole],
+    electronegativity=1.65,
     isotopes=[
         Isotope(
             mass=53.99295,
@@ -5498,6 +5574,9 @@ Ga = Element(
     atomic_number=31,
     atomic_weight=69.723,
     atomic_weight_uncertainty=0.001,
+    vdw_radius=187. * Picometers,
+    ionization_energies=[578.8 * KilojoulesPerMole, 1979.3 * KilojoulesPerMole, 2963. * KilojoulesPerMole, 6180. * KilojoulesPerMole],
+    electronegativity=1.81,
     isotopes=[
         Isotope(
             mass=55.99491,
@@ -5757,6 +5836,8 @@ Ge = Element(
     atomic_number=32,
     atomic_weight=72.64,
     atomic_weight_uncertainty=0.01,
+    ionization_energies=[762. * KilojoulesPerMole, 1537.5 * KilojoulesPerMole, 3302.1 * KilojoulesPerMole, 4411. * KilojoulesPerMole, 9020. * KilojoulesPerMole],
+    electronegativity=2.01,
     isotopes=[
         Isotope(
             mass=57.99101,
@@ -6024,6 +6105,9 @@ As = Element(
     atomic_number=33,
     atomic_weight=74.92160,
     atomic_weight_uncertainty=0.00002,
+    vdw_radius=185. * Picometers,
+    ionization_energies=[947. * KilojoulesPerMole, 1798. * KilojoulesPerMole, 2735. * KilojoulesPerMole, 4837. * KilojoulesPerMole, 6043. * KilojoulesPerMole, 12310. * KilojoulesPerMole],
+    electronegativity=2.18,
     isotopes=[
         Isotope(
             mass=59.99313,
@@ -6299,6 +6383,9 @@ Se = Element(
     atomic_number=34,
     atomic_weight=78.96,
     atomic_weight_uncertainty=0.03,
+    vdw_radius=190. * Picometers,
+    ionization_energies=[941. * KilojoulesPerMole, 2045. * KilojoulesPerMole, 2973.7 * KilojoulesPerMole, 4144. * KilojoulesPerMole, 6590. * KilojoulesPerMole, 7880. * KilojoulesPerMole, 14990. * KilojoulesPerMole],
+    electronegativity=2.55,
     isotopes=[
         Isotope(
             mass=64.96466,
@@ -6550,6 +6637,9 @@ Br = Element(
     atomic_number=35,
     atomic_weight=79.904,
     atomic_weight_uncertainty=0.001,
+    vdw_radius=185. * Picometers,
+    ionization_energies=[1139.9 * KilojoulesPerMole, 2103. * KilojoulesPerMole, 3470. * KilojoulesPerMole, 4560. * KilojoulesPerMole, 5760. * KilojoulesPerMole, 8550. * KilojoulesPerMole, 9940. * KilojoulesPerMole, 18600. * KilojoulesPerMole],
+    electronegativity=2.96,
     isotopes=[
         Isotope(
             mass=66.96479,
@@ -6809,6 +6899,9 @@ Kr = Element(
     atomic_number=36,
     atomic_weight=83.798,
     atomic_weight_uncertainty=0.002,
+    vdw_radius=202. * Picometers,
+    ionization_energies=[1350.8 * KilojoulesPerMole, 2350.4 * KilojoulesPerMole, 3565. * KilojoulesPerMole, 5070. * KilojoulesPerMole, 6240. * KilojoulesPerMole, 7570. * KilojoulesPerMole, 10710. * KilojoulesPerMole, 12138. * KilojoulesPerMole, 22274. * KilojoulesPerMole, 25880. * KilojoulesPerMole, 29700. * KilojoulesPerMole, 33800. * KilojoulesPerMole, 37700. * KilojoulesPerMole, 43100. * KilojoulesPerMole, 47500. * KilojoulesPerMole, 52200. * KilojoulesPerMole, 57100. * KilojoulesPerMole, 61800. * KilojoulesPerMole, 75800. * KilojoulesPerMole, 80400. * KilojoulesPerMole, 85300. * KilojoulesPerMole],
+    electronegativity=3.,
     isotopes=[
         Isotope(
             mass=68.96518,
@@ -7076,6 +7169,8 @@ Rb = Element(
     atomic_number=37,
     atomic_weight=85.4678,
     atomic_weight_uncertainty=0.0003,
+    ionization_energies=[403. * KilojoulesPerMole, 2633. * KilojoulesPerMole, 3860. * KilojoulesPerMole, 5080. * KilojoulesPerMole, 6850. * KilojoulesPerMole, 8140. * KilojoulesPerMole, 9570. * KilojoulesPerMole, 13120. * KilojoulesPerMole, 14500. * KilojoulesPerMole, 26740. * KilojoulesPerMole],
+    electronegativity=0.82,
     isotopes=[
         Isotope(
             mass=70.96532,
@@ -7343,6 +7438,8 @@ Sr = Element(
     atomic_number=38,
     atomic_weight=87.62,
     atomic_weight_uncertainty=0.01,
+    ionization_energies=[549.5 * KilojoulesPerMole, 1064.2 * KilojoulesPerMole, 4138. * KilojoulesPerMole, 5500. * KilojoulesPerMole, 6910. * KilojoulesPerMole, 8760. * KilojoulesPerMole, 10230. * KilojoulesPerMole, 11800. * KilojoulesPerMole, 15600. * KilojoulesPerMole, 17100. * KilojoulesPerMole],
+    electronegativity=0.95,
     isotopes=[
         Isotope(
             mass=72.96597,
@@ -7618,6 +7715,8 @@ Y = Element(
     atomic_number=39,
     atomic_weight=88.90585,
     atomic_weight_uncertainty=0.00002,
+    ionization_energies=[600. * KilojoulesPerMole, 1180. * KilojoulesPerMole, 1980. * KilojoulesPerMole, 5847. * KilojoulesPerMole, 7430. * KilojoulesPerMole, 8970. * KilojoulesPerMole, 11190. * KilojoulesPerMole, 12450. * KilojoulesPerMole, 14110. * KilojoulesPerMole, 18400. * KilojoulesPerMole],
+    electronegativity=1.22,
     isotopes=[
         Isotope(
             mass=75.95845,
@@ -7893,6 +7992,8 @@ Zr = Element(
     atomic_number=40,
     atomic_weight=91.224,
     atomic_weight_uncertainty=0.002,
+    ionization_energies=[640.1 * KilojoulesPerMole, 1270. * KilojoulesPerMole, 2218. * KilojoulesPerMole, 3313. * KilojoulesPerMole, 7752. * KilojoulesPerMole, 9500. * KilojoulesPerMole],
+    electronegativity=1.33,
     isotopes=[
         Isotope(
             mass=77.95523,
@@ -8168,6 +8269,8 @@ Nb = Element(
     atomic_number=41,
     atomic_weight=92.90638,
     atomic_weight_uncertainty=0.00002,
+    ionization_energies=[652.1 * KilojoulesPerMole, 1380. * KilojoulesPerMole, 2416. * KilojoulesPerMole, 3700. * KilojoulesPerMole, 4877. * KilojoulesPerMole, 9847. * KilojoulesPerMole, 12100. * KilojoulesPerMole],
+    electronegativity=1.6,
     isotopes=[
         Isotope(
             mass=80.94903,
@@ -8443,6 +8546,8 @@ Mo = Element(
     atomic_number=42,
     atomic_weight=95.96,
     atomic_weight_uncertainty=0.02,
+    ionization_energies=[684.3 * KilojoulesPerMole, 1560. * KilojoulesPerMole, 2618. * KilojoulesPerMole, 4480. * KilojoulesPerMole, 5257. * KilojoulesPerMole, 6640.8 * KilojoulesPerMole, 12125. * KilojoulesPerMole, 13860. * KilojoulesPerMole, 15835. * KilojoulesPerMole, 17980. * KilojoulesPerMole, 20190. * KilojoulesPerMole, 22219. * KilojoulesPerMole, 26930. * KilojoulesPerMole, 29196. * KilojoulesPerMole, 52490. * KilojoulesPerMole, 55000. * KilojoulesPerMole, 61400. * KilojoulesPerMole, 67700. * KilojoulesPerMole, 74000. * KilojoulesPerMole, 80400. * KilojoulesPerMole, 87000. * KilojoulesPerMole],
+    electronegativity=2.16,
     isotopes=[
         Isotope(
             mass=82.94874,
@@ -8718,6 +8823,8 @@ Tc = Element(
     atomic_number=43,
     atomic_weight=98,
     is_synthetic=True,
+    ionization_energies=[702. * KilojoulesPerMole, 1470. * KilojoulesPerMole, 2850. * KilojoulesPerMole],
+    electronegativity=1.9,
     isotopes=[
         Isotope(
             mass=84.94883,
@@ -9001,6 +9108,8 @@ Ru = Element(
     atomic_number=44,
     atomic_weight=101.07,
     atomic_weight_uncertainty=0.02,
+    ionization_energies=[710.2 * KilojoulesPerMole, 1620. * KilojoulesPerMole, 2747. * KilojoulesPerMole],
+    electronegativity=2.2,
     isotopes=[
         Isotope(
             mass=86.94918,
@@ -9284,6 +9393,8 @@ Rh = Element(
     atomic_number=45,
     atomic_weight=102.90550,
     atomic_weight_uncertainty=0.00002,
+    ionization_energies=[719.7 * KilojoulesPerMole, 1740. * KilojoulesPerMole, 2997. * KilojoulesPerMole],
+    electronegativity=2.28,
     isotopes=[
         Isotope(
             mass=88.94884,
@@ -9567,6 +9678,9 @@ Pd = Element(
     atomic_number=46,
     atomic_weight=106.42,
     atomic_weight_uncertainty=0.01,
+    vdw_radius=163. * Picometers,
+    ionization_energies=[804.4 * KilojoulesPerMole, 1870. * KilojoulesPerMole, 3177. * KilojoulesPerMole],
+    electronegativity=2.2,
     isotopes=[
         Isotope(
             mass=90.94911,
@@ -9850,6 +9964,9 @@ Ag = Element(
     atomic_number=47,
     atomic_weight=107.8682,
     atomic_weight_uncertainty=0.0002,
+    vdw_radius=172. * Picometers,
+    ionization_energies=[731. * KilojoulesPerMole, 2070. * KilojoulesPerMole, 3361. * KilojoulesPerMole],
+    electronegativity=1.93,
     isotopes=[
         Isotope(
             mass=92.94978,
@@ -10165,6 +10282,9 @@ Cd = Element(
     atomic_number=48,
     atomic_weight=112.411,
     atomic_weight_uncertainty=0.008,
+    vdw_radius=158. * Picometers,
+    ionization_energies=[867.8 * KilojoulesPerMole, 1631.4 * KilojoulesPerMole, 3616. * KilojoulesPerMole],
+    electronegativity=1.69,
     isotopes=[
         Isotope(
             mass=94.94987,
@@ -10480,6 +10600,9 @@ In = Element(
     atomic_number=49,
     atomic_weight=114.818,
     atomic_weight_uncertainty=0.003,
+    vdw_radius=193. * Picometers,
+    ionization_energies=[558.3 * KilojoulesPerMole, 1820.7 * KilojoulesPerMole, 2704. * KilojoulesPerMole, 5210. * KilojoulesPerMole],
+    electronegativity=1.78,
     isotopes=[
         Isotope(
             mass=96.94954,
@@ -10803,6 +10926,9 @@ Sn = Element(
     atomic_number=50,
     atomic_weight=118.710,
     atomic_weight_uncertainty=0.007,
+    vdw_radius=217. * Picometers,
+    ionization_energies=[708.6 * KilojoulesPerMole, 1411.8 * KilojoulesPerMole, 2943. * KilojoulesPerMole, 3930.3 * KilojoulesPerMole, 7456. * KilojoulesPerMole],
+    electronegativity=1.96,
     isotopes=[
         Isotope(
             mass=98.94933,
@@ -11126,6 +11252,8 @@ Sb = Element(
     atomic_number=51,
     atomic_weight=121.760,
     atomic_weight_uncertainty=0.001,
+    ionization_energies=[834. * KilojoulesPerMole, 1594.9 * KilojoulesPerMole, 2440. * KilojoulesPerMole, 4260. * KilojoulesPerMole, 5400. * KilojoulesPerMole, 10400. * KilojoulesPerMole],
+    electronegativity=2.05,
     isotopes=[
         Isotope(
             mass=102.93969,
@@ -11433,6 +11561,9 @@ Te = Element(
     atomic_number=52,
     atomic_weight=127.60,
     atomic_weight_uncertainty=0.03,
+    vdw_radius=206. * Picometers,
+    ionization_energies=[869.3 * KilojoulesPerMole, 1790. * KilojoulesPerMole, 2698. * KilojoulesPerMole, 3610. * KilojoulesPerMole, 5668. * KilojoulesPerMole, 6820. * KilojoulesPerMole, 13200. * KilojoulesPerMole],
+    electronegativity=2.1,
     isotopes=[
         Isotope(
             mass=104.94364,
@@ -11748,6 +11879,9 @@ I = Element(
     atomic_number=53,
     atomic_weight=126.90447,
     atomic_weight_uncertainty=0.00003,
+    vdw_radius=198. * Picometers,
+    ionization_energies=[1008.4 * KilojoulesPerMole, 1845.9 * KilojoulesPerMole, 3180. * KilojoulesPerMole],
+    electronegativity=2.66,
     isotopes=[
         Isotope(
             mass=107.94348,
@@ -12055,6 +12189,9 @@ Xe = Element(
     atomic_number=54,
     atomic_weight=131.293,
     atomic_weight_uncertainty=0.006,
+    vdw_radius=216. * Picometers,
+    ionization_energies=[1170.4 * KilojoulesPerMole, 2046.4 * KilojoulesPerMole, 3099.4 * KilojoulesPerMole],
+    electronegativity=2.6,
     isotopes=[
         Isotope(
             mass=109.94428,
@@ -12370,6 +12507,8 @@ Cs = Element(
     atomic_number=55,
     atomic_weight=132.9054519,
     atomic_weight_uncertainty=0.0000002,
+    ionization_energies=[375.7 * KilojoulesPerMole, 2234.3 * KilojoulesPerMole, 3400. * KilojoulesPerMole],
+    electronegativity=0.79,
     isotopes=[
         Isotope(
             mass=111.95030,
@@ -12701,6 +12840,8 @@ Ba = Element(
     atomic_number=56,
     atomic_weight=137.327,
     atomic_weight_uncertainty=0.007,
+    ionization_energies=[502.9 * KilojoulesPerMole, 965.2 * KilojoulesPerMole, 3600. * KilojoulesPerMole],
+    electronegativity=0.89,
     isotopes=[
         Isotope(
             mass=113.95068,
@@ -13032,6 +13173,8 @@ La = Element(
     atomic_number=57,
     atomic_weight=138.90547,
     atomic_weight_uncertainty=0.00007,
+    ionization_energies=[538.1 * KilojoulesPerMole, 1067. * KilojoulesPerMole, 1850.3 * KilojoulesPerMole, 4819. * KilojoulesPerMole, 5940. * KilojoulesPerMole],
+    electronegativity=1.1,
     isotopes=[
         Isotope(
             mass=116.95007,
@@ -13355,6 +13498,8 @@ Ce = Element(
     atomic_number=58,
     atomic_weight=140.116,
     atomic_weight_uncertainty=0.001,
+    ionization_energies=[534.4 * KilojoulesPerMole, 1050. * KilojoulesPerMole, 1949. * KilojoulesPerMole, 3547. * KilojoulesPerMole, 6325. * KilojoulesPerMole, 7490. * KilojoulesPerMole],
+    electronegativity=1.12,
     isotopes=[
         Isotope(
             mass=118.95276,
@@ -13678,6 +13823,8 @@ Pr = Element(
     atomic_number=59,
     atomic_weight=140.90765,
     atomic_weight_uncertainty=0.00002,
+    ionization_energies=[527. * KilojoulesPerMole, 1020. * KilojoulesPerMole, 2086. * KilojoulesPerMole, 3761. * KilojoulesPerMole, 5551. * KilojoulesPerMole],
+    electronegativity=1.13,
     isotopes=[
         Isotope(
             mass=120.95536,
@@ -14001,6 +14148,8 @@ Nd = Element(
     atomic_number=60,
     atomic_weight=144.242,
     atomic_weight_uncertainty=0.003,
+    ionization_energies=[533.1 * KilojoulesPerMole, 1040. * KilojoulesPerMole, 2130. * KilojoulesPerMole, 3900. * KilojoulesPerMole],
+    electronegativity=1.14,
     isotopes=[
         Isotope(
             mass=123.95223,
@@ -14316,6 +14465,7 @@ Pm = Element(
     atomic_number=61,
     atomic_weight=145,
     is_synthetic=True,
+    ionization_energies=[540. * KilojoulesPerMole, 1050. * KilojoulesPerMole, 2150. * KilojoulesPerMole, 3970. * KilojoulesPerMole],
     isotopes=[
         Isotope(
             mass=125.95752,
@@ -14631,6 +14781,8 @@ Sm = Element(
     atomic_number=62,
     atomic_weight=150.36,
     atomic_weight_uncertainty=0.02,
+    ionization_energies=[544.5 * KilojoulesPerMole, 1070. * KilojoulesPerMole, 2260. * KilojoulesPerMole, 3990. * KilojoulesPerMole],
+    electronegativity=1.17,
     isotopes=[
         Isotope(
             mass=127.95808,
@@ -14946,6 +15098,7 @@ Eu = Element(
     atomic_number=63,
     atomic_weight=151.964,
     atomic_weight_uncertainty=0.001,
+    ionization_energies=[547.1 * KilojoulesPerMole, 1085. * KilojoulesPerMole, 2404. * KilojoulesPerMole, 4120. * KilojoulesPerMole],
     isotopes=[
         Isotope(
             mass=129.96357,
@@ -15261,6 +15414,8 @@ Gd = Element(
     atomic_number=64,
     atomic_weight=157.25,
     atomic_weight_uncertainty=0.03,
+    ionization_energies=[593.4 * KilojoulesPerMole, 1170. * KilojoulesPerMole, 1990. * KilojoulesPerMole, 4250. * KilojoulesPerMole],
+    electronegativity=1.2,
     isotopes=[
         Isotope(
             mass=133.95537,
@@ -15560,6 +15715,7 @@ Tb = Element(
     atomic_number=65,
     atomic_weight=158.92535,
     atomic_weight_uncertainty=0.00002,
+    ionization_energies=[565.8 * KilojoulesPerMole, 1110. * KilojoulesPerMole, 2114. * KilojoulesPerMole, 3839. * KilojoulesPerMole],
     isotopes=[
         Isotope(
             mass=135.96138,
@@ -15859,6 +16015,8 @@ Dy = Element(
     atomic_number=66,
     atomic_weight=162.500,
     atomic_weight_uncertainty=0.001,
+    ionization_energies=[573. * KilojoulesPerMole, 1130. * KilojoulesPerMole, 2200. * KilojoulesPerMole, 3990. * KilojoulesPerMole],
+    electronegativity=1.22,
     isotopes=[
         Isotope(
             mass=137.96249,
@@ -16158,6 +16316,8 @@ Ho = Element(
     atomic_number=67,
     atomic_weight=164.93032,
     atomic_weight_uncertainty=0.00002,
+    ionization_energies=[581. * KilojoulesPerMole, 1140. * KilojoulesPerMole, 2204. * KilojoulesPerMole, 4100. * KilojoulesPerMole],
+    electronegativity=1.23,
     isotopes=[
         Isotope(
             mass=139.96854,
@@ -16457,6 +16617,8 @@ Er = Element(
     atomic_number=68,
     atomic_weight=167.259,
     atomic_weight_uncertainty=0.003,
+    ionization_energies=[589.3 * KilojoulesPerMole, 1150. * KilojoulesPerMole, 2194. * KilojoulesPerMole, 4120. * KilojoulesPerMole],
+    electronegativity=1.24,
     isotopes=[
         Isotope(
             mass=142.96634,
@@ -16748,6 +16910,8 @@ Tm = Element(
     atomic_number=69,
     atomic_weight=168.93421,
     atomic_weight_uncertainty=0.00002,
+    ionization_energies=[596.7 * KilojoulesPerMole, 1160. * KilojoulesPerMole, 2285. * KilojoulesPerMole, 4120. * KilojoulesPerMole],
+    electronegativity=1.25,
     isotopes=[
         Isotope(
             mass=144.97007,
@@ -17039,6 +17203,7 @@ Yb = Element(
     atomic_number=70,
     atomic_weight=173.054,
     atomic_weight_uncertainty=0.005,
+    ionization_energies=[603.4 * KilojoulesPerMole, 1174.8 * KilojoulesPerMole, 2417. * KilojoulesPerMole, 4203. * KilojoulesPerMole],
     isotopes=[
         Isotope(
             mass=147.96742,
@@ -17322,6 +17487,8 @@ Lu = Element(
     atomic_number=71,
     atomic_weight=174.9668,
     atomic_weight_uncertainty=0.0001,
+    ionization_energies=[523.5 * KilojoulesPerMole, 1340. * KilojoulesPerMole, 2022.3 * KilojoulesPerMole, 4370. * KilojoulesPerMole, 6445. * KilojoulesPerMole],
+    electronegativity=1.27,
     isotopes=[
         Isotope(
             mass=149.97323,
@@ -17613,6 +17780,8 @@ Hf = Element(
     atomic_number=72,
     atomic_weight=178.49,
     atomic_weight_uncertainty=0.02,
+    ionization_energies=[658.5 * KilojoulesPerMole, 1440. * KilojoulesPerMole, 2250. * KilojoulesPerMole, 3216. * KilojoulesPerMole],
+    electronegativity=1.3,
     isotopes=[
         Isotope(
             mass=152.97069,
@@ -17912,6 +18081,8 @@ Ta = Element(
     atomic_number=73,
     atomic_weight=180.94788,
     atomic_weight_uncertainty=0.00002,
+    ionization_energies=[761. * KilojoulesPerMole, 1500. * KilojoulesPerMole],
+    electronegativity=1.5,
     isotopes=[
         Isotope(
             mass=154.97459,
@@ -18211,6 +18382,8 @@ W = Element(
     atomic_number=74,
     atomic_weight=183.84,
     atomic_weight_uncertainty=0.01,
+    ionization_energies=[770. * KilojoulesPerMole, 1700. * KilojoulesPerMole],
+    electronegativity=2.36,
     isotopes=[
         Isotope(
             mass=157.97456,
@@ -18502,6 +18675,8 @@ Re = Element(
     atomic_number=75,
     atomic_weight=186.207,
     atomic_weight_uncertainty=0.001,
+    ionization_energies=[760. * KilojoulesPerMole, 1260. * KilojoulesPerMole, 2510. * KilojoulesPerMole, 3640. * KilojoulesPerMole],
+    electronegativity=1.9,
     isotopes=[
         Isotope(
             mass=159.98212,
@@ -18793,6 +18968,8 @@ Os = Element(
     atomic_number=76,
     atomic_weight=190.23,
     atomic_weight_uncertainty=0.03,
+    ionization_energies=[840. * KilojoulesPerMole, 1600. * KilojoulesPerMole],
+    electronegativity=2.2,
     isotopes=[
         Isotope(
             mass=161.98443,
@@ -19084,6 +19261,8 @@ Ir = Element(
     atomic_number=77,
     atomic_weight=192.217,
     atomic_weight_uncertainty=0.003,
+    ionization_energies=[880. * KilojoulesPerMole, 1600. * KilojoulesPerMole],
+    electronegativity=2.2,
     isotopes=[
         Isotope(
             mass=163.99220,
@@ -19383,6 +19562,9 @@ Pt = Element(
     atomic_number=78,
     atomic_weight=195.084,
     atomic_weight_uncertainty=0.009,
+    vdw_radius=175. * Picometers,
+    ionization_energies=[870. * KilojoulesPerMole, 1791. * KilojoulesPerMole],
+    electronegativity=2.28,
     isotopes=[
         Isotope(
             mass=165.99486,
@@ -19690,6 +19872,9 @@ Au = Element(
     atomic_number=79,
     atomic_weight=196.966569,
     atomic_weight_uncertainty=0.000004,
+    vdw_radius=166. * Picometers,
+    ionization_energies=[890.1 * KilojoulesPerMole, 1980. * KilojoulesPerMole],
+    electronegativity=2.54,
     isotopes=[
         Isotope(
             mass=168.99808,
@@ -19997,6 +20182,9 @@ Hg = Element(
     atomic_number=80,
     atomic_weight=200.59,
     atomic_weight_uncertainty=0.02,
+    vdw_radius=155. * Picometers,
+    ionization_energies=[1007.1 * KilojoulesPerMole, 1810. * KilojoulesPerMole, 3300. * KilojoulesPerMole],
+    electronegativity=2.,
     isotopes=[
         Isotope(
             mass=171.00376,
@@ -20328,6 +20516,9 @@ Tl = Element(
     atomic_number=81,
     atomic_weight=204.3833,
     atomic_weight_uncertainty=0.0002,
+    vdw_radius=196. * Picometers,
+    ionization_energies=[589.4 * KilojoulesPerMole, 1971. * KilojoulesPerMole, 2878. * KilojoulesPerMole],
+    electronegativity=1.62,
     isotopes=[
         Isotope(
             mass=176.00059,
@@ -20635,6 +20826,9 @@ Pb = Element(
     atomic_number=82,
     atomic_weight=207.2,
     atomic_weight_uncertainty=0.1,
+    vdw_radius=202. * Picometers,
+    ionization_energies=[715.6 * KilojoulesPerMole, 1450.5 * KilojoulesPerMole, 3081.5 * KilojoulesPerMole, 4083. * KilojoulesPerMole, 6640. * KilojoulesPerMole],
+    electronegativity=2.33,
     isotopes=[
         Isotope(
             mass=178.003830,
@@ -20950,6 +21144,8 @@ Bi = Element(
     atomic_number=83,
     atomic_weight=208.98040,
     atomic_weight_uncertainty=0.00001,
+    ionization_energies=[703. * KilojoulesPerMole, 1610. * KilojoulesPerMole, 2466. * KilojoulesPerMole, 4370. * KilojoulesPerMole, 5400. * KilojoulesPerMole, 8520. * KilojoulesPerMole],
+    electronegativity=2.02,
     isotopes=[
         Isotope(
             mass=184.00112,
@@ -21241,6 +21437,8 @@ Po = Element(
     atomic_number=84,
     atomic_weight=209,
     is_synthetic=True,
+    ionization_energies=[812.1 * KilojoulesPerMole],
+    electronegativity=2.,
     isotopes=[
         Isotope(
             mass=187.999422,
@@ -21516,6 +21714,8 @@ At = Element(
     atomic_number=85,
     atomic_weight=210,
     is_synthetic=True,
+    ionization_energies=[920. * KilojoulesPerMole],
+    electronegativity=2.2,
     isotopes=[
         Isotope(
             mass=192.999840,
@@ -21775,6 +21975,7 @@ Rn = Element(
     atomic_number=86,
     atomic_weight=222,
     is_synthetic=True,
+    ionization_energies=[1037. * KilojoulesPerMole],
     isotopes=[
         Isotope(
             mass=195.005440,
@@ -22058,6 +22259,8 @@ Fr = Element(
     atomic_number=87,
     atomic_weight=223,
     is_synthetic=True,
+    ionization_energies=[380. * KilojoulesPerMole],
+    electronegativity=0.7,
     isotopes=[
         Isotope(
             mass=199.007260,
@@ -22341,6 +22544,8 @@ Ra = Element(
     atomic_number=88,
     atomic_weight=226,
     is_synthetic=True,
+    ionization_energies=[509.3 * KilojoulesPerMole, 979. * KilojoulesPerMole],
+    electronegativity=0.9,
     isotopes=[
         Isotope(
             mass=202.009890,
@@ -22616,6 +22821,8 @@ Ac = Element(
     atomic_number=89,
     atomic_weight=227,
     is_synthetic=True,
+    ionization_energies=[499. * KilojoulesPerMole, 1170. * KilojoulesPerMole],
+    electronegativity=1.1,
     isotopes=[
         Isotope(
             mass=206.014500,
@@ -22875,6 +23082,8 @@ Th = Element(
     atomic_number=90,
     atomic_weight=232.03806,
     atomic_weight_uncertainty=0.00002,
+    ionization_energies=[587. * KilojoulesPerMole, 1110. * KilojoulesPerMole, 1930. * KilojoulesPerMole, 2780. * KilojoulesPerMole],
+    electronegativity=1.3,
     isotopes=[
         Isotope(
             mass=209.01772,
@@ -23126,6 +23335,8 @@ Pa = Element(
     atomic_number=91,
     atomic_weight=231.03588,
     atomic_weight_uncertainty=0.00002,
+    ionization_energies=[568. * KilojoulesPerMole],
+    electronegativity=1.5,
     isotopes=[
         Isotope(
             mass=212.023200,
@@ -23369,6 +23580,9 @@ U = Element(
     atomic_number=92,
     atomic_weight=238.02891,
     atomic_weight_uncertainty=0.00003,
+    vdw_radius=186. * Picometers,
+    ionization_energies=[597.6 * KilojoulesPerMole, 1420. * KilojoulesPerMole],
+    electronegativity=1.38,
     isotopes=[
         Isotope(
             mass=217.024370,
@@ -23588,6 +23802,8 @@ Np = Element(
     atomic_number=93,
     atomic_weight=237,
     is_synthetic=True,
+    ionization_energies=[604.5 * KilojoulesPerMole],
+    electronegativity=1.36,
     isotopes=[
         Isotope(
             mass=225.033910,
@@ -23759,6 +23975,8 @@ Pu = Element(
     atomic_number=94,
     atomic_weight=244,
     is_synthetic=True,
+    ionization_energies=[584.7 * KilojoulesPerMole],
+    electronegativity=1.28,
     isotopes=[
         Isotope(
             mass=228.038740,
@@ -23930,6 +24148,8 @@ Am = Element(
     atomic_number=95,
     atomic_weight=243,
     is_synthetic=True,
+    ionization_energies=[578. * KilojoulesPerMole],
+    electronegativity=1.3,
     isotopes=[
         Isotope(
             mass=231.04556,
@@ -24093,6 +24313,8 @@ Cm = Element(
     atomic_number=96,
     atomic_weight=247,
     is_synthetic=True,
+    ionization_energies=[581. * KilojoulesPerMole],
+    electronegativity=1.3,
     isotopes=[
         Isotope(
             mass=233.050770,
@@ -24264,6 +24486,8 @@ Bk = Element(
     atomic_number=97,
     atomic_weight=247,
     is_synthetic=True,
+    ionization_energies=[601. * KilojoulesPerMole],
+    electronegativity=1.3,
     isotopes=[
         Isotope(
             mass=235.05658,
@@ -24435,6 +24659,8 @@ Cf = Element(
     atomic_number=98,
     atomic_weight=251,
     is_synthetic=True,
+    ionization_energies=[608. * KilojoulesPerMole],
+    electronegativity=1.3,
     isotopes=[
         Isotope(
             mass=237.06207,
@@ -24606,6 +24832,8 @@ Es = Element(
     atomic_number=99,
     atomic_weight=252,
     is_synthetic=True,
+    ionization_energies=[619. * KilojoulesPerMole],
+    electronegativity=1.3,
     isotopes=[
         Isotope(
             mass=240.06892,
@@ -24769,6 +24997,8 @@ Fm = Element(
     atomic_number=100,
     atomic_weight=257,
     is_synthetic=True,
+    ionization_energies=[627. * KilojoulesPerMole],
+    electronegativity=1.3,
     isotopes=[
         Isotope(
             mass=242.07343,
@@ -24932,6 +25162,8 @@ Md = Element(
     atomic_number=101,
     atomic_weight=258,
     is_synthetic=True,
+    ionization_energies=[635. * KilojoulesPerMole],
+    electronegativity=1.3,
     isotopes=[
         Isotope(
             mass=245.08083,
@@ -25087,6 +25319,8 @@ No = Element(
     atomic_number=102,
     atomic_weight=259,
     is_synthetic=True,
+    ionization_energies=[642. * KilojoulesPerMole],
+    electronegativity=1.3,
     isotopes=[
         Isotope(
             mass=248.08660,
@@ -25234,6 +25468,7 @@ Lr = Element(
     atomic_number=103,
     atomic_weight=262,
     is_synthetic=True,
+    ionization_energies=[],
     isotopes=[
         Isotope(
             mass=251.09436,
@@ -25373,6 +25608,7 @@ Rf = Element(
     atomic_number=104,
     atomic_weight=265,
     is_synthetic=True,
+    ionization_energies=[],
     isotopes=[
         Isotope(
             mass=253.10069,
@@ -25512,6 +25748,7 @@ Db = Element(
     atomic_number=105,
     atomic_weight=268,
     is_synthetic=True,
+    ionization_energies=[],
     isotopes=[
         Isotope(
             mass=255.10740,
@@ -25651,6 +25888,7 @@ Sg = Element(
     atomic_number=106,
     atomic_weight=271,
     is_synthetic=True,
+    ionization_energies=[],
     isotopes=[
         Isotope(
             mass=258.11317,
@@ -25790,6 +26028,7 @@ Bh = Element(
     atomic_number=107,
     atomic_weight=272,
     is_synthetic=True,
+    ionization_energies=[],
     isotopes=[
         Isotope(
             mass=260.12197,
@@ -25929,6 +26168,7 @@ Hs = Element(
     atomic_number=108,
     atomic_weight=270,
     is_synthetic=True,
+    ionization_energies=[],
     isotopes=[
         Isotope(
             mass=263.12856,
@@ -26060,6 +26300,7 @@ Mt = Element(
     atomic_number=109,
     atomic_weight=276,
     is_synthetic=True,
+    ionization_energies=[],
     isotopes=[
         Isotope(
             mass=265.13615,
@@ -26191,6 +26432,7 @@ Ds = Element(
     atomic_number=110,
     atomic_weight=281,
     is_synthetic=True,
+    ionization_energies=[],
     isotopes=[
         Isotope(
             mass=267.14434,
@@ -26322,6 +26564,7 @@ Rg = Element(
     atomic_number=111,
     atomic_weight=280,
     is_synthetic=True,
+    ionization_energies=[],
     isotopes=[
         Isotope(
             mass=272.15362,
@@ -26429,6 +26672,7 @@ Cn = Element(
     atomic_number=112,
     atomic_weight=285,
     is_synthetic=True,
+    ionization_energies=[],
     isotopes=[
         Isotope(
             mass=277.16394,
@@ -26512,6 +26756,7 @@ Uut = Element(
     atomic_number=113,
     atomic_weight=284,
     is_synthetic=True,
+    ionization_energies=[],
     isotopes=[
         Isotope(
             mass=283.17645,
@@ -26563,6 +26808,7 @@ Uuq = Element(
     atomic_number=114,
     atomic_weight=289,
     is_synthetic=True,
+    ionization_energies=[],
     isotopes=[
         Isotope(
             mass=285.18370,
@@ -26614,6 +26860,7 @@ Uup = Element(
     atomic_number=115,
     atomic_weight=288,
     is_synthetic=True,
+    ionization_energies=[],
     isotopes=[
         Isotope(
             mass=287.19119,
@@ -26665,6 +26912,7 @@ Uuh = Element(
     atomic_number=116,
     atomic_weight=293,
     is_synthetic=True,
+    ionization_energies=[],
     isotopes=[
         Isotope(
             mass=289.19886,
@@ -26708,6 +26956,7 @@ Uus = Element(
     atomic_number=117,
     atomic_weight=292,
     is_synthetic=True,
+    ionization_energies=[],
     isotopes=[
         Isotope(
             mass=291.20656,
@@ -26735,6 +26984,7 @@ Uuo = Element(
     atomic_number=118,
     atomic_weight=294,
     is_synthetic=True,
+    ionization_energies=[],
     isotopes=[
         Isotope(
             mass=293.21467,

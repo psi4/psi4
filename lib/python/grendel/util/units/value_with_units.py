@@ -1,10 +1,12 @@
 from abc import ABCMeta, abstractproperty, abstractmethod
 from numbers import Real
-from grendel import type_checking_enabled
+from grendel import type_checking_enabled, sanity_checking_enabled
 from grendel.util.aliasing import function_alias
-from grendel.util.decorators import typechecked
+from grendel.util.decorators import typechecked, PairOf
 from grendel.util.units.errors import UnknownUnitError, UnitizedObjectError
 from grendel.util.units.unit import isunit
+from grendel.util.metaclasses import Immutable
+
 
 __all__ = [
     'hasunits', 'has_units',
@@ -88,7 +90,6 @@ class Unitized(object):
             return True
         else:
             return False
-
 
 class ValueWithUnits(float, Unitized):
     """ A class for encapsulating a physical constant and it's units.
@@ -207,3 +208,82 @@ class ValueWithUnits(float, Unitized):
             raise UnknownUnitError(units)
         return ValueWithUnits(self.value * self.units.to(units), units)
     convert_to = in_units
+
+#TODO implement error propegation and make a subclass of ValueWithUnits
+class PhysicalValue(object):
+    """
+    A value with units and an uncertainty.  Not a subclass of ValueWithUnits for the moment,
+    since all of the arithmatic for propigation of error is not implemented
+    """
+    __metaclass__ = Immutable
+
+    @typechecked(
+        value=Real,
+        units=isunit,
+        uncertainty=(Real, None),
+        interval=(PairOf(Real), None)
+    )
+    def __init__(self, value, units, uncertainty=None, interval=None):
+        """
+
+        @param value:
+        @param units:
+        @param uncertainty:
+        @param interval:
+        @return:
+        """
+        #----------------------------------------#
+        if sanity_checking_enabled:
+            if uncertainty is None and interval is None:
+                raise TypeError("Must specify either uncertainty or interval for a PhysicalValue")
+            elif uncertainty is not None and interval is not None:
+                raise TypeError("Must specify only one of uncertainty or interval for a PhysicalValue")
+            if interval is not None:
+                if not interval[0] < value < interval[1]:
+                    raise ValueError("Value {} is not in interval {}".format(value, interval))
+                if (has_units(interval[0]) and not has_units(interval[1])) or (has_units(interval[1]) and not has_units(interval[0])):
+                    raise ValueError("Interval {} specified with units on one bound and not on the other".format(interval))
+            if uncertainty is not None:
+                if uncertainty < 0:
+                    raise ValueError("Uncertainty must be a non-negative real value, ({} given)".format(uncertainty))
+        #----------------------------------------#
+        self.value = value
+        self.units = units
+        #----------------------------------------#
+        if interval is not None and not has_units(interval[0]):
+            interval[0] = ValueWithUnits(interval[0], self.units)
+            interval[1] = ValueWithUnits(interval[1], self.units)
+        if uncertainty is not None and not has_units(uncertainty):
+            uncertainty = ValueWithUnits(uncertainty, self.units)
+        #----------------------------------------#
+        self._interval = interval
+        self._uncertainty = uncertainty
+        #----------------------------------------#
+
+
+    @property
+    def uncertainty(self):
+        """
+        @return: The uncertainty in the PhysicalValue.  If the PhysicalValue was specified with an
+            interval and the interval is not symmetric about the value, the maximum uncertainty is given
+        """
+        if self._uncertainty is not None:
+            return self._uncertainty
+        else:
+            return max(abs(self.value-self._interval[0]), abs(self.value-self._interval[1]))
+
+    @property
+    def interval(self):
+        """
+        @return: The interval of uncertainty in the PhysicalValue.
+        """
+        if self._uncertainty is not None:
+            return [self.value - self._uncertainty, self.value + self._uncertainty]
+        else:
+            return self._interval
+
+    def has_symmetric_interval(self, tolerance=1e-6):
+        if self._interval is None:
+            return True
+        else:
+            return abs(abs(self.value - self._interval[0]) - abs(self.value - self._interval[1])) < tolerance

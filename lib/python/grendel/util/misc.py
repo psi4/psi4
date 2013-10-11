@@ -4,6 +4,7 @@ enough code related in some way gets put into this module,
 we should refactor it into another module.  Be careful not
 to change something that would mess up a user's code, however.
 """
+from __future__ import division, print_function
 from abc import ABCMeta
 from collections import Iterable
 from fractions import Fraction
@@ -14,7 +15,7 @@ import sys
 from grendel.util.metaclasses import SubscriptableClass
 
 __all__ = [
-    'r', 'full_path'
+    'r', 'full_path', "ProgressBar"
 ]
 
 class r(object):
@@ -92,6 +93,45 @@ python_minimum_version = python_version_at_least
 python_version_geq = python_version_at_least
 
 have_python3 = python_minimum_version((3,))
+
+class ProgressBar(object):
+    def __init__(self, max_val, width=80, out=sys.stdout, fill_char='=', indent='', arrow = True):
+        self.max_val = max_val
+        self.current_percent = 0
+        self.current_value = 0
+        self.width = width
+        self.out = out
+        self.fill_char = fill_char
+        self.indent = indent
+        self.arrow = arrow
+        self.printed = False
+
+    def update(self, new_val=None):
+        if new_val is not None:
+            self.current_value = new_val
+        new_percent = int(float(self.current_value/self.max_val)*100)
+        if new_percent != self.current_percent:
+            self.current_percent = new_percent
+            self.print_bar()
+
+    def print_bar(self):
+        bar_width = self.width - 7
+        filled = int(round(float(self.current_percent)/100.0 * bar_width))
+        filler = self.fill_char * filled
+        if self.arrow and filled > 0 and filled < bar_width:
+            filler = filler[:-1] + '>'
+        space = " " * (bar_width - filled)
+        if not self.printed:
+            self.out.write("{3}[{0}{1}] {2:>3d}%".format(filler, space, self.current_percent, self.indent))
+            self.printed = True
+        else:
+            self.out.write("\r{3}[{0}{1}] {2:>3d}%".format(filler, space, self.current_percent, self.indent))
+        self.out.flush()
+
+    def __iadd__(self, other):
+        self.current_value += other
+        self.update()
+        return self
 
 #####################
 # Dependent Imports #

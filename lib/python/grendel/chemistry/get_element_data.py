@@ -8,10 +8,12 @@ from __future__ import print_function
 from collections import defaultdict
 from os.path import dirname, abspath, join as path_join
 import re
+import math
+from grendel.util.strings import strip_quotes
 
 header = """
 from grendel.chemistry.element import Element, Isotope
-from grendel.util.units import AtomicMassUnit
+from grendel.util.units import AtomicMassUnit, ElectronVolt, Picometers, KilojoulesPerMole
 
 MASS_UNIT = AtomicMassUnit
 
@@ -52,11 +54,117 @@ def get_val_uncert(string):
     else:
         return None, None
 
+class MathematicaElementDatum(object):
+
+    NotApplicable = "NotApplicable"
+    NotAvailable = "NotAvailable"
+    MissingOther = "Missing"
+
+    def __init__(self, atom_number, prop_name, value_string, units_string, interval, notes):
+        self.atom_number = atom_number
+        self.property_name = strip_quotes(prop_name)
+        #----------------------------------------#
+        self.value = self._get_missing_status(value_string)
+        if self.value is None:
+            self.value = self._parse_value_string(value_string)
+        #----------------------------------------#
+        self.units = self._get_missing_status(units_string)
+        if self.units is None:
+            self.units = strip_quotes(units_string)
+        #----------------------------------------#
+        self.interval = self._get_missing_status(interval)
+        if self.interval is None:
+            self.interval = self._parse_interval(interval)
+        #----------------------------------------#
+        self.notes = self._get_missing_status(notes)
+        if self.notes is None:
+            self.notes = strip_quotes(notes)
+
+    def value_not_missing(self):
+        return self.value not in [
+            MathematicaElementDatum.NotAvailable,
+            MathematicaElementDatum.NotApplicable,
+            MathematicaElementDatum.MissingOther
+        ]
+
+    @staticmethod
+    def _parse_interval(interval):
+        m = re.match(r"Interval\[\{(.+), (.+)\}\]", interval)
+        if m:
+            num1, num2 = m.groups()
+            return "({}, {})".format(num1, num2)
+        else:
+            raise ValueError("Interval '{}' does not match expected interval pattern".format(interval))
+
+    @classmethod
+    def _get_missing_status(cls, value_string):
+        if value_string == 'Missing["NotApplicable"]':
+            return cls.NotApplicable
+        elif value_string == 'Missing["NotAvailable"]':
+            return cls.NotAvailable
+        elif 'Missing[' in value_string:
+            return cls.NotAvailable
+        elif value_string == "MissingOther":
+            return cls.MissingOther
+        else:
+            return None
+
+    @staticmethod
+    def _parse_value_string(value_string):
+        m = re.match(r'(-?\d+\.?\d*)(?:`(-?\d+?\.?\d*))?(?:\*^(-?\d+\.?\d*))?', value_string)
+        if m:
+            num = m.group(1)
+            if m.groups()[2] is not None:
+                float_expon = float(m.group(3))
+                expon = int(round(float_expon))
+                value_string = num + "e{}".format(expon)
+            else:
+                value_string = num
+            return value_string
+        elif value_string[0] == "{" and value_string[-1] == "}":
+            if len(value_string) == 2:
+                return []
+            else:
+                return [MathematicaElementDatum._parse_value_string(v) for v in re.split("\s*,\s*", value_string[1:-1])]
+        else:
+            return strip_quotes(value_string)
 
 if __name__ == "__main__":
 
     mydir = abspath(dirname(__file__))
-    isofile = path_join(mydir, "iso.txt")
+
+    # Grab some other stuff from the Mathematica element data
+    atominfo = path_join(mydir, "mathematica_data.txt")
+    math_data = defaultdict(lambda: dict())
+    # remove the first line that gives the catagories
+    lines = open(atominfo).readlines()[1:]
+    for line in lines:
+        line = line.strip()
+        line = re.sub(r'ElementData\[[^\]]+\]', 'MissingOther', line)
+        m = re.match(r"\{([^,]+),\s*([^,]+),\s*([^,]+),\s*(\{(?:[^,}]+,)*[^,}]*\}|[^,]*|Row\[.+\]*]),\s*([^,]+),\s*([^,]+),\s*(Interval\[.*\]|[^,]+),\s*(.+)\}", line)
+        if m:
+            if m.group(3) in [
+                '"ElectronConfiguration"',
+                '"QuantumNumbers"',
+                '"SpaceGroupName"',
+                '"ElectronConfigurationString"',
+                '"IsotopeAbundances"'
+            ]:
+                continue
+            atom_number, name, prop, value, units, __, interval, notes = m.groups()
+        else:
+            raise ValueError("Unrecognized mathematica line {}, {}, {}".format(line, line[0], line[-1]))
+        try:
+            datum = MathematicaElementDatum(
+                atom_number, prop, value, units, interval, notes
+            )
+        except:
+            print(line)
+            raise
+        math_data[int(atom_number)][datum.property_name] = datum
+
+    # Grab stuff from the isotopes file that comes from NIST
+    isofile = path_join(mydir, "isotopes.txt")
 
     data = open(isofile).read()
 
@@ -66,6 +174,7 @@ if __name__ == "__main__":
     isotopes = defaultdict(lambda: [])
     element_data = dict()
     symbols = []
+    other_keywords = dict()
 
     for m in section_re.finditer(data):
         atomic_number = int(m.group(1))
@@ -102,6 +211,31 @@ if __name__ == "__main__":
                 raise ValueError("Element data mismatch for {}{}".format(mass_number, standard_symbol))
         else:
             element_data[standard_symbol] = (atomic_number, atomic_weight, atomic_weight_uncertainty, is_synthetic)
+            # This is our first time on this element.  Let's grab some of the mathematica data
+            other_keywords[standard_symbol] = []
+            mdat = math_data[atomic_number]
+            #----------------------------------------#
+            if "VanDerWaalsRadius" in mdat:
+                vdw = mdat["VanDerWaalsRadius"]
+                if vdw.value_not_missing():
+                    other_keywords[standard_symbol].append("vdw_radius=" + vdw.value + " * " + vdw.units)
+            else:
+                print(atomic_number)
+            #----------------------------------------#
+            ie = math_data[atomic_number]["IonizationEnergies"]
+            if ie.value_not_missing():
+                vals = [v + " * " + ie.units for v in ie.value]
+                other_keywords[standard_symbol].append("ionization_energies=[" + ", ".join(vals) + "]")
+            #----------------------------------------#
+            eneg = math_data[atomic_number]["Electronegativity"]
+            if eneg.value_not_missing():
+                other_keywords[standard_symbol].append("electronegativity=" + eneg.value)
+            #----------------------------------------#
+
+
+
+
+
 
 
         if atomic_symbol != standard_symbol:
@@ -133,7 +267,7 @@ if __name__ == "__main__":
     symbol="{symbol}",
     atomic_number={atomic_number},
     atomic_weight={atomic_weight},
-    is_synthetic=True,
+    is_synthetic=True,{other_keywords}
     isotopes=[
         {isotopes}
     ]
@@ -144,7 +278,8 @@ Elements['{symbol}'] = {symbol}
                 symbol=symbol,
                 atomic_number=eldat[0],
                 atomic_weight=eldat[1],
-                isotopes=",\n        ".join(isotopes[symbol])
+                isotopes=",\n        ".join(isotopes[symbol]),
+                other_keywords="" if len(other_keywords[symbol]) == 0 else ("\n    " + ",\n    ".join(other_keywords[symbol]) + ",")
             )
         )
         else:
@@ -153,7 +288,7 @@ Elements['{symbol}'] = {symbol}
     symbol="{symbol}",
     atomic_number={atomic_number},
     atomic_weight={atomic_weight},
-    atomic_weight_uncertainty={aw_uncert},
+    atomic_weight_uncertainty={aw_uncert},{other_keywords}
     isotopes=[
         {isotopes}
     ]
@@ -165,7 +300,8 @@ Elements['{symbol}'] = {symbol}
                 atomic_number=eldat[0],
                 atomic_weight=eldat[1],
                 aw_uncert=eldat[2],
-                isotopes=",\n        ".join(isotopes[symbol])
+                isotopes=",\n        ".join(isotopes[symbol]),
+                other_keywords="" if len(other_keywords[symbol]) == 0 else ("\n    " + ",\n    ".join(other_keywords[symbol]) + ",")
             ))
 
 

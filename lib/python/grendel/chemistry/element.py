@@ -1,5 +1,8 @@
+from collections import Iterable
 from functools import total_ordering
 import math
+from grendel.util.units.value_with_units import has_units
+from grendel.util.units.composite import CompositeUnit
 
 __all__ = [
     "Element",
@@ -95,12 +98,65 @@ class Element(object):
 
     """
 
-    ##############
-    # Attributes #
-    ##############
+    #--------------------------------------------------------------------------------#
+
+    #region | Attributes                                                                {{{1 |
 
     symbol = None
+    """
+    TODO Document this attribute
+    """
+
     atomic_number = None
+    """
+    TODO Document this attribute
+    """
+
+    isotopes = None
+    """
+    TODO Document this attribute
+    """
+
+    atomic_weight = None
+    """
+    TODO Document this attribute
+    """
+
+    atomic_weight_uncertainty = None
+    """
+    TODO Document this attribute
+    """
+
+    is_synthetic = None
+    """
+    TODO Document this attribute
+    """
+
+    ionization_energies = None
+    """
+    TODO Document this attribute
+    """
+
+    vdw_radius = None
+    """
+    TODO Document this attribute
+    """
+
+    electron_affinity = None
+    """
+    TODO Document this attribute
+    """
+
+    electronegativity = None
+    """
+    TODO Document this attribute
+    """
+
+    #endregion }}}1
+
+    #--------------------------------------------------------------------------------#
+
+    #region | Initialization                                                            {{{1 |
 
     def __init__(self,
             symbol,
@@ -108,7 +164,8 @@ class Element(object):
             isotopes,
             atomic_weight,
             atomic_weight_uncertainty=None,
-            is_synthetic=False
+            is_synthetic=False,
+            **kwargs
     ):
         """
         """
@@ -120,7 +177,27 @@ class Element(object):
         self.is_synthetic = is_synthetic
         for iso in isotopes:
             self.add_isotope(iso)
+        for kw in kwargs:
+            if kw in self.__class__.__dict__:
+                val = kwargs[kw]
+                if has_units(val) and not isinstance(val.units, CompositeUnit):
+                    val = val.in_units(val.units.genre.default)
+                elif isinstance(val, Iterable):
+                    new_vals = []
+                    val = list(val)
+                    for v in val:
+                        if has_units(v) and not isinstance(v.units, CompositeUnit):
+                            new_vals.append(v.in_units(v.units.genre.default))
+                        else:
+                            new_vals.append(v)
+                    val = new_vals
+                setattr(self, kw, val)
+            else:
+                raise ValueError("Unknown Element constructor keyword '{}'".format(kw))
 
+    #endregion }}}1
+
+    #--------------------------------------------------------------------------------#
     ##############
     # Properties #
     ##############

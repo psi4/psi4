@@ -18,6 +18,7 @@ be access through the interface in the web_getter module.
 
 
 import os
+import traceback
 import urllib2
 from xml.etree import ElementTree as ET
 
@@ -42,7 +43,10 @@ def query(input, representation, resolvers=None):
         r = ",".join(resolvers)
         apiurl += '?resolver=%s' % r
     result = []
-    tree = ET.parse(urllib2.urlopen(apiurl))
+    try:
+        tree = ET.parse(urllib2.urlopen(apiurl))
+    except:
+        raise RuntimeError("Could not open url {}.  Got error '{}'".format(apiurl, traceback.format_exc(limit=0)))
     for data in tree.findall(".//data"):
         datadict = {'resolver':data.attrib['resolver'],
                     'notation':data.attrib['notation'],
