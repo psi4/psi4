@@ -514,6 +514,8 @@ class Joule(EnergyUnit):
             return pf * AvogadrosNumber / 1000.0
         elif issubclass(other, Hertz):
             return pf / PlanckConstant.value
+        elif issubclass(other, ElectronVolt):
+            return pf / 1.602176565e-19
         else: # pragma: no cover
             raise NotImplementedError("Conversion from units " + classname(cls) + " to units " + classname(other) + " is not implemented.")
 EnergyUnit.reference_unit = Joule
@@ -525,7 +527,7 @@ EnergyUnit.default = Wavenumber
 
 # TODO Molar energy unit?
 def_units(EnergyUnit,
-    #'ElectronVolt',
+    'ElectronVolt',
     'Hertz',
     'Hartree',
     'KiloCaloriePerMol',
@@ -545,9 +547,10 @@ def_units(EnergyUnit,
     KCalPerMol_plural = 'KCalsPerMol',
     #------------------#
     KiloJoulePerMol_plural = 'KiloJoulesPerMol',
-    KiloJoulesPerMol_prefixed = False,
-    KiloJoulesPerMol_aliases = [
+    KiloJoulePerMol_prefixed = False,
+    KiloJoulePerMol_aliases = [
         'KJPerMol',
+        'KilojoulesPerMole',
     ],
     KJPerMol_plural = False,
     #------------------#

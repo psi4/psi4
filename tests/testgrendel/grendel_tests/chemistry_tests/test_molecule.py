@@ -13,7 +13,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
 
 from grendel import *
 import grendel.chemistry
-from grendel.chemistry.molecule import InvalidXYZFormatError, InvalidZMatrixException
+from grendel.chemistry.atom import Atom
+from grendel.chemistry.molecule import InvalidXYZFormatError, InvalidZMatrixException, Molecule
 from grendel.chemistry import SampleMolecules
 from grendel_tests import skip
 
@@ -411,4 +412,35 @@ class moleculeTest(unittest.TestCase):
         m3 = m2.rotated(angle=120.*Degrees, axis=axis)
         m4 = m3.rotated(angle=120.*Degrees, axis=axis)
         assert_array_almost_equal(m.position, m4.position)
+
+    #--------------------------------------------------------------------------------#
+
+    def test_groups_1(self):
+        m = Molecule([
+                Atom('C', [  0.00000000,  0.00000000,  0.00000000 ] ),
+                Atom('C', [  0.00000000,  0.00000000,  4.76992933 ] ),
+                Atom('O', [  0.00000000, -1.04316184,  0.61707065 ] ),
+                Atom('O', [  0.01905095,  1.04298787,  4.15285868 ] ),
+                Atom('C', [ -0.11039651,  1.34908096,  0.68132447 ] ),
+                Atom('C', [ -0.13501595, -1.34683982,  4.08860486 ] ),
+                Atom('C', [  0.10780157,  0.01502933, -1.51597276 ] ),
+                Atom('C', [  0.10750912, -0.01699557,  6.28590209 ] ),
+                Atom('H', [ -0.08557151,  1.24276213,  1.76717696 ] ),
+                Atom('H', [ -0.10825342, -1.24099210,  3.00275237 ] ),
+                Atom('H', [  0.69789248,  2.01081145,  0.34934100 ] ),
+                Atom('H', [  0.66105324, -2.02322149,  4.42058833 ] ),
+                Atom('H', [ -1.04824273,  1.83250625,  0.38051647 ] ),
+                Atom('H', [ -1.08153441, -1.81305690,  4.38941286 ] ),
+                Atom('H', [  0.11566492, -1.00528185, -1.90094854 ] ),
+                Atom('H', [  0.13400478,  1.00300183,  6.67087787 ] ),
+                Atom('H', [ -0.72590461,  0.57377279, -1.95554705 ] ),
+                Atom('H', [ -0.73626218, -0.56042012,  6.72547638 ] ),
+                Atom('H', [  1.02679855,  0.52908924, -1.82068069 ] ),
+                Atom('H', [  1.01696471, -0.54775311,  6.59061002 ] )
+            ], units=Angstroms
+        )
+
+        groups = m.geometric_subgroups()
+        self.assertEqual(len(groups), 2)
+
 

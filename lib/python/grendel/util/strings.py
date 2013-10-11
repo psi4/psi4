@@ -17,6 +17,18 @@ def classname(class_or_str_or_obj):
         tystr = str(type(class_or_str_or_obj))
     return re.sub(r'^.*\.([^\.]+)$', r'\1', re.sub(r'^<.*\'(.+)\'>$', r'\1', tystr))
 
+def strip_quotes(value, strip_char=None):
+    if strip_char is not None:
+        strip_chars = [strip_char]
+    else:
+        strip_chars = ["'", '"']
+    for ch in strip_chars:
+        if value[0] == ch and value[-1] == ch:
+            return value[1:-1]
+    #----------------------------------------#
+    return value
+
+
 
 # TODO Support for letters and/or parenthesis?
 def superscript(num_or_str):

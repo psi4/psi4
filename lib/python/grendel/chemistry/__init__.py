@@ -1,5 +1,6 @@
 from copy import copy
 import sys
+from grendel.util.containers import AttributeLookupTable
 
 __submodules__ = [
     'element_data',
@@ -11,7 +12,8 @@ __submodules__ = [
 ]
 
 __all__ = [
-    "SampleMolecules"
+    "SampleMolecules",
+    "ElementData"
 ]
 
 for name in __submodules__:
@@ -40,6 +42,14 @@ __all__.extend(__submodules__)
 
 SampleMolecules = dict()
 from molecule import Molecule
+from element_data import Elements
+
+
+ElementData = AttributeLookupTable(
+    attribute_names=["symbol", "atomic_number", "atomic_weight"],
+    initial_values=set(Elements.values())
+)
+
 
 def init_sample_molecules():
     SampleMolecules = globals()['SampleMolecules']
