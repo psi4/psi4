@@ -74,6 +74,7 @@ while not user_obedient:
 print """
  XYZ file extension.
     All files with this extension in the current directory will be processed
+    Additionally, all files with extension p4m in the current dir will be processed as psi4 mol format
 """
 fext = raw_input('    fext = [xyz] ').strip()
 if fext == "":
@@ -156,7 +157,7 @@ BINDRGT = {}
 
 print "\n%-25s %6s %6s %6s %6s %6s\t\t%s\n" % ("system", "CHGsyst", "MLPsyst", "Natom", "Nmol1", "Nmol2", "Fragmentation Pattern")
 
-for xyzfile in glob.glob('*.' + fext):
+for xyzfile in (glob.glob('*.' + fext) + glob.glob('*.p4m')):
 
     # ascertain system name and open file
     system = os.path.splitext(xyzfile)[0]
@@ -167,7 +168,10 @@ for xyzfile in glob.glob('*.' + fext):
     f.close()
 
     # use Molecule object to read geometry in xyz file
-    mol = qcdb.Molecule.init_with_xyz(xyzfile, no_com=True, no_reorient=True)
+    if xyzfile.endswith(fext):
+        mol = qcdb.Molecule.init_with_xyz(xyzfile, no_com=True, no_reorient=True)
+    else:
+        mol = qcdb.Molecule(''.join(text))
     Nsyst = mol.natom()
 
     # alter second line
@@ -191,7 +195,7 @@ for xyzfile in glob.glob('*.' + fext):
     TAGLRGT[system] = mol.tagline
     BINDRGT[system] = None  # "nan" ?  # TODO
 
-    if route == 3:
+    if route == 3 and mol.nfragments() == 1:
 
         frag_pattern = mol.BFS()
         mol = mol.auto_fragments()

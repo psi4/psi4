@@ -55,7 +55,8 @@ DCFTSolver::transform_integrals()
         _ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::vir, MOSpace::vir);
     }
     if ((options_.get_str("ALGORITHM") == "QC" && options_.get_bool("QC_COUPLING")
-                                               && options_.get_str("QC_TYPE") == "SIMULTANEOUS") || orbital_optimized_) {
+                                               && options_.get_str("QC_TYPE") == "SIMULTANEOUS")
+                                               || orbital_optimized_) {
         // Compute the integrals needed for the MO Hessian
         _ints->transform_tei(MOSpace::vir, MOSpace::occ, MOSpace::occ, MOSpace::occ);
         _ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::occ);
@@ -87,7 +88,8 @@ DCFTSolver::transform_integrals()
 
     // VVVO and OOOV integrals are needed for the QC algorithm
     if ((options_.get_str("ALGORITHM") == "QC" && options_.get_bool("QC_COUPLING")
-                                               && options_.get_str("QC_TYPE") == "SIMULTANEOUS") || orbital_optimized_) {
+                                               && options_.get_str("QC_TYPE") == "SIMULTANEOUS")
+                                               || orbital_optimized_) {
 
         sort_OOOV_integrals();
 

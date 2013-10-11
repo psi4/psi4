@@ -60,6 +60,9 @@ def run_dcft(name, **kwargs):
 
     """
 
+    if (psi4.get_global_option('FREEZE_CORE') == 'TRUE'):
+        raise ValidationError('Frozen core is not available for DCFT.')
+
     flag = False
     if psi4.get_option('SCF', 'REFERENCE') == 'RHF':
         optstash = p4util.OptionsState(
@@ -726,7 +729,10 @@ def scf_helper(name, **kwargs):
 
         # Switch to the guess namespace
         namespace = psi4.IO.get_default_namespace()
-        psi4.IO.set_default_namespace((namespace + '.guess'))
+        guesspace = namespace + '.guess'
+        if namespace == '':
+            guesspace = 'guess'
+        psi4.IO.set_default_namespace(guesspace)
 
         # Setup initial SCF
         psi4.set_global_option('BASIS', guessbasis)
@@ -757,7 +763,7 @@ def scf_helper(name, **kwargs):
     if (cast):
 
         # Move files to proper namespace
-        psi4.IO.change_file_namespace(180, (namespace + '.guess'), namespace)
+        psi4.IO.change_file_namespace(180, guesspace, namespace)
         psi4.IO.set_default_namespace(namespace)
 
         # Set to read and project, and reset bases to final ones
@@ -944,6 +950,9 @@ def run_cc_gradient(name, **kwargs):
 
     psi4.set_global_option('DERTYPE', 'FIRST')
 
+    if (psi4.get_global_option('FREEZE_CORE') == 'TRUE'):
+        raise ValidationError('Frozen core is not available for the CC gradients.')
+
     run_ccenergy(name, **kwargs)
     if (name.lower() == 'ccsd'):
         psi4.set_local_option('CCLAMBDA', 'WFN', 'CCSD')
@@ -953,7 +962,7 @@ def run_cc_gradient(name, **kwargs):
         psi4.set_local_option('CCDENSITY', 'WFN', 'CCSD_T')
 
         user_ref = psi4.get_option('CCENERGY', 'REFERENCE')
-        if (user_ref != 'RHF') and (user_ref != 'UHF'):
+        if (user_ref != 'UHF'):
             raise ValidationError('Reference %s for CCSD(T) gradients is not available.' % user_ref)
 
     psi4.cchbar()
