@@ -43,8 +43,17 @@ void PSIO::change_file_namespace(unsigned int unit, const std::string & ns1, con
 
     old_fullpath = (char*) malloc( (strlen(path)+strlen(old_name)+80)*sizeof(char));
     new_fullpath = (char*) malloc( (strlen(path)+strlen(new_name)+80)*sizeof(char));
-    sprintf(old_fullpath, "%s%s.%s.%u", path, old_name, ns1.c_str(), unit);
-    sprintf(new_fullpath, "%s%s.%s.%u", path, new_name, ns2.c_str(), unit);
+    
+    if (ns1 == "") {    
+        sprintf(old_fullpath, "%s%s.%u", path, old_name, unit);
+    } else {
+        sprintf(old_fullpath, "%s%s.%s.%u", path, old_name, ns1.c_str(), unit);
+    }
+    if (ns2 == "") {    
+        sprintf(new_fullpath, "%s%s.%u", path, new_name, unit);
+    } else {
+        sprintf(new_fullpath, "%s%s.%s.%u", path, new_name, ns2.c_str(), unit);
+    }
 
     //printf("%s\n",old_fullpath);
     //printf("%s\n",new_fullpath);
