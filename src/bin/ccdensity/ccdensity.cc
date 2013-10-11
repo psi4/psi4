@@ -121,10 +121,7 @@ void ex_td_setup(struct TD_Params S, struct TD_Params U);
 void ex_td_cleanup();
 void ex_oscillator_strength(struct TD_Params *S, struct TD_Params *U, struct XTD_Params *xtd_data);
 void ex_rotational_strength(struct TD_Params *S, struct TD_Params *U, struct XTD_Params *xtd_data);
-//void ex_td_print();
 void ex_td_print(std::vector<struct XTD_Params>);
-//void ex_oscillator_strength(struct TD_Params *S, struct TD_Params *U);
-//void ex_rotational_strength(struct TD_Params *S, struct TD_Params *U);
 
 PsiReturnType ccdensity(Options& options)
 {
@@ -393,31 +390,35 @@ PsiReturnType ccdensity(Options& options)
       for(i=0; i < (params.nstates-1); i++) {
         for(j=0; j <= i; j++) {
 
+          //if(td_params[j].irrep == td_params[i+1].irrep) { 
+          fprintf(outfile, "State %d = %20.12lf\n", j+1, td_params[j].cceom_energy);
+          fprintf(outfile, "State %d = %20.12lf\n", i+2, td_params[i+1].cceom_energy);
+
           //- <Lx|O|Ry> (y>x)
           ex_td_setup(td_params[j],td_params[i+1]);
           fprintf(outfile,"\t*** LTD Setup complete.\n");
           fprintf(outfile,"\t*** Computing <%d|X{pq}}|%d> (LEFT) Transition Density ***\n", j+1,i+2);
           fflush(outfile);
+          //fprintf(stdout, "\t*** Computing <%d|X{pq}}|%d> (LEFT) Transition Density ***\n", j+1,i+2);
 
           ex_tdensity('l',td_params[j],td_params[i+1]);
 
-          //- Clean out Amp Files (Might not be necessary)
-          //ex_td_cleanup();
+          //- Clean out Amp Files (Might not be necessary, but seems to be.)
+          ex_td_cleanup();
 
           //- <Ly|O|Rx> (y>x) 
           ex_td_setup(td_params[i+1],td_params[j]);
           fprintf(outfile,"\t*** RTD Setup complete.\n");
           fprintf(outfile,"\t*** Computing <%d|X{pq}}|%d> (RIGHT) Transition Density ***\n", i+2,j+1);
           fflush(outfile);
+          //fprintf(stdout, "\t*** Computing <%d|X{pq}}|%d> (RIGHT) Transition Density ***\n", i+2,j+1);
 
           ex_tdensity('r',td_params[i+1],td_params[j]);
 
           fprintf(outfile,"\t*** Excited State -> Excited State Transition densities complete.\n");
           fflush(outfile);
-          //ex_oscillator_strength(&(td_params[j]),&(td_params[i+1]));
           ex_oscillator_strength(&(td_params[j]),&(td_params[i+1]), &xtd_data);
           if(params.ref == 0) {
-            //ex_rotational_strength(&(td_params[j]),&(td_params[i+1]));
             ex_rotational_strength(&(td_params[j]),&(td_params[i+1]), &xtd_data);
           }
 
@@ -425,6 +426,7 @@ PsiReturnType ccdensity(Options& options)
 
           td_cleanup();
         }
+        //}
       }
       td_print();
       ex_td_print(xtd_params);
