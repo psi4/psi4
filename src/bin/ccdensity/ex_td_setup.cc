@@ -44,6 +44,8 @@ void ex_td_setup(struct TD_Params S, struct TD_Params U)
   if((params.ref == 0) || (params.ref == 1)) {
     global_dpd_->file2_init(&L1, PSIF_CC_LAMPS, 0, 0, 1, "LIA 0 -1");
     global_dpd_->file2_copy(&L1, PSIF_CC_GLG, "LIA");
+    //fprintf(stdout, "\t*** LAMBDA ***\n");
+    //global_dpd_->file2_print(&L1, stdout);
     global_dpd_->file2_close(&L1);
 
     global_dpd_->file2_init(&L1, PSIF_CC_LAMPS, 0, 0, 1, "Lia 0 -1");
@@ -88,7 +90,10 @@ void ex_td_setup(struct TD_Params S, struct TD_Params U)
   if((params.ref==0) || (params.ref==1)) {
     global_dpd_->file2_init(&L1, PSIF_CC_LAMPS, S.irrep, 0, 1, S.L1A_lbl);
     global_dpd_->file2_copy(&L1, PSIF_CC_GL, "LIA");
+    //fprintf(stdout, "\t*** LHS ***\n");
     //global_dpd_->file2_print(&L1, stdout);
+    fprintf(outfile, "\t*** LHS ***\n");
+    global_dpd_->file2_print(&L1, outfile);
     global_dpd_->file2_close(&L1);
 
     global_dpd_->file2_init(&L1, PSIF_CC_LAMPS, S.irrep, 0, 1, S.L1B_lbl);
@@ -133,7 +138,10 @@ void ex_td_setup(struct TD_Params S, struct TD_Params U)
   if((params.ref == 0) || (params.ref == 1)) {
     global_dpd_->file2_init(&R1, PSIF_CC_RAMPS, U.irrep, 0, 1, U.R1A_lbl);
     global_dpd_->file2_copy(&R1, PSIF_CC_GR, "RIA");
+    //fprintf(stdout, "\t*** RHS ***\n");
     //global_dpd_->file2_print(&R1, stdout);
+    fprintf(outfile, "\t*** RHS ***\n");
+    global_dpd_->file2_print(&R1, outfile);
     global_dpd_->file2_close(&R1);
 
     global_dpd_->file2_init(&R1, PSIF_CC_RAMPS, U.irrep, 0, 1, U.R1B_lbl);
@@ -178,18 +186,23 @@ void ex_td_setup(struct TD_Params S, struct TD_Params U)
   if((params.ref==0) || (params.ref==1)) {
     if(S.irrep == 0) {
       global_dpd_->file2_init(&L1, PSIF_CC_GLG, 0, 0, 1, "LIA");
+      global_dpd_->file2_scm(&L1, S.R0);
       global_dpd_->file2_close(&L1);
 
       global_dpd_->file2_init(&L1, PSIF_CC_GLG, 0, 0, 1, "Lia");
+      global_dpd_->file2_scm(&L1, S.R0);
       global_dpd_->file2_close(&L1);
 
       global_dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 2, 7, 2, 7, 0, "LIJAB");
+      global_dpd_->buf4_scm(&L2, S.R0);
       global_dpd_->buf4_close(&L2);
 
       global_dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 2, 7, 2, 7, 0, "Lijab");
+      global_dpd_->buf4_scm(&L2, S.R0);
       global_dpd_->buf4_close(&L2);
 
       global_dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 0, 5, 0, 5, 0, "LIjAb");
+      global_dpd_->buf4_scm(&L2, S.R0);
       global_dpd_->buf4_close(&L2);
     }
 
@@ -221,18 +234,23 @@ void ex_td_setup(struct TD_Params S, struct TD_Params U)
   else if(params.ref == 2) {
     if(S.irrep == 0) {
       global_dpd_->file2_init(&L1, PSIF_CC_GLG, 0, 0, 1, "LIA");
+      global_dpd_->file2_scm(&L1, S.R0);
       global_dpd_->file2_close(&L1);
 
       global_dpd_->file2_init(&L1, PSIF_CC_GLG, 0, 2, 3, "Lia");
+      global_dpd_->file2_scm(&L1, S.R0);
       global_dpd_->file2_close(&L1);
 
       global_dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 0, 5, 2, 7, 0, "LIJAB");
+      global_dpd_->buf4_scm(&L2, S.R0);
       global_dpd_->buf4_close(&L2);
 
       global_dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 10, 15, 12, 17, 0, "Lijab");
+      global_dpd_->buf4_scm(&L2, S.R0);
       global_dpd_->buf4_close(&L2);
 
       global_dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 22, 28, 22, 28, 0, "LIjAb");
+      global_dpd_->buf4_scm(&L2, S.R0);
       global_dpd_->buf4_close(&L2);
     }
 

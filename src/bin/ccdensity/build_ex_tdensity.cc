@@ -34,9 +34,6 @@
 
 namespace psi { namespace ccdensity {
 
-//void ex_tdensity_rohf(struct TD_Params S, struct TD_Params U);
-//void ex_tdensity_uhf(struct TD_Params S, struct TD_Params U);
-//void ex_tdensity_intermediates(struct TD_Params S, struct TD_Params U);
 void ex_tdensity_rohf(char hand, struct TD_Params S, struct TD_Params U);
 void ex_tdensity_uhf(char hand, struct TD_Params S, struct TD_Params U);
 void ex_tdensity_intermediates(char hand, struct TD_Params S, struct TD_Params U);
@@ -152,9 +149,13 @@ void ex_tdensity_rohf(char hand, struct TD_Params S, struct TD_Params U)
 
 
   /* R_I^A */
+     //-> Exclude this term for excited -> excited transition densities.
+     //   This the R-only term (no L, so doesnt' contribute).
+/*
   global_dpd_->file2_init(&R1, PSIF_CC_GR, Rirrep, 0, 1, "RIA");
   global_dpd_->file2_copy(&R1, PSIF_CC_TMP, "LTDIA");
   global_dpd_->file2_close(&R1);
+*/
 
 /*
   if(Tirrep == 0) {
@@ -218,9 +219,13 @@ void ex_tdensity_rohf(char hand, struct TD_Params S, struct TD_Params U)
 */
 
   /* R_i^a */
+     //-> Exclude this term for excited -> excited transition densities.
+     //   This the R-only term (no L, so doesnt' contribute).
+/*
   global_dpd_->file2_init(&R1, PSIF_CC_GR, Rirrep, 0, 1, "Ria");
   global_dpd_->file2_copy(&R1, PSIF_CC_TMP, "LTDia");
   global_dpd_->file2_close(&R1);
+*/
 
 /*
   if(Tirrep == 0) {
@@ -305,8 +310,9 @@ void ex_tdensity_rohf(char hand, struct TD_Params S, struct TD_Params U)
   }
 */
 
-  //ex_tdensity_intermediates(S,U);
   ex_tdensity_intermediates(hand,S,U);
+  fprintf(outfile, "Intermediates built.\n");
+  fflush(outfile);
 
   global_dpd_->file2_init(&TIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
   global_dpd_->file2_init(&Tia, PSIF_CC_OEI, 0, 0, 1, "tia");
@@ -485,7 +491,6 @@ void ex_tdensity_rohf(char hand, struct TD_Params S, struct TD_Params U)
   return;
 }
 
-//void ex_tdensity_uhf(struct TD_Params S, struct TD_Params U)
 void ex_tdensity_uhf(char hand, struct TD_Params S, struct TD_Params U)
 {
   dpdfile2 DAI, Dai, DIA, Dia, DIJ, DAB, Dij, Dab, TIA, Tia;
@@ -578,10 +583,13 @@ void ex_tdensity_uhf(char hand, struct TD_Params S, struct TD_Params U)
 */
 
   /* R_I^A */
-    
+     //-> Exclude this term for excited -> excited transition densities.
+     //   This the R-only term (no L, so doesnt' contribute).
+/*  
   global_dpd_->file2_init(&R1, PSIF_CC_GR, Rirrep, 0, 1, "RIA");
   global_dpd_->file2_copy(&R1, PSIF_CC_TMP, "LTDIA");
   global_dpd_->file2_close(&R1); 
+*/
 
 /*
   if(Tirrep == 0) { // Symmetric Transitions
@@ -644,10 +652,13 @@ void ex_tdensity_uhf(char hand, struct TD_Params S, struct TD_Params U)
 */
 
   /* R_i^a */
-    
+     //-> Exclude this term for excited -> excited transition densities.
+     //   This the R-only term (no L, so doesnt' contribute).
+/*
   global_dpd_->file2_init(&R1, PSIF_CC_GR, Rirrep, 2, 3, "Ria");
   global_dpd_->file2_copy(&R1, PSIF_CC_TMP, "LTDia"); 
   global_dpd_->file2_close(&R1);
+*/
 
 /*
   if(Tirrep == 0) { // Symmetric Transitions 
@@ -733,7 +744,6 @@ void ex_tdensity_uhf(char hand, struct TD_Params S, struct TD_Params U)
   }
 */
 
-  //ex_tdensity_intermediates(S,U);
   ex_tdensity_intermediates(hand,S,U);
 
   global_dpd_->file2_init(&TIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
