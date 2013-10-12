@@ -272,6 +272,159 @@ the end of the ``ZMAT`` file that is otherwise written from psi style
 format. It is by this route that, for example ``%excite*`` sections can at
 present be spcified.
 
+One key difficulty to consider in constructing an interface, and
+particularly one such as this where input form is liberal, between cfour
+and psi4 formats, is that specificity on how info should be conveyed is
+lost. It is possible to specify something multiple ways, each of which
+are legal, then what happens if multiples ones are used. Does the last
+one get used? the psi4 one? does execution notify or stop?
+
+The above narrative introduction to the P4C4 interface should be
+sufficient to get started. Issues of competition between |PSIfour| and
+Cfour specification format are generally resolved behind the scenes:
+not according to a *simple* rule but according to sensible, sometimes
+intricate, rules governed by user intent (and integration of Cfour to
+behave like a |PSIfour| module). Much can be gleaned by just running
+inputs and inspecting the ``ZMAT`` passed to Cfour, but when questions
+arise, here are the specifics.
+
+Some Governing Laws
+
+* opt!!
+* puream
+
+* Specifying a piece of input in |PSIfour| format is entering into
+  a contract that you mean it. In particular this applies to
+  molecule (including charge/multiplicity through :samp:`molecule
+  {optional_molecule_name} \\{...\\}`), memory (through :samp:`memory
+  {value} {unit}`), computational method (through . If Cfour keywords
+  are specified with values that contradict the |PSIfour| input,
+  execution is halted.
+
+  As an example, the input below is set up to fail in four ways:
+  contradictory specification of memory, multiplicity, computational
+  method, and derivative level. Note, though, that the ``cfour_units
+  angstrom`` setting is permissible, since it concurs with the value
+  implied in the molecule block. ::
+
+    memory 300 mb
+
+    molecule {
+    H
+    H 1 0.7
+    }
+
+    set basis 6-31g
+    set cfour_multiplicity 3         # clash with implicit singlet in molecule {} above
+    set cfour_units angstrom         # no problem, consistent with molecule {} above
+    set cfour_memory_size 100000000  # clash with 300 mb above
+    set cfour_calc_level ccsd        # clash with 'c4-scf' below
+    set cfour_deriv_level first      # clash with energy() below (use gradient('c4-scf') to achieve this)
+
+    energy('c4-scf')
+
+* Specifying the basis is perhaps the regulated piece of input. Since
+  basis set names differ between |PSIfour| and Cfour and it's not
+  practical to compare exponent-to-exponent, any input file with both
+  |mints__basis| and |cfour__cfour_basis| keywords present will halt.
+
+* Specifying the computational method (through, for instance,
+  ``energy('c4-ccsd')`` instead of ``energy('cfour')``) often
+  sets additional keywords consistent with best practices (*e.g.*,
+  |cfour__cfour_cc_program|). Since those settings are implicit, any
+  explicit setting of those those keywords, whether contradicting or
+  concurring, takes priority (halts never generated). The following are
+  some concrete examples. For the moment, click the source button at
+  :py:func:`qcdb.cfour.muster_modelchem` for details of what keywords
+  get set.
+
+  * runs in vcc since that's Cfour's default for cc_program ::
+
+    set cfour_calc_level ccsd
+    energy('cfour')
+
+  * runs in ecc since Cfour's default overwritten by keyword ::
+
+    set cfour_calc_level ccsd
+    set cfour_cc_program ecc
+    energy('cfour')
+
+  * runs in ecc since that's best practice for the requested ccsd ::
+
+    energy('c4-ccsd')
+
+  * runs in vcc since *hidden* default overwritten by keyword ::
+
+    set cfour_cc_program vcc
+    energy('c4-ccsd')
+
+
+* Specifying anything in |PSIfour| format (molecule, basis, options,
+  method call) starts building a ``*CFOUR(...)`` directive for the
+  ``ZMAT`` file. Since the contents of the ``cfour {...}`` block are
+  blindly appended to any input interpreted from |PSIfour| format,
+  mixing of |PSIfour| and Cfour input formats likely *will* give rise
+  to multiple ``*CFOUR(...)`` directives in the prospective ``ZMAT``,
+  execution of which *will* be trapped and halted.
+
+  Proper uses for the ``cfour {...}`` block are for the sandwich mode,
+  where the entire ``ZMAT`` is enclosed, or for extra directives like
+  ``%excite*``, which presently have no other specification route.
+
+* Specifying certain keywords that are nominally applicable for pure-\
+  |PSIfour| modules directs them to fulfil analogous roles
+  in the Cfour program (*e.g.*, |scf__maxiter| is used to set
+  |cfour__cfour_scf_maxcyc|). This keyword translation only takes place
+  if the keywords are explicitly set in the input file (part of that
+  contract that you mean it), meaning that |PSIfours| defaults don't
+  get imposed on Cfour. Also, in the case where a translatable pure-\
+  |PSIfour| keyword and its translation Cfour keyword are both set,
+  the value attached to the latter is always used. Below are a few
+  clarifying examples.
+
+  * uses :math:`10^{-7}` SCF conv crit since that's Cfour's default
+    for |cfour__cfour_scf_conv| ::
+
+    energy('c4-scf')
+
+  * uses :math:`10^{-6}` SCF conv crit since default overwritten by
+    keyword ::
+
+    set cfour_scf_conv 6
+    energy('c4-scf')
+
+  * uses :math:`10^{-5}` SCF conv crit since default overwritten by
+    :ref:`SCF module<apdx:scf>` keyword ::
+
+    set d_convergence 5
+    energy('c4-scf')
+
+  * uses :math:`10^{-6}` SCF conv crit since default overwritten by
+    :ref:`SCF module<apdx:scf>` keyword (local scope works, too) where
+    the |PSIfours| more flexible float input has been rounded down to
+    the integer required by Cfour ::
+
+    set scf d_convergence 5e-6
+    energy('c4-scf')
+
+  * uses :math:`10^{-6}` SCF conv crit since default overwritten
+    and Cfour module keyword trumps |PSIfour| SCF module keyword ::
+
+    set cfour_scf_conv 6
+    set d_convergence 8
+    energy('c4-scf')
+
+  The keyword translation feature is still in the proof-of-principle
+  stage, so only a handful (found here) of keywords participate.
+
+.. note:: Longtime Cfour users who may consider this keyword
+   translation a flaw rather than a feature can avoid it entirely by
+   confining keywords to the :ref:`Cfour module<apdx:cfour>` along with
+   |mints__basis| and |globals__puream| (opt, too?)
+
+
+Since these overridings of Cfour defaults 
+
 
 .. molecule {
 .. 0 2
