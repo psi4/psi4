@@ -92,7 +92,7 @@ Molecule and Geometry Specification
 
    psithonmol
 
-To add EFP fragments to a molecule, see :ref:`sec:usingEFPFragments`.
+.. comment To add EFP fragments to a molecule, see :ref:`sec:usingEFPFragments`.
 
 .. index::
    triple: setting; keywords; general
@@ -187,65 +187,13 @@ the input file, so if the last four commands in the above example were to read :
 the commands that set the print level would be ineffective, as they would be
 processed after the CCSD computation completes.
 
-.. index:: basis set; multiple within molecule
-.. _`sec:psithonBasissets`:
+Basis Sets
+==========
 
-Assigning Basis Sets
-====================
+.. toctree::
+   :maxdepth: 2
 
-While the above syntax will suffice for specifying basis sets in most cases,
-the user may need to assign basis sets to specific atoms.  To achieve this, a
-``basis`` block can be used.  We use a snippet from the :srcsample:`mints2` sample
-input file, which performs a benzene SCF computation, to demonstrate this
-feature. ::
-
-    basis {
-       assign DZ
-       assign C 3-21G
-       assign H1 sto-3g
-       assign C1 sto-3g
-    }
-
-The first line in this block assigns the DZ basis set to all atoms.  The next
-line then assigns 3-21G to all carbon atoms, leaving the hydrogens with the DZ
-basis set.  On the third line, the hydrogen atoms which have been specifically
-labelled as ``H1`` are given the STO-3G basis set, leaving the unlabelled hydrogen
-atoms with the DZ basis set.  Likewise, the fourth line assigns the STO-3G
-basis set to just the carbon atoms labelled ``C1``.  This bizzare example was
-constructed to demonstrate the syntax, but the flexibility of the basis set
-specification is advantageous, for example, when selectivily omitting diffuse
-functions to make computations more tractable.
-
-.. index:: basis set; auxiliary
-
-In the above example the basis sets have been assigned asymmetrically, reducing
-the effective symmetry from :math:`D_{6h}` to :math:`C_{2v}`; |PSIfour| will detect this
-automatically and run in the appropriate point group.  The same syntax can be
-used to specify basis sets other than that used to define orbitals.  For
-example, ::
-
-    set df_basis_mp2 cc-pvdz-ri
-    
-     or
-    
-    basis {
-       assign cc-pVDZ-RI df_basis_mp2
-    }
-
-are both equivalent ways to set the auxiliary basis set for density fitted MP2
-computations.  To assign the aug-cc-pVDZ-RI to carbon atoms, the following
-command is used::
-
-    basis {
-       assign C aug-cc-pVDZ-RI df_basis_mp2
-    }
-
-When most popular basis sets are being used, including Dunning and
-Pople-style, the SCF, DF-MP2, and SAPT codes will chose the appropriate
-auxiliary basis set automatically according to :ref:`apdx:basisFamily`,
-unless instructed otherwise by setting the auxiliary basis set in the
-input.  Finally, we note that the ``basis {...}`` block may also be used
-for defining basis sets, as detailed in Sec. :ref:`sec:basisUserDefined`.
+   quickaddbasis
 
 .. _`sec:psiVariables`:
 

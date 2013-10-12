@@ -12,7 +12,6 @@
    external
    tutorial
    psithoninput
-   basissets
    methods
    interfacing
    psithonfunc

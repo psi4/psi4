@@ -4,30 +4,15 @@
 .. index:: basis set; available by family
 .. _`sec:basisBuiltIn`:
 
-==========
-Basis Sets
-==========
-
-Basis sets in |PSIfour| are Gaussian functions (not Slater-type functions or plane waves),
-all-electron [no effective core potentials (ECPs)],
-and of Gaussian94 format (for ease of export from `EMSL <https://bse.pnl.gov/bse/portal>`_).
-Both spherical harmonic (5D/7F) and Cartesian (6D/10F) Gaussian functions are supported,
-but their mixtures are not, neither within a basis set (*e.g.*, 6D/7F) nor within a calculation
-(*e.g.*, cartesian for the orbital basis and spherical for the fitting basis).
-For built-in basis sets, the correct ``spherical``/``cartesian`` value for |globals__puream|
-is set internally from the orbital basis.
-
-* :ref:`Specifying basis sets <sec:jobControl>`
-* Built-in basis sets by family (below)
-* :ref:`Built-in basis sets by element <apdx:basisElement>`
-* :ref:`User-Defined basis sets <sec:basisUserDefined>`
-* :ref:`Auxiliary bases for built-in orbital basis sets <apdx:basisFamily>`
-
+====================
+Basis Sets by Family
+====================
 
 Tables :ref:`Pople <table:basisPopleOrbital>`,
 :ref:`Dunning <table:basisDunningOrbital>`, 
-:ref:`Dunning (Douglas-Kroll) <table:basisDunningDK>`, and
-:ref:`Other <table:basisOther>` summarize the orbital basis sets available in
+:ref:`Dunning (Douglas-Kroll) <table:basisDunningDK>`, 
+:ref:`Karlsruhe <table:basisKarlsruhe>`,
+and :ref:`Other <table:basisOther>` summarize the orbital basis sets available in
 |PSIfour|.  These tables are arranged so that columns indicate degree of
 augmentation by diffuse functions (generally necessary for anions, excited
 states, and noncovalent interactions) and DTQ56 indicate the :math:`X\;=\zeta` levels
@@ -56,7 +41,7 @@ Appendix :ref:`apdx:basisElement`.
     +-----------------+--------------+------------------+---------------+-------------------+----------------+
     | no diffuse                     | heavy-augmented                  | augmented                          |
     +-----------------+--------------+------------------+---------------+-------------------+----------------+
-    | basis set       | [alias]      | basis set        | [alias]       | basis set         | [alias]        |
+    | basis set       | alias        | basis set        | alias         | basis set         | alias          |
     +=================+==============+==================+===============+===================+================+
     | STO-3G          |              |                  |               |                   |                |
     +-----------------+--------------+------------------+---------------+-------------------+----------------+
@@ -65,16 +50,16 @@ Appendix :ref:`apdx:basisElement`.
     +-----------------+--------------+------------------+---------------+-------------------+----------------+
     | 6-31G           |              | 6-31+G           |               | 6-31++G           |                |
     +-----------------+--------------+------------------+---------------+-------------------+----------------+
-    | 6-31G(d)        | [6-31G\*]    | 6-31+G(d)        | [6-31+G\*]    | 6-31++G(d)        | [6-31++G\*]    |
+    | 6-31G(d)        | 6-31G\*      | 6-31+G(d)        | 6-31+G\*      | 6-31++G(d)        | 6-31++G\*      |
     +-----------------+--------------+------------------+---------------+-------------------+----------------+
-    | 6-31G(d_p)      | [6-31G\*\*]  | 6-31+G(d_p)      | [6-31+G\*\*]  | 6-31++G(d_p)      | [6-31++G\*\*]  |
+    | 6-31G(d_p)      | 6-31G\*\*    | 6-31+G(d_p)      | 6-31+G\*\*    | 6-31++G(d_p)      | 6-31++G\*\*    |
     +-----------------+--------------+------------------+---------------+-------------------+----------------+
     +-----------------+--------------+------------------+---------------+-------------------+----------------+
     | 6-311G          |              | 6-311+G          |               | 6-311++G          |                |
     +-----------------+--------------+------------------+---------------+-------------------+----------------+
-    | 6-311G(d)       | [6-311G\*]   | 6-311+G(d)       | [6-311+G\*]   | 6-311++G(d)       | [6-311++G\*]   |
+    | 6-311G(d)       | 6-311G\*     | 6-311+G(d)       | 6-311+G\*     | 6-311++G(d)       | 6-311++G\*     |
     +-----------------+--------------+------------------+---------------+-------------------+----------------+
-    | 6-311G(d_p)     | [6-311G\*\*] | 6-311+G(d_p)     | [6-311+G\*\*] | 6-311++G(d_p)     | [6-311++G\*\*] |
+    | 6-311G(d_p)     | 6-311G\*\*   | 6-311+G(d_p)     | 6-311+G\*\*   | 6-311++G(d_p)     | 6-311++G\*\*   |
     +-----------------+--------------+------------------+---------------+-------------------+----------------+
     | 6-311G(2d)      |              | 6-311+G(2d)      |               | 6-311++G(2d)      |                |
     +-----------------+--------------+------------------+---------------+-------------------+----------------+
@@ -245,29 +230,48 @@ Appendix :ref:`apdx:basisElement`.
 |
 |
 
+.. _`table:basisKarlsruhe`:
+
+.. table:: Summary of Karlsruhe orbital basis sets available in |PSIfour|
+
+    +--------------+-------------+
+    | no diffuse   | augmented   |
+    +==============+=============+
+    | def2-SV(P)   |             |
+    +--------------+-------------+
+    | def2-SVP     | def2-SVPD   |
+    +--------------+-------------+
+    | def2-TZVP    | def2-TZVPD  |
+    +--------------+-------------+
+    | def2-TZVPP   | def2-TZVPPD |
+    +--------------+-------------+
+    | def2-QZVP    | def2-QZVPD  |
+    +--------------+-------------+
+    | def2-QZVPP   | def2-QZVPPD |
+    +--------------+-------------+
+
+|
+|
+
 .. _`table:basisOther`:
 
 .. table:: Summary of other orbital basis sets available in |PSIfour|
 
-    +--------------+-------------+----------------+
-    | Karlsruhe                  | other          |
-    +--------------+-------------+----------------+
-    | no diffuse   | augmented   |                |
-    +==============+=============+================+
-    | def2-SV(P)   |             | DZP            |
-    +--------------+-------------+----------------+
-    | def2-SVP     | def2-SVPD   | TZ2P           |
-    +--------------+-------------+----------------+
-    | def2-TZVP    | def2-TZVPD  | TZ2PF          |
-    +--------------+-------------+----------------+
-    | def2-TZVPP   | def2-TZVPPD | Sadlej-LPol-ds |
-    +--------------+-------------+----------------+
-    | def2-QZVP    | def2-QZVPD  | Sadlej-LPol-dl |
-    +--------------+-------------+----------------+
-    | def2-QZVPP   | def2-QZVPPD | Sadlej-LPol-fs |
-    +--------------+-------------+----------------+
-    |              |             | Sadlej-LPol-fl |
-    +--------------+-------------+----------------+
+    +----------------+
+    | DZP            |
+    +----------------+
+    | TZ2P           |
+    +----------------+
+    | TZ2PF          |
+    +----------------+
+    | Sadlej-LPol-ds |
+    +----------------+
+    | Sadlej-LPol-dl |
+    +----------------+
+    | Sadlej-LPol-fs |
+    +----------------+
+    | Sadlej-LPol-fl |
+    +----------------+
 
 |
 |
