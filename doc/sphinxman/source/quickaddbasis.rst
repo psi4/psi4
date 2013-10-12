@@ -1,16 +1,125 @@
 
 .. include:: autodoc_abbr_options_c.rst
 
+==========
+Basis Sets
+==========
+
+Basis sets in |PSIfour| are Gaussian functions (not Slater-type functions or plane waves),
+all-electron [no effective core potentials (ECPs)],
+and of Gaussian94 format (for ease of export from `EMSL <https://bse.pnl.gov/bse/portal>`_).
+Both spherical harmonic (5D/7F) and Cartesian (6D/10F) Gaussian functions are supported,
+but their mixtures are not, neither within a basis set (*e.g.*, 6D/7F) nor within a calculation
+(*e.g.*, cartesian for the orbital basis and spherical for the fitting basis).
+For built-in basis sets, the correct ``spherical``/``cartesian`` value for |globals__puream|
+is set internally from the orbital basis.
+
+* :ref:`Specifying basis sets <sec:jobControl>`
+* :ref:`sec:basisBuiltIn`
+* :ref:`Built-in basis sets by element <apdx:basisElement>`
+* :ref:`User-Defined basis sets <sec:basisUserDefined>`
+* :ref:`Auxiliary bases for built-in orbital basis sets <apdx:basisFamily>`
+
+.. index:: basis set; available by family
+.. _`sec:basisBuiltIn`:
+
+Built-In Basis Sets
+===================
+
+A wide range of orbital basis sets are built into |PSIfour|. These are
+summarized in Tables :ref:`Pople <table:basisPopleOrbital>`,
+:ref:`Dunning <table:basisDunningOrbital>`, 
+:ref:`Dunning (Douglas-Kroll) <table:basisDunningDK>`, 
+:ref:`Karlsruhe <table:basisKarlsruhe>`,
+and :ref:`Other <table:basisOther>` in Appendix :ref:`sec:basisBuiltIn`.
+These tables are arranged so that columns indicate degree of
+augmentation by diffuse functions (generally necessary for anions, excited
+states, and noncovalent interactions) and DTQ56 indicate the :math:`X\;=\zeta` levels
+available.  Several intermediate levels of diffuse space between the customary
+non-augmented and augmented versions have been supplied for each basis set,
+including heavy-augmented and Truhlar's [Papajak:2011:10]_ calendar
+truncations described in Table :ref:`Months Bases <table:basisMonths>`.  Fitting bases 
+in Tables :ref:`JKFIT <table:basisDunningJKFIT>`,
+:ref:`RI <table:basisDunningMP2FIT>`, and :ref:`DUAL <table:basisDunningDUAL>`
+are available for methods incorporating density-fitting or dual-basis
+approximations. JKFIT sets are appropriate for fitting :math:`(oo|`\ -type products,
+such as encountered in SCF theory and the electrostatics/exchange terms of SAPT.
+RI sets are appropriate for fitting :math:`(ov|`\ -type products, such as encountered in
+MP2 and most SAPT terms.  Citations for basis sets can be found in their
+definition files at :source:`lib/basis` in the source.  For basis set availability by
+element and the default value for keyword |globals__puream|, consult
+Appendix :ref:`apdx:basisElement`.
+
+.. index:: basis set; multiple within molecule
+.. _`sec:psithonBasissets`:
+
+Mixing Basis Sets
+=================
+
+While the above syntax will suffice for specifying basis sets in most cases,
+the user may need to assign basis sets to specific atoms.  To achieve this, a
+``basis`` block can be used.  We use a snippet from the :srcsample:`mints2` sample
+input file, which performs a benzene SCF computation, to demonstrate this
+feature. ::
+
+    basis {
+       assign DZ
+       assign C 3-21G
+       assign H1 sto-3g
+       assign C1 sto-3g
+    }
+
+The first line in this block assigns the DZ basis set to all atoms.  The next
+line then assigns 3-21G to all carbon atoms, leaving the hydrogens with the DZ
+basis set.  On the third line, the hydrogen atoms which have been specifically
+labelled as ``H1`` are given the STO-3G basis set, leaving the unlabelled hydrogen
+atoms with the DZ basis set.  Likewise, the fourth line assigns the STO-3G
+basis set to just the carbon atoms labelled ``C1``.  This bizzare example was
+constructed to demonstrate the syntax, but the flexibility of the basis set
+specification is advantageous, for example, when selectivily omitting diffuse
+functions to make computations more tractable.
+
+.. index:: basis set; auxiliary
+
+In the above example the basis sets have been assigned asymmetrically, reducing
+the effective symmetry from :math:`D_{6h}` to :math:`C_{2v}`; |PSIfour| will detect this
+automatically and run in the appropriate point group.  The same syntax can be
+used to specify basis sets other than that used to define orbitals.  For
+example, ::
+
+    set df_basis_mp2 cc-pvdz-ri
+    
+     or
+    
+    basis {
+       assign cc-pVDZ-RI df_basis_mp2
+    }
+
+are both equivalent ways to set the auxiliary basis set for density fitted MP2
+computations.  To assign the aug-cc-pVDZ-RI to carbon atoms, the following
+command is used::
+
+    basis {
+       assign C aug-cc-pVDZ-RI df_basis_mp2
+    }
+
+When most popular basis sets are being used, including Dunning and
+Pople-style, the SCF, DF-MP2, and SAPT codes will chose the appropriate
+auxiliary basis set automatically according to :ref:`apdx:basisFamily`,
+unless instructed otherwise by setting the auxiliary basis set in the
+input.  Finally, we note that the ``basis {...}`` block may also be used
+for defining basis sets, as detailed in :ref:`sec:basisUserDefined`.
+
 .. index::
    pair: basis set; adding new
-
-.. note:: No recompile of the PSI program is necessary for changes made to
-    files in ``$PSIDATADIR``, including those described below.
 
 .. _`sec:basisUserDefined`:
 
 User-Defined Basis Sets
 =======================
+
+.. note:: No recompile of the PSI program is necessary for changes made to
+    files in ``$PSIDATADIR``, including those described below.
 
 There are three routes by which a basis set in G94 format can be introduced to |PSIfours| notice.
 
@@ -115,4 +224,5 @@ Use ``assign`` statements to actually request the basis set. (See
    [addl]
    ...
    }
+
 

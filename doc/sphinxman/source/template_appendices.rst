@@ -22,6 +22,7 @@ Basis Sets
 .. toctree::
    :maxdepth: 2
 
+   basissets
    basissets_byelement
    basissets_byfamily
 
