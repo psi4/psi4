@@ -25,7 +25,8 @@ executable or to build the source. To by used by |PSIfour|, the program
 binary (``xcfour``) must be found in your :envvar:`PATH` or
 :envvar:`PSIPATH`.  The ``GENBAS`` file containing basis sets in Cfour
 format is not necessary for this interface, but if you prefer to access
-basis sets the "Cfour way", ``GENBAS``, too, must be in :envvar:`PATH` or
+basis sets the "Cfour way" using a custom ``GENBAS`` file (the distributed
+one is included with the interface), it, too, must be in :envvar:`PATH` or
 :envvar:`PSIPATH`. If |PSIfour| is unable to execute the binary, an error
 will be reported.
 
@@ -37,8 +38,6 @@ will be reported.
    PYTHONPATH should have one qcdb in it; the cloned qcdb is what needs to be
    imported in preference to the one already in psi4). Execute psi4 as usual.
 
-NOTE: Test checked-in GENBAS on installed copy
-
 Cfour for |PSIfour| Users
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -49,30 +48,43 @@ Cfour for |PSIfour| Users
 * Set basis set as usual (Cfour only cares about orbital basis, no fitting
   bases)
 
+* Set the task as usual, indicating Cfour as the intended code by
+  prepending "c4-" to the method argument. So ``energy('scf')`` becomes
+  ``energy('c4-scf')`` and ``optimize('ccsd(t)')`` becomes
+  ``optimize('c4-ccsd(t)')``. Find available methods for
+  :py:func:`~driver.energy` at :ref:`Energy (CFOUR) <table:energy_cfour>`
+  and for :py:func:`~driver.optimize` at :ref:`Gradient (CFOUR)
+  <table:grad_cfour>`.
+
+* Generally, the p4c4 interface will handle best practices for path of
+  execution: ``vcc``/``ecc``, derivative type, *etc.* The user is still
+  responsible for setting convergence, frozen core, guess, diis, *etc.*
+  For the moment, so-called "best-practices" keywords are summarized at
+  :ref:`Best Practices <table:cfour_cc_program>`.
+
 * For the type of computation intended, find appropriate options at
-  :ref:`Keywords <apdx:cfour>`. These keyword summaries contain the same information as the
-  `proper CFOUR options list
+  :ref:`Keywords <apdx:cfour>`. These keyword summaries contain the same
+  information as the `proper CFOUR options list
   <http://slater.chemie.uni-mainz.de/cfour/index.php?n=Main.ListOfKeywordsInAlphabeticalOrder>`_
   plus notes on keyword relevance when run through |PSIfour|.  Information
   at the `CFOUR manual
   <http://slater.chemie.uni-mainz.de/cfour/index.php?n=Main.Manual>`_ may
   also be useful, as may the many samples at :source:`samples/cfour`.
 
-* Generally, the p4c4 interface will handle best practices for path of
-  execution: ``vcc``/``ecc``, derivative type, *etc.* The user is
-  still responsible for setting convergence, frozen core, guess, diis,
-  *etc.*
-
 * Set Cfour keywords just like |PSIfour| keywords. The names of keywords
   are unchanged beyond a prepended "cfour\_". (Though be aware that common
-  abbreviations like CALC and REF must be fully spelled out when used in
+  abbreviations like CALC and REF must be fully spelled out as
+  |cfour__cfour_calc_level| and |cfour__cfour_reference| when used in
   |PSIfour|.)
 
-* Set the task as usual, indicating Cfour as the intended code by
-  prepending "c4-" to the method argument. So ``energy('scf')`` becomes
-  ``energy('c4-scf')`` and ``optimize('ccsd(t)')`` becomes
-  ``optimize('c4-ccsd(t)')``.
+* In limited trial cases, keywords nominally directed at non-Cfour modules
+  are translated into their Cfour counterparts. For example, setting
+  |scf__reference| will appropriately set |cfour__cfour_reference|. For a
+  list of applicable keywords, see source of
+  :py:func:`qcdb.cfour.muster_psi4options`.
 
+* Consult :ref:`sec:cfourFunctionality` for information on what Cfour
+  functionality is accessible through |PSIfour|.
 
 |PSIfour| for Cfour Users
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -107,7 +119,7 @@ place it in :envvar:`PATH` or :envvar:`PSIPATH`. The line calling
 
 After execution of the ``energy('cfour')`` line completes, Cfour results
 are read back into |PSIfour| format and are thereafter accessible for
-further processing in the input file. See :ref:`sec:cfouroutput` for
+further processing in the input file. See :ref:`sec:cfourOutput` for
 details. This in-memory variable and array storage of results (as opposed to only
 file storage) is the only advantage thus far incurred by the p4c4
 interface. We'll call this mode of basic utility the "sandwich" mode.
@@ -272,12 +284,8 @@ the end of the ``ZMAT`` file that is otherwise written from psi style
 format. It is by this route that, for example ``%excite*`` sections can at
 present be spcified.
 
-One key difficulty to consider in constructing an interface, and
-particularly one such as this where input form is liberal, between cfour
-and psi4 formats, is that specificity on how info should be conveyed is
-lost. It is possible to specify something multiple ways, each of which
-are legal, then what happens if multiples ones are used. Does the last
-one get used? the psi4 one? does execution notify or stop?
+Specification Details
+~~~~~~~~~~~~~~~~~~~~~
 
 The above narrative introduction to the P4C4 interface should be
 sufficient to get started. Issues of competition between |PSIfour| and
@@ -286,12 +294,7 @@ not according to a *simple* rule but according to sensible, sometimes
 intricate, rules governed by user intent (and integration of Cfour to
 behave like a |PSIfour| module). Much can be gleaned by just running
 inputs and inspecting the ``ZMAT`` passed to Cfour, but when questions
-arise, here are the specifics.
-
-Some Governing Laws
-
-* opt!!
-* puream
+arise, here are the specifics, the governing laws.
 
 * Specifying a piece of input in |PSIfour| format is entering into
   a contract that you mean it. In particular this applies to
@@ -323,10 +326,31 @@ Some Governing Laws
 
     energy('c4-scf')
 
+* Specifying anything in |PSIfour| format (molecule, basis, options,
+  method call) starts building a ``*CFOUR(...)`` directive for the
+  ``ZMAT`` file. Since the contents of the ``cfour {...}`` block are
+  blindly appended to any input interpreted from |PSIfour| format, mixing
+  of |PSIfour| and Cfour input formats likely *will* give rise to multiple
+  ``*CFOUR(...)`` directives in the prospective ``ZMAT``, execution of
+  which *will* be trapped and halted.  Proper uses for the ``cfour {...}``
+  block are for the sandwich mode, where the entire ``ZMAT`` is enclosed,
+  or for extra directives like ``%excite*``, which presently have no other
+  specification route.
+
 * Specifying the basis is perhaps the regulated piece of input. Since
   basis set names differ between |PSIfour| and Cfour and it's not
   practical to compare exponent-to-exponent, any input file with both
-  |mints__basis| and |cfour__cfour_basis| keywords present will halt.
+  |mints__basis| and |cfour__cfour_basis| keywords present will halt. Once
+  a basis set has been requested through |mints__basis|, overriding the
+  default spherical/Cartesian setting must be done through
+  |globals__puream| (as opposed to |cfour__cfour_spherical|).
+
+* Specifying keywords that control geometry optimization is
+  straightforward. Unless the optimization is invoked in sandwich mode,
+  all Cfour optimization keywords (*e.g.*, |cfour__cfour_geom_maxcyc|) are
+  ineffective, as the Cfour optimizer is never invoked. |PSIfour|
+  optimization keywords (*e.g.*, |optking__geom_maxiter|) instead fill
+  these roles.
 
 * Specifying the computational method (through, for instance,
   ``energy('c4-ccsd')`` instead of ``energy('cfour')``) often
@@ -340,36 +364,23 @@ Some Governing Laws
 
   * runs in vcc since that's Cfour's default for cc_program ::
 
-    set cfour_calc_level ccsd
-    energy('cfour')
+      set cfour_calc_level ccsd
+      energy('cfour')
 
   * runs in ecc since Cfour's default overwritten by keyword ::
 
-    set cfour_calc_level ccsd
-    set cfour_cc_program ecc
-    energy('cfour')
+      set cfour_calc_level ccsd
+      set cfour_cc_program ecc
+      energy('cfour')
 
   * runs in ecc since that's best practice for the requested ccsd ::
 
-    energy('c4-ccsd')
+      energy('c4-ccsd')
 
   * runs in vcc since *hidden* default overwritten by keyword ::
 
-    set cfour_cc_program vcc
-    energy('c4-ccsd')
-
-
-* Specifying anything in |PSIfour| format (molecule, basis, options,
-  method call) starts building a ``*CFOUR(...)`` directive for the
-  ``ZMAT`` file. Since the contents of the ``cfour {...}`` block are
-  blindly appended to any input interpreted from |PSIfour| format,
-  mixing of |PSIfour| and Cfour input formats likely *will* give rise
-  to multiple ``*CFOUR(...)`` directives in the prospective ``ZMAT``,
-  execution of which *will* be trapped and halted.
-
-  Proper uses for the ``cfour {...}`` block are for the sandwich mode,
-  where the entire ``ZMAT`` is enclosed, or for extra directives like
-  ``%excite*``, which presently have no other specification route.
+      set cfour_cc_program vcc
+      energy('c4-ccsd')
 
 * Specifying certain keywords that are nominally applicable for pure-\
   |PSIfour| modules directs them to fulfil analogous roles
@@ -385,34 +396,34 @@ Some Governing Laws
   * uses :math:`10^{-7}` SCF conv crit since that's Cfour's default
     for |cfour__cfour_scf_conv| ::
 
-    energy('c4-scf')
+      energy('c4-scf')
 
   * uses :math:`10^{-6}` SCF conv crit since default overwritten by
     keyword ::
 
-    set cfour_scf_conv 6
-    energy('c4-scf')
+      set cfour_scf_conv 6
+      energy('c4-scf')
 
   * uses :math:`10^{-5}` SCF conv crit since default overwritten by
     :ref:`SCF module<apdx:scf>` keyword ::
 
-    set d_convergence 5
-    energy('c4-scf')
+      set d_convergence 5
+      energy('c4-scf')
 
   * uses :math:`10^{-6}` SCF conv crit since default overwritten by
     :ref:`SCF module<apdx:scf>` keyword (local scope works, too) where
     the |PSIfours| more flexible float input has been rounded down to
     the integer required by Cfour ::
 
-    set scf d_convergence 5e-6
-    energy('c4-scf')
+      set scf d_convergence 5e-6
+      energy('c4-scf')
 
   * uses :math:`10^{-6}` SCF conv crit since default overwritten
     and Cfour module keyword trumps |PSIfour| SCF module keyword ::
 
-    set cfour_scf_conv 6
-    set d_convergence 8
-    energy('c4-scf')
+      set cfour_scf_conv 6
+      set d_convergence 8
+      energy('c4-scf')
 
   The keyword translation feature is still in the proof-of-principle
   stage, so only a handful (found here) of keywords participate.
@@ -471,9 +482,9 @@ keep=False)``.
 
 
 
-optimize on a sandwich calc?
+optimize on a sandwich calc? errors out
 
-.. _`sec:cfouroutput`:
+.. _`sec:cfourOutput`:
 
 Output
 ~~~~~~
@@ -497,10 +508,22 @@ tilde for geom opt
 
 .. autofunction:: interface_cfour.run_cfour(name [, keep, path])
 
+The contents of all files associated with Cfour are accessible from the
+input file through the Python dictionary ``P4C4_INFO``. That is,
+``P4C4_INFO['zmat']`` returns a string of the input file sent to Cfour.
+Accessible arguments are ``zmat``, ``output``, and any that have been
+produced of ``grd``.
+
+.. _`sec:cfourFunctionality`:
+
 Functionality
 ~~~~~~~~~~~~~
 
+Energy methods available through P4C4 interface
+
 .. include:: cfour_table_energy.rst
+
+Gradient methods available through P4C4 interface
 
 .. include:: cfour_table_grad.rst
 
@@ -573,4 +596,11 @@ Functionality
     |                                         |                                 +-----------------------+--------+--------+---------+
     |                                         |                                 | eomea/eomip           | _cc    | _cc    | vcc     |
     +-----------------------------------------+---------------------------------+-----------------------+--------+--------+---------+
+
+Notes to Self
+~~~~~~~~~~~~~
+
+Test checked-in GENBAS on installed copy
+
+Reference still not factoroed into cc_program!
 

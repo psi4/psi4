@@ -3057,7 +3057,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       //experimental use
       //BUFFERSIZE
 
-      /*- Defines the level of calculation to be performed. -*/
+      /*- Defines the level of calculation to be performed.  
+      **PSI4 Interface:** Keyword set from argument of computation
+      command: CCSD if ``energy('c4-ccsd')``, *etc.* See :ref:`Energy
+      (CFOUR) <table:energy_cfour>` and :ref:`Gradient (CFOUR)
+      <table:grad_cfour>`. for all available. -*/
       options.add_str("CFOUR_CALC_LEVEL", "SCF", "SCF HF MBPT(2) MP2 MBPT(3) MP3 SDQ-MBPT(4) SDQ-MP4 MBPT(4) MP4 CCD CCSD CCSD(T) CCSDT-1 CCSDT-1b CCSDT-2 CCSDT-3 CCSDT-4 CCSDT CC2 CC3 QCISD QCISD(T) CID CISD UCC(4) B-CCD");
 
       /*- The number of records held in the i/o cache used by the post-SCF
@@ -3102,7 +3106,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       Default: VCC Note: Using the option ECC is not recommended for ROHF
       gradients. That is, if you are doing a geometry optimization with
       ROHF as your reference wave function then it is safe to use the
-      option VCC. -*/
+      option VCC.
+      **PSI4 Interface:** Keyword set according to best practice for the
+      computational method |cfour__cfour_calc_level|, reference
+      |cfour__cfour_reference| (NYI) and derivative level
+      |cfour__cfour_deriv_level| according to Table :ref:`Best Practices
+      <table:cfour_cc_program>` when method specified by argument to
+      computation command (*e.g.*, when ``energy('c4-ccsd')`` requested
+      but not when ``energy('cfour')`` requested). Value can always be set
+      explicitly. -*/
       options.add_str("CFOUR_CC_PROGRAM", "VCC", "VCC ECC MRCC EXTERNAL");
 
       /*- Specifies the molecular charge. 
@@ -3191,7 +3203,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       calculated, SECOND (=2) second derivatives are calculated.  Note
       that this keyword usually needs not be set in any calculation since
       it is automatically set if the appropriate other options in the
-      CFOUR namelist are turned on. -*/
+      CFOUR namelist are turned on. 
+      **PSI4 Interface:** Keyword set from type of computation command:
+      ZERO if :py:func:`~driver.energy`, FIRST if
+      :py:func:`~driver.gradient` or :py:func:`~driver.optimization`,
+      *etc.* -*/
       options.add_str("CFOUR_DERIV_LEVEL", "ZERO", "ZERO FIRST SECOND");
 
       /*- Specifies whether orbital-relaxed (RELAXED =0) or
@@ -3407,7 +3423,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       groups, for example, those of linear molecules, the two sets of
       labels refer to different subgroups. There is as yet no
       straightforward way to determine what they will be without starting
-      a calculation. If one runs the xjoda and then the xsymcor
+      a calculation. If one runs the ``xjoda`` and then the ``xsymcor``
       executables, the relevant irreducible representations will be
       listed. If all vibrational frequencies are desired, this keyword
       need not be included.  Default : compute vibrational frequencies for
@@ -3673,12 +3689,16 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Specifies the amount of core memory used in integer words
       (default) or in the units specified via the keyword |cfour__cfour_mem_unit|.
       Default: 100 000 000 (approximately 381 or 762 MB for 32 or 64 bit
-      machines, respectively) -*/
+      machines, respectively).
+      **PSI4 Interface:** Keyword set in MB from memory input command when
+      given. -*/
       options.add_int("CFOUR_MEMORY_SIZE", 100000000);
 
       /*- Specifies the units in which the amount of requested core memory
       is given. Possible choices are INTEGERWORDS (default), kB, MB, GB,
-      and TB. -*/
+      and TB.
+      **PSI4 Interface:** Keyword set from memory input command when
+      given, always MB. -*/
       options.add_str("CFOUR_MEM_UNIT", "INTEGERWORDS", "INTEGERWORDS KB MB GB TB");
 
       /*- Specifies the geometry optimization strategy. Four values are
