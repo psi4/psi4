@@ -12,13 +12,14 @@ sp_rohf_subdirs = sp-rohf-scf sp-rohf-mp2-sc sp-rohf-mp4-sc sp-rohf-ccsd \
 sp-rohf-ccsd_t_ sp-rohf-ccsdt sp-rohf-ccsd-ao sp-rohf-ccsd_t_-ao \
 sp-rohf-ccsd_t_-ao-ecc sp-rohf-ccsd_t_-fc
 
-psi_subdirs = psi-mints5 psi-rhf-scsmp2 psi-uhf-scsmp2 psi-rohf-scsmp2 psi-rhf-mp3 \
-psi-uhf-mp3 psi-mp4 psi-ghost-grad
+psi_subdirs = psi-rhf-scsmp2 psi-uhf-scsmp2 psi-rohf-scsmp2 psi-rhf-mp3 \
+psi-uhf-mp3 psi-mp4 
 
 opt_subdirs = opt-rhf-scf opt-rhf-mp2 opt-rhf-ccsd_t_ opt-rhf-ccsd_t_-ecc \
-psi-mints5-grad psi-a24-grad
+psi-a24-grad
 
-infra_subdirs = puream pywrap-cbs1
+infra_subdirs = puream mints5 mints5-grad pywrap-cbs1 kw-1 kw-2 kw-3 kw-4 \
+kw-5 kw-6 kw-7 kw-8 psi-ghost-grad scf4 mp2-1 pywrap-db1 pywrap-basis dfmp2-1
 
 subdirs = \
 $(infra_subdirs) \

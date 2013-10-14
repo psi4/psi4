@@ -1,0 +1,13 @@
+memory 300 mb
+
+molecule {
+H
+H 1 0.7
+}
+
+set basis 6-31g
+set cfour_multiplicity 3         # clash with implicit singlet in molecule {} above
+
+energy('c4-scf')
+
+
