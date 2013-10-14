@@ -46,6 +46,8 @@ from p4xcpt import *  #CU add revisit
 
 P4C4_INFO = {}
 
+P4C4_INFO = {}
+
 def run_cfour(name, **kwargs):
     """Function that prepares environment and input files
     for a calculation calling Stanton and Gauss's CFOUR code.
@@ -361,7 +363,6 @@ def run_cfour(name, **kwargs):
     p4out.close()
     psi4.reopen_outfile()
 
-    d2d = ['Energy', 'Gradient', 'Hessian']
     psi4.print_out('\n')
     p4util.banner(' Cfour %s %s Results ' % (name.lower(), calledby.capitalize()))
     psi4.print_variables()
@@ -388,11 +389,6 @@ def cfour_list():
     """Form list of Cfour :py:func:`~driver.energy` arguments."""
     return qcdb.cfour.cfour_list()
 
-def cfour_gradient_list():
-    return qcdb.cfour.cfour_gradient_list()
-
-def cfour_psivar_list():
-    return qcdb.cfour.cfour_psivar_list()
 
 def cfour_gradient_list():
     """Form list of Cfour analytic :py:func:`~driver.gradient` arguments."""
@@ -450,8 +446,8 @@ def write_zmat(name, dertype):
     # Handle calc type and quantum chemical method
     mdccmd, mdckw = qcdb.cfour.muster_modelchem(name, dertype)
 
-    # Handle quantum chemical method
-    mtdcmd, mtdkw = qcdb.cfour.cfour_method(name)
+    # Handle calc type and quantum chemical method
+    mdccmd, mdckw = qcdb.cfour.muster_modelchem(name, dertype)
 
     # Handle driver vs input/default keyword reconciliation
     userkw = p4util.prepare_options_for_modules()
