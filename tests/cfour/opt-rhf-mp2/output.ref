@@ -2,7 +2,7 @@
           PSI4: An Open-Source Ab Initio Electronic Structure Package
                               PSI 4.0.0-beta4+ Driver
 
-               Git: Rev {master} 5939c37112634ce7d587241dbb279ff58d6f273a
+               Git: Rev {c4} ef7097b1d82a7804b2d78ad28247f837c1527697
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -14,7 +14,7 @@
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
-    Process ID:   6388
+    Process ID:  18375
     PSI4DATADIR: /theoryfs2/ds/loriab/chem/psi4_trials/c4/psi4/lib
 
     Using LocalCommunicator (Number of processes = 1)
@@ -24,6 +24,8 @@
   ==> Input File <==
 
 --------------------------------------------------------------------------
+#! optimization MP2/cc-pvtz on water
+
 print '        <<< Literal ZMAT to Cfour >>>'
 
 cfour {
@@ -41,14 +43,13 @@ SCF_CONV=12)
 }
 
 energy('cfour')
-print_variables()
 
-compare_values(9.193817619800, get_variable('NUCLEAR REPULSION ENERGY'), 6, 'NRE')
-compare_values(-76.057086657615, get_variable('current reference energy'), 6, 'SCF')
-compare_values(-0.275174751101, get_variable('current correlation energy'), 6, 'MP2 corl')
-compare_values(-76.332261408717, get_variable('current energy'), 6, 'MP2')
-compare_values(-0.066581844960, get_variable('mp2 same-spin energy'), 6, 'MP2 SS')
-compare_values(-0.208592906141, get_variable('mp2 opposite-spin energy'), 6, 'MP2 OS')
+compare_values(9.193817619800, get_variable('NUCLEAR REPULSION ENERGY'), 6, 'NRE')  #TEST
+compare_values(-76.057086657615, get_variable('current reference energy'), 6, 'SCF')  #TEST
+compare_values(-0.275174751101, get_variable('current correlation energy'), 6, 'MP2 corl')  #TEST
+compare_values(-76.332261408717, get_variable('current energy'), 6, 'MP2')  #TEST
+compare_values(-0.066581844960, get_variable('mp2 same-spin energy'), 6, 'MP2 SS')  #TEST
+compare_values(-0.208592906141, get_variable('mp2 opposite-spin energy'), 6, 'MP2 OS')  #TEST
 
 clean()
 clean_variables()
@@ -76,34 +77,17 @@ rms_force_g_convergence 6
 
 optimize('cfour')
 
-compare_values(9.193817619800, get_variable('NUCLEAR REPULSION ENERGY'), 3, 'NRE')
-compare_values(-76.057086657615, get_variable('current reference energy'), 6, 'SCF')
-compare_values(-0.275174751101, get_variable('current correlation energy'), 6, 'MP2 corl')
-compare_values(-76.332261408717, get_variable('current energy'), 6, 'MP2')
-compare_values(-0.066581844960, get_variable('mp2 same-spin energy'), 6, 'MP2 SS')
-compare_values(-0.208592906141, get_variable('mp2 opposite-spin energy'), 6, 'MP2 OS')
+compare_values(9.193817619800, get_variable('NUCLEAR REPULSION ENERGY'), 3, 'NRE')  #TEST
+compare_values(-76.057086657615, get_variable('current reference energy'), 6, 'SCF')  #TEST
+compare_values(-0.275174751101, get_variable('current correlation energy'), 6, 'MP2 corl')  #TEST
+compare_values(-76.332261408717, get_variable('current energy'), 6, 'MP2')  #TEST
+compare_values(-0.066581844960, get_variable('mp2 same-spin energy'), 6, 'MP2 SS')  #TEST
+compare_values(-0.208592906141, get_variable('mp2 opposite-spin energy'), 6, 'MP2 OS')  #TEST
 
 --------------------------------------------------------------------------
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.6388..cfour.27904
-
-====== Begin ZMAT input for CFOUR ======
-
-Geometry optimization of H2O at MP2 level
-O
-H 1 R*
-H 1 R* 2 A*
-
-R=0.958
-A=104.5
-
-*ACES2(CALC=MP2,BASIS=PVTZ
-GEO_CONV=10
-SCF_CONV=12)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.18375..cfour.42511
  --invoking executable xjoda
 
 
@@ -128,8 +112,8 @@ SCF_CONV=12)
  
                        version 1.2
  
-                     john2                                             
-                     Fri Aug  2 16:17:35 EDT 2013                      
+                     john3                                             
+                     Mon Oct 14 02:53:41 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -483,8 +467,8 @@ SCF_CONV=12)
   @TWOEL-I,      78170 integrals of symmetry type  I I J J
   @TWOEL-I,      84950 integrals of symmetry type  I J K L
   @TWOEL-I, Total number of 2-e integrals     350073.
-  @MOLECU-I, Two electron integrals required         0.64000 seconds.
-  @CHECKOUT-I, Total execution time :       0.6500 seconds.
+  @MOLECU-I, Two electron integrals required         0.68000 seconds.
+  @CHECKOUT-I, Total execution time :       0.6900 seconds.
                 0.38 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
@@ -718,7 +702,7 @@ SCF_CONV=12)
   VSCF finished.
 
   @CHECKOUT-I, Total execution time :       0.1500 seconds.
-                0.12 seconds walltime passed
+                0.25 seconds walltime passed
  --executable xvscf finished with status            0
  --invoking executable xvtran
   Partial RHF integral transformation
@@ -773,8 +757,8 @@ SCF_CONV=12)
     28         2.0366704        2        57         6.9421271        4
     29         3.3557477        2        58         7.2356137        4
 ------------------------------------------------------------------------
-  @CHECKOUT-I, Total execution time :       0.0600 seconds.
-                0.06 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.0700 seconds.
+                0.00 seconds walltime passed
  --executable xvtran finished with status            0
  --invoking executable xintprc
   Processing integrals for MBPT(2) calculation.
@@ -811,8 +795,8 @@ SCF_CONV=12)
 -----------------------------------------------------------------------------
    Norm of T2AB vector (    18479 symmetry allowed elements):  0.2123342616.
 -----------------------------------------------------------------------------
-  @CHECKOUT-I, Total execution time :       0.0100 seconds.
-                0.00 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.0000 seconds.
+                0.75 seconds walltime passed
  --executable xintprc finished with status            0
  --invoking executable xvcc
    MBPT(2) energy will be calculated.
@@ -851,7 +835,7 @@ SCF_CONV=12)
  --invoking executable xbcktrn
  MBPT(2) MO gammas will be transformed to the AO basis.
   @CHECKOUT-I, Total execution time :       0.0100 seconds.
-                0.06 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xbcktrn finished with status            0
  --invoking executable xvdint
  One- and two-electron integral derivatives are calculated
@@ -910,7 +894,7 @@ SCF_CONV=12)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  Evaluation of 1e integral derivatives required    0.01 seconds.
+  Evaluation of 1e integral derivatives required    0.02 seconds.
   Evaluation of 2el integral derivatives
 
                       Two-electron integral gradient
@@ -926,7 +910,7 @@ SCF_CONV=12)
  H #2 2     0.0000000000           -2.2317858423            1.8450251182
 
 
-  Evaluation of 2e integral derivatives required    0.81 seconds.
+  Evaluation of 2e integral derivatives required    0.83 seconds.
 
                             Molecular gradient
                             ------------------
@@ -953,8 +937,8 @@ SCF_CONV=12)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  @CHECKOUT-I, Total execution time :       0.8200 seconds.
-                0.69 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.8500 seconds.
+                0.88 seconds walltime passed
  --executable xvdint finished with status            0
  --invoking executable xjoda
    JODA beginning optimization cycle #  1.
@@ -1017,7 +1001,7 @@ SCF_CONV=12)
    Rotational constants (in MHz): 
      285618.1500588903        811494.8909190814        440745.2384135185
   There are   58 basis functions.
-                0.06 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xjoda finished with status            0
  --invoking executable xvmol
  Serial version of molecule started
@@ -1102,14 +1086,14 @@ SCF_CONV=12)
   required memory for a2 array                2070308  words 
  basis number:   8    35
  basis number:   1    15
-  @MOLECU-I, One electron integrals required         0.00000 seconds.
+  @MOLECU-I, One electron integrals required         0.01000 seconds.
   @TWOEL-I,      47639 integrals of symmetry type  I I I I
   @TWOEL-I,     139314 integrals of symmetry type  I J I J
   @TWOEL-I,      78170 integrals of symmetry type  I I J J
   @TWOEL-I,      84950 integrals of symmetry type  I J K L
   @TWOEL-I, Total number of 2-e integrals     350073.
-  @MOLECU-I, Two electron integrals required         0.63000 seconds.
-  @CHECKOUT-I, Total execution time :       0.6400 seconds.
+  @MOLECU-I, Two electron integrals required         0.64000 seconds.
+  @CHECKOUT-I, Total execution time :       0.6500 seconds.
                 0.38 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
@@ -1357,8 +1341,8 @@ SCF_CONV=12)
     28         2.0394458        2        57         6.9417754        4
     29         3.3504421        2        58         7.2383974        4
 ------------------------------------------------------------------------
-  @CHECKOUT-I, Total execution time :       0.0600 seconds.
-                0.06 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.0700 seconds.
+                0.00 seconds walltime passed
  --executable xvtran finished with status            0
  --invoking executable xintprc
   Processing integrals for MBPT(2) calculation.
@@ -1395,8 +1379,8 @@ SCF_CONV=12)
 -----------------------------------------------------------------------------
    Norm of T2AB vector (    18479 symmetry allowed elements):  0.2123211776.
 -----------------------------------------------------------------------------
-  @CHECKOUT-I, Total execution time :       0.0100 seconds.
-                0.00 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.0000 seconds.
+                0.12 seconds walltime passed
  --executable xintprc finished with status            0
  --invoking executable xvcc
    MBPT(2) energy will be calculated.
@@ -1427,8 +1411,8 @@ SCF_CONV=12)
   Trace of density matrix :  10.0000000000.
   ----------------------------------------------------------------------
   Density calculation successfully completed.
-  @CHECKOUT-I, Total execution time :       0.0100 seconds.
-                0.06 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.0200 seconds.
+                0.00 seconds walltime passed
  --executable xdens finished with status            0
  --invoking executable xanti
  --executable xanti finished with status            0
@@ -1494,7 +1478,7 @@ SCF_CONV=12)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  Evaluation of 1e integral derivatives required    0.01 seconds.
+  Evaluation of 1e integral derivatives required    0.02 seconds.
   Evaluation of 2el integral derivatives
 
                       Two-electron integral gradient
@@ -1510,7 +1494,7 @@ SCF_CONV=12)
  H #2 2     0.0000000000           -2.2166706466            1.8604307979
 
 
-  Evaluation of 2e integral derivatives required    0.81 seconds.
+  Evaluation of 2e integral derivatives required    0.83 seconds.
 
                             Molecular gradient
                             ------------------
@@ -1537,7 +1521,7 @@ SCF_CONV=12)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  @CHECKOUT-I, Total execution time :       0.8200 seconds.
+  @CHECKOUT-I, Total execution time :       0.8500 seconds.
                 0.75 seconds walltime passed
  --executable xvdint finished with status            0
  --invoking executable xjoda
@@ -1695,9 +1679,9 @@ SCF_CONV=12)
   @TWOEL-I,      78170 integrals of symmetry type  I I J J
   @TWOEL-I,      84950 integrals of symmetry type  I J K L
   @TWOEL-I, Total number of 2-e integrals     350073.
-  @MOLECU-I, Two electron integrals required         0.68000 seconds.
-  @CHECKOUT-I, Total execution time :       0.6900 seconds.
-                0.44 seconds walltime passed
+  @MOLECU-I, Two electron integrals required         0.65000 seconds.
+  @CHECKOUT-I, Total execution time :       0.6600 seconds.
+                0.38 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -1888,8 +1872,8 @@ SCF_CONV=12)
 
   VSCF finished.
 
-  @CHECKOUT-I, Total execution time :       0.1000 seconds.
-                0.12 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.2400 seconds.
+                0.62 seconds walltime passed
  --executable xvscf finished with status            0
  --invoking executable xvtran
   Partial RHF integral transformation
@@ -1945,7 +1929,7 @@ SCF_CONV=12)
     29         3.3478187        2        58         7.2393615        4
 ------------------------------------------------------------------------
   @CHECKOUT-I, Total execution time :       0.0600 seconds.
-                0.06 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xvtran finished with status            0
  --invoking executable xintprc
   Processing integrals for MBPT(2) calculation.
@@ -1983,7 +1967,7 @@ SCF_CONV=12)
    Norm of T2AB vector (    18479 symmetry allowed elements):  0.2123338252.
 -----------------------------------------------------------------------------
   @CHECKOUT-I, Total execution time :       0.0100 seconds.
-                0.06 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xintprc finished with status            0
  --invoking executable xvcc
    MBPT(2) energy will be calculated.
@@ -2014,8 +1998,8 @@ SCF_CONV=12)
   Trace of density matrix :  10.0000000000.
   ----------------------------------------------------------------------
   Density calculation successfully completed.
-  @CHECKOUT-I, Total execution time :       0.0100 seconds.
-                0.06 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.0200 seconds.
+                0.00 seconds walltime passed
  --executable xdens finished with status            0
  --invoking executable xanti
  --executable xanti finished with status            0
@@ -2081,7 +2065,7 @@ SCF_CONV=12)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  Evaluation of 1e integral derivatives required    0.01 seconds.
+  Evaluation of 1e integral derivatives required    0.02 seconds.
   Evaluation of 2el integral derivatives
 
                       Two-electron integral gradient
@@ -2124,7 +2108,7 @@ SCF_CONV=12)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  @CHECKOUT-I, Total execution time :       0.8200 seconds.
+  @CHECKOUT-I, Total execution time :       0.8300 seconds.
                 0.75 seconds walltime passed
  --executable xvdint finished with status            0
  --invoking executable xjoda
@@ -2282,8 +2266,8 @@ SCF_CONV=12)
   @TWOEL-I,      78170 integrals of symmetry type  I I J J
   @TWOEL-I,      84950 integrals of symmetry type  I J K L
   @TWOEL-I, Total number of 2-e integrals     350073.
-  @MOLECU-I, Two electron integrals required         0.63000 seconds.
-  @CHECKOUT-I, Total execution time :       0.6500 seconds.
+  @MOLECU-I, Two electron integrals required         0.65000 seconds.
+  @CHECKOUT-I, Total execution time :       0.6600 seconds.
                 0.38 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
@@ -2523,7 +2507,7 @@ SCF_CONV=12)
     28         2.0407416        2        57         6.9412066        4
     29         3.3477320        2        58         7.2392222        4
 ------------------------------------------------------------------------
-  @CHECKOUT-I, Total execution time :       0.0600 seconds.
+  @CHECKOUT-I, Total execution time :       0.0700 seconds.
                 0.00 seconds walltime passed
  --executable xvtran finished with status            0
  --invoking executable xintprc
@@ -2601,7 +2585,7 @@ SCF_CONV=12)
  --invoking executable xbcktrn
  MBPT(2) MO gammas will be transformed to the AO basis.
   @CHECKOUT-I, Total execution time :       0.0100 seconds.
-                0.06 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xbcktrn finished with status            0
  --invoking executable xvdint
  One- and two-electron integral derivatives are calculated
@@ -2704,7 +2688,7 @@ SCF_CONV=12)
 
 
   @CHECKOUT-I, Total execution time :       0.8200 seconds.
-                0.69 seconds walltime passed
+                0.75 seconds walltime passed
  --executable xvdint finished with status            0
  --invoking executable xjoda
    JODA beginning optimization cycle #  4.
@@ -2770,7 +2754,7 @@ SCF_CONV=12)
    Rotational constants (in MHz): 
      285670.7763274038        806272.0972080245        442427.5673195171
   There are   58 basis functions.
-                0.06 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xjoda finished with status            0
  --invoking executable xvmol
  Serial version of molecule started
@@ -2861,13 +2845,13 @@ SCF_CONV=12)
   @TWOEL-I,      78170 integrals of symmetry type  I I J J
   @TWOEL-I,      84950 integrals of symmetry type  I J K L
   @TWOEL-I, Total number of 2-e integrals     350073.
-  @MOLECU-I, Two electron integrals required         0.67000 seconds.
-  @CHECKOUT-I, Total execution time :       0.6800 seconds.
-                0.50 seconds walltime passed
+  @MOLECU-I, Two electron integrals required         0.66000 seconds.
+  @CHECKOUT-I, Total execution time :       0.6700 seconds.
+                0.38 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
-                0.00 seconds walltime passed
+                1.38 seconds walltime passed
  --executable xvmol2ja finished with status            0
  --invoking executable xvscf
  NSOSCF                     0
@@ -3055,7 +3039,7 @@ SCF_CONV=12)
   VSCF finished.
 
   @CHECKOUT-I, Total execution time :       0.1000 seconds.
-                0.06 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xvscf finished with status            0
  --invoking executable xvtran
   Partial RHF integral transformation
@@ -3110,8 +3094,8 @@ SCF_CONV=12)
     28         2.0407354        2        57         6.9410828        4
     29         3.3476849        2        58         7.2390763        4
 ------------------------------------------------------------------------
-  @CHECKOUT-I, Total execution time :       0.0600 seconds.
-                0.06 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.0700 seconds.
+                0.12 seconds walltime passed
  --executable xvtran finished with status            0
  --invoking executable xintprc
   Processing integrals for MBPT(2) calculation.
@@ -3188,7 +3172,7 @@ SCF_CONV=12)
  --invoking executable xbcktrn
  MBPT(2) MO gammas will be transformed to the AO basis.
   @CHECKOUT-I, Total execution time :       0.0100 seconds.
-                0.06 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xbcktrn finished with status            0
  --invoking executable xvdint
  One- and two-electron integral derivatives are calculated
@@ -3263,7 +3247,7 @@ SCF_CONV=12)
  H #2 2     0.0000000000           -2.2085780235            1.8676072628
 
 
-  Evaluation of 2e integral derivatives required    0.80 seconds.
+  Evaluation of 2e integral derivatives required    0.82 seconds.
 
                             Molecular gradient
                             ------------------
@@ -3290,8 +3274,8 @@ SCF_CONV=12)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  @CHECKOUT-I, Total execution time :       0.8100 seconds.
-                0.69 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.8300 seconds.
+                0.75 seconds walltime passed
  --executable xvdint finished with status            0
  --invoking executable xjoda
    JODA beginning optimization cycle #  5.
@@ -3357,7 +3341,7 @@ SCF_CONV=12)
    Rotational constants (in MHz): 
      285670.7059163938        806272.8485724402        442427.1721929603
   There are   58 basis functions.
-                0.06 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xjoda finished with status            0
  --invoking executable xvmol
  Serial version of molecule started
@@ -3448,8 +3432,8 @@ SCF_CONV=12)
   @TWOEL-I,      78170 integrals of symmetry type  I I J J
   @TWOEL-I,      84950 integrals of symmetry type  I J K L
   @TWOEL-I, Total number of 2-e integrals     350073.
-  @MOLECU-I, Two electron integrals required         0.64000 seconds.
-  @CHECKOUT-I, Total execution time :       0.6500 seconds.
+  @MOLECU-I, Two electron integrals required         0.68000 seconds.
+  @CHECKOUT-I, Total execution time :       0.6900 seconds.
                 0.38 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
@@ -3617,7 +3601,7 @@ SCF_CONV=12)
 
   VSCF finished.
 
-  @CHECKOUT-I, Total execution time :       0.0700 seconds.
+  @CHECKOUT-I, Total execution time :       0.0900 seconds.
                 0.12 seconds walltime passed
  --executable xvscf finished with status            0
  --invoking executable xvtran
@@ -3712,7 +3696,7 @@ SCF_CONV=12)
    Norm of T2AB vector (    18479 symmetry allowed elements):  0.2123521636.
 -----------------------------------------------------------------------------
   @CHECKOUT-I, Total execution time :       0.0100 seconds.
-                0.00 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xintprc finished with status            0
  --invoking executable xvcc
    MBPT(2) energy will be calculated.
@@ -3743,7 +3727,7 @@ SCF_CONV=12)
   Trace of density matrix :  10.0000000000.
   ----------------------------------------------------------------------
   Density calculation successfully completed.
-  @CHECKOUT-I, Total execution time :       0.0100 seconds.
+  @CHECKOUT-I, Total execution time :       0.0200 seconds.
                 0.00 seconds walltime passed
  --executable xdens finished with status            0
  --invoking executable xanti
@@ -3751,7 +3735,7 @@ SCF_CONV=12)
  --invoking executable xbcktrn
  MBPT(2) MO gammas will be transformed to the AO basis.
   @CHECKOUT-I, Total execution time :       0.0100 seconds.
-                0.06 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xbcktrn finished with status            0
  --invoking executable xvdint
  One- and two-electron integral derivatives are calculated
@@ -3826,7 +3810,7 @@ SCF_CONV=12)
  H #2 2     0.0000000000           -2.2085793924            1.8676057270
 
 
-  Evaluation of 2e integral derivatives required    0.80 seconds.
+  Evaluation of 2e integral derivatives required    0.82 seconds.
 
                             Molecular gradient
                             ------------------
@@ -3853,8 +3837,8 @@ SCF_CONV=12)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  @CHECKOUT-I, Total execution time :       0.8200 seconds.
-                0.69 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.8400 seconds.
+                2.00 seconds walltime passed
  --executable xvdint finished with status            0
  --invoking executable xjoda
    JODA beginning optimization cycle #  6.
@@ -3920,7 +3904,7 @@ SCF_CONV=12)
    Rotational constants (in MHz): 
      285670.7054795953        806272.8631369020        442427.1667598211
   There are   58 basis functions.
-                0.06 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xjoda finished with status            0
  --invoking executable xvmol
  Serial version of molecule started
@@ -4011,9 +3995,9 @@ SCF_CONV=12)
   @TWOEL-I,      78170 integrals of symmetry type  I I J J
   @TWOEL-I,      84950 integrals of symmetry type  I J K L
   @TWOEL-I, Total number of 2-e integrals     350073.
-  @MOLECU-I, Two electron integrals required         0.74000 seconds.
-  @CHECKOUT-I, Total execution time :       0.7600 seconds.
-                0.56 seconds walltime passed
+  @MOLECU-I, Two electron integrals required         0.68000 seconds.
+  @CHECKOUT-I, Total execution time :       0.7000 seconds.
+                0.38 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -4169,7 +4153,7 @@ SCF_CONV=12)
   VSCF finished.
 
   @CHECKOUT-I, Total execution time :       0.0600 seconds.
-                0.06 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xvscf finished with status            0
  --invoking executable xvtran
   Partial RHF integral transformation
@@ -4224,7 +4208,7 @@ SCF_CONV=12)
     28         2.0407352        2        57         6.9410827        4
     29         3.3476854        2        58         7.2390759        4
 ------------------------------------------------------------------------
-  @CHECKOUT-I, Total execution time :       0.0600 seconds.
+  @CHECKOUT-I, Total execution time :       0.0700 seconds.
                 0.00 seconds walltime passed
  --executable xvtran finished with status            0
  --invoking executable xintprc
@@ -4262,8 +4246,8 @@ SCF_CONV=12)
 -----------------------------------------------------------------------------
    Norm of T2AB vector (    18479 symmetry allowed elements):  0.2123521635.
 -----------------------------------------------------------------------------
-  @CHECKOUT-I, Total execution time :       0.0100 seconds.
-                0.06 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.0000 seconds.
+                0.12 seconds walltime passed
  --executable xintprc finished with status            0
  --invoking executable xvcc
    MBPT(2) energy will be calculated.
@@ -4302,7 +4286,7 @@ SCF_CONV=12)
  --invoking executable xbcktrn
  MBPT(2) MO gammas will be transformed to the AO basis.
   @CHECKOUT-I, Total execution time :       0.0100 seconds.
-                0.06 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xbcktrn finished with status            0
  --invoking executable xvdint
  One- and two-electron integral derivatives are calculated
@@ -4361,7 +4345,7 @@ SCF_CONV=12)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  Evaluation of 1e integral derivatives required    0.01 seconds.
+  Evaluation of 1e integral derivatives required    0.02 seconds.
   Evaluation of 2el integral derivatives
 
                       Two-electron integral gradient
@@ -4377,7 +4361,7 @@ SCF_CONV=12)
  H #2 2     0.0000000000           -2.2085794160            1.8676057046
 
 
-  Evaluation of 2e integral derivatives required    0.81 seconds.
+  Evaluation of 2e integral derivatives required    0.83 seconds.
 
                             Molecular gradient
                             ------------------
@@ -4404,8 +4388,8 @@ SCF_CONV=12)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  @CHECKOUT-I, Total execution time :       0.8200 seconds.
-                0.69 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.8500 seconds.
+                0.75 seconds walltime passed
  --executable xvdint finished with status            0
  --invoking executable xjoda
    JODA beginning optimization cycle #  7.
@@ -4481,7 +4465,7 @@ SCF_CONV=12)
     Potential                0.0000000    -1.4225880    -0.9930848
     Potential                0.0000000     1.4225880    -0.9930848
     --------------------------------------------------------------
-  @CHECKOUT-I, Total execution time :       0.1800 seconds.
+  @CHECKOUT-I, Total execution time :       0.1900 seconds.
  --executable xvprop finished with status            0
  --invoking executable xprops
  NCOA, NVRTA, NCOMP, NORBS
@@ -4733,6 +4717,10 @@ SCF_CONV=12)
  -------------------------------------------------------
  --executable xprops finished with status            0
 
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
 
   Variable Map:
   ----------------------------------------------------------------------------
@@ -4758,46 +4746,51 @@ SCF_CONV=12)
 
 
 
+  CFOUR scratch file GRD has been read
+    3        0.0000000000
+        8.0000000000        0.0000000000        0.0000000000        0.1251467388
+        1.0000000000        0.0000000000       -1.4225880470       -0.9930847787
+        1.0000000000        0.0000000000        1.4225880470       -0.9930847787
+        8.0000000000        0.0000000000        0.0000000000        0.0000000000
+        1.0000000000        0.0000000000        0.0000000000        0.0000000000
+        1.0000000000        0.0000000000        0.0000000000        0.0000000000
 
-  Variable Map:
-  ----------------------------------------------------------------------------
-  "CURRENT CORRELATION ENERGY" =>      -0.275174751101
-  "CURRENT ENERGY"             =>     -76.332261408717
-  "CURRENT REFERENCE ENERGY"   =>     -76.057086657615
-  "MP2 CORRELATION ENERGY"     =>      -0.275174751101
-  "MP2 OPPOSITE-SPIN ENERGY"   =>      -0.208592906141
-  "MP2 SAME-SPIN ENERGY"       =>      -0.066581844960
-  "MP2 TOTAL ENERGY"           =>     -76.332261408717
-  "NUCLEAR REPULSION ENERGY"   =>       9.193817619800
-  "SCF TOTAL ENERGY"           =>     -76.057086657615
+  CFOUR scratch file FCMFINAL has been read
+    3    9
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
 
 
 
   Memory set to 200.000 MiB by Python script.
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.6388..cfour.20453
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule default
-O     0.000000000000    0.000000000000   -0.065638538099
-H     0.000000000000   -0.757480611647    0.520865616174
-H     0.000000000000    0.757480611647    0.520865616174
-
-*CFOUR(BASIS=PVTZ
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-DERIV_LEVEL=FIRST
-UNITS=ANGSTROM
-MEMORY_SIZE=200
-CALC_LEVEL=MP2
-SCF_CONV=12
-MEM_UNIT=MB
-CHARGE=0)
-
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.18375..cfour.3487
  --invoking executable xjoda
 
 
@@ -4822,8 +4815,8 @@ CHARGE=0)
  
                        version 1.2
  
-                     john2                                             
-                     Fri Aug  2 16:17:59 EDT 2013                      
+                     john3                                             
+                     Mon Oct 14 02:54:12 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -5068,7 +5061,7 @@ CHARGE=0)
    Rotational constants (in MHz): 
      285155.3624955724        820739.6204654009        436977.5632977513
   There are   58 basis functions.
-                0.12 seconds walltime passed
+                1.00 seconds walltime passed
  --executable xjoda finished with status            0
   flag is                      5
  --invoking executable xvmol
@@ -5160,8 +5153,8 @@ CHARGE=0)
   @TWOEL-I,      78170 integrals of symmetry type  I I J J
   @TWOEL-I,      84950 integrals of symmetry type  I J K L
   @TWOEL-I, Total number of 2-e integrals     350073.
-  @MOLECU-I, Two electron integrals required         0.64000 seconds.
-  @CHECKOUT-I, Total execution time :       0.6500 seconds.
+  @MOLECU-I, Two electron integrals required         0.65000 seconds.
+  @CHECKOUT-I, Total execution time :       0.6600 seconds.
                 0.38 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
@@ -5395,7 +5388,7 @@ CHARGE=0)
   VSCF finished.
 
   @CHECKOUT-I, Total execution time :       0.1500 seconds.
-                0.12 seconds walltime passed
+                0.25 seconds walltime passed
  --executable xvscf finished with status            0
  --invoking executable xvtran
   Partial RHF integral transformation
@@ -5450,8 +5443,8 @@ CHARGE=0)
     28         2.0366704        2        57         6.9421271        4
     29         3.3557477        2        58         7.2356137        4
 ------------------------------------------------------------------------
-  @CHECKOUT-I, Total execution time :       0.0600 seconds.
-                0.06 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.0700 seconds.
+                0.00 seconds walltime passed
  --executable xvtran finished with status            0
  --invoking executable xintprc
   Processing integrals for MBPT(2) calculation.
@@ -5520,8 +5513,8 @@ CHARGE=0)
   Trace of density matrix :  10.0000000000.
   ----------------------------------------------------------------------
   Density calculation successfully completed.
-  @CHECKOUT-I, Total execution time :       0.0100 seconds.
-                0.06 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.0200 seconds.
+                0.00 seconds walltime passed
  --executable xdens finished with status            0
  --invoking executable xanti
  --executable xanti finished with status            0
@@ -5587,7 +5580,7 @@ CHARGE=0)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  Evaluation of 1e integral derivatives required    0.01 seconds.
+  Evaluation of 1e integral derivatives required    0.03 seconds.
   Evaluation of 2el integral derivatives
 
                       Two-electron integral gradient
@@ -5603,7 +5596,7 @@ CHARGE=0)
  H #2 2     0.0000000000           -2.2317858423           -1.8450251182
 
 
-  Evaluation of 2e integral derivatives required    0.81 seconds.
+  Evaluation of 2e integral derivatives required    0.85 seconds.
 
                             Molecular gradient
                             ------------------
@@ -5630,12 +5623,16 @@ CHARGE=0)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  @CHECKOUT-I, Total execution time :       0.8200 seconds.
-                0.75 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.8800 seconds.
+                0.88 seconds walltime passed
  --executable xvdint finished with status            0
  --invoking executable xjoda
                 0.00 seconds walltime passed
  --executable xjoda finished with status            0
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //    Cfour cfour Gradient Results   //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
   Variable Map:
@@ -5659,6 +5656,17 @@ CHARGE=0)
     2    0.0000000   -0.0015852   -0.0004582
     3    0.0000000    0.0015852   -0.0004582
 
+
+
+
+  CFOUR scratch file GRD has been read
+    3        0.0000000000
+        8.0000000000        0.0000000000        0.0000000000       -0.1240388865
+        1.0000000000        0.0000000000       -1.4314312007        0.9842935683
+        1.0000000000        0.0000000000        1.4314312007        0.9842935683
+        8.0000000000        0.0000000000        0.0000000000        0.0009164417
+        1.0000000000        0.0000000000       -0.0015851705       -0.0004582209
+        1.0000000000        0.0000000000        0.0015851705       -0.0004582209
 
 
 
@@ -5744,29 +5752,8 @@ CHARGE=0)
     R         =    0.9570792158
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.6388..cfour.26239
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule default
-O     0.000000000000    0.000000000000   -0.066212000178
-H     0.000000000000   -0.752314192222    0.525416245849
-H     0.000000000000    0.752314192222    0.525416245849
-
-*CFOUR(BASIS=PVTZ
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-DERIV_LEVEL=FIRST
-UNITS=ANGSTROM
-MEMORY_SIZE=200
-CALC_LEVEL=MP2
-SCF_CONV=12
-MEM_UNIT=MB
-CHARGE=0)
-
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.18375..cfour.55826
  --invoking executable xjoda
 
 
@@ -5791,8 +5778,8 @@ CHARGE=0)
  
                        version 1.2
  
-                     john2                                             
-                     Fri Aug  2 16:18:08 EDT 2013                      
+                     john3                                             
+                     Mon Oct 14 02:54:24 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -6129,8 +6116,8 @@ CHARGE=0)
   @TWOEL-I,      78170 integrals of symmetry type  I I J J
   @TWOEL-I,      84950 integrals of symmetry type  I J K L
   @TWOEL-I, Total number of 2-e integrals     350073.
-  @MOLECU-I, Two electron integrals required         0.63000 seconds.
-  @CHECKOUT-I, Total execution time :       0.6400 seconds.
+  @MOLECU-I, Two electron integrals required         0.68000 seconds.
+  @CHECKOUT-I, Total execution time :       0.6900 seconds.
                 0.38 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
@@ -6363,8 +6350,8 @@ CHARGE=0)
 
   VSCF finished.
 
-  @CHECKOUT-I, Total execution time :       0.1400 seconds.
-                0.12 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.1600 seconds.
+                0.25 seconds walltime passed
  --executable xvscf finished with status            0
  --invoking executable xvtran
   Partial RHF integral transformation
@@ -6419,8 +6406,8 @@ CHARGE=0)
     28         2.0410407        2        57         6.9417509        4
     29         3.3474250        2        58         7.2401754        4
 ------------------------------------------------------------------------
-  @CHECKOUT-I, Total execution time :       0.0600 seconds.
-                0.06 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.0700 seconds.
+                0.12 seconds walltime passed
  --executable xvtran finished with status            0
  --invoking executable xintprc
   Processing integrals for MBPT(2) calculation.
@@ -6457,7 +6444,7 @@ CHARGE=0)
 -----------------------------------------------------------------------------
    Norm of T2AB vector (    18479 symmetry allowed elements):  0.2123002310.
 -----------------------------------------------------------------------------
-  @CHECKOUT-I, Total execution time :       0.0100 seconds.
+  @CHECKOUT-I, Total execution time :       0.0000 seconds.
                 0.00 seconds walltime passed
  --executable xintprc finished with status            0
  --invoking executable xvcc
@@ -6489,7 +6476,7 @@ CHARGE=0)
   Trace of density matrix :  10.0000000000.
   ----------------------------------------------------------------------
   Density calculation successfully completed.
-  @CHECKOUT-I, Total execution time :       0.0100 seconds.
+  @CHECKOUT-I, Total execution time :       0.0200 seconds.
                 0.00 seconds walltime passed
  --executable xdens finished with status            0
  --invoking executable xanti
@@ -6497,7 +6484,7 @@ CHARGE=0)
  --invoking executable xbcktrn
  MBPT(2) MO gammas will be transformed to the AO basis.
   @CHECKOUT-I, Total execution time :       0.0100 seconds.
-                0.06 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xbcktrn finished with status            0
  --invoking executable xvdint
  One- and two-electron integral derivatives are calculated
@@ -6572,7 +6559,7 @@ CHARGE=0)
  H #2 2     0.0000000000           -2.2081889265           -1.8693994162
 
 
-  Evaluation of 2e integral derivatives required    0.81 seconds.
+  Evaluation of 2e integral derivatives required    0.82 seconds.
 
                             Molecular gradient
                             ------------------
@@ -6599,16 +6586,21 @@ CHARGE=0)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  @CHECKOUT-I, Total execution time :       0.8300 seconds.
-                0.69 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.8400 seconds.
+                0.75 seconds walltime passed
  --executable xvdint finished with status            0
  --invoking executable xjoda
                 0.00 seconds walltime passed
  --executable xjoda finished with status            0
 
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //    Cfour cfour Gradient Results   //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
 
   Variable Map:
   ----------------------------------------------------------------------------
+  "CFOUR ERROR CODE"           =>       0.000000000000
   "CURRENT CORRELATION ENERGY" =>      -0.275146881483
   "CURRENT ENERGY"             =>     -76.332260965382
   "CURRENT REFERENCE ENERGY"   =>     -76.057114083900
@@ -6628,6 +6620,17 @@ CHARGE=0)
     2    0.0000000    0.0004251   -0.0002432
     3    0.0000000   -0.0004251   -0.0002432
 
+
+
+
+  CFOUR scratch file GRD has been read
+    3        0.0000000000
+        8.0000000000        0.0000000000        0.0000000000       -0.1251225730
+        1.0000000000        0.0000000000       -1.4216680809        0.9928930139
+        1.0000000000        0.0000000000        1.4216680809        0.9928930139
+        8.0000000000        0.0000000000        0.0000000000        0.0004864251
+        1.0000000000        0.0000000000        0.0004250513       -0.0002432126
+        1.0000000000        0.0000000000       -0.0004250513       -0.0002432126
 
 
 
@@ -6711,29 +6714,8 @@ CHARGE=0)
     R         =    0.9574874564
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.6388..cfour.2133
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule default
-O     0.000000000000    0.000000000000   -0.066217230000
-H     0.000000000000   -0.752796753108    0.525457746380
-H     0.000000000000    0.752796753108    0.525457746380
-
-*CFOUR(BASIS=PVTZ
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-DERIV_LEVEL=FIRST
-UNITS=ANGSTROM
-MEMORY_SIZE=200
-CALC_LEVEL=MP2
-SCF_CONV=12
-MEM_UNIT=MB
-CHARGE=0)
-
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.18375..cfour.70107
  --invoking executable xjoda
 
 
@@ -6758,8 +6740,8 @@ CHARGE=0)
  
                        version 1.2
  
-                     john2                                             
-                     Fri Aug  2 16:18:17 EDT 2013                      
+                     john3                                             
+                     Mon Oct 14 02:54:35 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -7096,8 +7078,8 @@ CHARGE=0)
   @TWOEL-I,      78170 integrals of symmetry type  I I J J
   @TWOEL-I,      84950 integrals of symmetry type  I J K L
   @TWOEL-I, Total number of 2-e integrals     350073.
-  @MOLECU-I, Two electron integrals required         0.64000 seconds.
-  @CHECKOUT-I, Total execution time :       0.6500 seconds.
+  @MOLECU-I, Two electron integrals required         0.68000 seconds.
+  @CHECKOUT-I, Total execution time :       0.7000 seconds.
                 0.38 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
@@ -7330,8 +7312,8 @@ CHARGE=0)
 
   VSCF finished.
 
-  @CHECKOUT-I, Total execution time :       0.1400 seconds.
-                0.19 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.1600 seconds.
+                0.12 seconds walltime passed
  --executable xvscf finished with status            0
  --invoking executable xvtran
   Partial RHF integral transformation
@@ -7386,8 +7368,8 @@ CHARGE=0)
     28         2.0407265        2        57         6.9411680        4
     29         3.3477423        2        58         7.2391619        4
 ------------------------------------------------------------------------
-  @CHECKOUT-I, Total execution time :       0.0700 seconds.
-                0.06 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.0600 seconds.
+                0.00 seconds walltime passed
  --executable xvtran finished with status            0
  --invoking executable xintprc
   Processing integrals for MBPT(2) calculation.
@@ -7425,7 +7407,7 @@ CHARGE=0)
    Norm of T2AB vector (    18479 symmetry allowed elements):  0.2123462354.
 -----------------------------------------------------------------------------
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
-                0.06 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xintprc finished with status            0
  --invoking executable xvcc
    MBPT(2) energy will be calculated.
@@ -7463,7 +7445,7 @@ CHARGE=0)
  --executable xanti finished with status            0
  --invoking executable xbcktrn
  MBPT(2) MO gammas will be transformed to the AO basis.
-  @CHECKOUT-I, Total execution time :       0.0000 seconds.
+  @CHECKOUT-I, Total execution time :       0.0100 seconds.
                 0.00 seconds walltime passed
  --executable xbcktrn finished with status            0
  --invoking executable xvdint
@@ -7523,7 +7505,7 @@ CHARGE=0)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  Evaluation of 1e integral derivatives required    0.01 seconds.
+  Evaluation of 1e integral derivatives required    0.02 seconds.
   Evaluation of 2el integral derivatives
 
                       Two-electron integral gradient
@@ -7566,16 +7548,21 @@ CHARGE=0)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  @CHECKOUT-I, Total execution time :       0.8200 seconds.
-                0.75 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.8300 seconds.
+                1.62 seconds walltime passed
  --executable xvdint finished with status            0
  --invoking executable xjoda
-                0.00 seconds walltime passed
+                0.38 seconds walltime passed
  --executable xjoda finished with status            0
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //    Cfour cfour Gradient Results   //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
   Variable Map:
   ----------------------------------------------------------------------------
+  "CFOUR ERROR CODE"           =>       0.000000000000
   "CURRENT CORRELATION ENERGY" =>      -0.275171188929
   "CURRENT ENERGY"             =>     -76.332261404452
   "CURRENT REFERENCE ENERGY"   =>     -76.057090215524
@@ -7595,6 +7582,17 @@ CHARGE=0)
     2    0.0000000    0.0000300   -0.0000315
     3    0.0000000   -0.0000300   -0.0000315
 
+
+
+
+  CFOUR scratch file GRD has been read
+    3        0.0000000000
+        8.0000000000        0.0000000000        0.0000000000       -0.1251324559
+        1.0000000000        0.0000000000       -1.4225799890        0.9929714386
+        1.0000000000        0.0000000000        1.4225799890        0.9929714386
+        8.0000000000        0.0000000000        0.0000000000        0.0000630569
+        1.0000000000        0.0000000000        0.0000299973       -0.0000315285
+        1.0000000000        0.0000000000       -0.0000299973       -0.0000315285
 
 
 
@@ -7678,29 +7676,8 @@ CHARGE=0)
     R         =    0.9575319285
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.6388..cfour.64007
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule default
-O     0.000000000000    0.000000000000   -0.066224471327
-H     0.000000000000   -0.752802460742    0.525515208936
-H     0.000000000000    0.752802460742    0.525515208936
-
-*CFOUR(BASIS=PVTZ
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-DERIV_LEVEL=FIRST
-UNITS=ANGSTROM
-MEMORY_SIZE=200
-CALC_LEVEL=MP2
-SCF_CONV=12
-MEM_UNIT=MB
-CHARGE=0)
-
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.18375..cfour.34038
  --invoking executable xjoda
 
 
@@ -7725,8 +7702,8 @@ CHARGE=0)
  
                        version 1.2
  
-                     john2                                             
-                     Fri Aug  2 16:18:26 EDT 2013                      
+                     john3                                             
+                     Mon Oct 14 02:54:47 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -7971,7 +7948,7 @@ CHARGE=0)
    Rotational constants (in MHz): 
      285670.9666465117        806280.5787937049        442425.4699838017
   There are   58 basis functions.
-                0.12 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xjoda finished with status            0
   flag is                      5
  --invoking executable xvmol
@@ -8057,7 +8034,7 @@ CHARGE=0)
   required memory for a2 array                2070308  words 
  basis number:   8    35
  basis number:   1    15
-  @MOLECU-I, One electron integrals required         0.01000 seconds.
+  @MOLECU-I, One electron integrals required         0.02000 seconds.
   @TWOEL-I,      47639 integrals of symmetry type  I I I I
   @TWOEL-I,     139314 integrals of symmetry type  I J I J
   @TWOEL-I,      78170 integrals of symmetry type  I I J J
@@ -8065,7 +8042,7 @@ CHARGE=0)
   @TWOEL-I, Total number of 2-e integrals     350073.
   @MOLECU-I, Two electron integrals required         0.63000 seconds.
   @CHECKOUT-I, Total execution time :       0.6500 seconds.
-                0.38 seconds walltime passed
+                0.25 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -8297,8 +8274,8 @@ CHARGE=0)
 
   VSCF finished.
 
-  @CHECKOUT-I, Total execution time :       0.1500 seconds.
-                0.19 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.1400 seconds.
+                0.12 seconds walltime passed
  --executable xvscf finished with status            0
  --invoking executable xvtran
   Partial RHF integral transformation
@@ -8353,8 +8330,8 @@ CHARGE=0)
     28         2.0407337        2        57         6.9410845        4
     29         3.3476890        2        58         7.2390763        4
 ------------------------------------------------------------------------
-  @CHECKOUT-I, Total execution time :       0.0600 seconds.
-                0.06 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.0700 seconds.
+                0.00 seconds walltime passed
  --executable xvtran finished with status            0
  --invoking executable xintprc
   Processing integrals for MBPT(2) calculation.
@@ -8392,7 +8369,7 @@ CHARGE=0)
    Norm of T2AB vector (    18479 symmetry allowed elements):  0.2123520568.
 -----------------------------------------------------------------------------
   @CHECKOUT-I, Total execution time :       0.0100 seconds.
-                0.00 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xintprc finished with status            0
  --invoking executable xvcc
    MBPT(2) energy will be calculated.
@@ -8423,8 +8400,8 @@ CHARGE=0)
   Trace of density matrix :  10.0000000000.
   ----------------------------------------------------------------------
   Density calculation successfully completed.
-  @CHECKOUT-I, Total execution time :       0.0100 seconds.
-                0.06 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.0200 seconds.
+                0.00 seconds walltime passed
  --executable xdens finished with status            0
  --invoking executable xanti
  --executable xanti finished with status            0
@@ -8506,7 +8483,7 @@ CHARGE=0)
  H #2 2     0.0000000000           -2.2085904078           -1.8675977255
 
 
-  Evaluation of 2e integral derivatives required    0.80 seconds.
+  Evaluation of 2e integral derivatives required    0.83 seconds.
 
                             Molecular gradient
                             ------------------
@@ -8533,16 +8510,21 @@ CHARGE=0)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  @CHECKOUT-I, Total execution time :       0.8200 seconds.
+  @CHECKOUT-I, Total execution time :       0.8500 seconds.
                 0.75 seconds walltime passed
  --executable xvdint finished with status            0
  --invoking executable xjoda
                 0.00 seconds walltime passed
  --executable xjoda finished with status            0
 
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //    Cfour cfour Gradient Results   //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
 
   Variable Map:
   ----------------------------------------------------------------------------
+  "CFOUR ERROR CODE"           =>       0.000000000000
   "CURRENT CORRELATION ENERGY" =>      -0.275174675661
   "CURRENT ENERGY"             =>     -76.332261408714
   "CURRENT REFERENCE ENERGY"   =>     -76.057086733052
@@ -8562,6 +8544,17 @@ CHARGE=0)
     2    0.0000000   -0.0000000   -0.0000007
     3    0.0000000    0.0000000   -0.0000007
 
+
+
+
+  CFOUR scratch file GRD has been read
+    3        0.0000000000
+        8.0000000000        0.0000000000        0.0000000000       -0.1251461400
+        1.0000000000        0.0000000000       -1.4225907749        0.9930800271
+        1.0000000000        0.0000000000        1.4225907749        0.9930800271
+        8.0000000000        0.0000000000        0.0000000000        0.0000013621
+        1.0000000000        0.0000000000       -0.0000000068       -0.0000006811
+        1.0000000000        0.0000000000        0.0000000068       -0.0000006811
 
 
 

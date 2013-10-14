@@ -2,7 +2,7 @@
           PSI4: An Open-Source Ab Initio Electronic Structure Package
                               PSI 4.0.0-beta4+ Driver
 
-               Git: Rev {c4} 2584febb4244f3b3e578ee379b6fce16da611610
+               Git: Rev {c4} ef7097b1d82a7804b2d78ad28247f837c1527697
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -14,7 +14,7 @@
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
-    Process ID:  19564
+    Process ID:  19885
     PSI4DATADIR: /theoryfs2/ds/loriab/chem/psi4_trials/c4/psi4/lib
 
     Using LocalCommunicator (Number of processes = 1)
@@ -24,8 +24,11 @@
   ==> Input File <==
 
 --------------------------------------------------------------------------
-store = {}
-test_psivars = ['nuclear repulsion energy', 'scf total energy', 'mp2 singles energy', 'mp2 correlation energy', 'mp2 total energy', 'mp3 correlation energy', 'mp3 total energy', 'current energy', 'current correlation energy', 'current reference energy']
+#! MP3 energy components. Checks that computed identically
+#! between cfour and psi4
+
+store = {}  #TEST
+test_psivars = ['nuclear repulsion energy', 'scf total energy', 'mp2 singles energy', 'mp2 correlation energy', 'mp2 total energy', 'mp3 correlation energy', 'mp3 total energy', 'current energy', 'current correlation energy', 'current reference energy']  #TEST
 
 print '    <<<  RHF  >>>'
 
@@ -45,11 +48,11 @@ MEMORY=20000000)
 
 energy('cfour')
 
-for vari in test_psivars:
-    store[vari] = get_variable(vari)
-    set_variable(vari, 0.0)
-    #print(store[vari], get_variable(vari))
-    #print get_variable(vari)
+for vari in test_psivars:  #TEST
+    store[vari] = get_variable(vari)  #TEST
+    set_variable(vari, 0.0)  #TEST
+    #print(store[vari], get_variable(vari))  #TEST
+    #print get_variable(vari)  #TEST
 
 clean()
 clean_variables()
@@ -70,36 +73,19 @@ set e_convergence 10
 
 energy('mp3')
 
-print test_psivars
+print test_psivars  #TEST
 print_variables()
-for vari in test_psivars:
-    if vari == 'nuclear repulsion energy':
-        compare_values(store[vari], get_variable(vari), 4, vari.upper())
-    else:
-        compare_values(store[vari], get_variable(vari), 6, vari.upper())
+for vari in test_psivars:  #TEST
+    if vari == 'nuclear repulsion energy':  #TEST
+        compare_values(store[vari], get_variable(vari), 4, vari.upper())  #TEST
+    else:  #TEST
+        compare_values(store[vari], get_variable(vari), 6, vari.upper())  #TEST
 
 
 --------------------------------------------------------------------------
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.19564..cfour.1902
-
-====== Begin ZMAT input for CFOUR ======
-
-MP3 single-point energy calculation
-O
-H 1 R
-H 1 R 2 A
-
-R=0.958
-A=104.5
-
-*ACES2(CALC=MP3,BASIS=AUG-PVDZ
-SCF_CONV=12
-MEMORY=20000000)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.19885..cfour.24511
  --invoking executable xjoda
 
 
@@ -124,8 +110,8 @@ MEMORY=20000000)
  
                        version 1.2
  
-                     john2                                             
-                     Sun Aug 25 15:11:35 EDT 2013                      
+                     john3                                             
+                     Mon Oct 14 02:56:35 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -395,7 +381,7 @@ MEMORY=20000000)
      285155.3624957672        820739.6204653946        436977.5632982106
   There are   41 basis functions.
  @GEOPT-W, Archive file not created for single-point calculation.
-                0.00 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xjoda finished with status            0
   flag is                      5
  --invoking executable xvmol
@@ -485,7 +471,7 @@ MEMORY=20000000)
   @TWOEL-I, Total number of 2-e integrals      91307.
   @MOLECU-I, Two electron integrals required         0.11000 seconds.
   @CHECKOUT-I, Total execution time :       0.1100 seconds.
-                0.25 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -752,8 +738,8 @@ MEMORY=20000000)
     20         4.0263437        1        41         3.7029129        4
     21         0.1967132        2
 ------------------------------------------------------------------------
-  @CHECKOUT-I, Total execution time :       0.0600 seconds.
-                0.25 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.0300 seconds.
+                0.00 seconds walltime passed
  --executable xvtran finished with status            0
  --invoking executable xintprc
   Processing integrals for MBPT(3) calculation.
@@ -791,7 +777,7 @@ MEMORY=20000000)
    Norm of T2AB vector (     8758 symmetry allowed elements):  0.2090613320.
 -----------------------------------------------------------------------------
   @CHECKOUT-I, Total execution time :       0.0100 seconds.
-                0.25 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xintprc finished with status            0
  --invoking executable xvcc
    MBPT(3) energy will be calculated.
@@ -804,6 +790,12 @@ MEMORY=20000000)
   Total MBPT(3)       energy:   -76.267812677132 a.u.
   @CHECKOUT-I, Total execution time :       0.0100 seconds.
  --executable xvcc finished with status            0
+
+
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
   Variable Map:
@@ -824,8 +816,8 @@ MEMORY=20000000)
 
 
 
-*** tstart() called on john2
-*** at Sun Aug 25 15:11:37 2013
+*** tstart() called on john3
+*** at Mon Oct 14 02:56:36 2013
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -1074,18 +1066,96 @@ Properties computed using the SCF density density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on john2 at Sun Aug 25 15:11:38 2013
+*** tstop() called on john3 at Mon Oct 14 02:56:37 2013
 Module time:
-	user time   =       0.55 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.56 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.55 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.56 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on john2
-*** at Sun Aug 25 15:11:38 2013
+*** tstart() called on john3
+*** at Mon Oct 14 02:56:37 2013
+
+
+
+  Options:
+  ----------------------------------------------------------------------------
+  BENCH                  => 0                
+  CACHELEVEL             => 2                
+  CCL_ENERGY             => FALSE            
+  CC_DIIS_MAX_VECS       => 6                
+  CC_DIIS_MIN_VECS       => 2                
+  CC_MAXITER             => 50               
+  CEPA_OS_SCALE          => 1.27             
+  CEPA_SOS_SCALE         => 1.3              
+  CEPA_SS_SCALE          => 1.13             
+  CEPA_TYPE              => CEPA0            
+  CUTOFF                 => 14               
+  DEBUG                  => 0                
+  DERTYPE                => NONE             
+  DIE_IF_NOT_CONVERGED   => TRUE             
+  DOCC                   => [  ]             
+  DO_DIIS                => TRUE             
+  DO_LEVEL_SHIFT         => TRUE             
+  DO_SCS                 => FALSE            
+  DO_SOS                 => FALSE            
+  E3_SCALE               => 0.25             
+  EA_POLES               => FALSE            
+  EKT_EA                 => FALSE            
+  EKT_IP                 => FALSE            
+  EP_EA_POLES            => FALSE            
+  EP_IP_POLES            => FALSE            
+  EP_MAXITER             => 30               
+  E_CONVERGENCE          => 1e-10           !
+  FREEZE_CORE            => FALSE            
+  FROZEN_DOCC            => [  ]             
+  FROZEN_UOCC            => [  ]             
+  IP_POLES               => FALSE            
+  LEVEL_SHIFT            => 0.02             
+  LINEQ_SOLVER           => CDGESV           
+  LITERAL_CFOUR          => 
+               !
+  MAT_NUM_COLUMN_PRINT   => 5                
+  MAX_MOGRAD_CONVERGENCE => 0.001            
+  MOGRAD_DAMPING         => 1                
+  MO_DIIS_NUM_VECS       => 6                
+  MO_MAXITER             => 50               
+  MO_READ                => FALSE            
+  MO_STEP_MAX            => 0.5              
+  MO_WRITE               => FALSE            
+  MP2_OS_SCALE           => 1.2              
+  MP2_SOS_SCALE          => 1.3              
+  MP2_SOS_SCALE2         => 1.2              
+  MP2_SS_SCALE           => 0.333333         
+  MP2_TYPE               => DF               
+  NAT_ORBS               => FALSE            
+  NUM_FROZEN_DOCC        => 0                
+  NUM_FROZEN_UOCC        => 0                
+  OCC_ORBS_PRINT         => FALSE            
+  OPT_METHOD             => ORB_RESP         
+  ORB_OPT                => FALSE           !
+  ORB_RESP_SOLVER        => PCG              
+  ORTH_TYPE              => MGS              
+  PCG_BETA_TYPE          => FLETCHER_REEVES  
+  PCG_CONVERGENCE        => 1e-06            
+  PCG_MAXITER            => 30               
+  PRINT                  => 1                
+  PROPERTIES             => [  ]             
+  PROPERTIES_ORIGIN      => [  ]             
+  PUREAM                 => TRUE             
+  RMS_MOGRAD_CONVERGENCE => 1e-06            
+  R_CONVERGENCE          => 1e-05            
+  SCS_TYPE               => SCS              
+  SOCC                   => [  ]             
+  SOS_TYPE               => SOS              
+  TPDM_ABCD_TYPE         => DIRECT           
+  UNITS                  => ANGSTROMS        
+  WFN                    => SCF              
+  WFN_TYPE               => OMP3            !
+  WRITER_FILE_LABEL      => (empty)          
 
 
  ============================================================================== 
@@ -1153,14 +1223,14 @@ Total time:
 	============================================================================== 
 
 
-*** tstop() called on john2 at Sun Aug 25 15:11:38 2013
+*** tstop() called on john3 at Mon Oct 14 02:56:37 2013
 Module time:
 	user time   =       0.21 seconds =       0.00 minutes
 	system time =       0.07 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.76 seconds =       0.01 minutes
-	system time =       0.09 seconds =       0.00 minutes
+	user time   =       0.78 seconds =       0.01 minutes
+	system time =       0.10 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
 

@@ -2,7 +2,7 @@
           PSI4: An Open-Source Ab Initio Electronic Structure Package
                               PSI 4.0.0-beta4+ Driver
 
-               Git: Rev {master} 5939c37112634ce7d587241dbb279ff58d6f273a
+               Git: Rev {c4} ef7097b1d82a7804b2d78ad28247f837c1527697
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -14,7 +14,7 @@
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
-    Process ID:  26248
+    Process ID:  18208
     PSI4DATADIR: /theoryfs2/ds/loriab/chem/psi4_trials/c4/psi4/lib
 
     Using LocalCommunicator (Number of processes = 1)
@@ -24,6 +24,8 @@
   ==> Input File <==
 
 --------------------------------------------------------------------------
+#! optimization HF/svp on water
+
 print '        <<< Literal ZMAT to Cfour >>>'
 
 cfour {
@@ -42,8 +44,8 @@ SCF_CONV=14)
 
 energy('cfour')
 
-compare_values(9.3126203356, get_variable('NUCLEAR REPULSION ENERGY'), 6, 'NRE')
-compare_values(-75.96133851112, get_variable('current energy'), 6, 'SCF')
+compare_values(9.3126203356, get_variable('NUCLEAR REPULSION ENERGY'), 6, 'NRE')  #TEST
+compare_values(-75.96133851112, get_variable('current energy'), 6, 'SCF')  #TEST
 
 
 clean()
@@ -68,35 +70,17 @@ cfour_calc_level hf
 cfour_basis svp
 cfour_convergence 10
 cfour_scf_conv 12
-#cfour_DERIV_LEVEL=FIRST
 }
 
 optimize('cfour')
 
-compare_values(9.3126203356, get_variable('NUCLEAR REPULSION ENERGY'), 3, 'NRE')
-compare_values(-75.96133851112, get_variable('current energy'), 6, 'SCF')
+compare_values(9.3126203356, get_variable('NUCLEAR REPULSION ENERGY'), 3, 'NRE')  #TEST
+compare_values(-75.96133851112, get_variable('current energy'), 6, 'SCF')  #TEST
 
 --------------------------------------------------------------------------
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.26248..cfour.25837
-
-====== Begin ZMAT input for CFOUR ======
-
-Geometry optimization of H2O at HF-SCF level
-O
-H 1 R*
-H 1 R* 2 A*
-
-R=0.958
-A=104.5
-
-*ACES2(CALC=HF,BASIS=svp
-CONV=10
-SCF_CONV=14)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.18208..cfour.24097
  --invoking executable xjoda
 
 
@@ -121,8 +105,8 @@ SCF_CONV=14)
  
                        version 1.2
  
-                     john2                                             
-                     Fri Aug  2 15:22:00 EDT 2013                      
+                     john3                                             
+                     Mon Oct 14 02:53:00 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -462,9 +446,9 @@ SCF_CONV=14)
   @TWOEL-I,       2860 integrals of symmetry type  I I J J
   @TWOEL-I,       1735 integrals of symmetry type  I J K L
   @TWOEL-I, Total number of 2-e integrals      11412.
-  @MOLECU-I, Two electron integrals required         0.02000 seconds.
-  @CHECKOUT-I, Total execution time :       0.0200 seconds.
-                0.06 seconds walltime passed
+  @MOLECU-I, Two electron integrals required         0.03000 seconds.
+  @CHECKOUT-I, Total execution time :       0.0300 seconds.
+                0.00 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -730,7 +714,7 @@ SCF_CONV=14)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  Evaluation of 1e integral derivatives required    0.00 seconds.
+  Evaluation of 1e integral derivatives required    0.01 seconds.
   Evaluation of 2el integral derivatives
 
                       Two-electron integral gradient
@@ -746,7 +730,7 @@ SCF_CONV=14)
  H #2 2     0.0000000000           -2.6559258009            1.9823684194
 
 
-  Evaluation of 2e integral derivatives required    0.04 seconds.
+  Evaluation of 2e integral derivatives required    0.03 seconds.
 
                             Molecular gradient
                             ------------------
@@ -914,9 +898,9 @@ SCF_CONV=14)
   @TWOEL-I,       2860 integrals of symmetry type  I I J J
   @TWOEL-I,       1735 integrals of symmetry type  I J K L
   @TWOEL-I, Total number of 2-e integrals      11412.
-  @MOLECU-I, Two electron integrals required         0.02000 seconds.
-  @CHECKOUT-I, Total execution time :       0.0200 seconds.
-                0.06 seconds walltime passed
+  @MOLECU-I, Two electron integrals required         0.03000 seconds.
+  @CHECKOUT-I, Total execution time :       0.0300 seconds.
+                0.12 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -1089,8 +1073,8 @@ SCF_CONV=14)
 
   VSCF finished.
 
-  @CHECKOUT-I, Total execution time :       0.0000 seconds.
-                0.06 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.0100 seconds.
+                0.00 seconds walltime passed
  --executable xvscf finished with status            0
  --invoking executable xvdint
  One- and two-electron integral derivatives are calculated
@@ -1165,7 +1149,7 @@ SCF_CONV=14)
  H #2 2     0.0000000000           -2.6799054721            1.9939345259
 
 
-  Evaluation of 2e integral derivatives required    0.03 seconds.
+  Evaluation of 2e integral derivatives required    0.04 seconds.
 
                             Molecular gradient
                             ------------------
@@ -1192,8 +1176,8 @@ SCF_CONV=14)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  @CHECKOUT-I, Total execution time :       0.0300 seconds.
-                0.06 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.0400 seconds.
+                0.12 seconds walltime passed
  --executable xvdint finished with status            0
  --invoking executable xjoda
    JODA beginning optimization cycle #  2.
@@ -1330,15 +1314,15 @@ SCF_CONV=14)
   required memory for a2 array                2004428  words 
  basis number:   8    15
  basis number:   1     5
-  @MOLECU-I, One electron integrals required         0.00000 seconds.
+  @MOLECU-I, One electron integrals required         0.01000 seconds.
   @TWOEL-I,       2350 integrals of symmetry type  I I I I
   @TWOEL-I,       4467 integrals of symmetry type  I J I J
   @TWOEL-I,       2860 integrals of symmetry type  I I J J
   @TWOEL-I,       1735 integrals of symmetry type  I J K L
   @TWOEL-I, Total number of 2-e integrals      11412.
-  @MOLECU-I, Two electron integrals required         0.03000 seconds.
+  @MOLECU-I, Two electron integrals required         0.02000 seconds.
   @CHECKOUT-I, Total execution time :       0.0300 seconds.
-                0.00 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -1571,7 +1555,7 @@ SCF_CONV=14)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  Evaluation of 1e integral derivatives required    0.00 seconds.
+  Evaluation of 1e integral derivatives required    0.01 seconds.
   Evaluation of 2el integral derivatives
 
                       Two-electron integral gradient
@@ -1587,7 +1571,7 @@ SCF_CONV=14)
  H #2 2     0.0000000000           -2.7052875613            1.9927165211
 
 
-  Evaluation of 2e integral derivatives required    0.04 seconds.
+  Evaluation of 2e integral derivatives required    0.03 seconds.
 
                             Molecular gradient
                             ------------------
@@ -1615,7 +1599,7 @@ SCF_CONV=14)
 
 
   @CHECKOUT-I, Total execution time :       0.0400 seconds.
-                0.06 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xvdint finished with status            0
  --invoking executable xjoda
    JODA beginning optimization cycle #  3.
@@ -1681,7 +1665,7 @@ SCF_CONV=14)
    Rotational constants (in MHz): 
      292915.9701211174        855002.7410013775        445561.0242248246
   There are   24 basis functions.
-                0.06 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xjoda finished with status            0
  --invoking executable xvmol
  Serial version of molecule started
@@ -1758,9 +1742,9 @@ SCF_CONV=14)
   @TWOEL-I,       2860 integrals of symmetry type  I I J J
   @TWOEL-I,       1735 integrals of symmetry type  I J K L
   @TWOEL-I, Total number of 2-e integrals      11412.
-  @MOLECU-I, Two electron integrals required         0.02000 seconds.
-  @CHECKOUT-I, Total execution time :       0.0200 seconds.
-                0.06 seconds walltime passed
+  @MOLECU-I, Two electron integrals required         0.03000 seconds.
+  @CHECKOUT-I, Total execution time :       0.0300 seconds.
+                0.12 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -1925,7 +1909,7 @@ SCF_CONV=14)
 
   VSCF finished.
 
-  @CHECKOUT-I, Total execution time :       0.0000 seconds.
+  @CHECKOUT-I, Total execution time :       0.0100 seconds.
                 0.00 seconds walltime passed
  --executable xvscf finished with status            0
  --invoking executable xvdint
@@ -1985,7 +1969,7 @@ SCF_CONV=14)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  Evaluation of 1e integral derivatives required    0.01 seconds.
+  Evaluation of 1e integral derivatives required    0.02 seconds.
   Evaluation of 2el integral derivatives
 
                       Two-electron integral gradient
@@ -2028,7 +2012,7 @@ SCF_CONV=14)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  @CHECKOUT-I, Total execution time :       0.0400 seconds.
+  @CHECKOUT-I, Total execution time :       0.0500 seconds.
                 0.12 seconds walltime passed
  --executable xvdint finished with status            0
  --invoking executable xjoda
@@ -2172,9 +2156,9 @@ SCF_CONV=14)
   @TWOEL-I,       2860 integrals of symmetry type  I I J J
   @TWOEL-I,       1735 integrals of symmetry type  I J K L
   @TWOEL-I, Total number of 2-e integrals      11412.
-  @MOLECU-I, Two electron integrals required         0.03000 seconds.
-  @CHECKOUT-I, Total execution time :       0.0300 seconds.
-                0.06 seconds walltime passed
+  @MOLECU-I, Two electron integrals required         0.02000 seconds.
+  @CHECKOUT-I, Total execution time :       0.0200 seconds.
+                0.00 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -2343,8 +2327,8 @@ SCF_CONV=14)
 
   VSCF finished.
 
-  @CHECKOUT-I, Total execution time :       0.0100 seconds.
-                0.06 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.0000 seconds.
+                0.00 seconds walltime passed
  --executable xvscf finished with status            0
  --invoking executable xvdint
  One- and two-electron integral derivatives are calculated
@@ -2447,7 +2431,7 @@ SCF_CONV=14)
 
 
   @CHECKOUT-I, Total execution time :       0.0400 seconds.
-                0.06 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xvdint finished with status            0
  --invoking executable xjoda
    JODA beginning optimization cycle #  5.
@@ -2513,7 +2497,7 @@ SCF_CONV=14)
    Rotational constants (in MHz): 
      292897.7706756858        855714.7097389170        445325.8482839690
   There are   24 basis functions.
-                0.00 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xjoda finished with status            0
  --invoking executable xvmol
  Serial version of molecule started
@@ -2845,7 +2829,7 @@ SCF_CONV=14)
 
 
   @CHECKOUT-I, Total execution time :       0.0400 seconds.
-                0.06 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xvdint finished with status            0
  --invoking executable xjoda
    JODA beginning optimization cycle #  6.
@@ -2911,7 +2895,7 @@ SCF_CONV=14)
    Rotational constants (in MHz): 
      292897.8256129599        855714.9996629149        445325.8967598889
   There are   24 basis functions.
-                0.06 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xjoda finished with status            0
  --invoking executable xvmol
  Serial version of molecule started
@@ -2982,15 +2966,15 @@ SCF_CONV=14)
   required memory for a2 array                2004428  words 
  basis number:   8    15
  basis number:   1     5
-  @MOLECU-I, One electron integrals required         0.01000 seconds.
+  @MOLECU-I, One electron integrals required         0.00000 seconds.
   @TWOEL-I,       2350 integrals of symmetry type  I I I I
   @TWOEL-I,       4467 integrals of symmetry type  I J I J
   @TWOEL-I,       2860 integrals of symmetry type  I I J J
   @TWOEL-I,       1735 integrals of symmetry type  I J K L
   @TWOEL-I, Total number of 2-e integrals      11412.
-  @MOLECU-I, Two electron integrals required         0.02000 seconds.
+  @MOLECU-I, Two electron integrals required         0.03000 seconds.
   @CHECKOUT-I, Total execution time :       0.0300 seconds.
-                0.06 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -3132,7 +3116,7 @@ SCF_CONV=14)
   VSCF finished.
 
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
-                0.00 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xvscf finished with status            0
  --invoking executable xvdint
  One- and two-electron integral derivatives are calculated
@@ -3191,7 +3175,7 @@ SCF_CONV=14)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  Evaluation of 1e integral derivatives required    0.00 seconds.
+  Evaluation of 1e integral derivatives required    0.01 seconds.
   Evaluation of 2el integral derivatives
 
                       Two-electron integral gradient
@@ -3234,7 +3218,7 @@ SCF_CONV=14)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  @CHECKOUT-I, Total execution time :       0.0400 seconds.
+  @CHECKOUT-I, Total execution time :       0.0500 seconds.
                 0.12 seconds walltime passed
  --executable xvdint finished with status            0
  --invoking executable xjoda
@@ -3301,7 +3285,7 @@ SCF_CONV=14)
    Rotational constants (in MHz): 
      292897.8258188356        855714.9982732058        445325.8976121784
   There are   24 basis functions.
-                0.00 seconds walltime passed
+                2.00 seconds walltime passed
  --executable xjoda finished with status            0
  --invoking executable xvmol
  Serial version of molecule started
@@ -3380,7 +3364,7 @@ SCF_CONV=14)
   @TWOEL-I, Total number of 2-e integrals      11412.
   @MOLECU-I, Two electron integrals required         0.03000 seconds.
   @CHECKOUT-I, Total execution time :       0.0300 seconds.
-                0.06 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -3581,7 +3565,7 @@ SCF_CONV=14)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  Evaluation of 1e integral derivatives required    0.00 seconds.
+  Evaluation of 1e integral derivatives required    0.01 seconds.
   Evaluation of 2el integral derivatives
 
                       Two-electron integral gradient
@@ -3597,7 +3581,7 @@ SCF_CONV=14)
  H #2 2     0.0000000000           -2.7080390112            1.9884593646
 
 
-  Evaluation of 2e integral derivatives required    0.04 seconds.
+  Evaluation of 2e integral derivatives required    0.03 seconds.
 
                             Molecular gradient
                             ------------------
@@ -3625,7 +3609,7 @@ SCF_CONV=14)
 
 
   @CHECKOUT-I, Total execution time :       0.0400 seconds.
-                0.12 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xvdint finished with status            0
  --invoking executable xjoda
    JODA beginning optimization cycle #  8.
@@ -3791,6 +3775,10 @@ SCF_CONV=14)
  -------------------------------------------------------
  --executable xprops finished with status            0
 
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
 
   Variable Map:
   ----------------------------------------------------------------------------
@@ -3811,32 +3799,51 @@ SCF_CONV=14)
 
 
 
+  CFOUR scratch file GRD has been read
+    3        0.0000000000
+        8.0000000000        0.0000000000        0.0000000000        0.1214775394
+        1.0000000000        0.0000000000       -1.4179505081       -0.9639683498
+        1.0000000000        0.0000000000        1.4179505081       -0.9639683498
+        8.0000000000        0.0000000000        0.0000000000        0.0000000000
+        1.0000000000        0.0000000000        0.0000000000        0.0000000000
+        1.0000000000        0.0000000000        0.0000000000        0.0000000000
+
+  CFOUR scratch file FCMFINAL has been read
+    3    9
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+
+
+
   Memory set to 200.000 MiB by Python script.
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.26248..cfour.16041
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule default
-O     0.000000000000    0.000000000000   -0.065638538099
-H     0.000000000000   -0.757480611647    0.520865616174
-H     0.000000000000    0.757480611647    0.520865616174
-
-*CFOUR(BASIS=svp
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-DERIV_LEVEL=FIRST
-CONVERGENCE=10
-UNITS=ANGSTROM
-MEMORY_SIZE=200
-CALC_LEVEL=HF
-SCF_CONV=12
-MEM_UNIT=MB
-CHARGE=0)
-
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.18208..cfour.15211
  --invoking executable xjoda
 
 
@@ -3861,8 +3868,8 @@ CHARGE=0)
  
                        version 1.2
  
-                     john2                                             
-                     Fri Aug  2 15:22:08 EDT 2013                      
+                     john3                                             
+                     Mon Oct 14 02:53:13 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -4180,15 +4187,15 @@ CHARGE=0)
   required memory for a2 array                2004428  words 
  basis number:   8    15
  basis number:   1     5
-  @MOLECU-I, One electron integrals required         0.01000 seconds.
+  @MOLECU-I, One electron integrals required         0.00000 seconds.
   @TWOEL-I,       2350 integrals of symmetry type  I I I I
   @TWOEL-I,       4467 integrals of symmetry type  I J I J
   @TWOEL-I,       2860 integrals of symmetry type  I I J J
   @TWOEL-I,       1735 integrals of symmetry type  I J K L
   @TWOEL-I, Total number of 2-e integrals      11412.
-  @MOLECU-I, Two electron integrals required         0.02000 seconds.
+  @MOLECU-I, Two electron integrals required         0.03000 seconds.
   @CHECKOUT-I, Total execution time :       0.0300 seconds.
-                0.06 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -4378,7 +4385,7 @@ CHARGE=0)
 
   VSCF finished.
 
-  @CHECKOUT-I, Total execution time :       0.0000 seconds.
+  @CHECKOUT-I, Total execution time :       0.0100 seconds.
                 0.00 seconds walltime passed
  --executable xvscf finished with status            0
  --invoking executable xvdint
@@ -4438,7 +4445,7 @@ CHARGE=0)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  Evaluation of 1e integral derivatives required    0.01 seconds.
+  Evaluation of 1e integral derivatives required    0.00 seconds.
   Evaluation of 2el integral derivatives
 
                       Two-electron integral gradient
@@ -4454,7 +4461,7 @@ CHARGE=0)
  H #2 2     0.0000000000           -2.6559258009           -1.9823684194
 
 
-  Evaluation of 2e integral derivatives required    0.03 seconds.
+  Evaluation of 2e integral derivatives required    0.04 seconds.
 
                             Molecular gradient
                             ------------------
@@ -4482,11 +4489,15 @@ CHARGE=0)
 
 
   @CHECKOUT-I, Total execution time :       0.0400 seconds.
-                0.06 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xvdint finished with status            0
  --invoking executable xjoda
                 0.00 seconds walltime passed
  --executable xjoda finished with status            0
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //    Cfour cfour Gradient Results   //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
   Variable Map:
@@ -4505,6 +4516,17 @@ CHARGE=0)
     2    0.0000000   -0.0113018    0.0091387
     3    0.0000000    0.0113018    0.0091387
 
+
+
+
+  CFOUR scratch file GRD has been read
+    3        0.0000000000
+        8.0000000000        0.0000000000        0.0000000000       -0.1240388865
+        1.0000000000        0.0000000000       -1.4314312007        0.9842935683
+        1.0000000000        0.0000000000        1.4314312007        0.9842935683
+        8.0000000000        0.0000000000        0.0000000000       -0.0182774379
+        1.0000000000        0.0000000000       -0.0113017792        0.0091387190
+        1.0000000000        0.0000000000        0.0113017792        0.0091387190
 
 
 
@@ -4590,30 +4612,8 @@ CHARGE=0)
     R         =    0.9442641683
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.26248..cfour.55620
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule default
-O     0.000000000000    0.000000000000   -0.064552992706
-H     0.000000000000   -0.747617207855    0.512251419599
-H     0.000000000000    0.747617207855    0.512251419599
-
-*CFOUR(BASIS=svp
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-DERIV_LEVEL=FIRST
-CONVERGENCE=10
-UNITS=ANGSTROM
-MEMORY_SIZE=200
-CALC_LEVEL=HF
-SCF_CONV=12
-MEM_UNIT=MB
-CHARGE=0)
-
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.18208..cfour.43382
  --invoking executable xjoda
 
 
@@ -4638,8 +4638,8 @@ CHARGE=0)
  
                        version 1.2
  
-                     john2                                             
-                     Fri Aug  2 15:22:15 EDT 2013                      
+                     john3                                             
+                     Mon Oct 14 02:53:22 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -4885,7 +4885,7 @@ CHARGE=0)
    Rotational constants (in MHz): 
      293454.4867471373        848575.3981269381        448583.8180814193
   There are   24 basis functions.
-                0.06 seconds walltime passed
+                0.88 seconds walltime passed
  --executable xjoda finished with status            0
   flag is                      5
  --invoking executable xvmol
@@ -4963,9 +4963,9 @@ CHARGE=0)
   @TWOEL-I,       2860 integrals of symmetry type  I I J J
   @TWOEL-I,       1735 integrals of symmetry type  I J K L
   @TWOEL-I, Total number of 2-e integrals      11412.
-  @MOLECU-I, Two electron integrals required         0.03000 seconds.
-  @CHECKOUT-I, Total execution time :       0.0300 seconds.
-                0.06 seconds walltime passed
+  @MOLECU-I, Two electron integrals required         0.02000 seconds.
+  @CHECKOUT-I, Total execution time :       0.0200 seconds.
+                0.00 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -5155,7 +5155,7 @@ CHARGE=0)
 
   VSCF finished.
 
-  @CHECKOUT-I, Total execution time :       0.0100 seconds.
+  @CHECKOUT-I, Total execution time :       0.0000 seconds.
                 0.00 seconds walltime passed
  --executable xvscf finished with status            0
  --invoking executable xvdint
@@ -5215,7 +5215,7 @@ CHARGE=0)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  Evaluation of 1e integral derivatives required    0.00 seconds.
+  Evaluation of 1e integral derivatives required    0.01 seconds.
   Evaluation of 2el integral derivatives
 
                       Two-electron integral gradient
@@ -5258,16 +5258,21 @@ CHARGE=0)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  @CHECKOUT-I, Total execution time :       0.0300 seconds.
-                0.06 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.0400 seconds.
+                0.00 seconds walltime passed
  --executable xvdint finished with status            0
  --invoking executable xjoda
                 0.00 seconds walltime passed
  --executable xjoda finished with status            0
 
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //    Cfour cfour Gradient Results   //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
 
   Variable Map:
   ----------------------------------------------------------------------------
+  "CFOUR ERROR CODE"         =>       0.000000000000
   "CURRENT ENERGY"           =>     -75.961331823936
   "CURRENT REFERENCE ENERGY" =>     -75.961331823936
   "NUCLEAR REPULSION ENERGY" =>       9.320503306900
@@ -5282,6 +5287,17 @@ CHARGE=0)
     2    0.0000000    0.0013085   -0.0000137
     3    0.0000000   -0.0013085   -0.0000137
 
+
+
+
+  CFOUR scratch file GRD has been read
+    3        0.0000000000
+        8.0000000000        0.0000000000        0.0000000000       -0.1219875025
+        1.0000000000        0.0000000000       -1.4127920650        0.9680150926
+        1.0000000000        0.0000000000        1.4127920650        0.9680150926
+        8.0000000000        0.0000000000        0.0000000000        0.0000273808
+        1.0000000000        0.0000000000        0.0013085418       -0.0000136904
+        1.0000000000        0.0000000000       -0.0013085418       -0.0000136904
 
 
 
@@ -5365,30 +5381,8 @@ CHARGE=0)
     R         =    0.9449824453
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.26248..cfour.10938
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule default
-O     0.000000000000    0.000000000000   -0.064253732178
-H     0.000000000000   -0.750577173381    0.509876678726
-H     0.000000000000    0.750577173381    0.509876678726
-
-*CFOUR(BASIS=svp
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-DERIV_LEVEL=FIRST
-CONVERGENCE=10
-UNITS=ANGSTROM
-MEMORY_SIZE=200
-CALC_LEVEL=HF
-SCF_CONV=12
-MEM_UNIT=MB
-CHARGE=0)
-
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.18208..cfour.89138
  --invoking executable xjoda
 
 
@@ -5413,8 +5407,8 @@ CHARGE=0)
  
                        version 1.2
  
-                     john2                                             
-                     Fri Aug  2 15:22:21 EDT 2013                      
+                     john3                                             
+                     Mon Oct 14 02:53:31 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -5738,9 +5732,9 @@ CHARGE=0)
   @TWOEL-I,       2860 integrals of symmetry type  I I J J
   @TWOEL-I,       1735 integrals of symmetry type  I J K L
   @TWOEL-I, Total number of 2-e integrals      11412.
-  @MOLECU-I, Two electron integrals required         0.02000 seconds.
-  @CHECKOUT-I, Total execution time :       0.0200 seconds.
-                0.06 seconds walltime passed
+  @MOLECU-I, Two electron integrals required         0.03000 seconds.
+  @CHECKOUT-I, Total execution time :       0.0300 seconds.
+                0.12 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -6040,9 +6034,14 @@ CHARGE=0)
                 0.00 seconds walltime passed
  --executable xjoda finished with status            0
 
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //    Cfour cfour Gradient Results   //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
 
   Variable Map:
   ----------------------------------------------------------------------------
+  "CFOUR ERROR CODE"         =>       0.000000000000
   "CURRENT ENERGY"           =>     -75.961338460433
   "CURRENT REFERENCE ENERGY" =>     -75.961338460433
   "NUCLEAR REPULSION ENERGY" =>       9.312292167100
@@ -6057,6 +6056,17 @@ CHARGE=0)
     2    0.0000000   -0.0000833   -0.0000291
     3    0.0000000    0.0000833   -0.0000291
 
+
+
+
+  CFOUR scratch file GRD has been read
+    3        0.0000000000
+        8.0000000000        0.0000000000        0.0000000000       -0.1214219820
+        1.0000000000        0.0000000000       -1.4183855903        0.9635274818
+        1.0000000000        0.0000000000        1.4183855903        0.9635274818
+        8.0000000000        0.0000000000        0.0000000000        0.0000582379
+        1.0000000000        0.0000000000       -0.0000832693       -0.0000291190
+        1.0000000000        0.0000000000        0.0000832693       -0.0000291190
 
 
 

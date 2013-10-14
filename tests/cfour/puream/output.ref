@@ -2,7 +2,7 @@
           PSI4: An Open-Source Ab Initio Electronic Structure Package
                               PSI 4.0.0-beta4+ Driver
 
-               Git: Rev {c4} 2584febb4244f3b3e578ee379b6fce16da611610
+               Git: Rev {c4} ef7097b1d82a7804b2d78ad28247f837c1527697
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -14,7 +14,7 @@
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
-    Process ID:  12655
+    Process ID:  12792
     PSI4DATADIR: /theoryfs2/ds/loriab/chem/psi4_trials/c4/psi4/lib
 
     Using LocalCommunicator (Number of processes = 1)
@@ -24,8 +24,10 @@
   ==> Input File <==
 
 --------------------------------------------------------------------------
-store = {}
-test_psivars = ['scf total energy', 'mp2 same-spin energy', 'mp2 opposite-spin energy', 'mp2 singles energy', 'mp2 correlation energy', 'mp2 total energy', 'current reference energy', 'current correlation energy', 'current energy']
+#! Basis set spherical/Cartesian behavior in cfour
+
+store = {}  #TEST
+test_psivars = ['scf total energy', 'mp2 same-spin energy', 'mp2 opposite-spin energy', 'mp2 singles energy', 'mp2 correlation energy', 'mp2 total energy', 'current reference energy', 'current correlation energy', 'current energy']  #TEST
 
 sph_ccpvdz = -76.2307777348
 cart_ccpvdz = -76.2346763972
@@ -47,7 +49,7 @@ MEMORY=20000000)
 }
 
 energy('cfour')
-compare_values(sph_ccpvdz, get_variable('CURRENT ENERGY'), 6, 'cc-pVDZ Default (Sph)')
+compare_values(sph_ccpvdz, get_variable('CURRENT ENERGY'), 6, 'cc-pVDZ Default (Sph)')  #TEST
 
 clean()
 clean_variables()
@@ -68,7 +70,7 @@ MEMORY=20000000)
 }
 
 energy('cfour')
-compare_values(sph_631gs, get_variable('CURRENT ENERGY'), 6, '6-31G* Default (Sph)')
+compare_values(sph_631gs, get_variable('CURRENT ENERGY'), 6, '6-31G* Default (Sph)')  #TEST
 
 clean()
 clean_variables()
@@ -87,7 +89,7 @@ set cfour_CALC_level=MP2
 set basis 6-31g*
 
 energy('cfour')
-compare_values(cart_631gs, get_variable('CURRENT ENERGY'), 6, '6-31G* P4 Default (Cart)')
+compare_values(cart_631gs, get_variable('CURRENT ENERGY'), 6, '6-31G* P4 Default (Cart)')  #TEST
 
 clean()
 clean_variables()
@@ -96,7 +98,7 @@ cfour {}
 set basis cc-pvdz
 
 energy('cfour')
-compare_values(sph_ccpvdz, get_variable('CURRENT ENERGY'), 6, 'cc-pVDZ P4 Default (Sph)')
+compare_values(sph_ccpvdz, get_variable('CURRENT ENERGY'), 6, 'cc-pVDZ P4 Default (Sph)')  #TEST
 
 clean()
 clean_variables()
@@ -106,29 +108,12 @@ cfour {}
 set puream false
 
 energy('cfour')
-compare_values(cart_ccpvdz, get_variable('CURRENT ENERGY'), 6, 'cc-pVDZ P4 Forced (Cart)')
+compare_values(cart_ccpvdz, get_variable('CURRENT ENERGY'), 6, 'cc-pVDZ P4 Forced (Cart)')  #TEST
 
 --------------------------------------------------------------------------
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.12655..cfour.17900
-
-====== Begin ZMAT input for CFOUR ======
-
-MP2 single-point energy calculation
-O
-H 1 R
-H 1 R 2 A
-
-R=0.958
-A=104.5
-
-*ACES2(CALC=MP2,BASIS=PVDZ
-SCF_CONV=12
-MEMORY=20000000)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.12792..cfour.45251
  --invoking executable xjoda
 
 
@@ -153,8 +138,8 @@ MEMORY=20000000)
  
                        version 1.2
  
-                     john2                                             
-                     Tue Aug 20 12:01:29 EDT 2013                      
+                     john3                                             
+                     Mon Oct 14 02:40:13 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -424,7 +409,7 @@ MEMORY=20000000)
      285155.3624957672        820739.6204653946        436977.5632982106
   There are   24 basis functions.
  @GEOPT-W, Archive file not created for single-point calculation.
-                0.00 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xjoda finished with status            0
   flag is                      5
  --invoking executable xvmol
@@ -498,7 +483,7 @@ MEMORY=20000000)
   @TWOEL-I, Total number of 2-e integrals      11412.
   @MOLECU-I, Two electron integrals required         0.02000 seconds.
   @CHECKOUT-I, Total execution time :       0.0200 seconds.
-                0.00 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -780,6 +765,12 @@ MEMORY=20000000)
  --executable xvcc finished with status            0
 
 
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+
   Variable Map:
   ----------------------------------------------------------------------------
   "CURRENT CORRELATION ENERGY" =>      -0.204017014876
@@ -794,25 +785,8 @@ MEMORY=20000000)
 
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.12655..cfour.48085
-
-====== Begin ZMAT input for CFOUR ======
-
-MP2 single-point energy calculation
-O
-H 1 R
-H 1 R 2 A
-
-R=0.958
-A=104.5
-
-*ACES2(CALC=MP2,BASIS=6-31G*
-SCF_CONV=12
-MEMORY=20000000)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.12792..cfour.75359
  --invoking executable xjoda
 
 
@@ -837,8 +811,8 @@ MEMORY=20000000)
  
                        version 1.2
  
-                     john2                                             
-                     Tue Aug 20 12:01:33 EDT 2013                      
+                     john3                                             
+                     Mon Oct 14 02:40:22 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -1108,7 +1082,7 @@ MEMORY=20000000)
      285155.3624957672        820739.6204653946        436977.5632982106
   There are   18 basis functions.
  @GEOPT-W, Archive file not created for single-point calculation.
-                0.00 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xjoda finished with status            0
   flag is                      5
  --invoking executable xvmol
@@ -1359,7 +1333,7 @@ MEMORY=20000000)
   VSCF finished.
 
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
-                0.00 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xvscf finished with status            0
  --invoking executable xvtran
   Partial RHF integral transformation
@@ -1447,6 +1421,12 @@ MEMORY=20000000)
  --executable xvcc finished with status            0
 
 
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+
   Variable Map:
   ----------------------------------------------------------------------------
   "CURRENT CORRELATION ENERGY" =>      -0.186247323036
@@ -1461,32 +1441,9 @@ MEMORY=20000000)
 
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.12655.h2o.cfour.28401
-
-  GENBAS loaded from PSI4 LibMints
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule h2o
-O     0.000000000000    0.000000000000   -0.065638538099
-H     0.000000000000   -0.757480611647    0.520865616174
-H     0.000000000000    0.757480611647    0.520865616174
-
-*CFOUR(BASIS=SPECIAL
-SPHERICAL=0
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-UNITS=ANGSTROM
-CALC_LEVEL=MP2
-CHARGE=0)
-
-O:P4_1
-H:P4_2
-H:P4_3
-
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.12792.h2o.cfour.13188
+  GENBAS loaded from PSI4 LibMints for basis 6-31G*
  --invoking executable xjoda
 
 
@@ -1511,8 +1468,8 @@ H:P4_3
  
                        version 1.2
  
-                     john2                                             
-                     Tue Aug 20 12:01:38 EDT 2013                      
+                     john3                                             
+                     Mon Oct 14 02:40:30 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -2072,6 +2029,12 @@ H:P4_3
  --executable xvcc finished with status            0
 
 
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+
   Variable Map:
   ----------------------------------------------------------------------------
   "CURRENT CORRELATION ENERGY" =>      -0.188539232608
@@ -2086,32 +2049,9 @@ H:P4_3
 
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.12655.h2o.cfour.70807
-
-  GENBAS loaded from PSI4 LibMints
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule h2o
-O     0.000000000000    0.000000000000   -0.065638538099
-H     0.000000000000   -0.757480611647    0.520865616174
-H     0.000000000000    0.757480611647    0.520865616174
-
-*CFOUR(BASIS=SPECIAL
-SPHERICAL=1
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-UNITS=ANGSTROM
-CALC_LEVEL=MP2
-CHARGE=0)
-
-O:P4_1
-H:P4_2
-H:P4_3
-
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.12792.h2o.cfour.28122
+  GENBAS loaded from PSI4 LibMints for basis CC-PVDZ
  --invoking executable xjoda
 
 
@@ -2136,8 +2076,8 @@ H:P4_3
  
                        version 1.2
  
-                     john2                                             
-                     Tue Aug 20 12:01:43 EDT 2013                      
+                     john3                                             
+                     Mon Oct 14 02:40:39 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -2384,7 +2324,7 @@ H:P4_3
      285155.3624955724        820739.6204654009        436977.5632977513
   There are   24 basis functions.
  @GEOPT-W, Archive file not created for single-point calculation.
-                0.25 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xjoda finished with status            0
   flag is                      5
  --invoking executable xvmol
@@ -2473,7 +2413,7 @@ H:P4_3
   @TWOEL-I, Total number of 2-e integrals      11412.
   @MOLECU-I, Two electron integrals required         0.02000 seconds.
   @CHECKOUT-I, Total execution time :       0.0200 seconds.
-                0.00 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -2727,6 +2667,12 @@ H:P4_3
  --executable xvcc finished with status            0
 
 
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+
   Variable Map:
   ----------------------------------------------------------------------------
   "CURRENT CORRELATION ENERGY" =>      -0.204017015013
@@ -2741,32 +2687,9 @@ H:P4_3
 
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.12655.h2o.cfour.37053
-
-  GENBAS loaded from PSI4 LibMints
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule h2o
-O     0.000000000000    0.000000000000   -0.065638538099
-H     0.000000000000   -0.757480611647    0.520865616174
-H     0.000000000000    0.757480611647    0.520865616174
-
-*CFOUR(BASIS=SPECIAL
-SPHERICAL=0
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-UNITS=ANGSTROM
-CALC_LEVEL=MP2
-CHARGE=0)
-
-O:P4_1
-H:P4_2
-H:P4_3
-
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.12792.h2o.cfour.47612
+  GENBAS loaded from PSI4 LibMints for basis CC-PVDZ
  --invoking executable xjoda
 
 
@@ -2791,8 +2714,8 @@ H:P4_3
  
                        version 1.2
  
-                     john2                                             
-                     Tue Aug 20 12:01:47 EDT 2013                      
+                     john3                                             
+                     Mon Oct 14 02:40:47 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -3039,7 +2962,7 @@ H:P4_3
      285155.3624955724        820739.6204654009        436977.5632977513
   There are   25 basis functions.
  @GEOPT-W, Archive file not created for single-point calculation.
-                0.00 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xjoda finished with status            0
   flag is                      5
  --invoking executable xvmol
@@ -3126,8 +3049,8 @@ H:P4_3
   @TWOEL-I,       3314 integrals of symmetry type  I I J J
   @TWOEL-I,       1896 integrals of symmetry type  I J K L
   @TWOEL-I, Total number of 2-e integrals      13617.
-  @MOLECU-I, Two electron integrals required         0.01000 seconds.
-  @CHECKOUT-I, Total execution time :       0.0100 seconds.
+  @MOLECU-I, Two electron integrals required         0.02000 seconds.
+  @CHECKOUT-I, Total execution time :       0.0200 seconds.
                 0.00 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
@@ -3291,7 +3214,7 @@ H:P4_3
 
   VSCF finished.
 
-  @CHECKOUT-I, Total execution time :       0.0100 seconds.
+  @CHECKOUT-I, Total execution time :       0.0000 seconds.
                 0.00 seconds walltime passed
  --executable xvscf finished with status            0
  --invoking executable xvtran
@@ -3382,6 +3305,12 @@ H:P4_3
   Total MBPT(2)       energy:   -76.234676400910 a.u.
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
  --executable xvcc finished with status            0
+
+
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
   Variable Map:

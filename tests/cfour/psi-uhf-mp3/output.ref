@@ -2,7 +2,7 @@
           PSI4: An Open-Source Ab Initio Electronic Structure Package
                               PSI 4.0.0-beta4+ Driver
 
-               Git: Rev {c4} 2584febb4244f3b3e578ee379b6fce16da611610
+               Git: Rev {c4} ef7097b1d82a7804b2d78ad28247f837c1527697
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -14,7 +14,7 @@
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
-    Process ID:   8674
+    Process ID:  19961
     PSI4DATADIR: /theoryfs2/ds/loriab/chem/psi4_trials/c4/psi4/lib
 
     Using LocalCommunicator (Number of processes = 1)
@@ -24,8 +24,11 @@
   ==> Input File <==
 
 --------------------------------------------------------------------------
-store = {}
-test_psivars = ['nuclear repulsion energy', 'scf total energy', 'mp2 singles energy', 'mp2 correlation energy', 'mp2 total energy', 'mp3 correlation energy', 'mp3 total energy', 'current energy', 'current correlation energy', 'current reference energy']
+#! UHF MP3 energy components. Checks that converted
+#! identically between cfour and psi4
+
+store = {}  #TEST
+test_psivars = ['nuclear repulsion energy', 'scf total energy', 'mp2 singles energy', 'mp2 correlation energy', 'mp2 total energy', 'mp3 correlation energy', 'mp3 total energy', 'current energy', 'current correlation energy', 'current reference energy']  #TEST
 
 print '    <<<  UHF  >>>'
 
@@ -48,9 +51,9 @@ MEMORY=20000000)
 
 energy('cfour')
 
-for vari in test_psivars:
-    store[vari] = get_variable(vari)
-    set_variable(vari, 0.0)
+for vari in test_psivars:  #TEST
+    store[vari] = get_variable(vari)  #TEST
+    set_variable(vari, 0.0)  #TEST
 
 clean()
 clean_variables()
@@ -72,39 +75,19 @@ set socc [0, 0, 1, 0]  #OCCUPATION=3-1-1-0/3-0-1-0
 
 energy('mp3')
 
-print test_psivars
+print test_psivars  #TEST
 print_variables()
-for vari in test_psivars:
-    if vari == 'nuclear repulsion energy':
-        compare_values(store[vari], get_variable(vari), 4, vari.upper())
-    else:
-        compare_values(store[vari], get_variable(vari), 6, vari.upper())
+for vari in test_psivars:  #TEST
+    if vari == 'nuclear repulsion energy':  #TEST
+        compare_values(store[vari], get_variable(vari), 4, vari.upper())  #TEST
+    else:  #TEST
+        compare_values(store[vari], get_variable(vari), 6, vari.upper())  #TEST
 
 
 --------------------------------------------------------------------------
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.8674..cfour.91740
-
-====== Begin ZMAT input for CFOUR ======
-
-ROHF-MP3 energy calculation 
-N
-H 1 R
-H 1 R 2 A
-
-R=1.008
-A=105.0
-
-*ACES2(CALC=MP3,BASIS=AUG-PVDZ
-MULT=2,REF=UHF
-OCCUPATION=3-1-1-0/3-0-1-0
-SCF_CONV=12
-CC_CONV=12
-MEMORY=20000000)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.19961..cfour.39791
  --invoking executable xjoda
 
 
@@ -129,8 +112,8 @@ MEMORY=20000000)
  
                        version 1.2
  
-                     john2                                             
-                     Sun Aug 25 14:56:02 EDT 2013                      
+                     john3                                             
+                     Mon Oct 14 02:56:40 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -404,7 +387,7 @@ MEMORY=20000000)
      258833.4615238862        761713.0527317049        392055.7317765501
   There are   41 basis functions.
  @GEOPT-W, Archive file not created for single-point calculation.
-                0.00 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xjoda finished with status            0
   flag is                      5
  --invoking executable xvmol
@@ -778,8 +761,8 @@ MEMORY=20000000)
 
   VSCF finished.
 
-  @CHECKOUT-I, Total execution time :       0.0700 seconds.
-                0.25 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.0800 seconds.
+                0.12 seconds walltime passed
  --executable xvscf finished with status            0
  --invoking executable xvtran
   Full UHF integral transformation
@@ -862,8 +845,8 @@ MEMORY=20000000)
     20         0.0712063        2        41         2.7894186        4
     21         0.2263427        2
 ------------------------------------------------------------------------
-  @CHECKOUT-I, Total execution time :       0.1200 seconds.
-                0.25 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.1300 seconds.
+                0.12 seconds walltime passed
  --executable xvtran finished with status            0
  --invoking executable xintprc
   Processing integrals for MBPT(3) calculation.
@@ -958,7 +941,7 @@ MEMORY=20000000)
    Norm of T2AB vector (     7444 symmetry allowed elements):  0.1900105669.
 -----------------------------------------------------------------------------
   @CHECKOUT-I, Total execution time :       0.0400 seconds.
-                0.00 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xintprc finished with status            0
  --invoking executable xvcc
    MBPT(3) energy will be calculated.
@@ -969,8 +952,14 @@ MEMORY=20000000)
         D-MBPT(3)       -0.016056964161   -55.746054964607
   -----------------------------------------------------------
   Total MBPT(3)       energy:   -55.746054964607 a.u.
-  @CHECKOUT-I, Total execution time :       0.0200 seconds.
+  @CHECKOUT-I, Total execution time :       0.0100 seconds.
  --executable xvcc finished with status            0
+
+
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
   Variable Map:
@@ -991,8 +980,8 @@ MEMORY=20000000)
 
 
 
-*** tstart() called on john2
-*** at Sun Aug 25 14:56:04 2013
+*** tstart() called on john3
+*** at Mon Oct 14 02:56:42 2013
 
 	There are an odd number of electrons - assuming doublet.
 	Specify the multiplicity with the MULTP option in the
@@ -1262,7 +1251,7 @@ Properties computed using the SCF density density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on john2 at Sun Aug 25 14:56:04 2013
+*** tstop() called on john3 at Mon Oct 14 02:56:42 2013
 Module time:
 	user time   =       0.57 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
@@ -1272,8 +1261,8 @@ Total time:
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on john2
-*** at Sun Aug 25 14:56:04 2013
+*** tstart() called on john3
+*** at Mon Oct 14 02:56:42 2013
 
 
 
@@ -1305,7 +1294,7 @@ Total time:
   EP_EA_POLES            => FALSE            
   EP_IP_POLES            => FALSE            
   EP_MAXITER             => 30               
-  E_CONVERGENCE          => 1e-06           !
+  E_CONVERGENCE          => 1e-06            
   FREEZE_CORE            => FALSE            
   FROZEN_DOCC            => [  ]             
   FROZEN_UOCC            => [  ]             
@@ -1419,7 +1408,7 @@ Total time:
 	============================================================================== 
 
 
-*** tstop() called on john2 at Sun Aug 25 14:56:05 2013
+*** tstop() called on john3 at Mon Oct 14 02:56:43 2013
 Module time:
 	user time   =       0.41 seconds =       0.01 minutes
 	system time =       0.16 seconds =       0.00 minutes

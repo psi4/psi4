@@ -1262,7 +1262,7 @@ AC_CONFIG_FILES([
           tests/cfour/sp-rohf-mp2-sc/Makefile
           tests/cfour/sp-rohf-mp4-sc/Makefile
           tests/cfour/sp-rohf-scf/Makefile
-          tests/cfour/psi-mints5/Makefile
+          tests/cfour/mints5/Makefile
           tests/cfour/psi-rhf-scsmp2/Makefile
           tests/cfour/psi-uhf-scsmp2/Makefile
           tests/cfour/psi-rohf-scsmp2/Makefile
@@ -1279,9 +1279,22 @@ AC_CONFIG_FILES([
           tests/cfour/opt-rhf-scf/Makefile
           tests/cfour/puream/Makefile
           tests/cfour/pywrap-cbs1/Makefile
-          tests/cfour/psi-mints5-grad/Makefile
+          tests/cfour/mints5-grad/Makefile
           tests/cfour/psi-a24-grad/Makefile
           tests/cfour/psi-ghost-grad/Makefile
+          tests/cfour/scf4/Makefile
+          tests/cfour/mp2-1/Makefile
+          tests/cfour/pywrap-db1/Makefile
+          tests/cfour/pywrap-basis/Makefile
+          tests/cfour/dfmp2-1/Makefile
+          tests/cfour/kw-1/Makefile
+          tests/cfour/kw-2/Makefile
+          tests/cfour/kw-3/Makefile
+          tests/cfour/kw-4/Makefile
+          tests/cfour/kw-5/Makefile
+          tests/cfour/kw-6/Makefile
+          tests/cfour/kw-7/Makefile
+          tests/cfour/kw-8/Makefile
           plugins/Makefile
           plugins/aointegrals/Makefile
           plugins/backtrans/Makefile

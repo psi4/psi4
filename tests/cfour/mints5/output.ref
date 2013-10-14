@@ -2,7 +2,7 @@
           PSI4: An Open-Source Ab Initio Electronic Structure Package
                               PSI 4.0.0-beta4+ Driver
 
-               Git: Rev {c4} 65f6d194f59139e980683c60539dc41ecd62d4d0
+               Git: Rev {c4} ef7097b1d82a7804b2d78ad28247f837c1527697
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -14,7 +14,7 @@
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
-    Process ID:  21158
+    Process ID:  12791
     PSI4DATADIR: /theoryfs2/ds/loriab/chem/psi4_trials/c4/psi4/lib
 
     Using LocalCommunicator (Number of processes = 1)
@@ -24,6 +24,9 @@
   ==> Input File <==
 
 --------------------------------------------------------------------------
+#! geometries from a variety of input formats. references from psi4,
+#! testing whether geometry strings read identically for psi4/cfour
+
 import qcdb
 print 'mem'
 print get_memory()
@@ -31,9 +34,6 @@ print get_memory()
 
 set cfour_calc_level scf
 set cfour_basis 4-31g
-
-#! Tests to determine full point group symmetry.  Currently, these only matter
-#! for the rotational symmetry number in thermodynamic computations.
 
 
 molecule HOCl {
@@ -48,7 +48,7 @@ a1 = 110.0
 HOCl.update_geometry()
 nre = HOCl.nuclear_repulsion_energy()
 energy('cfour')
-compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[1]  NRE: zmat, external values')
+compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[1]  NRE: zmat, external values')  #TEST
 
 
 molecule NH3  {
@@ -66,7 +66,7 @@ molecule NH3  {
 NH3.update_geometry()
 nre = NH3.nuclear_repulsion_energy()
 energy('cfour')
-compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[2]  NRE: zmat, external values, w/dummy')
+compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[2]  NRE: zmat, external values, w/dummy')  #TEST
 
 
 molecule HCCCl  {
@@ -78,7 +78,7 @@ molecule HCCCl  {
 HCCCl.update_geometry()
 nre = HCCCl.nuclear_repulsion_energy()
 energy('cfour')
-compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[3]  NRE: cartesian, pure')
+compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[3]  NRE: cartesian, pure')  #TEST
 
 
 molecule C2H2 {
@@ -92,7 +92,7 @@ molecule C2H2 {
 C2H2.update_geometry()
 nre = C2H2.nuclear_repulsion_energy()
 energy('cfour')
-compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[4]  NRE: cartesian, external values, +/-')
+compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[4]  NRE: cartesian, external values, +/-')  #TEST
 
 
 molecule N2 {
@@ -104,7 +104,7 @@ molecule N2 {
 N2.update_geometry()
 nre = N2.nuclear_repulsion_energy()
 energy('cfour')
-compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[5]  NRE: cartesian, external values')
+compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[5]  NRE: cartesian, external values')  #TEST
 
 
 molecule CN  {
@@ -116,7 +116,7 @@ molecule CN  {
 CN.update_geometry()
 nre = CN.nuclear_repulsion_energy()
 energy('cfour')
-compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[6]  NRE: cartesian, external values')
+compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[6]  NRE: cartesian, external values')  #TEST
 
 
 molecule CHFClBr  {
@@ -130,7 +130,7 @@ CHFClBr.update_geometry()
 nre = CHFClBr.nuclear_repulsion_energy()
 set cfour_basis sto-3g
 energy('cfour')
-compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[7]  NRE: zmat, internal values')
+compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[7]  NRE: zmat, internal values')  #TEST
 
 
 molecule CH2ClBr  {
@@ -143,7 +143,7 @@ molecule CH2ClBr  {
 CH2ClBr.update_geometry()
 nre = CH2ClBr.nuclear_repulsion_energy()
 energy('cfour')
-compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[8]  NRE: zmat, internal values')
+compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[8]  NRE: zmat, internal values')  #TEST
 
 
 molecule CH2ClBr  {
@@ -157,7 +157,7 @@ molecule CH2ClBr  {
 CH2ClBr.update_geometry()
 nre = CH2ClBr.nuclear_repulsion_energy()
 energy('cfour')
-compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[8b]  NRE: zmat, external and internal values, +/-')
+compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[8b]  NRE: zmat, external and internal values, +/-')  #TEST
 
 
 molecule HOCl  {
@@ -168,7 +168,7 @@ molecule HOCl  {
 HOCl.update_geometry()
 nre = HOCl.nuclear_repulsion_energy()
 energy('cfour')
-compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[9]  NRE: zmat, internal values')
+compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[9]  NRE: zmat, internal values')  #TEST
 
 
 molecule C4H4Cl2F2  {
@@ -189,7 +189,7 @@ molecule C4H4Cl2F2  {
 C4H4Cl2F2.update_geometry()
 nre = C4H4Cl2F2.nuclear_repulsion_energy()
 energy('cfour')
-compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[10] NRE: cartesian, pure, bohr')
+compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[10] NRE: cartesian, pure, bohr')  #TEST
 
 
 molecule HOOH_dimer  {
@@ -205,7 +205,7 @@ molecule HOOH_dimer  {
 HOOH_dimer.update_geometry()
 nre = HOOH_dimer.nuclear_repulsion_energy()
 energy('cfour')
-compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[11] NRE: cartesian, pure')
+compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[11] NRE: cartesian, pure')  #TEST
 
 
 molecule HOOH  {
@@ -217,7 +217,7 @@ molecule HOOH  {
 HOOH.update_geometry()
 nre = HOOH.nuclear_repulsion_energy()
 energy('cfour')
-compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[12] NRE: zmat, internal values')
+compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[12] NRE: zmat, internal values')  #TEST
 
 
 #molecule NOHOHOH  {
@@ -233,7 +233,7 @@ compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[12] NRE: zmat
 #NOHOHOH.update_geometry()
 #nre = NOHOHOH.nuclear_repulsion_energy()
 #energy('cfour')
-#compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[13] NRE: zmat, internal values, w/dummy')
+#compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[13] NRE: zmat, internal values, w/dummy')  #TEST
 
 
 molecule H2O  {
@@ -244,7 +244,7 @@ molecule H2O  {
 H2O.update_geometry()
 nre = H2O.nuclear_repulsion_energy()
 energy('cfour')
-compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[14] NRE: zmat, internal values')
+compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[14] NRE: zmat, internal values')  #TEST
 
 
 molecule CH2F2  {
@@ -258,7 +258,7 @@ molecule CH2F2  {
 CH2F2.update_geometry()
 nre = CH2F2.nuclear_repulsion_energy()
 energy('cfour')
-compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[15] NRE: cartesian, pure, bohr')
+compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[15] NRE: cartesian, pure, bohr')  #TEST
 
 
 molecule NH3  {
@@ -274,7 +274,7 @@ molecule NH3  {
 NH3.update_geometry()
 nre = NH3.nuclear_repulsion_energy()
 energy('cfour')
-compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[16] NRE: zmat, external & internal values, w/dummy')
+compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[16] NRE: zmat, external & internal values, w/dummy')  #TEST
 
 
 molecule BrF5  {
@@ -289,7 +289,7 @@ molecule BrF5  {
 BrF5.update_geometry()
 nre = BrF5.nuclear_repulsion_energy()
 energy('cfour')
-compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[17] NRE: zmat, external & internal values')
+compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[17] NRE: zmat, external & internal values')  #TEST
 
 
 molecule N2H2  {
@@ -304,7 +304,7 @@ molecule N2H2  {
 N2H2.update_geometry()
 nre = N2H2.nuclear_repulsion_energy()
 energy('cfour')
-compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[18] NRE: zmat, external values')
+compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[18] NRE: zmat, external values')  #TEST
 
 
 #molecule NOHOHOH  {
@@ -320,7 +320,7 @@ compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[18] NRE: zmat
 #NOHOHOH.update_geometry()
 #nre = NOHOHOH.nuclear_repulsion_energy()
 #energy('cfour')
-#compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[19] NRE: zmat, internal values, w/dummy')
+#compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[19] NRE: zmat, internal values, w/dummy')  #TEST
 
 
 molecule TFCOT {
@@ -344,7 +344,7 @@ molecule TFCOT {
 TFCOT.update_geometry()
 nre = TFCOT.nuclear_repulsion_energy()
 energy('cfour')
-compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[20] NRE: cartesian, pure')
+compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[20] NRE: cartesian, pure')  #TEST
 
 
 molecule Li_H2O_4_p  {
@@ -377,7 +377,7 @@ molecule Li_H2O_4_p  {
 Li_H2O_4_p.update_geometry()
 nre = Li_H2O_4_p.nuclear_repulsion_energy()
 energy('cfour')
-compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[21] NRE: zmat, external and internal values, +/-, w/dummy')
+compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[21] NRE: zmat, external and internal values, +/-, w/dummy')  #TEST
 
 
 molecule ethylene_cation  {
@@ -395,7 +395,7 @@ molecule ethylene_cation  {
 ethylene_cation.update_geometry()
 nre = ethylene_cation.nuclear_repulsion_energy()
 energy('cfour')
-compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[22] NRE: zmat, external values')
+compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[22] NRE: zmat, external values')  #TEST
 
 
 molecule ethane_gauche  {
@@ -411,7 +411,7 @@ molecule ethane_gauche  {
 ethane_gauche.update_geometry()
 nre = ethane_gauche.nuclear_repulsion_energy()
 energy('cfour')
-compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[23] NRE: zmat, internal values')
+compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[23] NRE: zmat, internal values')  #TEST
 
 
 #molecule triplet_ethylene  {
@@ -429,7 +429,7 @@ compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[23] NRE: zmat
 #triplet_ethylene.update_geometry()
 #nre = triplet_ethylene.nuclear_repulsion_energy()
 #energy('cfour')
-#compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[24] NRE: zmat, external values')
+#compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[24] NRE: zmat, external values')  #TEST
 
 
 molecule allene  {
@@ -444,7 +444,7 @@ molecule allene  {
 allene.update_geometry()
 nre = allene.nuclear_repulsion_energy()
 energy('cfour')
-compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[25] NRE: cartesian, pure')
+compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[25] NRE: cartesian, pure')  #TEST
 
 
 molecule ethane_staggered  {
@@ -460,7 +460,7 @@ molecule ethane_staggered  {
 ethane_staggered.update_geometry()
 nre = ethane_staggered.nuclear_repulsion_energy()
 energy('cfour')
-compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[26] NRE: zmat, internal values')
+compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[26] NRE: zmat, internal values')  #TEST
 
 
 molecule singlet_ethylene  {
@@ -478,7 +478,7 @@ molecule singlet_ethylene  {
 singlet_ethylene.update_geometry()
 nre = singlet_ethylene.nuclear_repulsion_energy()
 energy('cfour')
-compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[27] NRE: zmat, external values')
+compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[27] NRE: zmat, external values')  #TEST
 
 
 molecule ethane_eclipsed  {
@@ -494,7 +494,7 @@ molecule ethane_eclipsed  {
 ethane_eclipsed.update_geometry()
 nre = ethane_eclipsed.nuclear_repulsion_energy()
 energy('cfour')
-compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[28] NRE: zmat, internal values')
+compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[28] NRE: zmat, internal values')  #TEST
 
 
 #molecule BH4p  {
@@ -509,7 +509,7 @@ compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[28] NRE: zmat
 #BH4p.update_geometry()
 #nre = BH4p.nuclear_repulsion_energy()
 #energy('cfour')
-#compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[29] NRE: zmat, internal values, w/dummy')
+#compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[29] NRE: zmat, internal values, w/dummy')  #TEST
 
 
 molecule CH4  {
@@ -523,7 +523,7 @@ molecule CH4  {
 CH4.update_geometry()
 nre = CH4.nuclear_repulsion_energy()
 energy('cfour')
-compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[30] NRE: zmat, external and internal values, w/TDA')
+compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[30] NRE: zmat, external and internal values, w/TDA')  #TEST
 
 
 molecule SF6  {
@@ -539,7 +539,7 @@ molecule SF6  {
 SF6.update_geometry()
 nre = SF6.nuclear_repulsion_energy()
 energy('cfour')
-compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[31] NRE: zmat, external and internal values')
+compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[31] NRE: zmat, external and internal values')  #TEST
 
 
 molecule Ih  {
@@ -562,29 +562,13 @@ molecule Ih  {
 Ih.update_geometry()
 nre = Ih.nuclear_repulsion_energy()
 energy('cfour')
-compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[32] NRE: cartesian, external and internal, +/-')
+compare_values(nre, get_variable('nuclear repulsion energy'), 3, '[32] NRE: cartesian, external and internal, +/-')  #TEST
 
 
 --------------------------------------------------------------------------
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.21158.HOCl.cfour.97050
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule HOCl
-H    -1.074855537230    1.371823577282    0.000000000000
-O    -1.074855537230    0.371823577282    0.000000000000
-CL    0.522621918106   -0.209610666372    0.000000000000
-
-*CFOUR(BASIS=4-31G
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-UNITS=ANGSTROM
-CALC_LEVEL=SCF
-CHARGE=0)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.12791.HOCl.cfour.90305
  --invoking executable xjoda
 
 
@@ -610,7 +594,7 @@ CHARGE=0)
                        version 1.2
  
                      john3                                             
-                     Mon Sep 16 12:14:39 EDT 2013                      
+                     Mon Oct 14 02:40:13 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -958,9 +942,9 @@ CHARGE=0)
   @TWOEL-I,       4149 integrals of symmetry type  I J I J
   @TWOEL-I,       2586 integrals of symmetry type  I I J J
   @TWOEL-I, Total number of 2-e integrals      23352.
-  @MOLECU-I, Two electron integrals required         0.05000 seconds.
-  @CHECKOUT-I, Total execution time :       0.0500 seconds.
-                0.00 seconds walltime passed
+  @MOLECU-I, Two electron integrals required         0.06000 seconds.
+  @CHECKOUT-I, Total execution time :       0.0600 seconds.
+                0.12 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -1119,10 +1103,14 @@ CHARGE=0)
   VSCF finished.
 
   @CHECKOUT-I, Total execution time :       0.0100 seconds.
-                0.12 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xvscf finished with status            0
 
 
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
   Variable Map:
@@ -1134,25 +1122,8 @@ CHARGE=0)
 
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.21158.NH3.cfour.82462
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule NH3
-N    -0.000000000000   -0.071293777318    0.000000000000
-H    -0.430496198842    0.330193571336   -0.745641288860
-H    -0.430496198842    0.330193571336    0.745641288860
-H     0.860992397685    0.330193571336    0.000000000000
-
-*CFOUR(BASIS=4-31G
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-UNITS=ANGSTROM
-CALC_LEVEL=SCF
-CHARGE=0)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.12791.NH3.cfour.49277
  --invoking executable xjoda
 
 
@@ -1178,7 +1149,7 @@ CHARGE=0)
                        version 1.2
  
                      john3                                             
-                     Mon Sep 16 12:14:44 EDT 2013                      
+                     Mon Oct 14 02:40:23 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -1497,8 +1468,8 @@ CHARGE=0)
   @TWOEL-I,        926 integrals of symmetry type  I J I J
   @TWOEL-I,        612 integrals of symmetry type  I I J J
   @TWOEL-I, Total number of 2-e integrals       3528.
-  @MOLECU-I, Two electron integrals required         0.01000 seconds.
-  @CHECKOUT-I, Total execution time :       0.0100 seconds.
+  @MOLECU-I, Two electron integrals required         0.00000 seconds.
+  @CHECKOUT-I, Total execution time :       0.0000 seconds.
                 0.00 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
@@ -1646,6 +1617,10 @@ CHARGE=0)
 
 
 
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
 
   Variable Map:
   ----------------------------------------------------------------------------
@@ -1657,25 +1632,8 @@ CHARGE=0)
 
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.21158.HCCCl.cfour.16746
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule HCCCl
-H     0.000000000000    0.000000000000   -2.719188122301
-C     0.000000000000    0.000000000000   -1.719188122301
-C     0.000000000000    0.000000000000   -0.619188122301
-CL    0.000000000000    0.000000000000    0.880811877699
-
-*CFOUR(BASIS=4-31G
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-UNITS=ANGSTROM
-CALC_LEVEL=SCF
-CHARGE=0)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.12791.HCCCl.cfour.63242
  --invoking executable xjoda
 
 
@@ -1701,7 +1659,7 @@ CHARGE=0)
                        version 1.2
  
                      john3                                             
-                     Mon Sep 16 12:14:49 EDT 2013                      
+                     Mon Oct 14 02:40:33 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -2074,12 +2032,12 @@ CHARGE=0)
  basis number:   6     9
  basis number:   6     9
  basis number:  17    13
-  @MOLECU-I, One electron integrals required         0.01000 seconds.
+  @MOLECU-I, One electron integrals required         0.00000 seconds.
   @TWOEL-I,      17671 integrals of symmetry type  I I I I
   @TWOEL-I,      18323 integrals of symmetry type  I J I J
   @TWOEL-I,      10922 integrals of symmetry type  I I J J
   @TWOEL-I, Total number of 2-e integrals      46916.
-  @MOLECU-I, Two electron integrals required         0.11000 seconds.
+  @MOLECU-I, Two electron integrals required         0.12000 seconds.
   @CHECKOUT-I, Total execution time :       0.1200 seconds.
                 0.12 seconds walltime passed
  --executable xvmol finished with status            0
@@ -2318,6 +2276,10 @@ CHARGE=0)
 
 
 
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
 
   Variable Map:
   ----------------------------------------------------------------------------
@@ -2329,25 +2291,8 @@ CHARGE=0)
 
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.21158.C2H2.cfour.96349
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule C2H2
-C     0.000000000000    0.000000000000    0.650000000000
-C     0.000000000000    0.000000000000   -0.650000000000
-H     0.000000000000    0.000000000000    1.750000000000
-H     0.000000000000    0.000000000000   -1.750000000000
-
-*CFOUR(BASIS=4-31G
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-UNITS=ANGSTROM
-CALC_LEVEL=SCF
-CHARGE=0)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.12791.C2H2.cfour.92525
  --invoking executable xjoda
 
 
@@ -2373,7 +2318,7 @@ CHARGE=0)
                        version 1.2
  
                      john3                                             
-                     Mon Sep 16 12:14:55 EDT 2013                      
+                     Mon Oct 14 02:40:43 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -2619,7 +2564,7 @@ CHARGE=0)
       30980.2837056325             0.0000000000
   There are   22 basis functions.
  @GEOPT-W, Archive file not created for single-point calculation.
-                0.00 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xjoda finished with status            0
   flag is                      5
  --invoking executable xvmol
@@ -2848,6 +2793,10 @@ CHARGE=0)
 
 
 
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
 
   Variable Map:
   ----------------------------------------------------------------------------
@@ -2859,23 +2808,8 @@ CHARGE=0)
 
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.21158.N2.cfour.31630
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule N2
-N     0.000000000000    0.000000000000   -0.550000000000
-N     0.000000000000    0.000000000000    0.550000000000
-
-*CFOUR(BASIS=4-31G
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-UNITS=ANGSTROM
-CALC_LEVEL=SCF
-CHARGE=0)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.12791.N2.cfour.88353
  --invoking executable xjoda
 
 
@@ -2901,7 +2835,7 @@ CHARGE=0)
                        version 1.2
  
                      john3                                             
-                     Mon Sep 16 12:15:00 EDT 2013                      
+                     Mon Oct 14 02:40:53 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -3197,7 +3131,7 @@ CHARGE=0)
   @TWOEL-I, Total number of 2-e integrals       2376.
   @MOLECU-I, Two electron integrals required         0.01000 seconds.
   @CHECKOUT-I, Total execution time :       0.0100 seconds.
-                0.12 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -3350,6 +3284,10 @@ CHARGE=0)
 
 
 
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
 
   Variable Map:
   ----------------------------------------------------------------------------
@@ -3361,23 +3299,8 @@ CHARGE=0)
 
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.21158.CN.cfour.70169
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule CN
-C     0.000000000000    0.000000000000   -0.753922540200
-N     0.000000000000    0.000000000000    0.646077459800
-
-*CFOUR(BASIS=4-31G
-MULTIPLICITY=2
-COORDINATES=CARTESIAN
-UNITS=ANGSTROM
-CALC_LEVEL=SCF
-CHARGE=0)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.12791.CN.cfour.98320
  --invoking executable xjoda
 
 
@@ -3403,7 +3326,7 @@ CHARGE=0)
                        version 1.2
  
                      john3                                             
-                     Mon Sep 16 12:15:05 EDT 2013                      
+                     Mon Oct 14 02:41:03 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -4015,6 +3938,10 @@ CHARGE=0)
 
 
 
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
 
   Variable Map:
   ----------------------------------------------------------------------------
@@ -4026,26 +3953,8 @@ CHARGE=0)
 
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.21158.CHFClBr.cfour.58774
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule CHFClBr
-H     0.251995331546   -0.251226142375   -1.228834841943
-C     0.251995331546   -0.251226142375   -0.228834841943
-F     0.251995331546   -1.217151968664    0.029984203160
-CL    1.088511635284    0.231736770769    0.029984203160
-BR   -0.584520972191    0.231736770769    0.029984203160
-
-*CFOUR(BASIS=STO-3G
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-UNITS=ANGSTROM
-CALC_LEVEL=SCF
-CHARGE=0)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.12791.CHFClBr.cfour.24842
  --invoking executable xjoda
 
 
@@ -4071,7 +3980,7 @@ CHARGE=0)
                        version 1.2
  
                      john3                                             
-                     Mon Sep 16 12:15:10 EDT 2013                      
+                     Mon Oct 14 02:41:12 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -4420,10 +4329,10 @@ CHARGE=0)
  basis number:   9     5
  basis number:  17     9
  basis number:  35     2
-  @MOLECU-I, One electron integrals required         0.01000 seconds.
+  @MOLECU-I, One electron integrals required         0.00000 seconds.
   @TWOEL-I,      30807 integrals of symmetry type  I I I I
   @TWOEL-I, Total number of 2-e integrals      30807.
-  @MOLECU-I, Two electron integrals required         0.08000 seconds.
+  @MOLECU-I, Two electron integrals required         0.09000 seconds.
   @CHECKOUT-I, Total execution time :       0.0900 seconds.
                 0.12 seconds walltime passed
  --executable xvmol finished with status            0
@@ -4518,6 +4427,10 @@ CHARGE=0)
 
 
 
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
 
   Variable Map:
   ----------------------------------------------------------------------------
@@ -4529,26 +4442,8 @@ CHARGE=0)
 
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.21158.CH2ClBr.cfour.34993
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule CH2ClBr
-CL   -0.588382367674    0.890373072017    0.000000000000
-C    -0.588382367674   -0.109626927983    0.000000000000
-BR    0.377543458615   -0.368445973085    0.000000000000
-H    -1.071345280819   -0.368445973085    0.836516303738
-H    -1.071345280819   -0.368445973085   -0.836516303738
-
-*CFOUR(BASIS=STO-3G
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-UNITS=ANGSTROM
-CALC_LEVEL=SCF
-CHARGE=0)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.12791.CH2ClBr.cfour.86588
  --invoking executable xjoda
 
 
@@ -4574,502 +4469,7 @@ CHARGE=0)
                        version 1.2
  
                      john3                                             
-                     Mon Sep 16 12:15:15 EDT 2013                      
-                     integer*8 version is running
- 
-    -------------------------------------------------------------------
-                    Input from ZMAT file
-    -------------------------------------------------------------------
- 
- auto-generated by qcdb from molecule CH2ClBr                                   
- CL   -0.588382367674    0.890373072017    0.000000000000                       
- C    -0.588382367674   -0.109626927983    0.000000000000                       
- BR    0.377543458615   -0.368445973085    0.000000000000                       
- H    -1.071345280819   -0.368445973085    0.836516303738                       
- H    -1.071345280819   -0.368445973085   -0.836516303738                       
-                                                                                
- *CFOUR(BASIS=STO-3G                                                            
- MULTIPLICITY=1                                                                 
- COORDINATES=CARTESIAN                                                          
- UNITS=ANGSTROM                                                                 
- CALC_LEVEL=SCF                                                                 
- CHARGE=0)                                                                      
-                                                                                
- 
-    -------------------------------------------------------------------
-                    CFOUR Control Parameters 
-    -------------------------------------------------------------------
-        External           Internal           Value            Units
-          Name               Name
-    -------------------------------------------------------------------
-       PRINT                IPRNT               0               ***   
-       CALCLEVEL            ICLLVL           SCF        [  0]   ***   
-       DERIV_LEV            IDRLVL            ZERO      [  0]   ***   
-       CC_CONV              ICCCNV          10D-  7             ***   
-       SCF_CONV             ISCFCV          10D-  7             ***   
-       XFORM_TOL            IXFTOL          10D- 11             ***   
-       CC_MAXCYC            ICCCYC              0              cycles 
-       LINDEP_TOL           ILINDP              8               ***   
-       RDO                  IRDOFM             OFF      [  0]   ***   
-  
-       SCF_EXTRAPO          IRPP                ON      [  1]   ***   
-       REFERENCE            IREFNC             RHF      [  0]   ***   
-       CC_EXPORDER          ICCEOR              0               ***   
-       TAMP_SUM             IEVERY              0               ***   
-       NTOP_TAMP            ITOPT2             15               ***   
-       CCORBOPT             ICCORB             OFF      [  0] x 0.01  
-       SCF_MAXCYC           ISCFCY            150              cycles 
-       OCCUPATION           IOCCU   ESTIMATED BY SCF 
-       PROPS                IPROPS             OFF      [  0]   ***   
-       RELAX_DENS           IRDENS             OFF      [  0]   ***   
-  
-       SCF_EXPORDE          IRPPOR              6               ***   
-       CC_EXTRAPOL          ICCEXT             DIIS     [  1]   ***   
-       BRUECKNER            IBRKNR             OFF      [  0]   ***   
-       XFIELD               IXEFLD              0             x 10-6  
-       YFIELD               IYEFLD              0             x 10-6  
-       ZFIELD               IZEFLD              0             x 10-6  
-       SAVE_INTS            ISVINT             OFF      [  0]   ***   
-       DROPMO               IDRPMO      NONE         
-       CHARGE               ICHRGE              0               ***   
-       MULTIPLICTY          IMULTP              1               ***   
-  
-       CPHF_CONVER          ICPHFT          10D- 16             ***   
-       CPHF_MAXCYC          ICPHFC             64              cycles 
-       INCORE               INCORE             OFF      [  0]   ***   
-       MEMORY_SIZE          IMEMSZ         100000000           words  
-       FILE_RECSIZ          IFLREC              4096           words  
-       NON-HF               INONHF             OFF      [  0]   ***   
-       ORBITALS             IORBTP           STANDARD   [  0]   ***   
-  
-       SCF_EXPSTAR          IRPPLS              8               ***   
-       LOCK_ORBOCC          ILOCOC             OFF      [  0]   ***   
-       HBAR                 IHBAR              OFF      [  0]   ***   
-       CACHE_RECS           ICHREC             10               ***   
-       GUESS                IGUESS            MOREAD    [  0]   ***   
-       JODA_PRINT           IJPRNT              0               ***   
-       GEO_METHOD           INR            SINGLE_POINT [  5]   ***   
-       GEO_CONV             ICONTL              5              H/bohr 
-       EIGENVECTOR          IVEC                1               ***   
-  
-       NEGEVAL              IDIE             ABORT      [  0]   ***   
-       CURVILINEAR          ICURVY            OFF       [  0]   ***   
-       SCALE_ON             ISTCRT              0               ***   
-       GEO_MAXSTEP          IMXSTP            300            millibohr
-       VIBRATION            IVIB              NO        [  0]   ***   
-       EVAL_HESS            IRECAL              0            # of cyc.
-       INTEGRALS            INTTYP             VMOL     [  1]   ***   
-       FD_STEPSIZE          IDISFD              0            10-4 bohr
-       POINTS               IGRDFD              0               ***   
-       CONTRACTION          ICNTYP          GENERAL     [  1]   ***   
-  
-       SYMMETRY             ISYM             ON         [  0]   ***   
-       BASIS                IBASIS         STO-3G       [  2]   ***   
-       SPHERICAL            IDFGHI             ON       [  1]   ***   
-       RESET_FLAGS          IRESET             OFF      [  0]   ***   
-       PERT_ORB             IPTORB         STANDARD     [  0]   ***   
-       GENBAS_1             IGNBS1              0               ***   
-       GENBAS_2             IGNBS2              0               ***   
-       GENBAS_3             IGNBS3              0               ***   
-       COORDINATES          ICOORD         CARTESIAN    [  1]   ***   
-       SYM_CHECK            ISYMCK         OVERRIDE     [  1]   ***   
-  
-       SCF_PRINT            ISCFPR              0               ***   
-       ECP                  IECP           OFF          [  0]   ***   
-       RESTART_CC           ICCRES         OFF          [  0]   ***   
-       TRANS_INV            ITRAIN         USE          [  0]   ***   
-       HFSTABILITY          ISTABL         OFF          [  0]   ***   
-       ROT_EVEC             ROTVEC              0               ***   
-       BRUCK_CONV           IBRTOL          10D-  4             ***   
-       UNITS                IUNITS         ANGSTROM     [  0]   ***   
-       FD_USEGROUP          IFDGRP         FULL         [  0]   ***   
-  
-       FD_PROJECT           IFDPRJ         ON           [  0]   ***   
-       FD_CALTYPE           IFDCAL         GRADONLY     [  0]   ***   
-       VTRAN                IVTRAN         FULL/PARTIAL [  0]   ***   
-       HF2_FILE             IHF2Fl         USE          [  1]   ***   
-       SUBGROUP             ISUBGP         DEFAULT      [  0]   ***   
-       SUBGRPAXIS           ISBXYZ         X            [  0]   ***   
-       EXCITE               IEXCIT         NONE         [  0]   ***   
-       LINEQ_CONV           IZTACN          10D-  7           cycles  
-  
-       TREAT_PERT           ITREAT         SIMULTANEOUS [  0]   ***   
-       ESTATE_PROP          IEXPRP         OFF          [  0]   ***   
-       GEO_MAXCYC           IOPTCY             50               ***   
-       ABCDTYPE             IABCDT         STANDARD     [  0]   ***   
-       AO_LADDERS           IAOLAD         SINGLEPASS   [  1]   ***   
-       FOCK                 IFOCK          AO           [  1]   ***   
-       ESTATE_MAXC          IEXMXC             20               ***   
-       ESTATE_CONV          IEXTOL          10D-  5             ***   
-       DIRECT               IDIRCT         OFF          [  0]   ***   
-  
-       GAMMA_ABCD           IGABCD         STORE        [  0]   ***   
-       LINEQ_TYPE           ILTYPE         DIIS         [  1]   ***   
-       LINEQ_MAXCY          ILMAXC             50               ***   
-       TRANGRAD             IRESRM         OFF          [  0]   ***   
-       PSI                  IPSI           OFF          [  0]   ***   
-       GAMMA_ABCI           IGABCI         STORE        [  0]   ***   
-       ESTATE_DIAG          IEXDIG         ITERATIVE    [  0]   ***   
-       FC_FIELD             IFINFC              0             x 10-6  
-       SD_FIELD             IFINSD              0             x 10-6  
-       DIFF_TYPE            IDIFTY         RELAXED      [  0]   ***   
-  
-       LINEQ_EXPOR          ILMAXD              5               ***   
-       FINITE_PERT          IFIPER              0             x 10-6  
-       ANHARMONIC           IANHAR         OFF          [  0]   ***   
-       CC_PROGRAM           ICCPRO         VCC          [  0]   ***   
-       OPEN-SHELL           IOPEN          SPIN-ORBITAL [  0]   ***   
-       UIJ_THRESHO          IUIJTH             25               ***   
-       SCF_DAMPING          IDAMP               0             x 10-3  
-       PROP_INTEGR          IINTYP         INTERNAL     [  0]   ***   
-       ANH_SYMMETR          IANHSM         ABELIAN      [  0]   ***   
-       ANH_ALGORIT          IANALG         STANDARD     [  0]   ***   
-  
-       EOM_NONIT            EOMNON         OFF          [  0]   ***   
-       VIB_ALGORIT          IGEALG         STANDARD     [  0]   ***   
-       ANH_DERIVAT          IANDER         SECOND       [  1]   ***   
-       SPINROTATIO          ISRCON         OFF          [  0]   ***   
-       CIS_CONV             ICISTL              5               ***   
-       ANH_STEPSIZ          ICUBST             50000          x 10-6  
-       SPIN_FLIP            ISPFLP         OFF          [  0]   ***   
-       GRID                 IGRID          OFF          [  0]   ***   
-  
-       DBOC                 IDBOC          OFF          [  0]   ***   
-       EOMFOLLOW            IEOMSR         ENERGY       [  0]   ***   
-       T3_EXTRAPOL          IT3EXT         OFF          [  0]   ***   
-       ESTATE_LOCK          IESLOC         OFF          [  0]   ***   
-       UNOS                 IUNOS          OFF          [  0]   ***   
-       FREQ_ALGORI          IVIALG         STANDARD     [  0]   ***   
-       RELATIVIST           IRELAT         OFF          [  0]   ***   
-       FROZEN_CORE          IFROCO         OFF          [  0]   ***   
-       EXCITATION           IEXCIT              0               ***   
-       INPUT_MRCC           IMRCC          ON           [  1]   ***   
-  
-       GIAO                 IGIAO          OFF          [  1]   ***   
-       EOM_NSING            IEOMSI          10D-  0             ***   
-       EOM_NTRIP            IEOMTR          10D-  0             ***   
-       EOM_NSTATES          IMRCCD         DAVIDSON     [  0]   ***   
-       DIAG_MRCC            IEOMST          10D-  0             ***   
-       NEWNORM              INEWNO         OFF          [  0]   ***   
-       TESTSUITE            ITESTS         OFF          [  0]   ***   
-       BUFFERSIZE           IBUFFS            600               ***   
-       SPINORBIT            ISOCAL         OFF          [  0]   ***   
-       DCT                  IDCT           OFF          [  0]   ***   
-  
-       PARALLEL             IPARAL         ON           [  1]   ***   
-       PARA_PRINT           IPPRIN              0               ***   
-       COMM_SIZE            IPSIZE            ***               ***   
-       PARA_INT             IPINTS         ON           [  1]   ***   
-       RAMAN_INT            IRAMIN         OFF          [  0]   ***   
-       RAMAN_ORB            IRAMRE         UNRELAXED    [  0]   ***   
-       BREIT                IBREIT         OFF          [  0]   ***   
-       MEM_UNIT             IMEMU          INTEGERWORDS [  0]   ***   
-       SPIN_ORBIT           ISPORB         OFF          [  0]   ***   
-       GENBAS_4             IGNBS4              0               ***   
-  
-       SPIN_SCAL            ISCSMP         OFF          [  0]   ***   
-       GRID_ALGO            IGALGO         SERIAL       [  0]   ***   
-       VIBPHASE             ISETPH         STANDARD     [  0]   ***   
-       SEQUENCE             ISEQUE         OFF          [  0]   ***   
-       HESS_TYPE            IHESTP         SCF          [  0]   ***   
-       CONTINUUM            ICONTU         NONE         [  0]   ***   
-       SCF_NOSTOP           ISCFST         OFF          [  0]   ***   
-       CONSTANT             ICONST         OLD          [  1]   ***   
-  
-       EOM_MRCC             IMRCCE         OLD          [  0]   ***   
-       EOM_ORDER            IEXORD         ENERGY       [  0]   ***   
-       GIMIC                IGIMIC         OFF          [  0]   ***   
-    -------------------------------------------------------------------
-  @GETXYZ-I,     5 atoms read from ZMAT.
-  1  CL        17    34.96885
-  2  C          6    12.00000
-  3  BR        35    78.91834
-  4  H          1     1.00783
-  5  H          1     1.00783
-  1  CL        17    34.96885
-  2  C          6    12.00000
-  3  BR        35    78.91834
-  4  H          1     1.00783
-  5  H          1     1.00783
-   Rotational constants (in cm-1): 
-          0.2454659323             0.2640547968             2.2020056335
-   Rotational constants (in MHz): 
-       7358.8845522554          7916.1647660974         66014.4773881737
-********************************************************************************
-   The full molecular point group is C s .
-   The largest Abelian subgroup of the full molecular point group is C s .
-   The computational point group is C s .
-********************************************************************************
- ----------------------------------------------------------------
- Z-matrix   Atomic            Coordinates (in bohr)
-  Symbol    Number           X              Y              Z
- ----------------------------------------------------------------
-     CL       17        -2.00207180     0.24290550     0.00000000
-     C         6        -0.56244937    -0.98124872     0.00000000
-     BR       35         0.99259452     0.09248534     0.00000000
-     H         1        -0.78106875    -1.99336740     1.58078704
-     H         1        -0.78106875    -1.99336740    -1.58078704
- ----------------------------------------------------------------
-   Interatomic distance matrix (Angstroms) 
- 
-                 CL            C             BR            H             H    
-                [ 1]        [ 2]        [ 3]        [ 4]        [ 5]
-  CL   [ 1]     0.00000
-  C    [ 2]     1.00000     0.00000
-  BR   [ 3]     1.58671     1.00000     0.00000
-  H    [ 4]     1.58671     1.00000     1.67303     0.00000
-  H    [ 5]     1.58671     1.00000     1.67303     1.67303     0.00000
-   Rotational constants (in cm-1): 
-          2.2020056335             0.2640547968             0.2454659323
-   Rotational constants (in MHz): 
-      66014.4773881737          7916.1647660974          7358.8845522554
-  There are   18 basis functions.
- @GEOPT-W, Archive file not created for single-point calculation.
-                0.12 seconds walltime passed
- --executable xjoda finished with status            0
-  flag is                      5
- --invoking executable xvmol
- Serial version of molecule started
- 
-    -------------------------------------------------------------------
-                    Input from MOL file
-    -------------------------------------------------------------------
- INTGRL        1    0    1    0    0    0    0    0    0                        
-          *** CFOUR Program System (Release V0.1) ***                           
- auto-generated by qcdb from molecule CH2ClBr                                   
-     4    1 Z          0.10E-08              0    0                             
-    9999.00      3.00                                                           
-          17.00000000    1    2    1    1                                       
- CL#1     -2.002071803753      0.242905497820      0.000000000000               
-     9    3                                                                     
-    601.345613600000       0.154329000000000       0.000000000000000E+000       
-   0.000000000000000E+000                                                       
-    109.535854200000       0.535328100000000       0.000000000000000E+000       
-   0.000000000000000E+000                                                       
-    29.6446769000000       0.444634500000000       0.000000000000000E+000       
-   0.000000000000000E+000                                                       
-    38.9604189000000       0.000000000000000E+000 -9.996720000000001E-002       
-   0.000000000000000E+000                                                       
-    9.05356350000000       0.000000000000000E+000  0.399512800000000            
-   0.000000000000000E+000                                                       
-    2.94449980000000       0.000000000000000E+000  0.700115500000000            
-   0.000000000000000E+000                                                       
-    2.12938650000000       0.000000000000000E+000  0.000000000000000E+000       
-  -0.219620400000000                                                            
-   0.594093400000000       0.000000000000000E+000  0.000000000000000E+000       
-   0.225595400000000                                                            
-   0.232524100000000       0.000000000000000E+000  0.000000000000000E+000       
-   0.900398400000000                                                            
-     6    2                                                                     
-    38.9604189000000       0.155916300000000       0.000000000000000E+000       
-    9.05356350000000       0.607683700000000       0.000000000000000E+000       
-    2.94449980000000       0.391957400000000       0.000000000000000E+000       
-    2.12938650000000       0.000000000000000E+000  1.058760000000000E-002       
-   0.594093400000000       0.000000000000000E+000  0.595167000000000            
-   0.232524100000000       0.000000000000000E+000  0.462001000000000            
-           6.00000000    1    2    1    1                                       
- C #2     -0.562449366101     -0.981248724458      0.000000000000               
-     6    2                                                                     
-    71.6168373000000       0.154329000000000       0.000000000000000E+000       
-    13.0450963000000       0.535328100000000       0.000000000000000E+000       
-    3.53051220000000       0.444634500000000       0.000000000000000E+000       
-    2.94124940000000       0.000000000000000E+000 -9.996720000000001E-002       
-   0.683483100000000       0.000000000000000E+000  0.399512800000000            
-   0.222289900000000       0.000000000000000E+000  0.700115500000000            
-     3    1                                                                     
-    2.94124940000000       0.155916300000000                                    
-   0.683483100000000       0.607683700000000                                    
-   0.222289900000000       0.391957400000000                                    
-          35.00000000    1    1    1                                            
- BR#3      0.992594517179      0.092485341308      0.000000000000               
-     3    2                                                                     
-    5.44717800000000       0.156285000000000       0.000000000000000E+000       
-   0.824547200000000       0.904691000000000       0.000000000000000E+000       
-   0.183191600000000       0.000000000000000E+000   1.00000000000000            
-           1.00000000    1    1    1                                            
- H #4     -0.781068750810     -1.993367397643      1.580787044145               
-     3    1                                                                     
-    3.42525090000000       0.154329000000000                                    
-   0.623913700000000       0.535328100000000                                    
-   0.168855400000000       0.444634500000000                                    
- FINISH                                                                         
- 
-    -------------------------------------------------------------------
- 
- One- and two-electron integrals over symmetry-adapted AOs are calculated.
-
-  Spherical harmonics are used.
-  
-  Integrals less than  0.10E-13 are neglected.
-
-  Nuclear repulsion energy :  403.6861797439 a.u.
-  required memory for a1 array                3013204  words 
-  required memory for a2 array                2046060  words 
- basis number:  17     9
- basis number:   6     5
- basis number:  35     2
- basis number:   1     1
-  @MOLECU-I, One electron integrals required         0.00000 seconds.
-  @TWOEL-I,       5311 integrals of symmetry type  I I I I
-  @TWOEL-I,       1527 integrals of symmetry type  I J I J
-  @TWOEL-I,        997 integrals of symmetry type  I I J J
-  @TWOEL-I, Total number of 2-e integrals       7835.
-  @MOLECU-I, Two electron integrals required         0.03000 seconds.
-  @CHECKOUT-I, Total execution time :       0.0300 seconds.
-                0.12 seconds walltime passed
- --executable xvmol finished with status            0
- --invoking executable xvmol2ja
-  @CHECKOUT-I, Total execution time :       0.0000 seconds.
-                0.00 seconds walltime passed
- --executable xvmol2ja finished with status            0
- --invoking executable xvscf
- NSOSCF                     0
-  There are   18 functions in the AO basis.
-
-  There are 2 irreducible representations.
-
-       Irrep        # of functions
-         1                 14
-         2                  4
-
-
-  Parameters for SCF calculation: 
-        SCF reference function:  RHF  
-  Maximum number of iterations:  150
-     Full symmetry point group: C s 
-     Computational point group: C s 
-        Initial density matrix: MOREAD                 
-     SCF convergence tolerance: 10**(- 7)
-  DIIS convergence acceleration:  ON
-          Latest start for DIIS:   8
-                     DIIS order:   6
-
-  Memory information:      53371 words required.
-  Fock matrices are constructed from AO integral file.
-  Initialization and symmetry analysis required      0.000 seconds.
-
-  @INITGES-I, Occupancies from core Hamiltonian:
-
-          Alpha population by irrep:  26    4
-           Beta population by irrep:  26    4
-
-
- total no. of electrons in initial guess :  0.000000000000000E+000
-  --------------------------------------------------------------------
-  Iteration         Total Energy            Largest Density Difference
-  --------------------------------------------------------------------
-       0           403.686179743931973              0.0000000000D+00
-   current occupation vector 
-    26  4
-    26  4
-       1          -720.409909196628632              0.2562169683D+02
-   current occupation vector 
-    26  4
-    26  4
-
-  SCF has converged.
-
- save density matrix on hard disk
- total electron number:   36.0000000000001     
-     E(SCF)=      -720.409909196627950              0.2486899575D-13
-
-  Eigenvector printing suppressed.
-
- @PUTMOS-I, Writing converged MOs to NEWMOS. 
- @PUTMOS-I, Symmetry   1 Full   3 Partial   2
- @PUTMOS-I, Symmetry   2 Full   1 Partial   0
-
-
- 
-  ORBITAL EIGENVALUES (ALPHA)  (1H = 27.2113838 eV)
-
-       MO #        E(hartree)               E(eV)           FULLSYM    COMPSYM
-       ----   --------------------   --------------------   -------   ---------
-    1     1        -110.9926758299       -3020.2643031706     A'        A'  (1)
-    2     2         -60.7040740381       -1651.8418580632     A'        A'  (1)
-    3     3         -22.9332253665        -624.0447976700     A'        A'  (1)
-    4     4         -18.2715381121        -497.1938365422     A'        A'  (1)
-    5     5         -17.9589000494        -488.6865222229     A'        A'  (1)
-    6     6         -15.1740323221        -412.9064176073     A'        A'  (1)
-    7    15         -15.1667310661        -412.7077403277     A''       A'' (2)
-    8     7         -15.0753789082        -410.2219216970     A'        A'  (1)
-    9     8         -14.3417642147        -390.2592506969     A'        A'  (1)
-   10    16         -12.4803342340        -339.6071650386     A''       A'' (2)
-   11     9         -12.4533666460        -338.8733396507     A'        A'  (1)
-   12    10          -9.5996662695        -261.2202033987     A'        A'  (1)
-   13    11          -8.5044913800        -231.4189791305     A'        A'  (1)
-   14    17          -7.1601381667        -194.8372678552     A''       A'' (2)
-   15    18          -6.4086789935        -174.3890238682     A''       A'' (2)
-   16    12          -6.3443253907        -172.6378732840     A'        A'  (1)
-   17    13          -5.9685308607        -162.4119840907     A'        A'  (1)
-   18    14          -5.8640989116        -159.5702462385     A'        A'  (1)
-
-
-  VSCF finished.
-
-  @CHECKOUT-I, Total execution time :       0.0000 seconds.
-                0.00 seconds walltime passed
- --executable xvscf finished with status            0
-
-
-
-
-  Variable Map:
-  ----------------------------------------------------------------------------
-  "CFOUR ERROR CODE"         =>       0.000000000000
-  "CURRENT ENERGY"           =>    -720.409909196628
-  "CURRENT REFERENCE ENERGY" =>    -720.409909196628
-  "NUCLEAR REPULSION ENERGY" =>     403.686179743900
-  "SCF TOTAL ENERGY"         =>    -720.409909196628
-
-
-
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.21158.CH2ClBr.cfour.7137
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule CH2ClBr
-CL   -0.588382367674    0.890373072017    0.000000000000
-C    -0.588382367674   -0.109626927983    0.000000000000
-BR    0.377543458615   -0.368445973085    0.000000000000
-H    -1.071345280819   -0.368445973085    0.836516303738
-H    -1.071345280819   -0.368445973085   -0.836516303738
-
-*CFOUR(BASIS=STO-3G
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-UNITS=ANGSTROM
-CALC_LEVEL=SCF
-CHARGE=0)
-
-======= End ZMAT input for CFOUR =======
-
- --invoking executable xjoda
-
-
-   *************************************************************************
-         <<<     CCCCCC     CCCCCC   |||     CCCCCC     CCCCCC   >>>
-       <<<      CCC        CCC       |||    CCC        CCC         >>>
-      <<<      CCC        CCC        |||   CCC        CCC            >>>
-    <<<        CCC        CCC        |||   CCC        CCC              >>>
-      <<<      CCC        CCC        |||   CCC        CCC            >>>
-       <<<      CCC        CCC       |||    CCC        CCC         >>>
-         <<<     CCCCCC     CCCCCC   |||     CCCCCC     CCCCCC   >>>
-   *************************************************************************
-
-     ****************************************************************
-     * CFOUR Coupled-Cluster techniques for Computational Chemistry *
-     ****************************************************************
- 
-
-   Department of Chemistry                Institut fuer Physikalische Chemie
-   University of Texas at Austin          Universitaet Mainz
-   Austin, TX  48792, USA                 D-55099 Mainz, Germany
- 
-                       version 1.2
- 
-                     john3                                             
-                     Mon Sep 16 12:15:20 EDT 2013                      
+                     Mon Oct 14 02:41:22 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -5508,6 +4908,10 @@ CHARGE=0)
 
 
 
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
 
   Variable Map:
   ----------------------------------------------------------------------------
@@ -5519,24 +4923,8 @@ CHARGE=0)
 
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.21158.HOCl.cfour.16949
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule HOCl
-H    -1.074855537230    1.371823577282    0.000000000000
-O    -1.074855537230    0.371823577282    0.000000000000
-CL    0.522621918106   -0.209610666372    0.000000000000
-
-*CFOUR(BASIS=STO-3G
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-UNITS=ANGSTROM
-CALC_LEVEL=SCF
-CHARGE=0)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.12791.CH2ClBr.cfour.91645
  --invoking executable xjoda
 
 
@@ -5562,7 +4950,488 @@ CHARGE=0)
                        version 1.2
  
                      john3                                             
-                     Mon Sep 16 12:15:26 EDT 2013                      
+                     Mon Oct 14 02:41:32 EDT 2013                      
+                     integer*8 version is running
+ 
+    -------------------------------------------------------------------
+                    Input from ZMAT file
+    -------------------------------------------------------------------
+ 
+ auto-generated by qcdb from molecule CH2ClBr                                   
+ CL   -0.588382367674    0.890373072017    0.000000000000                       
+ C    -0.588382367674   -0.109626927983    0.000000000000                       
+ BR    0.377543458615   -0.368445973085    0.000000000000                       
+ H    -1.071345280819   -0.368445973085    0.836516303738                       
+ H    -1.071345280819   -0.368445973085   -0.836516303738                       
+                                                                                
+ *CFOUR(BASIS=STO-3G                                                            
+ MULTIPLICITY=1                                                                 
+ COORDINATES=CARTESIAN                                                          
+ UNITS=ANGSTROM                                                                 
+ CALC_LEVEL=SCF                                                                 
+ CHARGE=0)                                                                      
+                                                                                
+ 
+    -------------------------------------------------------------------
+                    CFOUR Control Parameters 
+    -------------------------------------------------------------------
+        External           Internal           Value            Units
+          Name               Name
+    -------------------------------------------------------------------
+       PRINT                IPRNT               0               ***   
+       CALCLEVEL            ICLLVL           SCF        [  0]   ***   
+       DERIV_LEV            IDRLVL            ZERO      [  0]   ***   
+       CC_CONV              ICCCNV          10D-  7             ***   
+       SCF_CONV             ISCFCV          10D-  7             ***   
+       XFORM_TOL            IXFTOL          10D- 11             ***   
+       CC_MAXCYC            ICCCYC              0              cycles 
+       LINDEP_TOL           ILINDP              8               ***   
+       RDO                  IRDOFM             OFF      [  0]   ***   
+  
+       SCF_EXTRAPO          IRPP                ON      [  1]   ***   
+       REFERENCE            IREFNC             RHF      [  0]   ***   
+       CC_EXPORDER          ICCEOR              0               ***   
+       TAMP_SUM             IEVERY              0               ***   
+       NTOP_TAMP            ITOPT2             15               ***   
+       CCORBOPT             ICCORB             OFF      [  0] x 0.01  
+       SCF_MAXCYC           ISCFCY            150              cycles 
+       OCCUPATION           IOCCU   ESTIMATED BY SCF 
+       PROPS                IPROPS             OFF      [  0]   ***   
+       RELAX_DENS           IRDENS             OFF      [  0]   ***   
+  
+       SCF_EXPORDE          IRPPOR              6               ***   
+       CC_EXTRAPOL          ICCEXT             DIIS     [  1]   ***   
+       BRUECKNER            IBRKNR             OFF      [  0]   ***   
+       XFIELD               IXEFLD              0             x 10-6  
+       YFIELD               IYEFLD              0             x 10-6  
+       ZFIELD               IZEFLD              0             x 10-6  
+       SAVE_INTS            ISVINT             OFF      [  0]   ***   
+       DROPMO               IDRPMO      NONE         
+       CHARGE               ICHRGE              0               ***   
+       MULTIPLICTY          IMULTP              1               ***   
+  
+       CPHF_CONVER          ICPHFT          10D- 16             ***   
+       CPHF_MAXCYC          ICPHFC             64              cycles 
+       INCORE               INCORE             OFF      [  0]   ***   
+       MEMORY_SIZE          IMEMSZ         100000000           words  
+       FILE_RECSIZ          IFLREC              4096           words  
+       NON-HF               INONHF             OFF      [  0]   ***   
+       ORBITALS             IORBTP           STANDARD   [  0]   ***   
+  
+       SCF_EXPSTAR          IRPPLS              8               ***   
+       LOCK_ORBOCC          ILOCOC             OFF      [  0]   ***   
+       HBAR                 IHBAR              OFF      [  0]   ***   
+       CACHE_RECS           ICHREC             10               ***   
+       GUESS                IGUESS            MOREAD    [  0]   ***   
+       JODA_PRINT           IJPRNT              0               ***   
+       GEO_METHOD           INR            SINGLE_POINT [  5]   ***   
+       GEO_CONV             ICONTL              5              H/bohr 
+       EIGENVECTOR          IVEC                1               ***   
+  
+       NEGEVAL              IDIE             ABORT      [  0]   ***   
+       CURVILINEAR          ICURVY            OFF       [  0]   ***   
+       SCALE_ON             ISTCRT              0               ***   
+       GEO_MAXSTEP          IMXSTP            300            millibohr
+       VIBRATION            IVIB              NO        [  0]   ***   
+       EVAL_HESS            IRECAL              0            # of cyc.
+       INTEGRALS            INTTYP             VMOL     [  1]   ***   
+       FD_STEPSIZE          IDISFD              0            10-4 bohr
+       POINTS               IGRDFD              0               ***   
+       CONTRACTION          ICNTYP          GENERAL     [  1]   ***   
+  
+       SYMMETRY             ISYM             ON         [  0]   ***   
+       BASIS                IBASIS         STO-3G       [  2]   ***   
+       SPHERICAL            IDFGHI             ON       [  1]   ***   
+       RESET_FLAGS          IRESET             OFF      [  0]   ***   
+       PERT_ORB             IPTORB         STANDARD     [  0]   ***   
+       GENBAS_1             IGNBS1              0               ***   
+       GENBAS_2             IGNBS2              0               ***   
+       GENBAS_3             IGNBS3              0               ***   
+       COORDINATES          ICOORD         CARTESIAN    [  1]   ***   
+       SYM_CHECK            ISYMCK         OVERRIDE     [  1]   ***   
+  
+       SCF_PRINT            ISCFPR              0               ***   
+       ECP                  IECP           OFF          [  0]   ***   
+       RESTART_CC           ICCRES         OFF          [  0]   ***   
+       TRANS_INV            ITRAIN         USE          [  0]   ***   
+       HFSTABILITY          ISTABL         OFF          [  0]   ***   
+       ROT_EVEC             ROTVEC              0               ***   
+       BRUCK_CONV           IBRTOL          10D-  4             ***   
+       UNITS                IUNITS         ANGSTROM     [  0]   ***   
+       FD_USEGROUP          IFDGRP         FULL         [  0]   ***   
+  
+       FD_PROJECT           IFDPRJ         ON           [  0]   ***   
+       FD_CALTYPE           IFDCAL         GRADONLY     [  0]   ***   
+       VTRAN                IVTRAN         FULL/PARTIAL [  0]   ***   
+       HF2_FILE             IHF2Fl         USE          [  1]   ***   
+       SUBGROUP             ISUBGP         DEFAULT      [  0]   ***   
+       SUBGRPAXIS           ISBXYZ         X            [  0]   ***   
+       EXCITE               IEXCIT         NONE         [  0]   ***   
+       LINEQ_CONV           IZTACN          10D-  7           cycles  
+  
+       TREAT_PERT           ITREAT         SIMULTANEOUS [  0]   ***   
+       ESTATE_PROP          IEXPRP         OFF          [  0]   ***   
+       GEO_MAXCYC           IOPTCY             50               ***   
+       ABCDTYPE             IABCDT         STANDARD     [  0]   ***   
+       AO_LADDERS           IAOLAD         SINGLEPASS   [  1]   ***   
+       FOCK                 IFOCK          AO           [  1]   ***   
+       ESTATE_MAXC          IEXMXC             20               ***   
+       ESTATE_CONV          IEXTOL          10D-  5             ***   
+       DIRECT               IDIRCT         OFF          [  0]   ***   
+  
+       GAMMA_ABCD           IGABCD         STORE        [  0]   ***   
+       LINEQ_TYPE           ILTYPE         DIIS         [  1]   ***   
+       LINEQ_MAXCY          ILMAXC             50               ***   
+       TRANGRAD             IRESRM         OFF          [  0]   ***   
+       PSI                  IPSI           OFF          [  0]   ***   
+       GAMMA_ABCI           IGABCI         STORE        [  0]   ***   
+       ESTATE_DIAG          IEXDIG         ITERATIVE    [  0]   ***   
+       FC_FIELD             IFINFC              0             x 10-6  
+       SD_FIELD             IFINSD              0             x 10-6  
+       DIFF_TYPE            IDIFTY         RELAXED      [  0]   ***   
+  
+       LINEQ_EXPOR          ILMAXD              5               ***   
+       FINITE_PERT          IFIPER              0             x 10-6  
+       ANHARMONIC           IANHAR         OFF          [  0]   ***   
+       CC_PROGRAM           ICCPRO         VCC          [  0]   ***   
+       OPEN-SHELL           IOPEN          SPIN-ORBITAL [  0]   ***   
+       UIJ_THRESHO          IUIJTH             25               ***   
+       SCF_DAMPING          IDAMP               0             x 10-3  
+       PROP_INTEGR          IINTYP         INTERNAL     [  0]   ***   
+       ANH_SYMMETR          IANHSM         ABELIAN      [  0]   ***   
+       ANH_ALGORIT          IANALG         STANDARD     [  0]   ***   
+  
+       EOM_NONIT            EOMNON         OFF          [  0]   ***   
+       VIB_ALGORIT          IGEALG         STANDARD     [  0]   ***   
+       ANH_DERIVAT          IANDER         SECOND       [  1]   ***   
+       SPINROTATIO          ISRCON         OFF          [  0]   ***   
+       CIS_CONV             ICISTL              5               ***   
+       ANH_STEPSIZ          ICUBST             50000          x 10-6  
+       SPIN_FLIP            ISPFLP         OFF          [  0]   ***   
+       GRID                 IGRID          OFF          [  0]   ***   
+  
+       DBOC                 IDBOC          OFF          [  0]   ***   
+       EOMFOLLOW            IEOMSR         ENERGY       [  0]   ***   
+       T3_EXTRAPOL          IT3EXT         OFF          [  0]   ***   
+       ESTATE_LOCK          IESLOC         OFF          [  0]   ***   
+       UNOS                 IUNOS          OFF          [  0]   ***   
+       FREQ_ALGORI          IVIALG         STANDARD     [  0]   ***   
+       RELATIVIST           IRELAT         OFF          [  0]   ***   
+       FROZEN_CORE          IFROCO         OFF          [  0]   ***   
+       EXCITATION           IEXCIT              0               ***   
+       INPUT_MRCC           IMRCC          ON           [  1]   ***   
+  
+       GIAO                 IGIAO          OFF          [  1]   ***   
+       EOM_NSING            IEOMSI          10D-  0             ***   
+       EOM_NTRIP            IEOMTR          10D-  0             ***   
+       EOM_NSTATES          IMRCCD         DAVIDSON     [  0]   ***   
+       DIAG_MRCC            IEOMST          10D-  0             ***   
+       NEWNORM              INEWNO         OFF          [  0]   ***   
+       TESTSUITE            ITESTS         OFF          [  0]   ***   
+       BUFFERSIZE           IBUFFS            600               ***   
+       SPINORBIT            ISOCAL         OFF          [  0]   ***   
+       DCT                  IDCT           OFF          [  0]   ***   
+  
+       PARALLEL             IPARAL         ON           [  1]   ***   
+       PARA_PRINT           IPPRIN              0               ***   
+       COMM_SIZE            IPSIZE            ***               ***   
+       PARA_INT             IPINTS         ON           [  1]   ***   
+       RAMAN_INT            IRAMIN         OFF          [  0]   ***   
+       RAMAN_ORB            IRAMRE         UNRELAXED    [  0]   ***   
+       BREIT                IBREIT         OFF          [  0]   ***   
+       MEM_UNIT             IMEMU          INTEGERWORDS [  0]   ***   
+       SPIN_ORBIT           ISPORB         OFF          [  0]   ***   
+       GENBAS_4             IGNBS4              0               ***   
+  
+       SPIN_SCAL            ISCSMP         OFF          [  0]   ***   
+       GRID_ALGO            IGALGO         SERIAL       [  0]   ***   
+       VIBPHASE             ISETPH         STANDARD     [  0]   ***   
+       SEQUENCE             ISEQUE         OFF          [  0]   ***   
+       HESS_TYPE            IHESTP         SCF          [  0]   ***   
+       CONTINUUM            ICONTU         NONE         [  0]   ***   
+       SCF_NOSTOP           ISCFST         OFF          [  0]   ***   
+       CONSTANT             ICONST         OLD          [  1]   ***   
+  
+       EOM_MRCC             IMRCCE         OLD          [  0]   ***   
+       EOM_ORDER            IEXORD         ENERGY       [  0]   ***   
+       GIMIC                IGIMIC         OFF          [  0]   ***   
+    -------------------------------------------------------------------
+  @GETXYZ-I,     5 atoms read from ZMAT.
+  1  CL        17    34.96885
+  2  C          6    12.00000
+  3  BR        35    78.91834
+  4  H          1     1.00783
+  5  H          1     1.00783
+  1  CL        17    34.96885
+  2  C          6    12.00000
+  3  BR        35    78.91834
+  4  H          1     1.00783
+  5  H          1     1.00783
+   Rotational constants (in cm-1): 
+          0.2454659323             0.2640547968             2.2020056335
+   Rotational constants (in MHz): 
+       7358.8845522554          7916.1647660974         66014.4773881737
+********************************************************************************
+   The full molecular point group is C s .
+   The largest Abelian subgroup of the full molecular point group is C s .
+   The computational point group is C s .
+********************************************************************************
+ ----------------------------------------------------------------
+ Z-matrix   Atomic            Coordinates (in bohr)
+  Symbol    Number           X              Y              Z
+ ----------------------------------------------------------------
+     CL       17        -2.00207180     0.24290550     0.00000000
+     C         6        -0.56244937    -0.98124872     0.00000000
+     BR       35         0.99259452     0.09248534     0.00000000
+     H         1        -0.78106875    -1.99336740     1.58078704
+     H         1        -0.78106875    -1.99336740    -1.58078704
+ ----------------------------------------------------------------
+   Interatomic distance matrix (Angstroms) 
+ 
+                 CL            C             BR            H             H    
+                [ 1]        [ 2]        [ 3]        [ 4]        [ 5]
+  CL   [ 1]     0.00000
+  C    [ 2]     1.00000     0.00000
+  BR   [ 3]     1.58671     1.00000     0.00000
+  H    [ 4]     1.58671     1.00000     1.67303     0.00000
+  H    [ 5]     1.58671     1.00000     1.67303     1.67303     0.00000
+   Rotational constants (in cm-1): 
+          2.2020056335             0.2640547968             0.2454659323
+   Rotational constants (in MHz): 
+      66014.4773881737          7916.1647660974          7358.8845522554
+  There are   18 basis functions.
+ @GEOPT-W, Archive file not created for single-point calculation.
+                0.12 seconds walltime passed
+ --executable xjoda finished with status            0
+  flag is                      5
+ --invoking executable xvmol
+ Serial version of molecule started
+ 
+    -------------------------------------------------------------------
+                    Input from MOL file
+    -------------------------------------------------------------------
+ INTGRL        1    0    1    0    0    0    0    0    0                        
+          *** CFOUR Program System (Release V0.1) ***                           
+ auto-generated by qcdb from molecule CH2ClBr                                   
+     4    1 Z          0.10E-08              0    0                             
+    9999.00      3.00                                                           
+          17.00000000    1    2    1    1                                       
+ CL#1     -2.002071803753      0.242905497820      0.000000000000               
+     9    3                                                                     
+    601.345613600000       0.154329000000000       0.000000000000000E+000       
+   0.000000000000000E+000                                                       
+    109.535854200000       0.535328100000000       0.000000000000000E+000       
+   0.000000000000000E+000                                                       
+    29.6446769000000       0.444634500000000       0.000000000000000E+000       
+   0.000000000000000E+000                                                       
+    38.9604189000000       0.000000000000000E+000 -9.996720000000001E-002       
+   0.000000000000000E+000                                                       
+    9.05356350000000       0.000000000000000E+000  0.399512800000000            
+   0.000000000000000E+000                                                       
+    2.94449980000000       0.000000000000000E+000  0.700115500000000            
+   0.000000000000000E+000                                                       
+    2.12938650000000       0.000000000000000E+000  0.000000000000000E+000       
+  -0.219620400000000                                                            
+   0.594093400000000       0.000000000000000E+000  0.000000000000000E+000       
+   0.225595400000000                                                            
+   0.232524100000000       0.000000000000000E+000  0.000000000000000E+000       
+   0.900398400000000                                                            
+     6    2                                                                     
+    38.9604189000000       0.155916300000000       0.000000000000000E+000       
+    9.05356350000000       0.607683700000000       0.000000000000000E+000       
+    2.94449980000000       0.391957400000000       0.000000000000000E+000       
+    2.12938650000000       0.000000000000000E+000  1.058760000000000E-002       
+   0.594093400000000       0.000000000000000E+000  0.595167000000000            
+   0.232524100000000       0.000000000000000E+000  0.462001000000000            
+           6.00000000    1    2    1    1                                       
+ C #2     -0.562449366101     -0.981248724458      0.000000000000               
+     6    2                                                                     
+    71.6168373000000       0.154329000000000       0.000000000000000E+000       
+    13.0450963000000       0.535328100000000       0.000000000000000E+000       
+    3.53051220000000       0.444634500000000       0.000000000000000E+000       
+    2.94124940000000       0.000000000000000E+000 -9.996720000000001E-002       
+   0.683483100000000       0.000000000000000E+000  0.399512800000000            
+   0.222289900000000       0.000000000000000E+000  0.700115500000000            
+     3    1                                                                     
+    2.94124940000000       0.155916300000000                                    
+   0.683483100000000       0.607683700000000                                    
+   0.222289900000000       0.391957400000000                                    
+          35.00000000    1    1    1                                            
+ BR#3      0.992594517179      0.092485341308      0.000000000000               
+     3    2                                                                     
+    5.44717800000000       0.156285000000000       0.000000000000000E+000       
+   0.824547200000000       0.904691000000000       0.000000000000000E+000       
+   0.183191600000000       0.000000000000000E+000   1.00000000000000            
+           1.00000000    1    1    1                                            
+ H #4     -0.781068750810     -1.993367397643      1.580787044145               
+     3    1                                                                     
+    3.42525090000000       0.154329000000000                                    
+   0.623913700000000       0.535328100000000                                    
+   0.168855400000000       0.444634500000000                                    
+ FINISH                                                                         
+ 
+    -------------------------------------------------------------------
+ 
+ One- and two-electron integrals over symmetry-adapted AOs are calculated.
+
+  Spherical harmonics are used.
+  
+  Integrals less than  0.10E-13 are neglected.
+
+  Nuclear repulsion energy :  403.6861797439 a.u.
+  required memory for a1 array                3013204  words 
+  required memory for a2 array                2046060  words 
+ basis number:  17     9
+ basis number:   6     5
+ basis number:  35     2
+ basis number:   1     1
+  @MOLECU-I, One electron integrals required         0.00000 seconds.
+  @TWOEL-I,       5311 integrals of symmetry type  I I I I
+  @TWOEL-I,       1527 integrals of symmetry type  I J I J
+  @TWOEL-I,        997 integrals of symmetry type  I I J J
+  @TWOEL-I, Total number of 2-e integrals       7835.
+  @MOLECU-I, Two electron integrals required         0.03000 seconds.
+  @CHECKOUT-I, Total execution time :       0.0300 seconds.
+                0.12 seconds walltime passed
+ --executable xvmol finished with status            0
+ --invoking executable xvmol2ja
+  @CHECKOUT-I, Total execution time :       0.0000 seconds.
+                0.00 seconds walltime passed
+ --executable xvmol2ja finished with status            0
+ --invoking executable xvscf
+ NSOSCF                     0
+  There are   18 functions in the AO basis.
+
+  There are 2 irreducible representations.
+
+       Irrep        # of functions
+         1                 14
+         2                  4
+
+
+  Parameters for SCF calculation: 
+        SCF reference function:  RHF  
+  Maximum number of iterations:  150
+     Full symmetry point group: C s 
+     Computational point group: C s 
+        Initial density matrix: MOREAD                 
+     SCF convergence tolerance: 10**(- 7)
+  DIIS convergence acceleration:  ON
+          Latest start for DIIS:   8
+                     DIIS order:   6
+
+  Memory information:      53371 words required.
+  Fock matrices are constructed from AO integral file.
+  Initialization and symmetry analysis required      0.000 seconds.
+
+  @INITGES-I, Occupancies from core Hamiltonian:
+
+          Alpha population by irrep:  26    4
+           Beta population by irrep:  26    4
+
+
+ total no. of electrons in initial guess :  0.000000000000000E+000
+  --------------------------------------------------------------------
+  Iteration         Total Energy            Largest Density Difference
+  --------------------------------------------------------------------
+       0           403.686179743931973              0.0000000000D+00
+   current occupation vector 
+    26  4
+    26  4
+       1          -720.409909196628632              0.2562169683D+02
+   current occupation vector 
+    26  4
+    26  4
+
+  SCF has converged.
+
+ save density matrix on hard disk
+ total electron number:   36.0000000000001     
+     E(SCF)=      -720.409909196627950              0.2486899575D-13
+
+  Eigenvector printing suppressed.
+
+ @PUTMOS-I, Writing converged MOs to NEWMOS. 
+ @PUTMOS-I, Symmetry   1 Full   3 Partial   2
+ @PUTMOS-I, Symmetry   2 Full   1 Partial   0
+
+
+ 
+  ORBITAL EIGENVALUES (ALPHA)  (1H = 27.2113838 eV)
+
+       MO #        E(hartree)               E(eV)           FULLSYM    COMPSYM
+       ----   --------------------   --------------------   -------   ---------
+    1     1        -110.9926758299       -3020.2643031706     A'        A'  (1)
+    2     2         -60.7040740381       -1651.8418580632     A'        A'  (1)
+    3     3         -22.9332253665        -624.0447976700     A'        A'  (1)
+    4     4         -18.2715381121        -497.1938365422     A'        A'  (1)
+    5     5         -17.9589000494        -488.6865222229     A'        A'  (1)
+    6     6         -15.1740323221        -412.9064176073     A'        A'  (1)
+    7    15         -15.1667310661        -412.7077403277     A''       A'' (2)
+    8     7         -15.0753789082        -410.2219216970     A'        A'  (1)
+    9     8         -14.3417642147        -390.2592506969     A'        A'  (1)
+   10    16         -12.4803342340        -339.6071650386     A''       A'' (2)
+   11     9         -12.4533666460        -338.8733396507     A'        A'  (1)
+   12    10          -9.5996662695        -261.2202033987     A'        A'  (1)
+   13    11          -8.5044913800        -231.4189791305     A'        A'  (1)
+   14    17          -7.1601381667        -194.8372678552     A''       A'' (2)
+   15    18          -6.4086789935        -174.3890238682     A''       A'' (2)
+   16    12          -6.3443253907        -172.6378732840     A'        A'  (1)
+   17    13          -5.9685308607        -162.4119840907     A'        A'  (1)
+   18    14          -5.8640989116        -159.5702462385     A'        A'  (1)
+
+
+  VSCF finished.
+
+  @CHECKOUT-I, Total execution time :       0.0000 seconds.
+                0.00 seconds walltime passed
+ --executable xvscf finished with status            0
+
+
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+
+  Variable Map:
+  ----------------------------------------------------------------------------
+  "CFOUR ERROR CODE"         =>       0.000000000000
+  "CURRENT ENERGY"           =>    -720.409909196628
+  "CURRENT REFERENCE ENERGY" =>    -720.409909196628
+  "NUCLEAR REPULSION ENERGY" =>     403.686179743900
+  "SCF TOTAL ENERGY"         =>    -720.409909196628
+
+
+
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.12791.HOCl.cfour.89045
+ --invoking executable xjoda
+
+
+   *************************************************************************
+         <<<     CCCCCC     CCCCCC   |||     CCCCCC     CCCCCC   >>>
+       <<<      CCC        CCC       |||    CCC        CCC         >>>
+      <<<      CCC        CCC        |||   CCC        CCC            >>>
+    <<<        CCC        CCC        |||   CCC        CCC              >>>
+      <<<      CCC        CCC        |||   CCC        CCC            >>>
+       <<<      CCC        CCC       |||    CCC        CCC         >>>
+         <<<     CCCCCC     CCCCCC   |||     CCCCCC     CCCCCC   >>>
+   *************************************************************************
+
+     ****************************************************************
+     * CFOUR Coupled-Cluster techniques for Computational Chemistry *
+     ****************************************************************
+ 
+
+   Department of Chemistry                Institut fuer Physikalische Chemie
+   University of Texas at Austin          Universitaet Mainz
+   Austin, TX  48792, USA                 D-55099 Mainz, Germany
+ 
+                       version 1.2
+ 
+                     john3                                             
+                     Mon Oct 14 02:41:42 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -5803,7 +5672,7 @@ CHARGE=0)
      621256.5672934630         14852.9165308970         14506.1065318580
   There are   15 basis functions.
  @GEOPT-W, Archive file not created for single-point calculation.
-                0.00 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xjoda finished with status            0
   flag is                      5
  --invoking executable xvmol
@@ -6026,6 +5895,10 @@ CHARGE=0)
 
 
 
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
 
   Variable Map:
   ----------------------------------------------------------------------------
@@ -6037,33 +5910,8 @@ CHARGE=0)
 
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.21158.C4H4Cl2F2.cfour.15962
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule C4H4Cl2F2
-C     0.229017868233    1.004787940029    0.428812368303
-C    -0.877769859827    0.426088735692   -0.521149092029
-C     0.877769859827   -0.426088735692    0.521149092029
-C    -0.229017868233   -1.004787940029   -0.428812368303
-H    -0.168263421081    1.339964504859    1.397512113147
-H    -0.855007486223    0.854125194408   -1.524823369647
-H     0.855007486223   -0.854125194408    1.524823369647
-H     0.168263421081   -1.339964504859   -1.397512113147
-CL   -2.567662473018    0.542205804813    0.100675932958
-CL    2.567662473018   -0.542205804813   -0.100675932958
-F    -1.012693719957   -1.978894134159    0.136810587343
-F     1.012693719957    1.978894134159   -0.136810587343
-
-*CFOUR(BASIS=STO-3G
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-UNITS=ANGSTROM
-CALC_LEVEL=SCF
-CHARGE=0)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.12791.C4H4Cl2F2.cfour.38905
  --invoking executable xjoda
 
 
@@ -6089,7 +5937,7 @@ CHARGE=0)
                        version 1.2
  
                      john3                                             
-                     Mon Sep 16 12:15:31 EDT 2013                      
+                     Mon Oct 14 02:41:52 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -6509,7 +6357,7 @@ CHARGE=0)
   @TWOEL-I, Total number of 2-e integrals     441400.
   @MOLECU-I, Two electron integrals required         1.28000 seconds.
   @CHECKOUT-I, Total execution time :       1.3100 seconds.
-                1.38 seconds walltime passed
+                1.25 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -6703,11 +6551,15 @@ CHARGE=0)
 
   VSCF finished.
 
-  @CHECKOUT-I, Total execution time :       0.1600 seconds.
-                0.12 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.1700 seconds.
+                0.25 seconds walltime passed
  --executable xvscf finished with status            0
 
 
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
   Variable Map:
@@ -6720,29 +6572,8 @@ CHARGE=0)
 
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.21158.HOOH_dimer.cfour.13877
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule HOOH_dimer
-H     0.991126228500   -1.797922633300    0.146518251500
-O     2.769109309500   -1.348521864900   -0.007155768400
-O     2.517803031100    1.380837492300   -0.115405801400
-H     3.288320045300    1.830859509500    1.475770682500
-H    -3.288320045300   -1.830859509500   -1.475770682500
-O    -2.517803031100   -1.380837492300    0.115405801400
-O    -2.769109309500    1.348521864900    0.007155768400
-H    -0.991126228500    1.797922633300   -0.146518251500
-
-*CFOUR(BASIS=STO-3G
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-UNITS=ANGSTROM
-CALC_LEVEL=SCF
-CHARGE=0)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.12791.HOOH_dimer.cfour.6466
  --invoking executable xjoda
 
 
@@ -6768,7 +6599,7 @@ CHARGE=0)
                        version 1.2
  
                      john3                                             
-                     Mon Sep 16 12:15:38 EDT 2013                      
+                     Mon Oct 14 02:42:03 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -7040,7 +6871,7 @@ CHARGE=0)
        3680.7854957380          1060.1008093188           836.2938943146
   There are   24 basis functions.
  @GEOPT-W, Archive file not created for single-point calculation.
-                0.00 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xjoda finished with status            0
   flag is                      5
  --invoking executable xvmol
@@ -7596,6 +7427,10 @@ CHARGE=0)
 
 
 
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
 
   Variable Map:
   ----------------------------------------------------------------------------
@@ -7607,25 +7442,8 @@ CHARGE=0)
 
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.21158.HOOH.cfour.82907
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule HOOH
-H    -0.657774170895    0.990250821217   -0.765560415408
-O    -0.134283313545    0.737880743551    0.048237265941
-O     0.134283313545   -0.737880743551    0.048237265941
-H     0.657774170895   -0.990250821217   -0.765560415408
-
-*CFOUR(BASIS=STO-3G
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-UNITS=ANGSTROM
-CALC_LEVEL=SCF
-CHARGE=0)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.12791.HOOH.cfour.70425
  --invoking executable xjoda
 
 
@@ -7651,7 +7469,7 @@ CHARGE=0)
                        version 1.2
  
                      john3                                             
-                     Mon Sep 16 12:15:43 EDT 2013                      
+                     Mon Oct 14 02:42:13 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -7897,7 +7715,7 @@ CHARGE=0)
       23281.6464811964        306796.4789118984         24247.0372474497
   There are   12 basis functions.
  @GEOPT-W, Archive file not created for single-point calculation.
-                0.12 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xjoda finished with status            0
   flag is                      5
  --invoking executable xvmol
@@ -8088,6 +7906,10 @@ CHARGE=0)
 
 
 
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
 
   Variable Map:
   ----------------------------------------------------------------------------
@@ -8099,24 +7921,8 @@ CHARGE=0)
 
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.21158.H2O.cfour.32312
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule H2O
-H     0.000000000000    0.816641555162   -0.512554059234
-O     0.000000000000    0.000000000000    0.064591130803
-H     0.000000000000   -0.816641555162   -0.512554059234
-
-*CFOUR(BASIS=STO-3G
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-UNITS=ANGSTROM
-CALC_LEVEL=SCF
-CHARGE=0)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.12791.H2O.cfour.1370
  --invoking executable xjoda
 
 
@@ -8142,7 +7948,7 @@ CHARGE=0)
                        version 1.2
  
                      john3                                             
-                     Mon Sep 16 12:15:48 EDT 2013                      
+                     Mon Oct 14 02:42:23 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -8383,7 +8189,7 @@ CHARGE=0)
      260436.2853841786        847573.6043594811        375957.9130386499
   There are    7 basis functions.
  @GEOPT-W, Archive file not created for single-point calculation.
-                0.12 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xjoda finished with status            0
   flag is                      5
  --invoking executable xvmol
@@ -8552,10 +8358,14 @@ CHARGE=0)
   VSCF finished.
 
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
-                0.12 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xvscf finished with status            0
 
 
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
   Variable Map:
@@ -8568,26 +8378,8 @@ CHARGE=0)
 
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.21158.CH2F2.cfour.74210
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule CH2F2
-C     0.000000000000    0.000000000000    0.576324699493
-F     0.000000000000   -1.123081035006   -0.243324225420
-F     0.000000000000    1.123081035006   -0.243324225420
-H     0.904053743698    0.000000000000    1.155779539771
-H    -0.904053743698    0.000000000000    1.155779539771
-
-*CFOUR(BASIS=STO-3G
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-UNITS=ANGSTROM
-CALC_LEVEL=SCF
-CHARGE=0)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.12791.CH2F2.cfour.52511
  --invoking executable xjoda
 
 
@@ -8613,7 +8405,7 @@ CHARGE=0)
                        version 1.2
  
                      john3                                             
-                     Mon Sep 16 12:15:53 EDT 2013                      
+                     Mon Oct 14 02:42:33 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -8864,7 +8656,7 @@ CHARGE=0)
        8889.0981920450         47787.9910030624         10194.6025167342
   There are   17 basis functions.
  @GEOPT-W, Archive file not created for single-point calculation.
-                0.12 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xjoda finished with status            0
   flag is                      5
  --invoking executable xvmol
@@ -9079,6 +8871,10 @@ CHARGE=0)
 
 
 
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
 
   Variable Map:
   ----------------------------------------------------------------------------
@@ -9090,25 +8886,8 @@ CHARGE=0)
 
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.21158.NH3.cfour.75577
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule NH3
-N    -0.000000000000   -0.071293777318    0.000000000000
-H    -0.430496198842    0.330193571336   -0.745641288860
-H    -0.430496198842    0.330193571336    0.745641288860
-H     0.860992397685    0.330193571336    0.000000000000
-
-*CFOUR(BASIS=STO-3G
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-UNITS=ANGSTROM
-CALC_LEVEL=SCF
-CHARGE=0)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.12791.NH3.cfour.85970
  --invoking executable xjoda
 
 
@@ -9134,7 +8913,7 @@ CHARGE=0)
                        version 1.2
  
                      john3                                             
-                     Mon Sep 16 12:15:58 EDT 2013                      
+                     Mon Oct 14 02:42:42 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -9558,6 +9337,10 @@ CHARGE=0)
 
 
 
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
 
   Variable Map:
   ----------------------------------------------------------------------------
@@ -9569,27 +9352,8 @@ CHARGE=0)
 
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.21158.BrF5.cfour.31366
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule BrF5
-F     0.000000000000    0.000000000000   -1.514287735691
-BR    0.000000000000    0.000000000000    0.185712264309
-F     0.000000000000   -1.700000000000    0.185712264309
-F    -1.700000000000    0.000000000000    0.185712264309
-F     1.700000000000    0.000000000000    0.185712264309
-F     0.000000000000    1.700000000000    0.185712264309
-
-*CFOUR(BASIS=STO-3G
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-UNITS=ANGSTROM
-CALC_LEVEL=SCF
-CHARGE=0)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.12791.BrF5.cfour.88678
  --invoking executable xjoda
 
 
@@ -9615,7 +9379,7 @@ CHARGE=0)
                        version 1.2
  
                      john3                                             
-                     Mon Sep 16 12:16:03 EDT 2013                      
+                     Mon Oct 14 02:42:52 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -9875,7 +9639,7 @@ CHARGE=0)
        3184.1294502788          3184.1294502788          2301.1365151558
   There are   27 basis functions.
  @GEOPT-W, Archive file not created for single-point calculation.
-                0.25 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xjoda finished with status            0
   flag is                      5
  --invoking executable xvmol
@@ -9957,9 +9721,9 @@ CHARGE=0)
   @TWOEL-I,       3707 integrals of symmetry type  I I J J
   @TWOEL-I,       2138 integrals of symmetry type  I J K L
   @TWOEL-I, Total number of 2-e integrals      15202.
-  @MOLECU-I, Two electron integrals required         0.05000 seconds.
-  @CHECKOUT-I, Total execution time :       0.0500 seconds.
-                0.00 seconds walltime passed
+  @MOLECU-I, Two electron integrals required         0.06000 seconds.
+  @CHECKOUT-I, Total execution time :       0.0600 seconds.
+                0.12 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -10069,6 +9833,10 @@ CHARGE=0)
 
 
 
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
 
   Variable Map:
   ----------------------------------------------------------------------------
@@ -10080,25 +9848,8 @@ CHARGE=0)
 
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.21158.N2H2.cfour.66506
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule N2H2
-N     0.000000000000    0.700000000000    0.000000000000
-N     0.000000000000   -0.700000000000    0.000000000000
-H    -0.642787609687    1.466044443119    0.000000000000
-H     0.642787609687   -1.466044443119    0.000000000000
-
-*CFOUR(BASIS=STO-3G
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-UNITS=ANGSTROM
-CALC_LEVEL=SCF
-CHARGE=0)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.12791.N2H2.cfour.13846
  --invoking executable xjoda
 
 
@@ -10124,7 +9875,7 @@ CHARGE=0)
                        version 1.2
  
                      john3                                             
-                     Mon Sep 16 12:16:08 EDT 2013                      
+                     Mon Oct 14 02:43:02 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -10553,10 +10304,14 @@ CHARGE=0)
   VSCF finished.
 
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
-                0.00 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xvscf finished with status            0
 
 
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
   Variable Map:
@@ -10569,37 +10324,8 @@ CHARGE=0)
 
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.21158.TFCOT.cfour.94297
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule TFCOT
-C    -1.618188000000   -0.437140000000   -0.409373000000
-C    -1.394411000000    0.896360000000   -0.429596000000
-C    -0.896360000000   -1.394411000000    0.429596000000
-C    -0.437140000000    1.618188000000    0.409373000000
-C     0.437140000000   -1.618188000000    0.409373000000
-C     0.896360000000    1.394411000000    0.429596000000
-C     1.394411000000   -0.896360000000   -0.429596000000
-C     1.618188000000    0.437140000000   -0.409373000000
-F     2.147277000000   -1.690111000000   -1.235043000000
-F     1.690111000000    2.147277000000    1.235043000000
-F    -2.147277000000    1.690111000000   -1.235043000000
-F    -1.690111000000   -2.147277000000    1.235043000000
-H     0.878010000000   -2.418132000000    1.029595000000
-H    -2.418132000000   -0.878010000000   -1.029595000000
-H    -0.878010000000    2.418132000000    1.029595000000
-H     2.418132000000    0.878010000000   -1.029595000000
-
-*CFOUR(BASIS=STO-3G
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-UNITS=ANGSTROM
-CALC_LEVEL=SCF
-CHARGE=0)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.12791.TFCOT.cfour.84344
  --invoking executable xjoda
 
 
@@ -10625,7 +10351,7 @@ CHARGE=0)
                        version 1.2
  
                      john3                                             
-                     Mon Sep 16 12:16:14 EDT 2013                      
+                     Mon Oct 14 02:43:12 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -11083,14 +10809,14 @@ CHARGE=0)
  basis number:   9     5
  basis number:   1     1
  basis number:   1     1
-  @MOLECU-I, One electron integrals required         0.05000 seconds.
+  @MOLECU-I, One electron integrals required         0.06000 seconds.
   @TWOEL-I,     259908 integrals of symmetry type  I I I I
   @TWOEL-I,     486258 integrals of symmetry type  I J I J
   @TWOEL-I,     259136 integrals of symmetry type  I I J J
   @TWOEL-I, Total number of 2-e integrals    1005302.
-  @MOLECU-I, Two electron integrals required         3.00000 seconds.
-  @CHECKOUT-I, Total execution time :       3.0500 seconds.
-                3.12 seconds walltime passed
+  @MOLECU-I, Two electron integrals required         3.02000 seconds.
+  @CHECKOUT-I, Total execution time :       3.0800 seconds.
+                3.25 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -11304,11 +11030,15 @@ CHARGE=0)
 
   VSCF finished.
 
-  @CHECKOUT-I, Total execution time :       0.3900 seconds.
-                0.62 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.5400 seconds.
+                1.12 seconds walltime passed
  --executable xvscf finished with status            0
 
 
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
   Variable Map:
@@ -11321,34 +11051,8 @@ CHARGE=0)
 
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.21158.Li_H2O_4_p.cfour.99551
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule Li_H2O_4_p
-LI    0.000000000000    0.000000000000    0.000000000000
-O    -1.497220431853    0.000000000000   -1.169756803119
-O     1.497220431853    0.000000000000   -1.169756803119
-O     0.000000000000   -1.497220431853    1.169756803119
-O     0.000000000000    1.497220431853    1.169756803119
-H    -1.565808146965    0.498804253130   -1.977713511362
-H    -2.264066335924   -0.551608165437   -1.068881676192
-H     1.565808146965   -0.498804253130   -1.977713511362
-H     2.264066335924    0.551608165437   -1.068881676192
-H    -0.498804253130   -1.565808146965    1.977713511362
-H     0.551608165437   -2.264066335924    1.068881676192
-H     0.498804253130    1.565808146965    1.977713511362
-H    -0.551608165437    2.264066335924    1.068881676192
-
-*CFOUR(BASIS=STO-3G
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-UNITS=ANGSTROM
-CALC_LEVEL=SCF
-CHARGE=1)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.12791.Li_H2O_4_p.cfour.97499
  --invoking executable xjoda
 
 
@@ -11374,7 +11078,7 @@ CHARGE=1)
                        version 1.2
  
                      john3                                             
-                     Mon Sep 16 12:16:23 EDT 2013                      
+                     Mon Oct 14 02:43:26 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -11786,7 +11490,7 @@ CHARGE=1)
   @TWOEL-I, Total number of 2-e integrals      65118.
   @MOLECU-I, Two electron integrals required         0.30000 seconds.
   @CHECKOUT-I, Total execution time :       0.3100 seconds.
-                0.25 seconds walltime passed
+                0.38 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -11933,11 +11637,15 @@ CHARGE=1)
 
   VSCF finished.
 
-  @CHECKOUT-I, Total execution time :       0.0100 seconds.
+  @CHECKOUT-I, Total execution time :       0.0200 seconds.
                 0.00 seconds walltime passed
  --executable xvscf finished with status            0
 
 
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
   Variable Map:
@@ -11950,27 +11658,8 @@ CHARGE=1)
 
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.21158.ethylene_cation.cfour.90454
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule ethylene_cation
-C     0.000000000000    0.000000000000   -0.705000000000
-C     0.000000000000    0.000000000000    0.705000000000
-H     0.353742012310    0.854008763700   -1.282611998014
-H    -0.353742012310   -0.854008763700   -1.282611998014
-H    -0.353742012310    0.854008763700    1.282611998014
-H     0.353742012310   -0.854008763700    1.282611998014
-
-*CFOUR(BASIS=STO-3G
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-UNITS=ANGSTROM
-CALC_LEVEL=SCF
-CHARGE=0)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.12791.ethylene_cation.cfour.1673
  --invoking executable xjoda
 
 
@@ -11996,7 +11685,7 @@ CHARGE=0)
                        version 1.2
  
                      john3                                             
-                     Mon Sep 16 12:16:28 EDT 2013                      
+                     Mon Oct 14 02:43:37 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -12312,7 +12001,7 @@ CHARGE=0)
   @TWOEL-I, Total number of 2-e integrals       1327.
   @MOLECU-I, Two electron integrals required         0.01000 seconds.
   @CHECKOUT-I, Total execution time :       0.0100 seconds.
-                0.12 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -12446,6 +12135,10 @@ CHARGE=0)
 
 
 
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
 
   Variable Map:
   ----------------------------------------------------------------------------
@@ -12457,29 +12150,8 @@ CHARGE=0)
 
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.21158.ethane_gauche.cfour.6295
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule ethane_gauche
-H     1.092020143326    0.163175911167   -0.925416578398
-C     0.750000000000    0.000000000000    0.000000000000
-C    -0.750000000000    0.000000000000    0.000000000000
-H    -1.092020143326   -0.163175911167   -0.925416578398
-H    -1.092020143326   -0.719846310393    0.604022773555
-H    -1.092020143326    0.883022221559    0.321393804843
-H     1.092020143326    0.719846310393    0.604022773555
-H     1.092020143326   -0.883022221559    0.321393804843
-
-*CFOUR(BASIS=STO-3G
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-UNITS=ANGSTROM
-CALC_LEVEL=SCF
-CHARGE=0)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.12791.ethane_gauche.cfour.20272
  --invoking executable xjoda
 
 
@@ -12505,7 +12177,7 @@ CHARGE=0)
                        version 1.2
  
                      john3                                             
-                     Mon Sep 16 12:16:33 EDT 2013                      
+                     Mon Oct 14 02:43:46 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -12970,6 +12642,10 @@ CHARGE=0)
 
 
 
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
 
   Variable Map:
   ----------------------------------------------------------------------------
@@ -12981,28 +12657,8 @@ CHARGE=0)
 
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.21158.allene.cfour.64344
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule allene
-H    -2.000000000000   -0.707106781187    0.707106781187
-H    -2.000000000000    0.707106781187   -0.707106781187
-C    -1.500000000000    0.000000000000    0.000000000000
-C     0.000000000000    0.000000000000    0.000000000000
-C     1.500000000000    0.000000000000    0.000000000000
-H     2.000000000000    0.707106781187    0.707106781187
-H     2.000000000000   -0.707106781187   -0.707106781187
-
-*CFOUR(BASIS=STO-3G
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-UNITS=ANGSTROM
-CALC_LEVEL=SCF
-CHARGE=0)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.12791.allene.cfour.39978
  --invoking executable xjoda
 
 
@@ -13028,7 +12684,7 @@ CHARGE=0)
                        version 1.2
  
                      john3                                             
-                     Mon Sep 16 12:16:38 EDT 2013                      
+                     Mon Oct 14 02:43:56 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -13364,7 +13020,7 @@ CHARGE=0)
   @TWOEL-I, Total number of 2-e integrals       4041.
   @MOLECU-I, Two electron integrals required         0.03000 seconds.
   @CHECKOUT-I, Total execution time :       0.0300 seconds.
-                0.12 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -13523,6 +13179,10 @@ CHARGE=0)
 
 
 
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
 
   Variable Map:
   ----------------------------------------------------------------------------
@@ -13534,29 +13194,8 @@ CHARGE=0)
 
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.21158.ethane_staggered.cfour.26311
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule ethane_staggered
-H    -0.657774170895    0.990250821217   -0.813797681349
-C    -0.134283313545    0.737880743551    0.000000000000
-C     0.134283313545   -0.737880743551    0.000000000000
-H     0.657774170895   -0.990250821217   -0.813797681349
-H    -0.728988008574   -1.242620898884    0.000000000000
-H     0.657774170895   -0.990250821217    0.813797681349
-H    -0.657774170895    0.990250821217    0.813797681349
-H     0.728988008574    1.242620898884    0.000000000000
-
-*CFOUR(BASIS=STO-3G
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-UNITS=ANGSTROM
-CALC_LEVEL=SCF
-CHARGE=0)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.12791.ethane_staggered.cfour.47745
  --invoking executable xjoda
 
 
@@ -13582,7 +13221,7 @@ CHARGE=0)
                        version 1.2
  
                      john3                                             
-                     Mon Sep 16 12:16:44 EDT 2013                      
+                     Mon Oct 14 02:44:06 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -14045,6 +13684,10 @@ CHARGE=0)
 
 
 
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
 
   Variable Map:
   ----------------------------------------------------------------------------
@@ -14056,27 +13699,8 @@ CHARGE=0)
 
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.21158.singlet_ethylene.cfour.50430
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule singlet_ethylene
-C     0.000000000000    0.000000000000   -0.705000000000
-C     0.000000000000    0.000000000000    0.705000000000
-H     0.000000000000    0.924372424811   -1.282611998014
-H     0.000000000000   -0.924372424811   -1.282611998014
-H     0.000000000000    0.924372424811    1.282611998014
-H     0.000000000000   -0.924372424811    1.282611998014
-
-*CFOUR(BASIS=STO-3G
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-UNITS=ANGSTROM
-CALC_LEVEL=SCF
-CHARGE=0)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.12791.singlet_ethylene.cfour.18880
  --invoking executable xjoda
 
 
@@ -14102,7 +13726,7 @@ CHARGE=0)
                        version 1.2
  
                      john3                                             
-                     Mon Sep 16 12:16:49 EDT 2013                      
+                     Mon Oct 14 02:44:16 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -14362,7 +13986,7 @@ CHARGE=0)
      146716.2514547145         27228.7965860320         22966.4886222558
   There are   14 basis functions.
  @GEOPT-W, Archive file not created for single-point calculation.
-                0.00 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xjoda finished with status            0
   flag is                      5
  --invoking executable xvmol
@@ -14556,6 +14180,10 @@ CHARGE=0)
 
 
 
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
 
   Variable Map:
   ----------------------------------------------------------------------------
@@ -14567,29 +14195,8 @@ CHARGE=0)
 
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.21158.ethane_eclipsed.cfour.1698
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule ethane_eclipsed
-H     0.000000000000    1.092020143326   -0.939692620786
-C     0.000000000000    0.750000000000    0.000000000000
-C     0.000000000000   -0.750000000000    0.000000000000
-H     0.000000000000   -1.092020143326   -0.939692620786
-H     0.813797681349   -1.092020143326    0.469846310393
-H    -0.813797681349   -1.092020143326    0.469846310393
-H    -0.813797681349    1.092020143326    0.469846310393
-H     0.813797681349    1.092020143326    0.469846310393
-
-*CFOUR(BASIS=STO-3G
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-UNITS=ANGSTROM
-CALC_LEVEL=SCF
-CHARGE=0)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.12791.ethane_eclipsed.cfour.24071
  --invoking executable xjoda
 
 
@@ -14615,7 +14222,7 @@ CHARGE=0)
                        version 1.2
  
                      john3                                             
-                     Mon Sep 16 12:16:54 EDT 2013                      
+                     Mon Oct 14 02:44:26 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -14950,7 +14557,7 @@ CHARGE=0)
   @TWOEL-I, Total number of 2-e integrals       2410.
   @MOLECU-I, Two electron integrals required         0.02000 seconds.
   @CHECKOUT-I, Total execution time :       0.0200 seconds.
-                0.12 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -15078,6 +14685,10 @@ CHARGE=0)
 
 
 
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
 
   Variable Map:
   ----------------------------------------------------------------------------
@@ -15089,26 +14700,8 @@ CHARGE=0)
 
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.21158.CH4.cfour.8730
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule CH4
-C     0.000000000000    0.000000000000    0.000000000000
-H     0.000000000000    0.889981273211   -0.629311793417
-H     0.889981273211    0.000000000000    0.629311793417
-H    -0.889981273211    0.000000000000    0.629311793417
-H     0.000000000000   -0.889981273211   -0.629311793417
-
-*CFOUR(BASIS=STO-3G
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-UNITS=ANGSTROM
-CALC_LEVEL=SCF
-CHARGE=0)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.12791.CH4.cfour.93299
  --invoking executable xjoda
 
 
@@ -15134,7 +14727,7 @@ CHARGE=0)
                        version 1.2
  
                      john3                                             
-                     Mon Sep 16 12:16:59 EDT 2013                      
+                     Mon Oct 14 02:44:35 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -15447,7 +15040,7 @@ CHARGE=0)
   @TWOEL-I, Total number of 2-e integrals        333.
   @MOLECU-I, Two electron integrals required         0.00000 seconds.
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
-                0.12 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -15568,6 +15161,10 @@ CHARGE=0)
 
 
 
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
 
   Variable Map:
   ----------------------------------------------------------------------------
@@ -15579,28 +15176,8 @@ CHARGE=0)
 
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.21158.SF6.cfour.61330
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule SF6
-F     0.000000000000    0.000000000000   -1.800000000000
-S     0.000000000000    0.000000000000    0.000000000000
-F     0.000000000000   -1.800000000000    0.000000000000
-F     1.800000000000    0.000000000000    0.000000000000
-F     0.000000000000    1.800000000000    0.000000000000
-F    -1.800000000000    0.000000000000    0.000000000000
-F     0.000000000000    0.000000000000    1.800000000000
-
-*CFOUR(BASIS=STO-3G
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-UNITS=ANGSTROM
-CALC_LEVEL=SCF
-CHARGE=0)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.12791.SF6.cfour.85588
  --invoking executable xjoda
 
 
@@ -15626,7 +15203,7 @@ CHARGE=0)
                        version 1.2
  
                      john3                                             
-                     Mon Sep 16 12:17:04 EDT 2013                      
+                     Mon Oct 14 02:44:45 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -15996,8 +15573,8 @@ CHARGE=0)
   @TWOEL-I,       9753 integrals of symmetry type  I I J J
   @TWOEL-I,      12048 integrals of symmetry type  I J K L
   @TWOEL-I, Total number of 2-e integrals      40365.
-  @MOLECU-I, Two electron integrals required         0.16000 seconds.
-  @CHECKOUT-I, Total execution time :       0.1700 seconds.
+  @MOLECU-I, Two electron integrals required         0.17000 seconds.
+  @CHECKOUT-I, Total execution time :       0.1800 seconds.
                 0.25 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
@@ -16159,11 +15736,15 @@ CHARGE=0)
 
   VSCF finished.
 
-  @CHECKOUT-I, Total execution time :       0.0200 seconds.
-                0.00 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.0300 seconds.
+                0.12 seconds walltime passed
  --executable xvscf finished with status            0
 
 
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
   Variable Map:
@@ -16176,33 +15757,8 @@ CHARGE=0)
 
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.21158.Ih.cfour.94589
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule Ih
-H     0.000000000000    0.529177208590    0.856226709544
-H     0.000000000000   -0.529177208590    0.856226709544
-H     0.000000000000    0.529177208590   -0.856226709544
-H     0.000000000000   -0.529177208590   -0.856226709544
-H     0.529177208590    0.856226709544    0.000000000000
-H    -0.529177208590    0.856226709544    0.000000000000
-H     0.529177208590   -0.856226709544    0.000000000000
-H    -0.529177208590   -0.856226709544    0.000000000000
-H     0.856226709544    0.000000000000    0.529177208590
-H     0.856226709544    0.000000000000   -0.529177208590
-H    -0.856226709544    0.000000000000    0.529177208590
-H    -0.856226709544    0.000000000000   -0.529177208590
-
-*CFOUR(BASIS=STO-3G
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-UNITS=ANGSTROM
-CALC_LEVEL=SCF
-CHARGE=0)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.12791.Ih.cfour.44186
  --invoking executable xjoda
 
 
@@ -16228,7 +15784,7 @@ CHARGE=0)
                        version 1.2
  
                      john3                                             
-                     Mon Sep 16 12:17:10 EDT 2013                      
+                     Mon Oct 14 02:44:56 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -16728,6 +16284,10 @@ CHARGE=0)
  --executable xvscf finished with status            0
 
 
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
   Variable Map:

@@ -2,7 +2,7 @@
           PSI4: An Open-Source Ab Initio Electronic Structure Package
                               PSI 4.0.0-beta4+ Driver
 
-               Git: Rev {master} 5939c37112634ce7d587241dbb279ff58d6f273a
+               Git: Rev {c4} ef7097b1d82a7804b2d78ad28247f837c1527697
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -14,7 +14,7 @@
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
-    Process ID:   9088
+    Process ID:  18884
     PSI4DATADIR: /theoryfs2/ds/loriab/chem/psi4_trials/c4/psi4/lib
 
     Using LocalCommunicator (Number of processes = 1)
@@ -24,6 +24,8 @@
   ==> Input File <==
 
 --------------------------------------------------------------------------
+#! optimization CCSD(T)/dzp on water with ecc, aobasis
+
 print '        <<< Literal ZMAT to Cfour >>>'
 
 cfour {
@@ -45,14 +47,14 @@ SCF_CONV=12)
 
 energy('cfour')
 
-compare_values(9.132052626900, get_variable('NUCLEAR REPULSION ENERGY'), 6, 'NRE')
-compare_values(-76.013878694840, get_variable('current reference energy'), 6, 'SCF')
-compare_values(-0.217565923762, get_variable('mp2 correlation energy'), 6, 'MP2 corl')
-compare_values(-0.227372475715, get_variable("CCSD CORRELATION ENERGY"), 6, 'CCSD corl')
-compare_values(-76.241251170555, get_variable("CCSD TOTAL ENERGY"), 6, 'CCSD')
-compare_values(-0.003103546371, get_variable('(T) CORRECTION ENERGY'), 6, '(T)')
-compare_values(-0.230476022086, get_variable('current correlation energy'), 6, 'CCSD(T) corl')
-compare_values(-76.244354716926, get_variable('current energy'), 6, 'CCSD(T)')
+compare_values(9.132052626900, get_variable('NUCLEAR REPULSION ENERGY'), 6, 'NRE')  #TEST
+compare_values(-76.013878694840, get_variable('current reference energy'), 6, 'SCF')  #TEST
+compare_values(-0.217565923762, get_variable('mp2 correlation energy'), 6, 'MP2 corl')  #TEST
+compare_values(-0.227372475715, get_variable("CCSD CORRELATION ENERGY"), 6, 'CCSD corl')  #TEST
+compare_values(-76.241251170555, get_variable("CCSD TOTAL ENERGY"), 6, 'CCSD')  #TEST
+compare_values(-0.003103546371, get_variable('(T) CORRECTION ENERGY'), 6, '(T)')  #TEST
+compare_values(-0.230476022086, get_variable('current correlation energy'), 6, 'CCSD(T) corl')  #TEST
+compare_values(-76.244354716926, get_variable('current energy'), 6, 'CCSD(T)')  #TEST
 
 clean()
 clean_variables()
@@ -84,39 +86,19 @@ rms_force_g_convergence 6
 
 optimize('cfour')
 
-compare_values(9.132052626900, get_variable('NUCLEAR REPULSION ENERGY'), 3, 'NRE')
-compare_values(-76.013878694840, get_variable('current reference energy'), 6, 'SCF')
-compare_values(-0.217565923762, get_variable('mp2 correlation energy'), 6, 'MP2 corl')
-compare_values(-0.227372475715, get_variable("CCSD CORRELATION ENERGY"), 6, 'CCSD corl')
-compare_values(-76.241251170555, get_variable("CCSD TOTAL ENERGY"), 6, 'CCSD')
-compare_values(-0.003103546371, get_variable('(T) CORRECTION ENERGY'), 6, '(T)')
-compare_values(-0.230476022086, get_variable('current correlation energy'), 6, 'CCSD(T) corl')
-compare_values(-76.244354716926, get_variable('current energy'), 6, 'CCSD(T)')
+compare_values(9.132052626900, get_variable('NUCLEAR REPULSION ENERGY'), 3, 'NRE')  #TEST
+compare_values(-76.013878694840, get_variable('current reference energy'), 6, 'SCF')  #TEST
+compare_values(-0.217565923762, get_variable('mp2 correlation energy'), 6, 'MP2 corl')  #TEST
+compare_values(-0.227372475715, get_variable("CCSD CORRELATION ENERGY"), 6, 'CCSD corl')  #TEST
+compare_values(-76.241251170555, get_variable("CCSD TOTAL ENERGY"), 6, 'CCSD')  #TEST
+compare_values(-0.003103546371, get_variable('(T) CORRECTION ENERGY'), 6, '(T)')  #TEST
+compare_values(-0.230476022086, get_variable('current correlation energy'), 6, 'CCSD(T) corl')  #TEST
+compare_values(-76.244354716926, get_variable('current energy'), 6, 'CCSD(T)')  #TEST
 
 --------------------------------------------------------------------------
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.9088..cfour.47799
-
-====== Begin ZMAT input for CFOUR ======
-
-Geometry optimization of H2O at CCSD(T) level
-O
-H 1 R*
-H 1 R* 2 A*
-
-R=0.958
-A=104.5
-
-*ACES2(CALC=CCSD(T),BASIS=dzp
-ABCDTYPE=AOBASIS,CC_PROG=ECC
-GEO_CONV=10
-CC_CONV=12
-LINEQ_CONV=12
-SCF_CONV=12)
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.18884..cfour.25232
  --invoking executable xjoda
 
 
@@ -141,8 +123,8 @@ SCF_CONV=12)
  
                        version 1.2
  
-                     john2                                             
-                     Fri Aug  2 17:46:14 EDT 2013                      
+                     john3                                             
+                     Mon Oct 14 02:55:03 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -489,7 +471,7 @@ SCF_CONV=12)
   @TWOEL-I, Total number of 2-e integrals      13447.
   @MOLECU-I, Two electron integrals required         0.03000 seconds.
   @CHECKOUT-I, Total execution time :       0.0300 seconds.
-                0.00 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -681,7 +663,7 @@ SCF_CONV=12)
   VSCF finished.
 
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
-                0.12 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xvscf finished with status            0
  --invoking executable xvtran
   Partial RHF integral transformation
@@ -1231,7 +1213,7 @@ SCF_CONV=12)
 --------------------------------------------------------------------------------
   CCSD(T) energy                     -76.244205020359
 --------------------------------------------------------------------------------
-  @CHECKOUT-I, Total execution time :       0.2000 seconds.
+  @CHECKOUT-I, Total execution time :       0.2100 seconds.
                 0.12 seconds walltime passed
  --executable xecc finished with status            0
  --invoking executable xlcc
@@ -1338,8 +1320,8 @@ SCF_CONV=12)
      17     -0.2297094816929536   -76.244074500225   DIIS 
  -----------------------------------------------------------
  A miracle come to pass. The CC iterations have converged.
-  @CHECKOUT-I, Total execution time :       0.1500 seconds.
-                0.00 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.1600 seconds.
+                0.12 seconds walltime passed
  --executable xlcc finished with status            0
  --invoking executable xdens
   CCSD(T) density and intermediates are calculated.
@@ -1354,7 +1336,7 @@ SCF_CONV=12)
  Total CPU time :   0.000000000000000E+000
   processed                   3047  ao basis integrals from 
                      6  buffers.
- Total CPU time :   9.999999776482582E-003
+ Total CPU time :   0.000000000000000E+000
   processed                   5200  ao basis integrals from 
                      9  buffers.
  Total CPU time :   0.000000000000000E+000
@@ -1374,7 +1356,7 @@ SCF_CONV=12)
   Trace of density matrix :  10.0000000000.
   ----------------------------------------------------------------------
   Density calculation successfully completed.
-  @CHECKOUT-I, Total execution time :       0.0200 seconds.
+  @CHECKOUT-I, Total execution time :       0.0300 seconds.
                 0.00 seconds walltime passed
  --executable xdens finished with status            0
  --invoking executable xanti
@@ -1443,7 +1425,7 @@ SCF_CONV=12)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  Evaluation of 1e integral derivatives required    0.00 seconds.
+  Evaluation of 1e integral derivatives required    0.01 seconds.
   Evaluation of 2el integral derivatives
 
                       Two-electron integral gradient
@@ -1486,7 +1468,7 @@ SCF_CONV=12)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  @CHECKOUT-I, Total execution time :       0.0500 seconds.
+  @CHECKOUT-I, Total execution time :       0.0600 seconds.
                 0.12 seconds walltime passed
  --executable xvdint finished with status            0
  --invoking executable xjoda
@@ -1550,7 +1532,7 @@ SCF_CONV=12)
    Rotational constants (in MHz): 
      283787.0001178741        795330.5225124375        441222.4047515076
   There are   25 basis functions.
-                0.00 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xjoda finished with status            0
  --invoking executable xvmol
  Serial version of molecule started
@@ -1631,7 +1613,7 @@ SCF_CONV=12)
   @TWOEL-I, Total number of 2-e integrals      13447.
   @MOLECU-I, Two electron integrals required         0.03000 seconds.
   @CHECKOUT-I, Total execution time :       0.0300 seconds.
-                0.12 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -1830,7 +1812,7 @@ SCF_CONV=12)
     13         3.9470793        1
 ------------------------------------------------------------------------
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
-                0.00 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xvtran finished with status            0
  --invoking executable xintprc
   @GMOIAA-I, Processing MO integrals for spin case AA.
@@ -2340,7 +2322,7 @@ SCF_CONV=12)
 --------------------------------------------------------------------------------
   CCSD(T) energy                     -76.244320357771
 --------------------------------------------------------------------------------
-  @CHECKOUT-I, Total execution time :       0.2000 seconds.
+  @CHECKOUT-I, Total execution time :       0.2600 seconds.
                 0.12 seconds walltime passed
  --executable xecc finished with status            0
  --invoking executable xlcc
@@ -2447,7 +2429,7 @@ SCF_CONV=12)
      17     -0.2300162019280896   -76.244186830490   DIIS 
  -----------------------------------------------------------
  A miracle come to pass. The CC iterations have converged.
-  @CHECKOUT-I, Total execution time :       0.1500 seconds.
+  @CHECKOUT-I, Total execution time :       0.1700 seconds.
                 0.12 seconds walltime passed
  --executable xlcc finished with status            0
  --invoking executable xdens
@@ -2463,7 +2445,7 @@ SCF_CONV=12)
  Total CPU time :   0.000000000000000E+000
   processed                   3047  ao basis integrals from 
                      6  buffers.
- Total CPU time :   9.999999776482582E-003
+ Total CPU time :   0.000000000000000E+000
   processed                   5200  ao basis integrals from 
                      9  buffers.
  Total CPU time :   0.000000000000000E+000
@@ -2483,8 +2465,8 @@ SCF_CONV=12)
   Trace of density matrix :  10.0000000000.
   ----------------------------------------------------------------------
   Density calculation successfully completed.
-  @CHECKOUT-I, Total execution time :       0.0200 seconds.
-                0.12 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.0300 seconds.
+                0.00 seconds walltime passed
  --executable xdens finished with status            0
  --invoking executable xanti
  CCSD(T) MO gammas will be sorted to Mulliken order.
@@ -2552,7 +2534,7 @@ SCF_CONV=12)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  Evaluation of 1e integral derivatives required    0.00 seconds.
+  Evaluation of 1e integral derivatives required    0.01 seconds.
   Evaluation of 2el integral derivatives
 
                       Two-electron integral gradient
@@ -2595,7 +2577,7 @@ SCF_CONV=12)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  @CHECKOUT-I, Total execution time :       0.0500 seconds.
+  @CHECKOUT-I, Total execution time :       0.0600 seconds.
                 0.12 seconds walltime passed
  --executable xvdint finished with status            0
  --invoking executable xjoda
@@ -3452,7 +3434,7 @@ SCF_CONV=12)
 --------------------------------------------------------------------------------
   CCSD(T) energy                     -76.244354319527
 --------------------------------------------------------------------------------
-  @CHECKOUT-I, Total execution time :       0.1900 seconds.
+  @CHECKOUT-I, Total execution time :       0.2200 seconds.
                 0.12 seconds walltime passed
  --executable xecc finished with status            0
  --invoking executable xlcc
@@ -3559,7 +3541,7 @@ SCF_CONV=12)
      17     -0.2303184001067803   -76.244216923030   DIIS 
  -----------------------------------------------------------
  A miracle come to pass. The CC iterations have converged.
-  @CHECKOUT-I, Total execution time :       0.1600 seconds.
+  @CHECKOUT-I, Total execution time :       0.1700 seconds.
                 0.12 seconds walltime passed
  --executable xlcc finished with status            0
  --invoking executable xdens
@@ -3664,7 +3646,7 @@ SCF_CONV=12)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  Evaluation of 1e integral derivatives required    0.00 seconds.
+  Evaluation of 1e integral derivatives required    0.01 seconds.
   Evaluation of 2el integral derivatives
 
                       Two-electron integral gradient
@@ -3707,8 +3689,8 @@ SCF_CONV=12)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  @CHECKOUT-I, Total execution time :       0.0500 seconds.
-                0.00 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.0600 seconds.
+                0.12 seconds walltime passed
  --executable xvdint finished with status            0
  --invoking executable xjoda
    JODA beginning optimization cycle #  3.
@@ -3774,7 +3756,7 @@ SCF_CONV=12)
    Rotational constants (in MHz): 
      282057.5961292639        775230.5623421097        443373.1851509939
   There are   25 basis functions.
-                0.00 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xjoda finished with status            0
  --invoking executable xvmol
  Serial version of molecule started
@@ -3847,14 +3829,14 @@ SCF_CONV=12)
   required memory for a2 array                2004428  words 
  basis number:   8    16
  basis number:   1     5
-  @MOLECU-I, One electron integrals required         0.00000 seconds.
+  @MOLECU-I, One electron integrals required         0.01000 seconds.
   @TWOEL-I,       3047 integrals of symmetry type  I I I I
   @TWOEL-I,       5200 integrals of symmetry type  I J I J
   @TWOEL-I,       3309 integrals of symmetry type  I I J J
   @TWOEL-I,       1891 integrals of symmetry type  I J K L
   @TWOEL-I, Total number of 2-e integrals      13447.
   @MOLECU-I, Two electron integrals required         0.03000 seconds.
-  @CHECKOUT-I, Total execution time :       0.0300 seconds.
+  @CHECKOUT-I, Total execution time :       0.0400 seconds.
                 0.00 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
@@ -4005,7 +3987,7 @@ SCF_CONV=12)
 
   VSCF finished.
 
-  @CHECKOUT-I, Total execution time :       0.0100 seconds.
+  @CHECKOUT-I, Total execution time :       0.0000 seconds.
                 0.00 seconds walltime passed
  --executable xvscf finished with status            0
  --invoking executable xvtran
@@ -4046,7 +4028,7 @@ SCF_CONV=12)
     13         3.9365719        1
 ------------------------------------------------------------------------
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
-                0.12 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xvtran finished with status            0
  --invoking executable xintprc
   @GMOIAA-I, Processing MO integrals for spin case AA.
@@ -4556,7 +4538,7 @@ SCF_CONV=12)
 --------------------------------------------------------------------------------
   CCSD(T) energy                     -76.244354678120
 --------------------------------------------------------------------------------
-  @CHECKOUT-I, Total execution time :       0.1900 seconds.
+  @CHECKOUT-I, Total execution time :       0.2000 seconds.
                 0.12 seconds walltime passed
  --executable xecc finished with status            0
  --invoking executable xlcc
@@ -4663,7 +4645,7 @@ SCF_CONV=12)
      17     -0.2303335272426188   -76.244216738359   DIIS 
  -----------------------------------------------------------
  A miracle come to pass. The CC iterations have converged.
-  @CHECKOUT-I, Total execution time :       0.1600 seconds.
+  @CHECKOUT-I, Total execution time :       0.1700 seconds.
                 0.12 seconds walltime passed
  --executable xlcc finished with status            0
  --invoking executable xdens
@@ -4676,7 +4658,7 @@ SCF_CONV=12)
                      2                     2
                      3                     3
                      4                     4
- Total CPU time :   9.999999776482582E-003
+ Total CPU time :   0.000000000000000E+000
   processed                   3047  ao basis integrals from 
                      6  buffers.
  Total CPU time :   0.000000000000000E+000
@@ -4699,7 +4681,7 @@ SCF_CONV=12)
   Trace of density matrix :  10.0000000000.
   ----------------------------------------------------------------------
   Density calculation successfully completed.
-  @CHECKOUT-I, Total execution time :       0.0200 seconds.
+  @CHECKOUT-I, Total execution time :       0.0300 seconds.
                 0.00 seconds walltime passed
  --executable xdens finished with status            0
  --invoking executable xanti
@@ -4768,7 +4750,7 @@ SCF_CONV=12)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  Evaluation of 1e integral derivatives required    0.00 seconds.
+  Evaluation of 1e integral derivatives required    0.02 seconds.
   Evaluation of 2el integral derivatives
 
                       Two-electron integral gradient
@@ -4784,7 +4766,7 @@ SCF_CONV=12)
  H #2 2     0.0000000000           -2.5575549082            2.0844771656
 
 
-  Evaluation of 2e integral derivatives required    0.05 seconds.
+  Evaluation of 2e integral derivatives required    0.04 seconds.
 
                             Molecular gradient
                             ------------------
@@ -4811,7 +4793,7 @@ SCF_CONV=12)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  @CHECKOUT-I, Total execution time :       0.0500 seconds.
+  @CHECKOUT-I, Total execution time :       0.0600 seconds.
                 0.12 seconds walltime passed
  --executable xvdint finished with status            0
  --invoking executable xjoda
@@ -5763,8 +5745,8 @@ SCF_CONV=12)
      17     -0.2303379079625152   -76.244216558111   DIIS 
  -----------------------------------------------------------
  A miracle come to pass. The CC iterations have converged.
-  @CHECKOUT-I, Total execution time :       0.1600 seconds.
-                0.00 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.1800 seconds.
+                0.12 seconds walltime passed
  --executable xlcc finished with status            0
  --invoking executable xdens
   CCSD(T) density and intermediates are calculated.
@@ -5779,7 +5761,7 @@ SCF_CONV=12)
  Total CPU time :   0.000000000000000E+000
   processed                   3047  ao basis integrals from 
                      6  buffers.
- Total CPU time :   9.999999776482582E-003
+ Total CPU time :   0.000000000000000E+000
   processed                   5200  ao basis integrals from 
                      9  buffers.
  Total CPU time :   0.000000000000000E+000
@@ -5800,12 +5782,12 @@ SCF_CONV=12)
   ----------------------------------------------------------------------
   Density calculation successfully completed.
   @CHECKOUT-I, Total execution time :       0.0200 seconds.
-                0.12 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xdens finished with status            0
  --invoking executable xanti
  CCSD(T) MO gammas will be sorted to Mulliken order.
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
-                0.00 seconds walltime passed
+                0.25 seconds walltime passed
  --executable xanti finished with status            0
  --invoking executable xbcktrn
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -5868,7 +5850,7 @@ SCF_CONV=12)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  Evaluation of 1e integral derivatives required    0.01 seconds.
+  Evaluation of 1e integral derivatives required    0.00 seconds.
   Evaluation of 2el integral derivatives
 
                       Two-electron integral gradient
@@ -5911,8 +5893,8 @@ SCF_CONV=12)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  @CHECKOUT-I, Total execution time :       0.0600 seconds.
-                0.12 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.0500 seconds.
+                0.62 seconds walltime passed
  --executable xvdint finished with status            0
  --invoking executable xjoda
    JODA beginning optimization cycle #  5.
@@ -6744,8 +6726,8 @@ SCF_CONV=12)
 --------------------------------------------------------------------------------
   CCSD(T) energy                     -76.244354716926
 --------------------------------------------------------------------------------
-  @CHECKOUT-I, Total execution time :       0.1900 seconds.
-                0.12 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.2500 seconds.
+                0.25 seconds walltime passed
  --executable xecc finished with status            0
  --invoking executable xlcc
  Lambda equations are solved for CCSD(T)
@@ -6851,7 +6833,7 @@ SCF_CONV=12)
      17     -0.2303378647001412   -76.244216558234   DIIS 
  -----------------------------------------------------------
  A miracle come to pass. The CC iterations have converged.
-  @CHECKOUT-I, Total execution time :       0.1500 seconds.
+  @CHECKOUT-I, Total execution time :       0.1900 seconds.
                 0.12 seconds walltime passed
  --executable xlcc finished with status            0
  --invoking executable xdens
@@ -7147,7 +7129,7 @@ SCF_CONV=12)
   @TWOEL-I, Total number of 2-e integrals      13447.
   @MOLECU-I, Two electron integrals required         0.03000 seconds.
   @CHECKOUT-I, Total execution time :       0.0300 seconds.
-                0.12 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -7824,7 +7806,7 @@ SCF_CONV=12)
 --------------------------------------------------------------------------------
   CCSD(T) energy                     -76.244354716926
 --------------------------------------------------------------------------------
-  @CHECKOUT-I, Total execution time :       0.2000 seconds.
+  @CHECKOUT-I, Total execution time :       0.2200 seconds.
                 0.12 seconds walltime passed
  --executable xecc finished with status            0
  --invoking executable xlcc
@@ -7931,8 +7913,8 @@ SCF_CONV=12)
      17     -0.2303378634096571   -76.244216558250   DIIS 
  -----------------------------------------------------------
  A miracle come to pass. The CC iterations have converged.
-  @CHECKOUT-I, Total execution time :       0.1500 seconds.
-                0.12 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.1600 seconds.
+                0.00 seconds walltime passed
  --executable xlcc finished with status            0
  --invoking executable xdens
   CCSD(T) density and intermediates are calculated.
@@ -8036,7 +8018,7 @@ SCF_CONV=12)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  Evaluation of 1e integral derivatives required    0.00 seconds.
+  Evaluation of 1e integral derivatives required    0.01 seconds.
   Evaluation of 2el integral derivatives
 
                       Two-electron integral gradient
@@ -8052,7 +8034,7 @@ SCF_CONV=12)
  H #2 2     0.0000000000           -2.5579649707            2.0834648405
 
 
-  Evaluation of 2e integral derivatives required    0.05 seconds.
+  Evaluation of 2e integral derivatives required    0.04 seconds.
 
                             Molecular gradient
                             ------------------
@@ -8306,6 +8288,33 @@ SCF_CONV=12)
          1                D              0.00404800
          1                D              0.00507259
          1                D              0.00242345
+         1                D              0.01196399
+         1                D              0.00352023
+         2                S              0.69033210
+         3                S              0.69033210
+         2                S              0.07683127
+         3                S              0.07683127
+         2                P              0.02177325
+         3                P              0.02177325
+         2                P              0.03206827
+         3                P              0.03206827
+         2                P              0.02494730
+         3                P              0.02494730
+ -------------------------------------------------------
+  Population analysis by atoms (atomic charges).
+ -------------------------------------------------------
+     Z-matrix
+      Center          Function          Population
+ -------------------------------------------------------
+         1                               8.30809563
+         2                               0.84595218
+         3                               0.84595218
+ -------------------------------------------------------
+ --executable xprops finished with status            0
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //     Cfour cfour Energy Results    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
   Variable Map:
@@ -8337,35 +8346,51 @@ SCF_CONV=12)
 
 
 
+  CFOUR scratch file GRD has been read
+    3        0.0000000000
+        8.0000000000        0.0000000000        0.0000000000        0.1276078745
+        1.0000000000        0.0000000000       -1.4214528768       -1.0126147833
+        1.0000000000        0.0000000000        1.4214528768       -1.0126147833
+        8.0000000000        0.0000000000        0.0000000000        0.0000000000
+        1.0000000000        0.0000000000        0.0000000000        0.0000000000
+        1.0000000000        0.0000000000        0.0000000000        0.0000000000
+
+  CFOUR scratch file FCMFINAL has been read
+    3    9
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+        0.0000000000        0.0000000000        0.0000000000
+
+
+
   Memory set to 200.000 MiB by Python script.
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.9088..cfour.48189
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule default
-O     0.000000000000    0.000000000000   -0.065638538099
-H     0.000000000000   -0.757480611647    0.520865616174
-H     0.000000000000    0.757480611647    0.520865616174
-
-*CFOUR(CC_PROGRAM=ECC
-BASIS=dzp
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-DERIV_LEVEL=FIRST
-UNITS=ANGSTROM
-MEMORY_SIZE=200
-CALC_LEVEL=CCSD(T)
-CC_CONV=12
-ABCDTYPE=AOBASIS
-SCF_CONV=12
-MEM_UNIT=MB
-LINEQ_CONV=12
-CHARGE=0)
-
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.18884..cfour.11363
  --invoking executable xjoda
 
 
@@ -8390,8 +8415,8 @@ CHARGE=0)
  
                        version 1.2
  
-                     john2                                             
-                     Fri Aug  2 17:46:30 EDT 2013                      
+                     john3                                             
+                     Mon Oct 14 02:55:21 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -8722,7 +8747,7 @@ CHARGE=0)
   @TWOEL-I, Total number of 2-e integrals      13447.
   @MOLECU-I, Two electron integrals required         0.03000 seconds.
   @CHECKOUT-I, Total execution time :       0.0300 seconds.
-                0.12 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -8913,8 +8938,8 @@ CHARGE=0)
 
   VSCF finished.
 
-  @CHECKOUT-I, Total execution time :       0.0000 seconds.
-                0.00 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.0100 seconds.
+                0.12 seconds walltime passed
  --executable xvscf finished with status            0
  --invoking executable xvtran
   Partial RHF integral transformation
@@ -9464,7 +9489,7 @@ CHARGE=0)
 --------------------------------------------------------------------------------
   CCSD(T) energy                     -76.244205020359
 --------------------------------------------------------------------------------
-  @CHECKOUT-I, Total execution time :       0.1900 seconds.
+  @CHECKOUT-I, Total execution time :       0.2300 seconds.
                 0.12 seconds walltime passed
  --executable xecc finished with status            0
  --invoking executable xlcc
@@ -9571,7 +9596,7 @@ CHARGE=0)
      17     -0.2297094816929783   -76.244074500225   DIIS 
  -----------------------------------------------------------
  A miracle come to pass. The CC iterations have converged.
-  @CHECKOUT-I, Total execution time :       0.1500 seconds.
+  @CHECKOUT-I, Total execution time :       0.1800 seconds.
                 0.12 seconds walltime passed
  --executable xlcc finished with status            0
  --invoking executable xdens
@@ -9590,7 +9615,7 @@ CHARGE=0)
  Total CPU time :   0.000000000000000E+000
   processed                   5200  ao basis integrals from 
                      9  buffers.
- Total CPU time :   9.999999776482582E-003
+ Total CPU time :   0.000000000000000E+000
   processed                   3309  ao basis integrals from 
                      6  buffers.
  Total CPU time :   0.000000000000000E+000
@@ -9607,8 +9632,8 @@ CHARGE=0)
   Trace of density matrix :  10.0000000000.
   ----------------------------------------------------------------------
   Density calculation successfully completed.
-  @CHECKOUT-I, Total execution time :       0.0200 seconds.
-                0.00 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.0300 seconds.
+                0.12 seconds walltime passed
  --executable xdens finished with status            0
  --invoking executable xanti
  CCSD(T) MO gammas will be sorted to Mulliken order.
@@ -9617,7 +9642,7 @@ CHARGE=0)
  --executable xanti finished with status            0
  --invoking executable xbcktrn
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
-                0.00 seconds walltime passed
+                0.50 seconds walltime passed
  --executable xbcktrn finished with status            0
  --invoking executable xvdint
  One- and two-electron integral derivatives are calculated
@@ -9676,7 +9701,7 @@ CHARGE=0)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  Evaluation of 1e integral derivatives required    0.00 seconds.
+  Evaluation of 1e integral derivatives required    0.01 seconds.
   Evaluation of 2el integral derivatives
 
                       Two-electron integral gradient
@@ -9692,7 +9717,7 @@ CHARGE=0)
  H #2 2     0.0000000000           -2.6351343721           -2.0386995165
 
 
-  Evaluation of 2e integral derivatives required    0.05 seconds.
+  Evaluation of 2e integral derivatives required    0.04 seconds.
 
                             Molecular gradient
                             ------------------
@@ -9719,12 +9744,16 @@ CHARGE=0)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  @CHECKOUT-I, Total execution time :       0.0500 seconds.
+  @CHECKOUT-I, Total execution time :       0.0600 seconds.
                 0.12 seconds walltime passed
  --executable xvdint finished with status            0
  --invoking executable xjoda
                 0.00 seconds walltime passed
  --executable xjoda finished with status            0
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //    Cfour cfour Gradient Results   //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
   Variable Map:
@@ -9753,6 +9782,17 @@ CHARGE=0)
     2    0.0000000    0.0025722   -0.0054764
     3    0.0000000   -0.0025722   -0.0054764
 
+
+
+
+  CFOUR scratch file GRD has been read
+    3        0.0000000000
+        8.0000000000        0.0000000000        0.0000000000       -0.1240388865
+        1.0000000000        0.0000000000       -1.4314312007        0.9842935683
+        1.0000000000        0.0000000000        1.4314312007        0.9842935683
+        8.0000000000        0.0000000000        0.0000000000        0.0109527466
+        1.0000000000        0.0000000000        0.0025721875       -0.0054763733
+        1.0000000000        0.0000000000       -0.0025721875       -0.0054763733
 
 
 
@@ -9838,33 +9878,8 @@ CHARGE=0)
     R         =    0.9630962680
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.9088..cfour.28094
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule default
-O     0.000000000000    0.000000000000   -0.067306013690
-H     0.000000000000   -0.752242026711    0.534097640012
-H     0.000000000000    0.752242026711    0.534097640012
-
-*CFOUR(CC_PROGRAM=ECC
-BASIS=dzp
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-DERIV_LEVEL=FIRST
-UNITS=ANGSTROM
-MEMORY_SIZE=200
-CALC_LEVEL=CCSD(T)
-CC_CONV=12
-ABCDTYPE=AOBASIS
-SCF_CONV=12
-MEM_UNIT=MB
-LINEQ_CONV=12
-CHARGE=0)
-
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.18884..cfour.88929
  --invoking executable xjoda
 
 
@@ -9889,8 +9904,8 @@ CHARGE=0)
  
                        version 1.2
  
-                     john2                                             
-                     Fri Aug  2 17:46:38 EDT 2013                      
+                     john3                                             
+                     Mon Oct 14 02:55:31 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -10139,7 +10154,7 @@ CHARGE=0)
    Rotational constants (in MHz): 
      282644.9208809606        780576.4776616476        443084.9456432214
   There are   25 basis functions.
-                0.00 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xjoda finished with status            0
   flag is                      5
  --invoking executable xvmol
@@ -10219,8 +10234,8 @@ CHARGE=0)
   @TWOEL-I,       3309 integrals of symmetry type  I I J J
   @TWOEL-I,       1891 integrals of symmetry type  I J K L
   @TWOEL-I, Total number of 2-e integrals      13447.
-  @MOLECU-I, Two electron integrals required         0.04000 seconds.
-  @CHECKOUT-I, Total execution time :       0.0400 seconds.
+  @MOLECU-I, Two electron integrals required         0.03000 seconds.
+  @CHECKOUT-I, Total execution time :       0.0300 seconds.
                 0.00 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
@@ -10963,7 +10978,7 @@ CHARGE=0)
 --------------------------------------------------------------------------------
   CCSD(T) energy                     -76.244351531545
 --------------------------------------------------------------------------------
-  @CHECKOUT-I, Total execution time :       0.2000 seconds.
+  @CHECKOUT-I, Total execution time :       0.2100 seconds.
                 0.12 seconds walltime passed
  --executable xecc finished with status            0
  --invoking executable xlcc
@@ -11070,7 +11085,7 @@ CHARGE=0)
      17     -0.2302357171573002   -76.244215178623   DIIS 
  -----------------------------------------------------------
  A miracle come to pass. The CC iterations have converged.
-  @CHECKOUT-I, Total execution time :       0.1500 seconds.
+  @CHECKOUT-I, Total execution time :       0.1800 seconds.
                 0.12 seconds walltime passed
  --executable xlcc finished with status            0
  --invoking executable xdens
@@ -11083,7 +11098,7 @@ CHARGE=0)
                      2                     2
                      3                     3
                      4                     4
- Total CPU time :   9.999999776482582E-003
+ Total CPU time :   0.000000000000000E+000
   processed                   3047  ao basis integrals from 
                      6  buffers.
  Total CPU time :   0.000000000000000E+000
@@ -11106,13 +11121,13 @@ CHARGE=0)
   Trace of density matrix :  10.0000000000.
   ----------------------------------------------------------------------
   Density calculation successfully completed.
-  @CHECKOUT-I, Total execution time :       0.0200 seconds.
+  @CHECKOUT-I, Total execution time :       0.0300 seconds.
                 0.00 seconds walltime passed
  --executable xdens finished with status            0
  --invoking executable xanti
  CCSD(T) MO gammas will be sorted to Mulliken order.
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
-                0.00 seconds walltime passed
+                0.75 seconds walltime passed
  --executable xanti finished with status            0
  --invoking executable xbcktrn
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -11175,7 +11190,7 @@ CHARGE=0)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  Evaluation of 1e integral derivatives required    0.00 seconds.
+  Evaluation of 1e integral derivatives required    0.01 seconds.
   Evaluation of 2el integral derivatives
 
                       Two-electron integral gradient
@@ -11218,12 +11233,16 @@ CHARGE=0)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  @CHECKOUT-I, Total execution time :       0.0500 seconds.
+  @CHECKOUT-I, Total execution time :       0.0600 seconds.
                 0.12 seconds walltime passed
  --executable xvdint finished with status            0
  --invoking executable xjoda
                 0.00 seconds walltime passed
  --executable xjoda finished with status            0
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //    Cfour cfour Gradient Results   //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
   Variable Map:
@@ -11233,6 +11252,7 @@ CHARGE=0)
   "CCSD TOTAL ENERGY"          =>     -76.241255346728
   "CCSD(T) CORRELATION ENERGY" =>      -0.230372070079
   "CCSD(T) TOTAL ENERGY"       =>     -76.244351531545
+  "CFOUR ERROR CODE"           =>       0.000000000000
   "CURRENT CORRELATION ENERGY" =>      -0.230372070079
   "CURRENT ENERGY"             =>     -76.244351531545
   "CURRENT REFERENCE ENERGY"   =>     -76.013979461466
@@ -11252,6 +11272,17 @@ CHARGE=0)
     2    0.0000000    0.0007328   -0.0008690
     3    0.0000000   -0.0007328   -0.0008690
 
+
+
+
+  CFOUR scratch file GRD has been read
+    3        0.0000000000
+        8.0000000000        0.0000000000        0.0000000000       -0.1271899593
+        1.0000000000        0.0000000000       -1.4215317078        1.0092984747
+        1.0000000000        0.0000000000        1.4215317078        1.0092984747
+        8.0000000000        0.0000000000        0.0000000000        0.0017379158
+        1.0000000000        0.0000000000        0.0007327542       -0.0008689579
+        1.0000000000        0.0000000000       -0.0007327542       -0.0008689579
 
 
 
@@ -11335,33 +11366,8 @@ CHARGE=0)
     R         =    0.9643368258
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.9088..cfour.32422
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule default
-O     0.000000000000    0.000000000000   -0.067521068554
-H     0.000000000000   -0.752292602641    0.535804178394
-H     0.000000000000    0.752292602641    0.535804178394
-
-*CFOUR(CC_PROGRAM=ECC
-BASIS=dzp
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-DERIV_LEVEL=FIRST
-UNITS=ANGSTROM
-MEMORY_SIZE=200
-CALC_LEVEL=CCSD(T)
-CC_CONV=12
-ABCDTYPE=AOBASIS
-SCF_CONV=12
-MEM_UNIT=MB
-LINEQ_CONV=12
-CHARGE=0)
-
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.18884..cfour.74670
  --invoking executable xjoda
 
 
@@ -11386,8 +11392,8 @@ CHARGE=0)
  
                        version 1.2
  
-                     john2                                             
-                     Fri Aug  2 17:46:45 EDT 2013                      
+                     john3                                             
+                     Mon Oct 14 02:55:42 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -11718,7 +11724,7 @@ CHARGE=0)
   @TWOEL-I, Total number of 2-e integrals      13447.
   @MOLECU-I, Two electron integrals required         0.03000 seconds.
   @CHECKOUT-I, Total execution time :       0.0300 seconds.
-                0.00 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -11909,8 +11915,8 @@ CHARGE=0)
 
   VSCF finished.
 
-  @CHECKOUT-I, Total execution time :       0.0100 seconds.
-                0.12 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.0000 seconds.
+                0.00 seconds walltime passed
  --executable xvscf finished with status            0
  --invoking executable xvtran
   Partial RHF integral transformation
@@ -12071,9 +12077,9 @@ CHARGE=0)
  Iteration Nr. 4
  Generation of Intermediates required        0.0 seconds.
  Transformation of t(ab,ij) amplitudes required    0.0 seconds.
- Contraction of t(mu nu,ij) with AO integrals required    0.0 seconds.
+ Contraction of t(mu nu,ij) with AO integrals required    0.2 seconds.
  Backtransformation of t(mu nu,ij) increments required    0.0 seconds.
- Construction of Hbar(ab,ij) and Hbar(a,i) required   0.0 seconds.
+ Construction of Hbar(ab,ij) and Hbar(a,i) required   0.2 seconds.
  Amplitude changes are:
  -------------------------------------------------------------------
               Spin      RMS          Max.      Max. change for
@@ -12086,7 +12092,7 @@ CHARGE=0)
  Convergence information after     4 iterations: 
  Largest element of residual vector :  0.16403348E-03.
  Largest element of DIIS residual   :  0.94430039E-04.
- CPU: This iteration required        0.0 seconds.
+ CPU: This iteration required        0.2 seconds.
  Iteration Nr. 5
  Generation of Intermediates required        0.0 seconds.
  Transformation of t(ab,ij) amplitudes required    0.0 seconds.
@@ -12460,8 +12466,8 @@ CHARGE=0)
 --------------------------------------------------------------------------------
   CCSD(T) energy                     -76.244354709503
 --------------------------------------------------------------------------------
-  @CHECKOUT-I, Total execution time :       0.1900 seconds.
-                0.12 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.4100 seconds.
+                1.00 seconds walltime passed
  --executable xecc finished with status            0
  --invoking executable xlcc
  Lambda equations are solved for CCSD(T)
@@ -12567,8 +12573,8 @@ CHARGE=0)
      17     -0.2303392202056700   -76.244216462349   DIIS 
  -----------------------------------------------------------
  A miracle come to pass. The CC iterations have converged.
-  @CHECKOUT-I, Total execution time :       0.1500 seconds.
-                0.12 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.1700 seconds.
+                0.00 seconds walltime passed
  --executable xlcc finished with status            0
  --invoking executable xdens
   CCSD(T) density and intermediates are calculated.
@@ -12580,7 +12586,7 @@ CHARGE=0)
                      2                     2
                      3                     3
                      4                     4
- Total CPU time :   9.999999776482582E-003
+ Total CPU time :   0.000000000000000E+000
   processed                   3047  ao basis integrals from 
                      6  buffers.
  Total CPU time :   0.000000000000000E+000
@@ -12603,7 +12609,7 @@ CHARGE=0)
   Trace of density matrix :  10.0000000000.
   ----------------------------------------------------------------------
   Density calculation successfully completed.
-  @CHECKOUT-I, Total execution time :       0.0200 seconds.
+  @CHECKOUT-I, Total execution time :       0.0300 seconds.
                 0.00 seconds walltime passed
  --executable xdens finished with status            0
  --invoking executable xanti
@@ -12672,7 +12678,7 @@ CHARGE=0)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  Evaluation of 1e integral derivatives required    0.00 seconds.
+  Evaluation of 1e integral derivatives required    0.01 seconds.
   Evaluation of 2el integral derivatives
 
                       Two-electron integral gradient
@@ -12715,12 +12721,16 @@ CHARGE=0)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  @CHECKOUT-I, Total execution time :       0.0500 seconds.
+  @CHECKOUT-I, Total execution time :       0.0600 seconds.
                 0.12 seconds walltime passed
  --executable xvdint finished with status            0
  --invoking executable xjoda
                 0.00 seconds walltime passed
  --executable xjoda finished with status            0
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //    Cfour cfour Gradient Results   //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
   Variable Map:
@@ -12730,6 +12740,7 @@ CHARGE=0)
   "CCSD TOTAL ENERGY"          =>     -76.241251108557
   "CCSD(T) CORRELATION ENERGY" =>      -0.230477467359
   "CCSD(T) TOTAL ENERGY"       =>     -76.244354709503
+  "CFOUR ERROR CODE"           =>       0.000000000000
   "CURRENT CORRELATION ENERGY" =>      -0.230477467359
   "CURRENT ENERGY"             =>     -76.244354709503
   "CURRENT REFERENCE ENERGY"   =>     -76.013877242144
@@ -12749,6 +12760,17 @@ CHARGE=0)
     2    0.0000000   -0.0000491    0.0000112
     3    0.0000000    0.0000491    0.0000112
 
+
+
+
+  CFOUR scratch file GRD has been read
+    3        0.0000000000
+        8.0000000000        0.0000000000        0.0000000000       -0.1275963542
+        1.0000000000        0.0000000000       -1.4216272825        1.0125233655
+        1.0000000000        0.0000000000        1.4216272825        1.0125233655
+        8.0000000000        0.0000000000        0.0000000000       -0.0000223138
+        1.0000000000        0.0000000000       -0.0000491459        0.0000111569
+        1.0000000000        0.0000000000        0.0000491459        0.0000111569
 
 
 
@@ -12832,33 +12854,8 @@ CHARGE=0)
     R         =    0.9642963416
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.9088..cfour.36898
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule default
-O     0.000000000000    0.000000000000   -0.067528394492
-H     0.000000000000   -0.752188200713    0.535862312372
-H     0.000000000000    0.752188200713    0.535862312372
-
-*CFOUR(CC_PROGRAM=ECC
-BASIS=dzp
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-DERIV_LEVEL=FIRST
-UNITS=ANGSTROM
-MEMORY_SIZE=200
-CALC_LEVEL=CCSD(T)
-CC_CONV=12
-ABCDTYPE=AOBASIS
-SCF_CONV=12
-MEM_UNIT=MB
-LINEQ_CONV=12
-CHARGE=0)
-
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.18884..cfour.38784
  --invoking executable xjoda
 
 
@@ -12883,8 +12880,8 @@ CHARGE=0)
  
                        version 1.2
  
-                     john2                                             
-                     Fri Aug  2 17:46:53 EDT 2013                      
+                     john3                                             
+                     Mon Oct 14 02:55:53 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -13133,7 +13130,7 @@ CHARGE=0)
    Rotational constants (in MHz): 
      281994.8024161991        775443.8396241568        443148.3615348850
   There are   25 basis functions.
-                0.12 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xjoda finished with status            0
   flag is                      5
  --invoking executable xvmol
@@ -13215,7 +13212,7 @@ CHARGE=0)
   @TWOEL-I, Total number of 2-e integrals      13447.
   @MOLECU-I, Two electron integrals required         0.03000 seconds.
   @CHECKOUT-I, Total execution time :       0.0300 seconds.
-                0.12 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -13406,7 +13403,7 @@ CHARGE=0)
 
   VSCF finished.
 
-  @CHECKOUT-I, Total execution time :       0.0000 seconds.
+  @CHECKOUT-I, Total execution time :       0.0100 seconds.
                 0.00 seconds walltime passed
  --executable xvscf finished with status            0
  --invoking executable xvtran
@@ -13957,8 +13954,8 @@ CHARGE=0)
 --------------------------------------------------------------------------------
   CCSD(T) energy                     -76.244354716807
 --------------------------------------------------------------------------------
-  @CHECKOUT-I, Total execution time :       0.1900 seconds.
-                0.12 seconds walltime passed
+  @CHECKOUT-I, Total execution time :       0.2200 seconds.
+                0.25 seconds walltime passed
  --executable xecc finished with status            0
  --invoking executable xlcc
  Lambda equations are solved for CCSD(T)
@@ -14064,7 +14061,7 @@ CHARGE=0)
      17     -0.2303378881051676   -76.244216566084   DIIS 
  -----------------------------------------------------------
  A miracle come to pass. The CC iterations have converged.
-  @CHECKOUT-I, Total execution time :       0.1600 seconds.
+  @CHECKOUT-I, Total execution time :       0.1700 seconds.
                 0.12 seconds walltime passed
  --executable xlcc finished with status            0
  --invoking executable xdens
@@ -14169,7 +14166,7 @@ CHARGE=0)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  Evaluation of 1e integral derivatives required    0.00 seconds.
+  Evaluation of 1e integral derivatives required    0.01 seconds.
   Evaluation of 2el integral derivatives
 
                       Two-electron integral gradient
@@ -14212,12 +14209,16 @@ CHARGE=0)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  @CHECKOUT-I, Total execution time :       0.0500 seconds.
+  @CHECKOUT-I, Total execution time :       0.0600 seconds.
                 0.12 seconds walltime passed
  --executable xvdint finished with status            0
  --invoking executable xjoda
                 0.00 seconds walltime passed
  --executable xjoda finished with status            0
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //    Cfour cfour Gradient Results   //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
   Variable Map:
@@ -14227,6 +14228,7 @@ CHARGE=0)
   "CCSD TOTAL ENERGY"          =>     -76.241251163010
   "CCSD(T) CORRELATION ENERGY" =>      -0.230476038828
   "CCSD(T) TOTAL ENERGY"       =>     -76.244354716807
+  "CFOUR ERROR CODE"           =>       0.000000000000
   "CURRENT CORRELATION ENERGY" =>      -0.230476038828
   "CURRENT ENERGY"             =>     -76.244354716807
   "CURRENT REFERENCE ENERGY"   =>     -76.013878677979
@@ -14246,6 +14248,17 @@ CHARGE=0)
     2    0.0000000    0.0000050    0.0000003
     3    0.0000000   -0.0000050    0.0000003
 
+
+
+
+  CFOUR scratch file GRD has been read
+    3        0.0000000000
+        8.0000000000        0.0000000000        0.0000000000       -0.1276101982
+        1.0000000000        0.0000000000       -1.4214299914        1.0126332229
+        1.0000000000        0.0000000000        1.4214299914        1.0126332229
+        8.0000000000        0.0000000000        0.0000000000       -0.0000005048
+        1.0000000000        0.0000000000        0.0000049717        0.0000002524
+        1.0000000000        0.0000000000       -0.0000049717        0.0000002524
 
 
 
@@ -14329,33 +14342,8 @@ CHARGE=0)
     R         =    0.9642992642
 
 
-  GENBAS loaded from /theoryfs2/ds/loriab/bin/GENBAS
-  CFOUR to be run from /scratch/loriab//psi.9088..cfour.38229
-
-====== Begin ZMAT input for CFOUR ======
-auto-generated by qcdb from molecule default
-O     0.000000000000    0.000000000000   -0.067527002718
-H     0.000000000000   -0.752201923157    0.535851268134
-H     0.000000000000    0.752201923157    0.535851268134
-
-*CFOUR(CC_PROGRAM=ECC
-BASIS=dzp
-MULTIPLICITY=1
-COORDINATES=CARTESIAN
-DERIV_LEVEL=FIRST
-UNITS=ANGSTROM
-MEMORY_SIZE=200
-CALC_LEVEL=CCSD(T)
-CC_CONV=12
-ABCDTYPE=AOBASIS
-SCF_CONV=12
-MEM_UNIT=MB
-LINEQ_CONV=12
-CHARGE=0)
-
-
-======= End ZMAT input for CFOUR =======
-
+  GENBAS loaded from /theoryfs2/ds/cdsgroup/scripts/bin/GENBAS
+  CFOUR to be run from /scratch/loriab//psi.18884..cfour.87692
  --invoking executable xjoda
 
 
@@ -14380,8 +14368,8 @@ CHARGE=0)
  
                        version 1.2
  
-                     john2                                             
-                     Fri Aug  2 17:47:01 EDT 2013                      
+                     john3                                             
+                     Mon Oct 14 02:56:02 EDT 2013                      
                      integer*8 version is running
  
     -------------------------------------------------------------------
@@ -14630,7 +14618,7 @@ CHARGE=0)
    Rotational constants (in MHz): 
      281992.4820630684        775475.8047403676        443132.1929425988
   There are   25 basis functions.
-                0.12 seconds walltime passed
+                0.75 seconds walltime passed
  --executable xjoda finished with status            0
   flag is                      5
  --invoking executable xvmol
@@ -14712,7 +14700,7 @@ CHARGE=0)
   @TWOEL-I, Total number of 2-e integrals      13447.
   @MOLECU-I, Two electron integrals required         0.03000 seconds.
   @CHECKOUT-I, Total execution time :       0.0300 seconds.
-                0.00 seconds walltime passed
+                0.12 seconds walltime passed
  --executable xvmol finished with status            0
  --invoking executable xvmol2ja
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
@@ -14903,7 +14891,7 @@ CHARGE=0)
 
   VSCF finished.
 
-  @CHECKOUT-I, Total execution time :       0.0100 seconds.
+  @CHECKOUT-I, Total execution time :       0.0000 seconds.
                 0.00 seconds walltime passed
  --executable xvscf finished with status            0
  --invoking executable xvtran
@@ -14944,7 +14932,7 @@ CHARGE=0)
     13         3.9366242        1
 ------------------------------------------------------------------------
   @CHECKOUT-I, Total execution time :       0.0000 seconds.
-                0.12 seconds walltime passed
+                0.00 seconds walltime passed
  --executable xvtran finished with status            0
  --invoking executable xintprc
   @GMOIAA-I, Processing MO integrals for spin case AA.
@@ -15454,7 +15442,7 @@ CHARGE=0)
 --------------------------------------------------------------------------------
   CCSD(T) energy                     -76.244354716924
 --------------------------------------------------------------------------------
-  @CHECKOUT-I, Total execution time :       0.2000 seconds.
+  @CHECKOUT-I, Total execution time :       0.1900 seconds.
                 0.12 seconds walltime passed
  --executable xecc finished with status            0
  --invoking executable xlcc
@@ -15561,7 +15549,7 @@ CHARGE=0)
      17     -0.2303378608635677   -76.244216557176   DIIS 
  -----------------------------------------------------------
  A miracle come to pass. The CC iterations have converged.
-  @CHECKOUT-I, Total execution time :       0.1500 seconds.
+  @CHECKOUT-I, Total execution time :       0.1600 seconds.
                 0.12 seconds walltime passed
  --executable xlcc finished with status            0
  --invoking executable xdens
@@ -15666,7 +15654,7 @@ CHARGE=0)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  Evaluation of 1e integral derivatives required    0.00 seconds.
+  Evaluation of 1e integral derivatives required    0.01 seconds.
   Evaluation of 2el integral derivatives
 
                       Two-electron integral gradient
@@ -15709,12 +15697,16 @@ CHARGE=0)
   Conversion factor used: 1 a.u. =   2.54174691 Debye 
 
 
-  @CHECKOUT-I, Total execution time :       0.0500 seconds.
+  @CHECKOUT-I, Total execution time :       0.0600 seconds.
                 0.12 seconds walltime passed
  --executable xvdint finished with status            0
  --invoking executable xjoda
                 0.00 seconds walltime passed
  --executable xjoda finished with status            0
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //    Cfour cfour Gradient Results   //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
   Variable Map:
@@ -15724,6 +15716,7 @@ CHARGE=0)
   "CCSD TOTAL ENERGY"          =>     -76.241251171489
   "CCSD(T) CORRELATION ENERGY" =>      -0.230476020612
   "CCSD(T) TOTAL ENERGY"       =>     -76.244354716924
+  "CFOUR ERROR CODE"           =>       0.000000000000
   "CURRENT CORRELATION ENERGY" =>      -0.230476020612
   "CURRENT ENERGY"             =>     -76.244354716924
   "CURRENT REFERENCE ENERGY"   =>     -76.013878696312
@@ -15743,6 +15736,17 @@ CHARGE=0)
     2    0.0000000   -0.0000007   -0.0000000
     3    0.0000000    0.0000007   -0.0000000
 
+
+
+
+  CFOUR scratch file GRD has been read
+    3        0.0000000000
+        8.0000000000        0.0000000000        0.0000000000       -0.1276075682
+        1.0000000000        0.0000000000       -1.4214559231        1.0126123523
+        1.0000000000        0.0000000000        1.4214559231        1.0126123523
+        8.0000000000        0.0000000000        0.0000000000        0.0000000546
+        1.0000000000        0.0000000000       -0.0000006672       -0.0000000273
+        1.0000000000        0.0000000000        0.0000006672       -0.0000000273
 
 
 
