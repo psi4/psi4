@@ -248,7 +248,7 @@ def extract_sowreap_from_output(sowout, quantity, sownum, linkage, allvital=Fals
         freagent.close()
     return E
 
-def prepare_options_for_modules():
+def prepare_options_for_modules(changedOnly=False):
     """Function to return a string of commands to replicate the
     current state of user-modified options. Used to capture C++
     options information for distributed (sow/reap) input files.
@@ -271,47 +271,25 @@ def prepare_options_for_modules():
         "CFOUR",
         ]
 
-    options = collections.defaultdict(lambda: collections.defaultdict(dict))
+    options = {'GLOBALS': {}}
     for opt in psi4.get_global_option_list():
-        options['GLOBALS'][opt]['value'] = psi4.get_global_option(opt)
-        options['GLOBALS'][opt]['has_changed'] = psi4.has_global_option_changed(opt)
+        if psi4.has_global_option_changed(opt) or not changedOnly:
+            options['GLOBALS'][opt] = {'value': psi4.get_global_option(opt),
+                                       'has_changed': psi4.has_global_option_changed(opt)}
+            #if changedOnly:
+            #    print('Appending module %s option %s value %s has_changed %s.' % \
+            #        ('GLOBALS', opt, psi4.get_global_option(opt), psi4.has_global_option_changed(opt)))
         for module in modules:
             try:
-                options[module][opt]['value'] = psi4.get_option(module, opt)
-                options[module][opt]['has_changed'] = psi4.has_option_changed(module, opt)
+                if psi4.has_option_changed(module, opt) or not changedOnly:
+                    if not module in options:
+                        options[module] = {}
+                    options[module][opt] = {'value': psi4.get_option(module, opt),
+                                            'has_changed': psi4.has_option_changed(module, opt)}
+                    #if changedOnly:
+                    #    print('Appending module %s option %s value %s has_changed %s.' % \
+                    #        (module, opt, psi4.get_option(module, opt), psi4.has_option_changed(module, opt)))
             except RuntimeError:
                 pass
 
     return options
-
-
-#def prepare_options_for_input_new():
-#    """Function to
-#
-#    """
-#    options = prepare_options_for_modules()
-
-#    commands = ''
-#    commands += """\npsi4.set_memory(%s)\n\n""" % (psi4.get_memory())
-
-#    for chgdopt in psi4.get_global_option_list():
-#        if psi4.has_global_option_changed(chgdopt):
-#            chgdoptval = psi4.get_global_option(chgdopt)
-#            print 'GLOBAL', chgdopt, chgdoptval
-#        for module in modules:
-#            try:
-#                if psi4.has_local_option_changed(module, chgdopt):
-#                    chgdoptval = psi4.get_local_option(module, chgdopt)
-#                    print 'MODULE', module, chgdopt, chgdoptval
-#            except RuntimeError:
-#                pass
-        #if psi4.has_global_option_changed(chgdopt):
-            #chgdoptval = psi4.get_global_option(chgdopt)
-            #print(chgdopt, chgdoptval)
-            #if isinstance(chgdoptval, basestring):
-            #    commands += """psi4.set_global_option('%s', '%s')\n""" % (chgdopt, chgdoptval)
-            #elif isinstance(chgdoptval, int) or isinstance(chgdoptval, float):
-            #    commands += """psi4.set_global_option('%s', %s)\n""" % (chgdopt, chgdoptval)
-            #else:
-            #    raise ValidationError('Option \'%s\' is not of a type (string, int, float, bool) that can be processed.' % (chgdopt))
-#    return commands

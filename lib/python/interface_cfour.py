@@ -43,6 +43,8 @@ from functional import *
 # never import driver, wrappers, or aliases into this file
 
 
+P4C4_INFO = {}
+
 def run_cfour(name, **kwargs):
     """Function that prepares environment and input files
     for a calculation calling Stanton and Gauss's CFOUR code.
@@ -54,34 +56,42 @@ def run_cfour(name, **kwargs):
     correctly, the Cfour executable ``xcfour`` must be present in
     :envvar:`PATH` or :envvar:`PSIPATH`.
 
+    :PSI variables:
+
+    .. hlist::
+       :columns: 1
+
+       * Many PSI Variables as extracted from the Cfour output
+       * Python dictionary of associated file constants accessible as ``P4C4_INFO['zmat']``, ``P4C4_INFO['output']``,``P4C4_INFO['grd']``, *etc.*
+
+
     :type name: string
     :param name: ``'c4-scf'`` || ``'c4-ccsd(t)'`` || ``'cfour'`` || etc.
 
-	    First argument, usually unlabeled. Indicates the computational
-	    method to be applied to the system.
+        First argument, usually unlabeled. Indicates the computational
+        method to be applied to the system.
 
     :type keep: :ref:`boolean <op_py_boolean>`
     :param keep: ``'on'`` || |dl| ``'off'`` |dr|
 
-	    Indicates whether to delete the Cfour scratch directory upon
-	    completion of the Cfour job.
+        Indicates whether to delete the Cfour scratch directory upon
+        completion of the Cfour job.
 
     :type path: string
     :param path:
 
-	    Indicates path to Cfour scratch directory. Otherwise, the
-	    default is a subdirectory within the Psi4 scratch directory.
+        Indicates path to Cfour scratch directory. Otherwise, the
+        default is a subdirectory within the Psi4 scratch directory.
 
     """
     lowername = name.lower()
+    internal_p4c4_info = {}
 
-    # Because this fn is called for energy('cfour'), opt('cfour'), etc.,
-    # need this to figure out who called
-    d2d = ['energy', 'gradient', 'hessian']
+    # Determine calling function and hence dertype
     calledby = inspect.stack()[1][3]
-    dertype = d2d.index(calledby)
-    print('I am %s called by %s called by %s.\n' % 
-        (inspect.stack()[0][3], inspect.stack()[1][3], inspect.stack()[2][3]))
+    dertype = ['energy', 'gradient', 'hessian'].index(calledby)
+    #print('I am %s called by %s called by %s.\n' %
+    #    (inspect.stack()[0][3], inspect.stack()[1][3], inspect.stack()[2][3]))
 
     # Save submission directory
     current_directory = os.getcwd()
@@ -123,14 +133,16 @@ def run_cfour(name, **kwargs):
         psi4.print_out('  Search path that was tried:\n')
         psi4.print_out(lenv['PATH'].replace(':', ', '))
 
-    # Generate the ZMAT input file in scratch and write to outfile
+    # Generate the ZMAT input file in scratch
     with open('ZMAT', 'w') as cfour_infile:
         cfour_infile.write(write_zmat(lowername, dertype))
-    psi4.print_out('\n====== Begin ZMAT input for CFOUR ======\n')
-    psi4.print_out(open('ZMAT', 'r').read())
-    psi4.print_out('======= End ZMAT input for CFOUR =======\n\n')
-    #print('\n====== Begin ZMAT input for CFOUR ======\n', open('ZMAT', 'r').read(), \
-    #    '======= End ZMAT input for CFOUR =======\n\n')
+    internal_p4c4_info['zmat'] = open('ZMAT', 'r').read()
+    #psi4.print_out('\n====== Begin ZMAT input for CFOUR ======\n')
+    #psi4.print_out(open('ZMAT', 'r').read())
+    #psi4.print_out('======= End ZMAT input for CFOUR =======\n\n')
+    #print('\n====== Begin ZMAT input for CFOUR ======')
+    #print(open('ZMAT', 'r').read())
+    #print('======= End ZMAT input for CFOUR =======\n')
 
     # Close psi4 output file and reopen with filehandle
     psi4.close_outfile()
@@ -143,7 +155,7 @@ def run_cfour(name, **kwargs):
     if psi4.has_option_changed('CFOUR', 'CFOUR_OMP_NUM_THREADS') == True:
         os.environ['OMP_NUM_THREADS'] = str(psi4.get_option('CFOUR', 'CFOUR_OMP_NUM_THREADS'))
 
-    print("""\n\n<<<<<  RUNNING CFOUR ...  >>>>>\n\n""")
+    #print("""\n\n<<<<<  RUNNING CFOUR ...  >>>>>\n\n""")
     # Call executable xcfour, directing cfour output to the psi4 output file
     try:
         retcode = subprocess.Popen(['xcfour'], bufsize=0, stdout=subprocess.PIPE, env=lenv)
@@ -163,6 +175,7 @@ def run_cfour(name, **kwargs):
             p4out.write(data)
             p4out.flush()
         c4out += data
+    internal_p4c4_info['output'] = c4out
 
     # Restore user's OMP_NUM_THREADS
     if omp_num_threads_found == True:
@@ -182,6 +195,7 @@ def run_cfour(name, **kwargs):
                 c4files[item] = handle.read()
                 p4out.write('  CFOUR scratch file %s has been read\n' % (item))
                 p4out.write('%s\n' % c4files[item])
+                internal_p4c4_info[item.lower()] = c4files[item]
         except IOError:
             pass
     p4out.write('\n')
@@ -191,18 +205,8 @@ def run_cfour(name, **kwargs):
         qcdbmolecule = None
     else:
         molecule.update_geometry()
-        #print('ZZZZ')
-        #print(molecule.save_string_xyz())
-        #print(molecule.create_psi4_string_from_molecule())
         qcdbmolecule = qcdb.Molecule(molecule.create_psi4_string_from_molecule())
         qcdbmolecule.update_geometry()
-        #print('zzzz')
-        #qcdbmolecule.print_out_in_bohr()
-
-
-
-
-
 
     psivar, c4grad = qcdb.cfour.harvest(qcdbmolecule, c4out, **c4files)
 
@@ -228,14 +232,14 @@ def run_cfour(name, **kwargs):
     # read GRD
     # read FCMFINAL
     # see if theres an active molecule
-    # 
+
     # # Things delegatable to qcdb
     # parsing c4out
     # reading GRD and FCMFINAL strings
     # reconciling p4 and c4 molecules (orient)
 # reconciling c4out and GRD and FCMFINAL results
 # transforming frame of results back to p4
-    # 
+
     # # Things run_cfour needs to have back
     # psivar
 # qcdb.Molecule of c4?
@@ -312,7 +316,6 @@ def run_cfour(name, **kwargs):
     os.chdir(current_directory)
     psi4.reopen_outfile()
 
-    d2d = ['Energy', 'Gradient', 'Hessian']
     psi4.print_out('\n')
     p4util.banner(' Cfour %s %s Results ' % (name.lower(), calledby.capitalize()))
     psi4.print_variables()
@@ -323,18 +326,28 @@ def run_cfour(name, **kwargs):
     if psi4.get_variable('CFOUR ERROR CODE'):
         raise ValidationError("""Cfour exited abnormally.""")
 
+    P4C4_INFO.clear()
+    P4C4_INFO.update(internal_p4c4_info)
+
 
 def cfour_list():
+    """Form list of Cfour :py:func:`~driver.energy` arguments."""
     return qcdb.cfour.cfour_list()
 
+
 def cfour_gradient_list():
+    """Form list of Cfour analytic :py:func:`~driver.gradient` arguments."""
     return qcdb.cfour.cfour_gradient_list()
 
+
 def cfour_psivar_list():
+    """Form dictionary of :ref:`PSI Variables <apdx:cfour_psivar>` set by Cfour methods."""
     return qcdb.cfour.cfour_psivar_list()
 
+
 def write_zmat(name, dertype):
-    """
+    """Returns string with contents of Cfour ZMAT file as gathered from
+    active molecule, current keyword settings, and cfour {...} block.
 
     """
     # Handle memory
@@ -342,7 +355,7 @@ def write_zmat(name, dertype):
     if mem == 256:
         memcmd, memkw = '', {}
     else:
-        memcmd, memkw = qcdb.cfour.cfour_memory(mem)
+        memcmd, memkw = qcdb.cfour.muster_memory(mem)
 
     # Handle molecule and basis set
     molecule = psi4.get_active_molecule()
@@ -360,7 +373,7 @@ def write_zmat(name, dertype):
             bascmd, baskw = '', {}
         else:
             user_pg = molecule.schoenflies_symbol()
-            molecule.reset_point_group('c1')
+            molecule.reset_point_group('c1')  # need basis printed for *every* atom
             with open('GENBAS', 'w') as cfour_basfile:
                 cfour_basfile.write(psi4.BasisSet.construct(psi4.Gaussian94BasisSetParser(), molecule, "BASIS").genbas())
             psi4.print_out('  GENBAS loaded from PSI4 LibMints for basis %s\n' % (psi4.get_global_option('BASIS')))
@@ -368,22 +381,19 @@ def write_zmat(name, dertype):
             molecule.update_geometry()
             bascmd, baskw = qcdbmolecule.format_basis_for_cfour(psi4.MintsHelper().basisset().has_puream())
 
-    # Handle calc type
-    clvcmd, clvkw = qcdb.cfour.cfour_calclevel(dertype)
-    # consider combining calclevel and method so can set ecc/vcc diff by dertype
+    # Handle psi4 keywords implying cfour keyword values
+    psicmd, psikw = qcdb.cfour.muster_psi4options(p4util.prepare_options_for_modules(changedOnly=True))
 
-    # Handle psi4 keywords implying cfour keyword values (NYI)
-
-    # Handle quantum chemical method
-    mtdcmd, mtdkw = qcdb.cfour.cfour_method(name)
+    # Handle calc type and quantum chemical method
+    mdccmd, mdckw = qcdb.cfour.muster_modelchem(name, dertype)
 
     # Handle driver vs input/default keyword reconciliation
     userkw = p4util.prepare_options_for_modules()
     userkw = qcdb.options.reconcile_options(userkw, memkw)
     userkw = qcdb.options.reconcile_options(userkw, molkw)
     userkw = qcdb.options.reconcile_options(userkw, baskw)
-    userkw = qcdb.options.reconcile_options(userkw, mtdkw)
-    userkw = qcdb.options.reconcile_options(userkw, clvkw)
+    userkw = qcdb.options.reconcile_options(userkw, psikw)
+    userkw = qcdb.options.reconcile_options(userkw, mdckw)
 
     # Handle conversion of psi4 keyword structure into cfour format
     optcmd = qcdb.options.prepare_options_for_cfour(userkw)
@@ -391,5 +401,14 @@ def write_zmat(name, dertype):
     # Handle text to be passed untouched to cfour
     litcmd = psi4.get_global_option('LITERAL_CFOUR')
 
-    zmat = memcmd + molcmd + optcmd + mtdcmd + bascmd + litcmd
+    # Assemble ZMAT pieces
+    zmat = memcmd + molcmd + optcmd + mdccmd + psicmd + bascmd + litcmd
+
+    if len(re.findall(r'^\*(ACES2|CFOUR|CRAPS)\(', zmat, re.MULTILINE)) != 1:
+        psi4.print_out('\n  Faulty ZMAT constructed:\n%s' % (zmat))
+        raise ValidationError("""
+Multiple *CFOUR(...) blocks in input. This usually arises
+because molecule or options are specified both the psi4 way through
+molecule {...} and set ... and the cfour way through cfour {...}.""")
+
     return zmat
