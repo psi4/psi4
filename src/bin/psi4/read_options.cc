@@ -81,7 +81,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_str("FREEZE_CORE", "FALSE", "FALSE TRUE");
 
   /*- Do use pure angular momentum basis functions?
-  If not explicitly set, the default comes from the basis set. -*/
+  If not explicitly set, the default comes from the basis set. 
+  **Cfour Interface:** Keyword translates into |cfour__cfour_spherical|. -*/
   options.add_bool("PUREAM", true);
   /*- The amount of information to print to the output file.  1 prints
   basic information, and higher levels print more information. A value
@@ -912,7 +913,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "SCF", "SCF");
-    /*- Reference wavefunction type -*/
+    /*- Reference wavefunction type.
+    **Cfour Interface:** Keyword translates into |cfour__cfour_reference|. -*/
     options.add_str("REFERENCE", "RHF", "RHF ROHF UHF CUHF RKS UKS");
     /*- Primary basis set -*/
     options.add_str("BASIS", "");
@@ -959,7 +961,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- SUBSECTION Convergence Control/Stabilization -*/
 
-    /*- Maximum number of iterations -*/
+    /*- Maximum number of iterations.
+    **Cfour Interface:** Keyword translates into |cfour__cfour_scf_maxcyc|. -*/
     options.add_int("MAXITER", 100);
     /*- Fail if we reach maxiter without converging? -*/
     options.add_bool("FAIL_ON_MAXITER",true);
@@ -970,7 +973,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convergence criterion for SCF density, which is defined as the RMS
     value of the orbital gradient.  See Table :ref:`SCF Convergence & Algorithm
     <table:conv_scf>` for default convergence criteria for different
-    calculation types. -*/
+    calculation types. 
+    **Cfour Interface:** Keyword translates into |cfour__cfour_scf_conv|. -*/
     options.add_double("D_CONVERGENCE", 1e-6);
     /*- The amount (percentage) of damping to apply to the early density updates.
         0 will result in a full update, 100 will completely stall the update.  A
@@ -979,7 +983,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         could help to solve problems with oscillatory convergence. -*/
     options.add_double("DAMPING_PERCENTAGE", 100.0);
     /*- The density convergence threshold after which damping is no longer performed, if it is enabled.
-        It is recommended to leave damping on until convergence, which is the default. -*/
+        It is recommended to leave damping on until convergence, which is the default. 
+    **Cfour Interface:** Keyword translates into |cfour__cfour_scf_damping|. -*/
     options.add_double("DAMPING_CONVERGENCE", 1.0E-18);
     /*- Accelerate convergence by performing a preliminary scf with
     this small basis set followed by projection into the full target
@@ -3973,7 +3978,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       unrestricted Hartree-Fock reference; ROHF (= 2) a restricted
       open-shell Hartree-Fock calculation; TCSCF (=3) a
       two-configurational SCF calculation, and CASSCF (=4) a
-      complete-active space SCF calculations (currently not implemented). -*/
+      complete-active space SCF calculations (currently not implemented). 
+      **PSI4 Interface:** Keyword subject to translation from value of
+      |scf__reference| unless set explicitly. -*/
       options.add_str("CFOUR_REFERENCE", "RHF", "RHF UHF ROHF TCSCF CASSCF");
 
       /*- Specifies the treatment of relativistic effects. The default is
@@ -4048,7 +4055,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
       /*- Specifies the convergence criterion for the HF-SCF equations.
       Equations are considered converged when the maximum change in
-      density matrix elements is less than $10^{-N}$. -*/
+      density matrix elements is less than $10^{-N}$.
+      **PSI4 Interface:** Keyword subject to translation from value of
+      |scf__d_convergence| unless set explicitly. -*/
       options.add_int("CFOUR_SCF_CONV", 7);
 
       /*- Controls the damping (in the first iterations (specified by
@@ -4057,7 +4066,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       as the value specified by the keyword. The default value is
       currently 1000 (no damping), but a value of 500 is recommended in
       particular for transition metal compounds where the SCF convergence
-      is often troublesome. -*/
+      is often troublesome.
+      **PSI4 Interface:** Keyword subject to translation from value of
+      |scf__damping_percentage| unless set explicitly. -*/
       options.add_int("CFOUR_SCF_DAMPING", 1000);
 
       /*- Specifies the number of density matrices to be used in the
@@ -4073,7 +4084,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       DIIS, ON (=1) means use DIIS. -*/
       options.add_bool("CFOUR_SCF_EXTRAPOLATION", true);
 
-      /*- Specifies the maximum number of SCF iterations. -*/
+      /*- Specifies the maximum number of SCF iterations. 
+      **PSI4 Interface:** Keyword subject to translation from value of
+      |scf_maxiter| unless set explicitly.-*/
       options.add_int("CFOUR_SCF_MAXCYC", 150);
 
       /*- Specifies the strength of a spin-dipole pertubation as required
@@ -4097,8 +4110,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Specifies whether spherical harmonic (5d, 7f, 9g, etc.) or
       Cartesian (6d, 10f, 15g, etc.) basis functions are to be used. ON (=
       1) uses spherical harmonics, OFF (= 0) uses Cartesians. 
-      **PSI4 Interface:** Keyword set according to basis design when 
-      |mints__basis| is used instead of |cfour__cfour_basis|. -*/
+      **PSI4 Interface:** Keyword set according to basis design when
+      |mints__basis| is used instead of |cfour__cfour_basis|. Keyword
+      subject to translation from value of |globals__puream| unless set
+      explicitly. -*/
       options.add_bool("CFOUR_SPHERICAL", true);
 
       /*- Controls whether excitation energy calculations allow for a
