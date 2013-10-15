@@ -295,7 +295,7 @@ void ex_oscillator_strength(struct TD_Params *S, struct TD_Params *U, struct XTD
   /* SI Transition Energy */
   double nu_si = delta_ee * hartree2Hz;
   /* Einstein Coefficients */
-  einstein_b = (2.0/3.0) * (pc_c/pow(hbar,2.0)) * (1.0/(4.0*pc_pi*pc_e0)) * ds_si;
+  einstein_b = (2.0/3.0) * (pc_pi/pow(hbar,2.0)) * (1.0/(4.0*pc_pi*pc_e0)) * ds_si;
   einstein_a = 8.0* pc_pi * pc_h * pow((nu_si/pc_c),3.0) * einstein_b;
 
   fprintf(outfile,"\t<0|mu_e|n>              %11.8lf \t %11.8lf \t %11.8lf\n",
@@ -305,7 +305,7 @@ void ex_oscillator_strength(struct TD_Params *S, struct TD_Params *U, struct XTD
   fprintf(outfile,"\tDipole Strength         %11.8lf \n",ds_x+ds_y+ds_z);
   fprintf(outfile,"\tOscillator Strength     %11.8lf \n",f_x+f_y+f_z);
   fprintf(outfile,"\tEinstein A Coefficient  %11.8e  \n",einstein_a);
-  fprintf(outfile,"\tEinstein b Coefficient  %11.8e  \n",einstein_b);
+  fprintf(outfile,"\tEinstein B Coefficient  %11.8e  \n",einstein_b);
   fflush(outfile);
 
   if((params.ref == 0) || (params.ref == 1)) {
