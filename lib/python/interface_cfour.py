@@ -56,13 +56,11 @@ def run_cfour(name, **kwargs):
     correctly, the Cfour executable ``xcfour`` must be present in
     :envvar:`PATH` or :envvar:`PSIPATH`.
 
-    :PSI variables:
-
     .. hlist::
        :columns: 1
 
-       * Many PSI Variables as extracted from the Cfour output
-       * Python dictionary of associated file constants accessible as ``P4C4_INFO['zmat']``, ``P4C4_INFO['output']``,``P4C4_INFO['grd']``, *etc.*
+       * Many :ref:`PSI Variables <apdx:cfour_psivar>` extracted from the Cfour output
+       * Python dictionary of associated file constants accessible as ``P4C4_INFO['zmat']``, ``P4C4_INFO['output']``, ``P4C4_INFO['grd']``, *etc.*
 
 
     :type name: string
@@ -314,6 +312,7 @@ def run_cfour(name, **kwargs):
 
     # Return to submission directory and reopen output file
     os.chdir(current_directory)
+    p4out.close()
     psi4.reopen_outfile()
 
     psi4.print_out('\n')

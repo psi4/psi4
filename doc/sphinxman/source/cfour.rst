@@ -326,6 +326,7 @@ not, or both). ::
      Ne
    --
      Ne 1 R
+     symmetry c1
    }
    
    Rvals=[2.5, 3.0, 4.0]
@@ -333,12 +334,14 @@ not, or both). ::
    
    for R in Rvals:
      dimer.R = R
-     ecp = cp('c4-mp2', check_bsse=True)
-     print_out('R [A] = %.1f  IE [kcal/mol] = %.3f\n' % (R, psi_hartree2kcalmol * ecp))
+     ecp = cp('c4-mp2')
+     print_stdout('R [A] = %.1f  IE [kcal/mol] = %.3f\n' % (R, psi_hartree2kcalmol * ecp))
    
 yields ::
 
-   FILL IN
+   R [A] = 2.5  IE [kcal/mol] = 0.804
+   R [A] = 3.0  IE [kcal/mol] = 0.030
+   R [A] = 4.0  IE [kcal/mol] = -0.014
 
 Next, the :py:func:`~wrappers.database` wrapper allows any computational
 model chemistry to be applied a predefined collection of molecules. Thus
@@ -349,13 +352,51 @@ an input ::
        d_convergence 9
    }
    
-   database('c4-mp2','nbc10',cp='on',subset=MeMe)
+   database('c4-mp2','nbc10',cp='on',subset='MeMe')
 
 yields the counterpoise-corrected interaction energy for several points
 along the dissociation curve of methane dimer, which is a member of the
-NBC10 database::
+:srcdb:`NBC10` database::
 
-   FILL IN
+   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+   //       Database nbc10 Results      //
+   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+ 
+   For each VARIABLE requested by tabulate, a 'Reaction Value' will be formed from
+   'Reagent' values according to weightings 'Wt', as for the REQUESTED ENERGY below.
+   Depending on the nature of the variable, this may or may not make any physical sense.
+ 
+   ==> Requested Energy <==
+ 
+   ----------------------------------------------------------------------------------------------
+               Reaction     Reaction Energy      Error           Reagent 1           Reagent 2
+                               Ref     Calc [kcal/mol]              [H] Wt              [H] Wt
+   ----------------------------------------------------------------------------------------------
+          NBC1-MeMe-3.2     0.0690   1.1639     1.0949     -80.72700202  1     -40.36442840 -2
+          NBC1-MeMe-3.3    -0.2390   0.6709     0.9099     -80.72764911  1     -40.36435916 -2
+          NBC1-MeMe-3.4    -0.4170   0.3407     0.7577     -80.72806043  1     -40.36430165 -2
+          NBC1-MeMe-3.5    -0.5080   0.1244     0.6324     -80.72831099  1     -40.36425461 -2
+          NBC1-MeMe-3.6    -0.5410  -0.0129     0.5281     -80.72845373  1     -40.36421659 -2
+          NBC1-MeMe-3.7    -0.5390  -0.0961     0.4429     -80.72852567  1     -40.36418623 -2
+          NBC1-MeMe-3.8    -0.5150  -0.1430     0.3720     -80.72855247  1     -40.36416227 -2
+          NBC1-MeMe-3.9    -0.4800  -0.1659     0.3141     -80.72855167  1     -40.36414365 -2
+          NBC1-MeMe-4.0    -0.4390  -0.1733     0.2657     -80.72853498  1     -40.36412938 -2
+          NBC1-MeMe-4.1    -0.3960  -0.1712     0.2248     -80.72850993  1     -40.36411859 -2
+          NBC1-MeMe-4.2    -0.3540  -0.1633     0.1907     -80.72848118  1     -40.36411044 -2
+          NBC1-MeMe-4.3    -0.3150  -0.1525     0.1625     -80.72845143  1     -40.36410422 -2
+          NBC1-MeMe-4.4    -0.2790  -0.1403     0.1387     -80.72842215  1     -40.36409932 -2
+          NBC1-MeMe-4.6    -0.2170  -0.1155     0.1015     -80.72836761  1     -40.36409177 -2
+          NBC1-MeMe-4.8    -0.1680  -0.0933     0.0747     -80.72831991  1     -40.36408563 -2
+          NBC1-MeMe-5.0    -0.1300  -0.0747     0.0553     -80.72827951  1     -40.36408021 -2
+          NBC1-MeMe-5.4    -0.0800  -0.0479     0.0321     -80.72821875  1     -40.36407122 -2
+          NBC1-MeMe-5.8    -0.0500  -0.0312     0.0188     -80.72817678  1     -40.36406353 -2
+   ----------------------------------------------------------------------------------------------
+            Minimal Dev                         0.0188
+            Maximal Dev                         1.0949
+        Mean Signed Dev                         0.3509
+      Mean Absolute Dev                         0.3509
+                RMS Dev                         0.4676
+   ----------------------------------------------------------------------------------------------
 
 Thirdly, the :py:func:`~wrappers.complete_basis_set` wrapper allows any
 compound computational method that can be expressed through :ref:`CBS
@@ -373,24 +414,22 @@ CCSD(T)/cc-pVTZ (C4) single-points. ::
    H 1.0 0.0 0.0
    }
    
-   mp2_type conv
+   set mp2_type conv
 
    cbs('mp2', corl_basis='cc-pV[TQ]Z', delta_wfn='c4-ccsd(t)', delta_basis='cc-pV[DT]Z')
 
 This yields::
 
    ==> CBS <==
- 
+
    ---------------------------------------------------------------------------------------------------------
        Stage               Method / Basis                                Energy [H]   Scheme
    ---------------------------------------------------------------------------------------------------------
-         scf                  scf / cc-pvqz                             -1.10245971   highest_1
-        corl               c4-mp2 / cc-pv[tq]z                          -0.03561891   corl_xtpl_helgaker_2
-       delta  c4-ccsd(t) - c4-mp2 / cc-pv[dt]z                          -0.01020910   corl_xtpl_helgaker_2
-       total                  CBS                                       -1.14828772
+         scf                  scf / cc-pvqz                             -1.10245974   highest_1
+        corl                  mp2 / cc-pv[tq]z                          -0.03561890   corl_xtpl_helgaker_2
+       delta     c4-ccsd(t) - mp2 / cc-pv[dt]z                           0.03507767   corl_xtpl_helgaker_2
+       total                  CBS                                       -1.10300098
    ---------------------------------------------------------------------------------------------------------
-
-   FILL IN ACTUAL CCT
 
 Note that especially for :py:func:`~wrappers.complete_basis_set`, the
 basis set needs to be specified through |mints__basis|, not
