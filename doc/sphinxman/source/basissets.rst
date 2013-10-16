@@ -1,7 +1,7 @@
 
 .. include:: autodoc_abbr_options_c.rst
 
-_`sec:basisSets`:
+.. _`sec:basisSets`:
 
 ==========
 Basis Sets
@@ -16,8 +16,9 @@ but their mixtures are not, neither within a basis set (*e.g.*, 6D/7F) nor withi
 For built-in basis sets, the correct ``spherical``/``cartesian`` value for |globals__puream|
 is set internally from the orbital basis.
 
-* :ref:`Specifying basis sets <sec:jobControl>`
 * :ref:`sec:basisBuiltIn`
+* :ref:`Specifying basis sets <sec:jobControl>`
+* :ref:`Built-in basis sets by family <apdx:basisTables>`
 * :ref:`Built-in basis sets by element <apdx:basisElement>`
 * :ref:`User-Defined basis sets <sec:basisUserDefined>`
 * :ref:`Auxiliary bases for built-in orbital basis sets <apdx:basisFamily>`
@@ -33,7 +34,7 @@ summarized in Tables :ref:`Pople <table:basisPopleOrbital>`,
 :ref:`Dunning <table:basisDunningOrbital>`, 
 :ref:`Dunning (Douglas-Kroll) <table:basisDunningDK>`, 
 :ref:`Karlsruhe <table:basisKarlsruhe>`,
-and :ref:`Other <table:basisOther>` in Appendix :ref:`sec:basisBuiltIn`.
+and :ref:`Other <table:basisOther>` in Appendix :ref:`apdx:basisTables`.
 These tables are arranged so that columns indicate degree of
 augmentation by diffuse functions (generally necessary for anions, excited
 states, and noncovalent interactions) and DTQ56 indicate the :math:`X\;=\zeta` levels
