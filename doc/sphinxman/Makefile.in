@@ -42,7 +42,8 @@ help:
 
 discard = \
 expert_keywords.tex keywords.tex physconst.tex psi4bases.tex \
-psi4bases.html tests_descriptions.tex variables_list.tex warnings.txt
+psi4bases.html tests_descriptions_corepsi4.tex variables_list.tex \
+warnings.txt tests_descriptions_cfour.tex tests_descriptions_dftd3.tex
 
 autodocclean:
 	-rm -rf $(SOURCEDIR)/autod*
