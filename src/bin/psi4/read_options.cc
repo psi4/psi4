@@ -4086,7 +4086,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
       /*- Specifies the maximum number of SCF iterations. 
       **PSI4 Interface:** Keyword subject to translation from value of
-      |scf_maxiter| unless set explicitly.-*/
+      |scf__maxiter| unless set explicitly.-*/
       options.add_int("CFOUR_SCF_MAXCYC", 150);
 
       /*- Specifies the strength of a spin-dipole pertubation as required
