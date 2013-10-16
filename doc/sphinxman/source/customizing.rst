@@ -14,7 +14,6 @@ recompilation required.
 .. toctree::
    :maxdepth: 2
 
-   * :ref:`sec:basisUserDefined`
    quickaddalias
    quickadddatabase
 

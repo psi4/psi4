@@ -457,4 +457,9 @@ GitHub account <https://github.com/signup/free>`_.
 .. [#f3] threading through BLAS routines only
 .. [#f4] DFT gradients only implemented for SCF type DF. LRC-DFT gradients not implemented yet. 
 
+.. toctree::
+   :hidden:
 
+   mrcc_table_energy
+   cfour_table_energy
+   cfour_table_grad

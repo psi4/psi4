@@ -193,7 +193,7 @@ Basis Sets
 .. toctree::
    :maxdepth: 2
 
-   quickaddbasis
+   basissets
 
 .. _`sec:psiVariables`:
 
