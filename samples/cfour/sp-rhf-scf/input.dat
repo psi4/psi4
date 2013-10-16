@@ -50,7 +50,13 @@ clean()
 clean_variables()
 cfour {}
 
-print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
+# these make a clean slate for the next job
+revoke_global_option_changed('CFOUR_CALC_LEVEL')
+revoke_global_option_changed('CFOUR_SCF_CONV')
+
+print '        <<< Thorough Psi4 format >>>'
+
+memory 200 mb
 
 molecule {
 O
@@ -61,12 +67,9 @@ R=0.958
 A=104.5
 }
 
-set {
-cfour_CALC_level=HF
-cfour_BASIS=qz2p
-cfour_SCF_CONV=12
-}
+set cfour_BASIS=qz2p
+set d_convergence 12
 
-energy('cfour')
+energy('c4-scf')
 
 

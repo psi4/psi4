@@ -49,3 +49,24 @@ cfour_CC_CONV=12
 energy('cfour')
 
 
+print '        <<< Thorough Psi4 format >>>'
+
+molecule {
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+}
+
+set {
+cfour_BASIS=qz2p
+cfour_ABCDTYPE=AOBASIS
+cfour_SCF_CONV=12
+cfour_CC_CONV=12
+}
+
+energy('c4-ccsd(t)')
+
+
