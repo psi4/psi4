@@ -1,4 +1,4 @@
-#! Test parsed and exotic calls to energy() like zapt4, mp2.5, and cisd are working
+#! Test parsed and exotic calls to energy() like zapt4, mp2.5, and cisd are working !nosample
 
 memory 250 mb
 

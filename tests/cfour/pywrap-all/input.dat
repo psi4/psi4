@@ -1,7 +1,7 @@
 #! Intercalls among python wrappers- database, cbs, optimize, energy, etc.
 #! Though each call below functions individually, running them all in sequence or
 #! mixing up the sequence is aspirational at present.
-#! Also aspirational is using the intended types of gradients.
+#! Also aspirational is using the intended types of gradients. !nosample
 
 memory 250 mb
 
