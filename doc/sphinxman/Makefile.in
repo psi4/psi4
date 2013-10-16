@@ -292,7 +292,7 @@ cp.rst customizing.rst db.rst detci.rst dfmp2.rst diatomic.rst documentation.rst
 energy.rst external.rst freq.rst glossary_psivariables.rst intercalls.rst \
 interfacing.rst introduction.rst methods.rst notes_c.rst notes_py.rst \
 oeprop.rst opt.rst optking.rst plugins.rst programming.rst prop.rst \
-psithonfunc.rst psithoninput.rst quickaddalias.rst quickaddbasis.rst \
+psithonfunc.rst psithoninput.rst quickaddalias.rst basissets_tables.rst \
 quickadddatabase.rst sapt.rst sowreap.rst testsuite.rst tutorial.rst \
 dft_byfunctional.rst scf.rst mrcc.rst psimrcc.rst cc.rst dft.rst fnocc.rst \
 installfile.rst optionshandling.rst basissets_byfamily.rst psipep.rst \

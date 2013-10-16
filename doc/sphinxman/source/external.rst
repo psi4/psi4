@@ -35,13 +35,9 @@ the file :source:`INSTALL` distributed with the package).
 Compiling and Installing
 ========================
 
-* :ref:`I.   Compilation Prerequisites                                     <sec:install_I>`
-* :ref:`II.  Brief Summary of Configuration, Compilation, and Installation <sec:install_II>`
-* :ref:`III. Detailed Installation Instructions                            <sec:install_III>`
-* :ref:`IV.  Recommendations for BLAS and LAPACK libraries                 <sec:install_IV>`
-* :ref:`V.   Miscellaneous architecture-specific notes                     <sec:install_V>`
-* :ref:`VI.  Common Problems with PSI Compilation                          <sec:install_VI>`
+.. toctree::
 
+   installfile
 
 .. index:: scratch files, psirc, psi4rc
 .. _`sec:psirc`:
