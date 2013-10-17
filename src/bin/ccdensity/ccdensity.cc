@@ -375,47 +375,74 @@ PsiReturnType ccdensity(Options& options)
     int j;
 
     if(params.nstates > 1) {      // Can't do this with one excited state.
-      fprintf(outfile,"\n\t*********************************************************\n");
-      fprintf(outfile,"\t*********************************************************\n");
-      fprintf(outfile,"\t******                                             ******\n");
-      fprintf(outfile,"\t****** Excited State-Excited State Transition Data ******\n");
-      fprintf(outfile,"\t******                                             ******\n");
-      fprintf(outfile,"\t*********************************************************\n");
-      fprintf(outfile,"\t*********************************************************\n\n");
+      fprintf(outfile,"\n\t*********************************************************************\n");
+      fprintf(outfile,"\t*********************************************************************\n");
+      fprintf(outfile,"\t************                                             ************\n");
+      fprintf(outfile,"\t************ Excited State-Excited State Transition Data ************\n");
+      fprintf(outfile,"\t************                                             ************\n");
+      fprintf(outfile,"\t*********************************************************************\n");
+      fprintf(outfile,"\t*********************************************************************\n\n");
       fflush(outfile);
 
       std::vector<struct XTD_Params> xtd_params;
       struct XTD_Params xtd_data;
+      int state1;
+      int state2;
 
       for(i=0; i < (params.nstates-1); i++) {
         for(j=0; j <= i; j++) {
 
           //if(td_params[j].irrep == td_params[i+1].irrep) { 
-          fprintf(outfile, "State %d = %20.12lf\n", j+1, td_params[j].cceom_energy);
-          fprintf(outfile, "State %d = %20.12lf\n", i+2, td_params[i+1].cceom_energy);
+          //fprintf(outfile, "State %d = %20.12lf\n", j+1, td_params[j].cceom_energy);
+          //fprintf(outfile, "State %d = %20.12lf\n", i+2, td_params[i+1].cceom_energy);
+          //fprintf(outfile, "State %d Irrep= %3d\n", j+1, td_params[j].irrep);
+          //fprintf(outfile, "State %d Irrep= %3d\n", i+2, td_params[i+1].irrep);
+          //fprintf(outfile, "XOR     Irrep= %3d\n", td_params[i+1].irrep^td_params[j].irrep);
+          //fprintf(outfile, "GOR     Irrep= %3d\n", 0^td_params[j].irrep);
+          //fprintf(outfile, "GOR     Irrep= %3d\n", 0^td_params[i+1].irrep);
+
+          //- Set States
+          if(td_params[j].cceom_energy <= td_params[i+1].cceom_energy) {
+            state1 = j;
+            state2 = i+1;
+          }
+          else {
+            state1 = i+1;
+            state2 = j;
+          }
+/*
+          fprintf(outfile, "State %d%s Energy = %20.12lf\n",
+                td_params[state1].root+1,moinfo.labels[td_params[state1].irrep],td_params[state1].cceom_energy);
+          fprintf(outfile, "State %d%s Energy = %20.12lf\n", 
+                td_params[state1].root+1,moinfo.labels[td_params[state2].irrep],td_params[state2].cceom_energy);
+*/
 
           //- <Lx|O|Ry> (y>x)
-          ex_td_setup(td_params[j],td_params[i+1]);
-          fprintf(outfile,"\t*** LTD Setup complete.\n");
-          fprintf(outfile,"\t*** Computing <%d|X{pq}}|%d> (LEFT) Transition Density ***\n", j+1,i+2);
+          fprintf(outfile,"\n\t*** Computing <%d%2s|X{pq}}|%d%2s> (LEFT) Transition Density ***\n\n",
+                td_params[state1].root+1,moinfo.labels[td_params[state1].irrep],
+                td_params[state2].root+1,moinfo.labels[td_params[state2].irrep]);
+          ex_td_setup(td_params[state1],td_params[state2]);
+          fprintf(outfile,"\t\t*** LTD Setup complete.\n");
           fflush(outfile);
-          //fprintf(stdout, "\t*** Computing <%d|X{pq}}|%d> (LEFT) Transition Density ***\n", j+1,i+2);
 
-          ex_tdensity('l',td_params[j],td_params[i+1]);
+          ex_tdensity('l',td_params[state1],td_params[state2]);
 
           //- Clean out Amp Files (Might not be necessary, but seems to be.)
           ex_td_cleanup();
 
           //- <Ly|O|Rx> (y>x) 
-          ex_td_setup(td_params[i+1],td_params[j]);
-          fprintf(outfile,"\t*** RTD Setup complete.\n");
-          fprintf(outfile,"\t*** Computing <%d|X{pq}}|%d> (RIGHT) Transition Density ***\n", i+2,j+1);
+          fprintf(outfile,"\n\t*** Computing <%d%2s|X{pq}}|%d%2s> (RIGHT) Transition Density ***\n\n",
+                td_params[state2].root+1,moinfo.labels[td_params[state2].irrep],
+                td_params[state1].root+1,moinfo.labels[td_params[state1].irrep]);
+          ex_td_setup(td_params[state2],td_params[state1]);
+          fprintf(outfile,"\t\t*** RTD Setup complete.\n");
           fflush(outfile);
-          //fprintf(stdout, "\t*** Computing <%d|X{pq}}|%d> (RIGHT) Transition Density ***\n", i+2,j+1);
 
-          ex_tdensity('r',td_params[i+1],td_params[j]);
+          ex_tdensity('r',td_params[state2],td_params[state1]);
 
-          fprintf(outfile,"\t*** Excited State -> Excited State Transition densities complete.\n");
+          fprintf(outfile,"\n\t*** %d%s -> %d%s transition densities complete.\n",
+                td_params[state1].root+1,moinfo.labels[td_params[state1].irrep],
+                td_params[state2].root+1,moinfo.labels[td_params[state2].irrep]);
           fflush(outfile);
           ex_oscillator_strength(&(td_params[j]),&(td_params[i+1]), &xtd_data);
           if(params.ref == 0) {

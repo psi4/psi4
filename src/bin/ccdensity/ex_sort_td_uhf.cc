@@ -34,7 +34,6 @@
 
 namespace psi { namespace ccdensity {
 
-//void ex_sort_td_uhf(char hand, struct TD_Params S)
 void ex_sort_td_uhf(char hand, int Tirrep)
 {
   int h, nirreps, nmo, nfzv, nfzc, nclsd, nopen;
@@ -62,8 +61,6 @@ void ex_sort_td_uhf(char hand, int Tirrep)
   qt_aocc = moinfo.qt_aocc; qt_avir = moinfo.qt_avir;
   qt_bocc = moinfo.qt_bocc; qt_bvir = moinfo.qt_bvir;
 
-  //moinfo.ltd_a = block_matrix(nmo,nmo);
-  //moinfo.ltd_b = block_matrix(nmo,nmo);
   double **gtd_a = block_matrix(nmo,nmo);
   double **gtd_b = block_matrix(nmo,nmo);
 
@@ -197,8 +194,6 @@ void ex_sort_td_uhf(char hand, int Tirrep)
         moinfo.ltd_a[i][j] = gtd_a[i][j];
         moinfo.ltd_b[i][j] = gtd_b[i][j];
       }
-    //moinfo.ltd_a = gtd_a;
-    //moinfo.ltd_b = gtd_b;
   }
   else if(hand == 'r') {
     moinfo.rtd_a = block_matrix(nmo,nmo);
@@ -208,8 +203,6 @@ void ex_sort_td_uhf(char hand, int Tirrep)
         moinfo.rtd_a[i][j] = gtd_a[i][j];
         moinfo.rtd_b[i][j] = gtd_b[i][j];
       }
-    //moinfo.rtd_a = gtd_a;
-    //moinfo.rtd_b = gtd_b;
   }
   else printf("SOMETHING IS WRONG.\n");
   //else throw PsiException("ccdensity: error", __FILE__, __LINE__);
