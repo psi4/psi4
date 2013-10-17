@@ -50,17 +50,19 @@ void ex_tdensity(char hand, struct TD_Params S, struct TD_Params U) {
   int Tirrep = S.irrep^U.irrep;
   if(params.ref == 0 || params.ref == 1) {
     ex_tdensity_rohf(S,U);
-    fprintf(outfile, "    *** A density has been built.\n");
+    fprintf(outfile, "\t\t***...density has been built...\n");
     fflush(outfile);
-    if(hand=='l') ex_sort_td_rohf(hand,Tirrep);
-    if(hand=='r') ex_sort_td_rohf(hand,Tirrep);
-    fprintf(outfile, "    *** A density has been sorted.\n");
+    ex_sort_td_rohf(hand,Tirrep);
+    fprintf(outfile, "\t\t***...density has been sorted...\n");
     fflush(outfile);
   }
   else if(params.ref == 2) {
     ex_tdensity_uhf(S,U);
-    if(hand=='l') ex_sort_td_uhf(hand,Tirrep);
-    if(hand=='r') ex_sort_td_uhf(hand,Tirrep);
+    fprintf(outfile, "\t\t***...density has been built...\n");
+    fflush(outfile);
+    ex_sort_td_uhf(hand,Tirrep);
+    fprintf(outfile, "\t\t***...density has been sorted...\n");
+    fflush(outfile);
   }
 
   return;

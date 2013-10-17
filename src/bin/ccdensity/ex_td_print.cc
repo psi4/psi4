@@ -47,7 +47,7 @@ void ex_td_print(std::vector<struct XTD_Params> xtd_list)
   fprintf(outfile,"\n\t                        Excitation Energy          OS       RS        RS\n");
   fprintf(outfile,"\tTransition   (eV)    (cm^-1)    (nm)     (au)              (l,au)   (v,au)\n");
   for(i=0; i<xtd_list.size(); i++) {
-    fprintf(outfile,"\t    %d%s->%d%s %7.3lf %9.1lf %7.1lf %10.6lf %8.4lf %8.4lf %8.4lf\n",
+    fprintf(outfile,"\t  %d%s->%d%s %7.3lf %9.1lf %7.1lf %10.6lf %8.4lf %8.4lf %8.4lf\n",
             xtd_list[i].root1+1,moinfo.labels[xtd_list[i].irrep1],
             xtd_list[i].root2+1,moinfo.labels[xtd_list[i].irrep2],
             xtd_list[i].cceom_energy*pc_hartree2ev,

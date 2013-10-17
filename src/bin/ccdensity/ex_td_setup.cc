@@ -92,8 +92,8 @@ void ex_td_setup(struct TD_Params S, struct TD_Params U)
     global_dpd_->file2_copy(&L1, PSIF_CC_GL, "LIA");
     //fprintf(stdout, "\t*** LHS ***\n");
     //global_dpd_->file2_print(&L1, stdout);
-    fprintf(outfile, "\t*** LHS ***\n");
-    global_dpd_->file2_print(&L1, outfile);
+    //fprintf(outfile, "\t*** LHS ***\n");
+    //global_dpd_->file2_print(&L1, outfile);
     global_dpd_->file2_close(&L1);
 
     global_dpd_->file2_init(&L1, PSIF_CC_LAMPS, S.irrep, 0, 1, S.L1B_lbl);
@@ -140,8 +140,8 @@ void ex_td_setup(struct TD_Params S, struct TD_Params U)
     global_dpd_->file2_copy(&R1, PSIF_CC_GR, "RIA");
     //fprintf(stdout, "\t*** RHS ***\n");
     //global_dpd_->file2_print(&R1, stdout);
-    fprintf(outfile, "\t*** RHS ***\n");
-    global_dpd_->file2_print(&R1, outfile);
+    //fprintf(outfile, "\t*** RHS ***\n");
+    //global_dpd_->file2_print(&R1, outfile);
     global_dpd_->file2_close(&R1);
 
     global_dpd_->file2_init(&R1, PSIF_CC_RAMPS, U.irrep, 0, 1, U.R1B_lbl);

@@ -35,7 +35,6 @@
 
 namespace psi { namespace ccdensity {
 
-//void ex_sort_td_rohf(char hand, struct TD_Params S, struct TD_Params U) 
 void ex_sort_td_rohf(char hand, int Tirrep)
 {
   int h, nirreps, nmo, nfzv, nfzc, nclsd, nopen;
@@ -46,8 +45,6 @@ void ex_sort_td_rohf(char hand, int Tirrep)
   double chksum, value;
   psio_address next;
   dpdfile2 D;
-
-  //int Tirrep = S.irrep^U.irrep;
 
   nmo = moinfo.nmo;
   nfzc = moinfo.nfzc;
@@ -191,16 +188,14 @@ void ex_sort_td_rohf(char hand, int Tirrep)
     for(i=0; i<nmo; ++i)
       for(j=0; j<nmo; ++j)
         moinfo.ltd[i][j] = gtd[i][j];
-    //moinfo.ltd = gtd;
-    print_mat(moinfo.ltd,nmo,nmo,outfile);
+    //print_mat(moinfo.ltd,nmo,nmo,outfile);
   }
   else if(hand == 'r') {
     moinfo.rtd = block_matrix(nmo,nmo);
     for(i=0; i<nmo; ++i)
       for(j=0; j<nmo; ++j)
         moinfo.rtd[i][j] = gtd[i][j];
-    //moinfo.rtd = gtd;
-    print_mat(moinfo.rtd,nmo,nmo,outfile);
+    //print_mat(moinfo.rtd,nmo,nmo,outfile);
   }
   else printf("SOMETHING IS WRONG.\n");
   //else throw PsiException("ccdensity: error", __FILE__, __LINE__);
