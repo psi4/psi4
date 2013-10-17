@@ -34,13 +34,15 @@
 
 namespace psi { namespace ccdensity {
 
-void ex_tdensity_rohf(char hand, struct TD_Params S, struct TD_Params U);
-void ex_tdensity_uhf(char hand, struct TD_Params S, struct TD_Params U);
-void ex_tdensity_intermediates(char hand, struct TD_Params S, struct TD_Params U);
-void ex_sort_td_rohf(char hand, struct TD_Params S);
-void ex_sort_td_uhf(char hand, struct TD_Params S);
+void ex_tdensity_rohf(struct TD_Params S, struct TD_Params U);
+void ex_tdensity_uhf(struct TD_Params S, struct TD_Params U);
+void ex_tdensity_intermediates(struct TD_Params S, struct TD_Params U);
+//void ex_sort_td_rohf(char hand, struct TD_Params S);
+//void ex_sort_td_uhf(char hand, struct TD_Params S);
+void ex_sort_td_rohf(char hand, int Tirrep);
+void ex_sort_td_uhf(char hand, int Tirrep);
 
-void ex_tdensity_rohf(char hand, struct TD_Params S, struct TD_Params U)
+void ex_tdensity_rohf(struct TD_Params S, struct TD_Params U)
 {
   dpdfile2 DAI, Dai, DIA, Dia, DIJ, DAB, Dij, Dab, TIA, Tia;
   dpdfile2 LIA, Lia, RIA, Ria, Int, XIJ, Xij, R1;
@@ -55,9 +57,9 @@ void ex_tdensity_rohf(char hand, struct TD_Params S, struct TD_Params U)
   int LHS = PSIF_CC_GL;
   int Lirrep = S.irrep;
   int Rirrep = U.irrep;
-  int Tirrep;
-  if(hand=='l') Tirrep = Rirrep;
-  if(hand=='r') Tirrep = Lirrep;
+  int Tirrep = Lirrep^Rirrep;
+  /* Auxiliary Irrep Handles */
+  int Airrep = 0^Lirrep;
 
 /*
   /// These have no R-dependence, so don't include in XTD's.
@@ -310,9 +312,7 @@ void ex_tdensity_rohf(char hand, struct TD_Params S, struct TD_Params U)
   }
 */
 
-  ex_tdensity_intermediates(hand,S,U);
-  fprintf(outfile, "Intermediates built.\n");
-  fflush(outfile);
+  ex_tdensity_intermediates(S,U);
 
   global_dpd_->file2_init(&TIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
   global_dpd_->file2_init(&Tia, PSIF_CC_OEI, 0, 0, 1, "tia");
@@ -414,21 +414,25 @@ void ex_tdensity_rohf(char hand, struct TD_Params S, struct TD_Params U)
 
   /* - LT2_OO[M][I] * r1[M][A] */
 
-  global_dpd_->file2_init(&Int, PSIF_EOM_TMP, 0, 0, 0, "LT2_OO");
+  //global_dpd_->file2_init(&Int, PSIF_EOM_TMP, 0, 0, 0, "LT2_OO");
+  global_dpd_->file2_init(&Int, PSIF_EOM_TMP, Airrep, 0, 0, "LT2_OO");
   global_dpd_->contract222(&Int, &RIA, &DIA, 1, 1, -1.0, 1.0);
   global_dpd_->file2_close(&Int);
 
-  global_dpd_->file2_init(&Int, PSIF_EOM_TMP, 0, 0, 0, "LT2_oo");
+  //global_dpd_->file2_init(&Int, PSIF_EOM_TMP, 0, 0, 0, "LT2_oo");
+  global_dpd_->file2_init(&Int, PSIF_EOM_TMP, Airrep, 0, 0, "LT2_oo");
   global_dpd_->contract222(&Int, &Ria, &Dia, 1, 1, -1.0, 1.0);
   global_dpd_->file2_close(&Int);
 
   /* - r1[I][E] * LT2_VV[E][A] */
 
-  global_dpd_->file2_init(&Int, PSIF_EOM_TMP, 0, 1, 1, "LT2_VV");
+  //global_dpd_->file2_init(&Int, PSIF_EOM_TMP, 0, 1, 1, "LT2_VV");
+  global_dpd_->file2_init(&Int, PSIF_EOM_TMP, Airrep, 1, 1, "LT2_VV");
   global_dpd_->contract222(&RIA, &Int, &DIA, 0, 1, -1.0, 1.0);
   global_dpd_->file2_close(&Int);
 
-  global_dpd_->file2_init(&Int, PSIF_EOM_TMP, 0, 1, 1, "LT2_vv");
+  //global_dpd_->file2_init(&Int, PSIF_EOM_TMP, 0, 1, 1, "LT2_vv");
+  global_dpd_->file2_init(&Int, PSIF_EOM_TMP, Airrep, 1, 1, "LT2_vv");
   global_dpd_->contract222(&Ria, &Int, &Dia, 0, 1, -1.0, 1.0);
   global_dpd_->file2_close(&Int);
 
@@ -491,7 +495,7 @@ void ex_tdensity_rohf(char hand, struct TD_Params S, struct TD_Params U)
   return;
 }
 
-void ex_tdensity_uhf(char hand, struct TD_Params S, struct TD_Params U)
+void ex_tdensity_uhf(struct TD_Params S, struct TD_Params U)
 {
   dpdfile2 DAI, Dai, DIA, Dia, DIJ, DAB, Dij, Dab, TIA, Tia;
   dpdfile2 LIA, Lia, RIA, Ria, Int, XIJ, Xij, R1;
@@ -502,9 +506,12 @@ void ex_tdensity_uhf(char hand, struct TD_Params S, struct TD_Params U)
   int LHS = PSIF_CC_GL;
   int Lirrep = S.irrep;
   int Rirrep = U.irrep;
-  int Tirrep;
-  if(hand=='l') Tirrep = Rirrep;
-  if(hand=='r') Tirrep = Lirrep;
+  int Tirrep = Lirrep^Rirrep;
+  /* Auxiliary Irrep Handles */
+  int Airrep = 0^Lirrep;
+  
+  //if(hand=='l') Tirrep = Rirrep;
+  //if(hand=='r') Tirrep = Lirrep;
 /*
   if(Tirrep == 0 ) { // Symmetric Transition
 
@@ -744,7 +751,7 @@ void ex_tdensity_uhf(char hand, struct TD_Params S, struct TD_Params U)
   }
 */
 
-  ex_tdensity_intermediates(hand,S,U);
+  ex_tdensity_intermediates(S,U);
 
   global_dpd_->file2_init(&TIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
   global_dpd_->file2_init(&Tia, PSIF_CC_OEI, 0, 2, 3, "tia");
@@ -847,21 +854,25 @@ void ex_tdensity_uhf(char hand, struct TD_Params S, struct TD_Params U)
 
   /* - LT2_OO[M][I] * r1[M][A] */
 
-  global_dpd_->file2_init(&Int, PSIF_EOM_TMP, 0, 0, 0, "LT2_OO");
+  //global_dpd_->file2_init(&Int, PSIF_EOM_TMP, 0, 0, 0, "LT2_OO");
+  global_dpd_->file2_init(&Int, PSIF_EOM_TMP, Airrep, 0, 0, "LT2_OO");
   global_dpd_->contract222(&Int, &RIA, &DIA, 1, 1, -1.0, 1.0);
   global_dpd_->file2_close(&Int);
 
-  global_dpd_->file2_init(&Int, PSIF_EOM_TMP, 0, 2, 2, "LT2_oo");
+  //global_dpd_->file2_init(&Int, PSIF_EOM_TMP, 0, 2, 2, "LT2_oo");
+  global_dpd_->file2_init(&Int, PSIF_EOM_TMP, Airrep, 2, 2, "LT2_oo");
   global_dpd_->contract222(&Int, &Ria, &Dia, 1, 1, -1.0, 1.0);
   global_dpd_->file2_close(&Int);
 
   /* - r1[I][E] * LT2_vv[E][A] */
 
-  global_dpd_->file2_init(&Int, PSIF_EOM_TMP, 0, 1, 1, "LT2_VV");
+  //global_dpd_->file2_init(&Int, PSIF_EOM_TMP, 0, 1, 1, "LT2_VV");
+  global_dpd_->file2_init(&Int, PSIF_EOM_TMP, Airrep, 1, 1, "LT2_VV");
   global_dpd_->contract222(&RIA, &Int, &DIA, 0, 1, -1.0, 1.0);
   global_dpd_->file2_close(&Int);
 
-  global_dpd_->file2_init(&Int, PSIF_EOM_TMP, 0, 3, 3, "LT2_vv");
+  //global_dpd_->file2_init(&Int, PSIF_EOM_TMP, 0, 3, 3, "LT2_vv");
+  global_dpd_->file2_init(&Int, PSIF_EOM_TMP, Airrep, 3, 3, "LT2_vv");
   global_dpd_->contract222(&Ria, &Int, &Dia, 0, 1, -1.0, 1.0);
   global_dpd_->file2_close(&Int);
 
