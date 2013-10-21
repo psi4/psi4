@@ -33,6 +33,13 @@ formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 # Add options
 #
 blankstring = "No default" # This looks prettier when the user prints out the help
+# The C compiler
+parser.add_argument('--with-cc',
+                    metavar='= CC',
+                    type=str,
+                    default=blankstring,
+                    help='The C compiler to use.  If not specified the environmental variable $CC will be used. '\
+                         +'If that is not set, CMake will use the first working compiler it finds.')
 # The C++ compiler
 parser.add_argument('--with-cxx',
                     metavar='= CXX',
@@ -62,6 +69,13 @@ erdgroup.add_argument('--with-erd',
 erdgroup.add_argument('--without-erd',
                         action="store_false",
                         help='Do not use the ERD integral package.')
+# The Fortran compiler
+parser.add_argument('--with-f77',
+                    metavar='= F77',
+                    type=str,
+                    default=blankstring,
+                    help='The Fortran compiler to use.  If not specified the environmental variable $F77 will be used. '\
+                         +'If that is not set, CMake will use the first working compiler it finds.')
 # F77FLAGS flags
 parser.add_argument('--with-f77flags',
                     metavar='= F77FLAGS',
@@ -190,6 +204,12 @@ if args.with_f77flags != blankstring:
 # LDFLAGS
 if args.with_ldflags != blankstring:
     cmakeflags['LDFLAGS'] = [args.with_ldflags]
+# F77
+if args.with_f77 != blankstring:
+    cmakeflags['CMAKE_Fortran_COMPILER'] = args.with_f77
+# CC
+if args.with_cc != blankstring:
+    cmakeflags['CMAKE_C_COMPILER'] = args.with_cc
 # CXX
 if args.with_cxx != blankstring:
     cmakeflags['CMAKE_CXX_COMPILER'] = args.with_cxx

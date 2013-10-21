@@ -47,8 +47,10 @@ ShellInfo::ShellInfo(int am, const std::vector<double> &c,
     nfunction_  = INT_NFUNC(puream_, l_);
 
     // Compute the normalization constants
-    if (pt == Unnormalized)
+    if (pt == Unnormalized){
         normalize_shell();
+        erd_normalize_shell();
+    }
 }
 
 ShellInfo ShellInfo::copy()
@@ -72,6 +74,33 @@ double ShellInfo::primitive_normalization(int p)
     double z = pow(g, tmp1);
     double normg = sqrt( (pow(2.0, l_) * z) / (M_PI * sqrt(M_PI) * df[2*l_]));
     return normg;
+}
+
+void ShellInfo::erd_normalize_shell()
+{
+    erd_coef_.clear();
+    double sum = 0.0;
+    for(int j = 0; j < nprimitive(); j++){
+        for(int k = 0; k <= j; k++){
+            double a1 = exp_[j];
+            double a2 = exp_[k];
+            double temp = (original_coef(j) * original_coef(k));
+            double temp2 = ((double) l_ + 1.5);
+            double temp3 = (2.0 * sqrt(a1 * a2) / (a1 + a2));
+            temp3 = pow(temp3, temp2);
+            temp = temp * temp3;
+            sum = sum + temp;
+            if(j != k)
+                sum = sum + temp;
+        }
+    }
+    double prefac = 1.0;
+    if(l_ > 1)
+        prefac = pow(2.0, 2*l_) / df[2*l_];
+    double norm = sqrt(prefac / sum);
+    for(int j = 0; j < nprimitive(); j++){
+        erd_coef_.push_back(original_coef_[j] * norm);
+    }
 }
 
 void ShellInfo::contraction_normalization()
@@ -146,28 +175,14 @@ const char *ShellInfo::amtypes = "spdfghiklmnopqrtuvwxyz";
 const char *ShellInfo::AMTYPES = "SPDFGHIKLMNOPQRTUVWXYZ";
 
 
-GaussianShell::GaussianShell(int am, int nprimitive, const double *oc, const double *c,
+GaussianShell::GaussianShell(int am, int nprimitive, const double *oc, const double *c, const double *ec,
                              const double *e, GaussianType pure,
                              int nc, const double *center, int start)
-    : l_(am), nprimitive_(nprimitive), puream_(pure), exp_(e), original_coef_(oc), coef_(c),
+    : l_(am), nprimitive_(nprimitive), puream_(pure), exp_(e), original_coef_(oc), coef_(c), erd_coef_(ec),
       nc_(nc), center_(center), start_(start)
 {
     ncartesian_ = INT_NCART(l_);
     nfunction_  = INT_NFUNC(puream_, l_);
-}
-
-GaussianShell GaussianShell::copy()
-{
-    return GaussianShell(l_, nprimitive_, original_coef_, coef_, exp_,
-                         GaussianType(puream_),
-                         nc_, center_, start_);
-}
-
-GaussianShell GaussianShell::copy(int nc, const double *center)
-{
-    return GaussianShell(l_, nprimitive_, original_coef_, coef_, exp_,
-                         GaussianType(puream_),
-                         nc, center, start_);
 }
 
 int GaussianShell::nfunction() const

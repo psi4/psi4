@@ -127,6 +127,8 @@ class BasisSet
     double *ucoefficients_;
     /// The flattened lists of unique contraction coefficients (as provided by the user)
     double *uoriginal_coefficients_;
+    /// The flattened lists of ERD normalized contraction coefficients
+    double *uerd_coefficients_;
     /// The flattened list of Cartesian coordinates for each atom
     double *xyz_;
 
