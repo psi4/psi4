@@ -8,6 +8,7 @@
 #include "libmints/integral.h"
 #include "libmints/wavefunction.h"
 
+#define OLDCODE 0
 #define DEBUG 0
 
 // Name mangling
@@ -98,6 +99,7 @@ ERDTwoElectronInt::ERDTwoElectronInt(const IntegralFactory* integral, int deriv,
     cc_ = new double[max_nprim];
     alpha_ = new double[max_nprim];
 
+#if OLDCODE
     // Basis set dependent info
     new_cc_1_ = new double[original_bs1_->nprimitive()];
     alpha_1_ = new double[original_bs1_->nprimitive()];
@@ -144,6 +146,7 @@ ERDTwoElectronInt::ERDTwoElectronInt(const IntegralFactory* integral, int deriv,
         pgto_offsets_3_ = new int[original_bs3_->nshell()];
         pgto_offsets_4_ = new int[original_bs4_->nshell()];
     }
+#endif
 
     screen_ = 0;
     spheric_ = 0;
@@ -175,7 +178,7 @@ ERDTwoElectronInt::~ERDTwoElectronInt()
 {
     delete[] alpha_;
     delete[] cc_;
-
+#if OLDCODE
     delete[] alpha_1_;
     delete[] am_1_;
     delete[] npgto_1_;
@@ -202,6 +205,7 @@ ERDTwoElectronInt::~ERDTwoElectronInt()
         delete[] new_cc_3_;
         delete[] new_cc_4_;
     }
+#endif
     delete[] tformbuf_;
     delete[] target_;
     delete[] dscratch_;
@@ -307,6 +311,12 @@ void ERDTwoElectronInt::compute_scratch_size()
 #endif
     i_buffer_size_ = iopt;
     d_buffer_size_ = zopt;
+
+    // We always treat basis sets as segmented, right now.
+    ccbeg_[0] = 1;
+    ccbeg_[1] = 1;
+    ccbeg_[2] = 1;
+    ccbeg_[3] = 1;
 }
 
 /**
@@ -316,6 +326,7 @@ void ERDTwoElectronInt::compute_scratch_size()
  */
 void ERDTwoElectronInt::normalize_basis()
 {
+#if OLDCODE
     // Basis set 1
     int count = 0;
     for(int shell = 0; shell < original_bs1_->nshell(); ++shell){
@@ -463,15 +474,12 @@ void ERDTwoElectronInt::normalize_basis()
         am_4_[shell] = gs.am();
     }
 
-    // We always treat basis sets as segmented, right now.
-    ccbeg_[0] = 1;
-    ccbeg_[1] = 1;
-    ccbeg_[2] = 1;
-    ccbeg_[3] = 1;
+#endif
 }
 
 size_t ERDTwoElectronInt::compute_shell(int shell_i, int shell_j, int shell_k, int shell_l)
 {
+#if OLDCODE
     double *xyzptr1 = &xyz_1_[3*shell_i];
     double x1 = *(xyzptr1++);
     double y1 = *(xyzptr1++);
@@ -520,6 +528,60 @@ size_t ERDTwoElectronInt::compute_shell(int shell_i, int shell_j, int shell_k, i
     ::memcpy(&(cc_[offset_j]), &(new_cc_3_[pgto_offsets_3_[shell_k]]), sizeof(double)*npgto3);
     ::memcpy(&(cc_[offset_k]), &(new_cc_2_[pgto_offsets_2_[shell_j]]), sizeof(double)*npgto2);
     ::memcpy(&(cc_[offset_l]), &(new_cc_1_[pgto_offsets_1_[shell_i]]), sizeof(double)*npgto1);
+#else
+    const GaussianShell &gs1 = original_bs1_->shell(shell_i);
+    const GaussianShell &gs2 = original_bs2_->shell(shell_j);
+    const GaussianShell &gs3 = original_bs3_->shell(shell_k);
+    const GaussianShell &gs4 = original_bs4_->shell(shell_l);
+    const double *xyzptr1 = gs1.center();
+    double x1 = *(xyzptr1++);
+    double y1 = *(xyzptr1++);
+    double z1 = *(xyzptr1);
+    const double *xyzptr2 = gs2.center();
+    double x2 = *(xyzptr2++);
+    double y2 = *(xyzptr2++);
+    double z2 = *(xyzptr2);
+    const double *xyzptr3 = gs3.center();
+    double x3 = *(xyzptr3++);
+    double y3 = *(xyzptr3++);
+    double z3 = *(xyzptr3);
+    const double *xyzptr4 = gs4.center();
+    double x4 = *(xyzptr4++);
+    double y4 = *(xyzptr4++);
+    double z4 = *(xyzptr4);
+    F_INT ncgto1 = 1;
+    F_INT ncgto2 = 1;
+    F_INT ncgto3 = 1;
+    F_INT ncgto4 = 1;
+    F_INT ncgto = 4;
+    F_INT npgto1 = gs1.nprimitive();
+    F_INT npgto2 = gs2.nprimitive();
+    F_INT npgto3 = gs3.nprimitive();
+    F_INT npgto4 = gs4.nprimitive();
+    F_INT npgto = npgto1 + npgto2 + npgto3 + npgto4;
+    F_INT am1 = gs1.am();
+    F_INT am2 = gs2.am();
+    F_INT am3 = gs3.am();
+    F_INT am4 = gs4.am();
+    ccend_[0] = npgto4;
+    ccend_[1] = npgto3;
+    ccend_[2] = npgto2;
+    ccend_[3] = npgto1;
+    int offset_i = 0;
+    int offset_j = offset_i + npgto4;
+    int offset_k = offset_j + npgto3;
+    int offset_l = offset_k + npgto2;
+
+    // Copy exponents and coefficients over
+    ::memcpy(&(alpha_[offset_i]), gs4.exps(), sizeof(double)*npgto4);
+    ::memcpy(&(alpha_[offset_j]), gs3.exps(), sizeof(double)*npgto3);
+    ::memcpy(&(alpha_[offset_k]), gs2.exps(), sizeof(double)*npgto2);
+    ::memcpy(&(alpha_[offset_l]), gs1.exps(), sizeof(double)*npgto1);
+    ::memcpy(&(cc_[offset_i]), gs4.erd_coefs(), sizeof(double)*npgto4);
+    ::memcpy(&(cc_[offset_j]), gs3.erd_coefs(), sizeof(double)*npgto3);
+    ::memcpy(&(cc_[offset_k]), gs2.erd_coefs(), sizeof(double)*npgto2);
+    ::memcpy(&(cc_[offset_l]), gs1.erd_coefs(), sizeof(double)*npgto1);
+#endif
 
 #if DEBUG
     fprintf(outfile, "\n\nShell (%2d %2d | %2d %2d) - center (%2d %2d | %2d %2d) - angular momentum (%d %d | %d %d)\n",
@@ -530,7 +592,7 @@ size_t ERDTwoElectronInt::compute_shell(int shell_i, int shell_j, int shell_k, i
     fprintf(outfile, "XYZ2: %16.10f %16.10f %16.10f\n", x2, y2, z2);
     fprintf(outfile, "XYZ3: %16.10f %16.10f %16.10f\n", x3, y3, z3);
     fprintf(outfile, "XYZ4: %16.10f %16.10f %16.10f\n", x4, y4, z4);
-    fprintf(outfile, "Indices  -> %d\n", ccbeg_[0], ccend_[0]);
+    fprintf(outfile, "Indices  -> %d, %d\n", ccbeg_[0], ccend_[0]);
 
     fprintf(outfile, "Number of primitives: %d %d %d %d\n", npgto1, npgto2, npgto3, npgto4);
     fprintf(outfile, "Coefficients: ");
