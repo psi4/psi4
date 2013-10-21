@@ -291,12 +291,15 @@ void ex_oscillator_strength(struct TD_Params *S, struct TD_Params *U, struct XTD
   double hartree2Hz = pc_hartree2MHz * (1.0e6);
   double hbar       = pc_h/(pc_twopi);
   /* SI Dipole Strength */
-  double ds_si = (ds_x+ds_y+ds_z) * pc_dipmom_au2si;
+  double ds_si = (ds_x+ds_y+ds_z) * pc_dipmom_au2si * pc_dipmom_au2si;
   /* SI Transition Energy */
   double nu_si = delta_ee * hartree2Hz;
   /* Einstein Coefficients */
-  einstein_b = (2.0/3.0) * (pc_pi/pow(hbar,2.0)) * (1.0/(4.0*pc_pi*pc_e0)) * ds_si;
-  einstein_a = 8.0* pc_pi * pc_h * pow((nu_si/pc_c),3.0) * einstein_b;
+  einstein_b = (2.0/3.0) * (pc_pi/pow(hbar,2)) * (1.0/(4.0*pc_pi*pc_e0)) * ds_si;
+  einstein_a = 8.0* pc_pi * pc_h * pow((nu_si/pc_c),3) * einstein_b;
+  //double einstein_c = 32.0 * pc_pi * pc_pi * pc_pi * (1.0/(3.0 * hbar)) * nu_si * nu_si * nu_si
+  //                         * (1.0/pc_c) * (1.0/pc_c) * (1.0/pc_c) * (1.0/(4.0 * pc_pi * pc_e0))
+  //                         * ds_si;
 
   fprintf(outfile,"\t<0|mu_e|n>              %11.8lf \t %11.8lf \t %11.8lf\n",
           lt_x,lt_y,lt_z);
