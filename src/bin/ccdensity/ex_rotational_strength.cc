@@ -235,15 +235,15 @@ void ex_rotational_strength(struct TD_Params *S, struct TD_Params *U, struct XTD
      // Sign matters.  We view excitation energies as positive,
      // so we want to substract the lower state's energy from the 
      // higher state's.
-     // U is the higher-energy excited state. Maybe.
+     // U should be the higher-energy excited state.
   delta_ee = U->cceom_energy - S->cceom_energy;
-  if(delta_ee < 0.0) delta_ee *= -1.0;
+
   rs_x = rs_x / delta_ee;
   rs_y = rs_y / delta_ee;
   rs_z = rs_z / delta_ee;
 
   rs = rs_x + rs_y + rs_z;
-  //S->RS_velocity = rs;
+
   /* Fill in XTD Data */
   xtd_data->RS_velocity = rs;
 

@@ -40,13 +40,8 @@ void ex_sort_td_rohf(char hand, int Tirrep);
 void ex_sort_td_uhf(char hand, int Tirrep);
 
 void ex_tdensity(char hand, struct TD_Params S, struct TD_Params U) {
-  /*  "Density code" might need L or R for one reason:
-   *  1) Which state's irrep to use for transition density
-   *     being constructed (the higher state's irrep).
-   *  "Sort" might need to know L or R for two reasons:
-   *  1) Where to put density (ltd or rtd) -> DEFINITELY THIS
-   *  2) Which state's irrep to use for sorting -> MAYBE THIS
-   */
+  // FYI: "Sort" needs to know L or R in order to 
+  //       put density in correct place (ltd or rtd)
   int Tirrep = S.irrep^U.irrep;
   if(params.ref == 0 || params.ref == 1) {
     ex_tdensity_rohf(S,U);

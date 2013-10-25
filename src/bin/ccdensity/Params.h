@@ -122,6 +122,8 @@ struct TD_Params {
   double OS;
   double RS_length;
   double RS_velocity;
+  double einstein_a;
+  double einstein_b;
 };
 
 struct XTD_Params {
@@ -133,6 +135,8 @@ struct XTD_Params {
   double OS;
   double RS_length;
   double RS_velocity;
+  double einstein_a;
+  double einstein_b;
 };
 
 
