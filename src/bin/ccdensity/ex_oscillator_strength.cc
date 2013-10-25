@@ -271,14 +271,18 @@ void ex_oscillator_strength(struct TD_Params *S, struct TD_Params *U, struct XTD
   ds_z = lt_z * rt_z;
 
   /* Use |w2 - w1| for oscillator strengths */
-  delta_ee = fabs(S->cceom_energy - U->cceom_energy);
+     // We view excitation energies as positive,
+     // so we want to substract the lower state's energy from the 
+     // higher state's.
+     // U should be the higher-energy excited state.
+  delta_ee = U->cceom_energy - S->cceom_energy;
 
   f_x = (2*delta_ee*ds_x)/3;
   f_y = (2*delta_ee*ds_y)/3;
   f_z = (2*delta_ee*ds_z)/3;
 
   f = f_x + f_y + f_z;
-  //S->OS = f;
+
   /* Fill in XTD_Params for this Transition */
   xtd_data->root1        = S->root;
   xtd_data->root2        = U->root;
@@ -297,9 +301,10 @@ void ex_oscillator_strength(struct TD_Params *S, struct TD_Params *U, struct XTD
   /* Einstein Coefficients */
   einstein_b = (2.0/3.0) * (pc_pi/pow(hbar,2)) * (1.0/(4.0*pc_pi*pc_e0)) * ds_si;
   einstein_a = 8.0* pc_pi * pc_h * pow((nu_si/pc_c),3) * einstein_b;
-  //double einstein_c = 32.0 * pc_pi * pc_pi * pc_pi * (1.0/(3.0 * hbar)) * nu_si * nu_si * nu_si
-  //                         * (1.0/pc_c) * (1.0/pc_c) * (1.0/pc_c) * (1.0/(4.0 * pc_pi * pc_e0))
-  //                         * ds_si;
+  /* Don't print Eintstein A Coefficient  if it's zero */
+  //if(einstein_a < 1e-12) einstein_a = 0.0;
+  xtd_data->einstein_a = einstein_a;
+  xtd_data->einstein_b = einstein_b;
 
   fprintf(outfile,"\t<0|mu_e|n>              %11.8lf \t %11.8lf \t %11.8lf\n",
           lt_x,lt_y,lt_z);
@@ -307,8 +312,8 @@ void ex_oscillator_strength(struct TD_Params *S, struct TD_Params *U, struct XTD
           rt_x,rt_y,rt_z);
   fprintf(outfile,"\tDipole Strength         %11.8lf \n",ds_x+ds_y+ds_z);
   fprintf(outfile,"\tOscillator Strength     %11.8lf \n",f_x+f_y+f_z);
-  fprintf(outfile,"\tEinstein A Coefficient  %11.8e  \n",einstein_a);
-  fprintf(outfile,"\tEinstein B Coefficient  %11.8e  \n",einstein_b);
+  fprintf(outfile,"\tEinstein A Coefficient   %11.8e \n",einstein_a);
+  fprintf(outfile,"\tEinstein B Coefficient   %11.8e \n",einstein_b);
   fflush(outfile);
 
   if((params.ref == 0) || (params.ref == 1)) {

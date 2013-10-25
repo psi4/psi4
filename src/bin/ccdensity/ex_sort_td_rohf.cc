@@ -27,6 +27,7 @@
 #include <cstdio>
 #include <libdpd/dpd.h>
 #include <libciomr/libciomr.h>
+#include <liboptions/liboptions.h>
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
@@ -197,8 +198,7 @@ void ex_sort_td_rohf(char hand, int Tirrep)
         moinfo.rtd[i][j] = gtd[i][j];
     //print_mat(moinfo.rtd,nmo,nmo,outfile);
   }
-  else printf("SOMETHING IS WRONG.\n");
-  //else throw PsiException("ccdensity: error", __FILE__, __LINE__);
+  else throw PsiException("ccdensity: error", __FILE__, __LINE__);
   free_block(gtd);
 
 

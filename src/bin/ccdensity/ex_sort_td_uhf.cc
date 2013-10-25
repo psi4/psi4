@@ -26,6 +26,7 @@
 */
 #include <cstdio>
 #include <libdpd/dpd.h>
+#include <liboptions/liboptions.h>
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
@@ -204,8 +205,7 @@ void ex_sort_td_uhf(char hand, int Tirrep)
         moinfo.rtd_b[i][j] = gtd_b[i][j];
       }
   }
-  else printf("SOMETHING IS WRONG.\n");
-  //else throw PsiException("ccdensity: error", __FILE__, __LINE__);
+  else throw PsiException("ccdensity: error", __FILE__, __LINE__);
   /*mat_print(gtd_a,nmo,nmo,outfile);*/
   /*mat_print(gtd_b,nmo,nmo,outfile);*/
 

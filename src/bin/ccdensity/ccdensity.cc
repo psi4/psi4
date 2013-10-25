@@ -392,15 +392,6 @@ PsiReturnType ccdensity(Options& options)
       for(i=0; i < (params.nstates-1); i++) {
         for(j=0; j <= i; j++) {
 
-          //if(td_params[j].irrep == td_params[i+1].irrep) { 
-          //fprintf(outfile, "State %d = %20.12lf\n", j+1, td_params[j].cceom_energy);
-          //fprintf(outfile, "State %d = %20.12lf\n", i+2, td_params[i+1].cceom_energy);
-          //fprintf(outfile, "State %d Irrep= %3d\n", j+1, td_params[j].irrep);
-          //fprintf(outfile, "State %d Irrep= %3d\n", i+2, td_params[i+1].irrep);
-          //fprintf(outfile, "XOR     Irrep= %3d\n", td_params[i+1].irrep^td_params[j].irrep);
-          //fprintf(outfile, "GOR     Irrep= %3d\n", 0^td_params[j].irrep);
-          //fprintf(outfile, "GOR     Irrep= %3d\n", 0^td_params[i+1].irrep);
-
           //- Set States
           if(td_params[j].cceom_energy <= td_params[i+1].cceom_energy) {
             state1 = j;
@@ -444,22 +435,21 @@ PsiReturnType ccdensity(Options& options)
                 td_params[state1].root+1,moinfo.labels[td_params[state1].irrep],
                 td_params[state2].root+1,moinfo.labels[td_params[state2].irrep]);
           fflush(outfile);
-          ex_oscillator_strength(&(td_params[j]),&(td_params[i+1]), &xtd_data);
+          //ex_oscillator_strength(&(td_params[j]),&(td_params[i+1]), &xtd_data);
+          ex_oscillator_strength(&(td_params[state1]),&(td_params[state2]), &xtd_data);
           if(params.ref == 0) {
-            ex_rotational_strength(&(td_params[j]),&(td_params[i+1]), &xtd_data);
+            //ex_rotational_strength(&(td_params[j]),&(td_params[i+1]), &xtd_data);
+            ex_rotational_strength(&(td_params[state1]),&(td_params[state2]), &xtd_data);
           }
 
           xtd_params.push_back(xtd_data);
 
           td_cleanup();
         }
-        //}
       }
       td_print();
       ex_td_print(xtd_params);
     }
-    //ex_td_print(xtd_params);
-    //ex_td_print();
 
   }  // End params.transition IF loop
 
