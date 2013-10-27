@@ -25,7 +25,7 @@ for Pople and other non-Dunning orbital basis sets. Some
 plausible fitting basis sets are supplied as defaults.
 
 """
-from basislist import *
+from p4util.basislist import *
 
 
 def load_basfam_other():
