@@ -502,10 +502,21 @@ def energy(name, **kwargs):
     >>> energy('mp4')
 
     >>> # [4] Converge scf as singlet, then run detci as triplet upon singlet reference
+    >>> # Note that the integral transformation is not done automatically when detci is run in a separate step.
     >>> molecule H2 {\\n0 1\\nH\\nH 1 0.74\\n}
+    >>> set global basis cc-pVDZ
+    >>> set global reference rohf
     >>> energy('scf')
     >>> H2.set_multiplicity(3)
+    >>> psi4.MintsHelper().integrals()
     >>> energy('detci', bypass_scf=True)
+
+    >>> # [5] Run two CI calculations, keeping the integrals generated in the first one.
+    >>> molecule ne {\\nNe\\n}
+    >>> set globals  basis cc-pVDZ
+    >>> set transqt2 delete_tei false
+    >>> energy('cisd')
+    >>> energy('fci', bypass_scf='True')
 
     """
     lowername = name.lower()
