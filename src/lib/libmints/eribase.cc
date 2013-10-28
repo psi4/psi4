@@ -938,36 +938,63 @@ namespace {
                                       int am,
                                       int nprim1, int nprim2, int nprim3, int nprim4,
                                       bool sh1eqsh2, bool sh3eqsh4, int deriv_lvl) {
-        double zeta, eta, ooze, rho, poz, coef1, PQ[3], PQ2, W[3], o12, o34, T, *F;
+        double zeta, eta, ooze, rho, poz, coef1, PQx, PQy, PQz, PQ2, Wx, Wy, Wz, o12, o34, T, *F;
         double a1, a2, a3, a4;
-        int max_p2, max_p4, p1, p2, p3, p4, m, n, i;
+        int max_p2, max_p4, p1, p2, p3, p4, i;
         size_t nprim = 0L;
-
+        double restrict *pai = p12->ai;
+        double restrict *pgamma12 = p12->gamma[0];
+        double restrict *poverlap12 = p12->overlap[0];
         for (p1 = 0; p1 < nprim1; ++p1) {
-            max_p2 = sh1eqsh2 ? p1+1 : nprim2;
-            a1 = p12->ai[p1];
+            a1 = *pai;
+            ++pai;
+            double *paj = p12->aj;
+            for (p2 = 0; p2 < nprim2; ++p2) {
+                a2   = *paj;
+                zeta = *pgamma12;
+                o12  = *poverlap12;
+                ++paj;
+                ++pgamma12;
+                ++poverlap12;
+                double PAx = p12->PA[p1][p2][0];
+                double PAy = p12->PA[p1][p2][1];
+                double PAz = p12->PA[p1][p2][2];
+                double PBx = p12->PB[p1][p2][0];
+                double PBy = p12->PB[p1][p2][1];
+                double PBz = p12->PB[p1][p2][2];
+                double PABx = p12->P[p1][p2][0];
+                double PABy = p12->P[p1][p2][1];
+                double PABz = p12->P[p1][p2][2];
 
-            for (p2 = 0; p2 < max_p2; ++p2) {
-                m = (1 + (sh1eqsh2 && p1 != p2));
-
-                a2   = p12->aj[p2];
-                zeta = p12->gamma[p1][p2];
-                o12  = p12->overlap[p1][p2];
-
+                double restrict *pak = p34->ai;
+                double restrict *pgamma34 = p34->gamma[0];
+                double restrict *poverlap34 = p34->overlap[0];
                 for (p3 = 0; p3 < nprim3; ++p3) {
-                    max_p4 = sh3eqsh4 ? p3+1 : nprim4;
-                    a3 = p34->ai[p3];
+                    a3 = *pak;
+                    ++pak;
+                    double restrict *pal = p34->aj;
+                    for (p4 = 0; p4 < nprim4; ++p4) {
+                        a4 = *pal;
+                        eta  = *pgamma34;
+                        o34  = *poverlap34;
+                        ++pal;
+                        ++pgamma34;
+                        ++poverlap34;
 
-                    for (p4 = 0; p4 < max_p4; ++p4) {
-                        n = m * (1 + (sh3eqsh4 && p3 != p4));
-                        a4 = p34->aj[p4];
+                        double PCx = p34->PA[p3][p4][0];
+                        double PCy = p34->PA[p3][p4][1];
+                        double PCz = p34->PA[p3][p4][2];
+                        double PDx = p34->PB[p3][p4][0];
+                        double PDy = p34->PB[p3][p4][1];
+                        double PDz = p34->PB[p3][p4][2];
+                        double PCDx = p34->P[p3][p4][0];
+                        double PCDy = p34->P[p3][p4][1];
+                        double PCDz = p34->P[p3][p4][2];
 
-                        eta  = p34->gamma[p3][p4];
-                        o34  = p34->overlap[p3][p4];
                         ooze = 1.0 / (zeta + eta);
                         poz  = eta * ooze;
                         rho  = zeta * poz;
-                        coef1= 2.0 * sqrt(rho*M_1_PI) * o12 * o34 * n;
+                        coef1= 2.0 * sqrt(rho*M_1_PI) * o12 * o34;
 
                         PrimQuartet[nprim].poz   = poz;
                         PrimQuartet[nprim].oo2zn = 0.5 * ooze;
@@ -979,39 +1006,39 @@ namespace {
                         PrimQuartet[nprim].twozeta_c = 2.0 * a3;
                         PrimQuartet[nprim].twozeta_d = 2.0 * a4;
 
-                        PQ[0] = p12->P[p1][p2][0] - p34->P[p3][p4][0];
-                        PQ[1] = p12->P[p1][p2][1] - p34->P[p3][p4][1];
-                        PQ[2] = p12->P[p1][p2][2] - p34->P[p3][p4][2];
-                        PQ2   = PQ[0]*PQ[0] + PQ[1]*PQ[1] + PQ[2]*PQ[2];
+                        PQx = PABx - PCDx;
+                        PQy = PABy - PCDy;
+                        PQz = PABz - PCDz;
+                        PQ2   = PQx*PQx + PQy*PQy + PQz*PQz;
 
-                        W[0]  = (p12->P[p1][p2][0] * zeta + p34->P[p3][p4][0] * eta) * ooze;
-                        W[1]  = (p12->P[p1][p2][1] * zeta + p34->P[p3][p4][1] * eta) * ooze;
-                        W[2]  = (p12->P[p1][p2][2] * zeta + p34->P[p3][p4][2] * eta) * ooze;
+                        Wx  = (PABx * zeta + PCDx * eta) * ooze;
+                        Wy  = (PABy * zeta + PCDy * eta) * ooze;
+                        Wz  = (PABz * zeta + PCDz * eta) * ooze;
 
                         // PA
-                        PrimQuartet[nprim].U[0][0] = p12->PA[p1][p2][0];
-                        PrimQuartet[nprim].U[0][1] = p12->PA[p1][p2][1];
-                        PrimQuartet[nprim].U[0][2] = p12->PA[p1][p2][2];
+                        PrimQuartet[nprim].U[0][0] = PAx;
+                        PrimQuartet[nprim].U[0][1] = PAy;
+                        PrimQuartet[nprim].U[0][2] = PAz;
                         // PB
-                        PrimQuartet[nprim].U[1][0] = p12->PB[p1][p2][0];
-                        PrimQuartet[nprim].U[1][1] = p12->PB[p1][p2][1];
-                        PrimQuartet[nprim].U[1][2] = p12->PB[p1][p2][2];
+                        PrimQuartet[nprim].U[1][0] = PBx;
+                        PrimQuartet[nprim].U[1][1] = PBy;
+                        PrimQuartet[nprim].U[1][2] = PBz;
                         // QC
-                        PrimQuartet[nprim].U[2][0] = p34->PA[p3][p4][0];
-                        PrimQuartet[nprim].U[2][1] = p34->PA[p3][p4][1];
-                        PrimQuartet[nprim].U[2][2] = p34->PA[p3][p4][2];
+                        PrimQuartet[nprim].U[2][0] = PCx;
+                        PrimQuartet[nprim].U[2][1] = PCy;
+                        PrimQuartet[nprim].U[2][2] = PCz;
                         // QD
-                        PrimQuartet[nprim].U[3][0] = p34->PB[p3][p4][0];
-                        PrimQuartet[nprim].U[3][1] = p34->PB[p3][p4][1];
-                        PrimQuartet[nprim].U[3][2] = p34->PB[p3][p4][2];
+                        PrimQuartet[nprim].U[3][0] = PDx;
+                        PrimQuartet[nprim].U[3][1] = PDy;
+                        PrimQuartet[nprim].U[3][2] = PDz;
                         // WP
-                        PrimQuartet[nprim].U[4][0] = W[0] - p12->P[p1][p2][0];
-                        PrimQuartet[nprim].U[4][1] = W[1] - p12->P[p1][p2][1];
-                        PrimQuartet[nprim].U[4][2] = W[2] - p12->P[p1][p2][2];
+                        PrimQuartet[nprim].U[4][0] = Wx - PABx;
+                        PrimQuartet[nprim].U[4][1] = Wy - PABy;
+                        PrimQuartet[nprim].U[4][2] = Wz - PABz;
                         // WQ
-                        PrimQuartet[nprim].U[5][0] = W[0] - p34->P[p3][p4][0];
-                        PrimQuartet[nprim].U[5][1] = W[1] - p34->P[p3][p4][1];
-                        PrimQuartet[nprim].U[5][2] = W[2] - p34->P[p3][p4][2];
+                        PrimQuartet[nprim].U[5][0] = Wx - PCDx;
+                        PrimQuartet[nprim].U[5][1] = Wy - PCDy;
+                        PrimQuartet[nprim].U[5][2] = Wz - PCDz;
 
                         T = rho * PQ2;
                         fjt->set_rho(rho);
