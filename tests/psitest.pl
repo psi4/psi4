@@ -74,6 +74,20 @@ sub do_tests
   my $jobtype;
   ($wfn, $jobtype) = get_calctype_string($input);
 
+  # Figure out property (if oscillator_strength or not)
+  my $proptype = "some_property";
+  if ($wfn eq "EOM-CCSD" ||
+      $wfn eq "EOM_CCSD" ||
+      $wfn eq "eom-ccsd" ||
+      $wfn eq "eom_ccsd" ||
+      $wfn eq "EOM-CC2" ||
+      $wfn eq "EOM_CC2" ||
+      $wfn eq "eom-cc2" ||
+      $wfn eq "eom_cc2") {
+     $proptype = get_proptype_string($input);
+     #print "\tPropType = $proptype\n";
+  }
+
   #printf "\tWfn = $wfn\n";
   #printf "\tJobtype = $jobtype\n";
 
@@ -661,8 +675,13 @@ sub compare_eomcc_oeprop
     pass_test("$LABEL");
   }
 
-  @int_ref = seek_osc_str($REF_FILE,"OS       RS",$NSTATES);
-  @int_test = seek_osc_str($TEST_FILE,"OS       RS",$NSTATES);
+  # The search wasn't refined enough.
+  # Also, it caused some problems when looking for ex->ex data.
+  # -HM, 10/29/1013
+  #@int_ref = seek_osc_str($REF_FILE,"OS       RS",$NSTATES);
+  #@int_test = seek_osc_str($TEST_FILE,"OS       RS",$NSTATES);
+  @int_ref = seek_osc_str($REF_FILE,"Ground State -> Excited State",$NSTATES-1);
+  @int_test = seek_osc_str($TEST_FILE,"Ground State -> Excited State",$NSTATES-1);
 
   $LABEL = "Oscillator Strength";
   if(!compare_arrays(\@int_ref, \@int_test, $NSTATES, $TTOL)) {
@@ -672,8 +691,8 @@ sub compare_eomcc_oeprop
     pass_test("$LABEL");
   }
 
-  @int_ref = seek_rot_str($REF_FILE,"OS       RS",$NSTATES);
-  @int_test = seek_rot_str($TEST_FILE,"OS       RS",$NSTATES);
+  @int_ref = seek_rot_str($REF_FILE,"Ground State -> Excited State",$NSTATES-1);
+  @int_test = seek_rot_str($TEST_FILE,"Ground State -> Excited State",$NSTATES-1);
 
   $LABEL = "Rotational Strength";
   if(!compare_arrays(\@int_ref, \@int_test, $NSTATES, $TTOL)) {
@@ -683,7 +702,68 @@ sub compare_eomcc_oeprop
     pass_test("$LABEL");
   }
 
+  if($proptype eq "oscillator_strength") {
+    @int_ref = seek_einstein_a($REF_FILE,"Ground State -> Excited State",$NSTATES-1);
+    @int_test = seek_einstein_a($TEST_FILE,"Ground State -> Excited State",$NSTATES-1);
+ 
+    $LABEL = "Einstein A Coefficient";
+    if(!compare_arrays(\@int_ref, \@int_test, $NSTATES, $TTOL)) {
+      fail_test("$LABEL"); $fail = 1;
+    }
+    else {
+      pass_test("$LABEL");
+    }
+
+    # If more than one excited state, test excited-excited transition data
+    if($NSTATES-1 > 1) { 
+      #print "\tNumber of states (w/ ground state) = $NSTATES\n";
+
+      $NTEMP = $NSTATES-2; # -1 for ground state, -1 for combinations
+      $NTRANS = 0;
+      while($NTEMP > 0) {
+        $NTRANS += $NTEMP;
+        $NTEMP -= 1;
+        #print "$NTRANS\n";
+      }
+
+      # Check Oscillator Strengths (Ex.->Ex.)
+      @int_ref = seek_osc_str($REF_FILE,"Excited State -> Excited State",$NTRANS);
+      @int_test = seek_osc_str($TEST_FILE,"Excited State -> Excited State",$NTRANS);
+   
+      $LABEL = "Oscillator Strength (Ex.->Ex.)";
+      if(!compare_arrays(\@int_ref, \@int_test, $NTRANS, $TTOL)) {
+        fail_test("$LABEL"); $fail = 1;
+      }
+      else {
+        pass_test("$LABEL");
+      }
+      # Check Rotational Strengths (Ex.->Ex.)
+      @int_ref = seek_rot_str($REF_FILE,"Excited State -> Excited State",$NTRANS);
+      @int_test = seek_rot_str($TEST_FILE,"Excited State -> Excited State",$NTRANS);
+   
+      $LABEL = "Rotational Strength (Ex.->Ex.)";
+      if(!compare_arrays(\@int_ref, \@int_test, $NTRANS, $TTOL)) {
+        fail_test("$LABEL"); $fail = 1;
+      }
+      else {
+        pass_test("$LABEL");
+      }
+      # Check Einstein A Coefficients (Ex.->Ex.)
+      @int_ref = seek_einstein_a($REF_FILE,"Excited State -> Excited State",$NTRANS);
+      @int_test = seek_einstein_a($TEST_FILE,"Excited State -> Excited State",$NTRANS);
+   
+      $LABEL = "Einstein A Coefficient (Ex.->Ex.)";
+      if(!compare_arrays(\@int_ref, \@int_test, $NTRANS, $TTOL)) {
+        fail_test("$LABEL"); $fail = 1;
+      }
+      else {
+        pass_test("$LABEL");
+      }
+    }
+  }
+
   return $fail;
+
 }
 
 sub compare_casscf_energy
@@ -2776,14 +2856,22 @@ sub seek_osc_str
 
   $match = "$_[1]";
   $nstates = "$_[2]";
+  $data_idx;
+  if ($match eq "Ground State -> Excited State") {
+    $data_idx = 7;
+  }
+  else {
+    $data_idx = 6;
+  }
+
   $j=0;
   $linenum=0;
   foreach $line (@datafile) {
     $linenum++;
     if ($line =~ m/$match/) {
       while ($j<$nstates) {
-        @test = split (/ +/,$datafile[$linenum+1+$j]);
-        $os[$j] = $test[6];
+        @test = split (/ +/,$datafile[$linenum+3+$j]);
+        $os[$j] = $test[$data_idx];
         $j++;
       }
     }
@@ -2813,21 +2901,73 @@ sub seek_rot_str
 
   $match = "$_[1]";
   $nstates = "$_[2]";
+  $data_idx;
+  if ($match eq "Ground State -> Excited State") {
+    $data_idx = 8;
+  }
+  else {
+    $data_idx = 7;
+  }
+
   $j=0;
   $linenum=0;
   foreach $line (@datafile) {
     $linenum++;
     if ($line =~ m/$match/) {
       while ($j<$nstates) {
-        @test = split (/ +/,$datafile[$linenum+1+$j]);
-        $rs[$j] = $test[7];
+        @test = split (/ +/,$datafile[$linenum+3+$j]);
+        $rs[$j] = $test[$data_idx];
         $j++;
       }
     }
   }
 
+  #for($i=0; $i < $nstates; $i++) {
+  #  printf "%d %8.4f\n", $i, $rs[$i];
+  #}
+
   if($nstates > 0) {
     return @rs;
+  }
+
+  printf "Error: Check $_[1] in $_[0].\n";
+  exit 1;
+}
+
+sub seek_einstein_a
+{
+  open(OUT, "$_[0]") || die "cannot open $_[0] $!";
+  @datafile = <OUT>;
+  close(OUT);
+
+  $match = "$_[1]";
+  $ntrans = "$_[2]";
+  if ($match eq "Ground State -> Excited State") {
+    $data_idx = 10;
+  }
+  else {
+    $data_idx = 9;
+  }
+
+  $j=0;
+  $linenum=0;
+  foreach $line (@datafile) {
+    $linenum++;
+    if ($line =~ m/$match/) {
+      while ($j<$ntrans) {
+        @test = split (/ +/,$datafile[$linenum+3+$j]);
+        $ea[$j] = $test[$data_idx];
+        $j++;
+      }
+    }
+  }
+
+  #for($i=0; $i < $nstates; $i++) {
+  #  printf "%d %8.4e\n", $i, $ea[$i];
+  #}
+
+  if($ntrans > 1) {
+    return @ea;
   }
 
   printf "Error: Check $_[1] in $_[0].\n";
@@ -3003,6 +3143,27 @@ sub get_calctype_string
   }
 
   return ($wfn, $jobtype);
+}
+
+sub get_proptype_string
+{
+  open(IN, $_[0]) || die "fail";
+  @datafile = <IN>;
+  close(IN);
+
+  $proptype;
+  my $linenumber = 0;
+  foreach $line (@datafile) {
+    $linenumber++;
+    if ($line =~ m/oscillator\s*\(/) {
+      @data = split(/\'/, $line);
+    }
+  }
+  $proptype = $data[3];
+  #print "$data[3]\n";
+  #print "$proptype\n";
+
+  return $proptype;
 }
 
 1;
