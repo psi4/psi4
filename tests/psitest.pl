@@ -707,7 +707,7 @@ sub compare_eomcc_oeprop
     @int_test = seek_einstein_a($TEST_FILE,"Ground State -> Excited State",$NSTATES-1);
  
     $LABEL = "Einstein A Coefficient";
-    if(!compare_arrays(\@int_ref, \@int_test, $NSTATES, $TTOL)) {
+    if(!compare_arrays(\@int_ref, \@int_test, $NSTATES, 300)) {
       fail_test("$LABEL"); $fail = 1;
     }
     else {
@@ -753,7 +753,7 @@ sub compare_eomcc_oeprop
       @int_test = seek_einstein_a($TEST_FILE,"Excited State -> Excited State",$NTRANS);
    
       $LABEL = "Einstein A Coefficient (Ex.->Ex.)";
-      if(!compare_arrays(\@int_ref, \@int_test, $NTRANS, $TTOL)) {
+      if(!compare_arrays(\@int_ref, \@int_test, $NTRANS, 300)) {
         fail_test("$LABEL"); $fail = 1;
       }
       else {
