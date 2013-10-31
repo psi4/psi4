@@ -301,8 +301,7 @@ void ex_oscillator_strength(struct TD_Params *S, struct TD_Params *U, struct XTD
   /* Einstein Coefficients */
   einstein_b = (2.0/3.0) * (pc_pi/pow(hbar,2)) * (1.0/(4.0*pc_pi*pc_e0)) * ds_si;
   einstein_a = 8.0* pc_pi * pc_h * pow((nu_si/pc_c),3) * einstein_b;
-  /* Don't print Eintstein A Coefficient  if it's zero */
-  if(einstein_a < 1e-15) einstein_a = 0.000000;
+  if(einstein_a < 1e-7) einstein_a = 0.0000000;
   xtd_data->einstein_a = einstein_a;
   xtd_data->einstein_b = einstein_b;
 
