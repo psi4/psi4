@@ -703,11 +703,13 @@ sub compare_eomcc_oeprop
   }
 
   if($proptype eq "oscillator_strength") {
+
+    $EINSTEIN_TOL = 0.0001; # Or 0.01% Difference
     @int_ref = seek_einstein_a($REF_FILE,"Ground State -> Excited State",$NSTATES-1);
     @int_test = seek_einstein_a($TEST_FILE,"Ground State -> Excited State",$NSTATES-1);
  
     $LABEL = "Einstein A Coefficient";
-    if(!compare_arrays(\@int_ref, \@int_test, $NSTATES, 300)) {
+    if(!compare_einstein_a_arrays(\@int_ref, \@int_test, $NSTATES, $EINSTEIN_TOL)) {
       fail_test("$LABEL"); $fail = 1;
     }
     else {
@@ -753,7 +755,7 @@ sub compare_eomcc_oeprop
       @int_test = seek_einstein_a($TEST_FILE,"Excited State -> Excited State",$NTRANS);
    
       $LABEL = "Einstein A Coefficient (Ex.->Ex.)";
-      if(!compare_arrays(\@int_ref, \@int_test, $NTRANS, 300)) {
+      if(!compare_einstein_a_arrays(\@int_ref, \@int_test, $NTRANS, $EINSTEIN_TOL)) {
         fail_test("$LABEL"); $fail = 1;
       }
       else {
@@ -3019,6 +3021,29 @@ sub compare_arrays
   for($i=0; $i < $dim; $i++) {
     if(abs(@$A[$i] - @$B[$i]) > $tol) {
       $OK = 0;
+    }
+  }
+
+  return $OK;
+}
+
+sub compare_einstein_a_arrays
+{
+  my $A = $_[0];
+  my $B = $_[1];
+  my $dim = $_[2];
+  my $tol = $_[3];
+  my $OK = 1;
+  my $i=0;
+  
+  for($i=0; $i < $dim; $i++) {
+    if((@$A[$i] != 0 && @$B[$i] == 0) || (@$A[$i] == 0 && @$B[$i] != 0)) {
+      $OK = 0;
+    }
+    if(@$A[$i] != 0 && @$B[$i] != 0) {
+      if(abs(@$A[$i] - @$B[$i])/@$A[$i] > $tol) {
+        $OK = 0;
+      }
     }
   }
 
