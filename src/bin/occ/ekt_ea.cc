@@ -505,11 +505,13 @@ if (reference_ == "UNRESTRICTED") {
 }// if (reference_ == "UNRESTRICTED") 
 
      // For Non-OO methods
+     /*
      if (orb_opt_ == "FALSE" && reference_ == "RESTRICTED" && dertype == "FIRST") GFock->scale(2.0);  
      else if (orb_opt_ == "FALSE" && reference_ == "UNRESTRICTED" && dertype == "FIRST") {
               GFockA->scale(2.0);  
               GFockB->scale(2.0);  
      }
+     */
 
        GFock_primeA.reset();
        g1HalfA.reset();
