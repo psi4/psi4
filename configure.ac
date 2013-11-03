@@ -644,7 +644,7 @@ if test "x${have_boost}" == "x0"; then
     HAVE_BOOST=0
     AC_SUBST(HAVE_BOOST)
 
-    BOOSTVER='boost_1_53_0'
+    BOOSTVER='boost_1_54_0'
     AC_SUBST(BOOSTVER)
 
     BOOST_CPPFLAGS='-I$(top_objdir)/boost/$(BOOSTVER)'
