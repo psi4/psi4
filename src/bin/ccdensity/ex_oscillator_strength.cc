@@ -45,7 +45,8 @@ using namespace std;
 namespace psi { namespace ccdensity {
 #include <physconst.h>
 
-void oscillator_strength(struct TD_Params *S)
+//void ex_oscillator_strength(struct TD_Params *S, struct TD_Params *U)
+void ex_oscillator_strength(struct TD_Params *S, struct TD_Params *U, struct XTD_Params *xtd_data)
 {
   int nmo, nso, i, I, h, j, nirreps;
   int *order, *order_A, *order_B, *doccpi, *clsdpi, *openpi, *orbspi;
@@ -61,6 +62,8 @@ void oscillator_strength(struct TD_Params *S)
   double ds_x, ds_y, ds_z;
   double f_x, f_y, f_z;
   double f;
+  double delta_ee;
+  double einstein_a, einstein_b;
 
   chkpt_init(PSIO_OPEN_OLD);
   if ((params.ref == 0) || (params.ref == 1))
@@ -210,9 +213,10 @@ void oscillator_strength(struct TD_Params *S)
   free_block(MUY_SO);
   free_block(MUZ_SO);
 
-  fprintf(outfile,"\n\tOscillator Strength for %d%3s\n",S->root+1,
-          moinfo.labels[S->irrep]);
+  fprintf(outfile,"\n\tOscillator Strength for %d%3s to %d%3s\n",S->root+1,
+          moinfo.labels[S->irrep], U->root+1, moinfo.labels[U->irrep]);
   fprintf(outfile,"\t                              X    \t       Y    \t       Z\n");
+  fflush(outfile);
 
   if((params.ref == 0) || (params.ref == 1)) {
 
@@ -229,6 +233,7 @@ void oscillator_strength(struct TD_Params *S)
         rt_y += MUY_MO[i][j] * moinfo.rtd[i][j];
         rt_z += MUZ_MO[i][j] * moinfo.rtd[i][j];
       }
+
   }
   else if(params.ref == 2) {
 
@@ -265,12 +270,26 @@ void oscillator_strength(struct TD_Params *S)
   ds_y = lt_y * rt_y;
   ds_z = lt_z * rt_z;
 
-  f_x = (2*S->cceom_energy*ds_x)/3;
-  f_y = (2*S->cceom_energy*ds_y)/3;
-  f_z = (2*S->cceom_energy*ds_z)/3;
+  /* Use |w2 - w1| for oscillator strengths */
+     // We view excitation energies as positive,
+     // so we want to substract the lower state's energy from the 
+     // higher state's.
+     // U should be the higher-energy excited state.
+  delta_ee = U->cceom_energy - S->cceom_energy;
+
+  f_x = (2*delta_ee*ds_x)/3;
+  f_y = (2*delta_ee*ds_y)/3;
+  f_z = (2*delta_ee*ds_z)/3;
 
   f = f_x + f_y + f_z;
-  S->OS = f;
+
+  /* Fill in XTD_Params for this Transition */
+  xtd_data->root1        = S->root;
+  xtd_data->root2        = U->root;
+  xtd_data->irrep1       = S->irrep;
+  xtd_data->irrep2       = U->irrep;
+  xtd_data->cceom_energy = delta_ee;
+  xtd_data->OS           = f;
 
   /* Compute Einstein A,B Coefficients */
   double hartree2Hz = pc_hartree2MHz * (1.0e6);
@@ -278,13 +297,13 @@ void oscillator_strength(struct TD_Params *S)
   /* SI Dipole Strength */
   double ds_si = (ds_x+ds_y+ds_z) * pc_dipmom_au2si * pc_dipmom_au2si;
   /* SI Transition Energy */
-  double nu_si = S->cceom_energy * hartree2Hz;
+  double nu_si = delta_ee * hartree2Hz;
   /* Einstein Coefficients */
-  double einstein_b = (2.0/3.0) * (pc_pi/pow(hbar,2.0)) * (1.0/(4.0*pc_pi*pc_e0)) * ds_si;
-  double einstein_a = 8.0* pc_pi * pc_h * pow((nu_si/pc_c),3.0) * einstein_b;
+  einstein_b = (2.0/3.0) * (pc_pi/pow(hbar,2)) * (1.0/(4.0*pc_pi*pc_e0)) * ds_si;
+  einstein_a = 8.0* pc_pi * pc_h * pow((nu_si/pc_c),3) * einstein_b;
   if(einstein_a < 1e-7) einstein_a = 0.0000000;
-  S->einstein_a = einstein_a;
-  S->einstein_b = einstein_b;
+  xtd_data->einstein_a = einstein_a;
+  xtd_data->einstein_b = einstein_b;
 
   fprintf(outfile,"\t<0|mu_e|n>              %11.8lf \t %11.8lf \t %11.8lf\n",
           lt_x,lt_y,lt_z);

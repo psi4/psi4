@@ -25,7 +25,6 @@
     \brief Enter brief description of file here 
 */
 #include <cstdio>
-#include <cstdlib>
 #include <libdpd/dpd.h>
 #include "MOInfo.h"
 #include "Params.h"
@@ -34,29 +33,34 @@
 #include "globals.h"
 
 namespace psi { namespace ccdensity {
-#include <physconst.h>
 
-#define _hartree2nm 0.02194746313710
+void ex_tdensity_rohf(struct TD_Params S, struct TD_Params U);
+void ex_tdensity_uhf(struct TD_Params S, struct TD_Params U);
+void ex_sort_td_rohf(char hand, int Tirrep);
+void ex_sort_td_uhf(char hand, int Tirrep);
 
-void td_print(void)
-{
-  int i;
-
-  fprintf(outfile,"\n\t                   Ground State -> Excited State Transitions\n");
-  fprintf(outfile,"\n\t                   Excitation Energy          OS       RS        RS     Einstein A\n");
-  fprintf(outfile,"\tState   (eV)    (cm^-1)    (nm)     (au)              (l,au)   (v,au)     (s^-1)\n");
-  for(i=0; i<params.nstates; i++) {
-    //fprintf(outfile,"\t %d%3s %7.3lf %9.1lf %7.1lf %10.6lf %8.4lf %8.4lf %8.4lf  %12.1lf\n",
-    fprintf(outfile,"\t %d%3s %7.3lf %9.1lf %7.1lf %10.6lf %8.4lf %8.4lf %8.4lf  %7.6E\n",
-            td_params[i].root+1,moinfo.labels[td_params[i].irrep],
-            td_params[i].cceom_energy*pc_hartree2ev,
-            td_params[i].cceom_energy*pc_hartree2wavenumbers,
-            1/(td_params[i].cceom_energy*_hartree2nm),
-            td_params[i].cceom_energy, td_params[i].OS,
-            td_params[i].RS_length,td_params[i].RS_velocity,
-            td_params[i].einstein_a);
+void ex_tdensity(char hand, struct TD_Params S, struct TD_Params U) {
+  // FYI: "Sort" needs to know L or R in order to 
+  //       put density in correct place (ltd or rtd)
+  int Tirrep = S.irrep^U.irrep;
+  if(params.ref == 0 || params.ref == 1) {
+    ex_tdensity_rohf(S,U);
+    fprintf(outfile, "\t\t***...density has been built...\n");
+    fflush(outfile);
+    ex_sort_td_rohf(hand,Tirrep);
+    fprintf(outfile, "\t\t***...density has been sorted...\n");
+    fflush(outfile);
   }
-  fprintf(outfile,"\n");
+  else if(params.ref == 2) {
+    ex_tdensity_uhf(S,U);
+    fprintf(outfile, "\t\t***...density has been built...\n");
+    fflush(outfile);
+    ex_sort_td_uhf(hand,Tirrep);
+    fprintf(outfile, "\t\t***...density has been sorted...\n");
+    fflush(outfile);
+  }
+
+  return;
 }
 
 }} // namespace psi::ccdensity

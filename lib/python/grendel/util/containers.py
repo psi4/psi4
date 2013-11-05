@@ -582,5 +582,107 @@ class AliasedDict(dict):
     pass
 
 
+#--------------------------------------------------------------------------------#
+#                            AttributeLookupTable                                #
+#--------------------------------------------------------------------------------#
+
+class AttributeLookupTable(object):
+    """
+    A quick lookup table with a set of objects indexable by any number
+    of attributes
+    """
+    # TODO @beginner Document this class.  Should be extremely straitforward
+    # TODO @beginner tests for this class.  Should be extremely straitforward
+
+    def __init__(self, attribute_names, initial_values=None, allow_multiple_values=False):
+        self._attribute_names = tuple(attribute_names)
+        self._allow_multiple_values = allow_multiple_values
+        self._dicts = dict()
+        for attr in self._attribute_names:
+            if self._allow_multiple_values:
+                self._dicts[attr] = defaultdict(lambda: [])
+            else:
+                self._dicts[attr] = dict()
+        for value in initial_values:
+            self.insert(value)
+
+    @property
+    def attribute_names(self):
+        return self._attribute_names
+
+    @property
+    def allow_multiple_values(self):
+        return self._allow_multiple_values
+
+    def insert(self, obj):
+        for attr in self._attribute_names:
+            key = self._key_for_attribute(obj, attr)
+            if self._allow_multiple_values:
+                #TODO add an option to use sets instead of lists, add a unique_only option or something like that
+                self._dicts[attr][key].append(obj)
+            else:
+                self._dicts[attr][key] = obj
+
+    def get(self, **kwargs):
+        if len(kwargs) != 1:
+            raise TypeError("get() requires exactly one keyword argument")
+        key, value = kwargs.items()[0]
+        if self._allow_multiple_values:
+            # Protect the returned list from accidental modification
+            return tuple(self._dicts[key][value])
+        else:
+            return self._dicts[key][value]
+
+    def has_key(self, **kwargs):
+        if len(kwargs) != 1:
+            raise TypeError("has_key() requires exactly one keyword argument")
+        key, value = kwargs.items()[0]
+        if self._allow_multiple_values:
+            return len(self._dicts[key][value]) > 0
+        else:
+            return value in self._dicts[key]
+
+    # TODO python3: make default a keyword only argument
+    def get_with_default(self, default, **kwargs):
+        if len(kwargs) != 1:
+            raise TypeError("get_with_default() requires exactly one keyword argument")
+        if self.has_key(**kwargs):
+            return self.get(**kwargs)
+        else:
+            return default
+
+    def iter_keys(self, attribute_name):
+        if attribute_name not in self._attribute_names:
+            raise ValueError("not indexed by attribute named '{0}'".format(attribute_name))
+        for key in self._dicts[attribute_name]:
+            yield key
+
+    def iter_items(self, attribute_name):
+        if attribute_name not in self._attribute_names:
+            raise ValueError("not indexed by attribute named '{0}'".format(attribute_name))
+        for key, val in self._dicts[attribute_name].items():
+            yield key, val
+
+    def _key_for_attribute(self, obj, attr):
+        """
+        Mostly to make subclassing easier
+
+        @param obj:
+        @param attr:
+        @return:
+        """
+        return getattr(obj, attr)
+
+
+
+
+
+
+
+
+
+
+#--------------------------------------------------------------------------------#
+
 
 #TODO AccessibleSet as a dict of item->item acting as a subclass of set

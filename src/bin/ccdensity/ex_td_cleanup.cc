@@ -34,29 +34,31 @@
 #include "globals.h"
 
 namespace psi { namespace ccdensity {
-#include <physconst.h>
 
-#define _hartree2nm 0.02194746313710
-
-void td_print(void)
+void ex_td_cleanup(void)
 {
-  int i;
+  /* 
+   *  Clean out these files between computing x_ltd and x_rtd, 
+   *  because LHS and RHS eigenvectors change (get swapped).  
+   */
 
-  fprintf(outfile,"\n\t                   Ground State -> Excited State Transitions\n");
-  fprintf(outfile,"\n\t                   Excitation Energy          OS       RS        RS     Einstein A\n");
-  fprintf(outfile,"\tState   (eV)    (cm^-1)    (nm)     (au)              (l,au)   (v,au)     (s^-1)\n");
-  for(i=0; i<params.nstates; i++) {
-    //fprintf(outfile,"\t %d%3s %7.3lf %9.1lf %7.1lf %10.6lf %8.4lf %8.4lf %8.4lf  %12.1lf\n",
-    fprintf(outfile,"\t %d%3s %7.3lf %9.1lf %7.1lf %10.6lf %8.4lf %8.4lf %8.4lf  %7.6E\n",
-            td_params[i].root+1,moinfo.labels[td_params[i].irrep],
-            td_params[i].cceom_energy*pc_hartree2ev,
-            td_params[i].cceom_energy*pc_hartree2wavenumbers,
-            1/(td_params[i].cceom_energy*_hartree2nm),
-            td_params[i].cceom_energy, td_params[i].OS,
-            td_params[i].RS_length,td_params[i].RS_velocity,
-            td_params[i].einstein_a);
-  }
-  fprintf(outfile,"\n");
+  psio_close(PSIF_CC_TMP,0);
+  psio_close(PSIF_EOM_TMP,0);
+  psio_close(PSIF_EOM_TMP0,0);
+  psio_close(PSIF_EOM_TMP1,0);
+  psio_close(PSIF_CC_GLG,0);
+  psio_close(PSIF_CC_GL,0);
+  psio_close(PSIF_CC_GR,0);
+
+  psio_open(PSIF_CC_TMP,PSIO_OPEN_NEW);
+  psio_open(PSIF_EOM_TMP,PSIO_OPEN_NEW);
+  psio_open(PSIF_EOM_TMP0,PSIO_OPEN_NEW);
+  psio_open(PSIF_EOM_TMP1,PSIO_OPEN_NEW);
+  psio_open(PSIF_CC_GLG,PSIO_OPEN_NEW);
+  psio_open(PSIF_CC_GL,PSIO_OPEN_NEW);
+  psio_open(PSIF_CC_GR,PSIO_OPEN_NEW);
+
+  return;
 }
 
 }} // namespace psi::ccdensity

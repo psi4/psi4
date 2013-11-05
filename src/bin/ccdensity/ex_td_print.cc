@@ -38,23 +38,24 @@ namespace psi { namespace ccdensity {
 
 #define _hartree2nm 0.02194746313710
 
-void td_print(void)
+void ex_td_print(std::vector<struct XTD_Params> xtd_list)
 {
   int i;
 
-  fprintf(outfile,"\n\t                   Ground State -> Excited State Transitions\n");
-  fprintf(outfile,"\n\t                   Excitation Energy          OS       RS        RS     Einstein A\n");
-  fprintf(outfile,"\tState   (eV)    (cm^-1)    (nm)     (au)              (l,au)   (v,au)     (s^-1)\n");
-  for(i=0; i<params.nstates; i++) {
-    //fprintf(outfile,"\t %d%3s %7.3lf %9.1lf %7.1lf %10.6lf %8.4lf %8.4lf %8.4lf  %12.1lf\n",
-    fprintf(outfile,"\t %d%3s %7.3lf %9.1lf %7.1lf %10.6lf %8.4lf %8.4lf %8.4lf  %7.6E\n",
-            td_params[i].root+1,moinfo.labels[td_params[i].irrep],
-            td_params[i].cceom_energy*pc_hartree2ev,
-            td_params[i].cceom_energy*pc_hartree2wavenumbers,
-            1/(td_params[i].cceom_energy*_hartree2nm),
-            td_params[i].cceom_energy, td_params[i].OS,
-            td_params[i].RS_length,td_params[i].RS_velocity,
-            td_params[i].einstein_a);
+  fprintf(outfile,"\n\t                   Excited State -> Excited State Transitions\n");
+  fprintf(outfile,"\n\t                        Excitation Energy          OS       RS        RS     Einstein A\n");
+  fprintf(outfile,"\tTransition   (eV)    (cm^-1)    (nm)     (au)              (l,au)   (v,au)     (s^-1)\n");
+  for(i=0; i<xtd_list.size(); i++) {
+    //fprintf(outfile,"\t  %d%s->%d%s %7.3lf %9.1lf %7.1lf %10.6lf %8.4lf %8.4lf %8.4lf  %12.1lf\n",
+    fprintf(outfile,"\t  %d%s->%d%s %7.3lf %9.1lf %7.1lf %10.6lf %8.4lf %8.4lf %8.4lf  %7.6E\n",
+            xtd_list[i].root1+1,moinfo.labels[xtd_list[i].irrep1],
+            xtd_list[i].root2+1,moinfo.labels[xtd_list[i].irrep2],
+            xtd_list[i].cceom_energy*pc_hartree2ev,
+            xtd_list[i].cceom_energy*pc_hartree2wavenumbers,
+            1/(xtd_list[i].cceom_energy*_hartree2nm),
+            xtd_list[i].cceom_energy,xtd_list[i].OS,
+            xtd_list[i].RS_length,xtd_list[i].RS_velocity,
+            xtd_list[i].einstein_a);
   }
   fprintf(outfile,"\n");
 }
