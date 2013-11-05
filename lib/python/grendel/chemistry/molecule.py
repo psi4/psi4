@@ -2,7 +2,7 @@ from __future__ import print_function
 from collections import Iterable
 from copy import deepcopy, copy
 from functools import total_ordering
-from numbers import Number
+from numbers import Number, Real
 import os
 import re
 import itertools
@@ -28,13 +28,15 @@ from grendel.symmetry.symmetry_operation import SymmetryOperation
 
 from grendel.util import cirpy
 from grendel.util.aliasing import function_alias
-from grendel.util.decorators import with_flexible_arguments, cached_method, CachedProperty, typecheck, typechecked, IterableOf
+from grendel.util.decorators import with_flexible_arguments, cached_method, CachedProperty, \
+    typecheck, typechecked, IterableOf, TripleOf
 from grendel.util.exceptions import raises_error, min_arg_count
 from grendel.util.iteration import grouper
 from grendel.util.misc import distinct, full_path
 from grendel.util.parsing import re_float_or_int_or_scientific
 from grendel.util.overloading import overloaded, OverloadedFunctionCallError
-from grendel.util.units import Angstroms, Degrees, Radians, EnergyUnit, AngularUnit, DistanceUnit, ValueWithUnits, Kilograms, Meters, Joules, MassUnit
+from grendel.util.units import Angstroms, Degrees, Radians, EnergyUnit, \
+    AngularUnit, DistanceUnit, ValueWithUnits, Kilograms, Meters, Joules, MassUnit
 from grendel.util.units.physical_constants import ReducedPlanckConstant
 from grendel.util.units.unit import isunit
 from grendel.util.units.value_with_units import  hasunits, strip_units
@@ -162,18 +164,20 @@ class Molecule(object):
 
     """
 
-    ####################
-    # Class Attributes #
-    ####################
+    #--------------------------------------------------------------------------------#
+
+    #region | Class Attributes                                                          {{{1 |
 
     linear_cutoff = 5 * Degrees
     default_multiplicity = 1
     default_charge = 0
     global_result_getters = []
 
-    ##############
-    # Attributes #
-    ##############
+    #endregion }}}1
+
+    #--------------------------------------------------------------------------------#
+
+    #region | Attributes                                                                {{{1 |
 
     internal_representations = None
     """ A list of all the InternalRepresentation objects associated with self.
@@ -205,9 +209,11 @@ class Molecule(object):
     """ If the Molecule was generated as a displacement, the Displacement object is stored here.
     """
 
-    ######################
-    # Private Attributes #
-    ######################
+    #endregion }}}1
+
+    #--------------------------------------------------------------------------------#
+
+    #region | Private Attributes                                                        {{{1 |
 
     _cirmol = None             # Used if the molecule is initialized from the NIH CIR service.  Can be used to retrieve may properties.
     _point_group = None
@@ -220,10 +226,11 @@ class Molecule(object):
     _is_linear = None
     _properties = None
 
+    #endregion }}}1
 
-    ##################
-    # Initialization #
-    ##################
+    #--------------------------------------------------------------------------------#
+
+    #region | Initialization                                                            {{{1 |
 
     @overloaded
     @with_flexible_arguments(
@@ -301,9 +308,11 @@ class Molecule(object):
 
     @__init__.overload_with(
         atom_names=IterableOf(basestring),
-        cart_mat=Matrix,
+        cart_mat=(Matrix, IterableOf(TripleOf(Real))),
         copy_atoms=bool)
     def __init__(self, atom_names, cart_mat, copy_atoms=False, **kwargs):
+        if not isinstance(cart_mat, Matrix):
+            cart_mat = Matrix(cart_mat)
         if sanity_checking_enabled:
             if len(atom_names) != cart_mat.shape[0]:
                 raise ValueError("dimension mismatch in Molecule constructor ({} != {})".format(
@@ -381,11 +390,11 @@ class Molecule(object):
         # Add the current default cartesian representation
         self.update_cartesian_representation()
 
+    #endregion }}}1
 
+    #--------------------------------------------------------------------------------#
 
-    ##############
-    # Properties #
-    ##############
+    #region | Properties                                                                {{{1 |
 
     @property
     def natoms(self):
@@ -411,6 +420,7 @@ class Molecule(object):
         for atom in self:
             ret_val += atom.mass
         return ret_val
+    molecular_mass = mass
 
     @property
     def xyz(self):
@@ -436,7 +446,6 @@ class Molecule(object):
             self.atoms[i].position = row
             self.atoms[i].position.units = self.cartesian_units
         self.update_cartesian_representation()
-
 
     @CachedProperty
     def A_e(self):
@@ -610,9 +619,11 @@ class Molecule(object):
     def inverse_sqrt_mass_matrix(self):
         return np.diag(sum(([1.0 / math.sqrt(atom.mass)]*3 for atom in self), [])).view(Matrix)
 
-    ###################
-    # Special Methods #
-    ###################
+    #endregion }}}1
+
+    #--------------------------------------------------------------------------------#
+
+    #region | Special Methods                                                           {{{1 |
 
     def __add__(self, other):
         if isinstance(other, Molecule):
@@ -704,10 +715,11 @@ class Molecule(object):
             # TODO full symbol here for non-principal isotopes
             return ''.join(a.symbol for a in self.atoms)
 
+    #endregion }}}1
 
-    #################
-    # Class Methods #
-    #################
+    #--------------------------------------------------------------------------------#
+
+    #region | Class Methods                                                             {{{1 |
 
     #TODO make this take a string argument
     #TODO better error checking, better type checking
@@ -1185,10 +1197,11 @@ class Molecule(object):
     # Alias
     get = from_identifier
 
+    #endregion }}}1
 
-    #############
-    #  Methods  #
-    #############
+    #--------------------------------------------------------------------------------#
+
+    #region | Methods                                                                   {{{1 |
 
     #-------------------------------------#
     # Inquiry methods (which return bool) #
@@ -1843,6 +1856,52 @@ class Molecule(object):
         self.update_cartesian_representation()
 
 
+    def geometric_subgroups(self, n_vdw_radii=1.2, default_vdw_radius=2.0*Angstroms):
+        """
+        Return a list of geometrically separated moieties of the molecule.
+        Note: sub-molecules returned will have charge 0 and multiplicity 1 for now
+
+        @param n_vdw_radii:  How many Van der Waals radii two atoms may be separated by and still be considered bonded
+        @param default_vdw_radius: Van der Waals radius to use for elements that grendel doesn't know the VDW radius of.
+        @return: list of moieties as Molecule objects.
+        """
+        atom_lists = [[]]
+        adjacency_matrix = Matrix(shape=(self.natoms, self.natoms), dtype=bool)
+        for i, atom1 in enumerate(self):
+            for j, atom2 in enumerate(self):
+                if j > i:
+                    continue
+                adjacency_matrix[i,j] = adjacency_matrix[j,i] = atom1.is_bonded_to(atom2)
+        atom_lists[0].append(self.atoms[0])
+        ungrouped = self.atoms[1:]
+        while len(ungrouped) > 0:
+            n_ungrouped = len(ungrouped)
+            still_ungrouped = []
+            for atomB in ungrouped:
+                grouped = False
+                for group in atom_lists:
+                    for atomA in group:
+                        if adjacency_matrix[atomA.index, atomB.index]:
+                            group.append(atomB)
+                            grouped = True
+                            break
+                    if grouped:
+                        break
+                if not grouped:
+                    still_ungrouped.append(atomB)
+            #----------------------------------------#
+            if n_ungrouped == len(still_ungrouped):
+                # We didn't add any more atoms this time, so create a new group with
+                #     the first ungrouped atom
+                atom_lists.append([still_ungrouped.pop(0)])
+            #----------------------------------------#
+            ungrouped = still_ungrouped
+        #========================================#
+        return [Molecule(grp) for grp in atom_lists]
+
+
+
+
     #----------------------------#
     # Other unclassified methods #
     #----------------------------#
@@ -2044,6 +2103,12 @@ class Molecule(object):
     def get_stub(self):
         raise NotImplementedError
 
+
+    #endregion }}}1
+
+    #--------------------------------------------------------------------------------#
+
+    #region | Private Methods                                                           {{{1 |
     ###################
     # Private Methods #
     ###################
@@ -2163,6 +2228,13 @@ class Molecule(object):
         self._point_group = PointGroup(self, ops)
 
 
+    #endregion }}}1
+
+    #--------------------------------------------------------------------------------#
+
+    pass
+    # End of molecule class
+
 class MoleculeStub(Molecule):
     """ The exact same thing as the parent Molecule class (for now, anyway), but used for holding
     specifications of molecules that can later be replaced by a full molecule class (so things like,
@@ -2245,4 +2317,5 @@ from grendel.representations.internal_representation import InternalRepresentati
 from grendel.coordinates.bond_angle import BondAngle
 from grendel.coordinates.bond_length import BondLength
 from grendel.coordinates.torsion import Torsion
+
 

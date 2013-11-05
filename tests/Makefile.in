@@ -11,7 +11,9 @@ maddness_subdirs = dfmp2-1 dfmp2-2
 cc_subdirs = cc1 cc2 cc3 cc4 cc4a cc5a cc6 cc8 cc8a cc8b cc8c cc9 cc9a cc10 cc11 \
 cc12 cc13 cc13a cc14 cc15 cc16 cc17 cc18 cc19 cc21 cc22 cc23 cc24 cc25 cc26 cc27 cc28 \
 cc29 cc30 cc31 cc32 cc33 cc34 cc35 cc36 cc37 cc38 cc39 cc40 cc41 cc42 \
-cc43 cc44 cc45 cc46 cc47 cc48 cc49 cc50 cc51 cc52 cc53 # cc5 these should be restored when fixed
+cc43 cc44 cc45 cc46 cc47 cc48 cc49 cc50 cc51 cc52 cc53 cc55 # cc5 these should be restored when fixed
+
+cceom_subdirs = cc46 cc47 cc48 cc55
 
 cepa_subdirs = cepa1 cepa2 cepa3
 
@@ -147,6 +149,9 @@ fnocc_tests: $(fnocc_subdirs)
 cc_tests: $(cc_subdirs)
 	$(call gatherresults, $(cc_subdirs))
 
+cceom_tests: $(cceom_subdirs)
+	$(call gatherresults, $(cceom_subdirs))
+
 ci_tests: $(ci_subdirs)
 	$(call gatherresults, $(ci_subdirs))
 
@@ -198,6 +203,20 @@ clean:
 
 quicktestsclean:
 	for dir in $(quicktestdirs); \
+	do \
+	 (cd $${dir} && echo ...Cleaning $${dir}... && $(MAKE) clean) || exit 1; \
+	done
+	rm -f ../test-case-results
+
+cc_testsclean:
+	for dir in $(cc_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Cleaning $${dir}... && $(MAKE) clean) || exit 1; \
+	done
+	rm -f ../test-case-results
+
+cceom_testsclean:
+	for dir in $(cceom_subdirs); \
 	do \
 	 (cd $${dir} && echo ...Cleaning $${dir}... && $(MAKE) clean) || exit 1; \
 	done

@@ -269,11 +269,15 @@ void OCCWave::mp2_manager()
 {
         time4grad = 0;// means i will not compute the gradient
         timer_on("trans_ints");
-        if (reference_ == "RESTRICTED" && dertype == "NONE") trans_ints_rmp2(); 
-        else if (reference_ == "RESTRICTED" && dertype == "FIRST") trans_ints_rhf();
-	else if (reference_ == "UNRESTRICTED" && dertype == "FIRST") trans_ints_uhf();  
-	else if (reference_ == "UNRESTRICTED" && dertype == "NONE" && reference == "ROHF") trans_ints_uhf();  
-	else if (reference_ == "UNRESTRICTED" && dertype == "NONE" && reference != "ROHF") trans_ints_ump2();  
+        if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
+            if (reference_ == "RESTRICTED") trans_ints_rhf();
+	    else if (reference_ == "UNRESTRICTED") trans_ints_uhf();  
+        }
+        else {
+            if (reference_ == "RESTRICTED") trans_ints_rmp2(); 
+	    else if (reference_ == "UNRESTRICTED" && reference == "ROHF") trans_ints_uhf();  
+	    else if (reference_ == "UNRESTRICTED" && reference != "ROHF") trans_ints_ump2();  
+        }
         timer_off("trans_ints");
         // ROHF REF
         if (reference == "ROHF") {
@@ -388,27 +392,23 @@ void OCCWave::mp2_manager()
             if (ekt_ip_ == "TRUE" && ekt_ea_ == "TRUE") {
                 ekt_ip();
                 ekt_ea();
-                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
-                tstop();
-                exit(EXIT_SUCCESS);
+                //fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
+                //tstop();
+                //exit(EXIT_SUCCESS);
             }
 
             else if (ekt_ip_ == "TRUE" && ekt_ea_ == "FALSE") {
                 ekt_ip();
-                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
-                tstop();
-                exit(EXIT_SUCCESS);
             }
 
             else if (ekt_ip_ == "FALSE" && ekt_ea_ == "TRUE") {
                 ekt_ea();
-                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
-                tstop();
-                exit(EXIT_SUCCESS);
             }
 
-	    fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
-	    fflush(outfile);
+            else if (ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE") {
+	        fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
+	        fflush(outfile);
+            }
         }
 
 }// end mp2_manager 
@@ -870,27 +870,21 @@ void OCCWave::mp3_manager()
             if (ekt_ip_ == "TRUE" && ekt_ea_ == "TRUE") {
                 ekt_ip();
                 ekt_ea();
-                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
-                tstop();
-                exit(EXIT_SUCCESS);
             }
 
             else if (ekt_ip_ == "TRUE" && ekt_ea_ == "FALSE") {
                 ekt_ip();
-                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
-                tstop();
-                exit(EXIT_SUCCESS);
             }
 
             else if (ekt_ip_ == "FALSE" && ekt_ea_ == "TRUE") {
                 ekt_ea();
-                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
-                tstop();
-                exit(EXIT_SUCCESS);
             }
 
-	    fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
-	    fflush(outfile);
+            else if (ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE") {
+	        fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
+	        fflush(outfile);
+            }
+
         }
 
 }// end mp3_manager 
@@ -1165,27 +1159,21 @@ void OCCWave::cepa_manager()
             if (ekt_ip_ == "TRUE" && ekt_ea_ == "TRUE") {
                 ekt_ip();
                 ekt_ea();
-                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
-                tstop();
-                exit(EXIT_SUCCESS);
             }
 
             else if (ekt_ip_ == "TRUE" && ekt_ea_ == "FALSE") {
                 ekt_ip();
-                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
-                tstop();
-                exit(EXIT_SUCCESS);
             }
 
             else if (ekt_ip_ == "FALSE" && ekt_ea_ == "TRUE") {
                 ekt_ea();
-                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
-                tstop();
-                exit(EXIT_SUCCESS);
             }
 
-	    fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
-	    fflush(outfile);
+            else if (ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE") {
+	        fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
+	        fflush(outfile);
+            }
+
         }
 }// end cepa_manager 
 
@@ -1521,27 +1509,21 @@ void OCCWave::mp2_5_manager()
             if (ekt_ip_ == "TRUE" && ekt_ea_ == "TRUE") {
                 ekt_ip();
                 ekt_ea();
-                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
-                tstop();
-                exit(EXIT_SUCCESS);
             }
 
             else if (ekt_ip_ == "TRUE" && ekt_ea_ == "FALSE") {
                 ekt_ip();
-                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
-                tstop();
-                exit(EXIT_SUCCESS);
             }
 
             else if (ekt_ip_ == "FALSE" && ekt_ea_ == "TRUE") {
                 ekt_ea();
-                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
-                tstop();
-                exit(EXIT_SUCCESS);
             }
 
-	    fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
-	    fflush(outfile);
+            else if (ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE") {
+	        fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
+	        fflush(outfile);
+            }
+
         }
 
 }// end omp2.5_manager 

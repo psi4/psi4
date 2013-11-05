@@ -6,13 +6,13 @@ import numpy as np
 from grendel import type_checking_enabled, sanity_checking_enabled
 from grendel.chemistry.element import Element, Isotope
 
-from grendel.gmath.vector import Vector, LightVector
+from grendel.gmath.vector import Vector, LightVector, magnitude
 
 from grendel.util.decorators import with_flexible_arguments, CachedProperty, IterableOf, typechecked
 from grendel.util.metaprogramming import ReadOnlyAttribute
 from grendel.util.overloading import overloaded, OverloadedFunctionCallError
-from grendel.util.units.unit import DistanceUnit, isunit
-from grendel.util.units.value_with_units import hasunits
+from grendel.util.units.unit import DistanceUnit, isunit, Angstroms
+from grendel.util.units.value_with_units import hasunits, strip_units
 
 __all__ = [
     "Atom"
@@ -378,6 +378,19 @@ class Atom(object):
 
     def is_ghost(self):
         return self._element == Elements['X']
+
+    def is_bonded_to(self, other_atom, n_vdw_radii=1.2, default_vdw_radius=2.0*Angstroms):
+        #TODO deal with units
+        dist = magnitude(self.xyz - other_atom.xyz)
+        vdw_me = self.element.vdw_radius
+        if vdw_me is None:
+            vdw_me = default_vdw_radius
+        vdw_me = strip_units(vdw_me, convert_to=self.cartesian_units, assume_units=DistanceUnit.default)
+        vdw_other = self.element.vdw_radius
+        if vdw_other is None:
+            vdw_other = default_vdw_radius
+        vdw_other = strip_units(vdw_other, convert_to=self.cartesian_units, assume_units=DistanceUnit.default)
+        return dist < (vdw_me * n_vdw_radii/2 + vdw_other * n_vdw_radii/2)
 
     #---------------#
     # Other methods #
