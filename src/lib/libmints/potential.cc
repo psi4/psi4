@@ -30,6 +30,8 @@
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
+#define VDEBUG 1
+
 using namespace boost;
 using namespace psi;
 
@@ -466,6 +468,7 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
 
 #if VDEBUG
                                 fprintf(outfile, "%d %d %d %d %d %d\n", l1, m1, n1, l2, m2, n2);
+                                fprintf(outfile, "%lf %lf\n", a1, a2);
                                 fprintf(outfile, "iind %d jind %d\n", iind, jind);
 #endif
 
@@ -495,6 +498,7 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                 buffer_[a_x_start + (3 * center_i * size + 0 * size) + ao12     ] -= temp * pfac;
 #if VDEBUG
                                 fprintf(outfile, "axax ax %d ax %d contrib %20.14lf\n", 3*center_i, 3*center_i, temp * pfac);
+                                fprintf(outfile, "4a1 = %lf, 2a1 = %lf\n", 4.0*a1*a1*vi[iind+ix2+ix2][jind][0],  2.0*a1*(2*l1+1)*v_int);
 #endif
 
                                 // V_{\mu\nu}^{a_x a_y}
