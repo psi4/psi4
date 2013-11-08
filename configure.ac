@@ -861,11 +861,13 @@ case $withval in
      AC_SUBST(HAVE_PLUGINS, yes)
      case $target_os in
        linux*)
-         CXXOTH="$CXXOTH -fpic"
+         COTH="$COTH -fpic -fPIC"
+         CXXOTH="$CXXOTH -fpic -fPIC"
          LDFLAGS="$LDFLAGS -Wl,-export-dynamic"
          ;;
        darwin*)
-         CXXOTH="$CXXOTH -fpic"
+         COTH="$COTH -fpic -fPIC"
+         CXXOTH="$CXXOTH -fpic -fPIC"
          LDFLAGS="$LDFLAGS -all_load"
          ;;
      esac
