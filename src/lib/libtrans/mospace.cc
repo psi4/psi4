@@ -34,6 +34,7 @@ boost::shared_ptr<MOSpace> MOSpace::vir(new MOSpace(MOSPACE_VIR));
 boost::shared_ptr<MOSpace> MOSpace::fzv(new MOSpace(MOSPACE_FZV));
 boost::shared_ptr<MOSpace> MOSpace::all(new MOSpace(MOSPACE_ALL));
 boost::shared_ptr<MOSpace> MOSpace::nil(new MOSpace(MOSPACE_NIL));
+boost::shared_ptr<MOSpace> MOSpace::dum(new MOSpace(MOSPACE_DUM));
 
 /**
  * This creates an empty MOSpace with just a label.  This is solely for the
