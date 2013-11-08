@@ -92,6 +92,14 @@ class MOSpace{
          */
         #define MOSPACE_NIL 'n'
         static boost::shared_ptr<MOSpace> nil;
+        /**
+         * The MOSpace::dum space is a dummy space with a single function in each irrep.
+         * It is used for converting a single aux index into a DPD pair.
+         *
+         * The label associated with this space is 'd'
+         */
+        #define MOSPACE_DUM 'd'
+        static boost::shared_ptr<MOSpace> dum;
 
         // These are to allow the map to be used
         friend bool operator==(const MOSpace &lhs, const MOSpace &rhs)

@@ -226,6 +226,16 @@ IntegralTransform::process_spaces()
             // Compute the orbital symmetries
             for(int h = 0; h < nirreps_; ++h)
                 for(int n = 0; n < aOrbsPI[h]; ++n)  aOrbSym[aVirCount++] = h;
+        }else if(moSpace->label() == MOSPACE_DUM){
+            // This is the dummy single-function-per-irrep space
+            aOrbSym = new int[nirreps_];
+            aIndex  = new int[nirreps_];
+            int bOrbCount = 0;
+            for(int h = 0; h < nirreps_; ++h){
+                aOrbsPI[h] = 1;
+                aIndex[bOrbCount] = h;
+                aOrbSym[bOrbCount++] = h;
+            }
         }else{
             // This must be a custom MOSpace that the user provided
             const std::vector<int> aorbs  = moSpace->aOrbs();
@@ -403,6 +413,16 @@ IntegralTransform::process_spaces()
                 // Compute the orbital symmetries
                 for(int h = 0; h < nirreps_; ++h)
                     for(int n = 0; n < bOrbsPI[h]; ++n)  bOrbSym[bVirCount++] = h;
+            }else if(moSpace->label() == MOSPACE_DUM){
+                // This is the dummy single-function-per-irrep space
+                bOrbSym = new int[nirreps_];
+                bIndex  = new int[nirreps_];
+                int bOrbCount = 0;
+                for(int h = 0; h < nirreps_; ++h){
+                    bOrbsPI[h] = 1;
+                    bIndex[bOrbCount] = h;
+                    bOrbSym[bOrbCount++] = h;
+                }
             }else{
                 // This must be a custom MOSpace that the user provided
                 const std::vector<int> borbs  = moSpace->bOrbs();
