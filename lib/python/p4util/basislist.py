@@ -103,8 +103,8 @@ def load_basis_families():
     """Function to load into the array ``basisfamily_list``
     BasisFamily objects for all Psi4's standard installed bases.
     """
-    from basislistdunning import load_basfam_dunning
-    from basislistother import load_basfam_other
+    from p4util.basislistdunning import load_basfam_dunning
+    from p4util.basislistother import load_basfam_other
 
     if len(basisfamily_list) == 0:
         load_basfam_dunning()
