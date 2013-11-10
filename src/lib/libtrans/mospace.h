@@ -98,7 +98,7 @@ class MOSpace{
          *
          * The label associated with this space is 'd'
          */
-        #define MOSPACE_DUM 'd'
+        #define MOSPACE_DUM 'D'
         static boost::shared_ptr<MOSpace> dum;
 
         // These are to allow the map to be used
