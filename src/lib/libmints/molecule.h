@@ -376,6 +376,8 @@ public:
     /// Compute the rotational constants and return them in wavenumbers
     Vector rotational_constants(double tol = FULL_PG_TOL) const;
 
+    /// Print the rotational constants
+    void print_rotational_constants(void) const;
     /// Return the rotor type
     RotorType rotor_type(double tol = FULL_PG_TOL) const;
 
