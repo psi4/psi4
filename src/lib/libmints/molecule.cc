@@ -1901,11 +1901,11 @@ void Molecule::print_rotational_constants(void) const {
   if (rot_const[0] == 0.0) // linear
     fprintf(outfile,"\tA = **********  ");
   else               // non-linear
-    fprintf(outfile,"\tA = %10.5lf  ", rot_const[0]*pc_c/1000);
+    fprintf(outfile,"\tA = %10.5lf  ", rot_const[0]*pc_c/10000);
   if (rot_const[1] == 0.0) // atom
     fprintf(outfile,"  B = **********    C = **********  \n");
   else               // molecule
-    fprintf(outfile,"  B = %10.5lf   C = %10.5lf\n", rot_const[1]*pc_c/1000, rot_const[2]*pc_c/1000);
+    fprintf(outfile,"  B = %10.5lf   C = %10.5lf\n", rot_const[1]*pc_c/10000, rot_const[2]*pc_c/10000);
 }
 
 RotorType Molecule::rotor_type(double zero_tol) const {
