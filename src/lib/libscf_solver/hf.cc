@@ -508,6 +508,8 @@ void HF::print_header()
     if (WorldComm->me() == 0) {
         fprintf(outfile, "  Running in %s symmetry.\n\n", molecule_->point_group()->symbol().c_str());
 
+        molecule_->print_rotational_constants();
+
         fprintf(outfile, "  Nuclear repulsion = %20.15f\n\n", nuclearrep_);
         fprintf(outfile, "  Charge       = %d\n", charge_);
         fprintf(outfile, "  Multiplicity = %d\n", multiplicity_);
