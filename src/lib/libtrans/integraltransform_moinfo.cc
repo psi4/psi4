@@ -478,8 +478,8 @@ IntegralTransform::process_spaces()
     spacesUsed_.push_back(MOSPACE_NIL);
     spaceArray_.push_back(sopi_);
     spaceArray_.push_back(sosym_);
-    aOrbsPI_[MOSPACE_NIL] = zeros_;
-    bOrbsPI_[MOSPACE_NIL] = zeros_;
+    aOrbsPI_[MOSPACE_NIL] = sopi_;
+    bOrbsPI_[MOSPACE_NIL] = sopi_;
 
     /* Populate the DPD indexing map.  The string class is used instead of a char*
      * because I can't be bothered to roll my own char* container with comparison
