@@ -106,7 +106,7 @@ void DFTensor::print_header()
 }
 void DFTensor::build_metric()
 {
-    boost::shared_ptr<FittingMetric> met(new FittingMetric(auxiliary_));
+    boost::shared_ptr<FittingMetric> met(new FittingMetric(auxiliary_, true));
     met->form_eig_inverse();
     metric_ = met->get_metric();
 

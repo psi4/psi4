@@ -264,7 +264,9 @@ IntegralTransform::initialize()
             fprintf(outfile, "%d ", bCorrToPitzer_[p]);
         fprintf(outfile, "\n");
     }
+
     process_spaces();
+
     // Set up the DPD library
     // TODO implement caching of files
     int numSpaces = spacesUsed_.size();
