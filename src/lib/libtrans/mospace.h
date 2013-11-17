@@ -39,6 +39,7 @@ class MOSpace{
         MOSpace(const char label, const std::vector<int> aOrbs, const std::vector<int> bOrbs,
                 const std::vector<int> aIndex, const std::vector<int> bIndex);
         MOSpace(const char label, const std::vector<int> aOrbs, const std::vector<int> aIndex);
+        MOSpace(const char label, const std::vector<int> orbsPI);
 
         /**
          * The MOSpace::frc space can be used to define the frozen occupied space.
@@ -81,22 +82,22 @@ class MOSpace{
          * orbitals are handled consistently with how the transformation object is
          * constructed.  All active molecular orbtitals are transformed
          *
-         * The label associated with this space is 'a'
+         * The label associated with this space is 'A'
          */
         #define MOSPACE_ALL 'A'
         static boost::shared_ptr<MOSpace> all;
         /**
          * The MOSpace::nil space can be used to define the atomic orbital space.
          *
-         * The label associated with this space is 'n'
+         * The label associated with this space is 'N'
          */
-        #define MOSPACE_NIL 'n'
+        #define MOSPACE_NIL 'N'
         static boost::shared_ptr<MOSpace> nil;
         /**
          * The MOSpace::dum space is a dummy space with a single function in each irrep.
          * It is used for converting a single aux index into a DPD pair.
          *
-         * The label associated with this space is 'd'
+         * The label associated with this space is 'D'
          */
         #define MOSPACE_DUM 'D'
         static boost::shared_ptr<MOSpace> dum;
@@ -142,6 +143,10 @@ class MOSpace{
         /// Get the beta orbital indexing array for IWL
         const std::vector<int>& bIndex() {return bIndex_.size() == 0 ? aIndex_ : bIndex_;}
 
+        /// Whether this is just a placeholder
+        bool placeholder() const {return placeholder_;}
+        void set_placeholder(bool t_f) {placeholder_ = t_f;}
+
 
     protected:
         MOSpace(const char label);
@@ -161,6 +166,8 @@ class MOSpace{
         std::vector<int> aIndex_;
         // The beta reindexing array
         std::vector<int> bIndex_;
+        // Whether this only describes dimensions, and has no orbitals associated with it
+        bool placeholder_;
 };
 
 } // End namespaces
