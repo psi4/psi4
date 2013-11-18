@@ -137,7 +137,7 @@ public:
     inline void sum(type data, int nelem, type *receive_buffer=0, int target=-1)
     {
         if (receive_buffer != 0)
-            ::memcpy(receive_buffer, data, sizeof(type) * nelem);
+            std::memcpy(receive_buffer, data, sizeof(type) * nelem);
     }
 
     /**

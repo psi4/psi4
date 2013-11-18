@@ -508,6 +508,8 @@ void HF::print_header()
     if (WorldComm->me() == 0) {
         fprintf(outfile, "  Running in %s symmetry.\n\n", molecule_->point_group()->symbol().c_str());
 
+        molecule_->print_rotational_constants();
+
         fprintf(outfile, "  Nuclear repulsion = %20.15f\n\n", nuclearrep_);
         fprintf(outfile, "  Charge       = %d\n", charge_);
         fprintf(outfile, "  Multiplicity = %d\n", multiplicity_);
@@ -730,13 +732,22 @@ void HF::form_H()
     boost::python::object pyExtern = dynamic_cast<PythonDataType*>(options_["EXTERN"].get())->to_python();
     boost::shared_ptr<ExternalPotential> external = boost::python::extract<boost::shared_ptr<ExternalPotential> >(pyExtern);
     if (external) {
-        if (H_->nirrep() != 1)
+        if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY") == false && H_->nirrep() != 1)
             throw PSIEXCEPTION("SCF: External Fields are not consistent with symmetry. Set symmetry c1.");
+
+        SharedMatrix Vprime = external->computePotentialMatrix(basisset_);
+
+        if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY")) {
+            // Attempt to apply symmetry. No error checking is performed.
+            SharedMatrix Vprimesym = factory_->create_shared_matrix("External Potential");
+            Vprimesym->apply_symmetry(Vprime, AO2SO_);
+            Vprime = Vprimesym;
+        }
+
         if (print_) {
             external->set_print(print_);
             external->print();
         }
-        SharedMatrix Vprime = external->computePotentialMatrix(basisset_);
         if (print_ > 3)
             Vprime->print();
         V_->add(Vprime);

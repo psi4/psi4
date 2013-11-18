@@ -48,5 +48,6 @@ EXTERN struct Frozen frozen;
 EXTERN struct Params params;
 EXTERN struct RHO_Params *rho_params;
 EXTERN struct TD_Params *td_params;
+//EXTERN std::vector<struct XTD_Params> xtd_params;
 
 }} // namespace psi::ccdensity

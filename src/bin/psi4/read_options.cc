@@ -113,6 +113,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   etc. Use the add_str_i function to make this string case sensitive. -*/
   options.add_str_i("WRITER_FILE_LABEL", "");
 
+  /*- Assume external fields are arranged so that they have symmetry. It is up to the user to know what to do here. The code does NOT help you out in any way! !expert -*/
+  options.add_bool("EXTERNAL_POTENTIAL_SYMMETRY", false);
+
   // CDS-TODO: We should go through and check that the user hasn't done
   // something silly like specify frozen_docc in DETCI but not in TRANSQT.
   // That would create problems.  (This was formerly checked in DETCI
@@ -2696,14 +2699,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Convergence criterion for CC energy. See Table :ref:`Post-SCF
       Convergence <table:conv_corl>` for default convergence criteria for
       different calculation types.  Note that convergence is
-	  met only when |fnocc__e_convergence| and |fnocc__r_convergence|
-	  are satisfied. -*/
+      met only when |fnocc__e_convergence| and |fnocc__r_convergence|
+      are satisfied. -*/
       options.add_double("E_CONVERGENCE", 1.0e-6);
       /*- Maximum number of iterations for Brueckner orbitals optimization -*/
       options.add_int("BRUECKNER_MAXITER", 20);
       /*- Convergence for the CC amplitudes.  Note that convergence is
-	      met only when |fnocc__e_convergence| and |fnocc__r_convergence|
-	      are satisfied. -*/
+          met only when |fnocc__e_convergence| and |fnocc__r_convergence|
+          are satisfied. -*/
       options.add_double("R_CONVERGENCE", 1.0e-7);
       /*- Maximum number of CC iterations -*/
       options.add_int("MAXITER", 100);
@@ -2723,7 +2726,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
           ( only valid if |fnocc__nat_orbs| = true ) -*/
       options.add_double("OCC_TOLERANCE", 1.0e-6);
       /*- An array containing the number of virtual natural orbitals per irrep
-      (in Cotton order) so a user can specify the number of retained 
+      (in Cotton order) so a user can specify the number of retained
       natural orbitals rather than determining them with |fnocc__occ_tolerance|.
       This keyword overrides |fnocc__occ_tolerance|. -*/
       options.add("ACTIVE_NAT_ORBS", new ArrayType());

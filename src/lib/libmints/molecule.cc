@@ -1885,6 +1885,29 @@ Vector Molecule::rotational_constants(double zero_tol) const {
   return rot_const;
 }
 
+void Molecule::print_rotational_constants(void) const {
+  Vector rot_const = rotational_constants(1e-8);
+  fprintf(outfile,"\n\tRotational constants (cm^-1):\n");
+  if (rot_const[0] == 0.0) // linear
+    fprintf(outfile,"\tA = **********  ");
+  else               // non-linear
+    fprintf(outfile,"\tA = %10.5lf  ", rot_const[0]);
+  if (rot_const[1] == 0.0) // atom
+    fprintf(outfile,"  B = **********    C = **********  \n");
+  else               // molecule
+    fprintf(outfile,"  B = %10.5lf   C = %10.5lf\n", rot_const[1], rot_const[2]);
+  
+  fprintf(outfile,"\n\tRotational constants (MHz):\n");
+  if (rot_const[0] == 0.0) // linear
+    fprintf(outfile,"\tA = **********  ");
+  else               // non-linear
+    fprintf(outfile,"\tA = %10.5lf  ", rot_const[0]*pc_c/10000);
+  if (rot_const[1] == 0.0) // atom
+    fprintf(outfile,"  B = **********    C = **********  \n");
+  else               // molecule
+    fprintf(outfile,"  B = %10.5lf   C = %10.5lf\n", rot_const[1]*pc_c/10000, rot_const[2]*pc_c/10000);
+}
+
 RotorType Molecule::rotor_type(double zero_tol) const {
 
   Vector rot_const = rotational_constants();
