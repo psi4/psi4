@@ -48,7 +48,8 @@ void print_version(FILE *myout)
   fprintf(myout, "    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,\n");
   fprintf(myout, "    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,\n");
   fprintf(myout, "    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,\n");
-  fprintf(myout, "    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)\n");
+  fprintf(myout, "    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)\n");
+  fprintf(myout, "    (doi: 10.1002/wcms.93)\n");
 
   fprintf(myout, "\n");
   fprintf(myout, "                         Additional Contributions by\n");

@@ -272,12 +272,28 @@ void oscillator_strength(struct TD_Params *S)
   f = f_x + f_y + f_z;
   S->OS = f;
 
+  /* Compute Einstein A,B Coefficients */
+  double hartree2Hz = pc_hartree2MHz * (1.0e6);
+  double hbar       = pc_h/(pc_twopi);
+  /* SI Dipole Strength */
+  double ds_si = (ds_x+ds_y+ds_z) * pc_dipmom_au2si * pc_dipmom_au2si;
+  /* SI Transition Energy */
+  double nu_si = S->cceom_energy * hartree2Hz;
+  /* Einstein Coefficients */
+  double einstein_b = (2.0/3.0) * (pc_pi/pow(hbar,2.0)) * (1.0/(4.0*pc_pi*pc_e0)) * ds_si;
+  double einstein_a = 8.0* pc_pi * pc_h * pow((nu_si/pc_c),3.0) * einstein_b;
+  if(einstein_a < 1e-7) einstein_a = 0.0000000;
+  S->einstein_a = einstein_a;
+  S->einstein_b = einstein_b;
+
   fprintf(outfile,"\t<0|mu_e|n>              %11.8lf \t %11.8lf \t %11.8lf\n",
           lt_x,lt_y,lt_z);
   fprintf(outfile,"\t<n|mu_e|0>              %11.8lf \t %11.8lf \t %11.8lf\n",
           rt_x,rt_y,rt_z);
   fprintf(outfile,"\tDipole Strength         %11.8lf \n",ds_x+ds_y+ds_z);
   fprintf(outfile,"\tOscillator Strength     %11.8lf \n",f_x+f_y+f_z);
+  fprintf(outfile,"\tEinstein A Coefficient   %11.8e \n",einstein_a);
+  fprintf(outfile,"\tEinstein B Coefficient   %11.8e \n",einstein_b);
   fflush(outfile);
 
   if((params.ref == 0) || (params.ref == 1)) {

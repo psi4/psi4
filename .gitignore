@@ -52,3 +52,6 @@ svn_source
 psi4.xcodeproj
 do-configure*
 update_debug_latest.sh
+
+# Ignore Jet's Vagrantfile (might be added later for auto testing)
+Vagrantfile
