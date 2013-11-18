@@ -282,6 +282,8 @@ protected:
     double new_total_energy_;
     /// The Tikhonow regularizer used to remove singularities (c.f. Taube and Bartlett, JCP, 2009)
     double regularizer_;
+    /// Level shift for denominators in orbital updates
+    double orbital_level_shift_;
     /// The threshold for the norm of the residual part of the subspace (|b'> = |b'> - |b><b|b'>) that is used to augment the subspace
     double vec_add_tol_;
 

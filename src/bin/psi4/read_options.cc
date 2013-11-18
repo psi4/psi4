@@ -833,6 +833,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("DAMPING_PERCENTAGE",0.0);
       /*- The shift applied to the denominator in the density cumulant update iterations !expert-*/
       options.add_double("TIKHONOW_OMEGA", 0.0);
+      /*- The shift applied to the denominator in the orbital update iterations !expert-*/
+      options.add_double("ORBITAL_LEVEL_SHIFT", 0.0);
       /*- Controls whether to relax the orbitals during the energy computation or not (for debug puproses only).
       For practical applications only the default must be used !expert-*/
       options.add_bool("MO_RELAX", true);
