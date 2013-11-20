@@ -171,6 +171,8 @@ protected:
     void compute_orbital_gradient_VO();
     void compute_orbital_rotation_jacobi();
     void rotate_orbitals();
+    // Three-particle cumulant contributions
+    double compute_three_particle_energy();
 
     bool augment_b(double *vec, double tol);
     /// Controls convergence of the orbital updates
