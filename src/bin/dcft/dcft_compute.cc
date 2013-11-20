@@ -98,6 +98,12 @@ DCFTSolver::compute_energy()
     fprintf(outfile,   "\t*DCFT Lambda Energy                              = %20.15f\n", lambda_energy_);
     fprintf(outfile,   "\t*DCFT Total Energy                               = %20.15f\n", new_total_energy_);
 
+    // Compute three-particle contribution to the DCFT energy
+    if (options_.get_str("THREE_PARTICLE") == "ON") {
+        double three_particle_energy = compute_three_particle_energy();
+        fprintf(outfile,   "\t*DCFT Three-particle Energy                      = %20.15f\n", three_particle_energy);
+    }
+
     Process::environment.globals["CURRENT ENERGY"] = new_total_energy_;
     Process::environment.globals["DCFT TOTAL ENERGY"] = new_total_energy_;
     Process::environment.globals["DCFT SCF ENERGY"] = scf_energy_;
