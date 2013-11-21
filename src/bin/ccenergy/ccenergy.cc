@@ -115,6 +115,7 @@ void pair_energies(double** epair_aa, double** epair_ab);
 void print_pair_energies(double* emp2_aa, double* emp2_ab, double* ecc_aa,
 double* ecc_ab);
 void checkpoint(void);
+void form_df_ints(Options &options, int **cachelist, int *cachefiles, dpd_file4_cache_entry *priority);
 
 /* local correlation functions */
 void local_init(void);
@@ -232,7 +233,9 @@ PsiReturnType ccenergy(Options &options)
          cachelist, NULL, 4, spaces);
     dpd_set_default(0);
 
-    if( params.aobasis != "NONE" ) { /* Set up new DPD's for AO-basis algorithm */
+    if( params.df ){
+        form_df_ints(options, cachelist, cachefiles, priority);
+    }else if( params.aobasis != "NONE" ) { /* Set up new DPD's for AO-basis algorithm */
         std::vector<int*> aospaces;
         aospaces.push_back(moinfo.aoccpi);
         aospaces.push_back(moinfo.aocc_sym);
@@ -259,14 +262,16 @@ PsiReturnType ccenergy(Options &options)
 
     dpd_init(0, moinfo.nirreps, params.memory, params.cachetype, cachefiles, cachelist, priority, 2, spaces);
 
-    if( params.aobasis != "NONE") { /* Set up new DPD for AO-basis algorithm */
-            std::vector<int*> aospaces;
-            aospaces.push_back(moinfo.occpi);
-            aospaces.push_back(moinfo.occ_sym);
-            aospaces.push_back(moinfo.sopi);
-            aospaces.push_back(moinfo.sosym);
-            dpd_init(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL, 2, aospaces);
-            dpd_set_default(0);
+    if( params.df ){
+        form_df_ints(options, cachelist, cachefiles, priority);
+    }else if( params.aobasis != "NONE") { /* Set up new DPD for AO-basis algorithm */
+        std::vector<int*> aospaces;
+        aospaces.push_back(moinfo.occpi);
+        aospaces.push_back(moinfo.occ_sym);
+        aospaces.push_back(moinfo.sopi);
+        aospaces.push_back(moinfo.sosym);
+        dpd_init(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL, 2, aospaces);
+        dpd_set_default(0);
     }
 
   }

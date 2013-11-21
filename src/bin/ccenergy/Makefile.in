@@ -22,7 +22,7 @@ Fme.cc            cc2_WabijT2.cc  cc3_Wmnij.cc  get_params.cc  tau.cc\
 Fmi.cc            cc2_Wmbij.cc    ccenergy.cc   halftrans.cc   taut.cc\
 FmitT2.cc         cc2_WmbijT2.cc  converged.cc  init_amps.cc   tsave.cc\
 Wmbej.cc          cc2_Wmnij.cc    d1diag.cc     lmp2.cc        update.cc \
-mp2_energy.cc     d2diag.cc
+mp2_energy.cc     d2diag.cc       form_df_ints.cc
 
 BINOBJ = $(CXXSRC:%.cc=%.o)
 

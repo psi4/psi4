@@ -61,7 +61,7 @@ double dotval;
 #ifdef TIME_CCENERGY
     timer_on("BT2", outfile);
 #endif
-    if(params.aobasis == "DISK" || params.aobasis == "DIRECT")
+    if(params.df || params.aobasis == "DISK" || params.aobasis == "DIRECT")
       BT2_AO();
     else BT2();
     if(params.print & 2) status("<ab||cd> -> T2", outfile);
