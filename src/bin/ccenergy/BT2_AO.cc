@@ -47,63 +47,7 @@ void halftrans(dpdbuf4 *Buf1, int dpdnum1, dpdbuf4 *Buf2, int dpdnum2, double **
 
 int AO_contribute(struct iwlbuf *InBuf, dpdbuf4 *tau1_AO, dpdbuf4 *tau2_AO);
 
-/**
- * @brief contract444_df Forms integrals on the fly from density fitted integrals and contracts them against T amplitudes
- * @param B The DF integral tensor, arranged with the auxilliary index as the fast-running index
- * @param tau1_AO The incoming amplitudes
- * @param tau2_AO The outgoing amplitudes
- */
-void contract444_df(dpdbuf4 *B, dpdbuf4 *tau1_AO, dpdbuf4 *tau2_AO)
-{
-    // Zero out the target buffer
-    global_dpd_->buf4_scm(tau2_AO, 0.0);
 
-    // Open up the entire B matrix
-    for(int h = 0; h < B->params->nirreps; ++h){
-        global_dpd_->buf4_mat_irrep_init(B, h);
-        global_dpd_->buf4_mat_irrep_rd(B, h);
-    }
-
-    /*
-     * T_pq_ij <- (pr|Q) (qs|Q) T_rs_ij
-     */
-    for(int Gij = 0; Gij < tau2_AO->params->nirreps; ++Gij){
-        global_dpd_->buf4_mat_irrep_init(tau1_AO, Gij);
-        global_dpd_->buf4_mat_irrep_init(tau2_AO, Gij);
-        global_dpd_->buf4_mat_irrep_rd(tau1_AO, Gij);
-
-        for(int pq = 0; pq < tau2_AO->params->rowtot[Gij]; ++pq){
-            int p = tau2_AO->params->roworb[Gij][pq][0];
-            int q = tau2_AO->params->roworb[Gij][pq][1];
-            int psym = tau2_AO->params->psym[p];
-            for(int rs = 0; rs < tau1_AO->params->rowtot[Gij]; ++rs){
-                int r = tau1_AO->params->roworb[Gij][rs][0];
-                int s = tau1_AO->params->roworb[Gij][rs][1];
-                int rsym = tau1_AO->params->psym[r];
-                int Gpr = psym ^ rsym;
-                int len = B->params->coltot[Gpr];
-                if(len){
-                    int pr = B->params->rowidx[p][r];
-                    int qs = B->params->rowidx[q][s];
-                    double prqs = C_DDOT(len, B->matrix[Gpr][pr], 1, B->matrix[Gpr][qs], 1);
-                    if(tau1_AO->params->coltot[Gpr])
-                        C_DAXPY(tau1_AO->params->coltot[Gij], prqs,
-                                tau1_AO->matrix[Gij][rs], 1, tau2_AO->matrix[Gij][pq], 1);
-                }
-            }
-        }
-
-        global_dpd_->buf4_mat_irrep_wrt(tau2_AO, Gij);
-        global_dpd_->buf4_mat_irrep_close(tau2_AO, Gij);
-        global_dpd_->buf4_mat_irrep_close(tau1_AO, Gij);
-    }
-
-    // Close the B matrix
-    for(int h = 0; h < B->params->nirreps; ++h){
-        global_dpd_->buf4_mat_irrep_close(B, h);
-    }
-
-}
 
 void BT2_AO(void)
 {
@@ -212,8 +156,9 @@ void BT2_AO(void)
 
             if(params.df){
                 dpdbuf4 B;
-                global_dpd_->buf4_init(&B, PSIF_CC_OEI, 0, 5, 30, 8, 30, 0, "B(pq|Q)");
-                contract444_df(&B, &tau1_AO, &tau2_AO);
+                // 5 = unpacked. eventually use perm sym and pair number 8
+                global_dpd_->buf4_init(&B, PSIF_CC_OEI, 0, 5, 43, 8, 43, 0, "B(pq|Q)");
+                global_dpd_->contract444_df(&B, &tau1_AO, &tau2_AO, 1.0, 0.0);
                 global_dpd_->buf4_close(&B);
             }else{
                 for(h=0; h < nirreps; h++) {
