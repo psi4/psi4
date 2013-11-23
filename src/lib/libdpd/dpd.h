@@ -288,7 +288,7 @@ public:
                     int sum_Y, int trans_Z, double alpha, double beta);
     int contract444(dpdbuf4 *X, dpdbuf4 *Y, dpdbuf4 *Z,
                     int target_X, int target_Y, double alpha, double beta);
-    int contract444_df(dpdbuf4 *B, dpdbuf4 *tau1_AO, dpdbuf4 *tau2_AO, double alpha, double beta);
+    int contract444_df(dpdbuf4 *B, dpdbuf4 *tau_in, dpdbuf4 *tau_out, double alpha, double beta);
 
     /* Need to consolidate these routines into one general function */
     int dot23(dpdfile2 *T, dpdbuf4 *I, dpdfile2 *Z,

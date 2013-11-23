@@ -56,7 +56,25 @@ void BT2(void)
   psio_address next;
 
   if(params.ref == 0) { /** RHF **/
-    if(params.abcd == "OLD") {
+    if(params.df){
+      dpdbuf4 B;
+      // Transpose, for faster DAXPY operations inside contract444_df
+      global_dpd_->buf4_init(&tauIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjAb");
+      global_dpd_->buf4_sort(&tauIjAb, PSIF_CC_TMP0, rspq, 5, 0, "Temp AbIj");
+      global_dpd_->buf4_close(&tauIjAb);
+
+      global_dpd_->buf4_init(&tauIjAb, PSIF_CC_TMP0, 0, 5, 0, 5, 0, 0, "Temp AbIj");
+      global_dpd_->buf4_init(&Z1, PSIF_CC_TMP0, 0, 5, 0, 5, 0, 0, "Z(Ab,Ij)");
+      dpd_set_default(1);
+      // 10 = unpacked. eventually use perm sym and pair number 13
+      global_dpd_->buf4_init(&B, PSIF_CC_OEI, 0, 10, 43, 13, 43, 0, "B(VV|Q)");
+      dpd_set_default(0);
+      global_dpd_->contract444_df(&B, &tauIjAb, &Z1, 1.0, 0.0);
+      global_dpd_->buf4_sort_axpy(&Z1, PSIF_CC_TAMPS, rspq, 0, 5, "New tIjAb", 1);
+      global_dpd_->buf4_close(&Z1);
+      global_dpd_->buf4_close(&B);
+      global_dpd_->buf4_close(&tauIjAb);
+    }else if(params.abcd == "OLD") {
 #ifdef TIME_CCENERGY
       timer_on("ABCD:old");
 #endif
