@@ -82,7 +82,7 @@ void BT2_AO(void)
 
     if(params.ref == 0 || params.ref == 1) { /** RHF or ROHF **/
         virtpi = moinfo.virtpi;
-        C = moinfo.C;
+        C = moinfo.Cv;
 
         T2_cd_row_start = init_int_matrix(nirreps,nirreps);
         for(h=0; h < nirreps; h++) {
@@ -96,8 +96,8 @@ void BT2_AO(void)
     else if(params.ref == 2) {  /** UHF **/
         avirtpi = moinfo.avirtpi;
         bvirtpi = moinfo.bvirtpi;
-        Ca = moinfo.Ca;
-        Cb = moinfo.Cb;
+        Ca = moinfo.Cav;
+        Cb = moinfo.Cbv;
 
         T2_CD_row_start = init_int_matrix(nirreps,nirreps);
         for(h=0; h < nirreps; h++) {

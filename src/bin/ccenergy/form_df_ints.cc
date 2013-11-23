@@ -142,81 +142,86 @@ void form_df_ints(Options &options, int **cachelist, int *cachefiles, dpd_file4_
 
     dpdbuf4 I;
 
-    // Transform the AO indices to the SO basis
-    global_dpd_->buf4_init(&I, PSIF_CC_OEI, 0, QD, uSO, QD, pSO, 0, "B(Q|pq)");
-    for(int h = 0; h < nirreps; ++h){
-        global_dpd_->buf4_mat_irrep_init(&I, h);
+    if(params.ref == 2){
+        throw PSIEXCEPTION("UHF Density fitting NYI");
+    }else{
+        // Transform the AO indices to the SO basis
+        global_dpd_->buf4_init(&I, PSIF_CC_OEI, 0, QD, uSO, QD, pSO, 0, "B(Q|pq)");
+        for(int h = 0; h < nirreps; ++h){
+            global_dpd_->buf4_mat_irrep_init(&I, h);
 
-        double **pQao = symQao->pointer(h);
-        for(int pq = 0; pq < I.params->rowtot[h]; ++pq){
-            for(int Gr=0; Gr < nirreps; Gr++) {
-                // Transform ( Q | AO AO ) -> ( Q | AO SO )
-                int Gs = h^Gr;
-                int nrows = nbf;
-                int ncols = soDim[Gs];
-                int nlinks = nbf;
-                int rs = I.col_offset[h][Gr];
-                double **pc4a = aoAOtoSO->pointer(Gs);
-                if(nrows && ncols && nlinks)
-                    C_DGEMM('n', 'n', nrows, ncols, nlinks, 1.0, pQao[pq],
-                            nlinks, pc4a[0], ncols, 0.0, htints, nbf);
-                // Transform ( Q | AO SO ) -> ( Q | SO SO )
-                nrows = soDim[Gr];
-                ncols = soDim[Gs];
-                nlinks = nbf;
-                rs = I.col_offset[h][Gr];
-                double **pc3a = aoAOtoSO->pointer(Gr);
-                if(nrows && ncols && nlinks)
-                    C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, pc3a[0], nrows,
-                            htints, nbf, 0.0, &I.matrix[h][pq][rs], ncols);
-            } /* Gr */
-        } /* pq */
-        global_dpd_->buf4_mat_irrep_wrt(&I, h);
-        global_dpd_->buf4_mat_irrep_close(&I, h);
+            double **pQao = symQao->pointer(h);
+            for(int pq = 0; pq < I.params->rowtot[h]; ++pq){
+                for(int Gr=0; Gr < nirreps; Gr++) {
+                    // Transform ( Q | AO AO ) -> ( Q | AO SO )
+                    int Gs = h^Gr;
+                    int nrows = nbf;
+                    int ncols = soDim[Gs];
+                    int nlinks = nbf;
+                    int rs = I.col_offset[h][Gr];
+                    double **pc4a = aoAOtoSO->pointer(Gs);
+                    if(nrows && ncols && nlinks)
+                        C_DGEMM('n', 'n', nrows, ncols, nlinks, 1.0, pQao[pq],
+                                nlinks, pc4a[0], ncols, 0.0, htints, nbf);
+                    // Transform ( Q | AO SO ) -> ( Q | SO SO )
+                    nrows = soDim[Gr];
+                    ncols = soDim[Gs];
+                    nlinks = nbf;
+                    rs = I.col_offset[h][Gr];
+                    double **pc3a = aoAOtoSO->pointer(Gr);
+                    if(nrows && ncols && nlinks)
+                        C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, pc3a[0], nrows,
+                                htints, nbf, 0.0, &I.matrix[h][pq][rs], ncols);
+                } /* Gr */
+            } /* pq */
+            global_dpd_->buf4_mat_irrep_wrt(&I, h);
+            global_dpd_->buf4_mat_irrep_close(&I, h);
+        }
+        // Permute for fast AO basis contractions
+        global_dpd_->buf4_sort(&I, PSIF_CC_OEI, rspq, pSO, QD, "B(pq|Q)");
+
+        // Form (VV|Q)
+        dpdbuf4 VV;
+        global_dpd_->buf4_init(&VV, PSIF_CC_OEI, 0, QD, 10, QD, 13, 0, "B(Q|VV)");
+        for(int h = 0; h < nirreps; ++h){
+            global_dpd_->buf4_mat_irrep_init(&VV, h);
+            global_dpd_->buf4_mat_irrep_init(&I, h);
+            global_dpd_->buf4_mat_irrep_rd(&I, h);
+
+            for(int pq = 0; pq < I.params->rowtot[h]; ++pq){
+                for(int Gr=0; Gr < nirreps; Gr++) {
+                    // Transform ( Q | SO SO ) -> ( Q | SO V )
+                    int Gs = h^Gr;
+                    int nrows = moinfo.sopi[Gr];
+                    int ncols = moinfo.virtpi[Gs];
+                    int nlinks = moinfo.sopi[Gs];
+                    int rs = I.col_offset[h][Gr];
+                    double **pc4a = moinfo.Cv[Gs];
+                    if(nrows && ncols && nlinks)
+                        C_DGEMM('n', 'n', nrows, ncols, nlinks, 1.0,  &I.matrix[h][pq][rs],
+                                nlinks, pc4a[0], ncols, 0.0, htints, nbf);
+                    // Transform ( Q | SO V ) -> ( Q | V V )
+                    nrows = moinfo.virtpi[Gr];
+                    ncols = moinfo.virtpi[Gs];
+                    nlinks = moinfo.sopi[Gr];
+                    rs = VV.col_offset[h][Gr];
+                    double **pc3a = moinfo.Cv[Gr];
+                    if(nrows && ncols && nlinks)
+                        C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, pc3a[0], nrows,
+                                htints, nbf, 0.0, &VV.matrix[h][pq][rs], ncols);
+                } /* Gr */
+            } /* pq */
+            global_dpd_->buf4_mat_irrep_wrt(&VV, h);
+            global_dpd_->buf4_mat_irrep_close(&VV, h);
+            global_dpd_->buf4_mat_irrep_close(&I, h);
+        }
+        // Permute for fast contractions
+        global_dpd_->buf4_sort(&VV, PSIF_CC_OEI, rspq, 13, QD, "B(VV|Q)");
+
+        global_dpd_->buf4_close(&VV);
+        global_dpd_->buf4_close(&I);
+        delete [] htints;
     }
-    // Permute for fast AO basis contractions
-    global_dpd_->buf4_sort(&I, PSIF_CC_OEI, rspq, pSO, QD, "B(pq|Q)");
-
-    // Form (VV|Q)
-//    dpdbuf4 VV;
-//    global_dpd_->buf4_init(&VV, PSIF_CC_OEI, 0, 10, 10, 13, 13, 0, "B(Q|VV)");
-//    for(int h = 0; h < nirreps; ++h){
-//        global_dpd_->buf4_mat_irrep_init(&VV, h);
-//        global_dpd_->buf4_mat_irrep_init(&I, h);
-//        global_dpd_->buf4_mat_irrep_rd(&I, h);
-
-//        for(int pq = 0; pq < I.params->rowtot[h]; ++pq){
-//            for(int Gr=0; Gr < nirreps; Gr++) {
-//                // Transform ( Q | SO SO ) -> ( Q | SO V )
-//                int Gs = h^Gr;
-//                int nrows = moinfo.sopi[Gr];
-//                int ncols = moinfo.virtpi[Gs];
-//                int nlinks = moinfo.sopi[Gs];
-//                int rs = I.col_offset[h][Gr];
-//                double **pc4a = moinfo.C[Gs];
-//                if(nrows && ncols && nlinks)
-//                    C_DGEMM('n', 'n', nrows, ncols, nlinks, 1.0,  &I.matrix[h][pq][rs],
-//                            nlinks, pc4a[0], ncols, 0.0, htints, nbf);
-//                // Transform ( Q | SO V ) -> ( Q | V V )
-//                nrows = moinfo.virtpi[Gr];
-//                ncols = moinfo.virtpi[Gs];
-//                nlinks = moinfo.sopi[Gr];
-//                rs = VV.col_offset[h][Gr];
-//                double **pc3a = moinfo.C[Gr];
-//                if(nrows && ncols && nlinks)
-//                    C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, pc3a[0], nrows,
-//                            htints, nbf, 0.0, &VV.matrix[h][pq][rs], ncols);
-//            } /* Gr */
-//        } /* pq */
-//        global_dpd_->buf4_mat_irrep_wrt(&VV, h);
-//        global_dpd_->buf4_mat_irrep_close(&VV, h);
-//        global_dpd_->buf4_mat_irrep_close(&I, h);
-//    }
-
-//    global_dpd_->buf4_close(&VV);
-    global_dpd_->buf4_close(&I);
-    delete [] htints;
-
 #if 0
     // Test the resulting integrals
     dpdbuf4 Q1, Q2;
