@@ -862,7 +862,7 @@ DCFTSolver::compute_orbital_rotation_jacobi() {
     for(int h = 0; h < nirrep_; ++h){
         for(int i = 0; i < naoccpi_[h]; ++i){
             for(int a = naoccpi_[h]; a < nmopi_[h]; ++a){
-                double value = orbital_gradient_a_->get(h, i, a) / (2.0 * (moFa_->get(h, i, i) - moFa_->get(h, a, a)));
+                double value = orbital_gradient_a_->get(h, i, a) / (2.0 * (moFa_->get(h, i, i) - moFa_->get(h, a, a)) + orbital_level_shift_);
                 X_a_->set(h, i, a, value);
                 X_a_->set(h, a, i, (-1.0) * value);
             }
@@ -873,7 +873,7 @@ DCFTSolver::compute_orbital_rotation_jacobi() {
     for(int h = 0; h < nirrep_; ++h){
         for(int i = 0; i < nboccpi_[h]; ++i){
             for(int a = nboccpi_[h]; a < nmopi_[h]; ++a){
-                double value = orbital_gradient_b_->get(h, i, a) / (2.0 * (moFb_->get(h, i, i) - moFb_->get(h, a, a)));
+                double value = orbital_gradient_b_->get(h, i, a) / (2.0 * (moFb_->get(h, i, i) - moFb_->get(h, a, a)) + orbital_level_shift_);
                 X_b_->set(h, i, a, value);
                 X_b_->set(h, a, i, (-1.0) * value);
             }

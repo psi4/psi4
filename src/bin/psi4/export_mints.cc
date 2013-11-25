@@ -583,6 +583,7 @@ void export_mints()
             def("print_out", &Molecule::print, "Prints the molecule in Cartesians in input units").
             def("print_out_in_bohr", &Molecule::print_in_bohr, "Prints the molecule in Cartesians in Bohr").
             def("print_out_in_angstrom", &Molecule::print_in_angstrom, "Prints the molecule in Cartesians in Angstroms").
+            def("rotational_constants", &Molecule::rotational_constants, "Prints the rotational constants of the molecule").
             def("nuclear_repulsion_energy", &Molecule::nuclear_repulsion_energy, "Computes nuclear repulsion energy").
             def("find_point_group", &Molecule::find_point_group, "Finds computational molecular point group, user can override this with the symmetry keyword").
             def("reset_point_group", &Molecule::reset_point_group, "Overrides symmetry from outside the molecule string").
