@@ -173,6 +173,16 @@ protected:
     void rotate_orbitals();
     // Three-particle cumulant contributions
     double compute_three_particle_energy();
+    void dcft_semicanonicalize();
+    void dump_semicanonical();
+    void semicanonicalize_gbar_ovvv();
+    void semicanonicalize_gbar_ooov();
+    void semicanonicalize_dc();
+    double compute_triples_aaa();
+    double compute_triples_aab();
+    double compute_triples_abb();
+    double compute_triples_bbb();
+
 
     bool augment_b(double *vec, double tol);
     /// Controls convergence of the orbital updates
