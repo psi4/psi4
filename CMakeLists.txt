@@ -203,7 +203,7 @@ if(NOT Boost_FOUND)
     # Add the Boost version bundled with Psi4 as a dependency
     message(WARNING "Boost not found. The pre-packaged version will be built.")
     # The version bundled with Psi4
-    set(BOOSTVER boost_1_53_0)
+    set(BOOSTVER boost_1_54_0)
     # Link and include information
     set(BOOSTLIBDIR ${PROJECT_BINARY_DIR}/boost/${BOOSTVER}/stage/lib)
     set(Boost_INCLUDE_DIRS ${PROJECT_BINARY_DIR}/boost/${BOOSTVER})

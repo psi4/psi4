@@ -1,5 +1,10 @@
 PSI4: an ab initio quantum chemistry software package
 
+Copyright (c) 2007-2013 The PSI4 Developers.
+
+The copyrights for code used from other parties are included in
+the corresponding files.
+
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
@@ -13,3 +18,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+The journal article reference describing Psi4 is:
+
+Justin M. Turney, Andrew C. Simmonett, Robert M. Parrish,
+Edward G. Hohenstein, Francesco A. Evangelista, Justin T. Fermann,
+Benjamin J. Mintz, Lori A. Burns, Jeremiah J. Wilke,
+Micah L. Abrams, Nicholas J. Russ, Matthew L. Leininger,
+Curtis L. Janssen, Edward T. Seidl, Wesley D. Allen,
+Henry F. Schaefer, Rollin A. King, Edward F. Valeev,
+C. David Sherrill, T. Daniel Crawford (2012),
+Psi4: an open-source ab initio electronic structure program.
+WIREs Comput Mol Sci, 2: 556–565. doi: 10.1002/wcms.93
+

@@ -35,8 +35,8 @@ basisfamily_list = []
 class BasisFamily(object):
     """Class to associate with an orbital basis name *ornate*
     the gbs file names in which the orbital basis *orbital*
-    (usually the coded form of *ornate*) and *jkfit*, *rifit*,
-    and *dualfit* auxiliary bases can be found.
+    (usually the coded form of *ornate*) and *jfit*, *jkfit*, 
+    *rifit*, and *dualfit* auxiliary bases can be found.
 
     """
     def __init__(self, ornate, orbital=None, jk=None, ri=None, dual=None):
@@ -64,6 +64,12 @@ class BasisFamily(object):
         e.g., 6-311++G** for 6-311ppgss.
         """
         return self.ornate
+
+    def add_jfit(self, fit):
+        """Function to add basis *fit* as associated fitting basis
+        member *jfit* to a BasisFamily object.
+        """
+        self.jfit = sanitize_basisname(fit)
 
     def add_jkfit(self, fit):
         """Function to add basis *fit* as associated fitting basis
@@ -135,6 +141,19 @@ def corresponding_orbital(name):
     for fam in basisfamily_list:
         if sanitize_basisname(fam.ornate) == sanitize_basisname(name):
             return fam.ornate
+    return None
+
+def corresponding_jfit(name):
+    """Function to return an appropriate J fitting basis for
+        the orbital basis *name* in coded or ornate form. ``None``
+        is returned if no fitting basis is defined or if the
+        orbital basis is not found.
+        """
+    basisfamily_list = load_basis_families()
+    
+    for fam in basisfamily_list:
+        if sanitize_basisname(fam.ornate) == sanitize_basisname(name):
+            return fam.jfit
     return None
 
 
