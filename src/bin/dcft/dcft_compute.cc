@@ -100,6 +100,8 @@ DCFTSolver::compute_energy()
 
     // Compute three-particle contribution to the DCFT energy
     if (options_.get_str("THREE_PARTICLE") == "ON") {
+        if (options_.get_str("DCFT_FUNCTIONAL") != "ODC-12")
+            throw FeatureNotImplemented("DCFT functional other than ODC-12", "Three-particle energy correction", __FILE__, __LINE__);
         double three_particle_energy = compute_three_particle_energy();
         fprintf(outfile,   "\t*DCFT Three-particle Energy                      = %20.15f\n", three_particle_energy);
     }
