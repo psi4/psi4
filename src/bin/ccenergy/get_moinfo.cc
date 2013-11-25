@@ -345,9 +345,12 @@ void cleanup(void)
     chkpt_close();
 
     if(params.ref == 0 || params.ref == 1) {
-        for(h=0; h < moinfo.nirreps; h++)
+        for(h=0; h < moinfo.nirreps; h++){
+            if(moinfo.sopi[h] && moinfo.occpi[h]) free_block(moinfo.Co[h]);
             if(moinfo.sopi[h] && moinfo.virtpi[h]) free_block(moinfo.Cv[h]);
+        }
         free(moinfo.Cv);
+        free(moinfo.Co);
     }
     else if(params.ref == 2) {
         for(h=0; h < moinfo.nirreps; h++)
