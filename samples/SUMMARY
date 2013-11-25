@@ -166,6 +166,9 @@ cc53:         Matches Table II a-CCSD(T)/cc-pVDZ H2O @ 2.5 * Re value from Crawf
 cc54:         CCSD dipole with user-specified basis set
 
 
+cc55:         EOM-CCSD/6-31g excited state transition data for water with two excited states per irrep
+
+
 cc5a:         RHF CCSD(T) STO-3G frozen-core energy of C4NH4 Anion
 
 
