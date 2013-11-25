@@ -66,48 +66,80 @@ void FT2(void)
 
         /* t(ij,ab) <-- t(j,e) * <ie|ab> + t(i,e) * <je|ba> */
         /* OOC code added 3/23/05, TDC */
-        global_dpd_->buf4_init(&X, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "X(Ij,Ab)");
-        global_dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
-        global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "tIA");
-        global_dpd_->file2_mat_init(&t1);
-        global_dpd_->file2_mat_rd(&t1);
-        for(Gie=0; Gie < moinfo.nirreps; Gie++) {
-            Gab = Gie; /* F is totally symmetric */
-            Gij = Gab; /* T2 is totally symmetric */
-            global_dpd_->buf4_mat_irrep_init(&X, Gij);
-            ncols = F.params->coltot[Gie];
+        if(params.df){
+            dpdbuf4 OV, VV, Tov, Tovov, Toovv;
+            // (Q|ia) = (Q|ea) t_ie
+            dpd_set_default(1);
+            global_dpd_->buf4_init(&VV, PSIF_CC_OEI, 0, 10, 43, 13, 43, 0, "B(VV|Q)");
+            global_dpd_->buf4_init(&Tov, PSIF_CC_TMP0, 0, 27, 43, 27, 43, 0, "T(OV|Q)");
+            dpd_set_default(0);
+            global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "tIA");
+            global_dpd_->contract244(&t1, &VV, &Tov, 1, 0, 0, 1.0, 0.0);
+            global_dpd_->file2_close(&t1);
+            global_dpd_->buf4_close(&VV);
 
-            for(Gi=0; Gi < moinfo.nirreps; Gi++) {
-                Gj = Ge = Gi^Gie; /* T1 is totally symmetric */
+            // t_jbia = (Q|jb) (Q|ia)
+            dpd_set_default(1);
+            global_dpd_->buf4_init(&OV, PSIF_CC_OEI, 0, 43, 27, 43, 27, 0, "B(Q|OV)");
+            global_dpd_->buf4_init(&Tovov, PSIF_CC_TMP0, 0, 27, 27, 27, 27, 0, "T(OV|OV)");
+            dpd_set_default(0);
+            global_dpd_->contract444(&Tov, &OV, &Tovov, 0, 1, 1.0, 0.0);
+            global_dpd_->buf4_sort(&Tovov, PSIF_CC_TMP0, prqs, 0, 5, "T<OO|VV>");
+            global_dpd_->buf4_close(&OV);
+            global_dpd_->buf4_close(&Tovov);
 
-                nlinks = moinfo.virtpi[Ge];
-                nrows = moinfo.occpi[Gj];
+            global_dpd_->buf4_init(&Toovv, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "T<OO|VV>");
+            global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
+            // T_IjAb -> T2 IjAb
+            global_dpd_->buf4_axpy(&Toovv, &t2, 1.0);
+            // T_IjAb -> T2 jIBa
+            global_dpd_->buf4_sort_axpy(&Toovv, PSIF_CC_TAMPS, qpsr, 0, 5, "New tIjAb", 1.0);
+            global_dpd_->buf4_close(&t2);
+            global_dpd_->buf4_close(&Toovv);
+        }else{
+            global_dpd_->buf4_init(&X, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "X(Ij,Ab)");
+            global_dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
+            global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "tIA");
+            global_dpd_->file2_mat_init(&t1);
+            global_dpd_->file2_mat_rd(&t1);
+            for(Gie=0; Gie < moinfo.nirreps; Gie++) {
+                Gab = Gie; /* F is totally symmetric */
+                Gij = Gab; /* T2 is totally symmetric */
+                global_dpd_->buf4_mat_irrep_init(&X, Gij);
+                ncols = F.params->coltot[Gie];
 
-                global_dpd_->buf4_mat_irrep_init_block(&F, Gie, nlinks);
+                for(Gi=0; Gi < moinfo.nirreps; Gi++) {
+                    Gj = Ge = Gi^Gie; /* T1 is totally symmetric */
 
-                for(i=0; i < moinfo.occpi[Gi]; i++) {
-                    I = F.params->poff[Gi] + i;
-                    global_dpd_->buf4_mat_irrep_rd_block(&F, Gie, F.row_offset[Gie][I], nlinks);
+                    nlinks = moinfo.virtpi[Ge];
+                    nrows = moinfo.occpi[Gj];
 
-                    if(nrows && ncols && nlinks)
-                        C_DGEMM('n','n',nrows,ncols,nlinks,1.0,t1.matrix[Gj][0],nlinks,F.matrix[Gie][0],ncols,
-                                0.0,X.matrix[Gij][X.row_offset[Gij][I]],ncols);
+                    global_dpd_->buf4_mat_irrep_init_block(&F, Gie, nlinks);
+
+                    for(i=0; i < moinfo.occpi[Gi]; i++) {
+                        I = F.params->poff[Gi] + i;
+                        global_dpd_->buf4_mat_irrep_rd_block(&F, Gie, F.row_offset[Gie][I], nlinks);
+
+                        if(nrows && ncols && nlinks)
+                            C_DGEMM('n','n',nrows,ncols,nlinks,1.0,t1.matrix[Gj][0],nlinks,F.matrix[Gie][0],ncols,
+                                    0.0,X.matrix[Gij][X.row_offset[Gij][I]],ncols);
+                    }
+
+                    global_dpd_->buf4_mat_irrep_close_block(&F, Gie, nlinks);
                 }
 
-                global_dpd_->buf4_mat_irrep_close_block(&F, Gie, nlinks);
+                global_dpd_->buf4_mat_irrep_wrt(&X, Gij);
+                global_dpd_->buf4_mat_irrep_close(&X, Gij);
             }
-
-            global_dpd_->buf4_mat_irrep_wrt(&X, Gij);
-            global_dpd_->buf4_mat_irrep_close(&X, Gij);
+            global_dpd_->file2_mat_close(&t1);
+            global_dpd_->file2_close(&t1);
+            global_dpd_->buf4_close(&F);
+            global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
+            global_dpd_->buf4_axpy(&X, &t2, 1);
+            global_dpd_->buf4_close(&t2);
+            global_dpd_->buf4_sort_axpy(&X, PSIF_CC_TAMPS, qpsr, 0, 5, "New tIjAb", 1);
+            global_dpd_->buf4_close(&X);
         }
-        global_dpd_->file2_mat_close(&t1);
-        global_dpd_->file2_close(&t1);
-        global_dpd_->buf4_close(&F);
-        global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
-        global_dpd_->buf4_axpy(&X, &t2, 1);
-        global_dpd_->buf4_close(&t2);
-        global_dpd_->buf4_sort_axpy(&X, PSIF_CC_TAMPS, qpsr, 0, 5, "New tIjAb", 1);
-        global_dpd_->buf4_close(&X);
     }
     else if(params.ref == 1) { /** ROHF **/
 
