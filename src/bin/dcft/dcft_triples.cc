@@ -44,6 +44,11 @@ DCFTSolver::compute_three_particle_energy()
     double triples_energy_abb = compute_triples_abb();
     double triples_energy_bbb = compute_triples_bbb();
 
+    fprintf(outfile,   "\t*DCFT Three-particle Energy (AAA)                = %20.15f\n", triples_energy_aaa);
+    fprintf(outfile,   "\t*DCFT Three-particle Energy (AAB)                = %20.15f\n", triples_energy_aab);
+    fprintf(outfile,   "\t*DCFT Three-particle Energy (ABB)                = %20.15f\n", triples_energy_abb);
+    fprintf(outfile,   "\t*DCFT Three-particle Energy (BBB)                = %20.15f\n", triples_energy_bbb);
+
     return triples_energy_aaa + triples_energy_aab + triples_energy_abb + triples_energy_bbb;
 
 }
@@ -509,7 +514,6 @@ double
 DCFTSolver::compute_triples_aaa()
 {
 
-    int cnt;
     int h;
     int Gi, Gj, Gk, Ga, Gb, Gc, Gd, Gl;
     int Gji, Gij, Gjk, Gkj, Gik, Gki, Gijk;
@@ -519,43 +523,17 @@ DCFTSolver::compute_triples_aaa()
     int I, J, K, A, B, C;
     int i, j, k, a, b, c;
     int ij, ji, ik, ki, jk, kj;
-    int ab, ba, ac, ca, bc, cb;
+    int ab;
     int cd, ad, bd;
     int id, jd, kd;
     int il, jl, kl;
     int lc, la, lb;
-    int *aocc_off, *avir_off;
-    double value_c, value_d, dijk, denom, ET_aaaa;
+    double dijk, denom, ET_aaa;
     int nrows, ncols, nlinks;
     dpdbuf4 L, I_OVVV, I_OOOV;
     double ***WABC, ***WBCA, ***WACB, ***LABC;
 
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
-
-    aocc_off = init_int_array(nirrep_);
-    avir_off = init_int_array(nirrep_);
-
-    // TODO: Move this to the header
-    double ocount = naoccpi_[0];
-    double vcount = navirpi_[0];
-    for(h=1; h < nirrep_; h++) {
-      aocc_off[h] = ocount;
-      ocount += naoccpi_[h];
-      avir_off[h] = vcount;
-      vcount += navirpi_[h];
-    }
-
-//    bocc_off = init_int_array(nirrep_);
-//    bvir_off = init_int_array(nirrep_);
-
-//    ocount = nboccpi_[0];
-//    vcount = nbvirpi_[0];
-//    for(h=1; h < nirrep_; h++) {
-//      bocc_off[h] = ocount;
-//      ocount += nboccpi_[h];
-//      bvir_off[h] = vcount;
-//      vcount += nbvirpi_[h];
-//    }
 
     global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                            ID("[O,O]"), ID("[V,V]"), 0, "Lambda <O'O'|V'V'>");
@@ -577,7 +555,7 @@ DCFTSolver::compute_triples_aaa()
     WBCA = (double ***) malloc(nirrep_ * sizeof(double **));
     WACB = (double ***) malloc(nirrep_ * sizeof(double **));
 
-    ET_aaaa = 0.0;
+    ET_aaa = 0.0;
 
     for(Gi=0; Gi < nirrep_; Gi++) {
       for(Gj=0; Gj < nirrep_; Gj++) {
@@ -590,11 +568,11 @@ DCFTSolver::compute_triples_aaa()
       Gijk = Gi ^ Gj ^ Gk;
 
       for(i=0; i < naoccpi_[Gi]; i++) {
-        I = aocc_off[Gi] + i;
+        I = aocc_off_[Gi] + i;
         for(j=0; j < naoccpi_[Gj]; j++) {
-          J = aocc_off[Gj] + j;
+          J = aocc_off_[Gj] + j;
           for(k=0; k < naoccpi_[Gk]; k++) {
-            K = aocc_off[Gk] + k;
+            K = aocc_off_[Gk] + k;
 
             if(I > J && J > K) {
 
@@ -620,7 +598,7 @@ DCFTSolver::compute_triples_aaa()
           }
 
           for(Gd=0; Gd < nirrep_; Gd++) {
-            /* -t_jkcd * F_idab */
+            /* -lambda_jkcd * <id||ab> */
             Gab = Gid = Gi ^ Gd;
             Gc = Gjk ^ Gd;
 
@@ -642,7 +620,7 @@ DCFTSolver::compute_triples_aaa()
 
             global_dpd_->free_dpd_block(I_OVVV.matrix[Gid], navirpi_[Gd], I_OVVV.params->coltot[Gid]);
 
-            /* +t_ikcd * F_jdab */
+            /* +lambda_ikcd * <jd||ab> */
             Gab = Gjd = Gj ^ Gd;
             Gc = Gik ^ Gd;
 
@@ -664,7 +642,7 @@ DCFTSolver::compute_triples_aaa()
 
             global_dpd_->free_dpd_block(I_OVVV.matrix[Gjd], navirpi_[Gd], I_OVVV.params->coltot[Gjd]);
 
-            /* +t_jicd * F_kdab */
+            /* +lambda_jicd * <kd||ab> */
             Gab = Gkd = Gk ^ Gd;
             Gc = Gji ^ Gd;
 
@@ -689,7 +667,7 @@ DCFTSolver::compute_triples_aaa()
           }
 
           for(Gl=0; Gl < nirrep_; Gl++) {
-            /* -t_ilab E_jklc */
+            /* -lambda_ilab <jk||lc> */
             Gab = Gil = Gi ^ Gl;
             Gc = Gjk ^ Gl;
 
@@ -706,7 +684,7 @@ DCFTSolver::compute_triples_aaa()
                   &(I_OOOV.matrix[Gjk][jk][lc]), ncols, 1.0,
                   &(WABC[Gab][0][0]), ncols);
 
-            /* +t_jlab E_iklc */
+            /* +lambda_jlab <ik||lc> */
             Gab = Gjl = Gj ^ Gl;
             Gc = Gik ^ Gl;
 
@@ -723,7 +701,7 @@ DCFTSolver::compute_triples_aaa()
                   &(I_OOOV.matrix[Gik][ik][lc]), ncols, 1.0,
                   &(WABC[Gab][0][0]), ncols);
 
-            /* +t_klab E_jilc */
+            /* +lambda_klab <ji||lc> */
             Gab = Gkl = Gk ^ Gl;
             Gc = Gji ^ Gl;
 
@@ -748,7 +726,7 @@ DCFTSolver::compute_triples_aaa()
           }
 
           for(Gd=0; Gd < nirrep_; Gd++) {
-            /* -t_jkad * F_idbc */
+            /* -lambda_jkad * <id||bc> */
             Gbc = Gid = Gi ^ Gd;
             Ga = Gjk ^ Gd;
 
@@ -770,7 +748,7 @@ DCFTSolver::compute_triples_aaa()
 
             global_dpd_->free_dpd_block(I_OVVV.matrix[Gid], navirpi_[Gd], I_OVVV.params->coltot[Gid]);
 
-            /* +t_ikad * F_jdbc */
+            /* +lambda_ikad * <jd||bc> */
             Gbc = Gjd = Gj ^ Gd;
             Ga = Gik ^ Gd;
 
@@ -792,7 +770,7 @@ DCFTSolver::compute_triples_aaa()
 
             global_dpd_->free_dpd_block(I_OVVV.matrix[Gjd], navirpi_[Gd], I_OVVV.params->coltot[Gjd]);
 
-            /* +t_jiad * F_kdbc */
+            /* +lambda_jiad * <kd||bc> */
             Gbc = Gkd = Gk ^ Gd;
             Ga = Gji ^ Gd;
 
@@ -817,7 +795,7 @@ DCFTSolver::compute_triples_aaa()
           }
 
           for(Gl=0; Gl < nirrep_; Gl++) {
-            /* -t_ilbc * E_jkla */
+            /* -lambda_ilbc * <jk||la> */
             Gbc = Gil = Gi ^ Gl;
             Ga = Gjk ^ Gl;
 
@@ -834,7 +812,7 @@ DCFTSolver::compute_triples_aaa()
                   &(I_OOOV.matrix[Gjk][jk][la]), ncols, 1.0,
                   &(WBCA[Gbc][0][0]), ncols);
 
-            /* +t_jlbc E_ikla */
+            /* +lambda_jlbc <ik||la> */
             Gbc = Gjl = Gj ^ Gl;
             Ga = Gik ^ Gl;
 
@@ -851,7 +829,7 @@ DCFTSolver::compute_triples_aaa()
                   &(I_OOOV.matrix[Gik][ik][la]), ncols, 1.0,
                   &(WBCA[Gbc][0][0]), ncols);
 
-            /* +t_klbc E_jila */
+            /* +lambda_klbc <ji||la> */
             Gbc = Gkl = Gk ^ Gl;
             Ga = Gji ^ Gl;
 
@@ -871,7 +849,7 @@ DCFTSolver::compute_triples_aaa()
 
           global_dpd_->sort_3d(WBCA, WABC, nirrep_, Gijk, I_OVVV.params->coltot, I_OVVV.params->colidx,
                  I_OVVV.params->colorb, I_OVVV.params->rsym, I_OVVV.params->ssym,
-                 avir_off, avir_off, navirpi_, avir_off, I_OVVV.params->colidx, cab, 1);
+                 avir_off_, avir_off_, navirpi_, avir_off_, I_OVVV.params->colidx, cab, 1);
 
           for(Gab=0; Gab < nirrep_; Gab++) {
             Gc = Gab ^ Gijk;
@@ -882,7 +860,7 @@ DCFTSolver::compute_triples_aaa()
           }
 
           for(Gd=0; Gd < nirrep_; Gd++) {
-            /* +t_jkbd * F_idac */
+            /* +lambda_jkbd * <id||ac> */
             Gac = Gid = Gi ^ Gd;
             Gb = Gjk ^ Gd;
 
@@ -904,7 +882,7 @@ DCFTSolver::compute_triples_aaa()
 
             global_dpd_->free_dpd_block(I_OVVV.matrix[Gid], navirpi_[Gd], I_OVVV.params->coltot[Gid]);
 
-            /* -t_ikbd * F_jdac */
+            /* -lambda_ikbd * <jd||ac> */
             Gac = Gjd = Gj ^ Gd;
             Gb = Gik ^ Gd;
 
@@ -926,7 +904,7 @@ DCFTSolver::compute_triples_aaa()
 
             global_dpd_->free_dpd_block(I_OVVV.matrix[Gjd], navirpi_[Gd], I_OVVV.params->coltot[Gjd]);
 
-            /* -t_jibd * F_kdac */
+            /* -lambda_jibd * <kd||ac> */
             Gac = Gkd = Gk ^ Gd;
             Gb = Gji ^ Gd;
 
@@ -951,7 +929,7 @@ DCFTSolver::compute_triples_aaa()
           }
 
           for(Gl=0; Gl < nirrep_; Gl++) {
-            /* +t_ilac * E_jklb */
+            /* +lambda_ilac * <jk||lb> */
             Gac = Gil = Gi ^ Gl;
             Gb = Gjk ^ Gl;
 
@@ -968,7 +946,7 @@ DCFTSolver::compute_triples_aaa()
                   &(I_OOOV.matrix[Gjk][jk][lb]), ncols, 1.0,
                   &(WACB[Gac][0][0]), ncols);
 
-            /* -t_jlac * E_iklb */
+            /* -lambda_jlac * <ik||lb> */
             Gac = Gjl = Gj ^ Gl;
             Gb = Gik ^ Gl;
 
@@ -985,7 +963,7 @@ DCFTSolver::compute_triples_aaa()
                   &(I_OOOV.matrix[Gik][ik][lb]), ncols, 1.0,
                   &(WACB[Gac][0][0]), ncols);
 
-            /* -t_klac * E_jilb */
+            /* -lambda_klac * <ji||lb> */
             Gac = Gkl = Gk ^ Gl;
             Gb = Gji ^ Gl;
 
@@ -1005,7 +983,7 @@ DCFTSolver::compute_triples_aaa()
 
           global_dpd_->sort_3d(WACB, WABC, nirrep_, Gijk, I_OVVV.params->coltot, I_OVVV.params->colidx,
                  I_OVVV.params->colorb, I_OVVV.params->rsym, I_OVVV.params->ssym,
-                 avir_off, avir_off, navirpi_, avir_off, I_OVVV.params->colidx, acb, 1);
+                 avir_off_, avir_off_, navirpi_, avir_off_, I_OVVV.params->colidx, acb, 1);
 
           for(Gab=0; Gab < nirrep_; Gab++) {
             Gc = Gab ^ Gijk;
@@ -1013,7 +991,7 @@ DCFTSolver::compute_triples_aaa()
             global_dpd_->free_dpd_block(WACB[Gab], I_OVVV.params->coltot[Gab], navirpi_[Gc]);
           }
 
-          /* Add disconnected triples and finish W and V */
+          /* Compute denominator and evaluate labda_ijkabc */
           for(Gab=0; Gab < nirrep_; Gab++) {
             Gc = Gab ^ Gijk;
 
@@ -1022,21 +1000,21 @@ DCFTSolver::compute_triples_aaa()
             for(ab=0; ab < I_OVVV.params->coltot[Gab]; ab++) {
               A = I_OVVV.params->colorb[Gab][ab][0];
               Ga = I_OVVV.params->rsym[A];
-              a = A - avir_off[Ga];
+              a = A - avir_off_[Ga];
               B = I_OVVV.params->colorb[Gab][ab][1];
               Gb = I_OVVV.params->ssym[B];
-              b = B - avir_off[Gb];
+              b = B - avir_off_[Gb];
 
               Gbc = Gb ^ Gc;
               Gac = Ga ^ Gc;
 
               for(c=0; c < navirpi_[Gc]; c++) {
-                C = avir_off[Gc] + c;
+                C = avir_off_[Gc] + c;
 
-                /* Sum V and W into V */
+                /* Copy W into labda_ijkabc */
                 LABC[Gab][ab][c] = WABC[Gab][ab][c];
 
-                /* Build the rest of the denominator and divide it into W */
+                /* Build the rest of the denominator and compute labda_ijkabc */
                 denom = dijk;
 
                 if(moF0a_->rowspi()[Ga])
@@ -1046,7 +1024,7 @@ DCFTSolver::compute_triples_aaa()
                 if(moF0a_->rowspi()[Gc])
                     denom -= moF0a_->get(Gc, c + naoccpi_[Gc], c + naoccpi_[Gc]);
 
-                fprintf(outfile, "\td[%d][%d][%d][%d][%d][%d] = %20.10f\n", i, j, k, a + naoccpi_[Ga], b + naoccpi_[Gb], c + naoccpi_[Gc], denom);
+//                fprintf(outfile, "\td[%d][%d][%d][%d][%d][%d] = %20.10f\n", i, j, k, a + naoccpi_[Ga], b + naoccpi_[Gb], c + naoccpi_[Gc], denom);
 
                 LABC[Gab][ab][c] /= denom;
 
@@ -1056,7 +1034,7 @@ DCFTSolver::compute_triples_aaa()
 
           for(Gab=0; Gab < nirrep_; Gab++) {
             Gc = Gab ^ Gijk;
-            ET_aaaa += dot_block(LABC[Gab], WABC[Gab], I_OVVV.params->coltot[Gab], navirpi_[Gc], 1.0/6.0);
+            ET_aaa += dot_block(LABC[Gab], WABC[Gab], I_OVVV.params->coltot[Gab], navirpi_[Gc], 1.0/6.0);
             global_dpd_->free_dpd_block(WABC[Gab], I_OVVV.params->coltot[Gab], navirpi_[Gc]);
             global_dpd_->free_dpd_block(LABC[Gab], I_OVVV.params->coltot[Gab], navirpi_[Gc]);
           }
@@ -1087,7 +1065,7 @@ DCFTSolver::compute_triples_aaa()
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
 
-    return ET_aaaa;
+    return ET_aaa;
 }
 
 double
@@ -1105,7 +1083,560 @@ DCFTSolver::compute_triples_abb()
 double
 DCFTSolver::compute_triples_bbb()
 {
-    return 0.0;
+
+    int h;
+    int Gi, Gj, Gk, Ga, Gb, Gc, Gd, Gl;
+    int Gji, Gij, Gjk, Gkj, Gik, Gki, Gijk;
+    int Gab, Gbc, Gac;
+    int Gid, Gjd, Gkd;
+    int Gil, Gjl, Gkl;
+    int I, J, K, A, B, C;
+    int i, j, k, a, b, c;
+    int ij, ji, ik, ki, jk, kj;
+    int ab;
+    int cd, ad, bd;
+    int id, jd, kd;
+    int il, jl, kl;
+    int lc, la, lb;
+    double dijk, denom, ET_bbb;
+    int nrows, ncols, nlinks;
+    dpdbuf4 L, I_ovvv, I_ooov;
+    double ***WABC, ***WBCA, ***WACB, ***LABC;
+
+    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+
+    global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                           ID("[o,o]"), ID("[v,v]"), 0, "Lambda <o'o'|v'v'>");
+    global_dpd_->buf4_init(&I_ovvv, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[v,v]"),
+                           ID("[o,v]"), ID("[v,v]"), 0, "MO Ints <o'v'||v'v'>");
+    global_dpd_->buf4_init(&I_ooov, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,v]"),
+                           ID("[o,o]"), ID("[o,v]"), 0, "MO Ints <o'o'||o'v'>");
+
+    for(h=0; h < nirrep_; h++) {
+      global_dpd_->buf4_mat_irrep_init(&L, h);
+      global_dpd_->buf4_mat_irrep_rd(&L, h);
+
+      global_dpd_->buf4_mat_irrep_init(&I_ooov, h);
+      global_dpd_->buf4_mat_irrep_rd(&I_ooov, h);
+    }
+
+    WABC = (double ***) malloc(nirrep_ * sizeof(double **));
+    LABC = (double ***) malloc(nirrep_ * sizeof(double **));
+    WBCA = (double ***) malloc(nirrep_ * sizeof(double **));
+    WACB = (double ***) malloc(nirrep_ * sizeof(double **));
+
+    ET_bbb = 0.0;
+
+    for(Gi=0; Gi < nirrep_; Gi++) {
+      for(Gj=0; Gj < nirrep_; Gj++) {
+        for(Gk=0; Gk < nirrep_; Gk++) {
+
+      Gij = Gji = Gi ^ Gj;
+      Gjk = Gkj = Gj ^ Gk;
+      Gik = Gki = Gi ^ Gk;
+
+      Gijk = Gi ^ Gj ^ Gk;
+
+      for(i=0; i < nboccpi_[Gi]; i++) {
+        I = bocc_off_[Gi] + i;
+        for(j=0; j < nboccpi_[Gj]; j++) {
+          J = bocc_off_[Gj] + j;
+          for(k=0; k < nboccpi_[Gk]; k++) {
+            K = bocc_off_[Gk] + k;
+
+            if(I > J && J > K) {
+
+          ij = I_ooov.params->rowidx[I][J];
+          ji = I_ooov.params->rowidx[J][I];
+          jk = I_ooov.params->rowidx[J][K];
+          kj = I_ooov.params->rowidx[K][J];
+          ik = I_ooov.params->rowidx[I][K];
+          ki = I_ooov.params->rowidx[K][I];
+
+          dijk = 0.0;
+          if(moF0b_->rowspi()[Gi])
+            dijk += moF0b_->get(Gi, i, i);
+          if(moF0b_->rowspi()[Gj])
+            dijk += moF0b_->get(Gj, j, j);
+          if(moF0b_->rowspi()[Gk])
+            dijk += moF0b_->get(Gk, k, k);
+
+          for(Gab=0; Gab < nirrep_; Gab++) {
+            Gc = Gab ^ Gijk;
+
+            WABC[Gab] = global_dpd_->dpd_block_matrix(I_ovvv.params->coltot[Gab], nbvirpi_[Gc]);
+          }
+
+          for(Gd=0; Gd < nirrep_; Gd++) {
+            /* -lambda_jkcd * <id||ab> */
+            Gab = Gid = Gi ^ Gd;
+            Gc = Gjk ^ Gd;
+
+            cd = L.col_offset[Gjk][Gc];
+            id = I_ovvv.row_offset[Gid][I];
+
+            I_ovvv.matrix[Gid] = global_dpd_->dpd_block_matrix(nbvirpi_[Gd], I_ovvv.params->coltot[Gid]);
+            global_dpd_->buf4_mat_irrep_rd_block(&I_ovvv, Gid, id, nbvirpi_[Gd]);
+
+            nrows = I_ovvv.params->coltot[Gid];
+            ncols = nbvirpi_[Gc];
+            nlinks = nbvirpi_[Gd];
+
+            if(nrows && ncols && nlinks)
+              C_DGEMM('t', 't', nrows, ncols, nlinks, -1.0,
+                  &(I_ovvv.matrix[Gid][0][0]), nrows,
+                  &(L.matrix[Gjk][jk][cd]), nlinks, 1.0,
+                  &(WABC[Gab][0][0]), ncols);
+
+            global_dpd_->free_dpd_block(I_ovvv.matrix[Gid], nbvirpi_[Gd], I_ovvv.params->coltot[Gid]);
+
+            /* +lambda_ikcd * <jd||ab> */
+            Gab = Gjd = Gj ^ Gd;
+            Gc = Gik ^ Gd;
+
+            cd = L.col_offset[Gik][Gc];
+            jd = I_ovvv.row_offset[Gjd][J];
+
+            I_ovvv.matrix[Gjd] = global_dpd_->dpd_block_matrix(nbvirpi_[Gd], I_ovvv.params->coltot[Gjd]);
+            global_dpd_->buf4_mat_irrep_rd_block(&I_ovvv, Gjd, jd, nbvirpi_[Gd]);
+
+            nrows = I_ovvv.params->coltot[Gjd];
+            ncols = nbvirpi_[Gc];
+            nlinks = nbvirpi_[Gd];
+
+            if(nrows && ncols && nlinks)
+              C_DGEMM('t', 't', nrows, ncols, nlinks, 1.0,
+                  &(I_ovvv.matrix[Gjd][0][0]), nrows,
+                  &(L.matrix[Gik][ik][cd]), nlinks, 1.0,
+                  &(WABC[Gab][0][0]), ncols);
+
+            global_dpd_->free_dpd_block(I_ovvv.matrix[Gjd], nbvirpi_[Gd], I_ovvv.params->coltot[Gjd]);
+
+            /* +lambda_jicd * <kd||ab> */
+            Gab = Gkd = Gk ^ Gd;
+            Gc = Gji ^ Gd;
+
+            cd = L.col_offset[Gji][Gc];
+            kd = I_ovvv.row_offset[Gkd][K];
+
+            I_ovvv.matrix[Gkd] = global_dpd_->dpd_block_matrix(nbvirpi_[Gd], I_ovvv.params->coltot[Gkd]);
+            global_dpd_->buf4_mat_irrep_rd_block(&I_ovvv, Gkd, kd, nbvirpi_[Gd]);
+
+            nrows = I_ovvv.params->coltot[Gkd];
+            ncols = nbvirpi_[Gc];
+            nlinks = nbvirpi_[Gd];
+
+            if(nrows && ncols && nlinks)
+              C_DGEMM('t', 't', nrows, ncols, nlinks, 1.0,
+                  &(I_ovvv.matrix[Gkd][0][0]), nrows,
+                  &(L.matrix[Gji][ji][cd]), nlinks, 1.0,
+                  &(WABC[Gab][0][0]), ncols);
+
+            global_dpd_->free_dpd_block(I_ovvv.matrix[Gkd], nbvirpi_[Gd], I_ovvv.params->coltot[Gkd]);
+
+          }
+
+          for(Gl=0; Gl < nirrep_; Gl++) {
+            /* -lambda_ilab <jk||lc> */
+            Gab = Gil = Gi ^ Gl;
+            Gc = Gjk ^ Gl;
+
+            lc = I_ooov.col_offset[Gjk][Gl];
+            il = L.row_offset[Gil][I];
+
+            nrows = L.params->coltot[Gil];
+            ncols = nbvirpi_[Gc];
+            nlinks = nboccpi_[Gl];
+
+            if(nrows && ncols && nlinks)
+              C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0,
+                  &(L.matrix[Gil][il][0]), nrows,
+                  &(I_ooov.matrix[Gjk][jk][lc]), ncols, 1.0,
+                  &(WABC[Gab][0][0]), ncols);
+
+            /* +lambda_jlab <ik||lc> */
+            Gab = Gjl = Gj ^ Gl;
+            Gc = Gik ^ Gl;
+
+            lc = I_ooov.col_offset[Gik][Gl];
+            jl = L.row_offset[Gjl][J];
+
+            nrows = L.params->coltot[Gjl];
+            ncols = nbvirpi_[Gc];
+            nlinks = nboccpi_[Gl];
+
+            if(nrows && ncols && nlinks)
+              C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0,
+                  &(L.matrix[Gjl][jl][0]), nrows,
+                  &(I_ooov.matrix[Gik][ik][lc]), ncols, 1.0,
+                  &(WABC[Gab][0][0]), ncols);
+
+            /* +lambda_klab <ji||lc> */
+            Gab = Gkl = Gk ^ Gl;
+            Gc = Gji ^ Gl;
+
+            lc = I_ooov.col_offset[Gji][Gl];
+            kl = L.row_offset[Gkl][K];
+
+            nrows = L.params->coltot[Gkl];
+            ncols = nbvirpi_[Gc];
+            nlinks = nboccpi_[Gl];
+
+            if(nrows && ncols && nlinks)
+              C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0,
+                  &(L.matrix[Gkl][kl][0]), nrows,
+                  &(I_ooov.matrix[Gji][ji][lc]), ncols, 1.0,
+                  &(WABC[Gab][0][0]), ncols);
+          }
+
+          for(Gab=0; Gab < nirrep_; Gab++) {
+            Gc = Gab ^ Gijk;
+
+            WBCA[Gab] = global_dpd_->dpd_block_matrix(I_ovvv.params->coltot[Gab], nbvirpi_[Gc]);
+          }
+
+          for(Gd=0; Gd < nirrep_; Gd++) {
+            /* -lambda_jkad * <id||bc> */
+            Gbc = Gid = Gi ^ Gd;
+            Ga = Gjk ^ Gd;
+
+            ad = L.col_offset[Gjk][Ga];
+            id = I_ovvv.row_offset[Gid][I];
+
+            I_ovvv.matrix[Gid] = global_dpd_->dpd_block_matrix(nbvirpi_[Gd], I_ovvv.params->coltot[Gid]);
+            global_dpd_->buf4_mat_irrep_rd_block(&I_ovvv, Gid, id, nbvirpi_[Gd]);
+
+            nrows = I_ovvv.params->coltot[Gid];
+            ncols = nbvirpi_[Ga];
+            nlinks = nbvirpi_[Gd];
+
+            if(nrows && ncols && nlinks)
+              C_DGEMM('t', 't', nrows, ncols, nlinks, -1.0,
+                  &(I_ovvv.matrix[Gid][0][0]), nrows,
+                  &(L.matrix[Gjk][jk][ad]), nlinks, 1.0,
+                  &(WBCA[Gbc][0][0]), ncols);
+
+            global_dpd_->free_dpd_block(I_ovvv.matrix[Gid], nbvirpi_[Gd], I_ovvv.params->coltot[Gid]);
+
+            /* +lambda_ikad * <jd||bc> */
+            Gbc = Gjd = Gj ^ Gd;
+            Ga = Gik ^ Gd;
+
+            ad = L.col_offset[Gik][Ga];
+            jd = I_ovvv.row_offset[Gjd][J];
+
+            I_ovvv.matrix[Gjd] = global_dpd_->dpd_block_matrix(nbvirpi_[Gd], I_ovvv.params->coltot[Gjd]);
+            global_dpd_->buf4_mat_irrep_rd_block(&I_ovvv, Gjd, jd, nbvirpi_[Gd]);
+
+            nrows = I_ovvv.params->coltot[Gjd];
+            ncols = nbvirpi_[Ga];
+            nlinks = nbvirpi_[Gd];
+
+            if(nrows && ncols && nlinks)
+              C_DGEMM('t', 't', nrows, ncols, nlinks, 1.0,
+                  &(I_ovvv.matrix[Gjd][0][0]), nrows,
+                  &(L.matrix[Gik][ik][ad]), nlinks, 1.0,
+                  &(WBCA[Gbc][0][0]), ncols);
+
+            global_dpd_->free_dpd_block(I_ovvv.matrix[Gjd], nbvirpi_[Gd], I_ovvv.params->coltot[Gjd]);
+
+            /* +lambda_jiad * <kd||bc> */
+            Gbc = Gkd = Gk ^ Gd;
+            Ga = Gji ^ Gd;
+
+            ad = L.col_offset[Gji][Ga];
+            kd = I_ovvv.row_offset[Gkd][K];
+
+            I_ovvv.matrix[Gkd] = global_dpd_->dpd_block_matrix(nbvirpi_[Gd], I_ovvv.params->coltot[Gkd]);
+            global_dpd_->buf4_mat_irrep_rd_block(&I_ovvv, Gkd, kd, nbvirpi_[Gd]);
+
+            nrows = I_ovvv.params->coltot[Gkd];
+            ncols = nbvirpi_[Ga];
+            nlinks = nbvirpi_[Gd];
+
+            if(nrows && ncols && nlinks)
+              C_DGEMM('t', 't', nrows, ncols, nlinks, 1.0,
+                  &(I_ovvv.matrix[Gkd][0][0]), nrows,
+                  &(L.matrix[Gji][ji][ad]), nlinks, 1.0,
+                  &(WBCA[Gbc][0][0]), ncols);
+
+            global_dpd_->free_dpd_block(I_ovvv.matrix[Gkd], nbvirpi_[Gd], I_ovvv.params->coltot[Gkd]);
+
+          }
+
+          for(Gl=0; Gl < nirrep_; Gl++) {
+            /* -lambda_ilbc * <jk||la> */
+            Gbc = Gil = Gi ^ Gl;
+            Ga = Gjk ^ Gl;
+
+            la = I_ooov.col_offset[Gjk][Gl];
+            il = L.row_offset[Gil][I];
+
+            nrows = L.params->coltot[Gil];
+            ncols = nbvirpi_[Ga];
+            nlinks = nboccpi_[Gl];
+
+            if(nrows && ncols && nlinks)
+              C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0,
+                  &(L.matrix[Gil][il][0]), nrows,
+                  &(I_ooov.matrix[Gjk][jk][la]), ncols, 1.0,
+                  &(WBCA[Gbc][0][0]), ncols);
+
+            /* +lambda_jlbc <ik||la> */
+            Gbc = Gjl = Gj ^ Gl;
+            Ga = Gik ^ Gl;
+
+            la = I_ooov.col_offset[Gik][Gl];
+            jl = L.row_offset[Gjl][J];
+
+            nrows = L.params->coltot[Gjl];
+            ncols = nbvirpi_[Ga];
+            nlinks = nboccpi_[Gl];
+
+            if(nrows && ncols && nlinks)
+              C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0,
+                  &(L.matrix[Gjl][jl][0]), nrows,
+                  &(I_ooov.matrix[Gik][ik][la]), ncols, 1.0,
+                  &(WBCA[Gbc][0][0]), ncols);
+
+            /* +lambda_klbc <ji||la> */
+            Gbc = Gkl = Gk ^ Gl;
+            Ga = Gji ^ Gl;
+
+            la = I_ooov.col_offset[Gji][Gl];
+            kl = L.row_offset[Gkl][K];
+
+            nrows = L.params->coltot[Gkl];
+            ncols = nbvirpi_[Ga];
+            nlinks = nboccpi_[Gl];
+
+            if(nrows && ncols && nlinks)
+              C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0,
+                  &(L.matrix[Gkl][kl][0]), nrows,
+                  &(I_ooov.matrix[Gji][ji][la]), ncols, 1.0,
+                  &(WBCA[Gbc][0][0]), ncols);
+          }
+
+          global_dpd_->sort_3d(WBCA, WABC, nirrep_, Gijk, I_ovvv.params->coltot, I_ovvv.params->colidx,
+                 I_ovvv.params->colorb, I_ovvv.params->rsym, I_ovvv.params->ssym,
+                 bvir_off_, bvir_off_, nbvirpi_, bvir_off_, I_ovvv.params->colidx, cab, 1);
+
+          for(Gab=0; Gab < nirrep_; Gab++) {
+            Gc = Gab ^ Gijk;
+
+            global_dpd_->free_dpd_block(WBCA[Gab], I_ovvv.params->coltot[Gab], nbvirpi_[Gc]);
+
+            WACB[Gab] = global_dpd_->dpd_block_matrix(I_ovvv.params->coltot[Gab], nbvirpi_[Gc]);
+          }
+
+          for(Gd=0; Gd < nirrep_; Gd++) {
+            /* +lambda_jkbd * <id||ac> */
+            Gac = Gid = Gi ^ Gd;
+            Gb = Gjk ^ Gd;
+
+            bd = L.col_offset[Gjk][Gb];
+            id = I_ovvv.row_offset[Gid][I];
+
+            I_ovvv.matrix[Gid] = global_dpd_->dpd_block_matrix(nbvirpi_[Gd], I_ovvv.params->coltot[Gid]);
+            global_dpd_->buf4_mat_irrep_rd_block(&I_ovvv, Gid, id, nbvirpi_[Gd]);
+
+            nrows = I_ovvv.params->coltot[Gid];
+            ncols = nbvirpi_[Gb];
+            nlinks = nbvirpi_[Gd];
+
+            if(nrows && ncols && nlinks)
+              C_DGEMM('t', 't', nrows, ncols, nlinks, 1.0,
+                  &(I_ovvv.matrix[Gid][0][0]), nrows,
+                  &(L.matrix[Gjk][jk][bd]), nlinks, 1.0,
+                  &(WACB[Gac][0][0]), ncols);
+
+            global_dpd_->free_dpd_block(I_ovvv.matrix[Gid], nbvirpi_[Gd], I_ovvv.params->coltot[Gid]);
+
+            /* -lambda_ikbd * <jd||ac> */
+            Gac = Gjd = Gj ^ Gd;
+            Gb = Gik ^ Gd;
+
+            bd = L.col_offset[Gik][Gb];
+            jd = I_ovvv.row_offset[Gjd][J];
+
+            I_ovvv.matrix[Gjd] = global_dpd_->dpd_block_matrix(nbvirpi_[Gd], I_ovvv.params->coltot[Gjd]);
+            global_dpd_->buf4_mat_irrep_rd_block(&I_ovvv, Gjd, jd, nbvirpi_[Gd]);
+
+            nrows = I_ovvv.params->coltot[Gjd];
+            ncols = nbvirpi_[Gb];
+            nlinks = nbvirpi_[Gd];
+
+            if(nrows && ncols && nlinks)
+              C_DGEMM('t', 't', nrows, ncols, nlinks, -1.0,
+                  &(I_ovvv.matrix[Gjd][0][0]), nrows,
+                  &(L.matrix[Gik][ik][bd]), nlinks, 1.0,
+                  &(WACB[Gac][0][0]), ncols);
+
+            global_dpd_->free_dpd_block(I_ovvv.matrix[Gjd], nbvirpi_[Gd], I_ovvv.params->coltot[Gjd]);
+
+            /* -lambda_jibd * <kd||ac> */
+            Gac = Gkd = Gk ^ Gd;
+            Gb = Gji ^ Gd;
+
+            bd = L.col_offset[Gji][Gb];
+            kd = I_ovvv.row_offset[Gkd][K];
+
+            I_ovvv.matrix[Gkd] = global_dpd_->dpd_block_matrix(nbvirpi_[Gd], I_ovvv.params->coltot[Gkd]);
+            global_dpd_->buf4_mat_irrep_rd_block(&I_ovvv, Gkd, kd, nbvirpi_[Gd]);
+
+            nrows = I_ovvv.params->coltot[Gkd];
+            ncols = nbvirpi_[Gb];
+            nlinks = nbvirpi_[Gd];
+
+            if(nrows && ncols && nlinks)
+              C_DGEMM('t', 't', nrows, ncols, nlinks, -1.0,
+                  &(I_ovvv.matrix[Gkd][0][0]), nrows,
+                  &(L.matrix[Gji][ji][bd]), nlinks, 1.0,
+                  &(WACB[Gac][0][0]), ncols);
+
+            global_dpd_->free_dpd_block(I_ovvv.matrix[Gkd], nbvirpi_[Gd], I_ovvv.params->coltot[Gkd]);
+
+          }
+
+          for(Gl=0; Gl < nirrep_; Gl++) {
+            /* +lambda_ilac * <jk||lb> */
+            Gac = Gil = Gi ^ Gl;
+            Gb = Gjk ^ Gl;
+
+            lb = I_ooov.col_offset[Gjk][Gl];
+            il = L.row_offset[Gil][I];
+
+            nrows = L.params->coltot[Gil];
+            ncols = nbvirpi_[Gb];
+            nlinks = nboccpi_[Gl];
+
+            if(nrows && ncols && nlinks)
+              C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0,
+                  &(L.matrix[Gil][il][0]), nrows,
+                  &(I_ooov.matrix[Gjk][jk][lb]), ncols, 1.0,
+                  &(WACB[Gac][0][0]), ncols);
+
+            /* -lambda_jlac * <ik||lb> */
+            Gac = Gjl = Gj ^ Gl;
+            Gb = Gik ^ Gl;
+
+            lb = I_ooov.col_offset[Gik][Gl];
+            jl = L.row_offset[Gjl][J];
+
+            nrows = L.params->coltot[Gjl];
+            ncols = nbvirpi_[Gb];
+            nlinks = nboccpi_[Gl];
+
+            if(nrows && ncols && nlinks)
+              C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0,
+                  &(L.matrix[Gjl][jl][0]), nrows,
+                  &(I_ooov.matrix[Gik][ik][lb]), ncols, 1.0,
+                  &(WACB[Gac][0][0]), ncols);
+
+            /* -lambda_klac * <ji||lb> */
+            Gac = Gkl = Gk ^ Gl;
+            Gb = Gji ^ Gl;
+
+            lb = I_ooov.col_offset[Gji][Gl];
+            kl = L.row_offset[Gkl][K];
+
+            nrows = L.params->coltot[Gkl];
+            ncols = nbvirpi_[Gb];
+            nlinks = nboccpi_[Gl];
+
+            if(nrows && ncols && nlinks)
+              C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0,
+                  &(L.matrix[Gkl][kl][0]), nrows,
+                  &(I_ooov.matrix[Gji][ji][lb]), ncols, 1.0,
+                  &(WACB[Gac][0][0]), ncols);
+          }
+
+          global_dpd_->sort_3d(WACB, WABC, nirrep_, Gijk, I_ovvv.params->coltot, I_ovvv.params->colidx,
+                 I_ovvv.params->colorb, I_ovvv.params->rsym, I_ovvv.params->ssym,
+                 bvir_off_, bvir_off_, nbvirpi_, bvir_off_, I_ovvv.params->colidx, acb, 1);
+
+          for(Gab=0; Gab < nirrep_; Gab++) {
+            Gc = Gab ^ Gijk;
+
+            global_dpd_->free_dpd_block(WACB[Gab], I_ovvv.params->coltot[Gab], nbvirpi_[Gc]);
+          }
+
+          /* Compute denominator and evaluate labda_ijkabc */
+          for(Gab=0; Gab < nirrep_; Gab++) {
+            Gc = Gab ^ Gijk;
+
+            LABC[Gab] = global_dpd_->dpd_block_matrix(I_ovvv.params->coltot[Gab], nbvirpi_[Gc]);
+
+            for(ab=0; ab < I_ovvv.params->coltot[Gab]; ab++) {
+              A = I_ovvv.params->colorb[Gab][ab][0];
+              Ga = I_ovvv.params->rsym[A];
+              a = A - bvir_off_[Ga];
+              B = I_ovvv.params->colorb[Gab][ab][1];
+              Gb = I_ovvv.params->ssym[B];
+              b = B - bvir_off_[Gb];
+
+              Gbc = Gb ^ Gc;
+              Gac = Ga ^ Gc;
+
+              for(c=0; c < nbvirpi_[Gc]; c++) {
+                C = bvir_off_[Gc] + c;
+
+                /* Copy W into labda_ijkabc */
+                LABC[Gab][ab][c] = WABC[Gab][ab][c];
+
+                /* Build the rest of the denominator and compute labda_ijkabc */
+                denom = dijk;
+
+                if(moF0b_->rowspi()[Ga])
+                    denom -= moF0b_->get(Ga, a + nboccpi_[Ga], a + nboccpi_[Ga]);
+                if(moF0b_->rowspi()[Gb])
+                    denom -= moF0b_->get(Gb, b + nboccpi_[Gb], b + nboccpi_[Gb]);
+                if(moF0b_->rowspi()[Gc])
+                    denom -= moF0b_->get(Gc, c + nboccpi_[Gc], c + nboccpi_[Gc]);
+
+//                fprintf(outfile, "\td[%d][%d][%d][%d][%d][%d] = %20.10f\n", i, j, k, a + naoccpi_[Ga], b + naoccpi_[Gb], c + naoccpi_[Gc], denom);
+
+                LABC[Gab][ab][c] /= denom;
+
+              } /* c */
+            } /* ab */
+          } /* Gab */
+
+          for(Gab=0; Gab < nirrep_; Gab++) {
+            Gc = Gab ^ Gijk;
+            ET_bbb += dot_block(LABC[Gab], WABC[Gab], I_ovvv.params->coltot[Gab], nbvirpi_[Gc], 1.0/6.0);
+            global_dpd_->free_dpd_block(WABC[Gab], I_ovvv.params->coltot[Gab], nbvirpi_[Gc]);
+            global_dpd_->free_dpd_block(LABC[Gab], I_ovvv.params->coltot[Gab], nbvirpi_[Gc]);
+          }
+
+            } /* I >= J >= K */
+
+          } /* k */
+        } /* j */
+      } /* i */
+
+        } /* Gk */
+      } /* Gj */
+    } /* Gi */
+
+    free(WABC);
+    free(LABC);
+    free(WBCA);
+    free(WACB);
+
+    for(h=0; h < nirrep_; h++) {
+      global_dpd_->buf4_mat_irrep_close(&L, h);
+      global_dpd_->buf4_mat_irrep_close(&I_ooov, h);
+    }
+
+    global_dpd_->buf4_close(&L);
+    global_dpd_->buf4_close(&I_ovvv);
+    global_dpd_->buf4_close(&I_ooov);
+
+    psio_->close(PSIF_LIBTRANS_DPD, 1);
+
+    return ET_bbb;
+
 }
 
 }} //End namespaces
