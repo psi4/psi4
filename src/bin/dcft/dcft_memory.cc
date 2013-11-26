@@ -101,6 +101,29 @@ DCFTSolver::init()
     avir_tau_    = SharedMatrix(new Matrix("MO basis Tau (Alpha Virtual)", nirrep_, navirpi_, navirpi_));
     bvir_tau_    = SharedMatrix(new Matrix("MO basis Tau (Beta Virtual)", nirrep_, nbvirpi_, nbvirpi_));
 
+    // Compute MO offsets
+    aocc_off_ = init_int_array(nirrep_);
+    avir_off_ = init_int_array(nirrep_);
+    double ocount = naoccpi_[0];
+    double vcount = navirpi_[0];
+    for(int h=1; h < nirrep_; h++) {
+      aocc_off_[h] = ocount;
+      ocount += naoccpi_[h];
+      avir_off_[h] = vcount;
+      vcount += navirpi_[h];
+    }
+
+    bocc_off_ = init_int_array(nirrep_);
+    bvir_off_ = init_int_array(nirrep_);
+    ocount = nboccpi_[0];
+    vcount = nbvirpi_[0];
+    for(int h=1; h < nirrep_; h++) {
+      bocc_off_[h] = ocount;
+      ocount += nboccpi_[h];
+      bvir_off_[h] = vcount;
+      vcount += nbvirpi_[h];
+    }
+
     // Quadratically-convergent algorithm or orbital-optimized methods
     if (options_.get_str("ALGORITHM") == "QC" || orbital_optimized_) {
         orbital_gradient_a_ = SharedMatrix(new Matrix("MO basis Orbital Gradient (Alpha)", nirrep_, nmopi_, nmopi_));
