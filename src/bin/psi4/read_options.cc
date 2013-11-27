@@ -881,7 +881,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Chooses appropriate DCFT method -*/
       options.add_str("DCFT_FUNCTIONAL", "DC-06", "DC-06 DC-12 ODC-06 ODC-12 CEPA0");
       /*- Whether to compute three-particle energy correction or not -*/
-      options.add_str("THREE_PARTICLE", "OFF", "OFF ON");
+      options.add_str("THREE_PARTICLE", "NONE", "NONE PERTURBATIVE");
 
   }
   if (name == "MINTS"|| options.read_globals()) {
