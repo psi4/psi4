@@ -168,7 +168,7 @@ void Vector::assign_pointer_offsets()
     size_t offset = 0;
     for (int h=0; h<nirrep_; ++h) {
         if (dimpi_[h])
-            vector_[h] = v_.data() + offset;
+            vector_[h] = &(v_[0]) + offset;
         else
             vector_[h] = NULL;
         offset += dimpi_[h];

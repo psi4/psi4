@@ -664,7 +664,7 @@ int Molecule::nfrozen_core(const std::string& depth)
     }
     else if (local == "TRUE") {
         int nfzc = 0;
-        // Freeze the number of core electrons corresponding to the 
+        // Freeze the number of core electrons corresponding to the
         // nearest previous noble gas atom.  This means that the 4p block
         // will still have 3d electrons active.  Alkali earth atoms will
         // have one valence electron in this scheme.
@@ -676,7 +676,7 @@ int Molecule::nfrozen_core(const std::string& depth)
             if (Z(A) > 54) nfzc += 9;
             if (Z(A) > 86) nfzc += 16;
             if (Z(A) > 108) {
-                throw PSIEXCEPTION("Invalid atomic number"); 
+                throw PSIEXCEPTION("Invalid atomic number");
             }
         }
         return nfzc;
@@ -873,7 +873,7 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
         if (regex_match(lines[lineNumber], reMatches, variableDefinition_)) {
             // A variable definition
             double value = (reMatches[2].str() == "TDA" ?
-                                360.0*atan(sqrt(2))/M_PI : str_to_double(reMatches[2]));
+                                360.0*atan(std::sqrt(2))/M_PI : str_to_double(reMatches[2]));
             mol->geometry_variables_[reMatches[1].str()] = value;
             lines.erase(lines.begin() + lineNumber);
         }
@@ -1164,7 +1164,7 @@ std::string Molecule::create_psi4_string_from_molecule() const
             for(int fr=0; fr<fragments_.size(); ++fr) {
                 if ((fragment_types_[fr] == Absent) && (zmat_ == false)) {
                     continue;
-                } 
+                }
                 sprintf(buffer, "%s    %s%d %d\n",
                     Pfr == 0 ? "" : "    --\n",
                     (fragment_types_[fr] == Ghost || fragment_types_[fr] == Absent) ? "#" : "",
@@ -1268,7 +1268,7 @@ void Molecule::update_geometry()
         throw PSIEXCEPTION("Molecule::update_geometry: There are no fragments in this molecule.");
 
     // Idempotence condition
-    if (lock_frame_) 
+    if (lock_frame_)
         return;
 
 
@@ -1308,7 +1308,7 @@ void Molecule::activate_all_fragments()
 
 int Molecule::nactive_fragments() {
     int n = 0;
-    for(int i = 0; i < fragment_types_.size(); ++i){ 
+    for(int i = 0; i < fragment_types_.size(); ++i){
         if ( fragment_types_[i] == Real ) n++;
     }
     return n;
@@ -1852,7 +1852,7 @@ Matrix* Molecule::inertia_tensor() const
 
 Vector Molecule::rotational_constants(double zero_tol) const {
 
-  SharedMatrix pI(inertia_tensor()); 
+  SharedMatrix pI(inertia_tensor());
   Vector evals(3);
   SharedMatrix eigenvectors(new Matrix(3, 3));
   pI->diagonalize(eigenvectors, evals, ascending);
@@ -1896,7 +1896,7 @@ void Molecule::print_rotational_constants(void) const {
     fprintf(outfile,"  B = **********    C = **********  \n");
   else               // molecule
     fprintf(outfile,"  B = %10.5lf   C = %10.5lf\n", rot_const[1], rot_const[2]);
-  
+
   fprintf(outfile,"\n\tRotational constants (MHz):\n");
   if (rot_const[0] == 0.0) // linear
     fprintf(outfile,"\tA = **********  ");
@@ -2971,7 +2971,7 @@ CoordValue* Molecule::get_coord_value(const std::string &str)
     else {
         // Register this as variable, whether it's defined or not
         // Make sure this special case is in the map
-        if(str == "TDA") geometry_variables_[str] = 360.0*atan(sqrt(2))/M_PI;
+        if(str == "TDA") geometry_variables_[str] = 360.0*atan(std::sqrt(2))/M_PI;
         if(str[0] == '-'){
             // This is negative; ignore the leading '-' and return minus the value
             all_variables_.push_back(str.substr(1, str.size() - 1));
@@ -3085,7 +3085,7 @@ void Molecule::set_full_point_group(double zero_tol) {
   }
   else if (rotor == RT_SPHERICAL_TOP) { // spherical tops
     if (!op_i) { // The only spherical top without inversion is Td.
-      full_pg_ = PG_Td; 
+      full_pg_ = PG_Td;
       full_pg_n_ = 3;
     }
     else { // Oh or Ih ?
@@ -3095,11 +3095,11 @@ void Molecule::set_full_point_group(double zero_tol) {
       //fprintf(outfile,"\t\tS4z : %s\n", (op_symm ? "yes" : "no"));
 
       if (op_symm) {
-        full_pg_ = PG_Oh; 
+        full_pg_ = PG_Oh;
         full_pg_n_ = 4;
       }
       else {
-        full_pg_ = PG_Ih; 
+        full_pg_ = PG_Ih;
         full_pg_n_ = 5;
       }
     }
@@ -3107,38 +3107,38 @@ void Molecule::set_full_point_group(double zero_tol) {
   else if (rotor == RT_ASYMMETRIC_TOP) { // asymmetric tops cannot exceed D2h, right?
 
     if (d2h_subgroup == "c1") {
-      full_pg_ = PG_C1; 
+      full_pg_ = PG_C1;
       full_pg_n_ = 1;
     }
     else if (d2h_subgroup == "ci") {
-      full_pg_ = PG_Ci; 
+      full_pg_ = PG_Ci;
       full_pg_n_ = 1;
     }
     else if (d2h_subgroup == "c2") {
-      full_pg_ = PG_Cn; 
+      full_pg_ = PG_Cn;
       full_pg_n_ = 2;
     }
     else if (d2h_subgroup == "cs") {
-      full_pg_ = PG_Cs; 
+      full_pg_ = PG_Cs;
       full_pg_n_ = 1;
     }
     else if (d2h_subgroup == "d2") {
-      full_pg_ = PG_Dn; 
+      full_pg_ = PG_Dn;
       full_pg_n_ = 2;
     }
     else if (d2h_subgroup == "c2v") {
-      full_pg_ = PG_Cnv; 
+      full_pg_ = PG_Cnv;
       full_pg_n_ = 2;
     }
     else if (d2h_subgroup == "c2h") {
-      full_pg_ = PG_Cnh; 
+      full_pg_ = PG_Cnh;
       full_pg_n_ = 2;
     }
     else if (d2h_subgroup == "d2h") {
-      full_pg_ = PG_Dnh; 
+      full_pg_ = PG_Dnh;
       full_pg_n_ = 2;
     }
-    else 
+    else
       fprintf(outfile,"\t\tWarning: Cannot determine point group.\n");
   }
   else if (rotor == RT_SYMMETRIC_TOP) {
@@ -3301,7 +3301,7 @@ void Molecule::set_full_point_group(double zero_tol) {
         full_pg_   = PG_Dnd;
         full_pg_n_ = Cn_z;
       }
-      else {                     // Dn : Cn, nC2           
+      else {                     // Dn : Cn, nC2
         full_pg_   = PG_Dn;
         full_pg_n_ = Cn_z;
       }
@@ -3347,7 +3347,7 @@ int matrix_3d_rotation_Cn(Matrix &coord, Vector3 axis, bool reflect, double TOL,
   for (int n=2; n<max_possible+1; ++n) {
     rotated_mat = coord.matrix_3d_rotation(axis, 2*pc_pi/n, reflect);
     present = coord.equal_but_for_row_order(rotated_mat, TOL);
-   
+
     if (present)
       Cn = n;
   }
