@@ -59,6 +59,14 @@ void
 DCFTSolver::dcft_semicanonicalize()
 {
 
+    // If OOOV or VVVO integrals have not yet been transformed - do it
+    if ((options_.get_str("ALGORITHM") != "QC" || !options_.get_bool("QC_COUPLING")
+         || options_.get_str("QC_TYPE") != "SIMULTANEOUS") && !orbital_optimized_) {
+        fprintf(outfile, "\tTransforming OVVV and OOOV integrals ... \t\t\t");
+        transform_integrals_triples();
+        fprintf(outfile, "DONE\n");
+    }
+
     // Compute transformation to the semicanonical basis and dump it to disk
     dump_semicanonical();
 
@@ -79,6 +87,40 @@ DCFTSolver::dcft_semicanonicalize()
 
 }
 
+void
+DCFTSolver::transform_integrals_triples()
+{
+    _ints->update_orbitals();
+    _ints->set_print(print_ - 2 >= 0 ? print_ - 2 : 0);
+
+    // Compute the integrals needed for the MO Hessian
+    _ints->transform_tei(MOSpace::vir, MOSpace::occ, MOSpace::occ, MOSpace::occ);
+    _ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::occ);
+    _ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::vir, MOSpace::vir);
+    _ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::occ, MOSpace::vir);
+
+        /*
+         * Re-sort the chemists' notation integrals to physisists' notation
+         * (pq|rs) = <pr|qs>
+         */
+
+    // The integral object closes this file - we need to re-open it.
+    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+
+        /*
+         * Re-sort the chemists' notation integrals to physisicts' notation
+         * (pq|rs) = <pr|qs>
+         */
+
+    // VVVO and OOOV integrals are needed for the QC algorithm
+    sort_OOOV_integrals();
+
+    sort_OVVV_integrals();
+
+    psio_->close(PSIF_LIBTRANS_DPD, 1);
+
+}
+
 
 void
 DCFTSolver::dump_semicanonical()
@@ -94,6 +136,7 @@ DCFTSolver::dump_semicanonical()
     // Transform the F0 matrix to the MO basis
     moF0a_->transform(Ca_);
     moF0b_->transform(Cb_);
+
     // Zero out occupied-virtual part
     for(int h = 0; h < nirrep_; ++h){
         for(int i = 0; i < naoccpi_[h]; ++i){
