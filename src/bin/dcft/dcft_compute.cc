@@ -103,10 +103,10 @@ DCFTSolver::compute_energy()
     Process::environment.globals["DCFT TOTAL ENERGY"]  = new_total_energy_;
 
     // Compute three-particle contribution to the DCFT energy
-    if (options_.get_str("THREE_PARTICLE") == "ON") {
+    if (options_.get_str("THREE_PARTICLE") == "PERTURBATIVE") {
         // Check options
-        if (options_.get_str("DCFT_FUNCTIONAL") != "ODC-12")
-            throw FeatureNotImplemented("DCFT functional other than ODC-12", "Three-particle energy correction", __FILE__, __LINE__);
+//        if (options_.get_str("DCFT_FUNCTIONAL") != "ODC-12")
+//            throw FeatureNotImplemented("DCFT functional other than ODC-12", "Three-particle energy correction", __FILE__, __LINE__);
         if (options_.get_str("DERTYPE") == "FIRST")
             throw FeatureNotImplemented("DCFT three-particle energy correction", "Analytic gradients", __FILE__, __LINE__);
         // Compute the three-particle energy

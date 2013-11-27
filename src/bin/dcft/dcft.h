@@ -174,6 +174,7 @@ protected:
     // Three-particle cumulant contributions
     double compute_three_particle_energy();
     void dcft_semicanonicalize();
+    void transform_integrals_triples();
     void dump_semicanonical();
     void semicanonicalize_gbar_ovvv();
     void semicanonicalize_gbar_ooov();
