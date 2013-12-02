@@ -84,7 +84,7 @@ int DPD::contract444_df(dpdbuf4 *B, dpdbuf4 *tau_in, dpdbuf4 *tau_out, double al
         buf4_mat_irrep_rd(B, Gpr);
 
         int **orbs = B->params->roworb[Gpr];
-#pragma parallel for
+#pragma omp for
         for(int pr = 0; pr < B->params->rowtot[Gpr]; ++pr){
             int thread = 0;
 #ifdef _OPENMP
