@@ -28,6 +28,7 @@
 #include <cmath>
 #include <libqt/qt.h>
 #include <libpsio/psio.h>
+#include <libciomr/libciomr.h>
 #include "dpd.h"
 #include <psi4-dec.h>
 
@@ -66,12 +67,31 @@ int DPD::contract444_df(dpdbuf4 *B, dpdbuf4 *tau_in, dpdbuf4 *tau_out, double al
     nthreadz = omp_get_max_threads();
 #endif
 
+    // Create accumulation buffers
+    std::vector<double ***> arrays;
+    arrays.push_back(tau_out->matrix);
+    for(int thread = 1; thread < nthreadz; ++thread){
+        double ***arr = new double**[tau_out->params->nirreps];
+        for(int h = 0; h < tau_out->params->nirreps; ++h){
+            if(tau_out->params->rowtot[h] && tau_out->params->coltot[h])
+                arr[h] = block_matrix(tau_out->params->rowtot[h], tau_out->params->coltot[h]);
+        }
+        arrays.push_back(arr);
+    }
+
     for(int Gpr = 0; Gpr < B->params->nirreps; ++Gpr){
         buf4_mat_irrep_init(B, Gpr);
         buf4_mat_irrep_rd(B, Gpr);
 
         int **orbs = B->params->roworb[Gpr];
+#pragma parallel for
         for(int pr = 0; pr < B->params->rowtot[Gpr]; ++pr){
+            int thread = 0;
+#ifdef _OPENMP
+            thread = omp_get_thread_num();
+#endif
+            double ***arr = arrays[thread];
+
             int p = orbs[pr][0];
             int r = orbs[pr][1];
             int psym = B->params->psym[p];
@@ -111,24 +131,24 @@ int DPD::contract444_df(dpdbuf4 *B, dpdbuf4 *tau_in, dpdbuf4 *tau_out, double al
                 len = tau_in->params->coltot[Gpq];
                 if(len){
                     // T_pq_ij <- (pr|qs) T_rs_ij
-                    C_DAXPY(len, prqs, tau_in->matrix[Gpq][rs], 1, tau_out->matrix[Gpq][pq], 1);
+                    C_DAXPY(len, prqs, tau_in->matrix[Gpq][rs], 1, arr[Gpq][pq], 1);
                     // T_qp_ij <- (qs|pr) T_sr_ij
-                    C_DAXPY(len, prqs, tau_in->matrix[Gpq][sr], 1, tau_out->matrix[Gpq][qp], 1);
+                    C_DAXPY(len, prqs, tau_in->matrix[Gpq][sr], 1, arr[Gpq][qp], 1);
                     // T_rs_ij <- (rp|sq) T_pq_ij
-                    C_DAXPY(len, prqs, tau_in->matrix[Grs][pq], 1, tau_out->matrix[Grs][rs], 1);
+                    C_DAXPY(len, prqs, tau_in->matrix[Grs][pq], 1, arr[Grs][rs], 1);
                     // T_sr_ij <- (sq|rp) T_qp_ij
-                    C_DAXPY(len, prqs, tau_in->matrix[Grs][qp], 1, tau_out->matrix[Grs][sr], 1);
+                    C_DAXPY(len, prqs, tau_in->matrix[Grs][qp], 1, arr[Grs][sr], 1);
                 }
                 len = tau_in->params->coltot[Grq];
                 if(len){
                     // T_rq_ij <- (rp|qs) T_ps_ij
-                    C_DAXPY(len, prqs, tau_in->matrix[Grq][ps], 1, tau_out->matrix[Grq][rq], 1);
+                    C_DAXPY(len, prqs, tau_in->matrix[Grq][ps], 1, arr[Grq][rq], 1);
                     // T_qr_ij <- (qs|rp) T_sp_ij
-                    C_DAXPY(len, prqs, tau_in->matrix[Grq][sp], 1, tau_out->matrix[Grq][qr], 1);
+                    C_DAXPY(len, prqs, tau_in->matrix[Grq][sp], 1, arr[Grq][qr], 1);
                     // T_ps_ij <- (pr|sq) T_rq_ij
-                    C_DAXPY(len, prqs, tau_in->matrix[Gps][rq], 1, tau_out->matrix[Gps][ps], 1);
+                    C_DAXPY(len, prqs, tau_in->matrix[Gps][rq], 1, arr[Gps][ps], 1);
                     // T_sp_ij <- (sq|pr) T_qr_ij
-                    C_DAXPY(len, prqs, tau_in->matrix[Gps][qr], 1, tau_out->matrix[Gps][sp], 1);
+                    C_DAXPY(len, prqs, tau_in->matrix[Gps][qr], 1, arr[Gps][sp], 1);
                 }
 
             } // End qs loop
@@ -153,21 +173,36 @@ int DPD::contract444_df(dpdbuf4 *B, dpdbuf4 *tau_in, dpdbuf4 *tau_out, double al
             len = tau_in->params->coltot[Gpq];
             if(len){
                 // T_pq_ij <- (pr|qs) T_rs_ij
-                C_DAXPY(len, prqs, tau_in->matrix[Gpq][rs], 1, tau_out->matrix[Gpq][pq], 1);
+                C_DAXPY(len, prqs, tau_in->matrix[Gpq][rs], 1, arr[Gpq][pq], 1);
                 // T_rs_ij <- (rp|sq) T_pq_ij
-                C_DAXPY(len, prqs, tau_in->matrix[Grs][pq], 1, tau_out->matrix[Grs][rs], 1);
+                C_DAXPY(len, prqs, tau_in->matrix[Grs][pq], 1, arr[Grs][rs], 1);
             }
             len = tau_in->params->coltot[Grq];
             if(len){
                 // T_rq_ij <- (rp|qs) T_ps_ij
-                C_DAXPY(len, prqs, tau_in->matrix[Grq][ps], 1, tau_out->matrix[Grq][rq], 1);
+                C_DAXPY(len, prqs, tau_in->matrix[Grq][ps], 1, arr[Grq][rq], 1);
                 // T_ps_ij <- (pr|sq) T_rq_ij
-                C_DAXPY(len, prqs, tau_in->matrix[Gps][rq], 1, tau_out->matrix[Gps][ps], 1);
+                C_DAXPY(len, prqs, tau_in->matrix[Gps][rq], 1, arr[Gps][ps], 1);
             }
 
         } // End pr loop
         buf4_mat_irrep_close(B, Gpr);
     } // End Gpr loop
+
+    // Accumulate the results, and free memory
+    for(int thread = 1; thread < nthreadz; ++thread){
+        double ***arr = arrays[thread];
+        for(int h = 0; h < tau_out->params->nirreps; ++h){
+            for(int row = 0; row < tau_out->params->rowtot[h]; ++row)
+                for(int col = 0; col < tau_out->params->coltot[h]; ++col)
+                    tau_out->matrix[h][row][col] += arr[h][row][col];
+            if(tau_out->params->rowtot[h] && tau_out->params->coltot[h])
+                free_block(arr[h]);
+        }
+        delete [] arrays[thread];
+        arrays.push_back(arr);
+    }
+
 
     // Close the B matrix
     for(int h = 0; h < B->params->nirreps; ++h){
