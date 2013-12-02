@@ -38,6 +38,9 @@
 namespace psi {
 /**
  * @brief contract444_df Forms integrals on the fly from density fitted integrals and contracts them against T amplitudes
+ *
+ * The integral tensor should arrive packed, in the order (a>=b|Q), where Q is the auxilliary basis index
+ *
  * @param B The DF integral tensor, arranged with the auxilliary index as the fast-running index
  * @param tau1_AO The incoming amplitudes
  * @param tau2_AO The outgoing amplitudes
@@ -76,10 +79,10 @@ int DPD::contract444_df(dpdbuf4 *B, dpdbuf4 *tau_in, dpdbuf4 *tau_out, double al
 
             // Scale the diagonals by 0.5, to avoid "if" statements below
             if(p==r)
-                for(int qs = 0; qs < B->params->coltot[Gpr]; ++qs)
-                    B->matrix[Gpr][pr][qs] *= 0.5;
+                for(int Q = 0; Q < B->params->coltot[Gpr]; ++Q)
+                    B->matrix[Gpr][pr][Q] *= 0.5;
 
-            for(int qs = 0; qs <= pr; ++qs){
+            for(int qs = 0; qs < pr; ++qs){
                 int q = orbs[qs][0];
                 int s = orbs[qs][1];
                 int qsym = B->params->psym[q];
@@ -105,47 +108,63 @@ int DPD::contract444_df(dpdbuf4 *B, dpdbuf4 *tau_in, dpdbuf4 *tau_out, double al
                 int ps = tau_out->params->rowidx[p][s];
                 int sp = tau_out->params->rowidx[s][p];
 
-                if(pr != qs){
-                    len = tau_in->params->coltot[Gpq];
-                    if(len){
-                        // T_pq_ij <- (pr|qs) T_rs_ij
-                        C_DAXPY(len, prqs, tau_in->matrix[Gpq][rs], 1, tau_out->matrix[Gpq][pq], 1);
-                        // T_qp_ij <- (qs|pr) T_sr_ij
-                        C_DAXPY(len, prqs, tau_in->matrix[Gpq][sr], 1, tau_out->matrix[Gpq][qp], 1);
-                        // T_rs_ij <- (rp|sq) T_pq_ij
-                        C_DAXPY(len, prqs, tau_in->matrix[Grs][pq], 1, tau_out->matrix[Grs][rs], 1);
-                        // T_sr_ij <- (sq|rp) T_qp_ij
-                        C_DAXPY(len, prqs, tau_in->matrix[Grs][qp], 1, tau_out->matrix[Grs][sr], 1);
-                    }
-                    len = tau_in->params->coltot[Grq];
-                    if(len){
-                        // T_rq_ij <- (rp|qs) T_ps_ij
-                        C_DAXPY(len, prqs, tau_in->matrix[Grq][ps], 1, tau_out->matrix[Grq][rq], 1);
-                        // T_qr_ij <- (qs|rp) T_sp_ij
-                        C_DAXPY(len, prqs, tau_in->matrix[Grq][sp], 1, tau_out->matrix[Grq][qr], 1);
-                        // T_ps_ij <- (pr|sq) T_rq_ij
-                        C_DAXPY(len, prqs, tau_in->matrix[Gps][rq], 1, tau_out->matrix[Gps][ps], 1);
-                        // T_sp_ij <- (sq|pr) T_qr_ij
-                        C_DAXPY(len, prqs, tau_in->matrix[Gps][qr], 1, tau_out->matrix[Gps][sp], 1);
-                    }
-                }else{
-                    len = tau_in->params->coltot[Gpq];
-                    if(len){
-                        // T_pq_ij <- (pr|qs) T_rs_ij
-                        C_DAXPY(len, prqs, tau_in->matrix[Gpq][rs], 1, tau_out->matrix[Gpq][pq], 1);
-                        // T_rs_ij <- (rp|sq) T_pq_ij
-                        C_DAXPY(len, prqs, tau_in->matrix[Grs][pq], 1, tau_out->matrix[Grs][rs], 1);
-                    }
-                    len = tau_in->params->coltot[Grq];
-                    if(len){
-                        // T_rq_ij <- (rp|qs) T_ps_ij
-                        C_DAXPY(len, prqs, tau_in->matrix[Grq][ps], 1, tau_out->matrix[Grq][rq], 1);
-                        // T_ps_ij <- (pr|sq) T_rq_ij
-                        C_DAXPY(len, prqs, tau_in->matrix[Gps][rq], 1, tau_out->matrix[Gps][ps], 1);
-                    }
+                len = tau_in->params->coltot[Gpq];
+                if(len){
+                    // T_pq_ij <- (pr|qs) T_rs_ij
+                    C_DAXPY(len, prqs, tau_in->matrix[Gpq][rs], 1, tau_out->matrix[Gpq][pq], 1);
+                    // T_qp_ij <- (qs|pr) T_sr_ij
+                    C_DAXPY(len, prqs, tau_in->matrix[Gpq][sr], 1, tau_out->matrix[Gpq][qp], 1);
+                    // T_rs_ij <- (rp|sq) T_pq_ij
+                    C_DAXPY(len, prqs, tau_in->matrix[Grs][pq], 1, tau_out->matrix[Grs][rs], 1);
+                    // T_sr_ij <- (sq|rp) T_qp_ij
+                    C_DAXPY(len, prqs, tau_in->matrix[Grs][qp], 1, tau_out->matrix[Grs][sr], 1);
+                }
+                len = tau_in->params->coltot[Grq];
+                if(len){
+                    // T_rq_ij <- (rp|qs) T_ps_ij
+                    C_DAXPY(len, prqs, tau_in->matrix[Grq][ps], 1, tau_out->matrix[Grq][rq], 1);
+                    // T_qr_ij <- (qs|rp) T_sp_ij
+                    C_DAXPY(len, prqs, tau_in->matrix[Grq][sp], 1, tau_out->matrix[Grq][qr], 1);
+                    // T_ps_ij <- (pr|sq) T_rq_ij
+                    C_DAXPY(len, prqs, tau_in->matrix[Gps][rq], 1, tau_out->matrix[Gps][ps], 1);
+                    // T_sp_ij <- (sq|pr) T_qr_ij
+                    C_DAXPY(len, prqs, tau_in->matrix[Gps][qr], 1, tau_out->matrix[Gps][sp], 1);
                 }
 
             } // End qs loop
+
+            // Now, add in the diagonal elements, pr == qs
+            int Gpq = 0;
+            int Grq = rsym ^ psym;
+            int Grs = 0;
+            int Gps = Grq;
+            int pq = tau_out->params->rowidx[p][p];
+            int rs = tau_out->params->rowidx[r][r];
+            int rq = tau_out->params->rowidx[r][p];
+            int ps = tau_out->params->rowidx[p][r];
+
+            int len = B->params->coltot[Gpr];
+            if(len == 0)
+                continue;
+
+            // Build the integral
+            double prqs = alpha * C_DDOT(len, B->matrix[Gpr][pr], 1, B->matrix[Gpr][pr], 1);
+
+            len = tau_in->params->coltot[Gpq];
+            if(len){
+                // T_pq_ij <- (pr|qs) T_rs_ij
+                C_DAXPY(len, prqs, tau_in->matrix[Gpq][rs], 1, tau_out->matrix[Gpq][pq], 1);
+                // T_rs_ij <- (rp|sq) T_pq_ij
+                C_DAXPY(len, prqs, tau_in->matrix[Grs][pq], 1, tau_out->matrix[Grs][rs], 1);
+            }
+            len = tau_in->params->coltot[Grq];
+            if(len){
+                // T_rq_ij <- (rp|qs) T_ps_ij
+                C_DAXPY(len, prqs, tau_in->matrix[Grq][ps], 1, tau_out->matrix[Grq][rq], 1);
+                // T_ps_ij <- (pr|sq) T_rq_ij
+                C_DAXPY(len, prqs, tau_in->matrix[Gps][rq], 1, tau_out->matrix[Gps][ps], 1);
+            }
+
         } // End pr loop
         buf4_mat_irrep_close(B, Gpr);
     } // End Gpr loop
