@@ -67,7 +67,7 @@ void BT2(void)
       global_dpd_->buf4_init(&Z1, PSIF_CC_TMP0, 0, 5, 0, 5, 0, 0, "Z(Ab,Ij)");
       dpd_set_default(1);
       // 10 = unpacked. eventually use perm sym and pair number 13
-      global_dpd_->buf4_init(&B, PSIF_CC_OEI, 0, 10, 43, 13, 43, 0, "B(VV|Q)");
+      global_dpd_->buf4_init(&B, PSIF_CC_OEI, 0, 13, 43, 13, 43, 0, "B(VV|Q)");
       dpd_set_default(0);
       global_dpd_->contract444_df(&B, &tauIjAb, &Z1, 1.0, 0.0);
       global_dpd_->buf4_sort_axpy(&Z1, PSIF_CC_TAMPS, rspq, 0, 5, "New tIjAb", 1);
