@@ -1120,13 +1120,14 @@ DCFTSolver::compute_sigma_vector_cum_cum() {
     /*
      * Sigma_ijab += 1/16 Sum_cd gbar_cdab D_ijcd
      */
+
     // S_IJAB += (C>D) 1/16 Sum_CD gbar_CDAB D_IJCD
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V>V]-"), ID("[V>V]-"),
-                  ID("[V,V]"), ID("[V,V]"), 1, "MO Ints <VV|VV>");
+                           ID("[V,V]"), ID("[V,V]"), 1, "MO Ints <VV|VV>");
     global_dpd_->buf4_init(&D4, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
-                  ID("[O>O]-"), ID("[V>V]-"), 0, "D4 <OO|VV>");
+                           ID("[O>O]-"), ID("[V>V]-"), 0, "D4 <OO|VV>");
     global_dpd_->buf4_init(&S4, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
-                  ID("[O>O]-"), ID("[V>V]-"), 0, "Sigma <OO|VV>");
+                           ID("[O>O]-"), ID("[V>V]-"), 0, "Sigma <OO|VV>");
     global_dpd_->contract444(&D4, &I, &S4, 0, 0, 1.0/16.0, 0.0);
     global_dpd_->buf4_close(&I);
     global_dpd_->buf4_close(&D4);
@@ -1134,11 +1135,11 @@ DCFTSolver::compute_sigma_vector_cum_cum() {
 
     // S_IjAb += 1/16 Sum_Cd g_CdAb D_IjCd
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,v]"), ID("[V,v]"),
-                  ID("[V,v]"), ID("[V,v]"), 0, "MO Ints <Vv|Vv>");
+                           ID("[V,v]"), ID("[V,v]"), 0, "MO Ints <Vv|Vv>");
     global_dpd_->buf4_init(&D4, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                  ID("[O,o]"), ID("[V,v]"), 0, "D4 <Oo|Vv>");
+                           ID("[O,o]"), ID("[V,v]"), 0, "D4 <Oo|Vv>");
     global_dpd_->buf4_init(&S4, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                  ID("[O,o]"), ID("[V,v]"), 0, "Sigma <Oo|Vv>");
+                           ID("[O,o]"), ID("[V,v]"), 0, "Sigma <Oo|Vv>");
     global_dpd_->contract444(&D4, &I, &S4, 0, 0, 1.0/16.0, 0.0);
     global_dpd_->buf4_close(&I);
     global_dpd_->buf4_close(&D4);
@@ -1146,11 +1147,11 @@ DCFTSolver::compute_sigma_vector_cum_cum() {
 
     // S_ijab += (c>d) 1/16 Sum_cd gbar_cdab D_ijcd
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v>v]-"), ID("[v>v]-"),
-                  ID("[v,v]"), ID("[v,v]"), 1, "MO Ints <vv|vv>");
+                           ID("[v,v]"), ID("[v,v]"), 1, "MO Ints <vv|vv>");
     global_dpd_->buf4_init(&D4, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
-                  ID("[o>o]-"), ID("[v>v]-"), 0, "D4 <oo|vv>");
+                           ID("[o>o]-"), ID("[v>v]-"), 0, "D4 <oo|vv>");
     global_dpd_->buf4_init(&S4, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
-                  ID("[o>o]-"), ID("[v>v]-"), 0, "Sigma <oo|vv>");
+                           ID("[o>o]-"), ID("[v>v]-"), 0, "Sigma <oo|vv>");
     global_dpd_->contract444(&D4, &I, &S4, 0, 0, 1.0/16.0, 0.0);
     global_dpd_->buf4_close(&I);
     global_dpd_->buf4_close(&D4);
@@ -1161,7 +1162,7 @@ DCFTSolver::compute_sigma_vector_cum_cum() {
      */
     // S_IJAB += (K>L) 1/16 Sum_KL gbar_IJKL D_KLAB
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[O>O]-"),
-            ID("[O,O]"), ID("[O,O]"), 1, "MO Ints <OO|OO>");
+                  ID("[O,O]"), ID("[O,O]"), 1, "MO Ints <OO|OO>");
     global_dpd_->buf4_init(&D4, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
                   ID("[O>O]-"), ID("[V>V]-"), 0, "D4 <OO|VV>");
     global_dpd_->buf4_init(&S4, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
