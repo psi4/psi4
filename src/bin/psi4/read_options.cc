@@ -113,6 +113,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   etc. Use the add_str_i function to make this string case sensitive. -*/
   options.add_str_i("WRITER_FILE_LABEL", "");
 
+  /*- The type of integrals to use in coupled cluster computations. DF activates density fitting for the largest integral files,
+      while CONVENTIONAL results in no approximations being made. -*/
+  options.add_str("CC_TYPE", "CONVENTIONAL", "CONVENTIONAL DF");
+  /*- The density fitting basis to use in coupled cluster computations. -*/
+  options.add_str("DF_BASIS_CC", "");
   /*- Assume external fields are arranged so that they have symmetry. It is up to the user to know what to do here. The code does NOT help you out in any way! !expert -*/
   options.add_bool("EXTERNAL_POTENTIAL_SYMMETRY", false);
 

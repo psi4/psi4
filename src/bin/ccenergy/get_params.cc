@@ -55,6 +55,8 @@ void get_params(Options &options)
     params.brueckner = 1;
   else params.brueckner = 0;
 
+  params.df = options.get_str("CC_TYPE") == "DF";
+
   params.semicanonical = 0;
   junk = options.get_str("REFERENCE");
   /* if no reference is given, assume rhf */
