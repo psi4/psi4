@@ -40,30 +40,30 @@ DCFTSolver::build_cumulant_intermediates()
 
     dpdbuf4 I, L, G, T, Taa, Tab, Tbb, Laa, Lab, Lbb;
 
+//    /*
+//     * G_ijab = <ij||ab>
+//     */
+//    // G_IJAB = <IJ||AB>
+//    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
+//                  ID("[O,O]"), ID("[V,V]"), 1, "MO Ints <OO|VV>");
+//    global_dpd_->buf4_copy(&I, PSIF_DCFT_DPD, "G <OO|VV>");
+//    global_dpd_->buf4_close(&I);
+
+//    // G_IjAb = <Ij|Ab>
+//    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+//                  ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
+//    global_dpd_->buf4_copy(&I, PSIF_DCFT_DPD, "G <Oo|Vv>");
+//    global_dpd_->buf4_close(&I);
+
+//    // G_ijab = <ij||ab>
+//    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
+//                  ID("[o,o]"), ID("[v,v]"), 1, "MO Ints <oo|vv>");
+//    global_dpd_->buf4_copy(&I, PSIF_DCFT_DPD, "G <oo|vv>");
+//    global_dpd_->buf4_close(&I);
+
+
     /*
-     * G_ijab = <ij||ab>
-     */
-    // G_IJAB = <IJ||AB>
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
-                  ID("[O,O]"), ID("[V,V]"), 1, "MO Ints <OO|VV>");
-    global_dpd_->buf4_copy(&I, PSIF_DCFT_DPD, "G <OO|VV>");
-    global_dpd_->buf4_close(&I);
-
-    // G_IjAb = <Ij|Ab>
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                  ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
-    global_dpd_->buf4_copy(&I, PSIF_DCFT_DPD, "G <Oo|Vv>");
-    global_dpd_->buf4_close(&I);
-
-    // G_ijab = <ij||ab>
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
-                  ID("[o,o]"), ID("[v,v]"), 1, "MO Ints <oo|vv>");
-    global_dpd_->buf4_copy(&I, PSIF_DCFT_DPD, "G <oo|vv>");
-    global_dpd_->buf4_close(&I);
-
-
-    /*
-     * G_ijab += 1/2 Sum_cd gbar_cdab lambda_ijcd
+     * G_ijab = 1/2 Sum_cd gbar_cdab lambda_ijcd
      */
     if(options_.get_str("AO_BASIS") == "NONE"){
         // G_IJAB += 1/2 Sum_CD gbar_CDAB lambda_IJCD
@@ -73,7 +73,7 @@ DCFTSolver::build_cumulant_intermediates()
                       ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
         global_dpd_->buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
                       ID("[O>O]-"), ID("[V>V]-"), 0, "G <OO|VV>");
-        global_dpd_->contract444(&L, &I, &G, 0, 0, 1.0, 1.0);
+        global_dpd_->contract444(&L, &I, &G, 0, 0, 1.0, 0.0);
         global_dpd_->buf4_close(&I);
         global_dpd_->buf4_close(&L);
         global_dpd_->buf4_close(&G);
@@ -86,7 +86,7 @@ DCFTSolver::build_cumulant_intermediates()
                       ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
         global_dpd_->buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                       ID("[O,o]"), ID("[V,v]"), 0, "G <Oo|Vv>");
-        global_dpd_->contract444(&L, &I, &G, 0, 0, 1.0, 1.0);
+        global_dpd_->contract444(&L, &I, &G, 0, 0, 1.0, 0.0);
         global_dpd_->buf4_close(&I);
         global_dpd_->buf4_close(&L);
         global_dpd_->buf4_close(&G);
@@ -99,7 +99,7 @@ DCFTSolver::build_cumulant_intermediates()
                       ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
         global_dpd_->buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
                       ID("[o>o]-"), ID("[v>v]-"), 0, "G <oo|vv>");
-        global_dpd_->contract444(&L, &I, &G, 0, 0, 1.0, 1.0);
+        global_dpd_->contract444(&L, &I, &G, 0, 0, 1.0, 0.0);
         global_dpd_->buf4_close(&I);
         global_dpd_->buf4_close(&L);
         global_dpd_->buf4_close(&G);
@@ -107,31 +107,34 @@ DCFTSolver::build_cumulant_intermediates()
     else{
 
         /***********AA***********/
-        global_dpd_->buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                      ID("[O>O]-"), ID("[V>V]-"), 0, "G <OO|VV>");
-        global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+//        global_dpd_->buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+//                      ID("[O>O]-"), ID("[V>V]-"), 0, "G <OO|VV>");
+        global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
                       ID("[O,O]"), ID("[V,V]"), 0, "tau(temp) <OO|VV>");
-        global_dpd_->buf4_axpy(&L, &G, 1.0);
+//        global_dpd_->buf4_axpy(&L, &G, 1.0);
+        global_dpd_->buf4_copy(&L, PSIF_DCFT_DPD, "G <OO|VV>");
         global_dpd_->buf4_close(&L);
-        global_dpd_->buf4_close(&G);
+//        global_dpd_->buf4_close(&G);
 
         /***********BB***********/
-        global_dpd_->buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                      ID("[o>o]-"), ID("[v>v]-"), 0, "G <oo|vv>");
-        global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+//        global_dpd_->buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+//                      ID("[o>o]-"), ID("[v>v]-"), 0, "G <oo|vv>");
+        global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
                       ID("[o,o]"), ID("[v,v]"), 0, "tau(temp) <oo|vv>");
-        global_dpd_->buf4_axpy(&L, &G, 1.0);
+//        global_dpd_->buf4_axpy(&L, &G, 1.0);
+        global_dpd_->buf4_copy(&L, PSIF_DCFT_DPD, "G <oo|vv>");
         global_dpd_->buf4_close(&L);
-        global_dpd_->buf4_close(&G);
+//        global_dpd_->buf4_close(&G);
 
         /***********AB***********/
-        global_dpd_->buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                      ID("[O,o]"), ID("[V,v]"), 0, "G <Oo|Vv>");
+//        global_dpd_->buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+//                      ID("[O,o]"), ID("[V,v]"), 0, "G <Oo|Vv>");
         global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                       ID("[O,o]"), ID("[V,v]"), 0, "tau(temp) <Oo|Vv>");
-        global_dpd_->buf4_axpy(&L, &G, 1.0);
+//        global_dpd_->buf4_axpy(&L, &G, 1.0);
+        global_dpd_->buf4_copy(&L, PSIF_DCFT_DPD, "G <Oo|Vv>");
         global_dpd_->buf4_close(&L);
-        global_dpd_->buf4_close(&G);
+//        global_dpd_->buf4_close(&G);
     }
 
     /*

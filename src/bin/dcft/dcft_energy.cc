@@ -49,10 +49,10 @@ DCFTSolver::compute_dcft_energy()
     eGaa = global_dpd_->buf4_dot(&G, &L);
     global_dpd_->buf4_close(&G);
 
-    // E += 1/4 gbar_IJAB L_IJAB
+    // E += 1/2 gbar_IJAB L_IJAB
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
                   ID("[O,O]"), ID("[V,V]"), 1, "MO Ints <OO|VV>");
-    eIaa = global_dpd_->buf4_dot(&I, &L);
+    eIaa = 2.0 * global_dpd_->buf4_dot(&I, &L);
     global_dpd_->buf4_close(&I);
     global_dpd_->buf4_close(&L);
 
@@ -64,10 +64,10 @@ DCFTSolver::compute_dcft_energy()
     eGab =  global_dpd_->buf4_dot(&G, &L);
     global_dpd_->buf4_close(&G);
 
-    // E += gbar_IjAb L_IjAb
+    // E += 2.0 gbar_IjAb L_IjAb
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
-    eIab = global_dpd_->buf4_dot(&I, &L);
+    eIab = 2.0 * global_dpd_->buf4_dot(&I, &L);
     global_dpd_->buf4_close(&I);
     global_dpd_->buf4_close(&L);
 
@@ -80,10 +80,10 @@ DCFTSolver::compute_dcft_energy()
     global_dpd_->buf4_close(&G);
 
 
-    // E += 1/4 gbar_ijab L_ijab
+    // E += 1/2 gbar_ijab L_ijab
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
                   ID("[o,o]"), ID("[v,v]"), 1, "MO Ints <oo|vv>");
-    eIbb = global_dpd_->buf4_dot(&I, &L);
+    eIbb = 2.0 * global_dpd_->buf4_dot(&I, &L);
     global_dpd_->buf4_close(&I);
     global_dpd_->buf4_close(&L);
     psio_->close(PSIF_LIBTRANS_DPD, 1);
