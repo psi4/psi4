@@ -62,8 +62,8 @@ DCFTSolver::compute_energy()
         throw FeatureNotImplemented("DC-12 functional", "Analytic gradients", __FILE__, __LINE__);
     if (options_.get_str("AO_BASIS") == "DISK" && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0")
         throw FeatureNotImplemented("CEPA0", "AO_BASIS = DISK", __FILE__, __LINE__);
-    if (options_.get_str("AO_BASIS") == "DISK" && options_.get_str("ALGORITHM") == "QC")
-        throw FeatureNotImplemented("QC", "AO_BASIS = DISK", __FILE__, __LINE__);
+    if (options_.get_str("AO_BASIS") == "DISK" && options_.get_str("ALGORITHM") == "QC" && options_.get_str("QC_TYPE") == "SIMULTANEOUS")
+        throw FeatureNotImplemented("Simultaneous QC", "AO_BASIS = DISK", __FILE__, __LINE__);
     if (!(options_.get_str("ALGORITHM") == "TWOSTEP") && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0")
         throw FeatureNotImplemented("CEPA0", "Requested DCFT algorithm", __FILE__, __LINE__);
 
