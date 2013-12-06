@@ -73,8 +73,8 @@ void analyze(void)
   for(ij=0; ij<T2.params->rowtot[0]; ij++) {
 
     C_DGEMM('n', 't', nvir, nso, nvir, 1.0, &(T2.matrix[0][ij][0]), nvir, 
-	    &(moinfo.C[0][0][0]), nvir, 0.0, &(tmp[0][0]), nso);
-    C_DGEMM('n', 'n', nso, nso, nvir, 1.0, &(moinfo.C[0][0][0]), nvir,
+	    &(moinfo.Cv[0][0][0]), nvir, 0.0, &(tmp[0][0]), nso);
+    C_DGEMM('n', 'n', nso, nso, nvir, 1.0, &(moinfo.Cv[0][0][0]), nvir,
 	    tmp[0], nso, 0.0, T2trans[ij], nso);
 
     for(ab=0; ab<nso*nso; ab++) {
