@@ -69,6 +69,7 @@ DCFTSolver::compute_cumulant_residual()
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
                            ID("[O,O]"), ID("[V,V]"), 1, "MO Ints <OO|VV>");
     dpd_buf4_add(&R, &I, 1.0);
+//    global_dpd_->buf4_print(&R, outfile, 1);
     global_dpd_->buf4_close(&I);
 
 
@@ -96,6 +97,7 @@ DCFTSolver::compute_cumulant_residual()
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                            ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
     dpd_buf4_add(&R, &I, 1.0);
+//    global_dpd_->buf4_print(&R, outfile, 1);
     global_dpd_->buf4_close(&I);
 
 
@@ -123,6 +125,7 @@ DCFTSolver::compute_cumulant_residual()
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
                            ID("[o,o]"), ID("[v,v]"), 1, "MO Ints <oo|vv>");
     dpd_buf4_add(&R, &I, 1.0);
+//    global_dpd_->buf4_print(&R, outfile, 1);
     global_dpd_->buf4_close(&I);
 
     for(int h = 0; h < nirrep_; ++h)
@@ -132,6 +135,8 @@ DCFTSolver::compute_cumulant_residual()
     global_dpd_->buf4_close(&R);
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
+
+//    exit(1);
 
     dcft_timer_off("DCFTSolver::compute_lambda_residual()");
 

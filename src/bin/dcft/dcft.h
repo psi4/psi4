@@ -158,6 +158,7 @@ protected:
     void davidson_guess();
     // Exact Tau
     void refine_tau();
+    void compute_G_intermediate();
     void compute_F_intermediate();
     void form_density_weighted_fock();
     // Orbital-optimized DCFT

@@ -55,10 +55,10 @@ DCFTSolver::DCFTSolver(boost::shared_ptr<Wavefunction> reference_wavefunction, O
 
 //    if(options.get_str("REFERENCE") != "UHF") throw PSIEXCEPTION("You must have REFERENCE = UHF in the input file");
 
-    if (options.get_str("DCFT_FUNCTIONAL") == "DC-12" || options.get_str("DCFT_FUNCTIONAL") == "ODC-12") exact_tau_ = true;
+    if (options.get_str("DCFT_FUNCTIONAL") == "DC-12" || options.get_str("DCFT_FUNCTIONAL") == "ODC-12" || options.get_str("DCFT_FUNCTIONAL") == "ODC-13") exact_tau_ = true;
     else exact_tau_ = false;
 
-    if (options.get_str("DCFT_FUNCTIONAL") == "ODC-06" || options.get_str("DCFT_FUNCTIONAL") == "ODC-12") orbital_optimized_ = true;
+    if (options.get_str("DCFT_FUNCTIONAL") == "ODC-06" || options.get_str("DCFT_FUNCTIONAL") == "ODC-12" || options.get_str("DCFT_FUNCTIONAL") == "ODC-13") orbital_optimized_ = true;
     else orbital_optimized_ = false;
 
     // Sets up the memory, and orbital info
