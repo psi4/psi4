@@ -36,31 +36,23 @@ DCFTSolver::build_cumulant_intermediates()
 {
     dcft_timer_on("DCFTSolver::build_intermediates()");
 
+    compute_G_intermediate();
+
+    if (exact_tau_) {
+        form_density_weighted_fock();
+    }
+
+    compute_F_intermediate();
+
+    dcft_timer_off("DCFTSolver::build_intermediates()");
+}
+
+void
+DCFTSolver::compute_G_intermediate() {
+
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
     dpdbuf4 I, L, G, T, Taa, Tab, Tbb, Laa, Lab, Lbb;
-
-//    /*
-//     * G_ijab = <ij||ab>
-//     */
-//    // G_IJAB = <IJ||AB>
-//    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
-//                  ID("[O,O]"), ID("[V,V]"), 1, "MO Ints <OO|VV>");
-//    global_dpd_->buf4_copy(&I, PSIF_DCFT_DPD, "G <OO|VV>");
-//    global_dpd_->buf4_close(&I);
-
-//    // G_IjAb = <Ij|Ab>
-//    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-//                  ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
-//    global_dpd_->buf4_copy(&I, PSIF_DCFT_DPD, "G <Oo|Vv>");
-//    global_dpd_->buf4_close(&I);
-
-//    // G_ijab = <ij||ab>
-//    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
-//                  ID("[o,o]"), ID("[v,v]"), 1, "MO Ints <oo|vv>");
-//    global_dpd_->buf4_copy(&I, PSIF_DCFT_DPD, "G <oo|vv>");
-//    global_dpd_->buf4_close(&I);
-
 
     /*
      * G_ijab = 1/2 Sum_cd gbar_cdab lambda_ijcd
@@ -107,34 +99,22 @@ DCFTSolver::build_cumulant_intermediates()
     else{
 
         /***********AA***********/
-//        global_dpd_->buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-//                      ID("[O>O]-"), ID("[V>V]-"), 0, "G <OO|VV>");
         global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
                       ID("[O,O]"), ID("[V,V]"), 0, "tau(temp) <OO|VV>");
-//        global_dpd_->buf4_axpy(&L, &G, 1.0);
         global_dpd_->buf4_copy(&L, PSIF_DCFT_DPD, "G <OO|VV>");
         global_dpd_->buf4_close(&L);
-//        global_dpd_->buf4_close(&G);
 
         /***********BB***********/
-//        global_dpd_->buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-//                      ID("[o>o]-"), ID("[v>v]-"), 0, "G <oo|vv>");
         global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
                       ID("[o,o]"), ID("[v,v]"), 0, "tau(temp) <oo|vv>");
-//        global_dpd_->buf4_axpy(&L, &G, 1.0);
         global_dpd_->buf4_copy(&L, PSIF_DCFT_DPD, "G <oo|vv>");
         global_dpd_->buf4_close(&L);
-//        global_dpd_->buf4_close(&G);
 
         /***********AB***********/
-//        global_dpd_->buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-//                      ID("[O,o]"), ID("[V,v]"), 0, "G <Oo|Vv>");
         global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                       ID("[O,o]"), ID("[V,v]"), 0, "tau(temp) <Oo|Vv>");
-//        global_dpd_->buf4_axpy(&L, &G, 1.0);
         global_dpd_->buf4_copy(&L, PSIF_DCFT_DPD, "G <Oo|Vv>");
         global_dpd_->buf4_close(&L);
-//        global_dpd_->buf4_close(&G);
     }
 
     /*
@@ -409,12 +389,6 @@ DCFTSolver::build_cumulant_intermediates()
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
 
-    if (exact_tau_) {
-        form_density_weighted_fock();
-    }
-    compute_F_intermediate();
-
-    dcft_timer_off("DCFTSolver::build_intermediates()");
 }
 
 void
