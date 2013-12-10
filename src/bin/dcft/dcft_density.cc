@@ -35,43 +35,44 @@ DCFTSolver::compute_unrelaxed_density_OOOO() {
 
     psio_->open(PSIF_DCFT_DENSITY, PSIO_OPEN_OLD);
 
-    dpdbuf4 LLaa, LLab, LLbb, Laa, Lab, Lbb, Gaa, Gab, Gbb;
+    dpdbuf4 Iaa, Iab, Ibb, Gaa, Gab, Gbb;
 
     // Compute the N^6 terms for Gamma OOOO
 
-    // Gamma_ijkl = 1/16 (Lambda_ijab * Z_klab + Z_ijab * Lambda_klab)
-    global_dpd_->buf4_init(&Gaa, PSIF_DCFT_DENSITY, 0, ID("[O>O]-"), ID("[O>O]-"),
-              ID("[O>O]-"), ID("[O>O]-"), 0, "Gamma <OO|OO>");
-    global_dpd_->buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
-                  ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
-    global_dpd_->buf4_init(&LLaa, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
-                  ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
-    global_dpd_->contract444(&Laa, &LLaa, &Gaa, 0, 0, 0.25, 0.0);
-    global_dpd_->buf4_close(&LLaa);
-    global_dpd_->buf4_close(&Gaa);
-    global_dpd_->buf4_close(&Laa);
+    if (options_.get_str("DCFT_FUNCTIONAL") != "ODC-13") {
+        compute_I_intermediate();
+    }
 
-    global_dpd_->buf4_init(&Lab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                  ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
-    global_dpd_->buf4_init(&LLab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                  ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
+    // Gamma_ijkl = 1/8 * I_ijkl
+    global_dpd_->buf4_init(&Iaa, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[O>O]-"),
+                           ID("[O>O]-"), ID("[O>O]-"), 0, "I <OO|OO>");
+    global_dpd_->buf4_copy(&Iaa, PSIF_DCFT_DENSITY, "Gamma <OO|OO>");
+    global_dpd_->buf4_close(&Iaa);
+
+    global_dpd_->buf4_init(&Iab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[O,o]"),
+                           ID("[O,o]"), ID("[O,o]"), 0, "I <Oo|Oo>");
+    global_dpd_->buf4_copy(&Iab, PSIF_DCFT_DENSITY, "Gamma <Oo|Oo>");
+    global_dpd_->buf4_close(&Iab);
+
+    global_dpd_->buf4_init(&Ibb, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[o>o]-"),
+                           ID("[o>o]-"), ID("[o>o]-"), 0, "I <oo|oo>");
+    global_dpd_->buf4_copy(&Ibb, PSIF_DCFT_DENSITY, "Gamma <oo|oo>");
+    global_dpd_->buf4_close(&Ibb);
+
+    global_dpd_->buf4_init(&Gaa, PSIF_DCFT_DENSITY, 0, ID("[O>O]-"), ID("[O>O]-"),
+                           ID("[O>O]-"), ID("[O>O]-"), 0, "Gamma <OO|OO>");
+    global_dpd_->buf4_scm(&Gaa, 1.0/8.0);
+    global_dpd_->buf4_close(&Gaa);
+
     global_dpd_->buf4_init(&Gab, PSIF_DCFT_DENSITY, 0, ID("[O,o]"), ID("[O,o]"),
-              ID("[O,o]"), ID("[O,o]"), 0, "Gamma <Oo|Oo>");
-    global_dpd_->contract444(&Lab, &LLab, &Gab, 0, 0, 0.25, 0.0);
+                           ID("[O,o]"), ID("[O,o]"), 0, "Gamma <Oo|Oo>");
+    global_dpd_->buf4_scm(&Gab, 1.0/8.0);
     global_dpd_->buf4_close(&Gab);
-    global_dpd_->buf4_close(&LLab);
-    global_dpd_->buf4_close(&Lab);
 
     global_dpd_->buf4_init(&Gbb, PSIF_DCFT_DENSITY, 0, ID("[o>o]-"), ID("[o>o]-"),
-              ID("[o>o]-"), ID("[o>o]-"), 0, "Gamma <oo|oo>");
-    global_dpd_->buf4_init(&Lbb, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
-                  ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
-    global_dpd_->buf4_init(&LLbb, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
-                  ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
-    global_dpd_->contract444(&Lbb, &LLbb, &Gbb, 0, 0, 0.25, 0.0);
-    global_dpd_->buf4_close(&LLbb);
+                           ID("[o>o]-"), ID("[o>o]-"), 0, "Gamma <oo|oo>");
+    global_dpd_->buf4_scm(&Gbb, 1.0/8.0);
     global_dpd_->buf4_close(&Gbb);
-    global_dpd_->buf4_close(&Lbb);
 
     // Add the terms containing one-particle densities to Gamma OOOO
 

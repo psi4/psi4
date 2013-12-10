@@ -158,11 +158,14 @@ protected:
     void davidson_guess();
     // Exact Tau
     void refine_tau();
+    void form_density_weighted_fock();
+    // Cumulant residual intermediates
     void compute_G_intermediate();
     void compute_F_intermediate();
     void compute_V_intermediate();
     void compute_H_intermediate();
-    void form_density_weighted_fock();
+    void compute_I_intermediate();
+    void compute_J_intermediate();
     // Orbital-optimized DCFT
     void run_simult_dc_guess();
     double compute_orbital_residual();

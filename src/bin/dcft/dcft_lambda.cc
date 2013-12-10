@@ -170,7 +170,7 @@ DCFTSolver::compute_cumulant_residual()
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
 
-    exit(1);
+    if (options_.get_str("DCFT_FUNCTIONAL") == "ODC-13") exit(1);
 
     dcft_timer_off("DCFTSolver::compute_lambda_residual()");
 
