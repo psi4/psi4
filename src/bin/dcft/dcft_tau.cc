@@ -49,12 +49,10 @@ DCFTSolver::build_tau()
     global_dpd_->file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
     global_dpd_->file2_init(&T_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
 
-    global_dpd_->buf4_init(&L1, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID("[O,O]"), _ints->DPD_ID("[V,V]"),
-                  ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
-    global_dpd_->buf4_init(&L2, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID("[O,O]"), _ints->DPD_ID("[V,V]"),
-                  ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
+    global_dpd_->buf4_init(&L1, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                           ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
+    global_dpd_->buf4_init(&L2, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                           ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
     /*
      * Tau_IJ = -1/2 Lambda_IKAB Lambda_JKAB
      */
@@ -66,12 +64,10 @@ DCFTSolver::build_tau()
     global_dpd_->buf4_close(&L1);
     global_dpd_->buf4_close(&L2);
 
-    global_dpd_->buf4_init(&L1, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID("[o,o]"), _ints->DPD_ID("[v,v]"),
-                  ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
-    global_dpd_->buf4_init(&L2, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID("[o,o]"), _ints->DPD_ID("[v,v]"),
-                  ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
+    global_dpd_->buf4_init(&L1, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                           ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
+    global_dpd_->buf4_init(&L2, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                           ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
     /*
      * Tau_ij = -1/2 Lambda_ikab Lambda_jkab
      */
@@ -83,14 +79,10 @@ DCFTSolver::build_tau()
     global_dpd_->buf4_close(&L1);
     global_dpd_->buf4_close(&L2);
 
-    global_dpd_->buf4_init(&L1, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID("[O,o]"), _ints->DPD_ID("[V,v]"),
-                  _ints->DPD_ID("[O,o]"), _ints->DPD_ID("[V,v]"),
-                  0, "Lambda <Oo|Vv>");
-    global_dpd_->buf4_init(&L2, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID("[O,o]"), _ints->DPD_ID("[V,v]"),
-                  _ints->DPD_ID("[O,o]"), _ints->DPD_ID("[V,v]"),
-                  0, "Lambda <Oo|Vv>");
+    global_dpd_->buf4_init(&L1, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                           ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
+    global_dpd_->buf4_init(&L2, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                           ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
     /*
      * Tau_IJ -= 1/2 Lambda_IkAb Lambda_JkAb - 1/2 Lambda_IkaB Lambda_JkaB
      */

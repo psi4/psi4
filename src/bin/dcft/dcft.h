@@ -161,6 +161,7 @@ protected:
     void compute_G_intermediate();
     void compute_F_intermediate();
     void compute_V_intermediate();
+    void compute_H_intermediate();
     void form_density_weighted_fock();
     // Orbital-optimized DCFT
     void run_simult_dc_guess();
