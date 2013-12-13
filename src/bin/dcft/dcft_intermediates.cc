@@ -1531,6 +1531,13 @@ DCFTSolver::compute_V_intermediate() {
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
 
+    /*
+     * V_ijab += 1/3 P_(ij) P_(ab) lambda_acik L_kbjc
+     */
+
+    compute_L_intermediate();
+
+
 }
 
 void
@@ -1599,11 +1606,6 @@ DCFTSolver::compute_H_intermediate() {
     global_dpd_->buf4_close(&L);
     global_dpd_->buf4_close(&I);
 
-    global_dpd_->file2_print(&H_OO, outfile);
-    global_dpd_->file2_print(&H_oo, outfile);
-    global_dpd_->file2_print(&H_VV, outfile);
-    global_dpd_->file2_print(&H_vv, outfile);
-
     global_dpd_->file2_close(&H_OO);
     global_dpd_->file2_close(&H_oo);
     global_dpd_->file2_close(&H_VV);
@@ -1625,11 +1627,6 @@ DCFTSolver::compute_H_intermediate() {
     global_dpd_->file2_axpy(&HH_oo, &H_oo, 1.0, 1);
     global_dpd_->file2_axpy(&HH_VV, &H_VV, 1.0, 1);
     global_dpd_->file2_axpy(&HH_vv, &H_vv, 1.0, 1);
-
-    global_dpd_->file2_print(&H_OO, outfile);
-    global_dpd_->file2_print(&H_oo, outfile);
-    global_dpd_->file2_print(&H_VV, outfile);
-    global_dpd_->file2_print(&H_vv, outfile);
 
     global_dpd_->file2_close(&HH_OO);
     global_dpd_->file2_close(&HH_oo);
@@ -1747,7 +1744,7 @@ DCFTSolver::compute_J_intermediate() {
 void
 DCFTSolver::compute_K_intermediate() {
 
-    dpdbuf4 LLaa, LLab, LLbb, Laa, Lab, Lbb, Kaa, Kab, Kba, Kbb, Tab;
+    dpdbuf4 LLaa, LLab, LLbb, Laa, Lab, Lbb, Kaa, Kab, Kba, Kbb;
 
     // There are five unique spin cases: K<IAJB>, K<iajb>, K<IaJb>, K<iAjB>, K<IajB>
 
@@ -1845,6 +1842,177 @@ DCFTSolver::compute_K_intermediate() {
                            ID("[o,v]"), ID("[o,v]"), 0, "K (ov|ov)");
     global_dpd_->buf4_sort(&Kbb, PSIF_DCFT_DPD, psrq, ID("[o,v]"),ID("[o,v]"), "K <ov|ov>");
     global_dpd_->buf4_close(&Kbb);
+
+}
+
+void
+DCFTSolver::compute_L_intermediate() {
+
+    dpdbuf4 I, Iaa, Iab, Ibb, Lambda_aa, Lambda_ab, Lambda_bb, Laa, Lab, Lba, Lbb;
+
+    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+
+    // There are six unique spin cases: L<IAJB>, L<iajb>, L<IaJb>, L<iAjB>, L<IajB>, L<iAJb>
+
+    // L<IAJB> spin case
+    global_dpd_->buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O,V]"), ID("[V,O]"),
+                           ID("[O,V]"), ID("[V,O]"), 0, "L (OV|VO)");
+
+    global_dpd_->buf4_init(&Lambda_aa, PSIF_DCFT_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                           ID("[O,V]"), ID("[O,V]"), 0, "Lambda (OV|OV)");
+
+    // L_(IB|AJ) = Lambda_(IB|KC) * (AJ|KC)
+    global_dpd_->buf4_init(&Iaa, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[O,V]"),
+                           ID("[V,O]"), ID("[O,V]"), 0, "MO Ints (VO|OV)");
+    global_dpd_->contract444(&Lambda_aa, &Iaa, &Laa, 0, 0, 1.0, 0.0);
+    global_dpd_->buf4_close(&Iaa);
+
+    // L_(IB|AJ) -= Lambda_(IB|KC) * <AJ|KC>
+    global_dpd_->buf4_init(&Iaa, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[O,V]"),
+                           ID("[V,O]"), ID("[O,V]"), 0, "MO Ints <VO|OV>");
+    global_dpd_->contract444(&Lambda_aa, &Iaa, &Laa, 0, 0, -1.0, 1.0);
+    global_dpd_->buf4_close(&Iaa);
+
+    global_dpd_->buf4_close(&Lambda_aa);
+
+    // L_(IB|AJ) += Lambda_(IB|kc) * (AJ|kc)
+    global_dpd_->buf4_init(&Lambda_ab, PSIF_DCFT_DPD, 0, ID("[O,V]"), ID("[o,v]"),
+                           ID("[O,V]"), ID("[o,v]"), 0, "Lambda (OV|ov)");
+    global_dpd_->buf4_init(&Iab, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[o,v]"),
+                           ID("[V,O]"), ID("[o,v]"), 0, "MO Ints (VO|ov)");
+    global_dpd_->contract444(&Lambda_ab, &Iab, &Laa, 0, 0, 1.0, 1.0);
+    global_dpd_->buf4_close(&Iab);
+    global_dpd_->buf4_close(&Lambda_ab);
+
+    global_dpd_->buf4_print(&Laa, outfile, 1);
+    global_dpd_->buf4_close(&Laa);
+
+    // L<IaJb> and L<iAjB> spin cases:
+
+    // Although we denote L <Ov|Ov> and L <Vo|Vo> as in physist's notation, it is actually in chemist's notation.
+    // However, it is convenient to store that intermediate in this form to avoid unnecessary tensor sorts
+    global_dpd_->buf4_init(&Lambda_ab, PSIF_DCFT_DPD, 0, ID("[O,v]"), ID("[o,V]"),
+                           ID("[O,v]"), ID("[o,V]"), 0, "Lambda (Ov|oV)");
+    global_dpd_->buf4_sort(&Lambda_ab, PSIF_DCFT_DPD, pqsr, ID("[O,v]"), ID("[V,o]"), "Lambda (Ov|Vo)");
+    global_dpd_->buf4_close(&Lambda_ab);
+
+    global_dpd_->buf4_init(&Lambda_ab, PSIF_DCFT_DPD, 0, ID("[O,v]"), ID("[V,o]"),
+                           ID("[O,v]"), ID("[V,o]"), 0, "Lambda (Ov|Vo)");
+    global_dpd_->buf4_init(&Iab, PSIF_LIBTRANS_DPD, 0, ID("[O,v]"), ID("[V,o]"),
+                           ID("[O,v]"), ID("[V,o]"), 0, "MO Ints <Ov|Vo>");
+
+    // L_<Ib|Ja> = Lambda_(Ib|Ck) * <Ja|Ck>
+    global_dpd_->buf4_init(&Lab, PSIF_DCFT_DPD, 0, ID("[O,v]"), ID("[O,v]"),
+                           ID("[O,v]"), ID("[O,v]"), 0, "L <Ov|Ov>");
+    global_dpd_->contract444(&Lambda_ab, &Iab, &Lab, 0, 0, 1.0, 0.0);
+    global_dpd_->buf4_print(&Lab, outfile, 1);
+    global_dpd_->buf4_close(&Lab);
+
+    // L_<Bi|Aj> = Lambda_(Kc|Bi) * <Kc|Aj>
+    global_dpd_->buf4_init(&Lba, PSIF_DCFT_DPD, 0, ID("[V,o]"), ID("[V,o]"),
+                           ID("[V,o]"), ID("[V,o]"), 0, "L <Vo|Vo>");
+    global_dpd_->contract444(&Lambda_ab, &Iab, &Lba, 1, 1, 1.0, 0.0);
+    global_dpd_->buf4_print(&Lba, outfile, 1);
+    global_dpd_->buf4_close(&Lba);
+
+    global_dpd_->buf4_close(&Iab);
+    global_dpd_->buf4_close(&Lambda_ab);
+
+    // L<IajB> spin case:
+    global_dpd_->buf4_init(&Lambda_aa, PSIF_DCFT_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                           ID("[O,V]"), ID("[O,V]"), 0, "Lambda (OV|OV)");
+    global_dpd_->buf4_init(&Lambda_ab, PSIF_DCFT_DPD, 0, ID("[O,V]"), ID("[o,v]"),
+                           ID("[O,V]"), ID("[o,v]"), 0, "Lambda (OV|ov)");
+    global_dpd_->buf4_init(&Lambda_bb, PSIF_DCFT_DPD, 0, ID("[o,v]"), ID("[o,v]"),
+                           ID("[o,v]"), ID("[o,v]"), 0, "Lambda (ov|ov)");
+
+    global_dpd_->buf4_init(&Lab, PSIF_DCFT_DPD, 0, ID("[O,V]"), ID("[v,o]"),
+                           ID("[O,V]"), ID("[v,o]"), 0, "L (OV|vo)");
+
+    // L_(IB|aj) = Lambda_(IB|kc) * (aj|kc)
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[o,v]"),
+                           ID("[v,o]"), ID("[o,v]"), 0, "MO Ints (vo|ov)");
+    global_dpd_->contract444(&Lambda_ab, &I, &Lab, 0, 0, 1.0, 0.0);
+    global_dpd_->buf4_close(&I);
+
+    // L_(IB|aj) -= Lambda_(IB|kc) * <aj|kc>
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[o,v]"),
+                           ID("[v,o]"), ID("[o,v]"), 0, "MO Ints <vo|ov>");
+    global_dpd_->contract444(&Lambda_ab, &I, &Lab, 0, 0, -1.0, 1.0);
+    global_dpd_->buf4_close(&I);
+
+    // L_(IB|aj) += Lambda_(IB|KC) * (aj|KC)
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[O,V]"),
+                           ID("[v,o]"), ID("[O,V]"), 0, "MO Ints (vo|OV)");
+    global_dpd_->contract444(&Lambda_aa, &I, &Lab, 0, 0, 1.0, 1.0);
+    global_dpd_->buf4_close(&I);
+
+    global_dpd_->buf4_print(&Lab, outfile, 1);
+    global_dpd_->buf4_close(&Lab);
+
+    // L<iAJb> spin case:
+    global_dpd_->buf4_init(&Lab, PSIF_DCFT_DPD, 0, ID("[V,O]"), ID("[o,v]"),
+                           ID("[V,O]"), ID("[o,v]"), 0, "L (VO|ov)");
+
+    // L_(AJ|ib) += (AJ|KC) * Lambda_(KC|ib)
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[O,V]"),
+                           ID("[V,O]"), ID("[O,V]"), 0, "MO Ints (VO|OV)");
+    global_dpd_->contract444(&I, &Lambda_ab, &Lab, 0, 1, 1.0, 0.0);
+    global_dpd_->buf4_close(&I);
+
+    // L_(AJ|ib) -= <AJ|KC> * Lambda_(KC|ib)
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[O,V]"),
+                           ID("[V,O]"), ID("[O,V]"), 0, "MO Ints <VO|OV>");
+    global_dpd_->contract444(&I, &Lambda_ab, &Lab, 0, 1, -1.0, 1.0);
+    global_dpd_->buf4_close(&I);
+
+    // L_(AJ|ib) += (AJ|kc) * Lambda_(ib|kc)
+    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[o,v]"),
+                           ID("[V,O]"), ID("[o,v]"), 0, "MO Ints (VO|ov)");
+    global_dpd_->contract444(&I, &Lambda_bb, &Lab, 0, 1, 1.0, 1.0);
+    global_dpd_->buf4_close(&I);
+
+    global_dpd_->buf4_print(&Lab, outfile, 1);
+    global_dpd_->buf4_close(&Lab);
+
+    global_dpd_->buf4_close(&Lambda_bb);
+    global_dpd_->buf4_close(&Lambda_ab);
+    global_dpd_->buf4_close(&Lambda_aa);
+
+    // L<iajb> spin case
+    global_dpd_->buf4_init(&Lbb, PSIF_DCFT_DPD, 0, ID("[o,v]"), ID("[v,o]"),
+                           ID("[o,v]"), ID("[v,o]"), 0, "L (ov|vo)");
+
+    global_dpd_->buf4_init(&Lambda_bb, PSIF_DCFT_DPD, 0, ID("[o,v]"), ID("[o,v]"),
+                           ID("[o,v]"), ID("[o,v]"), 0, "Lambda (ov|ov)");
+
+    // L_(ib|aj) = Lambda_(ib|kc) * (aj|kc)
+    global_dpd_->buf4_init(&Ibb, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[o,v]"),
+                           ID("[v,o]"), ID("[o,v]"), 0, "MO Ints (vo|ov)");
+    global_dpd_->contract444(&Lambda_bb, &Ibb, &Lbb, 0, 0, 1.0, 0.0);
+    global_dpd_->buf4_close(&Ibb);
+
+    // L_(ib|aj) -= Lambda_(ib|kc) * <aj|kc>
+    global_dpd_->buf4_init(&Ibb, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[o,v]"),
+                           ID("[v,o]"), ID("[o,v]"), 0, "MO Ints <vo|ov>");
+    global_dpd_->contract444(&Lambda_bb, &Ibb, &Lbb, 0, 0, -1.0, 1.0);
+    global_dpd_->buf4_close(&Ibb);
+
+    global_dpd_->buf4_close(&Lambda_bb);
+
+    // L_(ib|aj) += Lambda_(ib|KC) * (aj|KC)
+    global_dpd_->buf4_init(&Lambda_ab, PSIF_DCFT_DPD, 0, ID("[O,V]"), ID("[o,v]"),
+                           ID("[O,V]"), ID("[o,v]"), 0, "Lambda (OV|ov)");
+    global_dpd_->buf4_init(&Iab, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[O,V]"),
+                           ID("[v,o]"), ID("[O,V]"), 0, "MO Ints (vo|OV)");
+    global_dpd_->contract444(&Lambda_ab, &Iab, &Lbb, 1, 0, 1.0, 1.0);
+    global_dpd_->buf4_close(&Iab);
+    global_dpd_->buf4_close(&Lambda_ab);
+
+    global_dpd_->buf4_print(&Lbb, outfile, 1);
+    global_dpd_->buf4_close(&Lbb);
+
+    psio_->close(PSIF_LIBTRANS_DPD, 1);
 
 }
 
