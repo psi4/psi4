@@ -12,12 +12,18 @@ ref_vals_odc12= [                                                             #T
                 [ 0.000000000000,     0.000000000000,    -0.070863321661],    #TEST
                 [ 0.000000000000,     0.000000000000,     0.070863321661]     #TEST
                 ]                                                             #TEST
+ref_vals_odc13= [                                                             #TEST
+                [ 0.000000000000,     0.000000000000,    -0.086959657405 ],   #TEST
+                [ 0.000000000000,     0.000000000000,     0.086959657405 ]    #TEST
+                ]                                                             #TEST
 ref_dc06 = psi4.Matrix(2, 3)                                                #TEST
 ref_odc06= psi4.Matrix(2, 3)                                                #TEST
 ref_odc12= psi4.Matrix(2, 3)                                                #TEST
+ref_odc13= psi4.Matrix(2, 3)                                                #TEST
 ref_dc06.set(ref_vals_dc06)                                                   #TEST
 ref_odc06.set(ref_vals_odc06)                                                 #TEST
 ref_odc12.set(ref_vals_odc12)                                                 #TEST
+ref_odc13.set(ref_vals_odc13)                                                 #TEST
 
 memory 250 mb
 
@@ -80,6 +86,20 @@ gradient('dcft')
 grad_odc12 = psi4.wavefunction().gradient()                                          #TEST
 compare_matrices(ref_odc12, grad_odc12, 8, "ODC-12 analytic gradient (qc, ao_basis=none)")  #TEST
 
+set ao_basis        none
+set dcft_functional odc-13
+set algorithm       simultaneous
+gradient('dcft')
+grad_odc13 = psi4.wavefunction().gradient()                                          #TEST
+compare_matrices(ref_odc13, grad_odc13, 8, "ODC-13 analytic gradient (simultaneous, ao_basis=none)")  #TEST
+
+set ao_basis        none
+set dcft_functional odc-13
+set algorithm       qc
+gradient('dcft')
+grad_odc13 = psi4.wavefunction().gradient()                                          #TEST
+compare_matrices(ref_odc13, grad_odc13, 8, "ODC-13 analytic gradient (qc, ao_basis=none)")  #TEST
+
 #AO_BASIS = DISK
 set ao_basis        disk
 set dcft_functional dc-06
@@ -102,3 +122,9 @@ gradient('dcft')
 grad_odc12 = psi4.wavefunction().gradient()                                          #TEST
 compare_matrices(ref_odc12, grad_odc12, 8, "ODC-12 analytic gradient (simultaneous, ao_basis=disk)")  #TEST
 
+set ao_basis        disk
+set dcft_functional odc-13
+set algorithm       simultaneous
+gradient('dcft')
+grad_odc13 = psi4.wavefunction().gradient()                                          #TEST
+compare_matrices(ref_odc13, grad_odc13, 8, "ODC-13 analytic gradient (simultaneous, ao_basis=disk)")  #TEST
