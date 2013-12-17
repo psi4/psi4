@@ -260,11 +260,6 @@ DCFTSolver::compute_unrelaxed_density_OOVV() {
     // Add third-order terms for the oovv density
     if (options_.get_str("DCFT_FUNCTIONAL") == "ODC-13")  {
 
-#if TEMP
-        build_tau();
-        refine_tau();
-#endif
-
         global_dpd_->file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "T <O|O>");
         global_dpd_->file2_init(&T_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "T <o|o>");
         global_dpd_->file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "T <V|V>");
@@ -463,10 +458,6 @@ DCFTSolver::compute_unrelaxed_density_OOVV() {
          * Gamma_ijab += 1/12 lambda_abkl I_klij
          */
 
-#if TEMP
-        compute_I_intermediate();
-#endif
-
         // Gamma_IJAB += 1/12 * lambda_ABKL * I_KLIJ
         global_dpd_->buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O>O]-"), ID("[V>V]-"),
                                ID("[O>O]-"), ID("[V>V]-"), 0, "Gamma <OO|VV>");
@@ -506,52 +497,6 @@ DCFTSolver::compute_unrelaxed_density_OOVV() {
         /*
          * Gamma_ijab += 1/6 P_(ij) P_(ab) lambda_acik K_kbjc
          */
-
-#if TEMP
-        global_dpd_->buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                      ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
-        global_dpd_->buf4_sort(&Laa, PSIF_DCFT_DPD, prqs, ID("[O,V]"), ID("[O,V]"), "Lambda (OV|OV)");
-        global_dpd_->buf4_close(&Laa);
-
-        global_dpd_->buf4_init(&Lbb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                      ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
-        global_dpd_->buf4_sort(&Lbb, PSIF_DCFT_DPD, prqs, ID("[o,v]"),ID("[o,v]"), "Lambda (ov|ov)");
-        global_dpd_->buf4_close(&Lbb);
-
-        global_dpd_->buf4_init(&Lab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                      ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
-        global_dpd_->buf4_sort(&Lab, PSIF_DCFT_DPD, psqr, ID("[O,v]"), ID("[o,V]"), "Lambda (Ov|oV)");
-        global_dpd_->buf4_close(&Lab);
-
-        global_dpd_->buf4_init(&Lab, PSIF_DCFT_DPD, 0, ID("[O,v]"), ID("[o,V]"),
-                               ID("[O,v]"), ID("[o,V]"), 0, "Lambda (Ov|oV)");
-        global_dpd_->buf4_sort(&Lab, PSIF_DCFT_DPD, pqsr, ID("[O,v]"), ID("[V,o]"), "Lambda (Ov|Vo)");
-        global_dpd_->buf4_close(&Lab);
-
-        global_dpd_->buf4_init(&Lab, PSIF_DCFT_DPD, 0, ID("[O,v]"), ID("[o,V]"),
-                      ID("[O,v]"), ID("[o,V]"), 0, "Lambda (Ov|oV)");
-        global_dpd_->buf4_sort(&Lab, PSIF_DCFT_DPD, psrq, ID("[O,V]"),ID("[o,v]"), "Lambda (OV|ov)");
-        global_dpd_->buf4_close(&Lab);
-
-        compute_K_intermediate();
-
-//        global_dpd_->buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O>O]-"), ID("[V>V]-"),
-//                      ID("[O>O]-"), ID("[V>V]-"), 0, "Gamma <OO|VV>");
-//        global_dpd_->buf4_scm(&G, 0.0);
-//        global_dpd_->buf4_close(&G);
-
-//        global_dpd_->buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o>o]-"), ID("[v>v]-"),
-//                      ID("[o>o]-"), ID("[v>v]-"), 0, "Gamma <oo|vv>");
-//        global_dpd_->buf4_scm(&G, 0.0);
-//        global_dpd_->buf4_close(&G);
-
-//        global_dpd_->buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,o]"), ID("[V,v]"),
-//                      ID("[O,o]"), ID("[V,v]"), 0, "Gamma <Oo|Vv>");
-//        global_dpd_->buf4_scm(&G, 0.0);
-//        global_dpd_->buf4_close(&G);
-
-#endif
-
 
         // OOVV
         global_dpd_->buf4_init(&Taa, PSIF_DCFT_DPD, 0, ID("[O,V]"), ID("[O,V]"),
@@ -698,14 +643,6 @@ DCFTSolver::compute_unrelaxed_density_OOVV() {
         global_dpd_->buf4_close(&L);
         global_dpd_->buf4_close(&Kab);
         global_dpd_->buf4_close(&Tab);
-
-#if TEMP
-        // K_kCjA -> K_CkAj
-        global_dpd_->buf4_init(&Kab, PSIF_DCFT_DPD, 0, ID("[o,V]"), ID("[o,V]"),
-                               ID("[o,V]"), ID("[o,V]"), 0, "K <oV|oV>");
-        global_dpd_->buf4_sort(&Kab, PSIF_DCFT_DPD, qpsr, ID("[V,o]"), ID("[V,o]"), "K <Vo|Vo>");
-        global_dpd_->buf4_close(&Kab);
-#endif
 
         // T_IbAj += 1/6 Lambda_(Ib|Ck) K_(Ck|Aj)
         global_dpd_->buf4_init(&Tab, PSIF_DCFT_DPD, 0, ID("[O,v]"), ID("[V,o]"),
