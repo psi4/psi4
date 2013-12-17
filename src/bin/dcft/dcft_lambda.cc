@@ -80,7 +80,6 @@ DCFTSolver::compute_cumulant_residual()
         global_dpd_->buf4_init(&V, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
                                ID("[O>O]-"), ID("[V>V]-"), 0, "V <OO|VV>");
         dpd_buf4_add(&R, &V, 1.0);
-        global_dpd_->buf4_print(&R, outfile, 1);
         global_dpd_->buf4_close(&V);
     }
 
@@ -119,7 +118,6 @@ DCFTSolver::compute_cumulant_residual()
         global_dpd_->buf4_init(&V, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                                ID("[O,o]"), ID("[V,v]"), 0, "V <Oo|Vv>");
         dpd_buf4_add(&R, &V, 1.0);
-        global_dpd_->buf4_print(&R, outfile, 1);
         global_dpd_->buf4_close(&V);
     }
 
@@ -158,7 +156,6 @@ DCFTSolver::compute_cumulant_residual()
         global_dpd_->buf4_init(&V, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
                                ID("[o>o]-"), ID("[v>v]-"), 0, "V <oo|vv>");
         dpd_buf4_add(&R, &V, 1.0);
-        global_dpd_->buf4_print(&R, outfile, 1);
         global_dpd_->buf4_close(&V);
     }
 

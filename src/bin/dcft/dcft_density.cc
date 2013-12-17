@@ -262,6 +262,7 @@ DCFTSolver::compute_unrelaxed_density_OOVV() {
 
 #if TEMP
         build_tau();
+        refine_tau();
 #endif
 
         global_dpd_->file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "T <O|O>");
@@ -344,8 +345,8 @@ DCFTSolver::compute_unrelaxed_density_OOVV() {
         global_dpd_->buf4_sort(&T, PSIF_DCFT_DPD, qprs, ID("[o,o]"), ID("[v,v]"), "P(Temp) <oo|vv>");
         global_dpd_->buf4_close(&T);
 
-        global_dpd_->buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                               ID("[O,O]"), ID("[V,V]"), 0, "Temp <OO|VV>");
+        global_dpd_->buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                               ID("[o,o]"), ID("[v,v]"), 0, "Temp <oo|vv>");
         global_dpd_->buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,o]"), ID("[v,v]"),
                                ID("[o>o]-"), ID("[v>v]-"), 0, "Gamma <oo|vv>");
         dpd_buf4_add(&G, &T, 1.0);
@@ -567,7 +568,7 @@ DCFTSolver::compute_unrelaxed_density_OOVV() {
         global_dpd_->contract444(&L, &Kaa, &Taa, 0, 0, 1.0/6.0, 0.0);
         global_dpd_->buf4_close(&L);
 
-        // T_IAJB += 1/6 Lambda_(IA|kc) K_(kc|JB)
+        // T_IAJB += 1/6 Lambda_(IA|kc) K_(JB|kc)
         global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,V]"), ID("[o,v]"),
                       ID("[O,V]"), ID("[o,v]"), 0, "Lambda (OV|ov)");
         global_dpd_->contract444(&L, &Kab, &Taa, 0, 0, 1.0/6.0, 1.0);
@@ -625,7 +626,6 @@ DCFTSolver::compute_unrelaxed_density_OOVV() {
         global_dpd_->buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O>O]-"), ID("[V>V]-"),
                       ID("[O>O]-"), ID("[V>V]-"), 0, "Gamma <OO|VV>");
         dpd_buf4_add(&G, &T, 1.0);
-        global_dpd_->buf4_print(&G, outfile, 1);
         global_dpd_->buf4_close(&G);
         global_dpd_->buf4_close(&T);
 
@@ -654,13 +654,13 @@ DCFTSolver::compute_unrelaxed_density_OOVV() {
         global_dpd_->contract444(&L, &Kab, &Tab, 0, 1, 1.0/6.0, 1.0);
         global_dpd_->buf4_close(&L);
 
-        // T_IAjb += 1/6 Lambda_(KC|jb) K_(KC|IA)
+        // T_IAjb += 1/6 K_(IA|KC) Lambda_(KC|jb)
         global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,V]"), ID("[o,v]"),
                       ID("[O,V]"), ID("[o,v]"), 0, "Lambda (OV|ov)");
         global_dpd_->contract444(&Kaa, &L, &Tab, 0, 1, 1.0/6.0, 1.0);
         global_dpd_->buf4_close(&L);
 
-        // T_IAjb += 1/6 Lambda_(jb|kc) K_(kc|IA)
+        // T_IAjb += 1/6 K_(IA|kc) Lambda_(jb|kc)
         global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o,v]"), ID("[o,v]"),
                       ID("[o,v]"), ID("[o,v]"), 0, "Lambda (ov|ov)");
         global_dpd_->contract444(&Kab, &L, &Tab, 0, 0, 1.0/6.0, 1.0);
@@ -731,7 +731,6 @@ DCFTSolver::compute_unrelaxed_density_OOVV() {
         global_dpd_->buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,o]"), ID("[V,v]"),
                       ID("[O,o]"), ID("[V,v]"), 0, "Gamma <Oo|Vv>");
         dpd_buf4_add(&G, &T, 1.0);
-        global_dpd_->buf4_print(&G, outfile, 1);
         global_dpd_->buf4_close(&G);
         global_dpd_->buf4_close(&T);
 
@@ -808,12 +807,10 @@ DCFTSolver::compute_unrelaxed_density_OOVV() {
         global_dpd_->buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o>o]-"), ID("[v>v]-"),
                       ID("[o>o]-"), ID("[v>v]-"), 0, "Gamma <oo|vv>");
         dpd_buf4_add(&G, &T, 1.0);
-        global_dpd_->buf4_print(&G, outfile, 1);
         global_dpd_->buf4_close(&G);
         global_dpd_->buf4_close(&T);
 
         global_dpd_->buf4_close(&Tbb);
-
 
     }
 
@@ -836,8 +833,6 @@ DCFTSolver::compute_unrelaxed_density_OOVV() {
     global_dpd_->buf4_close(&Gbb);
 
     psio_->close(PSIF_DCFT_DENSITY, 1);
-
-//    if (options_.get_str("DCFT_FUNCTIONAL") == "ODC-13") exit(1);
 
 }
 

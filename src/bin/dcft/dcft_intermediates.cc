@@ -725,6 +725,21 @@ DCFTSolver::compute_V_intermediate() {
     dpdbuf4 I, L, V, T, II, J, Taa, Tab, Tbb, Kaa, Kab, Kbb, Laa, Lab, Lbb;
     dpdfile2 T_OO, T_oo, T_VV, T_vv, H_OO, H_oo, H_VV, H_vv;
 
+//    global_dpd_->buf4_init(&V, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+//                           ID("[O>O]-"), ID("[V>V]-"), 0, "V <OO|VV>");
+//    global_dpd_->buf4_scm(&V, 0.0);
+//    global_dpd_->buf4_close(&V);
+
+//    global_dpd_->buf4_init(&V, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+//                           ID("[O,o]"), ID("[V,v]"), 0, "V <Oo|Vv>");
+//    global_dpd_->buf4_scm(&V, 0.0);
+//    global_dpd_->buf4_close(&V);
+
+//    global_dpd_->buf4_init(&V, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+//                           ID("[o>o]-"), ID("[v>v]-"), 0, "V <oo|vv>");
+//    global_dpd_->buf4_scm(&V, 0.0);
+//    global_dpd_->buf4_close(&V);
+
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
     global_dpd_->file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "T <O|O>");
@@ -817,8 +832,8 @@ DCFTSolver::compute_V_intermediate() {
     global_dpd_->buf4_scm(&V, 0.0);
     global_dpd_->buf4_close(&V);
 
-    global_dpd_->buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                           ID("[O,O]"), ID("[V,V]"), 0, "Temp <OO|VV>");
+    global_dpd_->buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                           ID("[o,o]"), ID("[v,v]"), 0, "Temp <oo|vv>");
     global_dpd_->buf4_init(&V, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                            ID("[o>o]-"), ID("[v>v]-"), 0, "V <oo|vv>");
     dpd_buf4_add(&V, &T, 1.0);
@@ -1015,8 +1030,8 @@ DCFTSolver::compute_V_intermediate() {
     global_dpd_->buf4_sort(&T, PSIF_DCFT_DPD, qprs, ID("[o,o]"), ID("[v,v]"), "P(Temp) <oo|vv>");
     global_dpd_->buf4_close(&T);
 
-    global_dpd_->buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                           ID("[O,O]"), ID("[V,V]"), 0, "Temp <OO|VV>");
+    global_dpd_->buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                           ID("[o,o]"), ID("[v,v]"), 0, "Temp <oo|vv>");
     global_dpd_->buf4_init(&V, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                            ID("[o>o]-"), ID("[v>v]-"), 0, "V <oo|vv>");
     dpd_buf4_add(&V, &T, 1.0);
@@ -2192,7 +2207,6 @@ DCFTSolver::compute_L_intermediate() {
     global_dpd_->buf4_init(&Lab, PSIF_DCFT_DPD, 0, ID("[O,v]"), ID("[O,v]"),
                            ID("[O,v]"), ID("[O,v]"), 0, "L <Ov|O'v'>");
     global_dpd_->contract444(&Lambda_ab, &Iab, &Lab, 0, 0, 1.0, 0.0);
-    global_dpd_->buf4_print(&Lab, outfile, 1);
     global_dpd_->buf4_close(&Lab);
 
     // L_<Bi|Aj> = Lambda_(Kc|Bi) * <Kc|Aj>
