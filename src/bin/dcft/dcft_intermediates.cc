@@ -2172,7 +2172,6 @@ DCFTSolver::compute_L_intermediate() {
     global_dpd_->buf4_close(&Iab);
     global_dpd_->buf4_close(&Lambda_ab);
 
-    global_dpd_->buf4_print(&Laa, outfile, 1);
     global_dpd_->buf4_close(&Laa);
 
     // L<IaJb> and L<iAjB> spin cases:
@@ -2200,7 +2199,6 @@ DCFTSolver::compute_L_intermediate() {
     global_dpd_->buf4_init(&Lba, PSIF_DCFT_DPD, 0, ID("[V,o]"), ID("[V,o]"),
                            ID("[V,o]"), ID("[V,o]"), 0, "L <Vo|V'o'>");
     global_dpd_->contract444(&Lambda_ab, &Iab, &Lba, 1, 1, 1.0, 0.0);
-    global_dpd_->buf4_print(&Lba, outfile, 1);
     global_dpd_->buf4_close(&Lba);
 
     global_dpd_->buf4_close(&Iab);
@@ -2235,7 +2233,6 @@ DCFTSolver::compute_L_intermediate() {
     global_dpd_->contract444(&Lambda_aa, &I, &Lab, 0, 0, 1.0, 1.0);
     global_dpd_->buf4_close(&I);
 
-    global_dpd_->buf4_print(&Lab, outfile, 1);
     global_dpd_->buf4_close(&Lab);
 
     // L<iAJb> spin case:
@@ -2260,7 +2257,6 @@ DCFTSolver::compute_L_intermediate() {
     global_dpd_->contract444(&I, &Lambda_bb, &Lab, 0, 1, 1.0, 1.0);
     global_dpd_->buf4_close(&I);
 
-    global_dpd_->buf4_print(&Lab, outfile, 1);
     global_dpd_->buf4_close(&Lab);
 
     global_dpd_->buf4_close(&Lambda_bb);
@@ -2297,7 +2293,6 @@ DCFTSolver::compute_L_intermediate() {
     global_dpd_->buf4_close(&Iab);
     global_dpd_->buf4_close(&Lambda_ab);
 
-    global_dpd_->buf4_print(&Lbb, outfile, 1);
     global_dpd_->buf4_close(&Lbb);
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
