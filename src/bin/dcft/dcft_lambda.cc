@@ -170,8 +170,6 @@ DCFTSolver::compute_cumulant_residual()
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
 
-    if (options_.get_str("DCFT_FUNCTIONAL") == "ODC-13") exit(1);
-
     dcft_timer_off("DCFTSolver::compute_lambda_residual()");
 
     if (nElements > 0) return sqrt(sumSQ / nElements);
@@ -194,6 +192,32 @@ DCFTSolver::update_cumulant_jacobi()
     /*
      * Lambda_ijab += R_ijab / D_ijab
      */
+
+    // Test!!!!!! TODO: Remove + return back denominators
+#if TEMP
+    build_tau();
+    if (exact_tau_) {
+        refine_tau();
+    }
+    transform_tau();
+    // Copy core hamiltonian into the Fock matrix array: F = H
+    Fa_->copy(so_h_);
+    Fb_->copy(so_h_);
+    // Build the new Fock matrix from the SO integrals: F += Gbar * Kappa
+    process_so_ints();
+    // Add non-idempotent density contribution (Tau) to the Fock matrix: F += Gbar * Tau
+    Fa_->add(g_tau_a_);
+    Fb_->add(g_tau_b_);
+    // Back up the SO basis Fock before it is symmetrically orthogonalized to transform it to the MO basis
+    moFa_->copy(Fa_);
+    moFb_->copy(Fb_);
+    // Transform the Fock matrix to the MO basis
+    moFa_->transform(Ca_);
+    moFb_->transform(Cb_);
+    build_denominators();
+#endif
+    // Test!!!!!!
+
     // L_IJAB += R_IJAB / D_IJAB
     global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O>=O]+"), ID("[V>=V]+"), 0, "D <OO|VV>");
