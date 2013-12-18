@@ -67,6 +67,7 @@ procedures = {
             'ocepa'         : run_ocepa,
             'cepa0'         : run_cepa0,
             'omp2.5'        : run_omp2_5,
+            'df-omp2'       : run_dfomp2,
             'sapt0'         : run_sapt,
             'sapt2'         : run_sapt,
             'sapt2+'        : run_sapt,
@@ -275,6 +276,8 @@ def energy(name, **kwargs):
     | ocepa                   | orbital-optimized coupled electron pair approximation :ref:`[manual] <sec:occ>`       |
     +-------------------------+---------------------------------------------------------------------------------------+
     | cepa0                   | coupled electron pair approximation, equiv. linear. CCD :ref:`[manual] <sec:convocc>` |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | df-omp2                 | density-fitted orbital-optimized MP2 :ref:`[manual] <sec:dfocc>`                      |
     +-------------------------+---------------------------------------------------------------------------------------+
     | cepa(0)                 | coupled electron pair approximation variant 0 :ref:`[manual] <sec:fnocepa>`           |
     +-------------------------+---------------------------------------------------------------------------------------+
