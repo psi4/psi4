@@ -275,6 +275,9 @@
 #define PSIF_OCC_DPD           273  /*- OCC DPD -*/
 #define PSIF_OCC_DENSITY       274  /*- OCC Density -*/
 #define PSIF_OCC_IABC          275  /*- OCC out-of-core <IA|BC> -*/
+#define PSIF_DFOCC_INTS        276  /*- DFOCC Integrals -*/ 
+#define PSIF_DFOCC_AMPS        277  /*- DFOCC Amplitudes -*/
+#define PSIF_DFOCC_DENS        278  /*- DFOCC PDMs -*/
 
 /* All of these one-electron quantities have been moved into PSIF_OEI
    Most integrals are real Hermitian hence only lower triangle of the matrix is written out */
