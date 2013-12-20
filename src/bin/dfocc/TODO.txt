@@ -1,0 +1,5 @@
+* Cholesky decomposition 
+* Separate GFM into ref + sep + corr: it is necessary for gradients 
+* Analytic gradients
+* OSCS-MP2
+* QC-SCF 
