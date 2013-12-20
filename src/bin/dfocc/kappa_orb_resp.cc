@@ -138,14 +138,9 @@ if (reference_ == "RESTRICTED") {
 
     // OO Block
     if (nfrzc > 0) {
-        for (int i = 0; i < naoccA; i++) {
-              for (int j = 0; j < nfrzc; j++) {
-                   double value = 2.0 * msd_oo_scale * (FockA->get(i + nfrzc, i + nfrzc) - FockA->get(j,j));
-                   AooA->set(i, j, value);
-              }
-        }
-     
       // Compute OO-Block orb rot params
+      //approx_diag_hf_mohess_oo();
+      approx_diag_mohess_oo();
       for (int x = 0; x < nidpA; x++) {
 	   int p = idprowA->get(x);
 	   int q = idpcolA->get(x);
@@ -443,22 +438,9 @@ else if (reference_ == "UNRESTRICTED") {
     zvector.reset();
 
     if (nfrzc > 0) {
-        // OO Block
-        for (int i = 0; i < naoccA; i++) {
-              for (int j = 0; j < nfrzc; j++) {
-                   double value = 2.0 * msd_oo_scale * (FockA->get(i + nfrzc, i + nfrzc) - FockA->get(j,j));
-                   AooA->set(i, j, value);
-              }
-        }
-        // oo Block
-        for (int i = 0; i < naoccB; i++) {
-             for (int j = 0; j < nfrzc; j++) {
-                  double value = 2.0 * msd_oo_scale * (FockB->get(i + nfrzc, i + nfrzc) - FockB->get(j,j));
-                  AooB->set(i, j, value);
-             }
-        }
-
       // Compute OO-Block orb rot params
+      //approx_diag_hf_mohess_oo();
+      approx_diag_mohess_oo();
       for (int x = 0; x < nidpA; x++) {
 	   int p = idprowA->get(x);
 	   int q = idpcolA->get(x);

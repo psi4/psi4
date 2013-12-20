@@ -78,6 +78,10 @@ protected:
     void diagonal_mohess_oo();
     void approx_diag_mohess_vo();
     void approx_diag_mohess_oo();
+    void approx_diag_hf_mohess_vo();
+    void approx_diag_hf_mohess_oo();
+    void approx_diag_ekt_mohess_vo();
+    void approx_diag_ekt_mohess_oo();
  
     // Conventional integrals for DF-BASIS-CC
     void tei_ijkl_chem();

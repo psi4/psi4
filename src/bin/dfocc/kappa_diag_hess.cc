@@ -28,84 +28,8 @@ using namespace std;
 
 namespace psi{ namespace dfoccwave{
 
-void DFOCC::kappa_diag_hess()
+void DFOCC::approx_diag_hf_mohess_vo()
 { 
-//fprintf(outfile,"\n kappa_diag_hess is starting... \n"); fflush(outfile);
-        double value;
-
-    //=========================
-    // APPROX_DIAG
-    //=========================
- if (hess_type == "APPROX_DIAG") {
-      approx_diag_mohess_vo();
-      if (nfrzc > 0) approx_diag_mohess_oo();
- } //end if (hess_type == "APPROX_DIAG") 
-
-    //=========================
-    // APPROX_DIAG_EKT
-    //=========================
- else if (hess_type == "APPROX_DIAG_EKT") {
-     if (reference_ == "RESTRICTED") {
-         // VO Block
-         for (int a = 0; a < nvirA; a++) {
-              for (int i = 0; i < noccA; i++) {
-                   double value = GFtvv->get(a, a) - GF->get(i,i);
-                   AvoA->set(a, i, value);
-              }
-         }
-
-         // OO Block
-         if (nfrzc > 0) {
-         for (int i = 0; i < naoccA; i++) {
-              for (int j = 0; j < nfrzc; j++) {
-                   double value = msd_oo_scale * (GF->get(i + nfrzc, i + nfrzc) - GF->get(j,j));
-                   AooA->set(i, j, value);
-              }
-         }
-         }
-     } // end if (reference_ == "RESTRICTED") 
-
-     else if (reference_ == "UNRESTRICTED") {
-         // VO Block
-         for (int a = 0; a < nvirA; a++) {
-              for (int i = 0; i < noccA; i++) {
-                   double value = 2.0 * (GFtvvA->get(a, a) - GFA->get(i,i));
-                   AvoA->set(a, i, value);
-              }
-         }
-
-         // vo Block
-         for (int a = 0; a < nvirB; a++) {
-              for (int i = 0; i < noccB; i++) {
-                   double value = 2.0 * (GFtvvB->get(a, a) - GFB->get(i,i));
-                   AvoB->set(a, i, value);
-              }
-         }
-
-         if (nfrzc > 0) {
-         // OO Block
-         for (int i = 0; i < naoccA; i++) {
-              for (int j = 0; j < nfrzc; j++) {
-                   double value = 2.0 * msd_oo_scale * (GFA->get(i + nfrzc, i + nfrzc) - GFA->get(j,j));
-                   AooA->set(i, j, value);
-              }
-         }
-
-         // oo Block
-         for (int i = 0; i < naoccB; i++) {
-              for (int j = 0; j < nfrzc; j++) {
-                   double value = 2.0 * msd_oo_scale * (GFB->get(i + nfrzc, i + nfrzc) - GFB->get(j,j));
-                   AooB->set(i, j, value);
-              }
-         }
-         }
-     }// end else if (reference_ == "UNRESTRICTED")
- } //end if (hess_type == "APPROX_DIAG_EKT") 
-
-    //=========================
-    // APPROX_DIAG_HF
-    //=========================
- else if (hess_type == "APPROX_DIAG_HF") {
      if (reference_ == "RESTRICTED") {
          // VO Block
          for (int a = 0; a < nvirA; a++) {
@@ -113,16 +37,6 @@ void DFOCC::kappa_diag_hess()
                    double value = 2.0 * (FockA->get(a + noccA, a + noccA) - FockA->get(i,i));
                    AvoA->set(a, i, value);
               }
-         }
-
-         // OO Block
-         if (nfrzc > 0) {
-         for (int i = 0; i < naoccA; i++) {
-              for (int j = 0; j < nfrzc; j++) {
-                   double value = 2.0 * msd_oo_scale * (FockA->get(i + nfrzc, i + nfrzc) - FockA->get(j,j));
-                   AooA->set(i, j, value);
-              }
-         }
          }
      } // end if (reference_ == "RESTRICTED") 
 
@@ -142,8 +56,25 @@ void DFOCC::kappa_diag_hess()
                    AvoB->set(a, i, value);
               }
          }
+     }// end else if (reference_ == "UNRESTRICTED")
+}//
 
-         if (nfrzc > 0) {
+//=========================
+// APPROX_DIAG_HF OO
+//=========================
+void DFOCC::approx_diag_hf_mohess_oo()
+{ 
+     if (reference_ == "RESTRICTED") {
+         // OO Block
+         for (int i = 0; i < naoccA; i++) {
+              for (int j = 0; j < nfrzc; j++) {
+                   double value = 2.0 * msd_oo_scale * (FockA->get(i + nfrzc, i + nfrzc) - FockA->get(j,j));
+                   AooA->set(i, j, value);
+              }
+         }
+     } // end if (reference_ == "RESTRICTED") 
+
+     else if (reference_ == "UNRESTRICTED") {
          // OO Block
          for (int i = 0; i < naoccA; i++) {
               for (int j = 0; j < nfrzc; j++) {
@@ -159,23 +90,106 @@ void DFOCC::kappa_diag_hess()
                    AooB->set(i, j, value);
               }
          }
-         }
-     }// end else if (reference_ == "UNRESTRICTED") 
- } //end if (hess_type == "APPROX_DIAG_HF") 
+     }// end else if (reference_ == "UNRESTRICTED")
+}//
 
-    //=========================
-    // DIAG
-    //=========================
+//=========================
+// APPROX_DIAG_EKT VO
+//=========================
+void DFOCC::approx_diag_ekt_mohess_vo()
+{ 
+     if (reference_ == "RESTRICTED") {
+         // VO Block
+         for (int a = 0; a < nvirA; a++) {
+              for (int i = 0; i < noccA; i++) {
+                   double value = GFtvv->get(a, a) - GF->get(i,i);
+                   AvoA->set(a, i, value);
+              }
+         }
+     } // end if (reference_ == "RESTRICTED") 
+
+     else if (reference_ == "UNRESTRICTED") {
+         // VO Block
+         for (int a = 0; a < nvirA; a++) {
+              for (int i = 0; i < noccA; i++) {
+                   double value = 2.0 * (GFtvvA->get(a, a) - GFA->get(i,i));
+                   AvoA->set(a, i, value);
+              }
+         }
+
+         // vo Block
+         for (int a = 0; a < nvirB; a++) {
+              for (int i = 0; i < noccB; i++) {
+                   double value = 2.0 * (GFtvvB->get(a, a) - GFB->get(i,i));
+                   AvoB->set(a, i, value);
+              }
+         }
+     }// end else if (reference_ == "UNRESTRICTED")
+}//
+
+//=========================
+// APPROX_DIAG_EKT OO
+//=========================
+void DFOCC::approx_diag_ekt_mohess_oo()
+{ 
+     if (reference_ == "RESTRICTED") {
+         // OO Block
+         for (int i = 0; i < naoccA; i++) {
+              for (int j = 0; j < nfrzc; j++) {
+                   double value = msd_oo_scale * (GF->get(i + nfrzc, i + nfrzc) - GF->get(j,j));
+                   AooA->set(i, j, value);
+              }
+         }
+     } // end if (reference_ == "RESTRICTED") 
+
+     else if (reference_ == "UNRESTRICTED") {
+         // OO Block
+         for (int i = 0; i < naoccA; i++) {
+              for (int j = 0; j < nfrzc; j++) {
+                   double value = 2.0 * msd_oo_scale * (GFA->get(i + nfrzc, i + nfrzc) - GFA->get(j,j));
+                   AooA->set(i, j, value);
+              }
+         }
+
+         // oo Block
+         for (int i = 0; i < naoccB; i++) {
+              for (int j = 0; j < nfrzc; j++) {
+                   double value = 2.0 * msd_oo_scale * (GFB->get(i + nfrzc, i + nfrzc) - GFB->get(j,j));
+                   AooB->set(i, j, value);
+              }
+         }
+     }// end else if (reference_ == "UNRESTRICTED")
+}//
+
+//=========================
+// kappa_diag_hess
+//=========================
+void DFOCC::kappa_diag_hess()
+{ 
+//fprintf(outfile,"\n kappa_diag_hess is starting... \n"); fflush(outfile);
+        double value;
+
+ if (hess_type == "APPROX_DIAG") {
+      approx_diag_mohess_vo();
+      if (nfrzc > 0) approx_diag_mohess_oo();
+ }
+
+ else if (hess_type == "APPROX_DIAG_EKT") {
+      approx_diag_ekt_mohess_vo();
+      if (nfrzc > 0) approx_diag_ekt_mohess_oo();
+ }
+
+ else if (hess_type == "APPROX_DIAG_HF") {
+      approx_diag_hf_mohess_vo();
+      if (nfrzc > 0) approx_diag_hf_mohess_oo();
+ }
+
  else if (hess_type == "DIAG") {
       diagonal_mohess_vo();
       if (nfrzc > 0) diagonal_mohess_oo();
- } // end else if (hess_type == "DIAG") 
+ }
 
-    //AvoA->print();
-
-    //=========================
-    // Kappa 
-    //=========================
+// Kappa
 if (reference_ == "RESTRICTED") {
         // Get kappa
         for(int x = 0; x < nidpA; x++) {
