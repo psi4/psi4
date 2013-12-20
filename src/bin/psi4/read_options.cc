@@ -2675,7 +2675,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       explicitly, instead it solves the simultaneous equations iteratively with the preconditioned conjugate gradient method. -*/
     options.add_str("ORB_RESP_SOLVER","LINEQ","PCG LINEQ");
     /*- Type of the MO Hessian matrix -*/
-    options.add_str("HESS_TYPE","APPROX_DIAG","APPROX_DIAG APPROX_DIAG_EKT APPROX_DIAG_HF");
+    options.add_str("HESS_TYPE","HF","APPROX_DIAG APPROX_DIAG_EKT APPROX_DIAG_HF HF");
     /*- Type of the SCS method -*/
     options.add_str("SCS_TYPE","SCS","SCS SCSN SCSVDW SCSMI");
     /*- Type of the SOS method -*/
