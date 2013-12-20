@@ -53,6 +53,7 @@ if (reference_ == "RESTRICTED") {
     timer_on("I/O");
     K->read(psio_, PSIF_DFOCC_INTS);
     timer_off("I/O");
+    #pragma omp parallel for
     for (int a = 0; a < nvirA; a++) {
          for (int i = 0; i < noccA; i++) {
               int ai = vo_idxAA->get(a,i);
@@ -78,6 +79,7 @@ if (reference_ == "RESTRICTED") {
     timer_on("I/O");
     K->read(psio_, PSIF_DFOCC_INTS);
     timer_off("I/O");
+    #pragma omp parallel for
     for (int a = 0; a < nvirA; a++) {
          for (int i = 0; i < noccA; i++) {
               int ai = vo_idxAA->get(a,i);
@@ -97,10 +99,11 @@ if (reference_ == "RESTRICTED") {
     /*
     // Level shifting
     if (level_shift == "TRUE") {
+        #pragma omp parallel for
         for (int a = 0; a < nvirA; a++) {
              for (int i = 0; i < noccA; i++) {
                   int ai = vo_idxAA->get(a,i);
-                  Aorb->subtract(ai, ai, lshift_parameter);
+                  Aorb->add(ai, ai, lshift_parameter);
              }
         }
     }
@@ -141,6 +144,7 @@ if (reference_ == "RESTRICTED") {
                    AooA->set(i, j, value);
               }
         }
+     
       // Compute OO-Block orb rot params
       for (int x = 0; x < nidpA; x++) {
 	   int p = idprowA->get(x);
@@ -219,6 +223,7 @@ else if (reference_ == "UNRESTRICTED") {
     timer_on("I/O");
     K->read(psio_, PSIF_DFOCC_INTS);
     timer_off("I/O");
+    #pragma omp parallel for
     for (int a = 0; a < nvirA; a++) {
          for (int i = 0; i < noccA; i++) {
               int ai = vo_idxAA->get(a,i);
@@ -244,6 +249,7 @@ else if (reference_ == "UNRESTRICTED") {
     timer_on("I/O");
     K->read(psio_, PSIF_DFOCC_INTS);
     timer_off("I/O");
+    #pragma omp parallel for
     for (int a = 0; a < nvirA; a++) {
          for (int i = 0; i < noccA; i++) {
               int ai = vo_idxAA->get(a,i);
@@ -278,6 +284,7 @@ else if (reference_ == "UNRESTRICTED") {
     timer_on("I/O");
     K->read(psio_, PSIF_DFOCC_INTS);
     timer_off("I/O");
+    #pragma omp parallel for
     for (int a = 0; a < nvirB; a++) {
          for (int i = 0; i < noccB; i++) {
               int ai = vo_idxBB->get(a,i);
@@ -303,6 +310,7 @@ else if (reference_ == "UNRESTRICTED") {
     timer_on("I/O");
     K->read(psio_, PSIF_DFOCC_INTS);
     timer_off("I/O");
+    #pragma omp parallel for
     for (int a = 0; a < nvirB; a++) {
          for (int i = 0; i < noccB; i++) {
               int ai = vo_idxBB->get(a,i);
@@ -336,6 +344,7 @@ else if (reference_ == "UNRESTRICTED") {
     timer_on("I/O");
     K->read(psio_, PSIF_DFOCC_INTS);
     timer_off("I/O");
+    #pragma omp parallel for
     for (int a = 0; a < nvirA; a++) {
          for (int i = 0; i < noccA; i++) {
               int ai = vo_idxAA->get(a,i);
@@ -372,9 +381,10 @@ else if (reference_ == "UNRESTRICTED") {
     /*
     // Level shifting
     if (level_shift == "TRUE") {
+        #pragma omp parallel for
         for (int a = 0; a < nidp_tot; a++) {
              for (int i = 0; i < nidp_tot; i++) {
-                  Aorb->subtract(a, i, lshift_parameter);
+                  Aorb->add(a, i, lshift_parameter);
              }
         }
     }
