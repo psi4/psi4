@@ -69,8 +69,7 @@ protected:
     void idp();
     void mograd();
     void occ_iterations();
-    void kappa_msd();
-    void kappa_qnr();
+    void kappa_orb_resp();
     void kappa_diag_hess();
     void update_mo();
     void diis(int dimvec, SharedTensor2d &vecs, SharedTensor2d &errvecs, SharedTensor1d &vec_new, SharedTensor1d &errvec_new);
@@ -244,6 +243,7 @@ protected:
      int idp_returnA;
      int idp_returnB;
      int nvar;
+     int pcg_conver;
 
      int exp_cutoff;
      int multp; 
@@ -609,6 +609,12 @@ protected:
      SharedTensor1d kappa_barB;
      SharedTensor1d kappa_newA;
      SharedTensor1d kappa_newB;
+     SharedTensor1d zvector;
+     SharedTensor1d zvectorA;
+     SharedTensor1d zvectorB;
+     SharedTensor2d Zmat;
+     SharedTensor2d ZmatA;
+     SharedTensor2d ZmatB;
 
      // Independent pairs
      SharedTensor1i idprowA;

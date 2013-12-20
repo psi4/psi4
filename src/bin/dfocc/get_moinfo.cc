@@ -99,7 +99,6 @@ if (reference_ == "RESTRICTED") {
         FvoA->form_vo(FockA);
         FvvA->form_vv(noccA, FockA);
 
-     if (hess_type == "APPROX_DIAG_EKT" || hess_type == "APPROX_DIAG_HF") {
         // Figure out OO Scaling factor
         if (options_["OO_SCALE"].has_changed()) {
             msd_oo_scale=options_.get_double("OO_SCALE");
@@ -110,7 +109,6 @@ if (reference_ == "RESTRICTED") {
             fprintf(outfile,"\tOO Scale is changed to: %12.10f\n", msd_oo_scale);
             fflush(outfile);
         }
-     }
 
         // Read orbital coefficients from chkpt
 	Ca_ = SharedMatrix(reference_wavefunction_->Ca());
@@ -254,7 +252,6 @@ else if (reference_ == "UNRESTRICTED") {
         FvvA->form_vv(noccA, FockA);
         FvvB->form_vv(noccB, FockB);
 
-     if (hess_type == "APPROX_DIAG_EKT" || hess_type == "APPROX_DIAG_HF") {
         // Figure out OO Scaling factor
         if (options_["OO_SCALE"].has_changed()) {
             msd_oo_scale=options_.get_double("OO_SCALE");
@@ -268,7 +265,6 @@ else if (reference_ == "UNRESTRICTED") {
             fprintf(outfile,"\tOO Scale is changed to: %12.10f\n", msd_oo_scale);
             fflush(outfile);
         }
-     }
 
         // Read orbital coefficients from chkpt
 	Ca_ = SharedMatrix(reference_wavefunction_->Ca());

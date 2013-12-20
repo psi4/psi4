@@ -68,11 +68,9 @@ void DFOCC::common_init()
     e3_scale=options_.get_double("E3_SCALE");
     tol_Eod=options_.get_double("E_CONVERGENCE");
     tol_t2=options_.get_double("R_CONVERGENCE");
-    msd_oo_scale=options_.get_double("OO_SCALE");
 
     orth_type=options_.get_str("ORTH_TYPE");
     opt_method=options_.get_str("OPT_METHOD");
-    hess_type=options_.get_str("HESS_TYPE");
     occ_orb_energy=options_.get_str("OCC_ORBS_PRINT");
     natorb=options_.get_str("NAT_ORBS");
     do_scs=options_.get_str("DO_SCS");
@@ -137,6 +135,21 @@ void DFOCC::common_init()
 
     if (options_.get_str("DO_DIIS") == "TRUE") do_diis_ = 1;
     else if (options_.get_str("DO_DIIS") == "FALSE") do_diis_ = 0;
+
+    // Figure out HESSIAN TYPE
+    if (options_["HESS_TYPE"].has_changed()) {
+        hess_type=options_.get_str("HESS_TYPE");
+    }
+    else {
+         if (reference_ == "RESTRICTED") {
+             hess_type = "HF"; 
+         }
+         else if (reference_ == "UNRESTRICTED") {
+             hess_type = "APPROX_DIAG";
+             fprintf(outfile,"\tMO Hessian type is changed to 'APPROX_DIAG'\n");
+             fflush(outfile);
+         }
+    }
 
     cutoff = pow(10.0,-exp_cutoff);
     get_moinfo();
@@ -272,7 +285,7 @@ void DFOCC::title()
    else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "TRUE") fprintf(outfile,"                       DF-OMP2.5 (DF-OO-MP2.5)   \n");
    else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "FALSE") fprintf(outfile,"                       DF-MP2.5  \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya\n") ; 
-   fprintf(outfile,"              Latest Revision Dec 18, 2013\n") ;
+   fprintf(outfile,"              Latest Revision Dec 20, 2013\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");

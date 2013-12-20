@@ -72,20 +72,6 @@ fflush(outfile);
               }
           }
       }
-
-      /*
-      // Set up the orb-resp algorithm
-      if (opt_method == "ORB_RESP") {
-       // Lineq
-       if (orb_resp_solver_ == "LINEQ") {
-         if (reference_ == "RESTRICTED") Aorb = SharedTensor2d(new Tensor2d("MO Hessian Matrix", nidpA, nidpA));
-         else if (reference_ == "UNRESTRICTED") {
-             nidp_tot = nidpA + nidpB;
-             kappa = SharedTensor1d(new Tensor1d("Total orb rot params vector of current step", nidp_tot));
-         }
-       }
-      }// orb_resp if 
-      */
       
 //==========================================================================================
 //========================= Head of the Loop ===============================================
@@ -98,14 +84,10 @@ do
 //========================= New orbital step ===============================================
 //==========================================================================================
         timer_on("kappa orb rot");
-        if (opt_method == "QNR") kappa_diag_hess();
-        /*
-        if (opt_method == "ORB_RESP") {
-           if (orb_resp_solver_ == "LINEQ") kappa_orb_resp();
-           //else if (orb_resp_solver_ == "PCG") kappa_orb_resp_iter();
-        }
-        */
+        if (hess_type == "HF") kappa_orb_resp();
+        else kappa_diag_hess();
         timer_off("kappa orb rot");
+
 //==========================================================================================
 //========================= update mo coefficients =========================================
 //==========================================================================================
