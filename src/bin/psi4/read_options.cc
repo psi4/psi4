@@ -2615,6 +2615,99 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do symmetrize the GFM and OPDM in the EKT computations?  -*/
     options.add_bool("SYMMETRIZE",true);
   }
+  if (name == "DFOCC"|| options.read_globals()) {
+    /*- MODULEDESCRIPTION Performs density-fitted orbital-optimized MPn and CC computations and conventional MPn computations. -*/
+
+    /*- Maximum number of iterations to determine the amplitudes -*/
+    options.add_int("CC_MAXITER",50);
+    /*- Maximum number of iterations to determine the orbitals -*/
+    options.add_int("MO_MAXITER",50);
+    /*- Number of vectors used in orbital DIIS -*/
+    options.add_int("MO_DIIS_NUM_VECS",6);
+    /*- Minimum number of vectors used in amplitude DIIS -*/
+    options.add_int("CC_DIIS_MIN_VECS",2);
+    /*- Maximum number of vectors used in amplitude DIIS -*/
+    options.add_int("CC_DIIS_MAX_VECS",6);
+    /*- Cutoff value for numerical procedures -*/
+    options.add_int("CUTOFF",10);
+    /*- Convergence criterion for energy. See Table :ref:`Post-SCF
+    Convergence <table:conv_corl>` for default convergence criteria for
+    different calculation types. -*/
+    options.add_double("E_CONVERGENCE", 1e-6);
+    /*- Convergence criterion for amplitudes (residuals). -*/
+    options.add_double("R_CONVERGENCE",1e-5);
+    /*- Convergence criterion for RMS orbital gradient. Default adjusts
+    depending on |occ__e_convergence|. -*/
+    options.add_double("RMS_MOGRAD_CONVERGENCE",1e-6);
+    /*- Convergence criterion for maximum orbital gradient -*/
+    options.add_double("MAX_MOGRAD_CONVERGENCE",1e-3);
+    /*- Maximum step size in orbital-optimization procedure -*/
+    options.add_double("MO_STEP_MAX",0.5);
+    /*- Level shift to aid convergence -*/
+    options.add_double("LEVEL_SHIFT",0.02);
+    /*- MP2 opposite-spin scaling value -*/
+    options.add_double("MP2_OS_SCALE",6.0/5.0);
+    /*- MP2 same-spin scaling value -*/
+    options.add_double("MP2_SS_SCALE",1.0/3.0);
+    /*- MP2 Spin-opposite scaling (SOS) value -*/
+    options.add_double("MP2_SOS_SCALE",1.3);
+    /*- Spin-opposite scaling (SOS) value for optimized-MP2 orbitals -*/
+    options.add_double("MP2_SOS_SCALE2",1.2);
+    /*- CEPA opposite-spin scaling value from SCS-CCSD -*/
+    options.add_double("CEPA_OS_SCALE",1.27);
+    /*- CEPA same-spin scaling value from SCS-CCSD -*/
+    options.add_double("CEPA_SS_SCALE",1.13);
+    /*- CEPA Spin-opposite scaling (SOS) value -*/
+    options.add_double("CEPA_SOS_SCALE",1.3);
+    /*- Scaling value for 3rd order energy correction (S. Grimme, Vol. 24, pp. 1529, J. Comput. Chem.) -*/
+    options.add_double("E3_SCALE",0.25);
+    /*- OO scaling factor used in MSD -*/
+    options.add_double("OO_SCALE",0.01);
+
+    /*- The solver will be used for simultaneous linear equations. -*/
+    options.add_str("LINEQ_SOLVER","CDGESV","CDGESV FLIN POPLE");
+    /*- The algorithm for orthogonalization of MOs -*/
+    options.add_str("ORTH_TYPE","MGS","GS MGS");
+    /*- The orbital optimization algorithm. Presently Quasy Newton-Raphson algorithm avaliable with several Hessian options. -*/
+    options.add_str("OPT_METHOD","QNR","QNR");
+    /*- The algorithm will be used for solving the orbital-response equations. The LINEQ option create the MO Hessian and solve the
+      simultaneous linear equations with method choosen by the LINEQ_SOLVER option. The PCG option does not create the MO Hessian
+      explicitly, instead it solves the simultaneous equations iteratively with the preconditioned conjugate gradient method. -*/
+    options.add_str("ORB_RESP_SOLVER","LINEQ","PCG LINEQ");
+    /*- Type of the MO Hessian matrix -*/
+    options.add_str("HESS_TYPE","HF","APPROX_DIAG APPROX_DIAG_EKT APPROX_DIAG_HF HF");
+    /*- Type of the SCS method -*/
+    options.add_str("SCS_TYPE","SCS","SCS SCSN SCSVDW SCSMI");
+    /*- Type of the SOS method -*/
+    options.add_str("SOS_TYPE","SOS","SOS SOSPI");
+    /*- Type of the wavefunction. -*/
+    options.add_str("WFN_TYPE","DF-OMP2","DF-OMP2 DF-OMP3 DF-OCEPA(0) DF-OMP2.5 DFGRAD");
+    /*- CEPA type such as CEPA0, CEPA1 etc. currently we have only CEPA0. -*/
+    options.add_str("CEPA_TYPE","CEPA(0)","CEPA(0)");
+
+    /*- Do compute natural orbitals? -*/
+    options.add_bool("NAT_ORBS",false);
+    /*- Do apply level shifting? -*/
+    options.add_bool("DO_LEVEL_SHIFT",true);
+    /*- Do print OCC orbital energies? -*/
+    options.add_bool("OCC_ORBS_PRINT",false);
+    /*- Do perform spin-component-scaled OMP2 (SCS-OMP2)? In all computation, SCS-OMP2 energy is computed automatically.
+     However, in order to perform geometry optimizations and frequency computations with SCS-OMP2, one needs to set
+     'DO_SCS' to true -*/
+    options.add_bool("DO_SCS",false);
+    /*- Do perform spin-opposite-scaled OMP2 (SOS-OMP2)? In all computation, SOS-OMP2 energy is computed automatically.
+     However, in order to perform geometry optimizations and frequency computations with SOS-OMP2, one needs to set
+     'DO_SOS' to true -*/
+    options.add_bool("DO_SOS",false);
+    /*- Do apply DIIS extrapolation? -*/
+    options.add_bool("DO_DIIS",true);
+    /*- Do compute occupied orbital energies based on extended Koopmans' theorem? -*/
+    options.add_bool("EKT_IP",false);
+    /*- Do compute virtual orbital energies based on extended Koopmans' theorem?  -*/
+    options.add_bool("EKT_EA",false);
+    /*- Do optimize the orbitals?  -*/
+    options.add_bool("ORB_OPT",true);
+  }
   if (name == "MRCC"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/
 

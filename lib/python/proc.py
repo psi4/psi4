@@ -97,6 +97,24 @@ def run_dcft_gradient(name, **kwargs):
     optstash.restore()
 
 
+def run_dfomp2(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an density-fitted orbital-optimized MP2 computation
+
+    """
+    # overwrite symmetry
+    molecule = psi4.get_active_molecule()
+    molecule.update_geometry()
+    molecule.reset_point_group('c1')
+
+    psi4.set_global_option('SCF_TYPE', 'DF')
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
+
+    return psi4.dfocc()
+
+
 def run_omp2(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     an orbital-optimized MP2 computation
