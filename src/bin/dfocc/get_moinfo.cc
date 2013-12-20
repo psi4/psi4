@@ -104,10 +104,13 @@ if (reference_ == "RESTRICTED") {
             msd_oo_scale=options_.get_double("OO_SCALE");
         }
         else {
-            msd_oo_scale = ( FockA->get(noccA,noccA) - FockA->get(noccA-1,noccA-1) ) / ( FockA->get(1,1) - FockA->get(0,0) ); 
+            //msd_oo_scale = ( FockA->get(noccA,noccA) - FockA->get(noccA-1,noccA-1) ) / ( FockA->get(1,1) - FockA->get(0,0) ); 
+            msd_oo_scale = ( FockA->get(noccA,noccA) - FockA->get(noccA-1,noccA-1) ) / ( FockA->get(nfrzc,nfrzc) - FockA->get(nfrzc-1,nfrzc-1) ); 
             msd_oo_scale /= 3.0;
-            fprintf(outfile,"\tOO Scale is changed to: %12.10f\n", msd_oo_scale);
-            fflush(outfile);
+            if (hess_type == "APPROX_DIAG_HF" || hess_type == "APPROX_DIAG_EKT") {
+                fprintf(outfile,"\tOO Scale is changed to: %12.10f\n", msd_oo_scale);
+                fflush(outfile);
+            }
         }
 
         // Read orbital coefficients from chkpt
@@ -257,13 +260,17 @@ else if (reference_ == "UNRESTRICTED") {
             msd_oo_scale=options_.get_double("OO_SCALE");
         }
         else {
-            double scaleA = ( FockA->get(noccA,noccA) - FockA->get(noccA-1,noccA-1) ) / ( FockA->get(1,1) - FockA->get(0,0) ); 
-            double scaleB = ( FockB->get(noccB,noccB) - FockB->get(noccB-1,noccB-1) ) / ( FockB->get(1,1) - FockB->get(0,0) ); 
+            //double scaleA = ( FockA->get(noccA,noccA) - FockA->get(noccA-1,noccA-1) ) / ( FockA->get(1,1) - FockA->get(0,0) ); 
+            //double scaleB = ( FockB->get(noccB,noccB) - FockB->get(noccB-1,noccB-1) ) / ( FockB->get(1,1) - FockB->get(0,0) ); 
+            double scaleA = ( FockA->get(noccA,noccA) - FockA->get(noccA-1,noccA-1) ) / ( FockA->get(nfrzc,nfrzc) - FockA->get(nfrzc-1,nfrzc-1) ); 
+            double scaleB = ( FockB->get(noccB,noccB) - FockB->get(noccB-1,noccB-1) ) / ( FockB->get(nfrzc,nfrzc) - FockB->get(nfrzc-1,nfrzc-1) ); 
             scaleA /= 3.0;
             scaleB /= 3.0;
             msd_oo_scale = 0.5 * (scaleA + scaleB);
-            fprintf(outfile,"\tOO Scale is changed to: %12.10f\n", msd_oo_scale);
-            fflush(outfile);
+            if (hess_type == "APPROX_DIAG_HF" || hess_type == "APPROX_DIAG_EKT") {
+                fprintf(outfile,"\tOO Scale is changed to: %12.10f\n", msd_oo_scale);
+                fflush(outfile);
+            }
         }
 
         // Read orbital coefficients from chkpt
