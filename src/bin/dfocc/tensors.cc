@@ -207,7 +207,7 @@ double Tensor1d::dot(const SharedTensor1d &y)
   double value = 0.0;
   int incx = 1;
   int incy = 1;
-  if (dim1_ == y->dim1_) value = C_DDOT(dim1_, A1d_, incx, y->A1d_, incy);
+  if (dim1_ == y->dim1_) value = C_DDOT((ULI)dim1_, A1d_, incx, y->A1d_, incy);
   return value; 
 }//
  
@@ -279,18 +279,22 @@ void Tensor1d::scale(double a)
     if (size) C_DSCAL(size, a, A1d_, 1);
 }//
 
-void Tensor1d::copy(double *x) 
+void Tensor1d::copy(double *a) 
 {
-    size_t size;
-    size = dim1_ * sizeof(double);
-    if (size) memcpy(&(A1d_[0]), &(x[0]), size);
+    //size_t size;
+    //size = dim1_ * sizeof(double);
+    //if (size) memcpy(&(A1d_[0]), &(x[0]), size);
+    ULI size = (ULI)dim1_ ;
+    C_DCOPY(size, a, 1, A1d_, 1);
 }//
 
-void Tensor1d::copy(const SharedTensor1d &x) 
+void Tensor1d::copy(const SharedTensor1d &a) 
 {
-    size_t size;
-    size = dim1_ * sizeof(double);
-    if (size) memcpy(&(A1d_[0]), &(x->A1d_[0]), size);
+    //size_t size;
+    //size = dim1_ * sizeof(double);
+    //if (size) memcpy(&(A1d_[0]), &(x->A1d_[0]), size);
+    ULI size = (ULI)dim1_ ;
+    C_DCOPY(size, a->A1d_, 1, A1d_, 1);
 }//
 
 void Tensor1d::row_vector(SharedTensor2d &A, int n)
@@ -1369,8 +1373,11 @@ SharedTensor2d Tensor2d::transpose()
 
 void Tensor2d::copy(double **a)
 {
-    size_t size = dim1_ * dim2_ * sizeof(double);
-    if (size) memcpy(&(A2d_[0][0]), &(a[0][0]), size);
+    //size_t size = dim1_ * dim2_ * sizeof(double);
+    //if (size) memcpy(&(A2d_[0][0]), &(a[0][0]), size);
+    ULI length;
+    length = (ULI)dim1_ * (ULI)dim2_;
+    C_DCOPY(length, a[0], 1, A2d_[0], 1);
 }
 
 void Tensor2d::copy(const SharedTensor2d &Adum)
@@ -1580,7 +1587,9 @@ void Tensor2d::triple_gemm(const SharedTensor2d& a, const SharedTensor2d& b, con
 double Tensor2d::vector_dot(double **rhs)
 {
     double value = 0.0;
-    size_t size = dim1_ * dim2_;
+    //size_t size = dim1_ * dim2_;
+    ULI size;
+    size = (ULI)dim1_ * (ULI)dim2_;
     if (size) value += C_DDOT(size, (&A2d_[0][0]), 1, &(rhs[0][0]), 1);
     return value;
 }//
@@ -1588,7 +1597,9 @@ double Tensor2d::vector_dot(double **rhs)
 double Tensor2d::vector_dot(const SharedTensor2d &rhs)
 {
     double value = 0.0;
-    size_t size = dim1_ * dim2_;
+    //size_t size = dim1_ * dim2_;
+    ULI size;
+    size = (ULI)dim1_ * (ULI)dim2_;
     if (size) value += C_DDOT(size, (&A2d_[0][0]), 1, &(rhs->A2d_[0][0]), 1);
     return value;
 }//
@@ -1716,7 +1727,10 @@ void Tensor2d::load(psi::PSIO& psio, unsigned int fileno, string name, int d1,in
 double **Tensor2d::to_block_matrix() 
 {
     double **temp = block_matrix(dim1_, dim2_);
-    memcpy(&(temp[0][0]), &(A2d_[0][0]), dim1_ * dim2_ * sizeof(double));
+    //memcpy(&(temp[0][0]), &(A2d_[0][0]), dim1_ * dim2_ * sizeof(double));
+    ULI length;
+    length = (ULI)dim1_ * (ULI)dim2_;
+    C_DCOPY(length, A2d_[0], 1, temp[0], 1);
     return temp;
 }//
 
@@ -2799,6 +2813,8 @@ void Tensor2i::copy(const SharedTensor2i& Adum)
     }
 
     // If matrices are in the same size
+    ULI length;
+    length = (ULI)dim1_ * (ULI)dim2_;
       if (dim1_ != 0 && dim2_ != 0) {
 	memcpy(A2i_[0], Adum->A2i_[0], dim1_ * dim2_ * sizeof(int));
       }
