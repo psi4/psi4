@@ -423,22 +423,24 @@ void DFOCC::b_ov_ref()
     bQovA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA * nvirA));
     bQnvA->contract(false, false, nQ_ref * nso_, nvirA, nso_, bQso, CvirA, 1.0, 0.0);
     bQovA->contract233(true, false, noccA, nvirA, CoccA, bQnvA, 1.0, 0.0);
-    //if (trans_ab == 0) bQnvA.reset();
     timer_on("I/O");
     bQovA->write(psio_, PSIF_DFOCC_INTS);
+    bQnvA->write(psio_, PSIF_DFOCC_INTS);
     timer_off("I/O");
     bQovA.reset();
+    bQnvA.reset();
 
  if (reference_ == "UNRESTRICTED") {
     bQnvB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mv)", nQ_ref, nso_ * nvirB));
     bQovB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|ov)", nQ_ref, noccB * nvirB));
     bQnvB->contract(false, false, nQ_ref * nso_, nvirB, nso_, bQso, CvirB, 1.0, 0.0);
     bQovB->contract233(true, false, noccB, nvirB, CoccB, bQnvB, 1.0, 0.0);
-    //if (trans_ab == 0) bQnvB.reset();
     timer_on("I/O");
     bQovB->write(psio_, PSIF_DFOCC_INTS);
+    bQnvB->write(psio_, PSIF_DFOCC_INTS);
     timer_off("I/O");
     bQovB.reset();
+    bQnvB.reset();
  }
 } // end b_ov
 
@@ -448,6 +450,10 @@ void DFOCC::b_ov_ref()
 void DFOCC::b_vv_ref()
 {
     bQvvA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA * nvirA));
+    bQnvA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mV)", nQ_ref, nso_ * nvirA));
+    timer_on("I/O");
+    bQnvA->read(psio_, PSIF_DFOCC_INTS);
+    timer_off("I/O");
     bQvvA->contract233(true, false, nvirA, nvirA, CvirA, bQnvA, 1.0, 0.0);
     bQnvA.reset();
     timer_on("I/O");
@@ -457,6 +463,10 @@ void DFOCC::b_vv_ref()
 
  if (reference_ == "UNRESTRICTED") {
     bQvvB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|vv)", nQ_ref, nvirB * nvirB));
+    bQnvB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mv)", nQ_ref, nso_ * nvirB));
+    timer_on("I/O");
+    bQnvB->read(psio_, PSIF_DFOCC_INTS);
+    timer_off("I/O");
     bQvvB->contract233(true, false, nvirB, nvirB, CvirB, bQnvB, 1.0, 0.0);
     bQnvB.reset();
     timer_on("I/O");
