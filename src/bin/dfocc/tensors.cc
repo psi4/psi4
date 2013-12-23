@@ -137,8 +137,9 @@ double Tensor1d::get(int i)
   return A1d_[i];
 }//
 
-void Tensor1d::add(const SharedTensor1d& Adum)
+void Tensor1d::add(const SharedTensor1d& a)
 {
+    /*
     double *lhs, *rhs;
     size_t size = dim1_;
     if (size) {
@@ -149,6 +150,10 @@ void Tensor1d::add(const SharedTensor1d& Adum)
             lhs++; rhs++;
         }
     }
+    */
+      #pragma omp parallel for
+      for (int i=0; i<dim1_; ++i) A1d_[i] += a->A1d_[i];
+      
 }//
 
 void Tensor1d::add(int i, double value)
@@ -156,8 +161,9 @@ void Tensor1d::add(int i, double value)
   A1d_[i]+=value;  
 }//
 
-void Tensor1d::subtract(const SharedTensor1d& Adum)
+void Tensor1d::subtract(const SharedTensor1d& a)
 {
+    /*
     double *lhs, *rhs;
     size_t size = dim1_;
     if (size) {
@@ -168,6 +174,9 @@ void Tensor1d::subtract(const SharedTensor1d& Adum)
             lhs++; rhs++;
         }
     }
+    */
+      #pragma omp parallel for
+      for (int i=0; i<dim1_; ++i) A1d_[i] -= a->A1d_[i];
 }//
 
 void Tensor1d::subtract(int i, double value)
@@ -1249,6 +1258,7 @@ void Tensor2d::davidson(int n_eigval, const SharedTensor2d& eigvectors, const Sh
 
 void Tensor2d::add(const SharedTensor2d &a)
 {
+    /*
     double *lhs, *rhs;
     size_t size = dim1_ * dim2_;
     if (size) {
@@ -1259,10 +1269,18 @@ void Tensor2d::add(const SharedTensor2d &a)
             lhs++; rhs++;
         }
     }
+    */
+      #pragma omp parallel for
+      for (int i=0; i<dim1_; ++i) {
+	for (int j=0; j<dim2_; ++j) {
+	  A2d_[i][j] += a->A2d_[i][j];
+	}
+      }
 }//
 
 void Tensor2d::add(double **a)
 {
+    /*
     double *lhs, *rhs;
     size_t size = dim1_ * dim2_;
     if (size) {
@@ -1273,6 +1291,13 @@ void Tensor2d::add(double **a)
             lhs++; rhs++;
         }
     }
+    */
+      #pragma omp parallel for
+      for (int i=0; i<dim1_; ++i) {
+	for (int j=0; j<dim2_; ++j) {
+	  A2d_[i][j] += a[i][j];
+	}
+      }
 }//
 
 void Tensor2d::add(double alpha, const SharedTensor2d &Adum)
@@ -1288,8 +1313,9 @@ void Tensor2d::add(int i, int j, double value)
   A2d_[i][j]+=value;  
 }//
 
-void Tensor2d::subtract(const SharedTensor2d &Adum)
+void Tensor2d::subtract(const SharedTensor2d &a)
 {
+    /*
     double *lhs, *rhs;
     size_t size = dim1_ * dim2_;
     if (size) {
@@ -1300,6 +1326,13 @@ void Tensor2d::subtract(const SharedTensor2d &Adum)
             lhs++; rhs++;
         }
     }
+    */
+      #pragma omp parallel for
+      for (int i=0; i<dim1_; ++i) {
+	for (int j=0; j<dim2_; ++j) {
+	  A2d_[i][j] -= a->A2d_[i][j];
+	}
+      }
 }//
 
 void Tensor2d::subtract(int i, int j, double value)
@@ -2528,8 +2561,9 @@ int Tensor1i::get(int i)
   return A1i_[i];
 }//
 
-void Tensor1i::add(const SharedTensor1i& Adum)
+void Tensor1i::add(const SharedTensor1i& a)
 {
+    /*
     int *lhs, *rhs;
     size_t size = dim1_;
     if (size) {
@@ -2540,6 +2574,9 @@ void Tensor1i::add(const SharedTensor1i& Adum)
             lhs++; rhs++;
         }
     }
+    */
+    #pragma omp parallel for
+    for (int i=0; i<dim1_; ++i) A1i_[i] += a->A1i_[i];
 }//
 
 void Tensor1i::add(int i, int value)
@@ -2547,8 +2584,9 @@ void Tensor1i::add(int i, int value)
   A1i_[i]+=value;  
 }//
 
-void Tensor1i::subtract(const SharedTensor1i& Adum)
+void Tensor1i::subtract(const SharedTensor1i& a)
 {
+    /*
     int *lhs, *rhs;
     size_t size = dim1_;
     if (size) {
@@ -2559,6 +2597,9 @@ void Tensor1i::subtract(const SharedTensor1i& Adum)
             lhs++; rhs++;
         }
     }
+    */
+    #pragma omp parallel for
+    for (int i=0; i<dim1_; ++i) A1i_[i] -= a->A1i_[i];
 }//
 
 void Tensor1i::subtract(int i, int value)
@@ -2676,8 +2717,9 @@ double Tensor2i::get(int i, int j)
   return A2i_[i][j];
 }//
 
-void Tensor2i::add(const SharedTensor2i& Adum)
+void Tensor2i::add(const SharedTensor2i& a)
 {
+    /*
     int *lhs, *rhs;
     size_t size = dim1_ * dim2_;
     if (size) {
@@ -2688,6 +2730,13 @@ void Tensor2i::add(const SharedTensor2i& Adum)
             lhs++; rhs++;
         }
     }
+    */
+      #pragma omp parallel for
+      for (int i=0; i<dim1_; ++i) {
+	for (int j=0; j<dim2_; ++j) {
+	  A2i_[i][j] += a->A2i_[i][j];
+	}
+      }
 }//
 
 void Tensor2i::add(int i, int j, int value)
@@ -2695,8 +2744,9 @@ void Tensor2i::add(int i, int j, int value)
   A2i_[i][j]+=value;  
 }//
 
-void Tensor2i::subtract(const SharedTensor2i& Adum)
+void Tensor2i::subtract(const SharedTensor2i& a)
 {
+    /*
     int *lhs, *rhs;
     size_t size = dim1_ * dim2_;
     if (size) {
@@ -2707,6 +2757,13 @@ void Tensor2i::subtract(const SharedTensor2i& Adum)
             lhs++; rhs++;
         }
     }
+    */
+      #pragma omp parallel for
+      for (int i=0; i<dim1_; ++i) {
+	for (int j=0; j<dim2_; ++j) {
+	  A2i_[i][j] -= a->A2i_[i][j];
+	}
+      }
 }//
 
 void Tensor2i::subtract(int i, int j, int value)
