@@ -51,7 +51,7 @@ void DFOCC::omp2_manager()
            tei_oooo_chem_ref();
            tei_ooov_chem_ref();
            tei_oovv_chem_ref();
-           tei_ovov_chem_ref();
+           tei_ovov_chem_ref(); 
            if (reference_ == "UNRESTRICTED") {
             tei_oooo_phys_ref();
             tei_ooov_phys_ref();

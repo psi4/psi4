@@ -265,7 +265,8 @@ double Tensor1d::xay(const SharedTensor2d &a, const SharedTensor1d &y)
 
 void Tensor1d::scale(double a)
 {
-    size_t size = dim1_ ;
+    //size_t size = dim1_ ;
+    ULI size = (ULI)dim1_ ;
     if (size) C_DSCAL(size, a, A1d_, 1);
 }//
 
@@ -1353,9 +1354,12 @@ void Tensor2d::copy(const SharedTensor2d &Adum)
     }
 
     // If matrices are in the same size
-      if (dim1_ != 0 && dim2_ != 0) {
-	memcpy(A2d_[0], Adum->A2d_[0], dim1_ * dim2_ * sizeof(double));
-      }
+    ULI length;
+    length = (ULI)dim1_ * (ULI)dim2_;
+    if (dim1_ != 0 && dim2_ != 0) {
+        //memcpy(A2d_[0], Adum->A2d_[0], dim1_ * dim2_ * sizeof(double));
+        C_DCOPY(length, Adum->A2d_[0], 1, A2d_[0], 1);
+    }
 }//
 
 void Tensor2d::diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff)
@@ -1475,19 +1479,20 @@ void Tensor2d::outer_product(const SharedTensor1d &x, const SharedTensor1d &y)
 
 void Tensor2d::scale(double a)
 {
-    size_t size;
-    size = dim1_ * dim2_;
+    //size_t size;
+    ULI size;
+    size = (ULI)dim1_ * (ULI)dim2_;
     if (size) C_DSCAL(size, a, &(A2d_[0][0]), 1);
 }//
 
 void Tensor2d::scale_row(int m, double a)
 {
-    C_DSCAL(dim1_, a, &(A2d_[m][0]), 1);
+    C_DSCAL((ULI)dim1_, a, &(A2d_[m][0]), 1);
 }//
 
 void Tensor2d::scale_column(int n, double a)
 {
-    C_DSCAL(dim2_, a, &(A2d_[0][n]), dim1_);
+    C_DSCAL((ULI)dim2_, a, &(A2d_[0][n]), dim1_);
 }//
 
 void Tensor2d::identity()
