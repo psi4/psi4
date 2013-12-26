@@ -100,30 +100,34 @@ do
 //==========================================================================================
         timer_on("DF CC Integrals");
         trans_corr();
-        tei_iajb_chem();
-        //tei_ijab_chem();// for Hessian
-        if (reference_ == "UNRESTRICTED") {
-            tei_ijab_phys();
-            tei_ijab_anti_symm();
-        }
+        if (conv_tei_type == "DISK") { 
+            tei_iajb_chem();
+            //tei_ijab_chem();// for Hessian
+            if (reference_ == "UNRESTRICTED") {
+                tei_ijab_phys();
+                tei_ijab_anti_symm();
+            }
+        }// if (conv_tei_type == "DISK")  
         timer_off("DF CC Integrals");
 
         timer_on("DF REF Integrals");
         trans_ref();
-        tei_oooo_chem_ref();
-        tei_ooov_chem_ref();
-        tei_oovv_chem_ref();
-        tei_ovov_chem_ref();
-        if (reference_ == "UNRESTRICTED") {
-            tei_oooo_phys_ref();
-            tei_ooov_phys_ref();
-            tei_oovv_phys_ref();
-            tei_ovov_phys_ref();
-            tei_oooo_anti_symm_ref();
-            tei_ooov_anti_symm_ref();
-            tei_oovv_anti_symm_ref();
-            tei_ovov_anti_symm_ref();
-        }
+        if (conv_tei_type == "DISK") { 
+            tei_oooo_chem_ref();
+            tei_ooov_chem_ref();
+            tei_oovv_chem_ref();
+            tei_ovov_chem_ref();
+            if (reference_ == "UNRESTRICTED") {
+                tei_oooo_phys_ref();
+                tei_ooov_phys_ref();
+                tei_oovv_phys_ref();
+                tei_ovov_phys_ref();
+                tei_oooo_anti_symm_ref();
+                tei_ooov_anti_symm_ref();
+                tei_oovv_anti_symm_ref();
+                tei_ovov_anti_symm_ref();
+            }
+        }// if (conv_tei_type == "DISK")  
         fock();
         timer_off("DF REF Integrals");
 
