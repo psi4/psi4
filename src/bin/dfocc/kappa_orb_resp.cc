@@ -50,9 +50,8 @@ if (reference_ == "RESTRICTED") {
 
     // A(ai,bj) = 2 \delta_{ij} f_ab - 2 \delta_{ab} f_ij + 8(ia|jb) - 2(ib|ja)
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OV|OV)", noccA, nvirA, noccA, nvirA));
-    timer_on("I/O");
-    K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
+    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
+    else tei_ovov_chem_ref_directAA(K);
     #pragma omp parallel for
     for (int a = 0; a < nvirA; a++) {
          for (int i = 0; i < noccA; i++) {
@@ -76,9 +75,8 @@ if (reference_ == "RESTRICTED") {
 
     // A(ai,bj) += -2(ij|ab)
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|VV)", noccA, noccA, nvirA, nvirA));
-    timer_on("I/O");
-    K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
+    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
+    else tei_oovv_chem_ref_directAA(K);
     #pragma omp parallel for
     for (int a = 0; a < nvirA; a++) {
          for (int i = 0; i < noccA; i++) {
@@ -126,6 +124,7 @@ if (reference_ == "RESTRICTED") {
     Aorb.reset();
 
     // Build kappa for VO block
+    #pragma omp parallel for
     for (int x = 0; x < nidpA; x++) {
          int p = idprowA->get(x);
 	 int q = idpcolA->get(x);
@@ -141,6 +140,7 @@ if (reference_ == "RESTRICTED") {
       // Compute OO-Block orb rot params
       //approx_diag_hf_mohess_oo();
       approx_diag_mohess_oo();
+      #pragma omp parallel for
       for (int x = 0; x < nidpA; x++) {
 	   int p = idprowA->get(x);
 	   int q = idpcolA->get(x);
@@ -154,6 +154,7 @@ if (reference_ == "RESTRICTED") {
     // If LINEQ FAILED!
     if (pcg_conver != 0) {
         // VO Block
+        #pragma omp parallel for
         for (int a = 0; a < nvirA; a++) {
               for (int i = 0; i < noccA; i++) {
                    double value = 2.0 * (FockA->get(a + noccA, a + noccA) - FockA->get(i,i));
@@ -161,6 +162,7 @@ if (reference_ == "RESTRICTED") {
               }
         }
         // Build kappa again
+        #pragma omp parallel for
         for (int x = 0; x < nidpA; x++) {
 	    int p = idprowA->get(x);
 	    int q = idpcolA->get(x);
@@ -215,9 +217,8 @@ else if (reference_ == "UNRESTRICTED") {
 
     // A(ai,bj) = 2 \delta_{ij} f_ab - 2 \delta_{ab} f_ij + 4(ia|jb) - 2(ib|ja)
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OV|OV)", noccA, nvirA, noccA, nvirA));
-    timer_on("I/O");
-    K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
+    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
+    else tei_ovov_chem_ref_directAA(K);
     #pragma omp parallel for
     for (int a = 0; a < nvirA; a++) {
          for (int i = 0; i < noccA; i++) {
@@ -241,9 +242,8 @@ else if (reference_ == "UNRESTRICTED") {
 
     // A(ai,bj) += -2(ij|ab)
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|VV)", noccA, noccA, nvirA, nvirA));
-    timer_on("I/O");
-    K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
+    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
+    else tei_oovv_chem_ref_directAA(K);
     #pragma omp parallel for
     for (int a = 0; a < nvirA; a++) {
          for (int i = 0; i < noccA; i++) {
@@ -276,9 +276,8 @@ else if (reference_ == "UNRESTRICTED") {
 
     // A(ai,bj) = 2 \delta_{ij} f_ab - 2 \delta_{ab} f_ij + 4(ia|jb) - 2(ib|ja)
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (ov|ov)", noccB, nvirB, noccB, nvirB));
-    timer_on("I/O");
-    K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
+    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
+    else tei_ovov_chem_ref_directBB(K);
     #pragma omp parallel for
     for (int a = 0; a < nvirB; a++) {
          for (int i = 0; i < noccB; i++) {
@@ -302,9 +301,8 @@ else if (reference_ == "UNRESTRICTED") {
 
     // A(ai,bj) += -2(ij|ab)
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (oo|vv)", noccB, noccB, nvirB, nvirB));
-    timer_on("I/O");
-    K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
+    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
+    else tei_oovv_chem_ref_directBB(K);
     #pragma omp parallel for
     for (int a = 0; a < nvirB; a++) {
          for (int i = 0; i < noccB; i++) {
@@ -336,9 +334,8 @@ else if (reference_ == "UNRESTRICTED") {
 
     // A(AI,bj) = 4(IA|jb)
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OV|ov)", noccA, nvirA, noccB, nvirB));
-    timer_on("I/O");
-    K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
+    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
+    else tei_ovov_chem_ref_directAB(K);
     #pragma omp parallel for
     for (int a = 0; a < nvirA; a++) {
          for (int i = 0; i < noccA; i++) {
@@ -387,12 +384,14 @@ else if (reference_ == "UNRESTRICTED") {
 
     // Build total zvector
     zvector = SharedTensor1d(new Tensor1d("UHF Z-Vector", nidp_tot));
+    #pragma omp parallel for
     for (int a = 0; a < nvirA; a++) {
          for (int i = 0; i < noccA; i++) {
               int ai = vo_idxAA->get(a,i);
               zvector->set(ai, -WorbA->get(a + noccA, i));
          }
     }
+    #pragma omp parallel for
     for (int a = 0; a < nvirB; a++) {
          for (int i = 0; i < noccB; i++) {
               int ai = vo_idxBB->get(a,i);
@@ -417,6 +416,7 @@ else if (reference_ == "UNRESTRICTED") {
     Aorb.reset();
 
     // Build kappa for VO block
+    #pragma omp parallel for
     for (int x = 0; x < nidpA; x++) {
          int p = idprowA->get(x);
 	 int q = idpcolA->get(x);
@@ -427,6 +427,7 @@ else if (reference_ == "UNRESTRICTED") {
     }
 
     // Build kappa for vo block
+    #pragma omp parallel for
     for (int x = 0; x < nidpB; x++) {
          int p = idprowB->get(x);
 	 int q = idpcolB->get(x);
@@ -441,6 +442,7 @@ else if (reference_ == "UNRESTRICTED") {
       // Compute OO-Block orb rot params
       //approx_diag_hf_mohess_oo();
       approx_diag_mohess_oo();
+      #pragma omp parallel for
       for (int x = 0; x < nidpA; x++) {
 	   int p = idprowA->get(x);
 	   int q = idpcolA->get(x);
@@ -450,6 +452,7 @@ else if (reference_ == "UNRESTRICTED") {
            }
       }
       // Compute oo-Block orb rot params
+      #pragma omp parallel for
       for (int x = 0; x < nidpB; x++) {
 	   int p = idprowB->get(x);
 	   int q = idpcolB->get(x);
@@ -463,6 +466,7 @@ else if (reference_ == "UNRESTRICTED") {
     // If LINEQ FAILED!
     if (pcg_conver != 0) {
          // VO Block
+         #pragma omp parallel for
          for (int a = 0; a < nvirA; a++) {
               for (int i = 0; i < noccA; i++) {
                    double value = 2.0 * (FockA->get(a + noccA, a + noccA) - FockA->get(i,i));
@@ -471,6 +475,7 @@ else if (reference_ == "UNRESTRICTED") {
          }
 
          // vo Block
+         #pragma omp parallel for
          for (int a = 0; a < nvirB; a++) {
               for (int i = 0; i < noccB; i++) {
                    double value = 2.0 * (FockB->get(a + noccB, a + noccB) - FockB->get(i,i));
@@ -479,6 +484,7 @@ else if (reference_ == "UNRESTRICTED") {
          }
 
 	// alpha
+        #pragma omp parallel for
         for(int x = 0; x < nidpA; x++) {
 	    int p = idprowA->get(x);
 	    int q = idpcolA->get(x);
@@ -489,6 +495,7 @@ else if (reference_ == "UNRESTRICTED") {
         }
 	
 	// beta
+        #pragma omp parallel for
         for(int x = 0; x < nidpB; x++) {
 	    int p = idprowB->get(x);
 	    int q = idpcolB->get(x);

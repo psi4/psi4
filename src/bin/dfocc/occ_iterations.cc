@@ -101,7 +101,7 @@ do
         timer_on("DF CC Integrals");
         trans_corr();
         tei_iajb_chem();
-        tei_ijab_chem();// for Hessian
+        //tei_ijab_chem();// for Hessian
         if (reference_ == "UNRESTRICTED") {
             tei_ijab_phys();
             tei_ijab_anti_symm();

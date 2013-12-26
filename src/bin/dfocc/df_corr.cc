@@ -44,9 +44,7 @@ void DFOCC::trans_corr()
 {   
     // Read SO integrals
     bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso2_));
-    timer_on("I/O");
     bQso->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
 
     trans_ab = 1;
     if (orb_opt_ == "TRUE" || dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
@@ -97,9 +95,7 @@ void DFOCC::trans_mp2()
 {   
     // Read SO integrals
     bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso2_));
-    timer_on("I/O");
     bQso->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
 
     // Form B(Q,ia)
     trans_ab = 0;
@@ -258,9 +254,7 @@ void DFOCC::formJ(boost::shared_ptr<BasisSet> auxiliary_, boost::shared_ptr<Basi
     // write J
     Jmhalf = SharedTensor2d(new Tensor2d("DF_BASIS_CC Jmhalf <P|Q>", nQ, nQ));
     Jmhalf->set(J_mhalf);
-    timer_on("I/O");
     Jmhalf->write(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     Jmhalf.reset();
 
 } // end formJ
@@ -396,9 +390,7 @@ void DFOCC::b_so(boost::shared_ptr<BasisSet> primary_, boost::shared_ptr<BasisSe
 
     C_DGEMM('N','N', nQ, nso2_, nQ, 1.0, J_mhalf[0], nQ, Bp[0], nso2_, 0.0, Ap[0], nso2_);
     bQso->set(Ap);
-    timer_on("I/O");
     bQso->write(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     if (print_ > 3) bQso->print();
     free_block(Bp);
     free_block(J_mhalf);
@@ -414,9 +406,7 @@ void DFOCC::b_so(boost::shared_ptr<BasisSet> primary_, boost::shared_ptr<BasisSe
     cQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|mn)", nQ, nso2_));
     cQso->set(Cp);
     free_block(Cp);
-    timer_on("I/O");
     cQso->write(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     cQso.reset();
     */
 
@@ -432,9 +422,7 @@ void DFOCC::b_ij()
     bQnoA->contract(false, false, nQ * nso_, naoccA, nso_, bQso, CaoccA, 1.0, 0.0);
     bQijA->contract233(true, false, naoccA, naoccA, CaoccA, bQnoA, 1.0, 0.0);
     bQnoA.reset();
-    timer_on("I/O");
     bQijA->write(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     bQijA.reset();
 
  if (reference_ == "UNRESTRICTED") {
@@ -443,9 +431,7 @@ void DFOCC::b_ij()
     bQnoB->contract(false, false, nQ * nso_, naoccB, nso_, bQso, CaoccB, 1.0, 0.0);
     bQijB->contract233(true, false, naoccB, naoccB, CaoccB, bQnoB, 1.0, 0.0);
     bQnoB.reset();
-    timer_on("I/O");
     bQijB->write(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     bQijB.reset();
  }
 
@@ -461,17 +447,13 @@ void DFOCC::b_oo()
     bQnoA->contract(false, false, nQ * nso_, noccA, nso_, bQso, CoccA, 1.0, 0.0);
     bQooA->contract233(true, false, noccA, noccA, CoccA, bQnoA, 1.0, 0.0);
     bQnoA.reset();
-    timer_on("I/O");
     bQooA->write(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
 
     // Form active b(Q,ij)
     bQijA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA));
     bQijA->form_b_ij(nfrzc, bQooA);
     bQooA.reset();
-    timer_on("I/O");
     bQijA->write(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     bQijA.reset();
 
  if (reference_ == "UNRESTRICTED") {
@@ -480,17 +462,13 @@ void DFOCC::b_oo()
     bQnoB->contract(false, false, nQ * nso_, noccB, nso_, bQso, CoccB, 1.0, 0.0);
     bQooB->contract233(true, false, noccB, noccB, CoccB, bQnoB, 1.0, 0.0);
     bQnoB.reset();
-    timer_on("I/O");
     bQooB->write(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
 
     // Form active b(Q,ij)
     bQijB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ij)", nQ, naoccB, naoccB));
     bQijB->form_b_ij(nfrzc, bQooB);
     bQooB.reset();
-    timer_on("I/O");
     bQijB->write(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     bQijB.reset();
  }
 
@@ -505,10 +483,8 @@ void DFOCC::b_ia()
     bQiaA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA * navirA));
     bQnvA->contract(false, false, nQ * nso_, navirA, nso_, bQso, CavirA, 1.0, 0.0);
     bQiaA->contract233(true, false, naoccA, navirA, CaoccA, bQnvA, 1.0, 0.0);
-    timer_on("I/O");
     bQiaA->write(psio_, PSIF_DFOCC_INTS);
     bQnvA->write(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     bQiaA.reset();
     bQnvA.reset();
 
@@ -517,10 +493,8 @@ void DFOCC::b_ia()
     bQiaB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ia)", nQ, naoccB * navirB));
     bQnvB->contract(false, false, nQ * nso_, navirB, nso_, bQso, CavirB, 1.0, 0.0);
     bQiaB->contract233(true, false, naoccB, navirB, CaoccB, bQnvB, 1.0, 0.0);
-    timer_on("I/O");
     bQiaB->write(psio_, PSIF_DFOCC_INTS);
     bQnvB->write(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     bQiaB.reset();
     bQnvB.reset();
  }
@@ -536,19 +510,15 @@ void DFOCC::b_ov()
     bQovA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OV)", nQ, noccA, nvirA));
     bQnvA->contract(false, false, nQ * nso_, nvirA, nso_, bQso, CvirA, 1.0, 0.0);
     bQovA->contract233(true, false, noccA, nvirA, CoccA, bQnvA, 1.0, 0.0);
-    timer_on("I/O");
     bQovA->write(psio_, PSIF_DFOCC_INTS);
     bQnvA->write(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     bQnvA.reset();
 
     // Form active b(Q,ia)
     bQiaA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA));
     bQiaA->form_b_ia(nfrzc, bQovA);
     bQovA.reset();
-    timer_on("I/O");
     bQiaA->write(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     bQiaA.reset();
 
  if (reference_ == "UNRESTRICTED") {
@@ -556,19 +526,15 @@ void DFOCC::b_ov()
     bQovB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ov)", nQ, noccB, nvirB));
     bQnvB->contract(false, false, nQ * nso_, nvirB, nso_, bQso, CvirB, 1.0, 0.0);
     bQovB->contract233(true, false, noccB, nvirB, CoccB, bQnvB, 1.0, 0.0);
-    timer_on("I/O");
     bQovB->write(psio_, PSIF_DFOCC_INTS);
     bQnvB->write(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     bQnvB.reset();
 
     // Form active b(Q,ia)
     bQiaB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ia)", nQ, naoccB, navirB));
     bQiaB->form_b_ia(nfrzc, bQovB);
     bQovB.reset();
-    timer_on("I/O");
     bQiaB->write(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     bQiaB.reset();
  }
 
@@ -581,27 +547,19 @@ void DFOCC::b_ab()
 {
     bQabA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA * navirA));
     bQnvA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mA)", nQ, nso_ * navirA));
-    timer_on("I/O");
     bQnvA->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     bQabA->contract233(true, false, navirA, navirA, CavirA, bQnvA, 1.0, 0.0);
     bQnvA.reset();
-    timer_on("I/O");
     bQabA->write(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     bQabA.reset();
 
  if (reference_ == "UNRESTRICTED") {
     bQabB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ab)", nQ, navirB * navirB));
     bQnvB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ma)", nQ, nso_ * navirB));
-    timer_on("I/O");
     bQnvB->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     bQabB->contract233(true, false, navirB, navirB, CavirB, bQnvB, 1.0, 0.0);
     bQnvB.reset();
-    timer_on("I/O");
     bQabB->write(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     bQabB.reset();
  }
 
@@ -614,43 +572,31 @@ void DFOCC::b_vv()
 {
     bQvvA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|VV)", nQ, nvirA, nvirA));
     bQnvA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mV)", nQ, nso_ * nvirA));
-    timer_on("I/O");
     bQnvA->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     bQvvA->contract233(true, false, nvirA, nvirA, CvirA, bQnvA, 1.0, 0.0);
     bQnvA.reset();
-    timer_on("I/O");
     bQvvA->write(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
 
     // Form active b(Q,ab)
     bQabA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA));
     bQabA->form_b_ab(bQvvA);
     bQvvA.reset();
-    timer_on("I/O");
     bQabA->write(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     bQabA.reset();
 
  if (reference_ == "UNRESTRICTED") {
     bQvvB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|vv)", nQ, nvirB, nvirB));
     bQnvB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mv)", nQ, nso_ * nvirB));
-    timer_on("I/O");
     bQnvB->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     bQvvB->contract233(true, false, nvirB, nvirB, CvirB, bQnvB, 1.0, 0.0);
     bQnvB.reset();
-    timer_on("I/O");
     bQvvB->write(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
 
     // Form active b(Q,ab)
     bQabB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ab)", nQ, navirB, navirB));
     bQabB->form_b_ab(bQvvB);
     bQvvB.reset();
-    timer_on("I/O");
     bQabB->write(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     bQabB.reset();
  }
 
@@ -666,9 +612,7 @@ void DFOCC::c_ij()
     cQnoA->contract(false, false, nQ * nso_, naoccA, nso_, cQso, CaoccA, 1.0, 0.0);
     cQijA->contract233(true, false, naoccA, naoccA, CaoccA, cQnoA, 1.0, 0.0);
     cQnoA.reset();
-    timer_on("I/O");
     cQijA->write(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     cQijA.reset();
 
  if (reference_ == "UNRESTRICTED") {
@@ -677,9 +621,7 @@ void DFOCC::c_ij()
     cQnoB->contract(false, false, nQ * nso_, naoccB, nso_, cQso, CaoccB, 1.0, 0.0);
     cQijB->contract233(true, false, naoccB, naoccB, CaoccB, cQnoB, 1.0, 0.0);
     cQnoB.reset();
-    timer_on("I/O");
     cQijB->write(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     cQijB.reset();
  }
 
@@ -695,9 +637,7 @@ void DFOCC::c_oo()
     cQnoA->contract(false, false, nQ * nso_, noccA, nso_, cQso, CoccA, 1.0, 0.0);
     cQooA->contract233(true, false, noccA, noccA, CoccA, cQnoA, 1.0, 0.0);
     cQnoA.reset();
-    timer_on("I/O");
     cQooA->write(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     cQooA.reset();
 
  if (reference_ == "UNRESTRICTED") {
@@ -706,9 +646,7 @@ void DFOCC::c_oo()
     cQnoB->contract(false, false, nQ * nso_, noccB, nso_, cQso, CoccB, 1.0, 0.0);
     cQooB->contract233(true, false, noccB, noccB, CoccB, cQnoB, 1.0, 0.0);
     cQnoB.reset();
-    timer_on("I/O");
     cQooB->write(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     cQooB.reset();
  }
 
@@ -724,9 +662,7 @@ void DFOCC::c_ia()
     cQnvA->contract(false, false, nQ * nso_, navirA, nso_, cQso, CavirA, 1.0, 0.0);
     cQiaA->contract233(true, false, naoccA, navirA, CaoccA, cQnvA, 1.0, 0.0);
     if (trans_ab == 0) cQnvA.reset();
-    timer_on("I/O");
     cQiaA->write(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     cQiaA.reset();
 
  if (reference_ == "UNRESTRICTED") {
@@ -735,9 +671,7 @@ void DFOCC::c_ia()
     cQnvB->contract(false, false, nQ * nso_, navirB, nso_, cQso, CavirB, 1.0, 0.0);
     cQiaB->contract233(true, false, naoccB, navirB, CaoccB, cQnvB, 1.0, 0.0);
     if (trans_ab == 0) cQnvB.reset();
-    timer_on("I/O");
     cQiaB->write(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     cQiaB.reset();
  }
 
@@ -753,9 +687,7 @@ void DFOCC::c_ov()
     cQnvA->contract(false, false, nQ * nso_, nvirA, nso_, cQso, CvirA, 1.0, 0.0);
     cQovA->contract233(true, false, noccA, nvirA, CoccA, cQnvA, 1.0, 0.0);
     if (trans_ab == 0) cQnvA.reset();
-    timer_on("I/O");
     cQovA->write(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     cQovA.reset();
 
  if (reference_ == "UNRESTRICTED") {
@@ -764,9 +696,7 @@ void DFOCC::c_ov()
     cQnvB->contract(false, false, nQ * nso_, nvirB, nso_, cQso, CvirB, 1.0, 0.0);
     cQovB->contract233(true, false, noccB, nvirB, CoccB, cQnvB, 1.0, 0.0);
     if (trans_ab == 0) cQnvB.reset();
-    timer_on("I/O");
     cQovB->write(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     cQovB.reset();
  }
 
@@ -780,18 +710,14 @@ void DFOCC::c_ab()
     cQabA = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|AB)", nQ, navirA * navirA));
     cQabA->contract233(true, false, navirA, navirA, CavirA, cQnvA, 1.0, 0.0);
     cQnvA.reset();
-    timer_on("I/O");
     cQabA->write(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     cQabA.reset();
 
  if (reference_ == "UNRESTRICTED") {
     cQabB = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|ab)", nQ, navirB * navirB));
     cQabB->contract233(true, false, navirB, navirB, CavirB, cQnvB, 1.0, 0.0);
     cQnvB.reset();
-    timer_on("I/O");
     cQabB->write(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     cQabB.reset();
  }
 
@@ -805,18 +731,14 @@ void DFOCC::c_vv()
     cQvvA = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|VV)", nQ, nvirA * nvirA));
     cQvvA->contract233(true, false, nvirA, nvirA, CvirA, cQnvA, 1.0, 0.0);
     cQnvA.reset();
-    timer_on("I/O");
     cQvvA->write(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     cQvvA.reset();
 
  if (reference_ == "UNRESTRICTED") {
     cQvvB = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|VV)", nQ, nvirB * nvirB));
     cQvvB->contract233(true, false, nvirB, nvirB, CvirB, cQnvB, 1.0, 0.0);
     cQnvB.reset();
-    timer_on("I/O");
     cQvvB->write(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     cQvvB.reset();
  }
 

@@ -52,10 +52,8 @@ if (reference_ == "RESTRICTED") {
     // DE += \sum_{Q} \sum_{i,a} G_ia^Q b_ia^Q
     G2c_ov = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OV)", nQ, noccA * nvirA));
     bQovA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OV)", nQ, noccA * nvirA));
-    timer_on("I/O");
     G2c_ov->read(psio_, PSIF_DFOCC_DENS);
     bQovA->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     EcorrL += G2c_ov->vector_dot(bQovA);
     G2c_ov.reset();
     bQovA.reset();
@@ -72,10 +70,8 @@ else if (reference_ == "UNRESTRICTED") {
     // DE += \sum_{Q} \sum_{I,A} G_IA^Q b_IA^Q
     G2c_ovA = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OV)", nQ, noccA * nvirA));
     bQovA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OV)", nQ, noccA * nvirA));
-    timer_on("I/O");
     G2c_ovA->read(psio_, PSIF_DFOCC_DENS);
     bQovA->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     EcorrL += G2c_ovA->vector_dot(bQovA);
     G2c_ovA.reset();
     bQovA.reset();
@@ -83,10 +79,8 @@ else if (reference_ == "UNRESTRICTED") {
     // DE += \sum_{Q} \sum_{i,a} G_ia^Q b_ia^Q
     G2c_ovB = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|ov)", nQ, noccB * nvirB));
     bQovB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ov)", nQ, noccB * nvirB));
-    timer_on("I/O");
     G2c_ovB->read(psio_, PSIF_DFOCC_DENS);
     bQovB->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     EcorrL += G2c_ovB->vector_dot(bQovB);
     G2c_ovB.reset();
     bQovB.reset();

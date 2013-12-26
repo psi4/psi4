@@ -48,10 +48,8 @@ if (reference_ == "RESTRICTED") {
     // Fab += \sum_{Q} \sum_{m} G_mb^Q b_ma^Q 
     G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OV)", nQ, noccA, nvirA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OV)", nQ, noccA * nvirA));
-    timer_on("I/O");
     G->read(psio_, PSIF_DFOCC_DENS);
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     GFvv->contract(true, false, nvirA, nvirA, nQ * noccA, K, G, 1.0, 1.0);
     G.reset();
     K.reset();
@@ -63,10 +61,8 @@ if (reference_ == "RESTRICTED") {
     // Fab += \sum_{Q} \sum_{m} G_mb^Q b_ma^Q 
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OV)", nQ_ref, noccA * nvirA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA * nvirA));
-    timer_on("I/O");
     G->read(psio_, PSIF_DFOCC_DENS);
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     GFvv->contract(true, false, nvirA, nvirA, nQ_ref * noccA, K, G, 1.0, 1.0);
     G.reset();
     K.reset();
@@ -74,10 +70,8 @@ if (reference_ == "RESTRICTED") {
     // Fab += \sum_{Q} \sum_{e} G_eb^Q b_ea^Q 
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
-    timer_on("I/O");
     G->read(psio_, PSIF_DFOCC_DENS);
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     GFvv->contract(true, false, nvirA, nvirA, nQ_ref * nvirA, K, G, 1.0, 1.0);
     G.reset();
     K.reset();
@@ -117,10 +111,8 @@ else if (reference_ == "UNRESTRICTED") {
     // alpha spin
     G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OV)", nQ, noccA, nvirA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OV)", nQ, noccA * nvirA));
-    timer_on("I/O");
     G->read(psio_, PSIF_DFOCC_DENS);
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     GFvvA->contract(true, false, nvirA, nvirA, nQ * noccA, K, G, 1.0, 1.0);
     G.reset();
     K.reset();
@@ -128,10 +120,8 @@ else if (reference_ == "UNRESTRICTED") {
     // beta spin
     G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|ov)", nQ, noccB, nvirB));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ov)", nQ, noccB * nvirB));
-    timer_on("I/O");
     G->read(psio_, PSIF_DFOCC_DENS);
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     GFvvB->contract(true, false, nvirB, nvirB, nQ * noccB, K, G, 1.0, 1.0);
     G.reset();
     K.reset();
@@ -144,10 +134,8 @@ else if (reference_ == "UNRESTRICTED") {
     // alpha spin
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OV)", nQ_ref, noccA * nvirA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA * nvirA));
-    timer_on("I/O");
     G->read(psio_, PSIF_DFOCC_DENS);
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     GFvvA->contract(true, false, nvirA, nvirA, nQ_ref * noccA, K, G, 1.0, 1.0);
     G.reset();
     K.reset();
@@ -155,10 +143,8 @@ else if (reference_ == "UNRESTRICTED") {
     // beta spin
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|ov)", nQ_ref, noccB * nvirB));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|ov)", nQ_ref, noccB * nvirB));
-    timer_on("I/O");
     G->read(psio_, PSIF_DFOCC_DENS);
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     GFvvB->contract(true, false, nvirB, nvirB, nQ_ref * noccB, K, G, 1.0, 1.0);
     G.reset();
     K.reset();
@@ -167,10 +153,8 @@ else if (reference_ == "UNRESTRICTED") {
     // alpha spin
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
-    timer_on("I/O");
     G->read(psio_, PSIF_DFOCC_DENS);
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     GFvvA->contract(true, false, nvirA, nvirA, nQ_ref * nvirA, K, G, 1.0, 1.0);
     G.reset();
     K.reset();
@@ -178,10 +162,8 @@ else if (reference_ == "UNRESTRICTED") {
     // beta spin
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|vv)", nQ_ref, nvirB, nvirB));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|vv)", nQ_ref, nvirB, nvirB));
-    timer_on("I/O");
     G->read(psio_, PSIF_DFOCC_DENS);
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     GFvvB->contract(true, false, nvirB, nvirB, nQ_ref * nvirB, K, G, 1.0, 1.0);
     G.reset();
     K.reset();

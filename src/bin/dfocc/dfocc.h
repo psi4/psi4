@@ -111,6 +111,86 @@ protected:
     void tei_oovv_anti_symm();
     void tei_ovov_anti_symm();
 
+    // Conventional integrals for DF-BASIS-CC with direct algorithm
+    // Integrals in chemist notations
+    void tei_ijkl_chem_directAA(SharedTensor2d &K);
+    void tei_ijkl_chem_directBB(SharedTensor2d &K);
+    void tei_ijkl_chem_directAB(SharedTensor2d &K);
+
+    void tei_ijka_chem_directAA(SharedTensor2d &K);
+    void tei_ijka_chem_directBB(SharedTensor2d &K);
+    void tei_ijka_chem_directAB(SharedTensor2d &K);
+    void tei_iajk_chem_directAB(SharedTensor2d &K);
+
+    void tei_ijab_chem_directAA(SharedTensor2d &K);
+    void tei_ijab_chem_directBB(SharedTensor2d &K);
+    void tei_ijab_chem_directAB(SharedTensor2d &K);
+    void tei_abij_chem_directAB(SharedTensor2d &K);
+
+    void tei_iajb_chem_directAA(SharedTensor2d &K);
+    void tei_iajb_chem_directBB(SharedTensor2d &K);
+    void tei_iajb_chem_directAB(SharedTensor2d &K);
+
+    void tei_oooo_chem_directAA(SharedTensor2d &K);
+    void tei_oooo_chem_directBB(SharedTensor2d &K);
+    void tei_oooo_chem_directAB(SharedTensor2d &K);
+
+    void tei_ooov_chem_directAA(SharedTensor2d &K);
+    void tei_ooov_chem_directBB(SharedTensor2d &K);
+    void tei_ooov_chem_directAB(SharedTensor2d &K);
+    void tei_ovoo_chem_directAB(SharedTensor2d &K);
+
+    void tei_oovv_chem_directAA(SharedTensor2d &K);
+    void tei_oovv_chem_directBB(SharedTensor2d &K);
+    void tei_oovv_chem_directAB(SharedTensor2d &K);
+    void tei_vvoo_chem_directAB(SharedTensor2d &K);
+
+    void tei_ovov_chem_directAA(SharedTensor2d &K);
+    void tei_ovov_chem_directBB(SharedTensor2d &K);
+    void tei_ovov_chem_directAB(SharedTensor2d &K);
+
+    // Integrals in physist notations
+    void tei_ijkl_phys_directAA(SharedTensor2d &K);
+    void tei_ijkl_phys_directBB(SharedTensor2d &K);
+    void tei_ijkl_phys_directAB(SharedTensor2d &K);
+
+    void tei_ijka_phys_directAA(SharedTensor2d &K);
+    void tei_ijka_phys_directBB(SharedTensor2d &K);
+    void tei_ijka_phys_directAB(SharedTensor2d &K);
+    void tei_ijak_phys_directAB(SharedTensor2d &K);
+
+    void tei_ijab_phys_directAA(SharedTensor2d &K);
+    void tei_ijab_phys_directBB(SharedTensor2d &K);
+    void tei_ijab_phys_directAB(SharedTensor2d &K);
+
+    void tei_iajb_phys_directAA(SharedTensor2d &K);
+    void tei_iajb_phys_directBB(SharedTensor2d &K);
+    void tei_iajb_phys_directAB(SharedTensor2d &K);
+    void tei_aibj_phys_directAB(SharedTensor2d &K);
+
+    void tei_oooo_phys_directAA(SharedTensor2d &K);
+    void tei_oooo_phys_directBB(SharedTensor2d &K);
+    void tei_oooo_phys_directAB(SharedTensor2d &K);
+
+    void tei_ooov_phys_directAA(SharedTensor2d &K);
+    void tei_ooov_phys_directBB(SharedTensor2d &K);
+    void tei_ooov_phys_directAB(SharedTensor2d &K);
+    void tei_oovo_phys_directAB(SharedTensor2d &K);
+
+    void tei_oovv_phys_directAA(SharedTensor2d &K);
+    void tei_oovv_phys_directBB(SharedTensor2d &K);
+    void tei_oovv_phys_directAB(SharedTensor2d &K);
+
+    void tei_ovov_phys_directAA(SharedTensor2d &K);
+    void tei_ovov_phys_directBB(SharedTensor2d &K);
+    void tei_ovov_phys_directAB(SharedTensor2d &K);
+    void tei_vovo_phys_directAB(SharedTensor2d &K);
+
+    // Anti-symmetrized integrals
+    void tei_pqrs_anti_symm_direct(SharedTensor2d &K, SharedTensor2d &L);
+    void tei_pqrs2_anti_symm_direct(SharedTensor2d &K, SharedTensor2d &L);
+    void tei_pqrs3_anti_symm_direct(SharedTensor2d &K, SharedTensor2d &L, SharedTensor2d &M);
+
     // Conventional integrals for DF-BASIS-SCF
     void tei_oooo_chem_ref();
     void tei_ooov_chem_ref();
@@ -126,6 +206,45 @@ protected:
     void tei_ooov_anti_symm_ref();
     void tei_oovv_anti_symm_ref();
     void tei_ovov_anti_symm_ref();
+
+    // Conventional integrals for DF-BASIS-SCF with direct algorithm
+    // Integrals in chemist notations
+    void tei_oooo_chem_ref_directAA(SharedTensor2d &K);
+    void tei_oooo_chem_ref_directBB(SharedTensor2d &K);
+    void tei_oooo_chem_ref_directAB(SharedTensor2d &K);
+
+    void tei_ooov_chem_ref_directAA(SharedTensor2d &K);
+    void tei_ooov_chem_ref_directBB(SharedTensor2d &K);
+    void tei_ooov_chem_ref_directAB(SharedTensor2d &K);
+    void tei_ovoo_chem_ref_directAB(SharedTensor2d &K);
+
+    void tei_oovv_chem_ref_directAA(SharedTensor2d &K);
+    void tei_oovv_chem_ref_directBB(SharedTensor2d &K);
+    void tei_oovv_chem_ref_directAB(SharedTensor2d &K);
+    void tei_vvoo_chem_ref_directAB(SharedTensor2d &K);
+
+    void tei_ovov_chem_ref_directAA(SharedTensor2d &K);
+    void tei_ovov_chem_ref_directBB(SharedTensor2d &K);
+    void tei_ovov_chem_ref_directAB(SharedTensor2d &K);
+
+    // Integrals in physist notations
+    void tei_oooo_phys_ref_directAA(SharedTensor2d &K);
+    void tei_oooo_phys_ref_directBB(SharedTensor2d &K);
+    void tei_oooo_phys_ref_directAB(SharedTensor2d &K);
+
+    void tei_ooov_phys_ref_directAA(SharedTensor2d &K);
+    void tei_ooov_phys_ref_directBB(SharedTensor2d &K);
+    void tei_ooov_phys_ref_directAB(SharedTensor2d &K);
+    void tei_oovo_phys_ref_directAB(SharedTensor2d &K);
+
+    void tei_oovv_phys_ref_directAA(SharedTensor2d &K);
+    void tei_oovv_phys_ref_directBB(SharedTensor2d &K);
+    void tei_oovv_phys_ref_directAB(SharedTensor2d &K);
+
+    void tei_ovov_phys_ref_directAA(SharedTensor2d &K);
+    void tei_ovov_phys_ref_directBB(SharedTensor2d &K);
+    void tei_ovov_phys_ref_directAB(SharedTensor2d &K);
+    void tei_vovo_phys_ref_directAB(SharedTensor2d &K);
 
     // df 
     void df();
@@ -385,6 +504,7 @@ protected:
      string ekt_ea_;
      string orb_opt_;
      string rotation_blocks;
+     string conv_tei_type;
 
      double **C_pitzerA;     
      double **C_pitzerB;     

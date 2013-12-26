@@ -42,10 +42,8 @@ if (reference_ == "RESTRICTED") {
     SharedTensor2d l2;
     t2 = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
     l2 = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
-    timer_on("I/O");
     t2->read(psio_, PSIF_DFOCC_AMPS);
     l2->read(psio_, PSIF_DFOCC_AMPS);
-    timer_off("I/O");
 
     // G_ij = 2\sum_{m,e,f} t_im^ef t_jm^ef    
     GijA->contract442(1, 1, t2, l2, 2.0, 0.0);
@@ -95,10 +93,8 @@ else if (reference_ == "UNRESTRICTED") {
     // G_IJ = 1/2 \sum_{M,E,F} t_IM^EF t_JM^EF
     t2 = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
     l2 = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
-    timer_on("I/O");
     t2->read(psio_, PSIF_DFOCC_AMPS);
     l2->read(psio_, PSIF_DFOCC_AMPS);
-    timer_off("I/O");
     GijA->contract442(1, 1, t2, l2, 0.5, 0.0);
     t2.reset();
     l2.reset();
@@ -106,10 +102,8 @@ else if (reference_ == "UNRESTRICTED") {
     // G_IJ = \sum_{m,E,f} t_Im^Ef t_Jm^Ef
     t2 = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
     l2 = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
-    timer_on("I/O");
     t2->read(psio_, PSIF_DFOCC_AMPS);
     l2->read(psio_, PSIF_DFOCC_AMPS);
-    timer_off("I/O");
     GijA->contract442(1, 1, t2, l2, 1.0, 1.0);
     t2.reset();
     l2.reset();
@@ -117,10 +111,8 @@ else if (reference_ == "UNRESTRICTED") {
     // G_ij = 1/2 \sum_{m,e,f} t_im^ef t_jm^ef
     t2 = SharedTensor2d(new Tensor2d("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
     l2 = SharedTensor2d(new Tensor2d("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
-    timer_on("I/O");
     t2->read(psio_, PSIF_DFOCC_AMPS);
     l2->read(psio_, PSIF_DFOCC_AMPS);
-    timer_off("I/O");
     GijB->contract442(1, 1, t2, l2, 0.5, 0.0);
     t2.reset();
     l2.reset();
@@ -128,10 +120,8 @@ else if (reference_ == "UNRESTRICTED") {
     // G_ij = \sum_{M,e,F} t_Mi^Fe t_Mj^Fe
     t2 = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
     l2 = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
-    timer_on("I/O");
     t2->read(psio_, PSIF_DFOCC_AMPS);
     l2->read(psio_, PSIF_DFOCC_AMPS);
-    timer_off("I/O");
     GijB->contract442(2, 2, t2, l2, 1.0, 1.0);
     t2.reset();
     l2.reset();
@@ -139,10 +129,8 @@ else if (reference_ == "UNRESTRICTED") {
     // G_AB = -1/2\sum_{M,N,F} t_MN^FA t_MN^FB
     t2 = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
     l2 = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
-    timer_on("I/O");
     t2->read(psio_, PSIF_DFOCC_AMPS);
     l2->read(psio_, PSIF_DFOCC_AMPS);
-    timer_off("I/O");
     GabA->contract442(4, 4, t2, l2, -0.5, 0.0);
     t2.reset();
     l2.reset();
@@ -150,10 +138,8 @@ else if (reference_ == "UNRESTRICTED") {
     // G_AB += -\sum_{M,n,f} t_Mn^Af t_Mn^Bf
     t2 = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
     l2 = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
-    timer_on("I/O");
     t2->read(psio_, PSIF_DFOCC_AMPS);
     l2->read(psio_, PSIF_DFOCC_AMPS);
-    timer_off("I/O");
     GabA->contract442(3, 3, t2, l2, -1.0, 1.0);
     t2.reset();
     l2.reset();
@@ -161,10 +147,8 @@ else if (reference_ == "UNRESTRICTED") {
     // G_ab = -1/2\sum_{m,n,f} t_mn^fa t_mn^fb
     t2 = SharedTensor2d(new Tensor2d("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
     l2 = SharedTensor2d(new Tensor2d("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
-    timer_on("I/O");
     t2->read(psio_, PSIF_DFOCC_AMPS);
     l2->read(psio_, PSIF_DFOCC_AMPS);
-    timer_off("I/O");
     GabB->contract442(4, 4, t2, l2, -0.5, 0.0);
     t2.reset();
     l2.reset();
@@ -172,10 +156,8 @@ else if (reference_ == "UNRESTRICTED") {
     // G_ab += -\sum_{m,N,F} t_Mn^Fa t_Mn^Fb
     t2 = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
     l2 = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
-    timer_on("I/O");
     t2->read(psio_, PSIF_DFOCC_AMPS);
     l2->read(psio_, PSIF_DFOCC_AMPS);
-    timer_off("I/O");
     GabB->contract442(4, 4, t2, l2, -1.0, 1.0);
     t2.reset();
     l2.reset();
