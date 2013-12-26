@@ -48,6 +48,7 @@ void DFOCC::omp2_manager()
         fflush(outfile);
         timer_off("DF CC Integrals");
 
+        if (conv_tei_type == "DISK") { 
            tei_oooo_chem_ref();
            tei_ooov_chem_ref();
            tei_oovv_chem_ref();
@@ -62,16 +63,18 @@ void DFOCC::omp2_manager()
             tei_oovv_anti_symm_ref();
             tei_ovov_anti_symm_ref();
            }
+
+           tei_iajb_chem();
+           //tei_ijab_chem();// for Hessian
+           if (reference_ == "UNRESTRICTED") {
+               tei_ijab_phys();
+               tei_ijab_anti_symm();
+           }
+        }// if (conv_tei_type == "DISK")  
            fock();
 
         // ROHF REF
         if (reference == "ROHF") t1_1st_sc();
-        tei_iajb_chem();
-        //tei_ijab_chem();// for Hessian
-        if (reference_ == "UNRESTRICTED") {
-            tei_ijab_phys();
-            tei_ijab_anti_symm();
-        }
 	t2_1st_sc();
         mp2_energy();
 	Emp2L=Emp2;
@@ -145,12 +148,15 @@ void DFOCC::omp2_manager()
 	   fflush(outfile);
 	   semi_canonic();
            trans_corr();
+        if (conv_tei_type == "DISK") { 
            tei_iajb_chem();
            if (reference_ == "UNRESTRICTED") {
                tei_ijab_phys();
                tei_ijab_anti_symm();
            }
+        }// if (conv_tei_type == "DISK") 
            trans_ref();
+        if (conv_tei_type == "DISK") { 
            tei_oooo_chem_ref();
            tei_ooov_chem_ref();
            tei_oovv_chem_ref();
@@ -165,6 +171,7 @@ void DFOCC::omp2_manager()
             tei_oovv_anti_symm_ref();
             tei_ovov_anti_symm_ref();
            }
+        }// if (conv_tei_type == "DISK") 
            fock();
 	   t2_1st_sc();
            conver = 1;
@@ -291,33 +298,15 @@ void DFOCC::mp2_manager()
 
         // ROHF REF
         //fprintf(outfile,"\tI am here.\n"); fflush(outfile);
-        if (reference == "ROHF") {
-            /*
-            df_ref();
-            fprintf(outfile,"\tNumber of basis functions in the DF-HF basis: %3d\n", nQ_ref);
-            fflush(outfile);
-            tei_oooo_chem_ref();
-            tei_ooov_chem_ref();
-            tei_oovv_chem_ref();
-            tei_ovov_chem_ref();
-            tei_oooo_phys_ref();
-            tei_ooov_phys_ref();
-            tei_oovv_phys_ref();
-            tei_ovov_phys_ref();
-            tei_oooo_anti_symm_ref();
-            tei_ooov_anti_symm_ref();
-            tei_oovv_anti_symm_ref();
-            tei_ovov_anti_symm_ref();
-            fock();
-            */
-	    t1_1st_sc();
-        } 
+        if (reference == "ROHF") t1_1st_sc();
 
-        tei_iajb_chem();
-        if (reference_ == "UNRESTRICTED") {
-            tei_ijab_phys();
-            tei_ijab_anti_symm();
-        }
+        if (conv_tei_type == "DISK") { 
+            tei_iajb_chem();
+            if (reference_ == "UNRESTRICTED") {
+                tei_ijab_phys();
+                tei_ijab_anti_symm();
+            }
+        }// if (conv_tei_type == "DISK")  
 	t2_1st_sc();
         mp2_energy();
 	Emp2L=Emp2;
