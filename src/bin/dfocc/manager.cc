@@ -67,7 +67,7 @@ void DFOCC::omp2_manager()
         // ROHF REF
         if (reference == "ROHF") t1_1st_sc();
         tei_iajb_chem();
-        tei_ijab_chem();// for Hessian
+        //tei_ijab_chem();// for Hessian
         if (reference_ == "UNRESTRICTED") {
             tei_ijab_phys();
             tei_ijab_anti_symm();

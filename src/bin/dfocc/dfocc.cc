@@ -86,6 +86,7 @@ void DFOCC::common_init()
     reference=options_.get_str("REFERENCE");
     wfn_type_=options_.get_str("WFN_TYPE");
     orb_opt_=options_.get_str("ORB_OPT");
+    conv_tei_type=options_.get_str("CONV_TEI_TYPE");
 
     //title
     title();
@@ -285,7 +286,7 @@ void DFOCC::title()
    else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "TRUE") fprintf(outfile,"                       DF-OMP2.5 (DF-OO-MP2.5)   \n");
    else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "FALSE") fprintf(outfile,"                       DF-MP2.5  \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya\n") ; 
-   fprintf(outfile,"              Latest Revision Dec 23, 2013\n") ;
+   fprintf(outfile,"              Latest Revision Dec 26, 2013\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");

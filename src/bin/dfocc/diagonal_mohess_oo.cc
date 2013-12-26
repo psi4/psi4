@@ -56,10 +56,8 @@ if (reference_ == "RESTRICTED") {
     // A_ij += \sum_{Q} 2 G_jj^Q b_ii^Q + 2 G_ii^Q b_jj^Q - 4 G_ij^Q b_ij^Q
     G = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM (Q|OO)", nQ_ref, noccA * noccA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA));
-    timer_on("I/O");
     G->read(psio_, PSIF_DFOCC_DENS);
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     for (int i = 0; i < naoccA; i++) {
          int ii = oo_idxAA->get(i + nfrzc,i + nfrzc);
          for (int j = 0; j < nfrzc; j++) {
@@ -88,10 +86,8 @@ if (reference_ == "RESTRICTED") {
     // A_ij += \sum_{Q} 2 G_jj^Q b_ii^Q + 2 G_ii^Q b_jj^Q - 4 G_ij^Q b_ij^Q
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OO)", nQ_ref, noccA * noccA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA));
-    timer_on("I/O");
     G->read(psio_, PSIF_DFOCC_DENS);
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     for (int i = 0; i < naoccA; i++) {
          int ii = oo_idxAA->get(i + nfrzc,i + nfrzc);
          for (int j = 0; j < nfrzc; j++) {
@@ -144,10 +140,8 @@ else if (reference_ == "UNRESTRICTED") {
     // A_IJ += \sum_{Q} 2 G_JJ^Q b_II^Q + 2 G_II^Q b_JJ^Q - 4 G_IJ^Q b_IJ^Q
     G = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM (Q|OO)", nQ_ref, noccA * noccA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA));
-    timer_on("I/O");
     G->read(psio_, PSIF_DFOCC_DENS);
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     for (int i = 0; i < naoccA; i++) {
          int ii = oo_idxAA->get(i + nfrzc,i + nfrzc);
          for (int j = 0; j < nfrzc; j++) {
@@ -168,10 +162,8 @@ else if (reference_ == "UNRESTRICTED") {
     // A_ij += \sum_{Q} 2 G_jj^Q b_ii^Q + 2 G_ii^Q b_jj^Q - 4 G_ij^Q b_ij^Q
     G = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM (Q|oo)", nQ_ref, noccB * noccB));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|oo)", nQ_ref, noccB, noccB));
-    timer_on("I/O");
     G->read(psio_, PSIF_DFOCC_DENS);
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     for (int i = 0; i < naoccB; i++) {
          int ii = oo_idxBB->get(i + nfrzc,i + nfrzc);
          for (int j = 0; j < nfrzc; j++) {
@@ -200,10 +192,8 @@ else if (reference_ == "UNRESTRICTED") {
     // A_IJ += \sum_{Q} 2 G_JJ^Q b_II^Q + 2 G_II^Q b_JJ^Q - 4 G_IJ^Q b_IJ^Q
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OO)", nQ_ref, noccA * noccA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA));
-    timer_on("I/O");
     G->read(psio_, PSIF_DFOCC_DENS);
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     for (int i = 0; i < naoccA; i++) {
          int ii = oo_idxAA->get(i + nfrzc,i + nfrzc);
          for (int j = 0; j < nfrzc; j++) {
@@ -224,10 +214,8 @@ else if (reference_ == "UNRESTRICTED") {
     // A_ij += \sum_{Q} 2 G_jj^Q b_ii^Q + 2 G_ii^Q b_jj^Q - 4 G_ij^Q b_ij^Q
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|oo)", nQ_ref, noccB * noccB));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|oo)", nQ_ref, noccB, noccB));
-    timer_on("I/O");
     G->read(psio_, PSIF_DFOCC_DENS);
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     for (int i = 0; i < naoccB; i++) {
          int ii = oo_idxBB->get(i + nfrzc,i + nfrzc);
          for (int j = 0; j < nfrzc; j++) {

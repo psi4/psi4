@@ -56,9 +56,8 @@ if (reference_ == "RESTRICTED") {
 
     // A_ai += 2 G_ii \sum_{m} (ma|ma)   
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OV|OV)", noccA, nvirA, noccA, nvirA));
-    timer_on("I/O");
-    K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
+    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
+    else tei_ovov_chem_ref_directAA(K);
     for (int a = 0; a < nvirA; a++) {
          for (int i = 0; i < noccA; i++) {
               int ia = ov_idxAA->get(i,a);
@@ -81,10 +80,8 @@ if (reference_ == "RESTRICTED") {
     // A_ai += 2\sum_{Q} b_aa^Q G_ii^Q 
     G = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM (Q|OO)", nQ_ref, noccA * noccA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
-    timer_on("I/O");
     G->read(psio_, PSIF_DFOCC_DENS);
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     for (int a = 0; a < nvirA; a++) {
          int aa = vv_idxAA->get(a,a);
          for (int i = 0; i < noccA; i++) {
@@ -106,10 +103,8 @@ if (reference_ == "RESTRICTED") {
     // A_ai += 2\sum_{Q} b_aa^Q G_ii^Q 
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OO)", nQ_ref, noccA * noccA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
-    timer_on("I/O");
     G->read(psio_, PSIF_DFOCC_DENS);
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     for (int a = 0; a < nvirA; a++) {
          int aa = vv_idxAA->get(a,a);
          for (int i = 0; i < noccA; i++) {
@@ -127,10 +122,8 @@ if (reference_ == "RESTRICTED") {
     // A_ai += 2\sum_{Q} b_ii^Q G_aa^Q 
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA * nvirA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA * noccA));
-    timer_on("I/O");
     G->read(psio_, PSIF_DFOCC_DENS);
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     for (int a = 0; a < nvirA; a++) {
          int aa = vv_idxAA->get(a,a);
          for (int i = 0; i < noccA; i++) {
@@ -180,9 +173,8 @@ else if (reference_ == "UNRESTRICTED") {
 
     // A_AI += 2 G_II \sum_{M} (MA|MA)   
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OV|OV)", noccA, nvirA, noccA, nvirA));
-    timer_on("I/O");
-    K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
+    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
+    else tei_ovov_chem_ref_directAA(K);
     for (int a = 0; a < nvirA; a++) {
          for (int i = 0; i < noccA; i++) {
               int ia = ov_idxAA->get(i,a);
@@ -200,9 +192,8 @@ else if (reference_ == "UNRESTRICTED") {
 
     // A_ai += -2 G_ii \sum_{m} (ma|ma)   
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (ov|ov)", noccB, nvirB, noccB, nvirB));
-    timer_on("I/O");
-    K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
+    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
+    else tei_ovov_chem_ref_directBB(K);
     for (int a = 0; a < nvirB; a++) {
          for (int i = 0; i < noccB; i++) {
               int ia = ov_idxBB->get(i,a);
@@ -225,10 +216,8 @@ else if (reference_ == "UNRESTRICTED") {
     // A_AI += 2\sum_{Q} b_AA^Q G_II^Q 
     G = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM (Q|OO)", nQ_ref, noccA * noccA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
-    timer_on("I/O");
     G->read(psio_, PSIF_DFOCC_DENS);
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     for (int a = 0; a < nvirA; a++) {
          int aa = vv_idxAA->get(a,a);
          for (int i = 0; i < noccA; i++) {
@@ -246,10 +235,8 @@ else if (reference_ == "UNRESTRICTED") {
     // A_ai += 2\sum_{Q} b_aa^Q G_ii^Q 
     G = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM (Q|oo)", nQ_ref, noccB * noccB));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|vv)", nQ_ref, nvirB, nvirB));
-    timer_on("I/O");
     G->read(psio_, PSIF_DFOCC_DENS);
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     for (int a = 0; a < nvirB; a++) {
          int aa = vv_idxBB->get(a,a);
          for (int i = 0; i < noccB; i++) {
@@ -271,10 +258,8 @@ else if (reference_ == "UNRESTRICTED") {
     // A_AI += 2\sum_{Q} b_AA^Q G_II^Q 
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OO)", nQ_ref, noccA * noccA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
-    timer_on("I/O");
     G->read(psio_, PSIF_DFOCC_DENS);
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     for (int a = 0; a < nvirA; a++) {
          int aa = vv_idxAA->get(a,a);
          for (int i = 0; i < noccA; i++) {
@@ -292,10 +277,8 @@ else if (reference_ == "UNRESTRICTED") {
     // A_ai += 2\sum_{Q} b_aa^Q G_ii^Q 
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|oo)", nQ_ref, noccB * noccB));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|vv)", nQ_ref, nvirB, nvirB));
-    timer_on("I/O");
     G->read(psio_, PSIF_DFOCC_DENS);
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     for (int a = 0; a < nvirB; a++) {
          int aa = vv_idxBB->get(a,a);
          for (int i = 0; i < noccB; i++) {
@@ -313,10 +296,8 @@ else if (reference_ == "UNRESTRICTED") {
     // A_AI += 2\sum_{Q} b_II^Q G_AA^Q 
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA * nvirA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA * noccA));
-    timer_on("I/O");
     G->read(psio_, PSIF_DFOCC_DENS);
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     for (int a = 0; a < nvirA; a++) {
          int aa = vv_idxAA->get(a,a);
          for (int i = 0; i < noccA; i++) {
@@ -334,10 +315,8 @@ else if (reference_ == "UNRESTRICTED") {
     // A_ai += 2\sum_{Q} b_ii^Q G_aa^Q 
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|vv)", nQ_ref, nvirB * nvirB));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|oo)", nQ_ref, noccB * noccB));
-    timer_on("I/O");
     G->read(psio_, PSIF_DFOCC_DENS);
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     for (int a = 0; a < nvirB; a++) {
          int aa = vv_idxBB->get(a,a);
          for (int i = 0; i < noccB; i++) {

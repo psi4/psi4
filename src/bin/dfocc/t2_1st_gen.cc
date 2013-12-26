@@ -34,24 +34,22 @@ namespace psi{ namespace dfoccwave{
 void DFOCC::t2_1st_gen()
 {   
 
+    SharedTensor2d K, L, M;
     timer_on("Form 1st-order T2");
     Fint_zero();
 
 if (reference_ == "RESTRICTED") {
     // Build amplitudes in Mulliken order 
     t2p_1new = SharedTensor2d(new Tensor2d("T2_1new(ia,jb)", naoccA, navirA, naoccA, navirA));
-    JiajbAA = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
-    timer_on("I/O");
-    JiajbAA->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
-    t2p_1new->copy(JiajbAA);
-    JiajbAA.reset();
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
+    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
+    else tei_iajb_chem_directAA(K);
+    t2p_1new->copy(K);
+    K.reset();
 
     // Read old amps
     t2p_1 = SharedTensor2d(new Tensor2d("T2_1(ia,jb)", naoccA, navirA, naoccA, navirA));
-    timer_on("I/O");
     t2p_1->read(psio_, PSIF_DFOCC_AMPS);
-    timer_off("I/O");
 
     // Fint contributions
     // T'(ia,jb) += \sum_{e} T_ij^ae F_be = \sum_{e} T'(ia,je) F_be
@@ -77,16 +75,12 @@ if (reference_ == "RESTRICTED") {
     // reset
     t2p_1->copy(t2p_1new);
     t2p_1new.reset();
-    timer_on("I/O");
     t2p_1->write(psio_, PSIF_DFOCC_AMPS);
-    timer_off("I/O");
  
     // Sort amplitudes to Dirac order
     t2_1 = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
     t2_1->sort(1324, t2p_1, 1.0, 0.0);
-    timer_on("I/O");
     t2_1->write(psio_, PSIF_DFOCC_AMPS);
-    timer_off("I/O");
     //t2_1->print();
     t2_1.reset();
 
@@ -94,34 +88,41 @@ if (reference_ == "RESTRICTED") {
     temp->sort(1432, t2p_1, 1.0, 0.0);
     temp->scale(-1.0);
     temp->add(t2p_1);
-    timer_on("I/O");
     temp->write(psio_, PSIF_DFOCC_AMPS);
-    timer_off("I/O");
 
     u2p_1 = SharedTensor2d(new Tensor2d("2*T2_1(ia,jb) - T2_1(ib,ja)", naoccA, navirA, naoccA, navirA));
     u2p_1->copy(temp);
     temp.reset();
     u2p_1->add(t2p_1);
     t2p_1.reset();
-    timer_on("I/O");
     u2p_1->write(psio_, PSIF_DFOCC_AMPS);
-    timer_off("I/O");
     u2p_1.reset();
 }// end if (reference_ == "RESTRICTED")
 
 else if (reference_ == "UNRESTRICTED") {
     // T2AA
+    if (conv_tei_type == "DISK") {
+        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ||AB>", naoccA, naoccA, navirA, navirA));
+        K->read(psio_, PSIF_DFOCC_INTS);
+    }
+    else {
+        L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
+        tei_iajb_chem_directAA(L);
+        M = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ|AB>", naoccA, naoccA, navirA, navirA));
+        M->sort(1324, L, 1.0, 0.0);
+        L.reset();
+        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ||AB>", naoccA, naoccA, navirA, navirA));
+        tei_pqrs_anti_symm_direct(K, M);
+        M.reset();
+    }
     t2_1newAA = SharedTensor2d(new Tensor2d("T2_1new <IJ|AB>", naoccA, naoccA, navirA, navirA));
-    t2_1AA = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
-    AIijabAA = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ||AB>", naoccA, naoccA, navirA, navirA));
-    timer_on("I/O");
-    t2_1AA->read(psio_, PSIF_DFOCC_AMPS);
-    AIijabAA->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
-    t2_1newAA->copy(AIijabAA);
-    AIijabAA.reset();
+    t2_1newAA->copy(K);
+    K.reset();
 
     // Fint contributions
+    t2_1AA = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
+    t2_1AA->read(psio_, PSIF_DFOCC_AMPS);
+
     // T(IJ,AB) += \sum_{E} T_IJ^AE F_BE
     t2_1newAA->contract424(4, 2, t2_1AA, FabA, 1.0, 1.0);
 
@@ -145,29 +146,36 @@ else if (reference_ == "UNRESTRICTED") {
     // reset
     t2_1AA->copy(t2_1newAA);
     t2_1newAA.reset();
-    timer_on("I/O");
     t2_1AA->write(psio_, PSIF_DFOCC_AMPS);
-    timer_off("I/O");
     t2p_1 = SharedTensor2d(new Tensor2d("T2_1(IA,JB)", naoccA, navirA, naoccA, navirA));
     t2p_1->sort(1324, t2_1AA, 1.0, 0.0);
     t2_1AA.reset();
-    timer_on("I/O");
     t2p_1->write(psio_, PSIF_DFOCC_AMPS);
-    timer_off("I/O");
     t2p_1.reset();
 
     // T2BB
+    if (conv_tei_type == "DISK") {
+        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <ij||ab>", naoccB, naoccB, navirB, navirB));
+        K->read(psio_, PSIF_DFOCC_INTS);
+    }
+    else {
+        L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (ia|jb)", naoccB, navirB, naoccB, navirB));
+        tei_iajb_chem_directBB(L);
+        M = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <ij|ab>", naoccB, naoccB, navirB, navirB));
+        M->sort(1324, L, 1.0, 0.0);
+        L.reset();
+        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <ij||ab>", naoccB, naoccB, navirB, navirB));
+        tei_pqrs_anti_symm_direct(K, M);
+        M.reset();
+    }
     t2_1newBB = SharedTensor2d(new Tensor2d("T2_1new <ij|ab>", naoccB, naoccB, navirB, navirB));
-    t2_1BB = SharedTensor2d(new Tensor2d("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
-    AIijabBB = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <ij||ab>", naoccB, naoccB, navirB, navirB));
-    timer_on("I/O");
-    t2_1BB->read(psio_, PSIF_DFOCC_AMPS);
-    AIijabBB->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
-    t2_1newBB->copy(AIijabBB);
-    AIijabBB.reset();
+    t2_1newBB->copy(K);
+    K.reset();
 
     // Fint contributions
+    t2_1BB = SharedTensor2d(new Tensor2d("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
+    t2_1BB->read(psio_, PSIF_DFOCC_AMPS);
+
     // T(ij,ab) += \sum_{e} T_ij^ae F_be
     t2_1newBB->contract424(4, 2, t2_1BB, FabB, 1.0, 1.0);
 
@@ -191,29 +199,33 @@ else if (reference_ == "UNRESTRICTED") {
     // reset
     t2_1BB->copy(t2_1newBB);
     t2_1newBB.reset();
-    timer_on("I/O");
     t2_1BB->write(psio_, PSIF_DFOCC_AMPS);
-    timer_off("I/O");
     t2p_1 = SharedTensor2d(new Tensor2d("T2_1(ia,jb)", naoccB, navirB, naoccB, navirB));
     t2p_1->sort(1324, t2_1BB, 1.0, 0.0);
     t2_1BB.reset();
-    timer_on("I/O");
     t2p_1->write(psio_, PSIF_DFOCC_AMPS);
-    timer_off("I/O");
     t2p_1.reset();
 
     // T2AB
+    if (conv_tei_type == "DISK") {
+        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+        K->read(psio_, PSIF_DFOCC_INTS);
+    }
+    else {
+        L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|jb)", naoccA, navirA, naoccB, navirB));
+        tei_iajb_chem_directAB(L);
+        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+        K->sort(1324, L, 1.0, 0.0);
+        L.reset();
+    }
     t2_1newAB = SharedTensor2d(new Tensor2d("T2_1new <Ij|Ab>", naoccA, naoccB, navirA, navirB));
-    t2_1AB = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
-    IijabAB = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <Ij|Ab>", naoccA, naoccB, navirA, navirB));
-    timer_on("I/O");
-    t2_1AB->read(psio_, PSIF_DFOCC_AMPS);
-    IijabAB->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
-    t2_1newAB->copy(IijabAB);
-    IijabAB.reset();
+    t2_1newAB->copy(K);
+    K.reset();
 
     // Fint contributions
+    t2_1AB = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+    t2_1AB->read(psio_, PSIF_DFOCC_AMPS);
+
     // T(Ij,Ab) += \sum_{e} T_Ij^Ae F_be
     t2_1newAB->contract424(4, 2, t2_1AB, FabB, 1.0, 1.0);
 
@@ -237,15 +249,11 @@ else if (reference_ == "UNRESTRICTED") {
     // reset
     t2_1AB->copy(t2_1newAB);
     t2_1newAB.reset();
-    timer_on("I/O");
     t2_1AB->write(psio_, PSIF_DFOCC_AMPS);
-    timer_off("I/O");
     t2p_1 = SharedTensor2d(new Tensor2d("T2_1(IA,jb)", naoccA, navirA, naoccB, navirB));
     t2p_1->sort(1324, t2_1AB, 1.0, 0.0);
     t2_1AB.reset();
-    timer_on("I/O");
     t2p_1->write(psio_, PSIF_DFOCC_AMPS);
-    timer_off("I/O");
     t2p_1.reset();
 
     // combined rms

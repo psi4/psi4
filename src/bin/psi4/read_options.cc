@@ -2684,6 +2684,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("WFN_TYPE","DF-OMP2","DF-OMP2 DF-OMP3 DF-OCEPA(0) DF-OMP2.5 DFGRAD");
     /*- CEPA type such as CEPA0, CEPA1 etc. currently we have only CEPA0. -*/
     options.add_str("CEPA_TYPE","CEPA(0)","CEPA(0)");
+    /*- The algorithm that used for 4 index MO TEIs. -*/
+    options.add_str("CONV_TEI_TYPE","DISK","DIRECT DISK");
 
     /*- Do compute natural orbitals? -*/
     options.add_bool("NAT_ORBS",false);

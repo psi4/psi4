@@ -49,10 +49,8 @@ if (reference_ == "RESTRICTED") {
     // Fia += \sum_{Q} \sum_{m} G_ma^Q b_mi^Q 
     G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OV)", nQ, noccA, nvirA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OO)", nQ, noccA * noccA));
-    timer_on("I/O");
     G->read(psio_, PSIF_DFOCC_DENS);
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     GFov->contract(true, false, noccA, nvirA, nQ * noccA, K, G, 1.0, 1.0);
     G.reset();
     K.reset();
@@ -64,26 +62,20 @@ if (reference_ == "RESTRICTED") {
     // Fia += \sum_{Q} \sum_{m} G_ma^Q b_mi^Q 
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OV)", nQ_ref, noccA * nvirA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA * noccA));
-    timer_on("I/O");
     G->read(psio_, PSIF_DFOCC_DENS);
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     GFov->contract(true, false, noccA, nvirA, nQ_ref * noccA, K, G, 1.0, 1.0);
     G.reset();
     K.reset();
 
     // Fia += \sum_{Q} \sum_{e} G_ea^Q b_ei^Q 
     K2 = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA, nvirA));
-    timer_on("I/O");
     K2->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VO)", nQ_ref, nvirA, noccA));
     K->swap_3index_col(K2);
     K2.reset();
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA));
-    timer_on("I/O");
     G->read(psio_, PSIF_DFOCC_DENS);
-    timer_off("I/O");
     GFov->contract(true, false, noccA, nvirA, nQ_ref * nvirA, K, G, 1.0, 1.0);
     G.reset();
     K.reset();
@@ -105,10 +97,8 @@ else if (reference_ == "UNRESTRICTED") {
     // F_IA += \sum_{Q} \sum_{M} G_MA^Q b_MI^Q 
     G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OV)", nQ, noccA, nvirA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OO)", nQ, noccA * noccA));
-    timer_on("I/O");
     G->read(psio_, PSIF_DFOCC_DENS);
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     GFovA->contract(true, false, noccA, nvirA, nQ * noccA, K, G, 1.0, 1.0);
     G.reset();
     K.reset();
@@ -116,10 +106,8 @@ else if (reference_ == "UNRESTRICTED") {
     // Fia += \sum_{Q} \sum_{m} G_ma^Q b_mi^Q 
     G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|ov)", nQ, noccB, nvirB));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|oo)", nQ, noccB * noccB));
-    timer_on("I/O");
     G->read(psio_, PSIF_DFOCC_DENS);
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     GFovB->contract(true, false, noccB, nvirB, nQ * noccB, K, G, 1.0, 1.0);
     G.reset();
     K.reset();
@@ -131,10 +119,8 @@ else if (reference_ == "UNRESTRICTED") {
     // FIA += \sum_{Q} \sum_{M} G_MA^Q b_MI^Q 
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OV)", nQ_ref, noccA * nvirA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA * noccA));
-    timer_on("I/O");
     G->read(psio_, PSIF_DFOCC_DENS);
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     GFovA->contract(true, false, noccA, nvirA, nQ_ref * noccA, K, G, 1.0, 1.0);
     G.reset();
     K.reset();
@@ -142,42 +128,32 @@ else if (reference_ == "UNRESTRICTED") {
     // Fia += \sum_{Q} \sum_{m} G_ma^Q b_mi^Q 
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|ov)", nQ_ref, noccB * nvirB));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|oo)", nQ_ref, noccB * noccB));
-    timer_on("I/O");
     G->read(psio_, PSIF_DFOCC_DENS);
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     GFovB->contract(true, false, noccB, nvirB, nQ_ref * noccB, K, G, 1.0, 1.0);
     G.reset();
     K.reset();
 
     // F_IA += \sum_{Q} \sum_{E} G_EA^Q b_EI^Q 
     K2 = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA, nvirA));
-    timer_on("I/O");
     K2->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VO)", nQ_ref, nvirA, noccA));
     K->swap_3index_col(K2);
     K2.reset();
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA));
-    timer_on("I/O");
     G->read(psio_, PSIF_DFOCC_DENS);
-    timer_off("I/O");
     GFovA->contract(true, false, noccA, nvirA, nQ_ref * nvirA, K, G, 1.0, 1.0);
     G.reset();
     K.reset();
 
     // Fia += \sum_{Q} \sum_{e} G_ea^Q b_ei^Q 
     K2 = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|ov)", nQ_ref, noccB, nvirB));
-    timer_on("I/O");
     K2->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|vo)", nQ_ref, nvirB, noccB));
     K->swap_3index_col(K2);
     K2.reset();
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|vv)", nQ_ref, nvirB, nvirB));
-    timer_on("I/O");
     G->read(psio_, PSIF_DFOCC_DENS);
-    timer_off("I/O");
     GFovB->contract(true, false, noccB, nvirB, nQ_ref * nvirB, K, G, 1.0, 1.0);
     G.reset();
     K.reset();

@@ -40,17 +40,13 @@ void DFOCC::gftilde_vv()
 if (reference_ == "RESTRICTED") {
     // G_Q = \sum_{m,n} b_mn^Q G1c_mn
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OO)", nQ, noccA * noccA));
-    timer_on("I/O");
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     g1Q->gemv(false, nQ, noccA * noccA, K, G1c_oo, 1.0, 0.0);
     K.reset();
 
     // Gt_Q = \sum_{e,f} b_ef^Q G1c_ef
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|VV)", nQ, nvirA * nvirA));
-    timer_on("I/O");
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     g1Qt2->gemv(false, nQ, nvirA * nvirA, K, G1c_vv, 1.0, 0.0);
     K.reset();
 
@@ -61,9 +57,8 @@ if (reference_ == "RESTRICTED") {
 
     // Ft_ab += 2.0*\sum_{Q} b_ab^Q J_Q 
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA * nvirA));
-    timer_on("I/O");
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
+    #pragma omp parallel for
     for (int a = 0; a < nvirA; a++) {
          for (int b = 0; b < nvirA; b++) {
               int ab = vv_idxAA->get(a,b);  
@@ -78,9 +73,8 @@ if (reference_ == "RESTRICTED") {
 
     // Ft_ab = 2.0 \sum_{Q} b_ab^Q (G_Q + Gt_Q)
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|VV)", nQ, nvirA * nvirA));
-    timer_on("I/O");
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
+    #pragma omp parallel for
     for (int a = 0; a < nvirA; a++) {
          for (int b = 0; b < nvirA; b++) {
               int ab = vv_idxAA->get(a,b);  
@@ -95,9 +89,9 @@ if (reference_ == "RESTRICTED") {
 
     // Ft_ab -= 2 \sum_{m} (ma|mb)
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OV|OV)", noccA, nvirA, noccA, nvirA));
-    timer_on("I/O");
-    K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
+    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
+    else tei_ovov_chem_ref_directAA(K);
+    #pragma omp parallel for
     for (int a = 0; a < nvirA; a++) {
          for (int b = 0; b < nvirA; b++) {
               double sum = 0.0;
@@ -114,9 +108,7 @@ if (reference_ == "RESTRICTED") {
     // Ft_ab -= \sum_{Q} \sum_{m} b_ma^Q G_mb^Q 
     G = SharedTensor2d(new Tensor2d("3-Index Corr OPDM (Q|OV)", nQ, noccA, nvirA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OV)", nQ, noccA * nvirA));
-    timer_on("I/O");
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     // G_ia^Q = \sum_{m} G_im b_ma^Q 
     G->contract233(false, false, noccA, nvirA, G1c_oo, K, 1.0, 0.0);
     GFtvv->contract(true, false, nvirA, nvirA, nQ * noccA, K, G, -1.0, 1.0);
@@ -126,9 +118,7 @@ if (reference_ == "RESTRICTED") {
     // Ft_ab -= \sum_{Q} \sum_{e} G_ea^Q b_eb^Q 
     G = SharedTensor2d(new Tensor2d("3-Index Corr OPDM (Q|VV)", nQ, nvirA, nvirA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|VV)", nQ, nvirA, nvirA));
-    timer_on("I/O");
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     // G_ab^Q = \sum_{e} G_ae b_eb^Q 
     G->contract233(false, false, nvirA, nvirA, G1c_vv, K, 1.0, 0.0);
     GFtvv->contract(true, false, nvirA, nvirA, nQ * nvirA, G, K, -1.0, 1.0);
@@ -144,33 +134,25 @@ if (reference_ == "RESTRICTED") {
 else if (reference_ == "UNRESTRICTED") {
     // G_Q = \sum_{m,n} b_mn^Q G1c_mn
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OO)", nQ, noccA * noccA));
-    timer_on("I/O");
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     g1Q->gemv(false, nQ, noccA * noccA, K, G1c_ooA, 1.0, 0.0);
     K.reset();
 
     // beta
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|oo)", nQ, noccB * noccB));
-    timer_on("I/O");
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     g1Q->gemv(false, nQ, noccB * noccB, K, G1c_ooB, 1.0, 1.0);
     K.reset();
 
     // Gt_Q = \sum_{e,f} b_ef^Q G1c_ef
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|VV)", nQ, nvirA * nvirA));
-    timer_on("I/O");
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     g1Qt2->gemv(false, nQ, nvirA * nvirA, K, G1c_vvA, 1.0, 0.0);
     K.reset();
 
     // beta
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|vv)", nQ, nvirB * nvirB));
-    timer_on("I/O");
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     g1Qt2->gemv(false, nQ, nvirB * nvirB, K, G1c_vvB, 1.0, 1.0);
     K.reset();
 
@@ -182,9 +164,8 @@ else if (reference_ == "UNRESTRICTED") {
 
     // Ft_AB += \sum_{Q} b_AB^Q J_Q 
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA * nvirA));
-    timer_on("I/O");
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
+    #pragma omp parallel for
     for (int a = 0; a < nvirA; a++) {
          for (int b = 0; b < nvirA; b++) {
               int ab = vv_idxAA->get(a,b);  
@@ -199,9 +180,8 @@ else if (reference_ == "UNRESTRICTED") {
 
     // Ft_ab += \sum_{Q} b_ab^Q J_Q 
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|vv)", nQ_ref, nvirB * nvirB));
-    timer_on("I/O");
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
+    #pragma omp parallel for
     for (int a = 0; a < nvirB; a++) {
          for (int b = 0; b < nvirB; b++) {
               int ab = vv_idxBB->get(a,b);  
@@ -216,9 +196,8 @@ else if (reference_ == "UNRESTRICTED") {
 
     // Ft_AB =  \sum_{Q} b_AB^Q (G_Q + Gt_Q)
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|VV)", nQ, nvirA * nvirA));
-    timer_on("I/O");
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
+    #pragma omp parallel for
     for (int a = 0; a < nvirA; a++) {
          for (int b = 0; b < nvirA; b++) {
               int ab = vv_idxAA->get(a,b);  
@@ -233,9 +212,8 @@ else if (reference_ == "UNRESTRICTED") {
 
     // Ft_ab =  \sum_{Q} b_ab^Q (G_Q + Gt_Q)
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|vv)", nQ, nvirB * nvirB));
-    timer_on("I/O");
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
+    #pragma omp parallel for
     for (int a = 0; a < nvirB; a++) {
          for (int b = 0; b < nvirB; b++) {
               int ab = vv_idxBB->get(a,b);  
@@ -250,9 +228,9 @@ else if (reference_ == "UNRESTRICTED") {
 
     // Ft_AB -= \sum_{M} (MA|MB)
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OV|OV)", noccA, nvirA, noccA, nvirA));
-    timer_on("I/O");
-    K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
+    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
+    else tei_ovov_chem_ref_directAA(K);
+    #pragma omp parallel for
     for (int a = 0; a < nvirA; a++) {
          for (int b = 0; b < nvirA; b++) {
               double sum = 0.0;
@@ -268,9 +246,9 @@ else if (reference_ == "UNRESTRICTED") {
 
     // Ft_ab -= \sum_{m} (ma|mb)
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (ov|ov)", noccB, nvirB, noccB, nvirB));
-    timer_on("I/O");
-    K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
+    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
+    else tei_ovov_chem_ref_directBB(K);
+    #pragma omp parallel for
     for (int a = 0; a < nvirB; a++) {
          for (int b = 0; b < nvirB; b++) {
               double sum = 0.0;
@@ -287,9 +265,7 @@ else if (reference_ == "UNRESTRICTED") {
     // Ft_AB -= \sum_{Q} \sum_{M} b_MA^Q G_MB^Q 
     G = SharedTensor2d(new Tensor2d("3-Index Corr OPDM (Q|OV)", nQ, noccA, nvirA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OV)", nQ, noccA * nvirA));
-    timer_on("I/O");
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     // G_IA^Q = \sum_{M} G_IM b_MA^Q 
     G->contract233(false, false, noccA, nvirA, G1c_ooA, K, 1.0, 0.0);
     GFtvvA->contract(true, false, nvirA, nvirA, nQ * noccA, K, G, -1.0, 1.0);
@@ -299,9 +275,7 @@ else if (reference_ == "UNRESTRICTED") {
     // Ft_ab -= \sum_{Q} \sum_{m} b_ma^Q G_mb^Q 
     G = SharedTensor2d(new Tensor2d("3-Index Corr OPDM (Q|ov)", nQ, noccB, nvirB));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ov)", nQ, noccB * nvirB));
-    timer_on("I/O");
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     // G_ia^Q = \sum_{m} G_im b_ma^Q 
     G->contract233(false, false, noccB, nvirB, G1c_ooB, K, 1.0, 0.0);
     GFtvvB->contract(true, false, nvirB, nvirB, nQ * noccB, K, G, -1.0, 1.0);
@@ -311,9 +285,7 @@ else if (reference_ == "UNRESTRICTED") {
     // Ft_AB -= \sum_{Q} \sum_{E} G_EA^Q b_EB^Q 
     G = SharedTensor2d(new Tensor2d("3-Index Corr OPDM (Q|VV)", nQ, nvirA, nvirA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|VV)", nQ, nvirA, nvirA));
-    timer_on("I/O");
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     // G_AB^Q = \sum_{E} G_AE b_EB^Q 
     G->contract233(false, false, nvirA, nvirA, G1c_vvA, K, 1.0, 0.0);
     GFtvvA->contract(true, false, nvirA, nvirA, nQ * nvirA, G, K, -1.0, 1.0);
@@ -323,9 +295,7 @@ else if (reference_ == "UNRESTRICTED") {
     // Ft_ab -= \sum_{Q} \sum_{e} G_ea^Q b_eb^Q 
     G = SharedTensor2d(new Tensor2d("3-Index Corr OPDM (Q|vv)", nQ, nvirB, nvirB));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|vv)", nQ, nvirB, nvirB));
-    timer_on("I/O");
     K->read(psio_, PSIF_DFOCC_INTS);
-    timer_off("I/O");
     // G_ab^Q = \sum_{e} G_ae b_eb^Q 
     G->contract233(false, false, nvirB, nvirB, G1c_vvB, K, 1.0, 0.0);
     GFtvvB->contract(true, false, nvirB, nvirB, nQ * nvirB, G, K, -1.0, 1.0);
