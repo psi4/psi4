@@ -194,6 +194,18 @@ if (reference_ == "RESTRICTED") {
         fprintf(outfile, "\t%3d  %3d   %3d  %3d\n\n", nfrzc, naoccA, navirA, nfrzv);
 	fflush(outfile);
 
+        // memory requirements
+        cost_ampAA = 0;
+        cost_ampAA = (ULI)nocc2AA * (ULI)nvir2AA;
+        cost_ampAA /= (ULI)1024 * (ULI)1024;
+        cost_ampAA *= (ULI)sizeof(double);
+        cost_amp = (ULI)3.0 * cost_ampAA;
+        memory = Process::environment.get_memory();
+        memory_mb = memory/1000000L;
+        fprintf(outfile,"\n\tAvailable memory is: %6lu MB \n", memory_mb);
+        fprintf(outfile,"\tMinimum required memory for the DFOCC module is: %6lu MB \n", cost_amp);
+        fflush(outfile);
+
 }  // end if (reference_ == "RESTRICTED")
 
 else if (reference_ == "UNRESTRICTED") {
@@ -267,6 +279,25 @@ else if (reference_ == "UNRESTRICTED") {
         fprintf(outfile, "\t%3d   %3d   %3d   %3d    %3d   %3d\n\n", nfrzc, naoccA, naoccB, navirA, navirB, nfrzv);
         fflush(outfile);
 
+        // memory requirements
+        cost_ampAA = 0;
+        cost_ampAA = (ULI)nocc2AA * (ULI)nvir2AA;
+        cost_ampAA /= (ULI)1024 * (ULI)1024;
+        cost_ampAA *= (ULI)sizeof(double);
+        cost_ampBB = (ULI)nocc2BB * (ULI)nvir2BB;
+        cost_ampBB /= (ULI)1024 * (ULI)1024;
+        cost_ampBB *= (ULI)sizeof(double);
+        cost_ampAB = (ULI)nocc2AB * (ULI)nvir2AB;
+        cost_ampAB /= (ULI)1024 * (ULI)1024;
+        cost_ampAB *= (ULI)sizeof(double);
+        cost_amp = MAX0(cost_ampAA, cost_ampBB);
+        cost_amp = MAX0(cost_amp, cost_ampAB);
+        cost_amp = (ULI)3.0 * cost_amp;
+        memory = Process::environment.get_memory();
+        memory_mb = memory/1000000L;
+        fprintf(outfile,"\n\tAvailable memory is: %6lu MB \n", memory_mb);
+        fprintf(outfile,"\tMinimum required memory for the DFOCC module is: %6lu MB \n", cost_amp);
+        fflush(outfile);
 }// else if (reference_ == "UNRESTRICTED")
 	
         //fprintf(outfile,"\tI am here.\n"); fflush(outfile);
