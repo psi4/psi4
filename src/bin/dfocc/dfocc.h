@@ -387,6 +387,14 @@ protected:
      int orbs_already_opt;      // 0 false, 1 true
      int orbs_already_sc;       // 0 false, 1 true
 
+     ULI memory;
+     ULI memory_mb;
+     ULI cost_ampAA;          // Mem required for the amplitudes
+     ULI cost_ampBB;          // Mem required for the amplitudes
+     ULI cost_ampAB;          // Mem required for the amplitudes
+     ULI cost_amp;            // Mem required for the amplitudes
+     ULI cost_df;             // Mem required for the df integrals
+
      // Common
      double Enuc;
      double Eelec;
