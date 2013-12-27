@@ -37,7 +37,7 @@ void DFOCC::separable_tpdm()
 
     timer_on("sep_tpdm");
 if (reference_ == "RESTRICTED") {
-    // Build J_Q
+    // Build J_Q: Already builded in fock.cc
     bQooA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA * noccA));
     bQooA->read(psio_, PSIF_DFOCC_INTS);
     for (int Q = 0; Q < nQ_ref; Q++) {
@@ -50,6 +50,8 @@ if (reference_ == "RESTRICTED") {
     }
 
     // G_Q = \sum_{m,n} b_mn^Q G1c_mn
+    //bQooA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA * noccA));
+    //bQooA->read(psio_, PSIF_DFOCC_INTS);
     g1Qc->gemv(false, nQ_ref, noccA * noccA, bQooA, G1c_oo, 1.0, 0.0);
 
     //=========================
@@ -159,7 +161,7 @@ else if (reference_ == "UNRESTRICTED") {
          }
          Jc->add(Q, value);
     }
-    bQooA.reset();
+    bQooB.reset();
 
     //=========================
     // Reference TPDM

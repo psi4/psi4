@@ -48,6 +48,13 @@ void DFOCC::omp2_manager()
         fflush(outfile);
         timer_off("DF CC Integrals");
 
+        // memalloc for density intermediates
+        Jc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF J_Q", nQ_ref));
+        g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
+        g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
+        g1Q = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1_Q", nQ));
+        g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
+
         if (conv_tei_type == "DISK") { 
            tei_oooo_chem_ref();
            tei_ooov_chem_ref();
@@ -118,12 +125,6 @@ void DFOCC::omp2_manager()
         Process::environment.globals["DF-MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         Process::environment.globals["DF-MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
-        // memalloc for density intermediates
-        Jc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF J_Q", nQ_ref));
-        g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
-        g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
-        g1Q = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1_Q", nQ));
-        g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
 
 	omp2_opdm();
 	omp2_tpdm();

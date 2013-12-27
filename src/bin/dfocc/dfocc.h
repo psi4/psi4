@@ -537,12 +537,16 @@ protected:
      SharedTensor2d DQmatA;
      SharedTensor2d HooA;	 
      SharedTensor2d HooB;	 
+     SharedTensor2d HovA;               
+     SharedTensor2d HovB;               
      SharedTensor2d HvoA;	 
      SharedTensor2d HvoB;	 
      SharedTensor2d HvvA;	 
      SharedTensor2d HvvB;	 
      SharedTensor2d FooA;               
      SharedTensor2d FooB;               
+     SharedTensor2d FovA;               
+     SharedTensor2d FovB;               
      SharedTensor2d FvoA;               
      SharedTensor2d FvoB;               
      SharedTensor2d FvvA;               

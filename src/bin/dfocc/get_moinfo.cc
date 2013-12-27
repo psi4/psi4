@@ -93,10 +93,12 @@ if (reference_ == "RESTRICTED") {
 
         // Fock Blocks
         FooA = SharedTensor2d(new Tensor2d("Fock <O|O>", noccA, noccA));
+        FovA = SharedTensor2d(new Tensor2d("Fock <O|V>", noccA, nvirA));
         FvoA = SharedTensor2d(new Tensor2d("Fock <V|O>", nvirA, noccA));
         FvvA = SharedTensor2d(new Tensor2d("Fock <V|V>", nvirA, nvirA));
         FooA->form_oo(FockA);
         FvoA->form_vo(FockA);
+        FovA = FvoA->transpose();
         FvvA->form_vv(noccA, FockA);
 
         // Figure out OO Scaling factor
@@ -244,6 +246,8 @@ else if (reference_ == "UNRESTRICTED") {
         // Fock Blocks
         FooA = SharedTensor2d(new Tensor2d("Fock <O|O>", noccA, noccA));
         FooB = SharedTensor2d(new Tensor2d("Fock <o|o>", noccB, noccB));
+        FovA = SharedTensor2d(new Tensor2d("Fock <O|V>", noccA, nvirA));
+        FovB = SharedTensor2d(new Tensor2d("Fock <o|v>", noccB, nvirB));
         FvoA = SharedTensor2d(new Tensor2d("Fock <V|O>", nvirA, noccA));
         FvoB = SharedTensor2d(new Tensor2d("Fock <v|o>", nvirB, noccB));
         FvvA = SharedTensor2d(new Tensor2d("Fock <V|V>", nvirA, nvirA));
@@ -252,6 +256,8 @@ else if (reference_ == "UNRESTRICTED") {
         FooB->form_oo(FockB);
         FvoA->form_vo(FockA);
         FvoB->form_vo(FockB);
+        FovA = FvoA->transpose();
+        FovB = FvoB->transpose();
         FvvA->form_vv(noccA, FockA);
         FvvB->form_vv(noccB, FockB);
 
