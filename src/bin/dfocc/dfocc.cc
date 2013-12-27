@@ -162,6 +162,7 @@ if (reference_ == "RESTRICTED") {
         FijA = SharedTensor2d(new Tensor2d("Fint <I|J>", naoccA, naoccA));
         FabA = SharedTensor2d(new Tensor2d("Fint <A|B>", navirA, navirA));
         HooA = SharedTensor2d(new Tensor2d("OEI <O|O>", noccA, noccA));
+        HovA = SharedTensor2d(new Tensor2d("OEI <O|V>", noccA, nvirA));
         HvoA = SharedTensor2d(new Tensor2d("OEI <V|O>", nvirA, noccA));
         HvvA = SharedTensor2d(new Tensor2d("OEI <V|V>", nvirA, nvirA));
 
@@ -205,6 +206,8 @@ else if (reference_ == "UNRESTRICTED") {
         FabB = SharedTensor2d(new Tensor2d("Fint <a|b>", navirB, navirB));
         HooA = SharedTensor2d(new Tensor2d("OEI <O|O>", noccA, noccA));
         HooB = SharedTensor2d(new Tensor2d("OEI <o|o>", noccB, noccB));
+        HovA = SharedTensor2d(new Tensor2d("OEI <O|V>", noccA, nvirA));
+        HovB = SharedTensor2d(new Tensor2d("OEI <o|v>", noccB, nvirB));
         HvoA = SharedTensor2d(new Tensor2d("OEI <V|O>", nvirA, noccA));
         HvoB = SharedTensor2d(new Tensor2d("OEI <v|o>", nvirB, noccB));
         HvvA = SharedTensor2d(new Tensor2d("OEI <V|V>", nvirA, nvirA));
@@ -286,7 +289,7 @@ void DFOCC::title()
    else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "TRUE") fprintf(outfile,"                       DF-OMP2.5 (DF-OO-MP2.5)   \n");
    else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "FALSE") fprintf(outfile,"                       DF-MP2.5  \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya\n") ; 
-   fprintf(outfile,"              Latest Revision Dec 26, 2013\n") ;
+   fprintf(outfile,"              Latest Revision Dec 27, 2013\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");

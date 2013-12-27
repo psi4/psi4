@@ -752,19 +752,19 @@ void DFOCC::trans_oei()
     // Alpha
     HmoA->transform(Hso, CmoA);
     if (print_ > 2) HmoA->print();
-
     // Blocks
     HooA->form_oo(HmoA);
     HvoA->form_vo(HmoA);
+    HovA = HvoA->transpose();
     HvvA->form_vv(noccA, HmoA);
 
  if (reference_ == "UNRESTRICTED") {
     HmoB->transform(Hso, CmoB);
     if (print_ > 2) HmoB->print();
-
     // Blocks
     HooB->form_oo(HmoB);
     HvoB->form_vo(HmoB);
+    HovB = HvoB->transpose();
     HvvB->form_vv(noccB, HmoB);
  } // uhf
 
