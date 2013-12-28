@@ -48,49 +48,45 @@ if (reference_ == "RESTRICTED") {
     // Build the MO Hessian
     Aorb = SharedTensor2d(new Tensor2d("MO Hessian Matrix", nvirA, noccA, nvirA, noccA));
 
-    // A(ai,bj) = 2 \delta_{ij} f_ab - 2 \delta_{ab} f_ij + 8(ia|jb) - 2(ib|ja)
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OV|OV)", noccA, nvirA, noccA, nvirA));
-    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
-    else tei_ovov_chem_ref_directAA(K);
+    // A(ai,bj) = 2 \delta_{ij} f_ab  
     #pragma omp parallel for
     for (int a = 0; a < nvirA; a++) {
          for (int i = 0; i < noccA; i++) {
               int ai = vo_idxAA->get(a,i);
-              int ia = ov_idxAA->get(i,a);
               for (int b = 0; b < nvirA; b++) {
-                   int ib = ov_idxAA->get(i,b);
-                   for (int j = 0; j < noccA; j++) {
-                        int bj = vo_idxAA->get(b,j);
-                        int jb = ov_idxAA->get(j,b);
-                        int ja = ov_idxAA->get(j,a);
-                        double value = (8.0 * K->get(ia,jb)) - (2.0 * K->get(ib,ja)); 
-                        if (i == j) value += 2.0 * FockA->get(a + noccA, b + noccA);
-                        if (a == b) value -= 2.0 * FockA->get(i, j);
-                        Aorb->set(ai, bj, value);
-                   }
+                   int bi = vo_idxAA->get(b,i);
+                   double value = 2.0 * FockA->get(a + noccA, b + noccA);
+                   Aorb->add(ai, bi, value);
               }
          }
     }
+
+    // A(ai,bj) -= 2 \delta_{ab} f_ij 
+    #pragma omp parallel for
+    for (int a = 0; a < nvirA; a++) {
+         for (int i = 0; i < noccA; i++) {
+              int ai = vo_idxAA->get(a,i);
+              for (int j = 0; j < noccA; j++) {
+                   int aj = vo_idxAA->get(a,j);
+                   double value = -2.0 * FockA->get(i, j);
+                   Aorb->add(ai, aj, value);
+              }
+         }
+    }
+
+    // A(ai,bj) += 8(ia|jb) - 2(ib|ja)
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OV|OV)", noccA, nvirA, noccA, nvirA));
+    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
+    else tei_ovov_chem_ref_directAA(K);
+    Aorb->sort(2143, K, 8.0, 1.0);
+    Aorb->sort(4123, K, -2.0, 1.0);
     K.reset();
 
     // A(ai,bj) += -2(ij|ab)
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|VV)", noccA, noccA, nvirA, nvirA));
     if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
     else tei_oovv_chem_ref_directAA(K);
-    #pragma omp parallel for
-    for (int a = 0; a < nvirA; a++) {
-         for (int i = 0; i < noccA; i++) {
-              int ai = vo_idxAA->get(a,i);
-              for (int b = 0; b < nvirA; b++) {
-                   for (int j = 0; j < noccA; j++) {
-                        int bj = vo_idxAA->get(b,j);
-                        int ij = oo_idxAA->get(i,j);
-                        int ab = vv_idxAA->get(a,b);
-                        Aorb->add(ai, bj, -2.0*K->get(ij,ab));
-                   }
-              }
-         }
-    }
+    Aorb->sort(3142, K, -2.0, 1.0);
     K.reset();
     if (print_ > 3) Aorb->print();
 
@@ -215,49 +211,45 @@ else if (reference_ == "UNRESTRICTED") {
     // Alpha-Alpha spin cae
     AorbAA = SharedTensor2d(new Tensor2d("MO Hessian Matrix <VO|VO>", nvirA, noccA, nvirA, noccA));
 
-    // A(ai,bj) = 2 \delta_{ij} f_ab - 2 \delta_{ab} f_ij + 4(ia|jb) - 2(ib|ja)
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OV|OV)", noccA, nvirA, noccA, nvirA));
-    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
-    else tei_ovov_chem_ref_directAA(K);
+    // A(ai,bj) = 2 \delta_{ij} f_ab  
     #pragma omp parallel for
     for (int a = 0; a < nvirA; a++) {
          for (int i = 0; i < noccA; i++) {
               int ai = vo_idxAA->get(a,i);
-              int ia = ov_idxAA->get(i,a);
               for (int b = 0; b < nvirA; b++) {
-                   int ib = ov_idxAA->get(i,b);
-                   for (int j = 0; j < noccA; j++) {
-                        int bj = vo_idxAA->get(b,j);
-                        int jb = ov_idxAA->get(j,b);
-                        int ja = ov_idxAA->get(j,a);
-                        double value = (4.0 * K->get(ia,jb)) - (2.0 * K->get(ib,ja)); 
-                        if (i == j) value += 2.0 * FockA->get(a + noccA, b + noccA);
-                        if (a == b) value -= 2.0 * FockA->get(i, j);
-                        AorbAA->set(ai, bj, value);
-                   }
+                   int bi = vo_idxAA->get(b,i);
+                   double value = 2.0 * FockA->get(a + noccA, b + noccA);
+                   AorbAA->add(ai, bi, value);
               }
          }
     }
+
+    // A(ai,bj) += - 2 \delta_{ab} f_ij 
+    #pragma omp parallel for
+    for (int a = 0; a < nvirA; a++) {
+         for (int i = 0; i < noccA; i++) {
+              int ai = vo_idxAA->get(a,i);
+              for (int j = 0; j < noccA; j++) {
+                   int aj = vo_idxAA->get(a,j);
+                   double value = -2.0 * FockA->get(i, j);
+                   AorbAA->add(ai, aj, value);
+              }
+         }
+    }
+
+    // A(ai,bj) += 4(ia|jb) - 2(ib|ja)
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OV|OV)", noccA, nvirA, noccA, nvirA));
+    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
+    else tei_ovov_chem_ref_directAA(K);
+    AorbAA->sort(2143, K, 4.0, 1.0);
+    AorbAA->sort(4123, K, -2.0, 1.0);
     K.reset();
 
     // A(ai,bj) += -2(ij|ab)
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|VV)", noccA, noccA, nvirA, nvirA));
     if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
     else tei_oovv_chem_ref_directAA(K);
-    #pragma omp parallel for
-    for (int a = 0; a < nvirA; a++) {
-         for (int i = 0; i < noccA; i++) {
-              int ai = vo_idxAA->get(a,i);
-              for (int b = 0; b < nvirA; b++) {
-                   for (int j = 0; j < noccA; j++) {
-                        int bj = vo_idxAA->get(b,j);
-                        int ij = oo_idxAA->get(i,j);
-                        int ab = vv_idxAA->get(a,b);
-                        AorbAA->add(ai, bj, -2.0*K->get(ij,ab));
-                   }
-              }
-         }
-    }
+    AorbAA->sort(3142, K, -2.0, 1.0);
     K.reset();
     if (print_ > 3) AorbAA->print();
 
@@ -274,49 +266,46 @@ else if (reference_ == "UNRESTRICTED") {
     // Beta-Beta spin case
     AorbBB = SharedTensor2d(new Tensor2d("MO Hessian Matrix <vo|vo>", nvirB, noccB, nvirB, noccB));
 
-    // A(ai,bj) = 2 \delta_{ij} f_ab - 2 \delta_{ab} f_ij + 4(ia|jb) - 2(ib|ja)
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (ov|ov)", noccB, nvirB, noccB, nvirB));
-    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
-    else tei_ovov_chem_ref_directBB(K);
+    // A(ai,bj) = 2 \delta_{ij} f_ab  
+    #pragma omp parallel for
+    for (int a = 0; a < nvirB; a++) {
+         for (int i = 0; i < noccB; i++) {
+              int ai = vo_idxBB->get(a,i);
+              for (int b = 0; b < nvirB; b++) {
+                   int bi = vo_idxBB->get(b,i);
+                   double value = 2.0 * FockB->get(a + noccB, b + noccB);
+                   AorbBB->add(ai, bi, value);
+              }
+         }
+    }
+
+    // A(ai,bj) -= 2 \delta_{ab} f_ij 
     #pragma omp parallel for
     for (int a = 0; a < nvirB; a++) {
          for (int i = 0; i < noccB; i++) {
               int ai = vo_idxBB->get(a,i);
               int ia = ov_idxBB->get(i,a);
-              for (int b = 0; b < nvirB; b++) {
-                   int ib = ov_idxBB->get(i,b);
-                   for (int j = 0; j < noccB; j++) {
-                        int bj = vo_idxBB->get(b,j);
-                        int jb = ov_idxBB->get(j,b);
-                        int ja = ov_idxBB->get(j,a);
-                        double value = (4.0 * K->get(ia,jb)) - (2.0 * K->get(ib,ja));
-                        if (i == j) value += 2.0 * FockB->get(a + noccB, b + noccB);
-                        if (a == b) value -= 2.0 * FockB->get(i, j);
-                        AorbBB->set(ai, bj, value);
-                   }
+              for (int j = 0; j < noccB; j++) {
+                   int aj = vo_idxBB->get(a,j);
+                   double value = -2.0 * FockB->get(i, j);
+                   AorbBB->add(ai, aj, value);
               }
          }
     }
+
+    // A(ai,bj) += 4(ia|jb) - 2(ib|ja)
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (ov|ov)", noccB, nvirB, noccB, nvirB));
+    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
+    else tei_ovov_chem_ref_directBB(K);
+    AorbBB->sort(2143, K, 4.0, 1.0);
+    AorbBB->sort(4123, K, -2.0, 1.0);
     K.reset();
 
     // A(ai,bj) += -2(ij|ab)
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (oo|vv)", noccB, noccB, nvirB, nvirB));
     if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
     else tei_oovv_chem_ref_directBB(K);
-    #pragma omp parallel for
-    for (int a = 0; a < nvirB; a++) {
-         for (int i = 0; i < noccB; i++) {
-              int ai = vo_idxBB->get(a,i);
-              for (int b = 0; b < nvirB; b++) {
-                   for (int j = 0; j < noccB; j++) {
-                        int bj = vo_idxBB->get(b,j);
-                        int ij = oo_idxBB->get(i,j);
-                        int ab = vv_idxBB->get(a,b);
-                        AorbBB->add(ai, bj, -2.0*K->get(ij,ab));
-                   }
-              }
-         }
-    }
+    AorbBB->sort(3142, K, -2.0, 1.0);
     K.reset();
     if (print_ > 3) AorbBB->print();
 
@@ -336,20 +325,7 @@ else if (reference_ == "UNRESTRICTED") {
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OV|ov)", noccA, nvirA, noccB, nvirB));
     if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
     else tei_ovov_chem_ref_directAB(K);
-    #pragma omp parallel for
-    for (int a = 0; a < nvirA; a++) {
-         for (int i = 0; i < noccA; i++) {
-              int ai = vo_idxAA->get(a,i);
-              int ia = ov_idxAA->get(i,a);
-              for (int b = 0; b < nvirB; b++) {
-                   for (int j = 0; j < noccB; j++) {
-                        int bj = vo_idxBB->get(b,j);
-                        int jb = ov_idxBB->get(j,b);
-                        AorbAB->set(ai, bj, 4.0*K->get(ia,jb));
-                   }
-              }
-         }
-    }
+    AorbAB->sort(2143, K, 4.0, 0.0);
     K.reset();
     if (print_ > 3) AorbAB->print();
 
