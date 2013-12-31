@@ -54,6 +54,7 @@ void CoupledCluster::MP2(){
     int v = nvirt;
 
     // transform integrals
+    fprintf(outfile,"\n");
     fprintf(outfile,"        ==> Transform (OV|OV) integrals <==\n");
     fprintf(outfile,"\n");
     boost::shared_ptr<psi::Wavefunction> wfn = Process::environment.wavefunction();

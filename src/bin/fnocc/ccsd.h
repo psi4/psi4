@@ -106,6 +106,7 @@ class CoupledCluster: public Wavefunction{
     double emp4_t;
   
     void WriteBanner();
+    void WriteOptions();
 
     /// allocate memory
     virtual void AllocateMemory();
