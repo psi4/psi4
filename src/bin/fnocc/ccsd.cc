@@ -374,6 +374,20 @@ void CoupledCluster::WriteBanner(){
   fprintf(outfile,     "        *****************************************************\n");
   fprintf(outfile,"\n\n");
   fflush(outfile);
+  WriteOptions();
+}
+void CoupledCluster::WriteOptions(){
+    fprintf(outfile,"\n");
+    fprintf(outfile,"  ==> Input parameters <==\n\n");
+    fprintf(outfile,"        Freeze core orbitals?               %5s\n",nfzc > 0 ? "yes" : "no");
+    fprintf(outfile,"        Use frozen natural orbitals?        %5s\n",options_.get_bool("NAT_ORBS") ? "yes" : "no");
+    fprintf(outfile,"        r_convergence:                  %5.3le\n",r_conv);
+    fprintf(outfile,"        e_convergence:                  %5.3le\n",e_conv);
+    fprintf(outfile,"        Number of DIIS vectors:             %5li\n",maxdiis);
+    fprintf(outfile,"        Number of frozen core orbitals:     %5li\n",nfzc);
+    fprintf(outfile,"        Number of active occupied orbitals: %5li\n",ndoccact);
+    fprintf(outfile,"        Number of active virtual orbitals:  %5li\n",nvirt);
+    fprintf(outfile,"        Number of frozen virtual orbitals:  %5li\n",nfzv);
 }
 
 /*===================================================================
@@ -653,7 +667,7 @@ void CoupledCluster::DefineTilingCPU(){
      ndoubles += o*o*v*v;
   }else{
      fprintf(outfile,"\n");
-     fprintf(outfile,"  Define tiling:\n");
+     fprintf(outfile,"  ==> Define tiling <==\n");
      fprintf(outfile,"\n");
   }
 
@@ -733,27 +747,28 @@ void CoupledCluster::AllocateMemory() {
   long int v=nvirt;
   if (!options_.get_bool("RUN_MP2")) {
     fprintf(outfile,"\n");
-    fprintf(outfile,"  available memory =                         %9.2lf mb\n",memory/1024./1024.);
+    fprintf(outfile,"  ==> Memory <==\n\n");
+    fprintf(outfile,"        available memory =                         %9.2lf mb\n",memory/1024./1024.);
     if (isccsd){
-       fprintf(outfile,"  minimum memory requirements for CCSD =     %9.2lf mb\n",
+       fprintf(outfile,"        minimum memory requirements for CCSD =     %9.2lf mb\n",
            8./1024./1024.*(o*o*v*v+2.*(o*o*v*v+o*v)+2.*o*v+2.*v*v+o+v));
     }else{
-       fprintf(outfile,"  minimum memory requirements for QCISD =    %9.2lf mb\n",
+       fprintf(outfile,"        minimum memory requirements for QCISD =    %9.2lf mb\n",
            8./1024./1024.*(o*o*v*v+2.*(o*o*v*v+o*v)+2.*o*v+2.*v*v+o+v));
     }
     if (options_.get_bool("COMPUTE_TRIPLES") || options_.get_bool("COMPUTE_MP4_TRIPLES")){
        double tempmem = 8.*(2L*o*o*v*v+o*o*o*v+o*v+3L*v*v*v*nthreads);
        if (tempmem > memory) {
-          fprintf(outfile,"\n  <<< warning! >>> switched to low-memory (t) algorithm\n\n");
+          fprintf(outfile,"\n        <<< warning! >>> switched to low-memory (t) algorithm\n\n");
        }
        if (tempmem > memory || options_.get_bool("TRIPLES_LOW_MEMORY")){
           isLowMemory = true;
           tempmem = 8.*(2L*o*o*v*v+o*o*o*v+o*v+5L*o*o*o*nthreads);
        }
        if (isccsd)
-          fprintf(outfile,"  memory requirements for CCSD(T) =          %9.2lf mb\n",tempmem/1024./1024.);
+          fprintf(outfile,"        memory requirements for CCSD(T) =          %9.2lf mb\n",tempmem/1024./1024.);
        else
-          fprintf(outfile,"  memory requirements for QCISD(T) =         %9.2lf mb\n",tempmem/1024./1024.);
+          fprintf(outfile,"        memory requirements for QCISD(T) =         %9.2lf mb\n",tempmem/1024./1024.);
     }
 
   }
@@ -3454,7 +3469,7 @@ void DFCoupledCluster::AllocateMemory() {
 
       if ( available_memory > total_memory + df_memory - size_of_t2) {
           fprintf(outfile,"\n");
-          fprintf(outfile,"  Warning: cannot accomodate T2 in core. T2 will be stored on disk.\n");
+          fprintf(outfile,"        Warning: cannot accomodate T2 in core. T2 will be stored on disk.\n");
           fprintf(outfile,"\n");
           fflush(outfile);
           t2_on_disk = true;
@@ -3475,7 +3490,6 @@ void DFCoupledCluster::AllocateMemory() {
   fprintf(outfile,"        CCSD intermediates:              %9.2lf mb\n",total_memory-size_of_t2*t2_on_disk);
   fprintf(outfile,"\n");
 
-
   if (options_.get_bool("COMPUTE_TRIPLES")) {
       long int nthreads = omp_get_max_threads();
       double tempmem = 8.*(2L*o*o*v*v+o*o*o*v+o*v+3L*v*v*v*nthreads);
@@ -3488,6 +3502,18 @@ void DFCoupledCluster::AllocateMemory() {
       }
       fprintf(outfile,"        memory requirements for CCSD(T): %9.2lf mb\n\n",tempmem/1024./1024.);
   }
+  fprintf(outfile,"  ==> Input parameters <==\n\n");
+  fprintf(outfile,"        Freeze core orbitals?               %5s\n",nfzc > 0 ? "yes" : "no");
+  fprintf(outfile,"        Use frozen natural orbitals?        %5s\n",options_.get_bool("NAT_ORBS") ? "yes" : "no");
+  fprintf(outfile,"        r_convergence:                  %5.3le\n",r_conv);
+  fprintf(outfile,"        e_convergence:                  %5.3le\n",e_conv);
+  fprintf(outfile,"        Number of DIIS vectors:             %5li\n",maxdiis);
+  fprintf(outfile,"        Number of frozen core orbitals:     %5li\n",nfzc);
+  fprintf(outfile,"        Number of active occupied orbitals: %5li\n",ndoccact);
+  fprintf(outfile,"        Number of active virtual orbitals:  %5li\n",nvirt);
+  fprintf(outfile,"        Number of frozen virtual orbitals:  %5li\n",nfzv);
+  fprintf(outfile,"\n");
+
 
   // allocate some memory for 3-index tensors
   Qoo = (double*)malloc(ndoccact*ndoccact*nQ*sizeof(double));
@@ -4256,6 +4282,7 @@ void CoupledPair::WriteBanner(){
   fprintf(outfile, "        *******************************************************\n");
   fprintf(outfile,"\n\n");
   fflush(outfile);
+  WriteOptions();
 }
 
 double CoupledPair::compute_energy() {
