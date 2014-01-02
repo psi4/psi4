@@ -48,8 +48,7 @@ if (reference_ == "RESTRICTED") {
     U = SharedTensor2d(new Tensor2d("2*T2_1(ia,jb) - T2_1(ib,ja)", naoccA, navirA, naoccA, navirA));
     U->sort(1432, T, 1.0, 0.0);
     U->scale(-1.0);
-    U->add(T);
-    U->add(T);
+    U->axpy(T, 2.0);
     T.reset();
     Ecorr = U->vector_dot(K);
     U.reset();

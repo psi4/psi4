@@ -42,7 +42,7 @@ if (reference_ == "RESTRICTED") {
     // Reference Contribution
     //=========================
     GFvo->zero();
-    GFvo->add(2.0, FvoA);
+    GFvo->axpy(FvoA, 2.0);
 
     //=========================
     // Correlation Contribution
