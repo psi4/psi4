@@ -1262,46 +1262,14 @@ void Tensor2d::davidson(int n_eigval, const SharedTensor2d& eigvectors, const Sh
 
 void Tensor2d::add(const SharedTensor2d &a)
 {
-    /*
-    double *lhs, *rhs;
-    size_t size = dim1_ * dim2_;
-    if (size) {
-        lhs = A2d_[0];
-        rhs = a->A2d_[0];
-        for (size_t ij=0; ij<size; ++ij) {
-            *lhs += *rhs;
-            lhs++; rhs++;
-        }
-    }
-    */
-      #pragma omp parallel for
-      for (int i=0; i<dim1_; ++i) {
-	for (int j=0; j<dim2_; ++j) {
-	  A2d_[i][j] += a->A2d_[i][j];
-	}
-      }
+    ULI length = (ULI)dim1_ * (ULI)dim2_;
+    C_DAXPY(length, 1.0, a->A2d_[0], 1, A2d_[0], 1);
 }//
 
 void Tensor2d::add(double **a)
 {
-    /*
-    double *lhs, *rhs;
-    size_t size = dim1_ * dim2_;
-    if (size) {
-        lhs = A2d_[0];
-        rhs = a[0];
-        for (size_t ij=0; ij<size; ++ij) {
-            *lhs += *rhs;
-            lhs++; rhs++;
-        }
-    }
-    */
-      #pragma omp parallel for
-      for (int i=0; i<dim1_; ++i) {
-	for (int j=0; j<dim2_; ++j) {
-	  A2d_[i][j] += a[i][j];
-	}
-      }
+    ULI length = (ULI)dim1_ * (ULI)dim2_;
+    C_DAXPY(length, 1.0, a[0], 1, A2d_[0], 1);
 }//
 
 void Tensor2d::add(double alpha, const SharedTensor2d &Adum)
@@ -1319,30 +1287,26 @@ void Tensor2d::add(int i, int j, double value)
 
 void Tensor2d::subtract(const SharedTensor2d &a)
 {
-    /*
-    double *lhs, *rhs;
-    size_t size = dim1_ * dim2_;
-    if (size) {
-        lhs = A2d_[0];
-        rhs = Adum->A2d_[0];
-        for (size_t ij=0; ij<size; ++ij) {
-            *lhs -= *rhs;
-            lhs++; rhs++;
-        }
-    }
-    */
-      #pragma omp parallel for
-      for (int i=0; i<dim1_; ++i) {
-	for (int j=0; j<dim2_; ++j) {
-	  A2d_[i][j] -= a->A2d_[i][j];
-	}
-      }
+    ULI length = (ULI)dim1_ * (ULI)dim2_;
+    C_DAXPY(length, -1.0, a->A2d_[0], 1, A2d_[0], 1);
 }//
 
 void Tensor2d::subtract(int i, int j, double value)
 {
   A2d_[i][j]-=value;  
 }//
+
+void Tensor2d::axpy(double **a, double alpha)
+{
+    ULI length = (ULI)dim1_ * (ULI)dim2_;
+    C_DAXPY(length, alpha, a[0], 1, A2d_[0], 1);
+}
+
+void Tensor2d::axpy(const SharedTensor2d &a, double alpha)
+{
+    ULI length = (ULI)dim1_ * (ULI)dim2_;
+    C_DAXPY(length, alpha, a->A2d_[0], 1, A2d_[0], 1);
+}
 
 double **Tensor2d::transpose2()
 {

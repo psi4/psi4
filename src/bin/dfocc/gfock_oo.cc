@@ -42,9 +42,8 @@ if (reference_ == "RESTRICTED") {
     //=========================
     // Reference Contribution
     //=========================
-    //GFoo->add(2.0, FooA);
-    GFoo->copy(FooA);
-    GFoo->scale(2.0);
+    GFoo->zero();
+    GFoo->axpy(FooA, 2.0);
 
     //=========================
     // Correlation Contribution

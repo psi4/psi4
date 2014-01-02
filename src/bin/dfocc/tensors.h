@@ -149,6 +149,9 @@ class Tensor2d
   void add(int i, int j, double value);
   void subtract(const SharedTensor2d &a);
   void subtract(int i, int j, double value);
+  // axpy: Y <-- a * X + Y
+  void axpy(double **a, double alpha);
+  void axpy(const SharedTensor2d &a, double alpha);
   double **transpose2();
   SharedTensor2d transpose();
   void copy(const SharedTensor2d &Adum);
