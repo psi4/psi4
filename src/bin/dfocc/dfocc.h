@@ -55,6 +55,7 @@ protected:
     void title();
     void ref_energy();
     void mp2_energy();
+    void mp2_direct();
     void t1_1st_sc();
     void t2_1st_sc();
     void t2_1st_gen();

@@ -191,7 +191,7 @@ if (reference_ == "RESTRICTED") {
         fprintf(outfile,"\n\tMO spaces... \n\n"); fflush(outfile);
         fprintf(outfile, "\t FC   OCC   VIR   FV \n");
         fprintf(outfile, "\t----------------------\n");                                                 
-        fprintf(outfile, "\t%3d  %3d   %3d  %3d\n\n", nfrzc, naoccA, navirA, nfrzv);
+        fprintf(outfile, "\t%3d  %3d   %3d  %3d\n", nfrzc, naoccA, navirA, nfrzv);
 	fflush(outfile);
 
         // memory requirements
@@ -276,7 +276,7 @@ else if (reference_ == "UNRESTRICTED") {
         fprintf(outfile,"\n\tMO spaces... \n\n"); fflush(outfile);
         fprintf(outfile, "\t FC   AOCC   BOCC  AVIR   BVIR   FV \n");
         fprintf(outfile, "\t------------------------------------------\n");
-        fprintf(outfile, "\t%3d   %3d   %3d   %3d    %3d   %3d\n\n", nfrzc, naoccA, naoccB, navirA, navirB, nfrzv);
+        fprintf(outfile, "\t%3d   %3d   %3d   %3d    %3d   %3d\n", nfrzc, naoccA, naoccB, navirA, navirB, nfrzv);
         fflush(outfile);
 
         // memory requirements
@@ -320,7 +320,7 @@ void DFOCC::title()
    else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "TRUE") fprintf(outfile,"                       DF-OMP2.5 (DF-OO-MP2.5)   \n");
    else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "FALSE") fprintf(outfile,"                       DF-MP2.5  \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya\n") ; 
-   fprintf(outfile,"              Latest Revision Dec 28, 2013\n") ;
+   fprintf(outfile,"              Latest Revision Jan 2, 2014\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
