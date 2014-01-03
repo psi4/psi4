@@ -31,7 +31,7 @@ using namespace std;
 
 namespace psi{ namespace dfoccwave{
   
-void DFOCC::t2_1st_gen()
+void DFOCC::t2_1st_scs_gen()
 {   
 
     SharedTensor2d K, L, M;
@@ -77,19 +77,23 @@ if (reference_ == "RESTRICTED") {
     t2p_1new.reset();
     t2p_1->write(psio_, PSIF_DFOCC_AMPS);
  
-    /*
     // Sort amplitudes to Dirac order
     t2_1 = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
     t2_1->sort(1324, t2p_1, 1.0, 0.0);
     t2_1->write(psio_, PSIF_DFOCC_AMPS);
+    //t2_1->print();
     t2_1.reset();
-    */
 
-    // form U(ia,jb)
+    SharedTensor2d temp = SharedTensor2d(new Tensor2d("T2_1(ia,jb) - T2_1(ib,ja)", naoccA, navirA, naoccA, navirA));
+    temp->sort(1432, t2p_1, 1.0, 0.0);
+    temp->scale(-1.0);
+    temp->add(t2p_1);
+    temp->write(psio_, PSIF_DFOCC_AMPS);
+
     u2p_1 = SharedTensor2d(new Tensor2d("2*T2_1(ia,jb) - T2_1(ib,ja)", naoccA, navirA, naoccA, navirA));
-    u2p_1->sort(1432, t2p_1, 1.0, 0.0);
-    u2p_1->scale(-1.0);
-    u2p_1->axpy(t2p_1, 2.0);
+    u2p_1->copy(temp);
+    temp.reset();
+    u2p_1->add(t2p_1);
     t2p_1.reset();
     u2p_1->write(psio_, PSIF_DFOCC_AMPS);
     u2p_1.reset();
@@ -259,48 +263,6 @@ else if (reference_ == "UNRESTRICTED") {
 }// else if (reference_ == "UNRESTRICTED")
     timer_off("Form 1st-order T2");
 } // end t2_1st_sc
-
-//==========================
-// F int
-//==========================
-void DFOCC::Fint_zero()
-{   
-    // OO block
-    FijA->zero();
-    for(int i = 0 ; i < naoccA; ++i){
-        for(int j = 0 ; j < naoccA; ++j){
-            if (i != j) FijA->set(i, j, FockA->get(i + nfrzc, j + nfrzc));
-        }
-    }
-
-    // VV block
-    FabA->zero();
-    for(int a = 0 ; a < navirA; ++a){
-        for(int b = 0 ; b < navirA; ++b){
-            if (a != b) FabA->set(a, b, FockA->get(a + noccA, b + noccA));
-        }
-    }
-
- // UNRESTRICTED
- if (reference_ == "UNRESTRICTED") {
-    // oo block
-    FijB->zero();
-    for(int i = 0 ; i < naoccB; ++i){
-        for(int j = 0 ; j < naoccB; ++j){
-            if (i != j) FijB->set(i, j, FockB->get(i + nfrzc, j + nfrzc));
-        }
-    }
-
-    // vv block
-    FabB->zero();
-    for(int a = 0 ; a < navirB; ++a){
-        for(int b = 0 ; b < navirB; ++b){
-            if (a != b) FabB->set(a, b, FockB->get(a + noccB, b + noccB));
-        }
-    }
- }// if (reference_ == "UNRESTRICTED")
-
-}// end Fint_zero
 
 }} // End Namespaces
 

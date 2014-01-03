@@ -109,6 +109,7 @@ if (reference_ == "RESTRICTED") {
     }
     K.reset();
 
+    /*
     // A_ai += 4\sum_{m,e} (t_im^ae - t_mi^ae) (im|ae)
     T = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IJ|AB)", naoccA, naoccA, navirA, navirA));
@@ -156,6 +157,7 @@ if (reference_ == "RESTRICTED") {
     }
     T.reset();
     K.reset();
+    */
 
     //=========================
     // Reference Contribution
