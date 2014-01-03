@@ -34,7 +34,7 @@ namespace psi{ namespace dfoccwave{
 void DFOCC::t2_1st_scs_sc()
 {   
     SharedTensor2d K, L, M;
-    timer_on("Form 1st-order T2");
+    timer_on("1st-order T2");
 if (reference_ == "RESTRICTED") {
     // Example: init from file
     //Array2d *temp = new Array2d(psio_, PSIF_DFOCC_INTS, "(ia|jb)", naoccA, navirA, naoccA, navirA);
@@ -146,7 +146,7 @@ else if (reference_ == "UNRESTRICTED") {
     t2p_1->write(psio_, PSIF_DFOCC_AMPS);
     t2p_1.reset();
 }// else if (reference_ == "UNRESTRICTED")
-    timer_off("Form 1st-order T2");
+    timer_off("1st-order T2");
 } // end t2_1st_sc
 
 }} // End Namespaces

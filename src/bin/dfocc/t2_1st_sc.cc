@@ -34,7 +34,7 @@ namespace psi{ namespace dfoccwave{
 void DFOCC::t2_1st_sc()
 {   
     SharedTensor2d K, L, M, T, U;
-    timer_on("First-order T2");
+    timer_on("1st-order T2");
 if (reference_ == "RESTRICTED") {
     // Build amplitudes in Mulliken order 
     T = SharedTensor2d(new Tensor2d("T2_1(ia,jb)", naoccA, navirA, naoccA, navirA));
@@ -172,7 +172,7 @@ else if (reference_ == "UNRESTRICTED") {
     Esosmp2 = Eref + Esosmp2AB;
     Escsnmp2 = Eref + Escsnmp2AA + Escsnmp2BB;
 }// else if (reference_ == "UNRESTRICTED")
-    timer_off("First-order T2");
+    timer_off("1st-order T2");
 } // end t2_1st_sc
 
 }} // End Namespaces
