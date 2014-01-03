@@ -52,6 +52,23 @@ void DFOCC::t1_1st_sc()
             t1B->set(i, a, FockB->get(i + nfrzc, a + noccB) / value);
         }
     }
+
+        //Singles-contribution
+        Emp2_t1 = 0.0;
+        //Alpha
+        for(int i = 0 ; i < naoccA; ++i){
+            for(int a = 0 ; a < navirA; ++a){
+                Emp2_t1 += t1A->get(i, a) * FockA->get(a + noccA, i + nfrzc);
+            }
+        }
+
+        // Beta
+        for(int i = 0 ; i < naoccB; ++i){
+            for(int a = 0 ; a < navirB; ++a){
+                Emp2_t1 += t1B->get(i, a) * FockB->get(a + noccB, i + nfrzc);
+            }
+        }
+
     if (print_ > 2) t1B->print();
     timer_off("1st-order T1");
 } // end t1_1st_sc

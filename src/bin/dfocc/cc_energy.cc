@@ -66,6 +66,121 @@ void DFOCC::ref_energy()
 //=======================================================          
 void DFOCC::mp2_energy()
 {   
+    SharedTensor2d K, L, M;
+    timer_on("MP2 Energy");
+if (reference_ == "RESTRICTED") {
+    JiajbAA = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
+    if (conv_tei_type == "DISK") JiajbAA->read(psio_, PSIF_DFOCC_INTS);
+    else tei_iajb_chem_directAA(JiajbAA);
+    u2p_1 = SharedTensor2d(new Tensor2d("2*T2_1(ia,jb) - T2_1(ib,ja)", naoccA, navirA, naoccA, navirA));
+    u2p_1->read(psio_, PSIF_DFOCC_AMPS);
+    Ecorr = u2p_1->vector_dot(JiajbAA); 
+    JiajbAA.reset();
+    u2p_1.reset();
+    Emp2 = Eref + Ecorr;
+}// end if (reference_ == "RESTRICTED")
+
+else if (reference_ == "UNRESTRICTED") {
+    // AA part
+    if (conv_tei_type == "DISK") {
+        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ||AB>", naoccA, naoccA, navirA, navirA));
+        K->read(psio_, PSIF_DFOCC_INTS);
+    }
+    else {
+        L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
+        tei_iajb_chem_directAA(L);
+        M = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ|AB>", naoccA, naoccA, navirA, navirA));
+        M->sort(1324, L, 1.0, 0.0);
+        L.reset();
+        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ||AB>", naoccA, naoccA, navirA, navirA));
+        tei_pqrs_anti_symm_direct(K, M);
+        M.reset();
+    }
+    t2_1AA = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
+    t2_1AA->read(psio_, PSIF_DFOCC_AMPS);
+    Emp2AA = 0.25 * t2_1AA->vector_dot(K);
+    K.reset();
+    t2_1AA.reset();
+    Escsmp2AA = ss_scale * Emp2AA;
+    Escsnmp2AA = 1.76 * Emp2AA;
+
+    // BB part
+    if (conv_tei_type == "DISK") {
+        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <ij||ab>", naoccB, naoccB, navirB, navirB));
+        K->read(psio_, PSIF_DFOCC_INTS);
+    }
+    else {
+        L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (ia|jb)", naoccB, navirB, naoccB, navirB));
+        tei_iajb_chem_directBB(L);
+        M = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <ij|ab>", naoccB, naoccB, navirB, navirB));
+        M->sort(1324, L, 1.0, 0.0);
+        L.reset();
+        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <ij||ab>", naoccB, naoccB, navirB, navirB));
+        tei_pqrs_anti_symm_direct(K, M);
+        M.reset();
+    }
+    t2_1BB = SharedTensor2d(new Tensor2d("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
+    t2_1BB->read(psio_, PSIF_DFOCC_AMPS);
+    Emp2BB = 0.25 * t2_1BB->vector_dot(K);
+    K.reset();
+    t2_1BB.reset();
+    Escsmp2BB = ss_scale * Emp2BB;
+    Escsnmp2BB = 1.76 * Emp2BB;
+
+    // AB part
+    if (conv_tei_type == "DISK") {
+        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+        K->read(psio_, PSIF_DFOCC_INTS);
+    }
+    else {
+        L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|jb)", naoccA, navirA, naoccB, navirB));
+        tei_iajb_chem_directAB(L);
+        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+        K->sort(1324, L, 1.0, 0.0);
+        L.reset();
+    }
+    t2_1AB = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+    t2_1AB->read(psio_, PSIF_DFOCC_AMPS);
+    Emp2AB = t2_1AB->vector_dot(K);
+    K.reset();
+    t2_1AB.reset();
+    Escsmp2AB = os_scale * Emp2AB;
+    if (mo_optimized == 0) Esosmp2AB = sos_scale * Emp2AB;
+    else if (mo_optimized == 1) Esosmp2AB = sos_scale2 * Emp2AB;
+
+
+    if (reference == "ROHF" && orb_opt_ == "FALSE" && wfn_type_ == "DF-OMP2") {
+        //Singles-contribution
+        Emp2_t1 = 0.0;
+        //Alpha
+        for(int i = 0 ; i < naoccA; ++i){
+            for(int a = 0 ; a < navirA; ++a){
+                Emp2_t1 += t1A->get(i, a) * FockA->get(a + noccA, i + nfrzc);
+            }
+        }
+
+        // Beta
+        for(int i = 0 ; i < naoccB; ++i){
+            for(int a = 0 ; a < navirB; ++a){
+                Emp2_t1 += t1B->get(i, a) * FockB->get(a + noccB, i + nfrzc);
+            }
+        }
+    }// end if (reference == "ROHF") 
+
+    Ecorr = Emp2AA + Emp2AB + Emp2BB + Emp2_t1;
+    Emp2 = Eref + Ecorr;
+    Escsmp2 = Eref + Escsmp2AA + Escsmp2AB + Escsmp2BB;
+    Esosmp2 = Eref + Esosmp2AB;
+    Escsnmp2 = Eref + Escsnmp2AA + Escsnmp2BB;
+}// else if (reference_ == "UNRESTRICTED")
+    timer_off("MP2 Energy");
+} // end mp2_energy
+
+//=======================================================
+//          SCS-MP2 Energy
+//=======================================================          
+void DFOCC::scs_mp2_energy()
+{   
 
     SharedTensor2d K, L, M;
     timer_on("MP2 Energy");
@@ -196,6 +311,8 @@ else if (reference_ == "UNRESTRICTED") {
     //fflush(outfile);
     timer_off("MP2 Energy");
 } // end mp2_energy
+
+
 
 //=======================================================
 //          MP3 Energy

@@ -31,40 +31,43 @@ using namespace std;
 
 namespace psi{ namespace dfoccwave{
   
-void DFOCC::t2_1st_sc()
+void DFOCC::t2_1st_scs_sc()
 {   
-    SharedTensor2d K, L, M, T, U;
-    timer_on("First-order T2");
+    SharedTensor2d K, L, M;
+    timer_on("Form 1st-order T2");
 if (reference_ == "RESTRICTED") {
+    // Example: init from file
+    //Array2d *temp = new Array2d(psio_, PSIF_DFOCC_INTS, "(ia|jb)", naoccA, navirA, naoccA, navirA);
+
     // Build amplitudes in Mulliken order 
-    T = SharedTensor2d(new Tensor2d("T2_1(ia,jb)", naoccA, navirA, naoccA, navirA));
+    t2p_1 = SharedTensor2d(new Tensor2d("T2_1(ia,jb)", naoccA, navirA, naoccA, navirA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
     if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
     else tei_iajb_chem_directAA(K);
-    T->copy(K);
-    T->apply_denom_chem(nfrzc, noccA, FockA);
-    T->write(psio_, PSIF_DFOCC_AMPS);
-
-    /*
+    t2p_1->copy(K);
+    K.reset();
+    t2p_1->apply_denom_chem(nfrzc, noccA, FockA);
+    t2p_1->write(psio_, PSIF_DFOCC_AMPS);
+ 
     // Sort amplitudes to Dirac order
     t2_1 = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
     t2_1->sort(1324, t2p_1, 1.0, 0.0);
     t2_1->write(psio_, PSIF_DFOCC_AMPS);
     t2_1.reset();
-    */
- 
-    // form U(ia,jb)
-    U = SharedTensor2d(new Tensor2d("2*T2_1(ia,jb) - T2_1(ib,ja)", naoccA, navirA, naoccA, navirA));
-    U->sort(1432, T, 1.0, 0.0);
-    U->scale(-1.0);
-    U->axpy(T, 2.0);
-    T.reset();
-    Ecorr = U->vector_dot(K);
-    U->write(psio_, PSIF_DFOCC_AMPS);
-    U.reset();
-    K.reset();
-    Emp2 = Eref + Ecorr;
 
+    SharedTensor2d temp = SharedTensor2d(new Tensor2d("T2_1(ia,jb) - T2_1(ib,ja)", naoccA, navirA, naoccA, navirA));
+    temp->sort(1432, t2p_1, 1.0, 0.0);
+    temp->scale(-1.0);
+    temp->add(t2p_1);
+    temp->write(psio_, PSIF_DFOCC_AMPS);
+
+    u2p_1 = SharedTensor2d(new Tensor2d("2*T2_1(ia,jb) - T2_1(ib,ja)", naoccA, navirA, naoccA, navirA));
+    u2p_1->copy(temp);
+    temp.reset();
+    u2p_1->add(t2p_1);
+    t2p_1.reset();
+    u2p_1->write(psio_, PSIF_DFOCC_AMPS);
+    u2p_1.reset();
 }// end if (reference_ == "RESTRICTED")
 
 else if (reference_ == "UNRESTRICTED") {
@@ -85,16 +88,9 @@ else if (reference_ == "UNRESTRICTED") {
     }
     t2_1AA = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
     t2_1AA->copy(K);
+    K.reset();
     t2_1AA->apply_denom(nfrzc, noccA, FockA);
     t2_1AA->write(psio_, PSIF_DFOCC_AMPS);
-
-    // Enegy AA 
-    Emp2AA = 0.25 * t2_1AA->vector_dot(K);
-    K.reset();
-    Escsmp2AA = ss_scale * Emp2AA;
-    Escsnmp2AA = 1.76 * Emp2AA;
-
-    // sort AA
     t2p_1 = SharedTensor2d(new Tensor2d("T2_1(IA,JB)", naoccA, navirA, naoccA, navirA));
     t2p_1->sort(1324, t2_1AA, 1.0, 0.0);
     t2_1AA.reset();
@@ -118,16 +114,9 @@ else if (reference_ == "UNRESTRICTED") {
     }
     t2_1BB = SharedTensor2d(new Tensor2d("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
     t2_1BB->copy(K);
+    K.reset();
     t2_1BB->apply_denom(nfrzc, noccB, FockB);
     t2_1BB->write(psio_, PSIF_DFOCC_AMPS);
-
-    // Energy BB
-    Emp2BB = 0.25 * t2_1BB->vector_dot(K);
-    K.reset();
-    Escsmp2BB = ss_scale * Emp2BB;
-    Escsnmp2BB = 1.76 * Emp2BB;
-
-    // sort BB
     t2p_1 = SharedTensor2d(new Tensor2d("T2_1(ia,jb)", naoccB, navirB, naoccB, navirB));
     t2p_1->sort(1324, t2_1BB, 1.0, 0.0);
     t2_1BB.reset();
@@ -148,31 +137,16 @@ else if (reference_ == "UNRESTRICTED") {
     }
     t2_1AB = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
     t2_1AB->copy(K);
+    K.reset();
     t2_1AB->apply_denom_os(nfrzc, noccA, noccB, FockA, FockB);
     t2_1AB->write(psio_, PSIF_DFOCC_AMPS);
-
-    // Energy AB
-    Emp2AB = t2_1AB->vector_dot(K);
-    K.reset();
-    Escsmp2AB = os_scale * Emp2AB;
-    if (mo_optimized == 0) Esosmp2AB = sos_scale * Emp2AB;
-    else if (mo_optimized == 1) Esosmp2AB = sos_scale2 * Emp2AB;
-
-    // sort AB
     t2p_1 = SharedTensor2d(new Tensor2d("T2_1(IA,jb)", naoccA, navirA, naoccB, navirB));
     t2p_1->sort(1324, t2_1AB, 1.0, 0.0);
     t2_1AB.reset();
     t2p_1->write(psio_, PSIF_DFOCC_AMPS);
     t2p_1.reset();
-
-    Ecorr = Emp2AA + Emp2AB + Emp2BB;
-    if (reference == "ROHF") Ecorr += Emp2_t1;
-    Emp2 = Eref + Ecorr;
-    Escsmp2 = Eref + Escsmp2AA + Escsmp2AB + Escsmp2BB;
-    Esosmp2 = Eref + Esosmp2AB;
-    Escsnmp2 = Eref + Escsnmp2AA + Escsnmp2BB;
 }// else if (reference_ == "UNRESTRICTED")
-    timer_off("First-order T2");
+    timer_off("Form 1st-order T2");
 } // end t2_1st_sc
 
 }} // End Namespaces

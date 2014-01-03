@@ -46,6 +46,7 @@ if (reference_ == "RESTRICTED") {
     }
 
     // Build the MO Hessian
+    timer_on("MO Hessian");
     Aorb = SharedTensor2d(new Tensor2d("MO Hessian Matrix", nvirA, noccA, nvirA, noccA));
 
     // A(ai,bj) = 2 \delta_{ij} f_ab  
@@ -89,6 +90,7 @@ if (reference_ == "RESTRICTED") {
     Aorb->sort(3142, K, -2.0, 1.0);
     K.reset();
     if (print_ > 3) Aorb->print();
+    timer_off("MO Hessian");
 
     /*
     // Level shifting
@@ -105,6 +107,7 @@ if (reference_ == "RESTRICTED") {
 
     // Solve the orb-resp equations
     pcg_conver = 0;// here 0 means successfull
+    timer_on("Orb Resp Solver");
     if (lineq == "CDGESV") Aorb->cdgesv(zvectorA, pcg_conver);
     else if (lineq == "FLIN") {
          double det = 0.0;      
@@ -118,6 +121,7 @@ if (reference_ == "RESTRICTED") {
     }
     else if (lineq == "POPLE") Aorb->lineq_pople(zvectorA, 6, cutoff);
     Aorb.reset();
+    timer_off("Orb Resp Solver");
 
     // Build kappa for VO block
     #pragma omp parallel for

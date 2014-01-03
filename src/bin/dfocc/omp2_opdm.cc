@@ -35,38 +35,28 @@ namespace psi{ namespace dfoccwave{
 void DFOCC::omp2_opdm()
 {   
 
+    SharedTensor2d T, U;
     timer_on("opdm");
 if (reference_ == "RESTRICTED") {
     // Tensors 
-    SharedTensor2d t2;
-    SharedTensor2d l2;
-    t2 = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
-    l2 = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
-    t2->read(psio_, PSIF_DFOCC_AMPS);
-    l2->read(psio_, PSIF_DFOCC_AMPS);
+    T = SharedTensor2d(new Tensor2d("T2_1(ia,jb)", naoccA, navirA, naoccA, navirA));
+    U = SharedTensor2d(new Tensor2d("2*T2_1(ia,jb) - T2_1(ib,ja)", naoccA, navirA, naoccA, navirA));
+    T->read(psio_, PSIF_DFOCC_AMPS);
+    U->read(psio_, PSIF_DFOCC_AMPS);
 
-    // G_ij = 2\sum_{m,e,f} t_im^ef t_jm^ef    
-    GijA->contract442(1, 1, t2, l2, 2.0, 0.0);
+    // G_ij = \sum_{m,e,f} T'(ie,mf) U'(je,mf)    
+    GijA->contract442(1, 1, T, U, 1.0, 0.0);
 
-    // G_ij += -\sum_{m,e,f} t_im^ef t_mj^ef    
-    GijA->contract442(1, 2, t2, l2, -1.0, 1.0);
-
-    // G_ab = -2\sum_{m,n,e} t_mn^ea t_mn^eb     
-    GabA->contract442(4, 4, t2, l2, -2.0, 0.0);
-
-    // G_ab += \sum_{m,n,e} t_mn^ea t_mn^be    
-    GabA->contract442(4, 3, t2, l2, 1.0, 1.0);
-    t2.reset();
-    l2.reset();
+    // G_ab = \sum_{m,n,e} U'(ma,ne) T'(mb,ne)    
+    GabA->contract442(2, 2, U, T, -1.0, 0.0);
+    T.reset();
+    U.reset();
 
     // Build G1c_oo and G1c_vv
     G1c_oo->set_act_oo(nfrzc, naoccA, GijA);
     G1c_oo->scale(-2.0);
     G1c_vv->set_act_vv(GabA);
     G1c_vv->scale(-2.0);
-
-    //G1c_oo->print();
-    //G1c_vv->print();
 
     // Build G1c
     G1c->set_oo(G1c_oo);
