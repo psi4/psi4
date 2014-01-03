@@ -35,7 +35,7 @@ void DFOCC::t2_1st_gen()
 {   
 
     SharedTensor2d K, L, M;
-    timer_on("Form 1st-order T2");
+    timer_on("1st-order T2");
     Fint_zero();
 
 if (reference_ == "RESTRICTED") {
@@ -257,7 +257,7 @@ else if (reference_ == "UNRESTRICTED") {
     rms_t2 = MAX0(rms_ss, rms_t2AB);
 
 }// else if (reference_ == "UNRESTRICTED")
-    timer_off("Form 1st-order T2");
+    timer_off("1st-order T2");
 } // end t2_1st_sc
 
 //==========================
