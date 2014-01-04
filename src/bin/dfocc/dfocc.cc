@@ -121,7 +121,7 @@ void DFOCC::common_init()
     }
     else {
         double temp2;
-        temp2 = (-0.835366 * log10(tol_grad)) - 0.378049;
+        temp2 = (-0.8 * log10(tol_grad)) - 0.5;
         if (temp2 < 3.0) {
             temp2 = 3.0;
         }
@@ -322,7 +322,7 @@ void DFOCC::title()
    else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "TRUE") fprintf(outfile,"                       DF-OMP2.5 (DF-OO-MP2.5)   \n");
    else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "FALSE") fprintf(outfile,"                       DF-MP2.5  \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya\n") ; 
-   fprintf(outfile,"              Latest Revision Jan 4, 2014\n") ;
+   fprintf(outfile,"              Latest Revision Jan 5, 2014\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
