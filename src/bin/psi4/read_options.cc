@@ -2622,6 +2622,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("CC_MAXITER",50);
     /*- Maximum number of iterations to determine the orbitals -*/
     options.add_int("MO_MAXITER",50);
+    /*- Maximum number of preconditioned conjugate gradient iterations.  -*/
+    options.add_int("PCG_MAXITER",30);
     /*- Number of vectors used in orbital DIIS -*/
     options.add_int("MO_DIIS_NUM_VECS",6);
     /*- Minimum number of vectors used in amplitude DIIS -*/
@@ -2663,6 +2665,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("E3_SCALE",0.25);
     /*- OO scaling factor used in MSD -*/
     options.add_double("OO_SCALE",0.01);
+    /*- Convergence criterion for residual vector of preconditioned conjugate gradient method. -*/
+    options.add_double("PCG_CONVERGENCE",1e-6);
 
     /*- The solver will be used for simultaneous linear equations. -*/
     options.add_str("LINEQ_SOLVER","CDGESV","CDGESV FLIN POPLE");
@@ -2673,7 +2677,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The algorithm will be used for solving the orbital-response equations. The LINEQ option create the MO Hessian and solve the
       simultaneous linear equations with method choosen by the LINEQ_SOLVER option. The PCG option does not create the MO Hessian
       explicitly, instead it solves the simultaneous equations iteratively with the preconditioned conjugate gradient method. -*/
-    options.add_str("ORB_RESP_SOLVER","LINEQ","PCG LINEQ");
+    options.add_str("ORB_RESP_SOLVER","PCG","PCG LINEQ");
     /*- Type of the MO Hessian matrix -*/
     options.add_str("HESS_TYPE","HF","APPROX_DIAG APPROX_DIAG_EKT APPROX_DIAG_HF HF");
     /*- Type of the SCS method -*/
@@ -2686,6 +2690,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("CEPA_TYPE","CEPA(0)","CEPA(0)");
     /*- The algorithm that used for 4 index MO TEIs. -*/
     options.add_str("CONV_TEI_TYPE","DIRECT","DIRECT DISK");
+    /*- Type of PCG beta parameter (Fletcher-Reeves or Polak-Ribiere). -*/
+    options.add_str("PCG_BETA_TYPE","FLETCHER_REEVES","FLETCHER_REEVES POLAK_RIBIERE");
 
     /*- Do compute natural orbitals? -*/
     options.add_bool("NAT_ORBS",false);

@@ -55,6 +55,7 @@ void DFOCC::common_init()
     cc_maxdiis_=options_.get_int("CC_DIIS_MAX_VECS");
     cc_mindiis_=options_.get_int("CC_DIIS_MIN_VECS");
     exp_cutoff=options_.get_int("CUTOFF");
+    pcg_maxiter=options_.get_int("PCG_MAXITER");
 
     step_max=options_.get_double("MO_STEP_MAX");
     lshift_parameter=options_.get_double("LEVEL_SHIFT");
@@ -68,6 +69,7 @@ void DFOCC::common_init()
     e3_scale=options_.get_double("E3_SCALE");
     tol_Eod=options_.get_double("E_CONVERGENCE");
     tol_t2=options_.get_double("R_CONVERGENCE");
+    tol_pcg=options_.get_double("PCG_CONVERGENCE");
 
     orth_type=options_.get_str("ORTH_TYPE");
     opt_method=options_.get_str("OPT_METHOD");
@@ -87,6 +89,7 @@ void DFOCC::common_init()
     wfn_type_=options_.get_str("WFN_TYPE");
     orb_opt_=options_.get_str("ORB_OPT");
     conv_tei_type=options_.get_str("CONV_TEI_TYPE");
+    pcg_beta_type_=options_.get_str("PCG_BETA_TYPE");
 
     //title
     title();
@@ -101,17 +104,17 @@ void DFOCC::common_init()
         tol_grad=options_.get_double("RMS_MOGRAD_CONVERGENCE");
     }
     else {
+        /*
         double temp;
-        temp = 2.0 - 0.5 * log10(tol_Eod); // I think (U.B) this is the desirable map balancing accuracy and efficiency.
-        //temp = 3.0 - 0.5 * log10(tol_Eod); // Lori's old map leads unecessary iterations for the omp2-2 test case.
-        //temp = 1.74 - 0.71 * log10(tol_Eod); //OLD map for wfn != OMP2
+        temp = 2.0 - 0.5 * log10(tol_Eod); 
         if (temp < 5.0) {
             temp = 5.0;
         }
         tol_grad = pow(10.0, -temp);
-    fprintf(outfile,"\tRMS orbital gradient is changed to : %12.2e\n", tol_grad);
-    fflush(outfile);
-
+        */
+        tol_grad = 100.0*tol_Eod; 
+        fprintf(outfile,"\tRMS orbital gradient is changed to : %12.2e\n", tol_grad);
+        fflush(outfile);
     }
 
     // Determine the MAXIMUM MOGRAD CONVERGENCE
@@ -119,14 +122,18 @@ void DFOCC::common_init()
     mograd_max=options_.get_double("MAX_MOGRAD_CONVERGENCE");
     }
     else {
+        /*
         double temp2;
         temp2 = -log10(tol_grad) - 1.5;
         if (temp2 > 4.0) {
             temp2 = 4.0;
         }
         mograd_max = pow(10.0, -temp2);
-    fprintf(outfile,"\tMAX orbital gradient is changed to : %12.2e\n", mograd_max);
-    fflush(outfile);
+        */
+        mograd_max = 10.0*tol_grad;
+        // if (mograd_max < 1e-4) mograd_max = 1e-4;
+        fprintf(outfile,"\tMAX orbital gradient is changed to : %12.2e\n", mograd_max);
+        fflush(outfile);
     }
 
     // Figure out REF
@@ -320,7 +327,7 @@ void DFOCC::title()
    else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "TRUE") fprintf(outfile,"                       DF-OMP2.5 (DF-OO-MP2.5)   \n");
    else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "FALSE") fprintf(outfile,"                       DF-MP2.5  \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya\n") ; 
-   fprintf(outfile,"              Latest Revision Jan 3, 2014\n") ;
+   fprintf(outfile,"              Latest Revision Jan 4, 2014\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");

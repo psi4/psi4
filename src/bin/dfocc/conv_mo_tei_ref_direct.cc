@@ -200,12 +200,12 @@ void DFOCC::tei_vvoo_chem_ref_directAB(SharedTensor2d &K)
 //=======================================================          
 void DFOCC::tei_ovov_chem_ref_directAA(SharedTensor2d &K)
 {   
-    timer_on("Build (ov|ov)");
+    timer_on("Build (OV|OV)");
     bQovA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA * nvirA));
     bQovA->read(psio_, PSIF_DFOCC_INTS);
     K->gemm(true, false, bQovA, bQovA, 1.0, 0.0);
     bQovA.reset();
-    timer_off("Build (ov|ov)");
+    timer_off("Build (OV|OV)");
 }
 
 //=======================================================
@@ -226,7 +226,7 @@ void DFOCC::tei_ovov_chem_ref_directBB(SharedTensor2d &K)
 //=======================================================          
 void DFOCC::tei_ovov_chem_ref_directAB(SharedTensor2d &K)
 {   
-    timer_on("Build (ov|ov)");
+    timer_on("Build (OV|ov)");
     bQovA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA * nvirA));
     bQovB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|ov)", nQ_ref, noccB * nvirB));
     bQovA->read(psio_, PSIF_DFOCC_INTS);
@@ -234,7 +234,63 @@ void DFOCC::tei_ovov_chem_ref_directAB(SharedTensor2d &K)
     K->gemm(true, false, bQovA, bQovB, 1.0, 0.0);
     bQovA.reset();
     bQovB.reset();
-    timer_off("Build (ov|ov)");
+    timer_off("Build (OV|ov)");
+}
+
+//=======================================================
+//          (VO|VO)
+//=======================================================          
+void DFOCC::tei_vovo_chem_ref_directAA(SharedTensor2d &K)
+{   
+    timer_on("Build (VO|VO)");
+    bQovA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA, nvirA));
+    bQovA->read(psio_, PSIF_DFOCC_INTS);
+    SharedTensor2d bQvo = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VO)", nQ_ref, nvirA, noccA));
+    bQvo->swap_3index_col(bQovA);
+    bQovA.reset();
+    K->gemm(true, false, bQvo, bQvo, 1.0, 0.0);
+    bQvo.reset();
+    timer_off("Build (VO|VO)");
+}
+
+//=======================================================
+//          (vo|vo)
+//=======================================================          
+void DFOCC::tei_vovo_chem_ref_directBB(SharedTensor2d &K)
+{   
+    timer_on("Build (vo|vo)");
+    bQovB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|ov)", nQ_ref, noccB, nvirB));
+    bQovB->read(psio_, PSIF_DFOCC_INTS);
+    SharedTensor2d bQvo = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|vo)", nQ_ref, nvirB, noccB));
+    bQvo->swap_3index_col(bQovB);
+    bQovB.reset();
+    K->gemm(true, false, bQvo, bQvo, 1.0, 0.0);
+    bQvo.reset();
+    timer_off("Build (vo|vo)");
+}
+
+//=======================================================
+//          (VO|vo)
+//=======================================================          
+void DFOCC::tei_vovo_chem_ref_directAB(SharedTensor2d &K)
+{   
+    timer_on("Build (VO|vo)");
+    bQovA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA, nvirA));
+    bQovA->read(psio_, PSIF_DFOCC_INTS);
+    SharedTensor2d bQvoA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VO)", nQ_ref, nvirA, noccA));
+    bQvoA->swap_3index_col(bQovA);
+    bQovA.reset();
+
+    bQovB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|ov)", nQ_ref, noccB, nvirB));
+    bQovB->read(psio_, PSIF_DFOCC_INTS);
+    SharedTensor2d bQvoB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|vo)", nQ_ref, nvirB, noccB));
+    bQvoB->swap_3index_col(bQovB);
+    bQovB.reset();
+
+    K->gemm(true, false, bQvoA, bQvoB, 1.0, 0.0);
+    bQvoA.reset();
+    bQvoB.reset();
+    timer_off("Build (VO|vo)");
 }
 
 //=======================================================

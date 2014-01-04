@@ -637,6 +637,15 @@ void Tensor2d::set(SharedMatrix A)
       }
 }//
 
+void Tensor2d::set(SharedTensor1d &A)
+{
+      for (int i=0, ij=0; i<dim1_; i++) {
+        for (int j=0; j<dim2_; j++, ij++) {
+             A2d_[i][j] = A->get(ij);
+        }
+      }
+}//
+
 double Tensor2d::get(int i, int j)
 { 
   return A2d_[i][j];
@@ -712,6 +721,27 @@ void Tensor2d::contract233(bool transa, bool transb, int m, int n, const SharedT
         }
     }
 }//
+
+void Tensor2d::contract332(bool transa, bool transb, int k, const SharedTensor2d& a, const SharedTensor2d& b, double alpha, double beta)
+{
+    char ta = transa ? 't' : 'n';
+    char tb = transb ? 't' : 'n';
+    int m, n, nca, ncb, ncc;
+
+    m = dim1_;
+    n = dim2_;
+    nca = transa ? m : k;
+    ncb = transb ? k : n;
+    ncc = n;
+
+    if (m && n && k) {
+        #pragma omp parallel for
+        for (int Q = 0; Q < a->dim1(); Q++) {
+             C_DGEMM(ta, tb, m, n, k, alpha, a->A2d_[Q], nca, b->A2d_[Q], ncb, beta, A2d_[0], ncc);
+        }
+    }
+}//
+
 void Tensor2d::contract424(int target_x, int target_y, const SharedTensor2d& a, const SharedTensor2d& b, double alpha, double beta)
 {
 
