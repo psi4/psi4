@@ -2,7 +2,7 @@
 
 refnuc      =  25.59060766929188 #TEST
 refscf      = -129.25910534911733 #TEST
-refomp2     = -129.59358525974653 #TEST
+refomp2     = -129.59358500439464 #TEST
 
 memory 256 mb
 

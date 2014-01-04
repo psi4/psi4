@@ -64,7 +64,7 @@ if (reference_ == "RESTRICTED") {
     rms_wogA=0;
     for (int i=0; i<nidpA;i++) rms_wogA += wogA->get(i) * wogA->get(i);
     norm_wogA=sqrt(rms_wogA);
-    rms_wogA=sqrt(rms_wogA)/nidpA;  
+    rms_wogA = wogA->rms();
     rms_wog=rms_wogA;  
     
     // print
@@ -124,22 +124,22 @@ else if (reference_ == "UNRESTRICTED") {
     rms_wogA=0;
     for (int i=0; i<nidpA;i++) rms_wogA += wogA->get(i) * wogA->get(i);
     norm_wogA=sqrt(rms_wogA);
-    rms_wogA=sqrt(rms_wogA)/nidpA;  
+    rms_wogA = wogA->rms();
     
     rms_wogB=0;
     for (int i=0; i<nidpB;i++) rms_wogB += wogB->get(i) * wogB->get(i);
     norm_wogB=sqrt(rms_wogB);
-    rms_wogB=sqrt(rms_wogB)/nidpB;  
+    rms_wogB = wogB->rms();
     rms_wog=MAX0(rms_wogA,rms_wogB);
     
     // print
     if(print_ > 2){
       for(int i = 0; i < nidpA; i++){
-        fprintf(outfile,"\n\t i, idprowA, idpcolA, wogA: %3d %3d %3d %20.14f\n", i, idprowA->get(i), idpcolA->get(i), wogA->get(i)); 
+        fprintf(outfile,"\t i, idprowA, idpcolA, wogA: %3d %3d %3d %20.14f\n", i, idprowA->get(i), idpcolA->get(i), wogA->get(i)); 
 	fflush(outfile);
       }
       for(int i = 0; i < nidpB; i++){
-        fprintf(outfile,"\n\t i, idprowB, idpcolB, wogB: %3d %3d %3d %20.14f\n", i, idprowB->get(i), idpcolB->get(i), wogB->get(i)); 
+        fprintf(outfile,"\t i, idprowB, idpcolB, wogB: %3d %3d %3d %20.14f\n", i, idprowB->get(i), idpcolB->get(i), wogB->get(i)); 
 	fflush(outfile);
       }
     }

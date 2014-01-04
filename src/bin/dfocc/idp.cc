@@ -132,7 +132,7 @@ if (reference_ == "RESTRICTED") {
 
       if (print_ > 2){
          for(int i = 0; i < nidpA; i++){
-             fprintf(outfile,"\n\t i, idprowA, idpcolA: %3d %3d %3d\n", i, idprowA->get(i), idpcolA->get(i));
+             fprintf(outfile,"\ti, idprowA, idpcolA: %3d %3d %3d\n", i, idprowA->get(i), idpcolA->get(i));
 	     fflush(outfile);
          }
       }

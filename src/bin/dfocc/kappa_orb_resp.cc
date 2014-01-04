@@ -75,12 +75,11 @@ if (reference_ == "RESTRICTED") {
          }
     }
 
-    // A(ai,bj) += 8(ia|jb) - 2(ib|ja)
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OV|OV)", noccA, nvirA, noccA, nvirA));
-    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
-    else tei_ovov_chem_ref_directAA(K);
-    Aorb->sort(2143, K, 8.0, 1.0);
-    Aorb->sort(4123, K, -2.0, 1.0);
+    // A(ai,bj) += 8(ai|bj) - 2(aj|bi)
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (VO|VO)", nvirA, noccA, nvirA, noccA));
+    tei_vovo_chem_ref_directAA(K);
+    Aorb->sort(1432, K, -2.0, 1.0);
+    Aorb->axpy(K, 8.0);
     K.reset();
 
     // A(ai,bj) += -2(ij|ab)
@@ -106,7 +105,7 @@ if (reference_ == "RESTRICTED") {
     */
 
     // Solve the orb-resp equations
-    pcg_conver = 0;// here 0 means successfull
+    pcg_conver = 1;// means successfull
     timer_on("Orb Resp Solver");
     if (lineq == "CDGESV") Aorb->cdgesv(zvectorA, pcg_conver);
     else if (lineq == "FLIN") {
@@ -116,7 +115,7 @@ if (reference_ == "RESTRICTED") {
              fprintf(outfile, "Warning!!! MO Hessian matrix is near-singular\n");
              fprintf(outfile, "Determinant is %6.3E\n", det);
              fflush(outfile);
-             pcg_conver = 1;// here 1 means unsuccessful
+             pcg_conver = 0;// means unsuccessful
          }
     }
     else if (lineq == "POPLE") Aorb->lineq_pople(zvectorA, 6, cutoff);
@@ -152,7 +151,7 @@ if (reference_ == "RESTRICTED") {
     } // if (nfrzc > 0) 
 
     // If LINEQ FAILED!
-    if (pcg_conver != 0) {
+    if (pcg_conver == 0) {
         // VO Block
         #pragma omp parallel for
         for (int a = 0; a < nvirA; a++) {
@@ -241,12 +240,11 @@ else if (reference_ == "UNRESTRICTED") {
          }
     }
 
-    // A(ai,bj) += 4(ia|jb) - 2(ib|ja)
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OV|OV)", noccA, nvirA, noccA, nvirA));
-    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
-    else tei_ovov_chem_ref_directAA(K);
-    AorbAA->sort(2143, K, 4.0, 1.0);
-    AorbAA->sort(4123, K, -2.0, 1.0);
+    // A(ai,bj) += 4(ai|bj) - 2(aj|bi)
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (VO|VO)", nvirA, noccA, nvirA, noccA));
+    tei_vovo_chem_ref_directAA(K);
+    AorbAA->sort(1432, K, -2.0, 1.0);
+    AorbAA->axpy(K, 4.0);
     K.reset();
 
     // A(ai,bj) += -2(ij|ab)
@@ -297,12 +295,11 @@ else if (reference_ == "UNRESTRICTED") {
          }
     }
 
-    // A(ai,bj) += 4(ia|jb) - 2(ib|ja)
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (ov|ov)", noccB, nvirB, noccB, nvirB));
-    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
-    else tei_ovov_chem_ref_directBB(K);
-    AorbBB->sort(2143, K, 4.0, 1.0);
-    AorbBB->sort(4123, K, -2.0, 1.0);
+    // A(ai,bj) += 4(ai|bj) - 2(aj|bi)
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (vo|vo)", nvirB, noccB, nvirB, noccB));
+    tei_vovo_chem_ref_directBB(K);
+    AorbBB->sort(1432, K, -2.0, 1.0);
+    AorbBB->axpy(K, 4.0);
     K.reset();
 
     // A(ai,bj) += -2(ij|ab)
@@ -325,11 +322,10 @@ else if (reference_ == "UNRESTRICTED") {
     // Alpha-Beta spin cae
     AorbAB = SharedTensor2d(new Tensor2d("MO Hessian Matrix <VO|vo>", nvirA, noccA, nvirB, noccB));
 
-    // A(AI,bj) = 4(IA|jb)
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OV|ov)", noccA, nvirA, noccB, nvirB));
-    if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
-    else tei_ovov_chem_ref_directAB(K);
-    AorbAB->sort(2143, K, 4.0, 0.0);
+    // A(AI,bj) = 4(AI|bj)
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (VO|vo)", nvirA, noccA, nvirB, noccB));
+    tei_vovo_chem_ref_directAB(K);
+    AorbAB->axpy(K, 4.0);
     K.reset();
     if (print_ > 3) AorbAB->print();
 
@@ -380,7 +376,7 @@ else if (reference_ == "UNRESTRICTED") {
     }
 
     // Solve the orb-resp equations
-    pcg_conver = 0;// here 0 means successfull
+    pcg_conver = 1;// means successfull
     if (lineq == "CDGESV") Aorb->cdgesv(zvector, pcg_conver);
     else if (lineq == "FLIN") {
          double det = 0.0;      
@@ -389,7 +385,7 @@ else if (reference_ == "UNRESTRICTED") {
              fprintf(outfile, "Warning!!! MO Hessian matrix is near-singular\n");
              fprintf(outfile, "Determinant is %6.3E\n", det);
              fflush(outfile);
-             pcg_conver = 1;// here 1 means unsuccessful
+             pcg_conver = 0;// means unsuccessful
          }
     }
     else if (lineq == "POPLE") Aorb->lineq_pople(zvector, 6, cutoff);
@@ -444,7 +440,7 @@ else if (reference_ == "UNRESTRICTED") {
     } // if (nfrzc > 0) 
 
     // If LINEQ FAILED!
-    if (pcg_conver != 0) {
+    if (pcg_conver == 0) {
          // VO Block
          #pragma omp parallel for
          for (int a = 0; a < nvirA; a++) {

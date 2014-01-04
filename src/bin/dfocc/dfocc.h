@@ -74,6 +74,9 @@ protected:
     void mograd();
     void occ_iterations();
     void kappa_orb_resp();
+    void kappa_orb_resp_pcg();
+    void orb_resp_pcg_rhf();
+    void orb_resp_pcg_uhf();
     void kappa_diag_hess();
     void update_mo();
     void diis(int dimvec, SharedTensor2d &vecs, SharedTensor2d &errvecs, SharedTensor1d &vec_new, SharedTensor1d &errvec_new);
@@ -231,6 +234,10 @@ protected:
     void tei_ovov_chem_ref_directBB(SharedTensor2d &K);
     void tei_ovov_chem_ref_directAB(SharedTensor2d &K);
 
+    void tei_vovo_chem_ref_directAA(SharedTensor2d &K);
+    void tei_vovo_chem_ref_directBB(SharedTensor2d &K);
+    void tei_vovo_chem_ref_directAB(SharedTensor2d &K);
+
     // Integrals in physist notations
     void tei_oooo_phys_ref_directAA(SharedTensor2d &K);
     void tei_oooo_phys_ref_directBB(SharedTensor2d &K);
@@ -379,10 +386,12 @@ protected:
      int conver;
      int cc_maxiter;
      int mo_maxiter;
+     int pcg_maxiter;
      int num_vecs;              // Number of vectors used in diis (diis order)
      int do_diis_;
      int itr_diis;
      int itr_occ;
+     int itr_pcg;
      int time4grad;             // If 0 it is not the time for grad, if 1 it is the time for grad
      int cc_maxdiis_;           // MAX Number of vectors used in CC diis
      int cc_mindiis_;           // MIN Number of vectors used in CC diis
@@ -430,6 +439,7 @@ protected:
      double tol_Eod;
      double tol_grad;
      double tol_t2;
+     double tol_pcg;
      double step_max;
      double mograd_max;
      double biggest_mograd;
@@ -512,6 +522,7 @@ protected:
      string sos_type_;		
      string wfn_type_;
      string orb_resp_solver_;
+     string pcg_beta_type_;
      string ekt_ip_;
      string ekt_ea_;
      string orb_opt_;
@@ -752,9 +763,28 @@ protected:
      SharedTensor1d zvector;
      SharedTensor1d zvectorA;
      SharedTensor1d zvectorB;
-     SharedTensor2d Zmat;
-     SharedTensor2d ZmatA;
-     SharedTensor2d ZmatB;
+     SharedTensor1d zvec_newA;
+     SharedTensor1d zvec_newB;
+
+     // PCG intermediates
+     SharedTensor1d r_pcgA;
+     SharedTensor1d r_pcgB;
+     SharedTensor1d z_pcgA;
+     SharedTensor1d z_pcgB;
+     SharedTensor1d p_pcgA;
+     SharedTensor1d p_pcgB;
+     SharedTensor1d sigma_pcgA;
+     SharedTensor1d sigma_pcgB;
+     SharedTensor1d Minv_pcgA;
+     SharedTensor1d Minv_pcgB;
+     SharedTensor1d r_pcg_newA;
+     SharedTensor1d r_pcg_newB;
+     SharedTensor1d z_pcg_newA;
+     SharedTensor1d z_pcg_newB;
+     SharedTensor1d p_pcg_newA;
+     SharedTensor1d p_pcg_newB;
+     SharedTensor1d dr_pcgA;
+     SharedTensor1d dr_pcgB;
 
      // Independent pairs
      SharedTensor1i idprowA;

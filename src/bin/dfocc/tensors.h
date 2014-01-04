@@ -141,6 +141,7 @@ class Tensor2d
   void set(double **A);
   void set(SharedTensor2d &A);
   void set(SharedMatrix A);
+  void set(SharedTensor1d &A);
   double get(int i, int j);
   // A2d = alpha * Adum
   void add(const SharedTensor2d &a);
@@ -181,6 +182,8 @@ class Tensor2d
   void contract323(bool transa, bool transb, int m, int n, const SharedTensor2d& a, const SharedTensor2d& b, double alpha, double beta);
   // contract233: C[Q](m,n) = \sum_{k} A(m,k) * B[Q](k,n)
   void contract233(bool transa, bool transb, int m, int n, const SharedTensor2d& a, const SharedTensor2d& b, double alpha, double beta);
+  // contract332: C(m,n) = \sum_{k} A[Q](m,k) * B[Q](k,n)
+  void contract332(bool transa, bool transb, int k, const SharedTensor2d& a, const SharedTensor2d& b, double alpha, double beta);
   // contract424: Z(pq,rs) = \sum_{o} X(pq,ro) * Y(o,s): where target_x = 4, target_y = 1, and Z = A2d_
   void contract424(int target_x, int target_y, const SharedTensor2d& a, const SharedTensor2d& b, double alpha, double beta);
   // contract442: C(p,q) \sum_{rst} A(pr,st) B(qr,st) , where row/col pair indices are related to B and sorted B.

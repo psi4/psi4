@@ -84,7 +84,10 @@ do
 //========================= New orbital step ===============================================
 //==========================================================================================
         timer_on("kappa orb rot");
-        if (hess_type == "HF") kappa_orb_resp();
+        if (hess_type == "HF") { 
+           if (orb_resp_solver_ == "LINEQ") kappa_orb_resp();
+           else if (orb_resp_solver_ == "PCG") kappa_orb_resp_pcg();
+        }
         else kappa_diag_hess();
         timer_off("kappa orb rot");
 
