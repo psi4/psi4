@@ -15,7 +15,7 @@
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
-    Process ID:  12903
+    Process ID:   4027
     PSI4DATADIR: /home/ugur/psi4/lib
 
     Using LocalCommunicator (Number of processes = 1)
@@ -29,7 +29,7 @@
 
 refnuc      =  9.18738642147759 #TEST
 refscf      = -76.02674017978717 #TEST
-refomp2     = -76.22932767482713 #TEST
+refomp2     = -76.22932767465205 #TEST
 
 memory 256 mb
 
@@ -60,7 +60,7 @@ compare_values(refomp2, get_variable("DF-OMP2 TOTAL ENERGY"), 6, "DF-OMP2 Total 
   Memory set to 256.000 MiB by Python script.
 
 *** tstart() called on bozkaya
-*** at Sat Jan  4 15:20:31 2014
+*** at Sat Jan  4 20:21:32 2014
 
 
          ---------------------------------------------------------
@@ -250,18 +250,18 @@ Properties computed using the SCF density density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on bozkaya at Sat Jan  4 15:20:31 2014
+*** tstop() called on bozkaya at Sat Jan  4 20:21:33 2014
 Module time:
 	user time   =       0.79 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
 	user time   =       0.79 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
 *** tstart() called on bozkaya
-*** at Sat Jan  4 15:20:31 2014
+*** at Sat Jan  4 20:21:33 2014
 
 
 
@@ -315,7 +315,7 @@ Total time:
   OO_SCALE                    => 0.01             
   OPT_METHOD                  => QNR              
   ORB_OPT                     => TRUE             
-  ORB_RESP_SOLVER             => LINEQ            
+  ORB_RESP_SOLVER             => PCG              
   ORTH_TYPE                   => MGS              
   PCG_BETA_TYPE               => FLETCHER_REEVES  
   PCG_CONVERGENCE             => 1e-06            
@@ -379,10 +379,10 @@ Total time:
 	            ------------------------------ 
  Iter       E_total           DE           RMS MO Grad      MAX MO Grad      RMS T2    
  ----    ---------------    ----------     -----------      -----------     ---------- 
-   1     -76.2293163664     -9.24e-04       2.98e-04         1.91e-03        4.01e-05 
-   2     -76.2293231416     -6.78e-06       1.46e-04         1.41e-03        2.99e-06 
-   3     -76.2293260326     -2.89e-06       1.09e-04         1.07e-03        6.11e-07 
-   4     -76.2293276748     -1.64e-06       8.25e-05         8.05e-04        3.97e-07 
+   1     -76.2293162970     -9.24e-04       3.00e-04         1.91e-03        4.01e-05 
+   2     -76.2293231432     -6.85e-06       1.46e-04         1.41e-03        3.02e-06 
+   3     -76.2293260330     -2.89e-06       1.09e-04         1.07e-03        6.05e-07 
+   4     -76.2293276751     -1.64e-06       8.24e-05         8.05e-04        3.96e-07 
 
  ============================================================================== 
  ======================== DF-OMP2 ITERATIONS ARE CONVERGED ==================== 
@@ -395,9 +395,9 @@ Total time:
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :     9.18738642147759
 	DF-HF Energy (a.u.)                :   -76.02674017978704
-	REF Energy (a.u.)                  :   -76.02582245306992
-	DF-MP2 Correlation Energy (a.u.)   :    -0.20258749504009
-	DF-MP2 Total Energy (a.u.)         :   -76.22932767482713
+	REF Energy (a.u.)                  :   -76.02582246523765
+	DF-MP2 Correlation Energy (a.u.)   :    -0.20258749527039
+	DF-MP2 Total Energy (a.u.)         :   -76.22932767505743
 	======================================================================= 
 
 	======================================================================= 
@@ -405,21 +405,21 @@ Total time:
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :     9.18738642147759
 	DF-HF Energy (a.u.)                :   -76.02674017978704
-	REF Energy (a.u.)                  :   -76.02582245306992
-	DF-OMP2 Correlation Energy (a.u.)  :    -0.20258749504009
-	Edfomp2 - Eref (a.u.)              :    -0.20350522175721
-	DF-OMP2 Total Energy (a.u.)        :   -76.22932767482713
+	REF Energy (a.u.)                  :   -76.02582246523765
+	DF-OMP2 Correlation Energy (a.u.)  :    -0.20258749527039
+	Edfomp2 - Eref (a.u.)              :    -0.20350520981978
+	DF-OMP2 Total Energy (a.u.)        :   -76.22932767505743
 	======================================================================= 
 
 
-*** tstop() called on bozkaya at Sat Jan  4 15:20:32 2014
+*** tstop() called on bozkaya at Sat Jan  4 20:21:33 2014
 Module time:
-	user time   =       1.18 seconds =       0.02 minutes
-	system time =       0.10 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       1.20 seconds =       0.02 minutes
+	system time =       0.12 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.97 seconds =       0.03 minutes
-	system time =       0.11 seconds =       0.00 minutes
+	user time   =       1.99 seconds =       0.03 minutes
+	system time =       0.13 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
 *** PSI4 exiting successfully. Buy a developer a beer!
