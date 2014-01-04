@@ -104,15 +104,13 @@ void DFOCC::common_init()
         tol_grad=options_.get_double("RMS_MOGRAD_CONVERGENCE");
     }
     else {
-        /*
         double temp;
-        temp = 2.0 - 0.5 * log10(tol_Eod); 
-        if (temp < 5.0) {
-            temp = 5.0;
+        temp = (-0.9 * log10(tol_Eod)) - 1.6; 
+        if (temp < 4.0) {
+            temp = 4.0;
         }
         tol_grad = pow(10.0, -temp);
-        */
-        tol_grad = 100.0*tol_Eod; 
+        //tol_grad = 100.0*tol_Eod; 
         fprintf(outfile,"\tRMS orbital gradient is changed to : %12.2e\n", tol_grad);
         fflush(outfile);
     }
@@ -122,16 +120,13 @@ void DFOCC::common_init()
     mograd_max=options_.get_double("MAX_MOGRAD_CONVERGENCE");
     }
     else {
-        /*
         double temp2;
-        temp2 = -log10(tol_grad) - 1.5;
-        if (temp2 > 4.0) {
-            temp2 = 4.0;
+        temp2 = (-0.835366 * log10(tol_grad)) - 0.378049;
+        if (temp2 < 3.0) {
+            temp2 = 3.0;
         }
         mograd_max = pow(10.0, -temp2);
-        */
-        mograd_max = 10.0*tol_grad;
-        // if (mograd_max < 1e-4) mograd_max = 1e-4;
+        //mograd_max = 10.0*tol_grad;
         fprintf(outfile,"\tMAX orbital gradient is changed to : %12.2e\n", mograd_max);
         fflush(outfile);
     }

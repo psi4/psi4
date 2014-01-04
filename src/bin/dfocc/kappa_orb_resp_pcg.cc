@@ -176,10 +176,10 @@ if (reference_ == "RESTRICTED") {
 
     // If LINEQ FAILED!
     if (pcg_conver == 0) {
-        if (print_ > 1 ) {
+        //if (print_ > 1 ) {
         fprintf(outfile,"\tWarning!!! PCG did NOT converged in %2d iterations, switching to an approximately diagonal MO Hessian. \n", itr_pcg);
         fflush(outfile);
-        }
+        //}
 
         // Compute VO-Block Hess
         approx_diag_mohess_vo();
@@ -490,10 +490,10 @@ else if (reference_ == "UNRESTRICTED") {
 
     // If LINEQ FAILED!
     if (pcg_conver == 0) {
-        if (print_ > 1 ) {
+        //if (print_ > 1 ) {
         fprintf(outfile,"\tWarning!!! PCG did NOT converged in %2d iterations, switching to an approximately diagonal MO Hessian. \n", itr_pcg);
         fflush(outfile);
-        }
+        //}
 
         // Compute VO-Block Hess
         approx_diag_mohess_vo();
