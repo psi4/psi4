@@ -251,6 +251,9 @@ class Tensor2d
   void apply_denom_os(int frzc, int occA, int occB, const SharedTensor2d &fockA, const SharedTensor2d &fockB);
   // apply_denom_chem: T(ia,jb) /= D(ij,ab)
   void apply_denom_chem(int frzc, int occ, const SharedTensor2d &fock);
+  void reg_denom(int frzc, int occ, const SharedTensor2d &fock, double reg);
+  void reg_denom_os(int frzc, int occA, int occB, const SharedTensor2d &fockA, const SharedTensor2d &fockB, double reg);
+  void reg_denom_chem(int frzc, int occ, const SharedTensor2d &fock, double reg);
   // dirprd: A2d_[i][j] = a[i][j] * b[i][j]
   void dirprd(const SharedTensor2d &a, const SharedTensor2d &b);
   // dirprd123: A2d_[Q][ij] = a[Q] * b[i][j]

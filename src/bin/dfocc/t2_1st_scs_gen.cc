@@ -65,7 +65,8 @@ if (reference_ == "RESTRICTED") {
     t2p_1new->contract424(1, 2, t2p_1, FijA, -1.0, 1.0);
 
     // Aplly denominators
-    t2p_1new->apply_denom_chem(nfrzc, noccA, FockA);
+    if (regularization == "FALSE") t2p_1new->apply_denom_chem(nfrzc, noccA, FockA);
+    else if (regularization == "TRUE") t2p_1new->reg_denom_chem(nfrzc, noccA, FockA, reg_param);
 
     // rms
     rms_t2 = 0.0;
@@ -136,7 +137,8 @@ else if (reference_ == "UNRESTRICTED") {
     t2_1newAA->contract424(1, 1, t2_1AA, FijA, -1.0, 1.0);
 
     // apply denom
-    t2_1newAA->apply_denom(nfrzc, noccA, FockA);
+    if (regularization == "FALSE") t2_1newAA->apply_denom(nfrzc, noccA, FockA);
+    else if (regularization == "TRUE") t2_1newAA->reg_denom(nfrzc, noccA, FockA, reg_param);
     if (print_ > 2) t2_1newAA->print();
 
     // rms
@@ -189,7 +191,8 @@ else if (reference_ == "UNRESTRICTED") {
     t2_1newBB->contract424(1, 1, t2_1BB, FijB, -1.0, 1.0);
 
     // apply denom
-    t2_1newBB->apply_denom(nfrzc, noccB, FockB);
+    if (regularization == "FALSE") t2_1newBB->apply_denom(nfrzc, noccB, FockB);
+    else if (regularization == "TRUE") t2_1newBB->reg_denom(nfrzc, noccB, FockB, reg_param);
     if (print_ > 2) t2_1newBB->print();
 
     // rms
@@ -239,7 +242,8 @@ else if (reference_ == "UNRESTRICTED") {
     t2_1newAB->contract424(1, 1, t2_1AB, FijA, -1.0, 1.0);
 
     // apply denom
-    t2_1newAB->apply_denom_os(nfrzc, noccA, noccB, FockA, FockB);
+    if (regularization == "FALSE") t2_1newAB->apply_denom_os(nfrzc, noccA, noccB, FockA, FockB);
+    else if (regularization == "TRUE") t2_1newAB->reg_denom_os(nfrzc, noccA, noccB, FockA, FockB, reg_param);
     if (print_ > 2) t2_1newAB->print();
 
     // rms

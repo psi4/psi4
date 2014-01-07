@@ -2667,6 +2667,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("OO_SCALE",0.01);
     /*- Convergence criterion for residual vector of preconditioned conjugate gradient method. -*/
     options.add_double("PCG_CONVERGENCE",1e-6);
+    /*- Regularization parameter -*/
+    options.add_double("REG_PARAM",0.004);
 
     /*- The solver will be used for simultaneous linear equations. -*/
     options.add_str("LINEQ_SOLVER","CDGESV","CDGESV FLIN POPLE");
@@ -2715,6 +2717,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("EKT_EA",false);
     /*- Do optimize the orbitals?  -*/
     options.add_bool("ORB_OPT",true);
+    /*- Do use regularized denominators?  -*/
+    options.add_bool("REGULARIZATION",false);
   }
   if (name == "MRCC"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/

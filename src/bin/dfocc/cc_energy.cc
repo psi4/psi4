@@ -69,6 +69,7 @@ void DFOCC::mp2_energy()
     SharedTensor2d K, L, M;
     timer_on("MP2 Energy");
 if (reference_ == "RESTRICTED") {
+    Ecorr = 0.0;
     JiajbAA = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
     if (conv_tei_type == "DISK") JiajbAA->read(psio_, PSIF_DFOCC_INTS);
     else tei_iajb_chem_directAA(JiajbAA);
@@ -81,6 +82,10 @@ if (reference_ == "RESTRICTED") {
 }// end if (reference_ == "RESTRICTED")
 
 else if (reference_ == "UNRESTRICTED") {
+    Emp2AA = 0.0;
+    Emp2BB = 0.0;
+    Emp2AB = 0.0;
+
     // AA part
     if (conv_tei_type == "DISK") {
         K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ||AB>", naoccA, naoccA, navirA, navirA));
@@ -149,10 +154,11 @@ else if (reference_ == "UNRESTRICTED") {
     else if (mo_optimized == 1) Esosmp2AB = sos_scale2 * Emp2AB;
 
 
+    //Singles-contribution
+    Emp2_t1 = 0.0;
     if (reference == "ROHF" && orb_opt_ == "FALSE" && wfn_type_ == "DF-OMP2") {
-        //Singles-contribution
-        Emp2_t1 = 0.0;
         //Alpha
+        Emp2_t1 = 0.0;
         for(int i = 0 ; i < naoccA; ++i){
             for(int a = 0 ; a < navirA; ++a){
                 Emp2_t1 += t1A->get(i, a) * FockA->get(a + noccA, i + nfrzc);

@@ -472,6 +472,7 @@ protected:
      double rms_kappaA;
      double rms_kappaB;
      double msd_oo_scale;
+     double reg_param;
 
      // OMP3
      double Emp3;
@@ -528,6 +529,7 @@ protected:
      string orb_opt_;
      string rotation_blocks;
      string conv_tei_type;
+     string regularization; 
 
      double **C_pitzerA;     
      double **C_pitzerB;     
