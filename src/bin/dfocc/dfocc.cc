@@ -70,6 +70,7 @@ void DFOCC::common_init()
     tol_Eod=options_.get_double("E_CONVERGENCE");
     tol_t2=options_.get_double("R_CONVERGENCE");
     tol_pcg=options_.get_double("PCG_CONVERGENCE");
+    reg_param=options_.get_double("REG_PARAM");
 
     orth_type=options_.get_str("ORTH_TYPE");
     opt_method=options_.get_str("OPT_METHOD");
@@ -90,6 +91,7 @@ void DFOCC::common_init()
     orb_opt_=options_.get_str("ORB_OPT");
     conv_tei_type=options_.get_str("CONV_TEI_TYPE");
     pcg_beta_type_=options_.get_str("PCG_BETA_TYPE");
+    regularization=options_.get_str("REGULARIZATION");
 
     //title
     title();
@@ -322,7 +324,7 @@ void DFOCC::title()
    else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "TRUE") fprintf(outfile,"                       DF-OMP2.5 (DF-OO-MP2.5)   \n");
    else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "FALSE") fprintf(outfile,"                       DF-MP2.5  \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya\n") ; 
-   fprintf(outfile,"              Latest Revision Jan 5, 2014\n") ;
+   fprintf(outfile,"              Latest Revision Jan 7, 2014\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
