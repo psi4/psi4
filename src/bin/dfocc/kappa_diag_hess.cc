@@ -30,11 +30,13 @@ namespace psi{ namespace dfoccwave{
 
 void DFOCC::approx_diag_hf_mohess_vo()
 { 
+     double value;
      if (reference_ == "RESTRICTED") {
          // VO Block
          for (int a = 0; a < nvirA; a++) {
               for (int i = 0; i < noccA; i++) {
-                   double value = 2.0 * (FockA->get(a + noccA, a + noccA) - FockA->get(i,i));
+                   value = 2.0 * (FockA->get(a + noccA, a + noccA) - FockA->get(i,i));
+                   if (regularization == "TRUE") value += reg_param;
                    AvoA->set(a, i, value);
               }
          }
@@ -44,7 +46,8 @@ void DFOCC::approx_diag_hf_mohess_vo()
          // VO Block
          for (int a = 0; a < nvirA; a++) {
               for (int i = 0; i < noccA; i++) {
-                   double value = 2.0 * (FockA->get(a + noccA, a + noccA) - FockA->get(i,i));
+                   value = 2.0 * (FockA->get(a + noccA, a + noccA) - FockA->get(i,i));
+                   if (regularization == "TRUE") value += reg_param;
                    AvoA->set(a, i, value);
               }
          }
@@ -52,7 +55,8 @@ void DFOCC::approx_diag_hf_mohess_vo()
          // vo Block
          for (int a = 0; a < nvirB; a++) {
               for (int i = 0; i < noccB; i++) {
-                   double value = 2.0 * (FockB->get(a + noccB, a + noccB) - FockB->get(i,i));
+                   value = 2.0 * (FockB->get(a + noccB, a + noccB) - FockB->get(i,i));
+                   if (regularization == "TRUE") value += reg_param;
                    AvoB->set(a, i, value);
               }
          }
@@ -98,11 +102,13 @@ void DFOCC::approx_diag_hf_mohess_oo()
 //=========================
 void DFOCC::approx_diag_ekt_mohess_vo()
 { 
+     double value;
      if (reference_ == "RESTRICTED") {
          // VO Block
          for (int a = 0; a < nvirA; a++) {
               for (int i = 0; i < noccA; i++) {
-                   double value = GFtvv->get(a, a) - GF->get(i,i);
+                   value = GFtvv->get(a, a) - GF->get(i,i);
+                   if (regularization == "TRUE") value += reg_param;
                    AvoA->set(a, i, value);
               }
          }
@@ -112,7 +118,8 @@ void DFOCC::approx_diag_ekt_mohess_vo()
          // VO Block
          for (int a = 0; a < nvirA; a++) {
               for (int i = 0; i < noccA; i++) {
-                   double value = 2.0 * (GFtvvA->get(a, a) - GFA->get(i,i));
+                   value = 2.0 * (GFtvvA->get(a, a) - GFA->get(i,i));
+                   if (regularization == "TRUE") value += reg_param;
                    AvoA->set(a, i, value);
               }
          }
@@ -120,7 +127,8 @@ void DFOCC::approx_diag_ekt_mohess_vo()
          // vo Block
          for (int a = 0; a < nvirB; a++) {
               for (int i = 0; i < noccB; i++) {
-                   double value = 2.0 * (GFtvvB->get(a, a) - GFB->get(i,i));
+                   value = 2.0 * (GFtvvB->get(a, a) - GFB->get(i,i));
+                   if (regularization == "TRUE") value += reg_param;
                    AvoB->set(a, i, value);
               }
          }
