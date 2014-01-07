@@ -42,7 +42,8 @@ if (reference_ == "RESTRICTED") {
     if (conv_tei_type == "DISK") K->read(psio_, PSIF_DFOCC_INTS);
     else tei_iajb_chem_directAA(K);
     T->copy(K);
-    T->apply_denom_chem(nfrzc, noccA, FockA);
+    if (regularization == "FALSE") T->apply_denom_chem(nfrzc, noccA, FockA);
+    else if (regularization == "TRUE") T->reg_denom_chem(nfrzc, noccA, FockA, reg_param);
     T->write(psio_, PSIF_DFOCC_AMPS);
 
     /*
@@ -85,7 +86,8 @@ else if (reference_ == "UNRESTRICTED") {
     }
     t2_1AA = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
     t2_1AA->copy(K);
-    t2_1AA->apply_denom(nfrzc, noccA, FockA);
+    if (regularization == "FALSE") t2_1AA->apply_denom(nfrzc, noccA, FockA);
+    else if (regularization == "TRUE") t2_1AA->reg_denom(nfrzc, noccA, FockA, reg_param);
     t2_1AA->write(psio_, PSIF_DFOCC_AMPS);
 
     // Enegy AA 
@@ -118,7 +120,8 @@ else if (reference_ == "UNRESTRICTED") {
     }
     t2_1BB = SharedTensor2d(new Tensor2d("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
     t2_1BB->copy(K);
-    t2_1BB->apply_denom(nfrzc, noccB, FockB);
+    if (regularization == "FALSE") t2_1BB->apply_denom(nfrzc, noccB, FockB);
+    else if (regularization == "TRUE") t2_1BB->reg_denom(nfrzc, noccB, FockB, reg_param);
     t2_1BB->write(psio_, PSIF_DFOCC_AMPS);
 
     // Energy BB
@@ -148,7 +151,8 @@ else if (reference_ == "UNRESTRICTED") {
     }
     t2_1AB = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
     t2_1AB->copy(K);
-    t2_1AB->apply_denom_os(nfrzc, noccA, noccB, FockA, FockB);
+    if (regularization == "FALSE") t2_1AB->apply_denom_os(nfrzc, noccA, noccB, FockA, FockB);
+    else if (regularization == "TRUE") t2_1AB->reg_denom_os(nfrzc, noccA, noccB, FockA, FockB, reg_param);
     t2_1AB->write(psio_, PSIF_DFOCC_AMPS);
 
     // Energy AB

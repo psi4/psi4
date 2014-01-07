@@ -2094,6 +2094,77 @@ void Tensor2d::apply_denom_chem(int frzc, int occ, const SharedTensor2d &fock)
     }
 }//
 
+void Tensor2d::reg_denom(int frzc, int occ, const SharedTensor2d &fock, double reg)
+{
+    int aocc = d1_;
+    int avir = d3_;
+
+    #pragma omp parallel for
+    for (int i = 0; i < aocc; i++) {
+         double di = fock->A2d_[i + frzc][i + frzc] - reg;
+         for (int j = 0; j < aocc; j++) {
+              double dij = di + fock->A2d_[j + frzc][j + frzc];
+              int ij = row_idx_[i][j];
+              for (int a = 0; a < avir; a++) {
+                   double dija = dij - fock->A2d_[a + occ][a + occ];
+                   for (int b = 0; b < avir; b++) {
+                        double dijab = dija - fock->A2d_[b + occ][b + occ];
+                        int ab = col_idx_[a][b];
+                        A2d_[ij][ab] /= dijab;
+                   }
+              }
+         }
+    }
+}//
+
+void Tensor2d::reg_denom_os(int frzc, int occA, int occB, const SharedTensor2d &fockA, const SharedTensor2d &fockB, double reg)
+{
+    int aoccA = d1_;
+    int aoccB = d2_;
+    int avirA = d3_;
+    int avirB = d4_;
+
+    #pragma omp parallel for
+    for (int i = 0; i < aoccA; i++) {
+         double di = fockA->A2d_[i + frzc][i + frzc] - reg;
+         for (int j = 0; j < aoccB; j++) {
+              double dij = di + fockB->A2d_[j + frzc][j + frzc];
+              int ij = row_idx_[i][j];
+              for (int a = 0; a < avirA; a++) {
+                   double dija = dij - fockA->A2d_[a + occA][a + occA];
+                   for (int b = 0; b < avirB; b++) {
+                        double dijab = dija - fockB->A2d_[b + occB][b + occB];
+                        int ab = col_idx_[a][b];
+                        A2d_[ij][ab] /= dijab;
+                   }
+              }
+         }
+    }
+}//
+
+void Tensor2d::reg_denom_chem(int frzc, int occ, const SharedTensor2d &fock, double reg)
+{
+    int aocc = d1_;
+    int avir = d2_;
+
+    #pragma omp parallel for
+    for (int i = 0; i < aocc; i++) {
+         double di = fock->A2d_[i + frzc][i + frzc] - reg;
+         for (int a = 0; a < avir; a++) {
+              double dia = di - fock->A2d_[a + occ][a + occ];
+              int ia = row_idx_[i][a];
+              for (int j = 0; j < aocc; j++) {
+                   double diaj = dia + fock->A2d_[j + frzc][j + frzc];
+                   for (int b = 0; b < avir; b++) {
+                        double diajb = diaj - fock->A2d_[b + occ][b + occ];
+                        int jb = col_idx_[j][b];
+                        A2d_[ia][jb] /= diajb;
+                   }
+              }
+         }
+    }
+}//
+
 void Tensor2d::dirprd(const SharedTensor2d &a, const SharedTensor2d &b)
 {
      #pragma omp parallel for
