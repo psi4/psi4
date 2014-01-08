@@ -39,11 +39,13 @@ if (wfn_type_ == "DF-OMP2") fprintf(outfile," ================ Performing DF-OMP
 else if (wfn_type_ == "DF-OMP3") fprintf(outfile," ================ Performing DF-OMP3 iterations... ============================ \n");  
 else if (wfn_type_ == "DF-OCEPA") fprintf(outfile," ================ Performing DF-OCEPA iterations... =========================== \n");  
 else if (wfn_type_ == "DF-OMP2.5") fprintf(outfile," ================ Performing DF-OMP2.5 iterations... ========================== \n");  
+else if (wfn_type_ == "CD-OMP2") fprintf(outfile," ================ Performing CD-OMP2 iterations... ============================ \n");  
 fprintf(outfile," ============================================================================== \n");
 if (wfn_type_ == "DF-OMP2") fprintf(outfile, "\t            Minimizing DF-MP2-L Functional \n");
 else if (wfn_type_ == "DF-OMP3") fprintf(outfile, "\t            Minimizing DF-MP3-L Functional \n");
 else if (wfn_type_ == "DF-OCEPA") fprintf(outfile, "\t            Minimizing DF-CEPA-L Functional \n");
 else if (wfn_type_ == "DF-OMP2.5") fprintf(outfile, "\t            Minimizing DF-MP2.5-L Functional \n");
+else if (wfn_type_ == "CD-OMP2") fprintf(outfile, "\t            Minimizing CD-MP2-L Functional \n");
 fprintf(outfile, "\t            ------------------------------ \n");
 fprintf(outfile, " Iter       E_total           DE           RMS MO Grad      MAX MO Grad      RMS T2    \n");
 fprintf(outfile, " ----    ---------------    ----------     -----------      -----------     ---------- \n");
@@ -101,6 +103,8 @@ do
 //==========================================================================================
 //========================= Trans TEI ======================================================
 //==========================================================================================
+    // DF
+    if (do_cd == "FALSE") { 
         timer_on("DF CC Integrals");
         trans_corr();
         if (conv_tei_type == "DISK") { 
@@ -131,13 +135,48 @@ do
                 tei_ovov_anti_symm_ref();
             }
         }// if (conv_tei_type == "DISK")  
-        fock();
         timer_off("DF REF Integrals");
+    }// end if (do_cd == "FALSE")  
+
+    // CD
+    else if (do_cd == "TRUE") { 
+        timer_on("CD Integrals");
+        trans_cd();
+        if (conv_tei_type == "DISK") { 
+            tei_iajb_chem();
+            if (reference_ == "UNRESTRICTED") {
+                tei_ijab_phys();
+                tei_ijab_anti_symm();
+            }
+        }// if (conv_tei_type == "DISK")  
+        timer_off("CD Integrals");
+        timer_on("CD REF Integrals");
+        if (conv_tei_type == "DISK") { 
+            tei_oooo_chem_ref();
+            tei_ooov_chem_ref();
+            tei_oovv_chem_ref();
+            tei_ovov_chem_ref();
+            if (reference_ == "UNRESTRICTED") {
+                tei_oooo_phys_ref();
+                tei_ooov_phys_ref();
+                tei_oovv_phys_ref();
+                tei_ovov_phys_ref();
+                tei_oooo_anti_symm_ref();
+                tei_ooov_anti_symm_ref();
+                tei_oovv_anti_symm_ref();
+                tei_ovov_anti_symm_ref();
+            }
+        }// if (conv_tei_type == "DISK")  
+        timer_off("CD REF Integrals");
+    }// end if (do_cd == "TRUE")  
+
+        // Fock
+        fock();
 
 //==========================================================================================
 //========================= New Amplitudes =================================================
 //==========================================================================================
-     if (wfn_type_ == "DF-OMP2") t2_1st_gen();
+     if (wfn_type_ == "DF-OMP2" || wfn_type_ == "CD-OMP2") t2_1st_gen();
 
     /*
      else if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") {
@@ -159,7 +198,7 @@ do
 //==========================================================================================
 //========================= PDMs ===========================================================
 //==========================================================================================
-	if (wfn_type_ == "DF-OMP2") {
+	if (wfn_type_ == "DF-OMP2"  || wfn_type_ == "CD-OMP2") {
 	    omp2_opdm();
 	    omp2_tpdm();
             separable_tpdm();
@@ -181,10 +220,10 @@ do
 //==========================================================================================
 //========================= CCL ============================================================
 //==========================================================================================
-     if (wfn_type_ == "DF-OMP2") {
-         ref_energy();
-         mp2l_energy();
-     }
+        // reference energy
+        ref_energy();
+
+     if (wfn_type_ == "DF-OMP2" || wfn_type_ == "CD-OMP2") mp2l_energy();
 
      /*
      else if (wfn_type_ == "DF-OMP3" || wfn_type_ == "DF-OMP2.5") { 
@@ -262,6 +301,7 @@ if(wfn_type_ == "DF-OMP2") fprintf(outfile," %3d     %12.10f  %12.2e   %12.2e   
 else if(wfn_type_ == "DF-OMP3") fprintf(outfile," %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,Emp3L,DE,rms_wog,biggest_mograd,rms_t2);
 else if(wfn_type_ == "DF-OCEPA") fprintf(outfile," %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,EcepaL,DE,rms_wog,biggest_mograd,rms_t2);
 else if(wfn_type_ == "DF-OMP2.5") fprintf(outfile," %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,Emp3L,DE,rms_wog,biggest_mograd,rms_t2);
+else if(wfn_type_ == "CD-OMP2") fprintf(outfile," %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,Emp2L,DE,rms_wog,biggest_mograd,rms_t2);
 fflush(outfile);
 
 //==========================================================================================

@@ -230,6 +230,7 @@ class Tensor2d
   void write(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno);
   void write(psi::PSIO* const psio, unsigned int fileno);
   void write(psi::PSIO& psio, unsigned int fileno);
+  void write(boost::shared_ptr<psi::PSIO> psio, const string& filename, unsigned int fileno);
   void read(psi::PSIO* psio, unsigned int fileno);
   void read(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno);
   void read(psi::PSIO& psio, unsigned int fileno);

@@ -45,6 +45,7 @@ if (reference_ == "RESTRICTED") {
     if (regularization == "FALSE") T->apply_denom_chem(nfrzc, noccA, FockA);
     else if (regularization == "TRUE") T->reg_denom_chem(nfrzc, noccA, FockA, reg_param);
     T->write(psio_, PSIF_DFOCC_AMPS);
+    if (print_ > 2) T->print();
 
     /*
     // Sort amplitudes to Dirac order

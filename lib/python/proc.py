@@ -115,6 +115,42 @@ def run_dfomp2(name, **kwargs):
     return psi4.dfocc()
 
 
+def run_cdomp2(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a cholesky-decomposed orbital-optimized MP2 computation
+
+    """
+
+    optstash = p4util.OptionsState(
+        ['DFOCC', 'WFN_TYPE'])
+
+    # overwrite symmetry
+    molecule = psi4.get_active_molecule()
+    molecule.update_geometry()
+    molecule.reset_point_group('c1')
+
+    psi4.set_global_option('SCF_TYPE', 'CD')
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
+
+    psi4.set_local_option('DFOCC', 'WFN_TYPE', 'CD-OMP2')
+    return psi4.dfocc()
+
+
+def run_cdmp2(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a cholesky-decomposed MP2 computation
+
+    """
+    optstash = p4util.OptionsState(
+        ['DFOCC', 'ORB_OPT'])
+
+    psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
+    run_cdomp2(name, **kwargs)
+    optstash.restore()
+
+
 def run_omp2(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     an orbital-optimized MP2 computation
@@ -1413,12 +1449,6 @@ def run_dft(name, **kwargs):
         returnvalue += vdh
         psi4.set_variable('DFT TOTAL ENERGY', returnvalue)
         psi4.set_variable('CURRENT ENERGY', returnvalue)
-        psi4.print_out('\n\n')
-        psi4.print_out('    %s Energy Summary\n' % (name.upper()))
-        psi4.print_out('    -------------------------\n')
-        psi4.print_out('    DFT Reference Energy                  = %22.16lf\n' % (returnvalue-vdh))
-        psi4.print_out('    Scaled MP2 Correlation                = %22.16lf\n' % (vdh))
-        psi4.print_out('    @Final double-hybrid DFT total energy = %22.16lf\n\n' % (returnvalue))
 
     optstash.restore()
 

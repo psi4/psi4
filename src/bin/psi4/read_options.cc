@@ -2669,6 +2669,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("PCG_CONVERGENCE",1e-6);
     /*- Regularization parameter -*/
     options.add_double("REG_PARAM",0.004);
+    /*- tolerance for Cholesky decomposition of the ERI tensor -*/
+    options.add_double("CHOLESKY_TOLERANCE",1.0e-4);
 
     /*- The solver will be used for simultaneous linear equations. -*/
     options.add_str("LINEQ_SOLVER","CDGESV","CDGESV FLIN POPLE");
@@ -2687,7 +2689,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Type of the SOS method -*/
     options.add_str("SOS_TYPE","SOS","SOS SOSPI");
     /*- Type of the wavefunction. -*/
-    options.add_str("WFN_TYPE","DF-OMP2","DF-OMP2 DF-OMP3 DF-OCEPA(0) DF-OMP2.5 DFGRAD");
+    options.add_str("WFN_TYPE","DF-OMP2","DF-OMP2 DF-OMP3 DF-OCEPA(0) DF-OMP2.5 DFGRAD CD-OMP2");
     /*- CEPA type such as CEPA0, CEPA1 etc. currently we have only CEPA0. -*/
     options.add_str("CEPA_TYPE","CEPA(0)","CEPA(0)");
     /*- The algorithm that used for 4 index MO TEIs. -*/

@@ -77,6 +77,7 @@ if (reference_ == "RESTRICTED") {
     t2p_1->copy(t2p_1new);
     t2p_1new.reset();
     t2p_1->write(psio_, PSIF_DFOCC_AMPS);
+    if (print_ > 2) t2p_1->print();
  
     /*
     // Sort amplitudes to Dirac order

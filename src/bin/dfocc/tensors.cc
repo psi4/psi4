@@ -1623,6 +1623,16 @@ void Tensor2d::write(psi::PSIO& psio, unsigned int fileno)
     write(&psio, fileno);
 }//
 
+void Tensor2d::write(boost::shared_ptr<psi::PSIO> psio, const string& filename, unsigned int fileno)
+{
+    // Check to see if the file is open
+    bool already_open = false;
+    if (psio->open_check(fileno)) already_open = true;
+    else psio->open(fileno, PSIO_OPEN_OLD);
+    psio->write_entry(fileno, const_cast<char*>(filename.c_str()), (char*)A2d_[0], sizeof(double) * dim1_ * dim2_);
+    if (!already_open) psio->close(fileno, 1);     // Close and keep
+}//
+
 void Tensor2d::read(psi::PSIO* psio, unsigned int fileno)
 {
     // Check to see if the file is open
