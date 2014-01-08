@@ -1449,6 +1449,12 @@ def run_dft(name, **kwargs):
         returnvalue += vdh
         psi4.set_variable('DFT TOTAL ENERGY', returnvalue)
         psi4.set_variable('CURRENT ENERGY', returnvalue)
+        psi4.print_out('\n\n')
+        psi4.print_out('    %s Energy Summary\n' % (name.upper()))
+        psi4.print_out('    -------------------------\n')
+        psi4.print_out('    DFT Reference Energy                  = %22.16lf\n' % (returnvalue-vdh))
+        psi4.print_out('    Scaled MP2 Correlation                = %22.16lf\n' % (vdh))
+        psi4.print_out('    @Final double-hybrid DFT total energy = %22.16lf\n\n' % (returnvalue))
 
     optstash.restore()
 
