@@ -291,9 +291,22 @@ protected:
     void fock_so();
     void ref_grad();
 
+    // Cholesky
+    void cd_ints();
+    void trans_cd();
+    void trans_cd_mp2();
+    void b_oo_cd();
+    void b_ov_cd();
+    void b_vv_cd();
+    void b_ij_cd();
+    void b_ia_cd();
+    void b_ab_cd();
+
     // OMP2
     void omp2_manager();
     void mp2_manager();
+    void cd_omp2_manager();
+    void cd_mp2_manager();
     void omp2_opdm();
     void omp2_tpdm();
     void mp2l_energy();
@@ -530,6 +543,7 @@ protected:
      string rotation_blocks;
      string conv_tei_type;
      string regularization; 
+     string do_cd; 
 
      double **C_pitzerA;     
      double **C_pitzerB;     

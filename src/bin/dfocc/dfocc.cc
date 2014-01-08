@@ -323,8 +323,10 @@ void DFOCC::title()
    else if (wfn_type_ == "DF-OCEPA(0)" && orb_opt_ == "FALSE") fprintf(outfile,"                       DF-CEPA(0)   \n");
    else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "TRUE") fprintf(outfile,"                       DF-OMP2.5 (DF-OO-MP2.5)   \n");
    else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "FALSE") fprintf(outfile,"                       DF-MP2.5  \n");
+   else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "TRUE") fprintf(outfile,"                      CD-OMP2 (CD-OO-MP2)   \n");
+   else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "FALSE") fprintf(outfile,"                       CD-MP2   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya\n") ; 
-   fprintf(outfile,"              Latest Revision Jan 7, 2014\n") ;
+   fprintf(outfile,"              Latest Revision Jan 8, 2014\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
@@ -338,6 +340,7 @@ double DFOCC::compute_energy()
 {   
 
         // Call the appropriate manager
+        do_cd = "FALSE";
         if (wfn_type_ == "DF-OMP2" && orb_opt_ == "TRUE") omp2_manager();
         else if (wfn_type_ == "DF-OMP2" && orb_opt_ == "FALSE") mp2_manager();
         else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "TRUE") omp3_manager();
@@ -346,6 +349,8 @@ double DFOCC::compute_energy()
         else if (wfn_type_ == "DF-OCEPA(0)" && orb_opt_ == "FALSE") cepa_manager();
         else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "TRUE") omp2_5_manager();
         else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "FALSE") mp2_5_manager();
+        else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "TRUE") cd_omp2_manager();
+        else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "FALSE") cd_mp2_manager();
 
         /*
         timer_on("DF-RHF GRAD");

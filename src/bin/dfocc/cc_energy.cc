@@ -156,7 +156,8 @@ else if (reference_ == "UNRESTRICTED") {
 
     //Singles-contribution
     Emp2_t1 = 0.0;
-    if (reference == "ROHF" && orb_opt_ == "FALSE" && wfn_type_ == "DF-OMP2") {
+    if (reference == "ROHF" && orb_opt_ == "FALSE") {
+        if (wfn_type_ == "DF-OMP2" || wfn_type_ == "CD-OMP2") {
         //Alpha
         Emp2_t1 = 0.0;
         for(int i = 0 ; i < naoccA; ++i){
@@ -171,6 +172,7 @@ else if (reference_ == "UNRESTRICTED") {
                 Emp2_t1 += t1B->get(i, a) * FockB->get(a + noccB, i + nfrzc);
             }
         }
+      }
     }// end if (reference == "ROHF") 
 
     Ecorr = Emp2AA + Emp2AB + Emp2BB + Emp2_t1;
