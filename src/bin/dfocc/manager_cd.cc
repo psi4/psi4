@@ -215,7 +215,7 @@ void DFOCC::cd_omp2_manager()
 	if (reference_ == "UNRESTRICTED") fprintf(outfile,"\tCD-SOS-OMP2 Total Energy (a.u.)    : %20.14f\n", Esosmp2);
 	if (reference_ == "UNRESTRICTED") fprintf(outfile,"\tCD-SCSN-OMP2 Total Energy (a.u.)   : %20.14f\n", Escsnmp2);
 	fprintf(outfile,"\tCD-OMP2 Correlation Energy (a.u.)  : %20.14f\n", Emp2L-Escf);
-	fprintf(outfile,"\tEdfomp2 - Eref (a.u.)              : %20.14f\n", Emp2L-Eref);
+	fprintf(outfile,"\tEcdomp2 - Eref (a.u.)              : %20.14f\n", Emp2L-Eref);
 	fprintf(outfile,"\tCD-OMP2 Total Energy (a.u.)        : %20.14f\n", Emp2L);
 	fprintf(outfile,"\t======================================================================= \n");
 	fprintf(outfile,"\n");
