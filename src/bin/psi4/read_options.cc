@@ -2631,7 +2631,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Maximum number of vectors used in amplitude DIIS -*/
     options.add_int("CC_DIIS_MAX_VECS",6);
     /*- Cutoff value for numerical procedures -*/
-    options.add_int("CUTOFF",10);
+    options.add_int("CUTOFF",8);
     /*- Convergence criterion for energy. See Table :ref:`Post-SCF
     Convergence <table:conv_corl>` for default convergence criteria for
     different calculation types. -*/
