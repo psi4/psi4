@@ -41,8 +41,10 @@ void DFOCC::cd_omp2_manager()
 	orbs_already_sc = 0;// menas orbitals are not semicanonical yet.
         timer_on("CD Integrals");
         cd_ints();
-        trans_cd();
         timer_off("CD Integrals");
+        timer_on("CD Trans");
+        trans_cd();
+        timer_off("CD Trans");
 
         // memalloc for density intermediates
         Jc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF J_Q", nQ_ref));

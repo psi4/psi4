@@ -34,6 +34,9 @@ dfoccwave(Options &options)
    
     DFOCC dfocc(Process::environment.wavefunction(), options);
     dfocc.compute_energy();
+    //boost::shared_ptr<Wavefunction> dfocc = boost::shared_ptr<Wavefunction>(new DFOCC(Process::environment.wavefunction(), options));
+    //Process::environment.set_wavefunction(dfocc);
+    //dfocc->compute_energy();
 
     // Shut down the timers
     tstop();

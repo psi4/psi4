@@ -140,7 +140,7 @@ do
 
     // CD
     else if (do_cd == "TRUE") { 
-        timer_on("CD Integrals");
+        timer_on("CD Trans");
         trans_cd();
         if (conv_tei_type == "DISK") { 
             tei_iajb_chem();
@@ -149,8 +149,7 @@ do
                 tei_ijab_anti_symm();
             }
         }// if (conv_tei_type == "DISK")  
-        timer_off("CD Integrals");
-        timer_on("CD REF Integrals");
+        timer_off("CD Trans");
         if (conv_tei_type == "DISK") { 
             tei_oooo_chem_ref();
             tei_ooov_chem_ref();
@@ -167,7 +166,6 @@ do
                 tei_ovov_anti_symm_ref();
             }
         }// if (conv_tei_type == "DISK")  
-        timer_off("CD REF Integrals");
     }// end if (do_cd == "TRUE")  
 
         // Fock

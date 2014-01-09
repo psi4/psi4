@@ -21,11 +21,13 @@
  */
 
 #include <libmints/mints.h>
+#include <libmints/sieve.h>
+#include <libmints/mintshelper.h>
+#include <libmints/wavefunction.h>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
-#include <libmints/mints.h>
-#include <libmints/sieve.h>
 #include <lib3index/cholesky.h>
+#include <psifiles.h>
 #include "psi4-dec.h"
 
 #include "defines.h"
@@ -123,13 +125,12 @@ void DFOCC::cd_ints()
       // Cholesky
 
       // read integrals from disk if they were generated in the SCF
-      /*
       if ( options_.get_str("SCF_TYPE") == "CD" ) {
           fprintf(outfile,"\tReading Cholesky vectors from disk ...\n");
           nQ = Process::environment.globals["NAUX (SCF)"];
           nQ_ref = nQ;
           fprintf(outfile,"\tCholesky decomposition threshold: %8.2le\n", options_.get_double("CHOLESKY_TOLERANCE"));
-          fprintf(outfile,"\nNumber of Cholesky vectors:   %5li\n",nQ);
+          fprintf(outfile,"\tNumber of Cholesky vectors:   %5li\n",nQ);
 
           // ntri comes from sieve above
           boost::shared_ptr<Matrix> Qmn = SharedMatrix(new Matrix("Qmn Integrals",nQ,ntri_cd));
@@ -151,15 +152,14 @@ void DFOCC::cd_ints()
           }
           bQso->write(psio_, PSIF_DFOCC_INTS);
       }// end if ( options_.get_str("SCF_TYPE") == "CD" ) 
-      */
 
-      //else {
+      else {
           // generate Cholesky 3-index integrals
           fprintf(outfile,"\tGenerating Cholesky vectors ...\n");
           boost::shared_ptr<BasisSet> primary = basisset();
           boost::shared_ptr<IntegralFactory> integral (new IntegralFactory(primary,primary,primary,primary));
           double tol_cd = options_.get_double("CHOLESKY_TOLERANCE");
-          boost::shared_ptr<CholeskyERI> Ch (new CholeskyERI(boost::shared_ptr<TwoBodyAOInt>(integral->eri()),0.0,tol_cd,Process::environment.get_memory()));
+          boost::shared_ptr<CholeskyERI> Ch (new CholeskyERI(boost::shared_ptr<TwoBodyAOInt>(integral->eri()),cutoff,tol_cd,Process::environment.get_memory()));
           Ch->choleskify();
           nQ  = Ch->Q();
           nQ_ref = nQ;
@@ -171,7 +171,7 @@ void DFOCC::cd_ints()
           fprintf(outfile,"\tCholesky decomposition threshold: %8.2le\n", options_.get_double("CHOLESKY_TOLERANCE"));
           fprintf(outfile,"\tNumber of Cholesky vectors:   %5li\n",nQ);
           fflush(outfile);
-      //}
+      }
 
 } // end df_corr
 
