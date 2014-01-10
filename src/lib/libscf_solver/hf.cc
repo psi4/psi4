@@ -1676,6 +1676,9 @@ double HF::compute_energy()
 //  Process::environment.globals["SCF QUADRUPOLE YZ"] =
 //  Process::environment.globals["SCF QUADRUPOLE ZZ"] =
 
+            Process::environment.globals["CURRENT DIPOLE X"] = Process::environment.globals["SCF DIPOLE X"];
+            Process::environment.globals["CURRENT DIPOLE Y"] = Process::environment.globals["SCF DIPOLE Y"];
+            Process::environment.globals["CURRENT DIPOLE Z"] = Process::environment.globals["SCF DIPOLE Z"];
         }
 
         save_information();

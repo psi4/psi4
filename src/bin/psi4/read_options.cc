@@ -3482,8 +3482,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       out-of-core algorithms are required. (Default: FOCK). -*/
       options.add_str("CFOUR_FOCK", "", "PK AO");
 
-      //FREQ_ALGORIT
-      //experimental use
+      /*- FREQ_ALGORIT experimental use -*/
+      options.add_str("CFOUR_FREQ_ALGORITHM", "STANDARD", "STANDARD PARALLEL");
 
       /*- Specifies whether in the correlation treatment all electron (OFF
       =0) or only the valence electrons (ON =1) are considered. This
@@ -3578,7 +3578,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Specifies whether gauge-including atomic orbitals are used (ON)
       or not (OFF). Default: ON for |cfour__cfour_props| =NMR  and =MAGNETIC, 
       otherwise OFF -*/
-      options.add_bool("CFOUR_GIAO", false);
+      options.add_bool("CFOUR_GIAO", true);
 
       //GIMIC
       //experimental use
