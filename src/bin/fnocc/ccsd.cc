@@ -180,9 +180,13 @@ double CoupledCluster::compute_energy() {
   }
 
   // integral sort
-  tstart();
-  SortIntegrals(nfzc,nfzv,nmo+nfzc+nfzv,ndoccact,nvirt,options_,reference_wavefunction_->isCIM());
-  tstop();
+  if (!reference_wavefunction_->isCIM()) {
+      tstart();
+      SortIntegrals(nfzc,nfzv,nmo+nfzc+nfzv,ndoccact,nvirt,options_,reference_wavefunction_->isCIM());
+      tstop();
+  }
+ 
+
 
   // MP4(SDQ)
   tstart();
