@@ -217,6 +217,15 @@ def run_cfour(name, **kwargs):
         c4out += data
     internal_p4c4_info['output'] = c4out
 
+# TODO, redo this when xj12fja more reliable
+#    # Call executable xja2fja to create FJOBARC, if normal xcfour invocation
+#    if cfour_executable == 'xcfour':
+#        try:
+#            retcode = subprocess.Popen(['xja2fja'], bufsize=0, stdout=subprocess.PIPE, env=lenv)
+#        except OSError as e:
+#            sys.stderr.write('Program xja2fja not found in path or execution failed. No FJOBARC: %s\n' % (e.strerror))
+#            p4out.write('Program xja2fja not found in path or execution failed. No FJOBARC: %s\n' % (e.strerror))
+
     # Restore user's OMP_NUM_THREADS
     if omp_num_threads_found == True:
         if psi4.has_option_changed('CFOUR', 'CFOUR_OMP_NUM_THREADS') == True:
