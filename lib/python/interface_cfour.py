@@ -155,11 +155,12 @@ def run_cfour(name, **kwargs):
 
     #print("""\n\n<<<<<  RUNNING CFOUR ...  >>>>>\n\n""")
     # Call executable xcfour, directing cfour output to the psi4 output file
+    cfour_executable = kwargs['c4exec'] if 'c4exec' in kwargs else 'xcfour'
     try:
-        retcode = subprocess.Popen(['xcfour'], bufsize=0, stdout=subprocess.PIPE, env=lenv)
+        retcode = subprocess.Popen([cfour_executable], bufsize=0, stdout=subprocess.PIPE, env=lenv)
     except OSError as e:
-        sys.stderr.write('Program xcfour not found in path or execution failed: %s\n' % (e.strerror))
-        p4out.write('Program xcfour not found in path or execution failed: %s\n' % (e.strerror))
+        sys.stderr.write('Program %s not found in path or execution failed: %s\n' % (cfour_executable, e.strerror))
+        p4out.write('Program %s not found in path or execution failed: %s\n' % (cfour_executable, e.strerror))
         sys.exit(1)
 
     c4out = ''
@@ -174,6 +175,15 @@ def run_cfour(name, **kwargs):
             p4out.flush()
         c4out += data
     internal_p4c4_info['output'] = c4out
+
+# TODO, redo this when xj12fja more reliable
+#    # Call executable xja2fja to create FJOBARC, if normal xcfour invocation
+#    if cfour_executable == 'xcfour':
+#        try:
+#            retcode = subprocess.Popen(['xja2fja'], bufsize=0, stdout=subprocess.PIPE, env=lenv)
+#        except OSError as e:
+#            sys.stderr.write('Program xja2fja not found in path or execution failed. No FJOBARC: %s\n' % (e.strerror))
+#            p4out.write('Program xja2fja not found in path or execution failed. No FJOBARC: %s\n' % (e.strerror))
 
     # Restore user's OMP_NUM_THREADS
     if omp_num_threads_found == True:
