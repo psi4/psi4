@@ -46,7 +46,6 @@ from p4xcpt import *  #CU add revisit
 
 P4C4_INFO = {}
 
-P4C4_INFO = {}
 
 def run_cfour(name, **kwargs):
     """Function that prepares environment and input files
