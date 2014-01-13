@@ -667,6 +667,7 @@ Gradient methods available through P4C4 interface
 
 .. _`table:cfour_cc_program`:
 
+.. notes on preferred modules from JFS
 .. comment always abcdtype = aobasis (but sometimes 
 .. comment ncc does rhf ccsdt(q)
 .. comment reccommended code to do with, not only code (b/c mrcc can do much of this)
