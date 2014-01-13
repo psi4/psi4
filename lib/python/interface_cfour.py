@@ -32,6 +32,7 @@ import os
 import subprocess
 import re
 import inspect
+import random
 import psi4
 import p4const
 import p4util
@@ -42,8 +43,8 @@ from molutil import *
 from functional import *
 # never import driver, wrappers, or aliases into this file
 
-
 P4C4_INFO = {}
+
 
 def run_cfour(name, **kwargs):
     """Function that prepares environment and input files
