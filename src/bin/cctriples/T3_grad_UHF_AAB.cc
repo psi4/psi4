@@ -581,7 +581,7 @@ extern void T3_UHF_AAB_abc(double ***W, double ***V, int disc, int nirreps,
 			    ac = FAAints.params->colidx[A][C];
 			    bc = FAAints.params->colidx[B][C];
 			    for(d=0; d < bvirtpi[Gd]; d++) {
-			      DAB.matrix[Ga][a][b] += 0.5 * WABc[Gac][ac][d] * (WABc[Gbc][bc][d] + VABc[Gbc][bc][d]);
+			      DAB.matrix[Ga][b][a] += 0.5 * WABc[Gac][ac][d] * (WABc[Gbc][bc][d] + VABc[Gbc][bc][d]);
 			    } /* d */
 			  } /* c */
 			} /* b */
@@ -599,7 +599,7 @@ extern void T3_UHF_AAB_abc(double ***W, double ***V, int disc, int nirreps,
 		    for(ab=0; ab < FAAints.params->coltot[Gab]; ab++) {
 		      for(c=0; c < bvirtpi[Gc]; c++) {
 			for(d=0; d < bvirtpi[Gd]; d++) {
-			  Dab.matrix[Gc][c][d] += 0.25 * WABc[Gab][ab][c] * (WABc[Gab][ab][d] + VABc[Gab][ab][d]);
+			  Dab.matrix[Gc][d][c] += 0.25 * WABc[Gab][ab][c] * (WABc[Gab][ab][d] + VABc[Gab][ab][d]);
 			}
 		      }
 		    } /* ab */
