@@ -127,7 +127,7 @@ B. Configuration and Compilation
      In the top-level psi4 directory, create a file like "do-configure" with 
      the configure command and options on one line. ::
 
-        >>> cat do-configure
+        >>> vi do-configure
         ../configure [your compilation configuration options here]
         >>> chmod u+x do-configure
         >>> cd obj
@@ -213,6 +213,9 @@ compiling and installing the PSI4 package.
           ../configure --prefix=/usr/local/psi4 --with-blas='-mkl' --with-cc=icc --with-cxx=icpc --with-fc=ifort  --with-opt='-O2 -static -no-prec-div' --with-incdirs=-mkl
 
        .. note:: It's ``-mkl``, not ``-lmkl``.
+
+       .. warning:: A few users have reported errors with MKL 10.  Use at
+          least version 11.
 
        .. warning:: There seems to be a problem with icpc 12.0.2 and possibly earlier
           12.0 versions, giving an error like::
@@ -567,9 +570,8 @@ BLAS and LAPACK recommendations when building PSI4:
 
 (2) Perhaps the best choice, if you have it available, is
     Intel's MKL library, which includes BLAS and LAPACK (note: use
-    version 11 or later, we had difficulty with version 10 for very
-    large coupled-cluster computations).  MKL is efficient and works
-    well in threaded mode.
+    version 11 or later, we had reports of occasional errors using version 
+    10).  MKL is efficient and works well in threaded mode.
 
     Otherwise, the simplest choice is to use ATLAS
     (http://math-atlas.sourceforge.net/), which is readily available
