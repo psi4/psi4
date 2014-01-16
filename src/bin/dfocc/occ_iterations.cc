@@ -311,6 +311,7 @@ fflush(outfile);
     }
 
     if (rms_wog < tol_grad && biggest_mograd < mograd_max) break;
+    if (fabs(DE) <= tol_Eod) break;
 
     if (rms_wog >= DIVERGE) {
         throw PSIEXCEPTION("DF-OCC iterations are diverging");
