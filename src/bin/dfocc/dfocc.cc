@@ -92,6 +92,7 @@ void DFOCC::common_init()
     conv_tei_type=options_.get_str("CONV_TEI_TYPE");
     pcg_beta_type_=options_.get_str("PCG_BETA_TYPE");
     regularization=options_.get_str("REGULARIZATION");
+    read_scf_3index=options_.get_str("READ_SCF_3INDEX");
 
     //title
     title();
@@ -326,7 +327,7 @@ void DFOCC::title()
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "TRUE") fprintf(outfile,"                      CD-OMP2 (CD-OO-MP2)   \n");
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "FALSE") fprintf(outfile,"                       CD-MP2   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya\n") ; 
-   fprintf(outfile,"              Latest Revision Jan 15, 2014\n") ;
+   fprintf(outfile,"              Latest Revision Jan 17, 2014\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");

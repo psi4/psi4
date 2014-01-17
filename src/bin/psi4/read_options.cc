@@ -2721,6 +2721,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("ORB_OPT",true);
     /*- Do use regularized denominators?  -*/
     options.add_bool("REGULARIZATION",false);
+    /*- Do read 3-index integrals from SCF files?  -*/
+    options.add_bool("READ_SCF_3INDEX",true);
   }
   if (name == "MRCC"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/

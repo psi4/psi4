@@ -102,12 +102,16 @@ def run_dfomp2(name, **kwargs):
     an density-fitted orbital-optimized MP2 computation
 
     """
+    optstash = p4util.OptionsState(
+        ['SCF','DF_INTS_IO'])
+
     # overwrite symmetry
     molecule = psi4.get_active_molecule()
     molecule.update_geometry()
     molecule.reset_point_group('c1')
 
-    psi4.set_global_option('SCF_TYPE', 'DF')
+    #psi4.set_global_option('SCF_TYPE', 'DF')
+    psi4.set_local_option('SCF','DF_INTS_IO', 'SAVE')
     # Bypass routine scf if user did something special to get it to converge
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
         scf_helper(name, **kwargs)
@@ -130,7 +134,7 @@ def run_cdomp2(name, **kwargs):
     molecule.update_geometry()
     molecule.reset_point_group('c1')
 
-    psi4.set_global_option('SCF_TYPE', 'CD')
+    #psi4.set_global_option('SCF_TYPE', 'CD')
     psi4.set_local_option('SCF','DF_INTS_IO', 'SAVE')
     # Bypass routine scf if user did something special to get it to converge
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):

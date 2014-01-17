@@ -17,6 +17,7 @@ set {
   guess sad
   reference uhf
   freeze_core true
+  scf_type cd
 }
 energy('cd-omp2')
 
