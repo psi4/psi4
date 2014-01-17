@@ -544,6 +544,7 @@ protected:
      string conv_tei_type;
      string regularization; 
      string do_cd; 
+     string read_scf_3index; 
 
      double **C_pitzerA;     
      double **C_pitzerB;     
