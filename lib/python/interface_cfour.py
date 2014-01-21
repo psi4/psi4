@@ -79,8 +79,26 @@ def run_cfour(name, **kwargs):
     :type path: string
     :param path:
 
-        Indicates path to Cfour scratch directory. Otherwise, the
-        default is a subdirectory within the Psi4 scratch directory.
+        Indicates path to Cfour scratch directory (with respect to Psi4
+        scratch directory). Otherwise, the default is a subdirectory
+        within the Psi4 scratch directory.
+
+        If specified, GENBAS and/or ZMAT within will be used.
+
+    :type genbas: string
+    :param genbas:
+
+        Indicates that contents should be used for GENBAS file.
+
+    GENBAS is a complicated topic. It is quite unnecessary if the
+    molecule is from a molecule {...} block and basis is set through
+    |Psifours| BASIS keyword. In that case, a GENBAS is written from
+    LibMints and all is well. Otherwise, a GENBAS is looked for in
+    the usual places: PSIPATH, PATH, PSIDATADIR/basis. If path kwarg is
+    specified, also looks there preferentially for a GENBAS. Can
+    also specify GENBAS within an input file through a string and
+    setting the genbas kwarg. Note that due to the input parser's
+    aggression, blank lines need to be replaced by the text blankline.
 
     """
     lowername = name.lower()
@@ -112,10 +130,16 @@ def run_cfour(name, **kwargs):
     lenv = os.environ
     lenv['PATH'] = ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':')]) + ':' + lenv.get('PATH') + ':' + psi4.Process.environment["PSIDATADIR"] + '/basis' + ':' + psi4.psi_top_srcdir() + '/lib/basis'
 
+    if 'path' in kwargs:
+        lenv['PATH'] = kwargs['path'] + ':' + lenv['PATH']
+
     # Load the GENBAS file
     genbas_path = qcdb.search_file('GENBAS', lenv['PATH'])
     if genbas_path:
-        shutil.copy2(genbas_path, psioh.get_default_path() + cfour_tmpdir)
+        try:
+            shutil.copy2(genbas_path, psioh.get_default_path() + cfour_tmpdir)
+        except shutil.Error:  # should only fail if src and dest equivalent
+            pass
         psi4.print_out("\n  GENBAS loaded from %s\n" % (genbas_path))
         psi4.print_out("  CFOUR to be run from %s\n" % (psioh.get_default_path() + cfour_tmpdir))
     else:
@@ -133,8 +157,12 @@ def run_cfour(name, **kwargs):
         psi4.print_out(lenv['PATH'].replace(':', ', '))
 
     # Generate the ZMAT input file in scratch
-    with open('ZMAT', 'w') as cfour_infile:
-        cfour_infile.write(write_zmat(lowername, dertype))
+    if 'path' in kwargs and os.path.isfile('ZMAT'):
+        psi4.print_out("  ZMAT loaded from %s\n" % (psioh.get_default_path() + kwargs['path'] + '/ZMAT'))
+    else:
+        with open('ZMAT', 'w') as cfour_infile:
+            cfour_infile.write(write_zmat(lowername, dertype))
+
     internal_p4c4_info['zmat'] = open('ZMAT', 'r').read()
     #psi4.print_out('\n====== Begin ZMAT input for CFOUR ======\n')
     #psi4.print_out(open('ZMAT', 'r').read())
@@ -143,7 +171,13 @@ def run_cfour(name, **kwargs):
     #print(open('ZMAT', 'r').read())
     #print('======= End ZMAT input for CFOUR =======\n')
 
+    if 'genbas' in kwargs:
+        with open('GENBAS', 'w') as cfour_basfile:
+            cfour_basfile.write(kwargs['genbas'].replace('\nblankline\n', '\n\n'))
+        psi4.print_out('  GENBAS loaded from kwargs string\n')
+
     # Close psi4 output file and reopen with filehandle
+    print('output in', current_directory + '/' + psi4.outfile_name())
     psi4.close_outfile()
     p4out = open(current_directory + '/' + psi4.outfile_name(), 'a')
 
@@ -177,15 +211,6 @@ def run_cfour(name, **kwargs):
         c4out += data
     internal_p4c4_info['output'] = c4out
 
-# TODO, redo this when xj12fja more reliable
-#    # Call executable xja2fja to create FJOBARC, if normal xcfour invocation
-#    if cfour_executable == 'xcfour':
-#        try:
-#            retcode = subprocess.Popen(['xja2fja'], bufsize=0, stdout=subprocess.PIPE, env=lenv)
-#        except OSError as e:
-#            sys.stderr.write('Program xja2fja not found in path or execution failed. No FJOBARC: %s\n' % (e.strerror))
-#            p4out.write('Program xja2fja not found in path or execution failed. No FJOBARC: %s\n' % (e.strerror))
-
     # Restore user's OMP_NUM_THREADS
     if omp_num_threads_found == True:
         if psi4.has_option_changed('CFOUR', 'CFOUR_OMP_NUM_THREADS') == True:
@@ -198,7 +223,7 @@ def run_cfour(name, **kwargs):
 
     c4files = {}
     p4out.write('\n')
-    for item in ['GRD', 'FCMFINAL']:
+    for item in ['GRD', 'FCMFINAL', 'DIPOL']:
         try:
             with open(psioh.get_default_path() + cfour_tmpdir + '/' + item, 'r') as handle:
                 c4files[item] = handle.read()
@@ -217,14 +242,20 @@ def run_cfour(name, **kwargs):
         qcdbmolecule = qcdb.Molecule(molecule.create_psi4_string_from_molecule())
         qcdbmolecule.update_geometry()
 
-    psivar, c4grad = qcdb.cfour.harvest(qcdbmolecule, c4out, **c4files)
-
-
-
+    # c4mol, if it exists, is dinky, just a clue to geometry of cfour results
+    psivar, c4grad, c4mol = qcdb.cfour.harvest(qcdbmolecule, c4out, **c4files)
 
     # Absorb results into psi4 data structures
     for key in psivar.keys():
         psi4.set_variable(key.upper(), float(psivar[key]))
+
+    if qcdbmolecule is None and c4mol is not None:
+        molecule = geometry(c4mol.create_psi4_string_from_molecule(), name='blank_molecule_psi4_yo')
+        molecule.update_geometry()
+        # This case arises when no Molecule going into calc (cfour {} block) but want
+        #   to know the orientation at which grad, properties, etc. are returned (c4mol).
+        #   c4mol is dinky, w/o chg, mult, dummies and retains name
+        #   blank_molecule_psi4_yo so as to not interfere with future cfour {} blocks
 
     if c4grad:
         mat = psi4.Matrix(len(c4grad), 3)
