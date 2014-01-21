@@ -149,10 +149,12 @@ class Table(object):
                 datarow[1][col] = datarow[1][col] * Factor
 
 
-def banner(text, type=1, width=35):
+def banner(text, type=1, width=35, strNotOutfile=False):
     """Function to print *text* to output file in a banner of
     minimum width *width* and minimum three-line height for
-    *type* = 1 or one-line height for *type* = 2.
+    *type* = 1 or one-line height for *type* = 2. If *strNotOutfile*
+    is True, function returns string rather than printing it
+    to output file.
 
     """
     lines = text.split('\n')
@@ -175,7 +177,10 @@ def banner(text, type=1, width=35):
         for line in lines:
             banner += (' ' + line + ' ').center(max_length, '=')
 
-    psi4.print_out(banner)
+    if strNotOutfile:
+        return banner
+    else:
+        psi4.print_out(banner)
 
 
 def print_stdout(stuff):

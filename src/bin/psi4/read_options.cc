@@ -3442,7 +3442,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       freedom. At a stationary point on the potential energy surface, both
       options will give equivalent harmonic force fields, but OFF should
       be used at non-stationary points. -*/
-      options.add_bool("CFOUR_FD_PROJECT", true);
+      options.add_str("CFOUR_FD_PROJECT", "ON", "ON OFF");
 
       /*- Specifies the step length in mass-weighted coordinates (in
       :math:`10^{-4} amu^{1/2} bohr` ) used in generating the force constant matrix
@@ -3578,7 +3578,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Specifies whether gauge-including atomic orbitals are used (ON)
       or not (OFF). Default: ON for |cfour__cfour_props| =NMR  and =MAGNETIC, 
       otherwise OFF -*/
-      options.add_bool("CFOUR_GIAO", true);
+      options.add_str("CFOUR_GIAO", "", "ON OFF");
 
       //GIMIC
       //experimental use

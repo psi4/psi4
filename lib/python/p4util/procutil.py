@@ -25,6 +25,7 @@ import os
 import sys
 import pickle
 import collections
+import inspect
 import psi4
 import inputparser
 from psiexceptions import *
@@ -64,7 +65,7 @@ def get_psifile(fileno, pidspace=str(os.getpid())):
     return targetfile
 
 
-def format_molecule_for_input(mol):
+def format_molecule_for_input(mol, name=''):
     """Function to return a string of the output of
     :py:func:`inputparser.process_input` applied to the XYZ
     format of molecule, passed as either fragmented
@@ -77,7 +78,7 @@ def format_molecule_for_input(mol):
     # when mol is already a string
     if isinstance(mol, basestring):
         mol_string = mol
-        mol_name = ''
+        mol_name = name
     # when mol is psi4.Molecule or qcdb.Molecule object
     else:
         # save_string_for_psi4 is the more detailed choice as it includes fragment
@@ -93,8 +94,10 @@ def format_molecule_for_input(mol):
 
         mol_name = mol.name()
 
-    commands = 'inputparser.process_input("""\nmolecule %s {\n%s\n}\n""", 0)\n' % (mol_name, mol_string)
-    return eval(commands)
+    commands = """\nmolecule %s {\n%s\n}\n""" % (mol_name, mol_string)
+    return commands
+    #commands = 'inputparser.process_input("""\nmolecule %s {\n%s\n}\n""", 0)\n' % (mol_name, mol_string)
+    #return eval(commands)
 
 
 def format_options_for_input():
@@ -248,7 +251,7 @@ def extract_sowreap_from_output(sowout, quantity, sownum, linkage, allvital=Fals
         freagent.close()
     return E
 
-def prepare_options_for_modules(changedOnly=False):
+def prepare_options_for_modules(changedOnly=False, commandsInsteadDict=False):
     """Function to return a string of commands to replicate the
     current state of user-modified options. Used to capture C++
     options information for distributed (sow/reap) input files.
@@ -258,6 +261,8 @@ def prepare_options_for_modules(changedOnly=False):
        - Need some option to get either all or changed
 
        - Need some option to either get dict or set string or psimod command list
+
+       - command return doesn't revoke has_changed setting for unchanged with changedOnly=False
 
     """
     modules = [
@@ -272,10 +277,16 @@ def prepare_options_for_modules(changedOnly=False):
         ]
 
     options = {'GLOBALS': {}}
+    commands = ''
     for opt in psi4.get_global_option_list():
         if psi4.has_global_option_changed(opt) or not changedOnly:
-            options['GLOBALS'][opt] = {'value': psi4.get_global_option(opt),
+            val = psi4.get_global_option(opt)
+            options['GLOBALS'][opt] = {'value': val,
                                        'has_changed': psi4.has_global_option_changed(opt)}
+            if isinstance(val, basestring):
+                commands += """psi4.set_global_option('%s', '%s')\n""" % (opt, val)
+            else:
+                commands += """psi4.set_global_option('%s', %s)\n""" % (opt, val)
             #if changedOnly:
             #    print('Appending module %s option %s value %s has_changed %s.' % \
             #        ('GLOBALS', opt, psi4.get_global_option(opt), psi4.has_global_option_changed(opt)))
@@ -284,12 +295,58 @@ def prepare_options_for_modules(changedOnly=False):
                 if psi4.has_option_changed(module, opt) or not changedOnly:
                     if not module in options:
                         options[module] = {}
-                    options[module][opt] = {'value': psi4.get_option(module, opt),
+                    val = psi4.get_option(module, opt)
+                    options[module][opt] = {'value': val,
                                             'has_changed': psi4.has_option_changed(module, opt)}
+                    if isinstance(val, basestring):
+                        commands += """psi4.set_local_option('%s', '%s', '%s')\n""" % (module, opt, val)
+                    else:
+                        commands += """psi4.set_local_option('%s', '%s', %s)\n""" % (module, opt, val)
                     #if changedOnly:
                     #    print('Appending module %s option %s value %s has_changed %s.' % \
                     #        (module, opt, psi4.get_option(module, opt), psi4.has_option_changed(module, opt)))
             except RuntimeError:
                 pass
 
-    return options
+    if commandsInsteadDict:
+        return commands
+    else:
+        return options
+
+
+def mat2arr(mat):
+    """Function to convert psi4.Matrix *mat* to Python array of arrays.
+    Expects psi4.Matrix to be flat with respect to symmetry.
+
+    """
+    if mat.rowdim().n() != 1:
+        raise ValidationError('Cannot convert Matrix with symmetry.')
+    arr = []
+    for row in range(mat.rowdim()[0]):
+        temp = []
+        for col in range(mat.coldim()[0]):
+            temp.append(mat.get(row, col))
+        arr.append(temp)
+    return arr
+
+
+def format_currentstate_for_input(func, name, allButMol=False, **kwargs):
+    """Function to return an input file in preprocessed psithon.
+    Captures memory, molecule, options, function, method, and kwargs.
+    Used to write distributed (sow/reap) input files.
+
+    """
+    commands = """\n# This is a psi4 input file auto-generated from the %s() wrapper.\n\n""" % (inspect.stack()[1][3])
+    commands += """memory %d mb\n\n""" % (int(0.000001 * psi4.get_memory()))
+    if not allButMol:
+        molecule = psi4.get_active_molecule()
+        molecule.update_geometry()
+        commands += format_molecule_for_input(molecule)
+        commands += '\n'
+    commands += prepare_options_for_modules(changedOnly=True, commandsInsteadDict=True)
+    commands += """\n%s('%s', """ % (func.__name__, name.lower())
+    for key in kwargs.keys():
+        commands += """%s=%r, """ % (key, kwargs[key])
+    commands += ')\n\n'
+
+    return commands
