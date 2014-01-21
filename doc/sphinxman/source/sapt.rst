@@ -20,7 +20,7 @@ SAPT: Symmetry-Adapted Perturbation Theory
    when the specification is in Z-matrix format. Use a Cartesian representation 
    to avoid this problem.
 
-.. warning:: In early versions (notably |Psifour| alpha circa 2011
+.. caution:: In early versions (notably |Psifour| alpha circa 2011
    and before), frozen core was implemented incompletely and for
    only selected terms. Comparisons with papers published using early
    |PSIfour| SAPT code may show discrepancies of 0.01-0.10 kcal/mol in
