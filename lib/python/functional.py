@@ -651,6 +651,15 @@ def build_wb88_x_functional(name):
 
     return fun
 
+def build_wb88_x_functional(name):
+
+    # Call this first
+    fun = psi4.Functional.build_base('wB88_X')
+
+    # => End User-Customization <= #
+
+    return fun
+
 
 def build_primitive_functional(name):
 
@@ -714,6 +723,10 @@ functionals = {
         'ft97_c'      : build_primitive_functional,
         'b_c'         : build_primitive_functional,
         'm_c'         : build_primitive_functional,
+        'pbea_c'      : build_primitive_functional, 
+        'pw92a_c'     : build_primitive_functional, 
+        'wpbe_c'      : build_primitive_functional,
+        'wpw92_c'     : build_primitive_functional, 
     }
 
 
@@ -817,6 +830,68 @@ def build_wpbesol_x_superfunctional(name, npoints, deriv):
     # Set GKS up after adding functionals
     sup.set_x_omega(0.3)
     sup.set_c_omega(0.0)
+    sup.set_x_alpha(0.0)
+    sup.set_c_alpha(0.0)
+
+    # => End User-Customization <= #
+
+    # Call this last
+    sup.allocate()
+    return sup
+
+def build_wpw92_c_superfunctional(name, npoints, deriv):
+
+    # Call this first
+    sup = psi4.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('wPW92_C')
+    # Tab in, trailing newlines
+    sup.set_description('    Short-Range PW92 Correlation Functional\n')
+    # Tab in, trailing newlines
+    sup.set_citation('    TODO\n')
+
+    # Add member functionals
+    sup.add_c_functional(build_functional('wPW92_C'))
+
+    # Set GKS up after adding functionals
+    sup.set_x_omega(0.0)
+    sup.set_c_omega(0.3)
+    sup.set_x_alpha(0.0)
+    sup.set_c_alpha(0.0)
+
+    # => End User-Customization <= #
+
+    # Call this last
+    sup.allocate()
+    return sup
+
+def build_wpbe_c_superfunctional(name, npoints, deriv):
+
+    # Call this first
+    sup = psi4.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('wPBE_C')
+    # Tab in, trailing newlines
+    sup.set_description('    Short-Range PBE Correlation Functional\n')
+    # Tab in, trailing newlines
+    sup.set_citation('    TODO\n')
+
+    # Add member functionals
+    sup.add_c_functional(build_functional('wPBE_C'))
+
+    # Set GKS up after adding functionals
+    sup.set_x_omega(0.0)
+    sup.set_c_omega(0.3)
     sup.set_x_alpha(0.0)
     sup.set_c_alpha(0.0)
 
@@ -3183,6 +3258,10 @@ superfunctionals = {
         'dsd-blyp'        : build_dsd_blyp_superfunctional,  # -D variants still need to be added
         'dsd-pbep86'      : build_dsd_pbep86_superfunctional,
         'dsd-pbepbe'      : build_dsd_pbepbe_superfunctional,
+        'pbea_c'          : build_primitive_superfunctional,
+        'pw92a_c'         : build_primitive_superfunctional,
+        'wpbe_c'          : build_wpbe_c_superfunctional,
+        'wpw92_c'         : build_wpw92_c_superfunctional,
     }
 
 # Insert -D/-D2/-D3 aliases into superfunctionals dict
