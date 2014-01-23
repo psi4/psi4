@@ -2,7 +2,7 @@
 
 refnuc      =  25.59060766929188 #TEST
 refscf      = -129.25927209151436 #TEST
-refomp2     = -129.58979051854723 #TEST
+refomp2     = -129.58978837298324 #TEST
 
 memory 256 mb
 
@@ -17,6 +17,7 @@ set {
   guess sad
   reference uhf
   freeze_core true
+  scf_type cd
 }
 energy('cd-omp2')
 
