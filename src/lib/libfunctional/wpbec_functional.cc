@@ -863,9 +863,9 @@ void wPBECFunctional::pbec_f(
     
     double P = pow(z+1.0,2.0/3.0)*(1.0/2.0)+pow(-z+1.0,2.0/3.0)*(1.0/2.0);
     
-    //  > t < //
+    //  > t2 < //
     
-    double t = (sqrt(s)*(1.0/2.0))/(P*ks*rho);
+    double t2 = 1.0/(P*P)*1.0/(ks*ks)*1.0/(rho*rho)*s*(1.0/4.0);
     
     //  > A < //
     
@@ -873,7 +873,7 @@ void wPBECFunctional::pbec_f(
     
     //  > H < //
     
-    double H = G*(P*P*P)*log((B_PBE*(t*t)*(A*(t*t)+1.0))/(G*(A*(t*t)+(A*A)*(t*t*t*t)+1.0))+1.0);
+    double H = G*(P*P*P)*log((B_PBE*t2*(A*t2+1.0))/(G*(A*t2+(A*A)*(t2*t2)+1.0))+1.0);
     
     //  > Z < //
     
@@ -891,21 +891,21 @@ void wPBECFunctional::pbec_f(
     
     double P_z = 1.0/pow(z+1.0,1.0/3.0)*(1.0/3.0)-1.0/pow(-z+1.0,1.0/3.0)*(1.0/3.0);
     
-    //  > t_rho < //
+    //  > t2_rho < //
     
-    double t_rho = (1.0/(rho*rho)*sqrt(s)*(-1.0/2.0))/(P*ks);
+    double t2_rho = 1.0/(P*P)*1.0/(ks*ks)*1.0/(rho*rho*rho)*s*(-1.0/2.0);
     
-    //  > t_s < //
+    //  > t2_s < //
     
-    double t_s = (1.0/sqrt(s)*(1.0/4.0))/(P*ks*rho);
+    double t2_s = 1.0/(P*P)*1.0/(ks*ks)*1.0/(rho*rho)*(1.0/4.0);
     
-    //  > t_ks < //
+    //  > t2_ks < //
     
-    double t_ks = (1.0/(ks*ks)*sqrt(s)*(-1.0/2.0))/(P*rho);
+    double t2_ks = 1.0/(P*P)*1.0/(ks*ks*ks)*1.0/(rho*rho)*s*(-1.0/2.0);
     
-    //  > t_P < //
+    //  > t2_P < //
     
-    double t_P = (1.0/(P*P)*sqrt(s)*(-1.0/2.0))/(ks*rho);
+    double t2_P = 1.0/(P*P*P)*1.0/(ks*ks)*1.0/(rho*rho)*s*(-1.0/2.0);
     
     //  > A_ec < //
     
@@ -917,15 +917,15 @@ void wPBECFunctional::pbec_f(
     
     //  > H_P < //
     
-    double H_P = G*(P*P)*log((B_PBE*(t*t)*(A*(t*t)+1.0))/(G*(A*(t*t)+(A*A)*(t*t*t*t)+1.0))+1.0)*3.0;
+    double H_P = G*(P*P)*log((B_PBE*t2*(A*t2+1.0))/(G*(A*t2+(A*A)*(t2*t2)+1.0))+1.0)*3.0;
     
-    //  > H_t < //
+    //  > H_t2 < //
     
-    double H_t = (G*(P*P*P)*((A*B_PBE*(t*t*t)*2.0)/(G*(A*(t*t)+(A*A)*(t*t*t*t)+1.0))+(B_PBE*t*(A*(t*t)+1.0)*2.0)/(G*(A*(t*t)+(A*A)*(t*t*t*t)+1.0))-(B_PBE*(t*t)*(A*t*2.0+(A*A)*(t*t*t)*4.0)*(A*(t*t)+1.0)*1.0/pow(A*(t*t)+(A*A)*(t*t*t*t)+1.0,2.0))/G))/((B_PBE*(t*t)*(A*(t*t)+1.0))/(G*(A*(t*t)+(A*A)*(t*t*t*t)+1.0))+1.0);
+    double H_t2 = (G*(P*P*P)*((B_PBE*(A*t2+1.0))/(G*(A*t2+(A*A)*(t2*t2)+1.0))+(A*B_PBE*t2)/(G*(A*t2+(A*A)*(t2*t2)+1.0))-(B_PBE*t2*(A+(A*A)*t2*2.0)*(A*t2+1.0)*1.0/pow(A*t2+(A*A)*(t2*t2)+1.0,2.0))/G))/((B_PBE*t2*(A*t2+1.0))/(G*(A*t2+(A*A)*(t2*t2)+1.0))+1.0);
     
     //  > H_A < //
     
-    double H_A = (G*(P*P*P)*((B_PBE*(t*t*t*t))/(G*(A*(t*t)+(A*A)*(t*t*t*t)+1.0))-(B_PBE*(t*t)*(A*(t*t*t*t)*2.0+t*t)*(A*(t*t)+1.0)*1.0/pow(A*(t*t)+(A*A)*(t*t*t*t)+1.0,2.0))/G))/((B_PBE*(t*t)*(A*(t*t)+1.0))/(G*(A*(t*t)+(A*A)*(t*t*t*t)+1.0))+1.0);
+    double H_A = (G*(P*P*P)*((B_PBE*(t2*t2))/(G*(A*t2+(A*A)*(t2*t2)+1.0))-(B_PBE*t2*(t2+A*(t2*t2)*2.0)*(A*t2+1.0)*1.0/pow(A*t2+(A*A)*(t2*t2)+1.0,2.0))/G))/((B_PBE*t2*(A*t2+1.0))/(G*(A*t2+(A*A)*(t2*t2)+1.0))+1.0);
     
     //  > Z_rho < //
     
@@ -951,17 +951,17 @@ void wPBECFunctional::pbec_f(
     
     double f_A = H_A*f_H;
     
-    //  > f_t < //
+    //  > f_t2 < //
     
-    double f_t = H_t*f_H;
+    double f_t2 = H_t2*f_H;
     
     //  > f_P < //
     
-    double f_P = A_P*f_A+H_P*f_H+f_t*t_P;
+    double f_P = A_P*f_A+H_P*f_H+f_t2*t2_P;
     
     //  > f_ks < //
     
-    double f_ks = f_t*t_ks;
+    double f_ks = f_t2*t2_ks;
     
     //  > f_ec < //
     
@@ -969,7 +969,7 @@ void wPBECFunctional::pbec_f(
     
     //  > f_rho < //
     
-    *f_rho = Z_rho*f_Z+ec_rho*f_ec+f_ks*ks_rho+f_t*t_rho;
+    *f_rho = Z_rho*f_Z+ec_rho*f_ec+f_ks*ks_rho+f_t2*t2_rho;
     
     //  > f_z < //
     
@@ -977,7 +977,7 @@ void wPBECFunctional::pbec_f(
     
     //  > f_s < //
     
-    *f_s = f_t*t_s;
+    *f_s = f_t2*t2_s;
 }
 void wPBECFunctional::pw92c_sr_f(
     double omega,
@@ -1043,9 +1043,9 @@ void wPBECFunctional::pbec_sr_f(
     
     double P = pow(z+1.0,2.0/3.0)*(1.0/2.0)+pow(-z+1.0,2.0/3.0)*(1.0/2.0);
     
-    //  > t < //
+    //  > t2 < //
     
-    double t = (sqrt(s)*(1.0/2.0))/(P*ks*rho);
+    double t2 = 1.0/(P*P)*1.0/(ks*ks)*1.0/(rho*rho)*s*(1.0/4.0);
     
     //  > A < //
     
@@ -1053,7 +1053,7 @@ void wPBECFunctional::pbec_sr_f(
     
     //  > H < //
     
-    double H = G*(P*P*P)*log((B*(t*t)*(A*(t*t)+1.0))/(G*(A*(t*t)+(A*A)*(t*t*t*t)+1.0))+1.0);
+    double H = G*(P*P*P)*log((B*t2*(A*t2+1.0))/(G*(A*t2+(A*A)*(t2*t2)+1.0))+1.0);
     
     //  > Z < //
     
@@ -1079,21 +1079,21 @@ void wPBECFunctional::pbec_sr_f(
     
     double P_z = 1.0/pow(z+1.0,1.0/3.0)*(1.0/3.0)-1.0/pow(-z+1.0,1.0/3.0)*(1.0/3.0);
     
-    //  > t_rho < //
+    //  > t2_rho < //
     
-    double t_rho = (1.0/(rho*rho)*sqrt(s)*(-1.0/2.0))/(P*ks);
+    double t2_rho = 1.0/(P*P)*1.0/(ks*ks)*1.0/(rho*rho*rho)*s*(-1.0/2.0);
     
-    //  > t_s < //
+    //  > t2_s < //
     
-    double t_s = (1.0/sqrt(s)*(1.0/4.0))/(P*ks*rho);
+    double t2_s = 1.0/(P*P)*1.0/(ks*ks)*1.0/(rho*rho)*(1.0/4.0);
     
-    //  > t_ks < //
+    //  > t2_ks < //
     
-    double t_ks = (1.0/(ks*ks)*sqrt(s)*(-1.0/2.0))/(P*rho);
+    double t2_ks = 1.0/(P*P)*1.0/(ks*ks*ks)*1.0/(rho*rho)*s*(-1.0/2.0);
     
-    //  > t_P < //
+    //  > t2_P < //
     
-    double t_P = (1.0/(P*P)*sqrt(s)*(-1.0/2.0))/(ks*rho);
+    double t2_P = 1.0/(P*P*P)*1.0/(ks*ks)*1.0/(rho*rho)*s*(-1.0/2.0);
     
     //  > A_ec_sr < //
     
@@ -1109,19 +1109,19 @@ void wPBECFunctional::pbec_sr_f(
     
     //  > H_B < //
     
-    double H_B = ((P*P*P)*(t*t)*(A*(t*t)+1.0))/(((B*(t*t)*(A*(t*t)+1.0))/(G*(A*(t*t)+(A*A)*(t*t*t*t)+1.0))+1.0)*(A*(t*t)+(A*A)*(t*t*t*t)+1.0));
+    double H_B = ((P*P*P)*t2*(A*t2+1.0))/(((B*t2*(A*t2+1.0))/(G*(A*t2+(A*A)*(t2*t2)+1.0))+1.0)*(A*t2+(A*A)*(t2*t2)+1.0));
     
     //  > H_P < //
     
-    double H_P = G*(P*P)*log((B*(t*t)*(A*(t*t)+1.0))/(G*(A*(t*t)+(A*A)*(t*t*t*t)+1.0))+1.0)*3.0;
+    double H_P = G*(P*P)*log((B*t2*(A*t2+1.0))/(G*(A*t2+(A*A)*(t2*t2)+1.0))+1.0)*3.0;
     
-    //  > H_t < //
+    //  > H_t2 < //
     
-    double H_t = (G*(P*P*P)*((A*B*(t*t*t)*2.0)/(G*(A*(t*t)+(A*A)*(t*t*t*t)+1.0))+(B*t*(A*(t*t)+1.0)*2.0)/(G*(A*(t*t)+(A*A)*(t*t*t*t)+1.0))-(B*(t*t)*(A*t*2.0+(A*A)*(t*t*t)*4.0)*(A*(t*t)+1.0)*1.0/pow(A*(t*t)+(A*A)*(t*t*t*t)+1.0,2.0))/G))/((B*(t*t)*(A*(t*t)+1.0))/(G*(A*(t*t)+(A*A)*(t*t*t*t)+1.0))+1.0);
+    double H_t2 = (G*(P*P*P)*((B*(A*t2+1.0))/(G*(A*t2+(A*A)*(t2*t2)+1.0))+(A*B*t2)/(G*(A*t2+(A*A)*(t2*t2)+1.0))-(B*t2*(A+(A*A)*t2*2.0)*(A*t2+1.0)*1.0/pow(A*t2+(A*A)*(t2*t2)+1.0,2.0))/G))/((B*t2*(A*t2+1.0))/(G*(A*t2+(A*A)*(t2*t2)+1.0))+1.0);
     
     //  > H_A < //
     
-    double H_A = (G*(P*P*P)*((B*(t*t*t*t))/(G*(A*(t*t)+(A*A)*(t*t*t*t)+1.0))-(B*(t*t)*(A*(t*t*t*t)*2.0+t*t)*(A*(t*t)+1.0)*1.0/pow(A*(t*t)+(A*A)*(t*t*t*t)+1.0,2.0))/G))/((B*(t*t)*(A*(t*t)+1.0))/(G*(A*(t*t)+(A*A)*(t*t*t*t)+1.0))+1.0);
+    double H_A = (G*(P*P*P)*((B*(t2*t2))/(G*(A*t2+(A*A)*(t2*t2)+1.0))-(B*t2*(t2+A*(t2*t2)*2.0)*(A*t2+1.0)*1.0/pow(A*t2+(A*A)*(t2*t2)+1.0,2.0))/G))/((B*t2*(A*t2+1.0))/(G*(A*t2+(A*A)*(t2*t2)+1.0))+1.0);
     
     //  > Z_rho < //
     
@@ -1147,17 +1147,17 @@ void wPBECFunctional::pbec_sr_f(
     
     double f_A = H_A*f_H;
     
-    //  > f_t < //
+    //  > f_t2 < //
     
-    double f_t = H_t*f_H;
+    double f_t2 = H_t2*f_H;
     
     //  > f_P < //
     
-    double f_P = A_P*f_A+H_P*f_H+f_t*t_P;
+    double f_P = A_P*f_A+H_P*f_H+f_t2*t2_P;
     
     //  > f_ks < //
     
-    double f_ks = f_t*t_ks;
+    double f_ks = f_t2*t2_ks;
     
     //  > f_B < //
     
@@ -1173,7 +1173,7 @@ void wPBECFunctional::pbec_sr_f(
     
     //  > f_rho < //
     
-    *f_rho = Z_rho*f_Z+ec_rho*f_ec+ec_sr_rho*f_ec_sr+f_ks*ks_rho+f_t*t_rho;
+    *f_rho = Z_rho*f_Z+ec_rho*f_ec+ec_sr_rho*f_ec_sr+f_ks*ks_rho+f_t2*t2_rho;
     
     //  > f_z < //
     
@@ -1181,7 +1181,7 @@ void wPBECFunctional::pbec_sr_f(
     
     //  > f_s < //
     
-    *f_s = f_t*t_s;
+    *f_s = f_t2*t2_s;
 }
 
 }
