@@ -36,14 +36,14 @@ import glob
 import shelve
 import datetime
 import difflib
-import psi4
-import p4const
-import p4util
-import qcdb
-from p4regex import *
+#CUimport psi4
+#CUimport p4const
+#CUimport p4util
+#CUimport qcdb
+#CUfrom p4regex import *
 #from extend_Molecule import *
-from molutil import *
-from functional import *
+#CUfrom molutil import *
+#CUfrom functional import *
 from driver import *
 # never import driver, wrappers, or aliases into this file
 

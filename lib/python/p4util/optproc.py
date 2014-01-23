@@ -24,7 +24,8 @@ r"""Module to provide mechanism to store and restore option states in driver.
 
 """
 import sys
-import psi4
+#CUimport psi4
+from p4xcpt import * #CU
 
 
 class OptionState(object):
@@ -105,10 +106,7 @@ class OptionsState(object):
             elif len(item) == 1:
                 self.data.append(OptionState(item[0]))
             else:
-                print('ERROR: Each argument to OptionsState should be an array, the first element')
-                print('       of which is the module scope and the second element of which is the')
-                print('       module name. Bad argument: %s' % (item))
-                sys.exit()
+                raise ValidationError('Each argument to OptionsState should be an array, the first element of which is     the module scope and the second element of which is the module name. Bad argument: %s' % (item))
 
     def __str__(self):
         text = ''

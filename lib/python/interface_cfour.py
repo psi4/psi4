@@ -33,14 +33,14 @@ import subprocess
 import re
 import inspect
 import random
-import psi4
-import p4const
+#CUimport psi4
+#CUimport p4const
 import p4util
 import qcdb
-from p4regex import *
+#CUfrom p4regex import *
 #from extend_Molecule import *
 from molutil import *
-from functional import *
+#CUfrom functional import *
 # never import driver, wrappers, or aliases into this file
 
 P4C4_INFO = {}

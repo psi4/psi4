@@ -25,7 +25,7 @@ import sys, os
 import math
 from math import *
 from datetime import date
-from psiexceptions import *
+from p4xcpt import *
 
 class InPsight:
 

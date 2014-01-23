@@ -26,9 +26,9 @@ import sys
 import pickle
 import collections
 import inspect
-import psi4
-import inputparser
-from psiexceptions import *
+#CUimport psi4
+#CUimport inputparser
+from p4xcpt import *
 
 
 if sys.version_info[0] > 2:

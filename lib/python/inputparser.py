@@ -33,9 +33,10 @@ import re
 import os
 import sys
 import random
-import psi4
+#CUimport psi4
 import pubchem
-from psiexceptions import *
+#CUfrom psiexceptions import *
+from p4xcpt import * #CU
 
 
 # inputfile contents to be preserved from the processor
@@ -735,13 +736,13 @@ def process_input(raw_input, print_level=1):
     imports += 'from p4const import *\n'
     imports += 'from p4util import *\n'
     imports += 'from molutil import *\n'
-    imports += 'from driver import *\n'
-    imports += 'from wrappers import *\n'
-    imports += 'from wrappers_cfour import *\n'
-    imports += 'from gaussian_n import *\n'
+#CU    imports += 'from driver import *\n'
+#CU    imports += 'from wrappers import *\n'
+#CU    imports += 'from wrappers_cfour import *\n'
+#CU    imports += 'from gaussian_n import *\n'
     imports += 'from aliases import *\n'
-    imports += 'from functional import *\n'
-    imports += 'from qmmm import *\n'
+#CU    imports += 'from functional import *\n'
+#    imports += 'from qmmm import *\n'
     imports += 'psi4_io = psi4.IOManager.shared_object()\n'
 
     # psirc (a baby PSIthon script that might live in ~/.psi4rc)
