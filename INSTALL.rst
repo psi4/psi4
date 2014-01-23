@@ -38,6 +38,8 @@ I. Compilation Prerequisites
 
 * Python interpreter (2.6 or higher; psi4 is Python3 compatible)
 
+  * psi4 is Python3 compatible intermittently every few months when tested.
+
 * Python developer libraries corresponding to your interpreter.
 
   .. note:: To check to see if you have the Python developer libraries
