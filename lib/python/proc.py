@@ -322,6 +322,11 @@ def run_omp3(name, **kwargs):
         scf_helper(name, **kwargs)
 
     psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+    # If the scf type is DF/CD, then the AO integrals were never written to disk
+    if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or 
+        psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
+        psi4.MintsHelper().integrals()
+
     psi4.occ()
 
     optstash.restore()
@@ -405,6 +410,10 @@ def run_scs_omp3(name, **kwargs):
 
     psi4.set_local_option('OCC', 'DO_SCS', 'TRUE')
     psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+    # If the scf type is DF/CD, then the AO integrals were never written to disk
+    if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or 
+        psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
+        psi4.MintsHelper().integrals()
     psi4.occ()
 
     optstash.restore()
@@ -434,6 +443,10 @@ def run_sos_omp3(name, **kwargs):
 
     psi4.set_local_option('OCC', 'DO_SOS', 'TRUE')
     psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+    # If the scf type is DF/CD, then the AO integrals were never written to disk
+    if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or 
+        psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
+        psi4.MintsHelper().integrals()
     psi4.occ()
 
     optstash.restore()
@@ -452,6 +465,10 @@ def run_ocepa(name, **kwargs):
         scf_helper(name, **kwargs)
 
     psi4.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
+    # If the scf type is DF/CD, then the AO integrals were never written to disk
+    if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or 
+        psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
+        psi4.MintsHelper().integrals()
     psi4.occ()
 
     optstash.restore()
@@ -520,6 +537,10 @@ def run_omp2_5(name, **kwargs):
         scf_helper(name, **kwargs)
 
     psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
+    # If the scf type is DF/CD, then the AO integrals were never written to disk
+    if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or 
+        psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
+        psi4.MintsHelper().integrals()
     psi4.occ()
 
     optstash.restore()
