@@ -1144,6 +1144,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add("DFT_DISPERSION_PARAMETERS", new ArrayType());
     /*- The convergence on the orbital localization procedure -*/
     options.add_double("LOCAL_CONVERGENCE",1E-12);
+    /*- The maxiter on the orbital localization procedure -*/
+    options.add_int("LOCAL_MAXITER",200);
   }
   if (name == "CPHF"|| options.read_globals()) {
     /*- The amount of information printed
