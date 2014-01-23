@@ -891,7 +891,7 @@ def build_wpbe_c_superfunctional(name, npoints, deriv):
 
     # Set GKS up after adding functionals
     sup.set_x_omega(0.0)
-    sup.set_c_omega(0.3)
+    sup.set_c_omega(0.5)
     sup.set_x_alpha(0.0)
     sup.set_c_alpha(0.0)
 
@@ -900,6 +900,70 @@ def build_wpbe_c_superfunctional(name, npoints, deriv):
     # Call this last
     sup.allocate()
     return sup
+
+def build_wpbe2_superfunctional(name, npoints, deriv):
+
+    # Call this first
+    sup = psi4.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('wPBE2')
+    # Tab in, trailing newlines
+    sup.set_description('    Double-Hybrid PBE LRC Functional\n')
+    # Tab in, trailing newlines
+    sup.set_citation('    TODO\n')
+
+    # Add member functionals
+    sup.add_x_functional(build_functional('wPBE_X'))
+    sup.add_c_functional(build_functional('wPBE_C'))
+
+    # Set GKS up after adding functionals
+    sup.set_x_omega(0.3)
+    sup.set_c_omega(0.5)
+    sup.set_x_alpha(0.0)
+    sup.set_c_alpha(0.0)
+
+    # => End User-Customization <= #
+
+    # Call this last
+    sup.allocate()
+    return sup
+
+#def build_wpbeQ_superfunctional(name, npoints, deriv):
+#
+#    # Call this first
+#    sup = psi4.SuperFunctional.blank()
+#    sup.set_max_points(npoints)
+#    sup.set_deriv(deriv)
+#
+#    # => User-Customization <= #
+#
+#    # No spaces, keep it short and according to convention
+#    sup.set_name('wPBEQ')
+#    # Tab in, trailing newlines
+#    sup.set_description('    Double-Hybrid PBE LRC Functional with wPW92 Correlation\n')
+#    # Tab in, trailing newlines
+#    sup.set_citation('    TODO\n')
+#
+#    # Add member functionals
+#    sup.add_x_functional(build_functional('wPBE_X'))
+#    sup.add_c_functional(build_functional('wPW92_C'))
+#
+#    # Set GKS up after adding functionals
+#    sup.set_x_omega(0.3)
+#    sup.set_c_omega(0.5)
+#    sup.set_x_alpha(0.0)
+#    sup.set_c_alpha(0.0)
+#
+#    # => End User-Customization <= #
+#
+#    # Call this last
+#    sup.allocate()
+#    return sup
 
 
 def build_wb88_x_superfunctional(name, npoints, deriv):
@@ -3262,6 +3326,8 @@ superfunctionals = {
         'pw92a_c'         : build_primitive_superfunctional,
         'wpbe_c'          : build_wpbe_c_superfunctional,
         'wpw92_c'         : build_wpw92_c_superfunctional,
+        'wpbe2'           : build_wpbe2_superfunctional,
+        #'wpbeq'           : build_wpbeQ_superfunctional,
     }
 
 # Insert -D/-D2/-D3 aliases into superfunctionals dict
