@@ -1142,6 +1142,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     :ref:`Dispersion Corrections <table:dashd>` for the order in which
     parameters are to be specified in this array option. -*/
     options.add("DFT_DISPERSION_PARAMETERS", new ArrayType());
+    /*- The convergence on the orbital localization procedure -*/
+    options.add_double("LOCAL_CONVERGENCE",1E-12);
   }
   if (name == "CPHF"|| options.read_globals()) {
     /*- The amount of information printed
