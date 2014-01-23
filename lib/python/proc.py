@@ -103,18 +103,38 @@ def run_dfomp2(name, **kwargs):
 
     """
     optstash = p4util.OptionsState(
-        ['SCF','DF_INTS_IO'])
+        ['SCF','DF_INTS_IO'],
+        ['DF_BASIS_SCF'],
+        ['GLOBALS', 'DF_BASIS_CC'])
 
     # overwrite symmetry
     molecule = psi4.get_active_molecule()
     molecule.update_geometry()
     molecule.reset_point_group('c1')
 
+    # if the df_basis_scf basis is not set, pick a sensible one.
+    if psi4.get_global_option('DF_BASIS_SCF') == '':
+        jkbasis = p4util.corresponding_jkfit(psi4.get_global_option('BASIS'))
+        if jkbasis:
+            psi4.set_global_option('DF_BASIS_SCF', jkbasis)
+            psi4.print_out('\n  No DF_BASIS_SCF auxiliary basis selected, defaulting to %s\n\n' % (jkbasis))
+        else:
+            raise ValidationError('Keyword DF_BASIS_SCF is required.')
+
     #psi4.set_global_option('SCF_TYPE', 'DF')
     psi4.set_local_option('SCF','DF_INTS_IO', 'SAVE')
     # Bypass routine scf if user did something special to get it to converge
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
         scf_helper(name, **kwargs)
+
+    # if the df_basis_cc basis is not set, pick a sensible one.
+    if psi4.get_global_option('DF_BASIS_CC') == '':
+        ribasis = p4util.corresponding_rifit(psi4.get_global_option('BASIS'))
+        if ribasis:
+            psi4.set_global_option('DF_BASIS_CC', ribasis)
+            psi4.print_out('  No DF_BASIS_CC auxiliary basis selected, defaulting to %s\n' % (ribasis))
+        else:
+            raise ValidationError('Keyword DF_BASIS_CC is required.')
 
     return psi4.dfocc()
 
@@ -162,11 +182,21 @@ def run_omp2(name, **kwargs):
     an orbital-optimized MP2 computation
 
     """
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
+    optstash = p4util.OptionsState(
+        ['SCF','SCF_TYPE'])
 
-    return psi4.occ()
+    # If SCF-TYPE = DF/CD call 
+    if psi4.get_option('SCF', 'SCF_TYPE') == 'DF' and psi4.get_global_option('DERTYPE') == 'NONE':
+            run_dfomp2(name, **kwargs)
+    elif psi4.get_option('SCF', 'SCF_TYPE') == 'CD' and psi4.get_global_option('DERTYPE') == 'NONE':
+            run_cdomp2(name, **kwargs)
+    else :
+            if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+                scf_helper(name, **kwargs)
+            psi4.occ()
+
+    #return psi4.occ()
+    optstash.restore()
 
 
 def run_omp2_gradient(name, **kwargs):
