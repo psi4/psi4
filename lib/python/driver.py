@@ -28,13 +28,13 @@ properties, and vibrational frequency calculations.
 
 """
 import sys
-import psi4
-import p4util
-import p4const
+#CUimport psi4
+#CUimport p4util
+#CUimport p4const
 from proc import *
 from interface_cfour import *
-from functional import *
-from p4regex import *
+#CUfrom functional import *
+#CUfrom p4regex import *
 # never import wrappers or aliases into this file
 
 # Procedure lookup tables

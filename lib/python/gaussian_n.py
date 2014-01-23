@@ -26,13 +26,13 @@ import re
 import os
 import math
 import warnings
-import psi4
-import p4const
-import p4util
+#CUimport psi4
+#CUimport p4const
+#CUimport p4util
 from driver import *
 #from extend_Molecule import *
-from molutil import *
-from p4regex import *
+#CUfrom molutil import *
+#CUfrom p4regex import *
 # never import aliases into this file
 
 def run_gaussian_2(name, **kwargs):

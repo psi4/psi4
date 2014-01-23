@@ -24,12 +24,12 @@
 a QM calculation.
 
 """
-import psi4
+#CUimport psi4
 import re
 import os
 import math
-import p4const
-from molutil import *
+#CUimport p4const
+#CUfrom molutil import *
 from driver import *
 
 

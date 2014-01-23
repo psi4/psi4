@@ -32,13 +32,13 @@ import warnings
 import pickle
 import copy
 import collections
-import psi4
-import p4const
-import p4util
+#CUimport psi4
+#CUimport p4const
+#CUimport p4util
 from driver import *
 #from extend_Molecule import *
-from molutil import *
-from p4regex import *
+#CUfrom molutil import *
+#CUfrom p4regex import *
 # never import aliases into this file
 
 
@@ -1213,7 +1213,8 @@ def database(name, db_name, **kwargs):
         VRGT[rgt] = {}
 
         # extra definition of molecule so that logic in building commands string has something to act on
-        exec(p4util.format_molecule_for_input(GEOS[rgt]))
+        geometry(GEOS[rgt].create_psi4_string_from_molecule(), name=rgt)
+        #exec(p4util.format_molecule_for_input(GEOS[rgt]))
         molecule = psi4.get_active_molecule()
 
         # build string of title banner
@@ -1281,7 +1282,8 @@ def database(name, db_name, **kwargs):
         # reap: opens individual reagent output file, collects results into a dictionary
         if (db_mode.lower() == 'continuous'):
             exec(banners)
-            exec(p4util.format_molecule_for_input(GEOS[rgt]))
+            geometry(GEOS[rgt].create_psi4_string_from_molecule(), name=rgt)
+            #exec(p4util.format_molecule_for_input(GEOS[rgt]))
             exec(commands)
             #print 'MOLECULE LIVES %23s %8s %4d %4d %4s' % (rgt, psi4.get_global_option('REFERENCE'),
             #    molecule.molecular_charge(), molecule.multiplicity(), molecule.schoenflies_symbol())

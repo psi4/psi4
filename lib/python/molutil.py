@@ -30,7 +30,7 @@ import random
 import math
 import psi4
 import p4const
-import p4util
+#CUimport p4util
 from p4regex import *
 from dashparam import *
 

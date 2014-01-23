@@ -32,12 +32,15 @@ import re
 import os
 import math
 import warnings
-import psi4
-import p4util
-from driver import *
+#CUimport psi4
+#CUimport p4util
+#CUfrom driver import *
 from wrappers import *
+from gaussian_n import * #CU
 #from extend_Molecule import *
-from molutil import *
+#CUfrom molutil import *
+from wrappers_cfour import * #CU
+from qmmm import * #CU
 
 # Python procedures like these can be run directly from the input file or integrated
 #   with the energy(), etc. routines by means of lines like those at the end of this file.

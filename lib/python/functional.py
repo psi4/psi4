@@ -24,13 +24,13 @@
 Module to provide lightweight definitions of functionals and
 SuperFunctionals
 """
-import psi4
+#CUimport psi4
 import re
 import os
 import sys
 import math
 import copy
-from psiexceptions import *
+#CUfrom psiexceptions import *
 from dashparam import *
 
 

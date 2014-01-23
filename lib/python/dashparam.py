@@ -23,7 +23,7 @@
 """
 Module to hold and distribute the -D dispersion correction parameters.
 """
-from psiexceptions import *
+from p4xcpt import *
 
 
 ## ==> Dispersion Aliases and Parameters <== ##

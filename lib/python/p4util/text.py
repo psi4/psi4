@@ -25,11 +25,11 @@ from __future__ import print_function
 to data tables and text.
 
 """
-import psi4
+#CUimport psi4
 import sys
 import re
 import p4const
-from psiexceptions import *
+from p4xcpt import *
 
 class Table(object):
     """Class defining a flexible Table object for storing data."""
