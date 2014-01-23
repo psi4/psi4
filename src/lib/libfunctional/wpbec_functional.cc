@@ -42,6 +42,8 @@ void wPBECFunctional::common_init()
     
     meta_ = false; 
 
+    //lsda_cutoff_ = 1.0E-18; 
+
     if (type_ == pw92c_type) {
         name_ = "   PW92C-New";
         description_ = "    New Implementation of PW92C in wPBEc-sr.\n";
@@ -168,6 +170,8 @@ void wPBECFunctional::compute_functional(const std::map<std::string,SharedVector
             v_gamma_ab[Q] += A * F_s * s_gamma_ab;
             v_gamma_bb[Q] += A * F_s * s_gamma_bb;
         }
+
+        //fprintf(outfile,"rho = %11.3E, gamma = %11.3E, %11.3E %11.3E %11.3E\n", rho_a, gamma_aa, v[Q], v_rho_a[Q], v_gamma_aa[Q]);
     }
 }
 void wPBECFunctional::pw92c_eps(
@@ -1043,6 +1047,16 @@ void wPBECFunctional::pbec_sr_f(
     
     double P = pow(z+1.0,2.0/3.0)*(1.0/2.0)+pow(-z+1.0,2.0/3.0)*(1.0/2.0);
     
+    // ==> The Singularity <== //
+
+    if (fabs(ec_sr / (G * P * P * P)) < 1.0E-15) {
+        *f = 0.0;
+        *f_rho = 0.0;
+        *f_z = 0.0;
+        *f_s = 0.0;
+        return;
+    }
+
     //  > t2 < //
     
     double t2 = 1.0/(P*P)*1.0/(ks*ks)*1.0/(rho*rho)*s*(1.0/4.0);
