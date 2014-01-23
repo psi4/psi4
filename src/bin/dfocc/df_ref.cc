@@ -25,6 +25,7 @@
 #include <libqt/qt.h>
 #include <libmints/mints.h>
 #include <libmints/sieve.h>
+#include <psifiles.h>
 #include "psi4-dec.h"
 
 #include "defines.h"
@@ -78,6 +79,71 @@ void DFOCC::df_ref()
 {   
     //fprintf(outfile,"\tComputing DF-BASIS-SCF integrals... \n"); fflush(outfile);
 
+  if (read_scf_3index == "TRUE") {
+  // 1.  read scf 3-index integrals from disk
+
+  // get ntri from sieve
+  boost::shared_ptr<ERISieve> sieve (new ERISieve(basisset_, options_.get_double("INTS_TOLERANCE")));
+  const std::vector<std::pair<int, int> >& function_pairs = sieve->function_pairs();
+  long int ntri_cd = function_pairs.size();
+
+      // read integrals from disk if they were generated in the SCF
+      if ( options_.get_str("SCF_TYPE") == "DF") {
+          fprintf(outfile,"\tReading DF integrals from disk ...\n");
+          boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
+          boost::shared_ptr<BasisSet> auxiliary = BasisSet::construct(parser, molecule(), "DF_BASIS_SCF");
+          nQ_ref = auxiliary->nbf();
+
+          // ntri comes from sieve above
+          boost::shared_ptr<Matrix> Qmn = SharedMatrix(new Matrix("Qmn Integrals",nQ_ref,ntri_cd));
+          double** Qmnp = Qmn->pointer();
+          psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
+          psio_->read_entry(PSIF_DFSCF_BJ, "(Q|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri_cd * nQ_ref);
+          psio_->close(PSIF_DFSCF_BJ,1);
+
+          bQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mn)", nQ_ref, nso2_));
+          for (long int mn = 0; mn < ntri_cd; mn++) {
+              long int m = function_pairs[mn].first;
+              long int n = function_pairs[mn].second;
+              for (long int P = 0; P < nQ_ref; P++) {
+                  bQso->set(P, (m*nso_) + n, Qmnp[P][mn]);
+                  bQso->set(P, (n*nso_) + m, Qmnp[P][mn]);
+              }
+          }
+          bQso->write(psio_, PSIF_DFOCC_INTS);
+      }// end if ( options_.get_str("SCF_TYPE") == "DF" ) 
+
+      // read integrals from disk if they were generated in the SCF
+      else if ( options_.get_str("SCF_TYPE") == "CD") {
+          fprintf(outfile,"\tReading Cholesky vectors from disk ...\n");
+          nQ_ref = Process::environment.globals["NAUX (SCF)"];
+          fprintf(outfile,"\tCholesky decomposition threshold: %8.2le\n", options_.get_double("CHOLESKY_TOLERANCE"));
+          //fprintf(outfile,"\tNumber of Cholesky vectors:   %5li\n",nQ_ref);
+
+          // ntri comes from sieve above
+          boost::shared_ptr<Matrix> Qmn = SharedMatrix(new Matrix("Qmn Integrals",nQ_ref,ntri_cd));
+          double** Qmnp = Qmn->pointer();
+          psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
+          psio_->read_entry(PSIF_DFSCF_BJ, "(Q|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri_cd * nQ_ref);
+          psio_->close(PSIF_DFSCF_BJ,1);
+
+          bQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mn)", nQ_ref, nso2_));
+          for (long int mn = 0; mn < ntri_cd; mn++) {
+              long int m = function_pairs[mn].first;
+              long int n = function_pairs[mn].second;
+              for (long int P = 0; P < nQ_ref; P++) {
+                  bQso->set(P, (m*nso_) + n, Qmnp[P][mn]);
+                  bQso->set(P, (n*nso_) + m, Qmnp[P][mn]);
+              }
+          }
+          bQso->write(psio_, PSIF_DFOCC_INTS);
+      }// end else if ( options_.get_str("SCF_TYPE") == "CD" ) 
+
+      else throw PSIEXCEPTION("SCF_TYPE should be DF or CD");
+  }// end if (read_scf_3index == "TRUE") 
+
+
+  else if (read_scf_3index == "FALSE") {
     // Read in the basis set informations
     boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
     boost::shared_ptr<BasisSet> auxiliary_ = BasisSet::construct(parser, reference_wavefunction_->molecule(), "DF_BASIS_SCF");
@@ -96,6 +162,8 @@ void DFOCC::df_ref()
     timer_on("Form B(Q,munu)");
     b_so_ref(primary_, auxiliary_, zero);
     timer_off("Form B(Q,munu)");
+  }// end if (read_scf_3index == "FALSE") 
+
 
     //fprintf(outfile,"\tDF-BASIS-SCF integrals were done. \n"); fflush(outfile);
 } // end df_ref
