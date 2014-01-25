@@ -280,7 +280,7 @@ double Dispersion::compute_energy(boost::shared_ptr<Molecule> m)
             try {
                 // Grab run_dftd3 off of the Python plane
                 PyObject *molutil;
-                PY_TRY(molutil, PyImport_ImportModule("molutil") );
+                PY_TRY(molutil, PyImport_ImportModule("interface_dftd3") );
                 PyObject *grimme;
                 PY_TRY(grimme, PyObject_GetAttrString(molutil, "run_dftd3"));
                 PyObject *pargs;
@@ -452,7 +452,7 @@ SharedMatrix Dispersion::compute_gradient(boost::shared_ptr<Molecule> m)
             try {
                 // Grab run_dftd3 off of the Python plane
                 PyObject *molutil;
-                PY_TRY(molutil, PyImport_ImportModule("molutil") );
+                PY_TRY(molutil, PyImport_ImportModule("interface_dftd3") );
                 PyObject *grimme;
                 PY_TRY(grimme, PyObject_GetAttrString(molutil, "run_dftd3"));
                 PyObject *pargs;

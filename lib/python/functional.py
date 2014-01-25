@@ -31,8 +31,8 @@ import sys
 import math
 import copy
 #CUfrom psiexceptions import *
-from dashparam import *
-
+#CUfrom dashparam import *
+from interface_dftd3 import *
 
 ## ==> Functionals <== ##
 
