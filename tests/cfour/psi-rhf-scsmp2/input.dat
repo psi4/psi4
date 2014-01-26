@@ -2,7 +2,7 @@
 #! between cfour and psi4
 
 store = {}  #TEST
-test_psivars = ['scf total energy', 'mp2 same-spin energy', 'mp2 opposite-spin energy', 'mp2 singles energy', 'mp2 correlation energy', 'mp2 total energy', 'current reference energy', 'current correlation energy', 'current energy']  #TEST
+test_psivars = ['scf total energy', 'mp2 same-spin correlation energy', 'mp2 opposite-spin correlation energy', 'mp2 singles energy', 'mp2 correlation energy', 'mp2 total energy', 'current reference energy', 'current correlation energy', 'current energy']  #TEST
 
 print '    <<<  RHF  >>>'
 

@@ -23,8 +23,8 @@ energy('cfour')
 compare_values(-55.5893469688, get_variable('scf total energy'), 6, 'SCF')  #TEST
 compare_values(-55.784877360093, get_variable('mp2 total energy'), 6, 'MP2')  #TEST
 compare_values(-0.195530391306, get_variable('mp2 correlation energy'), 6, 'MP2 corl')  #TEST
-compare_values(-0.0416164, get_variable('mp2 same-spin energy'), 6, 'MP2 SS corl')  #TEST
-compare_values(-0.1539141, get_variable('mp2 opposite-spin energy'), 6, 'MP2 OS corl')  #TEST
+compare_values(-0.0416164, get_variable('mp2 same-spin correlation energy'), 6, 'MP2 SS corl')  #TEST
+compare_values(-0.1539141, get_variable('mp2 opposite-spin correlation energy'), 6, 'MP2 OS corl')  #TEST
 
 clean()
 clean_variables()
@@ -57,6 +57,6 @@ energy('cfour')
 compare_values(-55.5893469688, get_variable('scf total energy'), 6, 'SCF')  #TEST
 compare_values(-55.784877360093, get_variable('mp2 total energy'), 6, 'MP2')  #TEST
 compare_values(-0.195530391306, get_variable('mp2 correlation energy'), 6, 'MP2 corl')  #TEST
-compare_values(-0.0416164, get_variable('mp2 same-spin energy'), 6, 'MP2 SS corl')  #TEST
-compare_values(-0.1539141, get_variable('mp2 opposite-spin energy'), 6, 'MP2 OS corl')  #TEST
+compare_values(-0.0416164, get_variable('mp2 same-spin correlation energy'), 6, 'MP2 SS corl')  #TEST
+compare_values(-0.1539141, get_variable('mp2 opposite-spin correlation energy'), 6, 'MP2 OS corl')  #TEST
 
