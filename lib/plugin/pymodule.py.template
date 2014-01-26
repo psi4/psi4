@@ -8,7 +8,7 @@ from driver import *
 from wrappers import *
 from molutil import *
 import p4util
-from psiexceptions import *
+from p4xcpt import *
 
 
 def run_@plugin@(name, **kwargs):

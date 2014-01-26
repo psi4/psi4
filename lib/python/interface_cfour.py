@@ -41,6 +41,7 @@ import qcdb
 #from extend_Molecule import *
 from molutil import *
 #CUfrom functional import *
+from p4xcpt import *  #CU add revisit
 # never import driver, wrappers, or aliases into this file
 
 P4C4_INFO = {}

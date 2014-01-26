@@ -9,7 +9,7 @@ from wrappers import *
 from molutil import *
 from p4const import *
 from p4util import *
-from psiexceptions import *
+from p4xcpt import *
 
 
 
