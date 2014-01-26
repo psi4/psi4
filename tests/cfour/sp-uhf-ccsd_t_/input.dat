@@ -26,8 +26,8 @@ compare_values(-55.5893469688, get_variable('scf total energy'), 6, 'SCF')  #TES
 compare_values(-55.784877360093, get_variable('mp2 total energy'), 6, 'MP2')  #TEST
 compare_values(-55.802645023958, get_variable('ccsd total energy'), 6, 'CCSD')  #TEST
 compare_values(-0.213298055172, get_variable('ccsd correlation energy'), 6, 'CCSD corl')  #TEST
-compare_values(-0.173390809645, get_variable('ccsd opposite-spin energy'), 6, 'CCSD OS corl')  #TEST
-compare_values(-0.039907245528, get_variable('ccsd same-spin energy'), 6, 'CCSD SS corl')  #TEST
+compare_values(-0.173390809645, get_variable('ccsd opposite-spin correlation energy'), 6, 'CCSD OS corl')  #TEST
+compare_values(-0.039907245528, get_variable('ccsd same-spin correlation energy'), 6, 'CCSD SS corl')  #TEST
 compare_values(-55.807811611842, get_variable('ccsd(t) total energy'), 6, 'CCSD(T)')  #TEST
 compare_values(-0.2184646435, get_variable('ccsd(t) correlation energy'), 6, 'CCSD(T) corl')  #TEST
 compare_values(-0.0051665879, get_variable('(t) correction energy'), 6, '(T)')  #TEST
@@ -71,8 +71,8 @@ compare_values(-55.5893469688, get_variable('scf total energy'), 6, 'SCF')  #TES
 compare_values(-55.784877360093, get_variable('mp2 total energy'), 6, 'MP2')  #TEST
 compare_values(-55.802645023958, get_variable('ccsd total energy'), 6, 'CCSD')  #TEST
 compare_values(-0.213298055172, get_variable('ccsd correlation energy'), 6, 'CCSD corl')  #TEST
-compare_values(-0.173390809645, get_variable('ccsd opposite-spin energy'), 6, 'CCSD OS corl')  #TEST
-compare_values(-0.039907245528, get_variable('ccsd same-spin energy'), 6, 'CCSD SS corl')  #TEST
+compare_values(-0.173390809645, get_variable('ccsd opposite-spin correlation energy'), 6, 'CCSD OS corl')  #TEST
+compare_values(-0.039907245528, get_variable('ccsd same-spin correlation energy'), 6, 'CCSD SS corl')  #TEST
 compare_values(-55.807811611842, get_variable('ccsd(t) total energy'), 6, 'CCSD(T)')  #TEST
 compare_values(-0.2184646435, get_variable('ccsd(t) correlation energy'), 6, 'CCSD(T) corl')  #TEST
 compare_values(-0.0051665879, get_variable('(t) correction energy'), 6, '(T)')  #TEST
