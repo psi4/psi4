@@ -274,15 +274,6 @@ def process_memory_command(matchobj):
     return command
 
 
-def process_basis_file(matchobj):
-    """Function to process match of ``basis file ...``."""
-    spacing = str(matchobj.group(1))
-    basisfile = str(matchobj.group(2)).strip()
-    command = "%spsi4.add_user_basis_file(\"%s\")" % (spacing, basisfile)
-
-    return command
-
-
 def process_filename(matchobj):
     """Function to process match of ``filename ...``."""
     spacing = str(matchobj.group(1))
@@ -340,14 +331,13 @@ def process_basis_block(matchobj):
         if(m):
             if(basisstring != ""):
                 result += "%spsi4tempbasisfile = psi4tempscratchdir + \"%s\"" % (spacing, basisname)
-                result += "%spsi4.add_user_basis_file(psi4tempbasisfile)" % (spacing)
                 result += "%stemppsioman.write_scratch_file(psi4tempbasisfile, \"\"\"\n%s\"\"\")" % (spacing, basisstring)
                 basisstring = ""
             basisname = psi4.BasisSet.make_filename(m.group(1))
-        basisstring += line + "\n"
+        else:
+            basisstring += line + "\n"
     if(basisstring != ""):
         result += "%spsi4tempbasisfile = psi4tempscratchdir + \"%s\"" % (spacing, basisname)
-        result += "%spsi4.add_user_basis_file(psi4tempbasisfile)" % (spacing)
         result += "%stemppsioman.write_scratch_file(psi4tempbasisfile, \"\"\"\n%s\"\"\")" % (spacing, basisstring)
     return result
 
@@ -711,11 +701,6 @@ def process_input(raw_input, print_level=1):
     memory_string = re.compile(r'(\s*?)memory\s+([+-]?\d*\.?\d+)\s+([KMG]i?B)',
                                re.IGNORECASE)
     temp = re.sub(memory_string, process_memory_command, temp)
-
-    # Process "basis file ... "
-    basis_file = re.compile(r'(\s*?)basis\s+file\s*(\b.*\b)\s*$',
-                            re.MULTILINE | re.IGNORECASE)
-    temp = re.sub(basis_file, process_basis_file, temp)
 
     # Process "basis name { ... }"
     basis_block = re.compile(r'(\s*?)basis[=\s]*\{(.*?)\}',

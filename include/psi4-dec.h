@@ -99,11 +99,6 @@ public:
         /// Map containing current energies
         std::map<std::string, double> globals;
 
-        /** User specified basis files.
-           *  These are specific files:  ~/basis/dz.gbs, ~/basis/tz.gbs
-           */
-        std::list<std::string> user_basis_files;
-
         /// Number of threads per process
         int get_n_threads() const;
         void set_n_threads(int nthread);
