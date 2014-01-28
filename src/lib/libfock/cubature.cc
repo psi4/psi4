@@ -4420,7 +4420,6 @@ void OctreeGridBlocker::block()
                     // Terminate if necessary
                     if (RC2 < T2) {
                         completed_tree.push_back(left);
-                        continue;
                     } else {
                         new_leaves.push_back(left);
                     }
@@ -4455,10 +4454,10 @@ void OctreeGridBlocker::block()
                     // Terminate if necessary
                     if (RC2 < T2) {
                         completed_tree.push_back(right);
-                        continue;
                     } else {
                         new_leaves.push_back(right);
                     }
+
                 }
             }
             active_tree = new_leaves;
