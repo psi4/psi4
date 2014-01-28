@@ -453,7 +453,8 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
     mol->update_geometry();
 
     // For each one try to load the basis set
-    list<string>& user_list = Process::environment.user_basis_files;
+    std::string psiPath = PSIOManager::shared_object()->get_default_path() + 
+        ":" + Process::environment("PSIPATH");
 
     // Map of GaussianShells
     //  basis           atom        gaussian shells
@@ -482,8 +483,9 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
     {
 //fprintf(outfile, "Working on basis %s\n", basis.first.c_str());
         bool not_found = true;
+        std::list<std::string> user_list;
         user_list.clear();
-        std::string psiPath = Process::environment("PSIPATH") + ":./";
+
         boost::char_separator<char> sep(":");
         typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
         tokenizer tokens(psiPath, sep);
@@ -951,23 +953,23 @@ void BasisSet::refresh()
 //        }
 //    }
 
-////    // Create a map that has a key/value pair
-////    // The key is the angular momentum function of the shell arranged in decending order
-////    // The value is the actual shell number
-////    typedef std::pair<int, int> am_to_shell_pair;
-////    std::multimap< int, int, std::less<int> > am_to_shell_list;
-////    for (int i=0; i < shells_.size(); i++) {
-////        am_to_shell_list.insert(am_to_shell_pair(shells_[i].nfunction(), i));
-////    }
-////    // This puts the sorted shell values into the sorted_shell_list_ vector
-////    // This can be used by the integral iterator to look up the value of the sorted shells
-////    std::multimap< int, int, std::less<int> >::iterator it;
-////    sorted_ao_shell_list_.clear();
-////    for (it=am_to_shell_list.begin(); it != am_to_shell_list.end(); it++) {
-////        //std::cout << "sorted shell size = " << it->first <<
-////        //        "\t, which belongs to shell number " << it->second << std::endl;
-////        sorted_ao_shell_list_.push_back(it->second);
-////    }
+//    // Create a map that has a key/value pair
+//    // The key is the angular momentum function of the shell arranged in decending order
+//    // The value is the actual shell number
+//    typedef std::pair<int, int> am_to_shell_pair;
+//    std::multimap< int, int, std::less<int> > am_to_shell_list;
+//    for (int i=0; i < shells_.size(); i++) {
+//        am_to_shell_list.insert(am_to_shell_pair(shells_[i].nfunction(), i));
+//    }
+//    // This puts the sorted shell values into the sorted_shell_list_ vector
+//    // This can be used by the integral iterator to look up the value of the sorted shells
+//    std::multimap< int, int, std::less<int> >::iterator it;
+//    sorted_ao_shell_list_.clear();
+//    for (it=am_to_shell_list.begin(); it != am_to_shell_list.end(); it++) {
+//        //std::cout << "sorted shell size = " << it->first <<
+//        //        "\t, which belongs to shell number " << it->second << std::endl;
+//        sorted_ao_shell_list_.push_back(it->second);
+//    }
 }
 
 std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > BasisSet::test_basis_set(int max_am)

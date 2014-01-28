@@ -1091,11 +1091,6 @@ boost::shared_ptr<Wavefunction> py_psi_wavefunction()
     return Process::environment.wavefunction();
 }
 
-void py_psi_add_user_specified_basis_file(const string& file)
-{
-    Process::environment.user_basis_files.push_front(file);
-}
-
 string py_psi_get_input_directory()
 {
     return infile_directory;
@@ -1312,9 +1307,6 @@ BOOST_PYTHON_MODULE(psi4)
     def("set_variable", py_psi_set_variable, "Sets a PSI variable, by name.");
     def("print_variables", py_psi_print_variable_map, "Prints all PSI variables that have been set internally.");
     def("clean_variables", py_psi_clean_variable_map, "Empties all PSI variables that have set internally.");
-
-    // Adds a custom user basis set file.
-    def("add_user_basis_file", py_psi_add_user_specified_basis_file, "Adds a custom basis set file, provided by the user.");
 
     // Get the name of the directory where the input file is at
     def("get_input_directory", py_psi_get_input_directory, "Returns the location of the input file.");
