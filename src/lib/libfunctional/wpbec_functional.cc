@@ -1032,9 +1032,17 @@ void wPBECFunctional::pbec_sr_f(
     double ec_sr_z;
     
     pw92c_sr_eps(omega,rho,z,&ec,&ec_rho,&ec_z,&ec_sr,&ec_sr_rho,&ec_sr_z);
-    
+
+    if (ec_sr >= -1.0E-20) {
+        *f = 0.0;
+        *f_rho = 0.0;
+        *f_z = 0.0;
+        *f_s = 0.0;
+        return;
+    }   
+ 
     // ==> Code <== //
-    
+
     //  > B < //
     
     double B = B_PBE*pow(ec_sr/ec,a_c);
@@ -1047,23 +1055,24 @@ void wPBECFunctional::pbec_sr_f(
     
     double P = pow(z+1.0,2.0/3.0)*(1.0/2.0)+pow(-z+1.0,2.0/3.0)*(1.0/2.0);
     
-    // ==> The Singularity <== //
-
-    if (fabs(ec_sr / (G * P * P * P)) < 1.0E-15) {
-        *f = 0.0;
-        *f_rho = 0.0;
-        *f_z = 0.0;
-        *f_s = 0.0;
-        return;
-    }
-
     //  > t2 < //
     
     double t2 = 1.0/(P*P)*1.0/(ks*ks)*1.0/(rho*rho)*s*(1.0/4.0);
     
+    //  > V < //
+    
+    double V = -(1.0/(P*P*P)*ec_sr)/G;
+    
+    //  > U < //
+    
+    double U = exp(V)-1.0;
+    if (fabs(V) < 1.0E-5) {
+        U = V + V*V/2.0 + V*V*V/6.0 + V*V*V*V/24.0;
+    }   
+ 
     //  > A < //
     
-    double A = B/(G*(exp(-(1.0/(P*P*P)*ec_sr)/G)-1.0));
+    double A = B/(G*U);
     
     //  > H < //
     
@@ -1109,17 +1118,25 @@ void wPBECFunctional::pbec_sr_f(
     
     double t2_P = 1.0/(P*P*P)*1.0/(ks*ks)*1.0/(rho*rho)*s*(-1.0/2.0);
     
-    //  > A_ec_sr < //
+    //  > V_ec_sr < //
     
-    double A_ec_sr = B*1.0/(G*G)*1.0/(P*P*P)*exp(-(1.0/(P*P*P)*ec_sr)/G)*1.0/pow(exp(-(1.0/(P*P*P)*ec_sr)/G)-1.0,2.0);
+    double V_ec_sr = -1.0/(P*P*P)/G;
+    
+    //  > V_P < //
+    
+    double V_P = (1.0/(P*P*P*P)*ec_sr*3.0)/G;
+    
+    //  > U_V < //
+    
+    double U_V = exp(V);
     
     //  > A_B < //
     
-    double A_B = 1.0/(G*(exp(-(1.0/(P*P*P)*ec_sr)/G)-1.0));
+    double A_B = 1.0/(G*U);
     
-    //  > A_P < //
+    //  > A_U < //
     
-    double A_P = B*1.0/(G*G)*1.0/(P*P*P*P)*ec_sr*exp(-(1.0/(P*P*P)*ec_sr)/G)*1.0/pow(exp(-(1.0/(P*P*P)*ec_sr)/G)-1.0,2.0)*-3.0;
+    double A_U = -(B*1.0/(U*U))/G;
     
     //  > H_B < //
     
@@ -1161,13 +1178,21 @@ void wPBECFunctional::pbec_sr_f(
     
     double f_A = H_A*f_H;
     
+    //  > f_U < //
+    
+    double f_U = A_U*f_A;
+    
+    //  > f_V < //
+    
+    double f_V = U_V*f_U;
+    
     //  > f_t2 < //
     
     double f_t2 = H_t2*f_H;
     
     //  > f_P < //
     
-    double f_P = A_P*f_A+H_P*f_H+f_t2*t2_P;
+    double f_P = H_P*f_H+V_P*f_V+f_t2*t2_P;
     
     //  > f_ks < //
     
@@ -1179,7 +1204,7 @@ void wPBECFunctional::pbec_sr_f(
     
     //  > f_ec_sr < //
     
-    double f_ec_sr = A_ec_sr*f_A+B_ec_sr*f_B+Z_ec_sr*f_Z;
+    double f_ec_sr = B_ec_sr*f_B+V_ec_sr*f_V+Z_ec_sr*f_Z;
     
     //  > f_ec < //
     
