@@ -125,7 +125,11 @@ protected:
     double J_cutoff_;
     /// Schwarz sieve tolerance
     double schwarz_cutoff_;
-
+    
+    // => HACK for LRC-ERIs <= //
+    
+    double omega_;
+    
     // => Targets <= //
 
     /// Three-center integrals, by name, sorted e.g. (ov|Q), DiskTensor
@@ -172,6 +176,8 @@ public:
     void add_pair_space(const std::string& name, const std::string& space1, const std::string& space2, double pow = -1.0/2.0, bool transpose12 = false);
     // Clear this DFERI object of tasks
     virtual void clear();
+    // Clear this DFERI object of pair spaces
+    virtual void clear_pair_spaces();
 
     // => Computers <= // 
 
@@ -192,6 +198,9 @@ public:
     void set_schwarz_cutoff(double schwarz_cutoff) { schwarz_cutoff_ = schwarz_cutoff; }
     /// Set to keep the raw integrals in (Q|ia) striping?
     void set_keep_raw_integrals(bool val) { keep_raw_integrals_ = val; }
+
+    /// Set the omega value. ALL integrals and metrics will use this value if set.
+    void set_omega(double omega) { omega_ = omega; }
     
 };
 
