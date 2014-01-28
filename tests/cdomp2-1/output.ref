@@ -15,7 +15,7 @@
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
-    Process ID:  16697
+    Process ID:  16166
     PSI4DATADIR: /home/ugur/psi4/lib
 
     Using LocalCommunicator (Number of processes = 1)
@@ -29,7 +29,7 @@
 
 refnuc      =  9.18738642147759 #TEST
 refscf      = -76.02671607958911 #TEST
-refomp2     = -76.22932075227128 #TEST
+refomp2     = -76.22932075806726 #TEST
 
 memory 256 mb
 
@@ -44,6 +44,7 @@ set {
   basis cc-pvdz
   guess sad
   freeze_core true
+  scf_type cd
 }
 energy('cd-omp2')
 
@@ -57,7 +58,7 @@ compare_values(refomp2, get_variable("CD-OMP2 TOTAL ENERGY"), 6, "CD-OMP2 Total 
   Memory set to 256.000 MiB by Python script.
 
 *** tstart() called on bozkaya
-*** at Wed Jan  8 16:48:58 2014
+*** at Thu Jan 23 11:18:38 2014
 
 
          ---------------------------------------------------------
@@ -154,7 +155,7 @@ compare_values(refomp2, get_variable("CD-OMP2 TOTAL ENERGY"), 6, "CD-OMP2 Total 
     Integrals threads:              4
     Memory (MB):                  183
     Algorithm:                   Core
-    Integral Cache:              NONE
+    Integral Cache:              SAVE
     Schwarz Cutoff:             1E-12
     Cholesky tolerance:      1.00E-04
     No. Cholesky vectors:         121
@@ -239,18 +240,18 @@ Properties computed using the SCF density density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on bozkaya at Wed Jan  8 16:48:59 2014
+*** tstop() called on bozkaya at Thu Jan 23 11:18:39 2014
 Module time:
-	user time   =       1.37 seconds =       0.02 minutes
+	user time   =       0.68 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.37 seconds =       0.02 minutes
+	user time   =       0.68 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
 *** tstart() called on bozkaya
-*** at Wed Jan  8 16:48:59 2014
+*** at Thu Jan 23 11:18:39 2014
 
 
 
@@ -267,7 +268,7 @@ Total time:
   CEPA_TYPE                   => CEPA(0)          
   CHOLESKY_TOLERANCE          => 0.0001           
   CONV_TEI_TYPE               => DIRECT           
-  CUTOFF                      => 10               
+  CUTOFF                      => 8                
   DEBUG                       => 0                
   DERTYPE                     => NONE             
   DF_BASIS_CC                 => (empty)          
@@ -314,6 +315,7 @@ Total time:
   PROPERTIES                  => [  ]             
   PROPERTIES_ORIGIN           => [  ]             
   PUREAM                      => TRUE             
+  READ_SCF_3INDEX             => TRUE             
   REGULARIZATION              => FALSE            
   REG_PARAM                   => 0.004            
   RMS_MOGRAD_CONVERGENCE      => 1e-06            
@@ -333,7 +335,7 @@ Total time:
 
                       CD-OMP2 (CD-OO-MP2)   
               Program Written by Ugur Bozkaya
-              Latest Revision Jan 8, 2014
+              Latest Revision Jan 17, 2014
 
  ============================================================================== 
  ============================================================================== 
@@ -350,7 +352,7 @@ Total time:
 
 	Available memory is:    256 MB 
 	Minimum required memory for the DFOCC module is:      0 MB 
-	Generating Cholesky vectors ...
+	Reading Cholesky vectors from disk ...
 	Cholesky decomposition threshold: 1.00e-04
 	Number of Cholesky vectors:     121
 
@@ -372,10 +374,10 @@ Total time:
 	            ------------------------------ 
  Iter       E_total           DE           RMS MO Grad      MAX MO Grad      RMS T2    
  ----    ---------------    ----------     -----------      -----------     ---------- 
-   1     -76.2293092914     -9.22e-04       3.06e-04         1.91e-03        4.01e-05 
-   2     -76.2293162032     -6.91e-06       1.47e-04         1.41e-03        2.94e-06 
-   3     -76.2293191114     -2.91e-06       1.09e-04         1.07e-03        7.14e-07 
-   4     -76.2293207568     -1.65e-06       8.25e-05         8.06e-04        4.02e-07 
+   1     -76.2293089128     -9.22e-04       3.41e-04         1.95e-03        4.01e-05 
+   2     -76.2293162191     -7.31e-06       1.47e-04         1.41e-03        2.79e-06 
+   3     -76.2293191199     -2.90e-06       1.09e-04         1.07e-03        6.14e-07 
+   4     -76.2293207616     -1.64e-06       8.25e-05         8.05e-04        4.01e-07 
 
  ============================================================================== 
  ============================================================================== 
@@ -387,9 +389,9 @@ Total time:
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :     9.18738642147759
 	CD-HF Energy (a.u.)                :   -76.02671607958911
-	REF Energy (a.u.)                  :   -76.02580011321845
-	CD-MP2 Correlation Energy (a.u.)   :    -0.20260467721880
-	CD-MP2 Total Energy (a.u.)         :   -76.22932075680791
+	REF Energy (a.u.)                  :   -76.02580010659086
+	CD-MP2 Correlation Energy (a.u.)   :    -0.20260468201448
+	CD-MP2 Total Energy (a.u.)         :   -76.22932076160359
 	======================================================================= 
 
 	======================================================================= 
@@ -397,21 +399,21 @@ Total time:
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :     9.18738642147759
 	CD-HF Energy (a.u.)                :   -76.02671607958911
-	REF Energy (a.u.)                  :   -76.02580011321845
-	CD-OMP2 Correlation Energy (a.u.)  :    -0.20260467721880
-	Edfomp2 - Eref (a.u.)              :    -0.20352064358946
-	CD-OMP2 Total Energy (a.u.)        :   -76.22932075680791
+	REF Energy (a.u.)                  :   -76.02580010659086
+	CD-OMP2 Correlation Energy (a.u.)  :    -0.20260468201448
+	Ecdomp2 - Eref (a.u.)              :    -0.20352065501272
+	CD-OMP2 Total Energy (a.u.)        :   -76.22932076160359
 	======================================================================= 
 
 
-*** tstop() called on bozkaya at Wed Jan  8 16:49:00 2014
+*** tstop() called on bozkaya at Thu Jan 23 11:18:39 2014
 Module time:
-	user time   =       1.08 seconds =       0.02 minutes
+	user time   =       0.64 seconds =       0.01 minutes
 	system time =       0.10 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.45 seconds =       0.04 minutes
+	user time   =       1.32 seconds =       0.02 minutes
 	system time =       0.11 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	total time  =          1 seconds =       0.02 minutes
 
 *** PSI4 exiting successfully. Buy a developer a beer!
