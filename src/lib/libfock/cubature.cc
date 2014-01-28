@@ -4410,9 +4410,9 @@ void OctreeGridBlocker::block()
                     // Determine radius of bounding sphere
                     double RC2 = 0.0;
                     for (int Q = 0; Q < left.size(); Q++) {
-                        double dx = x[Q] - XC[0];
-                        double dy = y[Q] - XC[1];
-                        double dz = z[Q] - XC[2];
+                        double dx = x[left[Q]] - XC[0];
+                        double dy = y[left[Q]] - XC[1];
+                        double dz = z[left[Q]] - XC[2];
                         double R2 = dx * dx + dy * dy + dz * dz;
                         RC2 = (RC2 > R2 ? RC2 : R2);
                     }
@@ -4445,9 +4445,9 @@ void OctreeGridBlocker::block()
                     // Determine radius of bounding sphere
                     double RC2 = 0.0;
                     for (int Q = 0; Q < right.size(); Q++) {
-                        double dx = x[Q] - XC[0];
-                        double dy = y[Q] - XC[1];
-                        double dz = z[Q] - XC[2];
+                        double dx = x[right[Q]] - XC[0];
+                        double dy = y[right[Q]] - XC[1];
+                        double dz = z[right[Q]] - XC[2];
                         double R2 = dx * dx + dy * dy + dz * dz;
                         RC2 = (RC2 > R2 ? RC2 : R2);
                     }
