@@ -746,17 +746,19 @@ void export_mints()
 
 
     // LIBFOCK wrappers
-//    class_<JK, boost::shared_ptr<JK> >("JK", "docstring", no_init)
+    class_<JK, boost::shared_ptr<JK>, boost::noncopyable>("JK", "docstring", no_init)
 //            .def(init<boost::shared_ptr<BasisSet> >())
-//            .def("build_JK", &JK::build_JK, "docstring")
-//            .staticmethod("build_JK")
-//            .def("initialize", &JK::initialize)
-//            .def("compute", &JK::compute)
-//            .def("finalize", &JK::finalize)
-//            .def("C_left", &JK::C_left)
-//            .def("C_right", &JK::C_right)
-//            .def("J", &JK::J)
-//            .def("K", &JK::K)
-//            .def("wK", &JK::wK)
-//            .def("D", &JK::D);
+            .def("build_JK", &JK::build_JK, "docstring")
+            .staticmethod("build_JK")
+            .def("initialize", &JK::initialize)
+            .def("compute", &JK::compute)
+            .def("finalize", &JK::finalize)
+            .def("C_left", &JK::C_left, return_internal_reference<>())
+            .def("C_right", &JK::C_right, return_internal_reference<>())
+            .def("J", &JK::J, return_internal_reference<>())
+            .def("K", &JK::K, return_internal_reference<>())
+            .def("wK", &JK::wK, return_internal_reference<>())
+            .def("D", &JK::D, return_internal_reference<>())
+            .def("print_header", &JK::print_header, "docstring")
+            ;
 }
