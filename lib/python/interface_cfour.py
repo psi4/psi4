@@ -105,6 +105,9 @@ def run_cfour(name, **kwargs):
     lowername = name.lower()
     internal_p4c4_info = {}
 
+    optstash = p4util.OptionsState(
+            ['CFOUR', 'TRANSLATE_PSI4'])
+
     # Determine calling function and hence dertype
     calledby = inspect.stack()[1][3]
     dertype = ['energy', 'gradient', 'hessian'].index(calledby)
@@ -371,6 +374,8 @@ def run_cfour(name, **kwargs):
     P4C4_INFO.clear()
     P4C4_INFO.update(internal_p4c4_info)
 
+    optstash.restore()
+
 
 def cfour_list():
     """Form list of Cfour :py:func:`~driver.energy` arguments."""
@@ -404,6 +409,7 @@ def write_zmat(name, dertype):
     if molecule.name() == 'blank_molecule_psi4_yo':
         molcmd, molkw = '', {}
         bascmd, baskw = '', {}
+        psi4.set_local_option('CFOUR', 'TRANSLATE_PSI4', False)
     else:
         molecule.update_geometry()
         #print(molecule.create_psi4_string_from_molecule())
@@ -424,7 +430,10 @@ def write_zmat(name, dertype):
             bascmd, baskw = qcdbmolecule.format_basis_for_cfour(psi4.MintsHelper().basisset().has_puream())
 
     # Handle psi4 keywords implying cfour keyword values
-    psicmd, psikw = qcdb.cfour.muster_psi4options(p4util.prepare_options_for_modules(changedOnly=True))
+    if psi4.get_option('CFOUR', 'TRANSLATE_PSI4'):
+        psicmd, psikw = qcdb.cfour.muster_psi4options(p4util.prepare_options_for_modules(changedOnly=True))
+    else:
+        psicmd, psikw = '', {}
 
     # Handle calc type and quantum chemical method
     mdccmd, mdckw = qcdb.cfour.muster_modelchem(name, dertype)

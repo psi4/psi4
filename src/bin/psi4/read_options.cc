@@ -2924,6 +2924,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
           !expert -*/
       options.add_int("CFOUR_OMP_NUM_THREADS", 1);
 
+      /*- Do translate set Psi4 options to their cfour counterparts. -*/
+      options.add_bool("TRANSLATE_PSI4", true);
+
       /*- SUBSECTION CFOUR Internal -*/
 
       /*- Specifies the way the :math:`\langle ab||cd \rangle` molecular orbital
