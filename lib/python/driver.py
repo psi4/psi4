@@ -501,20 +501,16 @@ def energy(name, **kwargs):
                 psi4.set_local_option('SCF', 'E_CONVERGENCE', 6)
             else:
                 psi4.set_local_option('SCF', 'E_CONVERGENCE', 8)
-            psi4.revoke_local_option_changed('SCF', 'E_CONVERGENCE')
-            # TODO: the above is a hack to avoid imposing psi's defaults on cfour. think on it.
         if not psi4.has_option_changed('SCF', 'D_CONVERGENCE'):
             if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
                 psi4.set_local_option('SCF', 'D_CONVERGENCE', 6)
             else:
                 psi4.set_local_option('SCF', 'D_CONVERGENCE', 8)
-            psi4.revoke_local_option_changed('SCF', 'D_CONVERGENCE')
 
         # Set post-scf convergence criteria (global will cover all correlated modules)
         if not psi4.has_global_option_changed('E_CONVERGENCE'):
             if not procedures['energy'][lowername] == run_scf and not procedures['energy'][lowername] == run_dft:
                 psi4.set_global_option('E_CONVERGENCE', 6)
-            psi4.revoke_global_option_changed('E_CONVERGENCE')
 
         procedures['energy'][lowername](lowername, **kwargs)
 
@@ -631,20 +627,16 @@ def gradient(name, **kwargs):
             psi4.set_local_option('SCF', 'E_CONVERGENCE', 8)
         else:
             psi4.set_local_option('SCF', 'E_CONVERGENCE', 10)
-#        psi4.revoke_local_option_changed('SCF', 'E_CONVERGENCE')
-        # TODO: the above is a hack to avoid imposing psi's defaults on cfour. think on it.
     if not psi4.has_option_changed('SCF', 'D_CONVERGENCE'):
         if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
             psi4.set_local_option('SCF', 'D_CONVERGENCE', 8)
         else:
             psi4.set_local_option('SCF', 'D_CONVERGENCE', 10)
-#        psi4.revoke_local_option_changed('SCF', 'D_CONVERGENCE')
 
     # Set post-scf convergence criteria (global will cover all correlated modules)
     if not psi4.has_global_option_changed('E_CONVERGENCE'):
         if not procedures['energy'][lowername] == run_scf and not procedures['energy'][lowername] == run_dft:
             psi4.set_global_option('E_CONVERGENCE', 8)
-#        psi4.revoke_global_option_changed('E_CONVERGENCE')
 
     # Does dertype indicate an analytic procedure both exists and is wanted?
     if (dertype == 1):
@@ -866,20 +858,16 @@ def property(name, **kwargs):
                 psi4.set_local_option('SCF', 'E_CONVERGENCE', 6)
             else:
                 psi4.set_local_option('SCF', 'E_CONVERGENCE', 10)
-            psi4.revoke_local_option_changed('SCF', 'E_CONVERGENCE')
-            # TODO: the above is a hack to avoid imposing psi's defaults on cfour. think on it.
         if not psi4.has_option_changed('SCF', 'D_CONVERGENCE'):
             if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
                 psi4.set_local_option('SCF', 'D_CONVERGENCE', 6)
             else:
                 psi4.set_local_option('SCF', 'D_CONVERGENCE', 10)
-            psi4.revoke_local_option_changed('SCF', 'D_CONVERGENCE')
 
         # Set post-scf convergence criteria (global will cover all correlated modules)
         if not psi4.has_global_option_changed('E_CONVERGENCE'):
             if not procedures['energy'][lowername] == run_scf and not procedures['energy'][lowername] == run_dft:
                 psi4.set_global_option('E_CONVERGENCE', 8)
-            psi4.revoke_global_option_changed('E_CONVERGENCE')
 
         returnvalue = procedures['property'][lowername](lowername, **kwargs)
 
@@ -1311,20 +1299,16 @@ def hessian(name, **kwargs):
             psi4.set_local_option('SCF', 'E_CONVERGENCE', 8)
         else:
             psi4.set_local_option('SCF', 'E_CONVERGENCE', 10)
-        psi4.revoke_local_option_changed('SCF', 'E_CONVERGENCE')
-        # TODO: the above is a hack to avoid imposing psi's defaults on cfour. think on it.
     if not psi4.has_option_changed('SCF', 'D_CONVERGENCE'):
         if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
             psi4.set_local_option('SCF', 'D_CONVERGENCE', 8)
         else:
             psi4.set_local_option('SCF', 'D_CONVERGENCE', 10)
-        psi4.revoke_local_option_changed('SCF', 'D_CONVERGENCE')
 
     # Set post-scf convergence criteria (global will cover all correlated modules)
     if not psi4.has_global_option_changed('E_CONVERGENCE'):
         if not procedures['energy'][lowername] == run_scf and not procedures['energy'][lowername] == run_dft:
             psi4.set_global_option('E_CONVERGENCE', 8)
-        psi4.revoke_global_option_changed('E_CONVERGENCE')
 
     # Select certain irreps
     if 'irrep' in kwargs:
@@ -1422,20 +1406,16 @@ def hessian(name, **kwargs):
                 psi4.set_local_option('SCF', 'E_CONVERGENCE', 10)
             else:
                 psi4.set_local_option('SCF', 'E_CONVERGENCE', 11)
-#            psi4.revoke_local_option_changed('SCF', 'E_CONVERGENCE')
-            # TODO: the above is a hack to avoid imposing psi's defaults on cfour. think on it.
         if not psi4.has_option_changed('SCF', 'D_CONVERGENCE'):
             if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
                 psi4.set_local_option('SCF', 'D_CONVERGENCE', 10)
             else:
                 psi4.set_local_option('SCF', 'D_CONVERGENCE', 11)
-#            psi4.revoke_local_option_changed('SCF', 'D_CONVERGENCE')
 
         # Set post-scf convergence criteria (global will cover all correlated modules)
         if not psi4.has_global_option_changed('E_CONVERGENCE'):
             if not procedures['energy'][lowername] == run_scf and not procedures['energy'][lowername] == run_dft:
                 psi4.set_global_option('E_CONVERGENCE', 10)
-#            psi4.revoke_global_option_changed('E_CONVERGENCE')
 
         # Obtain list of displacements
         displacements = psi4.fd_geoms_freq_0(irrep)

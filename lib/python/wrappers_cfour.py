@@ -142,7 +142,7 @@ def vpt2(name, **kwargs):
 
     # Switches for route through code- S/R or continuous & Psi4 or Cfour gradients
     isSowReap = True if kwargs['vpt2_mode'].lower() == 'sowreap' else False
-    isC4notP4 = re.match('cfour', lowername) or re.match('c4-', lowername)
+    isC4notP4 = bool(re.match('cfour', lowername)) or bool(re.match('c4-', lowername))
     isC4fully = True if ('c4full' in kwargs and yes.match(str(kwargs['c4full'])) and isC4notP4 and isSowReap) else False
 
     # Save submission directory and basis set
@@ -201,7 +201,7 @@ def vpt2(name, **kwargs):
 
     # Generate the ZMAT input file in scratch
     with open('ZMAT', 'w') as handle:
-        cfour_infile = write_zmat('c4-scf', 1)
+        cfour_infile = write_zmat(skelname, 1)
         handle.write(cfour_infile)
     print('\n====== Begin ZMAT input for CFOUR ======')
     print(open('ZMAT', 'r').read())
