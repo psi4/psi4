@@ -15,7 +15,7 @@
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
-    Process ID:  13227
+    Process ID:  16107
     PSI4DATADIR: /home/ugur/psi4/lib
 
     Using LocalCommunicator (Number of processes = 1)
@@ -29,7 +29,7 @@
 
 refnuc      =  25.59060766929188 #TEST
 refscf      = -129.25910534911733 #TEST
-refomp2     = -129.59358500439464 #TEST
+refomp2     = -129.59358382057701 #TEST
 
 memory 256 mb
 
@@ -58,7 +58,7 @@ compare_values(refomp2, get_variable("DF-OMP2 TOTAL ENERGY"), 6, "DF-OMP2 Total 
   Memory set to 256.000 MiB by Python script.
 
 *** tstart() called on bozkaya
-*** at Sat Jan  4 15:24:34 2014
+*** at Thu Jan 23 11:17:37 2014
 
 
          ---------------------------------------------------------
@@ -154,7 +154,7 @@ compare_values(refomp2, get_variable("DF-OMP2 TOTAL ENERGY"), 6, "DF-OMP2 Total 
     Integrals threads:           4
     Memory (MB):               183
     Algorithm:                Core
-    Integral Cache:           NONE
+    Integral Cache:           SAVE
     Schwarz Cutoff:          1E-12
     Fitting Condition:       1E-12
 
@@ -280,18 +280,18 @@ Properties computed using the SCF density density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on bozkaya at Sat Jan  4 15:24:34 2014
+*** tstop() called on bozkaya at Thu Jan 23 11:17:38 2014
 Module time:
 	user time   =       1.35 seconds =       0.02 minutes
 	system time =       0.03 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
 	user time   =       1.35 seconds =       0.02 minutes
 	system time =       0.03 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
 *** tstart() called on bozkaya
-*** at Sat Jan  4 15:24:34 2014
+*** at Thu Jan 23 11:17:38 2014
 
 
 
@@ -306,8 +306,9 @@ Total time:
   CEPA_SOS_SCALE              => 1.3              
   CEPA_SS_SCALE               => 1.13             
   CEPA_TYPE                   => CEPA(0)          
+  CHOLESKY_TOLERANCE          => 0.0001           
   CONV_TEI_TYPE               => DIRECT           
-  CUTOFF                      => 10               
+  CUTOFF                      => 8                
   DEBUG                       => 0                
   DERTYPE                     => NONE             
   DF_BASIS_CC                 => CC-PVDZ-RI      !
@@ -345,7 +346,7 @@ Total time:
   OO_SCALE                    => 0.01             
   OPT_METHOD                  => QNR              
   ORB_OPT                     => TRUE             
-  ORB_RESP_SOLVER             => LINEQ            
+  ORB_RESP_SOLVER             => PCG              
   ORTH_TYPE                   => MGS              
   PCG_BETA_TYPE               => FLETCHER_REEVES  
   PCG_CONVERGENCE             => 1e-06            
@@ -354,6 +355,9 @@ Total time:
   PROPERTIES                  => [  ]             
   PROPERTIES_ORIGIN           => [  ]             
   PUREAM                      => TRUE             
+  READ_SCF_3INDEX             => TRUE             
+  REGULARIZATION              => FALSE            
+  REG_PARAM                   => 0.004            
   RMS_MOGRAD_CONVERGENCE      => 1e-06            
   R_CONVERGENCE               => 1e-05            
   SCS_TYPE                    => SCS              
@@ -371,7 +375,7 @@ Total time:
 
                       DF-OMP2 (DF-OO-MP2)   
               Program Written by Ugur Bozkaya
-              Latest Revision Jan 4, 2014
+              Latest Revision Jan 17, 2014
 
  ============================================================================== 
  ============================================================================== 
@@ -389,6 +393,7 @@ Total time:
 
 	Available memory is:    256 MB 
 	Minimum required memory for the DFOCC module is:      0 MB 
+	Reading DF integrals from disk ...
 	Number of basis functions in the DF-HF basis: 140
 	Number of basis functions in the DF-CC basis: 112
 
@@ -428,30 +433,26 @@ Total time:
    7     -129.5935769647     -4.36e-05       2.57e-04         2.28e-03        7.24e-06 
    8     -129.5935833211     -6.36e-06       2.44e-04         1.78e-03        3.00e-06 
    9     -129.5935838206     -4.99e-07       2.30e-04         1.50e-03        1.40e-06 
-  10     -129.5935850044     -1.18e-06       5.73e-05         3.75e-04        5.19e-07 
 
  ============================================================================== 
  ======================== DF-OMP2 ITERATIONS ARE CONVERGED ==================== 
  ============================================================================== 
 
-	Orbitals are optimized now.
-	Switching to the standard DF-MP2 computation after semicanonicalization of the MOs... 
-
 	Computing MP2 energy using optimized MOs... 
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :    25.59060766929188
 	DF-HF Energy (a.u.)                :  -129.25910534911733
-	REF Energy (a.u.)                  :  -129.24928506756208
-	Alpha-Alpha Contribution (a.u.)    :    -0.04509661702664
-	Alpha-Beta Contribution (a.u.)     :    -0.24857025345135
-	Beta-Beta Contribution (a.u.)      :    -0.05063306635457
-	Scaled_SS Correlation Energy (a.u.):    -0.03190989446040
-	Scaled_OS Correlation Energy (a.u.):    -0.29828430414161
-	DF-SCS-MP2 Total Energy (a.u.)     :  -129.57947926616410
-	DF-SOS-MP2 Total Energy (a.u.)     :  -129.54756937170370
-	DF-SCSN-MP2 Total Energy (a.u.)    :  -129.41776931031299
-	DF-MP2 Correlation Energy (a.u.)   :    -0.33447965527731
-	DF-MP2 Total Energy (a.u.)         :  -129.59358500439464
+	REF Energy (a.u.)                  :  -129.24923289345563
+	Alpha-Alpha Contribution (a.u.)    :    -0.04510158218317
+	Alpha-Beta Contribution (a.u.)     :    -0.24860486693092
+	Beta-Beta Contribution (a.u.)      :    -0.05064411824539
+	Scaled_SS Correlation Energy (a.u.):    -0.03191523347619
+	Scaled_OS Correlation Energy (a.u.):    -0.29832584031710
+	DF-SCS-MP2 Total Energy (a.u.)     :  -129.57947396724890
+	DF-SOS-MP2 Total Energy (a.u.)     :  -129.54755873377272
+	DF-SCSN-MP2 Total Energy (a.u.)    :  -129.41774532620991
+	DF-MP2 Correlation Energy (a.u.)   :    -0.33447811169776
+	DF-MP2 Total Energy (a.u.)         :  -129.59358346081510
 	======================================================================= 
 
 	======================================================================= 
@@ -459,24 +460,24 @@ Total time:
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :    25.59060766929188
 	DF-HF Energy (a.u.)                :  -129.25910534911733
-	REF Energy (a.u.)                  :  -129.24928506756208
-	DF-SCS-OMP2 Total Energy (a.u.)    :  -129.57947926616410
-	DF-SOS-OMP2 Total Energy (a.u.)    :  -129.54756937170370
-	DF-SCSN-OMP2 Total Energy (a.u.)   :  -129.41776931031299
-	DF-OMP2 Correlation Energy (a.u.)  :    -0.33447965527731
-	Edfomp2 - Eref (a.u.)              :    -0.34429993683256
-	DF-OMP2 Total Energy (a.u.)        :  -129.59358500439464
+	REF Energy (a.u.)                  :  -129.24923289345563
+	DF-SCS-OMP2 Total Energy (a.u.)    :  -129.57947396724890
+	DF-SOS-OMP2 Total Energy (a.u.)    :  -129.54755873377272
+	DF-SCSN-OMP2 Total Energy (a.u.)   :  -129.41774532620991
+	DF-OMP2 Correlation Energy (a.u.)  :    -0.33447847145968
+	Edfomp2 - Eref (a.u.)              :    -0.34435092712138
+	DF-OMP2 Total Energy (a.u.)        :  -129.59358382057701
 	======================================================================= 
 
 
-*** tstop() called on bozkaya at Sat Jan  4 15:24:36 2014
+*** tstop() called on bozkaya at Thu Jan 23 11:17:39 2014
 Module time:
-	user time   =       4.39 seconds =       0.07 minutes
-	system time =       0.64 seconds =       0.01 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       3.61 seconds =       0.06 minutes
+	system time =       0.56 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       5.74 seconds =       0.10 minutes
-	system time =       0.67 seconds =       0.01 minutes
+	user time   =       4.96 seconds =       0.08 minutes
+	system time =       0.59 seconds =       0.01 minutes
 	total time  =          2 seconds =       0.03 minutes
 
 *** PSI4 exiting successfully. Buy a developer a beer!

@@ -1109,6 +1109,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("DFT_OMEGA", 0.0);
     /*- The DFT Exact-exchange parameter -*/
     options.add_double("DFT_ALPHA", 0.0);
+    /*- The DFT Correlation Range-separation parameter -*/
+    options.add_double("DFT_OMEGA_C", 0.0);
+    /*- The DFT Correlation hybrid parameter -*/
+    options.add_double("DFT_ALPHA_C", 0.0);
     /*- Number of spherical points (A :ref:`Lebedev Points <table:lebedevorder>` number). -*/
     options.add_int("DFT_SPHERICAL_POINTS", 302);
     /*- Number of radial points. -*/
@@ -1142,6 +1146,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     :ref:`Dispersion Corrections <table:dashd>` for the order in which
     parameters are to be specified in this array option. -*/
     options.add("DFT_DISPERSION_PARAMETERS", new ArrayType());
+    /*- The convergence on the orbital localization procedure -*/
+    options.add_double("LOCAL_CONVERGENCE",1E-12);
+    /*- The maxiter on the orbital localization procedure -*/
+    options.add_int("LOCAL_MAXITER",200);
   }
   if (name == "CPHF"|| options.read_globals()) {
     /*- The amount of information printed

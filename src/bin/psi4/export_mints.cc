@@ -36,6 +36,8 @@
 #include <libscf_solver/hf.h>
 #include <libscf_solver/rhf.h>
 
+#include <libfock/jk.h>
+
 #include <string>
 
 using namespace boost;
@@ -43,26 +45,26 @@ using namespace boost::python;
 using namespace psi;
 
 dict matrix_array_interface(SharedMatrix mat, int irrep){
-	dict rv;
-	int rows = mat->rowspi(irrep);
-	int cols = mat->colspi(irrep);
-	rv["shape"] = boost::python::make_tuple(rows, cols);
-	rv["data"] = boost::python::make_tuple((long)mat->get_pointer(irrep), true);
-	std::string typestr = is_big_endian() ? ">" : "<";
+    dict rv;
+    int rows = mat->rowspi(irrep);
+    int cols = mat->colspi(irrep);
+    rv["shape"] = boost::python::make_tuple(rows, cols);
+    rv["data"] = boost::python::make_tuple((long)mat->get_pointer(irrep), true);
+    std::string typestr = is_big_endian() ? ">" : "<";
     {
         std::stringstream sstr;
         sstr << (int)sizeof(double);
         typestr += "f" + sstr.str();
     }
-	rv["typestr"] = typestr;
-	return rv;
+    rv["typestr"] = typestr;
+    return rv;
 }
 
 dict matrix_array_interface_c1(SharedMatrix mat){
-	if(mat->nirrep() != 1){
-		throw PSIEXCEPTION("Pointer export of multiple irrep matrices not yet implemented.");
-	}
-	return matrix_array_interface(mat, 0);
+    if(mat->nirrep() != 1){
+        throw PSIEXCEPTION("Pointer export of multiple irrep matrices not yet implemented.");
+    }
+    return matrix_array_interface(mat, 0);
 }
 
 boost::shared_ptr<Vector> py_nuclear_dipole(shared_ptr<Molecule> mol)
@@ -199,7 +201,7 @@ void export_mints()
             .export_values();
 
     class_<PyBuffer<double>, shared_ptr<PyBuffer<double> > >("DoublePyBuffer", "Buffer interface to NumPy arrays").
-    		add_property("__array_interface__", &PyBuffer<double>::array_interface, "docstring");
+            add_property("__array_interface__", &PyBuffer<double>::array_interface, "docstring");
 
     typedef void   (Matrix::*matrix_multiply)(bool, bool, double, const SharedMatrix&, const SharedMatrix&, double);
     typedef void   (Matrix::*matrix_diagonalize)(SharedMatrix&, boost::shared_ptr<Vector>&, diagonalize_order);
@@ -369,8 +371,8 @@ void export_mints()
             def("is_done", &AOShellCombinationsIterator::is_done, "docstring");
 
     class_<ThreeCenterOverlapInt, boost::shared_ptr<ThreeCenterOverlapInt>, boost::noncopyable>("ThreeCenterOverlapInt", "docstring", no_init).
-    		def("compute_shell", &ThreeCenterOverlapInt::compute_shell, "docstring").
-    		add_property("py_buffer_object", make_function(&ThreeCenterOverlapInt::py_buffer_object, return_internal_reference<>()), "docstring").
+            def("compute_shell", &ThreeCenterOverlapInt::compute_shell, "docstring").
+            add_property("py_buffer_object", make_function(&ThreeCenterOverlapInt::py_buffer_object, return_internal_reference<>()), "docstring").
             def("set_enable_pybuffer", &ThreeCenterOverlapInt::set_enable_pybuffer, "docstring");
 
     class_<IntegralFactory, boost::shared_ptr<IntegralFactory>, boost::noncopyable>("IntegralFactory", "docstring", no_init).
@@ -742,4 +744,21 @@ void export_mints()
             def(init<double>()).
             def("exponent", &FittedSlaterCorrelationFactor::exponent);
 
+
+    // LIBFOCK wrappers
+    class_<JK, boost::shared_ptr<JK>, boost::noncopyable>("JK", "docstring", no_init)
+//            .def(init<boost::shared_ptr<BasisSet> >())
+            .def("build_JK", &JK::build_JK, "docstring")
+            .staticmethod("build_JK")
+            .def("initialize", &JK::initialize)
+            .def("compute", &JK::compute)
+            .def("finalize", &JK::finalize)
+            .def("C_left", &JK::C_left, return_internal_reference<>())
+            .def("C_right", &JK::C_right, return_internal_reference<>())
+            .def("J", &JK::J, return_internal_reference<>())
+            .def("K", &JK::K, return_internal_reference<>())
+            .def("wK", &JK::wK, return_internal_reference<>())
+            .def("D", &JK::D, return_internal_reference<>())
+            .def("print_header", &JK::print_header, "docstring")
+            ;
 }

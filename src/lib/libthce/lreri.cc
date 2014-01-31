@@ -221,6 +221,7 @@ void DFERI::common_init()
     schwarz_cutoff_ = 0.0;
     J_cutoff_ = 1.0E-10;
     keep_raw_integrals_ = false;
+    omega_ = 0.0;
 }
 boost::shared_ptr<DFERI> DFERI::build(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, Options& options)
 {
@@ -247,18 +248,25 @@ void DFERI::add_pair_space(const std::string& name, const std::string& space1, c
     pair_powers_[name] = power;
     pair_transposes_[name] = transpose12;
 }
-void DFERI::clear()
+void DFERI::clear_pair_spaces()
 {
-    LRERI::clear();
     pair_spaces_.clear();
     pair_spaces_order_.clear();
     pair_powers_.clear();
     pair_transposes_.clear();
     ints_.clear();
 }
+void DFERI::clear()
+{
+    clear_pair_spaces();
+    LRERI::clear();
+}
 void DFERI::print_header(int level)
 {
     fprintf(outfile, "  ==> DFERI: Density Fitted 3-Index Tensors <==\n\n");
+    if (omega_ != 0.0) {
+        fprintf(outfile, "    LRC Omega      = %11.3E\n", omega_);
+    }
     fprintf(outfile, "    Schwarz cutoff = %11.3E\n", schwarz_cutoff_);
     fprintf(outfile, "    J cutoff       = %11.3E\n", J_cutoff_);
     fprintf(outfile, "    Mem (GB)       = %11zu\n", (memory_ * 8L / 1073741824L)); 
@@ -309,7 +317,11 @@ boost::shared_ptr<Matrix> DFERI::Jpow(double power)
     boost::shared_ptr<IntegralFactory> Jfactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), auxiliary_, BasisSet::zero_ao_basis_set()));
     std::vector<boost::shared_ptr<TwoBodyAOInt> > Jeri;
     for (int thread = 0; thread < nthread; thread++) {
-        Jeri.push_back(boost::shared_ptr<TwoBodyAOInt>(Jfactory->eri()));
+        if (omega_ == 0.0) {
+            Jeri.push_back(boost::shared_ptr<TwoBodyAOInt>(Jfactory->eri()));
+        } else {
+            Jeri.push_back(boost::shared_ptr<TwoBodyAOInt>(Jfactory->erf_eri(omega_)));
+        }
     }
 
     std::vector<std::pair<int, int> > Jpairs;
@@ -499,7 +511,11 @@ void DFERI::transform()
     boost::shared_ptr<IntegralFactory> factory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_));
     std::vector<boost::shared_ptr<TwoBodyAOInt> > eri;
     for (int thread = 0; thread < nthread; thread++) {
-        eri.push_back(boost::shared_ptr<TwoBodyAOInt>(factory->eri()));
+        if (omega_ == 0.0) {
+            eri.push_back(boost::shared_ptr<TwoBodyAOInt>(factory->eri()));
+        } else {
+            eri.push_back(boost::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_)));
+        }
     }
 
     // => ERI Sieve <= //

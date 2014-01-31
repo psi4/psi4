@@ -16,6 +16,13 @@ computations with more than 2500 basis functions running serially or with modest
 With computationally demanding portions written in C++, Boost exports of many C++ classes into 
 Python, and a flexible Python driver, PSI4 strives to be friendly to both users and developers.
 
+[22 Jan 2014] Renamed psi4release to psi4public, since master branch is continuously synced
+with private master branch, rather than reflecting static stable releases. Interested developers
+are welcome to fork this repository -OR- clone and store branches here at psi4/psi4public (those
+with collaborator access) -OR- clone and store private branches at psi4/psi4 (those with collaborator
+access to the private repo). A new stable, fully tested beta6 should appear within a few weeks.
+Youtube links to psi4 developer training should appear after our workshop this Friday.
+
 [11 Nov 2013] We are transitioning from main development on a private GitHub repository toward
 main development on this public repository. Sensitive code (prone to scientific scooping) will
 remain on the private branch, but otherwise we anticipate that contributions from both the primary
