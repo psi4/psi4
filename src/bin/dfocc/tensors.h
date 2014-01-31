@@ -33,7 +33,7 @@ using namespace psi;
 using namespace std;
 
 namespace psi{ namespace dfoccwave{
-  
+
 class Tensor1d;
 class Tensor2d;
 class Tensor3d;
@@ -47,7 +47,7 @@ typedef boost::shared_ptr<Tensor3d> SharedTensor3d;
 typedef boost::shared_ptr<Tensor1i> SharedTensor1i;
 typedef boost::shared_ptr<Tensor2i> SharedTensor2i;
 typedef boost::shared_ptr<Tensor3i> SharedTensor3i;
-  
+
 class Tensor1d
 {
 
@@ -55,13 +55,13 @@ class Tensor1d
   double *A1d_;
   int dim1_;
   string name_;      // Name of the array
-    
+
   public:
-  Tensor1d(int d1);  
+  Tensor1d(int d1);
   Tensor1d(string name, int d1);
   Tensor1d();			   //default constructer
   ~Tensor1d(); 		   	   //destructer
-  
+
   void init(string name, int d1);
   void init(int d1);
   void memalloc();
@@ -76,13 +76,13 @@ class Tensor1d
   void add(int i, double value);// add value to ith element of the vector
   void subtract(const SharedTensor1d& Adum);
   void subtract(int i, double value);
-  double get(int i); 
-  // rms:  rms of A1d_ 
-  double rms(); 
+  double get(int i);
+  // rms:  rms of A1d_
+  double rms();
   // rms:  rms of (A1d_ - Atemp)
   double rms(const SharedTensor1d& Atemp);
   // dot: return result of A1d_' * y
-  double dot(const SharedTensor1d &y); 
+  double dot(const SharedTensor1d &y);
   // gemv: A1d_ = alpha * A * b + beta, where A is a general matrix
   // gemv: C(m) = \sum_{n} A(m,n) b(n)
   void gemv(bool transa, const SharedTensor2d& a, const SharedTensor1d& b, double alpha, double beta);
@@ -91,24 +91,24 @@ class Tensor1d
   // gbmv: This function may NOT working correctly!!!!
   void gbmv(bool transa, const SharedTensor2d& a, const SharedTensor1d& b, double alpha, double beta);
   // xay: return result of A1d_' * A * y
-  double xay(const SharedTensor2d &a, const SharedTensor1d &y); 
+  double xay(const SharedTensor2d &a, const SharedTensor1d &y);
   void scale(double a);
   void copy(double *x);
   void copy(const SharedTensor1d &x);
   // row_vector: set A1d to nth row of A, dim1_ = A->dim2
-  void row_vector(SharedTensor2d &A, int n); 
+  void row_vector(SharedTensor2d &A, int n);
   // column_vector: set A1d to nth column of A, dim1_ = A->dim1
-  void column_vector(SharedTensor2d &A, int n); 
+  void column_vector(SharedTensor2d &A, int n);
   int dim1() const { return dim1_; }
   // dirprd: A1d_[i] = a[i] * b[i]
   void dirprd(SharedTensor1d &a, SharedTensor1d &b);
-  
+
   friend class Tensor2d;
   friend class Tensor3d;
-};  
+};
 
 
-class Tensor2d 
+class Tensor2d
 {
 
   private:
@@ -117,9 +117,9 @@ class Tensor2d
   int **row_idx_, **col_idx_;
   int *row2d1_, *row2d2_, *col2d1_, *col2d2_;
   string name_;      // Name of the array
-    
+
   public:
-  Tensor2d(int d1,int d2);  
+  Tensor2d(int d1,int d2);
   Tensor2d(string name, int d1,int d2);
   Tensor2d(psi::PSIO* psio, unsigned int fileno, string name, int d1,int d2);
   Tensor2d(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, string name, int d1,int d2);
@@ -128,7 +128,7 @@ class Tensor2d
   Tensor2d(string name, int d1, int d2, int d3);
   Tensor2d();			   //default constructer
   ~Tensor2d(); 		   	   //destructer
-  
+
   void init(string name, int d1,int d2);
   void init(int d1,int d2);
   void memalloc();
@@ -160,20 +160,20 @@ class Tensor2d
   // diagonalize: diagonalize via rsp
   void diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff);
   // cdsyev: diagonalize via lapack
-  void cdsyev(char jobz, char uplo, const SharedTensor2d& eigvectors, const SharedTensor1d& eigvalues); 
+  void cdsyev(char jobz, char uplo, const SharedTensor2d& eigvectors, const SharedTensor1d& eigvalues);
   // davidson: diagonalize via davidson algorithm
-  void davidson(int n_eigval, const SharedTensor2d& eigvectors, const SharedTensor1d& eigvalues, double cutoff, int print); 
+  void davidson(int n_eigval, const SharedTensor2d& eigvectors, const SharedTensor1d& eigvalues, double cutoff, int print);
   // cdgesv: solve a linear equation via lapack
-  void cdgesv(const SharedTensor1d& Xvec); 
+  void cdgesv(const SharedTensor1d& Xvec);
   void cdgesv(double* Xvec);
   void cdgesv(const SharedTensor1d& Xvec, int errcod);
   void cdgesv(double* Xvec, int errcod);
   // lineq_flin: solve a linear equation via FLIN
-  void lineq_flin(const SharedTensor1d& Xvec, double *det);  
-  void lineq_flin(double* Xvec, double *det);  
+  void lineq_flin(const SharedTensor1d& Xvec, double *det);
+  void lineq_flin(double* Xvec, double *det);
   // pople: solve a linear equation via Pople's algorithm
-  void lineq_pople(const SharedTensor1d& Xvec, int num_vecs, double cutoff);   
-  void lineq_pople(double* Xvec, int num_vecs, double cutoff);   
+  void lineq_pople(const SharedTensor1d& Xvec, int num_vecs, double cutoff);
+  void lineq_pople(double* Xvec, int num_vecs, double cutoff);
   // gemm: matrix multiplication C = A * B
   void gemm(bool transa, bool transb, const SharedTensor2d& a, const SharedTensor2d& b, double alpha, double beta);
   // contract: general contraction C(m,n) = \sum_{k} A(m,k) * B(k,n)
@@ -192,8 +192,8 @@ class Tensor2d
   void gemv(bool transa, const SharedTensor2d& a, const SharedTensor1d& b, double alpha, double beta);
   // level_shift: A[i][i] = A[i][i] - value
   void level_shift(double value);
-  // outer_product: A = x * y' 
-  void outer_product(const SharedTensor1d &x, const SharedTensor1d &y); 
+  // outer_product: A = x * y'
+  void outer_product(const SharedTensor1d &x, const SharedTensor1d &y);
   void scale(double a);
   // scale_row: scales mth row with a
   void scale_row(int m, double a);
@@ -213,7 +213,7 @@ class Tensor2d
   // vector_dot: value = Tr(A' * B)
   double vector_dot(const SharedTensor2d &rhs);
   double vector_dot(double **rhs);
-  double **to_block_matrix(); 
+  double **to_block_matrix();
   double *to_lower_triangle();
   void to_shared_matrix(SharedMatrix A);
   // mgs: orthogonalize with a Modified Gram-Schmid algorithm
@@ -235,7 +235,7 @@ class Tensor2d
   void read(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno);
   void read(psi::PSIO& psio, unsigned int fileno);
   bool read(PSIO* psio, int itap, const char *label, int dim);
-  bool read(shared_ptr<psi::PSIO> psio, int itap, const char *label, int dim);
+  bool read(boost::shared_ptr<psi::PSIO> psio, int itap, const char *label, int dim);
   void save(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno);
   void save(psi::PSIO* const psio, unsigned int fileno);
   void save(psi::PSIO& psio, unsigned int fileno);
@@ -243,12 +243,12 @@ class Tensor2d
   void load(psi::PSIO* const psio, unsigned int fileno, string name, int d1,int d2);
   void load(psi::PSIO& psio, unsigned int fileno, string name, int d1,int d2);
 
-  // sort (for example 1432 sort): A2d_(ps,rq) = A(pq,rs) 
+  // sort (for example 1432 sort): A2d_(ps,rq) = A(pq,rs)
   // A2d_ = alpha*A + beta*A2d_
   void sort(int sort_type, const SharedTensor2d &A, double alpha, double beta);
   // apply_denom: T(ij,ab) /= D(ij,ab)
   void apply_denom(int frzc, int occ, const SharedTensor2d &fock);
-  // apply_denom_os: T(Ij,Ab) /= D(Ij,Ab) 
+  // apply_denom_os: T(Ij,Ab) /= D(Ij,Ab)
   void apply_denom_os(int frzc, int occA, int occB, const SharedTensor2d &fockA, const SharedTensor2d &fockB);
   // apply_denom_chem: T(ia,jb) /= D(ij,ab)
   void apply_denom_chem(int frzc, int occ, const SharedTensor2d &fock);
@@ -282,7 +282,7 @@ class Tensor2d
   void form_b_ij(int frzc, const SharedTensor2d &A);
   void form_b_ia(int frzc, const SharedTensor2d &A);
   void form_b_ab(const SharedTensor2d &A);
-  
+
   friend class Tensor1d;
   friend class Tensor3d;
   friend class Tensor1i;
@@ -296,13 +296,13 @@ class Tensor3d
   double ***A3d_;
   int dim1_,dim2_,dim3_;
   string name_;      // Name of the array
-    
+
   public:
-  Tensor3d(int d1,int d2, int d3);  
+  Tensor3d(int d1,int d2, int d3);
   Tensor3d(string name, int d1,int d2, int d3);
   Tensor3d();			   //default constructer
   ~Tensor3d(); 		   	   //destructer
-  
+
   void init(string name, int d1,int d2, int d3);
   void init(int d1,int d2, int d3);
   void memalloc();
@@ -310,8 +310,8 @@ class Tensor3d
   void print();
   void release();
   void set(int h, int i, int j, double value);
-  double get(int h, int i, int j); 
-  
+  double get(int h, int i, int j);
+
   friend class Tensor1d;
   friend class Tensor2d;
 };
@@ -323,13 +323,13 @@ class Tensor1i
   int *A1i_;
   int dim1_;
   string name_;      // Name of the array
-    
+
   public:
-  Tensor1i(int d1);  
+  Tensor1i(int d1);
   Tensor1i(string name, int d1);
   Tensor1i();			   //default constructer
   ~Tensor1i(); 		   	   //destructer
-  
+
   void init(string name, int d1);
   void init(int d1);
   void memalloc();
@@ -337,13 +337,13 @@ class Tensor1i
   void print();
   void release();
   void set(int i, int value);
-  int get(int i); 
+  int get(int i);
   void add(const SharedTensor1i& Adum);
   void add(int i, int value);
   void subtract(const SharedTensor1i& Adum);
   void subtract(int i, int value);
 
-}; 
+};
 
 class Tensor2i
 {
@@ -352,13 +352,13 @@ class Tensor2i
   int **A2i_;
   int dim1_,dim2_;
   string name_;      // Name of the array
-    
+
   public:
-  Tensor2i(int d1,int d2);  
+  Tensor2i(int d1,int d2);
   Tensor2i(string name, int d1,int d2);
   Tensor2i();			   //default constructer
   ~Tensor2i(); 		   	   //destructer
-  
+
   void init(string name, int d1,int d2);
   void init(int d1,int d2);
   void memalloc();
@@ -379,7 +379,7 @@ class Tensor2i
   void copy(int **a);
   void identity();
   int trace();
-  int **to_int_matrix(); 
+  int **to_int_matrix();
   int dim1() const { return dim1_; }
   int dim2() const { return dim2_; }
 
@@ -397,13 +397,13 @@ class Tensor3i
   int ***A3i_;
   int dim1_,dim2_,dim3_;
   string name_;      // Name of the array
-    
+
   public:
-  Tensor3i(int d1,int d2, int d3);  
+  Tensor3i(int d1,int d2, int d3);
   Tensor3i(string name, int d1,int d2, int d3);
   Tensor3i();			   //default constructer
   ~Tensor3i(); 		           //destructer
-  
+
   void init(string name, int d1,int d2, int d3);
   void init(int d1,int d2, int d3);
   void memalloc();
@@ -411,7 +411,7 @@ class Tensor3i
   void print();
   void release();
   void set(int h, int i, int j, int value);
-  int get(int h, int i, int j); 
+  int get(int h, int i, int j);
 };
 }} // End Namespaces
 #endif // _dfocc_tensors_h_

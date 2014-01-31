@@ -467,6 +467,17 @@ compiling and installing the PSI4 package.
   Running ``make`` (which must be GNU's 'make' utility) in $objdir will compile
   the PSI4 libraries and executable modules.
 
+  .. warning:: The libint integrals library creates rather large files
+     (multiple GB) during compilation, especially if higher angular momentum 
+     functions are enabled.  These are normally written to directory
+     ``/tmp``, which on some systems may be too small.  Alternatively,
+     the user can specify a location for these files by setting the
+     environmental variable ``$PSI_SCRATCH`` (if this is not set, 
+     ``$SCRATCH`` will also be checked).  See User Configuration below
+     about ``$PSI_SCRATCH``.  These files should be written to a local
+     disk (not a network-mounted NFS share) if possible, otherwise the
+     compilation may be very slow.
+
 * Step 3: Testing
 
   To execute automatically the ever-growing number of test cases after
