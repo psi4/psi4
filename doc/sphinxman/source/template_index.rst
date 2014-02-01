@@ -31,7 +31,6 @@ Programmers' Manual
 
    contributing
    programming
-   autodoc_available_plugins
    autodoc_driver
    autodoc_psimod
 
@@ -43,3 +42,4 @@ Programmers' Manual
 
 .. #####  HTML-ALL STOP
 
+.. comment  autodoc_available_plugins

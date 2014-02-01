@@ -52,8 +52,10 @@ for pyfile in glob.glob(DriverPath + '../../lib/python/*.py'):
             fdriver.write('\n.. literalinclude:: %slib/python/%s\n' % (IncludePath, filename))
         elif basename == 'diatomic':
             fdriver.write('   :exclude-members: anharmonicity\n')
-        elif basename == 'molutil':
+        elif basename == 'interface_dftd3':
             fdriver.write('   :exclude-members: run_dftd3\n')
+        elif basename == 'interface_cfour':
+            fdriver.write('   :exclude-members: run_cfour\n')
         elif basename == 'aliases':
             fdriver.write('   :exclude-members: sherrill_gold_standard, allen_focal_point\n')
 
