@@ -199,4 +199,7 @@ PSIF_HESS                   =  272  # Hessian Utility File
 PSIF_OCC_DPD                =  273  # OCC DPD
 PSIF_OCC_DENSITY            =  274  # OCC Density
 PSIF_OCC_IABC               =  275  # OCC out-of-core <IA|BC>
+PSIF_DFOCC_INTS             =  276  # DFOCC Integrals
+PSIF_DFOCC_AMPS             =  277  # DFOCC Amplitudes
+PSIF_DFOCC_DENS             =  278  # DFOCC PDMs
 
