@@ -22,7 +22,7 @@ set basis sto-3g
 Earray = [
   'SCF',
   'CCSD',
-  'CCSD(T)',
+#  'CCSD(T)',
   'CONV-MP2',
   'DF-MP2',
   'DCFT',

@@ -53,9 +53,9 @@ activate(h2)
 eb2plyp = energy('b2plyp')
 clean()
 
-#activate(h2o)
-#eb2plyp = energy('b2plyp')
-#clean()
+activate(h2o)
+eb2plyp = energy('b2plyp')
+clean()
 
 #activate(n2)
 #eb2plyp = energy('b2plyp')
