@@ -183,18 +183,13 @@ void THCE::delete_tensor(const std::string& name)
     tensors_.erase(name); 
 }
 
-std::set<std::string> Tensor::static_names_;
+long int Tensor::unique_id = 0;
 
 Tensor::Tensor(const std::string& name,
         std::vector<string>& dimensions, 
         std::vector<int>& sizes) :
     name_(name), dimensions_(dimensions), sizes_(sizes)
 {
-    if (static_names_.count(name_)) {
-        throw PSIEXCEPTION("Tensor name " + name_ + " already exists, and could produce scratch file aliasing.\nDelete the other tensor first."); 
-    }
-    static_names_.insert(name_);
-    
     if (sizes_.size() != dimensions_.size()) {
         throw PSIEXCEPTION("Dimensions and Sizes are not the same order.");
     }
@@ -204,12 +199,13 @@ Tensor::Tensor(const std::string& name,
     for (int k = 0; k < order_; k++) {
         numel_ *= sizes_[k];
     }
+
+    set_filename();
 }
 Tensor::~Tensor()
 {
-    static_names_.erase(name_);
 }
-std::string Tensor::filename() const
+void Tensor::set_filename() 
 {
     std::stringstream ss;
     ss <<  PSIOManager::shared_object()->get_default_path();
@@ -220,9 +216,13 @@ std::string Tensor::filename() const
     ss << ".";
     ss << PSIO::get_default_namespace();
     ss << ".";
+    ss << Tensor::unique_id;
+    ss << ".";
     ss << name_;
     ss << ".dat";
-    return ss.str();
+    filename_ = ss.str();
+
+    Tensor::unique_id++;
 }
 void Tensor::slice(boost::shared_ptr<Tensor> A, std::vector<boost::tuple<bool,int,int,bool,int,int> >& topology)
 {
