@@ -65,7 +65,7 @@ class Molecule(object):
     """
     Encapsulates all of the functionality and attributes of a Molecule itself.
 
-    **Signatures :**
+    :Signatures:
         * ``Molecule(xyz_string)``
         * ``Molecule(atoms)``
         * ``Molecule(atom_names, cart_mat)``
@@ -1457,6 +1457,7 @@ class Molecule(object):
     def center_of_mass(self):
         """ Returns a Vector giving the center of mass of the molecule in the current Cartesian representation.
         The units of the returned value are self.cartesian_units.
+
         .. note::
             This result of this method is cached, and the cached value gets flushed in
             `update_cartesian_representation()`.  If you change an atom's position
@@ -1468,6 +1469,7 @@ class Molecule(object):
             subsequently succeed, you probably forgot to call `update_cartesian_representation()`
             somewhere, or you were assuming that it was automatically called somewhere when
             in fact it was not getting called.
+
         """
         center = Vector([0.0, 0.0, 0.0])
         for atom in self:
@@ -2007,7 +2009,7 @@ class Molecule(object):
     def write_xyz(self, filename, overwrite=False, format_str = "%-3s %12.8f %12.8f %12.8f"):
         """ Writes the Molecule to the standard xyz format.
 
-        See `Molecule.xyz_string() for more details.
+        See :py:meth:`Molecule.xyz_string` for more details.
 
         :See Also:
 

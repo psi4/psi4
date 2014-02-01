@@ -17,11 +17,11 @@ class ImproperRotation(SymmetryOperation):
     :Attributes:
 
     n : int
-        The order of the rotation (e.g. for a S_3 operation, `n`=3)
+        The order of the rotation (e.g. for a S_3 operation, n=3)
     axis : Vector
         The axis about which the operation occurs
     exponent : int
-        The number of times the operation is applied.  (e.g. for S_5, `exponent` = 1, for S_5^4, `exponent` = 4, etc.)
+        The number of times the operation is applied.  (e.g. for S_5, exponent = 1, for S_5^4, exponent = 4, etc.)
 
     """
 
@@ -39,16 +39,16 @@ class ImproperRotation(SymmetryOperation):
     ##################
 
     def __init__(self, n, axis, exponent = 1, point_group = None):
-        """ Create a new ImproperRotation about `axis` with order `n` and exponent `exponent`
+        """ Create a new ImproperRotation about axis with order n and exponent exponent
 
         :Parameters:
 
         n : int
-            The order of the rotation (e.g. for a S_3 operation, `n`=3)
+            The order of the rotation (e.g. for a S_3 operation, n=3)
         axis : Vector
             The axis about which the operation occurs
         exponent : int, optional
-            The number of times the operation is applied.  (e.g. for S_3, `exponent` = 1, for S_3^2, `exponent` = 2, etc.)
+            The number of times the operation is applied.  (e.g. for S_3, exponent = 1, for S_3^2, exponent = 2, etc.)
 
         """
         self.point_group = point_group

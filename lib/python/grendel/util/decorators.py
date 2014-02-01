@@ -569,8 +569,7 @@ def with_flexible_arguments(required=None, optional=None, what_to_call_it=None):
 #def alias_for(func, argmap=None):
 #    """ Returns an alias for the method `f`
 #
-#    Examples
-#    --------
+#    :Examples:
 #
 #    >>> class A(object):
 #    ...     def foo(self, arg):

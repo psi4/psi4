@@ -64,11 +64,13 @@ class LightTensor(np.ndarray):
     #-----------------#
 
     def is_zero(self, cutoff=None):
-        """ Returns True if all elements of `self` have absolute values less than `cutoff`, which defaults
-        to `Tensor.zero_cutoff`
-        .. note::
-           Since `zero_cutoff` is a pseudo-class attribute in Tensor, not LightTensor, individual LightTensor
-           instances cannot set their own `zero_cutoff` attribute.
+        """Returns True if all elements of *self* have absolute values
+        less than *cutoff*, which defaults to :py:meth:`Tensor.zero_cutoff`
+
+        .. note:: Since zero_cutoff is a pseudo-class attribute in
+           Tensor, not LightTensor, individual LightTensor instances cannot 
+           set their own zero_cutoff attribute.
+
         """
         cutoff = cutoff if cutoff is not None else Tensor.zero_cutoff
         return (abs(self) < cutoff).all()
@@ -772,12 +774,12 @@ class Tensor(LightTensor):
     #-----------------#
 
     def is_zero(self, cutoff=None):
-        """ Returns True if all elements of `self` have absolute values less than `cutoff`, which defaults
-        to `Tensor.zero_cutoff`
-        .. note::
-           `Tensor.zero_cutoff` is treated as a pseudo-class attribute for Tensor instances, meaning individual
-            instances can also set a `zero_cutoff` attribute which will take precidence over the class-level
-            default.
+        """ Returns True if all elements of *self* have absolute values less than *cutoff*, which defaults
+        to Tensor.zero_cutoff
+
+        .. note:: Tensor.zero_cutoff is treated as a pseudo-class attribute for Tensor instances, meaning individual
+           instances can also set a zero_cutoff attribute which will take precidence over the class-level
+           default.
 
         """
         if cutoff:
@@ -974,8 +976,10 @@ class Tensor(LightTensor):
 # Using this class is a very bad idea.  It makes development a nightmare.  Don't do it.
 class ComputableTensor(Tensor):
     """ A tensor with elements that can be computed as needed.
-    .. warning:
+
+    .. warning::
         Using this class is a very bad idea.  It makes development a nightmare.  Don't do it.
+
     """
 
     sentinal_value = None
