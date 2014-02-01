@@ -153,6 +153,7 @@ foreach my $Module (@PSIMODULES) {
 }
 print TEXOUT "}\n";
 close TEXOUT;
+print VOUT "   autodir_psivariables/module__cfour\n";
 print VOUT "\n";
 close VOUT;
 

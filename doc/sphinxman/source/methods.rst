@@ -21,6 +21,7 @@ A complete list of standard keywords is provided in Appendix
    dcft
    dfmp2
    occ
+   dfocc
    cc
    fnocc
    psimrcc
