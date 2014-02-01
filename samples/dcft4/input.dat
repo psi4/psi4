@@ -53,12 +53,6 @@ set qc_type simultaneous
 energy('dcft')
 
 
-set ao_basis disk
-set algorithm qc
-set qc_type simultaneous
-energy('dcft')
-
-
 set ao_basis none
 set algorithm qc
 set qc_type twostep
@@ -94,12 +88,6 @@ energy('dcft')
 
 
 set ao_basis none
-set algorithm qc
-set qc_type simultaneous
-energy('dcft')
-
-
-set ao_basis disk
 set algorithm qc
 set qc_type simultaneous
 energy('dcft')
