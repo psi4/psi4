@@ -3045,7 +3045,7 @@ void DFCoupledCluster::T1Fock(){
         F_DGEMM('n','n',full,nso*rowdims[row],nso,1.0,Ca_L,full,integrals,nso,0.0,tempv,full);
         for (int q = 0; q < rowdims[row]; q++) {
             for (int mu = 0; mu < nso; mu++) {
-                F_DCOPY(full,tempv+q*nso*full+mu*full,1,integrals+q*nso*full+mu,full);
+                F_DCOPY(full,tempv+q*nso*full+mu*full,1,integrals+q*nso*full+mu,nso);
             }
         }
         F_DGEMM('n','n',full,full*rowdims[row],nso,1.0,Ca_R,full,integrals,nso,0.0,tempv,full);
@@ -3222,7 +3222,7 @@ void DFCoupledCluster::T1Integrals(){
         F_DGEMM('n','n',full,nso*rowdims[row],nso,1.0,Ca_L,full,integrals,nso,0.0,tempv,full);
         for (int q = 0; q < rowdims[row]; q++) {
             for (int mu = 0; mu < nso; mu++) {
-                F_DCOPY(full,tempv+q*nso*full+mu*full,1,integrals+q*nso*full+mu,full);
+                F_DCOPY(full,tempv+q*nso*full+mu*full,1,integrals+q*nso*full+mu,nso);
             }
         }
         F_DGEMM('n','n',full,full*rowdims[row],nso,1.0,Ca_R,full,integrals,nso,0.0,tempv,full);
