@@ -53,6 +53,9 @@ protected:
     void dimension_check(const std::string& name);
     /// Throws if a tensor name is not in tensors_
     void tensor_check(const std::string& name);
+
+    /// Get a unique ID number for a tensor (prevents disk clash)
+    static int unique_id();
    
 public:
 
@@ -107,15 +110,17 @@ class Tensor {
 
 private:
 
-    /// Global list of named tensors, to prevent true name alias
-    static std::set<std::string> static_names_;
+    /// Unique ID to prevent disk clash
+    static long int unique_id;
 
 protected:
 
     // => Object Data <= //
 
-    /// Unique ID of this Tensor
+    /// Name of this Tensor
     std::string name_;
+    /// Unique filename to prevent disk clash
+    std::string filename_; 
     /// Total number of elements in this Tensor
     size_t numel_;
     /// Order (number of dimensions) in this Tensor
@@ -129,9 +134,9 @@ protected:
 
     // => Helper Methods <= //
     
-    /// The complete scratch filename that this tensor uses under swap or disk operations
-    /// Based on the scratch path and Tensor name, so keep Tensor names unique
-    std::string filename() const;
+    /// Set the filename to scratch, PID, namespace, unique ID, name
+    void set_filename();
+
 public:
     
     // => Constructors <= //
@@ -146,8 +151,10 @@ public:
 
     // => Universal Accessors <= //
          
-    /// Unique ID of this Tensor
+    /// Name of this Tensor
     std::string name() const { return name_; }
+    /// Unique filename of this Tensor
+    std::string filename() const { return filename_; }
     /// Total number of elements in this Tensor
     size_t numel() const { return numel_; }
     /// Order (number of dimensions) in this Tensor
