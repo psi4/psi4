@@ -91,7 +91,6 @@ H        -1.70882231       1.00055573       0.00000000
 
 set basis sto-3g
 energy('uhf')
-compare_integers(2, test14.multiplicity(), "Mol3: Dimer multiplicity")
 
 test14.set_ghost_fragment(2)
 test14.update_geometry()
