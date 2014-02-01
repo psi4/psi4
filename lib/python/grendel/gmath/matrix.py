@@ -13,7 +13,7 @@ __all__ = [
 # TODO remove dependence on np.matrix
 class Matrix(Tensor):
     """
-     Encapsulates a vector.  Most functionality gets passed up to Tensor, which in turn passes things up to
+    Encapsulates a vector.  Most functionality gets passed up to Tensor, which in turn passes things up to
     ``numpy.ndarray``.  Special functionality for vectors gets implemented here.
 
     """

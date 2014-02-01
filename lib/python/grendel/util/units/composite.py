@@ -214,8 +214,7 @@ class CompositeUnit(object):
     def reduced(self, using_units=None):
         """ Reduce the composite unit into the fewest base units possible.
 
-        Examples
-        --------
+        :Examples:
 
         >>> from grendel.util.units import *
         >>> (Angstroms**2/Bohr).reduced()

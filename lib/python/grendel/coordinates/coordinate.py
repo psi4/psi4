@@ -38,28 +38,30 @@ class Coordinate(Unitized):
 
     `Coordinate`s are the components in which `Molecule`s are represented.  The most important
     thing about `Coordinate`s is that they are immutible, like Python's `str` and `tuple`
-    classes.[#f1]_  Let me say that again a bit louder:
+    classes. [#f1]_  Let me say that again a bit louder:
 
     .. note::
        All coordinates are immutable!
 
-    Parentage and the `molecule` attribute
-    --------------------------------------
+    :Parentage and the `molecule` attribute:
 
     `Coordinate` instances are typically (though not always) associated with a `Representation`,
     accessible through the `parent` read-only attribute.  `Coordinate` instances that do not
     have a `parent` associated with them are called "orphaned" coordinates, and can be identified
     using the `is_orphaned()` instance method.  Even orphaned coordinates must have a `Molecule`
     associated with them in one way or another.  This happens in one of three ways:
+
     1. If the `Coordinate` is not orphaned, then `parent`'s `molecule` attribute is used.  Note
        that in this case, the `Coordinate` protocol requires the `Coordinate`'s constituant
        atoms to have a parent molecule that is exactly the same instance as `parent`'s `molecule`
        attribute.  (If you aren't doing something weird, this shouldn't be an issue).
+
     2. If the `Coordinate` is orphaned, it still must be composed of one or more `Atom` instances,
        accessible through the `atoms` attribute.  These `Atom`s may themselves be orphaned, but
        if they are not, the first non-orphaned `Atom`'s `parent` is used.  Note that if one `Atom` is
        non-orphaned, the `Coordinate` protocol requires that all of them must not be orphaned (i. e.
        the `Coordinate` constructor enforces this when `sanity_checking_enabled` is `True`)
+
     3. If the `Coordinate` is orphaned and all of its `Atom`s are also orphaned (as is the
        case, for instance, with `Coordinate` instances created for the purpose of finite difference
        B tensor computation), the `Coordinate`'s `base_analog` attribute may be set to a
@@ -70,6 +72,7 @@ class Coordinate(Unitized):
        of the `Coordinate`'s atoms.  (The `base_analog`, in turn, may be an orphaned coordinate
        of this third type, in which case *that* coordinate's `base_analog` will be used, and so
        on recursively.)
+
     4. If the `Coordinate` is orphaned and no `base_analog` is given, then all of the atoms must have
        a `base_atom` that either has a `parent_molecule` or also has a `base_atom` defined (and so
        on so that a `base_atom` eventually has a `parent_molecule` somewhere up the line).  In this
@@ -77,8 +80,7 @@ class Coordinate(Unitized):
        in this manner.  Coordinates created in the course of analytic computation of B tensors fall
        into this catagory.
 
-    Indexing schemes
-    ----------------
+    :Indexing schemes:
 
     Because all `Coordinate`s may be austensibly associated with a `Molecule` instance in one way
     or another, there are two different ways to index various tensor properties of a `Coordinate`:
@@ -89,8 +91,7 @@ class Coordinate(Unitized):
     molecule, we need to use the `Molecule`'s indexing scheme.  All of this should be handled
     seemlessly behind the scenes, but it's a good distinction to be aware of.
 
-    Getting a `Coordinate`'s value
-    ------------------------------
+    :Getting a `Coordinate`'s value:
 
     `Coordinate` has a number of methods that can be used to get the value of a `Coordinate`
     in a particular scenario.  They hierarchically call each other to determine the value of
@@ -107,7 +108,7 @@ class Coordinate(Unitized):
            value_for_molecule_matrix-> value_for_positions [style=dotted,label="(only InternalCoordinate)"]
            value_for_positions -> value_for_xyz [style=dotted,label="(only SimpleInternalCoordinate)"];
            value_for_positions [label="@classmethod\nvalue_for_positions()",style=dotted];
-            value_for_xyz [label="@classmethod\nvalue_for_xyz()",style=dotted];
+           value_for_xyz [label="@classmethod\nvalue_for_xyz()",style=dotted];
        }
 
     The reason for this relatively complex hierarchy is that there are instances in which I have needed
@@ -116,8 +117,7 @@ class Coordinate(Unitized):
     `InternalCoordinate` subclasses must implement `value_for_positions`, and `Coordinate` subclasses
     must implement `value_for_molecule_matrix()`.
 
-    Subclassing
-    -----------
+    :Subclassing:
 
     TODO: write this part
 
@@ -441,15 +441,19 @@ class Coordinate(Unitized):
         This is guarenteed to work whether or not the `Coordinate` is orphaned.  For each
         of the various possible `Coordinate`--`Molecule` relationships detailed in the
         `Coordinate` class documentation, the reason the method works is as follows:
+
         1. If the `Coordinate` is not orphaned, then the `Coordinate`'s atoms must not be
            orphaned (the `Coordinate` constructor enforces this when `sanity_checking_enabled` is
            `True`).  Thus, each of the atoms must be non-orphaned and thus have an index.
+
         2. If the Coordinate is orphaned and at least one atom is non-orphaned, all atoms
            must be non-orphaned (enforced by the Coordinate protocol).  Thus, we can use
            the non-orphaned atoms' indices.
+
         3. If the coordinate is orphaned and all of its atoms are orphaned and `base_analog` is not
            None, the atoms must have the `base_atom` attribute set to the corresponding atom in the
            `Coordinate`'s `base_analog`.  Thus, the `Atom`'s `base_atom`'s index is used.
+
         4. If the coordinate is orphaned and all of its atoms are orphaned and `base_analog` is
            None, then each atom must have a `base_atom` somewhere down the line that has a parent
            and thus an index; this atom's index is used.

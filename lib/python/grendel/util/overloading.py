@@ -325,19 +325,24 @@ class overloaded(MethodLike):
         The type of a given argument need not be an instance of `type`.  It can also be any callable that can
         be called with one argument, `None`, an `IterableOf` instance, a string, or a tuple of `type`
         any of these.  The way these work is as follows:
+
         * If the type is a callable that does not return `False` (or anything with a truth value
           of False) when called with the argument value, the argument is considered to be of the correct type.
+
         * If one of the types in a sequence is `None` and the argument is `None`, the argument is considered
-          to have the correct type.[#f1]_
+          to have the correct type. [#f2]_
+
         * If the type is an instance if `IterableOf` (or one of its subtypes), the argument is considered to be
           the correct type if and only if all of the items in the container are considered the correct type when
           the criteria described here are applied with the `types` attribute of the `IterableOf` instance
+
         * If the type is a string, the string is evaluated in the context of the overloaded function's globals, and
           the return value of this evaluation is used as the type (which may, in turn, be any of the options described
           here except for a string).  This is particularly useful when the function to be overloaded is a
           method that takes as an argument an instance of that method's parent class.  Since the parent class
           will not be defined at the time of the function definition, using the parent class's name as an identifier
           will not work.
+
         * Finally, if a `tuple` (or any other `Iterable`) of type specifications is given, the argument is considered
           to have the correct type if any of the type specifications in the list lead to the correct type.
 
@@ -377,7 +382,7 @@ class overloaded(MethodLike):
 
         .. rubric:: Footnotes
 
-        .. [#f1] Note that if the type is `None` and it is not in a sequence, or a length one tuple `(None,)` is
+        .. [#f2] Note that if the type is `None` and it is not in a sequence, or a length one tuple `(None,)` is
                  given, this is considered a match for all types.  This is mostly to allow arguments to be left out
                  of the specification (in particular, the first argument of most methods, `self`)
 

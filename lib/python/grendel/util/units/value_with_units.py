@@ -94,8 +94,8 @@ class Unitized(object):
 class ValueWithUnits(float, Unitized):
     """ A class for encapsulating a physical constant and it's units.
 
-    Attributes
-    ----------
+    :Attributes:
+
     units : `CompositeUnit` or a class with `Unit` as its metaclass
         The units in which the value of `self` is to be interpreted
 
