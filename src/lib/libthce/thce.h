@@ -213,10 +213,10 @@ public:
 
     // > Unary Operations < //
 
-    /// Swap this tensor out to disk
-    virtual void swap_out() { throw PSIEXCEPTION("Not implemented in this Tensor subclass."); }
-    /// Swap this tensor in to core
-    virtual void swap_in() { throw PSIEXCEPTION("Not implemented in this Tensor subclass."); }
+    /// Swap this tensor out to disk (does not write if existing disk mirror and not changed)
+    virtual void swap_out(bool changed = true) { throw PSIEXCEPTION("Not implemented in this Tensor subclass."); }
+    /// Swap this tensor in to core (explicitly reads if true)
+    virtual void swap_in(bool read = true) { throw PSIEXCEPTION("Not implemented in this Tensor subclass."); }
     /// Scale the tensor by val (ignores active dims)
     virtual void scale(double val) { throw PSIEXCEPTION("Not implemented in this Tensor subclass."); } 
     /// Copy contents of data (ignores active dims)
@@ -272,6 +272,10 @@ protected:
     bool trust_;
     /// Data underlying this Tensor
     double* data_;
+    /// Is this tensor swapped?
+    bool swapped_;
+    /// File handle (valid if this tensor has ever been swapped out)
+    FILE* fh_;
 
 public:
     
@@ -320,7 +324,7 @@ public:
     /// Is this a trust core tensor?
     virtual bool trust() const { return trust_; }
     /// Is this a swapped-out core tensor?
-    virtual bool swapped() const { return data_ == NULL; }
+    virtual bool swapped() const { return swapped_; }
     /// Throw an exception if the tensor is swapped out or disk based
     virtual void swap_check() const;
 
@@ -336,13 +340,15 @@ public:
 
     /// Data underlying this Tensor (careful, returns NULL if swapped)
     virtual double* pointer() const { return data_; }
-     
+    /// File pointer underlying this Tensor (careful, returns NULL if not swapped, mirror not guaranteed)
+    virtual FILE* file_pointer() { return fh_; }
+    
     // > Unary Operations < //
 
-    /// Swap this tensor out to disk
-    virtual void swap_out();
-    /// Swap this tensor in to core
-    virtual void swap_in();
+    /// Swap this tensor out to disk (if existing file, only write if changed)
+    virtual void swap_out(bool changed = true);
+    /// Swap this tensor in to core (if read is false, allocate with zeros)
+    virtual void swap_in(bool read = true);
     /// Zero the tensor out
     virtual void zero();
     /// Scale the tensor by val

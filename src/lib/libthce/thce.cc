@@ -569,7 +569,9 @@ void Tensor::slice(boost::shared_ptr<Tensor> A, std::vector<boost::tuple<bool,in
 CoreTensor::CoreTensor(const std::string& name,
         std::vector<string>& dimensions, std::vector<int>& sizes, 
         double* data,
-        bool trust) : Tensor(name,dimensions,sizes), trust_(trust)
+        bool trust) : 
+        Tensor(name,dimensions,sizes), 
+        trust_(trust)
 {
     if (trust_) {
         data_ = data;
@@ -581,14 +583,20 @@ CoreTensor::CoreTensor(const std::string& name,
             ::memcpy((void*) data_, (void*) data, sizeof(double) * numel_);
         }
     }
+
+    swapped_ = false;
+    fh_ = NULL;
 }
 CoreTensor::~CoreTensor()
 {
     if (!trust_) {
-        if (!swapped()) {
+        if (data_ != NULL) {
             delete[] data_;
             data_ = NULL;
-        } else {
+        } 
+        if (fh_ != NULL) {
+            fclose(fh_);
+            fh_ = NULL;
             std::string file = filename();
             remove(file.c_str());
         }
@@ -779,23 +787,39 @@ void CoreTensor::set_data(double* data)
 
     ::memcpy((void*) data_, (void*) data, sizeof(double) * numel_);
 }
-void CoreTensor::swap_out()
+void CoreTensor::swap_out(bool changed)
 {
     if (trust_) {
         throw PSIEXCEPTION("You can't swap a trust CoreTensor.");
     }
 
-    if (!swapped()) { 
-        std::string file = filename();
-        FILE* fh = fopen(file.c_str(), "wb");
-        fwrite((void*) data_, sizeof(double), numel_, fh); 
-        fclose(fh);        
+    // First swap
 
+    if (fh_ == NULL) {
+        std::string file = filename();
+        fh_ = fopen(file.c_str(), "wb+");
+        fwrite((void*) data_, sizeof(double), numel_, fh_); 
+        fseek(fh_,0L,SEEK_SET);
         delete[] data_;
         data_ = NULL;
+        swapped_ = true;
+        return;
+    }        
+ 
+    // Subsequent swaps
+
+    if (!swapped()) { 
+        if (changed) {
+            fseek(fh_,0L,SEEK_SET);
+            fwrite((void*) data_, sizeof(double), numel_, fh_); 
+            fseek(fh_,0L,SEEK_SET);
+        }
+        delete[] data_;
+        data_ = NULL;
+        swapped_ = true;
     }
 }
-void CoreTensor::swap_in()
+void CoreTensor::swap_in(bool read)
 {
     if (trust_) {
         throw PSIEXCEPTION("You can't swap a trust CoreTensor.");
@@ -803,12 +827,14 @@ void CoreTensor::swap_in()
 
     if (swapped()) {
         data_ = new double[numel_]; 
-        
-        std::string file = filename();
-        FILE* fh = fopen(file.c_str(), "rb");
-        fread((void*) data_, sizeof(double), numel_, fh); 
-        fclose(fh);        
-        remove(file.c_str());
+        if (read) {
+            fseek(fh_,0L,SEEK_SET);
+            fread((void*) data_, sizeof(double), numel_, fh_); 
+            fseek(fh_,0L,SEEK_SET);
+        } else {
+            ::memset(data_,'\0', numel_*sizeof(double)); 
+        }
+        swapped_ = false;
     }
 }
 void CoreTensor::zero()

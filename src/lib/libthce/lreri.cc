@@ -776,37 +776,36 @@ void LSTHCERI::clear()
 }
 void LSTHCERI::print_header(int level)
 {
-    if (print_) {
-        fprintf(outfile, "\n");
-        fprintf(outfile, "         ------------------------------------------------------------\n");
-        fprintf(outfile, "                                   LSTHC-ERI                         \n"); 
-        fprintf(outfile, "                         Rob Parrish and Ed Hohenstein               \n"); 
-        fprintf(outfile, "         ------------------------------------------------------------\n\n");
+    fprintf(outfile, "  ==> LSTHCERI: LS-THC 2-Index Tensors <==\n\n");
 
-        fprintf(outfile, " ==> Options <==\n\n");
-        fprintf(outfile, "    Schwarz cutoff = %11.3E\n", schwarz_cutoff_);
-        fprintf(outfile, "    J cutoff       = %11.3E\n", J_cutoff_);
-        fprintf(outfile, "    S cutoff       = %11.3E\n", S_cutoff_);
-        fprintf(outfile, "    Balance        = %11s\n", (balance_ ? "Yes" : "No"));
-        fprintf(outfile, "    Mem (GB)       = %11zu\n", (memory_ * 8L / 1073741824L)); 
-        fprintf(outfile, "\n");
+    fprintf(outfile, "    Schwarz cutoff = %11.3E\n", schwarz_cutoff_);
+    fprintf(outfile, "    J cutoff       = %11.3E\n", J_cutoff_);
+    fprintf(outfile, "    S cutoff       = %11.3E\n", S_cutoff_);
+    fprintf(outfile, "    Balance        = %11s\n", (balance_ ? "Yes" : "No"));
+    fprintf(outfile, "    Mem (GB)       = %11zu\n", (memory_ * 8L / 1073741824L)); 
+    fprintf(outfile, "\n");
 
-        fprintf(outfile, " ==> Primary Basis <==\n\n");
+    if (level > 1) {
+        fprintf(outfile, "   => Primary Basis <=\n\n");
         primary_->print_by_level(outfile, print_);
+    }
 
-        if (auxiliary_) {
-            fprintf(outfile, " ==> Auxiliary Basis <==\n\n");
-            auxiliary_->print_by_level(outfile, print_);
-        }    
+    if (auxiliary_) {
+        fprintf(outfile, "   => Auxiliary Basis <=\n\n");
+        auxiliary_->print_by_level(outfile, print_);
+    }    
     
-        fprintf(outfile, " ==> Orbital Spaces: <==\n\n");
+    if (level > 1) {
+        fprintf(outfile, "   => Orbital Spaces: <=\n\n");
         fprintf(outfile, "    %12s %12s %12s\n", "Space", "Start", "End");
         for (int i = 0; i < spaces_order_.size(); i++) {
             fprintf(outfile, "    %12s %12d %12d\n", spaces_order_[i].c_str(), spaces_[spaces_order_[i]].first, spaces_[spaces_order_[i]].second);
         }
         fprintf(outfile, "\n");
+    }
 
-        fprintf(outfile, " ==> Required ERI Spaces: <==\n\n");
+    if (level > 1) {
+        fprintf(outfile, "   => Required ERI Spaces: <=\n\n");
         fprintf(outfile, "    %12s %12s %12s %12s %12s\n", "Tensor", "Space 1", "Space 2", "Space 3", "Space 4");
         for (int i = 0; i < eri_spaces_order_.size(); i++) {
             std::string tensor = eri_spaces_order_[i];
@@ -818,7 +817,7 @@ void LSTHCERI::print_header(int level)
 }
 void LSTHCERI::compute()
 {
-    print_header();
+    //print_header();
     ints_.clear();
 
     // => Roll some X matrices <= //
