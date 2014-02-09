@@ -4239,8 +4239,6 @@ CoupledPair::CoupledPair(boost::shared_ptr<Wavefunction> reference_wavefunction,
     else if (cepa_level == -1) sprintf(cepa_type,"CISD");
     else if (cepa_level == -2) sprintf(cepa_type,"ACPF");
     else if (cepa_level == -3) sprintf(cepa_type,"AQCC");
-
-    t2_on_disk = true;
 }
 
 CoupledPair::~CoupledPair()
