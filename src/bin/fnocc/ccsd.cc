@@ -3045,7 +3045,7 @@ void DFCoupledCluster::T1Fock(){
         F_DGEMM('n','n',full,nso*rowdims[row],nso,1.0,Ca_L,full,integrals,nso,0.0,tempv,full);
         for (int q = 0; q < rowdims[row]; q++) {
             for (int mu = 0; mu < nso; mu++) {
-                F_DCOPY(full,tempv+q*nso*full+mu*full,1,integrals+q*nso*full+mu,full);
+                F_DCOPY(full,tempv+q*nso*full+mu*full,1,integrals+q*nso*full+mu,nso);
             }
         }
         F_DGEMM('n','n',full,full*rowdims[row],nso,1.0,Ca_R,full,integrals,nso,0.0,tempv,full);
@@ -3222,7 +3222,7 @@ void DFCoupledCluster::T1Integrals(){
         F_DGEMM('n','n',full,nso*rowdims[row],nso,1.0,Ca_L,full,integrals,nso,0.0,tempv,full);
         for (int q = 0; q < rowdims[row]; q++) {
             for (int mu = 0; mu < nso; mu++) {
-                F_DCOPY(full,tempv+q*nso*full+mu*full,1,integrals+q*nso*full+mu,full);
+                F_DCOPY(full,tempv+q*nso*full+mu*full,1,integrals+q*nso*full+mu,nso);
             }
         }
         F_DGEMM('n','n',full,full*rowdims[row],nso,1.0,Ca_R,full,integrals,nso,0.0,tempv,full);
@@ -4441,11 +4441,18 @@ PsiReturnType CoupledPair::CEPAIterations(){
       }
 
       // update the amplitudes and check the energy
-      Eold = eccsd;
+      Eold = ( cepa_level < 1 ) ? evar : eccsd;
+      if ( iter==1 ) Eold = eccsd; // use mp2 energy as Eold on 2nd iteration
+      if (cepa_level < 1) {
+          evar = VariationalEnergy();
+          eccsd = evar; // for updates to t2 and t1
+      }
+
       PairEnergy();
       if (!options_.get_bool("CEPA_NO_SINGLES")){
           UpdateT1();
       }
+
       UpdateT2();
 
       // add vector to list for diis
@@ -4483,14 +4490,16 @@ PsiReturnType CoupledPair::CEPAIterations(){
       //else replace_diis_iter = 1;
 
       time_t iter_stop = time(NULL);
+      double dume = ( cepa_level < 1 ) ? evar : eccsd ;
+      if ( iter==0 ) dume = eccsd; // use mp2 energy on first iteration
       fprintf(outfile,"  %5i   %i %i %15.10f %15.10f %15.10f %8d\n",
-            iter,diis_iter-1,replace_diis_iter,eccsd,eccsd-Eold,nrm,(int)iter_stop-(int)iter_start);
+            iter,diis_iter-1,replace_diis_iter,dume,dume-Eold,nrm,(int)iter_stop-(int)iter_start);
       fflush(outfile);
       iter++;
       if (iter==1) emp2 = eccsd;
       if (iter==1) SCS_MP2();
 
-      if (fabs(eccsd - Eold) < e_conv && nrm < r_conv) break;
+      if (fabs(dume - Eold) < e_conv && nrm < r_conv) break;
   }
   times(&total_tmstime);
   time_t time_stop = time(NULL);
@@ -4514,6 +4523,13 @@ PsiReturnType CoupledPair::CEPAIterations(){
   fprintf(outfile,"\n");
   fprintf(outfile,"  %s iterations converged!\n",cepa_type);
   fprintf(outfile,"\n");
+
+  if (cepa_level < 1) {
+      fprintf(outfile,"  %s variational energy: %20.12lf\n",cepa_type,evar);
+      fprintf(outfile,"  %s transition energy:  %20.12lf\n",cepa_type,eccsd);
+      fprintf(outfile,"\n");
+      eccsd = evar;
+  }
 
   // delta mp2 correction for fno computations:
   if (options_.get_bool("NAT_ORBS")){
@@ -4848,6 +4864,82 @@ void CoupledPair::SCS_CEPA(){
   eccsd_ss = ssenergy;
 
   psio.reset();
+}
+double CoupledPair::VariationalEnergy(){
+
+    long int v = nvirt;
+    long int o = ndoccact;
+    long int rs = nmo;
+
+    // (ai|bj)
+    boost::shared_ptr<PSIO> psio(new PSIO());
+    psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
+    psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&integrals[0],o*o*v*v*sizeof(double));
+    psio->close(PSIF_DCC_IAJB,1);
+
+    if (t2_on_disk){
+       psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
+       psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
+       psio->close(PSIF_DCC_T2,1);
+       tb = tempt;
+    }
+
+    // read residual (no, it is in tempv still)
+    //psio->open(PSIF_DCC_R2,PSIO_OPEN_OLD);
+    //psio->read_entry(PSIF_DCC_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
+    //psio->close(PSIF_DCC_R2,1);
+
+    double fac = 1.0;
+    if (cepa_level == 0)       fac = 0.0;
+    else if (cepa_level == -1) fac = 1.0;
+    else if (cepa_level == -2) fac = 1.0/o;
+    else if (cepa_level == -3) fac = 1.0-(2.0*o-2.0)*(2.0*o-3.0) / (2.0*o*(2.0*o-1.0));
+
+    double evar = 0.0;
+    double nrm = 1.0;
+    for (int i=0; i<o; i++){
+        for (int j=0; j<o; j++){
+            for (int a=o; a<rs; a++){
+                for (int b=o; b<rs; b++){
+                    long int ijab = (a-o)*o*o*v+(b-o)*o*o+i*o+j;
+                    long int iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
+                    double dum = 0.5*(tb[ijab]-tb[(b-o)*o*o*v+(a-o)*o*o+i*o+j]);
+                    nrm += (2.0*dum*dum + tb[ijab]*tb[ijab]) * fac;
+                }
+            }
+        }
+    }
+    for (int i = 0; i < o; i++) {
+        for (int a = 0; a < v; a++) {
+            nrm += 2.0 * t1[a*o+i]*t1[a*o+i] * fac;
+        }
+    }
+    double ed = 0.0;
+    double e0 = 0.0;
+    for (int i = 0; i < o; i++) {
+        double di = - eps[i];
+        for (int j = 0; j < o; j++) {
+            double dij = di - eps[j];
+            for (int a = o; a < rs; a++) {
+                double dija = dij + eps[a];
+                for (int b = o; b < rs; b++) {
+                    double dijab = dija + eps[b];
+                    long int iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
+                    long int ijab = (a-o)*v*o*o+(b-o)*o*o+i*o+j;
+                    ed += (tempv[ijab] + dijab * tb[ijab]) * (2.0 * tb[ijab] - tb[(b-o)*o*o*v+(a-o)*o*o+i*o+j]);
+                    e0 += integrals[iajb] * (2.0 * tb[ijab] - tb[(b-o)*o*o*v+(a-o)*o*o+i*o+j]);
+                }
+            }
+        }
+    }
+    evar = ed + 2.0 * e0;
+    for (int i = 0; i < o; i++) {
+        for (int a = 0; a < v; a++) {
+            double dia = -eps[i]+eps[a+o];
+            evar += 2.0 * (dia*t1[a*o+i] + w1[a*o+i])*t1[a*o+i];
+        }
+    }
+    return evar/nrm;
 }
 double CoupledPair::CheckEnergy(){
 
