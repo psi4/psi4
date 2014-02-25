@@ -349,3 +349,13 @@ These environment variables will influence |PSIfours| behavior.
         sys.path.insert(0, '../../psiadditions')
         sys.path.insert(0, '/home/user/psiadditions')
 
+.. envvar:: PSIDATADIR
+
+   Path in which the |PSIfour| executable looks for its non-compiled
+   dependencies (*i.e.*, Python driver, basis sets, databases, *etc.*).
+   Not used when running from an installed (``make install``) executable,
+   so this variable is relevant primarily to developers running the
+   executable directly from the compilation directory. Value should be set
+   to directory containing driver, basis, *etc.* directories, generally
+   ``psi4/lib``.
+
