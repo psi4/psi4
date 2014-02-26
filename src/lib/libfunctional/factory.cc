@@ -26,6 +26,7 @@
 #include "xfunctional.h"
 #include "cfunctional.h"
 #include "wpbex_functional.h"
+#include "wpbec_functional.h"
 #include "LYP_Cfunctional.h"
 #include "FT97B_Xfunctional.h"
 #include "PZ81_Cfunctional.h"
@@ -152,6 +153,22 @@ boost::shared_ptr<Functional> Functional::build_base(const std::string& alias)
         fun = new VWN3_CFunctional();
     } else if (alias == "VWN5_C") {
         fun = new VWN5_CFunctional();
+    } else if (alias == "PW92A_C") {
+        wPBECFunctional* x = new wPBECFunctional();
+        x->set_wPBEC_type(wPBECFunctional::pw92c_type);
+        fun = static_cast<Functional*>(x);
+    } else if (alias == "PBEA_C") {
+        wPBECFunctional* x = new wPBECFunctional();
+        x->set_wPBEC_type(wPBECFunctional::pbec_type);
+        fun = static_cast<Functional*>(x);
+    } else if (alias == "wPW92_C") {
+        wPBECFunctional* x = new wPBECFunctional();
+        x->set_wPBEC_type(wPBECFunctional::pw92c_sr_type);
+        fun = static_cast<Functional*>(x);
+    } else if (alias == "wPBE_C") {
+        wPBECFunctional* x = new wPBECFunctional();
+        x->set_wPBEC_type(wPBECFunctional::pbec_sr_type);
+        fun = static_cast<Functional*>(x);
     } else {
         throw PSIEXCEPTION("Functional::build_base: Unrecognized base Functional.");
     }
