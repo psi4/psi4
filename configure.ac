@@ -971,6 +971,8 @@ AC_CONFIG_FILES([
           src/bin/detci/Makefile
           src/bin/stable/Makefile
           src/bin/fnocc/Makefile
+          src/bin/occ/Makefile
+          src/bin/dfocc/Makefile
           src/bin/ccsort/Makefile
           src/bin/ccenergy/Makefile
           src/bin/cctriples/Makefile
@@ -990,7 +992,6 @@ AC_CONFIG_FILES([
           src/bin/scfgrad/Makefile
           src/bin/optking/Makefile
           src/bin/findif/Makefile
-          src/bin/occ/Makefile
           src/bin/adc/Makefile
           src/bin/thermo/Makefile
 
@@ -1202,6 +1203,12 @@ AC_CONFIG_FILES([
           tests/cepa0-grad2/Makefile
           tests/ocepa-freq1/Makefile
           tests/mp2-1/Makefile
+          tests/dfomp2-1/Makefile
+          tests/dfomp2-2/Makefile
+          tests/dfomp2-3/Makefile
+          tests/dfomp2-4/Makefile
+          tests/cdomp2-1/Makefile
+          tests/cdomp2-2/Makefile
           tests/matrix1/Makefile
           tests/pubchem1/Makefile
           tests/props1/Makefile

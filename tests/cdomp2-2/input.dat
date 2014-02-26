@@ -1,0 +1,27 @@
+#! OMP2 cc-pVDZ energy for the NO molecule.
+
+refnuc      =  25.59060766929188 #TEST
+refscf      = -129.25927209151436 #TEST
+refomp2     = -129.58978837298324 #TEST
+
+memory 256 mb
+
+molecule {
+0 2
+N
+O 1 1.158
+}
+
+set {
+  basis cc-pvdz
+  guess sad
+  reference uhf
+  freeze_core true
+  scf_type cd
+}
+energy('cd-omp2')
+
+compare_values(refnuc, get_variable("NUCLEAR REPULSION ENERGY"), 6, "Nuclear Repulsion Energy (a.u.)");  #TEST
+compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 6, "CD-HF Energy (a.u.)");                        #TEST
+compare_values(refomp2, get_variable("CD-OMP2 TOTAL ENERGY"), 6, "CD-OMP2 Total Energy (a.u.)");               #TEST
+

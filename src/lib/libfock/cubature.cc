@@ -3591,6 +3591,76 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const& opt)
     }
 }
 
+void MolecularGrid::buildGridFromOptions(MolecularGridOptions const& opt,
+        const std::vector<std::vector<double> >& rs,
+        const std::vector<std::vector<double> >& ws,
+        const std::vector<std::vector<int> >&    Ls)
+{
+    options_ = opt; // Save a copy
+
+    std::vector<MassPoint> grid; // This is just for the first pass.
+
+    OrientationMgr std_orientation(molecule_);
+    RadialPruneMgr prune(opt);
+    NuclearWeightMgr nuc(molecule_, opt.nucscheme);
+
+    // RMP: Like, I want to keep this info, yo?
+    orientation_ = std_orientation.orientation();   
+    radial_grids_.clear();
+    spherical_grids_.clear(); 
+
+    // Iterate over atoms
+    for (int A = 0; A < molecule_->natom(); A++) {
+        int Z = molecule_->true_atomic_number(A);
+        double stratmannCutoff = nuc.GetStratmannCutoff(A);
+
+            double  r[rs[A].size()];
+            double wr[rs[A].size()];
+            double alpha = GetBSRadius(Z) * opt.bs_radius_alpha;
+
+            // Bloody great
+            for (int i = 0; i < rs[A].size(); i++) {
+                r[i]  = rs[A][i];
+                wr[i] = ws[A][i];
+            }
+            
+            // RMP: Want this stuff too
+            radial_grids_.push_back(RadialGrid::build("Unknown", rs[A].size(), r, wr, alpha));
+            std::vector<boost::shared_ptr<SphericalGrid> > spheres;
+            spherical_grids_.push_back(spheres);
+    
+            for (int i = 0; i < rs[A].size(); i++) {
+                int numAngPts = LebedevGridMgr::findNPointsByOrder(Ls[A][i]);
+                const MassPoint *anggrid = LebedevGridMgr::findGridByNPoints(numAngPts);
+                
+                // RMP: And this stuff! This whole thing is completely and utterly FUBAR. 
+                spherical_grids_[A].push_back(SphericalGrid::build("Unknown", numAngPts, anggrid)); 
+
+                for (int j = 0; j < numAngPts; j++) {
+                    MassPoint mp = { r[i] * anggrid[j].x, r[i]*anggrid[j].y, r[i]*anggrid[j].z, wr[i]*anggrid[j].w };
+                    mp = std_orientation.MoveIntoPosition(mp, A);
+                    mp.w *= nuc.computeNuclearWeight(mp, A, stratmannCutoff); // This ain't gonna fly. Must abate this mickey mouse a most rikky tikki tavi. 
+                    grid.push_back(mp);
+                    assert(!isnan(mp.w));
+                }
+            }
+    }
+
+    npoints_ = grid.size();
+    x_ = new double[npoints_];
+    y_ = new double[npoints_];
+    z_ = new double[npoints_];
+    w_ = new double[npoints_];
+    index_ = new int[npoints_];
+    for (int i = 0; i < npoints_; i++) {
+        x_[i] = grid[i].x;
+        y_[i] = grid[i].y;
+        z_[i] = grid[i].z;
+        w_[i] = grid[i].w;
+        index_[i] = i;
+    }
+}
+
 
 // the third parameter of from_string() should be
 // one of std::hex, std::dec or std::oct
@@ -4410,9 +4480,9 @@ void OctreeGridBlocker::block()
                     // Determine radius of bounding sphere
                     double RC2 = 0.0;
                     for (int Q = 0; Q < left.size(); Q++) {
-                        double dx = x[Q] - XC[0];
-                        double dy = y[Q] - XC[1];
-                        double dz = z[Q] - XC[2];
+                        double dx = x[left[Q]] - XC[0];
+                        double dy = y[left[Q]] - XC[1];
+                        double dz = z[left[Q]] - XC[2];
                         double R2 = dx * dx + dy * dy + dz * dz;
                         RC2 = (RC2 > R2 ? RC2 : R2);
                     }
@@ -4420,7 +4490,6 @@ void OctreeGridBlocker::block()
                     // Terminate if necessary
                     if (RC2 < T2) {
                         completed_tree.push_back(left);
-                        continue;
                     } else {
                         new_leaves.push_back(left);
                     }
@@ -4445,9 +4514,9 @@ void OctreeGridBlocker::block()
                     // Determine radius of bounding sphere
                     double RC2 = 0.0;
                     for (int Q = 0; Q < right.size(); Q++) {
-                        double dx = x[Q] - XC[0];
-                        double dy = y[Q] - XC[1];
-                        double dz = z[Q] - XC[2];
+                        double dx = x[right[Q]] - XC[0];
+                        double dy = y[right[Q]] - XC[1];
+                        double dz = z[right[Q]] - XC[2];
                         double R2 = dx * dx + dy * dy + dz * dz;
                         RC2 = (RC2 > R2 ? RC2 : R2);
                     }
@@ -4455,10 +4524,10 @@ void OctreeGridBlocker::block()
                     // Terminate if necessary
                     if (RC2 < T2) {
                         completed_tree.push_back(right);
-                        continue;
                     } else {
                         new_leaves.push_back(right);
                     }
+
                 }
             }
             active_tree = new_leaves;

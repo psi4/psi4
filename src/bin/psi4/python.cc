@@ -125,6 +125,7 @@ namespace psi {
     namespace fnocc      { PsiReturnType fnocc(Options&);     }
     namespace stable     { PsiReturnType stability(Options&); }
     namespace occwave    { PsiReturnType occwave(Options&);   }
+    namespace dfoccwave  { PsiReturnType dfoccwave(Options&);   }
     namespace adc        { PsiReturnType adc(Options&);       }
     namespace thermo     { PsiReturnType thermo(Options&);    }
     namespace mrcc       {
@@ -249,6 +250,16 @@ double py_psi_occ()
 {
     py_psi_prepare_options_for_module("OCC");
     if (occwave::occwave(Process::environment.options) == Success) {
+        return Process::environment.globals["CURRENT ENERGY"];
+    }
+    else
+        return 0.0;
+}
+
+double py_psi_dfocc()
+{
+    py_psi_prepare_options_for_module("DFOCC");
+    if (dfoccwave::dfoccwave(Process::environment.options) == Success) {
         return Process::environment.globals["CURRENT ENERGY"];
     }
     else
@@ -1355,6 +1366,7 @@ BOOST_PYTHON_MODULE(psi4)
     def("ccresponse", py_psi_ccresponse, "Runs the coupled cluster response theory code.");
     def("cceom", py_psi_cceom, "Runs the equation of motion coupled cluster code, for excited states.");
     def("occ", py_psi_occ, "Runs the orbital optimized CC codes.");
+    def("dfocc", py_psi_dfocc, "Runs the density-fitted orbital optimized CC codes.");
     def("adc", py_psi_adc, "Runs the ADC propagator code, for excited states.");
     def("thermo", py_psi_thermo, "Computes thermodynamic data.");
     def("opt_clean", py_psi_opt_clean, "Cleans up the optimizer's scratch files.");

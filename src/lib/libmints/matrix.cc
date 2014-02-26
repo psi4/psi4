@@ -798,14 +798,14 @@ void Matrix::print_mat(const double *const *const a, int m, int n, FILE *out) co
         fprintf(out,"\n");
         for(int j=print_ncol*num_frame_counter+1;j<print_ncol*num_frame_counter+print_ncol+1;j++){
             if(j==print_ncol*num_frame_counter+1){ fprintf(out,"%18d",j); }
-            else{ fprintf(out,"        %5d",j); }
+            else{ fprintf(out,"               %5d",j); }
         }
         fprintf(out,"\n\n");
 
         for(int k=1; k<=m; ++k){
             for(int j=print_ncol*num_frame_counter+1;j<print_ncol*num_frame_counter+print_ncol+2;j++){
                 if(j==print_ncol*num_frame_counter+1){ fprintf(out,"%5d",k);}
-                else{ fprintf(out," %12.7f",a[k-1][j-2]); }
+                else{ fprintf(out," %20.14f",a[k-1][j-2]); }
             }
             fprintf(out,"\n");
         }
@@ -817,14 +817,14 @@ void Matrix::print_mat(const double *const *const a, int m, int n, FILE *out) co
         fprintf(out,"\n");
         for(int j=print_ncol*num_frame_counter+1;j<=n;j++){
             if(j==print_ncol*num_frame_counter+1){ fprintf(out,"%18d",j); }
-            else{ fprintf(out,"        %5d",j); }
+            else{ fprintf(out,"               %5d",j); }
         }
         fprintf(out,"\n\n");
 
         for(int k=1; k<=m; ++k){
             for(int j=print_ncol*num_frame_counter+1;j<n+2;j++){
                 if(j==print_ncol*num_frame_counter+1){ fprintf(out,"%5d",k); }
-                else{ fprintf(out," %12.7f",a[k-1][j-2]); }
+                else{ fprintf(out," %20.14f",a[k-1][j-2]); }
             }
             fprintf(out,"\n");
         }

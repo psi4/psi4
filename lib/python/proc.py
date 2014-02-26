@@ -97,16 +97,106 @@ def run_dcft_gradient(name, **kwargs):
     optstash.restore()
 
 
+def run_dfomp2(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an density-fitted orbital-optimized MP2 computation
+
+    """
+    optstash = p4util.OptionsState(
+        ['SCF','DF_INTS_IO'],
+        ['DF_BASIS_SCF'],
+        ['GLOBALS', 'DF_BASIS_CC'])
+
+    # overwrite symmetry
+    molecule = psi4.get_active_molecule()
+    molecule.update_geometry()
+    molecule.reset_point_group('c1')
+
+    # if the df_basis_scf basis is not set, pick a sensible one.
+    if psi4.get_global_option('DF_BASIS_SCF') == '':
+        jkbasis = p4util.corresponding_jkfit(psi4.get_global_option('BASIS'))
+        if jkbasis:
+            psi4.set_global_option('DF_BASIS_SCF', jkbasis)
+            psi4.print_out('\n  No DF_BASIS_SCF auxiliary basis selected, defaulting to %s\n\n' % (jkbasis))
+        else:
+            raise ValidationError('Keyword DF_BASIS_SCF is required.')
+
+    #psi4.set_global_option('SCF_TYPE', 'DF')
+    psi4.set_local_option('SCF','DF_INTS_IO', 'SAVE')
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
+
+    # if the df_basis_cc basis is not set, pick a sensible one.
+    if psi4.get_global_option('DF_BASIS_CC') == '':
+        ribasis = p4util.corresponding_rifit(psi4.get_global_option('BASIS'))
+        if ribasis:
+            psi4.set_global_option('DF_BASIS_CC', ribasis)
+            psi4.print_out('  No DF_BASIS_CC auxiliary basis selected, defaulting to %s\n' % (ribasis))
+        else:
+            raise ValidationError('Keyword DF_BASIS_CC is required.')
+
+    return psi4.dfocc()
+
+
+def run_cdomp2(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a cholesky-decomposed orbital-optimized MP2 computation
+
+    """
+
+    optstash = p4util.OptionsState(
+        ['SCF','DF_INTS_IO'],
+        ['DFOCC', 'WFN_TYPE'])
+
+    # overwrite symmetry
+    molecule = psi4.get_active_molecule()
+    molecule.update_geometry()
+    molecule.reset_point_group('c1')
+
+    #psi4.set_global_option('SCF_TYPE', 'CD')
+    psi4.set_local_option('SCF','DF_INTS_IO', 'SAVE')
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
+
+    psi4.set_local_option('DFOCC', 'WFN_TYPE', 'CD-OMP2')
+    return psi4.dfocc()
+
+
+def run_cdmp2(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a cholesky-decomposed MP2 computation
+
+    """
+    optstash = p4util.OptionsState(
+        ['DFOCC', 'ORB_OPT'])
+
+    psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
+    run_cdomp2(name, **kwargs)
+    optstash.restore()
+
+
 def run_omp2(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     an orbital-optimized MP2 computation
 
     """
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
+    optstash = p4util.OptionsState(
+        ['SCF','SCF_TYPE'])
 
-    return psi4.occ()
+    # If SCF-TYPE = DF/CD call 
+    if psi4.get_option('SCF', 'SCF_TYPE') == 'DF' and psi4.get_global_option('DERTYPE') == 'NONE':
+            run_dfomp2(name, **kwargs)
+    elif psi4.get_option('SCF', 'SCF_TYPE') == 'CD' and psi4.get_global_option('DERTYPE') == 'NONE':
+            run_cdomp2(name, **kwargs)
+    else :
+            if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+                scf_helper(name, **kwargs)
+            psi4.occ()
+
+    #return psi4.occ()
+    optstash.restore()
 
 
 def run_omp2_gradient(name, **kwargs):
@@ -262,6 +352,11 @@ def run_omp3(name, **kwargs):
         scf_helper(name, **kwargs)
 
     psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+    # If the scf type is DF/CD, then the AO integrals were never written to disk
+    if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or 
+        psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
+        psi4.MintsHelper().integrals()
+
     psi4.occ()
 
     optstash.restore()
@@ -345,6 +440,10 @@ def run_scs_omp3(name, **kwargs):
 
     psi4.set_local_option('OCC', 'DO_SCS', 'TRUE')
     psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+    # If the scf type is DF/CD, then the AO integrals were never written to disk
+    if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or 
+        psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
+        psi4.MintsHelper().integrals()
     psi4.occ()
 
     optstash.restore()
@@ -374,6 +473,10 @@ def run_sos_omp3(name, **kwargs):
 
     psi4.set_local_option('OCC', 'DO_SOS', 'TRUE')
     psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+    # If the scf type is DF/CD, then the AO integrals were never written to disk
+    if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or 
+        psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
+        psi4.MintsHelper().integrals()
     psi4.occ()
 
     optstash.restore()
@@ -392,6 +495,10 @@ def run_ocepa(name, **kwargs):
         scf_helper(name, **kwargs)
 
     psi4.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
+    # If the scf type is DF/CD, then the AO integrals were never written to disk
+    if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or 
+        psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
+        psi4.MintsHelper().integrals()
     psi4.occ()
 
     optstash.restore()
@@ -460,6 +567,10 @@ def run_omp2_5(name, **kwargs):
         scf_helper(name, **kwargs)
 
     psi4.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
+    # If the scf type is DF/CD, then the AO integrals were never written to disk
+    if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or 
+        psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
+        psi4.MintsHelper().integrals()
     psi4.occ()
 
     optstash.restore()
@@ -1395,6 +1506,12 @@ def run_dft(name, **kwargs):
         returnvalue += vdh
         psi4.set_variable('DFT TOTAL ENERGY', returnvalue)
         psi4.set_variable('CURRENT ENERGY', returnvalue)
+        psi4.print_out('\n\n')
+        psi4.print_out('    %s Energy Summary\n' % (name.upper()))
+        psi4.print_out('    -------------------------\n')
+        psi4.print_out('    DFT Reference Energy                  = %22.16lf\n' % (returnvalue-vdh))
+        psi4.print_out('    Scaled MP2 Correlation                = %22.16lf\n' % (vdh))
+        psi4.print_out('    @Final double-hybrid DFT total energy = %22.16lf\n\n' % (returnvalue))
 
     optstash.restore()
 
