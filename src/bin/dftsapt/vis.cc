@@ -41,16 +41,16 @@ namespace psi {
 namespace dftsapt {
 
 ASAPTVis::ASAPTVis(
-        boost::shared_ptr<BasisSet> primary, 
+        boost::shared_ptr<BasisSet> primary,
         boost::shared_ptr<Molecule> monomer_A,
         boost::shared_ptr<Molecule> monomer_B,
-        boost::shared_ptr<Matrix> Locc_A, 
-        boost::shared_ptr<Matrix> Locc_B, 
-        boost::shared_ptr<Matrix> Q_A, 
+        boost::shared_ptr<Matrix> Locc_A,
+        boost::shared_ptr<Matrix> Locc_B,
+        boost::shared_ptr<Matrix> Q_A,
         boost::shared_ptr<Matrix> Q_B,
         boost::shared_ptr<AtomicDensity> atomic_A,
         boost::shared_ptr<AtomicDensity> atomic_B
-        ) : 
+        ) :
         primary_(primary),
         monomer_A_(monomer_A),
         monomer_B_(monomer_B),
@@ -64,7 +64,7 @@ ASAPTVis::ASAPTVis(
 {
     for (int i = 0; i < options_["ASAPT_TASKS"].size(); i++) {
         tasks_.insert(options_["ASAPT_TASKS"][i].to_string());
-    } 
+    }
 }
 ASAPTVis::~ASAPTVis()
 {
@@ -73,9 +73,9 @@ void ASAPTVis::analyze()
 {
     fprintf(outfile, "  ANALYSIS:\n\n");
 
-    monomer_A_->save_xyz("d.xyz", true);
-    monomer_A_->save_xyz("mA.xyz",false);
-    monomer_B_->save_xyz("mB.xyz",false);
+    monomer_A_->save_xyz_file("d.xyz", true);
+    monomer_A_->save_xyz_file("mA.xyz",false);
+    monomer_B_->save_xyz_file("mB.xyz",false);
 
     vars_["Charge_A"] = atomic_A_->charges(2.0);
     vars_["Charge_B"] = atomic_B_->charges(2.0);
@@ -183,13 +183,13 @@ void ASAPTVis::drop_orbital_2()
     drop("IndBA_Ab");
     drop("Disp_ab");
 }
-void ASAPTVis::drop(const std::string& var) 
+void ASAPTVis::drop(const std::string& var)
 {
     boost::shared_ptr<Matrix> T = vars_[var];
     double** Tp = T->pointer();
     int nrow = T->rowspi()[0];
     int ncol = T->colspi()[0];
-    
+
     std::stringstream ss;
     ss << var << ".dat";
     FILE* fh = fopen(ss.str().c_str(),"w");
@@ -205,7 +205,7 @@ void ASAPTVis::drop_voxel()
 {
     fprintf(outfile,"    Saving Order-1 Voxel Partition:\n\n");
 
-    // ==> Sizing <== // 
+    // ==> Sizing <== //
 
     int nn = Locc_A_->rowspi()[0];
     int na = Locc_A_->colspi()[0];
@@ -217,17 +217,17 @@ void ASAPTVis::drop_voxel()
 
     double dens_scale = options_.get_double("ASAPT_DENSITY_CLAMP");
     double int_scale  = options_.get_double("ASAPT_ENERGY_CLAMP");
-    
+
     // ==> Temporaries <== //
 
     boost::shared_ptr<Matrix> TA(Locc_A_->clone());
     boost::shared_ptr<Matrix> TB(Locc_B_->clone());
 
-    double** LAp = Locc_A_->pointer(); 
-    double** LBp = Locc_B_->pointer(); 
-    double** TAp = TA->pointer(); 
-    double** TBp = TB->pointer(); 
-    
+    double** LAp = Locc_A_->pointer();
+    double** LBp = Locc_B_->pointer();
+    double** TAp = TA->pointer();
+    double** TBp = TB->pointer();
+
     // ==> Floating Temporaries <== //
 
     double** EAp;
@@ -247,20 +247,20 @@ void ASAPTVis::drop_voxel()
     boost::shared_ptr<Vector> NB = atomic_B_->N();
     double* NAp = NA->pointer();
     double* NBp = NB->pointer();
-    
-    // ==> The Grid: A Digital Frontier to Reshape the Chemist's Condition <== // 
+
+    // ==> The Grid: A Digital Frontier to Reshape the Chemist's Condition <== //
 
     boost::shared_ptr<CubicDensityGrid> grid = boost::shared_ptr<CubicDensityGrid>(new CubicDensityGrid(primary_));
     grid->build_grid();
     grid->print_header();
-    
+
     // ==> Elst <== //
 
     fprintf(outfile, "    Saving Elst Voxel Partition.\n");
 
     EAp = vars_["Elst_A"]->pointer();
     EBp = vars_["Elst_B"]->pointer();
-    
+
     for (int A = 0; A < nA; A++) {
         VAp[A] = EAp[0][A] / NAp[A];
     }
@@ -272,7 +272,7 @@ void ASAPTVis::drop_voxel()
     grid->compute_atomic(VA,atomic_A_);
     grid->compute_atomic(VB,atomic_B_);
     grid->drop_raw("Elst.raw",int_scale);
-    
+
     // ==> Exch <== //
 
     fprintf(outfile, "    Saving Exch Voxel Partition.\n");
@@ -292,20 +292,20 @@ void ASAPTVis::drop_voxel()
     }
     DB = Matrix::doublet(TB,Locc_B_,false,true);
 
-    DA->add(DB); 
+    DA->add(DB);
     DA->set_name("Exch");
 
     grid->zero();
     grid->compute_electronic(DA);
     grid->drop_raw("Exch.raw",int_scale);
-    
+
     // ==> IndAB <== //
 
     fprintf(outfile, "    Saving IndAB Voxel Partition.\n");
 
     EAp = vars_["IndAB_a"]->pointer();
     EBp = vars_["IndAB_B"]->pointer();
-    
+
     for (int B = 0; B < nB; B++) {
         VBp[B] = EBp[0][B] / NBp[B];
     }
@@ -329,7 +329,7 @@ void ASAPTVis::drop_voxel()
 
     EBp = vars_["IndBA_b"]->pointer();
     EAp = vars_["IndBA_A"]->pointer();
-    
+
     for (int A = 0; A < nA; A++) {
         VAp[A] = EAp[0][A] / NAp[A];
     }
@@ -366,7 +366,7 @@ void ASAPTVis::drop_voxel()
     }
     DB = Matrix::doublet(TB,Locc_B_,false,true);
 
-    DA->add(DB); 
+    DA->add(DB);
     DA->set_name("Disp");
 
     grid->zero();
@@ -380,7 +380,7 @@ void ASAPTVis::drop_voxel()
     DA = Matrix::doublet(Locc_A_,Locc_A_,false,true);
     DB = Matrix::doublet(Locc_B_,Locc_B_,false,true);
 
-    DA->add(DB); 
+    DA->add(DB);
     DA->set_name("Dens");
 
     grid->zero();
@@ -395,8 +395,8 @@ void ASAPTVis::drop_debug()
 
     double dens_scale = options_.get_double("ASAPT_DENSITY_CLAMP");
     double orbs_scale = options_.get_double("ASAPT_ORBITAL_CLAMP");
-    
-    // ==> The Grid: A Digital Frontier to Reshape the Chemist's Condition <== // 
+
+    // ==> The Grid: A Digital Frontier to Reshape the Chemist's Condition <== //
 
     boost::shared_ptr<CubicDensityGrid> grid = boost::shared_ptr<CubicDensityGrid>(new CubicDensityGrid(primary_));
     grid->build_grid();
@@ -405,15 +405,15 @@ void ASAPTVis::drop_debug()
     fprintf(outfile,"    Saving Monomer A Atomic Density Voxel Partition:\n\n");
     grid->compute_atomic_densities(atomic_A_,dens_scale,"A");
     fprintf(outfile,"\n");
-    
+
     fprintf(outfile,"    Saving Monomer B Atomic Density Voxel Partition:\n\n");
     grid->compute_atomic_densities(atomic_B_,dens_scale,"B");
     fprintf(outfile,"\n");
-    
+
     fprintf(outfile,"    Saving Monomer A Local Orbital Voxel Partition:\n\n");
     grid->compute_orbitals(Locc_A_,orbs_scale,"A");
     fprintf(outfile,"\n");
-    
+
     fprintf(outfile,"    Saving Monomer B Local Orbital Voxel Partition:\n\n");
     grid->compute_orbitals(Locc_B_,orbs_scale,"B");
     fprintf(outfile,"\n");
@@ -498,7 +498,7 @@ void CubicDensityGrid::build_grid()
                 double* yp = &y_[offset];
                 double* zp = &z_[offset];
                 double* vp = &v_[offset];
-                
+
                 size_t block_size = 0L;
                 for (int i = istart; i < istart + ni; i++) {
                     for (int j = jstart; j < jstart + nj; j++) {
@@ -515,13 +515,13 @@ void CubicDensityGrid::build_grid()
             }
         }
     }
-            
+
     int max_functions = 0L;
     for (int ind = 0; ind < blocks_.size(); ind++) {
-        max_functions = (max_functions >= blocks_[ind]->functions_local_to_global().size() ? 
+        max_functions = (max_functions >= blocks_[ind]->functions_local_to_global().size() ?
             max_functions : blocks_[ind]->functions_local_to_global().size());
     }
- 
+
     points_ = boost::shared_ptr<RKSFunctions>(new RKSFunctions(primary_,max_points,max_functions));
     points_->set_ansatz(0);
 }
@@ -554,7 +554,7 @@ void CubicDensityGrid::zero()
 void CubicDensityGrid::compute_electronic(boost::shared_ptr<Matrix> D)
 {
     if (!npoints_) throw PSIEXCEPTION("CubicDensityGrid::compute: call build_grid first");
-   
+
     points_->set_pointers(D);
     boost::shared_ptr<Vector> rho = points_->point_value("RHO_A");
     double* rhop = rho->pointer();
@@ -563,14 +563,14 @@ void CubicDensityGrid::compute_electronic(boost::shared_ptr<Matrix> D)
     for (int ind = 0; ind < blocks_.size(); ind++) {
         points_->compute_points(blocks_[ind]);
         size_t npoints = blocks_[ind]->npoints();
-        C_DAXPY(npoints,1.0,rhop,1,&v_[offset],1);        
+        C_DAXPY(npoints,1.0,rhop,1,&v_[offset],1);
         offset += npoints;
     }
 }
 void CubicDensityGrid::compute_atomic(boost::shared_ptr<Vector> V, boost::shared_ptr<AtomicDensity> atomic)
 {
     if (!npoints_) throw PSIEXCEPTION("CubicDensityGrid::compute: call build_grid first");
-   
+
     points_->set_pointers(atomic->D());
     boost::shared_ptr<Vector> rho = points_->point_value("RHO_A");
     double* rhop = rho->pointer();
@@ -590,12 +590,12 @@ void CubicDensityGrid::compute_atomic(boost::shared_ptr<Vector> V, boost::shared
         C_DGEMV('T',nA,npoints,1.0,wp[0],max_points,Vp,1,1.0,&v_[offset],1);
         offset += npoints;
     }
-    
+
 }
 void CubicDensityGrid::compute_atomic_densities(boost::shared_ptr<AtomicDensity> atomic, double clamp, const::std::string& label)
 {
     if (!npoints_) throw PSIEXCEPTION("CubicDensityGrid::compute: call build_grid first");
-   
+
     int nA = atomic->N()->dimpi()[0];
 
     points_->set_pointers(atomic->D());
@@ -641,7 +641,7 @@ void CubicDensityGrid::compute_atomic_densities(boost::shared_ptr<AtomicDensity>
 void CubicDensityGrid::compute_orbitals(boost::shared_ptr<Matrix> C, double clamp, const::std::string& label)
 {
     if (!npoints_) throw PSIEXCEPTION("CubicDensityGrid::compute: call build_grid first");
-   
+
     int na = C->colspi()[0];
 
     points_->set_Cs(C);
@@ -683,7 +683,7 @@ void CubicDensityGrid::drop_raw(const std::string& file, double clamp, double* v
     //}
     //fclose(fh2);
 
-    if (v == NULL) { 
+    if (v == NULL) {
         v = v_;
     }
 
@@ -719,7 +719,7 @@ void CubicDensityGrid::drop_raw(const std::string& file, double clamp, double* v
         }
     }
 
-    fprintf(outfile,"    Max val = %11.3E out of %11.3E: %s.\n", maxval, clamp, (clamp >= maxval ? "No clamping" : "Clamped")); 
+    fprintf(outfile,"    Max val = %11.3E out of %11.3E: %s.\n", maxval, clamp, (clamp >= maxval ? "No clamping" : "Clamped"));
 
     //total *= D_[0] * D_[1] * D_[2];
     //fprintf(outfile,"    Integral value is %24.16E\n", total);
@@ -729,7 +729,7 @@ void CubicDensityGrid::drop_raw(const std::string& file, double clamp, double* v
     v2[npoints_-2L] =  0.0;
     v2[npoints_-3L] =  1.0;
     v2[npoints_-4L] = -1.0;
-    
+
     FILE* fh = fopen(file.c_str(), "wb");
     fwrite(v2,sizeof(float),npoints_,fh);
     fclose(fh);
@@ -738,7 +738,7 @@ void CubicDensityGrid::drop_uvf(const std::string& file, double clamp, double* v
 {
     if (!npoints_) throw PSIEXCEPTION("CubicDensityGrid::drop_raw: call build_grid first");
 
-    if (v == NULL) { 
+    if (v == NULL) {
         v = v_;
     }
 
@@ -771,14 +771,14 @@ void CubicDensityGrid::drop_uvf(const std::string& file, double clamp, double* v
         }
     }
 
-    fprintf(outfile,"    Max val = %11.3E out of %11.3E: %s.\n", maxval, clamp, (clamp >= maxval ? "No clamping" : "Clamped")); 
+    fprintf(outfile,"    Max val = %11.3E out of %11.3E: %s.\n", maxval, clamp, (clamp >= maxval ? "No clamping" : "Clamped"));
 
     //Dirty Hack: I love it!
     v2[npoints_-1L] =  0.0;
     v2[npoints_-2L] =  0.0;
     v2[npoints_-3L] =  1.0;
     v2[npoints_-4L] = -1.0;
-    
+
     FILE* fh = fopen(file.c_str(), "wb");
     const char* header = "UVF-DATA";
     fwrite(header,sizeof(char),8,fh);
@@ -786,13 +786,13 @@ void CubicDensityGrid::drop_uvf(const std::string& file, double clamp, double* v
     fwrite(endian,sizeof(char),1,fh);
     unsigned long int version = 3L;
     fwrite(&version,sizeof(unsigned long int),1,fh);
-    unsigned long int nchecksum = 0L;   
+    unsigned long int nchecksum = 0L;
     fwrite(&nchecksum,sizeof(unsigned long int),1,fh);
     unsigned long int offset2 = 0L;
     fwrite(&offset2,sizeof(unsigned long int),1,fh);
-    
+
     throw PSIEXCEPTION("Not implemented");
- 
+
     fclose(fh);
 }
 
