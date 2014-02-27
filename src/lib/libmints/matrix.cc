@@ -1248,10 +1248,10 @@ void Matrix::transform(const SharedMatrix& L,
 
 void Matrix::back_transform(const Matrix* const a, const Matrix* const transformer)
 {
-    Matrix temp(a->nirrep(),a->rowspi(),this->colspi());
+    Matrix temp(transformer->rowspi(), a->colspi());
 
-    temp.gemm(false, true, 1.0, a, transformer, 0.0);
-    gemm(false, false, 1.0, transformer, &temp, 0.0);
+    temp.gemm(false, false, 1.0, transformer, a, 0.0);
+    gemm(false, true, 1.0, &temp, transformer, 0.0);
 }
 
 void Matrix::back_transform(const SharedMatrix& a, const SharedMatrix& transformer)
