@@ -25,6 +25,7 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/python.hpp>
 #include <boost/foreach.hpp>
+#include <boost/format.hpp>
 
 #include <cmath>
 #include <cstdio>
@@ -1769,9 +1770,8 @@ void Molecule::print_out_of_planes () const
     fprintf(outfile, "\n\n");
 }
 
-void Molecule::save_xyz(const std::string& filename, bool save_ghosts) const
+void Molecule::save_xyz_file(const std::string& filename, bool save_ghosts) const
 {
-
     double factor = (units_ == Angstrom ? 1.0 : pc_bohr2angstroms);
 
     if (WorldComm->me() == 0) {
@@ -1784,7 +1784,6 @@ void Molecule::save_xyz(const std::string& filename, bool save_ghosts) const
                 if (Z(i)) N++;
             }
         }
-
         fprintf(fh,"%d\n\n", N);
 
         for (int i = 0; i < natom(); i++) {
@@ -1795,6 +1794,27 @@ void Molecule::save_xyz(const std::string& filename, bool save_ghosts) const
 
         fclose(fh);
     }
+}
+
+std::string Molecule::save_string_xyz_file() const
+{
+    std::stringstream stream;
+
+    double factor = (units_ == Angstrom ? 1.0 : pc_bohr2angstroms);
+
+    if (WorldComm->me() == 0) {
+
+        int N = natom();
+        stream << boost::format("%d\n\n") % N;
+
+        for (int i = 0; i < natom(); i++) {
+            Vector3 geom = atoms_[i]->compute();
+            if (Z(i))
+                stream << boost::format("%2s %17.12f %17.12f %17.12f\n") % (Z(i) ? symbol(i).c_str() : "Gh") % (factor*geom[0]) % (factor*geom[1]) % (factor*geom[2]);
+                //fprintf(fh, "%2s %17.12f %17.12f %17.12f\n", (Z(i) ? symbol(i).c_str() : "Gh"), factor*geom[0], factor*geom[1], factor*geom[2]);
+        }
+    }
+    return stream.str();
 }
 
 std::string Molecule::save_string_xyz() const
