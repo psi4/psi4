@@ -2799,7 +2799,7 @@ def build_b2plyp_superfunctional(name, npoints, deriv):
     becke.set_alpha(1.0)
     sup.add_x_functional(becke)
     lyp = build_functional('LYP_C')
-    lyp.set_alpha(0.73)
+    lyp.set_alpha(1.0)
     sup.add_c_functional(lyp)
 
     # Set GKS up after adding functionals
@@ -2956,7 +2956,7 @@ def build_pbe0_2_superfunctional(name, npoints, deriv):
     X.set_alpha(1.0)
     sup.add_x_functional(X)
     C = build_functional('PBE_C')
-    C.set_alpha(0.5)
+    C.set_alpha(1.0)
     sup.add_c_functional(C)
 
     # Set GKS up after adding functionals
@@ -3283,12 +3283,12 @@ superfunctionals = {
         'b2plyp-d2gr'     : build_b2plypd2gr_superfunctional,
         'b2plyp-d3zero'   : build_b2plypd3zero_superfunctional,
         'b2plyp-d3bj'     : build_b2plypd3bj_superfunctional,
-        'wb97x-2(tqz)'    : build_wb97x_2tqz_superfunctional,
-        'wb97x-2(lp)'     : build_wb97x_2lp_superfunctional,
+        #'wb97x-2(tqz)'    : build_wb97x_2tqz_superfunctional,  # removed 26 Feb 2014 pending better handling of SS/OS DH coeff
+        #'wb97x-2(lp)'     : build_wb97x_2lp_superfunctional,  # removed 26 Feb 2014 pending better handling of SS/OS DH coeff
         'pbe0-2'          : build_pbe0_2_superfunctional,
-        'dsd-blyp'        : build_dsd_blyp_superfunctional,  # -D variants still need to be added
-        'dsd-pbep86'      : build_dsd_pbep86_superfunctional,
-        'dsd-pbepbe'      : build_dsd_pbepbe_superfunctional,
+        #'dsd-blyp'        : build_dsd_blyp_superfunctional,  # -D variants still need to be added  # removed 26 Feb 2014 pending better handling of SS/OS DH coeff
+        #'dsd-pbep86'      : build_dsd_pbep86_superfunctional,  # removed 26 Feb 2014 pending better handling of SS/OS DH coeff
+        #'dsd-pbepbe'      : build_dsd_pbepbe_superfunctional,  # removed 26 Feb 2014 pending better handling of SS/OS DH coeff
         'pbea_c'          : build_primitive_superfunctional,
         'pw92a_c'         : build_primitive_superfunctional,
         'wpbe_c'          : build_wpbe_c_superfunctional,
