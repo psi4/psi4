@@ -33,14 +33,15 @@
 #include <libqt/qt.h>
 #include <psifiles.h>
 #include <libmints/wavefunction.h>
+#include <libmints/dimension.h>
+#include <libmints/molecule.h>
+#include <libmints/basisset.h>
 #include "MOInfo.h"
 #include "Params.h"
 #define EXTERN
 #include "globals.h"
 
 namespace psi { namespace ccenergy {
-
-#define reference_wavefunction_ Process::environment.wavefunction()->reference_wavefunction()
 
 /*
 ** get_moinfo():  Routine to obtain basic orbital information from
@@ -56,20 +57,25 @@ void get_moinfo(void)
     double ***Co, ***Cv, ***Ca, ***Cb;
     psio_address next;
 
+    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
     chkpt_init(PSIO_OPEN_OLD);
-    moinfo.nirreps = reference_wavefunction_->nirrep();
+    moinfo.nirreps = wfn->nirrep();
     //  moinfo.nirreps = chkpt_rd_nirreps();
-    moinfo.nmo = chkpt_rd_nmo();
-    moinfo.nso = chkpt_rd_nso();
-    moinfo.nao = chkpt_rd_nao();
-    moinfo.iopen = chkpt_rd_iopen();
-    moinfo.labels = chkpt_rd_irr_labs();
-    moinfo.enuc = chkpt_rd_enuc();
-    moinfo.escf = chkpt_rd_escf();
-    moinfo.sopi = chkpt_rd_sopi();
-    moinfo.orbspi = chkpt_rd_orbspi();
-    moinfo.clsdpi = chkpt_rd_clsdpi();
-    moinfo.openpi = chkpt_rd_openpi();
+    moinfo.nmo = wfn->nmo();
+    moinfo.nso = wfn->nso();
+    moinfo.nao = wfn->basisset()->nao();
+    moinfo.labels = wfn->molecule()->irrep_labels();
+    moinfo.enuc = wfn->molecule()->nuclear_repulsion_energy();
+    if(wfn->reference_wavefunction())
+        moinfo.escf = wfn->reference_wavefunction()->reference_energy();
+    else
+        moinfo.escf = wfn->reference_energy();
+    moinfo.sopi = wfn->nsopi();
+    moinfo.orbspi = wfn->nmopi();
+    moinfo.openpi = wfn->soccpi();
+    moinfo.clsdpi = init_int_array(moinfo.nirreps);
+    for(int h = 0; h < moinfo.nirreps; ++h)
+        moinfo.clsdpi[h] = wfn->doccpi()[h];
     moinfo.phase = chkpt_rd_phase_check();
     chkpt_close();
 
@@ -169,7 +175,6 @@ void get_moinfo(void)
                         (char *) moinfo.occpi, sizeof(int)*nirreps);
         psio_read_entry(PSIF_CC_INFO, "Active Virt Orbs Per Irrep",
                         (char *) moinfo.virtpi, sizeof(int)*nirreps);
-
         moinfo.occ_sym = init_int_array(nactive);
         moinfo.vir_sym = init_int_array(nactive);
         psio_read_entry(PSIF_CC_INFO, "Active Occ Orb Symmetry",
@@ -361,13 +366,13 @@ void cleanup(void)
         free(moinfo.Cbv);
     }
 
-    free(moinfo.sopi);
-    free(moinfo.sosym);
-    free(moinfo.orbspi);
-    free(moinfo.clsdpi);
-    free(moinfo.openpi);
-    free(moinfo.uoccpi);
     // Wavefunction owns these arrays
+//    free(moinfo.sopi);
+//    free(moinfo.sosym);
+//    free(moinfo.orbspi);
+    free(moinfo.clsdpi);
+//    free(moinfo.openpi);
+//    free(moinfo.uoccpi);
     //  free(moinfo.fruocc);
     //  free(moinfo.frdocc);
     for(i=0; i < moinfo.nirreps; i++)
