@@ -32,6 +32,11 @@ namespace psi{
 
 PSIOManager::PSIOManager() : default_path_("/tmp/")
 {
+    // Get the process ID and convert to string.
+    pid_t pid = getpid();
+    std::stringstream ss;
+    ss << pid;
+    pid_ = ss.str();
 }
 PSIOManager::~PSIOManager()
 {
@@ -60,7 +65,7 @@ void PSIOManager::set_specific_retention(int fileno, bool retain)
 {
     if (retain)
         specific_retains_.insert(fileno);
-    else 
+    else
         specific_retains_.erase(fileno);
     mirror_to_disk();
 }
@@ -116,29 +121,29 @@ void PSIOManager::print(FILE* out)
     fprintf(out, "\n");
 
     fprintf(out, "  Default Path: %s\n\n", default_path_.c_str());
-    
+
     fprintf(out, "  Specific File Paths:\n\n");
     fprintf(out, "  %-6s %-50s\n", "FileNo", "Path");
     fprintf(out, "  ----------------------------------------------------------------------\n");
     for (std::map<int, std::string>::iterator it = specific_paths_.begin(); it != specific_paths_.end(); it++) {
-        fprintf(out, "  %-6d %-50s\n", (*it).first, (*it).second.c_str()); 
+        fprintf(out, "  %-6d %-50s\n", (*it).first, (*it).second.c_str());
     }
     fprintf(out, "\n");
-    
+
     fprintf(out, "  Specific File Retentions:\n\n");
     fprintf(out, "  %-6s \n", "FileNo");
     fprintf(out, "  -------\n");
     for (std::set<int>::iterator it = specific_retains_.begin(); it != specific_retains_.end(); it++) {
-        fprintf(out, "  %-6d\n", (*it)); 
+        fprintf(out, "  %-6d\n", (*it));
     }
     fprintf(out, "\n");
-    
+
     fprintf(out, "  Current File Retention Rules:\n\n");
-    
+
     fprintf(out, "  %-6s \n", "Filename");
     fprintf(out, "  --------------------------------------------------\n");
     for (std::set<std::string>::iterator it = retained_files_.begin(); it != retained_files_.end(); it++) {
-        fprintf(out, "  %-50s\n", (*it).c_str()); 
+        fprintf(out, "  %-50s\n", (*it).c_str());
     }
     fprintf(out, "\n");
 
@@ -155,17 +160,18 @@ void PSIOManager::print(FILE* out)
 }
 void PSIOManager::mirror_to_disk()
 {
- 
+
     //if (WorldComm->me() == 0) {
-      FILE* fh = fopen("psi.clean","w");
+//      FILE* fh = fopen("psi.clean","w");
+    FILE* fh = fopen(("psi." + pid_ + ".clean").c_str(), "w");
       if (fh == NULL) throw PSIEXCEPTION("PSIOManager cannot get a mirror file handle\n");
-    
+
       for (std::map<std::string, bool>::iterator it = files_.begin(); it != files_.end(); it++) {
           if (retained_files_.count((*it).first) == 0) {
-              fprintf(fh, "%s\n", (*it).first.c_str()); 
+              fprintf(fh, "%s\n", (*it).first.c_str());
           }
       }
-    
+
       fclose(fh);
     //}
 }
@@ -175,17 +181,17 @@ void PSIOManager::build_from_disk()
 
       FILE* fh = fopen("psi.clean","r");
       if (fh == NULL) throw PSIEXCEPTION("PSIOManager cannot get a mirror file handle. Is there a psi.clean file there?\n");
-    
+
       files_.clear();
-      retained_files_.clear();   
+      retained_files_.clear();
 
       char* in = new char[1000];
-   
+
       while (fgets(in, 1000, fh) != NULL) {
           std::string str(in);
           str.resize(str.size()-1); // crush the newline
-          files_[str] = false; 
-      } 
+          files_[str] = false;
+      }
       delete[] in;
 
       fclose(fh);
@@ -220,7 +226,8 @@ void PSIOManager::psiclean()
     files_.clear();
     files_ = temp;
     //if (WorldComm->me() == 0)
-        unlink("psi.clean");
+//        unlink("psi.clean");
+    unlink(("psi." + pid_ + ".clean").c_str());
 }
 
 }
