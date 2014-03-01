@@ -31,6 +31,9 @@
 #include <libpsio/psio.h>
 #include <libchkpt/chkpt.h>
 #include <liboptions/liboptions.h>
+#include <psi4-dec.h>
+#include <libmints/wavefunction.h>
+#include <libmints/molecule.h>
 #include "MOInfo.h"
 #include "Params.h"
 #define EXTERN
@@ -50,14 +53,17 @@ void get_moinfo(Options &options)
 {
   int i, h, errcod, nactive, nirreps;
 
+  boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
   chkpt_init(PSIO_OPEN_OLD);
-  moinfo.nirreps = chkpt_rd_nirreps();
-  moinfo.nmo = chkpt_rd_nmo();
+  moinfo.nirreps = wfn->nirrep();
+  moinfo.nmo = wfn->nmo();
   moinfo.iopen = chkpt_rd_iopen();
-  moinfo.labels = chkpt_rd_irr_labs();
-  moinfo.orbspi = chkpt_rd_orbspi();
-  moinfo.clsdpi = chkpt_rd_clsdpi();
-  moinfo.openpi = chkpt_rd_openpi();
+  moinfo.labels = wfn->molecule()->irrep_labels();
+  moinfo.orbspi = wfn->nmopi();
+  moinfo.openpi = wfn->soccpi();
+  moinfo.clsdpi = init_int_array(moinfo.nirreps);
+  for(int h = 0; h < moinfo.nirreps; ++h)
+      moinfo.clsdpi[h] = wfn->doccpi()[h];
   moinfo.phase = chkpt_rd_phase_check();
   chkpt_close();
 
@@ -168,12 +174,12 @@ void cleanup(void)
 {
   int i;
 
-  free(moinfo.orbspi);
+//  free(moinfo.orbspi);
   free(moinfo.clsdpi);
-  free(moinfo.openpi);
-  free(moinfo.uoccpi);
-  free(moinfo.fruocc);
-  free(moinfo.frdocc);
+//  free(moinfo.openpi);
+//  free(moinfo.uoccpi);
+//  free(moinfo.fruocc);
+//  free(moinfo.frdocc);
   for(i=0; i < moinfo.nirreps; i++)
     free(moinfo.labels[i]);
   free(moinfo.labels);
