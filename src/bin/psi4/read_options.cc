@@ -1326,6 +1326,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
     /*- Boolean to delete the SO-basis two-electron integral file after the transformation -*/
     options.add_bool("DELETE_TEI", true);
+    /*- Whether to only form the one electron integrals !expert-*/
+    options.add_bool("NO_TEI", false);
     /*- Convert ROHF MOs to semicanonical MOs -*/
     options.add_bool("SEMICANONICAL", true);
   }
