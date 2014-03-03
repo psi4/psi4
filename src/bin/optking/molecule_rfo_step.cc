@@ -167,7 +167,7 @@ void MOLECULE::rfo_step(void) {
         dq[ g_intco_offset(f) + i ] = 0.0;
     }
   }
-
+//SE
 //  apply_intrafragment_step_limit(dq);
   //check_intrafragment_zero_angles(dq);
 
