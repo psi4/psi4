@@ -168,7 +168,7 @@ void MOLECULE::rfo_step(void) {
     }
   }
 
-  apply_intrafragment_step_limit(dq);
+//  apply_intrafragment_step_limit(dq);
   //check_intrafragment_zero_angles(dq);
 
   // get norm |dq| and unit vector in the step direction
