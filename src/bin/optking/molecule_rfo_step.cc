@@ -168,6 +168,7 @@ void MOLECULE::rfo_step(void) {
     }
   }
 
+//RAK
 //  apply_intrafragment_step_limit(dq);
   //check_intrafragment_zero_angles(dq);
 
