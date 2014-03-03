@@ -167,8 +167,8 @@ void MOLECULE::rfo_step(void) {
         dq[ g_intco_offset(f) + i ] = 0.0;
     }
   }
-//SE
-//  apply_intrafragment_step_limit(dq);
+
+  apply_intrafragment_step_limit(dq);
   //check_intrafragment_zero_angles(dq);
 
   // get norm |dq| and unit vector in the step direction
