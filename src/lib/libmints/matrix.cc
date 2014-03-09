@@ -2880,8 +2880,8 @@ void Matrix::write_to_dpdfile2(dpdfile2 *outFile)
 
 void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, bool saveSubBlocks)
 {
-    static const char *str_block_format = "%3d %3d %3d %16.12f\n";
-    static const char *str_full_format  = "%3d %3d %16.12f\n";
+    static const char *str_block_format = "%3d %3d %3d %16.16f\n";
+    static const char *str_full_format  = "%3d %3d %16.16f\n";
 
     // We can only save lower triangle if symmetry_ if 0
     if (symmetry_ && saveLowerTriangle)
