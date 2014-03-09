@@ -310,6 +310,9 @@ public:
     /// grab the filename of unit and strdup into name.
     void get_filename(unsigned int unit, char **name, bool remove_namespace = false);
 
+    /// delete a specific TOC entry (only deletes entry, not data)
+    bool tocdel(unsigned int unit, const char *key);
+
 private:
     /// vector of units
     psio_ud *psio_unit;
