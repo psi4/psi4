@@ -33,12 +33,14 @@
 #include <libqt/qt.h>
 #include <psifiles.h>
 #include <psi4-dec.h>
+#include <libmints/dimension.h>
+#include <libmints/wavefunction.h>
+#include <libmints/basisset.h>
 #include "MOInfo.h"
 #include "Params.h"
 #define EXTERN
 #include "globals.h"
 
-#include <libmints/wavefunction.h>
 
 namespace psi { namespace ccsort {
 
@@ -70,19 +72,27 @@ void get_moinfo(void)
     int *pitz2qt_A, *qt2pitz_A, *pitz2qt_B, *qt2pitz_B;
     psio_address next;
 
+    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
+
     chkpt_init(PSIO_OPEN_OLD);
-    moinfo.nirreps = chkpt_rd_nirreps();
-    moinfo.nmo = chkpt_rd_nmo();
-    moinfo.nso = chkpt_rd_nso();
-    moinfo.nao = chkpt_rd_nao();
-    moinfo.iopen = chkpt_rd_iopen();
-    moinfo.labels = chkpt_rd_irr_labs();
-    moinfo.enuc = chkpt_rd_enuc();
-    escf = chkpt_rd_escf();
-    moinfo.sopi = chkpt_rd_sopi();
-    moinfo.orbspi = chkpt_rd_orbspi();
-    moinfo.clsdpi = chkpt_rd_clsdpi();
-    moinfo.openpi = chkpt_rd_openpi();
+    moinfo.nirreps = wfn->nirrep();
+    moinfo.nmo = wfn->nmo();
+    moinfo.nso = wfn->nso();
+    moinfo.nao = wfn->basisset()->nao();
+    moinfo.labels = wfn->molecule()->irrep_labels();
+    moinfo.enuc = wfn->molecule()->nuclear_repulsion_energy();
+    // If we're doing Brueckner, we need to make sure we grab the right energy
+    if(wfn->reference_wavefunction())
+        escf = wfn->reference_wavefunction()->reference_energy();
+    else
+        escf = wfn->reference_energy();
+    moinfo.sopi = wfn->nsopi();
+    moinfo.orbspi = wfn->nmopi();
+    moinfo.openpi = wfn->soccpi();
+    moinfo.clsdpi = init_int_array(moinfo.nirreps);
+    for(int h = 0; h < moinfo.nirreps; ++h)
+        moinfo.clsdpi[h] = wfn->doccpi()[h];
+
     // TODO: Uncomment the following line.
     //moinfo.usotao = chkpt_rd_usotao();
     if(params.ref == 0) moinfo.scf = chkpt_rd_scf();
@@ -91,8 +101,8 @@ void get_moinfo(void)
     psio_write_entry(PSIF_CC_INFO, "Reference Wavefunction",
                      (char *) &(params.ref), sizeof(int));
 
-    moinfo.frdocc = Process::environment.wavefunction()->frzcpi();
-    moinfo.fruocc = Process::environment.wavefunction()->frzvpi();
+    moinfo.frdocc = wfn->frzcpi();
+    moinfo.fruocc = wfn->frzvpi();
     chkpt_close();
 
     moinfo.nfzc = moinfo.nfzv = 0;

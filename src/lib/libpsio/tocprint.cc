@@ -37,6 +37,9 @@ namespace psi {
 void PSIO::tocprint(unsigned int unit) {
   psio_tocentry *this_entry;
 
+  bool already_open = open_check(unit);
+  if(!already_open) open(unit, PSIO_OPEN_OLD);
+
   this_entry = psio_unit[unit].toc;
 
   fprintf(outfile, "\nTable of Contents for Unit %5u\n", unit);
@@ -58,6 +61,8 @@ void PSIO::tocprint(unsigned int unit) {
   }
   fprintf(outfile, "\n");
   fflush(outfile);
+
+  if(!already_open) close(unit, 1); // keep
 }
 
   /*!

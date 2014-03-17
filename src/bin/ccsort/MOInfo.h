@@ -33,7 +33,6 @@ struct MOInfo {
   int nso;               /* no. of symmetry orbitals */
   int nao;               /* no. of atomic orbitals */
   int noeints;           /* no. unique one-electron integrals (ex. fruocc) */
-  int iopen;             /* 0=closed shell; >0=open shell */
   int *sopi;             /* no. of SOs per irrep */
   int *orbspi;           /* no. of MOs per irrep */
   int *clsdpi;           /* no. of closed-shells per irrep ex. frdocc */

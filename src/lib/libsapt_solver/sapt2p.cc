@@ -283,7 +283,7 @@ void SAPT2p::print_results()
     fprintf(outfile,"      Disp22 (T) (CCD) %16.8lf mH %16.8lf kcal mol^-1\n",
       e_disp22t_ccd_*1000.0,e_disp22t_ccd_*pc_hartree2kcalmol);
     if (nat_orbs_t3_)
-      fprintf(outfile,"      Est. Disp22 (T)  %16.8lf mH %16.8lf kcal mol^-1\n",
+      fprintf(outfile,"      Est. Disp22 (T) (CCD)%12.8lf mH %16.8lf kcal mol^-1\n",
         e_est_disp22t_ccd_*1000.0,e_est_disp22t_ccd_*pc_hartree2kcalmol);
   }
   fprintf(outfile,"      Exch-Disp20      %16.8lf mH %16.8lf kcal mol^-1\n\n",

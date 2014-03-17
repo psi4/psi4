@@ -312,12 +312,12 @@ void cleanup(void)
   free(moinfo.pitzer2qt);
   free(moinfo.qt2pitzer);
 
-  free(moinfo.sopi);
-  free(moinfo.orbspi);
-  free(moinfo.clsdpi);
-  free(moinfo.openpi);
-  free(moinfo.uoccpi);
   // Wavefunction owns these arrays
+//  free(moinfo.sopi);
+//  free(moinfo.orbspi);
+  free(moinfo.clsdpi);
+//  free(moinfo.openpi);
+//  free(moinfo.uoccpi);
 //  free(moinfo.fruocc);
 //  free(moinfo.frdocc);
   for(i=0; i < moinfo.nirreps; i++)

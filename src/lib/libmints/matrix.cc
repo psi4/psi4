@@ -1248,10 +1248,10 @@ void Matrix::transform(const SharedMatrix& L,
 
 void Matrix::back_transform(const Matrix* const a, const Matrix* const transformer)
 {
-    Matrix temp(a->nirrep(),a->rowspi(),this->colspi());
+    Matrix temp(transformer->rowspi(), a->colspi());
 
-    temp.gemm(false, true, 1.0, a, transformer, 0.0);
-    gemm(false, false, 1.0, transformer, &temp, 0.0);
+    temp.gemm(false, false, 1.0, transformer, a, 0.0);
+    gemm(false, true, 1.0, &temp, transformer, 0.0);
 }
 
 void Matrix::back_transform(const SharedMatrix& a, const SharedMatrix& transformer)
@@ -2880,8 +2880,8 @@ void Matrix::write_to_dpdfile2(dpdfile2 *outFile)
 
 void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, bool saveSubBlocks)
 {
-    static const char *str_block_format = "%3d %3d %3d %16.12f\n";
-    static const char *str_full_format  = "%3d %3d %16.12f\n";
+    static const char *str_block_format = "%3d %3d %3d %16.16f\n";
+    static const char *str_full_format  = "%3d %3d %16.16f\n";
 
     // We can only save lower triangle if symmetry_ if 0
     if (symmetry_ && saveLowerTriangle)

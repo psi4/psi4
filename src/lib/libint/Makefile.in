@@ -1,6 +1,9 @@
 include ../MakeVars
 include ./MakeVars
 
+ifdef PSI_SCRATCH
+   SCRATCH = ${PSI_SCRATCH}
+endif
 ifndef SCRATCH
    SCRATCH = /tmp/${USER}
 endif

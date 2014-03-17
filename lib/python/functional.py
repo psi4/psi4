@@ -651,6 +651,15 @@ def build_wb88_x_functional(name):
 
     return fun
 
+def build_wb88_x_functional(name):
+
+    # Call this first
+    fun = psi4.Functional.build_base('wB88_X')
+
+    # => End User-Customization <= #
+
+    return fun
+
 
 def build_primitive_functional(name):
 
@@ -714,6 +723,10 @@ functionals = {
         'ft97_c'      : build_primitive_functional,
         'b_c'         : build_primitive_functional,
         'm_c'         : build_primitive_functional,
+        'pbea_c'      : build_primitive_functional, 
+        'pw92a_c'     : build_primitive_functional, 
+        'wpbe_c'      : build_primitive_functional,
+        'wpw92_c'     : build_primitive_functional, 
     }
 
 
@@ -826,6 +839,99 @@ def build_wpbesol_x_superfunctional(name, npoints, deriv):
     sup.allocate()
     return sup
 
+def build_wpw92_c_superfunctional(name, npoints, deriv):
+
+    # Call this first
+    sup = psi4.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('wPW92_C')
+    # Tab in, trailing newlines
+    sup.set_description('    Short-Range PW92 Correlation Functional\n')
+    # Tab in, trailing newlines
+    sup.set_citation('    TODO\n')
+
+    # Add member functionals
+    sup.add_c_functional(build_functional('wPW92_C'))
+
+    # Set GKS up after adding functionals
+    sup.set_x_omega(0.0)
+    sup.set_c_omega(0.3)
+    sup.set_x_alpha(0.0)
+    sup.set_c_alpha(0.0)
+
+    # => End User-Customization <= #
+
+    # Call this last
+    sup.allocate()
+    return sup
+
+def build_wpbe_c_superfunctional(name, npoints, deriv):
+
+    # Call this first
+    sup = psi4.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('wPBE_C')
+    # Tab in, trailing newlines
+    sup.set_description('    Short-Range PBE Correlation Functional\n')
+    # Tab in, trailing newlines
+    sup.set_citation('    TODO\n')
+
+    # Add member functionals
+    sup.add_c_functional(build_functional('wPBE_C'))
+
+    # Set GKS up after adding functionals
+    sup.set_x_omega(0.0)
+    sup.set_c_omega(0.5)
+    sup.set_x_alpha(0.0)
+    sup.set_c_alpha(0.0)
+
+    # => End User-Customization <= #
+
+    # Call this last
+    sup.allocate()
+    return sup
+
+def build_wpbe2_superfunctional(name, npoints, deriv):
+
+    # Call this first
+    sup = psi4.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('wPBE2')
+    # Tab in, trailing newlines
+    sup.set_description('    Double-Hybrid PBE LRC Functional\n')
+    # Tab in, trailing newlines
+    sup.set_citation('    TODO\n')
+
+    # Add member functionals
+    sup.add_x_functional(build_functional('wPBE_X'))
+    sup.add_c_functional(build_functional('wPBE_C'))
+
+    # Set GKS up after adding functionals
+    sup.set_x_omega(0.3)
+    sup.set_c_omega(0.5)
+    sup.set_x_alpha(0.0)
+    sup.set_c_alpha(0.0)
+
+    # => End User-Customization <= #
+
+    # Call this last
+    sup.allocate()
+    return sup
 
 def build_wb88_x_superfunctional(name, npoints, deriv):
 
@@ -2693,7 +2799,7 @@ def build_b2plyp_superfunctional(name, npoints, deriv):
     becke.set_alpha(1.0)
     sup.add_x_functional(becke)
     lyp = build_functional('LYP_C')
-    lyp.set_alpha(0.73)
+    lyp.set_alpha(1.0)
     sup.add_c_functional(lyp)
 
     # Set GKS up after adding functionals
@@ -2850,7 +2956,7 @@ def build_pbe0_2_superfunctional(name, npoints, deriv):
     X.set_alpha(1.0)
     sup.add_x_functional(X)
     C = build_functional('PBE_C')
-    C.set_alpha(0.5)
+    C.set_alpha(1.0)
     sup.add_c_functional(C)
 
     # Set GKS up after adding functionals
@@ -3177,12 +3283,17 @@ superfunctionals = {
         'b2plyp-d2gr'     : build_b2plypd2gr_superfunctional,
         'b2plyp-d3zero'   : build_b2plypd3zero_superfunctional,
         'b2plyp-d3bj'     : build_b2plypd3bj_superfunctional,
-        'wb97x-2(tqz)'    : build_wb97x_2tqz_superfunctional,
-        'wb97x-2(lp)'     : build_wb97x_2lp_superfunctional,
+        #'wb97x-2(tqz)'    : build_wb97x_2tqz_superfunctional,  # removed 26 Feb 2014 pending better handling of SS/OS DH coeff
+        #'wb97x-2(lp)'     : build_wb97x_2lp_superfunctional,  # removed 26 Feb 2014 pending better handling of SS/OS DH coeff
         'pbe0-2'          : build_pbe0_2_superfunctional,
-        'dsd-blyp'        : build_dsd_blyp_superfunctional,  # -D variants still need to be added
-        'dsd-pbep86'      : build_dsd_pbep86_superfunctional,
-        'dsd-pbepbe'      : build_dsd_pbepbe_superfunctional,
+        #'dsd-blyp'        : build_dsd_blyp_superfunctional,  # -D variants still need to be added  # removed 26 Feb 2014 pending better handling of SS/OS DH coeff
+        #'dsd-pbep86'      : build_dsd_pbep86_superfunctional,  # removed 26 Feb 2014 pending better handling of SS/OS DH coeff
+        #'dsd-pbepbe'      : build_dsd_pbepbe_superfunctional,  # removed 26 Feb 2014 pending better handling of SS/OS DH coeff
+        'pbea_c'          : build_primitive_superfunctional,
+        'pw92a_c'         : build_primitive_superfunctional,
+        'wpbe_c'          : build_wpbe_c_superfunctional,
+        'wpw92_c'         : build_wpw92_c_superfunctional,
+        'wpbe2'           : build_wpbe2_superfunctional,
     }
 
 # Insert -D/-D2/-D3 aliases into superfunctionals dict
