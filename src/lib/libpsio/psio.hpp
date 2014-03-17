@@ -44,6 +44,8 @@ private:
     std::map<std::string, bool> files_;
     /// Set of files to retain after psiclean
     std::set<std::string> retained_files_;
+
+    std::string pid_;
 public:
     /// Default constructor (does nothing)
     PSIOManager();
@@ -77,15 +79,16 @@ public:
             */
     void set_specific_retention(int fileno, bool retain);
     /**
-            * Get the path for a specific file number
-            * \param fileno PSI4 file number
-            * \return the appropriate full path
-            */
-    bool get_specific_retention(int fileno);
-    /**
             * Inquire whether a specific file number is set to be retained
             * \param fileno PSI4 file number
             * \return keeping or not?
+            */
+    bool get_specific_retention(int fileno);
+
+    /**
+            * Get the path for a specific file number
+            * \param fileno PSI4 file number
+            * \return the appropriate full path
             */
     std::string get_file_path(int fileno);
 
@@ -306,6 +309,9 @@ public:
 
     /// grab the filename of unit and strdup into name.
     void get_filename(unsigned int unit, char **name, bool remove_namespace = false);
+
+    /// delete a specific TOC entry (only deletes entry, not data)
+    bool tocdel(unsigned int unit, const char *key);
 
 private:
     /// vector of units

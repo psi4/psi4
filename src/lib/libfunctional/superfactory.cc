@@ -59,6 +59,12 @@ boost::shared_ptr<SuperFunctional> SuperFunctional::current(Options& options, in
         if (options["DFT_ALPHA"].has_changed()) {
             super->set_x_alpha(options.get_double("DFT_ALPHA"));
         }
+        if (options["DFT_OMEGA_C"].has_changed() && super->is_c_lrc()) {
+            super->set_c_omega(options.get_double("DFT_OMEGA_C"));
+        }
+        if (options["DFT_ALPHA_C"].has_changed()) {
+            super->set_c_alpha(options.get_double("DFT_ALPHA_C"));
+        }
     }
 
     if (npoints != super->max_points())

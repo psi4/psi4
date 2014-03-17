@@ -41,14 +41,20 @@ psio_tocentry*PSIO::tocscan(unsigned int unit, const char *key) {
   if ((strlen(key)+1) > PSIO_KEYLEN)
     psio_error(unit, PSIO_ERROR_KEYLEN);
 
+  bool already_open = open_check(unit); 
+  if(!already_open) open(unit, PSIO_OPEN_OLD);
+
   this_entry = psio_unit[unit].toc;
 
   while (this_entry != NULL) {
-    if (!strcmp(this_entry->key, key))
+    if (!strcmp(this_entry->key, key)) {
+      if(!already_open) close(unit, 1); // keep
       return (this_entry);
+    }
     this_entry = this_entry->next;
   }
 
+  if(!already_open) close(unit, 1); // keep
   return (NULL);
 }
 
@@ -72,14 +78,20 @@ bool PSIO::tocentry_exists(unsigned int unit, const char *key) {
   if ((strlen(key)+1) > PSIO_KEYLEN)
     psio_error(unit, PSIO_ERROR_KEYLEN);
 
+  bool already_open = open_check(unit); 
+  if(!already_open) open(unit, PSIO_OPEN_OLD);
+
   this_entry = psio_unit[unit].toc;
 
   while (this_entry != NULL) {
-    if (!strcmp(this_entry->key, key))
+    if (!strcmp(this_entry->key, key)) {
+      if(!already_open) close(unit, 1); // keep
       return (true);
+    }
     this_entry = this_entry->next;
   }
 
+  if(!already_open) close(unit, 1); // keep
   return (false);
 }
 

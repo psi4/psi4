@@ -716,6 +716,17 @@ PsiReturnType mrcc_generate_input(Options& options, const boost::python::dict& l
     if (pertcc && options.get_str("REFERENCE") == "ROHF")
         throw PSIEXCEPTION("Perturbative methods not implemented for ROHF references.");
 
+    if (!_default_psio_lib_->exists(PSIF_SO_TEI)) {
+        fprintf(outfile, "\n");
+        fprintf(outfile, "  WARNING: Integrals were not found on disk. Computing them now.\n");
+        fprintf(outfile, "           If you modified any of the integrals those modifications\n");
+        fprintf(outfile, "           will be lost. If you need them file an issue on GitHub:\n");
+        fprintf(outfile, "               https://github.com/psi4/psi4public/issues\n\n");
+
+        // Integrals do not exist on disk. Compute them.
+        MintsHelper helper;
+        helper.integrals();
+    }
     // Create integral transformation object
     IntegralTransform ints(wave, spaces, restricted ? IntegralTransform::Restricted : IntegralTransform::Unrestricted);
 

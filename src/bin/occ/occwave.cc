@@ -278,8 +278,14 @@ else {
 
     ints->set_print(0);
     ints->set_dpd_id(0);
-    ints->set_keep_iwl_so_ints(true);
-    ints->set_keep_dpd_so_ints(true);
+    if (orb_opt_ == "TRUE") {
+        ints->set_keep_iwl_so_ints(true);
+        ints->set_keep_dpd_so_ints(true);
+    }
+    else {
+        ints->set_keep_iwl_so_ints(false);
+        ints->set_keep_dpd_so_ints(false);
+    }
     ints->initialize();
     dpd_set_default(ints->get_dpd_id());
 
@@ -345,8 +351,14 @@ else if (reference_ == "UNRESTRICTED") {
 
     ints->set_print(0);
     ints->set_dpd_id(0);
-    ints->set_keep_iwl_so_ints(true);
-    ints->set_keep_dpd_so_ints(true);
+    if (orb_opt_ == "TRUE") {
+        ints->set_keep_iwl_so_ints(true);
+        ints->set_keep_dpd_so_ints(true);
+    }
+    else {
+        ints->set_keep_iwl_so_ints(false);
+        ints->set_keep_dpd_so_ints(false);
+    }
     ints->initialize();
     dpd_set_default(ints->get_dpd_id());
 
@@ -369,7 +381,7 @@ void OCCWave::title()
    else if (wfn_type_ == "OMP2.5" && orb_opt_ == "TRUE") fprintf(outfile,"                       OMP2.5 (OO-MP2.5)   \n");
    else if (wfn_type_ == "OMP2.5" && orb_opt_ == "FALSE") fprintf(outfile,"                       MP2.5  \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ;
-   fprintf(outfile,"              Latest Revision Jan 23, 2014.\n") ;
+   fprintf(outfile,"              Latest Revision Feb 1, 2014.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");

@@ -406,7 +406,9 @@ public:
     void print_out_of_planes() const;
 
     /// Save an XYZ file
-    void save_xyz(const std::string & filename, bool save_ghosts = true) const;
+    void save_xyz_file(const std::string & filename, bool save_ghosts = true) const;
+    /// Save an XYZ file to a string
+    std::string save_string_xyz_file() const;
 
     /// Save an XYZ string
     std::string save_string_xyz() const;
@@ -490,7 +492,7 @@ public:
     /**
      * Regenerates a input file molecule specification string
      * from the current state of the Molecule. Contains Cartesian
-     * geometry info, fragmentation, charges and multiplicities, 
+     * geometry info, fragmentation, charges and multiplicities,
      * and any frame restriction.
      */
     std::string create_psi4_string_from_molecule() const;
