@@ -4,6 +4,13 @@ spherical
 !
 ! Basis sets obtained from http://www.cosmologic.de/basis-sets/basissets.php  03/17/14
 !
+! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
+!
+! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
+!
+! F. Weigend; Phys. Chem. Chem. Phys. 8, 1057(2006).
+!
+!
 ! H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca Sc Ti V Cr Mn Fe Co Ni Cu Zn Ga Ge As Se Br Kr:
 ! F. Weigend and R. Ahlrichs, Phys. Chem. Chem. Phys., Balanced basis sets of split valence, triple 
 !    zeta valence and quadruple zeta valence quality for H to Rn: Design and assessment of accuracy 
@@ -29,7 +36,6 @@ P  2  1.00
         0.5358730        1.0
 D  1  1.00
         2.2165124        0.0033116
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 He    0
 S  3  1.00
@@ -45,7 +51,6 @@ P  2  1.00
         1.0              1.0
 D  1  1.00
         4.0              1.0         
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 Li    0
 S  7  1.00
@@ -87,7 +92,6 @@ F  2  1.00
         0.1790687        0.0006468
 G  1  1.00
         1.0460130       -0.0001971
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 Be    0
 S  7  1.00
@@ -129,7 +133,6 @@ F  2  1.00
         0.9215384        0.0035407
 G  1  1.00
         1.3893341       -0.0006334
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 B    0
 S  7  1.00
@@ -171,7 +174,6 @@ F  2  1.00
         0.4010000        0.0036145
 G  1  1.00
         0.6514300       -0.0012389
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 C    0
 S  7  1.00
@@ -213,7 +215,6 @@ F  2  1.00
         0.5997536        0.0069903
 G  1  1.00
         1.0024600       -0.0022192
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 N    0
 S  7  1.00
@@ -255,7 +256,6 @@ F  2  1.00
         0.8446137        0.0054427
 G  1  1.00
         1.4037700       -0.0023051
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 O    0
 S  7  1.00
@@ -297,7 +297,6 @@ F  2  1.00
         0.7345613        1.0
 G  1  1.00
         1.3931000       -0.0016533
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 F    0
 S  7  1.00
@@ -339,7 +338,6 @@ F  2  1.00
         0.9155962        1.0
 G  1  1.00
         1.6097500       -0.0005411
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 Ne    0
 S  7  1.00
@@ -381,7 +379,6 @@ F  2  1.00
         1.14             1.0
 G  1  1.00
         2.00             1.0         
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 Na    0
 S  7  1.00
@@ -429,7 +426,6 @@ F  2  1.00
         0.0980271       -0.0004706
 G  1  1.00
         0.0701600        0.0001161
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 Mg    0
 S  7  1.00
@@ -477,7 +473,6 @@ F  2  1.00
         0.4740262        0.0022316
 G  1  1.00
         0.8087604       -0.0004005
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 Al    0
 S  7  1.00
@@ -524,7 +519,6 @@ F  2  1.00
         0.1976728        0.0039371
 G  1  1.00
         0.3262000       -0.0020989
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 Si    0
 S  7  1.00
@@ -571,7 +565,6 @@ F  2  1.00
         0.1988529        0.0020248
 G  1  1.00
         0.4014900       -0.0016684
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 P    0
 S  7  1.00
@@ -618,7 +611,6 @@ F  2  1.00
         0.2959414        0.0038742
 G  1  1.00
         0.5510844       -0.0032181
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 S    0
 S  7  1.00
@@ -665,7 +657,6 @@ F  2  1.00
         0.4161474        1.0
 G  1  1.00
         0.6707100       -0.0044361
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 Cl    0
 S  7  1.00
@@ -712,7 +703,6 @@ F  2  1.00
         0.4700000        1.0         
 G  1  1.00
         0.7521100       -0.0026699
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 Ar    0
 S  7  1.00
@@ -759,7 +749,6 @@ F  2  1.00
         0.54             1.0
 G  1  1.00
         0.87             1.0      
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 K    0
 S  12  1.00
@@ -813,7 +802,6 @@ F  3  1.00
         0.1981564        0.0021994
 G  1  1.00
         0.2814606       -0.0007654
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 Ca    0
 S  12  1.00
@@ -867,7 +855,6 @@ F  3  1.00
         0.2117121        0.0021253
 G  1  1.00
         0.9854875       -0.0019534
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 Sc    0
 S  12  1.00
@@ -928,7 +915,6 @@ G  1  1.00
         1.7246112        0.0352184
 G  1  1.00
         0.5581653        0.0120819
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 Ti    0
 S  12  1.00
@@ -989,7 +975,6 @@ G  1  1.00
         2.1773896       -0.0829719
 G  1  1.00
         0.6876369       -0.0250650
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 V    0
 S  12  1.00
@@ -1050,7 +1035,6 @@ G  1  1.00
         2.7493872        0.0411332
 G  1  1.00
         0.8775089        0.0133622
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 Cr    0
 S  12  1.00
@@ -1111,7 +1095,6 @@ G  1  1.00
         4.4448953        0.0312836
 G  1  1.00
         1.6427198        0.0145788
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 Mn    0
 S  12  1.00
@@ -1172,7 +1155,6 @@ G  1  1.00
         1.4312160       -0.0012821
 G  1  1.00
         0.3465192        0.0000505
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 Fe    0
 S  12  1.00
@@ -1233,7 +1215,6 @@ G  1  1.00
         3.6312678       -0.0560530
 G  1  1.00
         1.0943052       -0.0150572
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 Co    0
 S  12  1.00
@@ -1294,7 +1275,6 @@ G  1  1.00
         6.0833764        0.0994221
 G  1  1.00
         2.0211729        0.0493786
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 Ni    0
 S  12  1.00
@@ -1355,7 +1335,6 @@ G  1  1.00
         5.1321451        0.0600436
 G  1  1.00
         1.6619205        0.0201898
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 Cu    0
 S  12  1.00
@@ -1416,7 +1395,6 @@ G  1  1.00
         4.2631148        0.0047914
 G  1  1.00
         1.1926492       -0.0006660
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 Zn    0
 S  12  1.00
@@ -1477,7 +1455,6 @@ G  1  1.00
         3.3877103        0.0005860
 G  1  1.00
         0.8352674       -0.0004519
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 Ga    0
 S  12  1.00
@@ -1531,7 +1508,6 @@ F  1  1.00
         0.1257500        0.0008062
 G  1  1.00
         0.9825567       -0.0007256
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 Ge    0
 S  12  1.00
@@ -1585,7 +1561,6 @@ F  1  1.00
         0.2019000        0.0012003
 G  1  1.00
         0.8994605       -0.0024009
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 As    0
 S  12  1.00
@@ -1639,7 +1614,6 @@ F  1  1.00
         0.3262074        0.0025260
 G  1  1.00
         0.8920726       -0.0029234
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 Se    0
 S  12  1.00
@@ -1693,7 +1667,6 @@ F  1  1.00
         0.2355400        0.0016419
 G  1  1.00
         0.9616190       -0.0038648
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 Br    0
 S  12  1.00
@@ -1747,7 +1720,6 @@ F  1  1.00
         0.2186427        0.0004936
 G  1  1.00
         1.1078575       -0.0027251
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 Kr    0
 S  12  1.00
@@ -1801,7 +1773,6 @@ F  1  1.00
         0.25             1.0      
 G  1  1.00
         1.27             1.0      
-! K. Eichkorn, O. Treutler, H. Öhm, M. Häser, R. Ahlrichs; Chem. Phys. Lett. 240, 283 (1995).
 ****
 Rb    0
 S  4  1.00
@@ -1847,7 +1818,6 @@ F  3  1.00
         0.1184513        0.0017392
 G  1  1.00
         0.1808175       -0.0005805
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 Sr    0
 S  4  1.00
@@ -1893,7 +1863,6 @@ F  3  1.00
         0.1173184        0.0014617
 G  1  1.00
         0.5831166       -0.0019680
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 Y    0
 S  4  1.00
@@ -1946,7 +1915,6 @@ G  1  1.00
         0.3816201       -0.0034052
 G  1  1.00
         0.1117575       -0.0001238
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 Zr    0
 S  4  1.00
@@ -1999,7 +1967,6 @@ G  1  1.00
         0.6942669        0.0321446
 G  1  1.00
         0.2810797        0.0088093
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 Nb    0
 S  4  1.00
@@ -2052,7 +2019,6 @@ G  1  1.00
         0.6678930        0.0089653
 G  1  1.00
         0.2446494        0.0024517
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 Mo    0
 S  4  1.00
@@ -2105,7 +2071,6 @@ G  1  1.00
         0.7511470        0.0014579
 G  1  1.00
         0.2751454        0.0008835
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 Tc    0
 S  4  1.00
@@ -2158,7 +2123,6 @@ G  1  1.00
         0.8126598        0.0129781
 G  1  1.00
         0.2951546        0.0029686
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 Ru    0
 S  4  1.00
@@ -2211,7 +2175,6 @@ G  1  1.00
         0.9241443        0.0347206
 G  1  1.00
         0.3385144        0.0042387
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 Rh    0
 S  4  1.00
@@ -2264,7 +2227,6 @@ G  1  1.00
         2.4807901        0.0572796
 G  1  1.00
         0.8654422        0.0167799
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 Pd    0
 S  4  1.00
@@ -2317,7 +2279,6 @@ G  1  1.00
         2.7664349        0.0340131
 G  1  1.00
         1.0133462        0.0097463
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 Ag    0
 S  4  1.00
@@ -2370,7 +2331,6 @@ G  1  1.00
         2.0620255        0.0033503
 G  1  1.00
         0.9729182       -0.0008695
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 Cd    0
 S  4  1.00
@@ -2423,7 +2383,6 @@ G  1  1.00
         2.0610067        0.0012980
 G  1  1.00
         0.7189977       -0.0009113
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 In    0
 S  4  1.00
@@ -2469,7 +2428,6 @@ F  1  1.00
         0.1039500        0.0005247
 G  1  1.00
         0.6332593       -0.0007994
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 Sn    0
 S  4  1.00
@@ -2515,7 +2473,6 @@ F  1  1.00
         0.2536500        0.0025646
 G  1  1.00
         0.5747157       -0.0024205
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 Sb    0
 S  4  1.00
@@ -2561,7 +2518,6 @@ F  1  1.00
         0.5029600        0.0087065
 G  1  1.00
         0.7040401       -0.0033090
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 Te    0
 S  4  1.00
@@ -2607,7 +2563,6 @@ F  1  1.00
         0.3367900        0.0038150
 G  1  1.00
         0.7345132       -0.0041990
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 I    0
 S  4  1.00
@@ -2653,7 +2608,6 @@ F  1  1.00
         0.3166600        0.0033025
 G  1  1.00
         0.9097867       -0.0028599
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 Xe    0
 S  4  1.00
@@ -2699,7 +2653,6 @@ F  1  1.00
         0.36             1.0       
 G  1  1.00
         1.03             1.0       
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 Cs    0
 S  4  1.00
@@ -2745,7 +2698,6 @@ F  3  1.00
         0.0867322        0.0007464
 G  1  1.00
         0.2855416       -0.0009947
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 Ba    0
 S  4  1.00
@@ -2791,7 +2743,6 @@ F  3  1.00
         0.4226647        0.0000323
 G  1  1.00
         0.5296055       -0.0028225
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 La    0
 S  4  1.00
@@ -2844,7 +2795,6 @@ G  1  1.00
         0.5999926        0.0123505
 G  1  1.00
         0.2197775        0.0046045
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 Hf    0
 S  4  1.00
@@ -2897,7 +2847,6 @@ G  1  1.00
         0.6169406       -0.0141241
 G  1  1.00
         0.2497735       -0.0025013
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 Ta    0
 S  4  1.00
@@ -2950,7 +2899,6 @@ G  1  1.00
         0.5603502        0.0076635
 G  1  1.00
         0.2110499        0.0021677
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 W    0
 S  4  1.00
@@ -3003,7 +2951,6 @@ G  1  1.00
         0.6692890        0.0028665
 G  1  1.00
         0.2671445        0.0018391
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 Re    0
 S  4  1.00
@@ -3056,7 +3003,6 @@ G  1  1.00
         0.8348138       -0.0021146
 G  1  1.00
         0.3813500        0.0005980
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 Os    0
 S  4  1.00
@@ -3109,7 +3055,6 @@ G  1  1.00
         0.7411062        0.0285502
 G  1  1.00
         0.2850409        0.0025849
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 Ir    0
 S  4  1.00
@@ -3162,7 +3107,6 @@ G  1  1.00
         0.7782394        0.0157387
 G  1  1.00
         0.2993228        0.0022449
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 Pt    0
 S  4  1.00
@@ -3215,7 +3159,6 @@ G  1  1.00
         0.8343779        0.0085873
 G  1  1.00
         0.3209146        0.0028695
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 Au    0
 S  4  1.00
@@ -3268,7 +3211,6 @@ G  1  1.00
         0.8956940        0.0008294
 G  1  1.00
         0.3442127        0.0002724
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 Hg    0
 S  4  1.00
@@ -3321,7 +3263,6 @@ G  1  1.00
         1.9992876        0.0033125
 G  1  1.00
         0.7792167       -0.0013159
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 Tl    0
 S  4  1.00
@@ -3367,7 +3308,6 @@ F  1  1.00
         0.1747600        0.0013458
 G  1  1.00
         0.5623024       -0.0007528
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 Pb    0
 S  4  1.00
@@ -3413,7 +3353,6 @@ F  1  1.00
         0.2584277        0.0032450
 G  1  1.00
         0.5880719       -0.0022264
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 Bi    0
 S  4  1.00
@@ -3459,7 +3398,6 @@ F  1  1.00
         0.3321300        0.0042284
 G  1  1.00
         0.6087002       -0.0028321
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 Po    0
 S  4  1.00
@@ -3505,7 +3443,6 @@ F  1  1.00
         0.4345900        0.0069739
 G  1  1.00
         0.6841917       -0.0034581
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 At    0
 S  4  1.00
@@ -3551,7 +3488,6 @@ F  1  1.00
         0.3770300        0.0059035
 G  1  1.00
         0.8223522       -0.0028128
-! K. Eichkorn, F. Weigend, O. Treutler, R. Ahlrichs; Theor. Chem. Acc. 97, 119 (1997).
 ****
 Rn    0
 S  4  1.00
@@ -3597,7 +3533,6 @@ F  1  1.00
  0.37703000000       1.0000000000
 G  1  1.00
  0.82235220000       1.0000000000
-! F. Weigend; Phys. Chem. Chem. Phys. 8, 1057(2006).
 ****
 
 

@@ -3,6 +3,9 @@ spherical
 !
 ! Basis sets obtained from http://www.cosmologic.de/basis-sets/basissets.php 03/17/14
 !
+! A. Hellweg, D. Rappoport, to be published.
+!
+!
 ! H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca Sc Ti V Cr Mn Fe Co Ni Cu Zn Ga Ge As Se Br Kr:
 ! F. Weigend and R. Ahlrichs, Phys. Chem. Chem. Phys., Balanced basis sets of split valence, triple
 ! zeta valence and quadruple zeta valence quality for H to Rn: Design and assessment of accuracy
@@ -37,7 +40,6 @@ P  1  1.00
  0.253726  1.0
 D  1  1.00
  0.299998  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 He    0
 S  2  1.00
@@ -58,7 +60,6 @@ P  1  1.00
  0.561558  1.0
 D  1  1.00
  3.96264   1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Li    0
 S  5  1.00
@@ -95,7 +96,6 @@ P  1  1.00
  0.0441184  1.0
 D  1  1.00
  0.0503426  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Be    0
 S  5  1.00
@@ -132,7 +132,6 @@ P  1  1.00
  0.0555837  1.0
 D  1  1.00
  0.0509244  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 B    0
 S  3  1.00
@@ -181,7 +180,6 @@ D  1  1.00
  0.0670086  1.0
 F  1  1.00
  0.18943   1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 C    0
 S  3  1.00
@@ -230,7 +228,6 @@ D  1  1.00
  0.101879  1.0
 F  1  1.00
  0.301853  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 N    0
 S  3  1.00
@@ -279,7 +276,6 @@ D  1  1.00
  0.17172   1.0
 F  1  1.00
  0.432075  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 O    0
 S  3  1.00
@@ -328,7 +324,6 @@ D  1  1.00
  0.199384  1.0
 F  1  1.00
  0.417082  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 F    0
 S  3  1.00
@@ -377,7 +372,6 @@ D  1  1.00
  0.263061  1.0
 F  1  1.00
  0.533044  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Ne    0
 S  3  1.00
@@ -426,7 +420,6 @@ D  1  1.00
  0.42459   1.0
 F  1  1.00
  0.74145   1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Na    0
 S  2  1.00
@@ -477,7 +470,6 @@ P  1  1.00
  0.049378  1.0
 D  1  1.00
  0.0824339  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Mg    0
 S  2  1.00
@@ -526,7 +518,6 @@ P  1  1.00
  0.058811  1.0
 D  1  1.00
  0.0489305  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Al    0
 S  3  1.00
@@ -584,7 +575,6 @@ D  1  1.00
  0.123918  1.0
 F  1  1.00
  0.1305    1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Si    0
 S  3  1.00
@@ -642,7 +632,6 @@ D  1  1.00
  0.0705389  1.0
 F  1  1.00
  0.173124  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 P    0
 S  3  1.00
@@ -700,7 +689,6 @@ D  1  1.00
  0.109402  1.0
 F  1  1.00
  0.239521  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 S    0
 S  3  1.00
@@ -758,7 +746,6 @@ D  1  1.00
  0.117058  1.0
 F  1  1.00
  0.23718   1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Cl    0
 S  3  1.00
@@ -816,7 +803,6 @@ D  1  1.00
  0.15252   1.0
 F  1  1.00
  0.295064  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Ar    0
 S  3  1.00
@@ -874,7 +860,6 @@ D  1  1.00
  0.209825  1.0
 F  1  1.00
  0.37158   1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 K    0
 S  4  1.00
@@ -928,7 +913,6 @@ P  1  1.00
  0.0278053  1.0
 D  1  1.00
  0.112388  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Ca    0
 S  4  1.00
@@ -988,7 +972,6 @@ P  1  1.00
  0.0386742  1.0
 D  1  1.00
  0.0336867  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Sc    0
 S  1  1.00
@@ -1063,7 +1046,6 @@ P  1  1.00
  0.0502847  1.0
 D  1  1.00
  0.0126832  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Ti    0
 S  1  1.00
@@ -1138,7 +1120,6 @@ P  1  1.00
  0.0456727  1.0
 D  1  1.00
  0.0664243  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 V    0
 S  1  1.00
@@ -1213,7 +1194,6 @@ P  1  1.00
  0.040292  1.0
 D  1  1.00
  0.166341  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Cr    0
 S  1  1.00
@@ -1288,7 +1268,6 @@ P  1  1.00
  0.0613279  1.0
 D  1  1.00
  0.132055  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Mn    0
 S  1  1.00
@@ -1363,7 +1342,6 @@ P  1  1.00
  0.0415982  1.0
 D  1  1.00
  0.352793  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Fe    0
 S  1  1.00
@@ -1438,7 +1416,6 @@ P  1  1.00
  0.0667408  1.0
 D  1  1.00
  0.204043  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Co    0
 S  1  1.00
@@ -1513,7 +1490,6 @@ P  1  1.00
  0.0749191  1.0
 D  1  1.00
  0.228262  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Ni    0
 S  1  1.00
@@ -1588,7 +1564,6 @@ P  1  1.00
  0.0564447  1.0
 D  1  1.00
  0.154658  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Cu    0
 S  1  1.00
@@ -1663,7 +1638,6 @@ P  1  1.00
  0.0747792  1.0
 D  1  1.00
  0.143497  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Zn    0
 S  1  1.00
@@ -1738,7 +1712,6 @@ P  1  1.00
  0.0656557  1.0
 D  1  1.00
  0.491624  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Ga    0
 S  1  1.00
@@ -1819,7 +1792,6 @@ D  1  1.00
  0.0941722  1.0
 F  1  1.00
  0.149625  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Ge    0
 S  1  1.00
@@ -1900,7 +1872,6 @@ D  1  1.00
  0.151341  1.0
 F  1  1.00
  0.168261  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 As    0
 S  1  1.00
@@ -1981,7 +1952,6 @@ D  1  1.00
  0.101293  1.0
 F  1  1.00
  0.188998  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Se    0
 S  1  1.00
@@ -2062,7 +2032,6 @@ D  1  1.00
  0.0909385  1.0
 F  1  1.00
  0.181298  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Br    0
 S  1  1.00
@@ -2143,7 +2112,6 @@ D  1  1.00
  0.107182  1.0
 F  1  1.00
  0.218288  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Kr    0
 S  1  1.00
@@ -2224,7 +2192,6 @@ D  1  1.00
  0.168498  1.0
 F  1  1.00
  0.275029  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Rb    0
 S  1  1.00
@@ -2281,7 +2248,6 @@ P  1  1.00
  0.0174023  1.0
 D  1  1.00
  0.0426656  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Sr    0
 S  1  1.00
@@ -2336,7 +2302,6 @@ P  1  1.00
  0.0394667  1.0
 D  1  1.00
  0.0145231  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Y    0
 S  1  1.00
@@ -2405,7 +2370,6 @@ P  1  1.00
  0.050885  1.0
 D  1  1.00
  0.0559054  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Zr    0
 S  1  1.00
@@ -2474,7 +2438,6 @@ P  1  1.00
  0.0253964  1.0
 D  1  1.00
  0.0276656  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Nb    0
 S  1  1.00
@@ -2543,7 +2506,6 @@ P  1  1.00
  0.0679877  1.0
 D  1  1.00
  0.0770279  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Mo    0
 S  1  1.00
@@ -2612,7 +2574,6 @@ P  1  1.00
  0.0492771  1.0
 D  1  1.00
  0.0707458  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Tc    0
 S  1  1.00
@@ -2681,7 +2642,6 @@ P  1  1.00
  0.0468174  1.0
 D  1  1.00
  0.0926132  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Ru    0
 S  1  1.00
@@ -2750,7 +2710,6 @@ P  1  1.00
  0.0727819  1.0
 D  1  1.00
  0.0804722  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Rh    0
 S  1  1.00
@@ -2819,7 +2778,6 @@ P  1  1.00
  0.0187396  1.0
 D  1  1.00
  0.0264907  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Pd    0
 S  1  1.00
@@ -2888,7 +2846,6 @@ P  1  1.00
  0.0646297  1.0
 D  1  1.00
  0.080007  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Ag    0
 S  1  1.00
@@ -2957,7 +2914,6 @@ P  1  1.00
  0.104963  1.0
 D  1  1.00
  0.0900421  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Cd    0
 S  1  1.00
@@ -3026,7 +2982,6 @@ P  1  1.00
  0.0580263  1.0
 D  1  1.00
  0.107307  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 In    0
 S  1  1.00
@@ -3097,7 +3052,6 @@ D  1  1.00
  0.05286   1.0
 F  1  1.00
  0.0992279  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Sn    0
 S  1  1.00
@@ -3168,7 +3122,6 @@ D  1  1.00
  0.0945482  1.0
 F  1  1.00
  0.13206   1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Sb    0
 S  1  1.00
@@ -3239,7 +3192,6 @@ D  1  1.00
  0.0959369  1.0
 F  1  1.00
  0.158079  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Te    0
 S  1  1.00
@@ -3310,7 +3262,6 @@ D  1  1.00
  0.0697161  1.0
 F  1  1.00
  0.147117  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 I    0
 S  1  1.00
@@ -3381,7 +3332,6 @@ D  1  1.00
  0.0836522  1.0
 F  1  1.00
  0.178558  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Xe    0
 S  1  1.00
@@ -3468,7 +3418,6 @@ D  1  1.00
  0.103939  1.0
 F  1  1.00
  0.166842  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Cs    0
 S  1  1.00
@@ -3523,7 +3472,6 @@ P  1  1.00
  0.017254  1.0
 D  1  1.00
  0.0482983  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Ba    0
 S  1  1.00
@@ -3586,7 +3534,6 @@ P  1  1.00
  0.0163398  1.0
 D  1  1.00
  0.0128254  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 La    0
 S  1  1.00
@@ -3659,7 +3606,6 @@ P  1  1.00
  0.00555665  1.0
 D  1  1.00
  0.0449824  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Hf    0
 S  1  1.00
@@ -3732,7 +3678,6 @@ P  1  1.00
  0.0104921  1.0
 D  1  1.00
  0.0638687  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Ta    0
 S  1  1.00
@@ -3805,7 +3750,6 @@ P  1  1.00
  0.0257528  1.0
 D  1  1.00
  0.0338398  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 W    0
 S  1  1.00
@@ -3878,7 +3822,6 @@ P  1  1.00
  0.0163079  1.0
 D  1  1.00
  0.0495371  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Re    0
 S  1  1.00
@@ -3951,7 +3894,6 @@ P  1  1.00
  0.0482429  1.0
 D  1  1.00
  0.0736123  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Os    0
 S  1  1.00
@@ -4024,7 +3966,6 @@ P  1  1.00
  0.0657989  1.0
 D  1  1.00
  0.0750843  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Ir    0
 S  1  1.00
@@ -4097,7 +4038,6 @@ P  1  1.00
  0.0418216  1.0
 D  1  1.00
  0.05008   1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Pt    0
 S  1  1.00
@@ -4170,7 +4110,6 @@ P  1  1.00
  0.0719483  1.0
 D  1  1.00
  0.00503682  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Au    0
 S  1  1.00
@@ -4243,7 +4182,6 @@ P  1  1.00
  0.0810429  1.0
 D  1  1.00
  0.0704688  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Hg    0
 S  1  1.00
@@ -4316,7 +4254,6 @@ P  1  1.00
  0.0655491  1.0
 D  1  1.00
  0.121469  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Tl    0
 S  1  1.00
@@ -4389,7 +4326,6 @@ D  1  1.00
  0.0788166  1.0
 F  1  1.00
  0.0882879  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Pb    0
 S  1  1.00
@@ -4462,7 +4398,6 @@ D  1  1.00
  0.0876424  1.0
 F  1  1.00
  0.114803  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Bi    0
 S  1  1.00
@@ -4535,7 +4470,6 @@ D  1  1.00
  0.089581  1.0
 F  1  1.00
  0.141863  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Po    0
 S  1  1.00
@@ -4608,7 +4542,6 @@ D  1  1.00
  0.0660325  1.0
 F  1  1.00
  0.126668  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 At    0
 S  1  1.00
@@ -4681,7 +4614,6 @@ D  1  1.00
  0.0796596  1.0
 F  1  1.00
  0.147443  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 Rn    0
 S  1  1.00
@@ -4768,7 +4700,6 @@ D  1  1.00
  0.0968856  1.0
 F  1  1.00
  0.162725  1.0
-! A. Hellweg, D. Rappoport, to be published.
 ****
 
 
