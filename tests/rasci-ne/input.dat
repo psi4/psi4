@@ -66,7 +66,8 @@ refcorr  = refci - refscf     #TEST
 set globals {
   wfn detci
   d_convergence 10
-  frozen_docc     [2, 0, 0, 0, 0, 1, 1, 1]
+  docc            [2, 0, 0, 0, 0, 1, 1, 1]
+  frozen_docc     [1, 0, 0, 0, 0, 0, 0, 0]
   ras1            [1, 0, 0, 0, 0, 1, 1, 1]
   ras2            [1, 0, 0, 0, 0, 1, 1, 1]
   ras3            [5, 2, 2, 2, 1, 3, 3, 3]
