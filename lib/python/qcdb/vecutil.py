@@ -269,7 +269,7 @@ def zero(m, n):
 def show(matrix):
     """ Print out matrix"""
     for col in matrix:
-        print(col)
+        print col
 
 
 def mscale(matrix, d):
@@ -288,11 +288,17 @@ def mult(matrix1, matrix2):
 
     else:
         # Multiply if correct dimensions
-        new_matrix = zero(len(matrix1), len(matrix2[0]))
-        for i in range(len(matrix1)):
-            for j in range(len(matrix2[0])):
+        try:
+            new_matrix = zero(len(matrix1), len(matrix2[0]))
+            for i in range(len(matrix1)):
+                for j in range(len(matrix2[0])):
+                    for k in range(len(matrix2)):
+                        new_matrix[i][j] += matrix1[i][k] * matrix2[k][j]
+        except TypeError:
+            new_matrix = zero(len(matrix1), 1)
+            for i in range(len(matrix1)):
                 for k in range(len(matrix2)):
-                    new_matrix[i][j] += matrix1[i][k] * matrix2[k][j]
+                    new_matrix[i][0] += matrix1[i][k] * matrix2[k]
         return new_matrix
 
 
@@ -304,3 +310,15 @@ def transpose(matrix):
 
     tmat = [list(i) for i in zip(*matrix)]
     return tmat
+
+
+def matadd(matrix1, matrix2, fac1=1.0, fac2=1.0):
+    """Matrix addition"""
+    if (len(matrix1[0]) != len(matrix2[0])) or (len(matrix1) != len(matrix2)):
+        raise ValidationError('Matrices must be same dimension to add.')
+    new_matrix = zero(len(matrix1), len(matrix1[0]))
+    for i in range(len(matrix1)):
+        for j in range(len(matrix1[0])):
+            new_matrix[i][j] = fac1 * matrix1[i][j] + fac2 * matrix2[i][j]
+    return new_matrix
+
