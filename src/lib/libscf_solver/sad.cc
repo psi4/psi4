@@ -171,8 +171,9 @@ SharedMatrix SADGuess::form_D_AO()
     int tot_elec = 0;
 
     //Ground state high spin occupency array, atoms 0 to 36 (see Giffith's Quantum Mechanics, pp. 217)
-    const int reference_S[] = {0,1,0,1,0,1,2,3,2,1,0,1,0,1,2,3,2,1,0,1,0,1,2,3,6,5,4,3,2,1,0,1,2,3,2,1,0};
-    const int MAX_Z = 36;
+    //For 37 to 86, save for f-bloack: Atomic, Molecular, & Optical Physics Handbook, Ed. Gordon W. F. Drake, American Institute of Physics, Woodbury, New York, USA, 1996.
+    const int reference_S[] = {0,1,0,1,0,1,2,3,2,1,0,1,0,1,2,3,2,1,0,1,0,1,2,3,6,5,4,3,2,1,0,1,2,3,2,1,0,1,0,1,2,5,6,5,4,3,0,1,0,1,2,3,2,1,0,1,0,1,0,3,4,5,6,7,8,5,4,3,2,1,0,1,2,3,4,5,4,3,2,1,0,1,2,3,2,1,0};
+    const int MAX_Z = 86;
 
     if (print_>1)
         fprintf(outfile,"  Determining Atomic Occupations\n");
