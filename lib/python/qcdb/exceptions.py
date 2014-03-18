@@ -59,3 +59,14 @@ class IncompleteAtomError(QcdbException):
     def __init__(self, msg):
         QcdbException.__init__(self, msg)
         self.msg = msg
+
+
+class ParsingValidationError(QcdbException):
+    """Error called for problems with syntax from a QC output file. Prints
+    error message *msg* to standard output stream.
+
+    """
+    def __init__(self, msg):
+        QcdbException.__init__(self, msg)
+        self.msg = msg
+        print('\nQcdbException: %s\n\n' % (msg))
