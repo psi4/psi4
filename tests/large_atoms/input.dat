@@ -8,7 +8,7 @@ units bohr
 }
 
 set globals {
-  basis def2-QZVP
+  basis def2-sv_p_
   scf_type df
   DF_BASIS_SCF def2-sv_p_-jkfit
 }
@@ -26,7 +26,7 @@ units bohr
 }
 
 set globals {
-  basis def2-QZVP
+  basis def2-sv_p_
   scf_type df
   DF_BASIS_SCF def2-sv_p_-jkfit
 }
