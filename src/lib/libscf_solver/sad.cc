@@ -180,7 +180,7 @@ SharedMatrix SADGuess::form_D_AO()
     for (int A = 0; A<molecule_->natom(); A++) {
         int Z = molecule_->Z(A);
         if (Z>MAX_Z) {
-            throw std::domain_error(" Only Atoms up to 36 (Kr) are currently supported with SAD Guess");
+            throw std::domain_error(" Only Atoms up to 86 (Rn) are currently supported with SAD Guess");
         }
         nhigh[A] = reference_S[Z];
         nelec[A] = Z;
