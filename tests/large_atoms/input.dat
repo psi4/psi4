@@ -10,7 +10,7 @@ units bohr
 set globals {
   basis def2-QZVP
   scf_type df
-  DF_BASIS_SCF def2-QZVP-jkfit
+  DF_BASIS_SCF def2-sv_p_-jkfit
 }
 
 gradient('df-mp2')
@@ -28,7 +28,7 @@ units bohr
 set globals {
   basis def2-QZVP
   scf_type df
-  DF_BASIS_SCF def2-QZVP-jkfit
+  DF_BASIS_SCF def2-sv_p_-jkfit
 }
 
 gradient('scf')
@@ -110,7 +110,7 @@ units bohr
 }
 
 set globals {
-  basis def2-QZVPP
+  basis def2-svp
   scf_type pk
 }
 
@@ -127,7 +127,7 @@ units bohr
 }
 
 set globals {
-  basis def2-QZVPP
+  basis def2-svp
   scf_type pk
 }
 
