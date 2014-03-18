@@ -1490,14 +1490,14 @@ size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4)
     am2 = original_bs2_->shell(sh2).am();
     am3 = original_bs3_->shell(sh3).am();
     am4 = original_bs4_->shell(sh4).am();
-	temp = am1+am2+am3+am4;
-	
-	c1 = original_bs1_->shell(sh1).ncenter();
-	c2 = original_bs1_->shell(sh2).ncenter();
-	c3 = original_bs1_->shell(sh3).ncenter();
-	c4 = original_bs1_->shell(sh4).ncenter();
-	
-	// TODO: Check this!
+    temp = am1+am2+am3+am4;
+
+    //c1 = original_bs1_->shell(sh1).ncenter();
+    //c2 = original_bs1_->shell(sh2).ncenter();
+    //c3 = original_bs1_->shell(sh3).ncenter();
+    //c4 = original_bs1_->shell(sh4).ncenter();
+
+    // TODO: Check this!
 //	if (c1 == c2 && c1 == c3 && c1 && c4 && temp % 2 != 0) {
 //#ifdef MINTS_TIMER
 //		timer_off("reorder");
@@ -1505,7 +1505,7 @@ size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4)
 //#endif
 //		return 0;
 //	}
-	
+
     int n1, n2, n3, n4;
 
     if (force_cartesian_) {
@@ -1594,7 +1594,7 @@ size_t TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4)
 	size_t ncomputed = compute_quartet(s1, s2, s3, s4);
     if (ncomputed) {
 		// Only do the following if we did any work.
-		
+
     	// Permute integrals back, if needed
     	if (p12_ || p34_ || p13p24_) {
 #ifdef MINTS_TIMER
@@ -2010,7 +2010,7 @@ size_t TwoElectronInt::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4)
         // copy the integrals to the target_, 3n of them
         memcpy(target_, source_, ERI_1DER_NTYPE * size *sizeof(double));
     }
-	
+
 	return size;
 }
 
