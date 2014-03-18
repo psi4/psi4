@@ -1,6 +1,8 @@
 set(SRC
     blas.cc
     ccsd.cc
+    coupled_pair.cc
+    df_ccsd.cc
     diis.cc
     fnocc.cc
     frozen_natural_orbitals.cc
