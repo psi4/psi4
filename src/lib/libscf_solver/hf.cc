@@ -1339,8 +1339,17 @@ void HF::check_phases()
 
 void HF::dump_to_checkpoint()
 {
+    // avoid overwriting TOC entries if nmo has changed by writing
+    // an all-new checkpoint file every time!  (Will delete any
+    // post-HF stuff, hopefully don't need that in a future iteration)
+    // CDS 3/19/14
+    /*
     if(!psio_->open_check(PSIF_CHKPT))
         psio_->open(PSIF_CHKPT, PSIO_OPEN_OLD);
+    */
+    if(psio_->open_check(PSIF_CHKPT)) psio_->close(PSIF_CHKPT, 0);
+    psio_->open(PSIF_CHKPT, PSIO_OPEN_NEW);
+
     chkpt_->wt_nirreps(nirrep_);
     char **labels = molecule_->irrep_labels();
     chkpt_->wt_irr_labs(labels);
@@ -1358,7 +1367,7 @@ void HF::dump_to_checkpoint()
     chkpt_->wt_orbspi(nmopi_);
     chkpt_->wt_clsdpi(doccpi_);
     chkpt_->wt_openpi(soccpi_);
-    chkpt_->wt_phase_check(0);
+    chkpt_->wt_phase_check(1); // Jet's phase check supposed to always work?
     chkpt_->wt_sopi(nsopi_);
     // Figure out total number of frozen docc/uocc orbitals
     int nfzc = 0;
