@@ -46,6 +46,8 @@
 #include <psifiles.h>
 #include <libfock/jk.h>
 
+#include <libmints/gridprop.h>
+
 #include "hf.h"
 
 #include <psi4-dec.h>
@@ -1663,6 +1665,11 @@ double HF::compute_energy()
             if (WorldComm->me() == 0)
                 fprintf(outfile, "  ==> Properties <==\n\n");
             oe->compute();
+
+            // TODO: Hack to test CubicScalarGrid
+            boost::shared_ptr<CubicScalarGrid> grid(new CubicScalarGrid(basisset_));
+            grid->print_header();
+            grid->compute_density_cube(Da_, "Da");
 
 //  Comments so that autodoc utility will find these PSI variables
 //

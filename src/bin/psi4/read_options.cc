@@ -129,6 +129,17 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   block. -*/
   options.add_str_i("LITERAL_CFOUR", "");
 
+  /*- CubicScalarGrid basis cutoff. !expert -*/
+  options.add_double("CUBIC_BASIS_TOLERANCE", 1.0E-12);
+  /*- CubicScalarGrid maximum number of grid points per evaluation block. !expert -*/
+  options.add_int("CUBIC_BLOCK_MAX_POINTS",1000);
+  /*- CubicScalarGrid filepath -*/ 
+  options.add_str_i("CUBIC_GRID_FILEPATH", ".");
+  /*- CubicScalarGrid overages in bohr [O_X, O_Y, O_Z]. Defaults to 2.0 bohr each. -*/ 
+  options.add("CUBIC_GRID_OVERAGE", new ArrayType());
+  /*- CubicScalarGrid spacing in bohr [D_X, D_Y, D_Z]. Defaults to 0.2 bohr each. -*/ 
+  options.add("CUBIC_GRID_SPACING", new ArrayType());
+  
   // CDS-TODO: We should go through and check that the user hasn't done
   // something silly like specify frozen_docc in DETCI but not in TRANSQT.
   // That would create problems.  (This was formerly checked in DETCI
