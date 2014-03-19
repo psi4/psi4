@@ -298,6 +298,8 @@ void SADGuess::getUHFAtomicDensity(boost::shared_ptr<BasisSet> bas, int nelec, i
     int natom = mol->natom();
     int norbs = bas->nbf();
 
+    if (nalpha > norbs || nbeta > norbs) throw PSIEXCEPTION("Atom has more electrons than basis functions.");
+
     if (print_>1) {
         fprintf(outfile,"\n");
         bas->print(outfile);
