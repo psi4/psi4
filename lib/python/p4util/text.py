@@ -186,3 +186,25 @@ def print_stdout(stuff):
 def print_stderr(stuff):
     """Function to print *stuff* to standard error stream."""
     print(stuff, file=sys.stderr)
+
+def levenshtein(seq1, seq2):
+    """Function to compute the Levenshtein distance between two strings."""
+    oneago = None
+    thisrow = range(1, len(seq2) + 1) + [0]
+    for x in xrange(len(seq1)):
+        twoago, oneago, thisrow = oneago, thisrow, [0] * len(seq2) + [x + 1]
+        for y in xrange(len(seq2)):
+            delcost = oneago[y] + 1
+            addcost = thisrow[y - 1] + 1
+            subcost = oneago[y - 1] + (seq1[x] != seq2[y])
+            thisrow[y] = min(delcost, addcost, subcost)
+    return thisrow[len(seq2) - 1]
+
+def find_approximate_string_matches(seq1,options,max_distance):
+    """Function to compute approximate string matches from a list of options."""
+    matches = []
+    for seq2 in options:
+        distance = levenshtein(seq1,seq2)
+        if distance <= max_distance:
+            matches.append(seq2)
+    return matches
