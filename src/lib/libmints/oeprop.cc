@@ -856,17 +856,8 @@ bool from_string(T& t,
 
 void OEProp::compute()
 {
-    std::string name(wfn_->Da()->name());
 
-    // We want to strip out the Alpha part of the name, because we really use the full density
-    size_t pos = name.find("Alpha ");
-    if(pos != std::string::npos)
-        name.replace(pos, 6, "");
-    pos = name.find("alpha ");
-    if(pos != std::string::npos)
-        name.replace(pos, 6, "");
-
-    fprintf(outfile, "\nProperties computed using the %s density matrix\n", name.c_str());
+    fprintf(outfile, "\nProperties computed using the %s density matrix\n\n", title_.c_str());
 
     // Search for multipole strings, which are handled separately
     std::set<std::string>::const_iterator iter = tasks_.begin();
@@ -1127,6 +1118,7 @@ void OEProp::compute_dipole(bool transition)
 
     fflush(outfile);
 }
+
 void OEProp::compute_quadrupole(bool transition)
 {
     boost::shared_ptr<Molecule> mol = basisset_->molecule();
