@@ -125,6 +125,7 @@ BasisSet::BasisSet()
     xyz_[0] = 0.0;
     xyz_[1] = 0.0;
     xyz_[2] = 0.0;
+    name_ = "(Empty Basis Set)";
     shells_[0] = GaussianShell(0, nprimitive_, uoriginal_coefficients_, ucoefficients_, uerd_coefficients_,
                                uexponents_, GaussianType(0), 0, xyz_, 0);
 }
@@ -298,8 +299,12 @@ void BasisSet::print_detail(FILE* out) const
 
 const GaussianShell& BasisSet::shell(int si) const
 {
-    if (si < 0 || si > nshell())
+    if (si < 0 || si > nshell()) {
+        fprintf(stderr, "BasisSet::shell(si = %d), requested a shell out-of-bound.\n", si);
+        fprintf(stderr, "     Max shell size: %d\n", nshell());
+        fprintf(stderr, "     Name: %s\n", name().c_str());
         throw PSIEXCEPTION("BasisSet::shell: requested shell is out-of-bounds.");
+    }
     return shells_[si];
 }
 

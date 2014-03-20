@@ -570,7 +570,11 @@ def energy(name, **kwargs):
         procedures['energy'][lowername](lowername, **kwargs)
 
     except KeyError:
-        raise ValidationError('Energy method %s not available.' % (lowername))
+        alternatives = ""
+        alt_lowername = p4util.text.find_approximate_string_matches(lowername,procedures['energy'].keys(),2)
+        if len(alt_lowername) > 0:
+            alternatives = " Did you mean? %s" % (" ".join(alt_lowername))
+        raise ValidationError('Energy method %s not available.%s' % (lowername,alternatives))
 
     optstash.restore()
     return psi4.get_variable('CURRENT ENERGY')
@@ -617,7 +621,7 @@ def gradient(name, **kwargs):
         elif der1st.match(str(opt_dertype)):
             dertype = 1
         else:
-            raise ValidationError('Requested derivative level \'dertype\' %s not valid for helper function optimize.' % (opt_dertype))
+            raise ValidationError('Derivative level \'dertype\' %s not valid for helper function optimize.' % (opt_dertype))
 
     # 3. if the user provides a custom function THAT takes precendence
     if ('opt_func' in kwargs) or ('func' in kwargs):
@@ -635,8 +639,12 @@ def gradient(name, **kwargs):
     elif (dertype == 0) and not(func is energy):
         pass
     else:
-        raise ValidationError('Requested method \'name\' %s and derivative level \'dertype\' %s are not available.'
-            % (lowername, dertype))
+        alternatives = ""
+        alt_lowername = p4util.text.find_approximate_string_matches(lowername,procedures['gradient'].keys(),2)
+        if len(alt_lowername) > 0:
+            alternatives = " Did you mean? %s" % (" ".join(alt_lowername))
+        raise ValidationError('Derivative method \'name\' %s and derivative level \'dertype\' %s are not available.%s'
+            % (lowername, dertype,alternatives))
 
     # no analytic derivatives for scf_type cd
     if psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
@@ -919,7 +927,11 @@ def property(name, **kwargs):
         returnvalue = procedures['property'][lowername](lowername, **kwargs)
 
     except KeyError:
-        raise ValidationError('Property method %s not available.' % (lowername))
+        alternatives = ""
+        alt_lowername = p4util.text.find_approximate_string_matches(lowername,procedures['property'].keys(),2)
+        if len(alt_lowername) > 0:
+            alternatives = " Did you mean? %s" % (" ".join(alt_lowername))
+        raise ValidationError('Property method %s not available.%s' % (lowername,alternatives))
 
     optstash.restore()
     return returnvalue
@@ -1272,7 +1284,7 @@ def hessian(name, **kwargs):
         elif der2nd.match(str(freq_dertype)):
             dertype = 2
         else:
-            raise ValidationError('Requested derivative level \'dertype\' %s not valid for helper function frequency.' % (freq_dertype))
+            raise ValidationError('Derivative level \'dertype\' %s not valid for helper function frequency.' % (freq_dertype))
 
     # 3. if the user provides a custom function THAT takes precedence
     if ('freq_func' in kwargs) or ('func' in kwargs):
@@ -1294,8 +1306,13 @@ def hessian(name, **kwargs):
     elif (dertype == 0) and not(func is energy):
         pass
     else:
-        raise ValidationError('Requested method \'name\' %s and derivative level \'dertype\' %s are not available.'
-            % (lowername, dertype))
+        alternatives = ""
+        alt_lowername = p4util.text.find_approximate_string_matches(lowername,procedures['energy'].keys(),2)
+        if len(alt_lowername) > 0:
+            alternatives = " Did you mean? %s" % (" ".join(alt_lowername))
+
+        raise ValidationError('Derivative method \'name\' %s and derivative level \'dertype\' %s are not available.%s'
+            % (lowername, dertype, alternatives))
 
     # Make sure the molecule the user provided is the active one
     if ('molecule' in kwargs):

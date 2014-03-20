@@ -41,6 +41,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/python.hpp>
 #include <boost/python/object.hpp>
+#include <boost/algorithm/string/join.hpp>
 
 namespace psi {
 
@@ -1250,8 +1251,39 @@ Data& Options::use(std::string& key)
         return get(globals_, key);
     }
 
-    if (!exists_in_active(key) && !exists_in_global(key))
+    if (!exists_in_active(key) && !exists_in_global(key)){
+        printf("\nError: option %s is not contained in the list of available options.\n",key.c_str());
+        fprintf(outfile,"\nError: option %s is not contained in the list of available options.\n",key.c_str());
+
+        std::vector<std::string> choices;
+
+        /// "Active" set of options
+        {
+            std::map<std::string, Data>::iterator it = locals_[current_module_].begin();
+            std::map<std::string, Data>::iterator endit = locals_[current_module_].end();
+            for (; it != endit; ++it){
+                unsigned int distance = edit_distance(it->first,key);
+                if (distance < 3){
+                    choices.push_back(it->first);
+                }
+            }
+        }
+        /// "Global" set of options
+        {
+            std::map<std::string, Data>::iterator it = globals_.begin();
+            std::map<std::string, Data>::iterator endit = globals_.end();
+            for (; it != endit; ++it){
+                unsigned int distance = edit_distance(it->first,key);
+                if (distance < 3){
+                    choices.push_back(it->first);
+                }
+            }
+        }
+
+        printf("\nDid you mean? %s\n\n",boost::algorithm::join(choices, " ").c_str());
+        fprintf(outfile,"\nDid you mean? %s\n\n",boost::algorithm::join(choices, " ").c_str());
         throw IndexException(key);
+    }
     else if (!exists_in_active(key) && exists_in_global(key))
         return get(globals_, key);
     else if (exists_in_active(key) && exists_in_global(key)) {

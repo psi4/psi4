@@ -45,6 +45,11 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory* intsfactory, int deriv) :
     target_(0),
     target_pybuffer_(&target_, true)
 {
+    //fprintf(stderr, "TwoBodyAOInt object created with: %s, %s, %s, %s\n",
+    //        original_bs1_->name().c_str(),
+    //        original_bs2_->name().c_str(),
+    //        original_bs3_->name().c_str(),
+    //        original_bs4_->name().c_str());
     // The derived classes allocate this memory.
     force_cartesian_ = false;
     tformbuf_ = 0;
