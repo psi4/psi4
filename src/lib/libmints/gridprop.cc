@@ -25,6 +25,7 @@
 #include <libfock/cubature.h>
 #include <libfock/points.h>
 #include <libqt/qt.h>
+#include <libciomr/libciomr.h>
 #include <psi4-dec.h>
 #include <physconst.h>
 
@@ -49,7 +50,7 @@ CubicScalarGrid::CubicScalarGrid(
     x_ = NULL;
     y_ = NULL;
     z_ = NULL;
-    v_ = NULL;
+    w_ = NULL;
     N_ = new int[3];
     D_ = new double[3];
     O_ = new double[3];
@@ -61,7 +62,7 @@ CubicScalarGrid::~CubicScalarGrid()
     if (x_) delete x_;
     if (y_) delete y_;
     if (z_) delete z_;
-    if (v_) delete v_;
+    if (w_) delete w_;
     delete[] N_;
     delete[] D_;
     delete[] O_;
@@ -74,6 +75,18 @@ void CubicScalarGrid::build_grid(const std::string filepath, int* N, double* D, 
         N_[k] = N[k];
         O_[k] = O[k];
         D_[k] = D[k];
+    }
+    
+    populate_grid();
+}
+void CubicScalarGrid::build_grid(boost::shared_ptr<CubicScalarGrid> other)
+{
+    filepath_ = other->filepath();
+
+    for (int k = 0; k < 3; k++) {
+        N_[k] = other->N()[k];
+        O_[k] = other->O()[k];
+        D_[k] = other->D()[k];
     }
     
     populate_grid();
@@ -132,13 +145,13 @@ void CubicScalarGrid::populate_grid()
     if (x_) delete x_;
     if (y_) delete y_;
     if (z_) delete z_;
-    if (v_) delete v_;
+    if (w_) delete w_;
 
     npoints_ = (N_[0] + 1L) * (N_[1] + 1L) * (N_[2] + 1L);
     x_ = new double[npoints_];
     y_ = new double[npoints_];
     z_ = new double[npoints_];
-    v_ = new double[npoints_];
+    w_ = new double[npoints_];
 
     double epsilon = options_.get_double("CUBIC_BASIS_TOLERANCE");
     extents_ = boost::shared_ptr<BasisExtents> (new BasisExtents(primary_, epsilon));
@@ -158,7 +171,7 @@ void CubicScalarGrid::populate_grid()
                 double* xp = &x_[offset];
                 double* yp = &y_[offset];
                 double* zp = &z_[offset];
-                double* vp = &v_[offset];
+                double* wp = &w_[offset];
                 
                 size_t block_size = 0L;
                 for (int i = istart; i < istart + ni; i++) {
@@ -167,12 +180,13 @@ void CubicScalarGrid::populate_grid()
                             x_[offset] = O_[0] + i * D_[0];
                             y_[offset] = O_[1] + j * D_[1];
                             z_[offset] = O_[2] + k * D_[2];
+                            w_[offset] = D_[0] * D_[1] * D_[2];
                             offset++;
                             block_size++;
                         }
                     }
                 }
-                blocks_.push_back(boost::shared_ptr<BlockOPoints>(new BlockOPoints(block_size,xp,yp,zp,vp,extents_)));
+                blocks_.push_back(boost::shared_ptr<BlockOPoints>(new BlockOPoints(block_size,xp,yp,zp,wp,extents_)));
             }
         }
     }
@@ -209,36 +223,16 @@ void CubicScalarGrid::print_header()
 
     fflush(outfile);
 }
-void CubicScalarGrid::zero()
+void CubicScalarGrid::write_gen_file(double* v, const std::string& name, const std::string& type)
 {
-    ::memset(v_, '\0', sizeof(double) * npoints_);
-}
-void CubicScalarGrid::compute_density(boost::shared_ptr<Matrix> D, double scale)
-{
-    points_->set_pointers(D);
-    boost::shared_ptr<Vector> rho = points_->point_value("RHO_A");
-    double* rhop = rho->pointer();
-
-    size_t offset = 0L;
-    for (int ind = 0; ind < blocks_.size(); ind++) {
-        points_->compute_points(blocks_[ind]);
-        size_t npoints = blocks_[ind]->npoints();
-        C_DAXPY(npoints,scale,rhop,1,&v_[offset],1);        
-        offset += npoints;
+    if (type == "CUBE") {
+        write_cube_file(v, name);
+    } else {
+        throw PSIEXCEPTION("CubicScalarGrid: Unrecognized output file type");
     }
 }
-void CubicScalarGrid::compute_orbital(boost::shared_ptr<Vector> C, double scale)
+void CubicScalarGrid::write_cube_file(double* v, const std::string& name)
 {
-    throw PSIEXCEPTION("Not yet implemented"); 
-}
-void CubicScalarGrid::compute_basis(int function, double scale)
-{
-    throw PSIEXCEPTION("Not yet implemented"); 
-}
-void CubicScalarGrid::write_cube_file(const std::string& name, double* v)
-{
-    if (v == NULL) v = v_;
-
     // => Reorder the grid <= //
 
     double* v2 = new double[npoints_];
@@ -293,20 +287,114 @@ void CubicScalarGrid::write_cube_file(const std::string& name, double* v)
 
     fclose(fh);   
 }
-void CubicScalarGrid::compute_density_cube(boost::shared_ptr<Matrix> D, const std::string name)
+void CubicScalarGrid::add_density(double* v, boost::shared_ptr<Matrix> D)
 {
-    zero();
-    compute_density(D);
-    write_cube_file(name);
+    points_->set_pointers(D);
+    boost::shared_ptr<Vector> rho = points_->point_value("RHO_A");
+    double* rhop = rho->pointer();
+
+    size_t offset = 0L;
+    for (int ind = 0; ind < blocks_.size(); ind++) {
+        points_->compute_points(blocks_[ind]);
+        size_t npoints = blocks_[ind]->npoints();
+        C_DAXPY(npoints,1.0,rhop,1,&v[offset],1);        
+        offset += npoints;
+    }
 }
-void CubicScalarGrid::compute_orbital_cubes(boost::shared_ptr<Matrix> C, const std::string name, const std::vector<int>& indices)
+void CubicScalarGrid::add_esp(double* v, boost::shared_ptr<Matrix> D)
 {
     throw PSIEXCEPTION("Not yet implemented"); 
 }
-void CubicScalarGrid::compute_basis_cubes(const std::string name, const std::vector<int>& indices)
+void CubicScalarGrid::add_basis_functions(double** v, const std::vector<int>& indices)
 {
-    
-    throw PSIEXCEPTION("Not yet implemented"); 
+    boost::shared_ptr<Matrix> phi = points_->basis_value("PHI");
+    double** phip = phi->pointer();
+
+    size_t offset = 0L;
+    for (int ind = 0; ind < blocks_.size(); ind++) {
+        points_->compute_functions(blocks_[ind]);
+
+        size_t npoints = blocks_[ind]->npoints();
+        const std::vector<int>& function_map = blocks_[ind]->functions_local_to_global();
+        int nlocal  = function_map.size();
+        int nglobal = points_->max_functions();
+
+        for (int ind1 = 0; ind1 < indices.size(); ind1++) {
+            for (int ind2 = 0; ind2 < function_map.size(); ind2++) {
+                if (indices[ind1] == function_map[ind2]) {
+                    C_DAXPY(npoints,1.0,&phip[0][ind2],nglobal,&v[ind1][offset],1);
+                }                
+            }
+        }
+
+        offset += npoints;
+    }
+}
+void CubicScalarGrid::add_orbitals(double** v, boost::shared_ptr<Matrix> C)
+{
+    int na = C->colspi()[0];    
+
+    points_->set_Cs(C);
+    boost::shared_ptr<Matrix> psi = points_->orbital_value("PSI_A");
+    double** psip = psi->pointer();
+
+    size_t offset = 0L;
+    for (int ind = 0; ind < blocks_.size(); ind++) {
+        points_->compute_orbitals(blocks_[ind]);
+
+        size_t npoints = blocks_[ind]->npoints();
+        for (int a = 0; a < na; a++) {
+            C_DAXPY(npoints,1.0,psip[a],1,&v[a][offset],1);
+        }    
+
+        offset += npoints;
+    }
+}
+void CubicScalarGrid::compute_density(boost::shared_ptr<Matrix> D, const std::string& name, const std::string& type)
+{
+    double* v = new double[npoints_];
+    memset(v,'\0',npoints_*sizeof(double));
+    add_density(v,D);
+    write_gen_file(v,name,type);
+    delete[] v;
+}
+void CubicScalarGrid::compute_esp(boost::shared_ptr<Matrix> D, const std::string& name, const std::string& type)
+{
+    double* v = new double[npoints_];
+    memset(v,'\0',npoints_*sizeof(double));
+    add_esp(v,D);
+    write_gen_file(v,name,type);
+    delete[] v;
+}
+void CubicScalarGrid::compute_basis_functions(const std::vector<int>& indices, const std::string& name, const std::string& type)
+{
+    double** v = block_matrix(indices.size(), npoints_);
+    memset(v[0],'\0',indices.size()*npoints_*sizeof(double));
+    add_basis_functions(v, indices);
+    for (int k = 0; k < indices.size(); k++) {
+        std::stringstream ss; 
+        ss << name << "_" << (indices[k] + 1);
+        write_gen_file(v[k],ss.str(),type);
+    }   
+    free_block(v);
+}
+void CubicScalarGrid::compute_orbitals(boost::shared_ptr<Matrix> C, const std::vector<int>& indices, const std::string& name, const std::string& type)
+{
+    boost::shared_ptr<Matrix> C2(new Matrix(primary_->nbf(), indices.size()));  
+    double** Cp  = C->pointer();
+    double** C2p = C2->pointer();
+    for (int k = 0; k < indices.size(); k++) {
+        C_DCOPY(primary_->nbf(), &Cp[0][indices[k]], C->colspi()[0], &C2p[0][k], C2->colspi()[0]); 
+    }
+    double** v = block_matrix(indices.size(), npoints_);
+    memset(v[0],'\0',indices.size()*npoints_*sizeof(double));
+    add_orbitals(v, C2);
+    for (int k = 0; k < indices.size(); k++) {
+        std::stringstream ss; 
+        ss << name << "_" << (indices[k] + 1);
+        write_gen_file(v[k],ss.str(),type);
+    }   
+    free_block(v);
 }
 
 //void CubicScalarGrid::compute_orbitals(boost::shared_ptr<Matrix> C, double clamp, const::std::string& label)
