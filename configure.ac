@@ -1031,6 +1031,7 @@ AC_CONFIG_FILES([
           tests/opt5/Makefile
           tests/opt6/Makefile
           tests/opt7/Makefile
+          tests/opt-lindep-change/Makefile
           tests/sad1/Makefile
           tests/fd-gradient/Makefile
           tests/fd-freq-energy/Makefile
