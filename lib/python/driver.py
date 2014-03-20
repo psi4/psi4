@@ -190,6 +190,15 @@ procedures = {
             'dfmp2'  : run_dfmp2_property,
             'eom-cc2'  : run_cc_property,
             'eom-ccsd' : run_cc_property,
+            'detci'    : run_detci_property,  # full control over detci
+            'mp'       : run_detci_property,  # arbitrary order mp(n)
+            'detci-mp' : run_detci_property,  # arbitrary order mp(n)
+            'zapt'     : run_detci_property,  # arbitrary order zapt(n)
+            'cisd'     : run_detci_property,
+            'cisdt'    : run_detci_property,
+            'cisdtq'   : run_detci_property,
+            'ci'       : run_detci_property,  # arbitrary order ci(n)
+            'fci'      : run_detci_property,
             # Upon adding a method to this list, add it to the docstring in property() below
         }}
 

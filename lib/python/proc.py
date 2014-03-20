@@ -1349,6 +1349,123 @@ def run_dfmp2_property(name, **kwargs):
         return e_dfmp2
 
 
+def run_detci_property(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a configuration interaction calculation, namely FCI,
+    CIn, MPn, and ZAPTn, computing properties.
+
+    """
+    oneel_properties = ['dipole', 'quadrupole']
+    excited_properties = ['transition_dipole', 'transition_quadrupole']
+
+    one = []
+    excited = []
+    invalid = []
+
+    if 'properties' in kwargs:
+        properties = kwargs.pop('properties')
+        properties = p4util.drop_duplicates(properties)
+
+        for prop in properties:
+            if prop in oneel_properties:
+                one.append(prop)
+            elif prop in excited_properties:
+                excited.append(prop)
+            else:
+                invalid.append(prop)
+    else:
+        raise ValidationError("The \"properties\" keyword is required with the property() function.")
+
+    n_one = len(one)
+    n_excited = len(excited)
+    n_invalid = len(invalid)
+
+    if (n_invalid > 0):
+        print("The following properties are not currently supported: %s" % invalid)
+    
+    if ('quadrupole' in one) or ('transition_quadrupole' in excited):
+        psi4.set_global_option('PRINT', 2)
+
+    if (n_one > 0):
+        psi4.set_global_option('OPDM', 'TRUE')
+
+    if (n_excited > 0):
+        psi4.set_global_option('TDM', 'TRUE')
+
+    optstash = p4util.OptionsState(
+        ['TRANSQT2', 'WFN'],
+        ['DETCI', 'WFN'],
+        ['DETCI', 'MAX_NUM_VECS'],
+        ['DETCI', 'MPN_ORDER_SAVE'],
+        ['DETCI', 'MPN'],
+        ['DETCI', 'FCI'],
+        ['DETCI', 'EX_LEVEL'])
+
+    user_ref = psi4.get_option('DETCI', 'REFERENCE')
+    if (user_ref != 'RHF') and (user_ref != 'ROHF'):
+        raise ValidationError('Reference %s for DETCI is not available.' % user_ref)
+
+    if (name.lower() == 'zapt'):
+        psi4.set_local_option('TRANSQT2', 'WFN', 'ZAPTN')
+        psi4.set_local_option('DETCI', 'WFN', 'ZAPTN')
+        level = kwargs['level']
+        maxnvect = int((level + 1) / 2) + (level + 1) % 2
+        psi4.set_local_option('DETCI', 'MAX_NUM_VECS', maxnvect)
+        if ((level + 1) % 2):
+            psi4.set_local_option('DETCI', 'MPN_ORDER_SAVE', 2)
+        else:
+            psi4.set_local_option('DETCI', 'MPN_ORDER_SAVE', 1)
+    elif (name.lower() == 'detci-mp') or (name.lower() == 'mp'):
+        psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
+        psi4.set_local_option('DETCI', 'WFN', 'DETCI')
+        psi4.set_local_option('DETCI', 'MPN', 'TRUE')
+
+        level = kwargs['level']
+        maxnvect = int((level + 1) / 2) + (level + 1) % 2
+        psi4.set_local_option('DETCI', 'MAX_NUM_VECS', maxnvect)
+        if ((level + 1) % 2):
+            psi4.set_local_option('DETCI', 'MPN_ORDER_SAVE', 2)
+        else:
+            psi4.set_local_option('DETCI', 'MPN_ORDER_SAVE', 1)
+    elif (name.lower() == 'fci'):
+            psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
+            psi4.set_local_option('DETCI', 'WFN', 'DETCI')
+            psi4.set_local_option('DETCI', 'FCI', 'TRUE')
+    elif (name.lower() == 'cisd'):
+            psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
+            psi4.set_local_option('DETCI', 'WFN', 'DETCI')
+            psi4.set_local_option('DETCI', 'EX_LEVEL', 2)
+    elif (name.lower() == 'cisdt'):
+            psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
+            psi4.set_local_option('DETCI', 'WFN', 'DETCI')
+            psi4.set_local_option('DETCI', 'EX_LEVEL', 3)
+    elif (name.lower() == 'cisdtq'):
+            psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
+            psi4.set_local_option('DETCI', 'WFN', 'DETCI')
+            psi4.set_local_option('DETCI', 'EX_LEVEL', 4)
+    elif (name.lower() == 'ci'):
+        psi4.set_local_option('TRANSQT2', 'WFN', 'DETCI')
+        psi4.set_local_option('DETCI', 'WFN', 'DETCI')
+        level = kwargs['level']
+        psi4.set_local_option('DETCI', 'EX_LEVEL', level)
+    # Call a plain energy('detci') and have full control over options
+    elif(name.lower() == 'detci'):
+        pass
+
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
+
+        # If the scf type is DF/CD, then the AO integrals were never written to disk
+        if psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
+            psi4.MintsHelper().integrals()
+
+    psi4.transqt2()
+    psi4.detci()
+
+    optstash.restore()
+
+
 def run_eom_cc(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     an EOM-CC calculation, namely EOM-CC2, EOM-CCSD, and EOM-CC3.
