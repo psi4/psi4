@@ -82,19 +82,21 @@ int psi_start(int argc, char *argv[])
     interactive_python  = false;
 
     // A string listing of valid short option letters
-    const char* const short_options = "ahvVdcwo:p:i:sn:mkt";
+    const char* const short_options = "ahvVdcwo:p:i:l:s:n:mkt";
     const struct option long_options[] = {
         { "append",  0, NULL, 'a' },
         { "help",    0, NULL, 'h' },
         { "verbose", 0, NULL, 'v' },
         { "version", 0, NULL, 'V' },
         { "check",   0, NULL, 'c' },
-        { "nthread", 0, NULL, 'n' },
+        { "nthread", 1, NULL, 'n' },
         { "debug",   0, NULL, 'd' },
         { "wipe",    0, NULL, 'w' },
         { "output",  1, NULL, 'o' },
         { "prefix",  1, NULL, 'p' },
         { "input",   1, NULL, 'i' },
+        { "psidatadir", 1, NULL, 'l' },
+        { "scratch", 1, NULL, 's' },
         { "messy",   0, NULL, 'm' },
         { "skip-preprocessor",  0, NULL, 'k' },
         { "interactive", 0, NULL, 't' },
@@ -142,6 +144,15 @@ int psi_start(int argc, char *argv[])
 
             case 'i': // -i or --input
                 ifname = optarg;
+                break;
+
+            case 'l': // -l or --psidatadir
+                // This is ok so long as all reads of this var are after here
+                Process::environment.set("PSIDATADIR",optarg);
+                break;
+
+            case 's': // -s or --scratch
+                Process::environment.set("PSI_SCRATCH",optarg);
                 break;
 
             case 'o': // -o or --output
@@ -325,6 +336,8 @@ void print_usage(void)
     printf("                          filename.out if input is filename\n");
     printf("                          filename.out if input is filename.in\n");
     printf("                          output.dat if input is input.dat\n");
+    printf(" -l  --psidatadir         Specify where to look for the Psi data directory.\n");
+    printf("                          Overrides PSIDATADIR.\n");
     printf(" -m  --messy              Leave temporary files after the run is completed.\n");
     printf(" -n  --nthread            Number of threads to use (overrides OMP_NUM_THREADS)\n");
     printf("     --new-plugin name    Creates a new directory with files for writing a\n"

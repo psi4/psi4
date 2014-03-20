@@ -1140,6 +1140,7 @@ bool psi4_python_module_initialize()
     std::string psiDataDirWithPython = psiDataDirName + "/psi4";
     boost::filesystem::path bf_path;
     bf_path = boost::filesystem::system_complete(psiDataDirWithPython);
+    // printf("Python dir is at %s\n", psiDataDirName.c_str()); 
     if(!boost::filesystem::is_directory(bf_path)) {
         printf("Unable to read the PSI4 Python folder - check the PSIDATADIR environmental variable\n"
                 "      Current value of PSIDATADIR is %s\n", psiDataDirName.c_str());
@@ -1474,6 +1475,7 @@ void Python::run(FILE *input)
         std::string psiDataDirWithPython = psiDataDirName + "/python";
         boost::filesystem::path bf_path;
         bf_path = boost::filesystem::system_complete(psiDataDirWithPython);
+        // printf("Python dir is at %s\n", psiDataDirName.c_str());
         if(!boost::filesystem::is_directory(bf_path)) {
             printf("Unable to read the PSI4 Python folder - check the PSIDATADIR environmental variable\n"
                     "      Current value of PSIDATADIR is %s\n", psiDataDirName.c_str());
