@@ -47,22 +47,22 @@ protected:
     boost::shared_ptr<Molecule> mol_;
     /// Basis set this grid is built around
     boost::shared_ptr<BasisSet> primary_;
-    /// File path for grid storage
-    std::string filepath_;
 
     // => Physical Grid <= //
+    
+    /// Voxel quanta in x, y, z [(N_x+1) x (N_y + 1) x (N_z + 1) points]
+    int* N_;
+    /// Voxel spacing in x, y, z
+    double* D_;
+    /// Voxel origin in x, y, z
+    double* O_;
+    /// File path for grid storage
+    std::string filepath_;
 
     /// number of points of grid
     size_t npoints_;
     /// Sparsity blocking in all cardinal directions
     size_t nxyz_;
-
-    // Voxel quanta in x, y, z [(N_x+1) x (N_y + 1) x (N_z + 1)]
-    int* N_;
-    // Voxel spacing in x, y, z
-    double* D_;
-    // Voxel origin in x, y, z
-    double* O_;
 
     /// x coordinates of grid
     double* x_;
@@ -70,8 +70,8 @@ protected:
     double* y_;
     /// z coordinates of grid
     double* z_;
-    /// Scalar field values on grid
-    double* v_;
+    /// w quadrature weights of grid (rectangular)
+    double* w_;
 
     // => Grid Computers <= //
     
@@ -88,58 +88,82 @@ protected:
     void populate_grid();
 
 public:
-    CubicScalarGrid(boost::shared_ptr<BasisSet> primary);
+    // => Constructors <= //
 
+    CubicScalarGrid(boost::shared_ptr<BasisSet> primary);
     virtual ~CubicScalarGrid(); 
 
-    // => Setup Routines <= //
+    // => High-Level Setup Routines <= //
 
     /// Build grid with options overages
     void build_grid();
     /// Build grid with specified geometry (e.g., from another grid)
     void build_grid(const std::string filepath, int* N, double* D, double* O);
-    /// Set the directory for cube file storage
-    void set_filepath(const std::string filepath) { filepath_ = filepath; }  
+    /// Build grid from the dimensions in another grid
+    void build_grid(boost::shared_ptr<CubicScalarGrid> other);
     /// Header info
     void print_header();
 
-    // => Accessor Routines <= //
+    // => High-Level Set Routines <= //
+   
+    /// Set the directory for cube file storage (defaults to "./")
+    void set_filepath(const std::string filepath) { filepath_ = filepath; }  
+    
+    // => High-Level Accessor Routines <= //
 
+    /// Number of voxels in [x,y,z]. Number of points along each dimensions in N_i + 1.
     int* N() const { return N_; }
+    /// Voxel width in [x,y,z], in bohr
     double* D() const { return D_; }
+    /// Lower-left corner of th grid, in bohr
     double* O() const { return O_; }
+    /// Filepath where grid output will be stored
+    std::string filepath() const { return filepath_; }
 
-    double* x() const { return x_; } 
-    double* y() const { return y_; } 
-    double* z() const { return z_; } 
-    double* v() const { return v_; } 
+    // => Low-Level Accessor Routines (Use only if you know what you are doing) <= //
 
+    /// Total number of points in grid
     size_t npoints() const { return npoints_; }
+    /// Number of points 
     size_t nxyz() const { return nxyz_; }
     
-    // => Low-Level Scalar Field Computation <= //
+    /// x points in fast ordering
+    double* x() const { return x_; } 
+    /// y points in fast ordering
+    double* y() const { return y_; } 
+    /// z points in fast ordering
+    double* z() const { return z_; } 
+    /// w weights (rectangular) in fast ordering
+    double* w() const { return w_; }
 
-    /// Zero the scalar field
-    void zero();
+    // => Low-Level Write Routines (Use only if you know what you are doing) <= //
+
+    /// Write a general file of the scalar field v (in fast ordering) to filepath/name.ext
+    void write_gen_file(double* v, const std::string& name, const std::string& type);
+    /// Write a Gaussian cube file of the scalar field v (in fast ordering) to filepath/name.cube
+    void write_cube_file(double* v, const std::string& name);
+    
+    // => Low-Level Scalar Field Computation (Use only if you know what you are doing) <= //
 
     /// Add a density-type property to the scalar field
-    void compute_density(boost::shared_ptr<Matrix> D, double scale = 1.0);
-    /// Add an orbital-type property to the scalar field
-    void compute_orbital(boost::shared_ptr<Vector> C, double scale = 1.0);
-    /// Add a basis-function-type property to the scalar field
-    void compute_basis(int function, double scale = 1.0);
+    void add_density(double* v, boost::shared_ptr<Matrix> D);
+    /// Add an ESP-type property to the scalar field (total density matrix, must set DF_BASIS_SCF option)
+    void add_esp(double* v, boost::shared_ptr<Matrix> D);
+    /// Add a basis function property for desired indices to the scalar fields in v (rows are basis functions)
+    void add_basis_functions(double** v, const std::vector<int>& indices);
+    /// Add orbital property for desired indices to the scalar fields in v (rows are orbitals)
+    void add_orbitals(double** v, boost::shared_ptr<Matrix> C);
     
-    /// Write a cube file with the current scalar field to filepath/name.cube
-    void write_cube_file(const std::string& name, double* v = NULL);
-
     // => High-Level Scalar Field Computation <= //
 
-    /// Compute a Gaussian Cube file corresponding to the density matrix D
-    void compute_density_cube(boost::shared_ptr<Matrix> D, const std::string name);
-    /// Compute a series of Gaussian Cube files corresponding to the orbitals in indices (or all by default)
-    void compute_orbital_cubes(boost::shared_ptr<Matrix> C, const std::string name, const std::vector<int>& indices = std::vector<int>());
-    /// Compute a series of Gaussian Cube files corresponding to the basis functions in indices (or all by default)
-    void compute_basis_cubes(const std::string name, const std::vector<int>& indices = std::vector<int>());
+    /// Compute a density-type property and drop a file corresponding to name and type
+    void compute_density(boost::shared_ptr<Matrix> D, const std::string& name, const std::string& type = "CUBE");
+    /// Compute an ESP-type property and drop a file corresponding to name and type
+    void compute_esp(boost::shared_ptr<Matrix> D, const std::string& name, const std::string& type = "CUBE");
+    /// Compute a set of basis function-type properties and drop files corresponding to name, index, and type
+    void compute_basis_functions(const std::vector<int>& indices, const std::string& name, const std::string& type = "CUBE");
+    /// Compute a set of orbital-type properties and drop files corresponding to name, index, and type
+    void compute_orbitals(boost::shared_ptr<Matrix> C, const std::vector<int>& indices, const std::string& name, const std::string& type = "CUBE");
 
 };
 
