@@ -262,6 +262,17 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
 
    Number of threads to use (overrides :envvar:`OMP_NUM_THREADS`)
 
+.. option:: -scratch <name>, --s <name>
+
+   This overrides the value of :envvar:`PSI_SCRATCH` and provides
+   a path to the location of scratch files
+
+.. option:: -l <name>, --psidatadir <name>
+
+   Mainly for use by developers, this overrides the value of
+   :envvar:`PSIDATADIR` and specifies the path to the Psi data
+   library (psi4/lib) 
+
 .. option:: --new-plugin <name>
 
    Creates a new directory <name> with files for writing a
