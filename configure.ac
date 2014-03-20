@@ -1224,6 +1224,7 @@ AC_CONFIG_FILES([
           tests/dft-psivar/Makefile
           tests/mom/Makefile
           tests/frac/Makefile
+	  tests/mp2-def2/Makefile
           tests/docs-psimod/Makefile
           tests/docs-dft/Makefile
           tests/docs-bases/Makefile
