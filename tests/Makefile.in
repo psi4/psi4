@@ -47,7 +47,7 @@ dftd3_subdirs = dftd3-energy dftd3-grad
 
 mrcc_subdirs = 
 
-longtest_subdirs = sapt2 sapt4 fd-freq-gradient-large
+longtest_subdirs = mp2-def2 sapt2 sapt4 fd-freq-gradient-large
 
 subdirs = \
 $(tutorial_subdirs) \
