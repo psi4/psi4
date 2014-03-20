@@ -21,6 +21,7 @@
  */
 
 #include "gridprop.h"
+#include <libmints/sieve.h>
 #include <libmints/mints.h>
 #include <libfock/cubature.h>
 #include <libfock/points.h>
@@ -59,10 +60,10 @@ CubicScalarGrid::CubicScalarGrid(
 }
 CubicScalarGrid::~CubicScalarGrid()
 {
-    if (x_) delete x_;
-    if (y_) delete y_;
-    if (z_) delete z_;
-    if (w_) delete w_;
+    if (x_) delete[] x_;
+    if (y_) delete[] y_;
+    if (z_) delete[] z_;
+    if (w_) delete[] w_;
     delete[] N_;
     delete[] D_;
     delete[] O_;
@@ -142,10 +143,10 @@ void CubicScalarGrid::build_grid()
 }
 void CubicScalarGrid::populate_grid()
 {
-    if (x_) delete x_;
-    if (y_) delete y_;
-    if (z_) delete z_;
-    if (w_) delete w_;
+    if (x_) delete[] x_;
+    if (y_) delete[] y_;
+    if (z_) delete[] z_;
+    if (w_) delete[] w_;
 
     npoints_ = (N_[0] + 1L) * (N_[1] + 1L) * (N_[2] + 1L);
     x_ = new double[npoints_];
@@ -303,7 +304,194 @@ void CubicScalarGrid::add_density(double* v, boost::shared_ptr<Matrix> D)
 }
 void CubicScalarGrid::add_esp(double* v, boost::shared_ptr<Matrix> D)
 {
-    throw PSIEXCEPTION("Not yet implemented"); 
+    // => Auxiliary Basis Set (TODO: Get appropriate default) <= //
+
+    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
+    boost::shared_ptr<BasisSet> auxiliary = BasisSet::construct(parser, primary_->molecule(), "DF_BASIS_SCF");
+    
+    // => DF Options (TODO: Should these be in here?) <= //
+
+    double cutoff    = options_.get_double("INTS_TOLERANCE");
+    double condition = options_.get_double("DF_FITTING_CONDITION");
+
+    // => Sizing <= //
+
+    int nbf  = primary_->nbf();
+    int naux = auxiliary->nbf();
+    int maxP = auxiliary->max_function_per_shell();
+
+    int nthreads = 0;
+    #ifdef _OPENMP
+        nthreads = omp_get_max_threads();
+    #endif
+
+    // => Density Fitting (TODO: Could be sped up) <= //
+
+    boost::shared_ptr<IntegralFactory> Ifact(new IntegralFactory(auxiliary,BasisSet::zero_ao_basis_set(), primary_, primary_));
+    std::vector<boost::shared_ptr<TwoBodyAOInt> > ints;
+    for (int thread = 0; thread < nthreads; thread++) {
+        ints.push_back(boost::shared_ptr<TwoBodyAOInt>(Ifact->eri()));
+    }
+
+    boost::shared_ptr<ERISieve> sieve(new ERISieve(primary_, cutoff));
+    const std::vector<std::pair<int,int> >& pairs = sieve->shell_pairs();  
+
+    boost::shared_ptr<Vector> c(new Vector("c", naux));
+    double* cp = c->pointer();
+
+    boost::shared_ptr<Matrix> Amn(new Matrix("Amn", maxP, nbf*nbf));
+    double** Amnp = Amn->pointer();
+
+    double** Dp = D->pointer();
+
+    for (int P = 0; P < auxiliary->nshell(); P++) {
+
+        int nP = auxiliary->shell(P).nfunction();
+        int oP = auxiliary->shell(P).function_index();
+
+        Amn->zero();        
+
+        // Integrals
+        #pragma omp parallel for schedule(dynamic)
+        for (int task = 0; task < pairs.size(); task++) {
+            
+            int thread = 0;
+            #ifdef _OPENMP
+                thread = omp_get_thread_num();
+            #endif
+
+            int M = pairs[task].first;
+            int N = pairs[task].second;
+
+            ints[thread]->compute_shell(P,0,M,N);
+            const double* buffer = ints[thread]->buffer();
+
+            int nM = primary_->shell(M).nfunction();
+            int oM = primary_->shell(M).function_index();
+            int nN = primary_->shell(N).nfunction();
+            int oN = primary_->shell(N).function_index();
+
+            int index = 0;
+            for (int p = 0; p < nP; p++) {
+                for (int m = 0; m < nM; m++) {
+                    for (int n = 0; n < nN; n++) {
+                        Amnp[p][(m + oM) * nbf + (n + oN)] =
+                        Amnp[p][(n + oN) * nbf + (m + oM)] =
+                        buffer[index++];
+                    }
+                }
+            }
+            
+        }
+        
+        // Contraction
+        C_DGEMV('N', nP, nbf*nbf, 1.0, Amnp[0], nbf*nbf, Dp[0], 1, 0.0, cp + oP, 1);
+
+    }
+
+    Amn.reset();
+    Ifact.reset();
+    ints.clear();
+
+    boost::shared_ptr<Matrix> J(new Matrix("J", naux, naux));
+    double** Jp = J->pointer();
+
+    boost::shared_ptr<IntegralFactory> Jfact(new IntegralFactory(
+        auxiliary,BasisSet::zero_ao_basis_set(), 
+        auxiliary,BasisSet::zero_ao_basis_set()));
+
+    boost::shared_ptr<TwoBodyAOInt> Jints(Jfact->eri());
+    const double* Jbuffer = Jints->buffer();
+
+    for (int P = 0; P < auxiliary->nshell(); P++) {
+        int nP = auxiliary->shell(P).nfunction();
+        int oP = auxiliary->shell(P).function_index();
+
+        for (int Q = 0; Q <= P; Q++) {
+            int nQ = auxiliary->shell(Q).nfunction();
+            int oQ = auxiliary->shell(Q).function_index();
+
+            Jints->compute_shell(P,0,Q,0);
+
+            int index = 0;
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Jp[p + oP][q + oQ] = 
+                    Jp[q + oQ][p + oP] = 
+                    Jbuffer[index++];
+                }
+            }
+        }
+    }
+
+    Jfact.reset();
+    Jints.reset(); 
+   
+    J->power(-1.0, condition); 
+
+    boost::shared_ptr<Vector> d(new Vector("d", naux));
+    double* dp = d->pointer();
+
+    C_DGEMV('N',naux,naux,1.0,Jp[0],naux,cp,1,0.0,dp,1);
+
+    //c->print();
+    //d->print();
+
+    J.reset();
+
+    // => Electronic Part <= //
+
+    boost::shared_ptr<IntegralFactory> Vfact(new IntegralFactory(auxiliary,BasisSet::zero_ao_basis_set()));
+    std::vector<boost::shared_ptr<Matrix> > ZxyzT;
+    std::vector<boost::shared_ptr<Matrix> > VtempT;
+    std::vector<boost::shared_ptr<PotentialInt> > VintT;
+    for (int thread = 0; thread < nthreads; thread++) {
+        ZxyzT.push_back(boost::shared_ptr<Matrix>(new Matrix("Zxyz",1,4)));
+        VtempT.push_back(boost::shared_ptr<Matrix>(new Matrix("Vtemp",naux,1)));
+        VintT.push_back(boost::shared_ptr<PotentialInt>(static_cast<PotentialInt*>(Vfact->ao_potential())));
+        VintT[thread]->set_charge_field(ZxyzT[thread]);
+    }
+
+    #pragma omp parallel for schedule(dynamic)
+    for (int P = 0; P < npoints_; P++) {
+
+        // Thread info
+        int thread = 0;
+        #ifdef _OPENMP
+            thread = omp_get_thread_num();
+        #endif
+
+        // Pointers
+        double** ZxyzTp = ZxyzT[thread]->pointer();
+        double** VtempTp = VtempT[thread]->pointer();
+
+        // Integrals
+        VtempT[thread]->zero();
+        ZxyzTp[0][0] = 1.0;
+        ZxyzTp[0][1] = x_[P];
+        ZxyzTp[0][2] = y_[P];
+        ZxyzTp[0][3] = z_[P]; 
+        VintT[thread]->compute(VtempT[thread]);
+
+        // Contraction 
+        v[P] += C_DDOT(naux,dp,1,VtempTp[0],1);
+    }
+    
+    // => Nuclear Part <= //
+
+    for (int A = 0; A < mol_->natom(); A++) {
+        double Z = mol_->Z(A);
+        double x = mol_->x(A);
+        double y = mol_->y(A);
+        double z = mol_->z(A);
+        for (int P = 0; P < npoints_; P++) {
+            double R = sqrt(
+                (x - x_[P]) * (x - x_[P]) +
+                (y - y_[P]) * (y - y_[P]) +
+                (z - z_[P]) * (z - z_[P]));
+            v[P] += (R >= 1.0E-15 ? Z / R : 0.0);
+        }
+    }
 }
 void CubicScalarGrid::add_basis_functions(double** v, const std::vector<int>& indices)
 {
@@ -396,163 +584,5 @@ void CubicScalarGrid::compute_orbitals(boost::shared_ptr<Matrix> C, const std::v
     }   
     free_block(v);
 }
-
-//void CubicScalarGrid::compute_orbitals(boost::shared_ptr<Matrix> C, double clamp, const::std::string& label)
-//{
-//    if (!npoints_) throw PSIEXCEPTION("CubicScalarGrid::compute: call build_grid first");
-//   
-//    int na = C->colspi()[0];
-//
-//    points_->set_Cs(C);
-//    boost::shared_ptr<Matrix> psi = points_->orbital_value("PSI_A");
-//    double** psip = psi->pointer();
-//
-//    int max_points = points_->max_points();
-//
-//    boost::shared_ptr<Matrix> W(new Matrix("W", na, npoints_));
-//    double** Wp = W->pointer();
-//
-//    size_t offset = 0L;
-//    for (int ind = 0; ind < blocks_.size(); ind++) {
-//        size_t npoints = blocks_[ind]->npoints();
-//        points_->compute_orbitals(blocks_[ind]);
-//        for (int A = 0; A < na; A++) {
-//            ::memcpy(&Wp[A][offset],psip[A],sizeof(double)*npoints);
-//        }
-//        offset += npoints;
-//    }
-//
-//    for (int A = 0; A < na; A++) {
-//        fprintf(outfile,"    Saving %4d Orbital Voxel Partition.\n", A+1);
-//        std::stringstream ss;
-//        ss << label << "f" << A+1 << ".raw";
-//        drop_raw(ss.str(), clamp, Wp[A]);
-//    }
-//}
-//void CubicScalarGrid::drop_raw(const std::string& file, double clamp, double* v)
-//{
-//    if (!npoints_) throw PSIEXCEPTION("CubicScalarGrid::drop_raw: call build_grid first");
-//
-//    //ASCII Variant
-//    //std::stringstream ss2;
-//    //ss2 << V_->name() << ".debug";
-//    //FILE* fh2 = fopen(ss2.str().c_str(), "w");
-//    //for (size_t ind = 0; ind < npoints_; ind++) {
-//    //    fprintf(fh2,"  %16zu %24.16E %24.16E %24.16E %24.16E\n", ind, x_[ind], y_[ind], z_[ind], v_[ind]);
-//    //}
-//    //fclose(fh2);
-//
-//    if (v == NULL) { 
-//        v = v_;
-//    }
-//
-//    double s = 1.0 / clamp;
-//    double maxval = 0.0;
-//
-//    //double total = 0.0;
-//
-//    float* v2 = new float[npoints_];
-//    size_t offset = 0L;
-//    for (int istart = 0L; istart <= N_[0]; istart+=nxyz_) {
-//        int ni = (istart + nxyz_ > N_[0] ? (N_[0] + 1) - istart : nxyz_);
-//        for (int jstart = 0L; jstart <= N_[1]; jstart+=nxyz_) {
-//            int nj = (jstart + nxyz_ > N_[1] ? (N_[1] + 1) - jstart : nxyz_);
-//            for (int kstart = 0L; kstart <= N_[2]; kstart+=nxyz_) {
-//                int nk = (kstart + nxyz_ > N_[2] ? (N_[2] + 1) - kstart : nxyz_);
-//                for (int i = istart; i < istart + ni; i++) {
-//                    for (int j = jstart; j < jstart + nj; j++) {
-//                        for (int k = kstart; k < kstart + nk; k++) {
-//                            size_t index = i * (N_[1] + 1L) * (N_[2] + 1L) + j * (N_[2] + 1L) + k;
-//                            double val = v[offset];
-//                            maxval = (maxval >= fabs(val) ? maxval : fabs(val));
-//                            //total += val;
-//                            val = (val <= clamp ? val : clamp);
-//                            val = (val >= -clamp ? val : -clamp);
-//                            val *= s;
-//                            v2[index] = val;
-//                            offset++;
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
-//
-//    fprintf(outfile,"    Max val = %11.3E out of %11.3E: %s.\n", maxval, clamp, (clamp >= maxval ? "No clamping" : "Clamped")); 
-//
-//    //total *= D_[0] * D_[1] * D_[2];
-//    //fprintf(outfile,"    Integral value is %24.16E\n", total);
-//
-//    //Dirty Hack: I love it!
-//    v2[npoints_-1L] =  0.0;
-//    v2[npoints_-2L] =  0.0;
-//    v2[npoints_-3L] =  1.0;
-//    v2[npoints_-4L] = -1.0;
-//    
-//    FILE* fh = fopen(file.c_str(), "wb");
-//    fwrite(v2,sizeof(float),npoints_,fh);
-//    fclose(fh);
-//}
-//void CubicScalarGrid::drop_uvf(const std::string& file, double clamp, double* v)
-//{
-//    if (!npoints_) throw PSIEXCEPTION("CubicScalarGrid::drop_raw: call build_grid first");
-//
-//    if (v == NULL) { 
-//        v = v_;
-//    }
-//
-//    double s = 1.0 / clamp;
-//    double maxval = 0.0;
-//
-//    float* v2 = new float[npoints_];
-//    size_t offset = 0L;
-//    for (int istart = 0L; istart <= N_[0]; istart+=nxyz_) {
-//        int ni = (istart + nxyz_ > N_[0] ? (N_[0] + 1) - istart : nxyz_);
-//        for (int jstart = 0L; jstart <= N_[1]; jstart+=nxyz_) {
-//            int nj = (jstart + nxyz_ > N_[1] ? (N_[1] + 1) - jstart : nxyz_);
-//            for (int kstart = 0L; kstart <= N_[2]; kstart+=nxyz_) {
-//                int nk = (kstart + nxyz_ > N_[2] ? (N_[2] + 1) - kstart : nxyz_);
-//                for (int i = istart; i < istart + ni; i++) {
-//                    for (int j = jstart; j < jstart + nj; j++) {
-//                        for (int k = kstart; k < kstart + nk; k++) {
-//                            size_t index = i * (N_[1] + 1L) * (N_[2] + 1L) + j * (N_[2] + 1L) + k;
-//                            double val = v[offset];
-//                            maxval = (maxval >= fabs(val) ? maxval : fabs(val));
-//                            val = (val <= clamp ? val : clamp);
-//                            val = (val >= -clamp ? val : -clamp);
-//                            val *= s;
-//                            v2[index] = val;
-//                            offset++;
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
-//
-//    fprintf(outfile,"    Max val = %11.3E out of %11.3E: %s.\n", maxval, clamp, (clamp >= maxval ? "No clamping" : "Clamped")); 
-//
-//    //Dirty Hack: I love it!
-//    v2[npoints_-1L] =  0.0;
-//    v2[npoints_-2L] =  0.0;
-//    v2[npoints_-3L] =  1.0;
-//    v2[npoints_-4L] = -1.0;
-//    
-//    FILE* fh = fopen(file.c_str(), "wb");
-//    const char* header = "UVF-DATA";
-//    fwrite(header,sizeof(char),8,fh);
-//    const char* endian = "\0";
-//    fwrite(endian,sizeof(char),1,fh);
-//    unsigned long int version = 3L;
-//    fwrite(&version,sizeof(unsigned long int),1,fh);
-//    unsigned long int nchecksum = 0L;   
-//    fwrite(&nchecksum,sizeof(unsigned long int),1,fh);
-//    unsigned long int offset2 = 0L;
-//    fwrite(&offset2,sizeof(unsigned long int),1,fh);
-//    
-//    throw PSIEXCEPTION("Not implemented");
-// 
-//    fclose(fh);
-//}
 
 }
