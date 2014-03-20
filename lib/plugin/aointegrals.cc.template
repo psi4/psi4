@@ -87,17 +87,18 @@ PsiReturnType @plugin@(Options &options)
         int count=0;
         for (shellIter.first(); shellIter.is_done() == false; shellIter.next()) {
             // Compute quartet
-            eri->compute_shell(shellIter);
-            // From the quartet get all the integrals
-            AOIntegralsIterator intIter = shellIter.integrals_iterator();
-            for (intIter.first(); intIter.is_done() == false; intIter.next()) {
-                int p = intIter.i();
-                int q = intIter.j();
-                int r = intIter.k();
-                int s = intIter.l();
-                fprintf(outfile, "\t(%2d %2d | %2d %2d) = %20.15f\n",
-                    p, q, r, s, buffer[intIter.index()]);
-                ++count;
+            if (eri->compute_shell(shellIter)) {
+                // From the quartet get all the integrals
+                AOIntegralsIterator intIter = shellIter.integrals_iterator();
+                for (intIter.first(); intIter.is_done() == false; intIter.next()) {
+                    int p = intIter.i();
+                    int q = intIter.j();
+                    int r = intIter.k();
+                    int s = intIter.l();
+                    fprintf(outfile, "\t(%2d %2d | %2d %2d) = %20.15f\n",
+                        p, q, r, s, buffer[intIter.index()]);
+                    ++count;
+                }
             }
         }
         fprintf(outfile, "\n\tThere are %d unique integrals\n\n", count);
