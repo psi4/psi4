@@ -33,7 +33,7 @@ mints_subdirs = mints1 mints2 mints3 mints4 mints5 mints6 mints8
 
 matrix_subdirs = matrix1
 
-opt_subdirs = opt1 opt1-fd opt2 opt2-fd opt3 opt4 opt5 opt6 opt7 pywrap-opt-sowreap
+opt_subdirs = opt1 opt1-fd opt2 opt2-fd opt3 opt4 opt5 opt6 opt7 pywrap-opt-sowreap opt-lindep-change
 
 freq_subdirs = fd-gradient fd-freq-energy fd-freq-gradient dft-freq gibbs pywrap-freq-e-sowreap
 
