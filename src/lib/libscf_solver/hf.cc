@@ -1675,13 +1675,6 @@ double HF::compute_energy()
                 fprintf(outfile, "  ==> Properties <==\n\n");
             oe->compute();
 
-            // TODO: Hack to test CubicScalarGrid
-            /*
-            boost::shared_ptr<CubicScalarGrid> grid(new CubicScalarGrid(basisset_));
-            grid->print_header();
-            grid->compute_density_cube(Da_, "Da");
-            */
-
 //  Comments so that autodoc utility will find these PSI variables
 //
 //  Process::environment.globals["SCF DIPOLE X"] =
