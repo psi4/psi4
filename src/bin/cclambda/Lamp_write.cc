@@ -134,7 +134,7 @@ void amp_write_L1(dpdfile2 *L1, int length, const char *label, FILE *outfile)
     for(i=0; i < L1->params->rowtot[h]; i++) {
       I = L1->params->roworb[h][i];
       for(a=0; a < L1->params->coltot[h^Gia]; a++) {
-	A = L1->params->colorb[h][a];
+	A = L1->params->colorb[h^Gia][a];
 	value = L1->matrix[h][i][a];
 	for(m=0; m < length; m++) {
 	  if((fabs(value) - fabs(t1stack[m].value)) > 1e-12) {
