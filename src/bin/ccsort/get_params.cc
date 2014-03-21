@@ -97,6 +97,9 @@ void get_params(Options & options)
     throw PsiException("ccsort failure", __FILE__, __LINE__);
   }
 
+  if(params.wfn == "CCSD_T" && params.dertype == 1 && params.semicanonical)
+    throw PsiException("ROHF-CCSD(T) gradients not yet available.", __FILE__, __LINE__);
+
   params.prop = options.get_str("PROPERTY");
   if(params.prop!="POLARIZABILITY" && params.prop!="ROTATION" &&
      params.prop!="ALL" && params.prop!="MAGNETIZABILITY"
