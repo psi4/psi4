@@ -10,6 +10,10 @@ Bibliography
    B. Jeziorski, R. Moszynski, and K. Szalewicz,
    *Chem. Rev.* **94**, 1887 (1994).
 
+.. [Parker:2014:094106]
+   T. M. Parker, L. A. Burns, R. M. Parrish, A. G. Ryno, and C. D. Sherrill,
+   *J. Chem. Phys.* **140**, 094106 (2014).
+
 .. [Hohenstein:2012:WIREs]
    E. G. Hohenstein and C. D. Sherrill,
    *WIREs Comput. Mol. Sci.* **2**, 304-326 (2012).
@@ -21,6 +25,14 @@ Bibliography
 .. [Hohenstein:2011:174107]
    E. G. Hohenstein, R. M. Parrish, C. D. Sherrill, J. M. Turney, and H. F.
    Schaefer, *J. Chem. Phys.* **135**, 174107 (2011).
+
+.. [Hohenstein:2011:2842]
+   E. G. Hohenstein, H. M. Jaeger, E. J. Carrell, G. S. Tschumper, and
+   C. D. Sherrill, *J. Chem. Theory Comput.* **7**, 2842-2851 (2011).
+
+.. [Parrish:2013:174102]
+   R. M. Parrish and C. D. Sherrill,
+   *J. Chem. Phys.* **139**, 174102 (2013).
 
 .. [Hohenstein:2010:014101]
    E. G. Hohenstein and C. D. Sherrill,

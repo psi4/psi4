@@ -182,7 +182,17 @@ method is as follows:
   (doi: `10.1021/cr00031a008 <http://dx.doi.org/10.1021/cr00031a008>`_).
 
 |PSIfour| benefits enormously from the introduction of density fitting (DF)
-into SAPT.  The theory and implementation of DF-SAPT is discussed 
+into SAPT.  There are several SAPT truncations available in PSI.  For 
+guidance on which one to choose, see the SAPT section of the manual
+and refer to the following systematic study:
+
+* "Levels of  Symmetry Adapted Perturbation Theory (SAPT). I. Efficiency and
+  Performance for Interaction Energies,'' T. M. Parker, L. A. Burns, R. M.
+  Parrish, A. G. Ryno, and C. D. Sherrill, *J. Chem. Phys.* **140**, 
+  094106 (2014).
+  (doi: `10.1063/1.4867135 <http://dx.doi.org/10.1063/1.4867135>`_).
+
+The theory and implementation of DF-SAPT is discussed 
 in the following papers for various levels of SAPT.
 
 DF-SAPT0
@@ -201,7 +211,7 @@ DF-SAPT0
   184111 (2010).
   (doi: `10.1063/1.3426316 <http://dx.doi.org/10.1063/1.3426316>`_).
 
-DF-SAPT2, DF-SAPT2+, DF-SAPT2+(3), DF-SAPT2+3
+SAPT2
 
 * "Density Fitting of Intramonomer Correlation Effects in
   Symmetry-Adapted Perturbation Theory,"
@@ -209,17 +219,44 @@ DF-SAPT2, DF-SAPT2+, DF-SAPT2+(3), DF-SAPT2+3
   014101 (2010).
   (doi: `10.1063/1.3451077 <http://dx.doi.org/10.1063/1.3451077>`_).
 
+SAPT2+, SAPT2+(3), SAPT2+3
+
 * "Wavefunction Methods for Noncovalent Interactions," E. G.
   Hohenstein and C. D. Sherrill, *WIREs: Comput. Mol. Sci.* **2**,
   304-326 (2012).
   (doi: `10.1002/wcms.84 <http://dx.doi.org/10.1002/wcms.84>`_).
 
-Using Natural Orbitals in SAPT
+* "Density Fitting of Intramonomer Correlation Effects in
+  Symmetry-Adapted Perturbation Theory,"
+  E. G. Hohenstein and C. D. Sherrill, *J. Chem. Phys.* **133**,
+  014101 (2010).
+  (doi: `10.1063/1.3451077 <http://dx.doi.org/10.1063/1.3451077>`_).
 
 * "Efficient Evaluation of Triple Excitations in Symmetry-Adapted
   Perturbation Theory via MP2 Natural Orbitals," E. G. Hohenstein
   and C. D. Sherrill, *J. Chem. Phys.* **133**, 104107 (2010).
   (doi: `10.1063/1.3479400 <http://dx.doi.org/10.1063/1.3479400>`_).
+
+
+SAPT2+(CCD), SAPT2+(3)(CCD), and SAPT2+3(CCD)
+
+* ``Tractability Gains in Symmetry-Adapted Perturbation Theory Including
+  Coupled Double Excitations: CCD+ST(CCD) Dispersion with Natural Orbital
+  Truncations,'' R. M. Parrish, E. G. Hohenstein, and C. D. Sherrill, 
+  *J. Chem. Phys.* **139**, 174102 (2013).
+  (doi: `10.1063/1.4826520 <http://dx.doi.org/10.1063/1.4826520>`_).
+
+* "Wavefunction Methods for Noncovalent Interactions," E. G.
+  Hohenstein and C. D. Sherrill, *WIREs: Comput. Mol. Sci.* **2**,
+  304-326 (2012).
+  (doi: `10.1002/wcms.84 <http://dx.doi.org/10.1002/wcms.84>`_).
+
+* "Density Fitting of Intramonomer Correlation Effects in
+  Symmetry-Adapted Perturbation Theory,"
+  E. G. Hohenstein and C. D. Sherrill, *J. Chem. Phys.* **133**,
+  014101 (2010).
+  (doi: `10.1063/1.3451077 <http://dx.doi.org/10.1063/1.3451077>`_).
+
 
 Orbital-Optimized Post-Hartree-Fock Methods
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
