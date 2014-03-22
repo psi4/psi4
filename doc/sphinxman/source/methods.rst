@@ -20,10 +20,10 @@ A complete list of standard keywords is provided in Appendix
    dft
    dcft
    dfmp2
-   occ
-   dfocc
    cc
    fnocc
+   occ
+   dfocc
    psimrcc
    detci
    sapt
