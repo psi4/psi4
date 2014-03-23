@@ -575,7 +575,9 @@ void NBOWriter::write(const std::string &filename)
 
     //Alpha AO->MO transformation
     SharedMatrix soalphac = wavefunction_->Ca();
-    SharedMatrix alphac(new Matrix(nbf, nbf));
+    const Dimension aos = helper.petite_list()->AO_basisdim();
+    const Dimension nmo = wavefunction_->Ca()->colspi();
+    SharedMatrix alphac(new Matrix("Ca AO x MO", aos, nmo));
     alphac->gemm(true, false, 1.00, sotoao, soalphac, 0.00);
 
     fprintf(file47, "\n$LCAOMO\n ");
