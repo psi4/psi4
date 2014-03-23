@@ -11,7 +11,7 @@
 .. _`sec:dfocc`:
 
 DF-OCC: Density-Fitted Orbital-Optimized Coupled-Cluster and M\ |o_slash|\ ller--Plesset Perturbation Theories 
-============================================================================================
+==============================================================================================================
 
 .. codeauthor:: Ugur Bozkaya
 .. sectionauthor:: Ugur Bozkaya
@@ -168,13 +168,13 @@ Advanced Keywords
 .. include:: /autodir_options_c/dfocc__mo_diis_num_vecs.rst
 .. include:: /autodir_options_c/dfocc__orth_type.rst
 .. include:: /autodir_options_c/dfocc__do_diis.rst
-.. include:: /autodir_options_c/odfcc__do_level_shift.rst
+.. include:: /autodir_options_c/dfocc__do_level_shift.rst
 
 
 .. _`sec:dfconvocc`:
 
 DF-OCC: Conventional M\ |o_slash|\ ller--Plesset Perturbation Theories 
-===================================================================
+======================================================================
 
 *Module:* :ref:`Keywords <apdx:dfocc>`, :ref:`PSI Variables <apdx:dfocc_psivar>`, :source:`DFOCC <src/bin/dfocc>`
 

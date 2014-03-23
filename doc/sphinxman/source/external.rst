@@ -238,6 +238,10 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
 
    Append results to output file. Default: Truncate first
 
+.. option:: -d, --debug
+
+   Flush the outfile at every fprintf. Default: true iff ``--with-debug``
+
 .. option:: -h, --help
 
    Display the command-line options and usage information.
@@ -246,13 +250,11 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
 
    Input file name. Default: input.dat
 
-.. option:: -o <filename>, --output <filename>
+.. option:: -l <name>, --psidatadir <name>
 
-   Output file name. Use ``stdout`` as <filename> to redirect 
-   to the screen. Default: when the input filename is "input.dat",
-   then the output filename defaults to "output.dat".  Otherwise, the
-   output filename defaults to the the input filename (subtracting
-   any ".in" or ".dat" suffix) plus ".out"
+   Mainly for use by developers, this overrides the value of
+   :envvar:`PSIDATADIR` and specifies the path to the Psi data
+   library (psi4/lib) 
 
 .. option:: -m, --messy
 
@@ -262,16 +264,22 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
 
    Number of threads to use (overrides :envvar:`OMP_NUM_THREADS`)
 
-.. option:: -scratch <name>, --s <name>
+.. option:: -o <filename>, --output <filename>
+
+   Output file name. Use ``stdout`` as <filename> to redirect 
+   to the screen. Default: when the input filename is "input.dat",
+   then the output filename defaults to "output.dat".  Otherwise, the
+   output filename defaults to the the input filename (subtracting
+   any ".in" or ".dat" suffix) plus ".out"
+
+.. option:: -p <prefix>, --prefix <prefix>
+
+   Prefix for psi files. Default: psi
+
+.. option:: -s <name>, --scratch <name>
 
    This overrides the value of :envvar:`PSI_SCRATCH` and provides
    a path to the location of scratch files
-
-.. option:: -l <name>, --psidatadir <name>
-
-   Mainly for use by developers, this overrides the value of
-   :envvar:`PSIDATADIR` and specifies the path to the Psi data
-   library (psi4/lib) 
 
 .. option:: --new-plugin <name>
 
@@ -280,17 +288,9 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
    to use, for example: ``--new-plugin name +mointegrals``.
    See Sec. :ref:`sec:plugins` for available templates.
 
-.. option:: -p <prefix>, --prefix <prefix>
-
-   Prefix for psi files. Default: psi
-
 .. option:: -v, --verbose
 
    Print a lot of information, including the Psithon translation of the input file
-
-.. option:: -d, --debug
-
-   Flush the outfile at every fprintf. Default: true iff ``--with-debug``
 
 .. option:: -V, --version
 
