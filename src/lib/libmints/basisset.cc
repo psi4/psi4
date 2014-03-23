@@ -111,6 +111,7 @@ BasisSet::BasisSet()
     n_prim_per_shell_[0] = 1;
     uexponents_[0] = 0.0;
     ucoefficients_[0] = 1.0;
+    uerd_coefficients_[0] = 1.0;
     uoriginal_coefficients_[0] = 1.0;
     shell_first_ao_[0] = 0;
     shell_first_basis_function_[0] = 0;

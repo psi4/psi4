@@ -30,14 +30,16 @@ one is included with the interface), it, too, must be in :envvar:`PATH` or
 :envvar:`PSIPATH`. If |PSIfour| is unable to execute the binary, an error
 will be reported.
 
-.. caution:: The p4c4 interface isn't in the master branch nor will it be in
-   the near future. To run this code, (1) build the ``c4`` branch of psi4,
-   (2) find a copy of cfour and put it in :envvar:`PATH` or
-   :envvar:`PSIPATH`, and (3) clone https://github.com/loriab/qcdb.git
-   python module and prepend :envvar:`PYTHONPATH` with the top qcdb
-   directory (the path added to PYTHONPATH should have one "qcdb" in it;
-   the cloned qcdb is what needs to be imported in preference to the one
-   already in psi4). Execute psi4 as usual.
+.. .. caution:: The p4c4 interface isn't in the master branch nor will it be in
+..    the near future. To run this code, (1) build the ``c4`` branch of psi4,
+..    (2) find a copy of cfour and put it in :envvar:`PATH` or
+..    :envvar:`PSIPATH`, and (3) clone https://github.com/loriab/qcdb.git
+..    python module and prepend :envvar:`PYTHONPATH` with the top qcdb
+..    directory (the path added to PYTHONPATH should have one "qcdb" in it;
+..    the cloned qcdb is what needs to be imported in preference to the one
+..    already in psi4). Execute psi4 as usual.
+
+.. caution:: The p4c4 interface hasn't been fully adapted for the new March 2014 version.
 
 Cfour for |PSIfour| Users
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -659,80 +661,80 @@ Gradient methods available through P4C4 interface
 
 .. _`table:cfour_cc_program`:
 
-always abcdtype = aobasis (but sometimes 
-ncc does rhf ccsdt(q)
-reccommended code to do with, not only code (b/c mrcc can do much of this)
-.. table:: Cfour coupled-cluster program defaults by calculation type
-
-    +-----------------------------------------+---------------------------------+-----------------------+--------+--------+---------+
-    |                                         |                                 |                       | RHF    | UHF    | ROHF    |
-    |                                         |                                 |                       +--------+--------+---------+
-    | Driver Call, |cfour__cfour_deriv_level| | name, |cfour__cfour_calc_level| | |cfour__cfour_excite| | |cfour__cfour_cc_program| |
-    +=========================================+=================================+=======================+========+========+=========+
-    | :py:func:`~driver.energy`, zero         | cc2                             | none                  | vcc    | vcc    | vcc     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomee                 | _cc    | _cc    | _cc     |
-    |                                         |vcc for everything                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomea/eomip           | _cc    | _cc    | _cc     |
-    |                                         +---------------------------------+-----------------------+--------+--------+---------+
-    |                                         | ccsd                            | none                  | ecc    | ecc    | ecc     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomee                 | vcc    | vcc    | vcc     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomea/eomip           | vcc    | vcc    | vcc     |
-    |                                         +---------------------------------+-----------------------+--------+--------+---------+
-    |                                         | ccsd(t)                         | none                  | ecc    | ecc    | ecc     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomee                 |     |     |      |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomea/eomip           |     |     |      |
-    |                                         +---------------------------------+-----------------------+--------+--------+---------+
-    |                                         | cc3                             | none                  | vcc    | vcc    | vcc     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomee                 | vcc    | vcc    | |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomea/eomip           |  |     |      |
-    |                                         +---------------------------------+-----------------------+--------+--------+---------+
-    |                                         | ccsdt (no aobasis sp or opt, also prob for cc3, or for eomea grad) 
-ecc / vcc / vcc
-| none                  | ecc    | ecc    | ecc     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomee                 | ecc    | mrcc    | mr_cc     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomeano/eomipyes      | ecc    |     |      |
-    +-----------------------------------------+---------------------------------+-----------------------+--------+--------+---------+
-    | :py:func:`~driver.optimize`, first      | cc2                             | none                  | vcc    | vcc    | vcc     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomee                 | vcc    | vcc    | vcc     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomea/eomip    not sure ask       | vcc    | vcc    | vcc     |
-    |                                         +---------------------------------+-----------------------+--------+--------+---------+
-    |                                         | ccsd                            | none                  | ecc    | ecc    | ecc     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomee                 | vcc    | vcc    | vcc     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomea/eomip           | vcc    | vcc    | vcc     |
-    |                                         +---------------------------------+-----------------------+--------+--------+---------+
-    |                                         | ccsd(t)                         | none                  | ecc    | ecc    | vcc     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomee                 |     |     |      |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomea/eomip           |     |     |      |
-    |                                         +---------------------------------+-----------------------+--------+--------+---------+
-    |                                         | cc3                             | none                  | vcc    |     |     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomee                 | vcc    |     |     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomea/eomip           | vcc    |    |      |
-    |                                         +---------------------------------+-----------------------+--------+--------+---------+
-    |                                         | ccsdt                           | none                  | ecc    | mrcc    | mrc     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomee                 | mrcc   | mrcc    | mrcc     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomea/eomip           | mrcc    | mrcc    | mrcc     |
-    +-----------------------------------------+---------------------------------+-----------------------+--------+--------+---------+
-properties same as grad
-2nd deriv ecc only for ccsd(t)
+.. comment always abcdtype = aobasis (but sometimes 
+.. comment ncc does rhf ccsdt(q)
+.. comment reccommended code to do with, not only code (b/c mrcc can do much of this)
+.. comment .. table:: Cfour coupled-cluster program defaults by calculation type
+.. comment 
+.. comment     +-----------------------------------------+---------------------------------+-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 |                       | RHF    | UHF    | ROHF    |
+.. comment     |                                         |                                 |                       +--------+--------+---------+
+.. comment     | Driver Call, |cfour__cfour_deriv_level| | name, |cfour__cfour_calc_level| | |cfour__cfour_excite| | |cfour__cfour_cc_program| |
+.. comment     +=========================================+=================================+=======================+========+========+=========+
+.. comment     | :py:func:`~driver.energy`, zero         | cc2                             | none                  | vcc    | vcc    | vcc     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomee                 | _cc    | _cc    | _cc     |
+.. comment     |                                         |vcc for everything                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomea/eomip           | _cc    | _cc    | _cc     |
+.. comment     |                                         +---------------------------------+-----------------------+--------+--------+---------+
+.. comment     |                                         | ccsd                            | none                  | ecc    | ecc    | ecc     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomee                 | vcc    | vcc    | vcc     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomea/eomip           | vcc    | vcc    | vcc     |
+.. comment     |                                         +---------------------------------+-----------------------+--------+--------+---------+
+.. comment     |                                         | ccsd(t)                         | none                  | ecc    | ecc    | ecc     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomee                 |     |     |      |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomea/eomip           |     |     |      |
+.. comment     |                                         +---------------------------------+-----------------------+--------+--------+---------+
+.. comment     |                                         | cc3                             | none                  | vcc    | vcc    | vcc     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomee                 | vcc    | vcc    | |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomea/eomip           |  |     |      |
+.. comment     |                                         +---------------------------------+-----------------------+--------+--------+---------+
+.. comment     |                                         | ccsdt (no aobasis sp or opt, also prob for cc3, or for eomea grad) 
+.. comment ecc / vcc / vcc
+.. comment | none                  | ecc    | ecc    | ecc     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomee                 | ecc    | mrcc    | mr_cc     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomeano/eomipyes      | ecc    |     |      |
+.. comment     +-----------------------------------------+---------------------------------+-----------------------+--------+--------+---------+
+.. comment     | :py:func:`~driver.optimize`, first      | cc2                             | none                  | vcc    | vcc    | vcc     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomee                 | vcc    | vcc    | vcc     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomea/eomip    not sure ask       | vcc    | vcc    | vcc     |
+.. comment     |                                         +---------------------------------+-----------------------+--------+--------+---------+
+.. comment     |                                         | ccsd                            | none                  | ecc    | ecc    | ecc     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomee                 | vcc    | vcc    | vcc     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomea/eomip           | vcc    | vcc    | vcc     |
+.. comment     |                                         +---------------------------------+-----------------------+--------+--------+---------+
+.. comment     |                                         | ccsd(t)                         | none                  | ecc    | ecc    | vcc     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomee                 |     |     |      |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomea/eomip           |     |     |      |
+.. comment     |                                         +---------------------------------+-----------------------+--------+--------+---------+
+.. comment     |                                         | cc3                             | none                  | vcc    |     |     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomee                 | vcc    |     |     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomea/eomip           | vcc    |    |      |
+.. comment     |                                         +---------------------------------+-----------------------+--------+--------+---------+
+.. comment     |                                         | ccsdt                           | none                  | ecc    | mrcc    | mrc     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomee                 | mrcc   | mrcc    | mrcc     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomea/eomip           | mrcc    | mrcc    | mrcc     |
+.. comment     +-----------------------------------------+---------------------------------+-----------------------+--------+--------+---------+
+.. comment properties same as grad
+.. comment 2nd deriv ecc only for ccsd(t)
 
 Specification Details
 ~~~~~~~~~~~~~~~~~~~~~
@@ -915,84 +917,84 @@ unaffected.  Additionally, there are a few arguments to the function
 :py:func:`~interface_cfour.run_cfour` that control the Cfour scratch
 directory. 
 
-Notes to Self
-~~~~~~~~~~~~~
-
-Test checked-in GENBAS on installed copy
-
-Reference still not factoroed into cc_program!
-
-optimize on a sandwich calc? errors out
-
-
-.. _`table:cfour_cc_program`:
-
-.. table:: Cfour coupled-cluster program defaults by calculation type
-
-    +-----------------------------------------+---------------------------------+-----------------------+--------+--------+---------+
-    |                                         |                                 |                       | RHF    | UHF    | ROHF    |
-    |                                         |                                 |                       +--------+--------+---------+
-    | Driver Call, |cfour__cfour_deriv_level| | name, |cfour__cfour_calc_level| | |cfour__cfour_excite| | |cfour__cfour_cc_program| |
-    +=========================================+=================================+=======================+========+========+=========+
-    | :py:func:`~driver.energy`, zero         | cc2                             | none                  | vcc    | vcc    | vcc     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomee                 | _cc    | _cc    | _cc     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomea/eomip           | _cc    | _cc    | _cc     |
-    |                                         +---------------------------------+-----------------------+--------+--------+---------+
-    |                                         | ccsd                            | none                  | ecc    | ecc    | ecc     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomee                 | ecc    | _cc    | _cc     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomea/eomip           | _cc    | _cc    | _cc     |
-    |                                         +---------------------------------+-----------------------+--------+--------+---------+
-    |                                         | ccsd(t)                         | none                  | ecc    | ecc    | ecc     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomee                 | _cc    | _cc    | _cc     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomea/eomip           | _cc    | _cc    | _cc     |
-    |                                         +---------------------------------+-----------------------+--------+--------+---------+
-    |                                         | cc3                             | none                  | vcc    | vcc    | vcc     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomee                 | _cc    | _cc    | _cc     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomea/eomip           | _cc    | _cc    | _cc     |
-    |                                         +---------------------------------+-----------------------+--------+--------+---------+
-    |                                         | ccsdt                           | none                  | ecc    | ecc    | ecc     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomee                 | _cc    | _cc    | _cc     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomea/eomip           | _cc    | _cc    | _cc     |
-    +-----------------------------------------+---------------------------------+-----------------------+--------+--------+---------+
-    | :py:func:`~driver.optimize`, first      | cc2                             | none                  | _cc    | _cc    | vcc     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomee                 | _cc    | _cc    | vcc     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomea/eomip           | _cc    | _cc    | vcc     |
-    |                                         +---------------------------------+-----------------------+--------+--------+---------+
-    |                                         | ccsd                            | none                  | _cc    | _cc    | vcc     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomee                 | _cc    | _cc    | vcc     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomea/eomip           | _cc    | _cc    | vcc     |
-    |                                         +---------------------------------+-----------------------+--------+--------+---------+
-    |                                         | ccsd(t)                         | none                  | ecc    | _cc    | vcc     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomee                 | _cc    | _cc    | vcc     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomea/eomip           | _cc    | _cc    | vcc     |
-    |                                         +---------------------------------+-----------------------+--------+--------+---------+
-    |                                         | cc3                             | none                  | _cc    | _cc    | vcc     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomee                 | _cc    | _cc    | vcc     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomea/eomip           | _cc    | _cc    | vcc     |
-    |                                         +---------------------------------+-----------------------+--------+--------+---------+
-    |                                         | ccsdt                           | none                  | ecc    | _cc    | vcc     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomee                 | _cc    | _cc    | vcc     |
-    |                                         |                                 +-----------------------+--------+--------+---------+
-    |                                         |                                 | eomea/eomip           | _cc    | _cc    | vcc     |
-    +-----------------------------------------+---------------------------------+-----------------------+--------+--------+---------+
-
-
+.. comment Notes to Self
+.. comment ~~~~~~~~~~~~~
+.. comment 
+.. comment Test checked-in GENBAS on installed copy
+.. comment 
+.. comment Reference still not factoroed into cc_program!
+.. comment 
+.. comment optimize on a sandwich calc? errors out
+.. comment 
+.. comment 
+.. comment .. _`table:cfour_cc_program`:
+.. comment 
+.. comment .. table:: Cfour coupled-cluster program defaults by calculation type
+.. comment 
+.. comment     +-----------------------------------------+---------------------------------+-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 |                       | RHF    | UHF    | ROHF    |
+.. comment     |                                         |                                 |                       +--------+--------+---------+
+.. comment     | Driver Call, |cfour__cfour_deriv_level| | name, |cfour__cfour_calc_level| | |cfour__cfour_excite| | |cfour__cfour_cc_program| |
+.. comment     +=========================================+=================================+=======================+========+========+=========+
+.. comment     | :py:func:`~driver.energy`, zero         | cc2                             | none                  | vcc    | vcc    | vcc     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomee                 | _cc    | _cc    | _cc     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomea/eomip           | _cc    | _cc    | _cc     |
+.. comment     |                                         +---------------------------------+-----------------------+--------+--------+---------+
+.. comment     |                                         | ccsd                            | none                  | ecc    | ecc    | ecc     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomee                 | ecc    | _cc    | _cc     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomea/eomip           | _cc    | _cc    | _cc     |
+.. comment     |                                         +---------------------------------+-----------------------+--------+--------+---------+
+.. comment     |                                         | ccsd(t)                         | none                  | ecc    | ecc    | ecc     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomee                 | _cc    | _cc    | _cc     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomea/eomip           | _cc    | _cc    | _cc     |
+.. comment     |                                         +---------------------------------+-----------------------+--------+--------+---------+
+.. comment     |                                         | cc3                             | none                  | vcc    | vcc    | vcc     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomee                 | _cc    | _cc    | _cc     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomea/eomip           | _cc    | _cc    | _cc     |
+.. comment     |                                         +---------------------------------+-----------------------+--------+--------+---------+
+.. comment     |                                         | ccsdt                           | none                  | ecc    | ecc    | ecc     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomee                 | _cc    | _cc    | _cc     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomea/eomip           | _cc    | _cc    | _cc     |
+.. comment     +-----------------------------------------+---------------------------------+-----------------------+--------+--------+---------+
+.. comment     | :py:func:`~driver.optimize`, first      | cc2                             | none                  | _cc    | _cc    | vcc     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomee                 | _cc    | _cc    | vcc     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomea/eomip           | _cc    | _cc    | vcc     |
+.. comment     |                                         +---------------------------------+-----------------------+--------+--------+---------+
+.. comment     |                                         | ccsd                            | none                  | _cc    | _cc    | vcc     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomee                 | _cc    | _cc    | vcc     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomea/eomip           | _cc    | _cc    | vcc     |
+.. comment     |                                         +---------------------------------+-----------------------+--------+--------+---------+
+.. comment     |                                         | ccsd(t)                         | none                  | ecc    | _cc    | vcc     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomee                 | _cc    | _cc    | vcc     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomea/eomip           | _cc    | _cc    | vcc     |
+.. comment     |                                         +---------------------------------+-----------------------+--------+--------+---------+
+.. comment     |                                         | cc3                             | none                  | _cc    | _cc    | vcc     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomee                 | _cc    | _cc    | vcc     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomea/eomip           | _cc    | _cc    | vcc     |
+.. comment     |                                         +---------------------------------+-----------------------+--------+--------+---------+
+.. comment     |                                         | ccsdt                           | none                  | ecc    | _cc    | vcc     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomee                 | _cc    | _cc    | vcc     |
+.. comment     |                                         |                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |                                 | eomea/eomip           | _cc    | _cc    | vcc     |
+.. comment     +-----------------------------------------+---------------------------------+-----------------------+--------+--------+---------+
+.. comment 
+.. comment 
