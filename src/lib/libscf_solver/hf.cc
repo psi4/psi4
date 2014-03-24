@@ -46,8 +46,6 @@
 #include <psifiles.h>
 #include <libfock/jk.h>
 
-#include <libmints/gridprop.h>
-
 #include "hf.h"
 
 #include <psi4-dec.h>
