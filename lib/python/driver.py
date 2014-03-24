@@ -818,24 +818,26 @@ def property(name, **kwargs):
 
     .. caution:: Some features are not yet implemented. Buy a developer a coffee.
 
-       - This function at present handles property functions only for CC methods.
-         Consult the keywords sections for other modules for further property capabilities.
+       - This function at present has a limited functionality.
+         Consult the keywords sections of other modules for further property capabilities.
 
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | name                    | calls method                                                                          |
-    +=========================+=======================================================================================+
-    | scf                     | Self-consistent field method(s)                                                       |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | cc2                     | 2nd-order approximate CCSD                                                            |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | ccsd                    | coupled cluster singles and doubles (CCSD)                                            |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | df-mp2                  | MP2 with density fitting                                                              |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | eom-cc2                 | 2nd-order approximate EOM-CCSD                                                        |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | eom-ccsd                | equation-of-motion coupled cluster singles and doubles (EOM-CCSD)                     |
-    +-------------------------+---------------------------------------------------------------------------------------+
+    +--------------+-----------------------------------------------+----------------+-----------------------------------------------+
+    | Name         | Calls Method                                  | Reference      | Supported Properties                          |
+    +==============+===============================================+================+===============================================+
+    | scf          | Self-consistent field method(s)               | RHF/ROHF/UHF   | Listed here                                   |
+    +--------------+-----------------------------------------------+----------------+-----------------------------------------------+
+    | cc2          | 2nd-order approximate CCSD                    | RHF            | dipole, quadrupole, polarizability, rotation, |
+    |              |                                               |                | roa                                           |
+    +--------------+-----------------------------------------------+----------------+-----------------------------------------------+
+    | ccsd         | Coupled cluster singles and doubles (CCSD)    | RHF            | dipole, quadrupole, polarizability, rotation, |
+    |              |                                               |                | roa                                           |
+    +--------------+-----------------------------------------------+----------------+-----------------------------------------------+
+    | df-mp2       | MP2 with density fitting                      | RHF            |                                               |
+    +--------------+-----------------------------------------------+----------------+-----------------------------------------------+
+    | eom-cc2      | 2nd-order approximate EOM-CCSD                | RHF            | oscillator_strength, rotational_strength      |
+    +--------------+-----------------------------------------------+----------------+-----------------------------------------------+
+    | eom-ccsd     | Equation-of-motion CCSD (EOM-CCSD)            | RHF            | oscillator_strength, rotational_strength      |
+    +--------------+-----------------------------------------------+----------------+-----------------------------------------------+
 
     :type name: string
     :param name: ``'ccsd'`` || etc.
