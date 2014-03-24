@@ -209,9 +209,6 @@ procedures = {
             'eom-cc2'  : run_cc_property,
             'eom-ccsd' : run_cc_property,
             'detci'    : run_detci_property,  # full control over detci
-            'mp'       : run_detci_property,  # arbitrary order mp(n)
-            'detci-mp' : run_detci_property,  # arbitrary order mp(n)
-            'zapt'     : run_detci_property,  # arbitrary order zapt(n)
             'cisd'     : run_detci_property,
             'cisdt'    : run_detci_property,
             'cisdtq'   : run_detci_property,
@@ -821,24 +818,28 @@ def property(name, **kwargs):
        - This function at present has a limited functionality.
          Consult the keywords sections of other modules for further property capabilities.
 
-    +--------------+-----------------------------------------------+----------------+-----------------------------------------------+
-    | Name         | Calls Method                                  | Reference      | Supported Properties                          |
-    +==============+===============================================+================+===============================================+
-    | scf          | Self-consistent field method(s)               | RHF/ROHF/UHF   | Listed here                                   |
-    +--------------+-----------------------------------------------+----------------+-----------------------------------------------+
-    | cc2          | 2nd-order approximate CCSD                    | RHF            | dipole, quadrupole, polarizability, rotation, |
-    |              |                                               |                | roa                                           |
-    +--------------+-----------------------------------------------+----------------+-----------------------------------------------+
-    | ccsd         | Coupled cluster singles and doubles (CCSD)    | RHF            | dipole, quadrupole, polarizability, rotation, |
-    |              |                                               |                | roa                                           |
-    +--------------+-----------------------------------------------+----------------+-----------------------------------------------+
-    | df-mp2       | MP2 with density fitting                      | RHF            |                                               |
-    +--------------+-----------------------------------------------+----------------+-----------------------------------------------+
-    | eom-cc2      | 2nd-order approximate EOM-CCSD                | RHF            | oscillator_strength, rotational_strength      |
-    +--------------+-----------------------------------------------+----------------+-----------------------------------------------+
-    | eom-ccsd     | Equation-of-motion CCSD (EOM-CCSD)            | RHF            | oscillator_strength, rotational_strength      |
-    +--------------+-----------------------------------------------+----------------+-----------------------------------------------+
-
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+    | Name               | Calls Method                                  | Reference      | Supported Properties                                          |
+    +====================+===============================================+================+===============================================================+
+    | scf                | Self-consistent field method(s)               | RHF/ROHF/UHF   | Listed :ref:`here <sec:oeprop>`                               |
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+    | cc2                | 2nd-order approximate CCSD                    | RHF            | dipole, quadrupole, polarizability, rotation, roa             |
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+    | ccsd               | Coupled cluster singles and doubles (CCSD)    | RHF            | dipole, quadrupole, polarizability, rotation, roa             |
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+    | df-mp2             | MP2 with density fitting                      | RHF            | dipole, quadrupole, mulliken_charges, no_occupations          |
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+    | eom-cc2            | 2nd-order approximate EOM-CCSD                | RHF            | oscillator_strength, rotational_strength                      |
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+    | eom-ccsd           | Equation-of-motion CCSD (EOM-CCSD)            | RHF            | oscillator_strength, rotational_strength                      |
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+    | 'cisd', 'cisdt',   | Configuration interaction                     | RHF/ROHF       | dipole, quadrupole, transition_dipole, transition_quadrupole  |
+    | 'cisdt', 'cisdtq', |                                               |                |                                                               |
+    | 'ci5', etc...      |                                               |                |                                                               |
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+    | 'fci'              | Full configuration interaction                | RHF/ROHF       | dipole, quadrupole, transition_dipole, transition_quadrupole  |
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+     
     :type name: string
     :param name: ``'ccsd'`` || etc.
 
