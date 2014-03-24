@@ -68,6 +68,12 @@ Density Cumulant Functional Theory (DCFT)
 
 .. _`intro:dcftcitations`:
 
+|PSIfour| features several formulations of newly-developed density cumulant
+functional theory (DCFT). The theory and benchmark of this theory are
+discussed in the following papers:
+
+DC-06 (also known as DCFT-06):  
+
 * "Density Cumulant Functional Theory: First Implementation and
   Benchmark Results for the DCFT-06 Model," A. C. Simmonett,
   J. J. Wilke, H. F. Schaefer, and W. Kutzelnigg, *J. Chem. Phys.*
@@ -79,11 +85,19 @@ Density Cumulant Functional Theory (DCFT)
   and H. F. Schaefer, *J. Chem. Phys.* **137**, 054105 (2012).
   (doi: `10.1063/1.4739423 <http://dx.doi.org/10.1063/1.4739423>`_).
 
+DC-12:  
+
 * "Density cumulant functional theory: The DC-12 method, an improved 
   description of the one-particle density matrix," A. Yu. Sokolov, 
   A. C. Simmonett, and H. F. Schaefer, *J. Chem. Phys.*  **138**, 024107 
   (2013).
   (doi: `10.1063/1.4773580 <http://dx.doi.org/10.1063/1.4773580>`_).
+
+ODC-06 and ODC-12:  
+
+* "Orbital-optimized density cumulant functional theory," A. Yu. Sokolov, and
+  H. F. Schaefer, *J. Chem. Phys.*  **139**, 204110 (2013). 
+  (doi: `10.1063/1.4833138 <http://dx.doi.org/10.1063/1.4833138>`_).
 
 Configuration Interaction (CI)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
