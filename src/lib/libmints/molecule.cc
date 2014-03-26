@@ -2799,7 +2799,8 @@ char** Molecule::irrep_labels()
     for (int i=0; i<nirreps; i++) {
         irreplabel[i] = (char *) malloc(sizeof(char)*5);
         ::memset(irreplabel[i], 0, sizeof(char)*5);
-        strcpy(irreplabel[i],pg_->char_table().gamma(i).symbol());
+        //strcpy(irreplabel[i],pg_->char_table().gamma(i).symbol());
+        strcpy(irreplabel[i],pg_->char_table().gamma(i).symbol_ns());
     }
     return irreplabel;
 }

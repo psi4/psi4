@@ -124,7 +124,7 @@ a certain set of determinants. ::
       active          [0,0,1,1,0,0,0,0]      # Active MOs
       frozen_uocc     [0,0,0,0,0,0,0,0]      # Frozen virtual MOs
       corr_multp      1                      # Select the Ms = 0 component
-      root            1
+      follow_root     1
       wfn_sym         B1g                    # Select the B1g state
    }
    energy('psimrcc')
