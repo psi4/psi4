@@ -29,6 +29,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
 #include <cstdio>
 #include <sstream>
 #include <map>
@@ -709,6 +710,8 @@ bool py_psi_set_local_option_int(std::string const & module, std::string const &
         Process::environment.options.set_double(module, nonconst_key, val);
     }else if (data.type() == "boolean") {
         Process::environment.options.set_bool(module, nonconst_key, value ? true : false);
+    }else if (data.type() == "string") {
+        Process::environment.options.set_str(module, nonconst_key, boost::lexical_cast<std::string>(value));
     }else{
         Process::environment.options.set_int(module, nonconst_key, value);
     }
@@ -767,6 +770,8 @@ bool py_psi_set_global_option_int(std::string const & key, int value)
         Process::environment.options.set_global_double(nonconst_key, val);
     }else if (data.type() == "boolean") {
         Process::environment.options.set_global_bool(nonconst_key, value ? true : false);
+    }else if (data.type() == "string") {
+        Process::environment.options.set_global_str(nonconst_key, boost::lexical_cast<std::string>(value));
     }else{
         Process::environment.options.set_global_int(nonconst_key, value);
     }
