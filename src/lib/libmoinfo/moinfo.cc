@@ -150,7 +150,7 @@ void MOInfo::read_info()
     boost::shared_ptr<PointGroup> old_pg = Process::environment.parent_symmetry();
     if(old_pg){
         for(int h = 0; h < nirreps; ++h){
-            string irr_label_str = old_pg->char_table().gamma(h).symbol();
+            string irr_label_str = old_pg->char_table().gamma(h).symbol_ns();
             trim_spaces(irr_label_str);
             to_upper(irr_label_str);
             if(wavefunction_sym_str == irr_label_str){
