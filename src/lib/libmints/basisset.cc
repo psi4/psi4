@@ -486,7 +486,6 @@ BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
     /*
      * Count basis functions, shells and primitives
      */
-    n_uprimitive_ = 0;
     n_shells_ = 0;
     nprimitive_ = 0;
     nao_ = 0;
@@ -499,7 +498,6 @@ BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
         for (int i=0; i<shells.size(); ++i) {
             const ShellInfo &shell = shells[i];
             int nprim = shell.nprimitive();
-            n_uprimitive_ += nprim;
             nprimitive_ += nprim;
             n_shells_++;
             nao_ += shell.ncartesian();
