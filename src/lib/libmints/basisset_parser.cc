@@ -212,7 +212,7 @@ Gaussian94BasisSetParser::parse(const string& symbol, const std::vector<std::str
                 gaussian_type = Cartesian;
                 if (Process::environment.options.get_global("PUREAM").has_changed()) {
                     gaussian_type = ((Process::environment.options.get_global("PUREAM").to_integer()) ? Pure : Cartesian);
-            }
+                }
                 continue;
             } else if (regex_match(line, what, spherical)) {
                 gaussian_type = Pure;

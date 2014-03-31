@@ -634,20 +634,20 @@ void export_mints()
             def("print_out", basis_print_out(&BasisSet::print), "docstring").
             def("print_detail_out", basis_print_out(&BasisSet::print_detail), "docstring").
             def("genbas", &BasisSet::print_detail_cfour, "Returns basis set per atom in CFOUR format").
-            def("make_filename", &BasisSet::make_filename, "docstring").
+            def("make_filename", &BasisSet::make_filename, "Returns filename for basis name: pluses, stars, parentheses replaced and gbs extension added").
             staticmethod("make_filename").
             def("construct", &BasisSet::construct, "docstring").
             staticmethod("construct").
             def("zero_ao_basis_set", &BasisSet::zero_ao_basis_set, "Returns a BasisSet object that actually has a single s-function at the origin with an exponent of 0.0 and contraction of 1.0.").
             staticmethod("zero_ao_basis_set").
-            def("nbf", &BasisSet::nbf, "docstring").
-            def("nao", &BasisSet::nao, "docstring").
-            def("nprimitive", &BasisSet::nprimitive, "docstring").
-            def("nshell", &BasisSet::nshell, "docstring").
+            def("nbf", &BasisSet::nbf, "Returns number of basis functions (Cartesian or spherical depending on has_puream)").
+            def("nao", &BasisSet::nao, "Returns number of atomic orbitals (Cartesian)").
+            def("nprimitive", &BasisSet::nprimitive, "Returns total number of primitives in all contractions").
+            def("nshell", &BasisSet::nshell, "Returns number of shells").
             def("shell", no_center_version(&BasisSet::shell), return_value_policy<copy_const_reference>(), "docstring").
             def("shell", center_version(&BasisSet::shell), return_value_policy<copy_const_reference>(), "docstring").
-            def("max_am", &BasisSet::max_am, "docstring").
-            def("has_puream", &BasisSet::has_puream, "docstring").
+            def("max_am", &BasisSet::max_am, "Returns maximum angular momentum used").
+            def("has_puream", &BasisSet::has_puream, "Spherical harmonics?").
             def("shell_to_basis_function", &BasisSet::shell_to_basis_function, "docstring").
             def("shell_to_center", &BasisSet::shell_to_center, "docstring").
             def("shell_to_ao_function", &BasisSet::shell_to_ao_function, "docstring").
