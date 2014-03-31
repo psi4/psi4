@@ -61,35 +61,47 @@ void MOLECULE::rfo_step(void) {
   double **H = p_Opt_data->g_H_pointer();
   double *dq = p_Opt_data->g_dq_pointer();
   double **SRFO = init_matrix(dim+1,dim+1);
-  double **rfO = init_matrix(dim+1,dim+1);
+  double **rfo = init_matrix(dim+1,dim+1);
 
   // build (lower-triangle of) RFO matrix and diagonalize
-  double **rfo_mat = init_matrix(dim+1, dim+1);
-  for (i=0; i<dim; ++i)
-    for (j=0; j<=i; ++j)
-      rfo_mat[i][j] = H[i][j];
+//  double **rfo_mat = init_matrix(dim+1, dim+1);
+  for (i=0; i<dim; ++i){
+    for (j=0; j<=i; ++j){
+//      rfo_mat[i][j] = H[i][j];
       rfo[i][j] = H[i][j];
-
-  for (i=0; i<dim; ++i)
-    rfo_mat[dim][i] = - fq[i];
-    rfodim[i][j] = -fq[i];
-
+    }
+  }
+//  matrix_copy(rfo_mat,rfo,dim+1,dim+1);
+  for (i=0; i<dim; ++i) {
+//    rfo_mat[dim][i] = - fq[i];
+      rfo[i][dim]= rfo[dim][i] = -fq[i]; 
+  }
+//  if (Opt_params.print_lvl >= 3) {
+//    fprintf(outfile,"RFO mat\n");
+//    print_matrix(outfile, rfo_mat, dim+1, dim+1);
+//  }
   if (Opt_params.print_lvl >= 3) {
     fprintf(outfile,"RFO mat\n");
-    print_matrix(outfile, rfo_mat, dim+1, dim+1);
+    print_matrix(outfile, rfo, dim+1, dim+1);
   }
+  double **Hevects = matrix_return_copy(H,dim,dim); 
   double *h = init_array(dim);
-  opt_symm_matrix_eig(H, dim, h);
-  double *evalsRfo = init_array(dim+1);
-  opt_symm_matrix_eig(rfo_mat, dim+1, evalsRfo);
+  opt_symm_matrix_eig(Hevects, dim, h);
+//  double *evalsRfo = init_array(dim+1);
+//  opt_symm_matrix_eig(rfo_mat, dim+1, evalsRfo);
+//  if (Opt_params.print_lvl >= 2) {
+//    fprintf(outfile,"RFO eigenvalues/evalsRfos\n");
+//    print_matrix(outfile, &(evalsRfo), 1, dim+1);
+//  }
   if (Opt_params.print_lvl >= 2) {
-    fprintf(outfile,"RFO eigenvalues/evalsRfos\n");
-    print_matrix(outfile, &(evalsRfo), 1, dim+1);
+//    fprintf(outfile,"RFO eigenvalues/evalsRfos\n");
+//    print_matrix(outfile, &(h), 1, dim+1);
   }
 
 
   int rfo_root, f;
   double rfo_eval;
+  double *evalsSrfo = init_array(dim+1);
   double *rfo_u;      // unit vector in step direction
   double dqtdq;
   double rfo_dqnorm;   // norm of step
@@ -103,17 +115,18 @@ void MOLECULE::rfo_step(void) {
   double lambda;
   double sum;
   double analyticDerivative;
-  double trust;
-  trust = 0.001;
+  double trust = Opt_params.intrafragment_step_limit;
+  dqtdq = 10;
+  alpha = 1;
 
 //Iterative sequence to find s
-  While (fabs(trust- Sqrt[dqtdq]) >= 10^-8) {
+  while ( fabs( trust - sqrt(dqtdq )) > 1e-5) {
 
 	//Creates scaling matrix
-	  for(i=0; i<dim+1; i++) {
-		for(j=0; j<dim+1; j++) {
-			if(i==dim+1 && j==dim+1) {
-				smat[i][j]=1
+	  for(i=0; i<=dim; i++) {
+		for(j=0; j<=dim; j++) {
+			if(i==dim && j==dim) {
+				smat[i][j]=1;
 			}
 			else if(i==j) {
 				smat[i][j]=1/alpha;
@@ -123,11 +136,25 @@ void MOLECULE::rfo_step(void) {
 			}
 		}
 	  }
+           if (Opt_params.print_lvl >= 3) {
+              fprintf(outfile,"Scaling matrix\n");
+   	      print_matrix(outfile, smat, dim+1, dim+1);
+  	   }
+
+
  	 //Scales RFO matrix
-	  opt_matrix_mult(rfo, 0, smat, 0, SRFO, 0, dim+1, dim+1,1, 0);
+	  opt_matrix_mult(smat, 0, rfo, 0, SRFO, 0, dim+1, dim+1, dim+1, 0);
+          if (Opt_params.print_lvl >= 3) {
+              fprintf(outfile,"Scaled matrix\n");
+              print_matrix(outfile, SRFO, dim+1, dim+1);
+           }
 	  //Finds eigenvectors and eigenvalues
 	  opt_symm_matrix_eig(SRFO, dim+1, evalsSrfo);
-	
+          if (Opt_params.print_lvl >= 3) {
+              fprintf(outfile,"eigenvectors of scaled rfo\n");
+              print_matrix(outfile, SRFO, dim+1,dim+1);
+           }
+
 	  // Do intermediate normalization.  
 	  // RFO paper says to scale eigenvector to make the last element equal to 1.
 	  // During the course of an optimization some evects may appear that are bogus leads
@@ -181,7 +208,7 @@ void MOLECULE::rfo_step(void) {
 	  p_Opt_data->set_rfo_eigenvector(SRFO[rfo_root]);
 
 	  // print out lowest energy evects
-	  if (Opt_params.print_lvl >= 2) {
+	  if (Opt_params.print_lvl >= 3) {
 	    for (i=0; i<dim+1; ++i) {
 	      if ((evalsSrfo[i] < 0.0) || (i <rfo_root)) {
 	        fprintf(outfile,"Scaled RFO eigenvalue %d: %15.10lf (or 2*%-15.10lf)\n", i+1, evalsSrfo[i],evalsSrfo[i]/2);
@@ -192,20 +219,21 @@ void MOLECULE::rfo_step(void) {
 	  }
 	  free_array(evalsSrfo);
 
-	  for (j=0; j<dim; ++j)
+	  for (j=0; j<dim; ++j) {
 	    dq[j] = SRFO[rfo_root][j]; // leave out last column
-
+          }
+ 
 	//DR.KING, WE DON'T REALLY KNOW WHAT THIS FROZEN FRAGMENT IS FOR AND IF IT NEEDS ALTERING
 	  // Zero steps for frozen fragment  
-	  for (f=0; f<fragments.size(); ++f) {
-	    if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
-	      fprintf(outfile,"\tZero'ing out displacements for frozen fragment %d\n", f+1);
-	      for (i=0; i<fragments[f]->g_nintco(); ++i)
-	        dq[ g_intco_offset(f) + i ] = 0.0;
-	    }
-	  }
+//	  for (f=0; f<fragments.size(); ++f) {
+//	    if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
+//	      fprintf(outfile,"\tZero'ing out displacements for frozen fragment %d\n", f+1);
+//	      for (i=0; i<fragments[f]->g_nintco(); ++i)
+//	        dq[ g_intco_offset(f) + i ] = 0.0;
+//	    }
+//	  }
 
-	  apply_intrafragment_step_limit(dq);
+//	  apply_intrafragment_step_limit(dq);
 	  //check_intrafragment_zero_angles(dq);
 	
 	  // get norm |dq| and unit vector in the step direction
@@ -213,29 +241,37 @@ void MOLECULE::rfo_step(void) {
 	  rfo_dqnorm = sqrt( dqtdq );
 	  rfo_u = init_array(dim);
 	  array_copy(SRFO[rfo_root], rfo_u, dim);
-	  array_normalize(rfo_u, dim);
-	  free_matrix(rfo_mat);
-	  free_matrix(SRFO);
+	  array_normalize(rfo_u, dim+1);
 	
 	  // find the analytical derivative
 	  lambda = array_dot(fq,dq,dim);
+          if (Opt_params.print_lvl >= 2) {
+            fprintf(outfile,"lambda");
+            fprintf(outfile, "%10.10f",lambda);
+   	    fprintf(outfile, "\n");
+          }
 	  sum = 0;
-	  for (int i=0; i<dim; i++) {
-		sum = sum + ( array_dot(H[i],fq)^2 ) / ( ( h[i]-lambda*alpha )^3 );
+	  for (i=0; i<dim; i++) {
+		sum = sum + ( pow(array_dot( Hevects[i], fq, dim),2) ) / ( pow(( h[i]-lambda*alpha ),3) );
 	  }
 	  analyticDerivative = 2*lambda / (1+alpha*dqtdq ) * sum;
 	  alpha = alpha + 2*(trust*rfo_dqnorm - dqtdq) / analyticDerivative;
+          if (Opt_params.print_lvl >= 2) {
+            fprintf(outfile,"alpha is");
+            fprintf(outfile, "%10.10f",alpha);
+          }
    }
-	  
+//  free_matrix(rfo_mat);
+  free_matrix(SRFO);
  // get gradient and hessian in step direction
   rfo_g = -1 * array_dot(fq, rfo_u, dim);
   rfo_h = 0;
   for (i=0; i<dim; ++i)
-    rfo_h += rfo_u[i] * array_dot(H[i], rfo_u, dim);
+    rfo_h += rfo_u[i] * array_dot(Hevects[i], rfo_u, dim);
 
   DE_projected = DE_rfo_energy(rfo_dqnorm, rfo_g, rfo_h);
   fprintf(outfile,"\tProjected energy change by RFO approximation: %20.10lf\n", DE_projected);
-
+ free_matrix(Hevects);
 /* Test step sizes
   double *x_before = g_geom_array();
   double **G = compute_G(true);
@@ -252,7 +288,7 @@ void MOLECULE::rfo_step(void) {
 
 
 // do displacements for each fragment separately
- * for (f=0; f<fragments.size(); ++f) {
+  for (f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
       fprintf(outfile,"\tDisplacements for frozen fragment %d skipped.\n", f+1);
       continue;
@@ -277,7 +313,7 @@ void MOLECULE::rfo_step(void) {
 #endif
 
   symmetrize_geom(); // now symmetrize the geometry for next step
-
+  
 /* Test step sizes
   double *x_after = g_geom_array();
   double *masses = g_masses();
