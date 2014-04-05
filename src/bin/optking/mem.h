@@ -65,6 +65,8 @@ void opt_free_array(double *f);
 double **opt_init_matrix(long int m, long int n);
 void opt_free_matrix(double **A);
 
+void opt_matrix_copy(double **A, double **B, long int m, long int n);
+
 }
 
 #endif
