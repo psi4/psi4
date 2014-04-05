@@ -98,7 +98,6 @@ void MOLECULE::rfo_step(void) {
   double *SRFOevals = init_array(dim+1);
   double **Smat = init_matrix(dim+1,dim+1); //scaling matrix
   double *rfo_u = init_array(dim); // unit vector in step direction
-  bool rs_successful = true; // note if restricted step algorithm fails
   bool converged = false;
 
   //Iterative sequence to find alpha; we'll give it 15 tries
@@ -112,7 +111,6 @@ void MOLECULE::rfo_step(void) {
     if (iter == 15) {
       fprintf(outfile, "\tFailed to converge alpha.  Doing simple step scaling instead.\n");
       alpha = 1;
-      rs_successful = false;
     }
 
     // Create scaling matrix = (alpha^-1) I
@@ -268,7 +266,7 @@ void MOLECULE::rfo_step(void) {
     fprintf(outfile,"\t-------------------------------\n");
 
   // Crude/old way to limit step size if restricted step algorithm failed.
-  if (!rs_successful)
+  if (!converged)
     apply_intrafragment_step_limit(dq);
 
   // Save and print out RFO eigenvector(s) 
