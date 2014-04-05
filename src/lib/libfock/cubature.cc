@@ -3559,7 +3559,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const& opt)
                     mp = std_orientation.MoveIntoPosition(mp, A);
                     mp.w *= nuc.computeNuclearWeight(mp, A, stratmannCutoff); // This ain't gonna fly. Must abate this mickey mouse a most rikky tikki tavi. 
                     grid.push_back(mp);
-                    assert(!isnan(mp.w));
+                    assert(!::isnan(mp.w));
                 }
             }
         } else {
@@ -3571,7 +3571,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const& opt)
                 MassPoint mp = std_orientation.MoveIntoPosition(sg[i], A);
                 mp.w *= nuc.computeNuclearWeight(mp, A, stratmannCutoff); // This ain't gonna fly. Must abate this mickey mouse a most rikky tikki tavi. 
                 grid.push_back(mp);
-                assert(!isnan(mp.w));
+                assert(!::isnan(mp.w));
             }
         }
     }
@@ -3641,7 +3641,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const& opt,
                     mp = std_orientation.MoveIntoPosition(mp, A);
                     mp.w *= nuc.computeNuclearWeight(mp, A, stratmannCutoff); // This ain't gonna fly. Must abate this mickey mouse a most rikky tikki tavi. 
                     grid.push_back(mp);
-                    assert(!isnan(mp.w));
+                    assert(!::isnan(mp.w));
                 }
             }
     }
