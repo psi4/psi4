@@ -37,6 +37,8 @@ void opt_matrix_mult(double **A, bool tA, double **B, bool tB, double **C, bool 
 // eigenvector/eigenvalues
 bool opt_symm_matrix_eig(double **A, int dim, double *evals);
 
+bool opt_asymm_matrix_eig(double **A, int dim, double *evals);
+
 }
 
 namespace opt {
