@@ -50,17 +50,17 @@ void CoupledCluster::DIIS(double*c,long int nvec,long int n,int replace_diis_ite
 
   // add row to matrix, don't build the whole thing.
   psio->read_entry(PSIF_DCC_EVEC,"error matrix",(char*)&temp[0],maxdiis*maxdiis*sizeof(double));
-  for (int i = 0; i < nvec; i++){
-      for (int j = 0; j < nvec; j++){
+  for (long int i = 0; i < nvec; i++){
+      for (long int j = 0; j < nvec; j++){
           A[i*nvar+j] = temp[i*maxdiis+j];
       }
   }
 
   if (nvec <= 3) {
-      for (int i = 0; i < nvec; i++) {
+      for (long int i = 0; i < nvec; i++) {
           sprintf(evector,"evector%li",i+1);
           psio->read_entry(PSIF_DCC_EVEC,evector,(char*)&tempt[0],n*sizeof(double));
-          for (int j = i; j < nvec; j++){
+          for (long int j = i; j < nvec; j++){
               sprintf(evector,"evector%li",j+1);
               psio->read_entry(PSIF_DCC_EVEC,evector,(char*)&tempv[0],n*sizeof(double));
               double sum  = F_DDOT(n,tempt,1,tempv,1);
@@ -69,7 +69,7 @@ void CoupledCluster::DIIS(double*c,long int nvec,long int n,int replace_diis_ite
           }
       }
   }else {
-      int i;
+      long int i;
       if (nvec<=maxdiis && iter<=maxdiis){
           i = nvec - 1;
       }
@@ -78,7 +78,7 @@ void CoupledCluster::DIIS(double*c,long int nvec,long int n,int replace_diis_ite
       }
       sprintf(evector,"evector%li",i+1);
       psio->read_entry(PSIF_DCC_EVEC,evector,(char*)&tempt[0],n*sizeof(double));
-      for (int j = 0; j < nvec; j++){
+      for (long int j = 0; j < nvec; j++){
           sprintf(evector,"evector%li",j+1);
           psio->read_entry(PSIF_DCC_EVEC,evector,(char*)&tempv[0],n*sizeof(double));
           double sum  = F_DDOT(n,tempt,1,tempv,1);
@@ -87,16 +87,16 @@ void CoupledCluster::DIIS(double*c,long int nvec,long int n,int replace_diis_ite
       }
   }
 
-  int j = nvec;
-  for (int i = 0; i < nvar; i++){
+  long int j = nvec;
+  for (long int i = 0; i < nvar; i++){
       A[j*nvar+i] = -1.0;
       A[i*nvar+j] = -1.0;
   }
   A[nvar*nvar-1] = 0.;
 
   // save matrix for next iteration
-  for (int i = 0; i < nvec; i++){
-      for (int j = 0; j < nvec; j++){
+  for (long int i = 0; i < nvec; i++){
+      for (long int j = 0; j < nvec; j++){
           temp[i*maxdiis+j] = A[i*nvar+j];
       }
   }
@@ -213,7 +213,7 @@ void CoupledCluster::DIISNewAmplitudes(int diis_iter,int&replace_diis_iter){
   memset((void*)tb,'\0',arraysize*sizeof(double));
   memset((void*)t1,'\0',o*v*sizeof(double));
 
-  int max = diis_iter;
+  long int max = diis_iter;
   if (max > maxdiis) max = maxdiis;
 
   double min = 1.e9;

@@ -318,21 +318,21 @@ PsiReturnType CoupledPair::CEPAIterations(){
       }
       eccsd = CheckEnergy();
 
-      if (diis_iter < maxdiis ) {
-         replace_diis_iter++;
-      }else {
-          double min = 1.0e9;
-          for (int j = 1; j <= (diis_iter < maxdiis ? diis_iter : maxdiis); j++) {
-              if ( fabs( diisvec[j-1] ) < min ) {
-                  min = fabs( diisvec[j-1] );
-                  replace_diis_iter = j;
-              }
-          }
-      }
+      //if (diis_iter < maxdiis ) {
+      //   replace_diis_iter++;
+      //}else {
+      //    double min = 1.0e9;
+      //    for (int j = 1; j <= (diis_iter < maxdiis ? diis_iter : maxdiis); j++) {
+      //        if ( fabs( diisvec[j-1] ) < min ) {
+      //            min = fabs( diisvec[j-1] );
+      //            replace_diis_iter = j;
+      //        }
+      //    }
+      //}
 
       if (diis_iter<=maxdiis) diis_iter++;
-      //else if (replace_diis_iter<maxdiis) replace_diis_iter++;
-      //else replace_diis_iter = 1;
+      else if (replace_diis_iter<maxdiis) replace_diis_iter++;
+      else replace_diis_iter = 1;
 
       time_t iter_stop = time(NULL);
       double dume = ( cepa_level < 1 ) ? evar : eccsd ;
