@@ -222,8 +222,8 @@ DIISManager::add_entry(int numQuantities, ...)
         switch(type){
             case DIISEntry::Pointer:
                 array = va_arg(args, double*);
-                for(int i = 0; i < _componentSizes[i]; ++i)
-                    *arrayPtr++ = array[i];
+                for(int j = 0; j < _componentSizes[i]; ++j)
+                    *arrayPtr++ = array[j];
                 break;
             case DIISEntry::DPDBuf4:
                 buf4 = va_arg(args, dpdbuf4*);
@@ -452,8 +452,8 @@ DIISManager::extrapolate(int numQuantities, ...)
                 case DIISEntry::Pointer:
                     array = va_arg(args, double*);
                     if(!n) ::memset(array, 0, _componentSizes[componentIndex] * sizeof(double));
-                    for(int i = 0; i < _componentSizes[componentIndex]; ++i)
-                        array[i] += coefficient * *arrayPtr++;
+                    for(int j = 0; j < _componentSizes[componentIndex]; ++j)
+                        array[j] += coefficient * *arrayPtr++;
                     break;
                 case DIISEntry::DPDBuf4:
                     buf4 = va_arg(args, dpdbuf4*);
