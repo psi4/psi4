@@ -320,7 +320,7 @@ void CubicScalarGrid::add_esp(double* v, boost::shared_ptr<Matrix> D)
     int naux = auxiliary->nbf();
     int maxP = auxiliary->max_function_per_shell();
 
-    int nthreads = 0;
+    int nthreads = 1;
     #ifdef _OPENMP
         nthreads = omp_get_max_threads();
     #endif
