@@ -82,9 +82,10 @@ struct OPT_PARAMS {
   bool add_auxiliary_bonds;
 
   // related to step taken
-  double intrafragment_step_limit;
-  double intrafragment_step_limit_min;
-  double intrafragment_step_limit_max;
+  double intrafragment_step_limit;      // current step limit
+  double intrafragment_step_limit_orig; // store original user-specified or default value
+  double intrafragment_step_limit_min;  // the smallest trust radius is allowed to go
+  double intrafragment_step_limit_max;  // the largest trust radius is allowed to go
 
   double interfragment_step_limit;
 

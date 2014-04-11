@@ -625,8 +625,13 @@ void OPT_DATA::write(void) {
 bool OPT_DATA::previous_step_report(void) const {
   fprintf(outfile,  "\tCurrent energy   : %20.10lf\n\n", p_Opt_data->g_energy());
 
-  if (steps.size() == 1) 
+  if (steps.size() == 1) {
+    // optking changes the intrafragment_step_limit keyword value when it changes the trust
+    // radius.  So on the first step, save the initial user-given step size so that it can be
+    // reset to the user-defined value after one molecule is optimized.
+    Opt_params.intrafragment_step_limit_orig = Opt_params.intrafragment_step_limit;
     return true;
+  }
 
   fprintf(outfile,"\tEnergy change for the previous step:\n");
   fprintf(outfile,"\t\tProjected    : %20.10lf\n", p_Opt_data->g_last_DE_predicted());
@@ -692,6 +697,21 @@ void OPT_DATA::decrease_trust_radius(void) const {
     rem_write(qchem_limit_val, REM_GEOM_OPT2_INTRAFRAG_STEP_LIMIT);
 #endif
   }
+  return;
+}
+
+void OPT_DATA::reset_trust_radius(void) const {
+  std::string module = "OPTKING";
+  std::string key = "INTRAFRAG_STEP_LIMIT";
+
+  Opt_params.intrafragment_step_limit = Opt_params.intrafragment_step_limit_orig;
+
+#if defined(OPTKING_PACKAGE_PSI)
+    psi::Process::environment.options.set_double(module, key, Opt_params.intrafragment_step_limit);
+#elif defined(OPTKING_PACKAGE_QCHEM)
+    int qchem_limit_val = (int) (Opt_params.intrafragment_step_limit * 1000);
+    rem_write(qchem_limit_val, REM_GEOM_OPT2_INTRAFRAG_STEP_LIMIT);
+#endif
   return;
 }
 
