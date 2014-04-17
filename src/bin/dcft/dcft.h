@@ -158,8 +158,16 @@ protected:
     void davidson_guess();
     // Exact Tau
     void refine_tau();
-    void compute_F_intermediate();
     void form_density_weighted_fock();
+    // Cumulant residual intermediates
+    void compute_G_intermediate();
+    void compute_F_intermediate();
+    void compute_V_intermediate();
+    void compute_H_intermediate();
+    void compute_I_intermediate();
+    void compute_J_intermediate();
+    void compute_K_intermediate();
+    void compute_L_intermediate();
     // Orbital-optimized DCFT
     void run_simult_dc_guess();
     double compute_orbital_residual();
@@ -171,6 +179,19 @@ protected:
     void compute_orbital_gradient_VO();
     void compute_orbital_rotation_jacobi();
     void rotate_orbitals();
+    // Three-particle cumulant contributions
+    double compute_three_particle_energy();
+    void dcft_semicanonicalize();
+    void transform_integrals_triples();
+    void dump_semicanonical();
+    void semicanonicalize_gbar_ovvv();
+    void semicanonicalize_gbar_ooov();
+    void semicanonicalize_dc();
+    double compute_triples_aaa();
+    double compute_triples_aab();
+    double compute_triples_abb();
+    double compute_triples_bbb();
+
 
     bool augment_b(double *vec, double tol);
     /// Controls convergence of the orbital updates
@@ -252,6 +273,14 @@ protected:
     Dimension navirpi_;
     /// The number of virtual beta orbitals per irrep
     Dimension nbvirpi_;
+    /// Alpha occupied MO offset
+    int *aocc_off_;
+    /// Alpha virtual MO offset
+    int *avir_off_;
+    /// Beta occupied MO offset
+    int *bocc_off_;
+    /// Beta virtual MO offset
+    int *bvir_off_;
     /// The nuclear repulsion energy in Hartree
     double enuc_;
     /// The cutoff below which and integral is assumed to be zero

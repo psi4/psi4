@@ -94,14 +94,30 @@ DCFTSolver::compute_energy()
     if(!orbitalsDone_ || !cumulantDone_ || !densityConverged_)
         throw ConvergenceError<int>("DCFT", maxiter_, cumulant_threshold_, cumulant_convergence_, __FILE__, __LINE__);
 
-    fprintf(outfile, "\n\t*DCFT SCF Energy                                 = %20.15f\n", scf_energy_);
-    fprintf(outfile,   "\t*DCFT Lambda Energy                              = %20.15f\n", lambda_energy_);
-    fprintf(outfile,   "\t*DCFT Total Energy                               = %20.15f\n", new_total_energy_);
+    fprintf(outfile, "\n\t*%6s SCF Energy                                 = %20.15f\n", options_.get_str("DCFT_FUNCTIONAL").c_str(), scf_energy_);
+    fprintf(outfile,   "\t*%6s Lambda Energy                              = %20.15f\n", options_.get_str("DCFT_FUNCTIONAL").c_str(), lambda_energy_);
+    fprintf(outfile,   "\t*%6s Total Energy                               = %20.15f\n", options_.get_str("DCFT_FUNCTIONAL").c_str(), new_total_energy_);
 
-    Process::environment.globals["CURRENT ENERGY"] = new_total_energy_;
-    Process::environment.globals["DCFT TOTAL ENERGY"] = new_total_energy_;
-    Process::environment.globals["DCFT SCF ENERGY"] = scf_energy_;
+    Process::environment.globals["DCFT SCF ENERGY"]    = scf_energy_;
     Process::environment.globals["DCFT LAMBDA ENERGY"] = lambda_energy_;
+    Process::environment.globals["DCFT TOTAL ENERGY"]  = new_total_energy_;
+
+    // Compute three-particle contribution to the DCFT energy
+    if (options_.get_str("THREE_PARTICLE") == "PERTURBATIVE") {
+        // Check options
+        if (options_.get_str("DERTYPE") == "FIRST")
+            throw FeatureNotImplemented("DCFT three-particle energy correction", "Analytic gradients", __FILE__, __LINE__);
+        // Compute the three-particle energy
+        double three_particle_energy = compute_three_particle_energy();
+        fprintf(outfile,   "\t*DCFT Three-particle Energy                        = %20.15f\n", three_particle_energy);
+        fprintf(outfile,   "\t*DCFT Total Energy                                 = %20.15f\n", new_total_energy_ + three_particle_energy);
+        // Set global variables
+        Process::environment.globals["DCFT THREE-PARTICLE ENERGY"] = three_particle_energy;
+        Process::environment.globals["CURRENT ENERGY"]             = new_total_energy_ + three_particle_energy;
+    }
+    else {
+        Process::environment.globals["CURRENT ENERGY"]             = new_total_energy_;
+    }
 
     if(!options_.get_bool("MO_RELAX")){
         fprintf(outfile, "Warning!  The orbitals were not relaxed\n");

@@ -903,7 +903,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Controls whether to relax tau during the cumulant updates or not !expert-*/
       options.add_bool("RELAX_TAU", true);
       /*- Chooses appropriate DCFT method -*/
-      options.add_str("DCFT_FUNCTIONAL", "DC-06", "DC-06 DC-12 ODC-06 ODC-12 CEPA0");
+      options.add_str("DCFT_FUNCTIONAL", "DC-06", "DC-06 DC-12 ODC-06 ODC-12 ODC-13 CEPA0");
+      /*- Whether to compute three-particle energy correction or not -*/
+      options.add_str("THREE_PARTICLE", "NONE", "NONE PERTURBATIVE");
 
   }
   if (name == "MINTS"|| options.read_globals()) {
