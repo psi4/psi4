@@ -68,7 +68,7 @@ struct OPT_PARAMS {
 
   // Hessian guess
   // Note the Lindh "intrafragment" option is cartesian so it applies to all coordinates.
-  enum INTRAFRAGMENT_HESSIAN {FISCHER, SCHLEGEL, SIMPLE, LINDH} intrafragment_H;
+  enum INTRAFRAGMENT_HESSIAN {FISCHER, SCHLEGEL, SIMPLE, LINDH, LINDH_SIMPLE} intrafragment_H;
   enum INTERFRAGMENT_HESSIAN {DEFAULT, FISCHER_LIKE}  interfragment_H;
 
   enum H_UPDATE {NONE, BFGS, MS, POWELL, BOFILL} H_update;
