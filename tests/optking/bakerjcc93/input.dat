@@ -32,9 +32,7 @@ set optking = {
 #  hess_update_use_last 2
 
 # Algorithm for the initial empirical Hessian guess:
-# The options are: Fischer, Schlegel, Simple, and Lindh [SCHLEGEL]
-# Helgaker uses Lindh.  My tests have been ambiguous.  I am not confident
-# that I coded Lindh's method properly.  We could revisit that.
+# The options are: Fischer, [Schlegel], Simple, Lindh, and Lindh_simple
 #  intrafrag_hess schlegel
 
 }
