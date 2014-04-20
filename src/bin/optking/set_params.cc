@@ -126,6 +126,7 @@ void set_params(void)
     else if (s == "SCHLEGEL") Opt_params.intrafragment_H = OPT_PARAMS::SCHLEGEL;
     else if (s == "SIMPLE") Opt_params.intrafragment_H = OPT_PARAMS::SIMPLE;
     else if (s == "LINDH") Opt_params.intrafragment_H = OPT_PARAMS::LINDH;
+    else if (s == "LINDH_SIMPLE") Opt_params.intrafragment_H = OPT_PARAMS::LINDH_SIMPLE;
 
 // Whether to use the default of FISCHER_LIKE force constants for the initial guess {DEFAULT, FISCHER_LIKE}
     s = options.get_str("INTERFRAG_HESS");
@@ -665,6 +666,10 @@ void print_params(void) {
   fprintf(outfile, "intrafragment_H        = %18s\n", "Schlegel");
   else if (Opt_params.intrafragment_H == OPT_PARAMS::SIMPLE)
   fprintf(outfile, "intrafragment_H        = %18s\n", "Simple");
+  else if (Opt_params.intrafragment_H == OPT_PARAMS::LINDH)
+  fprintf(outfile, "intrafragment_H        = %18s\n", "Lindh");
+  else if (Opt_params.intrafragment_H == OPT_PARAMS::LINDH_SIMPLE)
+  fprintf(outfile, "intrafragment_H        = %18s\n", "Lindh - Simple");
 
   if (Opt_params.interfragment_H == OPT_PARAMS::DEFAULT)
   fprintf(outfile, "interfragment_H        = %18s\n", "Default");
