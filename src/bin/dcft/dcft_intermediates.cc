@@ -1133,8 +1133,6 @@ DCFTSolver::compute_V_intermediate() {
      * V_ijab += 1/6 gbar_abkl I_klij
      */
 
-    compute_I_intermediate();
-
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
     // V_IJAB += 1/6 * gbar_ABKL * I_KLIJ
@@ -1220,8 +1218,6 @@ DCFTSolver::compute_V_intermediate() {
     /*
      * V_ijab += 2/3 P_(ij) P_(ab) gbar_acik K_kbjc
      */
-
-    compute_K_intermediate();
 
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
@@ -2003,6 +1999,28 @@ DCFTSolver::compute_K_intermediate() {
     dpdbuf4 LLaa, LLab, LLbb, Laa, Lab, Lbb, Kaa, Kab, Kba, Kbb;
 
     // There are five unique spin cases: K<IAJB>, K<iajb>, K<IaJb>, K<iAjB>, K<IajB>
+
+    // Sort the cumulant
+
+    global_dpd_->buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
+    global_dpd_->buf4_sort(&Laa, PSIF_DCFT_DPD, prqs, ID("[O,V]"), ID("[O,V]"), "Lambda (OV|OV)");
+    global_dpd_->buf4_close(&Laa);
+
+    global_dpd_->buf4_init(&Lab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
+    global_dpd_->buf4_sort(&Lab, PSIF_DCFT_DPD, psqr, ID("[O,v]"), ID("[o,V]"), "Lambda (Ov|oV)");
+    global_dpd_->buf4_close(&Lab);
+
+    global_dpd_->buf4_init(&Lab, PSIF_DCFT_DPD, 0, ID("[O,v]"), ID("[o,V]"),
+                  ID("[O,v]"), ID("[o,V]"), 0, "Lambda (Ov|oV)");
+    global_dpd_->buf4_sort(&Lab, PSIF_DCFT_DPD, psrq, ID("[O,V]"),ID("[o,v]"), "Lambda (OV|ov)");
+    global_dpd_->buf4_close(&Lab);
+
+    global_dpd_->buf4_init(&Lbb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
+    global_dpd_->buf4_sort(&Lbb, PSIF_DCFT_DPD, prqs, ID("[o,v]"),ID("[o,v]"), "Lambda (ov|ov)");
+    global_dpd_->buf4_close(&Lbb);
 
     // K<IAJB> spin case
 

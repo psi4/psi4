@@ -106,6 +106,77 @@ DCFTSolver::build_tau()
     global_dpd_->file2_close(&T_VV);
     global_dpd_->file2_close(&T_vv);
 
+    // Compute fourth-order Tau terms if requested
+    // Copy Tau for the third-order N-representability terms if needed
+    if (options_.get_str("DCFT_FUNCTIONAL") == "ODC-13") {
+
+        // Prepare T intermediates
+        // Copy Tau
+        global_dpd_->file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
+        global_dpd_->file2_init(&T_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Tau <o|o>");
+        global_dpd_->file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
+        global_dpd_->file2_init(&T_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
+
+        global_dpd_->file2_copy(&T_OO, PSIF_DCFT_DPD, "T <O|O>");
+        global_dpd_->file2_copy(&T_oo, PSIF_DCFT_DPD, "T <o|o>");
+        global_dpd_->file2_copy(&T_VV, PSIF_DCFT_DPD, "T <V|V>");
+        global_dpd_->file2_copy(&T_vv, PSIF_DCFT_DPD, "T <v|v>");
+
+        global_dpd_->file2_close(&T_OO);
+        global_dpd_->file2_close(&T_oo);
+        global_dpd_->file2_close(&T_VV);
+        global_dpd_->file2_close(&T_vv);
+
+        // Multiply by 2.0
+        global_dpd_->file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "T <O|O>");
+        global_dpd_->file2_init(&T_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "T <o|o>");
+        global_dpd_->file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "T <V|V>");
+        global_dpd_->file2_init(&T_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "T <v|v>");
+
+        global_dpd_->file2_scm(&T_OO, 2.0);
+        global_dpd_->file2_scm(&T_oo, 2.0);
+        global_dpd_->file2_scm(&T_VV, 2.0);
+        global_dpd_->file2_scm(&T_vv, 2.0);
+
+        global_dpd_->file2_close(&T_OO);
+        global_dpd_->file2_close(&T_oo);
+        global_dpd_->file2_close(&T_VV);
+        global_dpd_->file2_close(&T_vv);
+
+//        global_dpd_->buf4_init(&L1, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+//                               ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
+//        global_dpd_->buf4_print(&L1, outfile, 1);
+//        global_dpd_->buf4_close(&L1);
+
+//        global_dpd_->buf4_init(&L1, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+//                               ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
+//        global_dpd_->buf4_print(&L1, outfile, 1);
+//        global_dpd_->buf4_close(&L1);
+
+//        global_dpd_->buf4_init(&L1, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+//                               ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
+//        global_dpd_->buf4_print(&L1, outfile, 1);
+//        global_dpd_->buf4_close(&L1);
+
+        // Compute I and K intermediates needed for the fourth-order Tau terms
+        compute_I_intermediate();
+
+        compute_K_intermediate();
+
+        // Fourth-order Tau terms
+
+        /*
+         * Tau_ij += 1/3 T_kj T_kj
+         */
+
+        // OOVV
+
+        // V_IJAB = 1/3 gbar_IKAB * T_KJ
+
+
+        exit(1);
+    }
+
     // Read MO-basis Tau from disk into the memory
     global_dpd_->file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
     global_dpd_->file2_init(&T_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Tau <o|o>");
@@ -149,43 +220,6 @@ DCFTSolver::build_tau()
     global_dpd_->file2_close(&T_oo);
     global_dpd_->file2_close(&T_VV);
     global_dpd_->file2_close(&T_vv);
-
-    // Copy Tau for the third-order N-representability terms if needed
-    if (options_.get_str("DCFT_FUNCTIONAL") == "ODC-13") {
-
-        // Copy Tau
-        global_dpd_->file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
-        global_dpd_->file2_init(&T_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Tau <o|o>");
-        global_dpd_->file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
-        global_dpd_->file2_init(&T_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
-
-        global_dpd_->file2_copy(&T_OO, PSIF_DCFT_DPD, "T <O|O>");
-        global_dpd_->file2_copy(&T_oo, PSIF_DCFT_DPD, "T <o|o>");
-        global_dpd_->file2_copy(&T_VV, PSIF_DCFT_DPD, "T <V|V>");
-        global_dpd_->file2_copy(&T_vv, PSIF_DCFT_DPD, "T <v|v>");
-
-        global_dpd_->file2_close(&T_OO);
-        global_dpd_->file2_close(&T_oo);
-        global_dpd_->file2_close(&T_VV);
-        global_dpd_->file2_close(&T_vv);
-
-        // Multiply by 2.0
-        global_dpd_->file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "T <O|O>");
-        global_dpd_->file2_init(&T_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "T <o|o>");
-        global_dpd_->file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "T <V|V>");
-        global_dpd_->file2_init(&T_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "T <v|v>");
-
-        global_dpd_->file2_scm(&T_OO, 2.0);
-        global_dpd_->file2_scm(&T_oo, 2.0);
-        global_dpd_->file2_scm(&T_VV, 2.0);
-        global_dpd_->file2_scm(&T_vv, 2.0);
-
-        global_dpd_->file2_close(&T_OO);
-        global_dpd_->file2_close(&T_oo);
-        global_dpd_->file2_close(&T_VV);
-        global_dpd_->file2_close(&T_vv);
-
-    }
 
     dcft_timer_off("DCFTSolver::build_tau()");
 }
