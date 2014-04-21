@@ -81,6 +81,7 @@ protected:
     void compute_scf_energy();
     void mp2_guess();
     void build_tau();
+    void build_tau_fourth_order();
     void transform_tau();
     void build_gtau();
     void print_opdm();

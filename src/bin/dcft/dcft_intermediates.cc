@@ -1930,6 +1930,27 @@ DCFTSolver::compute_I_intermediate() {
     global_dpd_->buf4_close(&Lbb);
     global_dpd_->buf4_close(&Ibb);
 
+    // Sort the I intermediate to chemist's notation
+    global_dpd_->buf4_init(&Iaa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[O,O]"),
+                           ID("[O>O]-"), ID("[O>O]-"), 0, "I <OO|OO>");
+    global_dpd_->buf4_sort(&Iaa, PSIF_DCFT_DPD, prqs, ID("[O,O]"), ID("[O,O]"), "I (OO|OO)");
+    global_dpd_->buf4_close(&Iaa);
+
+    global_dpd_->buf4_init(&Iab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[O,o]"),
+                           ID("[O,o]"), ID("[O,o]"), 0, "I <Oo|Oo>");
+    global_dpd_->buf4_sort(&Iab, PSIF_DCFT_DPD, prqs, ID("[O,O]"), ID("[o,o]"), "I (OO|oo)");
+    global_dpd_->buf4_close(&Iab);
+
+    global_dpd_->buf4_init(&Iab, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[o,o]"),
+                           ID("[O,O]"), ID("[o,o]"), 0, "I (OO|oo)");
+    global_dpd_->buf4_sort(&Iab, PSIF_DCFT_DPD, rspq, ID("[o,o]"), ID("[O,O]"), "I (oo|OO)");
+    global_dpd_->buf4_close(&Iab);
+
+    global_dpd_->buf4_init(&Ibb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[o,o]"),
+                           ID("[o>o]-"), ID("[o>o]-"), 0, "I <oo|oo>");
+    global_dpd_->buf4_sort(&Ibb, PSIF_DCFT_DPD, prqs, ID("[o,o]"), ID("[o,o]"), "I (oo|oo)");
+    global_dpd_->buf4_close(&Ibb);
+
 }
 
 void
@@ -2048,6 +2069,12 @@ DCFTSolver::compute_K_intermediate() {
     global_dpd_->buf4_sort(&Kaa, PSIF_DCFT_DPD, psrq, ID("[O,V]"),ID("[O,V]"), "K <OV|OV>");
     global_dpd_->buf4_close(&Kaa);
 
+    // Resort K<OV|OV> to the K(OO|VV)
+    global_dpd_->buf4_init(&Kaa, PSIF_DCFT_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                           ID("[O,V]"),ID("[O,V]"), 0, "K <OV|OV>");
+    global_dpd_->buf4_sort(&Kaa, PSIF_DCFT_DPD, prqs, ID("[O,O]"),ID("[V,V]"), "K (OO|VV)");
+    global_dpd_->buf4_close(&Kaa);
+
     // K<IaJb> and K<iAjB> spin cases:
 
     // Although we denote K <Ov|Ov> and K <Vo|Vo> as in physist's notation, it is actually in chemist's notation.
@@ -2067,6 +2094,18 @@ DCFTSolver::compute_K_intermediate() {
     global_dpd_->buf4_close(&Kba);
     global_dpd_->buf4_close(&Lab);
     global_dpd_->buf4_close(&LLab);
+
+    // Resort K<Ov|Ov> to the K(OO|vv)
+    global_dpd_->buf4_init(&Kab, PSIF_DCFT_DPD, 0, ID("[O,v]"), ID("[O,v]"),
+                           ID("[O,v]"), ID("[O,v]"), 0, "K <Ov|Ov>");
+    global_dpd_->buf4_sort(&Kab, PSIF_DCFT_DPD, prqs, ID("[O,O]"),ID("[v,v]"), "K (OO|vv)");
+    global_dpd_->buf4_close(&Kab);
+
+    // Resort K<oV|oV> to the K(oo|VV)
+    global_dpd_->buf4_init(&Kab, PSIF_DCFT_DPD, 0, ID("[o,V]"), ID("[o,V]"),
+                           ID("[o,V]"), ID("[o,V]"), 0, "K <oV|oV>");
+    global_dpd_->buf4_sort(&Kab, PSIF_DCFT_DPD, prqs, ID("[o,o]"),ID("[V,V]"), "K (oo|VV)");
+    global_dpd_->buf4_close(&Kab);
 
     // K_kCjA -> K_CkAj
     global_dpd_->buf4_init(&Kab, PSIF_DCFT_DPD, 0, ID("[o,V]"), ID("[o,V]"),
@@ -2121,6 +2160,12 @@ DCFTSolver::compute_K_intermediate() {
     global_dpd_->buf4_init(&Kbb, PSIF_DCFT_DPD, 0, ID("[o,v]"), ID("[o,v]"),
                            ID("[o,v]"), ID("[o,v]"), 0, "K (ov|ov)");
     global_dpd_->buf4_sort(&Kbb, PSIF_DCFT_DPD, psrq, ID("[o,v]"),ID("[o,v]"), "K <ov|ov>");
+    global_dpd_->buf4_close(&Kbb);
+
+    // Resort K<ov|ov> to the K(oo|vv)
+    global_dpd_->buf4_init(&Kbb, PSIF_DCFT_DPD, 0, ID("[o,v]"), ID("[o,v]"),
+                           ID("[o,v]"), ID("[o,v]"), 0, "K <ov|ov>");
+    global_dpd_->buf4_sort(&Kbb, PSIF_DCFT_DPD, prqs, ID("[o,o]"),ID("[v,v]"), "K (oo|vv)");
     global_dpd_->buf4_close(&Kbb);
 
 }
