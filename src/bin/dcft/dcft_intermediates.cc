@@ -2017,7 +2017,7 @@ DCFTSolver::compute_J_intermediate() {
 void
 DCFTSolver::compute_K_intermediate() {
 
-    dpdbuf4 LLaa, LLab, LLbb, Laa, Lab, Lbb, Kaa, Kab, Kba, Kbb;
+    dpdbuf4 LLaa, LLab, LLbb, Laa, Lab, Lbb, Kaa, Kab, Kba, Kbb, K;
 
     // There are five unique spin cases: K<IAJB>, K<iajb>, K<IaJb>, K<iAjB>, K<IajB>
 
@@ -2167,6 +2167,27 @@ DCFTSolver::compute_K_intermediate() {
                            ID("[o,v]"), ID("[o,v]"), 0, "K <ov|ov>");
     global_dpd_->buf4_sort(&Kbb, PSIF_DCFT_DPD, prqs, ID("[o,o]"),ID("[v,v]"), "K (oo|vv)");
     global_dpd_->buf4_close(&Kbb);
+
+    // Resort all chemist's notation K intermediates to VVOO format (needed for fourth-order Tau terms)
+    global_dpd_->buf4_init(&K, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                                                 ID("[O,O]"), ID("[V,V]"), 0, "K (OO|VV)");
+    global_dpd_->buf4_sort(&K, PSIF_DCFT_DPD, rspq, ID("[V,V]"), ID("[O,O]"), "K (VV|OO)");
+    global_dpd_->buf4_close(&K);
+
+    global_dpd_->buf4_init(&K, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[v,v]"),
+                                                 ID("[O,O]"), ID("[v,v]"), 0, "K (OO|vv)");
+    global_dpd_->buf4_sort(&K, PSIF_DCFT_DPD, rspq, ID("[v,v]"), ID("[O,O]"), "K (vv|OO)");
+    global_dpd_->buf4_close(&K);
+
+    global_dpd_->buf4_init(&K, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[V,V]"),
+                                                 ID("[o,o]"), ID("[V,V]"), 0, "K (oo|VV)");
+    global_dpd_->buf4_sort(&K, PSIF_DCFT_DPD, rspq, ID("[V,V]"), ID("[o,o]"), "K (VV|oo)");
+    global_dpd_->buf4_close(&K);
+
+    global_dpd_->buf4_init(&K, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                                                 ID("[o,o]"), ID("[v,v]"), 0, "K (oo|vv)");
+    global_dpd_->buf4_sort(&K, PSIF_DCFT_DPD, rspq, ID("[v,v]"), ID("[o,o]"), "K (vv|oo)");
+    global_dpd_->buf4_close(&K);
 
 }
 
@@ -2359,6 +2380,53 @@ DCFTSolver::compute_L_intermediate() {
 
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
+
+}
+
+void
+DCFTSolver::compute_O_intermediate() {
+
+    dpdbuf4 O, L, I;
+
+    /*
+     * O_ijab = Lambda_abkl I_klij
+     */
+
+    // O_IJAB = Lambda_ABKL * I_KLIJ
+    global_dpd_->buf4_init(&O, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
+                           ID("[O>O]-"), ID("[V>V]-"), 0, "O <OO|VV>");
+    global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
+                           ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
+    global_dpd_->buf4_init(&I, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[O>O]-"),
+                           ID("[O>O]-"), ID("[O>O]-"), 0, "I <OO|OO>");
+    global_dpd_->contract444(&I, &L, &O, 0, 1, 2.0, 0.0);
+    global_dpd_->buf4_close(&I);
+    global_dpd_->buf4_close(&L);
+    global_dpd_->buf4_close(&O);
+
+    // O_IjAb = Lambda_AbKl * I_KlIj
+    global_dpd_->buf4_init(&O, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                           ID("[O,o]"), ID("[V,v]"), 0, "O <Oo|Vv>");
+    global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                           ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
+    global_dpd_->buf4_init(&I, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[O,o]"),
+                           ID("[O,o]"), ID("[O,o]"), 0, "I <Oo|Oo>");
+    global_dpd_->contract444(&I, &L, &O, 0, 1, 2.0, 0.0);
+    global_dpd_->buf4_close(&I);
+    global_dpd_->buf4_close(&L);
+    global_dpd_->buf4_close(&O);
+
+    // O_ijab = Lambda_abkl * I_klij
+    global_dpd_->buf4_init(&O, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
+                           ID("[o>o]-"), ID("[v>v]-"), 0, "O <oo|vv>");
+    global_dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
+                           ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
+    global_dpd_->buf4_init(&I, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[o>o]-"),
+                           ID("[o>o]-"), ID("[o>o]-"), 0, "I <oo|oo>");
+    global_dpd_->contract444(&I, &L, &O, 0, 1, 2.0, 0.0);
+    global_dpd_->buf4_close(&I);
+    global_dpd_->buf4_close(&L);
+    global_dpd_->buf4_close(&O);
 
 }
 
