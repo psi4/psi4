@@ -629,8 +629,6 @@ DCFTSolver::build_tau_fourth_order()
     global_dpd_->file2_close(&Tau_vv);
     global_dpd_->file2_close(&Tau_VV);
 
-    exit(1);
-
 }
 
 void
