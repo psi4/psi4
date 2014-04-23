@@ -164,12 +164,16 @@ protected:
     void compute_G_intermediate();
     void compute_F_intermediate();
     void compute_V_intermediate();
+    void compute_W_intermediate();
     void compute_H_intermediate();
     void compute_I_intermediate();
     void compute_J_intermediate();
     void compute_K_intermediate();
     void compute_L_intermediate();
     void compute_O_intermediate();
+    void compute_M_intermediate();
+    void compute_N_intermediate();
+
     // Orbital-optimized DCFT
     void run_simult_dc_guess();
     double compute_orbital_residual();
