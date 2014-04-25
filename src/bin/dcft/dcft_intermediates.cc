@@ -2436,7 +2436,7 @@ DCFTSolver::compute_O_intermediate() {
 void
 DCFTSolver::compute_W_intermediate() {
 
-    dpdbuf4 I, Laa, Lab, Lbb, W, T;
+    dpdbuf4 I, Laa, Lab, Lbb, W, T, N, M;
     dpdfile2 T_OO, T_oo, T_VV, T_vv, F_OO, F_oo, F_VV, F_vv, FT_OO, FT_oo, FT_VV, FT_vv;
 
     // Compute M and N intermediates
@@ -2481,9 +2481,14 @@ DCFTSolver::compute_W_intermediate() {
     global_dpd_->file2_close(&FT_vv);
 
     /*
-     * 1. W_ijab = -2/3 P_(ij) [(Ft_il T_lk + T_il Ft_lk) Lambda_kjab] - 2/3 P_(ab) [(Ft_da T_cd + T_da Ft_cd) Lambda_ijcb]
+     * 1. W_ijab = -2/3 P_(ij) [(Ft_il T_lk + T_il Ft_lk) Lambda_kjab]
      */
 
+    /*
+     * 2. W_ijab -= 2/3 P_(ab) [(Ft_da T_cd + T_da Ft_cd) Lambda_ijcb]
+     */
+
+    // OOVV
     global_dpd_->buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "Temp <OO|VV>");
     global_dpd_->buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
@@ -2531,6 +2536,7 @@ DCFTSolver::compute_W_intermediate() {
     global_dpd_->buf4_close(&T);
     global_dpd_->buf4_close(&W);
 
+    // OoVv
     global_dpd_->buf4_init(&W, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "W <Oo|Vv>");
     global_dpd_->buf4_init(&Lab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
@@ -2554,6 +2560,7 @@ DCFTSolver::compute_W_intermediate() {
     global_dpd_->buf4_close(&Lab);
     global_dpd_->buf4_close(&W);
 
+    // oovv
     global_dpd_->buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "Temp <oo|vv>");
     global_dpd_->buf4_init(&Lbb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
@@ -2601,22 +2608,183 @@ DCFTSolver::compute_W_intermediate() {
     global_dpd_->buf4_close(&W);
 
     /*
-     * 2. W_ijab -= 1/6 P_(ij) [N_ikab T_jk]
+     * 3. W_ijab -= 1/6 P_(ij) [N_ikab T_jk]
      */
 
-    // 2. W_IJAB = -1/6 P_(IJ) [N_IKAB T_JK]
+    // OOVV
+    // Temp_IJAB = -1/6 N_IKAB T_JK
+    global_dpd_->buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "Temp <OO|VV>");
+    global_dpd_->buf4_init(&N, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "N <O'O|VV>");
+    global_dpd_->contract424(&N, &T_OO, &T, 1, 1, 1, -1.0/6.0, 0.0);
+    global_dpd_->buf4_close(&N);
+    global_dpd_->buf4_close(&T);
 
+    // W_IJAB += Temp_IJAB
+    global_dpd_->buf4_init(&W, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O>O]-"), ID("[V>V]-"), 0, "W <OO|VV>");
+    global_dpd_->buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "Temp <OO|VV>");
+    dpd_buf4_add(&W, &T, 1.0);
+    global_dpd_->buf4_close(&T);
+    global_dpd_->buf4_close(&W);
 
+    // Temp_IJAB -> Temp_JIAB
+    global_dpd_->buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "Temp <OO|VV>");
+    global_dpd_->buf4_sort(&T, PSIF_DCFT_DPD, qprs, ID("[O,O]"), ID("[V,V]"), "P(Temp) <OO|VV>");
+    global_dpd_->buf4_close(&T);
 
+    // W_IJAB -= Temp_JIAB
+    global_dpd_->buf4_init(&W, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O>O]-"), ID("[V>V]-"), 0, "W <OO|VV>");
+    global_dpd_->buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "P(Temp) <OO|VV>");
+    dpd_buf4_add(&W, &T, -1.0);
+    global_dpd_->buf4_close(&T);
+    global_dpd_->buf4_close(&W);
 
+    // OoVv
+    global_dpd_->buf4_init(&W, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "W <Oo|Vv>");
+    // W_IjAb += -1/6 N_IkAb T_jk
+    global_dpd_->buf4_init(&N, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "N <O'o|Vv>");
+    global_dpd_->contract424(&N, &T_oo, &W, 1, 1, 1, -1.0/6.0, 1.0);
+    global_dpd_->buf4_close(&N);
 
+    // W_IjAb += -1/6 T_IK N_KjAb
+    global_dpd_->buf4_init(&N, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "N <Oo'|Vv>");
+    global_dpd_->contract244(&T_OO, &N, &W, 1, 0, 0, -1.0/6.0, 1.0);
+    global_dpd_->buf4_close(&N);
+    global_dpd_->buf4_close(&W);
 
+    // oovv
+    // Temp_ijab = -1/6 N_ikab T_jk
+    global_dpd_->buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "Temp <oo|vv>");
+    global_dpd_->buf4_init(&N, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "N <o'o|vv>");
+    global_dpd_->contract424(&N, &T_oo, &T, 1, 1, 1, -1.0/6.0, 0.0);
+    global_dpd_->buf4_close(&N);
+    global_dpd_->buf4_close(&T);
 
+    // W_ijab += Temp_ijab
+    global_dpd_->buf4_init(&W, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o>o]-"), ID("[v>v]-"), 0, "W <oo|vv>");
+    global_dpd_->buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "Temp <oo|vv>");
+    dpd_buf4_add(&W, &T, 1.0);
+    global_dpd_->buf4_close(&T);
+    global_dpd_->buf4_close(&W);
 
+    // Temp_ijab -> Temp_jiab
+    global_dpd_->buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "Temp <oo|vv>");
+    global_dpd_->buf4_sort(&T, PSIF_DCFT_DPD, qprs, ID("[o,o]"), ID("[v,v]"), "P(Temp) <oo|vv>");
+    global_dpd_->buf4_close(&T);
+
+    // W_ijab -= Temp_jiab
+    global_dpd_->buf4_init(&W, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o>o]-"), ID("[v>v]-"), 0, "W <oo|vv>");
+    global_dpd_->buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "P(Temp) <oo|vv>");
+    dpd_buf4_add(&W, &T, -1.0);
+    global_dpd_->buf4_close(&T);
+    global_dpd_->buf4_close(&W);
 
     /*
-     * W_ijab -= 1/6 P_(ab) [M_ijac T_cb]
+     * 4. W_ijab -= 1/6 P_(ab) [M_ijac T_cb]
      */
+
+    // OOVV
+    // Temp_IJAB = -1/6 M_IJAC T_CB
+    global_dpd_->buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "Temp <OO|VV>");
+    global_dpd_->buf4_init(&M, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                                                 ID("[O,O]"), ID("[V,V]"), 0, "M <OO|V'V>");
+    global_dpd_->contract424(&M, &T_VV, &T, 3, 1, 0, -1.0/6.0, 0.0);
+    global_dpd_->buf4_close(&M);
+    global_dpd_->buf4_close(&T);
+
+    // W_IJAB += Temp_IJAB
+    global_dpd_->buf4_init(&W, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O>O]-"), ID("[V>V]-"), 0, "W <OO|VV>");
+    global_dpd_->buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "Temp <OO|VV>");
+    dpd_buf4_add(&W, &T, 1.0);
+    global_dpd_->buf4_close(&T);
+    global_dpd_->buf4_close(&W);
+
+    // Temp_IJAB -> Temp_IJBA
+    global_dpd_->buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "Temp <OO|VV>");
+    global_dpd_->buf4_sort(&T, PSIF_DCFT_DPD, pqsr, ID("[O,O]"), ID("[V,V]"), "P(Temp) <OO|VV>");
+    global_dpd_->buf4_close(&T);
+
+    // W_IJAB -= Temp_IJBA
+    global_dpd_->buf4_init(&W, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O>O]-"), ID("[V>V]-"), 0, "W <OO|VV>");
+    global_dpd_->buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "P(Temp) <OO|VV>");
+    dpd_buf4_add(&W, &T, -1.0);
+    global_dpd_->buf4_close(&T);
+    global_dpd_->buf4_close(&W);
+
+    // OoVv
+    // W_IjAb += -1/6 M_IjAc T_cb
+    global_dpd_->buf4_init(&W, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "W <Oo|Vv>");
+    global_dpd_->buf4_init(&M, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "M <Oo|V'v>");
+    global_dpd_->contract424(&M, &T_vv, &W, 3, 1, 0, -1.0/6.0, 1.0);
+    global_dpd_->buf4_close(&M);
+
+    // W_IjAb += -1/6 T_AC M_IjCb
+    global_dpd_->buf4_init(&M, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "M <Oo|Vv'>");
+    global_dpd_->contract244(&T_VV, &M, &W, 1, 2, 1, -1.0/6.0, 1.0);
+    global_dpd_->buf4_close(&M);
+    global_dpd_->buf4_close(&W);
+
+    // oovv
+    // Temp_ijab = -1/6 M_ijac T_cb
+    global_dpd_->buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "Temp <oo|vv>");
+    global_dpd_->buf4_init(&M, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "M <oo|v'v>");
+    global_dpd_->contract424(&M, &T_vv, &T, 3, 1, 0, -1.0/6.0, 0.0);
+    global_dpd_->buf4_close(&M);
+    global_dpd_->buf4_close(&T);
+
+    // W_ijab += Temp_ijab
+    global_dpd_->buf4_init(&W, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o>o]-"), ID("[v>v]-"), 0, "W <oo|vv>");
+    global_dpd_->buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "Temp <oo|vv>");
+    dpd_buf4_add(&W, &T, 1.0);
+    global_dpd_->buf4_close(&T);
+    global_dpd_->buf4_close(&W);
+
+    // Temp_ijab -> Temp_ijba
+    global_dpd_->buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "Temp <oo|vv>");
+    global_dpd_->buf4_sort(&T, PSIF_DCFT_DPD, pqsr, ID("[o,o]"), ID("[v,v]"), "P(Temp) <oo|vv>");
+    global_dpd_->buf4_close(&T);
+
+    // W_ijab -= Temp_ijba
+    global_dpd_->buf4_init(&W, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o>o]-"), ID("[v>v]-"), 0, "W <oo|vv>");
+    global_dpd_->buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "P(Temp) <oo|vv>");
+    dpd_buf4_add(&W, &T, -1.0);
+    global_dpd_->buf4_close(&T);
+    global_dpd_->buf4_close(&W);
+
+
+
 
 
 
