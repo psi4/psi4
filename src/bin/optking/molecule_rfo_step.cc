@@ -96,6 +96,7 @@ void MOLECULE::rfo_step(void) {
 
   double **SRFO = init_matrix(dim+1,dim+1);
   double *SRFOevals = init_array(dim+1);
+  double **Smat = init_matrix(dim+1,dim+1); //scaling matrix
   double *rfo_u = init_array(dim); // unit vector in step direction
   bool converged = false;
 
@@ -112,17 +113,25 @@ void MOLECULE::rfo_step(void) {
       alpha = 1;
     }
 
+    // Create scaling matrix = (alpha^-1) I
+    zero_matrix(Smat, dim+1, dim+1);
+
+    Smat[dim][dim] = 1.0;
+
+    for(i=0; i<dim; ++i)
+      Smat[i][i] = 1/alpha;
+
+    if (Opt_params.print_lvl >= 3) {
+      fprintf(outfile,"Scaling matrix\n");
+      print_matrix(outfile, Smat, dim+1, dim+1);
+    }
 
     // Scale the RFO matrix.
-	for (i=0; i<dim+1; ++i) {
-	    for (j=0; j<dim; ++j) {
-		    SRFO[i][j] = RFO[i][j] / alpha;
-		}
-		SRFO[i][dim] = RFO[i][dim];
-	}
-	if (Opt_params.print_lvl >= 3) {
+    opt_matrix_mult(Smat, 0, RFO, 0, SRFO, 0, dim+1, dim+1, dim+1, 0);
+
+    if (Opt_params.print_lvl >= 3) {
       fprintf(outfile,"Scaled RFO matrix.\n");
-      print_matrix(outfile,  SRFO, dim+1, dim+1);
+      print_matrix(outfile, SRFO, dim+1, dim+1);
       fflush(outfile);
     }
 
@@ -281,6 +290,7 @@ void MOLECULE::rfo_step(void) {
   free_matrix(RFO);
   free_matrix(SRFO);
   free_array(SRFOevals);
+  free_matrix(Smat);
 
 /* Test step sizes
   double *x_before = g_geom_array();
