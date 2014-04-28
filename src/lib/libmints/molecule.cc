@@ -87,7 +87,7 @@ namespace psi {
 
 boost::regex realNumber_("(-?\\d+\\.\\d+)|(-?\\d+\\.)|(-?\\.\\d+)|(-?\\d+)", boost::regbase::normal | boost::regbase::icase);
 boost::regex integerNumber_("(-?\\d+)", boost::regbase::normal | boost::regbase::icase);
-boost::regex atomSymbol_("([A-Z]{1,2})\\d*", boost::regbase::normal | boost::regbase::icase);
+boost::regex atomSymbol_("(([A-Z]{1,3})(?:(_\\w+)|(\\d+))?)", boost::regbase::normal | boost::regbase::icase);
 boost::regex variableDefinition_("\\s*(\\w+)\\s*=\\s*((-?\\d+\\.\\d+)|(-?\\d+\\.)|(-?\\.\\d+)|(-?\\d+)|(tda))\\s*", boost::regbase::normal | boost::regbase::icase);
 boost::regex blankLine_("[\\s%]*", boost::regbase::normal | boost::regbase::icase);
 boost::regex commentLine_("\\s*[#%].*", boost::regbase::normal | boost::regbase::icase);
@@ -1021,7 +1021,7 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
                                + " on line\n" + *(line));
 
         // Save the actual atom symbol (H1 => H)
-        atomSym = reMatches[1].str();
+        atomSym = reMatches[2].str();
 
         double zVal = zVals[atomSym];
         double charge = zVal;
@@ -1178,11 +1178,11 @@ std::string Molecule::create_psi4_string_from_molecule() const
                         ss << buffer;
                     }
                     else if (fZ(at) || fsymbol(at) == "X") {
-                        sprintf(buffer, "    %-8s", fsymbol(at).c_str());
+                        sprintf(buffer, "    %-8s", flabel(at).c_str());
                         ss << buffer;
                     }
                     else {
-                        std::string stmp = std::string("Gh(") + fsymbol(at) + ")";
+                        std::string stmp = std::string("Gh(") + flabel(at) + ")";
                         sprintf(buffer, "    %-8s", stmp.c_str());
                         ss << buffer;
                     }
