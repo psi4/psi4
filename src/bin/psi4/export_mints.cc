@@ -522,24 +522,25 @@ void export_mints()
     typedef void (SymmetryOperation::*intFunction)(int);
     typedef void (SymmetryOperation::*doubleFunction)(double);
 
-    class_<SymmetryOperation>("SymmetryOperation", "docstring").
+    class_<SymmetryOperation>("SymmetryOperation", "Class to provide a 3 by 3 matrix representation of a symmetry operation, such as a rotation or reflection.").
             def(init<const SymmetryOperation& >()).
-            def("trace", &SymmetryOperation::trace, "docstring").
-            def("zero", &SymmetryOperation::zero, "docstring").
-            def("operate", &SymmetryOperation::operate, "docstring").
-            def("transform", &SymmetryOperation::transform, "docstring").
-            def("unit", &SymmetryOperation::unit, "docstring").
-            def("E", &SymmetryOperation::E, "docstring").
-            def("i", &SymmetryOperation::i, "docstring").
-            def("sigma_xy", &SymmetryOperation::sigma_xy, "docstring").
-            def("sigma_yz", &SymmetryOperation::sigma_yz, "docstring").
-            def("sigma_xz", &SymmetryOperation::sigma_xz, "docstring").
+            def("trace", &SymmetryOperation::trace, "Returns trace of transformation matrix").
+            def("zero", &SymmetryOperation::zero, "Zero out the symmetry operation").
+            def("operate", &SymmetryOperation::operate, "Performs the operation arg2 * arg1").
+            def("transform", &SymmetryOperation::transform, "Performs the transform arg2 * arg1 * arg2~").
+            def("unit", &SymmetryOperation::unit, "Set equal to a unit matrix").
+            def("E", &SymmetryOperation::E, "Set equal to E").
+            def("i", &SymmetryOperation::i, "Set equal to an inversion").
+            def("sigma_xy", &SymmetryOperation::sigma_xy, "Set equal to reflection in xy plane").
+            def("sigma_yz", &SymmetryOperation::sigma_yz, "Set equal to reflection in yz plane").
+            def("sigma_xz", &SymmetryOperation::sigma_xz, "Set equal to reflection in xz plane").
             //        def("sigma_yz", &SymmetryOperation::sigma_yz).
-            def("rotate_n", intFunction(&SymmetryOperation::rotation), "docstring").
-            def("rotate_theta", doubleFunction(&SymmetryOperation::rotation), "docstring").
-            def("c2_x", &SymmetryOperation::c2_x, "docstring").
-            def("c2_y", &SymmetryOperation::c2_y, "docstring").
-            def("transpose", &SymmetryOperation::transpose, "docstring");
+            def("rotate_n", intFunction(&SymmetryOperation::rotation), "Set equal to a clockwise rotation by 2pi/n").
+            def("rotate_theta", doubleFunction(&SymmetryOperation::rotation), "Set equal to a clockwise rotation by theta").
+            def("c2_x", &SymmetryOperation::c2_x, "Set equal to C2 about the x axis").
+            def("c2_y", &SymmetryOperation::c2_y, "Set equal to C2 about the y axis").
+            def("c2_z", &SymmetryOperation::c2_z, "Set equal to C2 about the z axis").
+            def("transpose", &SymmetryOperation::transpose, "Performs transposition of matrix operation");
 
     class_<OrbitalSpace>("OrbitalSpace", "docstring", no_init).
             def(init<const std::string&, const std::string&, const SharedMatrix&, const SharedVector&, const boost::shared_ptr<BasisSet>&, const boost::shared_ptr<IntegralFactory>& >()).
@@ -561,7 +562,7 @@ void export_mints()
 
     class_<PointGroup, boost::shared_ptr<PointGroup> >("PointGroup", "docstring").
             def(init<const std::string&>()).
-            def("symbol", &PointGroup::symbol, "docstring");
+            def("symbol", &PointGroup::symbol, "Returns Schoenflies symbol for point group");
             //def("origin", &PointGroup::origin).
 //            def("set_symbol", &PointGroup::set_symbol);
 
