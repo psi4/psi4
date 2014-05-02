@@ -41,7 +41,7 @@ DCFTSolver::compute_cumulant_residual()
 {
     dcft_timer_on("DCFTSolver::compute_lambda_residual()");
 
-    dpdbuf4 R, G, F, I, V;
+    dpdbuf4 R, G, F, I, V, W;
     double sumSQ = 0.0;
     size_t nElements = 0;
 
@@ -81,6 +81,12 @@ DCFTSolver::compute_cumulant_residual()
                                ID("[O>O]-"), ID("[V>V]-"), 0, "V <OO|VV>");
         dpd_buf4_add(&R, &V, 1.0);
         global_dpd_->buf4_close(&V);
+
+        // R_IJAB += W_IJAB
+        global_dpd_->buf4_init(&W, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
+                               ID("[O>O]-"), ID("[V>V]-"), 0, "W <OO|VV>");
+        dpd_buf4_add(&R, &W, 1.0);
+        global_dpd_->buf4_close(&W);
     }
 
     for(int h = 0; h < nirrep_; ++h)
@@ -119,6 +125,12 @@ DCFTSolver::compute_cumulant_residual()
                                ID("[O,o]"), ID("[V,v]"), 0, "V <Oo|Vv>");
         dpd_buf4_add(&R, &V, 1.0);
         global_dpd_->buf4_close(&V);
+
+        // R_IJAB += W_IJAB
+        global_dpd_->buf4_init(&W, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                               ID("[O,o]"), ID("[V,v]"), 0, "W <Oo|Vv>");
+        dpd_buf4_add(&R, &W, 1.0);
+        global_dpd_->buf4_close(&W);
     }
 
     for(int h = 0; h < nirrep_; ++h)
@@ -157,6 +169,12 @@ DCFTSolver::compute_cumulant_residual()
                                ID("[o>o]-"), ID("[v>v]-"), 0, "V <oo|vv>");
         dpd_buf4_add(&R, &V, 1.0);
         global_dpd_->buf4_close(&V);
+
+        // R_IJAB += W_IJAB
+        global_dpd_->buf4_init(&W, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
+                               ID("[o>o]-"), ID("[v>v]-"), 0, "W <oo|vv>");
+        dpd_buf4_add(&R, &W, 1.0);
+        global_dpd_->buf4_close(&W);
     }
 
     for(int h = 0; h < nirrep_; ++h)
