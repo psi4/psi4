@@ -3696,24 +3696,24 @@ DCFTSolver::compute_W_intermediate() {
 
 
 
-    global_dpd_->buf4_init(&W, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O>O]-"), ID("[V>V]-"), 0, "W <OO|VV>");
-    global_dpd_->buf4_print(&W, outfile, 1);
-    global_dpd_->buf4_close(&W);
+//    global_dpd_->buf4_init(&W, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+//                  ID("[O>O]-"), ID("[V>V]-"), 0, "W <OO|VV>");
+//    global_dpd_->buf4_print(&W, outfile, 1);
+//    global_dpd_->buf4_close(&W);
 
-    global_dpd_->buf4_init(&W, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                  ID("[O,o]"), ID("[V,v]"), 0, "W <Oo|Vv>");
-    global_dpd_->buf4_print(&W, outfile, 1);
-    global_dpd_->buf4_close(&W);
+//    global_dpd_->buf4_init(&W, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+//                  ID("[O,o]"), ID("[V,v]"), 0, "W <Oo|Vv>");
+//    global_dpd_->buf4_print(&W, outfile, 1);
+//    global_dpd_->buf4_close(&W);
 
-    global_dpd_->buf4_init(&W, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                  ID("[o>o]-"), ID("[v>v]-"), 0, "W <oo|vv>");
-    global_dpd_->buf4_print(&W, outfile, 1);
-    global_dpd_->buf4_close(&W);
+//    global_dpd_->buf4_init(&W, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+//                  ID("[o>o]-"), ID("[v>v]-"), 0, "W <oo|vv>");
+//    global_dpd_->buf4_print(&W, outfile, 1);
+//    global_dpd_->buf4_close(&W);
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
 
-    exit(1);
+//    exit(1);
 
 
 }
