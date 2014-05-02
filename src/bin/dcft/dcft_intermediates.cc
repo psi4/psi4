@@ -3022,7 +3022,7 @@ DCFTSolver::compute_W_intermediate() {
                   ID("[o,o]"), ID("[v,v]"), 0, "Temp2 <oo|vv>");
     global_dpd_->buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "Temp <oo|vv>");
-    global_dpd_->contract424(&T, &T_VV, &TT, 3, 1, 0, 1.0/6.0, 0.0);
+    global_dpd_->contract424(&T, &T_vv, &TT, 3, 1, 0, 1.0/6.0, 0.0);
     global_dpd_->buf4_close(&T);
     global_dpd_->buf4_close(&TT);
 
