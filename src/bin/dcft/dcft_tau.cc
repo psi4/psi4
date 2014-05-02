@@ -385,8 +385,6 @@ DCFTSolver::build_tau_fourth_order()
     global_dpd_->buf4_close(&K);
 
     // Close Tau_OO
-//    global_dpd_->file2_print(&Tau_OO, outfile); ////print
-//    global_dpd_->file2_print(&Tau_oo, outfile); ////print
     global_dpd_->file2_close(&Tau_oo);
     global_dpd_->file2_close(&Tau_OO);
 
@@ -624,8 +622,6 @@ DCFTSolver::build_tau_fourth_order()
     global_dpd_->buf4_close(&K);
 
     // Close Tau_VV
-//    global_dpd_->file2_print(&Tau_VV, outfile); ////print
-//    global_dpd_->file2_print(&Tau_vv, outfile); ////print
     global_dpd_->file2_close(&Tau_vv);
     global_dpd_->file2_close(&Tau_VV);
 

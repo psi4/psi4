@@ -3685,36 +3685,7 @@ DCFTSolver::compute_W_intermediate() {
 
     global_dpd_->buf4_close(&TT);
 
-
-
-
-
-
-
-
-
-
-
-
-//    global_dpd_->buf4_init(&W, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-//                  ID("[O>O]-"), ID("[V>V]-"), 0, "W <OO|VV>");
-//    global_dpd_->buf4_print(&W, outfile, 1);
-//    global_dpd_->buf4_close(&W);
-
-//    global_dpd_->buf4_init(&W, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-//                  ID("[O,o]"), ID("[V,v]"), 0, "W <Oo|Vv>");
-//    global_dpd_->buf4_print(&W, outfile, 1);
-//    global_dpd_->buf4_close(&W);
-
-//    global_dpd_->buf4_init(&W, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-//                  ID("[o>o]-"), ID("[v>v]-"), 0, "W <oo|vv>");
-//    global_dpd_->buf4_print(&W, outfile, 1);
-//    global_dpd_->buf4_close(&W);
-
     psio_->close(PSIF_LIBTRANS_DPD, 1);
-
-//    exit(1);
-
 
 }
 
@@ -3757,13 +3728,6 @@ DCFTSolver::compute_M_intermediate() {
     global_dpd_->contract424(&Lab, &F_vv, &M, 3, 1, 0, 1.0, 0.0);
     global_dpd_->file2_close(&F_vv);
     global_dpd_->buf4_close(&Lab);
-    global_dpd_->buf4_close(&M);
-
-    // TODO: Check if it's needed
-    // M_JiBa -> M_iJaB
-    global_dpd_->buf4_init(&M, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                  ID("[O,o]"), ID("[V,v]"), 0, "M <Oo|Vv'>");
-    global_dpd_->buf4_sort(&M, PSIF_DCFT_DPD, qpsr, ID("[o,O]"), ID("[v,V]"), "M <oO|v'V>");
     global_dpd_->buf4_close(&M);
 
     // M_ijab = F_ac lambda_ijcb
@@ -3819,13 +3783,6 @@ DCFTSolver::compute_N_intermediate(){
     global_dpd_->contract424(&Lab, &F_oo, &N, 1, 1, 1, 1.0, 0.0);
     global_dpd_->file2_close(&F_oo);
     global_dpd_->buf4_close(&Lab);
-    global_dpd_->buf4_close(&N);
-
-    // TODO: Check if it's needed
-    // N_JiBa -> N_iJaB
-    global_dpd_->buf4_init(&N, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                  ID("[O,o]"), ID("[V,v]"), 0, "N <Oo'|Vv>");
-    global_dpd_->buf4_sort(&N, PSIF_DCFT_DPD, qpsr, ID("[o,O]"), ID("[v,V]"), "N <o'O|vV>");
     global_dpd_->buf4_close(&N);
 
     // N_ijab = F_ik lambda_kjab
