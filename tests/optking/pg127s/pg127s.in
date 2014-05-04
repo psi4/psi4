@@ -83,5 +83,5 @@ set globals {
     scf_type df
 }
 
-optimize('b3lyp-d3')
+optimize('b3lyp-d2')
 
