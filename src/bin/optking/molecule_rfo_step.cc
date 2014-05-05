@@ -61,131 +61,226 @@ void MOLECULE::rfo_step(void) {
   double **H = p_Opt_data->g_H_pointer();
   double *dq = p_Opt_data->g_dq_pointer();
 
-  // build (lower-triangle of) RFO matrix and diagonalize
-  double **rfo_mat = init_matrix(dim+1, dim+1);
+  // Determine the eigenvectors/eigenvalues of H.  Used in RS-RFO
+  double **Hevects = matrix_return_copy(H,dim,dim); 
+  double *h = init_array(dim);
+  opt_symm_matrix_eig(Hevects, dim, h);
+
+  // Build the original, unscaled RFO matrix.
+  // For restricted-step RFO, the matrix is not symmetric, so we must copy the whole matrix.
+  double **RFO = init_matrix(dim+1,dim+1);
   for (i=0; i<dim; ++i)
-    for (j=0; j<=i; ++j)
-      rfo_mat[i][j] = H[i][j];
+    for (j=0; j<dim; ++j)
+      RFO[i][j] = H[i][j];
 
   for (i=0; i<dim; ++i)
-    rfo_mat[dim][i] = - fq[i];
+    RFO[i][dim]= RFO[dim][i] = -fq[i]; 
 
   if (Opt_params.print_lvl >= 3) {
-    fprintf(outfile,"RFO mat\n");
-    print_matrix(outfile, rfo_mat, dim+1, dim+1);
+    fprintf(outfile,"Original, unscaled RFO mat\n");
+    print_matrix(outfile, RFO, dim+1, dim+1);
   }
 
-  double *lambda = init_array(dim+1);
-  opt_symm_matrix_eig(rfo_mat, dim+1, lambda);
-  if (Opt_params.print_lvl >= 2) {
-    fprintf(outfile,"RFO eigenvalues/lambdas\n");
-    print_matrix(outfile, &(lambda), 1, dim+1);
-  }
-
-  // Do intermediate normalization.  
-  // RFO paper says to scale eigenvector to make the last element equal to 1.
-  // During the course of an optimization some evects may appear that are bogus leads
-  // - the root following can avoid them. 
-  for (i=0; i<dim+1; ++i) {
-    tval = rfo_mat[i][dim];
-    if (fabs(tval) > Opt_params.rfo_normalization_min) {
-      for (j=0;j<dim+1;++j)
-        rfo_mat[i][j] /= rfo_mat[i][dim];
-    }
-  }
-  if (Opt_params.print_lvl >= 3) {
-    fprintf(outfile,"RFO eigenvectors (rows)\n");
-    print_matrix(outfile, rfo_mat, dim+1, dim+1);
-  }
-
-  int rfo_root, f;
+  int rfo_root, f;     // root to follow
   double rfo_eval;
-  double *rfo_u;      // unit vector in step direction
-  double rfo_dqnorm;   // norm of step
   double rfo_g;         // gradient in step direction
   double rfo_h;         // hessian in step direction
   double DE_projected; // projected energy change by quadratic approximation
+  bool symm_rfo_step = false;
+  double * rfo_old_evect = p_Opt_data->g_rfo_eigenvector_pointer();
+  double lambda, sum;
+  double analyticDerivative;  // d(norm step squared) / d(alpha)
+  double trust = Opt_params.intrafragment_step_limit;
+  double dqtdq = 10;     // square of norm of step
+  double alpha = 1;      // scaling factor for RS-RFO, scaling matrix is sI
 
-  // *** choose which RFO eigenvector to use
-  // if not root following, then use rfo_root'th lowest eigenvalue; default is 0 (lowest)
-  if ( (!Opt_params.rfo_follow_root) || (p_Opt_data->g_iteration() == 1)) {
-    rfo_root = Opt_params.rfo_root;
-    fprintf(outfile,"\tGoing to follow RFO solution %d.\n", rfo_root+1);
+  double **SRFO = init_matrix(dim+1,dim+1);
+  double *SRFOevals = init_array(dim+1);
+  double *rfo_u = init_array(dim); // unit vector in step direction
+  bool converged = false;
 
-    // Now test RFO eigenvector and make sure that it is totally symmetric.
-    bool symm_rfo_step = false;
+  //Iterative sequence to find alpha; we'll give it 15 tries
+  int iter = -1;
+  while (!converged && iter<16 ) {
+    ++iter;
 
-    while (!symm_rfo_step) {
-
-      symm_rfo_step = intco_combo_is_symmetric(rfo_mat[rfo_root], dim);
-
-      if (!symm_rfo_step) {
-        fprintf(outfile,"\tRejecting RFO root %d because it breaks the molecular point group.\n", rfo_root+1);
-        fprintf(outfile,"\tIf you are doing an energy minimization, there may exist a lower-energy, ");
-        fprintf(outfile,"structure with less symmetry.\n");
-        ++rfo_root;
-      }
-
-      if (rfo_root == dim+1) // quit in the unlikely event we've checked them all
-        break;
+    // If we get to iteration 15, and we haven't not yet converged, than
+    // bail out on the restricted-step algorithm.  Set alpha=1 and apply the crude
+    // intrafragment_step_limit below.
+    if (iter == 15) {
+      fprintf(outfile, "\tFailed to converge alpha.  Doing simple step scaling instead.\n");
+      alpha = 1;
     }
-  }
-  else { // do root following
-    double * rfo_old_evect = p_Opt_data->g_rfo_eigenvector_pointer();
-    tval = 0;
-    for (i=0; i<dim; ++i) { // dot only within H block, excluding rows and columns approaching 0
-      tval2 = array_dot(rfo_mat[i], rfo_old_evect,dim);
-      if (tval2 > tval) {
-        tval = tval2;
-        rfo_root = i;
-      }
-    }
-    fprintf(outfile,"RFO vector %d has maximal overlap with previous step\n", rfo_root+1);
-  }
-  p_Opt_data->set_rfo_eigenvector(rfo_mat[rfo_root]);
 
-  // print out lowest energy evects
-  if (Opt_params.print_lvl >= 2) {
+
+    // Scale the RFO matrix.
+	for (i=0; i<=dim; i++) {
+	    for (j=0; j<dim; j++) {
+		    SRFO[j][i] = RFO[j][i] / alpha;
+		};
+		SRFO[dim][i] = RFO[dim][i];
+	}
+	if (Opt_params.print_lvl >= 3) {
+      fprintf(outfile,"Scaled RFO matrix.\n");
+      print_matrix(outfile,  SRFO, dim+1, dim+1);
+      fflush(outfile);
+    }
+
+    //Find the eigenvectors and eigenvalues of RFO matrix.
+    opt_asymm_matrix_eig(SRFO, dim+1, SRFOevals);
+    if (Opt_params.print_lvl >= 3) {
+      fprintf(outfile,"Eigenvectors of scaled RFO matrix.\n");
+      print_matrix(outfile, SRFO, dim+1,dim+1);
+      fprintf(outfile,"Eigenvalues of scaled RFO matrix.\n");
+      for (i=0; i<dim+1; ++i)
+        fprintf(outfile,"%10.6lf", SRFOevals[i]);
+      fprintf(outfile,"\n");
+    }
+
+    // Do intermediate normalization.  
+    // RFO paper says to scale eigenvector to make the last element equal to 1.
+    // During the course of an optimization some evects may appear that are bogus leads
+    // - the root following can avoid them. 
     for (i=0; i<dim+1; ++i) {
-      if ((lambda[i] < 0.0) || (i <rfo_root)) {
-        fprintf(outfile,"RFO eigenvalue %d: %15.10lf (or 2*%-15.10lf)\n", i+1, lambda[i],lambda[i]/2);
-        fprintf(outfile,"eigenvector:\n");
-        print_matrix(outfile, &(rfo_mat[i]), 1, dim+1);
+      tval = SRFO[i][dim];
+      if (fabs(tval) > Opt_params.rfo_normalization_min) {
+        for (j=0;j<dim+1;++j)
+          SRFO[i][j] /= SRFO[i][dim];
       }
     }
-  }
-  free_array(lambda);
-
-  for (j=0; j<dim; ++j)
-    dq[j] = rfo_mat[rfo_root][j]; // leave out last column
-
-  // Zero steps for frozen fragment
-  for (f=0; f<fragments.size(); ++f) {
-    if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
-      fprintf(outfile,"\tZero'ing out displacements for frozen fragment %d\n", f+1);
-      for (i=0; i<fragments[f]->g_nintco(); ++i)
-        dq[ g_intco_offset(f) + i ] = 0.0;
+    if (Opt_params.print_lvl >= 3) {
+      fprintf(outfile,"Scaled RFO eigenvectors (rows).\n");
+      print_matrix(outfile, SRFO, dim+1, dim+1);
     }
+
+    // Choose which RFO eigenvector to use.
+    // if not root following, then use rfo_root'th lowest eigenvalue; default is 0 (lowest)
+    if ( (!Opt_params.rfo_follow_root) || (p_Opt_data->g_iteration() == 1)) {
+      rfo_root = Opt_params.rfo_root;
+      if (iter == 0)
+        fprintf(outfile,"\tGoing to follow RFO solution %d.\n", rfo_root+1);
+
+      // Now test RFO eigenvector and make sure that it is totally symmetric.
+      while (!symm_rfo_step) {
+        symm_rfo_step = intco_combo_is_symmetric(SRFO[rfo_root], dim);
+
+        if (!symm_rfo_step) {
+          fprintf(outfile,"\tRejecting RFO root %d because it breaks the molecular point group.\n", rfo_root+1);
+          fprintf(outfile,"\tIf you are doing an energy minimization, there may exist a lower-energy, ");
+          fprintf(outfile,"structure with less symmetry.\n");
+          ++rfo_root;
+        }
+
+        if (rfo_root == dim+1) // quit in the unlikely event we've checked them all
+        break;
+      }
+    }
+    else { // do root following
+      tval = 0;
+      for (i=0; i<dim; ++i) { // dot only within H block, excluding rows and columns approaching 0
+        tval2 = array_dot(SRFO[i], rfo_old_evect, dim);
+        if (tval2 > tval) {
+          tval = tval2;
+          rfo_root = i;
+        }
+      }
+      if (iter == 0)
+        fprintf(outfile,"RFO vector %d overlaps most with earlier step.\n", rfo_root+1);
+    }
+
+    // Print only the lowest eigenvalues/eigenvectors
+    if (Opt_params.print_lvl >= 2) {
+      for (i=0; i<dim+1; ++i) {
+        if ((SRFOevals[i] < 0.0) || (i <rfo_root)) {
+          fprintf(outfile,"Scaled RFO eigenvalue %d: %15.10lf (or 2*%-15.10lf)\n", i+1, SRFOevals[i], SRFOevals[i]/2);
+          fprintf(outfile,"eigenvector:\n");
+          print_matrix(outfile, &(SRFO[i]), 1, dim+1);
+        }
+      }
+    }
+
+    for (j=0; j<dim; ++j)
+      dq[j] = SRFO[rfo_root][j]; // leave out last column
+
+    // Zero steps for frozen fragment.  If user has specified.
+    for (f=0; f<fragments.size(); ++f) {
+      if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
+        fprintf(outfile,"\tZero'ing out displacements for frozen fragment %d\n", f+1);
+        for (i=0; i<fragments[f]->g_nintco(); ++i)
+          dq[ g_intco_offset(f) + i ] = 0.0;
+      }
+    }
+
+    // Perhaps not necessary:
+    // check_intrafragment_zero_angles(dq);
+	
+    // get norm |dq| and unit vector in the step direction
+    dqtdq = array_dot(dq, dq, dim);
+
+    if (sqrt(dqtdq) < (trust+1e-5))
+      converged = true;
+
+    if (iter == 0 && !converged) {
+      fprintf(outfile,"\n\tDetermining step-restricting scale parameter for RS-RFO.\n");
+      fprintf(outfile,"\tMaximum step size allowed %10.5lf\n\n", trust);
+      fprintf(outfile,"\t Iter      |step|      alpha \n");
+      fprintf(outfile,"\t-------------------------------\n");
+      fprintf(outfile,"\t%5d%12.5lf%12.5lf\n", iter+1, sqrt(dqtdq), alpha);
+    }
+    else if (iter > 0)
+      fprintf(outfile,"\t%5d%12.5lf%12.5lf\n", iter, sqrt(dqtdq), alpha);
+    fflush(outfile);
+
+    // Find the analytical derivative.
+    lambda = -1 * array_dot(fq, dq, dim);
+    if (Opt_params.print_lvl >= 3)
+      fprintf(outfile,"\tlambda calculated by (dq^t).(-f) = %20.10lf\n", lambda);
+
+    // Calculate derivative of step size wrt alpha.
+    // Equation 20, Besalu and Bofill, Theor. Chem. Acc., 1999, 100:265-274
+    sum = 0;
+    for (i=0; i<dim; i++)
+      sum += ( pow(array_dot( Hevects[i], fq, dim),2) ) / ( pow(( h[i]-lambda*alpha ),3) );
+
+    analyticDerivative = 2*lambda / (1+alpha*dqtdq ) * sum;
+    if (Opt_params.print_lvl >= 3)
+      fprintf(outfile,"\tAnalytic derivative d(norm)/d(alpha) = %20.10lf\n", analyticDerivative);
+
+    // Calculate new scaling alpha value.
+    // Equation 20, Besalu and Bofill, Theor. Chem. Acc., 1999, 100:265-274
+    alpha += 2*(trust * sqrt(dqtdq) - dqtdq) / analyticDerivative;
+    if (Opt_params.print_lvl >= 3)
+      fprintf(outfile,"\tNew alpha value = %20.10lf\n", alpha);
   }
 
-  apply_intrafragment_step_limit(dq);
-  //check_intrafragment_zero_angles(dq);
+  if (iter > 0)
+    fprintf(outfile,"\t-------------------------------\n");
 
-  // get norm |dq| and unit vector in the step direction
-  rfo_dqnorm = sqrt( array_dot(dq, dq, dim) );
-  rfo_u = init_array(dim);
-  array_copy(rfo_mat[rfo_root], rfo_u, dim);
+  // Crude/old way to limit step size if restricted step algorithm failed.
+  if (!converged)
+    apply_intrafragment_step_limit(dq);
+
+  // Save and print out RFO eigenvector(s) 
+  p_Opt_data->set_rfo_eigenvector(dq);
+  dqtdq = array_dot(dq, dq, dim);
+  double rfo_dqnorm = sqrt( dqtdq );
+  array_copy(dq, rfo_u, dim);
   array_normalize(rfo_u, dim);
-  free_matrix(rfo_mat);
 
-  // get gradient and hessian in step direction
+ // get gradient and hessian in step direction
   rfo_g = -1 * array_dot(fq, rfo_u, dim);
   rfo_h = 0;
   for (i=0; i<dim; ++i)
-    rfo_h += rfo_u[i] * array_dot(H[i], rfo_u, dim);
+    rfo_h += rfo_u[i] * array_dot(Hevects[i], rfo_u, dim);
 
   DE_projected = DE_rfo_energy(rfo_dqnorm, rfo_g, rfo_h);
   fprintf(outfile,"\tProjected energy change by RFO approximation: %20.10lf\n", DE_projected);
+
+  free_matrix(Hevects);
+  free_array(h);
+  free_matrix(RFO);
+  free_matrix(SRFO);
+  free_array(SRFOevals);
 
 /* Test step sizes
   double *x_before = g_geom_array();
@@ -201,7 +296,7 @@ void MOLECULE::rfo_step(void) {
   fprintf(outfile,"Step-size in mass-weighted internal coordinates: %20.10lf\n", N);
 */
 
-  // do displacements for each fragment separately
+// do displacements for each fragment separately
   for (f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
       fprintf(outfile,"\tDisplacements for frozen fragment %d skipped.\n", f+1);
@@ -227,7 +322,7 @@ void MOLECULE::rfo_step(void) {
 #endif
 
   symmetrize_geom(); // now symmetrize the geometry for next step
-
+  
 /* Test step sizes
   double *x_after = g_geom_array();
   double *masses = g_masses();
