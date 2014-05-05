@@ -341,12 +341,14 @@ void MOLECULE::H_guess(void) const {
     fprintf(outfile,"\tGenerating empirical Hessian (Fischer & Almlof '92) for each fragment.\n");
   else if (Opt_params.intrafragment_H == OPT_PARAMS::SIMPLE)
     fprintf(outfile,"\tGenerating simple diagonal Hessian (.5 .2 .1) for each fragment.\n");
-  else if (Opt_params.intrafragment_H == OPT_PARAMS::LINDH)
+  else if (Opt_params.intrafragment_H == OPT_PARAMS::LINDH_SIMPLE)
     fprintf(outfile,"\tGenerating diagonal Hessian from Lindh (1995) for each fragment.\n");
+  else if (Opt_params.intrafragment_H == OPT_PARAMS::LINDH)
+    fprintf(outfile,"\tUsing model Hessian from Lindh (1995).\n");
 
   if (Opt_params.intrafragment_H == OPT_PARAMS::SCHLEGEL ||
       Opt_params.intrafragment_H == OPT_PARAMS::FISCHER  ||
-      Opt_params.intrafragment_H == OPT_PARAMS::LINDH  ||
+      Opt_params.intrafragment_H == OPT_PARAMS::LINDH_SIMPLE  ||
       Opt_params.intrafragment_H == OPT_PARAMS::SIMPLE) {
     for (int f=0; f<fragments.size(); ++f) {
       double **H_frag = fragments[f]->H_guess();
@@ -381,14 +383,12 @@ void MOLECULE::H_guess(void) const {
     }
 #endif
   }
-/*
   else if (Opt_params.intrafragment_H == OPT_PARAMS::LINDH) {
     double **H_xyz = Lindh_guess();      // generate Lindh cartesian Hessian
     bool read_H_worked = cartesian_H_to_internals(H_xyz); // transform to internals
     // if fails, then what?  Fix later.
     free_matrix(H_xyz);
   }
-*/
 
   if (Opt_params.print_lvl >= 2) {
     fprintf(outfile,"Initial Hessian guess\n");

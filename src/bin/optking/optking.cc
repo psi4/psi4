@@ -329,6 +329,7 @@ OptReturnType optking(void) {
         }
         p_irc_data->progress_report(*mol1);
 
+        p_Opt_data->reset_trust_radius();
         delete p_Opt_data;
         mol1->write_geom();  // write geometry -> chkpt file (also output for QChem)
         print_end();
@@ -368,6 +369,7 @@ OptReturnType optking(void) {
         fprintf(outfile,"\tSaving final (previous) structure.\n");
       }
 
+      p_Opt_data->reset_trust_radius();
       delete p_Opt_data;
       mol1->write_geom();  // write geometry -> chkpt file (also output for QChem)
       print_end();
