@@ -305,7 +305,7 @@ int FRAG::add_auxiliary_bonds(void) {
       double R = v3d_dist(geom[a], geom[b]);
       double Rcov = (cov_radii[Zint[a]] + cov_radii[Zint[b]])/_bohr2angstroms;
 
-      if (R < Rcov * Opt_params.auxiliary_bonds_factor) {
+      if (R < Rcov * Opt_params.auxiliary_bond_factor) {
         STRE *one_stre = new STRE(a,b);
         if (!present(one_stre)) {
           intcos.push_back(one_stre);
