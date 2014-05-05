@@ -141,6 +141,9 @@ void set_params(void)
 // Add auxiliary bonds for non-bonded (but nearby) atoms.
     Opt_params.add_auxiliary_bonds = options.get_bool("ADD_AUXILIARY_BONDS");
 
+// Covalent distance times this factor is used to choose extra stretch coordinates
+    Opt_params.auxiliary_bond_factor = options.get_double("AUXILIARY_BOND_FACTOR");
+
 // By default, optking prints and saves the last (previous) geometry at the end of an
 // optimization, i.e., the one at which a gradient was computed.  If this keyword is
 // set to true, then the structure obtained from the last projected step is printed out and saved instead.
@@ -692,6 +695,13 @@ void print_params(void) {
   fprintf(outfile, "intrafragment_step_limit=%18.2e\n", Opt_params.intrafragment_step_limit);
 
   fprintf(outfile, "interfragment_step_limit=%18.2e\n", Opt_params.interfragment_step_limit);
+
+  if (Opt_params.add_auxiliary_bonds)
+  fprintf(outfile, "add_auxiliary_bonds   = %18s\n", "true");
+  else
+  fprintf(outfile, "add_auxiliary_bonds   = %18s\n", "false");
+
+  fprintf(outfile, "auxiliary_bond_factor =%18.2e\n", Opt_params.auxiliary_bond_factor);
 
   if (Opt_params.H_update_limit)
     fprintf(outfile, "H_update_limit         = %18s\n", "true");

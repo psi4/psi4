@@ -225,7 +225,6 @@ class MOLECULE {
     int n=0;
     for (int i=0; i<fragments.size(); ++i)
       n += fragments[i]->add_auxiliary_bonds();
-printf("adding %d auxiliary bonds\n", n);
     return n;
   }
 

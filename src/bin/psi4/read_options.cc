@@ -2447,6 +2447,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_str("INTERFRAG_MODE", "FIXED", "FIXED INTERFRAGMENT");
       /*- Do add bond coordinates at nearby atoms for non-bonded systems? -*/
       options.add_bool("ADD_AUXILIARY_BONDS", false);
+      /*- This factor times standard covalent distance is used to add extra stretch coordinates. -*/
+      options.add_double("AUXILIARY_BOND_FACTOR", 2.5);
       /*- Do use $\frac{1}{R@@{AB}}$ for the stretching coordinate between fragments?
       Otherwise, use $R@@{AB}$. -*/
       options.add_bool("INTERFRAG_DIST_INV", false);

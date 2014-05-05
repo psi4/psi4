@@ -80,6 +80,7 @@ struct OPT_PARAMS {
   bool freeze_intrafragment; // freeze all fragments
   bool freeze_interfragment; // freeze all interfragment modes
   bool add_auxiliary_bonds;
+  double auxiliary_bond_factor;  // covalent length times this to add extra-redundant stretches
 
   // related to step taken
   double intrafragment_step_limit;
