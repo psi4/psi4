@@ -141,6 +141,7 @@ protected:
     void compute_relaxed_density_OOVV();
     void compute_relaxed_density_OVOV();
     void compute_relaxed_density_VVVV();
+    void compute_TPDM_trace();
     // Quadratically-convergent DCFT
     void run_qc_dcft();
     void compute_orbital_gradient();

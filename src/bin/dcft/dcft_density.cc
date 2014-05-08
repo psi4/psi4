@@ -1847,6 +1847,197 @@ DCFTSolver::compute_relaxed_density_VVVV()
     psio_->close(PSIF_DCFT_DENSITY, 1);
 }
 
+void
+DCFTSolver::compute_TPDM_trace() {
+
+    dpdbuf4 G;
+
+    psio_->open(PSIF_DCFT_DENSITY, PSIO_OPEN_OLD);
+
+    double tpdm_trace = 0.0;
+
+    // OOOO density
+    global_dpd_->buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O>O]-"), ID("[O>O]-"),
+              ID("[O>O]-"), ID("[O>O]-"), 0, "Gamma <OO|OO>");
+    for(int h = 0; h < nirrep_; ++h){
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
+
+        #pragma omp parallel for
+        for(long int ij = 0; ij < G.params->rowtot[h]; ++ij){
+            tpdm_trace += 8.0 * G.matrix[h][ij][ij];
+        }
+
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
+    }
+    global_dpd_->buf4_close(&G);
+
+    global_dpd_->buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,o]"), ID("[O,o]"),
+              ID("[O,o]"), ID("[O,o]"), 0, "Gamma <Oo|Oo>");
+    for(int h = 0; h < nirrep_; ++h){
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
+
+        #pragma omp parallel for
+        for(long int ij = 0; ij < G.params->rowtot[h]; ++ij){
+            tpdm_trace += 8.0 * G.matrix[h][ij][ij];
+        }
+
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
+
+    }
+    global_dpd_->buf4_close(&G);
+
+    global_dpd_->buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o>o]-"), ID("[o>o]-"),
+              ID("[o>o]-"), ID("[o>o]-"), 0, "Gamma <oo|oo>");
+    for(int h = 0; h < nirrep_; ++h){
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
+
+        #pragma omp parallel for
+        for(long int ij = 0; ij < G.params->rowtot[h]; ++ij){
+            tpdm_trace += 8.0 * G.matrix[h][ij][ij];
+        }
+
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
+
+    }
+    global_dpd_->buf4_close(&G);
+
+    // VVVV density
+    global_dpd_->buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[V>V]-"), ID("[V>V]-"),
+              ID("[V>V]-"), ID("[V>V]-"), 0, "Gamma <VV|VV>");
+    for(int h = 0; h < nirrep_; ++h){
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
+
+        #pragma omp parallel for
+        for(long int ab = 0; ab < G.params->rowtot[h]; ++ab){
+            tpdm_trace += 8.0 * G.matrix[h][ab][ab];
+        }
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
+    }
+
+    global_dpd_->buf4_close(&G);
+
+    global_dpd_->buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[V,v]"), ID("[V,v]"),
+              ID("[V,v]"), ID("[V,v]"), 0, "Gamma <Vv|Vv>");
+    for(int h = 0; h < nirrep_; ++h){
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
+
+        #pragma omp parallel for
+        for(long int ab = 0; ab < G.params->rowtot[h]; ++ab){
+            tpdm_trace += 8.0 * G.matrix[h][ab][ab];
+        }
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
+    }
+
+    global_dpd_->buf4_close(&G);
+
+    global_dpd_->buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[v>v]-"), ID("[v>v]-"),
+              ID("[v>v]-"), ID("[v>v]-"), 0, "Gamma <vv|vv>");
+    for(int h = 0; h < nirrep_; ++h){
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
+
+        #pragma omp parallel for
+        for(long int ab = 0; ab < G.params->rowtot[h]; ++ab){
+            tpdm_trace += 8.0 * G.matrix[h][ab][ab];
+        }
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
+    }
+
+    global_dpd_->buf4_close(&G);
+
+    // OVOV density
+    global_dpd_->buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
+                           ID("[O,V]"), ID("[O,V]"), 0, "Gamma <OV|OV>");
+    for(int h = 0; h < nirrep_; ++h){
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
+
+        #pragma omp parallel for
+        for(long int ia = 0; ia < G.params->rowtot[h]; ++ia){
+            tpdm_trace += 2.0 * G.matrix[h][ia][ia];
+        }
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
+    }
+
+    global_dpd_->buf4_close(&G);
+
+    global_dpd_->buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,v]"), ID("[O,v]"),
+                           ID("[O,v]"), ID("[O,v]"), 0, "Gamma <Ov|Ov>");
+    for(int h = 0; h < nirrep_; ++h){
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
+
+        #pragma omp parallel for
+        for(long int ia = 0; ia < G.params->rowtot[h]; ++ia){
+            tpdm_trace += 2.0 * G.matrix[h][ia][ia];
+        }
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
+    }
+
+    global_dpd_->buf4_close(&G);
+
+    global_dpd_->buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,V]"), ID("[o,V]"),
+                           ID("[o,V]"), ID("[o,V]"), 0, "Gamma <oV|oV>");
+    for(int h = 0; h < nirrep_; ++h){
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
+
+        #pragma omp parallel for
+        for(long int ia = 0; ia < G.params->rowtot[h]; ++ia){
+            tpdm_trace += 2.0 * G.matrix[h][ia][ia];
+        }
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
+    }
+
+    global_dpd_->buf4_close(&G);
+
+    global_dpd_->buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,v]"), ID("[o,v]"),
+                           ID("[o,v]"), ID("[o,v]"), 0, "Gamma <ov|ov>");
+
+    for(int h = 0; h < nirrep_; ++h){
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
+
+        #pragma omp parallel for
+        for(long int ia = 0; ia < G.params->rowtot[h]; ++ia){
+            tpdm_trace += 2.0 * G.matrix[h][ia][ia];
+        }
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
+    }
+
+    global_dpd_->buf4_close(&G);
+
+    // Compute OPDM trace
+    double opdm_trace = (kappa_mo_a_->trace() + kappa_mo_b_->trace());
+    opdm_trace += (aocc_tau_->trace() + bocc_tau_->trace() + avir_tau_->trace() + bvir_tau_->trace());
+
+    // Compute deviations from N-representability
+    double N = (double) (nalpha_ + nbeta_);
+    double opdm_dev = N - opdm_trace;
+    double tpdm_dev = N * (N - 1.0) - tpdm_trace;
+
+    fprintf(outfile, "\t OPDM trace: \t%10.6f\t\tDeviation: \t%8.4e\n", opdm_trace, opdm_dev);
+    fprintf(outfile, "\t TPDM trace: \t%10.6f\t\tDeviation: \t%8.4e\n", tpdm_trace, tpdm_dev);
+
+    psio_->close(PSIF_DCFT_DENSITY, 1);
+
+}
+
 }} //End namespaces
 
 

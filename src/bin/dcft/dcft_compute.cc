@@ -136,6 +136,8 @@ DCFTSolver::compute_energy()
         tstart();
         // Solve the response equations, compute relaxed OPDM and TPDM and dump them to disk
         compute_gradient();
+        // Compute TPDM trace
+        compute_TPDM_trace();
     }
 
     // Free up memory and close files
