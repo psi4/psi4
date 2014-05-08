@@ -36,7 +36,7 @@ import random
 #CUimport psi4
 import pubchem
 #CUfrom psiexceptions import *
-from p4xcpt import * #CU
+#from p4xcpt import * #CU
 
 
 # inputfile contents to be preserved from the processor
@@ -45,29 +45,30 @@ literals = {}
 
 def bad_option_syntax(line):
     """Function to report bad syntax to screen and output file."""
-    raise ValidationError('Unsupported syntax:\n\n%s\n\n' % (line))
+    print('Unsupported syntax:\n\n%s\n\n' % (line))
+    sys.exit(1)
 
 
 def process_word_quotes(matchobj):
     """Function to determine if argument needs wrapping in quotes as string."""
     dollar = matchobj.group(2)
     val = matchobj.group(3)
-    if(dollar):
+    if dollar:
         # This is a python variable, make sure that it starts with a letter
-        if(re.match(r'^[A-Za-z][\w]*', val)):
+        if re.match(r'^[A-Za-z][\w]*', val):
             return val
         else:
-            print("Invalid Python variable: %s" % val)
+            print("Invalid Python variable: %s" % (val))
             sys.exit(1)
-    elif(re.match(r'^-?\d+\.?\d*(?:[Ee]-?\d+)?$', val)):
+    elif re.match(r'^-?\d+\.?\d*(?:[Ee]-?\d+)?$', val):
         # This must be a number, don't wrap it in quotes
         return val
-    elif(re.match(r'^\'.*\'$', val) or re.match(r'^\".*\"$', val)):
+    elif re.match(r'^\'.*\'$', val) or re.match(r'^\".*\"$', val):
         # This is already wrapped in quotes, do nothing
         return val
     else:
         # This must be a string
-        return "\"%s\"" % val
+        return "\"%s\"" % (val)
 
 
 def quotify(string):
@@ -87,20 +88,21 @@ def process_option(spaces, module, key, value, line):
     into global/local domain and keyword/value.
 
     """
+    module = module.upper()
     value = quotify(value.strip())
     temp = ""
 
-    global_options = False
-    module = module.upper()
-    if(module == "GLOBALS" or module == "GLOBAL" or module == "" or module.isspace()):
+    if module == "GLOBALS" or module == "GLOBAL" or module == "" or module.isspace():
         global_options = True
+    else:
+        global_options = False
 
-    if(global_options):
+    if global_options:
         # If it's really a global, we need slightly different syntax
-        return spaces + "psi4.set_global_option(\"%s\", %s)\n" % (key, value)
+        return "%spsi4.set_global_option(\"%s\", %s)\n" % (spaces, key, value)
     else:
         # It's a local option, so we need the module name in there too
-        return spaces + "psi4.set_local_option(\"%s\", \"%s\", %s)\n" % (module, key, value)
+        return "%spsi4.set_local_option(\"%s\", \"%s\", %s)\n" % (spaces, module, key, value)
 
 
 def process_set_command(matchobj):
@@ -110,10 +112,10 @@ def process_set_command(matchobj):
     """
     result = ""
     module_string = ""
-    if(matchobj.group(2)):
+    if matchobj.group(2):
         module_string = matchobj.group(2)
     for module in module_string.split(","):
-        result = result + process_option(matchobj.group(1), module, matchobj.group(3), matchobj.group(4), matchobj.group(0))
+        result += process_option(matchobj.group(1), module, matchobj.group(3), matchobj.group(4), matchobj.group(0))
     return result
 
 
@@ -127,23 +129,23 @@ def process_set_commands(matchobj):
     result = ""
     module_string = ""
     command = ""
-    if(matchobj.group(2)):
+    if matchobj.group(2):
         module_string = matchobj.group(2)
     for module in module_string.split(","):
         for line in command_lines:
             # Chomp the trailing newline and accumulate
-            command = command + line
+            command += line
             if not check_parentheses_and_brackets(command, 0):
                 # If the brackets don't match up, we need to move on to the next line
                 # and keep going, until they do match. Only then do we process the command
                 continue
             # Ignore blank/empty lines
-            if (not line or line.isspace()):
+            if not line or line.isspace():
                 continue
             matchobj = re.match(r'^\s*(\w+)[\s=]+(.*?)$', command)
             # Is the syntax correct? If so, process the line
             if matchobj:
-                result = result + process_option(spaces, module, matchobj.group(1), matchobj.group(2), command)
+                result += process_option(spaces, module, matchobj.group(1), matchobj.group(2), command)
                 # Reset the string
                 command = ""
             else:
@@ -170,20 +172,20 @@ def process_pubchem_command(matchobj):
 
         # N.B. Anything starting with PubchemError will be handled correctly by the molecule parser
         # in libmints, which will just print the rest of the string and exit gracefully.
-        if(not results):
+        if not results:
             # Nothing!
-            return "PubchemError\n\tNo results were found when searching PubChem for %s.\n" % string
-        elif(len(results) == 1):
+            return "PubchemError\n\tNo results were found when searching PubChem for %s.\n" % (string)
+        elif len(results) == 1:
             # There's only 1 result - use it
             return results[0].getMoleculeString()
         else:
             # There are multiple results. Print and exit
             msg = "\tPubchemError\n"
-            msg += "\tMultiple pubchem results were found. Replace\n\n\t\tpubchem:%s\n\n" % string
+            msg += "\tMultiple pubchem results were found. Replace\n\n\t\tpubchem:%s\n\n" % (string)
             msg += "\twith the Chemical ID number or exact name from one of the following and re-run.\n\n"
             msg += "\t Chemical ID     IUPAC Name\n\n"
             for result in results:
-                msg += "%s" % result
+                msg += "%s" % (result)
                 if result.name().lower() == string.lower():
                     #We've found an exact match!
                     return result.getMoleculeString()
@@ -224,20 +226,20 @@ def process_cfour_command(matchobj):
 
     literalkey = str(random.randint(0, 99999))
     literals[literalkey] = cfourblock
-    return spaces + "psi4.set_global_option(\"%s\", \"\"\"%s\n\"\"\")\n" % ('LITERAL_CFOUR',
-        'literals_psi4_yo-' + literalkey)
+    return "%spsi4.set_global_option(\"%s\", \"\"\"%s\n\"\"\")\n" % \
+        (spaces, 'LITERAL_CFOUR', 'literals_psi4_yo-' + literalkey)
 
 
 def process_extract_command(matchobj):
     """Function to process match of ``extract_subsets``."""
     spaces = matchobj.group(1)
     name = matchobj.group(2)
-    extract = matchobj.group(0)
-    extract += spaces + '%s.set_name("%s")' % (name, name)
-    extract += "\n%spsi4.set_active_molecule(%s)" % (spaces, name)
-    extract += '\n%spsi4.IO.set_default_namespace("%s")' % (spaces, name)
+    result = matchobj.group(0)
+    result += '%s%s.set_name("%s")' % (spaces, name, name)
+    result += "\n%spsi4.set_active_molecule(%s)" % (spaces, name)
+    result += '\n%spsi4.IO.set_default_namespace("%s")' % (spaces, name)
 
-    return extract
+    return result
 
 
 def process_print_command(matchobj):
@@ -248,37 +250,33 @@ def process_print_command(matchobj):
     spaces = matchobj.group(1)
     string = matchobj.group(2)
 
-    printer = str(spaces)
-    printer += "psi4.print_out(str(%s))\n" % str(string)
-
-    return printer
+    return "%spsi4.print_out(str(%s))\n" % (spaces, str(string))
 
 
 def process_memory_command(matchobj):
     """Function to process match of ``memory ...``."""
-    spacing = str(matchobj.group(1))
+    spaces = str(matchobj.group(1))
     sig = str(matchobj.group(2))
     units = str(matchobj.group(3))
 
     val = float(sig)
     memory_amount = val
 
-    if (units.upper() == 'KB'):
+    if units.upper() == 'KB':
         memory_amount = val * 1000
-    elif (units.upper() == 'MB'):
+    elif units.upper() == 'MB':
         memory_amount = val * 1000000
-    elif (units.upper() == 'GB'):
+    elif units.upper() == 'GB':
         memory_amount = val * 1000000000
 
-    command = "%spsi4.set_memory(%d)\n" % (spacing, int(memory_amount))
-    return command
+    return "%spsi4.set_memory(%d)\n" % (spaces, int(memory_amount))
 
 
 def process_filename(matchobj):
     """Function to process match of ``filename ...``."""
-    spacing = str(matchobj.group(1))
+    spaces = str(matchobj.group(1))
     filename = str(matchobj.group(2)).strip()
-    command = "%spsi4.IO.shared_object().set_pid(\"%s\")" % (spacing, filename)
+    command = "%spsi4.IO.shared_object().set_pid(\"%s\")" % (spaces, filename)
 
     return command
 
@@ -286,9 +284,9 @@ def process_filename(matchobj):
 def process_basis_block(matchobj):
     """Function to process match of ``basis name { ... }``."""
     command_lines = re.split('\n', matchobj.group(2))
-    spacing = str(matchobj.group(1))
-    result = "%stemppsioman = psi4.IOManager.shared_object()" % spacing
-    result += "%spsi4tempscratchdir = temppsioman.get_file_path(100)" % spacing
+    spaces = str(matchobj.group(1))
+    result = "%stemppsioman = psi4.IOManager.shared_object()" % (spaces)
+    result += "%spsi4tempscratchdir = temppsioman.get_file_path(100)" % (spaces)
     basislabel = re.compile(r'\s*\[\s*([-*\(\)\w]+)\s*\]\s*')
 
     # Start by looking for assign lines, and remove them
@@ -302,26 +300,26 @@ def process_basis_block(matchobj):
             m = label_re.match(line)
             if m.group(3):
                 basistype = m.group(3).upper()
-            result += "%spsi4.get_active_molecule().set_basis_by_label(\"%s\",\"%s\",\"%s\")" % (spacing, m.group(1), m.group(2), basistype)
-            result += "%spsi4.set_global_option(\"%s\", \"CUSTOM\")" % (spacing, basistype)
+            result += "%spsi4.get_active_molecule().set_basis_by_label(\"%s\",\"%s\",\"%s\")" % (spaces, m.group(1), m.group(2), basistype)
+            result += "%spsi4.set_global_option(\"%s\", \"CUSTOM\")" % (spaces, basistype)
         elif(symbol_re.match(line)):
             m = symbol_re.match(line)
             if m.group(3):
                 basistype = m.group(3).upper()
-            result += "%spsi4.get_active_molecule().set_basis_by_symbol(\"%s\",\"%s\",\"%s\")" % (spacing, m.group(1), m.group(2), basistype)
-            result += "%spsi4.set_global_option(\"%s\", \"CUSTOM\")" % (spacing, basistype)
+            result += "%spsi4.get_active_molecule().set_basis_by_symbol(\"%s\",\"%s\",\"%s\")" % (spaces, m.group(1), m.group(2), basistype)
+            result += "%spsi4.set_global_option(\"%s\", \"CUSTOM\")" % (spaces, basistype)
             custom_basis = True
         elif(all_re.match(line)):
             m = all_re.match(line)
             if m.group(2):
                 basistype = m.group(2).upper()
-            result += "%spsi4.get_active_molecule().set_basis_all_atoms(\"%s\",\"%s\")" % (spacing, m.group(1), basistype)
-            result += "%spsi4.set_global_option(\"%s\", \"%s\")" % (spacing, basistype, m.group(1))
+            result += "%spsi4.get_active_molecule().set_basis_all_atoms(\"%s\",\"%s\")" % (spaces, m.group(1), basistype)
+            result += "%spsi4.set_global_option(\"%s\", \"%s\")" % (spaces, basistype, m.group(1))
             custom_basis = False
         else:
-            # Ignore blank lines
-            if (line and not line.isspace()):
-                leftover_lines.append(line)
+            # Ignore blank lines and accumulate remainder
+            if line and not line.isspace():
+                leftover_lines.append(line.strip())
 
     # Now look for regular basis set definitions
     basisstring = ""
@@ -330,41 +328,41 @@ def process_basis_block(matchobj):
         m = re.match(basislabel, line)
         if(m):
             if(basisstring != ""):
-                result += "%spsi4tempbasisfile = psi4tempscratchdir + \"%s\"" % (spacing, basisname)
-                result += "%stemppsioman.write_scratch_file(psi4tempbasisfile, \"\"\"\n%s\"\"\")" % (spacing, basisstring)
+                result += "%spsi4tempbasisfile = psi4tempscratchdir + \"%s\"" % (spaces, basisname)
+                result += "%stemppsioman.write_scratch_file(psi4tempbasisfile, \"\"\"\n%s\"\"\")" % (spaces, basisstring)
                 basisstring = ""
             basisname = psi4.BasisSet.make_filename(m.group(1))
         else:
             basisstring += line + "\n"
     if(basisstring != ""):
-        result += "%spsi4tempbasisfile = psi4tempscratchdir + \"%s\"" % (spacing, basisname)
-        result += "%stemppsioman.write_scratch_file(psi4tempbasisfile, \"\"\"\n%s\"\"\")" % (spacing, basisstring)
+        result += "%spsi4tempbasisfile = psi4tempscratchdir + \"%s\"" % (spaces, basisname)
+        result += "%stemppsioman.write_scratch_file(psi4tempbasisfile, \"\"\"\n%s\"\"\")" % (spaces, basisstring)
     return result
 
 
 def process_pcm_command(matchobj):
     """Function to process match of ``pcm name? { ... }``."""
-    spacing = str(matchobj.group(1)) # Ignore..
-    name = str(matchobj.group(2)) # Ignore..
+    spaces = str(matchobj.group(1))  # Ignore..
+    name = str(matchobj.group(2))  # Ignore..
     block = str(matchobj.group(3))
     fp = open('@pcmsolver.inp', 'w')
     fp.write(block)
     fp.close()
     from pcmpreprocess import preprocess
     preprocess()
-    return "" # The file has been written to disk; nothing needed in Psi4 input
+    return ""  # The file has been written to disk; nothing needed in Psi4 input
 
 
 def process_external_command(matchobj):
     """Function to process match of ``external name? { ... }``."""
-    spacing = str(matchobj.group(1))
+    spaces = str(matchobj.group(1))
     name = str(matchobj.group(2))
-    if (not name or name.isspace()):
+    if not name or name.isspace():
         name = "extern"
     block = str(matchobj.group(3))
     lines = re.split('\n', block)
 
-    extern = "%sqmmm = QMMM()\n" % (spacing)
+    extern = "%sqmmm = QMMM()\n" % (spaces)
 
     NUMBER = "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"
 
@@ -374,7 +372,7 @@ def process_external_command(matchobj):
     lines2 = []
     for line in lines:
         mobj = re_blank.match(line)
-        if (mobj):
+        if mobj:
             pass
         else:
             lines2.append(line)
@@ -386,9 +384,9 @@ def process_external_command(matchobj):
     lines2 = []
     for line in lines:
         mobj = re_units.match(line)
-        if (mobj):
+        if mobj:
             unit = mobj.group(1)
-            if (unit == 'bohr' or unit == 'au' or unit == 'a.u.'):
+            if unit in ['bohr', 'au', 'a.u.']:
                 units = 'bohr'
             else:
                 units = 'ang'
@@ -405,11 +403,11 @@ def process_external_command(matchobj):
     lines2 = []
     for line in lines:
         mobj = re_basis.match(line)
-        if (mobj):
+        if mobj:
             basis = mobj.group(1)
         else:
             mobj = re_df_basis.match(line)
-            if (mobj):
+            if mobj:
                 df_basis_scf = mobj.group(1)
             else:
                 lines2.append(line)
@@ -420,11 +418,11 @@ def process_external_command(matchobj):
     lines2 = []
     for line in lines:
         mobj = charge_re.match(line)
-        if (mobj):
-            if (units == 'ang'):
-                extern += '%sqmmm.addChargeAngstrom(%s,%s,%s,%s)\n' % (spacing, mobj.group(1), mobj.group(2), mobj.group(3), mobj.group(4))
-            if (units == 'bohr'):
-                extern += '%sqmmm.addChargeBohr(%s,%s,%s,%s)\n' % (spacing, mobj.group(1), mobj.group(2), mobj.group(3), mobj.group(4))
+        if mobj:
+            if units == 'ang':
+                extern += '%sqmmm.addChargeAngstrom(%s,%s,%s,%s)\n' % (spaces, mobj.group(1), mobj.group(2), mobj.group(3), mobj.group(4))
+            if units == 'bohr':
+                extern += '%sqmmm.addChargeBohr(%s,%s,%s,%s)\n' % (spaces, mobj.group(1), mobj.group(2), mobj.group(3), mobj.group(4))
         else:
             lines2.append(line)
     lines = lines2
@@ -435,13 +433,13 @@ def process_external_command(matchobj):
     frags.append([])
     for line in lines:
         mobj = spacer_re.match(line)
-        if (mobj):
-            if (len(frags[len(frags) - 1])):
+        if mobj:
+            if len(frags[len(frags) - 1]):
                 frags.append([])
         else:
             frags[len(frags) - 1].append(line)
 
-    extern += '%sextern_mol_temp = psi4.get_active_molecule()\n' % (spacing)
+    extern += '%sextern_mol_temp = psi4.get_active_molecule()\n' % (spaces)
 
     mol_re = re.compile(r'\s*\S+\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s*$')
     lines = []
@@ -450,39 +448,39 @@ def process_external_command(matchobj):
         if not len(frag):
             continue
 
-        extern += '%sexternal_diffuse = geometry("""\n' % (spacing)
-        extern += '%s0 1\n' % (spacing)
+        extern += '%sexternal_diffuse = geometry("""\n' % (spaces)
+        extern += '%s0 1\n' % (spaces)
 
         for line in frag:
             if not mol_re.match(line):
                 lines.append(line)
             else:
-                extern += '%s%s\n' % (spacing, line)
+                extern += '%s%s\n' % (spaces, line)
 
-        extern += '%sunits %s\n' % (spacing, units)
-        extern += '%ssymmetry c1\n' % (spacing)
-        extern += '%sno_reorient\n' % (spacing)
-        extern += '%sno_com\n' % (spacing)
-        extern += '%s""")\n' % (spacing)
-        extern += "%sdiffuse = Diffuse(external_diffuse,'%s','%s')\n" % (spacing, basis, df_basis_scf)
-        extern += '%sdiffuse.fitScf()\n' % (spacing)
-        extern += '%sqmmm.addDiffuse(diffuse)\n' % (spacing)
+        extern += '%sunits %s\n' % (spaces, units)
+        extern += '%ssymmetry c1\n' % (spaces)
+        extern += '%sno_reorient\n' % (spaces)
+        extern += '%sno_com\n' % (spaces)
+        extern += '%s""")\n' % (spaces)
+        extern += "%sdiffuse = Diffuse(external_diffuse,'%s','%s')\n" % (spaces, basis, df_basis_scf)
+        extern += '%sdiffuse.fitScf()\n' % (spaces)
+        extern += '%sqmmm.addDiffuse(diffuse)\n' % (spaces)
         extern += '\n'
 
-    extern += '%spsi4.set_active_molecule(extern_mol_temp)\n' % (spacing)
+    extern += '%spsi4.set_active_molecule(extern_mol_temp)\n' % (spaces)
 
     # 6. If there is anything left, the user messed up
-    if (len(lines)):
+    if len(lines):
         print('Input parsing for external {}: Extra line(s) present:')
         for line in lines:
             print(line)
             sys.exit(1)
 
     # Return is actually an ExternalPotential, not a QMMM
-    extern += '%sqmmm.populateExtern()\n' % (spacing)
-    extern += '%s%s = qmmm.extern\n' % (spacing, name)
+    extern += '%sqmmm.populateExtern()\n' % (spaces)
+    extern += '%s%s = qmmm.extern\n' % (spaces, name)
 
-    extern += '%spsi4.set_global_option_python("EXTERN", extern)\n' % (spacing)
+    extern += '%spsi4.set_global_option_python("EXTERN", extern)\n' % (spaces)
 
     return extern
 
@@ -497,7 +495,7 @@ def check_parentheses_and_brackets(input_string, exit_on_error):
     import collections
 
     # create left to right parenthesis mappings
-    lrmap = {"(":")", "[":"]", "{":"}"}
+    lrmap = {"(": ")", "[": "]", "{": "}"}
 
     # derive sets of left and right parentheses
     lparens = set(lrmap.keys())
@@ -516,7 +514,7 @@ def check_parentheses_and_brackets(input_string, exit_on_error):
                 # Run out of opening parens
                 all_matched = 0
                 if exit_on_error:
-                    print("Input error: extra %s" % ch)
+                    print("Input error: extra %s" % (ch))
                     sys.exit(1)
             if lrmap[opench] != ch:
                 # wrong type of parenthesis popped from stack
@@ -524,10 +522,10 @@ def check_parentheses_and_brackets(input_string, exit_on_error):
                 if exit_on_error:
                     print("Input error: %s closed with a %s" % (opench, ch))
                     sys.exit(1)
-    if(len(parenstack) != 0):
+    if len(parenstack) != 0:
         all_matched = 0
         if exit_on_error:
-            print("Input error: Unmatched %s" % parenstack.pop())
+            print("Input error: Unmatched %s" % (parenstack.pop()))
             sys.exit(1)
 
     return all_matched
@@ -543,7 +541,7 @@ def parse_multiline_array(input_list):
     while not check_parentheses_and_brackets(line, 0):
         thisline = input_list.pop(0).strip()
         line += thisline
-    return "%s\n" % line
+    return "%s\n" % (line)
 
 
 def process_multiline_arrays(inputfile):
@@ -563,7 +561,7 @@ def process_multiline_arrays(inputfile):
             newinput += parse_multiline_array(input_list)
         else:
             # Nothing to do - just add the line to the string
-            newinput += "%s\n" % input_list.pop(0)
+            newinput += "%s\n" % (input_list.pop(0))
     return newinput
 
 
@@ -580,7 +578,7 @@ def process_input(raw_input, print_level=1):
     """
     # Check if the infile is actually an outfile (yeah we did)
     psi4_id = re.compile(r'PSI4: An Open-Source Ab Initio Electronic Structure Package')
-    if (re.search(psi4_id, raw_input)):
+    if re.search(psi4_id, raw_input):
         input_lines = raw_input.split("\n")
         input_re = re.compile(r'^\s*?\=\=> Input File <\=\=')
         input_start = -1
@@ -598,7 +596,7 @@ def process_input(raw_input, print_level=1):
                 input_stop = line_count
                 break
 
-        if (input_start == -1 or input_stop == -1):
+        if input_start == -1 or input_stop == -1:
             print('Cannot extract infile from outfile.')
             sys.exit(1)
 
