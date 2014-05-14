@@ -101,7 +101,7 @@ void MOLECULE::rfo_step(void) {
 
   //Iterative sequence to find alpha; we'll give it 15 tries
   int iter = -1;
-  while (!converged && iter<16 ) {
+  while (!converged && iter<16 && !Opt_params.simple_step_scaling) {
     ++iter;
 
     // If we get to iteration 15, and we haven't not yet converged, than
@@ -112,15 +112,14 @@ void MOLECULE::rfo_step(void) {
       alpha = 1;
     }
 
-
     // Scale the RFO matrix.
-	for (i=0; i<=dim; i++) {
-	    for (j=0; j<dim; j++) {
-		    SRFO[j][i] = RFO[j][i] / alpha;
-		};
-		SRFO[dim][i] = RFO[dim][i];
-	}
-	if (Opt_params.print_lvl >= 3) {
+    for (i=0; i<=dim; i++) {
+      for (j=0; j<dim; j++) {
+        SRFO[j][i] = RFO[j][i] / alpha;
+      };
+      SRFO[dim][i] = RFO[dim][i];
+    }
+    if (Opt_params.print_lvl >= 3) {
       fprintf(outfile,"Scaled RFO matrix.\n");
       print_matrix(outfile,  SRFO, dim+1, dim+1);
       fflush(outfile);

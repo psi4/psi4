@@ -123,25 +123,26 @@ double ** FRAG::Lindh_guess(void) {
       R[B][A] = R[A][B] = v3d_dist(geom[A], geom[B]);
 
   // Define "close" atoms;
-  double const dist_limit = 5.5;
+  double const dist_limit = 6.0;
   bool **close = init_bool_matrix(natom, natom);
   for (int A=0; A<natom; ++A)
     for (int B=0; B<natom; ++B)
-      close[A][B] = true;
-      //if (R[A][B] < dist_limit)
-// make all close for now
+      if (R[A][B] < dist_limit)
+        close[A][B] = true;
 
-    const double k_r   = 0.45;
-    const double k_phi = 0.15;
-    const double k_tau = 0.005;
-    double Lindh_k;
+  const double k_r   = 0.45;
+  const double k_phi = 0.15;
+  const double k_tau = 0.005;
+  double Lindh_k;
 
+// Use this code to do one intco at a time; neglect gradient term
     // Model is defined including ALL possible bends, angles, and torsions..
     double **Hx = init_matrix(3*natom,3*natom);
 
     // loop over all possible stretches, between i j in fragment
     for (int i=0; i<natom; ++i)
       for (int j=i+1; j<natom; ++j) {
+        if (close[i][j]) {
 
         Lindh_k = k_r * Lindh_rho_orig(i, j, R[i][j]);
 
@@ -157,6 +158,7 @@ double ** FRAG::Lindh_guess(void) {
                   Lindh_k * sB[a][xyz_a] * sB[b][xyz_b];
 
         delete s1;
+        }
       }
 
     // loop over all possible i j k
@@ -165,6 +167,7 @@ double ** FRAG::Lindh_guess(void) {
         if (j != i)
           for (int k=i+1; k<natom; ++k)
             if (k != j) {
+              if (close[i][j] && close[j][k]) {
 
               Lindh_k = k_phi * Lindh_rho_orig(i, j, R[i][j]) *
                                 Lindh_rho_orig(j, k, R[j][k]);
@@ -181,6 +184,7 @@ double ** FRAG::Lindh_guess(void) {
                         Lindh_k * bB[a][xyz_a] * bB[b][xyz_b];
 
               delete b1;
+              }
             }
 
     for (int i=0; i<natom; ++i)
@@ -190,6 +194,7 @@ double ** FRAG::Lindh_guess(void) {
             if ( k!=i && k!=j)
               for (int l=i+1; l<natom; ++l)
                 if ( l!=j && l!=k) {
+                  if (close[i][j] && close[j][k] && close[k][l]) {
 
                   Lindh_k = k_tau * Lindh_rho_orig(i, j, R[i][j]) *
                                     Lindh_rho_orig(j, k, R[j][k]) * 
@@ -207,9 +212,12 @@ double ** FRAG::Lindh_guess(void) {
                             Lindh_k * tB[a][xyz_a] * tB[b][xyz_b];
 
                   delete t1;
+                  }
             }
 
-/* Use this code to build all internals and compute forces;  otherwise just do one intco at a time
+/* Use this code to build all internals and compute forces;  include g_q term
+  Lindh_intcos = vector<SIMPLE *> intcos;
+
   // Generate coordinates between ALL atoms, but not 
   // complete reversals or using duplicate i,j,k,l.
   // Create stretch coordinates.
@@ -217,7 +225,7 @@ double ** FRAG::Lindh_guess(void) {
     for (int j=i+1; j<natom; ++j) {
       if (close[i][j]) {
         STRE *one_stre = new STRE(i, j);
-        intcos.push_back(one_stre);
+        Lindh_intcos.push_back(one_stre);
       }
 
   // Create bend coodinates.
@@ -225,9 +233,9 @@ double ** FRAG::Lindh_guess(void) {
     for (int j=0; j<natom; ++j)
       if (close[j][i] && (j != i))
         for (int k=i+1; k<natom; ++k)
-          if (close[k][j] && close[k][i] && (k != j)) {
+          if (close[k][j] && && (k != j)) {
             BEND *one_bend = new BEND(i, j, k);
-            intcos.push_back(one_bend);
+            Lindh_intcos.push_back(one_bend);
           }
 
   // Create torsion coodinates.
@@ -235,69 +243,19 @@ double ** FRAG::Lindh_guess(void) {
     for (int j=0; j<natom; ++j)
       if (close[j][i] && (j != i))
         for (int k=0; k<natom; ++k)
-          if (close[k][j] && close[k][i] && (k!=i) && (k!=j))
+          if (close[k][j] && (k!=i) && (k!=j))
             for (int l=i+1; l<natom; ++l)
-              if (close[l][k] && close[l][j] && close[l][i] && l!=j && l!=k) {
+              if (close[l][k] && l!=j && l!=k) {
                 TORS *one_tors = new TORS(i, j, k, l);
-                intcos.push_back(one_tors);
+                Lindh_intcos.push_back(one_tors);
               }
 
   free_bool_matrix(close);
 
-  const double k_r   = 0.45;
-  const double k_phi = 0.15;
-  const double k_tau = 0.005;
-  double k;
-
-  double **Hx = init_matrix(3*natom, 3*natom);
-
-
-  for (int i=0; i<intcos.size(); ++i) {  // loop over intcos
-    SIMPLE * q = intcos.at(i);
-
-    double **Bintco = q->DqDx(geom); // dq_i / da_xyz
-    int natom_intco = q->g_natom();
-
-    if (q->g_type() == stre_type) {
-      int a = q->g_atom(0);
-      int b = q->g_atom(1);
-      k = k_r * Lindh_rho_orig(a, b, R[a][b]);
-    }
-    else if (intcos.at(i)->g_type() == bend_type) {
-      int a = q->g_atom(0);
-      int b = q->g_atom(1);
-      int c = q->g_atom(2);
-      k = k_phi * Lindh_rho_orig(a, b, R[a][b])
-                * Lindh_rho_orig(b, c, R[b][c]);
-    }
-    else if (intcos.at(i)->g_type() == tors_type) {
-      int a = q->g_atom(0);
-      int b = q->g_atom(1);
-      int c = q->g_atom(2);
-      int d = q->g_atom(3);
-      k = k_tau * Lindh_rho_orig(a, b, R[a][b])
-                * Lindh_rho_orig(b, c, R[b][c])
-                * Lindh_rho_orig(c, d, R[c][d]);
-    }
-
-    // Hxy += k dq/dx dq/dy
-    for (int a=0; a < natom_intco; ++a) {
-      int x1 = q->g_atom(a);
-
-      for (int b=0; b < natom_intco; ++b) {
-        int x2 = q->g_atom(b);
-
-        for (int xyz1=0; xyz1<3; ++xyz1)
-          for (int xyz2=0; xyz2<3; ++xyz2)
-             Hx[3*x1 + xyz1][3*x2 + xyz2] += k * Bintco[a][xyz1] * Bintco[b][xyz2];
-      }
-    }
-    free_matrix(Bintco);
-
-// If we include energy gradient term, then need gradient in internals.  // Is it worth it?
-
+// Is it worth it?
+// If we include energy gradient term, then need gradient in internals.
   // Compute g_q = (BB^t)^-1 B g_x
-  long int Nintco = intcos.size();
+  long int Nintco = Lindh_intcos.size();
   double **B = compute_B();
   double *g_x = g_grad_array();
   double *temp_arr = init_array(Nintco);
@@ -318,23 +276,69 @@ double ** FRAG::Lindh_guess(void) {
   free_matrix(G_inv);
   free_array(temp_arr);
   // Done computing g_q
-    // Hxy += dE/dq_i d2q_i/dxdy
-    double **Dq2 = q->Dq2Dx2(geom);
+
+  double **Hx = init_matrix(3*natom, 3*natom);
+
+  for (int i=0; i<Lindh_intcos.size(); ++i) {  // loop over intcos
+    SIMPLE * q = Lindh_intcos.at(i);
+
+    double **Bintco = q->DqDx(geom); // dq_i / da_xyz
+    int natom_intco = q->g_natom();
+
+    if (q->g_type() == stre_type) {
+      int a = q->g_atom(0);
+      int b = q->g_atom(1);
+      Lindh_k = k_r * Lindh_rho_orig(a, b, R[a][b]);
+    }
+    else if (intcos.at(i)->g_type() == bend_type) {
+      int a = q->g_atom(0);
+      int b = q->g_atom(1);
+      int c = q->g_atom(2);
+      Lindh_k = k_phi * Lindh_rho_orig(a, b, R[a][b])
+                * Lindh_rho_orig(b, c, R[b][c]);
+    }
+    else if (intcos.at(i)->g_type() == tors_type) {
+      int a = q->g_atom(0);
+      int b = q->g_atom(1);
+      int c = q->g_atom(2);
+      int d = q->g_atom(3);
+      Lindh_k = k_tau * Lindh_rho_orig(a, b, R[a][b])
+                * Lindh_rho_orig(b, c, R[b][c])
+                * Lindh_rho_orig(c, d, R[c][d]);
+    }
+
+    // Hxy += k dq/dx dq/dy
     for (int a=0; a < natom_intco; ++a) {
       int x1 = q->g_atom(a);
+
       for (int b=0; b < natom_intco; ++b) {
         int x2 = q->g_atom(b);
+
         for (int xyz1=0; xyz1<3; ++xyz1)
           for (int xyz2=0; xyz2<3; ++xyz2)
-             Hx[3*x1 + xyz1][3*x2 + xyz2] += k * g_q[i] * Dq2[3*a+xyz1][3*b+xyz2];
+             Hx[3*x1 + xyz1][3*x2 + xyz2] += Lindh_k * Bintco[a][xyz1] * Bintco[b][xyz2];
       }
     }
+    free_matrix(Bintco);
+  }
+
+  // Hxy += dE/dq_i d2q_i/dxdy
+  double **Dq2 = q->Dq2Dx2(geom);
+  for (int a=0; a < natom_intco; ++a) {
+    int x1 = q->g_atom(a);
+    for (int b=0; b < natom_intco; ++b) {
+      int x2 = q->g_atom(b);
+      for (int xyz1=0; xyz1<3; ++xyz1)
+        for (int xyz2=0; xyz2<3; ++xyz2)
+          Hx[3*x1 + xyz1][3*x2 + xyz2] += k * g_q[i] * Dq2[3*a+xyz1][3*b+xyz2];
+    }
+  }
     free_matrix(Dq2);
   //free_array(g_q);
+// end try of g_q full coordinate transform
 */
 
   free_matrix(R);
-
   if (Opt_params.print_lvl >= 2) {
     fprintf(outfile,"Lindh cartesian Hessian guess\n");
     print_matrix(outfile, Hx, 3*natom, 3*natom);

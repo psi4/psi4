@@ -90,6 +90,8 @@ struct OPT_PARAMS {
 
   double interfragment_step_limit;
 
+  bool simple_step_scaling; // do stupid, linear scaling of internal coordinates to step limit (not RS-RFO);
+
   // whether to limit changes in Hessian due to update
   bool H_update_limit;
   // changes in H are limited to H_update_limit_scale * the previous value

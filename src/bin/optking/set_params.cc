@@ -85,6 +85,9 @@ void set_params(void)
 
     Opt_params.interfragment_step_limit = options.get_double("INTERFRAG_STEP_LIMIT");
 
+// do stupid, linear scaling of internal coordinates to step limit (not RS-RFO);
+    Opt_params.simple_step_scaling = options.get_bool("SIMPLE_STEP_SCALING");
+
 // Whether to 'follow' the initial RFO vector after the first step {true, false}
     Opt_params.rfo_follow_root = options.get_bool("RFO_FOLLOW_ROOT");
 // Which RFO root to follow; internally 0 (externally 1) indicates minimum; {integer}

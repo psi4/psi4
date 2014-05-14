@@ -2365,6 +2365,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("INTRAFRAG_STEP_LIMIT_MAX", 1.0);
       /*- Maximum step size in bohr or radian along an interfragment coordinate -*/
       options.add_double("INTERFRAG_STEP_LIMIT", 0.4);
+      /*= Do stupid, linear scaling of internal coordinates to step limit (not RS-RFO) -*/
+      options.add_bool("SIMPLE_STEP_SCALING", false);
       /*- Set number of consecutive backward steps allowed in optimization -*/
       options.add_int("CONSECUTIVE_BACKSTEPS", 0);
       /*- Specify distances between atoms to be frozen (unchanged) -*/
