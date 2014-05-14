@@ -640,6 +640,8 @@ bool OPT_DATA::previous_step_report(void) const {
 
   double Energy_ratio = (p_Opt_data->g_energy() - p_Opt_data->g_last_energy()) / g_last_DE_predicted();
 
+fprintf(outfile,"Energy_ratio %10.5lf\n", Energy_ratio);
+
   // Minimum search
   if (Opt_params.opt_type == OPT_PARAMS::MIN) {
     if (Energy_ratio < 0.0 && consecutive_backsteps < Opt_params.consecutive_backsteps_allowed) {
@@ -665,7 +667,8 @@ void OPT_DATA::increase_trust_radius(void) const {
   std::string key = "INTRAFRAG_STEP_LIMIT";
   double max = Opt_params.intrafragment_step_limit_max;
   if (Opt_params.intrafragment_step_limit != max) {
-    double new_val = Opt_params.intrafragment_step_limit * 2;
+    //double new_val = Opt_params.intrafragment_step_limit * 2;
+    double new_val = Opt_params.intrafragment_step_limit * 3;
     Opt_params.intrafragment_step_limit = ((new_val > max) ? max : new_val);
     fprintf(outfile,"\tEnergy ratio indicates good step: Trust radius increased to %6.3e.\n\n",
         Opt_params.intrafragment_step_limit);
