@@ -2895,12 +2895,12 @@ void Molecule::set_basis_all_atoms(const std::string& name, const std::string& t
 
 void Molecule::set_basis_by_number(int number, const std::string& name, const std::string& type)
 {
-    if (number >= nallatom()){
+    if (number >= natom()){
         char msg[100];
         sprintf(&msg[0], "Basis specified for atom %d, but there are only %d atoms in this molecule", number, natom());
         throw PSIEXCEPTION(msg);
     }
-    full_atoms_[number-1]->set_basisset(name, type);
+    atoms_[number]->set_basisset(name, type);
 }
 
 void Molecule::set_basis_by_symbol(const std::string& symbol, const std::string& name, const std::string& type)
