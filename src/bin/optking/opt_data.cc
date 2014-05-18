@@ -639,8 +639,7 @@ bool OPT_DATA::previous_step_report(void) const {
       p_Opt_data->g_energy() - p_Opt_data->g_last_energy());
 
   double Energy_ratio = (p_Opt_data->g_energy() - p_Opt_data->g_last_energy()) / g_last_DE_predicted();
-
-fprintf(outfile,"Energy_ratio %10.5lf\n", Energy_ratio);
+  // fprintf(outfile,"Energy_ratio %10.5lf\n", Energy_ratio);
 
   // Minimum search
   if (Opt_params.opt_type == OPT_PARAMS::MIN) {
