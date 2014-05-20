@@ -838,16 +838,6 @@ def scf_helper(name, **kwargs):
         ['SCF', 'SCF_TYPE'] # Hack: scope gets changed internally with the Andy trick
     )
 
-    # if the df_basis_scf basis is not set, pick a sensible one.
-    if psi4.get_option('SCF', 'SCF_TYPE') == 'DF':
-        if psi4.get_global_option('DF_BASIS_SCF') == '':
-            jkbasis = p4util.corresponding_jkfit(psi4.get_global_option('BASIS'))
-            if jkbasis:
-                psi4.set_global_option('DF_BASIS_SCF', jkbasis)
-                psi4.print_out('\n  No DF_BASIS_SCF auxiliary basis selected, defaulting to %s\n\n' % (jkbasis))
-            else:
-                raise ValidationError('Keyword DF_BASIS_SCF is required.')
-
     optstash2 = p4util.OptionsState(
         ['BASIS'],
         ['DF_BASIS_SCF'],
@@ -1872,15 +1862,6 @@ def run_dfmp2(name, **kwargs):
     psi4.print_out('\n')
     p4util.banner('DFMP2')
     psi4.print_out('\n')
-
-    # if the df_basis_mp2 basis is not set, pick a sensible one.
-    if psi4.get_global_option('DF_BASIS_MP2') == '':
-        ribasis = p4util.corresponding_rifit(psi4.get_global_option('BASIS'))
-        if ribasis:
-            psi4.set_global_option('DF_BASIS_MP2', ribasis)
-            psi4.print_out('  No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (ribasis))
-        else:
-            raise ValidationError('Keyword DF_BASIS_MP2 is required.')
 
     e_dfmp2 = psi4.dfmp2()
     e_scs_dfmp2 = psi4.get_variable('SCS-MP2 TOTAL ENERGY')
