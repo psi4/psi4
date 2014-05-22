@@ -36,7 +36,7 @@ import random
 #CUimport psi4
 import pubchem
 #CUfrom psiexceptions import *
-#from p4xcpt import * #CU
+from p4xcpt import *  # CU
 
 
 # inputfile contents to be preserved from the processor
@@ -89,15 +89,10 @@ def process_option(spaces, module, key, value, line):
 
     """
     module = module.upper()
+    key = key.upper()
     value = quotify(value.strip())
-    temp = ""
 
     if module == "GLOBALS" or module == "GLOBAL" or module == "" or module.isspace():
-        global_options = True
-    else:
-        global_options = False
-
-    if global_options:
         # If it's really a global, we need slightly different syntax
         return "%spsi4.set_global_option(\"%s\", %s)\n" % (spaces, key, value)
     else:
@@ -272,71 +267,70 @@ def process_memory_command(matchobj):
     return "%spsi4.set_memory(%d)\n" % (spaces, int(memory_amount))
 
 
-def process_filename(matchobj):
-    """Function to process match of ``filename ...``."""
-    spaces = str(matchobj.group(1))
-    filename = str(matchobj.group(2)).strip()
-    command = "%spsi4.IO.shared_object().set_pid(\"%s\")" % (spaces, filename)
-
-    return command
+def basname(name):
+    """Imitates BasisSet.make_filename() without the gbs extension"""
+    return name.lower().replace('+', 'p').replace('*', 's').replace('(', '_').replace(')', '_').replace(',', '_')
 
 
 def process_basis_block(matchobj):
-    """Function to process match of ``basis name { ... }``."""
-    command_lines = re.split('\n', matchobj.group(2))
-    spaces = str(matchobj.group(1))
-    result = "%stemppsioman = psi4.IOManager.shared_object()" % (spaces)
-    result += "%spsi4tempscratchdir = temppsioman.get_file_path(100)" % (spaces)
+    """Function to process match of ``basis name? { ... }``."""
+    spaces = matchobj.group(1)
+    basistype = matchobj.group(2).upper()
+    name = matchobj.group(3)
+    cleanbas = basname(name).replace('-', '')  # further remove hyphens so can be function name
+    command_lines = re.split('\n', matchobj.group(4))
+
+    symbol_re = re.compile(r'^\s*assign\s+(?P<symbol>[A-Z]{1,3})\s+(?P<basis>[-*\(\)\w]+)\s*$', re.IGNORECASE)
+    label_re = re.compile(r'^\s*assign\s+(?P<label>(?P<symbol>[A-Z]{1,3})(?:(_\w+)|(\d+))?)\s+(?P<basis>[-*\(\)\w]+)\s*$', re.IGNORECASE)
+    all_re = re.compile(r'^\s*assign\s+(?P<basis>[-*\(\)\w]+)\s*$', re.IGNORECASE)
     basislabel = re.compile(r'\s*\[\s*([-*\(\)\w]+)\s*\]\s*')
 
+    result = """%sdef basisspec_psi4_yo__%s(mol, role):\n""" % (spaces, cleanbas)
+    result += """%s    basstrings = {}\n""" % (spaces)
+
     # Start by looking for assign lines, and remove them
-    label_re = re.compile(r'^\s*assign\s*([A-Za-z]+\d+)\s+([-*\(\)\w]+)\s*(\w+)?\s*$')
-    symbol_re = re.compile(r'^\s*assign\s*([A-Za-z]+)\s+([-*\(\)\w]+)\s*(\w+)?\s*$')
-    all_re = re.compile(r'^\s*assign\s*([-*\(\)\w]+)\s*(\w+)?\s*$')
     leftover_lines = []
     for line in command_lines:
-        basistype = "BASIS"
-        if(label_re.match(line)):
-            m = label_re.match(line)
-            if m.group(3):
-                basistype = m.group(3).upper()
-            result += "%spsi4.get_active_molecule().set_basis_by_label(\"%s\",\"%s\",\"%s\")" % (spaces, m.group(1), m.group(2), basistype)
-            result += "%spsi4.set_global_option(\"%s\", \"CUSTOM\")" % (spaces, basistype)
-        elif(symbol_re.match(line)):
+        if symbol_re.match(line):
             m = symbol_re.match(line)
-            if m.group(3):
-                basistype = m.group(3).upper()
-            result += "%spsi4.get_active_molecule().set_basis_by_symbol(\"%s\",\"%s\",\"%s\")" % (spaces, m.group(1), m.group(2), basistype)
-            result += "%spsi4.set_global_option(\"%s\", \"CUSTOM\")" % (spaces, basistype)
-            custom_basis = True
-        elif(all_re.match(line)):
+            result += """%s    mol.set_basis_by_symbol("%s", "%s", role=role)\n""" % \
+                (spaces, m.group('symbol'), m.group('basis'))
+
+        elif label_re.match(line):
+            m = label_re.match(line)
+            result += """%s    mol.set_basis_by_label("%s", "%s", role=role)\n""" % \
+                (spaces, m.group('label'), m.group('basis'))
+
+        elif all_re.match(line):
             m = all_re.match(line)
-            if m.group(2):
-                basistype = m.group(2).upper()
-            result += "%spsi4.get_active_molecule().set_basis_all_atoms(\"%s\",\"%s\")" % (spaces, m.group(1), basistype)
-            result += "%spsi4.set_global_option(\"%s\", \"%s\")" % (spaces, basistype, m.group(1))
-            custom_basis = False
+            result += """%s    mol.set_basis_all_atoms("%s", role=role)\n""" % \
+                (spaces, m.group('basis'))
+
         else:
             # Ignore blank lines and accumulate remainder
             if line and not line.isspace():
                 leftover_lines.append(line.strip())
 
     # Now look for regular basis set definitions
-    basisstring = ""
-    for line in leftover_lines:
-        # Ignore blank/empty lines
-        m = re.match(basislabel, line)
-        if(m):
-            if(basisstring != ""):
-                result += "%spsi4tempbasisfile = psi4tempscratchdir + \"%s\"" % (spaces, basisname)
-                result += "%stemppsioman.write_scratch_file(psi4tempbasisfile, \"\"\"\n%s\"\"\")" % (spaces, basisstring)
-                basisstring = ""
-            basisname = psi4.BasisSet.make_filename(m.group(1))
+    basblock = filter(None, basislabel.split('\n'.join(leftover_lines)))
+    if len(basblock) == 1:
+        if len(result.split('\n') == 2):  # TODO check
+            # case with no [basname] markers where whole block is contents of gbs file
+            result += """%s    mol.set_basis_all_atoms("%s", role=role)\n""" % \
+                (spaces, name)
+            result += """%s    basstrings['%s'] = \"\"\"\n%s\n\"\"\"\n""" % \
+                (spaces, basname(name), basblock[0])
         else:
-            basisstring += line + "\n"
-    if(basisstring != ""):
-        result += "%spsi4tempbasisfile = psi4tempscratchdir + \"%s\"" % (spaces, basisname)
-        result += "%stemppsioman.write_scratch_file(psi4tempbasisfile, \"\"\"\n%s\"\"\")" % (spaces, basisstring)
+            print("Conflicting basis set specification: assign lines present but shells have no [basname] label.""")
+            sys.exit(1)
+    else:
+        # case with specs separated by [basname] markers
+        for idx in range(0, len(basblock), 2):
+            result += """%s    basstrings['%s'] = \"\"\"\n%s\n\"\"\"\n""" % \
+                (spaces, basname(basblock[idx]), basblock[idx + 1])
+
+    result += """%s    return basstrings\n""" % (spaces)
+    result += """%spsi4.set_global_option(\"%s\", \"%s\")""" % (spaces, basistype, name)
     return result
 
 
@@ -700,15 +694,10 @@ def process_input(raw_input, print_level=1):
                                re.IGNORECASE)
     temp = re.sub(memory_string, process_memory_command, temp)
 
-    # Process "basis name { ... }"
-    basis_block = re.compile(r'(\s*?)basis[=\s]*\{(.*?)\}',
+    # Process "basis name? { ... }"
+    basis_block = re.compile(r'^(\s*?)(basis|df_basis_scf|df_basis_mp2)[=\s]*(\w*?)\s*\{(.*?)\}',
                              re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(basis_block, process_basis_block, temp)
-
-    # Process "basis file ... "
-    file_pid = re.compile(r'(\s*?)filename\s*(\b.*\b)\s*$',
-                            re.MULTILINE | re.IGNORECASE)
-    temp = re.sub(file_pid, process_filename, temp)
 
     # Process literal blocks by substituting back in
     lit_block = re.compile(r'literals_psi4_yo-(\d*\d)')

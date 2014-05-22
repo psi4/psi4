@@ -334,6 +334,18 @@ public:
         const boost::shared_ptr<Molecule>& mol,
         const std::string& type);
 
+    /** Returns a new BasisSet object with qcdb Python machinery.
+     *
+     * @param mol    Molecule to construct the basis set for.
+     * @param key    keyword to build basis set for
+     * @param target keyword value to build basis set for, either orbital or auxilliary
+     * @param role   e.g., RIFIT, JKFIT; defaults to BASIS.
+     * @param other  keyword value for "hints" basis set; when target is auxiliary, use this for orbital
+     * @return A new basis set object constructed from the information passed in.
+     */
+    static boost::shared_ptr<BasisSet> pyconstruct(const boost::shared_ptr<Molecule>&,
+        const std::string&, const std::string&, 
+        const std::string& = std::string("BASIS"), const std::string& = std::string());
 
     /** Converts basis set name to a compatible filename.
      * @param basisname Basis name
