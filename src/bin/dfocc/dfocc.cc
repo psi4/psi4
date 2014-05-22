@@ -93,6 +93,7 @@ void DFOCC::common_init()
     pcg_beta_type_=options_.get_str("PCG_BETA_TYPE");
     regularization=options_.get_str("REGULARIZATION");
     read_scf_3index=options_.get_str("READ_SCF_3INDEX");
+    freeze_core_=options_.get_str("FREEZE_CORE");
 
     //title
     title();
@@ -147,8 +148,11 @@ void DFOCC::common_init()
         hess_type=options_.get_str("HESS_TYPE");
     }
     else {
-         if (reference_ == "RESTRICTED") {
+         if (reference_ == "RESTRICTED" && freeze_core_ == "FALSE") {
              hess_type = "HF"; 
+         }
+         else if (reference_ == "RESTRICTED" && freeze_core_ == "TRUE") {
+             hess_type = "APPROX_DIAG";
          }
          else if (reference_ == "UNRESTRICTED") {
              hess_type = "APPROX_DIAG";
@@ -157,9 +161,17 @@ void DFOCC::common_init()
          }
     }
 
+    // Regularization 
+    if (regularization == "TRUE") {
+        fprintf(outfile,"\n\tNOTE: A regularization procedure will be applied to the method.\n");
+        fprintf(outfile,"\tThe regularization parameter is : %12.2f mh\n", reg_param * 1000.0);
+        fflush(outfile);
+    }
+
     cutoff = pow(10.0,-exp_cutoff);
     get_moinfo();
     pair_index();
+
 
 if (reference_ == "RESTRICTED") {
 	// Memory allocation
@@ -178,8 +190,10 @@ if (reference_ == "RESTRICTED") {
         G1c_oo = SharedTensor2d(new Tensor2d("Correlation OPDM <O|O>", noccA, noccA));
         G1c_vv = SharedTensor2d(new Tensor2d("Correlation OPDM <V|V>", nvirA, nvirA));
         G1 = SharedTensor2d(new Tensor2d("MO-basis OPDM", nmo_, nmo_));
+        G1ao = SharedTensor2d(new Tensor2d("AO-basis OPDM", nso_, nso_));
         G1c = SharedTensor2d(new Tensor2d("MO-basis correlation OPDM", nmo_, nmo_));
         GF = SharedTensor2d(new Tensor2d("MO-basis GFM", nmo_, nmo_));
+        GFao = SharedTensor2d(new Tensor2d("AO-basis GFM", nso_, nso_));
         GFoo = SharedTensor2d(new Tensor2d("MO-basis GFM <O|O>", noccA, noccA));
         GFvo = SharedTensor2d(new Tensor2d("MO-basis GFM <V|O>", nvirA, noccA));
         GFov = SharedTensor2d(new Tensor2d("MO-basis GFM <O|V>", noccA, nvirA));
@@ -244,8 +258,10 @@ else if (reference_ == "UNRESTRICTED") {
         G1cB = SharedTensor2d(new Tensor2d("MO-basis beta correlation OPDM", nmo_, nmo_));
         G1A = SharedTensor2d(new Tensor2d("MO-basis alpha OPDM", nmo_, nmo_));
         G1B = SharedTensor2d(new Tensor2d("MO-basis beta OPDM", nmo_, nmo_));
+        G1ao = SharedTensor2d(new Tensor2d("AO-basis OPDM", nso_, nso_));
         GFA = SharedTensor2d(new Tensor2d("MO-basis alpha GFM", nmo_, nmo_));
         GFB = SharedTensor2d(new Tensor2d("MO-basis beta GFM", nmo_, nmo_));
+        GFao = SharedTensor2d(new Tensor2d("AO-basis GFM", nso_, nso_));
         GFooA = SharedTensor2d(new Tensor2d("MO-basis GFM <O|O>", noccA, noccA));
         GFooB = SharedTensor2d(new Tensor2d("MO-basis GFM <o|o>", noccB, noccB));
         GFvoA = SharedTensor2d(new Tensor2d("MO-basis GFM <V|O>", nvirA, noccA));
@@ -327,7 +343,28 @@ void DFOCC::title()
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "TRUE") fprintf(outfile,"                      CD-OMP2 (CD-OO-MP2)   \n");
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "FALSE") fprintf(outfile,"                       CD-MP2   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya\n") ; 
-   fprintf(outfile,"              Latest Revision Jan 17, 2014\n") ;
+   fprintf(outfile,"              Latest Revision May 22, 2014\n") ;
+   fprintf(outfile,"\n");
+   fprintf(outfile," ============================================================================== \n");
+   fprintf(outfile," ============================================================================== \n");
+   fprintf(outfile," ============================================================================== \n");
+   fprintf(outfile,"\n");
+   fflush(outfile);
+
+}//
+
+void DFOCC::title_grad()
+{
+   fprintf(outfile,"\n");
+   fprintf(outfile," ============================================================================== \n");
+   fprintf(outfile," ============================================================================== \n");
+   fprintf(outfile," ============================================================================== \n");
+   fprintf(outfile,"\n");
+   fprintf(outfile,"                         DFGRAD   \n");
+   fprintf(outfile,"            A General Analytic Gradients Code   \n");
+   fprintf(outfile,"               for Density-Fitted Methods       \n");
+   fprintf(outfile,"                   by Ugur Bozkaya\n") ; 
+   fprintf(outfile,"              Latest Revision May 22, 2014\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
