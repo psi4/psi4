@@ -206,6 +206,8 @@ class Tensor2d
   void transform(const SharedTensor2d& a, const SharedTensor2d& transformer);
   // back_transform: A = L * B * L'
   void back_transform(const SharedTensor2d& a, const SharedTensor2d& transformer);
+  // back_transform: A = alpha* L * B * L' + (beta*A)
+  void back_transform(const SharedTensor2d& a, const SharedTensor2d& transformer, double alpha, double beta);
   // pseudo_transform: A = L * B * L
   void pseudo_transform(const SharedTensor2d& a, const SharedTensor2d& transformer);
   // triple_gemm: A2d_ = a * b * c
@@ -265,6 +267,7 @@ class Tensor2d
   double* to_vector();
   double rms();
   double rms(const SharedTensor2d& a);
+
   void set_act_oo(int aocc, const SharedTensor2d &a);
   void set_act_oo(int frzc, int aocc, const SharedTensor2d &a);
   void set_act_vv(int occ, int avir, const SharedTensor2d &A);
@@ -273,12 +276,20 @@ class Tensor2d
   void set_ov(const SharedTensor2d &A);
   void set_vo(const SharedTensor2d &A);
   void set_vv(int occ, const SharedTensor2d &A);
+
+  void set3_oo(const SharedTensor2d &A);
+  void add3_oo(const SharedTensor2d &A, double alpha, double beta);
   void set3_act_ov(int frzc, int aocc, int avir, int vir, const SharedTensor2d &a);
+  void set3_ov(const SharedTensor2d &A);
+  void set3_vo(const SharedTensor2d &A);
+  void set3_vv(const SharedTensor2d &A, int occ);
   void swap_3index_col(const SharedTensor2d &A);
+
   void form_oo(const SharedTensor2d &A);
   void form_vv(int occ, const SharedTensor2d &A);
   void form_vo(const SharedTensor2d &A);
   void form_ov(const SharedTensor2d &A);
+
   void form_b_ij(int frzc, const SharedTensor2d &A);
   void form_b_ia(int frzc, const SharedTensor2d &A);
   void form_b_ab(const SharedTensor2d &A);

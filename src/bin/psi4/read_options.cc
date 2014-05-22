@@ -2705,7 +2705,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convergence criterion for residual vector of preconditioned conjugate gradient method. -*/
     options.add_double("PCG_CONVERGENCE",1e-6);
     /*- Regularization parameter -*/
-    options.add_double("REG_PARAM",0.004);
+    options.add_double("REG_PARAM",0.4);
     /*- tolerance for Cholesky decomposition of the ERI tensor -*/
     options.add_double("CHOLESKY_TOLERANCE",1.0e-4);
 
