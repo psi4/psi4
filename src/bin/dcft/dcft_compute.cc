@@ -128,6 +128,13 @@ DCFTSolver::compute_energy()
     if(options_.get_bool("TPDM")) dump_density();
 //    check_n_representability();
 
+    if (options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") {
+        compute_unrelaxed_density_OOOO();
+        compute_unrelaxed_density_OVOV();
+        compute_unrelaxed_density_VVVV();
+        compute_TPDM_trace();
+    }
+
     // Compute the analytic gradients, if requested
     if(options_.get_str("DERTYPE") == "FIRST") {
         // Shut down the timers
