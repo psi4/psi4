@@ -1863,7 +1863,6 @@ DCFTSolver::compute_TPDM_trace() {
         global_dpd_->buf4_mat_irrep_init(&G, h);
         global_dpd_->buf4_mat_irrep_rd(&G, h);
 
-        #pragma omp parallel for
         for(long int ij = 0; ij < G.params->rowtot[h]; ++ij){
             tpdm_trace += 8.0 * G.matrix[h][ij][ij];
         }
@@ -1879,7 +1878,6 @@ DCFTSolver::compute_TPDM_trace() {
         global_dpd_->buf4_mat_irrep_init(&G, h);
         global_dpd_->buf4_mat_irrep_rd(&G, h);
 
-        #pragma omp parallel for
         for(long int ij = 0; ij < G.params->rowtot[h]; ++ij){
             tpdm_trace += 8.0 * G.matrix[h][ij][ij];
         }
@@ -1896,7 +1894,6 @@ DCFTSolver::compute_TPDM_trace() {
         global_dpd_->buf4_mat_irrep_init(&G, h);
         global_dpd_->buf4_mat_irrep_rd(&G, h);
 
-        #pragma omp parallel for
         for(long int ij = 0; ij < G.params->rowtot[h]; ++ij){
             tpdm_trace += 8.0 * G.matrix[h][ij][ij];
         }
@@ -1914,7 +1911,6 @@ DCFTSolver::compute_TPDM_trace() {
         global_dpd_->buf4_mat_irrep_init(&G, h);
         global_dpd_->buf4_mat_irrep_rd(&G, h);
 
-        #pragma omp parallel for
         for(long int ab = 0; ab < G.params->rowtot[h]; ++ab){
             tpdm_trace += 8.0 * G.matrix[h][ab][ab];
         }
@@ -1930,7 +1926,6 @@ DCFTSolver::compute_TPDM_trace() {
         global_dpd_->buf4_mat_irrep_init(&G, h);
         global_dpd_->buf4_mat_irrep_rd(&G, h);
 
-        #pragma omp parallel for
         for(long int ab = 0; ab < G.params->rowtot[h]; ++ab){
             tpdm_trace += 8.0 * G.matrix[h][ab][ab];
         }
@@ -1946,7 +1941,6 @@ DCFTSolver::compute_TPDM_trace() {
         global_dpd_->buf4_mat_irrep_init(&G, h);
         global_dpd_->buf4_mat_irrep_rd(&G, h);
 
-        #pragma omp parallel for
         for(long int ab = 0; ab < G.params->rowtot[h]; ++ab){
             tpdm_trace += 8.0 * G.matrix[h][ab][ab];
         }
@@ -1963,7 +1957,6 @@ DCFTSolver::compute_TPDM_trace() {
         global_dpd_->buf4_mat_irrep_init(&G, h);
         global_dpd_->buf4_mat_irrep_rd(&G, h);
 
-        #pragma omp parallel for
         for(long int ia = 0; ia < G.params->rowtot[h]; ++ia){
             tpdm_trace += 2.0 * G.matrix[h][ia][ia];
         }
@@ -1979,7 +1972,6 @@ DCFTSolver::compute_TPDM_trace() {
         global_dpd_->buf4_mat_irrep_init(&G, h);
         global_dpd_->buf4_mat_irrep_rd(&G, h);
 
-        #pragma omp parallel for
         for(long int ia = 0; ia < G.params->rowtot[h]; ++ia){
             tpdm_trace += 2.0 * G.matrix[h][ia][ia];
         }
@@ -1995,7 +1987,6 @@ DCFTSolver::compute_TPDM_trace() {
         global_dpd_->buf4_mat_irrep_init(&G, h);
         global_dpd_->buf4_mat_irrep_rd(&G, h);
 
-        #pragma omp parallel for
         for(long int ia = 0; ia < G.params->rowtot[h]; ++ia){
             tpdm_trace += 2.0 * G.matrix[h][ia][ia];
         }
@@ -2012,7 +2003,6 @@ DCFTSolver::compute_TPDM_trace() {
         global_dpd_->buf4_mat_irrep_init(&G, h);
         global_dpd_->buf4_mat_irrep_rd(&G, h);
 
-        #pragma omp parallel for
         for(long int ia = 0; ia < G.params->rowtot[h]; ++ia){
             tpdm_trace += 2.0 * G.matrix[h][ia][ia];
         }
