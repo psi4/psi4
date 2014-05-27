@@ -16,10 +16,10 @@ refodc12_lambda_3 =  -0.0002626210176291  #TEST
 refodc12_total    = -55.2510762094586738 #TEST
 
 # ODC-13
-refodc13scf       = -55.091769910917357   #TEST
-refodc13          = -55.2496487754694670  #TEST
-refodc13_lambda_3 =  -0.0002483719658146   #TEST
-refodc13_total    = -55.2498971474352842  #TEST
+refodc13scf       = -55.082458005628837 #TEST
+refodc13          = -55.2513190823393856 #TEST
+refodc13_lambda_3 =  -0.0002724874031523  #TEST
+refodc13_total    = -55.2515915697425370 #TEST
 
 molecule NH3 {
 1 2
