@@ -78,12 +78,12 @@ IntegralTransform::presort_so_tei()
                 int pq = INDEX((p + soOffset), (q + soOffset));
                 for(int i = 0; i < frzcpi_[h]; ++i)
                     aFzcD[pq] += pCa[p][i] * pCa[q][i];
-                for(int i = 0; i < clsdpi_[h] + openpi_[h]; ++i)
+                for(int i = 0; i < nalphapi_[h]; ++i)
                     aD[pq] += pCa[p][i] * pCa[q][i];
                 if(transformationType_ != Restricted){
                     for(int i = 0; i < frzcpi_[h]; ++i)
                         bFzcD[pq] += pCb[p][i] * pCb[q][i];
-                    for(int i = 0; i < clsdpi_[h]; ++i)
+                    for(int i = 0; i < nbetapi_[h]; ++i)
                         bD[pq] += pCb[p][i] * pCb[q][i];
                 }
             }
