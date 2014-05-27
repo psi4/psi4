@@ -25,8 +25,8 @@ refodc12scf = -98.163060134490195     #TEST
 refodc12    = -98.2083640708414407    #TEST
 
 # ODC-13
-refodc13scf = -98.164255284849261     #TEST
-refodc13    = -98.2081239681909466    #TEST
+refodc13scf = -98.162361155505053     #TEST
+refodc13    = -98.2084516176586817    #TEST
 
 molecule HF {
 1 2
