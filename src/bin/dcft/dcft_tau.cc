@@ -27,6 +27,7 @@
 #include <libmints/molecule.h>
 #include <psifiles.h>
 #include <libtrans/integraltransform.h>
+#include <libdiis/diismanager.h>
 #include "defines.h"
 
 using namespace std;
@@ -818,7 +819,25 @@ DCFTSolver::refine_tau() {
     bocc_d->copy(bocc_tau_);
     bvir_d->copy(bvir_tau_);
 
+    DIISManager diisManager(maxdiis_, "DCFT DIIS Tau",DIISManager::LargestError,DIISManager::InCore);
+    if ((nalpha_ + nbeta_) > 1) {
+        diisManager.set_error_vector_size(4, DIISEntry::Matrix, aocc_tau_.get(),
+                                             DIISEntry::Matrix, bocc_tau_.get(),
+                                             DIISEntry::Matrix, avir_tau_.get(),
+                                             DIISEntry::Matrix, bvir_tau_.get());
+        diisManager.set_vector_size(4, DIISEntry::Matrix, aocc_tau_.get(),
+                                       DIISEntry::Matrix, bocc_tau_.get(),
+                                       DIISEntry::Matrix, avir_tau_.get(),
+                                       DIISEntry::Matrix, bvir_tau_.get());
+    }
+
+    SharedMatrix aocc_r(new Matrix("Residual (Alpha Occupied)", nirrep_, naoccpi_, naoccpi_));
+    SharedMatrix bocc_r(new Matrix("Residual (Beta Occupied)", nirrep_, nboccpi_, nboccpi_));
+    SharedMatrix avir_r(new Matrix("Residual (Alpha Virtual)", nirrep_, navirpi_, navirpi_));
+    SharedMatrix bvir_r(new Matrix("Residual (Beta Virtual)", nirrep_, nbvirpi_, nbvirpi_));
+
     while(!converged && !failed){
+        std::string diisString;
 
         // Save old tau from previous iteration
         aocc_tau_old->copy(aocc_tau_);
@@ -826,37 +845,96 @@ DCFTSolver::refine_tau() {
         bocc_tau_old->copy(bocc_tau_);
         bvir_tau_old->copy(bvir_tau_);
 
-        // Tau_ij = d_ij
-        // Tau_ab = -d_ab
-        aocc_tau_->copy(aocc_d);
-        avir_tau_->copy(avir_d);
-        bocc_tau_->copy(bocc_d);
-        bvir_tau_->copy(bvir_d);
+        // R_ij = d_ij
+        // R_ab = -d_ab
+        aocc_r->copy(aocc_d);
+        bocc_r->copy(bocc_d);
+        avir_r->copy(avir_d);
+        bvir_r->copy(bvir_d);
 
-        // Tau_ij -= Tau_ik * Tau_kj
-        // Tau_ab += Tau_ac * Tau_cb
-        aocc_tau_->gemm(false, false, -1.0, aocc_tau_old, aocc_tau_old, 1.0);
-        avir_tau_->gemm(false, false, 1.0, avir_tau_old, avir_tau_old, 1.0);
-        bocc_tau_->gemm(false, false, -1.0, bocc_tau_old, bocc_tau_old, 1.0);
-        bvir_tau_->gemm(false, false, 1.0, bvir_tau_old, bvir_tau_old, 1.0);
+        // R_ij -= Tau_ik * Tau_kj
+        // R_ab += Tau_ac * Tau_cb
+        aocc_r->gemm(false, false, -1.0, aocc_tau_old, aocc_tau_old, 1.0);
+        bocc_r->gemm(false, false, -1.0, bocc_tau_old, bocc_tau_old, 1.0);
+        avir_r->gemm(false, false, 1.0, avir_tau_old, avir_tau_old, 1.0);
+        bvir_r->gemm(false, false, 1.0, bvir_tau_old, bvir_tau_old, 1.0);
+
+        // R_ij -= Tau_ij
+        // R_ab -= Tau_ab
+        aocc_r->subtract(aocc_tau_old);
+        bocc_r->subtract(bocc_tau_old);
+        avir_r->subtract(avir_tau_old);
+        bvir_r->subtract(bvir_tau_old);
 
         // Compute RMS
-        aocc_tau_old->subtract(aocc_tau_);
-        avir_tau_old->subtract(avir_tau_);
-        bocc_tau_old->subtract(bocc_tau_);
-        bvir_tau_old->subtract(bvir_tau_);
-
-        double rms = aocc_tau_old->rms();
-        rms += avir_tau_old->rms();
-        rms += bocc_tau_old->rms();
-        rms += bvir_tau_old->rms();
+        double rms = aocc_r->rms();
+        rms += bocc_r->rms();
+        rms += avir_r->rms();
+        rms += bvir_r->rms();
 
         converged = (rms < cumulant_threshold_);
         failed    = (++cycle == maxiter_);
 
-        if (print_ > 2) fprintf(outfile, "\t Exact Tau Iterations: %-3d %20.12f\n", cycle, rms);
+        aocc_tau_->add(aocc_r);
+        bocc_tau_->add(bocc_r);
+        avir_tau_->add(avir_r);
+        bvir_tau_->add(bvir_r);
+
+        if(rms < diis_start_thresh_){
+            //Store the DIIS vectors
+            if(diisManager.add_entry(8, aocc_r.get(), bocc_r.get(), avir_r.get(), bvir_r.get(),
+                                        aocc_tau_.get(), bocc_tau_.get(), avir_tau_.get(), bvir_tau_.get())){
+                diisString += "S";
+            }
+            if(diisManager.subspace_size() > mindiisvecs_){
+                diisString += "/E";
+                diisManager.extrapolate(4, aocc_tau_.get(), bocc_tau_.get(), avir_tau_.get(), bvir_tau_.get());
+            }
+        }
+
+        if (print_ > 1) fprintf(outfile, "\t Exact Tau Iterations: %-3d %20.12f %-3s\n", cycle, rms, diisString.c_str());
 
     } // end of macroiterations
+
+//    while(!converged && !failed){
+
+//        // Save old tau from previous iteration
+//        aocc_tau_old->copy(aocc_tau_);
+//        avir_tau_old->copy(avir_tau_);
+//        bocc_tau_old->copy(bocc_tau_);
+//        bvir_tau_old->copy(bvir_tau_);
+
+//        // Tau_ij = d_ij
+//        // Tau_ab = -d_ab
+//        aocc_tau_->copy(aocc_d);
+//        avir_tau_->copy(avir_d);
+//        bocc_tau_->copy(bocc_d);
+//        bvir_tau_->copy(bvir_d);
+
+//        // Tau_ij -= Tau_ik * Tau_kj
+//        // Tau_ab += Tau_ac * Tau_cb
+//        aocc_tau_->gemm(false, false, -1.0, aocc_tau_old, aocc_tau_old, 1.0);
+//        avir_tau_->gemm(false, false, 1.0, avir_tau_old, avir_tau_old, 1.0);
+//        bocc_tau_->gemm(false, false, -1.0, bocc_tau_old, bocc_tau_old, 1.0);
+//        bvir_tau_->gemm(false, false, 1.0, bvir_tau_old, bvir_tau_old, 1.0);
+
+//        // Compute RMS
+//        aocc_tau_old->subtract(aocc_tau_);
+//        avir_tau_old->subtract(avir_tau_);
+//        bocc_tau_old->subtract(bocc_tau_);
+//        bvir_tau_old->subtract(bvir_tau_);
+
+//        double rms = aocc_tau_old->rms();
+//        rms += avir_tau_old->rms();
+//        rms += bocc_tau_old->rms();
+//        rms += bvir_tau_old->rms();
+
+//        converged = (rms < cumulant_threshold_);
+//        failed    = (++cycle == maxiter_);
+
+//        if (print_ > 2) fprintf(outfile, "\t Exact Tau Iterations: %-3d %20.12f\n", cycle, rms);
+
+//    } // end of macroiterations
 
     // Test the trace of Tau
     // double trace = aocc_tau_->trace() + avir_tau_->trace() + bocc_tau_->trace() + bvir_tau_->trace();
