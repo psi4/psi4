@@ -2105,15 +2105,6 @@ def run_sapt(name, **kwargs):
         psi4.set_local_option('SAPT', 'DO_THIRD_ORDER', True)
         psi4.set_local_option('SAPT', 'DO_CCD_DISP', True)
 
-    # if the df_basis_sapt basis is not set, pick a sensible one.
-    if psi4.get_global_option('DF_BASIS_SAPT') == '':
-        ribasis = p4util.corresponding_rifit(psi4.get_global_option('BASIS'))
-        if ribasis:
-            psi4.set_global_option('DF_BASIS_SAPT', ribasis)
-            psi4.print_out('  No DF_BASIS_SAPT auxiliary basis selected, defaulting to %s\n' % (ribasis))
-        else:
-            raise ValidationError('Keyword DF_BASIS_SAPT is required.')
-
     psi4.print_out('\n')
     p4util.banner(name.upper())
     psi4.print_out('\n')
