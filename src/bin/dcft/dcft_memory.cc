@@ -56,10 +56,10 @@ DCFTSolver::init()
     frzvpi_ = reference_wavefunction_->frzvpi();
     nmopi_  = reference_wavefunction_->nmopi();
     nsopi_  = reference_wavefunction_->nsopi();
-    naoccpi_ = doccpi_ + soccpi_;
-    nboccpi_ = doccpi_;
-    navirpi_ = nmopi_ - doccpi_ - soccpi_ - frzvpi_;
-    nbvirpi_ = nmopi_ - doccpi_ - frzvpi_;
+    nalphapi_ = naoccpi_ = reference_wavefunction_->nalphapi();
+    nbetapi_ = nboccpi_ = reference_wavefunction_->nbetapi();
+    navirpi_ = (nmopi_ - naoccpi_ - frzvpi_);
+    nbvirpi_ = (nmopi_ - nboccpi_ - frzvpi_);
     nalpha_  = naoccpi_.sum();
     nbeta_  = nboccpi_.sum();
     navir_  = navirpi_.sum();

@@ -376,6 +376,10 @@ class IntegralTransform{
         Dimension frzcpi_;
         // The number of frozen virtual orbitals per irrep
         Dimension frzvpi_;
+        // The number of alpha electrons per irrep
+        Dimension nalphapi_;
+        // The number of beta electrons per irrep
+        Dimension nbetapi_;
         // The cache files used by libDPD
         int *cacheFiles_, **cacheList_;
         // The alpha MO coefficients for each irrep

@@ -34,7 +34,7 @@ namespace psi{ namespace dfoccwave{
 //======================================================================             
 void DFOCC::omp2_manager()
 {
-        time4grad = 0;// means i will not compute the gradient
+        time4grad = 0;// means I will not compute the gradient
 	mo_optimized = 0;// means MOs are not optimized
 	orbs_already_opt = 0;// means orbitals are not optimized yet.
 	orbs_already_sc = 0;// menas orbitals are not semicanonical yet.
@@ -266,15 +266,7 @@ void DFOCC::omp2_manager()
 	//if (occ_orb_energy == "TRUE") semi_canonic(); 
 
         // Compute Analytic Gradients
-        /*
-        if (dertype == "FIRST") {
-	    fprintf(outfile,"\tAnalytic gradient computation is starting...\n");
-	    fflush(outfile);
-            coord_grad();
-	    fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
-	    fflush(outfile);
-        }
-        */
+        if (dertype == "FIRST") dfgrad();
 
   }// end if (conver == 1)
 }// end omp2_manager 

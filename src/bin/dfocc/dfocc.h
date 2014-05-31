@@ -53,6 +53,7 @@ protected:
     void mem_release();
     void get_moinfo();
     void title();
+    void title_grad();
     void ref_energy();
     void mp2_energy();
     void scs_mp2_energy();
@@ -65,6 +66,13 @@ protected:
     void Fint_zero();
     void fock();
     void separable_tpdm();
+    void combine_ref_sep_tpdm();
+    void tpdm_tilde();
+    void back_trans();
+    void dfgrad();
+    void oei_grad();
+    void tei_grad_ref();
+    void tei_grad_corr();
     void gfock_oo();
     void gfock_vo();
     void gfock_ov();
@@ -338,6 +346,10 @@ protected:
 
     // DIIS
     DIISManager *t2DiisManager;
+
+    // Gradients
+    std::map<std::string, SharedMatrix> gradients;
+    std::vector<std::string> gradient_terms;
     
      int natom;
      int nmo;		// Number of MOs
@@ -545,6 +557,7 @@ protected:
      string regularization; 
      string do_cd; 
      string read_scf_3index; 
+     string freeze_core_; 
 
      double **C_pitzerA;     
      double **C_pitzerB;     
@@ -636,7 +649,8 @@ protected:
      SharedTensor2d G1c_oo;             
      SharedTensor2d G1c_vv;             
      SharedTensor2d G1c;               // Correlation part of OPDM
-     SharedTensor2d G1;                // Full OPDM
+     SharedTensor2d G1;                // Full OPDM (MO)
+     SharedTensor2d G1ao;              // Full OPDM (AO)
      SharedTensor2d G1c_ijA;             
      SharedTensor2d G1c_ijB;             
      SharedTensor2d G1c_abA;             
@@ -686,7 +700,8 @@ protected:
      SharedTensor1d g1Qt2;              
 
      // DF GFM
-     SharedTensor2d GF;                // Full GFM
+     SharedTensor2d GF;                // Full GFM (MO)
+     SharedTensor2d GFao;              // Full GFM (AO)
      SharedTensor2d GFA;               // Full GFM
      SharedTensor2d GFB;               // Full GFM
      SharedTensor2d GFoo;             

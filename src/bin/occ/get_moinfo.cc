@@ -59,6 +59,8 @@ if (reference_ == "RESTRICTED") {
         soccpi_  = reference_wavefunction_->soccpi();
         frzcpi_  = reference_wavefunction_->frzcpi();
         frzvpi_  = reference_wavefunction_->frzvpi();
+        nalphapi_  = reference_wavefunction_->nalphapi();
+        nbetapi_  = reference_wavefunction_->nbetapi();
 
         // get nfrzc and nfrzv
         nfrzc = 0;
@@ -413,6 +415,8 @@ else if (reference_ == "UNRESTRICTED") {
         soccpi_  = reference_wavefunction_->soccpi();
         frzcpi_  = reference_wavefunction_->frzcpi();
         frzvpi_  = reference_wavefunction_->frzvpi();
+        nalphapi_  = reference_wavefunction_->nalphapi();
+        nbetapi_  = reference_wavefunction_->nbetapi();
 
         // get nfrzc and nfrzv
         nfrzc = 0;
