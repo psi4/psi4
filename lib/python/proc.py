@@ -139,6 +139,21 @@ def run_dfomp2(name, **kwargs):
     return psi4.dfocc()
 
 
+def run_dfomp2_gradient(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    DF-OMP2 gradient calculation.
+
+    """
+    optstash = p4util.OptionsState(
+        ['REFERENCE'],
+        ['GLOBALS', 'DERTYPE'])
+
+    psi4.set_global_option('DERTYPE', 'FIRST')
+    run_dfomp2(name, **kwargs)
+
+    optstash.restore()
+
+
 def run_cdomp2(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a cholesky-decomposed orbital-optimized MP2 computation

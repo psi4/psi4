@@ -319,7 +319,7 @@ class MOLECULE {
     return g;
   }
 
-  double ** g_grad_2D(void) {
+  double ** g_grad_2D(void) const {
     double **g, *g_frag;
 
     g = init_matrix(g_natom(),3);

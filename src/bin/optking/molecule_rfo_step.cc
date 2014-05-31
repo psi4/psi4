@@ -101,16 +101,19 @@ void MOLECULE::rfo_step(void) {
 
   //Iterative sequence to find alpha; we'll give it 15 tries
   int iter = -1;
-  while (!converged && iter<16 && !Opt_params.simple_step_scaling) {
+  while (!converged && iter<16) {
+
     ++iter;
 
-    // If we get to iteration 15, and we haven't not yet converged, than
+    // If we get to iteration 14, and we haven't not yet converged, than
     // bail out on the restricted-step algorithm.  Set alpha=1 and apply the crude
     // intrafragment_step_limit below.
-    if (iter == 15) {
+    if (iter == 16) {
       fprintf(outfile, "\tFailed to converge alpha.  Doing simple step scaling instead.\n");
       alpha = 1;
     }
+    else if (Opt_params.simple_step_scaling) // If simple_step_scaling is on, not an iterative method.
+      iter = 16;
 
     // Scale the RFO matrix.
     for (i=0; i<=dim; i++) {
@@ -226,9 +229,9 @@ void MOLECULE::rfo_step(void) {
       fprintf(outfile,"\tMaximum step size allowed %10.5lf\n\n", trust);
       fprintf(outfile,"\t Iter      |step|      alpha \n");
       fprintf(outfile,"\t-------------------------------\n");
-      fprintf(outfile,"\t%5d%12.5lf%12.5lf\n", iter+1, sqrt(dqtdq), alpha);
+      fprintf(outfile,"\t%5d%12.5lf%12.5lf\n", iter, sqrt(dqtdq), alpha);
     }
-    else if (iter > 0)
+    else if ( (iter > 0) && !Opt_params.simple_step_scaling)
       fprintf(outfile,"\t%5d%12.5lf%12.5lf\n", iter, sqrt(dqtdq), alpha);
     fflush(outfile);
 
@@ -252,7 +255,7 @@ void MOLECULE::rfo_step(void) {
     alpha += 2*(trust * sqrt(dqtdq) - dqtdq) / analyticDerivative;
   }
 
-  if (iter > 0)
+  if ((iter > 0) && !Opt_params.simple_step_scaling)
     fprintf(outfile,"\t-------------------------------\n");
 
   // Crude/old way to limit step size if restricted step algorithm failed.

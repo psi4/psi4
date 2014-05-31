@@ -97,6 +97,9 @@ protected:
     /// SOCC vector from input (if found)
     bool input_socc_;
 
+    /// Whether its broken symmetry solution or not
+    bool broken_symmetry_;
+
     //Initial SAD doubly occupied may be more than ndocc
     int sad_nocc_[8];
 

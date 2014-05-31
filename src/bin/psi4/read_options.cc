@@ -2449,6 +2449,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_str("INTERFRAG_MODE", "FIXED", "FIXED INTERFRAGMENT");
       /*- Do add bond coordinates at nearby atoms for non-bonded systems? -*/
       options.add_bool("ADD_AUXILIARY_BONDS", true);
+      /*- Re-estimate the Hessian at every step, i.e., ignore the currently stored Hessian. -*/
+      options.add_bool("H_GUESS_EVERY", false);
       /*- This factor times standard covalent distance is used to add extra stretch coordinates. -*/
       options.add_double("AUXILIARY_BOND_FACTOR", 2.5);
       /*- Do use $\frac{1}{R@@{AB}}$ for the stretching coordinate between fragments?
@@ -2705,7 +2707,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convergence criterion for residual vector of preconditioned conjugate gradient method. -*/
     options.add_double("PCG_CONVERGENCE",1e-6);
     /*- Regularization parameter -*/
-    options.add_double("REG_PARAM",0.004);
+    options.add_double("REG_PARAM",0.4);
     /*- tolerance for Cholesky decomposition of the ERI tensor -*/
     options.add_double("CHOLESKY_TOLERANCE",1.0e-4);
 

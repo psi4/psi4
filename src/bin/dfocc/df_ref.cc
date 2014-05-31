@@ -79,7 +79,7 @@ void DFOCC::df_ref()
 {   
     //fprintf(outfile,"\tComputing DF-BASIS-SCF integrals... \n"); fflush(outfile);
 
-  if (read_scf_3index == "TRUE") {
+  //if (read_scf_3index == "TRUE" && dertype == "NONE") {
   // 1.  read scf 3-index integrals from disk
 
   // get ntri from sieve
@@ -92,6 +92,7 @@ void DFOCC::df_ref()
           fprintf(outfile,"\tReading DF integrals from disk ...\n");
           boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
           boost::shared_ptr<BasisSet> auxiliary = BasisSet::construct(parser, molecule(), "DF_BASIS_SCF");
+          boost::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
           nQ_ref = auxiliary->nbf();
 
           // ntri comes from sieve above
@@ -111,6 +112,14 @@ void DFOCC::df_ref()
               }
           }
           bQso->write(psio_, PSIF_DFOCC_INTS);
+
+          if (dertype == "FIRST") {
+              // Form J^-1/2
+              timer_on("Form J");
+              formJ_ref(auxiliary, zero);
+              timer_off("Form J");
+          }// end if (dertype == "FIRST")       
+
       }// end if ( options_.get_str("SCF_TYPE") == "DF" ) 
 
       // read integrals from disk if they were generated in the SCF
@@ -139,11 +148,12 @@ void DFOCC::df_ref()
           bQso->write(psio_, PSIF_DFOCC_INTS);
       }// end else if ( options_.get_str("SCF_TYPE") == "CD" ) 
 
-      else throw PSIEXCEPTION("SCF_TYPE should be DF or CD");
-  }// end if (read_scf_3index == "TRUE") 
+      //else throw PSIEXCEPTION("SCF_TYPE should be DF or CD");
+  //}// end if (read_scf_3index == "TRUE") 
 
 
-  else if (read_scf_3index == "FALSE") {
+  //else if (read_scf_3index == "FALSE") {
+  else {
     // Read in the basis set informations
     boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
     boost::shared_ptr<BasisSet> auxiliary_ = BasisSet::construct(parser, reference_wavefunction_->molecule(), "DF_BASIS_SCF");
@@ -164,8 +174,7 @@ void DFOCC::df_ref()
     timer_off("Form B(Q,munu)");
   }// end if (read_scf_3index == "FALSE") 
 
-
-    //fprintf(outfile,"\tDF-BASIS-SCF integrals were done. \n"); fflush(outfile);
+  //fprintf(outfile,"\tDF-BASIS-SCF integrals were done. \n"); fflush(outfile);
 } // end df_ref
 
 
