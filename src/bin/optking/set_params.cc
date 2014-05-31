@@ -747,18 +747,28 @@ void print_params(void) {
   fprintf(outfile, "efp_fragments_only     = %18s\n", "false");
 
   fprintf(outfile, "frozen_distance: \n");
-  fprintf(outfile, "%s\n", Opt_params.frozen_distance_str.c_str());
+  if (!Opt_params.frozen_distance_str.empty())
+    fprintf(outfile, "%s\n", Opt_params.frozen_distance_str.c_str());
+
   fprintf(outfile, "frozen_bend: \n");
-  fprintf(outfile, "%s\n", Opt_params.frozen_bend_str.c_str());
+  if (!Opt_params.frozen_bend_str.empty())
+    fprintf(outfile, "%s\n", Opt_params.frozen_bend_str.c_str());
+
   fprintf(outfile, "frozen_dihedral: \n");
-  fprintf(outfile, "%s\n", Opt_params.frozen_dihedral_str.c_str());
+  if (!Opt_params.frozen_dihedral_str.empty())
+    fprintf(outfile, "%s\n", Opt_params.frozen_dihedral_str.c_str());
 
   fprintf(outfile, "fixed_distance: \n");
-  fprintf(outfile, "%s\n", Opt_params.fixed_distance_str.c_str());
+  if (!Opt_params.fixed_distance_str.empty())
+    fprintf(outfile, "%s\n", Opt_params.fixed_distance_str.c_str());
+
   fprintf(outfile, "fixed_bend: \n");
-  fprintf(outfile, "%s\n", Opt_params.fixed_bend_str.c_str());
+  if (!Opt_params.fixed_bend_str.empty())
+    fprintf(outfile, "%s\n", Opt_params.fixed_bend_str.c_str());
+
   fprintf(outfile, "fixed_dihedral: \n");
-  fprintf(outfile, "%s\n", Opt_params.fixed_dihedral_str.c_str());
+  if (!Opt_params.fixed_dihedral_str.empty())
+    fprintf(outfile, "%s\n", Opt_params.fixed_dihedral_str.c_str());
 }
 
 }
