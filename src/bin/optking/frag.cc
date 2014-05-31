@@ -303,7 +303,7 @@ int FRAG::add_auxiliary_bonds(void) {
       if (connectivity[a][b]) continue; // already joined by regular bond
 
       // Omit auxiliary bonds involving H atoms
-      //if (Zint[a] == 1 || Zint[b] == 1) continue;
+      if (Zint[a] == 1 || Zint[b] == 1) continue;
 
       double R = v3d_dist(geom[a], geom[b]);
       double Rcov = (cov_radii[Zint[a]] + cov_radii[Zint[b]])/_bohr2angstroms;

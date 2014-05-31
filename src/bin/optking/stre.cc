@@ -186,7 +186,7 @@ void STRE::print_disp(FILE *fp, const double q_orig, const double f_q,
   ostringstream iss(ostringstream::out);
   if (s_frozen) iss << "*";
   iss << "R(" << s_atom[0]+atom_offset+1 << "," << s_atom[1]+atom_offset+1 << ")" << std::flush ;
-  fprintf(fp,"\t %-15s = %13.6lf%13.6lf%13.6lf%13.6lf\n",
+  fprintf(fp,"%-15s = %13.6lf%13.6lf%13.6lf%13.6lf\n",
     iss.str().c_str(), q_orig*_bohr2angstroms, f_q*_hartree2aJ/_bohr2angstroms,
     dq*_bohr2angstroms, new_q*_bohr2angstroms);
   fflush(fp);
