@@ -193,7 +193,6 @@ class FRAG {
   // function to help with Lindh guess hessian
   double Lindh_rho(int A, int B, double RAB) const;
   // function to help with Lindh guess hessian - original constants
-  double Lindh_rho_orig(int A, int B, double RAB) const;
   double **Lindh_guess(void);
   bool **g_connectivity(void) const;
   const bool * const * g_connectivity_pointer(void) const;

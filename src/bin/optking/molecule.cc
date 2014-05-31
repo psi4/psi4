@@ -307,13 +307,14 @@ void MOLECULE::print_geom(void) {
 
 void MOLECULE::apply_intrafragment_step_limit(double * & dq) {
   int i, f;
+  int dim = g_nintco();
   double scale = 1.0;
   double limit = Opt_params.intrafragment_step_limit;
 
   for (f=0; f<fragments.size(); ++f)
     for (i=0; i<fragments[f]->g_nintco(); ++i)
-      if (scale * fabs(dq[g_intco_offset(f)+i]) > limit)
-        scale = limit / fabs(dq[g_intco_offset(f)+i]);
+      if ((scale * sqrt(array_dot(dq,dq,dim)))> limit)
+        scale = limit / sqrt(array_dot(dq,dq,dim));
 
   if (scale != 1.0) {
     fprintf(outfile,"\tChange in coordinate exceeds step limit of %10.5lf.\n", limit);
