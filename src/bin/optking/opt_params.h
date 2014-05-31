@@ -81,6 +81,7 @@ struct OPT_PARAMS {
   bool freeze_interfragment; // freeze all interfragment modes
   bool add_auxiliary_bonds;
   double auxiliary_bond_factor;  // covalent length times this to add extra-redundant stretches
+  bool H_guess_every; // re-estimate the hessian every step
 
   // related to step taken
   double intrafragment_step_limit;      // current step limit
