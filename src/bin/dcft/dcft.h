@@ -371,6 +371,10 @@ protected:
     SharedMatrix moFa_;
     /// The beta Fock matrix in the MO basis
     SharedMatrix moFb_;
+    /// The alpha density-weighted Fock matrix in the MO basis
+    SharedMatrix Ftilde_a_;
+    /// The beta density-weighted Fock matrix in the MO basis
+    SharedMatrix Ftilde_b_;
     /// The inverse square root overlap matrix in the SO basis
     SharedMatrix s_half_inv_;
     /// The old full alpha MO coefficients

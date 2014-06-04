@@ -665,6 +665,9 @@ DCFTSolver::form_density_weighted_fock() {
     // Beta spin
     nso_Fb->back_transform(b_evecs);
 
+    Ftilde_a_->copy(nso_Fa);
+    Ftilde_b_->copy(nso_Fb);
+
     global_dpd_->file2_init(&F_OO, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F <O|O>");
     global_dpd_->file2_init(&F_oo, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('o'), "F <o|o>");
     global_dpd_->file2_init(&F_VV, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "F <V|V>");

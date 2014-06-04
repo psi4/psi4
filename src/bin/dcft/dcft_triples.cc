@@ -125,30 +125,19 @@ DCFTSolver::transform_integrals_triples()
 void
 DCFTSolver::dump_semicanonical()
 {
-    // Copy core hamiltonian into the Fock matrix array: F = H
-    Fa_->copy(so_h_);
-    Fb_->copy(so_h_);
-    // Build the new Fock matrix from the SO integrals: F += Gbar * Kappa
-    process_so_ints();
-    // Form F0 matrix
-    moF0a_->copy(Fa_);
-    moF0b_->copy(Fb_);
-    // Transform the F0 matrix to the MO basis
-    moF0a_->transform(Ca_);
-    moF0b_->transform(Cb_);
 
     // Zero out occupied-virtual part
     for(int h = 0; h < nirrep_; ++h){
         for(int i = 0; i < naoccpi_[h]; ++i){
             for(int a = naoccpi_[h]; a < nmopi_[h]; ++a){
-                moF0a_->set(h, i, a, 0.0);
-                moF0a_->set(h, a, i, 0.0);
+                Ftilde_a_->set(h, i, a, 0.0);
+                Ftilde_a_->set(h, a, i, 0.0);
             }
         }
         for(int i = 0; i < nboccpi_[h]; ++i){
             for(int a = nboccpi_[h]; a < nmopi_[h]; ++a){
-                moF0b_->set(h, i, a, 0.0);
-                moF0b_->set(h, a, i, 0.0);
+                Ftilde_b_->set(h, i, a, 0.0);
+                Ftilde_b_->set(h, a, i, 0.0);
             }
         }
     }
@@ -159,12 +148,12 @@ DCFTSolver::dump_semicanonical()
     SharedVector a_evals (new Vector ("F0 Eigenvalues (Alpha)", nirrep_, nmopi_));
     SharedVector b_evals (new Vector ("F0 Eigenvalues (Beta)", nirrep_, nmopi_));
 
-    moF0a_->diagonalize(a_evecs, a_evals);
-    moF0a_->zero();
-    moF0a_->set_diagonal(a_evals);
-    moF0b_->diagonalize(b_evecs, b_evals);
-    moF0b_->zero();
-    moF0b_->set_diagonal(b_evals);
+    Ftilde_a_->diagonalize(a_evecs, a_evals);
+    Ftilde_a_->zero();
+    Ftilde_a_->set_diagonal(a_evals);
+    Ftilde_b_->diagonalize(b_evecs, b_evals);
+    Ftilde_b_->zero();
+    Ftilde_b_->set_diagonal(b_evals);
 
     // Write the transformation matrix to disk
     dpdfile2 U_OO, U_VV, U_oo, U_vv;
@@ -842,12 +831,12 @@ DCFTSolver::compute_triples_aaa()
           ki = I_OOOV.params->rowidx[K][I];
 
           dijk = 0.0;
-          if(moF0a_->rowspi()[Gi])
-            dijk += moF0a_->get(Gi, i, i);
-          if(moF0a_->rowspi()[Gj])
-            dijk += moF0a_->get(Gj, j, j);
-          if(moF0a_->rowspi()[Gk])
-            dijk += moF0a_->get(Gk, k, k);
+          if(Ftilde_a_->rowspi()[Gi])
+            dijk += Ftilde_a_->get(Gi, i, i);
+          if(Ftilde_a_->rowspi()[Gj])
+            dijk += Ftilde_a_->get(Gj, j, j);
+          if(Ftilde_a_->rowspi()[Gk])
+            dijk += Ftilde_a_->get(Gk, k, k);
 
           for(Gab=0; Gab < nirrep_; Gab++) {
             Gc = Gab ^ Gijk;
@@ -1275,12 +1264,12 @@ DCFTSolver::compute_triples_aaa()
                 /* Build the rest of the denominator and compute labda_ijkabc */
                 denom = dijk;
 
-                if(moF0a_->rowspi()[Ga])
-                    denom -= moF0a_->get(Ga, a + naoccpi_[Ga], a + naoccpi_[Ga]);
-                if(moF0a_->rowspi()[Gb])
-                    denom -= moF0a_->get(Gb, b + naoccpi_[Gb], b + naoccpi_[Gb]);
-                if(moF0a_->rowspi()[Gc])
-                    denom -= moF0a_->get(Gc, c + naoccpi_[Gc], c + naoccpi_[Gc]);
+                if(Ftilde_a_->rowspi()[Ga])
+                    denom -= Ftilde_a_->get(Ga, a + naoccpi_[Ga], a + naoccpi_[Ga]);
+                if(Ftilde_a_->rowspi()[Gb])
+                    denom -= Ftilde_a_->get(Gb, b + naoccpi_[Gb], b + naoccpi_[Gb]);
+                if(Ftilde_a_->rowspi()[Gc])
+                    denom -= Ftilde_a_->get(Gc, c + naoccpi_[Gc], c + naoccpi_[Gc]);
 
                 LABC[Gab][ab][c] /= denom;
 
@@ -1429,12 +1418,12 @@ DCFTSolver::compute_triples_aab()
           ki = I_oOoV.params->rowidx[K][I];
 
           dijk = 0.0;
-          if(moF0a_->rowspi()[Gi])
-            dijk += moF0a_->get(Gi, i, i);
-          if(moF0a_->rowspi()[Gj])
-            dijk += moF0a_->get(Gj, j, j);
-          if(moF0b_->rowspi()[Gk])
-            dijk += moF0b_->get(Gk, k, k);
+          if(Ftilde_a_->rowspi()[Gi])
+            dijk += Ftilde_a_->get(Gi, i, i);
+          if(Ftilde_a_->rowspi()[Gj])
+            dijk += Ftilde_a_->get(Gj, j, j);
+          if(Ftilde_b_->rowspi()[Gk])
+            dijk += Ftilde_b_->get(Gk, k, k);
 
           /* Begin the W intermediate */
 
@@ -1870,12 +1859,12 @@ DCFTSolver::compute_triples_aab()
 
                 /* Build the rest of the denominator and compute labda_ijkabc */
                 denom = dijk;
-                if(moF0a_->rowspi()[Ga])
-                    denom -= moF0a_->get(Ga, a + naoccpi_[Ga], a + naoccpi_[Ga]);
-                if(moF0a_->rowspi()[Gb])
-                    denom -= moF0a_->get(Gb, b + naoccpi_[Gb], b + naoccpi_[Gb]);
-                if(moF0b_->rowspi()[Gc])
-                    denom -= moF0b_->get(Gc, c + nboccpi_[Gc], c + nboccpi_[Gc]);
+                if(Ftilde_a_->rowspi()[Ga])
+                    denom -= Ftilde_a_->get(Ga, a + naoccpi_[Ga], a + naoccpi_[Ga]);
+                if(Ftilde_a_->rowspi()[Gb])
+                    denom -= Ftilde_a_->get(Gb, b + naoccpi_[Gb], b + naoccpi_[Gb]);
+                if(Ftilde_b_->rowspi()[Gc])
+                    denom -= Ftilde_b_->get(Gc, c + nboccpi_[Gc], c + nboccpi_[Gc]);
 
                 LABc[Gab][ab][c] /= denom;
 
@@ -2041,12 +2030,12 @@ DCFTSolver::compute_triples_abb()
           ki = I_oOoV.params->rowidx[K][I];
 
           dijk = 0.0;
-          if(moF0a_->rowspi()[Gi])
-            dijk += moF0a_->get(Gi, i, i);
-          if(moF0b_->rowspi()[Gj])
-            dijk += moF0b_->get(Gj, j, j);
-          if(moF0b_->rowspi()[Gk])
-            dijk += moF0b_->get(Gk, k, k);
+          if(Ftilde_a_->rowspi()[Gi])
+            dijk += Ftilde_a_->get(Gi, i, i);
+          if(Ftilde_b_->rowspi()[Gj])
+            dijk += Ftilde_b_->get(Gj, j, j);
+          if(Ftilde_b_->rowspi()[Gk])
+            dijk += Ftilde_b_->get(Gk, k, k);
 
           /* Begin the W intermediate */
 
@@ -2470,12 +2459,12 @@ DCFTSolver::compute_triples_abb()
 
                 /* Build the rest of the denominator and compute labda_ijkabc */
                 denom = dijk;
-                if(moF0a_->rowspi()[Ga])
-                    denom -= moF0a_->get(Ga, a + naoccpi_[Ga], a + naoccpi_[Ga]);
-                if(moF0b_->rowspi()[Gb])
-                    denom -= moF0b_->get(Gb, b + nboccpi_[Gb], b + nboccpi_[Gb]);
-                if(moF0b_->rowspi()[Gc])
-                    denom -= moF0b_->get(Gc, c + nboccpi_[Gc], c + nboccpi_[Gc]);
+                if(Ftilde_a_->rowspi()[Ga])
+                    denom -= Ftilde_a_->get(Ga, a + naoccpi_[Ga], a + naoccpi_[Ga]);
+                if(Ftilde_b_->rowspi()[Gb])
+                    denom -= Ftilde_b_->get(Gb, b + nboccpi_[Gb], b + nboccpi_[Gb]);
+                if(Ftilde_b_->rowspi()[Gc])
+                    denom -= Ftilde_b_->get(Gc, c + nboccpi_[Gc], c + nboccpi_[Gc]);
 
 
                 LAbc[Gab][ab][c] /= denom;
@@ -2608,12 +2597,12 @@ DCFTSolver::compute_triples_bbb()
           ki = I_ooov.params->rowidx[K][I];
 
           dijk = 0.0;
-          if(moF0b_->rowspi()[Gi])
-            dijk += moF0b_->get(Gi, i, i);
-          if(moF0b_->rowspi()[Gj])
-            dijk += moF0b_->get(Gj, j, j);
-          if(moF0b_->rowspi()[Gk])
-            dijk += moF0b_->get(Gk, k, k);
+          if(Ftilde_b_->rowspi()[Gi])
+            dijk += Ftilde_b_->get(Gi, i, i);
+          if(Ftilde_b_->rowspi()[Gj])
+            dijk += Ftilde_b_->get(Gj, j, j);
+          if(Ftilde_b_->rowspi()[Gk])
+            dijk += Ftilde_b_->get(Gk, k, k);
 
           for(Gab=0; Gab < nirrep_; Gab++) {
             Gc = Gab ^ Gijk;
@@ -3041,12 +3030,12 @@ DCFTSolver::compute_triples_bbb()
                 /* Build the rest of the denominator and compute labda_ijkabc */
                 denom = dijk;
 
-                if(moF0b_->rowspi()[Ga])
-                    denom -= moF0b_->get(Ga, a + nboccpi_[Ga], a + nboccpi_[Ga]);
-                if(moF0b_->rowspi()[Gb])
-                    denom -= moF0b_->get(Gb, b + nboccpi_[Gb], b + nboccpi_[Gb]);
-                if(moF0b_->rowspi()[Gc])
-                    denom -= moF0b_->get(Gc, c + nboccpi_[Gc], c + nboccpi_[Gc]);
+                if(Ftilde_b_->rowspi()[Ga])
+                    denom -= Ftilde_b_->get(Ga, a + nboccpi_[Ga], a + nboccpi_[Ga]);
+                if(Ftilde_b_->rowspi()[Gb])
+                    denom -= Ftilde_b_->get(Gb, b + nboccpi_[Gb], b + nboccpi_[Gb]);
+                if(Ftilde_b_->rowspi()[Gc])
+                    denom -= Ftilde_b_->get(Gc, c + nboccpi_[Gc], c + nboccpi_[Gc]);
 
                 LABC[Gab][ab][c] /= denom;
 
