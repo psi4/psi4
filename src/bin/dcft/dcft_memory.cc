@@ -75,6 +75,8 @@ DCFTSolver::init()
     Fb_          = SharedMatrix(reference_wavefunction_->Fb());
     moF0a_         = SharedMatrix(new Matrix("Alpha MO F0 Matrix", nirrep_, nmopi_, nmopi_));
     moF0b_         = SharedMatrix(new Matrix("Beta MO F0 Matrix", nirrep_, nmopi_, nmopi_));
+    Ftilde_a_      = SharedMatrix(new Matrix("Alpha MO Ftilde Matrix", nirrep_, nmopi_, nmopi_));
+    Ftilde_b_      = SharedMatrix(new Matrix("Beta MO Ftilde Matrix", nirrep_, nmopi_, nmopi_));
     Ca_          = SharedMatrix(new Matrix("Alpha MO Coefficients", nirrep_, nsopi_, nsopi_));
     Cb_          = SharedMatrix(new Matrix("Beta MO Coefficients", nirrep_, nsopi_, nsopi_));
     moFa_        = SharedMatrix(new Matrix("Alpha MO Fock Matrix", nirrep_, nmopi_, nmopi_));

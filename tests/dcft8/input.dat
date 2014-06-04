@@ -12,14 +12,14 @@ refmp2      = -55.231284743677058  #TEST
 # ODC-12                              #TEST
 refodc12scf       = -55.086226756314794   #TEST
 refodc12          = -55.2508135884410478 #TEST
-refodc12_lambda_3 =  -0.0002626210176291  #TEST
-refodc12_total    = -55.2510762094586738 #TEST
+refodc12_lambda_3 =  -0.0002588245379959  #TEST
+refodc12_total    = -55.2510724129790134 #TEST
 
 # ODC-13
 refodc13scf       = -55.082458005628837 #TEST
 refodc13          = -55.2513190823393856 #TEST
-refodc13_lambda_3 =  -0.0002724874031523  #TEST
-refodc13_total    = -55.2515915697425370 #TEST
+refodc13_lambda_3 =  -0.0002684062910043  #TEST
+refodc13_total    = -55.2515874886303919 #TEST
 
 molecule NH3 {
 1 2
