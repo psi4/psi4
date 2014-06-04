@@ -645,7 +645,12 @@ bool OPT_DATA::previous_step_report(void) const {
 
   // Minimum search
   if (Opt_params.opt_type == OPT_PARAMS::MIN) {
-    if (Energy_ratio < 0.0 && consecutive_backsteps < Opt_params.consecutive_backsteps_allowed) {
+    // In odd situations, the predicted energy change might be positive.  If the step was negative, 
+    // keep step size the same and proceed.
+    if (p_Opt_data->g_last_DE_predicted() > 0  &&  Energy_ratio < 0.0) {
+      return true;
+    }
+    else if (Energy_ratio < 0.0 && consecutive_backsteps < Opt_params.consecutive_backsteps_allowed) {
       throw(BAD_STEP_EXCEPT("Energy has increased in a minimization.\n"));
     }
     else if (Energy_ratio < 0.25)
