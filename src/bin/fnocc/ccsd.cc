@@ -539,7 +539,7 @@ PsiReturnType CoupledCluster::CCSDIterations() {
 
   // T1 and D1 diagnostics:
 
-  double t1diag = F_DNRM2(o*v,t1,1) / sqrt(2.0 * o);
+  double t1diag = C_DNRM2(o*v,t1,1) / sqrt(2.0 * o);
   fprintf(outfile,"        T1 diagnostic:                   %20.12lf\n",t1diag);
   boost::shared_ptr<Matrix>T (new Matrix(o,o));
   boost::shared_ptr<Matrix>eigvec (new Matrix(o,o));
@@ -895,7 +895,7 @@ void CoupledCluster::CPU_t1_vmeai(CCTaskParams params){
   F_DAXPY(o*o*v*v,-2.0,integrals,1,tempv,1);
   
   for (i=0; i<o; i++){
-      F_DCOPY(v,t1+i,o,tempt+i*v,1);
+      C_DCOPY(v,t1+i,o,tempt+i*v,1);
   }
   F_DGEMV('n',o*v,o*v,-1.0,tempv,o*v,tempt,1,0.0,integrals,1);
   for (a=0; a<v; a++){
@@ -923,7 +923,7 @@ void CoupledCluster::CPU_t1_vmeni(CCTaskParams params){
   for (a=0,id=0; a<v; a++){
       for (m=0; m<o; m++){
           for (n=0; n<o; n++){
-              F_DCOPY(v,tb+a*v*o*o+m*o+n,o*o,tempt+a*o*o*v+m*o*v+n*v,1);
+              C_DCOPY(v,tb+a*v*o*o+m*o+n,o*o,tempt+a*o*o*v+m*o*v+n*v,1);
               F_DAXPY(v,-2.0,tb+a*o*o+m*o+n,o*o*v,tempt+a*o*o*v+m*o*v+n*v,1);
           }
       }
@@ -955,7 +955,7 @@ void CoupledCluster::CPU_t1_vmaef(CCTaskParams params){
   for (f=0,id=0; f<v; f++){
       for (m=0; m<o; m++){
           for (e=0; e<v; e++){
-              F_DCOPY(o,tb+e*v*o*o+f*o*o+m*o,1,tempt+f*o*o*v+m*o*v+e*o,1);
+              C_DCOPY(o,tb+e*v*o*o+f*o*o+m*o,1,tempt+f*o*o*v+m*o*v+e*o,1);
               F_DAXPY(o,-0.5,tb+e*v*o*o+f*o*o+m,o,tempt+f*o*o*v+m*o*v+e*o,1);
           }
       }
@@ -1013,7 +1013,7 @@ void CoupledCluster::CPU_I1ab(CCTaskParams params){
   for (m=0,id=0; m<o; m++){
       for (e=0; e<v; e++){
           for (n=0; n<o; n++){
-              F_DCOPY(v,tb+e*v*o*o+m*o+n,o*o,tempt+m*o*v*v+e*o*v+n*v,1);
+              C_DCOPY(v,tb+e*v*o*o+m*o+n,o*o,tempt+m*o*v*v+e*o*v+n*v,1);
               if (isccsd) {
                  for (b=0; b<v; b++){
                      tempt[id++] += t1[e*o+m]*t1[b*o+n];
@@ -1022,7 +1022,7 @@ void CoupledCluster::CPU_I1ab(CCTaskParams params){
           }
       }
   }
-  F_DCOPY(o*o*v*v,integrals,1,tempv,1);
+  C_DCOPY(o*o*v*v,integrals,1,tempv,1);
   for (m=0,id=0; m<o; m++){
       for (e=0; e<v; e++){
           for (n=0; n<o; n++){
@@ -1041,7 +1041,7 @@ void CoupledCluster::CPU_I1ab(CCTaskParams params){
      addr = PSIO_ZERO;
 
      for (i=0; i<o; i++){
-         F_DCOPY(v,t1+i,o,tempt+i*v,1);
+         C_DCOPY(v,t1+i,o,tempt+i*v,1);
      }
 
      // try tiling dgemv bc ov^3 might be too large.
@@ -1078,7 +1078,7 @@ void CoupledCluster::CPU_I1ab(CCTaskParams params){
   for (l=0,id=0; l<o; l++){
       for (c=0; c<v; c++){
           for (k=0; k<o; k++){
-              F_DCOPY(v,tb+c*o*o+l*o+k,v*o*o,tempt+l*o*v*v+c*o*v+k*v,1);
+              C_DCOPY(v,tb+c*o*o+l*o+k,v*o*o,tempt+l*o*v*v+c*o*v+k*v,1);
           }
       }
   }
@@ -1159,7 +1159,7 @@ void CoupledCluster::CPU_I1pij_I1ia_lessmem(CCTaskParams params){
   psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&integrals[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_DCC_IAJB,1);
-  F_DCOPY(o*o*v*v,integrals,1,tempv,1);
+  C_DCOPY(o*o*v*v,integrals,1,tempv,1);
   for (i=0; i<o; i++){
       for (a=0; a<v; a++){
           for (m=0; m<o; m++){
@@ -1167,7 +1167,7 @@ void CoupledCluster::CPU_I1pij_I1ia_lessmem(CCTaskParams params){
           }
       }
   }
-  for (i=0; i<o; i++) F_DCOPY(v,t1+i,o,tempt+i*v,1);
+  for (i=0; i<o; i++) C_DCOPY(v,t1+i,o,tempt+i*v,1);
   F_DGEMV('t',o*v,o*v,2.0,tempv,o*v,tempt,1,0.0,I1,1);
 
   if (t2_on_disk){
@@ -1183,7 +1183,7 @@ void CoupledCluster::CPU_I1pij_I1ia_lessmem(CCTaskParams params){
   for (m=0; m<o; m++){
       for (e=0; e<v; e++){
           for (j=0; j<o; j++){
-              F_DCOPY(v,tb+e*o*o*v+m*o+j,o*o,tempt+m*o*v*v+e*o*v+j*v,1);
+              C_DCOPY(v,tb+e*o*o*v+m*o+j,o*o,tempt+m*o*v*v+e*o*v+j*v,1);
               F_DAXPY(v,-0.5,tb+e*o*o*v+j*o+m,o*o,tempt+m*o*v*v+e*o*v+j*v,1);
           }
       }
@@ -1205,7 +1205,7 @@ void CoupledCluster::CPU_I1pij_I1ia_lessmem(CCTaskParams params){
      for (i=0; i<o; i++){
          for (j=0; j<o; j++){
              for (e=0; e<v; e++){
-                 F_DCOPY(o,tempt+i*o*v+j*v+e,o*o*v,tempv+i*o*o*v+j*o*v+e*o,1);
+                 C_DCOPY(o,tempt+i*o*v+j*v+e,o*o*v,tempv+i*o*o*v+j*o*v+e*o,1);
                  F_DAXPY(o,-2.0,tempt+i*o*o*v+j*v+e,o*v,tempv+i*o*o*v+j*o*v+e*o,1);
              }
          }
@@ -1233,7 +1233,7 @@ void CoupledCluster::CPU_I1pij_I1ia_lessmem(CCTaskParams params){
   for (m=0,id=0; m<o; m++){
       for (e=0; e<v; e++){
           for (j=0; j<o; j++){
-              F_DCOPY(v,tb+e*o*o*v+m*o+j,o*o,tempt+m*o*v*v+e*o*v+j*v,1);
+              C_DCOPY(v,tb+e*o*o*v+m*o+j,o*o,tempt+m*o*v*v+e*o*v+j*v,1);
           }
       }
   }
@@ -1270,7 +1270,7 @@ void CoupledCluster::I2ijkl(CCTaskParams params){
      psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
   }else{
-     F_DCOPY(o*o*v*v,tb,1,tempt,1);
+     C_DCOPY(o*o*v*v,tb,1,tempt,1);
   }
 
   if (isccsd) {
@@ -1290,7 +1290,7 @@ void CoupledCluster::I2ijkl(CCTaskParams params){
   for (j=0; j<o; j++){
       for (i=0; i<o; i++){
           for (b=0; b<v; b++){
-              F_DCOPY(v,integrals+j*o*v*v+b*o*v+i*v,1,tempv+j*o*v*v+i*v*v+b*v,1);
+              C_DCOPY(v,integrals+j*o*v*v+b*o*v+i*v,1,tempv+j*o*v*v+i*v*v+b*v,1);
           }
       }
   }
@@ -1341,7 +1341,7 @@ void CoupledCluster::I2piajk(CCTaskParams params){
         psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
         psio->close(PSIF_DCC_T2,1);
      }else{
-        F_DCOPY(o*o*v*v,tb,1,tempt,1);
+        C_DCOPY(o*o*v*v,tb,1,tempt,1);
      }
 
      for (a=0,id=0; a<v; a++){
@@ -1417,7 +1417,7 @@ void CoupledCluster::Vabcd1(CCTaskParams params){
      psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
   }else{
-     F_DCOPY(o*o*v*v,tb,1,tempt,1);
+     C_DCOPY(o*o*v*v,tb,1,tempt,1);
   }
   if (isccsd){
      for (a=0,id=0; a<v; a++){
@@ -1486,7 +1486,7 @@ void CoupledCluster::Vabcd2(CCTaskParams params){
      psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
   }else{
-     F_DCOPY(o*o*v*v,tb,1,tempt,1);
+     C_DCOPY(o*o*v*v,tb,1,tempt,1);
   }
   if (isccsd) {
      for (a=0,id=0; a<v; a++){
@@ -1610,7 +1610,7 @@ void CoupledCluster::K(CCTaskParams params){
   for (i=0; i<o; i++){
       for (b=0; b<v; b++){
           for (j=0; j<o; j++){
-              F_DCOPY(v,tb+b*o*o*v+j*o+i,o*o,integrals+i*o*v*v+b*o*v+j*v,1);
+              C_DCOPY(v,tb+b*o*o*v+j*o+i,o*o,integrals+i*o*v*v+b*o*v+j*v,1);
               if ( isccsd ) {
                   for (a=0; a<v; a++){
                       integrals[i*o*v*v+b*o*v+j*v+a] += 2.0*t1[a*o+i]*t1[b*o+j];
@@ -1625,7 +1625,7 @@ void CoupledCluster::K(CCTaskParams params){
   for (i=0; i<o; i++){
       for (b=0; b<v; b++){
           for (j=0; j<o; j++){
-              F_DCOPY(v,tempt+i*v*v*o+j*v+b,o*v,tempv+i*o*v*v+b*o*v+j*v,1);
+              C_DCOPY(v,tempt+i*v*v*o+j*v+b,o*v,tempv+i*o*v*v+b*o*v+j*v,1);
           }
       }
   }
@@ -1646,7 +1646,7 @@ void CoupledCluster::K(CCTaskParams params){
   for (j=0; j<o; j++){
       for (a=0; a<v; a++){
           for (i=0; i<o; i++){
-              F_DCOPY(v,tb+a*o*o+j*o+i,o*o*v,tempv+j*o*v*v+a*o*v+i*v,1);
+              C_DCOPY(v,tb+a*o*o+j*o+i,o*o*v,tempv+j*o*v*v+a*o*v+i*v,1);
           }
       }
   }
@@ -1659,7 +1659,7 @@ void CoupledCluster::K(CCTaskParams params){
   for (a=0,id=0; a<v; a++){
       for (b=0; b<v; b++){
           for (j=0; j<o; j++){
-              F_DCOPY(o,    integrals+j*o*v*v+b*v*o+a,v,tempt+a*o*o*v+b*o*o+j*o,1);
+              C_DCOPY(o,    integrals+j*o*v*v+b*v*o+a,v,tempt+a*o*o*v+b*o*o+j*o,1);
               F_DAXPY(o,1.0,integrals+a*v*o+j*v+b,o*v*v,tempt+a*o*o*v+b*o*o+j*o,1);
               F_DAXPY(o,0.5,integrals+j*o*v*v+a*v*o+b,v,tempt+a*o*o*v+b*o*o+j*o,1);
               F_DAXPY(o,0.5,integrals+b*v*o+j*v+a,o*v*v,tempt+a*o*o*v+b*o*o+j*o,1);
@@ -1715,7 +1715,7 @@ void CoupledCluster::TwoJminusK(CCTaskParams params){
   psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&tempt[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_DCC_IAJB,1);
-  F_DCOPY(o*o*v*v,tempt,1,integrals,1);
+  C_DCOPY(o*o*v*v,tempt,1,integrals,1);
   for (i = 0,id=0; i < o; i++){
   for (b = 0; b < v; b++){
   for (int m = 0; m < o; m++){
@@ -1813,7 +1813,7 @@ void CoupledCluster::TwoJminusK(CCTaskParams params){
   for (j=0; j<o; j++){
       for (b=0; b<v; b++){
           for (i=0; i<o; i++){
-              F_DCOPY(v,tb+b*o*o+i*o+j,o*o*v,tempt+j*o*v*v+b*o*v+i*v,1);
+              C_DCOPY(v,tb+b*o*o+i*o+j,o*o*v,tempt+j*o*v*v+b*o*v+i*v,1);
               F_DAXPY(v,-0.5,tb+b*o*o*v+i*o+j,o*o,tempt+j*o*v*v+b*o*v+i*v,1);
           }
       }
@@ -1884,7 +1884,7 @@ void CoupledCluster::UpdateT2(long int iter){
      psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
   }else{
-     F_DCOPY(o*o*v*v,tb,1,tempv,1);
+     C_DCOPY(o*o*v*v,tb,1,tempv,1);
   }
   F_DAXPY(o*o*v*v,-1.0,tempt,1,tempv,1);
   if (t2_on_disk){
@@ -1892,7 +1892,7 @@ void CoupledCluster::UpdateT2(long int iter){
      psio->write_entry(PSIF_DCC_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
   }else{
-     F_DCOPY(o*o*v*v,tempt,1,tb,1);
+     C_DCOPY(o*o*v*v,tempt,1,tb,1);
   }
   psio.reset();
 }
@@ -1911,9 +1911,9 @@ void CoupledCluster::UpdateT1(long int iter){
       }
   }
   // error vector for diis is in tempv:
-  F_DCOPY(o*v,w1,1,tempv+o*o*v*v,1);
+  C_DCOPY(o*v,w1,1,tempv+o*o*v*v,1);
   F_DAXPY(o*v,-1.0,t1,1,tempv+o*o*v*v,1);
-  F_DCOPY(o*v,w1,1,t1,1);
+  C_DCOPY(o*v,w1,1,t1,1);
 }
 
 
@@ -1968,7 +1968,7 @@ void CoupledCluster::Local_SCS_CCSD(){
               I1[i*o+j] = tempt[ab*o*o+j*o+i];
           }
       }
-      F_DCOPY(o*o,I1,1,tempt+ab*o*o,1);
+      C_DCOPY(o*o,I1,1,tempt+ab*o*o,1);
   }
   for (a=0; a<v; a++){
       for (b=0; b<v; b++){
@@ -2036,7 +2036,7 @@ void CoupledCluster::Local_SCS_MP2(){
               I1[i*o+j] = tempt[ab*o*o+j*o+i];
           }
       }
-      F_DCOPY(o*o,I1,1,tempt+ab*o*o,1);
+      C_DCOPY(o*o,I1,1,tempt+ab*o*o,1);
   }
 
   SharedVector factor = reference_wavefunction_->CIMOrbitalFactors();
@@ -2292,7 +2292,7 @@ void CoupledCluster::MP4_SDQ(){
           psio->write_entry(PSIF_DCC_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
           psio->close(PSIF_DCC_T2,1);
       }else {
-          F_DCOPY(o*o*v*v,tempt,1,tb,1);
+          C_DCOPY(o*o*v*v,tempt,1,tb,1);
       }
 
       fprintf(outfile,"        MP4(SD)....................................");
@@ -2300,7 +2300,7 @@ void CoupledCluster::MP4_SDQ(){
       for (int i=0; i<nltasks; i++) {
           (*this.*LTasklist[i].func)(LParams[i]);
       }
-      //F_DCOPY(o*o*v*v,tb,1,tempt,1);
+      //C_DCOPY(o*o*v*v,tb,1,tempt,1);
       if (t2_on_disk) {
           tb = tempt;
       }
