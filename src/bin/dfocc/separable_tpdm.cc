@@ -100,7 +100,7 @@ if (reference_ == "RESTRICTED") {
     }
 
     // G_ij^Q += J_Q G_ij
-    G2c_oo->dirprd123(Jc, G1c_oo, oo_idxAA, 1.0, 1.0); 
+    G2c_oo->dirprd123(Jc, G1c_oo, 1.0, 1.0); 
 
     // G_ij^Q += - \sum_{m} b_im^Q G_mj - \sum_{m} b_jm^Q G_im 
     bQooA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA * noccA));
@@ -131,7 +131,7 @@ if (reference_ == "RESTRICTED") {
 
     // G_ab^Q = J_Q G_ab
     G2c_vv = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA * nvirA));
-    G2c_vv->dirprd123(Jc, G1c_vv, vv_idxAA, 1.0, 0.0); 
+    G2c_vv->dirprd123(Jc, G1c_vv, 1.0, 0.0); 
     G2c_vv->write(psio_, PSIF_DFOCC_DENS);
     if(print_ > 3) G2c_vv->print();
     G2c_vv.reset();
@@ -249,7 +249,7 @@ else if (reference_ == "UNRESTRICTED") {
     }
 
     // G_IJ^Q += J_Q G_IJ
-    G2c_ooA->dirprd123(Jc, G1c_ooA, oo_idxAA, 1.0, 1.0); 
+    G2c_ooA->dirprd123(Jc, G1c_ooA, 1.0, 1.0); 
 
     // G_IJ^Q += - \sum_{M} b_IM^Q G_MJ - \sum_{M} b_JM^Q G_IM
     bQooA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA * noccA));
@@ -272,7 +272,7 @@ else if (reference_ == "UNRESTRICTED") {
     }
 
     // G_ij^Q += J_Q G_ij
-    G2c_ooB->dirprd123(Jc, G1c_ooB, oo_idxBB, 1.0, 1.0); 
+    G2c_ooB->dirprd123(Jc, G1c_ooB, 1.0, 1.0); 
 
     // G_ij^Q += - \sum_{m} b_im^Q G_mj - \sum_{m} b_jm^Q G_im 
     bQooB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|oo)", nQ_ref, noccB * noccB));
@@ -320,14 +320,14 @@ else if (reference_ == "UNRESTRICTED") {
 
     // G_AB^Q = J_Q G_ab
     G2c_vv = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA * nvirA));
-    G2c_vv->dirprd123(Jc, G1c_vvA, vv_idxAA, 1.0, 0.0); 
+    G2c_vv->dirprd123(Jc, G1c_vvA, 1.0, 0.0); 
     G2c_vv->write(psio_, PSIF_DFOCC_DENS);
     if(print_ > 3) G2c_vv->print();
     G2c_vv.reset();
 
     // G_ab^Q = J_Q G_ab
     G2c_vv = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|vv)", nQ_ref, nvirB * nvirB));
-    G2c_vv->dirprd123(Jc, G1c_vvB, vv_idxBB, 1.0, 0.0); 
+    G2c_vv->dirprd123(Jc, G1c_vvB, 1.0, 0.0); 
     G2c_vv->write(psio_, PSIF_DFOCC_DENS);
     if(print_ > 3) G2c_vv->print();
     G2c_vv.reset();

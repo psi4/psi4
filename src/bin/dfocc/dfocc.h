@@ -79,6 +79,7 @@ protected:
     void gfock_vv();
     void gftilde_vv();
     void idp();
+    void idp2();
     void mograd();
     void occ_iterations();
     void kappa_orb_resp();
@@ -97,6 +98,12 @@ protected:
     void approx_diag_hf_mohess_oo();
     void approx_diag_ekt_mohess_vo();
     void approx_diag_ekt_mohess_oo();
+    void prepare4grad();
+    void z_vector();
+    void z_vector_pcg();
+    void effective_pdms();
+    void effective_gfm();
+    void oeprop();
  
     // Conventional integrals for DF-BASIS-CC
     void tei_ijkl_chem();
@@ -558,6 +565,7 @@ protected:
      string do_cd; 
      string read_scf_3index; 
      string freeze_core_; 
+     string oeprop_; 
 
      double **C_pitzerA;     
      double **C_pitzerB;     
@@ -770,6 +778,10 @@ protected:
      SharedTensor2d AooB;
      SharedTensor2d AvoA;
      SharedTensor2d AvoB;
+     SharedTensor2d ZvoA;            // Zvector in matrix form
+     SharedTensor2d ZvoB;            // Zvector in matrix form
+     SharedTensor2d ZovA;            // Transpose of Zvector in matrix form
+     SharedTensor2d ZovB;            // Transpose of Zvector in matrix form
 
      // Orbital rotations
      SharedTensor2d UorbA;           // MO rotation matrix: wrt reference MOs
