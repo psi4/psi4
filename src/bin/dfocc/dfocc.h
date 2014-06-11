@@ -104,6 +104,7 @@ protected:
     void effective_pdms();
     void effective_gfm();
     void oeprop();
+    void s2_response();
  
     // Conventional integrals for DF-BASIS-CC
     void tei_ijkl_chem();
@@ -505,6 +506,8 @@ protected:
      double rms_kappaB;
      double msd_oo_scale;
      double reg_param;
+     double s2_resp;
+     double s2_ref;
 
      // OMP3
      double Emp3;
@@ -566,6 +569,7 @@ protected:
      string read_scf_3index; 
      string freeze_core_; 
      string oeprop_; 
+     string comput_s2_; 
 
      double **C_pitzerA;     
      double **C_pitzerB;     

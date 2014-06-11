@@ -95,6 +95,7 @@ void DFOCC::common_init()
     read_scf_3index=options_.get_str("READ_SCF_3INDEX");
     freeze_core_=options_.get_str("FREEZE_CORE");
     oeprop_=options_.get_str("OEPROP");
+    comput_s2_=options_.get_str("COMPUT_S2");
 
     //title
     title();
