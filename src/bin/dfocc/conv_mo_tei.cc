@@ -367,7 +367,7 @@ void DFOCC::tei_ovov_chem()
 //=======================================================          
 void DFOCC::tei_ijkl_phys()
 {   
-    timer_on("Build <ij|kl>)");
+    timer_on("Build <ij|kl>");
     // AA spin case
     IijklAA = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ|KL>", naoccA, naoccA, naoccA, naoccA));
     JijklAA = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IJ|KL)", naoccA, naoccA, naoccA, naoccA));
@@ -396,7 +396,7 @@ void DFOCC::tei_ijkl_phys()
     IijklAB->write(psio_, PSIF_DFOCC_INTS);
     IijklAB.reset();
  }
-    timer_off("Build <ij|kl>)");
+    timer_off("Build <ij|kl>");
 }// end tei_ijkl_phys
 
 //=======================================================
@@ -404,7 +404,7 @@ void DFOCC::tei_ijkl_phys()
 //=======================================================          
 void DFOCC::tei_oooo_phys()
 {   
-    timer_on("Build <ij|kl>)");
+    timer_on("Build <ij|kl>");
     // AA spin case
     IooooAA = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <OO|OO>", noccA, noccA, noccA, noccA));
     JooooAA = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (OO|OO)", noccA, noccA, noccA, noccA));
@@ -433,7 +433,7 @@ void DFOCC::tei_oooo_phys()
     IooooAB->write(psio_, PSIF_DFOCC_INTS);
     IooooAB.reset();
  }
-    timer_off("Build <ij|kl>)");
+    timer_off("Build <ij|kl>");
 }// end tei_oooo_phys
 
 //=======================================================
@@ -441,7 +441,7 @@ void DFOCC::tei_oooo_phys()
 //=======================================================          
 void DFOCC::tei_ijka_phys()
 {   
-    timer_on("Build <ij|ka>)");
+    timer_on("Build <ij|ka>");
     // AA spin case
     IijkaAA = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ|KA>", naoccA, naoccA, naoccA, navirA));
     JijkaAA = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IJ|KA)", naoccA, naoccA, naoccA, navirA));
@@ -479,7 +479,7 @@ void DFOCC::tei_ijka_phys()
     IijakAB->write(psio_, PSIF_DFOCC_INTS);
     IijakAB.reset();
  }
-    timer_off("Build <ij|ka>)");
+    timer_off("Build <ij|ka>");
 }// end tei_ijka_phys
 
 //=======================================================
@@ -487,7 +487,7 @@ void DFOCC::tei_ijka_phys()
 //=======================================================          
 void DFOCC::tei_ooov_phys()
 {   
-    timer_on("Build <ij|ka>)");
+    timer_on("Build <ij|ka>");
     // AA spin case
     IooovAA = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <OO|OV>", noccA, noccA, noccA, nvirA));
     JooovAA = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (OO|OV)", noccA, noccA, noccA, nvirA));
@@ -525,7 +525,7 @@ void DFOCC::tei_ooov_phys()
     IoovoAB->write(psio_, PSIF_DFOCC_INTS);
     IoovoAB.reset();
  }
-    timer_off("Build <ij|ka>)");
+    timer_off("Build <ij|ka>");
 }// end tei_ooov_phys
 
 //=======================================================
@@ -533,7 +533,7 @@ void DFOCC::tei_ooov_phys()
 //=======================================================          
 void DFOCC::tei_ijab_phys()
 {   
-    timer_on("Build <ij|ab>)");
+    timer_on("Build <ij|ab>");
 
     // AA spin case
     IijabAA = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ|AB>", naoccA, naoccA, navirA, navirA));
@@ -563,7 +563,7 @@ void DFOCC::tei_ijab_phys()
     IijabAB->write(psio_, PSIF_DFOCC_INTS);
     IijabAB.reset();
  }
-    timer_off("Build <ij|ab>)");
+    timer_off("Build <ij|ab>");
 }// end tei_ijab_phys
 
 //=======================================================
@@ -571,7 +571,7 @@ void DFOCC::tei_ijab_phys()
 //=======================================================          
 void DFOCC::tei_oovv_phys()
 {   
-    timer_on("Build <ij|ab>)");
+    timer_on("Build <ij|ab>");
     // AA spin case
     IoovvAA = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <OO|VV>", noccA, noccA, nvirA, nvirA));
     JovovAA = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (OV|OV)", noccA, nvirA, noccA, nvirA));
@@ -600,7 +600,7 @@ void DFOCC::tei_oovv_phys()
     IoovvAB->write(psio_, PSIF_DFOCC_INTS);
     IoovvAB.reset();
  }
-    timer_off("Build <ij|ab>)");
+    timer_off("Build <ij|ab>");
 }// end tei_oovv_phys
 
 //=======================================================
@@ -608,7 +608,7 @@ void DFOCC::tei_oovv_phys()
 //=======================================================          
 void DFOCC::tei_iajb_phys()
 {   
-    timer_on("Build <ia|jb>)");
+    timer_on("Build <ia|jb>");
     // AA spin case
     IiajbAA = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IA|JB>", naoccA, navirA, naoccA, navirA));
     JijabAA = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IJ|AB)", naoccA, naoccA, navirA, navirA));
@@ -646,7 +646,7 @@ void DFOCC::tei_iajb_phys()
     IaibjAB->write(psio_, PSIF_DFOCC_INTS);
     IaibjAB.reset();
  }
-    timer_off("Build <ia|jb>)");
+    timer_off("Build <ia|jb>");
 }// end tei_iajb_phys
 
 //=======================================================
@@ -654,7 +654,7 @@ void DFOCC::tei_iajb_phys()
 //=======================================================          
 void DFOCC::tei_ovov_phys()
 {   
-    timer_on("Build <ia|jb>)");
+    timer_on("Build <ia|jb>");
     // AA spin case
     IovovAA = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <OV|OV>", noccA, nvirA, noccA, nvirA));
     JoovvAA = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (OO|VV)", noccA, noccA, nvirA, nvirA));
@@ -692,7 +692,7 @@ void DFOCC::tei_ovov_phys()
     IvovoAB->write(psio_, PSIF_DFOCC_INTS);
     IvovoAB.reset();
  }
-    timer_off("Build <ia|jb>)");
+    timer_off("Build <ia|jb>");
 }// end tei_ovov_phys
 
 //=======================================================
@@ -700,7 +700,7 @@ void DFOCC::tei_ovov_phys()
 //=======================================================          
 void DFOCC::tei_ijkl_anti_symm()
 {   
-    timer_on("Build <ij||kl>)");
+    timer_on("Build <ij||kl>");
     // AA spin case
     AIijklAA = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ||KL>", naoccA, naoccA, naoccA, naoccA));
     IijklAA = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ|KL>", naoccA, naoccA, naoccA, naoccA));
@@ -724,7 +724,7 @@ void DFOCC::tei_ijkl_anti_symm()
     AIijklBB->write(psio_, PSIF_DFOCC_INTS);
     AIijklBB.reset();
  }
-    timer_off("Build <ij||kl>)");
+    timer_off("Build <ij||kl>");
 }// end tei_ijkl_anti_symm
 
 //=======================================================
@@ -732,7 +732,7 @@ void DFOCC::tei_ijkl_anti_symm()
 //=======================================================          
 void DFOCC::tei_oooo_anti_symm()
 {   
-    timer_on("Build <ij||kl>)");
+    timer_on("Build <ij||kl>");
     // AA spin case
     AIooooAA = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <OO||OO>", noccA, noccA, noccA, noccA));
     IooooAA = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <OO|OO>", noccA, noccA, noccA, noccA));
@@ -756,7 +756,7 @@ void DFOCC::tei_oooo_anti_symm()
     AIooooBB->write(psio_, PSIF_DFOCC_INTS);
     AIooooBB.reset();
  }
-    timer_off("Build <ij||kl>)");
+    timer_off("Build <ij||kl>");
 }// end tei_oooo_anti_symm
 
 //=======================================================
@@ -764,7 +764,7 @@ void DFOCC::tei_oooo_anti_symm()
 //=======================================================          
 void DFOCC::tei_ijka_anti_symm()
 {   
-    timer_on("Build <ij||ka>)");
+    timer_on("Build <ij||ka>");
     // <ij||ka> = <ij|ka> - <ji|ka>
     // AA spin case
     AIijkaAA = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ||KA>", naoccA, naoccA, naoccA, navirA));
@@ -789,7 +789,7 @@ void DFOCC::tei_ijka_anti_symm()
     AIijkaBB->write(psio_, PSIF_DFOCC_INTS);
     AIijkaBB.reset();
  }
-    timer_off("Build <ij||ka>)");
+    timer_off("Build <ij||ka>");
 }// end tei_ijka_anti_symm
 
 //=======================================================
@@ -797,7 +797,7 @@ void DFOCC::tei_ijka_anti_symm()
 //=======================================================          
 void DFOCC::tei_ooov_anti_symm()
 {   
-    timer_on("Build <ij||ka>)");
+    timer_on("Build <ij||ka>");
     // <ij||ka> = <ij|ka> - <ji|ka>
     // AA spin case
     AIooovAA = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <OO||OV>", noccA, noccA, noccA, nvirA));
@@ -822,7 +822,7 @@ void DFOCC::tei_ooov_anti_symm()
     AIooovBB->write(psio_, PSIF_DFOCC_INTS);
     AIooovBB.reset();
  }
-    timer_off("Build <ij||ka>)");
+    timer_off("Build <ij||ka>");
 }// end tei_ooov_anti_symm
 
 //=======================================================
@@ -830,7 +830,7 @@ void DFOCC::tei_ooov_anti_symm()
 //=======================================================          
 void DFOCC::tei_ijab_anti_symm()
 {   
-    timer_on("Build <ij||ab>)");
+    timer_on("Build <ij||ab>");
 
     // AA spin case
     AIijabAA = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ||AB>", naoccA, naoccA, navirA, navirA));
@@ -855,7 +855,7 @@ void DFOCC::tei_ijab_anti_symm()
     AIijabBB->write(psio_, PSIF_DFOCC_INTS);
     AIijabBB.reset();
  }
-    timer_off("Build <ij||ab>)");
+    timer_off("Build <ij||ab>");
 }// end tei_ijab_anti_symm
 
 //=======================================================
@@ -863,7 +863,7 @@ void DFOCC::tei_ijab_anti_symm()
 //=======================================================          
 void DFOCC::tei_oovv_anti_symm()
 {   
-    timer_on("Build <ij||ab>)");
+    timer_on("Build <ij||ab>");
     // AA spin case
     AIoovvAA = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <OO||VV>", noccA, noccA, nvirA, nvirA));
     IoovvAA = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <OO|VV>", noccA, noccA, nvirA, nvirA));
@@ -887,7 +887,7 @@ void DFOCC::tei_oovv_anti_symm()
     AIoovvBB->write(psio_, PSIF_DFOCC_INTS);
     AIoovvBB.reset();
  }
-    timer_off("Build <ij||ab>)");
+    timer_off("Build <ij||ab>");
 }// end tei_oovv_anti_symm
 
 //=======================================================
@@ -895,7 +895,7 @@ void DFOCC::tei_oovv_anti_symm()
 //=======================================================          
 void DFOCC::tei_iajb_anti_symm()
 {   
-    timer_on("Build <ia||jb>)");
+    timer_on("Build <ia||jb>");
     // <ia||jb> = <ia|jb> - <ia|bj> = <ia|jb> - (ib|ja)
     // AA spin case
     AIiajbAA = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IA||JB>", naoccA, navirA, naoccA, navirA));
@@ -927,7 +927,7 @@ void DFOCC::tei_iajb_anti_symm()
     AIiajbBB.reset();
     //fprintf(outfile,"\tI am here.\n"); fflush(outfile);
  }
-    timer_off("Build <ia||jb>)");
+    timer_off("Build <ia||jb>");
 }// end tei_iajb_anti_symm
 
 //=======================================================
@@ -935,7 +935,7 @@ void DFOCC::tei_iajb_anti_symm()
 //=======================================================          
 void DFOCC::tei_ovov_anti_symm()
 {   
-    timer_on("Build <ia||jb>)");
+    timer_on("Build <ia||jb>");
     // <ia||jb> = <ia|jb> - <ia|bj> = <ia|jb> - (ib|ja)
     // AA spin case
     AIovovAA = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <OV||OV>", noccA, nvirA, noccA, nvirA));
@@ -967,7 +967,7 @@ void DFOCC::tei_ovov_anti_symm()
     AIovovBB.reset();
     //fprintf(outfile,"\tI am here.\n"); fflush(outfile);
  }
-    timer_off("Build <ia||jb>)");
+    timer_off("Build <ia||jb>");
 }// end tei_ovov_anti_symm
 
 

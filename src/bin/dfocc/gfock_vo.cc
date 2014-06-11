@@ -167,6 +167,8 @@ else if (reference_ == "UNRESTRICTED") {
     // Set global GF
     GFA->set_vo(GFvoA);
     GFB->set_vo(GFvoB);
+    //GFvoA->print();
+    //GFvoB->print();
 
 }// else if (reference_ == "UNRESTRICTED")
 
