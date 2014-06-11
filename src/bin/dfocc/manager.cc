@@ -268,6 +268,9 @@ void DFOCC::omp2_manager()
         // OEPROP
         if (oeprop_ == "TRUE") oeprop();
 
+        // S2
+        if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED") s2_response();
+
         // Compute Analytic Gradients
         if (dertype == "FIRST") dfgrad();
 
@@ -368,6 +371,7 @@ void DFOCC::mp2_manager()
 	    omp2_tpdm();
             prepare4grad();
             if (oeprop_ == "TRUE") oeprop();
+            //if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED") s2_response();
             dfgrad();
 
             /*
