@@ -366,19 +366,6 @@ void DFOCC::oeprop()
     fflush(outfile);
 
     timer_on("oeprop");
-
-    /*
-    if (reference_ == "RESTRICTED") G1ao->back_transform(G1, CmoA);
-    else if (reference_ == "UNRESTRICTED") {
-        G1ao->back_transform(G1A, CmoA);
-        G1ao->back_transform(G1B, CmoB, 1.0, 1.0);
-    }
-    */
-
-    //SharedMatrix Da_ = SharedMatrix(new Matrix("AO-basis OPDM", nso_, nso_));
-    //G1ao->to_shared_matrix(Da_);
-    //if (reference_ == "RESTRICTED") Da_->scale(0.5);
-
     SharedMatrix Da_ = SharedMatrix(new Matrix("MO-basis alpha OPDM", nmo_, nmo_));
     SharedMatrix Db_ = SharedMatrix(new Matrix("MO-basis beta OPDM", nmo_, nmo_));
     if (reference_ == "RESTRICTED") {
@@ -394,7 +381,6 @@ void DFOCC::oeprop()
 
     // Compute oeprop
     boost::shared_ptr<OEProp> oe(new OEProp());
-    //oe->set_Da_so(Da_);
     oe->set_Da_mo(Da_);
     if (reference_ == "UNRESTRICTED") oe->set_Db_mo(Db_);
     oe->add("DIPOLE");
