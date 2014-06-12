@@ -2653,6 +2653,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("RELAXED",true);
     /*- Do symmetrize the GFM and OPDM in the EKT computations?  -*/
     options.add_bool("SYMMETRIZE",true);
+    /*- Do compute one electron properties?  -*/
+    options.add_bool("OEPROP",false);
   }
   if (name == "DFOCC"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs density-fitted orbital-optimized MPn and CC computations and conventional MPn computations. -*/

@@ -97,6 +97,9 @@ protected:
     void effective_pdms();
     void effective_gfock();
     void gfock_ea();
+    void oeprop();
+    void s2_response();
+    void s2_lagrangian();
 
     // OMP2
     void omp2_manager();
@@ -307,6 +310,10 @@ protected:
      double rms_t1;
      double rms_t1A;
      double rms_t1B;
+     double s2_resp;
+     double s2_proj;
+     double s2_lag;
+     double s2_ref;
 
      // OMP3
      double e3_scale;
@@ -386,6 +393,8 @@ protected:
      string orb_opt_;
      string relaxed_;
      string sym_gfm_;
+     string oeprop_;
+     string comput_s2_;
 
 
      int *mopi; 		/* number of all MOs per irrep */

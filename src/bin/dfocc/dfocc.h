@@ -105,6 +105,7 @@ protected:
     void effective_gfm();
     void oeprop();
     void s2_response();
+    void s2_lagrangian();
  
     // Conventional integrals for DF-BASIS-CC
     void tei_ijkl_chem();
@@ -508,6 +509,7 @@ protected:
      double reg_param;
      double s2_resp;
      double s2_proj;
+     double s2_lag;
      double s2_ref;
 
      // OMP3

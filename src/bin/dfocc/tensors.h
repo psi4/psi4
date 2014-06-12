@@ -295,9 +295,17 @@ class Tensor2d
   void swap_3index_col(const SharedTensor2d &A);
 
   void form_oo(const SharedTensor2d &A);
+  void form_act_oo(int frzc, const SharedTensor2d &A);
   void form_vv(int occ, const SharedTensor2d &A);
+  void form_act_vv(int occ, const SharedTensor2d &A);
   void form_vo(const SharedTensor2d &A);
+  void form_vo(int occ, const SharedTensor2d &A);
+  void form_act_vo(int frzc, const SharedTensor2d &A);
+  void form_act_vo(int frzc, int occ, const SharedTensor2d &A);
   void form_ov(const SharedTensor2d &A);
+  void form_ov(int occ, const SharedTensor2d &A);
+  void form_act_ov(int frzc, const SharedTensor2d &A);
+  void form_act_ov(int frzc, int occ, const SharedTensor2d &A);
 
   void form_b_ij(int frzc, const SharedTensor2d &A);
   void form_b_ia(int frzc, const SharedTensor2d &A);

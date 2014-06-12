@@ -270,6 +270,7 @@ void DFOCC::omp2_manager()
 
         // S2
         if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED") s2_response();
+        //if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED") s2_lagrangian();
 
         // Compute Analytic Gradients
         if (dertype == "FIRST") dfgrad();
@@ -286,7 +287,7 @@ void DFOCC::mp2_manager()
 	mo_optimized = 0;// means MOs are not optimized
         timer_on("DF CC Integrals");
         df_corr();
-        if (dertype == "NONE" && ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE") {
+        if (dertype == "NONE" && ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE" && comput_s2_ == "FALSE") {
             trans_mp2();
         }
         else {
@@ -317,7 +318,7 @@ void DFOCC::mp2_manager()
                 tei_ijab_anti_symm();
             }
         }// if (conv_tei_type == "DISK")  
-        if (dertype == "NONE" && ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE") mp2_direct();
+        if (dertype == "NONE" && ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE" && comput_s2_ == "FALSE") mp2_direct();
         else {
              fock();
 	     t2_1st_sc();
@@ -364,6 +365,7 @@ void DFOCC::mp2_manager()
         Process::environment.globals["DF-MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
         // S2
+        //if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED" && dertype == "NONE") s2_response();
         if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED") s2_response();
 
         // Compute Analytic Gradients
@@ -374,6 +376,7 @@ void DFOCC::mp2_manager()
 	    omp2_tpdm();
             prepare4grad();
             if (oeprop_ == "TRUE") oeprop();
+            //if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED") s2_lagrangian();
             dfgrad();
 
             /*
