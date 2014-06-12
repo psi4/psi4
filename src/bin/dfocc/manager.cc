@@ -363,6 +363,9 @@ void DFOCC::mp2_manager()
         Process::environment.globals["DF-MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         Process::environment.globals["DF-MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
+        // S2
+        if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED") s2_response();
+
         // Compute Analytic Gradients
         if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
             fprintf(outfile,"\n\tComputing unrelaxed response density matrices...\n");
@@ -371,7 +374,6 @@ void DFOCC::mp2_manager()
 	    omp2_tpdm();
             prepare4grad();
             if (oeprop_ == "TRUE") oeprop();
-            //if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED") s2_response();
             dfgrad();
 
             /*

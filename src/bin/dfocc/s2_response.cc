@@ -75,7 +75,9 @@ void DFOCC::s2_response()
     //=========================
     // <S2> = <S2>_ref - 1/2 \sum_{Ij} \sum_{Ab} S_Ib S_jA t_Ij^Ab
     s2_resp = 0.0;
+    s2_proj = 0.0;
     s2_resp += s2_ref;
+    s2_proj += s2_ref;
 
     // Form overlap blocks
     // S_Ia
@@ -101,18 +103,29 @@ void DFOCC::s2_response()
     T2->sort(1423, T, 1.0, 0.0);
     T.reset();
 
-    // X_Ib = -1/2 \sum_{jA} T2(Ib,jA) S_jA
+    // X_Ib = -1/2 \sum_{jA} T2(Ib,jA) S_jA. NoTe: For projected value there is no 1/2 factor
     SharedTensor2d X = SharedTensor2d(new Tensor2d("X <O|v>", noccA, nvirB));
-    X->gemv(false, T2, SovBA, -0.5, 0.0);
+    //X->gemv(false, T2, SovBA, -0.5, 0.0);
+    X->gemv(false, T2, SovBA, -1.0, 0.0);
     T2.reset();
 
     // <S2> += \sum_{Ib} X_Ib S_Ib
-    s2_resp += X->vector_dot(SovAB);
+    double value = 0.0;
+    value = X->vector_dot(SovAB);
     X.reset();
+    s2_proj += value;
+    s2_resp += 0.5 * value;
+
+    double value2 = 1.0 + (4.0*s2_resp);
+    double approx_s = 0.5 * (sqrt(value2) - 1.0);
+    double approx_s2 = sqrt(value2);
  
     // Print
     fprintf(outfile,"\t<S**2>_reference (a.u.): %12.8f\n", s2_ref);
     fprintf(outfile,"\t<S**2>_response (a.u.) : %12.8f\n", s2_resp);
+    fprintf(outfile,"\t<S**2>_projected (a.u.): %12.8f\n", s2_proj);
+    fprintf(outfile,"\tApproximate spin q.n.  : %12.8f\n", approx_s);
+    fprintf(outfile,"\tApproximate spin mult. : %12.8f\n", approx_s2);
     fflush(outfile);
 
     timer_off("s2_response");

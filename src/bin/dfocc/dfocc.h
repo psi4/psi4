@@ -507,6 +507,7 @@ protected:
      double msd_oo_scale;
      double reg_param;
      double s2_resp;
+     double s2_proj;
      double s2_ref;
 
      // OMP3
