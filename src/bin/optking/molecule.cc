@@ -96,7 +96,7 @@ void MOLECULE::forces(void) {
 
   // B (u f_x)
   B = compute_B();
-  if (Opt_params.print_lvl >= 2) {
+  if (Opt_params.print_lvl >= 3) {
     fprintf(outfile, "B matrix\n");
     print_matrix(outfile, B, Nintco, Ncart);
   }
@@ -284,7 +284,7 @@ void MOLECULE::project_f_and_H(void) {
     for (int j=0; j<i; ++j)
       H[j][i] = H[i][j] = H[i][j] + 1000 * (1.0 - P[i][j]);*/
 
-  if (Opt_params.print_lvl >= 2) {
+  if (Opt_params.print_lvl >= 3) {
     fprintf(outfile,"Projected (PHP) Hessian matrix\n");
     if (Opt_params.efp_fragments)
       fprintf(outfile,"EFP external coordinates are not projected.\n");
@@ -392,7 +392,7 @@ void MOLECULE::H_guess(void) const {
   }
 
   if (Opt_params.print_lvl >= 2) {
-    fprintf(outfile,"Initial Hessian guess\n");
+    fprintf(outfile,"\nInitial Hessian guess\n");
     print_matrix(outfile, H, g_nintco(), g_nintco());
   }
   fflush(outfile);
@@ -727,7 +727,7 @@ double ** MOLECULE::compute_constraints(void) {
     free_matrix(C_inter);
   }
 
-  if (Opt_params.print_lvl >= 2) {
+  if (Opt_params.print_lvl >= 3) {
     fprintf(outfile,"Constraint matrix\n");
     print_matrix(outfile, C, g_nintco(), g_nintco()); fflush(outfile);
   }

@@ -46,7 +46,7 @@ namespace opt {
 using namespace v3d;
 
 // return period from atomic number
-inline int period(int Z) { 
+static inline int period(int Z) { 
   if      (Z <=  2) return 1;
   else if (Z <= 10) return 2;
   else if (Z <= 18) return 3;
@@ -57,15 +57,15 @@ inline int period(int Z) {
 // return generic distance from two periods;
 // based on DZP RHF, I have suggested: 1.38 1.9 2.53
 // my values certainly work better for water
-inline double r_ref_table(int perA, int perB) {
+static inline double r_ref_table(int perA, int perB) {
   if (perA == 1) {
-    if (perB == 1) return 1.38;     // Lindh 1.35
-    else if (perB == 2) return 1.9; // Lindh 2.1
+    if (perB == 1) return 1.35;     // Lindh 1.35
+    else if (perB == 2) return 2.1; // Lindh 2.1
     else return 2.53;
   }
   else if (perA == 2) {
 // based on DZP RHF, I have suggested: 1.9 2.87 3.40
-    if (perB == 1) return 1.9;      // Lindh 2.1
+    if (perB == 1) return 2.1;      // Lindh 2.1
     else if (perB == 2) return 2.87;
     else return 3.40;
   }
@@ -76,7 +76,7 @@ inline double r_ref_table(int perA, int perB) {
 }
 
 // return Lindh alpha value from two periods
-inline double alpha_table(int perA, int perB) {
+static inline double alpha_table(int perA, int perB) {
   if (perA == 1) {
     if (perB == 1)
       return 1.000;
@@ -104,7 +104,7 @@ double FRAG::Lindh_rho(int A, int B, double RAB) const {
 }
 
 // covalent bond length in bohr from atomic numbers
-inline double Rcov(double ZA, double ZB) {
+static inline double Rcov(double ZA, double ZB) {
   return (cov_radii[(int) ZA] + cov_radii[(int) ZB]) / _bohr2angstroms;
 }
 

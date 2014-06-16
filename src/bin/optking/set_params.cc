@@ -145,6 +145,9 @@ void set_params(void)
 // Add auxiliary bonds for non-bonded (but nearby) atoms.
     Opt_params.add_auxiliary_bonds = options.get_bool("ADD_AUXILIARY_BONDS");
 
+// re-estimate the hessian every step
+    Opt_params.H_guess_every = options.get_bool("H_GUESS_EVERY");
+
 // Covalent distance times this factor is used to choose extra stretch coordinates
     Opt_params.auxiliary_bond_factor = options.get_double("AUXILIARY_BOND_FACTOR");
 
@@ -428,6 +431,9 @@ void set_params(void)
 // Whether to freeze all fragments rigid (default 0);
   Opt_params.freeze_intrafragment = rem_read(REM_GEOM_OPT2_FREEZE_INTRAFRAGMENT);
 
+// Needs added to QChem
+  Opt_params.H_guess_every = rem_read("REM_GEOM_OPT2_H_GUESS_EVERY");
+
 // Whether to freeze all interfragment modes:
   Opt_params.freeze_interfragment = rem_read(REM_GEOM_OPT2_FREEZE_INTERFRAGMENT);
 
@@ -705,9 +711,14 @@ void print_params(void) {
   fprintf(outfile, "interfragment_step_limit=%18.2e\n", Opt_params.interfragment_step_limit);
 
   if (Opt_params.add_auxiliary_bonds)
-  fprintf(outfile, "add_auxiliary_bonds   = %18s\n", "true");
+    fprintf(outfile, "add_auxiliary_bonds   = %18s\n", "true");
   else
-  fprintf(outfile, "add_auxiliary_bonds   = %18s\n", "false");
+    fprintf(outfile, "add_auxiliary_bonds   = %18s\n", "false");
+
+  if (Opt_params.H_guess_every)
+    fprintf(outfile, "H_guess_every         = %18s\n", "true");
+  else
+    fprintf(outfile, "H_guess_every         = %18s\n", "false");
 
   fprintf(outfile, "auxiliary_bond_factor =%18.2e\n", Opt_params.auxiliary_bond_factor);
 
@@ -747,18 +758,28 @@ void print_params(void) {
   fprintf(outfile, "efp_fragments_only     = %18s\n", "false");
 
   fprintf(outfile, "frozen_distance: \n");
-  fprintf(outfile, "%s\n", Opt_params.frozen_distance_str.c_str());
+  if (!Opt_params.frozen_distance_str.empty())
+    fprintf(outfile, "%s\n", Opt_params.frozen_distance_str.c_str());
+
   fprintf(outfile, "frozen_bend: \n");
-  fprintf(outfile, "%s\n", Opt_params.frozen_bend_str.c_str());
+  if (!Opt_params.frozen_bend_str.empty())
+    fprintf(outfile, "%s\n", Opt_params.frozen_bend_str.c_str());
+
   fprintf(outfile, "frozen_dihedral: \n");
-  fprintf(outfile, "%s\n", Opt_params.frozen_dihedral_str.c_str());
+  if (!Opt_params.frozen_dihedral_str.empty())
+    fprintf(outfile, "%s\n", Opt_params.frozen_dihedral_str.c_str());
 
   fprintf(outfile, "fixed_distance: \n");
-  fprintf(outfile, "%s\n", Opt_params.fixed_distance_str.c_str());
+  if (!Opt_params.fixed_distance_str.empty())
+    fprintf(outfile, "%s\n", Opt_params.fixed_distance_str.c_str());
+
   fprintf(outfile, "fixed_bend: \n");
-  fprintf(outfile, "%s\n", Opt_params.fixed_bend_str.c_str());
+  if (!Opt_params.fixed_bend_str.empty())
+    fprintf(outfile, "%s\n", Opt_params.fixed_bend_str.c_str());
+
   fprintf(outfile, "fixed_dihedral: \n");
-  fprintf(outfile, "%s\n", Opt_params.fixed_dihedral_str.c_str());
+  if (!Opt_params.fixed_dihedral_str.empty())
+    fprintf(outfile, "%s\n", Opt_params.fixed_dihedral_str.c_str());
 }
 
 }

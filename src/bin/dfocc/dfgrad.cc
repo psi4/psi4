@@ -89,6 +89,25 @@ void DFOCC::dfgrad()
     gradients["Total"] = total; 
     gradients["Total"]->set_name("Total Gradient");
 
+    // OEI grad
+    gradients["One-Electron"] = SharedMatrix(gradients["Nuclear"]->clone());
+    gradients["One-Electron"]->set_name("One-Electron Gradient");
+    gradients["One-Electron"]->zero();
+    gradients["One-Electron"]->add(gradients["Kinetic"]);
+    gradients["One-Electron"]->add(gradients["Potential"]);
+    gradients["One-Electron"]->print_atom_vector();
+
+    // TEI grad
+    gradients["Two-Electron"] = SharedMatrix(gradients["Nuclear"]->clone());
+    gradients["Two-Electron"]->set_name("Two-Electron Gradient");
+    gradients["Two-Electron"]->zero();
+    gradients["Two-Electron"]->add(gradients["3-Index:RefSep"]);
+    gradients["Two-Electron"]->add(gradients["3-Index:Corr"]);
+    gradients["Two-Electron"]->add(gradients["Metric:RefSep"]);
+    gradients["Two-Electron"]->add(gradients["Metric:Corr"]);
+    gradients["Two-Electron"]->print_atom_vector();//UB
+
+
     // => Final Printing <= //
     if (print_ > 1) {
         for (int i = 0; i < gradient_terms.size(); i++) {
@@ -105,8 +124,7 @@ void DFOCC::dfgrad()
 
 
 //fprintf(outfile,"\tdfgrad is done. \n"); fflush(outfile);
-}// end 
-
+}// end dfgrad 
 
 }} // End Namespaces
 

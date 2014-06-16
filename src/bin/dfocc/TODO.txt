@@ -1,4 +1,8 @@
+* Gradients for DF-MP2
+* Fix UDFMP2 grad, and PCG solver
+* Implement dipol moments
+* Implement Response spin multiplicities
+* Make DF-OMP2 default for OMP2 unless CD integrals are requested
 * OSCS-MP2
 * QC-SCF 
 * GWH Guess
-* Gradients for DF-MP2

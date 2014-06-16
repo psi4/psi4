@@ -102,6 +102,7 @@ if (reference_ == "RESTRICTED") {
     Gao->contract233(false, false, nso_, nso_, CvirA, G, 1.0, 1.0);
     G.reset();
     Gao->write(psio_, PSIF_DFOCC_DENS);
+    //Gao->print();
 
     // 2-Index TPDM
     bQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mn)", nQ_ref, nso2_));
@@ -114,9 +115,12 @@ if (reference_ == "RESTRICTED") {
     Jmhalf.reset();
     G = SharedTensor2d(new Tensor2d("2-Index RefSep TPDM (P|Q)", nQ_ref, nQ_ref));
     G->gemm(false, true, cQso, Gao, 0.5, 0.0);
+    //G->gemm(false, true, cQso, Gao, 0.25, 0.0);
+    //G->gemm(false, true, Gao, cQso, 0.25, 1.0);
     cQso.reset();
     Gao.reset();
     G->write(psio_, PSIF_DFOCC_DENS);
+    //G->print();
     G.reset();
 
     //=========================
@@ -352,6 +356,44 @@ else if (reference_ == "UNRESTRICTED") {
     //fprintf(outfile,"\tBacktransformation is done.\n");  
     //fflush(outfile);
 } // end back_trans
+
+//=========================
+// OEPROP
+//=========================
+void DFOCC::oeprop()
+{ 
+    fprintf(outfile,"\tComputing one-electron properties...\n");  
+    fflush(outfile);
+
+    timer_on("oeprop");
+    SharedMatrix Da_ = SharedMatrix(new Matrix("MO-basis alpha OPDM", nmo_, nmo_));
+    SharedMatrix Db_ = SharedMatrix(new Matrix("MO-basis beta OPDM", nmo_, nmo_));
+    if (reference_ == "RESTRICTED") {
+        G1->to_shared_matrix(Da_);
+        Da_->scale(0.5);
+        Db_->copy(Da_);
+    }
+
+    else if (reference_ == "UNRESTRICTED") {
+        G1A->to_shared_matrix(Da_);
+        G1B->to_shared_matrix(Db_);
+    }
+
+    // Compute oeprop
+    boost::shared_ptr<OEProp> oe(new OEProp());
+    oe->set_Da_mo(Da_);
+    if (reference_ == "UNRESTRICTED") oe->set_Db_mo(Db_);
+    oe->add("DIPOLE");
+    oe->add("QUADRUPOLE");
+    oe->add("MULLIKEN_CHARGES");
+    oe->add("NO_OCCUPATIONS");
+    oe->set_title("DF-OMP2");
+    oe->compute();
+    Da_.reset();
+    Db_.reset();
+
+    timer_off("oeprop");
+} // end oeprop
 
 }} // End Namespaces
 

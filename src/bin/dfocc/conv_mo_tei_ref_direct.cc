@@ -298,12 +298,12 @@ void DFOCC::tei_vovo_chem_ref_directAB(SharedTensor2d &K)
 //=======================================================          
 void DFOCC::tei_oooo_phys_ref_directAA(SharedTensor2d &K)
 {   
-    timer_on("Build <OO|OO>)");
+    timer_on("Build <OO|OO>");
     SharedTensor2d L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|OO)", noccA, noccA, noccA, noccA));
     tei_oooo_chem_ref_directAA(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
-    timer_off("Build <OO|OO>)");
+    timer_off("Build <OO|OO>");
 }
 
 //=======================================================
@@ -311,12 +311,12 @@ void DFOCC::tei_oooo_phys_ref_directAA(SharedTensor2d &K)
 //=======================================================          
 void DFOCC::tei_oooo_phys_ref_directBB(SharedTensor2d &K)
 {   
-    timer_on("Build <oo|oo>)");
+    timer_on("Build <oo|oo>");
     SharedTensor2d L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (oo|oo)", noccB, noccB, noccB, noccB));
     tei_oooo_chem_ref_directBB(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
-    timer_off("Build <oo|oo>)");
+    timer_off("Build <oo|oo>");
 }
 
 //=======================================================
@@ -324,12 +324,12 @@ void DFOCC::tei_oooo_phys_ref_directBB(SharedTensor2d &K)
 //=======================================================          
 void DFOCC::tei_oooo_phys_ref_directAB(SharedTensor2d &K)
 {   
-    timer_on("Build <Oo|Oo>)");
+    timer_on("Build <Oo|Oo>");
     SharedTensor2d L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|oo)", noccA, noccA, noccB, noccB));
     tei_oooo_chem_ref_directAB(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
-    timer_off("Build <Oo|Oo>)");
+    timer_off("Build <Oo|Oo>");
 }
 
 //=======================================================
@@ -337,12 +337,12 @@ void DFOCC::tei_oooo_phys_ref_directAB(SharedTensor2d &K)
 //=======================================================          
 void DFOCC::tei_ooov_phys_ref_directAA(SharedTensor2d &K)
 {   
-    timer_on("Build <OO|OV>)");
+    timer_on("Build <OO|OV>");
     SharedTensor2d L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|OV)", noccA, noccA, noccA, nvirA));
     tei_ooov_chem_ref_directAA(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
-    timer_off("Build <OO|OV>)");
+    timer_off("Build <OO|OV>");
 }
 
 //=======================================================
@@ -350,12 +350,12 @@ void DFOCC::tei_ooov_phys_ref_directAA(SharedTensor2d &K)
 //=======================================================          
 void DFOCC::tei_ooov_phys_ref_directBB(SharedTensor2d &K)
 {   
-    timer_on("Build <oo|ov>)");
+    timer_on("Build <oo|ov>");
     SharedTensor2d L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (oo|ov)", noccB, noccB, noccB, nvirB));
     tei_ooov_chem_ref_directBB(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
-    timer_off("Build <oo|ov>)");
+    timer_off("Build <oo|ov>");
 }
 
 //=======================================================
@@ -363,12 +363,12 @@ void DFOCC::tei_ooov_phys_ref_directBB(SharedTensor2d &K)
 //=======================================================          
 void DFOCC::tei_ooov_phys_ref_directAB(SharedTensor2d &K)
 {   
-    timer_on("Build <Oo|Ov>)");
+    timer_on("Build <Oo|Ov>");
     SharedTensor2d L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|ov)", noccA, noccA, noccB, nvirB));
     tei_ooov_chem_ref_directAB(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
-    timer_off("Build <Oo|Ov>)");
+    timer_off("Build <Oo|Ov>");
 }
 
 //=======================================================
@@ -376,12 +376,12 @@ void DFOCC::tei_ooov_phys_ref_directAB(SharedTensor2d &K)
 //=======================================================          
 void DFOCC::tei_oovo_phys_ref_directAB(SharedTensor2d &K)
 {   
-    timer_on("Build <Oo|Vo>)");
+    timer_on("Build <Oo|Vo>");
     SharedTensor2d L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OV|oo)", noccA, nvirA, noccB, noccB));
     tei_ovoo_chem_ref_directAB(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
-    timer_off("Build <Oo|Vo>)");
+    timer_off("Build <Oo|Vo>");
 }
 
 //=======================================================
@@ -389,12 +389,12 @@ void DFOCC::tei_oovo_phys_ref_directAB(SharedTensor2d &K)
 //=======================================================          
 void DFOCC::tei_oovv_phys_ref_directAA(SharedTensor2d &K)
 {   
-    timer_on("Build <OO|VV>)");
+    timer_on("Build <OO|VV>");
     SharedTensor2d L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OV|OV)", noccA, nvirA, noccA, nvirA));
     tei_ovov_chem_ref_directAA(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
-    timer_off("Build <OO|VV>)");
+    timer_off("Build <OO|VV>");
 }
 
 //=======================================================
@@ -402,12 +402,12 @@ void DFOCC::tei_oovv_phys_ref_directAA(SharedTensor2d &K)
 //=======================================================          
 void DFOCC::tei_oovv_phys_ref_directBB(SharedTensor2d &K)
 {   
-    timer_on("Build <oo|vv>)");
+    timer_on("Build <oo|vv>");
     SharedTensor2d L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (ov|ov)", noccB, nvirB, noccB, nvirB));
     tei_ovov_chem_ref_directBB(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
-    timer_off("Build <oo|vv>)");
+    timer_off("Build <oo|vv>");
 }
 
 //=======================================================
@@ -415,12 +415,12 @@ void DFOCC::tei_oovv_phys_ref_directBB(SharedTensor2d &K)
 //=======================================================          
 void DFOCC::tei_oovv_phys_ref_directAB(SharedTensor2d &K)
 {   
-    timer_on("Build <Oo|Vv>)");
+    timer_on("Build <Oo|Vv>");
     SharedTensor2d L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OV|ov)", noccA, nvirA, noccB, nvirB));
     tei_ovov_chem_ref_directAB(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
-    timer_off("Build <Oo|Vv>)");
+    timer_off("Build <Oo|Vv>");
 }
 
 //=======================================================
@@ -428,12 +428,12 @@ void DFOCC::tei_oovv_phys_ref_directAB(SharedTensor2d &K)
 //=======================================================          
 void DFOCC::tei_ovov_phys_ref_directAA(SharedTensor2d &K)
 {   
-    timer_on("Build <OV|OV>)");
+    timer_on("Build <OV|OV>");
     SharedTensor2d L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|VV)", noccA, noccA, nvirA, nvirA));
     tei_oovv_chem_ref_directAA(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
-    timer_off("Build <OV|OV>)");
+    timer_off("Build <OV|OV>");
 }
 
 //=======================================================
@@ -441,12 +441,12 @@ void DFOCC::tei_ovov_phys_ref_directAA(SharedTensor2d &K)
 //=======================================================          
 void DFOCC::tei_ovov_phys_ref_directBB(SharedTensor2d &K)
 {   
-    timer_on("Build <ov|ov>)");
+    timer_on("Build <ov|ov>");
     SharedTensor2d L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (oo|vv)", noccB, noccB, nvirB, nvirB));
     tei_oovv_chem_ref_directBB(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
-    timer_off("Build <ov|ov>)");
+    timer_off("Build <ov|ov>");
 }
 
 //=======================================================
@@ -454,12 +454,12 @@ void DFOCC::tei_ovov_phys_ref_directBB(SharedTensor2d &K)
 //=======================================================          
 void DFOCC::tei_ovov_phys_ref_directAB(SharedTensor2d &K)
 {   
-    timer_on("Build <Ov|Ov>)");
+    timer_on("Build <Ov|Ov>");
     SharedTensor2d L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|vv)", noccA, noccA, nvirB, nvirB));
     tei_oovv_chem_ref_directAB(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
-    timer_off("Build <Ov|Ov>)");
+    timer_off("Build <Ov|Ov>");
 }
 
 //=======================================================
@@ -467,12 +467,12 @@ void DFOCC::tei_ovov_phys_ref_directAB(SharedTensor2d &K)
 //=======================================================          
 void DFOCC::tei_vovo_phys_ref_directAB(SharedTensor2d &K)
 {   
-    timer_on("Build <Vo|Vo>)");
+    timer_on("Build <Vo|Vo>");
     SharedTensor2d L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (VV|oo)", nvirA, nvirA, noccB, noccB));
     tei_vvoo_chem_ref_directAB(L);
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
-    timer_off("Build <Vo|Vo>)");
+    timer_off("Build <Vo|Vo>");
 }
 
 }} // End Namespaces
