@@ -32,6 +32,7 @@
 #include <libciomr/libciomr.h>
 #include <libmints/matrix.h>
 #include <libmints/wavefunction.h>
+#include "psi4-dec.h"
 
 namespace psi {
 
