@@ -73,6 +73,10 @@ if (OPENMP_FOUND)
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
+#
+# Find MPI
+#
+find_package(MPI)
 include(CheckIncludeFiles)
 check_include_files(dlfcn.h HAVE_DLFCN)
 
@@ -80,8 +84,9 @@ include(CheckFunctionExists)
 check_function_exists(MKL_Free_Buffers HAVE_MKL) # NEEDS TO BE TESTED
 check_function_exists(erf HAVE_FUNC_ERF)
 
-include(CheckSymbolExists)
-check_symbol_exists(MPI_Finalize mpi.h HAVE_MPI) # NEEDS TO BE TESTED
+#Should be taken care of by find_package(MPI)
+#include(CheckSymbolExists)
+#check_symbol_exists(MPI_Finalize mpi.h HAVE_MPI) # NEEDS TO BE TESTED
 
 include(cmake/Restrict.cmake)
 test_restrict(restrict)
@@ -193,17 +198,21 @@ include_directories(${PYTHON_INCLUDE_DIRS})
 #
 # N.B. Update boost/CMakeLists.txt if this list of components changes
 set(Boost_USE_STATIC_LIBS ON)
-set(Boost_COMPONENTS filesystem python regex serialization system thread )
+if(MPI_FOUND)
+  set(Boost_COMPONENTS filesystem python mpi regex serialization system thread )
+else()
+  set(Boost_COMPONENTS filesystem python regex serialization system thread )
+endif()
 if(NOT useroptUSE_SYSTEM_BOOST)
     message(WARNING "Skipping Boost detection, and forcing Psi to build the bundled version.")
 else()
-    find_package(Boost 1.47.0 COMPONENTS ${Boost_COMPONENTS})
+    find_package(Boost 1.55.0 COMPONENTS ${Boost_COMPONENTS})
 endif()
 if(NOT Boost_FOUND)
     # Add the Boost version bundled with Psi4 as a dependency
     message(WARNING "Boost not found. The pre-packaged version will be built.")
     # The version bundled with Psi4
-    set(BOOSTVER boost_1_54_0)
+    set(BOOSTVER boost_1_55_0)
     # Link and include information
     set(BOOSTLIBDIR ${PROJECT_BINARY_DIR}/boost/${BOOSTVER}/stage/lib)
     set(Boost_INCLUDE_DIRS ${PROJECT_BINARY_DIR}/boost/${BOOSTVER})
