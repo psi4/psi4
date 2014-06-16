@@ -263,6 +263,36 @@ void Tensor1d::gemv(bool transa, int m, int n, const SharedTensor2d& a, const Sh
     }
 }//
 
+void Tensor1d::gemv(bool transa, const SharedTensor2d& a, const SharedTensor2d& b, double alpha, double beta)
+{
+    char ta = transa ? 't' : 'n';
+    int incx, incy, lda, m, n;
+
+    m = a->dim1();
+    n = a->dim2();
+
+    /*
+    if (transa) {
+        m = a->dim1();
+        n = a->dim2();
+    }
+
+    else {
+        n = a->dim1();
+        m = a->dim2();
+    }
+    */
+
+    lda = n;
+    incx = 1;// increments in elements of b vector
+    incy = 1;// increments in elements of A1d_
+
+    // A1d_ = alpha * A * b + beta, where A is a general matrix
+    if (m && n) {
+       C_DGEMV(ta, m, n, alpha, &(a->A2d_[0][0]), lda, &(b->A2d_[0][0]), incx, beta, A1d_, incy);
+    }
+}//
+
 double Tensor1d::xay(const SharedTensor2d &a, const SharedTensor1d &y)
 {
   double value = 0.0;
@@ -1283,6 +1313,22 @@ void Tensor2d::gemv(bool transa, const SharedTensor2d& a, const SharedTensor1d& 
     }
 }//
 
+void Tensor2d::gemv(bool transa, const SharedTensor2d& a, const SharedTensor2d& b, double alpha, double beta)
+{
+    char ta = transa ? 't' : 'n';
+    int m, n, k, incx, incy, lda;
+
+    m = a->dim1();
+    n = a->dim2();
+    lda = n;
+    incx = 1;// increments in elements of b vector
+    incy = 1;// increments in elements of A2d_
+
+    if (m && n) {
+       C_DGEMV(ta, m, n, alpha, &(a->A2d_[0][0]), lda, &(b->A2d_[0][0]), incx, beta, &(A2d_[0][0]), incy);
+    }
+}//
+
 void Tensor2d::davidson(int n_eigval, const SharedTensor2d& eigvectors, const SharedTensor1d& eigvalues, double cutoff, int print)
 {
 
@@ -1996,6 +2042,25 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
     }
  }
 
+ else if (sort_type == 4132) {
+    #pragma omp parallel for
+    for (int p = 0; p < d1; p++) {
+         for (int q = 0; q < d2; q++) {
+              int pq = A->row_idx_[p][q];
+              for (int r = 0; r < d3; r++) {
+                   for (int s = 0; s < d4; s++) {
+                        int rs = A->col_idx_[r][s];
+                        int sp = row_idx_[s][p];
+                        int rq = col_idx_[r][q];
+                        A2d_[sp][rq] = (alpha*A->A2d_[pq][rs]) + (beta*A2d_[sp][rq]);
+                   }
+              }
+         }
+    }
+ }
+
+
+
  else if (sort_type == 1342) {
     #pragma omp parallel for
     for (int p = 0; p < d1; p++) {
@@ -2191,7 +2256,7 @@ void Tensor2d::dirprd(const SharedTensor2d &a, const SharedTensor2d &b)
      }
 }//
 
-void Tensor2d::dirprd123(const SharedTensor1d &a, const SharedTensor2d &b, const SharedTensor2i &pair_idx, double alpha, double beta)
+void Tensor2d::dirprd123(const SharedTensor1d &a, const SharedTensor2d &b, double alpha, double beta)
 {
      int d1 = dim1_;
      int d2 = b->dim1();
@@ -2200,12 +2265,46 @@ void Tensor2d::dirprd123(const SharedTensor1d &a, const SharedTensor2d &b, const
      for (int i=0; i<d1; i++) {
           for (int j=0; j<d2; j++) {
                for (int k=0; k<d3; k++) {
-                    int jk = pair_idx->get(j,k);
+                    int jk = k + (j*d3);
                     //A2d_[i][jk] = a->get(i) * b->get(j,k);
                     A2d_[i][jk] = (alpha * a->get(i) * b->get(j,k)) + (beta * A2d_[i][jk]);
                }
           }
      }
+}//
+
+void Tensor2d::dirprd123(bool transb, const SharedTensor1d &a, const SharedTensor2d &b, double alpha, double beta)
+{
+   if (transb) {
+     int d1 = dim1_;
+     int d2 = b->dim2();
+     int d3 = b->dim1();
+     #pragma omp parallel for
+     for (int i=0; i<d1; i++) {
+          for (int j=0; j<d2; j++) {
+               for (int k=0; k<d3; k++) {
+                    int jk = k + (j*d3);
+                    A2d_[i][jk] = (alpha * a->get(i) * b->get(k,j)) + (beta * A2d_[i][jk]);
+               }
+          }
+     }
+   }
+
+   else {
+     int d1 = dim1_;
+     int d2 = b->dim1();
+     int d3 = b->dim2();
+     #pragma omp parallel for
+     for (int i=0; i<d1; i++) {
+          for (int j=0; j<d2; j++) {
+               for (int k=0; k<d3; k++) {
+                    int jk = k + (j*d3);
+                    //A2d_[i][jk] = a->get(i) * b->get(j,k);
+                    A2d_[i][jk] = (alpha * a->get(i) * b->get(j,k)) + (beta * A2d_[i][jk]);
+               }
+          }
+     }
+   }
 }//
 
 void Tensor2d::dirprd112(const SharedTensor1d &a, const SharedTensor1d &b)
@@ -2358,6 +2457,52 @@ void Tensor2d::set_vo(const SharedTensor2d &A)
     }
 }//
 
+void Tensor2d::add_oo(const SharedTensor2d &A, double alpha, double beta)
+{
+    int occ = A->dim1();
+    #pragma omp parallel for
+    for (int i = 0; i < occ; i++) {
+         for (int j = 0; j < occ; j++) {
+              A2d_[i][j] = (alpha * A->get(i,j)) + (beta * A2d_[i][j]);
+         }
+    }
+}//
+
+void Tensor2d::add_vv(int occ, const SharedTensor2d &A, double alpha, double beta)
+{
+    int vir = A->dim1();
+    #pragma omp parallel for
+    for (int a = 0; a < vir; a++) {
+         for (int b = 0; b < vir; b++) {
+              A2d_[a + occ][b + occ] = (alpha *A->get(a,b)) + (beta * A2d_[a + occ][b + occ]);
+         }
+    }
+}//
+
+void Tensor2d::add_ov(const SharedTensor2d &A, double alpha, double beta)
+{
+    int occ = A->dim1();
+    int vir = A->dim2();
+    #pragma omp parallel for
+    for (int i = 0; i < occ; i++) {
+         for (int a = 0; a < vir; a++) {
+              A2d_[i][a + occ] = (alpha * A->get(i,a)) + (beta * A2d_[i][a + occ]);
+         }
+    }
+}//
+
+void Tensor2d::add_vo(const SharedTensor2d &A, double alpha, double beta)
+{
+    int vir = A->dim1();
+    int occ = A->dim2();
+    #pragma omp parallel for
+    for (int a = 0; a < vir; a++) {
+         for (int i = 0; i < occ; i++) {
+              A2d_[a + occ][i] = (alpha * A->get(a,i)) + (beta * A2d_[a + occ][i]);
+         }
+    }
+}//
+
 void Tensor2d::set3_oo(const SharedTensor2d &A)
 {
     int naux = A->d1_;
@@ -2485,7 +2630,29 @@ void Tensor2d::form_oo(const SharedTensor2d &A)
     }
 }//
 
+void Tensor2d::form_act_oo(int frzc, const SharedTensor2d &A)
+{
+    int occ = dim1_;
+    #pragma omp parallel for
+    for (int i = 0; i < occ; i++) {
+         for (int j = 0; j < occ; j++) {
+              A2d_[i][j] = A->get(i + frzc, j + frzc);
+         }
+    }
+}//
+
 void Tensor2d::form_vv(int occ, const SharedTensor2d &A)
+{
+    int vir = dim1_;
+    #pragma omp parallel for
+    for (int a = 0; a < vir; a++) {
+         for (int b = 0; b < vir; b++) {
+              A2d_[a][b] = A->get(a + occ, b + occ);
+         }
+    }
+}//
+
+void Tensor2d::form_act_vv(int occ, const SharedTensor2d &A)
 {
     int vir = dim1_;
     #pragma omp parallel for
@@ -2508,6 +2675,42 @@ void Tensor2d::form_vo(const SharedTensor2d &A)
     }
 }//
 
+void Tensor2d::form_vo(int occ, const SharedTensor2d &A)
+{
+    int vir = dim1_;
+    int occ2 = dim2_;
+    #pragma omp parallel for
+    for (int a = 0; a < vir; a++) {
+         for (int i = 0; i < occ2; i++) {
+              A2d_[a][i] = A->get(a + occ, i);
+         }
+    }
+}//
+
+void Tensor2d::form_act_vo(int frzc, const SharedTensor2d &A)
+{
+    int vir = dim1_;
+    int occ = dim2_;
+    #pragma omp parallel for
+    for (int a = 0; a < vir; a++) {
+         for (int i = 0; i < occ; i++) {
+              A2d_[a][i] = A->get(a + occ, i + frzc);
+         }
+    }
+}//
+
+void Tensor2d::form_act_vo(int frzc, int occ, const SharedTensor2d &A)
+{
+    int vir = dim1_;
+    int occ2 = dim2_;
+    #pragma omp parallel for
+    for (int a = 0; a < vir; a++) {
+         for (int i = 0; i < occ2; i++) {
+              A2d_[a][i] = A->get(a + occ, i + frzc);
+         }
+    }
+}//
+
 void Tensor2d::form_ov(const SharedTensor2d &A)
 {
     int vir = dim2_;
@@ -2516,6 +2719,42 @@ void Tensor2d::form_ov(const SharedTensor2d &A)
     for (int i = 0; i < occ; i++) {
          for (int a = 0; a < vir; a++) {
               A2d_[i][a] = A->get(i, a + occ);
+         }
+    }
+}//
+
+void Tensor2d::form_ov(int occ, const SharedTensor2d &A)
+{
+    int vir = dim2_;
+    int occ2 = dim1_;
+    #pragma omp parallel for
+    for (int i = 0; i < occ2; i++) {
+         for (int a = 0; a < vir; a++) {
+              A2d_[i][a] = A->get(i, a + occ);
+         }
+    }
+}//
+
+void Tensor2d::form_act_ov(int frzc, const SharedTensor2d &A)
+{
+    int vir = dim2_;
+    int occ = dim1_;
+    #pragma omp parallel for
+    for (int i = 0; i < occ; i++) {
+         for (int a = 0; a < vir; a++) {
+              A2d_[i][a] = A->get(i + frzc, a + occ);
+         }
+    }
+}//
+
+void Tensor2d::form_act_ov(int frzc, int occ, const SharedTensor2d &A)
+{
+    int vir = dim2_;
+    int occ2 = dim1_;
+    #pragma omp parallel for
+    for (int i = 0; i < occ2; i++) {
+         for (int a = 0; a < vir; a++) {
+              A2d_[i][a] = A->get(i + frzc, a + occ);
          }
     }
 }//
@@ -2561,6 +2800,25 @@ void Tensor2d::form_b_ab(const SharedTensor2d &A)
          }
     }
 }//
+
+void Tensor2d::symmetrize()
+{
+    SharedTensor2d temp = SharedTensor2d(new Tensor2d(dim2_, dim1_));
+    temp = transpose();
+    add(temp);
+    scale(0.5);
+    temp.reset();
+}//
+
+void Tensor2d::symmetrize3(const SharedTensor2d &A)
+{
+    SharedTensor2d temp = SharedTensor2d(new Tensor2d("temp", d1_, d3_, d2_));
+    temp->swap_3index_col(A);
+    add(temp);
+    scale(0.5);
+    temp.reset();
+}//
+
 
 /********************************************************************************************/
 /************************** 3d array ********************************************************/

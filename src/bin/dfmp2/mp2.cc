@@ -2334,6 +2334,10 @@ void RDFMP2::form_Z()
         Ppq->add(dPpq);
 
         Dtemp = Ppq->clone();
+
+        // Scale the correlated part of OPDM by 1/2 to make it consistent with OEPROP code
+        Dtemp->scale(0.5);
+
         // Add in the reference contribution
         for (int i = 0; i < nocc; ++i)
             Dtemp->add(i, i, 1.0);
@@ -2343,6 +2347,10 @@ void RDFMP2::form_Z()
     }else{
         // Don't relax the OPDM
         Dtemp = Ppq->clone();
+
+        // Scale the correlated part of OPDM by 1/2 to make it consistent with OEPROP code
+        Dtemp->scale(0.5);
+
         // Add in the reference contribution
         for (int i = 0; i < nocc; ++i)
             Dtemp->add(i, i, 1.0);
@@ -2364,7 +2372,6 @@ void RDFMP2::form_Z()
 
         // Compute one-electron properties
         boost::shared_ptr<OEProp> oe(new OEProp());
-
         oe->set_Da_so(Da_);
 
         oe->add("DIPOLE");

@@ -265,6 +265,13 @@ void DFOCC::omp2_manager()
 	//if (natorb == "TRUE") nbo();
 	//if (occ_orb_energy == "TRUE") semi_canonic(); 
 
+        // OEPROP
+        if (oeprop_ == "TRUE") oeprop();
+
+        // S2
+        if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED") s2_response();
+        //if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED") s2_lagrangian();
+
         // Compute Analytic Gradients
         if (dertype == "FIRST") dfgrad();
 
@@ -280,10 +287,22 @@ void DFOCC::mp2_manager()
 	mo_optimized = 0;// means MOs are not optimized
         timer_on("DF CC Integrals");
         df_corr();
-        if (dertype == "NONE" && ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE") {
+        if (dertype == "NONE" && ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE" && comput_s2_ == "FALSE") {
             trans_mp2();
         }
-        else trans_corr();
+        else {
+            trans_corr();
+            df_ref();
+            trans_ref();
+            fprintf(outfile,"\tNumber of basis functions in the DF-HF basis: %3d\n", nQ_ref);
+
+            // memalloc for density intermediates
+            Jc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF J_Q", nQ_ref));
+            g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
+            g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
+            g1Q = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1_Q", nQ));
+            g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
+        }
         fprintf(outfile,"\tNumber of basis functions in the DF-CC basis: %3d\n", nQ);
         fflush(outfile);
         timer_off("DF CC Integrals");
@@ -299,10 +318,9 @@ void DFOCC::mp2_manager()
                 tei_ijab_anti_symm();
             }
         }// if (conv_tei_type == "DISK")  
-	//t2_1st_sc();
-        //mp2_energy();
-        if (dertype == "NONE" && ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE") mp2_direct();
+        if (dertype == "NONE" && ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE" && comput_s2_ == "FALSE") mp2_direct();
         else {
+             fock();
 	     t2_1st_sc();
              mp2_energy();
         }
@@ -346,24 +364,22 @@ void DFOCC::mp2_manager()
         Process::environment.globals["DF-MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         Process::environment.globals["DF-MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
-        /*
+        // S2
+        //if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED" && dertype == "NONE") s2_response();
+        if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED") s2_response();
+
         // Compute Analytic Gradients
         if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
-	    fprintf(outfile,"\tAnalytic gradient computation is starting...\n");
-	    fprintf(outfile,"\tComputing response density matrices...\n");
-	    fflush(outfile);
-	    omp2_response_pdms();
-            fprintf(outfile,"\tComputing off-diagonal blocks of GFM...\n");
+            fprintf(outfile,"\n\tComputing unrelaxed response density matrices...\n");
             fflush(outfile);
-	    gfock();
-            fprintf(outfile,"\tForming independent-pairs...\n");
-            fflush(outfile);
-	    idp2();
-            fprintf(outfile,"\tComputing orbital gradient...\n");
-            fflush(outfile);
-	    mograd();
-            coord_grad();
+ 	    omp2_opdm();
+	    omp2_tpdm();
+            prepare4grad();
+            if (oeprop_ == "TRUE") oeprop();
+            //if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED") s2_lagrangian();
+            dfgrad();
 
+            /*
             if (ekt_ip_ == "TRUE" && ekt_ea_ == "TRUE") {
                 ekt_ip();
                 ekt_ea();
@@ -376,13 +392,8 @@ void DFOCC::mp2_manager()
             else if (ekt_ip_ == "FALSE" && ekt_ea_ == "TRUE") {
                 ekt_ea();
             }
-
-            else if (ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE") {
-	        fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
-	        fflush(outfile);
-            }
+            */
         }// if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") 
-        */
 
 }// end mp2_manager 
 

@@ -76,7 +76,7 @@ void MOLECULE::rfo_step(void) {
   for (i=0; i<dim; ++i)
     RFO[i][dim]= RFO[dim][i] = -fq[i]; 
 
-  if (Opt_params.print_lvl >= 3) {
+  if (Opt_params.print_lvl >= 4) {
     fprintf(outfile,"Original, unscaled RFO mat\n");
     print_matrix(outfile, RFO, dim+1, dim+1);
   }
@@ -122,15 +122,15 @@ void MOLECULE::rfo_step(void) {
       };
       SRFO[dim][i] = RFO[dim][i];
     }
-    if (Opt_params.print_lvl >= 3) {
-      fprintf(outfile,"Scaled RFO matrix.\n");
+    if (Opt_params.print_lvl >= 4) {
+      fprintf(outfile,"\nScaled RFO matrix.\n");
       print_matrix(outfile,  SRFO, dim+1, dim+1);
       fflush(outfile);
     }
 
     //Find the eigenvectors and eigenvalues of RFO matrix.
     opt_asymm_matrix_eig(SRFO, dim+1, SRFOevals);
-    if (Opt_params.print_lvl >= 3) {
+    if (Opt_params.print_lvl >= 4) {
       fprintf(outfile,"Eigenvectors of scaled RFO matrix.\n");
       print_matrix(outfile, SRFO, dim+1,dim+1);
       fprintf(outfile,"Eigenvalues of scaled RFO matrix.\n");
@@ -150,8 +150,8 @@ void MOLECULE::rfo_step(void) {
           SRFO[i][j] /= SRFO[i][dim];
       }
     }
-    if (Opt_params.print_lvl >= 3) {
-      fprintf(outfile,"Scaled RFO eigenvectors (rows).\n");
+    if (Opt_params.print_lvl >= 4) {
+      fprintf(outfile,"All scaled RFO eigenvectors (rows).\n");
       print_matrix(outfile, SRFO, dim+1, dim+1);
     }
 
@@ -192,11 +192,13 @@ void MOLECULE::rfo_step(void) {
 
     // Print only the lowest eigenvalues/eigenvectors
     if (Opt_params.print_lvl >= 2) {
+      fprintf(outfile,"\trfo_root is %d\n", rfo_root);
       for (i=0; i<dim+1; ++i) {
-        if ((SRFOevals[i] < 0.0) || (i <rfo_root)) {
-          fprintf(outfile,"Scaled RFO eigenvalue %d: %15.10lf (or 2*%-15.10lf)\n", i+1, SRFOevals[i], SRFOevals[i]/2);
+        if ((SRFOevals[i] < -0.000001) || (i <rfo_root)) {
+          fprintf(outfile,"\nScaled RFO eigenvalue %d: %15.10lf (or 2*%-15.10lf)\n", i+1, SRFOevals[i], SRFOevals[i]/2);
           fprintf(outfile,"eigenvector:\n");
           print_matrix(outfile, &(SRFO[i]), 1, dim+1);
+          fprintf(outfile,"\n");
         }
       }
     }
@@ -235,8 +237,8 @@ void MOLECULE::rfo_step(void) {
 
     // Find the analytical derivative.
     lambda = -1 * array_dot(fq, dq, dim);
-    if (Opt_params.print_lvl >= 3)
-      fprintf(outfile,"\tlambda calculated by (dq^t).(-f) = %20.10lf\n", lambda);
+    if (Opt_params.print_lvl >= 2)
+      fprintf(outfile,"\tlambda calculated by (dq^t).(-f)     = %20.10lf\n", lambda);
 
     // Calculate derivative of step size wrt alpha.
     // Equation 20, Besalu and Bofill, Theor. Chem. Acc., 1999, 100:265-274
@@ -245,14 +247,12 @@ void MOLECULE::rfo_step(void) {
       sum += ( pow(array_dot( Hevects[i], fq, dim),2) ) / ( pow(( h[i]-lambda*alpha ),3) );
 
     analyticDerivative = 2*lambda / (1+alpha*dqtdq ) * sum;
-    if (Opt_params.print_lvl >= 3)
+    if (Opt_params.print_lvl >= 2)
       fprintf(outfile,"\tAnalytic derivative d(norm)/d(alpha) = %20.10lf\n", analyticDerivative);
 
     // Calculate new scaling alpha value.
     // Equation 20, Besalu and Bofill, Theor. Chem. Acc., 1999, 100:265-274
     alpha += 2*(trust * sqrt(dqtdq) - dqtdq) / analyticDerivative;
-    if (Opt_params.print_lvl >= 3)
-      fprintf(outfile,"\tNew alpha value = %20.10lf\n", alpha);
   }
 
   if ((iter > 0) && !Opt_params.simple_step_scaling)
@@ -261,6 +261,11 @@ void MOLECULE::rfo_step(void) {
   // Crude/old way to limit step size if restricted step algorithm failed.
   if (!converged)
     apply_intrafragment_step_limit(dq);
+
+  if (Opt_params.print_lvl >= 3) {
+    fprintf(outfile,"\tFinal scaled step dq:\n");
+    print_matrix(outfile, &dq, 1, dim);
+  }
 
   // Save and print out RFO eigenvector(s) 
   p_Opt_data->set_rfo_eigenvector(dq);

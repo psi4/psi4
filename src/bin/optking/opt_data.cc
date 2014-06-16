@@ -492,7 +492,7 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
 
   free_matrix(H_new);
   if (Opt_params.print_lvl >= 2) {
-    fprintf(outfile, "Updated Hessian (in au)\n");
+    fprintf(outfile,"\nUpdated Hessian (in au)\n");
     print_matrix(outfile, H, Nintco, Nintco);
   }
   return;
@@ -639,11 +639,18 @@ bool OPT_DATA::previous_step_report(void) const {
       p_Opt_data->g_energy() - p_Opt_data->g_last_energy());
 
   double Energy_ratio = (p_Opt_data->g_energy() - p_Opt_data->g_last_energy()) / g_last_DE_predicted();
-  // fprintf(outfile,"Energy_ratio %10.5lf\n", Energy_ratio);
+
+  if (Opt_params.print_lvl >= 2)
+    fprintf(outfile,"\tEnergy ratio = %10.5lf\n", Energy_ratio);
 
   // Minimum search
   if (Opt_params.opt_type == OPT_PARAMS::MIN) {
-    if (Energy_ratio < 0.0 && consecutive_backsteps < Opt_params.consecutive_backsteps_allowed) {
+    // In odd situations, the predicted energy change might be positive.  If the step was negative, 
+    // keep step size the same and proceed.
+    if (p_Opt_data->g_last_DE_predicted() > 0  &&  Energy_ratio < 0.0) {
+      return true;
+    }
+    else if (Energy_ratio < 0.0 && consecutive_backsteps < Opt_params.consecutive_backsteps_allowed) {
       throw(BAD_STEP_EXCEPT("Energy has increased in a minimization.\n"));
     }
     else if (Energy_ratio < 0.25)

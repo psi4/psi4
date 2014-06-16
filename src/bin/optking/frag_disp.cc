@@ -91,13 +91,15 @@ void FRAG::displace(double *dq, double *fq, int atom_offset) {
     }
   }
 
-  fprintf(outfile,"\n\t---Internal Coordinate Step in ANG or DEG, aJ/ANG or AJ/DEG ---\n");
-  fprintf(outfile,  "\t ----------------------------------------------------------------------\n");
-  fprintf(outfile,  "\t Coordinate             Previous        Force       Change         New \n");
-  fprintf(outfile,  "\t ----------             --------       ------       ------       ------\n");
-  for (int i=0; i<intcos.size(); ++i)
+  fprintf(outfile,"\n\t--- Internal Coordinate Step in ANG or DEG, aJ/ANG or AJ/DEG ---\n");
+  fprintf(outfile,  "\t ---------------------------------------------------------------------------\n");
+  fprintf(outfile,  "\t   Coordinate                Previous        Force       Change         New \n");
+  fprintf(outfile,  "\t   ----------                --------       ------       ------       ------\n");
+  for (int i=0; i<intcos.size(); ++i) {
+    fprintf(outfile,"\t %4d ",i+1);
     intcos.at(i)->print_disp(outfile, q_orig[i], fq[i], dq[i], q_final[i], atom_offset);
-  fprintf(outfile,  "\t ----------------------------------------------------------------------\n");
+  }
+  fprintf(outfile,  "\t ---------------------------------------------------------------------------\n");
 
   free_array(q_orig);
   free_array(q_final);
@@ -119,24 +121,22 @@ void FRAG::displace_util(double *dq, bool focus_on_constraints) {
     bt_max_iter           = 100;
   }
 
-  if (Opt_params.print_lvl >= 2) {
-    fprintf(outfile,"\t---------------------------------------------------\n");
-    fprintf(outfile,"\t Iter        RMS(dx)        Max(dx)        RMS(dq) \n");
-    fprintf(outfile,"\t---------------------------------------------------\n");
-  }
-
   double * q_orig = intco_values();
-  if (Opt_params.print_lvl >= 3) {
-    fprintf(outfile,"\nOriginal q internal coordinates\n");
-    for (i=0; i<Nints; ++i) fprintf(outfile, "\t%15.10lf\n", q_orig[i]);
-  }
 
   double * q_target = init_array(Nints);
   for (i=0; i<Nints; ++i)
     q_target[i] = q_orig[i] + dq[i];
+
   if (Opt_params.print_lvl >= 3) {
-    fprintf(outfile,"\nTarget q internal coordinates\n");
-    for (i=0; i<Nints; ++i) fprintf(outfile, "\t%15.10lf\n", q_target[i]);
+    fprintf(outfile,"\t       Original         Target      Target-Dq\n");
+    for (i=0; i<Nints; ++i)
+      fprintf(outfile, "\t%15.10lf%15.10lf\n", q_orig[i], q_target[i], dq[i]);
+  }
+
+  if (Opt_params.print_lvl >= 2) {
+    fprintf(outfile,"\t---------------------------------------------------\n");
+    fprintf(outfile,"\t Iter        RMS(dx)        Max(dx)        RMS(dq) \n");
+    fprintf(outfile,"\t---------------------------------------------------\n");
   }
 
   double * new_geom   = g_geom_array(); // cart geometry to start each iter
@@ -194,6 +194,7 @@ void FRAG::displace_util(double *dq, bool focus_on_constraints) {
 
     for (i=0; i< Nints; ++i)
       dq[i] = q_target[i] - new_q[i];
+
     free_array(new_q);
 
     // save first try in case doesn't converge
@@ -211,7 +212,16 @@ void FRAG::displace_util(double *dq, bool focus_on_constraints) {
   }
 
   if (Opt_params.print_lvl >= 2)
-    fprintf(outfile,"\t---------------------------------------------\n");
+    fprintf(outfile,"\t---------------------------------------------------\n");
+
+  if (Opt_params.print_lvl >= 2) {
+    fprintf(outfile,"\n\tReport of back-transformation:\n");
+    fprintf(outfile,"\t  int       q_target          Error\n");
+    fprintf(outfile,"\t-----------------------------------\n");
+    for (i=0; i<Nints; ++i)
+      fprintf(outfile,"\t%5d%15.10lf%15.10lf\n", i+1, q_target[i], -dq[i]);
+    fprintf(outfile,"\n");
+  }
 
   if (bt_converged) {
     fprintf(outfile, "\tSuccessfully converged to displaced geometry.\n");

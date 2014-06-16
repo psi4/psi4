@@ -2449,6 +2449,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_str("INTERFRAG_MODE", "FIXED", "FIXED INTERFRAGMENT");
       /*- Do add bond coordinates at nearby atoms for non-bonded systems? -*/
       options.add_bool("ADD_AUXILIARY_BONDS", true);
+      /*- Re-estimate the Hessian at every step, i.e., ignore the currently stored Hessian. -*/
+      options.add_bool("H_GUESS_EVERY", false);
       /*- This factor times standard covalent distance is used to add extra stretch coordinates. -*/
       options.add_double("AUXILIARY_BOND_FACTOR", 2.5);
       /*- Do use $\frac{1}{R@@{AB}}$ for the stretching coordinate between fragments?
@@ -2651,6 +2653,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("RELAXED",true);
     /*- Do symmetrize the GFM and OPDM in the EKT computations?  -*/
     options.add_bool("SYMMETRIZE",true);
+    /*- Do compute one electron properties?  -*/
+    options.add_bool("OEPROP",false);
   }
   if (name == "DFOCC"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs density-fitted orbital-optimized MPn and CC computations and conventional MPn computations. -*/
@@ -2760,6 +2764,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("REGULARIZATION",false);
     /*- Do read 3-index integrals from SCF files?  -*/
     options.add_bool("READ_SCF_3INDEX",true);
+    /*- Do compute one electron properties?  -*/
+    options.add_bool("OEPROP",false);
+    /*- Do compute <S2> for DF-OMP2/DF-MP2?  -*/
+    options.add_bool("COMPUT_S2",false);
   }
   if (name == "MRCC"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/

@@ -88,6 +88,7 @@ class Tensor1d
   void gemv(bool transa, const SharedTensor2d& a, const SharedTensor1d& b, double alpha, double beta);
   // gemv: C(m) = \sum_{n} A(m,n) b(n)
   void gemv(bool transa, int m, int n, const SharedTensor2d& a, const SharedTensor2d& b, double alpha, double beta);
+  void gemv(bool transa, const SharedTensor2d& a, const SharedTensor2d& b, double alpha, double beta);
   // gbmv: This function may NOT working correctly!!!!
   void gbmv(bool transa, const SharedTensor2d& a, const SharedTensor1d& b, double alpha, double beta);
   // xay: return result of A1d_' * A * y
@@ -190,6 +191,8 @@ class Tensor2d
   void contract442(int target_a, int target_b, const SharedTensor2d& a, const SharedTensor2d& b, double alpha, double beta);
   // gemv: C(mn) = \sum_{k} A(mn,k) * b(k)
   void gemv(bool transa, const SharedTensor2d& a, const SharedTensor1d& b, double alpha, double beta);
+  // gemv: C(mn) = \sum_{kl} A(mn,kl) * b(kl)
+  void gemv(bool transa, const SharedTensor2d& a, const SharedTensor2d& b, double alpha, double beta);
   // level_shift: A[i][i] = A[i][i] - value
   void level_shift(double value);
   // outer_product: A = x * y'
@@ -260,7 +263,8 @@ class Tensor2d
   // dirprd: A2d_[i][j] = a[i][j] * b[i][j]
   void dirprd(const SharedTensor2d &a, const SharedTensor2d &b);
   // dirprd123: A2d_[Q][ij] = a[Q] * b[i][j]
-  void dirprd123(const SharedTensor1d &a, const SharedTensor2d &b, const SharedTensor2i &pair_idx, double alpha, double beta);
+  void dirprd123(const SharedTensor1d &a, const SharedTensor2d &b, double alpha, double beta);
+  void dirprd123(bool transb, const SharedTensor1d &a, const SharedTensor2d &b, double alpha, double beta);
   // dirprd112: A2d_[i][j] = a[i] * b[j]
   void dirprd112(const SharedTensor1d &a, const SharedTensor1d &b);
   double* to_vector(const SharedTensor2i &pair_idx);
@@ -277,6 +281,11 @@ class Tensor2d
   void set_vo(const SharedTensor2d &A);
   void set_vv(int occ, const SharedTensor2d &A);
 
+  void add_oo(const SharedTensor2d &A, double alpha, double beta);
+  void add_vv(int occ, const SharedTensor2d &A, double alpha, double beta);
+  void add_ov(const SharedTensor2d &A, double alpha, double beta);
+  void add_vo(const SharedTensor2d &A, double alpha, double beta);
+
   void set3_oo(const SharedTensor2d &A);
   void add3_oo(const SharedTensor2d &A, double alpha, double beta);
   void set3_act_ov(int frzc, int aocc, int avir, int vir, const SharedTensor2d &a);
@@ -286,13 +295,27 @@ class Tensor2d
   void swap_3index_col(const SharedTensor2d &A);
 
   void form_oo(const SharedTensor2d &A);
+  void form_act_oo(int frzc, const SharedTensor2d &A);
   void form_vv(int occ, const SharedTensor2d &A);
+  void form_act_vv(int occ, const SharedTensor2d &A);
   void form_vo(const SharedTensor2d &A);
+  void form_vo(int occ, const SharedTensor2d &A);
+  void form_act_vo(int frzc, const SharedTensor2d &A);
+  void form_act_vo(int frzc, int occ, const SharedTensor2d &A);
   void form_ov(const SharedTensor2d &A);
+  void form_ov(int occ, const SharedTensor2d &A);
+  void form_act_ov(int frzc, const SharedTensor2d &A);
+  void form_act_ov(int frzc, int occ, const SharedTensor2d &A);
 
   void form_b_ij(int frzc, const SharedTensor2d &A);
   void form_b_ia(int frzc, const SharedTensor2d &A);
   void form_b_ab(const SharedTensor2d &A);
+
+
+  // B_pq = 1/2 (A_pq + A_qp)
+  void symmetrize();
+  // C(Q,pq) = 1/2 [ A(Q,pq) + B(Q,qp) ]
+  void symmetrize3(const SharedTensor2d &A);
 
   friend class Tensor1d;
   friend class Tensor3d;

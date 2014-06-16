@@ -236,7 +236,10 @@ OptReturnType optking(void) {
   mol1->forces(); // puts forces in p_Opt_data->step[last one]
 
   bool read_H_worked = false;
-  if (Opt_params.read_cartesian_H) {
+  if (Opt_params.H_guess_every) { // ignore Hessian already present
+      mol1->H_guess(); // empirical model guess Hessian
+  }  /* if one wants to read_cartesian_H every time, then user can set this to true and H_update to none */
+  else if (Opt_params.read_cartesian_H) {
     double **H_cart = p_Opt_data->read_cartesian_H();       // read Cartesian Hessian
     read_H_worked = mol1->cartesian_H_to_internals(H_cart); // transform to internal coordinates
     free_matrix(H_cart);                                    // free Cartesian Hessian

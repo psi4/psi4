@@ -125,6 +125,9 @@ void OCCWave::omp2_manager()
 	omp2_mp2_energy();
         if (orbs_already_opt == 1) Emp2L = Emp2;
 
+       // S2
+       //if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED") s2_response();
+
         // Green's function
         if (ip_poles == "TRUE") {
 	   if (orbs_already_sc == 0) {
@@ -372,6 +375,9 @@ void OCCWave::mp2_manager()
 	             Process::environment.globals["CURRENT CORRELATION ENERGY"] = Esospimp2 - Escf;
              }
 	}
+ 
+        // S2
+        //if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED") s2_response();
  
         // Compute Analytic Gradients
         if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {

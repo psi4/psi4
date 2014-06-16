@@ -353,7 +353,73 @@ else if (reference_ == "UNRESTRICTED") {
       
 }// end if (reference_ == "UNRESTRICTED") 
 
-}// end of main
+}// end of idp
+
+//=======================================================
+//          IDP2
+//=======================================================          
+void DFOCC::idp2()
+{
+    fprintf(outfile,"\tForming independent-pairs...\n");
+    fflush(outfile);
+if (reference_ == "RESTRICTED") {
+    // Form IDPs: All V-O
+    nidpA=0;
+    nidpA = nvirA * noccA; 
+    fprintf(outfile,"\tNumber of independent-pairs: %3d\n", nidpA);
+    fflush(outfile);  
+    wogA = SharedTensor1d(new Tensor1d("Alpha MO grad vector", nidpA));
+    idprowA = SharedTensor1i(new Tensor1i("Alpha IDP Row", nidpA));
+    idpcolA = SharedTensor1i(new Tensor1i("Alpha IDP Col", nidpA));
+
+    int dim = 0;
+    for(int a = 0; a < nvirA; a++){
+        for(int i = 0; i < noccA; i++){
+            idprowA->set(dim, a + noccA);
+            idpcolA->set(dim, i);
+	    dim++;  
+	}
+    }
+
+}// end if (reference_ == "RESTRICTED") 
+
+else if (reference_ == "UNRESTRICTED") {
+    // Form IDPs: All V-O
+    nidpA=0;
+    nidpB=0;
+    nidpA = nvirA * noccA; 
+    nidpB = nvirB * noccB; 
+    fprintf(outfile,"\tNumber of alpha independent-pairs:%3d\n", nidpA);
+    fprintf(outfile,"\tNumber of beta independent-pairs :%3d\n", nidpB);
+    fflush(outfile);  
+    wogA = SharedTensor1d(new Tensor1d("Alpha MO grad vector", nidpA));
+    wogB = SharedTensor1d(new Tensor1d("Beta MO grad vector", nidpB));
+    idprowA = SharedTensor1i(new Tensor1i("Alpha IDP Row", nidpA));
+    idpcolA = SharedTensor1i(new Tensor1i("Alpha IDP Col", nidpA));
+    idprowB = SharedTensor1i(new Tensor1i("Beta IDP Row", nidpB));
+    idpcolB = SharedTensor1i(new Tensor1i("Beta IDP Col", nidpB));
+
+    int dim = 0;
+    for(int a = 0; a < nvirA; a++){
+        for(int i = 0; i < noccA; i++){
+            idprowA->set(dim, a + noccA);
+            idpcolA->set(dim, i);
+	    dim++;  
+	}
+    }
+
+    dim = 0;
+    for(int a = 0; a < nvirB; a++){
+        for(int i = 0; i < noccB; i++){
+	    idprowB->set(dim, a + noccB);
+	    idpcolB->set(dim, i);
+	    dim++;  
+        }
+    }
+
+}// end if (reference_ == "UNRESTRICTED") 
+}// end of idp2
+
 }} // End Namespaces
 
 
