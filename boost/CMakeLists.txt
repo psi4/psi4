@@ -4,9 +4,22 @@ add_custom_command(
     COMMENT Unpacking Boost
     DEPENDS ${PROJECT_SOURCE_DIR}/boost/${BOOSTVER}.tar.gz
 )
+set(MPI_SENT "")
+if(MPI_FOUND)
+  set(BOOST_LIBS_2_MAKE
+"filesystem,mpi,python,regex,serialization,system,thread")
+  set(MPI_SENT "using mpi \\;")
+else()
+  set(BOOST_LIBS_2_MAKE "filesystem,python,regex,serialization,system,thread")
+endif()
+
+#To get boost to compile MPI we need to append "using mpi ;" to the end of the
+#project-config.jam file
 
 add_custom_command(
-    COMMAND ./bootstrap.sh --with-libraries=filesystem,python,regex,serialization,system,thread --with-python=${PYTHON}
+    COMMAND ./bootstrap.sh --with-libraries=${BOOST_LIBS_2_MAKE}
+--with-python=${PYTHON}
+    COMMAND echo "${MPI_SENT}">>project-config.jam
     COMMAND ./b2
     COMMAND touch ../boost.compiled
     WORKING_DIRECTORY ${BOOSTVER}
