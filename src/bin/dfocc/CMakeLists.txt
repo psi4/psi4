@@ -19,6 +19,7 @@ combine_ref_sep_tpdm.cc   tpdm_tilde.cc             back_trans.cc
 oei_grad.cc               tei_grad_ref.cc           tei_grad_corr.cc
 z_vector_pcg.cc           z_vector.cc               prepare4grad.cc
 dfgrad.cc                 s2_response.cc            z_vector_pcg.cc
+z_vector_cg.cc
 )
 add_library(dfocc ${SRC})
 add_dependencies(dfocc mints)
