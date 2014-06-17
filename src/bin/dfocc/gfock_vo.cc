@@ -103,6 +103,12 @@ else if (reference_ == "UNRESTRICTED") {
     // F_AI = \sum_{M} h_AM G_Mi
     GFvoA->gemm(false, false, HvoA, G1c_ooA, 1.0, 1.0);
 
+ if (reference == "ROHF" && orb_opt_ == "FALSE") {
+    // Fai = \sum_{e} h_ae G_ei
+    GFvoA->gemm(false, false, HvvA, G1c_voA, 1.0, 1.0);
+    GFvoB->gemm(false, false, HvvB, G1c_voB, 1.0, 1.0);
+ }
+
     // F_AI += \sum_{Q} \sum_{E} G_IE^Q b_AE^Q = \sum_{E} G_EI^Q b_EA^Q
     G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|VO)", nQ, nvirA, noccA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|VV)", nQ, nvirA * nvirA));

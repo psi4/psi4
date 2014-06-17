@@ -175,6 +175,7 @@ class Tensor2d
   // pople: solve a linear equation via Pople's algorithm
   void lineq_pople(const SharedTensor1d& Xvec, int num_vecs, double cutoff);
   void lineq_pople(double* Xvec, int num_vecs, double cutoff);
+
   // gemm: matrix multiplication C = A * B
   void gemm(bool transa, bool transb, const SharedTensor2d& a, const SharedTensor2d& b, double alpha, double beta);
   // contract: general contraction C(m,n) = \sum_{k} A(m,k) * B(k,n)
@@ -193,6 +194,7 @@ class Tensor2d
   void gemv(bool transa, const SharedTensor2d& a, const SharedTensor1d& b, double alpha, double beta);
   // gemv: C(mn) = \sum_{kl} A(mn,kl) * b(kl)
   void gemv(bool transa, const SharedTensor2d& a, const SharedTensor2d& b, double alpha, double beta);
+
   // level_shift: A[i][i] = A[i][i] - value
   void level_shift(double value);
   // outer_product: A = x * y'
@@ -280,6 +282,8 @@ class Tensor2d
   void set_ov(const SharedTensor2d &A);
   void set_vo(const SharedTensor2d &A);
   void set_vv(int occ, const SharedTensor2d &A);
+  void set_act_ov(int frzc, const SharedTensor2d &A);
+  void set_act_vo(int frzc, const SharedTensor2d &A);
 
   void add_oo(const SharedTensor2d &A, double alpha, double beta);
   void add_vv(int occ, const SharedTensor2d &A, double alpha, double beta);
