@@ -240,7 +240,7 @@ SAPT2+, SAPT2+(3), SAPT2+3
 
 SAPT2+(CCD), SAPT2+(3)(CCD), and SAPT2+3(CCD)
 
-* ``Tractability Gains in Symmetry-Adapted Perturbation Theory Including
+* "Tractability Gains in Symmetry-Adapted Perturbation Theory Including
   Coupled Double Excitations: CCD+ST(CCD) Dispersion with Natural Orbital
   Truncations,'' R. M. Parrish, E. G. Hohenstein, and C. D. Sherrill, 
   *J. Chem. Phys.* **139**, 174102 (2013).
@@ -273,6 +273,11 @@ Orbital-optimized second-order perturbation theory (OMP2)
   M\ |o_slash|\ ller--Plesset perturbation theory," U. Bozkaya and 
   C. D. Sherrill, *J. Chem. Phys.* **138**, 184103 (2013).
   (doi: `10.1063/1.4803662 <http://dx.doi.org/10.1063/1.4803662>`_).
+
+* "Orbital-Optimized Second-Order Perturbation Theory with Density-Fitting
+  and Cholesky Decomposition Approximations: An Efficient Implementation,"
+  U. Bozkaya,   *J. Chem. Theory Comput.* **10**, 2371 (2014).
+  (doi: `10.1021/ct500231c <http://dx.doi.org/10.1021/ct500231c>`_).
 
 Orbital-optimized third-order perturbation theory (OMP3)
 
@@ -310,6 +315,16 @@ Orbital-optimized MP2.5 (OMP2.5)
   (doi: `10.1063/1.3665134 <http://dx.doi.org/10.1063/1.3665134>`_).
 
 * U. Bozkaya and C. D. Sherrill, (unpublished).
+
+Extended Koopmans' Theorem
+
+* "The extended Koopmans' theorem for orbital-optimized methods: Accurate computation of ionization potentials," 
+   U. Bozkaya,  *J. Chem. Phys.* **139**, 154105 (2013).
+  (doi: `10.1063/1.4825041 <http://dx.doi.org/10.1063/1.4825041>`_).
+
+* "Accurate Electron Affinities from the Extended Koopmans' Theorem Based on Orbital-Optimized Methods,"
+  U. Bozkaya,   *J. Chem. Theory Comput.* **10**, 2041 (2014).
+  (doi: `10.1021/ct500186j <http://dx.doi.org/10.1021/ct500186j>`_).
 
 
 Second-Order Algebraic-Diagrammatic Construction [ADC(2)]
@@ -490,7 +505,7 @@ GitHub account <https://github.com/signup/free>`_.
 .. rubric:: Footnotes
 
 .. [#f1] UHF-CCSD(T) gradients only, as of |version|
-.. [#f2] RHF reference only.  DF-MP2 is recommended as a faster alternative.
+.. [#f2] RHF and UHF reference are available, however the latter one should be requsted from DFOCC module.  DF-MP2 is recommended as a faster alternative.
 .. [#f3] threading through BLAS routines only
 .. [#f4] DFT gradients only implemented for SCF type DF. LRC-DFT gradients not implemented yet. 
 

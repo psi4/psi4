@@ -197,7 +197,7 @@ if (reference_ == "RESTRICTED") {
         HvvA = SharedTensor2d(new Tensor2d("OEI <V|V>", nvirA, nvirA));
 
     // if we need PDMs
-    if (orb_opt_ == "TRUE" || dertype != "NONE") {
+    if (orb_opt_ == "TRUE" || dertype != "NONE" || oeprop_ == "TRUE") {
         GijA = SharedTensor2d(new Tensor2d("G Intermediate <I|J>", naoccA, naoccA));
         GabA = SharedTensor2d(new Tensor2d("G Intermediate <A|B>", navirA, navirA));
         G1c_oo = SharedTensor2d(new Tensor2d("Correlation OPDM <O|O>", noccA, noccA));
@@ -258,7 +258,7 @@ else if (reference_ == "UNRESTRICTED") {
         HvvB = SharedTensor2d(new Tensor2d("OEI <v|v>", nvirB, nvirB));
 
     // if we need PDMs
-    if (orb_opt_ == "TRUE" || dertype != "NONE") {
+    if (orb_opt_ == "TRUE" || dertype != "NONE" || oeprop_ == "TRUE") {
         GijA = SharedTensor2d(new Tensor2d("G Intermediate <I|J>", naoccA, naoccA));
         GijB = SharedTensor2d(new Tensor2d("G Intermediate <i|j>", naoccB, naoccB));
         GabA = SharedTensor2d(new Tensor2d("G Intermediate <A|B>", navirA, navirA));

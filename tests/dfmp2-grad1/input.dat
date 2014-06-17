@@ -23,6 +23,7 @@ set {
   df_basis_scf cc-pvdz-jkfit
   df_basis_cc cc-pvdz-ri
   guess sad
+  scf_type df
   orb_opt false
 }
 gradient('df-omp2')
