@@ -2401,6 +2401,30 @@ void Tensor2d::set_oo(const SharedTensor2d &a)
     }
 }//
 
+void Tensor2d::set_act_ov(int frzc, const SharedTensor2d &A)
+{
+    int aocc = A->dim1();
+    int avir = A->dim2();
+    #pragma omp parallel for
+    for (int i = 0; i < aocc; i++) {
+         for (int a = 0; a < avir; a++) {
+              A2d_[i + frzc][a] = A->get(i,a);
+         }
+    }
+}//
+
+void Tensor2d::set_act_vo(int frzc, const SharedTensor2d &A)
+{
+    int avir = A->dim1();
+    int aocc = A->dim2();
+    #pragma omp parallel for
+    for (int a = 0; a < avir; a++) {
+         for (int i = 0; i < aocc; i++) {
+              A2d_[a][i + frzc] = A->get(a,i);
+         }
+    }
+}//
+
 void Tensor2d::set_act_vv(int occ, int avir, const SharedTensor2d &A)
 {
     #pragma omp parallel for

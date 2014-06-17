@@ -2664,7 +2664,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Maximum number of iterations to determine the orbitals -*/
     options.add_int("MO_MAXITER",50);
     /*- Maximum number of preconditioned conjugate gradient iterations.  -*/
-    options.add_int("PCG_MAXITER",30);
+    options.add_int("PCG_MAXITER",50);
     /*- Number of vectors used in orbital DIIS -*/
     options.add_int("MO_DIIS_NUM_VECS",6);
     /*- Minimum number of vectors used in amplitude DIIS -*/

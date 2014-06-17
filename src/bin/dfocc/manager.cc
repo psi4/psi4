@@ -52,6 +52,11 @@ void DFOCC::omp2_manager()
         Jc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF J_Q", nQ_ref));
         g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
         g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
+        /*
+        if (reference == "ROHF") {
+            g1Qp = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1p_Q", nQ_ref));
+        }
+        */
         g1Q = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1_Q", nQ));
         g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
 
@@ -124,6 +129,8 @@ void DFOCC::omp2_manager()
         Process::environment.globals["DF-MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         Process::environment.globals["DF-MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
+        // S2
+        if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED") s2_response();
 
 	omp2_opdm();
 	omp2_tpdm();
@@ -144,9 +151,11 @@ void DFOCC::omp2_manager()
                     fprintf(outfile,"\n\tMAX MOGRAD did NOT converged, but RMS MOGRAD converged!!!\n");
 	            fprintf(outfile,"\tI will consider the present orbitals as optimized.\n");
            }
-	   fprintf(outfile,"\tSwitching to the standard DF-MP2 computation after semicanonicalization of the MOs... \n");
+	   fprintf(outfile,"\tTransforming MOs to the semicanonical basis... \n");
 	   fflush(outfile);
 	   semi_canonic();
+	   fprintf(outfile,"\tSwitching to the standard DF-MP2 computation... \n");
+	   fflush(outfile);
            trans_corr();
         if (conv_tei_type == "DISK") { 
            tei_iajb_chem();
@@ -302,6 +311,9 @@ void DFOCC::mp2_manager()
             g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
             g1Q = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1_Q", nQ));
             g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
+            if (reference == "ROHF") {
+                g1Qp = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1p_Q", nQ_ref));
+            }
         }
         fprintf(outfile,"\tNumber of basis functions in the DF-CC basis: %3d\n", nQ);
         fflush(outfile);
@@ -366,7 +378,9 @@ void DFOCC::mp2_manager()
 
         // S2
         //if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED" && dertype == "NONE") s2_response();
-        if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED") s2_response();
+        if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED") {
+            if (reference == "UHF" || reference == "UKS") s2_response();
+        }
 
         // Compute Analytic Gradients
         if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {

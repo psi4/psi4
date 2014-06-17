@@ -107,6 +107,12 @@ else if (reference_ == "UNRESTRICTED") {
     GFvvA->gemm(true, false, HvvA, G1c_vvA, 1.0, 0.0);
     GFvvB->gemm(true, false, HvvB, G1c_vvB, 1.0, 0.0);
 
+ if (reference == "ROHF" && orb_opt_ == "FALSE") {
+    // Fab = \sum_{m} h_am G_mb
+    GFvvA->gemm(false, false, HvoA, G1c_ovA, 1.0, 1.0);
+    GFvvB->gemm(false, false, HvoB, G1c_ovB, 1.0, 1.0);
+ }
+
     // Fab += \sum_{Q} \sum_{m} G_mb^Q b_ma^Q 
     // alpha spin
     G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OV)", nQ, noccA, nvirA));
@@ -176,7 +182,6 @@ else if (reference_ == "UNRESTRICTED") {
         GFA->print();
         GFB->print();
     }
-
 
     /*
     // Energy

@@ -142,6 +142,17 @@ void DFOCC::common_init()
     else if (reference == "UHF" || reference == "UKS" || reference == "ROHF") reference_ = "UNRESTRICTED";
     if (reference == "ROHF") reference_wavefunction_->semicanonicalize();
 
+    // Only ROHF-MP2 energy is available, not the gradients
+    if (reference == "ROHF" && orb_opt_ == "FALSE" && dertype == "FIRST") {
+             throw PSIEXCEPTION("ROHF DF-MP2 analytic gradients are not available, UHF DF-MP2 is recommended.");
+    }
+
+    // Frozen Core
+    if (freeze_core_ == "TRUE" && orb_opt_ == "FALSE" && dertype == "FIRST") {
+             throw PSIEXCEPTION("Frozen core gradients are available only for orbital-optimized methods.");
+    }
+
+    // DIIS
     if (options_.get_str("DO_DIIS") == "TRUE") do_diis_ = 1;
     else if (options_.get_str("DO_DIIS") == "FALSE") do_diis_ = 0;
 
@@ -294,6 +305,14 @@ else if (reference_ == "UNRESTRICTED") {
         if (reference == "ROHF" && wfn_type_ == "DF-OMP2") {
             t1A = SharedTensor2d(new Tensor2d("T1_1 <I|A>", naoccA, navirA));
             t1B = SharedTensor2d(new Tensor2d("T1_1 <i|a>", naoccB, navirB));
+            GiaA = SharedTensor2d(new Tensor2d("G Intermediate <I|A>", naoccA, navirA));
+            GiaB = SharedTensor2d(new Tensor2d("G Intermediate <i|a>", naoccB, navirB));
+            GaiA = SharedTensor2d(new Tensor2d("G Intermediate <A|I>", navirA, naoccA));
+            GaiB = SharedTensor2d(new Tensor2d("G Intermediate <a|i>", navirB, naoccB));
+            G1c_ovA = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
+            G1c_ovB = SharedTensor2d(new Tensor2d("Correlation OPDM <o|v>", noccB, nvirB));
+            G1c_voA = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
+            G1c_voB = SharedTensor2d(new Tensor2d("Correlation OPDM <v|o>", nvirB, noccB));
         }
 
         fprintf(outfile,"\n\tMO spaces... \n\n"); fflush(outfile);
@@ -345,7 +364,7 @@ void DFOCC::title()
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "TRUE") fprintf(outfile,"                      CD-OMP2 (CD-OO-MP2)   \n");
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "FALSE") fprintf(outfile,"                       CD-MP2   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya\n") ; 
-   fprintf(outfile,"              Latest Revision June 12, 2014\n") ;
+   fprintf(outfile,"              Latest Revision June 17, 2014\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
@@ -366,7 +385,7 @@ void DFOCC::title_grad()
    fprintf(outfile,"            A General Analytic Gradients Code   \n");
    fprintf(outfile,"               for Density-Fitted Methods       \n");
    fprintf(outfile,"                   by Ugur Bozkaya\n") ; 
-   fprintf(outfile,"              Latest Revision June 11, 2014\n") ;
+   fprintf(outfile,"              Latest Revision June 17, 2014\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");

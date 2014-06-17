@@ -45,13 +45,12 @@ void DFOCC::prepare4grad()
     fprintf(outfile,"\tComputing the orbital gradient...\n");
     fflush(outfile);
     mograd();
-    z_vector();
+    //z_vector();
+    //z_vector_solver();
     //z_vector_pcg();
+    z_vector_cg();
     effective_pdms();
     effective_gfm();
-    //fprintf(outfile,"\tComputing effective PDMs...\n");
-    //fprintf(outfile,"\tComputing effective GFM...\n");
-    //fflush(outfile);
 
 }// end prepare4grad 
 
@@ -149,9 +148,6 @@ else if (reference_ == "UNRESTRICTED") {
     // Beta
     G1B->add_vo(ZvoB, 1.0, 1.0);
     G1B->add_ov(ZovB, 1.0, 1.0);
-
-    //G1A->print();
-    //G1B->print();
 
     //=========================
     // Seprable TPDM
@@ -388,14 +384,11 @@ else if (reference_ == "UNRESTRICTED") {
     GFooA->gemv(false, K, ZovA, -1.0, 1.0);
     K.reset();
 
-    // F_IJ += 2 * \sum_{em} (IJ|em) Z_em
+    // F_IJ += 2 * \sum_{em} (IJ|em) Z_em =  2 * \sum_{em} (IJ|me) Z_me
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|ov)", noccA, noccA, noccB, nvirB));
     tei_ooov_chem_ref_directAB(K);
-    L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|vo)", noccA, noccA, nvirB, noccB));
-    L->sort(1243, K, 1.0, 0.0);
+    GFooA->gemv(false, K, ZovB, 2.0, 1.0);
     K.reset();
-    GFooA->gemv(false, L, ZvoB, 2.0, 1.0);
-    L.reset();
 
     // Set global GF
     GFA->set_oo(GFooA);
@@ -422,14 +415,11 @@ else if (reference_ == "UNRESTRICTED") {
     GFooB->gemv(false, K, ZovB, -1.0, 1.0);
     K.reset();
 
-    // F_ij += 2 * \sum_{EM} (ij|EM) Z_EM
+    // F_ij += 2 * \sum_{EM} (ij|EM) Z_EM = 2 * \sum_{ME} (ij|ME) Z_ME
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OV|oo)", noccA, nvirA, noccB, noccB));
     tei_ovoo_chem_ref_directAB(K);
-    L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (VO|oo)", nvirA, noccA, noccB, noccB));
-    L->sort(2134, K, 1.0, 0.0);
+    GFooB->gemv(true, K, ZovA, 2.0, 1.0);
     K.reset();
-    GFooB->gemv(true, L, ZvoA, 2.0, 1.0);
-    L.reset();
 
     // Set global GF
     GFB->set_oo(GFooB);
@@ -533,8 +523,6 @@ else if (reference_ == "UNRESTRICTED") {
               GFB->add(a + noccB, i, ZvoB->get(a, i) * FockB->get(a + noccB, a + noccB));
 	 }
     }
-    //GFA->print();
-    //GFB->print();
 
 }// else if (reference_ == "UNRESTRICTED")
     timer_off("effective_gfm");

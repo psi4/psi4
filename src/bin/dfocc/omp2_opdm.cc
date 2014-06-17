@@ -77,8 +77,7 @@ if (reference_ == "RESTRICTED") {
 
 else if (reference_ == "UNRESTRICTED") {
     // tensors
-    SharedTensor2d t2;
-    SharedTensor2d l2;
+    SharedTensor2d t2, l2, l1A, l1B;
 
     // G_IJ = 1/2 \sum_{M,E,F} t_IM^EF t_JM^EF
     t2 = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
@@ -153,6 +152,22 @@ else if (reference_ == "UNRESTRICTED") {
     l2.reset();
     //fprintf(outfile,"\tI am here.\n"); fflush(outfile);
 
+   if (reference == "ROHF" && orb_opt_ == "FALSE") {
+       // G_ia = t_i^a
+       GiaA->copy(t1A);
+       GiaB->copy(t1B);
+       GaiA = GiaA->transpose();
+       GaiB = GiaB->transpose();
+
+       // G_ij -= \sum_{e} T_i^e L_e^i
+       GijA->gemm(false, true, t1A, t1A, -1.0, 1.0);
+       GijB->gemm(false, true, t1B, t1B, -1.0, 1.0);
+
+       // G_ab += \sum_{m} L_a^m T_m^b
+       GabA->gemm(true, false, t1A, t1A, 1.0, 1.0);
+       GabB->gemm(true, false, t1B, t1B, 1.0, 1.0);
+   }
+
     // Build G1c_oo and G1c_vv
     G1c_ooA->set_act_oo(nfrzc, naoccA, GijA);
     G1c_ooB->set_act_oo(nfrzc, naoccB, GijB);
@@ -163,11 +178,25 @@ else if (reference_ == "UNRESTRICTED") {
     G1c_vvA->scale(-1.0);
     G1c_vvB->scale(-1.0);
 
+    if (reference == "ROHF" && orb_opt_ == "FALSE") {
+        G1c_ovA->set_act_ov(nfrzc, GiaA);
+        G1c_ovB->set_act_ov(nfrzc, GiaB);
+        G1c_voA->set_act_vo(nfrzc, GaiA);
+        G1c_voB->set_act_vo(nfrzc, GaiB);
+    }
+
     // Build G1c
     G1cA->set_oo(G1c_ooA);
     G1cA->set_vv(noccA, G1c_vvA);
     G1cB->set_oo(G1c_ooB);
     G1cB->set_vv(noccB, G1c_vvB);
+
+    if (reference == "ROHF" && orb_opt_ == "FALSE") {
+        G1cA->set_ov(G1c_ovA);
+        G1cB->set_ov(G1c_ovB);
+        G1cA->set_vo(G1c_voA);
+        G1cB->set_vo(G1c_voB);
+    }
 
     // Build G1
     G1A->copy(G1cA);

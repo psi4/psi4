@@ -28,9 +28,9 @@ using namespace std;
 
 namespace psi{ namespace dfoccwave{
 
-void DFOCC::z_vector_pcg()
+void DFOCC::z_vector_solver()
 { 
-//fprintf(outfile,"\n z_vector_pcg is starting... \n"); fflush(outfile);
+//fprintf(outfile,"\n z_vector_solver is starting... \n"); fflush(outfile);
     fprintf(outfile,"\tSolving orbital Z-vector equations...\n");
     fflush(outfile);
 
@@ -42,64 +42,38 @@ if (reference_ == "RESTRICTED") {
     zvec_newA = SharedTensor1d(new Tensor1d("Alpha New Z-Vector", noccA * nvirA));
     Minv_pcgA = SharedTensor1d(new Tensor1d("Alpha PCG M inverse", noccA * nvirA));
     sigma_pcgA = SharedTensor1d(new Tensor1d("Alpha PCG sigma", noccA * nvirA));
-    r_pcgA = SharedTensor1d(new Tensor1d("Alpha PCG r", noccA * nvirA));
-    r_pcg_newA = SharedTensor1d(new Tensor1d("Alpha PCG new r", noccA * nvirA));
-    z_pcgA = SharedTensor1d(new Tensor1d("Alpha PCG z", noccA * nvirA));
-    z_pcg_newA = SharedTensor1d(new Tensor1d("Alpha PCG new z", noccA * nvirA));
-    p_pcgA = SharedTensor1d(new Tensor1d("Alpha PCG p", noccA * nvirA));
-    p_pcg_newA = SharedTensor1d(new Tensor1d("Alpha PCG new p", noccA * nvirA));
-    dr_pcgA = SharedTensor1d(new Tensor1d("Alpha PCG dr", noccA * nvirA));
-    residualA = SharedTensor1d(new Tensor1d("Alpha Residual Vector", noccA * nvirA));
+    residualA = SharedTensor1d(new Tensor1d("Alpha PCG Residual", noccA * nvirA));
+    WvoA = SharedTensor1d(new Tensor1d("Effective MO gradient <V|O>", noccA * nvirA));
 
-    // Build kappa0 
+    // DIIS
+    nvar = num_vecs +1;
+    itr_diis = 0;
+    vecsA = SharedTensor2d(new Tensor2d("Alpha MO DIIS Vectors", num_vecs, nidpA));
+    errvecsA = SharedTensor2d(new Tensor2d("Alpha MO DIIS Error Vectors", num_vecs, nidpA));
+    wog_intA = SharedTensor1d(new Tensor1d("Alpha Interpolated MO grad vector", nidpA));
+
+    // Build initial guess, Wvo, and M-1 
     for (int a = 0, ai = 0; a < nvirA; a++) {
          for (int i = 0; i < noccA; i++, ai++) {
               double value = FockA->get(a + noccA, a + noccA) - FockA->get(i,i);
               zvectorA->set(ai, -WorbA->get(a + noccA, i) / (2.0*value));       
-         }
-    }
-
-    // Build S = A kappa_0
-    sigma_rhf(sigma_pcgA, zvectorA);
-
-    // Build r0
-    for (int a = 0, ai = 0; a < nvirA; a++) {
-         for (int i = 0; i < noccA; i++, ai++) {
-              residualA->set(ai, -WorbA->get(a + noccA, i) - sigma_pcgA->get(ai));       
-         }
-    }
-    r_pcgA->copy(residualA);
-
-    // Build M0
-    for (int a = 0, ai = 0; a < nvirA; a++) {
-         for (int i = 0; i < noccA; i++, ai++) {
-              double value = FockA->get(a + noccA, a + noccA) - FockA->get(i,i);
               Minv_pcgA->set(ai, 0.5/value);
-              //Minv_pcgA->set(ai, 1.0);// now it becomes CG
+              WvoA->set(ai, WorbA->get(a + noccA, i));       
          }
     }
-
-    // Build z0
-    z_pcgA->dirprd(Minv_pcgA, r_pcgA);
-
-    // Build p0
-    p_pcgA->copy(z_pcgA);
 
     // Call Orbital Response Solver
-    pcg_solver_rhf();
+    zvec_solver_rhf();
 
     // Memfree
     zvec_newA.reset(); 
     Minv_pcgA.reset(); 
     sigma_pcgA.reset();
-    r_pcgA.reset();
-    r_pcg_newA.reset();
-    z_pcgA.reset();
-    z_pcg_newA.reset();
-    p_pcgA.reset();
-    p_pcg_newA.reset();
-    dr_pcgA.reset();
     residualA.reset();
+    WvoA.reset();
+    vecsA.reset();
+    errvecsA.reset();
+    wog_intA.reset();
 
     // Build Zvo
     ZvoA = SharedTensor2d(new Tensor2d("Zvector <V|O>", nvirA, noccA));
@@ -108,7 +82,7 @@ if (reference_ == "RESTRICTED") {
               ZvoA->set(a, i, zvectorA->get(ai));
 	 }
     }
-    zvectorA->print();
+    //zvectorA->print();
 
     // Build Z_ia = Z_ai
     ZovA = SharedTensor2d(new Tensor2d("Zvector <O|V>", noccA, nvirA));
@@ -118,11 +92,10 @@ if (reference_ == "RESTRICTED") {
 
     // If LINEQ FAILED!
     if (pcg_conver == 0) {
-        fprintf(outfile,"\tWarning!!! PCG did NOT converged in %2d iterations. \n", itr_pcg);
+        fprintf(outfile,"\tWarning!!! Iterative solver did NOT converged in %2d iterations. \n", itr_pcg);
         fprintf(outfile,"\tI will solve the z-vector equation with a direct method.\n");
         fflush(outfile);
         z_vector();
-        fflush(outfile);
     } // end if pcg_conver = 0
 
 
@@ -375,89 +348,100 @@ else if (reference_ == "UNRESTRICTED") {
 }// end z_vector_pcg
 
 //=======================================================
-//          PCG (RHF)
+//          Z-Vector (RHF)
 //=======================================================          
-void DFOCC::pcg_solver_rhf()
+void DFOCC::zvec_solver_rhf()
 { 
 
     SharedTensor2d K, L;
     itr_pcg = 0;
-    double rms_r_pcgA = 0.0;
     double rms_residual = 0.0;
     double rms_pcg = 0.0;
-    double a_pcgA = 0.0;
-    double b_pcgA = 0.0;
     pcg_conver = 1; // assuming pcg will converge
 
-fprintf(outfile, "\n\t            PCG Solver \n");
+fprintf(outfile, "\n\t          Z-Vector Solver \n");
 fprintf(outfile, "\t   ------------------------------ \n");
-fprintf(outfile, "\tIter     RMS Z Vector        RMS PCG  \n");
-fprintf(outfile, "\t----    ---------------    ------------\n");
+fprintf(outfile, "\tIter     RMS Z-Vector        RMS Residual  \n");
+fprintf(outfile, "\t----    ---------------    --------------\n");
 fflush(outfile);
+   //Minv_pcgA->print();
+   //zvectorA->print();
 
  // Head of the loop
  do
  {
 
-    //fprintf(outfile, "pcg iter: %3d \n", itr_pcg); fflush(outfile);
-    // Build sigma
-    sigma_rhf(sigma_pcgA, p_pcgA);
+   //fprintf(outfile, "pcg iter: %3d \n", itr_pcg); fflush(outfile);
+   // Build sigma
+   sigma_pcgA->zero();
+   sigma_orb_resp_rhf(sigma_pcgA, zvectorA);
 
-    // Compute line search parameter alpha
-    a_pcgA = r_pcgA->dot(z_pcgA) / p_pcgA->dot(sigma_pcgA);
+   // Build W + sigma
+   sigma_pcgA->add(WvoA);
+   //sigma_pcgA->print();
 
    // Build kappa-new
    zvec_newA->zero();
-   zvec_newA->copy(p_pcgA);
-   zvec_newA->scale(a_pcgA);
-   zvec_newA->add(zvectorA);
-
-   // Build r-new
-   r_pcg_newA->zero();
-   r_pcg_newA->copy(sigma_pcgA);
-   r_pcg_newA->scale(-a_pcgA);
-   r_pcg_newA->add(r_pcgA);
-
-   // Build z-new
-   z_pcg_newA->dirprd(Minv_pcgA, r_pcg_newA);
-
-   // Build line search parameter beta
-   if (pcg_beta_type_ == "FLETCHER_REEVES") {
-       b_pcgA = r_pcg_newA->dot(z_pcg_newA) / r_pcgA->dot(z_pcgA);
-   }
-
-   else if (pcg_beta_type_ == "POLAK_RIBIERE") {
-       dr_pcgA->copy(r_pcg_newA);
-       dr_pcgA->subtract(r_pcgA);
-       b_pcgA = z_pcg_newA->dot(dr_pcgA) / z_pcgA->dot(r_pcgA);
-   }
-
-   // Build p-new
-   p_pcg_newA->copy(p_pcgA);
-   p_pcg_newA->scale(b_pcgA);
-   p_pcg_newA->add(z_pcg_newA);
-
-   // RMS 
-   rms_pcg = 0.0;
-   rms_pcg = zvec_newA->rms(zvectorA);
-   rms_r_pcgA = r_pcg_newA->rms();
-
-   // Reset
-   zvectorA->copy(zvec_newA);
-   r_pcgA->copy(r_pcg_newA);
-   z_pcgA->copy(z_pcg_newA);
-   p_pcgA->copy(p_pcg_newA);
+   zvec_newA->dirprd(Minv_pcgA, sigma_pcgA);
+   zvec_newA->scale(-1.0);
+   //zvec_newA->add(zvectorA);
 
     // Build sigma for kappa
-    sigma_rhf(sigma_pcgA, zvectorA);
-
-    // Build r0
+    //sigma_rhf(sigma_pcgA, zvectorA);
+    sigma_rhf(sigma_pcgA, zvec_newA);
     for (int a = 0, ai = 0; a < nvirA; a++) {
          for (int i = 0; i < noccA; i++, ai++) {
               residualA->set(ai, -WorbA->get(a + noccA, i) - sigma_pcgA->get(ai));       
          }
     }
     rms_residual = residualA->rms();
+
+   // RMS 
+   rms_pcg = 0.0;
+   rms_pcg = zvec_newA->rms(zvectorA);
+
+/*
+if (do_diis_ == 1) {
+  
+        // starting with itr = 1
+        itr_diis++;
+   
+        // Form Diis Error Vector & Extrapolant Alpha Spin Case
+	if (itr_diis <= num_vecs) {  
+	  for(int i = 0; i < nidpA; i++){
+	    //errvecsA->set(itr_diis-1, i, zvec_newA->get(i) - zvectorA->get(i));
+	    errvecsA->set(itr_diis-1, i, residualA->get(i));
+	    vecsA->set(itr_diis-1, i, zvec_newA->get(i));
+	  }  
+	}
+	
+	if (itr_diis > num_vecs) {  
+	  for(int j = 0; j < (num_vecs-1); j++){
+	    for(int i = 0; i < nidpA; i++){
+	      errvecsA->set(j, i, errvecsA->get(j+1, i));
+	      vecsA->set(j, i, vecsA->get(j+1, i));
+	    }  
+	  }
+	  
+	  for(int i = 0; i < nidpA; i++){
+	    //errvecsA->set(num_vecs-1, i, zvec_newA->get(i) - zvectorA->get(i));
+	    errvecsA->set(num_vecs-1, i, residualA->get(i));
+	    vecsA->set(num_vecs-1, i, zvec_newA->get(i));
+	  }    
+	}
+	
+        // Extrapolate 
+        if (itr_diis >= num_vecs) {
+	  diis(nidpA, vecsA, errvecsA, zvec_newA, wog_intA);
+	}
+	
+}// end if (do_diis_ == 1) 
+*/
+
+   // Reset
+   //zvectorA->print();
+   //zvec_newA->print();
+   zvectorA->copy(zvec_newA);
 
    // increment iteration index 
    itr_pcg++;
@@ -473,22 +457,24 @@ fflush(outfile);
    }  
 
    //if (rms_r_pcgA < tol_pcg || rms_pcg < tol_pcg) break;  
-   if (rms_residual < tol_pcg  || rms_pcg < tol_pcg) break;  
+   //if (rms_residual < tol_pcg  || rms_pcg < tol_pcg) break;  
+   if (rms_pcg < tol_pcg) break;  
 
  }
- while(fabs(rms_residual) >= tol_pcg);  
+ while(fabs(rms_pcg) >= tol_pcg);  
 
     // Converged?
     //r_pcgA->print();
-    residualA->print();
+    //residualA->print();
+    zvectorA->print();
 
-}// end pcg_sover_rhf
+}// end zvec_sover_rhf
 
 
 //=======================================================
 //          PCG (UHF)
 //=======================================================          
-void DFOCC::pcg_solver_uhf()
+void DFOCC::zvec_solver_uhf()
 { 
     SharedTensor2d K, L;
     itr_pcg = 0;
@@ -699,31 +685,21 @@ void DFOCC::pcg_solver_uhf()
     SvoA.reset();
     SvoB.reset();
     pQ.reset();
-}// end pcg_solver_uhf
+}// end zvec_solver_uhf
 
 //=======================================================
 //          Sigma (RHF)
 //=======================================================          
-void DFOCC::sigma_rhf(SharedTensor1d& sigma_pcg, SharedTensor1d& p_pcg)
+void DFOCC::sigma_orb_resp_rhf(SharedTensor1d& sigma, SharedTensor1d& p_vec)
 { 
     // Build sigma0
     // Memalloc
     SharedTensor2d SvoA = SharedTensor2d(new Tensor2d("PCG Sigma <V|O>", nvirA, noccA));
     SharedTensor1d pQ = SharedTensor1d(new Tensor1d("DF_BASIS_SCF p_Q", nQ_ref));
     SharedTensor2d PvoA = SharedTensor2d(new Tensor2d("PCG P <V|O>", nvirA, noccA));
-    PvoA->set(p_pcg);
+    PvoA->set(p_vec);
 
     // Build sigma
-    // s_ai = 2 \sum_{b} f_ab p_bi - 2 \sum_{j} f_ij p_aj  = 2 (f_aa - f_ii) p_ai 
-    //SvoA->gemm(false, false, FvvA, PvoA, 2.0, 0.0);
-    //SvoA->gemm(false, false, PvoA, FooA, -2.0, 1.0);
-    for (int a = 0; a < nvirA; a++) {
-         for (int i = 0; i < noccA; i++) {
-              double value = FockA->get(a + noccA, a + noccA) - FockA->get(i,i);
-              SvoA->set(a, i, 2.0 * value * PvoA->get(a, i));
-         }
-    }
-
     // s_ai += 4 \sum_{Q} bai^Q p^Q
     bQovA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA, nvirA));
     bQovA->read(psio_, PSIF_DFOCC_INTS);
@@ -731,8 +707,8 @@ void DFOCC::sigma_rhf(SharedTensor1d& sigma_pcg, SharedTensor1d& p_pcg)
     bQvoA->swap_3index_col(bQovA);
     bQovA.reset();
     // p_Q = 2\sum_{bj} b_bj^Q p_bj
-    pQ->gemv(false, bQvoA, p_pcg, 2.0, 0.0);
-    SvoA->gemv(true, bQvoA, pQ, 4.0, 1.0);
+    pQ->gemv(false, bQvoA, p_vec, 2.0, 0.0);
+    SvoA->gemv(true, bQvoA, pQ, 4.0, 0.0);
 
     // p_ij^Q = \sum_{b} b_bi^Q p_bj
     SharedTensor2d pQooA = SharedTensor2d(new Tensor2d("PCG P (Q|OO)", nQ_ref, noccA, noccA));
@@ -758,7 +734,7 @@ void DFOCC::sigma_rhf(SharedTensor1d& sigma_pcg, SharedTensor1d& p_pcg)
     // Form sigma vector
     for (int a = 0, ai = 0; a < nvirA; a++) {
          for (int i = 0; i < noccA; i++, ai++) {
-              sigma_pcg->set(ai, SvoA->get(a,i));
+              sigma->set(ai, SvoA->get(a,i));
          }
     }
 

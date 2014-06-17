@@ -109,6 +109,12 @@ else if (reference_ == "UNRESTRICTED") {
     GFooA->gemm(false, false, HooA, G1c_ooA, 1.0, 1.0);
     GFooB->gemm(false, false, HooB, G1c_ooB, 1.0, 1.0);
 
+ if (reference == "ROHF" && orb_opt_ == "FALSE") {
+    // Fij = \sum_{e} h_ie G_ej
+    GFooA->gemm(false, false, HovA, G1c_voA, 1.0, 1.0);
+    GFooB->gemm(false, false, HovB, G1c_voB, 1.0, 1.0);
+ }
+
     // F_IJ += \sum_{Q} \sum_{E} G_JE^Q b_IE^Q = \sum_{E} G_EJ^Q b_EI^Q
     K2 = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OV)", nQ, noccA, nvirA));
     K2->read(psio_, PSIF_DFOCC_INTS);
@@ -182,6 +188,8 @@ else if (reference_ == "UNRESTRICTED") {
     // Set global GF
     GFA->set_oo(GFooA);
     GFB->set_oo(GFooB);
+    //GFooA->print();
+    //GFooB->print();
 
 }// else if (reference_ == "UNRESTRICTED")
     timer_off("GFM OO");

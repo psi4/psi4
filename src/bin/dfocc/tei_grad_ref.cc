@@ -162,7 +162,7 @@ void DFOCC::tei_grad_ref()
          gradients["Metric:RefSep"]->add(Jtemps[t]);
     }
 
-    gradients["Metric:RefSep"]->print_atom_vector();
+    //gradients["Metric:RefSep"]->print_atom_vector();
     timer_off("Grad: Metric:RefSep");
 
 //===========================================================================================
@@ -324,7 +324,7 @@ void DFOCC::tei_grad_ref()
          gradients["3-Index:RefSep"]->add(Jtemps2[t]);
     }
 
-    gradients["3-Index:RefSep"]->print_atom_vector();
+    //gradients["3-Index:RefSep"]->print_atom_vector();
     timer_off("Grad: 3-Index:RefSep");
 
 //fprintf(outfile,"\tref_grad is done. \n"); fflush(outfile);
