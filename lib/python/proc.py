@@ -154,6 +154,20 @@ def run_dfomp2_gradient(name, **kwargs):
     optstash.restore()
 
 
+def run_dfomp2_property(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    DF-OMP2 gradient calculation.
+
+    """
+    optstash = p4util.OptionsState(
+        ['DFOCC', 'OEPROP'])
+
+    psi4.set_local_option('DFOCC', 'OEPROP', 'TRUE')
+    run_dfomp2(name, **kwargs)
+
+    optstash.restore()
+
+
 def run_cdomp2(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a cholesky-decomposed orbital-optimized MP2 computation
@@ -197,18 +211,21 @@ def run_omp2(name, **kwargs):
     an orbital-optimized MP2 computation
 
     """
+    run_dfomp2(name, **kwargs)
+
+
+def run_conv_omp2(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an orbital-optimized MP2 computation
+
+    """
     optstash = p4util.OptionsState(
         ['SCF','SCF_TYPE'])
 
-    # If SCF-TYPE = DF/CD call 
-    if psi4.get_option('SCF', 'SCF_TYPE') == 'DF' and psi4.get_global_option('DERTYPE') == 'NONE':
-            run_dfomp2(name, **kwargs)
-    elif psi4.get_option('SCF', 'SCF_TYPE') == 'CD' and psi4.get_global_option('DERTYPE') == 'NONE':
-            run_cdomp2(name, **kwargs)
-    else :
-            if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-                scf_helper(name, **kwargs)
-            psi4.occ()
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
+
+    psi4.occ()
 
     #return psi4.occ()
     optstash.restore()
@@ -219,12 +236,20 @@ def run_omp2_gradient(name, **kwargs):
     OMP2 gradient calculation.
 
     """
+    run_dfomp2_gradient(name, **kwargs)
+
+
+def run_conv_omp2_gradient(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    OMP2 gradient calculation.
+
+    """
     optstash = p4util.OptionsState(
         ['REFERENCE'],
         ['GLOBALS', 'DERTYPE'])
 
     psi4.set_global_option('DERTYPE', 'FIRST')
-    run_omp2(name, **kwargs)
+    run_conv_omp2(name, **kwargs)
     psi4.deriv()
 
     optstash.restore()
