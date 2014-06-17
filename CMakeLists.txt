@@ -271,3 +271,6 @@ configure_file(cmake/reconfigure.sh.in reconfigure.sh)
 #foreach (_variableName ${_variableNames})
 #    message(STATUS "${_variableName}=${${_variableName}}")
 #endforeach()
+
+enable_testing()
+add_subdirectory(tests)
