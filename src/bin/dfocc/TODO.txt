@@ -1,8 +1,5 @@
-* Gradients for DF-MP2
-* Fix PCG solver
-* Implement dipol moments
-* Implement Response spin multiplicities
-* Make DF-OMP2 default for OMP2 unless CD integrals are requested
 * OSCS-MP2
 * QC-SCF 
 * GWH Guess
+* Amplitude direct for MP2 and the S2 code
+* Simplify kappa solver

@@ -88,7 +88,6 @@ protected:
     void orb_resp_pcg_uhf();
     void kappa_diag_hess();
     void update_mo();
-    void diis(int dimvec, SharedTensor2d &vecs, SharedTensor2d &errvecs, SharedTensor1d &vec_new, SharedTensor1d &errvec_new);
     void semi_canonic();
     void diagonal_mohess_vo();
     void diagonal_mohess_oo();
@@ -113,10 +112,19 @@ protected:
     void oeprop();
     void s2_response();
     void s2_lagrangian();
-    void sigma_rhf(SharedTensor1d& sigma_pcg, SharedTensor1d& p_pcg);
+
+    void diis(int dimvec, SharedTensor2d &vecs, SharedTensor2d &errvecs, SharedTensor1d &vec_new, SharedTensor1d &errvec_new);
+    void sigma_rhf(SharedTensor1d& sigma, SharedTensor1d& p_vec);
+    void sigma_uhf(SharedTensor1d& sigma_A, SharedTensor1d& sigma_B, SharedTensor1d& p_vecA, SharedTensor1d& p_vecB);
     void sigma_orb_resp_rhf(SharedTensor1d& sigma, SharedTensor1d& p_vec);
     void build_rhf_mohess(SharedTensor2d& Aorb_);
     void build_uhf_mohess(SharedTensor2d& Aorb_);
+    void t2_rmp2_direct(SharedTensor2d& T);
+    void u2_rmp2_direct(SharedTensor2d& U);
+    void u2_rmp2_direct(SharedTensor2d& T, SharedTensor2d& U);
+    void t2AA_ump2_direct(SharedTensor2d& T);
+    void t2BB_ump2_direct(SharedTensor2d& T);
+    void t2AB_ump2_direct(SharedTensor2d& T);
  
     // Conventional integrals for DF-BASIS-CC
     void tei_ijkl_chem();
@@ -584,6 +592,7 @@ protected:
      string freeze_core_; 
      string oeprop_; 
      string comput_s2_; 
+     string mp2_amp_type_; 
 
      double **C_pitzerA;     
      double **C_pitzerB;     
@@ -811,24 +820,34 @@ protected:
      // PCG intermediates
      SharedTensor1d r_pcgA;
      SharedTensor1d r_pcgB;
+     SharedTensor1d r_pcg;
      SharedTensor1d z_pcgA;
      SharedTensor1d z_pcgB;
+     SharedTensor1d z_pcg;
      SharedTensor1d p_pcgA;
      SharedTensor1d p_pcgB;
+     SharedTensor1d p_pcg;
      SharedTensor1d sigma_pcgA;
      SharedTensor1d sigma_pcgB;
-     SharedTensor1d sigma_tot;
+     SharedTensor1d sigma_pcg;
      SharedTensor1d Minv_pcgA;
      SharedTensor1d Minv_pcgB;
+     SharedTensor1d Minv_pcg;
      SharedTensor1d r_pcg_newA;
      SharedTensor1d r_pcg_newB;
+     SharedTensor1d r_pcg_new;
      SharedTensor1d z_pcg_newA;
      SharedTensor1d z_pcg_newB;
+     SharedTensor1d z_pcg_new;
      SharedTensor1d p_pcg_newA;
      SharedTensor1d p_pcg_newB;
+     SharedTensor1d p_pcg_new;
      SharedTensor1d dr_pcgA;
      SharedTensor1d dr_pcgB;
+     SharedTensor1d dr_pcg;
      SharedTensor1d residualA;
+     SharedTensor1d residualB;
+     SharedTensor1d residual;
 
      // Independent pairs
      SharedTensor1i idprowA;

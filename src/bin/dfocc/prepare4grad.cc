@@ -45,10 +45,12 @@ void DFOCC::prepare4grad()
     fprintf(outfile,"\tComputing the orbital gradient...\n");
     fflush(outfile);
     mograd();
+    timer_on("Z-vector");
+    //z_vector_cg();
     //z_vector();
     //z_vector_solver();
-    //z_vector_pcg();
-    z_vector_cg();
+    z_vector_pcg();
+    timer_off("Z-vector");
     effective_pdms();
     effective_gfm();
 
