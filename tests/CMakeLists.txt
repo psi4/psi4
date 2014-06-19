@@ -140,8 +140,9 @@ foreach(Tests2Run ${TestSet})
 set(RUNDIR ${TESTDIR}/${Tests2Run})
 set(INPUTFILE ${RUNDIR}/input.dat)
 set(OUTFILE ${RUNDIR}/output.dat)
+set(AUTOTEST 'true')
 add_test(
     NAME ${Tests2Run}
     WORKING_DIRECTORY ${RUNDIR}
-    COMMAND perl ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${OUTFILE} ${PSIEXE})
+    COMMAND perl ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${OUTFILE} ${PSIEXE})
 endforeach(Tests2Run)
