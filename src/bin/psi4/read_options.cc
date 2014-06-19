@@ -2737,6 +2737,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("CONV_TEI_TYPE","DIRECT","DIRECT DISK");
     /*- Type of PCG beta parameter (Fletcher-Reeves or Polak-Ribiere). -*/
     options.add_str("PCG_BETA_TYPE","FLETCHER_REEVES","FLETCHER_REEVES POLAK_RIBIERE");
+    /*- The algorithm that used to handle mp2 amplitudes. The DIRECT option means compute amplitudes on the fly whenever they are necessary. -*/
+    options.add_str("MP2_AMP_TYPE","DIRECT","DIRECT CONV");
 
     /*- Do compute natural orbitals? -*/
     options.add_bool("NAT_ORBS",false);

@@ -269,7 +269,7 @@ def run_mp2(name, **kwargs):
             mints.integrals()
 
     psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-    run_omp2(name, **kwargs)
+    run_conv_omp2(name, **kwargs)
 
     optstash.restore()
 
@@ -315,7 +315,7 @@ def run_mp2_gradient(name, **kwargs):
 
     psi4.set_global_option('DERTYPE', 'FIRST')
     psi4.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-    run_omp2(name, **kwargs)
+    run_conv_omp2(name, **kwargs)
     psi4.deriv()
 
     optstash.restore()

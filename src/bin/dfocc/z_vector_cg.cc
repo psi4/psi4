@@ -212,6 +212,7 @@ else if (reference_ == "UNRESTRICTED") {
 	      zvectorA->set(ai, zvector->get(ai));
          }
     }
+    //zvectorA->print();
 
     // Build zvector for vo block
     for (int a = 0, ai = 0; a < nvirB; a++) {
@@ -219,6 +220,7 @@ else if (reference_ == "UNRESTRICTED") {
 	      zvectorB->set(ai, zvector->get(ai + nidpA));
          }
     }
+    //zvectorB->print();
     zvector.reset();
 
     // Build Zvo

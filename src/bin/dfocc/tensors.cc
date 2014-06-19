@@ -765,7 +765,7 @@ void Tensor2d::contract332(bool transa, bool transb, int k, const SharedTensor2d
     ncc = n;
 
     if (m && n && k) {
-        #pragma omp parallel for
+        //#pragma omp parallel for
         for (int Q = 0; Q < a->dim1(); Q++) {
              C_DGEMM(ta, tb, m, n, k, alpha, a->A2d_[Q], nca, b->A2d_[Q], ncb, beta, A2d_[0], ncc);
         }

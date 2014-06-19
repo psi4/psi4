@@ -38,6 +38,7 @@ void DFOCC::s2_response()
     fprintf(outfile,"\tComputing <S**2>...\n");  
     fflush(outfile);
     timer_on("s2_response");
+    SharedTensor2d T, T2;
 
     //=========================
     // Read AO basis SO 
@@ -89,9 +90,10 @@ void DFOCC::s2_response()
     s2_proj += s2_ref;
 
     // Compute amplitude contribution
-    SharedTensor2d T = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
-    SharedTensor2d T2 = SharedTensor2d(new Tensor2d("T2_1 (Ib,jA)", naoccA, navirB, naoccB, navirA));
-    T->read(psio_, PSIF_DFOCC_AMPS);
+    T = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+    T2 = SharedTensor2d(new Tensor2d("T2_1 (Ib,jA)", naoccA, navirB, naoccB, navirA));
+    if (orb_opt_ == "FALSE" && mp2_amp_type_ == "DIRECT") t2AB_ump2_direct(T);
+    else T->read(psio_, PSIF_DFOCC_AMPS);
     T2->sort(1423, T, 1.0, 0.0);
     T.reset();
 
@@ -145,6 +147,7 @@ void DFOCC::s2_lagrangian()
     fprintf(outfile,"\tComputing <S**2>_lagrangian...\n");  
     fflush(outfile);
     timer_on("s2_lagrangian");
+    SharedTensor2d T, T2;
 
     //=========================
     // Read AO basis SO 
@@ -184,17 +187,6 @@ void DFOCC::s2_lagrangian()
     SiaBA->form_act_ov(nfrzc, noccA, SmoBA);
     SovBA->form_ov(noccA, SmoBA);
 
-    // S_Ai
-    /*
-    SharedTensor2d SaiAB = SharedTensor2d(new Tensor2d("S <A|i>", navirA, naoccB));
-    for (int a = 0; a < navirA; a++) {
-         for (int i = 0; i < naoccB; i++) {
-              SaiAB->set(a, i, SmoAB->get(a + noccA, i + nfrzc));
-         }
-    }
-    */
-    //SvoAB->form_act_vo(nfrzc, noccA, SmoAB);
-    
     // S_Vo
     SharedTensor2d SvoAB = SharedTensor2d(new Tensor2d("S <V|o>", nvirA, noccB));
     for (int a = 0; a < nvirA; a++) {
@@ -202,17 +194,6 @@ void DFOCC::s2_lagrangian()
               SvoAB->set(a, i, SmoAB->get(a + noccA, i));
          }
     }
-
-    // S_aI
-    /*
-    SharedTensor2d SaiBA = SharedTensor2d(new Tensor2d("S <a|I>", navirB, naoccA));
-    for (int a = 0; a < navirB; a++) {
-         for (int i = 0; i < naoccA; i++) {
-              SaiBA->set(a, i, SmoBA->get(a + noccB, i + nfrzc));
-         }
-    }
-    */
-    //SvoBA->form_act_vo(nfrzc, noccB, SmoBA);
 
     // S_vO
     SharedTensor2d SvoBA = SharedTensor2d(new Tensor2d("S <v|O>", nvirB, noccA));
@@ -242,8 +223,10 @@ void DFOCC::s2_lagrangian()
     s2_lag += s2_ref;
 
     // Compute amplitude contribution
-    SharedTensor2d T = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
-    SharedTensor2d T2 = SharedTensor2d(new Tensor2d("T2_1 (Ib,jA)", naoccA, navirB, naoccB, navirA));
+    T = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+    T2 = SharedTensor2d(new Tensor2d("T2_1 (Ib,jA)", naoccA, navirB, naoccB, navirA));
+    if (orb_opt_ == "FALSE" && mp2_amp_type_ == "DIRECT") t2AB_ump2_direct(T);
+    else T->read(psio_, PSIF_DFOCC_AMPS);
     T->read(psio_, PSIF_DFOCC_AMPS);
     T2->sort(1423, T, 1.0, 0.0);
     T.reset();

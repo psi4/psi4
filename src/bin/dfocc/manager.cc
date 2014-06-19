@@ -52,11 +52,6 @@ void DFOCC::omp2_manager()
         Jc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF J_Q", nQ_ref));
         g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
         g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
-        /*
-        if (reference == "ROHF") {
-            g1Qp = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1p_Q", nQ_ref));
-        }
-        */
         g1Q = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1_Q", nQ));
         g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
 
@@ -333,8 +328,11 @@ void DFOCC::mp2_manager()
         if (dertype == "NONE" && oeprop_ == "FALSE" && ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE" && comput_s2_ == "FALSE") mp2_direct();
         else {
              fock();
-	     t2_1st_sc();
-             mp2_energy();
+             if (mp2_amp_type_ == "DIRECT") mp2_direct();
+             else { 
+	         t2_1st_sc();
+                 mp2_energy();
+             }
         }
 	Emp2L=Emp2;
         EcorrL=Emp2L-Escf;
