@@ -52,27 +52,20 @@ if (reference_ == "RESTRICTED") {
     GFao->back_transform(GF, CmoA);
 
     //=========================
-    // Reference TPDM
+    // Seprable TPDM
     //=========================
-    Gmo = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM <Q|OO>", nQ_ref, noccA, noccA));
+    // OO Block Sep + OO block Ref
+    Gref = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM <Q|OO>", nQ_ref, noccA, noccA));
+    Gmo = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|OO>", nQ_ref, noccA, noccA));
+    Gref->read(psio_, PSIF_DFOCC_DENS);
     Gmo->read(psio_, PSIF_DFOCC_DENS);
-    G = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM (Q|On)", nQ_ref, noccA, nso_));
+    Gmo->add(Gref);
+    Gref.reset();
+    G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|On)", nQ_ref, noccA, nso_));
     G->contract(false, true, nQ_ref * noccA, nso_, noccA, Gmo, CoccA, 1.0, 0.0);
     Gmo.reset();
     Gao = SharedTensor2d(new Tensor2d("RefSep 3-Index TPDM (Q|nn)", nQ_ref, nso_, nso_));
     Gao->contract233(false, false, nso_, nso_, CoccA, G, 1.0, 0.0);
-    G.reset();
-
-    //=========================
-    // Seprable TPDM
-    //=========================
-    // OO Block
-    Gmo = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|OO>", nQ_ref, noccA, noccA));
-    Gmo->read(psio_, PSIF_DFOCC_DENS);
-    G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|On)", nQ_ref, noccA, nso_));
-    G->contract(false, true, nQ_ref * noccA, nso_, noccA, Gmo, CoccA, 1.0, 0.0);
-    Gmo.reset();
-    Gao->contract233(false, false, nso_, nso_, CoccA, G, 1.0, 1.0);
     G.reset();
 
     // OV Block
@@ -81,16 +74,7 @@ if (reference_ == "RESTRICTED") {
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|On)", nQ_ref, noccA, nso_));
     G->contract(false, true, nQ_ref * noccA, nso_, nvirA, Gmo, CvirA, 1.0, 0.0);
     Gmo.reset();
-    Gao->contract233(false, false, nso_, nso_, CoccA, G, 1.0, 1.0);
-    G.reset();
-
-    // VO Block
-    Gmo = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|VO>", nQ_ref, nvirA, noccA));
-    Gmo->read(psio_, PSIF_DFOCC_DENS);
-    G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|Vn)", nQ_ref, nvirA, nso_));
-    G->contract(false, true, nQ_ref * nvirA, nso_, noccA, Gmo, CoccA, 1.0, 0.0);
-    Gmo.reset();
-    Gao->contract233(false, false, nso_, nso_, CvirA, G, 1.0, 1.0);
+    Gao->contract233(false, false, nso_, nso_, CoccA, G, 2.0, 1.0);
     G.reset();
 
     // VV Block
@@ -101,8 +85,10 @@ if (reference_ == "RESTRICTED") {
     Gmo.reset();
     Gao->contract233(false, false, nso_, nso_, CvirA, G, 1.0, 1.0);
     G.reset();
+
+    // symmetrize : This is necessary since we only consider OV block
+    Gao->symmetrize3(Gao);
     Gao->write(psio_, PSIF_DFOCC_DENS);
-    //Gao->print();
 
     // 2-Index TPDM
     bQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mn)", nQ_ref, nso2_));
@@ -120,7 +106,6 @@ if (reference_ == "RESTRICTED") {
     cQso.reset();
     Gao.reset();
     G->write(psio_, PSIF_DFOCC_DENS);
-    //G->print();
     G.reset();
 
     //=========================
@@ -133,17 +118,11 @@ if (reference_ == "RESTRICTED") {
     G->contract(false, true, nQ * noccA, nso_, nvirA, Gmo, CvirA, 1.0, 0.0);
     Gmo.reset();
     Gao = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|nn)", nQ, nso_, nso_));
-    Gao->contract233(false, false, nso_, nso_, CoccA, G, 1.0, 0.0);
+    Gao->contract233(false, false, nso_, nso_, CoccA, G, 2.0, 0.0);
     G.reset();
 
-    // VO Block
-    Gmo = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|VO>", nQ, nvirA, noccA));
-    Gmo->read(psio_, PSIF_DFOCC_DENS);
-    G = SharedTensor2d(new Tensor2d("3-Index Correlation TPDM (Q|Vn)", nQ, nvirA, nso_));
-    G->contract(false, true, nQ * nvirA, nso_, noccA, Gmo, CoccA, 1.0, 0.0);
-    Gmo.reset();
-    Gao->contract233(false, false, nso_, nso_, CvirA, G, 1.0, 1.0);
-    G.reset();
+    // symmetrize : This is necessary since we only consider OV block
+    Gao->symmetrize3(Gao);
     Gao->write(psio_, PSIF_DFOCC_DENS);
 
     // 2-Index TPDM
@@ -179,43 +158,29 @@ else if (reference_ == "UNRESTRICTED") {
     GFao->back_transform(GFB, CmoB, 1.0, 1.0);
 
     //=========================
-    // Reference TPDM
+    // Seprable TPDM
     //=========================
-    // OO Block
-    Gmo = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM <Q|OO>", nQ_ref, noccA, noccA));
+    // OO Block sep + OO Block ref
+    Gref = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM <Q|OO>", nQ_ref, noccA, noccA));
+    Gmo = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|OO>", nQ_ref, noccA, noccA));
+    Gref->read(psio_, PSIF_DFOCC_DENS);
     Gmo->read(psio_, PSIF_DFOCC_DENS);
-    G = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM (Q|On)", nQ_ref, noccA, nso_));
+    Gmo->add(Gref);
+    Gref.reset();
+    G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|On)", nQ_ref, noccA, nso_));
     G->contract(false, true, nQ_ref * noccA, nso_, noccA, Gmo, CoccA, 1.0, 0.0);
     Gmo.reset();
     Gao = SharedTensor2d(new Tensor2d("RefSep 3-Index TPDM (Q|nn)", nQ_ref, nso_, nso_));
     Gao->contract233(false, false, nso_, nso_, CoccA, G, 1.0, 0.0);
     G.reset();
 
-    // oo Block
-    Gmo = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM <Q|oo>", nQ_ref, noccB, noccB));
-    Gmo->read(psio_, PSIF_DFOCC_DENS);
-    G = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM (Q|on)", nQ_ref, noccB, nso_));
-    G->contract(false, true, nQ_ref * noccB, nso_, noccB, Gmo, CoccB, 1.0, 0.0);
-    Gmo.reset();
-    Gao->contract233(false, false, nso_, nso_, CoccB, G, 1.0, 1.0);
-    G.reset();
-
-
-    //=========================
-    // Seprable TPDM
-    //=========================
-    // OO Block
-    Gmo = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|OO>", nQ_ref, noccA, noccA));
-    Gmo->read(psio_, PSIF_DFOCC_DENS);
-    G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|On)", nQ_ref, noccA, nso_));
-    G->contract(false, true, nQ_ref * noccA, nso_, noccA, Gmo, CoccA, 1.0, 0.0);
-    Gmo.reset();
-    Gao->contract233(false, false, nso_, nso_, CoccA, G, 1.0, 1.0);
-    G.reset();
-
-    // oo Block
+    // oo Block sep + oo block ref
+    Gref = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM <Q|oo>", nQ_ref, noccB, noccB));
     Gmo = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|oo>", nQ_ref, noccB, noccB));
+    Gref->read(psio_, PSIF_DFOCC_DENS);
     Gmo->read(psio_, PSIF_DFOCC_DENS);
+    Gmo->add(Gref);
+    Gref.reset();
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|on)", nQ_ref, noccB, nso_));
     G->contract(false, true, nQ_ref * noccB, nso_, noccB, Gmo, CoccB, 1.0, 0.0);
     Gmo.reset();
@@ -228,7 +193,7 @@ else if (reference_ == "UNRESTRICTED") {
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|On)", nQ_ref, noccA, nso_));
     G->contract(false, true, nQ_ref * noccA, nso_, nvirA, Gmo, CvirA, 1.0, 0.0);
     Gmo.reset();
-    Gao->contract233(false, false, nso_, nso_, CoccA, G, 1.0, 1.0);
+    Gao->contract233(false, false, nso_, nso_, CoccA, G, 2.0, 1.0);
     G.reset();
 
     // ov Block
@@ -237,25 +202,7 @@ else if (reference_ == "UNRESTRICTED") {
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|on)", nQ_ref, noccB, nso_));
     G->contract(false, true, nQ_ref * noccB, nso_, nvirB, Gmo, CvirB, 1.0, 0.0);
     Gmo.reset();
-    Gao->contract233(false, false, nso_, nso_, CoccB, G, 1.0, 1.0);
-    G.reset();
-
-    // VO Block
-    Gmo = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|VO>", nQ_ref, nvirA, noccA));
-    Gmo->read(psio_, PSIF_DFOCC_DENS);
-    G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|Vn)", nQ_ref, nvirA, nso_));
-    G->contract(false, true, nQ_ref * nvirA, nso_, noccA, Gmo, CoccA, 1.0, 0.0);
-    Gmo.reset();
-    Gao->contract233(false, false, nso_, nso_, CvirA, G, 1.0, 1.0);
-    G.reset();
-
-    // vo Block
-    Gmo = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|vo>", nQ_ref, nvirB, noccB));
-    Gmo->read(psio_, PSIF_DFOCC_DENS);
-    G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|vn)", nQ_ref, nvirB, nso_));
-    G->contract(false, true, nQ_ref * nvirB, nso_, noccB, Gmo, CoccB, 1.0, 0.0);
-    Gmo.reset();
-    Gao->contract233(false, false, nso_, nso_, CvirB, G, 1.0, 1.0);
+    Gao->contract233(false, false, nso_, nso_, CoccB, G, 2.0, 1.0);
     G.reset();
 
     // VV Block
@@ -275,6 +222,9 @@ else if (reference_ == "UNRESTRICTED") {
     Gmo.reset();
     Gao->contract233(false, false, nso_, nso_, CvirB, G, 1.0, 1.0);
     G.reset();
+
+    // symmetrize : This is necessary since we only consider OV block
+    Gao->symmetrize3(Gao);
     Gao->write(psio_, PSIF_DFOCC_DENS);
 
     // 2-Index TPDM
@@ -303,7 +253,7 @@ else if (reference_ == "UNRESTRICTED") {
     G->contract(false, true, nQ * noccA, nso_, nvirA, Gmo, CvirA, 1.0, 0.0);
     Gmo.reset();
     Gao = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|nn)", nQ, nso_, nso_));
-    Gao->contract233(false, false, nso_, nso_, CoccA, G, 1.0, 0.0);
+    Gao->contract233(false, false, nso_, nso_, CoccA, G, 2.0, 0.0);
     G.reset();
 
     // ov Block
@@ -312,27 +262,11 @@ else if (reference_ == "UNRESTRICTED") {
     G = SharedTensor2d(new Tensor2d("3-Index Correlation TPDM (Q|on)", nQ, noccB, nso_));
     G->contract(false, true, nQ * noccB, nso_, nvirB, Gmo, CvirB, 1.0, 0.0);
     Gmo.reset();
-    Gao->contract233(false, false, nso_, nso_, CoccB, G, 1.0, 1.0);
+    Gao->contract233(false, false, nso_, nso_, CoccB, G, 2.0, 1.0);
     G.reset();
 
-    // VO Block
-    Gmo = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|VO>", nQ, nvirA, noccA));
-    Gmo->read(psio_, PSIF_DFOCC_DENS);
-    G = SharedTensor2d(new Tensor2d("3-Index Correlation TPDM (Q|Vn)", nQ, nvirA, nso_));
-    G->contract(false, true, nQ * nvirA, nso_, noccA, Gmo, CoccA, 1.0, 0.0);
-    Gmo.reset();
-    Gao->contract233(false, false, nso_, nso_, CvirA, G, 1.0, 1.0);
-    G.reset();
-    Gao->write(psio_, PSIF_DFOCC_DENS);
-
-    // vo Block
-    Gmo = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|vo>", nQ, nvirB, noccB));
-    Gmo->read(psio_, PSIF_DFOCC_DENS);
-    G = SharedTensor2d(new Tensor2d("3-Index Correlation TPDM (Q|vn)", nQ, nvirB, nso_));
-    G->contract(false, true, nQ * nvirB, nso_, noccB, Gmo, CoccB, 1.0, 0.0);
-    Gmo.reset();
-    Gao->contract233(false, false, nso_, nso_, CvirB, G, 1.0, 1.0);
-    G.reset();
+    // symmetrize : This is necessary since we only consider OV block
+    Gao->symmetrize3(Gao);
     Gao->write(psio_, PSIF_DFOCC_DENS);
 
     // 2-Index TPDM
