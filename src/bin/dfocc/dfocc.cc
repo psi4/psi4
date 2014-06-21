@@ -365,7 +365,7 @@ void DFOCC::title()
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "TRUE") fprintf(outfile,"                      CD-OMP2 (CD-OO-MP2)   \n");
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "FALSE") fprintf(outfile,"                       CD-MP2   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya\n") ; 
-   fprintf(outfile,"              Latest Revision June 21, 2014\n") ;
+   fprintf(outfile,"              Latest Revision June 22, 2014\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
@@ -386,7 +386,7 @@ void DFOCC::title_grad()
    fprintf(outfile,"            A General Analytic Gradients Code   \n");
    fprintf(outfile,"               for Density-Fitted Methods       \n");
    fprintf(outfile,"                   by Ugur Bozkaya\n") ; 
-   fprintf(outfile,"              Latest Revision June 21, 2014\n") ;
+   fprintf(outfile,"              Latest Revision June 22, 2014\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
