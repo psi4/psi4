@@ -79,7 +79,7 @@ if (reference_ == "RESTRICTED") {
 
     // VV Block
     Gmo = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|VV>", nQ_ref, nvirA, nvirA));
-    Gmo->read(psio_, PSIF_DFOCC_DENS);
+    Gmo->read(psio_, PSIF_DFOCC_DENS, true, true);
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|Vn)", nQ_ref, nvirA, nso_));
     G->contract(false, true, nQ_ref * nvirA, nso_, nvirA, Gmo, CvirA, 1.0, 0.0);
     Gmo.reset();
@@ -88,14 +88,14 @@ if (reference_ == "RESTRICTED") {
 
     // symmetrize : This is necessary since we only consider OV block
     Gao->symmetrize3(Gao);
-    Gao->write(psio_, PSIF_DFOCC_DENS);
+    Gao->write(psio_, PSIF_DFOCC_DENS, true, true);
 
     // 2-Index TPDM
-    bQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mn)", nQ_ref, nso2_));
-    bQso->read(psio_, PSIF_DFOCC_INTS);
+    bQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mn)", nQ_ref, nso_, nso_));
+    bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
     Jmhalf = SharedTensor2d(new Tensor2d("DF_BASIS_SCF Jmhalf <P|Q>", nQ_ref, nQ_ref));
     Jmhalf->read(psio_, PSIF_DFOCC_INTS);
-    cQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF C (Q|mn)", nQ_ref, nso2_));
+    cQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF C (Q|mn)", nQ_ref, nso_, nso_));
     cQso->gemm(true, false, Jmhalf, bQso, 1.0, 0.0);
     bQso.reset();
     Jmhalf.reset();
@@ -105,7 +105,8 @@ if (reference_ == "RESTRICTED") {
     //G->gemm(false, true, Gao, cQso, 0.25, 1.0);
     cQso.reset();
     Gao.reset();
-    G->write(psio_, PSIF_DFOCC_DENS);
+    //G->write(psio_, PSIF_DFOCC_DENS);
+    G->write_symm(psio_, PSIF_DFOCC_DENS);
     G.reset();
 
     //=========================
@@ -123,14 +124,14 @@ if (reference_ == "RESTRICTED") {
 
     // symmetrize : This is necessary since we only consider OV block
     Gao->symmetrize3(Gao);
-    Gao->write(psio_, PSIF_DFOCC_DENS);
+    Gao->write(psio_, PSIF_DFOCC_DENS, true, true);
 
     // 2-Index TPDM
-    bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso2_));
-    bQso->read(psio_, PSIF_DFOCC_INTS);
+    bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));
+    bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
     Jmhalf = SharedTensor2d(new Tensor2d("DF_BASIS_CC Jmhalf <P|Q>", nQ, nQ));
     Jmhalf->read(psio_, PSIF_DFOCC_INTS);
-    cQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|mn)", nQ, nso2_));
+    cQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|mn)", nQ, nso_, nso_));
     cQso->gemm(true, false, Jmhalf, bQso, 1.0, 0.0);
     bQso.reset();
     Jmhalf.reset();
@@ -138,7 +139,8 @@ if (reference_ == "RESTRICTED") {
     G->gemm(false, true, cQso, Gao, 0.5, 0.0);
     cQso.reset();
     Gao.reset();
-    G->write(psio_, PSIF_DFOCC_DENS);
+    //G->write(psio_, PSIF_DFOCC_DENS);
+    G->write_symm(psio_, PSIF_DFOCC_DENS);
     G.reset();
 
 }// end if (reference_ == "RESTRICTED")
@@ -207,7 +209,7 @@ else if (reference_ == "UNRESTRICTED") {
 
     // VV Block
     Gmo = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|VV>", nQ_ref, nvirA, nvirA));
-    Gmo->read(psio_, PSIF_DFOCC_DENS);
+    Gmo->read(psio_, PSIF_DFOCC_DENS, true, true);
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|Vn)", nQ_ref, nvirA, nso_));
     G->contract(false, true, nQ_ref * nvirA, nso_, nvirA, Gmo, CvirA, 1.0, 0.0);
     Gmo.reset();
@@ -216,7 +218,7 @@ else if (reference_ == "UNRESTRICTED") {
 
     // vv Block
     Gmo = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|vv>", nQ_ref, nvirB, nvirB));
-    Gmo->read(psio_, PSIF_DFOCC_DENS);
+    Gmo->read(psio_, PSIF_DFOCC_DENS, true, true);
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|vn)", nQ_ref, nvirB, nso_));
     G->contract(false, true, nQ_ref * nvirB, nso_, nvirB, Gmo, CvirB, 1.0, 0.0);
     Gmo.reset();
@@ -225,14 +227,14 @@ else if (reference_ == "UNRESTRICTED") {
 
     // symmetrize : This is necessary since we only consider OV block
     Gao->symmetrize3(Gao);
-    Gao->write(psio_, PSIF_DFOCC_DENS);
+    Gao->write(psio_, PSIF_DFOCC_DENS, true, true);
 
     // 2-Index TPDM
-    bQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mn)", nQ_ref, nso2_));
-    bQso->read(psio_, PSIF_DFOCC_INTS);
+    bQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mn)", nQ_ref, nso_, nso_));
+    bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
     Jmhalf = SharedTensor2d(new Tensor2d("DF_BASIS_SCF Jmhalf <P|Q>", nQ_ref, nQ_ref));
     Jmhalf->read(psio_, PSIF_DFOCC_INTS);
-    cQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF C (Q|mn)", nQ_ref, nso2_));
+    cQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF C (Q|mn)", nQ_ref, nso_, nso_));
     cQso->gemm(true, false, Jmhalf, bQso, 1.0, 0.0);
     bQso.reset();
     Jmhalf.reset();
@@ -240,7 +242,8 @@ else if (reference_ == "UNRESTRICTED") {
     G->gemm(false, true, cQso, Gao, 0.5, 0.0);
     cQso.reset();
     Gao.reset();
-    G->write(psio_, PSIF_DFOCC_DENS);
+    //G->write(psio_, PSIF_DFOCC_DENS);
+    G->write_symm(psio_, PSIF_DFOCC_DENS);
     G.reset();
 
     //=========================
@@ -267,14 +270,14 @@ else if (reference_ == "UNRESTRICTED") {
 
     // symmetrize : This is necessary since we only consider OV block
     Gao->symmetrize3(Gao);
-    Gao->write(psio_, PSIF_DFOCC_DENS);
+    Gao->write(psio_, PSIF_DFOCC_DENS, true, true);
 
     // 2-Index TPDM
-    bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso2_));
-    bQso->read(psio_, PSIF_DFOCC_INTS);
+    bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));
+    bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
     Jmhalf = SharedTensor2d(new Tensor2d("DF_BASIS_CC Jmhalf <P|Q>", nQ, nQ));
     Jmhalf->read(psio_, PSIF_DFOCC_INTS);
-    cQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|mn)", nQ, nso2_));
+    cQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|mn)", nQ, nso_, nso_));
     cQso->gemm(true, false, Jmhalf, bQso, 1.0, 0.0);
     bQso.reset();
     Jmhalf.reset();
@@ -282,7 +285,8 @@ else if (reference_ == "UNRESTRICTED") {
     G->gemm(false, true, cQso, Gao, 0.5, 0.0);
     cQso.reset();
     Gao.reset();
-    G->write(psio_, PSIF_DFOCC_DENS);
+    //G->write(psio_, PSIF_DFOCC_DENS);
+    G->write_symm(psio_, PSIF_DFOCC_DENS);
     G.reset();
 
 }// else if (reference_ == "UNRESTRICTED")

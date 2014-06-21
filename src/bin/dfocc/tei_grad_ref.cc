@@ -64,7 +64,8 @@ void DFOCC::tei_grad_ref()
 //===========================================================================================
     // Read Gaux_ref 
     Gaux_ref = SharedTensor2d(new Tensor2d("2-Index RefSep TPDM (P|Q)", nQ_ref, nQ_ref));
-    Gaux_ref->read(psio_, PSIF_DFOCC_DENS);
+    //Gaux_ref->read(psio_, PSIF_DFOCC_DENS);
+    Gaux_ref->read_symm(psio_, PSIF_DFOCC_DENS);
 
     // JPQ_X
     timer_on("Grad: Metric:RefSep");
@@ -170,7 +171,7 @@ void DFOCC::tei_grad_ref()
 //===========================================================================================
     // Read gQso
     gQso_ref = SharedTensor2d(new Tensor2d("RefSep 3-Index TPDM (Q|nn)", nQ_ref, nso_, nso_));
-    gQso_ref->read(psio_, PSIF_DFOCC_DENS);
+    gQso_ref->read(psio_, PSIF_DFOCC_DENS, true, true);
 
     // (Q | mu nu)^X
     timer_on("Grad: 3-Index:RefSep");

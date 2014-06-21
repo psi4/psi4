@@ -563,7 +563,7 @@ void DFOCC::sigma_rhf(SharedTensor1d& sigma, SharedTensor1d& p_vec)
 
     // p_aj^Q = \sum_{b} b_ba^Q p_bj
     bQvvA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
-    bQvvA->read(psio_, PSIF_DFOCC_INTS);
+    bQvvA->read(psio_, PSIF_DFOCC_INTS, true, true);
     SharedTensor2d pQvoA = SharedTensor2d(new Tensor2d("PCG P (Q|VO)", nQ_ref, nvirA, noccA));
     pQvoA->contract323(false, false, nvirA, noccA, bQvvA, PvoA, 1.0, 0.0);
     bQvvA.reset();
@@ -648,8 +648,8 @@ void DFOCC::sigma_uhf(SharedTensor1d& sigma_A, SharedTensor1d& sigma_B, SharedTe
     bQvoA.reset();
 
     // p_AJ^Q = \sum_{B} b_BA^Q p_BJ
-    bQvvA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA * nvirA));
-    bQvvA->read(psio_, PSIF_DFOCC_INTS);
+    bQvvA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
+    bQvvA->read(psio_, PSIF_DFOCC_INTS, true, true);
     SharedTensor2d pQvoA = SharedTensor2d(new Tensor2d("PCG P (Q|VO)", nQ_ref, nvirA, noccA));
     pQvoA->contract323(false, false, nvirA, noccA, bQvvA, PvoA, 1.0, 0.0);
     bQvvA.reset();
@@ -701,8 +701,8 @@ void DFOCC::sigma_uhf(SharedTensor1d& sigma_A, SharedTensor1d& sigma_B, SharedTe
     bQvoB.reset();
 
     // p_aj^Q = \sum_{b} b_ba^Q p_bj
-    bQvvB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|vv)", nQ_ref, nvirB * nvirB));
-    bQvvB->read(psio_, PSIF_DFOCC_INTS);
+    bQvvB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|vv)", nQ_ref, nvirB, nvirB));
+    bQvvB->read(psio_, PSIF_DFOCC_INTS, true, true);
     SharedTensor2d pQvoB = SharedTensor2d(new Tensor2d("PCG P (Q|vo)", nQ_ref, nvirB, noccB));
     pQvoB->contract323(false, false, nvirB, noccB, bQvvB, PvoB, 1.0, 0.0);
     bQvvB.reset();

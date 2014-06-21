@@ -81,8 +81,8 @@ if (reference_ == "RESTRICTED") {
     //=========================
 
     // Gt_Q = \sum_{e,f} b_ef^Q G1c_ef
-    bQvvA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA * nvirA));
-    bQvvA->read(psio_, PSIF_DFOCC_INTS);
+    bQvvA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
+    bQvvA->read(psio_, PSIF_DFOCC_INTS, true, true);
     g1Qt->gemv(false, nQ_ref, nvirA * nvirA, bQvvA, G1c_vv, 1.0, 0.0);
     bQvvA.reset();
 
@@ -130,9 +130,9 @@ if (reference_ == "RESTRICTED") {
     G2c_vo.reset();
 
     // G_ab^Q = J_Q G_ab
-    G2c_vv = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA * nvirA));
+    G2c_vv = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA));
     G2c_vv->dirprd123(Jc, G1c_vv, 1.0, 0.0); 
-    G2c_vv->write(psio_, PSIF_DFOCC_DENS);
+    G2c_vv->write(psio_, PSIF_DFOCC_DENS, true, true);
     if(print_ > 3) G2c_vv->print();
     G2c_vv.reset();
 
@@ -223,14 +223,14 @@ else if (reference_ == "UNRESTRICTED") {
     bQooB.reset();
 
     // Gt_Q = \sum_{e,f} b_ef^Q G1c_ef
-    bQvvA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA * nvirA));
-    bQvvA->read(psio_, PSIF_DFOCC_INTS);
+    bQvvA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
+    bQvvA->read(psio_, PSIF_DFOCC_INTS, true, true);
     g1Qt->gemv(false, nQ_ref, nvirA * nvirA, bQvvA, G1c_vvA, 1.0, 0.0);
     bQvvA.reset();
 
     // Gt_Q = \sum_{e,f} b_ef^Q G1c_ef
-    bQvvB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|vv)", nQ_ref, nvirB * nvirB));
-    bQvvB->read(psio_, PSIF_DFOCC_INTS);
+    bQvvB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|vv)", nQ_ref, nvirB, nvirB));
+    bQvvB->read(psio_, PSIF_DFOCC_INTS, true, true);
     g1Qt->gemv(false, nQ_ref, nvirB * nvirB, bQvvB, G1c_vvB, 1.0, 1.0);
     bQvvB.reset();
 
@@ -375,16 +375,16 @@ else if (reference_ == "UNRESTRICTED") {
     G2c_vo.reset();
 
     // G_AB^Q = J_Q G_ab
-    G2c_vv = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA * nvirA));
+    G2c_vv = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA));
     G2c_vv->dirprd123(Jc, G1c_vvA, 1.0, 0.0); 
-    G2c_vv->write(psio_, PSIF_DFOCC_DENS);
+    G2c_vv->write(psio_, PSIF_DFOCC_DENS, true, true);
     if(print_ > 3) G2c_vv->print();
     G2c_vv.reset();
 
     // G_ab^Q = J_Q G_ab
-    G2c_vv = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|vv)", nQ_ref, nvirB * nvirB));
+    G2c_vv = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|vv)", nQ_ref, nvirB, nvirB));
     G2c_vv->dirprd123(Jc, G1c_vvB, 1.0, 0.0); 
-    G2c_vv->write(psio_, PSIF_DFOCC_DENS);
+    G2c_vv->write(psio_, PSIF_DFOCC_DENS, true, true);
     if(print_ > 3) G2c_vv->print();
     G2c_vv.reset();
 

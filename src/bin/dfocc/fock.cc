@@ -69,8 +69,8 @@ if (reference_ == "RESTRICTED") {
     FvvA->copy(HvvA);
     FvvA->contract(true, false, nvirA, nvirA, nQ_ref * noccA, L, L, -1.0, 1.0);
     L.reset();
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA * nvirA));
-    K->read(psio_, PSIF_DFOCC_INTS);
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
+    K->read(psio_, PSIF_DFOCC_INTS, true, true);
     FvvA->gemv(true, K, Jc, 1.0, 1.0);
     K.reset();
 
@@ -150,8 +150,8 @@ else if (reference_ == "UNRESTRICTED") {
     FvvA->copy(HvvA);
     FvvA->contract(true, false, nvirA, nvirA, nQ_ref * noccA, L, L, -1.0, 1.0);
     L.reset();
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA * nvirA));
-    K->read(psio_, PSIF_DFOCC_INTS);
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
+    K->read(psio_, PSIF_DFOCC_INTS, true, true);
     FvvA->gemv(true, K, Jc, 1.0, 1.0);
     K.reset();
 
@@ -178,8 +178,8 @@ else if (reference_ == "UNRESTRICTED") {
     FvvB->copy(HvvB);
     FvvB->contract(true, false, nvirB, nvirB, nQ_ref * noccB, L, L, -1.0, 1.0);
     L.reset();
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|vv)", nQ_ref, nvirB * nvirB));
-    K->read(psio_, PSIF_DFOCC_INTS);
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|vv)", nQ_ref, nvirB, nvirB));
+    K->read(psio_, PSIF_DFOCC_INTS, true, true);
     FvvB->gemv(true, K, Jc, 1.0, 1.0);
     K.reset();
 
