@@ -46,8 +46,8 @@ namespace psi{ namespace dfoccwave{
 void DFOCC::trans_cd()
 {   
     // Read SO integrals
-    bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso2_));
-    bQso->read(psio_, PSIF_DFOCC_INTS);
+    bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));
+    bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
 
     trans_ab = 1;
     if (orb_opt_ == "TRUE" || dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
@@ -97,8 +97,8 @@ void DFOCC::trans_cd()
 void DFOCC::trans_cd_mp2()
 {   
     // Read SO integrals
-    bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso2_));
-    bQso->read(psio_, PSIF_DFOCC_INTS);
+    bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));
+    bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
 
     // Form B(Q,ia)
     trans_ab = 0;
@@ -139,7 +139,7 @@ void DFOCC::cd_ints()
           psio_->read_entry(PSIF_DFSCF_BJ, "(Q|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri_cd * nQ);
           psio_->close(PSIF_DFSCF_BJ,1);
 
-          bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso2_));
+          bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));
           for (long int mn = 0; mn < ntri_cd; mn++) {
               long int m = function_pairs[mn].first;
               long int n = function_pairs[mn].second;
@@ -150,7 +150,7 @@ void DFOCC::cd_ints()
                   bQso->set(P, (n*nso_) + m, Qmnp[P][mn]);
               }
           }
-          bQso->write(psio_, PSIF_DFOCC_INTS);
+          bQso->write(psio_, PSIF_DFOCC_INTS, true, true);
       }// end if ( options_.get_str("SCF_TYPE") == "CD" ) 
 
       else {
@@ -164,10 +164,10 @@ void DFOCC::cd_ints()
           nQ  = Ch->Q();
           nQ_ref = nQ;
           boost::shared_ptr<Matrix> L = Ch->L();
-          bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso2_));
+          bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));
           bQso->set(L);
           L.reset();
-          bQso->write(psio_, PSIF_DFOCC_INTS);
+          bQso->write(psio_, PSIF_DFOCC_INTS, true, true);
           fprintf(outfile,"\tCholesky decomposition threshold: %8.2le\n", options_.get_double("CHOLESKY_TOLERANCE"));
           fprintf(outfile,"\tNumber of Cholesky vectors:   %5li\n",nQ);
           fflush(outfile);
@@ -342,14 +342,14 @@ void DFOCC::b_vv_cd()
     bQnvA->read(psio_, PSIF_DFOCC_INTS);
     bQvvA->contract233(true, false, nvirA, nvirA, CvirA, bQnvA, 1.0, 0.0);
     bQnvA.reset();
-    bQvvA->write(psio_, PSIF_DFOCC_INTS);
-    bQvvA->write(psio_, "DF_BASIS_SCF B (Q|VV)", PSIF_DFOCC_INTS);
+    bQvvA->write(psio_, PSIF_DFOCC_INTS, true, true);
+    bQvvA->write(psio_, "DF_BASIS_SCF B (Q|VV)", PSIF_DFOCC_INTS, true, true);
 
     // Form active b(Q,ab)
     bQabA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA));
     bQabA->form_b_ab(bQvvA);
     bQvvA.reset();
-    bQabA->write(psio_, PSIF_DFOCC_INTS);
+    bQabA->write(psio_, PSIF_DFOCC_INTS, true, true);
     bQabA.reset();
 
  if (reference_ == "UNRESTRICTED") {
@@ -358,14 +358,14 @@ void DFOCC::b_vv_cd()
     bQnvB->read(psio_, PSIF_DFOCC_INTS);
     bQvvB->contract233(true, false, nvirB, nvirB, CvirB, bQnvB, 1.0, 0.0);
     bQnvB.reset();
-    bQvvB->write(psio_, PSIF_DFOCC_INTS);
-    bQvvB->write(psio_, "DF_BASIS_SCF B (Q|vv)", PSIF_DFOCC_INTS);
+    bQvvB->write(psio_, PSIF_DFOCC_INTS, true, true);
+    bQvvB->write(psio_, "DF_BASIS_SCF B (Q|vv)", PSIF_DFOCC_INTS, true, true);
 
     // Form active b(Q,ab)
     bQabB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ab)", nQ, navirB, navirB));
     bQabB->form_b_ab(bQvvB);
     bQvvB.reset();
-    bQabB->write(psio_, PSIF_DFOCC_INTS);
+    bQabB->write(psio_, PSIF_DFOCC_INTS, true, true);
     bQabB.reset();
  }
 

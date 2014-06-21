@@ -28,6 +28,11 @@
 #include <libmints/mints.h>
 #include <libpsio/psio.hpp>
 
+#define index2(i,j) ((i>j) ? ((i*(i+1)/2)+j) : ((j*(j+1)/2)+i))
+#define index4(i,j,k,l) index2(index2(i,j),index2(k,l))
+#define MIN0(a,b) (((a)<(b)) ? (a) : (b))
+#define MAX0(a,b) (((a)>(b)) ? (a) : (b))
+
 using namespace boost;
 using namespace psi;
 using namespace std;
@@ -238,11 +243,18 @@ class Tensor2d
   void write(psi::PSIO* const psio, unsigned int fileno);
   void write(psi::PSIO& psio, unsigned int fileno);
   void write(boost::shared_ptr<psi::PSIO> psio, const string& filename, unsigned int fileno);
+  void write(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, bool three_index, bool symm);
+  void write(boost::shared_ptr<psi::PSIO> psio, const string& filename, unsigned int fileno, bool three_index, bool symm);
+  void write_symm(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno);
+
   void read(psi::PSIO* psio, unsigned int fileno);
   void read(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno);
   void read(psi::PSIO& psio, unsigned int fileno);
+  void read(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, bool three_index, bool symm);
+  void read_symm(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno);
   bool read(PSIO* psio, int itap, const char *label, int dim);
   bool read(boost::shared_ptr<psi::PSIO> psio, int itap, const char *label, int dim);
+
   void save(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno);
   void save(psi::PSIO* const psio, unsigned int fileno);
   void save(psi::PSIO& psio, unsigned int fileno);

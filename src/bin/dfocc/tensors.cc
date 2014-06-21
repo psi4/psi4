@@ -1685,6 +1685,103 @@ void Tensor2d::write(boost::shared_ptr<psi::PSIO> psio, const string& filename, 
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }//
 
+void Tensor2d::write(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, bool three_index, bool symm)
+{
+    // Form Lower triangular part
+    if (three_index && symm) {
+        int ntri_col = 0.5 * d2_ * (d2_ +1);
+        SharedTensor2d temp = SharedTensor2d(new Tensor2d("temp", d1_, ntri_col));
+        #pragma omp parallel for
+        for (int R = 0; R < d1_; R++) {
+              for (int p = 0; p < d2_; p++) {
+                   for (int q = 0; q < d3_; q++) {
+                        int pq = col_idx_[p][q];
+                        int pq_sym = index2(p,q);
+                        temp->set(R, pq_sym, A2d_[R][pq]);
+                   }
+              }
+        }
+
+        // Check to see if the file is open
+        bool already_open = false;
+        if (psio->open_check(fileno)) already_open = true;
+        else psio->open(fileno, PSIO_OPEN_OLD);
+        psio->write_entry(fileno, const_cast<char*>(name_.c_str()), (char*)temp->A2d_[0], sizeof(double) * dim1_ * ntri_col);
+        if (!already_open) psio->close(fileno, 1);     // Close and keep
+        temp.reset();
+    }
+
+    else {
+        // Check to see if the file is open
+        bool already_open = false;
+        if (psio->open_check(fileno)) already_open = true;
+        else psio->open(fileno, PSIO_OPEN_OLD);
+        psio->write_entry(fileno, const_cast<char*>(name_.c_str()), (char*)A2d_[0], sizeof(double) * dim1_ * dim2_);
+        if (!already_open) psio->close(fileno, 1);     // Close and keep
+    }
+
+}//
+
+void Tensor2d::write(boost::shared_ptr<psi::PSIO> psio, const string& filename, unsigned int fileno, bool three_index, bool symm)
+{
+    // Form Lower triangular part
+    if (three_index && symm) {
+        int ntri_col = 0.5 * d2_ * (d2_ +1);
+        SharedTensor2d temp = SharedTensor2d(new Tensor2d("temp", d1_, ntri_col));
+        #pragma omp parallel for
+        for (int R = 0; R < d1_; R++) {
+              for (int p = 0; p < d2_; p++) {
+                   for (int q = 0; q < d3_; q++) {
+                        int pq = col_idx_[p][q];
+                        int pq_sym = index2(p,q);
+                        temp->set(R, pq_sym, A2d_[R][pq]);
+                   }
+              }
+        }
+
+        // Check to see if the file is open
+        bool already_open = false;
+        if (psio->open_check(fileno)) already_open = true;
+        else psio->open(fileno, PSIO_OPEN_OLD);
+        psio->write_entry(fileno, const_cast<char*>(filename.c_str()), (char*)temp->A2d_[0], sizeof(double) * dim1_ * ntri_col);
+        if (!already_open) psio->close(fileno, 1);     // Close and keep
+        temp.reset();
+    }
+
+    else {
+        // Check to see if the file is open
+        bool already_open = false;
+        if (psio->open_check(fileno)) already_open = true;
+        else psio->open(fileno, PSIO_OPEN_OLD);
+        psio->write_entry(fileno, const_cast<char*>(filename.c_str()), (char*)A2d_[0], sizeof(double) * dim1_ * dim2_);
+        if (!already_open) psio->close(fileno, 1);     // Close and keep
+    }
+
+}//
+
+void Tensor2d::write_symm(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno)
+{
+        // Form Lower triangular part
+        int ntri_col = 0.5 * dim1_ * (dim2_ +1);
+        SharedTensor1d temp = SharedTensor1d(new Tensor1d("temp", ntri_col));
+        #pragma omp parallel for
+        for (int p = 0; p < dim1_; p++) {
+              for (int q = 0; q < dim2_; q++) {
+                   int pq = index2(p,q);
+                   temp->set(pq, A2d_[p][q]);
+              }
+        }
+
+        // Check to see if the file is open
+        bool already_open = false;
+        if (psio->open_check(fileno)) already_open = true;
+        else psio->open(fileno, PSIO_OPEN_OLD);
+        psio->write_entry(fileno, const_cast<char*>(name_.c_str()), (char*)&(temp->A1d_[0]), sizeof(double) * ntri_col);
+        if (!already_open) psio->close(fileno, 1);     // Close and keep
+        temp.reset();
+
+}//
+
 void Tensor2d::read(psi::PSIO* psio, unsigned int fileno)
 {
     // Check to see if the file is open
@@ -1708,6 +1805,67 @@ void Tensor2d::read(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno)
 void Tensor2d::read(psi::PSIO& psio, unsigned int fileno)
 {
     read(&psio, fileno);
+}//
+
+void Tensor2d::read(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, bool three_index, bool symm)
+{
+    // Form Lower triangular part
+    if (three_index && symm) {
+        int ntri_col = 0.5 * d2_ * (d2_ +1);
+        SharedTensor2d temp = SharedTensor2d(new Tensor2d("temp", d1_, ntri_col));
+
+        // Check to see if the file is open
+        bool already_open = false;
+        if (psio->open_check(fileno)) already_open = true;
+        else psio->open(fileno, PSIO_OPEN_OLD);
+        psio->read_entry(fileno, const_cast<char*>(name_.c_str()), (char*)temp->A2d_[0], sizeof(double) * dim1_ * ntri_col);
+        if (!already_open) psio->close(fileno, 1);     // Close and keep
+
+        #pragma omp parallel for
+        for (int R = 0; R < d1_; R++) {
+              for (int p = 0; p < d2_; p++) {
+                   for (int q = 0; q < d3_; q++) {
+                        int pq = col_idx_[p][q];
+                        int pq_sym = index2(p,q);
+                        A2d_[R][pq] = temp->get(R, pq_sym);
+                   }
+              }
+        }
+        temp.reset();
+    }
+
+    else {
+        // Check to see if the file is open
+        bool already_open = false;
+        if (psio->open_check(fileno)) already_open = true;
+        else psio->open(fileno, PSIO_OPEN_OLD);
+        psio->read_entry(fileno, const_cast<char*>(name_.c_str()), (char*)A2d_[0], sizeof(double) * dim1_ * dim2_);
+        if (!already_open) psio->close(fileno, 1);     // Close and keep
+    }
+
+}//
+
+void Tensor2d::read_symm(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno)
+{
+        // Form Lower triangular part
+        int ntri_col = 0.5 * dim1_ * (dim2_ +1);
+        SharedTensor1d temp = SharedTensor1d(new Tensor1d("temp", ntri_col));
+
+        // Check to see if the file is open
+        bool already_open = false;
+        if (psio->open_check(fileno)) already_open = true;
+        else psio->open(fileno, PSIO_OPEN_OLD);
+        psio->read_entry(fileno, const_cast<char*>(name_.c_str()), (char*)&(temp->A1d_[0]), sizeof(double) * ntri_col);
+        if (!already_open) psio->close(fileno, 1);     // Close and keep
+
+        #pragma omp parallel for
+        for (int p = 0; p < dim1_; p++) {
+              for (int q = 0; q < dim2_; q++) {
+                   int pq = index2(p,q);
+                   A2d_[p][q] = temp->get(pq);
+              }
+        }
+        temp.reset();
 }//
 
 bool Tensor2d::read(PSIO* psio, int itap, const char *label, int dim)

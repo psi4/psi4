@@ -121,9 +121,9 @@ void DFOCC::tei_oovv_chem_ref()
     // AA spin case
     JoovvAA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OO|VV)", noccA, noccA, nvirA, nvirA));
     bQooA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA * noccA));
-    bQvvA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA * nvirA));
+    bQvvA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
     bQooA->read(psio_, PSIF_DFOCC_INTS);
-    bQvvA->read(psio_, PSIF_DFOCC_INTS);
+    bQvvA->read(psio_, PSIF_DFOCC_INTS, true, true);
     JoovvAA->gemm(true, false, bQooA, bQvvA, 1.0, 0.0);
     if (reference_ == "RESTRICTED") bQooA.reset();
     if (reference_ == "RESTRICTED") bQvvA.reset();
@@ -134,9 +134,9 @@ void DFOCC::tei_oovv_chem_ref()
     // BB spin case
     JoovvBB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (oo|vv)", noccB, noccB, nvirB, nvirB));
     bQooB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|oo)", nQ_ref, noccB * noccB));
-    bQvvB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|vv)", nQ_ref, nvirB * nvirB));
+    bQvvB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|vv)", nQ_ref, nvirB, nvirB));
     bQooB->read(psio_, PSIF_DFOCC_INTS);
-    bQvvB->read(psio_, PSIF_DFOCC_INTS);
+    bQvvB->read(psio_, PSIF_DFOCC_INTS, true, true);
     JoovvBB->gemm(true, false, bQooB, bQvvB, 1.0, 0.0);
     JoovvBB->write(psio_, PSIF_DFOCC_INTS);
     JoovvBB.reset();

@@ -86,10 +86,10 @@ if (reference_ == "RESTRICTED") {
     // VV Block
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|VV>", nQ_ref, nvirA, nvirA));
     Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA));
-    Gsep->read(psio_, PSIF_DFOCC_DENS);
+    Gsep->read(psio_, PSIF_DFOCC_DENS, true, true);
     G->gemm(true, false, Jmhalf, Gsep, 1.0, 0.0);
     Gsep.reset();
-    G->write(psio_, PSIF_DFOCC_DENS);
+    G->write(psio_, PSIF_DFOCC_DENS, true, true);
     G.reset();
 
     // Free J-1/2
@@ -203,19 +203,19 @@ else if (reference_ == "UNRESTRICTED") {
     // VV Block
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|VV>", nQ_ref, nvirA, nvirA));
     Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA));
-    Gsep->read(psio_, PSIF_DFOCC_DENS);
+    Gsep->read(psio_, PSIF_DFOCC_DENS, true, true);
     G->gemm(true, false, Jmhalf, Gsep, 1.0, 0.0);
     Gsep.reset();
-    G->write(psio_, PSIF_DFOCC_DENS);
+    G->write(psio_, PSIF_DFOCC_DENS, true, true);
     G.reset();
 
     // vv Block
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|vv>", nQ_ref, nvirB, nvirB));
     Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|vv)", nQ_ref, nvirB, nvirB));
-    Gsep->read(psio_, PSIF_DFOCC_DENS);
+    Gsep->read(psio_, PSIF_DFOCC_DENS, true, true);
     G->gemm(true, false, Jmhalf, Gsep, 1.0, 0.0);
     Gsep.reset();
-    G->write(psio_, PSIF_DFOCC_DENS);
+    G->write(psio_, PSIF_DFOCC_DENS, true, true);
     G.reset();
 
     // Free J-1/2

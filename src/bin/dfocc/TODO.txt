@@ -1,5 +1,4 @@
 * OSCS-MP2
 * QC-SCF 
 * GWH Guess
-* Amplitude direct for MP2 and the S2 code
 * Simplify kappa solver
