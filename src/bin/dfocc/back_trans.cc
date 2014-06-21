@@ -37,7 +37,7 @@ void DFOCC::back_trans()
     fprintf(outfile,"\tBacktransforming OPDM, TPDM, and GFM to the AO basis...\n");  
     fflush(outfile);
 
-    SharedTensor2d Gmo, Gao, G, Gref, Gsep, Gcorr;
+    SharedTensor2d Gmo, Gao, Gao2, G, Gref, Gsep, Gcorr, cQso2;
     timer_on("back_trans");
 if (reference_ == "RESTRICTED") {
 
@@ -90,6 +90,7 @@ if (reference_ == "RESTRICTED") {
     Gao->symmetrize3(Gao);
     Gao->write(psio_, PSIF_DFOCC_DENS, true, true);
 
+    /*
     // 2-Index TPDM
     bQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mn)", nQ_ref, nso_, nso_));
     bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
@@ -106,6 +107,35 @@ if (reference_ == "RESTRICTED") {
     cQso.reset();
     Gao.reset();
     //G->write(psio_, PSIF_DFOCC_DENS);
+    G->write_symm(psio_, PSIF_DFOCC_DENS);
+    G.reset();
+    */
+
+    // 2-Index TPDM
+    bQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mn)", nQ_ref, nso_, nso_));
+    bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
+    Jmhalf = SharedTensor2d(new Tensor2d("DF_BASIS_SCF Jmhalf <P|Q>", nQ_ref, nQ_ref));
+    Jmhalf->read(psio_, PSIF_DFOCC_INTS);
+    cQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF C (Q|mn)", nQ_ref, nso_, nso_));
+    cQso->gemm(true, false, Jmhalf, bQso, 1.0, 0.0);
+    bQso.reset();
+    Jmhalf.reset();
+
+    // Packed c_mn^Q
+    cQso2 = SharedTensor2d(new Tensor2d("DF_BASIS_SCF C (Q|m>=n)", nQ_ref, ntri_so));
+    cQso2->symm_packed(cQso);
+    cQso.reset();
+
+    // LTM of G_mn^Q
+    Gao2 = SharedTensor2d(new Tensor2d("RefSep 3-Index TPDM (Q|n>=n)", nQ_ref, ntri_so));
+    Gao2->ltm(Gao);
+    Gao.reset();
+
+    // G_PQ = 1/2 \sum_{mn} c_mn^P G_mn^Q = 1/2 \sum_{m>=n} c_mn^P G_mn^Q (2 - \delta_{mn})
+    G = SharedTensor2d(new Tensor2d("2-Index RefSep TPDM (P|Q)", nQ_ref, nQ_ref));
+    G->gemm(false, true, cQso2, Gao2, 0.5, 0.0);
+    Gao2.reset();
+    cQso2.reset();
     G->write_symm(psio_, PSIF_DFOCC_DENS);
     G.reset();
 
@@ -126,6 +156,7 @@ if (reference_ == "RESTRICTED") {
     Gao->symmetrize3(Gao);
     Gao->write(psio_, PSIF_DFOCC_DENS, true, true);
 
+    /*
     // 2-Index TPDM
     bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));
     bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
@@ -140,6 +171,35 @@ if (reference_ == "RESTRICTED") {
     cQso.reset();
     Gao.reset();
     //G->write(psio_, PSIF_DFOCC_DENS);
+    G->write_symm(psio_, PSIF_DFOCC_DENS);
+    G.reset();
+    */
+
+    // 2-Index TPDM
+    bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));
+    bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
+    Jmhalf = SharedTensor2d(new Tensor2d("DF_BASIS_CC Jmhalf <P|Q>", nQ, nQ));
+    Jmhalf->read(psio_, PSIF_DFOCC_INTS);
+    cQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|mn)", nQ, nso_, nso_));
+    cQso->gemm(true, false, Jmhalf, bQso, 1.0, 0.0);
+    bQso.reset();
+    Jmhalf.reset();
+
+    // Packed c_mn^Q
+    cQso2 = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|m>=n)", nQ, ntri_so));
+    cQso2->symm_packed(cQso);
+    cQso.reset();
+
+    // LTM of G_mn^Q
+    Gao2 = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|n>=n)", nQ, ntri_so));
+    Gao2->ltm(Gao);
+    Gao.reset();
+
+    // G_PQ = 1/2 \sum_{mn} c_mn^P G_mn^Q = 1/2 \sum_{m>=n} c_mn^P G_mn^Q (2 - \delta_{mn})
+    G = SharedTensor2d(new Tensor2d("2-Index Correlation TPDM (P|Q)", nQ, nQ));
+    G->gemm(false, true, cQso2, Gao2, 0.5, 0.0);
+    Gao2.reset();
+    cQso2.reset();
     G->write_symm(psio_, PSIF_DFOCC_DENS);
     G.reset();
 
@@ -229,6 +289,7 @@ else if (reference_ == "UNRESTRICTED") {
     Gao->symmetrize3(Gao);
     Gao->write(psio_, PSIF_DFOCC_DENS, true, true);
 
+    /*
     // 2-Index TPDM
     bQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mn)", nQ_ref, nso_, nso_));
     bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
@@ -243,6 +304,35 @@ else if (reference_ == "UNRESTRICTED") {
     cQso.reset();
     Gao.reset();
     //G->write(psio_, PSIF_DFOCC_DENS);
+    G->write_symm(psio_, PSIF_DFOCC_DENS);
+    G.reset();
+    */
+
+    // 2-Index TPDM
+    bQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mn)", nQ_ref, nso_, nso_));
+    bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
+    Jmhalf = SharedTensor2d(new Tensor2d("DF_BASIS_SCF Jmhalf <P|Q>", nQ_ref, nQ_ref));
+    Jmhalf->read(psio_, PSIF_DFOCC_INTS);
+    cQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF C (Q|mn)", nQ_ref, nso_, nso_));
+    cQso->gemm(true, false, Jmhalf, bQso, 1.0, 0.0);
+    bQso.reset();
+    Jmhalf.reset();
+
+    // Packed c_mn^Q
+    cQso2 = SharedTensor2d(new Tensor2d("DF_BASIS_SCF C (Q|m>=n)", nQ_ref, ntri_so));
+    cQso2->symm_packed(cQso);
+    cQso.reset();
+
+    // LTM of G_mn^Q
+    Gao2 = SharedTensor2d(new Tensor2d("RefSep 3-Index TPDM (Q|n>=n)", nQ_ref, ntri_so));
+    Gao2->ltm(Gao);
+    Gao.reset();
+
+    // G_PQ = 1/2 \sum_{mn} c_mn^P G_mn^Q = 1/2 \sum_{m>=n} c_mn^P G_mn^Q (2 - \delta_{mn})
+    G = SharedTensor2d(new Tensor2d("2-Index RefSep TPDM (P|Q)", nQ_ref, nQ_ref));
+    G->gemm(false, true, cQso2, Gao2, 0.5, 0.0);
+    Gao2.reset();
+    cQso2.reset();
     G->write_symm(psio_, PSIF_DFOCC_DENS);
     G.reset();
 
@@ -272,6 +362,7 @@ else if (reference_ == "UNRESTRICTED") {
     Gao->symmetrize3(Gao);
     Gao->write(psio_, PSIF_DFOCC_DENS, true, true);
 
+    /*
     // 2-Index TPDM
     bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));
     bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
@@ -286,6 +377,35 @@ else if (reference_ == "UNRESTRICTED") {
     cQso.reset();
     Gao.reset();
     //G->write(psio_, PSIF_DFOCC_DENS);
+    G->write_symm(psio_, PSIF_DFOCC_DENS);
+    G.reset();
+    */
+
+    // 2-Index TPDM
+    bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));
+    bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
+    Jmhalf = SharedTensor2d(new Tensor2d("DF_BASIS_CC Jmhalf <P|Q>", nQ, nQ));
+    Jmhalf->read(psio_, PSIF_DFOCC_INTS);
+    cQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|mn)", nQ, nso_, nso_));
+    cQso->gemm(true, false, Jmhalf, bQso, 1.0, 0.0);
+    bQso.reset();
+    Jmhalf.reset();
+
+    // Packed c_mn^Q
+    cQso2 = SharedTensor2d(new Tensor2d("DF_BASIS_CC C (Q|m>=n)", nQ, ntri_so));
+    cQso2->symm_packed(cQso);
+    cQso.reset();
+
+    // LTM of G_mn^Q
+    Gao2 = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|n>=n)", nQ, ntri_so));
+    Gao2->ltm(Gao);
+    Gao.reset();
+
+    // G_PQ = 1/2 \sum_{mn} c_mn^P G_mn^Q = 1/2 \sum_{m>=n} c_mn^P G_mn^Q (2 - \delta_{mn})
+    G = SharedTensor2d(new Tensor2d("2-Index Correlation TPDM (P|Q)", nQ, nQ));
+    G->gemm(false, true, cQso2, Gao2, 0.5, 0.0);
+    Gao2.reset();
+    cQso2.reset();
     G->write_symm(psio_, PSIF_DFOCC_DENS);
     G.reset();
 

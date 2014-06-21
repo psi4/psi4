@@ -108,6 +108,10 @@ class Tensor1d
   int dim1() const { return dim1_; }
   // dirprd: A1d_[i] = a[i] * b[i]
   void dirprd(SharedTensor1d &a, SharedTensor1d &b);
+  // symm_packed A(p>=q) = A(p,q) * (2 - \delta_{pq}) 
+  void symm_packed(const SharedTensor2d &A);
+  // ltm: lower triangular matrix: A(p>=q) = A(p,q) 
+  void ltm(const SharedTensor2d &A);
 
   friend class Tensor2d;
   friend class Tensor3d;
@@ -327,11 +331,14 @@ class Tensor2d
   void form_b_ia(int frzc, const SharedTensor2d &A);
   void form_b_ab(const SharedTensor2d &A);
 
-
   // B_pq = 1/2 (A_pq + A_qp)
   void symmetrize();
   // C(Q,pq) = 1/2 [ A(Q,pq) + B(Q,qp) ]
   void symmetrize3(const SharedTensor2d &A);
+  // A(Q, p>=q) = A(Q,pq) * (2 -\delta_{pq})
+  void symm_packed(const SharedTensor2d &A);
+  // A(Q, p>=q) = A(Q,pq)
+  void ltm(const SharedTensor2d &A);
 
   friend class Tensor1d;
   friend class Tensor3d;

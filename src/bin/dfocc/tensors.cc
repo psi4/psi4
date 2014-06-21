@@ -350,6 +350,32 @@ void Tensor1d::dirprd(SharedTensor1d &a, SharedTensor1d &b)
   else throw SanityCheckError("Vector dimensions do NOT match!", __FILE__, __LINE__);
 }//
 
+void Tensor1d::symm_packed(const SharedTensor2d &A)
+{
+    // Form Lower triangular part
+    #pragma omp parallel for
+    for (int p = 0; p < A->dim1(); p++) {
+          for (int q = 0; q <= p; q++) {
+               int pq = index2(p,q);
+               double perm = (p == q ? 1.0 : 2.0);
+               A1d_[pq] = perm * A->get(p,q);
+          }
+    }
+
+}//
+
+void Tensor1d::ltm(const SharedTensor2d &A)
+{
+    // Form Lower triangular part
+    #pragma omp parallel for
+    for (int p = 0; p < A->dim1(); p++) {
+          for (int q = 0; q <= p; q++) {
+               int pq = index2(p,q);
+               A1d_[pq] = A->get(p,q);
+          }
+    }
+
+}//
 
 /********************************************************************************************/
 /************************** 2d array ********************************************************/
@@ -2999,6 +3025,39 @@ void Tensor2d::symmetrize3(const SharedTensor2d &A)
     add(temp);
     scale(0.5);
     temp.reset();
+}//
+
+void Tensor2d::symm_packed(const SharedTensor2d &A)
+{
+    // Form symetric packed 3-index
+    #pragma omp parallel for
+    for (int R = 0; R < A->d1_; R++) {
+          for (int p = 0; p < A->d2_; p++) {
+               for (int q = 0; q <= p; q++) {
+                    int pq = A->col_idx_[p][q];
+                    int pq_sym = index2(p,q);
+                    double perm = (p == q ? 1.0 : 2.0);
+                    A2d_[R][pq_sym] = perm * A->get(R, pq);
+               }
+          }
+    }
+
+}//
+
+void Tensor2d::ltm(const SharedTensor2d &A)
+{
+    // Form Lower triangular part
+    #pragma omp parallel for
+    for (int R = 0; R < A->d1_; R++) {
+          for (int p = 0; p < A->d2_; p++) {
+               for (int q = 0; q <= p; q++) {
+                    int pq = A->col_idx_[p][q];
+                    int pq_sym = index2(p,q);
+                    A2d_[R][pq_sym] = A->get(R, pq);
+               }
+          }
+    }
+
 }//
 
 
