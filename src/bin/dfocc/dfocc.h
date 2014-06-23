@@ -109,6 +109,7 @@ protected:
     void zvec_solver_uhf();
     void effective_pdms();
     void effective_gfm();
+    void effective_pdm_gfm();
     void oeprop();
     void s2_response();
     void s2_lagrangian();
