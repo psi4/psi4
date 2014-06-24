@@ -26,12 +26,6 @@
 
 namespace psi {
 
-
-
-boost::shared_ptr<worldcomm> initialize_communicator(const int &argc, char **argv) {
-    return boost::shared_ptr<worldcomm>(initialize_specific_communicator<worldcomm>(argc, argv));
-}
-
 void init_openmp() {
 #ifdef _OPENMP
     // Disable nested threads in OpenMP

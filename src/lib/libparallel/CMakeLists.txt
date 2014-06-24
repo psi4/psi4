@@ -1,3 +1,6 @@
-set(SRC fprintf.cc p_fprintf.cc parallel.cc process.cc)
+set(SRC fprintf.cc p_fprintf.cc process.cc)
+if(${MPI_FOUND} AND "FALSE")
+   set(SRC ${SRC} mpi_wrapper.cc)
+endif()
 add_library(parallel ${SRC})
 add_dependencies(parallel mints)

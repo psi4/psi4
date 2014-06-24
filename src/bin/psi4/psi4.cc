@@ -72,7 +72,7 @@ int main(int argc, char **argv)
     Process::environment.initialize();   // grabs the environment from the global environ variable
 
     // Initialize the world communicator
-    WorldComm = initialize_communicator(argc, argv);
+    WorldComm = boost::shared_ptr<worldcomm>(new worldcomm(argc, argv));
 
     // There is only one timer:
     timer_init();
@@ -122,7 +122,6 @@ int main(int argc, char **argv)
     Script::language->finalize();
 
     WorldComm->sync();
-    WorldComm->finalize();
 
 
     Process::environment.wavefunction().reset();
