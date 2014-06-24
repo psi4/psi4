@@ -22,7 +22,7 @@
 
 #include <stdio.h>
 #include <stdarg.h>
-#include "parallel.h"
+#include "psi4-dec.h"
 
 using namespace psi;
 
