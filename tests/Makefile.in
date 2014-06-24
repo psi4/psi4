@@ -83,8 +83,8 @@ quicktestdirs = tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt tu4-h2o-freq \
   cisd-opt-fd rasci-h2o mpn-bh \
   mcscf1 sapt1 sad1 \
   psimrcc-sp1 mints1 mints2 matrix1 opt1 opt1-fd gibbs omp2-2 \
-  omp3-1 omp2_5-2 ocepa1 dfomp2-1 dfomp2-2 cdomp2-1 cdomp2-2 fnocc2 fnocc4 \
-  mp2_5-grad1 ocepa-grad2 dfomp2-1 dfomp2-2 dofmp2-grad1 dofmp2-grad2 dfmp2-grad1 dfmp2-grad2 dcft-grad1 \
+  omp3-1 omp2_5-2 ocepa1 cdomp2-1 cdomp2-2 fnocc2 fnocc4 \
+  mp2_5-grad1 ocepa-grad2 dfomp2-1 dfomp2-2 dfomp2-grad1 dfomp2-grad2 dfmp2-grad1 dfmp2-grad2 dcft-grad1 \
   dcft1 dcft2 dcft3 dcft4 pywrap-db1 pywrap-db2 pywrap-cbs1 pywrap-all pywrap-alias \
   pywrap-molecule pywrap-freq-e-sowreap
 
