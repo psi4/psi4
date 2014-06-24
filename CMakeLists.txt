@@ -254,6 +254,11 @@ endif()
 add_subdirectory(src)
 
 #
+# Add the library directory, for install purposes
+#
+add_subdirectory(lib)
+
+#
 # Echo the directory information back
 #
 set(RECONFIGURE_PSI "${PROJECT_BINARY_DIR}/reconfigure.sh")
@@ -272,5 +277,10 @@ configure_file(cmake/reconfigure.sh.in reconfigure.sh)
 #    message(STATUS "${_variableName}=${${_variableName}}")
 #endforeach()
 
+FILE(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin)
+INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bin/psi4 DESTINATION
+${CMAKE_INSTALL_PREFIX}/bin)
+
 enable_testing()
 add_subdirectory(tests)
+
