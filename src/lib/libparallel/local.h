@@ -23,7 +23,7 @@
 #ifndef _psi_src_lib_libparallel_local_h_
 #define	_psi_src_lib_libparallel_local_h_
 
-#include <psi4-dec.h>
+#include "process.h"
 #include <cstring>
 #include <libparallel/openmp.h>
 

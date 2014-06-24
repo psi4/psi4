@@ -31,6 +31,7 @@ namespace psi {
   FILE *outfile;
   char *psi_file_prefix;
   std::string outfile_name;
+  boost::shared_ptr<worldcomm> WorldComm;
 }
 
 #endif
