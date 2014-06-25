@@ -45,8 +45,8 @@ if (reference_ == "RESTRICTED") {
         u2_rmp2_direct(T, U);
     }
     else {
-        T->read(psio_, PSIF_DFOCC_AMPS);
-        U->read(psio_, PSIF_DFOCC_AMPS);
+        T->read_symm(psio_, PSIF_DFOCC_AMPS);
+        U->read_symm(psio_, PSIF_DFOCC_AMPS);
     }
 
     // G_ij = \sum_{m,e,f} T'(ie,mf) U'(je,mf)    
@@ -88,7 +88,7 @@ else if (reference_ == "UNRESTRICTED") {
     t2 = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
     l2 = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
     if (orb_opt_ == "FALSE" && mp2_amp_type_ == "DIRECT") t2AA_ump2_direct(t2);
-    else t2->read(psio_, PSIF_DFOCC_AMPS);
+    else t2->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
     l2->copy(t2);
     GijA->contract442(1, 1, t2, l2, 0.5, 0.0);
     // G_AB = -1/2\sum_{M,N,F} t_MN^FA t_MN^FB
@@ -116,7 +116,7 @@ else if (reference_ == "UNRESTRICTED") {
     t2 = SharedTensor2d(new Tensor2d("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
     l2 = SharedTensor2d(new Tensor2d("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
     if (orb_opt_ == "FALSE" && mp2_amp_type_ == "DIRECT") t2BB_ump2_direct(t2);
-    else t2->read(psio_, PSIF_DFOCC_AMPS);
+    else t2->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
     l2->copy(t2);
     GijB->contract442(1, 1, t2, l2, 0.5, 1.0);
     // G_ab = -1/2\sum_{m,n,f} t_mn^fa t_mn^fb
