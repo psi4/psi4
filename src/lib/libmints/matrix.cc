@@ -3380,9 +3380,9 @@ void Matrix::bcast(int broadcaster)
 
 void Matrix::sum()
 {
-    for (int h=0; h<nirrep_; ++h)
-        if (rowspi_[h] > 0 && colspi_[h] > 0)
-            WorldComm->sum(matrix_[h][0], rowspi_[h] * colspi_[h^symmetry_]);
+   //RMR--Removed the call to worldcomm that was here because as
+   //it stood it was nothing more than a memcpy at best, probably
+   //best if this function does nothing versus expecting such behavior
 }
 
 bool Matrix::equal(const Matrix& rhs)

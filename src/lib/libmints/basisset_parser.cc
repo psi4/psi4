@@ -147,7 +147,7 @@ vector<string> BasisSetParser::load_file(const std::string& filename,
     }
 
     if (nproc > 1)
-        WorldComm->bcast_serializable(lines, 0);
+        WorldComm->bcast(&lines[0],lines.size(), 0);
 
     return lines;
 }

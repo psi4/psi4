@@ -84,17 +84,12 @@ class Parallel {
          return CurrentComm.back();
       }
 
-      inline int thread_id(const pthread_t &thread) {
+      int thread_id(const pthread_t &thread) {
          return 0;
       }
 
-      template <typename type>
-      inline void sum(type data, int nelem, type *receive_buffer=0,
-            const std::string& CommName="NONE") const {
-         static_cast<const DerivedType*>(this)->sumImpl(data, nelem,
-               receive_buffer, CommName);
-      }
-
+      virtual void MakeComm(const std::string& Name, const int Color,
+            const std::string& Comm2Split="NONE"){}
 };// End Parallel base class
 }//End namespace psi
 #endif  /* _psi_src_lib_libparallel_parallel_h_ */
