@@ -354,7 +354,5 @@ void Vector::bcast(int broadcaster)
 
 void Vector::sum()
 {
-    for (int h=0; h<nirrep_; ++h)
-        if (dimpi_[h] > 0)
-            WorldComm->sum(vector_[h], dimpi_[h]);
+   ///RMR-See note in Matrix::sum()
 }

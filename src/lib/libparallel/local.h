@@ -37,13 +37,6 @@ class LocalCommWrapper: public Parallel<LocalCommWrapper> {
 		}
 
     template<typename type>
-    void sumImpl(type data,const int nelem, type *receive_buffer,const
-    		std::string& CommName="NONE")const{
-        if (receive_buffer != 0)
-            std::memcpy(receive_buffer,data,sizeof(type)*nelem);
-    }
-
-    template<typename type>
     void all_gatherImpl(const type* localdata,const int nelem, type* target,
           const std::string& CommName="NONE") const {
        if(localdata!=target)std::memcpy(localdata,target,
@@ -60,6 +53,7 @@ class LocalCommWrapper: public Parallel<LocalCommWrapper> {
        omp_set_nested(0);
        if (Process::environment("OMP_NUM_THREADS") == "")
            Process::environment.set_n_threads(1);
+       std::cout<<"Made local comm"<<std::endl;
     }
 }; // End of LocalCommWrapper class
 

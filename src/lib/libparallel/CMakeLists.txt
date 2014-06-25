@@ -1,5 +1,5 @@
 set(SRC fprintf.cc p_fprintf.cc process.cc)
-if(${MPI_FOUND} AND "FALSE")
+if(${MPI_FOUND})
    set(SRC ${SRC} mpi_wrapper.cc)
 endif()
 add_library(parallel ${SRC})

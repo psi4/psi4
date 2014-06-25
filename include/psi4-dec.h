@@ -33,6 +33,7 @@
 #include <exception.h>
 #include <libmints/typedefs.h>
 #include "libparallel/local.h"
+#include "libparallel/mpi_wrapper.h"
 #include "process.h"
 namespace psi {
 
@@ -47,11 +48,12 @@ extern bool verbose;
 // Very useful regex for matching floating point numbers
 #define NUMBER "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"
 
-#if defined(HAVE_MPI)
-typedef MPICommunicator worldcomm;
+#if HAVE_MPI
+   typedef MPICommunicator worldcomm;
 #else
-typedef LocalCommWrapper worldcomm;
+   typedef LocalCommWrapper worldcomm;
 #endif
+
 extern boost::shared_ptr<worldcomm> WorldComm;
 void die_if_not_converged();
 
