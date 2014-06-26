@@ -37,7 +37,7 @@
 namespace psi {
 
 void PSIO::close(unsigned int unit, int keep) {
-    WorldComm->sync();
+    //WorldComm->sync();
   unsigned int i;
   psio_ud *this_unit;
   psio_tocentry *this_entry, *next_entry;

@@ -79,6 +79,9 @@ endif()
 find_package(MPI)
 include(CheckIncludeFiles)
 check_include_files(dlfcn.h HAVE_DLFCN)
+if(MPI_FOUND)
+   add_definitions(-DHAVE_MPI)
+endif()
 
 include(CheckFunctionExists)
 check_function_exists(MKL_Free_Buffers HAVE_MKL) # NEEDS TO BE TESTED

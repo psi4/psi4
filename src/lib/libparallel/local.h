@@ -39,8 +39,8 @@ class LocalCommWrapper: public Parallel<LocalCommWrapper> {
     template<typename type>
     void all_gatherImpl(const type* localdata,const int nelem, type* target,
           const std::string& CommName="NONE") const {
-       if(localdata!=target)std::memcpy(localdata,target,
-             sizeof(type)*nelem);
+       if(localdata!=target)
+             std::memcpy(const_cast<type*>(localdata),target,sizeof(type)*nelem);
     }
     friend Parallel<LocalCommWrapper>;
 	public:

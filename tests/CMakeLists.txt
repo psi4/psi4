@@ -145,4 +145,10 @@ add_test(
     NAME ${Tests2Run}
     WORKING_DIRECTORY ${RUNDIR}
     COMMAND perl ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${OUTFILE} ${PSIEXE})
+if(MPI_FOUND AND "FALSE")
+add_test(
+    NAME MPI-${Tests2Run}
+    WORKING_DIRECTORY ${RUNDIR}
+    COMMAND mpirun -n 2 perl ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${OUTFILE} ${PSIEXE})
+endif()
 endforeach(Tests2Run)

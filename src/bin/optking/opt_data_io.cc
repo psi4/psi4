@@ -58,12 +58,10 @@ bool opt_io_is_present(void) {
   bool file_present = false;
 
 #if defined(OPTKING_PACKAGE_PSI)
-  ::psi::WorldComm->sync();
   psio_open(PSI_OPTDATA_FILE_NUM, PSIO_OPEN_OLD);
   if (psio_rd_toclen(PSI_OPTDATA_FILE_NUM) > 0)
     file_present = true;
   psio_close(PSI_OPTDATA_FILE_NUM, 1);
-  psi::WorldComm->sync();
 
 #elif defined(OPTKING_PACKAGE_QCHEM)
   using opt_io::opt_data_stream;
@@ -83,13 +81,11 @@ bool opt_io_is_present(void) {
 void opt_io_remove(void) {
 #if defined(OPTKING_PACKAGE_PSI)
   // check retention setting in .psi4rc - maybe the user likes file 1 !
-  psi::WorldComm->sync();
   if (! psi::_default_psio_manager_->get_specific_retention(1)) {
     if (!psio_open_check(PSI_OPTDATA_FILE_NUM)) // if not open, open it
       psio_open(PSI_OPTDATA_FILE_NUM, PSIO_OPEN_OLD);
     psio_close(PSI_OPTDATA_FILE_NUM, 0);        // close and delete it
   }
-  psi::WorldComm->sync();
 
 #elif defined(OPTKING_PACKAGE_QCHEM)
   using opt_io::opt_data_stream;
@@ -117,14 +113,12 @@ void opt_io_open(OPT_IO_FILE_STATUS status) {
 #if defined(OPTKING_PACKAGE_PSI)
   // if file is already open, then close it
   // delete it if NEW is requested
-  psi::WorldComm->sync();
   if (psio_open_check(PSI_OPTDATA_FILE_NUM)) {
     if (status == OPT_IO_OPEN_OLD)
       psio_close(PSI_OPTDATA_FILE_NUM, 1);
     else if (status == OPT_IO_OPEN_NEW)
       psio_close(PSI_OPTDATA_FILE_NUM, 0);
   }
-  psi::WorldComm->sync();
 
   psio_open(PSI_OPTDATA_FILE_NUM, PSIO_OPEN_OLD);
 
@@ -154,7 +148,6 @@ void opt_io_open(OPT_IO_FILE_STATUS status) {
 void opt_io_close(int keep) {
 
 #if defined(OPTKING_PACKAGE_PSI)
-  psi::WorldComm->sync();
   psio_close(PSI_OPTDATA_FILE_NUM, 1);
 #elif defined(OPTKING_PACKAGE_QCHEM)
   opt_io::opt_data_stream.close();
