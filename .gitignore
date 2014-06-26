@@ -36,6 +36,8 @@ _coverage_html
 # Files resulting from running PSI4
 output.dat
 *.32
+*.clean
+*.dat
 *.timer.dat
 
 # Compilation directories that people use
@@ -44,6 +46,7 @@ obj*
 obj
 objdir_clang_debug
 objdir_gcc_debug
+build
 debug
 debug_latest
 
