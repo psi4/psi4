@@ -21,9 +21,10 @@
  */
 
 // This tells us the Python version number
+#include <boost/python.hpp>
 #include <boost/python/detail/wrap_python.hpp>
 #include <boost/python/module.hpp>
-#include <boost/python.hpp>
+
 #include <boost/tokenizer.hpp>
 #include <boost/python/list.hpp>
 #include <boost/python/dict.hpp>
@@ -79,6 +80,7 @@ void export_mints();
 void export_functional();
 void export_oeprop();
 void export_cubefile();
+
 
 // In export_plugins.cc
 void py_psi_plugin_close_all();
@@ -991,7 +993,6 @@ void py_psi_set_parent_symmetry(std::string pg)
     Process::environment.set_parent_symmetry(group);
 }
 
-
 boost::shared_ptr<Molecule> py_psi_get_active_molecule()
 {
     return Process::environment.molecule();
@@ -1076,14 +1077,72 @@ int py_psi_get_n_threads()
     return Process::environment.get_n_threads();
 }
 
-int py_psi_get_nproc()
+int py_psi_get_nproc(const std::string& CommName)
 {
-    return WorldComm->nproc();
+    return WorldComm->nproc(CommName);
 }
 
-int py_psi_get_me()
+int py_psi_get_me(const std::string& CommName)
 {
-    return WorldComm->me();
+    return WorldComm->me(CommName);
+}
+
+void py_make_comm(const std::string& CommName,const int Color,const std::string& Comm2Split){
+	WorldComm->MakeComm(CommName,Color,Comm2Split);
+}
+
+void py_free_comm(const std::string& CommName){
+	//WorldComm->FreeComm(CommName);
+}
+
+std::string py_get_comm(){
+	std::string the_comm=WorldComm->communicator();
+	return the_comm;
+}
+
+
+template <typename T>
+boost::python::list bcast_wrapper(T* data,int nelem, int broadcaster,const std::string& CommName){
+	int me=WorldComm->me(CommName);
+	T* datatarget;
+	if(me!=broadcaster)datatarget=new T[nelem];
+	else datatarget=data;
+	WorldComm->bcast(datatarget,nelem,broadcaster,CommName);
+	boost::python::list data2return;
+	for(int i=0;i<nelem;i++)data2return.append(datatarget[i]);
+	if(me!=broadcaster)delete [] datatarget;
+	return data2return;
+}
+
+boost::python::list py_bcast_double(boost::python::list& data,int broadcaster,const std::string& CommName){
+	std::vector<double>data2bcast;
+	int nelem=boost::python::len(data);
+	for(int i=0;i<nelem;i++)data2bcast.push_back(boost::python::extract<double>(data[i]));
+	return bcast_wrapper(&data2bcast[0],nelem,broadcaster,CommName);
+}
+
+template <typename T>
+boost::python::list all_gather_wrapper(const T* data, int nelem,const std::string& CommName){
+	int nproc=WorldComm->nproc(CommName);
+	int TotalElem=nproc*nelem;
+	T *datatarget=new T[TotalElem];
+	WorldComm->all_gather(data,nelem,datatarget,CommName);
+	boost::python::list data2return;
+	for(int i=0;i<TotalElem;i++)data2return.append(datatarget[i]);
+	delete [] datatarget;
+	return data2return;
+}
+
+
+boost::python::list py_all_gather_double(const boost::python::list& data,const std::string& CommName){
+	std::vector<double>data2gather;
+	int nelem=boost::python::len(data);
+	for(int i=0;i<nelem;i++)data2gather.push_back(boost::python::extract<double>(data[i]));
+	return all_gather_wrapper(&data2gather[0],nelem,CommName);
+}
+
+void py_sync(const std::string& CommName){
+	WorldComm->sync(CommName);
 }
 
 boost::shared_ptr<Wavefunction> py_psi_wavefunction()
@@ -1180,7 +1239,7 @@ void psi4_python_module_finalize()
     Script::language->finalize();
 
     WorldComm->sync();
-    WorldComm->finalize();
+    //WorldComm->finalize();
 }
 #endif
 
@@ -1222,6 +1281,10 @@ BOOST_PYTHON_MODULE(psi4)
     def("initialize", &psi4_python_module_initialize);
     def("finalize", &psi4_python_module_finalize);
 #endif
+
+
+
+
 
     register_exception_translator<PsiException>(&translate_psi_exception);
 
@@ -1266,8 +1329,14 @@ BOOST_PYTHON_MODULE(psi4)
     def("get_memory", py_psi_get_memory, "Returns the amount of memory available to Psi (in bytes).");
     def("set_nthread", &py_psi_set_n_threads, "Sets the number of threads to use in SMP parallel computations.");
     def("nthread", &py_psi_get_n_threads, "Returns the number of threads to use in SMP parallel computations.");
-    def("nproc", &py_psi_get_nproc, "Returns the number of processors being used in a MADNESS parallel run.");
-    def("me", &py_psi_get_me, "Returns the current process ID in a MADNESS parallel run.");
+    def("nproc", &py_psi_get_nproc, "Returns the number of processes.");
+    def("me", &py_psi_get_me, "Returns the current process ID.");
+    def("make_comm",&py_make_comm, "Makes a communicator");
+    def("free_comm",&py_free_comm, "Frees a communicator");
+    def("get_comm",&py_get_comm, "Returns the current communicator");
+    def("sync",&py_sync,"Waits for all MPI processes to ketchup");
+    def("bcast_double",&py_bcast_double,"broadcasts a list of doubles");
+    def("all_gather_double",&py_all_gather_double,"all_gathers a list of doubles");
 
     def("set_parent_symmetry", py_psi_set_parent_symmetry, "Sets the symmetry of the 'parent' (undisplaced) geometry, by Schoenflies symbol, at the beginning of a finite difference computation.");
     def("print_options", py_psi_print_options, "Prints the currently set options (to the output file) for the current module.");
@@ -1381,6 +1450,7 @@ BOOST_PYTHON_MODULE(psi4)
     export_chkpt();
     export_mints();
     export_functional();
+
 
     typedef string (Process::Environment::*environmentStringFunction)(const string&);
 

@@ -204,20 +204,20 @@ void HF::common_init()
         if(nelectron_%2){
             multiplicity_ = 2;
             molecule_->set_multiplicity(2);
-            if (WorldComm->me() == 0) {
+
             // There are an odd number of electrons
                 fprintf(outfile,"\tThere are an odd number of electrons - assuming doublet.\n"
                             "\tSpecify the multiplicity with the MULTP option in the\n"
                             "\tinput if this is incorrect\n\n");
-            }
+
         }else{
             multiplicity_ = 1;
             // There are an even number of electrons
-            if (WorldComm->me() == 0) {
+
                 fprintf(outfile,"\tThere are an even number of electrons - assuming singlet.\n"
                             "\tSpecify the multiplicity with the MULTP option in the\n"
                             "\tinput if this is incorrect\n\n");
-            }
+
         }
     }
 
@@ -311,14 +311,14 @@ void HF::common_init()
                 lambda_ = 1.0;
             }
             else {
-                if (WorldComm->me() == 0) {
+
                     fprintf(outfile, "Unknown PERTURB_WITH. Applying no perturbation.\n");
-                }
+
             }
         } else {
-            if (WorldComm->me() == 0) {
+
                 fprintf(outfile, "PERTURB_H is true, but PERTURB_WITH not found, applying no perturbation.\n");
-            }
+
         }
     }
 
@@ -375,7 +375,7 @@ void HF::damp_update()
 
 void HF::integrals()
 {
-    if (print_ && WorldComm->me() == 0)
+    if (print_ )
         fprintf(outfile, "  ==> Integral Setup <==\n\n");
 
     // Build the JK from options, symmetric type
@@ -509,7 +509,7 @@ void HF::find_occupation()
 
         // If print > 2 (diagnostics), print always
         if((print_ > 2 || (print_ && occ_changed)) && iteration_ > 0){
-            if (WorldComm->me() == 0)
+
                 fprintf(outfile, "\tOccupation by irrep:\n");
             print_occupation();
         }
@@ -528,7 +528,7 @@ void HF::print_header()
         nthread = omp_get_max_threads();
     #endif
 
-    if (WorldComm->me() == 0) {
+
         fprintf(outfile, "\n");
         fprintf(outfile, "         ---------------------------------------------------------\n");
         fprintf(outfile, "                                   SCF\n");
@@ -538,11 +538,11 @@ void HF::print_header()
         fprintf(outfile, "         ---------------------------------------------------------\n");
         fprintf(outfile, "\n");
         fprintf(outfile, "  ==> Geometry <==\n\n");
-    }
+
 
     molecule_->print();
 
-    if (WorldComm->me() == 0) {
+
         fprintf(outfile, "  Running in %s symmetry.\n\n", molecule_->point_group()->symbol().c_str());
 
         molecule_->print_rotational_constants();
@@ -569,7 +569,7 @@ void HF::print_header()
         fflush(outfile);
 
         fprintf(outfile, "  ==> Primary Basis <==\n\n");
-    }
+
     basisset_->print_by_level(outfile, print_);
     fflush(outfile);
 }
@@ -577,7 +577,7 @@ void HF::print_preiterations()
 {
     CharacterTable ct = molecule_->point_group()->char_table();
 
-    if (WorldComm->me() == 0) {
+
         fprintf(outfile, "   -------------------------------------------------------\n");
         fprintf(outfile, "    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc\n");
         fprintf(outfile, "   -------------------------------------------------------\n");
@@ -587,7 +587,7 @@ void HF::print_preiterations()
         fprintf(outfile, "   -------------------------------------------------------\n");
         fprintf(outfile, "    Total  %6d  %6d  %6d  %6d  %6d  %6d\n", nso_, nmo_, nalpha_, nbeta_, nbeta_, nalpha_-nbeta_);
         fprintf(outfile, "   -------------------------------------------------------\n\n");
-    }
+
 }
 
 void HF::form_H()
@@ -700,10 +700,10 @@ void HF::form_H()
           }
         } // sphere
 
-        if(WorldComm->me() == 0) {
+
           fprintf(outfile, "  Perturbing H by %f V_eff.\n", lambda_);
           if(options_.get_int("PRINT") > 3) mat_print(V_eff, nso, nso, outfile);
-        }
+
 
         if(perturb_ == dx) {
           for(int i=0; i < nso; i++)
@@ -728,34 +728,29 @@ void HF::form_H()
         OneBodySOInt *so_dipole = integral_->so_dipole();
         so_dipole->compute(dipoles);
 
-        if (perturb_ == dipole_x && (WorldComm->me() == 0)) {
+        if (perturb_ == dipole_x ) {
             if (msymm.component_symmetry(0) != 0){
                 fprintf(outfile, "  WARNING: You requested mu(x) perturbation, but mu(x) is not symmetric.\n");
             }
             else {
-                if (WorldComm->me() == 0)
                     fprintf(outfile, "  Perturbing H by %f mu(x).\n", lambda_);
                 dipoles[0]->scale(lambda_);
                 V_->add(dipoles[0]);
             }
         } else if (perturb_ == dipole_y) {
             if (msymm.component_symmetry(1) != 0){
-                if (WorldComm->me() == 0)
                     fprintf(outfile, "  WARNING: You requested mu(y) perturbation, but mu(y) is not symmetric.\n");
             }
             else {
-                if (WorldComm->me() == 0)
                     fprintf(outfile, "  Perturbing H by %f mu(y).\n", lambda_);
                 dipoles[1]->scale(lambda_);
                 V_->add(dipoles[1]);
             }
         } else if (perturb_ == dipole_z) {
             if (msymm.component_symmetry(2) != 0){
-                if (WorldComm->me() == 0)
                     fprintf(outfile, "  WARNING: You requested mu(z) perturbation, but mu(z) is not symmetric.\n");
             }
             else {
-                if (WorldComm->me() == 0)
                     fprintf(outfile, "  Perturbing H by %f mu(z).\n", lambda_);
                 dipoles[2]->scale(lambda_);
                 V_->add(dipoles[2]);
@@ -840,7 +835,7 @@ void HF::form_Shalf()
             eigval->set(h, i, scale);
         }
     }
-    if (print_ && (WorldComm->me() == 0))
+    if (print_ )
         fprintf(outfile,"  Minimum eigenvalue in the overlap matrix is %14.10E.\n",min_S);
     // Create a vector matrix from the converted eigenvalues
     eigtemp2->set_diagonal(eigval);
@@ -854,12 +849,12 @@ void HF::form_Shalf()
     double S_cutoff = options_.get_double("S_TOLERANCE");
     if (min_S > S_cutoff && options_.get_str("S_ORTHOGONALIZATION") == "SYMMETRIC") {
 
-        if (print_ && (WorldComm->me() == 0))
+        if (print_)
             fprintf(outfile,"  Using Symmetric Orthogonalization.\n");
 
     } else {
 
-        if (print_ && (WorldComm->me() == 0))
+        if (print_)
             fprintf(outfile,"  Using Canonical Orthogonalization with cutoff of %14.10E.\n",S_cutoff);
 
         //Diagonalize S (or just get a fresh copy)
@@ -879,7 +874,7 @@ void HF::form_Shalf()
                     nmo_--;
                 }
             }
-            if (print_>2 && (WorldComm->me() == 0))
+            if (print_>2)
                 fprintf(outfile,"  Irrep %d, %d of %d possible MOs eliminated.\n",h,start_index,nsopi_[h]);
 
             delta_mos += start_index;
@@ -902,7 +897,7 @@ void HF::form_Shalf()
             }
         }
 
-        if (print_ && (WorldComm->me() == 0))
+        if (print_)
             fprintf(outfile,"  Overall, %d of %d possible MOs eliminated.\n\n",delta_mos,nso_);
 
         // Refreshes twice in RHF, no big deal
@@ -984,7 +979,7 @@ void HF::compute_fvpi()
 
 void HF::print_orbitals(const char* header, std::vector<std::pair<double, std::pair<const char*, int> > > orbs)
 {
-    if (WorldComm->me() == 0) {
+
         fprintf(outfile, "\t%-70s\n\n\t", header);
         int count = 0;
         for (int i = 0; i < orbs.size(); i++) {
@@ -993,14 +988,13 @@ void HF::print_orbitals(const char* header, std::vector<std::pair<double, std::p
                 fprintf(outfile, "\n\t");
         }
         fprintf(outfile, "\n\n");
-    }
+
 }
 
 void HF::print_orbitals()
 {
     char **labels = molecule_->irrep_labels();
 
-    if (WorldComm->me() == 0)
         fprintf(outfile, "\tOrbital Energies (a.u.)\n\t-----------------------\n\n");
 
     std::string reference = options_.get_str("REFERENCE");
@@ -1122,7 +1116,7 @@ void HF::print_orbitals()
         free(labels[h]);
     free(labels);
 
-    if (WorldComm->me() == 0)
+
         fprintf(outfile, "\tFinal Occupation by Irrep:\n");
     print_occupation();
 }
@@ -1150,7 +1144,7 @@ void HF::guess()
 
     if (guess_type == "READ") {
 
-        if (print_ && (WorldComm->me() == 0))
+
             fprintf(outfile, "  SCF Guess: Projection.\n\n");
 
         load_orbitals(); // won't save the energy from here
@@ -1158,7 +1152,7 @@ void HF::guess()
 
     } else if (guess_type == "SAD") {
 
-        if (print_ && (WorldComm->me() == 0))
+        if (print_)
             fprintf(outfile, "  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.\n\n");
 
         //Superposition of Atomic Density (RHF only at present)
@@ -1167,7 +1161,7 @@ void HF::guess()
 
     } else if (guess_type == "GWH") {
         //Generalized Wolfsberg Helmholtz (Sounds cool, easy to code)
-        if (print_ && (WorldComm->me() == 0))
+        if (print_)
             fprintf(outfile, "  SCF Guess: Generalized Wolfsberg-Helmholtz.\n\n");
 
         Fa_->zero(); //Try Fa_{mn} = S_{mn} (H_{mm} + H_{nn})/2
@@ -1191,7 +1185,7 @@ void HF::guess()
 
     } else if (guess_type == "CORE") {
 
-        if (print_ && (WorldComm->me() == 0))
+        if (print_)
             fprintf(outfile, "  SCF Guess: Core (One-Electron) Hamiltonian.\n\n");
 
         Fa_->copy(H_); //Try the core Hamiltonian as the Fock Matrix
@@ -1211,9 +1205,6 @@ void HF::guess()
         Fb_->print();
     }
 
-    // This is confusing the user and valgrind.
-    //if (print_ && (WorldComm->me() == 0))
-    //    fprintf(outfile, "  Guess energy: %20.14f\n\n", guess_E);
 
     E_ = 0.0; // don't use this guess in our convergence checks
 }
@@ -1222,7 +1213,7 @@ void HF::save_orbitals()
 {
     psio_->open(PSIF_SCF_MOS,PSIO_OPEN_NEW);
 
-    if (print_ && (WorldComm->me() == 0))
+    if (print_)
         fprintf(outfile,"\n  Saving occupied orbitals to File %d.\n", PSIF_SCF_MOS);
 
     psio_->write_entry(PSIF_SCF_MOS,"SCF ENERGY",(char *) &(E_),sizeof(double));
@@ -1279,12 +1270,9 @@ void HF::load_orbitals()
 
     if (print_) {
         if (basisname != options_.get_str("BASIS")) {
-            if (WorldComm->me() == 0) {
                 fprintf(outfile,"  Computing basis set projection from %s to %s.\n", \
                     basisname.c_str(),options_.get_str("BASIS").c_str());
-            }
         } else {
-            if (WorldComm->me() == 0)
                 fprintf(outfile,"  Using orbitals from previous SCF, no projection.\n");
         }
     }
@@ -1548,7 +1536,7 @@ double HF::compute_energy()
     else
         iteration_ = 0;
 
-    if (print_ && (WorldComm->me() == 0))
+    if (print_)
         fprintf(outfile, "  ==> Pre-Iterations <==\n\n");
 
     if (print_)
@@ -1592,10 +1580,8 @@ double HF::compute_energy()
 
     bool df = (options_.get_str("SCF_TYPE") == "DF");
 
-    if (WorldComm->me() == 0) {
         fprintf(outfile, "  ==> Iterations <==\n\n");
         fprintf(outfile, "%s                        Total Energy        Delta E     RMS |[F,P]|\n\n", df ? "   " : "");
-    }
     fflush(outfile);
 
     // SCF iterations
@@ -1657,7 +1643,7 @@ double HF::compute_energy()
         }
         timer_off("DIIS");
 
-        if (print_>4 && diis_performed_ && (WorldComm->me() == 0)) {
+        if (print_>4 && diis_performed_) {
             fprintf(outfile,"  After DIIS:\n");
             Fa_->print(outfile);
             Fb_->print(outfile);
@@ -1709,11 +1695,11 @@ double HF::compute_energy()
 
         df = (options_.get_str("SCF_TYPE") == "DF");
 
-        if (WorldComm->me() == 0) {
+
             fprintf(outfile, "   @%s%s iter %3d: %20.14f   %12.5e   %-11.5e %s\n", df ? "DF-" : "",
                               reference.c_str(), iteration_, E_, E_ - Eold_, Drms_, status.c_str());
             fflush(outfile);
-        }
+
 
         // If a an excited MOM is requested but not started, don't stop yet
         if (MOM_excited_ && !MOM_started_) converged = false;
@@ -1738,7 +1724,7 @@ double HF::compute_energy()
 
     } while (!converged && iteration_ < maxiter_ );
 
-    if (WorldComm->me() == 0)
+
         fprintf(outfile, "\n  ==> Post-Iterations <==\n\n");
 
     check_phases();
@@ -1754,20 +1740,19 @@ double HF::compute_energy()
         if(print_)
             print_orbitals();
 
-        if (WorldComm->me() == 0 && converged) {
+        if (converged) {
             fprintf(outfile, "  Energy converged.\n\n");
         }
-        if (WorldComm->me() == 0 && !converged) {
+        if (!converged) {
             fprintf(outfile, "  Energy did not converge, but proceeding anyway.\n\n");
         }
-        if (WorldComm->me() == 0) {
             fprintf(outfile, "  @%s%s Final Energy: %20.14f", df ? "DF-" : "", reference.c_str(), E_);
             if (perturb_h_) {
                 fprintf(outfile, " with %f perturbation", lambda_);
             }
             fprintf(outfile, "\n\n");
             print_energies();
-        }
+
 
         // Properties
         if (print_) {
@@ -1786,7 +1771,6 @@ double HF::compute_energy()
                 oe->add("WIBERG_LOWDIN_INDICES");
             }
 
-            if (WorldComm->me() == 0)
                 fprintf(outfile, "  ==> Properties <==\n\n");
             oe->compute();
 
@@ -1809,10 +1793,8 @@ double HF::compute_energy()
 
         save_information();
     } else {
-        if (WorldComm->me() == 0) {
             fprintf(outfile, "  Failed to converged.\n");
             fprintf(outfile, "    NOTE: MO Coefficients will not be saved to Checkpoint.\n");
-        }
         E_ = 0.0;
         if(psio_->open_check(PSIF_CHKPT))
             psio_->close(PSIF_CHKPT, 1);
@@ -1825,8 +1807,6 @@ double HF::compute_energy()
     save_orbitals();
     if (options_.get_str("SAPT") != "FALSE") //not a bool because it has types
         save_sapt_info();
-
-    WorldComm->sync();
 
     // Perform wavefunction stability analysis
     if(options_.get_str("STABILITY_ANALYSIS") != "NONE")
@@ -1876,7 +1856,7 @@ void HF::print_energies()
 
 void HF::print_occupation()
 {
-    if (WorldComm->me() == 0) {
+
         char **labels = molecule_->irrep_labels();
         std::string reference = options_.get_str("REFERENCE");
         fprintf(outfile, "\t      ");
@@ -1901,7 +1881,7 @@ void HF::print_occupation()
 
         for(int h = 0; h < nirrep_; ++h) free(labels[h]); free(labels);
         fprintf(outfile,"\n");
-    }
+
 }
 
 //  Returns a vector of the occupation of the a orbitals

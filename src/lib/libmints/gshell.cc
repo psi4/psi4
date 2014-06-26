@@ -151,13 +151,12 @@ int ShellInfo::nprimitive() const
 
 void ShellInfo::print(FILE *out) const
 {
-    if (WorldComm->me() == 0) {
         fprintf(outfile, "    %c %3d 1.00\n", AMCHAR(), nprimitive());
-    }
+
     for (int K = 0; K < nprimitive(); K++) {
-        if (WorldComm->me() == 0) {
+
             fprintf(outfile, "               %20.8f %20.8f\n",exp_[K], original_coef_[K]);
-        }
+
     }
 }
 
@@ -197,13 +196,13 @@ int GaussianShell::nprimitive() const
 
 void GaussianShell::print(FILE *out) const
 {
-    if (WorldComm->me() == 0) {
+
         fprintf(outfile, "    %c %3d 1.00\n", AMCHAR(), nprimitive());
-    }
+
     for (int K = 0; K < nprimitive(); K++) {
-        if (WorldComm->me() == 0) {
+
             fprintf(outfile, "               %20.8f %20.8f\n",exp_[K], original_coef_[K]);
-        }
+
     }
 }
 

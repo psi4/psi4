@@ -117,9 +117,7 @@ OptReturnType optking(void) {
     // read internal coordinate and fragment definitions
     // create, allocate, and add fragment objects
     mol1->read_intcos(if_intco);
-#if defined(OPTKING_PACKAGE_PSI)
-    psi::WorldComm->sync();
-#endif
+
     if_intco.close();
 
     mol1->update_connectivity_by_bonds();
@@ -175,9 +173,7 @@ OptReturnType optking(void) {
     // print out internal coordinates for future steps
     FILE *fp_intco = fopen(FILENAME_INTCO_DAT, "w");
     mol1->print_intco_dat(fp_intco);
-#if defined(OPTKING_PACKAGE_PSI)
-    psi::WorldComm->sync();
-#endif
+
     fclose(fp_intco);
 
     // only generate coordinates and print them out

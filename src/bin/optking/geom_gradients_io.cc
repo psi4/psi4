@@ -195,7 +195,6 @@ void MOLECULE::read_geom_grad(void) {
         fin >> grad[i][2];
       }
     }
-    psi::WorldComm->sync();
     fin.close();
   } // end try reading geometries
   catch (std::ios_base::failure & bf) {
@@ -354,7 +353,6 @@ double ** OPT_DATA::read_cartesian_H(void) const {
       for (int j=0; j<Ncart; ++j)
         if_Hcart >> H_cart[i][j];
 
-    psi::WorldComm->sync();
     if_Hcart.close();
   }
   catch (std::ios_base::failure & bf) {

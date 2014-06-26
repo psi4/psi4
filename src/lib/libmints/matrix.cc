@@ -3380,9 +3380,8 @@ void Matrix::bcast(int broadcaster)
 
 void Matrix::sum()
 {
-   //RMR--Removed the call to worldcomm that was here because as
-   //it stood it was nothing more than a memcpy at best, probably
-   //best if this function does nothing versus expecting such behavior
+   //RMR--Removed the call to here because as
+   //it stood it did nothing
 }
 
 bool Matrix::equal(const Matrix& rhs)

@@ -1141,7 +1141,7 @@ std::string Molecule::create_psi4_string_from_molecule() const
     char buffer[120];
     std::stringstream ss;
 
-    if (WorldComm->me() == 0) {
+
         if (nallatom()) {
             // append units and any other non-default molecule keywords
             sprintf(buffer,"    units %-s\n", units_ == Angstrom ? "Angstrom" : "Bohr");
@@ -1204,7 +1204,7 @@ std::string Molecule::create_psi4_string_from_molecule() const
                 ss << buffer;
             }
         }
-    }
+
     return ss.str();
 }
 
@@ -1480,7 +1480,7 @@ void Molecule::save_to_chkpt(boost::shared_ptr<Chkpt> chkpt, std::string prefix)
 void Molecule::print_in_angstrom() const
 {
     // Sometimes one just wants angstroms regardless of input units
-    if (WorldComm->me() == 0) {
+
         if (natom()) {
             if (pg_) fprintf(outfile,"    Molecular point group: %s\n", pg_->symbol().c_str());
             if (full_pg_) fprintf(outfile,"    Full point group: %s\n\n", full_point_group().c_str());
@@ -1500,7 +1500,7 @@ void Molecule::print_in_angstrom() const
         }
         else
             fprintf(outfile, "  No atoms in this molecule.\n");
-    }
+
 }
 
 
@@ -1508,7 +1508,7 @@ void Molecule::print_in_bohr() const
 {
     // I'm tired of wanting to compare geometries with cints and psi4 will use what's in the input
     // and psi3 using bohr.
-    if (WorldComm->me() == 0) {
+
         if (natom()) {
             if (pg_) fprintf(outfile,"    Molecular point group: %s\n", pg_->symbol().c_str());
             if (full_pg_) fprintf(outfile,"    Full point group: %s\n\n", full_point_group().c_str());
@@ -1528,12 +1528,11 @@ void Molecule::print_in_bohr() const
         }
         else
             fprintf(outfile, "  No atoms in this molecule.\n");
-    }
+
 }
 
 void Molecule::print_in_input_format() const
 {
-    if (WorldComm->me() == 0) {
         if (nallatom()) {
             if (pg_) fprintf(outfile,"    Molecular point group: %s\n", pg_->symbol().c_str());
             if (full_pg_) fprintf(outfile,"    Full point group: %s\n\n", full_point_group().c_str());
@@ -1559,12 +1558,12 @@ void Molecule::print_in_input_format() const
                 fprintf(outfile, "\n");
             }
         }
-    }
+
 }
 
 void Molecule::print() const
 {
-    if (WorldComm->me() == 0) {
+
         if (natom()) {
             if (pg_) fprintf(outfile,"    Molecular point group: %s\n", pg_->symbol().c_str());
             if (full_pg_) fprintf(outfile,"    Full point group: %s\n\n", full_point_group().c_str());
@@ -1585,12 +1584,12 @@ void Molecule::print() const
         }
         else
             fprintf(outfile, "  No atoms in this molecule.\n");
-    }
+
 }
 
 void Molecule::print_cluster() const
 {
-    if (WorldComm->me() == 0) {
+
         if (natom()) {
             if (pg_) fprintf(outfile,"    Molecular point group: %s\n", pg_->symbol().c_str());
             if (full_pg_) fprintf(outfile,"    Full point group: %s\n\n", full_point_group().c_str());
@@ -1622,12 +1621,12 @@ void Molecule::print_cluster() const
         }
         else
             fprintf(outfile, "  No atoms in this molecule.\n");
-    }
+
 }
 
 void Molecule::print_full() const
 {
-    if (WorldComm->me() == 0) {
+
         if (natom()) {
             if (pg_) fprintf(outfile,"    Molecular point group: %s\n", pg_->symbol().c_str());
             if (full_pg_) fprintf(outfile,"    Full point group: %s\n\n", full_point_group().c_str());
@@ -1648,7 +1647,7 @@ void Molecule::print_full() const
         }
         else
             fprintf(outfile, "  No atoms in this molecule.\n");
-    }
+
 }
 
 void Molecule::print_distances() const
@@ -1802,7 +1801,7 @@ std::string Molecule::save_string_xyz_file() const
 
     double factor = (units_ == Angstrom ? 1.0 : pc_bohr2angstroms);
 
-    if (WorldComm->me() == 0) {
+
 
         int N = natom();
         stream << boost::format("%d\n\n") % N;
@@ -1813,7 +1812,7 @@ std::string Molecule::save_string_xyz_file() const
                 stream << boost::format("%2s %17.12f %17.12f %17.12f\n") % (Z(i) ? symbol(i).c_str() : "Gh") % (factor*geom[0]) % (factor*geom[1]) % (factor*geom[2]);
                 //fprintf(fh, "%2s %17.12f %17.12f %17.12f\n", (Z(i) ? symbol(i).c_str() : "Gh"), factor*geom[0], factor*geom[1], factor*geom[2]);
         }
-    }
+
     return stream.str();
 }
 
@@ -1823,7 +1822,7 @@ std::string Molecule::save_string_xyz() const
     char buffer[120];
     std::stringstream ss;
 
-    if (WorldComm->me() == 0) {
+
         sprintf(buffer,"%d %d\n", molecular_charge(), multiplicity());
         ss << buffer;
 
@@ -1832,7 +1831,7 @@ std::string Molecule::save_string_xyz() const
             sprintf(buffer, "%2s %17.12f %17.12f %17.12f\n", (Z(i) ? symbol(i).c_str() : "Gh"), factor*geom[0], factor*geom[1], factor*geom[2]);
             ss << buffer;
         }
-    }
+
     return ss.str();
 }
 
@@ -2957,7 +2956,7 @@ void Molecule::set_variable(const std::string &str, double val)
 {
     lock_frame_ = false;
     geometry_variables_[str] = val;
-    if (WorldComm->me() == 0)
+
         fprintf(outfile, "Setting geometry variable %s to %f\n", str.c_str(), val);
     try {
         update_geometry();
