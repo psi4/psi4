@@ -100,7 +100,6 @@ void DFOCC::t2AA_ump2_direct(SharedTensor2d& T)
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ||AB>", naoccA, naoccA, navirA, navirA));
     tei_pqrs_anti_symm_direct(K, M);
     M.reset();
-    T = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
     T->copy(K);
     T->apply_denom(nfrzc, noccA, FockA);
     timer_off("T2AA_MP2");
@@ -121,7 +120,6 @@ void DFOCC::t2BB_ump2_direct(SharedTensor2d& T)
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <ij||ab>", naoccB, naoccB, navirB, navirB));
     tei_pqrs_anti_symm_direct(K, M);
     M.reset();
-    T = SharedTensor2d(new Tensor2d("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
     T->copy(K);
     T->apply_denom(nfrzc, noccB, FockB);
     timer_off("T2BB_MP2");
@@ -139,7 +137,6 @@ void DFOCC::t2AB_ump2_direct(SharedTensor2d& T)
     K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <Ij|Ab>", naoccA, naoccB, navirA, navirB));
     K->sort(1324, L, 1.0, 0.0);
     L.reset();
-    T = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
     T->copy(K);
     T->apply_denom_os(nfrzc, noccA, noccB, FockA, FockB);
     timer_off("T2AB_MP2");

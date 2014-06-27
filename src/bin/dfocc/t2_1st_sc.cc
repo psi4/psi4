@@ -44,7 +44,7 @@ if (reference_ == "RESTRICTED") {
     T->copy(K);
     if (regularization == "FALSE") T->apply_denom_chem(nfrzc, noccA, FockA);
     else if (regularization == "TRUE") T->reg_denom_chem(nfrzc, noccA, FockA, reg_param);
-    T->write(psio_, PSIF_DFOCC_AMPS);
+    T->write_symm(psio_, PSIF_DFOCC_AMPS);
     if (print_ > 2) T->print();
 
     /*
@@ -62,7 +62,7 @@ if (reference_ == "RESTRICTED") {
     U->axpy(T, 2.0);
     T.reset();
     Ecorr = U->vector_dot(K);
-    U->write(psio_, PSIF_DFOCC_AMPS);
+    U->write_symm(psio_, PSIF_DFOCC_AMPS);
     U.reset();
     K.reset();
     Emp2 = Eref + Ecorr;
@@ -89,7 +89,7 @@ else if (reference_ == "UNRESTRICTED") {
     t2_1AA->copy(K);
     if (regularization == "FALSE") t2_1AA->apply_denom(nfrzc, noccA, FockA);
     else if (regularization == "TRUE") t2_1AA->reg_denom(nfrzc, noccA, FockA, reg_param);
-    t2_1AA->write(psio_, PSIF_DFOCC_AMPS);
+    t2_1AA->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
 
     // Enegy AA 
     Emp2AA = 0.25 * t2_1AA->vector_dot(K);
@@ -101,7 +101,7 @@ else if (reference_ == "UNRESTRICTED") {
     t2p_1 = SharedTensor2d(new Tensor2d("T2_1(IA,JB)", naoccA, navirA, naoccA, navirA));
     t2p_1->sort(1324, t2_1AA, 1.0, 0.0);
     t2_1AA.reset();
-    t2p_1->write(psio_, PSIF_DFOCC_AMPS);
+    t2p_1->write_symm(psio_, PSIF_DFOCC_AMPS);
     t2p_1.reset();
 
     // T2BB
@@ -123,7 +123,7 @@ else if (reference_ == "UNRESTRICTED") {
     t2_1BB->copy(K);
     if (regularization == "FALSE") t2_1BB->apply_denom(nfrzc, noccB, FockB);
     else if (regularization == "TRUE") t2_1BB->reg_denom(nfrzc, noccB, FockB, reg_param);
-    t2_1BB->write(psio_, PSIF_DFOCC_AMPS);
+    t2_1BB->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
 
     // Energy BB
     Emp2BB = 0.25 * t2_1BB->vector_dot(K);
@@ -135,7 +135,7 @@ else if (reference_ == "UNRESTRICTED") {
     t2p_1 = SharedTensor2d(new Tensor2d("T2_1(ia,jb)", naoccB, navirB, naoccB, navirB));
     t2p_1->sort(1324, t2_1BB, 1.0, 0.0);
     t2_1BB.reset();
-    t2p_1->write(psio_, PSIF_DFOCC_AMPS);
+    t2p_1->write_symm(psio_, PSIF_DFOCC_AMPS);
     t2p_1.reset();
 
     // T2AB
