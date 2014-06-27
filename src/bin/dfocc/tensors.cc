@@ -1788,11 +1788,11 @@ void Tensor2d::write(boost::shared_ptr<psi::PSIO> psio, const string& filename, 
 void Tensor2d::write_symm(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno)
 {
         // Form Lower triangular part
-        int ntri_col = 0.5 * dim1_ * (dim2_ +1);
+        int ntri_col = 0.5 * dim1_ * (dim1_ +1);
         SharedTensor1d temp = SharedTensor1d(new Tensor1d("temp", ntri_col));
         #pragma omp parallel for
         for (int p = 0; p < dim1_; p++) {
-              for (int q = 0; q < dim2_; q++) {
+              for (int q = 0; q <= p; q++) {
                    int pq = index2(p,q);
                    temp->set(pq, A2d_[p][q]);
               }
@@ -1803,6 +1803,37 @@ void Tensor2d::write_symm(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno
         if (psio->open_check(fileno)) already_open = true;
         else psio->open(fileno, PSIO_OPEN_OLD);
         psio->write_entry(fileno, const_cast<char*>(name_.c_str()), (char*)&(temp->A1d_[0]), sizeof(double) * ntri_col);
+        if (!already_open) psio->close(fileno, 1);     // Close and keep
+        temp.reset();
+
+}//
+
+void Tensor2d::write_anti_symm(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno)
+{
+        // Form Lower triangular part
+        int ntri_row = 0.5 * d1_ * (d1_ - 1);
+        int ntri_col = 0.5 * d3_ * (d3_ - 1);
+        SharedTensor2d temp = SharedTensor2d(new Tensor2d("temp", ntri_row, ntri_col));
+        #pragma omp parallel for
+        for (int p = 1; p < d1_; p++) {
+              for (int q = 0; q < p; q++) {
+                   int pq = row_idx_[p][q];
+                   int pq2 = idx_asym(p,q);
+                   for (int r = 1; r < d3_; r++) {
+                        for (int s = 0; s < r; s++) {
+                             int rs = col_idx_[r][s];
+                             int rs2 = idx_asym(r,s);
+                             temp->set(pq2, rs2, A2d_[pq][rs]);
+                        }
+                   }
+              }
+        }
+
+        // Check to see if the file is open
+        bool already_open = false;
+        if (psio->open_check(fileno)) already_open = true;
+        else psio->open(fileno, PSIO_OPEN_OLD);
+        psio->write_entry(fileno, const_cast<char*>(name_.c_str()), (char*)temp->A2d_[0], sizeof(double) * ntri_row * ntri_col);
         if (!already_open) psio->close(fileno, 1);     // Close and keep
         temp.reset();
 
@@ -1874,7 +1905,7 @@ void Tensor2d::read(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno, bool
 void Tensor2d::read_symm(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno)
 {
         // Form Lower triangular part
-        int ntri_col = 0.5 * dim1_ * (dim2_ +1);
+        int ntri_col = 0.5 * dim1_ * (dim1_ +1);
         SharedTensor1d temp = SharedTensor1d(new Tensor1d("temp", ntri_col));
 
         // Check to see if the file is open
@@ -1886,12 +1917,51 @@ void Tensor2d::read_symm(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno)
 
         #pragma omp parallel for
         for (int p = 0; p < dim1_; p++) {
-              for (int q = 0; q < dim2_; q++) {
+              for (int q = 0; q <= p; q++) {
                    int pq = index2(p,q);
                    A2d_[p][q] = temp->get(pq);
+                   A2d_[q][p] = temp->get(pq);
               }
         }
         temp.reset();
+}//
+
+void Tensor2d::read_anti_symm(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno)
+{
+        // Form Lower triangular part
+        int ntri_row = 0.5 * d1_ * (d1_ - 1);
+        int ntri_col = 0.5 * d3_ * (d3_ - 1);
+        SharedTensor2d temp = SharedTensor2d(new Tensor2d("temp", ntri_row, ntri_col));
+
+        // Check to see if the file is open
+        bool already_open = false;
+        if (psio->open_check(fileno)) already_open = true;
+        else psio->open(fileno, PSIO_OPEN_OLD);
+        psio->read_entry(fileno, const_cast<char*>(name_.c_str()), (char*)temp->A2d_[0], sizeof(double) * ntri_row * ntri_col);
+        if (!already_open) psio->close(fileno, 1);     // Close and keep
+
+        #pragma omp parallel for
+        for (int p = 1; p < d1_; p++) {
+              for (int q = 0; q < p; q++) {
+                   int pq = row_idx_[p][q];
+                   int qp = row_idx_[q][p];
+                   int pq2 = idx_asym(p,q);
+                   for (int r = 1; r < d3_; r++) {
+                        for (int s = 0; s < r; s++) {
+                             int rs = col_idx_[r][s];
+                             int sr = col_idx_[s][r];
+                             int rs2 = idx_asym(r,s);
+                             double value = temp->get(pq2, rs2);
+                             A2d_[pq][rs] = value;
+                             A2d_[pq][sr] = -1.0 * value;
+                             A2d_[qp][rs] = -1.0 * value;
+                             A2d_[qp][sr] = value;
+                        }
+                   }
+              }
+        }
+        temp.reset();
+
 }//
 
 bool Tensor2d::read(PSIO* psio, int itap, const char *label, int dim)

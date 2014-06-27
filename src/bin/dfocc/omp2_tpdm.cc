@@ -42,7 +42,7 @@ if (reference_ == "RESTRICTED") {
     G2c_ia = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|IA)", nQ, naoccA * navirA));
     u2p_1 = SharedTensor2d(new Tensor2d("2*T2_1(ia,jb) - T2_1(ib,ja)", naoccA, navirA, naoccA, navirA));
     if (orb_opt_ == "FALSE" && mp2_amp_type_ == "DIRECT") u2_rmp2_direct(u2p_1);
-    else u2p_1->read(psio_, PSIF_DFOCC_AMPS);
+    else u2p_1->read_symm(psio_, PSIF_DFOCC_AMPS);
     bQiaA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA * navirA));
     bQiaA->read(psio_, PSIF_DFOCC_INTS);
     G2c_ia->gemm(false, false, bQiaA, u2p_1, 2.0, 0.0);
@@ -76,7 +76,7 @@ else if (reference_ == "UNRESTRICTED") {
         t2p_1->sort(1324, T, 1.0, 0.0);
         T.reset();
     }
-    else t2p_1->read(psio_, PSIF_DFOCC_AMPS);
+    else t2p_1->read_symm(psio_, PSIF_DFOCC_AMPS);
     bQiaA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA * navirA));
     bQiaA->read(psio_, PSIF_DFOCC_INTS);
     G2c_iaA->gemm(false, false, bQiaA, t2p_1, 1.0, 0.0);
@@ -124,7 +124,7 @@ else if (reference_ == "UNRESTRICTED") {
         t2p_1->sort(1324, T, 1.0, 0.0);
         T.reset();
     }
-    else t2p_1->read(psio_, PSIF_DFOCC_AMPS);
+    else t2p_1->read_symm(psio_, PSIF_DFOCC_AMPS);
     bQiaB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ia)", nQ, naoccB * navirB));
     bQiaB->read(psio_, PSIF_DFOCC_INTS);
     G2c_iaB->gemm(false, false, bQiaB, t2p_1, 1.0, 0.0);
