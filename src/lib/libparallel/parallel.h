@@ -68,6 +68,13 @@ class Parallel {
                broadcaster, CommName);
       }
 
+      template <class T>
+      void bcast(T& data, const int broadcaster,
+            const std::string& CommName="NONE") const {
+         static_cast<const DerivedType*>(this)->bcastImpl(data,
+               broadcaster, CommName);
+      }
+
       virtual int me(const std::string& CommName="NONE") const {
          return 0;
       }

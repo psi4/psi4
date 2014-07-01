@@ -21,6 +21,7 @@
  */
 
 #include "mpi_wrapper.h"
+
 #include <omp.h>
 #if HAVE_MPI
 namespace psi{

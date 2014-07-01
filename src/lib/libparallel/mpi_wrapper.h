@@ -135,9 +135,15 @@ class MPICommunicator:public Parallel<MPICommunicator> {
       }
 
       template <typename T>
-      void bcastImpl(T* data, int nelem, int broadcaster,
+      void bcastImpl(T* data, int nelem,const int broadcaster,
             const std::string& Comm="NONE") const {
          boost::mpi::broadcast(GetComm(Comm), data, nelem, broadcaster);
+      }
+
+      template <typename T>
+      void bcastImpl(T& data,const int broadcaster,
+            const std::string&Comm="NONE")const{
+         boost::mpi::broadcast(GetComm(Comm), data, broadcaster);
       }
 
 };
