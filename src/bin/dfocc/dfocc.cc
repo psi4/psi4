@@ -149,9 +149,11 @@ void DFOCC::common_init()
     }
 
     // Frozen Core
+    /*
     if (freeze_core_ == "TRUE" && orb_opt_ == "FALSE" && dertype == "FIRST") {
              throw PSIEXCEPTION("Frozen core gradients are available only for orbital-optimized methods.");
     }
+    */
 
     // DIIS
     if (options_.get_str("DO_DIIS") == "TRUE") do_diis_ = 1;
@@ -218,6 +220,9 @@ if (reference_ == "RESTRICTED") {
         KorbA = SharedTensor2d(new Tensor2d("Alpha K MO rotation parameters matrix", nmo_, nmo_));
         KsqrA = SharedTensor2d(new Tensor2d("Alpha K^2 MO rotation parameters matrix", nmo_, nmo_));
         AvoA = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <V|O>", nvirA, noccA));
+        if (orb_opt_ == "FALSE") {
+            WvoA = SharedTensor2d(new Tensor2d("Effective MO gradient <V|O>", nvirA, noccA));
+        }
         if (nfrzc > 0) AooA = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <I|FC>", naoccA, nfrzc));
     }
 
@@ -296,9 +301,13 @@ else if (reference_ == "UNRESTRICTED") {
         KsqrB = SharedTensor2d(new Tensor2d("Beta K^2 MO rotation parameters matrix", nmo_, nmo_));
         AvoA = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <V|O>", nvirA, noccA));
         AvoB = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <v|o>", nvirB, noccB));
+        if (orb_opt_ == "FALSE") {
+            WvoA = SharedTensor2d(new Tensor2d("Effective MO gradient <V|O>", nvirA, noccA));
+            WvoB = SharedTensor2d(new Tensor2d("Effective MO gradient <v|o>", nvirB, noccB));
+        }
         if (nfrzc > 0) {
             AooA = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <I|FC>", naoccA, nfrzc));
-            AooB = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <i|FC>", naoccA, nfrzc));
+            AooB = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <i|FC>", naoccB, nfrzc));
         }
     }
 
@@ -365,7 +374,7 @@ void DFOCC::title()
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "TRUE") fprintf(outfile,"                      CD-OMP2 (CD-OO-MP2)   \n");
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "FALSE") fprintf(outfile,"                       CD-MP2   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya\n") ; 
-   fprintf(outfile,"              Latest Revision June 25, 2014\n") ;
+   fprintf(outfile,"              Latest Revision July 01, 2014\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
@@ -386,7 +395,7 @@ void DFOCC::title_grad()
    fprintf(outfile,"            A General Analytic Gradients Code   \n");
    fprintf(outfile,"               for Density-Fitted Methods       \n");
    fprintf(outfile,"                   by Ugur Bozkaya\n") ; 
-   fprintf(outfile,"              Latest Revision June 23, 2014\n") ;
+   fprintf(outfile,"              Latest Revision July 01, 2014\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
