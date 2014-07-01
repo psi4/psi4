@@ -1,4 +1,4 @@
-set(SRC fprintf.cc p_fprintf.cc process.cc)
+set(SRC fprintf.cc p_fprintf.cc process.cc ParallelPrinter.cc)
 if(${MPI_FOUND})
    set(SRC ${SRC} mpi_wrapper.cc)
 endif()
