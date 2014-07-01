@@ -55,7 +55,8 @@ if (reference_ == "RESTRICTED") {
     for (int a = 0, ai = 0; a < nvirA; a++) {
          for (int i = 0; i < noccA; i++, ai++) {
               double value = FockA->get(a + noccA, a + noccA) - FockA->get(i,i);
-              zvectorA->set(ai, -WorbA->get(a + noccA, i) / (2.0*value));       
+              //zvectorA->set(ai, -WorbA->get(a + noccA, i) / (2.0*value));       
+              zvectorA->set(ai, -WvoA->get(a, i) / (2.0*value));       
               Minv_pcgA->set(ai, 0.5/value);
          }
     }
@@ -66,7 +67,7 @@ if (reference_ == "RESTRICTED") {
     // Build r0
     for (int a = 0, ai = 0; a < nvirA; a++) {
          for (int i = 0; i < noccA; i++, ai++) {
-              residualA->set(ai, -WorbA->get(a + noccA, i) - sigma_pcgA->get(ai));       
+              residualA->set(ai, -WvoA->get(a, i) - sigma_pcgA->get(ai));       
          }
     }
     r_pcgA->copy(residualA);
@@ -146,7 +147,8 @@ else if (reference_ == "UNRESTRICTED") {
     for (int a = 0, ai = 0; a < nvirA; a++) {
          for (int i = 0; i < noccA; i++, ai++) {
               double value = FockA->get(a + noccA, a + noccA) - FockA->get(i,i);
-              zvectorA->set(ai, -WorbA->get(a + noccA, i) / (2.0*value));       
+              //zvectorA->set(ai, -WorbA->get(a + noccA, i) / (2.0*value));       
+              zvectorA->set(ai, -WvoA->get(a, i) / (2.0*value));       
               Minv_pcg->set(ai, 0.5/value);
          }
     }
@@ -155,7 +157,8 @@ else if (reference_ == "UNRESTRICTED") {
     for (int a = 0, ai = 0; a < nvirB; a++) {
          for (int i = 0; i < noccB; i++, ai++) {
               double value = FockB->get(a + noccB, a + noccB) - FockB->get(i,i);
-              zvectorB->set(ai, -WorbB->get(a + noccB, i) / (2.0*value));       
+              //zvectorB->set(ai, -WorbB->get(a + noccB, i) / (2.0*value));       
+              zvectorB->set(ai, -WvoB->get(a, i) / (2.0*value));       
               Minv_pcg->set(ai + nidpA, 0.5/value);
          }
     }
@@ -175,13 +178,15 @@ else if (reference_ == "UNRESTRICTED") {
     // alpha
     for (int a = 0, ai = 0; a < nvirA; a++) {
          for (int i = 0; i < noccA; i++, ai++) {
-              residual->set(ai, -WorbA->get(a + noccA, i));       
+              //residual->set(ai, -WorbA->get(a + noccA, i));       
+              residual->set(ai, -WvoA->get(a, i));       
          }
     }
     // beta
     for (int a = 0, ai = 0; a < nvirB; a++) {
          for (int i = 0; i < noccB; i++, ai++) {
-              residual->set(ai + nidpA, -WorbB->get(a + noccB, i));       
+              //residual->set(ai + nidpA, -WorbB->get(a + noccB, i));       
+              residual->set(ai + nidpA, -WvoB->get(a, i));       
          }
     }
     residual->subtract(sigma_pcg);
