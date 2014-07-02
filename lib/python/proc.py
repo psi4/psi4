@@ -107,10 +107,14 @@ def run_dfomp2(name, **kwargs):
         ['DF_BASIS_SCF'],
         ['GLOBALS', 'DF_BASIS_CC'])
 
-    # overwrite symmetry
+    # override symmetry:
     molecule = psi4.get_active_molecule()
-    molecule.update_geometry()
+    user_pg = molecule.schoenflies_symbol()
     molecule.reset_point_group('c1')
+    molecule.fix_orientation(1)
+    molecule.update_geometry()
+    if user_pg != 'c1':
+        psi4.print_out('  DFOCC does not make use of molecular symmetry, further calculations in C1 point group.\n')
 
     # if the df_basis_scf basis is not set, pick a sensible one.
     if psi4.get_global_option('DF_BASIS_SCF') == '':
@@ -136,7 +140,15 @@ def run_dfomp2(name, **kwargs):
         else:
             raise ValidationError('Keyword DF_BASIS_CC is required.')
 
-    return psi4.dfocc()
+    psi4.dfocc()
+
+    molecule.reset_point_group(user_pg)
+    molecule.update_geometry()
+
+    # restore options
+    optstash.restore()
+
+    return psi4.get_variable("CURRENT ENERGY")
 
 
 def run_dfomp2_gradient(name, **kwargs):
