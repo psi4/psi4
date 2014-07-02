@@ -224,8 +224,10 @@ if (reference_ == "RESTRICTED") {
     // Z_ki^Q = 2 * \sum_{l} Z_kl b_li^Q
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA));
     K->read(psio_, PSIF_DFOCC_INTS);
-    L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|IL)", nQ_ref, noccA, nfrzc));
-    L->form_b_il(K);
+    //L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|IL)", nQ_ref, noccA, nfrzc));
+    //L->form_b_il(K);
+    L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|LI)", nQ_ref, nfrzc, noccA));
+    L->form_b_li(K);
     K.reset();
     Z = SharedTensor2d(new Tensor2d("DF_BASIS_SCF Z (Q|KI)", nQ_ref, naoccA, noccA));
     Z->contract233(false, false, naoccA, noccA, ZklA, L, 2.0, 0.0);
@@ -297,17 +299,6 @@ else if (reference_ == "UNRESTRICTED") {
     G1A->add_fc_aocc(ZlkA, 1.0, 1.0);
     G1B->add_aocc_fc(ZklB, 1.0, 1.0);
     G1B->add_fc_aocc(ZlkB, 1.0, 1.0);
-
-    /*
-    G1A->print();
-    double trace = G1A->trace();
-    fprintf(outfile,"\t Alpha trace: %12.12f \n", trace);
-    G1B->print();
-    trace = G1B->trace();
-    fprintf(outfile,"\t Beta trace: %12.12f \n", trace);
-    fflush(outfile);
-    */
-
 
     //=========================
     // Seprable TPDM : Alpha
@@ -428,8 +419,8 @@ else if (reference_ == "UNRESTRICTED") {
     // Z_KI^Q = \sum_{L} Z_KL b_LI^Q
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA));
     K->read(psio_, PSIF_DFOCC_INTS);
-    L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|IL)", nQ_ref, noccA, nfrzc));
-    L->form_b_il(K);
+    L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|LI)", nQ_ref, nfrzc, noccA));
+    L->form_b_li(K);
     K.reset();
     Z = SharedTensor2d(new Tensor2d("DF_BASIS_SCF Z (Q|KI)", nQ_ref, naoccA, noccA));
     Z->contract233(false, false, naoccA, noccA, ZklA, L, 1.0, 0.0);
@@ -472,11 +463,11 @@ else if (reference_ == "UNRESTRICTED") {
     L->form_b_ka(K);
     K.reset();
     IvoA->contract(true, false, nvirA, noccA, nQ_ref * naoccA, L, Z, -1.0, 1.0);
+    L.reset();
+    Z.reset();
     GFvoA->add(IvoA);
     WvoA->add(2.0, IvoA);
     IvoA.reset();
-    L.reset();
-    Z.reset();
 
     //=========================
     // GFM: AOCC-FC Terms
@@ -591,8 +582,8 @@ else if (reference_ == "UNRESTRICTED") {
     // Z_ki^Q = \sum_{l} Z_kl b_li^Q
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|oo)", nQ_ref, noccB, noccB));
     K->read(psio_, PSIF_DFOCC_INTS);
-    L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|il)", nQ_ref, noccB, nfrzc));
-    L->form_b_il(K);
+    L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|li)", nQ_ref, nfrzc, noccB));
+    L->form_b_li(K);
     K.reset();
     Z = SharedTensor2d(new Tensor2d("DF_BASIS_SCF Z (Q|ki)", nQ_ref, naoccB, noccB));
     Z->contract233(false, false, naoccB, noccB, ZklB, L, 1.0, 0.0);
@@ -635,11 +626,11 @@ else if (reference_ == "UNRESTRICTED") {
     L->form_b_ka(K);
     K.reset();
     IvoB->contract(true, false, nvirB, noccB, nQ_ref * naoccB, L, Z, -1.0, 1.0);
+    L.reset();
+    Z.reset();
     GFvoB->add(IvoB);
     WvoB->add(2.0, IvoB);
     IvoB.reset();
-    L.reset();
-    Z.reset();
 
     //=========================
     // GFM: AOCC-FC Terms

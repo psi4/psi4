@@ -930,8 +930,6 @@ else if (reference_ == "UNRESTRICTED") {
               GFB->add(a + noccB, i, ZvoB->get(a, i) * FockB->get(a + noccB, a + noccB));
 	 }
     }
-    GFA->print();
-    GFB->print();
 
 }// else if (reference_ == "UNRESTRICTED")
     timer_off("Gamma^eff");
