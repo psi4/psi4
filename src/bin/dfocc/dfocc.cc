@@ -188,6 +188,14 @@ void DFOCC::common_init()
     get_moinfo();
     pair_index();
 
+    // Frozen virtual
+    if (nfrzv > 0 && dertype == "FIRST") {
+        throw PSIEXCEPTION("Frozen virtual gradients are not available.");
+    }
+    if (nfrzv > 0 && orb_opt_ == "TRUE") {
+        throw PSIEXCEPTION("Frozen virtual approximation is not available for orbital-optimized methods.");
+    }
+
 
 if (reference_ == "RESTRICTED") {
 	// Memory allocation
@@ -374,7 +382,7 @@ void DFOCC::title()
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "TRUE") fprintf(outfile,"                      CD-OMP2 (CD-OO-MP2)   \n");
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "FALSE") fprintf(outfile,"                       CD-MP2   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya\n") ; 
-   fprintf(outfile,"              Latest Revision July 01, 2014\n") ;
+   fprintf(outfile,"              Latest Revision July 02, 2014\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
@@ -395,7 +403,7 @@ void DFOCC::title_grad()
    fprintf(outfile,"            A General Analytic Gradients Code   \n");
    fprintf(outfile,"               for Density-Fitted Methods       \n");
    fprintf(outfile,"                   by Ugur Bozkaya\n") ; 
-   fprintf(outfile,"              Latest Revision July 01, 2014\n") ;
+   fprintf(outfile,"              Latest Revision July 02, 2014\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
