@@ -43,7 +43,7 @@ if (reference_ == "RESTRICTED") {
     Minv_pcgA = SharedTensor1d(new Tensor1d("Alpha PCG M inverse", noccA * nvirA));
     sigma_pcgA = SharedTensor1d(new Tensor1d("Alpha PCG sigma", noccA * nvirA));
     residualA = SharedTensor1d(new Tensor1d("Alpha PCG Residual", noccA * nvirA));
-    WvoA = SharedTensor1d(new Tensor1d("Effective MO gradient <V|O>", noccA * nvirA));
+    Wvo_vecA = SharedTensor1d(new Tensor1d("Effective MO gradient <V|O>", noccA * nvirA));
 
     // DIIS
     nvar = num_vecs +1;
@@ -58,7 +58,7 @@ if (reference_ == "RESTRICTED") {
               double value = FockA->get(a + noccA, a + noccA) - FockA->get(i,i);
               zvectorA->set(ai, -WorbA->get(a + noccA, i) / (2.0*value));       
               Minv_pcgA->set(ai, 0.5/value);
-              WvoA->set(ai, WorbA->get(a + noccA, i));       
+              Wvo_vecA->set(ai, WorbA->get(a + noccA, i));       
          }
     }
 
@@ -70,7 +70,7 @@ if (reference_ == "RESTRICTED") {
     Minv_pcgA.reset(); 
     sigma_pcgA.reset();
     residualA.reset();
-    WvoA.reset();
+    Wvo_vecA.reset();
     vecsA.reset();
     errvecsA.reset();
     wog_intA.reset();
@@ -377,7 +377,7 @@ fflush(outfile);
    sigma_orb_resp_rhf(sigma_pcgA, zvectorA);
 
    // Build W + sigma
-   sigma_pcgA->add(WvoA);
+   sigma_pcgA->add(Wvo_vecA);
    //sigma_pcgA->print();
 
    // Build kappa-new

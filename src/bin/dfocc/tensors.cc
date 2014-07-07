@@ -2781,6 +2781,30 @@ void Tensor2d::add_vo(const SharedTensor2d &A, double alpha, double beta)
     }
 }//
 
+void Tensor2d::add_aocc_fc(const SharedTensor2d &A, double alpha, double beta)
+{
+    int aocc = A->dim1();
+    int frzc = A->dim2();
+    #pragma omp parallel for
+    for (int i = 0; i < aocc; i++) {
+         for (int j = 0; j < frzc; j++) {
+              A2d_[i + frzc][j] = (alpha * A->get(i,j)) + (beta * A2d_[i + frzc][j]);
+         }
+    }
+}//
+
+void Tensor2d::add_fc_aocc(const SharedTensor2d &A, double alpha, double beta)
+{
+    int frzc = A->dim1();
+    int aocc = A->dim2();
+    #pragma omp parallel for
+    for (int i = 0; i < frzc; i++) {
+         for (int j = 0; j < aocc; j++) {
+              A2d_[i][j + frzc] = (alpha * A->get(i,j)) + (beta * A2d_[i][j + frzc]);
+         }
+    }
+}//
+
 void Tensor2d::set3_oo(const SharedTensor2d &A)
 {
     int naux = A->d1_;
@@ -3074,6 +3098,111 @@ void Tensor2d::form_b_ab(const SharedTensor2d &A)
                    int ab = col_idx_[a][b];
                    int vv = A->col_idx_[a][b];
                    A2d_[Q][ab] = A->get(Q,vv);
+              }
+         }
+    }
+}//
+
+void Tensor2d::form_b_kl(const SharedTensor2d &A)
+{
+    int naux = d1_;
+    int aocc = d2_;
+    int frzc = d3_;
+    #pragma omp parallel for
+    for (int Q = 0; Q < naux; Q++) {
+         for (int i = 0; i < aocc; i++) {
+              for (int j = 0; j < frzc; j++) {
+                   int ij = A->col_idx_[i + frzc][j];
+                   int oo = col_idx_[i][j];
+                   A2d_[Q][oo] = A->get(Q,ij);
+              }
+         }
+    }
+}//
+
+void Tensor2d::form_b_ki(const SharedTensor2d &A)
+{
+    int naux = d1_;
+    int aocc = d2_;
+    int occ = d3_;
+    int frzc = occ - aocc;
+    #pragma omp parallel for
+    for (int Q = 0; Q < naux; Q++) {
+         for (int i = 0; i < aocc; i++) {
+              for (int j = 0; j < occ; j++) {
+                   int ij = A->col_idx_[i + frzc][j];
+                   int oo = col_idx_[i][j];
+                   A2d_[Q][oo] = A->get(Q,ij);
+              }
+         }
+    }
+}//
+
+void Tensor2d::form_b_ka(const SharedTensor2d &A)
+{
+    int naux = d1_;
+    int aocc = d2_;
+    int vir = d3_;
+    int occ = A->d2_;
+    int frzc = occ - aocc;
+    #pragma omp parallel for
+    for (int Q = 0; Q < naux; Q++) {
+         for (int i = 0; i < aocc; i++) {
+              for (int j = 0; j < vir; j++) {
+                   int ij = A->col_idx_[i + frzc][j];
+                   int oo = col_idx_[i][j];
+                   A2d_[Q][oo] = A->get(Q,ij);
+              }
+         }
+    }
+}//
+
+void Tensor2d::form_b_li(const SharedTensor2d &A)
+{
+    int naux = d1_;
+    int frzc = d2_;
+    int occ = d3_;
+    #pragma omp parallel for
+    for (int Q = 0; Q < naux; Q++) {
+         for (int i = 0; i < frzc; i++) {
+              for (int j = 0; j < occ; j++) {
+                   int ij = A->col_idx_[i][j];
+                   int oo = col_idx_[i][j];
+                   A2d_[Q][oo] = A->get(Q,ij);
+              }
+         }
+    }
+}//
+
+void Tensor2d::form_b_il(const SharedTensor2d &A)
+{
+    int naux = d1_;
+    int occ = d2_;
+    int frzc = d3_;
+    #pragma omp parallel for
+    for (int Q = 0; Q < naux; Q++) {
+         for (int i = 0; i < occ; i++) {
+              for (int j = 0; j < frzc; j++) {
+                   int ij = A->col_idx_[i][j];
+                   int oo = col_idx_[i][j];
+                   A2d_[Q][oo] = A->get(Q,ij);
+              }
+         }
+    }
+}//
+
+void Tensor2d::form_b_la(const SharedTensor2d &A)
+{
+    int naux = d1_;
+    int frzc = d2_;
+    int vir = d3_;
+    #pragma omp parallel for
+    for (int Q = 0; Q < naux; Q++) {
+         for (int i = 0; i < frzc; i++) {
+              for (int j = 0; j < vir; j++) {
+                   int ij = A->col_idx_[i][j];
+                   int oo = col_idx_[i][j];
+                   A2d_[Q][oo] = A->get(Q,ij);
               }
          }
     }
