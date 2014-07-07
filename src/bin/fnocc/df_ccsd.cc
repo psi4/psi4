@@ -89,7 +89,7 @@ void DFCoupledCluster::Local_SCS_MP2(){
               I1[i*o+j] = tempt[ab*o*o+j*o+i];
           }
       }
-      F_DCOPY(o*o,I1,1,tempt+ab*o*o,1);
+      C_DCOPY(o*o,I1,1,tempt+ab*o*o,1);
   }
 
   // energy
@@ -157,7 +157,7 @@ void DFCoupledCluster::Local_SCS_CCSD(){
               I1[i*o+j] = tempt[ab*o*o+j*o+i];
           }
       }
-      F_DCOPY(o*o,I1,1,tempt+ab*o*o,1);
+      C_DCOPY(o*o,I1,1,tempt+ab*o*o,1);
   }
   for (int a = 0; a < v; a++){
       for (int b = 0; b < v; b++){
@@ -545,7 +545,7 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
 
   // T1 and D1 diagnostics:
 
-  double t1diag = F_DNRM2(o*v,t1,1) / sqrt(2.0 * o);
+  double t1diag = C_DNRM2(o*v,t1,1) / sqrt(2.0 * o);
   fprintf(outfile,"        T1 diagnostic:                  %20.12lf\n",t1diag);
   boost::shared_ptr<Matrix>T (new Matrix(o,o));
   boost::shared_ptr<Matrix>eigvec (new Matrix(o,o));
@@ -620,11 +620,11 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
 
   if (options_.get_bool("COMPUTE_TRIPLES")){
       // need to generate non-t1-transformed 3-index integrals
-      F_DCOPY(o*v,t1,1,w1,1);
+      C_DCOPY(o*v,t1,1,w1,1);
       memset((void*)t1,'\0',o*v*sizeof(double));
       T1Fock();
       T1Integrals();
-      F_DCOPY(o*v,w1,1,t1,1);
+      C_DCOPY(o*v,w1,1,t1,1);
   }
 
   return Success;
@@ -644,12 +644,12 @@ void DFCoupledCluster::T1Fock(){
         psio->open(PSIF_CIM,PSIO_OPEN_OLD);
         psio->read_entry(PSIF_CIM,"C matrix",(char*)&Catemp[0],nso*full*sizeof(double));
         psio->close(PSIF_CIM,1);
-        F_DCOPY(nso*full,&Catemp[0],1,Ca_L,1);
-        F_DCOPY(nso*full,&Catemp[0],1,Ca_R,1);
+        C_DCOPY(nso*full,&Catemp[0],1,Ca_L,1);
+        C_DCOPY(nso*full,&Catemp[0],1,Ca_R,1);
     }else {
-        F_DCOPY(nso*full,&Ca[0][0],1,Ca_L,1);
-        F_DCOPY(nso*full,&Ca[0][0],1,Ca_R,1);
-        F_DCOPY(nso*full,&Ca[0][0],1,Catemp,1);
+        C_DCOPY(nso*full,&Ca[0][0],1,Ca_L,1);
+        C_DCOPY(nso*full,&Ca[0][0],1,Ca_R,1);
+        C_DCOPY(nso*full,&Ca[0][0],1,Catemp,1);
     }
 
     #pragma omp parallel for schedule (static)
@@ -701,7 +701,7 @@ void DFCoupledCluster::T1Fock(){
         F_DGEMM('n','n',full,nso*rowdims[row],nso,1.0,Ca_L,full,integrals,nso,0.0,tempv,full);
         for (int q = 0; q < rowdims[row]; q++) {
             for (int mu = 0; mu < nso; mu++) {
-                F_DCOPY(full,tempv+q*nso*full+mu*full,1,integrals+q*nso*full+mu,nso);
+                C_DCOPY(full,tempv+q*nso*full+mu*full,1,integrals+q*nso*full+mu,nso);
             }
         }
         F_DGEMM('n','n',full,full*rowdims[row],nso,1.0,Ca_R,full,integrals,nso,0.0,tempv,full);
@@ -826,12 +826,12 @@ void DFCoupledCluster::T1Integrals(){
         psio->open(PSIF_CIM,PSIO_OPEN_OLD);
         psio->read_entry(PSIF_CIM,"C matrix",(char*)&Catemp[0],nso*full*sizeof(double));
         psio->close(PSIF_CIM,1);
-        F_DCOPY(nso*full,&Catemp[0],1,Ca_L,1);
-        F_DCOPY(nso*full,&Catemp[0],1,Ca_R,1);
+        C_DCOPY(nso*full,&Catemp[0],1,Ca_L,1);
+        C_DCOPY(nso*full,&Catemp[0],1,Ca_R,1);
     }else {
-        F_DCOPY(nso*full,&Ca[0][0],1,Ca_L,1);
-        F_DCOPY(nso*full,&Ca[0][0],1,Ca_R,1);
-        F_DCOPY(nso*full,&Ca[0][0],1,Catemp,1);
+        C_DCOPY(nso*full,&Ca[0][0],1,Ca_L,1);
+        C_DCOPY(nso*full,&Ca[0][0],1,Ca_R,1);
+        C_DCOPY(nso*full,&Ca[0][0],1,Catemp,1);
     }
 
     #pragma omp parallel for schedule (static)
@@ -878,7 +878,7 @@ void DFCoupledCluster::T1Integrals(){
         F_DGEMM('n','n',full,nso*rowdims[row],nso,1.0,Ca_L,full,integrals,nso,0.0,tempv,full);
         for (int q = 0; q < rowdims[row]; q++) {
             for (int mu = 0; mu < nso; mu++) {
-                F_DCOPY(full,tempv+q*nso*full+mu*full,1,integrals+q*nso*full+mu,nso);
+                C_DCOPY(full,tempv+q*nso*full+mu*full,1,integrals+q*nso*full+mu,nso);
             }
         }
         F_DGEMM('n','n',full,full*rowdims[row],nso,1.0,Ca_R,full,integrals,nso,0.0,tempv,full);
@@ -1253,9 +1253,9 @@ void DFCoupledCluster::UpdateT1(){
       }
   }
   // error vector for diis is in tempv:
-  F_DCOPY(o*v,w1,1,tempv+o*o*v*v,1);
+  C_DCOPY(o*v,w1,1,tempv+o*o*v*v,1);
   F_DAXPY(o*v,-1.0,t1,1,tempv+o*o*v*v,1);
-  F_DCOPY(o*v,w1,1,t1,1);
+  C_DCOPY(o*v,w1,1,t1,1);
 }
 void DFCoupledCluster::UpdateT2(){
 
@@ -1297,7 +1297,7 @@ void DFCoupledCluster::UpdateT2(){
       }
   }
     // error vector is just dt
-    F_DCOPY(o*o*v*v,tempt,1,tempv,1);
+    C_DCOPY(o*o*v*v,tempt,1,tempv,1);
 
     if (t2_on_disk){
         psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
@@ -1358,9 +1358,9 @@ void DFCoupledCluster::Vabcd1(){
     // qvv transpose
     #pragma omp parallel for schedule (static)
     for (int q = 0; q < nQ; q++) {
-        F_DCOPY(v*v,Qvv+q*v*v,1,integrals+q,nQ);
+        C_DCOPY(v*v,Qvv+q*v*v,1,integrals+q,nQ);
     }
-    F_DCOPY(nQ*v*v,integrals,1,Qvv,1);
+    C_DCOPY(nQ*v*v,integrals,1,Qvv,1);
   
     double time1 = 0.0;
     double time2 = 0.0;
@@ -1434,9 +1434,9 @@ void DFCoupledCluster::Vabcd1(){
     // qvv un-transpose
     #pragma omp parallel for schedule (static)
     for (int q = 0; q < nQ; q++) {
-        F_DCOPY(v*v,Qvv+q,nQ,integrals+q*v*v,1);
+        C_DCOPY(v*v,Qvv+q,nQ,integrals+q*v*v,1);
     }
-    F_DCOPY(nQ*v*v,integrals,1,Qvv,1);
+    C_DCOPY(nQ*v*v,integrals,1,Qvv,1);
 }
 
 void DFCoupledCluster::CCResidual(){
@@ -1531,7 +1531,7 @@ void DFCoupledCluster::CCResidual(){
 
     // D2: 1/2 U(b,c,j,k) [ L(a,i,k,c) + 1/2 U(a,d,i,l) L(l,d,k,c) ] 
     F_DGEMM('n','t',o*v,o*v,nQ,1.0,Qov,o*v,Qov,o*v,0.0,integrals,o*v);
-    F_DCOPY(o*o*v*v,integrals,1,tempv,1);
+    C_DCOPY(o*o*v*v,integrals,1,tempv,1);
     #pragma omp parallel for schedule (static)
     for (int l = 0; l < o; l++) {
         for (int d = 0; d < v; d++) {
@@ -1618,7 +1618,7 @@ void DFCoupledCluster::CCResidual(){
         psio->close(PSIF_DCC_T2,1);
         tb = tempv;
     }
-    F_DCOPY(o*o*v*v,tb,1,tempt,1);
+    C_DCOPY(o*o*v*v,tb,1,tempt,1);
     #pragma omp parallel for schedule (static)
     for (int b = 0; b < v; b++) {
         for (int d = 0; d < v; d++) {
@@ -1703,7 +1703,7 @@ void DFCoupledCluster::CCResidual(){
     F_DGEMM('n','n',o,o*v*v,o,-1.0,Fij,o,tb,o,1.0,tempt,o);
 
     // R2 = R2 + P(ia,jb) R2
-    F_DCOPY(o*o*v*v,tempt,1,integrals,1);
+    C_DCOPY(o*o*v*v,tempt,1,integrals,1);
     #pragma omp parallel for schedule (static)
     for (int a = 0; a < v; a++) {
         for (int b = 0; b < v; b++) {
@@ -1773,7 +1773,7 @@ void DFCoupledCluster::CCResidual(){
     // now singles residual:
 
     // D1: F(ai)
-    F_DCOPY(o*v,Fai,1,w1,1);
+    C_DCOPY(o*v,Fai,1,w1,1);
  
     // A1 (G):  U(c,d,k,l) (ad|kc)
     #pragma omp parallel for schedule (static)
@@ -1790,7 +1790,7 @@ void DFCoupledCluster::CCResidual(){
     #pragma omp parallel for schedule (static)
     for (int q = 0; q < nQ; q++) {
         for (int a = 0; a < v; a++) {
-            F_DCOPY(v,Qvv+q*v*v+a*v,1,integrals+q*v*v+a,v);
+            C_DCOPY(v,Qvv+q*v*v+a*v,1,integrals+q*v*v+a,v);
         }
     }
     F_DGEMM('n','t',o,v,v*nQ,1.0,tempv,o,integrals,v,1.0,w1,o);
@@ -1818,7 +1818,7 @@ void DFCoupledCluster::CCResidual(){
         psio->close(PSIF_DCC_T2,1);
         tb = integrals;
     }
-    F_DCOPY(o*o*v*v,tb,1,tempt,1);
+    C_DCOPY(o*o*v*v,tb,1,tempt,1);
     #pragma omp parallel for schedule (static)
     for (int a = 0; a < v; a++) {
         for (int c = 0; c < v; c++) {

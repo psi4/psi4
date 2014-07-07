@@ -25,6 +25,7 @@
 #include<libmints/matrix.h>
 #include<libmints/vector.h>
 #include"blas.h"
+#include<libqt/qt.h>
 #ifdef _OPENMP
    #include<omp.h>
 #endif
@@ -164,7 +165,7 @@ PsiReturnType CoupledCluster::local_triples() {
      psio->close(PSIF_DCC_T2,1);
   }
 
-  F_DCOPY(o*o*v*v,tb,1,tempt,1);
+  C_DCOPY(o*o*v*v,tb,1,tempt,1);
 
   // might as well use t2's memory
   double*E2klcd = tb;
@@ -290,7 +291,7 @@ PsiReturnType CoupledCluster::local_triples() {
              }
          }
 
-         F_DCOPY(o*o*o,Z[thread],1,Z2[thread],1);
+         C_DCOPY(o*o*o,Z[thread],1,Z2[thread],1);
          double dabc = -F[a+o]-F[b+o]-F[c+o];
          for (int i=0; i<o; i++){
              double dabci = dabc+F[i];
@@ -315,7 +316,7 @@ PsiReturnType CoupledCluster::local_triples() {
              }
          }
 
-         F_DCOPY(o*o*o,Z[thread],1,Z3[thread],1);
+         C_DCOPY(o*o*o,Z[thread],1,Z3[thread],1);
          for (int i=0; i<o; i++){
              for (int j=0; j<o; j++){
                  for (int k=0; k<o; k++){
@@ -329,7 +330,7 @@ PsiReturnType CoupledCluster::local_triples() {
 
          // transform one index of Z2 and Z3 to lmo basis:
          F_DGEMM('n','t',o*o,o,o,1.0,Z2[thread],o*o,Rii,o,0.0,Z4[thread],o*o);
-         F_DCOPY(o*o*o,Z4[thread],1,E2abci[thread],1);
+         C_DCOPY(o*o*o,Z4[thread],1,E2abci[thread],1);
          F_DGEMM('n','t',o*o,o,o,1.0,Z3[thread],o*o,Rii,o,0.0,Z4[thread],o*o);
 
          // contribute to energy:
@@ -374,7 +375,7 @@ PsiReturnType CoupledCluster::local_triples() {
 
          // transform one index of of E2abci and Z3 to lmo basis:
          F_DGEMM('n','t',o*o,o,o,1.0,Z3[thread],o*o,Rii,o,0.0,Z4[thread],o*o);
-         F_DCOPY(o*o*o,Z4[thread],1,Z3[thread],1);
+         C_DCOPY(o*o*o,Z4[thread],1,Z3[thread],1);
          F_DGEMM('n','t',o*o,o,o,1.0,E2abci[thread],o*o,Rii,o,0.0,Z4[thread],o*o);
 
          // contribute to energy:
