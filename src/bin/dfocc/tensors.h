@@ -308,6 +308,8 @@ class Tensor2d
   void add_vv(int occ, const SharedTensor2d &A, double alpha, double beta);
   void add_ov(const SharedTensor2d &A, double alpha, double beta);
   void add_vo(const SharedTensor2d &A, double alpha, double beta);
+  void add_aocc_fc(const SharedTensor2d &A, double alpha, double beta);
+  void add_fc_aocc(const SharedTensor2d &A, double alpha, double beta);
 
   void set3_oo(const SharedTensor2d &A);
   void add3_oo(const SharedTensor2d &A, double alpha, double beta);
@@ -333,6 +335,18 @@ class Tensor2d
   void form_b_ij(int frzc, const SharedTensor2d &A);
   void form_b_ia(int frzc, const SharedTensor2d &A);
   void form_b_ab(const SharedTensor2d &A);
+  // form_b_kl: k is active occupied, and l is frozen core
+  void form_b_kl(const SharedTensor2d &A);
+  // form_b_ki: k is active occupied, and i is all occupied
+  void form_b_ki(const SharedTensor2d &A);
+  // form_b_li: l is frozen core, and i is all occupied
+  void form_b_li(const SharedTensor2d &A);
+  // form_b_il: l is frozen core, and i is all occupied
+  void form_b_il(const SharedTensor2d &A);
+  // form_b_ka: k is active occupied, and a is all virtual
+  void form_b_ka(const SharedTensor2d &A);
+  // form_b_la: k is frozen core, and a is all virtual
+  void form_b_la(const SharedTensor2d &A);
 
   // B_pq = 1/2 (A_pq + A_qp)
   void symmetrize();

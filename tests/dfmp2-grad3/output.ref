@@ -1,0 +1,501 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-beta5+ Driver
+
+               Git: Rev {master} 22aabcd6baba56ef2bc3627bb1ec5787a50da437
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
+    (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+    Process ID:   6231
+    PSI4DATADIR: /home/ugur/psi4/lib
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! DF-MP2 cc-pVDZ gradients for the H2O molecule.
+
+ref_vals = [                                                             #TEST
+             [ -0.000000000000,    -0.000000000004,     0.012748331586],  #TEST
+             [ -0.000000000000,     0.002236137610,    -0.006374166315],  #TEST
+             [  0.000000000000,    -0.002236137607,    -0.006374165272]   #TEST
+           ]                                                             #TEST
+ref = psi4.Matrix(3, 3)                                                #TEST
+ref.set(ref_vals)
+
+memory 256 mb
+
+molecule h2o {
+0 1
+o
+h 1 0.958
+h 1 0.958 2 104.4776 
+symmetry c1
+}
+
+set {
+  basis cc-pvdz
+  df_basis_scf cc-pvdz-jkfit
+  df_basis_cc cc-pvdz-ri
+  guess sad
+  scf_type df
+  orb_opt false
+  freeze_core true
+}
+gradient('df-omp2')
+
+grad = psi4.wavefunction().gradient()                           #TEST
+compare_matrices(ref, grad, 5, "Analytic gradients")              #TEST
+
+
+--------------------------------------------------------------------------
+
+  Memory set to 256.000 MiB by Python script.
+
+*** tstart() called on bozkaya
+*** at Wed Jul  2 03:32:48 2014
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        4 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.065655108074
+           H          0.000000000000    -0.757365949175     0.520997104936
+           H          0.000000000000     0.757365949175     0.520997104936
+
+  Running in c1 symmetry.
+
+
+	Rotational constants (cm^-1):
+	A =   27.36310    B =   14.58041   C =    9.51197
+
+	Rotational constants (MHz):
+	A = 820325.16776    B = 437109.76453   C = 285161.58706
+  Nuclear repulsion =    9.187386421477591
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-10
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Number of shells: 12
+    Number of basis function: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         24      24       0       0       0       0
+   -------------------------------------------------------
+    Total      24      24       5       5       5       0
+   -------------------------------------------------------
+
+ OEINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:              12
+      Number of primitives:             32
+      Number of atomic orbitals:        25
+      Number of basis functions:        24
+
+      Number of irreps:                  1
+      Number of functions per irrep: [  24 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              4
+    Integrals threads:           4
+    Memory (MB):               183
+    Algorithm:                Core
+    Integral Cache:           SAVE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: cc-pvdz-jkfit
+    Number of shells: 42
+    Number of basis function: 116
+    Number of Cartesian functions: 131
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 3.4230868664E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RHF iter   0:   -76.02230221842291   -7.60223e+01   7.05241e-02 
+   @DF-RHF iter   1:   -75.99055553716292    3.17467e-02   1.18605e-02 
+   @DF-RHF iter   2:   -76.01905241382082   -2.84969e-02   5.88985e-03 DIIS
+   @DF-RHF iter   3:   -76.02616670669542   -7.11429e-03   1.00716e-03 DIIS
+   @DF-RHF iter   4:   -76.02668285283261   -5.16146e-04   2.84654e-04 DIIS
+   @DF-RHF iter   5:   -76.02673706472146   -5.42119e-05   5.86124e-05 DIIS
+   @DF-RHF iter   6:   -76.02674009997378   -3.03525e-06   9.32698e-06 DIIS
+   @DF-RHF iter   7:   -76.02674017827289   -7.82991e-08   1.35133e-06 DIIS
+   @DF-RHF iter   8:   -76.02674017970074   -1.42785e-09   3.04459e-07 DIIS
+   @DF-RHF iter   9:   -76.02674017978177   -8.10303e-11   6.93981e-08 DIIS
+   @DF-RHF iter  10:   -76.02674017978654   -4.77485e-12   2.20948e-08 DIIS
+   @DF-RHF iter  11:   -76.02674017978711   -5.68434e-13   3.29457e-09 DIIS
+   @DF-RHF iter  12:   -76.02674017978714   -2.84217e-14   5.02996e-10 DIIS
+   @DF-RHF iter  13:   -76.02674017978711    2.84217e-14   1.15621e-10 DIIS
+   @DF-RHF iter  14:   -76.02674017978711    0.00000e+00   3.13331e-11 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1A    -20.550585     2A     -1.336342     3A     -0.698830  
+	   4A     -0.566503     5A     -0.493099  
+
+	Virtual:                                                              
+
+	   6A      0.185441     7A      0.256144     8A      0.788691  
+	   9A      0.853812    10A      1.163733    11A      1.200441  
+	  12A      1.253476    13A      1.444765    14A      1.476603  
+	  15A      1.674917    16A      1.867631    17A      1.934918  
+	  18A      2.451189    19A      2.488875    20A      3.285846  
+	  21A      3.338551    22A      3.510393    23A      3.865411  
+	  24A      4.147172  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     5 ]
+
+  Energy converged.
+
+  @DF-RHF Final Energy:   -76.02674017978711
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              9.1873864214775907
+    One-Electron Energy =                -123.1375342601629086
+    Two-Electron Energy =                  37.9234076588982418
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    Total Energy =                        -76.0267401797870832
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+  ==> Properties <==
+
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.9765
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:    -0.1669
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:     0.8097     Total:     0.8097
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -0.0000      Z:     2.0580     Total:     2.0580
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on bozkaya at Wed Jul  2 03:32:49 2014
+Module time:
+	user time   =       1.33 seconds =       0.02 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       1.33 seconds =       0.02 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on bozkaya
+*** at Wed Jul  2 03:32:49 2014
+
+
+
+  Options:
+  ----------------------------------------------------------------------------
+  BENCH                       => 0                
+  CC_DIIS_MAX_VECS            => 6                
+  CC_DIIS_MIN_VECS            => 2                
+  CC_MAXITER                  => 50               
+  CC_TYPE                     => CONVENTIONAL     
+  CEPA_OS_SCALE               => 1.27             
+  CEPA_SOS_SCALE              => 1.3              
+  CEPA_SS_SCALE               => 1.13             
+  CEPA_TYPE                   => CEPA(0)          
+  CHOLESKY_TOLERANCE          => 0.0001           
+  COMPUT_S2                   => FALSE            
+  CONV_TEI_TYPE               => DIRECT           
+  CUBIC_BASIS_TOLERANCE       => 1e-12            
+  CUBIC_BLOCK_MAX_POINTS      => 1000             
+  CUBIC_GRID_FILEPATH         => .                
+  CUBIC_GRID_OVERAGE          => [  ]             
+  CUBIC_GRID_SPACING          => [  ]             
+  CUTOFF                      => 8                
+  DEBUG                       => 0                
+  DERTYPE                     => FIRST           !
+  DF_BASIS_CC                 => CC-PVDZ-RI      !
+  DIE_IF_NOT_CONVERGED        => TRUE             
+  DOCC                        => [  ]             
+  DO_DIIS                     => TRUE             
+  DO_LEVEL_SHIFT              => TRUE             
+  DO_SCS                      => FALSE            
+  DO_SOS                      => FALSE            
+  E3_SCALE                    => 0.25             
+  EKT_EA                      => FALSE            
+  EKT_IP                      => FALSE            
+  EXTERNAL_POTENTIAL_SYMMETRY => FALSE            
+  E_CONVERGENCE               => 1e-08           !
+  FREEZE_CORE                 => TRUE            !
+  FROZEN_DOCC                 => [  ]             
+  FROZEN_UOCC                 => [  ]             
+  HESS_TYPE                   => HF               
+  INTEGRAL_PACKAGE            => ERD              
+  LEVEL_SHIFT                 => 0.02             
+  LINEQ_SOLVER                => CDGESV           
+  LITERAL_CFOUR               => (empty)          
+  MAT_NUM_COLUMN_PRINT        => 5                
+  MAX_MOGRAD_CONVERGENCE      => 0.001            
+  MO_DIIS_NUM_VECS            => 6                
+  MO_MAXITER                  => 50               
+  MO_STEP_MAX                 => 0.5              
+  MP2_AMP_TYPE                => DIRECT           
+  MP2_OS_SCALE                => 1.2              
+  MP2_SOS_SCALE               => 1.3              
+  MP2_SOS_SCALE2              => 1.2              
+  MP2_SS_SCALE                => 0.333333         
+  NAT_ORBS                    => FALSE            
+  NUM_FROZEN_DOCC             => 0                
+  NUM_FROZEN_UOCC             => 0                
+  OCC_ORBS_PRINT              => FALSE            
+  OEPROP                      => FALSE            
+  OO_SCALE                    => 0.01             
+  OPT_METHOD                  => QNR              
+  ORB_OPT                     => FALSE           !
+  ORB_RESP_SOLVER             => PCG              
+  ORTH_TYPE                   => MGS              
+  PCG_BETA_TYPE               => FLETCHER_REEVES  
+  PCG_CONVERGENCE             => 1e-06            
+  PCG_MAXITER                 => 50               
+  PRINT                       => 1                
+  PROPERTIES                  => [  ]             
+  PROPERTIES_ORIGIN           => [  ]             
+  PUREAM                      => TRUE             
+  READ_SCF_3INDEX             => TRUE             
+  REGULARIZATION              => FALSE            
+  REG_PARAM                   => 0.4              
+  RMS_MOGRAD_CONVERGENCE      => 1e-06            
+  R_CONVERGENCE               => 1e-05            
+  SCS_TYPE                    => SCS              
+  SOCC                        => [  ]             
+  SOS_TYPE                    => SOS              
+  UNITS                       => ANGSTROMS        
+  WFN                         => SCF              
+  WFN_TYPE                    => DF-OMP2          
+  WRITER_FILE_LABEL           => (empty)          
+
+
+ ============================================================================== 
+ ============================================================================== 
+ ============================================================================== 
+
+                       DF-MP2   
+              Program Written by Ugur Bozkaya
+              Latest Revision July 01, 2014
+
+ ============================================================================== 
+ ============================================================================== 
+ ============================================================================== 
+
+	RMS orbital gradient is changed to :     2.51e-06
+	MAX orbital gradient is changed to :     1.05e-04
+
+	MO spaces... 
+
+	 FC   OCC   VIR   FV 
+	----------------------
+	  1    4    19    0
+
+	Available memory is:    256 MB 
+	Minimum required memory for the DFOCC module is:      0 MB 
+	Reading DF integrals from disk ...
+	Number of basis functions in the DF-HF basis: 116
+	Number of basis functions in the DF-CC basis:  84
+
+	Computing DF-MP2 energy using SCF MOs (Canonical DF-MP2)... 
+	======================================================================= 
+	Nuclear Repulsion Energy (a.u.)    :     9.18738642147759
+	DF-HF Energy (a.u.)                :   -76.02674017978711
+	REF Energy (a.u.)                  :   -76.02674017978711
+	DF-MP2 Correlation Energy (a.u.)   :    -0.20165224255786
+	DF-MP2 Total Energy (a.u.)         :   -76.22839242234497
+	======================================================================= 
+
+	Computing unrelaxed response density matrices...
+	Forming independent-pairs...
+	Number of independent-pairs:  95
+	Computing the generalized Fock matrix (GFM)...
+	Computing the orbital gradient...
+	Forming effective orbital gradient...
+	Solving orbital Z-vector equations...
+
+	            PCG Solver 
+	   ------------------------------ 
+	Iter     RMS Z Vector        RMS Residual  
+	----    ---------------    ---------------
+	  1         3.61e-04         1.53e-04
+	  2         6.19e-05         6.43e-05
+	  3         2.11e-05         1.09e-05
+	  4         4.69e-06         2.07e-06
+	  5         7.02e-07         4.83e-07
+
+	Computing the relaxed PDMs and GFM...
+
+ ============================================================================== 
+ ============================================================================== 
+ ============================================================================== 
+
+                         DFGRAD   
+            A General Analytic Gradients Code   
+               for Density-Fitted Methods       
+                   by Ugur Bozkaya
+              Latest Revision July 01, 2014
+
+ ============================================================================== 
+ ============================================================================== 
+ ============================================================================== 
+
+	Analytic gradients computation is starting...
+	Forming Gamma^tilde...
+	Backtransforming OPDM, TPDM, and GFM to the AO basis...
+	Computing analytic gradients...
+
+  -Nuclear Gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000     2.989554195418
+       2        0.000000000000     2.051800004663    -1.494777097709
+       3        0.000000000000    -2.051800004663    -1.494777097709
+
+
+  -Kinetic Gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1       -0.000000000001     0.000000000009     0.900013006454
+       2        0.000000000000     0.596613268184    -0.450006503222
+       3        0.000000000001    -0.596613268193    -0.450006503232
+
+
+  -Potential Gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000006    -0.000000000005    -8.417308405924
+       2       -0.000000000000    -5.593148728659     4.208654202951
+       3       -0.000000000006     5.593148728664     4.208654202973
+
+
+  -Overlap Gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1       -0.000000000002     0.000000000003     0.481387393361
+       2       -0.000000000001     0.292890893012    -0.240693697200
+       3        0.000000000002    -0.292890893016    -0.240693696161
+
+
+  -One-Electron Gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000006     0.000000000004    -7.517295399470
+       2       -0.000000000000    -4.996535460475     3.758647699729
+       3       -0.000000000006     4.996535460471     3.758647699742
+
+
+  -Two-Electron Gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1       -0.000000000004    -0.000000000012     4.059102142278
+       2        0.000000000001     2.654080700410    -2.029551071135
+       3        0.000000000004    -2.654080700398    -2.029551071143
+
+
+  -Total Gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1       -0.000000000000    -0.000000000004     0.012748331586
+       2       -0.000000000000     0.002236137610    -0.006374166315
+       3        0.000000000000    -0.002236137607    -0.006374165272
+
+
+*** tstop() called on bozkaya at Wed Jul  2 03:32:51 2014
+Module time:
+	user time   =       1.90 seconds =       0.03 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+Total time:
+	user time   =       3.23 seconds =       0.05 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+
+*** PSI4 exiting successfully. Buy a developer a beer!
