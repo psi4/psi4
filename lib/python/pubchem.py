@@ -46,8 +46,12 @@ except ImportError:
     from urllib.request import urlopen
     from urllib.parse import quote
     from urllib.error import URLError
+import xml.etree.ElementTree as ET
+import time
+import gzip
 import re
 import sys
+import os
 
 
 class PubChemObj(object):
@@ -66,18 +70,97 @@ class PubChemObj(object):
     def getSDF(self):
         """Function to return the SDF (structure-data file) of the PubChem object."""
         if (len(self.dataSDF) == 0):
-            # When completed uncomment the following:
-            url = self.url + '?cid=' + quote(str(self.cid)) + '&disopt=3DDisplaySDF'
-            try:
-                location = urlopen(url)
-            except URLError as e:
-                msg = "\tPubchemError\n%s\n\treceived when trying to open\n\t%s\n" % (str(e), url)
-                msg += "\tCheck your internet connection, and the above URL, and try again.\n"
-                raise Exception(msg)
-            print("\tRetrieved entry for chemical ID %d\n" % self.cid)
-            self.dataSDF = location.read().decode(sys.getdefaultencoding())
-            #f = open("TEST", "w")
-            #f.write(self.dataSDF)
+            def extract_xml_keyval(xml, key):
+                """ A useful helper function for parsing a single key from XML. """
+                matches = list(xml.iter(key))
+                if len(matches) == 0:
+                    return None
+                elif len(matches) == 1:
+                    return matches[0].text
+                else:
+                    raise TooManyMatchesException
+
+            url = "http://pubchem.ncbi.nlm.nih.gov/pug/pug.cgi"
+            initial_request = """
+            <PCT-Data>
+              <PCT-Data_input>
+                <PCT-InputData>
+                  <PCT-InputData_download>
+                    <PCT-Download>
+                      <PCT-Download_uids>
+                        <PCT-QueryUids>
+                          <PCT-QueryUids_ids>
+                            <PCT-ID-List>
+                              <PCT-ID-List_db>pccompound</PCT-ID-List_db>
+                              <PCT-ID-List_uids>
+                                <PCT-ID-List_uids_E>%d</PCT-ID-List_uids_E>
+                              </PCT-ID-List_uids>
+                            </PCT-ID-List>
+                          </PCT-QueryUids_ids>
+                        </PCT-QueryUids>
+                      </PCT-Download_uids>
+                      <PCT-Download_format value="sdf"/>
+                    </PCT-Download>
+                  </PCT-InputData_download>
+                </PCT-InputData>
+              </PCT-Data_input>
+            </PCT-Data>
+            """ % self.cid
+
+            print("\tPosting PubChem request for CID %d" % self.cid)
+            server_response = urlopen(url, initial_request).read()
+            xml = ET.fromstring(server_response)
+            for attempt in range(4):
+                if attempt == 3:
+                    raise PubChemTimeoutError
+                # Look for a download location in the XML response
+                download_url = extract_xml_keyval(xml, 'PCT-Download-URL_url')
+                if download_url:
+                    print("\tDownloading from PubChem...")
+                    # We have a download location; gogetit
+                    file_name = '_psi4_pubchem_temp_download_.tgz'
+                    response = urlopen(download_url)
+                    data = response.read()
+                    fh = open(file_name, 'wb')
+                    fh.write(data)
+                    fh.close()
+                    unzipped = gzip.open(file_name)
+                    self.dataSDF = unzipped.read()
+                    unzipped.close()
+                    try:
+                        os.remove(file_name)
+                    except:
+                        pass
+                    print("\tDone!")
+                    break
+                # We didn't find a download location yet.
+                if attempt == 0:
+                    # If this is the first try, take a ticket
+                    ticket = extract_xml_keyval(xml, 'PCT-Waiting_reqid')
+                    #print("ticket = " + ticket)
+                    statusrequest = """<PCT-Data>
+                      <PCT-Data_input>
+                        <PCT-InputData>
+                          <PCT-InputData_request>
+                            <PCT-Request>
+                              <PCT-Request_reqid>%d</PCT-Request_reqid>
+                              <PCT-Request_type value="status"/>
+                            </PCT-Request>
+                          </PCT-InputData_request>
+                        </PCT-InputData>
+                      </PCT-Data_input>
+                    </PCT-Data>
+                    """ % int(ticket)
+                if ticket:
+                    # Wait 10 seconds...
+                    print("\tPubChem result not available yet, will try again in 10 seconds...")
+                    time.sleep(10)
+                    # ...and ask for an update on the progress
+                    server_response = urlopen(url, statusrequest).read()
+                    xml = ET.fromstring(server_response)
+                else:
+                    # We can't find a ticket number, or a download location. Bail.
+                    raise PubChemDownloadError
         return self.dataSDF
 
     def name(self):

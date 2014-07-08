@@ -23,6 +23,7 @@
 #include"ccsd.h"
 #include"blas.h"
 #include<libmints/wavefunction.h>
+#include<libqt/qt.h>
 #ifdef _OPENMP
    #include<omp.h>
 #endif
@@ -148,7 +149,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
      psio->close(PSIF_DCC_T2,1);
   }
 
-  F_DCOPY(o*o*v*v,tb,1,tempt,1);
+  C_DCOPY(o*o*v*v,tb,1,tempt,1);
 
   // might as well use t2's memory
   double*E2klcd = tb;
@@ -274,7 +275,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
              }
          }
 
-         F_DCOPY(o*o*o,Z[thread],1,Z2[thread],1);
+         C_DCOPY(o*o*o,Z[thread],1,Z2[thread],1);
          double dabc = -F[a+o]-F[b+o]-F[c+o];
          for (int i=0; i<o; i++){
              double dabci = dabc+F[i];
@@ -299,7 +300,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
              }
          }
 
-         F_DCOPY(o*o*o,Z[thread],1,Z3[thread],1);
+         C_DCOPY(o*o*o,Z[thread],1,Z3[thread],1);
          for (int i=0; i<o; i++){
              for (int j=0; j<o; j++){
                  for (int k=0; k<o; k++){
