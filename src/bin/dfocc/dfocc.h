@@ -110,6 +110,9 @@ protected:
     void effective_pdms();
     void effective_gfm();
     void effective_pdm_gfm();
+    void effective_mograd();
+    void fc_grad_terms();
+    void z_vector_fc();
     void oeprop();
     void s2_response();
     void s2_lagrangian();
@@ -787,6 +790,12 @@ protected:
      SharedTensor2d ZvoB;            // Zvector in matrix form
      SharedTensor2d ZovA;            // Transpose of Zvector in matrix form
      SharedTensor2d ZovB;            // Transpose of Zvector in matrix form
+     SharedTensor2d ZklA;            // AOCC-FC Zvector in matrix form
+     SharedTensor2d ZklB;            // AOCC-FC Zvector in matrix form
+     SharedTensor2d ZlkA;            // FC-AOCC Zvector in matrix form
+     SharedTensor2d ZlkB;            // FC-AOCC Zvector in matrix form
+     SharedTensor2d WvoA;            // Effective MO gradient VO block
+     SharedTensor2d WvoB;            // Effective MO gradient VO block
 
      // Orbital rotations
      SharedTensor2d UorbA;           // MO rotation matrix: wrt reference MOs
@@ -815,8 +824,7 @@ protected:
      SharedTensor1d zvec_newA;
      SharedTensor1d zvec_newB;
      SharedTensor1d zvec_new;
-     SharedTensor1d WvoA;            // Effective MO gradient vector VO block
-     SharedTensor1d WvoB;            // Effective MO gradient vector VO block
+     SharedTensor1d Wvo_vecA;            // Effective MO gradient vector VO block
 
      // PCG intermediates
      SharedTensor1d r_pcgA;

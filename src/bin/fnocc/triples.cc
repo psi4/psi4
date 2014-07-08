@@ -23,6 +23,7 @@
 #include"ccsd.h"
 #include"blas.h"
 #include<libmints/wavefunction.h>
+#include<libqt/qt.h>
 #ifdef _OPENMP
    #include<omp.h>
 #endif
@@ -136,7 +137,7 @@ PsiReturnType CoupledCluster::triples(){
   }
 
   for (int a=0; a<v*v; a++){
-      F_DCOPY(o*o,tb+a*o*o,1,tempt+a,v*v);
+      C_DCOPY(o*o,tb+a*o*o,1,tempt+a,v*v);
   }
 
   // might as well use t2's memory
@@ -227,7 +228,7 @@ PsiReturnType CoupledCluster::triples(){
           }
       }
 
-      F_DCOPY(v*v*v,Z[thread],1,Z2[thread],1);
+      C_DCOPY(v*v*v,Z[thread],1,Z2[thread],1);
       for (int a=0; a<v; a++){
           double tai = t1[a*o+i];
           for (int b=0; b<v; b++){
