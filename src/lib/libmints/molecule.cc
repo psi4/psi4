@@ -1774,6 +1774,7 @@ void Molecule::save_xyz_file(const std::string& filename, bool save_ghosts) cons
     double factor = (units_ == Angstrom ? 1.0 : pc_bohr2angstroms);
 
     if (WorldComm->me() == 0) {
+        std::cout<<"In this file-thingy"<<std::endl;
         FILE* fh = fopen(filename.c_str(), "w");
 
         int N = natom();

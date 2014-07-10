@@ -1,0 +1,17 @@
+#!/bin/csh -x
+
+foreach nproc (16 12 8 4 2 1)
+  foreach demo (grid)
+    echo `whoami` `hostname` $nproc $demo /tmp > ${demo}.p
+    (time ../ipcv4.0/parallel $demo -ngrid 1024) >& ${demo}.log.${nproc}
+  end
+end
+
+
+foreach nproc (16 12 8 4 2 1)
+  foreach demo (mc)
+    echo `whoami` `hostname` $nproc $demo /tmp > ${demo}.p
+    (time ../ipcv4.0/parallel $demo) < mc.input >& ${demo}.log.${nproc}
+  end
+end
+

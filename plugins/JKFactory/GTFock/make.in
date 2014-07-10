@@ -1,0 +1,9 @@
+CC  = /theoryfs2/ds/richard/bin/mpicc /usr/lib64/liblapack.so;-L/theoryfs2/ds/richard/lib/mkl
+CXX = /theoryfs2/ds/richard/bin/mpicxx
+FC  = /theoryfs2/ds/richard/bin/mpif77
+AR  = /usr/bin/ar rcs
+
+BLAS_LIBDIR = /usr/lib64/liblapack.so;-L/theoryfs2/ds/richard/lib/mkl
+GA_INCDIR = /theoryfs2/ds/richard/SrcFiles/psi4clean/plugins/JKFactory/build/include
+GA_LIBDIR = /theoryfs2/ds/richard/SrcFiles/psi4clean/plugins/JKFactory/build/lib
+GA_LIBS = -lga -larmci

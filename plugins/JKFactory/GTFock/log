@@ -1,0 +1,610 @@
+make -C external
+make[1]: Entering directory `/theoryfs2/ds/richard/JKbuilder-master/GTFock/external'
+make -C erd
+make[2]: Entering directory `/theoryfs2/ds/richard/JKbuilder-master/GTFock/external/erd'
+make[2]: Nothing to be done for `all'.
+make[2]: Leaving directory `/theoryfs2/ds/richard/JKbuilder-master/GTFock/external/erd'
+make -C oed
+make[2]: Entering directory `/theoryfs2/ds/richard/JKbuilder-master/GTFock/external/oed'
+make[2]: Nothing to be done for `all'.
+make[2]: Leaving directory `/theoryfs2/ds/richard/JKbuilder-master/GTFock/external/oed'
+make[1]: Leaving directory `/theoryfs2/ds/richard/JKbuilder-master/GTFock/external'
+make -C libcint
+make[1]: Entering directory `/theoryfs2/ds/richard/JKbuilder-master/GTFock/libcint'
+/theoryfs2/ds/richard/lib/intel/bin/icpc -static -O3 -Wall -w2 -openmp -fPIC -Wunknown-pragmas -Wunused-variable -xHost -I/theoryfs2/ds/richard/lib/openmpi/include64 -c basisset.c -o basisset.o 
+/theoryfs2/ds/richard/lib/intel/bin/icpc -static -O3 -Wall -w2 -openmp -fPIC -Wunknown-pragmas -Wunused-variable -xHost -I/theoryfs2/ds/richard/lib/openmpi/include64 -c erd_integral.c -o erd_integral.o 
+/theoryfs2/ds/richard/lib/intel/bin/icpc -static -O3 -Wall -w2 -openmp -fPIC -Wunknown-pragmas -Wunused-variable -xHost -I/theoryfs2/ds/richard/lib/openmpi/include64 -c oed_integral.c -o oed_integral.o 
+/theoryfs2/ds/richard/lib/intel/bin/xiar rcs libcint.a basisset.o erd_integral.o oed_integral.o
+xiar: executing 'ar'
+cp -r libcint.a ../lib/
+sh genheader.sh
+make[1]: Leaving directory `/theoryfs2/ds/richard/JKbuilder-master/GTFock/libcint'
+make -C libpfock
+make[1]: Entering directory `/theoryfs2/ds/richard/JKbuilder-master/GTFock/libpfock'
+/theoryfs2/ds/richard/lib/openmpi/bin/mpicc -cc=/theoryfs2/ds/richard/lib/intel/bin/icpc -static -O3 -Wall -openmp -w2 -fPIC -Wunknown-pragmas -Wunused-variable  -D_DYNAMIC_ -D_SCF_ -I./ -I../include -I/theoryfs2/ds/richard/lib/openmpi/include64 -I/theoryfs2/ds/richard/lib/intel/mkl/include -I/theoryfs2/ds/richard/lib/intel/lib/intel64 -I/theoryfs2/ds/richard/lib/GlobalArray/Intel/include -c fock_task.c -o fock_task.o 
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(384): warning #869: parameter "oldtype" was never referenced
+      static int NULL_COPY_FN( const Datatype &oldtype, int keyval, void *ex,
+                                               ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(384): warning #869: parameter "keyval" was never referenced
+      static int NULL_COPY_FN( const Datatype &oldtype, int keyval, void *ex,
+                                                            ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(384): warning #869: parameter "ex" was never referenced
+      static int NULL_COPY_FN( const Datatype &oldtype, int keyval, void *ex,
+                                                                          ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(385): warning #869: parameter "attr_in" was never referenced
+      void *attr_in, void *attr_out, bool &flag ) { flag = 1; return 0;}
+            ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(385): warning #869: parameter "attr_out" was never referenced
+      void *attr_in, void *attr_out, bool &flag ) { flag = 1; return 0;}
+                           ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(386): warning #869: parameter "type" was never referenced
+      static int NULL_DELETE_FN( Datatype &type, int keyval, void * attr, 
+                                           ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(386): warning #869: parameter "keyval" was never referenced
+      static int NULL_DELETE_FN( Datatype &type, int keyval, void * attr, 
+                                                     ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(386): warning #869: parameter "attr" was never referenced
+      static int NULL_DELETE_FN( Datatype &type, int keyval, void * attr, 
+                                                                    ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(387): warning #869: parameter "ex" was never referenced
+           void *ex ) { return 0; }
+                 ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(388): warning #869: parameter "oldtype" was never referenced
+      static int DUP_FN( const Datatype &oldtype, int keyval, void *ex,
+                                         ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(388): warning #869: parameter "keyval" was never referenced
+      static int DUP_FN( const Datatype &oldtype, int keyval, void *ex,
+                                                      ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(388): warning #869: parameter "ex" was never referenced
+      static int DUP_FN( const Datatype &oldtype, int keyval, void *ex,
+                                                                    ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1451): warning #869: parameter "oldcomm" was never referenced
+      static int NULL_COPY_FN( const Comm &oldcomm, int keyval, void *ex,
+                                           ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1451): warning #869: parameter "keyval" was never referenced
+      static int NULL_COPY_FN( const Comm &oldcomm, int keyval, void *ex,
+                                                        ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1451): warning #869: parameter "ex" was never referenced
+      static int NULL_COPY_FN( const Comm &oldcomm, int keyval, void *ex,
+                                                                      ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1452): warning #869: parameter "attr_in" was never referenced
+      void *attr_in, void *attr_out, bool &flag ) { flag = 0; return 0;}
+            ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1452): warning #869: parameter "attr_out" was never referenced
+      void *attr_in, void *attr_out, bool &flag ) { flag = 0; return 0;}
+                           ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1453): warning #869: parameter "comm" was never referenced
+      static int NULL_DELETE_FN( Comm &comm, int keyval, void * attr, void *ex )
+                                       ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1453): warning #869: parameter "keyval" was never referenced
+      static int NULL_DELETE_FN( Comm &comm, int keyval, void * attr, void *ex )
+                                                 ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1453): warning #869: parameter "attr" was never referenced
+      static int NULL_DELETE_FN( Comm &comm, int keyval, void * attr, void *ex )
+                                                                ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1453): warning #869: parameter "ex" was never referenced
+      static int NULL_DELETE_FN( Comm &comm, int keyval, void * attr, void *ex )
+                                                                            ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1455): warning #869: parameter "oldcomm" was never referenced
+      static int DUP_FN( const Comm &oldcomm, int keyval, void *ex,
+                                     ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1455): warning #869: parameter "keyval" was never referenced
+      static int DUP_FN( const Comm &oldcomm, int keyval, void *ex,
+                                                  ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1455): warning #869: parameter "ex" was never referenced
+      static int DUP_FN( const Comm &oldcomm, int keyval, void *ex,
+                                                                ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1884): warning #869: parameter "oldwin" was never referenced
+      static int NULL_COPY_FN( const Win &oldwin, int keyval, void *ex,
+                                          ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1884): warning #869: parameter "keyval" was never referenced
+      static int NULL_COPY_FN( const Win &oldwin, int keyval, void *ex,
+                                                      ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1884): warning #869: parameter "ex" was never referenced
+      static int NULL_COPY_FN( const Win &oldwin, int keyval, void *ex,
+                                                                    ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1885): warning #869: parameter "attr_in" was never referenced
+      void *attr_in, void *attr_out, bool &flag ) { flag = 1; return 0;}
+            ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1885): warning #869: parameter "attr_out" was never referenced
+      void *attr_in, void *attr_out, bool &flag ) { flag = 1; return 0;}
+                           ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1886): warning #869: parameter "win" was never referenced
+      static int NULL_DELETE_FN( Win &win, int keyval, void * attr, 
+                                      ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1886): warning #869: parameter "keyval" was never referenced
+      static int NULL_DELETE_FN( Win &win, int keyval, void * attr, 
+                                               ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1886): warning #869: parameter "attr" was never referenced
+      static int NULL_DELETE_FN( Win &win, int keyval, void * attr, 
+                                                              ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1887): warning #869: parameter "ex" was never referenced
+           void *ex ) { return 0; }
+                 ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1888): warning #869: parameter "oldwin" was never referenced
+      static int DUP_FN( const Win &oldwin, int keyval, void *ex,
+                                    ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1888): warning #869: parameter "keyval" was never referenced
+      static int DUP_FN( const Win &oldwin, int keyval, void *ex,
+                                                ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1888): warning #869: parameter "ex" was never referenced
+      static int DUP_FN( const Win &oldwin, int keyval, void *ex,
+                                                              ^
+
+/theoryfs2/ds/richard/lib/openmpi/bin/mpicc -cc=/theoryfs2/ds/richard/lib/intel/bin/icpc -static -O3 -Wall -openmp -w2 -fPIC -Wunknown-pragmas -Wunused-variable  -D_DYNAMIC_ -D_SCF_ -I./ -I../include -I/theoryfs2/ds/richard/lib/openmpi/include64 -I/theoryfs2/ds/richard/lib/intel/mkl/include -I/theoryfs2/ds/richard/lib/intel/lib/intel64 -I/theoryfs2/ds/richard/lib/GlobalArray/Intel/include -c one_electron.c -o one_electron.o 
+/theoryfs2/ds/richard/lib/openmpi/bin/mpicc -cc=/theoryfs2/ds/richard/lib/intel/bin/icpc -static -O3 -Wall -openmp -w2 -fPIC -Wunknown-pragmas -Wunused-variable  -D_DYNAMIC_ -D_SCF_ -I./ -I../include -I/theoryfs2/ds/richard/lib/openmpi/include64 -I/theoryfs2/ds/richard/lib/intel/mkl/include -I/theoryfs2/ds/richard/lib/intel/lib/intel64 -I/theoryfs2/ds/richard/lib/GlobalArray/Intel/include -c pfock.c -o pfock.o 
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(384): warning #869: parameter "oldtype" was never referenced
+      static int NULL_COPY_FN( const Datatype &oldtype, int keyval, void *ex,
+                                               ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(384): warning #869: parameter "keyval" was never referenced
+      static int NULL_COPY_FN( const Datatype &oldtype, int keyval, void *ex,
+                                                            ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(384): warning #869: parameter "ex" was never referenced
+      static int NULL_COPY_FN( const Datatype &oldtype, int keyval, void *ex,
+                                                                          ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(385): warning #869: parameter "attr_in" was never referenced
+      void *attr_in, void *attr_out, bool &flag ) { flag = 1; return 0;}
+            ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(385): warning #869: parameter "attr_out" was never referenced
+      void *attr_in, void *attr_out, bool &flag ) { flag = 1; return 0;}
+                           ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(386): warning #869: parameter "type" was never referenced
+      static int NULL_DELETE_FN( Datatype &type, int keyval, void * attr, 
+                                           ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(386): warning #869: parameter "keyval" was never referenced
+      static int NULL_DELETE_FN( Datatype &type, int keyval, void * attr, 
+                                                     ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(386): warning #869: parameter "attr" was never referenced
+      static int NULL_DELETE_FN( Datatype &type, int keyval, void * attr, 
+                                                                    ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(387): warning #869: parameter "ex" was never referenced
+           void *ex ) { return 0; }
+                 ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(388): warning #869: parameter "oldtype" was never referenced
+      static int DUP_FN( const Datatype &oldtype, int keyval, void *ex,
+                                         ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(388): warning #869: parameter "keyval" was never referenced
+      static int DUP_FN( const Datatype &oldtype, int keyval, void *ex,
+                                                      ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(388): warning #869: parameter "ex" was never referenced
+      static int DUP_FN( const Datatype &oldtype, int keyval, void *ex,
+                                                                    ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1451): warning #869: parameter "oldcomm" was never referenced
+      static int NULL_COPY_FN( const Comm &oldcomm, int keyval, void *ex,
+                                           ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1451): warning #869: parameter "keyval" was never referenced
+      static int NULL_COPY_FN( const Comm &oldcomm, int keyval, void *ex,
+                                                        ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1451): warning #869: parameter "ex" was never referenced
+      static int NULL_COPY_FN( const Comm &oldcomm, int keyval, void *ex,
+                                                                      ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1452): warning #869: parameter "attr_in" was never referenced
+      void *attr_in, void *attr_out, bool &flag ) { flag = 0; return 0;}
+            ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1452): warning #869: parameter "attr_out" was never referenced
+      void *attr_in, void *attr_out, bool &flag ) { flag = 0; return 0;}
+                           ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1453): warning #869: parameter "comm" was never referenced
+      static int NULL_DELETE_FN( Comm &comm, int keyval, void * attr, void *ex )
+                                       ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1453): warning #869: parameter "keyval" was never referenced
+      static int NULL_DELETE_FN( Comm &comm, int keyval, void * attr, void *ex )
+                                                 ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1453): warning #869: parameter "attr" was never referenced
+      static int NULL_DELETE_FN( Comm &comm, int keyval, void * attr, void *ex )
+                                                                ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1453): warning #869: parameter "ex" was never referenced
+      static int NULL_DELETE_FN( Comm &comm, int keyval, void * attr, void *ex )
+                                                                            ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1455): warning #869: parameter "oldcomm" was never referenced
+      static int DUP_FN( const Comm &oldcomm, int keyval, void *ex,
+                                     ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1455): warning #869: parameter "keyval" was never referenced
+      static int DUP_FN( const Comm &oldcomm, int keyval, void *ex,
+                                                  ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1455): warning #869: parameter "ex" was never referenced
+      static int DUP_FN( const Comm &oldcomm, int keyval, void *ex,
+                                                                ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1884): warning #869: parameter "oldwin" was never referenced
+      static int NULL_COPY_FN( const Win &oldwin, int keyval, void *ex,
+                                          ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1884): warning #869: parameter "keyval" was never referenced
+      static int NULL_COPY_FN( const Win &oldwin, int keyval, void *ex,
+                                                      ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1884): warning #869: parameter "ex" was never referenced
+      static int NULL_COPY_FN( const Win &oldwin, int keyval, void *ex,
+                                                                    ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1885): warning #869: parameter "attr_in" was never referenced
+      void *attr_in, void *attr_out, bool &flag ) { flag = 1; return 0;}
+            ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1885): warning #869: parameter "attr_out" was never referenced
+      void *attr_in, void *attr_out, bool &flag ) { flag = 1; return 0;}
+                           ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1886): warning #869: parameter "win" was never referenced
+      static int NULL_DELETE_FN( Win &win, int keyval, void * attr, 
+                                      ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1886): warning #869: parameter "keyval" was never referenced
+      static int NULL_DELETE_FN( Win &win, int keyval, void * attr, 
+                                               ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1886): warning #869: parameter "attr" was never referenced
+      static int NULL_DELETE_FN( Win &win, int keyval, void * attr, 
+                                                              ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1887): warning #869: parameter "ex" was never referenced
+           void *ex ) { return 0; }
+                 ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1888): warning #869: parameter "oldwin" was never referenced
+      static int DUP_FN( const Win &oldwin, int keyval, void *ex,
+                                    ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1888): warning #869: parameter "keyval" was never referenced
+      static int DUP_FN( const Win &oldwin, int keyval, void *ex,
+                                                ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1888): warning #869: parameter "ex" was never referenced
+      static int DUP_FN( const Win &oldwin, int keyval, void *ex,
+                                                              ^
+
+/theoryfs2/ds/richard/lib/openmpi/bin/mpicc -cc=/theoryfs2/ds/richard/lib/intel/bin/icpc -static -O3 -Wall -openmp -w2 -fPIC -Wunknown-pragmas -Wunused-variable  -D_DYNAMIC_ -D_SCF_ -I./ -I../include -I/theoryfs2/ds/richard/lib/openmpi/include64 -I/theoryfs2/ds/richard/lib/intel/mkl/include -I/theoryfs2/ds/richard/lib/intel/lib/intel64 -I/theoryfs2/ds/richard/lib/GlobalArray/Intel/include -c screening.c -o screening.o 
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(384): warning #869: parameter "oldtype" was never referenced
+      static int NULL_COPY_FN( const Datatype &oldtype, int keyval, void *ex,
+                                               ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(384): warning #869: parameter "keyval" was never referenced
+      static int NULL_COPY_FN( const Datatype &oldtype, int keyval, void *ex,
+                                                            ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(384): warning #869: parameter "ex" was never referenced
+      static int NULL_COPY_FN( const Datatype &oldtype, int keyval, void *ex,
+                                                                          ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(385): warning #869: parameter "attr_in" was never referenced
+      void *attr_in, void *attr_out, bool &flag ) { flag = 1; return 0;}
+            ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(385): warning #869: parameter "attr_out" was never referenced
+      void *attr_in, void *attr_out, bool &flag ) { flag = 1; return 0;}
+                           ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(386): warning #869: parameter "type" was never referenced
+      static int NULL_DELETE_FN( Datatype &type, int keyval, void * attr, 
+                                           ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(386): warning #869: parameter "keyval" was never referenced
+      static int NULL_DELETE_FN( Datatype &type, int keyval, void * attr, 
+                                                     ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(386): warning #869: parameter "attr" was never referenced
+      static int NULL_DELETE_FN( Datatype &type, int keyval, void * attr, 
+                                                                    ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(387): warning #869: parameter "ex" was never referenced
+           void *ex ) { return 0; }
+                 ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(388): warning #869: parameter "oldtype" was never referenced
+      static int DUP_FN( const Datatype &oldtype, int keyval, void *ex,
+                                         ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(388): warning #869: parameter "keyval" was never referenced
+      static int DUP_FN( const Datatype &oldtype, int keyval, void *ex,
+                                                      ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(388): warning #869: parameter "ex" was never referenced
+      static int DUP_FN( const Datatype &oldtype, int keyval, void *ex,
+                                                                    ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1451): warning #869: parameter "oldcomm" was never referenced
+      static int NULL_COPY_FN( const Comm &oldcomm, int keyval, void *ex,
+                                           ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1451): warning #869: parameter "keyval" was never referenced
+      static int NULL_COPY_FN( const Comm &oldcomm, int keyval, void *ex,
+                                                        ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1451): warning #869: parameter "ex" was never referenced
+      static int NULL_COPY_FN( const Comm &oldcomm, int keyval, void *ex,
+                                                                      ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1452): warning #869: parameter "attr_in" was never referenced
+      void *attr_in, void *attr_out, bool &flag ) { flag = 0; return 0;}
+            ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1452): warning #869: parameter "attr_out" was never referenced
+      void *attr_in, void *attr_out, bool &flag ) { flag = 0; return 0;}
+                           ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1453): warning #869: parameter "comm" was never referenced
+      static int NULL_DELETE_FN( Comm &comm, int keyval, void * attr, void *ex )
+                                       ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1453): warning #869: parameter "keyval" was never referenced
+      static int NULL_DELETE_FN( Comm &comm, int keyval, void * attr, void *ex )
+                                                 ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1453): warning #869: parameter "attr" was never referenced
+      static int NULL_DELETE_FN( Comm &comm, int keyval, void * attr, void *ex )
+                                                                ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1453): warning #869: parameter "ex" was never referenced
+      static int NULL_DELETE_FN( Comm &comm, int keyval, void * attr, void *ex )
+                                                                            ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1455): warning #869: parameter "oldcomm" was never referenced
+      static int DUP_FN( const Comm &oldcomm, int keyval, void *ex,
+                                     ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1455): warning #869: parameter "keyval" was never referenced
+      static int DUP_FN( const Comm &oldcomm, int keyval, void *ex,
+                                                  ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1455): warning #869: parameter "ex" was never referenced
+      static int DUP_FN( const Comm &oldcomm, int keyval, void *ex,
+                                                                ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1884): warning #869: parameter "oldwin" was never referenced
+      static int NULL_COPY_FN( const Win &oldwin, int keyval, void *ex,
+                                          ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1884): warning #869: parameter "keyval" was never referenced
+      static int NULL_COPY_FN( const Win &oldwin, int keyval, void *ex,
+                                                      ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1884): warning #869: parameter "ex" was never referenced
+      static int NULL_COPY_FN( const Win &oldwin, int keyval, void *ex,
+                                                                    ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1885): warning #869: parameter "attr_in" was never referenced
+      void *attr_in, void *attr_out, bool &flag ) { flag = 1; return 0;}
+            ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1885): warning #869: parameter "attr_out" was never referenced
+      void *attr_in, void *attr_out, bool &flag ) { flag = 1; return 0;}
+                           ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1886): warning #869: parameter "win" was never referenced
+      static int NULL_DELETE_FN( Win &win, int keyval, void * attr, 
+                                      ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1886): warning #869: parameter "keyval" was never referenced
+      static int NULL_DELETE_FN( Win &win, int keyval, void * attr, 
+                                               ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1886): warning #869: parameter "attr" was never referenced
+      static int NULL_DELETE_FN( Win &win, int keyval, void * attr, 
+                                                              ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1887): warning #869: parameter "ex" was never referenced
+           void *ex ) { return 0; }
+                 ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1888): warning #869: parameter "oldwin" was never referenced
+      static int DUP_FN( const Win &oldwin, int keyval, void *ex,
+                                    ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1888): warning #869: parameter "keyval" was never referenced
+      static int DUP_FN( const Win &oldwin, int keyval, void *ex,
+                                                ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1888): warning #869: parameter "ex" was never referenced
+      static int DUP_FN( const Win &oldwin, int keyval, void *ex,
+                                                              ^
+
+/theoryfs2/ds/richard/lib/openmpi/bin/mpicc -cc=/theoryfs2/ds/richard/lib/intel/bin/icpc -static -O3 -Wall -openmp -w2 -fPIC -Wunknown-pragmas -Wunused-variable  -D_DYNAMIC_ -D_SCF_ -I./ -I../include -I/theoryfs2/ds/richard/lib/openmpi/include64 -I/theoryfs2/ds/richard/lib/intel/mkl/include -I/theoryfs2/ds/richard/lib/intel/lib/intel64 -I/theoryfs2/ds/richard/lib/GlobalArray/Intel/include -c taskq.c -o taskq.o 
+/theoryfs2/ds/richard/lib/openmpi/bin/mpicc -cc=/theoryfs2/ds/richard/lib/intel/bin/icpc -static -O3 -Wall -openmp -w2 -fPIC -Wunknown-pragmas -Wunused-variable  -D_DYNAMIC_ -D_SCF_ -I./ -I../include -I/theoryfs2/ds/richard/lib/openmpi/include64 -I/theoryfs2/ds/richard/lib/intel/mkl/include -I/theoryfs2/ds/richard/lib/intel/lib/intel64 -I/theoryfs2/ds/richard/lib/GlobalArray/Intel/include -c utils.c -o utils.o 
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(384): warning #869: parameter "oldtype" was never referenced
+      static int NULL_COPY_FN( const Datatype &oldtype, int keyval, void *ex,
+                                               ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(384): warning #869: parameter "keyval" was never referenced
+      static int NULL_COPY_FN( const Datatype &oldtype, int keyval, void *ex,
+                                                            ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(384): warning #869: parameter "ex" was never referenced
+      static int NULL_COPY_FN( const Datatype &oldtype, int keyval, void *ex,
+                                                                          ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(385): warning #869: parameter "attr_in" was never referenced
+      void *attr_in, void *attr_out, bool &flag ) { flag = 1; return 0;}
+            ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(385): warning #869: parameter "attr_out" was never referenced
+      void *attr_in, void *attr_out, bool &flag ) { flag = 1; return 0;}
+                           ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(386): warning #869: parameter "type" was never referenced
+      static int NULL_DELETE_FN( Datatype &type, int keyval, void * attr, 
+                                           ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(386): warning #869: parameter "keyval" was never referenced
+      static int NULL_DELETE_FN( Datatype &type, int keyval, void * attr, 
+                                                     ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(386): warning #869: parameter "attr" was never referenced
+      static int NULL_DELETE_FN( Datatype &type, int keyval, void * attr, 
+                                                                    ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(387): warning #869: parameter "ex" was never referenced
+           void *ex ) { return 0; }
+                 ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(388): warning #869: parameter "oldtype" was never referenced
+      static int DUP_FN( const Datatype &oldtype, int keyval, void *ex,
+                                         ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(388): warning #869: parameter "keyval" was never referenced
+      static int DUP_FN( const Datatype &oldtype, int keyval, void *ex,
+                                                      ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(388): warning #869: parameter "ex" was never referenced
+      static int DUP_FN( const Datatype &oldtype, int keyval, void *ex,
+                                                                    ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1451): warning #869: parameter "oldcomm" was never referenced
+      static int NULL_COPY_FN( const Comm &oldcomm, int keyval, void *ex,
+                                           ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1451): warning #869: parameter "keyval" was never referenced
+      static int NULL_COPY_FN( const Comm &oldcomm, int keyval, void *ex,
+                                                        ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1451): warning #869: parameter "ex" was never referenced
+      static int NULL_COPY_FN( const Comm &oldcomm, int keyval, void *ex,
+                                                                      ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1452): warning #869: parameter "attr_in" was never referenced
+      void *attr_in, void *attr_out, bool &flag ) { flag = 0; return 0;}
+            ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1452): warning #869: parameter "attr_out" was never referenced
+      void *attr_in, void *attr_out, bool &flag ) { flag = 0; return 0;}
+                           ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1453): warning #869: parameter "comm" was never referenced
+      static int NULL_DELETE_FN( Comm &comm, int keyval, void * attr, void *ex )
+                                       ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1453): warning #869: parameter "keyval" was never referenced
+      static int NULL_DELETE_FN( Comm &comm, int keyval, void * attr, void *ex )
+                                                 ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1453): warning #869: parameter "attr" was never referenced
+      static int NULL_DELETE_FN( Comm &comm, int keyval, void * attr, void *ex )
+                                                                ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1453): warning #869: parameter "ex" was never referenced
+      static int NULL_DELETE_FN( Comm &comm, int keyval, void * attr, void *ex )
+                                                                            ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1455): warning #869: parameter "oldcomm" was never referenced
+      static int DUP_FN( const Comm &oldcomm, int keyval, void *ex,
+                                     ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1455): warning #869: parameter "keyval" was never referenced
+      static int DUP_FN( const Comm &oldcomm, int keyval, void *ex,
+                                                  ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1455): warning #869: parameter "ex" was never referenced
+      static int DUP_FN( const Comm &oldcomm, int keyval, void *ex,
+                                                                ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1884): warning #869: parameter "oldwin" was never referenced
+      static int NULL_COPY_FN( const Win &oldwin, int keyval, void *ex,
+                                          ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1884): warning #869: parameter "keyval" was never referenced
+      static int NULL_COPY_FN( const Win &oldwin, int keyval, void *ex,
+                                                      ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1884): warning #869: parameter "ex" was never referenced
+      static int NULL_COPY_FN( const Win &oldwin, int keyval, void *ex,
+                                                                    ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1885): warning #869: parameter "attr_in" was never referenced
+      void *attr_in, void *attr_out, bool &flag ) { flag = 1; return 0;}
+            ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1885): warning #869: parameter "attr_out" was never referenced
+      void *attr_in, void *attr_out, bool &flag ) { flag = 1; return 0;}
+                           ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1886): warning #869: parameter "win" was never referenced
+      static int NULL_DELETE_FN( Win &win, int keyval, void * attr, 
+                                      ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1886): warning #869: parameter "keyval" was never referenced
+      static int NULL_DELETE_FN( Win &win, int keyval, void * attr, 
+                                               ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1886): warning #869: parameter "attr" was never referenced
+      static int NULL_DELETE_FN( Win &win, int keyval, void * attr, 
+                                                              ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1887): warning #869: parameter "ex" was never referenced
+           void *ex ) { return 0; }
+                 ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1888): warning #869: parameter "oldwin" was never referenced
+      static int DUP_FN( const Win &oldwin, int keyval, void *ex,
+                                    ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1888): warning #869: parameter "keyval" was never referenced
+      static int DUP_FN( const Win &oldwin, int keyval, void *ex,
+                                                ^
+
+/theoryfs2/common/software/mpich2-1.2.1/include/mpicxx.h(1888): warning #869: parameter "ex" was never referenced
+      static int DUP_FN( const Win &oldwin, int keyval, void *ex,
+                                                              ^
+
+/theoryfs2/ds/richard/lib/intel/bin/xiar rcs libpfock.a fock_task.o one_electron.o pfock.o screening.o taskq.o utils.o
+xiar: executing 'ar'
+cp -r libpfock.a ../lib/
+sh genheader.sh 1
+make[1]: Leaving directory `/theoryfs2/ds/richard/JKbuilder-master/GTFock/libpfock'

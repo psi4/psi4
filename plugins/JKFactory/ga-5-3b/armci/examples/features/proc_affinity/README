@@ -1,0 +1,34 @@
+Process affinity in ARMCI comes into play for finding the optimal way to
+assign the data server thread that is used on many platforms to different
+physical processors on the node. This is only functional for the LINUX and
+LINUX64 platforms.
+  
+Normally, ARMCI will run only 1 data server thread per node. It can be
+alternatively configured to run as many data servers as compute processes on a
+node. The way to enable one data server per compute process is by setting the
+environment variable ARMCI_NSERV_EQ_NPROC.
+  
+These are two environment variables to control process affinity
+
+1.  ARMCI_CHANGE_SERVER_AFFINITY
+
+    if this is enabled in armci/src/GNUmakefile, data servers affinity is
+    changed between different CPU's depending on the work load. Note that this
+    is only applicable for the case where ARMCI_NSERV_EQ_NPROC is not defined.
+    If both are defined, results may be undesirable.
+    
+2.  ARMCI_CHANGE_AFFINITY_GRANULARITY
+
+    Data server changes its affinity based on its work load. The granularity
+    at which to switch between CPU's can be changed with this evronment
+    variable. The three values of this variable are SMALL, MEDIUM and LARGE.
+    SMALL changes affinity in the order of milli-seconds of work load, MEDIUM
+    does it at a granularity of 1 second and LARGE changes in the order of
+    10's of seconds.
+
+Example: Please look at performance graph:
+
+    affinity_performance.png
+    
+which shows a case where changing affinity helps. The corresponding test for
+this is simple/affinity_test.c.

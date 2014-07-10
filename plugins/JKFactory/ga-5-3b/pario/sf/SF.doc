@@ -1,0 +1,77 @@
+                             Shared Files Model
+
+
+. Shared files are non-persistent (temporary)
+. Shared files resemble one-dimensional arrays in main memory
+. Each process can independently read/write to any location in the file
+. The file size has a hard limit specified when it is created
+. User can also specify (or use "don't know" flag) the estimated approximate
+  file size -- might be exceeded at run-time (a hint)
+. sf_flush flushes the buffers so that previously written data goes to the disk
+  before the routine returns.
+. All routines return error code: "0" means success.
+. sf_create and sf_destroy are collective
+. file, request sizes, and offset (all in bytes) are DOUBLE PRECISION arguments,
+  all the other arguments are INTEGERS
+. read/writes are asynchronous
+
+
+integer sf_create(fname, size_hard_limit, size_soft_limit, req_size, handle)
+        fname            -- meta-file name
+        size_hard_limit  -- max file size in bytes not to be exceeded (a hint)
+        size_soft_limit  -- estimated file size (a hint)
+        req_size         -- size of  a typical request (a hint)
+        handle           -- returned handle to the created file
+
+Creates shared file using name and path specified in fname as a template.
+req_size specifies size of a typical request (-1 = "don't know")
+
+
+integer sf_write(handle, offset, bytes, buffer, request_id)
+        handle           -- file handle returned from sf_create   [in]
+        offset           -- location in file (from the beginning)
+                            where data should be written to       [in]
+        buffer           -- local array to put the data           [in]
+        bytes            -- number of bytes to read               [in]
+        request_id       -- id identifying asynchronous operation [out]
+
+asynchronous write operation
+
+
+integer sf_read(handle, offset, bytes, buffer, request_it)
+        handle           -- file handle returned from sf_create   [in]
+        offset           -- location in file (from the beginning)
+                            where data should be read from        [in]
+        buffer           -- local array to put the data           [in]
+        bytes            -- number of bytes to read               [in]
+        request_id       -- id identifying asynchronous operation [out]
+
+asynchronous read operation
+
+
+integer sf_wait(request_id)
+        request_id       -- id identifying asynchronous operation [in/out]
+
+blocks calling process until I/O operation associated with id completed,
+invalidates request_id
+
+
+integer sf_waitall(list, num)
+        list(num)        -- array of ids for asynchronous operations [in/o]
+        num              -- number of entries in list                [in]
+
+blocks calling process until all "num" I/O operations associated with ids
+specified in list completed, invalidates ids on the list
+
+
+integer sf_destroy(handle)
+        handle           -- file handle returned from sf_create      [in]
+
+subroutine sf_errmsg(ierr,message)
+        ierr             -- error code returned by a previous call to SF [in]
+        message          -- character string where the corresponding message
+                            is written
+
+returns a string interpretation of the error code, or
+an empty string (Fortran all blanks, C null first character)
+if the error code is not recognized.

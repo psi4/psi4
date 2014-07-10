@@ -1,0 +1,1002 @@
+#include <algorithm>
+#include <fstream>
+#include <iostream>
+#include <list>
+#include <map>
+#include <sstream>
+
+#include <math.h>
+#include <pthread.h>
+#include <sched.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <ga.h>
+#include <gfutex.h>
+
+#include <tbb/atomic.h>
+#include <tbb/enumerable_thread_specific.h>
+#include <tbb/queuing_mutex.h>
+#include <tbb/task_scheduler_init.h>
+#include <tbb/tbb_thread.h>
+#include <tbb/tick_count.h>
+
+#include "cscc.h"
+#include "scf.h"
+#include "twoel.h"
+
+using namespace globalFutures;
+
+typedef double ChunkArray[ichunk][ichunk];
+
+struct TaskStats {
+  long int taskid;
+  int lo[4][2], hi[4][2];
+  bool executed;
+
+  TaskStats() : taskid(-1), executed(false)
+  {
+    for (int i = 0; i < 4; i++)
+      for (int j = 0; j < 2; j++) {
+	lo[i][j] = -1;
+	hi[i][j] = -1;
+      }
+  } // TaskStats
+};
+
+typedef std::list<TaskStats> TaskStatsList;
+
+typedef tbb::enumerable_thread_specific<double> TIAccum;
+typedef tbb::enumerable_thread_specific<TaskStatsList> PTaskStatsList;
+
+static void TwoElThreadTask(int g_a, int ndims, int plo[], int phi[], void *arg);
+static void TwoElThreadOMP(int g_a, int ndims, int plo[], int phi[], void *arg);
+
+struct TwoElArgs {
+  double schwmax;
+
+  long int itasklo, itaskhi;
+};
+
+#ifdef DEBUG
+static const int maxTasks = 1000;
+#endif
+
+static double traccum = 0.0;
+static TIAccum tiaccum(0.0);
+
+static PTaskStatsList statsList;
+
+#ifdef DEBUG
+static double taskTimes[maxTasks];
+static tbb::tbb_thread::id taskIDs[maxTasks];
+static cpu_set_t sets[maxTasks];
+static pthread_t threadIDs[maxTasks];
+static long int tlo[maxTasks], thi[maxTasks];
+static tbb::atomic<unsigned int> taskPos;
+#endif
+
+static GFHandle tehndl;
+static int numTasks;
+static tbb::atomic<long int> execTasks;
+
+static void print_task_stats(int me, int nproc, int g_a);
+
+int GFInitialize()
+{
+  int ret = globalFutures::GFInitialize();
+
+  tehndl = GFRegister(TwoElThreadTask, sizeof(TwoElArgs));
+
+#ifdef DEBUG
+  taskPos = 0U;
+#endif
+
+  execTasks = 0L;
+
+  // traccum = new double[nsheps];
+
+//   for (int i = 0; i < nsheps; i++)
+//     traccum[i] = 0.0;
+
+  return ret;
+} // GFInitialize
+
+void GFFinalize()
+{
+  globalFutures::GFFinalize();
+} // GFFinalize
+
+void twoel_orig(double schwmax, double *etwo, int nproc)
+{
+  double f_ij[ichunk][ichunk], d_kl[ichunk][ichunk];
+  double f_ik[ichunk][ichunk], d_jl[ichunk][ichunk];
+  double s_ij[ichunk][ichunk], s_kl[ichunk][ichunk];
+  double one;
+      
+  long long int ijcnt, klcnt, ijklcnt;
+  int lo[4], hi[4], lo_ik[2], hi_ik[2], lo_jl[2], hi_jl[2];
+  int i, j, k, l, iloc, jloc, kloc, lloc, ich, it, jt, kt, lt;
+  int dotask, newtask, accum;
+
+  int itask;
+  double gg;
+
+  ga_nbhdl_t f0, f1;
+
+#ifdef CLOG
+  int *procs = NULL, *map = NULL, *phist = NULL, np = 0, ip;
+#endif
+
+  // add in the two-electron contribution to the fock matrix;
+
+#ifdef CLOG
+  procs = (int *)malloc(sizeof(int) * nproc);
+  phist = (int *)calloc(nproc, sizeof(int));
+  map = (int *)malloc(sizeof(int) * 2 * nproc);
+#endif
+
+  one = 1.00;
+  ijcnt = icut1;
+  klcnt = icut2;
+  ijklcnt = icut3;
+
+  GA_Zero(g_counter);
+  ich = ichunk;
+  dotask = next_4chunk(lo, hi, &it, &jt, &kt, &lt);
+  itask = 0;
+  newtask = 1;
+  accum = 0;
+      
+  while (dotask) {
+    lo_ik[0] = lo[0];
+    lo_ik[1] = lo[2];
+    hi_ik[0] = hi[0];
+    hi_ik[1] = hi[2];
+    lo_jl[0] = lo[1];
+    lo_jl[1] = lo[3];
+    hi_jl[0] = hi[1];
+    hi_jl[1] = hi[3];
+
+#ifdef CLOG
+    np = GF_Locate_region(g_schwarz, lo, hi, map, procs);
+
+    if (np > 1)
+      fprintf(clog, "Attention: multi-processor tile: %d\n", np);
+
+    for (ip = 0; ip < np; ip++) {
+      fprintf(clog, "itask: %d, g_schwarz tile: %d %d %d %d, proc: %d\n", itask, lo[0], lo[1],
+	      hi[0], hi[1], procs[ip]);
+      phist[procs[ip]]++;
+    }
+#endif
+
+    GF_Get(g_schwarz, lo, hi, s_ij, &ich);
+
+    clean_chunk(f_ij);
+    clean_chunk(f_ik);
+
+    for (i = lo[0]; i <= hi[0]; i++) {
+      iloc = i - lo[0];
+      for (j = lo[1]; j <= hi[1]; j++) {
+	jloc = j - lo[1];
+	if ((s_ij[iloc][jloc] * schwmax) < tol2e)
+	  icut1 = icut1 + (hi[2] - lo[2] + 1) * (hi[3] - lo[3] + 1);
+	else {
+	  ga_nbhdl_t s, d0, d1;
+
+	  if (newtask) {
+	    GF_NbGet(g_schwarz, &lo[2], &hi[2], s_kl, &ich, &s);
+	    GF_NbGet(g_dens, &lo[2], &hi[2], d_kl, &ich, &d0);
+	    GF_NbGet(g_dens, lo_jl, hi_jl, d_jl, &ich, &d1);
+
+#ifdef CLOG
+	    np = GF_Locate_region(g_schwarz, &lo[2], &hi[2], map, procs);
+
+	    if (np > 1)
+	      fprintf(clog, "Attention: multi-processor tile: %d\n", np);
+
+	    for (ip = 0; ip < np; ip++) {
+	      fprintf(clog, "itask: %d, g_schwarz tile: %d %d %d %d, proc: %d\n", itask,
+		      lo[2], lo[3], hi[2], hi[3], procs[ip]);
+	      phist[procs[ip]]++;
+	    }
+
+	    np = GF_Locate_region(g_dens, lo_jl, hi_jl, map, procs);
+
+	    if (np > 1)
+	      fprintf(clog, "Attention: multi-processor tile: %d\n", np);
+
+	    for (ip = 0; ip < np; ip++) {
+	      fprintf(clog, "itask: %d, g_dens tile: %d %d %d %d, proc: %d\n", itask,
+		      lo_jl[0], lo_jl[1], hi_jl[0], hi_jl[1], procs[ip]);
+	      phist[procs[ip]]++;
+	    }
+#endif
+
+	    GF_NbWait(&s);
+	  }
+
+	  for (k = lo[2]; k <= hi[2]; k++) {
+	    kloc = k - lo[2];
+	    for (l = lo[3]; l <= hi[3]; l++) {
+	      lloc = l - lo[3];
+	      if (s_ij[iloc][jloc] * s_kl[kloc][lloc] < tol2e)
+		icut2 = icut2 + 1;
+	      else {
+		if (newtask) {
+		  GF_NbWait(&d0);
+		  GF_NbWait(&d1);
+
+		  newtask = 0;
+		}
+
+		g(&gg, i, j, k, l);
+		f_ij[iloc][jloc] = f_ij[iloc][jloc] + gg * d_kl[kloc][lloc];
+		f_ik[iloc][kloc] = f_ik[iloc][kloc] - 0.50 * gg * d_jl[jloc][lloc];
+		icut3 = icut3 + 1;
+		accum = 1;
+	      }
+	    }
+	  }
+
+	  if (newtask) {
+	    GF_NbWait(&d0);
+	    GF_NbWait(&d1);
+
+	    newtask = 0;
+	  }
+	}
+      }
+    }
+    if (accum) {
+      GF_NbAcc(g_fock, lo, hi, f_ij, &ich, &one, &f0);
+      GF_NbAcc(g_fock, lo_ik, hi_ik, f_ik, &ich, &one, &f1);
+    }
+
+    dotask = next_4chunk(lo, hi, &it, &jt, &kt, &lt);
+
+    if (accum) {
+      GF_NbWait(&f0);
+      GF_NbWait(&f1);
+    }
+
+    if (dotask) {
+      newtask = 1;
+      accum = 0;
+
+#ifdef CLOG
+      fprintf(clog, "\n");
+#endif
+    }
+
+    itask++;
+  }
+
+  *etwo = 0.50 * contract_matrices(g_fock, g_dens);
+  ijcnt = icut1 - ijcnt;
+  klcnt = icut2 - klcnt;
+  ijklcnt = icut3 - ijklcnt;
+  icut4 = icut3;
+
+#ifdef CLOG
+  fprintf(clog, "\n");
+
+  for (ip = 0; ip < nproc; ip++)
+    fprintf(clog, "Proc: %d, cnt: %d\n", ip, phist[ip]);
+
+  free(procs);
+  free(phist);
+  free(map);
+#endif
+
+  if (icut3 > 0)
+    return;
+
+  //    no integrals may be calculated if there is no work for;
+  //    this node (ichunk too big), or, something is wrong;
+  printf("no two-electron integrals computed by node %d\n", GA_Nodeid());
+  printf("\n"); 
+} // twoel_orig
+
+static tbb::atomic<long long int> aicut1, aicut2, aicut3;
+
+#define DYNAMIC_TASKS 1
+#define ACCURATE_TIMING 1
+
+void twoel(double schwmax, double *etwo, int nproc)
+{
+  int dotask, itask, ndim;
+  int lo[4], hi[4], it, jt, kt, lt;
+  long long int ijcnt, klcnt, ijklcnt;
+  long int taskid, tidlo, tidhi, currLim, incrT, tmpi;
+  double tr0, tr1, tr2, tr3, teaccum, tqaccum;
+  long long int totTasks, procTasks;
+  int me;
+
+  // add in the two-electron contribution to the fock matrix;
+  ijcnt = icut1;
+  klcnt = icut2;
+  ijklcnt = icut3;
+
+  me = GA_Nodeid();
+
+  tmpi = ceil(static_cast<double>(nbfn) / static_cast<double>(ichunk));
+  incrT = tmpi * tmpi;
+
+  totTasks = incrT * incrT;
+  numTasks = ceil(static_cast<double>(totTasks) / incrT); // n^2 integrals per task
+  
+  procTasks = ceil(static_cast<double>(totTasks) / static_cast<double>(nproc));
+  procTasks = ceil(static_cast<double>(procTasks) / static_cast<double>(nproc));
+
+  tidlo = me * procTasks;
+  tidhi = (me + 1) * procTasks - 1;
+
+  currLim = totTasks / incrT;
+
+#if 0
+  std::cout << "Proc: " << me << ", totTasks: " << totTasks << ", numTasks: " <<
+    numTasks << std::endl;
+  std::cout << "Proc: " << me << ", procTasks: " << procTasks << ", tidlo: " << tidlo <<
+    ", tidhi: " << tidhi << std::flush << std::endl;
+#endif
+
+  GA_Zero(g_counter);
+#ifdef DYNAMIC_TASKS
+  taskid = acquire_tasks(numTasks);
+  dotask = translate_task(taskid, lo, hi, &it, &jt, &kt, &lt);
+#endif
+  // dotask = next_4chunk(lo, hi, &it, &jt, &kt, &lt);
+  itask = 0;
+
+  TwoElArgs teargs;
+
+  teargs.schwmax = schwmax;
+  ndim = GA_Ndim(g_schwarz);
+
+  aicut1 = icut1;
+  aicut2 = icut2;
+  aicut3 = icut3;
+
+  teaccum = 0.0;
+  tqaccum = 0.0;
+
+  tr0 = MPI_Wtime();
+
+  // for (taskid = tidlo; taskid <= tidhi; taskid++) {
+#ifndef DYNAMIC_TASKS
+  for (taskid = tidlo; taskid <= tidhi; taskid += numTasks) {
+#else
+  while (dotask) {
+#endif
+    teargs.itasklo = taskid;
+#ifndef DYNAMIC_TASKS
+    teargs.itaskhi = std::min(taskid + numTasks - 1, tidhi);
+#else
+    teargs.itaskhi = taskid + numTasks - 1;
+#endif
+
+#ifndef DYNAMIC_TASKS
+    dotask = translate_task(taskid, lo, hi, &it, &jt, &kt, &lt);
+#endif
+
+    GFExecute(tehndl, g_schwarz, ndim, &lo[2], &hi[2], &teargs);
+    // TwoElThreadOMP(g_schwarz, ndim, &lo[2], &hi[2], &teargs);
+
+#ifdef DYNAMIC_TASKS
+    taskid = acquire_tasks(numTasks);
+    dotask = translate_task(taskid, lo, hi, &it, &jt, &kt, &lt);
+#endif
+
+      // dotask = next_4chunk(lo, hi, &it, &jt, &kt, &lt);
+    itask++;
+
+    if (itask % GFMaxConcurrency() == 0)
+      GFQuiesce(tehndl);
+  }
+  tr1 = MPI_Wtime();
+
+  tr2 = MPI_Wtime();
+  GFAllQuiesce(tehndl);
+  tr3 = MPI_Wtime();
+
+  traccum += (tr1 - tr0) + (tr3 - tr2);
+
+  teaccum += (tr1 - tr0);
+  tqaccum += (tr3 - tr2);
+
+#if 0
+  printf("Proc: %d, number of tasks executed: %d, exec. time: %f, quiesce time: %f\n", me, itask,
+	 teaccum, tqaccum);
+  fflush(stdout);
+#endif
+
+#ifdef CLOG
+  fprintf(clog, "After threaded execution\n");
+  fflush(clog);
+#endif
+
+  icut1 = aicut1;
+  icut2 = aicut2;
+  icut3 = aicut3;
+
+  *etwo = 0.50 * contract_matrices(g_fock, g_dens);
+  ijcnt = icut1 - ijcnt;
+  klcnt = icut2 - klcnt;
+  ijklcnt = icut3 - ijklcnt;
+  icut4 = icut3;
+
+  print_task_stats(me, nproc, g_schwarz);
+
+  if (icut3 > 0)
+    return;
+
+  // no integrals may be calculated if there is no work for;
+  // this node (ichunk too big), or, something is wrong;
+
+  printf("no two-electron integrals computed by node %d\n", me);
+  printf("\n"); 
+} // twoel
+
+void TwoElThreadTask(int g_a, int ndims, int plo[], int phi[], void *arg)
+{
+  const double one = 1.0;
+
+  TwoElArgs *teargs;
+  double gg;
+
+  int i, j, k, l, iloc, jloc, kloc, lloc, ich, it, jt, kt, lt;
+  int lo[4], hi[4], lo_ik[2], hi_ik[2], lo_jl[2], hi_jl[2];
+  int newtask, accum;
+
+  ChunkArray *f_ij, *d_kl;
+  ChunkArray *f_ik, *d_jl;
+  ChunkArray *s_ij, *s_kl;
+
+  ga_nbhdl_t f0, f1;
+
+  unsigned int lTaskPos;
+
+  long long int laicut1 = 0L, laicut2 = 0L, laicut3 = 0L;
+  long int lexecTasks = 0L;
+
+  teargs = reinterpret_cast<TwoElArgs *>(arg);
+
+  f_ij = reinterpret_cast<ChunkArray *>(new ChunkArray);
+  d_kl = reinterpret_cast<ChunkArray *>(new ChunkArray);
+  f_ik = reinterpret_cast<ChunkArray *>(new ChunkArray);
+  d_jl = reinterpret_cast<ChunkArray *>(new ChunkArray);
+  s_ij = reinterpret_cast<ChunkArray *>(new ChunkArray);
+  s_kl = reinterpret_cast<ChunkArray *>(new ChunkArray);
+
+  ich = ichunk;
+
+#ifdef DEBUG
+  lTaskPos = taskPos++;
+
+  taskIDs[lTaskPos] = tbb::this_tbb_thread::get_id();
+  threadIDs[lTaskPos] = pthread_self();
+
+  tlo[lTaskPos] = teargs->itasklo;
+  thi[lTaskPos] = teargs->itaskhi;
+#endif
+
+#if 0
+  pthread_getaffinity_np(threadIDs[lTaskPos], sizeof(sets[lTaskPos]), &sets[lTaskPos]);
+ 
+  unsigned int ccnt = 0U;
+
+  for (int i = 0; i < CPU_SETSIZE; i++)
+    if (CPU_ISSET(i, &sets[lTaskPos]))
+      ccnt++;
+
+  if (ccnt > 1U) {
+    unsigned int lcore = cores.fetch_and_add(2U);
+
+    CPU_ZERO(&sets[lTaskPos]);
+    CPU_SET(lcore, &sets[lTaskPos]);
+    pthread_setaffinity_np(threadIDs[lTaskPos], sizeof(sets[lTaskPos]), &sets[lTaskPos]);
+  }
+#endif
+
+  PTaskStatsList::reference ltlist = statsList.local();
+
+  tbb::tick_count t0, t1;
+
+  t0 = tbb::tick_count::now();
+  for (long int itask = teargs->itasklo; itask <= teargs->itaskhi; itask++) {
+    int dotask;
+
+    newtask = 1;
+    accum = 0;
+
+    dotask = translate_task(itask, lo, hi, &it, &jt, &kt, &lt);
+
+    if (!dotask)
+      break;
+
+    lo_ik[0] = lo[0];
+    lo_ik[1] = lo[2];
+    hi_ik[0] = hi[0];
+    hi_ik[1] = hi[2];
+    lo_jl[0] = lo[1];
+    lo_jl[1] = lo[3];
+    hi_jl[0] = hi[1];
+    hi_jl[1] = hi[3];
+ 
+    ltlist.push_back(TaskStats());
+
+    TaskStats &stats = ltlist.back();
+
+    stats.taskid = itask;
+
+    stats.lo[0][0] = lo[0];
+    stats.lo[0][1] = lo[1];
+    stats.hi[0][0] = hi[0];
+    stats.hi[0][1] = hi[1];
+ 
+    GF_Get(g_schwarz, lo, hi, s_ij, &ich);
+
+    clean_chunk(*f_ij);
+    clean_chunk(*f_ik);
+
+    for (i = lo[0]; i <= hi[0]; i++) {
+      iloc = i - lo[0];
+      for (j = lo[1]; j <= hi[1]; j++) {
+	jloc = j - lo[1];
+	if (((*s_ij)[iloc][jloc] * teargs->schwmax) < tol2e)
+	  // qthread_incr(&icut1, (hi[2] - lo[2] + 1) * (hi[3] - lo[3] + 1));
+	  laicut1 += (hi[2] - lo[2] + 1) * (hi[3] - lo[3] + 1);
+	else {
+	  ga_nbhdl_t s, d0, d1;
+
+	  if (newtask) {
+	    GF_NbGet(g_schwarz, &lo[2], &hi[2], *s_kl, &ich, &s);
+	    GF_NbGet(g_dens, &lo[2], &hi[2], *d_kl, &ich, &d0);
+	    GF_NbGet(g_dens, lo_jl, hi_jl, *d_jl, &ich, &d1);
+
+	    stats.lo[1][0] = lo[2];
+	    stats.lo[1][1] = lo[3];
+	    stats.hi[1][0] = hi[2];
+	    stats.hi[1][1] = hi[3];
+
+	    stats.lo[2][0] = lo[2];
+	    stats.lo[2][1] = lo[3];
+	    stats.hi[2][0] = hi[2];
+	    stats.hi[2][1] = hi[3];
+
+	    stats.lo[3][0] = lo_jl[0];
+	    stats.lo[3][1] = lo_jl[1];
+	    stats.hi[3][0] = hi_jl[0];
+	    stats.hi[3][1] = hi_jl[1];
+
+	    GF_NbWait(&s);
+	  }
+
+	  for (k = lo[2]; k <= hi[2]; k++) {
+	    kloc = k - lo[2];
+	    for (l = lo[3]; l <= hi[3]; l++) {
+	      lloc = l - lo[3];
+	      if ((*s_ij)[iloc][jloc] * (*s_kl)[kloc][lloc] < tol2e)
+		// qthread_incr(&icut2, 1);
+		laicut2++;
+	      else {
+		if (newtask) {
+		  GF_NbWait(&d0);
+		  GF_NbWait(&d1);
+
+		  newtask = 0;
+
+		  stats.executed = true;
+		  lexecTasks++;
+		}
+
+		g(&gg, i, j, k, l);
+		(*f_ij)[iloc][jloc] = (*f_ij)[iloc][jloc] + gg *
+		  (*d_kl)[kloc][lloc];
+		(*f_ik)[iloc][kloc] = (*f_ik)[iloc][kloc] - 0.50 * gg *
+		  (*d_jl)[jloc][lloc];
+		// qthread_incr(&icut3, 1);
+		laicut3++;
+		accum = 1;
+	      }
+	    }
+	  }
+
+	  if (newtask) {
+	    GF_NbWait(&d0);
+	    GF_NbWait(&d1);
+
+	    newtask = 0;
+	  }
+	}
+      }
+    }
+
+    if (accum) {
+      GF_NbAcc(g_fock, lo, hi, *f_ij, &ich, const_cast<double *>(&one), &f0);
+      GF_NbAcc(g_fock, lo_ik, hi_ik, *f_ik, &ich, const_cast<double *>(&one), &f1);
+
+      GF_NbWait(&f0);
+      GF_NbWait(&f1);
+    }
+  }
+
+  aicut1 += laicut1;
+  aicut2 += laicut2;
+  aicut3 += laicut3;
+
+  execTasks += lexecTasks;
+
+  t1 = tbb::tick_count::now();
+
+#ifdef ACCURATE_TIMING
+  TIAccum::reference ltiacc = tiaccum.local();
+
+  ltiacc += (t1 - t0).seconds();
+#endif
+
+#ifdef DEBUG
+  taskTimes[lTaskPos] = (t1 - t0).seconds();
+#endif
+
+  delete [] f_ij;
+  delete [] d_kl;
+  delete [] f_ik;
+  delete [] d_jl;
+  delete [] s_ij;
+  delete [] s_kl;
+
+  // qthread_dincr(&traccum[qthread_shep(NULL)], tr1 - tr0);
+} // TwoElThreadTask
+
+void TwoElThreadOMP(int g_a, int ndims, int plo[], int phi[], void *arg)
+{
+  const double one = 1.0;
+
+  TwoElArgs *teargs;
+  double gg;
+
+  int i, j, k, l, iloc, jloc, kloc, lloc, ich, it, jt, kt, lt;
+  int lo[4], hi[4], lo_ik[2], hi_ik[2], lo_jl[2], hi_jl[2];
+  int newtask, accum;
+
+  ChunkArray *f_ij, *d_kl;
+  ChunkArray *f_ik, *d_jl;
+  ChunkArray *s_ij, *s_kl;
+
+  ga_nbhdl_t f0, f1;
+
+  unsigned int lTaskPos;
+
+  teargs = reinterpret_cast<TwoElArgs *>(arg);
+
+  ich = ichunk;
+
+  long long int laicut1 = 0L, laicut2 = 0L, laicut3 = 0L;
+  long int lexecTasks = 0L;
+
+#pragma omp parallel default(none), shared(teargs, g_schwarz, g_dens, g_fock, ich, aicut1, aicut2, aicut3, tiaccum, execTasks, statsList), private(f_ij, d_kl, f_ik, d_jl, s_ij, s_kl, gg, newtask, accum, lo, hi, it, jt, kt, lt, lo_ik, hi_ik, lo_jl, hi_jl, i, j, k, l, iloc, jloc, kloc, lloc, f0, f1, laicut1, laicut2, laicut3, lexecTasks)
+  {
+    tbb::tick_count t0, t1;
+
+    t0 = tbb::tick_count::now();
+
+    f_ij = reinterpret_cast<ChunkArray *>(new ChunkArray);
+    d_kl = reinterpret_cast<ChunkArray *>(new ChunkArray);
+    f_ik = reinterpret_cast<ChunkArray *>(new ChunkArray);
+    d_jl = reinterpret_cast<ChunkArray *>(new ChunkArray);
+    s_ij = reinterpret_cast<ChunkArray *>(new ChunkArray);
+    s_kl = reinterpret_cast<ChunkArray *>(new ChunkArray);
+
+    laicut1 = 0L;
+    laicut2 = 0L;
+    laicut3 = 0L;
+    lexecTasks = 0L;
+
+    PTaskStatsList::reference ltlist = statsList.local();
+
+#pragma omp for schedule(guided), nowait
+    for (long int itask = teargs->itasklo; itask <= teargs->itaskhi; itask++) {
+      int dotask;
+
+      newtask = 1;
+      accum = 0;
+
+      dotask = translate_task(itask, lo, hi, &it, &jt, &kt, &lt);
+
+      if (!dotask)
+	continue;
+
+      lo_ik[0] = lo[0];
+      lo_ik[1] = lo[2];
+      hi_ik[0] = hi[0];
+      hi_ik[1] = hi[2];
+      lo_jl[0] = lo[1];
+      lo_jl[1] = lo[3];
+      hi_jl[0] = hi[1];
+      hi_jl[1] = hi[3];
+
+      ltlist.push_back(TaskStats());
+
+      TaskStats &stats = ltlist.back();
+
+      stats.taskid = itask;
+
+      stats.lo[0][0] = lo[0];
+      stats.lo[0][1] = lo[1];
+      stats.hi[0][0] = hi[0];
+      stats.hi[0][1] = hi[1];
+
+      GF_Get(g_schwarz, lo, hi, s_ij, &ich);
+
+      clean_chunk(*f_ij);
+      clean_chunk(*f_ik);
+
+      for (i = lo[0]; i <= hi[0]; i++) {
+	iloc = i - lo[0];
+	for (j = lo[1]; j <= hi[1]; j++) {
+	  jloc = j - lo[1];
+	  if (((*s_ij)[iloc][jloc] * teargs->schwmax) < tol2e)
+	    // qthread_incr(&icut1, (hi[2] - lo[2] + 1) * (hi[3] - lo[3] + 1));
+	    laicut1 += (hi[2] - lo[2] + 1) * (hi[3] - lo[3] + 1);
+	  else {
+	    ga_nbhdl_t s, d0, d1;
+
+	    if (newtask) {
+	      GF_NbGet(g_schwarz, &lo[2], &hi[2], *s_kl, &ich, &s);
+	      GF_NbGet(g_dens, &lo[2], &hi[2], *d_kl, &ich, &d0);
+	      GF_NbGet(g_dens, lo_jl, hi_jl, *d_jl, &ich, &d1);
+
+	      stats.lo[1][0] = lo[2];
+	      stats.lo[1][1] = lo[3];
+	      stats.hi[1][0] = hi[2];
+	      stats.hi[1][1] = hi[3];
+
+	      stats.lo[2][0] = lo[2];
+	      stats.lo[2][1] = lo[3];
+	      stats.hi[2][0] = hi[2];
+	      stats.hi[2][1] = hi[3];
+
+	      stats.lo[3][0] = lo_jl[0];
+	      stats.lo[3][1] = lo_jl[1];
+	      stats.hi[3][0] = hi_jl[0];
+	      stats.hi[3][1] = hi_jl[1];
+
+	      GF_NbWait(&s);
+	    }
+
+	    for (k = lo[2]; k <= hi[2]; k++) {
+	      kloc = k - lo[2];
+	      for (l = lo[3]; l <= hi[3]; l++) {
+		lloc = l - lo[3];
+		if ((*s_ij)[iloc][jloc] * (*s_kl)[kloc][lloc] < tol2e)
+		  // qthread_incr(&icut2, 1);
+		  laicut2++;
+		else {
+		  if (newtask) {
+		    GF_NbWait(&d0);
+		    GF_NbWait(&d1);
+
+		    newtask = 0;
+
+		    lexecTasks++;
+		    stats.executed = true;
+		  }
+
+		  g(&gg, i, j, k, l);
+		  (*f_ij)[iloc][jloc] = (*f_ij)[iloc][jloc] + gg *
+		    (*d_kl)[kloc][lloc];
+		  (*f_ik)[iloc][kloc] = (*f_ik)[iloc][kloc] - 0.50 * gg *
+		    (*d_jl)[jloc][lloc];
+		  // qthread_incr(&icut3, 1);
+		  laicut3++;
+		  accum = 1;
+		}
+	      }
+	    }
+
+	    if (newtask) {
+	      GF_NbWait(&d0);
+	      GF_NbWait(&d1);
+
+	      newtask = 0;
+	    }
+	  }
+	}
+      }
+
+      if (accum) {
+	GF_NbAcc(g_fock, lo, hi, *f_ij, &ich, const_cast<double *>(&one), &f0);
+	GF_NbAcc(g_fock, lo_ik, hi_ik, *f_ik, &ich, const_cast<double *>(&one), &f1);
+
+	GF_NbWait(&f0);
+	GF_NbWait(&f1);
+      }
+    }
+
+    delete [] f_ij;
+    delete [] d_kl;
+    delete [] f_ik;
+    delete [] d_jl;
+    delete [] s_ij;
+    delete [] s_kl;
+
+    aicut1 += laicut1;
+    aicut2 += laicut2;
+    aicut3 += laicut3;
+
+    execTasks += lexecTasks;
+
+    t1 = tbb::tick_count::now();
+
+    TIAccum::reference ltiacc = tiaccum.local();
+
+    ltiacc += (t1 - t0).seconds();
+  }
+} // TwoElThreadOMP
+
+void print_timing(int me)
+{
+#ifdef DEBUG
+  typedef std::map<tbb::tbb_thread::id, int> ThreadMap;
+
+  const int nthreads = tbb::task_scheduler_init::default_num_threads();
+
+  double accumTimes[nthreads];
+  ThreadMap tids;
+  int pos = 0;
+
+  for (int i = 0; i < nthreads; i++)
+    accumTimes[i] = 0.0;
+
+  for (int i = 0; i < maxTasks; i++) {
+    bool newtid;
+
+    ThreadMap::const_iterator iter = tids.find(taskIDs[i]);
+
+    newtid = (iter == tids.end());
+
+    if (newtid)
+      tids[taskIDs[i]] = pos++;
+  }
+
+  for (ThreadMap::const_iterator iter = tids.begin(); iter != tids.end(); iter++)
+    std::cout << "Thread ID: " << iter->first << ", pos: " << iter->second << std::endl;
+
+  for (int i = 0; i < maxTasks; i++)
+    accumTimes[tids[taskIDs[i]]] += taskTimes[i];
+
+  for (int i = 0; i < nthreads; i++)
+    std::cout << "Thread: " << i << ", time: " << accumTimes[i] << std::endl;
+
+  std::cout << "Main thread ID: " << pthread_self() << std::endl;
+
+  for (int i = 0; i < maxTasks; i++) {
+    std::cout << "Task: " << i << ", pthread id: " << threadIDs[i] << ", tbb id: " <<
+      taskIDs[i] /* << ", CPU set: "; */;
+
+    /* for (int j = 0; j < CPU_SETSIZE; j++)
+      if (CPU_ISSET(j, &sets[i]))
+      std::cout << j << " "; */
+
+    std::cout << ", tlo: " << tlo[i] << ", thi: " << thi[i];
+    std::cout << std::endl;
+  }
+#endif
+
+  if (me == 0) {
+    printf("Time spent in twoel: %f\n", traccum);
+    fflush(stdout);
+  }
+
+#ifdef ACCURATE_TIMING
+  std::ostringstream ostr;
+
+  ostr << "clog.dat." << me;
+
+  std::ofstream ofs(ostr.str().c_str(), std::ios_base::out | std::ios_base::app);
+
+  ofs << "icut3: " << icut3 << ", execTasks: " << execTasks << ", time: ";
+
+  for (TIAccum::const_iterator iter = tiaccum.begin(); iter != tiaccum.end(); iter++)
+    ofs << *iter << " ";
+
+  ofs << std::flush << std::endl;
+#endif
+} // print_timing
+
+void print_task_stats(int me, int nproc, int g_a)
+{
+  std::ostringstream ostr;
+
+  ostr << "tasks.dat." << me;
+
+  std::ofstream ofs(ostr.str().c_str(), std::ios_base::out | std::ios_base::app);
+
+  int *map = new int[2 * 2 * nproc];
+  int *procs = new int[nproc];
+
+  ofs << "Executed real tasks: " << execTasks << std::endl;
+
+#if 0
+  for (PTaskStatsList::const_iterator iter = statsList.begin(); iter != statsList.end(); iter++) {
+    ofs << "List size: " << iter->size() << std::endl << std::endl;
+
+    for (TaskStatsList::const_iterator iiter = iter->begin(); iiter != iter->end(); iiter++) {
+      ofs << "task id: " << iiter->taskid << ", coords: ";
+
+      for (int i = 0; i < 4; i++) {
+	int np = GF_Locate_region(g_a, const_cast<int *>(iiter->lo[i]),
+				  const_cast<int *>(iiter->hi[i]), map, procs);
+
+	for (int j = 0; j < 2; j++)
+	  ofs << "(" << iiter->lo[i][j] << ", " << iiter->hi[i][j] << ")";
+
+	ofs << ", on procs: ";
+
+	for (int k = 0; k < np; k++)
+	  ofs << procs[k] << " ";
+
+	ofs << std::endl;
+      }
+    }
+
+    ofs << std::endl << std::endl;
+  }
+#else
+  int *hist = new int[nproc], *ghist = NULL;
+  int taskcnt = 0;
+
+  for (int i = 0; i < nproc; i++)
+    hist[i] = 0;
+
+  for (PTaskStatsList::const_iterator iter = statsList.begin(); iter != statsList.end();
+       iter++)
+    for (TaskStatsList::const_iterator iiter = iter->begin(); iiter != iter->end(); iiter++) {
+      for (int i = 1; i < 4; i++) {
+	int np = GF_Locate_region(g_a, const_cast<int *>(iiter->lo[i]),
+				  const_cast<int *>(iiter->hi[i]), map, procs);
+	for (int k = 0; k < np; k++)
+	  hist[procs[k]]++;
+      }
+      taskcnt++;
+    }
+
+  for (int i = 0; i < nproc; i++)
+    ofs << "Proc: " << i << ", comms: " << hist[i] << std::endl;
+
+  ofs << std::endl;
+  ofs << "Total number of executed tasks: " << taskcnt << std::endl;
+
+  ofs << std::endl << std::endl;
+
+  if (me == 0)
+    ghist = new int[nproc];
+
+  MPI_Reduce(hist, ghist, nproc, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+
+  if (me == 0) {
+    ofs << "Global histogram" << std::endl << std::endl;
+
+    for (int i = 0; i < nproc; i++)
+      ofs << "Proc: " << i << ", tasks: " << ghist[i] << std::endl;
+
+    delete [] ghist;
+  }
+
+  delete [] hist;
+
+  ofs << std::endl << std::endl;
+
+  for (PTaskStatsList::const_iterator iter = statsList.begin(); iter != statsList.end();
+       iter++)
+    for (TaskStatsList::const_iterator iiter = iter->begin(); iiter != iter->end(); iiter++)
+      ofs << "Task ID: " << iiter->taskid << ", real: " << iiter->executed << std::endl;
+
+#endif
+
+  delete [] map;
+  delete [] procs;
+} // print_task_stats

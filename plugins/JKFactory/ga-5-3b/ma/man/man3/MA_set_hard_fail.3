@@ -1,0 +1,51 @@
+.TH MA_SET_HARD_FAIL 3 "20 February 1997" "MA Release 1.8" "MA LIBRARY ROUTINES"
+.SH NAME
+MA_set_hard_fail -
+set the ma_hard_fail flag
+.SH "C SYNOPSIS"
+.nf
+#include "macdecls.h"
+
+Boolean MA_set_hard_fail(value)
+    Boolean     value;          /* read-only */
+.fi
+.SH "FORTRAN SYNOPSIS"
+.nf
+#include "mafdecls.fh"
+
+logical function MA_set_hard_fail(value)
+    logical     value
+.fi
+.SH DESCRIPTION
+MA_set_hard_fail() sets the ma_hard_fail flag to
+.I value
+and returns the flag's previous value.
+If the ma_hard_fail flag is true,
+then any error detected by MA
+(including those normally considered nonfatal)
+causes program termination.
+The ma_hard_fail flag is initially false.
+.\" .SH USAGE
+.\" .SH DIAGNOSTICS
+.SH "RETURN VALUE"
+C: The previous value of the ma_hard_fail flag
+(MA_TRUE or MA_FALSE).
+.br
+FORTRAN: The previous value of the ma_hard_fail flag
+(.true. or .false.).
+.\" .SH NOTES
+.SH FILES
+.nf
+Include files: /msrc/proj/hpctools/ma/release/current/include
+Library:       /msrc/proj/hpctools/ma/release/current/lib/\fIplatform\fR/libma.a
+Man pages:     /msrc/proj/hpctools/ma/release/current/man/man3
+Source code:   /msrc/proj/hpctools/ma/release/current/tar/ma\fIrelease\fR.tar
+.fi
+.SH "SEE ALSO"
+.na
+MA(3),
+MA_set_auto_verify(3),
+MA_set_error_print(3)
+.ad
+.SH AUTHOR
+Gregory S. Thomas, Pacific Northwest National Laboratory

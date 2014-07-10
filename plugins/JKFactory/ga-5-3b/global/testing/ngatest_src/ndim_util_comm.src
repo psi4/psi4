@@ -1,0 +1,178 @@
+      subroutine random_range(lo,hi,lop,hip,ndim)
+      implicit none
+      integer lo(1),hi(1),lop(1),hip(1),ndim
+      integer i, range, swap, val,iran
+      double precision drand
+      iran(range) = int(drand(0)*dble(range)) + 1
+c     iran(range) = range/2 
+      do i = 1, ndim
+         range = hi(i)-lo(i)+1
+         val = iran(range)
+         lop(i) = lo(i) + val 
+         val = iran(range)
+         hip(i) = hi(i) - val
+         if(hip(i) .lt. lop(i))then
+            swap =hip(i)
+            hip(i)=lop(i)
+            lop(i)=swap
+         endif
+         hip(i)=MIN(hip(i),hi(i))
+         lop(i)=MAX(lop(i),lo(i))
+      enddo
+      end
+c
+
+c
+      subroutine random_range_outbound(lo,hi,lop,hip,ndim)
+      implicit none
+      integer lo(1),hi(1),lop(1),hip(1),ndim
+      integer i, range, val,iran
+      double precision drand
+      iran(range) = int(drand(0)*dble(range)) + 1
+c     iran(range) = range/2
+      do i = 1, ndim
+         range = 2*(hi(i)-lo(i)+1)
+         val = iran(range)
+         lop(i) = lo(i) + val
+         range = hi(i)-lo(i)+1
+         val = iran(range)
+         hip(i) = lop(i) + range - val
+c
+         hip(i) = hip(i)-hi(i)
+         lop(i) = lop(i)-hi(i)
+      enddo
+      end
+c
+c
+      integer function count_elems(lo,hi,ndim)
+      implicit none
+      integer lo(1),hi(1),ndim,elems,i
+      elems=1
+      do i=1,ndim
+         elems = elems*(hi(i)-lo(i)+1)
+      enddo
+      count_elems = elems
+      end
+c
+
+c     get the next available nindex in the range of lo and hi
+      integer function next_index(ind,total,ndim,lo,hi,dims)
+      implicit none
+      integer ind,total,ndim,lo(ndim),hi(ndim),dims(ndim)
+      integer i
+      integer indx(m4_max_dim),nindex
+c
+      nindex = ind + 1
+ 200  call conv_1ton(ndim,dims,nindex,indx)
+c
+c     test if indx(i) is in the range of lo(i) and hi(i)
+      do i=1,ndim
+         if((indx(i).lt.lo(i)).or.(indx(i).gt.hi(i))) then
+            nindex = nindex + 1
+            if(nindex.gt.total) then
+               next_index = 0
+               goto 300
+            else
+               goto 200
+            endif
+         endif
+      enddo
+c
+      next_index = nindex
+ 300  end
+
+c     testing if the indices are unique
+      integer function unique(ind,ndim,m,n)
+      implicit none
+      integer ndim,m,n
+      integer ind(ndim,m)
+      integer i,j,marker
+c
+      unique = 1
+      do i = 1, n-1
+         marker = 0
+         do j = 1, ndim
+            if(ind(j,n).eq.ind(j,i)) marker = marker + 1
+         enddo
+c     
+         if(marker.eq.ndim) unique = 0
+      enddo
+c
+      end
+
+c
+      subroutine prnt_rng(me,lo,hi,ndim)
+      implicit none
+      integer me,ndim
+      integer lo(ndim),hi(ndim)
+      integer i
+c
+      print *, me,': array section [',(lo(i),':',hi(i),i=1,ndim),']'
+c
+      end
+
+c     divide the space into equal size patches according to nproc
+c     and calculate my lo and hi
+      subroutine my_space(me,nproc,ndim,total,dims,lo,hi)
+      implicit none
+      integer me,nproc,ndim,total
+      integer dims(ndim),lo(ndim),hi(ndim)
+      integer div,lop,hip,i
+c
+      div = total/nproc
+c
+      lop = div * me + 1
+c
+      if(me.eq.(nproc-1)) then
+         hip = total
+      else
+         hip = div * (me+1)
+      endif
+c
+      call conv_1ton(ndim,dims,lop,lo)
+      call conv_1ton(ndim,dims,hip,hi)
+c
+c     swap the indices if the lo if larger thant hi
+      do i = 1,ndim
+         if(lo(i).gt.hi(i)) then
+	    if(i.eq.ndim) call ga_error('bye',0)
+            lo(i) = 1
+            lo(i+1) = lo(i+1) + 1
+         endif
+      enddo
+      end
+
+c     convert the index from one dimension to n dimension
+      subroutine conv_1ton(ndim,dims,ind1,indn)
+      implicit none
+      integer ndim
+      integer dims(ndim)
+      integer ind1,indn(ndim)
+      integer range(m4_max_dim),remainder,i
+c
+      remainder = ind1
+c     get the range of each dimension
+      do i=1,ndim
+         if(i.eq.1) then
+            range(i) = dims(i)
+         else
+            range(i) = range(i-1) * dims(i)
+         endif
+      enddo
+c
+c     get the indices in each dimension
+      do i = ndim,1,-1
+         if(i.ne.1) then
+            indn(i) = remainder/range(i-1)
+            remainder = remainder - indn(i)*range(i-1)
+            if(remainder.eq.0) then
+               remainder = range(i-1)
+            else
+               indn(i) = indn(i) + 1
+            endif
+         else
+            indn(i) = remainder
+         endif
+      enddo
+c
+      end

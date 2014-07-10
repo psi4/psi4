@@ -1,0 +1,95 @@
+.TH MA_SIZEOF 3 "20 February 1997" "MA Release 1.8" "MA LIBRARY ROUTINES"
+.SH NAME
+MA_sizeof -
+compute sizes of data types
+.SH "C SYNOPSIS"
+.nf
+#include "macdecls.h"
+
+Integer MA_sizeof(datatype1, nelem1, datatype2)
+    Integer     datatype1;      /* read-only */
+    Integer     nelem1;         /* read-only */
+    Integer     datatype2;      /* read-only */
+.fi
+.SH "FORTRAN SYNOPSIS"
+.nf
+#include "mafdecls.fh"
+
+integer function MA_sizeof(datatype1, nelem1, datatype2)
+    integer     datatype1
+    integer     nelem1
+    integer     datatype2
+.fi
+.SH DESCRIPTION
+MA_sizeof() returns the number of elements of type
+.I datatype2
+required to contain
+.I nelem1
+elements of type
+.IR datatype1 .
+.SH USAGE
+The following FORTRAN code illustrates the use of MA_sizeof()
+by computing the space required for
+100 integers in 5 allocations in the heap,
+200 logicals in 4 allocations in the heap,
+300 reals in 3 allocations in the stack,
+and 400 doubles in 2 allocations in the stack.
+
+.nf
+#include "mafdecls.fh"
+
+    logical ok
+    integer heap_bytes_data
+    integer heap_bytes_overhead
+    integer heap_bytes_total
+    integer stack_bytes_data
+    integer stack_bytes_overhead
+    integer stack_bytes_total
+
+    heap_bytes_data = MA_sizeof(MT_INT, 100, MT_BYTE)
+                    + MA_sizeof(MT_LOG, 200, MT_BYTE)
+    heap_bytes_overhead = (5 + 4) * MA_sizeof_overhead(MT_BYTE)
+    heap_bytes_total = heap_bytes_data + heap_bytes_overhead
+    stack_bytes_data = MA_sizeof(MT_REAL, 300, MT_BYTE)
+                     + MA_sizeof(MT_DBL, 400, MT_BYTE)
+    stack_bytes_overhead = (3 + 2) * MA_sizeof_overhead(MT_BYTE)
+    stack_bytes_total = stack_bytes_data + stack_bytes_overhead
+    ok = MA_init(MT_BYTE, stack_bytes_total, heap_bytes_total)
+.fi
+.SH DIAGNOSTICS
+unable to set sizes of FORTRAN datatypes
+.in +0.5i
+This indicates either that the internal state of MA is corrupted
+or that there is a problem in the C-FORTRAN linkage.
+.in
+invalid datatype: %d
+.in +0.5i
+.I datatype1
+and
+.I datatype2
+must be one of those listed in macdecls.h or mafdecls.fh.
+.in
+invalid nelem: %d
+.in +0.5i
+.I nelem1
+must be greater than or equal to zero.
+.in
+.SH "RETURN VALUE"
+C: The number of elements, as described above.
+.br
+FORTRAN: The number of elements, as described above.
+.\" .SH NOTES
+.SH FILES
+.nf
+Include files: /msrc/proj/hpctools/ma/release/current/include
+Library:       /msrc/proj/hpctools/ma/release/current/lib/\fIplatform\fR/libma.a
+Man pages:     /msrc/proj/hpctools/ma/release/current/man/man3
+Source code:   /msrc/proj/hpctools/ma/release/current/tar/ma\fIrelease\fR.tar
+.fi
+.SH "SEE ALSO"
+.na
+MA(3),
+MA_sizeof_overhead(3)
+.ad
+.SH AUTHOR
+Gregory S. Thomas, Pacific Northwest National Laboratory

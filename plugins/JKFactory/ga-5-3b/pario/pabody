@@ -1,0 +1,94 @@
+#!/usr/local/bin/perl
+
+print "Enter ascii SDDF file: ";
+#$file = <STDIN>;
+$file = "pab.ascii";
+open(infile,"$file") || (chop($file) && (die "can't open \"$file\": $!\n"));
+print "Enter output Upshot file: ";
+#$file = <STDIN>;
+$file = "pab.out";
+open(outfile,">$file");
+
+print "\n";
+$generic_trace_first = 0;
+$open_flag = 0;
+$close_flag = 0;
+$write_flag = 0;
+$first{'"Open"'} = 0;
+$first{'"Close"'} = 0;
+$first{'"Write"'} = 0;
+$first{'"Read"'} = 0;
+$first{'"Seek"'} = 0;
+
+while (<infile>) {
+    if (/"Generic Interval"/) {
+        if ($generic_trace_first == 0)
+         {  $generic_trace_first =  1;
+            print "Skipping first: ", $0, "\n";
+            next;
+         };
+	$junk = <infile>;
+	$junk = <infile>;
+	$junk = <infile>;
+	$useful = <infile>;
+	$useful =~ /\}, (.+), (.+), (.+), (.+),/;
+	$useful =~ /\}, ([0-9].[0-9]+), ([0-9]+), ([0-9].[0-9]+),/;
+#	print $1," | ", $2," | ", $3," | ", $4," |\n";
+
+        $endtime = $1;
+	$eventid = $2;
+	$procid = $3;
+	$duration = $4;
+        $starttime = $endtime - $duration;
+
+	$starttime = $starttime * 1000000.0;
+	$starttime = int($starttime);
+#	print $starttime, "\n";
+	$endtime = $endtime * 1000000.0;
+	$endtime = int($endtime);
+#	$endevent = $eventid + 1000;
+	$endevent = $eventid + 1;
+
+	print outfile $eventid, " ", $procid, " ", 0, " ", 0, " ", 
+	0, " ", $starttime, "\n";
+	print outfile $endevent, " ", $procid, " ", 0, " ", 0, " ", 
+	0, " ", $endtime, "\n";
+    }
+
+    if (/"Open"/ || /"Close"/ || /"Write"/ || /"Read"/ || /"Seek"/) {
+	if( $first_time{ $_ } == 0 )
+	  {
+	    $first_time{ $_ } = 1;
+	    next;
+          };
+
+        $junk = <infile>;
+        $junk = <infile>;
+        $junk = <infile>;
+        $useful = <infile>;
+        $useful =~ /\}, (.+), (\d+), (\d+), (.+), (\d+)/;
+#       print $1, " ", $2, " ", $3, " ", $4, "\n";
+    
+        $starttime = $1;
+        $eventid = $2;
+        $procid = $3;
+        $duration = $4;
+        $endtime = $starttime + $duration;
+
+        $starttime = $starttime * 1000000.0;
+        $starttime = int($starttime);
+#       print $starttime, "\n";
+        $endtime = $endtime * 1000000.0;
+        $endtime = int($endtime);
+        $endevent = $eventid + 1000;
+
+        print outfile $eventid, " ", $procid, " ", 0, " ", 0, " ", 
+        0, " ", $starttime, "\n";
+        print outfile $endevent, " ", $procid, " ", 0, " ", 0, " ", 
+        0, " ", $endtime, "\n";
+    }
+
+}
+
+close outfile;
+close infile;

@@ -1,0 +1,106 @@
+      subroutine m4_func_NGA_PERIODIC_ACC(m4_test_type, m4_ndim)
+      implicit none
+#include "mafdecls.fh"
+#include "global.fh"
+c     
+      integer n
+      integer ndim
+      parameter (n = m4_n)
+      parameter (ndim = m4_ndim)
+      m4_data_type a(substr(m4_array, 1, eval(m4_ndim*2-1)))
+      m4_data_type b(substr(m4_array, 1, eval(m4_ndim*2-1)))
+      m4_data_type c(substr(m4_array, 1, eval(m4_ndim*2-1)))
+      integer lo(ndim),hi(ndim),lop(ndim),hip(ndim)
+      integer blo(ndim),bhi(ndim)
+      integer dims(ndim),ld(ndim)
+      integer g_a
+      integer chunk(ndim)
+      integer i,total,loop
+      m4_data_type alpha
+      double precision drand
+      integer nproc, me
+      logical status
+c     
+      nproc = ga_nnodes()
+      me    = ga_nodeid()
+c     
+c---------------------- initialize the GA -----------------------
+c     initialize the chunk, dims, ld, and calculate the number 
+c     of elements
+      total=1
+      do i = 1,ndim
+         chunk(i) = 0
+         dims(i) = n
+         ld(i) = n
+      enddo
+c
+c***  Create global arrays
+      if (.not. nga_create(m4_MT, ndim, dims, 'a', chunk, g_a))
+     $     call ga_error(' ga_create failed ',1)
+c     
+      call ga_sync()
+c
+c------------------------ NGA_PERIODIC_ACC ----------------------
+      m4_print_info(nga_periodic_acc)
+c
+      total = 1
+      do i = 1,ndim
+         lo(i) = 1
+         hi(i) = n
+         total = total*dims(i)
+      enddo
+c
+      call m4_util_init_array(m4_test_type)(a,total)
+      call m4_util_init_array(m4_test_type)(b,total)
+c
+c     initialize array g_a
+      call ga_fill(g_a,m4_conv(123))
+      call ga_sync()
+c
+      alpha = m4_rand(me*2+1)
+c
+      do loop = 1, MAXLOOP 
+         if(mod(loop,nproc).eq.me) then
+            call random_range_outbound(lo,hi,lop,hip,ndim)
+            if(Mod(loop,10).eq.0) then
+               call print_range(loop,lop,hip,ndim)
+            endif
+            call ga_init_fence()
+c           keep a copy of the original patch
+            call nga_periodic_put(g_a,lop,hip,
+     $           b(substr(m4_lo_all,1,eval(m4_ndim*6-1))),ld)
+            call ga_fence()
+            call ga_init_fence()
+            call nga_periodic_acc(g_a,lop,hip,
+     $           a(substr(m4_lo_all,1,eval(m4_ndim*6-1))),ld,alpha)
+            call ga_fence()
+            call ga_init_fence()
+            call nga_periodic_get(g_a,lop,hip,
+     $           c(substr(m4_lo_all,1,eval(m4_ndim*6-1))),ld)
+            call ga_fence()
+c     
+c           check the result
+            do i=1,ndim
+               blo(i) = 1
+               bhi(i) = hip(i)-lop(i)+1
+            enddo
+c           scale the local copy of array            
+            call m4_util_scale_patch(m4_test_type)(total,
+     $        m4_conv(1),b,blo,bhi,ndim,dims,
+     $        alpha,a,blo,bhi,ndim,dims)             
+            call m4_util_compare_patches(m4_test_type)(1d-2,
+     $           total,b,blo,bhi,ndim,dims,total,c,blo,bhi,ndim,dims)
+         endif
+         call ga_sync()
+      enddo
+c
+      call ga_sync()
+      if(me.eq.0)then
+         print *, 'OK'
+         print *, ' '
+         call ffflush(6)
+      endif
+c---------------------------
+c     
+      status= ga_destroy(g_a)
+      end

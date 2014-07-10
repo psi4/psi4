@@ -1,0 +1,7 @@
+#*********** PROGRAM STACKTRACE **************
+# text address   function cp    func start
+# ------------   -----------    ----------
+     0x1176840     0x81b8858     0x1175fd0
+     0x1174ea8     0x81b8498     0x1174900
+     0x119a208     0x81bdd10     0x119a000
+#*************** END STACKTRACE **************

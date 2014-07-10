@@ -1,0 +1,419 @@
+#!/usr/bin/env perl
+# This script is designed to preprocess selected #if defined(), #ifdef
+# and #ifndef # statements in source code. The syntax for using this
+# script is
+#
+# ./armci_cpp SYMBOL1 SYMBOL2 SYMBOL3 .... SYMBOLN
+#
+# where SYMBOL refers to arguments that appear in the #if, #ifdef,
+# #ifndef statements. This script will process ALL files in the
+# directory in which it is run. This is done so that symbols defined
+# in include files can be added to the list of symbols used by the
+# script to parse the files. The files produced by the parser will have
+# a .new extension. The parser also produces a fairly large amount of
+# debugging output to standard IO. This can be ignored.
+#
+# An example invocation of armci_cpp is as follows:
+#
+# armci_cpp __ia64 LINUX64 LINUX SYSV PTHREADS DATA_SERVER \
+# SERVER_THREAD _REENTRANT VAPI ALLOW_PIN PEND_BUFS REF_THREAD_SAFE \
+# MPI OPENIB
+#
+# Symbols that end in _H and _H_ are handled differently if they
+# appear in .h files. The code bracketed by these symbols is parsed if
+# the symbol exists, even though it is using the #ifndef syntax.
+#
+# Note that this parser will probably not produce compilable code. There
+# are a few instances where symbols are defined if a comparative
+# relation is satisfied (e.g. SYMBOL_A < SYMBOL_B) and this causes some
+# symbols to be left out of the symbol table and some parts of the code
+# to be incorrectly parsed. The parser will, however, give an rough idea
+# of what post process code will look like.
+#
+
+$numargs = @ARGV;
+
+if ($numargs == 0) {
+  print "No environment settings specified\n";
+  print "Usage: ./armci_cpp SYMBOL1 SYMBOL2 SYMBOL3 .... SYMBOLN\n";
+  exit(0);
+}
+
+# Get environment settings and use these to file the symbol list
+%arg_symbols = {};
+for ($i=0; $i<$numargs; $i++) {
+  print "ARGV[$i]: $ARGV[$i]\n";
+  $arg_symbols{$ARGV[$i]} = 1;
+}
+
+# Get a list of all files in the directory
+opendir(MYDIR,"./");
+@tfiles = readdir(MYDIR);
+closedir(MYDIR);
+$num_files = @tfiles;
+
+# Scan the include files for symbols
+for ($ifile=0; $ifile<$num_files; $ifile++) {
+  if ($tfiles[$ifile] =~ /\.h$/ || $tfiles[$ifile] =~ /\.c$/) {
+    $level = 0;
+    %symbols = {};
+    %symbols = %arg_symbols;
+    %header_symbols = {};
+# Initialize file variable
+    @state = ();
+    $state[0] = 1;
+    @save_cpp = ();
+    $save_cpp[0] = 0;
+    @once_true = ();
+    $once_true[0] = 1;
+    @parse_else = ();
+    $parse_else[0] = 0;
+    @ignore = ();
+    $ignore[0] = 0;
+    $newfile = "";
+    $continuation_cnt = 0;
+#
+    $file_level = 0;
+    @parsing_header = ();
+    $parsing_header[0] = 0;
+#
+    &parse_file($tfiles[$ifile]);
+#    print "PRINTING NEWFILE:\n$newfile\n";
+    $filename = $tfiles[$ifile];
+    $filename .= "\.new";
+    open (NEW_HEADER,">$filename");
+    print NEW_HEADER ("$newfile");
+    close(NEW_HEADER);
+#
+    foreach $symbol (keys %header_symbols) {
+      print "(header symbols) \($symbol\):$header_symbols{$symbol}\n";
+    }
+    foreach $symbol (keys %symbols) {
+      print "(symbols) \($symbol\):$symbols{$symbol}\n";
+    }
+
+  }
+}
+
+# Subroutine to reduce string to evaluatable expression
+sub reduce_expr {
+  if ($state[$level] == 1) {
+    print "Expression1: \($expr\)\n";
+  }
+  $expr =~ s/\/\*.*\*\///g;
+  $expr =~ s/undefined/\!/g;
+  $expr =~ s/defined//g;
+  if ($state[$level] == 1) {
+    print "Expression2: \($expr\)\n";
+  }
+  foreach $symbol (keys %header_symbols) {
+    if ($symbol =~ /^\s*[a-zA-Z0-9\_]*\s*$/) {
+      if ($expr =~ /[\s\!\(\|\&]+$symbol[\s\)\|\&]+/ ||
+	  $expr =~ /\s+$symbol$/ || $expr =~ /$symbol $/ ||
+	  $expr =~ /^$symbol$/) {
+	print "Matching header_symbol: $symbol\n";
+	$expr =~ s/$symbol/1/;
+      }
+    }
+  }
+  foreach $symbol (keys %symbols) {
+    if ($symbol =~ /ARMCI_STAMP/ ) {
+      print "Found ARMCI_STAMP: \($symbol\)\n";
+    }
+    if ($symbol =~ /^\s*[a-zA-Z0-9\_]*\s*$/) {
+      if ($expr =~ /[\s\!\(\|\&]+$symbol[\s\)\|\&]+/ ||
+	  $expr =~ /\s+$symbol$/ || $expr =~ /$symbol $/ ||
+	  $expr =~ /^$symbol$/) {
+	print "Matching symbol: $symbol\n";
+	$expr =~ s/$symbol/1/;
+      }
+    }
+  }
+  if ($state[$level] == 1) {
+    print "Expression3: \($expr\)\n";
+  }
+# Set anything that hasn't been recognized to 0
+  $copy = $expr;
+# Replace delimiters etc. by blanks
+  $copy =~ s/[&|\(\)]+/ /g;
+  chomp($copy);
+  @strings = ();
+  @strings = split(/\s+/,$copy);
+# Loop through list of strings and replace anything that isn't a 1
+  $test_string = "";
+  for ($j=0; $j<@strings; $j++) {
+    $test_string .= $strings[$j];
+    $test_string .= " ";
+    if (!($strings[$j] =~ /\s*1\s+/ || $strings[$j] =~ /\s+1\s*/ ||
+	  $strings[$j] =~ /^1$/)) {
+      $tmp_string = $strings[$j];
+      if (!($tmp_string =~ /[\s+|\!]/ || $tmp_string =~ /\\/ || $tmp_string eq "")) {
+	$expr =~ s/$tmp_string/0/;
+      }
+    }
+  }
+# Get rid of continuation characters
+  $expr =~ s/\\//g;
+  if ($state[$level] == 1) {
+    print "Expression4: \($expr\)\n";
+  }
+}
+
+# Subroutine to get the rest of the expression if a line continuation appears
+sub get_expr {
+  my($local_expr,$filesize,$iline,@myfile) = @_;
+  $expr = $local_expr;
+# See if line continues
+  print "Local expr: $local_expr filesize: $filesize iline: $iline\n";
+  while ($line =~/\\\s*$/ && $iline<$filesize-1) {
+    $iline++;
+    $line = $myfile[$iline];
+    $expr .= $line;
+    print "Current line: $line\n";
+    print "Continuation line: $expr\n";
+  }
+  $continuation_cnt = $iline;
+# Remove continuation characters
+  $expr =~ s/\\//;
+}
+
+# Subroutine to set parsing parameters
+sub set_pars_params {
+  $level++;
+  print "Level: $level\n";
+  if ($expr =~ /0 0/) {
+    print "Bogus expression: $expr\n";
+    print "Filename: $tfiles[$ifile]\n";
+  }
+  $chk = eval $expr;
+  if ($chk) {
+    print "Expression $expr : true\n";
+  } else {
+    print "Expression $expr : false\n";
+  }
+  if ($chk) {
+    if ($state[$level-1] == 1) {
+      $state[$level] = 1;
+      $save_cpp[$level] = 0;
+    } else {
+      $state[$level] = 0;
+      $save_cpp[$level] = 0;
+    }
+  } else {
+    $state[$level] = 0;
+    $save_cpp[$level] = 0;
+  }
+  $parse_else[$level] = 1;
+  $ignore[$level] = 0;
+}
+
+# Subroutine to parse files
+sub parse_file($filename) {
+  my ($filename) = @_;
+  my (@file, $filesize, $iline);
+  my ($comment);
+#  my (@state, @save_cpp, @once_true);
+#  my (@parse_else);
+# Get strings from file;
+  print "Parsing file: $tfiles[$ifile]\n";
+  open(HEADER, $filename);
+  @file = <HEADER>;
+  close(HEADER);
+  $filesize = @file;
+  $iline = 0;
+# Initialize parser contol variables
+  $comment = 0;
+  while ($iline<$filesize) {
+    $line = $file[$iline];
+# Check for comments
+    if ($line =~ /\/\*/ && !($line =~/\*\//)) {
+      $comment = 1;
+    }
+    if ($line =~ /\*\// && !($line =~ /\/\*/)) {
+      $comment = 0;
+    }
+# Check for #if constructs
+    if ($line =~ /^\s*\#\s*if([\s\(])*def(ined)?(.*)/) {
+      $tmp_string = $1;
+      &get_expr($3,$filesize,$iline,@file);
+      $iline = $continuation_cnt;
+      print "ifdef expression: $3\n";
+      if ($tmp_string =~ /\(*/) {
+        $tmp_string .= $expr;
+        $expr = $tmp_string;
+      }
+      &reduce_expr;
+      &set_pars_params;
+      $chk = eval $expr;
+      if ($chk) {
+        $once_true[$level] = 1;
+      } else {
+        $once_true[$level] = 0;
+      }
+      print "ifdef: state[$level]: $state[$level]\n";
+    } elsif ($line =~ /^\s*\#\s*if\s+0/) {
+      print "if 0: $line";
+      $level++;
+      print "Level: $level\n";
+      $state[$level] = 0;
+      $save_cpp[$level] = 0;
+      $once_true[$level] = 0;
+      $pars_else[$level] = 1;
+      $ignore[$level] = 0;
+    } elsif ($line =~ /^\s*\#\s*if\s+1/) {
+      print "if 1: $line";
+      $level++;
+      print "Level: $level\n";
+      if ($state[$level-1] == 1) {
+        $state[$level] = 1;
+        $save_cpp[$level] = 0;
+      } else {
+        $state[$level] = 0;
+        $save_cpp[$level] = 0;
+      }
+      $once_true[$level] = 1;
+      $pars_else[$level] = 1;
+      $ignore[$level] = 0;
+    } elsif ($line =~ /^\s*\#\s*if\s*\!\s*defined(.*)/) {
+      &get_expr($1,$filesize,$iline,@file);
+      $iline = $continuation_cnt;
+      &reduce_expr; 
+      $expr = "!\($expr\)";
+      &set_pars_params;
+      $chk = eval $expr;
+      if ($chk) {
+        $once_true[$level] = 1;
+      } else {
+        $once_true[$level] = 0;
+      }
+    } elsif ($line =~ /^\s*\#\s*if\s+/) {
+# Some other kind of conditional that will be ignored
+      $level++;
+      if ($state[$level-1] == 1) {
+        $state[$level] = 1;
+        $save_cpp[$level] = 1;
+        $parse_else[$level] = 0;
+        $newfile .= $line;
+        $ignore[$level] = 1;
+      } else {
+        $state[$level] = 0;
+        $save_cpp[$level] = 0;
+        $ignore[$level] = 0;
+      }
+    } elsif ($line =~ /^\s*\#\s*ifndef\s+(.*)/) {
+# Check for header symbol
+      if ($line =~ /\s+(\S+_H)\s*$/ || $line =~ /\s+(\S+_H_)\s*$/) {
+        if (!defined($header_symbols{$1})) {
+          $level++;
+          print "Level: $level\n";
+          if ($state[$level-1] == 1) {
+            $state[$level] = 1;
+            $save_cpp[$level] = 1;
+            $once_true[$level] = 1;
+            $newfile .= $line;
+            $header_symbols{$1} = 1;
+          } else {
+            $state[$level] = 0;
+            $save_cpp[$level] = 0;
+            $once_true[$level] = 0;
+          }
+        } else {
+          $level++;
+          $state[$level] = 0;
+          $save_cpp[$level] = 1;
+          $once_true[$level] = 1;
+        }
+        $pars_else[$level] = 1;
+        $ignore[$level] = 0;
+      } else {
+        &get_expr($1,$filesize,$iline,@file);
+        $iline = $continuation_cnt;
+        &reduce_expr; 
+        $expr = "!\($expr\)";
+        &set_pars_params;
+        $chk = eval $expr;
+        if ($chk) {
+          $once_true[$level] = 1;
+        } else {
+          $once_true[$level] = 0;
+        }
+      }
+    } elsif ($line =~ /^\s*\#\s*elif\s+(.*)/ && $ignore[$level]==0) {
+      &get_expr($1,$filesize,$iline,@file);
+      $iline = $continuation_cnt;
+      &reduce_expr;
+      $chk = eval $expr;
+      if ($chk) {
+        if ($once_true[$level] == 0 && $state[$level-1] == 1) {
+          $state[$level] = 1;
+          $once_true[$level] = 1;
+        } else {
+          $state[$level] = 0;
+        }
+      } else {
+        $state[$level] = 0;
+      }
+    } elsif ($line =~ /^\s*\#\s*else/ && $ignore[$level]==0) {
+      if ($once_true[$level] == 0 && $state[$level-1] == 1) {
+        $state[$level] = 1;
+        $once_true[$level] = 1;
+      } else {
+        $state[$level] = 0;
+      }
+    } elsif ($line =~ /^\s*\#\s*endif/) {
+      if ($state[$level] == 1 && $save_cpp[$level] == 1) {
+        $newfile .= $line;
+      }
+      print "endif: $line";
+      $level--;
+      print "Level: $level\n";
+      if ($level < 0) {
+        exit(0);
+      }
+    } elsif ($line =~ /^\s*\#\s*define\s+(\S+)\s*(\S*)/) {
+      if ($comment == 0) {
+        $key = $1;
+        $value = $2; 
+        $key =~ s/\(.*//;
+	if (($ignore[$level] == 0 && $parsing_header[$file_level] == 1) ||
+             $state[$level] == 1) {
+	  if ($2 ne "") {
+	    $symbols{$key} = $value;
+	    print "new symbol key: $key value: $value\n";
+	  } else {
+	    $symbols{$key} = 1;
+	    print "new symbol key: $key (no value)\n";
+	  }
+	}
+      }
+      if ($state[$level] == 1) {
+        print "new definition: $line\n";
+        $newfile .= $line;
+      }
+    } elsif ($line =~ /^\s*\#\s*include\s+(\S+)/) {
+      $include_file = $1;
+# Ignore include if it is a system level header file
+      if (!($include_file =~ /\<.*\>/) && $include_file =~ /\.h\"\s*$/ &&
+          $state[$level] == 1) {
+        $newfile .= $line;
+        $include_file =~ s/\"//g;
+        print "Adding contents of $include_file\n";
+        $level++;
+        $ignore[$level] = 0;
+        $state[$level] = 0;
+        $file_level++;
+        $parsing_header[$file_level] = 1;
+        &parse_file($include_file);
+        $file_level--;
+        $level--;
+      } elsif ( $state[$level] == 1) {
+        $newfile .= $line;
+      }
+    } else {
+      if ($state[$level] == 1) {
+        $newfile .= $line;
+      }
+    }
+    $iline++;
+  }
+}

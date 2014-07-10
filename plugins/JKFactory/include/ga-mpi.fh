@@ -1,0 +1,9 @@
+#ifndef GA_MPI_H_
+#define GA_MPI_H_
+!     usage: call ga_mpi_comm(OUT integer comm)
+!     usage: call ga_mpi_comm_pgroup(OUT integer comm, IN integer grp)
+!     usage: call ga_mpi_comm_pgroup_default(OUT integer comm)
+      external ga_mpi_comm
+      external ga_mpi_comm_pgroup
+      external ga_mpi_comm_pgroup_default
+#endif /* GA_MPI_H_ */

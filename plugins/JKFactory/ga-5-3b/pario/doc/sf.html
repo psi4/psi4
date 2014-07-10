@@ -1,0 +1,141 @@
+<HTML>
+<HEAD>
+  <META NAME="GENERATOR" CONTENT="Adobe PageMill 3.0 Win">
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+  <META NAME="Author" CONTENT="Magdalena Nieplocha">
+  <TITLE>sf gowno</TITLE>
+</HEAD>
+<BODY BGCOLOR="#f8f8eb" LINK="#0000ee" VLINK="#990099" TEXT="#000099"
+ALINK="#00ffff" BACKGROUND="Image2.gif">
+
+<H2><CENTER><A NAME="overview"></A></CENTER></H2>
+
+<H2><CENTER>Shared Files Library</CENTER></H2>
+
+<P>The Shared Files (SF) library implements logically-shared temporary
+files for parallel SPMD (single-program-multiple-data) applications.
+Any process can read and write at arbitrary location in a file
+independently of other processes. Shared files must be created
+and destroyed collectively. To optimize performance of the library,
+user can provide hints on:</P>
+
+<UL>
+  <LI>soft limit, and
+  <LI>hard limit for the file size.
+</UL>
+
+<P>The SF <I>read </I>and <I>write</I> operations are asynchronous/nonblocking
+and require a <I>wait</I> operation to complete.</P>
+
+<P>Due to the FORTRAN data type limitations, in order to facilitate
+access to files &gt;2GB the file size, request size and offset
+arguments use double precision data types.</P>
+
+<P>All SF routines return an error code. The &quot;0&quot; value
+means success, other values correspond to error codes.</P>
+
+<P><HR ALIGN=LEFT></P>
+
+<H2><A NAME="sf_create"></A></H2>
+
+<H2>sf_create</H2>
+
+<PRE>integer sf_create(fname, size_hard_limit, size_soft_limit, req_size, handle)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; fname&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -- meta-file name
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; size_hard_limit&nbsp; -- max file size in bytes not to be exceeded (a hint)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; size_soft_limit&nbsp; -- estimated file size (a hint)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; req_size&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -- size of&nbsp; a typical request (a hint)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handle&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -- returned handle to the created file</PRE>
+
+<P>Creates shared file using name and path specified in <I>fname
+</I>as a template. <BR>
+<I>req_size</I> specifies size of a typical request (-1. means
+&quot;don't know&quot;).</P>
+
+<P>Creates shared file using name and path specified in fname
+as a template. <BR>
+req_size specifies size of a typical request (-1. means &quot;don't
+know&quot;).</P>
+
+<P>It is a collective operation.</P>
+
+<P><HR ALIGN=LEFT></P>
+
+<P><A NAME="sf_write"></A></P>
+
+<H2>sf_write</H2>
+
+<P>&nbsp;</P>
+
+<PRE>integer sf_write(handle, offset, bytes, buffer, request_id)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handle&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -- file handle returned from sf_create&nbsp;&nbsp; [in]
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; offset&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -- location in file (from the beginning)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; where data should be written to&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [in]
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; buffer&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -- local array to put the data&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [in]
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; bytes&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -- number of bytes to read&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [in]
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; request_id&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -- id identifying asynchronous operation [out]</PRE>
+
+<P>Asynchronous write operation. Writes number of <I>bytes</I>
+to the file identified by <I>handle</I> at location <I>offset</I>.Operation
+is guaranteed to be complete when <I>sf_wait</I> called with <I>request_id
+</I>argument returns. <BR>
+<HR ALIGN=LEFT></P>
+
+<H2><A NAME="sf_read"></A></H2>
+
+<H2>sf_read</H2>
+
+<PRE>integer sf_read(handle, offset, bytes, buffer, request_id)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handle&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -- file handle returned from sf_create&nbsp;&nbsp; [in]
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; offset&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -- location in file (from the beginning)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; where data should be read from&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [in]
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; buffer&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -- local array to put the data&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [in]
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; bytes&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -- number of bytes to read&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [in]
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; request_id&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -- id identifying asynchronous operation [out]</PRE>
+
+<P>Asynchronous read operation. Reads number of <I>bytes</I> to
+the file identified by <I>handle</I> at location <I>offset</I>.Operation
+is guaranteed to be complete when <I>sf_wait</I> called with <I>request_id
+</I>argument returns.</P>
+
+<P><HR ALIGN=LEFT></P>
+
+<H2><A NAME="sf_wait"></A></H2>
+
+<H2>sf_wait</H2>
+
+<PRE>integer sf_wait(request_id)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; request_id&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -- id identifying asynchronous operation [in/out]</PRE>
+
+<P>Blocks the calling process until I/O operation associated with
+<I>request</I>_<I>id</I> completes. <BR>
+Invalidates <I>request_id.</I> <BR>
+&nbsp;<BR>
+&nbsp;<HR ALIGN=LEFT><BR>
+<A NAME="sf_waitall"></A></P>
+
+<H2>sf_waitall</H2>
+
+<PRE>integer sf_waitall(list, num)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; list(num)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -- array of ids for asynchronous operations [in/out]
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; num&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -- number of entries in list&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [in]</PRE>
+
+<P>Blocks the calling process until all of the <I>num</I> I/O
+operations associated with <I>ids</I><BR>
+specified in <I>list</I> complete. Invalidates (modifies) <I>ids</I>
+on the <I>list.</I><BR>
+<HR ALIGN=LEFT></P>
+
+<H2><A NAME="sf_destroy"></A></H2>
+
+<H2>sf_destroy</H2>
+
+<PRE>
+integer sf_destroy(handle)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handle&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -- file handle returned from sf_create&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [in]</PRE>
+
+<P>Destroys the shared file associated with <I>handle</I>. It
+is a collective operation.
+
+</BODY>
+</HTML>

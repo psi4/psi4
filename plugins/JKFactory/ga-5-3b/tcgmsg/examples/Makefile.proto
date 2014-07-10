@@ -1,0 +1,330 @@
+
+    TOPDIR = TOP_LEVEL_DIRECTORY
+    LIBDIR = $(TOPDIR)/ipcv4.0
+    TCGMSG = $(LIBDIR)/libtcgmsg.a
+
+   INSTALL = echo "$@" is built
+
+IF CRAY
+#CRAY ... note that ranf is much faster than dran48 being used
+        FC = cf77
+        CC = cc
+#older UNICOS
+#      LIBS =  -lbsd -lnet -lrpc
+      LIBS = 
+    FFLAGS = -Zv -Wf"-dp"
+    CFLAGS = -I$(LIBDIR) -DCRAY
+   SCFBLAS = scfblas.o
+ENDIF CRAY
+IF SGI
+        FC = f77
+    FFLAGS = -O2
+        CC = cc
+    CFLAGS = -O -I$(LIBDIR) -I/usr/include/bsd -I/usr/include/sun -DSGI
+      LIBS = -lmalloc -lbsd -lrpcsvc -lsun
+   SCFBLAS = scfblas.o
+ENDIF SGI
+IF SGITFP
+#SGI IRIX ...  note that need -lmalloc ... default break in Stress
+        FC = f77
+    FFLAGS = -O2 -d8 -i8
+        CC = cc
+   DEFINES = -DSGI -DSGITFP
+    CFLAGS = -O  $(DEFINES)
+      LIBS = -lmalloc -lbsd -lrpcsvc 
+   SCFBLAS = scfblas.o
+ENDIF SGI
+IF KSR
+        FC = f77
+    FFLAGS = -para -g -r8
+        CC = cc
+    CFLAGS = -para -g -I$(LIBDIR)
+      LIBS = -lrpc
+   SCFBLAS = scfblas.o
+ENDIF KSR
+IF APOLLO
+#APOLLO GN10000 ... Apollo PRISM Domain/OS
+        FC = f77
+    FFLAGS =  -O
+        CC = cc
+    CFLAGS = -O -DAPOLLO -DCONVEX -I$(LIBDIR) \
+             -A nansi -A sys,bsd4.3 -A run,bsd4.3
+      LIBS =
+   SCFBLAS = scfblas.o
+ENDIF
+IF CONVEX
+        FC = fc
+    FFLAGS =  -O2
+        CC = cc
+    CFLAGS = -O -DCONVEX -I$(LIBDIR)
+      LIBS =
+   SCFBLAS = 
+ENDIF CONVEX
+IF HPUX
+        FC = f77
+        CC = cc
+      LIBS =
+    FFLAGS = -O +ppu
+    CFLAGS = -O -DHPUX -DEXTNAME -DPLOT -I$(LIBDIR)
+   SCFBLAS = scfblas.o
+ENDIF HPUX
+IF HPUXNOEXT
+        FC = f77
+        CC = cc
+      LIBS =
+    FFLAGS = -O
+    CFLAGS = -O -DHPUX -DPLOT -I$(LIBDIR)
+   SCFBLAS = scfblas.o
+ENDIF HPUXNOEXT
+IF SUN
+        FC = f77
+        CC = cc
+      LIBS = 
+    FFLAGS = -O3 -dalign -Nl99
+    CFLAGS = -O -dalign -DSUN -DPLOT -I$(LIBDIR)
+   SCFBLAS = scfblas.o
+ENDIF SUN
+IF DEC
+        FC = f77
+        CC = cc
+      LIBS = 
+    FFLAGS = -O2
+    CFLAGS = -O -DULTRIX -DPLOT -I$(LIBDIR)
+   SCFBLAS = scfblas.o
+ENDIF DEC
+IF DECOSF
+        FC = f77
+        CC = cc
+      LIBS =
+    FFLAGS = -O -integer_size 64 -align dcommons -align records
+    CFLAGS = -O -DDECOSF -I$(LIBDIR)
+   SCFBLAS = scfblas.o
+ENDIF DEC
+IF LINUX
+        FC = f77
+        CC = cc
+      LIBS = -lf2c -lipc
+    FFLAGS = -O 
+    CFLAGS = -O -I$(LIBDIR)
+   SCFBLAS = scfblas.o
+ENDIF LINUX
+IF IPSC DELTA PARAGON
+        AS = as860
+        FC = if77
+        CC = icc
+      LIBS = -node -lkmath
+IF DELTA
+   DEFINES = -DIPSC -DDELTA -DPLOT
+   INSTALL = rcp "$@" delta1: &
+    CFLAGS = -i860 -O $(DEFINES) -I$(LIBDIR) -Knoieee
+    FFLAGS = -O2 -i860 -Knoieee
+ELSEIF PARAGON
+   DEFINES = -DIPSC -DPARAGON -DPLOT
+   INSTALL = echo "$@" is built
+   CFLAGS = -nx -g -Knoieee $(DEFINES)
+   FFLAGS = -nx -O2 -Knoieee
+ELSE
+   DEFINES = -DIPSC -DPLOT
+   INSTALL = rcp "$@" micron: &
+    CFLAGS = -i860 -O $(DEFINES) -I$(LIBDIR) -Knoieee
+    FFLAGS = -O2 -i860 -Knoieee
+ENDIF
+   SCFBLAS = 
+ENDIF IPSC DELTA PARAGON
+IF NEXT
+        FC = f77
+        CC = cc
+    FFLAGS = -g -f -N9
+    CFLAGS = -g -DNEXT -DEXTNAME -DPLOT -I$(LIBDIR)
+      LIBS = 
+   SCFBLAS = scfblas.o
+ENDIF NEXT
+IF NEXTNOEXT
+        FC = f77
+        CC = cc
+    FFLAGS = -g -f
+    CFLAGS = -g -DNEXT -DPLOT -I$(LIBDIR)
+      LIBS = 
+   SCFBLAS = scfblas.o
+ENDIF NEXT
+IF IBM
+#IBM RISC 6000 ... AIX 3.1 ... -qEXTNAME
+#              ... see the comments in the Makefile for the toolkit.
+        FC = xlf
+      LIBS = -lc
+    FFLAGS = -O -g -qEXTNAME
+    CFLAGS = -O -DPLOT -DAIX -DEXTNAME -I$(LIBDIR)
+   SCFBLAS = scfblas.o
+ENDIF IBM
+IF IBMNOEXT
+#IBM RISC 6000 ... AIX 3.1
+#              ... see the comments in the Makefile for the toolkit.
+        FC = xlf
+      LIBS = -lblas -lc
+    FFLAGS = -O -g
+    CFLAGS = -O -DPLOT -DAIX -I$(LIBDIR)
+   SCFBLAS = 
+ENDIF IBMNOEXT
+IF ARDENT
+        FC = fc
+        CC = cc
+      LIBS =
+    FFLAGS = -43 -O2
+    CFLAGS = -O2 -43 -DARDENT -DPLOT -I$(LIBDIR)
+   SCFBLAS = scfblas.o
+ENDIF ARDENT
+IF ALLIANT ALLIANTMPP
+       FC = fortran
+       CC = fxc
+IF ALLIANT
+     LIBS = -lalgebra -lsignal -lcommon
+ELSE
+     LIBS = -lalgebra -lsignal -lcommon -lsw
+ENDIF
+   FFLAGS = -g -Ogv -AS -uniproc -OM
+   CFLAGS = -Ogv -uniproc -DALLIANT -I$(LIBDIR)
+   SCFBLAS = 
+ENDIF ALLIANT
+
+######################################
+# Should not need to modify below here
+######################################
+
+.SUFFIXES:	
+.SUFFIXES: .o .f .c .s
+
+.s.o:
+	$(AS) $*.s
+.f.o:
+	$(FC) $(FFLAGS) -c $*.f
+.c.o:
+	$(CC) $(CFLAGS) -c $*.c
+
+all everything:	scf15 scf30 scf60 md mc jacobi grid template.p
+
+extra:	scf60lin scf120lin scf240lin
+
+clean:
+	/bin/rm -f *.o *.p core event* 
+	/bin/rm -f scf15 scf30 scf60 scf60lin scf120lin scf240lin 
+	/bin/rm -f md mc jacobi grid
+
+realclean:	clean
+	/bin/rm -f Makefile fexit.f *~ *.trace *.V demo TAGS msgtypesf.h #*#
+
+
+msgtypesf.h:	$(LIBDIR)/msgtypesf.h
+	cp $(LIBDIR)/msgtypesf.h .
+
+############
+#SCF example
+############
+
+# Note rather messy use of same fortran source but different
+# include/block data files and copy in make rule.
+# This screws up normal simple dependency of object on include files
+# and makes targets scf15/30/60 etc. unable to be made in parallel.
+
+SOBJ = $(SCFBLAS) integ.o output.o timer.o fexit.o diagon.o
+
+scf15:	cscf15.h blkdat15.f scf.f $(SOBJ)
+	cp cscf15.h cscf.h
+	$(FC) $(FFLAGS) -o $@ scf.f blkdat15.f $(SOBJ) $(TCGMSG) $(LIBS)
+	$(INSTALL)
+
+scf30:	cscf30.h blkdat30.f scf.f $(SOBJ)
+	cp cscf30.h cscf.h
+	$(FC) $(FFLAGS) -o $@ scf.f blkdat30.f $(SOBJ) $(TCGMSG) $(LIBS)
+	$(INSTALL)
+
+scf60:	cscf60.h blkdat60.f scf.f $(SOBJ)
+	cp cscf60.h cscf.h
+	$(FC) $(FFLAGS) -o $@ scf.f blkdat60.f $(SOBJ) $(TCGMSG) $(LIBS)
+	$(INSTALL)
+
+scf60lin:	cscf60lin.h blkdat60lin.f scf.f $(SOBJ)
+	cp cscf60lin.h cscf.h
+	$(FC) $(FFLAGS) -o $@ scf.f blkdat60lin.f $(SOBJ) $(TCGMSG) $(LIBS)
+	$(INSTALL)
+
+scf120lin:	cscf120lin.h blkdat120lin.f scf.f $(SOBJ)
+	cp cscf120lin.h cscf.h
+	$(FC) $(FFLAGS) -o $@ scf.f blkdat120lin.f $(SOBJ) $(TCGMSG) $(LIBS)
+	$(INSTALL)
+
+scf240lin:	cscf240lin.h blkdat240lin.f scf.f $(SOBJ)
+	cp cscf240lin.h cscf.h
+	$(FC) $(FFLAGS) -o $@ scf.f blkdat240lin.f $(SOBJ) $(TCGMSG) $(LIBS)
+	$(INSTALL)
+
+$(SOBJ) scf15 scf30 scf60 scf60lin scf120lin scf240lin:	msgtypesf.h
+
+###########
+#MD example
+###########
+
+md:	md.o dscal.o timer.o fexit.o
+	$(FC) $(FFLAGS) -o $@ md.o dscal.o timer.o fexit.o \
+			$(TCGMSG) $(LIBS)
+	$(INSTALL)
+
+md.o:	msgtypesf.h
+
+###########
+#MC example
+###########
+
+mc:	mc.o timer.o fexit.o
+	$(FC) $(FFLAGS) -o $@ mc.o timer.o fexit.o $(TCGMSG) $(LIBS)
+	$(INSTALL)
+
+mc.o:	msgtypesf.h
+
+################
+# Jacobi example
+################
+
+IF CRAY
+  JOBJ = fexit.o timer.o getmem.o
+ELSEIF IBMNOEXT ALLIANT
+  JOBJ = fexit.o timer.o getmem.o mxv_dgemv.o
+ELSEIF IPSC DELTA
+  JOBJ = fexit.o timer.o getmem.o mxv_daxpy1.o daxpy1.o
+ELSE
+  JOBJ = fexit.o timer.o getmem.o mxv_fortran.o
+ENDIF
+
+jacobi:	jacobi.o $(JOBJ)
+	$(FC) $(FFLAGS) -o $@ jacobi.o $(JOBJ) $(TCGMSG) $(LIBS)
+	$(INSTALL)
+
+jacobi.o:	msgtypesf.h
+
+#############
+#Grid example
+#############
+
+grid:	grid.o
+	$(CC) $(CFLAGS) -o $@ grid.o $(TCGMSG) -lm $(LIBS)
+	$(INSTALL)
+
+grid.o:	$(LIBDIR)/msgtypesc.h
+
+###########
+#template.p
+###########
+
+template.p:
+	echo "# This template is piped thru sed to replace" >  template.p
+	echo "# PROGRAM with the name of the program."      >> template.p
+	echo "# Add other hosts and processes as desired."  >> template.p
+IF CRAY NEXT NEXTNOEXT
+	echo "$$LOGNAME `hostname` 1 `pwd`/PROGRAM /tmp"   >> template.p
+	echo "$$LOGNAME `hostname` 1 `pwd`/PROGRAM /tmp"   >> template.p
+	echo "$$LOGNAME `hostname` 1 `pwd`/PROGRAM /tmp"   >> template.p
+	echo "$$LOGNAME `hostname` 1 `pwd`/PROGRAM /tmp"   >> template.p
+ELSEIF IPSC
+	echo '0 $$ ' PROGRAM . >> template.p
+ELSE
+	echo "`whoami` `hostname` 4 `pwd`/PROGRAM /tmp"   >> template.p
+ENDIF

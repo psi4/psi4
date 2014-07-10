@@ -3371,7 +3371,8 @@ void Matrix::recv()
 
 void Matrix::bcast(int broadcaster)
 {
-    // Assume the user allocated the matrix to the correct size first.
+    std::cout<<"Someone is calling the Matrix bcast routine..."<<std::endl;
+   // Assume the user allocated the matrix to the correct size first.
     for (int h=0; h<nirrep_; ++h) {
         if (rowspi_[h] > 0 && colspi_[h] > 0)
             WorldComm->bcast(matrix_[h][0], rowspi_[h] * colspi_[h^symmetry_], broadcaster);

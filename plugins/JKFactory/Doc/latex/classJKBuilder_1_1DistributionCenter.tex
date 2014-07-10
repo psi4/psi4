@@ -1,0 +1,109 @@
+\hypertarget{classJKBuilder_1_1DistributionCenter}{
+\section{DistributionCenter Class Reference}
+\label{classJKBuilder_1_1DistributionCenter}\index{JKBuilder::DistributionCenter@{JKBuilder::DistributionCenter}}
+}
+
+
+A distribution center is a \hyperlink{classJKBuilder_1_1JKFactory}{JKFactory} that makes distributed objects.  
+
+
+{\ttfamily \#include $<$DistributionCenter.h$>$}Inheritance diagram for DistributionCenter::\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3cm]{classJKBuilder_1_1DistributionCenter}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classJKBuilder_1_1DistributionCenter_a188ebdd377e09a6e048a5e3f0b47a3ec}{DistributionCenter} (\hyperlink{classJKBuilder_1_1AOBasisSet}{AOBasisSet} $\ast$basis)
+\begin{DoxyCompactList}\small\item\em Sets everything to NULL for the time being. \item\end{DoxyCompactList}\item 
+virtual \hyperlink{classJKBuilder_1_1DistributionCenter_a2e0afd90ae098233a728d3c384196de2}{$\sim$DistributionCenter} ()
+\begin{DoxyCompactList}\small\item\em Frees up memory associated with rho, J, and K. \item\end{DoxyCompactList}\item 
+virtual void \hyperlink{classJKBuilder_1_1JKFactory_ae253b309dafe3ce003fdabfd315318b8}{BuildJK} (const double $\ast$DensityMatrix, \hyperlink{namespaceJKBuilder_aef21bc37b7cf7bc5ebb5a48628db8d0f}{SharedSymJKMatrix} \&J\_\-Matrix, \hyperlink{namespaceJKBuilder_aef21bc37b7cf7bc5ebb5a48628db8d0f}{SharedSymJKMatrix} \&K\_\-Matrix)=0
+\begin{DoxyCompactList}\small\item\em The function actually in charge of building the J and K matrices. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classJKBuilder_1_1MPIManager}{MPIManager} $\ast$ \hyperlink{classJKBuilder_1_1DistributionCenter_a3753afd7c89e077643a274ed7c4e9129}{MPI}
+\begin{DoxyCompactList}\small\item\em This is the object in charge of managing the parallelism. \item\end{DoxyCompactList}\item 
+std::vector$<$ \hyperlink{namespaceJKBuilder_a3b337e72f5cb0686ec93e063dda09c70}{SharedDistMatrix} $>$ \hyperlink{classJKBuilder_1_1DistributionCenter_aea5bfaa6247d7c03edf480fa8ecdd929}{rho}
+\begin{DoxyCompactList}\small\item\em The distributed density \hyperlink{classJKBuilder_1_1matrix}{matrix}. \item\end{DoxyCompactList}\item 
+std::vector$<$ \hyperlink{namespaceJKBuilder_a3b337e72f5cb0686ec93e063dda09c70}{SharedDistMatrix} $>$ \hyperlink{classJKBuilder_1_1DistributionCenter_a83e7fc1320b7071187dce35322e659b2}{J}
+\begin{DoxyCompactList}\small\item\em The distributed Coloumb \hyperlink{classJKBuilder_1_1matrix}{matrix}. \item\end{DoxyCompactList}\item 
+std::vector$<$ \hyperlink{namespaceJKBuilder_a3b337e72f5cb0686ec93e063dda09c70}{SharedDistMatrix} $>$ \hyperlink{classJKBuilder_1_1DistributionCenter_a36d7716ac07910f43805622922c1fb93}{K}
+\begin{DoxyCompactList}\small\item\em The distributed Exchange \hyperlink{classJKBuilder_1_1matrix}{matrix}. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+A distribution center is a \hyperlink{classJKBuilder_1_1JKFactory}{JKFactory} that makes distributed objects. The name distribution center is supposed to be a pun related to the name \char`\"{}factory\char`\"{}. It is a lame one, but I like it, so it stays. Either way, this is an abstract base class that actual Distributed routines derive from. For example the \hyperlink{namespaceGTFock}{GTFock} library is a derived class of this class. 
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{classJKBuilder_1_1DistributionCenter_a188ebdd377e09a6e048a5e3f0b47a3ec}{
+\index{JKBuilder::DistributionCenter@{JKBuilder::DistributionCenter}!DistributionCenter@{DistributionCenter}}
+\index{DistributionCenter@{DistributionCenter}!JKBuilder::DistributionCenter@{JKBuilder::DistributionCenter}}
+\subsubsection[{DistributionCenter}]{\setlength{\rightskip}{0pt plus 5cm}{\bf DistributionCenter} ({\bf AOBasisSet} $\ast$ {\em basis})}}
+\label{classJKBuilder_1_1DistributionCenter_a188ebdd377e09a6e048a5e3f0b47a3ec}
+
+
+Sets everything to NULL for the time being. \hypertarget{classJKBuilder_1_1DistributionCenter_a2e0afd90ae098233a728d3c384196de2}{
+\index{JKBuilder::DistributionCenter@{JKBuilder::DistributionCenter}!$\sim$DistributionCenter@{$\sim$DistributionCenter}}
+\index{$\sim$DistributionCenter@{$\sim$DistributionCenter}!JKBuilder::DistributionCenter@{JKBuilder::DistributionCenter}}
+\subsubsection[{$\sim$DistributionCenter}]{\setlength{\rightskip}{0pt plus 5cm}$\sim${\bf DistributionCenter} ()\hspace{0.3cm}{\ttfamily  \mbox{[}virtual\mbox{]}}}}
+\label{classJKBuilder_1_1DistributionCenter_a2e0afd90ae098233a728d3c384196de2}
+
+
+Frees up memory associated with rho, J, and K. 
+
+\subsection{Member Function Documentation}
+\hypertarget{classJKBuilder_1_1JKFactory_ae253b309dafe3ce003fdabfd315318b8}{
+\index{JKBuilder::DistributionCenter@{JKBuilder::DistributionCenter}!BuildJK@{BuildJK}}
+\index{BuildJK@{BuildJK}!JKBuilder::DistributionCenter@{JKBuilder::DistributionCenter}}
+\subsubsection[{BuildJK}]{\setlength{\rightskip}{0pt plus 5cm}virtual void BuildJK (const double $\ast$ {\em DensityMatrix}, \/  {\bf SharedSymJKMatrix} \& {\em J\_\-Matrix}, \/  {\bf SharedSymJKMatrix} \& {\em K\_\-Matrix})\hspace{0.3cm}{\ttfamily  \mbox{[}pure virtual, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1JKFactory_ae253b309dafe3ce003fdabfd315318b8}
+
+
+The function actually in charge of building the J and K matrices. This function first updates the density \hyperlink{classJKBuilder_1_1matrix}{matrix} to be the one given to it. Next, it computes J and K and returns them as \hyperlink{classJKBuilder_1_1matrix}{matrix} objects.
+
+
+\begin{DoxyParams}{Parameters}
+\item[\mbox{$\leftarrow$} {\em DensityMatrix}]The density \hyperlink{classJKBuilder_1_1matrix}{matrix} \item[\mbox{$\rightarrow$} {\em J}]The Coulomb \hyperlink{classJKBuilder_1_1matrix}{matrix} corresponding to DensityMatrix \item[\mbox{$\rightarrow$} {\em K}]The Exchange \hyperlink{classJKBuilder_1_1matrix}{matrix} corresponding to DensityMatrix \end{DoxyParams}
+
+
+Implemented in \hyperlink{classGTFock_1_1DistGTFock_aea85d0b3d84e8e52819e8a15201e078a}{DistGTFock}, and \hyperlink{classJKBuilder_1_1PsiShared_aa5f73a8109ec88464262262164feda1e}{PsiShared}.
+
+\subsection{Member Data Documentation}
+\hypertarget{classJKBuilder_1_1DistributionCenter_a3753afd7c89e077643a274ed7c4e9129}{
+\index{JKBuilder::DistributionCenter@{JKBuilder::DistributionCenter}!MPI@{MPI}}
+\index{MPI@{MPI}!JKBuilder::DistributionCenter@{JKBuilder::DistributionCenter}}
+\subsubsection[{MPI}]{\setlength{\rightskip}{0pt plus 5cm}{\bf MPIManager}$\ast$ {\bf MPI}\hspace{0.3cm}{\ttfamily  \mbox{[}protected\mbox{]}}}}
+\label{classJKBuilder_1_1DistributionCenter_a3753afd7c89e077643a274ed7c4e9129}
+
+
+This is the object in charge of managing the parallelism. \hypertarget{classJKBuilder_1_1DistributionCenter_aea5bfaa6247d7c03edf480fa8ecdd929}{
+\index{JKBuilder::DistributionCenter@{JKBuilder::DistributionCenter}!rho@{rho}}
+\index{rho@{rho}!JKBuilder::DistributionCenter@{JKBuilder::DistributionCenter}}
+\subsubsection[{rho}]{\setlength{\rightskip}{0pt plus 5cm}std::vector$<${\bf SharedDistMatrix}$>$ {\bf rho}\hspace{0.3cm}{\ttfamily  \mbox{[}protected\mbox{]}}}}
+\label{classJKBuilder_1_1DistributionCenter_aea5bfaa6247d7c03edf480fa8ecdd929}
+
+
+The distributed density \hyperlink{classJKBuilder_1_1matrix}{matrix}. \hypertarget{classJKBuilder_1_1DistributionCenter_a83e7fc1320b7071187dce35322e659b2}{
+\index{JKBuilder::DistributionCenter@{JKBuilder::DistributionCenter}!J@{J}}
+\index{J@{J}!JKBuilder::DistributionCenter@{JKBuilder::DistributionCenter}}
+\subsubsection[{J}]{\setlength{\rightskip}{0pt plus 5cm}std::vector$<${\bf SharedDistMatrix}$>$ {\bf J}\hspace{0.3cm}{\ttfamily  \mbox{[}protected\mbox{]}}}}
+\label{classJKBuilder_1_1DistributionCenter_a83e7fc1320b7071187dce35322e659b2}
+
+
+The distributed Coloumb \hyperlink{classJKBuilder_1_1matrix}{matrix}. \hypertarget{classJKBuilder_1_1DistributionCenter_a36d7716ac07910f43805622922c1fb93}{
+\index{JKBuilder::DistributionCenter@{JKBuilder::DistributionCenter}!K@{K}}
+\index{K@{K}!JKBuilder::DistributionCenter@{JKBuilder::DistributionCenter}}
+\subsubsection[{K}]{\setlength{\rightskip}{0pt plus 5cm}std::vector$<${\bf SharedDistMatrix}$>$ {\bf K}\hspace{0.3cm}{\ttfamily  \mbox{[}protected\mbox{]}}}}
+\label{classJKBuilder_1_1DistributionCenter_a36d7716ac07910f43805622922c1fb93}
+
+
+The distributed Exchange \hyperlink{classJKBuilder_1_1matrix}{matrix}. 
+
+The documentation for this class was generated from the following files:\begin{DoxyCompactItemize}
+\item 
+src/\hyperlink{DistributionCenter_8h}{DistributionCenter.h}\item 
+src/\hyperlink{DistributionCenter_8cpp}{DistributionCenter.cpp}\end{DoxyCompactItemize}

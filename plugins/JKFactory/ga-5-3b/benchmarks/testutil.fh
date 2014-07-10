@@ -1,0 +1,4 @@
+      double precision util_timer
+      integer util_mdtob
+      external util_timer
+      external util_mdtob

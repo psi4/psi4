@@ -1,0 +1,82 @@
+\documentstyle[11pt,twocolumn]{article}
+
+% vertical parameters
+\setlength{\topmargin}{0in}
+\setlength{\headheight}{0in}
+\setlength{\headsep}{0in}
+\setlength{\topskip}{0in}
+\setlength{\textheight}{8.5in}
+\setlength{\footheight}{10pt}
+\setlength{\footskip}{0.5in}
+
+% horizontal parameters
+\setlength{\textwidth}{6.5in}
+\setlength{\oddsidemargin}{0in}
+\setlength{\evensidemargin}{0in}
+\setlength{\marginparwidth}{0in}
+\setlength{\parindent}{0in}
+
+\begin{document}
+
+MA is a library of routines that comprises a dynamic memory allocator
+for use by C, FORTRAN, or mixed-language applications.  C applications
+can benefit from using MA instead of the ordinary malloc() and free()
+routines because of the extra features MA provides:  both heap and
+stack memory management disciplines, debugging and verification
+support, usage statistics, and quantitative memory availability
+information.  FORTRAN applications can take advantage of the same
+features, and may in fact require a library such as MA because dynamic
+memory allocation is not supported by all versions of the language.
+
+MA is designed to be portable across a variety of platforms.
+The following platforms are currently supported:
+
+\begin{itemize}
+\item Cray Y-MP C90
+\item Cray T3D
+\item DEC Alpha
+\item HP 9000/700
+\item IBM RS/6000
+\item Intel DELTA
+\item Intel iPSC/860
+\item Intel Paragon
+\item KSR1
+\item SGI
+\item SGI Power Challenge
+\item SPARC
+\end{itemize}
+
+The implementation of MA uses the following memory layout:
+
+\begin{quote}
+segment = heap\_region stack\_region \\
+region = block block block \ldots \\
+block = AD gap1 guard1 client\_space guard2 gap2
+\end{quote}
+
+A segment of memory is obtained from the OS upon initialization.
+The low end of the segment is managed as a heap; the heap region
+grows from low addresses to high addresses.  The high end of the
+segment is managed as a stack; the stack region grows from high
+addresses to low addresses.
+
+Each region consists of a series of contiguous blocks, one per
+allocation request, and possibly some unused space.  Blocks in
+the heap region are either in use by the client (allocated and
+not yet deallocated) or not in use by the client (allocated and
+already deallocated).  A block on the rightmost end of the heap
+region becomes part of the unused space upon deallocation.
+Blocks in the stack region are always in use by the client,
+because when a stack block is deallocated, it becomes part of
+the unused space.
+
+A block consists of the client space, i.e., the range of memory
+available for use by the application; guard words adjacent to
+each end of the client space to help detect improper memory access
+by the client; bookkeeping info (in an ``allocation descriptor,''
+AD); and two gaps, each zero or more bytes long, to satisfy
+alignment constraints (specifically, to ensure that AD and
+client\_space are aligned properly).
+
+A set of man pages for the MA routines is available.
+\end{document}

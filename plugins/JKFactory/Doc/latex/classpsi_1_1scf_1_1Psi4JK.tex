@@ -1,0 +1,261 @@
+\hypertarget{classpsi_1_1scf_1_1Psi4JK}{
+\section{Psi4JK Class Reference}
+\label{classpsi_1_1scf_1_1Psi4JK}\index{psi::scf::Psi4JK@{psi::scf::Psi4JK}}
+}
+
+
+{\ttfamily \#include $<$Psi4JK.h$>$}Inheritance diagram for Psi4JK::\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2cm]{classpsi_1_1scf_1_1Psi4JK}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classpsi_1_1scf_1_1Psi4JK_ad4c73ca14721107f570bbf67a1ce18bb}{Psi4JK} (\hyperlink{namespacepsi_a00b3104f9d454b5adfe2d16e5f8d1e14}{SharedPsiBasis} \&PsiBasis, const \hyperlink{namespacepsi_a672173d36fd5e5d06c17ff19c3bacb9d}{SharedMatrix} \&Density, \hyperlink{namespacepsi_a672173d36fd5e5d06c17ff19c3bacb9d}{SharedMatrix} \&\hyperlink{classJKBuilder_1_1JK_aa04a91cc219b5dabfce19d5316f96887}{J}, \hyperlink{namespacepsi_a672173d36fd5e5d06c17ff19c3bacb9d}{SharedMatrix} \&\hyperlink{classJKBuilder_1_1JK_a5160b673d25f0110d98097f8e7364315}{K})
+\item 
+void \hyperlink{classpsi_1_1scf_1_1Psi4JK_a36bddec95b737f7ee42688b0de2e730b}{UpdateDensity} (const \hyperlink{namespacepsi_a672173d36fd5e5d06c17ff19c3bacb9d}{SharedMatrix} \&Density, \hyperlink{namespacepsi_a672173d36fd5e5d06c17ff19c3bacb9d}{SharedMatrix} \&\hyperlink{classJKBuilder_1_1JK_aa04a91cc219b5dabfce19d5316f96887}{J}, \hyperlink{namespacepsi_a672173d36fd5e5d06c17ff19c3bacb9d}{SharedMatrix} \&\hyperlink{classJKBuilder_1_1JK_a5160b673d25f0110d98097f8e7364315}{K})
+\item 
+void \hyperlink{classJKBuilder_1_1JK_ac0b62715458b98f8426017fdd8864670}{UpdateDensity} (const double $\ast$DensityMatrix)
+\item 
+double $\ast$ \hyperlink{classJKBuilder_1_1JK_ada0787d51feb1496d4aa3a786f870f88}{J\_\-Address} ()
+\item 
+double $\ast$ \hyperlink{classJKBuilder_1_1JK_a198d3c4da107eb0d9cfafa795f8d635b}{K\_\-Address} ()
+\item 
+double $\ast$ \hyperlink{classJKBuilder_1_1JK_a5104eb472d984f59df6ca3b91c625209}{Rho} ()
+\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{classJKBuilder_1_1JK_a13b685265e196c183897777ec2f3136a}{SetUp} (AOBasisSet $\ast$\hyperlink{classJKBuilder_1_1JK_a81392b84b45d3cf84c5c105e9fd5d09c}{basis}, molecule\_\-class $\ast$\hyperlink{classJKBuilder_1_1JK_ad646bdee4fc9f601f954b4a98c4da476}{molecule}, const double $\ast$DensityMatrix, double $\ast$\hyperlink{classJKBuilder_1_1JK_aa04a91cc219b5dabfce19d5316f96887}{J}, double $\ast$\hyperlink{classJKBuilder_1_1JK_a5160b673d25f0110d98097f8e7364315}{K})
+\begin{DoxyCompactList}\small\item\em Sets up a bare-\/bones, distributed, \hyperlink{classJKBuilder_1_1JK}{JK} object in the DesiredBasis, on the desired molecule. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+bool \hyperlink{classJKBuilder_1_1JK_a072479da68be17a25570325316eade23}{Distributed}
+\begin{DoxyCompactList}\small\item\em Are we calling the distributed \hyperlink{classJKBuilder_1_1JK}{JK} Builder, then true. False if we want the shared memory version. \item\end{DoxyCompactList}\item 
+bool \hyperlink{classJKBuilder_1_1JK_a6324fcb7d27b80663a26f90a35f2e9b9}{Disk}
+\begin{DoxyCompactList}\small\item\em Are we storing stuff on disk (true) or in memory (false). \item\end{DoxyCompactList}\item 
+JKFactory $\ast$ \hyperlink{classJKBuilder_1_1JK_a09e4ffeb9ba2c95bf981da66beecc033}{SweatShop}
+\begin{DoxyCompactList}\small\item\em Handles all the building of J and K objects. \item\end{DoxyCompactList}\item 
+molecule\_\-class $\ast$ \hyperlink{classJKBuilder_1_1JK_ad646bdee4fc9f601f954b4a98c4da476}{molecule}
+\item 
+std::vector$<$ SharedSymJKMatrix $>$ \hyperlink{classJKBuilder_1_1JK_aa04a91cc219b5dabfce19d5316f96887}{J}
+\begin{DoxyCompactList}\small\item\em The J \hyperlink{classJKBuilder_1_1matrix}{matrix}. \item\end{DoxyCompactList}\item 
+std::vector$<$ SharedSymJKMatrix $>$ \hyperlink{classJKBuilder_1_1JK_a5160b673d25f0110d98097f8e7364315}{K}
+\begin{DoxyCompactList}\small\item\em The K \hyperlink{classJKBuilder_1_1matrix}{matrix}. \item\end{DoxyCompactList}\item 
+AOBasisSet $\ast$ \hyperlink{classJKBuilder_1_1JK_a81392b84b45d3cf84c5c105e9fd5d09c}{basis}
+\item 
+Integrals \hyperlink{classJKBuilder_1_1JK_ad95ede2076c192d856848b3635efc38e}{DaInts}
+\end{DoxyCompactItemize}
+\subsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{classpsi_1_1scf_1_1Psi4JK_a3c559c20a0aa33fa3c6d9bf9e9aefff8}{MakeT} ()
+\begin{DoxyCompactList}\small\item\em Function that sets up T. \item\end{DoxyCompactList}\item 
+void \hyperlink{classpsi_1_1scf_1_1Psi4JK_a33ac8f638424d92033ec6a72ffc96d6b}{FillBasis} (psi::BasisSet \&PsiBasis)
+\begin{DoxyCompactList}\small\item\em Function that makes the \hyperlink{classJKBuilder_1_1AOBasisSet}{JKBuilder::AOBasisSet} object (allocates the memory for it). \item\end{DoxyCompactList}\item 
+void \hyperlink{classpsi_1_1scf_1_1Psi4JK_a1cd8cf0f476576f25976b4b822230afa}{MakeMolecule} (psi::BasisSet \&PsiBasis)
+\begin{DoxyCompactList}\small\item\em Function that makes the \hyperlink{classJKBuilder_1_1molecule__class}{JKBuilder::molecule\_\-class} object (allocates the memory for it). \item\end{DoxyCompactList}\item 
+void \hyperlink{classpsi_1_1scf_1_1Psi4JK_ac2f36c6229344fb608c6d868377a5548}{UpdateJorK} (\hyperlink{namespacepsi_a672173d36fd5e5d06c17ff19c3bacb9d}{SharedMatrix} \&NewMat, \hyperlink{namespaceJKBuilder_aef21bc37b7cf7bc5ebb5a48628db8d0f}{JKBuilder::SharedSymJKMatrix} \&MyMatrix)
+\begin{DoxyCompactList}\small\item\em Given a Psi4 matrix, NewMat, builds a SharedSymJKMatrix around the pointer. \item\end{DoxyCompactList}\item 
+void \hyperlink{classpsi_1_1scf_1_1Psi4JK_a76433c0bae70a347630890a4c497b488}{MakeInts} (\hyperlink{namespacepsi_a00b3104f9d454b5adfe2d16e5f8d1e14}{SharedPsiBasis} \&PsiBasis)
+\end{DoxyCompactItemize}
+\subsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+double $\ast$ \hyperlink{classpsi_1_1scf_1_1Psi4JK_a92cb38c784d8c2e0b1c80d40e5a2fe64}{density}
+\item 
+int \hyperlink{classpsi_1_1scf_1_1Psi4JK_a58cb6ef9f81c24f9444912b29a402a7a}{nbasis}
+\item 
+\hyperlink{namespacepsi_a672173d36fd5e5d06c17ff19c3bacb9d}{SharedMatrix} \hyperlink{classpsi_1_1scf_1_1Psi4JK_af705cc477a1c67061c47a2e881c15422}{T}
+\begin{DoxyCompactList}\small\item\em The transformation matrix to ERD's ordering. \item\end{DoxyCompactList}\item 
+bool \hyperlink{classpsi_1_1scf_1_1Psi4JK_aff7a60d3f21b50f4ad18e40d99d33a61}{scale}
+\begin{DoxyCompactList}\small\item\em True if we need to transform with T. \item\end{DoxyCompactList}\item 
+std::vector$<$ \hyperlink{namespacepsi_a7b2115040860b8011075023be6fbeb9a}{SharedInts} $>$ \hyperlink{classpsi_1_1scf_1_1Psi4JK_abf9e78c6ffafd24366286f9dbf937e14}{Ints}
+\item 
+std::vector$<$ \hyperlink{namespacepsi_a3b03bcb6d101bc7caa7ea1a26b9e1f50}{SharedIntFact} $>$ \hyperlink{classpsi_1_1scf_1_1Psi4JK_a63f6583dc209a73acfa1cb9c7cfc3553}{IntFactory}
+\end{DoxyCompactItemize}
+
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{classpsi_1_1scf_1_1Psi4JK_ad4c73ca14721107f570bbf67a1ce18bb}{
+\index{psi::scf::Psi4JK@{psi::scf::Psi4JK}!Psi4JK@{Psi4JK}}
+\index{Psi4JK@{Psi4JK}!psi::scf::Psi4JK@{psi::scf::Psi4JK}}
+\subsubsection[{Psi4JK}]{\setlength{\rightskip}{0pt plus 5cm}{\bf Psi4JK} ({\bf SharedPsiBasis} \& {\em PsiBasis}, \/  const {\bf SharedMatrix} \& {\em Density}, \/  {\bf SharedMatrix} \& {\em J}, \/  {\bf SharedMatrix} \& {\em K})}}
+\label{classpsi_1_1scf_1_1Psi4JK_ad4c73ca14721107f570bbf67a1ce18bb}
+
+
+\subsection{Member Function Documentation}
+\hypertarget{classpsi_1_1scf_1_1Psi4JK_a3c559c20a0aa33fa3c6d9bf9e9aefff8}{
+\index{psi::scf::Psi4JK@{psi::scf::Psi4JK}!MakeT@{MakeT}}
+\index{MakeT@{MakeT}!psi::scf::Psi4JK@{psi::scf::Psi4JK}}
+\subsubsection[{MakeT}]{\setlength{\rightskip}{0pt plus 5cm}void MakeT ()\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}
+\label{classpsi_1_1scf_1_1Psi4JK_a3c559c20a0aa33fa3c6d9bf9e9aefff8}
+
+
+Function that sets up T. \hypertarget{classpsi_1_1scf_1_1Psi4JK_a33ac8f638424d92033ec6a72ffc96d6b}{
+\index{psi::scf::Psi4JK@{psi::scf::Psi4JK}!FillBasis@{FillBasis}}
+\index{FillBasis@{FillBasis}!psi::scf::Psi4JK@{psi::scf::Psi4JK}}
+\subsubsection[{FillBasis}]{\setlength{\rightskip}{0pt plus 5cm}void FillBasis (psi::BasisSet \& {\em PsiBasis})\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}
+\label{classpsi_1_1scf_1_1Psi4JK_a33ac8f638424d92033ec6a72ffc96d6b}
+
+
+Function that makes the \hyperlink{classJKBuilder_1_1AOBasisSet}{JKBuilder::AOBasisSet} object (allocates the memory for it). \hypertarget{classpsi_1_1scf_1_1Psi4JK_a1cd8cf0f476576f25976b4b822230afa}{
+\index{psi::scf::Psi4JK@{psi::scf::Psi4JK}!MakeMolecule@{MakeMolecule}}
+\index{MakeMolecule@{MakeMolecule}!psi::scf::Psi4JK@{psi::scf::Psi4JK}}
+\subsubsection[{MakeMolecule}]{\setlength{\rightskip}{0pt plus 5cm}void MakeMolecule (psi::BasisSet \& {\em PsiBasis})\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}
+\label{classpsi_1_1scf_1_1Psi4JK_a1cd8cf0f476576f25976b4b822230afa}
+
+
+Function that makes the \hyperlink{classJKBuilder_1_1molecule__class}{JKBuilder::molecule\_\-class} object (allocates the memory for it). \hypertarget{classpsi_1_1scf_1_1Psi4JK_ac2f36c6229344fb608c6d868377a5548}{
+\index{psi::scf::Psi4JK@{psi::scf::Psi4JK}!UpdateJorK@{UpdateJorK}}
+\index{UpdateJorK@{UpdateJorK}!psi::scf::Psi4JK@{psi::scf::Psi4JK}}
+\subsubsection[{UpdateJorK}]{\setlength{\rightskip}{0pt plus 5cm}void UpdateJorK ({\bf SharedMatrix} \& {\em NewMat}, \/  {\bf JKBuilder::SharedSymJKMatrix} \& {\em MyMatrix})\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}
+\label{classpsi_1_1scf_1_1Psi4JK_ac2f36c6229344fb608c6d868377a5548}
+
+
+Given a Psi4 matrix, NewMat, builds a SharedSymJKMatrix around the pointer. \hypertarget{classpsi_1_1scf_1_1Psi4JK_a76433c0bae70a347630890a4c497b488}{
+\index{psi::scf::Psi4JK@{psi::scf::Psi4JK}!MakeInts@{MakeInts}}
+\index{MakeInts@{MakeInts}!psi::scf::Psi4JK@{psi::scf::Psi4JK}}
+\subsubsection[{MakeInts}]{\setlength{\rightskip}{0pt plus 5cm}void MakeInts ({\bf SharedPsiBasis} \& {\em PsiBasis})\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}
+\label{classpsi_1_1scf_1_1Psi4JK_a76433c0bae70a347630890a4c497b488}
+\hypertarget{classpsi_1_1scf_1_1Psi4JK_a36bddec95b737f7ee42688b0de2e730b}{
+\index{psi::scf::Psi4JK@{psi::scf::Psi4JK}!UpdateDensity@{UpdateDensity}}
+\index{UpdateDensity@{UpdateDensity}!psi::scf::Psi4JK@{psi::scf::Psi4JK}}
+\subsubsection[{UpdateDensity}]{\setlength{\rightskip}{0pt plus 5cm}void UpdateDensity (const {\bf SharedMatrix} \& {\em Density}, \/  {\bf SharedMatrix} \& {\em J}, \/  {\bf SharedMatrix} \& {\em K})}}
+\label{classpsi_1_1scf_1_1Psi4JK_a36bddec95b737f7ee42688b0de2e730b}
+\hypertarget{classJKBuilder_1_1JK_a13b685265e196c183897777ec2f3136a}{
+\index{psi::scf::Psi4JK@{psi::scf::Psi4JK}!SetUp@{SetUp}}
+\index{SetUp@{SetUp}!psi::scf::Psi4JK@{psi::scf::Psi4JK}}
+\subsubsection[{SetUp}]{\setlength{\rightskip}{0pt plus 5cm}void SetUp ({\bf AOBasisSet} $\ast$ {\em basis}, \/  {\bf molecule\_\-class} $\ast$ {\em molecule}, \/  const double $\ast$ {\em DensityMatrix}, \/  double $\ast$ {\em J}, \/  double $\ast$ {\em K})\hspace{0.3cm}{\ttfamily  \mbox{[}protected, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1JK_a13b685265e196c183897777ec2f3136a}
+
+
+Sets up a bare-\/bones, distributed, \hyperlink{classJKBuilder_1_1JK}{JK} object in the DesiredBasis, on the desired molecule. The \hyperlink{classJKBuilder_1_1JK}{JK} object minimally needs three things: a basis, a molecule, and density \hyperlink{classJKBuilder_1_1matrix}{matrix}. The Carts array should be in \char`\"{}messy\char`\"{} form, which is:\par
+ $<$atomic number$>$=\char`\"{}\char`\"{}$>$ $<$x-\/coordinate$>$ $<$y-\/coordinate$>$ $<$z-\/coordinate$>$\par
+ this way we do not have to pass the identities in separately. Also note the atomic numbers will be mapped to integers via an int cast. To be on the safe side you may want to use numbers slightly bigger then the desired value, e.g. 6.01 for carbon; however simply setting it to 6.000000000000....should be OK as well. Also note that \hyperlink{classJKBuilder_1_1JK}{JK} objects can only be used for one molecule and basis set at a time.
+
+
+\begin{DoxyParams}{Parameters}
+\item[\mbox{$\leftarrow$} {\em basis}]The basis set object for the class \item[\mbox{$\leftarrow$} {\em molecule}]The molecule object \item[\mbox{$\leftarrow$} {\em DensityMatrix}]the density \hyperlink{classJKBuilder_1_1matrix}{matrix} \end{DoxyParams}
+\hypertarget{classJKBuilder_1_1JK_ac0b62715458b98f8426017fdd8864670}{
+\index{psi::scf::Psi4JK@{psi::scf::Psi4JK}!UpdateDensity@{UpdateDensity}}
+\index{UpdateDensity@{UpdateDensity}!psi::scf::Psi4JK@{psi::scf::Psi4JK}}
+\subsubsection[{UpdateDensity}]{\setlength{\rightskip}{0pt plus 5cm}void UpdateDensity (const double $\ast$ {\em DensityMatrix})\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1JK_ac0b62715458b98f8426017fdd8864670}
+\hypertarget{classJKBuilder_1_1JK_ada0787d51feb1496d4aa3a786f870f88}{
+\index{psi::scf::Psi4JK@{psi::scf::Psi4JK}!J\_\-Address@{J\_\-Address}}
+\index{J\_\-Address@{J\_\-Address}!psi::scf::Psi4JK@{psi::scf::Psi4JK}}
+\subsubsection[{J\_\-Address}]{\setlength{\rightskip}{0pt plus 5cm}double $\ast$ J\_\-Address ()\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1JK_ada0787d51feb1496d4aa3a786f870f88}
+\hypertarget{classJKBuilder_1_1JK_a198d3c4da107eb0d9cfafa795f8d635b}{
+\index{psi::scf::Psi4JK@{psi::scf::Psi4JK}!K\_\-Address@{K\_\-Address}}
+\index{K\_\-Address@{K\_\-Address}!psi::scf::Psi4JK@{psi::scf::Psi4JK}}
+\subsubsection[{K\_\-Address}]{\setlength{\rightskip}{0pt plus 5cm}double $\ast$ K\_\-Address ()\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1JK_a198d3c4da107eb0d9cfafa795f8d635b}
+\hypertarget{classJKBuilder_1_1JK_a5104eb472d984f59df6ca3b91c625209}{
+\index{psi::scf::Psi4JK@{psi::scf::Psi4JK}!Rho@{Rho}}
+\index{Rho@{Rho}!psi::scf::Psi4JK@{psi::scf::Psi4JK}}
+\subsubsection[{Rho}]{\setlength{\rightskip}{0pt plus 5cm}double$\ast$ Rho ()\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1JK_a5104eb472d984f59df6ca3b91c625209}
+
+
+\subsection{Member Data Documentation}
+\hypertarget{classpsi_1_1scf_1_1Psi4JK_a92cb38c784d8c2e0b1c80d40e5a2fe64}{
+\index{psi::scf::Psi4JK@{psi::scf::Psi4JK}!density@{density}}
+\index{density@{density}!psi::scf::Psi4JK@{psi::scf::Psi4JK}}
+\subsubsection[{density}]{\setlength{\rightskip}{0pt plus 5cm}double$\ast$ {\bf density}\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}
+\label{classpsi_1_1scf_1_1Psi4JK_a92cb38c784d8c2e0b1c80d40e5a2fe64}
+\hypertarget{classpsi_1_1scf_1_1Psi4JK_a58cb6ef9f81c24f9444912b29a402a7a}{
+\index{psi::scf::Psi4JK@{psi::scf::Psi4JK}!nbasis@{nbasis}}
+\index{nbasis@{nbasis}!psi::scf::Psi4JK@{psi::scf::Psi4JK}}
+\subsubsection[{nbasis}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf nbasis}\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}
+\label{classpsi_1_1scf_1_1Psi4JK_a58cb6ef9f81c24f9444912b29a402a7a}
+\hypertarget{classpsi_1_1scf_1_1Psi4JK_af705cc477a1c67061c47a2e881c15422}{
+\index{psi::scf::Psi4JK@{psi::scf::Psi4JK}!T@{T}}
+\index{T@{T}!psi::scf::Psi4JK@{psi::scf::Psi4JK}}
+\subsubsection[{T}]{\setlength{\rightskip}{0pt plus 5cm}{\bf SharedMatrix} {\bf T}\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}
+\label{classpsi_1_1scf_1_1Psi4JK_af705cc477a1c67061c47a2e881c15422}
+
+
+The transformation matrix to ERD's ordering. For Cartesian Gaussians ERD is ordered (lx,ly,lz): 1. L 0 0 2. L-\/1 1 0 3. L-\/1 0 1 4. L-\/2 2 0 5. L-\/2 1 1 6. L-\/2 0 2 7. L-\/3 3 0 ....
+
+In general the loop looks like: for (int i=0;i$<$L;i++)\{ for(int j=0;j$<$i;j++)\{ Lx=L-\/i; Ly=i-\/j; Lz=j; \} \}
+
+This is the same for Psi4
+
+For spherical Gaussians Psi's order is 0,1,-\/1,...,L,-\/L \hypertarget{classpsi_1_1scf_1_1Psi4JK_aff7a60d3f21b50f4ad18e40d99d33a61}{
+\index{psi::scf::Psi4JK@{psi::scf::Psi4JK}!scale@{scale}}
+\index{scale@{scale}!psi::scf::Psi4JK@{psi::scf::Psi4JK}}
+\subsubsection[{scale}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf scale}\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}
+\label{classpsi_1_1scf_1_1Psi4JK_aff7a60d3f21b50f4ad18e40d99d33a61}
+
+
+True if we need to transform with T. \hypertarget{classpsi_1_1scf_1_1Psi4JK_abf9e78c6ffafd24366286f9dbf937e14}{
+\index{psi::scf::Psi4JK@{psi::scf::Psi4JK}!Ints@{Ints}}
+\index{Ints@{Ints}!psi::scf::Psi4JK@{psi::scf::Psi4JK}}
+\subsubsection[{Ints}]{\setlength{\rightskip}{0pt plus 5cm}std::vector$<${\bf SharedInts}$>$ {\bf Ints}\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}
+\label{classpsi_1_1scf_1_1Psi4JK_abf9e78c6ffafd24366286f9dbf937e14}
+\hypertarget{classpsi_1_1scf_1_1Psi4JK_a63f6583dc209a73acfa1cb9c7cfc3553}{
+\index{psi::scf::Psi4JK@{psi::scf::Psi4JK}!IntFactory@{IntFactory}}
+\index{IntFactory@{IntFactory}!psi::scf::Psi4JK@{psi::scf::Psi4JK}}
+\subsubsection[{IntFactory}]{\setlength{\rightskip}{0pt plus 5cm}std::vector$<${\bf SharedIntFact}$>$ {\bf IntFactory}\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}
+\label{classpsi_1_1scf_1_1Psi4JK_a63f6583dc209a73acfa1cb9c7cfc3553}
+\hypertarget{classJKBuilder_1_1JK_a072479da68be17a25570325316eade23}{
+\index{psi::scf::Psi4JK@{psi::scf::Psi4JK}!Distributed@{Distributed}}
+\index{Distributed@{Distributed}!psi::scf::Psi4JK@{psi::scf::Psi4JK}}
+\subsubsection[{Distributed}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf Distributed}\hspace{0.3cm}{\ttfamily  \mbox{[}protected, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1JK_a072479da68be17a25570325316eade23}
+
+
+Are we calling the distributed \hyperlink{classJKBuilder_1_1JK}{JK} Builder, then true. False if we want the shared memory version. \hypertarget{classJKBuilder_1_1JK_a6324fcb7d27b80663a26f90a35f2e9b9}{
+\index{psi::scf::Psi4JK@{psi::scf::Psi4JK}!Disk@{Disk}}
+\index{Disk@{Disk}!psi::scf::Psi4JK@{psi::scf::Psi4JK}}
+\subsubsection[{Disk}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf Disk}\hspace{0.3cm}{\ttfamily  \mbox{[}protected, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1JK_a6324fcb7d27b80663a26f90a35f2e9b9}
+
+
+Are we storing stuff on disk (true) or in memory (false). \hypertarget{classJKBuilder_1_1JK_a09e4ffeb9ba2c95bf981da66beecc033}{
+\index{psi::scf::Psi4JK@{psi::scf::Psi4JK}!SweatShop@{SweatShop}}
+\index{SweatShop@{SweatShop}!psi::scf::Psi4JK@{psi::scf::Psi4JK}}
+\subsubsection[{SweatShop}]{\setlength{\rightskip}{0pt plus 5cm}JKFactory$\ast$ {\bf SweatShop}\hspace{0.3cm}{\ttfamily  \mbox{[}protected, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1JK_a09e4ffeb9ba2c95bf981da66beecc033}
+
+
+Handles all the building of J and K objects. Eventually this will be static so that we aren't rebuilding the integrals if we make several \hyperlink{classJKBuilder_1_1JK}{JK} objects \hypertarget{classJKBuilder_1_1JK_ad646bdee4fc9f601f954b4a98c4da476}{
+\index{psi::scf::Psi4JK@{psi::scf::Psi4JK}!molecule@{molecule}}
+\index{molecule@{molecule}!psi::scf::Psi4JK@{psi::scf::Psi4JK}}
+\subsubsection[{molecule}]{\setlength{\rightskip}{0pt plus 5cm}molecule\_\-class$\ast$ {\bf molecule}\hspace{0.3cm}{\ttfamily  \mbox{[}protected, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1JK_ad646bdee4fc9f601f954b4a98c4da476}
+\hypertarget{classJKBuilder_1_1JK_aa04a91cc219b5dabfce19d5316f96887}{
+\index{psi::scf::Psi4JK@{psi::scf::Psi4JK}!J@{J}}
+\index{J@{J}!psi::scf::Psi4JK@{psi::scf::Psi4JK}}
+\subsubsection[{J}]{\setlength{\rightskip}{0pt plus 5cm}std::vector$<$SharedSymJKMatrix$>$ {\bf J}\hspace{0.3cm}{\ttfamily  \mbox{[}protected, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1JK_aa04a91cc219b5dabfce19d5316f96887}
+
+
+The J \hyperlink{classJKBuilder_1_1matrix}{matrix}. \hypertarget{classJKBuilder_1_1JK_a5160b673d25f0110d98097f8e7364315}{
+\index{psi::scf::Psi4JK@{psi::scf::Psi4JK}!K@{K}}
+\index{K@{K}!psi::scf::Psi4JK@{psi::scf::Psi4JK}}
+\subsubsection[{K}]{\setlength{\rightskip}{0pt plus 5cm}std::vector$<$SharedSymJKMatrix$>$ {\bf K}\hspace{0.3cm}{\ttfamily  \mbox{[}protected, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1JK_a5160b673d25f0110d98097f8e7364315}
+
+
+The K \hyperlink{classJKBuilder_1_1matrix}{matrix}. \hypertarget{classJKBuilder_1_1JK_a81392b84b45d3cf84c5c105e9fd5d09c}{
+\index{psi::scf::Psi4JK@{psi::scf::Psi4JK}!basis@{basis}}
+\index{basis@{basis}!psi::scf::Psi4JK@{psi::scf::Psi4JK}}
+\subsubsection[{basis}]{\setlength{\rightskip}{0pt plus 5cm}AOBasisSet$\ast$ {\bf basis}\hspace{0.3cm}{\ttfamily  \mbox{[}protected, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1JK_a81392b84b45d3cf84c5c105e9fd5d09c}
+\hypertarget{classJKBuilder_1_1JK_ad95ede2076c192d856848b3635efc38e}{
+\index{psi::scf::Psi4JK@{psi::scf::Psi4JK}!DaInts@{DaInts}}
+\index{DaInts@{DaInts}!psi::scf::Psi4JK@{psi::scf::Psi4JK}}
+\subsubsection[{DaInts}]{\setlength{\rightskip}{0pt plus 5cm}Integrals {\bf DaInts}\hspace{0.3cm}{\ttfamily  \mbox{[}protected, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1JK_ad95ede2076c192d856848b3635efc38e}
+
+
+The documentation for this class was generated from the following files:\begin{DoxyCompactItemize}
+\item 
+src/\hyperlink{Psi4JK_8h}{Psi4JK.h}\item 
+src/\hyperlink{Psi4JK_8cpp}{Psi4JK.cpp}\end{DoxyCompactItemize}

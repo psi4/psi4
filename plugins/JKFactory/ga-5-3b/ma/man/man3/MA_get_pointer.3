@@ -1,0 +1,96 @@
+.TH MA_GET_POINTER 3 "20 February 1997" "MA Release 1.8" "MA LIBRARY ROUTINES"
+.SH NAME
+MA_get_pointer -
+get the base pointer for a block
+.SH "C SYNOPSIS"
+.nf
+#include "macdecls.h"
+
+Boolean MA_get_pointer(memhandle, pointer)
+    Integer     memhandle;      /* read-only */
+    Pointer     *pointer;       /* write-only */
+.fi
+.SH "FORTRAN SYNOPSIS"
+Not available.
+.SH DESCRIPTION
+MA_get_pointer() returns in
+.I pointer
+the base pointer
+for the block corresponding to the handle
+.I memhandle
+(which was returned by MA_allocate_heap() or MA_push_stack()
+when the block was allocated).
+.SH USAGE
+The following C code illustrates the use of MA_get_pointer()
+by allocating a block of 5 integers on the heap
+and then storing values into the integers.
+
+.nf
+#include "macdecls.h"
+
+    Boolean ok;
+    Integer mhandle;
+    Pointer pointer;
+    int     i;
+
+    ok = MA_allocate_heap(MT_INT, 5, "heap int block", &mhandle);
+    if (ok)
+    {
+        ok = MA_get_pointer(mhandle, &pointer);
+        if (ok)
+            for (i = 0; i < 5; i++)
+                *((int *)pointer + i) = 0;
+    }
+.fi
+.SH DIAGNOSTICS
+invalid memhandle: %d
+.in +0.5i
+.I memhandle
+is not a valid handle.
+.in
+invalid checksum for memhandle %d (name: '%s')
+.in +0.5i
+The block's computed checksum does not match its stored checksum.
+This indicates that the block has been corrupted
+by having its internal state overwritten.
+.in
+invalid guard(s) for memhandle %d (name: '%s')
+.in +0.5i
+This indicates that the block has been corrupted
+by being overwritten at one or both ends.
+The likely cause of this is an application indexing bug.
+.in
+memhandle %d (name: '%s') not in heap or stack
+.in +0.5i
+The block is not currently allocated in the heap or the stack.
+.in
+
+Other diagnostics are possible.
+If seen,
+they indicate corruption of the internal state of MA,
+caused by bugs in either MA or the application.
+.SH "RETURN VALUE"
+C: MA_TRUE upon success, MA_FALSE upon failure.
+.br
+FORTRAN: Not available.
+.SH NOTES
+MA_get_pointer() is not available in FORTRAN,
+because FORTRAN does not support pointers.
+.SH FILES
+.nf
+Include files: /msrc/proj/hpctools/ma/release/current/include
+Library:       /msrc/proj/hpctools/ma/release/current/lib/\fIplatform\fR/libma.a
+Man pages:     /msrc/proj/hpctools/ma/release/current/man/man3
+Source code:   /msrc/proj/hpctools/ma/release/current/tar/ma\fIrelease\fR.tar
+.fi
+.SH "SEE ALSO"
+.na
+MA(3),
+MA_alloc_get(3),
+MA_allocate_heap(3),
+MA_get_index(3),
+MA_push_get(3),
+MA_push_stack(3)
+.ad
+.SH AUTHOR
+Gregory S. Thomas, Pacific Northwest National Laboratory

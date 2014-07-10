@@ -1,0 +1,28 @@
+GA Trace Library 
+~~~~~~~~~~~~~~~~
+
+The library contains tracing routines for GA operations. The GA library has to
+be created with tracing enabled. There are two programs: 'adjust' that
+processes and integrates the trace files into a single one, and 'collisions'
+that analyses this file with respect to the overlapping access to sections of
+GA arrays. The output from 'adjust' can be used as an input to the GA
+visualization program 'xregion'.  The trace library depends on the MA memory
+allocator.
+
+Usage
+===== 
+
+The user's program first calls subroutine trace_init(n) to initialize tracing.
+n specifies the maximum number of events to be traced. An event is defined as
+a single access to a part of or entire array.  Tracing is disabled by calling
+subroutine trace_end(proc), where proc is the current processor number. At
+this point trace file for processor proc is written to the disk. The file name
+is the corresponding processor number coded with three digits.
+ 
+For each event the following data is recorded: 
+
+- processor number
+- array handle
+- coordinates of the section of an array being accessed
+- GA operation code
+- time stamps

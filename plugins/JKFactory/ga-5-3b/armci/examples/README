@@ -1,0 +1,33 @@
+ARMCI EXAMPLES
+~~~~~~~~~~~~~~
+
+Introduction
+============
+
+The benchmarks directory has many ARMCI benchmarks.
+
+The features directory has examples and notes on each of the features
+listed below:
+
+1. aggregation
+2. gpc
+3. non-blocking
+4. proc_affinity
+5. concurrency
+6. notification
+7. symmetric_memory
+
+Compiling
+=========
+
+The examples directory is built by the top-level Makefile after a successful
+"configure" run.  You can run "make checkprogs" to build the test programs and
+the example programs together, or "make examples" to build only the example
+programs.  Remember, run "make" from the top level, not from the testing or
+examples directories!
+
+Execution
+=========
+
+Any example that expects an input also has a README in its directory
+explaining how to use it.

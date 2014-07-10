@@ -1,0 +1,790 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>ARMCI - Aggregate Remote Memory Copy Interface</title>
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+  <meta name="Description"
+ content="The homepage for the ARMCI portable remote memory copy library.">
+  <meta name="KeyWords"
+ content="remote memory copy, one-sided communication, 1-sided communication, MPI-2, Global Arrays, ACTS,  parallel computing, pmodels">
+</head>
+<body
+ style="background-image: url(file:///Q:/docs/parsoft/armci/images/main_bg.jpg);"
+ leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
+<script type="text/javascript" language="javascript"
+ src="scripts/header.js"> </script>
+<table width="100%" height="364" border="0" cellpadding="0"
+ cellspacing="0">
+  <tbody>
+    <tr>
+      <td valign="top">
+      <table width="750" height="600" border="0" cellpadding="0"
+ cellspacing="0">
+        <tbody>
+          <tr>
+            <td width="140" valign="top">
+            <table width="140" border="0" cellpadding="0"
+ cellspacing="1">
+              <tbody>
+                <tr>
+                  <td width="122" height="40"><a href="#init"><font
+ size="-1">Initialization
+&amp; Termination</font></a></td>
+                </tr>
+                <tr>
+                  <td width="122" height="40"><a href="#copyvec"><font
+ size="-1">Put/Get (vector)</font></a></td>
+                </tr>
+                <tr>
+                  <td width="122" height="40"><a href="#copys"><font
+ size="-1">PutGet (strided)</font></a></td>
+                </tr>
+                <tr>
+                  <td width="122" height="40"><a href="#copy"><font
+ size="-1">Put/Get
+(contiguous)</font></a></td>
+                </tr>
+                <tr>
+                  <td width="122" height="40"><a href="#accv"><font
+ size="-1">Accumulate (vector)</font></a></td>
+                </tr>
+                <tr>
+                  <td width="122" height="40"><a href="#accs"><font
+ size="-1">Accumulate
+(strided)</font></a></td>
+                </tr>
+                <tr>
+                  <td width="122" height="40"><a href="#acc"><font
+ size="-1">Accumulate
+(contig.)</font></a></td>
+                </tr>
+                <tr>
+                  <td width="122" height="40"><a href="#reg"><font
+ size="-1">Register Ops</font></a></td>
+                </tr>
+                <tr>
+                  <td width="122" height="40"><a href="#compl"><font
+ size="-1">Fence / Wait /
+Barrier</font></a></td>
+                </tr>
+                <tr>
+                  <td width="122" height="40"><a href="#aggr"><font
+ size="-1">Aggregation</font></a></td>
+                </tr>
+                <tr>
+                  <td width="122" height="40"><a href="#atomic"><font
+ size="-1">Atomic / Sync</font></a></td>
+                </tr>
+                <tr>
+                  <td width="122" height="40"><a href="#mem"><font
+ size="-1">Memory Mgmt.</font></a></td>
+                </tr>
+                <tr>
+                  <td width="122" height="40"><a href="#collect"><font
+ size="-1">Collective Ops</font></a></td>
+                </tr>
+                <tr>
+                  <td style="vertical-align: top;"><small><a
+ href="#config">Configuration Info</a></small><br>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            </td>
+            <td width="628" valign="top"><!-- ----------- TEXT STARTS HERE ------------- -->
+            <br>
+            <font face="Arial,Helvetica"><font color="#000099">
+            <h2>ARMCI - Programming Interfaces<br>
+            </h2>
+            </font></font> <font face="Arial,Helvetica"><font size="+0"
+ color="#000099"> </font></font><small><font face="Arial,Helvetica"><font
+ size="-1"><big style="color: rgb(0, 0, 153);">ARMCI programming
+interfaces are
+explained below. This is an up-to-date document that containing all the
+supporting ARMCI APIs. There is also a
+document
+describing the ARMCI design (API corresponding to release 1.0 only) is <a
+ href="publications/armci1-1.pdf">available in the&nbsp;
+PDF</a><a href="publications/armci1-1.pdf">&nbsp;
+format</a>. </big><br>
+            </font></font></small> <br>
+            <font face="Arial,Helvetica" style="font-weight: bold;"><font
+ size="+0" color="#000099">Header file</font></font><br>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">The
+interfaces are prototyped in the "armci.h" header file.<br>
+&nbsp; </font></font>
+            <h3><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><a name="init"></a>1 Initialization and Termination</font></font></h3>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">int&nbsp;<span style="font-weight: bold;">ARMCI_Init</span>()</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">PURPOSE:&nbsp;&nbsp;&nbsp;&nbsp; Initializes the ARMCI. This function must be called before any ARMCI functions.<br>RETURN VALUE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zero&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Successful.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; other value - Error code (described in the release notes). </font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><br>int&nbsp;<span style="font-weight: bold;">ARMCI_Finalize</span>()</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">PURPOSE:&nbsp;&nbsp;&nbsp;&nbsp; Finalizes the ARMCI. This function must be called after using ARMCI functions.<br>RETURN VALUE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zero&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Successful.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; other value - Error code (described in the release notes).</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><br>void&nbsp;<span style="font-weight: bold;">ARMCI_Cleanup</span>()</font></font></pre>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">PURPOSE: Releases any system resources (like System V shmem ids) that<br>ARMCI can be holding. It is intended to be used before terminating a program<br>(e.g., by calling MPI_Abort) in case of an error.</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><br>void&nbsp;<span style="font-weight: bold;">ARMCI_Error</span>(char *message, int code)</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">Purpose:
+Combines the functionality of ARMCI_Cleanup and MPI_Abort, and
+it prints (to the stdout and stderr) a user specified message followed
+by an integer code. </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">ARGUMENTS:&nbsp;&nbsp;&nbsp;<br>message&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Message to print out<br>code&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Error code<br></font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <hr style="width: 100%; height: 2px;"><font
+ face="Arial,Helvetica"><font size="+0" color="#000099"> </font></font>
+            <h3><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><a name="copyvec"></a>2 Copy operations using
+the generalized I/O vector format</font></font></h3>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">int&nbsp;<span style="font-weight: bold;">ARMCI_PutV</span>(armci_giov_t *dsrc_arr, int arr_len, int proc)</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">PURPOSE:
+Generalized&nbsp; I/O vector operation that transfers data
+from
+the local memory of calling process (source) to the memory of a remote
+process (destination). </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">DATA TYPE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; typedef struct {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; void **src_ptr_ar;&nbsp; - Source starting addresses of each data segment.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; void **dst_ptr_ar;&nbsp; - Destination starting addresses of each data segment.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int bytes;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - The length of each segment in bytes.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int ptr_ar_len;&nbsp;&nbsp;&nbsp; - Number of data segment.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }armci_giov_t;</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">ARGUMENTS:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dsrc_arr - Array of data (type of armci_giov_t) to be put to remote process.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; arr_len&nbsp; - Number of elements in the dsrc_arr.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; proc&nbsp;&nbsp;&nbsp;&nbsp; - Remote process ID (destination).</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">RETURN VALUE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zero&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Successful.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; other value - Error code (described in the release notes).</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><br>int&nbsp;<span style="font-weight: bold;">ARMCI_NbPutV</span>(armci_giov_t *dsrc_arr,int arr_len,int proc,armci_hdl_t* handle)</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">PURPOSE:
+Generalized Non-Blocking I/O vector operation that transfers
+data
+from the local memory of the calling process (source) to the memory of
+a
+remote
+process (destination). </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">DATA TYPE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; typedef struct {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; void **src_ptr_ar;&nbsp; - Source starting addresses of each data segment.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; void **dst_ptr_ar;&nbsp; - Destination starting addresses of each data segment.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int bytes;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - The length of each segment in bytes.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int ptr_ar_len;&nbsp;&nbsp;&nbsp; - Number of data segment.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }armci_giov_t;</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">ARGUMENTS:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dsrc_arr - Array of data (type of armci_giov_t) to be put to remote process.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; arr_len&nbsp; - Number of elements in the dsrc_arr.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; proc&nbsp;&nbsp;&nbsp;&nbsp; - Remote process ID (destination).<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handle&nbsp;&nbsp; - Pointer to a desciptor associated with a particular non-blocking transfer.&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Passing of a NULL value for this arg makes this function do an implicit&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handle non-blocking transfer.</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">RETURN VALUE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zero&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Successful.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; other value - Error code (described in the release notes).</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><br>int&nbsp;<span style="font-weight: bold;">ARMCI_GetV</span>(armci_giov_t *dsrc_arr,int arr_len,int proc)</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">&nbsp;PURPOSE:
+Generalized&nbsp; I/O vector blocking operation that
+transfers
+data from the remote process memory (source) to the calling process
+local
+memory (destination). </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">DATA TYPE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; typedef struct {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; void **src_ptr_ar;&nbsp; - Source starting addresses of each data segment.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; void **dst_ptr_ar;&nbsp; - Destination starting addresses of each data segment.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int bytes;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - The length of each segment in bytes.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int ptr_ar_len;&nbsp;&nbsp;&nbsp; - Number of data segment.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }armci_giov_t;</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">ARGUMENTS:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dsrc_arr - Array of data (type of armci_giov_t) to get from remote process.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; arr_len&nbsp; - Number of elements in the dsrc_arr.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; proc&nbsp;&nbsp;&nbsp;&nbsp; - Remote process ID (source).</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">RETURN VALUE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zero&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Successful.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; other value - Error code (described in the release notes).</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><br>int&nbsp;<span style="font-weight: bold;">ARMCI_NbGetV</span>(armci_giov_t *dsrc_arr,int arr_len,int proc,armci_hdl_t* handle)</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">PURPOSE:
+Generalized Non-blocking I/O vector operation that transfers
+data from the remote process memory (source) to the callingprocess
+local memory (destination). </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">DATA TYPE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; typedef struct {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; void **src_ptr_ar;&nbsp; - Source starting addresses of each data segment.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; void **dst_ptr_ar;&nbsp; - Destination starting addresses of each data segment.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int bytes;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - The length of each segment in bytes.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int ptr_ar_len;&nbsp;&nbsp;&nbsp; - Number of data segment.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }armci_giov_t;<br>ARGUMENTS:<br><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dsrc_arr - Array of data (type of armci_giov_t) to get from remote process.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; arr_len&nbsp; - Number of elements in the dsrc_arr.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; proc&nbsp;&nbsp;&nbsp;&nbsp; - Remote process ID (source).<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handle&nbsp;&nbsp; - Pointer to a desciptor associated with a particular non-blocking transfer.&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Passing of a NULL value for this arg makes this function do an implicit&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handle non-blocking transfer.<br>RETURN VALUE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zero&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Successful.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; other value - Error code (described in the release notes).</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">_____________________________________________________________________________
+            <br>
+            </font></font>
+            <h3><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><a name="copys"></a>3 Copy operations using the
+strided
+format</font></font></h3>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><br>int&nbsp;<span style="font-weight: bold;">ARMCI_PutS</span>(void* src_ptr, int src_stride_ar[], void* dst_ptr, int dst_stride_ar[], <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int count[], int stride_levels, int proc)<br></font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">PURPOSE:
+Blocking strided&nbsp; operation that transfers data from the
+local memory of calling process (source) to the memory of a remote
+process (destination).<br>
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">ARGUMENTS:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; src_ptr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Source starting address of the data block to put.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; src_stride_arr - Source array of stride distances in bytes.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dst_ptr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Destination starting address to put data.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dst_stride_ar&nbsp; - Destination array of stride distances in bytes.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; count&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Block size in each dimension. count[0] should be the<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; number of bytes of contiguous data in leading dimension.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; stride_levels&nbsp; - The level of strides.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; proc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Remote process ID (destination).<br>RETURN VALUE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zero&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Successful.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; other value - Error code (described in the release notes).</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><br>int&nbsp;<span style="font-weight: bold;">ARMCI_NbPutS</span>(void* src_ptr, int src_stride_ar[], void* dst_ptr, int dst_stride_ar[], <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int count[], int stride_levels, int proc,armci_hdl_t* handle)</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">PURPOSE:
+Non-blocking strided&nbsp; operation that transfer data
+from
+the local memory of calling process (source) to the memory of a remote
+process (destination). </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">ARGUMENTS:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; src_ptr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Source starting address of the data block to put.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; src_stride_arr - Source array of stride distances in bytes.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dst_ptr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Destination starting address to put data.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dst_stride_ar&nbsp; - Destination array of stride distances in bytes.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; count&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Block size in each dimension. count[0] should be the<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; number of bytes of contiguous data in leading dimension.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; stride_levels&nbsp; - The level of strides.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; proc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Remote process ID (destination).<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handle&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Pointer to a desciptor associated with a particular non-blocking transfer.&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Passing of a NULL value for this arg makes this function do an implicit&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handle non-blocking transfer.<br>RETURN VALUE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zero&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Successful.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; other value - Error code (described in the release notes).</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><br>int&nbsp;<span style="font-weight: bold;">ARMCI_GetS</span>(void *src_ptr c_ptr, int src_stride_ar[], void* dst_ptr,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int dst_stride_ar[], int count[], int stride_levels, int proc)</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">PURPOSE:
+Blocking strided operation that transfers data
+from
+the remote process memory (source) to the calling process&nbsp; local
+memory
+(destination). <br>
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">ARGUMENTS:<br>       src_ptr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Source starting address of the data block to get.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; src_stride_arr - Source array of stride distances in bytes.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dst_ptr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Destination starting address to get data.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dst_stride_arr - Destination array of stride distances in bytes.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; count&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Block size in each dimension. count[0] should be the<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; number of bytes of contiguous data in leading dimension.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; stride_levels&nbsp; - The level of strides.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; proc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Remote process ID (source).<br>RETURN VALUE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zero&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Successful.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; other value - Error code (described in the release notes).</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><br>int&nbsp;<span style="font-weight: bold;">ARMCI_NbGetS</span>(void *src_ptr c_ptr, int src_stride_ar[], void* dst_ptr, int dst_stride_ar[], <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int count[], int stride_levels, int proc, armci_hdl_t* handle)</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">PURPOSE:
+Non-blocking strided operation that transfers data
+from
+the remote process memory (source) to the calling process&nbsp; local
+memory
+(destination). <br>
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">&nbsp;&nbsp;&nbsp;&nbsp; ARGUMENTS:<br>       src_ptr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Source starting address of the data block to get.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; src_stride_arr - Source array of stride distances in bytes.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dst_ptr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Destination starting address to get data.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dst_stride_arr - Destination array of stride distances in bytes.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; count&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Block size in each dimension. count[0] should be the<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; number of bytes of contiguous data in leading dimension.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; stride_levels&nbsp; - The level of strides.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; proc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Remote process ID (source).<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handle&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Pointer to a desciptor associated with a particular non-blocking transfer.&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Passing of a NULL value for this arg makes this function do an implicit&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handle non-blocking transfer.<br>RETURN VALUE:<br>       zero&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Successful.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; other value - Error code (described in the release notes).</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">_____________________________________________________________________________
+            <br>
+            </font></font>
+            <h3><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><a name="copy"></a>4 Copy operations for contiguous
+data</font></font></h3>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">int&nbsp;<span style="font-weight: bold;">ARMCI_Put</span>(void* src, void* dst, int bytes, int proc)</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            <small>PURPOSE: Blocking transfer of contiguous data from
+the local process&nbsp;
+memory (source) to remote process memory (destination).</small> </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">ARGUMENTS:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; src&nbsp;&nbsp;&nbsp;&nbsp; - Source starting address of the data block to put.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dst&nbsp;&nbsp;&nbsp;&nbsp; - Destination starting address to put data.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; bytes&nbsp;&nbsp; - amount of data to transfer in bytes.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; proc&nbsp;&nbsp;&nbsp; - Remote process ID (destination).<br>RETURN VALUE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zero&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Successful.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; other value - Error code (described in the release notes).</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><br>int&nbsp;<span style="font-weight: bold;">ARMCI_NbPut</span>(void* src, void* dst, int bytes, int proc, armci_hdl_t* handle)</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            <small>PURPOSE: Non-blocking transfer of contiguous data
+from
+the local
+process&nbsp;
+memory (source) to remote process memory (destination).</small> </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">ARGUMENTS:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; src&nbsp;&nbsp;&nbsp;&nbsp; - Source starting address of the data block to put.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dst&nbsp;&nbsp;&nbsp;&nbsp; - Destination starting address to put data.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; bytes&nbsp;&nbsp; - amount of data to transfer in bytes.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; proc&nbsp;&nbsp;&nbsp; - Remote process ID (destination).            <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handle&nbsp; - Pointer to a desciptor associated with a particular non-blocking transfer.&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Passing of a NULL value for this arg makes this function do an implicit&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handle non-blocking transfer.<br><br>RETURN VALUE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zero&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Successful.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; other value - Error code (described in the release notes).</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><br>int&nbsp;<span style="font-weight: bold;">ARMCI_Get</span>(src, dst, bytes, proc)</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">PURPOSE:
+Blocking transfer of contiguous data from the remote process&nbsp;
+memory (source) to the calling process
+memory (destination). </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">ARGUMENTS:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; src&nbsp;&nbsp;&nbsp;&nbsp; - Source starting address of the data block to put.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dst&nbsp;&nbsp;&nbsp;&nbsp; - Destination starting address to put data.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; bytes&nbsp;&nbsp; - amount of data to transfer in bytes.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; proc&nbsp;&nbsp;&nbsp; - Remote process ID (destination).<br>            <br>RETURN VALUE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zero&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Successful.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; other value - Error code (described in the release notes).</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><br>int&nbsp;<span style="font-weight: bold;">ARMCI_NbGet</span>(src, dst, bytes, proc, armci_hdl_t* handle)</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">PURPOSE:
+Non-blocking transfer of contiguous
+data
+from the remote process&nbsp; memory (source) to the calling process
+memory
+(destination). </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">ARGUMENTS:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; src&nbsp;&nbsp;&nbsp;&nbsp; - Source starting address of the data block to put.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dst&nbsp;&nbsp;&nbsp;&nbsp; - Destination starting address to put data.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; bytes&nbsp;&nbsp; - amount of data to transfer in bytes.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; proc&nbsp;&nbsp;&nbsp; - Remote process ID (destination).<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handle&nbsp; - Pointer to a desciptor associated with a particular non-blocking transfer.&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Passing of a NULL value for this arg makes this function do an implicit&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handle non-blocking transfer.<br>RETURN VALUE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zero&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Successful.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; other value - Error code (described in the release notes).</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">__________________________________________________________________________
+            </font></font>
+            <h3><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><a name="accv"></a>5 Accumulate operation using the
+generalized I/O
+vector format</font></font></h3>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">Accumulate
+operation performs atomic scaled reduction, i.e.,&nbsp;
+remote += scale*local <br>
+            <br>
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">int&nbsp;<span style="font-weight: bold;">ARMCI_AccV</span>(int datatype, void *scale, armci_giov_t *dsrc_arr, int arr_len, int proc, <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; armci_hdl_t* handle)<br><br>PURPOSE: Blocking generalized I/O vector operation that atomically updates the memory of<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a remote process (destination).<br>DATA TYPE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; typedef struct {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; void **src_ptr_ar;&nbsp; - Source starting addresses of each data segment.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; void **dst_ptr_ar;&nbsp; - Destination starting addresses of each data segment.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int bytes;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - The length of each segment in bytes.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int ptr_ar_len;&nbsp;&nbsp;&nbsp; - Number of data segment.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }armci_giov_t;<br><br>ARGUMENTS:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; datatype&nbsp; - Supported data types are:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ARMCI_ACC_INT -&gt; int, ARMCI_ACC_LNG -&gt; long,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ARMCI_ACC_FLT -&gt; float, ARMCI_ACC_DBL-&gt; double,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ARMCI_ACC_CPL -&gt; complex, ARMCI_ACC_DCPL -&gt; double complex.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; scale&nbsp;&nbsp;&nbsp;&nbsp; - Scale for the data (dest = dest + scale * src).<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dsrc_arr&nbsp; - Array of data (type of armci_giov_t) to be accumulated to the remote process.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; arr_len&nbsp;&nbsp; - Number of elements in the dsrc_arr.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; proc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Remote process ID.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handle&nbsp;&nbsp;&nbsp; - Pointer to a desciptor associated with a particular non-blocking transfer.&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Passing of a NULL value for this arg makes this function do an implicit&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handle non-blocking transfer.<br>RETURN VALUE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zero&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Successful.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; other value - Error code (described in the release notes).</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><br>int&nbsp;<span style="font-weight: bold;">ARMCI_NbAccV</span>(int datatype, void *scale, armci_giov_t *dsrc_arr, int arr_len, int proc, <br>                 armci_hdl_t* handle)</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">PURPOSE:
+Non-blocking generalized&nbsp; I/O vector operation that
+atomically&nbsp;
+updates the memory of a remote process (destination). </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">DATA TYPE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; typedef struct {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; void **src_ptr_ar;&nbsp; - Source starting addresses of each data segment.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; void **dst_ptr_ar;&nbsp; - Destination starting addresses of each data segment.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int bytes;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - The length of each segment in bytes.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int ptr_ar_len;&nbsp;&nbsp;&nbsp; - Number of data segment.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }armci_giov_t;<br>ARGUMENTS:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; datatype&nbsp; - Supported data types are:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ARMCI_ACC_INT -&gt; int, ARMCI_ACC_LNG -&gt; long,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ARMCI_ACC_FLT -&gt; float, ARMCI_ACC_DBL-&gt; double,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ARMCI_ACC_CPL -&gt; complex, ARMCI_ACC_DCPL -&gt; double complex.</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; scale&nbsp;&nbsp;&nbsp;&nbsp; - Scale for the data (dest = dest + scale * src).<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dsrc_arr&nbsp; - Array of data (type of armci_giov_t) to be accumulated to the remote process.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; arr_len&nbsp;&nbsp; - Number of elements in the dsrc_arr.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; proc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Remote process ID.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handle&nbsp;&nbsp;&nbsp; - Pointer to a desciptor associated with a particular non-blocking transfer.&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Passing of a NULL value for this arg makes this function do an implicit&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handle non-blocking transfer.<br>RETURN VALUE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zero&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Successful.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; other value - Error code (described in the release notes).</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">_____________________________________________________________________________
+            </font></font>
+            <h3><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><a name="accs"></a>6 Accumulate operation using the
+strided format</font></font></h3>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">int&nbsp;<span style="font-weight: bold;">ARMCI_AccS</span>(int datatype, void *scale, void* src_ptr,int src_stride_ar[], void* dst_ptr, <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int dst_stride_ar[], int count[],&nbsp; int stride_levels, int proc)<br>PURPOSE: Blocking strided operation that atomicaly updates the memory of a remote process (destination).<br>ARGUMENTS:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; datatype&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Supported data types are:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ARMCI_ACC_INT -&gt; int, ARMCI_ACC_LNG -&gt; long,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ARMCI_ACC_FLT -&gt; float, ARMCI_ACC_DBL-&gt; double,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ARMCI_ACC_CPL -&gt; complex, ARMCI_ACC_DCPL -&gt; double complex.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; scale&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Scale for the data (dest = dest + scale * src).<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; src_ptr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Source starting address of the data block to put.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; src_stride_arr - Source array of stride distances in bytes.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dst_ptr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Destination starting address to put data.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dst_stride_arr - Destination array stride distances in bytes.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; count&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Block size in each dimension. count[0] should be the<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; number of bytes of contiguous data in leading dimension.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; stride_levels&nbsp; - The level of strides.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; proc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Remote process ID (destination).<br>RETURN VALUE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zero&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Successful.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; other value&nbsp;&nbsp;&nbsp; - Error code (described in the release notes).</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><br>int&nbsp;<span style="font-weight: bold;">ARMCI_NbAccS</span>(int datatype, void *scale, void* src_ptr,int src_stride_ar[], <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;void* dst_ptr, int dst_stride_ar[], int count[],&nbsp; int stride_levels, <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int proc, armci_hdl_t* handle)</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            <small>PURPOSE: Non-blocking strided
+operation
+that atomicaly updates the memory of a remote process (destination).</small>
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">ARGUMENTS:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; datatype&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Supported data types are:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ARMCI_ACC_INT -&gt; int, ARMCI_ACC_LNG -&gt; long,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ARMCI_ACC_FLT -&gt; float, ARMCI_ACC_DBL-&gt; double,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ARMCI_ACC_CPL -&gt; complex, ARMCI_ACC_DCPL -&gt; double complex.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; scale&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Scale for the data (dest = dest + scale * src).<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; src_ptr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Source starting address of the data block to put.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; src_stride_arr - Source array of stride distances in bytes.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dst_ptr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Destination starting address to put data.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dst_stride_arr - Destination array stride distances in bytes.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; count&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Block size in each dimension. count[0] should be the<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; number of bytes of contiguous data in leading dimension.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; stride_levels&nbsp; - The level of strides.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; proc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Remote process ID (destination).<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handle&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Pointer to a desciptor associated with a particular non-blocking transfer.&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Passing of a NULL value for this arg makes this function do an implicit&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handle non-blocking transfer.<br>RETURN VALUE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zero&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Successful.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; other value&nbsp;&nbsp;&nbsp; - Error code (described in the release notes).<br></font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <hr style="width: 100%; height: 2px;"><font
+ face="Arial,Helvetica"><font size="+0" color="#000099"> </font></font>
+            <h3><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><a name="acc"></a>7 Accumulate operation using
+contiguous format<br>
+            </font></font></h3>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">int&nbsp;<span style="font-weight: bold;">ARMCI_Acc</span>(int datatype, void *scale, void* src, void* dst, int bytes, int proc)<br>PURPOSE: Blocking operation that atomicaly updates the memory of a remote process (destination).<br><br>ARGUMENTS:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; datatype - Supported data types are:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ARMCI_ACC_INT -&gt; int, ARMCI_ACC_LNG -&gt; long,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ARMCI_ACC_FLT -&gt; float, ARMCI_ACC_DBL-&gt; double,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ARMCI_ACC_CPL -&gt; complex, ARMCI_ACC_DCPL -&gt; double complex.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; scale&nbsp;&nbsp;  - Scale for the data (dest = dest + scale * src).<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; src&nbsp;&nbsp;&nbsp;&nbsp;  - Source starting address of the data to transfer.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dst&nbsp;&nbsp;&nbsp;&nbsp;  - Destination starting address to add incoming data.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; bytes&nbsp;&nbsp;  - amount of data to transfer in bytes.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; proc&nbsp;&nbsp;&nbsp;  - Remote process ID (destination).<br>RETURN VALUE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zero&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Successful.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; other value - Error code (described in the release notes).</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><br>int&nbsp;<span style="font-weight: bold;">ARMCI_NbAcc</span>(int datatype, void *scale, void* src, void* dst, int bytes, int proc, <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;armci_hdl_t* handle)<br><br>PURPOSE: Bon-blocking operation that atomicaly updates the memory of a remote process (destination).<br>ARGUMENTS:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; datatype - Supported data types are:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ARMCI_ACC_INT -&gt; int, ARMCI_ACC_LNG -&gt; long,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ARMCI_ACC_FLT -&gt; float, ARMCI_ACC_DBL-&gt; double,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ARMCI_ACC_CPL -&gt; complex, ARMCI_ACC_DCPL -&gt; double complex.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; scale&nbsp;&nbsp;  - Scale for the data (dest = dest + scale * src).<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; src&nbsp;&nbsp;&nbsp;&nbsp;  - Source starting address of the data to transfer.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dst&nbsp;&nbsp;&nbsp;&nbsp;  - Destination starting address to add incoming data.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; bytes&nbsp;&nbsp;  - amount of data to transfer in bytes.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; proc&nbsp;&nbsp;&nbsp;  - Remote process ID (destination).<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handle&nbsp;&nbsp; - Pointer to a desciptor associated with a particular non-blocking transfer.&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Passing of a NULL value for this arg makes this function do an implicit&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handle non-blocking transfer.<br>RETURN VALUE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zero&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Successful.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; other value - Error code (described in the release notes).<br></font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">&nbsp;_____________________________________________________________________________
+            </font></font>
+            <h3><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><a name="reg"></a>8 Register Originated Data Transfer
+Operations</font></font></h3>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">int&nbsp;<span style="font-weight: bold;">ARMCI_PutValueXXX</span>(DATATYPE src, void* dst, int proc)</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            <small>PURPOSE: Transfer of a value stored in a
+register&nbsp; of a local
+process
+to remote process memory (destination).&nbsp;&nbsp; XXX can be
+"Long"/"Int"/"Double"/"Float"</small> </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">ARGUMENTS:<br>DATA TYPE &nbsp;&nbsp; - long, int, float, double according to XXX in the function name<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; src&nbsp;&nbsp; - Value in a register to put.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dst&nbsp;&nbsp; - Destination starting address to put data.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; proc&nbsp; - Remote process ID (destination).<br>RETURN VALUE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zero&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Successful.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; other value - Error code (described in the release notes).</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><br>int&nbsp;<span style="font-weight: bold;">ARMCI_NbPutValueXXX</span>(DATATYPE src, void* dst, int proc, armci_hdl_t* handle)</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            <small>PURPOSE: Non-blocking transfer of a value stored in
+a register of a
+local
+process to remote process memory (destination).&nbsp;
+XXX can be "Long"/"Int"/"Double"/"Float"</small> </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">ARGUMENTS:<br>DATA TYPE:&nbsp;  - long, int, float, double according to XXX in the function name<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; src&nbsp;&nbsp;  - Value in a register to put.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dst&nbsp;&nbsp;  - Destination starting address to put data.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; proc&nbsp;  - Remote process ID (destination).<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handle - Pointer to a desciptor associated with a particular non-blocking transfer.&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Passing of a NULL value for this arg makes this function do an implicit&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handle non-blocking transfer.<br>RETURN VALUE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zero&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Successful.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; other value - Error code (described in the release notes).</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><br>DATATYPE&nbsp;<span style="font-weight: bold;">ARMCI_GetValueXXX</span>(void *src, int proc)</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            <small>PURPOSE: Transfer of a value stored in a
+register&nbsp; of a process
+(source).&nbsp;&nbsp;
+XXX can be "Long"/"Int"/"Double"/"Float"</small> </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">ARGUMENTS:<br> DATATYPE&nbsp;&nbsp;&nbsp; - long, int, float, double according to XXX in the function name<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; src&nbsp;&nbsp; - Source starting address.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; proc&nbsp; - Remote process ID (source).<br>RETURN VALUE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; the value (of type DATATYPE) is returned.</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">_____________________________________________________________________________
+            </font></font>
+            <h3><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><a name="compl"></a>9 Completion of Outstanding
+Operations</font></font></h3>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">int <span style="font-weight: bold;">ARMCI_Fence</span>(int proc)</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            <small>PURPOSE: Blocks the calling process until all
+blocking put or
+accumulate
+operations<br>
+issued to the specified remote process complete at the destination.</small>
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">ARGUMENTS:<br>&nbsp;&nbsp;&nbsp;    proc&nbsp;&nbsp;&nbsp; - Remote process ID.<br>RETURN VALUE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zero&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Successful.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; other value - Error code (described in the release notes).</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><br>int <span style="font-weight: bold;">ARMCI_AllFence</span>()</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            <small>PURPOSE: Blocks the calling process until all the
+outstanding blocking
+put or accumulate<br>
+operations complete remotely regardless of the destination processor.</small>
+            </font></font>
+            <p><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><small>ARGUMENTS: none </small><br>
+            </font></font></p>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><br>int&nbsp;<span style="font-weight: bold;">ARMCI_Wait</span>(armci_hdl_t* handle)</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            <small>PURPOSE: A common function to be used&nbsp; to wait
+for non-blocking
+ARMCI
+operations with explicit handle.</small><br>
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">ARGUMENTS:<br>   handle - Pointer to a desciptor associated with a particular non-blocking transfer.&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; A value of NULL for the pointer is erroneous. A value other then NULL would&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; make this routine act as a wait for an explicit non-blocking request with&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; the handle pointed to by reqid.<br>RETURN VALUE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zero&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Successful.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; other value - Error code (described in the release notes).</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><br>int&nbsp;<span style="font-weight: bold;">ARMCI_Test</span>(armci_hdl_t* handle)</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">PURPOSE:
+A function to be used as check completion status of&nbsp;
+non-blocking
+ARMCI operations with explicit handle. </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">ARGUMENTS:<br>   handle - Pointer to a desciptor associated with a particular non-blocking transfer. <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; A value of NULL for the pointer is erroneous. A value other then NULL would&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; make this routine act as a wait for an explicit non-blocking request with&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; the handle pointed to by reqid.<br>RETURN VALUE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zero&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Completed<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - In progress<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; other value - Error code (described in the release notes).</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><br>int&nbsp;<span style="font-weight: bold;">ARMCI_WaitProc</span>(int proc)</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            <small>PURPOSE: Wait for all outstanding non-blocking
+operations with implicit
+handles to a particular process to finish.</small> </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">ARGUMENTS:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; proc - proc for which all the outstanding non-blocking operations have to be completed.<br>RETURN VALUE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zero&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Successful.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; other value - Error code (described in the release notes).</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><br>int<span style="font-weight: bold;"> ARMCI_WaitAll</span>()</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            <small>PURPOSE: Wait for all outstanding non-blocking
+operations with implicit
+handles to finish.</small> </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">ARGUMENTS: none<br>RETURN VALUE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zero&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Successful.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; other value - Error code (described in the release notes).</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><br>int<span style="font-weight: bold;"> ARMCI_Barrier</span>()<br><br>PURPOSE: Synchronize processors and memory. This operation combines functionality of <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MPI_Barrier and ARMCI_AllFence.<br>ARGUMENTS: none<br>RETURN VALUE: none</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">_____________________________________________________________________________
+            </font></font>
+            <h3><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><a name="aggr"></a>10 Aggregated Data Transfer
+Operations</font></font></h3>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            <span style="font-weight: bold;">ARMCI_SET_AGGREGATE_HANDLE</span>
+(armci_hdl_t*
+handle) </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">handle - Pointer to a desciptor associated with a particular non-blocking transfer.</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            <small>PURPOSE: Mark a handle as aggregate. This will allow
+ARMCI to combine
+nonblocking
+operations that use that particular handle and process them as a single
+operation. In the initial implementation only contiguous puts or gets
+could
+use aggregate handle. Specifying the same handle for a mix of put anmd
+get calls is not allowed i.e., only multiple put or only multiple get
+calls
+can use the same handle.</small><br>
+            <br>
+            </font></font>
+            <p><span style="font-weight: bold;"><font
+ face="Arial,Helvetica"><font size="+0" color="#000099">ARMCI_UNSET_AGGREGATE_HANDLE</font></font></span>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">(armci_hdl_t*
+handle) </font></font></p>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">handle - Pointer to a desciptor associated with a particular non-blocking transfer.</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            <small>PURPOSE: Clears a handle that has been marked as
+aggregate</small>. <br>
+            </font></font>
+            <hr style="width: 100%; height: 2px;"><font
+ face="Arial,Helvetica"><font size="+0" color="#000099"> </font></font>
+            <h3><span style="font-weight: bold;"><font
+ face="Arial,Helvetica"><font size="+0" color="#000099"><a name="atomic"></a>11
+Atomic and
+Synchronization
+Operations<br>
+            </font></font></span></h3>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">int <span style="font-weight: bold;">ARMCI_Rmw</span>(int op, void *ploc, void *prem, int value, proc)</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            <small>PURPOSE: Combines atomically the specified
+integer&nbsp; value with the
+corresponding integer value (int or long) at the remote memory location
+and returns the original value found at that location.</small> </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">ARGUMENTS:&nbsp;<br>&nbsp;&nbsp;&nbsp; op&nbsp;&nbsp;&nbsp; - Available operations are:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ARMCI_FETCH_AND_ADD -&gt; int<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ARMCI_FETCH_AND_ADD_LONG -&gt; long<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ARMCI_SWAP -&gt; int<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ARMCI_SWAP_LONG -&gt;long<br>&nbsp;&nbsp; ploc&nbsp;&nbsp; - Pointer to the local memory.<br>&nbsp;&nbsp; prem&nbsp;&nbsp; - Pointer to the remote memory.<br>&nbsp;&nbsp; value&nbsp; - Value to be added to the remote memory.<br>&nbsp;&nbsp; proc&nbsp;&nbsp; - Remote process ID.</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            <span style="font-weight: bold;"><br>
+            </span> </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">int <span style="font-weight: bold;">ARMCI_Create_mutexes</span>(int count)</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            <small>PURPOSE: Collective operation to create sets of
+mutexes on individual
+processes.<br>
+Each process specifies the number of mutexes associated with that <br>
+process. The total number of mutexes allocate will be a sum of the <br>
+values specified on each process.</small> </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">ARGUMENTS:<br>&nbsp; count&nbsp;&nbsp;&nbsp; - number of mutexes allocated on calling process<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; count=0 means that no mutexes will be associated with that process.<br>RETURN VALUE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zero&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Successful.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; other value - Error code (described in the release notes).</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><br>int <span style="font-weight: bold;">ARMCI_Destroy_mutexes</span>(void)</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            <small>PURPOSE: Collective operation to destroy mutex sets
+allocated by
+ARMCI_Create_mutexes.</small> </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">ARGUMENTS:&nbsp; none<br>RETURN VALUE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zero&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Successful.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; other value - Error code (described in the release notes).</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><br>void <span style="font-weight: bold;">ARMCI_Lock</span>(int mutex, int proc)</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            <small>PURPOSE: Acquire the specified mutex on the
+specified
+process on behalf
+of the calling process.</small><br>
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">ARGUMENTS:<br>&nbsp;mutex&nbsp;&nbsp;&nbsp; - Mutex number (0..count-1)<br>&nbsp; proc&nbsp;&nbsp;&nbsp; - Remote process ID</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><br>void <span style="font-weight: bold;">ARMCI_Unlock</span>(int mutex, int proc)</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            <small>PURPOSE: Releas the specified mutex on the specified
+process on behalf
+of the calling process. The mutex must have been acquired with
+ARMCI_Lock.</small> </font></font>
+            <pre><span style="font-family: arial,helvetica;"><font
+ face="Arial,Helvetica"><font size="+0" color="#000099">ARGUMENTS:</font></font></span><font
+ face="Arial,Helvetica"><font size="+0" color="#000099"><br>&nbsp;&nbsp;&nbsp; mutex&nbsp;&nbsp;&nbsp; - Mutex number (0..count-1)<br>&nbsp;&nbsp;&nbsp; proc&nbsp;&nbsp;&nbsp;&nbsp; - Remote process ID<br></font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <hr style="width: 100%; height: 2px;"><font
+ face="Arial,Helvetica"><font size="+0" color="#000099"> </font></font>
+            <h3><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><a name="mem"></a>12 Memory Management<br>
+            </font></font></h3>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">int <span style="font-weight: bold;">ARMCI_Malloc</span>(void* ptr[], armci_size_t bytes)</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            <small>PURPOSE: Collective operation to allocate memory
+that can be used in
+the context<br>
+of ARMCI copy operations.</small><br>
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">ARGUMENTS:<br>&nbsp; ptr&nbsp;&nbsp;&nbsp; - Pointer array. Each pointer points to the allocated memory of one process.<br>bytes&nbsp;&nbsp;&nbsp; - The size of allocated memory in bytes.<br>RETURN VALUE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zero&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Successful.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; other value - Error code (described in the release notes).<br><br></font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">void* <span style="font-weight: bold;">ARMCI_Malloc_local</span>(armci_size_t bytes)</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            <small>PURPOSE: Operation (noncollective) to allocate local
+memory. This
+memory can only be accessed locally. However, using this memory in
+ARMCI operations can improve performance on some systems. For example,
+on Myrinet or Infiniband, the memory is registered and therefore
+suitable for the native RDMA communication.</small><br>
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">ARGUMENTS:<br>bytes&nbsp;&nbsp;&nbsp; - The size of allocated memory in bytes.<br>RETURN VALUE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; NULL pointer - Failure.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; other value  - address of newly allocated memory.<br><br></font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">int <span style="font-weight: bold;">ARMCI_Free</span>(void *address)</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            <small>PURPOSE: Collective operation to free memory which
+was allocated by
+ARMCI_Malloc.</small> </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">ARGUMENTS:<br>&nbsp; address&nbsp;&nbsp;&nbsp; - pointer to the allocated memory.<br>RETURN VALUE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zero&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Successful.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; other value - Error code (described in the release notes).<br></font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><br>int <span style="font-weight: bold;">ARMCI_Free_local</span>(void *address)</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            <small>PURPOSE: Non-collective operation to free memory
+which was allocated by
+ARMCI_Malloc_local.</small> </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">ARGUMENTS:<br>&nbsp; address&nbsp;&nbsp;&nbsp; - pointer to the allocated memory.<br>RETURN VALUE:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zero&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Successful.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; other value - Error code (described in the release notes).<br></font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <hr style="width: 100%; height: 2px;"><font
+ face="Arial,Helvetica"><font size="+0" color="#000099"> </font></font>
+            <h3><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><a name="collect"></a>13 Collective Operations</font></font></h3>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">These
+operations can be used as an alternative to the collective
+operations in a message-passing library ARMCI is running with. The
+programmer can use either. </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><br>void <span style="font-weight: bold;">armci_msg_brdcst</span>(void* buffer, int len, int root)</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">PURPOSE: broadcast data from process "root" to everybody else.<br>ARGUMENTS:<br>  buffer - data to broadcast/receive<br>  len    - size of the data<br>  root   - rank of the sending process<br>RETURN VALUE: none</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><br>void <span style="font-weight: bold;">armci_msg_gop2</span>(void *x, int n, int type, char* op)</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">PURPOSE: allreduce operation for int, long, float, double corresponding to XXX is "i"/"l","f","d" <br>ARGUMENTS:<br>  x      - data <br>  n      - number of elements<br>  type   - data type, one of: ARMCI_INT/ARMCI_LONG/ARMCI_FLOAT/ARMCI_DOUBLE<br>  op     - operator, one of: "+","-","*","min","max","abs"<br>RETURN VALUE: none</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><br>void <span style="font-weight: bold;">armci_msg_barrier</span>(void)<br>PURPOSE: synchronize all processors<br>ARGUMENTS: none<br>RETURN VALUE: none</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><br>void <span style="font-weight: bold;">armci_msg_reduce</span>(void *x, int n, char* op, int type, int root)<br>PURPOSE: reduce operation<br>ARGUMENTS:<br>  x      - data <br>  len    - size of the data<br>  type   - data type, one of: ARMCI_INT/ARMCI_LONG/ARMCI_FLOAT/ARMCI_DOUBLE<br>  op     - operator, one of: "+","-","*","min","max","abs"<br>RETURN VALUE: none<br></font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <hr style="width: 100%; height: 2px;">
+            <h3><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">
+            <h3><a name="config"></a>14 System Configuration</h3>
+            </font></font></h3>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">These
+operations can be used to determine configuration of the system the
+application&nbsp; is running on.<br>
+The system configuration is described in terms of locality domains. For
+example on clusters with SMP nodes, SMP node is one of two locality
+domains for a process. The ARMCI header file predefines
+ARMCI_DOMAIN_SMP for querying configuration information on clusters
+composed of computer nodes with shared memory. <br>
+            </font></font><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"> </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099"><br>int <span style="font-weight: bold;">armci_domain_nprocs</span>(armci_domain_t domain, int id)</font></font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font>
+            <pre><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">PURPOSE: return number of processes/tasks in locality domain represented by id. <br>ARGUMENTS:<br>  domain - domain name <br>  id     - identifier of a node within the locality domain, value &lt; 0 means my node<br>RETURN VALUE:<br>   &lt; 0         - error<br>   other value - number of processes/tasks (0, ..., armci_domain_count(domain)-1)<br><br></font></font><pre
+ style="font-family: monospace;"><font face="Arial,Helvetica"><font
+ size="+0" color="#000099"><font size="+0" color="#000099">int <span
+ style="font-weight: bold;">armci_domain_count</span>(armci_domain_t domain)<br></font></font></font><pre><font
+ face="Arial,Helvetica"><font size="+0" color="#000099"><font size="+0"
+ color="#000099"><font><font><font face="Arial,Helvetica"><font
+ size="+0" color="#000099">PURPOSE: return number of nodes in specified locality domain. <br>ARGUMENTS:<br>  domain - domain name <br>RETURN VALUE:<br>    &lt;  0        - error<br>    other value - number of nodes<br><br></font></font></font></font></font></font></font></pre><pre><font
+ face="Arial,Helvetica"><font size="+0" color="#000099"><font size="+0"
+ color="#000099"><font><font><font face="Arial,Helvetica"><font
+ size="+0" color="#000099">int <span style="font-weight: bold;">armci_domain_id</span>(armci_domain_t domain, int glob_proc_id)<br><br>PURPOSE: return ID of locality domain of specified process<br>ARGUMENTS:<br>  domain - domain name <br>  id     - process/task id<br>RETURN VALUE<br>    &lt; 0         - error<br>    other value - process/task i<span
+ style="font-family: monospace;">d<br><br></span></font></font></font></font></font></font></font></pre><span
+ style="font-family: arial; color: rgb(0, 0, 153);">int </span><span
+ style="font-weight: bold; font-family: arial; color: rgb(0, 0, 153);">armci_domain_glob_proc_id</span><span
+ style="font-family: arial; color: rgb(0, 0, 153);">(armci_domain_t domain, int id, int loc_proc_id)</span></pre></pre>
+            <font face="Arial,Helvetica" style="font-family: arial;"
+ size="-1"><font color="#000099"><font color="#000099"><font><font><font
+ color="#000099"><font><font><font color="#000099">PURPOSE: Returns
+global process/task id based on its id in a given locality domain node </font></font></font></font></font></font></font></font></font><br
+ style="font-family: arial;">
+            <font size="-1" style="font-family: arial;"> </font><font
+ face="Arial,Helvetica" style="font-family: arial;" size="-1"><font
+ color="#000099"><font color="#000099"><font><font><font color="#000099"><font><font><font
+ color="#000099">ARGUMENTS:</font></font></font></font></font></font></font></font></font><br
+ style="font-family: arial;">
+            <font size="-1" style="font-family: arial;"> </font><font
+ face="Arial,Helvetica" style="font-family: arial;" size="-1"><font
+ color="#000099"><font color="#000099"><font><font><font color="#000099"><font><font><font
+ color="#000099">&nbsp; domain - domain name</font></font></font></font></font></font></font></font></font><br
+ style="font-family: arial;">
+            <font size="-1" style="font-family: arial;"> </font><font
+ face="Arial,Helvetica" style="font-family: arial;" size="-1"><font
+ color="#000099"><font color="#000099"><font><font><font color="#000099"><font><font><font
+ color="#000099">&nbsp; id - identifier of a node within the locality
+domain, value &lt; 0 means my node</font></font></font></font></font></font></font></font></font><br
+ style="font-family: arial;">
+            <font size="-1" style="font-family: arial;"> </font><font
+ face="Arial,Helvetica" style="font-family: arial;" size="-1"><font
+ color="#000099"><font color="#000099"><font><font><font color="#000099"><font><font><font
+ color="#000099">RETURN VALUE:</font></font></font></font></font></font></font></font></font><br
+ style="font-family: arial;">
+            <font size="-1" style="font-family: arial;"> </font><font
+ face="Arial,Helvetica" style="font-family: arial;" size="-1"><font
+ color="#000099"><font color="#000099"><font><font><font color="#000099"><font><font><font
+ color="#000099">&nbsp; &lt; 0 - error</font></font></font></font></font></font></font></font></font><br
+ style="font-family: arial;">
+            <font size="-1" style="font-family: arial;"> </font><font
+ face="Arial,Helvetica" style="font-family: arial;" size="-1"><font
+ color="#000099"><font color="#000099"><font><font><font color="#000099"><font><font><font
+ color="#000099">&nbsp; other value - process/task id</font></font></font></font></font></font></font></font></font>
+            <pre style="font-family: arial; color: rgb(0, 0, 153);"><pre
+ style="font-family: arial;"><font size="-1">int <span
+ style="font-weight: bold;">armci_domain_my_id</span>(armci_domain_t domain)</font></pre><font
+ size="-1">PURPOSE: Returns id node in specified domain the calling process/task belongs to <br>ARGUMENTS:<br>  domain - domain name<br>  id     - identifier of a node within the locality domain, value &lt; 0 means my node<br>RETURN VALUE: id of domain</font></pre>
+            <font face="Arial,Helvetica"><font size="+0" color="#000099">
+            </font></font><font face="Arial,Helvetica"><font size="+0"
+ color="#000099">
+            <hr style="width: 100%; height: 2px;"> </font></font><!-- ----------- TEXT ENDS HERE ------------- -->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+</body>
+</html>

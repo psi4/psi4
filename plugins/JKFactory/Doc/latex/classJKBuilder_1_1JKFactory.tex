@@ -1,0 +1,67 @@
+\hypertarget{classJKBuilder_1_1JKFactory}{
+\section{JKFactory Class Reference}
+\label{classJKBuilder_1_1JKFactory}\index{JKBuilder::JKFactory@{JKBuilder::JKFactory}}
+}
+
+
+The \hyperlink{classJKBuilder_1_1JKFactory}{JKFactory} class is an abstract base class that is responsible for building the J and K matrices.  
+
+
+{\ttfamily \#include $<$JKFactory.h$>$}Inheritance diagram for JKFactory::\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3cm]{classJKBuilder_1_1JKFactory}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+virtual void \hyperlink{classJKBuilder_1_1JKFactory_ae253b309dafe3ce003fdabfd315318b8}{BuildJK} (const double $\ast$DensityMatrix, \hyperlink{namespaceJKBuilder_aef21bc37b7cf7bc5ebb5a48628db8d0f}{SharedSymJKMatrix} \&J\_\-Matrix, \hyperlink{namespaceJKBuilder_aef21bc37b7cf7bc5ebb5a48628db8d0f}{SharedSymJKMatrix} \&K\_\-Matrix)=0
+\begin{DoxyCompactList}\small\item\em The function actually in charge of building the J and K matrices. \item\end{DoxyCompactList}\item 
+\hyperlink{classJKBuilder_1_1JKFactory_a05f3bfba8a8e2c8182393027e6cbbd5c}{JKFactory} ()
+\begin{DoxyCompactList}\small\item\em No set up for this class. \item\end{DoxyCompactList}\item 
+virtual \hyperlink{classJKBuilder_1_1JKFactory_a9350f429f8b82b14409553f0a2245a7b}{$\sim$JKFactory} ()
+\begin{DoxyCompactList}\small\item\em Nothing to destroy for this class. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+The \hyperlink{classJKBuilder_1_1JKFactory}{JKFactory} class is an abstract base class that is responsible for building the J and K matrices. 
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{classJKBuilder_1_1JKFactory_a05f3bfba8a8e2c8182393027e6cbbd5c}{
+\index{JKBuilder::JKFactory@{JKBuilder::JKFactory}!JKFactory@{JKFactory}}
+\index{JKFactory@{JKFactory}!JKBuilder::JKFactory@{JKBuilder::JKFactory}}
+\subsubsection[{JKFactory}]{\setlength{\rightskip}{0pt plus 5cm}{\bf JKFactory} ()}}
+\label{classJKBuilder_1_1JKFactory_a05f3bfba8a8e2c8182393027e6cbbd5c}
+
+
+No set up for this class. \hypertarget{classJKBuilder_1_1JKFactory_a9350f429f8b82b14409553f0a2245a7b}{
+\index{JKBuilder::JKFactory@{JKBuilder::JKFactory}!$\sim$JKFactory@{$\sim$JKFactory}}
+\index{$\sim$JKFactory@{$\sim$JKFactory}!JKBuilder::JKFactory@{JKBuilder::JKFactory}}
+\subsubsection[{$\sim$JKFactory}]{\setlength{\rightskip}{0pt plus 5cm}$\sim${\bf JKFactory} ()\hspace{0.3cm}{\ttfamily  \mbox{[}virtual\mbox{]}}}}
+\label{classJKBuilder_1_1JKFactory_a9350f429f8b82b14409553f0a2245a7b}
+
+
+Nothing to destroy for this class. 
+
+\subsection{Member Function Documentation}
+\hypertarget{classJKBuilder_1_1JKFactory_ae253b309dafe3ce003fdabfd315318b8}{
+\index{JKBuilder::JKFactory@{JKBuilder::JKFactory}!BuildJK@{BuildJK}}
+\index{BuildJK@{BuildJK}!JKBuilder::JKFactory@{JKBuilder::JKFactory}}
+\subsubsection[{BuildJK}]{\setlength{\rightskip}{0pt plus 5cm}virtual void BuildJK (const double $\ast$ {\em DensityMatrix}, \/  {\bf SharedSymJKMatrix} \& {\em J\_\-Matrix}, \/  {\bf SharedSymJKMatrix} \& {\em K\_\-Matrix})\hspace{0.3cm}{\ttfamily  \mbox{[}pure virtual\mbox{]}}}}
+\label{classJKBuilder_1_1JKFactory_ae253b309dafe3ce003fdabfd315318b8}
+
+
+The function actually in charge of building the J and K matrices. This function first updates the density \hyperlink{classJKBuilder_1_1matrix}{matrix} to be the one given to it. Next, it computes J and K and returns them as \hyperlink{classJKBuilder_1_1matrix}{matrix} objects.
+
+
+\begin{DoxyParams}{Parameters}
+\item[\mbox{$\leftarrow$} {\em DensityMatrix}]The density \hyperlink{classJKBuilder_1_1matrix}{matrix} \item[\mbox{$\rightarrow$} {\em J}]The Coulomb \hyperlink{classJKBuilder_1_1matrix}{matrix} corresponding to DensityMatrix \item[\mbox{$\rightarrow$} {\em K}]The Exchange \hyperlink{classJKBuilder_1_1matrix}{matrix} corresponding to DensityMatrix \end{DoxyParams}
+
+
+Implemented in \hyperlink{classGTFock_1_1DistGTFock_aea85d0b3d84e8e52819e8a15201e078a}{DistGTFock}, and \hyperlink{classJKBuilder_1_1PsiShared_aa5f73a8109ec88464262262164feda1e}{PsiShared}.
+
+The documentation for this class was generated from the following files:\begin{DoxyCompactItemize}
+\item 
+src/\hyperlink{JKFactory_8h}{JKFactory.h}\item 
+src/\hyperlink{JKFactory_8cpp}{JKFactory.cpp}\end{DoxyCompactItemize}

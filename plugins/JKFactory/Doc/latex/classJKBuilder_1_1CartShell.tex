@@ -1,0 +1,142 @@
+\hypertarget{classJKBuilder_1_1CartShell}{
+\section{CartShell Class Reference}
+\label{classJKBuilder_1_1CartShell}\index{JKBuilder::CartShell@{JKBuilder::CartShell}}
+}
+
+
+Specialization of \hyperlink{classJKBuilder_1_1Shell}{Shell} to Cartesian Gaussians.  
+
+
+{\ttfamily \#include $<$BasisSet.h$>$}Inheritance diagram for CartShell::\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2cm]{classJKBuilder_1_1CartShell}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classJKBuilder_1_1CartShell_a57fcc9d47cb98edd56f6e2122f15afd6}{CartShell} (int \hyperlink{classJKBuilder_1_1Shell_a89606eca6b563ec68d2da2e84657736f}{l}=0)
+\begin{DoxyCompactList}\small\item\em Calls the \hyperlink{classJKBuilder_1_1Shell}{Shell} constructor with IsCart=true. \item\end{DoxyCompactList}\item 
+int \hyperlink{classJKBuilder_1_1CartShell_a297c144fb990284ac5973c99cdd55f91}{GetNBasis} ()
+\begin{DoxyCompactList}\small\item\em Returns the number of basis functions. \item\end{DoxyCompactList}\item 
+int \hyperlink{classJKBuilder_1_1Shell_abc886cd4e35d3c56a0250b7d06986f61}{GetNPrims} ()
+\begin{DoxyCompactList}\small\item\em Returns the number of primitives. \item\end{DoxyCompactList}\item 
+int \hyperlink{classJKBuilder_1_1Shell_a7cc8fc5bc043267a7b47e69503e0e308}{GetL} ()
+\begin{DoxyCompactList}\small\item\em Returns the angular momentum. \item\end{DoxyCompactList}\item 
+bool \hyperlink{classJKBuilder_1_1Shell_a75c22d97e837f5c439eb51aa223bed98}{IsCart} ()
+\begin{DoxyCompactList}\small\item\em Returns true if this a Cartesian like shell. \item\end{DoxyCompactList}\item 
+void \hyperlink{classJKBuilder_1_1Shell_a20ec923cb07d5d3762fffa4501d09924}{AddPrimitive} (double c0, double beta0)
+\begin{DoxyCompactList}\small\item\em Creates a primitive with expansion coefficient c0 and exponent scale factor beta0. \item\end{DoxyCompactList}\item 
+\hyperlink{classJKBuilder_1_1Primitive}{Primitive} $\ast$ \hyperlink{classJKBuilder_1_1Shell_ae98a68bcb237e53c8c063aded1b34f2e}{operator\mbox{[}$\,$\mbox{]}} (const int i)
+\begin{DoxyCompactList}\small\item\em Returns a pointer to the i-\/th primitive. \item\end{DoxyCompactList}\item 
+void \hyperlink{classJKBuilder_1_1Shell_a388f572c62279f839ee138a9afbdeeb5}{print} ()
+\begin{DoxyCompactList}\small\item\em Prints out the shell. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+bool \hyperlink{classJKBuilder_1_1Shell_a8a5f217a40aac0ce092effdd9b6db9f6}{spherical}
+\begin{DoxyCompactList}\small\item\em True if spherical, false if Cartesian. \item\end{DoxyCompactList}\item 
+int \hyperlink{classJKBuilder_1_1Shell_a89606eca6b563ec68d2da2e84657736f}{l}
+\begin{DoxyCompactList}\small\item\em The angular momentum of this shell. \item\end{DoxyCompactList}\item 
+std::vector$<$ \hyperlink{classJKBuilder_1_1Primitive}{Primitive} $\ast$ $>$ \hyperlink{classJKBuilder_1_1Shell_afd0049f3a997082e636f4dae72879da2}{gi}
+\begin{DoxyCompactList}\small\item\em A vector of the Primitives for this shell. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Specialization of \hyperlink{classJKBuilder_1_1Shell}{Shell} to Cartesian Gaussians. In a Cartesian Gaussian of angular momentum $\ell=a+b+c$, we can assign quantum numbers between 0 and $\ell$ to each of the three numbers; however, the value of the third is set once we have choosen the first two. This means we can only really choose two numbers from the possible set. If we let $a=\ell$ then $b=c=0$ necessarily. If we let $a=\ell-1$ then $\lbrace b=1,c=0\rbrace$ or $\lbrace b=0,c=1\rbrace$. It is now apparent that in general if $a=\ell-\theta$, then we have $\theta+1$ choices of pairs of $b$ and $c$, which correspond to the choices for b, which are each value between 0 and $\theta$. This means:
+
+\begin{eqnarray*} \rm{NBasis}=&\sum_{i=0}^\ell\left(i+1\right)\\ =&(\ell+1)+\sum_{i=1}^\ell i\\ =&(\ell+1)+\frac{\ell\left(\ell+1\right)}{2}\\ =&\frac{2\ell+2+\ell^2+\ell}{2}\\ =&\frac{\left(\ell +1\right)\left(\ell +2\right)}{2} \end{eqnarray*} 
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{classJKBuilder_1_1CartShell_a57fcc9d47cb98edd56f6e2122f15afd6}{
+\index{JKBuilder::CartShell@{JKBuilder::CartShell}!CartShell@{CartShell}}
+\index{CartShell@{CartShell}!JKBuilder::CartShell@{JKBuilder::CartShell}}
+\subsubsection[{CartShell}]{\setlength{\rightskip}{0pt plus 5cm}{\bf CartShell} (int {\em l} = {\ttfamily 0})}}
+\label{classJKBuilder_1_1CartShell_a57fcc9d47cb98edd56f6e2122f15afd6}
+
+
+Calls the \hyperlink{classJKBuilder_1_1Shell}{Shell} constructor with IsCart=true. 
+
+\subsection{Member Function Documentation}
+\hypertarget{classJKBuilder_1_1CartShell_a297c144fb990284ac5973c99cdd55f91}{
+\index{JKBuilder::CartShell@{JKBuilder::CartShell}!GetNBasis@{GetNBasis}}
+\index{GetNBasis@{GetNBasis}!JKBuilder::CartShell@{JKBuilder::CartShell}}
+\subsubsection[{GetNBasis}]{\setlength{\rightskip}{0pt plus 5cm}int GetNBasis ()\hspace{0.3cm}{\ttfamily  \mbox{[}virtual\mbox{]}}}}
+\label{classJKBuilder_1_1CartShell_a297c144fb990284ac5973c99cdd55f91}
+
+
+Returns the number of basis functions. 
+
+Implements \hyperlink{classJKBuilder_1_1Shell_a1167cdb6f1e1ba08ba6cbffa0b32ca77}{Shell}.\hypertarget{classJKBuilder_1_1Shell_abc886cd4e35d3c56a0250b7d06986f61}{
+\index{JKBuilder::CartShell@{JKBuilder::CartShell}!GetNPrims@{GetNPrims}}
+\index{GetNPrims@{GetNPrims}!JKBuilder::CartShell@{JKBuilder::CartShell}}
+\subsubsection[{GetNPrims}]{\setlength{\rightskip}{0pt plus 5cm}int GetNPrims ()\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1Shell_abc886cd4e35d3c56a0250b7d06986f61}
+
+
+Returns the number of primitives. \hypertarget{classJKBuilder_1_1Shell_a7cc8fc5bc043267a7b47e69503e0e308}{
+\index{JKBuilder::CartShell@{JKBuilder::CartShell}!GetL@{GetL}}
+\index{GetL@{GetL}!JKBuilder::CartShell@{JKBuilder::CartShell}}
+\subsubsection[{GetL}]{\setlength{\rightskip}{0pt plus 5cm}int GetL ()\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1Shell_a7cc8fc5bc043267a7b47e69503e0e308}
+
+
+Returns the angular momentum. \hypertarget{classJKBuilder_1_1Shell_a75c22d97e837f5c439eb51aa223bed98}{
+\index{JKBuilder::CartShell@{JKBuilder::CartShell}!IsCart@{IsCart}}
+\index{IsCart@{IsCart}!JKBuilder::CartShell@{JKBuilder::CartShell}}
+\subsubsection[{IsCart}]{\setlength{\rightskip}{0pt plus 5cm}bool IsCart ()\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1Shell_a75c22d97e837f5c439eb51aa223bed98}
+
+
+Returns true if this a Cartesian like shell. \hypertarget{classJKBuilder_1_1Shell_a20ec923cb07d5d3762fffa4501d09924}{
+\index{JKBuilder::CartShell@{JKBuilder::CartShell}!AddPrimitive@{AddPrimitive}}
+\index{AddPrimitive@{AddPrimitive}!JKBuilder::CartShell@{JKBuilder::CartShell}}
+\subsubsection[{AddPrimitive}]{\setlength{\rightskip}{0pt plus 5cm}void AddPrimitive (double {\em c0}, \/  double {\em beta0})\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1Shell_a20ec923cb07d5d3762fffa4501d09924}
+
+
+Creates a primitive with expansion coefficient c0 and exponent scale factor beta0. \hypertarget{classJKBuilder_1_1Shell_ae98a68bcb237e53c8c063aded1b34f2e}{
+\index{JKBuilder::CartShell@{JKBuilder::CartShell}!operator\mbox{[}\mbox{]}@{operator[]}}
+\index{operator\mbox{[}\mbox{]}@{operator[]}!JKBuilder::CartShell@{JKBuilder::CartShell}}
+\subsubsection[{operator[]}]{\setlength{\rightskip}{0pt plus 5cm}{\bf Primitive} $\ast$ operator\mbox{[}$\,$\mbox{]} (const int {\em i})\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1Shell_ae98a68bcb237e53c8c063aded1b34f2e}
+
+
+Returns a pointer to the i-\/th primitive. \hypertarget{classJKBuilder_1_1Shell_a388f572c62279f839ee138a9afbdeeb5}{
+\index{JKBuilder::CartShell@{JKBuilder::CartShell}!print@{print}}
+\index{print@{print}!JKBuilder::CartShell@{JKBuilder::CartShell}}
+\subsubsection[{print}]{\setlength{\rightskip}{0pt plus 5cm}void print ()\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1Shell_a388f572c62279f839ee138a9afbdeeb5}
+
+
+Prints out the shell. 
+
+\subsection{Member Data Documentation}
+\hypertarget{classJKBuilder_1_1Shell_a8a5f217a40aac0ce092effdd9b6db9f6}{
+\index{JKBuilder::CartShell@{JKBuilder::CartShell}!spherical@{spherical}}
+\index{spherical@{spherical}!JKBuilder::CartShell@{JKBuilder::CartShell}}
+\subsubsection[{spherical}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf spherical}\hspace{0.3cm}{\ttfamily  \mbox{[}protected, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1Shell_a8a5f217a40aac0ce092effdd9b6db9f6}
+
+
+True if spherical, false if Cartesian. \hypertarget{classJKBuilder_1_1Shell_a89606eca6b563ec68d2da2e84657736f}{
+\index{JKBuilder::CartShell@{JKBuilder::CartShell}!l@{l}}
+\index{l@{l}!JKBuilder::CartShell@{JKBuilder::CartShell}}
+\subsubsection[{l}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf l}\hspace{0.3cm}{\ttfamily  \mbox{[}protected, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1Shell_a89606eca6b563ec68d2da2e84657736f}
+
+
+The angular momentum of this shell. \hypertarget{classJKBuilder_1_1Shell_afd0049f3a997082e636f4dae72879da2}{
+\index{JKBuilder::CartShell@{JKBuilder::CartShell}!gi@{gi}}
+\index{gi@{gi}!JKBuilder::CartShell@{JKBuilder::CartShell}}
+\subsubsection[{gi}]{\setlength{\rightskip}{0pt plus 5cm}std::vector$<${\bf Primitive}$\ast$$>$ {\bf gi}\hspace{0.3cm}{\ttfamily  \mbox{[}protected, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1Shell_afd0049f3a997082e636f4dae72879da2}
+
+
+A vector of the Primitives for this shell. 
+
+The documentation for this class was generated from the following files:\begin{DoxyCompactItemize}
+\item 
+src/\hyperlink{BasisSet_8h}{BasisSet.h}\item 
+src/\hyperlink{BasisSet_8cpp}{BasisSet.cpp}\end{DoxyCompactItemize}

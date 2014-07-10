@@ -1,0 +1,85 @@
+Task Scheduling Library (tascel -- pronounced tassel)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+DISCLAIMER
+==========
+
+This material was prepared as an account of work sponsored by an
+agency of the United States Government.  Neither the United States
+Government nor the United States Department of Energy, nor Battelle,
+nor any of their employees, MAKES ANY WARRANTY, EXPRESS OR IMPLIED,
+OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY,
+COMPLETENESS, OR USEFULNESS OF ANY INFORMATION, APPARATUS, PRODUCT,
+SOFTWARE, OR PROCESS DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT
+INFRINGE PRIVATELY OWNED RIGHTS.
+
+ACKNOWLEDGMENT
+==============
+
+This software and its documentation were produced with United States
+Government support under Contract Number DE-AC06-76RLO-1830 awarded
+by the United States Department of Energy. The United States
+Government retains a paid-up non-exclusive, irrevocable worldwide
+license to reproduce, prepare derivative works, perform publicly and
+display publicly by or for the US Government, including the right to
+distribute to other US Government contractors.
+
+FOR THE IMPATIENT
+=================
+
+The command::
+
+    ./configure && make && make install
+
+should compile the static tascel library (libtascel.a) and install
+headers and libraries to /usr/local/include and /usr/local/lib,
+respectively.
+
+Please refer to the INSTALL file for generic build instructions.  That is a
+good place to start if you are new to using "configure; make; make install"
+types of builds.  Detailed instructions are covered later in this file.
+
+QUESTIONS/HELP/SUPPORT/BUG-REPORT
+=================================
+
+email: hpctools@pnl.gov
+
+Please don't hesitate to send us an email.  An archive of emails is available
+at:
+
+    http://groups.google.com/group/hpctools
+
+WHERE IS THE DOCUMENTATION?
+===========================
+
+The documentation, based on doxygen source code comments, is available
+in doc/ sub-directory.
+
+
+ABOUT THIS SOFTWARE
+===================
+
+Tascel is a task scheduling library, compatible with MPI and ARMCI,
+that implements algorithms for dynamic load balancing. It builds
+upon the algorithms developed in the implementation of the SCIOTO
+library for dynamic load balancing.
+
+DIRECTORY STRUCTURE (ALPHABETICALLY)
+====================================
+
+- src               (implementation of tascel algorithms)
+- examples          (example programs using tascel)
+  + scf             (SCF algorithm implemented with tascel)
+- test              (small test programs)
+- doc               (documentation)
+- m4                (autoconf macros)
+- build-aux         (autotools support scripts)
+
+
+HOW TO BUILD THE PACKAGE?
+=========================
+
+Please refer to the INSTALL file for generic build instructions.  That is a
+good place to start if you are new to using "configure; make; make install"
+types of builds. 
+

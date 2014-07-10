@@ -1,0 +1,214 @@
+\hypertarget{classJKBuilder_1_1MPIManager}{
+\section{MPIManager Class Reference}
+\label{classJKBuilder_1_1MPIManager}\index{JKBuilder::MPIManager@{JKBuilder::MPIManager}}
+}
+
+
+{\ttfamily \#include $<$MPIManager.h$>$}\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{classJKBuilder_1_1MPIManager_af29235075c80eddd344e686522304ae3}{GetNProc} ()
+\begin{DoxyCompactList}\small\item\em Returns the number of processors MPI can use. \item\end{DoxyCompactList}\item 
+int \hyperlink{classJKBuilder_1_1MPIManager_ad7e8bcb21ab0390b8330848222de5dcd}{GetNProc} (string Comm)
+\begin{DoxyCompactList}\small\item\em Returns the number of processors communicator Comm has. \item\end{DoxyCompactList}\item 
+int \hyperlink{classJKBuilder_1_1MPIManager_a8381bb709c5cc6aec8837bacd875db19}{WhoAmI} ()
+\begin{DoxyCompactList}\small\item\em Returns threadID for MPI\_\-COMM\_\-WORLD by calling \hyperlink{classJKBuilder_1_1MPIManager_a8381bb709c5cc6aec8837bacd875db19}{MPIManager::WhoAmI}(\char`\"{}MPI\_\-COMM\_\-WORLD\char`\"{}). \item\end{DoxyCompactList}\item 
+int \hyperlink{classJKBuilder_1_1MPIManager_ae78ccb19a8d31a623839b5a25ccd95ba}{WhoAmI} (string Comm)
+\begin{DoxyCompactList}\small\item\em Returns thread ID of communicator Comm. \item\end{DoxyCompactList}\item 
+void \hyperlink{classJKBuilder_1_1MPIManager_accd63186e1017516c2c303c5683a370d}{Send} (void $\ast$buffer, int count, string datatype, int root, string comm)
+\begin{DoxyCompactList}\small\item\em Sends signal to process root. \item\end{DoxyCompactList}\item 
+void \hyperlink{classJKBuilder_1_1MPIManager_ab1442bcae2404867a58c12e3d1cc2b15}{Receive} (void $\ast$buffer, int count, string datatype, int root, string comm)
+\begin{DoxyCompactList}\small\item\em Receives signal from process root. \item\end{DoxyCompactList}\item 
+void \hyperlink{classJKBuilder_1_1MPIManager_ae7fbfac94b9a7fff2f378fb34b550957}{Broadcast} (void $\ast$buffer, int count, string datatype, int root, string comm)
+\begin{DoxyCompactList}\small\item\em Broadcast sends information from root, to all other processess. \item\end{DoxyCompactList}\item 
+void \hyperlink{classJKBuilder_1_1MPIManager_a9b48de66ac7a99bc490fe3d4d940ca47}{NewComm} (string OldComm, int Color, int rank, string NewComm)
+\begin{DoxyCompactList}\small\item\em Uses the processors in OldComm to make NewComm based on the Color criteria and sorted by rank. \item\end{DoxyCompactList}\item 
+void \hyperlink{classJKBuilder_1_1MPIManager_a361624cbb5157081a71a2d1038fec676}{AllGather} (void $\ast$Message2Send, int Sendlength, string SendType, void $\ast$Buffer2Rec, int Receivelength, string ReceiveType, string Comm)
+\item 
+void \hyperlink{classJKBuilder_1_1MPIManager_a5c9f3bb8eb11f62048166357ea651f44}{Barrier} (string comm)
+\item 
+\hyperlink{classJKBuilder_1_1MPIManager_ac5bf36d4313f974db1d1d21362d97d04}{MPIManager} ()
+\item 
+\hyperlink{classJKBuilder_1_1MPIManager_a8bb26f25399bff1611d0c7db989333d0}{$\sim$MPIManager} ()
+\end{DoxyCompactItemize}
+\subsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+MPI\_\-Datatype \hyperlink{classJKBuilder_1_1MPIManager_a10170badfc93237bc6726ea1571da1e2}{DataType} (const string type)
+\begin{DoxyCompactList}\small\item\em Function that maps from our string MPI datatypes to the real ones. \item\end{DoxyCompactList}\item 
+MPI\_\-Comm \hyperlink{classJKBuilder_1_1MPIManager_aa684a7e66e1a5459234d78e7e4c0be6e}{CommType} (const string type)
+\begin{DoxyCompactList}\small\item\em Function that maps from our string Communicator identifiers to the real ones. \item\end{DoxyCompactList}\item 
+void \hyperlink{classJKBuilder_1_1MPIManager_a5097097fb8c69072f75bfc3a496abe1e}{StartMPI} ()
+\begin{DoxyCompactList}\small\item\em A function that takes care of starting MPI routines if they have not been started yet. \item\end{DoxyCompactList}\item 
+void \hyperlink{classJKBuilder_1_1MPIManager_a2eaaa3e6682681e7f143eabf2f3b2a22}{EndMPI} ()
+\begin{DoxyCompactList}\small\item\em Ends MPI run. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+bool \hyperlink{classJKBuilder_1_1MPIManager_a872aa5f69571aa82d846d4e359c83180}{DidIStartMPI}
+\begin{DoxyCompactList}\small\item\em A flag that tells us if we started MPI. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Static Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+static vector$<$ MPI\_\-Comm $>$ \hyperlink{classJKBuilder_1_1MPIManager_af2e854b00a926ebf1d7c5ecf42b39730}{CommNumber}
+\begin{DoxyCompactList}\small\item\em This is a vector of the \char`\"{}real\char`\"{} communicators. \item\end{DoxyCompactList}\item 
+static vector$<$ string $>$ \hyperlink{classJKBuilder_1_1MPIManager_a5c4dab3dd2e63bd6c3095b187a108a79}{KnownComms}
+\begin{DoxyCompactList}\small\item\em This is a vector their string labels. \item\end{DoxyCompactList}\item 
+static bool \hyperlink{classJKBuilder_1_1MPIManager_a69d6fedda1d1b6c334d4b158a25c7d6c}{MPIStarted} = false
+\begin{DoxyCompactList}\small\item\em A flag that tells us whether or not MPI has been started so we don't have to keep checking. \item\end{DoxyCompactList}\item 
+static int \hyperlink{classJKBuilder_1_1MPIManager_adcb0533b7c1700c2da6b4a0b64c9c947}{NProcs} = 0
+\begin{DoxyCompactList}\small\item\em The number of Processors. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{classJKBuilder_1_1MPIManager_ac5bf36d4313f974db1d1d21362d97d04}{
+\index{JKBuilder::MPIManager@{JKBuilder::MPIManager}!MPIManager@{MPIManager}}
+\index{MPIManager@{MPIManager}!JKBuilder::MPIManager@{JKBuilder::MPIManager}}
+\subsubsection[{MPIManager}]{\setlength{\rightskip}{0pt plus 5cm}{\bf MPIManager} ()}}
+\label{classJKBuilder_1_1MPIManager_ac5bf36d4313f974db1d1d21362d97d04}
+\hypertarget{classJKBuilder_1_1MPIManager_a8bb26f25399bff1611d0c7db989333d0}{
+\index{JKBuilder::MPIManager@{JKBuilder::MPIManager}!$\sim$MPIManager@{$\sim$MPIManager}}
+\index{$\sim$MPIManager@{$\sim$MPIManager}!JKBuilder::MPIManager@{JKBuilder::MPIManager}}
+\subsubsection[{$\sim$MPIManager}]{\setlength{\rightskip}{0pt plus 5cm}$\sim${\bf MPIManager} ()}}
+\label{classJKBuilder_1_1MPIManager_a8bb26f25399bff1611d0c7db989333d0}
+
+
+\subsection{Member Function Documentation}
+\hypertarget{classJKBuilder_1_1MPIManager_a10170badfc93237bc6726ea1571da1e2}{
+\index{JKBuilder::MPIManager@{JKBuilder::MPIManager}!DataType@{DataType}}
+\index{DataType@{DataType}!JKBuilder::MPIManager@{JKBuilder::MPIManager}}
+\subsubsection[{DataType}]{\setlength{\rightskip}{0pt plus 5cm}MPI\_\-Datatype DataType (const string {\em type})\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}
+\label{classJKBuilder_1_1MPIManager_a10170badfc93237bc6726ea1571da1e2}
+
+
+Function that maps from our string MPI datatypes to the real ones. \hypertarget{classJKBuilder_1_1MPIManager_aa684a7e66e1a5459234d78e7e4c0be6e}{
+\index{JKBuilder::MPIManager@{JKBuilder::MPIManager}!CommType@{CommType}}
+\index{CommType@{CommType}!JKBuilder::MPIManager@{JKBuilder::MPIManager}}
+\subsubsection[{CommType}]{\setlength{\rightskip}{0pt plus 5cm}MPI\_\-Comm CommType (const string {\em type})\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}
+\label{classJKBuilder_1_1MPIManager_aa684a7e66e1a5459234d78e7e4c0be6e}
+
+
+Function that maps from our string Communicator identifiers to the real ones. \hypertarget{classJKBuilder_1_1MPIManager_a5097097fb8c69072f75bfc3a496abe1e}{
+\index{JKBuilder::MPIManager@{JKBuilder::MPIManager}!StartMPI@{StartMPI}}
+\index{StartMPI@{StartMPI}!JKBuilder::MPIManager@{JKBuilder::MPIManager}}
+\subsubsection[{StartMPI}]{\setlength{\rightskip}{0pt plus 5cm}void StartMPI ()\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}
+\label{classJKBuilder_1_1MPIManager_a5097097fb8c69072f75bfc3a496abe1e}
+
+
+A function that takes care of starting MPI routines if they have not been started yet. \hypertarget{classJKBuilder_1_1MPIManager_a2eaaa3e6682681e7f143eabf2f3b2a22}{
+\index{JKBuilder::MPIManager@{JKBuilder::MPIManager}!EndMPI@{EndMPI}}
+\index{EndMPI@{EndMPI}!JKBuilder::MPIManager@{JKBuilder::MPIManager}}
+\subsubsection[{EndMPI}]{\setlength{\rightskip}{0pt plus 5cm}void EndMPI ()\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}
+\label{classJKBuilder_1_1MPIManager_a2eaaa3e6682681e7f143eabf2f3b2a22}
+
+
+Ends MPI run. \hypertarget{classJKBuilder_1_1MPIManager_af29235075c80eddd344e686522304ae3}{
+\index{JKBuilder::MPIManager@{JKBuilder::MPIManager}!GetNProc@{GetNProc}}
+\index{GetNProc@{GetNProc}!JKBuilder::MPIManager@{JKBuilder::MPIManager}}
+\subsubsection[{GetNProc}]{\setlength{\rightskip}{0pt plus 5cm}int GetNProc ()}}
+\label{classJKBuilder_1_1MPIManager_af29235075c80eddd344e686522304ae3}
+
+
+Returns the number of processors MPI can use. \hypertarget{classJKBuilder_1_1MPIManager_ad7e8bcb21ab0390b8330848222de5dcd}{
+\index{JKBuilder::MPIManager@{JKBuilder::MPIManager}!GetNProc@{GetNProc}}
+\index{GetNProc@{GetNProc}!JKBuilder::MPIManager@{JKBuilder::MPIManager}}
+\subsubsection[{GetNProc}]{\setlength{\rightskip}{0pt plus 5cm}int GetNProc (string {\em Comm})}}
+\label{classJKBuilder_1_1MPIManager_ad7e8bcb21ab0390b8330848222de5dcd}
+
+
+Returns the number of processors communicator Comm has. \hypertarget{classJKBuilder_1_1MPIManager_a8381bb709c5cc6aec8837bacd875db19}{
+\index{JKBuilder::MPIManager@{JKBuilder::MPIManager}!WhoAmI@{WhoAmI}}
+\index{WhoAmI@{WhoAmI}!JKBuilder::MPIManager@{JKBuilder::MPIManager}}
+\subsubsection[{WhoAmI}]{\setlength{\rightskip}{0pt plus 5cm}int WhoAmI ()}}
+\label{classJKBuilder_1_1MPIManager_a8381bb709c5cc6aec8837bacd875db19}
+
+
+Returns threadID for MPI\_\-COMM\_\-WORLD by calling \hyperlink{classJKBuilder_1_1MPIManager_a8381bb709c5cc6aec8837bacd875db19}{MPIManager::WhoAmI}(\char`\"{}MPI\_\-COMM\_\-WORLD\char`\"{}). \hypertarget{classJKBuilder_1_1MPIManager_ae78ccb19a8d31a623839b5a25ccd95ba}{
+\index{JKBuilder::MPIManager@{JKBuilder::MPIManager}!WhoAmI@{WhoAmI}}
+\index{WhoAmI@{WhoAmI}!JKBuilder::MPIManager@{JKBuilder::MPIManager}}
+\subsubsection[{WhoAmI}]{\setlength{\rightskip}{0pt plus 5cm}int WhoAmI (string {\em Comm})}}
+\label{classJKBuilder_1_1MPIManager_ae78ccb19a8d31a623839b5a25ccd95ba}
+
+
+Returns thread ID of communicator Comm. \hypertarget{classJKBuilder_1_1MPIManager_accd63186e1017516c2c303c5683a370d}{
+\index{JKBuilder::MPIManager@{JKBuilder::MPIManager}!Send@{Send}}
+\index{Send@{Send}!JKBuilder::MPIManager@{JKBuilder::MPIManager}}
+\subsubsection[{Send}]{\setlength{\rightskip}{0pt plus 5cm}void Send (void $\ast$ {\em buffer}, \/  int {\em count}, \/  string {\em datatype}, \/  int {\em root}, \/  string {\em comm})}}
+\label{classJKBuilder_1_1MPIManager_accd63186e1017516c2c303c5683a370d}
+
+
+Sends signal to process root. \hypertarget{classJKBuilder_1_1MPIManager_ab1442bcae2404867a58c12e3d1cc2b15}{
+\index{JKBuilder::MPIManager@{JKBuilder::MPIManager}!Receive@{Receive}}
+\index{Receive@{Receive}!JKBuilder::MPIManager@{JKBuilder::MPIManager}}
+\subsubsection[{Receive}]{\setlength{\rightskip}{0pt plus 5cm}void Receive (void $\ast$ {\em buffer}, \/  int {\em count}, \/  string {\em datatype}, \/  int {\em root}, \/  string {\em comm})}}
+\label{classJKBuilder_1_1MPIManager_ab1442bcae2404867a58c12e3d1cc2b15}
+
+
+Receives signal from process root. \hypertarget{classJKBuilder_1_1MPIManager_ae7fbfac94b9a7fff2f378fb34b550957}{
+\index{JKBuilder::MPIManager@{JKBuilder::MPIManager}!Broadcast@{Broadcast}}
+\index{Broadcast@{Broadcast}!JKBuilder::MPIManager@{JKBuilder::MPIManager}}
+\subsubsection[{Broadcast}]{\setlength{\rightskip}{0pt plus 5cm}void Broadcast (void $\ast$ {\em buffer}, \/  int {\em count}, \/  string {\em datatype}, \/  int {\em root}, \/  string {\em comm})}}
+\label{classJKBuilder_1_1MPIManager_ae7fbfac94b9a7fff2f378fb34b550957}
+
+
+Broadcast sends information from root, to all other processess. \hypertarget{classJKBuilder_1_1MPIManager_a9b48de66ac7a99bc490fe3d4d940ca47}{
+\index{JKBuilder::MPIManager@{JKBuilder::MPIManager}!NewComm@{NewComm}}
+\index{NewComm@{NewComm}!JKBuilder::MPIManager@{JKBuilder::MPIManager}}
+\subsubsection[{NewComm}]{\setlength{\rightskip}{0pt plus 5cm}void NewComm (string {\em OldComm}, \/  int {\em Color}, \/  int {\em rank}, \/  string {\em NewComm})}}
+\label{classJKBuilder_1_1MPIManager_a9b48de66ac7a99bc490fe3d4d940ca47}
+
+
+Uses the processors in OldComm to make NewComm based on the Color criteria and sorted by rank. \hypertarget{classJKBuilder_1_1MPIManager_a361624cbb5157081a71a2d1038fec676}{
+\index{JKBuilder::MPIManager@{JKBuilder::MPIManager}!AllGather@{AllGather}}
+\index{AllGather@{AllGather}!JKBuilder::MPIManager@{JKBuilder::MPIManager}}
+\subsubsection[{AllGather}]{\setlength{\rightskip}{0pt plus 5cm}void AllGather (void $\ast$ {\em Message2Send}, \/  int {\em Sendlength}, \/  string {\em SendType}, \/  void $\ast$ {\em Buffer2Rec}, \/  int {\em Receivelength}, \/  string {\em ReceiveType}, \/  string {\em Comm})}}
+\label{classJKBuilder_1_1MPIManager_a361624cbb5157081a71a2d1038fec676}
+\hypertarget{classJKBuilder_1_1MPIManager_a5c9f3bb8eb11f62048166357ea651f44}{
+\index{JKBuilder::MPIManager@{JKBuilder::MPIManager}!Barrier@{Barrier}}
+\index{Barrier@{Barrier}!JKBuilder::MPIManager@{JKBuilder::MPIManager}}
+\subsubsection[{Barrier}]{\setlength{\rightskip}{0pt plus 5cm}void Barrier (string {\em comm})}}
+\label{classJKBuilder_1_1MPIManager_a5c9f3bb8eb11f62048166357ea651f44}
+
+
+\subsection{Member Data Documentation}
+\hypertarget{classJKBuilder_1_1MPIManager_af2e854b00a926ebf1d7c5ecf42b39730}{
+\index{JKBuilder::MPIManager@{JKBuilder::MPIManager}!CommNumber@{CommNumber}}
+\index{CommNumber@{CommNumber}!JKBuilder::MPIManager@{JKBuilder::MPIManager}}
+\subsubsection[{CommNumber}]{\setlength{\rightskip}{0pt plus 5cm}vector$<$ MPI\_\-Comm $>$ {\bf CommNumber}\hspace{0.3cm}{\ttfamily  \mbox{[}static, private\mbox{]}}}}
+\label{classJKBuilder_1_1MPIManager_af2e854b00a926ebf1d7c5ecf42b39730}
+
+
+This is a vector of the \char`\"{}real\char`\"{} communicators. \hypertarget{classJKBuilder_1_1MPIManager_a5c4dab3dd2e63bd6c3095b187a108a79}{
+\index{JKBuilder::MPIManager@{JKBuilder::MPIManager}!KnownComms@{KnownComms}}
+\index{KnownComms@{KnownComms}!JKBuilder::MPIManager@{JKBuilder::MPIManager}}
+\subsubsection[{KnownComms}]{\setlength{\rightskip}{0pt plus 5cm}vector$<$ string $>$ {\bf KnownComms}\hspace{0.3cm}{\ttfamily  \mbox{[}static, private\mbox{]}}}}
+\label{classJKBuilder_1_1MPIManager_a5c4dab3dd2e63bd6c3095b187a108a79}
+
+
+This is a vector their string labels. At the outset two communicators are known: MPI\_\-COMM\_\-WORLD and MPI\_\-COMM\_\-SELF (both all caps). The user may add more comms by calling NewComm with some string identifier for the new comm, these identifiers will be case sensitive. \hypertarget{classJKBuilder_1_1MPIManager_a69d6fedda1d1b6c334d4b158a25c7d6c}{
+\index{JKBuilder::MPIManager@{JKBuilder::MPIManager}!MPIStarted@{MPIStarted}}
+\index{MPIStarted@{MPIStarted}!JKBuilder::MPIManager@{JKBuilder::MPIManager}}
+\subsubsection[{MPIStarted}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf MPIStarted} = false\hspace{0.3cm}{\ttfamily  \mbox{[}static, private\mbox{]}}}}
+\label{classJKBuilder_1_1MPIManager_a69d6fedda1d1b6c334d4b158a25c7d6c}
+
+
+A flag that tells us whether or not MPI has been started so we don't have to keep checking. \hypertarget{classJKBuilder_1_1MPIManager_a872aa5f69571aa82d846d4e359c83180}{
+\index{JKBuilder::MPIManager@{JKBuilder::MPIManager}!DidIStartMPI@{DidIStartMPI}}
+\index{DidIStartMPI@{DidIStartMPI}!JKBuilder::MPIManager@{JKBuilder::MPIManager}}
+\subsubsection[{DidIStartMPI}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf DidIStartMPI}\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}
+\label{classJKBuilder_1_1MPIManager_a872aa5f69571aa82d846d4e359c83180}
+
+
+A flag that tells us if we started MPI. \hypertarget{classJKBuilder_1_1MPIManager_adcb0533b7c1700c2da6b4a0b64c9c947}{
+\index{JKBuilder::MPIManager@{JKBuilder::MPIManager}!NProcs@{NProcs}}
+\index{NProcs@{NProcs}!JKBuilder::MPIManager@{JKBuilder::MPIManager}}
+\subsubsection[{NProcs}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf NProcs} = 0\hspace{0.3cm}{\ttfamily  \mbox{[}static, private\mbox{]}}}}
+\label{classJKBuilder_1_1MPIManager_adcb0533b7c1700c2da6b4a0b64c9c947}
+
+
+The number of Processors. 
+
+The documentation for this class was generated from the following files:\begin{DoxyCompactItemize}
+\item 
+src/\hyperlink{MPIManager_8h}{MPIManager.h}\item 
+src/\hyperlink{MPIManager_8cpp}{MPIManager.cpp}\end{DoxyCompactItemize}

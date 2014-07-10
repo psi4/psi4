@@ -1,0 +1,273 @@
+/* config.h.in.  Generated from configure.ac by autoheader.  */
+
+/* Define to 1 on BlueGene/L systems */
+#undef BGL
+
+/* Define to 1 on BlueGene/P systems */
+#undef BGP
+
+/* Define to 1 on Cray XT systems using Catamount */
+#undef CATAMOUNT
+
+/* Define to 1 on Cray SV1 systems */
+#undef CRAY_SV1
+
+/* Define to 1 on Cray SV2 systems */
+#undef CRAY_SV2
+
+/* Define to 1 on Cray T3E systems */
+#undef CRAY_T3E
+
+/* Define to 1 on Cray XT systems */
+#undef CRAY_XT
+
+/* Define to 1 on Cray YMP systems */
+#undef CRAY_YMP
+
+/* Define to 1 on Cygnus systems */
+#undef CYGNUS
+
+/* Define to 1 on Cygwin systems */
+#undef CYGWIN
+
+/* Define to 1 on DEC OSF */
+#undef DECOSF
+
+/* Define to 1 on fujitsu systems */
+#undef FUJITSU_VPP
+
+/* Define to 1 on fujitsu systems */
+#undef FUJITSU_VPP64
+
+/* define if the Boost library is available */
+#undef HAVE_BOOST
+
+/* Define to 1 if you have the <dlfcn.h> header file. */
+#undef HAVE_DLFCN_H
+
+/* set to 1 if we have the indicated package */
+#undef HAVE_GA
+
+/* Define to 1 if you have the `gettimeofday' function. */
+#undef HAVE_GETTIMEOFDAY
+
+/* Define to 1 if you have the <inttypes.h> header file. */
+#undef HAVE_INTTYPES_H
+
+/* Define to 1 if you have the <limits.h> header file. */
+#undef HAVE_LIMITS_H
+
+/* Define to 1 if your system has a GNU libc compatible `malloc' function, and
+   to 0 otherwise. */
+#undef HAVE_MALLOC
+
+/* Define to 1 if you have the <math.h> header file. */
+#undef HAVE_MATH_H
+
+/* Define to 1 if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
+
+/* Define to 1 if you have the `memset' function. */
+#undef HAVE_MEMSET
+
+/* Define to 1 if you have the <omp.h> header file. */
+#undef HAVE_OMP_H
+
+/* Define to 1 if you have the `pow' function. */
+#undef HAVE_POW
+
+/* Define to 1 if you have the <pthread.h> header file. */
+#undef HAVE_PTHREAD_H
+
+/* Define to 1 if you have the <sched.h> header file. */
+#undef HAVE_SCHED_H
+
+/* Define to 1 if you have the `sqrt' function. */
+#undef HAVE_SQRT
+
+/* Define to 1 if stdbool.h conforms to C99. */
+#undef HAVE_STDBOOL_H
+
+/* Define to 1 if you have the <stdint.h> header file. */
+#undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdio.h> header file. */
+#undef HAVE_STDIO_H
+
+/* Define to 1 if you have the <stdlib.h> header file. */
+#undef HAVE_STDLIB_H
+
+/* Define to 1 if you have the `strerror' function. */
+#undef HAVE_STRERROR
+
+/* Define to 1 if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define to 1 if you have the <string.h> header file. */
+#undef HAVE_STRING_H
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#undef HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/time.h> header file. */
+#undef HAVE_SYS_TIME_H
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
+
+/* set to 1 if we have the indicated package */
+#undef HAVE_TBB
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#undef HAVE_UNISTD_H
+
+/* Define to 1 if the system has the type `_Bool'. */
+#undef HAVE__BOOL
+
+/* Define to 1 on hitachi systems */
+#undef HITACHI
+
+/* Define to 1 on HP-UX systems */
+#undef HPUX
+
+/* Define to 1 on 64bit HP-UX systems */
+#undef HPUX64
+
+/* Define to 1 on IBM SP systems */
+#undef IBM
+
+/* Define to 1 on 64bit IBM SP systems */
+#undef IBM64
+
+/* Define to 1 on ??? systems */
+#undef INTERIX
+
+/* Define to 1 on IBM systems with LAPI */
+#undef LAPI
+
+/* Define to 1 on 64bit IBM systems with LAPI */
+#undef LAPI64
+
+/* Define to 1 on generic Linux systems */
+#undef LINUX
+
+/* Define to 1 on generic 64bit Linux systems */
+#undef LINUX64
+
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+   */
+#undef LT_OBJDIR
+
+/* Define to 1 on OSX systems */
+#undef MACX
+
+/* Define to 1 on 64bit OSX systems */
+#undef MACX64
+
+/* Use MPI for messaging */
+#undef MSG_COMMS_MPI
+
+/* Use TCGMSG for messaging */
+#undef MSG_COMMS_TCGMSG
+
+/* Use TCGMSG (ipcv4.0) for messaging */
+#undef MSG_COMMS_TCGMSG4
+
+/* Use TCGMSG (ipcv5.0) for messaing */
+#undef MSG_COMMS_TCGMSG5
+
+/* Define to 1 if assertions should be disabled. */
+#undef NDEBUG
+
+/* Define to 1 on NEC systems */
+#undef NEC
+
+/* Define to 1 on 64bit NEC systems */
+#undef NEC64
+
+/* Name of package */
+#undef PACKAGE
+
+/* Define to the address where bug reports for this package should be sent. */
+#undef PACKAGE_BUGREPORT
+
+/* Define to the full name of this package. */
+#undef PACKAGE_NAME
+
+/* Define to the full name and version of this package. */
+#undef PACKAGE_STRING
+
+/* Define to the one symbol short name of this package. */
+#undef PACKAGE_TARNAME
+
+/* Define to the home page for this package. */
+#undef PACKAGE_URL
+
+/* Define to the version of this package. */
+#undef PACKAGE_VERSION
+
+/* Define to 1 on ??? systems */
+#undef SGI
+
+/* Define to 1 on ??? systems */
+#undef SGITFP
+
+/* Define to 1 on ??? systems */
+#undef SGI_N32
+
+/* The size of `char', as computed by sizeof. */
+#undef SIZEOF_CHAR
+
+/* The size of `double', as computed by sizeof. */
+#undef SIZEOF_DOUBLE
+
+/* The size of `float', as computed by sizeof. */
+#undef SIZEOF_FLOAT
+
+/* The size of `int', as computed by sizeof. */
+#undef SIZEOF_INT
+
+/* The size of `long', as computed by sizeof. */
+#undef SIZEOF_LONG
+
+/* The size of `long double', as computed by sizeof. */
+#undef SIZEOF_LONG_DOUBLE
+
+/* The size of `long long', as computed by sizeof. */
+#undef SIZEOF_LONG_LONG
+
+/* The size of `short', as computed by sizeof. */
+#undef SIZEOF_SHORT
+
+/* The size of `void*', as computed by sizeof. */
+#undef SIZEOF_VOIDP
+
+/* Define to 1 on Solaris systems */
+#undef SOLARIS
+
+/* Define to 1 on 64bit Solaris systems */
+#undef SOLARIS64
+
+/* Define to 1 if you have the ANSI C header files. */
+#undef STDC_HEADERS
+
+/* Define if we want this system to use SYSV shared memory */
+#undef SYSV
+
+/* deprecated, use MSG_COMMS_TCGMSG */
+#undef TCGMSG
+
+/* Version number of package */
+#undef VERSION
+
+/* Define to `__inline__' or `__inline' if that's what the C compiler
+   calls it, or to nothing if 'inline' is not supported under any name.  */
+#ifndef __cplusplus
+#undef inline
+#endif
+
+/* Define to rpl_malloc if the replacement function should be used. */
+#undef malloc
+
+/* Define to `unsigned int' if <sys/types.h> does not define. */
+#undef size_t

@@ -1,0 +1,105 @@
+TCGMSG Examples
+===============
+
+These example programs are realisitic (?) models of actual applications or
+algorithms from chemical-physics.  They should make cleanly once the Makefile
+has been appropriately modified (which is done automatically for all supported
+machines). Serial and shared-memory parallel (and possibly CM and Linda)
+versions are also available but not included here.
+
+The programs may be run using the csh script demo in this directory The script
+takes a single argument which is the name of the desired demo (scf, md, mc,
+jacobi, grid).  The script uses a template PROCGRP file (template.p) to
+generate the actual PROCGRP file used ... its makes a default file if one does
+not exist ... look in that for details.
+
+Self Consistent Field (scf)
+---------------------------
+
+This SCF code is a cleaned up and much enhanced version of the one in Szabo
+and Ostlund.  It uses distributed primitive 1s gaussian functions as a basis
+(thus emulating use of s,p,... functions) and computes integrals to
+essentially full accuracy.  It is a direct SCF (integrals are computed each
+iteration using the Schwarz inequality for screeing).  An atomic denisty is
+used for a starting guess.  Damping and level shifting are used to aid
+convergence. 
+
+Rather than complicate the program with code for parsing input the include
+file 'cscf.h' and block data file 'blkdata.f' contain all the data and thus
+there are three versions, one for each of the available problem sizes.  The
+three sizes correpsond to 15 basis functions (Be), 30 basis functions (Be2)
+and 60 basis functions (tetrahedral Be4).
+
+[In addition to these three cases there are files for 60, 120 and 240
+functions, which are not built by default (type 'make extra' for
+these).  These are 4, 8 and 16 Be atoms, respectively, arranged in a line.]
+
+The O(N**4) step has been parallelized with the assumption that each process
+can hold all of the density and fock matrices which is reasonable for up to
+O(1000) basis functions on most workstations networks and many MIMD machines
+(e.g. iPSC-i860).  The work is dynamically load-balanced, with tasks
+comprising 10 sets of integrals (ij|**) (see TWOEL() and NXTASK() in scf.f).
+
+The work of O(N**3) has not been parallelized, but has been optimized to use
+BLAS and a tweaked Jacobi diagonalizer with dynamic threshold selection.
+
+Molecular Dynamics (md)
+-----------------------
+
+This program bounces a few thousand argon atoms around in a box with periodic
+boundary conditions.  Pairwise interactions (Leonard-Jones) are used with a
+simple integration of the Newtonian equations of motion.  This program is
+derived from the serial code of Deiter Heerman, but many modifications have
+been made.  Prof. Frank Harris has a related FORTRAN 9X Connection Machine
+version.
+
+The O(N) work constructing the forces has been parallelized, as has the
+computation of the pair distribution function.  The neighbour list is computed
+in parallel every 20 steps with a simple static decomposition.  This then
+drives the parallelization of the forces computation.  To make the simulation
+bigger increase the value of mm in the parameter statement at the top of md.f
+(mm=8 gives 2048 particles, mm=13 gives 8878).  Each particle interacts with
+about 80 others, and the neighbor list is computed for about 130 neighbors to
+allow for movement before it is updated.
+
+Monte Carlo (mc)
+----------------
+
+This code evaluates the energy of the simplest explicitly correlated
+electronic wavefunction for the He atom ground state using a variational
+monte-carlo method without importance sampling.  It is completely boringly
+parallel and for realistic problem sizes gives completely linear speed-ups for
+several hunderd processes.  You have to give it the no. of moves to
+equilibrate the system for (neq) and the no. of moves to compute averages over
+(nstep).  Apropriate values for a very short run are 200 and 500 respectively.
+
+Jacobi iterative linear equation solver (jacobi)
+------------------------------------------------
+
+Uses a naive jacobi iterative algorithm to solve a linear equation.  This
+algorithm is not applicable to real linear equations (sic) and neither is it
+the most parallel algorithm available.  The code as implemented here gets 780+
+MFLOP on a 128 node iPSC-i860 ... a paltry 30% efficiency, but it is not hard
+to improve upon either.
+
+All the time is spent in a large matrix vector product which is statically
+distributed across the processes.  You need to give it the matrix dimension
+(pick as big as will fit in memory).
+
+Solution of Laplace's equation on a 2-D grid (grid)
+---------------------------------------------------
+
+Solve Laplace's eqn. on a 2-D square grid subject to b.c.s on the boundary.
+Use 5 point discretization of the operator and a heirarchy of grids with
+red/black gauss seidel w-relaxation.  This is not the most efficient means of
+solving this equation (probably should use a fast-poisson solver) but it
+provides a 'real-world' example of spatial decomposition determining the
+parallel decomposition.  It is also the only example of a full application in
+C that is included here.
+
+If the code is compiled with -DPLOT and run with the option '-plot XXX', where
+XXX is one of 'value', 'residual' or 'error', then grids are dumped at
+intervals to the file 'plot' (in the directory of process zero).  This file
+may be displayed with the X11-R4/5 program xpix.  Xpix is not built
+automatically and must be extracted and built from the shar file in this
+directory.
