@@ -34,3 +34,9 @@ add_custom_target(
     boostlibs ALL
     DEPENDS boost.compiled
 )
+
+#include(ExternalProject)
+#ExternalProject_Add(Boost
+#    URL ${PROJECT_SOURCE_DIR}/boost/${BOOSTVER}.tar.gz
+#    CONFIGURE_COMMAND ./bootstrap.sh --with-libraries=${BOOST_LIBS_2_MAKE}
+#    BUILD_COMMAND b2)

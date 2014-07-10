@@ -90,11 +90,17 @@ parser.add_argument('--with-f77symbol',
                     default='detect',
                     help="The Fortran compiler name mangling convention, used for linking external Fortran libraries, such as BLAS. Values are lcu (lower case with traling underscore), lc (lower case), ucu (upper case with trailing underscore), uc (upper case). If omitted CMake will detect it automatically if a Fortran compiler is present, if not it will use lcu.")
 # Lapack
-parser.add_argument('--with-lapack',
-                    metavar='= LAPACK',
+parser.add_argument('--with-lapack-libs',
+                    metavar='= LAPACKLIBS',
                     type=str,
                     default=blankstring,
                     help='The flags to be passed to the linker to use BLAS and LAPACK. For modern mkl, with intel compilers, you can set this to -mkl (N.B. not -lmkl).  If omitted, CMake will try to find a working version for you.')
+parser.add_argument('--with-lapack-incs',
+                    metavar='= LAPACKINCS',
+                    type=str,
+                    default=blankstring,
+                    help='The flags to be passed to the compiler to use BLAS and LAPACK. If omitted, CMake will try to find a working version for you.')
+
 # LD flags
 parser.add_argument('--with-ldflags',
                     metavar='= LDFLAGS',
@@ -158,7 +164,7 @@ def dict_to_list(dictionary):
         else:
             if isinstance(dictionary[k], list):
                 s += " ".join(dictionary[k])
-                print l
+                #print l
             elif isinstance(dictionary[k], str):
                 s += dictionary[k]
             elif isinstance(dictionary[k], (int, float)):
@@ -178,7 +184,7 @@ def dict_to_string(dictionary):
         else:
             if isinstance(dictionary[k], list):
                 string += '"' + " ".join(dictionary[k]) + '"'
-                print string
+                #print string
             elif isinstance(dictionary[k], str):
                 string += dictionary[k]
             elif isinstance(dictionary[k], (int, float)):
@@ -209,6 +215,8 @@ else:
 if args.with_debug:
     cmakeflags['CXXFLAGS'].append("-g")
     cmakeflags['F77FLAGS'].append("-g")
+if args.with_erd:
+    cmakeflags['ERD']=["TRUE"]
 if args.with_cxxflags != blankstring:
     cmakeflags['CXXFLAGS'].append(args.with_cxxflags)
 if args.with_f77flags != blankstring:
@@ -234,8 +242,10 @@ if args.with_boost_libdir != blankstring:
 if args.with_python != blankstring:
     cmakeflags['PYTHON'] = args.with_python
 # LAPACK
-if args.with_lapack != blankstring:
-    cmakeflags['LAPACK'] = [args.with_lapack]
+if args.with_lapack_libs != blankstring:
+    cmakeflags['LAPACKLIBS'] = [args.with_lapack_libs]
+if args.with_lapack_incs != blankstring:
+    cmakeflags['LAPACKINCS'] = [args.with_lapack_incs]
 # F77SYMBOL
 cmakeflags['F77SYMBOL'] = args.with_f77symbol
 
