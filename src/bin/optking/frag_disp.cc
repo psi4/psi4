@@ -243,7 +243,10 @@ bool FRAG::displace_util(double *dq, bool focus_on_constraints) {
   while ( !bt_iter_done ) {
 
 /*
-    // (B^t B)^-1 B^t dq = dx
+    // B dx    = dq
+    // Bt B dx = Bt dq
+    // dx      = (B^t B)^-1 B^t dq
+    // dx      = G^-1 B^t dq, where G = B^t B.
     // Tried in 2014.  Will it give different results than the code below if there are redundancies?
     // In this form, G is cart x cart, instead of int by int.
     // Disadvantage is that G has always rotation and translations in it (i.e., 0 evals when diagonalized).
@@ -255,7 +258,11 @@ bool FRAG::displace_util(double *dq, bool focus_on_constraints) {
     free_matrix(Gx_inv);
 */
 
-    // G = BuBt ; u = unit matrix; G = BBt
+    // B dx = dq
+    // B dx = (B Bt)(B Bt)^-1 dq
+    // B dx = B * (Bt (B Bt)^-1) dq
+    //   dx = Bt (B Bt)^-1 dq
+    //   dx = Bt G^-1 dq, where G = B B^t.
     compute_B(B);
     opt_matrix_mult(B, 0, B, 1, G, 0, Nints, Ncarts, Nints, 0);
 
