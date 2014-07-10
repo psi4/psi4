@@ -964,6 +964,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     (if set), or else by the name of the output file plus the name of
     the current molecule. -*/
     options.add_bool("MOLDEN_WRITE", false);
+    /*- If true, then repeat the specified guess procedure for the orbitals every time -
+    even during a geometry optimization. -*/
+    options.add_bool("GUESS_PERSIST", false);
 
     /*- Flag to print the molecular orbitals. -*/
     options.add_bool("PRINT_MOS", false);

@@ -1039,6 +1039,7 @@ def optimize(name, **kwargs):
     mol = psi4.get_active_molecule()
     mol.update_geometry()
     initial_sym = mol.schoenflies_symbol()
+    guessPersist = psi4.get_global_option('GUESS_PERSIST')
     while n <= psi4.get_global_option('GEOM_MAXITER'):
         mol = psi4.get_active_molecule()
         mol.update_geometry()
@@ -1051,7 +1052,7 @@ def optimize(name, **kwargs):
         kwargs['opt_iter'] = n
 
         # Use orbitals from previous iteration as a guess
-        if (n > 1) and (not isSowReap):
+        if (n > 1) and (not isSowReap) and (not guessPersist):
             psi4.set_local_option('SCF', 'GUESS', 'READ')
 
         # Compute the gradient
