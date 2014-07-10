@@ -2656,6 +2656,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("RELAXED",true);
     /*- Do symmetrize the GFM and OPDM in the EKT computations?  -*/
     options.add_bool("SYMMETRIZE",true);
+    /*- Do compute one electron properties?  -*/
+    options.add_bool("OEPROP",false);
   }
   if (name == "DFOCC"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs density-fitted orbital-optimized MPn and CC computations and conventional MPn computations. -*/
@@ -2665,7 +2667,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Maximum number of iterations to determine the orbitals -*/
     options.add_int("MO_MAXITER",50);
     /*- Maximum number of preconditioned conjugate gradient iterations.  -*/
-    options.add_int("PCG_MAXITER",30);
+    options.add_int("PCG_MAXITER",50);
     /*- Number of vectors used in orbital DIIS -*/
     options.add_int("MO_DIIS_NUM_VECS",6);
     /*- Minimum number of vectors used in amplitude DIIS -*/
@@ -2738,6 +2740,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("CONV_TEI_TYPE","DIRECT","DIRECT DISK");
     /*- Type of PCG beta parameter (Fletcher-Reeves or Polak-Ribiere). -*/
     options.add_str("PCG_BETA_TYPE","FLETCHER_REEVES","FLETCHER_REEVES POLAK_RIBIERE");
+    /*- The algorithm that used to handle mp2 amplitudes. The DIRECT option means compute amplitudes on the fly whenever they are necessary. -*/
+    options.add_str("MP2_AMP_TYPE","DIRECT","DIRECT CONV");
 
     /*- Do compute natural orbitals? -*/
     options.add_bool("NAT_ORBS",false);
@@ -2765,6 +2769,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("REGULARIZATION",false);
     /*- Do read 3-index integrals from SCF files?  -*/
     options.add_bool("READ_SCF_3INDEX",true);
+    /*- Do compute one electron properties?  -*/
+    options.add_bool("OEPROP",false);
+    /*- Do compute <S2> for DF-OMP2/DF-MP2?  -*/
+    options.add_bool("COMPUT_S2",false);
   }
   if (name == "MRCC"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/

@@ -70,8 +70,8 @@ if (reference_ == "RESTRICTED") {
     // Fab += \sum_{Q} \sum_{e} G_eb^Q b_ea^Q 
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
-    G->read(psio_, PSIF_DFOCC_DENS);
-    K->read(psio_, PSIF_DFOCC_INTS);
+    G->read(psio_, PSIF_DFOCC_DENS, true, true);
+    K->read(psio_, PSIF_DFOCC_INTS, true, true);
     GFvv->contract(true, false, nvirA, nvirA, nQ_ref * nvirA, K, G, 1.0, 1.0);
     G.reset();
     K.reset();
@@ -106,6 +106,12 @@ else if (reference_ == "UNRESTRICTED") {
     // Fab = \sum_{e} h_ae G_eb
     GFvvA->gemm(true, false, HvvA, G1c_vvA, 1.0, 0.0);
     GFvvB->gemm(true, false, HvvB, G1c_vvB, 1.0, 0.0);
+
+ if (reference == "ROHF" && orb_opt_ == "FALSE") {
+    // Fab = \sum_{m} h_am G_mb
+    GFvvA->gemm(false, false, HvoA, G1c_ovA, 1.0, 1.0);
+    GFvvB->gemm(false, false, HvoB, G1c_ovB, 1.0, 1.0);
+ }
 
     // Fab += \sum_{Q} \sum_{m} G_mb^Q b_ma^Q 
     // alpha spin
@@ -153,8 +159,8 @@ else if (reference_ == "UNRESTRICTED") {
     // alpha spin
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
-    G->read(psio_, PSIF_DFOCC_DENS);
-    K->read(psio_, PSIF_DFOCC_INTS);
+    G->read(psio_, PSIF_DFOCC_DENS, true, true);
+    K->read(psio_, PSIF_DFOCC_INTS, true, true);
     GFvvA->contract(true, false, nvirA, nvirA, nQ_ref * nvirA, K, G, 1.0, 1.0);
     G.reset();
     K.reset();
@@ -162,8 +168,8 @@ else if (reference_ == "UNRESTRICTED") {
     // beta spin
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|vv)", nQ_ref, nvirB, nvirB));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|vv)", nQ_ref, nvirB, nvirB));
-    G->read(psio_, PSIF_DFOCC_DENS);
-    K->read(psio_, PSIF_DFOCC_INTS);
+    G->read(psio_, PSIF_DFOCC_DENS, true, true);
+    K->read(psio_, PSIF_DFOCC_INTS, true, true);
     GFvvB->contract(true, false, nvirB, nvirB, nQ_ref * nvirB, K, G, 1.0, 1.0);
     G.reset();
     K.reset();
@@ -176,7 +182,6 @@ else if (reference_ == "UNRESTRICTED") {
         GFA->print();
         GFB->print();
     }
-
 
     /*
     // Energy

@@ -20,7 +20,7 @@ h 1 0.958 2 104.4776
 set {
   basis cc-pvdz
 }
-gradient('omp2')
+gradient('conv-omp2')
 
 grad = psi4.wavefunction().gradient()                           #TEST
 compare_matrices(ref, grad, 5, "Analytic gradients")              #TEST

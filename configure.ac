@@ -1211,6 +1211,10 @@ AC_CONFIG_FILES([
           tests/cdomp2-2/Makefile
           tests/dfomp2-grad1/Makefile
           tests/dfomp2-grad2/Makefile
+          tests/dfmp2-grad1/Makefile
+          tests/dfmp2-grad2/Makefile
+          tests/dfmp2-grad3/Makefile
+          tests/dfmp2-grad4/Makefile
           tests/matrix1/Makefile
           tests/pubchem1/Makefile
           tests/props1/Makefile

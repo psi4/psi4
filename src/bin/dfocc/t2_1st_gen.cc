@@ -49,7 +49,7 @@ if (reference_ == "RESTRICTED") {
 
     // Read old amps
     t2p_1 = SharedTensor2d(new Tensor2d("T2_1(ia,jb)", naoccA, navirA, naoccA, navirA));
-    t2p_1->read(psio_, PSIF_DFOCC_AMPS);
+    t2p_1->read_symm(psio_, PSIF_DFOCC_AMPS);
 
     // Fint contributions
     // T'(ia,jb) += \sum_{e} T_ij^ae F_be = \sum_{e} T'(ia,je) F_be
@@ -76,7 +76,7 @@ if (reference_ == "RESTRICTED") {
     // reset
     t2p_1->copy(t2p_1new);
     t2p_1new.reset();
-    t2p_1->write(psio_, PSIF_DFOCC_AMPS);
+    t2p_1->write_symm(psio_, PSIF_DFOCC_AMPS);
     if (print_ > 2) t2p_1->print();
  
     /*
@@ -93,7 +93,7 @@ if (reference_ == "RESTRICTED") {
     u2p_1->scale(-1.0);
     u2p_1->axpy(t2p_1, 2.0);
     t2p_1.reset();
-    u2p_1->write(psio_, PSIF_DFOCC_AMPS);
+    u2p_1->write_symm(psio_, PSIF_DFOCC_AMPS);
     u2p_1.reset();
 }// end if (reference_ == "RESTRICTED")
 
@@ -119,7 +119,7 @@ else if (reference_ == "UNRESTRICTED") {
 
     // Fint contributions
     t2_1AA = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
-    t2_1AA->read(psio_, PSIF_DFOCC_AMPS);
+    t2_1AA->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
 
     // T(IJ,AB) += \sum_{E} T_IJ^AE F_BE
     t2_1newAA->contract424(4, 2, t2_1AA, FabA, 1.0, 1.0);
@@ -145,11 +145,11 @@ else if (reference_ == "UNRESTRICTED") {
     // reset
     t2_1AA->copy(t2_1newAA);
     t2_1newAA.reset();
-    t2_1AA->write(psio_, PSIF_DFOCC_AMPS);
+    t2_1AA->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
     t2p_1 = SharedTensor2d(new Tensor2d("T2_1(IA,JB)", naoccA, navirA, naoccA, navirA));
     t2p_1->sort(1324, t2_1AA, 1.0, 0.0);
     t2_1AA.reset();
-    t2p_1->write(psio_, PSIF_DFOCC_AMPS);
+    t2p_1->write_symm(psio_, PSIF_DFOCC_AMPS);
     t2p_1.reset();
 
     // T2BB
@@ -173,7 +173,7 @@ else if (reference_ == "UNRESTRICTED") {
 
     // Fint contributions
     t2_1BB = SharedTensor2d(new Tensor2d("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
-    t2_1BB->read(psio_, PSIF_DFOCC_AMPS);
+    t2_1BB->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
 
     // T(ij,ab) += \sum_{e} T_ij^ae F_be
     t2_1newBB->contract424(4, 2, t2_1BB, FabB, 1.0, 1.0);
@@ -199,11 +199,11 @@ else if (reference_ == "UNRESTRICTED") {
     // reset
     t2_1BB->copy(t2_1newBB);
     t2_1newBB.reset();
-    t2_1BB->write(psio_, PSIF_DFOCC_AMPS);
+    t2_1BB->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
     t2p_1 = SharedTensor2d(new Tensor2d("T2_1(ia,jb)", naoccB, navirB, naoccB, navirB));
     t2p_1->sort(1324, t2_1BB, 1.0, 0.0);
     t2_1BB.reset();
-    t2p_1->write(psio_, PSIF_DFOCC_AMPS);
+    t2p_1->write_symm(psio_, PSIF_DFOCC_AMPS);
     t2p_1.reset();
 
     // T2AB
