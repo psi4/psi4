@@ -341,6 +341,7 @@ class MOLECULE {
   void apply_constraint_forces(void);
   bool has_fixed_eq_vals(void);
   void project_f_and_H(void);
+  void project_dq(double *);
   void irc_step(void);
   void nr_step(void);
   void rfo_step(void);

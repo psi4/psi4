@@ -206,6 +206,10 @@ void MOLECULE::rfo_step(void) {
     for (j=0; j<dim; ++j)
       dq[j] = SRFO[rfo_root][j]; // leave out last column
 
+    // Project out redundancies in steps.
+    // RAK added this projection in 2014, but doesn't seem to be necessary. f,H are already projected.
+    project_dq(dq);
+
     // Zero steps for frozen fragment.  If user has specified.
     for (f=0; f<fragments.size(); ++f) {
       if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
