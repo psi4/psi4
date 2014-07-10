@@ -20,8 +20,10 @@ get_value(useroptCXX_FLAGS CXXFLAGS   ${EMPTY})
 get_value(useroptF77_FLAGS F77FLAGS   ${EMPTY})
 #OPTION F77SYMBOL       The Fortran compiler name mangling convention, used for linking external Fortran libraries, such as BLAS. Values are lcu (lower case with traling underscore), lc (lower case), ucu (upper case with trailing underscore), uc (upper case). If omitted CMake will detect it automatically if a Fortran compiler is present, if not it will use lcu. (string)
 get_value(useroptF77SYMBOL F77SYMBOL  "detect")
-#OPTION LAPACK           Linker flags to use for Lapack (and BLAS), instead of detecting system library (string)
-get_value(useroptLAPACK  LAPACK   ${EMPTY})
+#OPTION LAPACK Libs          Linker flags to use for Lapack (and BLAS), instead of detecting system library (string)
+get_value(useroptLAPACKLIBS  LAPACKLIBS   ${EMPTY})
+#OPTION LAPACK Incs          Compiler flags to use for Lapack (and BLAS), instead of detecting system library (string)
+get_value(useroptLAPACKINCS  LAPACKINCS   ${EMPTY})
 #OPTION LD_FLAGS         Extra flags to be used in linking (string)
 get_value(useroptLDFLAGS  LDFLAGS   ${EMPTY})
 #OPTION PREFIX           The installation directory for psi4 (string)
@@ -87,10 +89,6 @@ include(CheckFunctionExists)
 check_function_exists(MKL_Free_Buffers HAVE_MKL) # NEEDS TO BE TESTED
 check_function_exists(erf HAVE_FUNC_ERF)
 
-#Should be taken care of by find_package(MPI)
-#include(CheckSymbolExists)
-#check_symbol_exists(MPI_Finalize mpi.h HAVE_MPI) # NEEDS TO BE TESTED
-
 include(cmake/Restrict.cmake)
 test_restrict(restrict)
 
@@ -100,7 +98,8 @@ endif()
 configure_file(include/psiconfig.h.cmake.in include/psiconfig.h)
 
 # Is this needed for the script?
-# TODO: Fix gitversion.py to work without setting top_srcdir...maybe use PROJECT_SOURCE_DIR
+# TODO: Fix gitversion.py to work without setting top_srcdir...maybe use 
+# PROJECT_SOURCE_DIR?
 set(top_srcdir ${PROJECT_SOURCE_DIR}) # The quotes are added in the source, in this case
 configure_file(src/bin/psi4/gitversion.py.in src/bin/psi4/gitversion.py)
 
@@ -130,21 +129,16 @@ include_directories(
 #
 # BLAS and LAPACK
 #
-#if(useroptBLAS)
-#    set(BLAS_Libraries ${useroptBLAS})
-#    message(WARNING "Skipping BLAS detection and using these flags: ${useroptBLAS}")
-#else()
-#    find_package(BLAS REQUIRED)
-#endif()
-if(NOT useroptLAPACK STREQUAL EMPTY)
-    set(LAPACK_LIBRARIES ${useroptLAPACK})
-    message(WARNING "Skipping LAPACK detection and using these flags: ${useroptLAPACK}")
+if(NOT useroptLAPACKLIBS STREQUAL EMPTY)
+    #RMR only have a library check at this time
+    # and then set the variables that would be set by find_package
+    set(LAPACK_LIBRARIES ${useroptLAPACKLIBS})
+    set(LAPACK_INCLUDE_DIR ${useroptLAPACKINCS})
+    message(WARNING "Skipping LAPACK detection and using these linker flags: ${useroptLAPACKLIBS}")
+    set(LAPACK_FOUND TRUE)
 else()
     find_package(LAPACK REQUIRED)
 endif()
-#if(NOT MKL_Found)
-#    find_package(LAPACK REQUIRED)   # "Finding LAPACK implies BLAS was found too"
-#endif()
 
 #
 # Fortran (yuk!) for external linking
@@ -217,8 +211,18 @@ if(NOT Boost_FOUND)
     # The version bundled with Psi4
     set(BOOSTVER boost_1_55_0)
     # Link and include information
-    set(BOOSTLIBDIR ${PROJECT_BINARY_DIR}/boost/${BOOSTVER}/stage/lib)
-    set(Boost_INCLUDE_DIRS ${PROJECT_BINARY_DIR}/boost/${BOOSTVER})
+
+	#This is the official cmake boost library macro
+    set(BOOST_LIBRARYDIR ${PROJECT_BINARY_DIR}/boost/${BOOSTVER}/stage/lib)
+    #This is the one that was in use in the PSI4 cmake files and is included
+    #to maintain the scripts in some working order, but the former should
+    #be preferred
+    set(BOOSTLIBDIR ${BOOST_LIBRARYDIR})
+    
+    #Same as for the lib dir above,this is the "real" one
+    set(Boost_INCLUDE_DIR ${PROJECT_BINARY_DIR}/boost/${BOOSTVER})
+    set(Boost_INCLUDE_DIRS ${Boost_INCLUDE_DIR})
+    
     foreach(component ${Boost_COMPONENTS})
         set(Boost_LIBRARIES ${Boost_LIBRARIES} "${BOOSTLIBDIR}/libboost_${component}.a")
     endforeach()
@@ -226,6 +230,7 @@ if(NOT Boost_FOUND)
         set(Boost_LIBRARIES ${Boost_LIBRARIES} -lrt)
     endif()
     add_subdirectory(boost)
+    set(Boost_FOUND TRUE)
 endif()
 include_directories(${Boost_INCLUDE_DIRS})
 
@@ -246,10 +251,46 @@ file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
-set(PSILIB mints_wrapper dfmp2 dfocc scf ccenergy ccsort psimrcc transqt2 cctriples scf_solver fock dcft lmp2 mcscf sapt dftsapt sapt_solver cchbar cclambda ccdensity transqt ccresponse detci occ mrcc fnocc cceom adc thermo functional disp thce 3index deriv_wrapper optking findif mints trans dpd chkpt iwl psio qt ciomr options moinfo util stable deriv scfgrad int util diis plugin parallel)
-if(CMAKE_Fortran_COMPILER)
+#TODO: this variable should be started here, then appended to by each
+#subdirectory, this way new libraries can be added more naturally at the
+#level they are included at.  When that is done the defintion of the
+#executable should be moved up to this directory so that plugins and such
+#can be linked in easier
+set(PSILIB mints_wrapper dfmp2 dfocc scf ccenergy ccsort psimrcc transqt2 
+           cctriples scf_solver fock dcft lmp2 mcscf sapt dftsapt sapt_solver
+           cchbar cclambda ccdensity transqt ccresponse detci occ mrcc fnocc
+           cceom adc thermo functional disp thce 3index deriv_wrapper optking
+           findif mints trans dpd chkpt iwl psio qt ciomr options moinfo util
+           stable deriv scfgrad int util diis plugin parallel frag)
+
+if(DEFINED ERD)
     set(PSILIB ${PSILIB} erd)
+    set(JK_ERD ${CMAKE_BINARY_DIR}/lib/liberd.a)
+    add_definitions(-DHAVE_ERD)
 endif()
+
+#If we have MPI also build the JKFactory library for awesome SCF performance
+if(MPI_FOUND)
+   set(BUILD_JK_FACTORY "FALSE")
+endif()
+
+if(BUILD_JK_FACTORY)
+    add_definitions(-DHAVE_JK_FACTORY)
+    set(JKROOT ${CMAKE_CURRENT_SOURCE_DIR}/plugins/JKFactory)
+    set(JK_BLAS_INC ${LAPACK_INCLUDE_DIR})
+    add_subdirectory(plugins/JKFactory)
+    set(PSILIB ${PSILIB} JKFactory)
+    set(PSILIB ${PSILIB} pfock)
+    set(PSILIB ${PSILIB} cint)
+    set(PSILIB ${PSILIB} ${CMAKE_BINARY_DIR}/lib/libga.a)
+    set(PSILIB ${PSILIB} ${CMAKE_BINARY_DIR}/lib/libarmci.a)
+    set(PSILIB ${PSILIB} oed)
+    if(NOT DEFINED ERD)
+       set(PSILIB ${PSILIB} erd)
+    endif()
+    set(PSILIB ${PSILIB} -lmkl_scalapack_lp64 -lmkl_blacs_lp64)
+endif()
+
 
 #
 # Recursively add source directories
@@ -279,6 +320,11 @@ configure_file(cmake/reconfigure.sh.in reconfigure.sh)
 #foreach (_variableName ${_variableNames})
 #    message(STATUS "${_variableName}=${${_variableName}}")
 #endforeach()
+
+#If we are making boost add it as a dependency
+if(NOT Boost_FOUND)
+   add_dependencies(psi4 ${Boost_LIBRARIES})
+endif()
 
 FILE(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin)
 INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bin/psi4 DESTINATION

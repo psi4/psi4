@@ -64,8 +64,5 @@
 /* Restrict keyword definition */
 #cmakedefine restrict
 
-/* Whether to compile the ERD integral module */
-#cmakedefine HAVE_ERD
-
 #endif /* _psi_src_psiconfig_h */
 

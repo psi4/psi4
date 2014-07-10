@@ -134,6 +134,7 @@ if (\$psiautotest eq \"true\") {
 }
 
 exit \$return;\n")
+set(TestsThatFailMPI "cc8")
 #Finally run these beasts
 set(LOGFILE ${CMAKE_BINARY_DIR}/testresults.log)
 foreach(Tests2Run ${TestSet})
@@ -145,10 +146,18 @@ add_test(
     NAME ${Tests2Run}
     WORKING_DIRECTORY ${RUNDIR}
     COMMAND perl ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${OUTFILE} ${PSIEXE})
-if(MPI_FOUND AND "FALSE")
+if( MPI_FOUND AND FALSE)
+set(do_test TRUE)
+foreach(badtests ${TestsThatFailMPI})
+  if(${Tests2Run} EQUAL ${badtests})
+    set(do_test FALSE)
+  endif()
+endforeach()
+if(do_test)
 add_test(
     NAME MPI-${Tests2Run}
     WORKING_DIRECTORY ${RUNDIR}
     COMMAND mpirun -n 2 perl ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${OUTFILE} ${PSIEXE})
+endif()
 endif()
 endforeach(Tests2Run)
