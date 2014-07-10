@@ -1,0 +1,260 @@
+\hypertarget{classJKBuilder_1_1AOBasisSet}{
+\section{AOBasisSet Class Reference}
+\label{classJKBuilder_1_1AOBasisSet}\index{JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}}
+}
+
+
+The top-\/level basis set object for the \hyperlink{namespaceJKBuilder}{JKBuilder} library.  
+
+
+{\ttfamily \#include $<$BasisSet.h$>$}Inheritance diagram for AOBasisSet::\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2cm]{classJKBuilder_1_1AOBasisSet}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classJKBuilder_1_1AOBasisSet_ae37ea5df793e15317b741ddef3065f3a}{AOBasisSet} (\hyperlink{classJKBuilder_1_1molecule__class}{molecule\_\-class} $\ast$molecule)
+\begin{DoxyCompactList}\small\item\em Sets up a basis set for the given molecule. \item\end{DoxyCompactList}\item 
+\hyperlink{classJKBuilder_1_1AOBasisSet_addb5212a040850c3a3816eb2ef9c2483}{$\sim$AOBasisSet} ()
+\begin{DoxyCompactList}\small\item\em Frees memory. \item\end{DoxyCompactList}\item 
+int \hyperlink{classJKBuilder_1_1AOBasisSet_aa62be7e63d0f2b5828ab72cec3ce8590}{GetNShells} ()
+\begin{DoxyCompactList}\small\item\em Returns the number of shells in the AObasis. \item\end{DoxyCompactList}\item 
+int \hyperlink{classJKBuilder_1_1AOBasisSet_a297c144fb990284ac5973c99cdd55f91}{GetNBasis} ()
+\begin{DoxyCompactList}\small\item\em Returns the total number of basis functions in the AObasis. \item\end{DoxyCompactList}\item 
+int \hyperlink{classJKBuilder_1_1AOBasisSet_af6694a93cc5d86a8f3cd1aa984a0cdc3}{GetMaxL} ()
+\begin{DoxyCompactList}\small\item\em Returns the maximum momentum contained in any \hyperlink{classJKBuilder_1_1AtomicBasisSet}{JKBuilder::AtomicBasisSet}. \item\end{DoxyCompactList}\item 
+int \hyperlink{classJKBuilder_1_1AOBasisSet_a6a6c8b94fb293123b918605d0507ebbf}{GetNAtoms} ()
+\begin{DoxyCompactList}\small\item\em Returns the number of atoms this basis is for. \item\end{DoxyCompactList}\item 
+int \hyperlink{classJKBuilder_1_1AOBasisSet_a03191bf41d6e3a2445dd3eb8640305be}{GetMaxPrim} (int \&ID)
+\begin{DoxyCompactList}\small\item\em Returns the maximum number of primitives in a shell and sets ID to the ID of that shell. \item\end{DoxyCompactList}\item 
+int \hyperlink{classJKBuilder_1_1AOBasisSet_adcda37af511d6b4f8d305fcba2da5c4a}{GetMaxBasis} ()
+\begin{DoxyCompactList}\small\item\em Returns the maximum number of basis functions in a shell. \item\end{DoxyCompactList}\item 
+\hyperlink{classJKBuilder_1_1AtomicBasisSet}{AtomicBasisSet} $\ast$ \hyperlink{classJKBuilder_1_1AOBasisSet_a1d366290bc84106b0a92c61156a4fa80}{operator\mbox{[}$\,$\mbox{]}} (const int i)
+\begin{DoxyCompactList}\small\item\em Returns a pointer to the i-\/th atom's basis set. \item\end{DoxyCompactList}\item 
+void \hyperlink{classJKBuilder_1_1AOBasisSet_a388f572c62279f839ee138a9afbdeeb5}{print} ()
+\begin{DoxyCompactList}\small\item\em Prints the AO basis set. \item\end{DoxyCompactList}\item 
+int \hyperlink{classJKBuilder_1_1AOBasisSet_aa1fc6892f227f640de8bc2d6aa127d5f}{AbsShellNum} (int x, int y)
+\begin{DoxyCompactList}\small\item\em Converts shell y, on \hyperlink{classJKBuilder_1_1atom}{atom} x to an absolute number. \item\end{DoxyCompactList}\item 
+int \hyperlink{classJKBuilder_1_1AOBasisSet_a23219e59060d6ef915e6146114f52ddd}{AbsBasisNum} (int x, int y, int z)
+\begin{DoxyCompactList}\small\item\em Converts basis fxn z, in shell y, on \hyperlink{classJKBuilder_1_1atom}{atom} x to an absolute number by means of AbsShellNum. \item\end{DoxyCompactList}\item 
+virtual int \hyperlink{classJKBuilder_1_1BasisSet_abc886cd4e35d3c56a0250b7d06986f61}{GetNPrims} ()
+\begin{DoxyCompactList}\small\item\em Returns the number of primitives. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{classJKBuilder_1_1BasisSet_a41e2bc1e52da2859eabe6586e4451663}{NBasis}
+\begin{DoxyCompactList}\small\item\em The number of basis functions in this basis. \item\end{DoxyCompactList}\item 
+int \hyperlink{classJKBuilder_1_1BasisSet_a9f13901f058284051a35aabd9d69c6d5}{NShells}
+\begin{DoxyCompactList}\small\item\em The number of shells in this basis set. \item\end{DoxyCompactList}\item 
+int \hyperlink{classJKBuilder_1_1BasisSet_ad30990632a28f27018d2b497e263caf1}{NPrims}
+\begin{DoxyCompactList}\small\item\em The number of primitives in this basis set. \item\end{DoxyCompactList}\item 
+int \hyperlink{classJKBuilder_1_1BasisSet_a8fce14d0246c865eea79bf2869b02997}{max\_\-momentum}
+\begin{DoxyCompactList}\small\item\em The maximum momentum. \item\end{DoxyCompactList}\item 
+int \hyperlink{classJKBuilder_1_1BasisSet_aeb188680b23f4d32ea9a65468e5ba71d}{max\_\-prims}
+\begin{DoxyCompactList}\small\item\em The maximum number of primitives. \item\end{DoxyCompactList}\item 
+int \hyperlink{classJKBuilder_1_1BasisSet_acdabb925780e7292114dfa2ace8b9d8e}{max\_\-prims\_\-ID}
+\begin{DoxyCompactList}\small\item\em The ID of the shell with the maximum number of primitives,counting from 0. \item\end{DoxyCompactList}\item 
+int \hyperlink{classJKBuilder_1_1BasisSet_af29e85e56ea63952fc7a1ede8d10426f}{max\_\-basis}
+\begin{DoxyCompactList}\small\item\em The maximum number of basis functions in this basis. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std::vector$<$ \hyperlink{classJKBuilder_1_1AtomicBasisSet}{AtomicBasisSet} $\ast$ $>$ \hyperlink{classJKBuilder_1_1AOBasisSet_a872dee545656a5acc39da552c8e5137f}{AOBasis}
+\begin{DoxyCompactList}\small\item\em The AO basis. \item\end{DoxyCompactList}\item 
+std::vector$<$ int $>$ \hyperlink{classJKBuilder_1_1AOBasisSet_a82f86f036166d7d52ed2aea14bfe8510}{ShellsPerAtom}
+\item 
+std::vector$<$ int $>$ \hyperlink{classJKBuilder_1_1AOBasisSet_a8d80fa437dbb830552ffe2a6b07630fb}{BFsPerShell}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+The top-\/level basis set object for the \hyperlink{namespaceJKBuilder}{JKBuilder} library. ERD and OED integrals are run by shell, so we need details per shell; however each of those shells retains some properties of the atoms they reside on. I have made the decision to store the shells for each \hyperlink{classJKBuilder_1_1atom}{atom} together as objects. The set of all shells for an \hyperlink{classJKBuilder_1_1atom}{atom} is a basis set for that \hyperlink{classJKBuilder_1_1atom}{atom}, an \hyperlink{classJKBuilder_1_1AtomicBasisSet}{JKBuilder::AtomicBasisSet} object. The set of these basis sets for each \hyperlink{classJKBuilder_1_1atom}{atom} in a molecular system is then the \hyperlink{classJKBuilder_1_1AOBasisSet}{AOBasisSet}. That is what is stored in this object. 
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{classJKBuilder_1_1AOBasisSet_ae37ea5df793e15317b741ddef3065f3a}{
+\index{JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}!AOBasisSet@{AOBasisSet}}
+\index{AOBasisSet@{AOBasisSet}!JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}}
+\subsubsection[{AOBasisSet}]{\setlength{\rightskip}{0pt plus 5cm}{\bf AOBasisSet} ({\bf molecule\_\-class} $\ast$ {\em molecule})}}
+\label{classJKBuilder_1_1AOBasisSet_ae37ea5df793e15317b741ddef3065f3a}
+
+
+Sets up a basis set for the given molecule. 
+\begin{DoxyParams}{Parameters}
+\item[\mbox{$\leftarrow$} {\em molecule}]The system we are setting up a basis set for \end{DoxyParams}
+\hypertarget{classJKBuilder_1_1AOBasisSet_addb5212a040850c3a3816eb2ef9c2483}{
+\index{JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}!$\sim$AOBasisSet@{$\sim$AOBasisSet}}
+\index{$\sim$AOBasisSet@{$\sim$AOBasisSet}!JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}}
+\subsubsection[{$\sim$AOBasisSet}]{\setlength{\rightskip}{0pt plus 5cm}$\sim${\bf AOBasisSet} ()}}
+\label{classJKBuilder_1_1AOBasisSet_addb5212a040850c3a3816eb2ef9c2483}
+
+
+Frees memory. 
+
+\subsection{Member Function Documentation}
+\hypertarget{classJKBuilder_1_1AOBasisSet_aa62be7e63d0f2b5828ab72cec3ce8590}{
+\index{JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}!GetNShells@{GetNShells}}
+\index{GetNShells@{GetNShells}!JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}}
+\subsubsection[{GetNShells}]{\setlength{\rightskip}{0pt plus 5cm}int GetNShells ()\hspace{0.3cm}{\ttfamily  \mbox{[}virtual\mbox{]}}}}
+\label{classJKBuilder_1_1AOBasisSet_aa62be7e63d0f2b5828ab72cec3ce8590}
+
+
+Returns the number of shells in the AObasis. 
+
+Implements \hyperlink{classJKBuilder_1_1BasisSet_a0eb3b46d258dffcfbc3e4db91f60f4f8}{BasisSet}.\hypertarget{classJKBuilder_1_1AOBasisSet_a297c144fb990284ac5973c99cdd55f91}{
+\index{JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}!GetNBasis@{GetNBasis}}
+\index{GetNBasis@{GetNBasis}!JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}}
+\subsubsection[{GetNBasis}]{\setlength{\rightskip}{0pt plus 5cm}int GetNBasis ()\hspace{0.3cm}{\ttfamily  \mbox{[}virtual\mbox{]}}}}
+\label{classJKBuilder_1_1AOBasisSet_a297c144fb990284ac5973c99cdd55f91}
+
+
+Returns the total number of basis functions in the AObasis. 
+
+Implements \hyperlink{classJKBuilder_1_1BasisSet_a1167cdb6f1e1ba08ba6cbffa0b32ca77}{BasisSet}.\hypertarget{classJKBuilder_1_1AOBasisSet_af6694a93cc5d86a8f3cd1aa984a0cdc3}{
+\index{JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}!GetMaxL@{GetMaxL}}
+\index{GetMaxL@{GetMaxL}!JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}}
+\subsubsection[{GetMaxL}]{\setlength{\rightskip}{0pt plus 5cm}int GetMaxL ()\hspace{0.3cm}{\ttfamily  \mbox{[}virtual\mbox{]}}}}
+\label{classJKBuilder_1_1AOBasisSet_af6694a93cc5d86a8f3cd1aa984a0cdc3}
+
+
+Returns the maximum momentum contained in any \hyperlink{classJKBuilder_1_1AtomicBasisSet}{JKBuilder::AtomicBasisSet}. 
+
+Implements \hyperlink{classJKBuilder_1_1BasisSet_a5580c8eff6cb4242a298c15da2292fa4}{BasisSet}.\hypertarget{classJKBuilder_1_1AOBasisSet_a6a6c8b94fb293123b918605d0507ebbf}{
+\index{JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}!GetNAtoms@{GetNAtoms}}
+\index{GetNAtoms@{GetNAtoms}!JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}}
+\subsubsection[{GetNAtoms}]{\setlength{\rightskip}{0pt plus 5cm}int GetNAtoms ()}}
+\label{classJKBuilder_1_1AOBasisSet_a6a6c8b94fb293123b918605d0507ebbf}
+
+
+Returns the number of atoms this basis is for. \hypertarget{classJKBuilder_1_1AOBasisSet_a03191bf41d6e3a2445dd3eb8640305be}{
+\index{JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}!GetMaxPrim@{GetMaxPrim}}
+\index{GetMaxPrim@{GetMaxPrim}!JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}}
+\subsubsection[{GetMaxPrim}]{\setlength{\rightskip}{0pt plus 5cm}int GetMaxPrim (int \& {\em ID})\hspace{0.3cm}{\ttfamily  \mbox{[}virtual\mbox{]}}}}
+\label{classJKBuilder_1_1AOBasisSet_a03191bf41d6e3a2445dd3eb8640305be}
+
+
+Returns the maximum number of primitives in a shell and sets ID to the ID of that shell. 
+
+Implements \hyperlink{classJKBuilder_1_1BasisSet_a4e5f8295f4fe1ecf1a910ae2fcb46c1f}{BasisSet}.\hypertarget{classJKBuilder_1_1AOBasisSet_adcda37af511d6b4f8d305fcba2da5c4a}{
+\index{JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}!GetMaxBasis@{GetMaxBasis}}
+\index{GetMaxBasis@{GetMaxBasis}!JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}}
+\subsubsection[{GetMaxBasis}]{\setlength{\rightskip}{0pt plus 5cm}int GetMaxBasis ()\hspace{0.3cm}{\ttfamily  \mbox{[}virtual\mbox{]}}}}
+\label{classJKBuilder_1_1AOBasisSet_adcda37af511d6b4f8d305fcba2da5c4a}
+
+
+Returns the maximum number of basis functions in a shell. 
+
+Implements \hyperlink{classJKBuilder_1_1BasisSet_a7c12871050e478f6a22c4c1c46bd4b21}{BasisSet}.\hypertarget{classJKBuilder_1_1AOBasisSet_a1d366290bc84106b0a92c61156a4fa80}{
+\index{JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}!operator\mbox{[}\mbox{]}@{operator[]}}
+\index{operator\mbox{[}\mbox{]}@{operator[]}!JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}}
+\subsubsection[{operator[]}]{\setlength{\rightskip}{0pt plus 5cm}{\bf AtomicBasisSet} $\ast$ operator\mbox{[}$\,$\mbox{]} (const int {\em i})}}
+\label{classJKBuilder_1_1AOBasisSet_a1d366290bc84106b0a92c61156a4fa80}
+
+
+Returns a pointer to the i-\/th atom's basis set. \hypertarget{classJKBuilder_1_1AOBasisSet_a388f572c62279f839ee138a9afbdeeb5}{
+\index{JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}!print@{print}}
+\index{print@{print}!JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}}
+\subsubsection[{print}]{\setlength{\rightskip}{0pt plus 5cm}void print ()\hspace{0.3cm}{\ttfamily  \mbox{[}virtual\mbox{]}}}}
+\label{classJKBuilder_1_1AOBasisSet_a388f572c62279f839ee138a9afbdeeb5}
+
+
+Prints the AO basis set. 
+
+Reimplemented from \hyperlink{classJKBuilder_1_1BasisSet_a388f572c62279f839ee138a9afbdeeb5}{BasisSet}.\hypertarget{classJKBuilder_1_1AOBasisSet_aa1fc6892f227f640de8bc2d6aa127d5f}{
+\index{JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}!AbsShellNum@{AbsShellNum}}
+\index{AbsShellNum@{AbsShellNum}!JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}}
+\subsubsection[{AbsShellNum}]{\setlength{\rightskip}{0pt plus 5cm}int AbsShellNum (int {\em x}, \/  int {\em y})}}
+\label{classJKBuilder_1_1AOBasisSet_aa1fc6892f227f640de8bc2d6aa127d5f}
+
+
+Converts shell y, on \hyperlink{classJKBuilder_1_1atom}{atom} x to an absolute number. \hypertarget{classJKBuilder_1_1AOBasisSet_a23219e59060d6ef915e6146114f52ddd}{
+\index{JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}!AbsBasisNum@{AbsBasisNum}}
+\index{AbsBasisNum@{AbsBasisNum}!JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}}
+\subsubsection[{AbsBasisNum}]{\setlength{\rightskip}{0pt plus 5cm}int AbsBasisNum (int {\em x}, \/  int {\em y}, \/  int {\em z})}}
+\label{classJKBuilder_1_1AOBasisSet_a23219e59060d6ef915e6146114f52ddd}
+
+
+Converts basis fxn z, in shell y, on \hyperlink{classJKBuilder_1_1atom}{atom} x to an absolute number by means of AbsShellNum. \hypertarget{classJKBuilder_1_1BasisSet_abc886cd4e35d3c56a0250b7d06986f61}{
+\index{JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}!GetNPrims@{GetNPrims}}
+\index{GetNPrims@{GetNPrims}!JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}}
+\subsubsection[{GetNPrims}]{\setlength{\rightskip}{0pt plus 5cm}int GetNPrims ()\hspace{0.3cm}{\ttfamily  \mbox{[}virtual, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1BasisSet_abc886cd4e35d3c56a0250b7d06986f61}
+
+
+Returns the number of primitives. 
+
+\subsection{Member Data Documentation}
+\hypertarget{classJKBuilder_1_1AOBasisSet_a872dee545656a5acc39da552c8e5137f}{
+\index{JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}!AOBasis@{AOBasis}}
+\index{AOBasis@{AOBasis}!JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}}
+\subsubsection[{AOBasis}]{\setlength{\rightskip}{0pt plus 5cm}std::vector$<${\bf AtomicBasisSet}$\ast$$>$ {\bf AOBasis}\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}
+\label{classJKBuilder_1_1AOBasisSet_a872dee545656a5acc39da552c8e5137f}
+
+
+The AO basis. A vector of the basis sets for each \hyperlink{classJKBuilder_1_1atom}{atom}, this is the AO basis. The order of the AtomicBasisSets that are on it is expected to correspond to the order the atoms are in the input file. That is AOBasis\mbox{[}i\mbox{]} should be the basis set of \hyperlink{classJKBuilder_1_1atom}{atom} i,counting from 0. \hypertarget{classJKBuilder_1_1AOBasisSet_a82f86f036166d7d52ed2aea14bfe8510}{
+\index{JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}!ShellsPerAtom@{ShellsPerAtom}}
+\index{ShellsPerAtom@{ShellsPerAtom}!JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}}
+\subsubsection[{ShellsPerAtom}]{\setlength{\rightskip}{0pt plus 5cm}std::vector$<$int$>$ {\bf ShellsPerAtom}\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}
+\label{classJKBuilder_1_1AOBasisSet_a82f86f036166d7d52ed2aea14bfe8510}
+\hypertarget{classJKBuilder_1_1AOBasisSet_a8d80fa437dbb830552ffe2a6b07630fb}{
+\index{JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}!BFsPerShell@{BFsPerShell}}
+\index{BFsPerShell@{BFsPerShell}!JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}}
+\subsubsection[{BFsPerShell}]{\setlength{\rightskip}{0pt plus 5cm}std::vector$<$int$>$ {\bf BFsPerShell}\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}
+\label{classJKBuilder_1_1AOBasisSet_a8d80fa437dbb830552ffe2a6b07630fb}
+\hypertarget{classJKBuilder_1_1BasisSet_a41e2bc1e52da2859eabe6586e4451663}{
+\index{JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}!NBasis@{NBasis}}
+\index{NBasis@{NBasis}!JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}}
+\subsubsection[{NBasis}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf NBasis}\hspace{0.3cm}{\ttfamily  \mbox{[}protected, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1BasisSet_a41e2bc1e52da2859eabe6586e4451663}
+
+
+The number of basis functions in this basis. \hypertarget{classJKBuilder_1_1BasisSet_a9f13901f058284051a35aabd9d69c6d5}{
+\index{JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}!NShells@{NShells}}
+\index{NShells@{NShells}!JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}}
+\subsubsection[{NShells}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf NShells}\hspace{0.3cm}{\ttfamily  \mbox{[}protected, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1BasisSet_a9f13901f058284051a35aabd9d69c6d5}
+
+
+The number of shells in this basis set. \hypertarget{classJKBuilder_1_1BasisSet_ad30990632a28f27018d2b497e263caf1}{
+\index{JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}!NPrims@{NPrims}}
+\index{NPrims@{NPrims}!JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}}
+\subsubsection[{NPrims}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf NPrims}\hspace{0.3cm}{\ttfamily  \mbox{[}protected, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1BasisSet_ad30990632a28f27018d2b497e263caf1}
+
+
+The number of primitives in this basis set. \hypertarget{classJKBuilder_1_1BasisSet_a8fce14d0246c865eea79bf2869b02997}{
+\index{JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}!max\_\-momentum@{max\_\-momentum}}
+\index{max\_\-momentum@{max\_\-momentum}!JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}}
+\subsubsection[{max\_\-momentum}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf max\_\-momentum}\hspace{0.3cm}{\ttfamily  \mbox{[}protected, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1BasisSet_a8fce14d0246c865eea79bf2869b02997}
+
+
+The maximum momentum. \hypertarget{classJKBuilder_1_1BasisSet_aeb188680b23f4d32ea9a65468e5ba71d}{
+\index{JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}!max\_\-prims@{max\_\-prims}}
+\index{max\_\-prims@{max\_\-prims}!JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}}
+\subsubsection[{max\_\-prims}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf max\_\-prims}\hspace{0.3cm}{\ttfamily  \mbox{[}protected, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1BasisSet_aeb188680b23f4d32ea9a65468e5ba71d}
+
+
+The maximum number of primitives. \hypertarget{classJKBuilder_1_1BasisSet_acdabb925780e7292114dfa2ace8b9d8e}{
+\index{JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}!max\_\-prims\_\-ID@{max\_\-prims\_\-ID}}
+\index{max\_\-prims\_\-ID@{max\_\-prims\_\-ID}!JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}}
+\subsubsection[{max\_\-prims\_\-ID}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf max\_\-prims\_\-ID}\hspace{0.3cm}{\ttfamily  \mbox{[}protected, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1BasisSet_acdabb925780e7292114dfa2ace8b9d8e}
+
+
+The ID of the shell with the maximum number of primitives,counting from 0. \hypertarget{classJKBuilder_1_1BasisSet_af29e85e56ea63952fc7a1ede8d10426f}{
+\index{JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}!max\_\-basis@{max\_\-basis}}
+\index{max\_\-basis@{max\_\-basis}!JKBuilder::AOBasisSet@{JKBuilder::AOBasisSet}}
+\subsubsection[{max\_\-basis}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf max\_\-basis}\hspace{0.3cm}{\ttfamily  \mbox{[}protected, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1BasisSet_af29e85e56ea63952fc7a1ede8d10426f}
+
+
+The maximum number of basis functions in this basis. 
+
+The documentation for this class was generated from the following files:\begin{DoxyCompactItemize}
+\item 
+src/\hyperlink{BasisSet_8h}{BasisSet.h}\item 
+src/\hyperlink{BasisSet_8cpp}{BasisSet.cpp}\end{DoxyCompactItemize}

@@ -1,0 +1,3 @@
+#define MP_DEFINES_ONLY
+#include "mp3.fh"
+#undef MP_DEFINES_ONLY

@@ -1,0 +1,43 @@
+Molecular Dynamics of Lennard Jones System using Global Arrays
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There are 3 classes of parallelization: Atom, Force and Spatial Decomposition.
+The current implementation is based on force decomposition and uses global
+arrays (GA).
+
+Algorithm
+=========
+
+The entire force matrix (N x N) is divided into multiple blocks (m x m) for
+dynamic load balancing, where m is the block size and N is the total number of
+atoms/particles. The force between two atoms/particles can be approximated by
+Lennard Jones potential energy function.
+
+Block Topology (of Force Matrix)
+--------------------------------
+
+Say for example if there are 4 block and 100 atoms, the size of the force
+matrix is 100x100 and each block size is 50x50. (Dynamic Load Balancing) Each
+process (say 2 process example) gets one block each, and once it is done with
+a block, it gets the next block in the queue (atomic task array). 
+
+Using Newton's laws of equation and Velocity-Verlet algorithm, the velocities
+and coordinates are updated for the next time step. 
+
+Refer to the following for more information on MD algorithm:
+
+    http://www.physics.buffalo.edu/phy516/lectures.html
+    
+An output file output.dat is created in Molden format, when the variable
+WRITE_TO_FILE is set. For optimum performance, BLOCK SIZE should be set
+appropriately depending upon the problem size (number of atoms/particles). 
+
+References:
+
+    - http://www.physics.buffalo.edu/phy516/lectures.html
+    - http://www.cs.sandia.gov/~sjplimp/main.html
+
+To Compile
+----------
+
+run "make examples" or "make global/examples/lennard-jones/lennard.x".

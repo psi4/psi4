@@ -1,0 +1,29 @@
+                      Disk Resident Arrays Implementation Notes
+
+Assumptions:
+. ANSI C compiler is not required;
+. interface to C programs is minimal (most users program in Fortran)  
+. low level I/O operations defined in ELIO library
+. upper layer knows if they are called collectively or not
+
+C Interface:
+. C programs must use Integer and DoublePrecision data types,
+  defined in "global.h" (GA package) for both the GA and DRA, and include
+  file "dra.h";
+. all arguments passed by address;
+. names of DRA operations have capitalized DRA prefix i.e., C version of 
+  Fortran dra_init is DRA_init. Note that the names are converted by cpp as 
+  specified in "dra.h" so that in most cases, C and Fortran programs call 
+  the same function. Internal convention is that there is a separate   
+  Fortran wrapper to a DRA operation iff it has a character string 
+  argument(s).
+  
+Implementation Status:
+. prototyping used for DRA functions if ANSI C compiler available
+. indexing arguments are currently implemented as integers 
+. reshaping and transposing in dra_[write,read]_section not implemented yet
+
+
+Problems to Resolve:
+. do we need explicit dra_flush or we should handle it implicitly after
+  each write when file is create in 'read+write' in  mode ?

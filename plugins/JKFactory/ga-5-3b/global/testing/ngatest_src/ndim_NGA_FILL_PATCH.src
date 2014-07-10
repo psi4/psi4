@@ -1,0 +1,69 @@
+      subroutine m4_func_NGA_FILL_PATCH(m4_test_type, m4_ndim)
+      implicit none
+#include "mafdecls.fh"
+#include "global.fh"
+c     
+      integer n,m
+      integer ndim
+      parameter (n = m4_n)
+      parameter (m = (m4_n**m4_ndim)/100)
+      parameter (ndim = m4_ndim)
+      m4_data_type a(substr(m4_array, 1, eval(m4_ndim*2-1)))
+      m4_data_type b(substr(m4_array, 1, eval(m4_ndim*2-1)))
+      integer lo(ndim),hi(ndim),dims(ndim)
+      integer g_a
+      integer chunk(ndim)
+      integer i, total
+      m4_data_type val
+      integer nproc, me
+      logical status
+c     
+      nproc = ga_nnodes()
+      me    = ga_nodeid()
+c     
+c---------------------- initialize the GA -----------------------
+c     initialize the chunk, dims, ld, and calculate the number 
+c     of elements
+      total=1
+      do i = 1,ndim
+         chunk(i) = 0
+         dims(i) = n
+         total = total * dims(i)
+      enddo
+c
+c***  Create global arrays
+      if (.not. nga_create(m4_MT, ndim, dims, 'a', chunk, g_a))
+     $     call ga_error(' ga_create failed ',1)
+c     
+      call ga_sync()
+c
+c--------------------------- NGA_FILL_PATCH -------------------------
+      m4_print_info(nga_fill_patch)
+c
+      val = m4_conv(1234)
+c     initialize the lo and hi
+      do i=1, ndim
+         lo(i) = 2
+         hi(i) = n - 1
+      enddo
+c
+      call nga_fill_patch(g_a, lo, hi, val)
+c
+c     check the result
+      call m4_util_fill_array(m4_test_type)(a,total,val)
+      call nga_get(g_a,lo,hi,
+     $        b(substr(m4_lo_all, 1, eval(m4_ndim*6-1))),dims)
+c
+      call m4_util_compare_patches(m4_test_type)(0d0,total,
+     $     a,lo,hi,ndim,dims,total,b,lo,hi,ndim,dims)
+c
+      call ga_sync()
+      if(me.eq.0)then
+         print *, 'OK'
+         print *, ' '
+         call ffflush(6)
+      endif
+c---------------------------
+c     
+      status= ga_destroy(g_a)
+      end

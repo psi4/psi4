@@ -1,0 +1,270 @@
+      subroutine m4_func_NGA_COPY_PATCH(m4_test_type, m4_ndim)
+      implicit none
+#include "mafdecls.fh"
+#include "global.fh"
+c     
+      integer n,m
+      integer ndim
+      parameter (n = m4_n)
+      parameter (m = (m4_n**m4_ndim)/100)
+      parameter (ndim = m4_ndim)
+      m4_data_type a(substr(m4_array, 1, eval(m4_ndim*2-1)))
+      m4_data_type b(substr(m4_array, 1, eval(m4_ndim*2-1)))
+      integer dims(ndim)
+      integer g_a, g_b
+      integer chunk(ndim)
+      integer i, total
+      integer elems, count_elems
+      integer loop
+      integer lop(ndim), hip(ndim), hipl(ndim)
+      integer alo(ndim), ahi(ndim)
+      integer blo(ndim), bhi(ndim)
+      integer tlo(ndim), thi(ndim)
+c     for different array dimensions
+      ifelse(m4_ndim,1,`',`
+      m4_data_type d(substr(m4_array, 1, eval((m4_ndim-1)*2-1)))
+      integer dndim
+      parameter (dndim = m4_ndim-1)
+      integer ddims(dndim),dlo(dndim),dhi(dndim),dtotal
+      ')
+c
+      integer nproc, me
+      logical status
+      integer repeat
+c     
+      nproc = ga_nnodes()
+      me    = ga_nodeid()
+c     
+c---------------------- initialize the GA -----------------------
+c     initialize the chunk, dims, ld, and calculate the number 
+c     of elements
+      total=1
+      do i = 1,ndim
+         chunk(i) = 0
+         dims(i) = n
+         total = total * dims(i)
+      enddo
+c
+c***  Create global arrays
+      if (.not. nga_create(m4_MT, ndim, dims, 'a', chunk, g_a))
+     $     call ga_error(' ga_create failed ',1)
+c
+c     test the same distribution and different distribution seperately
+      do repeat=1,2
+         if(repeat.eq.1) then
+            status = ga_duplicate(g_a, g_b, 'a_duplicated')
+            if(.not.ga_compare_distr(g_a, g_b))
+     $           call ga_error("g_b distribution different",0)   
+c     
+         else
+            do i = 1,ndim
+               if(mod(i,2).eq.0) chunk(i) = n
+            enddo
+            if (.not. nga_create(m4_MT, ndim, dims, 'b', chunk, g_b))
+     $           call ga_error(' ga_create failed ',1)
+         endif
+c
+         call ga_sync()
+c     
+c---------------------------NGA_COPY_PATCH -------------------------
+c
+      if(repeat.eq.1) then
+         m4_print_info(nga_copy_patch)
+         if(me.eq.0) print *, 'Testing with the same distributions'
+      else
+         if(me.eq.0) print *, 'Testing with different distributions'
+      endif
+c     
+c     initialize GA
+      call m4_util_init_array(m4_test_type)(a,total)
+      call nga_distribution(g_a, me, lop, hip)
+      elems = count_elems(lop, hip, ndim)
+      if(elems.gt.0) call nga_put(g_a,lop,hip,
+     $     a(substr(m4_lop_all, 1, eval(m4_ndim*7-1))),dims)
+c           
+      call ga_sync()
+      do i = 1,ndim
+         lop(i) = 1
+         hipl(i) = n-1
+         hip(i) = n
+      enddo
+c    
+c---  
+      do loop=1, 10
+         call random_range(lop,hipl,alo,ahi,ndim)
+         do i=1, ndim
+            blo(i) = alo(i) + 1
+            bhi(i) = ahi(i) + 1
+         enddo
+         if(me.eq.0)then
+            call copy_range(loop,alo,ahi,ndim,blo,bhi,ndim)
+c$$$            print *, loop,': copy [',(alo(i),':',ahi(i), i=1,ndim),']', 
+c$$$     $           '-->', '[',(blo(i),':',bhi(i), i=1,ndim),']'
+         endif
+c     
+c        keep a copy of the origian array
+         call nga_get(g_a,alo,ahi,
+     $        a(substr(m4_alo_all, 1, eval(m4_ndim*7-1))),dims)
+c
+         call nga_copy_patch('n', g_a, alo, ahi, g_b, blo, bhi)
+c     
+         call nga_get(g_b,blo,bhi,
+     $        b(substr(m4_blo_all, 1, eval(m4_ndim*7-1))),dims)
+c     
+         call m4_util_compare_patches(m4_test_type)(0d0,total,
+     $        a,alo,ahi,ndim,dims,total,b,blo,bhi,ndim,dims)
+      enddo
+c     
+      call ga_sync()
+      if(me.eq.0)then
+         print *, '  standard copy patch: OK'
+         print *, ' '
+         call ffflush(6)
+      endif
+c---  
+      do loop=1, 10
+         call random_range(lop,hipl,alo,ahi,ndim)
+         do i=1, ndim
+            blo(i) = alo(ndim-i+1) + 1
+            bhi(i) = ahi(ndim-i+1) + 1
+         enddo
+         if(me.eq.0)then
+            call copy_range(loop,alo,ahi,ndim,blo,bhi,ndim)
+c$$$            print *, loop,': copy [',(alo(i),':',ahi(i), i=1,ndim),']', 
+c$$$     $           '-->', '[',(blo(i),':',bhi(i), i=1,ndim),']'
+         endif
+c     
+         call nga_copy_patch('n', g_a, alo, ahi, g_b, blo, bhi)
+c     
+         call nga_get(g_b,blo,bhi,
+     $        b(substr(m4_blo_all, 1, eval(m4_ndim*7-1))),dims)
+c     
+         call m4_util_compare_patches(m4_test_type)(0d0,total,
+     $        a,alo,ahi,ndim,dims,total,b,blo,bhi,ndim,dims)
+      enddo
+c     
+      call ga_sync()
+      if(me.eq.0)then
+         print *, '  reshaping without transpose: OK'
+         print *, ' '
+         call ffflush(6)
+      endif
+c---  
+c     prepare array a, make it transposed
+      call m4_util_transpose(m4_test_type)(a,b,total,ndim,dims)
+c     
+      do loop=1, 10
+         call random_range(lop,hipl,alo,ahi,ndim)
+         do i=1, ndim
+            blo(i) = alo(ndim-i+1) + 1
+            bhi(i) = ahi(ndim-i+1) + 1
+         enddo
+         if(me.eq.0)then
+            call copy_range(loop,alo,ahi,ndim,blo,bhi,ndim)
+c$$$            print *, loop,': copy [',(alo(i),':',ahi(i), i=1,ndim),']', 
+c$$$     $           '-->', '[',(blo(i),':',bhi(i), i=1,ndim),']'
+         endif
+c     
+         call nga_copy_patch('t', g_a, alo, ahi, g_b, blo, bhi)
+c     
+         call nga_get(g_b,blo,bhi,
+     $        b(substr(m4_blo_all, 1, eval(m4_ndim*7-1))),dims)
+c     
+c     adjust index of array a
+         do i=1,ndim
+            tlo(i) = alo(ndim-i+1)
+            thi(i) = ahi(ndim-i+1)
+         enddo
+         call m4_util_compare_patches(m4_test_type)(0d0,total,
+     $        a,tlo,thi,ndim,dims,total,b,blo,bhi,ndim,dims)
+      enddo
+c     
+      call ga_sync()
+      if(me.eq.0)then
+         print *, '  reshaping transposed: OK'
+         print *, ' '
+         call ffflush(6)
+      endif
+c---------------------------
+c     
+         status = ga_destroy(g_b)
+      enddo
+c
+c-----------------------------------------------------------------
+      changequote({,})
+      ifelse(m4_ndim,1,{},{
+c     testing copy on differet dimensions
+      dtotal = 1
+      do i = 1,dndim
+         ddims(i) = n
+         dtotal = dtotal * ddims(i)
+      enddo
+c     
+      if (.not. nga_create(m4_MT, dndim, ddims, 'd', chunk, g_b))
+     $     call ga_error(' ga_create failed ',1)
+c     
+      if(me.eq.0) 
+     $     print *, 'Testing copy patch on different dimensions'
+c     
+      call ga_sync()
+c
+c     initialize g_b
+      call m4_util_init_array(m4_test_type)(d,dtotal)
+      call nga_distribution(g_b, me, dlo, dhi)
+      elems = count_elems(dlo, dhi, dndim)
+      if(elems.gt.0) call nga_put(g_b,dlo,dhi,
+     $     d(substr(m4_dlo_all, 1, eval((m4_ndim-1)*7-1))),ddims)
+c
+c     
+c     calculate the maximum range of g_a that can fit into g_b
+      do i = 1,ndim
+         lop(i) = 1
+         hip(i) = n
+      enddo
+      hip(dndim) = 1
+c
+      call ga_sync()
+c     
+      do loop=1, 10
+         call random_range(lop,hip,alo,ahi,ndim)
+c     
+         do i=1, dndim
+            dlo(i) = alo(dndim-i+1)
+            dhi(i) = ahi(dndim-i+1)
+         enddo
+         dlo(1) = alo(ndim)
+         dhi(1) = ahi(ndim)
+c     
+         if(me.eq.0) then
+            call copy_range(loop,alo,ahi,ndim,dlo,dhi,dndim)
+c$$$            print *, loop,': copy [',(alo(i),':',ahi(i),i=1,ndim),
+c$$$     $           ']','-->','[',(dlo(i),':',dhi(i), i=1,dndim),']'
+         endif
+c     
+         call nga_copy_patch('n', g_a, alo, ahi, g_b, dlo, dhi)
+c     
+         call nga_get(g_b,dlo,dhi,
+     $        d(substr(m4_dlo_all, 1, eval((m4_ndim-1)*7-1))),ddims)
+         call nga_get(g_a,alo,ahi,
+     $        a(substr(m4_alo_all, 1, eval(m4_ndim*7-1))),dims)
+c     
+         call m4_util_compare_patches(m4_test_type)(0d0,total,
+     $        a,alo,ahi,ndim,dims,total,d,dlo,dhi,dndim,ddims)
+      enddo
+c     
+      call ga_sync()
+      if(me.eq.0)then
+         print *, '  copy patches on different dimensions: OK'
+         print *, ' '
+         call ffflush(6)
+      endif            
+c     
+      status = ga_destroy(g_b)
+      })
+      changequote(`,')
+c---  
+      status = ga_destroy(g_a)
+      end
+
+
+

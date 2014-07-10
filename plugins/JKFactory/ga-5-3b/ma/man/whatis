@@ -1,0 +1,25 @@
+MA (3)			- introduction to the MA dynamic memory allocator
+MA_alloc_get (3)	- allocate a heap block and get the corresponding base index
+MA_allocate_heap (3)	- allocate a heap block
+MA_chop_stack (3)	- deallocate a stack block and all stack blocks allocated after it
+MA_free_heap (3)	- deallocate a heap block
+MA_get_index (3)	- get the base index for a block
+MA_get_next_memhandle (3)	- get the handle for the next block in the scan of currently allocated blocks
+MA_get_pointer (3)	- get the base pointer for a block
+MA_init (3)		- initialize the memory allocator
+MA_initialized (3)	- find out if MA has been successfully initialized
+MA_init_memhandle_iterator (3)	- initialize a scan of currently allocated blocks
+MA_inquire_avail (3)	- find out how much free space is available between the heap and stack regions
+MA_inquire_heap (3)	- find out how much free space is available in the heap region
+MA_inquire_stack (3)	- find out how much free space is available in the stack region
+MA_pop_stack (3)	- deallocate a stack block
+MA_print_stats (3)	- print MA usage statistics on the standard output (stdout)
+MA_push_get (3)		- allocate a stack block and get the corresponding base index
+MA_push_stack (3)	- allocate a stack block
+MA_set_auto_verify (3)	- set the ma_auto_verify flag
+MA_set_error_print (3)	- set the ma_error_print flag
+MA_set_hard_fail (3)	- set the ma_hard_fail flag
+MA_sizeof (3)		- compute sizes of data types
+MA_sizeof_overhead (3)	- compute size of block overhead
+MA_summarize_allocated_blocks (3)	- print information about currently allocated blocks on the standard output (stdout)
+MA_verify_allocator_stuff (3)	- sanity check the internal state of MA

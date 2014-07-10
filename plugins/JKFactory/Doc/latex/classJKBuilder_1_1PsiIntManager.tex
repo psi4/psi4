@@ -1,0 +1,76 @@
+\hypertarget{classJKBuilder_1_1PsiIntManager}{
+\section{PsiIntManager Class Reference}
+\label{classJKBuilder_1_1PsiIntManager}\index{JKBuilder::PsiIntManager@{JKBuilder::PsiIntManager}}
+}
+
+
+{\ttfamily \#include $<$PsiShared.h$>$}\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classJKBuilder_1_1PsiIntManager_a889963032b8696d99b4b6f17b2b0ea79}{PsiIntManager} (\hyperlink{namespaceJKBuilder_a5f21cc1a0cc795f1cb9aceca0400dcd0}{SharedInts} \&\hyperlink{classJKBuilder_1_1PsiIntManager_abff505bf91f526e978bc6abbf3e0cfc5}{DaInts}, \hyperlink{namespaceJKBuilder_aa50d645c83645be7de5fa94937abf1f3}{SharedBasis} \&\hyperlink{classJKBuilder_1_1PsiIntManager_a1328ec05e99c755f29d64d7ea56fee7e}{Basis})
+\item 
+\hyperlink{classJKBuilder_1_1ShellQuartetIterator}{ShellQuartetIterator} \hyperlink{classJKBuilder_1_1PsiIntManager_a705edceb221f8e4caf7ddece3fb564a7}{GetShellItr} (int $\ast$PQRS)
+\item 
+\hyperlink{classJKBuilder_1_1BasisQuartetIterator}{BasisQuartetIterator} \hyperlink{classJKBuilder_1_1PsiIntManager_a5933bbf29c242bc4ca6bf84fa4114948}{GetBasisItr} (int $\ast$PQRS, int $\ast$pqrs)
+\item 
+int \hyperlink{classJKBuilder_1_1PsiIntManager_a62c0b160046fddcf57ebcdaba797d50b}{GetNAtomPairs} (std::vector$<$ int $>$ \&atoms)
+\item 
+void \hyperlink{classJKBuilder_1_1PsiIntManager_a8599805b4cb7661e4e0878c6117d71b8}{FillIndices} (int $\ast$ij, int $\ast$IJ, int $\ast$ijkl, int $\ast$shell\_\-offset, int $\ast$nbf\_\-on\_\-atom, \hyperlink{classJKBuilder_1_1BasisQuartetIterator}{BasisQuartetIterator} \&BasisItr)
+\end{DoxyCompactItemize}
+\subsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{namespaceJKBuilder_a5f21cc1a0cc795f1cb9aceca0400dcd0}{SharedInts} \hyperlink{classJKBuilder_1_1PsiIntManager_abff505bf91f526e978bc6abbf3e0cfc5}{DaInts}
+\item 
+\hyperlink{namespaceJKBuilder_aa50d645c83645be7de5fa94937abf1f3}{SharedBasis} \hyperlink{classJKBuilder_1_1PsiIntManager_a1328ec05e99c755f29d64d7ea56fee7e}{Basis}
+\end{DoxyCompactItemize}
+
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{classJKBuilder_1_1PsiIntManager_a889963032b8696d99b4b6f17b2b0ea79}{
+\index{JKBuilder::PsiIntManager@{JKBuilder::PsiIntManager}!PsiIntManager@{PsiIntManager}}
+\index{PsiIntManager@{PsiIntManager}!JKBuilder::PsiIntManager@{JKBuilder::PsiIntManager}}
+\subsubsection[{PsiIntManager}]{\setlength{\rightskip}{0pt plus 5cm}{\bf PsiIntManager} ({\bf SharedInts} \& {\em DaInts}, \/  {\bf SharedBasis} \& {\em Basis})}}
+\label{classJKBuilder_1_1PsiIntManager_a889963032b8696d99b4b6f17b2b0ea79}
+
+
+\subsection{Member Function Documentation}
+\hypertarget{classJKBuilder_1_1PsiIntManager_a705edceb221f8e4caf7ddece3fb564a7}{
+\index{JKBuilder::PsiIntManager@{JKBuilder::PsiIntManager}!GetShellItr@{GetShellItr}}
+\index{GetShellItr@{GetShellItr}!JKBuilder::PsiIntManager@{JKBuilder::PsiIntManager}}
+\subsubsection[{GetShellItr}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ShellQuartetIterator} GetShellItr (int $\ast$ {\em PQRS})}}
+\label{classJKBuilder_1_1PsiIntManager_a705edceb221f8e4caf7ddece3fb564a7}
+\hypertarget{classJKBuilder_1_1PsiIntManager_a5933bbf29c242bc4ca6bf84fa4114948}{
+\index{JKBuilder::PsiIntManager@{JKBuilder::PsiIntManager}!GetBasisItr@{GetBasisItr}}
+\index{GetBasisItr@{GetBasisItr}!JKBuilder::PsiIntManager@{JKBuilder::PsiIntManager}}
+\subsubsection[{GetBasisItr}]{\setlength{\rightskip}{0pt plus 5cm}{\bf BasisQuartetIterator} GetBasisItr (int $\ast$ {\em PQRS}, \/  int $\ast$ {\em pqrs})}}
+\label{classJKBuilder_1_1PsiIntManager_a5933bbf29c242bc4ca6bf84fa4114948}
+\hypertarget{classJKBuilder_1_1PsiIntManager_a62c0b160046fddcf57ebcdaba797d50b}{
+\index{JKBuilder::PsiIntManager@{JKBuilder::PsiIntManager}!GetNAtomPairs@{GetNAtomPairs}}
+\index{GetNAtomPairs@{GetNAtomPairs}!JKBuilder::PsiIntManager@{JKBuilder::PsiIntManager}}
+\subsubsection[{GetNAtomPairs}]{\setlength{\rightskip}{0pt plus 5cm}int GetNAtomPairs (std::vector$<$ int $>$ \& {\em atoms})}}
+\label{classJKBuilder_1_1PsiIntManager_a62c0b160046fddcf57ebcdaba797d50b}
+\hypertarget{classJKBuilder_1_1PsiIntManager_a8599805b4cb7661e4e0878c6117d71b8}{
+\index{JKBuilder::PsiIntManager@{JKBuilder::PsiIntManager}!FillIndices@{FillIndices}}
+\index{FillIndices@{FillIndices}!JKBuilder::PsiIntManager@{JKBuilder::PsiIntManager}}
+\subsubsection[{FillIndices}]{\setlength{\rightskip}{0pt plus 5cm}void FillIndices (int $\ast$ {\em ij}, \/  int $\ast$ {\em IJ}, \/  int $\ast$ {\em ijkl}, \/  int $\ast$ {\em shell\_\-offset}, \/  int $\ast$ {\em nbf\_\-on\_\-atom}, \/  {\bf BasisQuartetIterator} \& {\em BasisItr})}}
+\label{classJKBuilder_1_1PsiIntManager_a8599805b4cb7661e4e0878c6117d71b8}
+
+
+\subsection{Member Data Documentation}
+\hypertarget{classJKBuilder_1_1PsiIntManager_abff505bf91f526e978bc6abbf3e0cfc5}{
+\index{JKBuilder::PsiIntManager@{JKBuilder::PsiIntManager}!DaInts@{DaInts}}
+\index{DaInts@{DaInts}!JKBuilder::PsiIntManager@{JKBuilder::PsiIntManager}}
+\subsubsection[{DaInts}]{\setlength{\rightskip}{0pt plus 5cm}{\bf SharedInts} {\bf DaInts}\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}
+\label{classJKBuilder_1_1PsiIntManager_abff505bf91f526e978bc6abbf3e0cfc5}
+\hypertarget{classJKBuilder_1_1PsiIntManager_a1328ec05e99c755f29d64d7ea56fee7e}{
+\index{JKBuilder::PsiIntManager@{JKBuilder::PsiIntManager}!Basis@{Basis}}
+\index{Basis@{Basis}!JKBuilder::PsiIntManager@{JKBuilder::PsiIntManager}}
+\subsubsection[{Basis}]{\setlength{\rightskip}{0pt plus 5cm}{\bf SharedBasis} {\bf Basis}\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}
+\label{classJKBuilder_1_1PsiIntManager_a1328ec05e99c755f29d64d7ea56fee7e}
+
+
+The documentation for this class was generated from the following files:\begin{DoxyCompactItemize}
+\item 
+src/\hyperlink{PsiShared_8h}{PsiShared.h}\item 
+src/\hyperlink{PsiShared_8cpp}{PsiShared.cpp}\end{DoxyCompactItemize}

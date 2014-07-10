@@ -1,0 +1,29 @@
+#ifndef TYPESF2C_H_
+#define TYPESF2C_H_
+
+#ifdef WIN32
+#   define FATR __stdcall
+#else
+#   define FATR 
+#endif
+
+typedef @F2C_INTEGER_C_TYPE@ Integer;
+typedef @F2C_REAL_C_TYPE@ Real;
+typedef @F2C_DOUBLE_PRECISION_C_TYPE@ DoublePrecision;
+
+typedef Integer logical;
+typedef Integer Logical;
+
+typedef struct {
+    DoublePrecision real;
+    DoublePrecision imag;
+} DoubleComplex;
+
+typedef struct {
+    Real real;
+    Real imag;
+} SingleComplex;
+
+typedef @C_POINTER_AS_INTEGER@ intp;
+
+#endif /* TYPESF2C_H_ */

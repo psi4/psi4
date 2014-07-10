@@ -1,0 +1,335 @@
+                   DISK RESIDENT ARRAYS PRELIMINARY DOCUMENTATION
+                          Jarek Nieplocha, 05.10.95               
+
+
+Disk Resident Arrays extend Global Arrays NUMA programming model with  
+disk I/O operations. Either whole or sections of global arrays 
+can be transferred between GA memory and the disk.
+  
+At present time, all operations are declared to be collective. 
+This simplifies implementation on machines where only some processors 
+are connected to I/O devices. 
+
+Except where stated otherwise, all operations are synchronous (blocking)
+which means that control is returned to the calling process only after
+the requested operation completes. 
+
+All operations return error code.
+
+    Return values:
+                     0    - OK
+                    >0    - failure
+
+
+A program that uses Disk Resident Arrays should look like:
+
+      program foo
+#include "mafdecls.h"
+#include "global.fh"
+#include "dra.fh"
+c
+      call pbeginf()                      ! initialize TCGMSG
+      if(.not. ma_init(...)) ERROR        ! initialize MA
+      call ga_initialize()                ! initialize Global Arrays
+      if(dra_init(....).ne.0) ERROR       ! initialize Disk Arrays 
+
+c     do work
+
+      if(dra_terminate().ne.0)ERROR       ! destroy DRA internal data structures
+      call ga_terminate                   ! terminate Global Arrays
+      call pend()                         ! terminate TCGMSG
+      end
+
+
+      
+List of DRA operations:
+
+
+     status = dra_init(max_arrays, max_array_size, total_disk_space, max_memory)
+              integer max_arrays 		[input]
+              double precision max_array_size	[input]
+              double precision total_disk_space	[input]
+              double precision max_memory	[input]
+
+            discussion:
+
+              Initializes disk resident array I/O subsystem.
+
+              "max_array_size", "total_disk_space" and  "max_memory" are given
+              in bytes. 
+
+              "max_memory" specifies how much local memory per processor the
+              application is willing to provide to the DRA I/O subsystem for
+              buffering. 
+
+              The value of "-1" for any of input arguments means:
+              "don't care", "don't know", or "use defaults" 
+
+
+
+     status = dra_terminate()
+
+            discussion:
+
+              Close all open disk resident arrays and shut down 
+              DRA I/O subsystem.
+
+
+
+     status = dra_create(type, dim1, dim2, name, filename, mode,rdim1,rdim2,d_a)
+              integer type     	 		[input]   ! MA type identifier
+              integer dim1     	 		[input]
+              integer dim2     	 		[input]
+              character*(*) name 		[input]
+              character*(*) filename 		[input]
+              integer mode	     	 	[input]
+              integer rdim1          	 	[input] 
+              integer rdim2     	 	[input]
+              integer d_a      	 		[output]  ! DRA handle
+
+            discussion:
+
+              Creates new disk resident array with specified dimensions
+              and "type".
+
+	      String "filename" specifies name of an abstract
+	      meta-file that will store the data on the disk. The
+	      meta-file might be implemented as multiple disk files
+	      that will contain parts of the disk resident array. The component
+	      files will have names derived from the string "filename"
+	      according to some established scheme(s).
+
+	      Only one DRA object can be stored in DRA meta-file identified by
+	      "filename".
+
+              DRA objects persist on the disk after calling dra_close().
+              dra_delete() should be used instead of dra_close() to delete disk
+              array and associated meta-file on the disk.
+
+              A set of UNIX commands that understand "filename" identifier
+              will be provided to copy, rename, move, change access attributes,
+              and delete DRA meta-files.
+
+              String "name" can be used for more informative (longer)names.
+
+              Disk array is implicitly initialized to "0".
+
+              Access permissions (read, write, read&write) are set in "mode".
+              These are set using defined in DRA.fh (Fortran) and DRA.h (C)
+              preprocessor constants: DRA_R, DRA_W, DRA_RW.
+
+	      The pair [rdim1, rdim2] specifies dimensions of a
+	      "typical" request.  The value of "-1" for either of them
+	      means "unspecified".  The layout of the data on the
+	      disk(s) is determined based on the values of these
+	      arguments. Performance of the DRA operations will depend
+	      on the dimensions (section shape) of the requests.  If
+	      data layout is optimized for "column-like" sections,
+	      performance of DRA operations for "row-like" sections
+	      might be seriously degraded. This is analogous to the
+	      effect of wrong loop order yielding frequent cache misses
+	      on RISC processors in the example below.
+
+
+	      double precision a(1000, 1000)
+              do i = 1, 1000
+		 do j = 1, 1000
+		    a(i,j) = dfloat(i+j)
+                 enddo
+              enddo
+
+              instead of 
+
+              do j = 1, 1000
+                 do i = 1, 1000
+                    a(i,j) = dfloat(i+j) 
+                 enddo
+              enddo
+
+              
+
+     status = dra_open(filename, mode, d_a)
+              character*(*) filename            [input]
+              integer mode	     	 	[input]
+              integer d_a                       [output]  ! DRA handle
+
+            discussion:
+
+	      Open and assign DRA handle to disk resident array stored in DRA
+	      meta-file "filename".  Disk arrays that are created
+	      with 'dra_create' and saved by calling 'dra_close' can be
+	      later opened and accessed by the same or different
+	      application.
+
+	      Attributes of disk resident array can be found by calling
+	      'dra_inquire'.
+
+
+
+     status = dra_write(g_a, d_a, request)
+              integer g_a      	 		[input]  ! GA handle
+              integer d_a      	 		[input]  ! DRA handle
+              integer request			[output] ! request id
+
+            discussion:
+
+              Write asynchronously specified global array to specified 
+              disk resident array.
+
+              Dimensions and type of g_a and d_a must match. If dimensions
+              don't match, 'dra_write_section' should be used instead.   
+
+	      The operation is by definition asynchronous but it might
+	      be implemented as synchronous i.e., it would return only
+	      when I/O is done.  
+
+	      "request" can be used to 'dra_probe' or 'dra_wait' for completion.
+
+
+
+     status = dra_write_section(transp, g_a, gilo, gihi, gjlo, gjhi, 
+                                        d_a, dilo, dihi, djlo, djhi, request)
+              logical transp   	 		[input] ! transpose operator 
+              integer g_a   	 		[input] ! GA handle 
+              integer d_a   	 		[input] ! DRA handle 
+              integer gilo   	 		[input] 
+              integer gihi   	 		[input] 
+              integer gjlo   	 		[input] 
+              integer gjhi   	 		[input] 
+              integer dilo   	 		[input] 
+              integer dihi   	 		[input] 
+              integer djlo   	 		[input] 
+              integer djhi   	 		[input] 
+              integer request			[output] ! request id
+
+
+            discussion:
+
+              Write asynchronously specified global array section to 
+              specified disk resident array section:
+                OP(g_a[ gilo:gihi, gjlo:gjhi]) --> d_a[ dilo:dihi, djlo:djhi]
+              where OP is the transpose operator (.true./.false.).
+
+              Return error if the two section's types or sizes mismatch.
+
+              See 'dra_write' specs for discussion of "request". 
+
+            Note:
+	      Section reshaping and transpose operation not implemented yet.
+
+
+     status = dra_read(g_a, d_a, request)
+              integer g_a                       [input]  ! GA handle
+              integer d_a                       [input]  ! DRA handle
+              integer request                   [output] ! request id
+
+            discussion:
+
+              Read asynchronously specified global array from specified
+              disk resident array.
+
+              Dimensions and type of g_a and d_a must match. If dimensions
+              don't match, 'dra_read_section' could be used instead.
+
+              See 'dra_write' specs for discussion of "request". 
+
+
+     status = dra_read_section(transp, g_a, gilo, gihi, gjlo, gjhi,
+                                       d_a, dilo, dihi, djlo, djhi, request)
+              logical transp                    [input] ! transpose operator
+              integer g_a                       [input] ! GA handle
+              integer d_a                       [input] ! DRA handle
+              integer gilo                      [input]
+              integer gihi                      [input]
+              integer gjlo                      [input]
+              integer gjhi                      [input]
+              integer dilo                      [input]
+              integer dihi                      [input]
+              integer djlo                      [input]
+              integer djhi                      [input]
+              integer request                   [output] ! request id
+
+            discussion:
+
+              Read asynchronously specified global array section from 
+              specified disk resident array section:
+                OP(d_a[ dilo:dihi, djlo:djhi]) --> g_a[ gilo:gihi, gjlo:gjhi]
+              where OP is the transpose operator (.true./.false.).
+
+              See 'dra_write' specs for discussion of "request".
+
+            Note:
+	      Section reshaping and transpose operation not implemented yet.
+
+
+     status = dra_probe(request, compl_status)
+              integer request                   [input]  ! request id
+              integer compl_status              [output] ! completion status  
+
+            discussion:
+
+	      Tests for completion of 'dra_write/read' or
+	      'dra_write/read_section' operation which set the value
+	      passed in "request" argument.
+
+              compl_status =  0 the operation has been completed
+              compl_status <> 0 not done yet
+
+
+
+     status = dra_wait(request)
+              integer request                   [input]  ! request id
+
+            discussion:
+
+	      Blocks until completion of 'dra_write/read' or
+	      'dra_write/read_section' operation which set the value
+	      passed in "request" argument. 
+
+
+
+     status = dra_inquire(d_a, type, dim1, dim2, name, filename)
+              integer d_a                       [input]  ! DRA handle
+              integer type                      [output]
+              integer dim1                      [output]
+              integer dim2                      [output]
+              character*(*) name                [output]
+              character*(*) filename            [output]
+
+            discussion:
+
+	      Return dimensions, "type", "name" of disk resident array,
+	      and "filename" of DRA meta-file associated with "d_a"
+	      handle.
+
+
+     status = dra_delete(d_a)
+              integer d_a                       [input]  ! DRA handle
+
+            discussion:
+
+                Delete a disk resident array associated with "d_a" handle.
+
+                Invalidate handle.
+
+                The corresponding DRA meta-file is destroyed.
+
+
+
+     status = dra_close(d_a)
+              integer d_a                       [input]  ! DRA handle
+
+            discussion:
+
+	      Close DRA meta-file associated with "d_a" handle and
+	      deallocate data structures corresponding to this disk
+	      array.  Invalidate "d_a" handle. The array on the disk is
+	      persistent.
+
+
+     subroutine dra_flick()
+
+            discussion:
+
+             Returns control to DRA for a VERY short time to improve 
+             progress of pending asynchronous operations.

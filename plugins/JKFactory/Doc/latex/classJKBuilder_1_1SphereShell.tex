@@ -1,0 +1,140 @@
+\hypertarget{classJKBuilder_1_1SphereShell}{
+\section{SphereShell Class Reference}
+\label{classJKBuilder_1_1SphereShell}\index{JKBuilder::SphereShell@{JKBuilder::SphereShell}}
+}
+
+
+Specialization of \hyperlink{classJKBuilder_1_1Shell}{Shell} to Spherical Gaussians.  
+
+
+{\ttfamily \#include $<$BasisSet.h$>$}Inheritance diagram for SphereShell::\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2cm]{classJKBuilder_1_1SphereShell}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classJKBuilder_1_1SphereShell_af92e2c0e6f04dbf41105b543a6eebdcd}{SphereShell} (int \hyperlink{classJKBuilder_1_1Shell_a89606eca6b563ec68d2da2e84657736f}{l}=0)
+\begin{DoxyCompactList}\small\item\em Calls \hyperlink{classJKBuilder_1_1Shell}{Shell} constructor with IsCart=false. \item\end{DoxyCompactList}\item 
+int \hyperlink{classJKBuilder_1_1SphereShell_a297c144fb990284ac5973c99cdd55f91}{GetNBasis} ()
+\begin{DoxyCompactList}\small\item\em Returns the number of basis functions. \item\end{DoxyCompactList}\item 
+int \hyperlink{classJKBuilder_1_1Shell_abc886cd4e35d3c56a0250b7d06986f61}{GetNPrims} ()
+\begin{DoxyCompactList}\small\item\em Returns the number of primitives. \item\end{DoxyCompactList}\item 
+int \hyperlink{classJKBuilder_1_1Shell_a7cc8fc5bc043267a7b47e69503e0e308}{GetL} ()
+\begin{DoxyCompactList}\small\item\em Returns the angular momentum. \item\end{DoxyCompactList}\item 
+bool \hyperlink{classJKBuilder_1_1Shell_a75c22d97e837f5c439eb51aa223bed98}{IsCart} ()
+\begin{DoxyCompactList}\small\item\em Returns true if this a Cartesian like shell. \item\end{DoxyCompactList}\item 
+void \hyperlink{classJKBuilder_1_1Shell_a20ec923cb07d5d3762fffa4501d09924}{AddPrimitive} (double c0, double beta0)
+\begin{DoxyCompactList}\small\item\em Creates a primitive with expansion coefficient c0 and exponent scale factor beta0. \item\end{DoxyCompactList}\item 
+\hyperlink{classJKBuilder_1_1Primitive}{Primitive} $\ast$ \hyperlink{classJKBuilder_1_1Shell_ae98a68bcb237e53c8c063aded1b34f2e}{operator\mbox{[}$\,$\mbox{]}} (const int i)
+\begin{DoxyCompactList}\small\item\em Returns a pointer to the i-\/th primitive. \item\end{DoxyCompactList}\item 
+void \hyperlink{classJKBuilder_1_1Shell_a388f572c62279f839ee138a9afbdeeb5}{print} ()
+\begin{DoxyCompactList}\small\item\em Prints out the shell. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+bool \hyperlink{classJKBuilder_1_1Shell_a8a5f217a40aac0ce092effdd9b6db9f6}{spherical}
+\begin{DoxyCompactList}\small\item\em True if spherical, false if Cartesian. \item\end{DoxyCompactList}\item 
+int \hyperlink{classJKBuilder_1_1Shell_a89606eca6b563ec68d2da2e84657736f}{l}
+\begin{DoxyCompactList}\small\item\em The angular momentum of this shell. \item\end{DoxyCompactList}\item 
+std::vector$<$ \hyperlink{classJKBuilder_1_1Primitive}{Primitive} $\ast$ $>$ \hyperlink{classJKBuilder_1_1Shell_afd0049f3a997082e636f4dae72879da2}{gi}
+\begin{DoxyCompactList}\small\item\em A vector of the Primitives for this shell. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Specialization of \hyperlink{classJKBuilder_1_1Shell}{Shell} to Spherical Gaussians. A shell of spherical Gaussians is characterized by a momentum $\ell$ and has one Gaussian for each value in the set $\lbrace i:0\le |i|\le\ell\rbrace$, which amounts to $2\ell+1$ allowed values. 
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{classJKBuilder_1_1SphereShell_af92e2c0e6f04dbf41105b543a6eebdcd}{
+\index{JKBuilder::SphereShell@{JKBuilder::SphereShell}!SphereShell@{SphereShell}}
+\index{SphereShell@{SphereShell}!JKBuilder::SphereShell@{JKBuilder::SphereShell}}
+\subsubsection[{SphereShell}]{\setlength{\rightskip}{0pt plus 5cm}{\bf SphereShell} (int {\em l} = {\ttfamily 0})}}
+\label{classJKBuilder_1_1SphereShell_af92e2c0e6f04dbf41105b543a6eebdcd}
+
+
+Calls \hyperlink{classJKBuilder_1_1Shell}{Shell} constructor with IsCart=false. 
+
+\subsection{Member Function Documentation}
+\hypertarget{classJKBuilder_1_1SphereShell_a297c144fb990284ac5973c99cdd55f91}{
+\index{JKBuilder::SphereShell@{JKBuilder::SphereShell}!GetNBasis@{GetNBasis}}
+\index{GetNBasis@{GetNBasis}!JKBuilder::SphereShell@{JKBuilder::SphereShell}}
+\subsubsection[{GetNBasis}]{\setlength{\rightskip}{0pt plus 5cm}int GetNBasis ()\hspace{0.3cm}{\ttfamily  \mbox{[}virtual\mbox{]}}}}
+\label{classJKBuilder_1_1SphereShell_a297c144fb990284ac5973c99cdd55f91}
+
+
+Returns the number of basis functions. 
+
+Implements \hyperlink{classJKBuilder_1_1Shell_a1167cdb6f1e1ba08ba6cbffa0b32ca77}{Shell}.\hypertarget{classJKBuilder_1_1Shell_abc886cd4e35d3c56a0250b7d06986f61}{
+\index{JKBuilder::SphereShell@{JKBuilder::SphereShell}!GetNPrims@{GetNPrims}}
+\index{GetNPrims@{GetNPrims}!JKBuilder::SphereShell@{JKBuilder::SphereShell}}
+\subsubsection[{GetNPrims}]{\setlength{\rightskip}{0pt plus 5cm}int GetNPrims ()\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1Shell_abc886cd4e35d3c56a0250b7d06986f61}
+
+
+Returns the number of primitives. \hypertarget{classJKBuilder_1_1Shell_a7cc8fc5bc043267a7b47e69503e0e308}{
+\index{JKBuilder::SphereShell@{JKBuilder::SphereShell}!GetL@{GetL}}
+\index{GetL@{GetL}!JKBuilder::SphereShell@{JKBuilder::SphereShell}}
+\subsubsection[{GetL}]{\setlength{\rightskip}{0pt plus 5cm}int GetL ()\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1Shell_a7cc8fc5bc043267a7b47e69503e0e308}
+
+
+Returns the angular momentum. \hypertarget{classJKBuilder_1_1Shell_a75c22d97e837f5c439eb51aa223bed98}{
+\index{JKBuilder::SphereShell@{JKBuilder::SphereShell}!IsCart@{IsCart}}
+\index{IsCart@{IsCart}!JKBuilder::SphereShell@{JKBuilder::SphereShell}}
+\subsubsection[{IsCart}]{\setlength{\rightskip}{0pt plus 5cm}bool IsCart ()\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1Shell_a75c22d97e837f5c439eb51aa223bed98}
+
+
+Returns true if this a Cartesian like shell. \hypertarget{classJKBuilder_1_1Shell_a20ec923cb07d5d3762fffa4501d09924}{
+\index{JKBuilder::SphereShell@{JKBuilder::SphereShell}!AddPrimitive@{AddPrimitive}}
+\index{AddPrimitive@{AddPrimitive}!JKBuilder::SphereShell@{JKBuilder::SphereShell}}
+\subsubsection[{AddPrimitive}]{\setlength{\rightskip}{0pt plus 5cm}void AddPrimitive (double {\em c0}, \/  double {\em beta0})\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1Shell_a20ec923cb07d5d3762fffa4501d09924}
+
+
+Creates a primitive with expansion coefficient c0 and exponent scale factor beta0. \hypertarget{classJKBuilder_1_1Shell_ae98a68bcb237e53c8c063aded1b34f2e}{
+\index{JKBuilder::SphereShell@{JKBuilder::SphereShell}!operator\mbox{[}\mbox{]}@{operator[]}}
+\index{operator\mbox{[}\mbox{]}@{operator[]}!JKBuilder::SphereShell@{JKBuilder::SphereShell}}
+\subsubsection[{operator[]}]{\setlength{\rightskip}{0pt plus 5cm}{\bf Primitive} $\ast$ operator\mbox{[}$\,$\mbox{]} (const int {\em i})\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1Shell_ae98a68bcb237e53c8c063aded1b34f2e}
+
+
+Returns a pointer to the i-\/th primitive. \hypertarget{classJKBuilder_1_1Shell_a388f572c62279f839ee138a9afbdeeb5}{
+\index{JKBuilder::SphereShell@{JKBuilder::SphereShell}!print@{print}}
+\index{print@{print}!JKBuilder::SphereShell@{JKBuilder::SphereShell}}
+\subsubsection[{print}]{\setlength{\rightskip}{0pt plus 5cm}void print ()\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1Shell_a388f572c62279f839ee138a9afbdeeb5}
+
+
+Prints out the shell. 
+
+\subsection{Member Data Documentation}
+\hypertarget{classJKBuilder_1_1Shell_a8a5f217a40aac0ce092effdd9b6db9f6}{
+\index{JKBuilder::SphereShell@{JKBuilder::SphereShell}!spherical@{spherical}}
+\index{spherical@{spherical}!JKBuilder::SphereShell@{JKBuilder::SphereShell}}
+\subsubsection[{spherical}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf spherical}\hspace{0.3cm}{\ttfamily  \mbox{[}protected, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1Shell_a8a5f217a40aac0ce092effdd9b6db9f6}
+
+
+True if spherical, false if Cartesian. \hypertarget{classJKBuilder_1_1Shell_a89606eca6b563ec68d2da2e84657736f}{
+\index{JKBuilder::SphereShell@{JKBuilder::SphereShell}!l@{l}}
+\index{l@{l}!JKBuilder::SphereShell@{JKBuilder::SphereShell}}
+\subsubsection[{l}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf l}\hspace{0.3cm}{\ttfamily  \mbox{[}protected, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1Shell_a89606eca6b563ec68d2da2e84657736f}
+
+
+The angular momentum of this shell. \hypertarget{classJKBuilder_1_1Shell_afd0049f3a997082e636f4dae72879da2}{
+\index{JKBuilder::SphereShell@{JKBuilder::SphereShell}!gi@{gi}}
+\index{gi@{gi}!JKBuilder::SphereShell@{JKBuilder::SphereShell}}
+\subsubsection[{gi}]{\setlength{\rightskip}{0pt plus 5cm}std::vector$<${\bf Primitive}$\ast$$>$ {\bf gi}\hspace{0.3cm}{\ttfamily  \mbox{[}protected, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1Shell_afd0049f3a997082e636f4dae72879da2}
+
+
+A vector of the Primitives for this shell. 
+
+The documentation for this class was generated from the following files:\begin{DoxyCompactItemize}
+\item 
+src/\hyperlink{BasisSet_8h}{BasisSet.h}\item 
+src/\hyperlink{BasisSet_8cpp}{BasisSet.cpp}\end{DoxyCompactItemize}

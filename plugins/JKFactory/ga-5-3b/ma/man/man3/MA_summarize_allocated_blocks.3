@@ -1,0 +1,86 @@
+.TH MA_SUMMARIZE_ALLOCATED_BLOCKS 3 "20 February 1997" "MA Release 1.8" " "
+.SH NAME
+MA_summarize_allocated_blocks -
+print information about currently allocated blocks
+on the standard output (stdout)
+.SH "C SYNOPSIS"
+.nf
+#include "macdecls.h"
+
+void MA_summarize_allocated_blocks()
+.fi
+.SH "FORTRAN SYNOPSIS"
+.nf
+#include "mafdecls.fh"
+
+subroutine MA_summarize_allocated_blocks
+.fi
+.SH DESCRIPTION
+MA_summarize_allocated_blocks() prints the following information
+on the standard output (stdout)
+for each block currently allocated on the heap or the stack.
+
+address
+.in +0.5i
+The location in memory of (i.e., pointer to) the block.
+.in
+handle
+.in +0.5i
+The memhandle by which the block is referenced
+(returned when the block was allocated).
+.in
+name
+.in +0.5i
+The name of the block
+(specified when the block was allocated).
+.in
+type of elements
+.in +0.5i
+The type of data elements stored in the block
+(specified when the block was allocated).
+.in
+number of elements
+.in +0.5i
+The number of data elements stored in the block
+(specified when the block was allocated).
+.in
+address of client space
+.in +0.5i
+The location in memory of (i.e., pointer to) the data elements.
+This is the value returned by MA_get_pointer().
+.in
+index for client space
+.in +0.5i
+The base index for the appropriate type-specific data array.
+This is the value returned by MA_get_index().
+.in
+total number of bytes
+.in +0.5i
+The total number of bytes, including overhead, in the block.
+.in
+.\" .SH USAGE
+.SH DIAGNOSTICS
+invalid index_base: %d
+.in +0.5i
+This indicates either that the internal state of MA is corrupted
+or that there is a problem in the C-FORTRAN linkage.
+.in
+.SH "RETURN VALUE"
+C: None.
+.br
+FORTRAN: None.
+.\" .SH NOTES
+.SH FILES
+.nf
+Include files: /msrc/proj/hpctools/ma/release/current/include
+Library:       /msrc/proj/hpctools/ma/release/current/lib/\fIplatform\fR/libma.a
+Man pages:     /msrc/proj/hpctools/ma/release/current/man/man3
+Source code:   /msrc/proj/hpctools/ma/release/current/tar/ma\fIrelease\fR.tar
+.fi
+.SH "SEE ALSO"
+.na
+MA(3),
+MA_print_stats(3)
+.ad
+.SH AUTHOR
+Gregory S. Thomas, Pacific Northwest National Laboratory

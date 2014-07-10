@@ -1,0 +1,5 @@
+#!/bin/tcsh
+rm -f core*
+limit coredumpsize 128megabytes
+# setenv CRAY_PORTALS_USE_BLOCKING_POLL 1
+aprun -n 4 -N 2 ./test.x

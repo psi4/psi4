@@ -1,0 +1,228 @@
+BRIEF TOUBLESHOOTING NOTES
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+NON-PLATFORM SPECIFIC PROBLEMS
+==============================
+
+1.  Your make is not GNU make.
+
+    Symptoms:
+
+    Make: makefile: Must be a separator on line 2.  Stop.
+
+    Fix: use GNU make.
+
+    To verify if make is a GNU make, type make -v. The output should look
+    like::
+
+        % make -v
+        GNU Make version 3.74, by Richard Stallman and Roland McGrath.
+        Copyright (C) 1988, 89, 90, 91, 92, 93, 94, 95 Free Software Foundation, Inc.
+        This is free software; see the source for copying conditions.
+        There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A
+        PARTICULAR PURPOSE.
+
+2.  Limited IPC resources on shared memory machines
+   
+    Symptoms: 
+    
+    GA programs fail in initialization when trying to allocate semaphores or
+    shared memory.
+
+    Fix: 
+
+    Most often semaphore/shared memory IDs are used by processes that
+    terminated and left them unallocated. Run UNIX commands "ipcs" and then
+    "ipcrm" to remove any IDs that belong to your dead processes or contact
+    your sys admin for help.
+
+    Related:
+
+    On some platforms, insufficient amount of swap space might cause
+    shmget/shmat fail. In this case, either swap space has to be increased or
+    constant _SHMMAX in file global/src/shmem.c decreased. The current values
+    of _SHMMAX might be too optimistic. For example, on the PNNL IBM laptops
+    running Linux, kernel was rebuilt to allow 24 MB of shared memory.
+
+PLATFORM SPECIFIC PROBLEMS
+==========================
+
+PLEASE NOTE:
+------------
+For up-to-date information regarding platform specific problems, go to Global
+Arrays support page:
+
+    http://www.emsl.pnl.gov/docs/global/support.html
+
+Systems with QSnet interconnects
+--------------------------------
+Due to a bug in elan library (old versions between and including 1.3 and
+1.4.1), programs using the elan library can crash when transmiting 4-byte C
+Floats.  Please contact Quadrics support for further information about this
+problem.  Since ARMCI uses the elan library on the QSnet interconnect, this
+elan library bug can cause a problem if your system is using the above
+mentioned version of the elan library. This problem does not occur with the
+new 1.4.2 version of the elan library.
+
+Linux 
+-----
+The release 3.1 of GA supports  Intel (x86), PowerPC, Alpha, and Sparc Ultra
+processors. 
+
+A kernel patch helps to cut down  latency in the TCP/IP socket based
+communication on the Linux clusters connected with Ethernet networks.  We
+strongly recommend people who use Global Arrays extensively in this
+environment to apply the patch to avoid communication performance problems. 
+
+The Linux kernel has traditionally fairly small limit for the shared memory
+segment size (SHMMAX). In kernels 2.2.x it is 32MB on Intel, 16MB on Sun
+Ultra, and 4MB on Alpha processors. There are two ways to increase this limit: 
+
+    * rebuild the kernel after changing SHMMAX in 
+      /usr/src/linux/include/asm-i386/shmparam.h, for example, setting SHMMAX
+      as 0x8000000 (128MB) 
+    * a system admin can increase the limit without rebuilding 
+      the kernel, for example: echo "134217728" >/proc/sys/kernel/shmmax 
+
+More info on this subject: 
+	* http://ps-ax.com/shared-mem.html and on the Linux SMP 
+	  discussion list. 
+  	* Setting very large values of SHMMAX is not recommended. 
+	  In particular, it should not be bigger than the swap space or 
+	  even the amount of physical memory in the system. For most 
+	  applications, 128-256MB values should work fine. 
+
+Issues related to Myrinet :
+	* On Linux/x86 clusters with Myrinet, the release of GM 1.4 
+	  leads to hangs in ARMCI and GA. This problem has been solved 
+   	  in GM 1.4.1pre6 which is available on the Myricom ftp site. 
+       	  Versions 1.2, 1.3, 1.4pre48 of GM do not have that problem. 
+	* With MPICH/GM versions >1.2.3, the GM version 1.4.1pre14 or 
+	  higher must be used. 
+
+IBM SP 
+------
+POE environment variable settings for the parallel environment PSSP 3.1
+(Troutbeck): Global Arrays applications like any other LAPI-based codes must
+define MP_MSG_API=lapior MP_MSG_API=mpi,lapi(when using GA and MPI) 
+
+The LAPI-based implementation of GA cannot be used on the very old (made 5-7
+years ago) SP-2 systems because LAPI does not support the TB2 switch used in
+these models.  If in doubt which switch you got use odmget command: odmget -q
+name=css0 CuDv 
+
+Under AIX 4.3.1 and later one must set environment variable AIXTHREAD_SCOPE=S
+to assure correct operation of LAPI (IBM should do it in PSSP by default). 
+
+under AIX 4.3.3 and later  an additional environment variable is required
+RT_GRQ=ON to restore the original thread scheduling LAPI relies upon. 
+
+SGI 
+---
+In older versions of GA (<3.1) there is a possibility of conflict between the
+SGI implementation of MPI (but not others, MPICH for example) and ARMCI in
+their use of the SGI specific interprocessor communication facility called
+arena.The release 3.1 does not use arenas to avoid the problem. 
+
+If processors are oversubscribed (you are using more processes than
+processors), the SGI spin locks used for synchronization in GA are a very bad
+idea. In such a case Sys V semaphores work much better.
+
+Sun 
+---
+Solaris by default provides only 1MB limit for the largest shared memory
+segment. You need to increase  this value to do any useful work with GA. For
+example to make SHMMAX= 2GB, add either of the lines to /etc/system::
+
+    set shmsys:shminfo_shmmax=0x80000000 /* hexidecimal */ 
+    set shmsys:shminfo_shmmax=2147483648 /* decimal     */ 
+
+After rebooting, you should be able to take advantage of the increased shared
+memory limits. For more info, please refer to the article in SunWorld:
+
+    http://www.itworld.com/Comp/2378/UnixInsider/
+    
+Also see Note below.
+
+Compaq/DEC
+---------- 
+Tru64 is another example of an OS with a pityfully small size of the shared
+memory region limit. Here are instruction on how to modify shared memory max
+segment size to 256MB on  the Tru64 UNIX Version 4.0F: 
+
+1. create a file called /etc/sysconfig.shmmax 
+cat > /etc/sysconfig.shmmax << EOF 
+ipc: 
+shm-max = 268435456 
+EOF 
+You can check if the file created is OK by typing: 
+/sbin/sysconfigdb -l -t /etc/sysconfig.shmmax 
+
+2. Modify kernel values: sysconfigdb -a -f /etc/sysconfig.shmmax ipc 
+
+3. Reboot 
+
+4. To check new values: /sbin/sysconfig -q ipc|egrep shm-max 
+
+For more info:
+    http://www.tru64unix.compaq.com/docs/base_doc/DOCUMENTATION/V40F_HTML/AQ0R3GTE/CHLMTSXX.HTM
+
+Also see Note below.
+
+HP-UX 
+-----
+In most HP-UX/11 installations, the default limit  for the largest shared
+memory segment is 64MB. A system administrator should be able to easily
+increment this value to better suit the applications needs: 
+
+1. Start sam (HP System Administration Manager). 
+
+2. Go to Kernel Configuration, select Configurable Parameters. 
+   Click on the shmmax entry on the list. 
+
+3. From Actions menu select Modify Configurable Parameter. Click on the 
+   radio button Specify New Formula/Value and fill in a desired value for 
+   SHMMAX in the hexadecimal format e.g.,  0X8000000 (128MB). 
+
+4. Finally, select Process New Kernel from the Actions menu. It will 
+   apply the new value of SHHMAX into the kernel after rebooting the system. 
+
+The C compiler (commercial version) under HP-UX 10.2 performs incorrect
+address calculations for shared memory references. GNU gcc works fine.  This
+problem manifests itself in global/testing/test.x failing.  If it happens, GA
+has to recompiled with gcc.
+
+Fujitsu VX/VPP
+--------------
+The code will not complile because of the missing header file.  This file
+references MPlib library, a trade secret of Fujitsu.  The GA/ARMCI binaries
+can be obtained from nobes@fecit.com.
+
+Cray systems
+-------------
+J90 and SV1 - MPI related issues
+................................
+    * Only MPI message-passing library is supported (TCGMSG-MPI also).
+    * Must use "mpirun -nt" rather than "mpirun -np" command to run
+      GA based codes.
+    * The Cray MPI_Abort implementation is broken(hangs).
+      GA aborts using _exit().
+    * MPI_Initialized() is also broken - we cannot detect if some
+      other library already initialized MPI.
+
+FreeBSD 
+-------
+To increase the shared memory segments on FreeBSD the following two sysctl's
+should be added to the startup scripts (e.g. /etc/rc.local): 
+
+sysctl -w kern.ipc.shmmax=67108864 
+sysctl -w kern.ipc.shmall=16384 
+
+the first sysctl allocates 64Mbytes of memory, the second does the same thing
+in 4k pages (4k * 16384 = 64M), you must set both sysctl. 
+
+Note on SHMMAX: 
+---------------
+Setting very large values of SHMMAX is not recommended. In particular, it
+should not be bigger than the swap space or even the amount of physical memory
+in the system. For most applications, 128-256MB values should work fine. 

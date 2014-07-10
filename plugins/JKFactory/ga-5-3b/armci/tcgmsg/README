@@ -1,0 +1,256 @@
+TCGMSG migration path (January 2013)
+------------------------------------
+
+TCGMSG (ipcv4.0 and ipcv5.0) have become the MPI-free runtime for ARMCI. It is
+now C-only i.e. no fortran code. The TCGMSG fortran interface is preserved for
+backwards compatibility within the Global Arrays distribution.
+
+This was a minimal effort migration. MPI is the preferred runtime.
+
+TCGMSG Send/receive subroutines ... version 4.04 (January 1994)
+---------------------------------------------------------------
+
+:author: Robert J. Harrison
+:address: P.O. Box 999 Richland WA 99352 K1-90
+:tel: 509-375-2037
+:fax: 509-375-6631
+:email: rj_harrison@pnl.gov
+
+Summary
+-------
+
+TCGMSG is a toolkit for writing portable parallel programs using a message
+passing model.  Supported are a variety of common UNIX workstations,
+mini-super and super computers and hetrogenous networks of the same, along
+with true parallel computers such as the Touchstone Delta, the Intel iPSC, the
+Kendall Square Research KSR-1, and the Alliant FX/2800 MPP system.
+Applications port between all of these environments without modification to
+the parallel constructs.  This toolkit is available without charge, along with
+a set of example 'chemistry' applications.  We are using this toolkit in our
+production codes, but cannot guarantee support or accept any liability for its
+use.
+
+Release Notes (4.04)
+--------------------
+
+  1)  Several bug fixes for SUN and Intel
+
+  2)  Fixed, but slow, KSR port ... bug KSR to write quality software
+      instead of hacking
+
+  3)  Paragon port
+
+  4)  DEC Alpha port (thanks to Nico Sanna, Rome)
+
+  5)  Implemented bitwise OR operation for IGOP
+
+  6)  Fixed UNIX version so that an executable invoked on its own (i.e.,
+      without using the parallel command) functions correctly as a single
+      process ... this is very useful for debugging (thanks to J. Nieplocha).
+
+  7)  Probe now formally supported on all platforms including entry in
+      ipcv4.0/README and the interactive test program
+
+
+Release Notes (4.03)
+--------------------
+
+  1) Tuning of shared memory communication mechanism. 
+
+  2) Fixed bugs causing non-conservation of energy in MD example.
+
+
+Release Notes (4.02)
+--------------------
+
+  0)  Note my new address.
+
+  1)  New port to the KSR, done by KSR and integrated by me back
+      into the main release.  This looks good, though the C
+      compiler will not compile the socket based code with any
+      optimisation and I have not done any extensive testing other
+      than verify the test code and examples.
+
+  2)  Script (makep) to build a .p file for a UNIX workstation
+      network.  It queries a list of machines to see if they are
+      up and then sorts them by their load.  Finally, a .p file
+      is built to use the desired no. of machines using the least
+      loaded ones first.  Have a look at the top of tcgmsg/makep
+      for more info.
+
+  3)  A few minor bug fixes.  Worst one was specific to SUN Fortran.
+
+  4)  New function returns wall clock time in seconds as accurately
+      as possible (or rather as accurately as currently implemented).
+
+          DOUBLE PRECISION FUNCTION TCGTIME()
+          double TCGTIME_()
+
+  5)  Wrapper around nice for FORTRAN users only
+
+          INTEGER FUNCTION NICE(INCR)
+          INTEGER INCR
+
+  6)  MD and SCF examples extensively revised to more accurately reflect 
+      actual applications.
+
+  7)  Thanks to multiple users for input (Rick Kendall, Theresa Windus,
+      Mike Coolidge, Joe Golab, Rik Littlefield, ...)
+
+  8)  Experiments with a function to probe the message queue for
+      available messages. 
+
+          INTEGER FUNCTION PROBE(TYPE, NODE)
+          INTEGER TYPE, NODE
+
+          long PROBE_(long * type, long * node)
+
+  9)  Are you aware of the message passing interface standardization
+      effort?  Send mail to netlib@ornl.gov with the body
+      'send index from mpi' to get more information.
+
+
+Release Notes (4.0)
+-------------------
+
+  1)  Hopefully all (?) inconsistencies have now been removed.
+      In particular receive from anyone now checks the type on ALL
+      messages by peeking at data in the socket/buffer if necessary.
+
+  2)  Numerous bug fixes, mostly to do with specific process 
+      distributions and removing stupidities in socket I/O.
+
+  3)  Much improved (2-10+) short message performance.  Part of this
+      comes from SHORT messages being sent asynchronously as far as
+      buffering in the transport mechanism permits.  This also makes
+      the UNIX world consistent with the iPSC world. However, the
+      maximum length/number of messages that can be sent asyncrhonously
+      is system and transport mechanism dependent and should not be
+      relied upon.
+
+  4)  Updating of all existing ports to reflect latest O/S releases
+      (e.g. CRAY UNICOS 6.* and 7.*)
+
+  5)  New ports including the Alliant Massively parallel system.
+
+  6)  Simplified install procedure ... just type 'make all MACHINE=CRAY'
+
+  7)  Broadcast and global operations have been tuned to both the 
+      UNIX networked environment (to minimize network traffic) and
+      to the iPSC and DELTA.  All exploit full pipe-lining and overlap
+      of operations on large vectors.  The requirement to provide
+      workspace for the global operations has been eliminated.
+
+  8)  Improved support for the IPSC and DELTA, including working demo
+      command for the examples.
+
+
+Obtaining TCGMSG
+----------------
+
+ a) anonymous ftp from ftp.tcg.anl.gov
+
+    If you obtain the source by ftp please send e-mail to me so that 
+    I can maintain a list of users for bugfixes etc.
+
+    Using binary mode transfer the file pub/tcgmsg/tcgmsg.4.04.tar.Z
+    (or tcgmsg.4.04.tar if you don't have compress).
+
+ b) e-mail (only if you can't ftp it please)
+
+    Send a request to me at the above address.  I will send you a
+    split uuencoded version of tcgmsg.4.04.tar.Z.
+
+
+Installing TCGSMG
+-----------------
+
+  a) Existing ports
+
+     Meaning of status field
+
+     . - tested and fully functional
+     s - tested but O/S does not support shared memory -> sockets only
+     x - tested but O/S does not support XDR -> no data conversion
+     ? - not tested recently but is supposed to work
+     ! - known problems
+
+
+  Status   Machine     Description
+  ------   -------     -----------
+  .        SUN         Sun workstation running Sun O/S 4.0 or above
+  .        KSR         Kendall Square Research KSR-1
+  .        DEC         DecStation running ULTRIX
+  .        DECOSF      DEC Alpha running OSF (must use 8 byte FORTRAN integers)
+  .        SGI         Silicon Graphics workstation IRIX 4.0
+  .        ALLIANT     Alliant FX/8/80/800/2800 Concentrix 2800 2.2
+  ?        ALLIANTMPP  Alliant MPP system ALPHA VERSION
+  .        ARDENT      Stardent (formerly Ardent) Titan O/S 2.2
+  .        CONVEX      Convex C220 running ConvexOS V8.1
+  .        IBM         IBM R6000 with AIX 3.1 (xlf -qEXTNAME)
+  .        IBMNOEXT    IBM R6000 with AIX 3.1
+  .        HPUX        Hewlett-Packard risc (HP-UX A.B8.05) (f77 +ppu)
+  .        HPUXNOEXT   Hewlett-Packard risc (HP-UX A.B8.05)
+  .        IPSC        Intel iPSC i860 hypercube
+  .        DELTA       Intel/DARPA Touchstone Delta
+  .        PARAGON     Intel Paragon running OSF
+  x        APOLLO      Apollo DN10000, DomainOS Release 10.3 (bsd4.3)
+  s        CRAY        Cray running UNICOS 6.1 or above
+  s        NEXT        NeXT Workstation (OS 2.1) (Absoft f77 -f -N9)
+  s        NEXTNOEXT   NeXT Workstation (OS 2.1) (Absoft f77 -f)
+  ?        ENCORE      Encore running UMAX-4.3
+  !        SEQUENT     Sequent (DYNIX V3.0.14)
+
+     In the top-level TCGMSG directory type
+
+     make all MACHINE=<your-machine>
+
+     e.g.
+
+          make all MACHINE=ALLIANT
+
+     That's it, unless you're building the IPSC source.  For the IPSC you also
+     need to log onto the cube manager and in the tcgmsg/ipcv4.0 directory type
+     'make parallel'.  See the section on testing below and the Makefile and
+     README in the ipcv4.0 directory for more detailed information.
+
+  b) Ports to new UNIX machines
+
+     See ipcv4.0/README for suggested procedure.
+
+  c) Ports to new true message passing machines
+
+     See the source for the iPSC.
+
+
+Testing
+-------
+
+     1) System test codes in ipcv4.0
+
+        Make installs default proc-group files using the local
+        machine only.  See the ipcv4.0/README info on how to include
+        additional hosts/processes.
+
+        a) Hello world ... try the following command.
+
+           parallel hello
+
+        b) Interactive system test program
+
+           parallel test
+
+        c) Non-interactive FORTRAN test program
+
+           parallel testf
+
+     2) The codes in examples 
+
+        e.g.
+
+          cd examples
+          demo scf
+          ... respond 15 for the number of basis functions
+
+        See the README for more info on the examples and how to run them.
+

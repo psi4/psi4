@@ -1,0 +1,52 @@
+.TH MA_SET_ERROR_PRINT 3 "20 February 1997" "MA Release 1.8" "MA LIBRARY ROUTINES"
+.SH NAME
+MA_set_error_print -
+set the ma_error_print flag
+.SH "C SYNOPSIS"
+.nf
+#include "macdecls.h"
+
+Boolean MA_set_error_print(value)
+    Boolean     value;          /* read-only */
+.fi
+.SH "FORTRAN SYNOPSIS"
+.nf
+#include "mafdecls.fh"
+
+logical function MA_set_error_print(value)
+    logical     value
+.fi
+.SH DESCRIPTION
+MA_set_error_print() sets the ma_error_print flag to
+.I value
+and returns the flag's previous value.
+If the ma_error_print flag is true,
+then nonfatal errors cause messages to be printed
+on the standard error (stderr),
+else they do not.
+(Fatal errors always generate messages.)
+The ma_error_print flag is initially true.
+.\" .SH USAGE
+.\" .SH DIAGNOSTICS
+.SH "RETURN VALUE"
+C: The previous value of the ma_error_print flag
+(MA_TRUE or MA_FALSE).
+.br
+FORTRAN: The previous value of the ma_error_print flag
+(.true. or .false.).
+.\" .SH NOTES
+.SH FILES
+.nf
+Include files: /msrc/proj/hpctools/ma/release/current/include
+Library:       /msrc/proj/hpctools/ma/release/current/lib/\fIplatform\fR/libma.a
+Man pages:     /msrc/proj/hpctools/ma/release/current/man/man3
+Source code:   /msrc/proj/hpctools/ma/release/current/tar/ma\fIrelease\fR.tar
+.fi
+.SH "SEE ALSO"
+.na
+MA(3),
+MA_set_auto_verify(3),
+MA_set_hard_fail(3)
+.ad
+.SH AUTHOR
+Gregory S. Thomas, Pacific Northwest National Laboratory

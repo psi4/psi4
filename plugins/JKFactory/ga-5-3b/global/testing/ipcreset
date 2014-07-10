@@ -1,0 +1,17 @@
+#!/bin/csh
+# clean System V IPC resources (semaphores and shared memory) owned by the user
+#
+if( `uname` == "Linux") then
+# Linux has non-standard interface to ipcrm
+# we use int() to filter out text decorations
+  foreach s ( `ipcs -s | awk '{ if( int($2) != "0") { print $2 } }'` )
+    ipcrm sem $s >/dev/null
+  end 
+  foreach m ( `ipcs -m | awk '{ if( int($2) != "0") { print $2 } }'` )
+    ipcrm shm $m >/dev/null
+  end 
+else
+  ipcrm `ipcs | awk '{if (($1 == "m") || ($1 == "s")) print sprintf("-%s %s",$1,$2) }'`
+endif
+# show what is left
+ipcs

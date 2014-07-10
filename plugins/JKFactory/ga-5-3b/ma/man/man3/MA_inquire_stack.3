@@ -1,0 +1,55 @@
+.TH MA_INQUIRE_STACK 3 "20 February 1997" "MA Release 1.8" "MA LIBRARY ROUTINES"
+.SH NAME
+MA_inquire_stack -
+find out how much free space is available in the stack region
+.SH "C SYNOPSIS"
+.nf
+#include "macdecls.h"
+
+Integer MA_inquire_stack(datatype)
+    Integer     datatype;       /* read-only */
+.fi
+.SH "FORTRAN SYNOPSIS"
+.nf
+#include "mafdecls.fh"
+
+integer function MA_inquire_stack(datatype)
+    integer     datatype
+.fi
+.SH DESCRIPTION
+MA_inquire_stack() returns the maximum number of elements of type
+.I datatype
+that can currently be allocated in the stack,
+in a single allocation request,
+with respect to the partition defined at initialization.
+.\" .SH USAGE
+.SH DIAGNOSTICS
+MA not yet initialized
+.in +0.5i
+MA_init() must be called before this routine is called.
+.in
+invalid datatype: %d
+.in +0.5i
+.I datatype
+must be one of those listed in macdecls.h or mafdecls.fh.
+.in
+.SH "RETURN VALUE"
+C: The number of elements, as described above.
+.br
+FORTRAN: The number of elements, as described above.
+.\" .SH NOTES
+.SH FILES
+.nf
+Include files: /msrc/proj/hpctools/ma/release/current/include
+Library:       /msrc/proj/hpctools/ma/release/current/lib/\fIplatform\fR/libma.a
+Man pages:     /msrc/proj/hpctools/ma/release/current/man/man3
+Source code:   /msrc/proj/hpctools/ma/release/current/tar/ma\fIrelease\fR.tar
+.fi
+.SH "SEE ALSO"
+.na
+MA(3),
+MA_inquire_avail(3),
+MA_inquire_heap(3)
+.ad
+.SH AUTHOR
+Gregory S. Thomas, Pacific Northwest National Laboratory

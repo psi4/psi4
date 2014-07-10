@@ -1,0 +1,383 @@
+#if HAVE_CONFIG_H
+#   include "config.fh"
+#endif
+#define  MAXLOOP 100
+
+      program test
+      implicit none
+#include "mafdecls.fh"
+#include "global.fh"
+      integer stack, heap
+c
+c***  Intitialize a message passing library
+c
+#include "mp3.fh"
+c
+c***  Intitialize the GA package
+      call ga_initialize()
+c     if(ga_nodeid().eq.0)print *,ga_nnodes(),' nodes'
+c
+      if(ga_uses_ma()) then
+         stack = 200000
+c         stack = 100000
+      else
+         stack = 60000
+c         stack = 20000
+      endif
+      heap = stack
+      if (.not. ma_init(MT_DBL, heap, stack))
+     $    call ga_error("ma init failed",heap+stack)
+c
+c
+c     test GA_FILL
+      ifelse(m4_test_GA_FILL, `yes',
+        `forloop(`m4_i', m4_from, m4_to,
+	   `ifelse(m4_test_int, `yes',
+	      `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_int)
+	       divert
+      call m4_func_GA_FILL(m4_test_type, m4_i)')
+	    ifelse(m4_test_dbl, `yes',
+              `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_dbl)
+	       divert 
+      call m4_func_GA_FILL(m4_test_type, m4_i)')
+	    ifelse(m4_test_dcpl, `yes',
+	      `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_dcpl)
+	       divert
+      call m4_func_GA_FILL(m4_test_type, m4_i)')
+      ')')
+c
+c     test NGA_GET
+      ifelse(m4_test_NGA_GET, `yes',
+        `forloop(`m4_i', m4_from, m4_to,
+	   `ifelse(m4_test_int, `yes', 
+	       `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_int)
+	       divert
+      call m4_func_NGA_GET(m4_test_type, m4_i)')
+	    ifelse(m4_test_dbl, `yes',
+              `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_dbl)
+	       divert
+      call m4_func_NGA_GET(m4_test_type, m4_i)')
+	    ifelse(m4_test_dcpl, `yes',
+	      `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_dcpl)
+	       divert
+      call m4_func_NGA_GET(m4_test_type, m4_i)')
+      ')')
+c
+c     test NGA_PUT
+      ifelse(m4_test_NGA_PUT, `yes',
+        `forloop(`m4_i', m4_from, m4_to,
+	   `ifelse(m4_test_int, `yes', 
+	       `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_int)
+	       divert
+      call m4_func_NGA_PUT(m4_test_type, m4_i)')
+	    ifelse(m4_test_dbl, `yes',
+              `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_dbl)
+	       divert
+      call m4_func_NGA_PUT(m4_test_type, m4_i)')
+	    ifelse(m4_test_dcpl, `yes',
+	      `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_dcpl)
+	       divert
+      call m4_func_NGA_PUT(m4_test_type, m4_i)')
+      ')')
+c
+c     test NGA_ACC
+      ifelse(m4_test_NGA_ACC, `yes',
+        `forloop(`m4_i', m4_from, m4_to,
+	   `ifelse(m4_test_int, `yes', 
+	       `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_int)
+	       divert
+      call m4_func_NGA_ACC(m4_test_type, m4_i)')
+	    ifelse(m4_test_dbl, `yes',
+              `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_dbl)
+	       divert
+      call m4_func_NGA_ACC(m4_test_type, m4_i)')
+	    ifelse(m4_test_dcpl, `yes',
+	      `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_dcpl)
+	       divert
+      call m4_func_NGA_ACC(m4_test_type, m4_i)')
+      ')')
+c
+c     test NGA_PERIODIC_GET
+      ifelse(m4_test_NGA_PERIODIC_GET, `yes',
+        `forloop(`m4_i', m4_from, m4_to,
+	   `ifelse(m4_test_int, `yes', 
+	       `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_int)
+	       divert
+      call m4_func_NGA_PERIODIC_GET(m4_test_type, m4_i)')
+	    ifelse(m4_test_dbl, `yes',
+              `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_dbl)
+	       divert
+      call m4_func_NGA_PERIODIC_GET(m4_test_type, m4_i)')
+	    ifelse(m4_test_dcpl, `yes',
+	      `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_dcpl)
+	       divert
+      call m4_func_NGA_PERIODIC_GET(m4_test_type, m4_i)')
+      ')')
+c
+c     test NGA_PERIODIC_PUT
+      ifelse(m4_test_NGA_PERIODIC_PUT, `yes',
+        `forloop(`m4_i', m4_from, m4_to,
+	   `ifelse(m4_test_int, `yes', 
+	       `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_int)
+	       divert
+      call m4_func_NGA_PERIODIC_PUT(m4_test_type, m4_i)')
+	    ifelse(m4_test_dbl, `yes',
+              `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_dbl)
+	       divert
+      call m4_func_NGA_PERIODIC_PUT(m4_test_type, m4_i)')
+	    ifelse(m4_test_dcpl, `yes',
+	      `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_dcpl)
+	       divert
+      call m4_func_NGA_PERIODIC_PUT(m4_test_type, m4_i)')
+      ')')
+c
+c     test NGA_PERIODIC_ACC
+      ifelse(m4_test_NGA_PERIODIC_ACC, `yes',
+        `forloop(`m4_i', m4_from, m4_to,
+	   `ifelse(m4_test_int, `yes', 
+	       `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_int)
+	       divert
+      call m4_func_NGA_PERIODIC_ACC(m4_test_type, m4_i)')
+	    ifelse(m4_test_dbl, `yes',
+              `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_dbl)
+	       divert
+      call m4_func_NGA_PERIODIC_ACC(m4_test_type, m4_i)')
+	    ifelse(m4_test_dcpl, `yes',
+	      `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_dcpl)
+	       divert
+      call m4_func_NGA_PERIODIC_ACC(m4_test_type, m4_i)')
+      ')')
+c
+c     test NGA_FILL_PATCH
+      ifelse(m4_test_NGA_FILL_PATCH, `yes',
+        `forloop(`m4_i', m4_from, m4_to,
+	   `ifelse(m4_test_int, `yes', 
+	       `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_int)
+	       divert
+      call m4_func_NGA_FILL_PATCH(m4_test_type, m4_i)')
+	    ifelse(m4_test_dbl, `yes',
+              `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_dbl)
+	       divert
+      call m4_func_NGA_FILL_PATCH(m4_test_type, m4_i)')
+	    ifelse(m4_test_dcpl, `yes',
+	      `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_dcpl)
+	       divert
+      call m4_func_NGA_FILL_PATCH(m4_test_type, m4_i)')
+      ')')
+c
+c     test NGA_COPY_PATCH
+      ifelse(m4_test_NGA_COPY_PATCH, `yes',
+        `forloop(`m4_i', m4_from, m4_to,
+	   `ifelse(m4_test_int, `yes', 
+	       `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_int)
+	       divert
+      call m4_func_NGA_COPY_PATCH(m4_test_type, m4_i)')
+	    ifelse(m4_test_dbl, `yes',
+              `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_dbl)
+	       divert
+      call m4_func_NGA_COPY_PATCH(m4_test_type, m4_i)')
+	    ifelse(m4_test_dcpl, `yes',
+	      `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_dcpl)
+	       divert
+      call m4_func_NGA_COPY_PATCH(m4_test_type, m4_i)')
+      ')')
+c
+c     test NGA_SCALE_PATCH
+      ifelse(m4_test_NGA_SCALE_PATCH, `yes',
+        `forloop(`m4_i', m4_from, m4_to,
+	   `ifelse(m4_test_int, `yes', 
+	       `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_int)
+	       divert
+      call m4_func_NGA_SCALE_PATCH(m4_test_type, m4_i)')
+	    ifelse(m4_test_dbl, `yes',
+              `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_dbl)
+	       divert
+      call m4_func_NGA_SCALE_PATCH(m4_test_type, m4_i)')
+	    ifelse(m4_test_dcpl, `yes',
+	      `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_dcpl)
+	       divert
+      call m4_func_NGA_SCALE_PATCH(m4_test_type, m4_i)')
+      ')')
+c
+c     test NGA_ADD_PATCH
+      ifelse(m4_test_NGA_ADD_PATCH, `yes',
+        `forloop(`m4_i', m4_from, m4_to,
+	   `ifelse(m4_test_int, `yes', 
+	       `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_int)
+	       divert
+      call m4_func_NGA_ADD_PATCH(m4_test_type, m4_i)')
+	    ifelse(m4_test_dbl, `yes',
+              `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_dbl)
+	       divert
+      call m4_func_NGA_ADD_PATCH(m4_test_type, m4_i)')
+	    ifelse(m4_test_dcpl, `yes',
+	      `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_dcpl)
+	       divert
+      call m4_func_NGA_ADD_PATCH(m4_test_type, m4_i)')
+      ')')
+c
+c     test NGA_DOT_PATCH
+      ifelse(m4_test_NGA_DOT_PATCH, `yes',
+        `forloop(`m4_i', m4_from, m4_to,
+	   `ifelse(m4_test_int, `yes', 
+	       `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_int)
+	       divert
+      call m4_func_NGA_DOT_PATCH(m4_test_type, m4_i)')
+	    ifelse(m4_test_dbl, `yes',
+              `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_dbl)
+	       divert
+      call m4_func_NGA_DOT_PATCH(m4_test_type, m4_i)')
+	    ifelse(m4_test_dcpl, `yes',
+	      `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_dcpl)
+	       divert
+      call m4_func_NGA_DOT_PATCH(m4_test_type, m4_i)')
+      ')')
+c
+c     test NGA_SCATTER
+      ifelse(m4_test_NGA_SCATTER, `yes',
+        `forloop(`m4_i', m4_from, m4_to,
+	   `ifelse(m4_test_int, `yes', 
+	       `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_int)
+	       divert
+      call m4_func_NGA_SCATTER(m4_test_type, m4_i)')
+	    ifelse(m4_test_dbl, `yes',
+              `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_dbl)
+	       divert
+      call m4_func_NGA_SCATTER(m4_test_type, m4_i)')
+	    ifelse(m4_test_dcpl, `yes',
+	      `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_dcpl)
+	       divert
+      call m4_func_NGA_SCATTER(m4_test_type, m4_i)')
+      ')')
+c
+c     test NGA_SCATTER_ACC
+      ifelse(m4_test_NGA_SCATTER_ACC, `yes',
+        `forloop(`m4_i', m4_from, m4_to,
+           `ifelse(m4_test_int, `yes',
+               `divert(-1)
+               undefine(`m4_test_type')
+               define(m4_test_type, m4_test_type_int)
+               divert
+      call m4_func_NGA_SCATTER_ACC(m4_test_type, m4_i)')
+            ifelse(m4_test_dbl, `yes',
+              `divert(-1)
+               undefine(`m4_test_type')
+               define(m4_test_type, m4_test_type_dbl)
+               divert
+      call m4_func_NGA_SCATTER_ACC(m4_test_type, m4_i)')
+            ifelse(m4_test_dcpl, `yes',
+              `divert(-1)
+               undefine(`m4_test_type')
+               define(m4_test_type, m4_test_type_dcpl)
+               divert
+      call m4_func_NGA_SCATTER_ACC(m4_test_type, m4_i)')
+      ')')
+c
+c     test NGA_GATHER
+      ifelse(m4_test_NGA_GATHER, `yes',
+        `forloop(`m4_i', m4_from, m4_to,
+	   `ifelse(m4_test_int, `yes', 
+	       `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_int)
+	       divert
+      call m4_func_NGA_GATHER(m4_test_type, m4_i)')
+	    ifelse(m4_test_dbl, `yes',
+              `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_dbl)
+	       divert
+      call m4_func_NGA_GATHER(m4_test_type, m4_i)')
+	    ifelse(m4_test_dcpl, `yes',
+	      `divert(-1)
+	       undefine(`m4_test_type')
+	       define(m4_test_type, m4_test_type_dcpl)
+	       divert
+      call m4_func_NGA_GATHER(m4_test_type, m4_i)')
+      ')')
+
+
+c
+      if(ga_nodeid().eq.0) print *, 'All tests successful'
+c
+      call ga_terminate()
+      call MP_FINALIZE()
+      end

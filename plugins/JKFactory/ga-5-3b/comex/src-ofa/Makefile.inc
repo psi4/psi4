@@ -1,0 +1,19 @@
+libcomex_la_SOURCES += src-ofa/comex.c
+libcomex_la_SOURCES += src-ofa/comex_impl.h
+libcomex_la_SOURCES += src-ofa/contig.c
+libcomex_la_SOURCES += src-ofa/device.c
+libcomex_la_SOURCES += src-ofa/device.h
+libcomex_la_SOURCES += src-ofa/fence.c
+libcomex_la_SOURCES += src-ofa/gpa.c
+libcomex_la_SOURCES += src-ofa/groups.c
+libcomex_la_SOURCES += src-ofa/groups.h
+libcomex_la_SOURCES += src-ofa/mutex.c
+libcomex_la_SOURCES += src-ofa/openib.c
+libcomex_la_SOURCES += src-ofa/openib.h
+libcomex_la_SOURCES += src-ofa/reg_cache.c
+libcomex_la_SOURCES += src-ofa/reg_cache.h
+libcomex_la_SOURCES += src-ofa/strided.c
+libcomex_la_SOURCES += src-ofa/vector.c
+libcomex_la_SOURCES += src-ofa/wait.c
+
+AM_CPPFLAGS += -I$(top_srcdir)/src-ofa

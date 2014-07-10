@@ -1,0 +1,20 @@
+============
+README.first
+============
+
+What is this for?
+-----------------
+This directory is meant to stage some of our test programs into a gzipped
+tarball meant for benchmark testing on various platforms. Our tests depend on
+certain header files, preprocessor directives, and additional test-related
+functions which aren't available from a standard installation of GA. The files
+here are meant to fill that void.
+
+See the README for details about the contained files. Note that the README
+will describe these files as well as files which have not yet been staged.
+
+How to Generate the Benchmarks Tarball
+--------------------------------------
+Simply run "make".  The default make target will create a "ga-benchmarks"
+directory, copy various test sources as well as the sources found here, and
+remove the default staging make target from the copied Makefile.

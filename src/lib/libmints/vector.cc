@@ -346,6 +346,7 @@ void Vector::recv()
 void Vector::bcast(int broadcaster)
 {
     // Assume the user allocated the matrix to the correct size first.
+    std::cout<<"Someone is calling the vector bcast"<<std::endl;
     for (int h=0; h<nirrep_; ++h) {
         if (dimpi_[h] > 0)
             WorldComm->bcast(vector_[h], dimpi_[h], broadcaster);
