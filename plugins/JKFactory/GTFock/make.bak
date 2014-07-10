@@ -1,0 +1,66 @@
+#arch = mic
+#arch = cpu
+
+#This is where this file lives
+path2file=/theoryfs2/ds/richard/SrcFiles/JKbuilder-master
+#This program requires the global arrays library
+#which is available from PNNL after regestering
+#for it.  This is the location of that library.
+galoc=/theoryfs2/ds/richard/lib
+#Are we compiling the SCF routines
+DOSCF=0
+
+#This is where the intel compilers live
+#Assumed MKL libraries are here as well
+#if not edit mkl variable
+intel=/theoryfs2/ds/richard/lib/intel64
+mkl=/theoryfs2/ds/richard/lib/mkl
+#This is where the MPI files are
+mpi=/theoryfs2/ds/richard/lib
+
+#Stuff below here shouldn't need edited now
+
+#Compiler Options
+#CC=gcc
+#CXX=g++
+#FC=gfortran
+
+CC  = /theoryfs2/ds/richard/bin/mpicc 
+CXX = /theoryfs2/ds/richard/bin/mpicpc
+FC  = /theoryfs2/ds/richard/bin/ifort
+AR  = /theoryfs2/ds/richard/bin/xiar rcs
+
+#I don't have mpiicc so I had to use mpicc
+#that compes with the MPI libraries
+#consequentially I needed the flag
+#MPICC = ${mpi}/bin/mpicc
+MPICC = ${CC}
+
+#BLAS options
+BLAS_LIBDIR = ${mkl}
+BLAS_INCDIR = /theoryfs2/ds/richard/include/mkl
+BLAS_LIBS = -lmkl_core           \
+            -lmkl_intel_lp64     \
+            -lmkl_intel_thread   \
+            -liomp5
+SCALAPACK_LIBDIR = ${mkl}
+SCALAPACK_LIBS = -lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64
+
+MPI_LIBDIR = ${mpi}
+MPI_LIBS =
+MPI_INCDIR = /theoryfs2/ds/richard/include
+
+GA_INCDIR = /theoryfs2/ds/richard/include
+GA_LIBDIR = /theoryfs2/ds/richard/lib
+GA_LIBS = -lga -larmci
+
+#These were the old definitions, which were system
+#dependent
+#GA_INCDIR = /home/xing/test/GTFock/GAlib/include
+#GA_LIBDIR = /home/xing/test/GTFock/GAlib/lib
+
+ifeq "${arch}" "mic"
+OPTFLAGS = -mmic
+else
+OPTFLAGS = -xHost
+endif

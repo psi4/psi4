@@ -1,0 +1,91 @@
+\hypertarget{classJKBuilder_1_1Primitive}{
+\section{Primitive Class Reference}
+\label{classJKBuilder_1_1Primitive}\index{JKBuilder::Primitive@{JKBuilder::Primitive}}
+}
+
+
+A Gaussian primitive.  
+
+
+{\ttfamily \#include $<$BasisSet.h$>$}\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classJKBuilder_1_1Primitive_ad5c80a16eab14367b76a4dc79844d0d5}{Primitive} (double c0=0, double beta0=0)
+\begin{DoxyCompactList}\small\item\em Creates a \hyperlink{classJKBuilder_1_1Primitive}{Primitive} with exponent scale factor beta0 and expansion coefficient c0. \item\end{DoxyCompactList}\item 
+double \hyperlink{classJKBuilder_1_1Primitive_a229a18fdc499aafe149c55011f9fb2fb}{GetC} ()
+\begin{DoxyCompactList}\small\item\em Returns c. \item\end{DoxyCompactList}\item 
+double \hyperlink{classJKBuilder_1_1Primitive_a8b788f95c3fa1f2cc9aedaa1b92b78a1}{GetBeta} ()
+\begin{DoxyCompactList}\small\item\em Returns beta. \item\end{DoxyCompactList}\item 
+void \hyperlink{classJKBuilder_1_1Primitive_a388f572c62279f839ee138a9afbdeeb5}{print} ()
+\begin{DoxyCompactList}\small\item\em Prints out the primitive. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+double \hyperlink{classJKBuilder_1_1Primitive_a2c09e929a6ea340fc9653cca414b11d3}{c}
+\begin{DoxyCompactList}\small\item\em The expansion coefficient of this primitive. \item\end{DoxyCompactList}\item 
+double \hyperlink{classJKBuilder_1_1Primitive_a9424343761f8c4f4c1afe8f5b6bf471b}{beta}
+\begin{DoxyCompactList}\small\item\em The exponent scale factor of this primitive. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+A Gaussian primitive. Gaussian primitives are assumed of the form:
+
+\[ g_i\left(\bf{r}:c_i,\beta_i\right)=c_i\ \rm{e}^{-\beta_i\bf{r}^2}, \]
+
+where $c_i$ is the expansion coefficient associated with this primitive, and $\beta_i$ is exponent scale factor. The smaller $\beta_i$ the more diffuse the primitive. 
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{classJKBuilder_1_1Primitive_ad5c80a16eab14367b76a4dc79844d0d5}{
+\index{JKBuilder::Primitive@{JKBuilder::Primitive}!Primitive@{Primitive}}
+\index{Primitive@{Primitive}!JKBuilder::Primitive@{JKBuilder::Primitive}}
+\subsubsection[{Primitive}]{\setlength{\rightskip}{0pt plus 5cm}{\bf Primitive} (double {\em c0} = {\ttfamily 0}, \/  double {\em beta0} = {\ttfamily 0})}}
+\label{classJKBuilder_1_1Primitive_ad5c80a16eab14367b76a4dc79844d0d5}
+
+
+Creates a \hyperlink{classJKBuilder_1_1Primitive}{Primitive} with exponent scale factor beta0 and expansion coefficient c0. 
+
+\subsection{Member Function Documentation}
+\hypertarget{classJKBuilder_1_1Primitive_a229a18fdc499aafe149c55011f9fb2fb}{
+\index{JKBuilder::Primitive@{JKBuilder::Primitive}!GetC@{GetC}}
+\index{GetC@{GetC}!JKBuilder::Primitive@{JKBuilder::Primitive}}
+\subsubsection[{GetC}]{\setlength{\rightskip}{0pt plus 5cm}double GetC ()}}
+\label{classJKBuilder_1_1Primitive_a229a18fdc499aafe149c55011f9fb2fb}
+
+
+Returns c. \hypertarget{classJKBuilder_1_1Primitive_a8b788f95c3fa1f2cc9aedaa1b92b78a1}{
+\index{JKBuilder::Primitive@{JKBuilder::Primitive}!GetBeta@{GetBeta}}
+\index{GetBeta@{GetBeta}!JKBuilder::Primitive@{JKBuilder::Primitive}}
+\subsubsection[{GetBeta}]{\setlength{\rightskip}{0pt plus 5cm}double GetBeta ()}}
+\label{classJKBuilder_1_1Primitive_a8b788f95c3fa1f2cc9aedaa1b92b78a1}
+
+
+Returns beta. \hypertarget{classJKBuilder_1_1Primitive_a388f572c62279f839ee138a9afbdeeb5}{
+\index{JKBuilder::Primitive@{JKBuilder::Primitive}!print@{print}}
+\index{print@{print}!JKBuilder::Primitive@{JKBuilder::Primitive}}
+\subsubsection[{print}]{\setlength{\rightskip}{0pt plus 5cm}void print ()}}
+\label{classJKBuilder_1_1Primitive_a388f572c62279f839ee138a9afbdeeb5}
+
+
+Prints out the primitive. 
+
+\subsection{Member Data Documentation}
+\hypertarget{classJKBuilder_1_1Primitive_a2c09e929a6ea340fc9653cca414b11d3}{
+\index{JKBuilder::Primitive@{JKBuilder::Primitive}!c@{c}}
+\index{c@{c}!JKBuilder::Primitive@{JKBuilder::Primitive}}
+\subsubsection[{c}]{\setlength{\rightskip}{0pt plus 5cm}double {\bf c}\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}
+\label{classJKBuilder_1_1Primitive_a2c09e929a6ea340fc9653cca414b11d3}
+
+
+The expansion coefficient of this primitive. \hypertarget{classJKBuilder_1_1Primitive_a9424343761f8c4f4c1afe8f5b6bf471b}{
+\index{JKBuilder::Primitive@{JKBuilder::Primitive}!beta@{beta}}
+\index{beta@{beta}!JKBuilder::Primitive@{JKBuilder::Primitive}}
+\subsubsection[{beta}]{\setlength{\rightskip}{0pt plus 5cm}double {\bf beta}\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}
+\label{classJKBuilder_1_1Primitive_a9424343761f8c4f4c1afe8f5b6bf471b}
+
+
+The exponent scale factor of this primitive. 
+
+The documentation for this class was generated from the following files:\begin{DoxyCompactItemize}
+\item 
+src/\hyperlink{BasisSet_8h}{BasisSet.h}\item 
+src/\hyperlink{BasisSet_8cpp}{BasisSet.cpp}\end{DoxyCompactItemize}

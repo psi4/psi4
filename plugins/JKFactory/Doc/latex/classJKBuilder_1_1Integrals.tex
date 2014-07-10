@@ -1,0 +1,75 @@
+\hypertarget{classJKBuilder_1_1Integrals}{
+\section{Integrals Class Reference}
+\label{classJKBuilder_1_1Integrals}\index{JKBuilder::Integrals@{JKBuilder::Integrals}}
+}
+
+
+The \hyperlink{classJKBuilder_1_1Integrals}{Integrals} class is an API to the various integral packages that may be used.  
+
+
+{\ttfamily \#include $<$Integrals.h$>$}\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{classJKBuilder_1_1Integrals_a192b23625f0ca29472adb24ea0167d04}{AddFxns} (\hyperlink{Integrals_8h_ac8a8046e90f302a56e8d49058926be33}{ComputeFxn} \&CF, \hyperlink{Integrals_8h_ab945cefec686042cf6ebb998aa068552}{BufferFxn} \&BF)
+\item 
+\hyperlink{classJKBuilder_1_1Integrals_ad62b2f3d89ff3b7777582513a89381f0}{Integrals} ()
+\item 
+int \hyperlink{classJKBuilder_1_1Integrals_ac5087342e58e3fd449a58e82ea7e4b9c}{ComputeShell} (int P, int Q, int R, int S, int thread=0)
+\item 
+const double $\ast$ \hyperlink{classJKBuilder_1_1Integrals_ad0720a0de5aa5cbe34ac5f4b80754ee7}{TheIntegrals} (int thread=0)
+\end{DoxyCompactItemize}
+\subsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std::vector$<$ \hyperlink{Integrals_8h_ac8a8046e90f302a56e8d49058926be33}{ComputeFxn} $>$ \hyperlink{classJKBuilder_1_1Integrals_a968679304a6d15dd63858873608113b5}{ComputeInts}
+\item 
+std::vector$<$ \hyperlink{Integrals_8h_ab945cefec686042cf6ebb998aa068552}{BufferFxn} $>$ \hyperlink{classJKBuilder_1_1Integrals_a877ca0c4fd4342f3d3ca7078e65fbfeb}{DaInts}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+The \hyperlink{classJKBuilder_1_1Integrals}{Integrals} class is an API to the various integral packages that may be used. The \hyperlink{classJKBuilder_1_1Integrals}{Integrals} class really does two things: calls the appropriate compute function and provides a way of accessing the actual elements. This is all accomplished by fxn pointers, meaning it's ability to do these things will be as fast or slow as the functions it calls. 
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{classJKBuilder_1_1Integrals_ad62b2f3d89ff3b7777582513a89381f0}{
+\index{JKBuilder::Integrals@{JKBuilder::Integrals}!Integrals@{Integrals}}
+\index{Integrals@{Integrals}!JKBuilder::Integrals@{JKBuilder::Integrals}}
+\subsubsection[{Integrals}]{\setlength{\rightskip}{0pt plus 5cm}{\bf Integrals} ()}}
+\label{classJKBuilder_1_1Integrals_ad62b2f3d89ff3b7777582513a89381f0}
+
+
+\subsection{Member Function Documentation}
+\hypertarget{classJKBuilder_1_1Integrals_a192b23625f0ca29472adb24ea0167d04}{
+\index{JKBuilder::Integrals@{JKBuilder::Integrals}!AddFxns@{AddFxns}}
+\index{AddFxns@{AddFxns}!JKBuilder::Integrals@{JKBuilder::Integrals}}
+\subsubsection[{AddFxns}]{\setlength{\rightskip}{0pt plus 5cm}void AddFxns ({\bf ComputeFxn} \& {\em CF}, \/  {\bf BufferFxn} \& {\em BF})}}
+\label{classJKBuilder_1_1Integrals_a192b23625f0ca29472adb24ea0167d04}
+\hypertarget{classJKBuilder_1_1Integrals_ac5087342e58e3fd449a58e82ea7e4b9c}{
+\index{JKBuilder::Integrals@{JKBuilder::Integrals}!ComputeShell@{ComputeShell}}
+\index{ComputeShell@{ComputeShell}!JKBuilder::Integrals@{JKBuilder::Integrals}}
+\subsubsection[{ComputeShell}]{\setlength{\rightskip}{0pt plus 5cm}int ComputeShell (int {\em P}, \/  int {\em Q}, \/  int {\em R}, \/  int {\em S}, \/  int {\em thread} = {\ttfamily 0})}}
+\label{classJKBuilder_1_1Integrals_ac5087342e58e3fd449a58e82ea7e4b9c}
+\hypertarget{classJKBuilder_1_1Integrals_ad0720a0de5aa5cbe34ac5f4b80754ee7}{
+\index{JKBuilder::Integrals@{JKBuilder::Integrals}!TheIntegrals@{TheIntegrals}}
+\index{TheIntegrals@{TheIntegrals}!JKBuilder::Integrals@{JKBuilder::Integrals}}
+\subsubsection[{TheIntegrals}]{\setlength{\rightskip}{0pt plus 5cm}const double $\ast$ TheIntegrals (int {\em thread} = {\ttfamily 0})}}
+\label{classJKBuilder_1_1Integrals_ad0720a0de5aa5cbe34ac5f4b80754ee7}
+
+
+\subsection{Member Data Documentation}
+\hypertarget{classJKBuilder_1_1Integrals_a968679304a6d15dd63858873608113b5}{
+\index{JKBuilder::Integrals@{JKBuilder::Integrals}!ComputeInts@{ComputeInts}}
+\index{ComputeInts@{ComputeInts}!JKBuilder::Integrals@{JKBuilder::Integrals}}
+\subsubsection[{ComputeInts}]{\setlength{\rightskip}{0pt plus 5cm}std::vector$<${\bf ComputeFxn}$>$ {\bf ComputeInts}\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}
+\label{classJKBuilder_1_1Integrals_a968679304a6d15dd63858873608113b5}
+\hypertarget{classJKBuilder_1_1Integrals_a877ca0c4fd4342f3d3ca7078e65fbfeb}{
+\index{JKBuilder::Integrals@{JKBuilder::Integrals}!DaInts@{DaInts}}
+\index{DaInts@{DaInts}!JKBuilder::Integrals@{JKBuilder::Integrals}}
+\subsubsection[{DaInts}]{\setlength{\rightskip}{0pt plus 5cm}std::vector$<${\bf BufferFxn}$>$ {\bf DaInts}\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}
+\label{classJKBuilder_1_1Integrals_a877ca0c4fd4342f3d3ca7078e65fbfeb}
+
+
+The documentation for this class was generated from the following files:\begin{DoxyCompactItemize}
+\item 
+src/\hyperlink{Integrals_8h}{Integrals.h}\item 
+src/\hyperlink{Integrals_8cpp}{Integrals.cpp}\end{DoxyCompactItemize}

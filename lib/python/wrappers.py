@@ -41,7 +41,8 @@ from driver import *
 #CUfrom p4regex import *
 # never import aliases into this file
 
-
+#Where the implementation for running MBEs is held
+import mbe_impl
 # Function to make calls among wrappers(), energy(), optimize(), etc.
 def call_function_in_1st_argument(funcarg, **largs):
     r"""Function to make primary function call to energy(), opt(), etc.
@@ -168,6 +169,28 @@ def auto_fragments(name, **kwargs):
     new_mol = geometry(new_geom)
     new_mol.print_out()
     psi4.print_out("Exiting auto_fragments\n")
+    
+def mbe(name,n=2,frag_method="USER_DEFINED",embed_method="NONE",cap_method="NONE",**kwargs):
+    """ The driver routine for running calculations with the MBE or the GMBE.
+    
+    Arguments:
+    name=level of theory that things will be performed on
+    n=(G)MBE truncation order.
+    frag_method=How are the fragments being made
+    embed_method=How are higher order MBE effects being accounted for
+    cap_method=How are we dealing with severed covalent bonds
+    """
+
+    if 'molecule' in kwargs:
+        activate(kwargs['molecule'])
+        del kwargs['molecule']
+    molecule = psi4.get_active_molecule()
+    molecule.update_geometry()
+    Egys=[[]]
+    mbe_impl.fragment(name,molecule,frag_method,Egys[0],**kwargs)
+    mbe_impl.nmers(name,molecule,n,Egys,**kwargs)
+    Best_Approx_Egy=mbe_impl.SystemEnergy(Egys)
+    return Best_Approx_Egy
 
 #######################
 ##  Start of n_body  ##

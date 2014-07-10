@@ -1,0 +1,91 @@
+#ifndef _maf2c_fh
+#define _maf2c_fh
+
+c
+c     $Id: maf2c.fh,v 1.6 2002-09-14 05:40:30 d3g001 Exp $
+c
+
+c
+c     Private header file containing FORTRAN type declarations for the
+c     C wrapper routines.
+c
+c     This file should only be included by internal FORTRAN files.
+c
+
+c
+c     The guard ends here instead of at the end of the file because we
+c     need the declarations (stuff below) to be defined each time this file
+c     is included by a FORTRAN file.
+c
+
+#endif /* _maf2c_fh */
+
+c
+c     function types
+c
+
+      integer f2c_alloc_get
+      integer f2c_allocate_heap
+      integer f2c_chop_stack
+      integer f2c_free_heap
+      integer f2c_free_heap_piece
+      integer f2c_get_index
+      integer f2c_get_next_memhandle
+      integer f2c_get_numalign
+      integer f2c_inform_base
+      integer f2c_init
+      integer f2c_initialized
+      integer f2c_init_memhandle_iterator
+      integer f2c_inquire_avail
+      integer f2c_inquire_heap
+      integer f2c_inquire_heap_check_stack
+      integer f2c_inquire_heap_no_partition
+      integer f2c_inquire_stack
+      integer f2c_inquire_stack_check_heap
+      integer f2c_inquire_stack_no_partition
+      integer f2c_pop_stack
+c     void f2c_print_stats
+      integer f2c_push_get
+      integer f2c_push_stack
+      integer f2c_set_auto_verify
+      integer f2c_set_error_print
+      integer f2c_set_hard_fail
+      integer f2c_set_numalign
+      integer f2c_sizeof
+      integer f2c_sizeof_overhead
+c     void f2c_summarize_allocated_blocks
+c     void f2c_trace
+      integer f2c_verify_allocator_stuff
+
+      external f2c_alloc_get
+      external f2c_allocate_heap
+      external f2c_chop_stack
+      external f2c_free_heap
+      external f2c_free_heap_piece
+      external f2c_get_index
+      external f2c_get_next_memhandle
+      external f2c_get_numalign
+      external f2c_inform_base
+      external f2c_init
+      external f2c_initialized
+      external f2c_init_memhandle_iterator
+      external f2c_inquire_avail
+      external f2c_inquire_heap
+      external f2c_inquire_heap_check_stack
+      external f2c_inquire_heap_no_partition
+      external f2c_inquire_stack
+      external f2c_inquire_stack_check_heap
+      external f2c_inquire_stack_no_partition
+      external f2c_pop_stack
+      external f2c_print_stats
+      external f2c_push_get
+      external f2c_push_stack
+      external f2c_set_auto_verify
+      external f2c_set_error_print
+      external f2c_set_hard_fail
+      external f2c_set_numalign
+      external f2c_sizeof
+      external f2c_sizeof_overhead
+      external f2c_summarize_allocated_blocks
+      external f2c_trace
+      external f2c_verify_allocator_stuff

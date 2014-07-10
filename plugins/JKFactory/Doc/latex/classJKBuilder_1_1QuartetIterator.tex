@@ -1,0 +1,243 @@
+\hypertarget{classJKBuilder_1_1QuartetIterator}{
+\section{QuartetIterator Class Reference}
+\label{classJKBuilder_1_1QuartetIterator}\index{JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}}
+}
+
+
+Generalization to an iterator that iterates over two pairs of pairs.  
+
+
+{\ttfamily \#include $<$Iterators.h$>$}Inheritance diagram for QuartetIterator::\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3cm]{classJKBuilder_1_1QuartetIterator}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{classJKBuilder_1_1QuartetIterator_a34ca36a99b20ae3170babadaffe51ed2}{Start} (int n=0)
+\begin{DoxyCompactList}\small\item\em Returns an iterator suitable for starting on iteration n. \item\end{DoxyCompactList}\item 
+void \hyperlink{classJKBuilder_1_1QuartetIterator_a5f692b73d2e160450f4617bb75825e11}{End} (int n=-\/1)
+\begin{DoxyCompactList}\small\item\em Returns an iterator representing the state of the iterator after n iterations have occured. \item\end{DoxyCompactList}\item 
+\hyperlink{classJKBuilder_1_1QuartetIterator_a07d00ea07b0f26457f2552be518080ba}{QuartetIterator} ()
+\item 
+\hyperlink{classJKBuilder_1_1QuartetIterator_af4c9d6672dc0009768dd792e7f98ae7d}{QuartetIterator} (\hyperlink{classJKBuilder_1_1QuartetIterator}{QuartetIterator} const \&other)
+\item 
+virtual \hyperlink{classJKBuilder_1_1QuartetIterator_a45af941f47c9b8051f2ed69d47157e12}{$\sim$QuartetIterator} ()
+\item 
+\hyperlink{classJKBuilder_1_1QuartetIterator}{QuartetIterator} \& \hyperlink{classJKBuilder_1_1QuartetIterator_ab3cd17222545586596dbbc6aa3ca7046}{operator=} (\hyperlink{classJKBuilder_1_1QuartetIterator}{QuartetIterator} const \&other)
+\item 
+\hyperlink{classJKBuilder_1_1Iterator}{Iterator} \hyperlink{classJKBuilder_1_1Iterator_ac1702aedba13b4112b891b58dfd78eba}{operator++} (int)
+\begin{DoxyCompactList}\small\item\em Increments the iterator after returning it's value. \item\end{DoxyCompactList}\item 
+\hyperlink{classJKBuilder_1_1Iterator}{Iterator} \& \hyperlink{classJKBuilder_1_1Iterator_ae1f21c74128a5ef5d1b9de72ceb09be8}{operator++} ()
+\begin{DoxyCompactList}\small\item\em Increments the iterator before returning it's value. \item\end{DoxyCompactList}\item 
+bool \hyperlink{classJKBuilder_1_1Iterator_a1ea001976a5bc8ae8dc365e2a912b59a}{operator==} (const \hyperlink{classJKBuilder_1_1Iterator}{Iterator} \&other) const 
+\item 
+bool \hyperlink{classJKBuilder_1_1Iterator_a8c06af8ae0d9d1614ae9f81629275926}{operator!=} (const \hyperlink{classJKBuilder_1_1Iterator}{Iterator} \&other)
+\begin{DoxyCompactList}\small\item\em Returns the opposite of operator==. \item\end{DoxyCompactList}\item 
+void \hyperlink{classJKBuilder_1_1Iterator_aa83de505e29125c1d3ac7bb1b13ca15a}{SetStart} (std::vector$<$ int $>$ const \&other)
+\begin{DoxyCompactList}\small\item\em Sets the N Indices to the N given in other. \item\end{DoxyCompactList}\item 
+void \hyperlink{classJKBuilder_1_1Iterator_aad84ec668b5f41210db34c540aaa31fc}{SetEnd} (std::vector$<$ int $>$ const \&other)
+\begin{DoxyCompactList}\small\item\em Sets the N MaxInd in other. \item\end{DoxyCompactList}\item 
+int \hyperlink{classJKBuilder_1_1Iterator_a74247cf730a06b23fcb1ec64e5596b25}{operator\mbox{[}$\,$\mbox{]}} (const int i) const 
+\begin{DoxyCompactList}\small\item\em Returns index i. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+virtual bool \hyperlink{classJKBuilder_1_1QuartetIterator_af88c46759ac710bbd36c17601dc62d55}{RSIsMaxed} ()=0
+\begin{DoxyCompactList}\small\item\em The definition of what it means for RS to be maxed. \item\end{DoxyCompactList}\item 
+virtual bool \hyperlink{classJKBuilder_1_1QuartetIterator_ac51ff9a02f4a201598f7820476c52faf}{RSIsOK} ()=0
+\begin{DoxyCompactList}\small\item\em A check to see if the iterated RS value is acceptable. \item\end{DoxyCompactList}\item 
+virtual void \hyperlink{classJKBuilder_1_1QuartetIterator_a7874a07e98b52f4f147cde6f39353bae}{Iterate} ()
+\item 
+void \hyperlink{classJKBuilder_1_1QuartetIterator_a1af5c865d6e9cfe63d0dedc53bdc13ba}{UpdateCurrentValue} ()
+\begin{DoxyCompactList}\small\item\em Copies PQ and RS into CurrentValue. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classJKBuilder_1_1PairIterator}{PairIterator} $\ast$ \hyperlink{classJKBuilder_1_1QuartetIterator_a84f5c3632fba19d3bb85e1cffb9e51f7}{PQ}
+\item 
+\hyperlink{classJKBuilder_1_1PairIterator}{PairIterator} $\ast$ \hyperlink{classJKBuilder_1_1QuartetIterator_a26b777bf7ea22524f1cc725020ee2082}{RS}
+\item 
+std::vector$<$ int $>$ \hyperlink{classJKBuilder_1_1Iterator_a20ca24f6d827aba144bb087c4bcb74a0}{CurrentValue}
+\begin{DoxyCompactList}\small\item\em The current value. \item\end{DoxyCompactList}\item 
+std::vector$<$ int $>$ \hyperlink{classJKBuilder_1_1Iterator_ab6b56d3c4e9353bc938dd6249cde9ca0}{MaxInd}
+\begin{DoxyCompactList}\small\item\em This is a vector of length N containing the maximum each index can be. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{classJKBuilder_1_1QuartetIterator_a1cc9d53b063e002ead95abb45f05f0c3}{Copy} (\hyperlink{classJKBuilder_1_1QuartetIterator}{QuartetIterator} const \&other)
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Generalization to an iterator that iterates over two pairs of pairs. 
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{classJKBuilder_1_1QuartetIterator_a07d00ea07b0f26457f2552be518080ba}{
+\index{JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}!QuartetIterator@{QuartetIterator}}
+\index{QuartetIterator@{QuartetIterator}!JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}}
+\subsubsection[{QuartetIterator}]{\setlength{\rightskip}{0pt plus 5cm}{\bf QuartetIterator} ()}}
+\label{classJKBuilder_1_1QuartetIterator_a07d00ea07b0f26457f2552be518080ba}
+\hypertarget{classJKBuilder_1_1QuartetIterator_af4c9d6672dc0009768dd792e7f98ae7d}{
+\index{JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}!QuartetIterator@{QuartetIterator}}
+\index{QuartetIterator@{QuartetIterator}!JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}}
+\subsubsection[{QuartetIterator}]{\setlength{\rightskip}{0pt plus 5cm}{\bf QuartetIterator} ({\bf QuartetIterator} const \& {\em other})}}
+\label{classJKBuilder_1_1QuartetIterator_af4c9d6672dc0009768dd792e7f98ae7d}
+\hypertarget{classJKBuilder_1_1QuartetIterator_a45af941f47c9b8051f2ed69d47157e12}{
+\index{JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}!$\sim$QuartetIterator@{$\sim$QuartetIterator}}
+\index{$\sim$QuartetIterator@{$\sim$QuartetIterator}!JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}}
+\subsubsection[{$\sim$QuartetIterator}]{\setlength{\rightskip}{0pt plus 5cm}$\sim${\bf QuartetIterator} ()\hspace{0.3cm}{\ttfamily  \mbox{[}virtual\mbox{]}}}}
+\label{classJKBuilder_1_1QuartetIterator_a45af941f47c9b8051f2ed69d47157e12}
+
+
+\subsection{Member Function Documentation}
+\hypertarget{classJKBuilder_1_1QuartetIterator_a1cc9d53b063e002ead95abb45f05f0c3}{
+\index{JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}!Copy@{Copy}}
+\index{Copy@{Copy}!JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}}
+\subsubsection[{Copy}]{\setlength{\rightskip}{0pt plus 5cm}void Copy ({\bf QuartetIterator} const \& {\em other})\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}
+\label{classJKBuilder_1_1QuartetIterator_a1cc9d53b063e002ead95abb45f05f0c3}
+
+
+Reimplemented from \hyperlink{classJKBuilder_1_1Iterator_aacb7559eb1b8aab6e7bb6a56602d97ff}{Iterator}.\hypertarget{classJKBuilder_1_1QuartetIterator_af88c46759ac710bbd36c17601dc62d55}{
+\index{JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}!RSIsMaxed@{RSIsMaxed}}
+\index{RSIsMaxed@{RSIsMaxed}!JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}}
+\subsubsection[{RSIsMaxed}]{\setlength{\rightskip}{0pt plus 5cm}virtual bool RSIsMaxed ()\hspace{0.3cm}{\ttfamily  \mbox{[}protected, pure virtual\mbox{]}}}}
+\label{classJKBuilder_1_1QuartetIterator_af88c46759ac710bbd36c17601dc62d55}
+
+
+The definition of what it means for RS to be maxed. 
+
+Implemented in \hyperlink{classJKBuilder_1_1AtomQuartetIterator_a458dcf49c4c4bbb1e3d3d39d3dc086c9}{AtomQuartetIterator}, and \hyperlink{classJKBuilder_1_1ShellQuartetIterator_a458dcf49c4c4bbb1e3d3d39d3dc086c9}{ShellQuartetIterator}.\hypertarget{classJKBuilder_1_1QuartetIterator_ac51ff9a02f4a201598f7820476c52faf}{
+\index{JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}!RSIsOK@{RSIsOK}}
+\index{RSIsOK@{RSIsOK}!JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}}
+\subsubsection[{RSIsOK}]{\setlength{\rightskip}{0pt plus 5cm}virtual bool RSIsOK ()\hspace{0.3cm}{\ttfamily  \mbox{[}protected, pure virtual\mbox{]}}}}
+\label{classJKBuilder_1_1QuartetIterator_ac51ff9a02f4a201598f7820476c52faf}
+
+
+A check to see if the iterated RS value is acceptable. 
+
+Implemented in \hyperlink{classJKBuilder_1_1AtomQuartetIterator_a13e657ea529c0566a0bf48e9c5a488d7}{AtomQuartetIterator}, and \hyperlink{classJKBuilder_1_1ShellQuartetIterator_a13e657ea529c0566a0bf48e9c5a488d7}{ShellQuartetIterator}.\hypertarget{classJKBuilder_1_1QuartetIterator_a7874a07e98b52f4f147cde6f39353bae}{
+\index{JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}!Iterate@{Iterate}}
+\index{Iterate@{Iterate}!JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}}
+\subsubsection[{Iterate}]{\setlength{\rightskip}{0pt plus 5cm}void Iterate ()\hspace{0.3cm}{\ttfamily  \mbox{[}protected, virtual\mbox{]}}}}
+\label{classJKBuilder_1_1QuartetIterator_a7874a07e98b52f4f147cde6f39353bae}
+
+
+Reimplemented from \hyperlink{classJKBuilder_1_1Iterator_a7874a07e98b52f4f147cde6f39353bae}{Iterator}.\hypertarget{classJKBuilder_1_1QuartetIterator_a1af5c865d6e9cfe63d0dedc53bdc13ba}{
+\index{JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}!UpdateCurrentValue@{UpdateCurrentValue}}
+\index{UpdateCurrentValue@{UpdateCurrentValue}!JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}}
+\subsubsection[{UpdateCurrentValue}]{\setlength{\rightskip}{0pt plus 5cm}void UpdateCurrentValue ()\hspace{0.3cm}{\ttfamily  \mbox{[}protected\mbox{]}}}}
+\label{classJKBuilder_1_1QuartetIterator_a1af5c865d6e9cfe63d0dedc53bdc13ba}
+
+
+Copies PQ and RS into CurrentValue. \hypertarget{classJKBuilder_1_1QuartetIterator_a34ca36a99b20ae3170babadaffe51ed2}{
+\index{JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}!Start@{Start}}
+\index{Start@{Start}!JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}}
+\subsubsection[{Start}]{\setlength{\rightskip}{0pt plus 5cm}void Start (int {\em n} = {\ttfamily 0})\hspace{0.3cm}{\ttfamily  \mbox{[}virtual\mbox{]}}}}
+\label{classJKBuilder_1_1QuartetIterator_a34ca36a99b20ae3170babadaffe51ed2}
+
+
+Returns an iterator suitable for starting on iteration n. 
+
+Reimplemented from \hyperlink{classJKBuilder_1_1Iterator_a34ca36a99b20ae3170babadaffe51ed2}{Iterator}.\hypertarget{classJKBuilder_1_1QuartetIterator_a5f692b73d2e160450f4617bb75825e11}{
+\index{JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}!End@{End}}
+\index{End@{End}!JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}}
+\subsubsection[{End}]{\setlength{\rightskip}{0pt plus 5cm}void End (int {\em n} = {\ttfamily -\/1})\hspace{0.3cm}{\ttfamily  \mbox{[}virtual\mbox{]}}}}
+\label{classJKBuilder_1_1QuartetIterator_a5f692b73d2e160450f4617bb75825e11}
+
+
+Returns an iterator representing the state of the iterator after n iterations have occured. The default argument is n=-\/1, which is a flag corresponding to the last iteration of the iterator 
+
+Reimplemented from \hyperlink{classJKBuilder_1_1Iterator_a5f692b73d2e160450f4617bb75825e11}{Iterator}.\hypertarget{classJKBuilder_1_1QuartetIterator_ab3cd17222545586596dbbc6aa3ca7046}{
+\index{JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}!operator=@{operator=}}
+\index{operator=@{operator=}!JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}}
+\subsubsection[{operator=}]{\setlength{\rightskip}{0pt plus 5cm}{\bf QuartetIterator} \& operator= ({\bf QuartetIterator} const \& {\em other})}}
+\label{classJKBuilder_1_1QuartetIterator_ab3cd17222545586596dbbc6aa3ca7046}
+
+
+Reimplemented from \hyperlink{classJKBuilder_1_1Iterator_ae6f4f24e1855d2aaf89a8a60a9f1521b}{Iterator}.
+
+Reimplemented in \hyperlink{classJKBuilder_1_1AtomQuartetIterator_a39f50a07009d2e9e81e1d64da594084f}{AtomQuartetIterator}, and \hyperlink{classJKBuilder_1_1ShellQuartetIterator_acd8ac6ed2e831bcb87e65acc0de747db}{ShellQuartetIterator}.\hypertarget{classJKBuilder_1_1Iterator_ac1702aedba13b4112b891b58dfd78eba}{
+\index{JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}!operator++@{operator++}}
+\index{operator++@{operator++}!JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}}
+\subsubsection[{operator++}]{\setlength{\rightskip}{0pt plus 5cm}{\bf Iterator} operator++ (int)\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1Iterator_ac1702aedba13b4112b891b58dfd78eba}
+
+
+Increments the iterator after returning it's value. \hypertarget{classJKBuilder_1_1Iterator_ae1f21c74128a5ef5d1b9de72ceb09be8}{
+\index{JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}!operator++@{operator++}}
+\index{operator++@{operator++}!JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}}
+\subsubsection[{operator++}]{\setlength{\rightskip}{0pt plus 5cm}{\bf Iterator} \& operator++ ()\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1Iterator_ae1f21c74128a5ef5d1b9de72ceb09be8}
+
+
+Increments the iterator before returning it's value. \hypertarget{classJKBuilder_1_1Iterator_a1ea001976a5bc8ae8dc365e2a912b59a}{
+\index{JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}!operator==@{operator==}}
+\index{operator==@{operator==}!JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}}
+\subsubsection[{operator==}]{\setlength{\rightskip}{0pt plus 5cm}bool operator== (const {\bf Iterator} \& {\em other}) const\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1Iterator_a1ea001976a5bc8ae8dc365e2a912b59a}
+
+
+Reimplemented in \hyperlink{classJKBuilder_1_1PairIterator_a6b4e430066f478e5e400edd39ef93968}{PairIterator}.\hypertarget{classJKBuilder_1_1Iterator_a8c06af8ae0d9d1614ae9f81629275926}{
+\index{JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}!operator!=@{operator!=}}
+\index{operator!=@{operator!=}!JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}}
+\subsubsection[{operator!=}]{\setlength{\rightskip}{0pt plus 5cm}bool operator!= (const {\bf Iterator} \& {\em other})\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1Iterator_a8c06af8ae0d9d1614ae9f81629275926}
+
+
+Returns the opposite of operator==. \hypertarget{classJKBuilder_1_1Iterator_aa83de505e29125c1d3ac7bb1b13ca15a}{
+\index{JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}!SetStart@{SetStart}}
+\index{SetStart@{SetStart}!JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}}
+\subsubsection[{SetStart}]{\setlength{\rightskip}{0pt plus 5cm}void SetStart (std::vector$<$ int $>$ const \& {\em other})\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1Iterator_aa83de505e29125c1d3ac7bb1b13ca15a}
+
+
+Sets the N Indices to the N given in other. \hypertarget{classJKBuilder_1_1Iterator_aad84ec668b5f41210db34c540aaa31fc}{
+\index{JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}!SetEnd@{SetEnd}}
+\index{SetEnd@{SetEnd}!JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}}
+\subsubsection[{SetEnd}]{\setlength{\rightskip}{0pt plus 5cm}void SetEnd (std::vector$<$ int $>$ const \& {\em other})\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1Iterator_aad84ec668b5f41210db34c540aaa31fc}
+
+
+Sets the N MaxInd in other. \hypertarget{classJKBuilder_1_1Iterator_a74247cf730a06b23fcb1ec64e5596b25}{
+\index{JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}!operator\mbox{[}\mbox{]}@{operator[]}}
+\index{operator\mbox{[}\mbox{]}@{operator[]}!JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}}
+\subsubsection[{operator[]}]{\setlength{\rightskip}{0pt plus 5cm}int operator\mbox{[}$\,$\mbox{]} (const int {\em i}) const\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1Iterator_a74247cf730a06b23fcb1ec64e5596b25}
+
+
+Returns index i. 
+
+\subsection{Member Data Documentation}
+\hypertarget{classJKBuilder_1_1QuartetIterator_a84f5c3632fba19d3bb85e1cffb9e51f7}{
+\index{JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}!PQ@{PQ}}
+\index{PQ@{PQ}!JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}}
+\subsubsection[{PQ}]{\setlength{\rightskip}{0pt plus 5cm}{\bf PairIterator}$\ast$ {\bf PQ}\hspace{0.3cm}{\ttfamily  \mbox{[}protected\mbox{]}}}}
+\label{classJKBuilder_1_1QuartetIterator_a84f5c3632fba19d3bb85e1cffb9e51f7}
+\hypertarget{classJKBuilder_1_1QuartetIterator_a26b777bf7ea22524f1cc725020ee2082}{
+\index{JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}!RS@{RS}}
+\index{RS@{RS}!JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}}
+\subsubsection[{RS}]{\setlength{\rightskip}{0pt plus 5cm}{\bf PairIterator}$\ast$ {\bf RS}\hspace{0.3cm}{\ttfamily  \mbox{[}protected\mbox{]}}}}
+\label{classJKBuilder_1_1QuartetIterator_a26b777bf7ea22524f1cc725020ee2082}
+\hypertarget{classJKBuilder_1_1Iterator_a20ca24f6d827aba144bb087c4bcb74a0}{
+\index{JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}!CurrentValue@{CurrentValue}}
+\index{CurrentValue@{CurrentValue}!JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}}
+\subsubsection[{CurrentValue}]{\setlength{\rightskip}{0pt plus 5cm}std::vector$<$int$>$ {\bf CurrentValue}\hspace{0.3cm}{\ttfamily  \mbox{[}protected, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1Iterator_a20ca24f6d827aba144bb087c4bcb74a0}
+
+
+The current value. \hypertarget{classJKBuilder_1_1Iterator_ab6b56d3c4e9353bc938dd6249cde9ca0}{
+\index{JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}!MaxInd@{MaxInd}}
+\index{MaxInd@{MaxInd}!JKBuilder::QuartetIterator@{JKBuilder::QuartetIterator}}
+\subsubsection[{MaxInd}]{\setlength{\rightskip}{0pt plus 5cm}std::vector$<$int$>$ {\bf MaxInd}\hspace{0.3cm}{\ttfamily  \mbox{[}protected, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1Iterator_ab6b56d3c4e9353bc938dd6249cde9ca0}
+
+
+This is a vector of length N containing the maximum each index can be. 
+
+The documentation for this class was generated from the following files:\begin{DoxyCompactItemize}
+\item 
+src/\hyperlink{Iterators_8h}{Iterators.h}\item 
+src/\hyperlink{Iterator_8cpp}{Iterator.cpp}\end{DoxyCompactItemize}

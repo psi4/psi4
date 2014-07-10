@@ -1,0 +1,103 @@
+\hypertarget{classJKBuilder_1_1IteratorRules}{
+\section{IteratorRules Class Reference}
+\label{classJKBuilder_1_1IteratorRules}\index{JKBuilder::IteratorRules@{JKBuilder::IteratorRules}}
+}
+
+
+A set of rules governing how an iterator works.  
+
+
+{\ttfamily \#include $<$IteratorRules.h$>$}\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+virtual bool \hyperlink{classJKBuilder_1_1IteratorRules_ae197a0b320460b5c5d42d58bc921ddbc}{IsAcceptable} (vector$<$ int $>$ \&Indices)
+\begin{DoxyCompactList}\small\item\em Returns true if a set of indices. \item\end{DoxyCompactList}\item 
+\hyperlink{classJKBuilder_1_1IteratorRules_ae657e753967d73a7b2966dccb364682b}{IteratorRules} ()
+\item 
+virtual \hyperlink{classJKBuilder_1_1IteratorRules_a59f6acedab9a2a18057b88a2c4d6df92}{$\sim$IteratorRules} ()
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+vector$<$ int $>$ \hyperlink{classJKBuilder_1_1IteratorRules_a405a336c1e1fa1b3a7a3e906b07722bf}{FreshStart}
+\begin{DoxyCompactList}\small\item\em This is the absolute first value an iterator playing by these rules can have. \item\end{DoxyCompactList}\item 
+vector$<$ int $>$ \hyperlink{classJKBuilder_1_1IteratorRules_a1e9f42e2eb6c6f9752414b8e43a3b36a}{TotalEnd}
+\begin{DoxyCompactList}\small\item\em This is the absolute last value an iterator playing by these rules can have. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+bool \hyperlink{classJKBuilder_1_1IteratorRules_afa98914b6f51cb9bd2eafa7c01a614e5}{LeftToRight}
+\begin{DoxyCompactList}\small\item\em If true, we try increment the left most index that can be incremented, if false we start at the right. \item\end{DoxyCompactList}\item 
+bool \hyperlink{classJKBuilder_1_1IteratorRules_a3cb2f931e32ad7450b106c2137dc5b7f}{Distinct}
+\begin{DoxyCompactList}\small\item\em If true, then all indices must be different. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+A set of rules governing how an iterator works. One can envision several common ways one may want to increment 4 (chosen for the sake of argument) indices, all of which go up to n (again for the sake of argument):
+
+0 0 0 0 0 0 0 1 0 0 0 2 ... 0 0 0 n 0 0 1 0 ... n n n n
+
+or the left to right variant of this (mirror the lines above). Another common instance is incurred when we want to only count unique indices:
+
+3 2 1 0 4 2 1 0 4 3 1 0 4 3 2 0 4 3 2 1 5 2 1 0 ... n n-\/1 n-\/2 n-\/3
+
+the mirror case is again possible. 
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{classJKBuilder_1_1IteratorRules_ae657e753967d73a7b2966dccb364682b}{
+\index{JKBuilder::IteratorRules@{JKBuilder::IteratorRules}!IteratorRules@{IteratorRules}}
+\index{IteratorRules@{IteratorRules}!JKBuilder::IteratorRules@{JKBuilder::IteratorRules}}
+\subsubsection[{IteratorRules}]{\setlength{\rightskip}{0pt plus 5cm}{\bf IteratorRules} ()}}
+\label{classJKBuilder_1_1IteratorRules_ae657e753967d73a7b2966dccb364682b}
+\hypertarget{classJKBuilder_1_1IteratorRules_a59f6acedab9a2a18057b88a2c4d6df92}{
+\index{JKBuilder::IteratorRules@{JKBuilder::IteratorRules}!$\sim$IteratorRules@{$\sim$IteratorRules}}
+\index{$\sim$IteratorRules@{$\sim$IteratorRules}!JKBuilder::IteratorRules@{JKBuilder::IteratorRules}}
+\subsubsection[{$\sim$IteratorRules}]{\setlength{\rightskip}{0pt plus 5cm}$\sim${\bf IteratorRules} ()\hspace{0.3cm}{\ttfamily  \mbox{[}virtual\mbox{]}}}}
+\label{classJKBuilder_1_1IteratorRules_a59f6acedab9a2a18057b88a2c4d6df92}
+
+
+\subsection{Member Function Documentation}
+\hypertarget{classJKBuilder_1_1IteratorRules_ae197a0b320460b5c5d42d58bc921ddbc}{
+\index{JKBuilder::IteratorRules@{JKBuilder::IteratorRules}!IsAcceptable@{IsAcceptable}}
+\index{IsAcceptable@{IsAcceptable}!JKBuilder::IteratorRules@{JKBuilder::IteratorRules}}
+\subsubsection[{IsAcceptable}]{\setlength{\rightskip}{0pt plus 5cm}bool IsAcceptable (vector$<$ int $>$ \& {\em Indices})\hspace{0.3cm}{\ttfamily  \mbox{[}virtual\mbox{]}}}}
+\label{classJKBuilder_1_1IteratorRules_ae197a0b320460b5c5d42d58bc921ddbc}
+
+
+Returns true if a set of indices. 
+
+\subsection{Member Data Documentation}
+\hypertarget{classJKBuilder_1_1IteratorRules_afa98914b6f51cb9bd2eafa7c01a614e5}{
+\index{JKBuilder::IteratorRules@{JKBuilder::IteratorRules}!LeftToRight@{LeftToRight}}
+\index{LeftToRight@{LeftToRight}!JKBuilder::IteratorRules@{JKBuilder::IteratorRules}}
+\subsubsection[{LeftToRight}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf LeftToRight}\hspace{0.3cm}{\ttfamily  \mbox{[}protected\mbox{]}}}}
+\label{classJKBuilder_1_1IteratorRules_afa98914b6f51cb9bd2eafa7c01a614e5}
+
+
+If true, we try increment the left most index that can be incremented, if false we start at the right. \hypertarget{classJKBuilder_1_1IteratorRules_a3cb2f931e32ad7450b106c2137dc5b7f}{
+\index{JKBuilder::IteratorRules@{JKBuilder::IteratorRules}!Distinct@{Distinct}}
+\index{Distinct@{Distinct}!JKBuilder::IteratorRules@{JKBuilder::IteratorRules}}
+\subsubsection[{Distinct}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf Distinct}\hspace{0.3cm}{\ttfamily  \mbox{[}protected\mbox{]}}}}
+\label{classJKBuilder_1_1IteratorRules_a3cb2f931e32ad7450b106c2137dc5b7f}
+
+
+If true, then all indices must be different. \hypertarget{classJKBuilder_1_1IteratorRules_a405a336c1e1fa1b3a7a3e906b07722bf}{
+\index{JKBuilder::IteratorRules@{JKBuilder::IteratorRules}!FreshStart@{FreshStart}}
+\index{FreshStart@{FreshStart}!JKBuilder::IteratorRules@{JKBuilder::IteratorRules}}
+\subsubsection[{FreshStart}]{\setlength{\rightskip}{0pt plus 5cm}vector$<$int$>$ {\bf FreshStart}}}
+\label{classJKBuilder_1_1IteratorRules_a405a336c1e1fa1b3a7a3e906b07722bf}
+
+
+This is the absolute first value an iterator playing by these rules can have. \hypertarget{classJKBuilder_1_1IteratorRules_a1e9f42e2eb6c6f9752414b8e43a3b36a}{
+\index{JKBuilder::IteratorRules@{JKBuilder::IteratorRules}!TotalEnd@{TotalEnd}}
+\index{TotalEnd@{TotalEnd}!JKBuilder::IteratorRules@{JKBuilder::IteratorRules}}
+\subsubsection[{TotalEnd}]{\setlength{\rightskip}{0pt plus 5cm}vector$<$int$>$ {\bf TotalEnd}}}
+\label{classJKBuilder_1_1IteratorRules_a1e9f42e2eb6c6f9752414b8e43a3b36a}
+
+
+This is the absolute last value an iterator playing by these rules can have. 
+
+The documentation for this class was generated from the following files:\begin{DoxyCompactItemize}
+\item 
+src/\hyperlink{IteratorRules_8h}{IteratorRules.h}\item 
+src/\hyperlink{IteratorRules_8cpp}{IteratorRules.cpp}\end{DoxyCompactItemize}
