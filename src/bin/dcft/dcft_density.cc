@@ -25,6 +25,9 @@
 #include <libqt/qt.h>
 #include <libiwl/iwl.h>
 #include <libdiis/diismanager.h>
+#include <libmints/mints.h>
+#include <libmints/writer.h>
+#include <libmints/writer_file_prefix.h>
 #include "dcft.h"
 #include "defines.h"
 
@@ -2025,6 +2028,141 @@ DCFTSolver::compute_TPDM_trace() {
     fprintf(outfile, "\t TPDM trace: \t%10.6f\t\tDeviation: \t%8.4e\n", tpdm_trace, tpdm_dev);
 
     psio_->close(PSIF_DCFT_DENSITY, 1);
+
+}
+
+void
+DCFTSolver::compute_oe_properties() {
+
+    // Form one-particle density matrix
+    SharedMatrix a_opdm (new Matrix("MO basis OPDM (Alpha)", nirrep_, nmopi_, nmopi_));
+    SharedMatrix b_opdm (new Matrix("MO basis OPDM (Beta)", nirrep_, nmopi_, nmopi_));
+
+    // Alpha spin
+    for(int h = 0; h < nirrep_; ++h){
+        // O-O
+        for(int i = 0 ; i < naoccpi_[h]; ++i){
+            for(int j = 0 ; j <= i; ++j){
+                a_opdm->set(h, i, j, (aocc_tau_->get(h,i,j) + kappa_mo_a_->get(h,i,j)));
+                if (i != j) a_opdm->set(h, j, i, (aocc_tau_->get(h,i,j) + kappa_mo_a_->get(h,i,j)));
+            }
+        }
+        // V-V
+        for(int a = 0 ; a < navirpi_[h]; ++a){
+            for(int b = 0 ; b <= a; ++b){
+                a_opdm->set(h, a + naoccpi_[h], b + naoccpi_[h], avir_tau_->get(h, a, b));
+                if (a != b) a_opdm->set(h, b + naoccpi_[h], a + naoccpi_[h], avir_tau_->get(h, a, b));
+            }
+        }
+    }
+
+    // Beta spin
+    for(int h = 0; h < nirrep_; ++h){
+        // O-O
+        for(int i = 0 ; i < nboccpi_[h]; ++i){
+            for(int j = 0 ; j <= i; ++j){
+                b_opdm->set(h, i, j, (bocc_tau_->get(h,i,j) + kappa_mo_b_->get(h,i,j)));
+                if (i != j) b_opdm->set(h, j, i, (bocc_tau_->get(h,i,j) + kappa_mo_b_->get(h,i,j)));
+            }
+        }
+        // V-V
+        for(int a = 0 ; a < nbvirpi_[h]; ++a){
+            for(int b = 0 ; b <= a; ++b){
+                b_opdm->set(h, a + nboccpi_[h], b + nboccpi_[h], bvir_tau_->get(h, a, b));
+                if (a != b) b_opdm->set(h, b + nboccpi_[h], a + nboccpi_[h], bvir_tau_->get(h, a, b));
+            }
+        }
+    }
+
+    // Compute one-electron properties
+
+    boost::shared_ptr<OEProp> oe(new OEProp());
+    oe->set_title(options_.get_str("DCFT_FUNCTIONAL").c_str());
+
+    oe->set_Da_mo(a_opdm);
+    oe->set_Db_mo(b_opdm);
+
+    oe->add("DIPOLE");
+
+    if (print_ > 1) {
+        oe->add("QUADRUPOLE");
+        oe->add("MULLIKEN_CHARGES");
+    }
+
+    oe->compute();
+
+}
+
+void
+DCFTSolver::write_molden_file() {
+
+    // Compute natural orbitals
+
+    // Form one-particle density matrix
+    SharedMatrix a_opdm (new Matrix("MO basis OPDM (Alpha)", nirrep_, nmopi_, nmopi_));
+    SharedMatrix b_opdm (new Matrix("MO basis OPDM (Beta)", nirrep_, nmopi_, nmopi_));
+
+    // Alpha spin
+    for(int h = 0; h < nirrep_; ++h){
+        // O-O
+        for(int i = 0 ; i < naoccpi_[h]; ++i){
+            for(int j = 0 ; j <= i; ++j){
+                a_opdm->set(h, i, j, (aocc_tau_->get(h,i,j) + kappa_mo_a_->get(h,i,j)));
+                if (i != j) a_opdm->set(h, j, i, (aocc_tau_->get(h,i,j) + kappa_mo_a_->get(h,i,j)));
+            }
+        }
+        // V-V
+        for(int a = 0 ; a < navirpi_[h]; ++a){
+            for(int b = 0 ; b <= a; ++b){
+                a_opdm->set(h, a + naoccpi_[h], b + naoccpi_[h], avir_tau_->get(h, a, b));
+                if (a != b) a_opdm->set(h, b + naoccpi_[h], a + naoccpi_[h], avir_tau_->get(h, a, b));
+            }
+        }
+    }
+
+    // Beta spin
+    for(int h = 0; h < nirrep_; ++h){
+        // O-O
+        for(int i = 0 ; i < nboccpi_[h]; ++i){
+            for(int j = 0 ; j <= i; ++j){
+                b_opdm->set(h, i, j, (bocc_tau_->get(h,i,j) + kappa_mo_b_->get(h,i,j)));
+                if (i != j) b_opdm->set(h, j, i, (bocc_tau_->get(h,i,j) + kappa_mo_b_->get(h,i,j)));
+            }
+        }
+        // V-V
+        for(int a = 0 ; a < nbvirpi_[h]; ++a){
+            for(int b = 0 ; b <= a; ++b){
+                b_opdm->set(h, a + nboccpi_[h], b + nboccpi_[h], bvir_tau_->get(h, a, b));
+                if (a != b) b_opdm->set(h, b + nboccpi_[h], a + nboccpi_[h], bvir_tau_->get(h, a, b));
+            }
+        }
+    }
+
+    // Diagonalize OPDM to obtain NOs
+    SharedMatrix aevecs(new Matrix("Eigenvectors (Alpha)", nirrep_, nmopi_, nmopi_));
+    SharedMatrix bevecs(new Matrix("Eigenvectors (Beta)", nirrep_, nmopi_, nmopi_));
+    SharedVector aevals(new Vector("Eigenvalues (Alpha)", nirrep_, nmopi_));
+    SharedVector bevals(new Vector("Eigenvalues (Beta)", nirrep_, nmopi_));
+
+    a_opdm->diagonalize(aevecs, aevals, descending);
+    b_opdm->diagonalize(bevecs, bevals, descending);
+
+    // Form transformation matrix from AO to NO
+    SharedMatrix aAONO (new Matrix("NOs (Alpha)", nirrep_, nsopi_, nmopi_));
+    SharedMatrix bAONO (new Matrix("NOs (Beta)", nirrep_, nsopi_, nmopi_));
+    aAONO->gemm(false, false, 1.0, Ca_, aevecs, 0.0);
+    bAONO->gemm(false, false, 1.0, Cb_, bevecs, 0.0);
+
+    // Write to MOLDEN file
+    boost::shared_ptr<Wavefunction> dcft_ = Process::environment.wavefunction();
+    boost::shared_ptr<MoldenWriter> molden(new MoldenWriter(dcft_));
+    std::string filename = get_writer_file_prefix() + ".molden";
+
+    // For now use zeros instead of energies, and DCFT NO occupation numbers as occupation numbers
+    SharedVector dummy_a(new Vector("Dummy Vector Alpha", nirrep_, nmopi_));
+    SharedVector dummy_b(new Vector("Dummy Vector Beta", nirrep_, nmopi_));
+
+    molden->write(filename, aAONO, bAONO, dummy_a, dummy_b, aevals, bevals);
 
 }
 

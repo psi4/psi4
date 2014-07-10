@@ -906,6 +906,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_str("DCFT_FUNCTIONAL", "DC-06", "DC-06 DC-12 ODC-06 ODC-12 ODC-13 CEPA0");
       /*- Whether to compute three-particle energy correction or not -*/
       options.add_str("THREE_PARTICLE", "NONE", "NONE PERTURBATIVE");
+      /*- Do write a MOLDEN output file?  If so, the filename will end in
+      .molden, and the prefix is determined by |globals__writer_file_label|
+      (if set), or else by the name of the output file plus the name of
+      the current molecule. -*/
+      options.add_bool("MOLDEN_WRITE", false);
 
   }
   if (name == "MINTS"|| options.read_globals()) {

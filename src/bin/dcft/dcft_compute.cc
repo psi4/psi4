@@ -123,7 +123,15 @@ DCFTSolver::compute_energy()
         fprintf(outfile, "Warning!  The orbitals were not relaxed\n");
     }
 
+    // Print natural occupations
     print_opdm();
+
+    if (orbital_optimized_) {
+        // Compute one-electron properties
+        compute_oe_properties();
+        // Write to MOLDEN file if requested
+        if (options_.get_bool("MOLDEN_WRITE")) write_molden_file();
+    }
 
     if(options_.get_bool("TPDM")) dump_density();
 //    check_n_representability();

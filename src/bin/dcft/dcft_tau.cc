@@ -714,40 +714,66 @@ DCFTSolver::transform_tau()
 void
 DCFTSolver::print_opdm()
 {
-    dpdbuf4 L1, L2;
-    dpdfile2 T_OO, T_oo, T_VV, T_vv;
-    global_dpd_->file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
-    global_dpd_->file2_init(&T_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Tau <o|o>");
-    global_dpd_->file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
-    global_dpd_->file2_init(&T_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
 
-    global_dpd_->file2_mat_init(&T_OO);
-    global_dpd_->file2_mat_init(&T_oo);
-    global_dpd_->file2_mat_init(&T_VV);
-    global_dpd_->file2_mat_init(&T_vv);
+    // Obtain natural occupancies
+    // Form one-particle density matrix
+    SharedMatrix a_opdm (new Matrix("MO basis OPDM (Alpha)", nirrep_, nmopi_, nmopi_));
+    SharedMatrix b_opdm (new Matrix("MO basis OPDM (Beta)", nirrep_, nmopi_, nmopi_));
 
-    global_dpd_->file2_mat_rd(&T_OO);
-    global_dpd_->file2_mat_rd(&T_oo);
-    global_dpd_->file2_mat_rd(&T_VV);
-    global_dpd_->file2_mat_rd(&T_vv);
+    // Alpha spin
+    for(int h = 0; h < nirrep_; ++h){
+        // O-O
+        for(int i = 0 ; i < naoccpi_[h]; ++i){
+            for(int j = 0 ; j <= i; ++j){
+                a_opdm->set(h, i, j, (aocc_tau_->get(h,i,j) + kappa_mo_a_->get(h,i,j)));
+                if (i != j) a_opdm->set(h, j, i, (aocc_tau_->get(h,i,j) + kappa_mo_a_->get(h,i,j)));
+            }
+        }
+        // V-V
+        for(int a = 0 ; a < navirpi_[h]; ++a){
+            for(int b = 0 ; b <= a; ++b){
+                a_opdm->set(h, a + naoccpi_[h], b + naoccpi_[h], avir_tau_->get(h, a, b));
+                if (a != b) a_opdm->set(h, b + naoccpi_[h], a + naoccpi_[h], avir_tau_->get(h, a, b));
+            }
+        }
+    }
+
+    // Beta spin
+    for(int h = 0; h < nirrep_; ++h){
+        // O-O
+        for(int i = 0 ; i < nboccpi_[h]; ++i){
+            for(int j = 0 ; j <= i; ++j){
+                b_opdm->set(h, i, j, (bocc_tau_->get(h,i,j) + kappa_mo_b_->get(h,i,j)));
+                if (i != j) b_opdm->set(h, j, i, (bocc_tau_->get(h,i,j) + kappa_mo_b_->get(h,i,j)));
+            }
+        }
+        // V-V
+        for(int a = 0 ; a < nbvirpi_[h]; ++a){
+            for(int b = 0 ; b <= a; ++b){
+                b_opdm->set(h, a + nboccpi_[h], b + nboccpi_[h], bvir_tau_->get(h, a, b));
+                if (a != b) b_opdm->set(h, b + nboccpi_[h], a + nboccpi_[h], bvir_tau_->get(h, a, b));
+            }
+        }
+    }
+
+    // Diagonalize OPDM to obtain NOs
+    SharedMatrix aevecs(new Matrix("Eigenvectors (Alpha)", nirrep_, nmopi_, nmopi_));
+    SharedMatrix bevecs(new Matrix("Eigenvectors (Beta)", nirrep_, nmopi_, nmopi_));
+    SharedVector aevals(new Vector("Eigenvalues (Alpha)", nirrep_, nmopi_));
+    SharedVector bevals(new Vector("Eigenvalues (Beta)", nirrep_, nmopi_));
+
+    a_opdm->diagonalize(aevecs, aevals, descending);
+    b_opdm->diagonalize(bevecs, bevals, descending);
 
     std::vector<std::pair<double, int> > aPairs;
     std::vector<std::pair<double, int> > bPairs;
 
     for(int h = 0; h < nirrep_; ++h){
-        for(int row = 0; row < T_OO.params->coltot[h]; ++row)
-            aPairs.push_back(std::make_pair(1.0 + T_OO.matrix[h][row][row], h));
-        for(int row = 0; row < T_VV.params->coltot[h]; ++row)
-            aPairs.push_back(std::make_pair(T_VV.matrix[h][row][row], h));
-        for(int row = 0; row < T_oo.params->coltot[h]; ++row)
-            bPairs.push_back(std::make_pair(1.0 + T_oo.matrix[h][row][row], h));
-        for(int row = 0; row < T_vv.params->coltot[h]; ++row)
-            bPairs.push_back(std::make_pair(T_vv.matrix[h][row][row], h));
+        for(int p = 0; p < nmopi_[h]; ++p) {
+            aPairs.push_back(std::make_pair(aevals->get(h, p), h));
+            bPairs.push_back(std::make_pair(bevals->get(h, p), h));
+        }
     }
-    global_dpd_->file2_close(&T_OO);
-    global_dpd_->file2_close(&T_oo);
-    global_dpd_->file2_close(&T_VV);
-    global_dpd_->file2_close(&T_vv);
 
     sort(aPairs.begin(), aPairs.end(), greater<std::pair<double, int> >());
     sort(bPairs.begin(), bPairs.end(), greater<std::pair<double, int> >());

@@ -186,6 +186,8 @@ protected:
     void compute_orbital_gradient_VO();
     void compute_orbital_rotation_jacobi();
     void rotate_orbitals();
+    void compute_oe_properties();
+    void write_molden_file();
     // Three-particle cumulant contributions
     double compute_three_particle_energy();
     void dcft_semicanonicalize();
