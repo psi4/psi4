@@ -69,8 +69,8 @@ if (reference_ == "RESTRICTED") {
     FvvA->copy(HvvA);
     FvvA->contract(true, false, nvirA, nvirA, nQ_ref * noccA, L, L, -1.0, 1.0);
     L.reset();
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA * nvirA));
-    K->read(psio_, PSIF_DFOCC_INTS);
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
+    K->read(psio_, PSIF_DFOCC_INTS, true, true);
     FvvA->gemv(true, K, Jc, 1.0, 1.0);
     K.reset();
 
@@ -81,6 +81,21 @@ if (reference_ == "RESTRICTED") {
     FockA->set_vv(noccA, FvvA);
 
     if (print_ > 2) FockA->print();
+
+    /*
+    // Diagonalize 
+    SharedTensor1d eigA = boost::shared_ptr<Tensor1d>(new Tensor1d("epsilon <P|Q>", nmo_));
+    SharedTensor2d UmoA = boost::shared_ptr<Tensor2d>(new Tensor2d("UmoA", nmo_, nmo_));
+    FockA->diagonalize(UmoA, eigA, cutoff);
+    eigA.reset();
+
+    // Get new MOs
+    SharedTensor2d Ca_new = boost::shared_ptr<Tensor2d>(new Tensor2d("New alpha MO coefficients", nso_, nmo_));
+    Ca_new->gemm(false, false, CmoA, UmoA, 1.0, 0.0); 
+    UmoA.reset();
+    CmoA->copy(Ca_new);
+    Ca_new.reset();
+    */
 }// end if (reference_ == "RESTRICTED")
 
 
@@ -135,8 +150,8 @@ else if (reference_ == "UNRESTRICTED") {
     FvvA->copy(HvvA);
     FvvA->contract(true, false, nvirA, nvirA, nQ_ref * noccA, L, L, -1.0, 1.0);
     L.reset();
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA * nvirA));
-    K->read(psio_, PSIF_DFOCC_INTS);
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
+    K->read(psio_, PSIF_DFOCC_INTS, true, true);
     FvvA->gemv(true, K, Jc, 1.0, 1.0);
     K.reset();
 
@@ -163,8 +178,8 @@ else if (reference_ == "UNRESTRICTED") {
     FvvB->copy(HvvB);
     FvvB->contract(true, false, nvirB, nvirB, nQ_ref * noccB, L, L, -1.0, 1.0);
     L.reset();
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|vv)", nQ_ref, nvirB * nvirB));
-    K->read(psio_, PSIF_DFOCC_INTS);
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|vv)", nQ_ref, nvirB, nvirB));
+    K->read(psio_, PSIF_DFOCC_INTS, true, true);
     FvvB->gemv(true, K, Jc, 1.0, 1.0);
     K.reset();
 

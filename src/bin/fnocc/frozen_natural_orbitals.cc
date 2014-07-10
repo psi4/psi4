@@ -43,6 +43,7 @@
 #include<lib3index/dftensor.h>
 #include<lib3index/cholesky.h>
 #include <libmints/sieve.h>
+#include<libqt/qt.h>
 
 #include<libdpd/dpd.h>
 #define ID(x) ints->DPD_ID(x)
@@ -635,7 +636,7 @@ void DFFrozenNO::FourIndexIntegrals() {
                 for (int s = r; s < nmo; s++) {
                     int rs = Position(r,s);
                     if ( rs > pq ) continue;
-                    double val = F_DDOT(nQ,Qmo+pq,nmo*(nmo+1)/2,Qmo+rs,nmo*(nmo+1)/2);
+                    double val = C_DDOT(nQ,Qmo+pq,nmo*(nmo+1)/2,Qmo+rs,nmo*(nmo+1)/2);
                     iwl->write_value(p, q, r, s, val, false, outfile, 0);
                 }
             }
@@ -679,7 +680,7 @@ void DFFrozenNO::ComputeNaturalOrbitals(){
   // transform Qso -> Qov:
   TransformQ(nQ,tmp2);
   double * Qov = (double*)malloc(o*v*nQ*sizeof(double));
-  F_DCOPY(o*v*nQ,tmp2,1,Qov,1);
+  C_DCOPY(o*v*nQ,tmp2,1,Qov,1);
   free(tmp2);
 
   if ( memory < 8L*(o*o*v*v+o*v*nQ) ) {
@@ -762,7 +763,7 @@ void DFFrozenNO::ComputeNaturalOrbitals(){
 
   // reorder transformation matrix:
   for (long int i=0; i<v; i++){
-      F_DCOPY(v,Dab+(v-1-i)*v,1,temp+i*v,1);
+      C_DCOPY(v,Dab+(v-1-i)*v,1,temp+i*v,1);
   }
 
   // establish cutoff for frozen virtuals
@@ -785,7 +786,7 @@ void DFFrozenNO::ComputeNaturalOrbitals(){
 
   // transform Fock matrix to MP2 NO basis
   memset((void*)newFock,'\0',v*v*sizeof(double));
-  F_DCOPY(v,F+ndoccact,1,newFock,v+1);
+  C_DCOPY(v,F+ndoccact,1,newFock,v+1);
   F_DGEMM('n','n',v,nvirt_no,v,1.0,newFock,v,temp,v,0.0,Dab,v);
   F_DGEMM('t','n',nvirt_no,nvirt_no,v,1.0,temp,v,Dab,v,0.0,newFock,nvirt_no);
 
@@ -796,7 +797,7 @@ void DFFrozenNO::ComputeNaturalOrbitals(){
   F_DGEMM('n','n',v,nvirt_no,nvirt_no,1.0,temp,v,newFock,nvirt_no,0.0,Dab,v);
 
   // put orbital energies back in F - doesn't matter in this implementation
-  F_DCOPY(nvirt_no,neweps,1,F+ndoccact,1);
+  C_DCOPY(nvirt_no,neweps,1,F+ndoccact,1);
 
   // free memory before using libtrans
   free(temp);
@@ -912,12 +913,12 @@ void DFFrozenNO::BuildFock(long int nQ,double*Qso,double*F) {
 
     // Transform Qso to MO basis:
     double * tmp = (double*)malloc(nso*nso*nQ*sizeof(double));
-    F_DCOPY(nso*nso*nQ,Qso,1,tmp,1);
+    C_DCOPY(nso*nso*nQ,Qso,1,tmp,1);
     F_DGEMM('n','n',nmo,nso*nQ,nso,1.0,&Cap[0][0],nmo,tmp,nso,0.0,Qso,nmo);
     #pragma omp parallel for schedule (static)
     for (long int q = 0; q < nQ; q++) {
         for (long int mu = 0; mu < nso; mu++) {
-            F_DCOPY(nmo,Qso+q*nso*nmo+mu*nmo,1,tmp+q*nso*nmo+mu,nmo);
+            C_DCOPY(nmo,Qso+q*nso*nmo+mu*nmo,1,tmp+q*nso*nmo+mu,nmo);
         }
     }
     F_DGEMM('n','n',nmo,nmo*nQ,nso,1.0,&Cap[0][0],nmo,tmp,nso,0.0,Qso,nmo);
@@ -966,7 +967,7 @@ void DFFrozenNO::BuildFock(long int nQ,double*Qso,double*F) {
     for (long int i = 0; i < nmo; i++) {
         for (long int j = 0; j < nmo; j++) {
             double dum = h[i*nmo+j] - temp3[i*nmo+j];
-            dum += F_DDOT(nQ,temp2,1,Qso + i*nmo + j , nmo*nmo);
+            dum += C_DDOT(nQ,temp2,1,Qso + i*nmo + j , nmo*nmo);
             F[i*nmo+j] = dum;
         }
     }

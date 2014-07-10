@@ -64,7 +64,8 @@ void DFOCC::tei_grad_ref()
 //===========================================================================================
     // Read Gaux_ref 
     Gaux_ref = SharedTensor2d(new Tensor2d("2-Index RefSep TPDM (P|Q)", nQ_ref, nQ_ref));
-    Gaux_ref->read(psio_, PSIF_DFOCC_DENS);
+    //Gaux_ref->read(psio_, PSIF_DFOCC_DENS);
+    Gaux_ref->read_symm(psio_, PSIF_DFOCC_DENS);
 
     // JPQ_X
     timer_on("Grad: Metric:RefSep");
@@ -162,7 +163,7 @@ void DFOCC::tei_grad_ref()
          gradients["Metric:RefSep"]->add(Jtemps[t]);
     }
 
-    gradients["Metric:RefSep"]->print_atom_vector();
+    //gradients["Metric:RefSep"]->print_atom_vector();
     timer_off("Grad: Metric:RefSep");
 
 //===========================================================================================
@@ -170,7 +171,7 @@ void DFOCC::tei_grad_ref()
 //===========================================================================================
     // Read gQso
     gQso_ref = SharedTensor2d(new Tensor2d("RefSep 3-Index TPDM (Q|nn)", nQ_ref, nso_, nso_));
-    gQso_ref->read(psio_, PSIF_DFOCC_DENS);
+    gQso_ref->read(psio_, PSIF_DFOCC_DENS, true, true);
 
     // (Q | mu nu)^X
     timer_on("Grad: 3-Index:RefSep");
@@ -258,7 +259,8 @@ void DFOCC::tei_grad_ref()
             int nP = auxiliary_->shell(P).nfunction();
             int cP = auxiliary_->shell(P).ncartesian();
             int aP = auxiliary_->shell(P).ncenter();
-            int oP = auxiliary_->shell(P).function_index() - pstart;
+            //int oP = auxiliary_->shell(P).function_index() - pstart;// alt-2
+            int oP = auxiliary_->shell(P).function_index();
 
             int nM = primary_->shell(M).nfunction();
             int cM = primary_->shell(M).ncartesian();
@@ -290,7 +292,8 @@ void DFOCC::tei_grad_ref()
                 for (int m = 0; m < nM; m++) {
                     for (int n = 0; n < nN; n++) {
 
-                            double Ival = 1.0 * perm * gQso_ref->get(p + oP + pstart, (m + oM) * nso + (n + oN));
+                            //double Ival = 1.0 * perm * gQso_ref->get(p + oP + pstart, (m + oM) * nso + (n + oN));// alt-2
+                            double Ival = 1.0 * perm * gQso_ref->get(p + oP, (m + oM) * nso + (n + oN));
                             grad_Jp[aP][0] += Ival * (*Px);
                             grad_Jp[aP][1] += Ival * (*Py);
                             grad_Jp[aP][2] += Ival * (*Pz);
@@ -322,7 +325,7 @@ void DFOCC::tei_grad_ref()
          gradients["3-Index:RefSep"]->add(Jtemps2[t]);
     }
 
-    gradients["3-Index:RefSep"]->print_atom_vector();
+    //gradients["3-Index:RefSep"]->print_atom_vector();
     timer_off("Grad: 3-Index:RefSep");
 
 //fprintf(outfile,"\tref_grad is done. \n"); fflush(outfile);

@@ -74,7 +74,7 @@ if (reference_ == "RESTRICTED") {
     if (conv_tei_type == "DISK") JiajbAA->read(psio_, PSIF_DFOCC_INTS);
     else tei_iajb_chem_directAA(JiajbAA);
     u2p_1 = SharedTensor2d(new Tensor2d("2*T2_1(ia,jb) - T2_1(ib,ja)", naoccA, navirA, naoccA, navirA));
-    u2p_1->read(psio_, PSIF_DFOCC_AMPS);
+    u2p_1->read_symm(psio_, PSIF_DFOCC_AMPS);
     Ecorr = u2p_1->vector_dot(JiajbAA); 
     JiajbAA.reset();
     u2p_1.reset();
@@ -102,7 +102,7 @@ else if (reference_ == "UNRESTRICTED") {
         M.reset();
     }
     t2_1AA = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
-    t2_1AA->read(psio_, PSIF_DFOCC_AMPS);
+    t2_1AA->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
     Emp2AA = 0.25 * t2_1AA->vector_dot(K);
     K.reset();
     t2_1AA.reset();
@@ -125,7 +125,7 @@ else if (reference_ == "UNRESTRICTED") {
         M.reset();
     }
     t2_1BB = SharedTensor2d(new Tensor2d("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
-    t2_1BB->read(psio_, PSIF_DFOCC_AMPS);
+    t2_1BB->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
     Emp2BB = 0.25 * t2_1BB->vector_dot(K);
     K.reset();
     t2_1BB.reset();

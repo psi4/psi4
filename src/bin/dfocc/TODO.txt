@@ -1,4 +1,4 @@
 * OSCS-MP2
 * QC-SCF 
 * GWH Guess
-* Gradients for DF-MP2
+* Simplify kappa solver

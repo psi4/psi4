@@ -257,6 +257,9 @@ void DFOCC::cd_omp2_manager()
   	         Process::environment.globals["CURRENT CORRELATION ENERGY"] = Esosmp2 - Escf;
              }
 	}
+
+        // OEPROP
+        if (oeprop_ == "TRUE") oeprop();
  
 	//if (natorb == "TRUE") nbo();
 	//if (occ_orb_energy == "TRUE") semi_canonic(); 

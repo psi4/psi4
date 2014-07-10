@@ -81,7 +81,7 @@ if (reference_ == "RESTRICTED") {
     G = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM (Q|OO)", nQ_ref, noccA * noccA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
     G->read(psio_, PSIF_DFOCC_DENS);
-    K->read(psio_, PSIF_DFOCC_INTS);
+    K->read(psio_, PSIF_DFOCC_INTS, true, true);
     for (int a = 0; a < nvirA; a++) {
          int aa = vv_idxAA->get(a,a);
          for (int i = 0; i < noccA; i++) {
@@ -104,7 +104,7 @@ if (reference_ == "RESTRICTED") {
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OO)", nQ_ref, noccA * noccA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
     G->read(psio_, PSIF_DFOCC_DENS);
-    K->read(psio_, PSIF_DFOCC_INTS);
+    K->read(psio_, PSIF_DFOCC_INTS, true, true);
     for (int a = 0; a < nvirA; a++) {
          int aa = vv_idxAA->get(a,a);
          for (int i = 0; i < noccA; i++) {
@@ -120,9 +120,9 @@ if (reference_ == "RESTRICTED") {
     K.reset();
 
     // A_ai += 2\sum_{Q} b_ii^Q G_aa^Q 
-    G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA * nvirA));
+    G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA * noccA));
-    G->read(psio_, PSIF_DFOCC_DENS);
+    G->read(psio_, PSIF_DFOCC_DENS, true, true);
     K->read(psio_, PSIF_DFOCC_INTS);
     for (int a = 0; a < nvirA; a++) {
          int aa = vv_idxAA->get(a,a);
@@ -217,7 +217,7 @@ else if (reference_ == "UNRESTRICTED") {
     G = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM (Q|OO)", nQ_ref, noccA * noccA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
     G->read(psio_, PSIF_DFOCC_DENS);
-    K->read(psio_, PSIF_DFOCC_INTS);
+    K->read(psio_, PSIF_DFOCC_INTS, true, true);
     for (int a = 0; a < nvirA; a++) {
          int aa = vv_idxAA->get(a,a);
          for (int i = 0; i < noccA; i++) {
@@ -236,7 +236,7 @@ else if (reference_ == "UNRESTRICTED") {
     G = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM (Q|oo)", nQ_ref, noccB * noccB));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|vv)", nQ_ref, nvirB, nvirB));
     G->read(psio_, PSIF_DFOCC_DENS);
-    K->read(psio_, PSIF_DFOCC_INTS);
+    K->read(psio_, PSIF_DFOCC_INTS, true, true);
     for (int a = 0; a < nvirB; a++) {
          int aa = vv_idxBB->get(a,a);
          for (int i = 0; i < noccB; i++) {
@@ -259,7 +259,7 @@ else if (reference_ == "UNRESTRICTED") {
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OO)", nQ_ref, noccA * noccA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
     G->read(psio_, PSIF_DFOCC_DENS);
-    K->read(psio_, PSIF_DFOCC_INTS);
+    K->read(psio_, PSIF_DFOCC_INTS, true, true);
     for (int a = 0; a < nvirA; a++) {
          int aa = vv_idxAA->get(a,a);
          for (int i = 0; i < noccA; i++) {
@@ -278,7 +278,7 @@ else if (reference_ == "UNRESTRICTED") {
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|oo)", nQ_ref, noccB * noccB));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|vv)", nQ_ref, nvirB, nvirB));
     G->read(psio_, PSIF_DFOCC_DENS);
-    K->read(psio_, PSIF_DFOCC_INTS);
+    K->read(psio_, PSIF_DFOCC_INTS, true, true);
     for (int a = 0; a < nvirB; a++) {
          int aa = vv_idxBB->get(a,a);
          for (int i = 0; i < noccB; i++) {
@@ -294,9 +294,9 @@ else if (reference_ == "UNRESTRICTED") {
     K.reset();
 
     // A_AI += 2\sum_{Q} b_II^Q G_AA^Q 
-    G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA * nvirA));
+    G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA * noccA));
-    G->read(psio_, PSIF_DFOCC_DENS);
+    G->read(psio_, PSIF_DFOCC_DENS, true, true);
     K->read(psio_, PSIF_DFOCC_INTS);
     for (int a = 0; a < nvirA; a++) {
          int aa = vv_idxAA->get(a,a);
@@ -313,9 +313,9 @@ else if (reference_ == "UNRESTRICTED") {
     K.reset();
 
     // A_ai += 2\sum_{Q} b_ii^Q G_aa^Q 
-    G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|vv)", nQ_ref, nvirB * nvirB));
+    G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|vv)", nQ_ref, nvirB, nvirB));
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|oo)", nQ_ref, noccB * noccB));
-    G->read(psio_, PSIF_DFOCC_DENS);
+    G->read(psio_, PSIF_DFOCC_DENS, true, true);
     K->read(psio_, PSIF_DFOCC_INTS);
     for (int a = 0; a < nvirB; a++) {
          int aa = vv_idxBB->get(a,a);

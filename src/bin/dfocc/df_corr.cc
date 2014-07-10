@@ -43,11 +43,11 @@ namespace psi{ namespace dfoccwave{
 void DFOCC::trans_corr()
 {   
     // Read SO integrals
-    bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso2_));
-    bQso->read(psio_, PSIF_DFOCC_INTS);
+    bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));
+    bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
 
     trans_ab = 1;
-    if (orb_opt_ == "TRUE" || dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
+    if (orb_opt_ == "TRUE" || dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
         // Form B(Q,ij)
         timer_on("Form B(Q,ij)");
         b_oo();
@@ -94,8 +94,8 @@ void DFOCC::trans_corr()
 void DFOCC::trans_mp2()
 {   
     // Read SO integrals
-    bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso2_));
-    bQso->read(psio_, PSIF_DFOCC_INTS);
+    bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));
+    bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
 
     // Form B(Q,ia)
     trans_ab = 0;
@@ -264,7 +264,7 @@ void DFOCC::formJ(boost::shared_ptr<BasisSet> auxiliary_, boost::shared_ptr<Basi
 //=======================================================          
 void DFOCC::b_so(boost::shared_ptr<BasisSet> primary_, boost::shared_ptr<BasisSet> auxiliary_, boost::shared_ptr<BasisSet> zero)
 {
-    bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso2_));
+    bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));
     double** Ap = block_matrix(nQ, nso2_); 
     double** Bp = block_matrix(nQ, nso2_); 
 
@@ -390,7 +390,7 @@ void DFOCC::b_so(boost::shared_ptr<BasisSet> primary_, boost::shared_ptr<BasisSe
 
     C_DGEMM('N','N', nQ, nso2_, nQ, 1.0, J_mhalf[0], nQ, Bp[0], nso2_, 0.0, Ap[0], nso2_);
     bQso->set(Ap);
-    bQso->write(psio_, PSIF_DFOCC_INTS);
+    bQso->write(psio_, PSIF_DFOCC_INTS, true, true);
     if (print_ > 3) bQso->print();
     free_block(Bp);
     free_block(J_mhalf);
@@ -575,7 +575,7 @@ void DFOCC::b_vv()
     bQnvA->read(psio_, PSIF_DFOCC_INTS);
     bQvvA->contract233(true, false, nvirA, nvirA, CvirA, bQnvA, 1.0, 0.0);
     bQnvA.reset();
-    bQvvA->write(psio_, PSIF_DFOCC_INTS);
+    bQvvA->write(psio_, PSIF_DFOCC_INTS, true, true);
 
     // Form active b(Q,ab)
     bQabA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA));
@@ -590,7 +590,7 @@ void DFOCC::b_vv()
     bQnvB->read(psio_, PSIF_DFOCC_INTS);
     bQvvB->contract233(true, false, nvirB, nvirB, CvirB, bQnvB, 1.0, 0.0);
     bQnvB.reset();
-    bQvvB->write(psio_, PSIF_DFOCC_INTS);
+    bQvvB->write(psio_, PSIF_DFOCC_INTS, true, true);
 
     // Form active b(Q,ab)
     bQabB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ab)", nQ, navirB, navirB));

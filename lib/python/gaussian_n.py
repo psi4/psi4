@@ -121,7 +121,8 @@ def run_gaussian_2(name, **kwargs):
 
     # big basis mp2
     psi4.set_global_option('BASIS',"6-311+G(3DF_2P)")
-    run_fnocc('_mp2',**kwargs)
+    #run_fnocc('_mp2',**kwargs)
+    energy('conv-mp2')
     emp2_big = psi4.get_variable("MP2 TOTAL ENERGY")
     psi4.clean()
 

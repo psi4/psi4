@@ -53,9 +53,9 @@ if (reference_ == "RESTRICTED") {
 
     // Fai += \sum_{Q} \sum_{e} G_ie^Q b_ae^Q = \sum_{e} G_ei^Q b_ea^Q
     G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|VO)", nQ, nvirA, noccA));
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|VV)", nQ, nvirA * nvirA));
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|VV)", nQ, nvirA, nvirA));
     G->read(psio_, PSIF_DFOCC_DENS);
-    K->read(psio_, PSIF_DFOCC_INTS);
+    K->read(psio_, PSIF_DFOCC_INTS, true, true);
     GFvo->contract(true, false, nvirA, noccA, nQ * nvirA, K, G, 1.0, 1.0);
     G.reset();
     K.reset();
@@ -75,9 +75,9 @@ if (reference_ == "RESTRICTED") {
 
     // Fai += \sum_{Q} \sum_{e} G_ie^Q b_ae^Q = \sum_{e} G_ei^Q b_ea^Q
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VO)", nQ_ref, nvirA, noccA));
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA * nvirA));
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
     G->read(psio_, PSIF_DFOCC_DENS);
-    K->read(psio_, PSIF_DFOCC_INTS);
+    K->read(psio_, PSIF_DFOCC_INTS, true, true);
     GFvo->contract(true, false, nvirA, noccA, nQ_ref * nvirA, K, G, 1.0, 1.0);
     G.reset();
     K.reset();
@@ -103,11 +103,17 @@ else if (reference_ == "UNRESTRICTED") {
     // F_AI = \sum_{M} h_AM G_Mi
     GFvoA->gemm(false, false, HvoA, G1c_ooA, 1.0, 1.0);
 
+ if (reference == "ROHF" && orb_opt_ == "FALSE") {
+    // Fai = \sum_{e} h_ae G_ei
+    GFvoA->gemm(false, false, HvvA, G1c_voA, 1.0, 1.0);
+    GFvoB->gemm(false, false, HvvB, G1c_voB, 1.0, 1.0);
+ }
+
     // F_AI += \sum_{Q} \sum_{E} G_IE^Q b_AE^Q = \sum_{E} G_EI^Q b_EA^Q
     G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|VO)", nQ, nvirA, noccA));
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|VV)", nQ, nvirA * nvirA));
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|VV)", nQ, nvirA, nvirA));
     G->read(psio_, PSIF_DFOCC_DENS);
-    K->read(psio_, PSIF_DFOCC_INTS);
+    K->read(psio_, PSIF_DFOCC_INTS, true, true);
     GFvoA->contract(true, false, nvirA, noccA, nQ * nvirA, K, G, 1.0, 1.0);
     G.reset();
     K.reset();
@@ -117,9 +123,9 @@ else if (reference_ == "UNRESTRICTED") {
 
     // Fai += \sum_{Q} \sum_{e} G_ie^Q b_ae^Q = \sum_{e} G_ei^Q b_ea^Q
     G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|vo)", nQ, nvirB, noccB));
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|vv)", nQ, nvirB * nvirB));
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|vv)", nQ, nvirB, nvirB));
     G->read(psio_, PSIF_DFOCC_DENS);
-    K->read(psio_, PSIF_DFOCC_INTS);
+    K->read(psio_, PSIF_DFOCC_INTS, true, true);
     GFvoB->contract(true, false, nvirB, noccB, nQ * nvirB, K, G, 1.0, 1.0);
     G.reset();
     K.reset();
@@ -139,9 +145,9 @@ else if (reference_ == "UNRESTRICTED") {
 
     // F_AI += \sum_{Q} \sum_{E} G_IE^Q b_AE^Q = \sum_{E} G_EI^Q b_EA^Q
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VO)", nQ_ref, nvirA, noccA));
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA * nvirA));
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
     G->read(psio_, PSIF_DFOCC_DENS);
-    K->read(psio_, PSIF_DFOCC_INTS);
+    K->read(psio_, PSIF_DFOCC_INTS, true, true);
     GFvoA->contract(true, false, nvirA, noccA, nQ_ref * nvirA, K, G, 1.0, 1.0);
     G.reset();
     K.reset();
@@ -157,9 +163,9 @@ else if (reference_ == "UNRESTRICTED") {
 
     // Fai += \sum_{Q} \sum_{e} G_ie^Q b_ae^Q = \sum_{e} G_ei^Q b_ea^Q
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|vo)", nQ_ref, nvirB, noccB));
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|vv)", nQ_ref, nvirB * nvirB));
+    K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|vv)", nQ_ref, nvirB, nvirB));
     G->read(psio_, PSIF_DFOCC_DENS);
-    K->read(psio_, PSIF_DFOCC_INTS);
+    K->read(psio_, PSIF_DFOCC_INTS, true, true);
     GFvoB->contract(true, false, nvirB, noccB, nQ_ref * nvirB, K, G, 1.0, 1.0);
     G.reset();
     K.reset();
@@ -167,6 +173,8 @@ else if (reference_ == "UNRESTRICTED") {
     // Set global GF
     GFA->set_vo(GFvoA);
     GFB->set_vo(GFvoB);
+    //GFvoA->print();
+    //GFvoB->print();
 
 }// else if (reference_ == "UNRESTRICTED")
 

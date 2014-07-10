@@ -121,6 +121,18 @@ parser.add_argument('--prefix',
                     type=str,
                     default="/usr/local/psi4",
                     help='Installation directory for Psi4')
+# Boost
+parser.add_argument('--with-boost-incdir',
+                    metavar='= BOOST',
+                    type=str,
+                    default=blankstring,
+                    help='The includes directory for boost.  If this is left blank cmake will attempt to find one on your system.  Failing that it will build one for you')
+# Boost-libdir
+parser.add_argument('--with-boost-libdir',
+                    metavar='= BOOSTLIB',
+                    type=str,
+                    default=blankstring,
+                    help='The libraries directory for boost.  If this is left blank cmake will attempt to find one on your system.  Failing that it will build one for you')
 # Python
 parser.add_argument('--with-python',
                     metavar='= PYTHON',
@@ -213,6 +225,11 @@ if args.with_cc != blankstring:
 # CXX
 if args.with_cxx != blankstring:
     cmakeflags['CMAKE_CXX_COMPILER'] = args.with_cxx
+#BOOST
+if args.with_boost_incdir != blankstring:
+    cmakeflags['Boost_INCLUDE_DIR'] = args.with_boost_incdir
+if args.with_boost_libdir != blankstring:
+    cmakeflags['BOOST_LIBRARYDIR'] = args.with_boost_libdir
 # PYTHON
 if args.with_python != blankstring:
     cmakeflags['PYTHON'] = args.with_python

@@ -53,20 +53,6 @@ void F_DGEMV(char trans,integer m,integer n,doublereal alpha,doublereal*A,intege
 void F_DGEMM(char transa,char transb, integer m, integer n, integer k,
             doublereal alpha,doublereal*A,integer lda,doublereal*B,integer ldb,
             doublereal beta,doublereal*C,integer ldc);
-/**
- * ddot
- */
-double F_DDOT(integer n,doublereal*dx,integer incx,doublereal*dy,integer incy);
-
-/**
- * dnrm2
- */
-double F_DNRM2(integer n,doublereal*x,integer incx);
-
-/**
- * dcopy
- */
-void F_DCOPY(integer n,doublereal*dx,integer incx,doublereal*dy,integer incy);
 
 /**
  * daxpy
