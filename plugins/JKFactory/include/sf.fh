@@ -1,0 +1,6 @@
+      integer sf_create,sf_write,sf_read,sf_wait, sf_destroy
+      integer sf_waitall, sf_open, sf_close, sf_rwtor
+      integer sf_create_suffix
+      external sf_create,sf_write,sf_read,sf_wait, sf_destroy
+      external sf_waitall, sf_open, sf_close, sf_rwtor
+      external sf_create_suffix

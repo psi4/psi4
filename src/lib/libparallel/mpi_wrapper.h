@@ -23,13 +23,16 @@
 #define _psi_src_lib_libparallel_mpi_wrapper_h_
 
 #include <string>
-#include <boost/mpi.hpp>
+
 #include <boost/shared_ptr.hpp>
 #include "parallel.h"
 #include <map>
+
+#if HAVE_MPI
+#include <boost/mpi.hpp>
+#include <boost/mpi/communicator.hpp>
 #include <mpi.h>
 namespace psi {
-#if HAVE_MPI
 class MPICommunicator:public Parallel<MPICommunicator> {
    public:
       //Convenient typedef of base type
@@ -39,8 +42,7 @@ class MPICommunicator:public Parallel<MPICommunicator> {
       MPICommunicator(int &argc, char **argv);
 
       ///Memory management is handled via smart pointer, so does nothing
-      ~MPICommunicator() {
-      }
+      ~MPICommunicator() {}
 
       /** \brief Basic assignment operator, checks for self-assignment.
        *
@@ -80,6 +82,9 @@ class MPICommunicator:public Parallel<MPICommunicator> {
 
       ///Frees the processes in the communicator
       void FreeComm(const std::string& Name="NONE");
+
+      ///Returns the MPI_Comm associated with the current communicator
+      MPI_Comm GetMPIComm()const{return (MPI_Comm)GetComm("NONE");}
 
    private:
       /**\brief This is Boost's MPI environment object.
@@ -147,8 +152,9 @@ class MPICommunicator:public Parallel<MPICommunicator> {
       }
 
 };
+}//End namespace psi
 //End mpiwrapper class
 #endif //End on HAVE_MPI
-}//End namespace psi
+
 
 #endif //End on header guard

@@ -1,0 +1,174 @@
+\hypertarget{classJKBuilder_1_1printer}{
+\section{printer Class Reference}
+\label{classJKBuilder_1_1printer}\index{JKBuilder::printer@{JKBuilder::printer}}
+}
+
+
+The class in charge of printing to std::cout.  
+
+
+{\ttfamily \#include $<$printer.h$>$}Inheritance diagram for printer::\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3cm]{classJKBuilder_1_1printer}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classJKBuilder_1_1printer_af4e2cc2ab8b108895389d46fa14d4a13}{printer} (int ncolumns=80)
+\begin{DoxyCompactList}\small\item\em Input is the number of columns we are allowed to print out to, ncolumns defaults to 80. \item\end{DoxyCompactList}\item 
+virtual \hyperlink{classJKBuilder_1_1printer_a555702a98f98cda2ba39f19c0c9397c6}{$\sim$printer} ()
+\begin{DoxyCompactList}\small\item\em No memory to free so it does nothing. \item\end{DoxyCompactList}\item 
+{\footnotesize template$<$class T $>$ }\\\hyperlink{classJKBuilder_1_1IOManager}{IOManager} \& \hyperlink{classJKBuilder_1_1IOManager_a505a35212a21e4884ed24b021c0add4b}{operator$<$$<$} (const T \&message)
+\begin{DoxyCompactList}\small\item\em This is the call that prints our messages, unless it is a double... \item\end{DoxyCompactList}\item 
+\hyperlink{classJKBuilder_1_1IOManager}{IOManager} \& \hyperlink{classJKBuilder_1_1IOManager_a127779d1803b6ffe9e44a3a36e46910e}{operator$<$$<$} (const double \&message)
+\begin{DoxyCompactList}\small\item\em Then it is this call, because we want to control the precision then. \item\end{DoxyCompactList}\item 
+\hyperlink{classJKBuilder_1_1IOManager}{IOManager} \& \hyperlink{classJKBuilder_1_1IOManager_a4ab394f377d37c6598659317320ec38c}{operator$<$$<$} (std::ostream \&($\ast$fn)(std::ostream \&))
+\begin{DoxyCompactList}\small\item\em This function is used for the endl character. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+static bool \hyperlink{classJKBuilder_1_1IOManager_aababa9aef0d20ddcfce2d78f41ae1dd8}{power} = true
+\begin{DoxyCompactList}\small\item\em The state of the printer's power. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+virtual void \hyperlink{classJKBuilder_1_1printer_a7f207ac705d33a0cd9794a9f0b4a1fa0}{EoL} ()
+\begin{DoxyCompactList}\small\item\em Returns the End of Line character, this form also resets the column. \item\end{DoxyCompactList}\item 
+void \hyperlink{classJKBuilder_1_1printer_aa32ee0a81ade611982bfc9861c5a05bb}{print} (const string message)
+\begin{DoxyCompactList}\small\item\em This is the function that actually does the printing. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std::stringstream \hyperlink{classJKBuilder_1_1IOManager_adbf6a7492c6521b38c1510aebe307770}{buffer}
+\begin{DoxyCompactList}\small\item\em This is the line/data we want to print out. \item\end{DoxyCompactList}\item 
+std::ostream $\ast$ \hyperlink{classJKBuilder_1_1IOManager_aafe3b1218427d92a689d147f74e74f4b}{Output}
+\begin{DoxyCompactList}\small\item\em Returns the current output, defaults to cout. \item\end{DoxyCompactList}\item 
+int \hyperlink{classJKBuilder_1_1IOManager_aa95455ed52a8459fad69509a4a0411b5}{precision}
+\begin{DoxyCompactList}\small\item\em The precision a double will be printed to. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{classJKBuilder_1_1printer_a7c4b990ebe8d2c098f3974f6ffe0c9b4}{ncols}
+\begin{DoxyCompactList}\small\item\em The number of columns we are allowed to print out to before word wrap. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Static Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+static int \hyperlink{classJKBuilder_1_1printer_a60dae4c6e78188cd718b696e4f08fc71}{column} = 0
+\begin{DoxyCompactList}\small\item\em This is which of the ncols we are printing to. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+The class in charge of printing to std::cout. As the name of the class implies, this class is designed to handle all of my printing. It's biggest feature is come release time, I can pull the plug on all printers, simultaneously by shutting off the power and I will never see printing from this library again. 
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{classJKBuilder_1_1printer_af4e2cc2ab8b108895389d46fa14d4a13}{
+\index{JKBuilder::printer@{JKBuilder::printer}!printer@{printer}}
+\index{printer@{printer}!JKBuilder::printer@{JKBuilder::printer}}
+\subsubsection[{printer}]{\setlength{\rightskip}{0pt plus 5cm}{\bf printer} (int {\em ncolumns} = {\ttfamily 80})}}
+\label{classJKBuilder_1_1printer_af4e2cc2ab8b108895389d46fa14d4a13}
+
+
+Input is the number of columns we are allowed to print out to, ncolumns defaults to 80. \hypertarget{classJKBuilder_1_1printer_a555702a98f98cda2ba39f19c0c9397c6}{
+\index{JKBuilder::printer@{JKBuilder::printer}!$\sim$printer@{$\sim$printer}}
+\index{$\sim$printer@{$\sim$printer}!JKBuilder::printer@{JKBuilder::printer}}
+\subsubsection[{$\sim$printer}]{\setlength{\rightskip}{0pt plus 5cm}$\sim${\bf printer} ()\hspace{0.3cm}{\ttfamily  \mbox{[}virtual\mbox{]}}}}
+\label{classJKBuilder_1_1printer_a555702a98f98cda2ba39f19c0c9397c6}
+
+
+No memory to free so it does nothing. 
+
+\subsection{Member Function Documentation}
+\hypertarget{classJKBuilder_1_1printer_a7f207ac705d33a0cd9794a9f0b4a1fa0}{
+\index{JKBuilder::printer@{JKBuilder::printer}!EoL@{EoL}}
+\index{EoL@{EoL}!JKBuilder::printer@{JKBuilder::printer}}
+\subsubsection[{EoL}]{\setlength{\rightskip}{0pt plus 5cm}void EoL ()\hspace{0.3cm}{\ttfamily  \mbox{[}protected, virtual\mbox{]}}}}
+\label{classJKBuilder_1_1printer_a7f207ac705d33a0cd9794a9f0b4a1fa0}
+
+
+Returns the End of Line character, this form also resets the column. 
+
+Reimplemented from \hyperlink{classJKBuilder_1_1IOManager_a7f207ac705d33a0cd9794a9f0b4a1fa0}{IOManager}.
+
+Reimplemented in \hyperlink{classJKBuilder_1_1error_a7f207ac705d33a0cd9794a9f0b4a1fa0}{error}.\hypertarget{classJKBuilder_1_1printer_aa32ee0a81ade611982bfc9861c5a05bb}{
+\index{JKBuilder::printer@{JKBuilder::printer}!print@{print}}
+\index{print@{print}!JKBuilder::printer@{JKBuilder::printer}}
+\subsubsection[{print}]{\setlength{\rightskip}{0pt plus 5cm}void print (const string {\em message})\hspace{0.3cm}{\ttfamily  \mbox{[}protected, virtual\mbox{]}}}}
+\label{classJKBuilder_1_1printer_aa32ee0a81ade611982bfc9861c5a05bb}
+
+
+This is the function that actually does the printing. 
+
+Reimplemented from \hyperlink{classJKBuilder_1_1IOManager_a3abc9519dd5220ecb1154daa25f557fe}{IOManager}.\hypertarget{classJKBuilder_1_1IOManager_a505a35212a21e4884ed24b021c0add4b}{
+\index{JKBuilder::printer@{JKBuilder::printer}!operator$<$$<$@{operator$<$$<$}}
+\index{operator$<$$<$@{operator$<$$<$}!JKBuilder::printer@{JKBuilder::printer}}
+\subsubsection[{operator$<$$<$}]{\setlength{\rightskip}{0pt plus 5cm}{\bf IOManager} \& operator$<$$<$ (const T \& {\em message})\hspace{0.3cm}{\ttfamily  \mbox{[}inline, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1IOManager_a505a35212a21e4884ed24b021c0add4b}
+
+
+This is the call that prints our messages, unless it is a double... \hypertarget{classJKBuilder_1_1IOManager_a127779d1803b6ffe9e44a3a36e46910e}{
+\index{JKBuilder::printer@{JKBuilder::printer}!operator$<$$<$@{operator$<$$<$}}
+\index{operator$<$$<$@{operator$<$$<$}!JKBuilder::printer@{JKBuilder::printer}}
+\subsubsection[{operator$<$$<$}]{\setlength{\rightskip}{0pt plus 5cm}{\bf IOManager} \& operator$<$$<$ (const double \& {\em message})\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1IOManager_a127779d1803b6ffe9e44a3a36e46910e}
+
+
+Then it is this call, because we want to control the precision then. \hypertarget{classJKBuilder_1_1IOManager_a4ab394f377d37c6598659317320ec38c}{
+\index{JKBuilder::printer@{JKBuilder::printer}!operator$<$$<$@{operator$<$$<$}}
+\index{operator$<$$<$@{operator$<$$<$}!JKBuilder::printer@{JKBuilder::printer}}
+\subsubsection[{operator$<$$<$}]{\setlength{\rightskip}{0pt plus 5cm}{\bf IOManager} \& operator$<$$<$ (std::ostream \&($\ast$)(std::ostream \&) {\em fn})\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1IOManager_a4ab394f377d37c6598659317320ec38c}
+
+
+This function is used for the endl character. When invoked with \char`\"{}endl\char`\"{} prints the content of the stringstream and clears it. Supports multiple endl's in a stream. The weird function signature is due to the signature of endl. 
+
+\subsection{Member Data Documentation}
+\hypertarget{classJKBuilder_1_1printer_a7c4b990ebe8d2c098f3974f6ffe0c9b4}{
+\index{JKBuilder::printer@{JKBuilder::printer}!ncols@{ncols}}
+\index{ncols@{ncols}!JKBuilder::printer@{JKBuilder::printer}}
+\subsubsection[{ncols}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf ncols}\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}
+\label{classJKBuilder_1_1printer_a7c4b990ebe8d2c098f3974f6ffe0c9b4}
+
+
+The number of columns we are allowed to print out to before word wrap. \hypertarget{classJKBuilder_1_1printer_a60dae4c6e78188cd718b696e4f08fc71}{
+\index{JKBuilder::printer@{JKBuilder::printer}!column@{column}}
+\index{column@{column}!JKBuilder::printer@{JKBuilder::printer}}
+\subsubsection[{column}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf column} = 0\hspace{0.3cm}{\ttfamily  \mbox{[}static, private\mbox{]}}}}
+\label{classJKBuilder_1_1printer_a60dae4c6e78188cd718b696e4f08fc71}
+
+
+This is which of the ncols we are printing to. \hypertarget{classJKBuilder_1_1IOManager_adbf6a7492c6521b38c1510aebe307770}{
+\index{JKBuilder::printer@{JKBuilder::printer}!buffer@{buffer}}
+\index{buffer@{buffer}!JKBuilder::printer@{JKBuilder::printer}}
+\subsubsection[{buffer}]{\setlength{\rightskip}{0pt plus 5cm}std::stringstream {\bf buffer}\hspace{0.3cm}{\ttfamily  \mbox{[}protected, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1IOManager_adbf6a7492c6521b38c1510aebe307770}
+
+
+This is the line/data we want to print out. \hypertarget{classJKBuilder_1_1IOManager_aafe3b1218427d92a689d147f74e74f4b}{
+\index{JKBuilder::printer@{JKBuilder::printer}!Output@{Output}}
+\index{Output@{Output}!JKBuilder::printer@{JKBuilder::printer}}
+\subsubsection[{Output}]{\setlength{\rightskip}{0pt plus 5cm}std::ostream$\ast$ {\bf Output}\hspace{0.3cm}{\ttfamily  \mbox{[}protected, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1IOManager_aafe3b1218427d92a689d147f74e74f4b}
+
+
+Returns the current output, defaults to cout. \hypertarget{classJKBuilder_1_1IOManager_aa95455ed52a8459fad69509a4a0411b5}{
+\index{JKBuilder::printer@{JKBuilder::printer}!precision@{precision}}
+\index{precision@{precision}!JKBuilder::printer@{JKBuilder::printer}}
+\subsubsection[{precision}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf precision}\hspace{0.3cm}{\ttfamily  \mbox{[}protected, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1IOManager_aa95455ed52a8459fad69509a4a0411b5}
+
+
+The precision a double will be printed to. \hypertarget{classJKBuilder_1_1IOManager_aababa9aef0d20ddcfce2d78f41ae1dd8}{
+\index{JKBuilder::printer@{JKBuilder::printer}!power@{power}}
+\index{power@{power}!JKBuilder::printer@{JKBuilder::printer}}
+\subsubsection[{power}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf power} = true\hspace{0.3cm}{\ttfamily  \mbox{[}static, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1IOManager_aababa9aef0d20ddcfce2d78f41ae1dd8}
+
+
+The state of the printer's power. If true then we are printing data to the output. If false then we are not. Note the static keyword. Turning off power for one \hyperlink{classJKBuilder_1_1printer}{printer} turns off the power for all of them. You flipped the breaker if you will. 
+
+The documentation for this class was generated from the following files:\begin{DoxyCompactItemize}
+\item 
+src/\hyperlink{printer_8h}{printer.h}\item 
+src/\hyperlink{printer_8cpp}{printer.cpp}\end{DoxyCompactItemize}

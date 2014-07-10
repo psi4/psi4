@@ -1,0 +1,299 @@
+\hypertarget{classJKBuilder_1_1CG2SG}{
+\section{CG2SG Class Reference}
+\label{classJKBuilder_1_1CG2SG}\index{JKBuilder::CG2SG@{JKBuilder::CG2SG}}
+}
+
+
+This class handles the transformation from Cartesian Gaussians to Spherical Gaussians.  
+
+
+{\ttfamily \#include $<$CG2SG.h$>$}Inheritance diagram for CG2SG::\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3cm]{classJKBuilder_1_1CG2SG}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classJKBuilder_1_1CG2SG_a3dd17ea7b07cd7d20b0c21010b56eb04}{CG2SG} (\hyperlink{classJKBuilder_1_1AOBasisSet}{AOBasisSet} $\ast$basis)
+\begin{DoxyCompactList}\small\item\em Give an AO basis set, generates the appropriate transformation \hyperlink{classJKBuilder_1_1matrix}{matrix} to go from the CG to SG basis. \item\end{DoxyCompactList}\item 
+void \hyperlink{classJKBuilder_1_1matrix_af2563817f6505e9f8a6ee5c5c209a115}{T} ()
+\begin{DoxyCompactList}\small\item\em Transposes a \hyperlink{classJKBuilder_1_1matrix}{matrix} by flipping the flag (don't forget to un-\/transpose it). \item\end{DoxyCompactList}\item 
+const double \& \hyperlink{classJKBuilder_1_1matrix_a9ccbac42f4eefb704f04886001f4fb3e}{operator()} (const int i, const int j) const 
+\begin{DoxyCompactList}\small\item\em Returns a non-\/editable element (i,j). \item\end{DoxyCompactList}\item 
+double \& \hyperlink{classJKBuilder_1_1matrix_a3d7fca183ff1c9f4c160218746f2ef31}{operator()} (const int i, const int j)
+\begin{DoxyCompactList}\small\item\em Returns an editable element (i,j). \item\end{DoxyCompactList}\item 
+\hyperlink{classJKBuilder_1_1matrix}{matrix} \& \hyperlink{classJKBuilder_1_1matrix_ad4799cbe4a5d07c77f41857a3ce914a2}{operator$\ast$} (const double alpha)
+\begin{DoxyCompactList}\small\item\em Scales a \hyperlink{classJKBuilder_1_1matrix}{matrix} by alpha. \item\end{DoxyCompactList}\item 
+void \hyperlink{classJKBuilder_1_1tensor_a0ca5cbe96d2a61f06ae4b543ef84f166}{Alloc} ()
+\item 
+bool \hyperlink{classJKBuilder_1_1tensor_a79c9a36acc5dbeab94033ca97971dc09}{IsSet} () const 
+\begin{DoxyCompactList}\small\item\em Returns true if this \hyperlink{classJKBuilder_1_1tensor}{tensor} is allocated and DimsGood==true (roughly the equiv to asking if this is NULL). \item\end{DoxyCompactList}\item 
+virtual void \hyperlink{classJKBuilder_1_1tensor_a98b1050f09da390896f964fb7a892391}{Initialize} ()
+\begin{DoxyCompactList}\small\item\em Sets all elements to zero in the \hyperlink{classJKBuilder_1_1tensor}{tensor}, which obviously overwrites the contents. \item\end{DoxyCompactList}\item 
+virtual void \hyperlink{classJKBuilder_1_1tensor_a10ffea2bf428adfa3e8319646c44a3c6}{Update} (const double $\ast$Tensor)
+\begin{DoxyCompactList}\small\item\em Updates DaTensor so that it is the same as Tensor. \item\end{DoxyCompactList}\item 
+int \hyperlink{classJKBuilder_1_1tensor_a537b2f14296e2f0e62f00e1703c5fa08}{TotalElements} ()
+\item 
+int \hyperlink{classJKBuilder_1_1tensor_a6bdcfca6493bc217b607317dbceb28b2}{DimI} (const int i) const 
+\begin{DoxyCompactList}\small\item\em Returns dimension i (counting from 0). \item\end{DoxyCompactList}\item 
+void \hyperlink{classJKBuilder_1_1tensor_ace6bcf62c74395ab9e37abc4935f66e0}{SetDimensions} (const int $\ast$DesiredDimensions)
+\begin{DoxyCompactList}\small\item\em Copies the dimensions you want (DesiredDimensions), into the \hyperlink{classJKBuilder_1_1tensor_a2ce1e6e0782ddee097f2c4aa2663d3e9}{tensor::dimensions}. Overwrites the contents. \item\end{DoxyCompactList}\item 
+virtual void \hyperlink{classJKBuilder_1_1tensor_a388f572c62279f839ee138a9afbdeeb5}{print} ()
+\begin{DoxyCompactList}\small\item\em Debugging function that prints the \hyperlink{classJKBuilder_1_1tensor}{tensor} (current model not appropriate for a distributed \hyperlink{classJKBuilder_1_1tensor}{tensor}) to the \hyperlink{classJKBuilder_1_1printer}{printer}. \item\end{DoxyCompactList}\item 
+virtual void \hyperlink{classJKBuilder_1_1tensor_a74b2fe351a5444c1325870dc6162f451}{print} (\hyperlink{classJKBuilder_1_1IOManager}{IOManager} \&output)
+\begin{DoxyCompactList}\small\item\em Allows the user to select the destination of the printed \hyperlink{classJKBuilder_1_1tensor}{tensor}. \item\end{DoxyCompactList}\item 
+const double \& \hyperlink{classJKBuilder_1_1tensor_a4f0dc1b84b580cec49500c70f87e084a}{operator\mbox{[}$\,$\mbox{]}} (const int i) const 
+\begin{DoxyCompactList}\small\item\em Returns a non-\/modifiable element i of the \hyperlink{classJKBuilder_1_1tensor}{tensor}. \item\end{DoxyCompactList}\item 
+double \& \hyperlink{classJKBuilder_1_1tensor_a38c9fed6b117f7cf8b76785648d76b62}{operator\mbox{[}$\,$\mbox{]}} (const int i)
+\begin{DoxyCompactList}\small\item\em Returns a modifiable element i of the \hyperlink{classJKBuilder_1_1tensor}{tensor}. \item\end{DoxyCompactList}\item 
+bool \hyperlink{classJKBuilder_1_1tensor_a10ae0b61e655854d12c6465d2b9e3506}{operator==} (const \hyperlink{classJKBuilder_1_1tensor}{tensor} \&other)
+\begin{DoxyCompactList}\small\item\em Returns true iff this \hyperlink{classJKBuilder_1_1tensor}{tensor} is equal to the other one. \item\end{DoxyCompactList}\item 
+bool \hyperlink{classJKBuilder_1_1tensor_a9b42dd835ddf2eb1a26b5d525b59b2b8}{operator!=} (const \hyperlink{classJKBuilder_1_1tensor}{tensor} \&other)
+\begin{DoxyCompactList}\small\item\em Returns the opposite of operator==. \item\end{DoxyCompactList}\item 
+const double $\ast$ \hyperlink{classJKBuilder_1_1tensor_a6a4e024f566d3bf9ba32a349afc5bbcf}{Address} () const 
+\begin{DoxyCompactList}\small\item\em Returns the starting address of the actual data so that pointers can just be passed. \item\end{DoxyCompactList}\item 
+double $\ast$ \hyperlink{classJKBuilder_1_1tensor_ac982d9eb84092bfc13694448dd824cbc}{Address} ()
+\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+bool \hyperlink{classJKBuilder_1_1tensor_a6e72344440b411f433eb50171648c2d0}{DimsGood} () const 
+\begin{DoxyCompactList}\small\item\em Returns true if the dimensions appear set (dimensions!=NULL \&\& dimensions\mbox{[}i\mbox{]}$>$0 for all i). \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+bool \hyperlink{classJKBuilder_1_1matrix_a77fa48e57c519482de2ec7ec182b16ef}{IsTransposed}
+\begin{DoxyCompactList}\small\item\em A flag that tells us if our \hyperlink{classJKBuilder_1_1matrix}{matrix} is transposed. \item\end{DoxyCompactList}\item 
+int \hyperlink{classJKBuilder_1_1tensor_a6cfd95afd0afebd625b889fb6e58371c}{rank}
+\begin{DoxyCompactList}\small\item\em This is the rank of the \hyperlink{classJKBuilder_1_1tensor}{tensor}. \item\end{DoxyCompactList}\item 
+double $\ast$ \hyperlink{classJKBuilder_1_1tensor_a91f7b1e58c0e5d1a49ddb8b80ab7790e}{DaTensor}
+\begin{DoxyCompactList}\small\item\em Realistically we are going to want to use this for doubles, so I am not declaring this a template. \item\end{DoxyCompactList}\item 
+int \hyperlink{classJKBuilder_1_1tensor_a23ae6a00bed19d2ad34d439636e797da}{nelements}
+\begin{DoxyCompactList}\small\item\em This is the total number of elements in the \hyperlink{classJKBuilder_1_1tensor}{tensor}. \item\end{DoxyCompactList}\item 
+int $\ast$ \hyperlink{classJKBuilder_1_1tensor_a2ce1e6e0782ddee097f2c4aa2663d3e9}{dimensions}
+\begin{DoxyCompactList}\small\item\em This is the array of \hyperlink{classJKBuilder_1_1tensor}{tensor} dimensions (row,column). \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+double \hyperlink{classJKBuilder_1_1CG2SG_a755586288e38b18e91f6e2437f979789}{GetC} (int L, int M, int Lx, int Ly, int Lz)
+\begin{DoxyCompactList}\small\item\em Returns the appropriate coefficient. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+This class handles the transformation from Cartesian Gaussians to Spherical Gaussians. Note: That I use the abbreviations CG=Cartesian Gaussian and SG=Spherical Gaussian regularly throughout this class. 
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{classJKBuilder_1_1CG2SG_a3dd17ea7b07cd7d20b0c21010b56eb04}{
+\index{JKBuilder::CG2SG@{JKBuilder::CG2SG}!CG2SG@{CG2SG}}
+\index{CG2SG@{CG2SG}!JKBuilder::CG2SG@{JKBuilder::CG2SG}}
+\subsubsection[{CG2SG}]{\setlength{\rightskip}{0pt plus 5cm}{\bf CG2SG} ({\bf AOBasisSet} $\ast$ {\em basis})}}
+\label{classJKBuilder_1_1CG2SG_a3dd17ea7b07cd7d20b0c21010b56eb04}
+
+
+Give an AO basis set, generates the appropriate transformation \hyperlink{classJKBuilder_1_1matrix}{matrix} to go from the CG to SG basis. 
+
+\subsection{Member Function Documentation}
+\hypertarget{classJKBuilder_1_1CG2SG_a755586288e38b18e91f6e2437f979789}{
+\index{JKBuilder::CG2SG@{JKBuilder::CG2SG}!GetC@{GetC}}
+\index{GetC@{GetC}!JKBuilder::CG2SG@{JKBuilder::CG2SG}}
+\subsubsection[{GetC}]{\setlength{\rightskip}{0pt plus 5cm}double GetC (int {\em L}, \/  int {\em M}, \/  int {\em Lx}, \/  int {\em Ly}, \/  int {\em Lz})\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}
+\label{classJKBuilder_1_1CG2SG_a755586288e38b18e91f6e2437f979789}
+
+
+Returns the appropriate coefficient. This returns the real component, not the complex. I use the convention that +M returns the positive linear combination and -\/M returns the negative combination
+
+
+\begin{DoxyParams}{Parameters}
+\item[\mbox{$\leftarrow$} {\em L}]The total Angular momentum \item[\mbox{$\leftarrow$} {\em M}]The projection of the Angular momentum \item[\mbox{$\leftarrow$} {\em Lx}]The x component of L \item[\mbox{$\leftarrow$} {\em Ly}]The y component of L \item[\mbox{$\leftarrow$} {\em Lz}]The z component of L \end{DoxyParams}
+\hypertarget{classJKBuilder_1_1matrix_af2563817f6505e9f8a6ee5c5c209a115}{
+\index{JKBuilder::CG2SG@{JKBuilder::CG2SG}!T@{T}}
+\index{T@{T}!JKBuilder::CG2SG@{JKBuilder::CG2SG}}
+\subsubsection[{T}]{\setlength{\rightskip}{0pt plus 5cm}void T ()\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1matrix_af2563817f6505e9f8a6ee5c5c209a115}
+
+
+Transposes a \hyperlink{classJKBuilder_1_1matrix}{matrix} by flipping the flag (don't forget to un-\/transpose it). \hypertarget{classJKBuilder_1_1matrix_a9ccbac42f4eefb704f04886001f4fb3e}{
+\index{JKBuilder::CG2SG@{JKBuilder::CG2SG}!operator()@{operator()}}
+\index{operator()@{operator()}!JKBuilder::CG2SG@{JKBuilder::CG2SG}}
+\subsubsection[{operator()}]{\setlength{\rightskip}{0pt plus 5cm}const double \& operator() (const int {\em i}, \/  const int {\em j}) const\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1matrix_a9ccbac42f4eefb704f04886001f4fb3e}
+
+
+Returns a non-\/editable element (i,j). 
+
+Reimplemented in \hyperlink{classJKBuilder_1_1SymmMatrix_a9ccbac42f4eefb704f04886001f4fb3e}{SymmMatrix}.\hypertarget{classJKBuilder_1_1matrix_a3d7fca183ff1c9f4c160218746f2ef31}{
+\index{JKBuilder::CG2SG@{JKBuilder::CG2SG}!operator()@{operator()}}
+\index{operator()@{operator()}!JKBuilder::CG2SG@{JKBuilder::CG2SG}}
+\subsubsection[{operator()}]{\setlength{\rightskip}{0pt plus 5cm}double \& operator() (const int {\em i}, \/  const int {\em j})\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1matrix_a3d7fca183ff1c9f4c160218746f2ef31}
+
+
+Returns an editable element (i,j). 
+
+Reimplemented in \hyperlink{classJKBuilder_1_1SymmMatrix_a3d7fca183ff1c9f4c160218746f2ef31}{SymmMatrix}.\hypertarget{classJKBuilder_1_1matrix_ad4799cbe4a5d07c77f41857a3ce914a2}{
+\index{JKBuilder::CG2SG@{JKBuilder::CG2SG}!operator$\ast$@{operator$\ast$}}
+\index{operator$\ast$@{operator$\ast$}!JKBuilder::CG2SG@{JKBuilder::CG2SG}}
+\subsubsection[{operator$\ast$}]{\setlength{\rightskip}{0pt plus 5cm}{\bf matrix} \& operator$\ast$ (const double {\em alpha})\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1matrix_ad4799cbe4a5d07c77f41857a3ce914a2}
+
+
+Scales a \hyperlink{classJKBuilder_1_1matrix}{matrix} by alpha. \hypertarget{classJKBuilder_1_1tensor_a6e72344440b411f433eb50171648c2d0}{
+\index{JKBuilder::CG2SG@{JKBuilder::CG2SG}!DimsGood@{DimsGood}}
+\index{DimsGood@{DimsGood}!JKBuilder::CG2SG@{JKBuilder::CG2SG}}
+\subsubsection[{DimsGood}]{\setlength{\rightskip}{0pt plus 5cm}bool DimsGood () const\hspace{0.3cm}{\ttfamily  \mbox{[}protected, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1tensor_a6e72344440b411f433eb50171648c2d0}
+
+
+Returns true if the dimensions appear set (dimensions!=NULL \&\& dimensions\mbox{[}i\mbox{]}$>$0 for all i). \hypertarget{classJKBuilder_1_1tensor_a0ca5cbe96d2a61f06ae4b543ef84f166}{
+\index{JKBuilder::CG2SG@{JKBuilder::CG2SG}!Alloc@{Alloc}}
+\index{Alloc@{Alloc}!JKBuilder::CG2SG@{JKBuilder::CG2SG}}
+\subsubsection[{Alloc}]{\setlength{\rightskip}{0pt plus 5cm}void Alloc ()\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1tensor_a0ca5cbe96d2a61f06ae4b543ef84f166}
+The following function can never be virtual because base operations of the Tensor depend on them The actual memory allocation call, if DaTensor==NULL allocates the memory \hypertarget{classJKBuilder_1_1tensor_a79c9a36acc5dbeab94033ca97971dc09}{
+\index{JKBuilder::CG2SG@{JKBuilder::CG2SG}!IsSet@{IsSet}}
+\index{IsSet@{IsSet}!JKBuilder::CG2SG@{JKBuilder::CG2SG}}
+\subsubsection[{IsSet}]{\setlength{\rightskip}{0pt plus 5cm}bool IsSet () const\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1tensor_a79c9a36acc5dbeab94033ca97971dc09}
+
+
+Returns true if this \hyperlink{classJKBuilder_1_1tensor}{tensor} is allocated and DimsGood==true (roughly the equiv to asking if this is NULL). \hypertarget{classJKBuilder_1_1tensor_a98b1050f09da390896f964fb7a892391}{
+\index{JKBuilder::CG2SG@{JKBuilder::CG2SG}!Initialize@{Initialize}}
+\index{Initialize@{Initialize}!JKBuilder::CG2SG@{JKBuilder::CG2SG}}
+\subsubsection[{Initialize}]{\setlength{\rightskip}{0pt plus 5cm}void Initialize ()\hspace{0.3cm}{\ttfamily  \mbox{[}virtual, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1tensor_a98b1050f09da390896f964fb7a892391}
+
+
+Sets all elements to zero in the \hyperlink{classJKBuilder_1_1tensor}{tensor}, which obviously overwrites the contents. 
+
+Reimplemented in \hyperlink{classJKBuilder_1_1DistributedMatrix_a98b1050f09da390896f964fb7a892391}{DistributedMatrix}.\hypertarget{classJKBuilder_1_1tensor_a10ffea2bf428adfa3e8319646c44a3c6}{
+\index{JKBuilder::CG2SG@{JKBuilder::CG2SG}!Update@{Update}}
+\index{Update@{Update}!JKBuilder::CG2SG@{JKBuilder::CG2SG}}
+\subsubsection[{Update}]{\setlength{\rightskip}{0pt plus 5cm}void Update (const double $\ast$ {\em Tensor})\hspace{0.3cm}{\ttfamily  \mbox{[}virtual, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1tensor_a10ffea2bf428adfa3e8319646c44a3c6}
+
+
+Updates DaTensor so that it is the same as Tensor. Update always takes the full Tensor, not a block of it. It is child class's jobs to scatter the data if need be. 
+
+Reimplemented in \hyperlink{classJKBuilder_1_1DistributedMatrix_a6a378face23ba83b2431cb08e8519066}{DistributedMatrix}.\hypertarget{classJKBuilder_1_1tensor_a537b2f14296e2f0e62f00e1703c5fa08}{
+\index{JKBuilder::CG2SG@{JKBuilder::CG2SG}!TotalElements@{TotalElements}}
+\index{TotalElements@{TotalElements}!JKBuilder::CG2SG@{JKBuilder::CG2SG}}
+\subsubsection[{TotalElements}]{\setlength{\rightskip}{0pt plus 5cm}int TotalElements ()\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1tensor_a537b2f14296e2f0e62f00e1703c5fa08}
+\hypertarget{classJKBuilder_1_1tensor_a6bdcfca6493bc217b607317dbceb28b2}{
+\index{JKBuilder::CG2SG@{JKBuilder::CG2SG}!DimI@{DimI}}
+\index{DimI@{DimI}!JKBuilder::CG2SG@{JKBuilder::CG2SG}}
+\subsubsection[{DimI}]{\setlength{\rightskip}{0pt plus 5cm}int DimI (const int {\em i}) const\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1tensor_a6bdcfca6493bc217b607317dbceb28b2}
+
+
+Returns dimension i (counting from 0). \hypertarget{classJKBuilder_1_1tensor_ace6bcf62c74395ab9e37abc4935f66e0}{
+\index{JKBuilder::CG2SG@{JKBuilder::CG2SG}!SetDimensions@{SetDimensions}}
+\index{SetDimensions@{SetDimensions}!JKBuilder::CG2SG@{JKBuilder::CG2SG}}
+\subsubsection[{SetDimensions}]{\setlength{\rightskip}{0pt plus 5cm}void SetDimensions (const int $\ast$ {\em DesiredDimensions})\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1tensor_ace6bcf62c74395ab9e37abc4935f66e0}
+
+
+Copies the dimensions you want (DesiredDimensions), into the \hyperlink{classJKBuilder_1_1tensor_a2ce1e6e0782ddee097f2c4aa2663d3e9}{tensor::dimensions}. Overwrites the contents. \hypertarget{classJKBuilder_1_1tensor_a388f572c62279f839ee138a9afbdeeb5}{
+\index{JKBuilder::CG2SG@{JKBuilder::CG2SG}!print@{print}}
+\index{print@{print}!JKBuilder::CG2SG@{JKBuilder::CG2SG}}
+\subsubsection[{print}]{\setlength{\rightskip}{0pt plus 5cm}void print ()\hspace{0.3cm}{\ttfamily  \mbox{[}virtual, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1tensor_a388f572c62279f839ee138a9afbdeeb5}
+
+
+Debugging function that prints the \hyperlink{classJKBuilder_1_1tensor}{tensor} (current model not appropriate for a distributed \hyperlink{classJKBuilder_1_1tensor}{tensor}) to the \hyperlink{classJKBuilder_1_1printer}{printer}. 
+
+Reimplemented in \hyperlink{classJKBuilder_1_1DistributedMatrix_a388f572c62279f839ee138a9afbdeeb5}{DistributedMatrix}.\hypertarget{classJKBuilder_1_1tensor_a74b2fe351a5444c1325870dc6162f451}{
+\index{JKBuilder::CG2SG@{JKBuilder::CG2SG}!print@{print}}
+\index{print@{print}!JKBuilder::CG2SG@{JKBuilder::CG2SG}}
+\subsubsection[{print}]{\setlength{\rightskip}{0pt plus 5cm}void print ({\bf IOManager} \& {\em output})\hspace{0.3cm}{\ttfamily  \mbox{[}virtual, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1tensor_a74b2fe351a5444c1325870dc6162f451}
+
+
+Allows the user to select the destination of the printed \hyperlink{classJKBuilder_1_1tensor}{tensor}. 
+
+Reimplemented in \hyperlink{classJKBuilder_1_1DistributedMatrix_a74b2fe351a5444c1325870dc6162f451}{DistributedMatrix}.\hypertarget{classJKBuilder_1_1tensor_a4f0dc1b84b580cec49500c70f87e084a}{
+\index{JKBuilder::CG2SG@{JKBuilder::CG2SG}!operator\mbox{[}\mbox{]}@{operator[]}}
+\index{operator\mbox{[}\mbox{]}@{operator[]}!JKBuilder::CG2SG@{JKBuilder::CG2SG}}
+\subsubsection[{operator[]}]{\setlength{\rightskip}{0pt plus 5cm}const double \& operator\mbox{[}$\,$\mbox{]} (const int {\em i}) const\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1tensor_a4f0dc1b84b580cec49500c70f87e084a}
+
+
+Returns a non-\/modifiable element i of the \hyperlink{classJKBuilder_1_1tensor}{tensor}. \hypertarget{classJKBuilder_1_1tensor_a38c9fed6b117f7cf8b76785648d76b62}{
+\index{JKBuilder::CG2SG@{JKBuilder::CG2SG}!operator\mbox{[}\mbox{]}@{operator[]}}
+\index{operator\mbox{[}\mbox{]}@{operator[]}!JKBuilder::CG2SG@{JKBuilder::CG2SG}}
+\subsubsection[{operator[]}]{\setlength{\rightskip}{0pt plus 5cm}double \& operator\mbox{[}$\,$\mbox{]} (const int {\em i})\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1tensor_a38c9fed6b117f7cf8b76785648d76b62}
+
+
+Returns a modifiable element i of the \hyperlink{classJKBuilder_1_1tensor}{tensor}. \hypertarget{classJKBuilder_1_1tensor_a10ae0b61e655854d12c6465d2b9e3506}{
+\index{JKBuilder::CG2SG@{JKBuilder::CG2SG}!operator==@{operator==}}
+\index{operator==@{operator==}!JKBuilder::CG2SG@{JKBuilder::CG2SG}}
+\subsubsection[{operator==}]{\setlength{\rightskip}{0pt plus 5cm}bool operator== (const {\bf tensor} \& {\em other})\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1tensor_a10ae0b61e655854d12c6465d2b9e3506}
+
+
+Returns true iff this \hyperlink{classJKBuilder_1_1tensor}{tensor} is equal to the other one. \hypertarget{classJKBuilder_1_1tensor_a9b42dd835ddf2eb1a26b5d525b59b2b8}{
+\index{JKBuilder::CG2SG@{JKBuilder::CG2SG}!operator!=@{operator!=}}
+\index{operator!=@{operator!=}!JKBuilder::CG2SG@{JKBuilder::CG2SG}}
+\subsubsection[{operator!=}]{\setlength{\rightskip}{0pt plus 5cm}bool operator!= (const {\bf tensor} \& {\em other})\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1tensor_a9b42dd835ddf2eb1a26b5d525b59b2b8}
+
+
+Returns the opposite of operator==. \hypertarget{classJKBuilder_1_1tensor_a6a4e024f566d3bf9ba32a349afc5bbcf}{
+\index{JKBuilder::CG2SG@{JKBuilder::CG2SG}!Address@{Address}}
+\index{Address@{Address}!JKBuilder::CG2SG@{JKBuilder::CG2SG}}
+\subsubsection[{Address}]{\setlength{\rightskip}{0pt plus 5cm}const double $\ast$ Address () const\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1tensor_a6a4e024f566d3bf9ba32a349afc5bbcf}
+
+
+Returns the starting address of the actual data so that pointers can just be passed. \hypertarget{classJKBuilder_1_1tensor_ac982d9eb84092bfc13694448dd824cbc}{
+\index{JKBuilder::CG2SG@{JKBuilder::CG2SG}!Address@{Address}}
+\index{Address@{Address}!JKBuilder::CG2SG@{JKBuilder::CG2SG}}
+\subsubsection[{Address}]{\setlength{\rightskip}{0pt plus 5cm}double $\ast$ Address ()\hspace{0.3cm}{\ttfamily  \mbox{[}inherited\mbox{]}}}}
+\label{classJKBuilder_1_1tensor_ac982d9eb84092bfc13694448dd824cbc}
+
+
+\subsection{Member Data Documentation}
+\hypertarget{classJKBuilder_1_1matrix_a77fa48e57c519482de2ec7ec182b16ef}{
+\index{JKBuilder::CG2SG@{JKBuilder::CG2SG}!IsTransposed@{IsTransposed}}
+\index{IsTransposed@{IsTransposed}!JKBuilder::CG2SG@{JKBuilder::CG2SG}}
+\subsubsection[{IsTransposed}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf IsTransposed}\hspace{0.3cm}{\ttfamily  \mbox{[}protected, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1matrix_a77fa48e57c519482de2ec7ec182b16ef}
+
+
+A flag that tells us if our \hyperlink{classJKBuilder_1_1matrix}{matrix} is transposed. \hypertarget{classJKBuilder_1_1tensor_a6cfd95afd0afebd625b889fb6e58371c}{
+\index{JKBuilder::CG2SG@{JKBuilder::CG2SG}!rank@{rank}}
+\index{rank@{rank}!JKBuilder::CG2SG@{JKBuilder::CG2SG}}
+\subsubsection[{rank}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf rank}\hspace{0.3cm}{\ttfamily  \mbox{[}protected, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1tensor_a6cfd95afd0afebd625b889fb6e58371c}
+
+
+This is the rank of the \hyperlink{classJKBuilder_1_1tensor}{tensor}. \hypertarget{classJKBuilder_1_1tensor_a91f7b1e58c0e5d1a49ddb8b80ab7790e}{
+\index{JKBuilder::CG2SG@{JKBuilder::CG2SG}!DaTensor@{DaTensor}}
+\index{DaTensor@{DaTensor}!JKBuilder::CG2SG@{JKBuilder::CG2SG}}
+\subsubsection[{DaTensor}]{\setlength{\rightskip}{0pt plus 5cm}double$\ast$ {\bf DaTensor}\hspace{0.3cm}{\ttfamily  \mbox{[}protected, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1tensor_a91f7b1e58c0e5d1a49ddb8b80ab7790e}
+
+
+Realistically we are going to want to use this for doubles, so I am not declaring this a template. \hypertarget{classJKBuilder_1_1tensor_a23ae6a00bed19d2ad34d439636e797da}{
+\index{JKBuilder::CG2SG@{JKBuilder::CG2SG}!nelements@{nelements}}
+\index{nelements@{nelements}!JKBuilder::CG2SG@{JKBuilder::CG2SG}}
+\subsubsection[{nelements}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf nelements}\hspace{0.3cm}{\ttfamily  \mbox{[}protected, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1tensor_a23ae6a00bed19d2ad34d439636e797da}
+
+
+This is the total number of elements in the \hyperlink{classJKBuilder_1_1tensor}{tensor}. \hypertarget{classJKBuilder_1_1tensor_a2ce1e6e0782ddee097f2c4aa2663d3e9}{
+\index{JKBuilder::CG2SG@{JKBuilder::CG2SG}!dimensions@{dimensions}}
+\index{dimensions@{dimensions}!JKBuilder::CG2SG@{JKBuilder::CG2SG}}
+\subsubsection[{dimensions}]{\setlength{\rightskip}{0pt plus 5cm}int$\ast$ {\bf dimensions}\hspace{0.3cm}{\ttfamily  \mbox{[}protected, inherited\mbox{]}}}}
+\label{classJKBuilder_1_1tensor_a2ce1e6e0782ddee097f2c4aa2663d3e9}
+
+
+This is the array of \hyperlink{classJKBuilder_1_1tensor}{tensor} dimensions (row,column). These dimensions are for the whole object, not blocks of it or anything else like that. What this means is that for say a 12 by 12 \hyperlink{classJKBuilder_1_1matrix}{matrix} distributed in 6 by 6 blocks these values are 12, not 6. 
+
+The documentation for this class was generated from the following files:\begin{DoxyCompactItemize}
+\item 
+src/\hyperlink{CG2SG_8h}{CG2SG.h}\item 
+src/\hyperlink{CG2SG_8cpp}{CG2SG.cpp}\end{DoxyCompactItemize}

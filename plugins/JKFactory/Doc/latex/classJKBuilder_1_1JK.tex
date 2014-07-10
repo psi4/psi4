@@ -1,0 +1,168 @@
+\hypertarget{classJKBuilder_1_1JK}{
+\section{JK Class Reference}
+\label{classJKBuilder_1_1JK}\index{JKBuilder::JK@{JKBuilder::JK}}
+}
+
+
+The main API to the \hyperlink{classJKBuilder_1_1JK}{JK} Builder Library.  
+
+
+{\ttfamily \#include $<$JK.h$>$}Inheritance diagram for JK::\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2cm]{classJKBuilder_1_1JK}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{classJKBuilder_1_1JK_ac0b62715458b98f8426017fdd8864670}{UpdateDensity} (const double $\ast$DensityMatrix)
+\item 
+double $\ast$ \hyperlink{classJKBuilder_1_1JK_ada0787d51feb1496d4aa3a786f870f88}{J\_\-Address} ()
+\item 
+double $\ast$ \hyperlink{classJKBuilder_1_1JK_a198d3c4da107eb0d9cfafa795f8d635b}{K\_\-Address} ()
+\item 
+double $\ast$ \hyperlink{classJKBuilder_1_1JK_a5104eb472d984f59df6ca3b91c625209}{Rho} ()
+\item 
+\hyperlink{classJKBuilder_1_1JK_ab667fd0f6ae1fdbf02a7aed8eb4cd4a8}{JK} ()
+\item 
+\hyperlink{classJKBuilder_1_1JK_a80533e1759361da2e871e53ba64161af}{$\sim$JK} ()
+\begin{DoxyCompactList}\small\item\em Frees memory. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{classJKBuilder_1_1JK_a13b685265e196c183897777ec2f3136a}{SetUp} (\hyperlink{classJKBuilder_1_1AOBasisSet}{AOBasisSet} $\ast$\hyperlink{classJKBuilder_1_1JK_a81392b84b45d3cf84c5c105e9fd5d09c}{basis}, \hyperlink{classJKBuilder_1_1molecule__class}{molecule\_\-class} $\ast$\hyperlink{classJKBuilder_1_1JK_ad646bdee4fc9f601f954b4a98c4da476}{molecule}, const double $\ast$DensityMatrix, double $\ast$\hyperlink{classJKBuilder_1_1JK_aa04a91cc219b5dabfce19d5316f96887}{J}, double $\ast$\hyperlink{classJKBuilder_1_1JK_a5160b673d25f0110d98097f8e7364315}{K})
+\begin{DoxyCompactList}\small\item\em Sets up a bare-\/bones, distributed, \hyperlink{classJKBuilder_1_1JK}{JK} object in the DesiredBasis, on the desired molecule. \item\end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+bool \hyperlink{classJKBuilder_1_1JK_a072479da68be17a25570325316eade23}{Distributed}
+\begin{DoxyCompactList}\small\item\em Are we calling the distributed \hyperlink{classJKBuilder_1_1JK}{JK} Builder, then true. False if we want the shared memory version. \item\end{DoxyCompactList}\item 
+bool \hyperlink{classJKBuilder_1_1JK_a6324fcb7d27b80663a26f90a35f2e9b9}{Disk}
+\begin{DoxyCompactList}\small\item\em Are we storing stuff on disk (true) or in memory (false). \item\end{DoxyCompactList}\item 
+\hyperlink{classJKBuilder_1_1JKFactory}{JKFactory} $\ast$ \hyperlink{classJKBuilder_1_1JK_a09e4ffeb9ba2c95bf981da66beecc033}{SweatShop}
+\begin{DoxyCompactList}\small\item\em Handles all the building of J and K objects. \item\end{DoxyCompactList}\item 
+\hyperlink{classJKBuilder_1_1molecule__class}{molecule\_\-class} $\ast$ \hyperlink{classJKBuilder_1_1JK_ad646bdee4fc9f601f954b4a98c4da476}{molecule}
+\item 
+std::vector$<$ \hyperlink{namespaceJKBuilder_aef21bc37b7cf7bc5ebb5a48628db8d0f}{SharedSymJKMatrix} $>$ \hyperlink{classJKBuilder_1_1JK_aa04a91cc219b5dabfce19d5316f96887}{J}
+\begin{DoxyCompactList}\small\item\em The J \hyperlink{classJKBuilder_1_1matrix}{matrix}. \item\end{DoxyCompactList}\item 
+std::vector$<$ \hyperlink{namespaceJKBuilder_aef21bc37b7cf7bc5ebb5a48628db8d0f}{SharedSymJKMatrix} $>$ \hyperlink{classJKBuilder_1_1JK_a5160b673d25f0110d98097f8e7364315}{K}
+\begin{DoxyCompactList}\small\item\em The K \hyperlink{classJKBuilder_1_1matrix}{matrix}. \item\end{DoxyCompactList}\item 
+\hyperlink{classJKBuilder_1_1AOBasisSet}{AOBasisSet} $\ast$ \hyperlink{classJKBuilder_1_1JK_a81392b84b45d3cf84c5c105e9fd5d09c}{basis}
+\item 
+\hyperlink{classJKBuilder_1_1Integrals}{Integrals} \hyperlink{classJKBuilder_1_1JK_ad95ede2076c192d856848b3635efc38e}{DaInts}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+The main API to the \hyperlink{classJKBuilder_1_1JK}{JK} Builder Library. The idea of the \hyperlink{classJKBuilder_1_1JK}{JK} Builder Library is to provide a nice, clean, easy to use way to build J and K matrices using distributed or shared architectures. This is to some extent the class that handles it (I say some extent because it is advisable and probably really good practice to derive from this class a child class that turns your objects into the input for my class, see Psi4JK for an example that turns Psi4's objects into my objects). If you are interfacing with my class your goal should be to call the SetUp function with the appropriate objects, which are the basis set, the molecule, the density \hyperlink{classJKBuilder_1_1matrix}{matrix}, the J \hyperlink{classJKBuilder_1_1matrix}{matrix}, and the K \hyperlink{classJKBuilder_1_1matrix}{matrix} (the last three are double stars for maximum compatibility) 
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{classJKBuilder_1_1JK_ab667fd0f6ae1fdbf02a7aed8eb4cd4a8}{
+\index{JKBuilder::JK@{JKBuilder::JK}!JK@{JK}}
+\index{JK@{JK}!JKBuilder::JK@{JKBuilder::JK}}
+\subsubsection[{JK}]{\setlength{\rightskip}{0pt plus 5cm}{\bf JK} ()}}
+\label{classJKBuilder_1_1JK_ab667fd0f6ae1fdbf02a7aed8eb4cd4a8}
+\hypertarget{classJKBuilder_1_1JK_a80533e1759361da2e871e53ba64161af}{
+\index{JKBuilder::JK@{JKBuilder::JK}!$\sim$JK@{$\sim$JK}}
+\index{$\sim$JK@{$\sim$JK}!JKBuilder::JK@{JKBuilder::JK}}
+\subsubsection[{$\sim$JK}]{\setlength{\rightskip}{0pt plus 5cm}$\sim${\bf JK} ()}}
+\label{classJKBuilder_1_1JK_a80533e1759361da2e871e53ba64161af}
+
+
+Frees memory. 
+
+\subsection{Member Function Documentation}
+\hypertarget{classJKBuilder_1_1JK_a13b685265e196c183897777ec2f3136a}{
+\index{JKBuilder::JK@{JKBuilder::JK}!SetUp@{SetUp}}
+\index{SetUp@{SetUp}!JKBuilder::JK@{JKBuilder::JK}}
+\subsubsection[{SetUp}]{\setlength{\rightskip}{0pt plus 5cm}void SetUp ({\bf AOBasisSet} $\ast$ {\em basis}, \/  {\bf molecule\_\-class} $\ast$ {\em molecule}, \/  const double $\ast$ {\em DensityMatrix}, \/  double $\ast$ {\em J}, \/  double $\ast$ {\em K})\hspace{0.3cm}{\ttfamily  \mbox{[}protected\mbox{]}}}}
+\label{classJKBuilder_1_1JK_a13b685265e196c183897777ec2f3136a}
+
+
+Sets up a bare-\/bones, distributed, \hyperlink{classJKBuilder_1_1JK}{JK} object in the DesiredBasis, on the desired molecule. The \hyperlink{classJKBuilder_1_1JK}{JK} object minimally needs three things: a basis, a molecule, and density \hyperlink{classJKBuilder_1_1matrix}{matrix}. The Carts array should be in \char`\"{}messy\char`\"{} form, which is:\par
+ $<$atomic number$>$=\char`\"{}\char`\"{}$>$ $<$x-\/coordinate$>$ $<$y-\/coordinate$>$ $<$z-\/coordinate$>$\par
+ this way we do not have to pass the identities in separately. Also note the atomic numbers will be mapped to integers via an int cast. To be on the safe side you may want to use numbers slightly bigger then the desired value, e.g. 6.01 for carbon; however simply setting it to 6.000000000000....should be OK as well. Also note that \hyperlink{classJKBuilder_1_1JK}{JK} objects can only be used for one molecule and basis set at a time.
+
+
+\begin{DoxyParams}{Parameters}
+\item[\mbox{$\leftarrow$} {\em basis}]The basis set object for the class \item[\mbox{$\leftarrow$} {\em molecule}]The molecule object \item[\mbox{$\leftarrow$} {\em DensityMatrix}]the density \hyperlink{classJKBuilder_1_1matrix}{matrix} \end{DoxyParams}
+\hypertarget{classJKBuilder_1_1JK_ac0b62715458b98f8426017fdd8864670}{
+\index{JKBuilder::JK@{JKBuilder::JK}!UpdateDensity@{UpdateDensity}}
+\index{UpdateDensity@{UpdateDensity}!JKBuilder::JK@{JKBuilder::JK}}
+\subsubsection[{UpdateDensity}]{\setlength{\rightskip}{0pt plus 5cm}void UpdateDensity (const double $\ast$ {\em DensityMatrix})}}
+\label{classJKBuilder_1_1JK_ac0b62715458b98f8426017fdd8864670}
+\hypertarget{classJKBuilder_1_1JK_ada0787d51feb1496d4aa3a786f870f88}{
+\index{JKBuilder::JK@{JKBuilder::JK}!J\_\-Address@{J\_\-Address}}
+\index{J\_\-Address@{J\_\-Address}!JKBuilder::JK@{JKBuilder::JK}}
+\subsubsection[{J\_\-Address}]{\setlength{\rightskip}{0pt plus 5cm}double $\ast$ J\_\-Address ()}}
+\label{classJKBuilder_1_1JK_ada0787d51feb1496d4aa3a786f870f88}
+\hypertarget{classJKBuilder_1_1JK_a198d3c4da107eb0d9cfafa795f8d635b}{
+\index{JKBuilder::JK@{JKBuilder::JK}!K\_\-Address@{K\_\-Address}}
+\index{K\_\-Address@{K\_\-Address}!JKBuilder::JK@{JKBuilder::JK}}
+\subsubsection[{K\_\-Address}]{\setlength{\rightskip}{0pt plus 5cm}double $\ast$ K\_\-Address ()}}
+\label{classJKBuilder_1_1JK_a198d3c4da107eb0d9cfafa795f8d635b}
+\hypertarget{classJKBuilder_1_1JK_a5104eb472d984f59df6ca3b91c625209}{
+\index{JKBuilder::JK@{JKBuilder::JK}!Rho@{Rho}}
+\index{Rho@{Rho}!JKBuilder::JK@{JKBuilder::JK}}
+\subsubsection[{Rho}]{\setlength{\rightskip}{0pt plus 5cm}double$\ast$ Rho ()}}
+\label{classJKBuilder_1_1JK_a5104eb472d984f59df6ca3b91c625209}
+
+
+\subsection{Member Data Documentation}
+\hypertarget{classJKBuilder_1_1JK_a072479da68be17a25570325316eade23}{
+\index{JKBuilder::JK@{JKBuilder::JK}!Distributed@{Distributed}}
+\index{Distributed@{Distributed}!JKBuilder::JK@{JKBuilder::JK}}
+\subsubsection[{Distributed}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf Distributed}\hspace{0.3cm}{\ttfamily  \mbox{[}protected\mbox{]}}}}
+\label{classJKBuilder_1_1JK_a072479da68be17a25570325316eade23}
+
+
+Are we calling the distributed \hyperlink{classJKBuilder_1_1JK}{JK} Builder, then true. False if we want the shared memory version. \hypertarget{classJKBuilder_1_1JK_a6324fcb7d27b80663a26f90a35f2e9b9}{
+\index{JKBuilder::JK@{JKBuilder::JK}!Disk@{Disk}}
+\index{Disk@{Disk}!JKBuilder::JK@{JKBuilder::JK}}
+\subsubsection[{Disk}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf Disk}\hspace{0.3cm}{\ttfamily  \mbox{[}protected\mbox{]}}}}
+\label{classJKBuilder_1_1JK_a6324fcb7d27b80663a26f90a35f2e9b9}
+
+
+Are we storing stuff on disk (true) or in memory (false). \hypertarget{classJKBuilder_1_1JK_a09e4ffeb9ba2c95bf981da66beecc033}{
+\index{JKBuilder::JK@{JKBuilder::JK}!SweatShop@{SweatShop}}
+\index{SweatShop@{SweatShop}!JKBuilder::JK@{JKBuilder::JK}}
+\subsubsection[{SweatShop}]{\setlength{\rightskip}{0pt plus 5cm}{\bf JKFactory}$\ast$ {\bf SweatShop}\hspace{0.3cm}{\ttfamily  \mbox{[}protected\mbox{]}}}}
+\label{classJKBuilder_1_1JK_a09e4ffeb9ba2c95bf981da66beecc033}
+
+
+Handles all the building of J and K objects. Eventually this will be static so that we aren't rebuilding the integrals if we make several \hyperlink{classJKBuilder_1_1JK}{JK} objects \hypertarget{classJKBuilder_1_1JK_ad646bdee4fc9f601f954b4a98c4da476}{
+\index{JKBuilder::JK@{JKBuilder::JK}!molecule@{molecule}}
+\index{molecule@{molecule}!JKBuilder::JK@{JKBuilder::JK}}
+\subsubsection[{molecule}]{\setlength{\rightskip}{0pt plus 5cm}{\bf molecule\_\-class}$\ast$ {\bf molecule}\hspace{0.3cm}{\ttfamily  \mbox{[}protected\mbox{]}}}}
+\label{classJKBuilder_1_1JK_ad646bdee4fc9f601f954b4a98c4da476}
+\hypertarget{classJKBuilder_1_1JK_aa04a91cc219b5dabfce19d5316f96887}{
+\index{JKBuilder::JK@{JKBuilder::JK}!J@{J}}
+\index{J@{J}!JKBuilder::JK@{JKBuilder::JK}}
+\subsubsection[{J}]{\setlength{\rightskip}{0pt plus 5cm}std::vector$<${\bf SharedSymJKMatrix}$>$ {\bf J}\hspace{0.3cm}{\ttfamily  \mbox{[}protected\mbox{]}}}}
+\label{classJKBuilder_1_1JK_aa04a91cc219b5dabfce19d5316f96887}
+
+
+The J \hyperlink{classJKBuilder_1_1matrix}{matrix}. \hypertarget{classJKBuilder_1_1JK_a5160b673d25f0110d98097f8e7364315}{
+\index{JKBuilder::JK@{JKBuilder::JK}!K@{K}}
+\index{K@{K}!JKBuilder::JK@{JKBuilder::JK}}
+\subsubsection[{K}]{\setlength{\rightskip}{0pt plus 5cm}std::vector$<${\bf SharedSymJKMatrix}$>$ {\bf K}\hspace{0.3cm}{\ttfamily  \mbox{[}protected\mbox{]}}}}
+\label{classJKBuilder_1_1JK_a5160b673d25f0110d98097f8e7364315}
+
+
+The K \hyperlink{classJKBuilder_1_1matrix}{matrix}. \hypertarget{classJKBuilder_1_1JK_a81392b84b45d3cf84c5c105e9fd5d09c}{
+\index{JKBuilder::JK@{JKBuilder::JK}!basis@{basis}}
+\index{basis@{basis}!JKBuilder::JK@{JKBuilder::JK}}
+\subsubsection[{basis}]{\setlength{\rightskip}{0pt plus 5cm}{\bf AOBasisSet}$\ast$ {\bf basis}\hspace{0.3cm}{\ttfamily  \mbox{[}protected\mbox{]}}}}
+\label{classJKBuilder_1_1JK_a81392b84b45d3cf84c5c105e9fd5d09c}
+\hypertarget{classJKBuilder_1_1JK_ad95ede2076c192d856848b3635efc38e}{
+\index{JKBuilder::JK@{JKBuilder::JK}!DaInts@{DaInts}}
+\index{DaInts@{DaInts}!JKBuilder::JK@{JKBuilder::JK}}
+\subsubsection[{DaInts}]{\setlength{\rightskip}{0pt plus 5cm}{\bf Integrals} {\bf DaInts}\hspace{0.3cm}{\ttfamily  \mbox{[}protected\mbox{]}}}}
+\label{classJKBuilder_1_1JK_ad95ede2076c192d856848b3635efc38e}
+
+
+The documentation for this class was generated from the following files:\begin{DoxyCompactItemize}
+\item 
+src/\hyperlink{JK_8h}{JK.h}\item 
+src/\hyperlink{JK_8cpp}{JK.cpp}\end{DoxyCompactItemize}

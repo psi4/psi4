@@ -1,0 +1,17 @@
+#ifndef EAF_FORTRAN
+#define EAF_FORTRAN
+#endif
+#include "eaf.h"
+      integer eaf_write, eaf_awrite, eaf_read, eaf_aread
+      integer eaf_wait, eaf_probe, eaf_close, eaf_open
+      integer eaf_delete, eaf_stat, eaf_length, eaf_truncate
+      logical eaf_eof
+      integer eaf_util_szint
+      double precision eaf_util_random
+      external eaf_write, eaf_awrite, eaf_read, eaf_aread
+      external eaf_wait, eaf_probe, eaf_close, eaf_open
+      external eaf_delete, eaf_stat, eaf_length, eaf_truncate
+      external eaf_eof
+      external eaf_util_random,eaf_util_szint
+      integer eaf_rw, eaf_r, eaf_w
+      parameter (eaf_rw=EAF_RW, eaf_r=EAF_R, eaf_w=EAF_W)

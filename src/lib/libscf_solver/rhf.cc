@@ -43,6 +43,7 @@
 #include <libmints/basisset_parser.h>
 #include <libmints/mints.h>
 #include <libfock/jk.h>
+#include "libfock/Psi4JK.h"
 #include "libtrans/integraltransform.h"
 #include "libdpd/dpd.h"
 
@@ -127,23 +128,54 @@ void RHF::save_density_and_energy()
     Eold_ = E_;       // Save previous energy
 }
 
+void forPermutation(int depth, vector<int>& array,
+      vector<int>& indices,int curDepth,vector<vector<int> >& finalindex) {
+   int length=array.size();
+   if(curDepth == 0) {
+        finalindex.push_back(indices);
+        return;
+    }
+    for (int i = 0; i < length; i++) {
+       bool isgood=true;
+       for(int j=length-1;j>=curDepth&&isgood;j--){
+          if(indices[j]==array[i])isgood=false;
+       }
+       if(isgood){
+          indices[curDepth-1]= array[i];
+          forPermutation(depth, array,indices, curDepth - 1,finalindex);
+       }
+    }
+}
 void RHF::form_G()
 {
-    // Push the C matrix on
-    std::vector<SharedMatrix> & C = jk_->C_left();
-    C.clear();
-    C.push_back(Ca_subset("SO", "OCC"));
+    if(!JKFactory){
+       boost::shared_ptr<BasisSetParser>parser
+       (new Gaussian94BasisSetParser());
+       boost::shared_ptr<BasisSet> primary =
+        BasisSet::construct(parser,Process::environment.molecule(),"BASIS");
+       JKFactory=boost::shared_ptr<Psi4JK>(new Psi4JK(primary));
+    }
+    if(JKFactory->Shared()){
+       std::cout<<"Used shared memory"<<std::endl;
+       // Push the C matrix on
+       std::vector<SharedMatrix> & C = jk_->C_left();
+       C.clear();
+       C.push_back(Ca_subset("SO", "OCC"));
 
-    // Run the JK object
-    jk_->compute();
+       // Run the JK object
+       jk_->compute();
 
-    // Pull the J and K matrices off
-    const std::vector<SharedMatrix> & J = jk_->J();
-    const std::vector<SharedMatrix> & K = jk_->K();
-    J_ = J[0];
+       // Pull the J and K matrices off
+       const std::vector<SharedMatrix> & J = jk_->J();
+       const std::vector<SharedMatrix> & K = jk_->K();
+       J_ = J[0];
+       K_ = K[0];
+    }
+    else{
+       std::cout<<"Using Distributed"<<std::endl;
+       JKFactory->UpdateDensity(D_,J_,K_);
+    }
     J_->scale(2.0);
-    K_ = K[0];
-
     G_->copy(J_);
     G_->subtract(K_);
 }
@@ -184,8 +216,14 @@ bool RHF::test_convergency()
     double ediff = E_ - Eold_;
 
     // Drms was computed earlier
-    if (fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_)
-        return true;
+    if (fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_){
+       //Need to shut-down JKFactory before worldcomm goes out of scope
+       //because destructor calls MPI.  May as well do it now
+       if(JKFactory){
+          JKFactory.reset();
+       }
+       return true;
+    }
     else
         return false;
 }
