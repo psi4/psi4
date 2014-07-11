@@ -145,9 +145,6 @@ def run_dfomp2(name, **kwargs):
     molecule.reset_point_group(user_pg)
     molecule.update_geometry()
 
-    # restore options
-    optstash.restore()
-
     return psi4.get_variable("CURRENT ENERGY")
 
 

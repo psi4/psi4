@@ -964,6 +964,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     (if set), or else by the name of the output file plus the name of
     the current molecule. -*/
     options.add_bool("MOLDEN_WRITE", false);
+    /*- If true, then repeat the specified guess procedure for the orbitals every time -
+    even during a geometry optimization. -*/
+    options.add_bool("GUESS_PERSIST", false);
 
     /*- Flag to print the molecular orbitals. -*/
     options.add_bool("PRINT_MOS", false);
@@ -2365,6 +2368,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("INTRAFRAG_STEP_LIMIT_MAX", 1.0);
       /*- Maximum step size in bohr or radian along an interfragment coordinate -*/
       options.add_double("INTERFRAG_STEP_LIMIT", 0.4);
+      /*- Reduce step size as necessary to ensure back-transformation of internal
+          coordinate step to cartesian coordinates. -*/
+      options.add_bool("ENSURE_BT_CONVERGENCE", false);
       /*= Do stupid, linear scaling of internal coordinates to step limit (not RS-RFO) -*/
       options.add_bool("SIMPLE_STEP_SCALING", false);
       /*- Set number of consecutive backward steps allowed in optimization -*/
