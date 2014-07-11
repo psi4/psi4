@@ -108,8 +108,8 @@ class MPICommunicator:public Parallel<MPICommunicator> {
        * \param[in] Comm The name of the communicator we want
        */
       boost::mpi::communicator GetComm(const std::string& CommName) const {
-         std::map<std::string, boost::mpi::communicator>DaCopy(Communicators);
-         return DaCopy[(CommName!="NONE" ? CommName : CurrentComm.back())];
+         return (const_cast<MPICommunicator*>(this))->
+               Communicators[(CommName!="NONE" ? CommName : CurrentComm.back())];
       }
 
       ///So that the base class can access the implementation

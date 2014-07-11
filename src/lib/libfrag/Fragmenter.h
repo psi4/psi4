@@ -10,6 +10,7 @@
 #include <vector>
 #include <boost/shared_ptr.hpp>
 #include "FragOptions.h"
+
 namespace psi{
 class Molecule;
 }

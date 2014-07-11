@@ -8,6 +8,7 @@
 #ifndef FRAGOPTIONS_H_
 #define FRAGOPTIONS_H_
 
+
 #include <string>
 namespace LibFrag{
 enum FragMethods {USER_DEFINED,BOND_BASED,DISTANCE_BASED};
@@ -15,6 +16,7 @@ enum EmbedMethods {NO_EMBED,POINT_CHARGE,ITR_POINT_CHARGE,DENSITY,
                    ITR_DENSITY};
 enum CapMethods {NO_CAPS,H_REPLACE,H_SHIFTED};
 enum BSSEMethods {NO_BSSE,FULL,MBCPN,VMFCN};
+
 
 class FragOptions{
 	private:
@@ -35,6 +37,7 @@ class FragOptions{
         void SetEMethod(const std::string& EMethodIn);
         void SetCMethod(const std::string& CMethodIn);
         void SetBMethod(const std::string& BMethodIn);
+
 
 		///Constructor
 		FragOptions(){DefaultOptions();}

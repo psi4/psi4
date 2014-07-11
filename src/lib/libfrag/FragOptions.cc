@@ -62,6 +62,7 @@ void FragOptions::SetBMethod(const std::string& BSSE){
    else if(BSSE=="VMFCN")BMethod=VMFCN;
 }
 
+
 void FragOptions::DefaultOptions(){
    FMethod=USER_DEFINED;
    EMethod=NO_EMBED;

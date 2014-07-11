@@ -19,10 +19,12 @@ class Set{
 		///Function computes the intersection of the two sets
 		void Intersection(const Set& other);
 		///Makes this set a copy of other
+
 		void Copy(const Set&other){
 		   this->Atoms=other.Atoms;
 		   this->Ghosts=other.Ghosts;
 		}
+
 	protected:
 		/* \brief List of atoms in this set
 		 *
@@ -30,11 +32,13 @@ class Set{
 		 * assumed to be in order (i.e. Atoms[i]<Atoms[j] \forall i<j)*/
 		std::vector<int> Atoms;
 	public:
+
         /**For BSSE purposes ghosts attached to this set, made it public for
 		calls like Set.Ghosts[i] to distinguish from Set[i], which gives
 		the real atom i*/
         std::vector<int> Ghosts;
 		void AddGhost(const int i){Ghosts.push_back(i);}
+
 		///Default constructor
 		Set(){}
 		///Copy constructor

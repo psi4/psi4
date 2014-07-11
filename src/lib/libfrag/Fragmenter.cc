@@ -25,7 +25,6 @@ void UDFragmenter::Fragment(SharedMol& AMol,NMerSet& Monomers){
 			boost::shared_ptr<Set> MonoI=Monomers[frags];
 			(*MonoI)<<index++;
 		}
-
 	}
 }
 }
