@@ -156,7 +156,6 @@ void RHF::form_G()
        JKFactory=boost::shared_ptr<Psi4JK>(new Psi4JK(primary));
     }
     if(JKFactory->Shared()){
-       std::cout<<"Used shared memory"<<std::endl;
        // Push the C matrix on
        std::vector<SharedMatrix> & C = jk_->C_left();
        C.clear();
@@ -172,7 +171,6 @@ void RHF::form_G()
        K_ = K[0];
     }
     else{
-       std::cout<<"Using Distributed"<<std::endl;
        JKFactory->UpdateDensity(D_,J_,K_);
     }
     J_->scale(2.0);

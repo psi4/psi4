@@ -26,12 +26,14 @@ import sys
 lfrag=psi4.LibFragHelper()
 
        
-def RunCalc(name,molecule,atoms,Egys,**kwargs):
+def RunCalc(name,molecule,atoms,ghosts,Egys,**kwargs):
     old_geom=molecule.save_string_xyz()
     temp_geom=old_geom.split('\n')
     new_geom=[]
     for i in range(0,len(atoms)):
         new_geom.append(temp_geom[atoms[i]+1])
+    for i in range(0,len(ghosts)):
+        new_geom.append('@'+temp_geom[ghosts[i]+1].lstrip(' '))
     fragstr='\n'.join(new_geom)
     frag=geometry(fragstr)
     activate(frag)
@@ -66,8 +68,9 @@ def BaseCall(name,molecule,size,Egys,i,**kwargs):
     [mystart,myend,remainder]=DoMPI(PMan,size)
     for x in range(mystart,myend):
         atoms=lfrag.GetNMerN(i,x)
+        ghosts=lfrag.GetGhostsNMerN(i,x)
         psi4.be_quiet()
-        RunCalc(name,molecule,atoms,Egys,**kwargs)
+        RunCalc(name,molecule,atoms,ghosts,Egys,**kwargs)
         psi4.reopen_outfile()
     PMan.all_gather(Egys,old_comm)
     offset=size-remainder
@@ -77,8 +80,9 @@ def BaseCall(name,molecule,size,Egys,i,**kwargs):
     for x in range(0,remainder):
         if PMan.me(old_comm)==x:
             atoms=lfrag.GetNMerN(i,offset+x)
+            ghosts=lfrag.GetGhostsNMerN(i,x)
             psi4.be_quiet()
-            RunCalc(name,molecule,atoms,Egys,**kwargs)
+            RunCalc(name,molecule,atoms,ghosts,Egys,**kwargs)
             psi4.reopen_outfile()
     PMan.sync(old_comm)
     for x in range(0,remainder):
@@ -93,9 +97,10 @@ def BaseCall(name,molecule,size,Egys,i,**kwargs):
     PMan.sync(old_comm)
     PMan.free_comm(PMan.current_comm)
 
-def fragment(name,molecule,frag_method,Egys,**kwargs):
+def fragment(name,molecule,bsse_method,frag_method,Egys,**kwargs):
     lcfrag_method=frag_method.lower()
-    lfrag.FragHelper(lcfrag_method)
+    lcbsse_method=bsse_method.lower()
+    lfrag.FragHelper(lcbsse_method,lcfrag_method)
     size=lfrag.GetNFrags()
     BaseCall(name,molecule,size,Egys,0,**kwargs)
     

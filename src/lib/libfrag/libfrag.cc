@@ -19,7 +19,7 @@
 #include "LibFragPrinter.h"
 #include "InputManip.h"
 #include "MBE.h"
-
+#include "BSSEer.h"
 
 typedef psi::Molecule Mol;
 typedef boost::shared_ptr<Mol> SharedMol;
@@ -28,34 +28,58 @@ typedef LibFrag::MBEFrag* pSet;
 typedef std::vector<pSet> FragSet;
 typedef std::string str;
 
-static bool ShowOut=false;
 namespace LibFrag{
 
+//Handy template for switching python things to c++ things
 template <typename T,typename S>
 void ToC(T& cvalue,S& pyvalue){
 	cvalue=boost::python::extract<T>(pyvalue);
 }
 
-boost::python::list LibFragHelper::GetNMerN(const int NMer,const int N){
-	boost::python::list DaList;
-	SharedFrag DaNMer=(Systems[NMer])[N];
-	for(int i=0;i<DaNMer->size();i++)DaList.append((*DaNMer)[i]);
-	return DaList;
+boost::python::list baseGetCall(const int NMer,const int N,std::vector<NMerSet>& Systems,
+      bool IsGhost){
+   boost::python::list DaList;
+   SharedFrag DaNMer=(Systems[NMer])[N];
+   if(!IsGhost){
+      for(int i=0;i<DaNMer->size();i++)DaList.append((*DaNMer)[i]);
+   }
+   else{
+      for(int i=0;i<DaNMer->Ghosts.size();i++)
+         DaList.append(DaNMer->Ghosts[i]);
+   }
+   return DaList;
 }
 
+boost::python::list LibFragHelper::GetNMerN(const int NMer,const int N){
+   return baseGetCall(NMer,N,Systems,false);
+}
 
+boost::python::list LibFragHelper::GetGhostNMerN(const int NMer,const int N){
+   return baseGetCall(NMer,N,Systems,true);
+}
 
-void LibFragHelper::Fragment_Helper(boost::python::str& FragMethod){
-	std::string name;
-	ToC(name,FragMethod);
+void LibFragHelper::Fragment_Helper(boost::python::str& BSSEMethod,
+      boost::python::str& FragMethod){
+	str fname,bname;
+	ToC(bname,BSSEMethod);
+	ToC(fname,FragMethod);
+	DaOptions.SetBMethod(bname);
+	DaOptions.SetFMethod(fname);
 	SharedMol AMol=psi::Process::environment.molecule();
 	Systems.push_back(NMerSet());
+
+	///Fragment the system
 	boost::shared_ptr<Fragmenter> FragFactory;
-	if(name=="user_defined"){
-	    DaOptions.FMethod=USER_DEFINED;
+	if(DaOptions.FMethod==USER_DEFINED)
 		FragFactory=boost::shared_ptr<Fragmenter>(new UDFragmenter);
-	}
 	FragFactory->Fragment(AMol,Systems[0]);
+
+	///Add in any BSSE corrections we may need
+	if(DaOptions.BMethod==FULL)
+	    BSSEFactory=boost::shared_ptr<BSSEer>(new FullBSSE(AMol->natom()));
+
+	if(DaOptions.BMethod!=NO_BSSE)BSSEFactory->AddBSSEJobs(Systems[0]);
+
 	//At this point need to figure out if the fragments intersect,
 	//assuming they don't for now
 	Expansion=boost::shared_ptr<GMBE>(new MBE);
@@ -83,10 +107,15 @@ double LibFragHelper::CalcEnergy(boost::python::list& Energies){
 }
 
 void LibFragHelper::NMer_Helper(const int N){
-	Expansion->SetN(N);
+	DaOptions.MBEOrder=N;
+    Expansion->SetN(N);
 	Expansion->MakeIntersections(Systems);
 	Systems.push_back(NMerSet());
 	Expansion->MakeNmers(Systems[0],Systems[Systems.size()-1]);
+	if(DaOptions.BMethod!=NO_BSSE){
+	   for(int order=1;order<Systems.size();order++)
+	   BSSEFactory->AddBSSEJobs(Systems[order]);
+	}
 }
 
 }

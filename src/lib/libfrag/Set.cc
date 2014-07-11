@@ -20,8 +20,12 @@ void SetCombine(SVec& ThisSet,const SVec& OtherSet,Operator opr){
 	ThisSet.resize(it-ThisSet.begin());//Shrink ThisSet down
 }
 
-void Set::Union(const Set&other){SetCombine(this->Atoms,other.Atoms,&std::set_union);}
-void Set::Intersection(const Set& other){SetCombine(this->Atoms,other.Atoms,&std::set_intersection);}
+void Set::Union(const Set&other){
+   SetCombine(this->Atoms,other.Atoms,&std::set_union);
+}
+void Set::Intersection(const Set& other){
+   SetCombine(this->Atoms,other.Atoms,&std::set_intersection);
+}
 
 
 }

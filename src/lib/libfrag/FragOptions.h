@@ -8,11 +8,13 @@
 #ifndef FRAGOPTIONS_H_
 #define FRAGOPTIONS_H_
 
+#include <string>
 namespace LibFrag{
 enum FragMethods {USER_DEFINED,BOND_BASED,DISTANCE_BASED};
-enum EmbedMethods {NO_EMBED,POINT_CHARGE,ITR_POINT_CHARGE,DENSITY};
-enum CapMethods {NO_CAPS,H_REPLACE,SHIFTED_H};
-enum BSSEMethods {NO_BSSE,FULL,MBCP,VMFC};
+enum EmbedMethods {NO_EMBED,POINT_CHARGE,ITR_POINT_CHARGE,DENSITY,
+                   ITR_DENSITY};
+enum CapMethods {NO_CAPS,H_REPLACE,H_SHIFTED};
+enum BSSEMethods {NO_BSSE,FULL,MBCPN,VMFCN};
 
 class FragOptions{
 	private:
@@ -27,6 +29,12 @@ class FragOptions{
         CapMethods CMethod;
         BSSEMethods BMethod;
         int MBEOrder;
+
+        ///Given a lowercase string, the following will set things up right
+        void SetFMethod(const std::string& FMethodIn);
+        void SetEMethod(const std::string& EMethodIn);
+        void SetCMethod(const std::string& CMethodIn);
+        void SetBMethod(const std::string& BMethodIn);
 
 		///Constructor
 		FragOptions(){DefaultOptions();}
