@@ -18,6 +18,7 @@ void export_libfrag(){
 	    .def("CapHelper",&LibFragHelper::Cap_Helper)
 	    .def("CalcEnergy",&LibFragHelper::CalcEnergy)
 	    .def("GetNNMers",&LibFragHelper::GetNNMers)
+	    .def("GetGhostsNMerN",&LibFragHelper::GetGhostNMerN)
 	    .def("GetNFrags",&LibFragHelper::GetNFrags)
 	    .def("GetNMerN",&LibFragHelper::GetNMerN);
 }

@@ -28,9 +28,39 @@ void FragOptions::copy(const FragOptions& other){
       this->FMethod=other.FMethod;
       this->EMethod=other.EMethod;
       this->CMethod=other.CMethod;
-      this->BSSEMethod=other.BMethod;
+      this->BMethod=other.BMethod;
 }
 
+void FragOptions::SetFMethod(const std::string& Frag){
+   if(Frag=="user_defined"||Frag=="ud"||Frag=="user")FMethod=USER_DEFINED;
+   else if(Frag=="bond_based"||Frag=="bond")FMethod=BOND_BASED;
+   else if(Frag=="distance_based"||Frag=="distance")FMethod=DISTANCE_BASED;
+}
+
+void FragOptions::SetEMethod(const std::string& Embed){
+   if(Embed=="none"||Embed=="no_embed"||Embed=="no"||Embed=="false")
+      EMethod=NO_EMBED;
+   else if(Embed=="point_charge"||Embed=="charges")EMethod=POINT_CHARGE;
+   else if(Embed=="iterative"||Embed=="iterative_point_charge")
+      EMethod=ITR_POINT_CHARGE;
+   else if(Embed=="density")EMethod=DENSITY;
+   else if(Embed=="itr_density"||Embed=="iterative_density")
+      EMethod=ITR_DENSITY;
+}
+
+void FragOptions::SetCMethod(const std::string& Cap){
+   if(Cap=="none"||Cap=="no_cap"||Cap=="no"||Cap=="false")CMethod=NO_CAPS;
+   else if(Cap=="h_replace")CMethod=H_REPLACE;
+   else if(Cap=="h_shifted")CMethod=H_SHIFTED;
+}
+
+void FragOptions::SetBMethod(const std::string& BSSE){
+   if(BSSE=="none"||BSSE=="false"||BSSE=="no_bsse"||BSSE=="no")
+      BMethod=NO_BSSE;
+   else if(BSSE=="full"||BSSE=="bettens")BMethod=FULL;
+   else if(BSSE=="MBCPN")BMethod=MBCPN;
+   else if(BSSE=="VMFCN")BMethod=VMFCN;
+}
 
 void FragOptions::DefaultOptions(){
    FMethod=USER_DEFINED;

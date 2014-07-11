@@ -9,6 +9,7 @@
 #define FRAGMENTER_H_
 #include <vector>
 #include <boost/shared_ptr.hpp>
+#include "FragOptions.h"
 namespace psi{
 class Molecule;
 }
@@ -18,6 +19,7 @@ namespace LibFrag{
 class MBEFrag;
 typedef boost::shared_ptr<MBEFrag> SharedFrag;
 typedef std::vector<SharedFrag> NMerSet;
+
 class Fragmenter{
 	public:
 		virtual void Fragment(SharedMol& Mol2Frag,NMerSet& Fragments)=0;
