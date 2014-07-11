@@ -1093,7 +1093,7 @@ void py_make_comm(const std::string& CommName,const int Color,const std::string&
 }
 
 void py_free_comm(const std::string& CommName){
-	//WorldComm->FreeComm(CommName);
+	WorldComm->FreeComm(CommName);
 }
 
 std::string py_get_comm(){

@@ -28,6 +28,7 @@ typedef LibFrag::MBEFrag* pSet;
 typedef std::vector<pSet> FragSet;
 typedef std::string str;
 
+
 namespace LibFrag{
 
 //Handy template for switching python things to c++ things

@@ -24,6 +24,7 @@ class MBEFrag: public Set{
 		int GetMBEOrder(){return MBEOrder;}
 		int ParentI(const int I){return Parents[I];}
 		void SetMBEOrder(const int N){MBEOrder=N;}
+
 		void SetParents(const int* Ps){
 		   for(int i=0;i<MBEOrder;i++)Parents.push_back(Ps[i]);
 		}

@@ -45,7 +45,7 @@ extern "C" {
         va_start(args, __format);
         int status = 0;
 
-        if ((WorldComm.get() != NULL) && (WorldComm->me() == 0)) {
+        if ((WorldComm.get() != NULL) && (WorldComm->me("COMM_WORLD") == 0)) {
             status = vfprintf(__stream, __format, args);
         }
         else if (WorldComm.get() == NULL) {

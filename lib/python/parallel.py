@@ -22,7 +22,8 @@ from driver import *
 
 class Parallel:
     """Parallel is the base class for managing MPI communication"""
-    current_comm="COMM_WORLD"
+    def CurrentComm(self):
+        return psi4.get_comm()
     
     def GetComm(self,Comm):
         """ Returns a communicator based on input.
@@ -34,22 +35,22 @@ class Parallel:
         be considered private, so don't use it outside the class
         """
         if Comm=="NONE":
-            return self.current_comm
+            return self.CurrentComm()
         return Comm
     
     def __init__(self):
         """ Makes a Parallel class, which amounts to figuring out the current comm"""
-        current_comm=psi4.get_comm()
+        #self.current_comm[0]=psi4.get_comm()
     
     def make_comm(self,NewComm,Color,Comm2Split="NONE"):
         """This splits Comm2Split, base on color, and calls the new comm NewComm."""
         psi4.make_comm(NewComm,Color,self.GetComm(Comm2Split))
-        current_comm=psi4.get_comm()
+        #self.current_comm[0]=psi4.get_comm()
     
     def free_comm(self,Comm="NONE"):
         """Frees the communicator passed to it.  No check to ensure COMM_WORLD isn't freed"""
         psi4.free_comm(self.GetComm(Comm))
-        current_comm=psi4.get_comm()
+        #self.current_comm[0]=psi4.get_comm()
     
     def me(self,Comm="NONE"):
         """Returns the current process number for the communicator Comm"""

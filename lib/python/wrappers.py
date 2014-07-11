@@ -170,11 +170,11 @@ def auto_fragments(name, **kwargs):
     new_mol.print_out()
     psi4.print_out("Exiting auto_fragments\n")
     
+
 def mbe(name,n=2,bsse_method="NONE",frag_method="USER_DEFINED",
         embed_method="NONE",cap_method="NONE",**kwargs):
     """ The driver routine for running calculations with the MBE or the 
-        GMBE.
-    
+        GMBE.    
     Arguments:
     name=level of theory that things will be performed on
     n=(G)MBE truncation order.

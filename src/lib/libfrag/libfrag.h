@@ -41,6 +41,7 @@ class LibFragHelper {
    public:
       void Fragment_Helper(boost::python::str& BSSE_Method,
             boost::python::str& FragMethod);
+
       void NMer_Helper(const int N);
       void Embed_Helper(boost::python::str& EmbedMethod);
       void Cap_Helper(boost::python::str& CapMethod);
@@ -55,7 +56,9 @@ class LibFragHelper {
          return GetNNMers(0);
       }
       boost::python::list GetNMerN(const int NMer, const int N);
+
       boost::python::list GetGhostNMerN(const int NMer, const int N);
+
       ~LibFragHelper() {
       }
 };

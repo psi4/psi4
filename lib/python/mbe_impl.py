@@ -26,6 +26,7 @@ import sys
 lfrag=psi4.LibFragHelper()
 
        
+
 def RunCalc(name,molecule,atoms,ghosts,Egys,**kwargs):
     old_geom=molecule.save_string_xyz()
     temp_geom=old_geom.split('\n')
@@ -45,7 +46,7 @@ def RunCalc(name,molecule,atoms,ghosts,Egys,**kwargs):
 
 #This call is incharge of setting up basic MPI stuff
 def DoMPI(PMan,size): 
-    current_comm=PMan.current_comm
+    current_comm=PMan.CurrentComm()
     MyProcN=PMan.me()
     NProc=PMan.nproc()
     PMan.make_comm("NewComm",MyProcN)
@@ -64,7 +65,7 @@ def DoMPI(PMan,size):
 #we term them the basecall
 def BaseCall(name,molecule,size,Egys,i,**kwargs):
     PMan=Parallel() 
-    old_comm=PMan.current_comm
+    old_comm=PMan.CurrentComm()
     [mystart,myend,remainder]=DoMPI(PMan,size)
     for x in range(mystart,myend):
         atoms=lfrag.GetNMerN(i,x)
@@ -95,7 +96,8 @@ def BaseCall(name,molecule,size,Egys,i,**kwargs):
         PMan.bcast(value,x,old_comm)
         Egys[offset+x]=value[0]
     PMan.sync(old_comm)
-    PMan.free_comm(PMan.current_comm)
+    PMan.free_comm(PMan.CurrentComm())
+
 
 def fragment(name,molecule,bsse_method,frag_method,Egys,**kwargs):
     lcfrag_method=frag_method.lower()
