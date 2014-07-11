@@ -17,7 +17,6 @@
 #include "../../bin/psi4/script.h"
 #include "../libmints/molecule.h"
 #include "LibFragPrinter.h"
-#include "InputManip.h"
 #include "MBE.h"
 #include "BSSEer.h"
 
