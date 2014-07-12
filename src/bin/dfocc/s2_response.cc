@@ -60,7 +60,7 @@ void DFOCC::s2_response()
     // Form overlap blocks
     // S_Ij
     SharedTensor2d SooAB = SharedTensor2d(new Tensor2d("S <O|o>", noccA, noccB));
-    SooAB->form_oo(SmoAB);
+    SooAB->form_ooAB(SmoAB);
 
     // S_Ia
     SharedTensor2d SiaAB = SharedTensor2d(new Tensor2d("S <I|a>", naoccA, navirB));
@@ -169,11 +169,11 @@ void DFOCC::s2_lagrangian()
     // Form overlap blocks
     // S_Ij
     SharedTensor2d SooAB = SharedTensor2d(new Tensor2d("S <O|o>", noccA, noccB));
-    SooAB->form_oo(SmoAB);
+    SooAB->form_ooAB(SmoAB);
 
     // S_iJ
     SharedTensor2d SooBA = SharedTensor2d(new Tensor2d("S <o|O>", noccB, noccA));
-    SooBA->form_oo(SmoBA);
+    SooBA->form_ooAB(SmoBA);
 
     // S_Ia
     SharedTensor2d SiaAB = SharedTensor2d(new Tensor2d("S <I|a>", naoccA, navirB));

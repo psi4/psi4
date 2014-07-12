@@ -331,6 +331,7 @@ class Tensor2d
   void form_ov(int occ, const SharedTensor2d &A);
   void form_act_ov(int frzc, const SharedTensor2d &A);
   void form_act_ov(int frzc, int occ, const SharedTensor2d &A);
+  void form_ooAB(const SharedTensor2d &A);
 
   void form_b_ij(int frzc, const SharedTensor2d &A);
   void form_b_ia(int frzc, const SharedTensor2d &A);

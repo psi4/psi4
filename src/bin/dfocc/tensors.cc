@@ -3061,6 +3061,18 @@ void Tensor2d::form_act_ov(int frzc, int occ, const SharedTensor2d &A)
     }
 }//
 
+void Tensor2d::form_ooAB(const SharedTensor2d &A)
+{
+    int occA = dim1_;
+    int occB = dim2_;
+    #pragma omp parallel for
+    for (int i = 0; i < occA; i++) {
+         for (int j = 0; j < occB; j++) {
+              A2d_[i][j] = A->get(i,j);
+         }
+    }
+}//
+
 void Tensor2d::form_b_ij(int frzc, const SharedTensor2d &A)
 {
     #pragma omp parallel for
