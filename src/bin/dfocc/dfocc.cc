@@ -97,6 +97,7 @@ void DFOCC::common_init()
     oeprop_=options_.get_str("OEPROP");
     comput_s2_=options_.get_str("COMPUT_S2");
     mp2_amp_type_=options_.get_str("MP2_AMP_TYPE");
+    qchf_=options_.get_str("QCHF");
 
     //title
     title();
@@ -208,7 +209,7 @@ if (reference_ == "RESTRICTED") {
         HvvA = SharedTensor2d(new Tensor2d("OEI <V|V>", nvirA, nvirA));
 
     // if we need PDMs
-    if (orb_opt_ == "TRUE" || dertype != "NONE" || oeprop_ == "TRUE") {
+    if (orb_opt_ == "TRUE" || dertype != "NONE" || oeprop_ == "TRUE" || qchf_ == "TRUE") {
         GijA = SharedTensor2d(new Tensor2d("G Intermediate <I|J>", naoccA, naoccA));
         GabA = SharedTensor2d(new Tensor2d("G Intermediate <A|B>", navirA, navirA));
         G1c_oo = SharedTensor2d(new Tensor2d("Correlation OPDM <O|O>", noccA, noccA));
@@ -272,7 +273,7 @@ else if (reference_ == "UNRESTRICTED") {
         HvvB = SharedTensor2d(new Tensor2d("OEI <v|v>", nvirB, nvirB));
 
     // if we need PDMs
-    if (orb_opt_ == "TRUE" || dertype != "NONE" || oeprop_ == "TRUE") {
+    if (orb_opt_ == "TRUE" || dertype != "NONE" || oeprop_ == "TRUE" || qchf_ == "TRUE") {
         GijA = SharedTensor2d(new Tensor2d("G Intermediate <I|J>", naoccA, naoccA));
         GijB = SharedTensor2d(new Tensor2d("G Intermediate <i|j>", naoccB, naoccB));
         GabA = SharedTensor2d(new Tensor2d("G Intermediate <A|B>", navirA, navirA));
@@ -382,7 +383,7 @@ void DFOCC::title()
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "TRUE") fprintf(outfile,"                      CD-OMP2 (CD-OO-MP2)   \n");
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "FALSE") fprintf(outfile,"                       CD-MP2   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya\n") ; 
-   fprintf(outfile,"              Latest Revision July 12, 2014\n") ;
+   fprintf(outfile,"              Latest Revision July 13, 2014\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");

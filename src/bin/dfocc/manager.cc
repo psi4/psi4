@@ -80,6 +80,9 @@ void DFOCC::omp2_manager()
         }// if (conv_tei_type == "DISK")  
            fock();
 
+        // QCHF
+        if (qchf_ == "TRUE") qchf();
+
         // ROHF REF
         if (reference == "ROHF") t1_1st_sc();
 	t2_1st_sc();
@@ -291,7 +294,7 @@ void DFOCC::mp2_manager()
 	mo_optimized = 0;// means MOs are not optimized
         timer_on("DF CC Integrals");
         df_corr();
-        if (dertype == "NONE" && oeprop_ == "FALSE" && ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE" && comput_s2_ == "FALSE") {
+        if (dertype == "NONE" && oeprop_ == "FALSE" && ekt_ip_ == "FALSE" && comput_s2_ == "FALSE" && qchf_ == "FALSE") {
             trans_mp2();
         }
         else {
@@ -313,6 +316,9 @@ void DFOCC::mp2_manager()
         fprintf(outfile,"\tNumber of basis functions in the DF-CC basis: %3d\n", nQ);
         fflush(outfile);
         timer_off("DF CC Integrals");
+
+        // QCHF
+        if (qchf_ == "TRUE") qchf();
 
         // ROHF REF
         //fprintf(outfile,"\tI am here.\n"); fflush(outfile);

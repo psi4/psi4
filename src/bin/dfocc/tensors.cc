@@ -302,6 +302,12 @@ double Tensor1d::xay(const SharedTensor2d &a, const SharedTensor1d &y)
   return value;
 }//
 
+void Tensor1d::axpy(const SharedTensor1d &a, double alpha)
+{
+    ULI length = (ULI)dim1_;
+    C_DAXPY(length, alpha, a->A1d_, 1, A1d_, 1);
+}
+
 void Tensor1d::scale(double a)
 {
     //size_t size = dim1_ ;

@@ -99,6 +99,8 @@ class Tensor1d
   void gbmv(bool transa, const SharedTensor2d& a, const SharedTensor1d& b, double alpha, double beta);
   // xay: return result of A1d_' * A * y
   double xay(const SharedTensor2d &a, const SharedTensor1d &y);
+  // axpy: Y <-- a * X + Y
+  void axpy(const SharedTensor1d &a, double alpha);
   void scale(double a);
   void copy(double *x);
   void copy(const SharedTensor1d &x);
