@@ -62,7 +62,7 @@ if (reference_ == "RESTRICTED") {
     sigma_rhf(sigma_pcgA, zvectorA);
 
     // Level Shift
-    if (level_shift == "TRUE") sigma_pcgA->axpy(zvectorA, -lshift_parameter);
+    if (level_shift == "TRUE") sigma_pcgA->axpy(zvectorA, lshift_parameter);
 
     // Build r0
     for (int a = 0, ai = 0; a < nvirA; a++) {
@@ -227,8 +227,8 @@ else if (reference_ == "UNRESTRICTED") {
 
     // Level Shift
     if (level_shift == "TRUE") {
-        sigma_pcgA->axpy(zvectorA, -lshift_parameter);
-        sigma_pcgB->axpy(zvectorB, -lshift_parameter);
+        sigma_pcgA->axpy(zvectorA, lshift_parameter);
+        sigma_pcgB->axpy(zvectorB, lshift_parameter);
     }
 
     // Form sigma vector
@@ -460,7 +460,7 @@ void DFOCC::orb_resp_pcg_rhf()
     sigma_rhf(sigma_pcgA, p_pcgA);
 
     // Level Shift
-    if (level_shift == "TRUE") sigma_pcgA->axpy(p_pcgA, -lshift_parameter);
+    if (level_shift == "TRUE") sigma_pcgA->axpy(p_pcgA, lshift_parameter);
 
     // Compute line search parameter alpha
     a_pcgA = r_pcgA->dot(z_pcgA) / p_pcgA->dot(sigma_pcgA);
@@ -551,8 +551,8 @@ void DFOCC::orb_resp_pcg_uhf()
 
     // Level Shift
     if (level_shift == "TRUE") {
-        sigma_pcgA->axpy(p_pcgA, -lshift_parameter);
-        sigma_pcgB->axpy(p_pcgB, -lshift_parameter);
+        sigma_pcgA->axpy(p_pcgA, lshift_parameter);
+        sigma_pcgB->axpy(p_pcgB, lshift_parameter);
     }
 
     // Form sigma vector
