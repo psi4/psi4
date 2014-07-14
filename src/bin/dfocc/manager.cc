@@ -142,7 +142,8 @@ void DFOCC::omp2_manager()
 	mograd();
         occ_iterations();
 	
-        if (rms_wog <= tol_grad && fabs(DE) >= tol_Eod) {
+        // main if
+        if (rms_wog <= tol_grad && fabs(DE) >= tol_Eod && regularization == "FALSE") {
            orbs_already_opt = 1;
 	   if (conver == 1) fprintf(outfile,"\n\tOrbitals are optimized now.\n");
 	   else if (conver == 0) { 
@@ -191,7 +192,14 @@ void DFOCC::omp2_manager()
                gfock_oo();
                gfock_vv();
            }
-        } 
+        }// end main if 
+
+        else if (rms_wog <= tol_grad && fabs(DE) >= tol_Eod && regularization == "TRUE") {
+	   fprintf(outfile,"\tOrbital gradient converged, but energy did not... \n");
+	   fprintf(outfile,"\tA tighter rms_mograd_convergence tolerance is recommended... \n");
+	   fflush(outfile);
+           throw PSIEXCEPTION("A tighter rms_mograd_convergence tolerance is recommended.");
+        }
 
   if (conver == 1) {
         ref_energy();
