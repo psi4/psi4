@@ -39,8 +39,10 @@ class LibFragHelper {
       ///The list of options
       FragOptions DaOptions;
    public:
-      void Fragment_Helper(boost::python::str& BSSE_Method,
-            boost::python::str& FragMethod);
+      void Fragment_Helper(boost::python::str& FragMethod, const int N,
+            boost::python::str& EmbedMethod,
+            boost::python::str& CapMethod,
+            boost::python::str& BSSEMethod);
 
       void NMer_Helper(const int N);
       void Embed_Helper(boost::python::str& EmbedMethod);

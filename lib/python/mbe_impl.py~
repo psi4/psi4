@@ -98,29 +98,21 @@ def BaseCall(name,molecule,size,Egys,i,**kwargs):
     PMan.sync(old_comm)
     PMan.free_comm(PMan.CurrentComm())
 
-def setup(frag_method,N,embed_method,cap_method,bsse_method):
+
+def fragment(name,molecule,bsse_method,frag_method,Egys,**kwargs):
     lcfrag_method=frag_method.lower()
     lcbsse_method=bsse_method.lower()
-    lcembed_method=embed_method.lower()
-    lccap_method=cap_method.lower()
-    lfrag.FragHelper(lcfrag_method,N,lcembed_method,lccap_method,
-                     lcbsse_method)
-
-def fragment(name,molecule,Egys,**kwargs):
+    lfrag.FragHelper(lcbsse_method,lcfrag_method)
     size=lfrag.GetNFrags()
-    psi4.print_out('The system contains %d monomers\n'% (size))
     BaseCall(name,molecule,size,Egys,0,**kwargs)
-    psi4.print_out('Finished running monomer calculations\n')
     
 def nmers(name,molecule,N,Egys,**kwargs):
     lfrag.NMerHelper(N)
     i=1
     while lfrag.GetNNMers(i)!=0:
         NNMers=lfrag.GetNNMers(i)
-        psi4.print_out('The system contains %d %d-mers\n'% (NNMers,i+1))
         Egys.append([])
         BaseCall(name,molecule,NNMers,Egys[i],i,**kwargs)
-        psi4.print_out('Finished running %d-body calculations\n'% (i+1))
         i+=1
        
 def SystemEnergy(Egys):

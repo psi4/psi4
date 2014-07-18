@@ -48,12 +48,9 @@ void MPICommunicator::MakeComm(const std::string& Name,const int Color,const std
 
 void MPICommunicator::FreeComm(const std::string& Name){
     //Refuse to free mpi_comm_world
-    std::cout<<"C++: "<<Name<<std::endl;
     if(CurrentComm.size()>1){
         Communicators.erase(Name);
         CurrentComm.erase(CurrentComm.end()-1);
-        for(int i=0;i<CurrentComm.size();i++)
-           std::cout<<"CurrentComm "<<i<<" : "<<CurrentComm[i]<<std::endl;
     }
 }
 

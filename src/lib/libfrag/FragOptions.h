@@ -24,6 +24,10 @@ class FragOptions{
         void DefaultOptions();
         ///Actually preforms copy
 		void copy(const FragOptions& other);
+		std::string ToString(const FragMethods& F);
+		std::string ToString(const EmbedMethods& E);
+		std::string ToString(const CapMethods& C);
+		std::string ToString(const BSSEMethods& B);
 	public:
         ///Options
 		FragMethods FMethod;
@@ -38,7 +42,8 @@ class FragOptions{
         void SetCMethod(const std::string& CMethodIn);
         void SetBMethod(const std::string& BMethodIn);
 
-
+        ///Nice, pretty printing of all the desired options
+        void PrintOptions();
 		///Constructor
 		FragOptions(){DefaultOptions();}
 		~FragOptions(){}

@@ -190,8 +190,8 @@ def mbe(name,n=2,bsse_method="NONE",frag_method="USER_DEFINED",
     molecule = psi4.get_active_molecule()
     molecule.update_geometry()
     Egys=[[]]
-    mbe_impl.fragment(name,molecule,bsse_method,frag_method,
-                      Egys[0],**kwargs)
+    mbe_impl.setup(frag_method,n,embed_method,cap_method,bsse_method)
+    mbe_impl.fragment(name,molecule,Egys[0],**kwargs)
     mbe_impl.nmers(name,molecule,n,Egys,**kwargs)
     Best_Approx_Egy=mbe_impl.SystemEnergy(Egys)
     return Best_Approx_Egy
