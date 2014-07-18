@@ -58,13 +58,20 @@ boost::python::list LibFragHelper::GetGhostNMerN(const int NMer,const int N){
    return baseGetCall(NMer,N,Systems,true);
 }
 
-void LibFragHelper::Fragment_Helper(boost::python::str& BSSEMethod,
-      boost::python::str& FragMethod){
-	str fname,bname;
+void LibFragHelper::Fragment_Helper( boost::python::str& FragMethod,
+      const int N,boost::python::str& EmbedMethod,
+      boost::python::str& CapMethod,boost::python::str& BSSEMethod){
+	str fname,bname,ename,cname;
 	ToC(bname,BSSEMethod);
 	ToC(fname,FragMethod);
+	ToC(ename,EmbedMethod);
+	ToC(cname,CapMethod);
 	DaOptions.SetBMethod(bname);
 	DaOptions.SetFMethod(fname);
+	DaOptions.SetCMethod(cname);
+	DaOptions.SetEMethod(ename);
+	DaOptions.MBEOrder=N;
+	DaOptions.PrintOptions();
 	SharedMol AMol=psi::Process::environment.molecule();
 	Systems.push_back(NMerSet());
 

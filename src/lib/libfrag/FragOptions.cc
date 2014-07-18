@@ -21,8 +21,62 @@
  */
 
 #include "FragOptions.h"
+#include "psi4-dec.h"
 
 namespace LibFrag{
+
+std::string FragOptions::ToString(const FragMethods& F){
+   std::string method;
+   switch(F){
+      case(USER_DEFINED):{method="user defined";break;}
+      case(BOND_BASED):{method="bond based";break;}
+      case(DISTANCE_BASED):{method="distance based";break;}
+   }
+   return method;
+}
+
+std::string FragOptions::ToString(const EmbedMethods& E){
+   std::string method;
+   switch(E){
+      case(NO_EMBED):{method="no embedding";break;}
+      case(POINT_CHARGE):{method="non-iterative point charges";break;}
+      case(ITR_POINT_CHARGE):{method="iterative point charges";break;}
+      case(DENSITY):{method="non-iterative density embedding";break;}
+      case(ITR_DENSITY):{method="iterative density embedding";break;}
+   }
+   return method;
+}
+
+std::string FragOptions::ToString(const CapMethods& C){
+   std::string method;
+   switch(C){
+      case(NO_CAPS):{method="no capping";break;}
+      case(H_REPLACE):{method="strict hydrogen replacement";break;}
+      case(H_SHIFTED):{method="shifted hydrogen replacement";break;}
+   }
+   return method;
+}
+
+std::string FragOptions::ToString(const BSSEMethods& B){
+   std::string method;
+   switch(B){
+      case(NO_BSSE):{method="no BSSE correction";break;}
+      case(FULL):{
+         method="supersystem basis applied to all terms (FULL)";
+         break;
+      }
+      case(MBCPN):{
+         method="Many-body counterpoise correction trunctated at order n";
+         break;
+      }
+      case(VMFCN):{
+         method="Valiron-Mayer Functional counterpoise correction truncated at order n";
+         break;
+      }
+   }
+   return method;
+}
+
 void FragOptions::copy(const FragOptions& other){
    this->MBEOrder=other.MBEOrder;
       this->FMethod=other.FMethod;
@@ -62,6 +116,31 @@ void FragOptions::SetBMethod(const std::string& BSSE){
    else if(BSSE=="VMFCN")BMethod=VMFCN;
 }
 
+
+void FragOptions::PrintOptions(){
+   fprintf(psi::outfile,
+"\n**************************************************************************"
+    );
+   fprintf(psi::outfile,
+"\n******************** Many-Body Expansion (MBE) module ********************"
+    );
+   fprintf(psi::outfile,
+"\n**************************************************************************"
+    );
+   fprintf(psi::outfile,
+     "\n\nA %d-body expansion is being performed with the following options:\n"
+         ,MBEOrder);
+   fprintf(psi::outfile,"Fragmenting system via: %s\n",ToString(FMethod));
+   if(EMethod!=NO_EMBED)fprintf(psi::outfile,"Embedding via: %s\n",
+         ToString(EMethod));
+   if(CMethod!=NO_CAPS)fprintf(psi::outfile,"Capping via: %s\n",
+         ToString(CMethod));
+   if(BMethod!=NO_BSSE)fprintf(psi::outfile,"BSSE Corrections via: %s\n",
+         ToString(BMethod));
+   fprintf(psi::outfile,
+   "\n**************************************************************************\n"
+    );
+}
 
 void FragOptions::DefaultOptions(){
    FMethod=USER_DEFINED;
