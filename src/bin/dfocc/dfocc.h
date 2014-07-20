@@ -80,6 +80,7 @@ protected:
     void gftilde_vv();
     void idp();
     void idp2();
+    void idp_hf();
     void mograd();
     void occ_iterations();
     void kappa_orb_resp();
@@ -88,7 +89,9 @@ protected:
     void orb_resp_pcg_uhf();
     void kappa_diag_hess();
     void update_mo();
+    void update_hfmo();
     void semi_canonic();
+    void canonic();
     void diagonal_mohess_vo();
     void diagonal_mohess_oo();
     void approx_diag_mohess_vo();
@@ -116,6 +119,8 @@ protected:
     void oeprop();
     void s2_response();
     void s2_lagrangian();
+    void gwh();
+    void qchf();
 
     void diis(int dimvec, SharedTensor2d &vecs, SharedTensor2d &errvecs, SharedTensor1d &vec_new, SharedTensor1d &errvec_new);
     void sigma_rhf(SharedTensor1d& sigma, SharedTensor1d& p_vec);
@@ -597,6 +602,8 @@ protected:
      string oeprop_; 
      string comput_s2_; 
      string mp2_amp_type_; 
+     string guess_type_; 
+     string qchf_; 
 
      double **C_pitzerA;     
      double **C_pitzerB;     
