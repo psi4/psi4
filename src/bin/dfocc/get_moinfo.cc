@@ -49,6 +49,8 @@ if (reference_ == "RESTRICTED") {
         doccpi_  = reference_wavefunction_->doccpi();
         frzcpi_  = reference_wavefunction_->frzcpi();
         frzvpi_  = reference_wavefunction_->frzvpi();
+        nalphapi_ = reference_wavefunction_->nalphapi();
+        nbetapi_ = reference_wavefunction_->nbetapi();
         natom   = molecule_->natom();
 
 	// Read in nuclear repulsion energy
@@ -177,6 +179,8 @@ else if (reference_ == "UNRESTRICTED") {
         soccpi_  = reference_wavefunction_->soccpi();
         frzcpi_  = reference_wavefunction_->frzcpi();
         frzvpi_  = reference_wavefunction_->frzvpi();
+        nalphapi_ = reference_wavefunction_->nalphapi();
+        nbetapi_ = reference_wavefunction_->nbetapi();
         natom   = molecule_->natom();
 
 	// Read in nuclear repulsion energy
