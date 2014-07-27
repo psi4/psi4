@@ -94,29 +94,29 @@ int overlap(int C_irr, int current) {
     }
     else if(params.eom_ref == 1) {
       sprintf(lbl, "%s %d %d", "RIA_old", C_irr, i);
-      global_dpd_->file2_init(&R1A, PSIF_CC_RAMPS, C_irr, 0, 1, lbl);
+      global_dpd_->file2_init(&R1A_old, PSIF_CC_RAMPS, C_irr, 0, 1, lbl);
       sprintf(lbl, "%s %d %d", "Ria_old", C_irr, i);
-      global_dpd_->file2_init(&R1B, PSIF_CC_RAMPS, C_irr, 0, 1, lbl);
+      global_dpd_->file2_init(&R1B_old, PSIF_CC_RAMPS, C_irr, 0, 1, lbl);
 
       sprintf(lbl, "%s %d %d", "RIJAB_old", C_irr, i);
-      global_dpd_->buf4_init(&R2AA, PSIF_CC_RAMPS, C_irr, 2, 7, 2, 7, 0, lbl);
+      global_dpd_->buf4_init(&R2AA_old, PSIF_CC_RAMPS, C_irr, 2, 7, 2, 7, 0, lbl);
       sprintf(lbl, "%s %d %d", "Rijab_old", C_irr, i);
-      global_dpd_->buf4_init(&R2BB, PSIF_CC_RAMPS, C_irr, 2, 7, 2, 7, 0, lbl);
+      global_dpd_->buf4_init(&R2BB_old, PSIF_CC_RAMPS, C_irr, 2, 7, 2, 7, 0, lbl);
       sprintf(lbl, "%s %d %d", "RIjAb_old", C_irr, i);
-      global_dpd_->buf4_init(&R2AB, PSIF_CC_RAMPS, C_irr, 0, 5, 0, 5, 0, lbl);
+      global_dpd_->buf4_init(&R2AB_old, PSIF_CC_RAMPS, C_irr, 0, 5, 0, 5, 0, lbl);
     }
     else if(params.eom_ref == 2) {
       sprintf(lbl, "%s %d %d", "RIA_old", C_irr, i);
-      global_dpd_->file2_init(&R1A, PSIF_CC_RAMPS, C_irr, 0, 1, lbl);
+      global_dpd_->file2_init(&R1A_old, PSIF_CC_RAMPS, C_irr, 0, 1, lbl);
       sprintf(lbl, "%s %d %d", "Ria_old", C_irr, i);
-      global_dpd_->file2_init(&R1B, PSIF_CC_RAMPS, C_irr, 2, 3, lbl);
+      global_dpd_->file2_init(&R1B_old, PSIF_CC_RAMPS, C_irr, 2, 3, lbl);
   
       sprintf(lbl, "%s %d %d", "RIJAB_old", C_irr, i);
-      global_dpd_->buf4_init(&R2AA, PSIF_CC_RAMPS, C_irr, 2, 7, 2, 7, 0, lbl);
+      global_dpd_->buf4_init(&R2AA_old, PSIF_CC_RAMPS, C_irr, 2, 7, 2, 7, 0, lbl);
       sprintf(lbl, "%s %d %d", "Rijab_old", C_irr, i);
-      global_dpd_->buf4_init(&R2BB, PSIF_CC_RAMPS, C_irr, 12, 17, 12, 17, 0, lbl);
+      global_dpd_->buf4_init(&R2BB_old, PSIF_CC_RAMPS, C_irr, 12, 17, 12, 17, 0, lbl);
       sprintf(lbl, "%s %d %d", "RIjAb_old", C_irr, i);
-      global_dpd_->buf4_init(&R2AB, PSIF_CC_RAMPS, C_irr, 22, 28, 22, 28, 0, lbl);
+      global_dpd_->buf4_init(&R2AB_old, PSIF_CC_RAMPS, C_irr, 22, 28, 22, 28, 0, lbl);
     }
 
     double overlap;
