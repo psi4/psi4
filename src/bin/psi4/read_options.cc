@@ -1857,7 +1857,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("SEMICANONICAL", true);
     /*- Report overlaps with old excited-state wave functions, if
  * available, and store current wave functions for later use. -*/
-    options.add_bool("OVERLAP_CHECK", true);
+    options.add_bool("OVERLAP_CHECK", false);
   }
   if(name == "CCRESPONSE"|| options.read_globals()) {
      /*- MODULEDESCRIPTION Performs coupled cluster response property computations. -*/
