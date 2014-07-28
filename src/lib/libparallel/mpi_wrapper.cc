@@ -29,7 +29,7 @@ namespace psi{
 MPICommunicator::MPICommunicator(int &argc,char **argv):
         Env(new boost::mpi::environment(argc,argv)){
         boost::mpi::communicator world;
-        Communicators[CurrentComm.back()]=world;
+        Communicators["COMM_WORLD"]=world;
         //The next three lines are what the old local comm did
         //the code breaks if I do not include them
         //The way I understand this is that the number of openmp threads
@@ -48,7 +48,7 @@ void MPICommunicator::MakeComm(const std::string& Name,const int Color,const std
 
 void MPICommunicator::FreeComm(const std::string& Name){
     //Refuse to free mpi_comm_world
-    if(CurrentComm.size()>1){
+    if(CurrentComm.size()>1&&Name!="COMM_WORLD"){
         Communicators.erase(Name);
         CurrentComm.erase(CurrentComm.end()-1);
     }

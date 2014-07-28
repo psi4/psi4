@@ -7,12 +7,12 @@
 
 #ifndef MBEFRAG_H_
 #define MBEFRAG_H_
-#include "Set.h"
+#include "AtomSet.h"
 #include <vector>
 namespace LibFrag{
 
 
-class MBEFrag: public Set{
+class MBEFrag: public AtomSet{
 	private:
 		std::vector<int> Parents;
 		int MBEOrder;
@@ -26,17 +26,18 @@ class MBEFrag: public Set{
 		void SetMBEOrder(const int N){MBEOrder=N;}
 
 		void SetParents(const int* Ps){
+		   Parents.clear();
 		   for(int i=0;i<MBEOrder;i++)Parents.push_back(Ps[i]);
 		}
 
 		MBEFrag(const int MBEOrder_=0,const int *Parents_=NULL):
 			MBEOrder(MBEOrder_){if(Parents_!=NULL)SetParents(Parents_);}
 
-		MBEFrag(const MBEFrag& other):Set(other){Copy(other);}
+		MBEFrag(const MBEFrag& other):AtomSet(other){Copy(other);}
 
 		MBEFrag& operator=(const MBEFrag& other){
 		   if(this!=&other){
-		      Set::operator=(other);
+		      AtomSet::operator=(other);
 		      Copy(other);
 		   }
 		   return *this;

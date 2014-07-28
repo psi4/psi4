@@ -22,6 +22,9 @@
 
 #include "FragOptions.h"
 #include "psi4-dec.h"
+#include "BSSEer.h"
+#include "Fragmenter.h"
+#include "Capper.h"
 
 namespace LibFrag{
 
@@ -86,9 +89,14 @@ void FragOptions::copy(const FragOptions& other){
 }
 
 void FragOptions::SetFMethod(const std::string& Frag){
-   if(Frag=="user_defined"||Frag=="ud"||Frag=="user")FMethod=USER_DEFINED;
-   else if(Frag=="bond_based"||Frag=="bond")FMethod=BOND_BASED;
-   else if(Frag=="distance_based"||Frag=="distance")FMethod=DISTANCE_BASED;
+   if(Frag=="user_defined"||Frag=="ud"||Frag=="user")
+      FMethod=USER_DEFINED;
+   else if(Frag=="bond_based"||Frag=="bond")
+      FMethod=BOND_BASED;
+   else if(Frag=="distance_based"||Frag=="distance"||Frag=="dist")
+      FMethod=DISTANCE_BASED;
+   else
+      throw psi::PSIEXCEPTION("Unrecognized Fragmentation method");
 }
 
 void FragOptions::SetEMethod(const std::string& Embed){
@@ -104,8 +112,11 @@ void FragOptions::SetEMethod(const std::string& Embed){
 
 void FragOptions::SetCMethod(const std::string& Cap){
    if(Cap=="none"||Cap=="no_cap"||Cap=="no"||Cap=="false")CMethod=NO_CAPS;
-   else if(Cap=="h_replace")CMethod=H_REPLACE;
-   else if(Cap=="h_shifted")CMethod=H_SHIFTED;
+   else if(Cap=="h_replace"||Cap=="replace")CMethod=H_REPLACE;
+   else if(Cap=="h_shifted"||Cap=="shift")CMethod=H_SHIFTED;
+   else
+      throw psi::PSIEXCEPTION
+      ("You requested an unrecognized capping method");
 }
 
 void FragOptions::SetBMethod(const std::string& BSSE){
@@ -118,25 +129,24 @@ void FragOptions::SetBMethod(const std::string& BSSE){
 
 
 void FragOptions::PrintOptions(){
-   fprintf(psi::outfile,
-"\n**************************************************************************"
-    );
+   std::string stars=
+         "\n**************************************************************************";
+   fprintf(psi::outfile,stars.c_str());
    fprintf(psi::outfile,
 "\n******************** Many-Body Expansion (MBE) module ********************"
     );
-   fprintf(psi::outfile,
-"\n**************************************************************************"
-    );
+   fprintf(psi::outfile,stars.c_str());
    fprintf(psi::outfile,
      "\n\nA %d-body expansion is being performed with the following options:\n"
          ,MBEOrder);
-   fprintf(psi::outfile,"Fragmenting system via: %s\n",ToString(FMethod));
+   fprintf(psi::outfile,"Fragmenting system via: %s\n",
+         (ToString(FMethod)).c_str());
    if(EMethod!=NO_EMBED)fprintf(psi::outfile,"Embedding via: %s\n",
-         ToString(EMethod));
+         (ToString(EMethod)).c_str());
    if(CMethod!=NO_CAPS)fprintf(psi::outfile,"Capping via: %s\n",
-         ToString(CMethod));
+         (ToString(CMethod)).c_str());
    if(BMethod!=NO_BSSE)fprintf(psi::outfile,"BSSE Corrections via: %s\n",
-         ToString(BMethod));
+         (ToString(BMethod)).c_str());
    fprintf(psi::outfile,
    "\n**************************************************************************\n"
     );
@@ -150,6 +160,73 @@ void FragOptions::DefaultOptions(){
    MBEOrder=2;
 }
 
+boost::shared_ptr<Fragmenter> FragOptions::MakeFragFactory()const{
+   boost::shared_ptr<Fragmenter> FragFactory;
+   switch(FMethod){
+      case(USER_DEFINED):{
+          FragFactory=boost::shared_ptr<Fragmenter>(new UDFragmenter);
+          break;
+      }
+      case(BOND_BASED):{
+          FragFactory=boost::shared_ptr<Fragmenter>(new BondFragmenter);
+          break;
+      }
+      case(DISTANCE_BASED):{
+         FragFactory=boost::shared_ptr<Fragmenter>(new DistFragmenter);
+         break;
+      }
+      default:{
+         throw psi::PSIEXCEPTION("Unrecognized fragmentation method");
+         break;
+      }
+   }
+   return FragFactory;
 }
+boost::shared_ptr<BSSEer> FragOptions::MakeBSSEFactory(int natoms)const{
+   boost::shared_ptr<BSSEer> BSSEFactory;
+   switch(BMethod){
+      case(NO_BSSE):{
+         break;
+      }
+      case(FULL):{
+       BSSEFactory=boost::shared_ptr<BSSEer>(new FullBSSE(natoms));
+       break;
+    }
+    default:{
+       throw psi::PSIEXCEPTION(
+             "Unrecognized BSSE correction method or it's not coded yet");
+       break;
+    }
+   }
+   return BSSEFactory;
+}
+boost::shared_ptr<Capper> FragOptions::MakeCapFactory(SharedMol& AMol)const{
+   boost::shared_ptr<Capper> Factory;
+   switch(CMethod){
+      case(NO_CAPS):{
+         throw psi::PSIEXCEPTION(
+               "You requested no caps be made (or didn't specify a method "
+               "for caps), but bonds were broken.  I strongly advise you "
+               "reconsider your position on this matter. In fact, I feel so"
+               " strongly about this that I have crashed the program");
+         break;
+      }
+      case(H_REPLACE):{
+         Factory=boost::shared_ptr<Capper>(new ReplaceAndCap(AMol));
+         break;
+      }
+      case(H_SHIFTED):{
+         Factory=boost::shared_ptr<Capper>(new ShiftAndCap(AMol));
+         break;
+      }
+      default:{
+         throw psi::PSIEXCEPTION("Unrecognized or capping algorithm.");
+         break;
+      }
+   }
+   return Factory;
+}
+
+}//End namespace
 
 

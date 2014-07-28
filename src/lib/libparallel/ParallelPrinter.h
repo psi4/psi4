@@ -95,7 +95,7 @@ class ParallelStream{
       void Write(T& Output){if(Mode==READ)Buffer>>Output;}
 
       ///Returns a copy of the buffer as a stringstream
-      std::stringstream CopyBuffer(){std::stringstream ACopy(Buffer);return ACopy;}
+      //std::stringstream CopyBuffer(){std::stringstream ACopy(Buffer);return ACopy;}
 };
 
 class OutFile:private ParallelStream{
@@ -147,7 +147,7 @@ class InFile:private ParallelStream{
       ///True if the file exists
       bool Exists(){return FileStatus();}
 
-      std::stringstream DumpBuffer(){return CopyBuffer();}
+      //std::stringstream DumpBuffer(){return CopyBuffer();}
 
 };
 

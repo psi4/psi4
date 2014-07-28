@@ -27,7 +27,8 @@ double MBE::Energy(const std::vector<NMerSet>& Systems, const std::vector<double
 	std::vector<double> Egys;
 	fprintf(psi::outfile,
 	      "\n************ MBE Energy Analysis ************\n\n");
-	if(Systems.size()!=N)std::cout<<"Shit is about to hit the fan..."<<std::endl;
+	if(Systems.size()!=N&&N!=1)
+	   std::cout<<"Shit is about to hit the fan..."<<std::endl;
 	for(int i=0;i<N;i++){
 		En.push_back(0);//Initialize our vector
 		int nfrags=Systems[i].size();

@@ -10,6 +10,8 @@
 
 
 #include <string>
+#include <boost/shared_ptr.hpp>
+#include "LibFragTypes.h"
 namespace LibFrag{
 enum FragMethods {USER_DEFINED,BOND_BASED,DISTANCE_BASED};
 enum EmbedMethods {NO_EMBED,POINT_CHARGE,ITR_POINT_CHARGE,DENSITY,
@@ -17,7 +19,10 @@ enum EmbedMethods {NO_EMBED,POINT_CHARGE,ITR_POINT_CHARGE,DENSITY,
 enum CapMethods {NO_CAPS,H_REPLACE,H_SHIFTED};
 enum BSSEMethods {NO_BSSE,FULL,MBCPN,VMFCN};
 
-
+class GMBE;
+class Fragmenter;
+class BSSEer;
+class Capper;
 class FragOptions{
 	private:
         ///Sets all members to the default options
@@ -42,9 +47,25 @@ class FragOptions{
         void SetCMethod(const std::string& CMethodIn);
         void SetBMethod(const std::string& BMethodIn);
 
+        ///Returns a pointer to the Fragmenter determined by this->FMethod
+        boost::shared_ptr<Fragmenter> MakeFragFactory()const;
+        /** \brief Returns a pointer to the BSSE factory determined by
+         *         this->BMethod
+         *
+         *
+         *   Most BSSE methods need to know the number of atoms in the
+         *   supersystem so you will need to pass that to this fxn.
+         *
+         *   \param[in] natoms The number of atoms in the supersystem
+         *
+         */
+        boost::shared_ptr<BSSEer> MakeBSSEFactory(const int natoms) const;
+        ///Returns a capping factory based on CMethod
+        boost::shared_ptr<Capper> MakeCapFactory(SharedMol& AMol)const;
+
         ///Nice, pretty printing of all the desired options
         void PrintOptions();
-		///Constructor
+		///Constructor, calls DefaultOptions() for initialization
 		FragOptions(){DefaultOptions();}
 		~FragOptions(){}
 		FragOptions(const FragOptions& other){this->copy(other);}
