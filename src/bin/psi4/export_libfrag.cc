@@ -19,7 +19,11 @@ void export_libfrag(){
 	    .def("CalcEnergy",&LibFragHelper::CalcEnergy)
 	    .def("GetNNMers",&LibFragHelper::GetNNMers)
 	    .def("GetGhostsNMerN",&LibFragHelper::GetGhostNMerN)
+	    .def("WriteMOs",&LibFragHelper::WriteMOs)
+	    .def("ReadMOs",&LibFragHelper::ReadMOs)
 	    .def("GetNFrags",&LibFragHelper::GetNFrags)
+	    .def("RunFrags",&LibFragHelper::RunFrags)
+	    .def("Sync",&LibFragHelper::Synchronize)
 	    .def("GetNMerN",&LibFragHelper::GetNMerN);
 }
 

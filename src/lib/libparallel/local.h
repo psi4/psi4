@@ -58,7 +58,6 @@ class LocalCommWrapper:public Parallel<LocalCommWrapper> {
          omp_set_nested(0);
          if (Process::environment("OMP_NUM_THREADS")=="")
             Process::environment.set_n_threads(1);
-         std::cout<<"Made local comm"<<std::endl;
       }
 };
 // End of LocalCommWrapper class

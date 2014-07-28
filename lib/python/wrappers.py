@@ -192,7 +192,8 @@ def mbe(name,n=2,bsse_method="NONE",frag_method="USER_DEFINED",
     Egys=[[]]
     mbe_impl.setup(frag_method,n,embed_method,cap_method,bsse_method)
     mbe_impl.fragment(name,molecule,Egys[0],**kwargs)
-    mbe_impl.nmers(name,molecule,n,Egys,**kwargs)
+    if(n>=2):
+        mbe_impl.nmers(name,molecule,n,Egys,**kwargs)
     Best_Approx_Egy=mbe_impl.SystemEnergy(Egys)
     return Best_Approx_Egy
 

@@ -27,20 +27,22 @@ lfrag=psi4.LibFragHelper()
 
        
 
-def RunCalc(name,molecule,atoms,ghosts,Egys,**kwargs):
+def RunCalc(name,molecule,atoms,caps,ghosts,Egys,**kwargs):
     old_geom=molecule.save_string_xyz()
     temp_geom=old_geom.split('\n')
     new_geom=[]
     for i in range(0,len(atoms)):
         new_geom.append(temp_geom[atoms[i]+1])
+    new_geom.append(caps)
     for i in range(0,len(ghosts)):
         new_geom.append('@'+temp_geom[ghosts[i]+1].lstrip(' '))
+    new_geom.append('symmetry c1')
+    new_geom.append('no_reorient')
     fragstr='\n'.join(new_geom)
     frag=geometry(fragstr)
     activate(frag)
     frag.update_geometry()
     Egys.append(energy(name,**kwargs))
-    psi4.clean()
     activate(molecule)
     molecule.update_geometry
 
@@ -61,18 +63,35 @@ def DoMPI(PMan,size):
         myend=size
     return mystart,myend,batchsize_remainder        
 
+
+
+#This is where the magic happens
+def Magic(frag,N,Egys,name,molecule,**kwargs):
+    atoms=lfrag.GetNMerN(N,frag)
+    caps=lfrag.CapHelper(N,frag)
+    ghosts=lfrag.GetGhostsNMerN(N,frag)
+    oldguess=psi4.get_global_option("GUESS")
+    
+    if(N!=0):
+        lfrag.WriteMOs(N,frag)
+        psi4.set_global_option("GUESS","READ")
+    RunCalc(name,molecule,atoms,caps,ghosts,Egys,**kwargs)
+    if(N==0):
+        lfrag.ReadMOs()
+    psi4.set_global_option("GUESS",oldguess)
+    psi4.clean()
+    
+
 #Both the fragments and NMers go through the same sequence of calls,
 #we term them the basecall
 def BaseCall(name,molecule,size,Egys,i,**kwargs):
     PMan=Parallel() 
     old_comm=PMan.CurrentComm()
+    PMan.sync(old_comm)
+    psi4.be_quiet()
     [mystart,myend,remainder]=DoMPI(PMan,size)
     for x in range(mystart,myend):
-        atoms=lfrag.GetNMerN(i,x)
-        ghosts=lfrag.GetGhostsNMerN(i,x)
-        psi4.be_quiet()
-        RunCalc(name,molecule,atoms,ghosts,Egys,**kwargs)
-        psi4.reopen_outfile()
+        Magic(x,i,Egys,name,molecule,**kwargs)
     PMan.all_gather(Egys,old_comm)
     offset=size-remainder
     for x in range(0,remainder):
@@ -80,11 +99,7 @@ def BaseCall(name,molecule,size,Egys,i,**kwargs):
     #Last element in the list is the value
     for x in range(0,remainder):
         if PMan.me(old_comm)==x:
-            atoms=lfrag.GetNMerN(i,offset+x)
-            ghosts=lfrag.GetGhostsNMerN(i,offset+x)
-            psi4.be_quiet()
-            RunCalc(name,molecule,atoms,ghosts,Egys,**kwargs)
-            psi4.reopen_outfile()
+            Magic(x+offset,i,Egys,name,molecule,**kwargs)
     PMan.sync(old_comm)
     for x in range(0,remainder):
         #Has to be a list...
@@ -95,8 +110,10 @@ def BaseCall(name,molecule,size,Egys,i,**kwargs):
             value.append(0)
         PMan.bcast(value,x,old_comm)
         Egys[offset+x]=value[0]
-    PMan.sync(old_comm)
+    lfrag.Sync(old_comm,i)
     PMan.free_comm(PMan.CurrentComm())
+    psi4.reopen_outfile()
+    PMan.sync(old_comm)
 
 def setup(frag_method,N,embed_method,cap_method,bsse_method):
     lcfrag_method=frag_method.lower()
@@ -108,9 +125,10 @@ def setup(frag_method,N,embed_method,cap_method,bsse_method):
 
 def fragment(name,molecule,Egys,**kwargs):
     size=lfrag.GetNFrags()
-    psi4.print_out('The system contains %d monomers\n'% (size))
-    BaseCall(name,molecule,size,Egys,0,**kwargs)
-    psi4.print_out('Finished running monomer calculations\n')
+    if(lfrag.RunFrags()!=0):
+        psi4.print_out('The system contains %d monomers\n'% (size))
+        BaseCall(name,molecule,size,Egys,0,**kwargs)
+        psi4.print_out('Finished running monomer calculations\n')
     
 def nmers(name,molecule,N,Egys,**kwargs):
     lfrag.NMerHelper(N)

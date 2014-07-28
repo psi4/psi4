@@ -22,13 +22,10 @@
 #ifndef BSSEER_H_
 #define BSSEER_H_
 
-#include <boost/shared_ptr.hpp>
-#include <vector>
+#include "LibFragTypes.h"
 
 namespace LibFrag{
-class MBEFrag;
-typedef boost::shared_ptr<MBEFrag> SharedFrag;
-typedef std::vector<SharedFrag> NMerSet;
+
 class BSSEer{
    protected:
       ///The total number of atoms in the entire system

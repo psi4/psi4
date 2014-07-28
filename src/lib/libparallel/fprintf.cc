@@ -47,6 +47,7 @@ extern "C" {
 
         if ((WorldComm.get() != NULL) && (WorldComm->me("COMM_WORLD") == 0)) {
             status = vfprintf(__stream, __format, args);
+            fflush(__stream);
         }
         else if (WorldComm.get() == NULL) {
             p_fprintf(stderr, "Communicator object does not exist.\n");

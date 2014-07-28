@@ -31,7 +31,10 @@ class MBE:public GMBE{
 		///Function that computes the intersections of the NMers
 		void MakeIntersections(std::vector<NMerSet>& Systems);
 		///Computes and returns the energy
-		double Energy(const std::vector<NMerSet>& Systems, const std::vector<double*>& Energies);
+		double Energy(const std::vector<NMerSet>& Systems,
+		      const std::vector<double*>& Energies);
+		bool RunFrags()const{return true;}
+		bool IsGMBE()const{return false;}
 };
 }
 
