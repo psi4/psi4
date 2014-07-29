@@ -102,7 +102,7 @@ void s3_block_vdiag(struct stringwr *alplist, struct stringwr *betlist,
           jlen = form_ilist(betlist, Jb_list, nbs, ij, L, R, Sgn);
            
           if (!jlen) continue;
-          /*  fprintf(outfile,"S3_BLOCK_VDIAG: ij = %d\t jlen = %d\n", ij, jlen);
+          /*  psi::fprintf(outfile,"S3_BLOCK_VDIAG: ij = %d\t jlen = %d\n", ij, jlen);
            */
           Tptr = tei + ioff[ij];
        
@@ -149,11 +149,11 @@ void s3_block_vdiag(struct stringwr *alplist, struct stringwr *betlist,
                   Iaij = Ia->ij[Ja_list];
 
                   zero_arr(V, jlen);
-/*                  fprintf(outfile,"Ia = %x\t Ia_idx = %d\n", Ia, Ia_idx);
+/*                  psi::fprintf(outfile,"Ia = %x\t Ia_idx = %d\n", Ia, Ia_idx);
                     fflush(outfile);
 
                     if (Jacnt) {
-                    fprintf(outfile,"S3_BLOCK_VDIAG: Jacnt = %d\n", Jacnt);
+                    psi::fprintf(outfile,"S3_BLOCK_VDIAG: Jacnt = %d\n", Jacnt);
                     fflush(outfile);
                     }
 */
@@ -242,10 +242,10 @@ void s3_block_vdiag_pthread(void *threadarg)
   Iaij = Ia_local->ij[Ja_list];
 
 /*
-  fprintf(outfile,"Ia_local = %x\t Ia_idx_local = %d\n", Ia_local, Ia_idx_local);
+  psi::fprintf(outfile,"Ia_local = %x\t Ia_idx_local = %d\n", Ia_local, Ia_idx_local);
   fflush(outfile);
   
-  fprintf(outfile,"Jacnt = %d\n", Jacnt);
+  psi::fprintf(outfile,"Jacnt = %d\n", Jacnt);
 */
       
   zero_arr(V, jlen);
@@ -514,8 +514,8 @@ int form_ilist(struct stringwr *alplist, int Ja_list, int nas, int kl,
         }
     }  /* end loop over Ia */
 /*  if(inum) {
-      fprintf(outfile,"form_ilist: nas = %d\n", nas);
-      fprintf(outfile,"form_ilist: jlen = %d\n", inum);
+      psi::fprintf(outfile,"form_ilist: nas = %d\n", nas);
+      psi::fprintf(outfile,"form_ilist: jlen = %d\n", inum);
       fflush(outfile);
     }
 */

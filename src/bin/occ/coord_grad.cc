@@ -34,28 +34,28 @@ namespace psi{ namespace occwave{
 void OCCWave::coord_grad()
 {
       if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") {
-          fprintf(outfile,"\tComputing G_abcd...\n");
+          psi::fprintf(outfile,"\tComputing G_abcd...\n");
           fflush(outfile);
           omp3_tpdm_vvvv();
       }
       else if (wfn_type_ == "OCEPA") { 
-          fprintf(outfile,"\tComputing G_abcd...\n");
+          psi::fprintf(outfile,"\tComputing G_abcd...\n");
           fflush(outfile);
           ocepa_tpdm_vvvv();
       }
-      fprintf(outfile,"\tComputing diagonal blocks of GFM...\n");
+      psi::fprintf(outfile,"\tComputing diagonal blocks of GFM...\n");
       fflush(outfile);
       gfock_diag();
      
       // For Standard methods  
       if (orb_opt_ == "FALSE" && relaxed_ == "TRUE") {
-          fprintf(outfile,"\tSolving orbital Z-vector equations...\n");
+          psi::fprintf(outfile,"\tSolving orbital Z-vector equations...\n");
           fflush(outfile);
           z_vector();
-          fprintf(outfile,"\tForming relaxed response density matrices...\n");
+          psi::fprintf(outfile,"\tForming relaxed response density matrices...\n");
           fflush(outfile);
           effective_pdms();
-          fprintf(outfile,"\tForming relaxed GFM...\n");
+          psi::fprintf(outfile,"\tForming relaxed GFM...\n");
           fflush(outfile);
           effective_gfock();
       }
@@ -64,7 +64,7 @@ void OCCWave::coord_grad()
      if (oeprop_ == "TRUE") oeprop();
 
       dump_ints();
-      fprintf(outfile,"\tWriting particle density matrices and GFM to disk...\n");
+      psi::fprintf(outfile,"\tWriting particle density matrices and GFM to disk...\n");
       fflush(outfile);
       dump_pdms();
 }// 
@@ -74,7 +74,7 @@ void OCCWave::coord_grad()
 //========================================================================         
 void OCCWave::dump_ints()
 {
-    //fprintf(outfile,"\n dump_ints is starting... \n"); fflush(outfile);
+    //psi::fprintf(outfile,"\n dump_ints is starting... \n"); fflush(outfile);
     dpdfile2 H;
     dpdbuf4 K;
 
@@ -156,7 +156,7 @@ void OCCWave::dump_ints()
  }// end uhf
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
-    //fprintf(outfile,"\n dump_ints done. \n"); fflush(outfile);
+    //psi::fprintf(outfile,"\n dump_ints done. \n"); fflush(outfile);
 
 }// end of dump_ints
 
@@ -165,7 +165,7 @@ void OCCWave::dump_ints()
 //========================================================================         
 void OCCWave::dump_pdms()
 {
-    //fprintf(outfile,"\n dump_pdms is starting... \n"); fflush(outfile);
+    //psi::fprintf(outfile,"\n dump_pdms is starting... \n"); fflush(outfile);
 
 //===========================================================================================
 //========================= RHF =============================================================
@@ -871,7 +871,7 @@ if (wfn_type_ != "OMP2") {
     iwl_buf_close(&BB, 1);
 
 }// end if (reference_ == "UNRESTRICTED") 
- //fprintf(outfile,"\n dump_pdms done. \n"); fflush(outfile);
+ //psi::fprintf(outfile,"\n dump_pdms done. \n"); fflush(outfile);
 }// end of dump_pdms
 
 //========================================================================
@@ -1481,7 +1481,7 @@ void OCCWave::effective_gfock()
     global_dpd_->buf4_close(&K);
 
     // F_AI += 2 \sum_{e,m} Z_em <Im|Ae> 	
-    //fprintf(outfile, "\tI am here\n"); fflush(outfile);
+    //psi::fprintf(outfile, "\tI am here\n"); fflush(outfile);
     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                  ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
     for(int h = 0; h < nirrep_; ++h){
@@ -1894,7 +1894,7 @@ void OCCWave::effective_gfock()
 //=========================
 void OCCWave::oeprop()
 { 
-    fprintf(outfile,"\tComputing one-electron properties...\n");  
+    psi::fprintf(outfile,"\tComputing one-electron properties...\n");  
     fflush(outfile);
 
     //SharedMatrix Da_ = SharedMatrix(new Matrix("MO-basis alpha OPDM", nmo_, nmo_));

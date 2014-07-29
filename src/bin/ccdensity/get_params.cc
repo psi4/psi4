@@ -117,7 +117,7 @@ void get_params( Options& options)
   if(options["OPDM_RELAX"].has_changed())
     params.relax_opdm = options.get_bool("OPDM_RELAX");
   if ( (params.onepdm) && (params.relax_opdm) ) { /* can't do relaxation without twopdm */
-    fprintf(outfile,"\tTurning orbital relaxation off since only onepdm is requested.\n");
+    psi::fprintf(outfile,"\tTurning orbital relaxation off since only onepdm is requested.\n");
     params.relax_opdm = 0;
   }
 
@@ -128,24 +128,24 @@ void get_params( Options& options)
   if(options["XI_CONNECT"].has_changed()) 
     params.connect_xi = options.get_bool("XI_CONNECT");
 
-  fprintf(outfile, "\n\tInput parameters:\n");
-  fprintf(outfile, "\t-----------------\n");
-  fprintf(outfile, "\tWave function    = %6s\n", params.wfn.c_str() );
-  fprintf(outfile, "\tReference wfn    = %5s\n", (params.ref == 0) ? "RHF" : ((params.ref == 1) ? "ROHF" : "UHF"));
-  fprintf(outfile, "\tDertype          = %d\n", params.dertype);
-  fprintf(outfile, "\tTolerance        = %3.1e\n", params.tolerance);
-  fprintf(outfile, "\tCache Level      = %1d\n", params.cachelev);
-  fprintf(outfile, "\tAO Basis         = %s\n",
+  psi::fprintf(outfile, "\n\tInput parameters:\n");
+  psi::fprintf(outfile, "\t-----------------\n");
+  psi::fprintf(outfile, "\tWave function    = %6s\n", params.wfn.c_str() );
+  psi::fprintf(outfile, "\tReference wfn    = %5s\n", (params.ref == 0) ? "RHF" : ((params.ref == 1) ? "ROHF" : "UHF"));
+  psi::fprintf(outfile, "\tDertype          = %d\n", params.dertype);
+  psi::fprintf(outfile, "\tTolerance        = %3.1e\n", params.tolerance);
+  psi::fprintf(outfile, "\tCache Level      = %1d\n", params.cachelev);
+  psi::fprintf(outfile, "\tAO Basis         = %s\n",
           params.aobasis ? "Yes" : "No");
-  fprintf(outfile, "\tOPDM Only        = %s\n",
+  psi::fprintf(outfile, "\tOPDM Only        = %s\n",
           params.onepdm ? "Yes" : "No");
-  fprintf(outfile, "\tRelax OPDM       = %s\n",
+  psi::fprintf(outfile, "\tRelax OPDM       = %s\n",
           params.relax_opdm ? "Yes" : "No");
-  fprintf(outfile, "\tCompute Xi       = %s\n",
+  psi::fprintf(outfile, "\tCompute Xi       = %s\n",
           (params.calc_xi) ? "Yes" : "No");
-  fprintf(outfile, "\tUse Zeta         = %s\n",
+  psi::fprintf(outfile, "\tUse Zeta         = %s\n",
           (params.use_zeta) ? "Yes" : "No");
-  fprintf(outfile, "\tXi connected     = %s\n",
+  psi::fprintf(outfile, "\tXi connected     = %s\n",
           (params.connect_xi) ? "Yes" : "No");
   fflush(outfile);
 }

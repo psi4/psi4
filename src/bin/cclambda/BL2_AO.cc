@@ -127,7 +127,7 @@ void BL2_AO(int L_irr)
 
     value = (double) valptr[InBuf.idx];
 
-    /*    fprintf(outfile, "<%d %d %d %d = %20.10lf\n", p, q, r, s, value); */
+    /*    psi::fprintf(outfile, "<%d %d %d %d = %20.10lf\n", p, q, r, s, value); */
 
     AO_contribute(p, q, r, s, value, &tau1_AO, &tau2_AO, 1);
 
@@ -143,7 +143,7 @@ void BL2_AO(int L_irr)
 
       value = (double) valptr[InBuf.idx];
 
-      /*      fprintf(outfile, "<%d %d %d %d = %20.10lf\n", p, q, r, s, value); */
+      /*      psi::fprintf(outfile, "<%d %d %d %d = %20.10lf\n", p, q, r, s, value); */
 
       AO_contribute(p, q, r, s, value, &tau1_AO, &tau2_AO, 1);
 
@@ -213,7 +213,7 @@ void BL2_AO(int L_irr)
 
     value = (double) valptr[InBuf.idx];
 
-    /*    fprintf(outfile, "<%d %d %d %d = %20.10lf\n", p, q, r, s, value); */
+    /*    psi::fprintf(outfile, "<%d %d %d %d = %20.10lf\n", p, q, r, s, value); */
 
     AO_contribute(p, q, r, s, value, &tau1_AO, &tau2_AO, 1);
 
@@ -229,7 +229,7 @@ void BL2_AO(int L_irr)
 
       value = (double) valptr[InBuf.idx];
 
-      /*      fprintf(outfile, "<%d %d %d %d = %20.10lf\n", p, q, r, s, value); */
+      /*      psi::fprintf(outfile, "<%d %d %d %d = %20.10lf\n", p, q, r, s, value); */
 
       AO_contribute(p, q, r, s, value, &tau1_AO, &tau2_AO, 1);
 
@@ -299,7 +299,7 @@ void BL2_AO(int L_irr)
 
     value = (double) valptr[InBuf.idx];
 
-    /*    fprintf(outfile, "<%d %d %d %d = %20.10lf\n", p, q, r, s, value); */
+    /*    psi::fprintf(outfile, "<%d %d %d %d = %20.10lf\n", p, q, r, s, value); */
 
     AO_contribute(p, q, r, s, value, &tau1_AO, &tau2_AO, 0);
 
@@ -315,7 +315,7 @@ void BL2_AO(int L_irr)
 
       value = (double) valptr[InBuf.idx];
 
-      /*      fprintf(outfile, "<%d %d %d %d = %20.10lf\n", p, q, r, s, value); */
+      /*      psi::fprintf(outfile, "<%d %d %d %d = %20.10lf\n", p, q, r, s, value); */
 
       AO_contribute(p, q, r, s, value, &tau1_AO, &tau2_AO, 0);
 

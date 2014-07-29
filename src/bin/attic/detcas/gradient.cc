@@ -168,7 +168,7 @@ void calc_grad_2(int npairs, int *ppair, int *qpair, double *F_core,
     }
 
     else {
-      fprintf(outfile, 
+      psi::fprintf(outfile, 
              "(calc_grad_2): Error, unrecognized class of indep pair\n");
     }
 

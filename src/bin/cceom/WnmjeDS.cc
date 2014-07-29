@@ -180,7 +180,7 @@ void WnmjeDS(int i, int C_irr) {
     global_dpd_->file2_close(&Cme);
 /*
     tval = dpd_file2_dot_self(&XNJ);
-    fprintf(outfile,"XNJ self dot %15.10lf\n",tval);
+    psi::fprintf(outfile,"XNJ self dot %15.10lf\n",tval);
 */
     global_dpd_->file2_close(&XNJ);
 
@@ -201,7 +201,7 @@ void WnmjeDS(int i, int C_irr) {
 
 /*
     tval = dpd_file2_dot_self(&Xnj);
-    fprintf(outfile,"Xnj self dot %15.10lf\n",tval);
+    psi::fprintf(outfile,"Xnj self dot %15.10lf\n",tval);
 */
     global_dpd_->file2_close(&Xnj);
 

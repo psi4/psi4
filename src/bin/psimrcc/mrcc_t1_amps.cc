@@ -51,7 +51,7 @@ void CCMRCC::build_t1_ia_amplitudes()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the t1_ia Amplitudes     ...");
+    psi::fprintf(outfile,"\n\tBuilding the t1_ia Amplitudes     ...");
     fflush(outfile);
   )
   // Closed-shell
@@ -89,7 +89,7 @@ void CCMRCC::build_t1_ia_amplitudes()
 
 
   if(pert_cbs && pert_cbs_coupling){
-    fprintf(outfile,"\n Computing frozen-virtual contribution to H(ia)");
+    psi::fprintf(outfile,"\n Computing frozen-virtual contribution to H(ia)");
     blas->append("t1_eqns[o][v]{u} +=     t2_1[o][ovf]{u} 2@2 <[v]:[ovf]>");
     blas->append("t1_eqns[o][v]{u} +=     t2_1[o][OvF]{u} 2@2 <[v]|[ovf]>");
     blas->append("t1_eqns[o][v]{u} +=     t2_1[o][OfV]{u} 2@2 <[v]|[ofv]>");
@@ -105,7 +105,7 @@ void CCMRCC::build_t1_ia_amplitudes()
 
 
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
+    psi::fprintf(outfile," done. Timing %20.6f s",timer.get());
     fflush(outfile);
   );
 }
@@ -114,7 +114,7 @@ void CCMRCC::build_t1_IA_amplitudes()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the t1_IA Amplitudes     ...");
+    psi::fprintf(outfile,"\n\tBuilding the t1_IA Amplitudes     ...");
     fflush(outfile);
   );
   // Closed-shell
@@ -140,7 +140,7 @@ void CCMRCC::build_t1_IA_amplitudes()
   DEBUGGING(3,blas->print("t1_eqns[O][V]{u}"););
 
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
+    psi::fprintf(outfile," done. Timing %20.6f s",timer.get());
     fflush(outfile);
   );
 }

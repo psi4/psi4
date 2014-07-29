@@ -217,9 +217,9 @@ void sortone_UHF(struct RHO_Params rho_params)
   global_dpd_->file2_close(&D);
 
   /*
-  fprintf(outfile, "\n\tAlpha MO OPDM:\n");
+  psi::fprintf(outfile, "\n\tAlpha MO OPDM:\n");
   mat_print(O_a, nmo, nmo, outfile);
-  fprintf(outfile, "\n\tBeta MO OPDM:\n");
+  psi::fprintf(outfile, "\n\tBeta MO OPDM:\n");
   mat_print(O_b, nmo, nmo, outfile);
   */
 

@@ -126,20 +126,20 @@ void mpn_generator(CIvect &Hd, struct stringwr **alplist,
   else oei = CalcInfo.gmat[0];
   tei = CalcInfo.twoel_ints;
 
-  fprintf(outfile,"   CalcInfo.escf = %25.15f\n", CalcInfo.escf);
-  fprintf(outfile,"   CalcInfo.e0   = %25.15f\n", CalcInfo.e0);
-  fprintf(outfile,"   CalcInfo.enuc = %25.15f\n", CalcInfo.enuc);
-  fprintf(outfile,"   CalcInfo.e1   = %25.15f\n\n", CalcInfo.e1);
+  psi::fprintf(outfile,"   CalcInfo.escf = %25.15f\n", CalcInfo.escf);
+  psi::fprintf(outfile,"   CalcInfo.e0   = %25.15f\n", CalcInfo.e0);
+  psi::fprintf(outfile,"   CalcInfo.enuc = %25.15f\n", CalcInfo.enuc);
+  psi::fprintf(outfile,"   CalcInfo.e1   = %25.15f\n\n", CalcInfo.e1);
   if(Parameters.zaptn) {
-    fprintf(outfile,"   n         Corr. Energy \t\t E(ZAPTn) \t\t"
+    psi::fprintf(outfile,"   n         Corr. Energy \t\t E(ZAPTn) \t\t"
         "   n         Corr. Energy \t\t E(ZAPTn)\n\n");
     } else {
-    fprintf(outfile,"   n         Corr. Energy \t\t E(MPn) \t\t"
+    psi::fprintf(outfile,"   n         Corr. Energy \t\t E(MPn) \t\t"
         "   n         Corr. Energy \t\t E(MPn)\n\n");
     }
-  fprintf(outfile,"   0  %25.15f %25.15f\n", 0.0000000000,
+  psi::fprintf(outfile,"   0  %25.15f %25.15f\n", 0.0000000000,
       CalcInfo.e0+CalcInfo.enuc);
-  fprintf(outfile,"   1  %25.15f %25.15f\n",mpk_energy[1],
+  psi::fprintf(outfile,"   1  %25.15f %25.15f\n",mpk_energy[1],
       mpk_energy[0]+mpk_energy[1]+CalcInfo.enuc);
   Empn = mpk_energy[0]+mpk_energy[1]+CalcInfo.enuc;
   Empn2 = Empn;
@@ -153,50 +153,50 @@ void mpn_generator(CIvect &Hd, struct stringwr **alplist,
       &(CalcInfo.ref_bet_list), &(CalcInfo.ref_bet_rel), H0block.blknum, 
       &tval);
   if (Parameters.print_lvl >= 5) {
-    fprintf(outfile,"Zeroth-order wavefunction\n");
+    psi::fprintf(outfile,"Zeroth-order wavefunction\n");
     Cvec.print(outfile); 
   }
 
   Sigma.buf_lock(buffer2);
   Cvec.read(0, 0);  /* Set Cvec up correctly ? */
   
-  //fprintf(outfile,"Cvec zero_blocks:\n");
+  //psi::fprintf(outfile,"Cvec zero_blocks:\n");
   //Cvec.print_zero_blocks(); 
   Sigma.set_zero_blocks_all();
   
-  //fprintf(outfile,"Sigma zero_blocks after set_zero_blocks_all.\n");
+  //psi::fprintf(outfile,"Sigma zero_blocks after set_zero_blocks_all.\n");
   //Sigma.print_zero_blocks(); 
   
   sigma(alplist, betlist, Cvec, Sigma, oei, tei, Parameters.fci, 0); 
   if (Parameters.print_lvl >= 5) {
-    fprintf(outfile,"Sigma vector for 0 C vector\n");
+    psi::fprintf(outfile,"Sigma vector for 0 C vector\n");
     Sigma.read(0,0);
     Sigma.print(outfile);
     }
-  //fprintf(outfile,"Sigma zero_blocks after sigma call.\n");
+  //psi::fprintf(outfile,"Sigma zero_blocks after sigma call.\n");
   //Sigma.print_zero_blocks(); 
 
   Cvec.read(0,0);  /* Set Cvec up correctly ? */
   Sigma.read(0,0); /* Set Sigma up correctly ? */
   tval = Cvec * Sigma;
 
-  //fprintf(outfile," CalcInfo.enuc = %25.15f\n", CalcInfo.enuc);
-  //fprintf(outfile," <psi0|Hc|psi0> = %25.15f\n", tval);
-  //fprintf(outfile," CalcInfo.efzc = %25.15f\n", CalcInfo.efzc);
-  //fprintf(outfile," mpk_energy[0] = %25.15f\n", mpk_energy[0]);
+  //psi::fprintf(outfile," CalcInfo.enuc = %25.15f\n", CalcInfo.enuc);
+  //psi::fprintf(outfile," <psi0|Hc|psi0> = %25.15f\n", tval);
+  //psi::fprintf(outfile," CalcInfo.efzc = %25.15f\n", CalcInfo.efzc);
+  //psi::fprintf(outfile," mpk_energy[0] = %25.15f\n", mpk_energy[0]);
  
   tval += CalcInfo.efzc - mpk_energy[0]; 
  
-  fprintf(outfile,"   1  %25.15f %25.15f\n", tval,
+  psi::fprintf(outfile,"   1  %25.15f %25.15f\n", tval,
    tval+mpk_energy[0]+CalcInfo.enuc);
   if (tval - mpk_energy[1] > ZERO) 
-    fprintf(outfile, "First-order energies do not agree!\n");
+    psi::fprintf(outfile, "First-order energies do not agree!\n");
   fflush(outfile);
 
   Cvec.copy_zero_blocks(Sigma); /* Probably don't need this anymore */ 
   Cvec.copy(Sigma, (1-kvec_offset), 0);
   if (Parameters.print_lvl >= 5) {
-    fprintf(outfile, "Cvec copying Sigma.\n");
+    psi::fprintf(outfile, "Cvec copying Sigma.\n");
     Cvec.print(outfile);
   }
 
@@ -208,7 +208,7 @@ void mpn_generator(CIvect &Hd, struct stringwr **alplist,
 
   tval = 0.0;
   if (Parameters.print_lvl >= 5) {
-    fprintf(outfile, "Cvec after dcalc2.\n");
+    psi::fprintf(outfile, "Cvec after dcalc2.\n");
     Cvec.print(outfile);
   }
   Cvec.read((1-kvec_offset),0);
@@ -218,7 +218,7 @@ void mpn_generator(CIvect &Hd, struct stringwr **alplist,
   Sigma.buf_lock(buffer2);
 
   if (Parameters.print_lvl >= 5) {
-    fprintf(outfile, "Cvec after set_vals.\n");
+    psi::fprintf(outfile, "Cvec after set_vals.\n");
     Cvec.print(outfile);
     }
 
@@ -230,7 +230,7 @@ void mpn_generator(CIvect &Hd, struct stringwr **alplist,
      Sigma.read(0, 0);
      Cvec.read((k-kvec_offset), 0);  /* Set Cvec up correctly ? */
      sigma(alplist, betlist, Cvec, Sigma, oei, tei, Parameters.fci, 0);
-     //fprintf(outfile,"Sigma zero_blocks after sigma call.\n");
+     //psi::fprintf(outfile,"Sigma zero_blocks after sigma call.\n");
      //Sigma.print_zero_blocks(); 
 
      /* Compute k+1, 2k, and 2k+1 th order energies from kth order wavefunction */ 
@@ -239,9 +239,9 @@ void mpn_generator(CIvect &Hd, struct stringwr **alplist,
 
      #ifdef DEBUG
        tval = Sigma * Sigma;
-       fprintf(outfile," Sigma * Sigma = %20.10f\n", tval);
+       psi::fprintf(outfile," Sigma * Sigma = %20.10f\n", tval);
        tval = sqrt(tval);
-       fprintf(outfile," norm of Sigma = %20.10f\n", tval);
+       psi::fprintf(outfile," norm of Sigma = %20.10f\n", tval);
      #endif
 
      if (CalcInfo.iopen) { 
@@ -253,7 +253,7 @@ void mpn_generator(CIvect &Hd, struct stringwr **alplist,
           &(CalcInfo.ref_bet_rel), H0block.blknum, &tval);
      mpk_energy[k+1] = tval; 
      Empn += tval;
-     fprintf(outfile,"  %2d  %25.15f %25.15f", k+1, mpk_energy[k+1], Empn); 
+     psi::fprintf(outfile,"  %2d  %25.15f %25.15f", k+1, mpk_energy[k+1], Empn); 
  
      std::string label = (Parameters.zaptn) ? "ZAPT" : "MP";
 
@@ -262,7 +262,7 @@ void mpn_generator(CIvect &Hd, struct stringwr **alplist,
        Cvec.wigner_E2k_formula(Hd, Sigma, Cvec2, alplist, betlist, buffer1,
           buffer2, k, mp2k_energy, wfn_overlap, cvec_coeff, cvec_norm, kvec_offset);
        Empn2 += mp2k_energy[2*k];
-       fprintf(outfile,"\t %2d %25.15f %25.15f\n",2*k,mp2k_energy[2*k],Empn2);
+       psi::fprintf(outfile,"\t %2d %25.15f %25.15f\n",2*k,mp2k_energy[2*k],Empn2);
 
        /*- strings so that variable-name psi variables get parsed in docs -*/
        /*- Process::environment.globals["ZAPTn TOTAL ENERGY"] -*/ 
@@ -284,7 +284,7 @@ void mpn_generator(CIvect &Hd, struct stringwr **alplist,
        Empn2a = Empn2;
 
        Empn2 += mp2k_energy[2*k+1];
-       fprintf(outfile,"\t\t\t\t\t\t\t\t"
+       psi::fprintf(outfile,"\t\t\t\t\t\t\t\t"
                " %2d %25.15f %25.15f\n", 2*k+1, mp2k_energy[2*k+1], Empn2);
 
        s.str(std::string());
@@ -299,7 +299,7 @@ void mpn_generator(CIvect &Hd, struct stringwr **alplist,
         
        }
      else {
-       fprintf(outfile, "\n");
+       psi::fprintf(outfile, "\n");
 
        std::stringstream s;
        s << label << (k+1) << " TOTAL ENERGY";
@@ -334,16 +334,16 @@ void mpn_generator(CIvect &Hd, struct stringwr **alplist,
            throw PsiException(str,__FILE__,__LINE__);
            } 
        while (max_overlap > MPn_ZERO) {
-         fprintf(outfile,"Second Schmidt-Orthogonalization performed.\n");
+         psi::fprintf(outfile,"Second Schmidt-Orthogonalization performed.\n");
          Cvec.read(k-1,0);
          tval = Cvec * Cvec;
          tval = 1.0/sqrt(tval);
-         fprintf(outfile,"Norm constant for %d S.O. Cvec = %20.15f\n",
+         psi::fprintf(outfile,"Norm constant for %d S.O. Cvec = %20.15f\n",
                  k-1, tval);
          Cvec2.read(k-1,0);
          tval = Cvec2 * Cvec2;
          tval = 1.0/sqrt(tval);
-         fprintf(outfile,"Norm constant for %d S.O. Cvec2 = %20.15f\n",
+         psi::fprintf(outfile,"Norm constant for %d S.O. Cvec2 = %20.15f\n",
                  k-1, tval);
          if (Cvec.schmidt_add2(Cvec2,0,k-2,k-1,k-1,tmp_coeff,
             &tmp_norm,&max_overlap)) did_vec = 1;
@@ -360,14 +360,14 @@ void mpn_generator(CIvect &Hd, struct stringwr **alplist,
            throw PsiException(str,__FILE__,__LINE__);
            }
          for (i=0; i<k-1; i++) { 
-            fprintf(outfile, "second coeff[%d] = %20.15f\n",i,tmp_coeff[i]);
+            psi::fprintf(outfile, "second coeff[%d] = %20.15f\n",i,tmp_coeff[i]);
             cvec_coeff[k-1][i] += (tmp_coeff[i]/cvec_norm[k-1]);
             }
-         fprintf(outfile, "max_overlap = %20.15f\n", max_overlap);
-         fprintf(outfile, "cvec_norm = %20.15f\n",cvec_norm[k-1]);
-         fprintf(outfile, "tmp_norm = %20.15f\n",tmp_norm);
+         psi::fprintf(outfile, "max_overlap = %20.15f\n", max_overlap);
+         psi::fprintf(outfile, "cvec_norm = %20.15f\n",cvec_norm[k-1]);
+         psi::fprintf(outfile, "tmp_norm = %20.15f\n",tmp_norm);
          cvec_norm[k-1] *= tmp_norm;
-         fprintf(outfile, "cvec_norm new = %20.15f\n",cvec_norm[k-1]);
+         psi::fprintf(outfile, "cvec_norm new = %20.15f\n",cvec_norm[k-1]);
          }
        Cvec2.buf_unlock();
        }
@@ -376,11 +376,11 @@ void mpn_generator(CIvect &Hd, struct stringwr **alplist,
      Cvec.construct_kth_order_wf(Hd, Sigma, Cvec2, alplist, betlist, buffer1,
         buffer2, k+1, mpk_energy, cvec_coeff, cvec_norm);
      
-     // fprintf(outfile, "Cvec %d = \n", k+1);
+     // psi::fprintf(outfile, "Cvec %d = \n", k+1);
      // Cvec.print(outfile);
 
      if (Parameters.mpn_schmidt) {
-       fprintf(outfile, "cvec_coeff = \n");
+       psi::fprintf(outfile, "cvec_coeff = \n");
        print_mat(cvec_coeff, k-1, k-1, outfile);
        }
 
@@ -403,36 +403,36 @@ void mpn_generator(CIvect &Hd, struct stringwr **alplist,
      Process::environment.globals["CURRENT CORRELATION ENERGY"] = Empn2 - Process::environment.globals["CURRENT REFERENCE ENERGY"];
 
      if(Parameters.zaptn) 
-       fprintf(outfile, "\nZAPT%d energy saved\n", (Parameters.maxnvect * 2) - 1);
+       psi::fprintf(outfile, "\nZAPT%d energy saved\n", (Parameters.maxnvect * 2) - 1);
      else
-       fprintf(outfile, "\nMP%d energy saved\n", (Parameters.maxnvect * 2) - 1);
+       psi::fprintf(outfile, "\nMP%d energy saved\n", (Parameters.maxnvect * 2) - 1);
    }
    else if (Parameters.save_mpn2 == 2 && Parameters.wigner) {
      chkpt_wt_etot(Empn2a);
      Process::environment.globals["CURRENT ENERGY"] = Empn2a;
      Process::environment.globals["CURRENT CORRELATION ENERGY"] = Empn2a - Process::environment.globals["CURRENT REFERENCE ENERGY"];
      if(Parameters.zaptn)
-       fprintf(outfile, "\nZAPT%d energy saved\n", (Parameters.maxnvect * 2) - 2);
+       psi::fprintf(outfile, "\nZAPT%d energy saved\n", (Parameters.maxnvect * 2) - 2);
      else
-       fprintf(outfile, "\nMP%d energy saved\n", (Parameters.maxnvect * 2) - 2);
+       psi::fprintf(outfile, "\nMP%d energy saved\n", (Parameters.maxnvect * 2) - 2);
    }
    else {
      chkpt_wt_etot(Empn);
      Process::environment.globals["CURRENT ENERGY"] = Empn;
      Process::environment.globals["CURRENT CORRELATION ENERGY"] = Empn - Process::environment.globals["CURRENT REFERENCE ENERGY"];
      if(Parameters.zaptn)
-       fprintf(outfile, "\nZAPT%d energy saved\n", Parameters.maxnvect);
+       psi::fprintf(outfile, "\nZAPT%d energy saved\n", Parameters.maxnvect);
      else
-       fprintf(outfile, "\nMP%d energy saved\n", Parameters.maxnvect);
+       psi::fprintf(outfile, "\nMP%d energy saved\n", Parameters.maxnvect);
    }
    if(Parameters.zaptn)
-     fprintf(outfile, "\nEZAPTn = %17.13lf\n", chkpt_rd_etot());
+     psi::fprintf(outfile, "\nEZAPTn = %17.13lf\n", chkpt_rd_etot());
    else
-     fprintf(outfile, "\nEMPn = %17.13lf\n", chkpt_rd_etot());
+     psi::fprintf(outfile, "\nEMPn = %17.13lf\n", chkpt_rd_etot());
 
    chkpt_close();
 
-   fprintf(outfile,"\n");
+   psi::fprintf(outfile,"\n");
 }
 
 }} // namespace psi::detci

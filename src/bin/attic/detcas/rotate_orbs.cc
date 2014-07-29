@@ -48,12 +48,12 @@ void rotate_orbs_irrep(int irrep, int dim, double **mo_coeffs,
   double **tmpmat, theta, sintheta, costheta;
 
   if (Params.print_lvl > 3) {
-    fprintf(outfile, "Thetas for irrep %d\n", irrep);
+    psi::fprintf(outfile, "Thetas for irrep %d\n", irrep);
     for (pair=0; pair<npairs; pair++) {
-      fprintf(outfile, "Pair (%2d,%2d) = %12.6lf\n",
+      psi::fprintf(outfile, "Pair (%2d,%2d) = %12.6lf\n",
               p_arr[pair], q_arr[pair], theta_arr[pair]);
     }
-    fprintf(outfile, "\n");
+    psi::fprintf(outfile, "\n");
     fflush(outfile);
   }
 
@@ -70,7 +70,7 @@ void rotate_orbs_irrep(int irrep, int dim, double **mo_coeffs,
  
   /* print new coefficients */
   if (Params.print_mos) {
-    fprintf(outfile, "\n\tOld molecular orbitals for irrep %s\n", 
+    psi::fprintf(outfile, "\n\tOld molecular orbitals for irrep %s\n", 
       CalcInfo.labels[irrep]);
     print_mat(tmpmat, dim, dim, outfile);
   }
@@ -89,7 +89,7 @@ void rotate_orbs_irrep(int irrep, int dim, double **mo_coeffs,
 
   /* print new coefficients */
   if (Params.print_mos) {
-    fprintf(outfile, "\n\tNew molecular orbitals for irrep %s\n", 
+    psi::fprintf(outfile, "\n\tNew molecular orbitals for irrep %s\n", 
       CalcInfo.labels[irrep]);
     print_mat(tmpmat, dim, dim, outfile);
   }
@@ -124,7 +124,7 @@ void rotate_test(int dim, int npairs, int *p_arr, int *q_arr,
   }
  
   /* print new coefficients */
-  fprintf(outfile, "\n\tOld molecular orbitals\n");
+  psi::fprintf(outfile, "\n\tOld molecular orbitals\n");
   print_mat(tmpmat, dim, dim, outfile);
 
 
@@ -136,16 +136,16 @@ void rotate_test(int dim, int npairs, int *p_arr, int *q_arr,
     theta = -theta;  /* DROT rotates around the other way */
     costheta = cos(theta);
     sintheta = sin(theta);
-    fprintf(outfile, "\nApplying rotation (%2d,%2d) = %12.6lf\n", p, q, theta);
-    fprintf(outfile, "Cos(theta)=%12.6lf, Sin(theta)=%12.6lf\n", 
+    psi::fprintf(outfile, "\nApplying rotation (%2d,%2d) = %12.6lf\n", p, q, theta);
+    psi::fprintf(outfile, "Cos(theta)=%12.6lf, Sin(theta)=%12.6lf\n", 
             costheta, sintheta);
     C_DROT(dim,&(tmpmat[0][q]),dim,&(tmpmat[0][p]),dim,costheta,sintheta);
-    fprintf(outfile, "\n\tMatrix after transformation:\n");
+    psi::fprintf(outfile, "\n\tMatrix after transformation:\n");
     print_mat(tmpmat, dim, dim, outfile);
   }
 
   /* print new coefficients */
-  fprintf(outfile, "\n\tNew molecular orbitals\n");
+  psi::fprintf(outfile, "\n\tNew molecular orbitals\n");
   print_mat(tmpmat, dim, dim, outfile);
 
   free_block(tmpmat);

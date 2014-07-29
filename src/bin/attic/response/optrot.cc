@@ -132,8 +132,8 @@ void optrot(void)
   free(S);
   free(T);
 
-  fprintf(outfile, "\n\tHartree-Fock Optical Rotation Tensor  [(e^2 a0^2)/E_h]:\n");
-  fprintf(outfile, "\t---------------------------------------------------------------\n");
+  psi::fprintf(outfile, "\n\tHartree-Fock Optical Rotation Tensor  [(e^2 a0^2)/E_h]:\n");
+  psi::fprintf(outfile, "\t---------------------------------------------------------------\n");
   mat_print(polar, 3, 3, outfile);
   free_block(polar);
 

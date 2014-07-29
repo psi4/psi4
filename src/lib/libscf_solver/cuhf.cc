@@ -182,9 +182,9 @@ void CUHF::compute_spin_contamination()
     double nm = (nalpha_ - nbeta_) / 2.0;
     double S2 = nm * (nm + 1.0);
 
-    fprintf(outfile, "\n  @Spin Contamination Metric: %8.5F\n", dS);
-      fprintf(outfile, "  @S^2 Expected:              %8.5F\n", S2);
-      fprintf(outfile, "  @S^2 Observed:              %8.5F\n", S2 + dS);
+    psi::fprintf(outfile, "\n  @Spin Contamination Metric: %8.5F\n", dS);
+      psi::fprintf(outfile, "  @S^2 Expected:              %8.5F\n", S2);
+      psi::fprintf(outfile, "  @S^2 Observed:              %8.5F\n", S2 + dS);
 
 }
 
@@ -205,9 +205,9 @@ void CUHF::form_initialF()
     Fb_->copy(H_);
 
     if (debug_) {
-        fprintf(outfile, "Initial Fock alpha matrix:\n");
+        psi::fprintf(outfile, "Initial Fock alpha matrix:\n");
         Fa_->print(outfile);
-        fprintf(outfile, "Initial Fock beta matrix:\n");
+        psi::fprintf(outfile, "Initial Fock beta matrix:\n");
         Fb_->print(outfile);
     }
 }
@@ -220,7 +220,7 @@ void CUHF::form_F()
     Dp_->scale(-0.5); // This is a hack to get the eigenvectors in the
                       // order that I want
     if (debug_) {
-      fprintf(outfile, "Charge Density Matrix (SO Basis):\n");
+      psi::fprintf(outfile, "Charge Density Matrix (SO Basis):\n");
       Dp_->print();
     }
 
@@ -228,14 +228,14 @@ void CUHF::form_F()
     Dp_->transform(S_);
     Dp_->transform(Ca_);
     if (debug_) {
-      fprintf(outfile, "Charge Density Matrix (Alpha Basis):\n");
+      psi::fprintf(outfile, "Charge Density Matrix (Alpha Basis):\n");
       Dp_->print();
     }
 
     // Diagonalize the charge density and form the natural orbitals
     Dp_->diagonalize(Cno_temp_,No_);
     if (debug_) {
-      fprintf(outfile, "CUHF Natural Orbital Occupations:\n");
+      psi::fprintf(outfile, "CUHF Natural Orbital Occupations:\n");
       No_->print();
     }
     Cno_->gemm(false, false, 1.0, Ca_, Cno_temp_, 0.0);
@@ -329,7 +329,7 @@ void CUHF::form_D()
     Dt_->add(Db_);
 
     if (debug_) {
-        fprintf(outfile, "in CUHF::form_D:\n");
+        psi::fprintf(outfile, "in CUHF::form_D:\n");
         Da_->print();
         Db_->print();
     }
@@ -356,7 +356,7 @@ double CUHF::compute_E()
     double DFa = Da_->vector_dot(Fa_);
     double DFb = Db_->vector_dot(Fb_);
     double Eelec = 0.5 * (DH + DFa + DFb);
-    // fprintf(outfile, "electronic energy = %20.14f\n", Eelec);
+    // psi::fprintf(outfile, "electronic energy = %20.14f\n", Eelec);
     double Etotal = nuclearrep_ + Eelec;
     return Etotal;
 }

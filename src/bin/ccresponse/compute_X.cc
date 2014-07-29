@@ -69,10 +69,10 @@ void compute_X(const char *pert, int irrep, double omega)
 
   timer_on("compute_X");
 
-  fprintf(outfile, "\n\tComputing %s-Perturbed Wave Function (%5.3f E_h).\n", pert, omega);
+  psi::fprintf(outfile, "\n\tComputing %s-Perturbed Wave Function (%5.3f E_h).\n", pert, omega);
   init_X(pert, irrep, omega);
-  fprintf(outfile, "\tIter   Pseudopolarizability       RMS \n");
-  fprintf(outfile, "\t----   --------------------   -----------\n");
+  psi::fprintf(outfile, "\tIter   Pseudopolarizability       RMS \n");
+  psi::fprintf(outfile, "\t----   --------------------   -----------\n");
   fflush(outfile);
 
   if (params.wfn == "CC2")
@@ -80,7 +80,7 @@ void compute_X(const char *pert, int irrep, double omega)
   else
     sort_X(pert, irrep, omega);
   polar = -2.0*pseudopolar(pert, irrep, omega);
-  fprintf(outfile, "\t%4d   %20.12f\n", iter, polar);
+  psi::fprintf(outfile, "\t%4d   %20.12f\n", iter, polar);
   fflush(outfile);
 
   for(iter=1; iter <= params.maxiter; iter++) {
@@ -104,15 +104,15 @@ void compute_X(const char *pert, int irrep, double omega)
         cc2_sort_X(pert, irrep, omega);
       else
         sort_X(pert, irrep, omega);
-      fprintf(outfile, "\t-----------------------------------------\n");
-      fprintf(outfile, "\tConverged %s-Perturbed Wfn to %4.3e\n", pert, rms);
+      psi::fprintf(outfile, "\t-----------------------------------------\n");
+      psi::fprintf(outfile, "\tConverged %s-Perturbed Wfn to %4.3e\n", pert, rms);
       if(params.print & 2) {
         sprintf(lbl, "X_%s_IjAb (%5.3f)", pert, omega);
         global_dpd_->buf4_init(&X2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
         X2_norm = global_dpd_->buf4_dot_self(&X2);
         global_dpd_->buf4_close(&X2);
         X2_norm = sqrt(X2_norm);
-        fprintf(outfile, "\tNorm of the converged X2 amplitudes %20.15f\n", X2_norm);
+        psi::fprintf(outfile, "\tNorm of the converged X2 amplitudes %20.15f\n", X2_norm);
         amp_write(pert, irrep, omega);
       }
       fflush(outfile);
@@ -126,7 +126,7 @@ void compute_X(const char *pert, int irrep, double omega)
       sort_X(pert, irrep, omega);
 
     polar = -2.0*pseudopolar(pert, irrep, omega);
-    fprintf(outfile, "\t%4d   %20.12f    %4.3e\n", iter, polar, rms);
+    psi::fprintf(outfile, "\t%4d   %20.12f    %4.3e\n", iter, polar, rms);
     fflush(outfile);
 
   }

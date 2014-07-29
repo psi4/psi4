@@ -232,12 +232,12 @@ void get_rho_params(Options& options)
 
   psio_write_entry(PSIF_CC_INFO, "Num. of CC densities", (char *) &(params.nstates), sizeof(int));
 
-  fprintf(outfile,"\tNumber of States = %-d\n",params.nstates);
+  psi::fprintf(outfile,"\tNumber of States = %-d\n",params.nstates);
 
   /*
-  fprintf(outfile,"\n\tGround? L_root L_irr R_root R_irr G_irr     EOM Energy        R0\n");
+  psi::fprintf(outfile,"\n\tGround? L_root L_irr R_root R_irr G_irr     EOM Energy        R0\n");
   for(i=0; i<params.nstates; i++) {
-    fprintf(outfile,"\t%5s %6d %7s %4d %7s %4s %15.10lf %12.8lf\n",
+    psi::fprintf(outfile,"\t%5s %6d %7s %4d %7s %4s %15.10lf %12.8lf\n",
             (rho_params[i].R_ground ? "Yes":"No"),
             rho_params[i].L_root+1, moinfo.labels[rho_params[i].L_irr],
             rho_params[i].R_root+1, moinfo.labels[rho_params[i].R_irr],
@@ -247,9 +247,9 @@ void get_rho_params(Options& options)
   }
   */
 
-  fprintf(outfile,"\n\tGround?  State     EOM Energy       R0\n");
+  psi::fprintf(outfile,"\n\tGround?  State     EOM Energy       R0\n");
   for(i=0; i<params.nstates; i++) {
-    fprintf(outfile,"\t%5s     %d%3s %15.10lf %12.8lf\n",
+    psi::fprintf(outfile,"\t%5s     %d%3s %15.10lf %12.8lf\n",
             (rho_params[i].R_ground ? "Yes":"No"),
             rho_params[i].L_root+1, moinfo.labels[rho_params[i].L_irr],
             rho_params[i].cceom_energy,

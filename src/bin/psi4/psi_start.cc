@@ -268,7 +268,7 @@ int psi_start(int argc, char *argv[])
         }
 
         if(infile == NULL) {
-            fprintf(stderr, "Error: could not open input file %s\n",ifname.c_str());
+            psi::fprintf(stderr, "Error: could not open input file %s\n",ifname.c_str());
             return(PSI_RETURN_FAILURE);
         }
     }
@@ -291,7 +291,7 @@ int psi_start(int argc, char *argv[])
     }
 
     if(outfile == NULL) {
-        fprintf(stderr, "Error: could not open output file %s\n",ofname.c_str());
+        psi::fprintf(stderr, "Error: could not open output file %s\n",ofname.c_str());
         return(PSI_RETURN_FAILURE);
     }
 #endif
@@ -327,7 +327,7 @@ void print_usage(void)
     printf("Usage:  psi4 [options] inputfile\n");
     printf(" -a  --append             Append results to output file. Default: Truncate first\n");
     printf(" -c  --check              Run input checks (not implemented).\n");
-    printf(" -d  --debug              Flush the outfile at every fprintf.\n"
+    printf(" -d  --debug              Flush the outfile at every psi::fprintf.\n"
            "                          Default: true iff --with-debug.\n");
     printf(" -h  --help               Display this usage information.\n");
     printf(" -i  --input filename     Input file name. Default: filename\n");

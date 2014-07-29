@@ -267,7 +267,7 @@ void RHF::form_D()
     }
 
     if (debug_) {
-        fprintf(outfile, "in RHF::form_D:\n");
+        psi::fprintf(outfile, "in RHF::form_D:\n");
         D_->print();
     }
 }
@@ -314,16 +314,16 @@ void RHF::save_sapt_info()
 {
     if (factory_->nirrep() != 1)
     {
-        fprintf(outfile,"Must run in C1. Period.\n"); fflush(outfile);
+        psi::fprintf(outfile,"Must run in C1. Period.\n"); fflush(outfile);
         abort();
     }
     if (soccpi_[0] != 0)
     {
-        fprintf(outfile,"Aren't we in RHF Here? Pair those electrons up cracker!\n"); fflush(outfile);
+        psi::fprintf(outfile,"Aren't we in RHF Here? Pair those electrons up cracker!\n"); fflush(outfile);
         abort();
     }
 
-    fprintf(outfile,"\n  Saving SAPT %s file.\n",options_.get_str("SAPT").c_str());
+    psi::fprintf(outfile,"\n  Saving SAPT %s file.\n",options_.get_str("SAPT").c_str());
 
     int fileno;
     char* body_type = (char*)malloc(400*sizeof(char));
@@ -527,9 +527,9 @@ void RHF::stability_analysis()
             delete [] evals;
         }
 
-        fprintf(outfile, "\tLowest singlet (RHF->RHF) stability eigenvalues:-\n");
+        psi::fprintf(outfile, "\tLowest singlet (RHF->RHF) stability eigenvalues:-\n");
         print_stability_analysis(singlet_eval_sym);
-        fprintf(outfile, "\tLowest triplet (RHF->UHF) stability eigenvalues:-\n");
+        psi::fprintf(outfile, "\tLowest triplet (RHF->UHF) stability eigenvalues:-\n");
         print_stability_analysis(triplet_eval_sym);
         psio_->close(PSIF_LIBTRANS_DPD, 1);
     }

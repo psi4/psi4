@@ -59,7 +59,7 @@ void IWL::write_all(int nbfso, double *ints,
                         lblptr[idx++] = (Label) s;
                         valptr[idx_] = (Value) ints[pqrs];
                         idx_++;
-                        if (printflg) fprintf(out, "%d %d %d %d [%d] = %10.6f\n",
+                        if (printflg) psi::fprintf(out, "%d %d %d %d [%d] = %10.6f\n",
                             p, q, r, s, pqrs, ints[pqrs]) ;
 
                         if (idx_ == ints_per_buf_) {
@@ -126,7 +126,7 @@ void iwl_buf_wrt_all(struct iwlbuf *Buf, int nbfso, double *ints, int *ioff,
 	    lblptr[idx++] = (Label) s;
 	    valptr[Buf->idx] = (Value) ints[pqrs];
 	    Buf->idx++;
-	    if (printflg) fprintf(out, "%d %d %d %d [%d] = %10.6f\n",
+	    if (printflg) psi::fprintf(out, "%d %d %d %d [%d] = %10.6f\n",
 				  p, q, r, s, pqrs, ints[pqrs]) ;
 	    
 	    if (Buf->idx == Buf->ints_per_buf) {

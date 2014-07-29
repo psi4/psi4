@@ -74,9 +74,9 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
 
     if(print_) {
         if(transformationType_ == Restricted){
-            fprintf(outfile, "\tStarting first half-transformation.\n");
+            psi::fprintf(outfile, "\tStarting first half-transformation.\n");
         }else{
-            fprintf(outfile, "\tStarting AA/AB first half-transformation.\n");
+            psi::fprintf(outfile, "\tStarting AA/AB first half-transformation.\n");
         }
         fflush(outfile);
     }
@@ -95,7 +95,7 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
     sprintf(label, "Half-Transformed Ints (nn|%c%c)", toupper(s1->label()), toupper(s2->label()));
     global_dpd_->buf4_init(&K, PSIF_HALFT0, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
     if(print_ > 5)
-        fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
+        psi::fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
                             label, braCore, ketCore, braDisk, ketDisk);
 
     for(int h=0; h < nirreps_; h++) {
@@ -113,10 +113,10 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
         }
 
         if(print_ > 1) {
-            fprintf(outfile, "\th = %d; memfree         = %lu\n", h, memFree);
-            fprintf(outfile, "\th = %d; rows_per_bucket = %lu\n", h, rowsPerBucket);
-            fprintf(outfile, "\th = %d; rows_left       = %lu\n", h, rowsLeft);
-            fprintf(outfile, "\th = %d; nbuckets        = %d\n", h, nBuckets);
+            psi::fprintf(outfile, "\th = %d; memfree         = %lu\n", h, memFree);
+            psi::fprintf(outfile, "\th = %d; rows_per_bucket = %lu\n", h, rowsPerBucket);
+            psi::fprintf(outfile, "\th = %d; rows_left       = %lu\n", h, rowsLeft);
+            psi::fprintf(outfile, "\th = %d; nbuckets        = %d\n", h, nBuckets);
             fflush(outfile);
         }
 
@@ -165,9 +165,9 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
 
     if(print_) {
         if(transformationType_ == Restricted){
-            fprintf(outfile, "\tSorting half-transformed integrals.\n");
+            psi::fprintf(outfile, "\tSorting half-transformed integrals.\n");
         }else{
-            fprintf(outfile, "\tSorting AA/AB half-transformed integrals.\n");
+            psi::fprintf(outfile, "\tSorting AA/AB half-transformed integrals.\n");
         }
         fflush(outfile);
     }
@@ -179,7 +179,7 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
     sprintf(label, "Half-Transformed Ints (nn|%c%c)", toupper(s1->label()), toupper(s2->label()));
     global_dpd_->buf4_init(&K, PSIF_HALFT0, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
     if(print_ > 5)
-        fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
+        psi::fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
                             label, braCore, ketCore, braDisk, ketDisk);
     sprintf(label, "Half-Transformed Ints (%c%c|nn)", toupper(s1->label()), toupper(s2->label()));
     global_dpd_->buf4_sort(&K, aHtIntFile_, rspq, ketCore, braCore, label);
@@ -191,7 +191,7 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
     if(transformationType_ != Restricted){
         /*** BB two-electron integral transformation ***/
         if(print_) {
-            fprintf(outfile, "\tStarting BB first half-transformation.\n");
+            psi::fprintf(outfile, "\tStarting BB first half-transformation.\n");
             fflush(outfile);
         }
 
@@ -207,7 +207,7 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
         sprintf(label, "Half-Transformed Ints (nn|%c%c)", tolower(s1->label()), tolower(s2->label()));
         global_dpd_->buf4_init(&K, PSIF_HALFT0, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
         if(print_ > 5)
-            fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
+            psi::fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
                                 label, braCore, ketCore, braDisk, ketDisk);
 
         for(int h=0; h < nirreps_; h++) {
@@ -226,10 +226,10 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
             }
 
             if(print_ > 1){
-                fprintf(outfile, "\th = %d; memfree         = %lu\n", h, memFree);
-                fprintf(outfile, "\th = %d; rows_per_bucket = %lu\n", h, rowsPerBucket);
-                fprintf(outfile, "\th = %d; rows_left       = %lu\n", h, rowsLeft);
-                fprintf(outfile, "\th = %d; nbuckets        = %d\n", h, nBuckets);
+                psi::fprintf(outfile, "\th = %d; memfree         = %lu\n", h, memFree);
+                psi::fprintf(outfile, "\th = %d; rows_per_bucket = %lu\n", h, rowsPerBucket);
+                psi::fprintf(outfile, "\th = %d; rows_left       = %lu\n", h, rowsLeft);
+                psi::fprintf(outfile, "\th = %d; nbuckets        = %d\n", h, nBuckets);
                 fflush(outfile);
             }
 
@@ -277,7 +277,7 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
         global_dpd_->buf4_close(&J);
 
         if(print_) {
-            fprintf(outfile, "\tSorting BB half-transformed integrals.\n");
+            psi::fprintf(outfile, "\tSorting BB half-transformed integrals.\n");
             fflush(outfile);
         }
 
@@ -290,7 +290,7 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
         sprintf(label, "Half-Transformed Ints (nn|%c%c)", tolower(s1->label()), tolower(s2->label()));
         global_dpd_->buf4_init(&K, PSIF_HALFT0, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
         if(print_ > 5)
-            fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
+            psi::fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
                                 label, braCore, ketCore, braDisk, ketDisk);
 
         sprintf(label, "Half-Transformed Ints (%c%c|nn)", tolower(s1->label()), tolower(s2->label()));
@@ -307,7 +307,7 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
     delete [] label;
 
     if(print_){
-        fprintf(outfile, "\tFirst half integral transformation complete.\n");
+        psi::fprintf(outfile, "\tFirst half integral transformation complete.\n");
         fflush(outfile);
     }
 

@@ -208,7 +208,7 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
 
 
     Parameters.root = j;
-    fprintf(outfile, "DETCI following root %d (overlap %6.4lf)\n", 
+    psi::fprintf(outfile, "DETCI following root %d (overlap %6.4lf)\n", 
       Parameters.root+1,max_overlap);
 
     for (i=0; i<Parameters.average_num; i++) {
@@ -458,12 +458,12 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
     
     /* write and/or print the opdm */
     if (printflag) {
-      fprintf(outfile, "\n\nOne-particle ");
+      psi::fprintf(outfile, "\n\nOne-particle ");
       if (transdens)
-        fprintf(outfile, "transition ");
-      fprintf(outfile, "density matrix MO basis for root %d\n", Jroot+1);
+        psi::fprintf(outfile, "transition ");
+      psi::fprintf(outfile, "density matrix MO basis for root %d\n", Jroot+1);
       print_mat(onepdm, populated_orbs, populated_orbs, outfile);
-      fprintf(outfile, "\n");
+      psi::fprintf(outfile, "\n");
     }
 
 
@@ -472,21 +472,21 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
       psio_write_entry(targetfile, opdm_key, (char *) onepdm[0], 
         populated_orbs * populated_orbs * sizeof(double));
       if (Parameters.print_lvl) 
-        fprintf(outfile, "\nWrote MO-basis %s %d to disk\n", 
+        psi::fprintf(outfile, "\nWrote MO-basis %s %d to disk\n", 
           transdens ? "TDM" : "OPDM", Jroot+1);
 
       sprintf(opdm_key,"MO-basis Alpha %s Root %d", transdens ? "TDM" : "OPDM",Jroot);
       psio_write_entry(targetfile, opdm_key, (char *) onepdm_a[0], 
         populated_orbs * populated_orbs * sizeof(double));
       if (Parameters.print_lvl) 
-        fprintf(outfile, "\nWrote MO-basis Alpha %s %d to disk\n", 
+        psi::fprintf(outfile, "\nWrote MO-basis Alpha %s %d to disk\n", 
           transdens ? "TDM" : "OPDM", Jroot+1);
 
       sprintf(opdm_key,"MO-basis Beta %s Root %d", transdens ? "TDM" : "OPDM",Jroot);
       psio_write_entry(targetfile, opdm_key, (char *) onepdm_b[0], 
         populated_orbs * populated_orbs * sizeof(double));
       if (Parameters.print_lvl) 
-        fprintf(outfile, "\nWrote MO-basis Beta %s %d to disk\n", 
+        psi::fprintf(outfile, "\nWrote MO-basis Beta %s %d to disk\n", 
           transdens ? "TDM" : "OPDM", Jroot+1);
 
       /* write it without the "Root n" part if it's the desired root      */
@@ -496,7 +496,7 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
         psio_write_entry(targetfile, opdm_key, (char *) onepdm[0],
           populated_orbs * populated_orbs * sizeof(double));
         if (Parameters.print_lvl) 
-          fprintf(outfile, "Wrote MO-basis %s to disk\n", 
+          psi::fprintf(outfile, "Wrote MO-basis %s to disk\n", 
             transdens ? "TDM" : "OPDM");
         
         // print alpha and beta densities for the target root also
@@ -504,17 +504,17 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
         psio_write_entry(targetfile, opdm_key, (char *) onepdm_a[0],
           populated_orbs * populated_orbs * sizeof(double));
         if (Parameters.print_lvl) 
-          fprintf(outfile, "Wrote MO-basis Alpha %s to disk\n", 
+          psi::fprintf(outfile, "Wrote MO-basis Alpha %s to disk\n", 
             transdens ? "TDM" : "OPDM");
         sprintf(opdm_key,"MO-basis Beta %s", transdens ? "TDM" : "OPDM");
         psio_write_entry(targetfile, opdm_key, (char *) onepdm_b[0],
           populated_orbs * populated_orbs * sizeof(double));
         if (Parameters.print_lvl) 
-          fprintf(outfile, "Wrote MO-basis Beta %s to disk\n", 
+          psi::fprintf(outfile, "Wrote MO-basis Beta %s to disk\n", 
             transdens ? "TDM" : "OPDM");
 
       }
-      fprintf(outfile, "\n");
+      psi::fprintf(outfile, "\n");
     }
 
     /* Get the kinetic energy if requested */
@@ -534,31 +534,31 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
           mu_z += muz_mo[i][j] * onepdm[i][j];
         }
       }
-      fprintf(outfile, "%sipole moment root %d \n", 
+      psi::fprintf(outfile, "%sipole moment root %d \n", 
         transdens ? "\nTransition d" : "\nD", Jroot+1); 
       if (!transdens) {
-        fprintf(outfile, "Nuclear:    %9.5lf x, %9.5lf y, %9.5lf z au\n",
+        psi::fprintf(outfile, "Nuclear:    %9.5lf x, %9.5lf y, %9.5lf z au\n",
           mux_n, muy_n, muz_n);
-        fprintf(outfile, "            %9.5lf x, %9.5lf y, %9.5lf z D\n",
+        psi::fprintf(outfile, "            %9.5lf x, %9.5lf y, %9.5lf z D\n",
           mux_n*_dipmom_au2debye,muy_n*_dipmom_au2debye,muz_n*_dipmom_au2debye);
       }
-      fprintf(outfile, "Electronic: %9.5lf x, %9.5lf y, %9.5lf z au\n",
+      psi::fprintf(outfile, "Electronic: %9.5lf x, %9.5lf y, %9.5lf z au\n",
         mu_x, mu_y, mu_z);
-      fprintf(outfile, "            %9.5lf x, %9.5lf y, %9.5lf z D\n",
+      psi::fprintf(outfile, "            %9.5lf x, %9.5lf y, %9.5lf z D\n",
         mu_x*_dipmom_au2debye, mu_y*_dipmom_au2debye, mu_z*_dipmom_au2debye);
       if (!transdens) {
         mu_x += mux_n; mu_y += muy_n; mu_z += muz_n; 
-        fprintf(outfile, "Total:      %9.5lf x, %9.5lf y, %9.5lf z au\n",
+        psi::fprintf(outfile, "Total:      %9.5lf x, %9.5lf y, %9.5lf z au\n",
           mu_x, mu_y, mu_z);
-        fprintf(outfile, "            %9.5lf x, %9.5lf y, %9.5lf z D\n",
+        psi::fprintf(outfile, "            %9.5lf x, %9.5lf y, %9.5lf z D\n",
           mu_x*_dipmom_au2debye, mu_y*_dipmom_au2debye, 
           mu_z*_dipmom_au2debye);
       }
       mu_tot = sqrt(mu_x * mu_x + mu_y * mu_y + mu_z * mu_z);
-      fprintf(outfile, "|mu|  =     %9.5lf au %9.5lf D\n", mu_tot,
+      psi::fprintf(outfile, "|mu|  =     %9.5lf au %9.5lf D\n", mu_tot,
         mu_tot * _dipmom_au2debye);
        
-      if (Jroot + 1 == Parameters.num_roots) fprintf(outfile, "\n");
+      if (Jroot + 1 == Parameters.num_roots) psi::fprintf(outfile, "\n");
     }
     */
 
@@ -652,7 +652,7 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
         }
     }
     
-    fprintf(outfile, "  ==> Properties %s <==\n", ss.str().c_str());
+    psi::fprintf(outfile, "  ==> Properties %s <==\n", ss.str().c_str());
     oe->compute();
 
     // std::pair<SharedMatrix,SharedVector> nos = oe->Na_mo();
@@ -780,14 +780,14 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
     /* loop over roots or averaged opdm */
     for(k=0; k<klast; k++) {
       if (Parameters.opdm_ave && Parameters.print_lvl > 1) {
-        fprintf(outfile,"\n\n\t\t\tCI Natural Orbitals for the Averaged\n");
-        fprintf(outfile,"\t\t\tOPDM of %d Roots in terms of Molecular"
+        psi::fprintf(outfile,"\n\n\t\t\tCI Natural Orbitals for the Averaged\n");
+        psi::fprintf(outfile,"\t\t\tOPDM of %d Roots in terms of Molecular"
                  " Orbitals\n\n",k); 
       }
       else if (Parameters.print_lvl > 1) {
-        fprintf(outfile,
+        psi::fprintf(outfile,
              "\n\t\t\tCI Natural Orbitals in terms of Molecular Orbitals\n\n");
-        fprintf(outfile,"\t\t\t Root %d\n\n",k+1);
+        psi::fprintf(outfile,"\t\t\t Root %d\n\n",k+1);
         fflush(outfile);
       }
 
@@ -822,8 +822,8 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
           scfvec = chkpt_rd_scf_irrep(irrep);
 
             #ifdef DEBUG
-            fprintf(outfile,"Cvec for k==0, read in from chkpt original\n");
-            fprintf(outfile," %s Block \n", CalcInfo.labels[irrep]);
+            psi::fprintf(outfile,"Cvec for k==0, read in from chkpt original\n");
+            psi::fprintf(outfile," %s Block \n", CalcInfo.labels[irrep]);
             print_mat(scfvec, CalcInfo.orbs_per_irr[irrep],
                       CalcInfo.orbs_per_irr[irrep], outfile);
             #endif
@@ -886,13 +886,13 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
         if (Parameters.print_lvl > 0) {
           if (irrep==0) {
             if (Parameters.opdm_ave) { 
-              fprintf(outfile, "\n Averaged CI Natural Orbitals in terms "
+              psi::fprintf(outfile, "\n Averaged CI Natural Orbitals in terms "
                 "of Molecular Orbitals\n\n");
               }
-            else fprintf(outfile, "\n CI Natural Orbitals in terms of "
+            else psi::fprintf(outfile, "\n CI Natural Orbitals in terms of "
                    "Molecular Orbitals: Root %d\n\n", k+1);
           }
-          fprintf(outfile,"\n %s Block (MO basis)\n", CalcInfo.labels[irrep]);
+          psi::fprintf(outfile,"\n %s Block (MO basis)\n", CalcInfo.labels[irrep]);
           eivout(opdm_eigvec, opdm_eigval, CalcInfo.orbs_per_irr[irrep],
                  CalcInfo.orbs_per_irr[irrep], outfile);
         }
@@ -901,7 +901,7 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
         if (Parameters.opdm_wrtnos && (k==Parameters.opdm_orbs_root)) {
           if (irrep==0) {
             if (!Parameters.opdm_ave) {
-              fprintf(outfile,"\n Writing CI Natural Orbitals for root %d"
+              psi::fprintf(outfile,"\n Writing CI Natural Orbitals for root %d"
                       " to checkpoint in terms of Symmetry Orbitals\n\n",k+1);
             }
           }
@@ -914,12 +914,12 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
             sizeof(double));
 
           #ifdef DEBUG
-          fprintf(outfile,"\nCvec read for MO to SO trans\n\n");
-          fprintf(outfile," %s Block \n", CalcInfo.labels[irrep]);
+          psi::fprintf(outfile,"\nCvec read for MO to SO trans\n\n");
+          psi::fprintf(outfile," %s Block \n", CalcInfo.labels[irrep]);
           print_mat(scfvec, CalcInfo.orbs_per_irr[irrep],
                     CalcInfo.orbs_per_irr[irrep], outfile);
-          fprintf(outfile,"\nOpdm_eigvec before MO to SO trans\n\n");
-          fprintf(outfile," %s Block \n", CalcInfo.labels[irrep]);
+          psi::fprintf(outfile,"\nOpdm_eigvec before MO to SO trans\n\n");
+          psi::fprintf(outfile," %s Block \n", CalcInfo.labels[irrep]);
           print_mat(opdm_eigvec, CalcInfo.orbs_per_irr[irrep],
                     CalcInfo.orbs_per_irr[irrep], outfile); 
           #endif
@@ -928,17 +928,17 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
                 CalcInfo.orbs_per_irr[irrep], 0); 
           free_block(scfvec);
           if (Parameters.print_lvl > 0) {  // FAE
-            fprintf(outfile," %s Block (SO basis)\n", CalcInfo.labels[irrep]);
+            psi::fprintf(outfile," %s Block (SO basis)\n", CalcInfo.labels[irrep]);
             print_mat(opdm_blk, CalcInfo.so_per_irr[irrep],
                       CalcInfo.orbs_per_irr[irrep], outfile);
           }
           chkpt_wt_scf_irrep(opdm_blk, irrep);
-          fprintf(outfile, "\n Warning: Natural Orbitals for the ");
+          psi::fprintf(outfile, "\n Warning: Natural Orbitals for the ");
 	  if (Parameters.opdm_ave)
-            fprintf(outfile, "Averaged OPDM ");
+            psi::fprintf(outfile, "Averaged OPDM ");
           else
-            fprintf(outfile, "Root %d OPDM ", k);
-          fprintf(outfile, "have been written to the checkpoint file!\n\n"); 
+            psi::fprintf(outfile, "Root %d OPDM ", k);
+          psi::fprintf(outfile, "have been written to the checkpoint file!\n\n"); 
         } /* end code to write the NO's to disk */
         mo_offset += CalcInfo.orbs_per_irr[irrep];
       } /* end loop over irreps */
@@ -1059,7 +1059,7 @@ void ave(int targetfile)
                       populated_orbs * populated_orbs * sizeof(double));
 
       if (Parameters.opdm_print) {
-        fprintf(outfile,"\n\n\t\t%sOPDM for Root %d",spinlabels[spincase],root+1);
+        psi::fprintf(outfile,"\n\n\t\t%sOPDM for Root %d",spinlabels[spincase],root+1);
         print_mat(tmp_mat2, populated_orbs, populated_orbs, outfile);
       }
 
@@ -1074,7 +1074,7 @@ void ave(int targetfile)
                      populated_orbs*populated_orbs*sizeof(double));
     
     if (Parameters.print_lvl> 0 || Parameters.opdm_print) {
-      fprintf(outfile,
+      psi::fprintf(outfile,
               "\n\t\t\t Averaged %sOPDM's for %d Roots written to opdm_file \n\n",
               spinlabels[spincase], Parameters.average_num);
     }
@@ -1112,7 +1112,7 @@ void opdm_ke(double **onepdm)
 
   T = init_array(noeints);
   if (Parameters.print_lvl>2) 
-    fprintf(outfile, "Kinetic energy integrals (SO basis):\n");
+    psi::fprintf(outfile, "Kinetic energy integrals (SO basis):\n");
   errcod = iwl_rdone(src_T_file,PSIF_SO_T,T,noeints,0,
                      (Parameters.print_lvl>2),outfile);
   if (!errcod) {
@@ -1129,7 +1129,7 @@ void opdm_ke(double **onepdm)
 
   /* transform the onepdm into SO form, one irrep at a time */
   so_offset = mo_offset = 0;
-  fprintf(outfile,"Correlation Piece of OPDM in SO basis\n");
+  psi::fprintf(outfile,"Correlation Piece of OPDM in SO basis\n");
   for (irrep=0; irrep<CalcInfo.nirreps; irrep++) {
     if (CalcInfo.orbs_per_irr[irrep] == 0) continue;
     for (i=0; i<CalcInfo.orbs_per_irr[irrep]; i++) {
@@ -1149,8 +1149,8 @@ void opdm_ke(double **onepdm)
     }
 
     
-    fprintf(outfile, "Irrep %d\n", irrep);
-    fprintf(outfile, "MO basis, Pitzer order\n");
+    psi::fprintf(outfile, "Irrep %d\n", irrep);
+    psi::fprintf(outfile, "MO basis, Pitzer order\n");
     print_mat(opdm_blk,CalcInfo.so_per_irr[irrep],
               CalcInfo.so_per_irr[irrep],outfile);
 
@@ -1161,7 +1161,7 @@ void opdm_ke(double **onepdm)
     mmult(scfmat,0,tmp_mat,0,opdm_blk,0,CalcInfo.so_per_irr[irrep],
           CalcInfo.orbs_per_irr[irrep],CalcInfo.so_per_irr[irrep],0); 
     
-    fprintf(outfile, "SO basis, Pitzer order\n");
+    psi::fprintf(outfile, "SO basis, Pitzer order\n");
     print_mat(opdm_blk,CalcInfo.so_per_irr[irrep],
               CalcInfo.so_per_irr[irrep],outfile);
 
@@ -1174,7 +1174,7 @@ void opdm_ke(double **onepdm)
       }
     }
 
-    fprintf(outfile,"Contribution to correlation kinetic energy = %15.10lf\n", 
+    psi::fprintf(outfile,"Contribution to correlation kinetic energy = %15.10lf\n", 
             kei);
 
     ke += kei;
@@ -1183,7 +1183,7 @@ void opdm_ke(double **onepdm)
 
   } /* end loop over irreps */
 
-  fprintf(outfile, "\nTotal correlation kinetic energy = %15.10lf\n", ke);
+  psi::fprintf(outfile, "\nTotal correlation kinetic energy = %15.10lf\n", ke);
 
 }
 
@@ -1217,7 +1217,7 @@ void get_mo_dipmom_ints(double **MUX_MO, double **MUY_MO, double **MUZ_MO)
   psio_close(PSIF_OEI, 1);  
 
   if (stat && system("cints --oeprop")) {
-    fprintf(outfile, "DETCI (get_mo_dipmom_ints): Can't run cints --oeprop\n");
+    psi::fprintf(outfile, "DETCI (get_mo_dipmom_ints): Can't run cints --oeprop\n");
     exit(1);
   }
 

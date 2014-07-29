@@ -85,9 +85,9 @@ FILE *outfile ;
    sem(A, 50, 4, evecs, evals, 1.0E-10, 6, &used);
 
 
-   fprintf(outfile, "Ok, the eigenvectors are sideways!\n");
+   psi::fprintf(outfile, "Ok, the eigenvectors are sideways!\n");
    eivout(evecs, evals, 4, 50, outfile);
-   fprintf(outfile, "\nused %d expansion vectors\n", used);
+   psi::fprintf(outfile, "\nused %d expansion vectors\n", used);
 
    tstop(outfile);
    fclose(outfile);
@@ -193,13 +193,13 @@ void sem_test(double **A, int N, int M, int L, double **evecs, double *evals,
       sq_rsp(L, L, G, lambda, 1, alpha, 1E-14);
  
       if (N<100 && Parameters.print_lvl >=3) {
-        fprintf(outfile,"\n b matrix\n");
+        psi::fprintf(outfile,"\n b matrix\n");
         print_mat(b,L,N,outfile);
-        fprintf(outfile,"\n sigma matrix\n");
+        psi::fprintf(outfile,"\n sigma matrix\n");
         print_mat(tmp_mat,L,N,outfile); 
-        fprintf(outfile,"\n G matrix (%d)\n", iter-1);
+        psi::fprintf(outfile,"\n G matrix (%d)\n", iter-1);
         print_mat(G,L,L,outfile);
-        fprintf(outfile,"\n Eigenvectors and eigenvalues of G matrix (%d)\n", iter-1);
+        psi::fprintf(outfile,"\n Eigenvectors and eigenvalues of G matrix (%d)\n", iter-1);
         eivout(alpha, lambda, L, L, outfile);
         }
 
@@ -227,13 +227,13 @@ void sem_test(double **A, int N, int M, int L, double **evecs, double *evals,
           } /* end loop over k (nroots) */
 
          if (Parameters.print_lvl > 2) {
-           fprintf(outfile, "\nsigma_overlap matrix (%2d) = \n", iter-1);
+           psi::fprintf(outfile, "\nsigma_overlap matrix (%2d) = \n", iter-1);
            print_mat(sigma_overlap, L, L, outfile);
 
            for (k=0; k<M; k++) {
-              fprintf(outfile, "\nM matrix (%2d) for root %d = \n", iter, k);
+              psi::fprintf(outfile, "\nM matrix (%2d) for root %d = \n", iter, k);
               print_mat(Mmatrix[k], L, L, outfile);
-              fprintf(outfile, "\n");
+              psi::fprintf(outfile, "\n");
               }
            } 
 
@@ -241,7 +241,7 @@ void sem_test(double **A, int N, int M, int L, double **evecs, double *evals,
        for (k=0; k<M; k++) {
           sq_rsp(L, L, Mmatrix[k], m_lambda[k], 1, m_alpha[k], 1.0E-14);
           if (Parameters.print_lvl > 2) {
-            fprintf(outfile, "\n M eigenvectors and eigenvalues root %d:\n",k);
+            psi::fprintf(outfile, "\n M eigenvectors and eigenvalues root %d:\n",k);
             eivout(m_alpha[k], m_lambda[k], L, L, outfile);
             }
           }
@@ -291,13 +291,13 @@ void sem_test(double **A, int N, int M, int L, double **evecs, double *evals,
         sq_rsp(L, L, G, lambda, 1, alpha, 1E-14);
         
         if (N<100 && Parameters.print_lvl >= 3) {
-        fprintf(outfile," Reformed G matrix (%d)\n",iter-1);
+        psi::fprintf(outfile," Reformed G matrix (%d)\n",iter-1);
         print_mat(G,L,L,outfile);
-        fprintf(outfile,"\n");
+        psi::fprintf(outfile,"\n");
         }
 
-        if (lse_do) fprintf(outfile," Least Squares Extrapolation\n");
-        fprintf(outfile," Collapse Davidson subspace to %d vectors\n", L);
+        if (lse_do) psi::fprintf(outfile," Least Squares Extrapolation\n");
+        psi::fprintf(outfile," Collapse Davidson subspace to %d vectors\n", L);
        } /* end collapse */
 
       /* form the d part of the correction vector */
@@ -312,7 +312,7 @@ void sem_test(double **A, int N, int M, int L, double **evecs, double *evals,
          }
 
       if (N<100 && Parameters.print_lvl >= 3) {
-        fprintf(outfile," D vectors for iter (%d)\n",iter-1);
+        psi::fprintf(outfile," D vectors for iter (%d)\n",iter-1);
         print_mat(d,M,N,outfile);
         }
 
@@ -327,15 +327,15 @@ void sem_test(double **A, int N, int M, int L, double **evecs, double *evals,
           converged_root[i] = 0;
           converged = 0;
           }
-         fprintf(outfile, "Iter %3d  Root %d = %13.9lf",
+         psi::fprintf(outfile, "Iter %3d  Root %d = %13.9lf",
             iter-1, i+1, (lambda[i] + offst));
-         fprintf(outfile, "    Delta_E %10.3E   Delta_C %10.3E %c\n",
+         psi::fprintf(outfile, "    Delta_E %10.3E   Delta_C %10.3E %c\n",
             lambda[i] - lastroot[i], tval, converged_root[i] ? 'c' : ' ');
          fflush(outfile);
          }
 
       if (M>1) {
-        fprintf(outfile, "\n");
+        psi::fprintf(outfile, "\n");
         fflush(outfile);
         }
 
@@ -377,7 +377,7 @@ void sem_test(double **A, int N, int M, int L, double **evecs, double *evals,
       for (i=0; i<M; i++) 
          if (converged_root[i] == 0) 
            if (schmidt_add(b, L, N, f[i])) L++;
-      fprintf(outfile," Number of b vectors = %d\n", L);
+      psi::fprintf(outfile," Number of b vectors = %d\n", L);
 
       if (L > maxnvect) {
          std::string str = "(test_sem): L(";

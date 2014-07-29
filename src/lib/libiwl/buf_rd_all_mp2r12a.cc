@@ -71,7 +71,7 @@ int IWL::read_all_mp2r12a(double *ints, int *ioff_lt, int *ioff_rt,
         }
 
         if (printflg) 
-            fprintf(out, "<%2d %2d %2d %2d [%2ld][%2ld] [[%3ld]] = %20.10f\n",
+            psi::fprintf(out, "<%2d %2d %2d %2d [%2ld][%2ld] [[%3ld]] = %20.10f\n",
             p, q, r, s, pq, rs, pqrs, ints[pqrs]) ;
 
     } /*! end loop through current buffer */
@@ -102,7 +102,7 @@ int IWL::read_all_mp2r12a(double *ints, int *ioff_lt, int *ioff_rt,
             }
 
             if (printflg) 
-                fprintf(out, "<%d %d %d %d [%ld][%ld] [[%ld]] = %20.10f\n",
+                psi::fprintf(out, "<%d %d %d %d [%ld][%ld] [[%ld]] = %20.10f\n",
                 p, q, r, s, pq, rs, pqrs, ints[pqrs]) ;
 
         } /*! end loop through current buffer */
@@ -172,7 +172,7 @@ int iwl_buf_rd_all_mp2r12a(struct iwlbuf *Buf, double *ints,
     }
     
     if (printflg) 
-      fprintf(out, "<%2d %2d %2d %2d [%2ld][%2ld] [[%3ld]] = %20.10f\n",
+      psi::fprintf(out, "<%2d %2d %2d %2d [%2ld][%2ld] [[%3ld]] = %20.10f\n",
 	      p, q, r, s, pq, rs, pqrs, ints[pqrs]) ;
     
   } /*! end loop through current buffer */
@@ -203,7 +203,7 @@ int iwl_buf_rd_all_mp2r12a(struct iwlbuf *Buf, double *ints,
       }
       
       if (printflg) 
-	fprintf(out, "<%d %d %d %d [%ld][%ld] [[%ld]] = %20.10f\n",
+	psi::fprintf(out, "<%d %d %d %d [%ld][%ld] [[%ld]] = %20.10f\n",
 		p, q, r, s, pq, rs, pqrs, ints[pqrs]) ;
       
     } /*! end loop through current buffer */

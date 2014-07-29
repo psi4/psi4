@@ -117,22 +117,22 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
   for (int i=0; i<len(python_energies); ++i)
     E.push_back( (double)extract<double>(python_energies[i]) );
 
-  fprintf(outfile,"\n-------------------------------------------------------------\n\n");
+  psi::fprintf(outfile,"\n-------------------------------------------------------------\n\n");
 
-  fprintf(outfile, "  Computing second-derivative from energies using projected, \n");
-  fprintf(outfile, "  symmetry-adapted, cartesian coordinates (fd_freq_0).\n");
+  psi::fprintf(outfile, "  Computing second-derivative from energies using projected, \n");
+  psi::fprintf(outfile, "  symmetry-adapted, cartesian coordinates (fd_freq_0).\n");
 
-  fprintf(outfile, "\t%d energies passed in, including the reference energy.\n", (int) E.size());
+  psi::fprintf(outfile, "\t%d energies passed in, including the reference energy.\n", (int) E.size());
   if (E.size() != Ndisp_all+1) { // last energy is the reference non-displaced energy
     throw PsiException("FINDIF: Incorrect number of energies passed in!",__FILE__,__LINE__);  }
 
   double energy_ref = E[Ndisp_all];
-  fprintf(outfile, "\tUsing %d-point formula.\n", pts);
-  fprintf(outfile, "\tEnergy without displacement: %15.10lf\n", energy_ref);
-  fprintf(outfile, "\tCheck energies below for precision!\n");
+  psi::fprintf(outfile, "\tUsing %d-point formula.\n", pts);
+  psi::fprintf(outfile, "\tEnergy without displacement: %15.10lf\n", energy_ref);
+  psi::fprintf(outfile, "\tCheck energies below for precision!\n");
   for (int i=0; i<Ndisp_all+1; ++i)
-    fprintf(outfile,"\t%5d : %20.10lf\n", i+1, E[i]);
-  fprintf(outfile,"\n");
+    psi::fprintf(outfile,"\t%5d : %20.10lf\n", i+1, E[i]);
+  psi::fprintf(outfile,"\n");
 
   // Determine the number of translation and rotational coordinates projected out
   // and obtain them.  might be needed for cartesian hessian.
@@ -220,8 +220,8 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
     } // i, salc_i
 
     if (print_lvl >= 3) {
-      fprintf(outfile, "\n\tForce Constants for irrep %s in mass-weighted, ", irrep_lbls[h]);
-      fprintf(outfile, "symmetry-adapted cartesian coordinates.\n");
+      psi::fprintf(outfile, "\n\tForce Constants for irrep %s in mass-weighted, ", irrep_lbls[h]);
+      psi::fprintf(outfile, "symmetry-adapted cartesian coordinates.\n");
       mat_print(H_irr[h], salcs_pi[h].size(), salcs_pi[h].size(), outfile);
     }
 
@@ -246,7 +246,7 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
       dim, 0, normal_irr[0], dim);
 
     if (print_lvl >= 3) {
-      fprintf(outfile,"\n\tNormal coordinates (mass-weighted) for irrep %s:\n", irrep_lbls[h]);
+      psi::fprintf(outfile,"\n\tNormal coordinates (mass-weighted) for irrep %s:\n", irrep_lbls[h]);
       eivout(normal_irr, evals, 3*Natom, dim, outfile);
     }
 
@@ -285,7 +285,7 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
 
   // Transform Hessian into cartesian coordinates
   if (print_lvl >= 3) {
-    fprintf(outfile, "\n\tFull force constant matrix in mass-weighted SALCS.\n");
+    psi::fprintf(outfile, "\n\tFull force constant matrix in mass-weighted SALCS.\n");
     mat_print(H, Nsalc_all, Nsalc_all, outfile);
   }
 
@@ -316,7 +316,7 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
   free_block(H);
 
   if (print_lvl >= 3) {
-    fprintf(outfile, "\n\tForce Constants in mass-weighted cartesian coordinates.\n");
+    psi::fprintf(outfile, "\n\tForce Constants in mass-weighted cartesian coordinates.\n");
     mat_print(Hx, 3*Natom, 3*Natom, outfile);
   }
 
@@ -346,9 +346,9 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
   }
 
   if (print_lvl >= 3) {
-    fprintf(outfile,"Gradient in mass-weighted SALC coordinates:\n");
+    psi::fprintf(outfile,"Gradient in mass-weighted SALC coordinates:\n");
     for (int i=0; i<salcs_pi[0].size(); ++i)
-      fprintf(outfile," %d  %20.10lf\n", i, g_q[i]);
+      psi::fprintf(outfile," %d  %20.10lf\n", i, g_q[i]);
   }
 
   // ***if we need it, this shows how to get the gradient in ordinary cartesians
@@ -418,7 +418,7 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
   free_block(ref_geom);
 
   if (print_lvl >= 3) {
-    fprintf(outfile, "\n\tMass-weighted force constants in cartesian coordinates including derivative term.\n");
+    psi::fprintf(outfile, "\n\tMass-weighted force constants in cartesian coordinates including derivative term.\n");
     mat_print(Hx, 3*Natom, 3*Natom, outfile);
   }
   free(g_q);
@@ -430,7 +430,7 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
       Hx[x1][x2] *= sqrt(mol->mass(x1/3)) * sqrt(mol->mass(x2/3));
 
   if (print_lvl >= 3) {
-    fprintf(outfile, "\n\tForce Constants in cartesian coordinates.\n");
+    psi::fprintf(outfile, "\n\tForce Constants in cartesian coordinates.\n");
     mat_print(Hx, 3*Natom, 3*Natom, outfile);
   }
 
@@ -438,15 +438,15 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
   if ( options.get_bool("HESSIAN_WRITE") ) {
     std::string hess_fname = get_writer_file_prefix() + ".hess";
     FILE *of_Hx = fopen(hess_fname.c_str(),"w");
-    fprintf(of_Hx,"%5d", Natom);
-    fprintf(of_Hx,"%5d\n", 6*Natom);
+    psi::fprintf(of_Hx,"%5d", Natom);
+    psi::fprintf(of_Hx,"%5d\n", 6*Natom);
 
     int cnt = -1;
     for (int i=0; i<3*Natom; ++i) {
       for (int j=0; j<3*Natom; ++j) {
-        fprintf(of_Hx, "%20.10lf", Hx[i][j]);
+        psi::fprintf(of_Hx, "%20.10lf", Hx[i][j]);
         if (++cnt == 2) {
-          fprintf(of_Hx,"\n");
+          psi::fprintf(of_Hx,"\n");
           cnt = -1;
         }
       }
@@ -455,7 +455,7 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
   }
   free_block(Hx);
 
-  fprintf(outfile,"\n-------------------------------------------------------------\n");
+  psi::fprintf(outfile,"\n-------------------------------------------------------------\n");
 
   return Success;
 }
@@ -536,10 +536,10 @@ int iE0(std::vector<int> & Ndisp_pi, std::vector< std::vector<int> > & salcs_pi,
   }
 
   if (rval < 0) {
-    fprintf(outfile,"Problem finding displaced energy.\n");
+    psi::fprintf(outfile,"Problem finding displaced energy.\n");
     throw PsiException("FINDIF: Problem finding displaced energy.",__FILE__,__LINE__);
   }
-  //fprintf(outfile,"irrep: %d, ii: %d, jj: %d, disp_i: %d, disp_j: %d, rval: %d \n",
+  //psi::fprintf(outfile,"irrep: %d, ii: %d, jj: %d, disp_i: %d, disp_j: %d, rval: %d \n",
   //  irrep, ii, jj, disp_i, disp_j, rval);
   return rval;
 }

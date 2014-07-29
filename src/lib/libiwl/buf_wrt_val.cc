@@ -69,11 +69,11 @@ void IWL::write_value(int p, int q, int r, int s, double value, int printflag,
 
         if (printflag) {
             if(dirac) {
-                fprintf(out, ">%d %d %d %d = %20.10f\n",
+                psi::fprintf(out, ">%d %d %d %d = %20.10f\n",
                     p, r, q, s, value);
             }
             else {
-                fprintf(out, ">%d %d %d %d = %20.10f\n",
+                psi::fprintf(out, ">%d %d %d %d = %20.10f\n",
                     p, q, r, s, value);
             }
         }
@@ -133,11 +133,11 @@ void iwl_buf_wrt_val(struct iwlbuf *Buf, int p, int q, int r, int s,
      
     if (printflag) {
       if(dirac) {
-	fprintf(out, ">%d %d %d %d = %20.10f\n",
+	psi::fprintf(out, ">%d %d %d %d = %20.10f\n",
 		p, r, q, s, value);
       }
       else {
-	fprintf(out, ">%d %d %d %d = %20.10f\n",
+	psi::fprintf(out, ">%d %d %d %d = %20.10f\n",
 		p, q, r, s, value);
       }
     }

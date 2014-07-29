@@ -119,7 +119,7 @@ void Fai_build(void)
     global_dpd_->buf4_close(&tIjAb);
 
 dotval = global_dpd_->file2_dot_self(&newtIA); 
-fprintf(outfile,"\t Norm squared of <Phi_I^A|Hbar|0> = %20.15lf\n",dotval);
+psi::fprintf(outfile,"\t Norm squared of <Phi_I^A|Hbar|0> = %20.15lf\n",dotval);
     global_dpd_->file2_close(&newtIA);
   }
   else if(params.ref == 1) { /** ROHF **/
@@ -268,9 +268,9 @@ fprintf(outfile,"\t Norm squared of <Phi_I^A|Hbar|0> = %20.15lf\n",dotval);
   global_dpd_->file2_mat_close(&newtia);
 
 dotval = global_dpd_->file2_dot_self(&newtIA); 
-fprintf(outfile,"\t Norm squared of <Phi_I^A|Hbar|0> = %20.15lf\n",dotval);
+psi::fprintf(outfile,"\t Norm squared of <Phi_I^A|Hbar|0> = %20.15lf\n",dotval);
 dotval = global_dpd_->file2_dot_self(&newtia); 
-fprintf(outfile,"\t Norm squared of <Phi_i^a|Hbar|0> = %20.15lf\n",dotval);
+psi::fprintf(outfile,"\t Norm squared of <Phi_i^a|Hbar|0> = %20.15lf\n",dotval);
 
     global_dpd_->file2_close(&newtIA);  global_dpd_->file2_close(&newtia);
   }
@@ -403,9 +403,9 @@ fprintf(outfile,"\t Norm squared of <Phi_i^a|Hbar|0> = %20.15lf\n",dotval);
     global_dpd_->buf4_close(&tIjAb);  
 
 dotval = global_dpd_->file2_dot_self(&newtIA); 
-fprintf(outfile,"\t Norm squared of <Phi_I^A|Hbar|0> = %20.15lf\n",dotval);
+psi::fprintf(outfile,"\t Norm squared of <Phi_I^A|Hbar|0> = %20.15lf\n",dotval);
 dotval = global_dpd_->file2_dot_self(&newtia); 
-fprintf(outfile,"\t Norm squared of <Phi_i^a|Hbar|0> = %20.15lf\n",dotval);
+psi::fprintf(outfile,"\t Norm squared of <Phi_i^a|Hbar|0> = %20.15lf\n",dotval);
 
     global_dpd_->file2_close(&newtIA);  global_dpd_->file2_close(&newtia);
   }

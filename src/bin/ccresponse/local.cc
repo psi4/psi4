@@ -66,13 +66,13 @@ void local_init(void)
   local.nocc = moinfo.occpi[0]; /* active doubly occupied orbitals */
   local.nvir = moinfo.virtpi[0]; /* active virtual orbitals */
 
-  fprintf(outfile, "\tLocalization parameters ready.\n\n");
+  psi::fprintf(outfile, "\tLocalization parameters ready.\n\n");
   fflush(outfile);
 }
 
 void local_done(void)
 {
-  fprintf(outfile, "\tLocal parameters free.\n");
+  psi::fprintf(outfile, "\tLocal parameters free.\n");
 }
 
 void local_filter_T1(dpdfile2 *T1)

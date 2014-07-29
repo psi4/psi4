@@ -34,7 +34,7 @@ namespace psi{ namespace occwave{
   
 void OCCWave::omp3_t2_1st_general()
 {   
-     //fprintf(outfile,"\n omp3_t2_1st_general is starting... \n"); fflush(outfile);
+     //psi::fprintf(outfile,"\n omp3_t2_1st_general is starting... \n"); fflush(outfile);
 
 //===========================================================================================
 //========================= RHF =============================================================
@@ -462,7 +462,7 @@ else if (reference_ == "UNRESTRICTED") {
     psio_->close(PSIF_OCC_DPD, 1);
 }// end if (reference_ == "UNRESTRICTED") 
     
- //fprintf(outfile,"\n omp3_t2_1st_general done. \n"); fflush(outfile);
+ //psi::fprintf(outfile,"\n omp3_t2_1st_general done. \n"); fflush(outfile);
 
 } // end omp3_t2_1st_general
 }} // End Namespaces

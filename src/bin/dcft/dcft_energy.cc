@@ -89,14 +89,14 @@ DCFTSolver::compute_dcft_energy()
     psio_->close(PSIF_LIBTRANS_DPD, 1);
 
 #if PRINT_ENERGY_COMPONENTS
-    fprintf(outfile, "\tAA G Energy = %20.12f\n", eGaa);
-    fprintf(outfile, "\tAB G Energy = %20.12f\n", eGab);
-    fprintf(outfile, "\tBB G Energy = %20.12f\n", eGbb);
-    fprintf(outfile, "\tAA I Energy = %20.12f\n", eIaa);
-    fprintf(outfile, "\tAB I Energy = %20.12f\n", eIab);
-    fprintf(outfile, "\tBB I Energy = %20.12f\n", eIbb);
-    fprintf(outfile, "\tTotal G Energy = %20.12f\n", eGaa + eGab + eGbb);
-    fprintf(outfile, "\tTotal I Energy = %20.12f\n", eIaa + eIab + eIbb);
+    psi::fprintf(outfile, "\tAA G Energy = %20.12f\n", eGaa);
+    psi::fprintf(outfile, "\tAB G Energy = %20.12f\n", eGab);
+    psi::fprintf(outfile, "\tBB G Energy = %20.12f\n", eGbb);
+    psi::fprintf(outfile, "\tAA I Energy = %20.12f\n", eIaa);
+    psi::fprintf(outfile, "\tAB I Energy = %20.12f\n", eIab);
+    psi::fprintf(outfile, "\tBB I Energy = %20.12f\n", eIbb);
+    psi::fprintf(outfile, "\tTotal G Energy = %20.12f\n", eGaa + eGab + eGbb);
+    psi::fprintf(outfile, "\tTotal I Energy = %20.12f\n", eIaa + eIab + eIbb);
 #endif
 
     lambda_energy_ = eGaa + eGab + eGbb + eIaa + eIab + eIbb;

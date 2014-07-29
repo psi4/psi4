@@ -323,9 +323,9 @@ void ROHF::form_initialF()
 
 #ifdef _DEBUG
     if (debug_) {
-        fprintf(outfile, "Initial alpha Fock matrix:\n");
+        psi::fprintf(outfile, "Initial alpha Fock matrix:\n");
         Fa_->print(outfile);
-        fprintf(outfile, "Initial beta Fock matrix:\n");
+        psi::fprintf(outfile, "Initial beta Fock matrix:\n");
         Fb_->print(outfile);
     }
 #endif
@@ -403,7 +403,7 @@ void ROHF::form_C()
 
     if (debug_) {
         Ca_->print(outfile);
-        fprintf(outfile, "In ROHF::form_C:\n");
+        psi::fprintf(outfile, "In ROHF::form_C:\n");
         Ct_->eivprint(epsilon_a_);
     }
 }
@@ -451,7 +451,7 @@ void ROHF::form_D()
     Dt_->add(Db_);
 
     if (debug_) {
-        fprintf(outfile, "in ROHF::form_D:\n");
+        psi::fprintf(outfile, "in ROHF::form_D:\n");
         Da_->print();
         Db_->print();
     }
@@ -741,7 +741,7 @@ void ROHF::stability_analysis()
             free_block(evecs);
             delete [] evals;
         }
-        fprintf(outfile, "\tLowest ROHF->ROHF stability eigenvalues:-\n");
+        psi::fprintf(outfile, "\tLowest ROHF->ROHF stability eigenvalues:-\n");
         print_stability_analysis(eval_sym);
         psio_->close(PSIF_LIBTRANS_DPD, 1);
     }

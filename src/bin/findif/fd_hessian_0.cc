@@ -45,10 +45,10 @@ PsiReturnType fd_hessian_0(Options &options, const boost::python::list& E_list)
   double disp_size = options.get_double("DISP_SIZE");
   int print_lvl = options.get_int("PRINT");
 
-  fprintf(outfile,"\n-------------------------------------------------------------\n\n");
+  psi::fprintf(outfile,"\n-------------------------------------------------------------\n\n");
 
-  fprintf(outfile, "  Computing totally symmetric second-derivative force constants\n");
-  fprintf(outfile, "  from symmetry-adapted, cartesian coordinates (fd_hessian_0).\n");
+  psi::fprintf(outfile, "  Computing totally symmetric second-derivative force constants\n");
+  psi::fprintf(outfile, "  from symmetry-adapted, cartesian coordinates (fd_hessian_0).\n");
 
   const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
   boost::shared_ptr<MatrixFactory> fact;
@@ -56,13 +56,13 @@ PsiReturnType fd_hessian_0(Options &options, const boost::python::list& E_list)
   CdSalcList salc_list(mol, fact, 0xFF, true, true);
 
   int Natom = mol->natom();
-  fprintf(outfile,"\tNumber of atoms is %d.\n", Natom);
+  psi::fprintf(outfile,"\tNumber of atoms is %d.\n", Natom);
 
   int Nirrep = salc_list.nirrep();
-  fprintf(outfile,"\tNumber of irreps is %d.\n", Nirrep);
+  psi::fprintf(outfile,"\tNumber of irreps is %d.\n", Nirrep);
 
   int Nsalc_all = salc_list.ncd();
-  fprintf(outfile,"\tNumber of SALCS is %d.\n", Nsalc_all);
+  psi::fprintf(outfile,"\tNumber of SALCS is %d.\n", Nsalc_all);
 
   // build vectors that list indices of salcs for each irrep
   std::vector<int> symm_salcs;
@@ -71,7 +71,7 @@ PsiReturnType fd_hessian_0(Options &options, const boost::python::list& E_list)
     if (salc_list[i].irrep() == 0)
       symm_salcs.push_back(i);
 
-  fprintf(outfile,"\tNumber of symmetric SALC's is %d.\n", (int) symm_salcs.size());
+  psi::fprintf(outfile,"\tNumber of symmetric SALC's is %d.\n", (int) symm_salcs.size());
 
   int Ndisp;
 
@@ -87,7 +87,7 @@ PsiReturnType fd_hessian_0(Options &options, const boost::python::list& E_list)
   else if (pts == 5)
     Ndisp += 8 * symm_salcs.size() * (symm_salcs.size() - 1) / 2;
 
-  fprintf(outfile,"\tNumber of symmetric displacements (including reference) is %d.\n", Ndisp);
+  psi::fprintf(outfile,"\tNumber of symmetric displacements (including reference) is %d.\n", Ndisp);
 
   if (options.get_int("PRINT") > 1)
     for (int i=0; i<salc_list.ncd(); ++i)
@@ -98,17 +98,17 @@ PsiReturnType fd_hessian_0(Options &options, const boost::python::list& E_list)
   for (int i=0; i<len(E_list); ++i)
     E.push_back( (double)extract<double>(E_list[i]) );
 
-  fprintf(outfile, "\t%d energies passed in, including the reference energy.\n", (int) E.size());
+  psi::fprintf(outfile, "\t%d energies passed in, including the reference energy.\n", (int) E.size());
   if (E.size() != Ndisp+1) { // last energy is the reference non-displaced energy
     throw PsiException("FINDIF: Incorrect number of energies passed in!",__FILE__,__LINE__);  }
 
   double energy_ref = E[Ndisp];
-  fprintf(outfile, "\tUsing %d-point formula.\n", pts);
-  fprintf(outfile, "\tEnergy without displacement: %15.10lf\n", energy_ref);
-  fprintf(outfile, "\tCheck energies below for precision!\n");
+  psi::fprintf(outfile, "\tUsing %d-point formula.\n", pts);
+  psi::fprintf(outfile, "\tEnergy without displacement: %15.10lf\n", energy_ref);
+  psi::fprintf(outfile, "\tCheck energies below for precision!\n");
   for (int i=0; i<Ndisp+1; ++i)
-    fprintf(outfile,"\t%5d : %20.10lf\n", i+1, E[i]);
-  fprintf(outfile,"\n");
+    psi::fprintf(outfile,"\t%5d : %20.10lf\n", i+1, E[i]);
+  psi::fprintf(outfile,"\n");
 
   //char **irrep_lbls = mol->irrep_labels();
   //std::vector<VIBRATION *> modes;
@@ -173,7 +173,7 @@ PsiReturnType fd_hessian_0(Options &options, const boost::python::list& E_list)
     } // i, salc_i
 
     //if (print_lvl >= 3) {
-      fprintf(outfile, "\n\tSymmetric Force Constants in mass-weighted, cartesian coordinates.\n");
+      psi::fprintf(outfile, "\n\tSymmetric Force Constants in mass-weighted, cartesian coordinates.\n");
       mat_print(H, symm_salcs.size(), symm_salcs.size(), outfile);
     //}
 
@@ -192,36 +192,36 @@ PsiReturnType fd_hessian_0(Options &options, const boost::python::list& E_list)
       }
     }
 
-fprintf(outfile, "\n\tB u ^1/2:\n");
+psi::fprintf(outfile, "\n\tB u ^1/2:\n");
 mat_print(B, dim, 3*Natom, outfile);
 
     double **tmat = block_matrix(3*Natom, dim);
 
     C_DGEMM('t', 'n', 3*Natom, dim, dim, 1.0, B[0], 3*Natom, H[0], dim, 0, tmat[0], dim);
 
-fprintf(outfile, "\n\tTmat.\n");
+psi::fprintf(outfile, "\n\tTmat.\n");
 mat_print(tmat, 3*Natom, dim, outfile);
 
     double **Hx = block_matrix(3*Natom, 3*Natom);
 
     C_DGEMM('n', 'n', 3*Natom, 3*Natom, dim, 1.0, tmat[0], dim, B[0], 3*Natom, 0, Hx[0], 3*Natom);
 
-    fprintf(outfile, "\n\tSymmetric Force Constants in cartesian coordinates.\n");
+    psi::fprintf(outfile, "\n\tSymmetric Force Constants in cartesian coordinates.\n");
     mat_print(Hx, 3*Natom, 3*Natom, outfile);
 
     // Print a hessian file
     if ( options.get_bool("HESSIAN_WRITE") ) {
       std::string hess_fname = get_writer_file_prefix() + ".hess";
       FILE *of_Hx = fopen(hess_fname.c_str(),"w");
-      fprintf(of_Hx,"%5d", Natom);
-      fprintf(of_Hx,"%5d\n", 6*Natom);
+      psi::fprintf(of_Hx,"%5d", Natom);
+      psi::fprintf(of_Hx,"%5d\n", 6*Natom);
 
       int cnt = -1;
       for (int i=0; i<3*Natom; ++i) {
         for (int j=0; j<3*Natom; ++j) {
-          fprintf(of_Hx, "%20.10lf", Hx[i][j]);
+          psi::fprintf(of_Hx, "%20.10lf", Hx[i][j]);
           if (++cnt == 2) {
-            fprintf(of_Hx,"\n");
+            psi::fprintf(of_Hx,"\n");
             cnt = -1;
           }
         }
@@ -231,7 +231,7 @@ mat_print(tmat, 3*Natom, dim, outfile);
     free_block(Hx);
     free_block(tmat);
 
-  fprintf(outfile,"\n-------------------------------------------------------------\n");
+  psi::fprintf(outfile,"\n-------------------------------------------------------------\n");
 
   return Success;
 }
@@ -290,7 +290,7 @@ int iE0(std::vector<int> & symm_salcs, int pts, int ii, int jj, int disp_i, int 
   }
 
   if (rval < 0) {
-    fprintf(outfile,"Problem finding displaced energy.\n");
+    psi::fprintf(outfile,"Problem finding displaced energy.\n");
     throw PsiException("FINDIF: Problem finding displaced energy.",__FILE__,__LINE__);
   }
   return rval;

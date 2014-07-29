@@ -105,10 +105,10 @@ CCMatrix::~CCMatrix()
  */
 void CCMatrix::print()
 {
-  fprintf(outfile,"\n\n\t\t\t\t\t%s Matrix\n",label.c_str());
+  psi::fprintf(outfile,"\n\n\t\t\t\t\t%s Matrix\n",label.c_str());
   for(int i=0;i<nirreps;i++){
     if(left->get_pairpi(i) * right->get_pairpi(i)){
-      fprintf(outfile,"\nBlock %d (%s,%s)",i,moinfo->get_irr_labs(i),moinfo->get_irr_labs(i));
+      psi::fprintf(outfile,"\nBlock %d (%s,%s)",i,moinfo->get_irr_labs(i),moinfo->get_irr_labs(i));
       print_dpdmatrix(i,outfile);
     }
   }
@@ -345,35 +345,35 @@ L200:
   nn=n;
   if (nn > kk) nn=kk;
   ll = 2*(nn-ii+1)+1;
-  fprintf (out,"\n            ");
+  psi::fprintf (out,"\n            ");
   for (i=ii; i <= nn; i++){
 
     short* right_indices = right->get_tuple(i+right_offset-1);
-    fprintf(out,"(");
+    psi::fprintf(out,"(");
     for(int p=0;p<right->get_nelements();p++)
-      fprintf(out,"%3d",right_indices[p]);
-    fprintf(out,")");
+      psi::fprintf(out,"%3d",right_indices[p]);
+    psi::fprintf(out,")");
     int nspaces = 10-3*right->get_nelements();
     for(int p=0;p<nspaces;p++)
-      fprintf(out," ");
+      psi::fprintf(out," ");
 
   }
-  fprintf (out,"\n");
+  psi::fprintf (out,"\n");
   for (i=0; i < m; i++) {
     short* left_indices = left->get_tuple(i+left_offset);
-    fprintf(out,"\n(");
+    psi::fprintf(out,"\n(");
     for(int p=0;p<left->get_nelements();p++)
-      fprintf(out,"%3d",left_indices[p]);
-    fprintf(out,")  ");
+      psi::fprintf(out,"%3d",left_indices[p]);
+    psi::fprintf(out,")  ");
 
     for (j=ii-1; j < nn; j++) {
       if(fabs(mat[i][j]) < 100.0)
-        fprintf (out,"%12.7f",mat[i][j]);
+        psi::fprintf (out,"%12.7f",mat[i][j]);
       else
-        fprintf (out,"    infinity");
+        psi::fprintf (out,"    infinity");
     }
   }
-  fprintf (out,"\n");
+  psi::fprintf (out,"\n");
   if (n <= kk) {
     fflush(out);
     return;

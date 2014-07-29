@@ -34,13 +34,13 @@ adc(Options &options)
 {
     tstart();
 
-    fprintf(outfile, "\n");
-    fprintf(outfile, "\t****************************************\n");
-    fprintf(outfile, "\t                 A D C                  \n");
-    fprintf(outfile, "\t An Algebraic-Diagrammatic Construction \n");
-    fprintf(outfile, "\t based on direct-product decomposition  \n");
-    fprintf(outfile, "\t             Masaaki Saitow             \n");
-    fprintf(outfile, "\t****************************************\n\n");
+    psi::fprintf(outfile, "\n");
+    psi::fprintf(outfile, "\t****************************************\n");
+    psi::fprintf(outfile, "\t                 A D C                  \n");
+    psi::fprintf(outfile, "\t An Algebraic-Diagrammatic Construction \n");
+    psi::fprintf(outfile, "\t based on direct-product decomposition  \n");
+    psi::fprintf(outfile, "\t             Masaaki Saitow             \n");
+    psi::fprintf(outfile, "\t****************************************\n\n");
     fflush(outfile);
 
     //
@@ -54,10 +54,10 @@ adc(Options &options)
     
     tstop();
     
-    fprintf(outfile, "\n");
-    fprintf(outfile, "  ∩==\n"); 
-    fprintf(outfile, "(: 3)))== kskkskkskksk         BOOOoooooOOOON!\n"); 
-    fprintf(outfile, "  ∪==\n"); 
+    psi::fprintf(outfile, "\n");
+    psi::fprintf(outfile, "  ∩==\n"); 
+    psi::fprintf(outfile, "(: 3)))== kskkskkskksk         BOOOoooooOOOON!\n"); 
+    psi::fprintf(outfile, "  ∪==\n"); 
     fflush(outfile);
 
     return Success;

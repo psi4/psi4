@@ -132,8 +132,8 @@ public:
     inline void print(FILE *out=outfile) const
     {
         if (me_ == 0) {
-            fprintf(out, "\n    Using MadCommunicator (Number of procs = %d)\n", nproc_);
-            fprintf(out, "                          (Number of threads in pool = %d)\n\n", nthread_);
+            psi::fprintf(out, "\n    Using MadCommunicator (Number of procs = %d)\n", nproc_);
+            psi::fprintf(out, "                          (Number of threads in pool = %d)\n\n", nthread_);
         }
     }
 

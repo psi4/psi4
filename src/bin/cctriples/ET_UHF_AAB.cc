@@ -166,9 +166,9 @@ double ET_UHF_AAB(void)
 	}
 
   ffile(&ijkfile,"ijk.dat",0);
-  fprintf(ijkfile, "Spin Case: AAB\n");
-  fprintf(ijkfile, "Number of IJK combintions: %d\n", nijk);
-  fprintf(ijkfile, "\nCurrent IJK Combination:\n");
+  psi::fprintf(ijkfile, "Spin Case: AAB\n");
+  psi::fprintf(ijkfile, "Number of IJK combintions: %d\n", nijk);
+  psi::fprintf(ijkfile, "\nCurrent IJK Combination:\n");
   fflush(ijkfile);
 
   mijk = 0;
@@ -201,7 +201,7 @@ double ET_UHF_AAB(void)
 	      if(I > J) {
 
 		mijk++;
-		fprintf(ijkfile, "%d\n", mijk);
+		psi::fprintf(ijkfile, "%d\n", mijk);
 		fflush(ijkfile);
 
 		ij = EAAints.params->rowidx[I][J];
@@ -774,8 +774,8 @@ double ET_UHF_AAB(void)
     } /* Gj */
   } /* Gi */
 
-  /*  fprintf(outfile, "cnt = %d\n", cnt); */
-  /*  fprintf(outfile, "ET_AAB = %20.14f\n", ET_AAB); */
+  /*  psi::fprintf(outfile, "cnt = %d\n", cnt); */
+  /*  psi::fprintf(outfile, "ET_AAB = %20.14f\n", ET_AAB); */
 
   free(WABc);
   free(WBcA);

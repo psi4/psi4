@@ -458,7 +458,7 @@ void TwoBodySOInt::common_init()
             b3_->max_nfunction_in_shell() *
             b4_->max_nfunction_in_shell();
 
-//    fprintf(outfile, "aQRS %zu, abcD %zu, abRS %zu, max_size %zu, size %zu\n", aQRS, abcD, abRS, max_size, size_);
+//    psi::fprintf(outfile, "aQRS %zu, abcD %zu, abRS %zu, max_size %zu, size %zu\n", aQRS, abcD, abRS, max_size, size_);
 
     // Check to make sure things are consistent
     if (tb_[0]->deriv() > 0 && cdsalcs_ == 0)

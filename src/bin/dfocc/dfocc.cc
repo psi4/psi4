@@ -118,7 +118,7 @@ void DFOCC::common_init()
         }
         tol_grad = pow(10.0, -temp);
         //tol_grad = 100.0*tol_Eod; 
-        fprintf(outfile,"\tRMS orbital gradient is changed to : %12.2e\n", tol_grad);
+        psi::fprintf(outfile,"\tRMS orbital gradient is changed to : %12.2e\n", tol_grad);
         fflush(outfile);
     }
 
@@ -134,7 +134,7 @@ void DFOCC::common_init()
         }
         mograd_max = pow(10.0, -temp2);
         //mograd_max = 10.0*tol_grad;
-        fprintf(outfile,"\tMAX orbital gradient is changed to : %12.2e\n", mograd_max);
+        psi::fprintf(outfile,"\tMAX orbital gradient is changed to : %12.2e\n", mograd_max);
         fflush(outfile);
     }
 
@@ -172,15 +172,15 @@ void DFOCC::common_init()
          }
          else if (reference_ == "UNRESTRICTED") {
              hess_type = "APPROX_DIAG";
-             fprintf(outfile,"\tMO Hessian type is changed to 'APPROX_DIAG'\n");
+             psi::fprintf(outfile,"\tMO Hessian type is changed to 'APPROX_DIAG'\n");
              fflush(outfile);
          }
     }
 
     // Regularization 
     if (regularization == "TRUE") {
-        fprintf(outfile,"\n\tNOTE: A regularization procedure will be applied to the method.\n");
-        fprintf(outfile,"\tThe regularization parameter is : %12.2f mh\n", reg_param * 1000.0);
+        psi::fprintf(outfile,"\n\tNOTE: A regularization procedure will be applied to the method.\n");
+        psi::fprintf(outfile,"\tThe regularization parameter is : %12.2f mh\n", reg_param * 1000.0);
         fflush(outfile);
     }
 
@@ -234,10 +234,10 @@ if (reference_ == "RESTRICTED") {
         if (nfrzc > 0) AooA = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <I|FC>", naoccA, nfrzc));
     }
 
-        fprintf(outfile,"\n\tMO spaces... \n\n"); fflush(outfile);
-        fprintf(outfile, "\t FC   OCC   VIR   FV \n");
-        fprintf(outfile, "\t----------------------\n");                                                 
-        fprintf(outfile, "\t%3d  %3d   %3d  %3d\n", nfrzc, naoccA, navirA, nfrzv);
+        psi::fprintf(outfile,"\n\tMO spaces... \n\n"); fflush(outfile);
+        psi::fprintf(outfile, "\t FC   OCC   VIR   FV \n");
+        psi::fprintf(outfile, "\t----------------------\n");                                                 
+        psi::fprintf(outfile, "\t%3d  %3d   %3d  %3d\n", nfrzc, naoccA, navirA, nfrzv);
 	fflush(outfile);
 
         // memory requirements
@@ -248,8 +248,8 @@ if (reference_ == "RESTRICTED") {
         cost_amp = (ULI)3.0 * cost_ampAA;
         memory = Process::environment.get_memory();
         memory_mb = memory/1000000L;
-        fprintf(outfile,"\n\tAvailable memory is: %6lu MB \n", memory_mb);
-        fprintf(outfile,"\tMinimum required memory for the DFOCC module is: %6lu MB \n", cost_amp);
+        psi::fprintf(outfile,"\n\tAvailable memory is: %6lu MB \n", memory_mb);
+        psi::fprintf(outfile,"\tMinimum required memory for the DFOCC module is: %6lu MB \n", cost_amp);
         fflush(outfile);
 
 }  // end if (reference_ == "RESTRICTED")
@@ -333,10 +333,10 @@ else if (reference_ == "UNRESTRICTED") {
             G1c_voB = SharedTensor2d(new Tensor2d("Correlation OPDM <v|o>", nvirB, noccB));
         }
 
-        fprintf(outfile,"\n\tMO spaces... \n\n"); fflush(outfile);
-        fprintf(outfile, "\t FC   AOCC   BOCC  AVIR   BVIR   FV \n");
-        fprintf(outfile, "\t------------------------------------------\n");
-        fprintf(outfile, "\t%3d   %3d   %3d   %3d    %3d   %3d\n", nfrzc, naoccA, naoccB, navirA, navirB, nfrzv);
+        psi::fprintf(outfile,"\n\tMO spaces... \n\n"); fflush(outfile);
+        psi::fprintf(outfile, "\t FC   AOCC   BOCC  AVIR   BVIR   FV \n");
+        psi::fprintf(outfile, "\t------------------------------------------\n");
+        psi::fprintf(outfile, "\t%3d   %3d   %3d   %3d    %3d   %3d\n", nfrzc, naoccA, naoccB, navirA, navirB, nfrzv);
         fflush(outfile);
 
         // memory requirements
@@ -355,60 +355,60 @@ else if (reference_ == "UNRESTRICTED") {
         cost_amp = (ULI)3.0 * cost_amp;
         memory = Process::environment.get_memory();
         memory_mb = memory/1000000L;
-        fprintf(outfile,"\n\tAvailable memory is: %6lu MB \n", memory_mb);
-        fprintf(outfile,"\tMinimum required memory for the DFOCC module is: %6lu MB \n", cost_amp);
+        psi::fprintf(outfile,"\n\tAvailable memory is: %6lu MB \n", memory_mb);
+        psi::fprintf(outfile,"\tMinimum required memory for the DFOCC module is: %6lu MB \n", cost_amp);
         fflush(outfile);
 }// else if (reference_ == "UNRESTRICTED")
 	
-        //fprintf(outfile,"\tI am here.\n"); fflush(outfile);
+        //psi::fprintf(outfile,"\tI am here.\n"); fflush(outfile);
 
 }// end common_init
 
 void DFOCC::title()
 {
-   fprintf(outfile,"\n");
-   fprintf(outfile," ============================================================================== \n");
-   fprintf(outfile," ============================================================================== \n");
-   fprintf(outfile," ============================================================================== \n");
-   fprintf(outfile,"\n");
-   if (wfn_type_ == "DF-OMP2" && orb_opt_ == "TRUE") fprintf(outfile,"                      DF-OMP2 (DF-OO-MP2)   \n");
-   else if (wfn_type_ == "DF-OMP2" && orb_opt_ == "FALSE") fprintf(outfile,"                       DF-MP2   \n");
-   else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "TRUE") fprintf(outfile,"                       DF-OMP3 (DF-OO-MP3)   \n");
-   else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "FALSE") fprintf(outfile,"                       DF-MP3   \n");
-   else if (wfn_type_ == "DF-OCEPA(0)" && orb_opt_ == "TRUE") fprintf(outfile,"                       DF-OCEPA(0) (DF-OO-CEPA)   \n");
-   else if (wfn_type_ == "DF-OCEPA(0)" && orb_opt_ == "FALSE") fprintf(outfile,"                       DF-CEPA(0)   \n");
-   else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "TRUE") fprintf(outfile,"                       DF-OMP2.5 (DF-OO-MP2.5)   \n");
-   else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "FALSE") fprintf(outfile,"                       DF-MP2.5  \n");
-   else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "TRUE") fprintf(outfile,"                      CD-OMP2 (CD-OO-MP2)   \n");
-   else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "FALSE") fprintf(outfile,"                       CD-MP2   \n");
-   fprintf(outfile,"              Program Written by Ugur Bozkaya\n") ; 
-   fprintf(outfile,"              Latest Revision July 02, 2014\n") ;
-   fprintf(outfile,"\n");
-   fprintf(outfile," ============================================================================== \n");
-   fprintf(outfile," ============================================================================== \n");
-   fprintf(outfile," ============================================================================== \n");
-   fprintf(outfile,"\n");
+   psi::fprintf(outfile,"\n");
+   psi::fprintf(outfile," ============================================================================== \n");
+   psi::fprintf(outfile," ============================================================================== \n");
+   psi::fprintf(outfile," ============================================================================== \n");
+   psi::fprintf(outfile,"\n");
+   if (wfn_type_ == "DF-OMP2" && orb_opt_ == "TRUE") psi::fprintf(outfile,"                      DF-OMP2 (DF-OO-MP2)   \n");
+   else if (wfn_type_ == "DF-OMP2" && orb_opt_ == "FALSE") psi::fprintf(outfile,"                       DF-MP2   \n");
+   else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "TRUE") psi::fprintf(outfile,"                       DF-OMP3 (DF-OO-MP3)   \n");
+   else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "FALSE") psi::fprintf(outfile,"                       DF-MP3   \n");
+   else if (wfn_type_ == "DF-OCEPA(0)" && orb_opt_ == "TRUE") psi::fprintf(outfile,"                       DF-OCEPA(0) (DF-OO-CEPA)   \n");
+   else if (wfn_type_ == "DF-OCEPA(0)" && orb_opt_ == "FALSE") psi::fprintf(outfile,"                       DF-CEPA(0)   \n");
+   else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "TRUE") psi::fprintf(outfile,"                       DF-OMP2.5 (DF-OO-MP2.5)   \n");
+   else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "FALSE") psi::fprintf(outfile,"                       DF-MP2.5  \n");
+   else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "TRUE") psi::fprintf(outfile,"                      CD-OMP2 (CD-OO-MP2)   \n");
+   else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "FALSE") psi::fprintf(outfile,"                       CD-MP2   \n");
+   psi::fprintf(outfile,"              Program Written by Ugur Bozkaya\n") ; 
+   psi::fprintf(outfile,"              Latest Revision July 02, 2014\n") ;
+   psi::fprintf(outfile,"\n");
+   psi::fprintf(outfile," ============================================================================== \n");
+   psi::fprintf(outfile," ============================================================================== \n");
+   psi::fprintf(outfile," ============================================================================== \n");
+   psi::fprintf(outfile,"\n");
    fflush(outfile);
 
 }//
 
 void DFOCC::title_grad()
 {
-   fprintf(outfile,"\n");
-   fprintf(outfile," ============================================================================== \n");
-   fprintf(outfile," ============================================================================== \n");
-   fprintf(outfile," ============================================================================== \n");
-   fprintf(outfile,"\n");
-   fprintf(outfile,"                         DFGRAD   \n");
-   fprintf(outfile,"            A General Analytic Gradients Code   \n");
-   fprintf(outfile,"               for Density-Fitted Methods       \n");
-   fprintf(outfile,"                   by Ugur Bozkaya\n") ; 
-   fprintf(outfile,"              Latest Revision July 02, 2014\n") ;
-   fprintf(outfile,"\n");
-   fprintf(outfile," ============================================================================== \n");
-   fprintf(outfile," ============================================================================== \n");
-   fprintf(outfile," ============================================================================== \n");
-   fprintf(outfile,"\n");
+   psi::fprintf(outfile,"\n");
+   psi::fprintf(outfile," ============================================================================== \n");
+   psi::fprintf(outfile," ============================================================================== \n");
+   psi::fprintf(outfile," ============================================================================== \n");
+   psi::fprintf(outfile,"\n");
+   psi::fprintf(outfile,"                         DFGRAD   \n");
+   psi::fprintf(outfile,"            A General Analytic Gradients Code   \n");
+   psi::fprintf(outfile,"               for Density-Fitted Methods       \n");
+   psi::fprintf(outfile,"                   by Ugur Bozkaya\n") ; 
+   psi::fprintf(outfile,"              Latest Revision July 02, 2014\n") ;
+   psi::fprintf(outfile,"\n");
+   psi::fprintf(outfile," ============================================================================== \n");
+   psi::fprintf(outfile," ============================================================================== \n");
+   psi::fprintf(outfile," ============================================================================== \n");
+   psi::fprintf(outfile,"\n");
    fflush(outfile);
 
 }//

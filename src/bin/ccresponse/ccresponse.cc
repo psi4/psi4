@@ -166,11 +166,11 @@ void init_io(void)
 
 void title(void)
 {
-  fprintf(outfile, "\t\t\t**************************\n");
-  fprintf(outfile, "\t\t\t*                        *\n");
-  fprintf(outfile, "\t\t\t*       ccresponse       *\n");
-  fprintf(outfile, "\t\t\t*                        *\n");
-  fprintf(outfile, "\t\t\t**************************\n");
+  psi::fprintf(outfile, "\t\t\t**************************\n");
+  psi::fprintf(outfile, "\t\t\t*                        *\n");
+  psi::fprintf(outfile, "\t\t\t*       ccresponse       *\n");
+  psi::fprintf(outfile, "\t\t\t*                        *\n");
+  psi::fprintf(outfile, "\t\t\t**************************\n");
 }
 
 void exit_io(void)

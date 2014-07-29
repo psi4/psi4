@@ -36,7 +36,7 @@ namespace psi{ namespace occwave{
 void OCCWave::gfock()
 {
 
-//fprintf(outfile,"\n omp3_gfock is starting... \n"); fflush(outfile);
+//psi::fprintf(outfile,"\n omp3_gfock is starting... \n"); fflush(outfile);
 //===========================================================================================
 //========================= RHF =============================================================
 //===========================================================================================
@@ -51,7 +51,7 @@ if (reference_ == "RESTRICTED") {
 	GFock->add(HG1);
 	Ecc_rdm = HG1->trace() + Enuc; // One-electron contribution to MP2L
         Eopdm = Ecc_rdm;
-	//fprintf(outfile,"\tOPDM energy (a.u.)          : %12.14f\n", Ecc_rdm);
+	//psi::fprintf(outfile,"\tOPDM energy (a.u.)          : %12.14f\n", Ecc_rdm);
 
         // 2e-part
 	dpdbuf4 G, K, X, T, Y;
@@ -1050,7 +1050,7 @@ if (wfn_type_ != "OMP2") {
 	}
 	
 }// end if (reference_ == "UNRESTRICTED") 
-//fprintf(outfile,"\n omp3_gfock done. \n"); fflush(outfile);
+//psi::fprintf(outfile,"\n omp3_gfock done. \n"); fflush(outfile);
 
 } // End main
 }} // End Namespaces

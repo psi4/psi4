@@ -240,17 +240,17 @@ SO_block::print(const char *title)
 {
     int i,j;
 
-    fprintf(outfile, "SO block %s\n", title);
+    psi::fprintf(outfile, "SO block %s\n", title);
 
     for (i=0; i < len; i++) {
-        fprintf(outfile, "  SO %d\n", i+1);
+        psi::fprintf(outfile, "  SO %d\n", i+1);
         for (j=0; j < so[i].length; j++)
-            fprintf(outfile, " %10d", so[i].cont[j].bfn);
-        fprintf(outfile, "\n");
+            psi::fprintf(outfile, " %10d", so[i].cont[j].bfn);
+        psi::fprintf(outfile, "\n");
 
         for (j=0; j < so[i].length; j++)
-            fprintf(outfile, " %10.7f", so[i].cont[j].coef);
-        fprintf(outfile, "\n");
+            psi::fprintf(outfile, " %10.7f", so[i].cont[j].coef);
+        psi::fprintf(outfile, "\n");
     }
 }
 
@@ -285,14 +285,14 @@ struct lin_comb {
     void print() const {
         int i;
         for (i=0; i < ns; i++)
-            fprintf(outfile, " %10d", mapf0+i);
-        fprintf(outfile, "\n");
+            psi::fprintf(outfile, " %10d", mapf0+i);
+        psi::fprintf(outfile, "\n");
 
         for (i=0; i < ns; i++) {
-            fprintf(outfile, "%2d", f0+i);
+            psi::fprintf(outfile, "%2d", f0+i);
             for (int j=0; j < ns; j++)
-                fprintf(outfile, " %10.7f", c[i][j]);
-            fprintf(outfile, "\n");
+                psi::fprintf(outfile, " %10.7f", c[i][j]);
+            psi::fprintf(outfile, "\n");
         }
     }
 };
@@ -334,11 +334,11 @@ int **compute_atom_map(const Molecule* molecule)
 
             atom_map[i][g] = mol.atom_at_position1(np, 0.05);
             if (atom_map[i][g] < 0) {
-                fprintf(outfile, "ERROR: Symmetry operation %d did not map atom %d to another atom:\n", g, i+1);
-                fprintf(outfile, "  Molecule:\n");
+                psi::fprintf(outfile, "ERROR: Symmetry operation %d did not map atom %d to another atom:\n", g, i+1);
+                psi::fprintf(outfile, "  Molecule:\n");
                 mol.print();
-                fprintf(outfile, "  attempted to find atom at\n");
-                fprintf(outfile, "    %lf %lf %lf\n", np[0], np[1], np[2]);
+                psi::fprintf(outfile, "  attempted to find atom at\n");
+                psi::fprintf(outfile, "    %lf %lf %lf\n", np[0], np[1], np[2]);
                 abort();
             }
         }
@@ -567,11 +567,11 @@ void PetiteList::init()
                 stablizer_[i] |= so.bit();
 
             if (atom_map_[i][g] < 0) {
-                fprintf(outfile, "ERROR: Symmetry operation %d did not map atom %d to another atom:\n", g, i+1);
-                fprintf(outfile, "  Molecule:\n");
+                psi::fprintf(outfile, "ERROR: Symmetry operation %d did not map atom %d to another atom:\n", g, i+1);
+                psi::fprintf(outfile, "  Molecule:\n");
                 mol.print();
-                fprintf(outfile, "  attempted to find atom at\n");
-                fprintf(outfile, "    %lf %lf %lf\n", np[0], np[1], np[2]);
+                psi::fprintf(outfile, "  attempted to find atom at\n");
+                psi::fprintf(outfile, "    %lf %lf %lf\n", np[0], np[1], np[2]);
                 abort();
             }
         }
@@ -721,55 +721,55 @@ void PetiteList::print(FILE *out)
 {
     int i;
 
-    fprintf(out, "PetiteList:\n");
+    psi::fprintf(out, "PetiteList:\n");
 
     if (c1_) {
-        fprintf(out, "  is c1\n");
+        psi::fprintf(out, "  is c1\n");
         return;
     }
 
-    fprintf(out, "  natom_ = %d\n", natom_);
-    fprintf(out, "  nshell_ = %d\n", nshell_);
-    fprintf(out, "  ng_ = %d\n", ng_);
-    fprintf(out, "  nirrep_ = %d\n", nirrep_);
+    psi::fprintf(out, "  natom_ = %d\n", natom_);
+    psi::fprintf(out, "  nshell_ = %d\n", nshell_);
+    psi::fprintf(out, "  ng_ = %d\n", ng_);
+    psi::fprintf(out, "  nirrep_ = %d\n", nirrep_);
 
-    fprintf(out, "  atom_map_ = \n");
+    psi::fprintf(out, "  atom_map_ = \n");
     for (i=0; i<natom_; ++i) {
-        fprintf(out, "    ");
+        psi::fprintf(out, "    ");
         for (int g=0; g<ng_; ++g)
-            fprintf(out, "%5d ", atom_map_[i][g]);
-        fprintf(outfile, "\n");
+            psi::fprintf(out, "%5d ", atom_map_[i][g]);
+        psi::fprintf(outfile, "\n");
     }
 
-    fprintf(out, "  stabilizer_ =\n");
+    psi::fprintf(out, "  stabilizer_ =\n");
     for (i=0; i<natom_; ++i)
-        fprintf(out, "    %5d %5d\n", i, stablizer_[i]);
+        psi::fprintf(out, "    %5d %5d\n", i, stablizer_[i]);
 
-    fprintf(out, "  shell_map_ = \n");
+    psi::fprintf(out, "  shell_map_ = \n");
     for (i=0; i<nshell_; ++i) {
-        fprintf(out, "    ");
+        psi::fprintf(out, "    ");
         for (int g=0; g<ng_; ++g)
-            fprintf(out, "%5d ", shell_map_[i][g]);
-        fprintf(outfile, "\n");
+            psi::fprintf(out, "%5d ", shell_map_[i][g]);
+        psi::fprintf(outfile, "\n");
     }
 
-    fprintf(out, "  p1_ =\n");
+    psi::fprintf(out, "  p1_ =\n");
     for (i=0; i<nshell_; ++i)
-        fprintf(out, "    %5d\n", p1_[i]);
+        psi::fprintf(out, "    %5d\n", p1_[i]);
 
-    fprintf(out, "  lamij_ = \n");
+    psi::fprintf(out, "  lamij_ = \n");
     for (i=0; i<nshell_; ++i) {
-        fprintf(out, "    ");
+        psi::fprintf(out, "    ");
         for (int j=0; j<=i; ++j)
-            fprintf(out, "%5d ", lamij_[i_offset64(i)+j]);
-        fprintf(outfile, "\n");
+            psi::fprintf(out, "%5d ", lamij_[i_offset64(i)+j]);
+        psi::fprintf(outfile, "\n");
     }
 
-    fprintf(out, "\n");
+    psi::fprintf(out, "\n");
 
     CharacterTable ct = basis_->molecule()->point_group()->char_table();
     for (i=0; i<nirrep_; ++i)
-        fprintf(out, "%5d functions of %s symmetry\n", nbf_in_ir_[i], ct.gamma(i).symbol());
+        psi::fprintf(out, "%5d functions of %s symmetry\n", nbf_in_ir_[i], ct.gamma(i).symbol());
 }
 
 /**
@@ -836,7 +836,7 @@ PetiteList::compute_aotoso_info()
                         double x = x_is_odd && op_inverts_x ? -1.0 : 1.0;
                         double y = y_is_odd && op_inverts_y ? -1.0 : 1.0;
                         double z = z_is_odd && op_inverts_z ? -1.0 : 1.0;
-//                        fprintf(outfile, "l = %d, Setting functionparities[%d][%d][%d] = %f\n", am, symop, am, bf, x*y*z);
+//                        psi::fprintf(outfile, "l = %d, Setting functionparities[%d][%d][%d] = %f\n", am, symop, am, bf, x*y*z);
                         function_parities[symop][am][bf] = x * y * z;
                         ++bf;
                     }
@@ -857,7 +857,7 @@ PetiteList::compute_aotoso_info()
         double norm = 1.0 / sqrt(nimages);
         int nshells = basis_->nshell_on_center(atom);
         for(int shell = 0; shell < nshells; ++shell){
-//fprintf(outfile, "working on shell %d\n", shell);fflush(outfile);
+//psi::fprintf(outfile, "working on shell %d\n", shell);fflush(outfile);
             int abs_shell = basis_->shell_on_center(atom, shell);
             int ncart = basis_->shell(abs_shell).ncartesian();
             int npure = basis_->shell(abs_shell).nfunction();
@@ -907,8 +907,8 @@ PetiteList::compute_aotoso_info()
                                     for(coef_iter = coefficients.coefficients.begin(); coef_iter!=stop; ++coef_iter){
                                         size_t address = nimages * pure + so_count;
                                         double val = coef_iter->second * cart_iter.coef();
-//fprintf(outfile, "l %d C %d P %d V %f v %f\n", l, cart, pure, trans->coef(n), val);
-//fprintf(outfile, "Adding %d, %f, %d to %d\n",coef_iter->first, val, irrep, address);fflush(outfile);
+//psi::fprintf(outfile, "l %d C %d P %d V %f v %f\n", l, cart, pure, trans->coef(n), val);
+//psi::fprintf(outfile, "Adding %d, %f, %d to %d\n",coef_iter->first, val, irrep, address);fflush(outfile);
                                         coefficients_list[address].add_contribution(coef_iter->first, val, irrep);
                                     }
                                 }
@@ -917,7 +917,7 @@ PetiteList::compute_aotoso_info()
                         }else{
                             // Cartesian, all we do is add it to the list
 //                            coefficients.print();
-//                            fprintf(outfile, "\n\n");
+//                            psi::fprintf(outfile, "\n\n");
                             coefficients_list[salc_count] = coefficients;
                         }
                         ++salc_count;
@@ -955,7 +955,7 @@ PetiteList::compute_aotoso_info()
         }
     }
     for(int h = 0; h < nirrep_; ++h){
-//fprintf(outfile, "Coeffs for irrep %d\n",h);
+//psi::fprintf(outfile, "Coeffs for irrep %d\n",h);
 //SOs[h].print("");
         if(!c1_ && functions_per_irrep[h] != nbf_in_ir_[h] && include_pure_transform_){
             std::stringstream err;
@@ -1047,13 +1047,13 @@ const char *labels[] = {
 
 void PetiteList::print_group(unsigned short group) const
 {
-    fprintf(outfile, "(group_ %d group %d) ", group_, group);
-    fprintf(outfile, "%s ", labels[0]);
+    psi::fprintf(outfile, "(group_ %d group %d) ", group_, group);
+    psi::fprintf(outfile, "%s ", labels[0]);
     for(int op = 1; op < 9; ++op){
         if (group & (1 << (op-1)))
-            fprintf(outfile, "%s ", labels[op]);
+            psi::fprintf(outfile, "%s ", labels[op]);
     }
-    fprintf(outfile, "\n");
+    psi::fprintf(outfile, "\n");
 }
 
 

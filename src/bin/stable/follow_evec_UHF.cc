@@ -74,7 +74,7 @@ void follow_evec_UHF(double *vf, int dim_A, int dim_B)
   scf = chkpt_rd_alpha_scf();
 
   if (params.print_lvl > 2) {
-    fprintf(outfile, "\n\tOld molecular orbitals (alpha):\n");
+    psi::fprintf(outfile, "\n\tOld molecular orbitals (alpha):\n");
     print_mat(scf, nso, nmo, outfile);
   }
 
@@ -95,7 +95,7 @@ void follow_evec_UHF(double *vf, int dim_A, int dim_B)
   }  /* end loop over h */
 
   if (params.print_lvl > 2) {
-    fprintf(outfile, "\n\tNew molecular orbitals (alpha):\n");
+    psi::fprintf(outfile, "\n\tNew molecular orbitals (alpha):\n");
     print_mat(scf, nso, nmo, outfile);
   }
 
@@ -107,7 +107,7 @@ void follow_evec_UHF(double *vf, int dim_A, int dim_B)
   scf = chkpt_rd_beta_scf();
 
   if (params.print_lvl > 2) {
-    fprintf(outfile, "\n\tOld molecular orbitals (beta):\n");
+    psi::fprintf(outfile, "\n\tOld molecular orbitals (beta):\n");
     print_mat(scf, nso, nmo, outfile);
   }
 
@@ -128,7 +128,7 @@ void follow_evec_UHF(double *vf, int dim_A, int dim_B)
   }  /* end loop over h */
 
   if (params.print_lvl > 2) {
-    fprintf(outfile, "\n\tNew molecular orbitals (beta):\n");
+    psi::fprintf(outfile, "\n\tNew molecular orbitals (beta):\n");
     print_mat(scf, nso, nmo, outfile);
   }
 
@@ -186,7 +186,7 @@ void follow_evec_UHF2(double *vf, int dim_A, int dim_B)
   scf_new = block_matrix(nso, nmo);
 
   if (params.print_lvl > 2) {
-    fprintf(outfile, "\n\tOld molecular orbitals (alpha):\n");
+    psi::fprintf(outfile, "\n\tOld molecular orbitals (alpha):\n");
     print_mat(scf, nso, nmo, outfile);
   }
 
@@ -221,7 +221,7 @@ void follow_evec_UHF2(double *vf, int dim_A, int dim_B)
   evals = init_array(nmo);
   work = init_array(nmo*3);
   if((stat = C_DSYEV('v','u', nmo,&(MO_S[0][0]),nmo,evals,work,nmo*3))) {
-    fprintf(outfile,
+    psi::fprintf(outfile,
       "rotate(): Error in overlap diagonalization. stat = %d\n", stat);
     exit(PSI_RETURN_FAILURE);
   }
@@ -250,7 +250,7 @@ void follow_evec_UHF2(double *vf, int dim_A, int dim_B)
   free_block(scf_new);
 
   if (params.print_lvl > 2) {
-    fprintf(outfile, "\n\tNew molecular orbitals (alpha):\n");
+    psi::fprintf(outfile, "\n\tNew molecular orbitals (alpha):\n");
     print_mat(scf_a, nso, nmo, outfile);
   }
 
@@ -266,7 +266,7 @@ void follow_evec_UHF2(double *vf, int dim_A, int dim_B)
   scf_b_orig = chkpt_rd_beta_scf();
 
   if (params.print_lvl > 2) {
-    fprintf(outfile, "\n\tOld molecular orbitals (beta):\n");
+    psi::fprintf(outfile, "\n\tOld molecular orbitals (beta):\n");
     print_mat(scf, nso, nmo, outfile);
   }
 
@@ -302,7 +302,7 @@ void follow_evec_UHF2(double *vf, int dim_A, int dim_B)
   evals = init_array(nmo);
   work = init_array(nmo*3);
   if((stat = C_DSYEV('v','u', nmo,&(MO_S[0][0]),nmo,evals,work,nmo*3))) {
-    fprintf(outfile,
+    psi::fprintf(outfile,
       "rotate(): Error in overlap diagonalization. stat = %d\n", stat);
     exit(PSI_RETURN_FAILURE);
   }
@@ -332,7 +332,7 @@ void follow_evec_UHF2(double *vf, int dim_A, int dim_B)
 
 
   if (params.print_lvl > 2) {
-    fprintf(outfile, "\n\tNew molecular orbitals (beta):\n");
+    psi::fprintf(outfile, "\n\tNew molecular orbitals (beta):\n");
     print_mat(scf_b, nso, nmo, outfile);
   }
 

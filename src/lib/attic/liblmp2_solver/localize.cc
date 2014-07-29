@@ -79,9 +79,9 @@ void LMP2::localize_pipek_mezey() {
     ao_bas.clear();
 
     if (me_ == 0) {
-        fprintf(outfile, "\n  ====> Orbital Localization <====\n\n");
-        fprintf(outfile, "  Iter    Max Rotation    Convergence\n");
-        fprintf(outfile, "  -----------------------------------\n");
+        psi::fprintf(outfile, "\n  ====> Orbital Localization <====\n\n");
+        psi::fprintf(outfile, "  Iter    Max Rotation    Convergence\n");
+        psi::fprintf(outfile, "  -----------------------------------\n");
     }
 
     SharedMatrix V(occ_occ_->create_matrix("V Matrix"));
@@ -180,7 +180,7 @@ void LMP2::localize_pipek_mezey() {
 
         conv = fabs(alphamax) - fabs(alphalast);
         if (me_ == 0) {
-            fprintf(outfile, "  %2d  %16.10f  %12.3e\n", iter, alphamax, conv);
+            psi::fprintf(outfile, "  %2d  %16.10f  %12.3e\n", iter, alphamax, conv);
         }
 
 
@@ -269,7 +269,7 @@ void LMP2::localize_pipek_mezey() {
     timer_off("Localization");
 
     if (me_ == 0)
-        fprintf(outfile, "\n  ================================\n\n");
+        psi::fprintf(outfile, "\n  ================================\n\n");
 
 
 }

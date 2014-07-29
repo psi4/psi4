@@ -29,7 +29,7 @@
 #include <psifiles.h>
 #include <cstdio>
 #include <cmath>
-
+#include "psi4-dec.h"
 #define DSIGN(a,b) (((b) >= 0.0) ? (fabs(a)) : (-fabs(a)))
 
 namespace psi {
@@ -73,7 +73,7 @@ L1:
 L2:
          if (m != l) {
             if (iter++ == 30) {
-               fprintf (stderr,"tqli not converging\n");
+               psi::fprintf (stderr,"tqli not converging\n");
                 continue;
 #if 0
                exit(PSI_RETURN_FAILURE);

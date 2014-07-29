@@ -116,7 +116,7 @@ void get_parameters(Options& options)
   if (Params.hessian != "FULL" && 
       Params.hessian != "DIAG" &&
       Params.hessian !=  "APPROX_DIAG") {
-    fprintf(outfile, "(detcas): Unrecognized Hessian option %s\n", 
+    psi::fprintf(outfile, "(detcas): Unrecognized Hessian option %s\n", 
       Params.hessian.c_str());
     throw PsiException("detcas: error", __FILE__, __LINE__);
   }
@@ -141,35 +141,35 @@ void get_parameters(Options& options)
 */
 void print_parameters(void)
 {
-  fprintf(outfile, "\n") ;
-  fprintf(outfile, "PARAMETERS: \n") ;
-  fprintf(outfile, "   PRINT         =   %6d      PRINT_MOS     =   %6s\n", 
+  psi::fprintf(outfile, "\n") ;
+  psi::fprintf(outfile, "PARAMETERS: \n") ;
+  psi::fprintf(outfile, "   PRINT         =   %6d      PRINT_MOS     =   %6s\n", 
       Params.print_lvl, Params.print_mos ? "yes" : "no");
-  fprintf(outfile, "   CONVERGENCE   =   %6d      E CONVERG     =   %6d\n",
+  psi::fprintf(outfile, "   CONVERGENCE   =   %6d      E CONVERG     =   %6d\n",
       Params.rms_grad_convergence, Params.energy_convergence);
-  fprintf(outfile, "   IGNORE_RAS_RAS=   %6s      IGNORE_FZ     =   %6s\n", 
+  psi::fprintf(outfile, "   IGNORE_RAS_RAS=   %6s      IGNORE_FZ     =   %6s\n", 
       Params.ignore_ras_ras ? "yes" : "no", Params.ignore_fz ? "yes" : "no") ;
-  fprintf(outfile, "   OEI FILE      =   %6d      OEI ERASE     =   %6s\n", 
+  psi::fprintf(outfile, "   OEI FILE      =   %6d      OEI ERASE     =   %6s\n", 
       Params.oei_file, Params.oei_erase ? "yes" : "no");
-  fprintf(outfile, "   TEI FILE      =   %6d      TEI ERASE     =   %6s\n", 
+  psi::fprintf(outfile, "   TEI FILE      =   %6d      TEI ERASE     =   %6s\n", 
       Params.tei_file, Params.tei_erase ? "yes" : "no");
-  fprintf(outfile, "   OPDM FILE     =   %6d      OPDM ERASE    =   %6s\n", 
+  psi::fprintf(outfile, "   OPDM FILE     =   %6d      OPDM ERASE    =   %6s\n", 
       Params.lag_file, Params.opdm_erase ? "yes" : "no");
-  fprintf(outfile, "   TPDM FILE     =   %6d      TPDM ERASE    =   %6s\n", 
+  psi::fprintf(outfile, "   TPDM FILE     =   %6d      TPDM ERASE    =   %6s\n", 
       Params.tpdm_file, Params.tpdm_erase ? "yes" : "no");
-  fprintf(outfile, "   LAG FILE      =   %6d      LAG ERASE     =   %6s\n", 
+  psi::fprintf(outfile, "   LAG FILE      =   %6d      LAG ERASE     =   %6s\n", 
       Params.lag_file, Params.lag_erase ? "yes" : "no");
-  fprintf(outfile, "   DIIS START    =   %6d      DIIS FREQ     =   %6d\n", 
+  psi::fprintf(outfile, "   DIIS START    =   %6d      DIIS FREQ     =   %6d\n", 
       Params.diis_start, Params.diis_freq);
-  fprintf(outfile, "   DIIS MIN VECS =   %6d      DIIS MAX VECS =   %6d\n", 
+  psi::fprintf(outfile, "   DIIS MIN VECS =   %6d      DIIS MAX VECS =   %6d\n", 
       Params.diis_min_vecs, Params.diis_max_vecs);
-  fprintf(outfile, "   SCALE STEP    =   %6.2E    MAX STEP      =   %6.2lf\n",
+  psi::fprintf(outfile, "   SCALE STEP    =   %6.2E    MAX STEP      =   %6.2lf\n",
       Params.scale_step, Params.step_max);
-  fprintf(outfile, "   LEVEL SHIFT   =   %6s      SHIFT         =   %6.2lf\n",
+  psi::fprintf(outfile, "   LEVEL SHIFT   =   %6s      SHIFT         =   %6.2lf\n",
       Params.level_shift ? "yes" : "no", Params.shift);
-  fprintf(outfile, "   USE FZC H     =   %6s      HESSIAN       = %-12s\n",
+  psi::fprintf(outfile, "   USE FZC H     =   %6s      HESSIAN       = %-12s\n",
       Params.use_fzc_h ? "yes" : "no", Params.hessian.c_str());
-  fprintf(outfile, "\n") ;
+  psi::fprintf(outfile, "\n") ;
   fflush(outfile) ;
 }
 

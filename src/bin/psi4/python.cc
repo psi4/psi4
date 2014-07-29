@@ -657,7 +657,7 @@ boost::python::list py_psi_get_global_option_list()
 
 void py_psi_print_out(std::string s)
 {
-    fprintf(outfile,"%s",s.c_str());
+    psi::fprintf(outfile,"%s",s.c_str());
 }
 
 /**
@@ -1059,7 +1059,7 @@ void py_psi_clean_variable_map()
 void py_psi_set_memory(unsigned long int mem)
 {
     Process::environment.set_memory(mem);
-    fprintf(outfile,"\n  Memory set to %7.3f %s by Python script.\n",(mem > 1000000000 ? mem/1.0E9 : mem/1.0E6), \
+    psi::fprintf(outfile,"\n  Memory set to %7.3f %s by Python script.\n",(mem > 1000000000 ? mem/1.0E9 : mem/1.0E6), \
         (mem > 1000000000 ? "GiB" : "MiB" ));
 }
 
@@ -1173,9 +1173,9 @@ void py_psi_print_variable_map()
             std::fixed << std::setprecision(12) << it->second << std::endl;
     }
 
-    fprintf(outfile, "\n\n  Variable Map:");
-    fprintf(outfile, "\n  ----------------------------------------------------------------------------\n");
-    fprintf(outfile, "%s\n\n", line.str().c_str());
+    psi::fprintf(outfile, "\n\n  Variable Map:");
+    psi::fprintf(outfile, "\n  ----------------------------------------------------------------------------\n");
+    psi::fprintf(outfile, "%s\n\n", line.str().c_str());
 }
 
 std::string py_psi_top_srcdir()
@@ -1497,12 +1497,12 @@ void Python::run(FILE *input)
 
 #if PY_MAJOR_VERSION == 2
         if (PyImport_AppendInittab(strdup("psi4"), initpsi4) == -1) {
-            fprintf(stderr, "Unable to register psi4 with your Python.\n");
+            psi::fprintf(stderr, "Unable to register psi4 with your Python.\n");
             abort();
         }
 #else
         if (PyImport_AppendInittab(strdup("psi4"), PyInit_psi4) == -1) {
-            fprintf(stderr, "Unable to register psi4 with your Python.\n");
+            psi::fprintf(stderr, "Unable to register psi4 with your Python.\n");
             abort();
         }
 #endif
@@ -1612,7 +1612,7 @@ void Python::run(FILE *input)
                     inputfile = file.str();
 
                 if (verbose) {
-                    fprintf(outfile, "\n Input file to run:\n%s", inputfile.c_str());
+                    psi::fprintf(outfile, "\n Input file to run:\n%s", inputfile.c_str());
                     fflush(outfile);
                 }
 
@@ -1638,7 +1638,7 @@ void Python::run(FILE *input)
         }
     }
     else {
-        fprintf(stderr, "Unable to run Python input file.\n");
+        psi::fprintf(stderr, "Unable to run Python input file.\n");
         return;
     }
 

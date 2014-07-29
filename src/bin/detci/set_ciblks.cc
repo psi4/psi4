@@ -58,8 +58,8 @@ void set_ciblks(struct olsen_graph *AlphaG, struct olsen_graph *BetaG)
    xlvl = Parameters.ex_lvl;
 
    if (Parameters.print_lvl) {
-      fprintf(outfile, "\nThere are %d alpha strings\n", CalcInfo.num_alp_str);
-      fprintf(outfile, "There are %d beta strings\n", CalcInfo.num_bet_str);
+      psi::fprintf(outfile, "\nThere are %d alpha strings\n", CalcInfo.num_alp_str);
+      psi::fprintf(outfile, "There are %d beta strings\n", CalcInfo.num_bet_str);
       }
 
    /* Get the occupations for the reference alpha and beta strings.
@@ -86,7 +86,7 @@ void set_ciblks(struct olsen_graph *AlphaG, struct olsen_graph *BetaG)
          occs2[cnt2++] = CalcInfo.ras_orbs[1][i][m-k];
       if (CalcInfo.socc[i] != 0) {
          if (Parameters.opentype == PARM_OPENTYPE_NONE)
-            fprintf(outfile,"Warning: ignoring socc since opentype=none\n");
+            psi::fprintf(outfile,"Warning: ignoring socc since opentype=none\n");
          else if (Parameters.opentype == PARM_OPENTYPE_HIGHSPIN) {
             j += CalcInfo.socc[i];
             l = (j<k) ? j : k;
@@ -134,7 +134,7 @@ void set_ciblks(struct olsen_graph *AlphaG, struct olsen_graph *BetaG)
             occs2[cnt2++] = CalcInfo.ras_orbs[1][i][m-k];
          if (CalcInfo.socc[i] != 0) {
             if (Parameters.opentype == PARM_OPENTYPE_NONE)
-               fprintf(outfile,"Warning: ignoring socc since opentype=none\n");
+               psi::fprintf(outfile,"Warning: ignoring socc since opentype=none\n");
             else if (Parameters.opentype == PARM_OPENTYPE_SINGLET &&
                      betsocc < CalcInfo.spab) {
                if (betsocc + CalcInfo.socc[i] <= CalcInfo.spab) {
@@ -320,7 +320,7 @@ void set_ciblks(struct olsen_graph *AlphaG, struct olsen_graph *BetaG)
    CIblks.num_blocks = nblocks;
 
    if (Parameters.print_lvl)
-      fprintf(outfile, "CI space contains %4d blocks\n", nblocks);
+      psi::fprintf(outfile, "CI space contains %4d blocks\n", nblocks);
 
    if (nblocks > CI_BLK_MAX) {
       std::string str = "nblocks = ";
@@ -341,7 +341,7 @@ void set_ciblks(struct olsen_graph *AlphaG, struct olsen_graph *BetaG)
                     (BIGINT) CIblks.Ib_size[nblocks-1];
 
    if (Parameters.print_lvl) {
-     fprintf(outfile,
+     psi::fprintf(outfile,
        "\nCI space requires %.0lf determinants\n", (double) CIblks.vectlen);
      fflush(outfile);
      }

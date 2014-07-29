@@ -45,7 +45,7 @@ int DPD::trans4_mat_irrep_shift31(dpdtrans4 *Trans, int buf_block)
     timer_on("shift");
 #endif
     if(Trans->shift.shift_type) {
-        fprintf(stderr, "\n\tShift is already on! %d\n",
+        psi::fprintf(stderr, "\n\tShift is already on! %d\n",
                 Trans->shift.shift_type);
         exit(PSI_RETURN_FAILURE);
     }

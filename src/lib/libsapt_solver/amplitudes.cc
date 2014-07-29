@@ -56,7 +56,7 @@ void SAPT2::amplitudes()
     tOVOV(PSIF_SAPT_BB_DF_INTS,"BS NO RI Integrals",foccB_,noccB_,no_nvirB_,
       no_evalsB_,PSIF_SAPT_BB_DF_INTS,"BS NO RI Integrals",foccB_,noccB_,
       no_nvirB_,no_evalsB_,PSIF_SAPT_AMPS,"tBSBS NO Amplitudes");
-    if (print_) fprintf(outfile,"\n");
+    if (print_) psi::fprintf(outfile,"\n");
   }
 
   theta(PSIF_SAPT_AMPS,"tARAR Amplitudes",'N',true,aoccA_,nvirA_,aoccA_,nvirA_,
@@ -670,7 +670,7 @@ void SAPT2p::amplitudes()
     tOVOV(PSIF_SAPT_BB_DF_INTS,"BS NO RI Integrals",foccB_,noccB_,no_nvirB_,
       no_evalsB_,PSIF_SAPT_BB_DF_INTS,"BS NO RI Integrals",foccB_,noccB_,
       no_nvirB_,no_evalsB_,PSIF_SAPT_AMPS,"tBSBS NO Amplitudes");
-    if (print_) fprintf(outfile,"\n");
+    if (print_) psi::fprintf(outfile,"\n");
   }
 
   theta(PSIF_SAPT_AMPS,"tARAR Amplitudes",'N',true,aoccA_,nvirA_,aoccA_,nvirA_,
@@ -819,7 +819,7 @@ void SAPT2p3::amplitudes()
     tOVOV(PSIF_SAPT_BB_DF_INTS,"BS NO RI Integrals",foccB_,noccB_,no_nvirB_,
       no_evalsB_,PSIF_SAPT_BB_DF_INTS,"BS NO RI Integrals",foccB_,noccB_,
       no_nvirB_,no_evalsB_,PSIF_SAPT_AMPS,"tBSBS NO Amplitudes");
-    if (print_) fprintf(outfile,"\n");
+    if (print_) psi::fprintf(outfile,"\n");
   }
 
   theta(PSIF_SAPT_AMPS,"tARAR Amplitudes",'N',true,aoccA_,nvirA_,aoccA_,nvirA_,

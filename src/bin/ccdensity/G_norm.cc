@@ -40,7 +40,7 @@ void G_norm(void) {
   double value, value1, dot_IA, dot_ia, dot_AI, dot_ai;
   int G_irr = 0;
 
-  fprintf(outfile,"Calculating overlaps of CC_OEI\n");
+  psi::fprintf(outfile,"Calculating overlaps of CC_OEI\n");
   global_dpd_->file2_init(&G1, PSIF_CC_OEI, G_irr, 0, 1, "DIA");
   dot_IA = global_dpd_->file2_dot_self(&G1);
   global_dpd_->file2_close(&G1);
@@ -54,14 +54,14 @@ void G_norm(void) {
   dot_ai = global_dpd_->file2_dot_self(&G1);
   global_dpd_->file2_close(&G1);
   /*
-  fprintf(outfile,"<DIA|DIA> = %15.10lf\n", dot_IA);
-  fprintf(outfile,"<Dia|Dia> = %15.10lf\n", dot_ia);
-  fprintf(outfile,"<DAI|DAI> = %15.10lf\n", dot_AI);
-  fprintf(outfile,"<Dai|Dai> = %15.10lf\n", dot_ai);
+  psi::fprintf(outfile,"<DIA|DIA> = %15.10lf\n", dot_IA);
+  psi::fprintf(outfile,"<Dia|Dia> = %15.10lf\n", dot_ia);
+  psi::fprintf(outfile,"<DAI|DAI> = %15.10lf\n", dot_AI);
+  psi::fprintf(outfile,"<Dai|Dai> = %15.10lf\n", dot_ai);
   */
-  fprintf(outfile,"\t<Dpq|Dqp>     = %15.10lf\n", dot_IA+dot_ia+dot_AI+dot_ai);
+  psi::fprintf(outfile,"\t<Dpq|Dqp>     = %15.10lf\n", dot_IA+dot_ia+dot_AI+dot_ai);
 
-  fprintf(outfile,"Calculating overlaps of CC_GAMMA\n");
+  psi::fprintf(outfile,"Calculating overlaps of CC_GAMMA\n");
 
   global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 2, 2, 2, 2, 0, "GIJKL");
   value = global_dpd_->buf4_dot_self(&G);
@@ -72,7 +72,7 @@ void G_norm(void) {
   global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 0, 0, 0, 0, 0, "GIjKl");
   value += global_dpd_->buf4_dot_self(&G);
   global_dpd_->buf4_close(&G);
-  fprintf(outfile,"\t<Gijkl|Gijkl> = %15.10lf\n", value);
+  psi::fprintf(outfile,"\t<Gijkl|Gijkl> = %15.10lf\n", value);
 
   global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 2, 10, 2, 10, 0, "GIJKA");
   value = global_dpd_->buf4_dot_self(&G);
@@ -86,7 +86,7 @@ void G_norm(void) {
   global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 0, 10, 0, 10, 0, "GiJkA");
   value += global_dpd_->buf4_dot_self(&G);
   global_dpd_->buf4_close(&G);
-  fprintf(outfile,"\t<Gijka|Gijka> = %15.10lf\n",value);
+  psi::fprintf(outfile,"\t<Gijka|Gijka> = %15.10lf\n",value);
 
   global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 2, 7, 2, 7, 0, "GIJAB");
   value = global_dpd_->buf4_dot_self(&G);
@@ -97,7 +97,7 @@ void G_norm(void) {
   global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 0, 5, 0, 5, 0, "GIjAb");
   value += global_dpd_->buf4_dot_self(&G);
   global_dpd_->buf4_close(&G);
-  fprintf(outfile,"\t<Gijab|Gijab> = %15.10lf\n", value);
+  psi::fprintf(outfile,"\t<Gijab|Gijab> = %15.10lf\n", value);
 
 
   global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 10, 10, 10, 10, 0, "GIBJA");
@@ -118,7 +118,7 @@ void G_norm(void) {
   global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 10, 10, 10, 10, 0, "GiBJa");
   value += global_dpd_->buf4_dot_self(&G);
   global_dpd_->buf4_close(&G);
-  fprintf(outfile,"\t<Gibja|Gibja> = %15.10lf\n",value);
+  psi::fprintf(outfile,"\t<Gibja|Gibja> = %15.10lf\n",value);
 
   global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 11, 7, 11, 7, 0, "GCIAB");
   value = global_dpd_->buf4_dot_self(&G);
@@ -132,7 +132,7 @@ void G_norm(void) {
   global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 11, 5, 11, 5, 0, "GcIaB");
   value += global_dpd_->buf4_dot_self(&G);
   global_dpd_->buf4_close(&G);
-  fprintf(outfile,"\t<Gciab|Gciab> = %15.10lf\n",value);
+  psi::fprintf(outfile,"\t<Gciab|Gciab> = %15.10lf\n",value);
 
   global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 7, 7, 7, 7, 0, "GABCD");
   value = global_dpd_->buf4_dot_self(&G);
@@ -143,7 +143,7 @@ void G_norm(void) {
   global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, G_irr, 5, 5, 5, 5, 0, "GAbCd");
   value += global_dpd_->buf4_dot_self(&G);
   global_dpd_->buf4_close(&G);
-  fprintf(outfile,"\t<Gabcd|Gabcd> = %15.10lf\n", value);
+  psi::fprintf(outfile,"\t<Gabcd|Gabcd> = %15.10lf\n", value);
 
   return;
 }

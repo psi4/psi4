@@ -155,35 +155,35 @@ double SAPT2p3::compute_energy()
 void SAPT2p3::print_header()
 {
   if (third_order_)
-    fprintf(outfile,"       SAPT2+3   \n");
+    psi::fprintf(outfile,"       SAPT2+3   \n");
   else
-    fprintf(outfile,"      SAPT2+(3)  \n");
+    psi::fprintf(outfile,"      SAPT2+(3)  \n");
   if (ccd_disp_) 
-    fprintf(outfile,"    CCD+(ST) Disp   \n");
-  fprintf(outfile,"    Ed Hohenstein\n") ;
-  fprintf(outfile,"     6 June 2009\n") ;
-  fprintf(outfile,"\n");
-  fprintf(outfile,"      Orbital Information\n");
-  fprintf(outfile,"  --------------------------\n");
+    psi::fprintf(outfile,"    CCD+(ST) Disp   \n");
+  psi::fprintf(outfile,"    Ed Hohenstein\n") ;
+  psi::fprintf(outfile,"     6 June 2009\n") ;
+  psi::fprintf(outfile,"\n");
+  psi::fprintf(outfile,"      Orbital Information\n");
+  psi::fprintf(outfile,"  --------------------------\n");
   if (nsoA_ != nso_ || nsoB_ != nso_) {
-    fprintf(outfile,"    NSO        = %9d\n",nso_);
-    fprintf(outfile,"    NSO A      = %9d\n",nsoA_);
-    fprintf(outfile,"    NSO B      = %9d\n",nsoB_);
-    fprintf(outfile,"    NMO        = %9d\n",nmo_);
-    fprintf(outfile,"    NMO A      = %9d\n",nmoA_);
-    fprintf(outfile,"    NMO B      = %9d\n",nmoB_);
+    psi::fprintf(outfile,"    NSO        = %9d\n",nso_);
+    psi::fprintf(outfile,"    NSO A      = %9d\n",nsoA_);
+    psi::fprintf(outfile,"    NSO B      = %9d\n",nsoB_);
+    psi::fprintf(outfile,"    NMO        = %9d\n",nmo_);
+    psi::fprintf(outfile,"    NMO A      = %9d\n",nmoA_);
+    psi::fprintf(outfile,"    NMO B      = %9d\n",nmoB_);
   } else {
-    fprintf(outfile,"    NSO        = %9d\n",nso_);
-    fprintf(outfile,"    NMO        = %9d\n",nmo_);
+    psi::fprintf(outfile,"    NSO        = %9d\n",nso_);
+    psi::fprintf(outfile,"    NMO        = %9d\n",nmo_);
   }
-  fprintf(outfile,"    NRI        = %9d\n",ndf_);
-  fprintf(outfile,"    NOCC A     = %9d\n",noccA_);
-  fprintf(outfile,"    NOCC B     = %9d\n",noccB_);
-  fprintf(outfile,"    FOCC A     = %9d\n",foccA_);
-  fprintf(outfile,"    FOCC B     = %9d\n",foccB_);
-  fprintf(outfile,"    NVIR A     = %9d\n",nvirA_);
-  fprintf(outfile,"    NVIR B     = %9d\n",nvirB_);
-  fprintf(outfile,"\n");
+  psi::fprintf(outfile,"    NRI        = %9d\n",ndf_);
+  psi::fprintf(outfile,"    NOCC A     = %9d\n",noccA_);
+  psi::fprintf(outfile,"    NOCC B     = %9d\n",noccB_);
+  psi::fprintf(outfile,"    FOCC A     = %9d\n",foccA_);
+  psi::fprintf(outfile,"    FOCC B     = %9d\n",foccB_);
+  psi::fprintf(outfile,"    NVIR A     = %9d\n",nvirA_);
+  psi::fprintf(outfile,"    NVIR B     = %9d\n",nvirB_);
+  psi::fprintf(outfile,"\n");
 
   long int mem = (long int) memory_;
   mem /= 8L;
@@ -202,18 +202,18 @@ void SAPT2p3::print_header()
   }
 
   if (print_) {
-    fprintf(outfile,"    Estimated memory usage: %.1lf MB\n\n",memory);
+    psi::fprintf(outfile,"    Estimated memory usage: %.1lf MB\n\n",memory);
     fflush(outfile);
   }
   if (options_.get_bool("SAPT_MEM_CHECK"))
     if (mem < vvnri + ovov*3L) 
       throw PsiException("Not enough memory", __FILE__,__LINE__);
 
-  fprintf(outfile,"    Natural Orbital Cutoff: %11.3E\n", occ_cutoff_);
-  fprintf(outfile,"    Disp(T3) Truncation:    %11s\n", (nat_orbs_t3_ ? "Yes" : "No"));
-  fprintf(outfile,"    CCD (vv|vv) Truncation: %11s\n", (nat_orbs_v4_ ? "Yes" : "No"));
-  fprintf(outfile,"    MBPT T2 Truncation:     %11s\n", (nat_orbs_t2_ ? "Yes" : "No"));
-  fprintf(outfile,"\n");
+  psi::fprintf(outfile,"    Natural Orbital Cutoff: %11.3E\n", occ_cutoff_);
+  psi::fprintf(outfile,"    Disp(T3) Truncation:    %11s\n", (nat_orbs_t3_ ? "Yes" : "No"));
+  psi::fprintf(outfile,"    CCD (vv|vv) Truncation: %11s\n", (nat_orbs_v4_ ? "Yes" : "No"));
+  psi::fprintf(outfile,"    MBPT T2 Truncation:     %11s\n", (nat_orbs_t2_ ? "Yes" : "No"));
+  psi::fprintf(outfile,"\n");
 
   fflush(outfile);
 }
@@ -272,108 +272,108 @@ void SAPT2p3::print_results()
   }
 
 
-  fprintf(outfile,"\n    SAPT Results  \n");
-  fprintf(outfile,"  --------------------------------------------------------------------------\n");
-  fprintf(outfile,"    Electrostatics        %16.8lf mH %16.8lf kcal mol^-1\n",
+  psi::fprintf(outfile,"\n    SAPT Results  \n");
+  psi::fprintf(outfile,"  --------------------------------------------------------------------------\n");
+  psi::fprintf(outfile,"    Electrostatics        %16.8lf mH %16.8lf kcal mol^-1\n",
     tot_elst*1000.0,tot_elst*pc_hartree2kcalmol);
-  fprintf(outfile,"      Elst10,r            %16.8lf mH %16.8lf kcal mol^-1\n",
+  psi::fprintf(outfile,"      Elst10,r            %16.8lf mH %16.8lf kcal mol^-1\n",
     e_elst10_*1000.0,e_elst10_*pc_hartree2kcalmol);
-  fprintf(outfile,"      Elst12,r            %16.8lf mH %16.8lf kcal mol^-1\n",
+  psi::fprintf(outfile,"      Elst12,r            %16.8lf mH %16.8lf kcal mol^-1\n",
     e_elst12_*1000.0,e_elst12_*pc_hartree2kcalmol);
-  fprintf(outfile,"      Elst13,r            %16.8lf mH %16.8lf kcal mol^-1\n",
+  psi::fprintf(outfile,"      Elst13,r            %16.8lf mH %16.8lf kcal mol^-1\n",
     e_elst13_*1000.0,e_elst13_*pc_hartree2kcalmol);
-  fprintf(outfile,"\n    Exchange              %16.8lf mH %16.8lf kcal mol^-1\n",
+  psi::fprintf(outfile,"\n    Exchange              %16.8lf mH %16.8lf kcal mol^-1\n",
     tot_exch*1000.0,tot_exch*pc_hartree2kcalmol);
-  fprintf(outfile,"      Exch10              %16.8lf mH %16.8lf kcal mol^-1\n",
+  psi::fprintf(outfile,"      Exch10              %16.8lf mH %16.8lf kcal mol^-1\n",
     e_exch10_*1000.0,e_exch10_*pc_hartree2kcalmol);
-  fprintf(outfile,"      Exch10(S^2)         %16.8lf mH %16.8lf kcal mol^-1\n",
+  psi::fprintf(outfile,"      Exch10(S^2)         %16.8lf mH %16.8lf kcal mol^-1\n",
     e_exch10_s2_*1000.0,e_exch10_s2_*pc_hartree2kcalmol);
-  fprintf(outfile,"      Exch11(S^2)         %16.8lf mH %16.8lf kcal mol^-1\n",
+  psi::fprintf(outfile,"      Exch11(S^2)         %16.8lf mH %16.8lf kcal mol^-1\n",
     e_exch11_*1000.0,e_exch11_*pc_hartree2kcalmol);
-  fprintf(outfile,"      Exch12(S^2)         %16.8lf mH %16.8lf kcal mol^-1\n",
+  psi::fprintf(outfile,"      Exch12(S^2)         %16.8lf mH %16.8lf kcal mol^-1\n",
     e_exch12_*1000.0,e_exch12_*pc_hartree2kcalmol);
-  fprintf(outfile,"\n    Induction             %16.8lf mH %16.8lf kcal mol^-1\n",
+  psi::fprintf(outfile,"\n    Induction             %16.8lf mH %16.8lf kcal mol^-1\n",
     tot_ind*1000.0,tot_ind*pc_hartree2kcalmol);
-  fprintf(outfile,"      Ind20,r             %16.8lf mH %16.8lf kcal mol^-1\n",
+  psi::fprintf(outfile,"      Ind20,r             %16.8lf mH %16.8lf kcal mol^-1\n",
     e_ind20_*1000.0,e_ind20_*pc_hartree2kcalmol);
   if (third_order_)
-    fprintf(outfile,"      Ind30,r             %16.8lf mH %16.8lf kcal mol^-1\n",
+    psi::fprintf(outfile,"      Ind30,r             %16.8lf mH %16.8lf kcal mol^-1\n",
       e_ind30r_*1000.0,e_ind30r_*pc_hartree2kcalmol);
-  fprintf(outfile,"      Ind22               %16.8lf mH %16.8lf kcal mol^-1\n",
+  psi::fprintf(outfile,"      Ind22               %16.8lf mH %16.8lf kcal mol^-1\n",
     e_ind22_*1000.0,e_ind22_*pc_hartree2kcalmol);
-  fprintf(outfile,"      Exch-Ind20,r        %16.8lf mH %16.8lf kcal mol^-1\n",
+  psi::fprintf(outfile,"      Exch-Ind20,r        %16.8lf mH %16.8lf kcal mol^-1\n",
     e_exch_ind20_*1000.0,e_exch_ind20_*pc_hartree2kcalmol);
   if (third_order_)
-    fprintf(outfile,"      Exch-Ind30,r        %16.8lf mH %16.8lf kcal mol^-1\n",
+    psi::fprintf(outfile,"      Exch-Ind30,r        %16.8lf mH %16.8lf kcal mol^-1\n",
       e_exch_ind30r_*1000.0,e_exch_ind30r_*pc_hartree2kcalmol);
-  fprintf(outfile,"      Exch-Ind22          %16.8lf mH %16.8lf kcal mol^-1\n",
+  psi::fprintf(outfile,"      Exch-Ind22          %16.8lf mH %16.8lf kcal mol^-1\n",
     e_exch_ind22_*1000.0,e_exch_ind22_*pc_hartree2kcalmol);
-  fprintf(outfile,"      delta HF,r (2)      %16.8lf mH %16.8lf kcal mol^-1\n",
+  psi::fprintf(outfile,"      delta HF,r (2)      %16.8lf mH %16.8lf kcal mol^-1\n",
     dHF2*1000.0,dHF2*pc_hartree2kcalmol);
   if (third_order_)
-    fprintf(outfile,"      delta HF,r (3)      %16.8lf mH %16.8lf kcal mol^-1\n",
+    psi::fprintf(outfile,"      delta HF,r (3)      %16.8lf mH %16.8lf kcal mol^-1\n",
       dHF3*1000.0,dHF3*pc_hartree2kcalmol);
-  fprintf(outfile,"\n    Dispersion            %16.8lf mH %16.8lf kcal mol^-1\n",
+  psi::fprintf(outfile,"\n    Dispersion            %16.8lf mH %16.8lf kcal mol^-1\n",
     tot_disp*1000.0,tot_disp*pc_hartree2kcalmol);
-  fprintf(outfile,"      Disp20              %16.8lf mH %16.8lf kcal mol^-1\n",
+  psi::fprintf(outfile,"      Disp20              %16.8lf mH %16.8lf kcal mol^-1\n",
     e_disp20_*1000.0,e_disp20_*pc_hartree2kcalmol);
-  fprintf(outfile,"      Disp30              %16.8lf mH %16.8lf kcal mol^-1\n",
+  psi::fprintf(outfile,"      Disp30              %16.8lf mH %16.8lf kcal mol^-1\n",
     e_disp30_*1000.0,e_disp30_*pc_hartree2kcalmol);
-  fprintf(outfile,"      Disp21              %16.8lf mH %16.8lf kcal mol^-1\n",
+  psi::fprintf(outfile,"      Disp21              %16.8lf mH %16.8lf kcal mol^-1\n",
     e_disp21_*1000.0,e_disp21_*pc_hartree2kcalmol);
   if (mbpt_disp_) {
-    fprintf(outfile,"      Disp22 (SDQ)        %16.8lf mH %16.8lf kcal mol^-1\n",
+    psi::fprintf(outfile,"      Disp22 (SDQ)        %16.8lf mH %16.8lf kcal mol^-1\n",
       e_disp22sdq_*1000.0,e_disp22sdq_*pc_hartree2kcalmol);
-    fprintf(outfile,"      Disp22 (T)          %16.8lf mH %16.8lf kcal mol^-1\n",
+    psi::fprintf(outfile,"      Disp22 (T)          %16.8lf mH %16.8lf kcal mol^-1\n",
       e_disp22t_*1000.0,e_disp22t_*pc_hartree2kcalmol);
     if (nat_orbs_t3_)
-      fprintf(outfile,"      Est. Disp22 (T)     %16.8lf mH %16.8lf kcal mol^-1\n",
+      psi::fprintf(outfile,"      Est. Disp22 (T)     %16.8lf mH %16.8lf kcal mol^-1\n",
         e_est_disp22t_*1000.0,e_est_disp22t_*pc_hartree2kcalmol);
   }
   if (ccd_disp_) {
-    fprintf(outfile,"      Disp2 (CCD)         %16.8lf mH %16.8lf kcal mol^-1\n",
+    psi::fprintf(outfile,"      Disp2 (CCD)         %16.8lf mH %16.8lf kcal mol^-1\n",
       e_disp2d_ccd_*1000.0,e_disp2d_ccd_*pc_hartree2kcalmol);
-    fprintf(outfile,"      Disp22 (S) (CCD)    %16.8lf mH %16.8lf kcal mol^-1\n",
+    psi::fprintf(outfile,"      Disp22 (S) (CCD)    %16.8lf mH %16.8lf kcal mol^-1\n",
       e_disp22s_ccd_*1000.0,e_disp22s_ccd_*pc_hartree2kcalmol);
-    fprintf(outfile,"      Disp22 (T) (CCD)    %16.8lf mH %16.8lf kcal mol^-1\n",
+    psi::fprintf(outfile,"      Disp22 (T) (CCD)    %16.8lf mH %16.8lf kcal mol^-1\n",
       e_disp22t_ccd_*1000.0,e_disp22t_ccd_*pc_hartree2kcalmol);
     if (nat_orbs_t3_)
-      fprintf(outfile,"      Est. Disp22 (T) (CCD)%15.8lf mH %16.8lf kcal mol^-1\n",
+      psi::fprintf(outfile,"      Est. Disp22 (T) (CCD)%15.8lf mH %16.8lf kcal mol^-1\n",
         e_est_disp22t_ccd_*1000.0,e_est_disp22t_ccd_*pc_hartree2kcalmol);
   }
-  fprintf(outfile,"      Exch-Disp20         %16.8lf mH %16.8lf kcal mol^-1\n",
+  psi::fprintf(outfile,"      Exch-Disp20         %16.8lf mH %16.8lf kcal mol^-1\n",
     e_exch_disp20_*1000.0,e_exch_disp20_*pc_hartree2kcalmol);
   if (third_order_) {
-    fprintf(outfile,"      Exch-Disp30         %16.8lf mH %16.8lf kcal mol^-1\n",
+    psi::fprintf(outfile,"      Exch-Disp30         %16.8lf mH %16.8lf kcal mol^-1\n",
       e_exch_disp30_*1000.0,e_exch_disp30_*pc_hartree2kcalmol);
-    fprintf(outfile,"      Ind-Disp30          %16.8lf mH %16.8lf kcal mol^-1\n",
+    psi::fprintf(outfile,"      Ind-Disp30          %16.8lf mH %16.8lf kcal mol^-1\n",
       e_ind_disp30_*1000.0,e_ind_disp30_*pc_hartree2kcalmol);
-    fprintf(outfile,"      Exch-Ind-Disp30     %16.8lf mH %16.8lf kcal mol^-1\n",
+    psi::fprintf(outfile,"      Exch-Ind-Disp30     %16.8lf mH %16.8lf kcal mol^-1\n",
       e_exch_ind_disp30_*1000.0,e_exch_ind_disp30_*pc_hartree2kcalmol);
   }
 
-  fprintf(outfile,"\n    Total HF              %16.8lf mH %16.8lf kcal mol^-1\n",
+  psi::fprintf(outfile,"\n    Total HF              %16.8lf mH %16.8lf kcal mol^-1\n",
     eHF_*1000.0,eHF_*pc_hartree2kcalmol);
-  fprintf(outfile,"    Total SAPT0           %16.8lf mH %16.8lf kcal mol^-1\n",
+  psi::fprintf(outfile,"    Total SAPT0           %16.8lf mH %16.8lf kcal mol^-1\n",
     e_sapt0_*1000.0,e_sapt0_*pc_hartree2kcalmol);
-  fprintf(outfile,"    Total SAPT2           %16.8lf mH %16.8lf kcal mol^-1\n",
+  psi::fprintf(outfile,"    Total SAPT2           %16.8lf mH %16.8lf kcal mol^-1\n",
     e_sapt2_*1000.0,e_sapt2_*pc_hartree2kcalmol);
   if (mbpt_disp_) {
-    fprintf(outfile,"    Total SAPT2+          %16.8lf mH %16.8lf kcal mol^-1\n",
+    psi::fprintf(outfile,"    Total SAPT2+          %16.8lf mH %16.8lf kcal mol^-1\n",
       e_sapt2p_*1000.0,e_sapt2p_*pc_hartree2kcalmol);
-    fprintf(outfile,"    Total SAPT2+(3)       %16.8lf mH %16.8lf kcal mol^-1\n",
+    psi::fprintf(outfile,"    Total SAPT2+(3)       %16.8lf mH %16.8lf kcal mol^-1\n",
       e_sapt2pp3_*1000.0,e_sapt2pp3_*pc_hartree2kcalmol);
     if (third_order_)
-      fprintf(outfile,"    Total SAPT2+3         %16.8lf mH %16.8lf kcal mol^-1\n",
+      psi::fprintf(outfile,"    Total SAPT2+3         %16.8lf mH %16.8lf kcal mol^-1\n",
         e_sapt2p3_*1000.0,e_sapt2p3_*pc_hartree2kcalmol);
   }
   if (ccd_disp_) {
-    fprintf(outfile,"    Total SAPT2+(CCD)     %16.8lf mH %16.8lf kcal mol^-1\n",
+    psi::fprintf(outfile,"    Total SAPT2+(CCD)     %16.8lf mH %16.8lf kcal mol^-1\n",
       e_sapt2p_ccd_*1000.0,e_sapt2p_ccd_*pc_hartree2kcalmol);
-    fprintf(outfile,"    Total SAPT2+(3)(CCD)  %16.8lf mH %16.8lf kcal mol^-1\n",
+    psi::fprintf(outfile,"    Total SAPT2+(3)(CCD)  %16.8lf mH %16.8lf kcal mol^-1\n",
       e_sapt2pp3_ccd_*1000.0,e_sapt2pp3_ccd_*pc_hartree2kcalmol);
     if (third_order_)
-      fprintf(outfile,"    Total SAPT2+3(CCD)    %16.8lf mH %16.8lf kcal mol^-1\n",
+      psi::fprintf(outfile,"    Total SAPT2+3(CCD)    %16.8lf mH %16.8lf kcal mol^-1\n",
         e_sapt2p3_ccd_*1000.0,e_sapt2p3_ccd_*pc_hartree2kcalmol);
   }
 

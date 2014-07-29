@@ -55,13 +55,13 @@ void SAPT2p3::exch_disp30()
   e_exch_disp30_ = ex_1 + ex_2 + ex_3 + ex_4;
 
   if (debug_) {
-    fprintf(outfile,"\n    Exch-Disp_1         = %18.12lf H\n",ex_1);
-    fprintf(outfile,"    Exch-Disp_2         = %18.12lf H\n",ex_2);
-    fprintf(outfile,"    Exch-Disp_3         = %18.12lf H\n",ex_3);
-    fprintf(outfile,"    Exch-Disp_4         = %18.12lf H\n",ex_4);
+    psi::fprintf(outfile,"\n    Exch-Disp_1         = %18.12lf H\n",ex_1);
+    psi::fprintf(outfile,"    Exch-Disp_2         = %18.12lf H\n",ex_2);
+    psi::fprintf(outfile,"    Exch-Disp_3         = %18.12lf H\n",ex_3);
+    psi::fprintf(outfile,"    Exch-Disp_4         = %18.12lf H\n",ex_4);
   }
   if (print_) {
-    fprintf(outfile,"    Exch-Disp30         = %18.12lf H\n",
+    psi::fprintf(outfile,"    Exch-Disp30         = %18.12lf H\n",
       e_exch_disp30_);
     fflush(outfile);
   }

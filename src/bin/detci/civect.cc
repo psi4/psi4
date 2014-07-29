@@ -448,13 +448,13 @@ void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac,
     // init_io_files();
 
 /*
-   fprintf(outfile,"num_blocks = %d\n", num_blocks);
+   psi::fprintf(outfile,"num_blocks = %d\n", num_blocks);
    for (i=0; i<buf_total; i++)
-      fprintf(outfile,"file_offset[%d] = %lu\n ", i, file_offset[i]);
+      psi::fprintf(outfile,"file_offset[%d] = %lu\n ", i, file_offset[i]);
    for (i=0; i<maxvect; i++)
-      fprintf(outfile,"zero_block_offset[%d] = %lu\n ", i,zero_block_offset[i]);
+      psi::fprintf(outfile,"zero_block_offset[%d] = %lu\n ", i,zero_block_offset[i]);
    for (i=0; i<buf_per_vect; i++)
-      fprintf(outfile,"buf_size[%d] = %lu\n ", i, buf_size[i]);
+      psi::fprintf(outfile,"buf_size[%d] = %lu\n ", i, buf_size[i]);
 */
 
    // Set up the flags for zero blocks...at first, all blocks are all 0's
@@ -516,7 +516,7 @@ void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac,
    // MLL 5/7/98: Want to know the subblock length of a vector //
    if (first) {
      if (Parameters.print_lvl) {
-        fprintf(outfile,"\n CI vector/subblock length = %ld\n", buffer_size);
+        psi::fprintf(outfile,"\n CI vector/subblock length = %ld\n", buffer_size);
         fflush(outfile);
         }
      first=0;
@@ -650,8 +650,8 @@ void CIvect::setarray(const double *a, BIGINT len)
       }
 
    else {
-      fprintf(stdout, "(CIvect::setarray): Invalid icore option!\n");
-      fprintf(stdout, "   use only for icore=1\n");
+      psi::fprintf(stdout, "(CIvect::setarray): Invalid icore option!\n");
+      psi::fprintf(stdout, "   use only for icore=1\n");
       }
 }
 
@@ -759,10 +759,10 @@ double CIvect::blk_max_abs_vals(int i, int offdiag, int nval, int *iac,
 
  /*
    for (i=0; i<H0block.size+H0block.coupling_size; i++)
-      fprintf(outfile,"H0block.H00[%d] = %lf\n",i,H0block.H00[i]);
-   fprintf(outfile,"H0block.spin_cp_vals = %lf\n",H0block.spin_cp_vals);
-   fprintf(outfile,"minval = %lf\n",minval);
-   fprintf(outfile,"printed in civect::blk_max_abs_vals\n");
+      psi::fprintf(outfile,"H0block.H00[%d] = %lf\n",i,H0block.H00[i]);
+   psi::fprintf(outfile,"H0block.spin_cp_vals = %lf\n",H0block.spin_cp_vals);
+   psi::fprintf(outfile,"minval = %lf\n",minval);
+   psi::fprintf(outfile,"printed in civect::blk_max_abs_vals\n");
  */
    return(minval);
 }
@@ -847,7 +847,7 @@ void CIvect::diag_mat_els(struct stringwr **alplist, struct stringwr
       if (!Parameters.hd_otf) write(0,0);
 
       /*
-      fprintf(outfile,"Diagonal matrix elements\n");
+      psi::fprintf(outfile,"Diagonal matrix elements\n");
       print(outfile);
       */
       } /* end icore==1 */
@@ -1054,11 +1054,11 @@ void CIvect::print(FILE *outfile)
 
    if (cur_vect < 0 || cur_buf < 0) {
       printf("(CIvect::print): Warning...printing unlocked vector\n");
-      fprintf(outfile, "[Can't print unlocked vector]\n");
+      psi::fprintf(outfile, "[Can't print unlocked vector]\n");
       }
 
    if (vectlen > 100000) {
-      fprintf(outfile, "Not printing long (>100000) vector...\n");
+      psi::fprintf(outfile, "Not printing long (>100000) vector...\n");
       return;
       }
 
@@ -1066,7 +1066,7 @@ void CIvect::print(FILE *outfile)
       for (buf=0; buf<buf_per_vect; buf++) {
          read(cur_vect, buf);
          block = buf2blk[buf];
-         fprintf(outfile, "\nBlock %2d, codes = (%2d,%2d)\n", block,
+         psi::fprintf(outfile, "\nBlock %2d, codes = (%2d,%2d)\n", block,
             Ia_code[block], Ib_code[block]);
          print_mat(blocks[block], Ia_size[block], Ib_size[block], outfile);
          }
@@ -1074,7 +1074,7 @@ void CIvect::print(FILE *outfile)
 
    else if (icore == 1) {
       for (block=0; block<num_blocks; block++) {
-         fprintf(outfile, "\nBlock %2d, codes = (%2d,%2d)\n", block,
+         psi::fprintf(outfile, "\nBlock %2d, codes = (%2d,%2d)\n", block,
             Ia_code[block], Ib_code[block]);
          print_mat(blocks[block], Ia_size[block], Ib_size[block], outfile);
          }
@@ -1085,7 +1085,7 @@ void CIvect::print(FILE *outfile)
          read(cur_vect, buf);
          irrep = buf2blk[buf];
          for (block=first_ablk[irrep]; block<=last_ablk[irrep]; block++) {
-            fprintf(outfile, "\nBlock %2d, codes = (%2d,%2d)\n", block,
+            psi::fprintf(outfile, "\nBlock %2d, codes = (%2d,%2d)\n", block,
                Ia_code[block], Ib_code[block]);
             print_mat(blocks[block], Ia_size[block], Ib_size[block], outfile);
             }
@@ -1093,7 +1093,7 @@ void CIvect::print(FILE *outfile)
       }
 
    else {
-      fprintf(outfile, "(CIvect::print): unrecognized icore option\n");
+      psi::fprintf(outfile, "(CIvect::print): unrecognized icore option\n");
       }
 }
 
@@ -1481,7 +1481,7 @@ double CIvect::zero_det(int iac, int ia, int ibc, int ib)
   double tval;
 
   if (icore != 1) {
-    fprintf(outfile, "CIvect::zero_det: Implemented for icore==1 only\n");
+    psi::fprintf(outfile, "CIvect::zero_det: Implemented for icore==1 only\n");
     return (0.0);
   }
 
@@ -1836,12 +1836,12 @@ int CIvect::write(int ivect, int ibuf)
    if (nunits < 1) return(1);
 
    if (ivect >= maxvect) {
-      fprintf(outfile, "(CIvect::write): ivect >= maxvect\n");
+      psi::fprintf(outfile, "(CIvect::write): ivect >= maxvect\n");
       return(0);
       }
 
    if (ivect > nvect) {
-      fprintf(outfile, "(CIvect::write): ivect > nvect\n");
+      psi::fprintf(outfile, "(CIvect::write): ivect > nvect\n");
       return(0);
       }
 
@@ -1908,7 +1908,7 @@ int CIvect::schmidt_add(CIvect &c, int L)
       for (cvect=0; cvect<L; cvect++) {
          c.read(cvect, buf);
        /*
-         fprintf(outfile,"dotval[%d] = %2.15lf\n",cvect,dotval[cvect]);
+         psi::fprintf(outfile,"dotval[%d] = %2.15lf\n",cvect,dotval[cvect]);
        */
          xpeay(buffer, -dotval[cvect], c.buffer, buf_size[buf]);
          }
@@ -1925,8 +1925,8 @@ int CIvect::schmidt_add(CIvect &c, int L)
    norm = 1.0 / norm;
 
    if (c.nvect > c.maxvect) {
-      fprintf(stderr, "(CIvect::schmidt_add): no more room to add vectors!\n");
-      fprintf(stderr, "   c.nvect = %d, c.maxvect = %d\n", c.nvect, c.maxvect);
+      psi::fprintf(stderr, "(CIvect::schmidt_add): no more room to add vectors!\n");
+      psi::fprintf(stderr, "   c.nvect = %d, c.maxvect = %d\n", c.nvect, c.maxvect);
       return(0);
       }
    else { /* add to c */
@@ -2008,9 +2008,9 @@ int CIvect::schmidt_add2(CIvect &c, int first_vec, int last_vec,
       write(cur_vect, buf);
       }
 
-   /* fprintf(outfile,"Norm of %d vec = %20.15f\n",target_vec,norm); */
+   /* psi::fprintf(outfile,"Norm of %d vec = %20.15f\n",target_vec,norm); */
    norm = sqrt(norm);
-   /* fprintf(outfile,"sqrt Norm of %d vec = %20.15f\n",target_vec,norm); */
+   /* psi::fprintf(outfile,"sqrt Norm of %d vec = %20.15f\n",target_vec,norm); */
    /* There was a dangling else here:
     * if (Parameters.mpn_schmidt)
     *   if (norm < MPn_NORM_TOL) return(0);
@@ -2024,12 +2024,12 @@ int CIvect::schmidt_add2(CIvect &c, int first_vec, int last_vec,
    if (norm < SA_NORM_TOL && !Parameters.mpn) return(0);
  */
    norm = 1.0 / norm;
-   /* fprintf(outfile,"1.0/sqrt(norm) of %d vec = %20.15f\n",target_vec,norm); */
+   /* psi::fprintf(outfile,"1.0/sqrt(norm) of %d vec = %20.15f\n",target_vec,norm); */
    *nrm = norm;
 
    if (c.nvect > c.maxvect) {
-      fprintf(stderr, "(CIvect::schmidt_add2): no more room to add vectors!\n");
-      fprintf(stderr, "   c.nvect = %d, c.maxvect = %d\n", c.nvect, c.maxvect);
+      psi::fprintf(stderr, "(CIvect::schmidt_add2): no more room to add vectors!\n");
+      psi::fprintf(stderr, "   c.nvect = %d, c.maxvect = %d\n", c.nvect, c.maxvect);
       return(0);
       }
    else { /* add to c */
@@ -2043,8 +2043,8 @@ int CIvect::schmidt_add2(CIvect &c, int first_vec, int last_vec,
          c.write(c.cur_vect, buf);
          }
      /*
-      fprintf(outfile, "c.cur_vect = %d\n",c.cur_vect);
-      fprintf(outfile, "dot product of normalized vector in SA2 = %20.10f\n",
+      psi::fprintf(outfile, "c.cur_vect = %d\n",c.cur_vect);
+      psi::fprintf(outfile, "dot product of normalized vector in SA2 = %20.10f\n",
               tmp_norm);
       c.print(outfile);
      */
@@ -2118,7 +2118,7 @@ void CIvect::sigma_renorm(int nr, int L, double renorm_C, CIvect &S,
 
          write(nr, buf);
          if (printflag) {
-            fprintf(outfile, "\nSigma renormalized matrix\n");
+            psi::fprintf(outfile, "\nSigma renormalized matrix\n");
             print_buf(outfile);
             }
          } /* loop over buffers */
@@ -2202,7 +2202,7 @@ void CIvect::dcalc(int nr, int L, double **alpha, double *lambda,
          */
 
          if (printflag) {
-            fprintf(outfile, "\nfirst D matrix\n");
+            psi::fprintf(outfile, "\nfirst D matrix\n");
             print_buf(outfile);
             }
          } /* loop over buffers */
@@ -2293,10 +2293,10 @@ void CIvect::construct_kth_order_wf(CIvect &Hd, CIvect &S, CIvect &C,
    int i, j, r, order, buf, block;
    double tval, norm;
 
-   //fprintf(outfile,"\nCVEC_COEFF and CVEC_NORMS in CONSTRUCT\n");
+   //psi::fprintf(outfile,"\nCVEC_COEFF and CVEC_NORMS in CONSTRUCT\n");
    //print_mat(cvec_coeff, k-2, k-2, outfile);
    //for (i=0; i<k-2; i++)
-   //   fprintf(outfile,"cvec_norm[%d] = %lf\n",i, cvec_norm[i]);
+   //   psi::fprintf(outfile,"cvec_norm[%d] = %lf\n",i, cvec_norm[i]);
    //fflush(outfile);
 
      for (buf=0; buf<buf_per_vect; buf++) {
@@ -2431,9 +2431,9 @@ void CIvect::wigner_E2k_formula(CIvect &Hd, CIvect &S, CIvect &C,
 
 
    if (Parameters.print_lvl > 3) {
-     fprintf(outfile,"\nwfn_overlap = \n");
+     psi::fprintf(outfile,"\nwfn_overlap = \n");
      print_mat(wfn_overlap, k+1, k+1, outfile);
-     fprintf(outfile,"\t\t\t\t");
+     psi::fprintf(outfile,"\t\t\t\t");
      }
 
    /* Compute E_2k and E_2k+1 */
@@ -2472,14 +2472,14 @@ void CIvect::wigner_E2k_formula(CIvect &Hd, CIvect &S, CIvect &C,
         zero_arr(buffer, buf_size[0]);
         for (I=1; I<=k-2; I++) {
            C.read(I,0);
-           fprintf(outfile, " prescaled Bvec %d = \n", I);
+           psi::fprintf(outfile, " prescaled Bvec %d = \n", I);
            C.print(outfile);
            if (i==I) tval = cvec_coeff[i][I]*(1.0/cvec_norm[i]);
            else tval = cvec_coeff[i][I];
            xpeay(buffer, tval, C.buffer, buf_size[0]);
            }
         if (i==1) {
-          fprintf(outfile, " Cvec %d = \n", i);
+          psi::fprintf(outfile, " Cvec %d = \n", i);
           print(outfile);
           }
         }
@@ -2521,13 +2521,13 @@ void CIvect::wigner_E2k_formula(CIvect &Hd, CIvect &S, CIvect &C,
         E2k -= tval*mp2k_energy[k-i];
         E2k -= tval2*2.0*mp2k_energy[k+1-i];
        /*
-        fprintf(outfile, "E2kp1 -> - tval*2.0*mp2k_energy[k+1-i] = %20.10f\n",
+        psi::fprintf(outfile, "E2kp1 -> - tval*2.0*mp2k_energy[k+1-i] = %20.10f\n",
                 tval*2.0*mp2k_energy[k+1-i]);
-        fprintf(outfile, "E2kp1 -> - tval2*2.0*mp2k_energy[k+2-i] = %20.10f\n",
+        psi::fprintf(outfile, "E2kp1 -> - tval2*2.0*mp2k_energy[k+2-i] = %20.10f\n",
                 tval*2.0*mp2k_energy[k+2-i]);
-        fprintf(outfile, "E2k -> - tval*mp2k_energy[k-i] = %20.10f\n",
+        psi::fprintf(outfile, "E2k -> - tval*mp2k_energy[k-i] = %20.10f\n",
                 tval*mp2k_energy[k-i]);
-        fprintf(outfile, "E2k -> - tval*2.0*mp2k_energy[k+1-i] = %20.10f\n",
+        psi::fprintf(outfile, "E2k -> - tval*2.0*mp2k_energy[k+1-i] = %20.10f\n",
                 tval*2.0*mp2k_energy[k+1-i]);
         */
         }
@@ -2544,7 +2544,7 @@ void CIvect::wigner_E2k_formula(CIvect &Hd, CIvect &S, CIvect &C,
      for (I=1; I<=k; I++) {
         C.read(I,0);
         if (I==1) {
-          fprintf(outfile,"Cvec %d = \n", I);
+          psi::fprintf(outfile,"Cvec %d = \n", I);
           C.print(outfile);
           }
         }
@@ -2584,8 +2584,8 @@ void CIvect::wigner_E2k_formula(CIvect &Hd, CIvect &S, CIvect &C,
            }
      }
 
-  /*  fprintf(outfile, "final E2k = %lf\n", E2k);
-   fprintf(outfile, "final E2kp1 = %lf\n", E2kp1);
+  /*  psi::fprintf(outfile, "final E2k = %lf\n", E2k);
+   psi::fprintf(outfile, "final E2kp1 = %lf\n", E2kp1);
   */
 
    mp2k_energy[2*k] = E2k;
@@ -2611,7 +2611,7 @@ void CIvect::print_buf(FILE *outfile)
 
    if (icore == 1) {
       for (blk=0; blk<num_blocks; blk++) {
-         fprintf(outfile, "\nBlock %2d, codes = (%2d,%2d)\n", blk,
+         psi::fprintf(outfile, "\nBlock %2d, codes = (%2d,%2d)\n", blk,
             Ia_code[blk], Ib_code[blk]);
          print_mat(blocks[blk], Ia_size[blk], Ib_size[blk], outfile);
          }
@@ -2620,12 +2620,12 @@ void CIvect::print_buf(FILE *outfile)
    if (icore == 2) { /* symmetry block in-core */
       irrep = buf2blk[cur_buf];
       if (first_ablk[irrep] < 0) {
-         fprintf(outfile, "(CIvect::print_blk): No blks for irrep %d\n",irrep);
+         psi::fprintf(outfile, "(CIvect::print_blk): No blks for irrep %d\n",irrep);
          return;
          }
       else {
          for (blk=first_ablk[irrep]; blk <= last_ablk[irrep]; blk++) {
-            fprintf(outfile, "\nBlock %2d, codes = (%2d,%2d)\n", blk,
+            psi::fprintf(outfile, "\nBlock %2d, codes = (%2d,%2d)\n", blk,
                Ia_code[blk], Ib_code[blk]);
             print_mat(blocks[blk], Ia_size[blk], Ib_size[blk], outfile);
             }
@@ -2635,7 +2635,7 @@ void CIvect::print_buf(FILE *outfile)
    if (icore == 0) { /* one subblock in-core */
       blk = buf2blk[cur_buf];
 
-      fprintf(outfile, "\nBlock %2d, codes = (%2d,%2d)\n", blk,
+      psi::fprintf(outfile, "\nBlock %2d, codes = (%2d,%2d)\n", blk,
          Ia_code[blk], Ib_code[blk]);
       print_mat(blocks[blk], Ia_size[blk], Ib_size[blk], outfile);
       }
@@ -2841,13 +2841,13 @@ void CIvect::gather(int ivec, int nvec, int nroot, double **alpha,
 {
    int buf, oldvec;
 
-   /* fprintf(outfile,"In CIvect::gather\n"); */
+   /* psi::fprintf(outfile,"In CIvect::gather\n"); */
    for (buf=0; buf<buf_per_vect; buf++) {
       zero_arr(buffer, buf_size[buf]);
       for (oldvec=0; oldvec<nvec; oldvec++) {
          C.read(oldvec, buf);
          xpeay(buffer, alpha[oldvec][nroot], C.buffer, buf_size[buf]);
-         /* fprintf(outfile,"coef[%d][%d] = %10.7f\n",oldvec,nroot,alpha[oldvec][nroot]); */
+         /* psi::fprintf(outfile,"coef[%d][%d] = %10.7f\n",oldvec,nroot,alpha[oldvec][nroot]); */
          }
       write(ivec, buf);
       }
@@ -2912,9 +2912,9 @@ void CIvect::print_fptrs()
 {
    int buf;
 
-   fprintf(outfile,"Printing file pointer information\n");
+   psi::fprintf(outfile,"Printing file pointer information\n");
    for (buf=0; buf<buf_total; buf++)
-      fprintf(outfile,"%d %d\n",buf, file_number[buf]);
+      psi::fprintf(outfile,"%d %d\n",buf, file_number[buf]);
 
 
 }
@@ -2997,29 +2997,29 @@ void sigma_get_contrib(struct stringwr **alplist, struct stringwr **betlist,
    #ifdef DEBUG
    printf("\nSigma 1:\n");
    for (i=0; i<S.num_blocks; i++) {
-     fprintf(outfile, "Contributions to sigma block %d\n", i);
+     psi::fprintf(outfile, "Contributions to sigma block %d\n", i);
      for (j=0; j<C.num_blocks; j++) {
-       if (s1_contrib[i][j]) fprintf(outfile, "%3d ", j);
+       if (s1_contrib[i][j]) psi::fprintf(outfile, "%3d ", j);
      }
-     fprintf(outfile, "\n");
+     psi::fprintf(outfile, "\n");
    }
 
    printf("\n\nSigma 2:\n");
    for (i=0; i<S.num_blocks; i++) {
-     fprintf(outfile, "Contributions to sigma block %d\n", i);
+     psi::fprintf(outfile, "Contributions to sigma block %d\n", i);
      for (j=0; j<C.num_blocks; j++) {
-       if (s2_contrib[i][j]) fprintf(outfile, "%3d ", j);
+       if (s2_contrib[i][j]) psi::fprintf(outfile, "%3d ", j);
      }
-     fprintf(outfile, "\n");
+     psi::fprintf(outfile, "\n");
    }
 
    printf("\n\nSigma 3:\n");
    for (i=0; i<S.num_blocks; i++) {
-     fprintf(outfile, "Contributions to sigma block %d\n", i);
+     psi::fprintf(outfile, "Contributions to sigma block %d\n", i);
      for (j=0; j<C.num_blocks; j++) {
-       if (s3_contrib[i][j]) fprintf(outfile, "%3d ", j);
+       if (s3_contrib[i][j]) psi::fprintf(outfile, "%3d ", j);
      }
-     fprintf(outfile, "\n");
+     psi::fprintf(outfile, "\n");
    }
    #endif
 
@@ -3189,11 +3189,11 @@ void olsen_update(CIvect &C, CIvect &S, CIvect &Hd, double E, double E_est,
  }
 
    *norm = nx;
-   /* fprintf(outfile,"\n ovrlap(ox) = %20.16f\n", ox); */
+   /* psi::fprintf(outfile,"\n ovrlap(ox) = %20.16f\n", ox); */
    *ovrlap = ox;
    if (normc1 <= 1.0E-13) {
-     fprintf(outfile,"Norm of correction vector = %5.4e\n", normc1);
-     fprintf(outfile,"This may cause numerical errors which would" \
+     psi::fprintf(outfile,"Norm of correction vector = %5.4e\n", normc1);
+     psi::fprintf(outfile,"This may cause numerical errors which would" \
          " deteriorate the diagonalization procedure.\n");
      }
    *c1norm = sqrt(rnorm);
@@ -3345,7 +3345,7 @@ void CIvect::h0block_gather_vec(int vecode)
       }
     /*
      if (!vecode) {
-       fprintf(outfile,"c0b in h0block_gather_vec = \n");
+       psi::fprintf(outfile,"c0b in h0block_gather_vec = \n");
        print_mat(&(H0block.c0b), 1, H0block.size, outfile);
        }
     */
@@ -3569,29 +3569,29 @@ void sigma_get_contrib_rotf(CIvect &C, CIvect &S,
    #ifdef DEBUG
    printf("\nSigma 1:\n");
    for (i=0; i<S.num_blocks; i++) {
-     fprintf(outfile, "Contributions to sigma block %d\n", i);
+     psi::fprintf(outfile, "Contributions to sigma block %d\n", i);
      for (j=0; j<C.num_blocks; j++) {
-       if (s1_contrib[i][j]) fprintf(outfile, "%3d ", j);
+       if (s1_contrib[i][j]) psi::fprintf(outfile, "%3d ", j);
      }
-     fprintf(outfile, "\n");
+     psi::fprintf(outfile, "\n");
    }
 
    printf("\n\nSigma 2:\n");
    for (i=0; i<S.num_blocks; i++) {
-     fprintf(outfile, "Contributions to sigma block %d\n", i);
+     psi::fprintf(outfile, "Contributions to sigma block %d\n", i);
      for (j=0; j<C.num_blocks; j++) {
-       if (s2_contrib[i][j]) fprintf(outfile, "%3d ", j);
+       if (s2_contrib[i][j]) psi::fprintf(outfile, "%3d ", j);
      }
-     fprintf(outfile, "\n");
+     psi::fprintf(outfile, "\n");
    }
 
    printf("\n\nSigma 3:\n");
    for (i=0; i<S.num_blocks; i++) {
-     fprintf(outfile, "Contributions to sigma block %d\n", i);
+     psi::fprintf(outfile, "Contributions to sigma block %d\n", i);
      for (j=0; j<C.num_blocks; j++) {
-       if (s3_contrib[i][j]) fprintf(outfile, "%3d ", j);
+       if (s3_contrib[i][j]) psi::fprintf(outfile, "%3d ", j);
      }
-     fprintf(outfile, "\n");
+     psi::fprintf(outfile, "\n");
    }
    #endif
 
@@ -3648,9 +3648,9 @@ double CIvect::calc_ssq(double *buffer1, double *buffer2,
                    blocks[ket_block], ket_nas, ket_nbs, bra_ac, bra_bc);
          tval += tval2;
          #ifdef DEBUG
-         fprintf(outfile,"\nbra_block = %d\n",bra_block);
-         fprintf(outfile,"ket_block = %d\n",ket_block);
-         fprintf(outfile,"Contribution to <S_S+> = %lf\n",tval2);
+         psi::fprintf(outfile,"\nbra_block = %d\n",bra_block);
+         psi::fprintf(outfile,"ket_block = %d\n",ket_block);
+         psi::fprintf(outfile,"Contribution to <S_S+> = %lf\n",tval2);
          #endif
          } /* end loop over bra_blocks */
 
@@ -3658,13 +3658,13 @@ double CIvect::calc_ssq(double *buffer1, double *buffer2,
 
     Ms = 0.5 * (CalcInfo.num_alp_expl - CalcInfo.num_bet_expl);
     #ifdef DEBUG
-    fprintf(outfile,"\n\n<S_z> = %lf\n", Ms);
-    fprintf(outfile,"<S_z>^2 = %lf\n", Ms*Ms);
-    fprintf(outfile,"<S_S+> = %lf\n", tval);
+    psi::fprintf(outfile,"\n\n<S_z> = %lf\n", Ms);
+    psi::fprintf(outfile,"<S_z>^2 = %lf\n", Ms*Ms);
+    psi::fprintf(outfile,"<S_S+> = %lf\n", tval);
     #endif
     S2 = CalcInfo.num_bet_expl + tval + Ms + Ms*Ms;
 
-    fprintf(outfile,"Computed <S^2> vector %d = %20.15f\n\n", vec_num, S2);
+    psi::fprintf(outfile,"Computed <S^2> vector %d = %20.15f\n\n", vec_num, S2);
 
   buf_unlock();
   return(S2);
@@ -3673,7 +3673,7 @@ double CIvect::calc_ssq(double *buffer1, double *buffer2,
 int CIvect::check_zero_block(int blocknum)
 {
    if (blocknum < 0 || blocknum > num_blocks) {
-      fprintf(stderr, "CIvect::check_zero_block(): Block %d out of range\n",
+      psi::fprintf(stderr, "CIvect::check_zero_block(): Block %d out of range\n",
               blocknum);
    }
 
@@ -3683,12 +3683,12 @@ int CIvect::check_zero_block(int blocknum)
 void CIvect::set_zero_block(int blocknum, int value)
 {
    if (blocknum < 0 || blocknum > num_blocks) {
-      fprintf(stderr, "CIvect::set_zero_block(): Block %d out of range\n",
+      psi::fprintf(stderr, "CIvect::set_zero_block(): Block %d out of range\n",
               blocknum);
    }
 
    if (value != 0 && value != 1) {
-      fprintf(stderr, "CIvect::set_zero_block(): Value %d out of range\n",
+      psi::fprintf(stderr, "CIvect::set_zero_block(): Value %d out of range\n",
               value);
    }
 
@@ -3709,7 +3709,7 @@ void CIvect::copy_zero_blocks(CIvect &src)
 
    for (i=0; i<num_blocks; i++) {
       zero_blocks[i] = src.zero_blocks[i];
-      // fprintf(outfile, "zero_block[%d] = %d\n", i, zero_blocks[i]);
+      // psi::fprintf(outfile, "zero_block[%d] = %d\n", i, zero_blocks[i]);
    }
 }
 
@@ -3718,7 +3718,7 @@ void CIvect::print_zero_blocks(void)
    int i;
 
    for (i=0; i<num_blocks; i++) {
-      fprintf(outfile, "zero_block[%d] = %d\n", i, zero_blocks[i]);
+      psi::fprintf(outfile, "zero_block[%d] = %d\n", i, zero_blocks[i]);
    }
 
 }
@@ -3749,8 +3749,8 @@ void CIvect::scale_sigma(CIvect &Hd, CIvect &C,
    int buf;
 
    for (buf=0; buf<buf_per_vect; buf++) {
-      /* fprintf(outfile," i = %d\n", i);
-      fprintf(outfile,"In scale_sigma\n"); */
+      /* psi::fprintf(outfile," i = %d\n", i);
+      psi::fprintf(outfile,"In scale_sigma\n"); */
       Hd.buf_lock(buf1);
       Hd.diag_mat_els_otf(alplist, betlist, CalcInfo.onel_ints,
          CalcInfo.twoel_ints, CalcInfo.e0_fzc, CalcInfo.num_alp_expl,
@@ -3944,9 +3944,9 @@ void CIvect::civect_psio_debug(void)
   for (i=0; i<nunits; i++)
     psio_tocprint(units[i], outfile);
   */
-  fprintf(outfile, "Number of vectors = %d\n", read_num_vecs());
-  fprintf(outfile, "New first buffer = %d\n", read_new_first_buf());
-  fprintf(outfile, "Internal new first buffer = %d\n", new_first_buf);
+  psi::fprintf(outfile, "Number of vectors = %d\n", read_num_vecs());
+  psi::fprintf(outfile, "New first buffer = %d\n", read_new_first_buf());
+  psi::fprintf(outfile, "Internal new first buffer = %d\n", new_first_buf);
 }
 
 
@@ -3968,7 +3968,7 @@ void CIvect::pt_correction(struct stringwr **alplist, struct stringwr
     }
   }
   else {
-    fprintf(outfile, "only icore=1 works for now\n");
+    psi::fprintf(outfile, "only icore=1 works for now\n");
   }
 
 }
@@ -3988,7 +3988,7 @@ double CIvect::compute_follow_overlap(int troot, int ncoef, double *coef,
   double tval;
 
   if (icore != 1) {
-    fprintf(outfile, "CIvect::compute_follow_overlap: can't use icore != 1\n");
+    psi::fprintf(outfile, "CIvect::compute_follow_overlap: can't use icore != 1\n");
     return(0.0);
   }
 

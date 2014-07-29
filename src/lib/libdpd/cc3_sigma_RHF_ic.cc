@@ -35,7 +35,7 @@
 #include <pthread.h>
 #include <psiconfig.h>
 #include "dpd.h"
-
+#include "psi4-dec.h"
 //MKL Header
 #ifdef HAVE_MKL
 #include <mkl.h>
@@ -114,7 +114,7 @@ void DPD::cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
     GW = WmAEf->file.my_irrep;
     GS = SIjAb->file.my_irrep;
     if (GS != (GX3^GW)) {
-        fprintf(outfile,"problem with irreps in cc3_sigma_RHF()\n");
+        psi::fprintf(outfile,"problem with irreps in cc3_sigma_RHF()\n");
         exit(1);
     }
 
@@ -234,7 +234,7 @@ void DPD::cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
                     errcod = pthread_create(&(p_thread[thread]), NULL, cc3_sigma_RHF_ic_thread,
                                             (void *) &thread_data_array[thread]);
                     if (errcod) {
-                        fprintf(stderr,"pthread_create in cc3_sigma_RHF_ic failed\n");
+                        psi::fprintf(stderr,"pthread_create in cc3_sigma_RHF_ic failed\n");
                         exit(PSI_RETURN_FAILURE);
                     }
                 }
@@ -243,7 +243,7 @@ void DPD::cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
                     if (!ijk_part[thread]) continue;
                     errcod = pthread_join(p_thread[thread], NULL);
                     if (errcod) {
-                        fprintf(stderr,"pthread_join in cc3_sigma_RHF_ic failed\n");
+                        psi::fprintf(stderr,"pthread_join in cc3_sigma_RHF_ic failed\n");
                         exit(PSI_RETURN_FAILURE);
                     }
                 }

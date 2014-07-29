@@ -86,7 +86,7 @@ int DPD::file4_init_nocache(dpdfile4 *File, int filenum, int irrep, int pqnum,
             /* number of rows for which we can compute the address offset directly */
             maxrows = DPD_BIGNUM/(coltot*sizeof(double));
             if(maxrows < 1) {
-                fprintf(stderr, "\nLIBDPD Error: each row of %s is too long to compute an address.\n",
+                psi::fprintf(stderr, "\nLIBDPD Error: each row of %s is too long to compute an address.\n",
                         File->label);
                 dpd_error("dpd_file4_init_nocache", stderr);
             }

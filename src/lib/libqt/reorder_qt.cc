@@ -97,7 +97,7 @@ void reorder_qt(int *docc_in, int *socc_in, int *frozen_docc_in,
    for (irrep=0; irrep<nirreps; irrep++) {
       tmpi = frozen_uocc[irrep] + docc[irrep] + socc[irrep];
       if (tmpi > orbs_per_irrep[irrep]) {
-         fprintf(stderr, "(reorder_qt): orbitals don't add up for irrep %d\n",
+         psi::fprintf(stderr, "(reorder_qt): orbitals don't add up for irrep %d\n",
             irrep);
          return;
          }
@@ -160,8 +160,8 @@ void reorder_qt(int *docc_in, int *socc_in, int *frozen_docc_in,
    /* do a final check */
    for (irrep=0; irrep<nirreps; irrep++) {
       if (used[irrep] > orbs_per_irrep[irrep]) {
-         fprintf(stderr, "(reorder_qt): on final check, used more orbitals");
-         fprintf(stderr, "   than were available (%d vs %d) for irrep %d\n",
+         psi::fprintf(stderr, "(reorder_qt): on final check, used more orbitals");
+         psi::fprintf(stderr, "   than were available (%d vs %d) for irrep %d\n",
             used[irrep], orbs_per_irrep[irrep], irrep);
          }
       }
@@ -214,7 +214,7 @@ void reorder_qt_uhf(int *docc, int *socc, int *frozen_docc,
     nmo += orbspi[irrep];
     tmpi = frozen_uocc[irrep] + docc[irrep] + socc[irrep];
     if (tmpi > orbspi[irrep]) {
-      fprintf(stderr, "(reorder_qt_uhf): orbitals don't add up for irrep %d\n",
+      psi::fprintf(stderr, "(reorder_qt_uhf): orbitals don't add up for irrep %d\n",
               irrep);
       return;
     }
@@ -277,13 +277,13 @@ void reorder_qt_uhf(int *docc, int *socc, int *frozen_docc,
   /* do a final check */
   for (irrep=0; irrep<nirreps; irrep++) {
     if (cnt_alpha > nmo) {
-      fprintf(stderr, "(reorder_qt_uhf): on final check, used more orbitals");
-      fprintf(stderr, "   than were available (%d vs %d) for irrep %d\n",
+      psi::fprintf(stderr, "(reorder_qt_uhf): on final check, used more orbitals");
+      psi::fprintf(stderr, "   than were available (%d vs %d) for irrep %d\n",
               cnt_alpha, nmo, irrep);
     }
     if (cnt_beta > nmo) {
-      fprintf(stderr, "(reorder_qt_uhf): on final check, used more orbitals");
-      fprintf(stderr, "   than were available (%d vs %d) for irrep %d\n",
+      psi::fprintf(stderr, "(reorder_qt_uhf): on final check, used more orbitals");
+      psi::fprintf(stderr, "   than were available (%d vs %d) for irrep %d\n",
               cnt_beta, nmo, irrep);
     }
   }

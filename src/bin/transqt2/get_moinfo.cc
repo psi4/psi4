@@ -147,7 +147,7 @@ void get_moinfo(Options& options)
         for(h=0; h < moinfo.nirreps; h++) {
             C[h] = chkpt_rd_scf_irrep(h);
             if(params.print_lvl > 2) {
-                fprintf(outfile, "\n\tMOs for irrep %d:\n",h);
+                psi::fprintf(outfile, "\n\tMOs for irrep %d:\n",h);
                 mat_print(C[h], moinfo.sopi[h], moinfo.mopi[h], outfile);
             }
         }
@@ -163,12 +163,12 @@ void get_moinfo(Options& options)
         for(h=0; h < moinfo.nirreps; h++) {
             C_a[h] = chkpt_rd_alpha_scf_irrep(h);
             if(params.print_lvl > 2) {
-                fprintf(outfile, "\n\tAlpha MOs for irrep %d:\n",h);
+                psi::fprintf(outfile, "\n\tAlpha MOs for irrep %d:\n",h);
                 mat_print(C_a[h], moinfo.sopi[h], moinfo.mopi[h], outfile);
             }
             C_b[h] = chkpt_rd_beta_scf_irrep(h);
             if(params.print_lvl > 2) {
-                fprintf(outfile, "\n\tBeta MOs for irrep %d:\n",h);
+                psi::fprintf(outfile, "\n\tBeta MOs for irrep %d:\n",h);
                 mat_print(C_b[h], moinfo.sopi[h], moinfo.mopi[h], outfile);
             }
         }
@@ -433,25 +433,25 @@ void get_moinfo(Options& options)
     }
 
     if(params.print_lvl) {
-        fprintf(outfile,"\tChkpt Parameters:\n");
-        fprintf(outfile,"\t--------------------\n");
-        fprintf(outfile,"\tNumber of irreps     = %d\n",moinfo.nirreps);
-        fprintf(outfile,"\tNumber of SOs        = %d\n",moinfo.nso);
-        fprintf(outfile,"\tNumber of MOs        = %d\n",moinfo.nmo);
-        fprintf(outfile,"\tNumber of active MOs = %d\n\n",moinfo.nactive);
-        fprintf(outfile,
+        psi::fprintf(outfile,"\tChkpt Parameters:\n");
+        psi::fprintf(outfile,"\t--------------------\n");
+        psi::fprintf(outfile,"\tNumber of irreps     = %d\n",moinfo.nirreps);
+        psi::fprintf(outfile,"\tNumber of SOs        = %d\n",moinfo.nso);
+        psi::fprintf(outfile,"\tNumber of MOs        = %d\n",moinfo.nmo);
+        psi::fprintf(outfile,"\tNumber of active MOs = %d\n\n",moinfo.nactive);
+        psi::fprintf(outfile,
                 "\tLabel\t# SOs\t# FZDC\t# DOCC\t# SOCC\t# VIRT\t# FZVR\n");
-        fprintf(outfile,
+        psi::fprintf(outfile,
                 "\t-----\t-----\t------\t------\t------\t------\t------\n");
         for(i=0; i < moinfo.nirreps; i++) {
-            fprintf(outfile,
+            psi::fprintf(outfile,
                     "\t %s\t   %d\t    %d\t    %d\t    %d\t    %d\t    %d\n",
                     moinfo.labels[i],moinfo.sopi[i],moinfo.frdocc[i],
                     moinfo.clsdpi[i]-moinfo.frdocc[i],moinfo.openpi[i],moinfo.uoccpi[i]-moinfo.fruocc[i],
                     moinfo.fruocc[i]);
         }
-        fprintf(outfile,"\n\tNuclear Rep. energy (chkpt) =  %20.14f\n", moinfo.enuc);
-        fprintf(outfile,  "\tSCF energy          (chkpt) =  %20.14f\n", escf);
+        psi::fprintf(outfile,"\n\tNuclear Rep. energy (chkpt) =  %20.14f\n", moinfo.enuc);
+        psi::fprintf(outfile,  "\tSCF energy          (chkpt) =  %20.14f\n", escf);
     }
 }
 

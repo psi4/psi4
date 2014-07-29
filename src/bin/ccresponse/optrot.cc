@@ -154,7 +154,7 @@ void optrot(void)
         compute_X(pert, moinfo.l_irreps[alpha], 0);
       }
 
-      fprintf(outfile, "\n\tComputing %s tensor.\n", lbl1); fflush(outfile);
+      psi::fprintf(outfile, "\n\tComputing %s tensor.\n", lbl1); fflush(outfile);
       for(alpha=0; alpha < 3; alpha ++) {
         for(beta=0; beta < 3; beta++) {
           sprintf(pert_x, "P_%1s", cartcomp[alpha]);
@@ -176,18 +176,18 @@ void optrot(void)
       }
     }
     else {
-      fprintf(outfile, "Using %s tensor found on disk.\n", lbl1);
+      psi::fprintf(outfile, "Using %s tensor found on disk.\n", lbl1);
       psio_read_entry(PSIF_CC_INFO, lbl1, (char *) tensor0[0], 9*sizeof(double));
     }
 
     if (params.wfn == "CC2")
-      fprintf(outfile, "\n     CC2 Optical Rotation Tensor (Velocity Gauge): %s\n", lbl1);
+      psi::fprintf(outfile, "\n     CC2 Optical Rotation Tensor (Velocity Gauge): %s\n", lbl1);
     else if(params.wfn == "CCSD")
-      fprintf(outfile, "\n    CCSD Optical Rotation Tensor (Velocity Gauge): %s\n", lbl1);
+      psi::fprintf(outfile, "\n    CCSD Optical Rotation Tensor (Velocity Gauge): %s\n", lbl1);
 
-    fprintf(outfile, "  -------------------------------------------------------------------------\n");
-    fprintf(outfile,   "   Evaluated at omega = 0.00 E_h (Inf nm, 0.0 eV, 0.0 cm-1)\n");
-    fprintf(outfile, "  -------------------------------------------------------------------------\n");
+    psi::fprintf(outfile, "  -------------------------------------------------------------------------\n");
+    psi::fprintf(outfile,   "   Evaluated at omega = 0.00 E_h (Inf nm, 0.0 eV, 0.0 cm-1)\n");
+    psi::fprintf(outfile, "  -------------------------------------------------------------------------\n");
     mat_print(tensor0, 3, 3, outfile);
 
   }
@@ -238,9 +238,9 @@ void optrot(void)
         compute_X(pert, moinfo.l_irreps[alpha], params.omega[i]);
       }
 
-      fprintf(outfile, "\n");
+      psi::fprintf(outfile, "\n");
       if(compute_rl) {
-        fprintf(outfile, "\tComputing %s tensor.\n", lbl1); fflush(outfile);
+        psi::fprintf(outfile, "\tComputing %s tensor.\n", lbl1); fflush(outfile);
         for(alpha=0; alpha < 3; alpha++) {
           for(beta=0; beta < 3; beta++) {
             sprintf(pert_x, "Mu_%1s", cartcomp[alpha]);
@@ -253,7 +253,7 @@ void optrot(void)
         psio_write_entry(PSIF_CC_INFO, lbl1, (char *) tensor_rl0[0], 9*sizeof(double));
       }
       if(compute_pl) {
-        fprintf(outfile, "\tComputing %s tensor.\n", lbl2); fflush(outfile);
+        psi::fprintf(outfile, "\tComputing %s tensor.\n", lbl2); fflush(outfile);
         for(alpha=0; alpha < 3; alpha++) {
           for(beta=0; beta < 3; beta++) {
             sprintf(pert_x, "P_%1s", cartcomp[alpha]);
@@ -278,13 +278,13 @@ void optrot(void)
       }
     }
     else {
-      fprintf(outfile, "\n");
+      psi::fprintf(outfile, "\n");
       if(compute_rl) {
-        fprintf(outfile, "\tUsing %s tensor found on disk.\n", lbl1); fflush(outfile);
+        psi::fprintf(outfile, "\tUsing %s tensor found on disk.\n", lbl1); fflush(outfile);
         psio_read_entry(PSIF_CC_INFO, lbl1, (char *) tensor_rl0[0], 9*sizeof(double));
       }
       if(compute_pl) {
-        fprintf(outfile, "\tUsing %s tensor found on disk.\n", lbl2); fflush(outfile);
+        psi::fprintf(outfile, "\tUsing %s tensor found on disk.\n", lbl2); fflush(outfile);
         psio_read_entry(PSIF_CC_INFO, lbl2, (char *) tensor_pl0[0], 9*sizeof(double));
       }
 
@@ -330,9 +330,9 @@ void optrot(void)
         compute_X(pert, moinfo.l_irreps[alpha], -params.omega[i]);
       }
 
-      fprintf(outfile, "\n");
+      psi::fprintf(outfile, "\n");
       if(compute_rl) {
-        fprintf(outfile, "\tComputing %s tensor.\n", lbl1); fflush(outfile);
+        psi::fprintf(outfile, "\tComputing %s tensor.\n", lbl1); fflush(outfile);
         for(alpha=0; alpha < 3; alpha++) {
           for(beta=0; beta < 3; beta++) {
             sprintf(pert_x, "Mu_%1s", cartcomp[alpha]);
@@ -345,7 +345,7 @@ void optrot(void)
         psio_write_entry(PSIF_CC_INFO, lbl1, (char *) tensor_rl1[0], 9*sizeof(double));
       }
       if(compute_pl) {
-        fprintf(outfile, "\tComputing %s tensor.\n", lbl2); fflush(outfile);
+        psi::fprintf(outfile, "\tComputing %s tensor.\n", lbl2); fflush(outfile);
         for(alpha=0; alpha < 3; alpha++) {
           for(beta=0; beta < 3; beta++) {
             sprintf(pert_x, "P*_%1s", cartcomp[alpha]);
@@ -359,7 +359,7 @@ void optrot(void)
       }
 
       if(params.gauge == "BOTH") {
-        fprintf(outfile, "\tComputing %s tensor.\n", lbl3); fflush(outfile);
+        psi::fprintf(outfile, "\tComputing %s tensor.\n", lbl3); fflush(outfile);
         for(alpha=0; alpha < 3; alpha++) {
           for(beta=0; beta < 3; beta++) {
             sprintf(pert_x, "P_%1s", cartcomp[alpha]);
@@ -392,17 +392,17 @@ void optrot(void)
 
     }
     else {
-      fprintf(outfile, "\n");
+      psi::fprintf(outfile, "\n");
       if(compute_rl) {
-        fprintf(outfile, "\tUsing %s tensor found on disk.\n", lbl1); fflush(outfile);
+        psi::fprintf(outfile, "\tUsing %s tensor found on disk.\n", lbl1); fflush(outfile);
         psio_read_entry(PSIF_CC_INFO, lbl1, (char *) tensor_rl1[0], 9*sizeof(double));
       }
       if(compute_pl) {
-        fprintf(outfile, "\tUsing %s tensor found on disk.\n", lbl2); fflush(outfile);
+        psi::fprintf(outfile, "\tUsing %s tensor found on disk.\n", lbl2); fflush(outfile);
         psio_read_entry(PSIF_CC_INFO, lbl2, (char *) tensor_pl1[0], 9*sizeof(double));
       }
       if(params.gauge == "BOTH") {
-        fprintf(outfile, "\tUsing %s tensor found on disk.\n", lbl3); fflush(outfile);
+        psi::fprintf(outfile, "\tUsing %s tensor found on disk.\n", lbl3); fflush(outfile);
         psio_read_entry(PSIF_CC_INFO, lbl3, (char *) tensor_rp[i][0], 9*sizeof(double));
       }
     }
@@ -426,44 +426,44 @@ void optrot(void)
 
     if(compute_rl) {
       if (params.wfn == "CC2")
-        fprintf(outfile, "\n            CC2 Optical Rotation Tensor (Length Gauge):\n");
+        psi::fprintf(outfile, "\n            CC2 Optical Rotation Tensor (Length Gauge):\n");
       else if(params.wfn == "CCSD")
-        fprintf(outfile, "\n           CCSD Optical Rotation Tensor (Length Gauge):\n");
+        psi::fprintf(outfile, "\n           CCSD Optical Rotation Tensor (Length Gauge):\n");
 
-      fprintf(outfile, "  -------------------------------------------------------------------------\n");
-      fprintf(outfile,   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i],
+      psi::fprintf(outfile, "  -------------------------------------------------------------------------\n");
+      psi::fprintf(outfile,   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i],
               (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]), pc_hartree2ev*params.omega[i],
               pc_hartree2wavenumbers*params.omega[i]);
-      fprintf(outfile, "  -------------------------------------------------------------------------\n");
+      psi::fprintf(outfile, "  -------------------------------------------------------------------------\n");
       mat_print(tensor_rl[i], 3, 3, outfile);
 
       TrG_rl = (tensor_rl[i][0][0] + tensor_rl[i][1][1] + tensor_rl[i][2][2])/(3.0 * params.omega[i]);
 
       rotation_rl[i] = prefactor * TrG_rl * nu * nu / M;
-      fprintf(outfile, "\n   Specific rotation using length-gauge electric-dipole Rosenfeld tensor.\n");
-      fprintf(outfile, "\t[alpha]_(%5.3f) = %10.5f deg/[dm (g/cm^3)]\n", params.omega[i], rotation_rl[i]);
+      psi::fprintf(outfile, "\n   Specific rotation using length-gauge electric-dipole Rosenfeld tensor.\n");
+      psi::fprintf(outfile, "\t[alpha]_(%5.3f) = %10.5f deg/[dm (g/cm^3)]\n", params.omega[i], rotation_rl[i]);
     }
 
     if(compute_pl) {
 
       if (params.wfn == "CC2")
-        fprintf(outfile, "\n          CC2 Optical Rotation Tensor (Velocity Gauge):\n");
+        psi::fprintf(outfile, "\n          CC2 Optical Rotation Tensor (Velocity Gauge):\n");
       else if(params.wfn == "CCSD")
-        fprintf(outfile, "\n         CCSD Optical Rotation Tensor (Velocity Gauge):\n");
+        psi::fprintf(outfile, "\n         CCSD Optical Rotation Tensor (Velocity Gauge):\n");
 
-      fprintf(outfile, "  -------------------------------------------------------------------------\n");
-      fprintf(outfile,   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i],
+      psi::fprintf(outfile, "  -------------------------------------------------------------------------\n");
+      psi::fprintf(outfile,   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i],
               (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]), pc_hartree2ev*params.omega[i],
               pc_hartree2wavenumbers*params.omega[i]);
-      fprintf(outfile, "  -------------------------------------------------------------------------\n");
+      psi::fprintf(outfile, "  -------------------------------------------------------------------------\n");
       mat_print(tensor_pl[i], 3, 3, outfile);
 
       TrG_pl = (tensor_pl[i][0][0] + tensor_pl[i][1][1] + tensor_pl[i][2][2])/(3.0 * params.omega[i]);
       TrG_pl /= params.omega[i];
 
       rotation_pl[i] = prefactor * TrG_pl * nu * nu / M;
-      fprintf(outfile, "\n   Specific rotation using velocity-gauge electric-dipole Rosenfeld tensor.\n");
-      fprintf(outfile, "\t[alpha]_(%5.3f) = %10.5f deg/[dm (g/cm^3)]\n", params.omega[i], rotation_pl[i]);
+      psi::fprintf(outfile, "\n   Specific rotation using velocity-gauge electric-dipole Rosenfeld tensor.\n");
+      psi::fprintf(outfile, "\t[alpha]_(%5.3f) = %10.5f deg/[dm (g/cm^3)]\n", params.omega[i], rotation_pl[i]);
 
       /* subtract the zero-frequency beta tensor */
       for(j=0; j < 3; j++)
@@ -471,15 +471,15 @@ void optrot(void)
           tensor_pl[i][j][k] -= tensor0[j][k];
 
       if (params.wfn == "CC2")
-        fprintf(outfile, "\n        CC2 Optical Rotation Tensor (Modified Velocity Gauge):\n");
+        psi::fprintf(outfile, "\n        CC2 Optical Rotation Tensor (Modified Velocity Gauge):\n");
       else if(params.wfn == "CCSD")
-        fprintf(outfile, "\n        CCSD Optical Rotation Tensor (Modified Velocity Gauge):\n");
+        psi::fprintf(outfile, "\n        CCSD Optical Rotation Tensor (Modified Velocity Gauge):\n");
 
-      fprintf(outfile, "  -------------------------------------------------------------------------\n");
-      fprintf(outfile,   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i],
+      psi::fprintf(outfile, "  -------------------------------------------------------------------------\n");
+      psi::fprintf(outfile,   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i],
               (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]), pc_hartree2ev*params.omega[i],
               pc_hartree2wavenumbers*params.omega[i]);
-      fprintf(outfile, "  -------------------------------------------------------------------------\n");
+      psi::fprintf(outfile, "  -------------------------------------------------------------------------\n");
       mat_print(tensor_pl[i], 3, 3, outfile);
 
       /* compute the specific rotation */
@@ -487,8 +487,8 @@ void optrot(void)
       TrG_pl /= params.omega[i];
 
       rotation_mod[i] = prefactor * TrG_pl * nu * nu / M;
-      fprintf(outfile, "\n   Specific rotation using modified velocity-gauge Rosenfeld tensor.\n");
-      fprintf(outfile, "\t[alpha]_(%5.3f) = %10.5f deg/[dm (g/cm^3)]\n", params.omega[i], rotation_mod[i]);
+      psi::fprintf(outfile, "\n   Specific rotation using modified velocity-gauge Rosenfeld tensor.\n");
+      psi::fprintf(outfile, "\t[alpha]_(%5.3f) = %10.5f deg/[dm (g/cm^3)]\n", params.omega[i], rotation_mod[i]);
     }
 
     if(params.gauge == "BOTH") {
@@ -498,8 +498,8 @@ void optrot(void)
       delta[i][0] /= 6.0 * params.omega[i];
       delta[i][1] /= 6.0 * params.omega[i];
       delta[i][2] /= 6.0 * params.omega[i];
-      fprintf(outfile, "\n   Origin-dependence vector for length-gauge rotation deg/[dm (g/cm^3)]/bohr.\n");
-      fprintf(outfile, "     Delta_x = %6.2f   Delta_y = %6.2f   Delta_z = %6.2f\n",
+      psi::fprintf(outfile, "\n   Origin-dependence vector for length-gauge rotation deg/[dm (g/cm^3)]/bohr.\n");
+      psi::fprintf(outfile, "     Delta_x = %6.2f   Delta_y = %6.2f   Delta_z = %6.2f\n",
               delta[i][0], delta[i][1], delta[i][2]);
     }
   } /* loop i over nomega */
@@ -507,44 +507,44 @@ void optrot(void)
   if(params.nomega > 1) {  /* print a summary table for multi-wavelength calcs */
 
     if(compute_rl) {
-      fprintf(outfile, "\n   ------------------------------------------\n");
+      psi::fprintf(outfile, "\n   ------------------------------------------\n");
       if (params.wfn == "CC2")
-        fprintf(outfile,   "       CC2 Length-Gauge Optical Rotation\n");
+        psi::fprintf(outfile,   "       CC2 Length-Gauge Optical Rotation\n");
       else
-        fprintf(outfile,   "       CCSD Length-Gauge Optical Rotation\n");
-      fprintf(outfile,   "   ------------------------------------------\n");
+        psi::fprintf(outfile,   "       CCSD Length-Gauge Optical Rotation\n");
+      psi::fprintf(outfile,   "   ------------------------------------------\n");
 
       if(params.gauge == "BOTH") {
-        fprintf(outfile,   "       Omega           alpha                        Delta\n");
-        fprintf(outfile,   "    E_h      nm   deg/[dm (g/cm^3)]        deg/[dm (g/cm^3)]/bohr\n");
-        fprintf(outfile,   "   -----   ------ ------------------  ----------------------------------\n");
-        fprintf(outfile,   "                                          x           y           z      \n");
+        psi::fprintf(outfile,   "       Omega           alpha                        Delta\n");
+        psi::fprintf(outfile,   "    E_h      nm   deg/[dm (g/cm^3)]        deg/[dm (g/cm^3)]/bohr\n");
+        psi::fprintf(outfile,   "   -----   ------ ------------------  ----------------------------------\n");
+        psi::fprintf(outfile,   "                                          x           y           z      \n");
         for(i=0; i < params.nomega; i++)
-          fprintf(outfile, "   %5.3f   %6.2f      %10.5f    %10.5f  %10.5f  %10.5f\n", params.omega[i], (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]),
+          psi::fprintf(outfile, "   %5.3f   %6.2f      %10.5f    %10.5f  %10.5f  %10.5f\n", params.omega[i], (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]),
                   rotation_rl[i], delta[i][0], delta[i][1], delta[i][2]);
       }
       else {
-        fprintf(outfile,   "       Omega           alpha\n");
-        fprintf(outfile,   "    E_h      nm   deg/[dm (g/cm^3)]\n");
-        fprintf(outfile,   "   -----   ------ ------------------\n");
+        psi::fprintf(outfile,   "       Omega           alpha\n");
+        psi::fprintf(outfile,   "    E_h      nm   deg/[dm (g/cm^3)]\n");
+        psi::fprintf(outfile,   "   -----   ------ ------------------\n");
         for(i=0; i < params.nomega; i++)
-          fprintf(outfile, "   %5.3f   %6.2f      %10.5f\n", params.omega[i], (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]),
+          psi::fprintf(outfile, "   %5.3f   %6.2f      %10.5f\n", params.omega[i], (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]),
                   rotation_rl[i]);
       }
     }
 
     if(compute_pl) {
-      fprintf(outfile, "\n   ------------------------------------------------------\n");
+      psi::fprintf(outfile, "\n   ------------------------------------------------------\n");
       if (params.wfn == "CC2")
-        fprintf(outfile,   "            CC2 Velocity-Gauge Optical Rotation\n");
+        psi::fprintf(outfile,   "            CC2 Velocity-Gauge Optical Rotation\n");
       else
-        fprintf(outfile,   "            CCSD Velocity-Gauge Optical Rotation\n");
-      fprintf(outfile,   "   ------------------------------------------------------\n");
-      fprintf(outfile,   "       Omega           alpha (deg/[dm (g/cm^3)]\n");
-      fprintf(outfile, "\n    E_h      nm   Velocity-Gauge  Modified Velocity-Gauge\n");
-      fprintf(outfile,   "   -----   ------ --------------  -----------------------\n");
+        psi::fprintf(outfile,   "            CCSD Velocity-Gauge Optical Rotation\n");
+      psi::fprintf(outfile,   "   ------------------------------------------------------\n");
+      psi::fprintf(outfile,   "       Omega           alpha (deg/[dm (g/cm^3)]\n");
+      psi::fprintf(outfile, "\n    E_h      nm   Velocity-Gauge  Modified Velocity-Gauge\n");
+      psi::fprintf(outfile,   "   -----   ------ --------------  -----------------------\n");
       for(i=0; i < params.nomega; i++)
-        fprintf(outfile, "   %5.3f   %6.2f   %10.5f          %10.5f\n", params.omega[i], (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]), rotation_pl[i], rotation_mod[i]);
+        psi::fprintf(outfile, "   %5.3f   %6.2f   %10.5f          %10.5f\n", params.omega[i], (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]), rotation_pl[i], rotation_mod[i]);
     }
   }
 

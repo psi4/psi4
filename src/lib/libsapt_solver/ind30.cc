@@ -49,11 +49,11 @@ void SAPT2p3::ind30()
   e_ind30_ = indA_B + indB_A;
 
   if (debug_) {
-    fprintf(outfile,"\n    Ind30_1             = %18.12lf H\n",indA_B);
-    fprintf(outfile,"    Ind30_2             = %18.12lf H\n",indB_A);
+    psi::fprintf(outfile,"\n    Ind30_1             = %18.12lf H\n",indA_B);
+    psi::fprintf(outfile,"    Ind30_2             = %18.12lf H\n",indB_A);
   }
   if (print_) {
-    fprintf(outfile,"    Ind30               = %18.12lf H\n",e_ind30_);
+    psi::fprintf(outfile,"    Ind30               = %18.12lf H\n",e_ind30_);
     fflush(outfile);
   }
 }
@@ -71,11 +71,11 @@ void SAPT2p3::ind30r()
   e_ind30r_ = indA_B + indB_A;
 
   if (debug_) {
-    fprintf(outfile,"\n    Ind30_1             = %18.12lf H\n",indA_B);
-    fprintf(outfile,"    Ind30_2             = %18.12lf H\n",indB_A);
+    psi::fprintf(outfile,"\n    Ind30_1             = %18.12lf H\n",indA_B);
+    psi::fprintf(outfile,"    Ind30_2             = %18.12lf H\n",indB_A);
   }
   if (print_) {
-    fprintf(outfile,"    Ind30,r             = %18.12lf H\n",e_ind30r_);
+    psi::fprintf(outfile,"    Ind30,r             = %18.12lf H\n",e_ind30r_);
     fflush(outfile);
   }
 }

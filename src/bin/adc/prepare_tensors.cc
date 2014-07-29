@@ -51,7 +51,7 @@ ADC::rhf_prepare_tensors()
     dpdbuf4 Aovov, K, V;
     dpdfile2 Xoo, Xvv, Aoo, Avv, Dov, Cocc, Cvir, B;
     
-    fprintf(outfile, "\t==> CIS/ADC(1) Level <==\n\n");
+    psi::fprintf(outfile, "\t==> CIS/ADC(1) Level <==\n\n");
     psio_->open(PSIF_ADC_SEM, PSIO_OPEN_NEW);
     
     // CIS calculation for obtaining the guess energy and vector
@@ -99,13 +99,13 @@ ADC::rhf_prepare_tensors()
             }
             global_dpd_->file2_mat_wrt(&B);
             global_dpd_->file2_mat_close(&B);
-            fprintf(outfile, "\t%d%3s state: %10.7f (a.u.), %10.7f (eV)\n", root+1, irrep_[h], omega[root], omega[root]*pc_hartree2ev);
-            fprintf(outfile, "\t---------------------------------------------\n");
+            psi::fprintf(outfile, "\t%d%3s state: %10.7f (a.u.), %10.7f (eV)\n", root+1, irrep_[h], omega[root], omega[root]*pc_hartree2ev);
+            psi::fprintf(outfile, "\t---------------------------------------------\n");
             int nprint;
             if(nxspi_[h] < num_amps_) nprint = nxspi_[h];
             else nprint = num_amps_;
             amps_write(&B, nprint, outfile);
-            fprintf(outfile, "\n");
+            psi::fprintf(outfile, "\n");
             global_dpd_->file2_close(&B);
         }
         
@@ -153,7 +153,7 @@ ADC::rhf_prepare_tensors()
     global_dpd_->file2_close(&Xvv);
 
 #if DEBUG_
-    fprintf(outfile, ">> In prepare_tensor <<\n");
+    psi::fprintf(outfile, ">> In prepare_tensor <<\n");
     global_dpd_->buf4_print(&K, outfile, 1);
     //abort();
 #endif

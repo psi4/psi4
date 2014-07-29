@@ -95,7 +95,7 @@ void PSIO::wt_toclen(unsigned int unit, ULI len) {
   WorldComm->bcast(&(errcod), 1, 0);
   //WorldComm->raw_bcast(&(errcod), sizeof(int), 0);
   if (errcod == -1) {
-    fprintf(stderr, "Error in PSIO_WT_TOCLEN()!\n");
+    ::fprintf(stderr, "Error in PSIO_WT_TOCLEN()!\n");
     exit(_error_exit_code_);
   }
   
@@ -106,7 +106,7 @@ void PSIO::wt_toclen(unsigned int unit, ULI len) {
   WorldComm->bcast(&(errcod), 1, 0);
   //WorldComm->raw_bcast(&(errcod), sizeof(int), 0);
   if(errcod != sizeof(ULI)) {
-    fprintf(stderr, "PSIO_ERROR: Failed to write toclen to unit %d.\n", unit);
+    ::fprintf(stderr, "PSIO_ERROR: Failed to write toclen to unit %d.\n", unit);
     fflush(stderr);
     throw PSIEXCEPTION("PSIO Error");
   }

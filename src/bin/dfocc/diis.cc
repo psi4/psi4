@@ -76,8 +76,8 @@ void DFOCC::diis(int dimvec, SharedTensor2d &vecs, SharedTensor2d &errvecs, Shar
             double det = 0.0;      
             Bmat->lineq_flin(Cvec, &det);
             if (fabs(det) < DIIS_MIN_DET) { 
-               fprintf(outfile, "Warning!!! Diis matrix is near-singular\n");
-               fprintf(outfile, "Determinant is %6.3E\n", det);
+               psi::fprintf(outfile, "Warning!!! Diis matrix is near-singular\n");
+               psi::fprintf(outfile, "Determinant is %6.3E\n", det);
                fflush(outfile);
             }
           }

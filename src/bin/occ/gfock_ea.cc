@@ -36,7 +36,7 @@ namespace psi{ namespace occwave{
 void OCCWave::gfock_ea()
 {
 
-//fprintf(outfile,"\n gfock_ea is starting... \n"); fflush(outfile);
+//psi::fprintf(outfile,"\n gfock_ea is starting... \n"); fflush(outfile);
 //===========================================================================================
 //========================= RHF =============================================================
 //===========================================================================================
@@ -1128,7 +1128,7 @@ else if (reference_ == "UNRESTRICTED") {
         }
 
 }// end if (reference_ == "UNRESTRICTED") 
-//fprintf(outfile,"\n gfock_ea done. \n"); fflush(outfile);
+//psi::fprintf(outfile,"\n gfock_ea done. \n"); fflush(outfile);
 
 } // End main
 }} // End Namespaces

@@ -76,12 +76,12 @@ void orient_fragment(int natom_A, int natom_B, int P_A, int P_B, double **geom_A
       for (i=0; i<natom_B;++i)
         ref_B[pts][xyz] += ref_coeff_B[pts][i] * geom_B[i][xyz];
 
-fprintf(outfile,"Coordinates for reference points on fragment A\n");
+psi::fprintf(outfile,"Coordinates for reference points on fragment A\n");
 print_mat(ref_A,P_A,3,outfile);
-fprintf(outfile,"Coordinates for reference points on fragment B (original) \n");
+psi::fprintf(outfile,"Coordinates for reference points on fragment B (original) \n");
 print_mat(ref_B,P_B,3,outfile);
-fprintf(outfile,"\t(1/)R_AB:%10.5f, theta_A:%10.5f, theta_B:%10.5f\n", R_AB, theta_A, theta_B);
-fprintf(outfile,"\t     tau:%10.5f,   phi_A:%10.5f,   phi_B:%10.5f\n", tau, phi_A, phi_B);
+psi::fprintf(outfile,"\t(1/)R_AB:%10.5f, theta_A:%10.5f, theta_B:%10.5f\n", R_AB, theta_A, theta_B);
+psi::fprintf(outfile,"\t     tau:%10.5f,   phi_A:%10.5f,   phi_B:%10.5f\n", tau, phi_A, phi_B);
 
   /* compute B1-B2 distance, B2-B3 distance, and B1-B2-B3 angle */
   R_B1B2 = 0.0;
@@ -108,7 +108,7 @@ fprintf(outfile,"\t     tau:%10.5f,   phi_A:%10.5f,   phi_B:%10.5f\n", tau, phi_
   if (P_B>2)
     zmat_point(ref_A[0], ref_B_final[0], ref_B_final[1], R_B2B3, B_angle, phi_B, ref_B_final[2]);
 
-fprintf(outfile,"Target reference points for fragment B\n");
+psi::fprintf(outfile,"Target reference points for fragment B\n");
 print_mat(ref_B_final,P_B,3,outfile);
 
   /* translate geom_B to place B1 in correct location */
@@ -125,7 +125,7 @@ print_mat(ref_B_final,P_B,3,outfile);
         ref_B[pts][xyz] += ref_coeff_B[pts][i] * geom_B[i][xyz];
     }
 
-//fprintf(outfile,"Reference points after translation (to fix point B1):\n");
+//psi::fprintf(outfile,"Reference points after translation (to fix point B1):\n");
 //print_mat(ref_B,P_B,3,outfile);
 
   if (P_B>1) { /* move fragment B to place reference point B2 in correct location */
@@ -133,7 +133,7 @@ print_mat(ref_B_final,P_B,3,outfile);
     unit_vec(ref_B[1],       ref_B[0], e12);  /* v B1->B2 */
     unit_vec(ref_B_final[1], ref_B[0], e12b); /* v B1->B2_final */
     B_angle = acos(dot_prod(e12b,e12));
-    fprintf(outfile,"Rotation by %f degrees (to fix point B2)\n", 180.0*B_angle/pc_pi);
+    psi::fprintf(outfile,"Rotation by %f degrees (to fix point B2)\n", 180.0*B_angle/pc_pi);
     if (fabs(B_angle) > 1.0e-7) {
       cross_prod(e12,e12b,erot);
 
@@ -158,7 +158,7 @@ print_mat(ref_B_final,P_B,3,outfile);
             ref_B[pts][xyz] += ref_coeff_B[pts][i] * geom_B[i][xyz];
         }
 
-      //fprintf(outfile,"Reference points after rotation (to fix point B2) \n");
+      //psi::fprintf(outfile,"Reference points after rotation (to fix point B2) \n");
       //print_mat(ref_B,P_B,3,outfile);
     }
   }
@@ -201,7 +201,7 @@ print_mat(ref_B_final,P_B,3,outfile);
     B_angle *= sign;
 
     if (fabs(B_angle) > 1.0e-7) {
-      fprintf(outfile,"Rotation by %f degrees (to fix point B3)\n", 180.0*B_angle/pc_pi);
+      psi::fprintf(outfile,"Rotation by %f degrees (to fix point B3)\n", 180.0*B_angle/pc_pi);
 
       /* Move B to put B2 at origin */
       for (xyz=0; xyz<3; ++xyz)
@@ -221,7 +221,7 @@ print_mat(ref_B_final,P_B,3,outfile);
           for (i=0; i<natom_B;++i)
             ref_B[pts][xyz] += ref_coeff_B[pts][i] * geom_B[i][xyz];
         }
-        //fprintf(outfile,"Reference points on B after rotation for B2 \n");
+        //psi::fprintf(outfile,"Reference points on B after rotation for B2 \n");
         //print_mat(ref_B,P_B,3,outfile);
       }
   }
@@ -235,7 +235,7 @@ print_mat(ref_B_final,P_B,3,outfile);
      throw PsiException("Unable to construct multi-fragment geometry.",__FILE__,__LINE__);
    }
    else
-     fprintf(outfile,"Successfully constructed multifragment geometry.\n");
+     psi::fprintf(outfile,"Successfully constructed multifragment geometry.\n");
 
   free_block(ref_A);
   free_block(ref_B);

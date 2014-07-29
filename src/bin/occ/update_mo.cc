@@ -33,7 +33,7 @@ namespace psi{ namespace occwave{
 
 void OCCWave::update_mo()
 {
-//fprintf(outfile,"\n update_mo is starting... \n"); fflush(outfile);     
+//psi::fprintf(outfile,"\n update_mo is starting... \n"); fflush(outfile);     
 //===========================================================================================
 //========================= RHF =============================================================
 //===========================================================================================

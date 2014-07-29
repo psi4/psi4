@@ -25,7 +25,7 @@ double MBE::Energy(const std::vector<NMerSet>& Systems, const std::vector<double
 	//Total energy of each set of n-mers
 	std::vector<double> En;
 	std::vector<double> Egys;
-	fprintf(psi::outfile,
+	psi::fprintf(psi::outfile,
 	      "\n************ MBE Energy Analysis ************\n\n");
 	if(Systems.size()!=N&&N!=1)
 	   std::cout<<"Shit is about to hit the fan..."<<std::endl;
@@ -37,12 +37,12 @@ double MBE::Energy(const std::vector<NMerSet>& Systems, const std::vector<double
 		}
 		energy=NBodyE(i+1,Systems[0].size(),&En[0]);
 		Egys.push_back(energy);
-		fprintf(psi::outfile,
+		psi::fprintf(psi::outfile,
 		      "%2d-body approximate energy: %16.15f (a.u.)\n",i+1,energy);
 	}
 	for(int i=0;i<N;i++){
 	   double corr=(i==0?Egys[i]:Egys[i]-Egys[i-1]);
-	   fprintf(psi::outfile,
+	   psi::fprintf(psi::outfile,
 	         "%2d-body correction: %16.15f (a.u.)\n",i+1,corr);
 	}
 	return energy;

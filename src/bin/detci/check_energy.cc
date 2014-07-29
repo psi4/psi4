@@ -27,7 +27,7 @@
 */
 #include <cstdio>
 #include <cmath>
-
+#include "psi4-dec.h"
 namespace psi { namespace detci {
 
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
@@ -69,18 +69,18 @@ double check_energy(double *H, double *twoel_ints, int *docc, int *frozen_docc,
       frozen_docc, fzc_flag, nirreps, reorder, opi);
 
    if (print_lvl) {
-     fprintf(outfile,"\nCheck SCF Energy from 1- and 2-electron integrals\n\n");
-     fprintf(outfile,"SCF Energy (ref):          %16.10lf\n", escf) ;
-     fprintf(outfile,"Nuclear repulsion energy:  %16.10lf\n", enuc) ;
-     fprintf(outfile,"One-electron energy:       %16.10lf\n", energy_1) ;
-     fprintf(outfile,"Two-electron energy:       %16.10lf\n", energy_2) ;
-     fprintf(outfile,"Frozen core energy:        %16.10lf\n", efzc) ;
-     fprintf(outfile,"Total electronic energy:   %16.10lf\n", energy_e+efzc) ;
-     fprintf(outfile,"Total SCF energy:          %16.10lf\n", enuc + 
+     psi::fprintf(outfile,"\nCheck SCF Energy from 1- and 2-electron integrals\n\n");
+     psi::fprintf(outfile,"SCF Energy (ref):          %16.10lf\n", escf) ;
+     psi::fprintf(outfile,"Nuclear repulsion energy:  %16.10lf\n", enuc) ;
+     psi::fprintf(outfile,"One-electron energy:       %16.10lf\n", energy_1) ;
+     psi::fprintf(outfile,"Two-electron energy:       %16.10lf\n", energy_2) ;
+     psi::fprintf(outfile,"Frozen core energy:        %16.10lf\n", efzc) ;
+     psi::fprintf(outfile,"Total electronic energy:   %16.10lf\n", energy_e+efzc) ;
+     psi::fprintf(outfile,"Total SCF energy:          %16.10lf\n", enuc + 
         energy_e + efzc) ;
     
      if (fabs(enuc + efzc + energy_e - escf) > 0.00000001) {
-        fprintf(outfile, 
+        psi::fprintf(outfile, 
            "\n*** Calculated Energy Differs from SCF Energy in CHKPT ! ***\n") ;
         }
    }

@@ -381,7 +381,7 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
 
    if (writeflag) {
      
-     if (printflag) fprintf(outfile, "\nTwo-particle density matrix\n\n");
+     if (printflag) psi::fprintf(outfile, "\nTwo-particle density matrix\n\n");
      iwl_buf_init(&TBuff, targetfile, 0.0, 0, 0);
      iwl_buf_init(&TBuff_aa, PSIF_MO_AA_TPDM, 0.0, 0, 0);
      iwl_buf_init(&TBuff_bb, PSIF_MO_BB_TPDM, 0.0, 0, 0);
@@ -488,7 +488,7 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
      iwl_buf_close(&TBuff_bb, 1);
      iwl_buf_flush(&TBuff_ab, 1);
      iwl_buf_close(&TBuff_ab, 1);
-     fprintf(outfile, "\n");
+     psi::fprintf(outfile, "\n");
    }
 
 

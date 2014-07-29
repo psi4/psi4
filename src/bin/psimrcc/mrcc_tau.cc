@@ -152,7 +152,7 @@ void CCMRCC::build_tau_intermediates()
     blas->print("tau3[OV][OV]{u}");
   );
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
+    psi::fprintf(outfile," done. Timing %20.6f s",timer.get());
     fflush(outfile);
   );
 }

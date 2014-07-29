@@ -61,7 +61,7 @@ namespace psi{ namespace occwave{
 void OCCWave::omp3_ip_poles()
 {   
 
-//fprintf(outfile,"\n omp3_ip_poles is starting... \n"); fflush(outfile);
+//psi::fprintf(outfile,"\n omp3_ip_poles is starting... \n"); fflush(outfile);
 //===========================================================================================
 //========================= RHF =============================================================
 //===========================================================================================
@@ -215,7 +215,7 @@ if (reference_ == "RESTRICTED") {
           }
     }
 
-    //fprintf(outfile,"\tI am here. \n"); fflush(outfile);
+    //psi::fprintf(outfile,"\tI am here. \n"); fflush(outfile);
 
     for (int i = 0; i < nooA; ++i) {
          for(int j = nooA-1; j > i; --j) {
@@ -232,9 +232,9 @@ if (reference_ == "RESTRICTED") {
 
 
     // Print occupied orbital energies
-    if (mo_optimized == 1) fprintf(outfile,"\n\tOMP3 Occupied Orbital Energies (a.u.) \n"); 
-    else if (mo_optimized == 0) fprintf(outfile,"\n\tMP3 Occupied Orbital Energies (a.u.) \n"); 
-    fprintf(outfile,"\t----------------------------------------------- \n"); 
+    if (mo_optimized == 1) psi::fprintf(outfile,"\n\tOMP3 Occupied Orbital Energies (a.u.) \n"); 
+    else if (mo_optimized == 0) psi::fprintf(outfile,"\n\tMP3 Occupied Orbital Energies (a.u.) \n"); 
+    psi::fprintf(outfile,"\t----------------------------------------------- \n"); 
     fflush(outfile);
 	  
     Molecule& mol = *reference_wavefunction_->molecule().get();
@@ -242,11 +242,11 @@ if (reference_ == "RESTRICTED") {
     string pgroup = mol.point_group()->symbol();
 
     // print alpha occ orb energy
-    fprintf(outfile, "\tAlpha occupied orbitals\n");
+    psi::fprintf(outfile, "\tAlpha occupied orbitals\n");
     count = 1;
     for (int i = 0; i < nooA; ++i) {
          int h = irrep_A->get(i);
-	 fprintf(outfile,"\t%3d (%-3s) %20.10f \n",count,ct.gamma(h).symbol(),evals_A->get(i));
+	 psi::fprintf(outfile,"\t%3d (%-3s) %20.10f \n",count,ct.gamma(h).symbol(),evals_A->get(i));
 	 fflush(outfile);   
 	 count++;
     }
@@ -670,7 +670,7 @@ else if (reference_ == "UNRESTRICTED") {
           }
     }
 
-    //fprintf(outfile,"\tI am here. \n"); fflush(outfile);
+    //psi::fprintf(outfile,"\tI am here. \n"); fflush(outfile);
 
     for (int i = 0; i < nooA; ++i) {
          for(int j = nooA-1; j > i; --j) {
@@ -709,9 +709,9 @@ else if (reference_ == "UNRESTRICTED") {
 
 
     // Print occupied orbital energies
-    if (mo_optimized == 1) fprintf(outfile,"\n\tOMP3 Occupied Orbital Energies (a.u.) \n"); 
-    else if (mo_optimized == 0) fprintf(outfile,"\n\tMP3 Occupied Orbital Energies (a.u.) \n"); 
-    fprintf(outfile,"\t----------------------------------------------- \n"); 
+    if (mo_optimized == 1) psi::fprintf(outfile,"\n\tOMP3 Occupied Orbital Energies (a.u.) \n"); 
+    else if (mo_optimized == 0) psi::fprintf(outfile,"\n\tMP3 Occupied Orbital Energies (a.u.) \n"); 
+    psi::fprintf(outfile,"\t----------------------------------------------- \n"); 
     fflush(outfile);
 	  
     Molecule& mol = *reference_wavefunction_->molecule().get();
@@ -719,21 +719,21 @@ else if (reference_ == "UNRESTRICTED") {
     string pgroup = mol.point_group()->symbol();
 
     // print alpha occ orb energy
-    fprintf(outfile, "\tAlpha occupied orbitals\n");
+    psi::fprintf(outfile, "\tAlpha occupied orbitals\n");
     count = 1;
     for (int i = 0; i < nooA; ++i) {
          int h = irrep_A->get(i);
-	 fprintf(outfile,"\t%3d (%-3s) %20.10f \n",count,ct.gamma(h).symbol(),evals_A->get(i));
+	 psi::fprintf(outfile,"\t%3d (%-3s) %20.10f \n",count,ct.gamma(h).symbol(),evals_A->get(i));
 	 fflush(outfile);   
 	 count++;
     }
 
     // print beta occ orb energy
-    fprintf(outfile, "\n\tBeta occupied orbitals\n");
+    psi::fprintf(outfile, "\n\tBeta occupied orbitals\n");
     count = 1;
     for (int i = 0; i < nooB; ++i) {
          int h = irrep_B->get(i);
-	 fprintf(outfile,"\t%3d (%-3s) %20.10f \n",count,ct.gamma(h).symbol(),evals_B->get(i));
+	 psi::fprintf(outfile,"\t%3d (%-3s) %20.10f \n",count,ct.gamma(h).symbol(),evals_B->get(i));
 	 fflush(outfile);   
 	 count++;
     }
@@ -746,7 +746,7 @@ else if (reference_ == "UNRESTRICTED") {
        delete irrep_B;
 
 }// end if (reference_ == "UNRESTRICTED") 
-//fprintf(outfile,"\n omp3_ip_poles is done. \n"); fflush(outfile);
+//psi::fprintf(outfile,"\n omp3_ip_poles is done. \n"); fflush(outfile);
 } // end omp3_ip_poles
 }} // End Namespaces
 

@@ -171,8 +171,8 @@ void dipquad(void)
   }
   free(T);
 
-  fprintf(outfile, "\n\tHartree-Fock Dipole/Quadrupole Tensor  [(e^2 a0^2)/E_h]:\n");
-  fprintf(outfile, "\t---------------------------------------------------------------\n");
+  psi::fprintf(outfile, "\n\tHartree-Fock Dipole/Quadrupole Tensor  [(e^2 a0^2)/E_h]:\n");
+  psi::fprintf(outfile, "\t---------------------------------------------------------------\n");
   for(alpha=0; alpha < 3; alpha++) {
     mat_print(polar[alpha], 3, 3, outfile);
   }

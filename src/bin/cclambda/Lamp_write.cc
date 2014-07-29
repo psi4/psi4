@@ -151,11 +151,11 @@ void amp_write_L1(dpdfile2 *L1, int length, const char *label, FILE *outfile)
   for(m=0; m < ((numt1 < length) ? numt1 : length); m++)
     if(fabs(t1stack[m].value) > 1e-8) num2print++;
 
-  if(num2print) fprintf(outfile, "%s", label);
+  if(num2print) psi::fprintf(outfile, "%s", label);
 
   for(m=0; m < ((numt1 < length) ? numt1 : length); m++)
     if(fabs(t1stack[m].value) > 1e-8)
-      fprintf(outfile, "\t        %3d %3d %20.10f\n", t1stack[m].i, t1stack[m].a, t1stack[m].value);
+      psi::fprintf(outfile, "\t        %3d %3d %20.10f\n", t1stack[m].i, t1stack[m].a, t1stack[m].value);
 
   free(t1stack);
 }
@@ -237,11 +237,11 @@ void amp_write_L2(dpdbuf4 *L2, int length, const char *label, FILE *outfile)
   for(m=0; m < ((numt2 < length) ? numt2 : length); m++)
     if(fabs(t2stack[m].value) > 1e-8) num2print++;
 
-  if(num2print) fprintf(outfile, "%s", label);
+  if(num2print) psi::fprintf(outfile, "%s", label);
 
   for(m=0; m < ((numt2 < length) ? numt2 : length); m++)
     if(fabs(t2stack[m].value) > 1e-8)
-      fprintf(outfile, "\t%3d %3d %3d %3d %20.10f\n", t2stack[m].i, t2stack[m].j, 
+      psi::fprintf(outfile, "\t%3d %3d %3d %3d %20.10f\n", t2stack[m].i, t2stack[m].j, 
 	      t2stack[m].a, t2stack[m].b, t2stack[m].value);
 
   free(t2stack);

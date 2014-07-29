@@ -33,10 +33,10 @@ namespace psi{ namespace dcft{
 SharedMatrix DCFTSolver::compute_gradient()
 {
     // Print out the header
-    fprintf(outfile,"\n\n\t***********************************************************************************\n");
-    fprintf(outfile,    "\t*                           DCFT Analytic Gradients Code                          *\n");
-    fprintf(outfile,    "\t*                     by Alexander Sokolov and Andy Simmonett                     *\n");
-    fprintf(outfile,    "\t***********************************************************************************\n\n");
+    psi::fprintf(outfile,"\n\n\t***********************************************************************************\n");
+    psi::fprintf(outfile,    "\t*                           DCFT Analytic Gradients Code                          *\n");
+    psi::fprintf(outfile,    "\t*                     by Alexander Sokolov and Andy Simmonett                     *\n");
+    psi::fprintf(outfile,    "\t***********************************************************************************\n\n");
 
     // Transform the one and two-electron integrals to the MO basis and write them into the DPD file
     gradient_init();
@@ -67,17 +67,17 @@ DCFTSolver::compute_gradient_dc() {
 
     // Start two-step algorithm for solution of the response equations
     if(options_.get_str("RESPONSE_ALGORITHM") == "TWOSTEP"){
-        fprintf(outfile, "\t*=================================================*\n"
+        psi::fprintf(outfile, "\t*=================================================*\n"
                 "\t* Cycle  RMS Orb. Resp.   RMS Cumul. Resp.   DIIS *\n"
                 "\t*-------------------------------------------------*");
 
         // Start macro-iterations
         while(!responseDone && iter_++ < maxiter_){
-            fprintf(outfile, "\n\t              *** Macro Iteration %d ***\n", iter_);
+            psi::fprintf(outfile, "\n\t              *** Macro Iteration %d ***\n", iter_);
 
             // Solve the cumulant response equations iteratively
             if (iter_ > 1) {
-                fprintf(outfile, "\t            Cumulant Response Iterations\n");
+                psi::fprintf(outfile, "\t            Cumulant Response Iterations\n");
                 iterate_cumulant_response();
             }
 
@@ -91,7 +91,7 @@ DCFTSolver::compute_gradient_dc() {
             compute_lagrangian_VO();
 
             // Solve the orbital response equations iteratively
-            fprintf(outfile, "\t            Orbital Response Iterations\n");
+            psi::fprintf(outfile, "\t            Orbital Response Iterations\n");
             iterate_orbital_response();
 
             // Compute terms that couple orbital and cumulant responses (C intermediate) and return RMS of their change
@@ -100,10 +100,10 @@ DCFTSolver::compute_gradient_dc() {
             // Check convergence
             if (response_coupling_rms_ < cumulant_threshold_) responseDone = true;
 
-            fprintf(outfile, "\t   RMS of Response Coupling Change: %11.3E \n", response_coupling_rms_);
+            psi::fprintf(outfile, "\t   RMS of Response Coupling Change: %11.3E \n", response_coupling_rms_);
         }
 
-        fprintf(outfile, "\t*=================================================*\n");
+        psi::fprintf(outfile, "\t*=================================================*\n");
     }
     else {
         // Start the simultaneous algorithm for the solution of the response equations
@@ -135,7 +135,7 @@ DCFTSolver::compute_gradient_dc() {
         global_dpd_->file2_close(&zaa);
         global_dpd_->file2_close(&zbb);
 
-        fprintf(outfile, "\t*==================================================================*\n"
+        psi::fprintf(outfile, "\t*==================================================================*\n"
                 "\t* Cycle  RMS Orb. Resp.   RMS Cumul. Resp.   RMS Coupling     DIIS *\n"
                 "\t*------------------------------------------------------------------*\n");
 
@@ -217,7 +217,7 @@ DCFTSolver::compute_gradient_dc() {
             response_coupling_rms_ = compute_response_coupling();
 
             // Print iterative trace
-            fprintf(outfile, "\t*%4d    %11.3E       %11.3E       %11.3E      %-4s *\n", iter_,
+            psi::fprintf(outfile, "\t*%4d    %11.3E       %11.3E       %11.3E      %-4s *\n", iter_,
                     orbital_response_rms_, cumulant_response_rms_, response_coupling_rms_, diisString.c_str());
 
             // Check convergence
@@ -226,10 +226,10 @@ DCFTSolver::compute_gradient_dc() {
 
         }
 
-        fprintf(outfile, "\t*==================================================================*\n");
+        psi::fprintf(outfile, "\t*==================================================================*\n");
     }
 
-    if (responseDone) fprintf(outfile, "\n\t   DCFT response equations converged.\n");
+    if (responseDone) psi::fprintf(outfile, "\n\t   DCFT response equations converged.\n");
     else throw PSIEXCEPTION("DCFT response equations did not converge");
 
     // Compute the VVVV block of the relaxed TPDM
@@ -248,7 +248,7 @@ DCFTSolver::compute_gradient_odc() {
 
     // Compute the VVVV block of the relaxed TPDM
     compute_unrelaxed_density_VVVV();
-    fprintf(outfile, "\t Computing energy-weighted density matrix from one- and two-particle densities...\n");
+    psi::fprintf(outfile, "\t Computing energy-weighted density matrix from one- and two-particle densities...\n");
     // Compute the OO block of MO Lagrangian
     compute_lagrangian_OO();
     // Compute the VV block of MO Lagrangian
@@ -1197,7 +1197,7 @@ DCFTSolver::iterate_orbital_response()
         converged = (fabs(orbital_response_rms_) < fabs(orbitals_threshold_));
 
         // Print iterative trace
-        fprintf(outfile, "\t*%4d    %11.3E       %11.3E       %-4s *\n", cycle,
+        psi::fprintf(outfile, "\t*%4d    %11.3E       %11.3E       %-4s *\n", cycle,
                 orbital_response_rms_, cumulant_response_rms_, diisString.c_str());
 
         // Termination condition
@@ -2041,7 +2041,7 @@ DCFTSolver::iterate_cumulant_response()
         converged = (fabs(cumulant_response_rms_) < fabs(cumulant_threshold_));
 
         // Print iterative trace
-        fprintf(outfile, "\t*%4d    %11.3E       %11.3E       %-4s *\n", cycle, orbital_response_rms_, cumulant_response_rms_, diisString.c_str());
+        psi::fprintf(outfile, "\t*%4d    %11.3E       %11.3E       %-4s *\n", cycle, orbital_response_rms_, cumulant_response_rms_, diisString.c_str());
 
         // Termination condition
         if (converged || cycle >= maxiter_) break;

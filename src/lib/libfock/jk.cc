@@ -575,7 +575,7 @@ void JK::compute()
     }
 
     if (debug_ > 6) {
-        fprintf(outfile, "   > JK <\n\n");
+        psi::fprintf(outfile, "   > JK <\n\n");
         for (int N = 0; N < C_left_.size(); N++) {
             if (C1() && AO2USO_->nirrep() != 1) {
                 C_left_ao_[N]->print(outfile);
@@ -616,15 +616,15 @@ void DiskJK::common_init()
 void DiskJK::print_header() const
 {
     if (print_) {
-        fprintf(outfile, "  ==> DiskJK: Disk-Based J/K Matrices <==\n\n");
+        psi::fprintf(outfile, "  ==> DiskJK: Disk-Based J/K Matrices <==\n\n");
 
-        fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
-        fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
-        fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
-        fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        psi::fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
+        psi::fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
+        psi::fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
+        psi::fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
         if (do_wK_)
-            fprintf(outfile, "    Omega:             %11.3E\n", omega_);
-        fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n\n", cutoff_);
+            psi::fprintf(outfile, "    Omega:             %11.3E\n", omega_);
+        psi::fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n\n", cutoff_);
     }
 }
 void DiskJK::preiterations()
@@ -1171,16 +1171,16 @@ void PKJK::common_init()
 void PKJK::print_header() const
 {
     if (print_) {
-        fprintf(outfile, "  ==> DiskJK: Disk-Based J/K Matrices <==\n\n");
+        psi::fprintf(outfile, "  ==> DiskJK: Disk-Based J/K Matrices <==\n\n");
 
-        fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
-        fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
-        fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
+        psi::fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
+        psi::fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
+        psi::fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
         if (do_wK_)
-            fprintf(outfile, "    Omega:             %11.3E\n", omega_);
-        fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
-        fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n\n", cutoff_);
-        //fprintf(outfile, "    OpenMP threads:    %11d\n", omp_nthread_);
+            psi::fprintf(outfile, "    Omega:             %11.3E\n", omega_);
+        psi::fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        psi::fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n\n", cutoff_);
+        //psi::fprintf(outfile, "    OpenMP threads:    %11d\n", omp_nthread_);
     }
 }
 
@@ -1289,7 +1289,7 @@ void PKJK::preiterations()
     nbatches++;
 
     for(int batch = 0; batch < nbatches; ++batch){
-        fprintf(outfile,"\tBatch %3d pq = [%8zu,%8zu] index = [%14zu,%zu]\n",
+        psi::fprintf(outfile,"\tBatch %3d pq = [%8zu,%8zu] index = [%14zu,%zu]\n",
                 batch + 1,
                 batch_pq_min_[batch],batch_pq_max_[batch],
                 batch_index_min_[batch],batch_index_max_[batch]);
@@ -1780,16 +1780,16 @@ void DirectJK::common_init()
 void DirectJK::print_header() const
 {
     if (print_) {
-        fprintf(outfile, "  ==> DirectJK: Integral-Direct J/K Matrices <==\n\n");
+        psi::fprintf(outfile, "  ==> DirectJK: Integral-Direct J/K Matrices <==\n\n");
 
-        fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
-        fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
-        fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
+        psi::fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
+        psi::fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
+        psi::fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
         if (do_wK_)
-            fprintf(outfile, "    Omega:             %11.3E\n", omega_);
-        fprintf(outfile, "    Integrals threads: %11d\n", df_ints_num_threads_);
-        //fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
-        fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n\n", cutoff_);
+            psi::fprintf(outfile, "    Omega:             %11.3E\n", omega_);
+        psi::fprintf(outfile, "    Integrals threads: %11d\n", df_ints_num_threads_);
+        //psi::fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        psi::fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n\n", cutoff_);
     }
 }
 void DirectJK::preiterations()
@@ -1903,18 +1903,18 @@ void DirectJK::build_JK(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints,
     }
 
     if (debug_) {
-        fprintf(outfile, "  ==> DirectJK: Task Blocking <==\n\n");
+        psi::fprintf(outfile, "  ==> DirectJK: Task Blocking <==\n\n");
         for (int task = 0; task < ntask; task++) {
-            fprintf(outfile, "  Task: %3d, Task Start: %4d, Task End: %4d\n", task, task_starts[task], task_starts[task+1]);
+            psi::fprintf(outfile, "  Task: %3d, Task Start: %4d, Task End: %4d\n", task, task_starts[task], task_starts[task+1]);
             for (int P2 = task_starts[task]; P2 < task_starts[task+1]; P2++) {
                 int P = task_shells[P2];
                 int size = primary_->shell(P).nfunction();
                 int off  = primary_->shell(P).function_index();
                 int off2 = task_offsets[P2];
-                fprintf(outfile, "    Index %4d, Shell: %4d, Size: %4d, Offset: %4d, Offset2: %4d\n", P2, P, size, off, off2);
+                psi::fprintf(outfile, "    Index %4d, Shell: %4d, Size: %4d, Offset: %4d, Offset2: %4d\n", P2, P, size, off, off2);
             }
         }
-        fprintf(outfile, "\n");
+        psi::fprintf(outfile, "\n");
     }
 
     // => Significant Task Pairs (PQ|-style <= //
@@ -2284,7 +2284,7 @@ void DirectJK::build_JK(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints,
         FILE* fh = fopen("bench.dat", "a");
         size_t ntri = nshell * (nshell + 1L) / 2L;
         size_t possible_shells = ntri * (ntri + 1L) / 2L;
-        fprintf(fh, "Computed %20zu Shell Quartets out of %20zu, (%11.3E ratio)\n", computed_shells, possible_shells, computed_shells / (double) possible_shells);
+        psi::fprintf(fh, "Computed %20zu Shell Quartets out of %20zu, (%11.3E ratio)\n", computed_shells, possible_shells, computed_shells / (double) possible_shells);
         fclose(fh);
     }
 }
@@ -2492,22 +2492,22 @@ SharedVector DFJK::iaia(SharedMatrix Ci, SharedMatrix Ca)
 void DFJK::print_header() const
 {
     if (print_) {
-        fprintf(outfile, "  ==> DFJK: Density-Fitted J/K Matrices <==\n\n");
+        psi::fprintf(outfile, "  ==> DFJK: Density-Fitted J/K Matrices <==\n\n");
 
-        fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
-        fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
-        fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
+        psi::fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
+        psi::fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
+        psi::fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
         if (do_wK_)
-            fprintf(outfile, "    Omega:             %11.3E\n", omega_);
-        fprintf(outfile, "    OpenMP threads:    %11d\n", omp_nthread_);
-        fprintf(outfile, "    Integrals threads: %11d\n", df_ints_num_threads_);
-        fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
-        fprintf(outfile, "    Algorithm:         %11s\n",  (is_core_ ? "Core" : "Disk"));
-        fprintf(outfile, "    Integral Cache:    %11s\n",  df_ints_io_.c_str());
-        fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n", cutoff_);
-        fprintf(outfile, "    Fitting Condition: %11.0E\n\n", condition_);
+            psi::fprintf(outfile, "    Omega:             %11.3E\n", omega_);
+        psi::fprintf(outfile, "    OpenMP threads:    %11d\n", omp_nthread_);
+        psi::fprintf(outfile, "    Integrals threads: %11d\n", df_ints_num_threads_);
+        psi::fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        psi::fprintf(outfile, "    Algorithm:         %11s\n",  (is_core_ ? "Core" : "Disk"));
+        psi::fprintf(outfile, "    Integral Cache:    %11s\n",  df_ints_io_.c_str());
+        psi::fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n", cutoff_);
+        psi::fprintf(outfile, "    Fitting Condition: %11.0E\n\n", condition_);
 
-        fprintf(outfile, "   => Auxiliary Basis Set <=\n\n");
+        psi::fprintf(outfile, "   => Auxiliary Basis Set <=\n\n");
         auxiliary_->print_by_level(outfile, print_);
     }
 }
@@ -2857,26 +2857,26 @@ void DFJK::initialize_JK_disk()
     ULI three_memory = ((ULI)auxiliary_->nbf())*ntri;
     ULI buffer_memory = memory_ - 2*two_memory; // Two is for buffer space in fitting
 
-    //fprintf(outfile, "Buffer memory = %ld words\n", buffer_memory);
+    //psi::fprintf(outfile, "Buffer memory = %ld words\n", buffer_memory);
 
-    //fprintf(outfile,"Schwarz Shell Pairs:\n");
+    //psi::fprintf(outfile,"Schwarz Shell Pairs:\n");
     //for (int MN = 0; MN < nshellpairs; MN++) {
-    //    fprintf(outfile,"  %3d: (%3d,%3d)\n", MN, schwarz_shell_pairs[2*MN], schwarz_shell_pairs[2*MN + 1]);
+    //    psi::fprintf(outfile,"  %3d: (%3d,%3d)\n", MN, schwarz_shell_pairs[2*MN], schwarz_shell_pairs[2*MN + 1]);
     //}
 
-    //fprintf(outfile,"Schwarz Function Pairs:\n");
+    //psi::fprintf(outfile,"Schwarz Function Pairs:\n");
     //for (int MN = 0; MN < ntri; MN++) {
-    //    fprintf(outfile,"  %3d: (%3d,%3d)\n", MN, schwarz_fun_pairs[2*MN], schwarz_fun_pairs[2*MN + 1]);
+    //    psi::fprintf(outfile,"  %3d: (%3d,%3d)\n", MN, schwarz_fun_pairs[2*MN], schwarz_fun_pairs[2*MN + 1]);
     //}
 
-    //fprintf(outfile,"Schwarz Reverse Shell Pairs:\n");
+    //psi::fprintf(outfile,"Schwarz Reverse Shell Pairs:\n");
     //for (int MN = 0; MN < primary_->nshell() * (primary_->nshell() + 1) / 2; MN++) {
-    //    fprintf(outfile,"  %3d: %4ld\n", MN, schwarz_shell_pairs_r[MN]);
+    //    psi::fprintf(outfile,"  %3d: %4ld\n", MN, schwarz_shell_pairs_r[MN]);
     //}
 
-    //fprintf(outfile,"Schwarz Reverse Function Pairs:\n");
+    //psi::fprintf(outfile,"Schwarz Reverse Function Pairs:\n");
     //for (int MN = 0; MN < primary_->nbf() * (primary_->nbf() + 1) / 2; MN++) {
-    //    fprintf(outfile,"  %3d: %4ld\n", MN, schwarz_fun_pairs_r[MN]);
+    //    psi::fprintf(outfile,"  %3d: %4ld\n", MN, schwarz_fun_pairs_r[MN]);
     //}
 
     // Find out exactly how much memory per MN shell
@@ -2905,10 +2905,10 @@ void DFJK::initialize_JK_disk()
         }
     }
 
-    //fprintf(outfile,"  # Memory per M row #\n\n");
+    //psi::fprintf(outfile,"  # Memory per M row #\n\n");
     //for (int M = 0; M < nshell; M++)
-    //    fprintf(outfile,"   %3d: %10ld\n", M+1,M_memp[M]);
-    //fprintf(outfile,"\n");
+    //    psi::fprintf(outfile,"   %3d: %10ld\n", M+1,M_memp[M]);
+    //psi::fprintf(outfile,"\n");
 
     // Find and check the minimum required memory for this problem
     ULI min_mem = naux*(ULI) ntri;
@@ -3008,9 +3008,9 @@ void DFJK::initialize_JK_disk()
         current_mem += M_memp[M];
     }
 
-    //fprintf(outfile,"Block, MN start, MN cols, mn start, mn cols\n");
+    //psi::fprintf(outfile,"Block, MN start, MN cols, mn start, mn cols\n");
     //for (int block = 0; block < nblock; block++) {
-    //    fprintf(outfile,"  %3d: %12d %12d %12d %12d\n", block, MN_start_b[block], MN_col_b[block], mn_start_b[block], mn_col_b[block]);
+    //    psi::fprintf(outfile,"  %3d: %12d %12d %12d %12d\n", block, MN_start_b[block], MN_col_b[block], mn_start_b[block], mn_col_b[block]);
     //}
     //fflush(outfile);
 
@@ -3354,26 +3354,26 @@ void DFJK::initialize_wK_disk()
     ULI three_memory = ((ULI)auxiliary_->nbf())*ntri;
     ULI buffer_memory = memory_ - 2L*two_memory; // Two is for buffer space in fitting
 
-    //fprintf(outfile, "Buffer memory = %ld words\n", buffer_memory);
+    //psi::fprintf(outfile, "Buffer memory = %ld words\n", buffer_memory);
 
-    //fprintf(outfile,"Schwarz Shell Pairs:\n");
+    //psi::fprintf(outfile,"Schwarz Shell Pairs:\n");
     //for (int MN = 0; MN < nshellpairs; MN++) {
-    //    fprintf(outfile,"  %3d: (%3d,%3d)\n", MN, schwarz_shell_pairs[2*MN], schwarz_shell_pairs[2*MN + 1]);
+    //    psi::fprintf(outfile,"  %3d: (%3d,%3d)\n", MN, schwarz_shell_pairs[2*MN], schwarz_shell_pairs[2*MN + 1]);
     //}
 
-    //fprintf(outfile,"Schwarz Function Pairs:\n");
+    //psi::fprintf(outfile,"Schwarz Function Pairs:\n");
     //for (int MN = 0; MN < ntri; MN++) {
-    //    fprintf(outfile,"  %3d: (%3d,%3d)\n", MN, schwarz_fun_pairs[2*MN], schwarz_fun_pairs[2*MN + 1]);
+    //    psi::fprintf(outfile,"  %3d: (%3d,%3d)\n", MN, schwarz_fun_pairs[2*MN], schwarz_fun_pairs[2*MN + 1]);
     //}
 
-    //fprintf(outfile,"Schwarz Reverse Shell Pairs:\n");
+    //psi::fprintf(outfile,"Schwarz Reverse Shell Pairs:\n");
     //for (int MN = 0; MN < primary_->nshell() * (primary_->nshell() + 1) / 2; MN++) {
-    //    fprintf(outfile,"  %3d: %4ld\n", MN, schwarz_shell_pairs_r[MN]);
+    //    psi::fprintf(outfile,"  %3d: %4ld\n", MN, schwarz_shell_pairs_r[MN]);
     //}
 
-    //fprintf(outfile,"Schwarz Reverse Function Pairs:\n");
+    //psi::fprintf(outfile,"Schwarz Reverse Function Pairs:\n");
     //for (int MN = 0; MN < primary_->nbf() * (primary_->nbf() + 1) / 2; MN++) {
-    //    fprintf(outfile,"  %3d: %4ld\n", MN, schwarz_fun_pairs_r[MN]);
+    //    psi::fprintf(outfile,"  %3d: %4ld\n", MN, schwarz_fun_pairs_r[MN]);
     //}
 
     // Find out exactly how much memory per MN shell
@@ -3402,10 +3402,10 @@ void DFJK::initialize_wK_disk()
         }
     }
 
-    //fprintf(outfile,"  # Memory per M row #\n\n");
+    //psi::fprintf(outfile,"  # Memory per M row #\n\n");
     //for (int M = 0; M < nshell; M++)
-    //    fprintf(outfile,"   %3d: %10ld\n", M+1,M_memp[M]);
-    //fprintf(outfile,"\n");
+    //    psi::fprintf(outfile,"   %3d: %10ld\n", M+1,M_memp[M]);
+    //psi::fprintf(outfile,"\n");
 
     // Find and check the minimum required memory for this problem
     ULI min_mem = naux*(ULI) ntri;
@@ -3505,9 +3505,9 @@ void DFJK::initialize_wK_disk()
         current_mem += M_memp[M];
     }
 
-    //fprintf(outfile,"Block, MN start, MN cols, mn start, mn cols\n");
+    //psi::fprintf(outfile,"Block, MN start, MN cols, mn start, mn cols\n");
     //for (int block = 0; block < nblock; block++) {
-    //    fprintf(outfile,"  %3d: %12d %12d %12d %12d\n", block, MN_start_b[block], MN_col_b[block], mn_start_b[block], mn_col_b[block]);
+    //    psi::fprintf(outfile,"  %3d: %12d %12d %12d %12d\n", block, MN_start_b[block], MN_col_b[block], mn_start_b[block], mn_col_b[block]);
     //}
     //fflush(outfile);
 
@@ -3756,7 +3756,7 @@ void DFJK::initialize_wK_disk()
 void DFJK::rebuild_wK_disk()
 {
     // Already open
-    fprintf(outfile, "    Rebuilding (Q|w|mn) Integrals (new omega)\n\n");
+    psi::fprintf(outfile, "    Rebuilding (Q|w|mn) Integrals (new omega)\n\n");
 
     int nso = primary_->nbf();
     int nshell = primary_->nshell();
@@ -4268,23 +4268,23 @@ void CDJK::manage_JK_core()
 void CDJK::print_header() const
 {
     if (print_) {
-        fprintf(outfile, "  ==> CDJK: Cholesky-decomposed J/K Matrices <==\n\n");
+        psi::fprintf(outfile, "  ==> CDJK: Cholesky-decomposed J/K Matrices <==\n\n");
 
-        fprintf(outfile, "    J tasked:             %11s\n", (do_J_ ? "Yes" : "No"));
-        fprintf(outfile, "    K tasked:             %11s\n", (do_K_ ? "Yes" : "No"));
-        fprintf(outfile, "    wK tasked:            %11s\n", (do_wK_ ? "Yes" : "No"));
+        psi::fprintf(outfile, "    J tasked:             %11s\n", (do_J_ ? "Yes" : "No"));
+        psi::fprintf(outfile, "    K tasked:             %11s\n", (do_K_ ? "Yes" : "No"));
+        psi::fprintf(outfile, "    wK tasked:            %11s\n", (do_wK_ ? "Yes" : "No"));
         if (do_wK_) {
             throw PsiException("no wk for scf_type cd.",__FILE__,__LINE__);
-            //fprintf(outfile, "    Omega:                %11.3E\n", omega_);
+            //psi::fprintf(outfile, "    Omega:                %11.3E\n", omega_);
         }
-        fprintf(outfile, "    OpenMP threads:       %11d\n", omp_nthread_);
-        fprintf(outfile, "    Integrals threads:    %11d\n", df_ints_num_threads_);
-        fprintf(outfile, "    Memory (MB):          %11ld\n", (memory_ *8L) / (1024L * 1024L));
-        fprintf(outfile, "    Algorithm:            %11s\n",  (is_core_ ? "Core" : "Disk"));
-        fprintf(outfile, "    Integral Cache:       %11s\n",  df_ints_io_.c_str());
-        fprintf(outfile, "    Schwarz Cutoff:       %11.0E\n", cutoff_);
-        fprintf(outfile, "    Cholesky tolerance:   %11.2E\n", cholesky_tolerance_);
-        fprintf(outfile, "    No. Cholesky vectors: %11li\n\n", ncholesky_);
+        psi::fprintf(outfile, "    OpenMP threads:       %11d\n", omp_nthread_);
+        psi::fprintf(outfile, "    Integrals threads:    %11d\n", df_ints_num_threads_);
+        psi::fprintf(outfile, "    Memory (MB):          %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        psi::fprintf(outfile, "    Algorithm:            %11s\n",  (is_core_ ? "Core" : "Disk"));
+        psi::fprintf(outfile, "    Integral Cache:       %11s\n",  df_ints_io_.c_str());
+        psi::fprintf(outfile, "    Schwarz Cutoff:       %11.0E\n", cutoff_);
+        psi::fprintf(outfile, "    Cholesky tolerance:   %11.2E\n", cholesky_tolerance_);
+        psi::fprintf(outfile, "    No. Cholesky vectors: %11li\n\n", ncholesky_);
     }
 }
 
@@ -4318,32 +4318,32 @@ void FastDFJK::common_init()
 void FastDFJK::print_header() const
 {
     if (print_) {
-        fprintf(outfile, "  ==> FastDFJK: Density-Fitted J/K Matrices <==\n\n");
+        psi::fprintf(outfile, "  ==> FastDFJK: Density-Fitted J/K Matrices <==\n\n");
 
-        fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
-        fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
-        fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
+        psi::fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
+        psi::fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
+        psi::fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
         if (do_wK_)
-            fprintf(outfile, "    Omega:             %11.3E\n", omega_);
-        fprintf(outfile, "    OpenMP threads:    %11d\n", omp_nthread_);
-        fprintf(outfile, "    Integrals threads: %11d\n", df_ints_num_threads_);
-        fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
-        fprintf(outfile, "    Algorithm:         %11s\n",  (is_core_ ? "Core" : "Disk"));
-        fprintf(outfile, "    Integral Cache:    %11s\n",  df_ints_io_.c_str());
-        fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n", cutoff_);
-        fprintf(outfile, "    Fitting Condition: %11.0E\n", condition_);
-        fprintf(outfile, "    Fitting Metric:    %11s\n", metric_.c_str());
+            psi::fprintf(outfile, "    Omega:             %11.3E\n", omega_);
+        psi::fprintf(outfile, "    OpenMP threads:    %11d\n", omp_nthread_);
+        psi::fprintf(outfile, "    Integrals threads: %11d\n", df_ints_num_threads_);
+        psi::fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        psi::fprintf(outfile, "    Algorithm:         %11s\n",  (is_core_ ? "Core" : "Disk"));
+        psi::fprintf(outfile, "    Integral Cache:    %11s\n",  df_ints_io_.c_str());
+        psi::fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n", cutoff_);
+        psi::fprintf(outfile, "    Fitting Condition: %11.0E\n", condition_);
+        psi::fprintf(outfile, "    Fitting Metric:    %11s\n", metric_.c_str());
         if (metric_ == "EWALD")
-            fprintf(outfile, "    Theta:             %11.3E\n", theta_);
-        fprintf(outfile, "    Fitting Domains:   %11s\n", domains_.c_str());
+            psi::fprintf(outfile, "    Theta:             %11.3E\n", theta_);
+        psi::fprintf(outfile, "    Fitting Domains:   %11s\n", domains_.c_str());
         if (domains_ != "DIATOMIC") {
-            fprintf(outfile, "    Bump R0:           %11.3E\n", bump_R0_);
-            fprintf(outfile, "    Bump R1:           %11.3E\n", bump_R1_);
+            psi::fprintf(outfile, "    Bump R0:           %11.3E\n", bump_R0_);
+            psi::fprintf(outfile, "    Bump R1:           %11.3E\n", bump_R1_);
         }
 
-        fprintf(outfile, "\n");
+        psi::fprintf(outfile, "\n");
 
-        fprintf(outfile, "   => Auxiliary Basis Set <=\n\n");
+        psi::fprintf(outfile, "   => Auxiliary Basis Set <=\n\n");
         auxiliary_->print_by_level(outfile, print_);
     }
 }
@@ -4364,33 +4364,33 @@ void FastDFJK::preiterations()
         Z_LR_ = build_Z(omega_);
 
     if (print_ > 1) {
-        fprintf(outfile,"  ==> Atom Pair Tasks <==\n\n");
+        psi::fprintf(outfile,"  ==> Atom Pair Tasks <==\n\n");
         for (size_t pair = 0L; pair < atom_pairs_.size(); pair++) {
-            fprintf(outfile,"  Task %8zu: Atom Pair (%4d,%4d)\n", pair, atom_pairs_[pair].first, atom_pairs_[pair].second);
+            psi::fprintf(outfile,"  Task %8zu: Atom Pair (%4d,%4d)\n", pair, atom_pairs_[pair].first, atom_pairs_[pair].second);
             const std::vector<int>& auxiliary_atoms = auxiliary_atoms_[pair];
             const std::vector<double>& bump_atoms = bump_atoms_[pair];
-            fprintf(outfile,"   Auxiliary Atoms/Bump Functions:\n");
+            psi::fprintf(outfile,"   Auxiliary Atoms/Bump Functions:\n");
             for (int A = 0; A < auxiliary_atoms.size(); A++) {
-                fprintf(outfile,"    %4d: %11.3E\n", auxiliary_atoms[A],bump_atoms[A]);
+                psi::fprintf(outfile,"    %4d: %11.3E\n", auxiliary_atoms[A],bump_atoms[A]);
             }
             if (debug_ > 1) {
-                fprintf(outfile,"   Primary Shell Pairs:\n");
+                psi::fprintf(outfile,"   Primary Shell Pairs:\n");
                 const std::vector<std::pair<int,int> >& shell_pairs = shell_pairs_[pair];
                 for (int A = 0; A < shell_pairs.size(); A++) {
-                    fprintf(outfile,"    (%4d,%4d)\n", shell_pairs[A].first, shell_pairs[A].second);
+                    psi::fprintf(outfile,"    (%4d,%4d)\n", shell_pairs[A].first, shell_pairs[A].second);
                 }
             }
         }
-        fprintf(outfile, "\n");
+        psi::fprintf(outfile, "\n");
     }
 
     if (debug_ > 3) {
-        fprintf(outfile,"  ==> Atom Pair Tensors <==\n\n");
+        psi::fprintf(outfile,"  ==> Atom Pair Tensors <==\n\n");
         for (size_t pair = 0L; pair < atom_pairs_.size(); pair++) {
-            fprintf(outfile,"  Task %8zu: Atom Pair (%4d,%4d)\n", pair, atom_pairs_[pair].first, atom_pairs_[pair].second);
+            psi::fprintf(outfile,"  Task %8zu: Atom Pair (%4d,%4d)\n", pair, atom_pairs_[pair].first, atom_pairs_[pair].second);
             Bpq_[pair]->print();
         }
-        fprintf(outfile, "\n");
+        psi::fprintf(outfile, "\n");
         Z_->print();
         if (do_wK_) Z_LR_->print();
     }
@@ -5043,28 +5043,28 @@ void PSJK::common_init()
 void PSJK::print_header() const
 {
     if (print_) {
-        fprintf(outfile, "  ==> PSJK: Pseudospectral J/K Matrices <==\n\n");
+        psi::fprintf(outfile, "  ==> PSJK: Pseudospectral J/K Matrices <==\n\n");
 
-        fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
-        fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
-        fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
+        psi::fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
+        psi::fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
+        psi::fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
         if (do_wK_)
-            fprintf(outfile, "    Omega:             %11.3E\n", omega_);
-        fprintf(outfile, "    OpenMP threads:    %11d\n", omp_nthread_);
-        fprintf(outfile, "    Integrals threads: %11d\n", df_ints_num_threads_);
-        fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
-        fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n", cutoff_);
-        fprintf(outfile, "    Theta:             %11.3E\n", theta_);
-        fprintf(outfile, "    Dealiasing:        %11s\n", dealiasing_.c_str());
-        fprintf(outfile, "\n");
+            psi::fprintf(outfile, "    Omega:             %11.3E\n", omega_);
+        psi::fprintf(outfile, "    OpenMP threads:    %11d\n", omp_nthread_);
+        psi::fprintf(outfile, "    Integrals threads: %11d\n", df_ints_num_threads_);
+        psi::fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        psi::fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n", cutoff_);
+        psi::fprintf(outfile, "    Theta:             %11.3E\n", theta_);
+        psi::fprintf(outfile, "    Dealiasing:        %11s\n", dealiasing_.c_str());
+        psi::fprintf(outfile, "\n");
 
-        fprintf(outfile, "   => Quadrature Grid <=\n\n");
-        fprintf(outfile, "    Total Points:      %11d\n", grid_->rowspi()[0]);
-        fprintf(outfile, "\n");
+        psi::fprintf(outfile, "   => Quadrature Grid <=\n\n");
+        psi::fprintf(outfile, "    Total Points:      %11d\n", grid_->rowspi()[0]);
+        psi::fprintf(outfile, "\n");
         // TODO print grid algorithm details
 
         if (dealiasing_ == "DEALIAS") {
-            fprintf(outfile, "   => Dealias Basis Set <=\n\n");
+            psi::fprintf(outfile, "   => Dealias Basis Set <=\n\n");
             dealias_->print_by_level(outfile,print_);
         }
     }
@@ -5165,7 +5165,7 @@ void PSJK::build_QR()
         bool warning;
         SharedMatrix Rplus = R_->pseudoinverse(1.0E-10, &warning);
         if (warning) {
-            fprintf(outfile, "    Warning, Renormalization had to be conditioned.\n\n");
+            psi::fprintf(outfile, "    Warning, Renormalization had to be conditioned.\n\n");
         }
 
         boost::shared_ptr<IntegralFactory> factory(new IntegralFactory(primary_));
@@ -5666,7 +5666,7 @@ void PSJK::build_JK_debug(const std::string& op, double theta)
         }
     }
 
-    fprintf(outfile, "  ==> JK Debug %s, theta = %11.3E <==\n\n", op.c_str(), theta);
+    psi::fprintf(outfile, "  ==> JK Debug %s, theta = %11.3E <==\n\n", op.c_str(), theta);
     for (int A = 0; A < D_.size(); A++) {
         if (do_J_) {
             J_ao_[A]->print();
@@ -5691,16 +5691,16 @@ void DirectJK::common_init()
 void DirectJK::print_header() const
 {
     if (print_) {
-        fprintf(outfile, "  ==> DirectJK: Integral-Direct J/K Matrices <==\n\n");
+        psi::fprintf(outfile, "  ==> DirectJK: Integral-Direct J/K Matrices <==\n\n");
 
-        fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
-        fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
-        fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
+        psi::fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
+        psi::fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
+        psi::fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
         if (do_wK_)
-            fprintf(outfile, "    Omega:             %11.3E\n", omega_);
-        fprintf(outfile, "    OpenMP threads:    %11d\n", omp_nthread_);
-        fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
-        fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n\n", cutoff_);
+            psi::fprintf(outfile, "    Omega:             %11.3E\n", omega_);
+        psi::fprintf(outfile, "    OpenMP threads:    %11d\n", omp_nthread_);
+        psi::fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        psi::fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n\n", cutoff_);
     }
 }
 void DirectJK::preiterations()

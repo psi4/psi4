@@ -62,18 +62,18 @@ void print_vibrations(std::vector<VIBRATION *> modes) {
   sort(modes.begin(), modes.end(), ascending);
 
   // Print out frequencies and irreps to output file.
-  fprintf(outfile, "\n\t  Irrep      Harmonic Frequency   \n");
-  fprintf(outfile,   "\t                  (cm-1)          \n");
-  fprintf(outfile,   "\t-----------------------------------------------\n");
+  psi::fprintf(outfile, "\n\t  Irrep      Harmonic Frequency   \n");
+  psi::fprintf(outfile,   "\t                  (cm-1)          \n");
+  psi::fprintf(outfile,   "\t-----------------------------------------------\n");
 
   for(int i=0; i<modes.size(); ++i) {
     if(modes[i]->cm < 0.0)
-      fprintf(outfile, "\t  %5s   %15.4fi \n", irrep_lbls[modes[i]->irrep], -modes[i]->cm);
+      psi::fprintf(outfile, "\t  %5s   %15.4fi \n", irrep_lbls[modes[i]->irrep], -modes[i]->cm);
     else
-      fprintf(outfile, "\t  %5s   %15.4f  \n", irrep_lbls[modes[i]->irrep], modes[i]->cm);
+      psi::fprintf(outfile, "\t  %5s   %15.4f  \n", irrep_lbls[modes[i]->irrep], modes[i]->cm);
   }
 
-  fprintf(outfile,   "\t-----------------------------------------------\n");
+  psi::fprintf(outfile,   "\t-----------------------------------------------\n");
   fflush(outfile);
 
   // Return list of frequencies to wavefunction object.
@@ -92,32 +92,32 @@ void print_vibrations(std::vector<VIBRATION *> modes) {
      sum += mol->mass(a);
 
   // print out normal modes in format that WebMO likes
-  fprintf(outfile, "\n\tNormal Modes (mass-weighted).\n");
-  fprintf(outfile, "\tMolecular mass is %10.5f amu.\n", sum);
-  fprintf(outfile, "\tFrequencies in cm^-1; force constants in au.\n");
+  psi::fprintf(outfile, "\n\tNormal Modes (mass-weighted).\n");
+  psi::fprintf(outfile, "\tMolecular mass is %10.5f amu.\n", sum);
+  psi::fprintf(outfile, "\tFrequencies in cm^-1; force constants in au.\n");
 
   for(int i=0; i<modes.size(); ++i) { // print descending order
     if (fabs(cm_convert * sqrt(k_convert * fabs(modes[i]->km))) < 5.0) continue;
-    fprintf(outfile,"\n");
+    psi::fprintf(outfile,"\n");
     if (modes[i]->km < 0.0)
-      fprintf(outfile, "   Frequency:      %8.2fi\n", cm_convert * sqrt(-k_convert * modes[i]->km));
+      psi::fprintf(outfile, "   Frequency:      %8.2fi\n", cm_convert * sqrt(-k_convert * modes[i]->km));
     else
-      fprintf(outfile, "   Frequency:      %8.2f\n", cm_convert * sqrt(k_convert * modes[i]->km));
+      psi::fprintf(outfile, "   Frequency:      %8.2f\n", cm_convert * sqrt(k_convert * modes[i]->km));
 
-    fprintf(outfile,   "   Force constant: %8.4f\n", modes[i]->km);
+    psi::fprintf(outfile,   "   Force constant: %8.4f\n", modes[i]->km);
 
-    //fprintf(outfile,   "   IR Intensity: %8.2f\n", irint[i]*ir_prefactor);
+    //psi::fprintf(outfile,   "   IR Intensity: %8.2f\n", irint[i]*ir_prefactor);
 
-    fprintf(outfile, "\t     X       Y       Z           mass\t\n");
+    psi::fprintf(outfile, "\t     X       Y       Z           mass\t\n");
     for (int a=0; a<Natom; a++) {
-      fprintf(outfile, "  %s \t", mol->symbol(a).c_str() );
+      psi::fprintf(outfile, "  %s \t", mol->symbol(a).c_str() );
 
       for (int xyz=0; xyz<3; ++xyz)
-        fprintf(outfile, "%8.3f", modes[i]->lx[3*a+xyz]);
+        psi::fprintf(outfile, "%8.3f", modes[i]->lx[3*a+xyz]);
 
-      fprintf(outfile,"%15.6f", mol->mass(a));
+      psi::fprintf(outfile,"%15.6f", mol->mass(a));
 
-      fprintf(outfile, "\n");
+      psi::fprintf(outfile, "\n");
     }
   }
 

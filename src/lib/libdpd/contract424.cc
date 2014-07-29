@@ -82,7 +82,7 @@ int DPD::contract424(dpdbuf4 *X, dpdfile2 *Y, dpdbuf4 *Z, int sum_X,
 
     if(sum_Y == 0) { Ytrans = 0; numlinks = Y->params->rowtot; symlink=0; }
     else if(sum_Y == 1) { Ytrans = 1; numlinks = Y->params->coltot; symlink=GY; }
-    else { fprintf(stderr, "Junk Y index %d\n", sum_Y); exit(PSI_RETURN_FAILURE); }
+    else { psi::fprintf(stderr, "Junk Y index %d\n", sum_Y); exit(PSI_RETURN_FAILURE); }
 
     if((sum_X == 1) || (sum_X == 2)) trans4_init(&Xt, X);
 
@@ -114,7 +114,7 @@ int DPD::contract424(dpdbuf4 *X, dpdfile2 *Y, dpdbuf4 *Z, int sum_X,
         if(coltot) {
             maxrows = DPD_BIGNUM/coltot;
             if(maxrows < 1) {
-                fprintf(stderr, "\nLIBDPD Error: cannot compute even the number of rows in contract424.\n");
+                psi::fprintf(stderr, "\nLIBDPD Error: cannot compute even the number of rows in contract424.\n");
                 dpd_error("contract424", stderr);
             }
         }
@@ -134,7 +134,7 @@ int DPD::contract424(dpdbuf4 *X, dpdfile2 *Y, dpdbuf4 *Z, int sum_X,
         if(coltot) {
             maxrows = DPD_BIGNUM/coltot;
             if(maxrows < 1) {
-                fprintf(stderr, "\nLIBDPD Error: cannot compute even the number of rows in contract424.\n");
+                psi::fprintf(stderr, "\nLIBDPD Error: cannot compute even the number of rows in contract424.\n");
                 dpd_error("contract424", stderr);
             }
         }
@@ -244,13 +244,13 @@ int DPD::contract424(dpdbuf4 *X, dpdfile2 *Y, dpdbuf4 *Z, int sum_X,
 #ifdef DPD_DEBUG
                     if((xrow[Hz] != zrow[Hz]) || (ycol[Hz] != zcol[Hz]) ||
                             (xcol[Hz] != yrow[Hz])) {
-                        fprintf(stderr, "** Alignment error in contract424 **\n");
-                        fprintf(stderr, "** Irrep: %d; Subirrep: %d **\n",hxbuf,Hz);
+                        psi::fprintf(stderr, "** Alignment error in contract424 **\n");
+                        psi::fprintf(stderr, "** Irrep: %d; Subirrep: %d **\n",hxbuf,Hz);
                         dpd_error("dpd_contract424", stderr);
                     }
 #endif      
-                    /* fprintf(outfile,"Hx %d Hy %d Hz %d\n",Hx,Hy,Hz);
-         fprintf(outfile,"numrows %d numlinks %d numcols %d\n",numrows[Hz],numlinks[Hy],numcols[Hz]); */
+                    /* psi::fprintf(outfile,"Hx %d Hy %d Hz %d\n",Hx,Hy,Hz);
+         psi::fprintf(outfile,"numrows %d numlinks %d numcols %d\n",numrows[Hz],numlinks[Hy],numcols[Hz]); */
                     newmm_rking(Xmat[Hx], Xtrans, Y->matrix[Hy], Ytrans,
                                 Zmat[Hz], numrows[Hz], numlinks[Hy^symlink],
                             numcols[Hz], alpha, 1.0);
@@ -264,8 +264,8 @@ int DPD::contract424(dpdbuf4 *X, dpdfile2 *Y, dpdbuf4 *Z, int sum_X,
 #ifdef DPD_DEBUG
                     if((xrow[Hz] != zrow[Hz]) || (ycol[Hz] != zcol[Hz]) ||
                             (xcol[Hz] != yrow[Hz])) {
-                        fprintf(stderr, "** Alignment error in contract424 **\n");
-                        fprintf(stderr, "** Irrep: %d; Subirrep: %d **\n",hxbuf,Hz);
+                        psi::fprintf(stderr, "** Alignment error in contract424 **\n");
+                        psi::fprintf(stderr, "** Irrep: %d; Subirrep: %d **\n",hxbuf,Hz);
                         dpd_error("dpd_contract424", stderr);
                     }
 #endif	    	      
@@ -315,7 +315,7 @@ int DPD::contract424(dpdbuf4 *X, dpdfile2 *Y, dpdbuf4 *Z, int sum_X,
         else { /* out-of-core for "normal" 424 contractions */
             /* Prepare the input buffer for the X factor and the target*/
 #ifdef DPD_DEBUG	
-            fprintf(stderr, "\t424 out-of-core: %d\n", hxbuf);
+            psi::fprintf(stderr, "\t424 out-of-core: %d\n", hxbuf);
 #endif
             buf4_mat_irrep_row_init(X, hxbuf);
             buf4_mat_irrep_row_init(Z, hzbuf);

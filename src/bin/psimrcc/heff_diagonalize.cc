@@ -72,35 +72,35 @@ double Hamiltonian::diagonalize(int root)
 
 //  if(initial){
 //    if(ndets < 8){
-//      fprintf(outfile,"\n\n  Heff Matrix\n");
+//      psi::fprintf(outfile,"\n\n  Heff Matrix\n");
 //      for(int i=0;i<ndets;i++){
-//        fprintf(outfile,"\n  ");
+//        psi::fprintf(outfile,"\n  ");
 //        for(int j=0;j<ndets;j++)
-//          fprintf(outfile," %22.12f",matrix[i][j]);
+//          psi::fprintf(outfile," %22.12f",matrix[i][j]);
 //      }
 //
-//      fprintf(outfile,"\n\n  Left Matrix\n");
+//      psi::fprintf(outfile,"\n\n  Left Matrix\n");
 //      for(int i=0;i<ndets;i++){
-//        fprintf(outfile,"\n  ");
+//        psi::fprintf(outfile,"\n  ");
 //        for(int j=0;j<ndets;j++)
-//          fprintf(outfile," %22.12f",left[j][i]);
+//          psi::fprintf(outfile," %22.12f",left[j][i]);
 //      }
 //
-//      fprintf(outfile,"\n\n  Right Matrix\n");
+//      psi::fprintf(outfile,"\n\n  Right Matrix\n");
 //      for(int i=0;i<ndets;i++){
-//        fprintf(outfile,"\n  ");
+//        psi::fprintf(outfile,"\n  ");
 //        for(int j=0;j<ndets;j++)
-//          fprintf(outfile," %22.12f",right[j][i]);
+//          psi::fprintf(outfile," %22.12f",right[j][i]);
 //      }
 //
-//      fprintf(outfile,"\n\n  Real                  Imaginary\n");
+//      psi::fprintf(outfile,"\n\n  Real                  Imaginary\n");
 //      for(int i=0;i<ndets;i++)
-//        fprintf(outfile,"\n  %22.12f   %22.12f",real[i],imaginary[i]);
-//      fprintf(outfile,"\n");
+//        psi::fprintf(outfile,"\n  %22.12f   %22.12f",real[i],imaginary[i]);
+//      psi::fprintf(outfile,"\n");
 //    }else{
-//      fprintf(outfile,"\n\n  There are too many determinants to print the eigensystem");
+//      psi::fprintf(outfile,"\n\n  There are too many determinants to print the eigensystem");
 //    }
-//    fprintf(outfile,"\n\n  The eigenvalue for root %d is %.12f (%.12f)",root,real[root],imaginary[root]);
+//    psi::fprintf(outfile,"\n\n  The eigenvalue for root %d is %.12f (%.12f)",root,real[root],imaginary[root]);
 //  }
 
   bool initial = false;

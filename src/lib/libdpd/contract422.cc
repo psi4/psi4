@@ -78,7 +78,7 @@ int DPD::contract422(dpdbuf4 *X, dpdfile2 *Y, dpdfile2 *Z, int trans_Y,
 
     if((zrow != X->params->ppi) || (zcol != X->params->qpi) ||
             (yrow != X->params->rpi) || (ycol != X->params->spi)) {
-        fprintf(stderr, "** Alignment error in contract422 **\n");
+        psi::fprintf(stderr, "** Alignment error in contract422 **\n");
         dpd_error("dpd_contract422", stderr);
     }
 #endif

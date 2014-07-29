@@ -73,7 +73,7 @@ void H0block_init(unsigned int size) {
    else size2 = H0block.size;
 
    if (Parameters.print_lvl > 1)
-     fprintf(outfile,"Total H0block size (including coupling): %d\n",size2);
+     psi::fprintf(outfile,"Total H0block size (including coupling): %d\n",size2);
 
    H0block.osize = H0block.size;
    H0block.guess_size = Parameters.h0guess_size;
@@ -149,13 +149,13 @@ void H0block_print(void)
    int i;
    char configstring[CONFIG_STRING_MAX];
 
-   fprintf(outfile, "\nMembers of H0 block:\n\n");
+   psi::fprintf(outfile, "\nMembers of H0 block:\n\n");
    for (i=0; i<H0block.size; i++) {
       print_config(CalcInfo.num_ci_orbs, CalcInfo.num_alp_expl,
          CalcInfo.num_bet_expl, alplist[H0block.alplist[i]] +
          H0block.alpidx[i], betlist[H0block.betlist[i]] +
          H0block.betidx[i], CalcInfo.num_fzc_orbs,configstring);
-      fprintf(outfile, "  %3d [%3d] %10.6lf  Block %2d (%4d,%4d)  %s\n",
+      psi::fprintf(outfile, "  %3d [%3d] %10.6lf  Block %2d (%4d,%4d)  %s\n",
          i+1, H0block.pair[i] + 1, H0block.H00[i], H0block.blknum[i],
          H0block.alpidx[i], H0block.betidx[i], configstring);
       }
@@ -173,9 +173,9 @@ int H0block_calc(double E)
    size = H0block.size;
 
    if (Parameters.print_lvl > 4) {
-      fprintf(outfile, "\nc0b = \n");
+      psi::fprintf(outfile, "\nc0b = \n");
       print_mat(&(H0block.c0b), 1, H0block.size, outfile);
-      fprintf(outfile, "\ns0b = \n");
+      psi::fprintf(outfile, "\ns0b = \n");
       print_mat(&(H0block.s0b), 1, H0block.size, outfile);
       }
 
@@ -213,13 +213,13 @@ int H0block_calc(double E)
         }
 
      if (Parameters.print_lvl > 4) {
-        fprintf(outfile, "\nc0b = \n");
+        psi::fprintf(outfile, "\nc0b = \n");
         print_mat(&(H0block.c0b),1,H0block.size+H0block.coupling_size,outfile);
-        fprintf(outfile, "\nc0bp = \n");
+        psi::fprintf(outfile, "\nc0bp = \n");
         print_mat(&(H0block.c0bp),1,H0block.size+H0block.coupling_size,outfile);
-        fprintf(outfile, "\ns0b = \n");
+        psi::fprintf(outfile, "\ns0b = \n");
         print_mat(&(H0block.s0b), 1, H0block.size, outfile);
-        fprintf(outfile, "\ns0bp = \n");
+        psi::fprintf(outfile, "\ns0bp = \n");
         print_mat(&(H0block.s0bp), 1, H0block.size, outfile);
         }
      free(H0xc0);
@@ -241,8 +241,8 @@ int H0block_calc(double E)
         }
 
      if (Parameters.print_lvl > 4) {
-        fprintf(outfile, "\n E = %lf\n", E);
-        fprintf(outfile, " H0 - E\n");
+        psi::fprintf(outfile, "\n E = %lf\n", E);
+        psi::fprintf(outfile, " H0 - E\n");
         print_mat(H0block.tmp1, H0block.size, H0block.size, outfile);
         }
 
@@ -263,7 +263,7 @@ int H0block_calc(double E)
      else {
        detH0 = invert_matrix(H0block.tmp1, H0block.H0b_inv, size, outfile);
        if (Parameters.print_lvl > 4) {
-         fprintf(outfile, "\nINV(H0 - E)\n");
+         psi::fprintf(outfile, "\nINV(H0 - E)\n");
          print_mat(H0block.H0b_inv, H0block.size, H0block.size, outfile);
          }
 
@@ -277,15 +277,15 @@ int H0block_calc(double E)
        }
 
      if (Parameters.print_lvl > 4) {
-        fprintf(outfile, "\nc0b = \n");
+        psi::fprintf(outfile, "\nc0b = \n");
         print_mat(&(H0block.c0b), 1, H0block.size, outfile);
-        fprintf(outfile, "\nc0bp = \n");
+        psi::fprintf(outfile, "\nc0bp = \n");
         print_mat(&(H0block.c0bp), 1, H0block.size, outfile);
-        fprintf(outfile, "\ns0b = \n");
+        psi::fprintf(outfile, "\ns0b = \n");
         print_mat(&(H0block.s0b), 1, H0block.size, outfile);
-        fprintf(outfile, "\ns0bp = \n");
+        psi::fprintf(outfile, "\ns0bp = \n");
         print_mat(&(H0block.s0bp), 1, H0block.size, outfile);
-        fprintf(outfile,"DET H0 = %5.4E\n", detH0);
+        psi::fprintf(outfile,"DET H0 = %5.4E\n", detH0);
         }
 
       if (detH0 < SMALL_DET) return(0);
@@ -357,15 +357,15 @@ void H0block_xy(double *x, double *y, double E)
    *y -= ty;
 
   /*
-   fprintf(outfile,"-tx = %lf -ty = %lf\n",tx,ty);
+   psi::fprintf(outfile,"-tx = %lf -ty = %lf\n",tx,ty);
    for (i=0; i<H0block.size; i++)
-      fprintf(outfile,"H0block.c0b[%d] = %lf\n",i,H0block.c0b[i]);
+      psi::fprintf(outfile,"H0block.c0b[%d] = %lf\n",i,H0block.c0b[i]);
    for (i=0; i<H0block.size; i++)
-      fprintf(outfile,"H0block.c0bp[%d] = %lf\n",i,H0block.c0bp[i]);
+      psi::fprintf(outfile,"H0block.c0bp[%d] = %lf\n",i,H0block.c0bp[i]);
    for (i=0; i<H0block.size; i++)
-      fprintf(outfile,"H0block.s0b[%d] = %lf\n",i,H0block.s0b[i]);
+      psi::fprintf(outfile,"H0block.s0b[%d] = %lf\n",i,H0block.s0b[i]);
    for (i=0; i<H0block.size; i++)
-      fprintf(outfile,"H0block.s0bp[%d] = %lf\n",i,H0block.s0bp[i]);
+      psi::fprintf(outfile,"H0block.s0bp[%d] = %lf\n",i,H0block.s0bp[i]);
   */
 
    dot_arr(H0block.c0b, H0block.c0bp, H0block.size, &tx);
@@ -375,7 +375,7 @@ void H0block_xy(double *x, double *y, double E)
    dot_arr(H0block.c0b, H0block.s0bp, H0block.size, &ty);
  */
    *y += ty;
-   /* fprintf(outfile,"+tx = %lf +ty = %lf\n",tx,ty); */
+   /* psi::fprintf(outfile,"+tx = %lf +ty = %lf\n",tx,ty); */
 
 }
 
@@ -467,8 +467,8 @@ void H0block_pairup(int guess)
   }
 
   if (first == 0) {
-    fprintf(outfile, "Warning!  H0block size reduced to zero by ");
-    fprintf(outfile, "H0block_pairup!\n");
+    psi::fprintf(outfile, "Warning!  H0block size reduced to zero by ");
+    psi::fprintf(outfile, "H0block_pairup!\n");
   }
 
   if (guess==2) H0block.coupling_size = newsize - H0block.size;
@@ -511,18 +511,18 @@ void H0block_spin_cpl_chk(void)
 
     i = H0block.size-1;
     diff = fabs(H0block.H00[i] - spin_cpl_vals2);
-   /* fprintf(outfile,"diff[%d] = %20.15f\n", i, diff); */
+   /* psi::fprintf(outfile,"diff[%d] = %20.15f\n", i, diff); */
     while (i > 0 && diff < zero) {
       i--;
       diff = fabs(H0block.H00[i] - spin_cpl_vals2);
-    /*  fprintf(outfile,"diff[%d] = %20.15f\n", i, diff); */
+    /*  psi::fprintf(outfile,"diff[%d] = %20.15f\n", i, diff); */
     }
 
     newsize = i+1;
 
     if (newsize == 0) {
-      fprintf(outfile, "Warning!  H0block size reduced to zero by ");
-      fprintf(outfile, "H0block_spin_cpl_chk!\n");
+      psi::fprintf(outfile, "Warning!  H0block size reduced to zero by ");
+      psi::fprintf(outfile, "H0block_spin_cpl_chk!\n");
     }
     H0block.size = newsize;
   }
@@ -548,17 +548,17 @@ void H0block_spin_cpl_chk(void)
 
     i = newsize - 1;
     diff = fabs(H0block.H00[i] - spin_cpl_vals2);
-   /* fprintf(outfile,"diff[%d] = %20.15f\n", i, diff); */
+   /* psi::fprintf(outfile,"diff[%d] = %20.15f\n", i, diff); */
     while (i > 0 && fabs(diff) < zero) {
       i--;
       diff = fabs(H0block.H00[i] - spin_cpl_vals2);
-     /* fprintf(outfile,"diff[%d] = %20.15f\n", i, diff); */
+     /* psi::fprintf(outfile,"diff[%d] = %20.15f\n", i, diff); */
     }
 
     newsize = i+1;
     if (newsize == 0) {
-      fprintf(outfile, "Warning!  H0block guess size reduced to zero by ");
-      fprintf(outfile, "H0block_spin_cpl_chk!\n");
+      psi::fprintf(outfile, "Warning!  H0block guess size reduced to zero by ");
+      psi::fprintf(outfile, "H0block_spin_cpl_chk!\n");
     }
 
     H0block.guess_size = newsize;
@@ -575,24 +575,24 @@ void H0block_spin_cpl_chk(void)
 
     i = newsize - 1;
     diff = fabs(H0block.H00[i] - spin_cpl_vals2);
-   /* fprintf(outfile,"diff[%d] = %20.15f\n", i, diff); */
+   /* psi::fprintf(outfile,"diff[%d] = %20.15f\n", i, diff); */
     while (i > 0 && fabs(diff) < zero) {
       i--;
       diff = fabs(H0block.H00[i] - spin_cpl_vals2);
-     /* fprintf(outfile,"diff[%d] = %20.15f\n", i, diff); */
+     /* psi::fprintf(outfile,"diff[%d] = %20.15f\n", i, diff); */
     }
 
     newsize = i+1;
 
     if (newsize < H0block.size) {
-      fprintf(outfile, "H0block coupling size reduced below 0 ???\n");
+      psi::fprintf(outfile, "H0block coupling size reduced below 0 ???\n");
       newsize = H0block.size;
     }
 
     if (newsize == H0block.size) {
-      fprintf(outfile,
+      psi::fprintf(outfile,
         "Warning! H0block coupling size reduced to H0block size by ");
-      fprintf(outfile, "H0block_spin_cpl_chk!\n");
+      psi::fprintf(outfile, "H0block_spin_cpl_chk!\n");
     }
 
     H0block.coupling_size = newsize - H0block.size;

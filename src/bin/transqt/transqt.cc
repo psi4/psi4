@@ -268,15 +268,15 @@ void init_io(Options & options)
 void title(void)
 {
   if (params.print_lvl) {
-    fprintf(outfile, "\n");
-    fprintf(outfile,"\t**************************************************\n");
-    fprintf(outfile,"\t* TRANSQT:  Program to transform integrals from  *\n");
-    fprintf(outfile,"\t*           the SO basis to the MO basis.        *\n");
-    fprintf(outfile,"\t*                                                *\n");
-    fprintf(outfile,"\t*            Daniel, David, & Justin             *\n");
-    fprintf(outfile,"\t*                   Sept  1995                   *\n");
-    fprintf(outfile,"\t**************************************************\n");
-    fprintf(outfile, "\n");
+    psi::fprintf(outfile, "\n");
+    psi::fprintf(outfile,"\t**************************************************\n");
+    psi::fprintf(outfile,"\t* TRANSQT:  Program to transform integrals from  *\n");
+    psi::fprintf(outfile,"\t*           the SO basis to the MO basis.        *\n");
+    psi::fprintf(outfile,"\t*                                                *\n");
+    psi::fprintf(outfile,"\t*            Daniel, David, & Justin             *\n");
+    psi::fprintf(outfile,"\t*                   Sept  1995                   *\n");
+    psi::fprintf(outfile,"\t**************************************************\n");
+    psi::fprintf(outfile, "\n");
     }
 }
 
@@ -286,7 +286,7 @@ void init_ioff(void)
   int i;
   ioff = (int *) malloc(IOFF_MAX * sizeof(int));
   if(ioff == NULL) {
-    fprintf(stderr, "(transqt): error malloc'ing ioff array\n");
+    psi::fprintf(stderr, "(transqt): error malloc'ing ioff array\n");
     abort();
   }
   ioff[0] = 0;
@@ -346,7 +346,7 @@ void get_parameters(Options & options)
     params.do_oei = 0;
   }
   else {
-    fprintf(outfile, "transqt: Unrecognized runmode %d\n", params.runmode);
+    psi::fprintf(outfile, "transqt: Unrecognized runmode %d\n", params.runmode);
     abort();
   }
 
@@ -547,79 +547,79 @@ void print_parameters(void)
 {
 
   if (params.print_lvl) {
-      fprintf(outfile,"\tInput Parameters:\n");
-      fprintf(outfile,"\t-----------------\n");
-      fprintf(outfile,"\tWavefunction           =  %s\n", params.wfn.c_str());
+      psi::fprintf(outfile,"\tInput Parameters:\n");
+      psi::fprintf(outfile,"\t-----------------\n");
+      psi::fprintf(outfile,"\tWavefunction           =  %s\n", params.wfn.c_str());
       if(params.semicanonical==1) {
-      fprintf(outfile,"\tReference orbitals     =  ROHF changed to UHF for Semicanonical Orbitals\n");
+      psi::fprintf(outfile,"\tReference orbitals     =  ROHF changed to UHF for Semicanonical Orbitals\n");
       }
       else {
-      fprintf(outfile,"\tReference orbitals     =  %s\n", params.ref.c_str());
+      psi::fprintf(outfile,"\tReference orbitals     =  %s\n", params.ref.c_str());
       }
-      fprintf(outfile,"\tBacktrans              =  %s\n",
+      psi::fprintf(outfile,"\tBacktrans              =  %s\n",
                                params.backtr ? "Yes" : "No");
-      fprintf(outfile,"\tPrint MOs              =  %s\n",
+      psi::fprintf(outfile,"\tPrint MOs              =  %s\n",
                                   (params.print_mos ? "Yes": "No"));
-      fprintf(outfile,"\tFreeze Core            =  %s\n",
+      psi::fprintf(outfile,"\tFreeze Core            =  %s\n",
                                   (params.fzc ? "Yes" : "No"));
-      fprintf(outfile,"\tDelete Restricted Docc =  %s\n",
+      psi::fprintf(outfile,"\tDelete Restricted Docc =  %s\n",
                           (params.del_restr_docc ? "Yes" : "No"));
-      fprintf(outfile,"\tDo All TEI             =  %s\n",
+      psi::fprintf(outfile,"\tDo All TEI             =  %s\n",
                                   (params.do_all_tei ? "Yes" : "No"));
-      fprintf(outfile,"\tMemory (Mbytes)        =  %5.1f\n",params.maxcor/1e6);
-      fprintf(outfile,"\tMax Buckets            =  %d\n",params.max_buckets);
-      fprintf(outfile,"\tFirst Tmp File         =  %d\n",params.first_tmp_file);
-      fprintf(outfile,"\tPresort File           =  %d\n", params.presort_file);
-      fprintf(outfile,"\tSource TEI File        =  %d\n",
+      psi::fprintf(outfile,"\tMemory (Mbytes)        =  %5.1f\n",params.maxcor/1e6);
+      psi::fprintf(outfile,"\tMax Buckets            =  %d\n",params.max_buckets);
+      psi::fprintf(outfile,"\tFirst Tmp File         =  %d\n",params.first_tmp_file);
+      psi::fprintf(outfile,"\tPresort File           =  %d\n", params.presort_file);
+      psi::fprintf(outfile,"\tSource TEI File        =  %d\n",
                                   params.src_tei_file);
-      fprintf(outfile,"\tOpdm In File           =  %d\n",params.opdm_in_file);
-      fprintf(outfile,"\tOpdm Out File          =  %d\n",params.opdm_out_file);
-      fprintf(outfile,"\tLag In File            =  %d\n", params.lag_in_file);
-      fprintf(outfile,"\tKeep Presort           =  %s\n",
+      psi::fprintf(outfile,"\tOpdm In File           =  %d\n",params.opdm_in_file);
+      psi::fprintf(outfile,"\tOpdm Out File          =  %d\n",params.opdm_out_file);
+      psi::fprintf(outfile,"\tLag In File            =  %d\n", params.lag_in_file);
+      psi::fprintf(outfile,"\tKeep Presort           =  %s\n",
                                   (params.keep_presort ? "Yes" : "No"));
-      fprintf(outfile,"\tJ File                 =  %d\n", params.jfile);
-      fprintf(outfile,"\tKeep J                 =  %s\n",
+      psi::fprintf(outfile,"\tJ File                 =  %d\n", params.jfile);
+      psi::fprintf(outfile,"\tKeep J                 =  %s\n",
                                   (params.keep_half_tf ? "Yes" : "No"));
-      fprintf(outfile,"\tM File                 =  %d\n", params.mfile);
-      fprintf(outfile,"\tBare OEI file          =  %d\n",
+      psi::fprintf(outfile,"\tM File                 =  %d\n", params.mfile);
+      psi::fprintf(outfile,"\tBare OEI file          =  %d\n",
                                   params.h_bare_file);
-      fprintf(outfile,"\tFrozen Core OEI file   =  %d\n",
+      psi::fprintf(outfile,"\tFrozen Core OEI file   =  %d\n",
                                   params.h_fzc_file);
-      fprintf(outfile,"\tSorted TEI file        =  %d\n",
+      psi::fprintf(outfile,"\tSorted TEI file        =  %d\n",
                                   params.sorted_tei_file);
-      fprintf(outfile,"\tDelete TEI source file =  %s\n",
+      psi::fprintf(outfile,"\tDelete TEI source file =  %s\n",
                                   (params.delete_src_tei ? "Yes" : "No"));
-      fprintf(outfile,"\tAdd TPDM Ref Part      =  %s\n",
+      psi::fprintf(outfile,"\tAdd TPDM Ref Part      =  %s\n",
                                   (params.tpdm_add_ref ? "Yes" : "No"));
-      fprintf(outfile,"\tDo Bare OEI tranform   =  %s\n",
+      psi::fprintf(outfile,"\tDo Bare OEI tranform   =  %s\n",
                                   (params.do_h_bare ? "Yes" : "No"));
-      fprintf(outfile,"\tDo FZC  OEI tranform   =  %s\n",
+      psi::fprintf(outfile,"\tDo FZC  OEI tranform   =  %s\n",
                                   (params.do_h_fzc ? "Yes" : "No"));
-      fprintf(outfile,"\tTolerance              =  %3.1e\n", params.tolerance);
-      fprintf(outfile,"\tPrint Level            =  %d\n", params.print_lvl);
-      fprintf(outfile,"\tPrint TE Ints          =  %s\n",
+      psi::fprintf(outfile,"\tTolerance              =  %3.1e\n", params.tolerance);
+      psi::fprintf(outfile,"\tPrint Level            =  %d\n", params.print_lvl);
+      psi::fprintf(outfile,"\tPrint TE Ints          =  %s\n",
                                   (params.print_te_ints ? "Yes": "No"));
-      fprintf(outfile,"\tPrint OE Ints          =  %s\n",
+      psi::fprintf(outfile,"\tPrint OE Ints          =  %s\n",
                                   (params.print_oe_ints ? "Yes" : "No"));
-      fprintf(outfile,"\tPrint Sorted TE Ints   =  %s\n",
+      psi::fprintf(outfile,"\tPrint Sorted TE Ints   =  %s\n",
                                   (params.print_sorted_te_ints ? "Yes": "No"));
-      fprintf(outfile,"\tPrint Sorted OE Ints   =  %s\n",
+      psi::fprintf(outfile,"\tPrint Sorted OE Ints   =  %s\n",
                                   (params.print_sorted_oe_ints ? "Yes": "No"));
-      fprintf(outfile,"\tReorder MOs            =  %s\n",
+      psi::fprintf(outfile,"\tReorder MOs            =  %s\n",
                                   (params.reorder ? "Yes" : "No"));
-      fprintf(outfile,"\tCheck C Orthonormality =  %s\n",
+      psi::fprintf(outfile,"\tCheck C Orthonormality =  %s\n",
                                   (params.check_C_orthonorm ? "Yes" : "No"));
-      fprintf(outfile,"\tQRHF orbitals          =  %s\n",
+      psi::fprintf(outfile,"\tQRHF orbitals          =  %s\n",
                                   (params.qrhf ? "Yes" : "No"));
-      fprintf(outfile,"\tIVO orbitals           =  %s\n",
+      psi::fprintf(outfile,"\tIVO orbitals           =  %s\n",
                                   (params.ivo ? "Yes" : "No"));
       if(params.semicanonical) {
         if(params.semicanonical==1)
-          fprintf(outfile,"\tSemicanonical orbitals =  Yes\n");
+          psi::fprintf(outfile,"\tSemicanonical orbitals =  Yes\n");
         else /* semicanonical == 2, hopefully */
-          fprintf(outfile,"\tSemicanonical orbitals =  Z-Averaged\n");
+          psi::fprintf(outfile,"\tSemicanonical orbitals =  Z-Averaged\n");
       }
-      fprintf(outfile,"\tPitzer                 =  %s\n",
+      psi::fprintf(outfile,"\tPitzer                 =  %s\n",
                                   (params.pitzer ? "Yes" : "No"));
     }
 
@@ -669,22 +669,22 @@ void get_moinfo(Options & options)
   if (params.reorder) {
 
     if(params.ref == "UHF" && params.semicanonical == 0) {
-      fprintf(stderr, "ERROR: MO reordering not allowed for UHF references.\n");
+      psi::fprintf(stderr, "ERROR: MO reordering not allowed for UHF references.\n");
       abort();
     }
     params.moorder = init_int_array(moinfo.nmo);
     if (!options["MOORDER"].has_changed() || options["MOORDER"].size() != moinfo.nmo)
-      fprintf(outfile,"\nTrouble parsing MOORDER.  Ignoring it.\n");
+      psi::fprintf(outfile,"\nTrouble parsing MOORDER.  Ignoring it.\n");
     else {
       int *tmpv = options.get_int_array("MOORDER");
       memcpy(params.moorder, tmpv, moinfo.nmo*sizeof(int));
       delete tmpv;
 
       /* print the MOORDER array */
-      fprintf(outfile, "\nMOORDER array: \n");
+      psi::fprintf(outfile, "\nMOORDER array: \n");
       for (i=0; i<moinfo.nmo; i++)
-        fprintf(outfile, "%3d", params.moorder[i]);
-      fprintf(outfile, "\n");
+        psi::fprintf(outfile, "%3d", params.moorder[i]);
+      psi::fprintf(outfile, "\n");
 
       /* change numbering in MOORDER from relative to absolute Pitzer */
       for (i=0,k=0,h=-1; i<moinfo.nirreps; i++) {
@@ -740,7 +740,7 @@ void get_moinfo(Options & options)
                  moinfo.clsdpi, moinfo.openpi, moinfo.frdocc, moinfo.fruocc,
                  moinfo.rstrdocc, moinfo.rstruocc, ras_opi, tmpi,
                  params.ras_type, i, options)) {
-      //fprintf(outfile, "Error in ras_set().  Aborting.\n");
+      //psi::fprintf(outfile, "Error in ras_set().  Aborting.\n");
       //abort();
       throw PSIEXCEPTION("ras_set2() returned error code");
     }
@@ -790,7 +790,7 @@ void get_moinfo(Options & options)
 
       for (i=0,warned=0; i<moinfo.nirreps; i++) {
         if (tmpi[i] != moinfo.clsdpi[i] && !warned && !params.qrhf) {
-          fprintf(outfile, "\tWarning: DOCC doesn't match chkpt file\n");
+          psi::fprintf(outfile, "\tWarning: DOCC doesn't match chkpt file\n");
           warned = 1;
         }
         moinfo.clsdpi[i] = tmpi[i];
@@ -804,7 +804,7 @@ void get_moinfo(Options & options)
 
       for (i=0,warned=0; i<moinfo.nirreps; i++) {
         if (tmpi[i] != moinfo.openpi[i] && !warned && !params.qrhf) {
-          fprintf(outfile, "\tWarning: SOCC doesn't match chkpt file\n");
+          psi::fprintf(outfile, "\tWarning: SOCC doesn't match chkpt file\n");
           warned = 1;
         }
         moinfo.openpi[i] = tmpi[i];
@@ -829,25 +829,25 @@ void get_moinfo(Options & options)
   }
 
   if (params.print_lvl) {
-    fprintf(outfile,"\n\tChkpt File Parameters:\n");
-    fprintf(outfile,"\t------------------\n");
-    fprintf(outfile,"\tNumber of irreps = %d\n",moinfo.nirreps);
-    fprintf(outfile,"\tNumber of SOs    = %d\n",moinfo.nso);
-    fprintf(outfile,"\tNumber of MOs    = %d\n\n",moinfo.nmo);
-    fprintf(outfile,
+    psi::fprintf(outfile,"\n\tChkpt File Parameters:\n");
+    psi::fprintf(outfile,"\t------------------\n");
+    psi::fprintf(outfile,"\tNumber of irreps = %d\n",moinfo.nirreps);
+    psi::fprintf(outfile,"\tNumber of SOs    = %d\n",moinfo.nso);
+    psi::fprintf(outfile,"\tNumber of MOs    = %d\n\n",moinfo.nmo);
+    psi::fprintf(outfile,
         "\tLabel\t# SOs\t# MOs\t# FZDC\t# DOCC\t# SOCC\t# VIRT\t# FZVR\n");
-    fprintf(outfile,
+    psi::fprintf(outfile,
         "\t-----\t-----\t-----\t------\t------\t------\t------\t------\n");
     for(i=0; i < moinfo.nirreps; i++) {
-      fprintf(outfile,
+      psi::fprintf(outfile,
           "\t %s\t   %d\t   %d\t    %d\t    %d\t    %d\t    %d\t    %d\n",
           moinfo.labels[i],moinfo.sopi[i],moinfo.orbspi[i],moinfo.frdocc[i],
           moinfo.clsdpi[i],moinfo.openpi[i],moinfo.virtpi[i],
           moinfo.fruocc[i]);
     }
-    fprintf(outfile,"\n\tNuclear Repulsion Energy    = %20.10f\n",
+    psi::fprintf(outfile,"\n\tNuclear Repulsion Energy    = %20.10f\n",
         moinfo.enuc);
-    fprintf(outfile,  "\tTotal SCF Energy            = %20.10f\n",
+    psi::fprintf(outfile,  "\tTotal SCF Energy            = %20.10f\n",
         moinfo.escf);
   }
 
@@ -958,8 +958,8 @@ void get_moinfo(Options & options)
   /*   but this requires some complicated sorting that we will avoid now.   */
 
   if(params.print_mos) {
-    fprintf(outfile,"\n\tSCF Eigenvectors (Transformation Matrix):\n");
-    fprintf(outfile,  "\t-----------------------------------------\n");
+    psi::fprintf(outfile,"\n\tSCF Eigenvectors (Transformation Matrix):\n");
+    psi::fprintf(outfile,  "\t-----------------------------------------\n");
   }
 
   if (!params.backtr) {
@@ -1020,7 +1020,7 @@ void get_moinfo(Options & options)
    */
   else {
 
-    if (params.print_mos) fprintf(outfile, "SO to AO matrix\n");
+    if (params.print_mos) psi::fprintf(outfile, "SO to AO matrix\n");
     so2ao = chkpt_rd_usotao();
     if (params.print_mos) print_mat(so2ao,moinfo.nso,moinfo.nao,outfile);
     tmpmat = init_matrix(moinfo.nso, moinfo.nmo - moinfo.nfzv);
@@ -1048,7 +1048,7 @@ void get_moinfo(Options & options)
       mmult(so2ao,1,tmpmat,0,moinfo.evects_alpha[0],0,moinfo.nao,moinfo.nso,
         moinfo.nmo - moinfo.nfzv,0);
       if (params.print_mos) {
-    fprintf(outfile, "Alpha C matrix (including AO to SO)\n");
+    psi::fprintf(outfile, "Alpha C matrix (including AO to SO)\n");
     print_mat(moinfo.evects_alpha[0],moinfo.nao,moinfo.nmo-moinfo.nfzv,outfile);
       }
 
@@ -1071,7 +1071,7 @@ void get_moinfo(Options & options)
       mmult(so2ao,1,tmpmat,0,moinfo.evects_beta[0],0,moinfo.nao,moinfo.nso,
         moinfo.nmo - moinfo.nfzv,0);
       if (params.print_mos) {
-    fprintf(outfile, "Beta C matrix (including AO to SO)\n");
+    psi::fprintf(outfile, "Beta C matrix (including AO to SO)\n");
     print_mat(moinfo.evects_beta[0],moinfo.nao,moinfo.nmo-moinfo.nfzv,outfile);
       }
 
@@ -1095,7 +1095,7 @@ void get_moinfo(Options & options)
       mmult(so2ao,1,tmpmat,0,moinfo.evects[0],0,moinfo.nao,moinfo.nso,
         moinfo.nmo - moinfo.nfzv,0);
       if (params.print_mos) {
-    fprintf(outfile, "C matrix (including AO to SO)\n");
+    psi::fprintf(outfile, "C matrix (including AO to SO)\n");
     print_mat(moinfo.evects[0],moinfo.nao,moinfo.nmo-moinfo.nfzv,outfile);
       }
     }
@@ -1163,7 +1163,7 @@ void get_reorder_array(Options& options)
                  moinfo.clsdpi, moinfo.openpi, moinfo.frdocc, moinfo.fruocc,
          moinfo.rstrdocc, moinfo.rstruocc, ras_opi, moinfo.order,
                  params.ras_type, i, options)) {
-      fprintf(outfile, "Error in ras_set().  Aborting.\n");
+      psi::fprintf(outfile, "Error in ras_set().  Aborting.\n");
       abort();
     }
 
@@ -1202,11 +1202,11 @@ void get_reorder_array(Options& options)
 
 
   if (params.print_reorder) {
-    fprintf(outfile, "\nReordering array:\n");
+    psi::fprintf(outfile, "\nReordering array:\n");
     for (i=0; i<moinfo.nmo; i++) {
-      fprintf(outfile, "%3d ", moinfo.order[i]);
+      psi::fprintf(outfile, "%3d ", moinfo.order[i]);
     }
-    fprintf(outfile, "\n");
+    psi::fprintf(outfile, "\n");
   }
 
   /* construct an array to map the other direction, i.e., from correlated */
@@ -1251,11 +1251,11 @@ void get_reorder_array(Options& options)
     }
 
     if (params.print_reorder) {
-      fprintf(outfile, "\nCorrelated to Pitzer (no fzv) Reordering Array:\n");
+      psi::fprintf(outfile, "\nCorrelated to Pitzer (no fzv) Reordering Array:\n");
       for (i=0; i<moinfo.nmo-moinfo.nfzv; i++) {
-    fprintf(outfile, "%3d ", moinfo.corr2pitz_nofzv[i]);
+    psi::fprintf(outfile, "%3d ", moinfo.corr2pitz_nofzv[i]);
       }
-      fprintf(outfile, "\n");
+      psi::fprintf(outfile, "\n");
     }
 
   }
@@ -1287,7 +1287,7 @@ void get_one_electron_integrals()
   }
 
   if (params.print_lvl)
-    fprintf(outfile, "\n\tReading one-electron integrals...");
+    psi::fprintf(outfile, "\n\tReading one-electron integrals...");
     stat = iwl_rdone(params.src_S_file,PSIF_SO_S,moinfo.S,moinfo.noeints,0,0,
                      outfile);
   if (!stat) {
@@ -1305,7 +1305,7 @@ void get_one_electron_integrals()
     abort();
   }
 
-  if (params.print_lvl) fprintf(outfile, "done.\n");
+  if (params.print_lvl) psi::fprintf(outfile, "done.\n");
 
   for (i=0; i < moinfo.noeints; i++) {
     moinfo.oe_ints[i] = T[i] + V[i];
@@ -1329,17 +1329,17 @@ void get_one_electron_integrals()
       fzc_density(moinfo.nirreps, moinfo.frdocc, moinfo.fzc_density_alpha,
           moinfo.scf_vector_alpha, moinfo.first, moinfo.first_so, moinfo.last_so, ioff);
       if (params.print_lvl > 2) {
-    fprintf(outfile, "\nAlpha frozen core density matrix:\n");
+    psi::fprintf(outfile, "\nAlpha frozen core density matrix:\n");
     print_array(moinfo.fzc_density_alpha, moinfo.nso, outfile);
-    fprintf(outfile, "\n");
+    psi::fprintf(outfile, "\n");
       }
       moinfo.fzc_density_beta = init_array(moinfo.noeints);
       fzc_density(moinfo.nirreps, moinfo.frdocc, moinfo.fzc_density_beta,
           moinfo.scf_vector_beta, moinfo.first, moinfo.first_so, moinfo.last_so, ioff);
       if (params.print_lvl > 2) {
-    fprintf(outfile, "\nBeta frozen core density matrix:\n");
+    psi::fprintf(outfile, "\nBeta frozen core density matrix:\n");
     print_array(moinfo.fzc_density_beta, moinfo.nso, outfile);
-    fprintf(outfile, "\n");
+    psi::fprintf(outfile, "\n");
       }
     }
     else {
@@ -1354,9 +1354,9 @@ void get_one_electron_integrals()
                     moinfo.last_so, ioff);
 
       if (params.print_lvl > 2) {
-    fprintf(outfile, "\nFrozen core density matrix:\n");
+    psi::fprintf(outfile, "\nFrozen core density matrix:\n");
     print_array(moinfo.fzc_density, moinfo.nso, outfile);
-    fprintf(outfile, "\n");
+    psi::fprintf(outfile, "\n");
       }
     }
   }
@@ -1405,7 +1405,7 @@ double *** construct_evects(const char *spin, int nirreps, int *active, int *sop
       }
 
       if(printflag) {
-        fprintf(outfile,"\n\tMolecular Orbitals for Irrep %s\n",
+        psi::fprintf(outfile,"\n\tMolecular Orbitals for Irrep %s\n",
                 moinfo.labels[h]);
         print_mat(evects[h],sopi[h],active[h], outfile);
       }
@@ -1452,9 +1452,9 @@ int check_C(int nso, int nmo, double **Cmat, double *S)
       Smat[p][q] = Smat[q][p] = S[pq];
 
   /*
-  fprintf(outfile, "C matrix:\n");
+  psi::fprintf(outfile, "C matrix:\n");
   print_mat(Cmat, nmo, nmo, outfile);
-  fprintf(outfile, "S matrix:\n");
+  psi::fprintf(outfile, "S matrix:\n");
   print_mat(Smat, nmo, nmo, outfile);
   */
 
@@ -1465,7 +1465,7 @@ int check_C(int nso, int nmo, double **Cmat, double *S)
   mmult(Tmat1, 0, Cmat, 0, Tmat2, 0, nmo, nso, nmo, 0);
 
   /*
-  fprintf(outfile, "C^+SC:\n");
+  psi::fprintf(outfile, "C^+SC:\n");
   print_mat(Tmat2, nmo, nmo, outfile);
   */
 
@@ -1473,7 +1473,7 @@ int check_C(int nso, int nmo, double **Cmat, double *S)
     for (q=0; q<nmo; q++) {
       if (p==q) continue;
       if (fabs(Tmat2[p][q]) > overlap_tol) {
-        fprintf(outfile, "(Check_C): C^+SC (%d,%d) = %lf\n", p, q, Tmat2[p][q]);
+        psi::fprintf(outfile, "(Check_C): C^+SC (%d,%d) = %lf\n", p, q, Tmat2[p][q]);
         failflag = 1;
       }
     }
@@ -1481,7 +1481,7 @@ int check_C(int nso, int nmo, double **Cmat, double *S)
 
   for (p=0; p<nmo; p++) {
     if (fabs(Tmat2[p][p] - 1.00) > overlap_tol) {
-      fprintf(outfile, "(Check_C): C^+SC (%d,%d) = %lf\n", p, p, Tmat2[p][p]);
+      psi::fprintf(outfile, "(Check_C): C^+SC (%d,%d) = %lf\n", p, p, Tmat2[p][p]);
       failflag = 1;
     }
   }

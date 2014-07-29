@@ -73,7 +73,7 @@ void SCF::save_info()
         int q = options_.get_int("ROTATE_MO_Q") -1;
         int h = options_.get_int("ROTATE_MO_IRREP") - 1;
 
-        fprintf(outfile,"\n\n  Rotating MOs %d and %d of irrep %d by %lf degrees",
+        psi::fprintf(outfile,"\n\n  Rotating MOs %d and %d of irrep %d by %lf degrees",
                         p,q,h,mo_rotate_angle);
         double angle = mo_rotate_angle * acos(-1.0) / 180.0;
         for(int i = 0; i < sopi[h]; ++i){
@@ -176,7 +176,7 @@ void SCF::save_info()
 //        int q = options_.get_int("ROTATE_MO_Q") -1;
 //        int h = options_.get_int("ROTATE_MO_IRREP") - 1;
 
-//        fprintf(outfile,"\n\n  Rotating MOs %d and %d of irrep %d by %d degrees",
+//        psi::fprintf(outfile,"\n\n  Rotating MOs %d and %d of irrep %d by %d degrees",
 //                        p,q,h,mo_rotate_angle);
 //        double angle = static_cast<double>(mo_rotate_angle) * acos(-1.0) / 180.0;
 //        for(int i = 0; i < sopi[h]; ++i){

@@ -140,7 +140,7 @@ PsiReturnType ccdensity(Options& options)
   get_rho_params(options);
 
   if ((moinfo.nfzc || moinfo.nfzv) && params.relax_opdm) {
-    fprintf(outfile, "\n\tGradients/orbital relaxation involving frozen orbitals not yet available.\n");
+    psi::fprintf(outfile, "\n\tGradients/orbital relaxation involving frozen orbitals not yet available.\n");
     throw PsiException("ccdensity: error", __FILE__, __LINE__);
   }
 
@@ -295,7 +295,7 @@ PsiReturnType ccdensity(Options& options)
       add_ref_RHF(&OutBuf);
 
       // ==> One-Electron Properties <== //
-      fprintf(outfile, "  ==> Properties: Root %d <==\n\n", i);
+      psi::fprintf(outfile, "  ==> Properties: Root %d <==\n\n", i);
       dipole();
 
       if(params.onepdm_grid_dump) dx_write(options, moinfo.opdm);
@@ -375,13 +375,13 @@ PsiReturnType ccdensity(Options& options)
     int j;
 
     if(params.nstates > 1) {      // Can't do this with one excited state.
-      fprintf(outfile,"\n\t*********************************************************************\n");
-      fprintf(outfile,"\t*********************************************************************\n");
-      fprintf(outfile,"\t************                                             ************\n");
-      fprintf(outfile,"\t************ Excited State-Excited State Transition Data ************\n");
-      fprintf(outfile,"\t************                                             ************\n");
-      fprintf(outfile,"\t*********************************************************************\n");
-      fprintf(outfile,"\t*********************************************************************\n\n");
+      psi::fprintf(outfile,"\n\t*********************************************************************\n");
+      psi::fprintf(outfile,"\t*********************************************************************\n");
+      psi::fprintf(outfile,"\t************                                             ************\n");
+      psi::fprintf(outfile,"\t************ Excited State-Excited State Transition Data ************\n");
+      psi::fprintf(outfile,"\t************                                             ************\n");
+      psi::fprintf(outfile,"\t*********************************************************************\n");
+      psi::fprintf(outfile,"\t*********************************************************************\n\n");
       fflush(outfile);
 
       std::vector<struct XTD_Params> xtd_params;
@@ -402,18 +402,18 @@ PsiReturnType ccdensity(Options& options)
             state2 = j;
           }
 /*
-          fprintf(outfile, "State %d%s Energy = %20.12lf\n",
+          psi::fprintf(outfile, "State %d%s Energy = %20.12lf\n",
                 td_params[state1].root+1,moinfo.labels[td_params[state1].irrep],td_params[state1].cceom_energy);
-          fprintf(outfile, "State %d%s Energy = %20.12lf\n", 
+          psi::fprintf(outfile, "State %d%s Energy = %20.12lf\n", 
                 td_params[state1].root+1,moinfo.labels[td_params[state2].irrep],td_params[state2].cceom_energy);
 */
 
           //- <Lx|O|Ry> (y>x)
-          fprintf(outfile,"\n\t*** Computing <%d%2s|X{pq}}|%d%2s> (LEFT) Transition Density ***\n\n",
+          psi::fprintf(outfile,"\n\t*** Computing <%d%2s|X{pq}}|%d%2s> (LEFT) Transition Density ***\n\n",
                 td_params[state1].root+1,moinfo.labels[td_params[state1].irrep],
                 td_params[state2].root+1,moinfo.labels[td_params[state2].irrep]);
           ex_td_setup(td_params[state1],td_params[state2]);
-          fprintf(outfile,"\t\t*** LTD Setup complete.\n");
+          psi::fprintf(outfile,"\t\t*** LTD Setup complete.\n");
           fflush(outfile);
 
           ex_tdensity('l',td_params[state1],td_params[state2]);
@@ -422,16 +422,16 @@ PsiReturnType ccdensity(Options& options)
           ex_td_cleanup();
 
           //- <Ly|O|Rx> (y>x) 
-          fprintf(outfile,"\n\t*** Computing <%d%2s|X{pq}}|%d%2s> (RIGHT) Transition Density ***\n\n",
+          psi::fprintf(outfile,"\n\t*** Computing <%d%2s|X{pq}}|%d%2s> (RIGHT) Transition Density ***\n\n",
                 td_params[state2].root+1,moinfo.labels[td_params[state2].irrep],
                 td_params[state1].root+1,moinfo.labels[td_params[state1].irrep]);
           ex_td_setup(td_params[state2],td_params[state1]);
-          fprintf(outfile,"\t\t*** RTD Setup complete.\n");
+          psi::fprintf(outfile,"\t\t*** RTD Setup complete.\n");
           fflush(outfile);
 
           ex_tdensity('r',td_params[state2],td_params[state1]);
 
-          fprintf(outfile,"\n\t*** %d%s -> %d%s transition densities complete.\n",
+          psi::fprintf(outfile,"\n\t*** %d%s -> %d%s transition densities complete.\n",
                 td_params[state1].root+1,moinfo.labels[td_params[state1].irrep],
                 td_params[state2].root+1,moinfo.labels[td_params[state2].irrep]);
           fflush(outfile);
@@ -521,13 +521,13 @@ void init_io(void)
 
 void title(void)
 {
-  fprintf(outfile, "\n");
-  fprintf(outfile, "\t\t\t**************************\n");
-  fprintf(outfile, "\t\t\t*                        *\n");
-  fprintf(outfile, "\t\t\t*        CCDENSITY       *\n");
-  fprintf(outfile, "\t\t\t*                        *\n");
-  fprintf(outfile, "\t\t\t**************************\n");
-  fprintf(outfile, "\n");
+  psi::fprintf(outfile, "\n");
+  psi::fprintf(outfile, "\t\t\t**************************\n");
+  psi::fprintf(outfile, "\t\t\t*                        *\n");
+  psi::fprintf(outfile, "\t\t\t*        CCDENSITY       *\n");
+  psi::fprintf(outfile, "\t\t\t*                        *\n");
+  psi::fprintf(outfile, "\t\t\t**************************\n");
+  psi::fprintf(outfile, "\n");
 }
 
 void exit_io(void)

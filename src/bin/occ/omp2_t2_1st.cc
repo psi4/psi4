@@ -161,7 +161,7 @@ else if (reference_ == "UNRESTRICTED") {
 
 void OCCWave::omp2_t2_1st_general()
 {   
-     //fprintf(outfile,"\n omp2_t2_1st_general is starting... \n"); fflush(outfile);
+     //psi::fprintf(outfile,"\n omp2_t2_1st_general is starting... \n"); fflush(outfile);
 
 //===========================================================================================
 //========================= RHF =============================================================
@@ -461,7 +461,7 @@ else if (reference_ == "UNRESTRICTED") {
     
 }// end if (reference_ == "UNRESTRICTED") 
 
-    //fprintf(outfile,"\n omp2_t2_1st_general done. \n"); fflush(outfile);
+    //psi::fprintf(outfile,"\n omp2_t2_1st_general done. \n"); fflush(outfile);
 } // end omp2_t2_1st_general
 
 }} // End Namespaces

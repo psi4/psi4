@@ -139,13 +139,13 @@ void scf_check_uhf(void)
 
   moinfo.eref = E1A+ E1B+ E2AA+ E2BB+ E2AB + moinfo.enuc + moinfo.efzc;
 
-  fprintf(outfile, "\tOne-electron energy          =  %20.14f\n", E1A + E1B);
-  fprintf(outfile, "\tTwo-electron (AA) energy     =  %20.14f\n", E2AA);
-  fprintf(outfile, "\tTwo-electron (BB) energy     =  %20.14f\n", E2BB);
-  fprintf(outfile, "\tTwo-electron (AB) energy     =  %20.14f\n", E2AB);
-  fprintf(outfile, "\tTwo-electron energy          =  %20.14f\n", E2AA + E2BB + E2AB);
-  fprintf(outfile, "\tFrozen-core energy (transqt) =  %20.14f\n", moinfo.efzc);
-  fprintf(outfile, "\tReference energy             =  %20.14f\n", moinfo.eref);
+  psi::fprintf(outfile, "\tOne-electron energy          =  %20.14f\n", E1A + E1B);
+  psi::fprintf(outfile, "\tTwo-electron (AA) energy     =  %20.14f\n", E2AA);
+  psi::fprintf(outfile, "\tTwo-electron (BB) energy     =  %20.14f\n", E2BB);
+  psi::fprintf(outfile, "\tTwo-electron (AB) energy     =  %20.14f\n", E2AB);
+  psi::fprintf(outfile, "\tTwo-electron energy          =  %20.14f\n", E2AA + E2BB + E2AB);
+  psi::fprintf(outfile, "\tFrozen-core energy (transqt) =  %20.14f\n", moinfo.efzc);
+  psi::fprintf(outfile, "\tReference energy             =  %20.14f\n", moinfo.eref);
 }
 
 void scf_check_rhf(void)
@@ -260,24 +260,24 @@ void scf_check_rhf(void)
   global_dpd_->buf4_close(&AInts);
 
   /*
-  fprintf(outfile, "\n\tEFZC = %20.15f\n", moinfo.efzc);
-  fprintf(outfile, "\n\tE1A = %20.15f\n", E1A);
-  fprintf(outfile,   "\tE1B = %20.15f\n", E1B);
-  fprintf(outfile,   "\tE2AA = %20.15f\n", E2AA);
-  fprintf(outfile,   "\tE2BB = %20.15f\n", E2BB);
-  fprintf(outfile,   "\tE2AB = %20.15f\n", E2AB);
+  psi::fprintf(outfile, "\n\tEFZC = %20.15f\n", moinfo.efzc);
+  psi::fprintf(outfile, "\n\tE1A = %20.15f\n", E1A);
+  psi::fprintf(outfile,   "\tE1B = %20.15f\n", E1B);
+  psi::fprintf(outfile,   "\tE2AA = %20.15f\n", E2AA);
+  psi::fprintf(outfile,   "\tE2BB = %20.15f\n", E2BB);
+  psi::fprintf(outfile,   "\tE2AB = %20.15f\n", E2AB);
   */
 
   moinfo.eref = E1A+E1B+0.5*(E2AA+E2BB)+E2AB + moinfo.enuc + moinfo.efzc;
 
-  fprintf(outfile, "\tNuclear energy               =  %20.14f\n", moinfo.enuc);
-  fprintf(outfile, "\tOne-electron energy          =  %20.14f\n", E1A+E1B);
-  fprintf(outfile, "\tTwo-electron (AA) energy     =  %20.14f\n", E2AA);
-  fprintf(outfile, "\tTwo-electron (BB) energy     =  %20.14f\n", E2BB);
-  fprintf(outfile, "\tTwo-electron (AB) energy     =  %20.14f\n", E2AB);
-  fprintf(outfile, "\tTwo-electron energy          =  %20.14f\n", 0.5*(E2AA+E2BB)+E2AB);
-  fprintf(outfile, "\tFrozen-core energy (transqt) =  %20.14f\n", moinfo.efzc);
-  fprintf(outfile, "\tReference energy             =  %20.14f\n", moinfo.eref);
+  psi::fprintf(outfile, "\tNuclear energy               =  %20.14f\n", moinfo.enuc);
+  psi::fprintf(outfile, "\tOne-electron energy          =  %20.14f\n", E1A+E1B);
+  psi::fprintf(outfile, "\tTwo-electron (AA) energy     =  %20.14f\n", E2AA);
+  psi::fprintf(outfile, "\tTwo-electron (BB) energy     =  %20.14f\n", E2BB);
+  psi::fprintf(outfile, "\tTwo-electron (AB) energy     =  %20.14f\n", E2AB);
+  psi::fprintf(outfile, "\tTwo-electron energy          =  %20.14f\n", 0.5*(E2AA+E2BB)+E2AB);
+  psi::fprintf(outfile, "\tFrozen-core energy (transqt) =  %20.14f\n", moinfo.efzc);
+  psi::fprintf(outfile, "\tReference energy             =  %20.14f\n", moinfo.eref);
 
 }
 

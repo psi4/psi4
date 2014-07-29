@@ -63,12 +63,12 @@ using namespace std;
  */
 void CCTransform::presort_integrals()
 {
-  fprintf(outfile,"\n\n  Presorting two-electron integrals from IWL buffer");
-  fprintf(outfile,"\n    Memory available                       = %14lu bytes",
+  psi::fprintf(outfile,"\n\n  Presorting two-electron integrals from IWL buffer");
+  psi::fprintf(outfile,"\n    Memory available                       = %14lu bytes",
                   (unsigned long)memory_manager->get_FreeMemory());
 
   size_t presort_memory = static_cast<size_t>(static_cast<double>(memory_manager->get_FreeMemory())*fraction_of_memory_for_presorting);
-  fprintf(outfile,"\n    Memory available for presorting        = %14lu bytes (%.1f%%)",
+  psi::fprintf(outfile,"\n    Memory available for presorting        = %14lu bytes (%.1f%%)",
                   (unsigned long)presort_memory,fraction_of_memory_for_presorting*100.0);
 
 
@@ -81,11 +81,11 @@ void CCTransform::presort_integrals()
     memory_required += (INDEX(pairpi[h]-1,pairpi[h]-1) + 1) * static_cast<size_t>(sizeof(double));
   }
 
-  fprintf(outfile,"\n    Memory required for in-core presort    = %14lu bytes",
+  psi::fprintf(outfile,"\n    Memory required for in-core presort    = %14lu bytes",
                   (unsigned long)memory_required);
 
   if(memory_required < static_cast<size_t>(3) * memory_manager->get_FreeMemory()){
-    fprintf(outfile,"\n    Presorting is not required");
+    psi::fprintf(outfile,"\n    Presorting is not required");
   }
 
   int first_irrep = 0;
@@ -115,7 +115,7 @@ void CCTransform::presort_integrals()
 
 void CCTransform::presort_blocks(int first_irrep, int last_irrep)
 {
-  fprintf(outfile,"\n    Reading irreps %d -> %d",first_irrep,last_irrep - 1);
+  psi::fprintf(outfile,"\n    Reading irreps %d -> %d",first_irrep,last_irrep - 1);
   fflush(outfile);
 
   CCIndex* pair_index = blas->get_index("[n>=n]");
@@ -161,7 +161,7 @@ void CCTransform::presort_blocks(int first_irrep, int last_irrep)
     } while(!lastbuf);
   iwl_buf_close(&ERIIN,1);
 
-  fprintf(outfile," (%lu non-zero integrals)", (unsigned long)elements);
+  psi::fprintf(outfile," (%lu non-zero integrals)", (unsigned long)elements);
   fflush(outfile);
 
   // Write integrals to disk

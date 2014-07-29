@@ -97,14 +97,14 @@ void CCMRCC::compute_energy(Updater* updater)
     }
 
     if(cycle>options_.get_int("MAXITER")){
-      fprintf(outfile,"\n\n\tThe calculation did not converge in %d cycles\n\tQuitting PSIMRCC\n",options_.get_int("MAXITER"));
+      psi::fprintf(outfile,"\n\n\tThe calculation did not converge in %d cycles\n\tQuitting PSIMRCC\n",options_.get_int("MAXITER"));
       fflush(outfile);
       exit(1);
     }
     cycle++;
   }
 
-  fprintf(outfile,"\n\n  Timing for singles and doubles: %20.6f s",cc_timer.get());
+  psi::fprintf(outfile,"\n\n  Timing for singles and doubles: %20.6f s",cc_timer.get());
 
   if(options_.get_str("CORR_WFN")=="CCSD_T"){
     compute_perturbative_triples();

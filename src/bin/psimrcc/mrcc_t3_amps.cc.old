@@ -22,11 +22,11 @@ void CCMRCC::build_t3_amplitudes()
   if(triples_type>ccsd_t){
     Timer timer;
     DEBUGGING(1,
-      fprintf(outfile,"\n\tBuilding the T3 Amplitudes        ...");
+      psi::fprintf(outfile,"\n\tBuilding the T3 Amplitudes        ...");
       fflush(outfile);
     )
     DEBUGGING(1,
-      fprintf(outfile,"\n\tDiagram 1 and 2 ...");
+      psi::fprintf(outfile,"\n\tDiagram 1 and 2 ...");
       fflush(outfile);
     );
     Timer timer1;
@@ -35,12 +35,12 @@ void CCMRCC::build_t3_amplitudes()
     build_t3_iJKaBC_amplitudes_diagrams12();
     build_t3_IJKABC_amplitudes_diagrams12();
     DEBUGGING(1,
-      fprintf(outfile," done. Timing %20.6f s",timer1.get());
+      psi::fprintf(outfile," done. Timing %20.6f s",timer1.get());
       fflush(outfile);
     )
 
     DEBUGGING(1,
-      fprintf(outfile,"\n\tDiagram 3     ...");
+      psi::fprintf(outfile,"\n\tDiagram 3     ...");
       fflush(outfile);
     );
     Timer timer2;
@@ -49,12 +49,12 @@ void CCMRCC::build_t3_amplitudes()
     build_t3_iJKaBC_amplitudes_diagram3();
     build_t3_IJKABC_amplitudes_diagram3();
     DEBUGGING(1,
-      fprintf(outfile," done. Timing %20.6f s",timer2.get());
+      psi::fprintf(outfile," done. Timing %20.6f s",timer2.get());
       fflush(outfile);
     )
 
     DEBUGGING(1,
-      fprintf(outfile,"\n\tDiagram 4     ...");
+      psi::fprintf(outfile,"\n\tDiagram 4     ...");
       fflush(outfile);
     )
     Timer timer3;
@@ -63,12 +63,12 @@ void CCMRCC::build_t3_amplitudes()
     build_t3_iJKaBC_amplitudes_diagram4();
     build_t3_IJKABC_amplitudes_diagram4();
     DEBUGGING(1,
-      fprintf(outfile," done. Timing %20.6f s",timer3.get());
+      psi::fprintf(outfile," done. Timing %20.6f s",timer3.get());
       fflush(outfile);
     )
 
     DEBUGGING(1,
-      fprintf(outfile," done. Timing %20.6f s",timer.get());
+      psi::fprintf(outfile," done. Timing %20.6f s",timer.get());
       fflush(outfile);
     )
   }

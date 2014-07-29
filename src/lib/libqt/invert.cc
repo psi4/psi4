@@ -70,11 +70,11 @@ double invert_matrix(double **a, double **y, int N, FILE *outfile)
    ludcmp(a,N,indx,&d) ;
    for (j=0; j<N; j++) d *= a[j][j];
 
-   /* fprintf(outfile,"detH0 in invert = %lf\n", fabs(d));
+   /* psi::fprintf(outfile,"detH0 in invert = %lf\n", fabs(d));
    fflush(outfile); */
 
     if (fabs(d) < SMALL_DET) {
-      fprintf(outfile,"Warning (invert_matrix): Determinant is %g\n", d);
+      psi::fprintf(outfile,"Warning (invert_matrix): Determinant is %g\n", d);
       printf("Warning (invert_matrix): Determinant is %g\n", d);
       fflush(outfile);
       }

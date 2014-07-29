@@ -119,8 +119,8 @@ void polar(void)
   free(R);
   free(S);
 
-  fprintf(outfile, "\n\tHartree-Fock Electric Polarizability Tensor  [(e^2 a0^2)/E_h]:\n");
-  fprintf(outfile, "\t---------------------------------------------------------------\n");
+  psi::fprintf(outfile, "\n\tHartree-Fock Electric Polarizability Tensor  [(e^2 a0^2)/E_h]:\n");
+  psi::fprintf(outfile, "\t---------------------------------------------------------------\n");
   mat_print(polar, 3, 3, outfile);
   free_block(polar);
 

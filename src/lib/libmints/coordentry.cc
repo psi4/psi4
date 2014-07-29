@@ -27,7 +27,7 @@
 #include <iomanip>
 #include <exception.h>
 #include "coordentry.h"
-
+#include "psi4-dec.h"
 using namespace psi;
 
 namespace {
@@ -147,7 +147,7 @@ void CartesianEntry::print_in_input_format()
     std::string xstr(variable_to_string(x_, 12));
     std::string ystr(variable_to_string(y_, 12));
     std::string zstr(variable_to_string(z_, 12));
-    fprintf(outfile, "  %17s  %17s  %17s\n", xstr.c_str(), ystr.c_str(), zstr.c_str());
+    psi::fprintf(outfile, "  %17s  %17s  %17s\n", xstr.c_str(), ystr.c_str(), zstr.c_str());
 }
 
 std::string CartesianEntry::string_in_input_format()
@@ -260,14 +260,14 @@ void ZMatrixEntry::print_in_input_format()
         /*
          * The first atom
          */
-        fprintf(outfile, "\n");
+        psi::fprintf(outfile, "\n");
     }else if(ato_ == 0 && dto_ == 0){
         /*
          * The second atom
          */
         int rto = rto_->entry_number() + 1;
         std::string rval = variable_to_string(rval_, 6);
-        fprintf(outfile, "  %5d %11s\n", rto, rval.c_str());
+        psi::fprintf(outfile, "  %5d %11s\n", rto, rval.c_str());
     }else if(dto_ == 0){
         /*
          * The third atom
@@ -276,7 +276,7 @@ void ZMatrixEntry::print_in_input_format()
         std::string rval = variable_to_string(rval_, 6);
         int ato = ato_->entry_number() + 1;
         std::string aval = variable_to_string(aval_, 6);
-        fprintf(outfile, "  %5d %11s  %5d %11s\n", rto, rval.c_str(), ato, aval.c_str());
+        psi::fprintf(outfile, "  %5d %11s  %5d %11s\n", rto, rval.c_str(), ato, aval.c_str());
     }else{
         /*
          * Remaining atoms
@@ -287,7 +287,7 @@ void ZMatrixEntry::print_in_input_format()
         std::string aval = variable_to_string(aval_, 6);
         int dto = dto_->entry_number() + 1;
         std::string dval = variable_to_string(dval_, 6);
-        fprintf(outfile, "  %5d %11s  %5d %11s  %5d %11s\n",
+        psi::fprintf(outfile, "  %5d %11s  %5d %11s  %5d %11s\n",
             rto, rval.c_str(), ato, aval.c_str(), dto, dval.c_str());
     }
 }
@@ -431,11 +431,11 @@ const Vector3& ZMatrixEntry::compute()
         for(int xyz = 0; xyz < 3; ++xyz)
            coordinates_[xyz] = B[xyz] + r * (eX[xyz] * sinABC * cosABCD + eY[xyz] * sinABC * sinABCD - eCB[xyz] * cosABC );
 
-//        fprintf(outfile, "%5s r %20.14lf, a %20.14lf, d %20.14lf\n", label_.c_str(),
+//        psi::fprintf(outfile, "%5s r %20.14lf, a %20.14lf, d %20.14lf\n", label_.c_str(),
 //                r, a, d);
-//        fprintf(outfile, "      B %20.14lf    %20.14lf    %20.14lf\n", B[0], B[1], B[2]);
-//        fprintf(outfile, "      C %20.14lf    %20.14lf    %20.14lf\n", C[0], C[1], C[2]);
-//        fprintf(outfile, "      D %20.14lf    %20.14lf    %20.14lf\n", D[0], D[1], D[2]);
+//        psi::fprintf(outfile, "      B %20.14lf    %20.14lf    %20.14lf\n", B[0], B[1], B[2]);
+//        psi::fprintf(outfile, "      C %20.14lf    %20.14lf    %20.14lf\n", C[0], C[1], C[2]);
+//        psi::fprintf(outfile, "      D %20.14lf    %20.14lf    %20.14lf\n", D[0], D[1], D[2]);
     }
 
     computed_ = true;

@@ -72,7 +72,7 @@ IntegralTransform::DPD_ID(const shared_ptr<MOSpace> s1, const shared_ptr<MOSpace
         label += "]";
     }
     if(print_>5)
-        fprintf(outfile, "s1: %c s2: %c %s, label = %s, id = %d\n",
+        psi::fprintf(outfile, "s1: %c s2: %c %s, label = %s, id = %d\n",
                  s1->label(), s2->label(), pack ? "packed" : "unpacked", label.c_str(), DPD_ID(label));
     return DPD_ID(label);
 }

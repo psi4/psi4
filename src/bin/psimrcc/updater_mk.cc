@@ -64,7 +64,7 @@ void MkUpdater::update(int cycle,Hamiltonian* heff)
     }else{
         if(cycle < tikhonow_max){
             omega = tikhonow_omega;
-            fprintf(outfile,"\n  Tikhonow regularization turned on.  Omega = %6.3e",omega);
+            psi::fprintf(outfile,"\n  Tikhonow regularization turned on.  Omega = %6.3e",omega);
         }
     }
 
@@ -133,7 +133,7 @@ void MkUpdater::update(int cycle,Hamiltonian* heff)
                 //                      (std::pow(heff->get_right_eigenvector(unique_i),2.0) + std::pow(omega,2.0));
                 //
                 //        if(fabs(term) > 100.0) {
-                //          fprintf(outfile,"\n  Warning: c_nu/c_mu = %e ."
+                //          psi::fprintf(outfile,"\n  Warning: c_nu/c_mu = %e ."
                 //              "\n  1) turn on Tikhonow regularization or increase omega (TIKHONOW_OMEGA > 0)",term);
                 //        }
 
@@ -175,7 +175,7 @@ void MkUpdater::update(int cycle,Hamiltonian* heff)
                 //                      (std::pow(heff->get_right_eigenvector(unique_i),2.0) + std::pow(omega,2.0));
                 //
                 //        if(fabs(term) > 100.0) {
-                //          fprintf(outfile,"\n  Warning: c_nu/c_mu = %e ."
+                //          psi::fprintf(outfile,"\n  Warning: c_nu/c_mu = %e ."
                 //              "\n  1) turn on Tikhonow regularization or increase omega (TIKHONOW_OMEGA > 0)",term);
                 //        }
 

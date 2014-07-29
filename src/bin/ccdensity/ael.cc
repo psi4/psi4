@@ -83,7 +83,7 @@ void ael(struct RHO_Params *rho_params)
     for (j=0; j<dim; ++j) {
       ael += 0.5 * fabs( rho_x[j][k] - rho_g[j][k] );
     }
-    fprintf(outfile, "\tAEL %d: %10.7lf\n", i, ael);
+    psi::fprintf(outfile, "\tAEL %d: %10.7lf\n", i, ael);
   }
 
   free(evals);

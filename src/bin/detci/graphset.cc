@@ -118,7 +118,7 @@ void formstrings(void)
 
    if (Parameters.print_lvl>=4) {
       for (listnum=0; listnum<AlphaGraph->num_graphs; listnum++) {
-         fprintf(outfile, "Strings for list %2d, irrep=%d\n",
+         psi::fprintf(outfile, "Strings for list %2d, irrep=%d\n",
             listnum, AlphaGraph->graph_irrep[listnum]);
          print_ci_space(alplist[listnum],
             AlphaGraph->Graph[listnum].num_strings,
@@ -151,7 +151,7 @@ void formstrings(void)
 
       if (Parameters.print_lvl>=4) {
          for (listnum=0; listnum<AlphaGraph->num_graphs; listnum++) {
-            fprintf(outfile, "Strings for list %2d, irrep=%d\n",
+            psi::fprintf(outfile, "Strings for list %2d, irrep=%d\n",
                listnum, AlphaGraph->graph_irrep[listnum]);
             print_ci_space(alplist[listnum],
                AlphaGraph->Graph[listnum].num_strings,
@@ -231,9 +231,9 @@ void graphset(struct graph_set *GraphSet, int ci_orbs, int num_el,
 
 
    #ifdef DEBUG
-   fprintf(outfile, "ras1_lvl = %d   ras1_min = %d  ras1_max = %d\n",
+   psi::fprintf(outfile, "ras1_lvl = %d   ras1_min = %d  ras1_max = %d\n",
       ras1_lvl, ras1_min, ras1_max) ;
-   fprintf(outfile, "ras3_lvl = %d   ras3_max = %d\n", ras3_lvl, ras3_max) ;
+   psi::fprintf(outfile, "ras3_lvl = %d   ras3_max = %d\n", ras3_lvl, ras3_max) ;
    #endif
 
    // Go ahead and set the occupations of the frozen orbs 
@@ -367,7 +367,7 @@ void graphset(struct graph_set *GraphSet, int ci_orbs, int num_el,
                continue;
 
             #ifdef DEBUG
-            fprintf(outfile, "n1 = %d, n2 = %d, n3 = %d, n4 = %d\n", 
+            psi::fprintf(outfile, "n1 = %d, n2 = %d, n3 = %d, n4 = %d\n", 
                n1, n2, n3, n4) ;
             if (n2 < 0) printf("Error: n2 < 0 in form_strings()\n") ;
             #endif
@@ -401,8 +401,8 @@ void graphset(struct graph_set *GraphSet, int ci_orbs, int num_el,
                         // print out occupations for debugging
                         #ifdef DEBUG
                         for (i=0; i<num_el - num_fzc_orbs; i++) 
-                           fprintf(outfile, "%2d ", occs[i]) ;
-                        fprintf(outfile, "\n") ;
+                           psi::fprintf(outfile, "%2d ", occs[i]) ;
+                        psi::fprintf(outfile, "\n") ;
                         #endif
                   
                         // add this walk to the graph
@@ -616,41 +616,41 @@ void gs_print(struct graphset *GraphSet, FILE *outfile)
    ras3_max = GraphSet->ras3_max;
    ras4_max = GraphSet->ras4_max;
 
-   fprintf(outfile,"\nGraphSet:\n");
-   fprintf(outfile,"%3c%2d Electrons\n",' ',GraphSet->num_el);
-   fprintf(outfile,"%3c%2d Frozen core orbitals\n",' ',GraphSet->num_fzc_orbs);
-   fprintf(outfile,"%3c%2d Restricted core orbs\n",' ',GraphSet->num_cor_orbs);
-   fprintf(outfile,"%3c%2d Explicit electrons\n",' ',GraphSet->num_el_expl);
-   fprintf(outfile,"%3c%2d Explicit Orbitals\n",' ',GraphSet->num_orb);
-   fprintf(outfile,"%3c%2d RAS I level\n",' ',GraphSet->ras1_lvl);
-   fprintf(outfile,"%3c%2d RAS I minimum\n",' ',ras1_min);
-   fprintf(outfile,"%3c%2d RAS I maximum\n",' ',ras1_max);
-   fprintf(outfile,"%3c%2d RAS III level\n",' ',GraphSet->ras3_lvl);
-   fprintf(outfile,"%3c%2d RAS III maximum\n",' ',ras3_max);
-   fprintf(outfile,"%3c%2d RAS IV maximum\n",' ',ras4_max);
-   fprintf(outfile,"%3c%2d Number of irreps\n",' ',GraphSet->nirreps);
-   fprintf(outfile,"%3c%2d Number of codes\n",' ',
+   psi::fprintf(outfile,"\nGraphSet:\n");
+   psi::fprintf(outfile,"%3c%2d Electrons\n",' ',GraphSet->num_el);
+   psi::fprintf(outfile,"%3c%2d Frozen core orbitals\n",' ',GraphSet->num_fzc_orbs);
+   psi::fprintf(outfile,"%3c%2d Restricted core orbs\n",' ',GraphSet->num_cor_orbs);
+   psi::fprintf(outfile,"%3c%2d Explicit electrons\n",' ',GraphSet->num_el_expl);
+   psi::fprintf(outfile,"%3c%2d Explicit Orbitals\n",' ',GraphSet->num_orb);
+   psi::fprintf(outfile,"%3c%2d RAS I level\n",' ',GraphSet->ras1_lvl);
+   psi::fprintf(outfile,"%3c%2d RAS I minimum\n",' ',ras1_min);
+   psi::fprintf(outfile,"%3c%2d RAS I maximum\n",' ',ras1_max);
+   psi::fprintf(outfile,"%3c%2d RAS III level\n",' ',GraphSet->ras3_lvl);
+   psi::fprintf(outfile,"%3c%2d RAS III maximum\n",' ',ras3_max);
+   psi::fprintf(outfile,"%3c%2d RAS IV maximum\n",' ',ras4_max);
+   psi::fprintf(outfile,"%3c%2d Number of irreps\n",' ',GraphSet->nirreps);
+   psi::fprintf(outfile,"%3c%2d Number of codes\n",' ',
       Graph->num_codes);
-   fprintf(outfile,"%3c%2d Max strings in irrep\n", ' ', 
+   psi::fprintf(outfile,"%3c%2d Max strings in irrep\n", ' ', 
       Graph->max_str_per_irrep);
-   fprintf(outfile,"%3c%2d Strings in total\n\n", ' ', GraphSet->num_str);
+   psi::fprintf(outfile,"%3c%2d Strings in total\n\n", ' ', GraphSet->num_str);
 
-   fprintf(outfile, "\n");
+   psi::fprintf(outfile, "\n");
    for (i=ras1_min; i<=ras1_max; i++) {
       for (j=0; j<=ras3_max; j++) {
          for (k=0; k<=ras4_max; k++) {
             if ((code = GraphSet->decode[i-ras1_min][j][k]) >= 0) {
-               fprintf(outfile, "%5cDecode (%2d,%2d,%2d) = %3d\n",' ',
+               psi::fprintf(outfile, "%5cDecode (%2d,%2d,%2d) = %3d\n",' ',
                   i,j,k,code);
                } 
             }
          }
       }
 
-   fprintf(outfile, "\n%4cString Digraphs\n", ' ');
+   psi::fprintf(outfile, "\n%4cString Digraphs\n", ' ');
    for (i=0; i<GraphSet->num_graphs; i++) {
       graph = GraphSet->Graph[i];
-      fprintf(outfile, "%6cGraph %3d (Code=%2d,Irrep=%1d): %4d strings, 
+      psi::fprintf(outfile, "%6cGraph %3d (Code=%2d,Irrep=%1d): %4d strings, 
          offset = %4d\n", ' ', i, GraphSet->graph_code[i], 
          GraphSet->graph_irrep[i], graph->num_strings, 
          GraphSet->graph_offset[i]);
@@ -658,10 +658,10 @@ void gs_print(struct graphset *GraphSet, FILE *outfile)
       print_int_mat(outfile, graph->data, GraphSet->num_el_expl+1, 
          GraphSet->num_orb+1);
 
-      fprintf(outfile, "\n");
+      psi::fprintf(outfile, "\n");
       }       
 
-   fprintf(outfile, "\n");
+   psi::fprintf(outfile, "\n");
    fflush(outfile);
 }
 
@@ -739,7 +739,7 @@ void gs_stringlist(struct graph_set *GraphSet, struct stringwr **slist)
                continue;
 
             #ifdef DEBUG
-            fprintf(outfile, "n1 = %d, n2 = %d, n3 = %d, n4 = %d\n", 
+            psi::fprintf(outfile, "n1 = %d, n2 = %d, n3 = %d, n4 = %d\n", 
                n1, n2, n3, n4) ;
             if (n2 < 0) printf("Error: n2 < 0 in form_strings()\n") ;
             #endif
@@ -773,8 +773,8 @@ void gs_stringlist(struct graph_set *GraphSet, struct stringwr **slist)
                         // print out occupations for debugging
                         #ifdef DEBUG
                         for (i=0; i<num_el - num_fzc_orbs; i++) 
-                           fprintf(outfile, "%2d ", occs[i]) ;
-                        fprintf(outfile, "\n") ;
+                           psi::fprintf(outfile, "%2d ", occs[i]) ;
+                        psi::fprintf(outfile, "\n") ;
                         #endif
                   
                         // add this walk to the Occs array

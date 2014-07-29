@@ -71,7 +71,7 @@ void IWL::write(int p, int q, int pq, int pqsym,
                 }
 
                 if(printflag)
-                    fprintf(out, "<%d %d %d %d [%d] [%d] = %20.10f\n",
+                    psi::fprintf(out, "<%d %d %d %d [%d] [%d] = %20.10f\n",
                     p, q, r, s, pq, rs, value);
 
             } /* end if (fabs(value) > Buf->cutoff) ... */
@@ -130,7 +130,7 @@ void iwl_buf_wrt(struct iwlbuf *Buf, int p, int q, int pq, int pqsym,
 	}
 	
 	if(printflag)
-	  fprintf(out, "<%d %d %d %d [%d] [%d] = %20.10f\n",
+	  psi::fprintf(out, "<%d %d %d %d [%d] [%d] = %20.10f\n",
 		  p, q, r, s, pq, rs, value);
 	 
       } /* end if (fabs(value) > Buf->cutoff) ... */

@@ -129,8 +129,8 @@ namespace psi { namespace cctriples {
 	    }
 
       ffile(&ijkfile,"ijk.dat", 0);
-      fprintf(ijkfile, "Number of IJK combintions: %d\n", nijk);
-      fprintf(ijkfile, "\nCurrent IJK Combination: ");
+      psi::fprintf(ijkfile, "Number of IJK combintions: %d\n", nijk);
+      psi::fprintf(ijkfile, "\nCurrent IJK Combination: ");
 
       W0 = (double ***) malloc(nirreps * sizeof(double **));
       W1 = (double ***) malloc(nirreps * sizeof(double **));
@@ -156,7 +156,7 @@ namespace psi { namespace cctriples {
 		  K = occ_off[Gk] + k;
 
 		  mijk++;
-		  fprintf(ijkfile, "%d\n", mijk);
+		  psi::fprintf(ijkfile, "%d\n", mijk);
 		  fflush(ijkfile);
 
 		  ij = T2.params->rowidx[I][J];
@@ -754,7 +754,7 @@ namespace psi { namespace cctriples {
 	} /* Gj */
       } /* Gi */
 
-      fprintf(outfile, "\tE(T) = %20.14f\n", ET);
+      psi::fprintf(outfile, "\tE(T) = %20.14f\n", ET);
 
       free(W0); free(W1); free(V); free(M);
 

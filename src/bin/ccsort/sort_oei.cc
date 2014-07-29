@@ -232,8 +232,8 @@ void sort_oei_rhf(void)
   free(tmp_oei);
 
   if(params.print_lvl > 5) {
-    fprintf(outfile, "\n\tFrozen-Core Operator:\n");
-    fprintf(outfile,   "\t---------------------");
+    psi::fprintf(outfile, "\n\tFrozen-Core Operator:\n");
+    psi::fprintf(outfile,   "\t---------------------");
     print_array(oei, nactive, outfile);
   }
 

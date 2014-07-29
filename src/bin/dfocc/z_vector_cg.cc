@@ -30,8 +30,8 @@ namespace psi{ namespace dfoccwave{
 
 void DFOCC::z_vector_cg()
 { 
-//fprintf(outfile,"\n z_vector_cg is starting... \n"); fflush(outfile);
-    fprintf(outfile,"\tSolving orbital Z-vector equations...\n");
+//psi::fprintf(outfile,"\n z_vector_cg is starting... \n"); fflush(outfile);
+    psi::fprintf(outfile,"\tSolving orbital Z-vector equations...\n");
     fflush(outfile);
 
     SharedTensor2d K, L;
@@ -115,8 +115,8 @@ if (reference_ == "RESTRICTED") {
 
     // If LINEQ FAILED!
     if (pcg_conver == 0) {
-        fprintf(outfile,"\tWarning!!! PCG did NOT converged in %2d iterations. \n", itr_pcg);
-        fprintf(outfile,"\tI will solve the z-vector equation with a direct method.\n");
+        psi::fprintf(outfile,"\tWarning!!! PCG did NOT converged in %2d iterations. \n", itr_pcg);
+        psi::fprintf(outfile,"\tI will solve the z-vector equation with a direct method.\n");
         fflush(outfile);
         z_vector();
         fflush(outfile);
@@ -250,12 +250,12 @@ else if (reference_ == "UNRESTRICTED") {
 
     // If LINEQ FAILED!
     if (pcg_conver == 0) {
-        fprintf(outfile,"\tWarning!!! PCG did NOT converged in %2d iterations. \n", itr_pcg);
+        psi::fprintf(outfile,"\tWarning!!! PCG did NOT converged in %2d iterations. \n", itr_pcg);
         fflush(outfile);
     } 
 
 }// end if (reference_ == "UNRESTRICTED") 
- //fprintf(outfile,"\n z_vector_cg done. \n"); fflush(outfile);
+ //psi::fprintf(outfile,"\n z_vector_cg done. \n"); fflush(outfile);
 }// end z_vector_cg
 
 //=======================================================
@@ -273,17 +273,17 @@ void DFOCC::cg_solver()
     double b_pcgA = 0.0;
     pcg_conver = 1; // assuming pcg will converge
 
-fprintf(outfile, "\n\t            PCG Solver \n");
-fprintf(outfile, "\t   ------------------------------ \n");
-fprintf(outfile, "\tIter     RMS Z Vector        RMS Residual  \n");
-fprintf(outfile, "\t----    ---------------    ---------------\n");
+psi::fprintf(outfile, "\n\t            PCG Solver \n");
+psi::fprintf(outfile, "\t   ------------------------------ \n");
+psi::fprintf(outfile, "\tIter     RMS Z Vector        RMS Residual  \n");
+psi::fprintf(outfile, "\t----    ---------------    ---------------\n");
 fflush(outfile);
 
  // Head of the loop
  do
  {
 
-    //fprintf(outfile, "pcg iter: %3d \n", itr_pcg); fflush(outfile);
+    //psi::fprintf(outfile, "pcg iter: %3d \n", itr_pcg); fflush(outfile);
     // Build sigma
     if (reference_ == "RESTRICTED") {
         Aorb = SharedTensor2d(new Tensor2d("MO Hessian Matrix", nvirA, noccA, nvirA, noccA));
@@ -368,7 +368,7 @@ fflush(outfile);
    itr_pcg++;
 
    // Print
-   fprintf(outfile,"\t%3d     %12.2e     %12.2e\n",itr_pcg,rms_pcg,rms_residual);
+   psi::fprintf(outfile,"\t%3d     %12.2e     %12.2e\n",itr_pcg,rms_pcg,rms_residual);
    fflush(outfile);
 
    // If we exceed maximum number of iteration, break the loop
@@ -383,7 +383,7 @@ fflush(outfile);
  while(fabs(rms_pcg) >= tol_pcg || fabs(rms_residual) >= tol_pcg);  
 
     // Converged?
-    fprintf(outfile,"\n");
+    psi::fprintf(outfile,"\n");
     fflush(outfile);
 }// cg_solver
 

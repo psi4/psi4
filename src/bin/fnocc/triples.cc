@@ -51,13 +51,13 @@ PsiReturnType CoupledCluster::triples(){
      fac = 0.0;
   }
 
-  fprintf(outfile,"\n");
-  fprintf(outfile, "        *******************************************************\n");
-  fprintf(outfile, "        *                                                     *\n");
-  fprintf(outfile, "        *                  %8s(T)                        *\n",name);
-  fprintf(outfile, "        *                                                     *\n");
-  fprintf(outfile, "        *******************************************************\n");
-  fprintf(outfile,"\n");
+  psi::fprintf(outfile,"\n");
+  psi::fprintf(outfile, "        *******************************************************\n");
+  psi::fprintf(outfile, "        *                                                     *\n");
+  psi::fprintf(outfile, "        *                  %8s(T)                        *\n",name);
+  psi::fprintf(outfile, "        *                                                     *\n");
+  psi::fprintf(outfile, "        *******************************************************\n");
+  psi::fprintf(outfile,"\n");
   fflush(outfile);
 
   int o = ndoccact;
@@ -78,11 +78,11 @@ PsiReturnType CoupledCluster::triples(){
   }
   memory -= 8L*(2L*o*o*v*v+o*o*o*v+o*v+3L*nthreads*v*v*v);
 
-  fprintf(outfile,"        num_threads =             %9i\n",nthreads);
-  fprintf(outfile,"        available memory =     %9.2lf mb\n",memory/1024./1024.);
-  fprintf(outfile,"        memory requirements =  %9.2lf mb\n",
+  psi::fprintf(outfile,"        num_threads =             %9i\n",nthreads);
+  psi::fprintf(outfile,"        available memory =     %9.2lf mb\n",memory/1024./1024.);
+  psi::fprintf(outfile,"        memory requirements =  %9.2lf mb\n",
            8.*(2.*o*o*v*v+1.*o*o*o*v+(3.*nthreads)*v*v*v+1.*o*v)/1024./1024.);
-  fprintf(outfile,"\n");
+  psi::fprintf(outfile,"\n");
   fflush(outfile);
 
   int nijk = 0;
@@ -106,8 +106,8 @@ PsiReturnType CoupledCluster::triples(){
           }
       }
   }
-  fprintf(outfile,"        Number of ijk combinations: %i\n",nijk);
-  fprintf(outfile,"\n");
+  psi::fprintf(outfile,"        Number of ijk combinations: %i\n",nijk);
+  psi::fprintf(outfile,"\n");
   fflush(outfile);
   
   E2abci = (double**)malloc(nthreads*sizeof(double*));
@@ -148,9 +148,9 @@ PsiReturnType CoupledCluster::triples(){
 
   double *etrip = (double*)malloc(nthreads*sizeof(double));
   for (int i=0; i<nthreads; i++) etrip[i] = 0.0;
-  fprintf(outfile,"        Computing (T) correction...\n");
-  fprintf(outfile,"\n");
-  fprintf(outfile,"        %% complete  total time\n");
+  psi::fprintf(outfile,"        Computing (T) correction...\n");
+  psi::fprintf(outfile,"\n");
+  psi::fprintf(outfile,"        %% complete  total time\n");
   fflush(outfile);
 
   time_t stop,start = time(NULL);
@@ -334,7 +334,7 @@ PsiReturnType CoupledCluster::triples(){
          else if ((double)ind/nijk >= 0.8 && !pct80){ pct80 = 1; print=1;}
          else if ((double)ind/nijk >= 0.9 && !pct90){ pct90 = 1; print=1;}
          if (print){
-            fprintf(outfile,"              %3.1lf  %8d s\n",100.0*ind/nijk,(int)stop-(int)start);
+            psi::fprintf(outfile,"              %3.1lf  %8d s\n",100.0*ind/nijk,(int)stop-(int)start);
             fflush(outfile);
          }
       }
@@ -348,20 +348,20 @@ PsiReturnType CoupledCluster::triples(){
   // ccsd(t) or qcisd(t)
   if (ccmethod <= 1) {
       et = myet;
-      fprintf(outfile,"\n");
-      fprintf(outfile,"        (T) energy   %s                   %20.12lf\n",space,et);
-      fprintf(outfile,"\n");
-      fprintf(outfile,"        %s(T) correlation energy       %20.12lf\n",name,eccsd+et);
-      fprintf(outfile,"      * %s(T) total energy             %20.12lf\n",name,eccsd+et+escf);
-      fprintf(outfile,"\n");
+      psi::fprintf(outfile,"\n");
+      psi::fprintf(outfile,"        (T) energy   %s                   %20.12lf\n",space,et);
+      psi::fprintf(outfile,"\n");
+      psi::fprintf(outfile,"        %s(T) correlation energy       %20.12lf\n",name,eccsd+et);
+      psi::fprintf(outfile,"      * %s(T) total energy             %20.12lf\n",name,eccsd+et+escf);
+      psi::fprintf(outfile,"\n");
   }else {
       emp4_t = myet;
-      fprintf(outfile,"\n");
-      fprintf(outfile,"        MP4(T) correlation energy:         %20.12lf\n",emp4_t);
-      fprintf(outfile,"\n");
-      fprintf(outfile,"        MP4(SDTQ) correlation energy:      %20.12lf\n",emp2+emp3+emp4_sd+emp4_q+emp4_t);
-      fprintf(outfile,"      * MP4(SDTQ) total energy:            %20.12lf\n",emp2+emp3+emp4_sd+emp4_q+emp4_t+escf);
-      fprintf(outfile,"\n");
+      psi::fprintf(outfile,"\n");
+      psi::fprintf(outfile,"        MP4(T) correlation energy:         %20.12lf\n",emp4_t);
+      psi::fprintf(outfile,"\n");
+      psi::fprintf(outfile,"        MP4(SDTQ) correlation energy:      %20.12lf\n",emp2+emp3+emp4_sd+emp4_q+emp4_t);
+      psi::fprintf(outfile,"      * MP4(SDTQ) total energy:            %20.12lf\n",emp2+emp3+emp4_sd+emp4_q+emp4_t+escf);
+      psi::fprintf(outfile,"\n");
   }
   fflush(outfile);
 

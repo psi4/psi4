@@ -41,7 +41,7 @@ DCFTSolver::transform_integrals()
 
     _ints->update_orbitals();
     if(print_ > 1){
-        fprintf(outfile, "\tTransforming integrals...\n");
+        psi::fprintf(outfile, "\tTransforming integrals...\n");
         fflush(outfile);
     }
     _ints->set_print(print_ - 2 >= 0 ? print_ - 2 : 0);

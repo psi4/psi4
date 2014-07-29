@@ -210,9 +210,9 @@ void oscillator_strength(struct TD_Params *S)
   free_block(MUY_SO);
   free_block(MUZ_SO);
 
-  fprintf(outfile,"\n\tOscillator Strength for %d%3s\n",S->root+1,
+  psi::fprintf(outfile,"\n\tOscillator Strength for %d%3s\n",S->root+1,
           moinfo.labels[S->irrep]);
-  fprintf(outfile,"\t                              X    \t       Y    \t       Z\n");
+  psi::fprintf(outfile,"\t                              X    \t       Y    \t       Z\n");
 
   if((params.ref == 0) || (params.ref == 1)) {
 
@@ -286,14 +286,14 @@ void oscillator_strength(struct TD_Params *S)
   S->einstein_a = einstein_a;
   S->einstein_b = einstein_b;
 
-  fprintf(outfile,"\t<0|mu_e|n>              %11.8lf \t %11.8lf \t %11.8lf\n",
+  psi::fprintf(outfile,"\t<0|mu_e|n>              %11.8lf \t %11.8lf \t %11.8lf\n",
           lt_x,lt_y,lt_z);
-  fprintf(outfile,"\t<n|mu_e|0>              %11.8lf \t %11.8lf \t %11.8lf\n",
+  psi::fprintf(outfile,"\t<n|mu_e|0>              %11.8lf \t %11.8lf \t %11.8lf\n",
           rt_x,rt_y,rt_z);
-  fprintf(outfile,"\tDipole Strength         %11.8lf \n",ds_x+ds_y+ds_z);
-  fprintf(outfile,"\tOscillator Strength     %11.8lf \n",f_x+f_y+f_z);
-  fprintf(outfile,"\tEinstein A Coefficient   %11.8e \n",einstein_a);
-  fprintf(outfile,"\tEinstein B Coefficient   %11.8e \n",einstein_b);
+  psi::fprintf(outfile,"\tDipole Strength         %11.8lf \n",ds_x+ds_y+ds_z);
+  psi::fprintf(outfile,"\tOscillator Strength     %11.8lf \n",f_x+f_y+f_z);
+  psi::fprintf(outfile,"\tEinstein A Coefficient   %11.8e \n",einstein_a);
+  psi::fprintf(outfile,"\tEinstein B Coefficient   %11.8e \n",einstein_b);
   fflush(outfile);
 
   if((params.ref == 0) || (params.ref == 1)) {

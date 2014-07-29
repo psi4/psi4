@@ -76,11 +76,11 @@ double SCF::energy(int cycle,double old_energy)
 //       }
 //     }
 
-//     fprintf(outfile,"\n  Hamiltonian");
+//     psi::fprintf(outfile,"\n  Hamiltonian");
 //     for(int I = 0 ; I < nci; ++I){
-//       fprintf(outfile,"\n    ");
+//       psi::fprintf(outfile,"\n    ");
 //       for(int J = 0 ; J < nci; ++J)
-//         fprintf(outfile," %11.8f ",H_tcscf[I][J]);
+//         psi::fprintf(outfile," %11.8f ",H_tcscf[I][J]);
 //     }
 
 

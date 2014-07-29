@@ -145,7 +145,7 @@ int main(int argc, char *argv[]) {
       strcpy(damp_type, "NONE");
     }
     else {
-      fprintf(outfile, "Error: unrecognized dispersion type %s\n", disp_method);
+      psi::fprintf(outfile, "Error: unrecognized dispersion type %s\n", disp_method);
       do_dispersion = 0;
     }
   }
@@ -166,7 +166,7 @@ int main(int argc, char *argv[]) {
 
     if (strcmp(damp_type, "GRIMME")!=0 &&
         strcmp(damp_type, "NONE")!=0)
-      fprintf(outfile, "Error: unrecognized option for DAMP\n");
+      psi::fprintf(outfile, "Error: unrecognized option for DAMP\n");
       exit(PSI_RETURN_FAILURE);
   }
 
@@ -176,7 +176,7 @@ int main(int argc, char *argv[]) {
   if (ip_exist("VDW_RADII",0)) {
     errcod = ip_count("VDW_RADII", &num_array, 0);
     if (errcod != IPE_OK) {
-      fprintf(stderr,"ERROR: %s\n", ip_error_message(errcod));
+      psi::fprintf(stderr,"ERROR: %s\n", ip_error_message(errcod));
     }  
     else {
       for (i=0; i<num_array; i+=2) {
@@ -184,7 +184,7 @@ int main(int argc, char *argv[]) {
         errcod = ip_data("VDW_RADII", "%lf", &tval, 1, i+1); 
         if ((j = label2an(tmpstr)) != -1) {
           vdw_radii_grimme[j] = tval;
-          fprintf(outfile, 
+          psi::fprintf(outfile, 
             "   Using custom value of %6.3lf for vdW radius of element %s\n",
             tval, tmpstr);
         }
@@ -196,7 +196,7 @@ int main(int argc, char *argv[]) {
   if (ip_exist("C6",0)) {
     errcod = ip_count("C6", &num_array, 0);
     if (errcod != IPE_OK) {
-      fprintf(stderr,"ERROR: %s\n", ip_error_message(errcod));
+      psi::fprintf(stderr,"ERROR: %s\n", ip_error_message(errcod));
     }  
     else {
       for (i=0; i<num_array; i+=2) {
@@ -204,7 +204,7 @@ int main(int argc, char *argv[]) {
         errcod = ip_data("C6", "%lf", &tval, 1, i+1); 
         if ((j = label2an(tmpstr)) != -1) {
           vdw_C6_grimme[j] = tval;
-          fprintf(outfile, 
+          psi::fprintf(outfile, 
             "   Using custom value of %6.3lf for C6 for element %s\n",
             tval, tmpstr);
         }
@@ -212,21 +212,21 @@ int main(int argc, char *argv[]) {
     }
   } /* end parsing overridden C6 coefficients */
  
-  fprintf(outfile, "\n");
+  psi::fprintf(outfile, "\n");
   if (do_dispersion) {
-    fprintf(outfile, "   Universal scaling coefficient s6 = %6.4lf\n", s6);
-    fprintf(outfile, "   Universal damping exponent d     = %6.4lf\n", d);
-    fprintf(outfile, "   Dispersion method                = %s\n", 
+    psi::fprintf(outfile, "   Universal scaling coefficient s6 = %6.4lf\n", s6);
+    psi::fprintf(outfile, "   Universal damping exponent d     = %6.4lf\n", d);
+    psi::fprintf(outfile, "   Dispersion method                = %s\n", 
       disp_method);
-    fprintf(outfile, "   Damping function                 = %s\n", 
+    psi::fprintf(outfile, "   Damping function                 = %s\n", 
       damp_type);
   }
 
   /* get checkpoint energy and print it */
   if (chkpt_exist_add_prefix("Total energy")) {
     etot = chkpt_rd_etot();
-    fprintf(outfile, "\n");
-    fprintf(outfile, "   Previous energy           = %14.9lf hartree\n", etot);
+    psi::fprintf(outfile, "\n");
+    psi::fprintf(outfile, "   Previous energy           = %14.9lf hartree\n", etot);
   }
   else etot = 0.0;
 
@@ -238,10 +238,10 @@ int main(int argc, char *argv[]) {
     energy_dd = compute_ddisp(natom, R, AN, s6, d, damp_type);
     energy_dd_hartree = energy_dd / (pc_na * pc_hartree2J);
 
-    fprintf(outfile, "\n");
-    fprintf(outfile, "   Damped dispersion energy  = %14.9lf hartree ", 
+    psi::fprintf(outfile, "\n");
+    psi::fprintf(outfile, "   Damped dispersion energy  = %14.9lf hartree ", 
       energy_dd_hartree);
-    fprintf(outfile, "(%10.4lf kcal/mol)\n", (energy_dd / 4184.0));
+    psi::fprintf(outfile, "(%10.4lf kcal/mol)\n", (energy_dd / 4184.0));
     fflush(outfile);
     etot += energy_dd_hartree;
   }
@@ -249,14 +249,14 @@ int main(int argc, char *argv[]) {
   if (do_estatic) {
     double estatic = compute_estatic(natom, R, AC);
     double estatic_hartree = estatic / (pc_na * pc_hartree2J);
-    fprintf(outfile, "   Electrostatic energy      = %14.9lf hartree ", 
+    psi::fprintf(outfile, "   Electrostatic energy      = %14.9lf hartree ", 
       estatic_hartree);
-    fprintf(outfile, "(%10.4lf kcal/mol)\n", (estatic / 4184.0));
+    psi::fprintf(outfile, "(%10.4lf kcal/mol)\n", (estatic / 4184.0));
     etot += estatic_hartree;
   }
 
-  fprintf(outfile, " * Total energy + empirical  = %14.9lf hartree\n", etot);
-  fprintf(outfile, "\n");
+  psi::fprintf(outfile, " * Total energy + empirical  = %14.9lf hartree\n", etot);
+  psi::fprintf(outfile, "\n");
   chkpt_wt_etot(etot);
 
   /* calculate the gradient if requested */
@@ -275,12 +275,12 @@ int main(int argc, char *argv[]) {
     /* this should never happen if called before $deriv
     if (chkpt_exist_add_prefix("Energy Gradient")) {
       gradient = chkpt_rd_grad();
-      fprintf(outfile, "  Energy gradient from checkpoint (hartree/bohr)\n");
+      psi::fprintf(outfile, "  Energy gradient from checkpoint (hartree/bohr)\n");
       for (i=0; i<natom; i++) {
-        fprintf(outfile, "  %12.9lf  %12.9lf  %12.9lf\n",
+        psi::fprintf(outfile, "  %12.9lf  %12.9lf  %12.9lf\n",
           gradient[i*3], gradient[i*3+1], gradient[i*3+2]);
       }
-      fprintf(outfile, "\n");
+      psi::fprintf(outfile, "\n");
     }
     else {
       gradient = init_array(3*natom);
@@ -290,12 +290,12 @@ int main(int argc, char *argv[]) {
     gradient = init_array(3*natom);
     compute_ddisp_gradient(natom, AN, geom, s6, d, damp_type, gradient);
 
-    fprintf(outfile, "  Gradient of empirical contribution (hartree/bohr)\n");
+    psi::fprintf(outfile, "  Gradient of empirical contribution (hartree/bohr)\n");
     for (i=0; i<natom; i++) {
-      fprintf(outfile, "  %12.9lf  %12.9lf  %12.9lf\n",
+      psi::fprintf(outfile, "  %12.9lf  %12.9lf  %12.9lf\n",
         gradient[i*3], gradient[i*3+1], gradient[i*3+2]);
     }
-    fprintf(outfile, "\n");
+    psi::fprintf(outfile, "\n");
     chkpt_wt_grad(gradient);
   }
 
@@ -315,14 +315,14 @@ int main(int argc, char *argv[]) {
       compute_disp_hess(natom, AN, geom, s6, hessian);
     }
     else {
-      fprintf(outfile, "Error: unrecognized damp type for Hessian!\n");
+      psi::fprintf(outfile, "Error: unrecognized damp type for Hessian!\n");
     }
 
   }
 
   if (do_estatic && derlvl > 0) {
-    fprintf(outfile, "   Warning: Electrostatic interactions not ");
-    fprintf(outfile, "included in derivatives!!\n");
+    psi::fprintf(outfile, "   Warning: Electrostatic interactions not ");
+    psi::fprintf(outfile, "included in derivatives!!\n");
   }
 
   /* clean up */
@@ -389,12 +389,12 @@ void stop_io(void)
 */
 void print_intro(void)
 {
- fprintf(outfile,"             ---------------------------------------\n");
- fprintf(outfile,"                            NONBONDED                  \n");
- fprintf(outfile,"               Evaluate empirical non-bonded terms     \n");
- fprintf(outfile,"                        C. David Sherrill              \n");
- fprintf(outfile,"             ---------------------------------------\n");
- fprintf(outfile,"\n");
+ psi::fprintf(outfile,"             ---------------------------------------\n");
+ psi::fprintf(outfile,"                            NONBONDED                  \n");
+ psi::fprintf(outfile,"               Evaluate empirical non-bonded terms     \n");
+ psi::fprintf(outfile,"                        C. David Sherrill              \n");
+ psi::fprintf(outfile,"             ---------------------------------------\n");
+ psi::fprintf(outfile,"\n");
 }
 
 
@@ -678,7 +678,7 @@ void compute_disp_hess(int natom, double *AN, double **geom,
     }
   }
 
-  fprintf(outfile,
+  psi::fprintf(outfile,
     "   Hessian contribution from undamped empirical correction\n");
   print_mat(hessian,3*natom,3*natom,outfile);
 
@@ -813,7 +813,7 @@ void compute_ddisp_hess(int natom, double *AN, double **geom,
     }
   }
 
-  fprintf(outfile,"   Hessian contribution from damped empirical correction\n");
+  psi::fprintf(outfile,"   Hessian contribution from damped empirical correction\n");
   print_mat(hessian,3*natom,3*natom,outfile);
   fflush(outfile);
 
@@ -857,9 +857,9 @@ double compute_estatic(int natom, double *R, double *AC)
        estatic += q1*q2/R[ij];
     }
   }
-  // fprintf(outfile, "estatic before conversion = %lf\n", estatic);
+  // psi::fprintf(outfile, "estatic before conversion = %lf\n", estatic);
   estatic *= convfact;
-  // fprintf(outfile, "estatic after conversion  = %lf\n", estatic);
+  // psi::fprintf(outfile, "estatic after conversion  = %lf\n", estatic);
   return estatic;
 }
 

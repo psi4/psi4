@@ -1075,27 +1075,27 @@ TwoElectronInt::TwoElectronInt(const IntegralFactory* integral, int deriv, bool 
 
     // Make sure libint is compiled to handle our max AM
     if (max_am >= LIBINT_MAX_AM) {
-        fprintf(stderr, "ERROR: ERI - libint cannot handle angular momentum this high.\n"
+        psi::fprintf(stderr, "ERROR: ERI - libint cannot handle angular momentum this high.\n"
                         "       In a fresh object directory, reconfigure libint for higher angular momentum, then recompile.\n");
         throw LimitExceeded<int>("ERI - libint cannot handle angular momentum this high.\n"
                                  "In a fresh object directory, reconfigure libint for higher angular momentum, then recompile.", LIBINT_MAX_AM, max_am, __FILE__, __LINE__);
     }
     else if (deriv_ == 1 && max_am >= LIBDERIV_MAX_AM1) {
-        fprintf(stderr, "ERROR: ERI - libderiv cannot handle angular momentum this high.\n"
+        psi::fprintf(stderr, "ERROR: ERI - libderiv cannot handle angular momentum this high.\n"
                         "     In a fresh object directory, reconfigure libderiv for higher angular momentum, then recompile.\n");
         throw LimitExceeded<int>("ERI - libderiv cannot handle angular momentum this high.\n"
                                  "In a fresh object directory, reconfigure libderiv for higher angular momentum, then recompile.",
                                  LIBDERIV_MAX_AM1, max_am, __FILE__, __LINE__);
     }
     else if (deriv_ == 2 && max_am >= LIBDERIV_MAX_AM12) {
-        fprintf(stderr, "ERROR: ERI - libderiv cannot handle angular momentum this high.\n"
+        psi::fprintf(stderr, "ERROR: ERI - libderiv cannot handle angular momentum this high.\n"
                         "       In a fresh object directory, reconfigure libderiv for higher angular momentum, then recompile.\n");
         throw LimitExceeded<int>("ERI - libderiv cannot handle angular momentum this high.\n"
                                  "In a fresh object directory, reconfigure libderiv for higher angular momentum, then recompile.",
                                  LIBDERIV_MAX_AM12, max_am, __FILE__, __LINE__);
     }
     else if (deriv_ > 2) {
-        fprintf(stderr, "ERROR: ERI - Cannot compute higher than second derivatives.");
+        psi::fprintf(stderr, "ERROR: ERI - Cannot compute higher than second derivatives.");
         throw PSIEXCEPTION("ERI - Cannot compute higher than second derivatives.");
     }
 
@@ -1109,7 +1109,7 @@ TwoElectronInt::TwoElectronInt(const IntegralFactory* integral, int deriv, bool 
             init_libderiv12(&libderiv_, max_am, max_nprim, max_cart_);
     }
     catch (std::bad_alloc& e) {
-        fprintf(stderr, "Error allocating memory for libint/libderiv.\n");
+        psi::fprintf(stderr, "Error allocating memory for libint/libderiv.\n");
         exit(EXIT_FAILURE);
     }
     size_t size = INT_NCART(basis1()->max_am()) * INT_NCART(basis2()->max_am()) *
@@ -1120,7 +1120,7 @@ TwoElectronInt::TwoElectronInt(const IntegralFactory* integral, int deriv, bool 
         tformbuf_ = new double[size];
     }
     catch (std::bad_alloc& e) {
-        fprintf(stderr, "Error allocating tformbuf_.\n%s\n", e.what());
+        psi::fprintf(stderr, "Error allocating tformbuf_.\n%s\n", e.what());
         exit(EXIT_FAILURE);
     }
     memset(tformbuf_, 0, sizeof(double)*size);
@@ -1132,7 +1132,7 @@ TwoElectronInt::TwoElectronInt(const IntegralFactory* integral, int deriv, bool 
         target_ = new double[size];
     }
     catch (std::bad_alloc& e) {
-        fprintf(stderr, "Error allocating target_.\n%s\n", e.what());
+        psi::fprintf(stderr, "Error allocating target_.\n%s\n", e.what());
         exit(EXIT_FAILURE);
     }
     memset(target_, 0, sizeof(double)*size);
@@ -1141,7 +1141,7 @@ TwoElectronInt::TwoElectronInt(const IntegralFactory* integral, int deriv, bool 
         source_ = new double[size];
     }
     catch (std::bad_alloc& e) {
-        fprintf(stderr, "Error allocating source_.\n%s\n", e.what());
+        psi::fprintf(stderr, "Error allocating source_.\n%s\n", e.what());
         exit(EXIT_FAILURE);
     }
     memset(source_, 0, sizeof(double)*size);
@@ -1295,7 +1295,7 @@ void TwoElectronInt::init_shell_pairs34()
         return;
     }
 #if 0
-    fprintf(outfile, "  Pre-computing additional values for two-electron integrals. [ |34) does not equal (12| ]\n");
+    psi::fprintf(outfile, "  Pre-computing additional values for two-electron integrals. [ |34) does not equal (12| ]\n");
 
     // Estimate memory needed by allocated space for the dynamically allocated parts of ShellPair structure
     memd = ERIBase::memory_to_store_shell_pairs(basis3(), basis4());
@@ -1843,7 +1843,7 @@ size_t TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
         for (size_t i=0; i<nprim; ++i)
             temp += (double)libint_.PrimQuartet[i].F[0];
         source_[0] = temp;
-//        fprintf(outfile, "s-functions = %8.5f\n", temp);
+//        psi::fprintf(outfile, "s-functions = %8.5f\n", temp);
     }
 
 #ifdef MINTS_TIMER
@@ -1866,7 +1866,7 @@ size_t TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
 size_t TwoElectronInt::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4)
 {
     if (deriv_ < 1) {
-        fprintf(stderr, "ERROR - ERI: ERI object not initialized to handle derivatives.\n");
+        psi::fprintf(stderr, "ERROR - ERI: ERI object not initialized to handle derivatives.\n");
         abort();
     }
     // Need to ensure the ordering asked by the user is valid for libint

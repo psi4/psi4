@@ -54,7 +54,7 @@
 #include<cstring>
 #include <libqt/qt.h>
 #include "dpd.h"
-
+#include "psi4-dec.h"
 namespace psi {
 
 double **
@@ -78,7 +78,7 @@ DPD::dpd_block_matrix(size_t n, size_t m)
         if(dpd_main.cachetype == 1) {
             if(file4_cache_del_low()) {
                 file4_cache_print(stderr);
-                fprintf(stderr, "dpd_block_matrix: n = %zd  m = %zd\n", n, m);
+                psi::fprintf(stderr, "dpd_block_matrix: n = %zd  m = %zd\n", n, m);
                 dpd_error("dpd_block_matrix: No memory left.", stderr);
             }
         }
@@ -87,7 +87,7 @@ DPD::dpd_block_matrix(size_t n, size_t m)
         else if(dpd_main.cachetype == 0) {
             if(file4_cache_del_lru()) {
                 file4_cache_print(stderr);
-                fprintf(stderr, "dpd_block_matrix: n = %zd  m = %zd\n", n, m);
+                psi::fprintf(stderr, "dpd_block_matrix: n = %zd  m = %zd\n", n, m);
                 dpd_error("dpd_block_matrix: No memory left.", stderr);
             }
         }
@@ -103,8 +103,8 @@ DPD::dpd_block_matrix(size_t n, size_t m)
     }
 
     if((A = (double **) malloc(n * sizeof(double *)))==NULL) {
-        fprintf(stderr,"dpd_block_matrix: trouble allocating memory \n");
-        fprintf(stderr,"n = %zd  m = %zd\n",n, m);
+        psi::fprintf(stderr,"dpd_block_matrix: trouble allocating memory \n");
+        psi::fprintf(stderr,"n = %zd  m = %zd\n",n, m);
         exit(PSI_RETURN_FAILURE);
     }
 
@@ -116,7 +116,7 @@ DPD::dpd_block_matrix(size_t n, size_t m)
         if(dpd_main.cachetype == 1) {
             if(file4_cache_del_low()) {
                 file4_cache_print(stderr);
-                fprintf(stderr, "dpd_block_matrix: n = %zd  m = %zd\n", n, m);
+                psi::fprintf(stderr, "dpd_block_matrix: n = %zd  m = %zd\n", n, m);
                 dpd_error("dpd_block_matrix: No memory left.", stderr);
             }
         }
@@ -125,7 +125,7 @@ DPD::dpd_block_matrix(size_t n, size_t m)
         else if(dpd_main.cachetype == 0) {
             if(file4_cache_del_lru()) {
                 file4_cache_print(stderr);
-                fprintf(stderr, "dpd_block_matrix: n = %zd  m = %zd\n", n, m);
+                psi::fprintf(stderr, "dpd_block_matrix: n = %zd  m = %zd\n", n, m);
                 dpd_error("dpd_block_matrix: No memory left.", stderr);
             }
         }

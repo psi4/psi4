@@ -108,7 +108,7 @@ void CCTransform::read_tei_so_integrals()
       allocate1(double,tei_so[h],block_size);
       for(size_t i=0;i<block_size;i++)
         tei_so[h][i]=0.0;
-      fprintf(outfile,"\n\tCCTransform: allocated the %s block of size %lu",moinfo->get_irr_labs(h),block_size);
+      psi::fprintf(outfile,"\n\tCCTransform: allocated the %s block of size %lu",moinfo->get_irr_labs(h),block_size);
     }
   }
 
@@ -141,7 +141,7 @@ void CCTransform::read_tei_so_integrals()
         iwl_buf_fetch(&ERIIN);
     } while(!ilsti);
 
-  fprintf(outfile,"\n    CCTransform: read %d non-zero integrals", elements);
+  psi::fprintf(outfile,"\n    CCTransform: read %d non-zero integrals", elements);
   iwl_buf_close(&ERIIN,1);
 
 //   for(int h=0;h<moinfo->get_nirreps();h++){
@@ -178,7 +178,7 @@ void CCTransform::transform_tei_so_integrals()
   CCIndex* elemindx = blas->get_index("[s]");
 
   // First-half transform
-  fprintf(outfile,"\n\tCCTransform: beginning first-half integral trasform");
+  psi::fprintf(outfile,"\n\tCCTransform: beginning first-half integral trasform");
   fflush(outfile);
   for(int h_rs=0;h_rs<nirreps;h_rs++){
     for(int h_p=0;h_p<nirreps;h_p++){
@@ -257,7 +257,7 @@ void CCTransform::transform_tei_so_integrals()
   }
 
   // Second-half transform
-  fprintf(outfile,"\n\tCCTransform: beginning second-half integral trasform");
+  psi::fprintf(outfile,"\n\tCCTransform: beginning second-half integral trasform");
   fflush(outfile);
   for(int h_ij=0;h_ij<nirreps;h_ij++){
     for(int h_r=0;h_r<nirreps;h_r++){
@@ -340,11 +340,11 @@ void CCTransform::transform_tei_so_integrals()
 //       for(int kl=ijindx->get_first(h_ij);kl<=ij;kl++){
 //         kl_tuple = ijindx->get_tuple(kl);
 //         int kl_abs = kl - ijindx->get_first(h_ij);
-//         fprintf(outfile,"\n (%2d %2d|%2d %2d) = %15.10f",ij_tuple[0],ij_tuple[1],kl_tuple[0],kl_tuple[1],tei_half_transformed[h_ij][ij_abs][kl_abs]);
+//         psi::fprintf(outfile,"\n (%2d %2d|%2d %2d) = %15.10f",ij_tuple[0],ij_tuple[1],kl_tuple[0],kl_tuple[1],tei_half_transformed[h_ij][ij_abs][kl_abs]);
 //       }
 //     }
 //   }
-  fprintf(outfile,"\n\tCCTransform: end of integral transform");
+  psi::fprintf(outfile,"\n\tCCTransform: end of integral transform");
   fflush(outfile);
 }
 
@@ -387,7 +387,7 @@ void CCTransform::read_tei_mo_integrals()
       if(!ilsti)
         iwl_buf_fetch(&ERIIN);
     } while(!ilsti);
-  fprintf(outfile,"\n    CCTransform: read %lu non-zero integrals", elements);
+  psi::fprintf(outfile,"\n    CCTransform: read %lu non-zero integrals", elements);
   fflush(outfile);
   iwl_buf_close(&ERIIN,1);
 }
@@ -508,11 +508,11 @@ void CCTransform::allocate_tei_mo()
           required_size += sizeof(double) * block_size;
           tei_mo[h] = NULL;
         }
-        fprintf(outfile,"\n\tCCTransform: allocated the %s block of size %lu bytes (free memory = %14lu bytes)",moinfo->get_irr_labs(h),block_size,memory_manager->get_FreeMemory());
+        psi::fprintf(outfile,"\n\tCCTransform: allocated the %s block of size %lu bytes (free memory = %14lu bytes)",moinfo->get_irr_labs(h),block_size,memory_manager->get_FreeMemory());
       }
     }
     if(failed){
-      fprintf(outfile,"\n\tCCTransform: not enough memory! %lu bytes extra required",required_size);
+      psi::fprintf(outfile,"\n\tCCTransform: not enough memory! %lu bytes extra required",required_size);
       fflush(outfile);
       exit(EXIT_FAILURE);
     }
@@ -543,11 +543,11 @@ void CCTransform::allocate_tei_so()
           required_size += sizeof(double) * block_size;
           tei_so[h] = NULL;
         }
-        fprintf(outfile,"\n\tCCTransform: allocated the %s block of size %d bytes (free memory = %14lu bytes)",moinfo->get_irr_labs(h),block_size,memory_manager->get_FreeMemory());
+        psi::fprintf(outfile,"\n\tCCTransform: allocated the %s block of size %d bytes (free memory = %14lu bytes)",moinfo->get_irr_labs(h),block_size,memory_manager->get_FreeMemory());
       }
     }
     if(failed){
-      fprintf(outfile,"\n\tCCTransform: not enough memory!");
+      psi::fprintf(outfile,"\n\tCCTransform: not enough memory!");
       fflush(outfile);
       exit(EXIT_FAILURE);
     }
@@ -569,7 +569,7 @@ void CCTransform::allocate_tei_half_transformed()
     for(int h=0;h<moinfo->get_nirreps();h++){
       if(so_indexing->get_pairpi(h)*mo_indexing->get_pairpi(h)>0){
         allocate2(double,tei_half_transformed[h],mo_indexing->get_pairpi(h),so_indexing->get_pairpi(h));
-        fprintf(outfile,"\n\tCCTransform: allocated the %s block of size %lu*%lu",moinfo->get_irr_labs(h),mo_indexing->get_pairpi(h),so_indexing->get_pairpi(h));
+        psi::fprintf(outfile,"\n\tCCTransform: allocated the %s block of size %lu*%lu",moinfo->get_irr_labs(h),mo_indexing->get_pairpi(h),so_indexing->get_pairpi(h));
       }
     }
   }
@@ -589,7 +589,7 @@ void CCTransform::free_tei_mo()
         size_t block_size = INDEX(indexing->get_pairpi(h)-1,indexing->get_pairpi(h)-1)+1;
         matrix_size += block_size;
         release1(tei_mo[h]);
-        fprintf(outfile,"\n\tCCTransform: deallocated the %s block of size %lu",moinfo->get_irr_labs(h),block_size);
+        psi::fprintf(outfile,"\n\tCCTransform: deallocated the %s block of size %lu",moinfo->get_irr_labs(h),block_size);
       }
     }
     release1(tei_mo);
@@ -608,7 +608,7 @@ void CCTransform::free_tei_so()
         size_t block_size = INDEX(indexing->get_pairpi(h)-1,indexing->get_pairpi(h)-1)+1;
         matrix_size += block_size;
         release1(tei_so[h]);
-        fprintf(outfile,"\n\tCCTransform: deallocated the %s block of size %lu",moinfo->get_irr_labs(h),block_size);
+        psi::fprintf(outfile,"\n\tCCTransform: deallocated the %s block of size %lu",moinfo->get_irr_labs(h),block_size);
       }
     }
     release1(tei_so);
@@ -626,7 +626,7 @@ void CCTransform::free_tei_half_transformed()
       if(rsindx->get_pairpi(h)*ijindx->get_pairpi(h)>0){
         matrix_size += ijindx->get_pairpi(h)*rsindx->get_pairpi(h);
         release2(tei_half_transformed[h]);
-        fprintf(outfile,"\n\tCCTransform: deallocated the %s block of size %lu*%lu",moinfo->get_irr_labs(h),ijindx->get_pairpi(h),rsindx->get_pairpi(h));
+        psi::fprintf(outfile,"\n\tCCTransform: deallocated the %s block of size %lu*%lu",moinfo->get_irr_labs(h),ijindx->get_pairpi(h),rsindx->get_pairpi(h));
       }
     }
     release1(tei_half_transformed);
@@ -652,7 +652,7 @@ double CCTransform::tei(int p, int q, int r, int s)
  */
 void CCTransform::transform_oei_so_integrals()
 {
-  fprintf(outfile,"\n  CCTransform: transforming one-electron integrals");
+  psi::fprintf(outfile,"\n  CCTransform: transforming one-electron integrals");
   fflush(outfile);
 
   allocate_oei_mo();

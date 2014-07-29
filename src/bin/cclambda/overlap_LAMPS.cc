@@ -206,19 +206,19 @@ void overlap_LAMPS(struct L_Params L_params)
   global_dpd_->file2_close(&T1B);
 
   /*
-    fprintf(outfile, "\tST1A = %20.15f\n", ST1A);
-    fprintf(outfile, "\tST1B = %20.15f\n", ST1B);
-    fprintf(outfile, "\tST2AA = %20.15f\n", ST2AA);
-    fprintf(outfile, "\tST2BB = %20.15f\n", ST2BB);
-    fprintf(outfile, "\tST2AB = %20.15f\n", ST2AB);
-    fprintf(outfile, "\tST12AA = %20.15f\n", ST12AA);
-    fprintf(outfile, "\tST12BB = %20.15f\n", ST12BB);
-    fprintf(outfile, "\tST12AB = %20.15f\n", ST12AB);
+    psi::fprintf(outfile, "\tST1A = %20.15f\n", ST1A);
+    psi::fprintf(outfile, "\tST1B = %20.15f\n", ST1B);
+    psi::fprintf(outfile, "\tST2AA = %20.15f\n", ST2AA);
+    psi::fprintf(outfile, "\tST2BB = %20.15f\n", ST2BB);
+    psi::fprintf(outfile, "\tST2AB = %20.15f\n", ST2AB);
+    psi::fprintf(outfile, "\tST12AA = %20.15f\n", ST12AA);
+    psi::fprintf(outfile, "\tST12BB = %20.15f\n", ST12BB);
+    psi::fprintf(outfile, "\tST12AB = %20.15f\n", ST12AB);
   */
 
   value = 1.0 - ST1A - ST1B - ST2AA - ST2BB - ST2AB + ST12AA + ST12BB + ST12AB;
 
-  fprintf(outfile, "\tOverlap <L|e^T> = %20.11f\n", value);
+  psi::fprintf(outfile, "\tOverlap <L|e^T> = %20.11f\n", value);
 }
 
 }} // namespace psi::cclambda

@@ -127,8 +127,7 @@ void LibFragHelper::Fragment_Helper(boost::python::str& FragMethod, const int N,
 }
 
 void LibFragHelper::Embed_Helper(boost::python::str& EmbedMethod) {
-   std::string name;
-   ToC(name, EmbedMethod);
+
 }
 
 std::string LibFragHelper::Cap_Helper(int order, int frag) {
@@ -146,6 +145,19 @@ double LibFragHelper::CalcEnergy(boost::python::list& Energies) {
       for (int j=0; j<size; j++)
          energies[i][j]=boost::python::extract<double>(Energies[i][j]);
    }
+   std::string dashes;
+   dashes="------------------------------------------------------------------\n";
+   for(int i=0;i<Systems.size();i++){
+      if(i==0)psi::fprintf(psi::outfile,"Monomer #     Energy (a.u.)\n");
+      else psi::fprintf(psi::outfile,  "%2d-mer  #     Energy (a.u.)\n",i+1);
+      psi::fprintf(psi::outfile,dashes.c_str());
+      for(int j=0;j<Systems[i].size();j++){
+         if(i!=0)Systems[i][j]->PrintParents();
+         else psi::fprintf(psi::outfile,"%d ",j);
+         psi::fprintf(psi::outfile," %16.15f\n",energies[i][j]);
+      }
+   }
+
    return Expansion->Energy(Systems, energies);
 }
 

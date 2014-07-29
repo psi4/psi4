@@ -52,7 +52,7 @@ void check_sum(const char *term_lbl, int index, int irrep) {
   char lbl[80];
 
   if (!strcmp(term_lbl,"reset"))  {
-    fprintf(outfile,"resetting norm\n");
+    psi::fprintf(outfile,"resetting norm\n");
   	old_norm = 0;
   	return;
   }
@@ -122,7 +122,7 @@ void check_sum(const char *term_lbl, int index, int irrep) {
     global_dpd_->buf4_close(&SIjAb);
   }
 
-  fprintf(outfile,"%7s, D(norm sigma)=%15.10lf\n", term_lbl, norm - old_norm);
+  psi::fprintf(outfile,"%7s, D(norm sigma)=%15.10lf\n", term_lbl, norm - old_norm);
   fflush(outfile);
   old_norm = norm;
 

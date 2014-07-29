@@ -96,7 +96,7 @@ PsiReturnType mcscf(Options& options)
       Process::environment.globals["CURRENT REFERENCE ENERGY"] = wfn->reference_energy();
       Process::environment.globals["SCF TOTAL ENERGY"] = wfn->reference_energy();
   }else if(options.get_str("REFERENCE") == "MCSCF"){
-      fprintf(outfile,"\n\nREFERENCE = MCSCF not implemented yet");
+      psi::fprintf(outfile,"\n\nREFERENCE = MCSCF not implemented yet");
       fflush(outfile);
       return Failure;
   }
@@ -115,10 +115,10 @@ PsiReturnType mcscf(Options& options)
  */
 void init_psi(Options& options_)
 {
-  fprintf(outfile,"\n         ------------------------------------------");
-  fprintf(outfile,"\n           MCSCF: a self-consistent field program");
-  fprintf(outfile,"\n            written by Francesco A. Evangelista");
-  fprintf(outfile,"\n         ------------------------------------------");
+  psi::fprintf(outfile,"\n         ------------------------------------------");
+  psi::fprintf(outfile,"\n           MCSCF: a self-consistent field program");
+  psi::fprintf(outfile,"\n            written by Francesco A. Evangelista");
+  psi::fprintf(outfile,"\n         ------------------------------------------");
 }
 
 /**
@@ -126,7 +126,7 @@ void init_psi(Options& options_)
  */
 void close_psi(Options& options_)
 {
-  fprintf(outfile,"\n\n  MCSCF Execution Completed.\n\n");
+  psi::fprintf(outfile,"\n\n  MCSCF Execution Completed.\n\n");
   fflush(outfile);
   tstop();
 }

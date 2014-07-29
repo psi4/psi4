@@ -34,7 +34,7 @@ namespace psi{ namespace dfoccwave{
   
 void DFOCC::tpdm_tilde()
 {   
-    fprintf(outfile,"\tForming Gamma^tilde...\n");
+    psi::fprintf(outfile,"\tForming Gamma^tilde...\n");
     fflush(outfile);
 
     SharedTensor2d G, G2, Gref, Gsep, Gcorr;

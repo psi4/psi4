@@ -219,13 +219,13 @@ double RKS::compute_E()
     energies_["-D"] = dashD_E;
 
     if (debug_) {
-        fprintf(outfile, "   => Energetics <=\n\n");
-        fprintf(outfile, "    Nuclear Repulsion Energy = %24.14f\n", nuclearrep_);
-        fprintf(outfile, "    One-Electron Energy =      %24.14f\n", one_electron_E);
-        fprintf(outfile, "    Coulomb Energy =           %24.14f\n", coulomb_E);
-        fprintf(outfile, "    Hybrid Exchange Energy =   %24.14f\n", exchange_E);
-        fprintf(outfile, "    XC Functional Energy =     %24.14f\n", XC_E); 
-        fprintf(outfile, "    -D Energy =                %24.14f\n\n", dashD_E);
+        psi::fprintf(outfile, "   => Energetics <=\n\n");
+        psi::fprintf(outfile, "    Nuclear Repulsion Energy = %24.14f\n", nuclearrep_);
+        psi::fprintf(outfile, "    One-Electron Energy =      %24.14f\n", one_electron_E);
+        psi::fprintf(outfile, "    Coulomb Energy =           %24.14f\n", coulomb_E);
+        psi::fprintf(outfile, "    Hybrid Exchange Energy =   %24.14f\n", exchange_E);
+        psi::fprintf(outfile, "    XC Functional Energy =     %24.14f\n", XC_E); 
+        psi::fprintf(outfile, "    -D Energy =                %24.14f\n\n", dashD_E);
     }
 
     return Etotal;
@@ -401,13 +401,13 @@ double UKS::compute_E()
     energies_["-D"] = dashD_E;
 
     if (debug_) {
-        fprintf(outfile, "   => Energetics <=\n\n");
-        fprintf(outfile, "    Nuclear Repulsion Energy = %24.14f\n", nuclearrep_);
-        fprintf(outfile, "    One-Electron Energy =      %24.14f\n", one_electron_E);
-        fprintf(outfile, "    Coulomb Energy =           %24.14f\n", 0.5 * coulomb_E);
-        fprintf(outfile, "    Hybrid Exchange Energy =   %24.14f\n", 0.5 * exchange_E);
-        fprintf(outfile, "    XC Functional Energy =     %24.14f\n", XC_E); 
-        fprintf(outfile, "    -D Energy =                %24.14f\n", dashD_E);
+        psi::fprintf(outfile, "   => Energetics <=\n\n");
+        psi::fprintf(outfile, "    Nuclear Repulsion Energy = %24.14f\n", nuclearrep_);
+        psi::fprintf(outfile, "    One-Electron Energy =      %24.14f\n", one_electron_E);
+        psi::fprintf(outfile, "    Coulomb Energy =           %24.14f\n", 0.5 * coulomb_E);
+        psi::fprintf(outfile, "    Hybrid Exchange Energy =   %24.14f\n", 0.5 * exchange_E);
+        psi::fprintf(outfile, "    XC Functional Energy =     %24.14f\n", XC_E); 
+        psi::fprintf(outfile, "    -D Energy =                %24.14f\n", dashD_E);
     }
 
     return Etotal;

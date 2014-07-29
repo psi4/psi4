@@ -51,8 +51,8 @@ void WmnieSD(int i, int C_irr) {
     global_dpd_->buf4_init(&WMnIe, PSIF_CC_HBAR, H_IRR, 0, 11, 0, 11, 0, "WMnIe - 2WnMIe (Mn,eI)");
     /* dpd_buf4_print(&WMnIe,outfile,1);
        dpd_buf4_print(&CMnEf,outfile,1);
-       fprintf(stdout,"starting Wmnie*CMNEF ->SIA\n");
-       fprintf(outfile,"starting Wmnie*CMNEF ->SIA\n"); */
+       psi::fprintf(stdout,"starting Wmnie*CMNEF ->SIA\n");
+       psi::fprintf(outfile,"starting Wmnie*CMNEF ->SIA\n"); */
     global_dpd_->contract442(&WMnIe, &CMnEf, &SIA, 3, 3, 1.0, 1.0);
     global_dpd_->buf4_close(&CMnEf);
     global_dpd_->buf4_close(&WMnIe);

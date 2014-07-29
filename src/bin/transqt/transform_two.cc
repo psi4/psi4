@@ -159,7 +159,7 @@ void transform_two(void)
   /** Pre-sort the two-electron Integrals **/
 
   if (params.print_lvl) {
-    fprintf(outfile, "\n\tPre-sorting two-electron ints...\n\n");
+    psi::fprintf(outfile, "\n\tPre-sorting two-electron ints...\n\n");
     fflush(outfile);
   }
 
@@ -167,9 +167,9 @@ void transform_two(void)
             first_tmp_file, tolerance, outfile);
 
   if (print_lvl > 1) {
-    fprintf(outfile, "\tPresort");
+    psi::fprintf(outfile, "\tPresort");
     yosh_print(&YBuffP, outfile);
-    fprintf(outfile, "\n");
+    psi::fprintf(outfile, "\n");
     fflush(outfile);
   }
 
@@ -210,10 +210,10 @@ void transform_two(void)
   chkpt_close();
 
   if (params.print_lvl)
-    fprintf(outfile, "\n\tFrozen core energy = %20.15lf\n", moinfo.efzc);
+    psi::fprintf(outfile, "\n\tFrozen core energy = %20.15lf\n", moinfo.efzc);
 
   if (params.print_lvl) {
-    fprintf(outfile, "\tTransforming two-electron ints...\n\n");
+    psi::fprintf(outfile, "\tTransforming two-electron ints...\n\n");
     fflush(outfile);
   }
 
@@ -224,9 +224,9 @@ void transform_two(void)
   yosh_init_buckets(&YBuffJ);
 
   if (print_lvl > 1) {
-    fprintf(outfile, "\tHalf-transform");
+    psi::fprintf(outfile, "\tHalf-transform");
     yosh_print(&YBuffJ, outfile);
-    fprintf(outfile, "\n");
+    psi::fprintf(outfile, "\n");
     fflush(outfile);
   }
 
@@ -319,7 +319,7 @@ void transform_two(void)
   }
 
   if (params.print_lvl)
-    fprintf(outfile, "\tSorting half-transformed integrals...\n");
+    psi::fprintf(outfile, "\tSorting half-transformed integrals...\n");
 
   iwl_buf_close(&PBuff, keep_presort);
   free(P_block);
@@ -330,8 +330,8 @@ void transform_two(void)
   yosh_done(&YBuffJ);
 
   if (params.print_lvl) {
-    fprintf(outfile, "\tFinished half-transform...\n");
-    fprintf(outfile, "\tWorking on second half...\n");
+    psi::fprintf(outfile, "\tFinished half-transform...\n");
+    psi::fprintf(outfile, "\tWorking on second half...\n");
     fflush(outfile);
   }
 
@@ -436,8 +436,8 @@ void transform_two(void)
   }
 
   if (params.print_lvl) {
-    fprintf(outfile, "\n\tTransformation finished.\n");
-    fprintf(outfile, "\tTwo-electron integrals written to file%d.\n",mfile);
+    psi::fprintf(outfile, "\n\tTransformation finished.\n");
+    psi::fprintf(outfile, "\tTwo-electron integrals written to file%d.\n",mfile);
     fflush(outfile);
   }
 

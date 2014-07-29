@@ -34,7 +34,7 @@ void CCMRCC::compute_first_order_amps()
   /*
    * MP2 - Doubles contributions
    */
-  fprintf(outfile,"\n\n  Computing first-order amplitudes for frozen-virtual MOs");
+  psi::fprintf(outfile,"\n\n  Computing first-order amplitudes for frozen-virtual MOs");
 
   blas->solve("t2_1[oo][vf]{u}   = <[oo]:[vf]> / d2[oo][vf]{u}");
   blas->solve("t2_1[oO][vF]{u}   = <[oo]|[vf]> / d2[oO][vF]{u}");
@@ -80,7 +80,7 @@ void CCMRCC::compute_first_order_amps()
 void CCMRCC::perturbative_cbs()
 {
 
-  fprintf(outfile,"\n\n  Computing perturbative corrections for frozen-virtual MOs");
+  psi::fprintf(outfile,"\n\n  Computing perturbative corrections for frozen-virtual MOs");
   /*
    * MP2 - Doubles contributions
    */
@@ -123,10 +123,10 @@ void CCMRCC::perturbative_cbs()
   double E_ff = blas->get_scalar("ECCSD",0);
 
 
-  fprintf(outfile,"\n        CBS second-order correction (vf) = %20.12f",E_vf);
-  fprintf(outfile,"\n        CBS second-order correction (fv) = %20.12f",E_fv);
-  fprintf(outfile,"\n        CBS second-order correction (ff) = %20.12f",E_ff);
-  fprintf(outfile,"\n        CBS second-order correction      = %20.12f",E_vf + E_fv + E_ff);
+  psi::fprintf(outfile,"\n        CBS second-order correction (vf) = %20.12f",E_vf);
+  psi::fprintf(outfile,"\n        CBS second-order correction (fv) = %20.12f",E_fv);
+  psi::fprintf(outfile,"\n        CBS second-order correction (ff) = %20.12f",E_ff);
+  psi::fprintf(outfile,"\n        CBS second-order correction      = %20.12f",E_vf + E_fv + E_ff);
 
 
   /*
@@ -250,18 +250,18 @@ void CCMRCC::perturbative_cbs()
 
   double E_ff_3_s = blas->get_scalar("ECCSD",0);
 
-  fprintf(outfile,"\n\n        CBS third-order  correction (vf) = %20.12f (no singles)",E_vf_3);
-  fprintf(outfile,"\n        CBS third-order  correction (fv) = %20.12f (no singles)",E_vf_3);
-  fprintf(outfile,"\n        CBS third-order  correction (ff) = %20.12f (no singles)",E_ff_3);
-  fprintf(outfile,"\n        CBS third-order  correction      = %20.12f (no singles)",E_vf_3 * 2.0 + E_ff_3);
-  fprintf(outfile,"\n\n        CBS third-order  correction (vf) = %20.12f",E_vf_3_s);
-  fprintf(outfile,"\n        CBS third-order  correction (fv) = %20.12f",E_vf_3_s);
-  fprintf(outfile,"\n        CBS third-order  correction (ff) = %20.12f",E_ff_3_s);
-  fprintf(outfile,"\n        CBS third-order  correction      = %20.12f",E_vf_3_s * 2.0 + E_ff_3_s);
+  psi::fprintf(outfile,"\n\n        CBS third-order  correction (vf) = %20.12f (no singles)",E_vf_3);
+  psi::fprintf(outfile,"\n        CBS third-order  correction (fv) = %20.12f (no singles)",E_vf_3);
+  psi::fprintf(outfile,"\n        CBS third-order  correction (ff) = %20.12f (no singles)",E_ff_3);
+  psi::fprintf(outfile,"\n        CBS third-order  correction      = %20.12f (no singles)",E_vf_3 * 2.0 + E_ff_3);
+  psi::fprintf(outfile,"\n\n        CBS third-order  correction (vf) = %20.12f",E_vf_3_s);
+  psi::fprintf(outfile,"\n        CBS third-order  correction (fv) = %20.12f",E_vf_3_s);
+  psi::fprintf(outfile,"\n        CBS third-order  correction (ff) = %20.12f",E_ff_3_s);
+  psi::fprintf(outfile,"\n        CBS third-order  correction      = %20.12f",E_vf_3_s * 2.0 + E_ff_3_s);
 
-  fprintf(outfile,"\n\n      * CBS corrected energy (2)         = %20.12f",current_energy + E_ff + E_vf + E_fv);
-  fprintf(outfile,"\n      * CBS corrected energy (2+3)       = %20.12f (no singles)",current_energy + E_ff + E_vf + E_fv + E_vf_3 * 2.0 + E_ff_3);
-  fprintf(outfile,"\n      * CBS corrected energy (2+3)       = %20.12f",current_energy + E_ff + E_vf + E_fv + E_vf_3_s * 2.0 + E_ff_3_s);
+  psi::fprintf(outfile,"\n\n      * CBS corrected energy (2)         = %20.12f",current_energy + E_ff + E_vf + E_fv);
+  psi::fprintf(outfile,"\n      * CBS corrected energy (2+3)       = %20.12f (no singles)",current_energy + E_ff + E_vf + E_fv + E_vf_3 * 2.0 + E_ff_3);
+  psi::fprintf(outfile,"\n      * CBS corrected energy (2+3)       = %20.12f",current_energy + E_ff + E_vf + E_fv + E_vf_3_s * 2.0 + E_ff_3_s);
 
   fflush(outfile);
 }

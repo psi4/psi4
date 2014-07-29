@@ -32,7 +32,7 @@ namespace psi{ namespace occwave{
 
 void OCCWave::omp3_response_pdms()
 {   
-        //fprintf(outfile,"\n response_pdms is starting... \n"); fflush(outfile);
+        //psi::fprintf(outfile,"\n response_pdms is starting... \n"); fflush(outfile);
 
         // Build G intermediates 
         timer_on("G int");
@@ -239,7 +239,7 @@ void OCCWave::omp3_response_pdms()
 
  }// end if (reference_ == "UNRESTRICTED") 
 
-  //fprintf(outfile,"\n response_pdms done... \n"); fflush(outfile);
+  //psi::fprintf(outfile,"\n response_pdms done... \n"); fflush(outfile);
 
 } // end of response_pdms
 }} // End Namespaces

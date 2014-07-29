@@ -88,7 +88,7 @@ void OutFile::Printf(const char* format,...){
    va_list args;
    va_start (args, format);
    int left=vsnprintf(buffer,1000,format,args);
-   if(left>1000)fprintf(outfile,"WARNING::Your entire message was not printed");
+   if(left>1000)psi::fprintf(outfile,"WARNING::Your entire message was not printed");
    va_end(args);
    Read(buffer);
 }

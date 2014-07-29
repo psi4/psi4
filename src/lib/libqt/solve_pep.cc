@@ -29,7 +29,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
-
+#include "psi4-dec.h"
 namespace psi {
 	
 #define A_MIN 1.0E-10
@@ -64,7 +64,7 @@ void solve_2x2_pep(double **H, double S, double *evals, double **evecs)
    tval -= 4.0 * a * c ;
    tval2 = sqrt(tval) ;
    if (tval < 0.0) {
-      fprintf(stderr, "(solve_2x2_pep): radical less than 0\n") ;
+      psi::fprintf(stderr, "(solve_2x2_pep): radical less than 0\n") ;
       return ;
       }
    else if (fabs(a) < A_MIN) {

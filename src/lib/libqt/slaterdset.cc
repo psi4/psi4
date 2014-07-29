@@ -36,7 +36,7 @@
 #include <libpsio/psio.h>
 #include <libciomr/libciomr.h>
 #include "slaterdset.h"
-
+#include "psi4-dec.h"
 namespace psi {
 
 #define PSIO_INIT if (!psio_state()) { \
@@ -677,7 +677,7 @@ PSIO_INIT
 PSIO_OPEN(unit,PSIO_OPEN_OLD)
 
   if (vectnum < 0 || vectnum > 99) {
-    fprintf(stderr, "(slaterdetset_write_vect): vectnum out of bounds\n");
+    psi::fprintf(stderr, "(slaterdetset_write_vect): vectnum out of bounds\n");
     abort();
   }
 

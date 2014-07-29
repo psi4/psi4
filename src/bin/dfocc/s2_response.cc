@@ -35,7 +35,7 @@ namespace psi{ namespace dfoccwave{
 void DFOCC::s2_response()
 {   
 
-    fprintf(outfile,"\tComputing <S**2>...\n");  
+    psi::fprintf(outfile,"\tComputing <S**2>...\n");  
     fflush(outfile);
     timer_on("s2_response");
     SharedTensor2d T, T2;
@@ -126,13 +126,13 @@ void DFOCC::s2_response()
     mult_proj = sqrt(value3);
  
     // Print
-    fprintf(outfile,"\t<S**2>_reference (a.u.): %12.8f\n", s2_ref);
-    fprintf(outfile,"\t<S**2>_response (a.u.) : %12.8f\n", s2_resp);
-    fprintf(outfile,"\t<S**2>_projected (a.u.): %12.8f\n", s2_proj);
-    fprintf(outfile,"\tSpin q.n. (resp)       : %12.8f\n", s_qn_resp);
-    fprintf(outfile,"\tSpin q.n. (proj)       : %12.8f\n", s_qn_proj);
-    fprintf(outfile,"\tSpin mult. (resp)      : %12.8f\n", mult_resp);
-    fprintf(outfile,"\tSpin mult. (proj)      : %12.8f\n", mult_proj);
+    psi::fprintf(outfile,"\t<S**2>_reference (a.u.): %12.8f\n", s2_ref);
+    psi::fprintf(outfile,"\t<S**2>_response (a.u.) : %12.8f\n", s2_resp);
+    psi::fprintf(outfile,"\t<S**2>_projected (a.u.): %12.8f\n", s2_proj);
+    psi::fprintf(outfile,"\tSpin q.n. (resp)       : %12.8f\n", s_qn_resp);
+    psi::fprintf(outfile,"\tSpin q.n. (proj)       : %12.8f\n", s_qn_proj);
+    psi::fprintf(outfile,"\tSpin mult. (resp)      : %12.8f\n", mult_resp);
+    psi::fprintf(outfile,"\tSpin mult. (proj)      : %12.8f\n", mult_proj);
     fflush(outfile);
 
     timer_off("s2_response");
@@ -144,7 +144,7 @@ void DFOCC::s2_response()
 void DFOCC::s2_lagrangian()
 {   
 
-    fprintf(outfile,"\tComputing <S**2>_lagrangian...\n");  
+    psi::fprintf(outfile,"\tComputing <S**2>_lagrangian...\n");  
     fflush(outfile);
     timer_on("s2_lagrangian");
     SharedTensor2d T, T2;
@@ -313,16 +313,16 @@ void DFOCC::s2_lagrangian()
     mult_lag = sqrt(value4);
  
     // Print
-    fprintf(outfile,"\t<S**2>_reference (a.u.)  : %12.8f\n", s2_ref);
-    fprintf(outfile,"\t<S**2>_response (a.u.)   : %12.8f\n", s2_resp);
-    fprintf(outfile,"\t<S**2>_projected (a.u.)  : %12.8f\n", s2_proj);
-    fprintf(outfile,"\t<S**2>_lagrangian (a.u.) : %12.8f\n", s2_lag);
-    fprintf(outfile,"\tSpin q.n. (resp)         : %12.8f\n", s_qn_resp);
-    fprintf(outfile,"\tSpin q.n. (proj)         : %12.8f\n", s_qn_proj);
-    fprintf(outfile,"\tSpin q.n. (lagr)         : %12.8f\n", s_qn_lag);
-    fprintf(outfile,"\tSpin mult. (resp)        : %12.8f\n", mult_resp);
-    fprintf(outfile,"\tSpin mult. (proj)        : %12.8f\n", mult_proj);
-    fprintf(outfile,"\tSpin mult. (lagr)        : %12.8f\n", mult_lag);
+    psi::fprintf(outfile,"\t<S**2>_reference (a.u.)  : %12.8f\n", s2_ref);
+    psi::fprintf(outfile,"\t<S**2>_response (a.u.)   : %12.8f\n", s2_resp);
+    psi::fprintf(outfile,"\t<S**2>_projected (a.u.)  : %12.8f\n", s2_proj);
+    psi::fprintf(outfile,"\t<S**2>_lagrangian (a.u.) : %12.8f\n", s2_lag);
+    psi::fprintf(outfile,"\tSpin q.n. (resp)         : %12.8f\n", s_qn_resp);
+    psi::fprintf(outfile,"\tSpin q.n. (proj)         : %12.8f\n", s_qn_proj);
+    psi::fprintf(outfile,"\tSpin q.n. (lagr)         : %12.8f\n", s_qn_lag);
+    psi::fprintf(outfile,"\tSpin mult. (resp)        : %12.8f\n", mult_resp);
+    psi::fprintf(outfile,"\tSpin mult. (proj)        : %12.8f\n", mult_proj);
+    psi::fprintf(outfile,"\tSpin mult. (lagr)        : %12.8f\n", mult_lag);
     fflush(outfile);
 
     timer_off("s2_lagrangian");

@@ -120,16 +120,16 @@ void get_moinfo(void)
 
     /* Calculation consistency check */
     if(moinfo.nfzc && (fabs(moinfo.efzc) < 1e-7)) {
-        fprintf(outfile, "\tCCSORT Error: Orbitals are frozen in input,\n");
-        fprintf(outfile, "\tbut frozen core energy is small!\n");
-        fprintf(outfile, "\tCalculation will be aborted...\n");
+        psi::fprintf(outfile, "\tCCSORT Error: Orbitals are frozen in input,\n");
+        psi::fprintf(outfile, "\tbut frozen core energy is small!\n");
+        psi::fprintf(outfile, "\tCalculation will be aborted...\n");
         fflush(outfile);
         exit(PSI_RETURN_FAILURE);
     }
     else if(!moinfo.nfzc && fabs(moinfo.efzc)) {
-        fprintf(outfile, "\tCCSORT Warning: No orbitals are frozen,\n");
-        fprintf(outfile, "\tbut the frozen-core energy in chkpt is non-zero.\n");
-        fprintf(outfile, "\tCalculation will continue with zero efzc...\n");
+        psi::fprintf(outfile, "\tCCSORT Warning: No orbitals are frozen,\n");
+        psi::fprintf(outfile, "\tbut the frozen-core energy in chkpt is non-zero.\n");
+        psi::fprintf(outfile, "\tCalculation will continue with zero efzc...\n");
         fflush(outfile);
         moinfo.efzc = 0.0;
     }
@@ -984,24 +984,24 @@ void get_moinfo(void)
 
     }
 
-    fprintf(outfile,"\n\tChkpt Parameters:\n");
-    fprintf(outfile,"\t--------------------\n");
-    fprintf(outfile,"\tNumber of irreps     = %d\n",moinfo.nirreps);
-    fprintf(outfile,"\tNumber of MOs        = %d\n",moinfo.nmo);
-    fprintf(outfile,"\tNumber of active MOs = %d\n\n",moinfo.nactive);
-    fprintf(outfile,
+    psi::fprintf(outfile,"\n\tChkpt Parameters:\n");
+    psi::fprintf(outfile,"\t--------------------\n");
+    psi::fprintf(outfile,"\tNumber of irreps     = %d\n",moinfo.nirreps);
+    psi::fprintf(outfile,"\tNumber of MOs        = %d\n",moinfo.nmo);
+    psi::fprintf(outfile,"\tNumber of active MOs = %d\n\n",moinfo.nactive);
+    psi::fprintf(outfile,
             "\tLabel\t# MOs\t# FZDC\t# DOCC\t# SOCC\t# VIRT\t# FZVR\n");
-    fprintf(outfile,
+    psi::fprintf(outfile,
             "\t-----\t-----\t------\t------\t------\t------\t------\n");
     for(i=0; i < moinfo.nirreps; i++) {
-        fprintf(outfile,
+        psi::fprintf(outfile,
                 "\t %s\t   %d\t    %d\t    %d\t    %d\t    %d\t    %d\n",
                 moinfo.labels[i],moinfo.orbspi[i],moinfo.frdocc[i],
                 moinfo.clsdpi[i],moinfo.openpi[i],moinfo.uoccpi[i],
                 moinfo.fruocc[i]);
     }
-    fprintf(outfile,"\n\tNuclear Rep. energy (chkpt) =  %20.14f\n", moinfo.enuc);
-    fprintf(outfile,  "\tSCF energy          (chkpt) =  %20.14f\n", escf);
+    psi::fprintf(outfile,"\n\tNuclear Rep. energy (chkpt) =  %20.14f\n", moinfo.enuc);
+    psi::fprintf(outfile,  "\tSCF energy          (chkpt) =  %20.14f\n", escf);
 
     /* Lastly, build the active virtual orbital SCF eigenvector array for
      the AO-basis code (see CCENERGY) */
@@ -1153,10 +1153,10 @@ void get_moinfo(void)
             free_block(evects[h]);
 
             /*
-      fprintf(outfile, "\n\tOriginal SCF Eigenvectors:\n");
+      psi::fprintf(outfile, "\n\tOriginal SCF Eigenvectors:\n");
       print_mat(evects[h], moinfo.sopi[h], moinfo.orbspi[h], outfile);
 
-      fprintf(outfile, "\n\tRe-ordered Virtual SCF Eigenvectors:\n");
+      psi::fprintf(outfile, "\n\tRe-ordered Virtual SCF Eigenvectors:\n");
       print_mat(scf_vector[h], moinfo.sopi[h], moinfo.virtpi[h], outfile);
     */
         }

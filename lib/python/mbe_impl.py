@@ -20,6 +20,7 @@
 #@END LICENSE
 #
 from parallel import *
+from qmmm import *
 import sys
 
 #Our instance of the MBE c++ API
@@ -27,16 +28,24 @@ lfrag=psi4.LibFragHelper()
 
        
 
-def RunCalc(name,molecule,atoms,caps,ghosts,Egys,**kwargs):
+def RunCalc(name,molecule,atoms,caps,charges,ghosts,Egys,**kwargs):
     old_geom=molecule.save_string_xyz()
     temp_geom=old_geom.split('\n')
     new_geom=[]
+    qmmm=QMMM()
+    for i in range(0,len(charges)):
+        qmm.addChargeBohr(charges[i*4],charges[i*4+1],
+                          charges[i*4+2],charges[i*4+3])
+    if(len(charges)>=1):
+        qmmm.populateExtern()
+        psi4.set_global_option_python('EXTERN',qmmm.extern)
     for i in range(0,len(atoms)):
         new_geom.append(temp_geom[atoms[i]+1])
     new_geom.append(caps)
     for i in range(0,len(ghosts)):
         new_geom.append('@'+temp_geom[ghosts[i]+1].lstrip(' '))
     new_geom.append('symmetry c1')
+    new_geom.append('no_com')
     new_geom.append('no_reorient')
     fragstr='\n'.join(new_geom)
     frag=geometry(fragstr)
@@ -69,13 +78,13 @@ def DoMPI(PMan,size):
 def Magic(frag,N,Egys,name,molecule,**kwargs):
     atoms=lfrag.GetNMerN(N,frag)
     caps=lfrag.CapHelper(N,frag)
+    charges=[]#lfrag.EmbedHelper("NNNNO")
     ghosts=lfrag.GetGhostsNMerN(N,frag)
-    oldguess=psi4.get_global_option("GUESS")
-    
+    oldguess=psi4.get_global_option("GUESS")    
     if(N!=0):
         lfrag.WriteMOs(N,frag)
         psi4.set_global_option("GUESS","READ")
-    RunCalc(name,molecule,atoms,caps,ghosts,Egys,**kwargs)
+    RunCalc(name,molecule,atoms,caps,charges,ghosts,Egys,**kwargs)
     if(N==0):
         lfrag.ReadMOs()
     psi4.set_global_option("GUESS",oldguess)

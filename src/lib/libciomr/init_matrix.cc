@@ -31,7 +31,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <strings.h>
-
+#include "psi4-dec.h"
 namespace psi {
 
   /**
@@ -66,15 +66,15 @@ double ** init_matrix(unsigned long int n, unsigned long int m)
 
 //  if ((A = (double **) malloc(n * (unsigned long int)sizeof(double *)))==NULL) {
     if ((A = new double*[n])==NULL) {
-        fprintf(stderr,"block_matrix: trouble allocating memory \n");
-        fprintf(stderr,"n = %ld\n",n);
+        psi::fprintf(stderr,"block_matrix: trouble allocating memory \n");
+        psi::fprintf(stderr,"n = %ld\n",n);
         exit(PSI_RETURN_FAILURE);
     }
 
 //  if ((B = (double *) malloc(m*n * (unsigned long int)sizeof(double)))==NULL) {
     if ((B = new double[n*m])==NULL) {
-        fprintf(stderr,"block_matrix: trouble allocating memory \n");
-        fprintf(stderr,"m = %ld\n",m);
+        psi::fprintf(stderr,"block_matrix: trouble allocating memory \n");
+        psi::fprintf(stderr,"m = %ld\n",m);
         exit(PSI_RETURN_FAILURE);
     }
 
@@ -97,16 +97,16 @@ double ** init_matrix(unsigned long int n, unsigned long int m)
 
   if ((array = (double **) malloc(n*(unsigned long int)sizeof(double *)))
     ==NULL) {
-    fprintf(stderr,"init_matrix: trouble allocating memory \n");
-    fprintf(stderr,"n = %ld\n",n);
+    psi::fprintf(stderr,"init_matrix: trouble allocating memory \n");
+    psi::fprintf(stderr,"n = %ld\n",n);
     exit(PSI_RETURN_FAILURE);
   }
 
   for (i = 0; i < n; i++) {
     if ((array[i] = (double *) malloc(m*(unsigned long int)sizeof(double)))
       ==NULL) {
-      fprintf(stderr,"init_matrix: trouble allocating memory \n");
-      fprintf(stderr,"i = %ld m = %ld\n",i,m);
+      psi::fprintf(stderr,"init_matrix: trouble allocating memory \n");
+      psi::fprintf(stderr,"i = %ld m = %ld\n",i,m);
       exit(PSI_RETURN_FAILURE);
     }
     bzero(array[i],m*(unsigned long int)sizeof(double));

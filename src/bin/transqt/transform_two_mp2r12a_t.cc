@@ -96,9 +96,9 @@ void transform_two_mp2r12a_t(void)
 
 
   if(moinfo.iopen) {
-      fprintf(outfile,"\n\tThis system seems to be open-shell.\n");
-      fprintf(outfile,"MP2R12/A restricted transformations are available only ");
-      fprintf(outfile,"for closed-shell molecules.\n");
+      psi::fprintf(outfile,"\n\tThis system seems to be open-shell.\n");
+      psi::fprintf(outfile,"MP2R12/A restricted transformations are available only ");
+      psi::fprintf(outfile,"for closed-shell molecules.\n");
       exit_io();
       exit(PSI_RETURN_FAILURE);
     }
@@ -131,7 +131,7 @@ void transform_two_mp2r12a_t(void)
 
   /** Pre-sort the two-electron Integrals **/
   if (params.print_lvl) {
-    fprintf(outfile, "\n\tPre-sorting two-electron ints...\n\n");
+    psi::fprintf(outfile, "\n\tPre-sorting two-electron ints...\n\n");
     fflush(outfile);
   }
 
@@ -139,9 +139,9 @@ void transform_two_mp2r12a_t(void)
             first_tmp_file, tolerance, outfile);
 
   if (print_lvl > 1) {
-    fprintf(outfile, "\tPresort");
+    psi::fprintf(outfile, "\tPresort");
     yosh_print(&YBuffP, outfile);
-    fprintf(outfile, "\n");
+    psi::fprintf(outfile, "\n");
     fflush(outfile);
   }
 
@@ -172,7 +172,7 @@ void transform_two_mp2r12a_t(void)
       nvirt += orbspi[h] - clsdpi[h];
     }
 
-  fprintf(outfile,
+  psi::fprintf(outfile,
           "\tEntering MP2R12/A two-electron integral transformation...\n\n");
 
   iwl_buf_init(&PBuff, presort_file, tolerance, 1, 1);
@@ -181,9 +181,9 @@ void transform_two_mp2r12a_t(void)
 
   yosh_init_buckets(&YBuffJ);
 
-  fprintf(outfile, "\tHalf-transform");
+  psi::fprintf(outfile, "\tHalf-transform");
   yosh_print(&YBuffJ, outfile);
-  fprintf(outfile, "\n");
+  psi::fprintf(outfile, "\n");
   fflush(outfile);
 
   A = block_matrix(nso,nso);
@@ -246,7 +246,7 @@ void transform_two_mp2r12a_t(void)
     Now the integrals are (kl|[r12,T2]|pq)
    ---------------------------------------*/
 
-  fprintf(outfile, "\tSorting half-transformed integrals...\n");
+  psi::fprintf(outfile, "\tSorting half-transformed integrals...\n");
 
   iwl_buf_close(&PBuff, keep_presort);
   yosh_flush(&YBuffJ);
@@ -255,8 +255,8 @@ void transform_two_mp2r12a_t(void)
             0, (print_lvl > 5), outfile);
   yosh_done(&YBuffJ);
 
-  fprintf(outfile, "\tFinished half-transform...\n");
-  fprintf(outfile, "\tWorking on second half...\n");
+  psi::fprintf(outfile, "\tFinished half-transform...\n");
+  psi::fprintf(outfile, "\tWorking on second half...\n");
   fflush(outfile);
 
   iwl_buf_init(&JBuff, jfile, tolerance, 1, 1);
@@ -325,9 +325,9 @@ void transform_two_mp2r12a_t(void)
   iwl_buf_flush(&MBuff, 1);
   iwl_buf_close(&MBuff, 1);
 
-  fprintf(outfile, "\n\tTransformation finished.\n");
+  psi::fprintf(outfile, "\n\tTransformation finished.\n");
 
-  fprintf(outfile, "\tTwo-electron integrals written to file%d.\n",mfile);
+  psi::fprintf(outfile, "\tTwo-electron integrals written to file%d.\n",mfile);
   fflush(outfile);
 
   return;
@@ -431,8 +431,8 @@ void make_arrays(double ****Cdocc,
 
   /* Organize MOs for docc set only */
   if(params.print_mos) {
-      fprintf(outfile,"\n\tSCF Eigenvectors (Occupied Set):\n");
-      fprintf(outfile,  "\t--------------------------------\n");
+      psi::fprintf(outfile,"\n\tSCF Eigenvectors (Occupied Set):\n");
+      psi::fprintf(outfile,  "\t--------------------------------\n");
     }
   *Cdocc = (double ***) malloc(moinfo.nirreps * sizeof(double **));
   for(h=0; h < moinfo.nirreps; h++) {
@@ -447,7 +447,7 @@ void make_arrays(double ****Cdocc,
                 }
             }
           if(params.print_mos) {
-              fprintf(outfile,"\n\tDoubly Occupied Orbitals for Irrep %s\n",
+              psi::fprintf(outfile,"\n\tDoubly Occupied Orbitals for Irrep %s\n",
                       moinfo.labels[h]);
               print_mat((*Cdocc)[h],moinfo.sopi[h],(*active_docc)[h],
                         outfile);

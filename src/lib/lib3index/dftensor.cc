@@ -94,13 +94,13 @@ void DFTensor::common_init()
 }
 void DFTensor::print_header()
 {
-    fprintf(outfile,"  ==> DF Tensor (by Rob Parrish) <==\n\n");
+    psi::fprintf(outfile,"  ==> DF Tensor (by Rob Parrish) <==\n\n");
 
-    fprintf(outfile," => Primary Basis Set <= \n\n");
+    psi::fprintf(outfile," => Primary Basis Set <= \n\n");
     primary_->print_by_level(outfile,print_);
     fflush(outfile);
 
-    fprintf(outfile," => Auxiliary Basis Set <= \n\n");
+    psi::fprintf(outfile," => Auxiliary Basis Set <= \n\n");
     auxiliary_->print_by_level(outfile,print_);
     fflush(outfile);
 }
@@ -206,7 +206,7 @@ SharedMatrix DFTensor::Qov()
 
     Amn.reset();
 
-    fprintf(outfile, "DFTensor::Qov: naux %d, naocc %d, navir %d\n", naux_, naocc_, navir_);
+    psi::fprintf(outfile, "DFTensor::Qov: naux %d, naocc %d, navir %d\n", naux_, naocc_, navir_);
     SharedMatrix Aia(new Matrix("Qia", naux_, naocc_ * (ULI) navir_));
     double** Aiap = Aia->pointer();
 

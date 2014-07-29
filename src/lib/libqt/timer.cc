@@ -126,22 +126,22 @@ void timer_done(void)
 
   /* Dump the timing data to timer.dat and free the timers */
   ffile(&timer_out, "timer.dat", 1);
-  fprintf(timer_out, "\n");
-  fprintf(timer_out, "Host: %s\n", host);
-  fprintf(timer_out, "\n");
-  fprintf(timer_out, "Timers On : %s", ctime(&timer_start));
-  fprintf(timer_out, "Timers Off: %s", ctime(&timer_end));
-  fprintf(timer_out, "\nWall Time:  %10.2f seconds\n\n",
+  psi::fprintf(timer_out, "\n");
+  psi::fprintf(timer_out, "Host: %s\n", host);
+  psi::fprintf(timer_out, "\n");
+  psi::fprintf(timer_out, "Timers On : %s", ctime(&timer_start));
+  psi::fprintf(timer_out, "Timers Off: %s", ctime(&timer_end));
+  psi::fprintf(timer_out, "\nWall Time:  %10.2f seconds\n\n",
           (double) timer_end - timer_start);
 
   this_timer = global_timer;
   while(this_timer != NULL) {
       if(this_timer->calls > 1)
-          fprintf(timer_out, "%-12s: %10.2fu %10.2fs %10.2fw %6d calls\n",
+          psi::fprintf(timer_out, "%-12s: %10.2fu %10.2fs %10.2fw %6d calls\n",
                   this_timer->key, this_timer->utime, this_timer->stime,
                   this_timer->wtime, this_timer->calls);
       else if(this_timer->calls == 1)
-          fprintf(timer_out, "%-12s: %10.2fu %10.2fs %10.2fw %6d call\n",
+          psi::fprintf(timer_out, "%-12s: %10.2fu %10.2fs %10.2fw %6d call\n",
                   this_timer->key, this_timer->utime, this_timer->stime,
                   this_timer->wtime, this_timer->calls);
       next_timer = this_timer->next;
@@ -149,7 +149,7 @@ void timer_done(void)
       this_timer = next_timer;
     }
 
-  fprintf(timer_out,
+  psi::fprintf(timer_out,
           "\n***********************************************************\n");
   fclose(timer_out);
 

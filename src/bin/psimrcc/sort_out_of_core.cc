@@ -63,15 +63,15 @@ void CCSort::build_integrals_out_of_core()
   size_t ccintegrals_memory = static_cast<size_t>(static_cast<double>(memory_manager->get_FreeMemory())*fraction_of_memory_for_sorting);
 
 
-  fprintf(outfile,"\n\n  Sorting integrals:");
-  fprintf(outfile,"\n    Memory available                       = %14lu bytes",
+  psi::fprintf(outfile,"\n\n  Sorting integrals:");
+  psi::fprintf(outfile,"\n    Memory available                       = %14lu bytes",
                   (unsigned long)memory_manager->get_FreeMemory());
-  fprintf(outfile,"\n    Memory available for sorting           = %14lu bytes (%.1f%%)",
+  psi::fprintf(outfile,"\n    Memory available for sorting           = %14lu bytes (%.1f%%)",
                   (unsigned long)ccintegrals_memory,fraction_of_memory_for_sorting*100.0);
   fflush(outfile);
 
   while(mat_it!=mat_end){
-    fprintf(outfile,"\n\n    Pass %d:",cycle + 1);
+    psi::fprintf(outfile,"\n\n    Pass %d:",cycle + 1);
     // Find how many matrices blocks we can store in 95% of the free memory and allocate them
     MatrixBlks to_be_processed;
     setup_out_of_core_list(mat_it,mat_irrep,mat_end,to_be_processed);
@@ -95,7 +95,7 @@ void CCSort::build_integrals_out_of_core()
 
 void CCSort::setup_out_of_core_list(MatMapIt& mat_it,int& mat_irrep,MatMapIt& mat_end,MatrixBlks& to_be_processed)
 {
-  fprintf(outfile,"\n    Setting up the matrix list:");
+  psi::fprintf(outfile,"\n    Setting up the matrix list:");
   fflush(outfile);
   size_t ccintegrals_memory = static_cast<size_t>(static_cast<double>(memory_manager->get_FreeMemory())*fraction_of_memory_for_sorting);
 
@@ -115,8 +115,8 @@ void CCSort::setup_out_of_core_list(MatMapIt& mat_it,int& mat_irrep,MatMapIt& ma
           blocks_added++;
         }else{
           if(blocks_added == 0){
-            fprintf(outfile,"\n    Matrix: %s irrep %d does not fit into memory",Matrix->get_label().c_str(),mat_irrep);
-            fprintf(outfile,"\n            memory required = %14lu bytes",(unsigned long)block_memory);
+            psi::fprintf(outfile,"\n    Matrix: %s irrep %d does not fit into memory",Matrix->get_label().c_str(),mat_irrep);
+            psi::fprintf(outfile,"\n            memory required = %14lu bytes",(unsigned long)block_memory);
             fflush(outfile);
           }
           out_of_memory = true;
@@ -128,7 +128,7 @@ void CCSort::setup_out_of_core_list(MatMapIt& mat_it,int& mat_irrep,MatMapIt& ma
     if(!out_of_memory)
       ++mat_it;
   }
-  fprintf(outfile," added %d matrices blocks",blocks_added);
+  psi::fprintf(outfile," added %d matrices blocks",blocks_added);
   fflush(outfile);
 }
 

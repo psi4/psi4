@@ -143,7 +143,7 @@ int schmidt_addoc(double *buffer4, double *buffer5, int buf_size, int extra_buf,
             f_index, &f_index); 
      } /* end extra_buf */
    normval = sqrt(normval); 
-   /* fprintf(outfile,"\n normval = %15.10f\n", normval); */ 
+   /* psi::fprintf(outfile,"\n normval = %15.10f\n", normval); */ 
  
   /* test norm of new b vector */
   free(dotval); 
@@ -357,7 +357,7 @@ BIGINT strings2det(int alp_code, int alp_idx, int bet_code, int bet_idx)
 
    blknum = CIblks.decode[alp_code][bet_code];
    if (blknum == -1) {
-     fprintf(outfile, "CIvect::strings2det failed --- invalid block\n");
+     psi::fprintf(outfile, "CIvect::strings2det failed --- invalid block\n");
      exit(1);
    }
 
@@ -419,7 +419,7 @@ void unit_guess(int alp_code, int alp_idx, int bet_code, int bet_idx,
         wreadw(b_file, (char *) buffer, sizeof(double)*buf_size,
                b_writ, &b_writ);
         for (I=0; I<buf_size; I++)
-           if (buffer[I] != 0.0) fprintf(outfile,"b[0][%d] = %lf\n\n",
+           if (buffer[I] != 0.0) psi::fprintf(outfile,"b[0][%d] = %lf\n\n",
                I, buffer[I]);
         printf("Done reading in b trial vector for check.\n"); */
 

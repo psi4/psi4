@@ -795,41 +795,41 @@ void Matrix::print_mat(const double *const *const a, int m, int n, FILE *out) co
     int num_frame_counter = 0;
     //for each frame
     for(num_frame_counter=0;num_frame_counter<num_frames;num_frame_counter++){
-        fprintf(out,"\n");
+        psi::fprintf(out,"\n");
         for(int j=print_ncol*num_frame_counter+1;j<print_ncol*num_frame_counter+print_ncol+1;j++){
-            if(j==print_ncol*num_frame_counter+1){ fprintf(out,"%18d",j); }
-            else{ fprintf(out,"               %5d",j); }
+            if(j==print_ncol*num_frame_counter+1){ psi::fprintf(out,"%18d",j); }
+            else{ psi::fprintf(out,"               %5d",j); }
         }
-        fprintf(out,"\n\n");
+        psi::fprintf(out,"\n\n");
 
         for(int k=1; k<=m; ++k){
             for(int j=print_ncol*num_frame_counter+1;j<print_ncol*num_frame_counter+print_ncol+2;j++){
-                if(j==print_ncol*num_frame_counter+1){ fprintf(out,"%5d",k);}
-                else{ fprintf(out," %20.14f",a[k-1][j-2]); }
+                if(j==print_ncol*num_frame_counter+1){ psi::fprintf(out,"%5d",k);}
+                else{ psi::fprintf(out," %20.14f",a[k-1][j-2]); }
             }
-            fprintf(out,"\n");
+            psi::fprintf(out,"\n");
         }
     }
 
     // ALREADY DID THE FULL FRAMES BY THIS POINT
     // NEED TO TAKE CARE OF THE REMAINDER
     if(num_frames_rem != 0){
-        fprintf(out,"\n");
+        psi::fprintf(out,"\n");
         for(int j=print_ncol*num_frame_counter+1;j<=n;j++){
-            if(j==print_ncol*num_frame_counter+1){ fprintf(out,"%18d",j); }
-            else{ fprintf(out,"               %5d",j); }
+            if(j==print_ncol*num_frame_counter+1){ psi::fprintf(out,"%18d",j); }
+            else{ psi::fprintf(out,"               %5d",j); }
         }
-        fprintf(out,"\n\n");
+        psi::fprintf(out,"\n\n");
 
         for(int k=1; k<=m; ++k){
             for(int j=print_ncol*num_frame_counter+1;j<n+2;j++){
-                if(j==print_ncol*num_frame_counter+1){ fprintf(out,"%5d",k); }
-                else{ fprintf(out," %20.14f",a[k-1][j-2]); }
+                if(j==print_ncol*num_frame_counter+1){ psi::fprintf(out,"%5d",k); }
+                else{ psi::fprintf(out," %20.14f",a[k-1][j-2]); }
             }
-            fprintf(out,"\n");
+            psi::fprintf(out,"\n");
         }
     }
-    fprintf(out,"\n\n");
+    psi::fprintf(out,"\n\n");
     //R.I.P. goto statements - Aug 4th 2010 - MSM
 }
 
@@ -839,18 +839,18 @@ void Matrix::print(FILE *out, const char *extra) const
 
     if (name_.length()) {
         if (extra == NULL)
-            fprintf(out, "  ## %s (Symmetry %d) ##\n", name_.c_str(), symmetry_);
+            psi::fprintf(out, "  ## %s (Symmetry %d) ##\n", name_.c_str(), symmetry_);
         else
-            fprintf(out, "  ## %s %s (Symmetry %d)##\n", name_.c_str(), extra, symmetry_);
+            psi::fprintf(out, "  ## %s %s (Symmetry %d)##\n", name_.c_str(), extra, symmetry_);
     }
 
     for (h=0; h<nirrep_; ++h) {
-        fprintf(out, "  Irrep: %d Size: %d x %d\n", h+1, rowspi_[h], colspi_[h^symmetry_]);
+        psi::fprintf(out, "  Irrep: %d Size: %d x %d\n", h+1, rowspi_[h], colspi_[h^symmetry_]);
         if (rowspi_[h] == 0 || colspi_[h^symmetry_] == 0)
-            fprintf(out, "\n\t(empty)\n");
+            psi::fprintf(out, "\n\t(empty)\n");
         else
             print_mat(matrix_[h], rowspi_[h], colspi_[h^symmetry_], out);
-        fprintf(out, "\n");
+        psi::fprintf(out, "\n");
     }
     fflush(out);
 }
@@ -860,17 +860,17 @@ void Matrix::print_atom_vector(FILE *out)
     int i;
 
     if (name_.length()) {
-        fprintf(out,"\n  -%s:\n", name_.c_str());
+        psi::fprintf(out,"\n  -%s:\n", name_.c_str());
     }
-    fprintf(out,"     Atom            X                  Y                   Z\n");
-    fprintf(out,"    ------   -----------------  -----------------  -----------------\n");
+    psi::fprintf(out,"     Atom            X                  Y                   Z\n");
+    psi::fprintf(out,"    ------   -----------------  -----------------  -----------------\n");
 
     for(i=0;i<nrow();i++) {
-        fprintf(out,"    %4d   ",i+1);
-        fprintf(out,"  %17.12lf  %17.12lf  %17.12lf", matrix_[0][i][0], matrix_[0][i][1], matrix_[0][i][2]);
-        fprintf(out,"\n");
+        psi::fprintf(out,"    %4d   ",i+1);
+        psi::fprintf(out,"  %17.12lf  %17.12lf  %17.12lf", matrix_[0][i][0], matrix_[0][i][1], matrix_[0][i][2]);
+        psi::fprintf(out,"\n");
     }
-    fprintf(out,"\n");
+    psi::fprintf(out,"\n");
 }
 
 
@@ -882,13 +882,13 @@ void Matrix::eivprint(const Vector * const values, FILE *out)
     int h;
 
     if (name_.length()) {
-        fprintf(out, "  ## %s with eigenvalues ##\n", name_.c_str());
+        psi::fprintf(out, "  ## %s with eigenvalues ##\n", name_.c_str());
     }
 
     for (h=0; h<nirrep_; ++h) {
-        fprintf(out, " Irrep: %d\n", h+1);
+        psi::fprintf(out, " Irrep: %d\n", h+1);
         eivout(matrix_[h], values->vector_[h], rowspi_[h], colspi_[h^symmetry_], out);
-        fprintf(out, "\n");
+        psi::fprintf(out, "\n");
     }
     fflush(out);
 }
@@ -1357,9 +1357,9 @@ void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix* const a,
 {
     // Check symmetry
     if (symmetry_ != (a->symmetry_ ^ b->symmetry_)) {
-        fprintf(outfile, "Matrix::gemm error: Input symmetries will not result in target symmetry.\n");
-        fprintf(outfile, " Asym %d ^ Bsym %d != Csym %d\n", a->symmetry(), b->symmetry(), symmetry());
-        fprintf(outfile, "Result is %d\n", a->symmetry_ ^ b->symmetry_);
+        psi::fprintf(outfile, "Matrix::gemm error: Input symmetries will not result in target symmetry.\n");
+        psi::fprintf(outfile, " Asym %d ^ Bsym %d != Csym %d\n", a->symmetry(), b->symmetry(), symmetry());
+        psi::fprintf(outfile, "Result is %d\n", a->symmetry_ ^ b->symmetry_);
         throw PSIEXCEPTION("Matrix::gemm error: Input symmetries will not result in target symmetry.");
     }
 
@@ -1630,10 +1630,10 @@ bool Matrix::schmidt_add_row(int h, int rows, double* v) throw()
     double dotval, normval;
     int i, I;
 
-//    fprintf(outfile, "in schmidt_add\n");
+//    psi::fprintf(outfile, "in schmidt_add\n");
 //    for (i=0; i<coldim(h); ++i)
-//        fprintf(outfile, "%lf ", v[i]);
-//    fprintf(outfile, "\n");
+//        psi::fprintf(outfile, "%lf ", v[i]);
+//    psi::fprintf(outfile, "\n");
 
     for (i=0; i<rows; ++i) {
         dotval = C_DDOT(coldim(h), matrix_[h][i], 1, v, 1);
@@ -1649,8 +1649,8 @@ bool Matrix::schmidt_add_row(int h, int rows, double* v) throw()
             matrix_[h][rows][I] = v[I] / normval;
 
 //        for (i=0; i<coldim(h); ++i)
-//            fprintf(outfile, "%lf ", matrix_[h][rows][i]);
-//        fprintf(outfile, "\n");
+//            psi::fprintf(outfile, "%lf ", matrix_[h][rows][i]);
+//        psi::fprintf(outfile, "\n");
         return true;
     }
     else
@@ -1663,7 +1663,7 @@ void Matrix::project_out(Matrix &constraints)
     Matrix temp = *this;
     zero();
 
-//    fprintf(outfile, "in project_out:\n");
+//    psi::fprintf(outfile, "in project_out:\n");
 
     temp.set_name("temp");
 //    temp.print();
@@ -1671,40 +1671,40 @@ void Matrix::project_out(Matrix &constraints)
 //    constraints.print();
 
     double *v = new double[coldim()];
-//    fprintf(outfile, "coldim(): %d\n", coldim()); fflush(outfile);
+//    psi::fprintf(outfile, "coldim(): %d\n", coldim()); fflush(outfile);
     for (int h=0; h<nirrep(); ++h) {
         for (int i=0; i<rowdim(h); ++i) {
-//            fprintf(outfile, "i=%d, copying %d elements from temp[%d][%d] to v\n", i, coldim(h), h, i); fflush(outfile);
+//            psi::fprintf(outfile, "i=%d, copying %d elements from temp[%d][%d] to v\n", i, coldim(h), h, i); fflush(outfile);
             memcpy(v, temp[h][i], sizeof(double)*coldim(h));
 
-//            fprintf(outfile, "temp[%d][] ", h);
+//            psi::fprintf(outfile, "temp[%d][] ", h);
 //            for(int z=0; z<coldim(h); ++z)
-//                fprintf(outfile, "%lf ", temp[h][i][z]);
-//            fprintf(outfile, "\n");
+//                psi::fprintf(outfile, "%lf ", temp[h][i][z]);
+//            psi::fprintf(outfile, "\n");
 
-//            fprintf(outfile, "v[] ", h);
+//            psi::fprintf(outfile, "v[] ", h);
 //            for(int z=0; z<coldim(h); ++z)
-//                fprintf(outfile, "%lf ", v[z]);
-//            fprintf(outfile, "\n");
+//                psi::fprintf(outfile, "%lf ", v[z]);
+//            psi::fprintf(outfile, "\n");
 
             for (int j=0; j<constraints.rowdim(0); ++j) {
                 // hand rolled ddot
                 double dotval = 0.0;
                 for (int z=0; z<coldim(h); ++z) {
                     dotval += temp[h][i][z] * constraints[0][j][z];
-//                    fprintf(outfile, " %lf * %lf ", temp[h][i][z], constraints[0][j][z]);
+//                    psi::fprintf(outfile, " %lf * %lf ", temp[h][i][z], constraints[0][j][z]);
                 }
-//                fprintf(outfile, "\n");
+//                psi::fprintf(outfile, "\n");
 //                double dotval = C_DDOT(coldim(h), &(temp[h][i][0]), 1, &(constraints[0][j][0]), 1);
-//                fprintf(outfile, "dotval = %lf\n", dotval); fflush(outfile);
+//                psi::fprintf(outfile, "dotval = %lf\n", dotval); fflush(outfile);
                 for (int I=0; I<coldim(h); ++I)
                     v[I] -= dotval * constraints[0][j][I];
             }
 
-//            fprintf(outfile, "after removing constraints v[] ", h);
+//            psi::fprintf(outfile, "after removing constraints v[] ", h);
 //            for(int z=0; z<coldim(h); ++z)
-//                fprintf(outfile, "%lf ", v[z]);
-//            fprintf(outfile, "\n");
+//                psi::fprintf(outfile, "%lf ", v[z]);
+//            psi::fprintf(outfile, "\n");
 
             // At this point all constraints have been projected out of "v"
             // Normalize it add Schmidt orthogonalize it against this
@@ -1714,10 +1714,10 @@ void Matrix::project_out(Matrix &constraints)
                 for (int j=0; j<coldim(h); ++j)
                     v[j] /= normval;
 
-//                fprintf(outfile, "calling schmidt_add sending i=%d\n", i);
+//                psi::fprintf(outfile, "calling schmidt_add sending i=%d\n", i);
 //                for(int z=0; z<coldim(h); ++z)
-//                    fprintf(outfile, "%lf ", v[z]);
-//                fprintf(outfile, "\n");
+//                    psi::fprintf(outfile, "%lf ", v[z]);
+//                psi::fprintf(outfile, "\n");
                 schmidt_add_row(h, i, v);
             }
         }
@@ -1802,12 +1802,12 @@ void Matrix::diagonalize(SharedMatrix& metric, SharedMatrix& eigvectors, boost::
 
         if (err != 0) {
             if (err < 0) {
-                fprintf(outfile, "Matrix::diagonalize with metric: C_DSYGV: argument %d has invalid parameter.\n", -err);
+                psi::fprintf(outfile, "Matrix::diagonalize with metric: C_DSYGV: argument %d has invalid parameter.\n", -err);
                 fflush(outfile);
                 abort();
             }
             if (err > 0) {
-                fprintf(outfile, "Matrix::diagonalize with metric: C_DSYGV: error value: %d\n", err);
+                psi::fprintf(outfile, "Matrix::diagonalize with metric: C_DSYGV: error value: %d\n", err);
                 fflush(outfile);
                 abort();
             }
@@ -1878,12 +1878,12 @@ void Matrix::svd(SharedMatrix& U, SharedVector& S, SharedMatrix& V)
 
         if (info != 0) {
             if (info < 0) {
-                fprintf(outfile, "Matrix::svd with metric: C_DGESDD: argument %d has invalid parameter.\n", -info);
+                psi::fprintf(outfile, "Matrix::svd with metric: C_DGESDD: argument %d has invalid parameter.\n", -info);
                 fflush(outfile);
                 abort();
             }
             if (info > 0) {
-                fprintf(outfile, "Matrix::svd with metric: C_DGESDD: error value: %d\n", info);
+                psi::fprintf(outfile, "Matrix::svd with metric: C_DGESDD: error value: %d\n", info);
                 fflush(outfile);
                 abort();
             }
@@ -1925,12 +1925,12 @@ void Matrix::svd_a(SharedMatrix& U, SharedVector& S, SharedMatrix& V)
 
             if (info != 0) {
                 if (info < 0) {
-                    fprintf(outfile, "Matrix::svd with metric: C_DGESDD: argument %d has invalid parameter.\n", -info);
+                    psi::fprintf(outfile, "Matrix::svd with metric: C_DGESDD: argument %d has invalid parameter.\n", -info);
                     fflush(outfile);
                     abort();
                 }
                 if (info > 0) {
-                    fprintf(outfile, "Matrix::svd with metric: C_DGESDD: error value: %d\n", info);
+                    psi::fprintf(outfile, "Matrix::svd with metric: C_DGESDD: error value: %d\n", info);
                     fflush(outfile);
                     abort();
                 }
@@ -2075,12 +2075,12 @@ void Matrix::cholesky_factorize()
             int err = C_DPOTRF('L', rowspi_[h], matrix_[h][0], rowspi_[h]);
             if (err != 0) {
                 if (err < 0) {
-                    fprintf(outfile, "cholesky_factorize: C_DPOTRF: argument %d has invalid paramter.\n", -err);
+                    psi::fprintf(outfile, "cholesky_factorize: C_DPOTRF: argument %d has invalid paramter.\n", -err);
                     fflush(outfile);
                     abort();
                 }
                 if (err > 1) {
-                    fprintf(outfile, "cholesky_factorize: C_DPOTRF: the leading minor of order %d is not "
+                    psi::fprintf(outfile, "cholesky_factorize: C_DPOTRF: the leading minor of order %d is not "
                             "positive definite, and the factorization could not be "
                             "completed.", err);
                     fflush(outfile);
@@ -2287,12 +2287,12 @@ void Matrix::general_invert()
             int err = C_DGETRF(rowspi_[h], colspi_[h], matrix_[h][0], rowspi_[h], ipiv);
             if (err != 0) {
                 if (err < 0) {
-                    fprintf(outfile, "invert: C_DGETRF: argument %d has invalid paramter.\n", -err);
+                    psi::fprintf(outfile, "invert: C_DGETRF: argument %d has invalid paramter.\n", -err);
                     fflush(outfile);
                     abort();
                 }
                 if (err > 1) {
-                    fprintf(outfile, "invert: C_DGETRF: the (%d,%d) element of the factor U or L is "
+                    psi::fprintf(outfile, "invert: C_DGETRF: the (%d,%d) element of the factor U or L is "
                             "zero, and the inverse could not be computed.\n", err, err);
                     fflush(outfile);
                     abort();
@@ -2302,12 +2302,12 @@ void Matrix::general_invert()
             err = C_DGETRI(colspi_[h], matrix_[h][0], rowspi_[h], ipiv, work, lwork);
             if (err != 0) {
                 if (err < 0) {
-                    fprintf(outfile, "invert: C_DGETRI: argument %d has invalid paramter.\n", -err);
+                    psi::fprintf(outfile, "invert: C_DGETRI: argument %d has invalid paramter.\n", -err);
                     fflush(outfile);
                     abort();
                 }
                 if (err > 1) {
-                    fprintf(outfile, "invert: C_DGETRI: the (%d,%d) element of the factor U or L is "
+                    psi::fprintf(outfile, "invert: C_DGETRI: the (%d,%d) element of the factor U or L is "
                             "zero, and the inverse could not be computed.\n", err, err);
                     fflush(outfile);
                     abort();
@@ -2470,9 +2470,9 @@ void Matrix::expm(int m, bool scale)
         C_DAXPY(n * (unsigned long int) n, -1.0, Y[0], 1, N[0], 1);
         C_DAXPY(n * (unsigned long int) n,  1.0, Y[0], 1, D[0], 1);
 
-        //fprintf(outfile,"  ## N ##\n\n");
+        //psi::fprintf(outfile,"  ## N ##\n\n");
         //print_mat(N,n,n,outfile); 
-        //fprintf(outfile,"  ## D ##\n\n");
+        //psi::fprintf(outfile,"  ## D ##\n\n");
         //print_mat(D,n,n,outfile); 
 
         // Solve exp(A) = N / D = D^{1} N = D \ N
@@ -2492,9 +2492,9 @@ void Matrix::expm(int m, bool scale)
             }
         }
 
-        //fprintf(outfile,"  ## LU ##\n\n");
+        //psi::fprintf(outfile,"  ## LU ##\n\n");
         //print_mat(D,n,n,outfile); 
-        //fprintf(outfile,"  ## S(0) ##\n\n");
+        //psi::fprintf(outfile,"  ## S(0) ##\n\n");
         //print_mat(N,n,n,outfile); 
 
         // D \ N
@@ -2504,7 +2504,7 @@ void Matrix::expm(int m, bool scale)
 
         delete[] ipiv;
     
-        //fprintf(outfile,"  ## S ##\n\n");
+        //psi::fprintf(outfile,"  ## S ##\n\n");
         //print_mat(N,n,n,outfile); 
 
         if (scale) {
@@ -2894,8 +2894,8 @@ void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, b
         out = fopen(filename.c_str(), "w");
     }
 
-    fprintf(out, "%s\n", name_.c_str());
-    fprintf(out, "symmetry %d\n", symmetry_);
+    psi::fprintf(out, "%s\n", name_.c_str());
+    psi::fprintf(out, "symmetry %d\n", symmetry_);
 
     if (saveSubBlocks == false) {
         // Convert the matrix to a full matrix
@@ -2918,11 +2918,11 @@ void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, b
                     }
                 }
             }
-            fprintf(out, "%5d\n", count);
+            psi::fprintf(out, "%5d\n", count);
             for (int i=0; i<sizer; ++i) {
                 for (int j=0; j<=i; ++j) {
                     if (fabs(fullblock[i][j]) > 1.0e-12) {
-                        fprintf(out, str_full_format, i, j, fullblock[i][j]);
+                        psi::fprintf(out, str_full_format, i, j, fullblock[i][j]);
                     }
                 }
             }
@@ -2936,11 +2936,11 @@ void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, b
                     }
                 }
             }
-            fprintf(out, "%5d\n", count);
+            psi::fprintf(out, "%5d\n", count);
             for (int i=0; i<sizer; ++i) {
                 for (int j=0; j<sizec; ++j) {
                     if (fabs(fullblock[i][j]) > 1.0e-12) {
-                        fprintf(out, str_full_format, i, j, fullblock[i][j]);
+                        psi::fprintf(out, str_full_format, i, j, fullblock[i][j]);
                     }
                 }
             }
@@ -2959,12 +2959,12 @@ void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, b
                     }
                 }
             }
-            fprintf(out, "%5d\n", count);
+            psi::fprintf(out, "%5d\n", count);
             for (int h=0; h<nirrep_; ++h) {
                 for (int i=0; i<rowspi_[h]; ++i) {
                     for (int j=0; j<=i; ++j) {
                         if (fabs(matrix_[h][i][j]) > 1.0e-12) {
-                            fprintf(out, str_block_format, h, i, j, matrix_[h][i][j]);
+                            psi::fprintf(out, str_block_format, h, i, j, matrix_[h][i][j]);
                         }
                     }
                 }
@@ -2981,12 +2981,12 @@ void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, b
                     }
                 }
             }
-            fprintf(out, "%5d\n", count);
+            psi::fprintf(out, "%5d\n", count);
             for (int h=0; h<nirrep_; ++h) {
                 for (int i=0; i<rowspi_[h]; ++i) {
                     for (int j=0; j<colspi_[h^symmetry_]; ++j) {
                         if (fabs(matrix_[h][i][j]) > 1.0e-12) {
-                            fprintf(out, str_block_format, h, i, j, matrix_[h][i][j]);
+                            psi::fprintf(out, str_block_format, h, i, j, matrix_[h][i][j]);
                         }
                     }
                 }
@@ -3256,7 +3256,7 @@ void Matrix::load_mpqc(const std::string &filename)
                     string s2 = match[2];
                     string s3 = match[3];
 
-//                    fprintf(outfile, "'%s' %s (%d) %s (%d) %s (%d)\n",
+//                    psi::fprintf(outfile, "'%s' %s (%d) %s (%d) %s (%d)\n",
 //                            string(match[0]).c_str(),
 //                            s1.c_str(), s1.length(),
 //                            s2.c_str(), s2.length(),

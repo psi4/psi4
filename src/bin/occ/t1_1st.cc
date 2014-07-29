@@ -66,7 +66,7 @@ void OCCWave::t1_1st_sc()
 //===========================================================================================
 void OCCWave::t1_1st_gen()
 {   
-     //fprintf(outfile,"\n t1_1st_gen is starting... \n"); fflush(outfile);
+     //psi::fprintf(outfile,"\n t1_1st_gen is starting... \n"); fflush(outfile);
      // For this section the frozen-core approximation is NOT fully implemented!
 
     // Alpha spin case
@@ -198,7 +198,7 @@ void OCCWave::t1_1st_gen()
     if (print_ > 1) t1A->print();
     if (print_ > 1) t1B->print();
 
-  //fprintf(outfile,"\n t1_1st_gen done. \n"); fflush(outfile);
+  //psi::fprintf(outfile,"\n t1_1st_gen done. \n"); fflush(outfile);
 } // end t1_1st_gen
 }} // End Namespaces
 

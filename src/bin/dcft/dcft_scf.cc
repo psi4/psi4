@@ -251,53 +251,53 @@ namespace psi{ namespace dcft{
       int *bIrrepCount = init_int_array(nirrep_);
       char **irrepLabels = chkpt_->rd_irr_labs();
 
-      fprintf(outfile, "\n\tOrbital energies (a.u.):\n\t\tAlpha occupied orbitals\n\t\t");
+      psi::fprintf(outfile, "\n\tOrbital energies (a.u.):\n\t\tAlpha occupied orbitals\n\t\t");
       for (int i = 0, count = 0; i < nalpha_; ++i, ++count) {
           int irrep = aPairs[i].second;
-          fprintf(outfile, "%4d%-4s%11.6f  ", ++aIrrepCount[irrep], irrepLabels[irrep], aPairs[i].first);
+          psi::fprintf(outfile, "%4d%-4s%11.6f  ", ++aIrrepCount[irrep], irrepLabels[irrep], aPairs[i].first);
           if (count % 4 == 3 && i != nalpha_)
-              fprintf(outfile, "\n\t\t");
+              psi::fprintf(outfile, "\n\t\t");
       }
-      fprintf(outfile, "\n\n\t\tBeta occupied orbitals\n\t\t");
+      psi::fprintf(outfile, "\n\n\t\tBeta occupied orbitals\n\t\t");
       for (int i = 0, count = 0; i < nbeta_; ++i, ++count) {
           int irrep = bPairs[i].second;
-          fprintf(outfile, "%4d%-4s%11.6f  ", ++bIrrepCount[irrep], irrepLabels[irrep], bPairs[i].first);
+          psi::fprintf(outfile, "%4d%-4s%11.6f  ", ++bIrrepCount[irrep], irrepLabels[irrep], bPairs[i].first);
           if (count % 4 == 3 && i != nbeta_)
-              fprintf(outfile, "\n\t\t");
+              psi::fprintf(outfile, "\n\t\t");
       }
-      fprintf(outfile, "\n\n\t\tAlpha virtual orbitals\n\t\t");
+      psi::fprintf(outfile, "\n\n\t\tAlpha virtual orbitals\n\t\t");
       for (int i = nalpha_, count = 0; i < nmo_; ++i, ++count) {
           int irrep = aPairs[i].second;
-          fprintf(outfile, "%4d%-4s%11.6f  ", ++aIrrepCount[irrep], irrepLabels[irrep], aPairs[i].first);
+          psi::fprintf(outfile, "%4d%-4s%11.6f  ", ++aIrrepCount[irrep], irrepLabels[irrep], aPairs[i].first);
           if (count % 4 == 3 && i != nmo_)
-              fprintf(outfile, "\n\t\t");
+              psi::fprintf(outfile, "\n\t\t");
       }
-      fprintf(outfile, "\n\n\t\tBeta virtual orbitals\n\t\t");
+      psi::fprintf(outfile, "\n\n\t\tBeta virtual orbitals\n\t\t");
       for (int i = nbeta_, count = 0; i < nmo_; ++i, ++count) {
           int irrep = bPairs[i].second;
-          fprintf(outfile, "%4d%-4s%11.6f  ", ++bIrrepCount[irrep], irrepLabels[irrep], bPairs[i].first);
+          psi::fprintf(outfile, "%4d%-4s%11.6f  ", ++bIrrepCount[irrep], irrepLabels[irrep], bPairs[i].first);
           if (count % 4 == 3 && i != nmo_)
-              fprintf(outfile, "\n\t\t");
+              psi::fprintf(outfile, "\n\t\t");
       }
-      fprintf(outfile, "\n\n");
+      psi::fprintf(outfile, "\n\n");
 
-      fprintf(outfile, "\n\tIrrep              ");
-      for(int h = 0; h < nirrep_; ++h) fprintf(outfile, "%4s ", irrepLabels[h]);
-      fprintf(outfile, "\n\t-------------------");
-      for(int h = 0; h < nirrep_; ++h) fprintf(outfile, "-----");
-      fprintf(outfile, "\n\t#Symmetry Orbitals ");
-      for(int h = 0; h < nirrep_; ++h) fprintf(outfile, "%4d ", nsopi_[h]);
-      fprintf(outfile, "\n\t#Alpha Occupied    ");
-      for(int h = 0; h < nirrep_; ++h) fprintf(outfile, "%4d ", naoccpi_[h]);
-      fprintf(outfile, "\n\t#Beta Occupied     ");
-      for(int h = 0; h < nirrep_; ++h) fprintf(outfile, "%4d ", nboccpi_[h]);
-      fprintf(outfile, "\n\t#Alpha Virtual     ");
-      for(int h = 0; h < nirrep_; ++h) fprintf(outfile, "%4d ", navirpi_[h]);
-      fprintf(outfile, "\n\t#Beta Virtual      ");
-      for(int h = 0; h < nirrep_; ++h) fprintf(outfile, "%4d ", nbvirpi_[h]);
-      fprintf(outfile, "\n\t-------------------");
-      for(int h = 0; h < nirrep_; ++h) fprintf(outfile, "-----");
-      fprintf(outfile, "\n\n");
+      psi::fprintf(outfile, "\n\tIrrep              ");
+      for(int h = 0; h < nirrep_; ++h) psi::fprintf(outfile, "%4s ", irrepLabels[h]);
+      psi::fprintf(outfile, "\n\t-------------------");
+      for(int h = 0; h < nirrep_; ++h) psi::fprintf(outfile, "-----");
+      psi::fprintf(outfile, "\n\t#Symmetry Orbitals ");
+      for(int h = 0; h < nirrep_; ++h) psi::fprintf(outfile, "%4d ", nsopi_[h]);
+      psi::fprintf(outfile, "\n\t#Alpha Occupied    ");
+      for(int h = 0; h < nirrep_; ++h) psi::fprintf(outfile, "%4d ", naoccpi_[h]);
+      psi::fprintf(outfile, "\n\t#Beta Occupied     ");
+      for(int h = 0; h < nirrep_; ++h) psi::fprintf(outfile, "%4d ", nboccpi_[h]);
+      psi::fprintf(outfile, "\n\t#Alpha Virtual     ");
+      for(int h = 0; h < nirrep_; ++h) psi::fprintf(outfile, "%4d ", navirpi_[h]);
+      psi::fprintf(outfile, "\n\t#Beta Virtual      ");
+      for(int h = 0; h < nirrep_; ++h) psi::fprintf(outfile, "%4d ", nbvirpi_[h]);
+      psi::fprintf(outfile, "\n\t-------------------");
+      for(int h = 0; h < nirrep_; ++h) psi::fprintf(outfile, "-----");
+      psi::fprintf(outfile, "\n\n");
 
       if(print_ > 2){
           Ca_->print();
@@ -344,7 +344,7 @@ namespace psi{ namespace dcft{
           update_scf_density();
       }
       else {
-          fprintf(outfile, "\n\n\tReading orbitals from previous job");
+          psi::fprintf(outfile, "\n\n\tReading orbitals from previous job");
           // Read the orbitals from the checkpoint file
           double **aEvecs = chkpt_->rd_alpha_scf();
           Ca_->set(aEvecs);
@@ -950,7 +950,7 @@ namespace psi{ namespace dcft{
     delete iwl;
     if(buildTensors){
         if(print_ > 1){
-            fprintf(outfile, "Processed %d SO integrals each for AA, BB, and AB\n", counter);
+            psi::fprintf(outfile, "Processed %d SO integrals each for AA, BB, and AB\n", counter);
         }
         for(int h = 0; h < nirrep_; ++h){
             global_dpd_->buf4_mat_irrep_wrt(&tau2_AO_aa, h);
@@ -1358,7 +1358,7 @@ namespace psi{ namespace dcft{
       iwl->set_keep_flag(1);
       delete iwl;
       if(print_ > 1){
-          fprintf(outfile, "Processed %d SO integrals each for AA, BB, and AB\n", counter);
+          psi::fprintf(outfile, "Processed %d SO integrals each for AA, BB, and AB\n", counter);
       }
       for(int h = 0; h < nirrep_; ++h){
           global_dpd_->buf4_mat_irrep_wrt(&tau2_AO_aa, h);

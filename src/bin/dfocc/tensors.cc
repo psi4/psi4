@@ -101,18 +101,18 @@ void Tensor1d::zero()
 
 void Tensor1d::print()
 {
-  if (name_.length()) fprintf(outfile, "\n ## %s ##\n", name_.c_str());
+  if (name_.length()) psi::fprintf(outfile, "\n ## %s ##\n", name_.c_str());
   for (int p=0; p<dim1_; p++){
-    fprintf(outfile," %3d %10.7f \n",p,A1d_[p]);
+    psi::fprintf(outfile," %3d %10.7f \n",p,A1d_[p]);
   }
   fflush(outfile);
 }//
 
 void Tensor1d::print(FILE *out)
 {
-  if (name_.length()) fprintf(out, "\n ## %s ##\n", name_.c_str());
+  if (name_.length()) psi::fprintf(out, "\n ## %s ##\n", name_.c_str());
   for (int p=0; p<dim1_; p++){
-    fprintf(out," %3d %10.7f \n",p,A1d_[p]);
+    psi::fprintf(out," %3d %10.7f \n",p,A1d_[p]);
   }
   fflush(out);
 }//
@@ -644,7 +644,7 @@ void Tensor2d::zero_diagonal()
 void Tensor2d::print()
 {
   if (A2d_) {
-      if (name_.length()) fprintf(outfile, "\n ## %s ##\n", name_.c_str());
+      if (name_.length()) psi::fprintf(outfile, "\n ## %s ##\n", name_.c_str());
       print_mat(A2d_,dim1_,dim2_,outfile);
       fflush(outfile);
   }
@@ -653,7 +653,7 @@ void Tensor2d::print()
 void Tensor2d::print(FILE *out)
 {
   if (A2d_) {
-      if (name_.length()) fprintf(out, "\n ## %s ##\n", name_.c_str());
+      if (name_.length()) psi::fprintf(out, "\n ## %s ##\n", name_.c_str());
       print_mat(A2d_,dim1_,dim2_,out);
       fflush(out);
   }
@@ -1147,7 +1147,7 @@ void Tensor2d::contract424(int target_x, int target_y, const SharedTensor2d& a, 
     */
 
     else {
-         fprintf(outfile,"\tcontract424: Unrecognized targets! \n");
+         psi::fprintf(outfile,"\tcontract424: Unrecognized targets! \n");
          fflush(outfile);
     }
 
@@ -1317,7 +1317,7 @@ void Tensor2d::contract442(int target_a, int target_b, const SharedTensor2d& a, 
     }
 
     else {
-         fprintf(outfile,"contract442: Unrecognized targets!");
+         psi::fprintf(outfile,"contract442: Unrecognized targets!");
          fflush(outfile);
     }
 
@@ -1650,7 +1650,7 @@ void Tensor2d::triple_gemm(const SharedTensor2d& a, const SharedTensor2d& b, con
     gemm(false, false, a, bc, 1.0, 0.0);
   }
   else {
-    fprintf(outfile,"\n Warning!!! Matrix dimensions do NOT match in triple_gemm().\n");
+    psi::fprintf(outfile,"\n Warning!!! Matrix dimensions do NOT match in triple_gemm().\n");
     fflush(outfile);
   }
 
@@ -2352,7 +2352,7 @@ void Tensor2d::sort(int sort_type, const SharedTensor2d &A, double alpha, double
 
 
  else {
-    fprintf(outfile,"\tUnrecognized sort type!\n");
+    psi::fprintf(outfile,"\tUnrecognized sort type!\n");
     fflush(outfile);
  }
 
@@ -3327,9 +3327,9 @@ void Tensor3d::zero()
 
 void Tensor3d::print()
 {
-  if (name_.length()) fprintf(outfile, "\n ## %s ##\n", name_.c_str());
+  if (name_.length()) psi::fprintf(outfile, "\n ## %s ##\n", name_.c_str());
   for (int i=0; i<dim1_;i++){
-    fprintf(outfile, "\n Irrep: %d\n", i+1);
+    psi::fprintf(outfile, "\n Irrep: %d\n", i+1);
     print_mat(A3d_[i],dim2_,dim3_,outfile);
   }
   fflush(outfile);
@@ -3412,9 +3412,9 @@ void Tensor1i::zero()
 
 void Tensor1i::print()
 {
-  if (name_.length()) fprintf(outfile, "\n ## %s ##\n", name_.c_str());
+  if (name_.length()) psi::fprintf(outfile, "\n ## %s ##\n", name_.c_str());
   for (int p=0; p<dim1_; p++){
-    fprintf(outfile," %3d %3d \n",p,A1i_[p]);
+    psi::fprintf(outfile," %3d %3d \n",p,A1i_[p]);
   }
   fflush(outfile);
 }//
@@ -3553,14 +3553,14 @@ void Tensor2i::zero_diagonal()
 
 void Tensor2i::print()
 {
-  if (name_.length()) fprintf(outfile, "\n ## %s ##\n", name_.c_str());
+  if (name_.length()) psi::fprintf(outfile, "\n ## %s ##\n", name_.c_str());
   print_int_mat(A2i_,dim1_,dim2_,outfile);
   fflush(outfile);
 }//
 
 void Tensor2i::print(FILE *out)
 {
-  if (name_.length()) fprintf(out, "\n ## %s ##\n", name_.c_str());
+  if (name_.length()) psi::fprintf(out, "\n ## %s ##\n", name_.c_str());
   print_int_mat(A2i_,dim1_,dim2_,out);
   fflush(out);
 }//
@@ -3784,9 +3784,9 @@ void Tensor3i::zero()
 
 void Tensor3i::print()
 {
-  if (name_.length()) fprintf(outfile, "\n ## %s ##\n", name_.c_str());
+  if (name_.length()) psi::fprintf(outfile, "\n ## %s ##\n", name_.c_str());
   for (int i=0; i<dim1_;i++){
-    fprintf(outfile, "\n Irrep: %d\n", i+1);
+    psi::fprintf(outfile, "\n Irrep: %d\n", i+1);
     print_int_mat(A3i_[i],dim2_,dim3_,outfile);
   }
   fflush(outfile);

@@ -45,8 +45,8 @@ PsiReturnType fnocc(Options &options) {
 
           // transform integrals
           tstart();
-          fprintf(outfile,"        ==> Transform all two-electron integrals <==\n");
-          fprintf(outfile,"\n");
+          psi::fprintf(outfile,"        ==> Transform all two-electron integrals <==\n");
+          psi::fprintf(outfile,"\n");
 
           std::vector<shared_ptr<MOSpace> > spaces;
           spaces.push_back(MOSpace::all);
@@ -77,16 +77,16 @@ PsiReturnType fnocc(Options &options) {
 
       tstart();
       fflush(outfile);
-      fprintf(outfile,"\n\n");
-      fprintf(outfile, "        *******************************************************\n");
-      fprintf(outfile, "        *                                                     *\n");
-      fprintf(outfile, "        *                       DF-CCSD                       *\n");
-      fprintf(outfile, "        *                 Density-fitted CCSD                 *\n");
-      fprintf(outfile, "        *                                                     *\n");
-      fprintf(outfile, "        *                   Eugene DePrince                   *\n");
-      fprintf(outfile, "        *                                                     *\n");
-      fprintf(outfile, "        *******************************************************\n");
-      fprintf(outfile,"\n\n");
+      psi::fprintf(outfile,"\n\n");
+      psi::fprintf(outfile, "        *******************************************************\n");
+      psi::fprintf(outfile, "        *                                                     *\n");
+      psi::fprintf(outfile, "        *                       DF-CCSD                       *\n");
+      psi::fprintf(outfile, "        *                 Density-fitted CCSD                 *\n");
+      psi::fprintf(outfile, "        *                                                     *\n");
+      psi::fprintf(outfile, "        *                   Eugene DePrince                   *\n");
+      psi::fprintf(outfile, "        *                                                     *\n");
+      psi::fprintf(outfile, "        *******************************************************\n");
+      psi::fprintf(outfile,"\n\n");
       fflush(outfile);
 
       // three-index integrals are generated/read by fno class

@@ -111,7 +111,7 @@ void SAPT0::disp20()
   free_block(T_p_BS);
 
   if (print_) {
-    fprintf(outfile,"    Disp20              = %18.12lf H\n",e_disp20_);
+    psi::fprintf(outfile,"    Disp20              = %18.12lf H\n",e_disp20_);
     fflush(outfile);
   }
 }
@@ -139,7 +139,7 @@ void SAPT2::disp20()
     tARBS[0],1);
 
   if (print_) {
-    fprintf(outfile,"    Disp20              = %18.12lf H\n",e_disp20_);
+    psi::fprintf(outfile,"    Disp20              = %18.12lf H\n",e_disp20_);
     fflush(outfile);
   }
 
@@ -173,7 +173,7 @@ void SAPT2::disp20()
     free_block(vARBS);
 
     if (print_) {
-      fprintf(outfile,"    Disp20 (NO)         = %18.12lf H\n",e_no_disp20_);
+      psi::fprintf(outfile,"    Disp20 (NO)         = %18.12lf H\n",e_no_disp20_);
       fflush(outfile);
     }
   }
@@ -302,7 +302,7 @@ void SAPT0::disp20()
   double **yPQ = block_matrix(ndf_,ndf_);
 
   if (debug_)
-    fprintf(outfile,"\n");
+    psi::fprintf(outfile,"\n");
 
   e_disp20_ = 0.0;
   for (int i=0; i<nvec_; i++) {
@@ -313,17 +313,17 @@ void SAPT0::disp20()
     double tval = C_DDOT(ndf_*ndf_,xPQ[0],1,yPQ[0],1);
     e_disp20_ -= tval;
     if (debug_)
-      fprintf(outfile,"    Disp %2d             = %18.12lf H\n",i+1,-tval);
+      psi::fprintf(outfile,"    Disp %2d             = %18.12lf H\n",i+1,-tval);
   }
 
   if (debug_)
-    fprintf(outfile,"\n");
+    psi::fprintf(outfile,"\n");
 
   free_block(xPQ);
   free_block(yPQ);
 
   if (print_) {
-    fprintf(outfile,"    Disp20              = %18.12lf H\n",e_disp20_);
+    psi::fprintf(outfile,"    Disp20              = %18.12lf H\n",e_disp20_);
     fflush(outfile);
   }
 

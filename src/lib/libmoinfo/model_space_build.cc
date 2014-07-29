@@ -25,7 +25,7 @@
 #include "model_space.h"
 #include "moinfo.h"
 #include <cstdio>
-
+#include "psi4-dec.h"
 namespace psi{
 
 extern FILE *outfile;
@@ -122,13 +122,13 @@ void ModelSpace::build()
   }
 
   if(determinants.size() == 0){
-    fprintf(outfile,"\n\n  No reference found in the model space");
-    fprintf(outfile,"\n  Please check the following:");
-    fprintf(outfile,"\n  1) Definition of FROZEN_DOCC, RESTRICTED_DOCC, ACTIVE, and FROZEN_UOCC");
-//    fprintf(outfile,"\n  1) Definition of FOCC, DOCC, ACTV, and FVIR");
-    fprintf(outfile,"\n  2) Symmetry of the wavefunction");
-    fprintf(outfile,"\n  3) Charge and multiplicity");
-    fprintf(outfile,"\n\n  Ending the computation.\n");
+    psi::fprintf(outfile,"\n\n  No reference found in the model space");
+    psi::fprintf(outfile,"\n  Please check the following:");
+    psi::fprintf(outfile,"\n  1) Definition of FROZEN_DOCC, RESTRICTED_DOCC, ACTIVE, and FROZEN_UOCC");
+//    psi::fprintf(outfile,"\n  1) Definition of FOCC, DOCC, ACTV, and FVIR");
+    psi::fprintf(outfile,"\n  2) Symmetry of the wavefunction");
+    psi::fprintf(outfile,"\n  3) Charge and multiplicity");
+    psi::fprintf(outfile,"\n\n  Ending the computation.\n");
     fflush(outfile);
     exit(PSI_RETURN_FAILURE);
   }

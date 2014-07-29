@@ -30,7 +30,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <strings.h>
-
+#include "psi4-dec.h"
 namespace psi {
 
 /*!
@@ -49,8 +49,8 @@ double * init_array(unsigned long int size)
 
   if ((array = (double *) malloc(size*(unsigned long int)sizeof(double)))
     == NULL) {
-    fprintf(stderr,"init_array: trouble allocating memory \n");
-    fprintf(stderr,"size = %ld\n",size);
+    psi::fprintf(stderr,"init_array: trouble allocating memory \n");
+    psi::fprintf(stderr,"size = %ld\n",size);
     exit(PSI_RETURN_FAILURE);
   }
   bzero(array,size*(unsigned long int)sizeof(double));

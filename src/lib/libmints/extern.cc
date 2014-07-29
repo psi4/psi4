@@ -51,29 +51,29 @@ void ExternalPotential::addBasis(boost::shared_ptr<BasisSet> basis, SharedVector
 }
 void ExternalPotential::print(FILE* out) const
 {
-    fprintf(out, "   => External Potential Field: %s <= \n\n", name_.c_str());
+    psi::fprintf(out, "   => External Potential Field: %s <= \n\n", name_.c_str());
 
     // Charges
     if (charges_.size()) {
-        fprintf(out, "    > Charges [a.u.] < \n\n");
-        fprintf(out, "     %10s %10s %10s %10s\n","Z","x","y","z");
+        psi::fprintf(out, "    > Charges [a.u.] < \n\n");
+        psi::fprintf(out, "     %10s %10s %10s %10s\n","Z","x","y","z");
         for (int i = 0 ; i < charges_.size(); i++) {
-            fprintf(out, "     %10.5f %10.5f %10.5f %10.5f\n",
+            psi::fprintf(out, "     %10.5f %10.5f %10.5f %10.5f\n",
                 get<0>(charges_[i]), get<1>(charges_[i]), get<2>(charges_[i]), get<3>(charges_[i]));
         }
-        fprintf(out,"\n");
+        psi::fprintf(out,"\n");
     }
 
     // Bases
     if (bases_.size()) {
-        fprintf(out, "    > Diffuse Bases < \n\n");
+        psi::fprintf(out, "    > Diffuse Bases < \n\n");
         for (int i = 0; i < bases_.size(); i++) {
-            fprintf(out, "    Molecule %d\n\n", i+1);
+            psi::fprintf(out, "    Molecule %d\n\n", i+1);
             bases_[i].first->molecule()->print();
-            fprintf(out, "    Basis %d\n\n", i+1);
+            psi::fprintf(out, "    Basis %d\n\n", i+1);
             bases_[i].first->print_by_level(out, print_);
             if (print_ > 2) {
-                fprintf(out, "    Density Coefficients %d\n\n", i+1);
+                psi::fprintf(out, "    Density Coefficients %d\n\n", i+1);
                 bases_[i].second->print();
             }
         }

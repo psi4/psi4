@@ -44,7 +44,7 @@ IntegralTransform::presort_mo_tpdm_restricted()
 
     if(tpdmAlreadyPresorted_){
         if(print_>5)
-            fprintf(outfile, "\tMO TPDM already sorted, moving on...\n");
+            psi::fprintf(outfile, "\tMO TPDM already sorted, moving on...\n");
             return;
     }
 
@@ -52,7 +52,7 @@ IntegralTransform::presort_mo_tpdm_restricted()
     dpd_set_default(myDPDNum_);
 
     if(print_){
-        fprintf(outfile, "\tPresorting MO-basis TPDM.\n");
+        psi::fprintf(outfile, "\tPresorting MO-basis TPDM.\n");
         fflush(outfile);
     }
 
@@ -114,7 +114,7 @@ IntegralTransform::presort_mo_tpdm_restricted()
     }
 
     if(print_) {
-        fprintf(outfile, "\tSorting File: %s nbuckets = %d\n", I.label, nBuckets);
+        psi::fprintf(outfile, "\tSorting File: %s nbuckets = %d\n", I.label, nBuckets);
         fflush(outfile);
     }
 
@@ -194,7 +194,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
     dpd_set_default(myDPDNum_);
 
     if(print_){
-        fprintf(outfile, "\tPresorting MO-basis TPDMs.\n");
+        psi::fprintf(outfile, "\tPresorting MO-basis TPDMs.\n");
         fflush(outfile);
     }
 
@@ -256,7 +256,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
     }
 
     if(print_) {
-        fprintf(outfile, "\tSorting File: %s nbuckets = %d\n", I.label, nBuckets);
+        psi::fprintf(outfile, "\tSorting File: %s nbuckets = %d\n", I.label, nBuckets);
         fflush(outfile);
     }
 
@@ -305,7 +305,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
     // The alpha - beta spin case
     global_dpd_->file4_init(&I, PSIF_TPDM_PRESORT, 0, DPD_ID("[A>=A]+"), DPD_ID("[a>=a]+"), "MO TPDM (AA|aa)");
     if(print_) {
-        fprintf(outfile, "\tSorting File: %s nbuckets = %d\n", I.label, nBuckets);
+        psi::fprintf(outfile, "\tSorting File: %s nbuckets = %d\n", I.label, nBuckets);
         fflush(outfile);
     }
     next = PSIO_ZERO;
@@ -352,7 +352,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
     // The beta - beta spin case
     global_dpd_->file4_init(&I, PSIF_TPDM_PRESORT, 0, DPD_ID("[a>=a]+"), DPD_ID("[a>=a]+"), "MO TPDM (aa|aa)");
     if(print_) {
-        fprintf(outfile, "\tSorting File: %s nbuckets = %d\n", I.label, nBuckets);
+        psi::fprintf(outfile, "\tSorting File: %s nbuckets = %d\n", I.label, nBuckets);
         fflush(outfile);
     }
     next = PSIO_ZERO;

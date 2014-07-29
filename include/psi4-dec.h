@@ -22,7 +22,6 @@
 
 #ifndef psi_include_psi4_dec_h
 #define psi_include_psi4_dec_h
-
 #include <boost/shared_ptr.hpp>
 #include <boost/current_function.hpp>
 
@@ -38,7 +37,8 @@
 namespace psi {
 
 enum PsiReturnType {Success, Failure, Balk, EndLoop};
-
+extern int fprintf(FILE* __restrict __stream,
+      const char * __restrict __format, ...);
 extern FILE *outfile;
 //  extern PSIO *psio;
 extern char *psi_file_prefix;

@@ -54,7 +54,7 @@
 ///*
 // void CCMRCC::mp3()
 //{
-//  fprintf(outfile,"\n\n  Computing MP3 Energy");
+//  psi::fprintf(outfile,"\n\n  Computing MP3 Energy");
 //}
 //
 //std::vector<double> CCMRCC::mp2_singles()
@@ -79,8 +79,8 @@
 //
 //  double E_f = blas->get_scalar("ECCSD",0);
 //
-//  fprintf(outfile,"\n        CBS second-order correction (v)  = %20.12f",E_v);
-//  fprintf(outfile,"\n        CBS second-order correction (f)  = %20.12f",E_f);
+//  psi::fprintf(outfile,"\n        CBS second-order correction (v)  = %20.12f",E_v);
+//  psi::fprintf(outfile,"\n        CBS second-order correction (f)  = %20.12f",E_f);
 //
 //  vector<double> result;
 //  result.push_back(E_v);
@@ -142,10 +142,10 @@
 //
 //  double E_ff = blas->get_scalar("ECCSD",0);
 //
-//  fprintf(outfile,"\n\n        CBS(virt-fvir)           = %20.12f",E_vf);
-//  fprintf(outfile,"\n        CBS(fvir-virt)           = %20.12f",E_fv);
-//  fprintf(outfile,"\n        CBS(fvir-fvir)           = %20.12f",E_ff);
-//  fprintf(outfile,"\n\n      * CBS total correction     = %20.12f",E_ff + E_vf + E_fv);
+//  psi::fprintf(outfile,"\n\n        CBS(virt-fvir)           = %20.12f",E_vf);
+//  psi::fprintf(outfile,"\n        CBS(fvir-virt)           = %20.12f",E_fv);
+//  psi::fprintf(outfile,"\n        CBS(fvir-fvir)           = %20.12f",E_ff);
+//  psi::fprintf(outfile,"\n\n      * CBS total correction     = %20.12f",E_ff + E_vf + E_fv);
 //
 //   * MP3 - Singles contribution
 //
@@ -300,9 +300,9 @@
 //
 //  double E_vv_3 = blas->get_scalar("ECCSD",0);
 //
-//  fprintf(outfile,"\n\n      * CBS total correction (2)  = %20.12f",E_vv);
-//  fprintf(outfile,"\n\n      * CBS total correction (3)  = %20.12f",E_vv_3);
-//  fprintf(outfile,"\n\n      * CBS total correction (2+3)= %20.12f",E_vv + E_vv_3);
+//  psi::fprintf(outfile,"\n\n      * CBS total correction (2)  = %20.12f",E_vv);
+//  psi::fprintf(outfile,"\n\n      * CBS total correction (3)  = %20.12f",E_vv_3);
+//  psi::fprintf(outfile,"\n\n      * CBS total correction (2+3)= %20.12f",E_vv + E_vv_3);
 //
 //  // OOVF Terms
 //  // HHHH Ladder
@@ -483,10 +483,10 @@
 //
 //  double E_ff_3 = blas->get_scalar("ECCSD",0);
 //
-//  fprintf(outfile,"\n      * MP3 (vv)             = %20.12f",E_vv_3);
-//  fprintf(outfile,"\n      * MP3 (vf)             = %20.12f",E_vf_3);
-//  fprintf(outfile,"\n      * MP3 (ff)             = %20.12f",E_ff_3);
-//  fprintf(outfile,"\n      * MP3 total correction = %20.12f",E_vv_3 + E_vf_3 * 2.0 + E_ff_3);
+//  psi::fprintf(outfile,"\n      * MP3 (vv)             = %20.12f",E_vv_3);
+//  psi::fprintf(outfile,"\n      * MP3 (vf)             = %20.12f",E_vf_3);
+//  psi::fprintf(outfile,"\n      * MP3 (ff)             = %20.12f",E_ff_3);
+//  psi::fprintf(outfile,"\n      * MP3 total correction = %20.12f",E_vv_3 + E_vf_3 * 2.0 + E_ff_3);
 //
 //  fflush(outfile);
 //}

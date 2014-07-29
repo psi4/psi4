@@ -66,7 +66,7 @@ void get_moinfo(void)
   nfzc = wfn->frzcpi().sum();
   nfzv = wfn->frzvpi().sum();
   if(nfzc || nfzv) {
-    fprintf(outfile, "\n\tStability analysis incorrect for frozen orbital calculations.\n");
+    psi::fprintf(outfile, "\n\tStability analysis incorrect for frozen orbital calculations.\n");
     exit(PSI_RETURN_FAILURE);
   }
   moinfo.frdocc = init_int_array(nirreps);

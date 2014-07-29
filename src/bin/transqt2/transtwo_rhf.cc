@@ -62,7 +62,7 @@ void transtwo_rhf(void)
   TMP = block_matrix(nso,nso);
 
   if(params.print_lvl) {
-    fprintf(outfile, "\tStarting first half-transformation.\n");
+    psi::fprintf(outfile, "\tStarting first half-transformation.\n");
     fflush(outfile);
   }
 
@@ -88,10 +88,10 @@ void transtwo_rhf(void)
     }
 
     if(params.print_lvl > 1) {
-      fprintf(outfile, "\th = %d; memfree         = %lu\n", h, memfree);
-      fprintf(outfile, "\th = %d; rows_per_bucket = %lu\n", h, rows_per_bucket);
-      fprintf(outfile, "\th = %d; rows_left       = %lu\n", h, rows_left);
-      fprintf(outfile, "\th = %d; nbuckets        = %d\n", h, nbuckets);
+      psi::fprintf(outfile, "\th = %d; memfree         = %lu\n", h, memfree);
+      psi::fprintf(outfile, "\th = %d; rows_per_bucket = %lu\n", h, rows_per_bucket);
+      psi::fprintf(outfile, "\th = %d; rows_left       = %lu\n", h, rows_left);
+      psi::fprintf(outfile, "\th = %d; nbuckets        = %d\n", h, nbuckets);
       fflush(outfile);
     }
 
@@ -136,7 +136,7 @@ void transtwo_rhf(void)
   timer_off("RHF:1sthalf");
   timer_on("RHF:midsort");
   if(params.print_lvl) {
-    fprintf(outfile, "\tSorting half-transformed integrals.\n");
+    psi::fprintf(outfile, "\tSorting half-transformed integrals.\n");
     fflush(outfile);
   }
 
@@ -151,7 +151,7 @@ void transtwo_rhf(void)
   timer_on("RHF:2ndhalf");
 
   if(params.print_lvl) {
-    fprintf(outfile, "\tStarting second half-transformation.\n");
+    psi::fprintf(outfile, "\tStarting second half-transformation.\n");
     fflush(outfile);
   }
   iwl_buf_init(&MBuff, PSIF_MO_TEI, params.tolerance, 0, 0);
@@ -174,10 +174,10 @@ void transtwo_rhf(void)
     }
 
     if(params.print_lvl > 1) {
-      fprintf(outfile, "\th = %d; memfree         = %lu\n", h, memfree);
-      fprintf(outfile, "\th = %d; rows_per_bucket = %lu\n", h, rows_per_bucket);
-      fprintf(outfile, "\th = %d; rows_left       = %lu\n", h, rows_left);
-      fprintf(outfile, "\th = %d; nbuckets        = %d\n", h, nbuckets);
+      psi::fprintf(outfile, "\th = %d; memfree         = %lu\n", h, memfree);
+      psi::fprintf(outfile, "\th = %d; rows_per_bucket = %lu\n", h, rows_per_bucket);
+      psi::fprintf(outfile, "\th = %d; rows_left       = %lu\n", h, rows_left);
+      psi::fprintf(outfile, "\th = %d; nbuckets        = %d\n", h, nbuckets);
       fflush(outfile);
     }
 
@@ -236,7 +236,7 @@ void transtwo_rhf(void)
   psio_close(PSIF_HALFT1, 0);
 
   if(params.print_lvl) {
-    fprintf(outfile, "\tTwo-electron integral transformation complete.\n");
+    psi::fprintf(outfile, "\tTwo-electron integral transformation complete.\n");
     fflush(outfile);
   }
 }

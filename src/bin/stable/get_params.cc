@@ -62,9 +62,9 @@ void get_params(Options &options)
   params.ref = ref;
   /* Make sure the value of ref matches that from CC_INFO */
   if(params.ref != ref) {
-    fprintf(outfile, "Value of REFERENCE from input.dat (%1d) and " 
+    psi::fprintf(outfile, "Value of REFERENCE from input.dat (%1d) and " 
             "CC_INFO (%1d) do not match!\n", ref, params.ref);
-    fprintf(outfile, "Is this what you want to do?\n");
+    psi::fprintf(outfile, "Is this what you want to do?\n");
     params.ref = ref;
   }
 
@@ -72,8 +72,8 @@ void get_params(Options &options)
   params.follow_instab = options.get_bool("FOLLOW");
 
   if (params.follow_instab == 1 && params.ref != 2) {
-    fprintf(outfile, "\nCan't follow instabilities unless REFERENCE is UHF\n");
-    fprintf(outfile, "Instability following turned off.\n");
+    psi::fprintf(outfile, "\nCan't follow instabilities unless REFERENCE is UHF\n");
+    psi::fprintf(outfile, "Instability following turned off.\n");
     params.follow_instab = 0;
   }
 

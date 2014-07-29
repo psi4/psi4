@@ -148,7 +148,7 @@ int build_abcd_packed(int inputfile, double tolerance, int keep)
     }
   }
 
-  fprintf(outfile, "\tSorting File: %s nbuckets = %d\n", B.label, nbuckets);
+  psi::fprintf(outfile, "\tSorting File: %s nbuckets = %d\n", B.label, nbuckets);
   fflush(outfile);
 
   next = PSIO_ZERO;

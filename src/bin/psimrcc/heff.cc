@@ -55,11 +55,11 @@ void Hamiltonian::cleanup()
 void Hamiltonian::print_matrix()
 {
   if(ndets < 8){
-    fprintf(outfile,"\n\n  Hamiltonian Matrix\n");
+    psi::fprintf(outfile,"\n\n  Hamiltonian Matrix\n");
     for(int mu = 0; mu < ndets; ++mu){
-      fprintf(outfile,"\n  ");
+      psi::fprintf(outfile,"\n  ");
       for(int nu = 0; nu < ndets; ++nu)
-        fprintf(outfile," %22.15f",matrix[mu][nu]);
+        psi::fprintf(outfile," %22.15f",matrix[mu][nu]);
     }
   }
 }
@@ -74,10 +74,10 @@ void Hamiltonian::print()
   }
   std::sort(eigenvector_index_pair.begin(),eigenvector_index_pair.end(),std::greater<std::pair<double,int> >());
   int max_size_list = std::min(10,static_cast<int>(eigenvector_index_pair.size()));
-  fprintf(outfile,"\n\n  Most important determinants in the wave function");
-  fprintf(outfile,"\n\n  determinant  eigenvector   eigenvector^2\n");
+  psi::fprintf(outfile,"\n\n  Most important determinants in the wave function");
+  psi::fprintf(outfile,"\n\n  determinant  eigenvector   eigenvector^2\n");
   for(int i = 0; i < max_size_list; ++i){
-    fprintf(outfile,"\n  %11d   %9.6f    %9.6f  %s",eigenvector_index_pair[i].second
+    psi::fprintf(outfile,"\n  %11d   %9.6f    %9.6f  %s",eigenvector_index_pair[i].second
                      ,right_eigenvector[eigenvector_index_pair[i].second]
                      ,eigenvector_index_pair[i].first
                      ,moinfo->get_determinant_label(eigenvector_index_pair[i].second).c_str());

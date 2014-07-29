@@ -357,7 +357,7 @@ int iwl_buf_rd_all_noperm(struct iwlbuf *Buf, double *ints, int nbf, int unsymm,
     }
     
     if (printflg) 
-      fprintf(outfile, "<%2d %2d %2d %2d [[%3ld]] = %20.10lf\n",
+      psi::fprintf(outfile, "<%2d %2d %2d %2d [[%3ld]] = %20.10lf\n",
 	      p, q, r, s, pqrs, ints[pqrs]) ;
     
   } /*! end loop through current buffer */
@@ -388,7 +388,7 @@ int iwl_buf_rd_all_noperm(struct iwlbuf *Buf, double *ints, int nbf, int unsymm,
       }
 
       if (printflg) 
-	fprintf(outfile, "<%d %d %d %d [[%ld]] = %20.10lf\n",
+	psi::fprintf(outfile, "<%d %d %d %d [[%ld]] = %20.10lf\n",
 		p, q, r, s, pqrs, ints[pqrs]) ;
       
     } /*! end loop through current buffer */
@@ -577,14 +577,14 @@ void write_2e_iwl(double* ints, int nbf, int filenum)
 
 void print_1e(const char* label, double** ints, int nbf)
 {
-  fprintf(outfile, "  -%s:\n", label);
+  psi::fprintf(outfile, "  -%s:\n", label);
   print_mat(ints,nbf,nbf,outfile);
   return;
 }
 
 void print_2e(const char* label, double* ints, int nbf, double cutoff)
 {
-  fprintf(outfile, "  -%s:\n", label);
+  psi::fprintf(outfile, "  -%s:\n", label);
 
   for(int i=0; i<nbf; i++) {
     for(int j=0; j<nbf; j++) {
@@ -594,7 +594,7 @@ void print_2e(const char* label, double* ints, int nbf, double cutoff)
           double value = ints[ijkl];
 
           if (fabs(value) > cutoff)
-            fprintf(stdout, ">%d %d %d %d [%d] = %20.10lf\n",
+            psi::fprintf(stdout, ">%d %d %d %d [%d] = %20.10lf\n",
                     i, j, k, l, ijkl, value);          
         }
       }
@@ -606,7 +606,7 @@ void print_2e(const char* label, double* ints, int nbf, double cutoff)
 
 void print_2e_canon(const char* label, double* ints, int nbf, double cutoff)
 {
-  fprintf(outfile, "  -%s:\n", label);
+  psi::fprintf(outfile, "  -%s:\n", label);
   
   for(int i=0; i<nbf; i++) {
     for(int j=0; j<=i; j++) {
@@ -619,7 +619,7 @@ void print_2e_canon(const char* label, double* ints, int nbf, double cutoff)
           double value = ints[ijkl];
 
           if (fabs(value) > cutoff)
-            fprintf(outfile, ">%d %d %d %d [%d] [%d] = %20.10lf\n",
+            psi::fprintf(outfile, ">%d %d %d %d [%d] [%d] = %20.10lf\n",
                     i, j, k, l, ij, kl, value);          
         }
       }

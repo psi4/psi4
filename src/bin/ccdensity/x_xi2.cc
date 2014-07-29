@@ -821,10 +821,10 @@ x_xi_check("terms 18, 19 (Wmnie, Wamef)");
   global_dpd_->file2_init(&XIA, PSIF_EOM_XI, G_irr, 0, 1, "XIA");
   tval = global_dpd_->file2_dot_self(&XIA);
   global_dpd_->file2_close(&XIA);
-  fprintf(outfile,"XIA amplitudes: norm=%20.15lf dot=%20.15lf\n", sqrt(tval), tval );
+  psi::fprintf(outfile,"XIA amplitudes: norm=%20.15lf dot=%20.15lf\n", sqrt(tval), tval );
   global_dpd_->file2_init(&Xia, PSIF_EOM_XI, G_irr, 0, 1, "Xia");
   tval += global_dpd_->file2_dot_self(&Xia);
-  fprintf(outfile,"X1 amplitudes:  norm=%20.15lf dot=%20.15lf\n", sqrt(tval), tval );
+  psi::fprintf(outfile,"X1 amplitudes:  norm=%20.15lf dot=%20.15lf\n", sqrt(tval), tval );
   global_dpd_->file2_close(&Xia);
   global_dpd_->buf4_init(&XIJAB, PSIF_EOM_XI, G_irr, 2, 7, 2, 7, 0, "XIJAB");
   tval += global_dpd_->buf4_dot_self(&XIJAB);
@@ -835,7 +835,7 @@ x_xi_check("terms 18, 19 (Wmnie, Wamef)");
   global_dpd_->buf4_init(&XIjAb, PSIF_EOM_XI, G_irr, 0, 5, 0, 5, 0, "XIjAb");
   tval += global_dpd_->buf4_dot_self(&XIjAb);
   global_dpd_->buf4_close(&XIjAb);
-  fprintf(outfile,"Norm of Xi: %20.15lf\n", sqrt(tval) );
+  psi::fprintf(outfile,"Norm of Xi: %20.15lf\n", sqrt(tval) );
   return;
 }
 

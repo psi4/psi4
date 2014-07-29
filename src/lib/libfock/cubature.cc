@@ -244,11 +244,11 @@ const MassPoint *LebedevGridMgr::findGridByNPoints(int npoints)
 
 void LebedevGridMgr::PrintHelp()
 {
-    fprintf(outfile, "  ==> Valid Lebedev Grids <==\n\n");
-    fprintf(outfile, "\t%11s %11s\n", "Points", "Order");
+    psi::fprintf(outfile, "  ==> Valid Lebedev Grids <==\n\n");
+    psi::fprintf(outfile, "\t%11s %11s\n", "Points", "Order");
     for (int i = 0; grids_[i].mkGridFn != NULL; i++)
-        fprintf(outfile, "\t%11d %11d\n", grids_[i].npoints, grids_[i].order);
-    fprintf(outfile, "\n");
+        psi::fprintf(outfile, "\t%11d %11d\n", grids_[i].npoints, grids_[i].order);
+    psi::fprintf(outfile, "\n");
     fflush(outfile);
 }
 
@@ -2357,7 +2357,7 @@ int RadialGridMgr::WhichScheme(const char *schemename)
     for (int i = 0; i < sizeof(radialschemes)/sizeof(radialschemes[0]); i++)
         if (strcmp(radialschemes[i].name, schemename) == 0)
             return i;
-    fprintf(outfile, "Unrecognized radial scheme %s!\n", schemename);
+    psi::fprintf(outfile, "Unrecognized radial scheme %s!\n", schemename);
     throw PSIEXCEPTION("Unrecognized radial scheme!");
 }
 
@@ -2454,14 +2454,14 @@ int StandardGridMgr::WhichGrid(const char *name)
     if (strcmp(name, "") == 0) return -1;
     if (strcmp(name, "SG0") == 0) return 0;
     if (strcmp(name, "SG1") == 0) return 1;
-    fprintf(outfile, "Unrecognized named grid %s!\n", name);
+    psi::fprintf(outfile, "Unrecognized named grid %s!\n", name);
     throw PSIEXCEPTION("Unrecognized named grid!");
 }
 
 int StandardGridMgr::GetSG0size(int Z)
 {
     if (Z >= sizeof(SG0_sizes_)/sizeof(SG0_sizes_[0]) || SG0_sizes_[Z] == 0) {
-        fprintf(outfile, "There is no SG-0 grid defined for atomic number %d!\n", Z);
+        psi::fprintf(outfile, "There is no SG-0 grid defined for atomic number %d!\n", Z);
         throw PSIEXCEPTION("There is no SG-0 grid defined for the requested atomic number!");
     }
     return SG0_sizes_[Z];
@@ -2470,7 +2470,7 @@ int StandardGridMgr::GetSG0size(int Z)
 int StandardGridMgr::GetSG1size(int Z)
 {
     if (Z >= sizeof(SG1_sizes_)/sizeof(SG1_sizes_[0]) || SG1_sizes_[Z] == 0) {
-        fprintf(outfile, "There is no SG-1 grid defined for atomic number %d!\n", Z);
+        psi::fprintf(outfile, "There is no SG-1 grid defined for atomic number %d!\n", Z);
         throw PSIEXCEPTION("There is no SG-1 grid defined for the requested atomic number!");
     }
     return SG1_sizes_[Z];
@@ -2479,7 +2479,7 @@ int StandardGridMgr::GetSG1size(int Z)
 const MassPoint *StandardGridMgr::GetSG0grid(int Z)
 {
     if (Z >= sizeof(SG0_grids_)/sizeof(SG0_grids_[0]) || SG0_grids_[Z] == 0) {
-        fprintf(outfile, "There is no SG-0 grid defined for atomic number %d!\n", Z);
+        psi::fprintf(outfile, "There is no SG-0 grid defined for atomic number %d!\n", Z);
         throw PSIEXCEPTION("There is no SG-0 grid defined for the requested atomic number!");
     }
     return SG0_grids_[Z];
@@ -2487,7 +2487,7 @@ const MassPoint *StandardGridMgr::GetSG0grid(int Z)
 const MassPoint *StandardGridMgr::GetSG1grid(int Z)
 {
     if (Z >= sizeof(SG1_grids_)/sizeof(SG1_grids_[0]) || SG1_grids_[Z] == 0) {
-        fprintf(outfile, "There is no SG-1 grid defined for atomic number %d!\n", Z);
+        psi::fprintf(outfile, "There is no SG-1 grid defined for atomic number %d!\n", Z);
         throw PSIEXCEPTION("There is no SG-1 grid defined for the requested atomic number!");
     }
     return SG1_grids_[Z];
@@ -2732,7 +2732,7 @@ int NuclearWeightMgr::WhichScheme(const char *schemename)
     for (int i = 0; i < sizeof(nuclearschemenames)/sizeof(nuclearschemenames[0]); i++)
         if (strcmp(nuclearschemenames[i], schemename) == 0)
             return i;
-    fprintf(outfile, "Unrecognized nuclear scheme %s!\n", schemename);
+    psi::fprintf(outfile, "Unrecognized nuclear scheme %s!\n", schemename);
     throw PSIEXCEPTION("Unrecognized nuclear scheme!");
 }
 
@@ -3186,7 +3186,7 @@ OrientationMgr::LMatrix OrientationMgr::symmetricTopMatrix(boost::shared_ptr<Mol
         if (!warned && fequ(XYDist, bestXYDist) && fequ(pos.z, bestZ) && rotmol[i].atomicNumber == rotmol[bestAtom].atomicNumber) {
             double alternateAngle = atan2(rotmol[i].pos.y, rotmol[i].pos.x);
             if (!bothAnglesResultInEquivalentGrids(rotmol, natom, bestAngle, alternateAngle)) {
-                fprintf(outfile, "Warning: Arbitrary grid orientation. (You can't do anything about this.)\n");
+                psi::fprintf(outfile, "Warning: Arbitrary grid orientation. (You can't do anything about this.)\n");
                 warned = true;
             }
         }
@@ -3194,7 +3194,7 @@ OrientationMgr::LMatrix OrientationMgr::symmetricTopMatrix(boost::shared_ptr<Mol
     if (bestAtom == -1) {
         // This *should* be impossible; if no best atom was found, then all atoms were on the z-axis, so the molecule
         // would be linear, so symmetricTopMatrix should never have been called. But warnings are cheap.
-        fprintf(outfile, "Warning (supposedly impossible!): Arbitrary grid orientation. (You can't do anything about this.)\n");
+        psi::fprintf(outfile, "Warning (supposedly impossible!): Arbitrary grid orientation. (You can't do anything about this.)\n");
         bestAngle = 0;
     }
     // OK, now I have my best angle. Let's turn it into a rotation matrix.
@@ -3366,7 +3366,7 @@ OrientationMgr::SymmetryType OrientationMgr::sphericalTopMatrix(boost::shared_pt
     } else if (LookForTetrahedralSymmetry(mol, natom, Q_out)) {
         return TETRAHEDRAL;
     } else {
-        fprintf(outfile, "Warning: Molecule has a spherically-symmetric moment of charge but lacks icosahedral, octahedral, and tetrahedral symmetry.");
+        psi::fprintf(outfile, "Warning: Molecule has a spherically-symmetric moment of charge but lacks icosahedral, octahedral, and tetrahedral symmetry.");
         *Q_out = lIdentityMatrix;
         return SPHERICAL_MYSTERY;
     }
@@ -3433,14 +3433,14 @@ OrientationMgr::OrientationMgr(boost::shared_ptr<Molecule> mol)
     }
 
     if (Process::environment.options.get_int("DEBUG") > 0) {
-        fprintf(outfile, "\n  => MolecularGrid: Standard Orientation for %s <= \n", mol->name().c_str());
-        fprintf(outfile, "  Total Charge: %d\n", QQ);
-        fprintf(outfile, "  Symmetry: %s\n", symmetryNames[symtype]);
-        fprintf(outfile, "  Center of charge: (%f, %f, %f)\n", center.x, center.y, center.z);
-        fprintf(outfile, "  Principal moments of charge: %f, %f, %f\n", evals.x, evals.y, evals.z);
-        fprintf(outfile, "      / % f  % f  % f \\\n", Q.xx, Q.xy, Q.xz);
-        fprintf(outfile, "  Q = | % f  % f  % f |\n",  Q.yx, Q.yy, Q.yz);
-        fprintf(outfile, "      \\ % f  % f  % f /\n\n", Q.zx, Q.zy, Q.zz);
+        psi::fprintf(outfile, "\n  => MolecularGrid: Standard Orientation for %s <= \n", mol->name().c_str());
+        psi::fprintf(outfile, "  Total Charge: %d\n", QQ);
+        psi::fprintf(outfile, "  Symmetry: %s\n", symmetryNames[symtype]);
+        psi::fprintf(outfile, "  Center of charge: (%f, %f, %f)\n", center.x, center.y, center.z);
+        psi::fprintf(outfile, "  Principal moments of charge: %f, %f, %f\n", evals.x, evals.y, evals.z);
+        psi::fprintf(outfile, "      / % f  % f  % f \\\n", Q.xx, Q.xy, Q.xz);
+        psi::fprintf(outfile, "  Q = | % f  % f  % f |\n",  Q.yx, Q.yy, Q.yz);
+        psi::fprintf(outfile, "      \\ % f  % f  % f /\n\n", Q.zx, Q.zy, Q.zz);
     }
 
     // Store these things as member variables.
@@ -3498,7 +3498,7 @@ int RadialPruneMgr::WhichPruneScheme(const char *schemename)
     for (int i = 0; i < sizeof(pruneschemes)/sizeof(pruneschemes[0]); i++)
         if (strcmp(pruneschemes[i].name, schemename) == 0)
             return i;
-    fprintf(outfile, "Unrecognized pruning scheme %s!\n", schemename);
+    psi::fprintf(outfile, "Unrecognized pruning scheme %s!\n", schemename);
     throw PSIEXCEPTION("Unrecognized pruning scheme!");
 }
 
@@ -3801,17 +3801,17 @@ void BasisExtents::computeExtents()
 }
 void BasisExtents::print(FILE* out)
 {
-    fprintf(out, "   => BasisExtents: Cutoff = %11.3E <=\n\n", delta_);
+    psi::fprintf(out, "   => BasisExtents: Cutoff = %11.3E <=\n\n", delta_);
 
     double* Rp = shell_extents_->pointer();
-    fprintf(out, "   Shell Extents:\n");
-    fprintf(out, "   %4s %14s %14s %14s %14s\n", "N", "X", "Y", "Z", "R");
+    psi::fprintf(out, "   Shell Extents:\n");
+    psi::fprintf(out, "   %4s %14s %14s %14s %14s\n", "N", "X", "Y", "Z", "R");
     for (int Q = 0; Q < primary_->nshell(); Q++) {
         Vector3 v = primary_->shell(Q).center();
-        fprintf(out, "   %4d %14.6E %14.6E %14.6E %14.6E\n", Q+1,
+        psi::fprintf(out, "   %4d %14.6E %14.6E %14.6E %14.6E\n", Q+1,
             v[0], v[1], v[2], Rp[Q]);
     }
-    fprintf(out, "\n\n");
+    psi::fprintf(out, "\n\n");
 }
 BlockOPoints::BlockOPoints(int npoints, double* x, double* y, double* z, double* w, boost::shared_ptr<BasisExtents> extents) :
     npoints_(npoints), x_(x), y_(y), z_(z), w_(w), extents_(extents)
@@ -3892,36 +3892,36 @@ void BlockOPoints::populate()
 }
 void BlockOPoints::print(FILE* out, int print)
 {
-    fprintf(out, "   => BlockOPoints: %d Points <=\n\n", npoints_);
+    psi::fprintf(out, "   => BlockOPoints: %d Points <=\n\n", npoints_);
 
-    fprintf(out, "    Center = <%11.3E,%11.3E,%11.3E>, R = %11.3E\n\n",
+    psi::fprintf(out, "    Center = <%11.3E,%11.3E,%11.3E>, R = %11.3E\n\n",
         xc_[0],xc_[1],xc_[2],R_);
 
-    fprintf(out, "    %-6lu Significant Shells.\n", shells_local_to_global_.size());
-    fprintf(out, "    %-6lu Significant Functions.\n\n", functions_local_to_global_.size());
+    psi::fprintf(out, "    %-6lu Significant Shells.\n", shells_local_to_global_.size());
+    psi::fprintf(out, "    %-6lu Significant Functions.\n\n", functions_local_to_global_.size());
 
     if (print > 3) {
-        fprintf(out, "    Significant Shells: ");
+        psi::fprintf(out, "    Significant Shells: ");
         for (int i = 0; i < shells_local_to_global_.size(); i++) {
-            fprintf(out, "%d ", shells_local_to_global_[i]);
+            psi::fprintf(out, "%d ", shells_local_to_global_[i]);
         }
-        fprintf(out, "\n\n");
-        fprintf(out, "    Significant Functions: ");
+        psi::fprintf(out, "\n\n");
+        psi::fprintf(out, "    Significant Functions: ");
         for (int i = 0; i < functions_local_to_global_.size(); i++) {
-            fprintf(out, "%d ", functions_local_to_global_[i]);
+            psi::fprintf(out, "%d ", functions_local_to_global_[i]);
         }
-        fprintf(out, "\n\n");
+        psi::fprintf(out, "\n\n");
     }
 
     if (print > 5) {
 
-        fprintf(out, "   Quadrature Points:\n\n");
-        fprintf(out, "   %4s %14s %14s %14s %14s\n", "N", "X", "Y", "Z", "W");
+        psi::fprintf(out, "   Quadrature Points:\n\n");
+        psi::fprintf(out, "   %4s %14s %14s %14s %14s\n", "N", "X", "Y", "Z", "W");
         for (int i = 0; i < npoints_; i++) {
-            fprintf(out, "   %4d %14.6E %14.6E %14.6E %14.6E\n", i+1,
+            psi::fprintf(out, "   %4d %14.6E %14.6E %14.6E %14.6E\n", i+1,
                 x_[i], y_[i], z_[i], w_[i]);
         }
-        fprintf(out, "\n\n");
+        psi::fprintf(out, "\n\n");
     }
 }
 DFTGrid::DFTGrid(boost::shared_ptr<Molecule> molecule,
@@ -4297,37 +4297,37 @@ void MolecularGrid::postProcess(boost::shared_ptr<BasisExtents> extents, int max
 
 void MolecularGrid::print(FILE* out, int print) const
 {
-    fprintf(out,"   => Molecular Quadrature <=\n\n");
-    fprintf(out,"    Radial Scheme    = %14s\n" , RadialGridMgr::SchemeName(options_.radscheme));
-    fprintf(out,"    Pruning Scheme   = %14s\n" , RadialPruneMgr::SchemeName(options_.prunescheme));
-    fprintf(out,"    Nuclear Scheme   = %14s\n", NuclearWeightMgr::SchemeName(options_.nucscheme));
-    fprintf(out,"\n");
-    fprintf(out,"    BS radius alpha  = %14g\n", options_.bs_radius_alpha);
-    fprintf(out,"    Pruning alpha    = %14g\n", options_.pruning_alpha);
-    fprintf(out,"    Radial Points    = %14d\n", options_.nradpts);
-    fprintf(out,"    Spherical Points = %14d\n", options_.nangpts);
-    fprintf(out,"    Total Points     = %14d\n", npoints_);
-    fprintf(out,"    Total Blocks     = %14zu\n", blocks_.size());
-    fprintf(out,"    Max Points       = %14d\n", max_points_);
-    fprintf(out,"    Max Functions    = %14d\n", max_functions_);
-    fprintf(out,"\n");
+    psi::fprintf(out,"   => Molecular Quadrature <=\n\n");
+    psi::fprintf(out,"    Radial Scheme    = %14s\n" , RadialGridMgr::SchemeName(options_.radscheme));
+    psi::fprintf(out,"    Pruning Scheme   = %14s\n" , RadialPruneMgr::SchemeName(options_.prunescheme));
+    psi::fprintf(out,"    Nuclear Scheme   = %14s\n", NuclearWeightMgr::SchemeName(options_.nucscheme));
+    psi::fprintf(out,"\n");
+    psi::fprintf(out,"    BS radius alpha  = %14g\n", options_.bs_radius_alpha);
+    psi::fprintf(out,"    Pruning alpha    = %14g\n", options_.pruning_alpha);
+    psi::fprintf(out,"    Radial Points    = %14d\n", options_.nradpts);
+    psi::fprintf(out,"    Spherical Points = %14d\n", options_.nangpts);
+    psi::fprintf(out,"    Total Points     = %14d\n", npoints_);
+    psi::fprintf(out,"    Total Blocks     = %14zu\n", blocks_.size());
+    psi::fprintf(out,"    Max Points       = %14d\n", max_points_);
+    psi::fprintf(out,"    Max Functions    = %14d\n", max_functions_);
+    psi::fprintf(out,"\n");
 
 }
 void MolecularGrid::print_details(FILE* out, int print) const 
 {
-    fprintf(out,"   > Grid Details <\n\n");
+    psi::fprintf(out,"   > Grid Details <\n\n");
     for (int A = 0; A < radial_grids_.size(); A++) {
-        fprintf(out,"    Atom: %4d, Nrad = %6d, Alpha = %11.3E:\n", A, radial_grids_[A]->npoints(), radial_grids_[A]->alpha());
+        psi::fprintf(out,"    Atom: %4d, Nrad = %6d, Alpha = %11.3E:\n", A, radial_grids_[A]->npoints(), radial_grids_[A]->alpha());
         for (int R = 0; R < spherical_grids_[A].size(); R++) {
             double Rval = radial_grids_[A]->r()[R];        
             double Wval = radial_grids_[A]->w()[R];        
             int Nsphere = spherical_grids_[A][R]->npoints();
             int Lsphere = spherical_grids_[A][R]->order();
-            fprintf(out,"    Node: %4d, R = %11.3E, WR = %11.3E, Nsphere = %6d, Lsphere = %6d\n",
+            psi::fprintf(out,"    Node: %4d, R = %11.3E, WR = %11.3E, Nsphere = %6d, Lsphere = %6d\n",
                 R, Rval, Wval, Nsphere, Lsphere);
         }
     }
-    fprintf(out,"\n");
+    psi::fprintf(out,"\n");
 }
 
 GridBlocker::GridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
@@ -4409,7 +4409,7 @@ void OctreeGridBlocker::block()
     FILE* fh_ktree;
     if (bench_) {
         fh_ktree = fopen("ktree.dat","w");
-        //fprintf(fh_ktree,"#  %4s %5s %15s %15s %15s\n", "Dept","ID","X","Y","Z");
+        //psi::fprintf(fh_ktree,"#  %4s %5s %15s %15s %15s\n", "Dept","ID","X","Y","Z");
     }
     int tree_level = 0;
 
@@ -4448,7 +4448,7 @@ void OctreeGridBlocker::block()
                     XC[0] /= block.size();
                     XC[1] /= block.size();
                     XC[2] /= block.size();
-                    fprintf(fh_ktree,"   %4d %5d %15.6E %15.6E %15.6E\n", tree_level,A, XC[0],XC[1],XC[2]);
+                    psi::fprintf(fh_ktree,"   %4d %5d %15.6E %15.6E %15.6E\n", tree_level,A, XC[0],XC[1],XC[2]);
                 }
 
                 std::vector<int> left;
@@ -4554,7 +4554,7 @@ void OctreeGridBlocker::block()
     FILE* fh_blocks;
     if (bench_) {
         fh_blocks = fopen("finished_blocks.dat","w");
-        //fprintf(fh_blocks, "#  %4s %15s %15s %15s %15s\n", "ID", "X", "Y", "Z", "W");
+        //psi::fprintf(fh_blocks, "#  %4s %15s %15s %15s %15s\n", "ID", "X", "Y", "Z", "W");
     }
     for (int A = 0; A < completed_tree.size(); A++) {
         std::vector<int> block = completed_tree[A];
@@ -4565,7 +4565,7 @@ void OctreeGridBlocker::block()
             z_[index] = z[delta];
             w_[index] = w[delta];
             index_[index] = index_ref_[delta];
-            if (bench_) fprintf(fh_blocks, "   %4d %15.6E %15.6E %15.6E %15.6E\n", unique_block, x_[index], y_[index], z_[index], w_[index]);
+            if (bench_) psi::fprintf(fh_blocks, "   %4d %15.6E %15.6E %15.6E %15.6E\n", unique_block, x_[index], y_[index], z_[index], w_[index]);
             index++;
         }
         if (block.size()) unique_block++;
@@ -4592,12 +4592,12 @@ void OctreeGridBlocker::block()
 
     if (bench_) {
         FILE* fh_extents = fopen("extents.dat","w");
-        //fprintf(fh_extents,"    %4s %15s %15s %15s %15s\n","ID","X","Y","Z","R");
+        //psi::fprintf(fh_extents,"    %4s %15s %15s %15s %15s\n","ID","X","Y","Z","R");
         boost::shared_ptr<BasisSet> basis = extents_->basis();
         boost::shared_ptr<Vector> Rc = extents_->shell_extents();
         for (int Q = 0; Q < basis->nshell(); Q++) {
             Vector3 v = basis->shell(Q).center();
-            fprintf(fh_extents,"    %4d %15.6E %15.6E %15.6E %15.6E\n", Q,v[0],v[1],v[2],Rc->get(0,Q));
+            psi::fprintf(fh_extents,"    %4d %15.6E %15.6E %15.6E %15.6E\n", Q,v[0],v[1],v[2],Rc->get(0,Q));
         }
         fclose(fh_extents);
     }
@@ -4608,13 +4608,13 @@ void OctreeGridBlocker::block()
             std::stringstream ss;
             ss << "extents" << i << ".dat";
             FILE* fh_extents = fopen(ss.str().c_str(),"w");
-            //fprintf(fh_extents,"    %4s %15s %15s %15s %15s\n","ID","X","Y","Z","R");
+            //psi::fprintf(fh_extents,"    %4s %15s %15s %15s %15s\n","ID","X","Y","Z","R");
             extents_->set_delta(pow(10.0,-i));
             boost::shared_ptr<BasisSet> basis = extents_->basis();
             boost::shared_ptr<Vector> Rc = extents_->shell_extents();
             for (int Q = 0; Q < basis->nshell(); Q++) {
                 Vector3 v = basis->shell(Q).center();
-                fprintf(fh_extents,"    %4d %15.6E %15.6E %15.6E %15.6E\n", Q,v[0],v[1],v[2],Rc->get(0,Q));
+                psi::fprintf(fh_extents,"    %4d %15.6E %15.6E %15.6E %15.6E\n", Q,v[0],v[1],v[2],Rc->get(0,Q));
             }
             fclose(fh_extents);
         }
@@ -4636,16 +4636,16 @@ RadialGrid::~RadialGrid()
 void RadialGrid::print(FILE* out, int level) const 
 {
     if (level > 0) {
-        fprintf(out, "   => RadialGrid: %s Scheme <=\n\n", scheme_.c_str());
-        fprintf(out, "      Points: %d\n", npoints_);
-        fprintf(out, "      Alpha:  %24.16E\n\n", alpha_);
-        fprintf(out, "   %4s %24s %24s\n", "N", "R", "W");
+        psi::fprintf(out, "   => RadialGrid: %s Scheme <=\n\n", scheme_.c_str());
+        psi::fprintf(out, "      Points: %d\n", npoints_);
+        psi::fprintf(out, "      Alpha:  %24.16E\n\n", alpha_);
+        psi::fprintf(out, "   %4s %24s %24s\n", "N", "R", "W");
         if (level > 1) {
             for (int i = 0; i < npoints_; i++) {
-                fprintf(out, "   %4d %24.16E %24.16E\n", i+1, r_[i], w_[i]);
+                psi::fprintf(out, "   %4d %24.16E %24.16E\n", i+1, r_[i], w_[i]);
             }
         }
-        fprintf(out, "\n");
+        psi::fprintf(out, "\n");
     }
 }
 boost::shared_ptr<RadialGrid> RadialGrid::build(const std::string& scheme, int npoints, double alpha)
@@ -4746,15 +4746,15 @@ SphericalGrid::~SphericalGrid()
 void SphericalGrid::print(FILE* out, int level) const 
 {
     if (level > 0) {
-        fprintf(out, "   => SphericalGrid: %s Scheme <=\n\n", scheme_.c_str());
-        fprintf(out, "      Points: %d\n", npoints_);
-        fprintf(out, "   %4s %24s %24s %24s %24s\n", "N", "X", "Y", "Z",  "W");
+        psi::fprintf(out, "   => SphericalGrid: %s Scheme <=\n\n", scheme_.c_str());
+        psi::fprintf(out, "      Points: %d\n", npoints_);
+        psi::fprintf(out, "   %4s %24s %24s %24s %24s\n", "N", "X", "Y", "Z",  "W");
         if (level > 1) {
             for (int i = 0; i < npoints_; i++) {
-                fprintf(out, "   %4d %24.16E %24.16E %24.16E %24.16E\n", i+1, x_[i], y_[i], z_[i], w_[i]);
+                psi::fprintf(out, "   %4d %24.16E %24.16E %24.16E %24.16E\n", i+1, x_[i], y_[i], z_[i], w_[i]);
             }
         }
-        fprintf(out, "\n");
+        psi::fprintf(out, "\n");
     }
 }
 void SphericalGrid::build_angles()
@@ -10250,42 +10250,42 @@ int SphericalGrid::lebedev_reccurence(int type, int start, double a, double b, d
 }
 void SphericalGrid::lebedev_error()
 {
-    fprintf(outfile,"  ==> Valid Lebedev Grids <==\n\n");
-    fprintf(outfile,"    L     2L+1   N   \n");
-    fprintf(outfile,"    1     3      6   \n");
-    fprintf(outfile,"    2     5      14  \n");
-    fprintf(outfile,"    3     7      26  \n");
-    fprintf(outfile,"    4     9      38  \n");
-    fprintf(outfile,"    5     11     50  \n");
-    fprintf(outfile,"    6     13     74  \n");
-    fprintf(outfile,"    7     15     86  \n");
-    fprintf(outfile,"    8     17     110 \n");
-    fprintf(outfile,"    9     19     146 \n");
-    fprintf(outfile,"    10    21     170 \n");
-    fprintf(outfile,"    11    23     194 \n");
-    fprintf(outfile,"    12    25     230 \n");
-    fprintf(outfile,"    13    27     266 \n");
-    fprintf(outfile,"    14    29     302 \n");
-    fprintf(outfile,"    15    31     350 \n");
-    fprintf(outfile,"    17    35     434 \n");
-    fprintf(outfile,"    20    41     590 \n");
-    fprintf(outfile,"    23    47     770 \n");
-    fprintf(outfile,"    26    53     974 \n");
-    fprintf(outfile,"    29    59     1202\n");
-    fprintf(outfile,"    32    65     1454\n");
-    fprintf(outfile,"    35    71     1730\n");
-    fprintf(outfile,"    38    77     2030\n");
-    fprintf(outfile,"    41    83     2354\n");
-    fprintf(outfile,"    44    89     2702\n");
-    fprintf(outfile,"    47    95     3074\n");
-    fprintf(outfile,"    50    101    3470\n");
-    fprintf(outfile,"    53    107    3890\n");
-    fprintf(outfile,"    56    113    4334\n");
-    fprintf(outfile,"    59    119    4802\n");
-    fprintf(outfile,"    62    125    5294\n");
-    fprintf(outfile,"    65    131    5810\n");
-    fprintf(outfile,"\n");
-    fprintf(outfile,"    In Soviet Russia, grid build you!\n\n");
+    psi::fprintf(outfile,"  ==> Valid Lebedev Grids <==\n\n");
+    psi::fprintf(outfile,"    L     2L+1   N   \n");
+    psi::fprintf(outfile,"    1     3      6   \n");
+    psi::fprintf(outfile,"    2     5      14  \n");
+    psi::fprintf(outfile,"    3     7      26  \n");
+    psi::fprintf(outfile,"    4     9      38  \n");
+    psi::fprintf(outfile,"    5     11     50  \n");
+    psi::fprintf(outfile,"    6     13     74  \n");
+    psi::fprintf(outfile,"    7     15     86  \n");
+    psi::fprintf(outfile,"    8     17     110 \n");
+    psi::fprintf(outfile,"    9     19     146 \n");
+    psi::fprintf(outfile,"    10    21     170 \n");
+    psi::fprintf(outfile,"    11    23     194 \n");
+    psi::fprintf(outfile,"    12    25     230 \n");
+    psi::fprintf(outfile,"    13    27     266 \n");
+    psi::fprintf(outfile,"    14    29     302 \n");
+    psi::fprintf(outfile,"    15    31     350 \n");
+    psi::fprintf(outfile,"    17    35     434 \n");
+    psi::fprintf(outfile,"    20    41     590 \n");
+    psi::fprintf(outfile,"    23    47     770 \n");
+    psi::fprintf(outfile,"    26    53     974 \n");
+    psi::fprintf(outfile,"    29    59     1202\n");
+    psi::fprintf(outfile,"    32    65     1454\n");
+    psi::fprintf(outfile,"    35    71     1730\n");
+    psi::fprintf(outfile,"    38    77     2030\n");
+    psi::fprintf(outfile,"    41    83     2354\n");
+    psi::fprintf(outfile,"    44    89     2702\n");
+    psi::fprintf(outfile,"    47    95     3074\n");
+    psi::fprintf(outfile,"    50    101    3470\n");
+    psi::fprintf(outfile,"    53    107    3890\n");
+    psi::fprintf(outfile,"    56    113    4334\n");
+    psi::fprintf(outfile,"    59    119    4802\n");
+    psi::fprintf(outfile,"    62    125    5294\n");
+    psi::fprintf(outfile,"    65    131    5810\n");
+    psi::fprintf(outfile,"\n");
+    psi::fprintf(outfile,"    In Soviet Russia, grid build you!\n\n");
     throw PSIEXCEPTION("SphericalGrid: Bad Lebedev number requested, see outfile for details.");
 }
 

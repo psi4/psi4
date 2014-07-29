@@ -33,7 +33,7 @@ namespace psi{ namespace occwave{
 
 void OCCWave::tei_sort_iabc()
 {    
-    //fprintf(outfile,"\n tei_sort_iabc is starting... \n"); fflush(outfile);
+    //psi::fprintf(outfile,"\n tei_sort_iabc is starting... \n"); fflush(outfile);
 /********************************************************************************************/
 /************************** sort chem -> phys ***********************************************/
 /********************************************************************************************/  
@@ -44,7 +44,7 @@ void OCCWave::tei_sort_iabc()
 	int ilsti,nbuf,index,fi;
 	double value = 0;
 
-        if (print_ > 2) fprintf(outfile,"\n writing <ia|bc>... \n"); 
+        if (print_ > 2) psi::fprintf(outfile,"\n writing <ia|bc>... \n"); 
  do
  {
         ilsti = ERIIN.last_buffer(); 
@@ -88,7 +88,7 @@ void OCCWave::tei_sort_iabc()
 	dpd_buf4_close(&K);
 	//psio_->close(PSIF_LIBTRANS_DPD, 1);
 
-        fprintf(outfile,"\n reading <ia|bc>... \n"); 
+        psi::fprintf(outfile,"\n reading <ia|bc>... \n"); 
 	IWL ERIIN2(psio_.get(), PSIF_OCC_IABC, 0.0, 1, 1);
  do
  {
@@ -107,7 +107,7 @@ void OCCWave::tei_sort_iabc()
         value = ERIIN2.values()[idx];
         fi += 4;
 
-	fprintf(outfile,"%3d %3d %3d %3d %20.14f\n",i,j,k,l,value);      
+	psi::fprintf(outfile,"%3d %3d %3d %3d %20.14f\n",i,j,k,l,value);      
         fflush(outfile);
 
    }
@@ -116,7 +116,7 @@ void OCCWave::tei_sort_iabc()
 
  } while(!ilsti);
  */   
-  //fprintf(outfile,"tei_sort_iabc done. \n"); fflush(outfile);
+  //psi::fprintf(outfile,"tei_sort_iabc done. \n"); fflush(outfile);
 }// end sort_iabc
 }} // End Namespaces
 

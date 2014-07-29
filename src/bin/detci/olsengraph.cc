@@ -114,7 +114,7 @@ void form_strings(void)
    if (Parameters.print_lvl>=4) {
       for (irrep=0,listnum=0; irrep < nirreps; irrep++) {
          for (code=0; code < ncodes; code++, listnum++) {
-            fprintf(outfile, "Strings for irrep %d code %2d (list %2d)\n", 
+            psi::fprintf(outfile, "Strings for irrep %d code %2d (list %2d)\n", 
                irrep, code, listnum);
             print_ci_space(alplist[irrep * ncodes + code],
                AlphaG->sg[irrep][code].num_strings,
@@ -150,7 +150,7 @@ void form_strings(void)
       if (Parameters.print_lvl>=4) {
          for (irrep=0; irrep < nirreps; irrep++) {
             for (code=0; code < ncodes; code++) {
-               fprintf(outfile, "Strings for irrep %d code %2d\n", irrep,
+               psi::fprintf(outfile, "Strings for irrep %d code %2d\n", irrep,
                   code);
                print_ci_space(betlist[irrep * ncodes + code],
                   BetaG->sg[irrep][code].num_strings,
@@ -259,9 +259,9 @@ void olsengraph(struct olsen_graph *Graph, int ci_orbs, int num_el,
 
 
    #ifdef DEBUG
-   fprintf(outfile, "ras1_lvl = %d   ras1_min = %d  ras1_max = %d\n",
+   psi::fprintf(outfile, "ras1_lvl = %d   ras1_min = %d  ras1_max = %d\n",
       ras1_lvl, ras1_min, ras1_max) ;
-   fprintf(outfile, "ras3_lvl = %d   ras3_max = %d\n", ras3_lvl, ras3_max) ;
+   psi::fprintf(outfile, "ras3_lvl = %d   ras3_max = %d\n", ras3_lvl, ras3_max) ;
    #endif
 
    // Go ahead and set the occupations of the frozen orbs 
@@ -408,7 +408,7 @@ void olsengraph(struct olsen_graph *Graph, int ci_orbs, int num_el,
                continue;
 
             #ifdef DEBUG
-            fprintf(outfile, "n1 = %d, n2 = %d, n3 = %d, n4 = %d\n", 
+            psi::fprintf(outfile, "n1 = %d, n2 = %d, n3 = %d, n4 = %d\n", 
                n1, n2, n3, n4) ;
             if (n2 < 0) printf("Error: n2 < 0 in form_strings()\n") ;
             #endif
@@ -442,8 +442,8 @@ void olsengraph(struct olsen_graph *Graph, int ci_orbs, int num_el,
                         // print out occupations for debugging
                         #ifdef DEBUG
                         for (i=0; i<num_el - num_fzc_orbs; i++) 
-                           fprintf(outfile, "%2d ", occs[i]) ;
-                        fprintf(outfile, "\n") ;
+                           psi::fprintf(outfile, "%2d ", occs[i]) ;
+                        psi::fprintf(outfile, "\n") ;
                         #endif
                   
                         // add this walk to the graph
@@ -803,54 +803,54 @@ void og_print(struct olsen_graph *Graph, FILE *outfile)
    ras3_max = Graph->ras3_max;
    ras4_max = Graph->ras4_max;
 
-   fprintf(outfile,"\nOlsen Graph:\n");
-   fprintf(outfile,"%3c%2d Electrons\n",' ',Graph->num_el);
-   fprintf(outfile,"%3c%2d Frozen core orbitals\n",' ',Graph->num_fzc_orbs);
-   fprintf(outfile,"%3c%2d Restricted core orbs\n",' ',Graph->num_cor_orbs);
-   fprintf(outfile,"%3c%2d Explicit electrons\n",' ',Graph->num_el_expl);
-   fprintf(outfile,"%3c%2d Explicit Orbitals\n",' ',Graph->num_orb);
-   fprintf(outfile,"%3c%2d RAS I level\n",' ',Graph->ras1_lvl);
-   fprintf(outfile,"%3c%2d RAS I minimum\n",' ',ras1_min);
-   fprintf(outfile,"%3c%2d RAS I maximum\n",' ',ras1_max);
-   fprintf(outfile,"%3c%2d RAS III level\n",' ',Graph->ras3_lvl);
-   fprintf(outfile,"%3c%2d RAS III maximum\n",' ',ras3_max);
-   fprintf(outfile,"%3c%2d RAS IV maximum\n",' ',ras4_max);
-   fprintf(outfile,"%3c%2d Number of irreps\n",' ',Graph->nirreps);
-   fprintf(outfile,"%3c%2d Subgraphs per irrep\n",' ',
+   psi::fprintf(outfile,"\nOlsen Graph:\n");
+   psi::fprintf(outfile,"%3c%2d Electrons\n",' ',Graph->num_el);
+   psi::fprintf(outfile,"%3c%2d Frozen core orbitals\n",' ',Graph->num_fzc_orbs);
+   psi::fprintf(outfile,"%3c%2d Restricted core orbs\n",' ',Graph->num_cor_orbs);
+   psi::fprintf(outfile,"%3c%2d Explicit electrons\n",' ',Graph->num_el_expl);
+   psi::fprintf(outfile,"%3c%2d Explicit Orbitals\n",' ',Graph->num_orb);
+   psi::fprintf(outfile,"%3c%2d RAS I level\n",' ',Graph->ras1_lvl);
+   psi::fprintf(outfile,"%3c%2d RAS I minimum\n",' ',ras1_min);
+   psi::fprintf(outfile,"%3c%2d RAS I maximum\n",' ',ras1_max);
+   psi::fprintf(outfile,"%3c%2d RAS III level\n",' ',Graph->ras3_lvl);
+   psi::fprintf(outfile,"%3c%2d RAS III maximum\n",' ',ras3_max);
+   psi::fprintf(outfile,"%3c%2d RAS IV maximum\n",' ',ras4_max);
+   psi::fprintf(outfile,"%3c%2d Number of irreps\n",' ',Graph->nirreps);
+   psi::fprintf(outfile,"%3c%2d Subgraphs per irrep\n",' ',
       Graph->subgr_per_irrep);
-   fprintf(outfile,"%3c%2d Max strings in irrep\n", ' ', 
+   psi::fprintf(outfile,"%3c%2d Max strings in irrep\n", ' ', 
       Graph->max_str_per_irrep);
-   fprintf(outfile,"%3c%2d Strings in total\n\n", ' ', Graph->num_str);
+   psi::fprintf(outfile,"%3c%2d Strings in total\n\n", ' ', Graph->num_str);
 
-   fprintf(outfile, "\n");
+   psi::fprintf(outfile, "\n");
    for (i=ras1_min; i<=ras1_max; i++) {
       for (j=0; j<=ras3_max; j++) {
          for (k=0; k<=ras4_max; k++) {
             if ((code = Graph->decode[i-ras1_min][j][k]) >= 0) {
-               fprintf(outfile, "%5cDecode (%2d,%2d,%2d) = %3d\n",' ',
+               psi::fprintf(outfile, "%5cDecode (%2d,%2d,%2d) = %3d\n",' ',
                   i,j,k,code);
                } 
             }
          }
       }
 
-   fprintf(outfile, "\n%4cString Distinct Row Tables\n", ' ');
-   fprintf(outfile, "%7c%3s %3s %3s %3s %3s %3s %3s %3s %3s %3s\n", ' ',
+   psi::fprintf(outfile, "\n%4cString Distinct Row Tables\n", ' ');
+   psi::fprintf(outfile, "%7c%3s %3s %3s %3s %3s %3s %3s %3s %3s %3s\n", ' ',
       "i", "j", "a", "b", "k0", "k1", "k0b", "k1b", "x", "y");
    for (i=0; i<Graph->nirreps; i++) {
-      fprintf(outfile, "\n%4cIrrep %2d has %d strings\n", ' ', i, 
+      psi::fprintf(outfile, "\n%4cIrrep %2d has %d strings\n", ' ', i, 
          Graph->str_per_irrep[i]);
       for (j=0; j<Graph->subgr_per_irrep; j++) {
          subgraph = Graph->sg[i] + j;
          if (subgraph->num_strings) {
-            fprintf(outfile, "%6cCode(%3d) : %4d strings, offset = %4d\n",
+            psi::fprintf(outfile, "%6cCode(%3d) : %4d strings, offset = %4d\n",
                ' ', j, subgraph->num_strings, subgraph->offset);
             curr = subgraph->lvl;
             for (k=0; k<Graph->num_orb+1; k++,curr++) {
                for (l=0; l<curr->num_j; l++) {
                   a = (curr->a)[l];
                   b = (curr->b)[l];
-                  fprintf(outfile, 
+                  psi::fprintf(outfile, 
                      "%7c%3d %3d %3d %3d %3d %3d %3d %3d %3d %3d\n", ' ',
                       k, l+1, a, b, (curr->k)[0][l], (curr->k)[1][l],
                       (curr->kbar)[0][l], (curr->kbar)[1][l],
@@ -861,7 +861,7 @@ void og_print(struct olsen_graph *Graph, FILE *outfile)
          }
       }
 
-   fprintf(outfile, "\n");
+   psi::fprintf(outfile, "\n");
    fflush(outfile);
 }
 

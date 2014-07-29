@@ -40,7 +40,7 @@ namespace psi{ namespace dfoccwave{
 
 void DFOCC::tei_grad_ref()
 {      
-  //fprintf(outfile,"\tref_grad is starting... \n"); fflush(outfile);
+  //psi::fprintf(outfile,"\tref_grad is starting... \n"); fflush(outfile);
 
 //===========================================================================================
 //========================= Two-electron Gradient:RefSep ====================================
@@ -328,7 +328,7 @@ void DFOCC::tei_grad_ref()
     //gradients["3-Index:RefSep"]->print_atom_vector();
     timer_off("Grad: 3-Index:RefSep");
 
-//fprintf(outfile,"\tref_grad is done. \n"); fflush(outfile);
+//psi::fprintf(outfile,"\tref_grad is done. \n"); fflush(outfile);
 }// end 
 
 

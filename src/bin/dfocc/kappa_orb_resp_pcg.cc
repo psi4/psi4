@@ -30,7 +30,7 @@ namespace psi{ namespace dfoccwave{
 
 void DFOCC::kappa_orb_resp_pcg()
 { 
-//fprintf(outfile,"\n kappa_orb_resp_pcg is starting... \n"); fflush(outfile);
+//psi::fprintf(outfile,"\n kappa_orb_resp_pcg is starting... \n"); fflush(outfile);
 
     SharedTensor2d K, L;
 
@@ -177,7 +177,7 @@ if (reference_ == "RESTRICTED") {
     // If LINEQ FAILED!
     if (pcg_conver == 0) {
         //if (print_ > 1 ) {
-        fprintf(outfile,"\tWarning!!! PCG did NOT converged in %2d iterations, switching to an approximately diagonal MO Hessian. \n", itr_pcg);
+        psi::fprintf(outfile,"\tWarning!!! PCG did NOT converged in %2d iterations, switching to an approximately diagonal MO Hessian. \n", itr_pcg);
         fflush(outfile);
         //}
 
@@ -491,7 +491,7 @@ else if (reference_ == "UNRESTRICTED") {
     // If LINEQ FAILED!
     if (pcg_conver == 0) {
         //if (print_ > 1 ) {
-        fprintf(outfile,"\tWarning!!! PCG did NOT converged in %2d iterations, switching to an approximately diagonal MO Hessian. \n", itr_pcg);
+        psi::fprintf(outfile,"\tWarning!!! PCG did NOT converged in %2d iterations, switching to an approximately diagonal MO Hessian. \n", itr_pcg);
         fflush(outfile);
         //}
 
@@ -578,7 +578,7 @@ else if (reference_ == "UNRESTRICTED") {
           kappaB->print();
         }
 }// end if (reference_ == "UNRESTRICTED") 
- //fprintf(outfile,"\n kappa_orb_resp_pcg done. \n"); fflush(outfile);
+ //psi::fprintf(outfile,"\n kappa_orb_resp_pcg done. \n"); fflush(outfile);
 }// end kappa_orb_resp_pcg
 
 //=======================================================
@@ -604,7 +604,7 @@ void DFOCC::orb_resp_pcg_rhf()
  do
  {
 
-    //fprintf(outfile, "pcg iter: %3d \n", itr_pcg); fflush(outfile);
+    //psi::fprintf(outfile, "pcg iter: %3d \n", itr_pcg); fflush(outfile);
     // Set 
     SvoA->set(sigma_pcgA);
     PvoA->set(p_pcgA);
@@ -747,7 +747,7 @@ void DFOCC::orb_resp_pcg_uhf()
  // Head of the loop
  do
  {
-    //fprintf(outfile, "pcg iter: %3d \n", itr_pcg); fflush(outfile);
+    //psi::fprintf(outfile, "pcg iter: %3d \n", itr_pcg); fflush(outfile);
 
     // Set 
     SvoA->set(sigma_pcgA);

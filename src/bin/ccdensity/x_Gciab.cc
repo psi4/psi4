@@ -450,7 +450,7 @@ void x_Gciab_rohf(void) {
   dpd_buf4_init(&V, CC_GAMMA, G_irr, 11, 5, 11, 5, 0, "GcIaB");
   value += dpd_buf4_dot_self(&V);
   dpd_buf4_close(&V);
-  fprintf(outfile,"<Gciab|Gciab> = %15.10lf\n",value);
+  psi::fprintf(outfile,"<Gciab|Gciab> = %15.10lf\n",value);
   */
 
 }

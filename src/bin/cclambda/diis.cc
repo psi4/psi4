@@ -120,7 +120,7 @@ void diis(int iter, int L_irr)
       for(row=0; row < L2a.params->rowtot[h]; row++)
         for(col=0; col < L2a.params->coltot[h^L_irr]; col++) {
           error[0][word++] = L2a.matrix[h][row][col] - L2b.matrix[h][row][col];
-/* fprintf(outfile,"%15.10lf\n", error[0][word-1]); */
+/* psi::fprintf(outfile,"%15.10lf\n", error[0][word-1]); */
     }
       global_dpd_->buf4_mat_irrep_close(&L2a, h);
       global_dpd_->buf4_mat_irrep_close(&L2b, h);
@@ -183,7 +183,7 @@ void diis(int iter, int L_irr)
 
       /*
       for(i=0; i < vector_length; i++)
-        fprintf(outfile,"E[%d][%d] = %20.15lf\n",p,i,vector[0][i]);
+        psi::fprintf(outfile,"E[%d][%d] = %20.15lf\n",p,i,vector[0][i]);
       */
 
       dot_arr(vector[0], vector[0], vector_length, &product);
@@ -222,7 +222,7 @@ void diis(int iter, int L_irr)
         B[p][q] /= maximum;
 
     /*
-    fprintf(outfile,"\nDIIS B:\n");
+    psi::fprintf(outfile,"\nDIIS B:\n");
     print_mat(B,nvector,nvector,outfile);
     */
 
@@ -235,7 +235,7 @@ void diis(int iter, int L_irr)
 
     errcod = C_DGESV(nvector+1, 1, &(B[0][0]), nvector+1, &(ipiv[0]), &(C[0]), nvector+1);
     if(errcod) {
-      fprintf(outfile, "\nError in DGESV return in diis.\n");
+      psi::fprintf(outfile, "\nError in DGESV return in diis.\n");
       throw PsiException("cclambda: error", __FILE__, __LINE__);
     }
 
@@ -243,7 +243,7 @@ void diis(int iter, int L_irr)
     vector = global_dpd_->dpd_block_matrix(1, vector_length);
     for(p=0; p < vector_length; p++) error[0][p] = 0.0;
     for(p=0; p < nvector; p++) {
-      /*fprintf(outfile,"C[%d] = %20.15lf\n",p,C[p]);*/
+      /*psi::fprintf(outfile,"C[%d] = %20.15lf\n",p,C[p]);*/
 
       start = psio_get_address(PSIO_ZERO, p*vector_length*sizeof(double));
 

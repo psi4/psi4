@@ -34,30 +34,30 @@ namespace psi {
 /*! Print PSI version information that was set in configure.ac */
 void print_version(FILE *myout)
 {
-  fprintf(myout, "    -----------------------------------------------------------------------\n");
-  fprintf(myout, "          PSI4: An Open-Source Ab Initio Electronic Structure Package\n");
-  fprintf(myout, "                              PSI %s Driver\n", PSI_VERSION);
+  psi::fprintf(myout, "    -----------------------------------------------------------------------\n");
+  psi::fprintf(myout, "          PSI4: An Open-Source Ab Initio Electronic Structure Package\n");
+  psi::fprintf(myout, "                              PSI %s Driver\n", PSI_VERSION);
 
   // Are we using git? If so,what version string
 #ifdef GIT_VERSION
-  fprintf(myout, "\n               Git: Rev " GIT_VERSION "\n");
+  psi::fprintf(myout, "\n               Git: Rev " GIT_VERSION "\n");
 #endif
 
-  fprintf(myout, "\n");
-  fprintf(myout, "    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,\n");
-  fprintf(myout, "    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,\n");
-  fprintf(myout, "    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,\n");
-  fprintf(myout, "    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,\n");
-  fprintf(myout, "    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)\n");
-  fprintf(myout, "    (doi: 10.1002/wcms.93)\n");
+  psi::fprintf(myout, "\n");
+  psi::fprintf(myout, "    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,\n");
+  psi::fprintf(myout, "    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,\n");
+  psi::fprintf(myout, "    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,\n");
+  psi::fprintf(myout, "    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,\n");
+  psi::fprintf(myout, "    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)\n");
+  psi::fprintf(myout, "    (doi: 10.1002/wcms.93)\n");
 
-  fprintf(myout, "\n");
-  fprintf(myout, "                         Additional Contributions by\n");
-  fprintf(myout, "    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov\n");
-  fprintf(myout, "    -----------------------------------------------------------------------\n\n");
+  psi::fprintf(myout, "\n");
+  psi::fprintf(myout, "                         Additional Contributions by\n");
+  psi::fprintf(myout, "    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov\n");
+  psi::fprintf(myout, "    -----------------------------------------------------------------------\n\n");
   pid_t pid = getpid();
-  fprintf(myout, "    Process ID: %6d\n",pid);
-  fprintf(myout, "    PSI4DATADIR: %s\n", Process::environment("PSIDATADIR").c_str());
+  psi::fprintf(myout, "    Process ID: %6d\n",pid);
+  psi::fprintf(myout, "    PSI4DATADIR: %s\n", Process::environment("PSIDATADIR").c_str());
 }
 
 }

@@ -245,15 +245,15 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
    if (Parameters.nodfile == FALSE) {
      if (Parameters.guess_vector == PARM_GUESS_VEC_DFILE &&
          (i = Dvec.read_num_vecs()) != nroots) {
-       fprintf(outfile, "D file contains %d not %d vectors.  Attempting ",
+       psi::fprintf(outfile, "D file contains %d not %d vectors.  Attempting ",
                i, nroots);
        if (Parameters.h0blocksize == 0) {
          Parameters.guess_vector = PARM_GUESS_VEC_UNIT;
-         fprintf(outfile, "unit vector guess.\n");
+         psi::fprintf(outfile, "unit vector guess.\n");
        }
        else {
          Parameters.guess_vector = PARM_GUESS_VEC_H0_BLOCK;
-         fprintf(outfile, "H0block guess.\n");
+         psi::fprintf(outfile, "H0block guess.\n");
        }
      }
    }
@@ -263,12 +263,12 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       L = Cvec.read_num_vecs();
       i = Sigma.read_num_vecs();
       if (i != L) {
-        fprintf(outfile, "%d C vectors and %d Sigma vectors.\n", i, L);
+        psi::fprintf(outfile, "%d C vectors and %d Sigma vectors.\n", i, L);
     if (i < L) {
           L = i;
       Cvec.write_num_vecs(L);
         }
-    fprintf(outfile, "Using %d vectors \n", L);
+    psi::fprintf(outfile, "Using %d vectors \n", L);
       }
       if (L < nroots) {
         str = "Restart failed...  ";
@@ -279,7 +279,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
         throw PsiException(str,__FILE__,__LINE__);
       }
 
-      fprintf(outfile, "\nAttempting Restart with %d vectors\n", L);
+      psi::fprintf(outfile, "\nAttempting Restart with %d vectors\n", L);
 
    /* open detci.dat and write file_offset and file_number array out to
       detci.dat */
@@ -318,13 +318,13 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       for (i=0; i<L; i++) {
          Sigma.read(i, 0);
          if (print_lvl > 4) {
-            fprintf(outfile, "Sigma[%d] =\n", i);
+            psi::fprintf(outfile, "Sigma[%d] =\n", i);
             Sigma.print(outfile);
             }
          for (j=0; j<=i; j++) {
             Cvec.read(j, 0);
             if (print_lvl > 4) {
-               fprintf(outfile, "C[%d] =\n", j);
+               psi::fprintf(outfile, "C[%d] =\n", j);
                Cvec.print(outfile);
                }
             G[j][i] = G[i][j] = Cvec * Sigma;
@@ -334,14 +334,14 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       Sigma.buf_unlock();
 
       if (print_lvl > 3) {
-         fprintf(outfile, "\nG matrix (%2d) = \n", iter);
+         psi::fprintf(outfile, "\nG matrix (%2d) = \n", iter);
          print_mat(G, L, L, outfile);
          }
 
       /* solve the L x L eigenvalue problem G a = lambda a for M roots */
       sq_rsp(L, L, G, lambda[iter2], 1, alpha[iter2], 1.0E-14);
       if (print_lvl > 4) {
-         fprintf(outfile, "\n G eigenvectors and eigenvalues:\n");
+         psi::fprintf(outfile, "\n G eigenvectors and eigenvalues:\n");
          eivout(alpha[iter2], lambda[iter2], L, L, outfile);
          }
 
@@ -392,7 +392,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
 
    /* previous-run d vector */
    else if (Parameters.guess_vector == PARM_GUESS_VEC_DFILE) {
-     fprintf(outfile, "Attempting to use %d previous converged vectors\n",
+     psi::fprintf(outfile, "Attempting to use %d previous converged vectors\n",
         nroots);
      if (Parameters.nodfile) {
        i = Cvec.read_new_first_buf();
@@ -491,12 +491,12 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       if (Parameters.precon == PRECON_GEN_DAVIDSON) L = H0block.size;
       else L = H0block.guess_size;
 
-      /* fprintf(outfile, " L = %d in sem.cc line 345\n", L); */
+      /* psi::fprintf(outfile, " L = %d in sem.cc line 345\n", L); */
       /* N = CIblks.vectlen; The variable N is never used */
       sm_evals = init_array(L);
 
       /* need to fill out sm_evecs into b (pad w/ 0's) */
-      fprintf(outfile, "Using %d initial trial vectors\n",
+      psi::fprintf(outfile, "Using %d initial trial vectors\n",
          Parameters.num_init_vecs);
 
       Cvec.buf_lock(buffer1);
@@ -516,7 +516,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
             if ((int) Parameters.S % 2) tval = -tval;
             if (fabs(H0block.H0b_diag[j][i] - tval) > 1.0E-8) {
               tmpi = 1;
-              fprintf(outfile,"(sem_iter): H0block.H0b_diag[%d][%d]"
+              psi::fprintf(outfile,"(sem_iter): H0block.H0b_diag[%d][%d]"
                       " - H0block.H0b_diag[%d][%d] = %lf - %lf = %lf"
                       " > 1.0E-8\n", j, i, l, i, H0block.H0b_diag[j][i],
                      tval, (H0block.H0b_diag[j][i] - tval));
@@ -531,9 +531,9 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
        if (Parameters.filter_guess_sign == -1) tval = -tval;
        if (fabs(H0block.H0b_diag[j][i] - tval) > 1.0E-8) {
          tmpi = 1;
-         fprintf(outfile, "(sem_iter): Guess vector failed user-specified"
+         psi::fprintf(outfile, "(sem_iter): Guess vector failed user-specified"
                           " criterion.\n");
-         fprintf(outfile, "(sem_iter): H0block.H0b_diag[%d][%d]"
+         psi::fprintf(outfile, "(sem_iter): H0block.H0b_diag[%d][%d]"
                  " - H0block.H0b_diag[%d][%d] = %lf - %lf = %lf"
              " > 1.0E-8\n", j, i, l, i, H0block.H0b_diag[j][i],
              tval, (H0block.H0b_diag[j][i] - tval));
@@ -552,7 +552,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
             tval = Cvec.calc_ssq(buffer1, buffer2, alplist, betlist, k);
             Cvec.buf_lock(buffer1);
             if (fabs(tval - (Parameters.S*(Parameters.S+1.0))) > 1.0E-3) {
-              fprintf(outfile,
+              psi::fprintf(outfile,
                  "Computed <S^2> not as desired, discarding guess\n");
               }
             else k++;
@@ -578,7 +578,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
    //Cvec.write_detfile(CI_VEC);
    //Sigma.write_detfile(SIGMA_VEC);
    //if (Parameters.print_lvl > 1)
-   //  fprintf(outfile,"Restart info written.\n");
+   //  psi::fprintf(outfile,"Restart info written.\n");
    fflush(outfile);
 
    if (k < nroots) {
@@ -605,7 +605,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       Lvec[iter2] = L;
 
       #ifdef DEBUG
-      fprintf(outfile, "L[cur] = %3d, L[last] = %3d\n", L,
+      psi::fprintf(outfile, "L[cur] = %3d, L[last] = %3d\n", L,
         iter2 > 0 ? Lvec[iter2-1] : 999);
       #endif
 
@@ -616,7 +616,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       for (i=Llast; i<L; i++) {
          Cvec.read(i, 0);
          if (print_lvl > 3) {
-            fprintf(outfile, "b[%d] =\n", i);
+            psi::fprintf(outfile, "b[%d] =\n", i);
             Cvec.print(outfile);
             }
 
@@ -632,7 +632,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
            }
 
          if (print_lvl > 3) { /* and this as well */
-            fprintf(outfile, "H * b[%d] = \n", i);
+            psi::fprintf(outfile, "H * b[%d] = \n", i);
             Sigma.print(outfile);
             }
 
@@ -650,12 +650,12 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       sq_rsp(L, L, G, lambda[iter2], 1, alpha[iter2], 1.0E-14);
 
       if (print_lvl > 4) {
-         fprintf(outfile, "\n G eigenvectors and eigenvalues:\n");
+         psi::fprintf(outfile, "\n G eigenvectors and eigenvalues:\n");
          eivout(alpha[iter2], lambda[iter2], L, L, outfile);
          }
 
       if (print_lvl > 3) {
-        fprintf(outfile, "\nG matrix (%2d) = \n", iter);
+        psi::fprintf(outfile, "\nG matrix (%2d) = \n", iter);
         print_mat(G, L, L, outfile);
         }
 
@@ -674,14 +674,14 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
        for (i=0; i<L; i++) {
           Sigma.read(i, 0);
           if (print_lvl > 2) {
-            fprintf(outfile,"Sigma[%d] = ", i);
+            psi::fprintf(outfile,"Sigma[%d] = ", i);
             Sigma.print(outfile);
             fflush(outfile);
             }
           for (j=i; j<L; j++) {
              Sigma2.read(j, 0);
              if (print_lvl > 2) {
-               fprintf(outfile,"Sigma2[%d] = ", j);
+               psi::fprintf(outfile,"Sigma2[%d] = ", j);
                Sigma2.print(outfile);
                fflush(outfile);
                }
@@ -705,13 +705,13 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
           } /* end loop over k (nroots) */
 
        if (print_lvl > 2) {
-         fprintf(outfile, "\nsigma_overlap matrix (%2d) = \n", iter);
+         psi::fprintf(outfile, "\nsigma_overlap matrix (%2d) = \n", iter);
          print_mat(sigma_overlap, L, L, outfile);
 
          for (k=0; k<nroots; k++) {
-            fprintf(outfile, "\nM matrix (%2d) for root %d = \n", iter, k);
+            psi::fprintf(outfile, "\nM matrix (%2d) for root %d = \n", iter, k);
             print_mat(M[k], L, L, outfile);
-            fprintf(outfile, "\n");
+            psi::fprintf(outfile, "\n");
             }
          }
 
@@ -719,7 +719,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
        for (k=0; k<nroots; k++) {
           sq_rsp(L, L, M[k], m_lambda[iter2][k], 1, m_alpha[iter2][k], 1.0E-14);
           if (print_lvl > 2) {
-            fprintf(outfile, "\n M eigenvectors and eigenvalues root %d:\n",k);
+            psi::fprintf(outfile, "\n M eigenvectors and eigenvalues root %d:\n",k);
             eivout(m_alpha[iter2][k], m_lambda[iter2][k], L, L, outfile);
             }
           }
@@ -734,14 +734,14 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
        for (i=0; i<L; i++) {
           Sigma.read(i, 0);
           if (print_lvl > 2) {
-            fprintf(outfile,"Sigma[%d] = ", i);
+            psi::fprintf(outfile,"Sigma[%d] = ", i);
             Sigma.print(outfile);
             fflush(outfile);
             }
           for (j=i; j<L; j++) {
              Sigma2.read(j, 0);
              if (print_lvl > 2) {
-               fprintf(outfile,"Sigma2[%d] = ", j);
+               psi::fprintf(outfile,"Sigma2[%d] = ", j);
                Sigma2.print(outfile);
                fflush(outfile);
                }
@@ -751,11 +751,11 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
        Sigma.buf_unlock();
        Sigma2.buf_unlock();
 
-       fprintf(outfile, "\nsigma_overlap matrix (%2d) = \n", iter);
+       psi::fprintf(outfile, "\nsigma_overlap matrix (%2d) = \n", iter);
        print_mat(sigma_overlap, L, L, outfile);
 
        for (i=0; i<L; i++) {
-         fprintf(outfile, "\nGuess energy #%d = %15.9lf\n", i,
+         psi::fprintf(outfile, "\nGuess energy #%d = %15.9lf\n", i,
            -1.0 * sqrt(sigma_overlap[i][i]) + CalcInfo.enuc + CalcInfo.efzc);
          }
 
@@ -779,9 +779,9 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
          m_lambda[0][0][i] = -1.0 * sqrt(m_lambda[0][0][i]) +
            CalcInfo.enuc + CalcInfo.efzc;
        }
-       fprintf(outfile, "\n Guess energy from H^2 = %15.9lf\n",
+       psi::fprintf(outfile, "\n Guess energy from H^2 = %15.9lf\n",
          m_lambda[0][0][L]);
-       fprintf(outfile, "\n M eigenvectors and eigenvalues root %d:\n",0);
+       psi::fprintf(outfile, "\n M eigenvectors and eigenvalues root %d:\n",0);
        eivout(m_alpha[0][0], m_lambda[0][0], L, L, outfile);
        }
 
@@ -863,7 +863,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
        L2 = L3 = nroots;
 
        #ifdef DEBUG
-       fprintf(outfile, "Gathered vectors 0 to %d and wrote to positions \
+       psi::fprintf(outfile, "Gathered vectors 0 to %d and wrote to positions \
           %d to %d\n", L-1, maxnvect-nroots, maxnvect-1);
        #endif
 
@@ -917,7 +917,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
 
         if (L2 != L3) {
           printf("(sem_iter): L2 != L3.  Bad. \n");
-          fprintf(outfile,"(sem_iter): L2 != L3.  Bad. \n");
+          psi::fprintf(outfile,"(sem_iter): L2 != L3.  Bad. \n");
           }
 
         Cvec.restart_reord_fp(maxnvect-L2);
@@ -937,7 +937,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
         Llast = L;
         iter2 = 0;  Lvec[0] = L;
         #ifdef DEBUG
-        fprintf(outfile, "L = %d, L2 = %d, L3 = %d\n",L, L2, L3);
+        psi::fprintf(outfile, "L = %d, L2 = %d, L3 = %d\n",L, L2, L3);
         #endif
 
         /* write file_offset and file_number array out to detci.dat */
@@ -945,7 +945,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
         Cvec.write_detfile(CI_VEC);
         Sigma.write_detfile(SIGMA_VEC);
         if (Parameters.print_lvl > 1)
-          fprintf(outfile,"Restart info written.\n");
+          psi::fprintf(outfile,"Restart info written.\n");
         fflush(outfile);
     */
 
@@ -969,7 +969,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
               if (Cvec.schmidt_add2(Cvec2,0, j-1, j, j,
                 clpse_dot[j],&(clpse_norm[j]),&ovlpmax)) L2++;
               }
-           if (ovlpmax > S_MAX) fprintf(outfile,"Near degeneracy in b space\n");
+           if (ovlpmax > S_MAX) psi::fprintf(outfile,"Near degeneracy in b space\n");
            Cvec.buf_unlock();
            Cvec2.buf_unlock();
            Sigma.buf_lock(buffer1);
@@ -982,7 +982,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
            L = L2;
            Sigma.buf_unlock();
            Sigma2.buf_unlock();
-           fprintf(outfile,"  Second Schmidt-Orthogonalization performed.\n");
+           psi::fprintf(outfile,"  Second Schmidt-Orthogonalization performed.\n");
            }
 
         /* need to re-form G here and re-diagonalize it */
@@ -998,7 +998,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
               Cvec.read(i,0);
               sigma(alplist, betlist, Cvec, Sigma, oei, tei, Parameters.fci, i);
               if (print_lvl > 1) {
-                fprintf(outfile,
+                psi::fprintf(outfile,
                   "Exact Sigma: (redid multiplication) H * b[%d] = \n", i);
                 Sigma.print(outfile);
                 }
@@ -1019,7 +1019,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
         sq_rsp(L, L, G, lambda[iter2], 1, alpha[iter2], 1.0E-14);
 
         if (print_lvl > 4) {
-           fprintf(outfile, "\n G eigenvectors and eigenvalues:\n");
+           psi::fprintf(outfile, "\n G eigenvectors and eigenvalues:\n");
            eivout(alpha[iter2], lambda[iter2], L, L, outfile);
            }
 
@@ -1027,13 +1027,13 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
         Sigma.buf_unlock();
 
         if (print_lvl > 1) {
-           fprintf(outfile,"  Collapsed Davidson subspace to %d vectors\n",L);
+           psi::fprintf(outfile,"  Collapsed Davidson subspace to %d vectors\n",L);
            if (lse_do) {
-             fprintf(outfile,"  Least Squares Extrapolation for Root%c",
+             psi::fprintf(outfile,"  Least Squares Extrapolation for Root%c",
                      (lse_do>1) ? 's' : ' ');
              for (i=0; i<nroots; i++)
-                if (lse_do_arr[i]) fprintf(outfile," %d", i);
-             fprintf(outfile,"\n");
+                if (lse_do_arr[i]) psi::fprintf(outfile," %d", i);
+             psi::fprintf(outfile,"\n");
              }
           }
 
@@ -1057,20 +1057,20 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
                lambda[iter2][i]+efzc,i,L,alpha[iter2], alplist, betlist);
              x[i] = tmpx;
              y[i] = tmpy;
-             /* fprintf(outfile,"x[%d] = %lf    y[%d] = %lf\n",i,x[i],i,y[i]);
+             /* psi::fprintf(outfile,"x[%d] = %lf    y[%d] = %lf\n",i,x[i],i,y[i]);
                E_est[i] += efzc; */
              errcod = H0block_calc(lambda[iter2][i]);
              if (!errcod)
-               fprintf(outfile,"Determinant of H0block is too small.\n");
+               psi::fprintf(outfile,"Determinant of H0block is too small.\n");
              if (Parameters.precon>=PRECON_GEN_DAVIDSON)
                H0block_xy(&x[i],&y[i],lambda[iter2][i]);
         /*
-             fprintf(outfile,
+             psi::fprintf(outfile,
                      "Modified x[%d] = %lf y[%d] = %lf\n",i,x[i],i,y[i]);
         */
              E_est[i] = y[i]/x[i];
              /*
-               fprintf(outfile,"E_est[%d] = %20.12f lambda[%d] = %20.12f\n",i,
+               psi::fprintf(outfile,"E_est[%d] = %20.12f lambda[%d] = %20.12f\n",i,
                     E_est[i]+efzc+enuc,i,lambda[iter2][i]+efzc+enuc);
              */
              }
@@ -1094,18 +1094,18 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
             root_converged[i] = 0;
             converged = 0;
             }
-         fprintf(outfile, "Iter %2d  Root %2d = %13.9lf",
+         psi::fprintf(outfile, "Iter %2d  Root %2d = %13.9lf",
             iter, i+1, (lambda[iter2][i] + enuc + efzc));
-         fprintf(outfile, "   Delta_E %10.3E   Delta_C %10.3E %c\n",
+         psi::fprintf(outfile, "   Delta_E %10.3E   Delta_C %10.3E %c\n",
             lambda[iter2][i] - lastroot[i], dvecnorm[i],
             root_converged[i] ? 'c' : ' ');
          fflush(outfile);
          }
 
-      if (nroots > 1) fprintf(outfile, "\n");
+      if (nroots > 1) psi::fprintf(outfile, "\n");
 
       if (iter == maxiter) {
-         fprintf(outfile, "\nMaximum number of iterations reached\n");
+         psi::fprintf(outfile, "\nMaximum number of iterations reached\n");
          }
 
       if (converged || iter == maxiter) {
@@ -1123,15 +1123,15 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
                Dvec.civ_xpeay(tval, Cvec, i, j);
                }
 
-            fprintf(outfile, "\n* ROOT %d CI total energy = %17.13lf", i+1,
+            psi::fprintf(outfile, "\n* ROOT %d CI total energy = %17.13lf", i+1,
                evals[i] + enuc + efzc);
 
             if (nroots > 1) {
-               fprintf(outfile, "  (%6.4lf eV, %9.2lf 1/cm)\n",
+               psi::fprintf(outfile, "  (%6.4lf eV, %9.2lf 1/cm)\n",
                  (evals[i] - evals[0]) * pc_hartree2ev,
                  (evals[i] - evals[0]) * pc_hartree2wavenumbers);
                }
-            else fprintf(outfile, "\n");
+            else psi::fprintf(outfile, "\n");
 
             if (Parameters.print_lvl) {
                zero_arr(mi_coeff, Parameters.nprint);
@@ -1139,7 +1139,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
                   mi_iaidx, mi_ibidx, mi_coeff, Parameters.neg_only);
                print_vec(Parameters.nprint, mi_iac, mi_ibc, mi_iaidx, mi_ibidx,
                   mi_coeff, AlphaG, BetaG, alplist, betlist, outfile);
-               fprintf(outfile, "\n");
+               psi::fprintf(outfile, "\n");
                }
             Dvec.write_num_vecs(i+1);  // only if nodfile ?
             }
@@ -1158,16 +1158,16 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
         for (i=0; i<L; i++) {
            Cvec.read(i,0);
            cknorm = Cvec.checknorm();
-           fprintf(outfile,"\ncknorm for b vector %d = %20.15f\n\n", i,cknorm);
-           fprintf(outfile,"before correctn vecs added to list of b vecs\n");
-           fprintf(outfile,"\nCvec (b vector) %d =\n", i);
+           psi::fprintf(outfile,"\ncknorm for b vector %d = %20.15f\n\n", i,cknorm);
+           psi::fprintf(outfile,"before correctn vecs added to list of b vecs\n");
+           psi::fprintf(outfile,"\nCvec (b vector) %d =\n", i);
            Cvec.print(outfile);
            for (j=i; j<L; j++) {
               Cvec2.read(j,0);
-              fprintf(outfile,"Cvec2 (b vector) %d =\n", j);
+              psi::fprintf(outfile,"Cvec2 (b vector) %d =\n", j);
               Cvec2.print(outfile);
               tvalmatt = Cvec * Cvec2;
-              fprintf(outfile,"Cvec[%d] * Cvec[%d] = %20.15f\n",i,j,tvalmatt);
+              psi::fprintf(outfile,"Cvec[%d] * Cvec[%d] = %20.15f\n",i,j,tvalmatt);
               }
            }
          Cvec.buf_unlock();
@@ -1192,7 +1192,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
            Dvec.h0block_buf_precon(&tval, k);
            }
          if (tval < 1.0E-13 && print_lvl > 0) {
-           fprintf(outfile,"Warning: Norm of "
+           psi::fprintf(outfile,"Warning: Norm of "
                   "correction (root %d) is < 1.0E-13\n", k);
            }
          Dvec.read(k,0);
@@ -1206,7 +1206,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
          Dvec.symnorm(tval,0,0);
 
          if (print_lvl > 4) {
-            fprintf(outfile, "\nsecond d matrix root %d\n", k);
+            psi::fprintf(outfile, "\nsecond d matrix root %d\n", k);
             Dvec.print(outfile);
             }
 
@@ -1238,7 +1238,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
         Cvec.buf_lock(buffer1);
         for (i=0; i<L; i++) {
            Cvec.read(i,0);
-           fprintf(outfile,"\nCvec (b vector) %d =\n", i);
+           psi::fprintf(outfile,"\nCvec (b vector) %d =\n", i);
            Cvec.print(outfile);
            }
         Cvec.buf_unlock();
@@ -1248,14 +1248,14 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
         for (i=0; i<L; i++) {
            Cvec.read(i,0);
            cknorm = Cvec.checknorm();
-           fprintf(outfile,"\nCvec (b vector) %d =\n", i);
+           psi::fprintf(outfile,"\nCvec (b vector) %d =\n", i);
            Cvec.print(outfile);
-           fprintf(outfile,"\ncknorm for b vector %d after"
+           psi::fprintf(outfile,"\ncknorm for b vector %d after"
                    " correction vectors = %20.15f\n\n",i,cknorm);
            for (j=i; j<L; j++) {
               Cvec2.read(j,0);
               tvalmatt = Cvec * Cvec2;
-              fprintf(outfile,"Cvec[%d] * Cvec[%d] = %20.15f\n",i,j,tvalmatt);
+              psi::fprintf(outfile,"Cvec[%d] * Cvec[%d] = %20.15f\n",i,j,tvalmatt);
               }
            }
          Cvec.buf_unlock();
@@ -1369,7 +1369,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
      slaterdetset_delete_full(&dets);
    }
    else if (Parameters.export_ci_vector && Parameters.icore != 1) {
-     fprintf(outfile, "\nWarning: requested CI vector export, unavailable " \
+     psi::fprintf(outfile, "\nWarning: requested CI vector export, unavailable " \
        "for icore = %d\n", Parameters.icore);
    }
 

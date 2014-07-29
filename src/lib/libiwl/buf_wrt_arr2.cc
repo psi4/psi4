@@ -65,7 +65,7 @@ void IWL::write_array2(double *arr, int p, int q, int *rlist, int *slist, int si
             valptr[idx_] = (Value) value;
 
             if(printflag) 
-                fprintf(out, "%d %d %d %d %20.10f\n", p, q, 
+                psi::fprintf(out, "%d %d %d %d %20.10f\n", p, q, 
                 rlist[i], slist[i], value);
 
             idx_++;
@@ -125,7 +125,7 @@ void iwl_buf_wrt_arr2(struct iwlbuf *Buf, double *arr, int p, int q,
       valptr[Buf->idx] = (Value) value;
    
       if(printflag) 
-	fprintf(out, "%d %d %d %d %20.10f\n", p, q, 
+	psi::fprintf(out, "%d %d %d %d %20.10f\n", p, q,
 		rlist[i], slist[i], value);
       
       Buf->idx++;

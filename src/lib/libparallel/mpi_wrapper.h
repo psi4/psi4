@@ -62,20 +62,11 @@ class MPICommunicator:public Parallel<MPICommunicator> {
        *
        * \param[in] Comm The communicator we are erecting a barrier on.  Defaults to current Comm.
        */
-      void sync(const std::string& CommName="NONE") const{
-         boost::mpi::communicator comm=GetComm(CommName);
-         comm.barrier();
-      }
+      void sync(const std::string& CommName="NONE") const;
 
-      int me(const std::string& CommName="NONE") const{
-         boost::mpi::communicator comm=GetComm(CommName);
-         return comm.rank();
-      }
+      int me(const std::string& CommName="NONE") const;
 
-      int nproc(const std::string& CommName="NONE") const{
-         boost::mpi::communicator comm=GetComm(CommName);
-         return comm.size();
-      }
+      int nproc(const std::string& CommName="NONE") const;
 
       void MakeComm(const std::string& Name, const int Color,
             const std::string& Comm2Split="NONE");
@@ -107,10 +98,7 @@ class MPICommunicator:public Parallel<MPICommunicator> {
        *
        * \param[in] Comm The name of the communicator we want
        */
-      boost::mpi::communicator GetComm(const std::string& CommName) const {
-         return (const_cast<MPICommunicator*>(this))->
-               Communicators[(CommName!="NONE" ? CommName : CurrentComm.back())];
-      }
+      boost::mpi::communicator GetComm(const std::string& CommName) const;
 
       ///So that the base class can access the implementation
       friend Parallel<MPICommunicator> ;

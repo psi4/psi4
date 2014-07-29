@@ -27,13 +27,12 @@
 #include <cstdio>
 #include <cstdlib>
 #include "dpd.h"
-
 namespace psi {
 
 
 void DPD::dpd_error(const char *caller, FILE *outfile)
 {
-    fprintf(outfile, "Error in: %s\n", caller);
+    psi::fprintf(outfile, "Error in: %s\n", caller);
     close(dpd_default);
     exit(PSI_RETURN_FAILURE);
 }

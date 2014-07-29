@@ -442,7 +442,7 @@ void OCCWave::omp3_tpdm_vvvv()
 /*=======================*/
 void OCCWave::ocepa_tpdm_vvvv()
 {      
-    //fprintf(outfile,"\n ocepa_tpdm_vvvv is starting... \n"); fflush(outfile);
+    //psi::fprintf(outfile,"\n ocepa_tpdm_vvvv is starting... \n"); fflush(outfile);
     // NOTE: contract444 can handle only TN and NT type contractions, which means (0,0) and (1,1) type target indices,
     //  with out-of-core algorithm!!!!     
     dpdbuf4  T, L, G, V;
@@ -590,7 +590,7 @@ void OCCWave::ocepa_tpdm_vvvv()
     
     psio_->close(PSIF_OCC_DENSITY, 1);
     psio_->close(PSIF_OCC_DPD, 1);
-    //fprintf(outfile,"\n ocepa_tpdm_vvvv done. \n"); fflush(outfile);
+    //psi::fprintf(outfile,"\n ocepa_tpdm_vvvv done. \n"); fflush(outfile);
 
 } // end of twopdm_vvvv
 

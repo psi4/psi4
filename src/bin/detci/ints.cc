@@ -128,24 +128,24 @@ void read_integrals()
         if(CalcInfo.maxK[i] > CalcInfo.maxKlist)
           CalcInfo.maxKlist = CalcInfo.maxK[i];
         if (Parameters.print_lvl > 4)
-          fprintf(outfile,"maxK[%d] = %lf\n",i, CalcInfo.maxK[i]);
+          psi::fprintf(outfile,"maxK[%d] = %lf\n",i, CalcInfo.maxK[i]);
         } 
       }
 
    if (Parameters.print_lvl > 4) {
-      fprintf(outfile, "\nOne-electron integrals\n") ;
+      psi::fprintf(outfile, "\nOne-electron integrals\n") ;
       for (i=0, ij=0; i<CalcInfo.num_ci_orbs; i++) {
          for (j=0; j<=i; j++, ij++) {
-            fprintf(outfile, "h(%d)(%d) = %11.7lf\n", i, j, 
+            psi::fprintf(outfile, "h(%d)(%d) = %11.7lf\n", i, j, 
                CalcInfo.onel_ints[ij]) ;
             }
          }
-      fprintf(outfile, "\n") ;
+      psi::fprintf(outfile, "\n") ;
       }
 
    if (Parameters.print_lvl > 4) {
-      fprintf(outfile, "\nmaxKlist = %lf\n",CalcInfo.maxKlist);
-      fprintf(outfile, "\nTwo-electron integrals\n");
+      psi::fprintf(outfile, "\nmaxKlist = %lf\n",CalcInfo.maxKlist);
+      psi::fprintf(outfile, "\nTwo-electron integrals\n");
       for (i=0; i<CalcInfo.num_ci_orbs; i++) {
          for (j=0; j<=i; j++) {
             ij = ioff[MAX0(i,j)] + MIN0(i,j) ;
@@ -153,7 +153,7 @@ void read_integrals()
                for (l=0; l<=k; l++) {
                   kl = ioff[MAX0(k,l)] + MIN0(k,l) ;
                   ijkl = ioff[MAX0(ij,kl)] + MIN0(ij,kl) ;
-                  fprintf(outfile, "%2d %2d %2d %2d (%4d) = %10.6lf\n",
+                  psi::fprintf(outfile, "%2d %2d %2d %2d (%4d) = %10.6lf\n",
                      i, j, k, l, ijkl, CalcInfo.twoel_ints[ijkl]);
                   } 
                }
@@ -256,9 +256,9 @@ void tf_onel_ints(int printflag, FILE *outfile)
          }
    /* print if necessary */
    if (printflag) {
-      fprintf(outfile, "\nh' matrix\n") ;
+      psi::fprintf(outfile, "\nh' matrix\n") ;
       print_array(CalcInfo.tf_onel_ints, nbf, outfile) ;
-      fprintf(outfile, "\n") ;
+      psi::fprintf(outfile, "\n") ;
       }
 }
 
@@ -325,9 +325,9 @@ void form_gmat(int printflag, FILE *outfile)
       }
 
    if (printflag) {
-      fprintf(outfile, "\ng matrix\n") ;
+      psi::fprintf(outfile, "\ng matrix\n") ;
       print_mat(CalcInfo.gmat, nbf, nbf, outfile) ;
-      fprintf(outfile, "\n") ;
+      psi::fprintf(outfile, "\n") ;
       }
 }
 

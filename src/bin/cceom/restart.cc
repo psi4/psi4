@@ -93,11 +93,11 @@ timer_on("RESTART");
         alpha_tot[i][j] = alpha[i][j];
   }
   /*
-  fprintf(outfile,"alpha\n");
+  psi::fprintf(outfile,"alpha\n");
   print_mat(alpha,L,L,outfile);
-  fprintf(outfile,"alpha_old\n");
+  psi::fprintf(outfile,"alpha_old\n");
   print_mat(alpha_old,L_old,L_old,outfile);
-  fprintf(outfile,"alpha_tot\n");
+  psi::fprintf(outfile,"alpha_tot\n");
   print_mat(alpha_tot,L,L_tot,outfile);
   */
 

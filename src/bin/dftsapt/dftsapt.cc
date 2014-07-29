@@ -164,21 +164,21 @@ double DFTSAPT::compute_energy()
 }
 void DFTSAPT::print_header() const
 {
-    fprintf(outfile, "\t --------------------------------------------------------\n");
-    fprintf(outfile, "\t                        DF-DFT-SAPT                      \n");
-    fprintf(outfile, "\t               Rob Parrish and Ed Hohenstein             \n");
-    fprintf(outfile, "\t --------------------------------------------------------\n");
-    fprintf(outfile, "\n");
+    psi::fprintf(outfile, "\t --------------------------------------------------------\n");
+    psi::fprintf(outfile, "\t                        DF-DFT-SAPT                      \n");
+    psi::fprintf(outfile, "\t               Rob Parrish and Ed Hohenstein             \n");
+    psi::fprintf(outfile, "\t --------------------------------------------------------\n");
+    psi::fprintf(outfile, "\n");
 
-    fprintf(outfile, "  ==> Sizes <==\n");
-    fprintf(outfile, "\n");
+    psi::fprintf(outfile, "  ==> Sizes <==\n");
+    psi::fprintf(outfile, "\n");
 
-    fprintf(outfile, "   => Resources <=\n\n");
+    psi::fprintf(outfile, "   => Resources <=\n\n");
 
-    fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
-    fprintf(outfile, "\n");
+    psi::fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+    psi::fprintf(outfile, "\n");
 
-    fprintf(outfile, "   => Orbital Ranges <=\n\n");
+    psi::fprintf(outfile, "   => Orbital Ranges <=\n\n");
 
     int nmo_A = eps_focc_A_->dim() + eps_aocc_A_->dim() + eps_avir_A_->dim() + eps_fvir_A_->dim();
     int nmo_B = eps_focc_B_->dim() + eps_aocc_B_->dim() + eps_avir_B_->dim() + eps_fvir_B_->dim();
@@ -193,29 +193,29 @@ void DFTSAPT::print_header() const
         if (monomer_B_->Z(B) != 0.0) nB++;
     }
 
-    fprintf(outfile, "    ------------------\n");
-    fprintf(outfile, "    %-6s %5s %5s\n", "Range", "M_A", "M_B");
-    fprintf(outfile, "    ------------------\n");
-    fprintf(outfile, "    %-6s %5d %5d\n", "natom", nA, nB);
-    fprintf(outfile, "    %-6s %5d %5d\n", "nso", primary_A_->nbf(), primary_B_->nbf());
-    fprintf(outfile, "    %-6s %5d %5d\n", "nmo", nmo_A, nmo_B);
-    fprintf(outfile, "    %-6s %5d %5d\n", "nocc", eps_aocc_A_->dim() + eps_focc_A_->dim(), eps_aocc_B_->dim() + eps_focc_B_->dim());
-    fprintf(outfile, "    %-6s %5d %5d\n", "nvir", eps_avir_A_->dim() + eps_fvir_A_->dim(), eps_avir_B_->dim() + eps_fvir_B_->dim());
-    fprintf(outfile, "    %-6s %5d %5d\n", "nfocc", eps_focc_A_->dim(), eps_focc_B_->dim());
-    fprintf(outfile, "    %-6s %5d %5d\n", "naocc", eps_aocc_A_->dim(), eps_aocc_B_->dim());
-    fprintf(outfile, "    %-6s %5d %5d\n", "navir", eps_avir_A_->dim(), eps_avir_B_->dim());
-    fprintf(outfile, "    %-6s %5d %5d\n", "nfvir", eps_fvir_A_->dim(), eps_fvir_B_->dim());
-    fprintf(outfile, "    ------------------\n");
-    fprintf(outfile, "\n");
+    psi::fprintf(outfile, "    ------------------\n");
+    psi::fprintf(outfile, "    %-6s %5s %5s\n", "Range", "M_A", "M_B");
+    psi::fprintf(outfile, "    ------------------\n");
+    psi::fprintf(outfile, "    %-6s %5d %5d\n", "natom", nA, nB);
+    psi::fprintf(outfile, "    %-6s %5d %5d\n", "nso", primary_A_->nbf(), primary_B_->nbf());
+    psi::fprintf(outfile, "    %-6s %5d %5d\n", "nmo", nmo_A, nmo_B);
+    psi::fprintf(outfile, "    %-6s %5d %5d\n", "nocc", eps_aocc_A_->dim() + eps_focc_A_->dim(), eps_aocc_B_->dim() + eps_focc_B_->dim());
+    psi::fprintf(outfile, "    %-6s %5d %5d\n", "nvir", eps_avir_A_->dim() + eps_fvir_A_->dim(), eps_avir_B_->dim() + eps_fvir_B_->dim());
+    psi::fprintf(outfile, "    %-6s %5d %5d\n", "nfocc", eps_focc_A_->dim(), eps_focc_B_->dim());
+    psi::fprintf(outfile, "    %-6s %5d %5d\n", "naocc", eps_aocc_A_->dim(), eps_aocc_B_->dim());
+    psi::fprintf(outfile, "    %-6s %5d %5d\n", "navir", eps_avir_A_->dim(), eps_avir_B_->dim());
+    psi::fprintf(outfile, "    %-6s %5d %5d\n", "nfvir", eps_fvir_A_->dim(), eps_fvir_B_->dim());
+    psi::fprintf(outfile, "    ------------------\n");
+    psi::fprintf(outfile, "\n");
 
-    fprintf(outfile, "   => Primary Basis Set <=\n\n");
+    psi::fprintf(outfile, "   => Primary Basis Set <=\n\n");
     primary_->print_by_level(outfile, print_);
 
     fflush(outfile);
 }
 void DFTSAPT::fock_terms()
 {
-    fprintf(outfile, "  SCF TERMS:\n\n");
+    psi::fprintf(outfile, "  SCF TERMS:\n\n");
 
     // ==> Setup <== //
 
@@ -344,11 +344,11 @@ void DFTSAPT::fock_terms()
     }
     if (debug_) {
         for (int k = 0; k < Elst10_terms.size(); k++) {
-            fprintf(outfile,"    Elst10,r (%1d)        = %18.12lf H\n",k+1,Elst10_terms[k]);
+            psi::fprintf(outfile,"    Elst10,r (%1d)        = %18.12lf H\n",k+1,Elst10_terms[k]);
         }
     }
     energies_["Elst10,r"] = Elst10;
-    fprintf(outfile,"    Elst10,r            = %18.12lf H\n",Elst10);
+    psi::fprintf(outfile,"    Elst10,r            = %18.12lf H\n",Elst10);
     fflush(outfile);
 
     // ==> Exchange Terms (S^\infty) <== //
@@ -394,11 +394,11 @@ void DFTSAPT::fock_terms()
     }
     if (debug_) {
         for (int k = 0; k < Exch10_n_terms.size(); k++) {
-            fprintf(outfile,"    Exch10 (%1d)          = %18.12lf H\n",k+1,Exch10_n_terms[k]);
+            psi::fprintf(outfile,"    Exch10 (%1d)          = %18.12lf H\n",k+1,Exch10_n_terms[k]);
         }
     }
     energies_["Exch10"] = Exch10_n;
-    fprintf(outfile,"    Exch10              = %18.12lf H\n",Exch10_n);
+    psi::fprintf(outfile,"    Exch10              = %18.12lf H\n",Exch10_n);
     fflush(outfile);
 
     T_A_n.reset();
@@ -425,12 +425,12 @@ void DFTSAPT::fock_terms()
     }
     if (debug_) {
         for (int k = 0; k < Exch10_2_terms.size(); k++) {
-            fprintf(outfile,"    Exch10(S^2) (%1d)     = %18.12lf H\n",k+1,Exch10_2_terms[k]);
+            psi::fprintf(outfile,"    Exch10(S^2) (%1d)     = %18.12lf H\n",k+1,Exch10_2_terms[k]);
         }
     }
     energies_["Exch10(S^2)"] = Exch10_2;
-    fprintf(outfile,"    Exch10(S^2)         = %18.12lf H\n",Exch10_2);
-    fprintf(outfile, "\n");
+    psi::fprintf(outfile,"    Exch10(S^2)         = %18.12lf H\n",Exch10_2);
+    psi::fprintf(outfile, "\n");
     fflush(outfile);
 
     // Clear up some memory
@@ -557,9 +557,9 @@ void DFTSAPT::fock_terms()
     energies_["Ind20,u (A<-B)"] = Ind20u_AB;
     energies_["Ind20,u (B->A)"] = Ind20u_BA;
     energies_["Ind20,u"] = Ind20u;
-    fprintf(outfile,"    Ind20,u (A<-B)      = %18.12lf H\n",Ind20u_AB);
-    fprintf(outfile,"    Ind20,u (A->B)      = %18.12lf H\n",Ind20u_BA);
-    fprintf(outfile,"    Ind20,u             = %18.12lf H\n",Ind20u);
+    psi::fprintf(outfile,"    Ind20,u (A<-B)      = %18.12lf H\n",Ind20u_AB);
+    psi::fprintf(outfile,"    Ind20,u (A->B)      = %18.12lf H\n",Ind20u_BA);
+    psi::fprintf(outfile,"    Ind20,u             = %18.12lf H\n",Ind20u);
     fflush(outfile);
 
     // => Exchange-Induction <= //
@@ -567,10 +567,10 @@ void DFTSAPT::fock_terms()
     double ExchInd20u_AB = 2.0 * xuA->vector_dot(uB);
     double ExchInd20u_BA = 2.0 * xuB->vector_dot(uA);
     double ExchInd20u = ExchInd20u_AB + ExchInd20u_BA;
-    fprintf(outfile,"    Exch-Ind20,u (A<-B) = %18.12lf H\n",ExchInd20u_AB);
-    fprintf(outfile,"    Exch-Ind20,u (B<-A) = %18.12lf H\n",ExchInd20u_BA);
-    fprintf(outfile,"    Exch-Ind20,u        = %18.12lf H\n",ExchInd20u);
-    fprintf(outfile,"\n");
+    psi::fprintf(outfile,"    Exch-Ind20,u (A<-B) = %18.12lf H\n",ExchInd20u_AB);
+    psi::fprintf(outfile,"    Exch-Ind20,u (B<-A) = %18.12lf H\n",ExchInd20u_BA);
+    psi::fprintf(outfile,"    Exch-Ind20,u        = %18.12lf H\n",ExchInd20u);
+    psi::fprintf(outfile,"\n");
     fflush(outfile);
 
     energies_["Exch-Ind20,u (A<-B)"] = ExchInd20u_AB;
@@ -596,9 +596,9 @@ void DFTSAPT::fock_terms()
     energies_["Ind20,r (A<-B)"] = Ind20r_AB;
     energies_["Ind20,r (B->A)"] = Ind20r_BA;
     energies_["Ind20,r"] = Ind20r;
-    fprintf(outfile,"    Ind20,r (A<-B)      = %18.12lf H\n",Ind20r_AB);
-    fprintf(outfile,"    Ind20,r (A->B)      = %18.12lf H\n",Ind20r_BA);
-    fprintf(outfile,"    Ind20,r             = %18.12lf H\n",Ind20r);
+    psi::fprintf(outfile,"    Ind20,r (A<-B)      = %18.12lf H\n",Ind20r_AB);
+    psi::fprintf(outfile,"    Ind20,r (A->B)      = %18.12lf H\n",Ind20r_BA);
+    psi::fprintf(outfile,"    Ind20,r             = %18.12lf H\n",Ind20r);
     fflush(outfile);
 
     // => Exchange-Induction <= //
@@ -606,10 +606,10 @@ void DFTSAPT::fock_terms()
     double ExchInd20r_AB = 2.0 * xA->vector_dot(uB);
     double ExchInd20r_BA = 2.0 * xB->vector_dot(uA);
     double ExchInd20r = ExchInd20r_AB + ExchInd20r_BA;
-    fprintf(outfile,"    Exch-Ind20,r (A<-B) = %18.12lf H\n",ExchInd20r_AB);
-    fprintf(outfile,"    Exch-Ind20,r (B<-A) = %18.12lf H\n",ExchInd20r_BA);
-    fprintf(outfile,"    Exch-Ind20,r        = %18.12lf H\n",ExchInd20r);
-    fprintf(outfile,"\n");
+    psi::fprintf(outfile,"    Exch-Ind20,r (A<-B) = %18.12lf H\n",ExchInd20r_AB);
+    psi::fprintf(outfile,"    Exch-Ind20,r (B<-A) = %18.12lf H\n",ExchInd20r_BA);
+    psi::fprintf(outfile,"    Exch-Ind20,r        = %18.12lf H\n",ExchInd20r);
+    psi::fprintf(outfile,"\n");
     fflush(outfile);
 
     energies_["Exch-Ind20,r (A<-B)"] = ExchInd20r_AB;
@@ -634,7 +634,7 @@ void DFTSAPT::fock_terms()
 }
 void DFTSAPT::mp2_terms()
 {
-    fprintf(outfile, "  PT2 TERMS:\n\n");
+    psi::fprintf(outfile, "  PT2 TERMS:\n\n");
 
     // => Sizing <= //
 
@@ -1073,14 +1073,14 @@ void DFTSAPT::mp2_terms()
 
     energies_["Disp20"] = Disp20;
     energies_["Exch-Disp20"] = ExchDisp20;
-    fprintf(outfile,"    Disp20              = %18.12lf H\n",Disp20);
-    fprintf(outfile,"    Exch-Disp20         = %18.12lf H\n",ExchDisp20);
-    fprintf(outfile,"\n");
+    psi::fprintf(outfile,"    Disp20              = %18.12lf H\n",Disp20);
+    psi::fprintf(outfile,"    Exch-Disp20         = %18.12lf H\n",ExchDisp20);
+    psi::fprintf(outfile,"\n");
     fflush(outfile);
 }
 void DFTSAPT::tdhf_demo()
 {
-    fprintf(outfile, "  TDHF Terms:\n\n");
+    psi::fprintf(outfile, "  TDHF Terms:\n\n");
     fflush(outfile);
 
     // => Sizing <= //
@@ -1203,9 +1203,9 @@ void DFTSAPT::tdhf_demo()
     time_t stop;
 
     start = time(NULL);
-    fprintf(outfile,"    ----------------------------------------------------------------------\n");
-    fprintf(outfile,"    %-3s %11s %15s %15s %11s %10s\n", "N", "Omega", "Disp20 [H]", "Disp2C [H]", "Ratio", "Time [s]");
-    fprintf(outfile,"    ----------------------------------------------------------------------\n");
+    psi::fprintf(outfile,"    ----------------------------------------------------------------------\n");
+    psi::fprintf(outfile,"    %-3s %11s %15s %15s %11s %10s\n", "N", "Omega", "Disp20 [H]", "Disp2C [H]", "Ratio", "Time [s]");
+    psi::fprintf(outfile,"    ----------------------------------------------------------------------\n");
     fflush(outfile);
 
     for (int w = 0; w < omega.size(); w++) {
@@ -1231,23 +1231,23 @@ void DFTSAPT::tdhf_demo()
         CBJ.reset();
 
         stop = time(NULL);
-        fprintf(outfile,"    %-3d %11.3E %15.12lf %15.12lf %11.3E %10ld\n", w+1,omega[w],Disp20_terms[w],Disp2C_terms[w],Disp2C_terms[w] / Disp20_terms[w],stop-start);
+        psi::fprintf(outfile,"    %-3d %11.3E %15.12lf %15.12lf %11.3E %10ld\n", w+1,omega[w],Disp20_terms[w],Disp2C_terms[w],Disp2C_terms[w] / Disp20_terms[w],stop-start);
         fflush(outfile);
 
     }
 
-    fprintf(outfile,"    ----------------------------------------------------------------------\n");
-    fprintf(outfile,"\n");
+    psi::fprintf(outfile,"    ----------------------------------------------------------------------\n");
+    psi::fprintf(outfile,"\n");
 
     for (int w = 0; w < omega.size(); w++) {
         Disp20 += Disp20_terms[w];
         Disp2C += Disp2C_terms[w];
     }
 
-    fprintf(outfile,"    Disp20              = %18.12lf H\n",Disp20);
-    fprintf(outfile,"    Disp2C              = %18.12lf H\n",Disp2C);
-    fprintf(outfile,"    Ratio               = %18.12lf\n",Disp2C/Disp20);
-    fprintf(outfile,"\n");
+    psi::fprintf(outfile,"    Disp20              = %18.12lf H\n",Disp20);
+    psi::fprintf(outfile,"    Disp2C              = %18.12lf H\n",Disp2C);
+    psi::fprintf(outfile,"    Ratio               = %18.12lf\n",Disp2C/Disp20);
+    psi::fprintf(outfile,"\n");
     fflush(outfile);
 }
 boost::shared_ptr<Matrix> DFTSAPT::uncoupled_susceptibility(
@@ -1624,41 +1624,41 @@ void DFTSAPT::print_trailer()
     energies_["Dispersion"]     = energies_["Disp20"] + energies_["Exch-Disp20"];
     energies_["SAPT"]           = energies_["Electrostatics"] + energies_["Exchange"] + energies_["Induction"] + energies_["Dispersion"];
 
-    fprintf(outfile,"\n    SAPT Results  \n");
-    fprintf(outfile,"  -----------------------------------------------------------------------\n");
-    fprintf(outfile,"    Electrostatics     %16.8lf mH %16.8lf kcal mol^-1\n",
+    psi::fprintf(outfile,"\n    SAPT Results  \n");
+    psi::fprintf(outfile,"  -----------------------------------------------------------------------\n");
+    psi::fprintf(outfile,"    Electrostatics     %16.8lf mH %16.8lf kcal mol^-1\n",
       energies_["Electrostatics"]*1000.0,energies_["Electrostatics"]*pc_hartree2kcalmol);
-    fprintf(outfile,"      Elst10,r         %16.8lf mH %16.8lf kcal mol^-1\n\n",
+    psi::fprintf(outfile,"      Elst10,r         %16.8lf mH %16.8lf kcal mol^-1\n\n",
       energies_["Elst10,r"]*1000.0,energies_["Elst10,r"]*pc_hartree2kcalmol);
-    fprintf(outfile,"    Exchange           %16.8lf mH %16.8lf kcal mol^-1\n",
+    psi::fprintf(outfile,"    Exchange           %16.8lf mH %16.8lf kcal mol^-1\n",
       energies_["Exchange"]*1000.0,energies_["Exchange"]*pc_hartree2kcalmol);
-    fprintf(outfile,"      Exch10           %16.8lf mH %16.8lf kcal mol^-1\n",
+    psi::fprintf(outfile,"      Exch10           %16.8lf mH %16.8lf kcal mol^-1\n",
       energies_["Exch10"]*1000.0,energies_["Exch10"]*pc_hartree2kcalmol);
-    fprintf(outfile,"      Exch10(S^2)      %16.8lf mH %16.8lf kcal mol^-1\n\n",
+    psi::fprintf(outfile,"      Exch10(S^2)      %16.8lf mH %16.8lf kcal mol^-1\n\n",
       energies_["Exch10(S^2)"]*1000.0,energies_["Exch10(S^2)"]*pc_hartree2kcalmol);
-    fprintf(outfile,"    Induction          %16.8lf mH %16.8lf kcal mol^-1\n",
+    psi::fprintf(outfile,"    Induction          %16.8lf mH %16.8lf kcal mol^-1\n",
       energies_["Induction"]*1000.0,energies_["Induction"]*pc_hartree2kcalmol);
-    fprintf(outfile,"      Ind20,r          %16.8lf mH %16.8lf kcal mol^-1\n",
+    psi::fprintf(outfile,"      Ind20,r          %16.8lf mH %16.8lf kcal mol^-1\n",
       energies_["Ind20,r"]*1000.0,energies_["Ind20,r"]*pc_hartree2kcalmol);
-    fprintf(outfile,"      Exch-Ind20,r     %16.8lf mH %16.8lf kcal mol^-1\n",
+    psi::fprintf(outfile,"      Exch-Ind20,r     %16.8lf mH %16.8lf kcal mol^-1\n",
       energies_["Exch-Ind20,r"]*1000.0,energies_["Exch-Ind20,r"]*pc_hartree2kcalmol);
-    fprintf(outfile,"      delta HF,r (2)   %16.8lf mH %16.8lf kcal mol^-1\n\n",
+    psi::fprintf(outfile,"      delta HF,r (2)   %16.8lf mH %16.8lf kcal mol^-1\n\n",
       energies_["delta HF,r (2)"]*1000.0,energies_["delta HF,r (2)"]*pc_hartree2kcalmol);
-    fprintf(outfile,"    Dispersion         %16.8lf mH %16.8lf kcal mol^-1\n",
+    psi::fprintf(outfile,"    Dispersion         %16.8lf mH %16.8lf kcal mol^-1\n",
       energies_["Dispersion"]*1000.0,energies_["Dispersion"]*pc_hartree2kcalmol);
-    fprintf(outfile,"      Disp20           %16.8lf mH %16.8lf kcal mol^-1\n",
+    psi::fprintf(outfile,"      Disp20           %16.8lf mH %16.8lf kcal mol^-1\n",
       energies_["Disp20"]*1000.0,energies_["Disp20"]*pc_hartree2kcalmol);
-    fprintf(outfile,"      Exch-Disp20      %16.8lf mH %16.8lf kcal mol^-1\n\n",
+    psi::fprintf(outfile,"      Exch-Disp20      %16.8lf mH %16.8lf kcal mol^-1\n\n",
       energies_["Exch-Disp20"]*1000.0,energies_["Exch-Disp20"]*pc_hartree2kcalmol);
 
-    fprintf(outfile,"    Total HF           %16.8lf mH %16.8lf kcal mol^-1\n",
+    psi::fprintf(outfile,"    Total HF           %16.8lf mH %16.8lf kcal mol^-1\n",
       energies_["HF"]*1000.0,energies_["HF"]*pc_hartree2kcalmol);
-    fprintf(outfile,"    Total SAPT0        %16.8lf mH %16.8lf kcal mol^-1\n",
+    psi::fprintf(outfile,"    Total SAPT0        %16.8lf mH %16.8lf kcal mol^-1\n",
       energies_["SAPT"]*1000.0,energies_["SAPT"]*pc_hartree2kcalmol);
-    fprintf(outfile,"\n");
+    psi::fprintf(outfile,"\n");
 
-    fprintf(outfile, "    Oh all the money that e'er I had, I spent it in good company.\n");
-    fprintf(outfile, "\n");
+    psi::fprintf(outfile, "    Oh all the money that e'er I had, I spent it in good company.\n");
+    psi::fprintf(outfile, "\n");
 }
 boost::shared_ptr<Matrix> DFTSAPT::build_ind_pot(std::map<std::string, boost::shared_ptr<Matrix> >& vars)
 {
@@ -1952,8 +1952,8 @@ void CPKS_SAPT::compute_cpks()
     preconditioner(r_B,z_B,eps_occ_B_,eps_vir_B_);
 
     // Uncoupled value
-    //fprintf(outfile, "(A<-B): %24.16E\n", -2.0 * z_A->vector_dot(w_A_));
-    //fprintf(outfile, "(B<-A): %24.16E\n", -2.0 * z_B->vector_dot(w_B_));
+    //psi::fprintf(outfile, "(A<-B): %24.16E\n", -2.0 * z_A->vector_dot(w_A_));
+    //psi::fprintf(outfile, "(B<-A): %24.16E\n", -2.0 * z_B->vector_dot(w_B_));
 
     p_A->copy(z_A);
     p_B->copy(z_B);
@@ -1967,20 +1967,20 @@ void CPKS_SAPT::compute_cpks()
     double b2A = sqrt(w_A_->vector_dot(w_A_));
     double b2B = sqrt(w_B_->vector_dot(w_B_));
 
-    fprintf(outfile, "  ==> CPKS Iterations <==\n\n");
+    psi::fprintf(outfile, "  ==> CPKS Iterations <==\n\n");
 
-    fprintf(outfile, "    Maxiter     = %11d\n", maxiter_);
-    fprintf(outfile, "    Convergence = %11.3E\n", delta_);
-    fprintf(outfile, "\n");
+    psi::fprintf(outfile, "    Maxiter     = %11d\n", maxiter_);
+    psi::fprintf(outfile, "    Convergence = %11.3E\n", delta_);
+    psi::fprintf(outfile, "\n");
 
     time_t start;
     time_t stop;
 
     start = time(NULL);
 
-    fprintf(outfile, "    -----------------------------------------\n");
-    fprintf(outfile, "    %-4s %11s  %11s  %10s\n", "Iter", "Monomer A", "Monomer B", "Time [s]");
-    fprintf(outfile, "    -----------------------------------------\n");
+    psi::fprintf(outfile, "    -----------------------------------------\n");
+    psi::fprintf(outfile, "    %-4s %11s  %11s  %10s\n", "Iter", "Monomer A", "Monomer B", "Time [s]");
+    psi::fprintf(outfile, "    -----------------------------------------\n");
     fflush(outfile);
 
     int iter;
@@ -2032,7 +2032,7 @@ void CPKS_SAPT::compute_cpks()
         }
 
         stop = time(NULL);
-        fprintf(outfile, "    %-4d %11.3E%1s %11.3E%1s %10ld\n", iter+1,
+        psi::fprintf(outfile, "    %-4d %11.3E%1s %11.3E%1s %10ld\n", iter+1,
             r2A, (r2A < delta_ ? "*" : " "),
             r2B, (r2B < delta_ ? "*" : " "),
             stop-start
@@ -2070,8 +2070,8 @@ void CPKS_SAPT::compute_cpks()
         }
     }
 
-    fprintf(outfile, "    -----------------------------------------\n");
-    fprintf(outfile, "\n");
+    psi::fprintf(outfile, "    -----------------------------------------\n");
+    psi::fprintf(outfile, "\n");
     fflush(outfile);
 
     if (iter == maxiter_)
@@ -2215,10 +2215,10 @@ GaussChebyshev::~GaussChebyshev()
 }
 void GaussChebyshev::print_header()
 {
-    fprintf(outfile,"  ==> Gauss-Chebyshev Quadrature <==\n\n");
-    fprintf(outfile,"    Points = %11d\n", npoint_);
-    fprintf(outfile,"    Scale  = %11.3E\n",scale_);
-    fprintf(outfile,"\n");
+    psi::fprintf(outfile,"  ==> Gauss-Chebyshev Quadrature <==\n\n");
+    psi::fprintf(outfile,"    Points = %11d\n", npoint_);
+    psi::fprintf(outfile,"    Scale  = %11.3E\n",scale_);
+    psi::fprintf(outfile,"\n");
     fflush(outfile);
 }
 void GaussChebyshev::compute()

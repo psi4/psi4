@@ -31,7 +31,7 @@ namespace psi{ namespace dfoccwave{
 
 void DFOCC::update_mo()
 {
-//fprintf(outfile,"\n update_mo is starting... \n"); fflush(outfile);     
+//psi::fprintf(outfile,"\n update_mo is starting... \n"); fflush(outfile);     
 //===========================================================================================
 //========================= RHF =============================================================
 //===========================================================================================

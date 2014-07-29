@@ -34,7 +34,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <strings.h>
-
+#include "psi4-dec.h"
 namespace psi {
 
 /*!
@@ -57,8 +57,8 @@ int * init_int_array(int size)
   int *array;
 
   if ((array = (int *) malloc(sizeof(int)*size))==NULL) {
-    fprintf(stderr,"init_array:  trouble allocating memory \n");
-    fprintf(stderr,"size = %d\n",size);
+    psi::fprintf(stderr,"init_array:  trouble allocating memory \n");
+    psi::fprintf(stderr,"size = %d\n",size);
     exit(PSI_RETURN_FAILURE);
   }
   bzero(array,sizeof(int)*size);
@@ -102,14 +102,14 @@ int **init_int_matrix(int rows, int cols)
    int i;
 
    if ((array = (int **) malloc(sizeof(int *)*rows))==NULL) {
-     fprintf(stderr,"init_int_matrix: trouble allocating memory \n"); 
-     fprintf(stderr,"rows = %d\n", rows);
+     psi::fprintf(stderr,"init_int_matrix: trouble allocating memory \n"); 
+     psi::fprintf(stderr,"rows = %d\n", rows);
      exit(PSI_RETURN_FAILURE);
    }
 
    if ((array[0] = (int *) malloc (sizeof(int)*cols*rows))==NULL) {
-     fprintf(stderr,"init_int_matrix: trouble allocating memory \n"); 
-     fprintf(stderr,"rows = %d, cols = %d", rows, cols);
+     psi::fprintf(stderr,"init_int_matrix: trouble allocating memory \n"); 
+     psi::fprintf(stderr,"rows = %d, cols = %d", rows, cols);
      exit(PSI_RETURN_FAILURE) ;
    }
    for (i=1; i<rows; i++) {
@@ -182,16 +182,16 @@ L200:
   nn=n;
   if (nn > kk) nn=kk;
   ll = 2*(nn-ii+1)+1;
-  fprintf (out,"\n   ");
-  for (i=ii; i <= nn; i++) fprintf(out,"   %5d",i);
-  fprintf (out,"\n");
+  psi::fprintf (out,"\n   ");
+  for (i=ii; i <= nn; i++) psi::fprintf(out,"   %5d",i);
+  psi::fprintf (out,"\n");
   for (i=0; i < m; i++) {
-    fprintf (out,"\n%5d",i+1);
+    psi::fprintf (out,"\n%5d",i+1);
     for (j=ii-1; j < nn; j++) {
-      fprintf (out,"%8d",a[i][j]);
+      psi::fprintf (out,"%8d",a[i][j]);
     }
   }
-  fprintf (out,"\n");
+  psi::fprintf (out,"\n");
   if (n <= kk) {
     fflush(out);
     return;

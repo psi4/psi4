@@ -29,7 +29,7 @@
 #include <cmath>
 #include <libqt/qt.h>
 #include "dpd.h"
-
+#include "psi4-dec.h"
 namespace psi {
 
 /*
@@ -136,7 +136,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
         if(coltot) {
             maxrows = DPD_BIGNUM/coltot;
             if(maxrows < 1) {
-                fprintf(stderr, "\nLIBDPD Error: too many rows in buf4_sort_axpy.\n");
+                psi::fprintf(stderr, "\nLIBDPD Error: too many rows in buf4_sort_axpy.\n");
                 dpd_error("buf4_sort_axpy", stderr);
             }
         }
@@ -188,7 +188,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 
     switch(index) {
     case pqrs:
-        fprintf(stderr, "\nDPD sort error: invalid index ordering.\n");
+        psi::fprintf(stderr, "\nDPD sort error: invalid index ordering.\n");
         dpd_error("buf_sort", stderr);
         break;
 
@@ -789,7 +789,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
             }
         }
         else {
-            fprintf(stderr, "LIBDPD: Out-of-core algorithm not yet coded for psqr sort.\n");
+            psi::fprintf(stderr, "LIBDPD: Out-of-core algorithm not yet coded for psqr sort.\n");
             dpd_error("buf4_sort", stderr);
         }
 
@@ -843,7 +843,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
             }
         }
         else {
-            fprintf(stderr, "LIBDPD: Out-of-core algorithm not yet coded for psrq sort.\n");
+            psi::fprintf(stderr, "LIBDPD: Out-of-core algorithm not yet coded for psrq sort.\n");
             dpd_error("buf4_sort", stderr);
         }
 
@@ -1185,7 +1185,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
             }
         }
         else {
-            fprintf(stderr, "LIBDPD: Out-of-core algorithm not yet coded for qrps sort.\n");
+            psi::fprintf(stderr, "LIBDPD: Out-of-core algorithm not yet coded for qrps sort.\n");
             dpd_error("buf4_sort", stderr);
         }
 
@@ -1239,7 +1239,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
             }
         }
         else {
-            fprintf(stderr, "LIBDPD: Out-of-core algorithm not yet coded for qrsp sort.\n");
+            psi::fprintf(stderr, "LIBDPD: Out-of-core algorithm not yet coded for qrsp sort.\n");
             dpd_error("buf4_sort", stderr);
         }
 
@@ -1292,7 +1292,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
             }
         }
         else {
-            fprintf(stderr, "LIBDPD: Out-of-core algorithm not yet coded for qspr sort.\n");
+            psi::fprintf(stderr, "LIBDPD: Out-of-core algorithm not yet coded for qspr sort.\n");
             dpd_error("buf4_sort", stderr);
         }
 
@@ -1345,7 +1345,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
             }
         }
         else {
-            fprintf(stderr, "LIBDPD: Out-of-core algorithm not yet coded for qsrp sort.\n");
+            psi::fprintf(stderr, "LIBDPD: Out-of-core algorithm not yet coded for qsrp sort.\n");
             dpd_error("buf4_sort", stderr);
         }
 
@@ -1399,7 +1399,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
             }
         }
         else {
-            fprintf(stderr, "LIBDPD: Out-of-core algorithm not yet coded for rqps sort.\n");
+            psi::fprintf(stderr, "LIBDPD: Out-of-core algorithm not yet coded for rqps sort.\n");
             dpd_error("buf4_sort", stderr);
         }
 
@@ -1453,7 +1453,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
             }
         }
         else {
-            fprintf(stderr, "LIBDPD: Out-of-core algorithm not yet coded for rqsp sort.\n");
+            psi::fprintf(stderr, "LIBDPD: Out-of-core algorithm not yet coded for rqsp sort.\n");
             dpd_error("buf4_sort", stderr);
         }
 
@@ -1507,7 +1507,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
             }
         }
         else {
-            fprintf(stderr, "LIBDPD: Out-of-core algorithm not yet coded for rpqs sort.\n");
+            psi::fprintf(stderr, "LIBDPD: Out-of-core algorithm not yet coded for rpqs sort.\n");
             dpd_error("buf4_sort", stderr);
         }
 
@@ -1561,7 +1561,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
             }
         }
         else {
-            fprintf(stderr, "LIBDPD: Out-of-core algorithm not yet coded for rpsq sort.\n");
+            psi::fprintf(stderr, "LIBDPD: Out-of-core algorithm not yet coded for rpsq sort.\n");
             dpd_error("buf4_sort", stderr);
         }
 
@@ -1601,7 +1601,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
             }
         }
         else {
-            fprintf(stderr, "LIBDPD: Out-of-core algorithm not yet coded for rsqp sort.\n");
+            psi::fprintf(stderr, "LIBDPD: Out-of-core algorithm not yet coded for rsqp sort.\n");
             dpd_error("buf4_sort", stderr);
         }
 
@@ -1659,17 +1659,17 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
                 else in_rows_left = InBuf->params->rowtot[Grs] % in_rows_per_bucket;
 
 #ifdef DPD_DEBUG
-                fprintf(stdout, "Gpq = %d\n", Gpq);
-                fprintf(stdout, "OutBuf.rowtot[Gpq]  = %d\n", OutBuf.params->rowtot[Gpq]);
-                fprintf(stdout, "OutBuf.coltot[Grs]  = %d\n", OutBuf.params->coltot[Grs]);
-                fprintf(stdout, "out_nbuckets        = %d\n", out_nbuckets);
-                fprintf(stdout, "out_rows_per_bucket = %d\n", out_rows_per_bucket);
-                fprintf(stdout, "out_rows_left       = %d\n", out_rows_left);
-                fprintf(stdout, "InBuf.rowtot[Grs]   = %d\n", InBuf->params->rowtot[Grs]);
-                fprintf(stdout, "InBuf.coltot[Gpq]   = %d\n", InBuf->params->coltot[Gpq]);
-                fprintf(stdout, "in_nbuckets         = %d\n", in_nbuckets);
-                fprintf(stdout, "in_rows_per_bucket  = %d\n", in_rows_per_bucket);
-                fprintf(stdout, "in_rows_left        = %d\n", in_rows_left);
+                psi::fprintf(stdout, "Gpq = %d\n", Gpq);
+                psi::fprintf(stdout, "OutBuf.rowtot[Gpq]  = %d\n", OutBuf.params->rowtot[Gpq]);
+                psi::fprintf(stdout, "OutBuf.coltot[Grs]  = %d\n", OutBuf.params->coltot[Grs]);
+                psi::fprintf(stdout, "out_nbuckets        = %d\n", out_nbuckets);
+                psi::fprintf(stdout, "out_rows_per_bucket = %d\n", out_rows_per_bucket);
+                psi::fprintf(stdout, "out_rows_left       = %d\n", out_rows_left);
+                psi::fprintf(stdout, "InBuf.rowtot[Grs]   = %d\n", InBuf->params->rowtot[Grs]);
+                psi::fprintf(stdout, "InBuf.coltot[Gpq]   = %d\n", InBuf->params->coltot[Gpq]);
+                psi::fprintf(stdout, "in_nbuckets         = %d\n", in_nbuckets);
+                psi::fprintf(stdout, "in_rows_per_bucket  = %d\n", in_rows_per_bucket);
+                psi::fprintf(stdout, "in_rows_left        = %d\n", in_rows_left);
                 fflush(stdout);
 #endif
 
@@ -1752,7 +1752,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
             }
         }
         else {
-            fprintf(stderr, "LIBDPD: Out-of-core algorithm not yet coded for sqrp sort.\n");
+            psi::fprintf(stderr, "LIBDPD: Out-of-core algorithm not yet coded for sqrp sort.\n");
             dpd_error("buf4_sort", stderr);
         }
 
@@ -1762,7 +1762,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
         break;
 
     case sqpr:
-        fprintf(stderr,"\nDPD sort error: sqpr index ordering not yet coded.\n");
+        psi::fprintf(stderr,"\nDPD sort error: sqpr index ordering not yet coded.\n");
         dpd_error("buf_sort", stderr);
         break;
 
@@ -1797,7 +1797,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
             }
         }
         else {
-            fprintf(stderr, "LIBDPD: Out-of-core algorithm not yet coded for srqp sort.\n");
+            psi::fprintf(stderr, "LIBDPD: Out-of-core algorithm not yet coded for srqp sort.\n");
             dpd_error("buf4_sort", stderr);
         }
 
@@ -1836,7 +1836,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
             }
         }
         else {
-            fprintf(stderr, "LIBDPD: Out-of-core algorithm not yet coded for srpq sort.\n");
+            psi::fprintf(stderr, "LIBDPD: Out-of-core algorithm not yet coded for srpq sort.\n");
             dpd_error("buf4_sort", stderr);
         }
 
@@ -1890,7 +1890,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
             }
         }
         else {
-            fprintf(stderr, "LIBDPD: Out-of-core algorithm not yet coded for spqr sort.\n");
+            psi::fprintf(stderr, "LIBDPD: Out-of-core algorithm not yet coded for spqr sort.\n");
             dpd_error("buf4_sort", stderr);
         }
 
@@ -1944,7 +1944,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
             }
         }
         else {
-            fprintf(stderr, "LIBDPD: Out-of-core algorithm not yet coded for sprq sort.\n");
+            psi::fprintf(stderr, "LIBDPD: Out-of-core algorithm not yet coded for sprq sort.\n");
             dpd_error("buf4_sort", stderr);
         }
 

@@ -260,7 +260,7 @@ void CCMRCC::update_t3_IJKABC_amps()
 //                            FockefMatTmp->get_two_address_element(c,c);
 //         double delta_abc_new = d3_vvv[ref][h][abc];
 //         if(delta_abc_new!=delta_abc)
-//           fprintf(outfile,"\nDenominators disagree %d",abc);
+//           psi::fprintf(outfile,"\nDenominators disagree %d",abc);
 //         for(int ijk = 0;ijk<TijkabcMatTmp->get_left_pairpi(h);ijk++){
 //           int i = left_tuples[left_offset + ijk][0];
 //           int j = left_tuples[left_offset + ijk][1];

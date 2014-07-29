@@ -29,14 +29,14 @@ void SAPT2::exch11()
   double e_exch110 = exch110(PSIF_SAPT_AMPS,"Theta AR Intermediates");
 
   if (debug_) {
-    fprintf(outfile,"    Exch110             = %18.12lf H\n",e_exch110);
+    psi::fprintf(outfile,"    Exch110             = %18.12lf H\n",e_exch110);
     fflush(outfile);
   }
 
   double e_exch101 = exch101(PSIF_SAPT_AMPS,"Theta BS Intermediates");
 
   if (debug_) {
-    fprintf(outfile,"    Exch101             = %18.12lf H\n\n",e_exch101);
+    psi::fprintf(outfile,"    Exch101             = %18.12lf H\n\n",e_exch101);
     fflush(outfile);
   }
 
@@ -44,7 +44,7 @@ void SAPT2::exch11()
 
 
   if (print_) {
-    fprintf(outfile,"    Exch11              = %18.12lf H\n",e_exch11_);
+    psi::fprintf(outfile,"    Exch11              = %18.12lf H\n",e_exch11_);
     fflush(outfile);
   }
 }
@@ -114,10 +114,10 @@ double SAPT2::exch110(int ampfile, const char *thetalabel)
   free_block(T_p_AR);
 
   if (debug_) {
-    fprintf(outfile,"\n    Exch11_1            = %18.12lf H\n",e1);
-    fprintf(outfile,"    Exch11_2            = %18.12lf H\n",e2);
-    fprintf(outfile,"    Exch11_3            = %18.12lf H\n",e3);
-    fprintf(outfile,"    Exch11_4            = %18.12lf H\n",e4);
+    psi::fprintf(outfile,"\n    Exch11_1            = %18.12lf H\n",e1);
+    psi::fprintf(outfile,"    Exch11_2            = %18.12lf H\n",e2);
+    psi::fprintf(outfile,"    Exch11_3            = %18.12lf H\n",e3);
+    psi::fprintf(outfile,"    Exch11_4            = %18.12lf H\n",e4);
     fflush(outfile);
   }
 
@@ -189,10 +189,10 @@ double SAPT2::exch101(int ampfile, const char *thetalabel)
   free_block(T_p_BS);
 
   if (debug_) {
-    fprintf(outfile,"\n    Exch11_1            = %18.12lf H\n",e1);
-    fprintf(outfile,"    Exch11_2            = %18.12lf H\n",e2);
-    fprintf(outfile,"    Exch11_3            = %18.12lf H\n",e3);
-    fprintf(outfile,"    Exch11_4            = %18.12lf H\n",e4);
+    psi::fprintf(outfile,"\n    Exch11_1            = %18.12lf H\n",e1);
+    psi::fprintf(outfile,"    Exch11_2            = %18.12lf H\n",e2);
+    psi::fprintf(outfile,"    Exch11_3            = %18.12lf H\n",e3);
+    psi::fprintf(outfile,"    Exch11_4            = %18.12lf H\n",e4);
     fflush(outfile);
   }
 

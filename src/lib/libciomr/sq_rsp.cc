@@ -90,7 +90,7 @@ void sq_rsp(int /*nm*/, int n, double **array, double *e_vals, int matz,
         for (int c = 0; c<n; c++)
             Temp_sqrsp[r][c] = array[r][c];
 
-    //fprintf("  Initial Matrix:\n");
+    //psi::fprintf("  Initial Matrix:\n");
     //print_mat(e_vecs,n,n,outfile);
     //printf("%d",n);
 
@@ -101,7 +101,7 @@ void sq_rsp(int /*nm*/, int n, double **array, double *e_vals, int matz,
     C_DSYEV('V','U',n,&Temp_sqrsp[0][0],n,&e_vals[0],&work_sqrsp[0],lwork_sqrsp);
     free(work_sqrsp);
 
-    //fprintf(outfile,"  Eigenvectors:\n");
+    //psi::fprintf(outfile,"  Eigenvectors:\n");
     //print_mat(e_vecs,n,n,outfile);
 
 
@@ -145,7 +145,7 @@ void sq_rsp(int /*nm*/, int n, double **array, double *e_vals, int matz,
             e_vecs[r][c] = Temp_sqrsp[r][c];
 
     free_block(Temp_sqrsp);
-    //fprintf(outfile,"  Eigenvectors (After sort):\n");
+    //psi::fprintf(outfile,"  Eigenvectors (After sort):\n");
     //print_mat(e_vecs,n,n,outfile);
 
     //printf("\n  Eigenvalues (After sort):\n");
@@ -218,7 +218,7 @@ void sq_rsp(int /*nm*/, int n, double **array, double *e_vals, int matz,
 
   if (n > nm) {
     ierr = 10*n;
-    fprintf(stderr,"n = %d is greater than nm = %d in rsp\n",n,nm);
+    psi::fprintf(stderr,"n = %d is greater than nm = %d in rsp\n",n,nm);
     exit(PSI_RETURN_FAILURE);
   }
 

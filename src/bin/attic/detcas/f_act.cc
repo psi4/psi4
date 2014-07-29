@@ -65,7 +65,7 @@ void form_F_act(void)
   */
 
   if (Params.print_lvl > 3) {
-    fprintf(outfile, "\nActive Fock matrix:\n");
+    psi::fprintf(outfile, "\nActive Fock matrix:\n");
     print_array(CalcInfo.F_act, CalcInfo.nmo, outfile);
   }
 
@@ -144,22 +144,22 @@ void check_F_act(double *F_act, int nmo, int firstact, int lastact,
       sum += val;
 
       if (val != 0.0) {
-        fprintf(outfile, "gamma[%d][%d] = %12.6lf\n", u, v, gamma);
-        fprintf(outfile, "TEI[%2d %2d %2d %2d] = %12.6lf\n", p,q,u,v,I1);
-        fprintf(outfile, "contrib = %12.6lf, sum = %12.6lf\n\n", val, sum);
+        psi::fprintf(outfile, "gamma[%d][%d] = %12.6lf\n", u, v, gamma);
+        psi::fprintf(outfile, "TEI[%2d %2d %2d %2d] = %12.6lf\n", p,q,u,v,I1);
+        psi::fprintf(outfile, "contrib = %12.6lf, sum = %12.6lf\n\n", val, sum);
       }
 
       val = -4.0 * gamma * 0.5 * I2;
       sum += val;
 
       if (val != 0.0) {
-        fprintf(outfile, "TEI[%2d %2d %2d %2d] = %12.6lf\n", p,u,q,v,I2);
-        fprintf(outfile, "contrib = %12.6lf, sum = %12.6lf\n\n", val, sum);
+        psi::fprintf(outfile, "TEI[%2d %2d %2d %2d] = %12.6lf\n", p,u,q,v,I2);
+        psi::fprintf(outfile, "contrib = %12.6lf, sum = %12.6lf\n\n", val, sum);
       }
     }
   }
 
-  fprintf(outfile, "Final F_act{0,6} = %12.6lf\n", sum / 4.0);
+  psi::fprintf(outfile, "Final F_act{0,6} = %12.6lf\n", sum / 4.0);
  
 }
 
@@ -192,7 +192,7 @@ void test_lag(int nbf, int ncore, int npop, double *oei,
     }
   }
 
-  fprintf(outfile, "\nTest lag:\n");
+  psi::fprintf(outfile, "\nTest lag:\n");
   print_array(lag, nbf, outfile);
   free(lag);
 }
@@ -238,7 +238,7 @@ void test_lag2(int nbf, int ncore, int npop, double *oei,
   for (r=0; r<npop; r++) {
     pr = INDEX(p,r);
     val = 2.0 * opdm[q][r] * oei[pr];
-    fprintf(outfile,
+    psi::fprintf(outfile,
        "2.0 * opdm[%d][%d] (%12.6lf) x oei[%d][%d] (%12.6lf) = %12.6lf\n",
        q, r, opdm[q][r], p, r, oei[pr], val);
     sum += val;
@@ -251,11 +251,11 @@ void test_lag2(int nbf, int ncore, int npop, double *oei,
         qrst = INDEX(qr,st); 
         val = 2.0 * tei[prst] * tpdm[qrst]; 
         if (val != 0.0) {
-          fprintf(outfile, "tei[%d %d %d %d]  = %12.6lf\n", p, r, s, t,
+          psi::fprintf(outfile, "tei[%d %d %d %d]  = %12.6lf\n", p, r, s, t,
                   tei[prst]);
-          fprintf(outfile, "tpdm[%d %d %d %d] = %12.6lf\n", q, r, s, t,
+          psi::fprintf(outfile, "tpdm[%d %d %d %d] = %12.6lf\n", q, r, s, t,
                   tpdm[qrst]);
-          fprintf(outfile, "contrib = %12.6lf, sum = %12.6lf\n", val, sum);
+          psi::fprintf(outfile, "contrib = %12.6lf, sum = %12.6lf\n", val, sum);
         }
         sum += val;
       }

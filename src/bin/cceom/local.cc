@@ -174,13 +174,13 @@ void local_init(void)
     free(local.pairdom_len);
   }
 
-  fprintf(outfile, "\tLocalization parameters ready.\n\n");
+  psi::fprintf(outfile, "\tLocalization parameters ready.\n\n");
   fflush(outfile);
 }
 
 void local_done(void)
 {
-  fprintf(outfile, "\tLocal parameters free.\n");
+  psi::fprintf(outfile, "\tLocal parameters free.\n");
 }
 
 void local_filter_T1(dpdfile2 *T1)
@@ -232,7 +232,7 @@ void local_filter_T1(dpdfile2 *T1)
     ii = i * nocc + i;  /* diagonal element of pair matrices */
 
     if(!local.pairdom_len[ii]) {
-      fprintf(outfile, "\n\tlocal_filter_T1: Pair ii = [%d] is zero-length, which makes no sense.\n",ii);
+      psi::fprintf(outfile, "\n\tlocal_filter_T1: Pair ii = [%d] is zero-length, which makes no sense.\n",ii);
       exit(PSI_RETURN_FAILURE);
     }
 

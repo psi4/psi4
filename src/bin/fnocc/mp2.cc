@@ -54,9 +54,9 @@ void CoupledCluster::MP2(){
     int v = nvirt;
 
     // transform integrals
-    fprintf(outfile,"\n");
-    fprintf(outfile,"        ==> Transform (OV|OV) integrals <==\n");
-    fprintf(outfile,"\n");
+    psi::fprintf(outfile,"\n");
+    psi::fprintf(outfile,"        ==> Transform (OV|OV) integrals <==\n");
+    psi::fprintf(outfile,"\n");
     boost::shared_ptr<psi::Wavefunction> wfn = Process::environment.wavefunction();
     std::vector<boost::shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::occ);
@@ -76,9 +76,9 @@ void CoupledCluster::MP2(){
     ints.reset();
 
     // sort integrals
-    fprintf(outfile,"\n");
-    fprintf(outfile,"        ==> Sort (OV|OV) integrals <==\n");
-    fprintf(outfile,"\n");
+    psi::fprintf(outfile,"\n");
+    psi::fprintf(outfile,"        ==> Sort (OV|OV) integrals <==\n");
+    psi::fprintf(outfile,"\n");
     struct iwlbuf Buf;
     iwl_buf_init(&Buf,PSIF_MO_TEI,0.0,1,1);
     SortOVOV(&Buf,nfzc,nfzv,nfzc+nfzv+ndoccact+nvirt,ndoccact,nvirt);
@@ -111,11 +111,11 @@ void CoupledCluster::MP2(){
     }
     emp2 = emp2_os + emp2_ss;
 
-    fprintf(outfile,"        OS MP2 correlation energy:       %20.12lf\n",emp2_os);
-    fprintf(outfile,"        SS MP2 correlation energy:       %20.12lf\n",emp2_ss);
-    fprintf(outfile,"        MP2 correlation energy:          %20.12lf\n",emp2);
-    fprintf(outfile,"      * MP2 total energy:                %20.12lf\n",emp2+escf);
-    fprintf(outfile,"\n");
+    psi::fprintf(outfile,"        OS MP2 correlation energy:       %20.12lf\n",emp2_os);
+    psi::fprintf(outfile,"        SS MP2 correlation energy:       %20.12lf\n",emp2_ss);
+    psi::fprintf(outfile,"        MP2 correlation energy:          %20.12lf\n",emp2);
+    psi::fprintf(outfile,"      * MP2 total energy:                %20.12lf\n",emp2+escf);
+    psi::fprintf(outfile,"\n");
 
     free(v2);
 }

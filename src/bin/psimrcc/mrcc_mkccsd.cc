@@ -80,7 +80,7 @@
 //{
 //  Timer timer;
 //  DEBUGGING(1,
-//    fprintf(outfile,"\n\tUpdating the t_ia,t_IA,t_ijab,t_iJaB,t_IJAB amps using the MkCCSD equations ...");
+//    psi::fprintf(outfile,"\n\tUpdating the t_ia,t_IA,t_ijab,t_iJaB,t_IJAB amps using the MkCCSD equations ...");
 //    fflush(outfile);
 //  );
 //  blas->solve("d'1[o][v]{u}  = d1[o][v]{u}");
@@ -115,7 +115,7 @@
 //        double term = right_eigenvector[j] * right_eigenvector[unique_i] / (pow(right_eigenvector[unique_i],2.0) + pow(omega,2.0));
 //
 //        if(fabs(term) > 100.0) {
-//          fprintf(outfile,"\n  Warning: c_nu/c_mu = %e ."
+//          psi::fprintf(outfile,"\n  Warning: c_nu/c_mu = %e ."
 //                          "\n  1) turn on Tikhonow regularization or increase omega (TIKHONOW_OMEGA > 0)",term);
 //        }
 //
@@ -151,7 +151,7 @@
 //      double term = right_eigenvector[j] * right_eigenvector[unique_i] / (pow(right_eigenvector[unique_i],2.0) + pow(omega,2.0));
 //
 //      if(fabs(term) > 100.0) {
-//        fprintf(outfile,"\n  Warning: c_nu/c_mu = %e ."
+//        psi::fprintf(outfile,"\n  Warning: c_nu/c_mu = %e ."
 //                        "\n  1) turn on Tikhonow regularization or increase omega (TIKHONOW_OMEGA > 0)",term);
 //      }
 //
@@ -344,7 +344,7 @@
 //
 //        if(fabs(right_eigenvector[nu]/right_eigenvector[unique_mu])>1.0e5) {
 //          factor = 0.0;
-//          fprintf(outfile,"\n  Warning: setting Heff[unique_mu][nu]*right_eigenvector[j]/right_eigenvector[unique_i] = 0.0 in T3 couplings");
+//          psi::fprintf(outfile,"\n  Warning: setting Heff[unique_mu][nu]*right_eigenvector[j]/right_eigenvector[unique_i] = 0.0 in T3 couplings");
 //        }
 //
 //        // Linear Coupling Terms
@@ -495,7 +495,7 @@
 //        }
 //      }
 //    }else{
-//      fprintf(outfile,"\n  Warning: I am not updating T3 for reference %d",unique_mu);
+//      psi::fprintf(outfile,"\n  Warning: I am not updating T3 for reference %d",unique_mu);
 //    }
 //  }
 //}
@@ -521,7 +521,7 @@
 //
 //        if(fabs(right_eigenvector[nu]/right_eigenvector[unique_mu])>1.0e5) {
 //          factor = 0.0;
-//          fprintf(outfile,"\n  Warning: setting Heff[unique_mu][nu]*right_eigenvector[j]/right_eigenvector[unique_i] = 0.0 in T3 couplings");
+//          psi::fprintf(outfile,"\n  Warning: setting Heff[unique_mu][nu]*right_eigenvector[j]/right_eigenvector[unique_i] = 0.0 in T3 couplings");
 //        }
 //
 //        // Linear Coupling Terms
@@ -706,7 +706,7 @@
 //        }
 //      }
 //    }else{
-//      fprintf(outfile,"\n  Warning: I am not updating T3 for reference %d",unique_mu);
+//      psi::fprintf(outfile,"\n  Warning: I am not updating T3 for reference %d",unique_mu);
 //    }
 //  }
 //}
@@ -733,7 +733,7 @@
 //
 //        if(fabs(right_eigenvector[nu]/right_eigenvector[unique_mu])>1.0e5) {
 //          factor = 0.0;
-//          fprintf(outfile,"\n  Warning: setting Heff[unique_mu][nu]*right_eigenvector[j]/right_eigenvector[unique_i] = 0.0 in T3 couplings");
+//          psi::fprintf(outfile,"\n  Warning: setting Heff[unique_mu][nu]*right_eigenvector[j]/right_eigenvector[unique_i] = 0.0 in T3 couplings");
 //        }
 //
 //        // Linear Coupling Terms
@@ -920,7 +920,7 @@
 //        }
 //      }
 //    }else{
-//      fprintf(outfile,"\n  Warning: I am not updating T3 for reference %d",unique_mu);
+//      psi::fprintf(outfile,"\n  Warning: I am not updating T3 for reference %d",unique_mu);
 //    }
 //  }
 //}
@@ -948,7 +948,7 @@
 //
 //        if(fabs(right_eigenvector[nu]/right_eigenvector[unique_mu])>1.0e5) {
 //          factor = 0.0;
-//          fprintf(outfile,"\n  Warning: setting Heff[unique_mu][nu]*right_eigenvector[j]/right_eigenvector[unique_i] = 0.0 in T3 couplings");
+//          psi::fprintf(outfile,"\n  Warning: setting Heff[unique_mu][nu]*right_eigenvector[j]/right_eigenvector[unique_i] = 0.0 in T3 couplings");
 //        }
 //
 //        // Linear Coupling Terms
@@ -1097,7 +1097,7 @@
 //        }
 //      }
 //    }else{
-//      fprintf(outfile,"\n  Warning: I am not updating T3 for reference %d",unique_mu);
+//      psi::fprintf(outfile,"\n  Warning: I am not updating T3 for reference %d",unique_mu);
 //    }
 //  }
 //}

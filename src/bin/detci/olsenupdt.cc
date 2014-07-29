@@ -114,7 +114,7 @@ void buf_ols_updt(double *a, double *c, double *norm, double *ovrlap,
       tval1 = c[i];
       tval2 = tval1 + a[i];
      /*
-      fprintf(outfile,"C_0[%d] = %14.12lf " \
+      psi::fprintf(outfile,"C_0[%d] = %14.12lf " \
        "C_1[%d] = %14.12lf C_new[%d] = %14.12lf\n",i,c[i],i,a[i],i,tval2); 
      */
       c[i] = tval2;

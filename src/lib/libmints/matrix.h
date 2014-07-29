@@ -673,7 +673,7 @@ public:
     void add(int h, int m, int n, double val) {
         #ifdef PSIDEBUG
         if (m > rowspi_[h] || n > colspi_[h^symmetry_]) {
-            fprintf(outfile, "out of bounds: symmetry_ = %d, h = %d, m = %d, n = %d\n",
+            psi::fprintf(outfile, "out of bounds: symmetry_ = %d, h = %d, m = %d, n = %d\n",
                     symmetry_, h, m, n);
             fflush(outfile);
             throw PSIEXCEPTION("What are you doing, Rob?");
@@ -685,7 +685,7 @@ public:
     void add(int m, int n, double val) {
         #ifdef PSIDEBUG
         if (m > rowspi_[0] || n > colspi_[0^symmetry_]) {
-            fprintf(outfile, "out of bounds: symmetry_ = %d, h = %d, m = %d, n = %d\n",
+            psi::fprintf(outfile, "out of bounds: symmetry_ = %d, h = %d, m = %d, n = %d\n",
                     symmetry_, 0, m, n);
             fflush(outfile);
             return;

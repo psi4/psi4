@@ -113,7 +113,7 @@ void Wabij_build(void)
   if(params.ref == 0) { /** RHF **/
     global_dpd_->buf4_init(&newtIjAb, PSIF_CC_HBAR, 0, 0, 5, 0, 5, 0, "WAbIj residual");
     dotval = global_dpd_->buf4_dot_self(&newtIjAb);
-    fprintf(outfile,"Norm squared of <Phi^IJ_AB|Hbar|0>: %20.15lf\n",dotval);
+    psi::fprintf(outfile,"Norm squared of <Phi^IJ_AB|Hbar|0>: %20.15lf\n",dotval);
     global_dpd_->buf4_close(&newtIjAb);
   }
   else if (params.ref == 1) {

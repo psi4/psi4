@@ -99,7 +99,7 @@ void SCF::startup()
     same_dens_ = false;
     if(moinfo_scf->get_guess_occupation()){
       printf("\n  ERROR:  MCSCF cannot guess the active orbital occupation\n");
-      fprintf(outfile,"\n\n  MCSCF cannot guess the active orbital occupation\n");
+      psi::fprintf(outfile,"\n\n  MCSCF cannot guess the active orbital occupation\n");
       fflush(outfile);
       exit(1);
     }
@@ -160,12 +160,12 @@ void SCF::startup()
     }
 
     nci = count;
-    fprintf(outfile,"\n  TWOCON MOs = [");
+    psi::fprintf(outfile,"\n  TWOCON MOs = [");
     for(int I = 0; I < nci; ++I)
-      fprintf(outfile,"%d (%s)%s",tcscf_mos[I] + block_offset[tcscf_sym[I]],
+      psi::fprintf(outfile,"%d (%s)%s",tcscf_mos[I] + block_offset[tcscf_sym[I]],
                                  moinfo_scf->get_irr_labs(tcscf_sym[I]),
                                  I != nci - 1 ? "," : "");
-    fprintf(outfile,"]");
+    psi::fprintf(outfile,"]");
 
     Favg      .allocate("Favg",nirreps,sopi,sopi);
     Favg_t    .allocate("Favg_t",nirreps,sopi,sopi);

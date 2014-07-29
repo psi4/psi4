@@ -81,12 +81,12 @@ int DPD::buf4_scmcopy(dpdbuf4 *InBuf, int outfilenum, const char *label, double 
             if(nbuckets > 1) {
                 incore = 0;
 #if DPD_DEBUG
-                fprintf(stderr, "buf4_scmcopy: memory information.\n");
-                fprintf(stderr, "buf4_scmcopy: rowtot[%d] = %d.\n", h, InBuf->params->rowtot[h]);
-                fprintf(stderr, "buf4_scmcopy: nbuckets = %d\n", nbuckets);
-                fprintf(stderr, "buf4_scmcopy: rows_per_bucket = %d\n", rows_per_bucket);
-                fprintf(stderr, "buf4_scmcopy: rows_left = %d\n", rows_left);
-                fprintf(stderr, "buf4_scmcopy: out-of-core algorithm used\n");
+                psi::fprintf(stderr, "buf4_scmcopy: memory information.\n");
+                psi::fprintf(stderr, "buf4_scmcopy: rowtot[%d] = %d.\n", h, InBuf->params->rowtot[h]);
+                psi::fprintf(stderr, "buf4_scmcopy: nbuckets = %d\n", nbuckets);
+                psi::fprintf(stderr, "buf4_scmcopy: rows_per_bucket = %d\n", rows_per_bucket);
+                psi::fprintf(stderr, "buf4_scmcopy: rows_left = %d\n", rows_left);
+                psi::fprintf(stderr, "buf4_scmcopy: out-of-core algorithm used\n");
 #endif
             }
 

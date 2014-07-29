@@ -37,12 +37,12 @@ DCFTSolver::run_qc_dcft()
     // for the simultaneous optimization of the cumulant and the orbitals
 
     if (options_.get_str("QC_TYPE") == "SIMULTANEOUS") {
-        fprintf(outfile, "\n\n\t*==========================================================================================*\n"
+        psi::fprintf(outfile, "\n\n\t*==========================================================================================*\n"
                              "\t* Cycle   RMS Orb Grad   RMS Lambda Error    delta E         Total Energy     NI(NR)  DIIS *\n"
                              "\t*------------------------------------------------------------------------------------------*\n");
     }
     else {
-        fprintf(outfile, "\n\n\t*====================================================================================================*\n"
+        psi::fprintf(outfile, "\n\n\t*====================================================================================================*\n"
                              "\t* Cycle   RMS Orb Grad   RMS Lambda Error    delta E         Total Energy     NI(Orb)  NI(Cum)  DIIS *\n"
                              "\t*----------------------------------------------------------------------------------------------------*\n");
     }
@@ -158,12 +158,12 @@ DCFTSolver::run_qc_dcft()
             rotate_orbitals();
             // Print the iterative trace
             if (options_.get_str("QC_TYPE") == "SIMULTANEOUS") {
-                fprintf(outfile, "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f   %3d    %-3s *\n",
+                psi::fprintf(outfile, "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f   %3d    %-3s *\n",
                         cycle, orbitals_convergence_, cumulant_convergence_, new_total_energy_ - old_total_energy_,
                         new_total_energy_, cycle_NR, diisString.c_str());
             }
             else {
-                fprintf(outfile, "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f   %3d      %3d      %-3s *\n",
+                psi::fprintf(outfile, "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f   %3d      %3d      %-3s *\n",
                         cycle, orbitals_convergence_, cumulant_convergence_, new_total_energy_ - old_total_energy_,
                         new_total_energy_, cycle_NR, cycle_jacobi, diisString.c_str());
 
@@ -184,10 +184,10 @@ DCFTSolver::run_qc_dcft()
     }
 
     if (options_.get_str("QC_TYPE") == "SIMULTANEOUS") {
-        fprintf(outfile, "\t*==========================================================================================*\n");
+        psi::fprintf(outfile, "\t*==========================================================================================*\n");
     }
     else {
-        fprintf(outfile, "\t*====================================================================================================*\n");
+        psi::fprintf(outfile, "\t*====================================================================================================*\n");
     }
 
     if(!orbitalsDone_ || !cumulantDone_ || !densityConverged_ || !energyConverged_)
@@ -1851,10 +1851,10 @@ DCFTSolver::iterate_nr_conjugate_gradients() {
         // Check convergence
         converged = (residual_rms < cumulant_threshold_);
 
-        if (print_ > 1) fprintf(outfile, "%d RMS = %8.5e\n", cycle, residual_rms);
+        if (print_ > 1) psi::fprintf(outfile, "%d RMS = %8.5e\n", cycle, residual_rms);
         if (cycle > maxiter_) {
 //            throw PSIEXCEPTION ("Solution of the Newton-Raphson equations did not converge");
-            fprintf(outfile, "\tN-R equations did not converge, made a Jacobi step \n");
+            psi::fprintf(outfile, "\tN-R equations did not converge, made a Jacobi step \n");
             for (int p = 0; p < nidp_; ++p) {
                 X_->set(p, gradient_->get(p)/Hd_->get(p));
             }
@@ -1921,7 +1921,7 @@ DCFTSolver::iterate_nr_jacobi() {
         }
         // Check convergence
         converged_micro = (residual_rms < cumulant_threshold_);
-        if (print_ > 1) fprintf(outfile, "%d RMS = %8.5e \n", counter, residual_rms);
+        if (print_ > 1) psi::fprintf(outfile, "%d RMS = %8.5e \n", counter, residual_rms);
         if (counter > maxiter_) throw PSIEXCEPTION ("Solution of the Newton-Raphson equations did not converge");
     }
 
@@ -2084,12 +2084,12 @@ DCFTSolver::run_davidson() {
     int count = 0;
 
     // Create a matrix with the Hessian diagonal for convenience
-    fprintf(outfile, "\tStability analysis of DCFT solution \n");
+    psi::fprintf(outfile, "\tStability analysis of DCFT solution \n");
     SharedVector Evals;
     SharedMatrix Evecs;
     while(!converged){
         if (count > maxiter_) throw PSIEXCEPTION("Davidson diagonalization did not converge!");
-        if (print_ > 1) fprintf(outfile, "\tIteration %d\n", ++count);
+        if (print_ > 1) psi::fprintf(outfile, "\tIteration %d\n", ++count);
 
         // Form the off-diagonal contribution to the sigma vector
         SharedMatrix sigma_vector(new Matrix("Sigma vector for the Davidson algorithm", b_dim_, nidp_));
@@ -2156,7 +2156,7 @@ DCFTSolver::run_davidson() {
         int n_good = 0;
         int n_bad  = 0;
         int nvecs = nevals_ < b_dim_ ? nevals_ : b_dim_;
-        if (print_ > 1) fprintf(outfile, "\tEigenvalues:\n");
+        if (print_ > 1) psi::fprintf(outfile, "\tEigenvalues:\n");
         for (int k = 0; k < nvecs; ++k) {
             double new_val = Evals->get(k);
             double ms = C_DDOT(b_dim_, r_p[k], 1, r_p[k], 1);
@@ -2165,11 +2165,11 @@ DCFTSolver::run_davidson() {
             if (not_converged) n_bad += 1;
             else n_good += 1;
             max_rms = rms > max_rms ? rms : max_rms;
-            if (print_ > 1) fprintf(outfile,  "\t\t%s%10.6f   (residual = %8.3e)\n", not_converged ? "*" : " ", new_val, rms);
+            if (print_ > 1) psi::fprintf(outfile,  "\t\t%s%10.6f   (residual = %8.3e)\n", not_converged ? "*" : " ", new_val, rms);
         }
 
-        if (print_ > 1) fprintf(outfile, "\tThere are %d vectors in the subspace\n", b_dim_);
-        if (print_ > 1) fprintf(outfile, "\tMax RMS residual %8.3e, %d converged, %d not converged\n", max_rms, n_good, n_bad);
+        if (print_ > 1) psi::fprintf(outfile, "\tThere are %d vectors in the subspace\n", b_dim_);
+        if (print_ > 1) psi::fprintf(outfile, "\tMax RMS residual %8.3e, %d converged, %d not converged\n", max_rms, n_good, n_bad);
 
         if (n_bad == 0) {
             converged = true;
@@ -2196,20 +2196,20 @@ DCFTSolver::run_davidson() {
         }
         if(!added_vectors && !converged) throw PSIEXCEPTION("No new vectors were added");
 
-        if (print_ > 1) fprintf(outfile, "\tAdded %d new vector(s) to the subspace\n\n\n", added_vectors);
+        if (print_ > 1) psi::fprintf(outfile, "\tAdded %d new vector(s) to the subspace\n\n\n", added_vectors);
 
         if (b_dim_ > max_space_) throw PSIEXCEPTION("The subspace size is exceeded, but the convergence is not reached in stability analysis");
 
     }
 
     // Perform the stability analysis by analyzing the eigenvector of the Hessian for several largest contributions
-    fprintf(outfile, "\tLowest %d eigenvalues of the electronic Hessian: \n", nevals_);
+    psi::fprintf(outfile, "\tLowest %d eigenvalues of the electronic Hessian: \n", nevals_);
     int values_to_print = 5;
     int n_neg = 0;
     int nvecs = nevals_ < b_dim_ ? nevals_ : b_dim_;
     for (int k = 0; k < nvecs; k++) {
         double value = Evals->get(k);
-        fprintf(outfile, "\t %10.6f \n", value);
+        psi::fprintf(outfile, "\t %10.6f \n", value);
         if (value < 0.0) {
             double *max_values = new double[values_to_print + 1];
             int *max_values_idp = new int[values_to_print + 1];
@@ -2238,14 +2238,14 @@ DCFTSolver::run_davidson() {
                 if (stored < values_to_print) stored++;
 
             }
-            fprintf(outfile, "\t %d largest contributions to the eigenvector: \n", values_to_print);
+            psi::fprintf(outfile, "\t %d largest contributions to the eigenvector: \n", values_to_print);
             for (int i = 0; i < values_to_print; ++i) {
-                fprintf(outfile, "\t %10.3e %s \n", max_values[i], (max_values_idp[i] < orbital_idp_) ? ("orbital space") : ("cumulant space"));
+                psi::fprintf(outfile, "\t %10.3e %s \n", max_values[i], (max_values_idp[i] < orbital_idp_) ? ("orbital space") : ("cumulant space"));
             }
             n_neg++;
         }
     }
-    if (n_neg) fprintf(outfile, "\tSolution is unstable (%d negative eigenvalues obtained) \n", n_neg);
+    if (n_neg) psi::fprintf(outfile, "\tSolution is unstable (%d negative eigenvalues obtained) \n", n_neg);
 
 }
 

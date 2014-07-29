@@ -119,7 +119,7 @@ int file_build(dpdfile4 *File, int inputfile, double tolerance,
         }
     }
 
-  fprintf(outfile, "\tSorting File: %s nbuckets = %d\n",
+  psi::fprintf(outfile, "\tSorting File: %s nbuckets = %d\n",
           File->label, nbuckets);
 
   /* Set up IWL buffers for sorting */

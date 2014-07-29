@@ -35,7 +35,7 @@ namespace psi{ namespace occwave{
 
 void OCCWave::t2_amps()
 {   
-     //fprintf(outfile,"\n t2_amps is starting... \n"); fflush(outfile);
+     //psi::fprintf(outfile,"\n t2_amps is starting... \n"); fflush(outfile);
 
 //===========================================================================================
 //========================= RHF =============================================================
@@ -874,7 +874,7 @@ else if (reference_ == "UNRESTRICTED") {
     psio_->close(PSIF_OCC_DPD, 1);
     
 }// end if (reference_ == "UNRESTRICTED") 
- //fprintf(outfile,"\n t2_amps done. \n"); fflush(outfile);
+ //psi::fprintf(outfile,"\n t2_amps done. \n"); fflush(outfile);
 
 } // end t2_amps
 }} // End Namespaces

@@ -123,9 +123,9 @@ void lmp2(void)
   global_dpd_->buf4_close(&T2);
   global_dpd_->buf4_close(&D);
 
-  fprintf(outfile, "\n\tComputing LMP2 amplitudes:\n");
-  fprintf(outfile,   "\t--------------------------\n");
-  fprintf(outfile, "\titer = %d    LMP2 Energy = %20.14f\n", 0, energy);
+  psi::fprintf(outfile, "\n\tComputing LMP2 amplitudes:\n");
+  psi::fprintf(outfile,   "\t--------------------------\n");
+  psi::fprintf(outfile, "\titer = %d    LMP2 Energy = %20.14f\n", 0, energy);
 
   conv = 0;
   int lmp2_maxiter=1000;
@@ -194,11 +194,11 @@ void lmp2(void)
 
     rms = sqrt(rms);
 
-    fprintf(outfile, "\titer = %d    LMP2 Energy = %20.14f   RMS = %4.3e\n", iter, energy, rms);
+    psi::fprintf(outfile, "\titer = %d    LMP2 Energy = %20.14f   RMS = %4.3e\n", iter, energy, rms);
 
     if(rms < params.convergence) {
       conv = 1;
-      fprintf(outfile, "\n\tLMP2 Iterations converged.\n");
+      psi::fprintf(outfile, "\n\tLMP2 Iterations converged.\n");
       break;
     }
     else {
@@ -209,7 +209,7 @@ void lmp2(void)
   }
 
   if(!conv) {
-    fprintf(outfile, "\n\tLMP2 Iterative procedure failed.\n");
+    psi::fprintf(outfile, "\n\tLMP2 Iterative procedure failed.\n");
     throw ConvergenceError<int>("LMP2 interative procedure failed.", lmp2_maxiter, params.convergence, rms, __FILE__, __LINE__);
   }
 
@@ -244,9 +244,9 @@ void lmp2(void)
   global_dpd_->buf4_mat_irrep_close(&D, 0);
   global_dpd_->buf4_close(&D);
 
-  fprintf(outfile, "\n\tLMP2 Weak Pair Energy   = %20.14f\n", weak_pair_energy);
-  fprintf(outfile, "\tLMP2 Correlation Energy = %20.14f\n", energy);
-  fprintf(outfile, "\tLMP2 Total Energy       = %20.14f\n\n", energy+moinfo.eref);
+  psi::fprintf(outfile, "\n\tLMP2 Weak Pair Energy   = %20.14f\n", weak_pair_energy);
+  psi::fprintf(outfile, "\tLMP2 Correlation Energy = %20.14f\n", energy);
+  psi::fprintf(outfile, "\tLMP2 Total Energy       = %20.14f\n\n", energy+moinfo.eref);
   fflush(outfile);
 
   local.weak_pair_energy = weak_pair_energy;
