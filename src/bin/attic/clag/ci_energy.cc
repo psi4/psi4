@@ -106,21 +106,21 @@ void ci_energy(double **OPDM, double *TPDM, double *h, double *TwoElec,
   e_ci = OEsum + TEsum + enuc;
   diff = e_ci - eci_chkpt; 
   if (fabs(diff) > CI_DIFF) {
-    fprintf(outfile,
+    psi::fprintf(outfile,
       "Calculated CI Energy differs from the CI Energy in checkpoint file\n");
-    fprintf(outfile,"ECI Calc. = %lf\n", e_ci); 
-    fprintf(outfile,"ECI Chkpt = %lf\n", eci_chkpt); 
+    psi::fprintf(outfile,"ECI Calc. = %lf\n", e_ci); 
+    psi::fprintf(outfile,"ECI Chkpt = %lf\n", eci_chkpt); 
     }
  
   if (print_lvl > 0) {
-    fprintf(outfile,"\nCheck CI Energy\n\n");
-    fprintf(outfile,"One-electron contribution = %20.10lf\n", OEsum); 
-    fprintf(outfile,"Two-electron contribution = %20.10lf\n", TEsum);
-    fprintf(outfile,"Total electronic energy   = %20.10lf\n", e_ci);
-    fprintf(outfile,"Trace of lagrangian       = %20.10lf\n", lagtr);
-    fprintf(outfile,"Nuclear repulsion energy  = %20.10f\n", enuc); 
-    fprintf(outfile,"Total CI Energy           = %20.10lf\n", e_ci); 
-    fprintf(outfile,"CI Energy from chkpt file = %20.10lf\n", eci_chkpt);
+    psi::fprintf(outfile,"\nCheck CI Energy\n\n");
+    psi::fprintf(outfile,"One-electron contribution = %20.10lf\n", OEsum); 
+    psi::fprintf(outfile,"Two-electron contribution = %20.10lf\n", TEsum);
+    psi::fprintf(outfile,"Total electronic energy   = %20.10lf\n", e_ci);
+    psi::fprintf(outfile,"Trace of lagrangian       = %20.10lf\n", lagtr);
+    psi::fprintf(outfile,"Nuclear repulsion energy  = %20.10f\n", enuc); 
+    psi::fprintf(outfile,"Total CI Energy           = %20.10lf\n", e_ci); 
+    psi::fprintf(outfile,"CI Energy from chkpt file = %20.10lf\n", eci_chkpt);
     }          
 }
 

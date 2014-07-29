@@ -88,7 +88,7 @@ CCSort::CCSort(SortAlgorithm algorithm):
   }
 
   moinfo->set_fzcore_energy(efzc);
-  fprintf(outfile,"\n\n    Frozen-core energy                     = %20.9f",efzc);
+  psi::fprintf(outfile,"\n\n    Frozen-core energy                     = %20.9f",efzc);
   fflush(outfile);
 }
 

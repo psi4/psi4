@@ -32,7 +32,7 @@ namespace psi{ namespace mcscf{
 
 double SCF::compute_energy()
 {
-  fprintf(outfile,"\n\n  Running an SCF calculation");
+  psi::fprintf(outfile,"\n\n  Running an SCF calculation");
 
   startup();
 

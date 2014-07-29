@@ -70,12 +70,12 @@ void SAPT2p3::ind_disp30()
   e_ind_disp30_ = inddisp_1 + inddisp_2 + inddisp_3;
 
   if (debug_) {
-    fprintf(outfile,"\n    Ind-Disp30_1        = %18.12lf H\n",inddisp_1);
-    fprintf(outfile,"    Ind-Disp30_2        = %18.12lf H\n",inddisp_2);
-    fprintf(outfile,"    Ind-Disp30_3        = %18.12lf H\n",inddisp_3);
+    psi::fprintf(outfile,"\n    Ind-Disp30_1        = %18.12lf H\n",inddisp_1);
+    psi::fprintf(outfile,"    Ind-Disp30_2        = %18.12lf H\n",inddisp_2);
+    psi::fprintf(outfile,"    Ind-Disp30_3        = %18.12lf H\n",inddisp_3);
   }
   if (print_) {
-    fprintf(outfile,"    Ind-Disp30          = %18.12lf H\n",e_ind_disp30_);
+    psi::fprintf(outfile,"    Ind-Disp30          = %18.12lf H\n",e_ind_disp30_);
     fflush(outfile);
   }
 }

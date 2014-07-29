@@ -73,8 +73,8 @@ int U_build(int irrep, int root, double lambda, enum Spin spin)
     global_dpd_->buf4_close(&U);
 
     /*
-    fprintf(outfile, "\n\tSolving for U2(%d)[%d] wave function:\n", root, irrep);
-    fprintf(outfile,   "\t-------------------------------------\n");
+    psi::fprintf(outfile, "\n\tSolving for U2(%d)[%d] wave function:\n", root, irrep);
+    psi::fprintf(outfile,   "\t-------------------------------------\n");
     */
 
     conv = 0;
@@ -136,10 +136,10 @@ int U_build(int irrep, int root, double lambda, enum Spin spin)
       global_dpd_->buf4_axpy(&U, &Unew, 1);
       global_dpd_->buf4_close(&U);
 
-      /*      fprintf(outfile, "\titer = %d   RMS = %4.3e\n", iter, rms); */
+      /*      psi::fprintf(outfile, "\titer = %d   RMS = %4.3e\n", iter, rms); */
       if(rms < params.convergence) {
 	conv = 1;
-	fprintf(outfile, "\tU2(%d)[%d] iterations converged. iter = %d   RMS = %4.3e\n", 
+	psi::fprintf(outfile, "\tU2(%d)[%d] iterations converged. iter = %d   RMS = %4.3e\n", 
 		root, irrep, iter, rms);
 	break;
       }
@@ -153,7 +153,7 @@ int U_build(int irrep, int root, double lambda, enum Spin spin)
     }
 
     if(!conv) {
-      fprintf(outfile, "\n\tU2(%d)[%d] iterative procedure failed. RMS = %4.3e\n", root, irrep, rms);
+      psi::fprintf(outfile, "\n\tU2(%d)[%d] iterative procedure failed. RMS = %4.3e\n", root, irrep, rms);
       sprintf(lbl, "UIjAb[%d]", irrep);
       global_dpd_->buf4_init(&U, PSIF_CC_MISC, irrep, 0, 5, 0, 5, 0, lbl);
       global_dpd_->buf4_scm(&U, 0.0);

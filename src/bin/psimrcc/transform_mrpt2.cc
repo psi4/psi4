@@ -90,7 +90,7 @@ void CCTransform::read_tei_mo_integrals_mrpt2()
         s = ERIIN.labels[fi+3];
         value = ERIIN.values[index];
 
-//         fprintf(outfile,"\n  (%2d %2d|%2d %2d) = %20.12f",p,q,r,s,value);
+//         psi::fprintf(outfile,"\n  (%2d %2d|%2d %2d) = %20.12f",p,q,r,s,value);
 
         integral_map[four(p,q,r,s)]=value;
 //         irrep = mo_indexing->get_tuple_irrep(p,q);
@@ -104,14 +104,14 @@ void CCTransform::read_tei_mo_integrals_mrpt2()
       if(!ilsti)
         iwl_buf_fetch(&ERIIN);
     } while(!ilsti);
-  fprintf(outfile,"\n    CCTransform: read %lu non-zero integrals (MRPT2)", elements);
+  psi::fprintf(outfile,"\n    CCTransform: read %lu non-zero integrals (MRPT2)", elements);
   fflush(outfile);
   iwl_buf_close(&ERIIN,1);
 }
 
 double CCTransform::tei_mrpt2(int p, int q, int r, int s)
 {
-//   fprintf(outfile,"\n  (%2d %2d|%2d %2d) = %20.15f",p,q,r,s,integral_map[four(p,q,r,s)]);
+//   psi::fprintf(outfile,"\n  (%2d %2d|%2d %2d) = %20.15f",p,q,r,s,integral_map[four(p,q,r,s)]);
   return(integral_map[four(p,q,r,s)]);
 }
 

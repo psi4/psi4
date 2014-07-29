@@ -77,7 +77,7 @@ ADC::rhf_construct_sigma(int irrep, int root)
     global_dpd_->file2_close(&E);
  
 #if DEBUG_
-    fprintf(outfile, ">> In construction of sigma <<\n");
+    psi::fprintf(outfile, ">> In construction of sigma <<\n");
     global_dpd_->buf4_print(&K, outfile, 1);
     //abort();
 #endif

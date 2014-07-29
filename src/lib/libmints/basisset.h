@@ -34,7 +34,7 @@
 #include "molecule.h"
 
 #include <boost/shared_ptr.hpp>
-
+#include "psi4-dec.h"
 namespace psi {
 
     extern FILE *outfile;
@@ -393,7 +393,7 @@ bool shell_sorter_am(const GaussianShell& d1, const GaussianShell& d2)
 inline
 BasisSet operator +(const BasisSet& a, const BasisSet& b) {
     if (a.molecule() != b.molecule()) {
-        fprintf(stderr, "BasisSet::operator+ : Unable to add basis sets from different molecules.");
+        psi::fprintf(stderr, "BasisSet::operator+ : Unable to add basis sets from different molecules.");
         return BasisSet();
     }
     BasisSet temp;

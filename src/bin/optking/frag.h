@@ -33,6 +33,7 @@
 
 #include "intcos.h"
 
+
 namespace opt {
 
 class INTERFRAG;

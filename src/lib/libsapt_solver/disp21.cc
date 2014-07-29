@@ -32,7 +32,7 @@ void SAPT2p::disp21()
     "Theta AR Intermediates",aoccA_,nvirA_);
 
   if (debug_) {
-    fprintf(outfile,"    Disp210             = %18.12lf H\n",e_disp210);
+    psi::fprintf(outfile,"    Disp210             = %18.12lf H\n",e_disp210);
     fflush(outfile);
   }
 
@@ -42,14 +42,14 @@ void SAPT2p::disp21()
     "Theta BS Intermediates",aoccB_,nvirB_);
 
   if (debug_) {
-    fprintf(outfile,"    Disp201             = %18.12lf H\n\n",e_disp201);
+    psi::fprintf(outfile,"    Disp201             = %18.12lf H\n\n",e_disp201);
     fflush(outfile);
   }
 
   e_disp21_ = e_disp210 + e_disp201;
 
   if (print_) {
-    fprintf(outfile,"    Disp21              = %18.12lf H\n",e_disp21_);
+    psi::fprintf(outfile,"    Disp21              = %18.12lf H\n",e_disp21_);
     fflush(outfile);
   }
 }
@@ -72,7 +72,7 @@ double SAPT2p::disp21_1(int ampfile, const char *glabel, const char *tlabel,
   free_block(gARBS);
 
   if (debug_) {
-    fprintf(outfile,"\n    Disp21_1            = %18.12lf H\n",energy);
+    psi::fprintf(outfile,"\n    Disp21_1            = %18.12lf H\n",energy);
     fflush(outfile);
   }
 
@@ -97,7 +97,7 @@ double SAPT2p::disp21_2(int ampfile, const char *tlabel,
   free_block(theta_p_AR);
 
   if (debug_) {
-    fprintf(outfile,"    Disp21_2            = %18.12lf H\n",energy);
+    psi::fprintf(outfile,"    Disp21_2            = %18.12lf H\n",energy);
     fflush(outfile);
   }
 

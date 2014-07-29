@@ -31,7 +31,7 @@ namespace psi{ namespace dfoccwave{
 
 void DFOCC::z_vector()
 { 
-//fprintf(outfile,"\n z_vector is starting... \n"); fflush(outfile);
+//psi::fprintf(outfile,"\n z_vector is starting... \n"); fflush(outfile);
 
     SharedTensor2d K;
 
@@ -59,8 +59,8 @@ if (reference_ == "RESTRICTED") {
          double det = 0.0;      
          Aorb->lineq_flin(zvectorA, &det);
          if (fabs(det) < DIIS_MIN_DET) { 
-             fprintf(outfile, "Warning!!! MO Hessian matrix is near-singular\n");
-             fprintf(outfile, "Determinant is %6.3E\n", det);
+             psi::fprintf(outfile, "Warning!!! MO Hessian matrix is near-singular\n");
+             psi::fprintf(outfile, "Determinant is %6.3E\n", det);
              fflush(outfile);
              pcg_conver = 0;// means unsuccessful
          }
@@ -86,7 +86,7 @@ if (reference_ == "RESTRICTED") {
 
     // If LINEQ FAILED!
     if (pcg_conver == 0) {
-        fprintf(outfile,"\tWarning!!! PCG did NOT converged in %2d iterations. \n", itr_pcg);
+        psi::fprintf(outfile,"\tWarning!!! PCG did NOT converged in %2d iterations. \n", itr_pcg);
         fflush(outfile);
     } // end if pcg_conver = 0
  
@@ -122,8 +122,8 @@ else if (reference_ == "UNRESTRICTED") {
          double det = 0.0;      
          Aorb->lineq_flin(zvector, &det);
          if (fabs(det) < DIIS_MIN_DET) { 
-             fprintf(outfile, "Warning!!! MO Hessian matrix is near-singular\n");
-             fprintf(outfile, "Determinant is %6.3E\n", det);
+             psi::fprintf(outfile, "Warning!!! MO Hessian matrix is near-singular\n");
+             psi::fprintf(outfile, "Determinant is %6.3E\n", det);
              fflush(outfile);
              pcg_conver = 0;// means unsuccessful
          }
@@ -177,12 +177,12 @@ else if (reference_ == "UNRESTRICTED") {
 
     // If LINEQ FAILED!
     if (pcg_conver == 0) {
-        fprintf(outfile,"\tWarning!!! PCG did NOT converged in %2d iterations. \n", itr_pcg);
+        psi::fprintf(outfile,"\tWarning!!! PCG did NOT converged in %2d iterations. \n", itr_pcg);
         fflush(outfile);
     } 
       
 }// end if (reference_ == "UNRESTRICTED") 
- //fprintf(outfile,"\n z_vector done. \n"); fflush(outfile);
+ //psi::fprintf(outfile,"\n z_vector done. \n"); fflush(outfile);
 }// end z_vector
 
 //=======================================================

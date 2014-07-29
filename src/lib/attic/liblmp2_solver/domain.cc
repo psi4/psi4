@@ -86,7 +86,7 @@ void LMP2::build_domains() {
         }
 
 //            for(int j=0; j < glob.natom_; j++) {
-//              fprintf(outfile, "charge[%d] = %20.12f\n", j, charge[j]);
+//              psi::fprintf(outfile, "charge[%d] = %20.12f\n", j, charge[j]);
 //            }
 
 
@@ -115,7 +115,7 @@ void LMP2::build_domains() {
         }
 
 //        for(int j=0; j < glob.natom_; j++) {
-//          fprintf(outfile, "rank[%d] = %d\n", j, rank[j]);
+//          psi::fprintf(outfile, "rank[%d] = %d\n", j, rank[j]);
 //        }
 
 
@@ -175,9 +175,9 @@ void LMP2::build_domains() {
 
     /* Print the orbital domains */
     if (me_ == 0) {
-        fprintf(outfile, "\n  ====> Building the Domains <====\n\n");
+        psi::fprintf(outfile, "\n  ====> Building the Domains <====\n\n");
 
-        fprintf(outfile, "   ****** Boughton-Pulay Occupied Orbital Domains ******\n");
+        psi::fprintf(outfile, "   ****** Boughton-Pulay Occupied Orbital Domains ******\n");
     }
     print_domains(fR);
 
@@ -186,7 +186,7 @@ void LMP2::build_domains() {
 //        std::cout << "user_domain = " << user_domain[p] << std::endl;
 
 //    if (glob.me_ == 0)
-//        fprintf(outfile, "\n   ****** Boughton-Pulay Occupied Orbital Domains ******\n");
+//        psi::fprintf(outfile, "\n   ****** Boughton-Pulay Occupied Orbital Domains ******\n");
 //    glob.print_domains(&fR[0]);
 
 
@@ -239,7 +239,7 @@ void LMP2::build_domains() {
         errcod = C_DGESV(row, 1, &(X[0][0]), nso_, &(ipiv[0]), &(Z[0]), nso_);
         if (errcod) {
             //        if(WorldComm->me() == 0)
-            //          fprintf(outfile, "\nError in DGESV return in orbital domain construction.\n");
+            //          psi::fprintf(outfile, "\nError in DGESV return in orbital domain construction.\n");
             //        exit(PSI_RETURN_FAILURE);
             throw PsiException("Error in DGESV in LMP2 orbital domain construction", __FILE__, __LINE__);
         }
@@ -248,7 +248,7 @@ void LMP2::build_domains() {
 
     /* Print the orbital domains */
     if (me_ == 0)
-        fprintf(outfile, "\n   ****** Final Occupied Orbital Domains ******\n");
+        psi::fprintf(outfile, "\n   ****** Final Occupied Orbital Domains ******\n");
     print_domains(fR);
 
     int pairs = (ndocc_ * (ndocc_ + 1)) / 2;
@@ -298,10 +298,10 @@ void LMP2::build_domains() {
     set_ij_maps();
     if(me_ == 0) {
         if(neglect_dp_) {
-            fprintf(outfile, "\n   The following ij pairs are distant and will be negleted\n");
+            psi::fprintf(outfile, "\n   The following ij pairs are distant and will be negleted\n");
             for(int ij=0; ij < ij_pairs_; ij++) {
                 if(pairdom_exist_[ij] == 0)
-                    fprintf(outfile, "   i = %d \t j = %d\n", ij_i_map_[ij], ij_j_map_[ij]);
+                    psi::fprintf(outfile, "   i = %d \t j = %d\n", ij_i_map_[ij], ij_j_map_[ij]);
             }
         }
     }
@@ -321,7 +321,7 @@ void LMP2::build_domains() {
     }
 
     if (me_ == 0)
-        fprintf(outfile, "\n  ================================\n\n");
+        psi::fprintf(outfile, "\n  ================================\n\n");
 
     timer_off("Orbital Domains");
 
@@ -338,23 +338,23 @@ void LMP2::print_domains(const std::vector<double> &s){
     if(domain_len_[i] > max) max = domain_len_[i];
 
   if(me_ == 0) {
-    fprintf(outfile, "   Orbital  Domain");
-    for(int i=0; i < max-2; i++) fprintf(outfile, "   "); /* formatting junk */
-    fprintf(outfile, "  Completeness\n");
-    fprintf(outfile, "   -------  ------");
-    for(int i=0; i < max-2; i++) fprintf(outfile, "---"); /* more formatting junk */
-    fprintf(outfile, "  ------------\n");
+    psi::fprintf(outfile, "   Orbital  Domain");
+    for(int i=0; i < max-2; i++) psi::fprintf(outfile, "   "); /* formatting junk */
+    psi::fprintf(outfile, "  Completeness\n");
+    psi::fprintf(outfile, "   -------  ------");
+    for(int i=0; i < max-2; i++) psi::fprintf(outfile, "---"); /* more formatting junk */
+    psi::fprintf(outfile, "  ------------\n");
     for(int i=0; i < ndocc_; i++) {
-      fprintf(outfile, "      %2d    ",i);
-      for(j=0,cnt=0; j < natom_; j++) if(domain_[i][j]) { fprintf(outfile, " %2d", j); cnt++; }
-      if(cnt < max) for(; cnt < max; cnt++) fprintf(outfile, "   ");
-      fprintf(outfile, "     %7.5f\n", s[i]);
+      psi::fprintf(outfile, "      %2d    ",i);
+      for(j=0,cnt=0; j < natom_; j++) if(domain_[i][j]) { psi::fprintf(outfile, " %2d", j); cnt++; }
+      if(cnt < max) for(; cnt < max; cnt++) psi::fprintf(outfile, "   ");
+      psi::fprintf(outfile, "     %7.5f\n", s[i]);
     }
     domain_tot = 0;
     for(int i=0; i < ndocc_; i++)
       domain_tot += domain_len_[i];
     domain_ave = domain_tot/ndocc_;
-    fprintf(outfile, "\n   The average domain length is %4.2lf\n", domain_ave);    
+    psi::fprintf(outfile, "\n   The average domain length is %4.2lf\n", domain_ave);    
     fflush(outfile);
   }
 }

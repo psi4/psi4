@@ -64,7 +64,7 @@ IntegralTransform::backtransform_tpdm_unrestricted()
     /*** first half transformation ***/
 
     if(print_) {
-        fprintf(outfile, "\tStarting first half-transformation.\n");
+        psi::fprintf(outfile, "\tStarting first half-transformation.\n");
         fflush(outfile);
     }
 
@@ -96,10 +96,10 @@ IntegralTransform::backtransform_tpdm_unrestricted()
         }
 
         if(print_ > 1) {
-            fprintf(outfile, "\th = %d; memfree         = %lu\n", h, memFree);
-            fprintf(outfile, "\th = %d; rows_per_bucket = %lu\n", h, rowsPerBucket);
-            fprintf(outfile, "\th = %d; rows_left       = %lu\n", h, rowsLeft);
-            fprintf(outfile, "\th = %d; nbuckets        = %d\n", h, nBuckets);
+            psi::fprintf(outfile, "\th = %d; memfree         = %lu\n", h, memFree);
+            psi::fprintf(outfile, "\th = %d; rows_per_bucket = %lu\n", h, rowsPerBucket);
+            psi::fprintf(outfile, "\th = %d; rows_left       = %lu\n", h, rowsLeft);
+            psi::fprintf(outfile, "\th = %d; nbuckets        = %d\n", h, nBuckets);
             fflush(outfile);
         }
 
@@ -197,10 +197,10 @@ IntegralTransform::backtransform_tpdm_unrestricted()
         }
 
         if(print_ > 1) {
-            fprintf(outfile, "\th = %d; memfree         = %lu\n", h, memFree);
-            fprintf(outfile, "\th = %d; rows_per_bucket = %lu\n", h, rowsPerBucket);
-            fprintf(outfile, "\th = %d; rows_left       = %lu\n", h, rowsLeft);
-            fprintf(outfile, "\th = %d; nbuckets        = %d\n", h, nBuckets);
+            psi::fprintf(outfile, "\th = %d; memfree         = %lu\n", h, memFree);
+            psi::fprintf(outfile, "\th = %d; rows_per_bucket = %lu\n", h, rowsPerBucket);
+            psi::fprintf(outfile, "\th = %d; rows_left       = %lu\n", h, rowsLeft);
+            psi::fprintf(outfile, "\th = %d; nbuckets        = %d\n", h, nBuckets);
             fflush(outfile);
         }
 
@@ -249,7 +249,7 @@ IntegralTransform::backtransform_tpdm_unrestricted()
     psio_->close(PSIF_TPDM_PRESORT, keepDpdMoTpdm_);
 
     if(print_) {
-        fprintf(outfile, "\tSorting half-transformed TPDMs.\n");
+        psi::fprintf(outfile, "\tSorting half-transformed TPDMs.\n");
         fflush(outfile);
     }
 
@@ -264,7 +264,7 @@ IntegralTransform::backtransform_tpdm_unrestricted()
     global_dpd_->buf4_close(&K);
 
     if(print_){
-        fprintf(outfile, "\tFirst half integral transformation complete.\n");
+        psi::fprintf(outfile, "\tFirst half integral transformation complete.\n");
         fflush(outfile);
     }
 
@@ -296,10 +296,10 @@ IntegralTransform::backtransform_tpdm_unrestricted()
         }
 
         if(print_ > 1) {
-            fprintf(outfile, "\th = %d; memfree         = %lu\n", h, memFree);
-            fprintf(outfile, "\th = %d; rows_per_bucket = %lu\n", h, rowsPerBucket);
-            fprintf(outfile, "\th = %d; rows_left       = %lu\n", h, rowsLeft);
-            fprintf(outfile, "\th = %d; nbuckets        = %d\n", h, nBuckets);
+            psi::fprintf(outfile, "\th = %d; memfree         = %lu\n", h, memFree);
+            psi::fprintf(outfile, "\th = %d; rows_per_bucket = %lu\n", h, rowsPerBucket);
+            psi::fprintf(outfile, "\th = %d; rows_left       = %lu\n", h, rowsLeft);
+            psi::fprintf(outfile, "\th = %d; nbuckets        = %d\n", h, nBuckets);
             fflush(outfile);
         }
 

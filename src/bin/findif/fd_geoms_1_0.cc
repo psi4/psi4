@@ -32,30 +32,30 @@ namespace psi { namespace findif {
 
 std::vector< SharedMatrix > fd_geoms_1_0(Options &options) {
 
-  fprintf(outfile,"\n-------------------------------------------------------------\n\n");
+  psi::fprintf(outfile,"\n-------------------------------------------------------------\n\n");
 
-  fprintf(outfile,"  Using finite-differences of energies to determine gradients (fd_geoms_1_0).\n");
+  psi::fprintf(outfile,"  Using finite-differences of energies to determine gradients (fd_geoms_1_0).\n");
 
   int pts = options.get_int("POINTS");
-  fprintf(outfile,"\tGenerating geometries for use with %d-point formula.\n",pts);
+  psi::fprintf(outfile,"\tGenerating geometries for use with %d-point formula.\n",pts);
   if (pts != 3 && pts != 5)
     throw PsiException("FINDIF: Invalid number of points!",__FILE__,__LINE__);
 
   double disp_size = options.get_double("DISP_SIZE");
-  fprintf(outfile,"\tDisplacement size will be %6.2e.\n", disp_size);
+  psi::fprintf(outfile,"\tDisplacement size will be %6.2e.\n", disp_size);
 
   // read in molecular data: Natom, reference geometry, and SALC coordinates
   const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
 
   int Natom = mol->natom();
-  fprintf(outfile,"\tNumber of atoms is %d.\n", Natom);
+  psi::fprintf(outfile,"\tNumber of atoms is %d.\n", Natom);
 
   // Get SALCS from libmints
   boost::shared_ptr<MatrixFactory> fact;
   CdSalcList cdsalc(mol, fact, 0x1, true, true);
 
   int Nsalc = cdsalc.ncd();
-  fprintf(outfile,"\tNumber of symmetric SALC's is %d.\n", Nsalc);
+  psi::fprintf(outfile,"\tNumber of symmetric SALC's is %d.\n", Nsalc);
 
   // Determine number of geometries (1 + # of displacements)
   int Ndisp = 1;
@@ -64,7 +64,7 @@ std::vector< SharedMatrix > fd_geoms_1_0(Options &options) {
   else if (pts == 5)
     Ndisp += 4 * Nsalc;
 
-  fprintf(outfile, "\tNumber of displacements (including reference) is %d.\n", Ndisp);
+  psi::fprintf(outfile, "\tNumber of displacements (including reference) is %d.\n", Ndisp);
 
   if (options.get_int("PRINT") > 1)
     for (int i=0; i<cdsalc.ncd(); ++i)
@@ -125,7 +125,7 @@ std::vector< SharedMatrix > fd_geoms_1_0(Options &options) {
   // put reference geometry list in list
   disp_geoms.push_back(ref_geom);
 
-  fprintf(outfile,"\n-------------------------------------------------------------\n");
+  psi::fprintf(outfile,"\n-------------------------------------------------------------\n");
 
   return disp_geoms;
 }

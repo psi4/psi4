@@ -41,7 +41,7 @@ if (reference_ == "RESTRICTED") {
       nidpA += virtpiA[h] * occpiA[h]; 
     }
 
-    fprintf(outfile,"\n\tNumber of independent-pairs: %3d\n", nidpA);
+    psi::fprintf(outfile,"\n\tNumber of independent-pairs: %3d\n", nidpA);
     fflush(outfile);  
     
     if (nidpA != 0) {
@@ -80,14 +80,14 @@ if (reference_ == "RESTRICTED") {
 
     if(print_ > 2){
      for(int i = 0; i < nidpA; i++){
-        fprintf(outfile,"\n i, idpirrA, idprowA, idpcolA: %3d %3d %3d %3d\n", i, idpirrA[i], idprowA[i],idpcolA[i]);
+        psi::fprintf(outfile,"\n i, idpirrA, idprowA, idpcolA: %3d %3d %3d %3d\n", i, idpirrA[i], idprowA[i],idpcolA[i]);
 	fflush(outfile);
       }
     }
     }// end if nidpA != 0
 
     else if (nidpA == 0) {
-            fprintf(outfile,"\tThere is not any non-redundant orbital rotation pair! \n");
+            psi::fprintf(outfile,"\tThere is not any non-redundant orbital rotation pair! \n");
             tstop();
             exit(EXIT_SUCCESS);
     }
@@ -105,12 +105,12 @@ else if (reference_ == "UNRESTRICTED") {
       nidpB += virtpiB[h] * occpiB[h]; 
     }
 
-    fprintf(outfile,"\n\tNumber of alpha independent-pairs:%3d\n", nidpA);
-    fprintf(outfile,"\tNumber of beta independent-pairs :%3d\n", nidpB);
+    psi::fprintf(outfile,"\n\tNumber of alpha independent-pairs:%3d\n", nidpA);
+    psi::fprintf(outfile,"\tNumber of beta independent-pairs :%3d\n", nidpB);
     fflush(outfile);  
 
     if (nidpA == 0 && nidpB == 0) {
-        fprintf(outfile,"\tThere is not any non-redundant orbital rotation pair! \n");
+        psi::fprintf(outfile,"\tThere is not any non-redundant orbital rotation pair! \n");
         tstop();
         exit(EXIT_SUCCESS);
     }
@@ -183,12 +183,12 @@ else if (reference_ == "UNRESTRICTED") {
     
     if(print_ > 2){
      for(int i = 0; i < nidpA; i++){
-        fprintf(outfile,"\n i, idpirrA, idprowA, idpcolA: %3d %3d %3d %3d\n", i, idpirrA[i], idprowA[i],idpcolA[i]);
+        psi::fprintf(outfile,"\n i, idpirrA, idprowA, idpcolA: %3d %3d %3d %3d\n", i, idpirrA[i], idprowA[i],idpcolA[i]);
 	fflush(outfile);
       }
       
       for(int i = 0; i < nidpB; i++){
-        fprintf(outfile,"\n i, idpirrB, idprowB, idpcolB: %3d %3d %3d %3d\n", i, idpirrB[i], idprowB[i],idpcolB[i]); 
+        psi::fprintf(outfile,"\n i, idpirrB, idprowB, idpcolB: %3d %3d %3d %3d\n", i, idpirrB[i], idprowB[i],idpcolB[i]); 
 	fflush(outfile);
       }
     }

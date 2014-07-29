@@ -447,9 +447,9 @@ void backsort(int first_tmp_file, double tolerance, int uhf)
                           counter[nquarts]);
 
           /*
-          fprintf(outfile, "%d %d %d %d  count = %d\n", p, q, r, s, counter[nquarts]);
+          psi::fprintf(outfile, "%d %d %d %d  count = %d\n", p, q, r, s, counter[nquarts]);
           for(i=0; i < counter[nquarts]; i++) {
-            fprintf(outfile, "%d %d %d %d gamma = %20.12f\n",
+            psi::fprintf(outfile, "%d %d %d %d gamma = %20.12f\n",
                     pidx[nquarts][i], qidx[nquarts][i],
                     ridx[nquarts][i], sidx[nquarts][i],
                     gamma[nquarts][i]);
@@ -460,7 +460,7 @@ void backsort(int first_tmp_file, double tolerance, int uhf)
           if(!(snuc[p] == snuc[q] && snuc[r] == snuc[s] && snuc[p] == snuc[r])) {
             value = 9.9999999999;
             iwl_buf_wrt_val(&OutBuf, -1, -1, -1, -1, value, 0, outfile, 0);
-            /*	    fprintf(outfile, "-1 -1 -1 -1 gamma = %20.12f\n", value); */
+            /*	    psi::fprintf(outfile, "-1 -1 -1 -1 gamma = %20.12f\n", value); */
           }
 
           num_tpdm += counter[nquarts]+1;
@@ -483,7 +483,7 @@ void backsort(int first_tmp_file, double tolerance, int uhf)
   iwl_buf_flush(&OutBuf, 1);
   iwl_buf_close(&OutBuf, 1);
 
-  /*  fprintf(outfile, "num_tpdm = %d\n", num_tpdm); */
+  /*  psi::fprintf(outfile, "num_tpdm = %d\n", num_tpdm); */
 
   /* Free up the global data */
   free(shell);
@@ -522,7 +522,7 @@ void backsort_write(int i, int j, double **A, int kfirst, int klast,
       else if(kl != ij && uhf) value *= 0.5;
 
       if (printflag) {
-        fprintf(outfile, ">%d %d %d %d [%d] [%d] = %20.10lf\n",
+        psi::fprintf(outfile, ">%d %d %d %d [%d] [%d] = %20.10lf\n",
                 i, j, k, l, ij, kl, value);
       }
 

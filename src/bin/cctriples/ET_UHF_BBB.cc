@@ -119,9 +119,9 @@ double ET_UHF_BBB(void)
 	}
 
   ffile(&ijkfile,"ijk.dat",0);
-  fprintf(ijkfile, "Spin Case: BBB\n");
-  fprintf(ijkfile, "Number of IJK combintions: %d\n", nijk);
-  fprintf(ijkfile, "\nCurrent IJK Combination:\n");
+  psi::fprintf(ijkfile, "Spin Case: BBB\n");
+  psi::fprintf(ijkfile, "Number of IJK combintions: %d\n", nijk);
+  psi::fprintf(ijkfile, "\nCurrent IJK Combination:\n");
   fflush(ijkfile);
 
   WABC = (double ***) malloc(nirreps * sizeof(double **));
@@ -152,7 +152,7 @@ double ET_UHF_BBB(void)
 	      if(I > J && J > K) {
 
 		mijk++;
-		fprintf(ijkfile, "%d\n", mijk);
+		psi::fprintf(ijkfile, "%d\n", mijk);
 		fflush(ijkfile);
 
 		ij = Eints.params->rowidx[I][J];
@@ -748,7 +748,7 @@ double ET_UHF_BBB(void)
 
 		      /*
 		      if(fabs(VABC[Gab][ab][c]) > 1e-7)
-			fprintf(outfile, "%d %d %d %d %d %d %20.15f\n", I,J,K,A,B,C,VABC[Gab][ab][c]);
+			psi::fprintf(outfile, "%d %d %d %d %d %d %20.15f\n", I,J,K,A,B,C,VABC[Gab][ab][c]);
 		      */
 
 		      /* Sum V and W into V */

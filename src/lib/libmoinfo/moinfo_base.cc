@@ -125,7 +125,7 @@ void MOInfoBase::read_mo_space(int nirreps_ref, int& n, intvec& mo, string label
         mo.assign(nirreps_ref,0);
         n = 0;
         if(read){
-            fprintf(outfile,"\n\n  libmoinfo has found a redundancy in the input keywords %s , please fix it!",labels.c_str());
+            psi::fprintf(outfile,"\n\n  libmoinfo has found a redundancy in the input keywords %s , please fix it!",labels.c_str());
             fflush(outfile);
             exit(1);
         }else{
@@ -137,7 +137,7 @@ void MOInfoBase::read_mo_space(int nirreps_ref, int& n, intvec& mo, string label
                 n += mo[i];
             }
         }else{
-            fprintf(outfile,"\n\n  The size of the %s array (%d) does not match the number of irreps (%d), please fix the input file",label_vec[k].c_str(),size,nirreps_ref);
+            psi::fprintf(outfile,"\n\n  The size of the %s array (%d) does not match the number of irreps (%d), please fix the input file",label_vec[k].c_str(),size,nirreps_ref);
             fflush(outfile);
             exit(1);
         }
@@ -146,13 +146,13 @@ void MOInfoBase::read_mo_space(int nirreps_ref, int& n, intvec& mo, string label
 
 void MOInfoBase::print_mo_space(int& n, intvec& mo, std::string labels)
 {
-  fprintf(outfile,"\n  %s",labels.c_str());
+  psi::fprintf(outfile,"\n  %s",labels.c_str());
 
   for(int i=nirreps;i<8;i++)
-    fprintf(outfile,"     ");
+    psi::fprintf(outfile,"     ");
   for(int i=0;i<nirreps;i++)
-    fprintf(outfile," %3d ",mo[i]);
-  fprintf(outfile,"  %3d",n);
+    psi::fprintf(outfile," %3d ",mo[i]);
+  psi::fprintf(outfile,"  %3d",n);
 }
 
 void MOInfoBase::correlate(char *ptgrp, int irrep, int& nirreps_old, int& nirreps_new,int*& arr)
@@ -176,7 +176,7 @@ void MOInfoBase::correlate(char *ptgrp, int irrep, int& nirreps_old, int& nirrep
   else if (strcmp(ptgrp,"D2h") == 0)
     nirreps_old = 8;
   else {
-    fprintf(outfile,"point group %s unknown.\n",ptgrp);
+    psi::fprintf(outfile,"point group %s unknown.\n",ptgrp);
     exit(1);
   }
 
@@ -245,7 +245,7 @@ void MOInfoBase::correlate(char *ptgrp, int irrep, int& nirreps_old, int& nirrep
     }
   }
   else {
-    fprintf(outfile,"Point group unknown for correlation table.\n");
+    psi::fprintf(outfile,"Point group unknown for correlation table.\n");
   }
   return;
 }

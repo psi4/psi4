@@ -70,11 +70,11 @@ namespace psi {
 
       if (printflag) {
         if(dirac) {
-          fprintf(out, ">%d %d %d %d = %20.10f\n",
+          psi::fprintf(out, ">%d %d %d %d = %20.10f\n",
             p, r, q, s, value);
         }
         else {
-          fprintf(out, ">%d %d %d %d = %20.10f\n",
+          psi::fprintf(out, ">%d %d %d %d = %20.10f\n",
             p, q, r, s, value);
         }
       }
@@ -138,11 +138,11 @@ namespace psi {
 
       if (printflag) {
         if(dirac) {
-          fprintf(out, ">%d %d %d %d = %20.10f\n",
+          psi::fprintf(out, ">%d %d %d %d = %20.10f\n",
             p, r, q, s, value);
         }
         else {
-          fprintf(out, ">%d %d %d %d = %20.10f\n",
+          psi::fprintf(out, ">%d %d %d %d = %20.10f\n",
             p, q, r, s, value);
         }
       }

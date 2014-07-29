@@ -33,7 +33,7 @@ namespace psi{ namespace occwave{
 
 void OCCWave::ocepa_g_int()
 {  
- //fprintf(outfile,"\n G_int is starting... \n"); fflush(outfile);
+ //psi::fprintf(outfile,"\n G_int is starting... \n"); fflush(outfile);
  if (reference_ == "RESTRICTED") {
        // initialize
 	GooA->zero();
@@ -265,7 +265,7 @@ void OCCWave::ocepa_g_int()
 	}
  }// end if (reference_ == "UNRESTRICTED") 
 	
-  //fprintf(outfile,"\n G_int done... \n"); fflush(outfile);
+  //psi::fprintf(outfile,"\n G_int done... \n"); fflush(outfile);
 
 } // end of G_int
 }} // End Namespaces

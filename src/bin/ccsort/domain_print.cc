@@ -29,7 +29,7 @@
 #include "Local.h"
 #define EXTERN
 #include "globals.h"
-
+#include "psi4-dec.h"
 namespace psi { namespace ccsort {
 
 void domain_print(int nocc, int natom, int *domain_len, int **domain,
@@ -43,23 +43,23 @@ void domain_print(int nocc, int natom, int *domain_len, int **domain,
   for(i=0; i < nocc; i++) 
     if(domain_len[i] > max) max = domain_len[i];
 
-  fprintf(outfile, "   Orbital  Domain");
-  for(i=0; i < max-2; i++) fprintf(outfile, "   "); /* formatting junk */
-  fprintf(outfile, "  Completeness\n");
-  fprintf(outfile, "   -------  ------");
-  for(i=0; i < max-2; i++) fprintf(outfile, "---"); /* more formatting junk */
-  fprintf(outfile, "  ------------\n");
+  psi::fprintf(outfile, "   Orbital  Domain");
+  for(i=0; i < max-2; i++) psi::fprintf(outfile, "   "); /* formatting junk */
+  psi::fprintf(outfile, "  Completeness\n");
+  psi::fprintf(outfile, "   -------  ------");
+  for(i=0; i < max-2; i++) psi::fprintf(outfile, "---"); /* more formatting junk */
+  psi::fprintf(outfile, "  ------------\n");
   for(i=0; i < nocc; i++) {
-    fprintf(outfile, "      %2d    ",i);
-    for(j=0,cnt=0; j < natom; j++) if(domain[i][j]) { fprintf(outfile, " %2d", j); cnt++; }
-    if(cnt < max) for(; cnt < max; cnt++) fprintf(outfile, "   ");
-    fprintf(outfile, "     %7.5f\n", fR[i]);
+    psi::fprintf(outfile, "      %2d    ",i);
+    for(j=0,cnt=0; j < natom; j++) if(domain[i][j]) { psi::fprintf(outfile, " %2d", j); cnt++; }
+    if(cnt < max) for(; cnt < max; cnt++) psi::fprintf(outfile, "   ");
+    psi::fprintf(outfile, "     %7.5f\n", fR[i]);
   }
   domain_tot = 0;
   for(i=0; i < nocc; i++)
     domain_tot += domain_len[i];
   domain_ave = domain_tot/nocc;
-  fprintf(outfile, "\n   The average domain length is %4.2lf\n", domain_ave);
+  psi::fprintf(outfile, "\n   The average domain length is %4.2lf\n", domain_ave);
   fflush(outfile);
 }
 

@@ -26,7 +26,7 @@
 */
 #include <cstdio>
 #include "dpd.h"
-
+#include "psi4-dec.h"
 namespace psi {
 
 /* dpd_buf4_print(): Prints out data for all irreps of a dpd
@@ -46,24 +46,24 @@ int DPD::buf4_print(dpdbuf4 *Buf, FILE *outfile, int print_data)
     all_buf_irrep = Buf->file.my_irrep;
     Params = Buf->params;
 
-    fprintf(outfile, "\n\tDPD Buf4 for file4: %s\n", Buf->file.label);
-    fprintf(outfile, "\n\tDPD Parameters:\n");
-    fprintf(outfile,   "\t---------------\n");
-    fprintf(outfile,   "\tpqnum = %d   rsnum = %d\n",
+    psi::fprintf(outfile, "\n\tDPD Buf4 for file4: %s\n", Buf->file.label);
+    psi::fprintf(outfile, "\n\tDPD Parameters:\n");
+    psi::fprintf(outfile,   "\t---------------\n");
+    psi::fprintf(outfile,   "\tpqnum = %d   rsnum = %d\n",
             Params->pqnum, Params->rsnum);
-    fprintf(outfile, "\t   Row and column dimensions for DPD Block:\n");
-    fprintf(outfile, "\t   ----------------------------------------\n");
+    psi::fprintf(outfile, "\t   Row and column dimensions for DPD Block:\n");
+    psi::fprintf(outfile, "\t   ----------------------------------------\n");
     for(i=0; i < Params->nirreps; i++)
-        fprintf(outfile,   "\t   Irrep: %1d row = %5d\tcol = %5d\n", i,
+        psi::fprintf(outfile,   "\t   Irrep: %1d row = %5d\tcol = %5d\n", i,
                 Params->rowtot[i], Params->coltot[i^all_buf_irrep]);
     fflush(outfile);
 
     if(print_data) {
         for(h=0; h < Buf->params->nirreps; h++) {
-            fprintf(outfile, "\n\tFile %3d DPD Buf4: %s\n", Buf->file.filenum,
+            psi::fprintf(outfile, "\n\tFile %3d DPD Buf4: %s\n", Buf->file.filenum,
                     Buf->file.label);
-            fprintf(outfile,   "\tMatrix for Irrep %1d\n", h);
-            fprintf(outfile,   "\t----------------------------------------\n");
+            psi::fprintf(outfile,   "\tMatrix for Irrep %1d\n", h);
+            psi::fprintf(outfile,   "\t----------------------------------------\n");
             buf4_mat_irrep_init(Buf, h);
             buf4_mat_irrep_rd(Buf, h);
             mat4_irrep_print(Buf->matrix[h], Buf->params, h, all_buf_irrep, outfile);

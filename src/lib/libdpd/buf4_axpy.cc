@@ -77,12 +77,12 @@ int DPD::buf4_axpy(dpdbuf4 *BufX, dpdbuf4 *BufY, double alpha)
             if(nbuckets > 1) {
                 incore = 0;
 #if DPD_DEBUG
-                fprintf(stderr, "buf4_axpy: memory information.\n");
-                fprintf(stderr, "buf4_axpy: rowtot[%d] = %d\n", h, BufX->params->rowtot[h]);
-                fprintf(stderr, "buf4_axpy: nbuckets = %d\n", nbuckets);
-                fprintf(stderr, "buf4_axpy: rows_per_bucket = %d\n", rows_per_bucket);
-                fprintf(stderr, "buf4_axpy: rows_left = %d\n", rows_left);
-                fprintf(stderr, "buf4_axpy: out-of-core algorithm used\n");
+                psi::fprintf(stderr, "buf4_axpy: memory information.\n");
+                psi::fprintf(stderr, "buf4_axpy: rowtot[%d] = %d\n", h, BufX->params->rowtot[h]);
+                psi::fprintf(stderr, "buf4_axpy: nbuckets = %d\n", nbuckets);
+                psi::fprintf(stderr, "buf4_axpy: rows_per_bucket = %d\n", rows_per_bucket);
+                psi::fprintf(stderr, "buf4_axpy: rows_left = %d\n", rows_left);
+                psi::fprintf(stderr, "buf4_axpy: out-of-core algorithm used\n");
 #endif
             }
         }

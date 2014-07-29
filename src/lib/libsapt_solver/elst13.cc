@@ -31,7 +31,7 @@ void SAPT2p3::elst13()
     foccA_,noccA_,nvirA_);
 
   if (debug_) {
-    fprintf(outfile,"    Elst130,r           = %18.12lf H\n",e_elst130);
+    psi::fprintf(outfile,"    Elst130,r           = %18.12lf H\n",e_elst130);
   }
 
   double e_elst103 = elst130(wABB_,wASS_,CHFB_,PSIF_SAPT_AMPS,
@@ -39,13 +39,13 @@ void SAPT2p3::elst13()
     foccB_,noccB_,nvirB_);
 
   if (debug_) {
-    fprintf(outfile,"    Elst103,r           = %18.12lf H\n\n",e_elst103);
+    psi::fprintf(outfile,"    Elst103,r           = %18.12lf H\n\n",e_elst103);
   }
 
   e_elst13_ = e_elst130 + e_elst103;
 
   if (print_) {
-    fprintf(outfile,"    Elst13,r            = %18.12lf H\n",e_elst13_);
+    psi::fprintf(outfile,"    Elst13,r            = %18.12lf H\n",e_elst13_);
     fflush(outfile);
   }
 }
@@ -82,9 +82,9 @@ double SAPT2p3::elst130(double **wBAA, double **wBRR, double **CHFA,
   free_block(yAR);
 
   if (debug_) {
-    fprintf(outfile,"\n    Elst13_1            = %18.12lf H\n",e1);
-    fprintf(outfile,"    Elst13_2            = %18.12lf H\n",e2);
-    fprintf(outfile,"    Elst13_3            = %18.12lf H\n",e3);
+    psi::fprintf(outfile,"\n    Elst13_1            = %18.12lf H\n",e1);
+    psi::fprintf(outfile,"    Elst13_2            = %18.12lf H\n",e2);
+    psi::fprintf(outfile,"    Elst13_3            = %18.12lf H\n",e3);
   }
 
   return(e1+e2+e3);

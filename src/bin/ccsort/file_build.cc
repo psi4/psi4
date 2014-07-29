@@ -131,7 +131,7 @@ int file_build(dpdfile4 *File, int inputfile, double tolerance,
         }
     }
 
-  fprintf(outfile, "\tSorting File: %s nbuckets = %d\n", File->label, nbuckets);
+  psi::fprintf(outfile, "\tSorting File: %s nbuckets = %d\n", File->label, nbuckets);
 
   /* Set up IWL buffers for sorting */
   SortBuf = (struct iwlbuf *) malloc(nbuckets * sizeof(struct iwlbuf));
@@ -218,11 +218,11 @@ int file_build(dpdfile4 *File, int inputfile, double tolerance,
 
               if(row >= File->params->rowtot[h] ||
                  col >= File->params->coltot[h]) {
-                    fprintf(outfile, "CCSORT ERROR: DPD File Build Problem!\n");
-                    fprintf(outfile, "CCSORT ERROR: %s\n", File->label);
-                    fprintf(outfile, "CCSORT ERROR: p = %d; q = %d; r = %d; s = %d; value = %20.14f\n", p, q, r, s, value);
-                    fprintf(outfile, "CCSORT ERROR: irrep = %d; row = %d; col = %d\n", h, row, col);
-                    fprintf(outfile, "CCSORT ERROR: rowtot = %d; coltot = %d\n", File->params->rowtot[h], File->params->coltot[h]);
+                    psi::fprintf(outfile, "CCSORT ERROR: DPD File Build Problem!\n");
+                    psi::fprintf(outfile, "CCSORT ERROR: %s\n", File->label);
+                    psi::fprintf(outfile, "CCSORT ERROR: p = %d; q = %d; r = %d; s = %d; value = %20.14f\n", p, q, r, s, value);
+                    psi::fprintf(outfile, "CCSORT ERROR: irrep = %d; row = %d; col = %d\n", h, row, col);
+                    psi::fprintf(outfile, "CCSORT ERROR: rowtot = %d; coltot = %d\n", File->params->rowtot[h], File->params->coltot[h]);
                     exit(PSI_RETURN_FAILURE);
                 }
 

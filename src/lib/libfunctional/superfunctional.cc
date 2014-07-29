@@ -58,74 +58,74 @@ void SuperFunctional::print(FILE* out, int level) const
 {
     if (level < 1) return;
 
-    fprintf(out, "   => %s Composite Functional <= \n\n", name_.c_str());
+    psi::fprintf(out, "   => %s Composite Functional <= \n\n", name_.c_str());
 
-    fprintf(out, "%s", description_.c_str());
-    fprintf(out, "\n");
+    psi::fprintf(out, "%s", description_.c_str());
+    psi::fprintf(out, "\n");
     
-    fprintf(out, "%s", citation_.c_str());
-    fprintf(out, "\n");
+    psi::fprintf(out, "%s", citation_.c_str());
+    psi::fprintf(out, "\n");
     
-    fprintf(out, "    Points   = %14d\n", max_points_);
-    fprintf(out, "    Deriv    = %14d\n", deriv_);
-    fprintf(out, "    GGA      = %14s\n", (is_gga() ? "TRUE" : "FALSE"));
-    fprintf(out, "    Meta     = %14s\n", (is_meta() ? "TRUE" : "FALSE"));
-    fprintf(out, "\n");
+    psi::fprintf(out, "    Points   = %14d\n", max_points_);
+    psi::fprintf(out, "    Deriv    = %14d\n", deriv_);
+    psi::fprintf(out, "    GGA      = %14s\n", (is_gga() ? "TRUE" : "FALSE"));
+    psi::fprintf(out, "    Meta     = %14s\n", (is_meta() ? "TRUE" : "FALSE"));
+    psi::fprintf(out, "\n");
 
-    fprintf(out, "    X_LRC        = %14s\n", (is_x_lrc() ? "TRUE" : "FALSE"));
-    fprintf(out, "    X_Hybrid     = %14s\n", (is_x_hybrid() ? "TRUE" : "FALSE"));
-    fprintf(out, "    X_Alpha      = %14.6E\n", x_alpha_);
-    fprintf(out, "    X_Omega      = %14.6E\n", x_omega_);
-    fprintf(out, "    C_LRC        = %14s\n", (is_c_lrc() ? "TRUE" : "FALSE"));
-    fprintf(out, "    C_Hybrid     = %14s\n", (is_c_hybrid() ? "TRUE" : "FALSE"));
-    fprintf(out, "    C_Alpha      = %14.6E\n", c_alpha_);
-    fprintf(out, "    C_Omega      = %14.6E\n", c_omega_);
-    //fprintf(out, "    C_SCS_Hybrid = %14s\n", (is_c_scs_hybrid() ? "TRUE" : "FALSE"));
-    //fprintf(out, "    C_SS_Alpha   = %14.6E\n", c_ss_alpha_);
-    //fprintf(out, "    C_OS_Alpha   = %14.6E\n", c_os_alpha_);
-    fprintf(out, "\n");
+    psi::fprintf(out, "    X_LRC        = %14s\n", (is_x_lrc() ? "TRUE" : "FALSE"));
+    psi::fprintf(out, "    X_Hybrid     = %14s\n", (is_x_hybrid() ? "TRUE" : "FALSE"));
+    psi::fprintf(out, "    X_Alpha      = %14.6E\n", x_alpha_);
+    psi::fprintf(out, "    X_Omega      = %14.6E\n", x_omega_);
+    psi::fprintf(out, "    C_LRC        = %14s\n", (is_c_lrc() ? "TRUE" : "FALSE"));
+    psi::fprintf(out, "    C_Hybrid     = %14s\n", (is_c_hybrid() ? "TRUE" : "FALSE"));
+    psi::fprintf(out, "    C_Alpha      = %14.6E\n", c_alpha_);
+    psi::fprintf(out, "    C_Omega      = %14.6E\n", c_omega_);
+    //psi::fprintf(out, "    C_SCS_Hybrid = %14s\n", (is_c_scs_hybrid() ? "TRUE" : "FALSE"));
+    //psi::fprintf(out, "    C_SS_Alpha   = %14.6E\n", c_ss_alpha_);
+    //psi::fprintf(out, "    C_OS_Alpha   = %14.6E\n", c_os_alpha_);
+    psi::fprintf(out, "\n");
     
-    fprintf(out, "   => Exchange Functionals <=\n\n");
+    psi::fprintf(out, "   => Exchange Functionals <=\n\n");
     for (int i = 0; i < x_functionals_.size(); i++) {
-        fprintf(out, "    %6.4f %7s", (1.0 - x_alpha_) * x_functionals_[i]->alpha(),
+        psi::fprintf(out, "    %6.4f %7s", (1.0 - x_alpha_) * x_functionals_[i]->alpha(),
             x_functionals_[i]->name().c_str());
         if (x_functionals_[i]->omega()) {
-            fprintf(out, " [omega = %6.4f]", x_functionals_[i]->omega());
+            psi::fprintf(out, " [omega = %6.4f]", x_functionals_[i]->omega());
         }
-        fprintf(out,"\n");
+        psi::fprintf(out,"\n");
     }    
     if (x_omega_) {
-        fprintf(out, "    %6.4f %7s [omega = %6.4f]\n", (1.0 - x_alpha_), "HF,LR", x_omega_);
+        psi::fprintf(out, "    %6.4f %7s [omega = %6.4f]\n", (1.0 - x_alpha_), "HF,LR", x_omega_);
     }
     if (x_alpha_) {
-        fprintf(out, "    %6.4f %7s \n", x_alpha_, "HF");
+        psi::fprintf(out, "    %6.4f %7s \n", x_alpha_, "HF");
     }
-    fprintf(out, "\n");
+    psi::fprintf(out, "\n");
      
-    fprintf(out, "   => Correlation Functionals <=\n\n");
+    psi::fprintf(out, "   => Correlation Functionals <=\n\n");
     for (int i = 0; i < c_functionals_.size(); i++) {
-        fprintf(out, "    %6.4f %7s", (1.0 - c_alpha_) * c_functionals_[i]->alpha(),
+        psi::fprintf(out, "    %6.4f %7s", (1.0 - c_alpha_) * c_functionals_[i]->alpha(),
             c_functionals_[i]->name().c_str());
         if (c_functionals_[i]->omega()) {
-            fprintf(out, " [omega = %6.4f]", c_functionals_[i]->omega());
+            psi::fprintf(out, " [omega = %6.4f]", c_functionals_[i]->omega());
         }
-        fprintf(out,"\n");
+        psi::fprintf(out,"\n");
     }
     
      // Not currently defined   
     if (c_omega_) {
-        fprintf(out, "    %6.4f %7s [omega = %6.4f]\n", (1.0 - c_alpha_), "MP2,LR", c_omega_);
+        psi::fprintf(out, "    %6.4f %7s [omega = %6.4f]\n", (1.0 - c_alpha_), "MP2,LR", c_omega_);
     }
     if (c_alpha_) {
-        fprintf(out, "    %6.4f %7s \n", c_alpha_, "MP2");
+        psi::fprintf(out, "    %6.4f %7s \n", c_alpha_, "MP2");
     }
     if (c_ss_alpha_) {
-        fprintf(out, "    %6.4f %s \n", c_ss_alpha_, "Same-Spin SCS-DF-MP2");
+        psi::fprintf(out, "    %6.4f %s \n", c_ss_alpha_, "Same-Spin SCS-DF-MP2");
     } 
     if (c_os_alpha_) {
-        fprintf(out, "    %6.4f %s \n", c_os_alpha_, "Opposite-Spin SCS-DF-MP2");
+        psi::fprintf(out, "    %6.4f %s \n", c_os_alpha_, "Opposite-Spin SCS-DF-MP2");
     } 
-    fprintf(out, "\n");
+    psi::fprintf(out, "\n");
 
     if (level > 1) {
         for (int i = 0; i < x_functionals_.size(); i++) {

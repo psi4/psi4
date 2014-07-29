@@ -22,7 +22,7 @@
 
 #include <cstdio>
 #include <cstdlib>
-
+#include "psi4-dec.h"
 /*!
 ** \file
 ** \brief Print a matrix to a file in a formatted style
@@ -60,38 +60,38 @@ int mat_print(double **matrix, int rows, int cols, FILE *outfile)
   for(page=0; page < num_pages; page++) {
       first_col = page*cols_per_page;
 
-      fprintf(outfile,"\n      ");
+      psi::fprintf(outfile,"\n      ");
       for(i=first_col; i < first_col+cols_per_page; i++) 
-          fprintf(outfile,"         %5d        ",i);
+          psi::fprintf(outfile,"         %5d        ",i);
 
-      fprintf (outfile,"\n");
+      psi::fprintf (outfile,"\n");
       for(i=0; i < rows; i++) {
-          fprintf(outfile,"\n%5d ",i);
+          psi::fprintf(outfile,"\n%5d ",i);
 
           for(j=first_col; j < first_col+cols_per_page; j++)        
-              fprintf (outfile,"%22.15f",matrix[i][j]);
+              psi::fprintf (outfile,"%22.15f",matrix[i][j]);
         }
 
-      fprintf (outfile,"\n");
+      psi::fprintf (outfile,"\n");
     }
 
   /* Now print the remaining columns */
   if(last_page) {
       first_col = page*cols_per_page;
 
-      fprintf(outfile,"\n      ");
+      psi::fprintf(outfile,"\n      ");
       for(i=first_col; i < first_col+last_page; i++) 
-          fprintf(outfile,"         %5d        ",i);
+          psi::fprintf(outfile,"         %5d        ",i);
       
-      fprintf (outfile,"\n");
+      psi::fprintf (outfile,"\n");
       for(i=0; i < rows; i++) {
-	  fprintf(outfile,"\n%5d ",i);
+	  psi::fprintf(outfile,"\n%5d ",i);
 
 	  for(j=first_col; j < first_col+last_page; j++)
-	      fprintf (outfile,"%22.15f",matrix[i][j]);
+	      psi::fprintf (outfile,"%22.15f",matrix[i][j]);
 	}
 
-      fprintf (outfile,"\n");
+      psi::fprintf (outfile,"\n");
     }
 
   return 0;

@@ -29,7 +29,7 @@
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "dpd.h"
-
+#include "psi4-dec.h"
 namespace psi {
 
 int DPD::buf4_mat_irrep_shift13(dpdbuf4 *Buf, int buf_block)
@@ -47,7 +47,7 @@ int DPD::buf4_mat_irrep_shift13(dpdbuf4 *Buf, int buf_block)
     all_buf_irrep = Buf->file.my_irrep;
 
     if(Buf->shift.shift_type) {
-        fprintf(stderr, "\n\tShift is already on! %d\n",
+        psi::fprintf(stderr, "\n\tShift is already on! %d\n",
                 Buf->shift.shift_type);
         exit(PSI_RETURN_FAILURE);
     }

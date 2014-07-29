@@ -181,9 +181,9 @@ void BlockMatrix::zero_diagonal()
 
 void BlockMatrix::print()
 {
-  fprintf(outfile,"\n\n  ## %s ##\n",label_.c_str());
+  psi::fprintf(outfile,"\n\n  ## %s ##\n",label_.c_str());
   for(int h = 0; h < nirreps_; ++h){
-    fprintf(outfile,"\n[%zu*%zu]\n",rows_size_[h],cols_size_[h]);
+    psi::fprintf(outfile,"\n[%zu*%zu]\n",rows_size_[h],cols_size_[h]);
     matrix_base_[h]->print();
   }
   fflush(outfile);

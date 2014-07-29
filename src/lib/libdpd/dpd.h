@@ -32,7 +32,7 @@
 #include <libpsio/config.h>
 #include <boost/shared_ptr.hpp>
 #include <vector>
-
+#include "psi4-dec.h"
 namespace psi {
 
 struct iwlstruct;

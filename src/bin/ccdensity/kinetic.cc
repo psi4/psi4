@@ -127,15 +127,15 @@ void kinetic(void)
   vref = moinfo.eref - tref;
   vcorr = moinfo.ecc - tcorr;
   
-  fprintf(outfile,"\n\tVirial Theorem Data:\n");
-  fprintf(outfile,  "\t--------------------\n");
-  fprintf(outfile,"\tKinetic energy (ref)   = %20.15f\n", tref);
-  fprintf(outfile,"\tKinetic energy (corr)  = %20.15f\n", tcorr);
-  fprintf(outfile,"\tKinetic energy (total) = %20.15f\n", ttot);
+  psi::fprintf(outfile,"\n\tVirial Theorem Data:\n");
+  psi::fprintf(outfile,  "\t--------------------\n");
+  psi::fprintf(outfile,"\tKinetic energy (ref)   = %20.15f\n", tref);
+  psi::fprintf(outfile,"\tKinetic energy (corr)  = %20.15f\n", tcorr);
+  psi::fprintf(outfile,"\tKinetic energy (total) = %20.15f\n", ttot);
 
-  fprintf(outfile,"\t-V/T (ref)             = %20.15f\n", -vref/tref);
-  fprintf(outfile,"\t-V/T (corr)            = %20.15f\n", -vcorr/tcorr);
-  fprintf(outfile,"\t-V/T (total)           = %20.15f\n", -vtot/ttot);
+  psi::fprintf(outfile,"\t-V/T (ref)             = %20.15f\n", -vref/tref);
+  psi::fprintf(outfile,"\t-V/T (corr)            = %20.15f\n", -vcorr/tcorr);
+  psi::fprintf(outfile,"\t-V/T (total)           = %20.15f\n", -vtot/ttot);
 
   fflush(outfile);
 

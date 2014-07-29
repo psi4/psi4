@@ -207,13 +207,13 @@ void DPD::file2_cache_print(FILE *outfile)
 
     this_entry = dpd_main.file2_cache;
 
-    fprintf(outfile, "\n\tDPD File2 Cache Listing:\n\n");
-    fprintf(outfile,
+    psi::fprintf(outfile, "\n\tDPD File2 Cache Listing:\n\n");
+    psi::fprintf(outfile,
             "Cache Label                     File symm  p  q  size(kB)\n");
-    fprintf(outfile,
+    psi::fprintf(outfile,
             "---------------------------------------------------------\n");
     while(this_entry != NULL) {
-        fprintf(outfile,
+        psi::fprintf(outfile,
                 "%-32s %3d    %1d  %1d  %1d  %8.1f\n",
                 this_entry->label, this_entry->filenum, this_entry->irrep,
                 this_entry->pnum, this_entry->qnum,
@@ -221,9 +221,9 @@ void DPD::file2_cache_print(FILE *outfile)
         total_size += this_entry->size;
         this_entry = this_entry->next;
     }
-    fprintf(outfile,
+    psi::fprintf(outfile,
             "---------------------------------------------------------\n");
-    fprintf(outfile, "Total cached: %8.1f kB\n", total_size*sizeof(double)/1e3);
+    psi::fprintf(outfile, "Total cached: %8.1f kB\n", total_size*sizeof(double)/1e3);
 }
 
 void DPD::file2_cache_dirty(dpdfile2 *File)

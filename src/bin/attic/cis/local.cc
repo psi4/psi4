@@ -115,14 +115,14 @@ void local_init(Options & options)
   /* C1 symmetry only */
   nirreps = moinfo.nirreps;
   if(nirreps != 1) {
-    fprintf(outfile, "\nError: localization must use C1 symmetry.\n");
+    psi::fprintf(outfile, "\nError: localization must use C1 symmetry.\n");
     throw PsiException("cis localization symmetry error", __FILE__, __LINE__);
   }
 
   nso = moinfo.nso;
   nmo = moinfo.nmo; /* should be the same as nso */
   if(nmo != nso) {
-    fprintf(outfile, "\nError: NMO != NSO!  %d != %d\n", nmo, nso);
+    psi::fprintf(outfile, "\nError: NMO != NSO!  %d != %d\n", nmo, nso);
     throw PsiException("cis number of orbitals error", __FILE__, __LINE__);
   }
 
@@ -153,7 +153,7 @@ void local_init(Options & options)
       C[i][j] = Y[i][j];
 
   /*
-    fprintf(outfile, "\n\tC inverse (Ci):\n");
+    psi::fprintf(outfile, "\n\tC inverse (Ci):\n");
     print_mat(Ci, nso, nso, outfile);
   */
 
@@ -176,7 +176,7 @@ void local_init(Options & options)
   free(ss);
 
   /*
-    fprintf(outfile, "\n\tAO Overlap (S)\n");
+    psi::fprintf(outfile, "\n\tAO Overlap (S)\n");
     print_mat(S, nso, nso, outfile);
   */
 
@@ -188,7 +188,7 @@ void local_init(Options & options)
 	D[i][j] += C[i][k] * C[j][k];
 
   /*
-    fprintf(outfile, "\n\tAO-basis SCF Density (D):\n");
+    psi::fprintf(outfile, "\n\tAO-basis SCF Density (D):\n");
     print_mat(D, nso, nso, outfile);
   */
 
@@ -298,7 +298,7 @@ void local_init(Options & options)
 
       errcod = C_DGESV(row, 1, &(X[0][0]), nso, &(ipiv[0]), &(Z[0]), nso);
       if(errcod) {
-	fprintf(outfile, "\nError in DGESV return in orbital domain construction.\n");
+	psi::fprintf(outfile, "\nError in DGESV return in orbital domain construction.\n");
         throw PsiException("cis orbital domain construction error", __FILE__, __LINE__);
       }
 
@@ -356,18 +356,18 @@ void local_init(Options & options)
   for(i=0; i < nocc; i++) 
     if(domain_len[i] > max) max = domain_len[i];
 
-  fprintf(outfile, "\n   ****** Occupied Orbital Domains ******\n");
-  fprintf(outfile, "   Orbital  Domain");
-  for(i=0; i < max-2; i++) fprintf(outfile, "   "); /* formatting junk */
-  fprintf(outfile, "  Completeness\n");
-  fprintf(outfile, "   -------  ------");
-  for(i=0; i < max-2; i++) fprintf(outfile, "---"); /* more formatting junk */
-  fprintf(outfile, "  ------------\n");
+  psi::fprintf(outfile, "\n   ****** Occupied Orbital Domains ******\n");
+  psi::fprintf(outfile, "   Orbital  Domain");
+  for(i=0; i < max-2; i++) psi::fprintf(outfile, "   "); /* formatting junk */
+  psi::fprintf(outfile, "  Completeness\n");
+  psi::fprintf(outfile, "   -------  ------");
+  for(i=0; i < max-2; i++) psi::fprintf(outfile, "---"); /* more formatting junk */
+  psi::fprintf(outfile, "  ------------\n");
   for(i=0; i < nocc; i++) {
-    fprintf(outfile, "      %2d    ",i);
-    for(j=0,cnt=0; j < natom; j++) if(domain[i][j]) { fprintf(outfile, " %2d", j); cnt++; }
-    if(cnt < max) for(; cnt < max; cnt++) fprintf(outfile, "   ");
-    fprintf(outfile, "     %7.5f\n", fR[i]);
+    psi::fprintf(outfile, "      %2d    ",i);
+    for(j=0,cnt=0; j < natom; j++) if(domain[i][j]) { psi::fprintf(outfile, " %2d", j); cnt++; }
+    if(cnt < max) for(; cnt < max; cnt++) psi::fprintf(outfile, "   ");
+    psi::fprintf(outfile, "     %7.5f\n", fR[i]);
   }
   fflush(outfile);
 
@@ -385,7 +385,7 @@ void local_init(Options & options)
 
   /* Identify and/or remove weak pairs */
   weak_pairs = init_int_array(nocc*nocc);
-  fprintf(outfile, "\n");
+  psi::fprintf(outfile, "\n");
   for(i=0,ij=0; i < nocc; i++)
     for(j=0; j < nocc; j++,ij++) {
       weak = 1;
@@ -396,9 +396,9 @@ void local_init(Options & options)
 	weak_pairs[ij] = 1;
 
         if(local.weakp == "MP2")
-	  fprintf(outfile, "\tPair %d %d [%d] is weak and will be treated with MP2.\n", i, j, ij);
+	  psi::fprintf(outfile, "\tPair %d %d [%d] is weak and will be treated with MP2.\n", i, j, ij);
         else if(local.weakp == "NEGLECT") {
-	  fprintf(outfile, "\tPair %d %d = [%d] is weak and will be deleted.\n", i, j, ij);
+	  psi::fprintf(outfile, "\tPair %d %d = [%d] is weak and will be deleted.\n", i, j, ij);
 	}
       }
       else weak_pairs[ij] = 0; 
@@ -422,9 +422,9 @@ void local_init(Options & options)
   }
 
   /* Print excitation space reduction info */
-  fprintf(outfile, "\n\tT1 Length = %d (local), %d (canonical)\n",
+  psi::fprintf(outfile, "\n\tT1 Length = %d (local), %d (canonical)\n",
           t1_length, nocc*nvir);
-  fprintf(outfile, "\tT2 Length = %d (local), %d (canonical)\n\n",
+  psi::fprintf(outfile, "\tT2 Length = %d (local), %d (canonical)\n\n",
           t2_length, nocc*nocc*nvir*nvir);
   fflush(outfile);
 
@@ -447,7 +447,7 @@ void local_init(Options & options)
 
   print_test = options.get_bool("DOMAIN_PRINT"); //default 0
   if(print_test) {
-    fprintf(outfile, "Printing of orbital domains requested...exiting.\n\n");
+    psi::fprintf(outfile, "Printing of orbital domains requested...exiting.\n\n");
     throw PsiException("cis early termination upon request", __FILE__, __LINE__);
   }
 
@@ -461,7 +461,7 @@ void local_init(Options & options)
 	  1.0,&(Rt_full[0][0]),nso);
 
   /*
-    fprintf(outfile, "\n\tVirtual-Space Projector (R-tilde):\n");
+    psi::fprintf(outfile, "\n\tVirtual-Space Projector (R-tilde):\n");
     print_mat(Rt_full, nso, nso, outfile);
   */
 
@@ -473,11 +473,11 @@ void local_init(Options & options)
     }
     norm = sqrt(norm);
     if(norm < 0.1) {
-      fprintf(outfile, "\tNorm of orbital %4d = %20.12f...deleteing\n", i, norm);
+      psi::fprintf(outfile, "\tNorm of orbital %4d = %20.12f...deleteing\n", i, norm);
       for(j=0; j < nso; j++) Rt_full[j][i] = 0.0;
     }
   }
-  fprintf(outfile, "\n");
+  psi::fprintf(outfile, "\n");
   fflush(outfile);
 
   /* Grab the MO-basis Fock matrix */
@@ -502,7 +502,7 @@ void local_init(Options & options)
   global_dpd_->file2_close(&fock);
 
   /*
-    fprintf(outfile, "\n\tMO Basis Fock matrix:\n");
+    psi::fprintf(outfile, "\n\tMO Basis Fock matrix:\n");
     print_mat(Fmo, nso, nso, outfile);
   */
 
@@ -518,7 +518,7 @@ void local_init(Options & options)
   for(i=0;i < nocc; i++) eps_occ[i] = Fmo[i+nfzc][i+nfzc];
 
   /*
-    fprintf(outfile, "\n\tAO-Basis Fock Matrix:\n");
+    psi::fprintf(outfile, "\n\tAO-Basis Fock Matrix:\n");
     print_mat(F, nso, nso, outfile);
   */
 
@@ -567,7 +567,7 @@ void local_init(Options & options)
 	      0.0,&(St[0][0]),pairdom_len[ij]);
 
       /*
-	fprintf(outfile, "\n\tVirtual-Space Metric (S-tilde) for ij = %d:\n", ij);
+	psi::fprintf(outfile, "\n\tVirtual-Space Metric (S-tilde) for ij = %d:\n", ij);
 	print_mat(St, pairdom_len[ij], pairdom_len[ij], outfile);
       */
 
@@ -582,10 +582,10 @@ void local_init(Options & options)
       pairdom_nrlen[ij] = pairdom_len[ij]-cnt;
 
       /*
-	fprintf(outfile, "\n\tS-tilde eigenvalues for ij = %d:\n", ij);
-	for(i=0; i < pairdom_len[ij]; i++) fprintf(outfile, "\t%d %20.12f\n", i, evals[i]);
+	psi::fprintf(outfile, "\n\tS-tilde eigenvalues for ij = %d:\n", ij);
+	for(i=0; i < pairdom_len[ij]; i++) psi::fprintf(outfile, "\t%d %20.12f\n", i, evals[i]);
 
-	fprintf(outfile, "\n\tS-tilde eigenvectors for ij = %d:\n", ij);
+	psi::fprintf(outfile, "\n\tS-tilde eigenvectors for ij = %d:\n", ij);
 	print_mat(evecs,pairdom_len[ij],pairdom_len[ij],outfile);
       */
 
@@ -602,7 +602,7 @@ void local_init(Options & options)
 
 
       /*
-	fprintf(outfile, "\n\tTransform to non-redundant, projected virtuals (X-tilde) for ij = %d:\n", ij);
+	psi::fprintf(outfile, "\n\tTransform to non-redundant, projected virtuals (X-tilde) for ij = %d:\n", ij);
 	print_mat(Xt, pairdom_len[ij], pairdom_nrlen[ij], outfile);
       */
 
@@ -624,7 +624,7 @@ void local_init(Options & options)
 	      &(X[0][0]),nso,&(Xt[0][0]),pairdom_nrlen[ij],0.0,&(Fbar[0][0]),pairdom_nrlen[ij]);
 
       /*
-	fprintf(outfile, "\n\tFbar matrix for ij = %d:\n", ij);
+	psi::fprintf(outfile, "\n\tFbar matrix for ij = %d:\n", ij);
 	print_mat(Fbar,pairdom_nrlen[ij],pairdom_nrlen[ij],outfile);
       */
 
@@ -634,7 +634,7 @@ void local_init(Options & options)
       sq_rsp(pairdom_nrlen[ij],pairdom_nrlen[ij],Fbar,evals,1,evecs,1e-12);
 
       /*
-	fprintf(outfile, "\n\tFbar eigenvectors for ij = %d:\n", ij);
+	psi::fprintf(outfile, "\n\tFbar eigenvectors for ij = %d:\n", ij);
 	print_mat(evecs,pairdom_nrlen[ij],pairdom_nrlen[ij],outfile);
       */
 
@@ -646,7 +646,7 @@ void local_init(Options & options)
 
 
       /*
-	fprintf(outfile, "\n\tW Transformation Matrix for ij = %d:\n", ij);
+	psi::fprintf(outfile, "\n\tW Transformation Matrix for ij = %d:\n", ij);
 	print_mat(W,pairdom_len[ij],pairdom_nrlen[ij],outfile);
       */
 
@@ -656,9 +656,9 @@ void local_init(Options & options)
         eps_vir[ij][i] = evals[i]; /* virtual orbital energies */
 
       /*
-	fprintf(outfile, "\n\tVirtual orbital Energies for ij = %d:\n", ij);
+	psi::fprintf(outfile, "\n\tVirtual orbital Energies for ij = %d:\n", ij);
 	for(i=0; i < pairdom_nrlen[ij]; i++)
-	fprintf(outfile, "%d %20.12f\n", i, eps_vir[ij][i]);
+	psi::fprintf(outfile, "%d %20.12f\n", i, eps_vir[ij][i]);
       */
 
       free(evals);
@@ -693,7 +693,7 @@ void local_init(Options & options)
 
   local.weak_pair_energy = 0.0;
 
-  fprintf(outfile, "\tLocalization parameters ready.\n\n");
+  psi::fprintf(outfile, "\tLocalization parameters ready.\n\n");
   fflush(outfile);
 
   timer_off("Local");
@@ -728,7 +728,7 @@ void local_done(void)
   free(local.pairdom_nrlen);
   free(local.weak_pairs);
 
-  fprintf(outfile, "\tLocal parameters free.\n");
+  psi::fprintf(outfile, "\tLocal parameters free.\n");
 }
 
 void local_filter_T2(dpdbuf4 *T2)

@@ -79,7 +79,7 @@ void IWL::write_matrix(int ptr, int qtr, double **mat, int rfirst, int rlast,
                 }
 
                 if (printflag)
-                    fprintf(out, ">%d %d %d %d [%d] [%d] = %20.10f\n",
+                    psi::fprintf(out, ">%d %d %d %d [%d] [%d] = %20.10f\n",
                     ptr, qtr, rtr, str, ij, kl, value);
 
             } /* end if (fabs(value) > Buf->cutoff) ... */
@@ -130,7 +130,7 @@ void IWL::write_matrix2(int ptr, int qtr, double **mat, int rfirst, int rlast,
                 }
 
                 if (printflag)
-                    fprintf(out, ">%d %d %d %d [%d] [%d] = %20.10f\n",
+                    psi::fprintf(out, ">%d %d %d %d [%d] [%d] = %20.10f\n",
                     ptr, qtr, rtr, str, ij, kl, value);
             } /* end if (fabs(value) > Buf->cutoff) ... */
         } /* end loop over s */
@@ -209,7 +209,7 @@ void iwl_buf_wrt_mat(struct iwlbuf *Buf, int ptr, int qtr,
 	 }
 	 
 	 if (printflag)
-	   fprintf(out, ">%d %d %d %d [%d] [%d] = %20.10f\n",
+	   psi::fprintf(out, ">%d %d %d %d [%d] [%d] = %20.10f\n",
 		   ptr, qtr, rtr, str, ij, kl, value);
 	 
        } /* end if (fabs(value) > Buf->cutoff) ... */
@@ -271,7 +271,7 @@ void iwl_buf_wrt_mat2(struct iwlbuf *Buf, int ptr, int qtr,
 	 }
 	 
 	 if (printflag)
-	   fprintf(out, ">%d %d %d %d [%d] [%d] = %20.10f\n",
+	   psi::fprintf(out, ">%d %d %d %d [%d] [%d] = %20.10f\n",
 		   ptr, qtr, rtr, str, ij, kl, value);
 	 
        } /* end if (fabs(value) > Buf->cutoff) ... */

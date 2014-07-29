@@ -49,18 +49,18 @@ namespace psi { namespace findif {
 
 std::vector< SharedMatrix > fd_geoms_freq_0(Options &options, int freq_irrep_only) {
 
-  fprintf(outfile,"\n-------------------------------------------------------------\n\n");
+  psi::fprintf(outfile,"\n-------------------------------------------------------------\n\n");
 
-  fprintf(outfile,"  Using finite-differences of energies to determine vibrational frequencies and \n");
-  fprintf(outfile,"  normal modes.  Resulting frequencies are only valid at stationary points.\n");
+  psi::fprintf(outfile,"  Using finite-differences of energies to determine vibrational frequencies and \n");
+  psi::fprintf(outfile,"  normal modes.  Resulting frequencies are only valid at stationary points.\n");
 
   int pts = options.get_int("POINTS");
-  fprintf(outfile,"\tGenerating geometries for use with %d-point formula.\n", pts);
+  psi::fprintf(outfile,"\tGenerating geometries for use with %d-point formula.\n", pts);
   if (pts != 3 && pts != 5)
     throw PsiException("FINDIF: Invalid number of points!",__FILE__,__LINE__);
 
   double disp_size = options.get_double("DISP_SIZE");
-  fprintf(outfile,"\tDisplacement size will be %6.2e.\n", disp_size);
+  psi::fprintf(outfile,"\tDisplacement size will be %6.2e.\n", disp_size);
 
   const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
 
@@ -69,13 +69,13 @@ std::vector< SharedMatrix > fd_geoms_freq_0(Options &options, int freq_irrep_onl
   CdSalcList salc_list(mol, fact, 0xFF, true, true);
 
   int Natom = mol->natom();
-  fprintf(outfile,"\tNumber of atoms is %d.\n", Natom);
+  psi::fprintf(outfile,"\tNumber of atoms is %d.\n", Natom);
 
   int Nirrep = salc_list.nirrep();
-  fprintf(outfile,"\tNumber of irreps is %d.\n", Nirrep);
+  psi::fprintf(outfile,"\tNumber of irreps is %d.\n", Nirrep);
 
   int Nsalc_all = salc_list.ncd();
-  fprintf(outfile,"\tNumber of SALCS is %d.\n", Nsalc_all);
+  psi::fprintf(outfile,"\tNumber of SALCS is %d.\n", Nsalc_all);
 
   if (freq_irrep_only >= Nirrep || freq_irrep_only < -1)
     throw PsiException("FINDIF: Irrep value not in valid range.",__FILE__,__LINE__);
@@ -95,18 +95,18 @@ std::vector< SharedMatrix > fd_geoms_freq_0(Options &options, int freq_irrep_onl
   }
 
   // From now on in code, salcs_pi establishes the canonical order of SALCs and displacements
-  fprintf(outfile,"\t Number of SALC's per irrep:\n");
+  psi::fprintf(outfile,"\t Number of SALC's per irrep:\n");
   for (int h=0; h<Nirrep; ++h)
-    fprintf(outfile,"\t  Irrep %d: %d\n", h+1, (int) salcs_pi[h].size());
+    psi::fprintf(outfile,"\t  Irrep %d: %d\n", h+1, (int) salcs_pi[h].size());
 
   if (options.get_int("PRINT") > 1) {
-    fprintf(outfile,"\tIndex of active salcs per irrep:\n");
+    psi::fprintf(outfile,"\tIndex of active salcs per irrep:\n");
     for (int h=0; h<Nirrep; ++h) {
       if (salcs_pi[h].size()) {
-        fprintf(outfile, "\t  Irrep %d : ", h+1);
+        psi::fprintf(outfile, "\t  Irrep %d : ", h+1);
         for (int i=0; i<salcs_pi[h].size(); ++i)
-          fprintf(outfile," %d ", salcs_pi[h][i]);
-        fprintf(outfile, "\n");
+          psi::fprintf(outfile," %d ", salcs_pi[h][i]);
+        psi::fprintf(outfile, "\n");
       }
     }
   }
@@ -140,10 +140,10 @@ std::vector< SharedMatrix > fd_geoms_freq_0(Options &options, int freq_irrep_onl
   for (int h=0; h<Nirrep; ++h)
     Ndisp_all += Ndisp_pi[h];
 
-  fprintf(outfile,"\tNumber of geometries (including reference) is %d.\n", Ndisp_all);
-  fprintf(outfile,"\tNumber of displacements per irrep:\n");
+  psi::fprintf(outfile,"\tNumber of geometries (including reference) is %d.\n", Ndisp_all);
+  psi::fprintf(outfile,"\tNumber of displacements per irrep:\n");
   for (int h=0; h<Nirrep; ++h)
-    fprintf(outfile,"\t  Irrep %d: %d\n", h+1, Ndisp_pi[h]);
+    psi::fprintf(outfile,"\t  Irrep %d: %d\n", h+1, Ndisp_pi[h]);
 
   if (options.get_int("PRINT") > 2)
     for (int i=0; i<salc_list.ncd(); ++i)
@@ -264,7 +264,7 @@ std::vector< SharedMatrix > fd_geoms_freq_0(Options &options, int freq_irrep_onl
   // put reference geometry list in list
   disp_geoms.push_back(ref_geom);
 
-  fprintf(outfile,"\n-------------------------------------------------------------\n");
+  psi::fprintf(outfile,"\n-------------------------------------------------------------\n");
 
   return disp_geoms;
 }

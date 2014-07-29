@@ -47,7 +47,7 @@ void CCBLAS::zero(const char* cstr)
     CCMatrix* Matrix = get_Matrix(names[n]);
     Matrix->zero_matrix();
     DEBUGGING(5,
-      fprintf(outfile,"\n...setting %s to zero",names[n].c_str());
+      psi::fprintf(outfile,"\n...setting %s to zero",names[n].c_str());
     );
   }
 }
@@ -61,7 +61,7 @@ void CCBLAS::zero_right_four_diagonal(const char* cstr)
     CCMatrix* Matrix = get_Matrix(names[n]);
     Matrix->zero_right_four_diagonal();
     DEBUGGING(5,
-      fprintf(outfile,"\n...setting the right diagonal terms of %s to zero",names[n].c_str());
+      psi::fprintf(outfile,"\n...setting the right diagonal terms of %s to zero",names[n].c_str());
     );
   }
 }
@@ -75,7 +75,7 @@ void CCBLAS::zero_non_doubly_occupied(const char* cstr)
     CCMatrix* Matrix = get_Matrix(names[n]);
     Matrix->zero_non_doubly_occupied();
     DEBUGGING(5,
-      fprintf(outfile,"\n...setting the right diagonal terms of %s to zero",names[n].c_str());
+      psi::fprintf(outfile,"\n...setting the right diagonal terms of %s to zero",names[n].c_str());
     );
   }
 }
@@ -89,7 +89,7 @@ void CCBLAS::zero_non_external(const char* cstr)
     CCMatrix* Matrix = get_Matrix(names[n]);
     Matrix->zero_non_external();
     DEBUGGING(5,
-      fprintf(outfile,"\n...setting the right diagonal terms of %s to zero",names[n].c_str());
+      psi::fprintf(outfile,"\n...setting the right diagonal terms of %s to zero",names[n].c_str());
     );
   }
 }

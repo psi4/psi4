@@ -165,9 +165,9 @@ double ET_UHF_ABB(void)
 	}
 
   ffile(&ijkfile,"ijk.dat",0);
-  fprintf(ijkfile, "Spin Case: ABB\n");
-  fprintf(ijkfile, "Number of IJK combintions: %d\n", nijk);
-  fprintf(ijkfile, "\nCurrent IJK Combination:\n");
+  psi::fprintf(ijkfile, "Spin Case: ABB\n");
+  psi::fprintf(ijkfile, "Number of IJK combintions: %d\n", nijk);
+  psi::fprintf(ijkfile, "\nCurrent IJK Combination:\n");
   fflush(ijkfile);
 
   mijk = 0;
@@ -200,7 +200,7 @@ double ET_UHF_ABB(void)
 	      if(J > K) {
 
 		mijk++;
-		fprintf(ijkfile, "%d\n", mijk);
+		psi::fprintf(ijkfile, "%d\n", mijk);
 		fflush(ijkfile);
 
 		ij = EABints.params->rowidx[I][J];

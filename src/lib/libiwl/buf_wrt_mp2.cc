@@ -79,7 +79,7 @@ void IWL::write_mp2(int p, int q, int pq,
                 }
 
                 if(printflag)
-                    fprintf(out, "<%d %d %d %d [%d] [%d] = %20.10f\n",
+                    psi::fprintf(out, "<%d %d %d %d [%d] [%d] = %20.10f\n",
                     p, q, rnew, snew, pq, rs, value);
 
             } /* end if (fabs(value) > Buf->cutoff) ... */
@@ -147,7 +147,7 @@ void iwl_buf_wrt_mp2(struct iwlbuf *Buf, int p, int q, int pq, int pqsym,
 	 }
 	 
 	 if(printflag)
-	   fprintf(out, "<%d %d %d %d [%d] [%d] = %20.10f\n",
+	   psi::fprintf(out, "<%d %d %d %d [%d] [%d] = %20.10f\n",
 		   p, q, rnew, snew, pq, rs, value);
 	 
        } /* end if (fabs(value) > Buf->cutoff) ... */

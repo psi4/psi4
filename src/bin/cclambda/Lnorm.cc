@@ -106,7 +106,7 @@ void Lnorm(struct L_Params L_params)
 
   overlap = overlap0 + overlap1 + overlap2;
 
-  fprintf(outfile,"\n\tInitial  <L|R>  =     %15.10lf\n", overlap);
+  psi::fprintf(outfile,"\n\tInitial  <L|R>  =     %15.10lf\n", overlap);
 
   global_dpd_->file2_scm(&LIA, 1.0/overlap);
   global_dpd_->file2_scm(&Lia, 1.0/overlap);
@@ -114,11 +114,11 @@ void Lnorm(struct L_Params L_params)
   global_dpd_->buf4_scm(&Lijab, 1.0/overlap);
   global_dpd_->buf4_scm(&LIjAb, 1.0/overlap);
 
-  fprintf(outfile,"\tNormalizing L...\n");
-  fprintf(outfile,"\tL0 * R0 =     %15.10lf\n", overlap0/overlap);
-  fprintf(outfile,"\tL1 * R1 =     %15.10lf\n", overlap1/overlap);
-  fprintf(outfile,"\tL2 * R2 =     %15.10lf\n", overlap2/overlap);
-  fprintf(outfile,"\t <L|R>  =     %15.10lf\n", overlap/overlap);
+  psi::fprintf(outfile,"\tNormalizing L...\n");
+  psi::fprintf(outfile,"\tL0 * R0 =     %15.10lf\n", overlap0/overlap);
+  psi::fprintf(outfile,"\tL1 * R1 =     %15.10lf\n", overlap1/overlap);
+  psi::fprintf(outfile,"\tL2 * R2 =     %15.10lf\n", overlap2/overlap);
+  psi::fprintf(outfile,"\t <L|R>  =     %15.10lf\n", overlap/overlap);
 
   global_dpd_->file2_close(&LIA);
   global_dpd_->file2_close(&Lia);
@@ -127,7 +127,7 @@ void Lnorm(struct L_Params L_params)
   global_dpd_->buf4_close(&LIjAb);
 
   tval = pseudoenergy(L_params);
-  fprintf(outfile,"\tPseudoenergy or Norm of normalized L = %20.15lf\n",tval);
+  psi::fprintf(outfile,"\tPseudoenergy or Norm of normalized L = %20.15lf\n",tval);
 
   return;
 }

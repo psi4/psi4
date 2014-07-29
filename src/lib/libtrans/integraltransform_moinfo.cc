@@ -87,7 +87,7 @@ IntegralTransform::process_spaces()
     std::vector<shared_ptr<MOSpace> >::const_iterator space;
 
     //    for(int h = 0; h < _nirreps; ++h){
-    //        fprintf(outfile, "docc = %d socc = %d frzcpi = %d frvirt = %d, mopi = %d, sopi = %d\n",
+    //        psi::fprintf(outfile, "docc = %d socc = %d frzcpi = %d frvirt = %d, mopi = %d, sopi = %d\n",
     //                _clsdpi[h], _openpi[h], _frzcpi[h], _frzvpi[h], _mopi[h], _sopi[h]);fflush(outfile);
     //    }
 
@@ -281,15 +281,15 @@ IntegralTransform::process_spaces()
 
         if(print_ > 5){
             int nAOrbs = 0;
-            fprintf(outfile, "Adding arrays for space %c:-\n",moSpace->label());
-            fprintf(outfile, "\n\talpha orbsPI = ");
+            psi::fprintf(outfile, "Adding arrays for space %c:-\n",moSpace->label());
+            psi::fprintf(outfile, "\n\talpha orbsPI = ");
             for(int h = 0; h < nirreps_; nAOrbs += aOrbsPI[h], ++h)
-                fprintf(outfile, "%d ", aOrbsPI[h]);
-            fprintf(outfile, "\n\talpha orbSym = ");
-            for(int i = 0; i < nAOrbs; ++i) fprintf(outfile, "%d ", aOrbSym[i]);
-            fprintf(outfile, "\n\talpha Indexing Array = ");
-            for(int i = 0; i < nAOrbs; ++i) fprintf(outfile, "%d ", aIndex[i]);
-            fprintf(outfile, "\n\n");
+                psi::fprintf(outfile, "%d ", aOrbsPI[h]);
+            psi::fprintf(outfile, "\n\talpha orbSym = ");
+            for(int i = 0; i < nAOrbs; ++i) psi::fprintf(outfile, "%d ", aOrbSym[i]);
+            psi::fprintf(outfile, "\n\talpha Indexing Array = ");
+            for(int i = 0; i < nAOrbs; ++i) psi::fprintf(outfile, "%d ", aIndex[i]);
+            psi::fprintf(outfile, "\n\n");
         }
 
         spacesUsed_.push_back(toupper(moSpace->label()));
@@ -482,15 +482,15 @@ IntegralTransform::process_spaces()
             }
             if(print_ > 5){
                 int nAOrbs = 0, nBOrbs = 0;
-                fprintf(outfile, "Adding arrays for space %c:-\n",moSpace->label());
-                fprintf(outfile, "\n\tbeta orbsPI = ");
+                psi::fprintf(outfile, "Adding arrays for space %c:-\n",moSpace->label());
+                psi::fprintf(outfile, "\n\tbeta orbsPI = ");
                 for(int h = 0; h < nirreps_; nBOrbs += bOrbsPI[h], ++h)
-                    fprintf(outfile, "%d ", bOrbsPI[h]);
-                fprintf(outfile, "\n\tbeta orbSym  = ");
-                for(int i = 0; i < nBOrbs; ++i) fprintf(outfile, "%d ", bOrbSym[i]);
-                fprintf(outfile, "\n\tbeta Indexing Array  = ");
-                for(int i = 0; i < nBOrbs; ++i) fprintf(outfile, "%d ", bIndex[i]);
-                fprintf(outfile, "\n\n");
+                    psi::fprintf(outfile, "%d ", bOrbsPI[h]);
+                psi::fprintf(outfile, "\n\tbeta orbSym  = ");
+                for(int i = 0; i < nBOrbs; ++i) psi::fprintf(outfile, "%d ", bOrbSym[i]);
+                psi::fprintf(outfile, "\n\tbeta Indexing Array  = ");
+                for(int i = 0; i < nBOrbs; ++i) psi::fprintf(outfile, "%d ", bIndex[i]);
+                psi::fprintf(outfile, "\n\n");
             }
 
             spacesUsed_.push_back(tolower(moSpace->label()));
@@ -709,11 +709,11 @@ IntegralTransform::process_eigenvectors()
         bMOCoefficients_[moSpace->label()] = Cb;
 
         if(print_ > 5){
-            fprintf(outfile, "Orbitals for space %c:-\n",moSpace->label());
+            psi::fprintf(outfile, "Orbitals for space %c:-\n",moSpace->label());
             Ca->print();
             if (transformationType_ != Restricted)
                 Cb->print();
-            fprintf(outfile, "\n\n");
+            psi::fprintf(outfile, "\n\n");
         }
     }// End loop over spaces
 
@@ -727,8 +727,8 @@ void
 IntegralTransform::print_dpd_lookup()
 {
     std::map<std::string, int>::iterator iter;
-    fprintf(outfile, "The DPD mappings used in this transformation:-\n");
+    psi::fprintf(outfile, "The DPD mappings used in this transformation:-\n");
     for(iter = dpdLookup_.begin(); iter != dpdLookup_.end(); ++iter){
-        fprintf(outfile, "Pair %-10s ID = %d\n", iter->first.c_str(), iter->second);
+        psi::fprintf(outfile, "Pair %-10s ID = %d\n", iter->first.c_str(), iter->second);
     }
 }

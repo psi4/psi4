@@ -32,7 +32,7 @@
 #include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
 #include <boost/shared_ptr.hpp>
-
+#include "psi4-dec.h"
 using namespace psi;
 
 /* Definition of global data */
@@ -132,7 +132,7 @@ extern "C" {
                         boost::shared_ptr<Chkpt> temp(new Chkpt(_default_psio_lib_, status));
             _default_chkpt_lib_ = temp;
             if (_default_chkpt_lib_ == 0) {
-                fprintf(stderr, "LIBCHKPT::init() -- failed to allocate memory\n");
+                psi::fprintf(stderr, "LIBCHKPT::init() -- failed to allocate memory\n");
                 exit(PSI_RETURN_FAILURE);
             }
         }

@@ -68,7 +68,7 @@ int IWL::read_array2(double *ints, int *plist, int *qlist, int *rlist, int *slis
         *size= *size + 1;
 
         if (printflg) 
-            fprintf(out, "<%d %d %d %d [%d] = %20.10f\n", p, q, r, s,
+            psi::fprintf(out, "<%d %d %d %d [%d] = %20.10f\n", p, q, r, s,
             pq, value);
     } /*! end loop through current buffer */
 
@@ -94,7 +94,7 @@ int IWL::read_array2(double *ints, int *plist, int *qlist, int *rlist, int *slis
             *size = *size + 1;
 
             if (printflg) 
-                fprintf(out, "<%d %d %d %d [%d] = %20.10f\n", p, q, r, s,
+                psi::fprintf(out, "<%d %d %d %d [%d] = %20.10f\n", p, q, r, s,
                 pq, value);
         } /*! end loop through current buffer */
     } /*! end loop over reading buffers */
@@ -150,7 +150,7 @@ int iwl_buf_rd_arr2(struct iwlbuf *Buf, double *ints, int *plist,
     *size= *size + 1;
     
     if (printflg) 
-      fprintf(out, "<%d %d %d %d [%d] = %20.10f\n", p, q, r, s,
+      psi::fprintf(out, "<%d %d %d %d [%d] = %20.10f\n", p, q, r, s,
 	      pq, value);
     
   } /*! end loop through current buffer */
@@ -177,7 +177,7 @@ int iwl_buf_rd_arr2(struct iwlbuf *Buf, double *ints, int *plist,
       *size = *size + 1;
       
       if (printflg) 
-	fprintf(out, "<%d %d %d %d [%d] = %20.10f\n", p, q, r, s,
+	psi::fprintf(out, "<%d %d %d %d [%d] = %20.10f\n", p, q, r, s,
 		pq, value);
       
     } /*! end loop through current buffer */

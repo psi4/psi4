@@ -77,7 +77,7 @@ void distribute(void)
     /* Check integral into each class */
     classify(p,q,r,s,value,&ABuf,&BBuf,&CBuf,&DBuf,&EBuf,&FBuf);
 
-/*    fprintf(outfile, "(%d %d|%d %d) = %20.10lf\n", p, q, r, s, value);  */
+/*    psi::fprintf(outfile, "(%d %d|%d %d) = %20.10lf\n", p, q, r, s, value);  */
 
     } /* end loop through current buffer */
 
@@ -97,7 +97,7 @@ void distribute(void)
       /* Check integral into each class */
       classify(p,q,r,s,value,&ABuf,&BBuf,&CBuf,&DBuf,&EBuf,&FBuf);
 
-/*      fprintf(outfile, "(%d %d|%d %d) = %20.10lf\n", p, q, r, s, value); */
+/*      psi::fprintf(outfile, "(%d %d|%d %d) = %20.10lf\n", p, q, r, s, value); */
 
       } /* end loop through current buffer */
     } /* end loop over reading buffers */

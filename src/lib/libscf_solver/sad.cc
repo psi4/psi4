@@ -146,7 +146,7 @@ SharedMatrix SADGuess::form_D_AO()
     std::vector<boost::shared_ptr<BasisSet> > atomic_bases;
 
     if (print_ > 6) {
-        fprintf(outfile,"\n  Constructing atomic basis sets\n  Molecule:\n");
+        psi::fprintf(outfile,"\n  Constructing atomic basis sets\n  Molecule:\n");
         molecule_->print();
     }
 
@@ -154,11 +154,11 @@ SharedMatrix SADGuess::form_D_AO()
     for (int A = 0; A<molecule_->natom(); A++) {
         atomic_bases.push_back(basis_->atomic_basis_set(A));
         if (print_>6) {
-            fprintf(outfile,"  SAD: Atomic Basis Set %d\n", A);
+            psi::fprintf(outfile,"  SAD: Atomic Basis Set %d\n", A);
             atomic_bases[A]->molecule()->print();
-            fprintf(outfile,"\n");
+            psi::fprintf(outfile,"\n");
             atomic_bases[A]->print(outfile);
-            fprintf(outfile,"\n");
+            psi::fprintf(outfile,"\n");
         }
     }
 
@@ -176,7 +176,7 @@ SharedMatrix SADGuess::form_D_AO()
     const int MAX_Z = 86;
 
     if (print_>1)
-        fprintf(outfile,"  Determining Atomic Occupations\n");
+        psi::fprintf(outfile,"  Determining Atomic Occupations\n");
     for (int A = 0; A<molecule_->natom(); A++) {
         int Z = molecule_->Z(A);
         if (Z>MAX_Z) {
@@ -188,7 +188,7 @@ SharedMatrix SADGuess::form_D_AO()
         nbeta[A] = (nelec[A]-nhigh[A])/2;
         nalpha[A] = nelec[A]-nbeta[A];
         if (print_>1)
-            fprintf(outfile,"  Atom %d, Z = %d, nelec = %d, nhigh = %d, nalpha = %d, nbeta = %d\n",A,Z,nelec[A],nhigh[A],nalpha[A],nbeta[A]);
+            psi::fprintf(outfile,"  Atom %d, Z = %d, nelec = %d, nhigh = %d, nalpha = %d, nbeta = %d\n",A,Z,nelec[A],nhigh[A],nalpha[A],nbeta[A]);
     }
     fflush(outfile);
 
@@ -247,15 +247,15 @@ SharedMatrix SADGuess::form_D_AO()
     }
 
     if (print_ > 1)
-        fprintf(outfile,"\n  Performing Atomic UHF Computations:\n");
+        psi::fprintf(outfile,"\n  Performing Atomic UHF Computations:\n");
     for (int A = 0; A<nunique; A++) {
         int index = atomic_indices[A];
         if (print_ > 1)
-            fprintf(outfile,"\n  UHF Computation for Unique Atom %d which is Atom %d:",A, index);
+            psi::fprintf(outfile,"\n  UHF Computation for Unique Atom %d which is Atom %d:",A, index);
         getUHFAtomicDensity(atomic_bases[index],nelec[index],nhigh[index],atomic_D[A]);
     }
     if (print_)
-        fprintf(outfile,"\n");
+        psi::fprintf(outfile,"\n");
 
     fflush(outfile);
 
@@ -301,10 +301,10 @@ void SADGuess::getUHFAtomicDensity(boost::shared_ptr<BasisSet> bas, int nelec, i
     if (nalpha > norbs || nbeta > norbs) throw PSIEXCEPTION("Atom has more electrons than basis functions.");
 
     if (print_>1) {
-        fprintf(outfile,"\n");
+        psi::fprintf(outfile,"\n");
         bas->print(outfile);
-        fprintf(outfile,"  Occupation: nalpha = %d, nbeta = %d, norbs = %d\n",nalpha,nbeta,norbs);
-        fprintf(outfile,"\n  Atom:\n");
+        psi::fprintf(outfile,"  Occupation: nalpha = %d, nbeta = %d, norbs = %d\n",nalpha,nbeta,norbs);
+        psi::fprintf(outfile,"\n  Atom:\n");
         mol->print();
     }
 
@@ -340,7 +340,7 @@ void SADGuess::getUHFAtomicDensity(boost::shared_ptr<BasisSet> bas, int nelec, i
     double** S = S_UHF->to_block_matrix();
 
     if (print_>6) {
-        fprintf(outfile,"  S:\n");
+        psi::fprintf(outfile,"  S:\n");
         print_mat(S,norbs,norbs,outfile);
     }
     // S^{-1/2}
@@ -352,7 +352,7 @@ void SADGuess::getUHFAtomicDensity(boost::shared_ptr<BasisSet> bas, int nelec, i
     double* work = init_array(lwork);
     int stat = C_DSYEV('v','u',norbs,S[0],norbs,eigval, work,lwork);
     if (stat != 0) {
-        fprintf(outfile, "C_DSYEV failed\n");
+        psi::fprintf(outfile, "C_DSYEV failed\n");
         exit(PSI_RETURN_FAILURE);
     }
     free(work);
@@ -382,7 +382,7 @@ void SADGuess::getUHFAtomicDensity(boost::shared_ptr<BasisSet> bas, int nelec, i
     free_block(S_copy);
 
     if (print_>6) {
-        fprintf(outfile,"  S^-1/2:\n");
+        psi::fprintf(outfile,"  S^-1/2:\n");
         print_mat(Shalf,norbs,norbs,outfile);
     }
 
@@ -402,7 +402,7 @@ void SADGuess::getUHFAtomicDensity(boost::shared_ptr<BasisSet> bas, int nelec, i
     delete V_ints;
 
     if (print_>6) {
-        fprintf(outfile,"  H:\n");
+        psi::fprintf(outfile,"  H:\n");
         print_mat(H,norbs,norbs,outfile);
     }
 
@@ -414,19 +414,19 @@ void SADGuess::getUHFAtomicDensity(boost::shared_ptr<BasisSet> bas, int nelec, i
     C_DCOPY(norbs*norbs,Da[0],1,D[0],1);
     C_DAXPY(norbs*norbs,1.0,Db[0],1,D[0],1);
     if (print_>6) {
-        fprintf(outfile,"  Ca:\n");
+        psi::fprintf(outfile,"  Ca:\n");
         print_mat(Ca,norbs,norbs,outfile);
 
-        fprintf(outfile,"  Cb:\n");
+        psi::fprintf(outfile,"  Cb:\n");
         print_mat(Cb,norbs,norbs,outfile);
 
-        fprintf(outfile,"  Da:\n");
+        psi::fprintf(outfile,"  Da:\n");
         print_mat(Da,norbs,norbs,outfile);
 
-        fprintf(outfile,"  Db:\n");
+        psi::fprintf(outfile,"  Db:\n");
         print_mat(Db,norbs,norbs,outfile);
 
-        fprintf(outfile,"  D:\n");
+        psi::fprintf(outfile,"  D:\n");
         print_mat(D,norbs,norbs,outfile);
     }
 
@@ -448,8 +448,8 @@ void SADGuess::getUHFAtomicDensity(boost::shared_ptr<BasisSet> bas, int nelec, i
 
     bool converged = false;
     if (print_>1) {
-        fprintf(outfile, "\n  Initial Atomic UHF Energy:    %14.10f\n\n",E);
-        fprintf(outfile, "                                         Total Energy            Delta E              Density RMS\n\n");
+        psi::fprintf(outfile, "\n  Initial Atomic UHF Energy:    %14.10f\n\n",E);
+        psi::fprintf(outfile, "                                         Total Energy            Delta E              Density RMS\n\n");
         fflush(outfile);
     }
     do {
@@ -486,7 +486,7 @@ void SADGuess::getUHFAtomicDensity(boost::shared_ptr<BasisSet> bas, int nelec, i
         int ola = bas->shell(LA).function_index() + l;
         for (int s = 0; s < numSI; s++, index++) {
         int osi = bas->shell(SI).function_index() + s;
-             //fprintf(outfile,"  Integral (%d, %d| %d, %d) = %14.10f\n",omu,onu,ola,osi,buffer[index]);
+             //psi::fprintf(outfile,"  Integral (%d, %d| %d, %d) = %14.10f\n",omu,onu,ola,osi,buffer[index]);
              Ga[omu][onu] += D[ola][osi]*buffer[index];
              //Ga[ola][osi] += D[omu][onu]*buffer[index];
              Ga[omu][osi] -= Da[onu][ola]*buffer[index];
@@ -532,47 +532,47 @@ void SADGuess::getUHFAtomicDensity(boost::shared_ptr<BasisSet> bas, int nelec, i
         double deltaE = fabs(E-E_old);
 
         if (print_>6) {
-            fprintf(outfile,"  Fa:\n");
+            psi::fprintf(outfile,"  Fa:\n");
             print_mat(Fa,norbs,norbs,outfile);
 
-            fprintf(outfile,"  Fb:\n");
+            psi::fprintf(outfile,"  Fb:\n");
             print_mat(Fb,norbs,norbs,outfile);
 
-            fprintf(outfile,"  Ga:\n");
+            psi::fprintf(outfile,"  Ga:\n");
             print_mat(Ga,norbs,norbs,outfile);
 
-            fprintf(outfile,"  Gb:\n");
+            psi::fprintf(outfile,"  Gb:\n");
             print_mat(Gb,norbs,norbs,outfile);
 
-            fprintf(outfile,"  Ca:\n");
+            psi::fprintf(outfile,"  Ca:\n");
             print_mat(Ca,norbs,norbs,outfile);
 
-            fprintf(outfile,"  Cb:\n");
+            psi::fprintf(outfile,"  Cb:\n");
             print_mat(Cb,norbs,norbs,outfile);
 
-            fprintf(outfile,"  Da:\n");
+            psi::fprintf(outfile,"  Da:\n");
             print_mat(Da,norbs,norbs,outfile);
 
-            fprintf(outfile,"  Db:\n");
+            psi::fprintf(outfile,"  Db:\n");
             print_mat(Db,norbs,norbs,outfile);
 
-            fprintf(outfile,"  D:\n");
+            psi::fprintf(outfile,"  D:\n");
             print_mat(D,norbs,norbs,outfile);
         }
         if (print_>1)
-            fprintf(outfile, "  @Atomic UHF iteration %3d energy: %20.14f    %20.14f %20.14f\n", iteration, E, E-E_old, Drms);
+            psi::fprintf(outfile, "  @Atomic UHF iteration %3d energy: %20.14f    %20.14f %20.14f\n", iteration, E, E-E_old, Drms);
         if (iteration > 1 && deltaE < E_tol && Drms < D_tol)
             converged = true;
 
         if (iteration > maxiter) {
-            fprintf(outfile, "\n WARNING: Atomic UHF is not converging! Try casting from a smaller basis or call Rob at CCMST.\n");
+            psi::fprintf(outfile, "\n WARNING: Atomic UHF is not converging! Try casting from a smaller basis or call Rob at CCMST.\n");
             break;
         }
 
         //Check convergence
     } while (!converged);
     if (converged && print_ > 1)
-        fprintf(outfile, "  @Atomic UHF Final Energy for atom %s: %20.14f\n", mol->symbol(0).c_str(),E);
+        psi::fprintf(outfile, "  @Atomic UHF Final Energy for atom %s: %20.14f\n", mol->symbol(0).c_str(),E);
 
     delete TEI;
     free_block(Dold);
@@ -722,25 +722,25 @@ SharedMatrix HF::BasisProjection(SharedMatrix C_A, int* noccpi, boost::shared_pt
         double** Temp1 = block_matrix(nb,nocc);
         C_DGEMM('T','N',nb,nocc,na,1.0,Sab[0],nb,Ca[0],nocc,0.0,Temp1[0],nocc);
 
-        //fprintf(outfile," Temp1:\n");
+        //psi::fprintf(outfile," Temp1:\n");
         //print_mat(Temp1,nb,nocc,outfile);
 
         double** Temp2 = block_matrix(nb,nocc);
         C_DGEMM('N','N',nb,nocc,nb,1.0,Sbb[0],nb,Temp1[0],nocc,0.0,Temp2[0],nocc);
 
-        //fprintf(outfile," Temp2:\n");
+        //psi::fprintf(outfile," Temp2:\n");
         //print_mat(Temp2,nb,nocc,outfile);
 
         double** Temp3 = block_matrix(na,nocc);
         C_DGEMM('N','N',na,nocc,nb,1.0,Sab[0],nb,Temp2[0],nocc,0.0,Temp3[0],nocc);
 
-        //fprintf(outfile," Temp3:\n");
+        //psi::fprintf(outfile," Temp3:\n");
         //print_mat(Temp3,na,nocc,outfile);
 
         double** T = block_matrix(nocc,nocc);
         C_DGEMM('T','N',nocc,nocc,na,1.0,Ca[0],nocc,Temp3[0],nocc,0.0,T[0],nocc);
 
-        //fprintf(outfile," T:\n");
+        //psi::fprintf(outfile," T:\n");
         //print_mat(T,nocc,nocc,outfile);
 
         //Find T^-1/2
@@ -751,7 +751,7 @@ SharedMatrix HF::BasisProjection(SharedMatrix C_A, int* noccpi, boost::shared_pt
         double* work = init_array(lwork);
         int stat = C_DSYEV('v','u',nocc,T[0],nocc,eigval, work,lwork);
         if (stat != 0) {
-            fprintf(outfile, "C_DSYEV failed\n");
+            psi::fprintf(outfile, "C_DSYEV failed\n");
             exit(PSI_RETURN_FAILURE);
         }
         free(work);

@@ -34,7 +34,7 @@ namespace psi{ namespace occwave{
 
 void OCCWave::trans_ints_rmp2()
 {    
-    //fprintf(outfile,"\n trans_ints is starting... \n"); fflush(outfile);
+    //psi::fprintf(outfile,"\n trans_ints is starting... \n"); fflush(outfile);
 /********************************************************************************************/
 /************************** Transform 2-electron int. to MO space ***************************/
 /********************************************************************************************/  
@@ -87,14 +87,14 @@ void OCCWave::trans_ints_rmp2()
       denominators_rmp2();
       timer_off("Build Denominators");
       psio_->close(PSIF_LIBTRANS_DPD, 1);
-      //fprintf(outfile,"\n trans_ints done. \n"); fflush(outfile);
+      //psi::fprintf(outfile,"\n trans_ints done. \n"); fflush(outfile);
  
 }//
 
 
 void OCCWave::denominators_rmp2()
 {
-    //fprintf(outfile,"\n denominators is starting... \n"); fflush(outfile);
+    //psi::fprintf(outfile,"\n denominators is starting... \n"); fflush(outfile);
     dpdbuf4 D;
     dpdfile2 Fo,Fv;
     
@@ -115,15 +115,15 @@ void OCCWave::denominators_rmp2()
 
     //Print
     if(print_ > 1){
-      fprintf(outfile,"\n \n"); fflush(outfile);
+      psi::fprintf(outfile,"\n \n"); fflush(outfile);
       for(int i = 0; i<nacooA; i++) {
-	fprintf(outfile,"\taOccEvals[%1d]: %20.14f\n", i, aOccEvals[i]); 
+	psi::fprintf(outfile,"\taOccEvals[%1d]: %20.14f\n", i, aOccEvals[i]); 
 	fflush(outfile);
       }
       
-      fprintf(outfile,"\n \n"); fflush(outfile);
+      psi::fprintf(outfile,"\n \n"); fflush(outfile);
       for(int i = 0; i<nacvoA; i++) {
-	fprintf(outfile,"\taVirEvals[%1d]: %20.14f\n", i, aVirEvals[i]); 
+	psi::fprintf(outfile,"\taVirEvals[%1d]: %20.14f\n", i, aVirEvals[i]); 
 	fflush(outfile);
       }
     }
@@ -151,7 +151,7 @@ void OCCWave::denominators_rmp2()
     delete [] aOccEvals;
     delete [] aVirEvals;
 
-//fprintf(outfile,"\n denominators done. \n"); fflush(outfile);
+//psi::fprintf(outfile,"\n denominators done. \n"); fflush(outfile);
 }// end denominators
 }} // End Namespaces
 

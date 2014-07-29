@@ -49,7 +49,7 @@ namespace psi{ namespace psimrcc{
 #define START_TIMER(level,title)             \
   Timer timer;                               \
   if(debugging->is_level(level)){            \
-    fprintf(outfile,"\n  %-48s ...",title);  \
+    psi::fprintf(outfile,"\n  %-48s ...",title);  \
     fflush(outfile);                         \
   }
 #endif
@@ -59,7 +59,7 @@ namespace psi{ namespace psimrcc{
 #else
 #define END_TIMER(level)                                    \
   if(debugging->is_level(level)){                           \
-    fprintf(outfile," done. Timing %10.4f s",timer.get());  \
+    psi::fprintf(outfile," done. Timing %10.4f s",timer.get());  \
     fflush(outfile);                                        \
   }
 #endif

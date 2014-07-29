@@ -81,7 +81,7 @@ void diagSS(int C_irr) {
 
   range = eom_params.excitation_range;
   pf = eom_params.print_singles;
-  if (pf) fprintf(outfile,"\n\n");
+  if (pf) psi::fprintf(outfile,"\n\n");
 
   /* a bunch of tedious code to setup reasonable HOMO-LUMO guess vectors */
   C_index=0;
@@ -236,9 +236,9 @@ void diagSS(int C_irr) {
       }
     }
 
-   if (pf) fprintf(outfile,"%d initial single excitation guesses\n",C_index);
+   if (pf) psi::fprintf(outfile,"%d initial single excitation guesses\n",C_index);
    if (C_index == 0) {
-      fprintf(outfile, "No intial guesses obtained for %s state \n",
+      psi::fprintf(outfile, "No intial guesses obtained for %s state \n",
 	      moinfo.irr_labs[moinfo.sym^C_irr]);
       exit(1);
     }
@@ -266,7 +266,7 @@ void diagSS(int C_irr) {
   }
   */
   if (eom_params.skip_diagSS) {
-    fprintf(outfile,"\nSkipping diagonalization of Hbar SS block.\n");
+    psi::fprintf(outfile,"\nSkipping diagonalization of Hbar SS block.\n");
     return;
   }
 
@@ -293,9 +293,9 @@ void diagSS(int C_irr) {
   converged = init_int_array(i);
   lambda_old = init_array(i);
 
-  if (pf) fprintf(outfile,"\n");
+  if (pf) psi::fprintf(outfile,"\n");
   while ((keep_going == 1) && (iter < eom_params.max_iter_SS)) {
-    if (pf) fprintf(outfile,"Iter=%-4d L=%-4d", iter+1, L);
+    if (pf) psi::fprintf(outfile,"Iter=%-4d L=%-4d", iter+1, L);
     keep_going = 0;
     numCs = L;
     num_converged = 0;
@@ -376,7 +376,7 @@ void diagSS(int C_irr) {
     /*  eivout(alpha, lambda, L, L, outfile); */
     free_block(G);
 
-    if (pf) fprintf(outfile,
+    if (pf) psi::fprintf(outfile,
 		    "  Root    EOM Energy    Delta E     Res. Norm    Conv?\n");
     fflush(outfile);
 
@@ -417,12 +417,12 @@ void diagSS(int C_irr) {
       else 
         norm = norm_C1(&RIA, &Ria);
 
-      if (pf) fprintf(outfile,"%6d%15.10lf%11.2e%12.2e",k+1,lambda[k],
+      if (pf) psi::fprintf(outfile,"%6d%15.10lf%11.2e%12.2e",k+1,lambda[k],
 		      lambda[k]-lambda_old[k], norm); 
 
       if ( (norm > eom_params.residual_tol_SS) ||
 	   (fabs(lambda[k]-lambda_old[k]) > eom_params.eval_tol_SS) ) {
-        if (pf) fprintf(outfile,"%7s\n","N");
+        if (pf) psi::fprintf(outfile,"%7s\n","N");
 	/*
 	  if (params.eom_ref == 0) precondition_SS_RHF(&RIA, lambda[k]);
 	  else precondition_SS(&RIA, &Ria, lambda[k]);
@@ -443,7 +443,7 @@ void diagSS(int C_irr) {
         else schmidt_add_SS(&RIA, &Ria, C_irr, &numCs);
       }
       else {
-        if (pf) fprintf(outfile,"%7s\n","Y");
+        if (pf) psi::fprintf(outfile,"%7s\n","Y");
         ++num_converged;
         converged[k] = 1;
       }
@@ -473,11 +473,11 @@ void diagSS(int C_irr) {
     ++iter;
   }
 
-  if (pf) fprintf(outfile,"\nLowest eigenvalues of HBar Singles-Singles Block\n");
-  if (pf) fprintf(outfile,"Root      Excitation Energy         Total Energy\n");
-  if (pf) fprintf(outfile,"           (eV)     (cm^-1)            (au)\n");
+  if (pf) psi::fprintf(outfile,"\nLowest eigenvalues of HBar Singles-Singles Block\n");
+  if (pf) psi::fprintf(outfile,"Root      Excitation Energy         Total Energy\n");
+  if (pf) psi::fprintf(outfile,"           (eV)     (cm^-1)            (au)\n");
   if (pf) for (i=0;i<num_roots;++i)
-    if (pf)   fprintf(outfile,"%4d%12.3lf%12.2lf%20.10lf\n",i+1,
+    if (pf)   psi::fprintf(outfile,"%4d%12.3lf%12.2lf%20.10lf\n",i+1,
 		      lambda_old[i]* pc_hartree2ev, lambda_old[i]* pc_hartree2wavenumbers,
 		      lambda_old[i]+moinfo.eref+moinfo.ecc);
 
@@ -486,7 +486,7 @@ void diagSS(int C_irr) {
   /* collapse solutions to one vector each */
   restart_SS(alpha, L, eom_params.cs_per_irrep[C_irr], C_irr);
   free_block(alpha);
-  if (pf) fprintf(outfile,"\n");
+  if (pf) psi::fprintf(outfile,"\n");
   fflush(outfile);
 
   return;
@@ -594,7 +594,7 @@ void precondition_SS_RHF(dpdfile2 *RIA, double eval)
       ii = i * nocc +i;
 
       if(!local.pairdom_len[ii]) {
-	fprintf(outfile, "\n\tlocal_filter_T1: Pair ii = [%d] is zero-length, which makes no sense.\n",ii);
+	psi::fprintf(outfile, "\n\tlocal_filter_T1: Pair ii = [%d] is zero-length, which makes no sense.\n",ii);
 	exit(2);
       }
 

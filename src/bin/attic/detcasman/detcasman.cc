@@ -133,15 +133,15 @@ int main(int argc, char *argv[])
     converged = system("detcas --quiet");
   }
 
-  fprintf(outfile,"\n");
-  fprintf(outfile,"*******************************************************\n");
+  psi::fprintf(outfile,"\n");
+  psi::fprintf(outfile,"*******************************************************\n");
 
   if (converged) {
-    fprintf(outfile,"                  ORBITALS CONVERGED\n");
-    fprintf(outfile,"\n  * %s total energy = %17.12lf\n", wfn, energy_last);
+    psi::fprintf(outfile,"                  ORBITALS CONVERGED\n");
+    psi::fprintf(outfile,"\n  * %s total energy = %17.12lf\n", wfn, energy_last);
   }
   else
-    fprintf(outfile,"               ORBITALS DID NOT CONVERGE\n");
+    psi::fprintf(outfile,"               ORBITALS DID NOT CONVERGE\n");
 
   if (converged) {
     sprintf(rmstring, "rm -f %s.%s %s.%s %s.%s", psi_file_prefix, "diis.dat",
@@ -161,24 +161,24 @@ namespace psi { namespace detcasman {
 */
 void title(void)
 {
-  fprintf(outfile,"\n");
-  fprintf(outfile,"*******************************************************\n");
-  fprintf(outfile,"                   D E T C A S M A N\n");
-  fprintf(outfile,"\n");
-  fprintf(outfile,"                   C. David Sherrill\n") ;
-  fprintf(outfile,"                    October 7 1998\n") ;
-  fprintf(outfile,"*******************************************************\n");
-  fprintf(outfile,"\n\n\n");
+  psi::fprintf(outfile,"\n");
+  psi::fprintf(outfile,"*******************************************************\n");
+  psi::fprintf(outfile,"                   D E T C A S M A N\n");
+  psi::fprintf(outfile,"\n");
+  psi::fprintf(outfile,"                   C. David Sherrill\n") ;
+  psi::fprintf(outfile,"                    October 7 1998\n") ;
+  psi::fprintf(outfile,"*******************************************************\n");
+  psi::fprintf(outfile,"\n\n\n");
   fflush(outfile);
 }
 
 
 void quote(void)
 {
-  fprintf(outfile,"\n");
-  fprintf(outfile,"                DETCAS MANAGER EXITING\n");
-  fprintf(outfile,"*******************************************************\n");
-  fprintf(outfile,"\n\n\n");
+  psi::fprintf(outfile,"\n");
+  psi::fprintf(outfile,"                DETCAS MANAGER EXITING\n");
+  psi::fprintf(outfile,"*******************************************************\n");
+  psi::fprintf(outfile,"\n\n\n");
   fflush(outfile);
 }
 
@@ -202,7 +202,7 @@ double calc_ci_conv(double scale_conv, double *energy_last)
   }
 
   if (fscanf(sumfile, "%d", &entries) != 1) {
-    fprintf(outfile,"detcasman: Trouble reading num entries in file %s\n",
+    psi::fprintf(outfile,"detcasman: Trouble reading num entries in file %s\n",
             sumfile_name);
     fclose(sumfile);
     return(scale_conv * 0.1);
@@ -221,7 +221,7 @@ double calc_ci_conv(double scale_conv, double *energy_last)
 }
 
 void print_mos_aobasis(void) {
-  fprintf(outfile,"In print_mos_aobasis.\n");
+  psi::fprintf(outfile,"In print_mos_aobasis.\n");
   chkpt_init(PSIO_OPEN_OLD);
   double** usotbf = chkpt_rd_usotbf();
   const int num_bf = chkpt_rd_nso();
@@ -243,7 +243,7 @@ void print_mos_aobasis(void) {
       double** mo_coeffs_bf = block_matrix(num_bf,num_mo);
       mmult(usotbf_blk,1,mo_coeffs_blk,0,mo_coeffs_bf,0,num_bf,num_so,num_mo,0);
       
-      fprintf(outfile, "\n\tCASSCF MO vectors for irrep %s\n", 
+      psi::fprintf(outfile, "\n\tCASSCF MO vectors for irrep %s\n", 
                       irrep_labels[h]);
       print_mat(mo_coeffs_bf, num_bf, num_mo, outfile);
       free_block(mo_coeffs_blk);

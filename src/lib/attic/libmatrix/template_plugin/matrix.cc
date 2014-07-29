@@ -62,7 +62,7 @@ PsiReturnType template_plugin(Options& options)
     molecule->print();
     int nbf[] = { aoBasis->nbf() };
     double nucrep = molecule->nuclear_repulsion_energy();
-    fprintf(outfile, "\n    Nuclear repulsion energy: %16.8f\n\n", nucrep);
+    psi::fprintf(outfile, "\n    Nuclear repulsion energy: %16.8f\n\n", nucrep);
 
     // The matrix factory can create matrices of the correct dimensions...
     boost::shared_ptr<MatrixFactory> factory(new MatrixFactory);

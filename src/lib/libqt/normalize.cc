@@ -76,10 +76,10 @@ void normalize(double **A, int rows, int cols) ;
    mat[2][0] = 0.0 ; mat[2][1] = 0.0 ; mat[2][2] = 0.5 ;
 
    ffile(&outfile, "output.dat", 0) ;
-   fprintf(outfile, "Matrix before normalization process\n") ;
+   psi::fprintf(outfile, "Matrix before normalization process\n") ;
    print_mat(mat,3,3,outfile) ;
    normalize(mat,3,3) ;
-   fprintf(outfile, "\nMatrix after normalization process\n") ;
+   psi::fprintf(outfile, "\nMatrix after normalization process\n") ;
    print_mat(mat,3,3,outfile) ;
 
    free_matrix(mat,3) ;

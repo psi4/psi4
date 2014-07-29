@@ -59,7 +59,7 @@ FittingMetric::FittingMetric()
     boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
 
     if (molecule.get() == 0) {
-        fprintf(outfile, "  Active molecule not set!");
+        psi::fprintf(outfile, "  Active molecule not set!");
         throw PSIEXCEPTION("Active molecule not set!");
     }
 

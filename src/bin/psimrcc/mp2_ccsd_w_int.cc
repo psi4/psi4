@@ -47,7 +47,7 @@ void MP2_CCSD::build_W_mNiJ_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the W_mNiJ Intermediates ...");
+    psi::fprintf(outfile,"\n\tBuilding the W_mNiJ Intermediates ...");
     fflush(outfile);
   );
 
@@ -62,7 +62,7 @@ void MP2_CCSD::build_W_mNiJ_intermediates()
   DEBUGGING(3,blas->print("W_mNiJ[oO][aA]{u}"););
 
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
+    psi::fprintf(outfile," done. Timing %20.6f s",timer.get());
     fflush(outfile);
   );
 }
@@ -71,7 +71,7 @@ void MP2_CCSD::build_W_jbme_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the W_jbme Intermediates ...");
+    psi::fprintf(outfile,"\n\tBuilding the W_jbme Intermediates ...");
     fflush(outfile);
   );
 
@@ -102,7 +102,7 @@ void MP2_CCSD::build_W_jbme_intermediates()
   // 
 
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
+    psi::fprintf(outfile," done. Timing %20.6f s",timer.get());
     fflush(outfile);
   );
 }
@@ -111,7 +111,7 @@ void MP2_CCSD::build_W_jBmE_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the W_jBmE Intermediates ...");
+    psi::fprintf(outfile,"\n\tBuilding the W_jBmE Intermediates ...");
     fflush(outfile);
   );
 
@@ -135,7 +135,7 @@ void MP2_CCSD::build_W_jBmE_intermediates()
   );
 
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
+    psi::fprintf(outfile," done. Timing %20.6f s",timer.get());
     fflush(outfile);
   );
 }
@@ -144,7 +144,7 @@ void MP2_CCSD::build_W_jbME_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the W_jbME Intermediates ...");
+    psi::fprintf(outfile,"\n\tBuilding the W_jbME Intermediates ...");
     fflush(outfile);
   );
 
@@ -171,7 +171,7 @@ void MP2_CCSD::build_W_jbME_intermediates()
     blas->print("W_jbME[aa][OV]{u}");
   );
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
+    psi::fprintf(outfile," done. Timing %20.6f s",timer.get());
     fflush(outfile);
   );
 }

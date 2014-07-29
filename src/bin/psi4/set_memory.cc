@@ -43,10 +43,10 @@ void set_memory(FILE *outfile)
     maxcrr = DEF_MAXCRR; // set to default
 
     if (maxcrr < 1e9) {
-       fprintf(outfile,"    Memory level set to %.3lf MB\n", maxcrr / 1e6 );
+       psi::fprintf(outfile,"    Memory level set to %.3lf MB\n", maxcrr / 1e6 );
     }
     else {
-        fprintf(outfile,"    Memory level set to %.3lf GB\n", maxcrr / 1e9 );
+        psi::fprintf(outfile,"    Memory level set to %.3lf GB\n", maxcrr / 1e9 );
     }
 
     Process::environment.set_memory(maxcrr);

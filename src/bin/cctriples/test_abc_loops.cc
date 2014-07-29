@@ -161,7 +161,7 @@ void test_abc_loops_AAA() {
       }
     }
   }
-  fprintf(outfile, "\tE(T) AAA from Andy's code = %20.15f\n", ET/36.0);
+  psi::fprintf(outfile, "\tE(T) AAA from Andy's code = %20.15f\n", ET/36.0);
   global_dpd_->buf4_close(&EAAints);
   global_dpd_->buf4_close(&FAAints);
   global_dpd_->buf4_close(&T2AA);
@@ -281,7 +281,7 @@ void test_abc_loops_BBB() {
       }
     }
   }
-  fprintf(outfile, "\tE(T) BBB from Andy's code = %20.15f\n", ET/36.0);
+  psi::fprintf(outfile, "\tE(T) BBB from Andy's code = %20.15f\n", ET/36.0);
   global_dpd_->buf4_close(&EBBints);
   global_dpd_->buf4_close(&FBBints);
   global_dpd_->buf4_close(&T2BB);
@@ -402,7 +402,7 @@ void test_abc_loops_AAB() {
                       denom += fIJ.matrix[Gj][j][j];
                     if (fij.params->rowtot[Gk])
                       denom += fij.matrix[Gk][k][k];
-                    //							  fprintf(outfile, "%d,%d,%d,%d,%d,%d = %20.12f\n",I,J,K,A,B,C,VIJk[Gij][ij][k]);
+                    //							  psi::fprintf(outfile, "%d,%d,%d,%d,%d,%d = %20.12f\n",I,J,K,A,B,C,VIJk[Gij][ij][k]);
 
 
                     ET += WIJk[Gij][ij][k] * (WIJk[Gij][ij][k]
@@ -428,7 +428,7 @@ void test_abc_loops_AAB() {
     }
   }
 
-  fprintf(outfile, "\tE(T) AAB from Andy's code = %20.15f\n", ET/4.0);
+  psi::fprintf(outfile, "\tE(T) AAB from Andy's code = %20.15f\n", ET/4.0);
   global_dpd_->file2_close(&fij);
   global_dpd_->file2_close(&fIJ);
   global_dpd_->file2_close(&fab);
@@ -561,7 +561,7 @@ void test_abc_loops_BBA() {
                       denom += fij.matrix[Gj][j][j];
                     if (fIJ.params->rowtot[Gk])
                       denom += fIJ.matrix[Gk][k][k];
-                    //							  fprintf(outfile, "%d,%d,%d,%d,%d,%d = %20.12f\n",I,J,K,A,B,C,VIJk[Gij][ij][k]);
+                    //							  psi::fprintf(outfile, "%d,%d,%d,%d,%d,%d = %20.12f\n",I,J,K,A,B,C,VIJk[Gij][ij][k]);
 
 
                     ET += WijK[Gij][ij][k] * (WijK[Gij][ij][k]
@@ -587,7 +587,7 @@ void test_abc_loops_BBA() {
     }
   }
 
-  fprintf(outfile, "\tE(T) BBA from Andy's code = %20.15f\n", ET/4.0);
+  psi::fprintf(outfile, "\tE(T) BBA from Andy's code = %20.15f\n", ET/4.0);
   global_dpd_->file2_close(&fij);
   global_dpd_->file2_close(&fIJ);
   global_dpd_->file2_close(&fab);

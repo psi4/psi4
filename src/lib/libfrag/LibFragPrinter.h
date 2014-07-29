@@ -16,7 +16,7 @@ class LibFragPrinter{
 		int me;
 	public:
 		LibFragPrinter(const int I=psi::WorldComm->me()):me(I){}
-		void print(const std::string& message){if(me==0){fprintf(psi::outfile,message.c_str());}}
+		void print(const std::string& message){if(me==0){psi::fprintf(psi::outfile,message.c_str());}}
 };
 
 

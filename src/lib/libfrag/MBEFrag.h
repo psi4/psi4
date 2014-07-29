@@ -8,6 +8,7 @@
 #ifndef MBEFRAG_H_
 #define MBEFRAG_H_
 #include "AtomSet.h"
+#include "psi4-dec.h"
 #include <vector>
 namespace LibFrag{
 
@@ -30,6 +31,9 @@ class MBEFrag: public AtomSet{
 		   for(int i=0;i<MBEOrder;i++)Parents.push_back(Ps[i]);
 		}
 
+		void PrintParents(){
+		   for(int i=0;i<MBEOrder;i++)psi::fprintf(psi::outfile,"%d ",Parents[i]);
+		}
 		MBEFrag(const int MBEOrder_=0,const int *Parents_=NULL):
 			MBEOrder(MBEOrder_){if(Parents_!=NULL)SetParents(Parents_);}
 

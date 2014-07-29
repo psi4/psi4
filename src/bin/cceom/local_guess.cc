@@ -118,10 +118,10 @@ void local_guess(void)
   T1bar = init_array(nso);
   T1tilde = init_array(nso);
 
-  fprintf(outfile, "\n\tTransitions for local guesses:\n");
-  fprintf(outfile,   "\t------------------------------\n");
+  psi::fprintf(outfile, "\n\tTransitions for local guesses:\n");
+  psi::fprintf(outfile,   "\t------------------------------\n");
   for(m=0; m < nroot; m++) {
-    fprintf(outfile, "\t%3d %3d %14.10f\n", stack[m].i, stack[m].a, stack[m].value);
+    psi::fprintf(outfile, "\t%3d %3d %14.10f\n", stack[m].i, stack[m].a, stack[m].value);
 
     memset((void *) T1bar, 0, nso*sizeof(double));
     memset((void *) T1tilde, 0, nso*sizeof(double));
@@ -148,7 +148,7 @@ void local_guess(void)
       norm += CME.matrix[0][i][a] * CME.matrix[0][i][a];
     }
     norm = sqrt(2.0 * norm);
-    fprintf(outfile, "Norm of guess vector %d = %20.14f\n", m, norm);
+    psi::fprintf(outfile, "Norm of guess vector %d = %20.14f\n", m, norm);
     for(a=0; a < nvir; a++) {
       CME.matrix[0][i][a] *= 1.0/norm;
     }
@@ -159,7 +159,7 @@ void local_guess(void)
     global_dpd_->file2_close(&CME);
   }
 
-  fprintf(outfile, "\n");
+  psi::fprintf(outfile, "\n");
 
   free(T1bar);
   free(T1tilde);

@@ -130,11 +130,11 @@ double lagcalc(double **OPDM, double *TPDM, double *h, double *TwoElec,
     nmo*nmo*sizeof(double));
 
   if (print_lvl > 1) {
-    fprintf(outfile,"\n\n One-electron part of the Lagrangian");
+    psi::fprintf(outfile,"\n\n One-electron part of the Lagrangian");
     print_mat(oe_lag, nmo, nmo, outfile);
-    fprintf(outfile,"\n\n Two-electron part of the Lagrangian");
+    psi::fprintf(outfile,"\n\n Two-electron part of the Lagrangian");
     print_mat(te_lag, nmo, nmo, outfile);
-    fprintf(outfile,"\nLagrangian Matrix\n\n");
+    psi::fprintf(outfile,"\nLagrangian Matrix\n\n");
     print_mat(lag, nmo, nmo, outfile);
     }
 

@@ -236,17 +236,17 @@ void RKSFunctions::print(FILE* out, int print) const
         ans = "Meta-GGA";
     }
 
-    fprintf(out, "   => RKSFunctions: %s Ansatz <=\n\n", ans.c_str());
+    psi::fprintf(out, "   => RKSFunctions: %s Ansatz <=\n\n", ans.c_str());
 
-    fprintf(out, "    Point Values:\n");
+    psi::fprintf(out, "    Point Values:\n");
     for (std::map<std::string, boost::shared_ptr<Vector> >::const_iterator it = point_values_.begin();
         it != point_values_.end(); it++) {
-        fprintf(out, "    %s\n", (*it).first.c_str());
+        psi::fprintf(out, "    %s\n", (*it).first.c_str());
         if (print > 3) {
             (*it).second->print();
         }
     }
-    fprintf(out,"\n\n");
+    psi::fprintf(out,"\n\n");
 
     BasisFunctions::print(out,print);
 }
@@ -519,17 +519,17 @@ void UKSFunctions::print(FILE* out, int print) const
         ans = "Meta-GGA";
     }
 
-    fprintf(out, "   => UKSFunctions: %s Ansatz <=\n\n", ans.c_str());
+    psi::fprintf(out, "   => UKSFunctions: %s Ansatz <=\n\n", ans.c_str());
 
-    fprintf(out, "    Point Values:\n");
+    psi::fprintf(out, "    Point Values:\n");
     for (std::map<std::string, boost::shared_ptr<Vector> >::const_iterator it = point_values_.begin();
         it != point_values_.end(); it++) {
-        fprintf(out, "    %s\n", (*it).first.c_str());
+        psi::fprintf(out, "    %s\n", (*it).first.c_str());
         if (print > 3) {
             (*it).second->print();
         }
     }
-    fprintf(out,"\n\n");
+    psi::fprintf(out,"\n\n");
 
     BasisFunctions::print(out,print);
 }
@@ -1001,17 +1001,17 @@ void BasisFunctions::compute_functions(boost::shared_ptr<BlockOPoints> block)
 }
 void BasisFunctions::print(FILE* out, int print) const
 {
-    fprintf(out, "   => BasisFunctions: Derivative = %d, Max Points = %d <=\n\n", deriv_, max_points_);
+    psi::fprintf(out, "   => BasisFunctions: Derivative = %d, Max Points = %d <=\n\n", deriv_, max_points_);
 
-    fprintf(out, "    Basis Values:\n");
+    psi::fprintf(out, "    Basis Values:\n");
     for (std::map<std::string, SharedMatrix >::const_iterator it = basis_values_.begin();
         it != basis_values_.end(); it++) {
-        fprintf(out, "    %s\n", (*it).first.c_str());
+        psi::fprintf(out, "    %s\n", (*it).first.c_str());
         if (print > 3) {
             (*it).second->print();
         }
     }
-    fprintf(out,"\n\n");
+    psi::fprintf(out,"\n\n");
 }
 
 } // Namespace psi

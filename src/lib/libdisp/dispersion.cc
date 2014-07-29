@@ -186,23 +186,23 @@ void Dispersion::print(FILE* out, int level) const
 {
     if (level < 1) return;
 
-    fprintf(out, "   => %s: Empirical Dispersion <=\n\n", name_.c_str());
+    psi::fprintf(out, "   => %s: Empirical Dispersion <=\n\n", name_.c_str());
 
-    fprintf(out, "%s", description_.c_str());
-    fprintf(out, "\n");
+    psi::fprintf(out, "%s", description_.c_str());
+    psi::fprintf(out, "\n");
 
-    fprintf(out, "%s", citation_.c_str());
-    fprintf(out, "\n");
+    psi::fprintf(out, "%s", citation_.c_str());
+    psi::fprintf(out, "\n");
 
-    fprintf(out, "    S6  = %14.6E\n", s6_);
-    if ((name_ == "-D3ZERO") || (name_ == "-D3BJ")) { fprintf(out, "    S8  = %14.6E\n", s8_); }
-    if (name_ == "-D3ZERO") { fprintf(out, "    SR6 = %14.6E\n", sr6_); }
-    if (name_ == "-D3BJ") { fprintf(out, "    A1  = %14.6E\n", a1_); }
-    if (name_ == "-D3BJ") { fprintf(out, "    A2  = %14.6E\n", a2_); }
+    psi::fprintf(out, "    S6  = %14.6E\n", s6_);
+    if ((name_ == "-D3ZERO") || (name_ == "-D3BJ")) { psi::fprintf(out, "    S8  = %14.6E\n", s8_); }
+    if (name_ == "-D3ZERO") { psi::fprintf(out, "    SR6 = %14.6E\n", sr6_); }
+    if (name_ == "-D3BJ") { psi::fprintf(out, "    A1  = %14.6E\n", a1_); }
+    if (name_ == "-D3BJ") { psi::fprintf(out, "    A2  = %14.6E\n", a2_); }
     if ((name_ == "-D1") || (name_ == "-D2") || (name_ == "-CHG") || (name_ == "-D2GR") || (name_ == "-D3ZERO")) {
-        fprintf(out, "    A6  = %14.6E\n", d_);
+        psi::fprintf(out, "    A6  = %14.6E\n", d_);
     }
-    fprintf(out, "\n");
+    psi::fprintf(out, "\n");
 }
 std::string Dispersion::print_energy(boost::shared_ptr<Molecule> m)
 {

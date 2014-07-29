@@ -143,7 +143,7 @@ StockholderDensity::~StockholderDensity()
 }
 void StockholderDensity::print_header() const 
 {
-    fprintf(outfile,"  ==> Stockholder Atomic Densities <==\n\n");
+    psi::fprintf(outfile,"  ==> Stockholder Atomic Densities <==\n\n");
     molecule_->print();
     primary_->print();
     grid_->print();
@@ -182,7 +182,7 @@ void StockholderDensity::compute(boost::shared_ptr<Matrix> D)
     double* wp = w_->pointer();
     double* rhop = rho_->pointer();
 
-    //fprintf(outfile,"  Electron count is %24.16E\n", C_DDOT(nP,wp,1,rhop,1));
+    //psi::fprintf(outfile,"  Electron count is %24.16E\n", C_DDOT(nP,wp,1,rhop,1));
 
     const std::vector<boost::shared_ptr<RadialGrid> >& rads = grid_->radial_grids();
     const std::vector<std::vector<boost::shared_ptr<SphericalGrid> > >& spheres = grid_->spherical_grids();
@@ -272,14 +272,14 @@ void StockholderDensity::compute(boost::shared_ptr<Matrix> D)
 
     // => Master Loop <= //
 
-    fprintf(outfile, "   > ISA Iterations <\n\n");
-    fprintf(outfile, "    Convergence:        %11.3E\n", convergence_);
-    fprintf(outfile, "    Maximum iterations: %11d\n", maxiter_);   
-    fprintf(outfile, "    DIIS:               %11s\n", (diis_ ? "Yes" : "No"));
-    fprintf(outfile, "    DIIS Min Vecs:      %11d\n", diis_min_vecs_);
-    fprintf(outfile, "    DIIS Max Vecs:      %11d\n", diis_max_vecs_);
-    fprintf(outfile, "    DIIS Flush Vecs:    %11d\n", diis_flush_);
-    fprintf(outfile, "\n");
+    psi::fprintf(outfile, "   > ISA Iterations <\n\n");
+    psi::fprintf(outfile, "    Convergence:        %11.3E\n", convergence_);
+    psi::fprintf(outfile, "    Maximum iterations: %11d\n", maxiter_);   
+    psi::fprintf(outfile, "    DIIS:               %11s\n", (diis_ ? "Yes" : "No"));
+    psi::fprintf(outfile, "    DIIS Min Vecs:      %11d\n", diis_min_vecs_);
+    psi::fprintf(outfile, "    DIIS Max Vecs:      %11d\n", diis_max_vecs_);
+    psi::fprintf(outfile, "    DIIS Flush Vecs:    %11d\n", diis_flush_);
+    psi::fprintf(outfile, "\n");
     fflush(outfile);
 
     bool converged = false;
@@ -343,12 +343,12 @@ void StockholderDensity::compute(boost::shared_ptr<Matrix> D)
         }
 
         // Print iterative trace
-        fprintf(outfile,"    @ISA Iter %4d %24.16E ", iter, norm);
+        psi::fprintf(outfile,"    @ISA Iter %4d %24.16E ", iter, norm);
         fflush(outfile);
 
         // Convergence check
         if (norm < convergence_) { 
-            fprintf(outfile,"\n");
+            psi::fprintf(outfile,"\n");
             converged = true;
             break; 
         }
@@ -385,21 +385,21 @@ void StockholderDensity::compute(boost::shared_ptr<Matrix> D)
                     offset2++;
                 }
             }
-            fprintf(outfile,"DIIS");
+            psi::fprintf(outfile,"DIIS");
         }
 
-        fprintf(outfile,"\n");
+        psi::fprintf(outfile,"\n");
         fflush(outfile);
  
     }
 
     diis_manager->delete_diis_file();
 
-    fprintf(outfile,"\n");
+    psi::fprintf(outfile,"\n");
     if (converged) { 
-        fprintf(outfile,"    ISA Converged.\n\n"); 
+        psi::fprintf(outfile,"    ISA Converged.\n\n"); 
     } else {
-        fprintf(outfile,"    ISA Failed.\n\n"); 
+        psi::fprintf(outfile,"    ISA Failed.\n\n"); 
     }
     fflush(outfile);
 
@@ -596,8 +596,8 @@ void StockholderDensity::compute_charges(double scale)
     double* Np = N_->pointer();
 
     // Print    
-    fprintf(outfile,"   > Atomic Charges <\n\n");
-    fprintf(outfile,"    %4s %3s %11s %11s %11s\n", 
+    psi::fprintf(outfile,"   > Atomic Charges <\n\n");
+    psi::fprintf(outfile,"    %4s %3s %11s %11s %11s\n", 
         "N", "Z", "Nuclear", "Electronic", "Atomic");
     double Ztot;
     double Qtot;
@@ -605,19 +605,19 @@ void StockholderDensity::compute_charges(double scale)
         int Aabs = Aind[A];
         double Z = molecule_->Z(Aabs);
         double Q = -scale * Np[A];
-        fprintf(outfile,"    %4d %3s %11.3E %11.3E %11.3E\n", 
+        psi::fprintf(outfile,"    %4d %3s %11.3E %11.3E %11.3E\n", 
             Aabs+1, molecule_->symbol(Aabs).c_str(), Z, Q, Z + Q);
         Ztot += Z;
         Qtot += Q;
     }
-    fprintf(outfile,"    %8s %11.3E %11.3E %11.3E\n", 
+    psi::fprintf(outfile,"    %8s %11.3E %11.3E %11.3E\n", 
             "Total", Ztot, Qtot, Ztot + Qtot);
-    fprintf(outfile,"\n");
+    psi::fprintf(outfile,"\n");
 
-    fprintf(outfile,"    True Molecular Charge: %11.3E\n", (double) molecule_->molecular_charge());
-    fprintf(outfile,"    Grid Molecular Charge: %11.3E\n", Ztot + Qtot);
-    fprintf(outfile,"    Grid Error:            %11.3E\n", Ztot + Qtot - (double) molecule_->molecular_charge());
-    fprintf(outfile,"\n");
+    psi::fprintf(outfile,"    True Molecular Charge: %11.3E\n", (double) molecule_->molecular_charge());
+    psi::fprintf(outfile,"    Grid Molecular Charge: %11.3E\n", Ztot + Qtot);
+    psi::fprintf(outfile,"    Grid Error:            %11.3E\n", Ztot + Qtot - (double) molecule_->molecular_charge());
+    psi::fprintf(outfile,"\n");
 
     fflush(outfile);
 }

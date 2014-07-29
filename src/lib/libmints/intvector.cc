@@ -170,15 +170,15 @@ void IntVector::set(int *vec) {
 void IntVector::print(FILE *out, const char* extra) const {
     int h;
     if (extra == NULL) {
-        fprintf(out, "\n # %s #\n", name_.c_str());
+        psi::fprintf(out, "\n # %s #\n", name_.c_str());
     } else {
-        fprintf(out, "\n # %s %s #\n", name_.c_str(), extra);
+        psi::fprintf(out, "\n # %s %s #\n", name_.c_str(), extra);
     }
     for (h=0; h<nirrep_; ++h) {
-        fprintf(out, " Irrep: %d\n", h+1);
+        psi::fprintf(out, " Irrep: %d\n", h+1);
         for (int i=0; i<dimpi_[h]; ++i)
-            fprintf(out, "   %4d: %10d\n", i+1, vector_[h][i]);
-        fprintf(out, "\n");
+            psi::fprintf(out, "   %4d: %10d\n", i+1, vector_[h][i]);
+        psi::fprintf(out, "\n");
     }
 }
 

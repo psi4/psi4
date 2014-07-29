@@ -54,28 +54,28 @@ void Functional::print(FILE* out, int level) const
 {
     if (level < 1) return;
 
-    fprintf(out, "   => %s Functional <=\n\n", name_.c_str());
+    psi::fprintf(out, "   => %s Functional <=\n\n", name_.c_str());
 
-    fprintf(out, "%s", description_.c_str());
-    fprintf(out, "\n");
+    psi::fprintf(out, "%s", description_.c_str());
+    psi::fprintf(out, "\n");
     
-    fprintf(out, "%s", citation_.c_str());
-    fprintf(out, "\n");
+    psi::fprintf(out, "%s", citation_.c_str());
+    psi::fprintf(out, "\n");
     
-    fprintf(out, "    GGA   = %14s\n", (gga_ ? "TRUE" : "FALSE"));
-    fprintf(out, "    Meta  = %14s\n", (meta_ ? "TRUE" : "FALSE"));
-    fprintf(out, "    LRC   = %14s\n", (lrc_ ? "TRUE" : "FALSE"));
-    fprintf(out, "    Alpha = %14.6E\n", alpha_);
-    fprintf(out, "    Omega = %14.6E\n", omega_);
-    fprintf(out, "\n");
+    psi::fprintf(out, "    GGA   = %14s\n", (gga_ ? "TRUE" : "FALSE"));
+    psi::fprintf(out, "    Meta  = %14s\n", (meta_ ? "TRUE" : "FALSE"));
+    psi::fprintf(out, "    LRC   = %14s\n", (lrc_ ? "TRUE" : "FALSE"));
+    psi::fprintf(out, "    Alpha = %14.6E\n", alpha_);
+    psi::fprintf(out, "    Omega = %14.6E\n", omega_);
+    psi::fprintf(out, "\n");
     
     if (level > 2) {
-        fprintf(out, "    > Parameters <\n\n");
+        psi::fprintf(out, "    > Parameters <\n\n");
         for (std::map<std::string, double>::const_iterator it = parameters_.begin();  
             it != parameters_.end(); ++it) {
-            fprintf(out,"    %11s = %24.16E\n", (*it).first.c_str(), (*it).second);
+            psi::fprintf(out,"    %11s = %24.16E\n", (*it).first.c_str(), (*it).second);
         }    
-        fprintf(out, "\n");
+        psi::fprintf(out, "\n");
     }
 } 
 void Functional::compute_functional(const std::map<std::string,SharedVector>& in, const std::map<std::string,SharedVector>& out, int npoints, int deriv, double alpha)

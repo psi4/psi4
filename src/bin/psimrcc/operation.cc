@@ -26,7 +26,7 @@
 #include "blas.h"
 #include "debugging.h"
 #include "matrix.h"
-
+#include "psi4-dec.h"
 namespace psi{
     extern FILE *outfile;
     namespace psimrcc{
@@ -63,48 +63,48 @@ CCOperation::~CCOperation()
 void CCOperation::print()
 {
   if(reindexing.size())
-    fprintf(outfile,"\n\tReindexing = %s",reindexing.c_str());
-  fprintf(outfile,"\n\tNumericalFactor = %lf",factor);
-  fprintf(outfile,"\tAssigment = %s",assignment.c_str());
-  fprintf(outfile,"\tOperation = %s",operation.c_str());
-  fprintf(outfile,"\n\tA = %s",A_Matrix->get_label().c_str());
+    psi::fprintf(outfile,"\n\tReindexing = %s",reindexing.c_str());
+  psi::fprintf(outfile,"\n\tNumericalFactor = %lf",factor);
+  psi::fprintf(outfile,"\tAssigment = %s",assignment.c_str());
+  psi::fprintf(outfile,"\tOperation = %s",operation.c_str());
+  psi::fprintf(outfile,"\n\tA = %s",A_Matrix->get_label().c_str());
   if(B_Matrix!=NULL)
-    fprintf(outfile,"\tB = %s",B_Matrix->get_label().c_str());
+    psi::fprintf(outfile,"\tB = %s",B_Matrix->get_label().c_str());
   if(C_Matrix!=NULL)
-    fprintf(outfile,"\tC = %s",C_Matrix->get_label().c_str());
+    psi::fprintf(outfile,"\tC = %s",C_Matrix->get_label().c_str());
 }
 
 void CCOperation::print_operation()
 {
-  fprintf(outfile,"%s",A_Matrix->get_label().c_str());
-  fprintf(outfile," %s",assignment.c_str());
+  psi::fprintf(outfile,"%s",A_Matrix->get_label().c_str());
+  psi::fprintf(outfile," %s",assignment.c_str());
   if(reindexing.size())
-    fprintf(outfile," %s",reindexing.c_str());
-  fprintf(outfile," %lf",factor);
+    psi::fprintf(outfile," %s",reindexing.c_str());
+  psi::fprintf(outfile," %lf",factor);
   if(B_Matrix!=NULL)
-    fprintf(outfile," %s",B_Matrix->get_label().c_str());
-  fprintf(outfile," %s",operation.c_str());
+    psi::fprintf(outfile," %s",B_Matrix->get_label().c_str());
+  psi::fprintf(outfile," %s",operation.c_str());
   if(C_Matrix!=NULL)
-    fprintf(outfile," %s",C_Matrix->get_label().c_str());
+    psi::fprintf(outfile," %s",C_Matrix->get_label().c_str());
 }
 
 void CCOperation::print_timing()
 {
   DEBUGGING(1,
-  fprintf(outfile,"\n-----------------------------------------");
-  fprintf(outfile,"\nzero_timing             = %f",zero_timing);
-  fprintf(outfile,"\nnumerical_timing        = %f",numerical_timing);
-  fprintf(outfile,"\ncontract_timing         = %f",contract_timing);
-  fprintf(outfile,"\ntensor_timing           = %f",tensor_timing);
-  fprintf(outfile,"\ndot_timing              = %f",dot_timing);
-  fprintf(outfile,"\nplus_timing             = %f",plus_timing);
-  fprintf(outfile,"\nproduct_timing          = %f",product_timing);
-  fprintf(outfile,"\ndivision_timing         = %f",division_timing);
-  fprintf(outfile,"\nsort_timing             = %f",sort_timing);
-  fprintf(outfile,"\nPartA_timing            = %f",PartA_timing);
-  fprintf(outfile,"\nPartB_timing            = %f",PartB_timing);
-  fprintf(outfile,"\nPartC_timing            = %f",PartC_timing);
-  fprintf(outfile,"\n-----------------------------------------\n");
+  psi::fprintf(outfile,"\n-----------------------------------------");
+  psi::fprintf(outfile,"\nzero_timing             = %f",zero_timing);
+  psi::fprintf(outfile,"\nnumerical_timing        = %f",numerical_timing);
+  psi::fprintf(outfile,"\ncontract_timing         = %f",contract_timing);
+  psi::fprintf(outfile,"\ntensor_timing           = %f",tensor_timing);
+  psi::fprintf(outfile,"\ndot_timing              = %f",dot_timing);
+  psi::fprintf(outfile,"\nplus_timing             = %f",plus_timing);
+  psi::fprintf(outfile,"\nproduct_timing          = %f",product_timing);
+  psi::fprintf(outfile,"\ndivision_timing         = %f",division_timing);
+  psi::fprintf(outfile,"\nsort_timing             = %f",sort_timing);
+  psi::fprintf(outfile,"\nPartA_timing            = %f",PartA_timing);
+  psi::fprintf(outfile,"\nPartB_timing            = %f",PartB_timing);
+  psi::fprintf(outfile,"\nPartC_timing            = %f",PartC_timing);
+  psi::fprintf(outfile,"\n-----------------------------------------\n");
   );
 }
 

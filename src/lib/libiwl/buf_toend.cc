@@ -40,7 +40,7 @@ void IWL::to_end()
 
     this_entry = psio_->tocscan(itap_, IWL_KEY_BUF);
     if (this_entry == NULL) {
-        fprintf(stderr,
+        psi::fprintf(stderr,
             "iwl_buf_toend: Can't find IWL buffer entry in file %d\n", itap_);
         set_keep_flag(1);
         close();
@@ -68,7 +68,7 @@ void iwl_buf_toend(struct iwlbuf *Buf)
 
   this_entry = psio_tocscan(Buf->itap, IWL_KEY_BUF);
   if (this_entry == NULL) {
-    fprintf(outfile,
+    psi::fprintf(outfile,
         "iwl_buf_toend: Can't find IWL buffer entry in file %d\n", Buf->itap);
     iwl_buf_close(Buf,1);
     return;

@@ -162,7 +162,7 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
    /* setup initial guess vector */
 
    if (Parameters.restart) {
-     fprintf(outfile,"\nAttempting Restart with 1 vector\n");
+     psi::fprintf(outfile,"\nAttempting Restart with 1 vector\n");
      if ((i=Cvec.read_num_vecs())< 1) {
        throw PsiException("CI vector file should contain only 1 vector.",__FILE__,__LINE__);
      }
@@ -170,7 +170,7 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
      Cvec.buf_lock(buffer1);
      Cvec.read(0, 0);
      tval = Cvec * Cvec;
-     if ((tval - 1.0) > ZERO) fprintf(outfile,"CI vector may be corrupted."
+     if ((tval - 1.0) > ZERO) psi::fprintf(outfile,"CI vector may be corrupted."
      " Attempting to correct by renormalizing.\n"); 
      Cvec.symnorm(tval,CI_VEC,TRUE);
      }
@@ -193,7 +193,7 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       else L = H0block.guess_size;
       sm_evals = init_array(L);
       /* need to fill out sm_evecs into b (pad w/ 0's) */
-      fprintf(outfile, "Using %d initial trial vectors\n",
+      psi::fprintf(outfile, "Using %d initial trial vectors\n",
          Parameters.num_init_vecs);
 
       Cvec.buf_lock(buffer1);
@@ -226,7 +226,7 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       }
 
    if (print_lvl > 4) {
-      fprintf(outfile, "\nC(0) vector = \n");
+      psi::fprintf(outfile, "\nC(0) vector = \n");
       Cvec.print(outfile);
       }
 
@@ -238,7 +238,7 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
    Cvec.copy_zero_blocks(Sigma);
 
    if (print_lvl > 4) {
-      fprintf(outfile, "\nSigma vector\n");
+      psi::fprintf(outfile, "\nSigma vector\n");
       Sigma.print(outfile);
       fflush(outfile);
       }
@@ -262,8 +262,8 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
                  betlist);
 
    if (Parameters.print_lvl > 3) {
-     fprintf(outfile, "Straight x = %12.6lf\n", x);
-     fprintf(outfile, "Straight y = %12.6lf\n", y);
+     psi::fprintf(outfile, "Straight x = %12.6lf\n", x);
+     psi::fprintf(outfile, "Straight y = %12.6lf\n", y);
      }
 
    if (Parameters.precon >= PRECON_GEN_DAVIDSON && H0block.size) {
@@ -273,8 +273,8 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
        */ 
        fflush(outfile); 
        if (detH0 == 0) {
-         fprintf(outfile, "H0block inverse is nearly nonsingular:");
-         fprintf(outfile," initiating DAVIDSON preconditioner\n");
+         psi::fprintf(outfile, "H0block inverse is nearly nonsingular:");
+         psi::fprintf(outfile," initiating DAVIDSON preconditioner\n");
          fflush(outfile);
          Parameters.precon = PRECON_DAVIDSON;
          }
@@ -283,17 +283,17 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
          H0block_xy(&x,&y,E); 
          */
          if (Parameters.print_lvl > 3) {
-            fprintf(outfile, "x = %12.6lf\n", x);
-            fprintf(outfile, "y = %12.6lf\n", y);
+            psi::fprintf(outfile, "x = %12.6lf\n", x);
+            psi::fprintf(outfile, "y = %12.6lf\n", y);
             }
          }
      }
 
    E_est = y / x;  /* should I add fzc here? */
    if (Parameters.print_lvl > 2) {
-      fprintf(outfile, "E_est = %12.6lf E-efzc = %12.6lf E = %12.6lf\n", 
+      psi::fprintf(outfile, "E_est = %12.6lf E-efzc = %12.6lf E = %12.6lf\n", 
            E_est,E-efzc,E);
-       fprintf(outfile, "x = %lf  y = %lf\n",x,y);
+       psi::fprintf(outfile, "x = %lf  y = %lf\n",x,y);
        }
     /* calculate delta_C and C(1) */
    olsen_update(Cvec, Sigma, Hd, E, E_est, &norm, &c1norm, &S, buffer1, buffer2,
@@ -311,18 +311,18 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
   /*
    Cvec.buf_lock(buffer1);
    Cvec.read(0,0);
-   fprintf(outfile," Cvec[0] = \n");
+   psi::fprintf(outfile," Cvec[0] = \n");
    Cvec.print(outfile);
    Cvec.read(1,0);
-   fprintf(outfile," Cvec[1] = \n");
+   psi::fprintf(outfile," Cvec[1] = \n");
    Cvec.print(outfile);
    Cvec.buf_unlock();
   */
 
    /* S is the overlap of the C_(i-1) and C_i */
 
-   fprintf(outfile,"Iter  0  ROOT 1 ECI = %14.9lf", enuc + E);
-   fprintf(outfile,"    Delta_E %10.3E   Delta_C %10.3E\n", E - E_last, c1norm);
+   psi::fprintf(outfile,"Iter  0  ROOT 1 ECI = %14.9lf", enuc + E);
+   psi::fprintf(outfile,"    Delta_E %10.3E   Delta_C %10.3E\n", E - E_last, c1norm);
    fflush(outfile);
 
    iter = 1;
@@ -336,10 +336,10 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       Sigma.buf_lock(buffer2);
       Cvec.read(curr,0);
       /* chknorm = Cvec.checknorm();
-      fprintf(outfile,"Norm of curr CI vect = %lf\n",chknorm);
+      psi::fprintf(outfile,"Norm of curr CI vect = %lf\n",chknorm);
      */ 
       if (print_lvl > 4) {
-         fprintf(outfile, "\nC(%2d) vector (symm'd norm'd)\n", iter) ;
+         psi::fprintf(outfile, "\nC(%2d) vector (symm'd norm'd)\n", iter) ;
          Cvec.print(outfile);
          fflush(outfile);
          }
@@ -351,15 +351,15 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       Cvec.copy_zero_blocks(Sigma);
       Cvec.read(curr,0);
       if (print_lvl > 4) {
-         fprintf(outfile,"\nC(%2d) vector (symm'd norm'd) second time\n",iter);
+         psi::fprintf(outfile,"\nC(%2d) vector (symm'd norm'd) second time\n",iter);
          Cvec.print(outfile);
          fflush(outfile);
          }
 
       if (print_lvl > 4) {
          Sigma.read(curr,0);
-         fprintf(outfile, "\n curr = %d\n", curr);
-         fprintf(outfile, "\nSigma(%2d) vector\n", iter);
+         psi::fprintf(outfile, "\n curr = %d\n", curr);
+         psi::fprintf(outfile, "\nSigma(%2d) vector\n", iter);
          Sigma.print(outfile);
          fflush(outfile);
          }
@@ -373,14 +373,14 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
 
       /* check for convergence and exit if reached */
       if (iter == maxiter)
-         fprintf(outfile, "Maximum number of iterations reached!\n");
+         psi::fprintf(outfile, "Maximum number of iterations reached!\n");
 
       /* if the 2x2 matrix diagonalization can be done, take Mitrush Step */
 
       if (Parameters.diag_method==METHOD_MITRUSHENKOV && 
           diag_method==METHOD_MITRUSHENKOV && S < S_MAX && 
           fabs(E_last-E_curr) > MITRUSH_E_DIFF_MIN) {
-        fprintf(outfile, "Taking Mitrushenkov step (S =%10.6lf <%10.6lf)\n",
+        psi::fprintf(outfile, "Taking Mitrushenkov step (S =%10.6lf <%10.6lf)\n",
                  S, S_MAX);
          /* calculate H(i,i-1) = H(i-1,i) */
         Cvec.read(last, 0);         
@@ -404,14 +404,14 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
         Sigma.buf_unlock();
 
         /*
-        fprintf(outfile,"alpha_0 = %lf  alpha_1 = %lf\n",
+        psi::fprintf(outfile,"alpha_0 = %lf  alpha_1 = %lf\n",
                 evecs2x2[0][0],evecs2x2[0][1]);
         Cvec.buf_lock(buffer1);
         Cvec.read(0,0);
-        fprintf(outfile," Cvec[%d] = \n",0);
+        psi::fprintf(outfile," Cvec[%d] = \n",0);
         Cvec.print(outfile);
         Cvec.read(1,0);
-        fprintf(outfile," Cvec[%d] = \n",1);
+        psi::fprintf(outfile," Cvec[%d] = \n",1);
         Cvec.print(outfile);
         Cvec.buf_unlock();
         */
@@ -443,33 +443,33 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
                     alplist, betlist);
 
       if (Parameters.print_lvl > 3) {
-        fprintf(outfile, "Straight x = %12.6lf\n", x);
-        fprintf(outfile, "Straight y = %12.6lf\n", y);
+        psi::fprintf(outfile, "Straight x = %12.6lf\n", x);
+        psi::fprintf(outfile, "Straight y = %12.6lf\n", y);
         }
 
       if (Parameters.precon >= PRECON_GEN_DAVIDSON && H0block.size) {
         detH0 = H0block_calc(E);
-        /* fprintf(outfile,"detH0 = %d\n", detH0);
+        /* psi::fprintf(outfile,"detH0 = %d\n", detH0);
         fflush(outfile); */
         if (detH0 == 0) {
-          fprintf(outfile, "H0block inverse is nearly singular:");
-          fprintf(outfile," initiating DAVIDSON preconditioner\n");
+          psi::fprintf(outfile, "H0block inverse is nearly singular:");
+          psi::fprintf(outfile," initiating DAVIDSON preconditioner\n");
           Parameters.precon = PRECON_DAVIDSON;
           }
         if (Parameters.precon >= PRECON_GEN_DAVIDSON) {
           H0block_xy(&x,&y,E);
           if (Parameters.print_lvl > 3) {
-            fprintf(outfile, "x = %12.6lf\n", x);
-            fprintf(outfile, "y = %12.6lf\n", y);
+            psi::fprintf(outfile, "x = %12.6lf\n", x);
+            psi::fprintf(outfile, "y = %12.6lf\n", y);
             }
           }
         }
 
       E_est = y / x;
       if (Parameters.print_lvl > 2) {
-        fprintf(outfile, "E_est = %12.6lf E = %12.6lf\n", 
+        psi::fprintf(outfile, "E_est = %12.6lf E = %12.6lf\n", 
                 E_est+efzc+enuc, E+enuc);
-        /* fprintf(outfile, "x = %lf  y = %lf\n",x,y); */
+        /* psi::fprintf(outfile, "x = %lf  y = %lf\n",x,y); */
         }
 
       /* calculate delta_C and C(next) */
@@ -489,10 +489,10 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       Cvec.buf_lock(buffer1);
       Cvec.buf_unlock();
       Cvec.read(0,0);
-      fprintf(outfile," Cvec[0] = \n");
+      psi::fprintf(outfile," Cvec[0] = \n");
       Cvec.print(outfile);
       Cvec.read(1,0);
-      fprintf(outfile," Cvec[1] = \n");
+      psi::fprintf(outfile," Cvec[1] = \n");
       Cvec.print(outfile);
      */
 
@@ -502,15 +502,15 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
         }
 
       if ((fabs(E - E_last) < conv_e && c1norm < conv_rms) || iter >=maxiter) {
-        fprintf(outfile, "Iter %2d  ROOT 1 ECI = %14.9lf", iter, E + enuc);
-        fprintf(outfile, "    Delta_E %10.3E   Delta_C %10.3E %c\n"
+        psi::fprintf(outfile, "Iter %2d  ROOT 1 ECI = %14.9lf", iter, E + enuc);
+        psi::fprintf(outfile, "    Delta_E %10.3E   Delta_C %10.3E %c\n"
           ,E-E_last,c1norm,(fabs(E - E_last) < conv_e && c1norm < conv_rms)
           ? 'c' : ' ');
         evals[0] = E;
         free_matrix(H2x2,2);
         free(evals2x2);
         free_matrix(evecs2x2,2);
-        fprintf(outfile, "\n\n* ROOT 1 CI total energy = %19.15lf\n", E + enuc);
+        psi::fprintf(outfile, "\n\n* ROOT 1 CI total energy = %19.15lf\n", E + enuc);
 
         Cvec.max_abs_vals(Parameters.nprint, mi_iac, mi_ibc, mi_iaidx,
            mi_ibidx, mi_coeff, Parameters.neg_only);
@@ -523,8 +523,8 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
 
       Cvec.buf_unlock();
       Sigma.buf_unlock();
-      fprintf(outfile,"Iter %2d  ROOT 1 ECI = %14.9lf", iter, enuc+E);
-      fprintf(outfile,"    Delta_E %10.3E   Delta_C %10.3E\n",E-E_last,c1norm);
+      psi::fprintf(outfile,"Iter %2d  ROOT 1 ECI = %14.9lf", iter, enuc+E);
+      psi::fprintf(outfile,"    Delta_E %10.3E   Delta_C %10.3E\n",E-E_last,c1norm);
       fflush(outfile);
       iter++;
       E_last = E;

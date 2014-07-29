@@ -24,42 +24,57 @@
 
 #include <omp.h>
 #if HAVE_MPI
-namespace psi{
+namespace psi {
+   void MPICommunicator::sync(const std::string& CommName) const {
+      boost::mpi::communicator comm=GetComm(CommName);
+      comm.barrier();
+   }
 
-MPICommunicator::MPICommunicator(int &argc,char **argv):
-        Env(new boost::mpi::environment(argc,argv)){
-        boost::mpi::communicator world;
-        Communicators["COMM_WORLD"]=world;
-        //The next three lines are what the old local comm did
-        //the code breaks if I do not include them
-        //The way I understand this is that the number of openmp threads
-        //is getting hard-coded to 1, and somewhere in the code people are
-        //counting on this behavior...
-        omp_set_nested(0);
-        if (Process::environment("OMP_NUM_THREADS") == "")
-            Process::environment.set_n_threads(1);
-}
+   int MPICommunicator::me(const std::string& CommName) const {
+      boost::mpi::communicator comm=GetComm(CommName);
+      return comm.rank();
+   }
 
-void MPICommunicator::MakeComm(const std::string& Name,const int Color,const std::string& Comm2Split){
-    boost::mpi::communicator comm=GetComm(Comm2Split);
-    Communicators[Name]=comm.split(Color);
-    CurrentComm.push_back(Name);
-}
+   int MPICommunicator::nproc(const std::string& CommName) const {
+      boost::mpi::communicator comm=GetComm(CommName);
+      return comm.size();
+   }
 
-void MPICommunicator::FreeComm(const std::string& Name){
-    //Refuse to free mpi_comm_world
-    if(CurrentComm.size()>1&&Name!="COMM_WORLD"){
-        Communicators.erase(Name);
-        CurrentComm.erase(CurrentComm.end()-1);
-    }
-}
+   boost::mpi::communicator MPICommunicator::GetComm(const std::string& CommName)
+   const {
+      return (const_cast<MPICommunicator*>(this))->
+      Communicators[(CommName!="NONE" ? CommName : CurrentComm.back())];
+   }
 
-}//End namespace psi
+   MPICommunicator::MPICommunicator(int &argc,char **argv):
+   Env(new boost::mpi::environment(argc,argv)) {
+      boost::mpi::communicator world;
+      Communicators["COMM_WORLD"]=world;
+      //The next three lines are what the old local comm did
+      //the code breaks if I do not include them
+      //The way I understand this is that the number of openmp threads
+      //is getting hard-coded to 1, and somewhere in the code people are
+      //counting on this behavior...
+      omp_set_nested(0);
+      if (Process::environment("OMP_NUM_THREADS") == "")
+      Process::environment.set_n_threads(1);
+   }
 
+   void MPICommunicator::MakeComm(const std::string& Name,const int Color,const std::string& Comm2Split) {
+      boost::mpi::communicator comm=GetComm(Comm2Split);
+      Communicators[Name]=comm.split(Color);
+      CurrentComm.push_back(Name);
+   }
+
+   void MPICommunicator::FreeComm(const std::string& Name) {
+      //Refuse to free mpi_comm_world
+      if(CurrentComm.size()>1&&Name!="COMM_WORLD") {
+         Communicators.erase(Name);
+         CurrentComm.erase(CurrentComm.end()-1);
+      }
+   }
+
+}        //End namespace psi
 
 #endif
-
-
-
-
 

@@ -120,7 +120,7 @@ int file_build_presort(dpdfile4 *File, int inputfile, double tolerance,
   }
 
   if(params.print_lvl) {
-    fprintf(outfile, "\tSorting File: %s nbuckets = %d\n", File->label, nbuckets);
+    psi::fprintf(outfile, "\tSorting File: %s nbuckets = %d\n", File->label, nbuckets);
     fflush(outfile);
   }
 

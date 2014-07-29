@@ -107,7 +107,7 @@ double LHX1Y2(const char *pert_x, int irrep_x, double omega_x,
   global_dpd_->file2_close(&l1);
   global_dpd_->file2_close(&z);
 
-//  fprintf(outfile, "L(1)HX1Y2 = %20.12f\n", polar);
+//  psi::fprintf(outfile, "L(1)HX1Y2 = %20.12f\n", polar);
 
 
   global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "Z(Ij,Ab) Final");

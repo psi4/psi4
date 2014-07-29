@@ -35,7 +35,7 @@
 
 #include <cstdio>
 #include <string>
-
+#include "psi4-dec.h"
 // I think this is forward-declaring class Options -CDS
 namespace psi {
 class Options;

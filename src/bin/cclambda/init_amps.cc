@@ -168,14 +168,14 @@ void init_amps(struct L_Params L_params)
         global_dpd_->file2_copy(&T1, PSIF_CC_LAMBDA, "Lia");
         global_dpd_->file2_close(&T1);
       }
-      else fprintf(outfile, "\tUsing old L1 amplitudes.\n");
+      else psi::fprintf(outfile, "\tUsing old L1 amplitudes.\n");
 
       if(!params.restart || !psio_tocscan(PSIF_CC_LAMBDA, "LIjAb")) {
         global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
         global_dpd_->buf4_copy(&T2, PSIF_CC_LAMBDA, "LIjAb");
         global_dpd_->buf4_close(&T2);
       }
-      else fprintf(outfile, "\tUsing old L2 amplitudes.\n");
+      else psi::fprintf(outfile, "\tUsing old L2 amplitudes.\n");
 
       global_dpd_->buf4_init(&T2, PSIF_CC_LAMBDA, 0, 2, 7, 0, 5, 1, "LIjAb");
       global_dpd_->buf4_copy(&T2, PSIF_CC_LAMBDA, "LIJAB");
@@ -193,7 +193,7 @@ void init_amps(struct L_Params L_params)
         global_dpd_->file2_copy(&T1, PSIF_CC_LAMBDA, "Lia");
         global_dpd_->file2_close(&T1);
       }
-      else fprintf(outfile, "\tUsing old L1 amplitudes.\n");
+      else psi::fprintf(outfile, "\tUsing old L1 amplitudes.\n");
   
       if(!params.restart || !psio_tocscan(PSIF_CC_LAMBDA, "LIjAb") ||
          !psio_tocscan(PSIF_CC_LAMBDA, "LIJAB") || 
@@ -210,7 +210,7 @@ void init_amps(struct L_Params L_params)
         global_dpd_->buf4_copy(&T2, PSIF_CC_LAMBDA, "LIjAb");
         global_dpd_->buf4_close(&T2);
       }
-      else fprintf(outfile, "\tUsing old L2 amplitudes.\n");
+      else psi::fprintf(outfile, "\tUsing old L2 amplitudes.\n");
     }
     else if(params.ref == 2) { /** UHF **/
       if(!params.restart || !psio_tocscan(PSIF_CC_LAMBDA, "LIA") ||
@@ -223,7 +223,7 @@ void init_amps(struct L_Params L_params)
         global_dpd_->file2_copy(&T1, PSIF_CC_LAMBDA, "Lia");
         global_dpd_->file2_close(&T1);
       }
-      else fprintf(outfile, "\tUsing old L1 amplitudes.\n");
+      else psi::fprintf(outfile, "\tUsing old L1 amplitudes.\n");
   
       if(!params.restart || !psio_tocscan(PSIF_CC_LAMBDA, "LIjAb") ||
          !psio_tocscan(PSIF_CC_LAMBDA, "LIJAB") || 
@@ -240,7 +240,7 @@ void init_amps(struct L_Params L_params)
         global_dpd_->buf4_copy(&T2, PSIF_CC_LAMBDA, "LIjAb");
         global_dpd_->buf4_close(&T2);
       }
-      else fprintf(outfile, "\tUsing old L2 amplitudes.\n");
+      else psi::fprintf(outfile, "\tUsing old L2 amplitudes.\n");
     }
   }
 
@@ -332,7 +332,7 @@ void init_amps(struct L_Params L_params)
       global_dpd_->buf4_close(&R2);
     }
   
-    fprintf(outfile,"\tInitial overlap of initial guess <L|R> = %15.10lf\n", norm);
+    psi::fprintf(outfile,"\tInitial overlap of initial guess <L|R> = %15.10lf\n", norm);
   
     global_dpd_->file2_scm(&LIA, 1.0/norm);
     global_dpd_->file2_scm(&Lia, 1.0/norm);
@@ -369,7 +369,7 @@ void init_amps(struct L_Params L_params)
       norm += global_dpd_->buf4_dot(&LIjAb, &R2);
       global_dpd_->buf4_close(&R2);
     }
-    fprintf(outfile,"\tChecking overlap of initial guess <L|R> = %15.10lf\n", norm);
+    psi::fprintf(outfile,"\tChecking overlap of initial guess <L|R> = %15.10lf\n", norm);
   
     global_dpd_->file2_close(&LIA);
     global_dpd_->file2_close(&Lia);
@@ -379,7 +379,7 @@ void init_amps(struct L_Params L_params)
   }
 
 #ifdef EOM_DEBUG
-  fprintf(outfile,"initial guess\n");
+  psi::fprintf(outfile,"initial guess\n");
   dpd_file2_init(&LIA, CC_LAMBDA, L_irr, 0, 1, "LIA");
   dpd_file2_print(&LIA,outfile);
   dpd_file2_close(&LIA);

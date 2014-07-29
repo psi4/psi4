@@ -354,12 +354,12 @@ void projections(struct L_Params *pL_params) {
     projection_tot = projection_0 + projection_S + projection_D;
     ael = projection_S + 2.0 * projection_D;
 
-    fprintf(outfile,"\n\tProjections for excited state, irrep %s, root %d:\n", moinfo.labels[0], root);
-    fprintf(outfile,"\t<0|Le^(-T)|0><0|Re^T|0>  = %15.10lf\n", projection_0);
-    fprintf(outfile,"\t<0|Le^(-T)|S><S|Re^T|0>  = %15.10lf\n", projection_S);
-    fprintf(outfile,"\t<0|Le^(-T)|D><D|Re^T|0>  = %15.10lf\n", projection_D);
-    fprintf(outfile,"\tSum of above             = %15.10lf\n", projection_tot);
-    fprintf(outfile,"\tApprox. excitation level = %15.10lf\n", ael);
+    psi::fprintf(outfile,"\n\tProjections for excited state, irrep %s, root %d:\n", moinfo.labels[0], root);
+    psi::fprintf(outfile,"\t<0|Le^(-T)|0><0|Re^T|0>  = %15.10lf\n", projection_0);
+    psi::fprintf(outfile,"\t<0|Le^(-T)|S><S|Re^T|0>  = %15.10lf\n", projection_S);
+    psi::fprintf(outfile,"\t<0|Le^(-T)|D><D|Re^T|0>  = %15.10lf\n", projection_D);
+    psi::fprintf(outfile,"\tSum of above             = %15.10lf\n", projection_tot);
+    psi::fprintf(outfile,"\tApprox. excitation level = %15.10lf\n", ael);
   } /* sum over states */
 
   /* close T1 */

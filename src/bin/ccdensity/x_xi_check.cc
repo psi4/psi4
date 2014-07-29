@@ -58,7 +58,7 @@ void x_xi_check(char *term_lbl) {
   
   /*
   if (!strcmp(term_lbl,"reset"))  {
-    fprintf(outfile,"resetting norm\n");
+    psi::fprintf(outfile,"resetting norm\n");
     old_norm = 0;
     return;
   }
@@ -108,7 +108,7 @@ void x_xi_check(char *term_lbl) {
     global_dpd_->buf4_close(&XIjAb);
   }
 
-  fprintf(outfile,"%7s, D(norm sigma)=%15.10lf\n", term_lbl, norm - old_norm);
+  psi::fprintf(outfile,"%7s, D(norm sigma)=%15.10lf\n", term_lbl, norm - old_norm);
   fflush(outfile);
   old_norm = norm;
   return;

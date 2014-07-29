@@ -23,7 +23,7 @@
 #include "model_space.h"
 #include "moinfo.h"
 #include <cstdio>
-
+#include "psi4-dec.h"
 namespace psi {
 
 extern FILE *outfile;
@@ -52,18 +52,18 @@ void ModelSpace::cleanup()
 
 void ModelSpace::print()
 {
-  fprintf(outfile,"\n\n  Model space:");
-  fprintf(outfile,"\n  ------------------------------------------------------------------------------");
+  psi::fprintf(outfile,"\n\n  Model space:");
+  psi::fprintf(outfile,"\n  ------------------------------------------------------------------------------");
   for(int mu = 0; mu < determinants.size(); ++mu){
-    fprintf(outfile,"\n  %2d %s",mu,determinants[mu].get_label().c_str());
+    psi::fprintf(outfile,"\n  %2d %s",mu,determinants[mu].get_label().c_str());
   }
-  fprintf(outfile,"\n\n  Closed-shell to model space mapping");
+  psi::fprintf(outfile,"\n\n  Closed-shell to model space mapping");
   for(int mu = 0; mu < closed_to_all.size(); ++mu){
-    fprintf(outfile,"\n  %d -> %d",mu,closed_to_all[mu]);
+    psi::fprintf(outfile,"\n  %d -> %d",mu,closed_to_all[mu]);
   }
-  fprintf(outfile,"\n\n  Open-shell to model space mapping");
+  psi::fprintf(outfile,"\n\n  Open-shell to model space mapping");
   for(int mu = 0; mu < opensh_to_all.size(); ++mu){
-    fprintf(outfile,"\n  %d -> %d",mu,opensh_to_all[mu]);
+    psi::fprintf(outfile,"\n  %d -> %d",mu,opensh_to_all[mu]);
   }
 
 }

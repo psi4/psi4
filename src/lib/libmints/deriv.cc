@@ -452,7 +452,7 @@ SharedMatrix Deriv::compute()
 
     if (natom_ == 1) {
         // This is an atom...there is no gradient.
-        fprintf(outfile, "    A single atom has no gradient.\n");
+        psi::fprintf(outfile, "    A single atom has no gradient.\n");
         // Save the gradient to the wavefunction so that optking can optimize with it
         wfn_->set_gradient(gradient_);
         return gradient_;
@@ -616,7 +616,7 @@ SharedMatrix Deriv::compute()
             fflush(outfile);
         }
 
-        fprintf(outfile, "\n");
+        psi::fprintf(outfile, "\n");
     }
 
     // Now, compute the one electron terms

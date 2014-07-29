@@ -36,7 +36,7 @@ namespace psi{ namespace occwave{
 void OCCWave::ekt_ip()
 {   
 
-//fprintf(outfile,"\n ekt_ip is starting... \n"); fflush(outfile);
+//psi::fprintf(outfile,"\n ekt_ip is starting... \n"); fflush(outfile);
 //===========================================================================================
 //========================= RHF =============================================================
 //===========================================================================================
@@ -90,7 +90,7 @@ void OCCWave::ekt_ip()
      // Print g^(-1/2)
      for (int h = 0; h < nirrep_; ++h) {
           for (int i = 0; i < nmopi_[h]; ++i) {
-               fprintf(outfile,"\t h, i, Diag_g1A: %3d %3d %20.14f \n", h, i, Diag_g1A->get(h, i));
+               psi::fprintf(outfile,"\t h, i, Diag_g1A: %3d %3d %20.14f \n", h, i, Diag_g1A->get(h, i));
                fflush(outfile);
           }
      }
@@ -107,7 +107,7 @@ void OCCWave::ekt_ip()
      // Again Print g^(-1/2)
      for (int h = 0; h < nirrep_; ++h) {
           for (int i = 0; i < nmopi_[h]; ++i) {
-               fprintf(outfile,"\t h, i, Diag_g1A: %3d %3d %20.14f \n", h, i, Diag_g1A->get(h, i));
+               psi::fprintf(outfile,"\t h, i, Diag_g1A: %3d %3d %20.14f \n", h, i, Diag_g1A->get(h, i));
                fflush(outfile);
           }
      }
@@ -233,8 +233,8 @@ void OCCWave::ekt_ip()
     }
  
     // Print IPs
-    fprintf(outfile,"\n\tEKT-OCC Ionization Potentials (Alpha Spin Case) \n"); 
-    fprintf(outfile,"\t------------------------------------------------------------------- \n"); 
+    psi::fprintf(outfile,"\n\tEKT-OCC Ionization Potentials (Alpha Spin Case) \n"); 
+    psi::fprintf(outfile,"\t------------------------------------------------------------------- \n"); 
     fflush(outfile);
 	  
     Molecule& mol = *reference_wavefunction_->molecule().get();
@@ -243,30 +243,30 @@ void OCCWave::ekt_ip()
 
  // print alpha IPs
  if (print_ < 2) {
-    fprintf(outfile, "\tState    Symmetry   -IP (a.u.)       IP (eV)        Pole Strength \n");
-    fprintf(outfile,"\t------------------------------------------------------------------- \n"); 
+    psi::fprintf(outfile, "\tState    Symmetry   -IP (a.u.)       IP (eV)        Pole Strength \n");
+    psi::fprintf(outfile,"\t------------------------------------------------------------------- \n"); 
     fflush(outfile);   
     for (int i = 0; i < nooA; ++i){
          int h = irrep_occA->get(i);
-	 fprintf(outfile,"\t%3d %10s %15.6f %15.6f %15.6f \n", i+1, ct.gamma(h).symbol(), 
+	 psi::fprintf(outfile,"\t%3d %10s %15.6f %15.6f %15.6f \n", i+1, ct.gamma(h).symbol(), 
                           eoccA->get(i), -eoccA->get(i)*pc_hartree2ev, ps_occA->get(i));
 	 fflush(outfile);   
     }
-    fprintf(outfile,"\t------------------------------------------------------------------- \n"); 
+    psi::fprintf(outfile,"\t------------------------------------------------------------------- \n"); 
     fflush(outfile);   
  }// end if
 
  else if (print_ >= 2) {
-    fprintf(outfile, "\tState    Symmetry   -IP (a.u.)       IP (eV)        Pole Strength \n");
-    fprintf(outfile,"\t------------------------------------------------------------------- \n"); 
+    psi::fprintf(outfile, "\tState    Symmetry   -IP (a.u.)       IP (eV)        Pole Strength \n");
+    psi::fprintf(outfile,"\t------------------------------------------------------------------- \n"); 
     fflush(outfile);   
     for (int i = 0; i < nmo_; ++i){
          int h = irrep_A->get(i);
-	 fprintf(outfile,"\t%3d %10s %15.6f %15.6f %15.6f \n", i+1, ct.gamma(h).symbol(), 
+	 psi::fprintf(outfile,"\t%3d %10s %15.6f %15.6f %15.6f \n", i+1, ct.gamma(h).symbol(), 
                           evals_A->get(i), -evals_A->get(i)*pc_hartree2ev, ps_vec2A->get(i));
 	 fflush(outfile);   
     }
-    fprintf(outfile,"\t------------------------------------------------------------------- \n"); 
+    psi::fprintf(outfile,"\t------------------------------------------------------------------- \n"); 
     fflush(outfile);   
  }// end else if
 
@@ -449,36 +449,36 @@ if (reference_ == "UNRESTRICTED") {
     }
  
     // Print IPs
-    fprintf(outfile,"\n\tEKT-OCC Ionization Potentials (Beta Spin Case) \n"); 
-    fprintf(outfile,"\t------------------------------------------------------------------- \n"); 
+    psi::fprintf(outfile,"\n\tEKT-OCC Ionization Potentials (Beta Spin Case) \n"); 
+    psi::fprintf(outfile,"\t------------------------------------------------------------------- \n"); 
     fflush(outfile);
 	  
  // print alpha IPs
  if (print_ < 2) {
-    fprintf(outfile, "\tState    Symmetry   -IP (a.u.)       IP (eV)        Pole Strength \n");
-    fprintf(outfile,"\t------------------------------------------------------------------- \n"); 
+    psi::fprintf(outfile, "\tState    Symmetry   -IP (a.u.)       IP (eV)        Pole Strength \n");
+    psi::fprintf(outfile,"\t------------------------------------------------------------------- \n"); 
     fflush(outfile);   
     for (int i = 0; i < nooB; ++i){
          int h = irrep_occB->get(i);
-	 fprintf(outfile,"\t%3d %10s %15.6f %15.6f %15.6f \n", i+1, ct.gamma(h).symbol(), 
+	 psi::fprintf(outfile,"\t%3d %10s %15.6f %15.6f %15.6f \n", i+1, ct.gamma(h).symbol(), 
                           eoccB->get(i), -eoccB->get(i)*pc_hartree2ev, ps_occB->get(i));
 	 fflush(outfile);   
     }
-    fprintf(outfile,"\t------------------------------------------------------------------- \n"); 
+    psi::fprintf(outfile,"\t------------------------------------------------------------------- \n"); 
     fflush(outfile);   
  }// end if
 
  else if (print_ >= 2) {
-    fprintf(outfile, "\tState    Symmetry   -IP (a.u.)       IP (eV)        Pole Strength \n");
-    fprintf(outfile,"\t------------------------------------------------------------------- \n"); 
+    psi::fprintf(outfile, "\tState    Symmetry   -IP (a.u.)       IP (eV)        Pole Strength \n");
+    psi::fprintf(outfile,"\t------------------------------------------------------------------- \n"); 
     fflush(outfile);   
     for (int i = 0; i < nmo_; ++i){
          int h = irrep_B->get(i);
-	 fprintf(outfile,"\t%3d %10s %15.6f %15.6f %15.6f \n", i+1, ct.gamma(h).symbol(), 
+	 psi::fprintf(outfile,"\t%3d %10s %15.6f %15.6f %15.6f \n", i+1, ct.gamma(h).symbol(), 
                           evals_B->get(i), -evals_B->get(i)*pc_hartree2ev, ps_vec2B->get(i));
 	 fflush(outfile);   
     }
-    fprintf(outfile,"\t------------------------------------------------------------------- \n"); 
+    psi::fprintf(outfile,"\t------------------------------------------------------------------- \n"); 
     fflush(outfile);   
  }// end else if
 
@@ -527,7 +527,7 @@ if (reference_ == "UNRESTRICTED") {
        delete ps_occA;
        delete eoccA;
 
-//fprintf(outfile,"\n ekt_ip is done. \n"); fflush(outfile);
+//psi::fprintf(outfile,"\n ekt_ip is done. \n"); fflush(outfile);
 
 } // end ekt_ip
 }} // End Namespaces

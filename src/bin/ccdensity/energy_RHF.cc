@@ -47,8 +47,8 @@ namespace psi { namespace ccdensity {
       double one_energy=0.0, two_energy=0.0, total_two_energy = 0.0;
       double this_energy;
 
-      fprintf(outfile, "\n\tEnergies re-computed from CC density:\n");
-      fprintf(outfile,   "\t-------------------------------------\n");
+      psi::fprintf(outfile, "\n\tEnergies re-computed from CC density:\n");
+      psi::fprintf(outfile,   "\t-------------------------------------\n");
 
       global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.DIJ_lbl);
       global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 0, "fIJ");
@@ -78,7 +78,7 @@ namespace psi { namespace ccdensity {
       global_dpd_->file2_close(&D);
       one_energy += this_energy;
 
-      fprintf(outfile, "\tOne-electron energy        = %20.15f\n", one_energy);
+      psi::fprintf(outfile, "\tOne-electron energy        = %20.15f\n", one_energy);
       fflush(outfile);
 
       total_two_energy = 0.0;
@@ -95,7 +95,7 @@ namespace psi { namespace ccdensity {
       global_dpd_->buf4_close(&A);
       global_dpd_->buf4_close(&G);
       total_two_energy += two_energy;
-      fprintf(outfile, "\tIJKL energy                = %20.15f\n", two_energy);
+      psi::fprintf(outfile, "\tIJKL energy                = %20.15f\n", two_energy);
       fflush(outfile);
 
       two_energy = 0.0;
@@ -114,7 +114,7 @@ namespace psi { namespace ccdensity {
       global_dpd_->buf4_close(&E);
       global_dpd_->buf4_close(&G);
       total_two_energy += two_energy;
-      fprintf(outfile, "\tIJKA energy                = %20.15f\n", two_energy);
+      psi::fprintf(outfile, "\tIJKA energy                = %20.15f\n", two_energy);
       fflush(outfile);
 
       two_energy = 0.0;
@@ -131,7 +131,7 @@ namespace psi { namespace ccdensity {
       global_dpd_->buf4_close(&DInts);
 
       total_two_energy += two_energy;
-      fprintf(outfile, "\tIJAB energy                = %20.15f\n", two_energy);
+      psi::fprintf(outfile, "\tIJAB energy                = %20.15f\n", two_energy);
       fflush(outfile);
 
       two_energy = 0.0;
@@ -153,7 +153,7 @@ namespace psi { namespace ccdensity {
       global_dpd_->buf4_close(&DInts);
 
       total_two_energy += two_energy;
-      fprintf(outfile, "\tIBJA energy                = %20.15f\n", two_energy);
+      psi::fprintf(outfile, "\tIBJA energy                = %20.15f\n", two_energy);
       fflush(outfile);
 
       two_energy = 0.0;
@@ -175,7 +175,7 @@ namespace psi { namespace ccdensity {
       global_dpd_->buf4_close(&G);
 
       total_two_energy += two_energy;
-      fprintf(outfile, "\tCIAB energy                = %20.15f\n", two_energy);
+      psi::fprintf(outfile, "\tCIAB energy                = %20.15f\n", two_energy);
       fflush(outfile);
 
       two_energy = 0.0;
@@ -192,21 +192,21 @@ namespace psi { namespace ccdensity {
       global_dpd_->buf4_close(&G);
 
       total_two_energy += two_energy;
-      fprintf(outfile, "\tABCD energy                = %20.15f\n", two_energy);
+      psi::fprintf(outfile, "\tABCD energy                = %20.15f\n", two_energy);
 
-      fprintf(outfile, "\tTotal two-electron energy  = %20.15f\n", total_two_energy);
+      psi::fprintf(outfile, "\tTotal two-electron energy  = %20.15f\n", total_two_energy);
       if (params.ground) {
-	fprintf(outfile, "\tCCSD correlation energy    = %20.15f\n",
+	psi::fprintf(outfile, "\tCCSD correlation energy    = %20.15f\n",
 		one_energy + total_two_energy);
-	fprintf(outfile, "\tTotal CCSD energy          = %20.15f\n",
+psi::fprintf(outfile, "\tTotal CCSD energy          = %20.15f\n",
 		one_energy + total_two_energy + moinfo.eref);
       }
       else {
-	fprintf(outfile, "\tTotal EOM CCSD correlation energy        = %20.15f\n",
+psi::fprintf(outfile, "\tTotal EOM CCSD correlation energy        = %20.15f\n",
 		one_energy + total_two_energy);
-	fprintf(outfile, "\tCCSD correlation + EOM excitation energy = %20.15f\n",
+psi::fprintf(outfile, "\tCCSD correlation + EOM excitation energy = %20.15f\n",
 		moinfo.ecc + params.cceom_energy);
-	fprintf(outfile, "\tTotal EOM CCSD energy                    = %20.15f\n",
+psi::fprintf(outfile, "\tTotal EOM CCSD energy                    = %20.15f\n",
 		one_energy + total_two_energy + moinfo.eref);
       }
     }

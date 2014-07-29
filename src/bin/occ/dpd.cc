@@ -434,12 +434,12 @@ double **SymBlockMatrix::to_block_matrix()
 
 void SymBlockMatrix::print(FILE *out)
 {
-    if (name_.length()) fprintf(out, "\n ## %s ##\n", name_.c_str());
+    if (name_.length()) psi::fprintf(out, "\n ## %s ##\n", name_.c_str());
     for (int h=0; h<nirreps_; h++) {
       if (rowspi_[h] != 0 && colspi_[h] != 0) {
-	fprintf(out, "\n Irrep: %d\n", h+1);
+	psi::fprintf(out, "\n Irrep: %d\n", h+1);
 	print_mat(matrix_[h], rowspi_[h], colspi_[h], out);
-	fprintf(out, "\n");
+	psi::fprintf(out, "\n");
       }
     }
     fflush(out);
@@ -447,12 +447,12 @@ void SymBlockMatrix::print(FILE *out)
 
 void SymBlockMatrix::print()
 {
-    if (name_.length()) fprintf(outfile, "\n ## %s ##\n", name_.c_str());
+    if (name_.length()) psi::fprintf(outfile, "\n ## %s ##\n", name_.c_str());
     for (int h=0; h<nirreps_; h++) {
       if (rowspi_[h] != 0 && colspi_[h] != 0) {
-	fprintf(outfile, "\n Irrep: %d\n", h+1);
+	psi::fprintf(outfile, "\n Irrep: %d\n", h+1);
 	print_mat(matrix_[h], rowspi_[h], colspi_[h], outfile);
-	fprintf(outfile, "\n");
+	psi::fprintf(outfile, "\n");
       }
     }
     fflush(outfile);
@@ -1145,12 +1145,12 @@ double SymBlockVector::trace()
 
 void SymBlockVector::print(FILE *out)
 {
-    if (name_.length()) fprintf(out, "\n ## %s ##\n", name_.c_str());
+    if (name_.length()) psi::fprintf(out, "\n ## %s ##\n", name_.c_str());
     for (int h=0; h<nirreps_; h++) {
       if (dimvec_[h] != 0) {
-	fprintf(out, "\n Irrep: %d\n", h+1);
+	psi::fprintf(out, "\n Irrep: %d\n", h+1);
 	for (int j=0; j<dimvec_[h]; ++j) {
-	  fprintf(out, "%20.14f \n", vector_[h][j]);
+	  psi::fprintf(out, "%20.14f \n", vector_[h][j]);
 	}
       }
     }
@@ -1159,12 +1159,12 @@ void SymBlockVector::print(FILE *out)
 
 void SymBlockVector::print()
 {
-     if (name_.length()) fprintf(outfile, "\n ## %s ##\n", name_.c_str());
+     if (name_.length()) psi::fprintf(outfile, "\n ## %s ##\n", name_.c_str());
     for (int h=0; h<nirreps_; h++) {
       if (dimvec_[h] != 0) {
-	fprintf(outfile, "\n Irrep: %d\n", h+1);
+	psi::fprintf(outfile, "\n Irrep: %d\n", h+1);
 	for (int j=0; j<dimvec_[h]; ++j) {
-	  fprintf(outfile, "%20.14f \n", vector_[h][j]);
+	  psi::fprintf(outfile, "%20.14f \n", vector_[h][j]);
 	}
       }
     }

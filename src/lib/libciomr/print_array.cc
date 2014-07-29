@@ -27,7 +27,7 @@
 */
 
 #include <cstdio>
-
+#include "psi4-dec.h"
 namespace psi {
 
 /*!
@@ -56,20 +56,20 @@ L200:
       mm=m;
       if (m > kk) mm=kk;
       ll = 2*(mm-ii+1)+1;
-      fprintf (out,"\n");
-      for (i=ii; i <= mm; i++) fprintf(out,"       %5d",i);
-      fprintf (out,"\n");
+      psi::fprintf (out,"\n");
+      for (i=ii; i <= mm; i++) psi::fprintf(out,"       %5d",i);
+      psi::fprintf (out,"\n");
       for (i=ii; i <= m; i++) {
          i1=i*(i-1)/2+ii;
          i2=i+i*(i-1)/2;
          if (i2 > nn) i2 = i1+9;
-         fprintf (out,"\n%5d",i);
+         psi::fprintf (out,"\n%5d",i);
          for (j=i1; j <= i2; j++) {
-            fprintf (out,"%12.7f",a[j-1]);
+            psi::fprintf (out,"%12.7f",a[j-1]);
             }
          }
       if (m <= kk) {
-         fprintf(out,"\n");
+         psi::fprintf(out,"\n");
          fflush(out);
          return;
          }

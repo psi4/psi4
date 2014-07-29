@@ -111,7 +111,7 @@ void preppert()
     double **TMP1 = angmom[i]->to_block_matrix();
     double **TMP3 = block_matrix(nmo, nmo);
     sprintf(lbl, "L_%1s", cartcomp[i]);
-  //  fprintf(outfile, "%s Angular Momentum Integrals (SO)\n",lbl);
+  //  psi::fprintf(outfile, "%s Angular Momentum Integrals (SO)\n",lbl);
 //    mat_print(TMP1,nmo, nmo, outfile);
     C_DGEMM('n','n',nso,nmo,nso,1,TMP1[0],nso,moinfo.scf[0],nmo,0,TMP2[0],nso);
     C_DGEMM('t','n',nmo,nmo,nso,1,moinfo.scf[0],nmo,TMP2[0],nso,0,TMP3[0],nmo);

@@ -54,17 +54,17 @@ void CCMRCC::compute_perturbative_triples()
   MRCCSD_T mrccsd_t(options_,&h_eff);
 
   if(options_.get_bool("DIAGONALIZE_HEFF")){
-    fprintf(outfile,"\n\n  Diagonalizing Heff");
+    psi::fprintf(outfile,"\n\n  Diagonalizing Heff");
     current_energy = h_eff.diagonalize();
   }else{
-    fprintf(outfile,"\n\n  Computing the expectation value of Heff");
+    psi::fprintf(outfile,"\n\n  Computing the expectation value of Heff");
     current_energy = h_eff.expectation_value();
   }
   Process::environment.globals["CURRENT ENERGY"]    = current_energy;
   Process::environment.globals["MRCC TOTAL ENERGY"] = current_energy;
 
-  fprintf(outfile,"\n\n%6c* Mk-MRCCSD(T) total energy   =    %20.12f",' ',current_energy);
-  fprintf(outfile,"\n\n  Timing for triples:             %20.6f s",timer.get());
+  psi::fprintf(outfile,"\n\n%6c* Mk-MRCCSD(T) total energy   =    %20.12f",' ',current_energy);
+  psi::fprintf(outfile,"\n\n  Timing for triples:             %20.6f s",timer.get());
   fflush(outfile);
 }
 

@@ -55,7 +55,7 @@ void get_td_params(Options& options)
   else if(options["ROOTS_PER_IRREP"].has_changed()) {
     i = options["ROOTS_PER_IRREP"].size();
     if(i != moinfo.nirreps) {
-      fprintf(outfile,"Dim. of states_per_irrep vector must be %d\n",
+      psi::fprintf(outfile,"Dim. of states_per_irrep vector must be %d\n",
               moinfo.nirreps) ;
       throw PsiException("ccdensity: error", __FILE__, __LINE__);
     }
@@ -64,12 +64,12 @@ void get_td_params(Options& options)
     }
   }
   else {
-    fprintf(outfile,"\nUse ROOTS_PER_IRREP or PROP_SYM and PROP_ROOT\n");
+    psi::fprintf(outfile,"\nUse ROOTS_PER_IRREP or PROP_SYM and PROP_ROOT\n");
     throw PsiException("ccdensity: error", __FILE__, __LINE__);
   }
 
   /*
-  fprintf(outfile,"\tNumber of States = %d\n",params.nstates);
+  psi::fprintf(outfile,"\tNumber of States = %d\n",params.nstates);
   fflush(outfile);
   */
 
@@ -157,9 +157,9 @@ void get_td_params(Options& options)
     }
   }
   /*
-  fprintf(outfile,"\n\tState\t  EOM Energy\t    R0\n");
+  psi::fprintf(outfile,"\n\tState\t  EOM Energy\t    R0\n");
   for(i=0; i<params.nstates; i++) {
-    fprintf(outfile,"\t %d%3s %15.10lf %12.8lf\n",
+    psi::fprintf(outfile,"\t %d%3s %15.10lf %12.8lf\n",
             td_params[i].root+1,moinfo.labels[td_params[i].irrep],
             td_params[i].cceom_energy,td_params[i].R0);
   }

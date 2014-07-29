@@ -544,7 +544,7 @@ double ET_ABB(void)
 			/*
 			if(fabs(value_c) > 1e-7) {
 			  cnt++;
-			  fprintf(outfile, "%d %d %d %d %d %d %20.14f\n", I, J, K, A, B, C, value_c);
+			  psi::fprintf(outfile, "%d %d %d %d %d %d %20.14f\n", I, J, K, A, B, C, value_c);
 			}
 			*/
 
@@ -581,9 +581,9 @@ double ET_ABB(void)
     } /* Gj */
   } /* Gi */
 
-  /*  fprintf(outfile, "cnt = %d\n", cnt); */
+  /*  psi::fprintf(outfile, "cnt = %d\n", cnt); */
   ET_ABB /= 4.0;
-  /*  fprintf(outfile, "ET_ABB = %20.14f\n", ET_ABB); */
+  /*  psi::fprintf(outfile, "ET_ABB = %20.14f\n", ET_ABB); */
 
 
   for(h=0; h < nirreps; h++) {

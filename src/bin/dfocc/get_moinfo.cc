@@ -35,7 +35,7 @@ namespace psi{ namespace dfoccwave{
 
 void DFOCC::get_moinfo()
 {      
-  //fprintf(outfile,"\n get_moinfo is starting... \n"); fflush(outfile);
+  //psi::fprintf(outfile,"\n get_moinfo is starting... \n"); fflush(outfile);
 //===========================================================================================
 //========================= RHF =============================================================
 //===========================================================================================
@@ -110,7 +110,7 @@ if (reference_ == "RESTRICTED") {
             msd_oo_scale = ( FockA->get(noccA,noccA) - FockA->get(noccA-1,noccA-1) ) / ( FockA->get(nfrzc+1,nfrzc+1) - FockA->get(nfrzc,nfrzc) ); 
             msd_oo_scale /= 3.0;
             if (hess_type == "APPROX_DIAG_HF" || hess_type == "APPROX_DIAG_EKT") {
-                fprintf(outfile,"\tOO Scale is changed to: %12.10f\n", msd_oo_scale);
+                psi::fprintf(outfile,"\tOO Scale is changed to: %12.10f\n", msd_oo_scale);
                 fflush(outfile);
             }
         }
@@ -274,7 +274,7 @@ else if (reference_ == "UNRESTRICTED") {
             scaleB /= 3.0;
             msd_oo_scale = 0.5 * (scaleA + scaleB);
             if (hess_type == "APPROX_DIAG_HF" || hess_type == "APPROX_DIAG_EKT") {
-                fprintf(outfile,"\tOO Scale is changed to: %12.10f\n", msd_oo_scale);
+                psi::fprintf(outfile,"\tOO Scale is changed to: %12.10f\n", msd_oo_scale);
                 fflush(outfile);
             }
         }
@@ -410,7 +410,7 @@ else if (reference_ == "UNRESTRICTED") {
         Sso->set(Sso_);
         Sso_.reset();
 
-//fprintf(outfile,"\n get_moinfo is done. \n"); fflush(outfile);
+//psi::fprintf(outfile,"\n get_moinfo is done. \n"); fflush(outfile);
 }// end get_moinfo
 }} // End Namespaces
 

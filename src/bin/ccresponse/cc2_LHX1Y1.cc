@@ -227,7 +227,7 @@ double cc2_LHX1Y1(const char *pert_x, int irrep_x, double omega_x,
   global_dpd_->file2_close(&L1);
   global_dpd_->file2_close(&ZIA);
 	
-  /*   fprintf(outfile, "L(1)HX1Y1 = %20.12f\n", polar); */
+  /*   psi::fprintf(outfile, "L(1)HX1Y1 = %20.12f\n", polar); */
 	
   /* The Lambda 2 contractions */
   sprintf(lbl, "X_%s_IA (%5.3f)", pert_x, omega_x);

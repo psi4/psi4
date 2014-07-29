@@ -130,7 +130,7 @@ else if (reference_ == "UNRESTRICTED") {
     G2c_iaB->gemm(false, false, bQiaB, t2p_1, 1.0, 0.0);
     t2p_1.reset();
     bQiaB.reset();
-    //fprintf(outfile,"\tI am here.\n"); fflush(outfile);
+    //psi::fprintf(outfile,"\tI am here.\n"); fflush(outfile);
 
     // G_ia^Q = \sum_{M,E} b_ME^Q t_Mi^Ea 
     t2p_1 = SharedTensor2d(new Tensor2d("T2_1(IA,jb)", naoccA, navirA, naoccB, navirB));

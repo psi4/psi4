@@ -24,11 +24,10 @@
 #include <stdarg.h>
 #include "psi4-dec.h"
 
-using namespace psi;
+namespace psi{
+//extern "C"{
+void p_fprintf(FILE * __restrict __stream, const char * __restrict __format, ...)
 
-extern "C" {
-
-    void p_fprintf(FILE * __restrict __stream, const char * __restrict __format, ...)
     {
         va_list args;
         va_start(args, __format);
@@ -57,5 +56,5 @@ extern "C" {
         va_end(args);
         return status;
     }
-
+//}
 }

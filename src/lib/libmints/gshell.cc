@@ -151,11 +151,11 @@ int ShellInfo::nprimitive() const
 
 void ShellInfo::print(FILE *out) const
 {
-        fprintf(outfile, "    %c %3d 1.00\n", AMCHAR(), nprimitive());
+        psi::fprintf(outfile, "    %c %3d 1.00\n", AMCHAR(), nprimitive());
 
     for (int K = 0; K < nprimitive(); K++) {
 
-            fprintf(outfile, "               %20.8f %20.8f\n",exp_[K], original_coef_[K]);
+            psi::fprintf(outfile, "               %20.8f %20.8f\n",exp_[K], original_coef_[K]);
 
     }
 }
@@ -197,11 +197,11 @@ int GaussianShell::nprimitive() const
 void GaussianShell::print(FILE *out) const
 {
 
-        fprintf(outfile, "    %c %3d 1.00\n", AMCHAR(), nprimitive());
+        psi::fprintf(outfile, "    %c %3d 1.00\n", AMCHAR(), nprimitive());
 
     for (int K = 0; K < nprimitive(); K++) {
 
-            fprintf(outfile, "               %20.8f %20.8f\n",exp_[K], original_coef_[K]);
+            psi::fprintf(outfile, "               %20.8f %20.8f\n",exp_[K], original_coef_[K]);
 
     }
 }

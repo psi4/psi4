@@ -326,26 +326,26 @@ void SAPT0::exch_ind20A_B()
   e_exch_ind20_ = exind;
 
   if (debug_) {
-    fprintf(outfile,"\n    Ex1                 = %18.12lf H\n",ex1);
-    fprintf(outfile,"    Ex2                 = %18.12lf H\n",ex2);
-    fprintf(outfile,"    Ex3                 = %18.12lf H\n",ex3);
-    fprintf(outfile,"    Ex4                 = %18.12lf H\n",ex4);
-    fprintf(outfile,"    Ex5                 = %18.12lf H\n",ex5);
-    fprintf(outfile,"    Ex6                 = %18.12lf H\n",ex6);
-    fprintf(outfile,"    Ex7                 = %18.12lf H\n",ex7);
-    fprintf(outfile,"    Ex8                 = %18.12lf H\n",ex8);
-    fprintf(outfile,"    Ex9                 = %18.12lf H\n",ex9);
-    fprintf(outfile,"    Ex10                = %18.12lf H\n",ex10);
-    fprintf(outfile,"    Ex11                = %18.12lf H\n",ex11);
-    fprintf(outfile,"    Ex12                = %18.12lf H\n",ex12);
-    fprintf(outfile,"    Ex13                = %18.12lf H\n\n",ex13);
+    psi::fprintf(outfile,"\n    Ex1                 = %18.12lf H\n",ex1);
+    psi::fprintf(outfile,"    Ex2                 = %18.12lf H\n",ex2);
+    psi::fprintf(outfile,"    Ex3                 = %18.12lf H\n",ex3);
+    psi::fprintf(outfile,"    Ex4                 = %18.12lf H\n",ex4);
+    psi::fprintf(outfile,"    Ex5                 = %18.12lf H\n",ex5);
+    psi::fprintf(outfile,"    Ex6                 = %18.12lf H\n",ex6);
+    psi::fprintf(outfile,"    Ex7                 = %18.12lf H\n",ex7);
+    psi::fprintf(outfile,"    Ex8                 = %18.12lf H\n",ex8);
+    psi::fprintf(outfile,"    Ex9                 = %18.12lf H\n",ex9);
+    psi::fprintf(outfile,"    Ex10                = %18.12lf H\n",ex10);
+    psi::fprintf(outfile,"    Ex11                = %18.12lf H\n",ex11);
+    psi::fprintf(outfile,"    Ex12                = %18.12lf H\n",ex12);
+    psi::fprintf(outfile,"    Ex13                = %18.12lf H\n\n",ex13);
   }
 
   if (print_) {
     if (no_response_) 
-      fprintf(outfile,"    Exch-Ind20 (A<-B)   = %18.12lf H\n",exind);
+      psi::fprintf(outfile,"    Exch-Ind20 (A<-B)   = %18.12lf H\n",exind);
     else
-      fprintf(outfile,"    Exch-Ind20,r (A<-B) = %18.12lf H\n",exind);
+      psi::fprintf(outfile,"    Exch-Ind20,r (A<-B) = %18.12lf H\n",exind);
     fflush(outfile);
   }
 }
@@ -648,29 +648,29 @@ void SAPT0::exch_ind20B_A()
   e_exch_ind20_ += exind;
 
   if (debug_) {
-    fprintf(outfile,"\n    Ex1                 = %18.12lf H\n",ex1);
-    fprintf(outfile,"    Ex2                 = %18.12lf H\n",ex2);
-    fprintf(outfile,"    Ex3                 = %18.12lf H\n",ex3);
-    fprintf(outfile,"    Ex4                 = %18.12lf H\n",ex4);
-    fprintf(outfile,"    Ex5                 = %18.12lf H\n",ex5);
-    fprintf(outfile,"    Ex6                 = %18.12lf H\n",ex6);
-    fprintf(outfile,"    Ex7                 = %18.12lf H\n",ex7);
-    fprintf(outfile,"    Ex8                 = %18.12lf H\n",ex8);
-    fprintf(outfile,"    Ex9                 = %18.12lf H\n",ex9);
-    fprintf(outfile,"    Ex10                = %18.12lf H\n",ex10);
-    fprintf(outfile,"    Ex11                = %18.12lf H\n",ex11);
-    fprintf(outfile,"    Ex12                = %18.12lf H\n",ex12);
-    fprintf(outfile,"    Ex13                = %18.12lf H\n\n",ex13);
+    psi::fprintf(outfile,"\n    Ex1                 = %18.12lf H\n",ex1);
+    psi::fprintf(outfile,"    Ex2                 = %18.12lf H\n",ex2);
+    psi::fprintf(outfile,"    Ex3                 = %18.12lf H\n",ex3);
+    psi::fprintf(outfile,"    Ex4                 = %18.12lf H\n",ex4);
+    psi::fprintf(outfile,"    Ex5                 = %18.12lf H\n",ex5);
+    psi::fprintf(outfile,"    Ex6                 = %18.12lf H\n",ex6);
+    psi::fprintf(outfile,"    Ex7                 = %18.12lf H\n",ex7);
+    psi::fprintf(outfile,"    Ex8                 = %18.12lf H\n",ex8);
+    psi::fprintf(outfile,"    Ex9                 = %18.12lf H\n",ex9);
+    psi::fprintf(outfile,"    Ex10                = %18.12lf H\n",ex10);
+    psi::fprintf(outfile,"    Ex11                = %18.12lf H\n",ex11);
+    psi::fprintf(outfile,"    Ex12                = %18.12lf H\n",ex12);
+    psi::fprintf(outfile,"    Ex13                = %18.12lf H\n\n",ex13);
   }
 
   if (print_) {
     if (no_response_) {
-      fprintf(outfile,"    Exch-Ind20 (B<-A)   = %18.12lf H\n",exind);
-      fprintf(outfile,"    Exch-Ind20          = %18.12lf H\n",e_exch_ind20_);
+      psi::fprintf(outfile,"    Exch-Ind20 (B<-A)   = %18.12lf H\n",exind);
+      psi::fprintf(outfile,"    Exch-Ind20          = %18.12lf H\n",e_exch_ind20_);
     } 
     else {
-      fprintf(outfile,"    Exch-Ind20,r (B<-A) = %18.12lf H\n",exind);
-      fprintf(outfile,"    Exch-Ind20,r        = %18.12lf H\n",e_exch_ind20_);
+      psi::fprintf(outfile,"    Exch-Ind20,r (B<-A) = %18.12lf H\n",exind);
+      psi::fprintf(outfile,"    Exch-Ind20,r        = %18.12lf H\n",e_exch_ind20_);
     }
     fflush(outfile);
   }
@@ -695,9 +695,9 @@ void SAPT2::exch_ind20r()
   e_exch_ind20_ = exindAB + exindBA;
 
   if (print_) {
-    fprintf(outfile,"    Exch-Ind20,r (A<-B) = %18.12lf H\n",exindAB);
-    fprintf(outfile,"    Exch-Ind20,r (B<-A) = %18.12lf H\n",exindBA);
-    fprintf(outfile,"    Exch-Ind20,r        = %18.12lf H\n",e_exch_ind20_);
+    psi::fprintf(outfile,"    Exch-Ind20,r (A<-B) = %18.12lf H\n",exindAB);
+    psi::fprintf(outfile,"    Exch-Ind20,r (B<-A) = %18.12lf H\n",exindBA);
+    psi::fprintf(outfile,"    Exch-Ind20,r        = %18.12lf H\n",e_exch_ind20_);
     fflush(outfile);
   }
 

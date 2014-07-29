@@ -85,7 +85,7 @@ void relax_pdms(double **onepdm, double *tpdm, double *tei,
     // oops, I think the PDM's maybe need to be bigger for gradients,
     // not just size of populated orbs...
     if (p >= npop || q >= npop) {
-      fprintf(outfile, "relax_pdms: ERROR: oops, need bigger pdms!\n");
+      psi::fprintf(outfile, "relax_pdms: ERROR: oops, need bigger pdms!\n");
       continue;
     }
     onepdm[p][q] += 2.0*Zvec[pq];
@@ -122,7 +122,7 @@ void relax_pdms(double **onepdm, double *tpdm, double *tei,
   psio_close(opdm_file,1); 
 
   if (print_lvl > 1) {
-    fprintf(outfile,"\nRelaxed one-particle density matrix\n\n");
+    psi::fprintf(outfile,"\nRelaxed one-particle density matrix\n\n");
     print_mat(onepdm, nmo, nmo, outfile);
   }
 
@@ -132,12 +132,12 @@ void relax_pdms(double **onepdm, double *tpdm, double *tei,
   psio_close(lag_file,1);
 
   if (print_lvl > 1) {
-    fprintf(outfile,"\nEffective Lagrangian Matrix\n\n");
+    psi::fprintf(outfile,"\nEffective Lagrangian Matrix\n\n");
     print_mat(X_tilde, nmo, nmo, outfile);
   }
 
   if (print_lvl > 1) {
-    fprintf(outfile,"\nRelaxed two-particle density matrix\n\n");
+    psi::fprintf(outfile,"\nRelaxed two-particle density matrix\n\n");
     print_array(tpdm, nmo*nmo, outfile);
   }
 

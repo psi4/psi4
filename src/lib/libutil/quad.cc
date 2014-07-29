@@ -63,13 +63,13 @@ ChebyshevIIQuadrature::ChebyshevIIQuadrature(int npoints, double t0) :
 
 void ChebyshevIIQuadrature::print(FILE* out)
 {
-    fprintf(out, "  Chebyshev Type II Quadrature of %d Points\n", npoints_);
-    fprintf(out, "        for integration on [0, \\infty)\n");
-    fprintf(out, "           Center %14.10E\n", center_);
-    fprintf(out, "\n");
-    fprintf(out, "  Index       Point         Weight\n");
+    psi::fprintf(out, "  Chebyshev Type II Quadrature of %d Points\n", npoints_);
+    psi::fprintf(out, "        for integration on [0, \\infty)\n");
+    psi::fprintf(out, "           Center %14.10E\n", center_);
+    psi::fprintf(out, "\n");
+    psi::fprintf(out, "  Index       Point         Weight\n");
     for (int k = 0; k < npoints_; k++)
-        fprintf(out, "   %3d      %8.3E    %8.3E\n", k+1, t_[k], w_[k]);
+        psi::fprintf(out, "   %3d      %8.3E    %8.3E\n", k+1, t_[k], w_[k]);
 }
 
 }

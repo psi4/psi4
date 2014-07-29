@@ -75,7 +75,7 @@ void schmidt(double **A, int rows, int cols, FILE * /*outfile*/)
          }
       dot_arr(tmp, tmp, cols, &normval);
       normval = sqrt(normval);
-      /* fprintf(outfile,"\n norm[%d] = %20.15f\n",i, (1.0/normval));
+      /* psi::fprintf(outfile,"\n norm[%d] = %20.15f\n",i, (1.0/normval));
       fflush(outfile); */
       for (I=0; I<cols; I++) A[i][I] = tmp[I] / normval;
       }
@@ -101,13 +101,13 @@ main()
    mat[2][0] = 0.0 ; mat[2][1] = 0.0 ; mat[2][2] = 0.5 ;
 
    ffile(&outfile, "output.dat", 0) ;
-   fprintf(outfile, "Matrix before Gram-Schmidt process\n") ;
+   psi::fprintf(outfile, "Matrix before Gram-Schmidt process\n") ;
    print_mat(mat,3,3,outfile) ;
    schmidt(mat,3,3) ;
-   fprintf(outfile, "\nMatrix after Gram-Schmidt process\n") ;
+   psi::fprintf(outfile, "\nMatrix after Gram-Schmidt process\n") ;
    print_mat(mat,3,3,outfile) ;
 
-   fprintf(outfile, "\nTest A * A = \n") ;
+   psi::fprintf(outfile, "\nTest A * A = \n") ;
 
    mmult(mat, 0, mat, 1, mat_x_mat, 0, 3, 3, 3, 0) ;
    print_mat(mat_x_mat,3,3,outfile) ;

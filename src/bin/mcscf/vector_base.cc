@@ -48,9 +48,9 @@ VectorBase::~VectorBase()
 
 void VectorBase::print()
 {
-  fprintf(outfile,"\n  ");
+  psi::fprintf(outfile,"\n  ");
   for(size_t i = 0 ; i < elements_; ++i){
-    fprintf(outfile,"%10.6f",vector_[i]);
+    psi::fprintf(outfile,"%10.6f",vector_[i]);
   }
 }
 

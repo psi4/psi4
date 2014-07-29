@@ -64,7 +64,7 @@ int read_ref_orbs(void)
   ffileb_noexit(&fp,"orbs.dat",2);
   if (fp == NULL) {
     if (Params.print_lvl) 
-      fprintf(outfile, "No orbs.dat file ... using new reference orbitals\n");
+      psi::fprintf(outfile, "No orbs.dat file ... using new reference orbitals\n");
     return(0);
   }
 
@@ -73,7 +73,7 @@ int read_ref_orbs(void)
     if (ir_orbs == 0) continue;
     if (fread(CalcInfo.mo_coeffs[h][0], sizeof(double), ir_orbs * ir_orbs,
               fp) != ir_orbs * ir_orbs) {
-      fprintf(outfile, "Error reading reference orbitals.\n");
+      psi::fprintf(outfile, "Error reading reference orbitals.\n");
       fclose(fp);
       return(0);
     }
@@ -101,7 +101,7 @@ int write_ref_orbs(void)
   ffileb_noexit(&fp,"orbs.dat",0);
   if (fp == NULL) {
     if (Params.print_lvl) 
-      fprintf(outfile, "Can't open orbs.dat file!\n");
+      psi::fprintf(outfile, "Can't open orbs.dat file!\n");
     return(0);
   }
 
@@ -110,7 +110,7 @@ int write_ref_orbs(void)
     if (ir_orbs == 0) continue;
     if (fwrite(CalcInfo.mo_coeffs[h][0], sizeof(double), ir_orbs * ir_orbs,
               fp) != ir_orbs * ir_orbs) {
-      fprintf(outfile, "Error writing reference orbitals.\n");
+      psi::fprintf(outfile, "Error writing reference orbitals.\n");
       fclose(fp);
       return(0);
     }

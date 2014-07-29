@@ -59,9 +59,9 @@ void MatrixBase::print()
 {
   if(nrows * ncols > 0){
     for(size_t p = 0; p < nrows; ++p){
-      fprintf(outfile,"\n  ");
+      psi::fprintf(outfile,"\n  ");
       for(size_t q = 0; q < ncols; ++q){
-        fprintf(outfile,"%10.6f",matrix[p][q]);
+        psi::fprintf(outfile,"%10.6f",matrix[p][q]);
       }
     }
   }
@@ -170,7 +170,7 @@ void BlockMatrix::print()
 {
   // Deallocate the blocks
   for(int h = 0; h < nirreps; ++h){
-    fprintf(outfile,"\n    Block %d",h);
+    psi::fprintf(outfile,"\n    Block %d",h);
     blocks[h]->print();
   }
 }
@@ -455,7 +455,7 @@ BlockMatrix* IndexMatrix::get_block_matrix(size_t index,int ref)
       return matrices[std::make_pair(index,ref)];
   }
 
-  fprintf(outfile,"\n  Couldn't find element!");
+  psi::fprintf(outfile,"\n  Couldn't find element!");
   fflush(outfile);
   abort();
   return 0;
@@ -464,7 +464,7 @@ BlockMatrix* IndexMatrix::get_block_matrix(size_t index,int ref)
 void IndexMatrix::print()
 {
   for(BMMap::iterator iter = matrices.begin(); iter != matrices.end(); ++iter){
-    fprintf(outfile,"\n  Index = %4d Ref = %d",static_cast<int>(iter->first.first),static_cast<int>(iter->first.second));
+    psi::fprintf(outfile,"\n  Index = %4d Ref = %d",static_cast<int>(iter->first.first),static_cast<int>(iter->first.second));
     iter->second->print();
   }
 }

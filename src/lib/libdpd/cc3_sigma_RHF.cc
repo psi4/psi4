@@ -32,7 +32,7 @@
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include <psifiles.h>
-
+#include "psi4-dec.h"
 namespace psi {
 
 /*
@@ -100,7 +100,7 @@ void DPD::cc3_sigma_RHF(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
     GW = WmAEf->file.my_irrep;
     GS = SIjAb->file.my_irrep;
     if (GS != (GX3^GW)) {
-        fprintf(outfile,"problem with irreps in cc3_sigma_RHF()\n");
+        psi::fprintf(outfile,"problem with irreps in cc3_sigma_RHF()\n");
         exit(1);
     }
     if (do_singles) {

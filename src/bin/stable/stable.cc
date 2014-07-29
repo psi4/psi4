@@ -124,22 +124,22 @@ PsiReturnType stability(Options & options)
 
   /* Print the eigenvalues in a nice format */
   if(params.ref == 0) {
-    fprintf(outfile, "\n\t     RHF->RHF stability eigenvalues:\n");
-    fprintf(outfile,   "\t     -------------------------------\n");
+    psi::fprintf(outfile, "\n\t     RHF->RHF stability eigenvalues:\n");
+    psi::fprintf(outfile,   "\t     -------------------------------\n");
     print_evals(moinfo.A_evals, moinfo.rank);
 
-    fprintf(outfile, "\n\t     RHF->UHF stability eigenvalues:\n");
-    fprintf(outfile,   "\t     -------------------------------\n");
+    psi::fprintf(outfile, "\n\t     RHF->UHF stability eigenvalues:\n");
+    psi::fprintf(outfile,   "\t     -------------------------------\n");
     print_evals(moinfo.A_triplet_evals, moinfo.rank);
   }
   else if(params.ref == 1) {
-    fprintf(outfile, "\n\t     ROHF->ROHF stability eigenvalues:\n");
-    fprintf(outfile,   "\t     ---------------------------------\n");
+    psi::fprintf(outfile, "\n\t     ROHF->ROHF stability eigenvalues:\n");
+    psi::fprintf(outfile,   "\t     ---------------------------------\n");
     print_evals(moinfo.A_evals, moinfo.rank);
   }
   else if(params.ref == 2) {
-    fprintf(outfile, "\n\t     UHF->UHF stability eigenvalues:\n");
-    fprintf(outfile,   "\t     -------------------------------\n");
+    psi::fprintf(outfile, "\n\t     UHF->UHF stability eigenvalues:\n");
+    psi::fprintf(outfile,   "\t     -------------------------------\n");
     print_evals(moinfo.A_evals, moinfo.rank);
   }
 

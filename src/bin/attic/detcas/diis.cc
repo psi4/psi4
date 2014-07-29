@@ -72,12 +72,12 @@ int diis(int veclen, double *vec, double *errvec)
   if (fp != NULL) {
 
     if (fread(&num_vecs, sizeof(int), 1, fp) != 1) {
-      fprintf(outfile, "(diis): Error reading number of diis vectors.\n");
+      psi::fprintf(outfile, "(diis): Error reading number of diis vectors.\n");
       return(0);
     }
 
     if (fread(&diis_iter, sizeof(int), 1, fp) != 1) {
-      fprintf(outfile, "(diis): Error reading diis iteration number.\n");
+      psi::fprintf(outfile, "(diis): Error reading diis iteration number.\n");
       return(0);
     }
 
@@ -87,12 +87,12 @@ int diis(int veclen, double *vec, double *errvec)
     for (i=0; i<num_vecs; i++) {
 
       if (fread(vecs[i], sizeof(double), veclen, fp) != veclen) { 
-        fprintf(outfile, "(diis): Error reading diis vector %d\n", i);
+        psi::fprintf(outfile, "(diis): Error reading diis vector %d\n", i);
         return(0);
       }
 
       if (fread(errvecs[i], sizeof(double), veclen, fp) != veclen) { 
-        fprintf(outfile, "(diis): Error reading diis error vector %d\n", i);
+        psi::fprintf(outfile, "(diis): Error reading diis error vector %d\n", i);
         return(0);
       }
 
@@ -124,7 +124,7 @@ int diis(int veclen, double *vec, double *errvec)
     offset = num_vecs - Params.diis_max_vecs;
 
   if (Params.print_lvl > 2) 
-    fprintf(outfile, "Diis: iter %2d, vecs %d, do_diis %d, offset %d\n", 
+    psi::fprintf(outfile, "Diis: iter %2d, vecs %d, do_diis %d, offset %d\n", 
             diis_iter, num_vecs, do_diis, offset);
 
   new_num_vecs = num_vecs - offset;
@@ -132,26 +132,26 @@ int diis(int veclen, double *vec, double *errvec)
   /* write out the diis info */
   ffileb_noexit(&fp,"diis.dat",0);
   if (fp == NULL) {
-    fprintf(outfile, "(diis): Error opening diis.dat\n");
+    psi::fprintf(outfile, "(diis): Error opening diis.dat\n");
     return(0);
   } 
 
   if (fwrite(&new_num_vecs, sizeof(int), 1, fp) != 1) {
-    fprintf(outfile, "(diis): Error writing number of diis vectors.\n");
+    psi::fprintf(outfile, "(diis): Error writing number of diis vectors.\n");
     return(0);
   }
 
   if (fwrite(&diis_iter, sizeof(int), 1, fp) != 1) {
-    fprintf(outfile, "(diis): Error writing diis iteration number.\n");
+    psi::fprintf(outfile, "(diis): Error writing diis iteration number.\n");
     return(0);
   }
 
   for (i=offset; i<num_vecs; i++) {
     if (fwrite(vecs[i], sizeof(double), veclen, fp) != veclen) {
-      fprintf(outfile, "(diis): Error writing vector %d.\n", i);
+      psi::fprintf(outfile, "(diis): Error writing vector %d.\n", i);
     }
     if (fwrite(errvecs[i], sizeof(double), veclen, fp) != veclen) {
-      fprintf(outfile, "(diis): Error writing error vector %d.\n", i);
+      psi::fprintf(outfile, "(diis): Error writing error vector %d.\n", i);
     }
   }
 
@@ -167,7 +167,7 @@ int diis(int veclen, double *vec, double *errvec)
 
   /* form diis matrix, solve equations */
   if (Params.print_lvl) 
-    fprintf(outfile, "Attempting a DIIS step\n");
+    psi::fprintf(outfile, "Attempting a DIIS step\n");
 
   bmat = block_matrix(new_num_vecs+1, new_num_vecs+1);
   bvec = init_array(new_num_vecs+1);
@@ -192,7 +192,7 @@ int diis(int veclen, double *vec, double *errvec)
   bvec[new_num_vecs] = -1.0;
 
   if (Params.print_lvl > 2) {
-    fprintf(outfile, "DIIS B Matrix:\n");
+    psi::fprintf(outfile, "DIIS B Matrix:\n");
     print_mat(bmat, new_num_vecs+1, new_num_vecs+1, outfile);
   }
 
@@ -205,7 +205,7 @@ int diis(int veclen, double *vec, double *errvec)
   }
 
   if (Params.print_lvl > 2) {
-    fprintf(outfile, "DIIS B Matrix:\n");
+    psi::fprintf(outfile, "DIIS B Matrix:\n");
     print_mat(bmat, new_num_vecs+1, new_num_vecs+1, outfile);
   }
 
@@ -213,17 +213,17 @@ int diis(int veclen, double *vec, double *errvec)
   flin(bmat, bvec, new_num_vecs+1, 1, &det); 
 
   if (fabs(det) < DIIS_MIN_DET) {
-    fprintf(outfile, "Warning: diis matrix near-singular\n");
-    fprintf(outfile, "Determinant is %6.3E\n", det);
+    psi::fprintf(outfile, "Warning: diis matrix near-singular\n");
+    psi::fprintf(outfile, "Determinant is %6.3E\n", det);
   }
 
   if (Params.print_lvl > 3) {
-    fprintf(outfile, "\nCoefficients of DIIS extrapolant:\n");
+    psi::fprintf(outfile, "\nCoefficients of DIIS extrapolant:\n");
     for (i=0; i<new_num_vecs; i++) {
-      fprintf(outfile, "%12.6lf\n", bvec[i]);
+      psi::fprintf(outfile, "%12.6lf\n", bvec[i]);
     }
-    fprintf(outfile, "Lambda:\n");
-    fprintf(outfile, "%12.6lf\n", bvec[i]);
+    psi::fprintf(outfile, "Lambda:\n");
+    psi::fprintf(outfile, "%12.6lf\n", bvec[i]);
   }
 
   /* get extrapolated vector */

@@ -122,7 +122,7 @@ void CCIndex::init()
       make_three_index();
       break;
     default:{
-      fprintf(outfile,"\n\n\tThe CCIndex class cannot handle %s because there are more than three indices!!!\n\n",label.c_str());
+      psi::fprintf(outfile,"\n\n\tThe CCIndex class cannot handle %s because there are more than three indices!!!\n\n",label.c_str());
       fflush(outfile);
       exit(1);
     }
@@ -316,7 +316,7 @@ void CCIndex::make_two_index()
 void CCIndex::make_three_index()
 {
   if(label.find(">")!=string::npos){
-    fprintf(outfile,"\n\n\tThe CCIndex class cannot handle restricted loops for triplets!!!\n\n");
+    psi::fprintf(outfile,"\n\n\tThe CCIndex class cannot handle restricted loops for triplets!!!\n\n");
     fflush(outfile);
     exit(1);
   }
@@ -414,22 +414,22 @@ void CCIndex::make_three_index()
 
 void CCIndex::print()
 {
-  fprintf(outfile,"\n\n---------------------------------");
-  fprintf(outfile,"\n\tPair Type %s has %lu elements",label.c_str(),(unsigned long) ntuples);
-  fprintf(outfile,"\n---------------------------------");
+  psi::fprintf(outfile,"\n\n---------------------------------");
+  psi::fprintf(outfile,"\n\tPair Type %s has %lu elements",label.c_str(),(unsigned long) ntuples);
+  psi::fprintf(outfile,"\n---------------------------------");
   int index=0;
   for(int h=0;h<nirreps;h++){
     if(tuplespi[h]>0)
-      fprintf(outfile,"\n\t%s",moinfo->get_irr_labs(h));
+      psi::fprintf(outfile,"\n\t%s",moinfo->get_irr_labs(h));
     for(size_t tuple = 0; tuple < tuplespi[h]; ++tuple){
-      fprintf(outfile,"\n\t\t( ");
+      psi::fprintf(outfile,"\n\t\t( ");
       for(int k=0;k<nelements;k++)
-        fprintf(outfile,"%d ",tuples[index][k]);
-      fprintf(outfile,")");
+        psi::fprintf(outfile,"%d ",tuples[index][k]);
+      psi::fprintf(outfile,")");
       index++;
     }
   }
-  fprintf(outfile,"\n---------------------------------");
+  psi::fprintf(outfile,"\n---------------------------------");
 }
 
 }} /* End Namespaces */

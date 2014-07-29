@@ -65,21 +65,21 @@ void DFOCC::semi_canonic()
 
         // Print orbital energies
 	if (occ_orb_energy == "TRUE" && mo_optimized == 1) {
-	  fprintf(outfile,"\n\n\tOCC Alpha Orbital Energies (a.u.) \n"); 
-	  fprintf(outfile,"\t  ---------------------------------- \n"); 
+	  psi::fprintf(outfile,"\n\n\tOCC Alpha Orbital Energies (a.u.) \n"); 
+	  psi::fprintf(outfile,"\t  ---------------------------------- \n"); 
 	  fflush(outfile);
 	  
 	  // print occ orb energy
-	 fprintf(outfile, "\tAlpha occupied orbitals\n");
+	 psi::fprintf(outfile, "\tAlpha occupied orbitals\n");
 	 for (int i = 0; i < naoccA; i++){
-	      fprintf(outfile,"\t%2d %20.10f \n",i,eigooA->get(i));
+	      psi::fprintf(outfile,"\t%2d %20.10f \n",i,eigooA->get(i));
 	      fflush(outfile);   
 	 }// end loop over naocc
 	  
 	  // print vir orb energy
-	  fprintf(outfile, "\n\tAlpha virtual orbitals\n");
+	  psi::fprintf(outfile, "\n\tAlpha virtual orbitals\n");
 	  for (int i = 0; i < navirA; i++){
-	      fprintf(outfile,"\t%2d %20.10f \n",i + noccA,eigvvA->get(i));
+	      psi::fprintf(outfile,"\t%2d %20.10f \n",i + noccA,eigvvA->get(i));
 	      fflush(outfile);
 	  }// end loop over naocc
 	  
@@ -194,21 +194,21 @@ void DFOCC::semi_canonic()
 
         // Print orbital energies
 	if (occ_orb_energy == "TRUE" && mo_optimized == 1) {
-	  fprintf(outfile,"\n\n\tOCC Beta Orbital Energies (a.u.) \n"); 
-	  fprintf(outfile,"\t  ---------------------------------- \n"); 
+	  psi::fprintf(outfile,"\n\n\tOCC Beta Orbital Energies (a.u.) \n"); 
+	  psi::fprintf(outfile,"\t  ---------------------------------- \n"); 
 	  fflush(outfile);
 	  
 	  // print occ orb energy
-	 fprintf(outfile, "\tBeta occupied orbitals\n");
+	 psi::fprintf(outfile, "\tBeta occupied orbitals\n");
 	 for (int i = 0; i < naoccB; i++){
-	      fprintf(outfile,"\t%2d %20.10f \n",i,eigooB->get(i));
+	      psi::fprintf(outfile,"\t%2d %20.10f \n",i,eigooB->get(i));
 	      fflush(outfile);   
 	 }// end loop over naocc
 	  
 	  // print vir orb energy
-	  fprintf(outfile, "\n\tBeta virtual orbitals\n");
+	  psi::fprintf(outfile, "\n\tBeta virtual orbitals\n");
 	  for (int i = 0; i < navirB; i++){
-	      fprintf(outfile,"\t%2d %20.10f \n",i + noccB,eigvvB->get(i));
+	      psi::fprintf(outfile,"\t%2d %20.10f \n",i + noccB,eigvvB->get(i));
 	      fflush(outfile);
 	  }// end loop over naocc
 	  

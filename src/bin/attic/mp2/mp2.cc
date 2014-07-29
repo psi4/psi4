@@ -108,16 +108,16 @@ mp2(Options & options)
 
   mo.Emp2 = energy();
 
-  fprintf(outfile,"\n");
-  fprintf(outfile,"\tScaled_OS correlation energy      = %20.15f\n",mo.escsmp2_os);
-  fprintf(outfile,"\tScaled_SS correlation energy      = %20.15f\n",mo.escsmp2_ss);
-  fprintf(outfile,"\tSCS-MP2 correlation energy        = %20.15f\n",mo.escsmp2_os+mo.escsmp2_ss);
-  fprintf(outfile,"      * SCS-MP2 total energy              = %20.15f\n",mo.Escf+mo.escsmp2_os+mo.escsmp2_ss);
+  psi::fprintf(outfile,"\n");
+  psi::fprintf(outfile,"\tScaled_OS correlation energy      = %20.15f\n",mo.escsmp2_os);
+  psi::fprintf(outfile,"\tScaled_SS correlation energy      = %20.15f\n",mo.escsmp2_ss);
+  psi::fprintf(outfile,"\tSCS-MP2 correlation energy        = %20.15f\n",mo.escsmp2_os+mo.escsmp2_ss);
+  psi::fprintf(outfile,"      * SCS-MP2 total energy              = %20.15f\n",mo.Escf+mo.escsmp2_os+mo.escsmp2_ss);
 
-  fprintf(outfile,"\n\tOpposite-spin correlation energy  = %20.15f\n",mo.emp2_os);
-  fprintf(outfile,"\tSame-spin correlation energy      = %20.15f\n",mo.emp2_ss);
-  fprintf(outfile,"\tMP2 correlation energy            = %20.15f\n",mo.Emp2);
-  fprintf(outfile,"      * MP2 total energy                  = %20.15f\n\n",mo.Escf + mo.Emp2);
+  psi::fprintf(outfile,"\n\tOpposite-spin correlation energy  = %20.15f\n",mo.emp2_os);
+  psi::fprintf(outfile,"\tSame-spin correlation energy      = %20.15f\n",mo.emp2_ss);
+  psi::fprintf(outfile,"\tMP2 correlation energy            = %20.15f\n",mo.Emp2);
+  psi::fprintf(outfile,"      * MP2 total energy                  = %20.15f\n\n",mo.Escf + mo.Emp2);
   fflush(outfile);
 
   Process::environment.globals["SCS-MP2 SAME-SPIN CORRELATION ENERGY"] = mo.escsmp2_ss;
@@ -206,11 +206,11 @@ void init_io()
 
 void title(void)
 {
-  fprintf(outfile, "\t\t\t*************************\n");
-  fprintf(outfile, "\t\t\t*                       *\n");
-  fprintf(outfile, "\t\t\t*          MP2          *\n");
-  fprintf(outfile, "\t\t\t*                       *\n");
-  fprintf(outfile, "\t\t\t*************************\n");
+  psi::fprintf(outfile, "\t\t\t*************************\n");
+  psi::fprintf(outfile, "\t\t\t*                       *\n");
+  psi::fprintf(outfile, "\t\t\t*          MP2          *\n");
+  psi::fprintf(outfile, "\t\t\t*                       *\n");
+  psi::fprintf(outfile, "\t\t\t*************************\n");
   fflush(outfile);
 }
 

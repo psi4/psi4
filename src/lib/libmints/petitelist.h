@@ -135,10 +135,10 @@ struct SOCoefficients{
     }
 
     void print() const {
-        fprintf(outfile, "\nSOCoefficients, irrep = %d\n", irrep);
+        psi::fprintf(outfile, "\nSOCoefficients, irrep = %d\n", irrep);
         std::map<int, double>::const_iterator iter;
         for(iter = coefficients.begin(); iter != coefficients.end(); ++iter){
-            fprintf(outfile, "Basis function:%d Coefficient: %.5f\n", iter->first, iter->second);
+            psi::fprintf(outfile, "Basis function:%d Coefficient: %.5f\n", iter->first, iter->second);
         }
     }
 

@@ -155,17 +155,17 @@ void IrreducibleRepresentation::print(FILE *out) const
 
     int i,d;
 
-    fprintf(out, "  %-5s", symb);
+    psi::fprintf(out, "  %-5s", symb);
 
     for (i=0; i < g; i++)
-        fprintf(out, " %6.3f", character(i));
-    fprintf(out, " | %d t, %d R\n", ntrans_, nrot_);
+        psi::fprintf(out, " %6.3f", character(i));
+    psi::fprintf(out, " | %d t, %d R\n", ntrans_, nrot_);
 
     for (d=0; d < nproj(); d++) {
-        fprintf(out, "       ");
+        psi::fprintf(out, "       ");
         for (i=0; i < g; i++)
-            fprintf(out, " %6.3f", p(d,i));
-        fprintf(out, "\n");
+            psi::fprintf(out, " %6.3f", p(d,i));
+        psi::fprintf(out, "\n");
     }
 }
 

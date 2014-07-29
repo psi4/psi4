@@ -250,37 +250,37 @@ void get_moinfo(void)
     psio_read_entry(PSIF_CC_INFO, "Reference Energy", (char *) &(moinfo.eref),
                     sizeof(double));
 
-    fprintf(outfile,"\n\tNuclear Rep. energy (chkpt)   = %20.15f\n",moinfo.enuc);
-    fprintf(outfile,  "\tSCF energy          (chkpt)   = %20.15f\n",moinfo.escf);
-    fprintf(outfile,  "\tReference energy    (file100) = %20.15f\n",moinfo.eref);
+    psi::fprintf(outfile,"\n\tNuclear Rep. energy (chkpt)   = %20.15f\n",moinfo.enuc);
+    psi::fprintf(outfile,  "\tSCF energy          (chkpt)   = %20.15f\n",moinfo.escf);
+    psi::fprintf(outfile,  "\tReference energy    (file100) = %20.15f\n",moinfo.eref);
 
     if(params.wfn == "CC2" || params.wfn == "EOM_CC2") {
         psio_read_entry(PSIF_CC_INFO, "CC2 Energy", (char *) &(moinfo.ecc),
                         sizeof(double));
-        fprintf(outfile,  "\tCC2 energy          (CC_INFO) = %20.15f\n",moinfo.ecc);
-        fprintf(outfile,  "\tTotal CC2 energy    (CC_INFO) = %20.15f\n",
+        psi::fprintf(outfile,  "\tCC2 energy          (CC_INFO) = %20.15f\n",moinfo.ecc);
+        psi::fprintf(outfile,  "\tTotal CC2 energy    (CC_INFO) = %20.15f\n",
                 moinfo.eref+moinfo.ecc);
     }
     else if( params.wfn == "CCSD" || params.wfn == "EOM_CCSD") {
         psio_read_entry(PSIF_CC_INFO, "CCSD Energy", (char *) &(moinfo.ecc),
                         sizeof(double));
-        fprintf(outfile,  "\tCCSD energy         (CC_INFO) = %20.15f\n",moinfo.ecc);
-        fprintf(outfile,  "\tTotal CCSD energy   (CC_INFO) = %20.15f\n",
+        psi::fprintf(outfile,  "\tCCSD energy         (CC_INFO) = %20.15f\n",moinfo.ecc);
+        psi::fprintf(outfile,  "\tTotal CCSD energy   (CC_INFO) = %20.15f\n",
                 moinfo.eref+moinfo.ecc);
     }
     else if(params.wfn == "CCSD_T") {
         psio_read_entry(PSIF_CC_INFO, "CCSD Energy", (char *) &(moinfo.ecc), sizeof(double));
         psio_read_entry(PSIF_CC_INFO, "(T) Energy", (char *) &(moinfo.et), sizeof(double));
-        fprintf(outfile,  "\tCCSD energy         (CC_INFO) = %20.15f\n",moinfo.ecc);
-        fprintf(outfile,  "\t(T) energy          (CC_INFO) = %20.15f\n",moinfo.et);
-        fprintf(outfile,  "\tTotal CCSD(T) energy(CC_INFO) = %20.15f\n",
+        psi::fprintf(outfile,  "\tCCSD energy         (CC_INFO) = %20.15f\n",moinfo.ecc);
+        psi::fprintf(outfile,  "\t(T) energy          (CC_INFO) = %20.15f\n",moinfo.et);
+        psi::fprintf(outfile,  "\tTotal CCSD(T) energy(CC_INFO) = %20.15f\n",
                 moinfo.eref+moinfo.ecc+moinfo.et);
     }
     else if(params.wfn == "CC3" || params.wfn == "EOM_CC3") {
         psio_read_entry(PSIF_CC_INFO, "CC3 Energy", (char *) &(moinfo.ecc),
                         sizeof(double));
-        fprintf(outfile,  "\tCC3 energy          (CC_INFO) = %20.15f\n",moinfo.ecc);
-        fprintf(outfile,  "\tTotal CC3 energy    (CC_INFO) = %20.15f\n",
+        psi::fprintf(outfile,  "\tCC3 energy          (CC_INFO) = %20.15f\n",moinfo.ecc);
+        psi::fprintf(outfile,  "\tTotal CC3 energy    (CC_INFO) = %20.15f\n",
                 moinfo.eref+moinfo.ecc);
     }
 

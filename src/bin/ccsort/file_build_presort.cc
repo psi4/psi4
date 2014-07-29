@@ -130,7 +130,7 @@ int file_build_presort(dpdfile4 *File, int inputfile, double tolerance, int keep
     }
   }
 
-  fprintf(outfile, "\tSorting File: %s nbuckets = %d\n", File->label, nbuckets);
+  psi::fprintf(outfile, "\tSorting File: %s nbuckets = %d\n", File->label, nbuckets);
   fflush(outfile);
 
   next = PSIO_ZERO;
@@ -155,7 +155,7 @@ int file_build_presort(dpdfile4 *File, int inputfile, double tolerance, int keep
 
       value = (double) valptr[InBuf.idx];
 
-/*       fprintf(outfile, "%d %d %d %d %20.12f\n", p, q, r, s, value); */
+/*       psi::fprintf(outfile, "%d %d %d %d %20.12f\n", p, q, r, s, value); */
 
       idx_permute_presort(File,n,bucket_map,bucket_offset,p,q,r,s,value,outfile);
 
@@ -174,7 +174,7 @@ int file_build_presort(dpdfile4 *File, int inputfile, double tolerance, int keep
 
         value = (double) valptr[InBuf.idx];
 
-/* 	fprintf(outfile, "%d %d %d %d %20.12f\n", p, q, r, s, value); */
+/* 	psi::fprintf(outfile, "%d %d %d %d %20.12f\n", p, q, r, s, value); */
 
         idx_permute_presort(File,n,bucket_map,bucket_offset,p,q,r,s,value,outfile);
 

@@ -94,7 +94,7 @@ void SCF::read_so_tei()
 
   for(int batch = 0; batch < nbatch; ++batch){
     batch_size[batch] = batch_index_max[ batch] - batch_index_min[batch];
-    fprintf(outfile,"\n  batch %3d pq = [%8ld,%8ld] index = [%16ld,%16ld]",
+    psi::fprintf(outfile,"\n  batch %3d pq = [%8ld,%8ld] index = [%16ld,%16ld]",
         batch,
         batch_pq_min[batch],batch_pq_max[batch],
         batch_index_min[batch],batch_index_max[batch]);
@@ -105,7 +105,7 @@ void SCF::read_so_tei()
   allocate1(double,PK,nin_core);
   for(size_t i=0; i < nin_core; i++)
     PK[i]    =0.0;
-  fprintf(outfile,"\n\n  Allocated the PK matrix (%ld elements) ",(long int)nin_core);
+  psi::fprintf(outfile,"\n\n  Allocated the PK matrix (%ld elements) ",(long int)nin_core);
   fflush(outfile);
 
   if(reference != rhf){
@@ -113,7 +113,7 @@ void SCF::read_so_tei()
     allocate1(double,K,nin_core);
     for(size_t i=0; i < nin_core; i++)
       K[i]    =0.0;
-    fprintf(outfile,"\n  Allocated the  K matrix (%ld elements) ",(long int)nin_core);
+    psi::fprintf(outfile,"\n  Allocated the  K matrix (%ld elements) ",(long int)nin_core);
     fflush(outfile);
   }
 
@@ -125,11 +125,11 @@ void SCF::read_so_tei()
 
 void SCF::read_so_tei_form_PK()
 {
-  fprintf(outfile,"\n  Reading the two-electron integrals to form PK ... ");
+  psi::fprintf(outfile,"\n  Reading the two-electron integrals to form PK ... ");
   fflush(outfile);
 
   for(int batch = 0; batch < nbatch; ++batch){
-    fprintf(outfile,"\n  batch %3d ... ",batch);
+    psi::fprintf(outfile,"\n  batch %3d ... ",batch);
     fflush(outfile);
     // Compute the minimum and maximum indices
     size_t min_index   = batch_index_min[batch];
@@ -199,20 +199,20 @@ void SCF::read_so_tei_form_PK()
     // Write the PK matrix to disk
     write_Raffanetti("PK",PK,batch);
 
-    fprintf(outfile,"done.");
+    psi::fprintf(outfile,"done.");
     fflush(outfile);
   }
-  fprintf(outfile,"\n");
+  psi::fprintf(outfile,"\n");
   fflush(outfile);
 }
 
 void SCF::read_so_tei_form_PK_and_K()
 {
-  fprintf(outfile,"\n  Reading the two-electron integrals to form PK and K ... ");
+  psi::fprintf(outfile,"\n  Reading the two-electron integrals to form PK and K ... ");
   fflush(outfile);
 
   for(int batch = 0; batch < nbatch; ++batch){
-    fprintf(outfile,"\n  batch %3d ... ",batch);
+    psi::fprintf(outfile,"\n  batch %3d ... ",batch);
     fflush(outfile);
     // Compute the minimum and maximum indices
     size_t min_index   = batch_index_min[batch];
@@ -292,10 +292,10 @@ void SCF::read_so_tei_form_PK_and_K()
     write_Raffanetti("PK",PK,batch);
     write_Raffanetti("K",K,batch);
 
-    fprintf(outfile,"done.");
+    psi::fprintf(outfile,"done.");
     fflush(outfile);
   }
-  fprintf(outfile,"\n");
+  psi::fprintf(outfile,"\n");
   fflush(outfile);
 }
 

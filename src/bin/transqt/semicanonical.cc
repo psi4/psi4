@@ -172,7 +172,7 @@ void semicanonical_fock(int averaged) /* averaged==0, regular semicanonical; =1 
       work = init_array(3*aoccpi[h]);
       if((stat = C_DSYEV('v','u', aoccpi[h], &(Foo[h][0][0]), aoccpi[h], evals, work, aoccpi[h]*3))) {
 
-        fprintf(outfile, "rotate(): Error in alpha Foo[%1d] diagonalization. stat = %d\n",
+        psi::fprintf(outfile, "rotate(): Error in alpha Foo[%1d] diagonalization. stat = %d\n",
                 h, stat);
         exit(PSI_RETURN_FAILURE);
       }
@@ -190,7 +190,7 @@ void semicanonical_fock(int averaged) /* averaged==0, regular semicanonical; =1 
       evals = init_array(asoccpi[h]);
       work = init_array(3*asoccpi[h]);
       if((stat = C_DSYEV('v','u', asoccpi[h], &(Fss[h][0][0]), asoccpi[h], evals, work, asoccpi[h]*3))) {
-        fprintf(outfile, "rotate(): Error in alpha Fss[%1d] diagonalization. stat = %d\n", h, stat);
+        psi::fprintf(outfile, "rotate(): Error in alpha Fss[%1d] diagonalization. stat = %d\n", h, stat);
         exit(PSI_RETURN_FAILURE);
       }
       for(i=0; i<asoccpi[h]; i++) alpha_evals[cnt++] = evals[i];
@@ -209,7 +209,7 @@ void semicanonical_fock(int averaged) /* averaged==0, regular semicanonical; =1 
       work = init_array(3*avirtpi[h]);
       if((stat = C_DSYEV('v','u', avirtpi[h], &(Fvv[h][0][0]), avirtpi[h],
                         evals, work, avirtpi[h]*3))) {
-      fprintf(outfile, "rotate(): Error in alpha Fvv[%1d] diagonalization. stat = %d\n",
+      psi::fprintf(outfile, "rotate(): Error in alpha Fvv[%1d] diagonalization. stat = %d\n",
               h, stat);
       exit(PSI_RETURN_FAILURE);
     }
@@ -274,7 +274,7 @@ void semicanonical_fock(int averaged) /* averaged==0, regular semicanonical; =1 
           work = init_array(3*boccpi[h]);
           if((stat = C_DSYEV('v','u', boccpi[h], &(Foo[h][0][0]),
                           boccpi[h], evals, work, boccpi[h]*3))) {
-            fprintf(outfile, "rotate(): Error in alpha Foo[%1d] diagonalization. stat = %d\n",
+            psi::fprintf(outfile, "rotate(): Error in alpha Foo[%1d] diagonalization. stat = %d\n",
                   h, stat);
             exit(PSI_RETURN_FAILURE);
           }
@@ -292,7 +292,7 @@ void semicanonical_fock(int averaged) /* averaged==0, regular semicanonical; =1 
           work = init_array(3*bvirtpi[h]);
           if((stat = C_DSYEV('v','u', bvirtpi[h], &(Fvv[h][0][0]), bvirtpi[h],
                           evals, work, bvirtpi[h]*3))) {
-            fprintf(outfile, "rotate(): Error in alpha Fvv[%1d] diagonalization. stat = %d\n",
+            psi::fprintf(outfile, "rotate(): Error in alpha Fvv[%1d] diagonalization. stat = %d\n",
                   h, stat);
             exit(PSI_RETURN_FAILURE);
           }
@@ -331,15 +331,15 @@ void semicanonical_fock(int averaged) /* averaged==0, regular semicanonical; =1 
   }
 
 
-  /*fprintf(outfile,"\nAlpha Eigenvalues\n");
-  for(i=0; i<moinfo.nmo; i++) fprintf(outfile,"%10.7lf\n",alpha_evals[i]);
-  fprintf(outfile,"\nBeta Eigenvalues\n");
-  for(i=0; i<moinfo.nmo; i++) fprintf(outfile,"%10.7lf\n",beta_evals[i]);
+  /*psi::fprintf(outfile,"\nAlpha Eigenvalues\n");
+  for(i=0; i<moinfo.nmo; i++) psi::fprintf(outfile,"%10.7lf\n",alpha_evals[i]);
+  psi::fprintf(outfile,"\nBeta Eigenvalues\n");
+  for(i=0; i<moinfo.nmo; i++) psi::fprintf(outfile,"%10.7lf\n",beta_evals[i]);
   fflush(outfile);
 
-  fprintf(outfile,"\nAlpha Eigenvalues\n");
+  psi::fprintf(outfile,"\nAlpha Eigenvalues\n");
   print_mat(scf_vector_alpha,moinfo.nmo,moinfo.nmo,outfile);
-  fprintf(outfile,"\nBeta Eigenvalues\n");
+  psi::fprintf(outfile,"\nBeta Eigenvalues\n");
   print_mat(scf_vector_beta,moinfo.nmo,moinfo.nmo,outfile);*/
 
   free_block(scf_vector_alpha);
@@ -411,7 +411,7 @@ void uhf_fock_build(double **fock_a, double **fock_b, double **D_a, double **D_b
       pq = INDEX(p,q);
       rs = INDEX(r,s);
 
-      /* fprintf(outfile, "%d %d %d %d [%d] [%d] %20.15f\n", p, q, r, s, pq, rs, value); */
+      /* psi::fprintf(outfile, "%d %d %d %d [%d] [%d] %20.15f\n", p, q, r, s, pq, rs, value); */
 
       /* (pq|rs) */
       fock_a[p][q] += Dt[r][s] * value;

@@ -40,24 +40,24 @@ functional = getF(0);
 % => Preamble <= %
 
 fh = fopen('preamble', 'w');
-fprintf(fh, 'name_ = "%s";\n', functional.name);
-fprintf(fh, 'description_ = "    %s\\n";\n', functional.description);
-fprintf(fh, 'citation_ = "    %s\\n";\n', functional.citation);
-fprintf(fh, 'alpha_ = 1.0;\n');
-fprintf(fh, 'omega_ = 0.0;\n');
-fprintf(fh, 'lrc_ = false;\n');
+psi::fprintf(fh, 'name_ = "%s";\n', functional.name);
+psi::fprintf(fh, 'description_ = "    %s\\n";\n', functional.description);
+psi::fprintf(fh, 'citation_ = "    %s\\n";\n', functional.citation);
+psi::fprintf(fh, 'alpha_ = 1.0;\n');
+psi::fprintf(fh, 'omega_ = 0.0;\n');
+psi::fprintf(fh, 'lrc_ = false;\n');
 if (functional.is_gga)
-    fprintf(fh, 'gga_ = true;\n');
+    psi::fprintf(fh, 'gga_ = true;\n');
 else
-    fprintf(fh, 'gga_ = false;\n');
+    psi::fprintf(fh, 'gga_ = false;\n');
 end    
 if (functional.is_meta)
-    fprintf(fh, 'meta_ = true;\n');
+    psi::fprintf(fh, 'meta_ = true;\n');
 else
-    fprintf(fh, 'meta_ = false;\n');
+    psi::fprintf(fh, 'meta_ = false;\n');
 end    
 for k = 1:length(functional.param_names)
-    fprintf(fh, 'parameters_["%s"] = %24.16E;\n', functional.param_names{k}, functional.param_vals(k));
+    psi::fprintf(fh, 'parameters_["%s"] = %24.16E;\n', functional.param_names{k}, functional.param_vals(k));
 end
 
 fclose(fh);
@@ -66,7 +66,7 @@ fclose(fh);
 
 fh = fopen('parameters', 'w');
 for k = 1:length(functional.param_names)
-    fprintf(fh, 'double %s = parameters_["%s"];\n', functional.param_names{k}, functional.param_names{k});
+    psi::fprintf(fh, 'double %s = parameters_["%s"];\n', functional.param_names{k}, functional.param_names{k});
 end
 fclose(fh);
 

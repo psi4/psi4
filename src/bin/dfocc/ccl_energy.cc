@@ -91,10 +91,10 @@ else if (reference_ == "UNRESTRICTED") {
     Emp2L = Eref + EcorrL;
     DE = Emp2L - Emp2L_old;
     /*
-    fprintf(outfile,"\tDF-MP2L One-Electron Energy (a.u.) : %20.14f\n", Eoei);
-    fprintf(outfile,"\tDF-MP2L OV Energy (a.u.)           : %20.14f\n", Eov);
-    fprintf(outfile,"\tDF-MP2L Correlation Energy (a.u.)  : %20.14f\n", EcorrL);
-    fprintf(outfile,"\tDF-MP2L Total Energy (a.u.)        : %20.14f\n", Emp2L);
+    psi::fprintf(outfile,"\tDF-MP2L One-Electron Energy (a.u.) : %20.14f\n", Eoei);
+    psi::fprintf(outfile,"\tDF-MP2L OV Energy (a.u.)           : %20.14f\n", Eov);
+    psi::fprintf(outfile,"\tDF-MP2L Correlation Energy (a.u.)  : %20.14f\n", EcorrL);
+    psi::fprintf(outfile,"\tDF-MP2L Total Energy (a.u.)        : %20.14f\n", Emp2L);
     fflush(outfile);
     */
     timer_off("CCL Energy");

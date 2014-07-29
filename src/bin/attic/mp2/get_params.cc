@@ -134,7 +134,7 @@ void get_params(Options &options)
     else if(cachetype == "LRU")
       params.cachetype = 0;
     else {
-      fprintf(outfile, "Invalide CACHETYPE = %s\n",cachetype.c_str());
+      psi::fprintf(outfile, "Invalide CACHETYPE = %s\n",cachetype.c_str());
       abort();
     }
   }
@@ -155,29 +155,29 @@ void get_params(Options &options)
 
   params.memory = Process::environment.get_memory();
  
-  fprintf(outfile, "\n");
-  fprintf(outfile, "\tInput parameters:\n");
-  fprintf(outfile, "\t-----------------\n");
-  fprintf(outfile, "\tWave function \t=\t%s\n", params.wfn.c_str());
+  psi::fprintf(outfile, "\n");
+  psi::fprintf(outfile, "\tInput parameters:\n");
+  psi::fprintf(outfile, "\t-----------------\n");
+  psi::fprintf(outfile, "\tWave function \t=\t%s\n", params.wfn.c_str());
   if(params.semicanonical) {
-  fprintf(outfile, "\tReference WFN \t=\tROHF changed to UHF for Semicanonical Orbitals\n");
+  psi::fprintf(outfile, "\tReference WFN \t=\tROHF changed to UHF for Semicanonical Orbitals\n");
   }
   else {
-  fprintf(outfile, "\tReference WFN \t=\t%s\n", (params.ref==0)?"RHF":((params.ref==1)?"ROHF":"UHF"));
+  psi::fprintf(outfile, "\tReference WFN \t=\t%s\n", (params.ref==0)?"RHF":((params.ref==1)?"ROHF":"UHF"));
   } 
-  fprintf(outfile, "\tDerivative    \t=\t%s\n", params.dertype.c_str());
-  fprintf(outfile, "\tCache Level   \t=\t%d\n", params.cachelev);
-  fprintf(outfile, "\tCache Type    \t=\t%s\n", params.cachetype ? "LOW":"LRU");
-  fprintf(outfile, "\tMemory (MB)   \t=\t%.1f\n",params.memory/1e6);
-  fprintf(outfile, "\tPrint Level   \t=\t%d\n", params.print);
-  fprintf(outfile, "\tOPDM          \t=\t%s\n", params.opdm ? "YES":"NO");
-  fprintf(outfile, "\tSCS           \t=\t%s\n", (params.scs == 1) ? "True" : "False");
-  fprintf(outfile, "\tMP2_OS_SCALE  \t=\t%.6f\n",params.scs_scale_os);
-  fprintf(outfile, "\tMP2_SS_SCALE  \t=\t%.6f\n",params.scs_scale_ss);
+  psi::fprintf(outfile, "\tDerivative    \t=\t%s\n", params.dertype.c_str());
+  psi::fprintf(outfile, "\tCache Level   \t=\t%d\n", params.cachelev);
+  psi::fprintf(outfile, "\tCache Type    \t=\t%s\n", params.cachetype ? "LOW":"LRU");
+  psi::fprintf(outfile, "\tMemory (MB)   \t=\t%.1f\n",params.memory/1e6);
+  psi::fprintf(outfile, "\tPrint Level   \t=\t%d\n", params.print);
+  psi::fprintf(outfile, "\tOPDM          \t=\t%s\n", params.opdm ? "YES":"NO");
+  psi::fprintf(outfile, "\tSCS           \t=\t%s\n", (params.scs == 1) ? "True" : "False");
+  psi::fprintf(outfile, "\tMP2_OS_SCALE  \t=\t%.6f\n",params.scs_scale_os);
+  psi::fprintf(outfile, "\tMP2_SS_SCALE  \t=\t%.6f\n",params.scs_scale_ss);
 
   if (params.scs && params.dertype != "NONE") {
-    fprintf(outfile,"\nWarning: SCS-MP2 computation requested but\n");
-    fprintf(outfile,"derivative will be evaluated for standard MP2 energy.\n");
+    psi::fprintf(outfile,"\nWarning: SCS-MP2 computation requested but\n");
+    psi::fprintf(outfile,"derivative will be evaluated for standard MP2 energy.\n");
   }
 
 }

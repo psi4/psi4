@@ -153,7 +153,7 @@ double EaT_RHF(void)
             }
           }
         }
-  fprintf(ijkfile, "Total number of IJK combinations =: %d\n", nijk);
+  psi::fprintf(ijkfile, "Total number of IJK combinations =: %d\n", nijk);
   fflush(ijkfile);
 
   ET = 0.0;
@@ -172,7 +172,7 @@ double EaT_RHF(void)
             }
           }
         }
-        fprintf(ijkfile, "Num. of IJK with (Gi,Gj,Gk)=(%d,%d,%d) =: %d\n", Gi, Gj, Gk, nijk);
+        psi::fprintf(ijkfile, "Num. of IJK with (Gi,Gj,Gk)=(%d,%d,%d) =: %d\n", Gi, Gj, Gk, nijk);
         fflush(ijkfile);
         if (nijk == 0) continue;
 
@@ -196,7 +196,7 @@ double EaT_RHF(void)
         /* execute threads */
         for (thread=0; thread<nthreads;++thread) {
           if (!ijk_part[thread]) continue;
-          fprintf(ijkfile,"\tthread %d: first_ijk=%d,  last_ijk=%d\n", thread,
+          psi::fprintf(ijkfile,"\tthread %d: first_ijk=%d,  last_ijk=%d\n", thread,
             thread_data_array[thread].first_ijk, thread_data_array[thread].last_ijk);
           fflush(ijkfile);
         }

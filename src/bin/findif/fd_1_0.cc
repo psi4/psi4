@@ -76,36 +76,36 @@ fd_1_0(Options &options, const boost::python::list& python_energies)
       g_q[i] = (E[4*i] - 8.0*E[4*i+1] + 8.0*E[4*i+2] - E[4*i+3]) / (12.0 * disp_size);
   }
 
-  fprintf(outfile,"\n-------------------------------------------------------------\n\n");
-  fprintf(outfile,"  Computing gradient from energies (fd_1_0).\n");
+  psi::fprintf(outfile,"\n-------------------------------------------------------------\n\n");
+  psi::fprintf(outfile,"  Computing gradient from energies (fd_1_0).\n");
 
   // Print out energies and gradients
   double energy_ref = E[Ndisp-1];
-  fprintf(outfile, "\tUsing %d-point formula.\n", pts);
-  fprintf(outfile, "\tEnergy without displacement: %15.10lf\n", energy_ref);
-  fprintf(outfile, "\tCheck energies below for precision!\n");
-  fprintf(outfile, "\tForces are for mass-weighted, symmetry-adapted cartesians (in au).\n");
+  psi::fprintf(outfile, "\tUsing %d-point formula.\n", pts);
+  psi::fprintf(outfile, "\tEnergy without displacement: %15.10lf\n", energy_ref);
+  psi::fprintf(outfile, "\tCheck energies below for precision!\n");
+  psi::fprintf(outfile, "\tForces are for mass-weighted, symmetry-adapted cartesians (in au).\n");
 
   int cnt;
   if (pts == 3) {
     cnt = -2;
-    fprintf(outfile,"\n\t Coord      Energy(-)        Energy(+)        Force\n");
+    psi::fprintf(outfile,"\n\t Coord      Energy(-)        Energy(+)        Force\n");
     for (int i=0; i<Nsalc; ++i) {
       cnt += 2;
-      fprintf(outfile,"\t%5d %17.10lf%17.10lf%17.10lf\n", i, E[cnt], E[cnt+1], g_q[i]);
+      psi::fprintf(outfile,"\t%5d %17.10lf%17.10lf%17.10lf\n", i, E[cnt], E[cnt+1], g_q[i]);
     }
-    fprintf(outfile,"\n");
+    psi::fprintf(outfile,"\n");
   }
   else if (pts == 5) {
     cnt = -4;
-    fprintf(outfile,
+    psi::fprintf(outfile,
       "\n\t Coord      Energy(-2)        Energy(-1)        Energy(+1)        Energy(+2)            Force\n");
     for (int i=0; i<Nsalc; ++i) {
       cnt += 4;
-      fprintf(outfile,"\t%5d %17.10lf %17.10lf %17.10lf %17.10lf %17.10lf\n",
+      psi::fprintf(outfile,"\t%5d %17.10lf %17.10lf %17.10lf %17.10lf %17.10lf\n",
               i, E[cnt], E[cnt+1], E[cnt+2], E[cnt+3], g_q[i]);
     }
-    fprintf(outfile,"\n");
+    psi::fprintf(outfile,"\n");
   }
 
   // Build B matrix of salc coefficients
@@ -137,18 +137,18 @@ fd_1_0(Options &options, const boost::python::list& python_energies)
     GradientWriter grad(mol, gradient_matrix);
     std::string gradfile = get_writer_file_prefix() + ".grad";
     grad.write(gradfile);
-    fprintf(outfile,"\tGradient written.\n");
+    psi::fprintf(outfile,"\tGradient written.\n");
   }
 
   SharedMatrix sgradient(gradient_matrix.clone());
   if (Process::environment.wavefunction()) {
     Process::environment.wavefunction()->set_gradient(sgradient);
-    fprintf(outfile,"\tGradient saved to wavefunction.\n");
+    psi::fprintf(outfile,"\tGradient saved to wavefunction.\n");
   } else {
     Process::environment.set_gradient(sgradient);
-    fprintf(outfile,"\tGradient saved to environment.\n");
+    psi::fprintf(outfile,"\tGradient saved to environment.\n");
   }
-  fprintf(outfile,"\n-------------------------------------------------------------\n");
+  psi::fprintf(outfile,"\n-------------------------------------------------------------\n");
 
   return Success;
 }

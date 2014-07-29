@@ -91,19 +91,19 @@ int main(int argc, char * argv[]) {
   if(ip_exist("RI_BASIS",0)) {
       errcod = ip_string("RI_BASIS", &(ri_basis),0);
   }else{
-      fprintf(outfile, "Please specify RI_BASIS\n");
+      psi::fprintf(outfile, "Please specify RI_BASIS\n");
       return EXIT_FAILURE;
   }
   if(errcod){
-      fprintf(outfile, "Error reading RI_BASIS\n");
+      psi::fprintf(outfile, "Error reading RI_BASIS\n");
       return EXIT_FAILURE;
   }
   errcod = ip_string("BASIS", &(orbital_basis),0);
   if(errcod){
-      fprintf(outfile, "Error reading BASIS\n");
+      psi::fprintf(outfile, "Error reading BASIS\n");
       return EXIT_FAILURE;
   }
-  fprintf(outfile,
+  psi::fprintf(outfile,
     "  Using the %s basis set for the orbitals, with the %s RI basis\n\n",
     orbital_basis,ri_basis);
   BasisSet* ribasis;
@@ -112,7 +112,7 @@ int main(int argc, char * argv[]) {
     char* ri_basisfile;
     errcod = ip_string("RI_BASISFILE", &(ri_basisfile),0);
     if (errcod) {
-        fprintf(outfile,"Error reading RI_BASISFILE %s\n",ri_basisfile);
+        psi::fprintf(outfile,"Error reading RI_BASISFILE %s\n",ri_basisfile);
         return EXIT_FAILURE;
     } else {
         ribasis = new BasisSet(chkpt, ri_basisfile, ri_basis);
@@ -135,12 +135,12 @@ int main(int argc, char * argv[]) {
   if (scs == 1) {
     errcod = ip_data("SCALE_OS","%lf",&(scs_scale_os),0);
     errcod = ip_data("SCALE_SS","%lf",&(scs_scale_ss),0);
-    fprintf(outfile,"\n  Spin-Component Scaled RI-MP2 requested\n");
-    fprintf(outfile,"    Opposite-spin scaled by %10.4lf\n",scs_scale_os);
-    fprintf(outfile,"    Same-spin scaled by     %10.4lf\n",scs_scale_ss);
+    psi::fprintf(outfile,"\n  Spin-Component Scaled RI-MP2 requested\n");
+    psi::fprintf(outfile,"    Opposite-spin scaled by %10.4lf\n",scs_scale_os);
+    psi::fprintf(outfile,"    Same-spin scaled by     %10.4lf\n",scs_scale_ss);
     }
   if (scsn == 1) {
-    fprintf(outfile,"\n  SCSN-RI-MP2 energies will be printed\n");
+    psi::fprintf(outfile,"\n  SCSN-RI-MP2 energies will be printed\n");
   }
 
   int nirreps = chkpt->rd_nirreps();
@@ -165,12 +165,12 @@ int main(int argc, char * argv[]) {
       norbs     += orbspi[h];
   }
 
-  fprintf(outfile, "\n\t\t==============================================\n");
-  fprintf(outfile, "\t\t #ORBITALS #RI  FOCC DOCC AOCC AVIR VIRT FVIR \n");
-  fprintf(outfile, "\t\t----------------------------------------------\n");
-  fprintf(outfile, "\t\t  %5d  %5d  %4d %4d %4d %4d %4d %4d\n",
+  psi::fprintf(outfile, "\n\t\t==============================================\n");
+  psi::fprintf(outfile, "\t\t #ORBITALS #RI  FOCC DOCC AOCC AVIR VIRT FVIR \n");
+  psi::fprintf(outfile, "\t\t----------------------------------------------\n");
+  psi::fprintf(outfile, "\t\t  %5d  %5d  %4d %4d %4d %4d %4d %4d\n",
           norbs,ribasis->nbf(),nfocc,ndocc,nact_docc,nact_virt,nvirt,nfvir);
-  fprintf(outfile, "\t\t==============================================\n");
+  psi::fprintf(outfile, "\t\t==============================================\n");
 
   double escf = chkpt->rd_escf();
 
@@ -180,7 +180,7 @@ int main(int argc, char * argv[]) {
     factory.create_simple_matrix("MO coefficients (SO basis)");
   double **vectors = chkpt->rd_scf();
   if (vectors == NULL) {
-    fprintf(stderr, "Could not find MO coefficients. Run cscf first.\n");
+    psi::fprintf(stderr, "Could not find MO coefficients. Run cscf first.\n");
     return EXIT_FAILURE;
   }
   C_so->set(vectors);
@@ -233,11 +233,11 @@ int main(int argc, char * argv[]) {
     }
   }
 
-  // fprintf(outfile, "J:\n");
+  // psi::fprintf(outfile, "J:\n");
   // print_mat(J, ribasis->nbf(), ribasis->nbf(), outfile);
   // Invert J matrix
   // invert_matrix(J, J_inverse, ribasis->nbf(), outfile);
-  // fprintf(outfile, "J^-1:\n");
+  // psi::fprintf(outfile, "J^-1:\n");
   // print_mat(J_inverse, ribasis->nbf(), ribasis->nbf(), outfile);
   // Form J^-1/2
   // First, diagonalize J
@@ -248,7 +248,7 @@ int main(int argc, char * argv[]) {
   int stat = C_DSYEV('v','u',ribasis->nbf(),J[0],ribasis->nbf(),eigval,
     work,lwork);
   if (stat != 0) {
-    fprintf(outfile, "C_DSYEV failed\n");
+    psi::fprintf(outfile, "C_DSYEV failed\n");
     exit(PSI_RETURN_FAILURE);
   }
   free(work);
@@ -322,9 +322,9 @@ int main(int argc, char * argv[]) {
   Chkpt::free(orbital_energies);
 
 #if DEBUG
-  fprintf(outfile, "Co:\n");
+  psi::fprintf(outfile, "Co:\n");
   print_mat(Co, norbs, nact_docc, outfile);
-  fprintf(outfile, "Cv:\n");
+  psi::fprintf(outfile, "Cv:\n");
   print_mat(Cv, norbs, nact_virt, outfile);
 #endif
 
@@ -416,7 +416,7 @@ for (Pshell=0; Pshell < ribasis->nshell(); ++Pshell) {
   timer_off("Form mo_p_ia");
 #endif
 
-  // fprintf(outfile, "mo_p_ia:\n");
+  // psi::fprintf(outfile, "mo_p_ia:\n");
   // print_mat(mo_p_ia, ribasis->nbf(), nact_docc*nact_virt, outfile);
 
 #ifdef TIME_DF_MP2
@@ -438,7 +438,7 @@ for (Pshell=0; Pshell < ribasis->nshell(); ++Pshell) {
   timer_off("Form B_ia^P");
 #endif
 
-  // fprintf(outfile, "B_ia_p:\n");
+  // psi::fprintf(outfile, "B_ia_p:\n");
   // print_mat(B_ia_p, nact_docc*nact_virt, ribasis->nbf(), outfile);
 
 
@@ -506,15 +506,15 @@ for (Pshell=0; Pshell < ribasis->nshell(); ++Pshell) {
   free(I);
   free_block(B_ia_p);
 
-  fprintf(outfile,"\tRI-MP2 correlation energy         = %20.15f\n",emp2);
-  fprintf(outfile,"      * RI-MP2 total energy               = %20.15f\n\n",
+  psi::fprintf(outfile,"\tRI-MP2 correlation energy         = %20.15f\n",emp2);
+  psi::fprintf(outfile,"      * RI-MP2 total energy               = %20.15f\n\n",
     escf + emp2);
-  fprintf(outfile,"\tOpposite-Spin correlation energy  = %20.15f\n",os_mp2);
-  fprintf(outfile,"\tSame-Spin correlation energy      = %20.15f\n\n",ss_mp2);
-  fprintf(outfile,"      * SCS-RI-MP2 total energy           = %20.15f\n\n",
+  psi::fprintf(outfile,"\tOpposite-Spin correlation energy  = %20.15f\n",os_mp2);
+  psi::fprintf(outfile,"\tSame-Spin correlation energy      = %20.15f\n\n",ss_mp2);
+  psi::fprintf(outfile,"      * SCS-RI-MP2 total energy           = %20.15f\n\n",
     escf + scs_scale_os*os_mp2 + scs_scale_ss*ss_mp2);
   if (scsn) {
-    fprintf(outfile,"      * SCSN-RI-MP2 total energy          = %20.15f\n\n",
+    psi::fprintf(outfile,"      * SCSN-RI-MP2 total energy          = %20.15f\n\n",
       escf + 1.76*ss_mp2);
     }
 
@@ -541,11 +541,11 @@ namespace psi{ namespace dfmp2{
 
 void title(void)
 {
-  fprintf(outfile, "\t\t\t*************************\n");
-  fprintf(outfile, "\t\t\t*                       *\n");
-  fprintf(outfile, "\t\t\t*         DF-MP2        *\n");
-  fprintf(outfile, "\t\t\t*                       *\n");
-  fprintf(outfile, "\t\t\t*************************\n");
+  psi::fprintf(outfile, "\t\t\t*************************\n");
+  psi::fprintf(outfile, "\t\t\t*                       *\n");
+  psi::fprintf(outfile, "\t\t\t*         DF-MP2        *\n");
+  psi::fprintf(outfile, "\t\t\t*                       *\n");
+  psi::fprintf(outfile, "\t\t\t*************************\n");
   fflush(outfile);
 }
 

@@ -31,14 +31,14 @@ void SAPT2::ind22()
   double e_ind220 = ind220();
 
   if (debug_) {
-    fprintf(outfile,"    Ind220              = %18.12lf H\n",e_ind220);
+    psi::fprintf(outfile,"    Ind220              = %18.12lf H\n",e_ind220);
     fflush(outfile);
   }
 
   double e_ind202 = ind202();
 
   if (debug_) {
-    fprintf(outfile,"    Ind202              = %18.12lf H\n\n",e_ind202);
+    psi::fprintf(outfile,"    Ind202              = %18.12lf H\n\n",e_ind202);
     fflush(outfile);
   }
 
@@ -46,7 +46,7 @@ void SAPT2::ind22()
   e_exch_ind22_ = e_ind22_*(e_exch_ind20_/e_ind20_);
 
   if (print_) {
-    fprintf(outfile,"    Ind22               = %18.12lf H\n",e_ind22_);
+    psi::fprintf(outfile,"    Ind22               = %18.12lf H\n",e_ind22_);
     fflush(outfile);
   }
 }
@@ -215,7 +215,7 @@ double SAPT2::ind220_1(int intfile, const char *AAlabel, const char *ARlabel,
   free_block(yARAR);
 
   if (debug_) {
-    fprintf(outfile,"\n    Ind22_1             = %18.12lf H\n",energy);
+    psi::fprintf(outfile,"\n    Ind22_1             = %18.12lf H\n",energy);
     fflush(outfile);
   }
 
@@ -244,7 +244,7 @@ double SAPT2::ind220_2(int ampfile, const char *tlabel, double **iAR,
   free_block(zAR);
 
   if (debug_) {
-    fprintf(outfile,"    Ind22_2             = %18.12lf H\n",energy);
+    psi::fprintf(outfile,"    Ind22_2             = %18.12lf H\n",energy);
     fflush(outfile);
   }
 
@@ -283,7 +283,7 @@ double SAPT2::ind220_3(int ampfile, const char *AAlabel, const char *RRlabel,
   free_block(xRR);
 
   if (debug_) {
-    fprintf(outfile,"    Ind22_3             = %18.12lf H\n",energy);
+    psi::fprintf(outfile,"    Ind22_3             = %18.12lf H\n",energy);
     fflush(outfile);
   }
 
@@ -328,7 +328,7 @@ double SAPT2::ind220_4(int ampfile, const char *thetalabel, int intfile,
   free_block(T_p_AR);
 
   if (debug_) {
-    fprintf(outfile,"    Ind22_4             = %18.12lf H\n",energy);
+    psi::fprintf(outfile,"    Ind22_4             = %18.12lf H\n",energy);
     fflush(outfile);
   }
 
@@ -364,7 +364,7 @@ double SAPT2::ind220_5(int ampfile, const char *tlabel, double **iAR,
   free_block(tARAR);
 
   if (debug_) {
-    fprintf(outfile,"    Ind22_5             = %18.12lf H\n",energy);
+    psi::fprintf(outfile,"    Ind22_5             = %18.12lf H\n",energy);
     fflush(outfile);
   }
 
@@ -421,7 +421,7 @@ double SAPT2::ind220_6(int intfile, const char *AAlabel, const char *ARlabel,
   free_block(yAR);
 
   if (debug_) {
-    fprintf(outfile,"    Ind22_6             = %18.12lf H\n",energy);
+    psi::fprintf(outfile,"    Ind22_6             = %18.12lf H\n",energy);
     fflush(outfile);
   }
 
@@ -492,7 +492,7 @@ double SAPT2::ind220_7(int AAfile, const char *AAlabel, const char *ARlabel,
   free_block(tAR);
 
   if (debug_) {
-    fprintf(outfile,"    Ind22_7             = %18.12lf H\n",energy);
+    psi::fprintf(outfile,"    Ind22_7             = %18.12lf H\n",energy);
     fflush(outfile);
   }
 

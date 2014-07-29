@@ -131,23 +131,23 @@ void FragOptions::SetBMethod(const std::string& BSSE){
 void FragOptions::PrintOptions(){
    std::string stars=
          "\n**************************************************************************";
-   fprintf(psi::outfile,stars.c_str());
-   fprintf(psi::outfile,
+   psi::fprintf(psi::outfile,stars.c_str());
+   psi::fprintf(psi::outfile,
 "\n******************** Many-Body Expansion (MBE) module ********************"
     );
-   fprintf(psi::outfile,stars.c_str());
-   fprintf(psi::outfile,
+   psi::fprintf(psi::outfile,stars.c_str());
+   psi::fprintf(psi::outfile,
      "\n\nA %d-body expansion is being performed with the following options:\n"
          ,MBEOrder);
-   fprintf(psi::outfile,"Fragmenting system via: %s\n",
+   psi::fprintf(psi::outfile,"Fragmenting system via: %s\n",
          (ToString(FMethod)).c_str());
-   if(EMethod!=NO_EMBED)fprintf(psi::outfile,"Embedding via: %s\n",
+   if(EMethod!=NO_EMBED)psi::fprintf(psi::outfile,"Embedding via: %s\n",
          (ToString(EMethod)).c_str());
-   if(CMethod!=NO_CAPS)fprintf(psi::outfile,"Capping via: %s\n",
+   if(CMethod!=NO_CAPS)psi::fprintf(psi::outfile,"Capping via: %s\n",
          (ToString(CMethod)).c_str());
-   if(BMethod!=NO_BSSE)fprintf(psi::outfile,"BSSE Corrections via: %s\n",
+   if(BMethod!=NO_BSSE)psi::fprintf(psi::outfile,"BSSE Corrections via: %s\n",
          (ToString(BMethod)).c_str());
-   fprintf(psi::outfile,
+   psi::fprintf(psi::outfile,
    "\n**************************************************************************\n"
     );
 }

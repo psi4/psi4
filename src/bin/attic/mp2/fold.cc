@@ -88,8 +88,8 @@ void rhf_sf_fold(void)
   occ_sym = mo.occ_sym; 
   vir_sym = mo.vir_sym;
 
-  fprintf(outfile, "\n\tEnergies re-computed from Fock-adjusted CC density:\n");
-  fprintf(outfile,   "\t---------------------------------------------------\n");
+  psi::fprintf(outfile, "\n\tEnergies re-computed from Fock-adjusted CC density:\n");
+  psi::fprintf(outfile,   "\t---------------------------------------------------\n");
 
   global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "DIJ");
   global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 0, "h(i,j)");
@@ -97,7 +97,7 @@ void rhf_sf_fold(void)
   global_dpd_->file2_close(&F);
   global_dpd_->file2_close(&D);
 
-  /*    fprintf(outfile, "\tDIJ = %20.15f\n", this_energy); */
+  /*    psi::fprintf(outfile, "\tDIJ = %20.15f\n", this_energy); */
   one_energy += this_energy;
 
   global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "Dij");
@@ -106,7 +106,7 @@ void rhf_sf_fold(void)
   global_dpd_->file2_close(&F);
   global_dpd_->file2_close(&D);
 
-  /*    fprintf(outfile, "\tDij = %20.15f\n", this_energy); */
+  /*    psi::fprintf(outfile, "\tDij = %20.15f\n", this_energy); */
   one_energy += this_energy;
 
   global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "DAB");
@@ -115,7 +115,7 @@ void rhf_sf_fold(void)
   global_dpd_->file2_close(&F);
   global_dpd_->file2_close(&D);
 
-  /*    fprintf(outfile, "\tDAB = %20.15f\n", this_energy); */
+  /*    psi::fprintf(outfile, "\tDAB = %20.15f\n", this_energy); */
   one_energy += this_energy;
 
   global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "Dab");
@@ -124,7 +124,7 @@ void rhf_sf_fold(void)
   global_dpd_->file2_close(&F);
   global_dpd_->file2_close(&D);
 
-  /*    fprintf(outfile, "\tDab = %20.15f\n", this_energy); */
+  /*    psi::fprintf(outfile, "\tDab = %20.15f\n", this_energy); */
   one_energy += this_energy;
 
   global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "DIA");
@@ -133,7 +133,7 @@ void rhf_sf_fold(void)
   global_dpd_->file2_close(&F);
   global_dpd_->file2_close(&D);
 
-  /*    fprintf(outfile, "\tDIA = %20.15f\n", this_energy); */
+  /*    psi::fprintf(outfile, "\tDIA = %20.15f\n", this_energy); */
   one_energy += this_energy;
 
   global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "Dia");
@@ -142,7 +142,7 @@ void rhf_sf_fold(void)
   global_dpd_->file2_close(&F);
   global_dpd_->file2_close(&D);
 
-  /*    fprintf(outfile, "\tDia = %20.15f\n", this_energy); */
+  /*    psi::fprintf(outfile, "\tDia = %20.15f\n", this_energy); */
   one_energy += this_energy;
 
   global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "DAI");
@@ -151,7 +151,7 @@ void rhf_sf_fold(void)
   global_dpd_->file2_close(&F);
     global_dpd_->file2_close(&D);
 
-  /*    fprintf(outfile, "\tDAI = %20.15f\n", this_energy); */
+  /*    psi::fprintf(outfile, "\tDAI = %20.15f\n", this_energy); */
   one_energy += this_energy;
 
   global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "Dai");
@@ -160,10 +160,10 @@ void rhf_sf_fold(void)
   global_dpd_->file2_close(&F);
   global_dpd_->file2_close(&D);
 
-  /*    fprintf(outfile, "\tDai = %20.15f\n", this_energy); */
+  /*    psi::fprintf(outfile, "\tDai = %20.15f\n", this_energy); */
   one_energy += this_energy;
 
-  fprintf(outfile, "\tOne-electron energy        = %20.15f\n", one_energy);
+  psi::fprintf(outfile, "\tOne-electron energy        = %20.15f\n", one_energy);
   fflush(outfile);
 
   global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "DIJ");
@@ -347,7 +347,7 @@ void rhf_sf_fold(void)
   global_dpd_->buf4_close(&G);
 
   total_two_energy += two_energy;
-  fprintf(outfile, "\tIJKL energy                = %20.15f\n", two_energy);
+  psi::fprintf(outfile, "\tIJKL energy                = %20.15f\n", two_energy);
   fflush(outfile);
 
   global_dpd_->file2_mat_close(&D);
@@ -560,7 +560,7 @@ void rhf_sf_fold(void)
   global_dpd_->buf4_close(&G);
 
   total_two_energy += two_energy;
-  fprintf(outfile, "\tIJKA energy                = %20.15f\n", two_energy);
+  psi::fprintf(outfile, "\tIJKA energy                = %20.15f\n", two_energy);
   fflush(outfile);
 
   global_dpd_->file2_mat_close(&D1);
@@ -585,7 +585,7 @@ void rhf_sf_fold(void)
 
   two_energy *= 2;
   total_two_energy += two_energy;
-  fprintf(outfile, "\tIJAB energy                = %20.15f\n", two_energy);
+  psi::fprintf(outfile, "\tIJAB energy                = %20.15f\n", two_energy);
   fflush(outfile);
 
   global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "DAB");
@@ -779,12 +779,12 @@ void rhf_sf_fold(void)
   global_dpd_->buf4_close(&DInts);
 
   total_two_energy += two_energy;
-  fprintf(outfile, "\tIBJA energy                = %20.15f\n", two_energy);
+  psi::fprintf(outfile, "\tIBJA energy                = %20.15f\n", two_energy);
   fflush(outfile);
 
-  fprintf(outfile, "\tMP2 correlation energy    = %20.15f\n",
+  psi::fprintf(outfile, "\tMP2 correlation energy    = %20.15f\n",
 	  one_energy + total_two_energy);
-  fprintf(outfile, "\tTotal MP2 energy          = %20.15f\n",
+  psi::fprintf(outfile, "\tTotal MP2 energy          = %20.15f\n",
 	  one_energy + total_two_energy + mo.Escf);
 }
 

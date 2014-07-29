@@ -79,12 +79,12 @@ void schmidt_add(dpdfile2 *RIA, dpdfile2 *Ria,
 
     dotval  = global_dpd_->file2_dot(RIA, &CME);
     dotval += global_dpd_->file2_dot(Ria, &Cme);
-  //fprintf(outfile, "OE Dotval for vector %d = %20.14f\n", i, dotval);
+  //psi::fprintf(outfile, "OE Dotval for vector %d = %20.14f\n", i, dotval);
     dotval += global_dpd_->buf4_dot(RIJAB, &CMNEF);
     dotval += global_dpd_->buf4_dot(Rijab, &Cmnef);
     dotval += global_dpd_->buf4_dot(RIjAb, &CMnEf);
 
-  //fprintf(outfile, "Dotval for vector %d = %20.14f\n", i, dotval);
+  //psi::fprintf(outfile, "Dotval for vector %d = %20.14f\n", i, dotval);
 
     global_dpd_->file2_axpy(&CME, RIA, -1.0*dotval, 0);
     global_dpd_->file2_axpy(&Cme, Ria, -1.0*dotval, 0);
@@ -100,7 +100,7 @@ void schmidt_add(dpdfile2 *RIA, dpdfile2 *Ria,
   }
 
   norm = norm_C(RIA, Ria, RIJAB, Rijab, RIjAb);
-  //fprintf(outfile, "Norm of residual (TDC) = %20.14f\n", norm);
+  //psi::fprintf(outfile, "Norm of residual (TDC) = %20.14f\n", norm);
 
   if (norm < eom_params.schmidt_add_residual_tol) {
     return;
@@ -152,7 +152,7 @@ void schmidt_add_RHF(dpdfile2 *RIA, dpdbuf4 *RIjAb, int *numCs, int irrep)
     global_dpd_->file2_init(&CME, PSIF_EOM_CME, irrep, 0, 1, CME_lbl);
     global_dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, irrep, 0, 5, 0, 5, 0, CMnEf_lbl);
     dotval  = 2.0 * global_dpd_->file2_dot(RIA, &CME);
- //fprintf(outfile, "OE Dotval for vector %d = %20.14f\n", i, dotval);
+ //psi::fprintf(outfile, "OE Dotval for vector %d = %20.14f\n", i, dotval);
     dotval += global_dpd_->buf4_dot(&R2a, &CMnEf);
     global_dpd_->buf4_close(&R2a);
 		if (params.full_matrix) {
@@ -161,7 +161,7 @@ void schmidt_add_RHF(dpdfile2 *RIA, dpdbuf4 *RIjAb, int *numCs, int irrep)
 			dotval += C0 * R0;
 		}
 
- //fprintf(outfile, "Dotval for vector %d = %20.14f\n", i, dotval);
+ //psi::fprintf(outfile, "Dotval for vector %d = %20.14f\n", i, dotval);
 		R0 = R0 - 1.0 * dotval * C0;
     global_dpd_->file2_axpy(&CME, RIA, -1.0*dotval, 0);
     global_dpd_->buf4_axpy(&CMnEf, RIjAb, -1.0*dotval);
@@ -182,7 +182,7 @@ void schmidt_add_RHF(dpdfile2 *RIA, dpdbuf4 *RIjAb, int *numCs, int irrep)
 
   global_dpd_->buf4_close(&R2b);
 
-  //fprintf(outfile, "Norm of residual (TDC) = %20.14f\n", norm);
+  //psi::fprintf(outfile, "Norm of residual (TDC) = %20.14f\n", norm);
 
   if (norm < eom_params.schmidt_add_residual_tol) {
     return;
@@ -201,7 +201,7 @@ void schmidt_add_RHF(dpdfile2 *RIA, dpdbuf4 *RIjAb, int *numCs, int irrep)
     norm -= dpd_buf4_dot(RIjAb, &R2b);
 		if (params.full_matrix) norm += R0 * R0;
     norm = sqrt(norm);
-    fprintf(outfile,"Norm of final new C in schmidt_add(): %20.15lf\n", norm);
+    psi::fprintf(outfile,"Norm of final new C in schmidt_add(): %20.15lf\n", norm);
     dpd_buf4_close(&R2b);
 #endif
 

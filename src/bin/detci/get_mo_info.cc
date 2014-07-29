@@ -81,16 +81,16 @@ void get_mo_info(Options &options)
    chkpt_close();
 
    if (CalcInfo.iopen && Parameters.opentype == PARM_OPENTYPE_NONE) {
-      fprintf(outfile, "Warning: iopen=1,opentype=none. Making iopen=0\n");
+      psi::fprintf(outfile, "Warning: iopen=1,opentype=none. Making iopen=0\n");
       CalcInfo.iopen = 0;
       }
    else if (!CalcInfo.iopen && (Parameters.opentype == PARM_OPENTYPE_HIGHSPIN
       || Parameters.opentype == PARM_OPENTYPE_SINGLET)) {
-      fprintf(outfile,"Warning: iopen=0,opentype!=closed. Making iopen=1\n");
+      psi::fprintf(outfile,"Warning: iopen=0,opentype!=closed. Making iopen=1\n");
       CalcInfo.iopen = 1;
       }
    if (Parameters.ref_sym >= CalcInfo.nirreps) {
-      fprintf(outfile,"Warning: ref_sym >= nirreps.  Setting ref_sym=0\n");
+      psi::fprintf(outfile,"Warning: ref_sym >= nirreps.  Setting ref_sym=0\n");
       Parameters.ref_sym = 0;
       }
 
@@ -171,11 +171,11 @@ void get_mo_info(Options &options)
 
 
    if (Parameters.print_lvl > 4) {
-      fprintf(outfile, "\nReordering array = \n");
+      psi::fprintf(outfile, "\nReordering array = \n");
       for (i=0; i<CalcInfo.nmo; i++) {
-         fprintf(outfile, "%3d ", CalcInfo.reorder[i]);
+         psi::fprintf(outfile, "%3d ", CalcInfo.reorder[i]);
          }
-      fprintf(outfile, "\n");
+      psi::fprintf(outfile, "\n");
       }
 
    CalcInfo.nmotri = (CalcInfo.nmo * (CalcInfo.nmo + 1)) / 2 ;

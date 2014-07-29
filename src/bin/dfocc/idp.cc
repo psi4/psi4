@@ -52,7 +52,7 @@ if (reference_ == "RESTRICTED") {
              nidpA += navirA * nfrzv; 
     }
 
-    fprintf(outfile,"\n\tNumber of independent-pairs: %3d\n", nidpA);
+    psi::fprintf(outfile,"\n\tNumber of independent-pairs: %3d\n", nidpA);
     fflush(outfile);  
     
     if (nidpA > 0) {
@@ -132,14 +132,14 @@ if (reference_ == "RESTRICTED") {
 
       if (print_ > 2){
          for(int i = 0; i < nidpA; i++){
-             fprintf(outfile,"\ti, idprowA, idpcolA: %3d %3d %3d\n", i, idprowA->get(i), idpcolA->get(i));
+             psi::fprintf(outfile,"\ti, idprowA, idpcolA: %3d %3d %3d\n", i, idprowA->get(i), idpcolA->get(i));
 	     fflush(outfile);
          }
       }
     }// end if nidpA != 0
 
     else if (nidpA == 0) {
-            fprintf(outfile,"\tThere is not any non-redundant orbital rotation pair! \n");
+            psi::fprintf(outfile,"\tThere is not any non-redundant orbital rotation pair! \n");
             tstop();
             exit(EXIT_SUCCESS);
     }
@@ -175,12 +175,12 @@ else if (reference_ == "UNRESTRICTED") {
              nidpB += navirB * nfrzv; 
     }
 
-    fprintf(outfile,"\n\tNumber of alpha independent-pairs:%3d\n", nidpA);
-    fprintf(outfile,"\tNumber of beta independent-pairs :%3d\n", nidpB);
+    psi::fprintf(outfile,"\n\tNumber of alpha independent-pairs:%3d\n", nidpA);
+    psi::fprintf(outfile,"\tNumber of beta independent-pairs :%3d\n", nidpB);
     fflush(outfile);  
 
     if (nidpA == 0 && nidpB == 0) {
-        fprintf(outfile,"\tThere is not any non-redundant orbital rotation pair! \n");
+        psi::fprintf(outfile,"\tThere is not any non-redundant orbital rotation pair! \n");
         tstop();
         exit(EXIT_SUCCESS);
     }
@@ -262,7 +262,7 @@ else if (reference_ == "UNRESTRICTED") {
 
       if (print_ > 2){
          for(int i = 0; i < nidpA; i++){
-             fprintf(outfile,"\n\t i, idprowA, idpcolA: %3d %3d %3d\n", i, idprowA->get(i), idpcolA->get(i));
+             psi::fprintf(outfile,"\n\t i, idprowA, idpcolA: %3d %3d %3d\n", i, idprowA->get(i), idpcolA->get(i));
 	     fflush(outfile);
          }
       }
@@ -345,7 +345,7 @@ else if (reference_ == "UNRESTRICTED") {
 
       if (print_ > 2){
          for(int i = 0; i < nidpB; i++){
-             fprintf(outfile,"\n\t i, idprowB, idpcolB: %3d %3d %3d\n", i, idprowB->get(i), idpcolB->get(i));
+             psi::fprintf(outfile,"\n\t i, idprowB, idpcolB: %3d %3d %3d\n", i, idprowB->get(i), idpcolB->get(i));
 	     fflush(outfile);
          }
       }
@@ -360,13 +360,13 @@ else if (reference_ == "UNRESTRICTED") {
 //=======================================================          
 void DFOCC::idp2()
 {
-    fprintf(outfile,"\tForming independent-pairs...\n");
+    psi::fprintf(outfile,"\tForming independent-pairs...\n");
     fflush(outfile);
 if (reference_ == "RESTRICTED") {
     // Form IDPs: All V-O
     nidpA=0;
     nidpA = nvirA * noccA; 
-    fprintf(outfile,"\tNumber of independent-pairs: %3d\n", nidpA);
+    psi::fprintf(outfile,"\tNumber of independent-pairs: %3d\n", nidpA);
     fflush(outfile);  
     wogA = SharedTensor1d(new Tensor1d("Alpha MO grad vector", nidpA));
     idprowA = SharedTensor1i(new Tensor1i("Alpha IDP Row", nidpA));
@@ -389,8 +389,8 @@ else if (reference_ == "UNRESTRICTED") {
     nidpB=0;
     nidpA = nvirA * noccA; 
     nidpB = nvirB * noccB; 
-    fprintf(outfile,"\tNumber of alpha independent-pairs:%3d\n", nidpA);
-    fprintf(outfile,"\tNumber of beta independent-pairs :%3d\n", nidpB);
+    psi::fprintf(outfile,"\tNumber of alpha independent-pairs:%3d\n", nidpA);
+    psi::fprintf(outfile,"\tNumber of beta independent-pairs :%3d\n", nidpB);
     fflush(outfile);  
     wogA = SharedTensor1d(new Tensor1d("Alpha MO grad vector", nidpA));
     wogB = SharedTensor1d(new Tensor1d("Beta MO grad vector", nidpB));

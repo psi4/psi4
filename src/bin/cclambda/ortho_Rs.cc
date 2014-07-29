@@ -66,12 +66,12 @@ void ortho_Rs(struct L_Params *pL_params, int current_L) {
     if (L_root == -1)
       overlap += pL_params[R].R0;
 
-     /* fprintf(outfile,"overlap with R[%d][%d]: %15.10lf\n", R_irr, R_root, overlap);  */
+     /* psi::fprintf(outfile,"overlap with R[%d][%d]: %15.10lf\n", R_irr, R_root, overlap);  */
     LRi_minus(L_irr, R_root, overlap, pL_params[R].R0);
    /* overlap = LRi_dot(L_irr, R_root);
     if (L_root == -1)
       overlap += pL_params[R].R0;
-    fprintf(outfile,"overlap with R[%d][%d]: %15.10lf\n", R_irr, R_root, overlap);  */
+    psi::fprintf(outfile,"overlap with R[%d][%d]: %15.10lf\n", R_irr, R_root, overlap);  */
   }
   return;
 }

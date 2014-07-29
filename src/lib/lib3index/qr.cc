@@ -120,7 +120,7 @@ void QR::form_QR()
         }
 
         if (debug_) {
-            fprintf(outfile, "Step l = %d: pivoting to column %d\n\n", l, pivot);
+            psi::fprintf(outfile, "Step l = %d: pivoting to column %d\n\n", l, pivot);
         }
 
         // Perform pivot

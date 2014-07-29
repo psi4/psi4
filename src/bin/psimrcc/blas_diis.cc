@@ -95,7 +95,7 @@ void CCBLAS::diis(int cycle, double delta, DiisType diis_type)
         }
       }
     }
-    fprintf(outfile,"   S");
+    psi::fprintf(outfile,"   S");
 
 
     // Decide if we are doing a DIIS extrapolation in this cycle
@@ -202,9 +202,9 @@ void CCBLAS::diis(int cycle, double delta, DiisType diis_type)
         }
 
       }
-      fprintf(outfile,"/E");
+      psi::fprintf(outfile,"/E");
       if(singularities_found)
-        fprintf(outfile," (singularities found)");
+        psi::fprintf(outfile," (singularities found)");
       release1(diis_A);
       release2(diis_B);
     }

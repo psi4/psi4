@@ -35,7 +35,7 @@
 #include <cstdio>
 #include <libpsio/psio.h>
 #include "config.h"
-
+#include "psi4-dec.h"
 namespace psi {
 
 struct iwlbuf {

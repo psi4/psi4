@@ -80,8 +80,8 @@ void rhf_sf_deanti(void)
   double total_two_energy = 0.0;
   dpdbuf4 A, B, C, DInts, E, FInts;
 
-  fprintf(outfile, "\n\tEnergies re-computed from Mulliken density:\n");
-  fprintf(outfile,   "\t-------------------------------------------\n");
+  psi::fprintf(outfile, "\n\tEnergies re-computed from Mulliken density:\n");
+  psi::fprintf(outfile,   "\t-------------------------------------------\n");
 
   global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "DIJ");
   global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 0, "h(i,j)");
@@ -131,7 +131,7 @@ void rhf_sf_deanti(void)
   global_dpd_->file2_close(&F);
   global_dpd_->file2_close(&D);
 
-  fprintf(outfile, "\tOne-electron energy        = %20.15f\n", one_energy);
+  psi::fprintf(outfile, "\tOne-electron energy        = %20.15f\n", one_energy);
   fflush(outfile);
 
   /* G(Ij,Kl) <-- 1/2 G(IJ,KL) + 1/2 G(ij,kl) + 1/2 G(Ij,Kl) + 1/2 G(iJ,kL) */
@@ -154,7 +154,7 @@ void rhf_sf_deanti(void)
   global_dpd_->buf4_init(&A, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 0, "A <ij|kl>");
   two_energy = global_dpd_->buf4_dot(&A, &G1);
   global_dpd_->buf4_close(&A);
-  fprintf(outfile, "\tIJKL energy                = %20.15f\n", two_energy);
+  psi::fprintf(outfile, "\tIJKL energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
 
   global_dpd_->buf4_close(&G1);
@@ -174,7 +174,7 @@ void rhf_sf_deanti(void)
   global_dpd_->buf4_init(&E, PSIF_CC_EINTS, 0, 0, 10, 0, 10, 0, "E <ij|ka>");
   two_energy = global_dpd_->buf4_dot(&E, &G1);
   global_dpd_->buf4_close(&E);
-  fprintf(outfile, "\tIJKA energy                = %20.15f\n", 2*two_energy);
+  psi::fprintf(outfile, "\tIJKA energy                = %20.15f\n", 2*two_energy);
   total_two_energy += 2*two_energy;
 
   global_dpd_->buf4_close(&G1);
@@ -231,7 +231,7 @@ void rhf_sf_deanti(void)
   global_dpd_->buf4_init(&DInts, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
   two_energy = global_dpd_->buf4_dot(&DInts, &G1);
   global_dpd_->buf4_close(&DInts);
-  fprintf(outfile, "\tIJAB energy                = %20.15f\n", two_energy);
+  psi::fprintf(outfile, "\tIJAB energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
 
   global_dpd_->buf4_close(&G1);
@@ -251,15 +251,15 @@ void rhf_sf_deanti(void)
   global_dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia|jb>");
   two_energy = global_dpd_->buf4_dot(&C, &G1);
   global_dpd_->buf4_close(&C);
-  fprintf(outfile, "\tIBJA energy                = %20.15f\n", two_energy);
+  psi::fprintf(outfile, "\tIBJA energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
 
   global_dpd_->buf4_close(&G1);
 
-  fprintf(outfile,"\tTotal two-electron energy  = %20.15f\n", total_two_energy);
-  fprintf(outfile, "\tMP2 correlation energy    = %20.15f\n",
+  psi::fprintf(outfile,"\tTotal two-electron energy  = %20.15f\n", total_two_energy);
+  psi::fprintf(outfile, "\tMP2 correlation energy    = %20.15f\n",
           one_energy + total_two_energy);
-  fprintf(outfile, "\tTotal MP2 energy          = %20.15f\n",
+  psi::fprintf(outfile, "\tTotal MP2 energy          = %20.15f\n",
           one_energy + total_two_energy + mo.Escf);
 }
 

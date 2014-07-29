@@ -86,9 +86,9 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
 
     if(print_) {
         if(transformationType_ == Restricted){
-            fprintf(outfile, "\tStarting second half-transformation.\n");
+            psi::fprintf(outfile, "\tStarting second half-transformation.\n");
         }else{
-            fprintf(outfile, "\tStarting AA second half-transformation.\n");
+            psi::fprintf(outfile, "\tStarting AA second half-transformation.\n");
         }
         fflush(outfile);
     }
@@ -105,7 +105,7 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
     sprintf(label, "Half-Transformed Ints (%c%c|nn)", toupper(s1->label()), toupper(s2->label()));
     global_dpd_->buf4_init(&J, aHtIntFile_, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
     if(print_ > 5)
-        fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
+        psi::fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
                             label, braCore, ketCore, braDisk, ketDisk);
 
     braCore = DPD_ID(s1, s2, Alpha, true);
@@ -119,7 +119,7 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
                                               toupper(s3->label()), toupper(s4->label()));
     global_dpd_->buf4_init(&K, dpdIntFile_, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
     if(print_ > 5)
-        fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
+        psi::fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
                             label, braCore, ketCore, braDisk, ketDisk);
 
     for(int h=0; h < nirreps_; h++) {
@@ -138,10 +138,10 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
         }
 
         if(print_ > 1) {
-            fprintf(outfile, "\th = %d; memfree         = %lu\n", h, memFree);
-            fprintf(outfile, "\th = %d; rows_per_bucket = %lu\n", h, rowsPerBucket);
-            fprintf(outfile, "\th = %d; rows_left       = %lu\n", h, rowsLeft);
-            fprintf(outfile, "\th = %d; nbuckets        = %d\n", h, nBuckets);
+            psi::fprintf(outfile, "\th = %d; memfree         = %lu\n", h, memFree);
+            psi::fprintf(outfile, "\th = %d; rows_per_bucket = %lu\n", h, rowsPerBucket);
+            psi::fprintf(outfile, "\th = %d; rows_left       = %lu\n", h, rowsLeft);
+            psi::fprintf(outfile, "\th = %d; nbuckets        = %d\n", h, nBuckets);
             fflush(outfile);
         }
 
@@ -215,7 +215,7 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
 
     if(transformationType_ != Restricted){
         if(print_) {
-            fprintf(outfile, "\tStarting AB second half-transformation.\n");
+            psi::fprintf(outfile, "\tStarting AB second half-transformation.\n");
             fflush(outfile);
         }
         if(useIWL_) iwl = new IWL(psio_.get(), iwlABIntFile_, tolerance_, 0, 0);
@@ -226,7 +226,7 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
         sprintf(label, "Half-Transformed Ints (%c%c|nn)", toupper(s1->label()), toupper(s2->label()));
         global_dpd_->buf4_init(&J, aHtIntFile_, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
         if(print_ > 5)
-            fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
+            psi::fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
                                 label, braCore, ketCore, braDisk, ketDisk);
 
         braCore = DPD_ID(s1, s2, Alpha, true);
@@ -240,7 +240,7 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
                                                   tolower(s3->label()), tolower(s4->label()));
         global_dpd_->buf4_init(&K, dpdIntFile_, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
         if(print_ > 5)
-            fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
+            psi::fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
                                 label, braCore, ketCore, braDisk, ketDisk);
 
         for(int h=0; h < nirreps_; h++) {
@@ -259,10 +259,10 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
             }
 
             if(print_ > 1) {
-                fprintf(outfile, "\th = %d; memfree         = %lu\n", h, memFree);
-                fprintf(outfile, "\th = %d; rows_per_bucket = %lu\n", h, rowsPerBucket);
-                fprintf(outfile, "\th = %d; rows_left       = %lu\n", h, rowsLeft);
-                fprintf(outfile, "\th = %d; nbuckets        = %d\n", h, nBuckets);
+                psi::fprintf(outfile, "\th = %d; memfree         = %lu\n", h, memFree);
+                psi::fprintf(outfile, "\th = %d; rows_per_bucket = %lu\n", h, rowsPerBucket);
+                psi::fprintf(outfile, "\th = %d; rows_left       = %lu\n", h, rowsLeft);
+                psi::fprintf(outfile, "\th = %d; nbuckets        = %d\n", h, nBuckets);
                 fflush(outfile);
             }
 
@@ -334,7 +334,7 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
         /*** AA/AB two-electron integral transformation complete ***/
 
         if(print_) {
-            fprintf(outfile, "\tStarting BB second half-transformation.\n");
+            psi::fprintf(outfile, "\tStarting BB second half-transformation.\n");
             fflush(outfile);
         }
         if(useIWL_) iwl = new IWL(psio_.get(), iwlBBIntFile_, tolerance_, 0, 0);
@@ -348,7 +348,7 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
         sprintf(label, "Half-Transformed Ints (%c%c|nn)", tolower(s1->label()), tolower(s2->label()));
         global_dpd_->buf4_init(&J, bHtIntFile_, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
         if(print_ > 5)
-            fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
+            psi::fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
                                 label, braCore, ketCore, braDisk, ketDisk);
 
         braCore = DPD_ID(s1, s2, Beta, true);
@@ -362,7 +362,7 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
                                                   tolower(s3->label()), tolower(s4->label()));
         global_dpd_->buf4_init(&K, dpdIntFile_, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
         if(print_ > 5)
-            fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
+            psi::fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
                                 label, braCore, ketCore, braDisk, ketDisk);
 
         for(int h=0; h < nirreps_; h++) {
@@ -382,10 +382,10 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
             }
 
             if(print_ > 1) {
-                fprintf(outfile, "\th = %d; memfree         = %lu\n", h, memFree);
-                fprintf(outfile, "\th = %d; rows_per_bucket = %lu\n", h, rowsPerBucket);
-                fprintf(outfile, "\th = %d; rows_left       = %lu\n", h, rowsLeft);
-                fprintf(outfile, "\th = %d; nbuckets        = %d\n", h, nBuckets);
+                psi::fprintf(outfile, "\th = %d; memfree         = %lu\n", h, memFree);
+                psi::fprintf(outfile, "\th = %d; rows_per_bucket = %lu\n", h, rowsPerBucket);
+                psi::fprintf(outfile, "\th = %d; rows_left       = %lu\n", h, rowsLeft);
+                psi::fprintf(outfile, "\th = %d; nbuckets        = %d\n", h, nBuckets);
                 fflush(outfile);
             }
 
@@ -467,7 +467,7 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
     delete [] label;
 
     if(print_){
-        fprintf(outfile, "\tTwo-electron integral transformation complete.\n");
+        psi::fprintf(outfile, "\tTwo-electron integral transformation complete.\n");
         fflush(outfile);
     }
 

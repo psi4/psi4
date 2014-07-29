@@ -40,7 +40,7 @@ namespace psi{ namespace dfoccwave{
 
 void DFOCC::ref_grad()
 {      
-  //fprintf(outfile,"\tref_grad is starting... \n"); fflush(outfile);
+  //psi::fprintf(outfile,"\tref_grad is starting... \n"); fflush(outfile);
 /********************************************************************************************/
 /************************** Build Intermediates and TPDM ************************************/
 /********************************************************************************************/
@@ -671,7 +671,7 @@ void DFOCC::ref_grad()
     }
 
 
-//fprintf(outfile,"\tref_grad is done. \n"); fflush(outfile);
+//psi::fprintf(outfile,"\tref_grad is done. \n"); fflush(outfile);
 }// end 
 
 

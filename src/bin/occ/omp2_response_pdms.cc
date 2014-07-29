@@ -34,7 +34,7 @@ namespace psi{ namespace occwave{
 
 void OCCWave::omp2_response_pdms()
 {   
- //fprintf(outfile,"\n omp2_response_pdms is starting... \n"); fflush(outfile);
+ //psi::fprintf(outfile,"\n omp2_response_pdms is starting... \n"); fflush(outfile);
 
  if (reference_ == "RESTRICTED") {
         // initialize
@@ -206,14 +206,14 @@ void OCCWave::omp2_response_pdms()
 
  }// end if (reference_ == "UNRESTRICTED") 
 
-  //fprintf(outfile,"\n omp2_response_pdms done... \n"); fflush(outfile);
+  //psi::fprintf(outfile,"\n omp2_response_pdms done... \n"); fflush(outfile);
 
 } // end of omp2_response_pdms
 
 
 void OCCWave::omp2_g_int()
 {  
-        //fprintf(outfile,"\n omp2_g_int is starting... \n"); fflush(outfile);
+        //psi::fprintf(outfile,"\n omp2_g_int is starting... \n"); fflush(outfile);
 
  if (reference_ == "RESTRICTED") {
 	GooA->zero();
@@ -435,7 +435,7 @@ void OCCWave::omp2_g_int()
 	
  }// end if (reference_ == "UNRESTRICTED") 
 
-  //fprintf(outfile,"\n omp2_g_int done... \n"); fflush(outfile);
+  //psi::fprintf(outfile,"\n omp2_g_int done... \n"); fflush(outfile);
 
 } // end of omp2_g_int
 }} // End Namespaces

@@ -94,19 +94,19 @@ void dist_container::print_mn()
 {
     if (exists_) {
         shell_block_it it;
-        fprintf(outfile, "\n *** MN (%d) Owner (%d) ***\n", MN_, me_);
+        psi::fprintf(outfile, "\n *** MN (%d) Owner (%d) ***\n", MN_, me_);
         for (it = eri_2_mn_.begin(); it != eri_2_mn_.end(); it++) {
-            fprintf (outfile,"\nRS %5d",it->first);
+            psi::fprintf (outfile,"\nRS %5d",it->first);
             for (int i=0; i < it->second.size(); i++) {
-                fprintf (outfile,"\n%5d",i);
-                fprintf (outfile,"%12.7f",it->second[i]);
+                psi::fprintf (outfile,"\n%5d",i);
+                psi::fprintf (outfile,"%12.7f",it->second[i]);
             }
-            fprintf (outfile,"\n");
+            psi::fprintf (outfile,"\n");
         }
     }
     else {
-        fprintf(outfile, "\n *** MN (%d) Owner (%d) ***\n", MN_, me_);
-        fprintf(outfile, "Does Not Exist\n");
+        psi::fprintf(outfile, "\n *** MN (%d) Owner (%d) ***\n", MN_, me_);
+        psi::fprintf(outfile, "Does Not Exist\n");
     }
 }
 

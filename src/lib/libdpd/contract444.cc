@@ -83,7 +83,7 @@ int DPD::contract444(dpdbuf4 *X, dpdbuf4 *Y, dpdbuf4 *Z,
     zrow = Z->params->rowtot; zcol = Z->params->coltot;
 
     if((zrow != xrow) || (zcol != ycol) || (xcol != yrow)) {
-        fprintf(stderr, "** Alignment error in contract444 **\n");
+        psi::fprintf(stderr, "** Alignment error in contract444 **\n");
         dpd_error("dpd_contract444",stderr);
     }
 #endif
@@ -126,19 +126,19 @@ int DPD::contract444(dpdbuf4 *X, dpdbuf4 *Y, dpdbuf4 *Z,
 
 #if DPD_DEBUG
         if(!incore) {
-            fprintf(stderr, "Contract444: memory information.\n");
-            fprintf(stderr, "Contract444: h = %d, row = %d, col = %d, tot = %d\n",
+            psi::fprintf(stderr, "Contract444: memory information.\n");
+            psi::fprintf(stderr, "Contract444: h = %d, row = %d, col = %d, tot = %d\n",
                     Hx, X->params->rowtot[Hx], X->params->coltot[Hx^GX],
                     X->params->rowtot[Hx] * X->params->coltot[Hx^GX]);
 
-            fprintf(stderr, "Contract444: nbuckets = %d\n", nbuckets);
-            fprintf(stderr, "Contract444: rows_per_bucket = %d\n",rows_per_bucket);
-            fprintf(stderr, "Contract444: rows_left = %d\n",rows_left);
+            psi::fprintf(stderr, "Contract444: nbuckets = %d\n", nbuckets);
+            psi::fprintf(stderr, "Contract444: rows_per_bucket = %d\n",rows_per_bucket);
+            psi::fprintf(stderr, "Contract444: rows_left = %d\n",rows_left);
             memtotal = X->params->rowtot[Hx] * X->params->coltot[Hx^GX];
             byte_conv = ((double) sizeof(double))/1e6;
-            fprintf(stderr, "Contract444: out of core algorithm used.\n");
-            fprintf(stderr, "Contract444: memtotal = %d.\n", memtotal);
-            fprintf(stderr, "Contract444: Need %5.2f MB to run in memory.\n",
+            psi::fprintf(stderr, "Contract444: out of core algorithm used.\n");
+            psi::fprintf(stderr, "Contract444: memtotal = %d.\n", memtotal);
+            psi::fprintf(stderr, "Contract444: Need %5.2f MB to run in memory.\n",
                     ((double) memtotal)*byte_conv);
             dpd_file4_cache_print(stderr);
             fflush(stderr);
@@ -180,7 +180,7 @@ int DPD::contract444(dpdbuf4 *X, dpdbuf4 *Y, dpdbuf4 *Z,
 
             /* out-of-core algorithm coded only for NT and TN arrangements, not NN or TT */
             if((!Ytrans && !Xtrans) || (Ytrans && Xtrans)) {
-                fprintf(stderr, "Out-of-core algorithm not yet coded for NN or TT DGEMM.\n");
+                psi::fprintf(stderr, "Out-of-core algorithm not yet coded for NN or TT DGEMM.\n");
                 dpd_error("contract444", stderr);
             }
 

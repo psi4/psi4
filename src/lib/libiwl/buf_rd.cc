@@ -69,7 +69,7 @@ int IWL::read(int target_pq, double *ints, int *ioff_lt, int *ioff_rt,
         ints[rs] = (double) valptr[idx_];
 
         if (printflg) 
-            fprintf(out, "<%d %d %d %d [%d][%d] = %20.10f\n",
+            psi::fprintf(out, "<%d %d %d %d [%d][%d] = %20.10f\n",
             p, q, r, s, pq, rs, ints[rs]) ;
 
     } /*! end loop through current buffer */
@@ -100,7 +100,7 @@ int IWL::read(int target_pq, double *ints, int *ioff_lt, int *ioff_rt,
             ints[rs] = (double) valptr[idx_];
 
             if (printflg) 
-                fprintf(out, "<%d %d %d %d [%d][%d] = %20.10f\n",
+                psi::fprintf(out, "<%d %d %d %d [%d][%d] = %20.10f\n",
                 p, q, r, s, pq, rs, ints[rs]) ;
 
         } /*! end loop through current buffer */
@@ -165,7 +165,7 @@ int iwl_buf_rd(struct iwlbuf *Buf, int target_pq, double *ints,
     ints[rs] = (double) valptr[Buf->idx];
     
     if (printflg) 
-      fprintf(out, "<%d %d %d %d [%d][%d] = %20.10f\n",
+      psi::fprintf(out, "<%d %d %d %d [%d][%d] = %20.10f\n",
 	      p, q, r, s, pq, rs, ints[rs]) ;
     
   } /*! end loop through current buffer */
@@ -196,7 +196,7 @@ int iwl_buf_rd(struct iwlbuf *Buf, int target_pq, double *ints,
       ints[rs] = (double) valptr[Buf->idx];
       
       if (printflg) 
-	fprintf(out, "<%d %d %d %d [%d][%d] = %20.10f\n",
+	psi::fprintf(out, "<%d %d %d %d [%d][%d] = %20.10f\n",
 		p, q, r, s, pq, rs, ints[rs]) ;
       
     } /*! end loop through current buffer */

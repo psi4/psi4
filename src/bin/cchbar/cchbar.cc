@@ -186,13 +186,13 @@ void init_io()
 
 void title(void)
 {
-  fprintf(outfile, "\n");
-  fprintf(outfile, "\t\t\t**************************\n");
-  fprintf(outfile, "\t\t\t*                        *\n");
-  fprintf(outfile, "\t\t\t*         CCHBAR         *\n");
-  fprintf(outfile, "\t\t\t*                        *\n");
-  fprintf(outfile, "\t\t\t**************************\n");
-  fprintf(outfile, "\n");
+  psi::fprintf(outfile, "\n");
+  psi::fprintf(outfile, "\t\t\t**************************\n");
+  psi::fprintf(outfile, "\t\t\t*                        *\n");
+  psi::fprintf(outfile, "\t\t\t*         CCHBAR         *\n");
+  psi::fprintf(outfile, "\t\t\t*                        *\n");
+  psi::fprintf(outfile, "\t\t\t**************************\n");
+  psi::fprintf(outfile, "\n");
 }
 
 void exit_io(void)

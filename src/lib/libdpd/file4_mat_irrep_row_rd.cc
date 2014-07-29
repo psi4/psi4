@@ -51,7 +51,7 @@ int DPD::file4_mat_irrep_row_rd(dpdfile4 *File, int irrep, int row)
     if(coltot) {
         seek_block = DPD_BIGNUM/(coltot * sizeof(double)); /* no. of rows for which we can compute the address */
         if(seek_block < 1) {
-            fprintf(stderr, "\nLIBDPD Error: each row of %s is too long to compute an address.\n",File->label);
+            psi::fprintf(stderr, "\nLIBDPD Error: each row of %s is too long to compute an address.\n",File->label);
             dpd_error("dpd_file4_mat_irrep_row_rd", stderr);
         }
         for(; row > seek_block; row -= seek_block)

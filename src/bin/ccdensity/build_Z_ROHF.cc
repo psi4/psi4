@@ -65,7 +65,7 @@ void build_Z_ROHF(void)
   for(h=0; h < nirreps; h++)
     num_ai += virtpi[h] * occpi[h];
 
-  /*  fprintf(outfile, "num_ai = %d\n", num_ai); */
+  /*  psi::fprintf(outfile, "num_ai = %d\n", num_ai); */
 
   /* Malloc space for the transformation matrix */
   T = block_matrix(num_ai,num_ai);
@@ -162,7 +162,7 @@ void build_Z_ROHF(void)
   free_block(T);
 
   /*
-  for(ai=0; ai < num_ai; ai++) fprintf(outfile, "Z[%d] = %20.15f\n", ai, Z[0][ai]);
+  for(ai=0; ai < num_ai; ai++) psi::fprintf(outfile, "Z[%d] = %20.15f\n", ai, Z[0][ai]);
   */
 
   /* Build the orbital component of Dai --- we'll build these as separate

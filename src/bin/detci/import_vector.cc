@@ -79,13 +79,13 @@ void parse_import_vector(SlaterDetSet *sdset, int *ialplist, int *ialpidx,
   /* now figure out how the frozen stuff is going to map */
   if (CalcInfo.num_fzc_orbs > alphastrings->nfzc ||
       CalcInfo.num_fzc_orbs > betastrings->nfzc) {
-    fprintf(outfile, "(parse_import_vector): Can't freeze more orbitals now" \
+    psi::fprintf(outfile, "(parse_import_vector): Can't freeze more orbitals now" \
       " than in the imported guess!\n");
     abort();
   }
 
   if (alphastrings->nfzc != betastrings->nfzc) {
-    fprintf(outfile, "(parse_import_vector): alpha nfzc != beta nfzc!\n");
+    psi::fprintf(outfile, "(parse_import_vector): alpha nfzc != beta nfzc!\n");
     abort();
   }
 
@@ -115,9 +115,9 @@ void parse_import_vector(SlaterDetSet *sdset, int *ialplist, int *ialpidx,
     /* figure out what block we're in */
     j = CIblks.decode[ialplist[i]][ibetlist[i]];
     if (j == -1) {
-      fprintf(outfile, "Import vector: can't find CI block!\n");
-      fprintf(outfile, "Determinant number %d\n", i);
-      fprintf(outfile, "\nialplist=%d, ialpidx=%d, ibetlist=%d, ibetidx=%d\n", 
+      psi::fprintf(outfile, "Import vector: can't find CI block!\n");
+      psi::fprintf(outfile, "Determinant number %d\n", i);
+      psi::fprintf(outfile, "\nialplist=%d, ialpidx=%d, ibetlist=%d, ibetidx=%d\n", 
         ialplist[i], ialpidx[i], ibetlist[i], ibetidx[i]);
       abort();
     }
@@ -165,7 +165,7 @@ void stringset_translate_addr(StringSet *sset, int new_nel, int new_nfzc,
   }
 
   if (num_former_fzc + old_nel > new_nel) {
-    fprintf(outfile, "(stringset_translate_addr): num_former_fzc + old_nel" \
+    psi::fprintf(outfile, "(stringset_translate_addr): num_former_fzc + old_nel" \
       " > new_nel!\n");
     fflush(outfile);
     abort();
@@ -191,7 +191,7 @@ void stringset_translate_addr(StringSet *sset, int new_nel, int new_nfzc,
     }
 
     if (l != new_nel) {
-      fprintf(outfile, "(stringset_translate_addr): Imported string has wrong" \
+      psi::fprintf(outfile, "(stringset_translate_addr): Imported string has wrong" \
         " number of electrons, %d vs. %d\n", l, new_nel);
       fflush(outfile);
       abort();

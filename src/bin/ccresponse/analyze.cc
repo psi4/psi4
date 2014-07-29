@@ -111,11 +111,11 @@ void analyze(const char *pert, int irrep, double omega)
   for (i = num_div-1; i >= 0; i--) {
     value = amp_array[i] / tot1;
     value2 += value;
-    fprintf(efile, "%10.5lf %lf\n", -((i)*width)-min, value);
+    psi::fprintf(efile, "%10.5lf %lf\n", -((i)*width)-min, value);
   }
   free(amp_array);
-  fprintf(outfile, "Total number of converged T2 amplitudes = %d\n", tot2);
-  fprintf(outfile, "Number of T2 amplitudes in analysis= %d\n", tot1);
+  psi::fprintf(outfile, "Total number of converged T2 amplitudes = %d\n", tot2);
+  psi::fprintf(outfile, "Number of T2 amplitudes in analysis= %d\n", tot1);
   fclose(efile);
 
   num_div = 40;
@@ -170,7 +170,7 @@ void analyze(const char *pert, int irrep, double omega)
   for (i = num_div-1; i >= 0; i--) {
     value = amp_array[i] / tot1;
     value2 += value;
-    fprintf(efile, "%10.5lf %lf\n", ((i)*width)-min, value);
+    psi::fprintf(efile, "%10.5lf %lf\n", ((i)*width)-min, value);
   }
 
   free(amp_array);

@@ -127,23 +127,23 @@ void MOInfoSCF::read_mo_spaces()
 
 void MOInfoSCF::print_mo()
 {
-    fprintf(outfile,"\n");
-    fprintf(outfile,"\n  MOs per irrep:                ");
+    psi::fprintf(outfile,"\n");
+    psi::fprintf(outfile,"\n  MOs per irrep:                ");
 
     for(int i=nirreps;i<8;i++)
-        fprintf(outfile,"     ");
+        psi::fprintf(outfile,"     ");
     for(int i=0;i<nirreps;i++)
-        fprintf(outfile,"  %s",irr_labs[i]);
-    fprintf(outfile," Total");
-    fprintf(outfile,"\n  ----------------------------------------------------------------------------");
+        psi::fprintf(outfile,"  %s",irr_labs[i]);
+    psi::fprintf(outfile," Total");
+    psi::fprintf(outfile,"\n  ----------------------------------------------------------------------------");
     print_mo_space(nso,sopi,"Total                         ");
     if(!guess_occupation){
         print_mo_space(ndocc,docc,"Doubly Occupied               ");
         print_mo_space(nactv,actv,"Active/Singly Occupied        ");
     }
-    fprintf(outfile,"\n  ----------------------------------------------------------------------------");
+    psi::fprintf(outfile,"\n  ----------------------------------------------------------------------------");
     if(guess_occupation)
-        fprintf(outfile,"\n\n  Guessing orbital occupation");
+        psi::fprintf(outfile,"\n\n  Guessing orbital occupation");
     fflush(outfile);
 }
 

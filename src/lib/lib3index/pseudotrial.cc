@@ -121,20 +121,20 @@ void PseudoTrial::common_init()
 
 void PseudoTrial::print_header()
 {
-    fprintf(outfile,"\t\t--------------------------------------------------\n");
-    fprintf(outfile,"\t\t                                                  \n");
-    fprintf(outfile,"\t\t      PseudoTrial: A Pseudospectral Sandbox       \n");
-    fprintf(outfile,"\t\t                  Rob Parrish                     \n");
-    fprintf(outfile,"\t\t                  21 May 2011                     \n");
-    fprintf(outfile,"\t\t                                                  \n");
-    fprintf(outfile,"\t\t--------------------------------------------------\n\n");
+    psi::fprintf(outfile,"\t\t--------------------------------------------------\n");
+    psi::fprintf(outfile,"\t\t                                                  \n");
+    psi::fprintf(outfile,"\t\t      PseudoTrial: A Pseudospectral Sandbox       \n");
+    psi::fprintf(outfile,"\t\t                  Rob Parrish                     \n");
+    psi::fprintf(outfile,"\t\t                  21 May 2011                     \n");
+    psi::fprintf(outfile,"\t\t                                                  \n");
+    psi::fprintf(outfile,"\t\t--------------------------------------------------\n\n");
     fflush(outfile);
 }
 
 void PseudoTrial::form_molecule()
 {
     molecule_ = Process::environment.molecule(); 
-    fprintf(outfile," => Molecule <= \n\n");
+    psi::fprintf(outfile," => Molecule <= \n\n");
     molecule_->print();
 }
 
@@ -147,19 +147,19 @@ void PseudoTrial::form_bases()
     primary_ = BasisSet::construct(parser,molecule_,"BASIS");  
     nso_ = primary_->nbf();   
  
-    fprintf(outfile," => Primary Basis Set <= \n\n");
+    psi::fprintf(outfile," => Primary Basis Set <= \n\n");
     primary_->print_by_level(outfile,print_);
 
-    fprintf(outfile," => Dealias Basis Set <= \n\n");
+    psi::fprintf(outfile," => Dealias Basis Set <= \n\n");
     if (options_.get_str("DEALIAS_BASIS_CC") == "") {
 
-        fprintf(outfile,"  Dealias Basis Automatically Generated\n\n");
+        psi::fprintf(outfile,"  Dealias Basis Automatically Generated\n\n");
 
         boost::shared_ptr<DealiasBasisSet> d(new DealiasBasisSet(primary_, options_));
         dealias_ = d->dealiasSet();
 
     } else {
-        fprintf(outfile,"  Dealias Basis Read from %s", options_.get_str("DEALIAS_BASIS_CC").c_str()); 
+        psi::fprintf(outfile,"  Dealias Basis Read from %s", options_.get_str("DEALIAS_BASIS_CC").c_str()); 
         molecule_->set_basis_all_atoms(options_.get_str("DEALIAS_BASIS_CC"),"DEALIAS_BASIS");
         dealias_ = BasisSet::construct(parser,molecule_,"DEALIAS_BASIS");  
 

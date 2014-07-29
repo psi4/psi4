@@ -34,7 +34,7 @@ namespace psi{ namespace occwave{
 
 void OCCWave::kappa_orb_resp_iter()
 { 
-//fprintf(outfile,"\n kappa_orb_resp_iter is starting... \n"); fflush(outfile);
+//psi::fprintf(outfile,"\n kappa_orb_resp_iter is starting... \n"); fflush(outfile);
 
 if (reference_ == "RESTRICTED") {
        // Build M inverse and kappa
@@ -202,7 +202,7 @@ if (reference_ == "RESTRICTED") {
        }
 
        if (print_ > 1 ) {
-           fprintf(outfile,"\tWarning!!! PCG did NOT converged in %2d iterations, switching to MSD. \n", itr_pcg);
+           psi::fprintf(outfile,"\tWarning!!! PCG did NOT converged in %2d iterations, switching to MSD. \n", itr_pcg);
            fflush(outfile);
        }
     } // end if pcg_conver = 0
@@ -552,7 +552,7 @@ else if (reference_ == "UNRESTRICTED") {
 
     // Call Orbital Response Solver
     orb_resp_pcg_uhf();
-    //fprintf(outfile," rms_pcg: %12.10f\n", rms_pcg);
+    //psi::fprintf(outfile," rms_pcg: %12.10f\n", rms_pcg);
     //fflush(outfile);
 
     // Close dpd files
@@ -581,7 +581,7 @@ else if (reference_ == "UNRESTRICTED") {
 	}
 
        if (print_ > 1 ) {
-        fprintf(outfile,"\tWarning!!! PCG did NOT converged in %2d iterations, switching to MSD. \n", itr_pcg);
+        psi::fprintf(outfile,"\tWarning!!! PCG did NOT converged in %2d iterations, switching to MSD. \n", itr_pcg);
         fflush(outfile);
        }
     }// en d if pcg_conver = 0
@@ -644,7 +644,7 @@ else if (reference_ == "UNRESTRICTED") {
         }
       
 }// end if (reference_ == "UNRESTRICTED") 
- //fprintf(outfile,"\n kappa_orb_resp_iter done. \n"); fflush(outfile);
+ //psi::fprintf(outfile,"\n kappa_orb_resp_iter done. \n"); fflush(outfile);
 }// end kappa_orb_resp_iter
 
 
@@ -660,7 +660,7 @@ void OCCWave::orb_resp_pcg_rhf()
  do
  {
 
-    //fprintf(outfile, "pcg iter: %3d \n", itr_pcg); fflush(outfile);
+    //psi::fprintf(outfile, "pcg iter: %3d \n", itr_pcg); fflush(outfile);
     // Open dpd files
     dpdbuf4 K;
     dpdfile2 P, S, F; 
@@ -844,7 +844,7 @@ void OCCWave::orb_resp_pcg_uhf()
  // Head of the loop
  do
  {
-    //fprintf(outfile, "pcg iter: %3d \n", itr_pcg); fflush(outfile);
+    //psi::fprintf(outfile, "pcg iter: %3d \n", itr_pcg); fflush(outfile);
     // Open dpd files
     dpdbuf4 K;
     dpdfile2 P, S, F; 

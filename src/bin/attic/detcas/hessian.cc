@@ -62,7 +62,7 @@ void form_appx_diag_mo_hess(int npairs, int *ppair, int *qpair,
   int qv,puvw,quvw,pv,pu,qu,pupv,quqv,ppuv,qquv,pvqu,puqv,pquv;
   double value;
 
-  fprintf(outfile, "Forming approximate diagonal orbital Hessian\n");
+  psi::fprintf(outfile, "Forming approximate diagonal orbital Hessian\n");
 
   /* loop over the independent pairs */
   for (pair=0; pair<npairs; pair++) {
@@ -198,7 +198,7 @@ void form_appx_diag_mo_hess(int npairs, int *ppair, int *qpair,
 
 
     else {
-      fprintf(outfile, 
+      psi::fprintf(outfile, 
              "(form_diag_mo_hess): Error, unrecognized class of indep pair\n");
     }
 
@@ -240,7 +240,7 @@ void form_diag_mo_hess(int npairs, int *ppair, int *qpair,
   int delta;
   double value;
 
-  fprintf(outfile, "Forming diagonal orbital Hessian\n");
+  psi::fprintf(outfile, "Forming diagonal orbital Hessian\n");
 
   /* loop over the independent pairs */
   for (pair=0; pair<npairs; pair++) {
@@ -433,7 +433,7 @@ void form_diag_mo_hess(int npairs, int *ppair, int *qpair,
     } /* end case H_{t1t2,t1t2} */
 
     else {
-      fprintf(outfile, 
+      psi::fprintf(outfile, 
              "(form_diag_mo_hess): Error, unrecognized class of indep pair\n");
     }
 
@@ -479,7 +479,7 @@ void form_full_mo_hess(int npairs, int *ppair, int *qpair, double *oei,
   int qsmn, prmn, qmsn, pmrn, psmn, pmsn, qrmn, qmrn;  
   double sum, ysum;
 
-  fprintf(outfile, "Forming full MCSCF orbital Hessian\n");
+  psi::fprintf(outfile, "Forming full MCSCF orbital Hessian\n");
  
   nmo = CalcInfo.nmo;
   npop = CalcInfo.npop;
@@ -633,7 +633,7 @@ void form_diag_mo_hess_yy(int npairs, int *ppair, int *qpair, double *oei,
   int qqmn, ppmn, qmqn, pmpn, pqmn, qpmn, pmqn, qmpn;
   double sum, ysum;
  
-  fprintf(outfile, "Forming diagonal MCSCF orbital Hessian (YY)\n");
+  psi::fprintf(outfile, "Forming diagonal MCSCF orbital Hessian (YY)\n");
 
   nmo = CalcInfo.nmo;
   npop = CalcInfo.npop;

@@ -53,12 +53,12 @@ void IWL::sort_buffer(IWL *Inbuf, IWL *Outbuf,
     int nbstri;
 
     if (printflg) {
-        fprintf(out, "\nsortbuf for pq=%d to %d\n", fpq, lpq);
+        psi::fprintf(out, "\nsortbuf for pq=%d to %d\n", fpq, lpq);
     }
 
     if (no_pq_perm && !intermediate) {
-        fprintf(out,"(sortbuf): illegal parameter combination.\n");
-        fprintf(stderr, "(sortbuf): illegal parameter combination.\n");
+        psi::fprintf(out,"(sortbuf): illegal parameter combination.\n");
+        psi::fprintf(stderr, "(sortbuf): illegal parameter combination.\n");
     }
 
     nbstri = nbfso * (nbfso + 1) / 2;
@@ -68,14 +68,14 @@ void IWL::sort_buffer(IWL *Inbuf, IWL *Outbuf,
     i = 0;
     while (fpq >= ioff[i] && i < BIGNUM) i++;
     if (i == BIGNUM) {
-        fprintf(out, "(sortbuf): parameter error\n") ;
+        psi::fprintf(out, "(sortbuf): parameter error\n") ;
         return;
     }
     first_p = i-1 ; first_q = fpq - ioff[i-1];
     first_pq = ioff[first_p] + first_q;
     if (first_pq != fpq) {
-        fprintf(out, "(sortbuf): fpq != first_pq.\n");
-        fprintf(stderr,  "(sortbuf): fpq != first_pq.\n");
+        psi::fprintf(out, "(sortbuf): fpq != first_pq.\n");
+        psi::fprintf(stderr,  "(sortbuf): fpq != first_pq.\n");
     }
 
     if (!intermediate) {
@@ -87,7 +87,7 @@ void IWL::sort_buffer(IWL *Inbuf, IWL *Outbuf,
     i=0; 
     while (lpq >= ioff[i] && i < BIGNUM) i++ ;
     if (i == BIGNUM) {
-        fprintf(out, "(sortbuf): parameter error\n") ;
+        psi::fprintf(out, "(sortbuf): parameter error\n") ;
         return ;
     }
     last_p = i-1 ; last_q = lpq - ioff[i-1] ;
@@ -134,14 +134,14 @@ void IWL::sort_buffer(IWL *Inbuf, IWL *Outbuf,
             }
 
             if (printflg && ints[pqrs-offset] != 0.0) 
-                fprintf(out, "Adding %10.6f to el %d %d %d %d = %10.6f\n", 
+                psi::fprintf(out, "Adding %10.6f to el %d %d %d %d = %10.6f\n", 
                 valptr[Inbuf->idx_], p, q, r, s, ints[pqrs-offset]);
 
             if (add) ints[pqrs-offset] += valptr[Inbuf->idx_];
             else ints[pqrs-offset] += valptr[Inbuf->idx_];
 
             if (printflg) 
-                fprintf(out, "<%d %d %d %d | %d %d [%ld] = %10.6f\n",
+                psi::fprintf(out, "<%d %d %d %d | %d %d [%ld] = %10.6f\n",
                 p, q, r, s, pq, rs, pqrs, ints[pqrs-offset]) ;
         }
     } while (!lastbuf);
@@ -209,7 +209,7 @@ void IWL::sort_buffer(IWL *Inbuf, IWL *Outbuf,
                         lblptr[idx++] = s;
                         valptr[Outbuf->idx_] = ints[pqrs-offset];
                         if (printflg) 
-                            fprintf(out, ">%d %d %d %d | %d %d [%ld] = %10.6f\n",
+                            psi::fprintf(out, ">%d %d %d %d | %d %d [%ld] = %10.6f\n",
                             p, q, r, s, pq, rs, pqrs, ints[pqrs-offset]) ;
 
                         Outbuf->idx_++;
@@ -299,12 +299,12 @@ void sortbuf(struct iwlbuf *Inbuf, struct iwlbuf *Outbuf,
    int nbstri;
 
    if (printflg) {
-     fprintf(out, "\nsortbuf for pq=%d to %d\n", fpq, lpq);
+     psi::fprintf(out, "\nsortbuf for pq=%d to %d\n", fpq, lpq);
    }
 
    if (no_pq_perm && !intermediate) {
-     fprintf(out,"(sortbuf): illegal parameter combination.\n");
-     fprintf(stderr, "(sortbuf): illegal parameter combination.\n");
+     psi::fprintf(out,"(sortbuf): illegal parameter combination.\n");
+     psi::fprintf(stderr, "(sortbuf): illegal parameter combination.\n");
    }
    
    nbstri = nbfso * (nbfso + 1) / 2;
@@ -314,14 +314,14 @@ void sortbuf(struct iwlbuf *Inbuf, struct iwlbuf *Outbuf,
    i = 0;
    while (fpq >= ioff[i] && i < BIGNUM) i++;
    if (i == BIGNUM) {
-     fprintf(out, "(sortbuf): parameter error\n") ;
+     psi::fprintf(out, "(sortbuf): parameter error\n") ;
      return;
    }
    first_p = i-1 ; first_q = fpq - ioff[i-1];
    first_pq = ioff[first_p] + first_q;
    if (first_pq != fpq) {
-     fprintf(out, "(sortbuf): fpq != first_pq.\n");
-     fprintf(stderr,  "(sortbuf): fpq != first_pq.\n");
+     psi::fprintf(out, "(sortbuf): fpq != first_pq.\n");
+     psi::fprintf(stderr,  "(sortbuf): fpq != first_pq.\n");
    }
    
    if (!intermediate) {
@@ -333,7 +333,7 @@ void sortbuf(struct iwlbuf *Inbuf, struct iwlbuf *Outbuf,
    i=0; 
    while (lpq >= ioff[i] && i < BIGNUM) i++ ;
    if (i == BIGNUM) {
-     fprintf(out, "(sortbuf): parameter error\n") ;
+     psi::fprintf(out, "(sortbuf): parameter error\n") ;
      return ;
    }
    last_p = i-1 ; last_q = lpq - ioff[i-1] ;
@@ -380,14 +380,14 @@ void sortbuf(struct iwlbuf *Inbuf, struct iwlbuf *Outbuf,
 	}
 	
         if (printflg && ints[pqrs-offset] != 0.0) 
-	   fprintf(out, "Adding %10.6f to el %d %d %d %d = %10.6f\n", 
+	   psi::fprintf(out, "Adding %10.6f to el %d %d %d %d = %10.6f\n", 
                    valptr[Inbuf->idx], p, q, r, s, ints[pqrs-offset]);
 
         if (add) ints[pqrs-offset] += valptr[Inbuf->idx];
         else ints[pqrs-offset] += valptr[Inbuf->idx];
 
 	if (printflg) 
-	  fprintf(out, "<%d %d %d %d | %d %d [%ld] = %10.6f\n",
+	  psi::fprintf(out, "<%d %d %d %d | %d %d [%ld] = %10.6f\n",
 		  p, q, r, s, pq, rs, pqrs, ints[pqrs-offset]) ;
       }
    } while (!lastbuf);
@@ -455,7 +455,7 @@ void sortbuf(struct iwlbuf *Inbuf, struct iwlbuf *Outbuf,
 	     lblptr[idx++] = s;
 	     valptr[Outbuf->idx] = ints[pqrs-offset];
 	     if (printflg) 
-	       fprintf(out, ">%d %d %d %d | %d %d [%ld] = %10.6f\n",
+	       psi::fprintf(out, ">%d %d %d %d | %d %d [%ld] = %10.6f\n",
 		       p, q, r, s, pq, rs, pqrs, ints[pqrs-offset]) ;
 	     
 	     Outbuf->idx++;

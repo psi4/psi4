@@ -46,20 +46,20 @@ void GradientWriter::write(const std::string &filename)
     if (file11 == NULL)
         throw PSIEXCEPTION("GradientWriter::write: Unable to open file11.dat");
 
-    fprintf(file11, "%-59.59s %-10.10s%-9.9s\n",
+    psi::fprintf(file11, "%-59.59s %-10.10s%-9.9s\n",
             molecule_->name().c_str(),
             "(wfn)",
             "(dertype)");
 
-    fprintf(file11, "%5d%20.10lf\n", molecule_->natom(), Process::environment.globals["CURRENT ENERGY"]);
+    psi::fprintf(file11, "%5d%20.10lf\n", molecule_->natom(), Process::environment.globals["CURRENT ENERGY"]);
 
     for (i=0; i<molecule_->natom(); ++i) {
-        fprintf(file11, "%20.10lf%20.10lf%20.10lf%20.10lf\n",
+        psi::fprintf(file11, "%20.10lf%20.10lf%20.10lf%20.10lf\n",
                 double(molecule_->Z(i)), molecule_->x(i), molecule_->y(i), molecule_->z(i));
     }
 
     for (i=0; i<molecule_->natom(); ++i) {
-        fprintf(file11, "                    %20.10lf%20.10lf%20.10lf\n",
+        psi::fprintf(file11, "                    %20.10lf%20.10lf%20.10lf\n",
                 gradient_(i, 0), gradient_(i, 1), gradient_(i, 2));
     }
 
@@ -77,7 +77,7 @@ void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> 
     FILE *molden = fopen(filename.c_str(), "a");
     int atom;
 
-    fprintf(molden, "[Molden Format]\n");
+    psi::fprintf(molden, "[Molden Format]\n");
 
     // Get the molecule for ease
     BasisSet& basisset = *wavefunction_->basisset().get();
@@ -87,19 +87,19 @@ void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> 
     //    basisset.print_detail();
 
     // Print the molecule to molden
-    fprintf(molden, "[Atoms] (AU)\n");
+    psi::fprintf(molden, "[Atoms] (AU)\n");
     for (atom=0; atom<mol.natom(); ++atom) {
         Vector3 coord = mol.xyz(atom);
-        fprintf(molden, "%-2s  %2d  %3d   %20.12f %20.12f %20.12f\n",
+        psi::fprintf(molden, "%-2s  %2d  %3d   %20.12f %20.12f %20.12f\n",
                 mol.symbol(atom).c_str(), atom+1, static_cast<int>(mol.Z(atom)), coord[0], coord[1], coord[2]);
     }
 
     // Dump the basis set using code adapted from psi2molden
-    fprintf(molden, "[GTO]\n");
+    psi::fprintf(molden, "[GTO]\n");
 
     // For each atom
     for (atom=0; atom<mol.natom(); ++atom) {
-        fprintf(molden, "  %d 0\n", atom+1);
+        psi::fprintf(molden, "  %d 0\n", atom+1);
 
         // Go through all the shells on this center
         for (int shell=0; shell < basisset.nshell_on_center(atom); ++shell) {
@@ -107,15 +107,15 @@ void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> 
 
             const GaussianShell& gs = basisset.shell(overall_shell);
 
-            fprintf(molden, " %c%5d  1.00\n", gs.amchar(), gs.nprimitive());
+            psi::fprintf(molden, " %c%5d  1.00\n", gs.amchar(), gs.nprimitive());
 
             for (int prim=0; prim<gs.nprimitive(); ++prim) {
-                fprintf(molden, "%20.10f %20.10f\n", gs.exp(prim), gs.coef(prim));
+                psi::fprintf(molden, "%20.10f %20.10f\n", gs.exp(prim), gs.coef(prim));
             }
         }
 
         // An empty line separates atoms
-        fprintf(molden, "\n");
+        psi::fprintf(molden, "\n");
     }
 
     // Convert Ca & Cb
@@ -179,7 +179,7 @@ void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> 
             for( int j =0; j < ncart; j++) {
                 for (int h=0; h < Ca_ao_mo->nirrep(); ++h) {
                     for (int k=0; k<Ca_ao_mo->coldim(h); ++k) {
-                        // fprintf(outfile, "am %d\n, from %d to %d\n", am, j, countpi[h] + molden_cartesian_order[am-1][j]);
+                        // psi::fprintf(outfile, "am %d\n, from %d to %d\n", am, j, countpi[h] + molden_cartesian_order[am-1][j]);
                         Ca_ao_mo->set(h, countpi[h] + molden_cartesian_order[am-1][j], k, temp_a->get(h, j, k));
                         Cb_ao_mo->set(h, countpi[h] + molden_cartesian_order[am-1][j], k, temp_b->get(h, j, k));
                     }
@@ -193,12 +193,12 @@ void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> 
 
     if (basisset.has_puream()) {
         // Tell Molden to use spherical.  5d implies 5d and 7f.
-        fprintf(molden, "[5d]\n[9g]\n\n");
+        psi::fprintf(molden, "[5d]\n[9g]\n\n");
     }
     CharacterTable ct = mol.point_group()->char_table();
 
     // Dump MO's to the molden file
-    fprintf(molden, "[MO]\n");
+    psi::fprintf(molden, "[MO]\n");
 
     std::vector<std::pair<double, std::pair<int, int> > > mos;
 
@@ -217,16 +217,16 @@ void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> 
         int h = mos[i].second.first;
         int n = mos[i].second.second;
 
-        fprintf(molden, " Sym= %s\n", ct.gamma(h).symbol());
-        fprintf(molden, " Ene= %20.10f\n", Ea->get(h, n));
-        fprintf(molden, " Spin= Alpha\n");
+        psi::fprintf(molden, " Sym= %s\n", ct.gamma(h).symbol());
+        psi::fprintf(molden, " Ene= %20.10f\n", Ea->get(h, n));
+        psi::fprintf(molden, " Spin= Alpha\n");
         if(Ca == Cb && Ea == Eb && SameOcc)
-            fprintf(molden, " Occup= %7.4lf\n", OccA->get(h,n)+OccB->get(h,n));
+            psi::fprintf(molden, " Occup= %7.4lf\n", OccA->get(h,n)+OccB->get(h,n));
         else
-            fprintf(molden, " Occup= %7.4lf\n", OccA->get(h,n));
+            psi::fprintf(molden, " Occup= %7.4lf\n", OccA->get(h,n));
         fflush(molden);
         for (int so=0; so<wavefunction_->nso(); ++so)
-            fprintf(molden, "%3d %20.12lf\n", so+1, Ca_ao_mo->get(h, so, n));
+            psi::fprintf(molden, "%3d %20.12lf\n", so+1, Ca_ao_mo->get(h, so, n));
     }
 
     // do beta's
@@ -243,12 +243,12 @@ void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> 
             int h = mos[i].second.first;
             int n = mos[i].second.second;
 
-            fprintf(molden, " Sym= %s\n", ct.gamma(h).symbol());
-            fprintf(molden, " Ene= %20.10lf\n", Eb->get(h, n));
-            fprintf(molden, " Spin= Beta\n");
-            fprintf(molden, " Occup= %7.4lf\n", OccB->get(h,n));
+            psi::fprintf(molden, " Sym= %s\n", ct.gamma(h).symbol());
+            psi::fprintf(molden, " Ene= %20.10lf\n", Eb->get(h, n));
+            psi::fprintf(molden, " Spin= Beta\n");
+            psi::fprintf(molden, " Occup= %7.4lf\n", OccB->get(h,n));
             for (int so=0; so<wavefunction_->nso(); ++so)
-                fprintf(molden, "%3d %20.12lf\n", so+1, Cb_ao_mo->get(h, so, n));
+                psi::fprintf(molden, "%3d %20.12lf\n", so+1, Cb_ao_mo->get(h, so, n));
         }
     }
 
@@ -290,29 +290,29 @@ void NBOWriter::write(const std::string &filename)
     //print $GENNBO section of file
     //BOHR indicates atomic units for the coordinates
     //OPEN indicates that we'll provide separate alpha and beta matrices
-    fprintf(file47, "$GENNBO NATOMS = %d NBAS = %d BOHR BODM ", mol.natom(), basisset.nbf());
+    psi::fprintf(file47, "$GENNBO NATOMS = %d NBAS = %d BOHR BODM ", mol.natom(), basisset.nbf());
 
     //To make this more user-friendly in the case of RHF wavefunctions...
     bool open_shell = (wavefunction_->nalpha() != wavefunction_->nbeta());
     if(open_shell)
-        fprintf(file47, "OPEN $END\n");
+        psi::fprintf(file47, "OPEN $END\n");
     else
-        fprintf(file47, "$END\n");
+        psi::fprintf(file47, "$END\n");
 
     //print NBO section of file47; user can modify this to suit their needs
-    fprintf(file47, "$NBO       $END\n");
+    psi::fprintf(file47, "$NBO       $END\n");
 
     //Now print out the molecule
-    fprintf(file47, "$COORD\n");
-    fprintf(file47, "GENNBO expects one comment line here. So, here's a comment line.\n");
+    psi::fprintf(file47, "$COORD\n");
+    psi::fprintf(file47, "GENNBO expects one comment line here. So, here's a comment line.\n");
     for( int i =0; i< mol.natom(); i++)
     {
         //the second mol.Z() should be modified when pseudopotentials are implemented
-        fprintf(file47, "%2d  %2d  %20.12f %20.12f %20.12f\n",
+        psi::fprintf(file47, "%2d  %2d  %20.12f %20.12f %20.12f\n",
                 static_cast<int>(mol.Z(i)), static_cast<int>(mol.Z(i)),
                 mol.x(i), mol.y(i), mol.z(i));
     }
-    fprintf(file47, "$END\n");
+    psi::fprintf(file47, "$END\n");
 
 
     //To form the BASIS and CONTRACT sections, we need some memory
@@ -342,7 +342,7 @@ void NBOWriter::write(const std::string &filename)
         {
             centers.set (0, fnindex, gshell.ncenter());
             if(gshell.is_pure()) {
-                //fprintf(outfile, "fnindex %d pure_order[%d][%d] %d\n", fnindex, angm, j, pure_order[angm][j]);
+                //psi::fprintf(outfile, "fnindex %d pure_order[%d][%d] %d\n", fnindex, angm, j, pure_order[angm][j]);
                 labels.set (0, fnindex, pure_order[angm][j]);
             }
             else
@@ -360,99 +360,99 @@ void NBOWriter::write(const std::string &filename)
     }
 
     //Now, we print out the basis section
-    fprintf(file47, "$BASIS\n");
+    psi::fprintf(file47, "$BASIS\n");
     //The CENTER section
-    fprintf(file47, "CENTER = ");
+    psi::fprintf(file47, "CENTER = ");
     for( int i =0; i < basisset.nbf(); i++)
     {
-        fprintf(file47, "%5d      ", (int)centers.get(0, i)+1);
+        psi::fprintf(file47, "%5d      ", (int)centers.get(0, i)+1);
         if((i+1)%10 == 0)
-            fprintf(file47, "\n");
+            psi::fprintf(file47, "\n");
     }
 
     //The LABEL section
-    fprintf(file47, "\nLABEL = ");
+    psi::fprintf(file47, "\nLABEL = ");
     for( int i =0; i < basisset.nbf(); i++)
     {
-        fprintf(file47, "%5d      ", (int)labels.get(0, i));
+        psi::fprintf(file47, "%5d      ", (int)labels.get(0, i));
         if((i+1)%10 == 0)
-            fprintf(file47, "\n");
+            psi::fprintf(file47, "\n");
     }
-    fprintf(file47, "\n$END\n");
+    psi::fprintf(file47, "\n$END\n");
 
     //The CONTRACT heading
-    fprintf(file47, "$CONTRACT \n");
-    fprintf(file47, "NSHELL = %d\n", nshells);
-    fprintf(file47, "NEXP = %d\n", nprim);
+    psi::fprintf(file47, "$CONTRACT \n");
+    psi::fprintf(file47, "NSHELL = %d\n", nshells);
+    psi::fprintf(file47, "NEXP = %d\n", nprim);
 
     //List of the number of functions per shell
-    fprintf(file47, "NCOMP = ");
+    psi::fprintf(file47, "NCOMP = ");
     for(int i = 0; i < nshells; i++)
     {
-        fprintf(file47, "%5d      ", (int)components.get(0, i));
+        psi::fprintf(file47, "%5d      ", (int)components.get(0, i));
         if((i+1)%10 == 0)
-            fprintf(file47, "\n");
+            psi::fprintf(file47, "\n");
     }
     //List the number of primitives per shell
-    fprintf(file47, "\nNPRIM = ");
+    psi::fprintf(file47, "\nNPRIM = ");
     for(int i =0; i < nshells; i++)
     {
-        fprintf(file47, "%d      ", (int)nprimitives.get(0, i));
+        psi::fprintf(file47, "%d      ", (int)nprimitives.get(0, i));
         if((i+1)%10 == 0)
-            fprintf(file47, "\n");
+            psi::fprintf(file47, "\n");
     }
     //location of the first exponent for each shell
-    fprintf(file47, "\nNPTR = ");
+    psi::fprintf(file47, "\nNPTR = ");
     int ptr = 1;
     for( int i =0; i < nshells; i++)
     {
-        fprintf(file47, "%d      ", ptr);
+        psi::fprintf(file47, "%d      ", ptr);
         ptr += nprimitives.get(0, i);
         if((i+1)%10 == 0)
-            fprintf(file47, "\n");
+            psi::fprintf(file47, "\n");
 
     }
     //The exponents
-    fprintf(file47, "\nEXP = \n");
+    psi::fprintf(file47, "\nEXP = \n");
     for( int i =0; i < nprim; i++)
     {
-        fprintf(file47, "%20.10f ", exponents.get(0, i));
+        psi::fprintf(file47, "%20.10f ", exponents.get(0, i));
         if((i+1)%4 == 0)
-            fprintf(file47, "\n");
+            psi::fprintf(file47, "\n");
     }
     //Coefficients for s functions
-    fprintf(file47, "\nCS = \n");
+    psi::fprintf(file47, "\nCS = \n");
     for( int i =0; i < nprim; i++)
     {
-        fprintf(file47, "%20.10f ", coefficient.get (0, 0, i));
+        psi::fprintf(file47, "%20.10f ", coefficient.get (0, 0, i));
         if((i+1)%4 == 0)
-            fprintf(file47, "\n");
+            psi::fprintf(file47, "\n");
     }
     //Coefficients for p functions
-    fprintf(file47, "\nCP = \n");
+    psi::fprintf(file47, "\nCP = \n");
     for( int i =0; i < nprim; i++)
     {
-        fprintf(file47, "%20.10f ", coefficient.get (0, 1, i));
+        psi::fprintf(file47, "%20.10f ", coefficient.get (0, 1, i));
         if((i+1)%4 == 0)
-            fprintf(file47, "\n");
+            psi::fprintf(file47, "\n");
     }
     //coefficients for d functions
-    fprintf(file47, "\nCD = \n");
+    psi::fprintf(file47, "\nCD = \n");
     for( int i =0; i < nprim; i++)
     {
-        fprintf(file47, "%20.10f ", coefficient.get (0, 2, i));
+        psi::fprintf(file47, "%20.10f ", coefficient.get (0, 2, i));
         if((i+1)%4 == 0)
-            fprintf(file47, "\n");
+            psi::fprintf(file47, "\n");
     }
     //coefficients for f functions
-    fprintf(file47, "\nCF = \n");
+    psi::fprintf(file47, "\nCF = \n");
     for( int i =0; i < nprim; i++)
     {
-        fprintf(file47, "%20.10f ", coefficient.get (0, 3, i));
+        psi::fprintf(file47, "%20.10f ", coefficient.get (0, 3, i));
         if((i+1)%4 == 0)
-            fprintf(file47, "\n");
+            psi::fprintf(file47, "\n");
     }
-    fprintf(file47, "\n$END");
+    psi::fprintf(file47, "\n$END");
 
     //Matrix transformation information we'll need
     int nbf = basisset.nbf ();
@@ -460,17 +460,17 @@ void NBOWriter::write(const std::string &filename)
     //Now we need the overlap matrix in the AO basis
     SharedMatrix overlap = helper.ao_overlap();
     //Print overlap matrix
-    fprintf(file47, "\n$OVERLAP \n");
+    psi::fprintf(file47, "\n$OVERLAP \n");
     for(int i =0; i < nbf; i++)
     {
         for(int j =0; j < nbf; j++)
         {
-            fprintf(file47, "%20.10f ", overlap->get (0, i, j));
+            psi::fprintf(file47, "%20.10f ", overlap->get (0, i, j));
             if(((nbf*i+j+1)%4)==0)
-                fprintf(file47, "\n");
+                psi::fprintf(file47, "\n");
         }
     }
-    fprintf(file47, "\n$END");
+    psi::fprintf(file47, "\n$END");
 
     //Alpha Density Matrix
     SharedMatrix soalphadens = wavefunction_->Da();
@@ -481,7 +481,7 @@ void NBOWriter::write(const std::string &filename)
     SharedMatrix sobetadens = wavefunction_->Db();
     betadens->remove_symmetry (sobetadens, sotoao);
     //Now print the density matrix
-    fprintf(file47, "\n$DENSITY\n ");
+    psi::fprintf(file47, "\n$DENSITY\n ");
     if(wavefunction_->same_a_b_dens ())
     {
         SharedMatrix density(new Matrix(nbf, nbf));
@@ -491,9 +491,9 @@ void NBOWriter::write(const std::string &filename)
         {
             for(int j =0; j < nbf; j++)
             {
-                fprintf(file47, "%20.10f ", density->get(0, i, j));
+                psi::fprintf(file47, "%20.10f ", density->get(0, i, j));
                 if(((nbf*i+j+1)%4)==0)
-                    fprintf(file47, "\n");
+                    psi::fprintf(file47, "\n");
             }
         }
     }
@@ -504,24 +504,24 @@ void NBOWriter::write(const std::string &filename)
         {
             for(int j =0; j < nbf; j++)
             {
-                fprintf(file47, "%20.10f ", alphadens->get (0, i, j));
+                psi::fprintf(file47, "%20.10f ", alphadens->get (0, i, j));
                 count++;
                 if(count%4 ==0)
-                    fprintf(file47, "\n");
+                    psi::fprintf(file47, "\n");
             }
         }
         for(int i =0; i < nbf; i++)
         {
             for(int j =0; j < nbf; j++)
             {
-                fprintf(file47, "%20.10f ", betadens->get (0, i, j));
+                psi::fprintf(file47, "%20.10f ", betadens->get (0, i, j));
                 count++;
                 if(count%4 ==0)
-                    fprintf(file47, "\n");
+                    psi::fprintf(file47, "\n");
             }
         }
     }
-    fprintf(file47, "\n$END");
+    psi::fprintf(file47, "\n$END");
 
 
     //Alpha Fock Matrix
@@ -529,16 +529,16 @@ void NBOWriter::write(const std::string &filename)
     SharedMatrix alphafock(new Matrix(nbf, nbf));
     alphafock->remove_symmetry (alphasofock, sotoao);
     //Print the Fock matrix
-    fprintf(file47, "\n$FOCK\n ");
+    psi::fprintf(file47, "\n$FOCK\n ");
     if(wavefunction_->same_a_b_dens ())
     {
         for(int i = 0; i < nbf; i++)
         {
             for(int j = 0; j < nbf; j++)
             {
-                fprintf(file47, "%20.10f ", alphafock->get (0, i, j));
+                psi::fprintf(file47, "%20.10f ", alphafock->get (0, i, j));
                 if(((nbf*i+j+1)%4)==0)
-                    fprintf(file47, "\n");
+                    psi::fprintf(file47, "\n");
             }
         }
     }
@@ -554,24 +554,24 @@ void NBOWriter::write(const std::string &filename)
         {
             for(int j =0; j < nbf; j++)
             {
-                fprintf(file47, "%20.10f ", alphafock->get (0, i, j));
+                psi::fprintf(file47, "%20.10f ", alphafock->get (0, i, j));
                 count++;
                 if(count%4 ==0)
-                    fprintf(file47, "\n");
+                    psi::fprintf(file47, "\n");
             }
         }
         for(int i =0; i < nbf; i++)
         {
             for(int j =0; j < nbf; j++)
             {
-                fprintf(file47, "%20.10f ", betafock->get (0, i, j));
+                psi::fprintf(file47, "%20.10f ", betafock->get (0, i, j));
                 count++;
                 if(count%4 ==0)
-                    fprintf(file47, "\n");
+                    psi::fprintf(file47, "\n");
             }
         }
     }
-    fprintf(file47, "\n$END");
+    psi::fprintf(file47, "\n$END");
 
     //Alpha AO->MO transformation
     SharedMatrix soalphac = wavefunction_->Ca();
@@ -580,16 +580,16 @@ void NBOWriter::write(const std::string &filename)
     SharedMatrix alphac(new Matrix("Ca AO x MO", aos, nmo));
     alphac->gemm(true, false, 1.00, sotoao, soalphac, 0.00);
 
-    fprintf(file47, "\n$LCAOMO\n ");
+    psi::fprintf(file47, "\n$LCAOMO\n ");
     if(wavefunction_->same_a_b_orbs ())
     {
         for(int i = 0; i < nbf; i++)
         {
             for(int j = 0; j < nbf; j++)
             {
-                fprintf(file47, "%20.10f ", alphac->get(0, i, j));
+                psi::fprintf(file47, "%20.10f ", alphac->get(0, i, j));
                 if(((nbf*i+j+1)%4)==0)
-                    fprintf(file47, "\n");
+                    psi::fprintf(file47, "\n");
             }
         }
     }
@@ -607,24 +607,24 @@ void NBOWriter::write(const std::string &filename)
         {
             for(int j =0; j < nbf; j++)
             {
-                fprintf(file47, "%20.10f ", alphac->get (0, i, j));
+                psi::fprintf(file47, "%20.10f ", alphac->get (0, i, j));
                 count++;
                 if(count%4==0)
-                    fprintf(file47, "\n");
+                    psi::fprintf(file47, "\n");
             }
         }
         for(int i =0; i < nbf; i++)
         {
             for(int j =0; j < nbf; j++)
             {
-                fprintf(file47, "%20.10f ", betac->get (0,   i, j));
+                psi::fprintf(file47, "%20.10f ", betac->get (0,   i, j));
                 count++;
                 if(count%4 ==0)
-                    fprintf(file47, "\n");
+                    psi::fprintf(file47, "\n");
             }
         }
     }
-    fprintf(file47, "\n$END\n");
+    psi::fprintf(file47, "\n$END\n");
     fclose(file47);
 }
 
@@ -729,12 +729,12 @@ void MOWriter::write()
     }
 
     // dump to output file
-    fprintf(outfile,"\n");
+    psi::fprintf(outfile,"\n");
     if ( isrestricted )
-        fprintf(outfile,"  ==> Molecular Orbitals <==\n");
+        psi::fprintf(outfile,"  ==> Molecular Orbitals <==\n");
     else
-        fprintf(outfile,"  ==> Alpha-Spin Molecular Orbitals <==\n");
-    fprintf(outfile,"\n");
+        psi::fprintf(outfile,"  ==> Alpha-Spin Molecular Orbitals <==\n");
+    psi::fprintf(outfile,"\n");
 
     write_mos(mol);
 
@@ -787,9 +787,9 @@ void MOWriter::write()
         }
 
         // dump to output file
-        fprintf(outfile,"\n");
-        fprintf(outfile,"  ==> Beta-Spin Molecular Orbitals <==\n");
-        fprintf(outfile,"\n");
+        psi::fprintf(outfile,"\n");
+        psi::fprintf(outfile,"  ==> Beta-Spin Molecular Orbitals <==\n");
+        psi::fprintf(outfile,"\n");
         write_mos(mol);
     }
 
@@ -814,44 +814,44 @@ void MOWriter::write_mos(Molecule & mol){
     for (int i = 0; i < nrows; i++) {
 
         // print blank space
-        fprintf(outfile,"     ");
+        psi::fprintf(outfile,"     ");
         // print mo number
         for (int j = 0; j < ncols; j++){
-            fprintf(outfile,"%13d",count+j+1);
+            psi::fprintf(outfile,"%13d",count+j+1);
         }
-        fprintf(outfile,"\n");
-        fprintf(outfile,"\n");
+        psi::fprintf(outfile,"\n");
+        psi::fprintf(outfile,"\n");
         // print orbitals
         for (int mu = 0; mu < nso; mu++) {
             // print ao number
-            fprintf(outfile,"%5i",mu+1);
+            psi::fprintf(outfile,"%5i",mu+1);
             for (int j = 0; j < ncols; j++){
 
-                fprintf(outfile,"%13.7lf",Ca_pointer[ mu*nmo + map[count + j] ]);
+                psi::fprintf(outfile,"%13.7lf",Ca_pointer[ mu*nmo + map[count + j] ]);
             }
-            fprintf(outfile,"\n");
+            psi::fprintf(outfile,"\n");
         }
-        fprintf(outfile,"\n");
+        psi::fprintf(outfile,"\n");
         // print energy
-        fprintf(outfile," Ene ");
+        psi::fprintf(outfile," Ene ");
         for (int j = 0; j < ncols; j++){
-            fprintf(outfile,"%13.7lf",eps[ map[count + j] ]);
+            psi::fprintf(outfile,"%13.7lf",eps[ map[count + j] ]);
         }
-        fprintf(outfile,"\n");
+        psi::fprintf(outfile,"\n");
         // print symmetry
-        fprintf(outfile," Sym ");
+        psi::fprintf(outfile," Sym ");
         for (int j = 0; j < ncols; j++){
-            fprintf(outfile,"%13s",ct.gamma(sym[map[count+j]]).symbol());
+            psi::fprintf(outfile,"%13s",ct.gamma(sym[map[count+j]]).symbol());
         }
-        fprintf(outfile,"\n");
+        psi::fprintf(outfile,"\n");
         // print occupancy
-        fprintf(outfile," Occ ");
+        psi::fprintf(outfile," Occ ");
         for (int j = 0; j < ncols; j++){
-            fprintf(outfile,"%13d",occ[map[count+j]]);
+            psi::fprintf(outfile,"%13d",occ[map[count+j]]);
         }
-        fprintf(outfile,"\n");
-        fprintf(outfile,"\n");
-        fprintf(outfile,"\n");
+        psi::fprintf(outfile,"\n");
+        psi::fprintf(outfile,"\n");
+        psi::fprintf(outfile,"\n");
         count+=ncols;
     }
 
@@ -859,41 +859,41 @@ void MOWriter::write_mos(Molecule & mol){
     if ( ncolsleft > 0 ) {
 
         // print blank space
-        fprintf(outfile,"     ");
+        psi::fprintf(outfile,"     ");
         // print mo number
         for (int j = 0; j < ncolsleft; j++){
-            fprintf(outfile,"%13d",count+j+1);
+            psi::fprintf(outfile,"%13d",count+j+1);
         }
-        fprintf(outfile,"\n");
-        fprintf(outfile,"\n");
+        psi::fprintf(outfile,"\n");
+        psi::fprintf(outfile,"\n");
         // print orbitals
         for (int mu = 0; mu < nso; mu++) {
             // print ao number
-            fprintf(outfile,"%5i",mu+1);
+            psi::fprintf(outfile,"%5i",mu+1);
             for (int j = 0; j < ncolsleft; j++){
-                fprintf(outfile,"%13.7lf",Ca_pointer[ mu*nmo + map[count + j] ]);
+                psi::fprintf(outfile,"%13.7lf",Ca_pointer[ mu*nmo + map[count + j] ]);
             }
-            fprintf(outfile,"\n");
+            psi::fprintf(outfile,"\n");
         }
-        fprintf(outfile,"\n");
+        psi::fprintf(outfile,"\n");
         // print energy
-        fprintf(outfile," Ene ");
+        psi::fprintf(outfile," Ene ");
         for (int j = 0; j < ncolsleft; j++){
-            fprintf(outfile,"%13.7lf",eps[ map[count + j] ]);
+            psi::fprintf(outfile,"%13.7lf",eps[ map[count + j] ]);
         }
-        fprintf(outfile,"\n");
-        fprintf(outfile," Sym ");
+        psi::fprintf(outfile,"\n");
+        psi::fprintf(outfile," Sym ");
         for (int j = 0; j < ncolsleft; j++){
-            fprintf(outfile,"%13s",ct.gamma(sym[map[count+j]]).symbol());
+            psi::fprintf(outfile,"%13s",ct.gamma(sym[map[count+j]]).symbol());
         }
-        fprintf(outfile,"\n");
+        psi::fprintf(outfile,"\n");
         // print occupancy
-        fprintf(outfile," Occ ");
+        psi::fprintf(outfile," Occ ");
         for (int j = 0; j < ncolsleft; j++){
-            fprintf(outfile,"%13d",occ[map[count+j]]);
+            psi::fprintf(outfile,"%13d",occ[map[count+j]]);
         }
-        fprintf(outfile,"\n");
-        fprintf(outfile,"\n");
+        psi::fprintf(outfile,"\n");
+        psi::fprintf(outfile,"\n");
 
     }
 }

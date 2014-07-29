@@ -74,7 +74,7 @@ int subgr_lex_addr(struct level *head, int *occs, int nel, int norb)
          j = curr->k[0][j-1];
          }
       if (j == 0) {
-         fprintf(outfile, "(subgr_lex_addr): Impossible walk!\n");
+         psi::fprintf(outfile, "(subgr_lex_addr): Impossible walk!\n");
          return(-1);
          }
       i++;

@@ -74,7 +74,7 @@ void count_ijk(void)
       }
     }
 
-    fprintf(outfile, "\n\tNumber of ijk index combinations: %d\n", nijk);
+    psi::fprintf(outfile, "\n\tNumber of ijk index combinations: %d\n", nijk);
 
     if(params.dertype == 1) {
       virtpi = moinfo.virtpi;
@@ -93,7 +93,7 @@ void count_ijk(void)
           }
         }
       }
-      fprintf(outfile, "\n\tNumber of abc index combinations: %d\n", nabc);
+      psi::fprintf(outfile, "\n\tNumber of abc index combinations: %d\n", nabc);
     } // dertype==1
 
   }
@@ -104,7 +104,7 @@ void count_ijk(void)
     boccpi = moinfo.boccpi;
     bocc_off = moinfo.bocc_off;
 
-    fprintf(outfile, "\n\tNumber of ijk index combinations:\n");
+    psi::fprintf(outfile, "\n\tNumber of ijk index combinations:\n");
 
     /** AAA **/
     nijk = 0;
@@ -127,7 +127,7 @@ void count_ijk(void)
       }
     }
 
-    fprintf(outfile, "\tSpin Case AAA: %d\n", nijk);
+    psi::fprintf(outfile, "\tSpin Case AAA: %d\n", nijk);
 
     /** BBB **/
     nijk = 0;
@@ -150,7 +150,7 @@ void count_ijk(void)
       }
     }
 
-    fprintf(outfile, "\tSpin Case BBB: %d\n", nijk);
+    psi::fprintf(outfile, "\tSpin Case BBB: %d\n", nijk);
 
     /** AAB **/
     nijk = 0;
@@ -173,7 +173,7 @@ void count_ijk(void)
       }
     }
 
-    fprintf(outfile, "\tSpin Case AAB: %d\n", nijk);
+    psi::fprintf(outfile, "\tSpin Case AAB: %d\n", nijk);
 
     /** ABB **/
     nijk = 0;
@@ -196,7 +196,7 @@ void count_ijk(void)
       }
     }
 
-    fprintf(outfile, "\tSpin Case ABB: %d\n", nijk);
+    psi::fprintf(outfile, "\tSpin Case ABB: %d\n", nijk);
 
     if(params.dertype == 1) {
       avirtpi = moinfo.avirtpi;
@@ -204,7 +204,7 @@ void count_ijk(void)
       bvirtpi = moinfo.bvirtpi;
       bvir_off = moinfo.bvir_off;
 
-      fprintf(outfile, "\n\tNumber of abc index combinations:\n");
+      psi::fprintf(outfile, "\n\tNumber of abc index combinations:\n");
       nabc = 0;
       for (Ga=0; Ga < nirreps; ++Ga)
         for (a=0; a < avirtpi[Ga]; ++a)
@@ -212,7 +212,7 @@ void count_ijk(void)
             for (b=0; b < avirtpi[Gb]; ++b)
               for (Gc=0; Gc < nirreps; ++Gc)
                 for (c=0; c < avirtpi[Gc]; ++c) nabc++;
-      fprintf(outfile, "\tSpin Case AAA: %d\n", nabc);
+      psi::fprintf(outfile, "\tSpin Case AAA: %d\n", nabc);
 
       nabc = 0;
       for (Ga=0; Ga < nirreps; ++Ga)
@@ -221,7 +221,7 @@ void count_ijk(void)
             for (b=0; b < bvirtpi[Gb]; ++b)
               for (Gc=0; Gc < nirreps; ++Gc)
                 for (c=0; c < bvirtpi[Gc]; ++c) nabc++;
-      fprintf(outfile, "\tSpin Case BBB: %d\n", nabc);
+      psi::fprintf(outfile, "\tSpin Case BBB: %d\n", nabc);
 
       nabc = 0;
       for (Ga=0; Ga < nirreps; ++Ga)
@@ -230,7 +230,7 @@ void count_ijk(void)
             for (b=0; b < avirtpi[Gb]; ++b)
               for (Gc=0; Gc < nirreps; ++Gc)
                 for (c=0; c < bvirtpi[Gc]; ++c) nabc++;
-      fprintf(outfile, "\tSpin Case AAB: %d\n", nabc);
+      psi::fprintf(outfile, "\tSpin Case AAB: %d\n", nabc);
 
       nabc = 0;
       for (Ga=0; Ga < nirreps; ++Ga)
@@ -239,7 +239,7 @@ void count_ijk(void)
             for (b=0; b < bvirtpi[Gb]; ++b)
               for (Gc=0; Gc < nirreps; ++Gc)
                 for (c=0; c < bvirtpi[Gc]; ++c) nabc++;
-      fprintf(outfile, "\tSpin Case ABB: %d\n", nabc);
+      psi::fprintf(outfile, "\tSpin Case ABB: %d\n", nabc);
 
     } // dertype == 1
 

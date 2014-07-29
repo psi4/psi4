@@ -59,7 +59,7 @@ int AO_contribute(struct iwlbuf *InBuf, dpdbuf4 *tau1_AO, dpdbuf4 *tau2_AO)
     value = (double) valptr[InBuf->idx];
     /*
     if(fabs(value) > 1e-8)
-        fprintf(stdout, "%d %d %d %d %20.14f\n", p, q, r, s, value);
+        psi::fprintf(stdout, "%d %d %d %d %20.14f\n", p, q, r, s, value);
     */
     count++;
 

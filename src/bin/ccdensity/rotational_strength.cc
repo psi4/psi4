@@ -64,9 +64,9 @@ void rotational_strength(struct TD_Params *S)
 
   transdip();
 
-  fprintf(outfile,"\n\tLength-Gauge Rotational Strength for %d%3s\n",S->root+1,
+  psi::fprintf(outfile,"\n\tLength-Gauge Rotational Strength for %d%3s\n",S->root+1,
           moinfo.labels[S->irrep]);
-  fprintf(outfile,"\t                              X    \t       Y    \t       Z\n");
+  psi::fprintf(outfile,"\t                              X    \t       Y    \t       Z\n");
 
   lt_x = lt_y = lt_z = 0.0;
   rt_x = rt_y = rt_z = 0.0;
@@ -94,9 +94,9 @@ void rotational_strength(struct TD_Params *S)
   rs_ly = lt_y * rt_y;
   rs_lz = lt_z * rt_z;
 
-  fprintf(outfile,"\t<0|mu_e|n>              %11.8lf \t %11.8lf \t %11.8lf\n",
+  psi::fprintf(outfile,"\t<0|mu_e|n>              %11.8lf \t %11.8lf \t %11.8lf\n",
           lt_x,lt_y,lt_z);
-  fprintf(outfile,"\t<n|mu_m|0>              %11.8lf \t %11.8lf \t %11.8lf\n",
+  psi::fprintf(outfile,"\t<n|mu_m|0>              %11.8lf \t %11.8lf \t %11.8lf\n",
           rt_x,rt_y,rt_z);
 
   // Complex Conjugate
@@ -129,9 +129,9 @@ void rotational_strength(struct TD_Params *S)
   rs_ry = lt_y * rt_y;
   rs_rz = lt_z * rt_z;
 
-  fprintf(outfile,"\t<0|mu_m|n>*             %11.8lf \t %11.8lf \t %11.8lf\n",
+  psi::fprintf(outfile,"\t<0|mu_m|n>*             %11.8lf \t %11.8lf \t %11.8lf\n",
           lt_x,lt_y,lt_z);
-  fprintf(outfile,"\t<n|mu_e|0>*             %11.8lf \t %11.8lf \t %11.8lf\n",
+  psi::fprintf(outfile,"\t<n|mu_e|0>*             %11.8lf \t %11.8lf \t %11.8lf\n",
           rt_x,rt_y,rt_z);
 
   rs_x = 0.5 * ( rs_lx + rs_rx);
@@ -141,14 +141,14 @@ void rotational_strength(struct TD_Params *S)
   rs = rs_x + rs_y + rs_z;
   S->RS_length = rs;
 
-  fprintf(outfile,"\n");
-  fprintf(outfile,"\tRotational Strength (au)                 %11.8lf\n",rs);
-  fprintf(outfile,"\tRotational Strength (10^-40 esu^2 cm^2)  %11.8lf\n",rs*_au2cgs);
+  psi::fprintf(outfile,"\n");
+  psi::fprintf(outfile,"\tRotational Strength (au)                 %11.8lf\n",rs);
+  psi::fprintf(outfile,"\tRotational Strength (10^-40 esu^2 cm^2)  %11.8lf\n",rs*_au2cgs);
   fflush(outfile);
 
-  fprintf(outfile,"\n\tVelocity-Gauge Rotational Strength for %d%3s\n",S->root+1,
+  psi::fprintf(outfile,"\n\tVelocity-Gauge Rotational Strength for %d%3s\n",S->root+1,
           moinfo.labels[S->irrep]);
-  fprintf(outfile,"\t                              X    \t       Y    \t       Z\n");
+  psi::fprintf(outfile,"\t                              X    \t       Y    \t       Z\n");
 
   lt_x = lt_y = lt_z = 0.0;
   rt_x = rt_y = rt_z = 0.0;
@@ -178,9 +178,9 @@ void rotational_strength(struct TD_Params *S)
   rs_ly = lt_y * rt_y;
   rs_lz = lt_z * rt_z;
 
-  fprintf(outfile,"\t<0|mu_e|n>              %11.8lf \t %11.8lf \t %11.8lf\n",
+  psi::fprintf(outfile,"\t<0|mu_e|n>              %11.8lf \t %11.8lf \t %11.8lf\n",
           lt_x,lt_y,lt_z);
-  fprintf(outfile,"\t<n|mu_m|0>              %11.8lf \t %11.8lf \t %11.8lf\n",
+  psi::fprintf(outfile,"\t<n|mu_m|0>              %11.8lf \t %11.8lf \t %11.8lf\n",
           rt_x,rt_y,rt_z);
 
   // Complex Conjugate
@@ -221,9 +221,9 @@ void rotational_strength(struct TD_Params *S)
   rs_y = 0.5 * ( rs_ly + rs_ry);
   rs_z = 0.5 * ( rs_lz + rs_rz);
 
-  fprintf(outfile,"\t<0|mu_m|n>*             %11.8lf \t %11.8lf \t %11.8lf\n",
+  psi::fprintf(outfile,"\t<0|mu_m|n>*             %11.8lf \t %11.8lf \t %11.8lf\n",
           lt_x,lt_y,lt_z);
-  fprintf(outfile,"\t<n|mu_e|0>*             %11.8lf \t %11.8lf \t %11.8lf\n",
+  psi::fprintf(outfile,"\t<n|mu_e|0>*             %11.8lf \t %11.8lf \t %11.8lf\n",
           rt_x,rt_y,rt_z);
 
   rs_x = rs_x / S->cceom_energy;
@@ -233,9 +233,9 @@ void rotational_strength(struct TD_Params *S)
   rs = rs_x + rs_y + rs_z;
   S->RS_velocity = rs;
 
-  fprintf(outfile,"\n");
-  fprintf(outfile,"\tRotational Strength (au)                 %11.8lf\n",rs);
-  fprintf(outfile,"\tRotational Strength (10^-40 esu^2 cm^2)  %11.8lf\n",rs*_au2cgs);
+  psi::fprintf(outfile,"\n");
+  psi::fprintf(outfile,"\tRotational Strength (au)                 %11.8lf\n",rs);
+  psi::fprintf(outfile,"\tRotational Strength (10^-40 esu^2 cm^2)  %11.8lf\n",rs*_au2cgs);
   fflush(outfile);
 
   return;

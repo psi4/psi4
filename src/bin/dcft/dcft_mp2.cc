@@ -58,13 +58,13 @@ DCFTSolver::mp2_guess()
     _ints->set_keep_dpd_so_ints(true);
     dpd_set_default(_ints->get_dpd_id());
 
-    fprintf(outfile, "\n\n\tTransforming two-electron integrals...\n");
+    psi::fprintf(outfile, "\n\n\tTransforming two-electron integrals...\n");
     transform_integrals();
 
     std::string guess = options_.get_str("DCFT_GUESS");
 
     if (guess == "MP2") {
-        fprintf(outfile, "\tComputing MP2 amplitude guess...\n\n"); fflush(outfile);
+        psi::fprintf(outfile, "\tComputing MP2 amplitude guess...\n\n"); fflush(outfile);
 
         psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
@@ -146,12 +146,12 @@ DCFTSolver::mp2_guess()
         global_dpd_->buf4_close(&L);
 
         new_total_energy_ = scf_energy_ + eAA + eAB + eBB;
-        fprintf(outfile, "\t*Total Hartree-Fock energy        = %20.15f\n", scf_energy_);
-        fprintf(outfile, "\t Alpha - Alpha MP2 energy         = %20.15f\n", eAA);
-        fprintf(outfile, "\t Alpha - Beta  MP2 energy         = %20.15f\n", eAB);
-        fprintf(outfile, "\t Beta  - Beta  MP2 energy         = %20.15f\n", eBB);
-        fprintf(outfile, "\t Total MP2 correlation energy     = %20.15f\n", eAA + eAB + eBB);
-        fprintf(outfile, "\t*Total MP2 energy                 = %20.15f\n", new_total_energy_);
+        psi::fprintf(outfile, "\t*Total Hartree-Fock energy        = %20.15f\n", scf_energy_);
+        psi::fprintf(outfile, "\t Alpha - Alpha MP2 energy         = %20.15f\n", eAA);
+        psi::fprintf(outfile, "\t Alpha - Beta  MP2 energy         = %20.15f\n", eAB);
+        psi::fprintf(outfile, "\t Beta  - Beta  MP2 energy         = %20.15f\n", eBB);
+        psi::fprintf(outfile, "\t Total MP2 correlation energy     = %20.15f\n", eAA + eAB + eBB);
+        psi::fprintf(outfile, "\t*Total MP2 energy                 = %20.15f\n", new_total_energy_);
 
         Process::environment.globals["MP2 TOTAL ENERGY"] = new_total_energy_;
         Process::environment.globals["MP2 CORRELATION ENERGY"] = eAA + eAB + eBB;
@@ -159,7 +159,7 @@ DCFTSolver::mp2_guess()
         psio_->close(PSIF_LIBTRANS_DPD, 1);
     }
     else if(guess == "CC" || guess == "BCC"){
-        fprintf(outfile, "\tReading existing coupled cluster amplitudes\n\n");
+        psi::fprintf(outfile, "\tReading existing coupled cluster amplitudes\n\n");
         psio_->open(PSIF_CC_TAMPS, PSIO_OPEN_OLD);
         dpdbuf4 T2;
         // Copy the AA amplitudes from CCEnergy

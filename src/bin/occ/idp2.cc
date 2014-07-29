@@ -41,7 +41,7 @@ if (reference_ == "RESTRICTED") {
       nidpA += virtpiA[h] * occpiA[h]; 
     }
 
-    fprintf(outfile,"\tNumber of independent-pairs: %3d\n", nidpA);
+    psi::fprintf(outfile,"\tNumber of independent-pairs: %3d\n", nidpA);
     fflush(outfile);  
     
     if (nidpA != 0) {
@@ -74,7 +74,7 @@ if (reference_ == "RESTRICTED") {
      
     if (print_ > 2){
      for(int i = 0; i < nidpA; i++){
-        fprintf(outfile,"\n i, idpirrA, idprowA, idpcolA: %3d %3d %3d %3d\n", i, idpirrA[i], idprowA[i],idpcolA[i]);
+        psi::fprintf(outfile,"\n i, idpirrA, idprowA, idpcolA: %3d %3d %3d %3d\n", i, idpirrA[i], idprowA[i],idpcolA[i]);
 	fflush(outfile);
       }
     }
@@ -92,8 +92,8 @@ else if (reference_ == "UNRESTRICTED") {
       nidpB += virtpiB[h] * occpiB[h]; 
     }
 
-    fprintf(outfile,"\tNumber of alpha independent-pairs:%3d\n", nidpA);
-    fprintf(outfile,"\tNumber of beta independent-pairs :%3d\n", nidpB);
+    psi::fprintf(outfile,"\tNumber of alpha independent-pairs:%3d\n", nidpA);
+    psi::fprintf(outfile,"\tNumber of beta independent-pairs :%3d\n", nidpB);
     fflush(outfile);  
     
     if (nidpA != 0) {
@@ -152,12 +152,12 @@ else if (reference_ == "UNRESTRICTED") {
 
     if(print_ > 2){
      for(int i = 0; i < nidpA; i++){
-        fprintf(outfile,"\n i, idpirrA, idprowA, idpcolA: %3d %3d %3d %3d\n", i, idpirrA[i], idprowA[i],idpcolA[i]);
+        psi::fprintf(outfile,"\n i, idpirrA, idprowA, idpcolA: %3d %3d %3d %3d\n", i, idpirrA[i], idprowA[i],idpcolA[i]);
 	fflush(outfile);
       }
       
       for(int i = 0; i < nidpB; i++){
-        fprintf(outfile,"\n i, idpirrB, idprowB, idpcolB: %3d %3d %3d %3d\n", i, idpirrB[i], idprowB[i],idpcolB[i]); 
+        psi::fprintf(outfile,"\n i, idpirrB, idprowB, idpcolB: %3d %3d %3d %3d\n", i, idpirrB[i], idprowB[i],idpcolB[i]); 
 	fflush(outfile);
       }
     }

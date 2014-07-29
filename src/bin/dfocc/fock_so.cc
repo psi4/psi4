@@ -34,7 +34,7 @@ namespace psi{ namespace dfoccwave{
 
 void DFOCC::fock_so()
 {      
-  //fprintf(outfile,"\tfock_so is starting... \n"); fflush(outfile);
+  //psi::fprintf(outfile,"\tfock_so is starting... \n"); fflush(outfile);
 /********************************************************************************************/
 /************************** Build the Fock matrix *******************************************/
 /********************************************************************************************/
@@ -68,7 +68,7 @@ void DFOCC::fock_so()
      FsoA->contract(true, false, nso_, nso_, nso_ * nQ_ref, bQso, DQmatA, -0.5, 1.0);
      //FsoA->print();
 
-//fprintf(outfile,"\tfock_so is done. \n"); fflush(outfile);
+//psi::fprintf(outfile,"\tfock_so is done. \n"); fflush(outfile);
 }// end fock_so
 }} // End Namespaces
 

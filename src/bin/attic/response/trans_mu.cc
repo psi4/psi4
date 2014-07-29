@@ -120,11 +120,11 @@ void trans_mu(void)
   moinfo.MUZ = MUZ;
 
   /*
-  fprintf(outfile, "MO-Basis MuX Integrals:\n");
+  psi::fprintf(outfile, "MO-Basis MuX Integrals:\n");
   mat_print(moinfo.MUX, nmo, nmo, outfile);
-  fprintf(outfile, "MO-Basis MuY Integrals:\n");
+  psi::fprintf(outfile, "MO-Basis MuY Integrals:\n");
   mat_print(moinfo.MUY, nmo, nmo, outfile);
-  fprintf(outfile, "MO-Basis MuZ Integrals:\n");
+  psi::fprintf(outfile, "MO-Basis MuZ Integrals:\n");
   mat_print(moinfo.MUZ, nmo, nmo, outfile);
   */
 
