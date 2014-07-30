@@ -1,7 +1,23 @@
 #These tests aren't set-up the same way as the others
 set(TestsNotSetUpRight dftd3 cfour optking testgrendel)
 
-#No ADC Short
+#In order to get CTest to run tests in three seperate categories:
+#
+#  LongTests=  The (as of right now) 4 really long tests
+#  Tests=      Every test in the test folder less LongTests
+#  QuickTests= Proper subset of tests deemed to run quickly
+#
+#  We use ctest -I [start,end] where start is the test number we start with
+#  and end is the test number we end with.  We will then use math to back out
+#  the appropriate starts and ends...
+#
+#
+#  In order to ensure that this works properly, please add your tests to the
+#  appropriate variables given below
+
+
+
+
 set(ADCLong adc1 adc2)
 
 set(CastUpShort castup1)
@@ -27,7 +43,7 @@ set(DocsLong docs-bases docs-dft docs-psimod)
 
 set(FCIShort fci-dipole)
 set(FCILong fci-h2o fci-h2o-2 fci-h2o-fzcv fci-tdm fci-tdm-2)
-set(FDLong fd-freq-energy fd-freq-energy-large fd-freq-gradient fd-freq-gradient-large fd-gradient)
+set(FDLong fd-freq-energy fd-freq-energy-large fd-freq-gradient fd-gradient)
 set(FNOCCShort fnocc2 fnocc4)
 set(FNOCCLong fnocc1 fnocc3) 
 
@@ -36,7 +52,7 @@ set(MCSCFLong mcscf2 mcscf3)
 set(MintsShort mints1 mints2)
 set(MintsLong mints3 mints4 mints5 mints6 mints8)
 set(MP2Short mp2_5-grad1 mpn-bh)
-set(MP2Long mp2-1 mp2_5-grad2 mp2-def2 mp2-grad1 mp2-grad2 mp3-grad1 mp3-grad2)
+set(MP2Long mp2-1 mp2_5-grad2 mp2-grad1 mp2-grad2 mp3-grad1 mp3-grad2)
 #No MRCCShort
 set(MRCCLong mrcc1 mrcc2 mrcc3 mrcc4)
 
@@ -58,7 +74,7 @@ set(RASCIShort rasci-h2o)
 set(RASCILong rasci-c2-active rasci-ne)
 
 set(SAPTShort sapt1)
-set(SAPTLong sapt2 sapt3 sapt4 sapt5)
+set(SAPTLong  sapt3 sapt5)
 set(SCFShort scf1 scf2 scf3 scf5 scf-guess-read)
 set(SCFLong scf11-freq-from-energies scf4 scf6 scf-bz2)
 
@@ -67,6 +83,12 @@ set(TutorialLong tu6-cp-ne2)
 set(MISCShort ci-multi sad1 matrix1 gibbs)
 set(MISCLong frac ghosts large_atoms min_input mom psithon1 psithon2 pubchem1 zaptn-nh2)
 
+###### END test definitions ################
+
+#These are the truly long tests
+set(LongTests mp2-def2 sapt2 sapt4 fd-freq-gradient-large)
+
+#These are the tests that will become the quicktest target
 set(QuickTests ${CastUpShort} ${CCShort} ${CDShort} ${CISDShort} ${DCFTShort}
     ${DFShort} ${DFTShort} ${FCIShort} ${FNOCCShort} ${MCSCFShort}
 ${MintsShort} ${MP2Short} ${OCEPAShort} ${OMPShort} ${OPTShort}
@@ -74,21 +96,38 @@ ${PSIMRCCShort} ${PYWrapShort} ${RASCIShort} ${SAPTShort} ${SCFShort}
 ${TutorialShort} ${MISCShort}
 )
 
-set(LongTests ${ADCLong} ${CastUpLong} ${CCLong} ${CEPALong} ${CISDLong}
+#And these are the rest of the tests
+set(LongerTests ${ADCLong} ${CastUpLong} ${CCLong} ${CEPALong} ${CISDLong}
 ${DCFTLong} ${DFLong} ${DFTLong} ${DocsLong} ${FCILong} ${FDLong} ${FNOCCLong}
 ${MCSCFLong} ${MintsLong} ${MP2Long} ${MRCCLong} ${OCEPALong} ${OMPLong}
 ${OPTLong} ${PropsLong} ${PSIMRCCLong} ${PYWrapLong} ${RASCILong} ${SAPTLong}
 ${SCFLong} ${TutorialLong} ${MISCLong})
 
-set(AllTests ${QuickTests} ${LongTests})
-set(TestSet ${QuickTests})
 
-#This is the command to actually run the tests
+
+set(TestSet ${LongTests} ${QuickTests} ${LongerTests})
+
+list(LENGTH TestSet NumberOfTests)
+list(LENGTH LongTests NLong)
+list(LENGTH QuickTests NShort)
+MATH(EXPR Start "${NLong} +1")
+
+add_custom_target(longtests ${CMAKE_CTEST_COMMAND} -I 1,${NLong})
+add_custom_target(quicktests ${CMAKE_CTEST_COMMAND} -I ${Start},${NShort})
+add_custom_target(tests ${CMAKE_CTEST_COMMAND} -I ${Start},${NumberOfTests})
+
+
+#The commands below this poitn are used to set-up cmakes test suite with
+#the info given up to this point
+
+#This is the psi command to actually run the tests
 set(PSIEXE ${CMAKE_BINARY_DIR}/bin/psi4)
+#This is where the test directories live
 set(TESTDIR ${CMAKE_CURRENT_SOURCE_DIR})
+#This is the perl script that we call, to call the psi, to run the tests
 set(TESTEXE ${TESTDIR}/runtest.pl)
 
-#CMake version of the Make runtest.pl.in
+#CMake way of the Make runtest.pl.in
 file(WRITE ${TESTEXE}
 "use strict;
 use warnings;
@@ -134,30 +173,29 @@ if (\$psiautotest eq \"true\") {
 }
 
 exit \$return;\n")
-set(TestsThatFailMPI "cc8")
+
 #Finally run these beasts
 set(LOGFILE ${CMAKE_BINARY_DIR}/testresults.log)
+
+#Declare each test as a possible test target even though noone will likely
+#want to run individual tests.  In the end makes our job easier
 foreach(Tests2Run ${TestSet})
-set(RUNDIR ${TESTDIR}/${Tests2Run})
-set(INPUTFILE ${RUNDIR}/input.dat)
-set(OUTFILE ${RUNDIR}/output.dat)
-set(AUTOTEST 'true')
-add_test(
-    NAME ${Tests2Run}
-    WORKING_DIRECTORY ${RUNDIR}
-    COMMAND perl ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${OUTFILE} ${PSIEXE})
-if( MPI_FOUND AND FALSE)
-set(do_test TRUE)
-foreach(badtests ${TestsThatFailMPI})
-  if(${Tests2Run} EQUAL ${badtests})
-    set(do_test FALSE)
-  endif()
-endforeach()
-if(do_test)
-add_test(
-    NAME MPI-${Tests2Run}
-    WORKING_DIRECTORY ${RUNDIR}
-    COMMAND mpirun -n 2 perl ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${OUTFILE} ${PSIEXE})
-endif()
-endif()
+   #The directory the test will be run in
+   set(RUNDIR ${TESTDIR}/${Tests2Run})
+ 
+   set(INPUTFILE ${RUNDIR}/input.dat)
+   set(OUTFILE ${RUNDIR}/output.dat)
+   set(AUTOTEST 'true')
+   add_test(
+      NAME ${Tests2Run}
+      WORKING_DIRECTORY ${RUNDIR}
+      COMMAND perl ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${OUTFILE} ${PSIEXE})
+   #In theory would like to make sure all tests run in parallel as well
+   #but....most do not right now...
+   if( MPI_FOUND AND FALSE)
+     add_test(
+        NAME MPI-${Tests2Run}
+        WORKING_DIRECTORY ${RUNDIR}
+        COMMAND mpirun -n 2 perl ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${OUTFILE} ${PSIEXE})
+    endif()
 endforeach(Tests2Run)
