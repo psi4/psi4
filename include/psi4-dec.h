@@ -42,6 +42,7 @@ extern FILE *outfile;
 extern char *psi_file_prefix;
 extern std::string outfile_name;
 extern bool verbose;
+extern std::string restart_id;
 
 // Very useful regex for matching floating point numbers
 #define NUMBER "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"

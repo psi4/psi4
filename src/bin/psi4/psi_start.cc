@@ -82,7 +82,7 @@ int psi_start(int argc, char *argv[])
     interactive_python  = false;
 
     // A string listing of valid short option letters
-    const char* const short_options = "ahvVdcwo:p:i:l:s:n:mkt";
+    const char* const short_options = "ahvVdcwo:p:i:l:s:n:r:mkt";
     const struct option long_options[] = {
         { "append",  0, NULL, 'a' },
         { "help",    0, NULL, 'h' },
@@ -97,6 +97,7 @@ int psi_start(int argc, char *argv[])
         { "input",   1, NULL, 'i' },
         { "psidatadir", 1, NULL, 'l' },
         { "scratch", 1, NULL, 's' },
+        { "restart", 1, NULL, 'r' },
         { "messy",   0, NULL, 'm' },
         { "skip-preprocessor",  0, NULL, 'k' },
         { "interactive", 0, NULL, 't' },
@@ -163,6 +164,10 @@ int psi_start(int argc, char *argv[])
                 fprefix = optarg;
                 break;
 
+            case 'r': // -r or --restart
+                restart_id = optarg;
+                break;
+
             case 'v': // -v or --verbose
                 verbose = true;
                 break;
@@ -226,6 +231,8 @@ int psi_start(int argc, char *argv[])
         ofname = Process::environment("PSI_OUTPUT");
     if (fprefix.empty() && Process::environment("PSI_PREFIX").size())
         fprefix = Process::environment("PSI_PREFIX");
+    if (restart_id.empty() && Process::environment("PSI_RESTART").size())
+        restart_id = Process::environment("PSI_RESTART");
 
     /* if some arguments still not defined - assign default values */
     if (ifname.empty()) ifname = "input.dat";
@@ -339,6 +346,7 @@ void print_usage(void)
     printf(" -l  --psidatadir         Specify where to look for the Psi data directory.\n");
     printf("                          Overrides PSIDATADIR.\n");
     printf(" -m  --messy              Leave temporary files after the run is completed.\n");
+    printf(" -r  --restart            Number to be used instead of process id.\n");
     printf(" -n  --nthread            Number of threads to use (overrides OMP_NUM_THREADS)\n");
     printf("     --new-plugin name    Creates a new directory with files for writing a\n"
            "                          new plugin. You can specify an additional argument\n"
