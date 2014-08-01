@@ -25,6 +25,7 @@
 
 #include <cstdio>
 #include <libpsio/config.h>
+#include <string>
 
 namespace psi {
 
@@ -35,6 +36,7 @@ namespace psi {
   void psio_error(unsigned int unit, unsigned int errval);
   int psio_open(unsigned int unit, int status);
   int psio_close(unsigned int unit, int keep);
+  std::string psio_getpid(void);
 
   unsigned int psio_get_numvols_default(void);
   int psio_get_volpath_default(unsigned int volume, char **path);
