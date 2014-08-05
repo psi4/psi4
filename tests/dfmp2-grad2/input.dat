@@ -1,0 +1,30 @@
+#! DF-MP2 cc-pVDZ gradient for the NO molecule.
+
+ref_vals = [                                                             #TEST
+             [ 0.000000000000,    0.00000000000000,    -0.196749453151],  #TEST
+             [ 0.000000000000,    0.00000000000000,     0.196749453151]   #TEST
+           ]                                                             #TEST
+ref = psi4.Matrix(2, 3)                                                #TEST
+ref.set(ref_vals)
+memory 256 mb
+
+molecule {
+0 2
+N
+O 1 1.158
+symmetry c1
+}
+
+set {
+  basis cc-pvdz
+  df_basis_scf cc-pvdz-jkfit
+  df_basis_cc cc-pvdz-ri
+  scf_type df
+  guess sad
+  reference uhf
+  orb_opt false
+}
+gradient('df-omp2')
+
+grad = psi4.wavefunction().gradient()                           #TEST
+compare_matrices(ref, grad, 5, "Analytic gradients")              #TEST

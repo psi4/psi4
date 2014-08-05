@@ -59,6 +59,8 @@ random.shuffle(Earray)
 set basis 6-31g
 set roots_per_irrep [1, 1]
 #set roots_per_irrep [1]
+set_global_option('DF_BASIS_SCF', '')
+revoke_global_option_changed('DF_BASIS_SCF')
 
 for method in Earray:
    water.reset_point_group(sym)
@@ -99,6 +101,8 @@ Earray = [
 random.shuffle(Earray)
 
 set basis sto-3g
+set_global_option('DF_BASIS_SCF', '')
+revoke_global_option_changed('DF_BASIS_SCF')
 
 for method in Earray:
    water.reset_point_group(sym)
@@ -115,6 +119,8 @@ for method in Earray:
 print('  Checking energy methods (ground state, non-minimal basis) ...')
 
 set basis 6-31g
+set_global_option('DF_BASIS_SCF', '')
+revoke_global_option_changed('DF_BASIS_SCF')
 
 Earray = [
   'MP4',
@@ -147,6 +153,8 @@ print('  Checking energy methods (excited state) ...')
 set roots_per_irrep [1, 1]
 #set roots_per_irrep [1]
 set basis sto-3g
+set_global_option('DF_BASIS_SCF', '')
+revoke_global_option_changed('DF_BASIS_SCF')
 
 Earray = [
   'ADC',
@@ -184,6 +192,8 @@ units angstrom
 }
 
 set basis sto-3g
+set_global_option('DF_BASIS_SCF', '')
+revoke_global_option_changed('DF_BASIS_SCF')
 
 Earray = [
   'SAPT0',

@@ -62,7 +62,7 @@ fflush(outfile);
       itr_diis = 0;
 
       // If diis?
-      if (noccA + noccB != 1) {
+      //if (noccA + noccB != 1) {
           if (do_diis_ == 1) {
               nvar = num_vecs +1;
               vecsA = SharedTensor2d(new Tensor2d("Alpha MO DIIS Vectors", num_vecs, nidpA));
@@ -73,7 +73,7 @@ fflush(outfile);
                   errvecsB = SharedTensor2d(new Tensor2d("Beta MO DIIS Error Vectors", num_vecs, nidpB));
               }
           }
-      }
+      //}
       
 //==========================================================================================
 //========================= Head of the Loop ===============================================

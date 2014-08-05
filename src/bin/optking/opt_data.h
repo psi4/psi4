@@ -233,6 +233,8 @@ class OPT_DATA {
     }
     void increase_trust_radius(void) const;
     void decrease_trust_radius(void) const;
+    void reset_trust_radius(void) const;
+
 };
 
 }

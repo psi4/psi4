@@ -274,7 +274,7 @@ void BEND::print_disp(FILE *fp, const double q_old, const double f_q,
 
   iss << s_atom[0]+atom_offset+1 << "," << s_atom[1]+atom_offset+1 << "," << s_atom[2]+atom_offset+1 << ")" << flush ;
 
-  fprintf(fp,"\t %-15s = %13.6lf%13.6lf%13.6lf%13.6lf\n",
+  fprintf(fp,"%-15s = %13.6lf%13.6lf%13.6lf%13.6lf\n",
     iss.str().c_str(), q_old/_pi*180.0, f_q*_hartree2aJ*_pi/180.0,
       dq/_pi*180.0, q_new/_pi*180.0);
   fflush(fp);

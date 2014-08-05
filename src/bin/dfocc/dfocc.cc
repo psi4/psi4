@@ -93,6 +93,11 @@ void DFOCC::common_init()
     pcg_beta_type_=options_.get_str("PCG_BETA_TYPE");
     regularization=options_.get_str("REGULARIZATION");
     read_scf_3index=options_.get_str("READ_SCF_3INDEX");
+    freeze_core_=options_.get_str("FREEZE_CORE");
+    oeprop_=options_.get_str("OEPROP");
+    comput_s2_=options_.get_str("COMPUT_S2");
+    mp2_amp_type_=options_.get_str("MP2_AMP_TYPE");
+    qchf_=options_.get_str("QCHF");
 
     //title
     title();
@@ -139,6 +144,19 @@ void DFOCC::common_init()
     else if (reference == "UHF" || reference == "UKS" || reference == "ROHF") reference_ = "UNRESTRICTED";
     if (reference == "ROHF") reference_wavefunction_->semicanonicalize();
 
+    // Only ROHF-MP2 energy is available, not the gradients
+    if (reference == "ROHF" && orb_opt_ == "FALSE" && dertype == "FIRST") {
+             throw PSIEXCEPTION("ROHF DF-MP2 analytic gradients are not available, UHF DF-MP2 is recommended.");
+    }
+
+    // Frozen Core
+    /*
+    if (freeze_core_ == "TRUE" && orb_opt_ == "FALSE" && dertype == "FIRST") {
+             throw PSIEXCEPTION("Frozen core gradients are available only for orbital-optimized methods.");
+    }
+    */
+
+    // DIIS
     if (options_.get_str("DO_DIIS") == "TRUE") do_diis_ = 1;
     else if (options_.get_str("DO_DIIS") == "FALSE") do_diis_ = 0;
 
@@ -147,8 +165,11 @@ void DFOCC::common_init()
         hess_type=options_.get_str("HESS_TYPE");
     }
     else {
-         if (reference_ == "RESTRICTED") {
+         if (reference_ == "RESTRICTED" && freeze_core_ == "FALSE") {
              hess_type = "HF"; 
+         }
+         else if (reference_ == "RESTRICTED" && freeze_core_ == "TRUE") {
+             hess_type = "APPROX_DIAG";
          }
          else if (reference_ == "UNRESTRICTED") {
              hess_type = "APPROX_DIAG";
@@ -157,9 +178,25 @@ void DFOCC::common_init()
          }
     }
 
+    // Regularization 
+    if (regularization == "TRUE") {
+        fprintf(outfile,"\n\tNOTE: A regularization procedure will be applied to the method.\n");
+        fprintf(outfile,"\tThe regularization parameter is : %12.2f mh\n", reg_param * 1000.0);
+        fflush(outfile);
+    }
+
     cutoff = pow(10.0,-exp_cutoff);
     get_moinfo();
     pair_index();
+
+    // Frozen virtual
+    if (nfrzv > 0 && dertype == "FIRST") {
+        throw PSIEXCEPTION("Frozen virtual gradients are not available.");
+    }
+    if (nfrzv > 0 && orb_opt_ == "TRUE") {
+        throw PSIEXCEPTION("Frozen virtual approximation is not available for orbital-optimized methods.");
+    }
+
 
 if (reference_ == "RESTRICTED") {
 	// Memory allocation
@@ -172,14 +209,16 @@ if (reference_ == "RESTRICTED") {
         HvvA = SharedTensor2d(new Tensor2d("OEI <V|V>", nvirA, nvirA));
 
     // if we need PDMs
-    if (orb_opt_ == "TRUE" || dertype != "NONE") {
+    if (orb_opt_ == "TRUE" || dertype != "NONE" || oeprop_ == "TRUE" || qchf_ == "TRUE") {
         GijA = SharedTensor2d(new Tensor2d("G Intermediate <I|J>", naoccA, naoccA));
         GabA = SharedTensor2d(new Tensor2d("G Intermediate <A|B>", navirA, navirA));
         G1c_oo = SharedTensor2d(new Tensor2d("Correlation OPDM <O|O>", noccA, noccA));
         G1c_vv = SharedTensor2d(new Tensor2d("Correlation OPDM <V|V>", nvirA, nvirA));
         G1 = SharedTensor2d(new Tensor2d("MO-basis OPDM", nmo_, nmo_));
+        G1ao = SharedTensor2d(new Tensor2d("AO-basis OPDM", nso_, nso_));
         G1c = SharedTensor2d(new Tensor2d("MO-basis correlation OPDM", nmo_, nmo_));
         GF = SharedTensor2d(new Tensor2d("MO-basis GFM", nmo_, nmo_));
+        GFao = SharedTensor2d(new Tensor2d("AO-basis GFM", nso_, nso_));
         GFoo = SharedTensor2d(new Tensor2d("MO-basis GFM <O|O>", noccA, noccA));
         GFvo = SharedTensor2d(new Tensor2d("MO-basis GFM <V|O>", nvirA, noccA));
         GFov = SharedTensor2d(new Tensor2d("MO-basis GFM <O|V>", noccA, nvirA));
@@ -190,6 +229,9 @@ if (reference_ == "RESTRICTED") {
         KorbA = SharedTensor2d(new Tensor2d("Alpha K MO rotation parameters matrix", nmo_, nmo_));
         KsqrA = SharedTensor2d(new Tensor2d("Alpha K^2 MO rotation parameters matrix", nmo_, nmo_));
         AvoA = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <V|O>", nvirA, noccA));
+        if (orb_opt_ == "FALSE") {
+            WvoA = SharedTensor2d(new Tensor2d("Effective MO gradient <V|O>", nvirA, noccA));
+        }
         if (nfrzc > 0) AooA = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <I|FC>", naoccA, nfrzc));
     }
 
@@ -231,7 +273,7 @@ else if (reference_ == "UNRESTRICTED") {
         HvvB = SharedTensor2d(new Tensor2d("OEI <v|v>", nvirB, nvirB));
 
     // if we need PDMs
-    if (orb_opt_ == "TRUE" || dertype != "NONE") {
+    if (orb_opt_ == "TRUE" || dertype != "NONE" || oeprop_ == "TRUE" || qchf_ == "TRUE") {
         GijA = SharedTensor2d(new Tensor2d("G Intermediate <I|J>", naoccA, naoccA));
         GijB = SharedTensor2d(new Tensor2d("G Intermediate <i|j>", naoccB, naoccB));
         GabA = SharedTensor2d(new Tensor2d("G Intermediate <A|B>", navirA, navirA));
@@ -244,8 +286,10 @@ else if (reference_ == "UNRESTRICTED") {
         G1cB = SharedTensor2d(new Tensor2d("MO-basis beta correlation OPDM", nmo_, nmo_));
         G1A = SharedTensor2d(new Tensor2d("MO-basis alpha OPDM", nmo_, nmo_));
         G1B = SharedTensor2d(new Tensor2d("MO-basis beta OPDM", nmo_, nmo_));
+        G1ao = SharedTensor2d(new Tensor2d("AO-basis OPDM", nso_, nso_));
         GFA = SharedTensor2d(new Tensor2d("MO-basis alpha GFM", nmo_, nmo_));
         GFB = SharedTensor2d(new Tensor2d("MO-basis beta GFM", nmo_, nmo_));
+        GFao = SharedTensor2d(new Tensor2d("AO-basis GFM", nso_, nso_));
         GFooA = SharedTensor2d(new Tensor2d("MO-basis GFM <O|O>", noccA, noccA));
         GFooB = SharedTensor2d(new Tensor2d("MO-basis GFM <o|o>", noccB, noccB));
         GFvoA = SharedTensor2d(new Tensor2d("MO-basis GFM <V|O>", nvirA, noccA));
@@ -266,9 +310,13 @@ else if (reference_ == "UNRESTRICTED") {
         KsqrB = SharedTensor2d(new Tensor2d("Beta K^2 MO rotation parameters matrix", nmo_, nmo_));
         AvoA = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <V|O>", nvirA, noccA));
         AvoB = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <v|o>", nvirB, noccB));
+        if (orb_opt_ == "FALSE") {
+            WvoA = SharedTensor2d(new Tensor2d("Effective MO gradient <V|O>", nvirA, noccA));
+            WvoB = SharedTensor2d(new Tensor2d("Effective MO gradient <v|o>", nvirB, noccB));
+        }
         if (nfrzc > 0) {
             AooA = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <I|FC>", naoccA, nfrzc));
-            AooB = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <i|FC>", naoccA, nfrzc));
+            AooB = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <i|FC>", naoccB, nfrzc));
         }
     }
 
@@ -276,6 +324,14 @@ else if (reference_ == "UNRESTRICTED") {
         if (reference == "ROHF" && wfn_type_ == "DF-OMP2") {
             t1A = SharedTensor2d(new Tensor2d("T1_1 <I|A>", naoccA, navirA));
             t1B = SharedTensor2d(new Tensor2d("T1_1 <i|a>", naoccB, navirB));
+            GiaA = SharedTensor2d(new Tensor2d("G Intermediate <I|A>", naoccA, navirA));
+            GiaB = SharedTensor2d(new Tensor2d("G Intermediate <i|a>", naoccB, navirB));
+            GaiA = SharedTensor2d(new Tensor2d("G Intermediate <A|I>", navirA, naoccA));
+            GaiB = SharedTensor2d(new Tensor2d("G Intermediate <a|i>", navirB, naoccB));
+            G1c_ovA = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
+            G1c_ovB = SharedTensor2d(new Tensor2d("Correlation OPDM <o|v>", noccB, nvirB));
+            G1c_voA = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
+            G1c_voB = SharedTensor2d(new Tensor2d("Correlation OPDM <v|o>", nvirB, noccB));
         }
 
         fprintf(outfile,"\n\tMO spaces... \n\n"); fflush(outfile);
@@ -327,7 +383,28 @@ void DFOCC::title()
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "TRUE") fprintf(outfile,"                      CD-OMP2 (CD-OO-MP2)   \n");
    else if (wfn_type_ == "CD-OMP2" && orb_opt_ == "FALSE") fprintf(outfile,"                       CD-MP2   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya\n") ; 
-   fprintf(outfile,"              Latest Revision Jan 17, 2014\n") ;
+   fprintf(outfile,"              Latest Revision July 25, 2014\n") ;
+   fprintf(outfile,"\n");
+   fprintf(outfile," ============================================================================== \n");
+   fprintf(outfile," ============================================================================== \n");
+   fprintf(outfile," ============================================================================== \n");
+   fprintf(outfile,"\n");
+   fflush(outfile);
+
+}//
+
+void DFOCC::title_grad()
+{
+   fprintf(outfile,"\n");
+   fprintf(outfile," ============================================================================== \n");
+   fprintf(outfile," ============================================================================== \n");
+   fprintf(outfile," ============================================================================== \n");
+   fprintf(outfile,"\n");
+   fprintf(outfile,"                         DFGRAD   \n");
+   fprintf(outfile,"            A General Analytic Gradients Code   \n");
+   fprintf(outfile,"               for Density-Fitted Methods       \n");
+   fprintf(outfile,"                   by Ugur Bozkaya\n") ; 
+   fprintf(outfile,"              Latest Revision July 02, 2014\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");

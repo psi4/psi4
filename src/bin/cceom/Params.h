@@ -47,6 +47,7 @@ struct Params {
   int t3_Ws_incore;
   int nthreads;
   int newtrips;
+  int overlap; // check for overlaps between current wfn set and older set stored on disk
 };
 
 struct Eom_params {

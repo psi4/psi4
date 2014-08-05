@@ -60,6 +60,9 @@ void OCCWave::coord_grad()
           effective_gfock();
       }
 
+     // OEPROP
+     if (oeprop_ == "TRUE") oeprop();
+
       dump_ints();
       fprintf(outfile,"\tWriting particle density matrices and GFM to disk...\n");
       fflush(outfile);
@@ -1885,6 +1888,46 @@ void OCCWave::effective_gfock()
  }// else if (reference_ == "UNRESTRICTED") 
 
 }// end of effective_gfock 
+
+//=========================
+// OEPROP
+//=========================
+void OCCWave::oeprop()
+{ 
+    fprintf(outfile,"\tComputing one-electron properties...\n");  
+    fflush(outfile);
+
+    //SharedMatrix Da_ = SharedMatrix(new Matrix("MO-basis alpha OPDM", nmo_, nmo_));
+    //SharedMatrix Db_ = SharedMatrix(new Matrix("MO-basis beta OPDM", nmo_, nmo_));
+    SharedMatrix Da_ = SharedMatrix(new Matrix("MO-basis alpha OPDM", nirrep_, nmopi_, nmopi_));
+    SharedMatrix Db_ = SharedMatrix(new Matrix("MO-basis beta OPDM", nirrep_, nmopi_, nmopi_));
+    if (reference_ == "RESTRICTED") {
+        Da_->copy(g1symm);
+        Da_->scale(0.5);
+        Db_->copy(Da_);
+    }
+
+    else if (reference_ == "UNRESTRICTED") {
+        Da_->copy(g1symmA);
+        Db_->copy(g1symmB);
+    }
+
+    // Compute oeprop
+    boost::shared_ptr<OEProp> oe(new OEProp());
+    oe->set_Da_mo(Da_);
+    if (reference_ == "UNRESTRICTED") oe->set_Db_mo(Db_);
+    oe->add("DIPOLE");
+    oe->add("QUADRUPOLE");
+    oe->add("MULLIKEN_CHARGES");
+    oe->add("NO_OCCUPATIONS");
+    oe->set_title("DF-OMP2");
+    oe->compute();
+    Da_.reset();
+    Db_.reset();
+
+} // end oeprop
+
+
 }} // End Namespaces
 
 

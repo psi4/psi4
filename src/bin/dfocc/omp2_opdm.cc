@@ -41,8 +41,13 @@ if (reference_ == "RESTRICTED") {
     // Tensors 
     T = SharedTensor2d(new Tensor2d("T2_1(ia,jb)", naoccA, navirA, naoccA, navirA));
     U = SharedTensor2d(new Tensor2d("2*T2_1(ia,jb) - T2_1(ib,ja)", naoccA, navirA, naoccA, navirA));
-    T->read(psio_, PSIF_DFOCC_AMPS);
-    U->read(psio_, PSIF_DFOCC_AMPS);
+    if (orb_opt_ == "FALSE" && mp2_amp_type_ == "DIRECT") {
+        u2_rmp2_direct(T, U);
+    }
+    else {
+        T->read_symm(psio_, PSIF_DFOCC_AMPS);
+        U->read_symm(psio_, PSIF_DFOCC_AMPS);
+    }
 
     // G_ij = \sum_{m,e,f} T'(ie,mf) U'(je,mf)    
     GijA->contract442(1, 1, T, U, 1.0, 0.0);
@@ -77,81 +82,65 @@ if (reference_ == "RESTRICTED") {
 
 else if (reference_ == "UNRESTRICTED") {
     // tensors
-    SharedTensor2d t2;
-    SharedTensor2d l2;
+    SharedTensor2d t2, l2, l1A, l1B;
 
     // G_IJ = 1/2 \sum_{M,E,F} t_IM^EF t_JM^EF
     t2 = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
     l2 = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
-    t2->read(psio_, PSIF_DFOCC_AMPS);
-    l2->read(psio_, PSIF_DFOCC_AMPS);
+    if (orb_opt_ == "FALSE" && mp2_amp_type_ == "DIRECT") t2AA_ump2_direct(t2);
+    else t2->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
+    l2->copy(t2);
     GijA->contract442(1, 1, t2, l2, 0.5, 0.0);
+    // G_AB = -1/2\sum_{M,N,F} t_MN^FA t_MN^FB
+    GabA->contract442(4, 4, t2, l2, -0.5, 0.0);
     t2.reset();
     l2.reset();
 
     // G_IJ = \sum_{m,E,f} t_Im^Ef t_Jm^Ef
     t2 = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
     l2 = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
-    t2->read(psio_, PSIF_DFOCC_AMPS);
-    l2->read(psio_, PSIF_DFOCC_AMPS);
+    if (orb_opt_ == "FALSE" && mp2_amp_type_ == "DIRECT") t2AB_ump2_direct(t2);
+    else t2->read(psio_, PSIF_DFOCC_AMPS);
+    l2->copy(t2);
     GijA->contract442(1, 1, t2, l2, 1.0, 1.0);
+    // G_ij = \sum_{M,e,F} t_Mi^Fe t_Mj^Fe
+    GijB->contract442(2, 2, t2, l2, 1.0, 0.0);
+    // G_AB += -\sum_{M,n,f} t_Mn^Af t_Mn^Bf
+    GabA->contract442(3, 3, t2, l2, -1.0, 1.0);
+    // G_ab += -\sum_{m,N,F} t_Mn^Fa t_Mn^Fb
+    GabB->contract442(4, 4, t2, l2, -1.0, 0.0);
     t2.reset();
     l2.reset();
 
     // G_ij = 1/2 \sum_{m,e,f} t_im^ef t_jm^ef
     t2 = SharedTensor2d(new Tensor2d("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
     l2 = SharedTensor2d(new Tensor2d("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
-    t2->read(psio_, PSIF_DFOCC_AMPS);
-    l2->read(psio_, PSIF_DFOCC_AMPS);
-    GijB->contract442(1, 1, t2, l2, 0.5, 0.0);
-    t2.reset();
-    l2.reset();
-
-    // G_ij = \sum_{M,e,F} t_Mi^Fe t_Mj^Fe
-    t2 = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
-    l2 = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
-    t2->read(psio_, PSIF_DFOCC_AMPS);
-    l2->read(psio_, PSIF_DFOCC_AMPS);
-    GijB->contract442(2, 2, t2, l2, 1.0, 1.0);
-    t2.reset();
-    l2.reset();
-
-    // G_AB = -1/2\sum_{M,N,F} t_MN^FA t_MN^FB
-    t2 = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
-    l2 = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
-    t2->read(psio_, PSIF_DFOCC_AMPS);
-    l2->read(psio_, PSIF_DFOCC_AMPS);
-    GabA->contract442(4, 4, t2, l2, -0.5, 0.0);
-    t2.reset();
-    l2.reset();
-
-    // G_AB += -\sum_{M,n,f} t_Mn^Af t_Mn^Bf
-    t2 = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
-    l2 = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
-    t2->read(psio_, PSIF_DFOCC_AMPS);
-    l2->read(psio_, PSIF_DFOCC_AMPS);
-    GabA->contract442(3, 3, t2, l2, -1.0, 1.0);
-    t2.reset();
-    l2.reset();
-
+    if (orb_opt_ == "FALSE" && mp2_amp_type_ == "DIRECT") t2BB_ump2_direct(t2);
+    else t2->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
+    l2->copy(t2);
+    GijB->contract442(1, 1, t2, l2, 0.5, 1.0);
     // G_ab = -1/2\sum_{m,n,f} t_mn^fa t_mn^fb
-    t2 = SharedTensor2d(new Tensor2d("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
-    l2 = SharedTensor2d(new Tensor2d("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
-    t2->read(psio_, PSIF_DFOCC_AMPS);
-    l2->read(psio_, PSIF_DFOCC_AMPS);
-    GabB->contract442(4, 4, t2, l2, -0.5, 0.0);
+    GabB->contract442(4, 4, t2, l2, -0.5, 1.0);
     t2.reset();
     l2.reset();
 
-    // G_ab += -\sum_{m,N,F} t_Mn^Fa t_Mn^Fb
-    t2 = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
-    l2 = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
-    t2->read(psio_, PSIF_DFOCC_AMPS);
-    l2->read(psio_, PSIF_DFOCC_AMPS);
-    GabB->contract442(4, 4, t2, l2, -1.0, 1.0);
-    t2.reset();
-    l2.reset();
     //fprintf(outfile,"\tI am here.\n"); fflush(outfile);
+
+   if (reference == "ROHF" && orb_opt_ == "FALSE") {
+       // G_ia = t_i^a
+       GiaA->copy(t1A);
+       GiaB->copy(t1B);
+       GaiA = GiaA->transpose();
+       GaiB = GiaB->transpose();
+
+       // G_ij -= \sum_{e} T_i^e L_e^i
+       GijA->gemm(false, true, t1A, t1A, -1.0, 1.0);
+       GijB->gemm(false, true, t1B, t1B, -1.0, 1.0);
+
+       // G_ab += \sum_{m} L_a^m T_m^b
+       GabA->gemm(true, false, t1A, t1A, 1.0, 1.0);
+       GabB->gemm(true, false, t1B, t1B, 1.0, 1.0);
+   }
 
     // Build G1c_oo and G1c_vv
     G1c_ooA->set_act_oo(nfrzc, naoccA, GijA);
@@ -163,11 +152,25 @@ else if (reference_ == "UNRESTRICTED") {
     G1c_vvA->scale(-1.0);
     G1c_vvB->scale(-1.0);
 
+    if (reference == "ROHF" && orb_opt_ == "FALSE") {
+        G1c_ovA->set_act_ov(nfrzc, GiaA);
+        G1c_ovB->set_act_ov(nfrzc, GiaB);
+        G1c_voA->set_act_vo(nfrzc, GaiA);
+        G1c_voB->set_act_vo(nfrzc, GaiB);
+    }
+
     // Build G1c
     G1cA->set_oo(G1c_ooA);
     G1cA->set_vv(noccA, G1c_vvA);
     G1cB->set_oo(G1c_ooB);
     G1cB->set_vv(noccB, G1c_vvB);
+
+    if (reference == "ROHF" && orb_opt_ == "FALSE") {
+        G1cA->set_ov(G1c_ovA);
+        G1cB->set_ov(G1c_ovB);
+        G1cA->set_vo(G1c_voA);
+        G1cB->set_vo(G1c_voB);
+    }
 
     // Build G1
     G1A->copy(G1cA);

@@ -302,16 +302,41 @@ int FRAG::add_auxiliary_bonds(void) {
     for (int b=a+1; b<natom; ++b) {
       if (connectivity[a][b]) continue; // already joined by regular bond
 
+      // Omit auxiliary bonds involving H atoms
+      if (Zint[a] == 1 || Zint[b] == 1) continue;
+
       double R = v3d_dist(geom[a], geom[b]);
       double Rcov = (cov_radii[Zint[a]] + cov_radii[Zint[b]])/_bohr2angstroms;
 
-      if (R < 2.5 * Rcov) {
-        STRE *one_stre = new STRE(a,b);
-        if (!present(one_stre)) {
-          intcos.push_back(one_stre);
-          ++nadded;
+      if (R < Rcov * Opt_params.auxiliary_bond_factor) {
+
+        bool omit = false;
+        // Omit auxiliary bonds between a and b, if a-c-b
+        for (int c=0; c<natom; ++c)
+          if (c != a && c != b)
+            if (connectivity[a][c] && connectivity[b][c])
+              omit = true; 
+
+        // Omit auxiliary bonds between a and b, if a-c-d-b
+        for (int c=0; c<natom; ++c)
+          if (c != a && c != b)
+            if (connectivity[c][a])
+              for (int d=0; d<natom; ++d)
+                if (d != a && d != b && d !=c)
+                  if (connectivity[d][c] && connectivity[d][b])
+                    omit = true;
+        
+        if (!omit) {
+          STRE *one_stre = new STRE(a,b);
+          if (!present(one_stre)) {
+            intcos.push_back(one_stre);
+            ++nadded;
+          }
+          else delete one_stre;
         }
-        else delete one_stre;
+        else {
+          fprintf(outfile,"\tOmitting auxiliary bond %d %d bc of connectivity.\n", a+1, b+1);
+        }
       }
     }
   }

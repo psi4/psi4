@@ -34,7 +34,7 @@ namespace psi{ namespace dfoccwave{
 //======================================================================             
 void DFOCC::omp2_manager()
 {
-        time4grad = 0;// means i will not compute the gradient
+        time4grad = 0;// means I will not compute the gradient
 	mo_optimized = 0;// means MOs are not optimized
 	orbs_already_opt = 0;// means orbitals are not optimized yet.
 	orbs_already_sc = 0;// menas orbitals are not semicanonical yet.
@@ -80,6 +80,9 @@ void DFOCC::omp2_manager()
         }// if (conv_tei_type == "DISK")  
            fock();
 
+        // QCHF
+        if (qchf_ == "TRUE") qchf();
+
         // ROHF REF
         if (reference == "ROHF") t1_1st_sc();
 	t2_1st_sc();
@@ -124,6 +127,8 @@ void DFOCC::omp2_manager()
         Process::environment.globals["DF-MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         Process::environment.globals["DF-MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
+        // S2
+        if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED") s2_response();
 
 	omp2_opdm();
 	omp2_tpdm();
@@ -137,16 +142,19 @@ void DFOCC::omp2_manager()
 	mograd();
         occ_iterations();
 	
-        if (rms_wog <= tol_grad && fabs(DE) >= tol_Eod) {
+        // main if
+        if (rms_wog <= tol_grad && fabs(DE) >= tol_Eod && regularization == "FALSE") {
            orbs_already_opt = 1;
 	   if (conver == 1) fprintf(outfile,"\n\tOrbitals are optimized now.\n");
 	   else if (conver == 0) { 
                     fprintf(outfile,"\n\tMAX MOGRAD did NOT converged, but RMS MOGRAD converged!!!\n");
 	            fprintf(outfile,"\tI will consider the present orbitals as optimized.\n");
            }
-	   fprintf(outfile,"\tSwitching to the standard DF-MP2 computation after semicanonicalization of the MOs... \n");
+	   fprintf(outfile,"\tTransforming MOs to the semicanonical basis... \n");
 	   fflush(outfile);
 	   semi_canonic();
+	   fprintf(outfile,"\tSwitching to the standard DF-MP2 computation... \n");
+	   fflush(outfile);
            trans_corr();
         if (conv_tei_type == "DISK") { 
            tei_iajb_chem();
@@ -184,7 +192,14 @@ void DFOCC::omp2_manager()
                gfock_oo();
                gfock_vv();
            }
-        } 
+        }// end main if 
+
+        else if (rms_wog <= tol_grad && fabs(DE) >= tol_Eod && regularization == "TRUE") {
+	   fprintf(outfile,"\tOrbital gradient converged, but energy did not... \n");
+	   fprintf(outfile,"\tA tighter rms_mograd_convergence tolerance is recommended... \n");
+	   fflush(outfile);
+           throw PSIEXCEPTION("A tighter rms_mograd_convergence tolerance is recommended.");
+        }
 
   if (conver == 1) {
         ref_energy();
@@ -265,16 +280,15 @@ void DFOCC::omp2_manager()
 	//if (natorb == "TRUE") nbo();
 	//if (occ_orb_energy == "TRUE") semi_canonic(); 
 
+        // OEPROP
+        if (oeprop_ == "TRUE") oeprop();
+
+        // S2
+        if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED") s2_response();
+        //if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED") s2_lagrangian();
+
         // Compute Analytic Gradients
-        /*
-        if (dertype == "FIRST") {
-	    fprintf(outfile,"\tAnalytic gradient computation is starting...\n");
-	    fflush(outfile);
-            coord_grad();
-	    fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
-	    fflush(outfile);
-        }
-        */
+        if (dertype == "FIRST") dfgrad();
 
   }// end if (conver == 1)
 }// end omp2_manager 
@@ -288,13 +302,31 @@ void DFOCC::mp2_manager()
 	mo_optimized = 0;// means MOs are not optimized
         timer_on("DF CC Integrals");
         df_corr();
-        if (dertype == "NONE" && ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE") {
+        if (dertype == "NONE" && oeprop_ == "FALSE" && ekt_ip_ == "FALSE" && comput_s2_ == "FALSE" && qchf_ == "FALSE") {
             trans_mp2();
         }
-        else trans_corr();
+        else {
+            trans_corr();
+            df_ref();
+            trans_ref();
+            fprintf(outfile,"\tNumber of basis functions in the DF-HF basis: %3d\n", nQ_ref);
+
+            // memalloc for density intermediates
+            Jc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF J_Q", nQ_ref));
+            g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
+            g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
+            g1Q = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1_Q", nQ));
+            g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
+            if (reference == "ROHF") {
+                g1Qp = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1p_Q", nQ_ref));
+            }
+        }
         fprintf(outfile,"\tNumber of basis functions in the DF-CC basis: %3d\n", nQ);
         fflush(outfile);
         timer_off("DF CC Integrals");
+
+        // QCHF
+        if (qchf_ == "TRUE") qchf();
 
         // ROHF REF
         //fprintf(outfile,"\tI am here.\n"); fflush(outfile);
@@ -307,12 +339,14 @@ void DFOCC::mp2_manager()
                 tei_ijab_anti_symm();
             }
         }// if (conv_tei_type == "DISK")  
-	//t2_1st_sc();
-        //mp2_energy();
-        if (dertype == "NONE" && ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE") mp2_direct();
+        if (dertype == "NONE" && oeprop_ == "FALSE" && ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE" && comput_s2_ == "FALSE") mp2_direct();
         else {
-	     t2_1st_sc();
-             mp2_energy();
+             fock();
+             if (mp2_amp_type_ == "DIRECT") mp2_direct();
+             else { 
+	         t2_1st_sc();
+                 mp2_energy();
+             }
         }
 	Emp2L=Emp2;
         EcorrL=Emp2L-Escf;
@@ -354,24 +388,23 @@ void DFOCC::mp2_manager()
         Process::environment.globals["DF-MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         Process::environment.globals["DF-MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
-        /*
-        // Compute Analytic Gradients
-        if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
-	    fprintf(outfile,"\tAnalytic gradient computation is starting...\n");
-	    fprintf(outfile,"\tComputing response density matrices...\n");
-	    fflush(outfile);
-	    omp2_response_pdms();
-            fprintf(outfile,"\tComputing off-diagonal blocks of GFM...\n");
-            fflush(outfile);
-	    gfock();
-            fprintf(outfile,"\tForming independent-pairs...\n");
-            fflush(outfile);
-	    idp2();
-            fprintf(outfile,"\tComputing orbital gradient...\n");
-            fflush(outfile);
-	    mograd();
-            coord_grad();
+        // S2
+        //if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED" && dertype == "NONE") s2_response();
+        if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED") {
+            if (reference == "UHF" || reference == "UKS") s2_response();
+        }
 
+        // Compute Analytic Gradients
+        if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
+            fprintf(outfile,"\n\tComputing unrelaxed response density matrices...\n");
+            fflush(outfile);
+ 	    omp2_opdm();
+	    omp2_tpdm();
+            prepare4grad();
+            if (oeprop_ == "TRUE") oeprop();
+            if (dertype == "FIRST") dfgrad();
+
+            /*
             if (ekt_ip_ == "TRUE" && ekt_ea_ == "TRUE") {
                 ekt_ip();
                 ekt_ea();
@@ -384,13 +417,8 @@ void DFOCC::mp2_manager()
             else if (ekt_ip_ == "FALSE" && ekt_ea_ == "TRUE") {
                 ekt_ea();
             }
-
-            else if (ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE") {
-	        fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
-	        fflush(outfile);
-            }
+            */
         }// if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") 
-        */
 
 }// end mp2_manager 
 

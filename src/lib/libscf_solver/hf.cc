@@ -185,12 +185,6 @@ void HF::common_init()
             soccpi_[i] = 0;
     }
 
-    if (input_socc_ || input_docc_) {
-        for (int h = 0; h < nirrep_; h++) {
-            nalphapi_[h] = doccpi_[h] + soccpi_[h];
-            nbetapi_[h]  = doccpi_[h];
-        }
-    }
 
 
     // Read information from checkpoint
@@ -246,6 +240,45 @@ void HF::common_init()
 
     nbeta_  = (nelectron_ - multiplicity_ + 1)/2;
     nalpha_ = nbeta_ + multiplicity_ - 1;
+
+    if (input_socc_ || input_docc_) {
+        for (int h = 0; h < nirrep_; h++) {
+            nalphapi_[h] = doccpi_[h] + soccpi_[h];
+            nbetapi_[h]  = doccpi_[h];
+        }
+    }
+
+    // Check if it is a broken symmetry solution
+    broken_symmetry_ = false;
+    int socc = 0;
+    for (int h = 0; h < nirrep_; h++) {
+        socc += soccpi_[h];
+    }
+
+    if (multiplicity_ == 1 && socc == 2) {
+        // Set up occupation for the broken symmetry solution
+        fprintf(outfile, "  Broken symmetry solution detected... \n"); //TEST
+        broken_symmetry_ = true;
+        int socc_count = 0;
+        nalphapi_ = doccpi_;
+        nbetapi_  = doccpi_;
+
+        for (int h = 0; h < nirrep_; h++) {
+            for (int i = 0; i<soccpi_[h]; i++) {
+                socc_count++;
+                if (socc_count == 1) {
+                    nalphapi_[h]++;
+                }
+                if (socc_count == 2) {
+                    nbetapi_[h]++;
+                }
+            }
+        }
+        if (print_ > 2) {
+            nalphapi_.print();
+            nbetapi_.print();
+        }
+    }
 
     perturb_h_ = false;
     perturb_h_ = options_.get_bool("PERTURB_H");
@@ -459,9 +492,11 @@ void HF::find_occupation()
             old_docc[h] = doccpi_[h];
         }
 
-        for (int h = 0; h < nirrep_; ++h) {
-            soccpi_[h] = std::abs(nalphapi_[h] - nbetapi_[h]);
-            doccpi_[h] = std::min(nalphapi_[h] , nbetapi_[h]);
+        if(!input_docc_ && !input_socc_){
+            for (int h = 0; h < nirrep_; ++h) {
+                soccpi_[h] = std::abs(nalphapi_[h] - nbetapi_[h]);
+                doccpi_[h] = std::min(nalphapi_[h] , nbetapi_[h]);
+            }
         }
 
         bool occ_changed = false;
@@ -1267,41 +1302,121 @@ void HF::load_orbitals()
         throw PSIEXCEPTION("SCF::load_orbitals: Projection of orbitals between different symmetries is not currently supported");
 
     psio_->read_entry(PSIF_SCF_MOS,"NSOPI",(char *) (old_nsopi),nirrep_*sizeof(int));
+
+    // Save current alpha and beta occupation vectors
+    Dimension nalphapi_current (nirrep_, "Current number of alpha electrons per irrep");
+    Dimension nbetapi_current (nirrep_, "Current number of beta electrons per irrep");
+    nalphapi_current = nalphapi_;
+    nbetapi_current = nbetapi_;
+
+    // Read in guess alpha and beta occupation vectors
     psio_->read_entry(PSIF_SCF_MOS,"NALPHAPI",(char *) &(nalphapi_[0]),nirrep_*sizeof(int));
     psio_->read_entry(PSIF_SCF_MOS,"NBETAPI",(char *) &(nbetapi_[0]),nirrep_*sizeof(int));
 
+    // Check if guess is the broken symmetry solution
+    int nalpha_guess = 0;
+    int nbeta_guess = 0;
     for (int h = 0; h < nirrep_; h++) {
-        doccpi_[h] = nbetapi_[h];
-        soccpi_[h] = nalphapi_[h] - nbetapi_[h];
+        nalpha_guess += nalphapi_[h];
+        nbeta_guess += nbetapi_[h];
     }
 
-    SharedMatrix Ctemp_a(new Matrix("ALPHA MOS", nirrep_, old_nsopi, nalphapi_));
-    Ctemp_a->load(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
-    SharedMatrix Ca;
-    if (basisname != options_.get_str("BASIS")) {
-        Ca = BasisProjection(Ctemp_a, nalphapi_, dual_basis, basisset_);
-    } else {
-        Ca = Ctemp_a;
-    }
-    for (int h = 0; h < nirrep_; h++)
-        for (int m = 0; m<nsopi_[h]; m++)
-            for (int i = 0; i<nalphapi_[h]; i++)
-                Ca_->set(h,m,i,Ca->get(h,m,i));
+    bool guess_broken_symmetry = false;
+    if (nalpha_guess == nbeta_guess && multiplicity_ == 3) guess_broken_symmetry = true;
 
-    SharedMatrix Ctemp_b(new Matrix("BETA MOS", nirrep_, old_nsopi, nbetapi_));
-    Ctemp_b->load(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
-    SharedMatrix Cb;
-    if (basisname != options_.get_str("BASIS")) {
-        Cb = BasisProjection(Ctemp_b, nbetapi_, dual_basis, basisset_);
-    } else {
-        Cb = Ctemp_b;
-    }
-    for (int h = 0; h < nirrep_; h++)
-        for (int m = 0; m<nsopi_[h]; m++)
-            for (int i = 0; i<nbetapi_[h]; i++)
-                Cb_->set(h,m,i,Cb->get(h,m,i));
+    if (!broken_symmetry_) {
+        if (!guess_broken_symmetry) {
+            fprintf(outfile, "  Recomputing DOCC and SOCC from number of alpha and beta electrons from previous calculation.\n");
+            for (int h = 0; h < nirrep_; h++) {
+                doccpi_[h] = std::min(nalphapi_[h] , nbetapi_[h]);
+                soccpi_[h] = std::abs(nalphapi_[h] - nbetapi_[h]);
+            }
+            print_occupation();
 
-    psio_->close(PSIF_SCF_MOS,1);
+            SharedMatrix Ctemp_a(new Matrix("ALPHA MOS", nirrep_, old_nsopi, nalphapi_));
+            Ctemp_a->load(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
+            SharedMatrix Ca;
+            if (basisname != options_.get_str("BASIS")) {
+                Ca = BasisProjection(Ctemp_a, nalphapi_, dual_basis, basisset_);
+            } else {
+                Ca = Ctemp_a;
+            }
+            for (int h = 0; h < nirrep_; h++)
+                for (int m = 0; m<nsopi_[h]; m++)
+                    for (int i = 0; i<nalphapi_[h]; i++)
+                        Ca_->set(h,m,i,Ca->get(h,m,i));
+
+            SharedMatrix Ctemp_b(new Matrix("BETA MOS", nirrep_, old_nsopi, nbetapi_));
+            Ctemp_b->load(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
+            SharedMatrix Cb;
+            if (basisname != options_.get_str("BASIS")) {
+                Cb = BasisProjection(Ctemp_b, nbetapi_, dual_basis, basisset_);
+            } else {
+                Cb = Ctemp_b;
+            }
+            for (int h = 0; h < nirrep_; h++)
+                for (int m = 0; m<nsopi_[h]; m++)
+                    for (int i = 0; i<nbetapi_[h]; i++)
+                        Cb_->set(h,m,i,Cb->get(h,m,i));
+        }
+        // If it's a triplet and there is a broken symmetry singlet guess - ignore the guess
+        else{
+            // Restore nalphapi and nbetapi requested by the user
+            nalphapi_ = nalphapi_current;
+            nbetapi_ = nbetapi_current;
+        }
+    }
+    // if it's a broken symmetry solution
+    else {
+
+        SharedMatrix Ctemp_a(new Matrix("ALPHA MOS", nirrep_, old_nsopi, nalphapi_));
+        Ctemp_a->load(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
+        SharedMatrix Ca;
+        if (basisname != options_.get_str("BASIS")) {
+            Ca = BasisProjection(Ctemp_a, nalphapi_, dual_basis, basisset_);
+        } else {
+            Ca = Ctemp_a;
+        }
+
+        SharedMatrix Ctemp_b(new Matrix("BETA MOS", nirrep_, old_nsopi, nbetapi_));
+        Ctemp_b->load(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
+        SharedMatrix Cb;
+        if (basisname != options_.get_str("BASIS")) {
+            Cb = BasisProjection(Ctemp_b, nbetapi_, dual_basis, basisset_);
+        } else {
+            Cb = Ctemp_b;
+        }
+
+        // Restore nalphapi and nbetapi requested by the user
+        nalphapi_ = nalphapi_current;
+        nbetapi_ = nbetapi_current;
+
+        int socc_count = 0;
+        for (int h = 0; h < nirrep_; h++) {
+            // Copy doubly occupied orbitals into the orbital space for alpha and beta
+            for (int i = 0; i<doccpi_[h]; i++) {
+                for (int m = 0; m<nsopi_[h]; m++) {
+                    Ca_->set(h,m,i,Ca->get(h,m,i));
+                    Cb_->set(h,m,i,Cb->get(h,m,i));
+                }
+            }
+            // Copy singly occupied orbitals into the appropriate alpha and beta orbital spaces
+            for (int i = doccpi_[h]; i<(doccpi_[h]+soccpi_[h]); i++) {
+                socc_count++;
+                if (socc_count == 1) {
+                    for (int m = 0; m<nsopi_[h]; m++) {
+                        Ca_->set(h,m,doccpi_[h],Ca->get(h,m,i));
+                    }
+                }
+                if (socc_count == 2) {
+                    for (int m = 0; m<nsopi_[h]; m++) {
+                        Cb_->set(h,m,doccpi_[h],Ca->get(h,m,i));
+                    }
+                }
+            }
+        }
+    }
+    psio_->close(PSIF_SCF_MOS,1);    
     delete[] basisnamec;
 }
 

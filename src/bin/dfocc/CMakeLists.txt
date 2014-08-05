@@ -15,6 +15,12 @@ dfocc.cc                  main.cc                   t2_1st_scs_gen.cc
 diagonal_mohess_oo.cc     manager.cc                t2_1st_scs_sc.cc
 diagonal_mohess_vo.cc     manager_cd.cc             tensors.cc
 diis.cc                   mograd.cc                 update_mo.cc
+combine_ref_sep_tpdm.cc   tpdm_tilde.cc             back_trans.cc
+oei_grad.cc               tei_grad_ref.cc           tei_grad_corr.cc
+z_vector_pcg.cc           z_vector.cc               prepare4grad.cc
+dfgrad.cc                 s2_response.cc            z_vector_cg.cc
+t2_mp2_direct.cc          effective_mograd.cc       qchf.cc
+update_hfmo.cc
 )
 add_library(dfocc ${SRC})
 add_dependencies(dfocc mints)

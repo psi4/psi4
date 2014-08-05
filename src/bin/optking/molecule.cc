@@ -96,7 +96,7 @@ void MOLECULE::forces(void) {
 
   // B (u f_x)
   B = compute_B();
-  if (Opt_params.print_lvl >= 2) {
+  if (Opt_params.print_lvl >= 3) {
     fprintf(outfile, "B matrix\n");
     print_matrix(outfile, B, Nintco, Ncart);
   }
@@ -284,7 +284,7 @@ void MOLECULE::project_f_and_H(void) {
     for (int j=0; j<i; ++j)
       H[j][i] = H[i][j] = H[i][j] + 1000 * (1.0 - P[i][j]);*/
 
-  if (Opt_params.print_lvl >= 2) {
+  if (Opt_params.print_lvl >= 3) {
     fprintf(outfile,"Projected (PHP) Hessian matrix\n");
     if (Opt_params.efp_fragments)
       fprintf(outfile,"EFP external coordinates are not projected.\n");
@@ -292,6 +292,63 @@ void MOLECULE::project_f_and_H(void) {
   }
   free_matrix(P);
   fflush(outfile);
+}
+
+// project redundancies out of displacement vector; so far, doesn't seem to make much difference
+void MOLECULE::project_dq(double *dq) {
+  int Nintco = g_nintco();
+  int Ncart = 3*g_natom();
+
+  double *dq_orig; //only for printing
+  if (Opt_params.print_lvl >=2) {
+    dq_orig = init_array(Nintco);
+    array_copy(dq, dq_orig, g_nintco());
+  }
+
+  double **B = compute_B();
+
+  //double **G = compute_G(true);
+  double **G = init_matrix(Ncart, Ncart);
+  opt_matrix_mult(B, 1, B, 0, G, 0, Ncart, Nintco, Ncart, 0);
+
+/*  will need fixed if this function ever helps
+#if defined (OPTKING_PACKAGE_QCHEM)
+  // Put 1's on diagonal for EFP coordinates
+  for (int I=0; I<efp_fragments.size(); ++I)
+    for (int i=0; i<efp_fragments[i]->g_nintco(); ++i)
+      G[g_efp_fragment_intco_offset(I) + i][g_efp_fragment_intco_offset(I) + i] = 1.0;
+#endif
+*/
+
+  // B dx = dq
+  // B^t B dx = B^t dq
+  // dx = (B^t B)^-1 B^t dq
+  double **G_inv = symm_matrix_inv(G, Ncart, 1);
+  free_matrix(G);
+
+  double **B_inv = init_matrix(Ncart, Nintco);
+  opt_matrix_mult(G_inv, 0, B, 1, B_inv, 0, Ncart, Ncart, Nintco, 0);
+  free_matrix(G_inv);
+
+  double **P = init_matrix(Nintco, Nintco);
+  opt_matrix_mult(B, 0, B_inv, 0, P, 0, Nintco, Ncart, Nintco, 0);
+  free_matrix(B);
+  free_matrix(B_inv);
+
+  double * temp_arr = init_array(Nintco);
+  opt_matrix_mult(P, 0, &dq, 1, &temp_arr, 1, Nintco, Nintco, 1, 0);
+  array_copy(temp_arr, dq, g_nintco());
+  free_array(temp_arr);
+  free_matrix(P);
+
+  if (Opt_params.print_lvl >=2) {
+    fprintf(outfile,"Projection of redundancies out of step:\n");
+    fprintf(outfile,"\tOriginal dq     Projected dq     Difference\n");
+    for (int i=0; i<Nintco; ++i)
+      fprintf(outfile,"\t%12.6lf    %12.6lf   %12.6lf\n", dq_orig[i], dq[i], dq[i]-dq_orig[i]);
+    free_array(dq_orig);
+    fflush(outfile);
+  }
 }
 
 void MOLECULE::print_geom(void) {
@@ -307,13 +364,14 @@ void MOLECULE::print_geom(void) {
 
 void MOLECULE::apply_intrafragment_step_limit(double * & dq) {
   int i, f;
+  int dim = g_nintco();
   double scale = 1.0;
   double limit = Opt_params.intrafragment_step_limit;
 
   for (f=0; f<fragments.size(); ++f)
     for (i=0; i<fragments[f]->g_nintco(); ++i)
-      if (scale * fabs(dq[g_intco_offset(f)+i]) > limit)
-        scale = limit / fabs(dq[g_intco_offset(f)+i]);
+      if ((scale * sqrt(array_dot(dq,dq,dim)))> limit)
+        scale = limit / sqrt(array_dot(dq,dq,dim));
 
   if (scale != 1.0) {
     fprintf(outfile,"\tChange in coordinate exceeds step limit of %10.5lf.\n", limit);
@@ -341,12 +399,14 @@ void MOLECULE::H_guess(void) const {
     fprintf(outfile,"\tGenerating empirical Hessian (Fischer & Almlof '92) for each fragment.\n");
   else if (Opt_params.intrafragment_H == OPT_PARAMS::SIMPLE)
     fprintf(outfile,"\tGenerating simple diagonal Hessian (.5 .2 .1) for each fragment.\n");
-  else if (Opt_params.intrafragment_H == OPT_PARAMS::LINDH)
+  else if (Opt_params.intrafragment_H == OPT_PARAMS::LINDH_SIMPLE)
     fprintf(outfile,"\tGenerating diagonal Hessian from Lindh (1995) for each fragment.\n");
+  else if (Opt_params.intrafragment_H == OPT_PARAMS::LINDH)
+    fprintf(outfile,"\tUsing model Hessian from Lindh (1995).\n");
 
   if (Opt_params.intrafragment_H == OPT_PARAMS::SCHLEGEL ||
       Opt_params.intrafragment_H == OPT_PARAMS::FISCHER  ||
-      Opt_params.intrafragment_H == OPT_PARAMS::LINDH  ||
+      Opt_params.intrafragment_H == OPT_PARAMS::LINDH_SIMPLE  ||
       Opt_params.intrafragment_H == OPT_PARAMS::SIMPLE) {
     for (int f=0; f<fragments.size(); ++f) {
       double **H_frag = fragments[f]->H_guess();
@@ -381,17 +441,15 @@ void MOLECULE::H_guess(void) const {
     }
 #endif
   }
-/*
   else if (Opt_params.intrafragment_H == OPT_PARAMS::LINDH) {
     double **H_xyz = Lindh_guess();      // generate Lindh cartesian Hessian
     bool read_H_worked = cartesian_H_to_internals(H_xyz); // transform to internals
     // if fails, then what?  Fix later.
     free_matrix(H_xyz);
   }
-*/
 
   if (Opt_params.print_lvl >= 2) {
-    fprintf(outfile,"Initial Hessian guess\n");
+    fprintf(outfile,"\nInitial Hessian guess\n");
     print_matrix(outfile, H, g_nintco(), g_nintco());
   }
   fflush(outfile);
@@ -726,7 +784,7 @@ double ** MOLECULE::compute_constraints(void) {
     free_matrix(C_inter);
   }
 
-  if (Opt_params.print_lvl >= 2) {
+  if (Opt_params.print_lvl >= 3) {
     fprintf(outfile,"Constraint matrix\n");
     print_matrix(outfile, C, g_nintco(), g_nintco()); fflush(outfile);
   }

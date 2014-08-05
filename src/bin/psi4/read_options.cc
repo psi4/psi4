@@ -971,6 +971,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     (if set), or else by the name of the output file plus the name of
     the current molecule. -*/
     options.add_bool("MOLDEN_WRITE", false);
+    /*- If true, then repeat the specified guess procedure for the orbitals every time -
+    even during a geometry optimization. -*/
+    options.add_bool("GUESS_PERSIST", false);
 
     /*- Flag to print the molecular orbitals. -*/
     options.add_bool("PRINT_MOS", false);
@@ -1859,6 +1862,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("EOM_GUESS", "SINGLES", "SINGLES DISK INPUT");
     /*- Convert ROHF MOs to semicanonical MOs -*/
     options.add_bool("SEMICANONICAL", true);
+    /*- Report overlaps with old excited-state wave functions, if
+ * available, and store current wave functions for later use. -*/
+    options.add_bool("OVERLAP_CHECK", false);
   }
   if(name == "CCRESPONSE"|| options.read_globals()) {
      /*- MODULEDESCRIPTION Performs coupled cluster response property computations. -*/
@@ -2372,6 +2378,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("INTRAFRAG_STEP_LIMIT_MAX", 1.0);
       /*- Maximum step size in bohr or radian along an interfragment coordinate -*/
       options.add_double("INTERFRAG_STEP_LIMIT", 0.4);
+      /*- Reduce step size as necessary to ensure back-transformation of internal
+          coordinate step to cartesian coordinates. -*/
+      options.add_bool("ENSURE_BT_CONVERGENCE", false);
+      /*= Do stupid, linear scaling of internal coordinates to step limit (not RS-RFO) -*/
+      options.add_bool("SIMPLE_STEP_SCALING", false);
       /*- Set number of consecutive backward steps allowed in optimization -*/
       options.add_int("CONSECUTIVE_BACKSTEPS", 0);
       /*- Specify distances between atoms to be frozen (unchanged) -*/
@@ -2437,7 +2448,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       default (-1) is to never compute the full Hessian. -*/
       options.add_int("FULL_HESS_EVERY", -1);
       /*- Model Hessian to guess intrafragment force constants -*/
-      options.add_str("INTRAFRAG_HESS", "SCHLEGEL", "FISCHER SCHLEGEL SIMPLE LINDH");
+      options.add_str("INTRAFRAG_HESS", "SCHLEGEL", "FISCHER SCHLEGEL SIMPLE LINDH LINDH_SIMPLE");
 
       /*- SUBSECTION Fragment/Internal Coordinate Control -*/
 
@@ -2453,7 +2464,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       principal axes or fixed linear combinations of atoms. -*/
       options.add_str("INTERFRAG_MODE", "FIXED", "FIXED INTERFRAGMENT");
       /*- Do add bond coordinates at nearby atoms for non-bonded systems? -*/
-      options.add_bool("ADD_AUXILIARY_BONDS", false);
+      options.add_bool("ADD_AUXILIARY_BONDS", true);
+      /*- Re-estimate the Hessian at every step, i.e., ignore the currently stored Hessian. -*/
+      options.add_bool("H_GUESS_EVERY", false);
+      /*- This factor times standard covalent distance is used to add extra stretch coordinates. -*/
+      options.add_double("AUXILIARY_BOND_FACTOR", 2.5);
       /*- Do use $\frac{1}{R@@{AB}}$ for the stretching coordinate between fragments?
       Otherwise, use $R@@{AB}$. -*/
       options.add_bool("INTERFRAG_DIST_INV", false);
@@ -2654,6 +2669,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("RELAXED",true);
     /*- Do symmetrize the GFM and OPDM in the EKT computations?  -*/
     options.add_bool("SYMMETRIZE",true);
+    /*- Do compute one electron properties?  -*/
+    options.add_bool("OEPROP",false);
   }
   if (name == "DFOCC"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs density-fitted orbital-optimized MPn and CC computations and conventional MPn computations. -*/
@@ -2663,7 +2680,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Maximum number of iterations to determine the orbitals -*/
     options.add_int("MO_MAXITER",50);
     /*- Maximum number of preconditioned conjugate gradient iterations.  -*/
-    options.add_int("PCG_MAXITER",30);
+    options.add_int("PCG_MAXITER",50);
     /*- Number of vectors used in orbital DIIS -*/
     options.add_int("MO_DIIS_NUM_VECS",6);
     /*- Minimum number of vectors used in amplitude DIIS -*/
@@ -2708,7 +2725,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convergence criterion for residual vector of preconditioned conjugate gradient method. -*/
     options.add_double("PCG_CONVERGENCE",1e-6);
     /*- Regularization parameter -*/
-    options.add_double("REG_PARAM",0.004);
+    options.add_double("REG_PARAM",0.4);
     /*- tolerance for Cholesky decomposition of the ERI tensor -*/
     options.add_double("CHOLESKY_TOLERANCE",1.0e-4);
 
@@ -2736,6 +2753,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("CONV_TEI_TYPE","DIRECT","DIRECT DISK");
     /*- Type of PCG beta parameter (Fletcher-Reeves or Polak-Ribiere). -*/
     options.add_str("PCG_BETA_TYPE","FLETCHER_REEVES","FLETCHER_REEVES POLAK_RIBIERE");
+    /*- The algorithm that used to handle mp2 amplitudes. The DIRECT option means compute amplitudes on the fly whenever they are necessary. -*/
+    options.add_str("MP2_AMP_TYPE","DIRECT","DIRECT CONV");
 
     /*- Do compute natural orbitals? -*/
     options.add_bool("NAT_ORBS",false);
@@ -2763,6 +2782,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("REGULARIZATION",false);
     /*- Do read 3-index integrals from SCF files?  -*/
     options.add_bool("READ_SCF_3INDEX",true);
+    /*- Do compute one electron properties?  -*/
+    options.add_bool("OEPROP",false);
+    /*- Do compute <S2> for DF-OMP2/DF-MP2?  -*/
+    options.add_bool("COMPUT_S2",false);
+    /*- Do perform a QCHF computation?  -*/
+    options.add_bool("QCHF",false);
   }
   if (name == "MRCC"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/
