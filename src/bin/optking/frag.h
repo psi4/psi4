@@ -172,7 +172,7 @@ class FRAG {
   // displace fragment by dq ; forces and offset are provided for printing
   void displace(double *dq, double *fq, int atom_offset=0);
   // utility used by displace
-  void displace_util(double *dq, bool focus_on_constraints);
+  bool displace_util(double *dq, bool focus_on_constraints);
 
   double ** g_geom_pointer(void) { return geom; };           // returns pointer
   double ** g_geom(void) const;                              // returns a copy
@@ -190,7 +190,9 @@ class FRAG {
   void print_geom(FILE *fp_geom); // write cartesian geometry out for next step
 
   double ** H_guess(void);
-  double Lindh_rho(int A, int B, double RAB) const; // function to help with Lindh guess hessian
+  // function to help with Lindh guess hessian
+  double Lindh_rho(int A, int B, double RAB) const;
+  // function to help with Lindh guess hessian - original constants
   double **Lindh_guess(void);
   bool **g_connectivity(void) const;
   const bool * const * g_connectivity_pointer(void) const;

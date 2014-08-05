@@ -91,7 +91,6 @@ IntegralTransform::process_spaces()
     //                _clsdpi[h], _openpi[h], _frzcpi[h], _frzvpi[h], _mopi[h], _sopi[h]);fflush(outfile);
     //    }
 
-
     bool qt_order = (moOrdering_ == QTOrder);  // If false, we assume Pitzer below
 
     for(space = uniqueSpaces_.begin(); space != uniqueSpaces_.end(); ++space){
@@ -128,7 +127,7 @@ IntegralTransform::process_spaces()
             // This is the occupied space
             int numAOcc = 0, aOccCount = 0;
             for(int h = 0; h < nirreps_; ++h){
-                aOrbsPI[h] = clsdpi_[h] + openpi_[h] - frzcpi_[h];
+                aOrbsPI[h] = nalphapi_[h] - frzcpi_[h];
                 numAOcc += aOrbsPI[h];
             }
             aOrbSym = new int[numAOcc];
@@ -174,9 +173,9 @@ IntegralTransform::process_spaces()
             int numAVir = 0, aVirCount = 0;
             for(int h = 0; h < nirreps_; ++h){
                 if(transformationType_ == Restricted){
-                    aOrbsPI[h] = mopi_[h] - clsdpi_[h] - frzvpi_[h];
+                    aOrbsPI[h] = mopi_[h] - nalphapi_[h] - frzvpi_[h];
                 }else{
-                    aOrbsPI[h] = mopi_[h] - clsdpi_[h] - frzvpi_[h] - openpi_[h];
+                    aOrbsPI[h] = mopi_[h] - nalphapi_[h] - frzvpi_[h];
                 }
                 numAVir += aOrbsPI[h];
             }
@@ -188,9 +187,9 @@ IntegralTransform::process_spaces()
             for(int h = 0; h < nirreps_; ++h){
                 for(int n = 0; n < aOrbsPI[h]; ++n){
                     if(transformationType_ == Restricted){
-                        aPitzerCount = pitzerOffset + clsdpi_[h];
+                        aPitzerCount = pitzerOffset + nalphapi_[h];
                     }else{
-                        aPitzerCount = pitzerOffset + clsdpi_[h] + openpi_[h];
+                        aPitzerCount = pitzerOffset + nalphapi_[h];
                     }
                 }
                 for(int n = 0; n < aOrbsPI[h]; ++n){
@@ -342,7 +341,7 @@ IntegralTransform::process_spaces()
                 // This is the occupied space
                 int numBOcc = 0, bOccCount = 0;
                 for(int h = 0; h < nirreps_; ++h){
-                    bOrbsPI[h] = clsdpi_[h] - frzcpi_[h];
+                    bOrbsPI[h] = nbetapi_[h] - frzcpi_[h];
                     numBOcc += bOrbsPI[h];
                 }
                 bOrbSym = new int[numBOcc];
@@ -385,7 +384,7 @@ IntegralTransform::process_spaces()
                 // This is the virtual space
                 int numBVir = 0,bVirCount = 0;
                 for(int h = 0; h < nirreps_; ++h){
-                    bOrbsPI[h] = mopi_[h] - clsdpi_[h] - frzvpi_[h];
+                    bOrbsPI[h] = mopi_[h] - nbetapi_[h] - frzvpi_[h];
                     numBVir += bOrbsPI[h];
                 }
                 bOrbSym = new int[numBVir];
@@ -394,7 +393,7 @@ IntegralTransform::process_spaces()
                 int bPitzerCount = 0, bOrbCount = 0;
                 int pitzerOffset = 0;
                 for(int h = 0; h < nirreps_; ++h){
-                    bPitzerCount = pitzerOffset + clsdpi_[h];
+                    bPitzerCount = pitzerOffset + nbetapi_[h];
                     for(int n = 0; n < bOrbsPI[h]; ++n){
                         bIndex[bOrbCount++] = (qt_order ? bQT_[bPitzerCount] : bPitzerCount);
                         bPitzerCount++;
@@ -583,10 +582,10 @@ IntegralTransform::process_eigenvectors()
 
     // N.B. The frozen orbitals have been zeroed, if appropriate
     Dimension focc = frzcpi_;
-    Dimension aocc = clsdpi_ + openpi_ - frzcpi_;
-    Dimension bocc = clsdpi_ - frzcpi_;
-    Dimension avir = mopi_ - clsdpi_ - openpi_ - frzvpi_;
-    Dimension bvir = mopi_ - clsdpi_ - frzvpi_;
+    Dimension aocc = nalphapi_ - frzcpi_;
+    Dimension bocc = nbetapi_ - frzcpi_;
+    Dimension avir = mopi_ - nalphapi_ - frzvpi_;
+    Dimension bvir = mopi_ - nbetapi_ - frzvpi_;
     Dimension aall = mopi_ - frzcpi_ - frzvpi_;
     Dimension fvir = frzvpi_;
     Dimension ball = mopi_ - frzcpi_ - frzvpi_;
@@ -635,10 +634,10 @@ IntegralTransform::process_eigenvectors()
                 Ca = Vavir();
                 Ca->set_name("Alpha virtual orbitals");
             }else{
-                View Vavir(Ca_, sopi_, avir, zero, clsdpi_ + openpi_);
+                View Vavir(Ca_, sopi_, avir, zero, nalphapi_);
                 Ca = Vavir();
                 Ca->set_name("Alpha virtual orbitals");
-                View Vbvir(Cb_, sopi_, bvir, zero, clsdpi_);
+                View Vbvir(Cb_, sopi_, bvir, zero, nbetapi_);
                 Cb = Vbvir();
                 Cb->set_name("Beta virtual orbitals");
             }

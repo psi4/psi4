@@ -492,7 +492,7 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
 
   free_matrix(H_new);
   if (Opt_params.print_lvl >= 2) {
-    fprintf(outfile, "Updated Hessian (in au)\n");
+    fprintf(outfile,"\nUpdated Hessian (in au)\n");
     print_matrix(outfile, H, Nintco, Nintco);
   }
   return;
@@ -625,8 +625,13 @@ void OPT_DATA::write(void) {
 bool OPT_DATA::previous_step_report(void) const {
   fprintf(outfile,  "\tCurrent energy   : %20.10lf\n\n", p_Opt_data->g_energy());
 
-  if (steps.size() == 1) 
+  if (steps.size() == 1) {
+    // optking changes the intrafragment_step_limit keyword value when it changes the trust
+    // radius.  So on the first step, save the initial user-given step size so that it can be
+    // reset to the user-defined value after one molecule is optimized.
+    Opt_params.intrafragment_step_limit_orig = Opt_params.intrafragment_step_limit;
     return true;
+  }
 
   fprintf(outfile,"\tEnergy change for the previous step:\n");
   fprintf(outfile,"\t\tProjected    : %20.10lf\n", p_Opt_data->g_last_DE_predicted());
@@ -635,9 +640,17 @@ bool OPT_DATA::previous_step_report(void) const {
 
   double Energy_ratio = (p_Opt_data->g_energy() - p_Opt_data->g_last_energy()) / g_last_DE_predicted();
 
+  if (Opt_params.print_lvl >= 2)
+    fprintf(outfile,"\tEnergy ratio = %10.5lf\n", Energy_ratio);
+
   // Minimum search
   if (Opt_params.opt_type == OPT_PARAMS::MIN) {
-    if (Energy_ratio < 0.0 && consecutive_backsteps < Opt_params.consecutive_backsteps_allowed) {
+    // In odd situations, the predicted energy change might be positive.  If the step was negative, 
+    // keep step size the same and proceed.
+    if (p_Opt_data->g_last_DE_predicted() > 0  &&  Energy_ratio < 0.0) {
+      return true;
+    }
+    else if (Energy_ratio < 0.0 && consecutive_backsteps < Opt_params.consecutive_backsteps_allowed) {
       throw(BAD_STEP_EXCEPT("Energy has increased in a minimization.\n"));
     }
     else if (Energy_ratio < 0.25)
@@ -660,7 +673,8 @@ void OPT_DATA::increase_trust_radius(void) const {
   std::string key = "INTRAFRAG_STEP_LIMIT";
   double max = Opt_params.intrafragment_step_limit_max;
   if (Opt_params.intrafragment_step_limit != max) {
-    double new_val = Opt_params.intrafragment_step_limit * 2;
+    //double new_val = Opt_params.intrafragment_step_limit * 2;
+    double new_val = Opt_params.intrafragment_step_limit * 3;
     Opt_params.intrafragment_step_limit = ((new_val > max) ? max : new_val);
     fprintf(outfile,"\tEnergy ratio indicates good step: Trust radius increased to %6.3e.\n\n",
         Opt_params.intrafragment_step_limit);
@@ -692,6 +706,21 @@ void OPT_DATA::decrease_trust_radius(void) const {
     rem_write(qchem_limit_val, REM_GEOM_OPT2_INTRAFRAG_STEP_LIMIT);
 #endif
   }
+  return;
+}
+
+void OPT_DATA::reset_trust_radius(void) const {
+  std::string module = "OPTKING";
+  std::string key = "INTRAFRAG_STEP_LIMIT";
+
+  Opt_params.intrafragment_step_limit = Opt_params.intrafragment_step_limit_orig;
+
+#if defined(OPTKING_PACKAGE_PSI)
+    psi::Process::environment.options.set_double(module, key, Opt_params.intrafragment_step_limit);
+#elif defined(OPTKING_PACKAGE_QCHEM)
+    int qchem_limit_val = (int) (Opt_params.intrafragment_step_limit * 1000);
+    rem_write(qchem_limit_val, REM_GEOM_OPT2_INTRAFRAG_STEP_LIMIT);
+#endif
   return;
 }
 

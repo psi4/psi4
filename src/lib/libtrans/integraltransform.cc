@@ -99,6 +99,8 @@ IntegralTransform::IntegralTransform(shared_ptr<Wavefunction> wfn,
     openpi_  = wfn->soccpi();
     frzcpi_  = wfn->frzcpi();
     frzvpi_  = wfn->frzvpi();
+    nalphapi_ = wfn->nalphapi();
+    nbetapi_ = wfn->nbetapi();
     frozen_core_energy_ = 0.0;
 
     common_initialize();

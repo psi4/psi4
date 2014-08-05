@@ -68,7 +68,7 @@ struct OPT_PARAMS {
 
   // Hessian guess
   // Note the Lindh "intrafragment" option is cartesian so it applies to all coordinates.
-  enum INTRAFRAGMENT_HESSIAN {FISCHER, SCHLEGEL, SIMPLE, LINDH} intrafragment_H;
+  enum INTRAFRAGMENT_HESSIAN {FISCHER, SCHLEGEL, SIMPLE, LINDH, LINDH_SIMPLE} intrafragment_H;
   enum INTERFRAGMENT_HESSIAN {DEFAULT, FISCHER_LIKE}  interfragment_H;
 
   enum H_UPDATE {NONE, BFGS, MS, POWELL, BOFILL} H_update;
@@ -80,13 +80,18 @@ struct OPT_PARAMS {
   bool freeze_intrafragment; // freeze all fragments
   bool freeze_interfragment; // freeze all interfragment modes
   bool add_auxiliary_bonds;
+  double auxiliary_bond_factor;  // covalent length times this to add extra-redundant stretches
+  bool H_guess_every; // re-estimate the hessian every step
 
   // related to step taken
-  double intrafragment_step_limit;
-  double intrafragment_step_limit_min;
-  double intrafragment_step_limit_max;
+  double intrafragment_step_limit;      // current step limit
+  double intrafragment_step_limit_orig; // store original user-specified or default value
+  double intrafragment_step_limit_min;  // the smallest trust radius is allowed to go
+  double intrafragment_step_limit_max;  // the largest trust radius is allowed to go
 
   double interfragment_step_limit;
+
+  bool simple_step_scaling; // do stupid, linear scaling of internal coordinates to step limit (not RS-RFO);
 
   // whether to limit changes in Hessian due to update
   bool H_update_limit;
@@ -145,6 +150,7 @@ struct OPT_PARAMS {
 
   // maximum number of allowed iterations in backtransformation to cartesian coordinates
   double bt_max_iter;
+  bool ensure_bt_convergence;
 
   double geom_maxiter;
 

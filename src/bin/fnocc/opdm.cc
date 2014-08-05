@@ -153,7 +153,7 @@ void BuildD1(long int nfzc,long int o,long int v,long int nfzv,double*t1,double*
       D1[i*nmo+i] = 1.0;
   }
 
-  F_DCOPY(o*o*v*v,tb,1,ta,1);
+  C_DCOPY(o*o*v*v,tb,1,ta,1);
   for (a=0,id=0; a<v; a++){
       for (b=0; b<v; b++){
           for (i=0; i<o; i++){

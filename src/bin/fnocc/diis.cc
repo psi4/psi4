@@ -22,6 +22,7 @@
 
 #include"ccsd.h"
 #include"blas.h"
+#include<libqt/qt.h>
 
 using namespace psi;
 
@@ -63,7 +64,7 @@ void CoupledCluster::DIIS(double*c,long int nvec,long int n,int replace_diis_ite
           for (long int j = i; j < nvec; j++){
               sprintf(evector,"evector%li",j+1);
               psio->read_entry(PSIF_DCC_EVEC,evector,(char*)&tempv[0],n*sizeof(double));
-              double sum  = F_DDOT(n,tempt,1,tempv,1);
+              double sum  = C_DDOT(n,tempt,1,tempv,1);
               A[i*nvar+j] = sum;
               A[j*nvar+i] = sum;
           }
@@ -81,7 +82,7 @@ void CoupledCluster::DIIS(double*c,long int nvec,long int n,int replace_diis_ite
       for (long int j = 0; j < nvec; j++){
           sprintf(evector,"evector%li",j+1);
           psio->read_entry(PSIF_DCC_EVEC,evector,(char*)&tempv[0],n*sizeof(double));
-          double sum  = F_DDOT(n,tempt,1,tempv,1);
+          double sum  = C_DDOT(n,tempt,1,tempv,1);
           A[i*nvar+j] = sum;
           A[j*nvar+i] = sum;
       }
@@ -110,7 +111,7 @@ void CoupledCluster::DIIS(double*c,long int nvec,long int n,int replace_diis_ite
   lda = ldb = nvar;
   info = 0;
   DGESV(nvar,nrhs,A,lda,ipiv,B,ldb,info);
-  F_DCOPY(nvec,B,1,c,1);
+  C_DCOPY(nvec,B,1,c,1);
 
   free(A);
   free(B);
@@ -182,7 +183,7 @@ double CoupledCluster::DIISErrorVector(int diis_iter,int replace_diis_iter,int i
      psio->open(PSIF_DCC_EVEC,PSIO_OPEN_OLD);
   }
 
-  nrm = F_DNRM2(arraysize+o*v,tempv,1);
+  nrm = C_DNRM2(arraysize+o*v,tempv,1);
   psio->write_entry(PSIF_DCC_EVEC,evector,(char*)&tempv[0],(arraysize+o*v)*sizeof(double));
 
   psio->close(PSIF_DCC_EVEC,1);

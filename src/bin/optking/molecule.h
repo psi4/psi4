@@ -225,7 +225,6 @@ class MOLECULE {
     int n=0;
     for (int i=0; i<fragments.size(); ++i)
       n += fragments[i]->add_auxiliary_bonds();
-printf("adding %d auxiliary bonds\n", n);
     return n;
   }
 
@@ -320,7 +319,7 @@ printf("adding %d auxiliary bonds\n", n);
     return g;
   }
 
-  double ** g_grad_2D(void) {
+  double ** g_grad_2D(void) const {
     double **g, *g_frag;
 
     g = init_matrix(g_natom(),3);
@@ -342,6 +341,7 @@ printf("adding %d auxiliary bonds\n", n);
   void apply_constraint_forces(void);
   bool has_fixed_eq_vals(void);
   void project_f_and_H(void);
+  void project_dq(double *);
   void irc_step(void);
   void nr_step(void);
   void rfo_step(void);

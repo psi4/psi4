@@ -17,7 +17,7 @@ set global {
   reference rohf
   guess gwh
 }
-energy('omp2')
+energy('conv-omp2')
 
 compare_values(refnuc, get_variable("NUCLEAR REPULSION ENERGY"), 6, "Nuclear Repulsion Energy (a.u.)"); #TEST
 compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 6, "SCF Energy (a.u.)");             #TEST

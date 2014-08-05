@@ -30,6 +30,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <libciomr/libciomr.h>
+#include <libmints/matrix.h>
+#include <libmints/wavefunction.h>
+#include "psi4-dec.h"
 
 namespace psi {
 
@@ -192,6 +195,9 @@ void reorder_qt_uhf(int *docc, int *socc, int *frozen_docc,
   int *offset, this_offset;
   int *uocc;
 
+  Dimension nalphapi = Process::environment.wavefunction()->nalphapi();
+  Dimension nbetapi = Process::environment.wavefunction()->nbetapi();
+
   offset = init_int_array(nirreps);
 
   uocc = init_int_array(nirreps);
@@ -230,7 +236,7 @@ void reorder_qt_uhf(int *docc, int *socc, int *frozen_docc,
   /* alpha occupied orbitals */
   for(irrep=0; irrep<nirreps; irrep++) {
     this_offset = offset[irrep] + frozen_docc[irrep];
-    for(p=0; p < docc[irrep] + socc[irrep] - frozen_docc[irrep]; p++) {
+    for(p=0; p < nalphapi[irrep] - frozen_docc[irrep]; p++) {
       order_alpha[this_offset + p] = cnt_alpha++;
     }
   }
@@ -238,23 +244,23 @@ void reorder_qt_uhf(int *docc, int *socc, int *frozen_docc,
   /* beta occupied orbitals */
   for(irrep=0; irrep<nirreps; irrep++) {
     this_offset = offset[irrep] + frozen_docc[irrep];
-    for(p=0; p < docc[irrep] - frozen_docc[irrep]; p++) {
+    for(p=0; p < nbetapi[irrep] - frozen_docc[irrep]; p++) {
       order_beta[this_offset + p] = cnt_beta++;
     }
   }
 
   /* alpha unoccupied orbitals */
   for(irrep=0; irrep<nirreps; irrep++) {
-    this_offset = offset[irrep] + docc[irrep] + socc[irrep];
-    for(p=0; p < uocc[irrep]; p++) {
+    this_offset = offset[irrep] + nalphapi[irrep];
+    for(p=0; p < orbspi[irrep] - nalphapi[irrep]; p++) {
       order_alpha[this_offset + p] = cnt_alpha++;
     }
   }
 
   /* beta unoccupied orbitals */
   for(irrep=0; irrep<nirreps; irrep++) {
-    this_offset = offset[irrep] + docc[irrep];
-    for(p=0; p < uocc[irrep] + socc[irrep]; p++) {
+    this_offset = offset[irrep] + nbetapi[irrep];
+    for(p=0; p < orbspi[irrep] - nbetapi[irrep]; p++) {
       order_beta[this_offset + p] = cnt_beta++;
     }
   }

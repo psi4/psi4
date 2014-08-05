@@ -53,6 +53,7 @@ protected:
     void mem_release();
     void get_moinfo();
     void title();
+    void title_grad();
     void ref_energy();
     void mp2_energy();
     void scs_mp2_energy();
@@ -65,12 +66,21 @@ protected:
     void Fint_zero();
     void fock();
     void separable_tpdm();
+    void combine_ref_sep_tpdm();
+    void tpdm_tilde();
+    void back_trans();
+    void dfgrad();
+    void oei_grad();
+    void tei_grad_ref();
+    void tei_grad_corr();
     void gfock_oo();
     void gfock_vo();
     void gfock_ov();
     void gfock_vv();
     void gftilde_vv();
     void idp();
+    void idp2();
+    void idp_hf();
     void mograd();
     void occ_iterations();
     void kappa_orb_resp();
@@ -79,8 +89,9 @@ protected:
     void orb_resp_pcg_uhf();
     void kappa_diag_hess();
     void update_mo();
-    void diis(int dimvec, SharedTensor2d &vecs, SharedTensor2d &errvecs, SharedTensor1d &vec_new, SharedTensor1d &errvec_new);
+    void update_hfmo();
     void semi_canonic();
+    void canonic();
     void diagonal_mohess_vo();
     void diagonal_mohess_oo();
     void approx_diag_mohess_vo();
@@ -89,6 +100,40 @@ protected:
     void approx_diag_hf_mohess_oo();
     void approx_diag_ekt_mohess_vo();
     void approx_diag_ekt_mohess_oo();
+    void prepare4grad();
+    void z_vector();
+    void z_vector_pcg();
+    void z_vector_cg();
+    void z_vector_solver();
+    void pcg_solver_rhf();
+    void pcg_solver_uhf();
+    void cg_solver();
+    void zvec_solver_rhf();
+    void zvec_solver_uhf();
+    void effective_pdms();
+    void effective_gfm();
+    void effective_pdm_gfm();
+    void effective_mograd();
+    void fc_grad_terms();
+    void z_vector_fc();
+    void oeprop();
+    void s2_response();
+    void s2_lagrangian();
+    void gwh();
+    void qchf();
+
+    void diis(int dimvec, SharedTensor2d &vecs, SharedTensor2d &errvecs, SharedTensor1d &vec_new, SharedTensor1d &errvec_new);
+    void sigma_rhf(SharedTensor1d& sigma, SharedTensor1d& p_vec);
+    void sigma_uhf(SharedTensor1d& sigma_A, SharedTensor1d& sigma_B, SharedTensor1d& p_vecA, SharedTensor1d& p_vecB);
+    void sigma_orb_resp_rhf(SharedTensor1d& sigma, SharedTensor1d& p_vec);
+    void build_rhf_mohess(SharedTensor2d& Aorb_);
+    void build_uhf_mohess(SharedTensor2d& Aorb_);
+    void t2_rmp2_direct(SharedTensor2d& T);
+    void u2_rmp2_direct(SharedTensor2d& U);
+    void u2_rmp2_direct(SharedTensor2d& T, SharedTensor2d& U);
+    void t2AA_ump2_direct(SharedTensor2d& T);
+    void t2BB_ump2_direct(SharedTensor2d& T);
+    void t2AB_ump2_direct(SharedTensor2d& T);
  
     // Conventional integrals for DF-BASIS-CC
     void tei_ijkl_chem();
@@ -338,6 +383,10 @@ protected:
 
     // DIIS
     DIISManager *t2DiisManager;
+
+    // Gradients
+    std::map<std::string, SharedMatrix> gradients;
+    std::vector<std::string> gradient_terms;
     
      int natom;
      int nmo;		// Number of MOs
@@ -486,6 +535,10 @@ protected:
      double rms_kappaB;
      double msd_oo_scale;
      double reg_param;
+     double s2_resp;
+     double s2_proj;
+     double s2_lag;
+     double s2_ref;
 
      // OMP3
      double Emp3;
@@ -545,6 +598,12 @@ protected:
      string regularization; 
      string do_cd; 
      string read_scf_3index; 
+     string freeze_core_; 
+     string oeprop_; 
+     string comput_s2_; 
+     string mp2_amp_type_; 
+     string guess_type_; 
+     string qchf_; 
 
      double **C_pitzerA;     
      double **C_pitzerB;     
@@ -636,13 +695,18 @@ protected:
      SharedTensor2d G1c_oo;             
      SharedTensor2d G1c_vv;             
      SharedTensor2d G1c;               // Correlation part of OPDM
-     SharedTensor2d G1;                // Full OPDM
+     SharedTensor2d G1;                // Full OPDM (MO)
+     SharedTensor2d G1ao;              // Full OPDM (AO)
      SharedTensor2d G1c_ijA;             
      SharedTensor2d G1c_ijB;             
      SharedTensor2d G1c_abA;             
      SharedTensor2d G1c_abB;             
      SharedTensor2d G1c_ooA;             
      SharedTensor2d G1c_ooB;             
+     SharedTensor2d G1c_ovA;             
+     SharedTensor2d G1c_ovB;             
+     SharedTensor2d G1c_voA;             
+     SharedTensor2d G1c_voB;             
      SharedTensor2d G1c_vvA;             
      SharedTensor2d G1c_vvB;             
      SharedTensor2d G1cA;              // Correlation part of OPDM
@@ -653,6 +717,10 @@ protected:
      SharedTensor2d GijB;              
      SharedTensor2d GabA;              
      SharedTensor2d GabB;              
+     SharedTensor2d GiaA;              
+     SharedTensor2d GiaB;              
+     SharedTensor2d GaiA;              
+     SharedTensor2d GaiB;              
 
      // DF TPDM
      SharedTensor2d G2c_ij;                                    
@@ -682,11 +750,13 @@ protected:
      SharedTensor1d Jc;                // Correlation Coulomb matrix
      SharedTensor1d g1Q;              
      SharedTensor1d g1Qc;              
+     SharedTensor1d g1Qp;              
      SharedTensor1d g1Qt;              
      SharedTensor1d g1Qt2;              
 
      // DF GFM
-     SharedTensor2d GF;                // Full GFM
+     SharedTensor2d GF;                // Full GFM (MO)
+     SharedTensor2d GFao;              // Full GFM (AO)
      SharedTensor2d GFA;               // Full GFM
      SharedTensor2d GFB;               // Full GFM
      SharedTensor2d GFoo;             
@@ -706,38 +776,6 @@ protected:
      SharedTensor2d GFtvvA;           // Complement of GFM 
      SharedTensor2d GFtvvB;           // Complement of GFM 
 
-     SharedTensor2d GFc;              // Correlation GFM
-     SharedTensor2d GFcA;             // Correlation GFM
-     SharedTensor2d GFcB;             // Correlation GFM
-     SharedTensor2d GFc_oo;             
-     SharedTensor2d GFc_ov;             
-     SharedTensor2d GFc_vo;             
-     SharedTensor2d GFc_vv;             
-     SharedTensor2d GFc_ooA;             
-     SharedTensor2d GFc_ooB;             
-     SharedTensor2d GFc_ovA;             
-     SharedTensor2d GFc_ovB;             
-     SharedTensor2d GFc_voA;             
-     SharedTensor2d GFc_voB;             
-     SharedTensor2d GFc_vvA;             
-     SharedTensor2d GFc_vvB;             
-
-     SharedTensor2d GFs;              // Separable part of GFM
-     SharedTensor2d GFsA;             // Separable part of GFM
-     SharedTensor2d GFsB;             // Separable part of GFM
-     SharedTensor2d GFs_oo;                                               
-     SharedTensor2d GFs_ov;
-     SharedTensor2d GFs_vo;
-     SharedTensor2d GFs_vv;
-     SharedTensor2d GFs_ooA;
-     SharedTensor2d GFs_ooB;
-     SharedTensor2d GFs_ovA;
-     SharedTensor2d GFs_ovB;
-     SharedTensor2d GFs_voA;
-     SharedTensor2d GFs_voB;
-     SharedTensor2d GFs_vvA;
-     SharedTensor2d GFs_vvB;
-
      // MO gradient and Hessian
      SharedTensor2d Worb;              // MO gradient matrix
      SharedTensor2d WorbA;
@@ -755,6 +793,16 @@ protected:
      SharedTensor2d AooB;
      SharedTensor2d AvoA;
      SharedTensor2d AvoB;
+     SharedTensor2d ZvoA;            // Zvector in matrix form
+     SharedTensor2d ZvoB;            // Zvector in matrix form
+     SharedTensor2d ZovA;            // Transpose of Zvector in matrix form
+     SharedTensor2d ZovB;            // Transpose of Zvector in matrix form
+     SharedTensor2d ZklA;            // AOCC-FC Zvector in matrix form
+     SharedTensor2d ZklB;            // AOCC-FC Zvector in matrix form
+     SharedTensor2d ZlkA;            // FC-AOCC Zvector in matrix form
+     SharedTensor2d ZlkB;            // FC-AOCC Zvector in matrix form
+     SharedTensor2d WvoA;            // Effective MO gradient VO block
+     SharedTensor2d WvoB;            // Effective MO gradient VO block
 
      // Orbital rotations
      SharedTensor2d UorbA;           // MO rotation matrix: wrt reference MOs
@@ -782,26 +830,40 @@ protected:
      SharedTensor1d zvectorB;
      SharedTensor1d zvec_newA;
      SharedTensor1d zvec_newB;
+     SharedTensor1d zvec_new;
+     SharedTensor1d Wvo_vecA;            // Effective MO gradient vector VO block
 
      // PCG intermediates
      SharedTensor1d r_pcgA;
      SharedTensor1d r_pcgB;
+     SharedTensor1d r_pcg;
      SharedTensor1d z_pcgA;
      SharedTensor1d z_pcgB;
+     SharedTensor1d z_pcg;
      SharedTensor1d p_pcgA;
      SharedTensor1d p_pcgB;
+     SharedTensor1d p_pcg;
      SharedTensor1d sigma_pcgA;
      SharedTensor1d sigma_pcgB;
+     SharedTensor1d sigma_pcg;
      SharedTensor1d Minv_pcgA;
      SharedTensor1d Minv_pcgB;
+     SharedTensor1d Minv_pcg;
      SharedTensor1d r_pcg_newA;
      SharedTensor1d r_pcg_newB;
+     SharedTensor1d r_pcg_new;
      SharedTensor1d z_pcg_newA;
      SharedTensor1d z_pcg_newB;
+     SharedTensor1d z_pcg_new;
      SharedTensor1d p_pcg_newA;
      SharedTensor1d p_pcg_newB;
+     SharedTensor1d p_pcg_new;
      SharedTensor1d dr_pcgA;
      SharedTensor1d dr_pcgB;
+     SharedTensor1d dr_pcg;
+     SharedTensor1d residualA;
+     SharedTensor1d residualB;
+     SharedTensor1d residual;
 
      // Independent pairs
      SharedTensor1i idprowA;

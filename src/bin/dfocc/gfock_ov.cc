@@ -75,7 +75,7 @@ if (reference_ == "RESTRICTED") {
     K->swap_3index_col(K2);
     K2.reset();
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA));
-    G->read(psio_, PSIF_DFOCC_DENS);
+    G->read(psio_, PSIF_DFOCC_DENS, true, true);
     GFov->contract(true, false, noccA, nvirA, nQ_ref * nvirA, K, G, 1.0, 1.0);
     G.reset();
     K.reset();
@@ -93,6 +93,12 @@ else if (reference_ == "UNRESTRICTED") {
     // Fia = \sum_{e} h_ie G_ea
     GFovA->gemm(true, false, HvoA, G1c_vvA, 1.0, 0.0);
     GFovB->gemm(true, false, HvoB, G1c_vvB, 1.0, 0.0);
+
+ if (reference == "ROHF" && orb_opt_ == "FALSE") {
+    // Fia = \sum_{m} h_im G_ma
+    GFovA->gemm(false, false, HooA, G1c_ovA, 1.0, 1.0);
+    GFovB->gemm(false, false, HooB, G1c_ovB, 1.0, 1.0);
+ }
 
     // F_IA += \sum_{Q} \sum_{M} G_MA^Q b_MI^Q 
     G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OV)", nQ, noccA, nvirA));
@@ -141,7 +147,7 @@ else if (reference_ == "UNRESTRICTED") {
     K->swap_3index_col(K2);
     K2.reset();
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA));
-    G->read(psio_, PSIF_DFOCC_DENS);
+    G->read(psio_, PSIF_DFOCC_DENS, true, true);
     GFovA->contract(true, false, noccA, nvirA, nQ_ref * nvirA, K, G, 1.0, 1.0);
     G.reset();
     K.reset();
@@ -153,7 +159,7 @@ else if (reference_ == "UNRESTRICTED") {
     K->swap_3index_col(K2);
     K2.reset();
     G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|vv)", nQ_ref, nvirB, nvirB));
-    G->read(psio_, PSIF_DFOCC_DENS);
+    G->read(psio_, PSIF_DFOCC_DENS, true, true);
     GFovB->contract(true, false, noccB, nvirB, nQ_ref * nvirB, K, G, 1.0, 1.0);
     G.reset();
     K.reset();
@@ -161,6 +167,8 @@ else if (reference_ == "UNRESTRICTED") {
     // Set global GF
     GFA->set_ov(GFovA);
     GFB->set_ov(GFovB);
+    //GFovA->print();
+    //GFovB->print();
 
 }// else if (reference_ == "UNRESTRICTED")
     timer_off("GFM OV");

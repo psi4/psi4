@@ -23,6 +23,7 @@
 #if defined(HAVE_MPI)
 
 #include <cstring>
+#include <string>
 #include <mpi.h>
 
 namespace psi {

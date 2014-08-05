@@ -44,8 +44,8 @@ namespace psi{ namespace dfoccwave{
 void DFOCC::trans_ref()
 {   
     // Read SO integrals
-    bQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mn)", nQ_ref, nso2_));
-    bQso->read(psio_, PSIF_DFOCC_INTS);
+    bQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mn)", nQ_ref, nso_, nso_));
+    bQso->read(psio_, PSIF_DFOCC_INTS, true, true);
 
     // Form B(Q,ij)
     timer_on("Form B(Q,ij)");
@@ -79,7 +79,7 @@ void DFOCC::df_ref()
 {   
     //fprintf(outfile,"\tComputing DF-BASIS-SCF integrals... \n"); fflush(outfile);
 
-  if (read_scf_3index == "TRUE") {
+  //if (read_scf_3index == "TRUE" && dertype == "NONE") {
   // 1.  read scf 3-index integrals from disk
 
   // get ntri from sieve
@@ -92,6 +92,7 @@ void DFOCC::df_ref()
           fprintf(outfile,"\tReading DF integrals from disk ...\n");
           boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
           boost::shared_ptr<BasisSet> auxiliary = BasisSet::construct(parser, molecule(), "DF_BASIS_SCF");
+          boost::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
           nQ_ref = auxiliary->nbf();
 
           // ntri comes from sieve above
@@ -101,7 +102,7 @@ void DFOCC::df_ref()
           psio_->read_entry(PSIF_DFSCF_BJ, "(Q|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri_cd * nQ_ref);
           psio_->close(PSIF_DFSCF_BJ,1);
 
-          bQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mn)", nQ_ref, nso2_));
+          bQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mn)", nQ_ref, nso_, nso_));
           for (long int mn = 0; mn < ntri_cd; mn++) {
               long int m = function_pairs[mn].first;
               long int n = function_pairs[mn].second;
@@ -110,7 +111,15 @@ void DFOCC::df_ref()
                   bQso->set(P, (n*nso_) + m, Qmnp[P][mn]);
               }
           }
-          bQso->write(psio_, PSIF_DFOCC_INTS);
+          bQso->write(psio_, PSIF_DFOCC_INTS, true, true);
+
+          if (dertype == "FIRST") {
+              // Form J^-1/2
+              timer_on("Form J");
+              formJ_ref(auxiliary, zero);
+              timer_off("Form J");
+          }// end if (dertype == "FIRST")       
+
       }// end if ( options_.get_str("SCF_TYPE") == "DF" ) 
 
       // read integrals from disk if they were generated in the SCF
@@ -127,7 +136,7 @@ void DFOCC::df_ref()
           psio_->read_entry(PSIF_DFSCF_BJ, "(Q|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri_cd * nQ_ref);
           psio_->close(PSIF_DFSCF_BJ,1);
 
-          bQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mn)", nQ_ref, nso2_));
+          bQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mn)", nQ_ref, nso_, nso_));
           for (long int mn = 0; mn < ntri_cd; mn++) {
               long int m = function_pairs[mn].first;
               long int n = function_pairs[mn].second;
@@ -136,14 +145,15 @@ void DFOCC::df_ref()
                   bQso->set(P, (n*nso_) + m, Qmnp[P][mn]);
               }
           }
-          bQso->write(psio_, PSIF_DFOCC_INTS);
+          bQso->write(psio_, PSIF_DFOCC_INTS, true, true);
       }// end else if ( options_.get_str("SCF_TYPE") == "CD" ) 
 
-      else throw PSIEXCEPTION("SCF_TYPE should be DF or CD");
-  }// end if (read_scf_3index == "TRUE") 
+      //else throw PSIEXCEPTION("SCF_TYPE should be DF or CD");
+  //}// end if (read_scf_3index == "TRUE") 
 
 
-  else if (read_scf_3index == "FALSE") {
+  //else if (read_scf_3index == "FALSE") {
+  else {
     // Read in the basis set informations
     boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
     boost::shared_ptr<BasisSet> auxiliary_ = BasisSet::construct(parser, reference_wavefunction_->molecule(), "DF_BASIS_SCF");
@@ -164,8 +174,7 @@ void DFOCC::df_ref()
     timer_off("Form B(Q,munu)");
   }// end if (read_scf_3index == "FALSE") 
 
-
-    //fprintf(outfile,"\tDF-BASIS-SCF integrals were done. \n"); fflush(outfile);
+  //fprintf(outfile,"\tDF-BASIS-SCF integrals were done. \n"); fflush(outfile);
 } // end df_ref
 
 
@@ -299,7 +308,7 @@ void DFOCC::formJ_ref(boost::shared_ptr<BasisSet> auxiliary_, boost::shared_ptr<
 //=======================================================          
 void DFOCC::b_so_ref(boost::shared_ptr<BasisSet> primary_, boost::shared_ptr<BasisSet> auxiliary_, boost::shared_ptr<BasisSet> zero)
 {
-    bQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mn)", nQ_ref, nso2_));
+    bQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mn)", nQ_ref, nso_, nso_));
     double** Ap = block_matrix(nQ_ref, nso2_); 
     double** Bp = block_matrix(nQ_ref, nso2_); 
 
@@ -424,7 +433,7 @@ void DFOCC::b_so_ref(boost::shared_ptr<BasisSet> primary_, boost::shared_ptr<Bas
 
     C_DGEMM('N','N', nQ_ref, nso2_, nQ_ref, 1.0, J_mhalf[0], nQ_ref, Bp[0], nso2_, 0.0, Ap[0], nso2_);
     bQso->set(Ap);
-    bQso->write(psio_, PSIF_DFOCC_INTS);
+    bQso->write(psio_, PSIF_DFOCC_INTS, true, true);
     if (print_ > 3) bQso->print();
     free_block(Bp);
     free_block(J_mhalf);
@@ -501,21 +510,21 @@ void DFOCC::b_ov_ref()
 //=======================================================          
 void DFOCC::b_vv_ref()
 {
-    bQvvA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA * nvirA));
+    bQvvA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
     bQnvA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mV)", nQ_ref, nso_ * nvirA));
     bQnvA->read(psio_, PSIF_DFOCC_INTS);
     bQvvA->contract233(true, false, nvirA, nvirA, CvirA, bQnvA, 1.0, 0.0);
     bQnvA.reset();
-    bQvvA->write(psio_, PSIF_DFOCC_INTS);
+    bQvvA->write(psio_, PSIF_DFOCC_INTS, true, true);
     bQvvA.reset();
 
  if (reference_ == "UNRESTRICTED") {
-    bQvvB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|vv)", nQ_ref, nvirB * nvirB));
+    bQvvB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|vv)", nQ_ref, nvirB, nvirB));
     bQnvB = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mv)", nQ_ref, nso_ * nvirB));
     bQnvB->read(psio_, PSIF_DFOCC_INTS);
     bQvvB->contract233(true, false, nvirB, nvirB, CvirB, bQnvB, 1.0, 0.0);
     bQnvB.reset();
-    bQvvB->write(psio_, PSIF_DFOCC_INTS);
+    bQvvB->write(psio_, PSIF_DFOCC_INTS, true, true);
     bQvvB.reset();
  }
 } // end b_vv

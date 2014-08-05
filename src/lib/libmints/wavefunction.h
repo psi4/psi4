@@ -27,6 +27,7 @@
 #include <vector>
 
 #include "typedefs.h"
+#include "exception.h"
 #include <libparallel/parallel.h>
 
 #define MAX_IOFF 30000
