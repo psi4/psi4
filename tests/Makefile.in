@@ -21,7 +21,7 @@ fnocc_subdirs = fnocc1 fnocc2 fnocc3 fnocc4
 
 ci_subdirs = cisd-h2o+-0 cisd-h2o+-1 cisd-h2o+-2 cisd-h2o-clpse cisd-sp cisd-sp-2 fci-h2o fci-h2o-2 fci-h2o-fzcv fci-dipole fci-tdm fci-tdm-2 cisd-opt-fd rasci-c2-active rasci-h2o rasci-ne zaptn-nh2 mpn-bh ci-multi
 
-dcft_subdirs = dcft1 dcft2 dcft3 dcft4 dcft5 dcft6 dcft7 dcft-grad1
+dcft_subdirs = dcft1 dcft2 dcft3 dcft4 dcft5 dcft6 dcft7 dcft8 dcft-grad1
 
 mcscf_subdirs = mcscf1 mcscf2 mcscf3
 
@@ -85,7 +85,7 @@ quicktestdirs = tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt tu4-h2o-freq \
   psimrcc-sp1 mints1 mints2 matrix1 opt1 opt1-fd gibbs omp2-2 \
   omp3-1 omp2_5-2 ocepa1 cdomp2-1 cdomp2-2 fnocc2 fnocc4 \
   mp2_5-grad1 ocepa-grad2 dfomp2-1 dfomp2-2 dfomp2-grad1 dfomp2-grad2 dfmp2-grad1 dfmp2-grad2 dcft-grad1 \
-  dcft1 dcft2 dcft3 dcft4 pywrap-db1 pywrap-db2 pywrap-cbs1 pywrap-all pywrap-alias \
+  dcft1 dcft2 dcft3 dcft4 dcft8 pywrap-db1 pywrap-db2 pywrap-cbs1 pywrap-all pywrap-alias \
   pywrap-molecule pywrap-freq-e-sowreap
 
 HAVE_MADNESS=@HAVE_MPI@
