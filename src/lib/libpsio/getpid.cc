@@ -20,19 +20,48 @@
  *@END LICENSE
  */
 
-#ifndef psi_include_psi4_def_h
-#define psi_include_psi4_def_h
+/*! \defgroup PSIO libpsio: The PSI I/O Library */
 
-// Define the psi namespace global variables here (one time); other
-// references use extern's (in psi4-dec.h) 
+/*!
+ ** \file
+ ** \ingroup PSIO
+ */
+
+#include <unistd.h>
+#include <cstring>
+#include <cstdlib>
+#include <libpsio/psio.h>
+#include <libpsio/psio.hpp>
 #include <psi4-dec.h>
+#include <unistd.h>
 
 namespace psi {
-  FILE *outfile;
-  char *psi_file_prefix;
-  std::string outfile_name;
-  std::string restart_id;
+
+std::string PSIO::getpid(void) {
+  std::stringstream ss;
+
+  if (psi::restart_id.empty()) {
+    pid_t pid = ::getpid();
+    ss << pid;
+  }
+  else 
+    ss << psi::restart_id;
+  
+  return ss.str();
 }
 
-#endif
+std::string psio_getpid(void) {
+  std::stringstream ss;
+
+  if (psi::restart_id.empty()) {
+    pid_t pid = ::getpid();
+    ss << pid;
+  }
+  else 
+    ss << psi::restart_id;
+  
+  return ss.str();
+}
+
+}
 

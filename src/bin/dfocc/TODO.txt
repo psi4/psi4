@@ -1,4 +1,3 @@
-* OSCS-MP2
 * QC-SCF 
 * GWH Guess
-* Simplify kappa solver
+* DF-OMP2.5 and DF-OMP3

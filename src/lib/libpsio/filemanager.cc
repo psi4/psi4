@@ -32,11 +32,7 @@ namespace psi{
 
 PSIOManager::PSIOManager() : default_path_("/tmp/")
 {
-    // Get the process ID and convert to string.
-    pid_t pid = getpid();
-    std::stringstream ss;
-    ss << pid;
-    pid_ = ss.str();
+    pid_ = psio_getpid();
 }
 PSIOManager::~PSIOManager()
 {

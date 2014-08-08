@@ -72,12 +72,18 @@ class PubChemObj(object):
         if (len(self.dataSDF) == 0):
             def extract_xml_keyval(xml, key):
                 """ A useful helper function for parsing a single key from XML. """
-                matches = list(xml.iter(key))
+                try:
+                    # Python 2.6 (ElementTree 1.2 API)
+                    matches = xml.getiterator(key)
+                except:
+                    # Python 2.7 (ElementTree 1.3 API)
+                    matches = list(xml.iter(key))
                 if len(matches) == 0:
                     return None
                 elif len(matches) == 1:
                     return matches[0].text
                 else:
+                    print(matches)
                     raise TooManyMatchesException
 
             url = "http://pubchem.ncbi.nlm.nih.gov/pug/pug.cgi"
