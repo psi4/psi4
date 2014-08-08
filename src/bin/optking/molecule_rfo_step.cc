@@ -60,6 +60,7 @@ void MOLECULE::rfo_step(void) {
   double *fq = p_Opt_data->g_forces_pointer();
   double **H = p_Opt_data->g_H_pointer();
   double *dq = p_Opt_data->g_dq_pointer();
+  const int max_projected_rfo_iter = 25;
 
   // Determine the eigenvectors/eigenvalues of H.  Used in RS-RFO
   double **Hevects = matrix_return_copy(H,dim,dim); 
@@ -99,21 +100,21 @@ void MOLECULE::rfo_step(void) {
   double *rfo_u = init_array(dim); // unit vector in step direction
   bool converged = false;
 
-  //Iterative sequence to find alpha; we'll give it 15 tries
+  //Iterative sequence to find alpha; we'll give it max_projected_rfo_iter tries
   int iter = -1;
-  while (!converged && iter<16) {
+  while (!converged && iter<max_projected_rfo_iter) {
 
     ++iter;
 
     // If we get to iteration 14, and we haven't not yet converged, than
     // bail out on the restricted-step algorithm.  Set alpha=1 and apply the crude
     // intrafragment_step_limit below.
-    if (iter == 16) {
+    if (iter == max_projected_rfo_iter) {
       fprintf(outfile, "\tFailed to converge alpha.  Doing simple step scaling instead.\n");
       alpha = 1;
     }
     else if (Opt_params.simple_step_scaling) // If simple_step_scaling is on, not an iterative method.
-      iter = 16;
+      iter = max_projected_rfo_iter;
 
     // Scale the RFO matrix.
     for (i=0; i<=dim; i++) {
@@ -133,9 +134,14 @@ void MOLECULE::rfo_step(void) {
     if (Opt_params.print_lvl >= 4) {
       fprintf(outfile,"Eigenvectors of scaled RFO matrix.\n");
       print_matrix(outfile, SRFO, dim+1,dim+1);
+    }
+    if (Opt_params.print_lvl >= 2) {
       fprintf(outfile,"Eigenvalues of scaled RFO matrix.\n");
-      for (i=0; i<dim+1; ++i)
+      int cnt2=0;
+      for (i=0; i<dim+1; ++i) {
         fprintf(outfile,"%10.6lf", SRFOevals[i]);
+        if (++cnt2 == 6) fprintf(outfile,"\n");
+      }
       fprintf(outfile,"\n");
     }
 
@@ -207,6 +213,7 @@ void MOLECULE::rfo_step(void) {
       dq[j] = SRFO[rfo_root][j]; // leave out last column
 
     // Project out redundancies in steps.
+    // Project out redundancies in steps.
     // RAK added this projection in 2014, but doesn't seem to be necessary. f,H are already projected.
     project_dq(dq);
 
@@ -231,12 +238,12 @@ void MOLECULE::rfo_step(void) {
     if (iter == 0 && !converged) {
       fprintf(outfile,"\n\tDetermining step-restricting scale parameter for RS-RFO.\n");
       fprintf(outfile,"\tMaximum step size allowed %10.5lf\n\n", trust);
-      fprintf(outfile,"\t Iter      |step|      alpha \n");
-      fprintf(outfile,"\t-------------------------------\n");
-      fprintf(outfile,"\t%5d%12.5lf%12.5lf\n", iter, sqrt(dqtdq), alpha);
+      fprintf(outfile,"\t Iter      |step|        alpha \n");
+      fprintf(outfile,"\t---------------------------------\n");
+      fprintf(outfile,"\t%5d%12.5lf%14.5lf\n", iter, sqrt(dqtdq), alpha);
     }
     else if ( (iter > 0) && !Opt_params.simple_step_scaling)
-      fprintf(outfile,"\t%5d%12.5lf%12.5lf\n", iter, sqrt(dqtdq), alpha);
+      fprintf(outfile,"\t%5d%12.5lf%14.5lf\n", iter, sqrt(dqtdq), alpha);
     fflush(outfile);
 
     // Find the analytical derivative.
@@ -307,7 +314,6 @@ void MOLECULE::rfo_step(void) {
   fprintf(outfile,"Step-size in mass-weighted internal coordinates: %20.10lf\n", N);
 */
 
-// do displacements for each fragment separately
   for (f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
       fprintf(outfile,"\tDisplacements for frozen fragment %d skipped.\n", f+1);
