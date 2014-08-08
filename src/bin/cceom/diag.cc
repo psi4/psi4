@@ -123,6 +123,9 @@ void amp_write_RHF(dpdfile2 *RIA, dpdbuf4 *RIjAb, int length);
 void amp_write_UHF(dpdfile2 *, dpdfile2 *, dpdbuf4 *, dpdbuf4 *, dpdbuf4 *, int length);
 void amp_write_ROHF(dpdfile2 *, dpdfile2 *, dpdbuf4 *, dpdbuf4 *, dpdbuf4 *, int length);
 
+void overlap(int C_irr, int current);
+void overlap_stash(int C_irr);
+
 void diag(void) {
   dpdfile2 CME, CME2, Cme, SIA, Sia, RIA, Ria, DIA, Dia, tIA, tia, LIA, Lia;
   dpdbuf4 CMNEF, Cmnef, CMnEf, SIJAB, Sijab, SIjAb, RIJAB, Rijab, RIjAb, RIjbA;
@@ -1057,10 +1060,15 @@ timer_off("INIT GUESS");
 //            fprintf(outfile,"\tPutting into environment CURRENT CORRELATION ENERGY: %15.10lf\n", lambda_old[i]+moinfo.ecc);
           }
 
+          // Check overlap with old wfns, if requested
+          if(params.overlap) overlap(C_irr, i);
+
         } // converged[i] == 1
       } // i
     } // if num_converged > 0
     fprintf(outfile,"\n");
+
+    if(params.overlap) overlap_stash(C_irr);
 
     free(lambda_old);
     free_block(alpha_old);

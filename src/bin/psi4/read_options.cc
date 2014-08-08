@@ -903,7 +903,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Controls whether to relax tau during the cumulant updates or not !expert-*/
       options.add_bool("RELAX_TAU", true);
       /*- Chooses appropriate DCFT method -*/
-      options.add_str("DCFT_FUNCTIONAL", "DC-06", "DC-06 DC-12 ODC-06 ODC-12 CEPA0");
+      options.add_str("DCFT_FUNCTIONAL", "DC-06", "DC-06 DC-12 ODC-06 ODC-12 ODC-13 CEPA0");
+      /*- Whether to compute three-particle energy correction or not -*/
+      options.add_str("THREE_PARTICLE", "NONE", "NONE PERTURBATIVE");
+      /*- Do write a MOLDEN output file?  If so, the filename will end in
+      .molden, and the prefix is determined by |globals__writer_file_label|
+      (if set), or else by the name of the output file plus the name of
+      the current molecule. -*/
+      options.add_bool("MOLDEN_WRITE", false);
 
   }
   if (name == "MINTS"|| options.read_globals()) {
@@ -1855,6 +1862,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("EOM_GUESS", "SINGLES", "SINGLES DISK INPUT");
     /*- Convert ROHF MOs to semicanonical MOs -*/
     options.add_bool("SEMICANONICAL", true);
+    /*- Report overlaps with old excited-state wave functions, if
+ * available, and store current wave functions for later use. -*/
+    options.add_bool("OVERLAP_CHECK", false);
   }
   if(name == "CCRESPONSE"|| options.read_globals()) {
      /*- MODULEDESCRIPTION Performs coupled cluster response property computations. -*/
@@ -2776,6 +2786,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("OEPROP",false);
     /*- Do compute <S2> for DF-OMP2/DF-MP2?  -*/
     options.add_bool("COMPUT_S2",false);
+    /*- Do perform a QCHF computation?  -*/
+    options.add_bool("QCHF",false);
   }
   if (name == "MRCC"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/

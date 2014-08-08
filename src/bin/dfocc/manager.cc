@@ -80,6 +80,9 @@ void DFOCC::omp2_manager()
         }// if (conv_tei_type == "DISK")  
            fock();
 
+        // QCHF
+        if (qchf_ == "TRUE") qchf();
+
         // ROHF REF
         if (reference == "ROHF") t1_1st_sc();
 	t2_1st_sc();
@@ -139,7 +142,8 @@ void DFOCC::omp2_manager()
 	mograd();
         occ_iterations();
 	
-        if (rms_wog <= tol_grad && fabs(DE) >= tol_Eod) {
+        // main if
+        if (rms_wog <= tol_grad && fabs(DE) >= tol_Eod && regularization == "FALSE") {
            orbs_already_opt = 1;
 	   if (conver == 1) fprintf(outfile,"\n\tOrbitals are optimized now.\n");
 	   else if (conver == 0) { 
@@ -188,7 +192,14 @@ void DFOCC::omp2_manager()
                gfock_oo();
                gfock_vv();
            }
-        } 
+        }// end main if 
+
+        else if (rms_wog <= tol_grad && fabs(DE) >= tol_Eod && regularization == "TRUE") {
+	   fprintf(outfile,"\tOrbital gradient converged, but energy did not... \n");
+	   fprintf(outfile,"\tA tighter rms_mograd_convergence tolerance is recommended... \n");
+	   fflush(outfile);
+           throw PSIEXCEPTION("A tighter rms_mograd_convergence tolerance is recommended.");
+        }
 
   if (conver == 1) {
         ref_energy();
@@ -291,7 +302,7 @@ void DFOCC::mp2_manager()
 	mo_optimized = 0;// means MOs are not optimized
         timer_on("DF CC Integrals");
         df_corr();
-        if (dertype == "NONE" && oeprop_ == "FALSE" && ekt_ip_ == "FALSE" && ekt_ea_ == "FALSE" && comput_s2_ == "FALSE") {
+        if (dertype == "NONE" && oeprop_ == "FALSE" && ekt_ip_ == "FALSE" && comput_s2_ == "FALSE" && qchf_ == "FALSE") {
             trans_mp2();
         }
         else {
@@ -313,6 +324,9 @@ void DFOCC::mp2_manager()
         fprintf(outfile,"\tNumber of basis functions in the DF-CC basis: %3d\n", nQ);
         fflush(outfile);
         timer_off("DF CC Integrals");
+
+        // QCHF
+        if (qchf_ == "TRUE") qchf();
 
         // ROHF REF
         //fprintf(outfile,"\tI am here.\n"); fflush(outfile);

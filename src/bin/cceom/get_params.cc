@@ -110,6 +110,8 @@ void get_params(Options &options)
 
   params.newtrips = options["NEW_TRIPLES"].to_integer();
 
+  params.overlap = options["OVERLAP_CHECK"].to_integer();
+
   fprintf(outfile, "\n\tInput parameters:\n");
   fprintf(outfile, "\t-----------------\n");
   if(params.semicanonical)

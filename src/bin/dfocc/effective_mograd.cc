@@ -224,8 +224,6 @@ if (reference_ == "RESTRICTED") {
     // Z_ki^Q = 2 * \sum_{l} Z_kl b_li^Q
     K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA));
     K->read(psio_, PSIF_DFOCC_INTS);
-    //L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|IL)", nQ_ref, noccA, nfrzc));
-    //L->form_b_il(K);
     L = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|LI)", nQ_ref, nfrzc, noccA));
     L->form_b_li(K);
     K.reset();
