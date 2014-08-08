@@ -338,6 +338,7 @@ bool FRAG::displace_util(double *dq, bool focus_on_constraints) {
     rval = true;
     if (dq_rms > first_dq_rms) {
       fprintf(outfile,"\tFirst geometry is closer to target in internal coordinates, so am using that one.\n");
+      fprintf(outfile,"\tFirst geometry has RMS(Delta(q)) = %8.2e\n", first_dq_rms);
       set_geom_array(first_geom);
       rval = false;
     }
