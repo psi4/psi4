@@ -33,10 +33,10 @@ def RunCalc(name,molecule,atoms,caps,charges,ghosts,Egys,**kwargs):
     temp_geom=old_geom.split('\n')
     new_geom=[]
     qmmm=QMMM()
-    for i in range(0,len(charges)):
-        qmm.addChargeBohr(charges[i*4],charges[i*4+1],
-                          charges[i*4+2],charges[i*4+3])
-    if(len(charges)>=1):
+    for i in range(0,len(charges)/4):
+        qmmm.addChargeBohr(charges[i*4],charges[i*4+1],
+                              charges[i*4+2],charges[i*4+3])
+    if(len(charges)>=4):
         qmmm.populateExtern()
         psi4.set_global_option_python('EXTERN',qmmm.extern)
     for i in range(0,len(atoms)):
@@ -45,17 +45,23 @@ def RunCalc(name,molecule,atoms,caps,charges,ghosts,Egys,**kwargs):
     for i in range(0,len(ghosts)):
         new_geom.append('@'+temp_geom[ghosts[i]+1].lstrip(' '))
     new_geom.append('symmetry c1')
-    new_geom.append('no_com')
     new_geom.append('no_reorient')
+    new_geom.append('no_com')
     fragstr='\n'.join(new_geom)
     frag=geometry(fragstr)
     activate(frag)
     frag.update_geometry()
     Egys.append(energy(name,**kwargs))
+    if(len(charges)>=4):
+        psi4.set_global_option_python("EXTERN", None)
+    oep=psi4.OEProp()
+    oep.add("MULLIKEN_CHARGES")
+    oep.compute()
     activate(molecule)
     molecule.update_geometry
 
 #This call is incharge of setting up basic MPI stuff
+
 def DoMPI(PMan,size): 
     current_comm=PMan.CurrentComm()
     MyProcN=PMan.me()
@@ -78,26 +84,27 @@ def DoMPI(PMan,size):
 def Magic(frag,N,Egys,name,molecule,**kwargs):
     atoms=lfrag.GetNMerN(N,frag)
     caps=lfrag.CapHelper(N,frag)
-    charges=[]#lfrag.EmbedHelper("NNNNO")
+    charges=lfrag.EmbedHelper(N,frag)
     ghosts=lfrag.GetGhostsNMerN(N,frag)
-    oldguess=psi4.get_global_option("GUESS")    
-    if(N!=0):
+    oldguess=psi4.get_global_option("GUESS")
+    if((N!=0 and lfrag.IsGMBE()==0) or len(charges)>=4):
         lfrag.WriteMOs(N,frag)
         psi4.set_global_option("GUESS","READ")
     RunCalc(name,molecule,atoms,caps,charges,ghosts,Egys,**kwargs)
     if(N==0):
-        lfrag.ReadMOs()
-    psi4.set_global_option("GUESS",oldguess)
+        lfrag.GatherData()
+        psi4.set_global_option("GUESS",oldguess)
     psi4.clean()
-    
+        
 
 #Both the fragments and NMers go through the same sequence of calls,
 #we term them the basecall
-def BaseCall(name,molecule,size,Egys,i,**kwargs):
+def BaseCall(name,molecule,size,Egys,i,SuppressPrint,itr,**kwargs):
     PMan=Parallel() 
     old_comm=PMan.CurrentComm()
     PMan.sync(old_comm)
-    psi4.be_quiet()
+    if(SuppressPrint):
+        psi4.be_quiet()
     [mystart,myend,remainder]=DoMPI(PMan,size)
     for x in range(mystart,myend):
         Magic(x,i,Egys,name,molecule,**kwargs)
@@ -119,9 +126,10 @@ def BaseCall(name,molecule,size,Egys,i,**kwargs):
             value.append(0)
         PMan.bcast(value,x,old_comm)
         Egys[offset+x]=value[0]
-    lfrag.Sync(old_comm,i)
+    lfrag.Sync(old_comm,i,itr)
     PMan.free_comm(PMan.CurrentComm())
-    psi4.reopen_outfile()
+    if(SuppressPrint):
+        psi4.reopen_outfile()
     PMan.sync(old_comm)
 
 def setup(frag_method,N,embed_method,cap_method,bsse_method):
@@ -132,21 +140,34 @@ def setup(frag_method,N,embed_method,cap_method,bsse_method):
     lfrag.FragHelper(lcfrag_method,N,lcembed_method,lccap_method,
                      lcbsse_method)
 
-def fragment(name,molecule,Egys,**kwargs):
+def fragment(name,molecule,Egys,SuppressPrint,**kwargs):
     size=lfrag.GetNFrags()
     if(lfrag.RunFrags()!=0):
         psi4.print_out('The system contains %d monomers\n'% (size))
-        BaseCall(name,molecule,size,Egys,0,**kwargs)
+        itr=0;
+        done =False
+        while (not done): 
+            if(itr==1):
+                psi4.print_out('Rerunning monomer\'s with embedding\n')
+            if(itr>1):
+                psi4.print_out('Embedding Iteration %d \n'%itr)
+            if(itr>=1):
+                #Reset energies
+                del Egys[:]
+            BaseCall(name,molecule,size,Egys,0,SuppressPrint,itr,**kwargs)
+            if(lfrag.Iterate(itr)==0):
+                done=True
+            itr=itr+1
         psi4.print_out('Finished running monomer calculations\n')
     
-def nmers(name,molecule,N,Egys,**kwargs):
+def nmers(name,molecule,N,Egys,SuppressPrint,**kwargs):
     lfrag.NMerHelper(N)
     i=1
     while lfrag.GetNNMers(i)!=0:
         NNMers=lfrag.GetNNMers(i)
         psi4.print_out('The system contains %d %d-mers\n'% (NNMers,i+1))
         Egys.append([])
-        BaseCall(name,molecule,NNMers,Egys[i],i,**kwargs)
+        BaseCall(name,molecule,NNMers,Egys[i],i,SuppressPrint,0,**kwargs)
         psi4.print_out('Finished running %d-body calculations\n'% (i+1))
         i+=1
        

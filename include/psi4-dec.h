@@ -34,12 +34,17 @@
 #include "libparallel/local.h"
 #include "libparallel/mpi_wrapper.h"
 #include "process.h"
+#include "libparallel/ParallelPrinter.h"
+
+#include <cstdarg>
 namespace psi {
 
 enum PsiReturnType {Success, Failure, Balk, EndLoop};
-extern int fprintf(FILE* __restrict __stream,
+/*extern int fprintf(FILE* __restrict __stream,
       const char * __restrict __format, ...);
-extern FILE *outfile;
+extern int vfprintf(FILE* __restrict __stream,
+      const char * __restrict __format,va_list& args);*/
+//
 //  extern PSIO *psio;
 extern char *psi_file_prefix;
 extern std::string outfile_name;
@@ -55,6 +60,7 @@ extern bool verbose;
 #endif
 
 extern boost::shared_ptr<worldcomm> WorldComm;
+extern boost::shared_ptr<PsiOutStream> outfile;
 void die_if_not_converged();
 
 }
