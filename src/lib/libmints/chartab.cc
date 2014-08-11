@@ -139,22 +139,24 @@ CharacterTable::operator=(const CharacterTable& ct)
     return *this;
 }
 
-void CharacterTable::print(FILE *out) const
+void CharacterTable::print(std::string out) const
 {
     if (!nirrep_) return;
-
+    boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+          boost::shared_ptr<OutFile>(new OutFile(out)));
     int i;
 
-    psi::fprintf(out, "  point group %s\n\n", symb.c_str());
+    printer->Printf( "  point group %s\n\n", symb.c_str());
 
     for (i=0; i < nirrep_; i++)
         gamma_[i].print(out);
 
-    psi::fprintf(out, "\n  symmetry operation matrices:\n\n");
+    printer->Printf( "\n  symmetry operation matrices:\n\n");
     for (i=0; i < nirrep_; i++)
         symop[i].print(out);
 
-    psi::fprintf(out, "\n  inverse symmetry operation matrices:\n\n");
+
+    printer->Printf("\n  inverse symmetry operation matrices:\n\n");
     for (i=0; i < nirrep_; i++)
         symop[inverse(i)].print(out);
 }
@@ -182,7 +184,7 @@ CharacterTable::CharacterTable(const std::string& cpg)
 {
     // Check the symbol coming in
     if (!PointGroup::full_name_to_bits(cpg, bits_)) {
-        psi::fprintf(stderr, "CharacterTable: Invalid point group name: %s\n", cpg.c_str());
+        outfile->Printf("CharacterTable: Invalid point group name: %s\n", cpg.c_str());
         throw PSIEXCEPTION("CharacterTable: Invalid point group name provided.");
     }
     common_init();

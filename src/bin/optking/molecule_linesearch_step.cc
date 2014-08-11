@@ -67,7 +67,7 @@ void MOLECULE::linesearch_step(void) {
   // Zero steps for frozen fragment
   for (int f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
-      fprintf(outfile,"\tZero'ing out displacements for frozen fragment %d\n", f+1);
+      psi::outfile->Printf("\tZero'ing out displacements for frozen fragment %d\n", f+1);
       for (int i=0; i<fragments[f]->g_nintco(); ++i)
         dq[ g_intco_offset(f) + i ] = 0.0;
     }
@@ -108,7 +108,7 @@ void MOLECULE::linesearch_step(void) {
     // do displacements for each fragment separately
     for (int f=0; f<fragments.size(); ++f) {
       if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
-        fprintf(outfile,"\tDisplacements for frozen fragment %d skipped.\n", f+1);
+        psi::outfile->Printf("\tDisplacements for frozen fragment %d skipped.\n", f+1);
         continue;
       }
       fragments[f]->displace(&(dq[g_intco_offset(f)]), &(fq[g_intco_offset(f)]), g_atom_offset(f));
@@ -117,7 +117,7 @@ void MOLECULE::linesearch_step(void) {
     // do displacements for interfragment coordinates
     for (int I=0; I<interfragments.size(); ++I) {
       if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
-        fprintf(outfile,"\tDisplacements for frozen interfragment %d skipped.\n", I+1);
+        psi::outfile->Printf("\tDisplacements for frozen interfragment %d skipped.\n", I+1);
         continue;
       }
       interfragments[I]->orient_fragment( &(dq[g_interfragment_intco_offset(I)]),
@@ -133,7 +133,7 @@ void MOLECULE::linesearch_step(void) {
     symmetrize_geom(); // now symmetrize the geometry for next step
 
     // Now write out file.
-    fprintf(outfile,"\t Line search structure #%d : maximum intco change %8.4f\n", igeom+1, max_dq);
+    psi::outfile->Printf("\t Line search structure #%d : maximum intco change %8.4f\n", igeom+1, max_dq);
     print_geom();
 
     std::stringstream geom_string;

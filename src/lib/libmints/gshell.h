@@ -160,7 +160,7 @@ public:
     const std::vector<double>& original_coefs() const { return original_coef_; }
 
     /// Print out the shell
-    void print(FILE *out) const;
+    void print(std::string out) const;
 
     /// Normalize the angular momentum component
     static double normalize(int l, int m, int n);
@@ -289,7 +289,7 @@ public:
     const double* erd_coefs() const { return erd_coef_; }
 
     /// Print out the shell
-    void print(FILE *out) const;
+    void print(std::string out) const;
 
     /// Basis function index where this shell starts.
     int function_index() const      { return start_; }

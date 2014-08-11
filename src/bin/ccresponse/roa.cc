@@ -115,7 +115,7 @@ void roa(void)
         compute_X(pert, moinfo.l_irreps[alpha], 0);
       }
 
-      psi::fprintf(outfile, "\n\tComputing %s tensor.\n", lbl1); fflush(outfile);
+      outfile->Printf( "\n\tComputing %s tensor.\n", lbl1); 
       for(alpha=0; alpha < 3; alpha ++) {
         for(beta=0; beta < 3; beta++) {
           sprintf(pert_x, "P_%1s", cartcomp[alpha]);
@@ -134,19 +134,19 @@ void roa(void)
       }
     }    
     else {
-      psi::fprintf(outfile, "Using %s tensor found on disk.\n", lbl1);
+      outfile->Printf( "Using %s tensor found on disk.\n", lbl1);
       psio_read_entry(PSIF_CC_INFO, lbl1, (char *) tensor0[0], 9*sizeof(double));
     }
 
     if (params.wfn == "CC2")
-      psi::fprintf(outfile, "\n     CC2 Optical Rotation Tensor (Velocity Gauge): %s\n", lbl1);
+      outfile->Printf( "\n     CC2 Optical Rotation Tensor (Velocity Gauge): %s\n", lbl1);
     else if(params.wfn == "CCSD")
-      psi::fprintf(outfile, "\n    CCSD Optical Rotation Tensor (Velocity Gauge): %s\n", lbl1);
+      outfile->Printf( "\n    CCSD Optical Rotation Tensor (Velocity Gauge): %s\n", lbl1);
 
-    psi::fprintf(outfile, "  -------------------------------------------------------------------------\n");
-    psi::fprintf(outfile,   "   Evaluated at omega = 0.00 E_h (Inf nm, 0.0 eV, 0.0 cm-1)\n");
-    psi::fprintf(outfile, "  -------------------------------------------------------------------------\n");
-    mat_print(tensor0, 3, 3, outfile);
+    outfile->Printf( "  -------------------------------------------------------------------------\n");
+    outfile->Printf(   "   Evaluated at omega = 0.00 E_h (Inf nm, 0.0 eV, 0.0 cm-1)\n");
+    outfile->Printf( "  -------------------------------------------------------------------------\n");
+    mat_print(tensor0, 3, 3, "outfile");
   }
 
   for(i=0; i < params.nomega; i++) {
@@ -229,8 +229,8 @@ void roa(void)
         }
       }
 
-      psi::fprintf(outfile, "\n");
-      psi::fprintf(outfile, "\tComputing %s tensor.\n", lbl3); fflush(outfile);
+      outfile->Printf( "\n");
+      outfile->Printf( "\tComputing %s tensor.\n", lbl3); 
       for(alpha=0; alpha < 3; alpha++) {
         for(beta=0; beta < 3; beta++) {
           sprintf(pert_x, "Mu_%1s", cartcomp[alpha]);
@@ -243,7 +243,7 @@ void roa(void)
       psio_write_entry(PSIF_CC_INFO, lbl3, (char *) tensor_rr[0], 9*sizeof(double));
 
       if(compute_rl) {
-        psi::fprintf(outfile, "\tComputing %s tensor.\n", lbl1); fflush(outfile);
+        outfile->Printf( "\tComputing %s tensor.\n", lbl1); 
         for(alpha=0; alpha < 3; alpha++) {
           for(beta=0; beta < 3; beta++) {
             sprintf(pert_x, "Mu_%1s", cartcomp[alpha]);
@@ -256,7 +256,7 @@ void roa(void)
 	psio_write_entry(PSIF_CC_INFO, lbl1, (char *) tensor_rl0[0], 9*sizeof(double));
       }
       if(compute_pl) {
-        psi::fprintf(outfile, "\tComputing %s tensor.\n", lbl2); fflush(outfile);
+        outfile->Printf( "\tComputing %s tensor.\n", lbl2); 
         for(alpha=0; alpha < 3; alpha++) {
           for(beta=0; beta < 3; beta++) {
             sprintf(pert_x, "P_%1s", cartcomp[alpha]);
@@ -269,7 +269,7 @@ void roa(void)
 	psio_write_entry(PSIF_CC_INFO, lbl2, (char *) tensor_pl0[0], 9*sizeof(double));
       }
 
-      psi::fprintf(outfile, "\tComputing %s tensor.\n", lbl4); fflush(outfile);
+      outfile->Printf( "\tComputing %s tensor.\n", lbl4); 
       for(alpha=0; alpha < 3; alpha++) {
         for(beta=0; beta < 3; beta++) {
           for(gamma=0; gamma < 3; gamma++) {
@@ -294,20 +294,20 @@ void roa(void)
       }
     }
     else {
-      psi::fprintf(outfile, "\n");
-      psi::fprintf(outfile, "\tUsing %s tensor found on disk.\n", lbl3); fflush(outfile);
+      outfile->Printf( "\n");
+      outfile->Printf( "\tUsing %s tensor found on disk.\n", lbl3); 
       psio_read_entry(PSIF_CC_INFO, lbl1, (char *) tensor_rr[i][0], 9*sizeof(double));
 
       if(compute_rl) {
-	psi::fprintf(outfile, "\tUsing %s tensor found on disk.\n", lbl1); fflush(outfile);
+	outfile->Printf( "\tUsing %s tensor found on disk.\n", lbl1); 
 	psio_read_entry(PSIF_CC_INFO, lbl1, (char *) tensor_rl0[0], 9*sizeof(double));
       }
       if(compute_pl) {
-	psi::fprintf(outfile, "\tUsing %s tensor found on disk.\n", lbl2); fflush(outfile);
+	outfile->Printf( "\tUsing %s tensor found on disk.\n", lbl2); 
 	psio_read_entry(PSIF_CC_INFO, lbl2, (char *) tensor_pl0[0], 9*sizeof(double));
       }
 
-      psi::fprintf(outfile, "\tUsing %s tensor found on disk.\n", lbl4); fflush(outfile);
+      outfile->Printf( "\tUsing %s tensor found on disk.\n", lbl4); 
       next = PSIO_ZERO;
       for(alpha=0; alpha < 3; alpha++)
         psio_read(PSIF_CC_INFO, lbl4, (char *) tensor_rQ0[alpha][0], 
@@ -356,9 +356,9 @@ void roa(void)
         }
       }
 
-      psi::fprintf(outfile, "\n");
+      outfile->Printf( "\n");
       if(compute_rl) {
-	psi::fprintf(outfile, "\tComputing %s tensor.\n", lbl1); fflush(outfile);
+	outfile->Printf( "\tComputing %s tensor.\n", lbl1); 
         for(alpha=0; alpha < 3; alpha++) {
           for(beta=0; beta < 3; beta++) {
             sprintf(pert_x, "Mu_%1s", cartcomp[alpha]);
@@ -371,7 +371,7 @@ void roa(void)
 	psio_write_entry(PSIF_CC_INFO, lbl1, (char *) tensor_rl1[0], 9*sizeof(double));
       }
       if(compute_pl) {
-	psi::fprintf(outfile, "\tComputing %s tensor.\n", lbl2); fflush(outfile);
+	outfile->Printf( "\tComputing %s tensor.\n", lbl2); 
         for(alpha=0; alpha < 3; alpha++) {
           for(beta=0; beta < 3; beta++) {
             sprintf(pert_x, "P*_%1s", cartcomp[alpha]);
@@ -384,7 +384,7 @@ void roa(void)
 	psio_write_entry(PSIF_CC_INFO, lbl2, (char *) tensor_pl1[0], 9*sizeof(double));
       }
 
-      psi::fprintf(outfile, "\tComputing %s tensor.\n", lbl3); fflush(outfile);
+      outfile->Printf( "\tComputing %s tensor.\n", lbl3); 
       for(alpha=0; alpha < 3; alpha++) {
         for(beta=0; beta < 3; beta++) {
           for(gamma=0; gamma < 3; gamma++) {
@@ -409,17 +409,17 @@ void roa(void)
 
     }
     else {
-      psi::fprintf(outfile, "\n");
+      outfile->Printf( "\n");
       if(compute_rl) {
-	psi::fprintf(outfile, "\tUsing %s tensor found on disk.\n", lbl1); fflush(outfile);
+	outfile->Printf( "\tUsing %s tensor found on disk.\n", lbl1); 
 	psio_read_entry(PSIF_CC_INFO, lbl1, (char *) tensor_rl1[0], 9*sizeof(double));
       }
       if(compute_pl) {
-	psi::fprintf(outfile, "\tUsing %s tensor found on disk.\n", lbl2); fflush(outfile);
+	outfile->Printf( "\tUsing %s tensor found on disk.\n", lbl2); 
 	psio_read_entry(PSIF_CC_INFO, lbl2, (char *) tensor_pl1[0], 9*sizeof(double));
       }
 
-      psi::fprintf(outfile, "\tUsing %s tensor found on disk.\n", lbl3); fflush(outfile);
+      outfile->Printf( "\tUsing %s tensor found on disk.\n", lbl3); 
       next = PSIO_ZERO;
       for(alpha=0; alpha < 3; alpha++)
         psio_read(PSIF_CC_INFO, lbl3, (char *) tensor_rQ1[alpha][0], 
@@ -448,38 +448,38 @@ void roa(void)
       }
 
     if(params.wfn == "CC2")
-      psi::fprintf(outfile, "\n                 CC2 Dipole Polarizability [(e^2 a0^2)/E_h]:\n");
+      outfile->Printf( "\n                 CC2 Dipole Polarizability [(e^2 a0^2)/E_h]:\n");
     else
-      psi::fprintf(outfile, "\n                 CCSD Dipole Polarizability [(e^2 a0^2)/E_h]:\n");
-    psi::fprintf(outfile, "  -------------------------------------------------------------------------\n");
+      outfile->Printf( "\n                 CCSD Dipole Polarizability [(e^2 a0^2)/E_h]:\n");
+    outfile->Printf( "  -------------------------------------------------------------------------\n");
 
-      psi::fprintf(outfile,   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i], (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]), pc_hartree2ev*params.omega[i], pc_hartree2wavenumbers*params.omega[i]);
-    psi::fprintf(outfile, "  -------------------------------------------------------------------------\n");
-    mat_print(tensor_rr[i], 3, 3, outfile);
+      outfile->Printf(   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i], (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]), pc_hartree2ev*params.omega[i], pc_hartree2wavenumbers*params.omega[i]);
+    outfile->Printf( "  -------------------------------------------------------------------------\n");
+    mat_print(tensor_rr[i], 3, 3, "outfile");
 
     if(compute_rl) {
       if (params.wfn == "CC2") 
-	psi::fprintf(outfile, "\n            CC2 Optical Rotation Tensor (Length Gauge):\n");
+	outfile->Printf( "\n            CC2 Optical Rotation Tensor (Length Gauge):\n");
       else if(params.wfn == "CCSD")
-	psi::fprintf(outfile, "\n           CCSD Optical Rotation Tensor (Length Gauge):\n");
+	outfile->Printf( "\n           CCSD Optical Rotation Tensor (Length Gauge):\n");
 
-      psi::fprintf(outfile, "  -------------------------------------------------------------------------\n");
-      psi::fprintf(outfile,   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i], (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]), pc_hartree2ev*params.omega[i], pc_hartree2wavenumbers*params.omega[i]);
-      psi::fprintf(outfile, "  -------------------------------------------------------------------------\n");
-      mat_print(tensor_rl[i], 3, 3, outfile);
+      outfile->Printf( "  -------------------------------------------------------------------------\n");
+      outfile->Printf(   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i], (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]), pc_hartree2ev*params.omega[i], pc_hartree2wavenumbers*params.omega[i]);
+      outfile->Printf( "  -------------------------------------------------------------------------\n");
+      mat_print(tensor_rl[i], 3, 3, "outfile");
     }
 
     if(compute_pl) {
 
       if (params.wfn == "CC2") 
-	psi::fprintf(outfile, "\n          CC2 Optical Rotation Tensor (Velocity Gauge):\n");
+	outfile->Printf( "\n          CC2 Optical Rotation Tensor (Velocity Gauge):\n");
       else if(params.wfn == "CCSD")
-	psi::fprintf(outfile, "\n         CCSD Optical Rotation Tensor (Velocity Gauge):\n");
+	outfile->Printf( "\n         CCSD Optical Rotation Tensor (Velocity Gauge):\n");
 
-      psi::fprintf(outfile, "  -------------------------------------------------------------------------\n");
-      psi::fprintf(outfile,   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i], (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]), pc_hartree2ev*params.omega[i], pc_hartree2wavenumbers*params.omega[i]);
-      psi::fprintf(outfile, "  -------------------------------------------------------------------------\n");
-      mat_print(tensor_pl[i], 3, 3, outfile);
+      outfile->Printf( "  -------------------------------------------------------------------------\n");
+      outfile->Printf(   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i], (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]), pc_hartree2ev*params.omega[i], pc_hartree2wavenumbers*params.omega[i]);
+      outfile->Printf( "  -------------------------------------------------------------------------\n");
+      mat_print(tensor_pl[i], 3, 3, "outfile");
 
       /* subtract the zero-frequency beta tensor */
       for(j=0; j < 3; j++)
@@ -487,26 +487,26 @@ void roa(void)
 	  tensor_pl[i][j][k] -= tensor0[j][k];
 
       if (params.wfn == "CC2")
-	psi::fprintf(outfile, "\n        CC2 Optical Rotation Tensor (Modified Velocity Gauge):\n");
+	outfile->Printf( "\n        CC2 Optical Rotation Tensor (Modified Velocity Gauge):\n");
       else if(params.wfn == "CCSD")
-	psi::fprintf(outfile, "\n        CCSD Optical Rotation Tensor (Modified Velocity Gauge):\n");
+	outfile->Printf( "\n        CCSD Optical Rotation Tensor (Modified Velocity Gauge):\n");
 
-      psi::fprintf(outfile, "  -------------------------------------------------------------------------\n");
-      psi::fprintf(outfile,   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i], (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]), pc_hartree2ev*params.omega[i], pc_hartree2wavenumbers*params.omega[i]);
-      psi::fprintf(outfile, "  -------------------------------------------------------------------------\n");
-      mat_print(tensor_pl[i], 3, 3, outfile);
+      outfile->Printf( "  -------------------------------------------------------------------------\n");
+      outfile->Printf(   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i], (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]), pc_hartree2ev*params.omega[i], pc_hartree2wavenumbers*params.omega[i]);
+      outfile->Printf( "  -------------------------------------------------------------------------\n");
+      mat_print(tensor_pl[i], 3, 3, "outfile");
 
     }
 
     if(params.wfn == "CC2")
-      psi::fprintf(outfile, "\n    CC2 Electric-Dipole/Quadrupole Polarizability [(e^2 a0^2)/E_h]:\n");
+      outfile->Printf( "\n    CC2 Electric-Dipole/Quadrupole Polarizability [(e^2 a0^2)/E_h]:\n");
     else
-      psi::fprintf(outfile, "\n    CCSD Electric-Dipole/Quadrupole Polarizability [(e^2 a0^2)/E_h]:\n");
-    psi::fprintf(outfile, "  -------------------------------------------------------------------------\n");
-      psi::fprintf(outfile,   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i], (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]), pc_hartree2ev*params.omega[i], pc_hartree2wavenumbers*params.omega[i]);
-      psi::fprintf(outfile, "  -------------------------------------------------------------------------\n");
+      outfile->Printf( "\n    CCSD Electric-Dipole/Quadrupole Polarizability [(e^2 a0^2)/E_h]:\n");
+    outfile->Printf( "  -------------------------------------------------------------------------\n");
+      outfile->Printf(   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i], (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]), pc_hartree2ev*params.omega[i], pc_hartree2wavenumbers*params.omega[i]);
+      outfile->Printf( "  -------------------------------------------------------------------------\n");
     for(alpha=0; alpha < 3; alpha++)
-      mat_print(tensor_rQ[i][alpha], 3, 3, outfile);
+      mat_print(tensor_rQ[i][alpha], 3, 3, "outfile");
 
   } /* loop i over nomega */
 

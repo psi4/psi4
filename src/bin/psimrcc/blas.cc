@@ -35,7 +35,7 @@
 
 
 namespace psi{
-    extern FILE *outfile;
+    
     namespace psimrcc{
     extern MOInfo *moinfo;
     extern MemoryManager *memory_manager;
@@ -102,7 +102,7 @@ void CCBLAS::allocate_work()
     allocate1(double,work[n],work_size);
     zero_arr(work[n],work_size);
   }
-  psi::fprintf(outfile,"\n  Allocated work array of size %ld (%.2f MiB)",work_size * sizeof(double),type_to_MiB<double>(work_size));
+  outfile->Printf("\n  Allocated work array of size %ld (%.2f MiB)",work_size * sizeof(double),type_to_MiB<double>(work_size));
 }
 
 void CCBLAS::allocate_buffer()
@@ -126,7 +126,7 @@ void CCBLAS::allocate_buffer()
     allocate1(double,buffer[n],buffer_size);
     zero_arr(buffer[n],buffer_size);
   }
-  psi::fprintf(outfile,"\n  Allocated buffer array of size %ld (%.2f MiB)",buffer_size * sizeof(double),type_to_MiB<double>(buffer_size));
+  outfile->Printf("\n  Allocated buffer array of size %ld (%.2f MiB)",buffer_size * sizeof(double),type_to_MiB<double>(buffer_size));
 }
 
 void CCBLAS::free_sortmap()
@@ -237,12 +237,12 @@ void CCBLAS::add_indices()
 // {
 //   for(MatrixMap::iterator iter=matrices.begin();iter!=matrices.end();++iter){
 //     CCMatrix* Matrix = iter->second;
-//     psi::fprintf(outfile,"\n%s(analyzing)",Matrix->get_label().c_str());
-//     fflush(outfile);
+//     outfile->Printf("\n%s(analyzing)",Matrix->get_label().c_str());
+//     
 //     if(Matrix->get_out_of_core()){
 //       Matrix->load();
-//       psi::fprintf(outfile,"\n%s <- reading from disk",Matrix->get_label().c_str());
-//       fflush(outfile);
+//       outfile->Printf("\n%s <- reading from disk",Matrix->get_label().c_str());
+//       
 //     }else if(!Matrix->is_allocated())
 //       Matrix->allocate_memory();
 //   }
@@ -264,37 +264,37 @@ void CCBLAS::print_ref(string& str)
 void CCBLAS::print_memory()
 {
 //  size_t total_memory_required = 0;
-//  psi::fprintf(outfile,"\n\n\t-----------------------------------------------------------------------------");
-//  psi::fprintf(outfile,"\n\tMatrix ID    Memory(bytes)   Cumulative Memory(bytes)  Accessed    Label");
-//  psi::fprintf(outfile,"\n\t------------------------------------------------------------------------------");
+//  outfile->Printf("\n\n\t-----------------------------------------------------------------------------");
+//  outfile->Printf("\n\tMatrix ID    Memory(bytes)   Cumulative Memory(bytes)  Accessed    Label");
+//  outfile->Printf("\n\t------------------------------------------------------------------------------");
 
 //  for(MatrixMap::iterator iter=matrices.begin();iter!=matrices.end();++iter){
 //    total_memory_required += iter->second->get_memory2();
-//    psi::fprintf(outfile,"\n  %4d",distance(matrices.begin(),iter));
-//    psi::fprintf(outfile,"     %14d",iter->second->get_memory2());
-//    psi::fprintf(outfile,"        %14d",total_memory_required);
-//    psi::fprintf(outfile,"             %4d",iter->second->get_naccess());
-//    psi::fprintf(outfile,"         %s",iter->second->get_label().c_str());
+//    outfile->Printf("\n  %4d",distance(matrices.begin(),iter));
+//    outfile->Printf("     %14d",iter->second->get_memory2());
+//    outfile->Printf("        %14d",total_memory_required);
+//    outfile->Printf("             %4d",iter->second->get_naccess());
+//    outfile->Printf("         %s",iter->second->get_label().c_str());
 //  }
-//  psi::fprintf(outfile,"\n\t------------------------------------------------------------------------------");
-//  psi::fprintf(outfile,"\n\n\tTotal memory required for matrices = %14d (bytes)\n",total_memory_required);
+//  outfile->Printf("\n\t------------------------------------------------------------------------------");
+//  outfile->Printf("\n\n\tTotal memory required for matrices = %14d (bytes)\n",total_memory_required);
 
 //  total_memory_required = 0;
 
-//  psi::fprintf(outfile,"\n\n\t-------------------------------------------------------------");
-//  psi::fprintf(outfile,"\n\tIndex ID    Memory(MB)   Cumulative Memory(MB)     Label");
-//  psi::fprintf(outfile,"\n\t--------------------------------------------------------------");
+//  outfile->Printf("\n\n\t-------------------------------------------------------------");
+//  outfile->Printf("\n\tIndex ID    Memory(MB)   Cumulative Memory(MB)     Label");
+//  outfile->Printf("\n\t--------------------------------------------------------------");
 
 //  for(IndexMap::iterator iter=indices.begin();iter!=indices.end();++iter){
 //    total_memory_required += iter->second->get_memory();
-//    psi::fprintf(outfile,"\n\t%4d",distance(indices.begin(),iter));
-//    psi::fprintf(outfile,"     %10.2f",iter->second->get_memory());
-//    psi::fprintf(outfile,"        %10.2f",total_memory_required);
-//    psi::fprintf(outfile,"         %s",iter->second->get_label().c_str());
+//    outfile->Printf("\n\t%4d",distance(indices.begin(),iter));
+//    outfile->Printf("     %10.2f",iter->second->get_memory());
+//    outfile->Printf("        %10.2f",total_memory_required);
+//    outfile->Printf("         %s",iter->second->get_label().c_str());
 //  }
-//  psi::fprintf(outfile,"\n\t--------------------------------------------------------------");
+//  outfile->Printf("\n\t--------------------------------------------------------------");
 
-//  psi::fprintf(outfile,"\n\n\tTotal memory required for indexing = %10.2f (Mb)\n",total_memory_required);
+//  outfile->Printf("\n\n\tTotal memory required for indexing = %10.2f (Mb)\n",total_memory_required);
 }
 
 /**
@@ -302,7 +302,7 @@ void CCBLAS::print_memory()
  */
 int CCBLAS::compute_storage_strategy()
 {
-  psi::fprintf(outfile,"\n\n  Computing storage strategy:");
+  outfile->Printf("\n\n  Computing storage strategy:");
 
   // N.B. Here I am using bytes as the basic unit
   size_t available_memory     = memory_manager->get_FreeMemory();
@@ -313,11 +313,11 @@ int CCBLAS::compute_storage_strategy()
   size_t fock_memory          = 0;
   size_t others_memory        = 0;
 
-  psi::fprintf(outfile,"\n    Input memory                           = %14lu bytes",
+  outfile->Printf("\n    Input memory                           = %14lu bytes",
                   (unsigned long)memory_manager->get_MaximumAllowedMemory());
-  psi::fprintf(outfile,"\n    Free memory                            = %14lu bytes",
+  outfile->Printf("\n    Free memory                            = %14lu bytes",
                   (unsigned long)available_memory);
-  psi::fprintf(outfile,"\n    Free memory available for matrices     = %14lu bytes (%3.0f%%)",
+  outfile->Printf("\n    Free memory available for matrices     = %14lu bytes (%3.0f%%)",
                   (unsigned long)storage_memory,fraction_for_in_core*100.0);
 
   // Gather the memory requirements for all the CCMAtrix object
@@ -343,24 +343,24 @@ int CCBLAS::compute_storage_strategy()
       fully_in_core_memory += block_memory;
     }
   }
-  psi::fprintf(outfile,"\n    Memory required by fock matrices       = %14lu bytes",(unsigned long)fock_memory);
-  psi::fprintf(outfile,"\n    Memory required by integrals           = %14lu bytes",(unsigned long)integrals_memory);
-  psi::fprintf(outfile,"\n    Memory required by other matrices      = %14lu bytes",(unsigned long)others_memory);
-  psi::fprintf(outfile,"\n    Memory required for in-core algorithm  = %14lu bytes",(unsigned long)fully_in_core_memory);
+  outfile->Printf("\n    Memory required by fock matrices       = %14lu bytes",(unsigned long)fock_memory);
+  outfile->Printf("\n    Memory required by integrals           = %14lu bytes",(unsigned long)integrals_memory);
+  outfile->Printf("\n    Memory required by other matrices      = %14lu bytes",(unsigned long)others_memory);
+  outfile->Printf("\n    Memory required for in-core algorithm  = %14lu bytes",(unsigned long)fully_in_core_memory);
 
   // Check if you may use a fully in core algorithm
   full_in_core = false;
   int strategy = 0;
   if(fully_in_core_memory < storage_memory ){
     full_in_core = true;
-    psi::fprintf(outfile,"\n    PSIMRCC will perform a full in-core computation");
+    outfile->Printf("\n    PSIMRCC will perform a full in-core computation");
     strategy = 0;
   }else{
     if(others_memory < storage_memory ){
-      psi::fprintf(outfile,"\n    PSIMRCC will store some integrals out-of-core");
+      outfile->Printf("\n    PSIMRCC will store some integrals out-of-core");
       strategy = 1;
     }else{
-      psi::fprintf(outfile,"\n    PSIMRCC will store all integrals and some other matrices out-of-core");
+      outfile->Printf("\n    PSIMRCC will store all integrals and some other matrices out-of-core");
       strategy = 2;
       throw PSIEXCEPTION("CCBLAS::compute_storage_strategy(): Strategy #2 is not implemented yet");
     }
@@ -395,39 +395,39 @@ int CCBLAS::compute_storage_strategy()
   }
 
 //  DEBUGGING(1,
-//    psi::fprintf(outfile,"\n    -------------------- Fock matrices -------------------------");
+//    outfile->Printf("\n    -------------------- Fock matrices -------------------------");
 //    for(int i=0;i<fock.size();i++){
 //      if(fock[i].first > 1.0e-5){
-//        psi::fprintf(outfile,"\n    %-32s irrep %d   %6.2f Mb --> ",fock[i].second.first->get_label().c_str(),
+//        outfile->Printf("\n    %-32s irrep %d   %6.2f Mb --> ",fock[i].second.first->get_label().c_str(),
 //                                                      fock[i].second.second,
 //                                                      fock[i].first);
-//        psi::fprintf(outfile,"%s",fock[i].second.first->is_block_allocated(fock[i].second.second) ? "in-core" : "out-of-core");
+//        outfile->Printf("%s",fock[i].second.first->is_block_allocated(fock[i].second.second) ? "in-core" : "out-of-core");
 //      }
 //    }
-//    psi::fprintf(outfile,"\n    -------------------- Other matrices ------------------------");
+//    outfile->Printf("\n    -------------------- Other matrices ------------------------");
 //    for(int i=0;i<others.size();i++){
 //      if(others[i].first > 1.0e-5){
-//        psi::fprintf(outfile,"\n    %-32s irrep %d   %6.2f Mb --> ",others[i].second.first->get_label().c_str(),
+//        outfile->Printf("\n    %-32s irrep %d   %6.2f Mb --> ",others[i].second.first->get_label().c_str(),
 //                                                      others[i].second.second,
 //                                                      others[i].first);
-//        psi::fprintf(outfile,"%s",others[i].second.first->is_block_allocated(others[i].second.second) ? "in-core" : "out-of-core");
+//        outfile->Printf("%s",others[i].second.first->is_block_allocated(others[i].second.second) ? "in-core" : "out-of-core");
 //      }
 //    }
-//    psi::fprintf(outfile,"\n    -------------------- Integrals -----------------------------");
+//    outfile->Printf("\n    -------------------- Integrals -----------------------------");
 //    for(int i=0;i<integrals.size();i++){
 //      if(integrals[i].first > 1.0e-5){
-//        psi::fprintf(outfile,"\n    %-32s irrep %d   %6.2f Mb --> ",integrals[i].second.first->get_label().c_str(),
+//        outfile->Printf("\n    %-32s irrep %d   %6.2f Mb --> ",integrals[i].second.first->get_label().c_str(),
 //                                                      integrals[i].second.second,
 //                                                      integrals[i].first);
-//        psi::fprintf(outfile,"%s",integrals[i].second.first->is_block_allocated(integrals[i].second.second) ? "in-core" : "out-of-core");
+//        outfile->Printf("%s",integrals[i].second.first->is_block_allocated(integrals[i].second.second) ? "in-core" : "out-of-core");
 //      }
 //    }
-//    psi::fprintf(outfile,"\n\n");
+//    outfile->Printf("\n\n");
 //  );
 
   if(!full_in_core){
-    psi::fprintf(outfile,"\n    Out-of-core algorithm will store %d other matrices on disk",number_of_others_on_disk);
-    psi::fprintf(outfile,"\n    Out-of-core algorithm will store %d integrals on disk",number_of_integrals_on_disk);
+    outfile->Printf("\n    Out-of-core algorithm will store %d other matrices on disk",number_of_others_on_disk);
+    outfile->Printf("\n    Out-of-core algorithm will store %d integrals on disk",number_of_integrals_on_disk);
   }
   return(strategy);
 }
@@ -438,16 +438,16 @@ int CCBLAS::compute_storage_strategy()
 void CCBLAS::show_storage()
 {
 //  DEBUGGING(1,
-//    psi::fprintf(outfile,"\n    ----------------------------------");
-//    psi::fprintf(outfile,"\n               Show Storage ");
-//    psi::fprintf(outfile,"\n    ----------------------------------");
+//    outfile->Printf("\n    ----------------------------------");
+//    outfile->Printf("\n               Show Storage ");
+//    outfile->Printf("\n    ----------------------------------");
 
 //    for(MatrixMap::iterator it=matrices.begin();it!=matrices.end();++it){
 //      for(int h=0;h<moinfo->get_nirreps();++h){
 //        double block_memory = it->second->get_memorypi(h);
-//        psi::fprintf(outfile,"\n    %-32s irrep %d   %6.2f Mb",it->second->get_label().c_str(),h,block_memory);
-//        psi::fprintf(outfile," is %s",it->second->is_block_allocated(h) ? "allocated" : "not allocated");
-//        psi::fprintf(outfile,"%s",it->second->is_out_of_core(h) ? "(out-of-core)" : "");
+//        outfile->Printf("\n    %-32s irrep %d   %6.2f Mb",it->second->get_label().c_str(),h,block_memory);
+//        outfile->Printf(" is %s",it->second->is_block_allocated(h) ? "allocated" : "not allocated");
+//        outfile->Printf("%s",it->second->is_out_of_core(h) ? "(out-of-core)" : "");
 
 //      }
 //    }

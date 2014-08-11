@@ -103,14 +103,14 @@ void form_ov(struct stringwr **alplist)
    if (Parameters.print_lvl > 3) {
       for (irrep=0; irrep < nirreps; irrep++) {
          for (fullij=0; fullij<norbs*norbs; fullij++) {
-            psi::fprintf(outfile, "OV[irrep=%d][oij=%d]:  ", irrep, fullij);
+            outfile->Printf( "OV[irrep=%d][oij=%d]:  ", irrep, fullij);
             for (i=0; i<OV[irrep][fullij][0]; i++) {
                idx = OV[irrep][fullij][i+1];
-               psi::fprintf(outfile, "%c", (idx & signmask) ? '-' : '+');
+               outfile->Printf( "%c", (idx & signmask) ? '-' : '+');
                idx = idx & nsignmask;
-               psi::fprintf(outfile, "%2d ", idx);
+               outfile->Printf( "%2d ", idx);
                }
-            psi::fprintf(outfile, "\n");
+            outfile->Printf( "\n");
             }
          }
       }

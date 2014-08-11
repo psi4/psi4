@@ -79,20 +79,20 @@ PsiReturnType fd_2_0(Options &options, const boost::python::list& E_list)
   for (int i=0; i<len(E_list); ++i)
     E.push_back( (double)extract<double>(E_list[i]) );
 
-  psi::fprintf(outfile, "\t%d energies passed in, including non-displaced energy.\n", (int) E.size());
-  psi::fprintf(outfile, "\t%d displaced energies expected.\n", Ndisp_all);
+  outfile->Printf( "\t%d energies passed in, including non-displaced energy.\n", (int) E.size());
+  outfile->Printf( "\t%d displaced energies expected.\n", Ndisp_all);
 
   if (E.size() != Ndisp_all+1) { // last energy is the reference non-displaced energy
     throw PsiException("FINDIF: Incorrect number of energies passed in!",__FILE__,__LINE__);
   }
 
   for (int i=0; i<Ndisp_all+1; ++i)
-    psi::fprintf(outfile,"%d %20.10lf\n", i+1, E[i]);
+    outfile->Printf("%d %20.10lf\n", i+1, E[i]);
 
   double energy_ref = E[Ndisp_all];
-  psi::fprintf(outfile, "\tFinite difference computation of second-derivative of energy with respect\n");
-  psi::fprintf(outfile, "\tto cartesian coordinates using %d-point formula.  Check for precision!\n", pts);
-  psi::fprintf(outfile, "\tEnergy without displacement: %15.10lf\n", energy_ref);
+  outfile->Printf( "\tFinite difference computation of second-derivative of energy with respect\n");
+  outfile->Printf( "\tto cartesian coordinates using %d-point formula.  Check for precision!\n", pts);
+  outfile->Printf( "\tEnergy without displacement: %15.10lf\n", energy_ref);
 
   double **H = block_matrix(3*Natom, 3*Natom);
 
@@ -159,14 +159,14 @@ PsiReturnType fd_2_0(Options &options, const boost::python::list& E_list)
 
   FILE *fp_file15 = fopen("psi.file15.dat", "w");
 
-  psi::fprintf(fp_file15, "%5d%5d\n", Natom, 6*Natom);
+  outfile->Printf(fp_file15, "%5d%5d\n", Natom, 6*Natom);
 
   int cnt=0;
   for (int i=0; i<3*Natom; ++i) {
     for (int j=0; j<3*Natom; ++j, ++cnt) {
-      psi::fprintf(fp_file15,"%20.10lf", H[i][j]);
+      outfile->Printf(fp_file15,"%20.10lf", H[i][j]);
       if (cnt == 2) { 
-        psi::fprintf(fp_file15, "\n");
+        outfile->Printf(fp_file15, "\n");
         cnt = -1;
       }
     }
@@ -238,7 +238,7 @@ int iE(int *ndisp, int *nsalc, int pts, int irr, int ii, int jj, int disp_i, int
 
   } //pts == 5
 
-  psi::fprintf(outfile,"Problem finding displaced energy.\n");
+  outfile->Printf("Problem finding displaced energy.\n");
   throw PsiException("FINDIF: Problem finding displaced energy.",__FILE__,__LINE__);
 }
 

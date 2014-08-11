@@ -54,8 +54,8 @@ void onestack_insert(struct onestack *stack, double value, int i, int a,
     int level, int stacklen);
 void twostack_insert(struct twostack *stack, double value, int i, int j, 
     int a, int b, int level, int stacklen);
-void amp_write_T1(dpdfile2 *T1, int length, const char *label, FILE *outfile);
-void amp_write_T2(dpdbuf4 *T2, int length, const char *label, FILE *outfile);
+void amp_write_T1(dpdfile2 *T1, int length, const char *label, std::string OutFileRMR);
+void amp_write_T2(dpdbuf4 *T2, int length, const char *label, std::string OutFileRMR);
 
 void amp_write(const char *pert, int irrep, double omega)
 {
@@ -66,17 +66,17 @@ void amp_write(const char *pert, int irrep, double omega)
   if(params.ref == 0) { /** RHF **/
     sprintf(lbl, "X_%s_IA (%5.3f)", pert, omega);
     global_dpd_->file2_init(&T1, PSIF_CC_OEI, irrep, 0, 1, lbl);
-    amp_write_T1(&T1, params.num_amps, "\n\tLargest XIA Amplitudes:\n", outfile);
+    amp_write_T1(&T1, params.num_amps, "\n\tLargest XIA Amplitudes:\n", "outfile");
     global_dpd_->file2_close(&T1);
 
     sprintf(lbl, "X_%s_IjAb (%5.3f)", pert, omega);
     global_dpd_->buf4_init(&T2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
-    amp_write_T2(&T2, params.num_amps, "\n\tLargest XIjAb Amplitudes:\n", outfile);
+    amp_write_T2(&T2, params.num_amps, "\n\tLargest XIjAb Amplitudes:\n", "outfile");
     global_dpd_->buf4_close(&T2);
   }
 }
 
-void amp_write_T1(dpdfile2 *T1, int length, const char *label, FILE *outfile)
+void amp_write_T1(dpdfile2 *T1, int length, const char *label, std::string out)
 {
   int m, h, nirreps, Gia;
   int i, I, a, A, numt1;
@@ -118,11 +118,11 @@ void amp_write_T1(dpdfile2 *T1, int length, const char *label, FILE *outfile)
   for(m=0; m < ((numt1 < length) ? numt1 : length); m++)
     if(fabs(t1stack[m].value) > 1e-8) num2print++;
 
-  if(num2print) psi::fprintf(outfile, "%s", label);
+  if(num2print) outfile->Printf( "%s", label);
 
   for(m=0; m < ((numt1 < length) ? numt1 : length); m++)
     if(fabs(t1stack[m].value) > 1e-8)
-      psi::fprintf(outfile, "\t        %3d %3d %20.10f\n", t1stack[m].i, t1stack[m].a, t1stack[m].value);
+      outfile->Printf( "\t        %3d %3d %20.10f\n", t1stack[m].i, t1stack[m].a, t1stack[m].value);
 
   free(t1stack);
 }
@@ -155,7 +155,7 @@ void onestack_insert(struct onestack *stack, double value, int i, int a, int lev
   }
 }
 
-void amp_write_T2(dpdbuf4 *T2, int length, const char *label, FILE *outfile)
+void amp_write_T2(dpdbuf4 *T2, int length, const char *label, std::string out)
 {
   int m, h, nirreps, Gijab, numt2;
   int ij, ab, i, j, a, b;
@@ -204,11 +204,11 @@ void amp_write_T2(dpdbuf4 *T2, int length, const char *label, FILE *outfile)
   for(m=0; m < ((numt2 < length) ? numt2 : length); m++)
     if(fabs(t2stack[m].value) > 1e-8) num2print++;
 
-  if(num2print) psi::fprintf(outfile, "%s", label);
+  if(num2print) outfile->Printf( "%s", label);
 
   for(m=0; m < ((numt2 < length) ? numt2 : length); m++)
     if(fabs(t2stack[m].value) > 1e-8)
-      psi::fprintf(outfile, "\t%3d %3d %3d %3d %20.10f\n", t2stack[m].i, t2stack[m].j, 
+      outfile->Printf( "\t%3d %3d %3d %3d %20.10f\n", t2stack[m].i, t2stack[m].j, 
 	      t2stack[m].a, t2stack[m].b, t2stack[m].value);
 
   free(t2stack);

@@ -47,9 +47,11 @@ namespace psi {
 void DPD::cc3_sigma_UHF_AAA(dpdbuf4 *CMNEF, dpdbuf4 *WABEI, dpdbuf4 *WMBIJ,
                             int do_singles, dpdbuf4 *Dints_anti, dpdfile2 *SIA, int do_doubles, dpdfile2 *FME,
                             dpdbuf4 *WMAFE, dpdbuf4 *WMNIE, dpdbuf4 *SIJAB, int *aoccpi, int *aocc_off,
-                            int *avirtpi, int *avir_off, double omega, FILE *outfile)
+                            int *avirtpi, int *avir_off, double omega, std::string out)
 {
-    int h, nirreps;
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            boost::shared_ptr<OutFile>(new OutFile(out)));
+   int h, nirreps;
     int *occ_off, *occpi, *vir_off, *virtpi;
     int Gi, Gj, Gk, Gijk, Ga, Gb, Gc;
     int i, j, k, I, J, K;
@@ -280,9 +282,11 @@ void DPD::cc3_sigma_UHF_BBB(dpdbuf4 *Cmnef, dpdbuf4 *Wabei, dpdbuf4 *Wmbij,
                             int do_singles, dpdbuf4 *Dijab_anti, dpdfile2 *Sia, int do_doubles,
                             dpdfile2 *Fme, dpdbuf4 *Wmafe, dpdbuf4 *Wmnie, dpdbuf4 *Sijab,
                             int *boccpi, int *bocc_off, int *bvirtpi, int *bvir_off,
-                            double omega, FILE *outfile)
+                            double omega, std::string out)
 {
-    int h, nirreps;
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            boost::shared_ptr<OutFile>(new OutFile(out)));
+   int h, nirreps;
     int *occ_off, *occpi, *vir_off, *virtpi;
     int Gi, Gj, Gk, Gijk, Ga, Gb, Gc;
     int i, j, k, I, J, K;
@@ -519,9 +523,11 @@ void DPD::cc3_sigma_UHF_AAB(dpdbuf4 *C2AA, dpdbuf4 *C2AB, dpdbuf4 *C2BA,
                             dpdbuf4 *WMNIE, dpdbuf4 *WMnIe, dpdbuf4 *WmNiE,
                             dpdbuf4 *SIJAB, dpdbuf4 *SIjAb, int *aoccpi, int *aocc_off, int *boccpi,
                             int *bocc_off, int *avirtpi, int *avir_off, int *bvirtpi, int *bvir_off,
-                            double omega, FILE *outfile)
+                            double omega, std::string out)
 {
-    int h, nirreps;
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            boost::shared_ptr<OutFile>(new OutFile(out)));
+   int h, nirreps;
     int Gi, Gj, Gk, Gijk;
     int Ga, Gb, Gc, Gab;
     int Gij, ij, ji, Gjk, jk, Gbc, bc, Gcb, cb;
@@ -1056,9 +1062,11 @@ void DPD::cc3_sigma_UHF_BBA(dpdbuf4 *C2BB, dpdbuf4 *C2AB, dpdbuf4 *C2BA,
                             dpdbuf4 *Wmnie, dpdbuf4 *WMnIe, dpdbuf4 *WmNiE,
                             dpdbuf4 *Sijab, dpdbuf4 *SIjAb, int *aoccpi, int *aocc_off, int *boccpi,
                             int *bocc_off, int *avirtpi, int *avir_off, int *bvirtpi, int *bvir_off,
-                            double omega, FILE *outfile)
+                            double omega, std::string out)
 {
-    int h, nirreps, S_irr;
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            boost::shared_ptr<OutFile>(new OutFile(out)));
+   int h, nirreps, S_irr;
     int Gi, Gj, Gk, Gijk;
     int Ga, Gb, Gc, Gab;
     int Gij, ij, ji, Gjk, jk, Gbc, bc, Gcb, cb;

@@ -107,7 +107,7 @@ void build_Z_UHF(void)
   dim_B = A_BB.params->rowtot[0];
 
   if(num_ai != dim_A + dim_B) { /* error */
-    psi::fprintf(outfile, "Problem: num_ai(%d) != dim_A + dim_b (%d)\n", num_ai,
+    outfile->Printf( "Problem: num_ai(%d) != dim_A + dim_b (%d)\n", num_ai,
             dim_A + dim_B);
     throw PsiException("ccenergy: error", __FILE__, __LINE__);
   }
@@ -143,17 +143,17 @@ void build_Z_UHF(void)
   ipiv = init_int_array(num_ai);
   info = C_DGESV(num_ai, 1, &(A[0][0]), num_ai, &(ipiv[0]), &(Z[0]), num_ai);
   if(info) {
-    psi::fprintf(outfile, "\nError in DGESV return in build_Z_UHF: %d.\n", info);
+    outfile->Printf( "\nError in DGESV return in build_Z_UHF: %d.\n", info);
     exit(PSI_RETURN_FAILURE);
   }
 
   free(ipiv);
   free_block(A);
   */
-  pople(A, Z, num_ai, 1, 1e-12, outfile, 0);
+  pople(A, Z, num_ai, 1, 1e-12, "outfile", 0);
 
   /*
-  for(ai=0; ai < num_ai; ai++) psi::fprintf(outfile, "Z[%d] = %20.15f\n", ai, Z[ai]);
+  for(ai=0; ai < num_ai; ai++) outfile->Printf( "Z[%d] = %20.15f\n", ai, Z[ai]);
   */
 
   global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 0, "D(orb)(A,I)");

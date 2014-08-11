@@ -86,14 +86,14 @@ void rsp(int nm, int n,int nv,double *array, double *e_vals, int matz,
 
       if (n > nm) {
          ierr = 10*n;
-         psi::fprintf(stderr,"n = %d is greater than nm = %d in rsp\n",n,nm);
+         outfile->Printf("n = %d is greater than nm = %d in rsp\n",n,nm);
          exit(PSI_RETURN_FAILURE);
          }
 
       if (nv < (n*(n+1)/2)) {
          int num = n*(n+1)/2;
          ierr = 20*n;
-         psi::fprintf(stderr,"nv = %d is less than n*(n+1)/2 = %d in rsp\n",nv,num);
+         outfile->Printf("nv = %d is less than n*(n+1)/2 = %d in rsp\n",nv,num);
          exit(PSI_RETURN_FAILURE);
          }
 

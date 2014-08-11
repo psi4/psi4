@@ -124,11 +124,11 @@ double pseudoenergy(struct L_Params L_params)
       global_dpd_->buf4_close(&D);
     }
     /*
-      psi::fprintf(outfile, "One A Energy = %20.14f\n", LIA_energy);
-      psi::fprintf(outfile, "One B Energy = %20.14f\n", Lia_energy);
-      psi::fprintf(outfile, "Two AA Energy = %20.14f\n", LIJAB_energy);
-      psi::fprintf(outfile, "Two BB Energy = %20.14f\n", Lijab_energy);
-      psi::fprintf(outfile, "Two AB Energy = %20.14f\n", LIjAb_energy);
+      outfile->Printf( "One A Energy = %20.14f\n", LIA_energy);
+      outfile->Printf( "One B Energy = %20.14f\n", Lia_energy);
+      outfile->Printf( "Two AA Energy = %20.14f\n", LIJAB_energy);
+      outfile->Printf( "Two BB Energy = %20.14f\n", Lijab_energy);
+      outfile->Printf( "Two AB Energy = %20.14f\n", LIjAb_energy);
     */
     return (LIJAB_energy + Lijab_energy + LIjAb_energy);
   }

@@ -303,10 +303,10 @@ void x_onepdm_rohf(struct RHO_Params rho_params)
   dpd_file2_init(&DIJ, CC_OEI, G_irr, 0, 0, rho_params.Dij_lbl);
   dot_IJ += dpd_file2_dot_self(&DIJ);
   dpd_file2_close(&DIJ);
-  psi::fprintf(outfile,"\tOverlaps of onepdm after excited-state parts added.\n");
-  psi::fprintf(outfile,"\t<DIA|DIA> = %15.10lf     <Dia|Dia> = %15.10lf\n", dot_IA, dot_ia);
-  psi::fprintf(outfile,"\t<DAI|DAI> = %15.10lf     <Dai|Dai> = %15.10lf\n", dot_AI, dot_ai);
-  psi::fprintf(outfile,"\t<Dpq|Dqp> = %15.10lf\n", dot_IA+dot_ia+dot_AI+dot_ai);
+  outfile->Printf("\tOverlaps of onepdm after excited-state parts added.\n");
+  outfile->Printf("\t<DIA|DIA> = %15.10lf     <Dia|Dia> = %15.10lf\n", dot_IA, dot_ia);
+  outfile->Printf("\t<DAI|DAI> = %15.10lf     <Dai|Dai> = %15.10lf\n", dot_AI, dot_ai);
+  outfile->Printf("\t<Dpq|Dqp> = %15.10lf\n", dot_IA+dot_ia+dot_AI+dot_ai);
   */
 
   return;

@@ -1253,7 +1253,7 @@ Data& Options::use(std::string& key)
 
     if (!exists_in_active(key) && !exists_in_global(key)){
         printf("\nError: option %s is not contained in the list of available options.\n",key.c_str());
-        psi::fprintf(outfile,"\nError: option %s is not contained in the list of available options.\n",key.c_str());
+        outfile->Printf("\nError: option %s is not contained in the list of available options.\n",key.c_str());
 
         std::vector<std::string> choices;
 
@@ -1281,7 +1281,7 @@ Data& Options::use(std::string& key)
         }
 
         printf("\nDid you mean? %s\n\n",boost::algorithm::join(choices, " ").c_str());
-        psi::fprintf(outfile,"\nDid you mean? %s\n\n",boost::algorithm::join(choices, " ").c_str());
+        outfile->Printf("\nDid you mean? %s\n\n",boost::algorithm::join(choices, " ").c_str());
         throw IndexException(key);
     }
     else if (!exists_in_active(key) && exists_in_global(key))

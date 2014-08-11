@@ -119,22 +119,22 @@ void Lmp2::print_pair_energies(const Dimension& occOrbsPI, double* emp2)
 
     double emp2_tot = 0.0;
 
-    psi::fprintf(outfile, "\tOrbital pair energies\n");
-    psi::fprintf(outfile, "\t    i       j         LMP2\n");
-    psi::fprintf(outfile, "\t  -----   -----   ------------\n");
+    outfile->Printf( "\tOrbital pair energies\n");
+    outfile->Printf( "\t    i       j         LMP2\n");
+    outfile->Printf( "\t  -----   -----   ------------\n");
     ij = 0;
     for(i=0; i<nocc_act; i++)
         for(j=0; j<=i; j++,ij++) {
-            psi::fprintf(outfile, "\t  %3d     %3d     %12.9lf\n", i+1, j+1, emp2[ij]);
+            outfile->Printf( "\t  %3d     %3d     %12.9lf\n", i+1, j+1, emp2[ij]);
             emp2_tot += emp2[ij];
             if (i != j)
                 emp2_tot += emp2[ij];
         }
-    psi::fprintf(outfile, "\t  -------------   ------------\n");
-    psi::fprintf(outfile, "\t      Total       %12.9lf\n\n", emp2_tot);
+    outfile->Printf( "\t  -------------   ------------\n");
+    outfile->Printf( "\t      Total       %12.9lf\n\n", emp2_tot);
 
 
-    psi::fprintf(outfile, "\n");
+    outfile->Printf( "\n");
 }
 
 void Lmp2::denom(const Dimension& occOrbsPI,
@@ -386,14 +386,14 @@ void Lmp2::common_init()
 
 double Lmp2::compute_energy()
 {
-    psi::fprintf(outfile,"\n\n *******************************************************************************\n");
-    psi::fprintf(outfile,    " *                                  Local MP2                                  *\n");
-    psi::fprintf(outfile,    " *                    by Justin Turney and Brandon Magers                      *\n");
-    psi::fprintf(outfile,    " *           Parts taken from ccsort and ccenergy by Daniel Crawford           *\n");
-    psi::fprintf(outfile,    " *******************************************************************************\n\n");
+    outfile->Printf("\n\n *******************************************************************************\n");
+    outfile->Printf(    " *                                  Local MP2                                  *\n");
+    outfile->Printf(    " *                    by Justin Turney and Brandon Magers                      *\n");
+    outfile->Printf(    " *           Parts taken from ccsort and ccenergy by Daniel Crawford           *\n");
+    outfile->Printf(    " *******************************************************************************\n\n");
 
     if (reference_wavefunction_->same_a_b_orbs() == false) {
-        psi::fprintf(outfile, "\tLMP2 only works for RHF reference.\n");
+        outfile->Printf( "\tLMP2 only works for RHF reference.\n");
         throw PSIEXCEPTION("LMP2 only works for RHF reference.");
     }
 
@@ -461,28 +461,28 @@ double Lmp2::compute_energy()
 
     occEvals = new double[numAOcc];
     virEvals = new double[numAVir];
-    psi::fprintf(outfile, "\n\n\tIrrep  Core  Docc  Socc  Occ  Vir\n");
-    psi::fprintf(outfile,     "\t===============================================\n");
+    outfile->Printf( "\n\n\tIrrep  Core  Docc  Socc  Occ  Vir\n");
+    outfile->Printf(     "\t===============================================\n");
     for(h = 0; h < nirrep_; ++h){
-       psi::fprintf(outfile, "\t %3s   %3d   %3d   %3d   %3d  %3d\n",
+       outfile->Printf( "\t %3s   %3d   %3d   %3d   %3d  %3d\n",
                              labels[h], frzcpi[h], clsdpi[h], openpi[h],
                              occOrbsPI[h], virOrbsPI[h]);
     }
-    psi::fprintf(outfile,     "\t===============================================\n\n");
+    outfile->Printf(     "\t===============================================\n\n");
     aOccCount = 0; aVirCount = 0;
     for(h = 0; h < nirrep_; ++h){
         for(a = frzcpi[h]; a < clsdpi[h]; ++a) occEvals[aOccCount++] = aEvals->get(h, a);
         for(a = clsdpi[h]; a < mopi[h]; ++a) virEvals[aVirCount++] = aEvals->get(h, a);
     }
-    psi::fprintf(outfile, "\tMAXITER = %d\n", maxiter);
+    outfile->Printf( "\tMAXITER = %d\n", maxiter);
 #if 0
     if(print > 2){
         for(i = 0; i < numAOcc; ++i)
-            psi::fprintf(outfile, "\toccEvals[%2d] = %10.6f\n", i, occEvals[i]);
-        psi::fprintf(outfile, "\n");
+            outfile->Printf( "\toccEvals[%2d] = %10.6f\n", i, occEvals[i]);
+        outfile->Printf( "\n");
         for(i = 0; i < numAVir; ++i)
-            psi::fprintf(outfile, "\tvirEvals[%2d] = %10.6f\n", i, virEvals[i]);
-        psi::fprintf(outfile, "\n");
+            outfile->Printf( "\tvirEvals[%2d] = %10.6f\n", i, virEvals[i]);
+        outfile->Printf( "\n");
     }
 #endif
 
@@ -506,24 +506,24 @@ double Lmp2::compute_energy()
         // Generate the integrals in various spaces in chemists' notation
         ints.set_dpd_int_file(PSIF_CC_AINTS);
         ints.set_aa_int_name("A (ik|jl)");
-        psi::fprintf(outfile, "\tTransforming integrals into types of A (ik|jl) ...\n\n"); fflush(outfile);
+        outfile->Printf( "\tTransforming integrals into types of A (ik|jl) ...\n\n"); 
         ints.transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::occ, MOSpace::occ, IntegralTransform::MakeAndKeep);
-        psi::fprintf(outfile, "\n");
+        outfile->Printf( "\n");
 
         ints.set_dpd_int_file(PSIF_CC_CINTS);
         ints.set_aa_int_name("C (ij|ab)");
-        psi::fprintf(outfile, "\tTransforming integrals into types of C (ij|ab) ...\n\n"); fflush(outfile);
+        outfile->Printf( "\tTransforming integrals into types of C (ij|ab) ...\n\n"); 
         ints.transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::vir, IntegralTransform::ReadAndNuke);
-        psi::fprintf(outfile, "\n");
+        outfile->Printf( "\n");
 
         // This is the last transformation, we can delete the SO ints
         ints.set_keep_dpd_so_ints(0);
         ints.set_dpd_int_file(PSIF_CC_DINTS);
         ints.set_aa_int_name("D (ia|jb)");
-        psi::fprintf(outfile, "\tTransforming integrals into types of D (ia|jb) ...\n\n"); fflush(outfile);
+        outfile->Printf( "\tTransforming integrals into types of D (ia|jb) ...\n\n"); 
         ints.transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);
 
-        psi::fprintf(outfile, "\n\tIntegral transformations complete.\n\n");
+        outfile->Printf( "\n\tIntegral transformations complete.\n\n");
 
         // Open files we need
         psio_->open(PSIF_CC_OEI, PSIO_OPEN_NEW);
@@ -537,44 +537,44 @@ double Lmp2::compute_energy()
         dpdbuf4 A, C, D;
         // Form A <ij|kl> from A (ik|jl)
         global_dpd_->buf4_init(&A, PSIF_CC_AINTS, 0, ID("[O,O]"), ID("[O,O]"), ID("[O>=O]+"), ID("[O>=O]+"), 0, "A (ik|jl)");
-        psi::fprintf(outfile, "\tSorting A (ik|jl) to A <ij|kl> ... "); fflush(outfile);
+        outfile->Printf( "\tSorting A (ik|jl) to A <ij|kl> ... "); 
         global_dpd_->buf4_sort(&A, PSIF_CC_AINTS, prqs, ID("[O,O]"), ID("[O,O]"), "A <ij|kl>");
-        psi::fprintf(outfile, "done\n"); fflush(outfile);
+        outfile->Printf( "done\n"); 
         global_dpd_->buf4_close(&A);
 
         // Form C <ia|jb> from C (ij|ab)
         global_dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0, "C (ij|ab)");
-        psi::fprintf(outfile, "\tSorting C (ij|ab) to C <ia|jb> ... "); fflush(outfile);
+        outfile->Printf( "\tSorting C (ij|ab) to C <ia|jb> ... "); 
         global_dpd_->buf4_sort(&C, PSIF_CC_CINTS, prqs, ID("[O,V]"), ID("[O,V]"), "C <ia|jb");
-        psi::fprintf(outfile, "done\n"); fflush(outfile);
+        outfile->Printf( "done\n"); 
         global_dpd_->buf4_close(&C);
 
         // Form D <ij|ab> from D (ia|jb)
         global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "D (ia|jb)");
-        psi::fprintf(outfile, "\tSorting D (ia|jb) to D <ij|ab> ... "); fflush(outfile);
+        outfile->Printf( "\tSorting D (ia|jb) to D <ij|ab> ... "); 
         global_dpd_->buf4_sort(&D, PSIF_CC_DINTS, prqs, ID("[O,O]"), ID("[V,V]"), "D <ij|ab>");
-        psi::fprintf(outfile, "done\n");
+        outfile->Printf( "done\n");
         global_dpd_->buf4_close(&D);
 
         // Form D 2<ij|ab> - <ij|ba>
         global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "D <ij|ab>");
-        psi::fprintf(outfile, "\tForming D 2<ij|ab> - <ij|ba> ... "); fflush(outfile);
+        outfile->Printf( "\tForming D 2<ij|ab> - <ij|ba> ... "); 
         global_dpd_->buf4_copy(&D, PSIF_CC_DINTS, "D 2<ij|ab> - <ij|ba>");
-        psi::fprintf(outfile, "<ij|ab> done ... "); fflush(outfile);
+        outfile->Printf( "<ij|ab> done ... "); 
         {
             dpdbuf4 Dba;
             global_dpd_->buf4_init(&Dba, PSIF_CC_DINTS, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 1, "D <ij|ab>");
             global_dpd_->buf4_axpy(&Dba, &D, 1.0);
-            psi::fprintf(outfile, "<ij|ab> - <ij|ba> done ... "); fflush(outfile);
+            outfile->Printf( "<ij|ab> - <ij|ba> done ... "); 
             global_dpd_->buf4_close(&Dba);
         }
-        psi::fprintf(outfile, "done\n");
+        outfile->Printf( "done\n");
         global_dpd_->buf4_close(&D);
     }
 
     // Form the Fock matrices
     {
-        psi::fprintf(outfile, "\n\tViewing Fock matrices ... "); fflush(outfile);
+        outfile->Printf( "\n\tViewing Fock matrices ... "); 
 
         // Looks like libtrans did this for us. Load it up.
         SharedMatrix f(new Matrix("f(m,n)", mopi, mopi));
@@ -606,14 +606,14 @@ double Lmp2::compute_energy()
         fab->write_to_dpdfile2(&F);
         global_dpd_->file2_close(&F);
 
-        psi::fprintf(outfile, "done\n\n");
+        outfile->Printf( "done\n\n");
     }
 
     // => Form denominators <=
     {
-        psi::fprintf(outfile, "\tForming denominators ... "); fflush(outfile);
+        outfile->Printf( "\tForming denominators ... "); 
         denom(occOrbsPI, virOrbsPI, occOffset, virOffset);
-        psi::fprintf(outfile, "done\n\n"); fflush(outfile);
+        outfile->Printf( "done\n\n"); 
     }
 
     // => Form initial LMP2 amplitudes <=
@@ -646,9 +646,9 @@ double Lmp2::compute_energy()
         global_dpd_->buf4_close(&T2);
         global_dpd_->buf4_close(&D);
 
-        psi::fprintf(outfile, "\tComputing LMP2 amplitudes:\n");
-        psi::fprintf(outfile, "\t==========================\n");
-        psi::fprintf(outfile, "\titer = %3d LMP2 Energy = %20.14lf\n", 0, energy); fflush(outfile);
+        outfile->Printf( "\tComputing LMP2 amplitudes:\n");
+        outfile->Printf( "\t==========================\n");
+        outfile->Printf( "\titer = %3d LMP2 Energy = %20.14lf\n", 0, energy); 
 
         for (int iter=1; iter< maxiter; iter++) {
             global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "D <ij|ab>");
@@ -706,11 +706,11 @@ double Lmp2::compute_energy()
 
             rms = sqrt(rms);
 
-            psi::fprintf(outfile, "\titer = %3d LMP2 Energy = %20.14f   RMS = %4.3e\n", iter, energy, rms); fflush(outfile);
+            outfile->Printf( "\titer = %3d LMP2 Energy = %20.14f   RMS = %4.3e\n", iter, energy, rms); 
 
             if(rms < convergence) {
               conv = 1;
-              psi::fprintf(outfile, "\n\tLMP2 Iterations converged.\n");
+              outfile->Printf( "\n\tLMP2 Iterations converged.\n");
               break;
             }
             else {
@@ -721,17 +721,17 @@ double Lmp2::compute_energy()
         }
 
         if(!conv) {
-          psi::fprintf(outfile, "\n\tLMP2 Iterative procedure failed.\n");
+          outfile->Printf( "\n\tLMP2 Iterative procedure failed.\n");
           throw ConvergenceError<int>("LMP2 interative procedure failed.", maxiter, 1.0e-8, rms, __FILE__, __LINE__);
         }
 
-        psi::fprintf(outfile, "\tLMP2 Correlation Energy = %20.14f\n", energy);
-        psi::fprintf(outfile, "\tLMP2 Total Energy       = %20.14f\n\n", energy+Process::environment.globals["HF TOTAL ENERGY"]);
+        outfile->Printf( "\tLMP2 Correlation Energy = %20.14f\n", energy);
+        outfile->Printf( "\tLMP2 Total Energy       = %20.14f\n\n", energy+Process::environment.globals["HF TOTAL ENERGY"]);
 
         Process::environment.globals["CURRENT_ENERGY"] = energy+Process::environment.globals["HF TOTAL ENERGY"];
         Process::environment.globals["LMP2 CORRELATION ENERGY"] = energy;
 
-        fflush(outfile);
+        
 
         global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "LMP2 tIjAb");
         global_dpd_->buf4_close(&T2);

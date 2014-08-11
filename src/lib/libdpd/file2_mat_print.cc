@@ -30,8 +30,10 @@
 
 namespace psi {
 
-int DPD::file2_mat_print(dpdfile2 *File, FILE *outfile)
+int DPD::file2_mat_print(dpdfile2 *File, std::string out)
 {
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            boost::shared_ptr<OutFile>(new OutFile(out)));
     div_t fraction;
     int i,j;
     int rows, cols, cols_per_page, num_pages, last_page, page, first_col;
@@ -45,10 +47,10 @@ int DPD::file2_mat_print(dpdfile2 *File, FILE *outfile)
 
     for(h=0; h < File->params->nirreps; h++) {
 
-        psi::fprintf(outfile, "\n\tFile %3d DPD File2: %s\n", File->filenum,
+        printer->Printf( "\n\tFile %3d DPD File2: %s\n", File->filenum,
                 File->label);
-        psi::fprintf(outfile,   "\tMatrix for Irrep %1d\n", h);
-        psi::fprintf(outfile,   "\t----------------------------------------\n");
+        printer->Printf(   "\tMatrix for Irrep %1d\n", h);
+        printer->Printf(   "\t----------------------------------------\n");
 
         rows = Params->rowtot[h];
         cols = Params->coltot[h^my_irrep];
@@ -62,47 +64,47 @@ int DPD::file2_mat_print(dpdfile2 *File, FILE *outfile)
         for(page=0; page < num_pages; page++) {
             first_col = page*cols_per_page;
 
-            psi::fprintf(outfile,"\n            ");
+            printer->Printf("\n            ");
             for(i=first_col; i < first_col+cols_per_page; i++)
-                psi::fprintf(outfile,"         %5d     ",i);
+                printer->Printf("         %5d     ",i);
 
-            psi::fprintf(outfile,"\n            ");
+            printer->Printf("\n            ");
             for(i=first_col; i < first_col+cols_per_page; i++)
-                psi::fprintf(outfile,"          (%3d)    ",
+                printer->Printf("          (%3d)    ",
                         Params->colorb[h^my_irrep][i]);
 
-            psi::fprintf (outfile,"\n");
+            printer->Printf("\n");
             for(i=0; i < rows; i++) {
-                psi::fprintf(outfile,"\n%5d  (%3d)",i, Params->roworb[h][i]);
+                printer->Printf("\n%5d  (%3d)",i, Params->roworb[h][i]);
 
                 for(j=first_col; j < first_col+cols_per_page; j++)
-                    psi::fprintf (outfile,"%19.15f",File->matrix[h][i][j]);
+                    printer->Printf("%19.15f",File->matrix[h][i][j]);
             }
 
-            psi::fprintf (outfile,"\n");
+            printer->Printf("\n");
         }
 
         /* Now print the remaining columns */
         if(last_page) {
             first_col = page*cols_per_page;
 
-            psi::fprintf(outfile,"\n            ");
+            printer->Printf("\n            ");
             for(i=first_col; i < first_col+last_page; i++)
-                psi::fprintf(outfile,"         %5d     ",i);
+                printer->Printf("         %5d     ",i);
 
-            psi::fprintf(outfile,"\n            ");
+            printer->Printf("\n            ");
             for(i=first_col; i < first_col+last_page; i++)
-                psi::fprintf(outfile,"          (%3d)    ",
+                printer->Printf("          (%3d)    ",
                         Params->colorb[h^my_irrep][i]);
 
-            psi::fprintf (outfile,"\n");
+            printer->Printf("\n");
             for(i=0; i < rows; i++) {
-                psi::fprintf(outfile,"\n%5d  (%3d)",i, Params->roworb[h][i]);
+                printer->Printf("\n%5d  (%3d)",i, Params->roworb[h][i]);
 
                 for(j=first_col; j < first_col+last_page; j++)
-                    psi::fprintf (outfile,"%19.15f", File->matrix[h][i][j]);
+                    printer->Printf("%19.15f", File->matrix[h][i][j]);
             }
-            psi::fprintf (outfile,"\n");
+            printer->Printf("\n");
         }
     }
 

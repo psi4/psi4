@@ -34,7 +34,7 @@
 #include <libciomr/libciomr.h>
 
 namespace psi {
-extern FILE* outfile;
+
 namespace ccenergy {
 
 /* Global variables */

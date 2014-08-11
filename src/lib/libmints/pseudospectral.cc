@@ -167,7 +167,7 @@ void PseudospectralInt::compute_pair(const GaussianShell& s1,
 
                             buffer_[ao12++] += vi[iind][jind][0] * over_pf;
 
-//                            psi::fprintf(outfile, "ao12=%d, vi[%d][%d][0] = %20.14f, over_pf = %20.14f, Z = %f\n", ao12-1, iind, jind, vi[iind][jind][0], over_pf, Z);
+//                            outfile->Printf( "ao12=%d, vi[%d][%d][0] = %20.14f, over_pf = %20.14f, Z = %f\n", ao12-1, iind, jind, vi[iind][jind][0], over_pf, Z);
                         }
                     }
                 }

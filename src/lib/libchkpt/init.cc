@@ -132,7 +132,7 @@ extern "C" {
                         boost::shared_ptr<Chkpt> temp(new Chkpt(_default_psio_lib_, status));
             _default_chkpt_lib_ = temp;
             if (_default_chkpt_lib_ == 0) {
-                psi::fprintf(stderr, "LIBCHKPT::init() -- failed to allocate memory\n");
+                outfile->Printf( "LIBCHKPT::init() -- failed to allocate memory\n");
                 exit(PSI_RETURN_FAILURE);
             }
         }

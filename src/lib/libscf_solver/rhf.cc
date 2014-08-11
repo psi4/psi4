@@ -155,6 +155,8 @@ void RHF::form_G()
         BasisSet::construct(parser,Process::environment.molecule(),"BASIS");
        JKFactory=boost::shared_ptr<Psi4JK>(new Psi4JK(primary));
     }
+    //SharedMatrix corrJ_(new Matrix(*J_));
+    //SharedMatrix corrK_(new Matrix(*K_));
     if(JKFactory->Shared()){
        // Push the C matrix on
        std::vector<SharedMatrix> & C = jk_->C_left();
@@ -171,11 +173,28 @@ void RHF::form_G()
        K_ = K[0];
     }
     else{
+
        JKFactory->UpdateDensity(D_,J_,K_);
     }
     J_->scale(2.0);
+    //corrJ_->scale(2.0);
+    //corrJ_->print_out();
+    //corrJ_->subtract(J_);
+    //J_->print_out();
+    //corrJ_->print_out();
+    /*double sum=0.0;
+    for(int i=0;i<corrJ_->rowspi(0);i++){
+       for(int j=0;j<corrJ_->colspi(0);j++)
+          sum+=sqrt((*corrJ_)(i,j)*(*corrJ_)(i,j));
+    }
+    outfile->Printf("Sum is : %16.12f\n",sum);
+    exit(1);*/
+    //SharedMatrix corrG(corrJ_);
     G_->copy(J_);
+    //corrG->subtract(corrK_);
     G_->subtract(K_);
+    //corrG->subtract(G_);
+    //corrG->print_out();
 }
 
 void RHF::save_information()
@@ -233,7 +252,7 @@ void RHF::form_F()
     Fa_->add(G_);
 
     if (debug_) {
-        Fa_->print(outfile);
+        Fa_->print("outfile");
         J_->print();
         K_->print();
         G_->print();
@@ -267,7 +286,7 @@ void RHF::form_D()
     }
 
     if (debug_) {
-        psi::fprintf(outfile, "in RHF::form_D:\n");
+        outfile->Printf( "in RHF::form_D:\n");
         D_->print();
     }
 }
@@ -314,16 +333,16 @@ void RHF::save_sapt_info()
 {
     if (factory_->nirrep() != 1)
     {
-        psi::fprintf(outfile,"Must run in C1. Period.\n"); fflush(outfile);
+        outfile->Printf("Must run in C1. Period.\n"); 
         abort();
     }
     if (soccpi_[0] != 0)
     {
-        psi::fprintf(outfile,"Aren't we in RHF Here? Pair those electrons up cracker!\n"); fflush(outfile);
+        outfile->Printf("Aren't we in RHF Here? Pair those electrons up cracker!\n"); 
         abort();
     }
 
-    psi::fprintf(outfile,"\n  Saving SAPT %s file.\n",options_.get_str("SAPT").c_str());
+    outfile->Printf("\n  Saving SAPT %s file.\n",options_.get_str("SAPT").c_str());
 
     int fileno;
     char* body_type = (char*)malloc(400*sizeof(char));
@@ -527,9 +546,9 @@ void RHF::stability_analysis()
             delete [] evals;
         }
 
-        psi::fprintf(outfile, "\tLowest singlet (RHF->RHF) stability eigenvalues:-\n");
+        outfile->Printf( "\tLowest singlet (RHF->RHF) stability eigenvalues:-\n");
         print_stability_analysis(singlet_eval_sym);
-        psi::fprintf(outfile, "\tLowest triplet (RHF->UHF) stability eigenvalues:-\n");
+        outfile->Printf( "\tLowest triplet (RHF->UHF) stability eigenvalues:-\n");
         print_stability_analysis(triplet_eval_sym);
         psio_->close(PSIF_LIBTRANS_DPD, 1);
     }

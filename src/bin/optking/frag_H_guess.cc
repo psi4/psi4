@@ -31,7 +31,7 @@
 #include "cov_radii.h"
 #include "physconst.h"
 #include "v3d.h"
-
+#include "psi4-dec.h"
 #define EXTERN
 #include "globals.h"
 
@@ -171,7 +171,7 @@ double ** FRAG::H_guess(void) {
         break;
 
         default:
-          fprintf(outfile,"H_guess encountered unknown internal type.\n");
+          psi::outfile->Printf("H_guess encountered unknown internal type.\n");
           f[cnt++] = 1.0;
       } // end switch coordinate type
     } // loop over intcos
@@ -233,7 +233,7 @@ double ** FRAG::H_guess(void) {
         break;
 
         default:
-          fprintf(outfile,"H_guess encountered unknown internal type.\n");
+          psi::outfile->Printf("H_guess encountered unknown internal type.\n");
           f[cnt++] = 1.0;
       } // end switch intcos
     } // end loop intcos
@@ -255,7 +255,7 @@ double ** FRAG::H_guess(void) {
         break;
 
         default:
-          fprintf(outfile,"H_guess encountered unknown internal type.\n");
+          psi::outfile->Printf("H_guess encountered unknown internal type.\n");
           f[cnt++] = 1.0;
       }
     }
@@ -295,13 +295,13 @@ double ** FRAG::H_guess(void) {
         break;
 
         default:
-          fprintf(outfile,"H_guess encountered unknown internal type.\n");
+          psi::outfile->Printf("H_guess encountered unknown internal type.\n");
           f[cnt++] = 1.0;
       }
     }
   }
   else {
-    fprintf(outfile,"FRAG::H_guess(): Unknown Hessian guess type.\n");
+    psi::outfile->Printf("FRAG::H_guess(): Unknown Hessian guess type.\n");
   }
 
   free_matrix(R);

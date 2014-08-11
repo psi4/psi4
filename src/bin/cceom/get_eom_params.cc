@@ -118,29 +118,29 @@ void get_eom_params(Options &options)
   eom_params.max_iter_SS = 500;
   eom_params.guess = options.get_str("EOM_GUESS");
 
-  psi::fprintf(outfile, "\n\tCCEOM parameters:\n");
-  psi::fprintf(outfile, "\t-----------------\n");
-  psi::fprintf(outfile, "\tStates sought per irrep     =");
+  outfile->Printf( "\n\tCCEOM parameters:\n");
+  outfile->Printf( "\t-----------------\n");
+  outfile->Printf( "\tStates sought per irrep     =");
   for(int i = 0; i < moinfo.nirreps; ++i) 
-    psi::fprintf(outfile, " %s %d,", moinfo.irr_labs[i], eom_params.states_per_irrep[i]);
+    outfile->Printf( " %s %d,", moinfo.irr_labs[i], eom_params.states_per_irrep[i]);
 
-  psi::fprintf(outfile,"\n");
-  psi::fprintf(outfile, "\tMax. number of iterations   = %5d\n", eom_params.max_iter);
-  psi::fprintf(outfile, "\tVectors stored per root     = %5d\n", eom_params.vectors_per_root);
-  psi::fprintf(outfile, "\tPrint HbarSS iterations?    = %5d\n", eom_params.print_singles);
-  psi::fprintf(outfile, "\tExcitation range for HBarSS = %5d\n", eom_params.excitation_range);
-  psi::fprintf(outfile, "\tEigenvalue tolerance        = %5.1e\n", eom_params.eval_tol);
-  psi::fprintf(outfile, "\tEigenvalue toleranceSS      = %5.1e\n", eom_params.eval_tol_SS);
-  psi::fprintf(outfile, "\tResidual vector tolerance   = %5.1e\n", eom_params.residual_tol);
-  psi::fprintf(outfile, "\tResidual vector toleranceSS = %5.1e\n", eom_params.residual_tol_SS);
-  psi::fprintf(outfile, "\tComplex tolerance           = %5.1e\n", eom_params.complex_tol);
-  psi::fprintf(outfile, "\tRoot for properties         = %5d\n", eom_params.prop_root + 1);
-  psi::fprintf(outfile, "\tSym of state for properties = %6s\n", moinfo.irr_labs[eom_params.prop_sym]);
-  psi::fprintf(outfile, "\tGuess vectors taken from    = %s\n", eom_params.guess.c_str());
-  psi::fprintf(outfile, "\tRestart EOM CC3             = %s\n", eom_params.restart_eom_cc3?"YES":"NO");
-  psi::fprintf(outfile, "\tCollapse with last vector   = %s\n", eom_params.collapse_with_last ? "YES":"NO");
-  if (eom_params.follow_root) psi::fprintf(outfile, "\tRoot following for CC3 turned on.\n");
-  psi::fprintf(outfile, "\n\n");
+  outfile->Printf("\n");
+  outfile->Printf( "\tMax. number of iterations   = %5d\n", eom_params.max_iter);
+  outfile->Printf( "\tVectors stored per root     = %5d\n", eom_params.vectors_per_root);
+  outfile->Printf( "\tPrint HbarSS iterations?    = %5d\n", eom_params.print_singles);
+  outfile->Printf( "\tExcitation range for HBarSS = %5d\n", eom_params.excitation_range);
+  outfile->Printf( "\tEigenvalue tolerance        = %5.1e\n", eom_params.eval_tol);
+  outfile->Printf( "\tEigenvalue toleranceSS      = %5.1e\n", eom_params.eval_tol_SS);
+  outfile->Printf( "\tResidual vector tolerance   = %5.1e\n", eom_params.residual_tol);
+  outfile->Printf( "\tResidual vector toleranceSS = %5.1e\n", eom_params.residual_tol_SS);
+  outfile->Printf( "\tComplex tolerance           = %5.1e\n", eom_params.complex_tol);
+  outfile->Printf( "\tRoot for properties         = %5d\n", eom_params.prop_root + 1);
+  outfile->Printf( "\tSym of state for properties = %6s\n", moinfo.irr_labs[eom_params.prop_sym]);
+  outfile->Printf( "\tGuess vectors taken from    = %s\n", eom_params.guess.c_str());
+  outfile->Printf( "\tRestart EOM CC3             = %s\n", eom_params.restart_eom_cc3?"YES":"NO");
+  outfile->Printf( "\tCollapse with last vector   = %s\n", eom_params.collapse_with_last ? "YES":"NO");
+  if (eom_params.follow_root) outfile->Printf( "\tRoot following for CC3 turned on.\n");
+  outfile->Printf( "\n\n");
 }
 
 }} // namespace psi::cceom

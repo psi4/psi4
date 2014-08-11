@@ -35,7 +35,7 @@ namespace psi{ namespace occwave{
 
 void OCCWave::t2_2nd_general()
 {   
-     //psi::fprintf(outfile,"\n t2_2nd_general is starting... \n"); fflush(outfile);
+     //outfile->Printf("\n t2_2nd_general is starting... \n"); 
 
 //===========================================================================================
 //========================= RHF =============================================================
@@ -172,7 +172,7 @@ if (reference_ == "RESTRICTED") {
                   ID("[O,O]"), ID("[V,V]"), 0, "D <OO|VV>");
     global_dpd_->buf4_dirprd(&D, &Tnew);
     global_dpd_->buf4_close(&D);
-    if (print_ > 2) global_dpd_->buf4_print(&Tnew, outfile, 1);
+    if (print_ > 2) global_dpd_->buf4_print(&Tnew, "outfile", 1);
     global_dpd_->buf4_close(&Tnew);
     
 
@@ -196,7 +196,7 @@ if (reference_ == "RESTRICTED") {
     
     // Reset
     global_dpd_->buf4_copy(&Tnew, PSIF_OCC_DPD, "T2_2 <OO|VV>");
-    if (print_ > 1) global_dpd_->buf4_print(&Tnew, outfile, 1);
+    if (print_ > 1) global_dpd_->buf4_print(&Tnew, "outfile", 1);
     global_dpd_->buf4_close(&Tnew);
 
     // Make arrangements for MP2.5
@@ -446,7 +446,7 @@ else if (reference_ == "UNRESTRICTED") {
                   ID("[O,O]"), ID("[V,V]"), 0, "D <OO|VV>");
     global_dpd_->buf4_dirprd(&D, &Tnew);
     global_dpd_->buf4_close(&D);
-    if (print_ > 2) global_dpd_->buf4_print(&Tnew, outfile, 1);
+    if (print_ > 2) global_dpd_->buf4_print(&Tnew, "outfile", 1);
     global_dpd_->buf4_close(&Tnew);
     
 /********************************************************************************************/
@@ -607,7 +607,7 @@ else if (reference_ == "UNRESTRICTED") {
                   ID("[o,o]"), ID("[v,v]"), 0, "D <oo|vv>");
     global_dpd_->buf4_dirprd(&D, &Tnew);
     global_dpd_->buf4_close(&D);
-    if (print_ > 2) global_dpd_->buf4_print(&Tnew, outfile, 1);
+    if (print_ > 2) global_dpd_->buf4_print(&Tnew, "outfile", 1);
     global_dpd_->buf4_close(&Tnew);
     
     
@@ -783,7 +783,7 @@ else if (reference_ == "UNRESTRICTED") {
                   ID("[O,o]"), ID("[V,v]"), 0, "D <Oo|Vv>");
     global_dpd_->buf4_dirprd(&D, &Tnew);
     global_dpd_->buf4_close(&D);
-    if (print_ > 2) global_dpd_->buf4_print(&Tnew, outfile, 1);
+    if (print_ > 2) global_dpd_->buf4_print(&Tnew, "outfile", 1);
     global_dpd_->buf4_close(&Tnew);
     
     
@@ -811,7 +811,7 @@ else if (reference_ == "UNRESTRICTED") {
     
     // Reset
     global_dpd_->buf4_copy(&Tnew, PSIF_OCC_DPD, "T2_2 <OO|VV>");
-    if (print_ > 1) global_dpd_->buf4_print(&Tnew, outfile, 1);
+    if (print_ > 1) global_dpd_->buf4_print(&Tnew, "outfile", 1);
     global_dpd_->buf4_close(&Tnew);
     
     // Make arrangements for MP2.5
@@ -843,7 +843,7 @@ else if (reference_ == "UNRESTRICTED") {
     
     // Reset
     global_dpd_->buf4_copy(&Tnew, PSIF_OCC_DPD, "T2_2 <oo|vv>");
-    if (print_ > 1) global_dpd_->buf4_print(&Tnew, outfile, 1);
+    if (print_ > 1) global_dpd_->buf4_print(&Tnew, "outfile", 1);
     global_dpd_->buf4_close(&Tnew);
     
     // Make arrangements for MP2.5
@@ -874,7 +874,7 @@ else if (reference_ == "UNRESTRICTED") {
     
     // Reset
     global_dpd_->buf4_copy(&Tnew, PSIF_OCC_DPD, "T2_2 <Oo|Vv>");
-    if (print_ > 1) global_dpd_->buf4_print(&Tnew, outfile, 1);
+    if (print_ > 1) global_dpd_->buf4_print(&Tnew, "outfile", 1);
     global_dpd_->buf4_close(&Tnew);
 
     // Make arrangements for MP2.5
@@ -954,7 +954,7 @@ else if (reference_ == "UNRESTRICTED") {
     psio_->close(PSIF_OCC_DPD, 1);
     
 }// end if (reference_ == "UNRESTRICTED") 
- //psi::fprintf(outfile,"\n t2_2nd_general done. \n"); fflush(outfile);
+ //outfile->Printf("\n t2_2nd_general done. \n"); 
 
 } // end t2_2nd_general
 }} // End Namespaces

@@ -104,7 +104,7 @@ void MRCCSD_T::startup()
   form_V_jk_c_m(V_jK_C_m,1.0,0.0);  // = <jk|mc>
 
   if(options_.get_bool("FAVG_CCSD_T")){
-    psi::fprintf(outfile,"\n\n  Using the average Fock matrix for the all references\n");
+    outfile->Printf("\n\n  Using the average Fock matrix for the all references\n");
     for(int mu = 0; mu < nrefs; ++mu){
       int unique_mu = moinfo->get_ref_number(mu,AllRefs);
       double c_mu_2 = h_eff->get_zeroth_order_eigenvector(unique_mu)
@@ -455,66 +455,66 @@ void MRCCSD_T::check_intruders()
 
     int max_aaa = std::min(10,static_cast<int>(aaa_sample.size()));
     if(max_aaa > 0){
-      psi::fprintf(outfile,"\n\n  Intruders diagnostics for reference %d, AAA triple excitations",mu);
-      psi::fprintf(outfile,"\n  has found the following denominators with absolute value < 0.1\n");
+      outfile->Printf("\n\n  Intruders diagnostics for reference %d, AAA triple excitations",mu);
+      outfile->Printf("\n  has found the following denominators with absolute value < 0.1\n");
       std::sort(aaa_sample.begin(),aaa_sample.end());
       for(int n = 0; n < max_aaa; ++n){
-        psi::fprintf(outfile,"\n  [%3d][%3d][%3d] -> [%3d][%3d][%3d] = %12.8f",
+        outfile->Printf("\n  [%3d][%3d][%3d] -> [%3d][%3d][%3d] = %12.8f",
             aaa_sample[n].second[0],aaa_sample[n].second[1],aaa_sample[n].second[2],
             aaa_sample[n].second[3],aaa_sample[n].second[4],aaa_sample[n].second[5],
             aaa_sample[n].first);
       }
-      psi::fprintf(outfile,"\n  please check your results.");
+      outfile->Printf("\n  please check your results.");
     }
 
     int max_aab = std::min(10,static_cast<int>(aab_sample.size()));
     if(max_aab > 0){
-      psi::fprintf(outfile,"\n\n  Intruders diagnostics for reference %d, AAB triple excitations",mu);
-      psi::fprintf(outfile,"\n  has found the following denominators with absolute value < 0.1\n");
+      outfile->Printf("\n\n  Intruders diagnostics for reference %d, AAB triple excitations",mu);
+      outfile->Printf("\n  has found the following denominators with absolute value < 0.1\n");
 
       std::sort(aab_sample.begin(),aab_sample.end());
       for(int n = 0; n < max_aab; ++n){
-        psi::fprintf(outfile,"\n  [%3d][%3d][%3d] -> [%3d][%3d][%3d] = %12.8f",
+        outfile->Printf("\n  [%3d][%3d][%3d] -> [%3d][%3d][%3d] = %12.8f",
             aab_sample[n].second[0],aab_sample[n].second[1],aab_sample[n].second[2],
             aab_sample[n].second[3],aab_sample[n].second[4],aab_sample[n].second[5],
             aab_sample[n].first);
       }
-      psi::fprintf(outfile,"\n\n  please check your results.");
+      outfile->Printf("\n\n  please check your results.");
     }
     if((max_aaa + max_aab) > 0 ){
-      psi::fprintf(outfile,"\n  Orbital labels used to describe the intruder triple excitations refer to"
+      outfile->Printf("\n  Orbital labels used to describe the intruder triple excitations refer to"
                       "\n  the occupied (docc + actv) and the virtual (actv + extr) spaces.");
 
-      psi::fprintf(outfile,"\n\n  Printing occupied orbital energies for reference %d",mu);
+      outfile->Printf("\n\n  Printing occupied orbital energies for reference %d",mu);
       CCIndexIterator  i("[o]");
-      psi::fprintf(outfile,"\n   OCC   MO      e(alpha)         e(beta)");
+      outfile->Printf("\n   OCC   MO      e(alpha)         e(beta)");
       for(i.first(); !i.end();i.next()){
-        psi::fprintf(outfile,"\n  %4d %4d",i.ind_abs<0>(),occ_to_mo[i.ind_abs<0>()]);
+        outfile->Printf("\n  %4d %4d",i.ind_abs<0>(),occ_to_mo[i.ind_abs<0>()]);
         if(is_aocc[mu][i.ind_abs<0>()]){
-          psi::fprintf(outfile,"%15.9f  ",e_oo[mu][i.ind_abs<0>()]);
+          outfile->Printf("%15.9f  ",e_oo[mu][i.ind_abs<0>()]);
         }else{
-          psi::fprintf(outfile,"         ---   ");
+          outfile->Printf("         ---   ");
         }
         if(is_bocc[mu][i.ind_abs<0>()]){
-          psi::fprintf(outfile,"%15.9f",e_OO[mu][i.ind_abs<0>()]);
+          outfile->Printf("%15.9f",e_OO[mu][i.ind_abs<0>()]);
         }else{
-          psi::fprintf(outfile,"           ---");
+          outfile->Printf("           ---");
         }
       }
-      psi::fprintf(outfile,"\n\n  Printing virtual orbital energies for reference %d",mu);
+      outfile->Printf("\n\n  Printing virtual orbital energies for reference %d",mu);
       CCIndexIterator  a("[v]");
-      psi::fprintf(outfile,"\n   VIR   MO      e(alpha)         e(beta)");
+      outfile->Printf("\n   VIR   MO      e(alpha)         e(beta)");
       for(a.first(); !a.end();a.next()){
-        psi::fprintf(outfile,"\n  %4d %4d",a.ind_abs<0>(),vir_to_mo[a.ind_abs<0>()]);
+        outfile->Printf("\n  %4d %4d",a.ind_abs<0>(),vir_to_mo[a.ind_abs<0>()]);
         if(is_avir[mu][a.ind_abs<0>()]){
-          psi::fprintf(outfile,"%15.9f  ",e_vv[mu][a.ind_abs<0>()]);
+          outfile->Printf("%15.9f  ",e_vv[mu][a.ind_abs<0>()]);
         }else{
-          psi::fprintf(outfile,"         ---   ");
+          outfile->Printf("         ---   ");
         }
         if(is_bvir[mu][a.ind_abs<0>()]){
-          psi::fprintf(outfile,"%15.9f",e_VV[mu][a.ind_abs<0>()]);
+          outfile->Printf("%15.9f",e_VV[mu][a.ind_abs<0>()]);
         }else{
-          psi::fprintf(outfile,"           ---");
+          outfile->Printf("           ---");
         }
       }
 
@@ -524,11 +524,11 @@ void MRCCSD_T::check_intruders()
 
   /*
   for(int mu = 0; mu < nrefs; ++mu){
-    psi::fprintf(outfile,"\n  @=@%d %.9f",mu,Mk_shift[mu]);
+    outfile->Printf("\n  @=@%d %.9f",mu,Mk_shift[mu]);
   }
 
   for(int mu = 0; mu < nrefs; ++mu){
-    psi::fprintf(outfile,"\n  @@@%d ",mu);
+    outfile->Printf("\n  @@@%d ",mu);
     // Loop over ijk
     CCIndexIterator  ijk("[ooo]");
     for(ijk.first(); !ijk.end(); ijk.next()){
@@ -550,7 +550,7 @@ void MRCCSD_T::check_intruders()
               double D_ijk = e_oo[mu][i_abs] + e_oo[mu][j_abs] + e_oo[mu][k_abs];
               double D_abc = e_vv[mu][a_abs] + e_vv[mu][b_abs] + e_vv[mu][c_abs];
               double denominator = D_ijk - D_abc;
-              psi::fprintf(outfile," %.6f",denominator);
+              outfile->Printf(" %.6f",denominator);
             }
           }
         }
@@ -561,7 +561,7 @@ void MRCCSD_T::check_intruders()
 
 
   for(int mu = 0; mu < nrefs; ++mu){
-    psi::fprintf(outfile,"\n  @@#%d ",mu);
+    outfile->Printf("\n  @@#%d ",mu);
     // Loop over ijk
     CCIndexIterator  ijk("[ooo]");
     for(ijk.first(); !ijk.end(); ijk.next()){
@@ -584,7 +584,7 @@ void MRCCSD_T::check_intruders()
               double D_ijk = e_oo[mu][i_abs] + e_oo[mu][j_abs] + e_OO[mu][k_abs];
               double D_abc = e_vv[mu][a_abs] + e_vv[mu][b_abs] + e_VV[mu][c_abs];
               double denominator = D_ijk - D_abc;
-              psi::fprintf(outfile," %.6f",denominator);
+              outfile->Printf(" %.6f",denominator);
             }
           }
         }

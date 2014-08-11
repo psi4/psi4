@@ -90,7 +90,7 @@ void get_mo_info(void)
                 CalcInfo.rstr_docc, CalcInfo.rstr_uocc,
                 CalcInfo.ras_opi, CalcInfo.pitz2ci, 1, 0)) 
    { 
-     psi::fprintf(outfile, "Error in ras_set().  Aborting.\n");
+     outfile->Printf( "Error in ras_set().  Aborting.\n");
      throw PsiException("detcas: error", __FILE__, __LINE__);
    }
    
@@ -129,11 +129,11 @@ void get_mo_info(void)
   } 
 
   if (Params.print_lvl > 4) {
-    psi::fprintf(outfile, "\nPitzer to CI order array = \n");
+    outfile->Printf( "\nPitzer to CI order array = \n");
     for (i=0; i<CalcInfo.nmo; i++) {
-      psi::fprintf(outfile, "%3d ", CalcInfo.pitz2ci[i]);
+      outfile->Printf( "%3d ", CalcInfo.pitz2ci[i]);
     }
-    psi::fprintf(outfile, "\n");
+    outfile->Printf( "\n");
   }
 
 
@@ -234,44 +234,44 @@ void get_mo_info(void)
   }
   
   if (Params.print_lvl > 0) {
-    psi::fprintf(outfile, "ORBITALS:");
-    psi::fprintf(outfile, "\n   FROZEN_DOCC   = ");
+    outfile->Printf( "ORBITALS:");
+    outfile->Printf( "\n   FROZEN_DOCC   = ");
     for (i=0; i<CalcInfo.nirreps; i++) {
-      psi::fprintf(outfile, "%2d ", CalcInfo.frozen_docc[i]);
+      outfile->Printf( "%2d ", CalcInfo.frozen_docc[i]);
     }
-    psi::fprintf(outfile, "\n   RESTR_DOCC    = ");
+    outfile->Printf( "\n   RESTR_DOCC    = ");
     for (i=0; i<CalcInfo.nirreps; i++) {
-      psi::fprintf(outfile, "%2d ", CalcInfo.rstr_docc[i]);
+      outfile->Printf( "%2d ", CalcInfo.rstr_docc[i]);
     }
-    psi::fprintf(outfile, "\n   DOCC          = ");
+    outfile->Printf( "\n   DOCC          = ");
     for (i=0; i<CalcInfo.nirreps; i++) {
-      psi::fprintf(outfile, "%2d ", CalcInfo.docc[i]);
+      outfile->Printf( "%2d ", CalcInfo.docc[i]);
     }
-    psi::fprintf(outfile, "\n   SOCC          = ");
+    outfile->Printf( "\n   SOCC          = ");
     for (i=0; i<CalcInfo.nirreps; i++) {
-      psi::fprintf(outfile, "%2d ", CalcInfo.socc[i]);
+      outfile->Printf( "%2d ", CalcInfo.socc[i]);
     }
-    psi::fprintf(outfile, "\n   RESTR_UOCC    = ");
+    outfile->Printf( "\n   RESTR_UOCC    = ");
     for (i=0; i<CalcInfo.nirreps; i++) {
-      psi::fprintf(outfile, "%2d ", CalcInfo.rstr_uocc[i]);
+      outfile->Printf( "%2d ", CalcInfo.rstr_uocc[i]);
     }
-    psi::fprintf(outfile, "\n   FROZEN_UOCC   = ");
+    outfile->Printf( "\n   FROZEN_UOCC   = ");
     for (i=0; i<CalcInfo.nirreps; i++) {
-      psi::fprintf(outfile, "%2d ", CalcInfo.frozen_uocc[i]);
+      outfile->Printf( "%2d ", CalcInfo.frozen_uocc[i]);
     }
 
     for (i=0; i<MAX_RAS_SPACES; i++) {
-      psi::fprintf(outfile, "\n   RAS %d         = ",i+1);
+      outfile->Printf( "\n   RAS %d         = ",i+1);
       for (j=0; j<CalcInfo.nirreps; j++) {
-        psi::fprintf(outfile, "%2d ", CalcInfo.ras_opi[i][j]);
+        outfile->Printf( "%2d ", CalcInfo.ras_opi[i][j]);
       }
     }
-    psi::fprintf(outfile, "\n");
+    outfile->Printf( "\n");
 
-    psi::fprintf(outfile, "   MOL ORBS      =   %6d\n", CalcInfo.nmo);
-    psi::fprintf(outfile, "   FROZEN CORE   =   %6d      RESTR CORE   =   %6d\n",
+    outfile->Printf( "   MOL ORBS      =   %6d\n", CalcInfo.nmo);
+    outfile->Printf( "   FROZEN CORE   =   %6d      RESTR CORE   =   %6d\n",
         CalcInfo.num_fzc_orbs, CalcInfo.num_cor_orbs);
-    psi::fprintf(outfile, "\n");
+    outfile->Printf( "\n");
   }
 }
 
@@ -417,7 +417,7 @@ double *** construct_evects(int nirreps, int *active, int *orbspi,
       }
 
       if(printflag) {
-        psi::fprintf(outfile,"\n\tMolecular Orbitals for Irrep %s\n",
+        outfile->Printf("\n\tMolecular Orbitals for Irrep %s\n",
                 CalcInfo.labels[h]);
         print_mat(evects[h],orbspi[h],active[h],outfile);
       }

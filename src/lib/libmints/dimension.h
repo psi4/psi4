@@ -29,7 +29,7 @@
 
 namespace psi {
 
-extern FILE *outfile;
+
 
 class Dimension
 {

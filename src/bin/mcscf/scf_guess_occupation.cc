@@ -69,13 +69,13 @@ void SCF::guess_occupation()
     }
 
     if((new_docc != docc) || (new_actv != actv)){
-      psi::fprintf(outfile,"\n\n  Occupation changed");
-      psi::fprintf(outfile,"\n  docc = (");
-      for(int h = 0; h < nirreps; ++h)  psi::fprintf(outfile," %d",new_docc[h]);
-      psi::fprintf(outfile," )");
-      psi::fprintf(outfile,"\n  actv = (");
-      for(int h = 0; h < nirreps; ++h)  psi::fprintf(outfile," %d",new_actv[h]);
-      psi::fprintf(outfile," )\n");
+      outfile->Printf("\n\n  Occupation changed");
+      outfile->Printf("\n  docc = (");
+      for(int h = 0; h < nirreps; ++h)  outfile->Printf(" %d",new_docc[h]);
+      outfile->Printf(" )");
+      outfile->Printf("\n  actv = (");
+      for(int h = 0; h < nirreps; ++h)  outfile->Printf(" %d",new_actv[h]);
+      outfile->Printf(" )\n");
     }
     docc = new_docc;
     actv = new_actv;

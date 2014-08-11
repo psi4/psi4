@@ -25,7 +25,7 @@
 #include "BSSEer.h"
 #include "Fragmenter.h"
 #include "Capper.h"
-
+#include "Embedder.h"
 namespace LibFrag{
 
 std::string FragOptions::ToString(const FragMethods& F){
@@ -102,12 +102,16 @@ void FragOptions::SetFMethod(const std::string& Frag){
 void FragOptions::SetEMethod(const std::string& Embed){
    if(Embed=="none"||Embed=="no_embed"||Embed=="no"||Embed=="false")
       EMethod=NO_EMBED;
-   else if(Embed=="point_charge"||Embed=="charges")EMethod=POINT_CHARGE;
-   else if(Embed=="iterative"||Embed=="iterative_point_charge")
+   else if(Embed=="point_charge"||Embed=="charges"||Embed=="charge")
+      EMethod=POINT_CHARGE;
+   else if(Embed=="iterative"||Embed=="itr_charges"||Embed=="itr_charge"||
+         Embed=="iterative_point_charge")
       EMethod=ITR_POINT_CHARGE;
    else if(Embed=="density")EMethod=DENSITY;
    else if(Embed=="itr_density"||Embed=="iterative_density")
       EMethod=ITR_DENSITY;
+   else
+      throw psi::PSIEXCEPTION("Unrecognized embedding method");
 }
 
 void FragOptions::SetCMethod(const std::string& Cap){
@@ -131,23 +135,23 @@ void FragOptions::SetBMethod(const std::string& BSSE){
 void FragOptions::PrintOptions(){
    std::string stars=
          "\n**************************************************************************";
-   psi::fprintf(psi::outfile,stars.c_str());
-   psi::fprintf(psi::outfile,
+   psi::outfile->Printf(stars.c_str());
+   psi::outfile->Printf(
 "\n******************** Many-Body Expansion (MBE) module ********************"
     );
-   psi::fprintf(psi::outfile,stars.c_str());
-   psi::fprintf(psi::outfile,
+   psi::outfile->Printf(stars.c_str());
+   psi::outfile->Printf(
      "\n\nA %d-body expansion is being performed with the following options:\n"
          ,MBEOrder);
-   psi::fprintf(psi::outfile,"Fragmenting system via: %s\n",
+   psi::outfile->Printf("Fragmenting system via: %s\n",
          (ToString(FMethod)).c_str());
-   if(EMethod!=NO_EMBED)psi::fprintf(psi::outfile,"Embedding via: %s\n",
+   if(EMethod!=NO_EMBED)psi::outfile->Printf("Embedding via: %s\n",
          (ToString(EMethod)).c_str());
-   if(CMethod!=NO_CAPS)psi::fprintf(psi::outfile,"Capping via: %s\n",
+   if(CMethod!=NO_CAPS)psi::outfile->Printf("Capping via: %s\n",
          (ToString(CMethod)).c_str());
-   if(BMethod!=NO_BSSE)psi::fprintf(psi::outfile,"BSSE Corrections via: %s\n",
+   if(BMethod!=NO_BSSE)psi::outfile->Printf("BSSE Corrections via: %s\n",
          (ToString(BMethod)).c_str());
-   psi::fprintf(psi::outfile,
+   psi::outfile->Printf(
    "\n**************************************************************************\n"
     );
 }
@@ -226,7 +230,27 @@ boost::shared_ptr<Capper> FragOptions::MakeCapFactory(SharedMol& AMol)const{
    }
    return Factory;
 }
-
+boost::shared_ptr<Embedder> FragOptions::MakeEmbedFactory(SharedMol& AMol)const{
+   boost::shared_ptr<Embedder> Factory;
+   switch(EMethod){
+      case(NO_EMBED):{
+         break;
+      }
+      case(POINT_CHARGE):{
+         Factory=boost::shared_ptr<Embedder>(new APCEmbedder(AMol,false));
+         break;
+      }
+      case(ITR_POINT_CHARGE):{
+         Factory=boost::shared_ptr<Embedder>(new APCEmbedder(AMol,true));
+         break;
+      }
+      default:{
+         throw psi::PSIEXCEPTION("Unrecognized or un-coded Embedding method");
+         break;
+      }
+   }
+   return Factory;
+}
 }//End namespace
 
 

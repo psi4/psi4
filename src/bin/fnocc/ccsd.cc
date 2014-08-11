@@ -359,39 +359,39 @@ double CoupledCluster::compute_energy() {
 }
 
 void CoupledCluster::WriteBanner(){
-  fflush(outfile);
-  psi::fprintf(outfile,"\n\n");
-  psi::fprintf(outfile,     "        *****************************************************\n");
-  psi::fprintf(outfile,     "        *                                                   *\n");
+  
+  outfile->Printf("\n\n");
+  outfile->Printf(     "        *****************************************************\n");
+  outfile->Printf(     "        *                                                   *\n");
   if (isccsd)
-      psi::fprintf(outfile, "        *                       CCSD                        *\n");
+      outfile->Printf( "        *                       CCSD                        *\n");
   else if (mp2_only)
-      psi::fprintf(outfile, "        *                        MP2                        *\n");
+      outfile->Printf( "        *                        MP2                        *\n");
   else if (mp4_only)
-      psi::fprintf(outfile, "        *                        MP4                        *\n");
+      outfile->Printf( "        *                        MP4                        *\n");
   else if (mp3_only)
-      psi::fprintf(outfile, "        *                        MP3                        *\n");
+      outfile->Printf( "        *                        MP3                        *\n");
   else
-      psi::fprintf(outfile, "        *                       QCISD                       *\n");
-  psi::fprintf(outfile,     "        *                  Eugene DePrince                  *\n");
-  psi::fprintf(outfile,     "        *                                                   *\n");
-  psi::fprintf(outfile,     "        *****************************************************\n");
-  psi::fprintf(outfile,"\n\n");
-  fflush(outfile);
+      outfile->Printf( "        *                       QCISD                       *\n");
+  outfile->Printf(     "        *                  Eugene DePrince                  *\n");
+  outfile->Printf(     "        *                                                   *\n");
+  outfile->Printf(     "        *****************************************************\n");
+  outfile->Printf("\n\n");
+  
   WriteOptions();
 }
 void CoupledCluster::WriteOptions(){
-    psi::fprintf(outfile,"\n");
-    psi::fprintf(outfile,"  ==> Input parameters <==\n\n");
-    psi::fprintf(outfile,"        Freeze core orbitals?               %5s\n",nfzc > 0 ? "yes" : "no");
-    psi::fprintf(outfile,"        Use frozen natural orbitals?        %5s\n",options_.get_bool("NAT_ORBS") ? "yes" : "no");
-    psi::fprintf(outfile,"        r_convergence:                  %5.3le\n",r_conv);
-    psi::fprintf(outfile,"        e_convergence:                  %5.3le\n",e_conv);
-    psi::fprintf(outfile,"        Number of DIIS vectors:             %5li\n",maxdiis);
-    psi::fprintf(outfile,"        Number of frozen core orbitals:     %5li\n",nfzc);
-    psi::fprintf(outfile,"        Number of active occupied orbitals: %5li\n",ndoccact);
-    psi::fprintf(outfile,"        Number of active virtual orbitals:  %5li\n",nvirt);
-    psi::fprintf(outfile,"        Number of frozen virtual orbitals:  %5li\n",nfzv);
+    outfile->Printf("\n");
+    outfile->Printf("  ==> Input parameters <==\n\n");
+    outfile->Printf("        Freeze core orbitals?               %5s\n",nfzc > 0 ? "yes" : "no");
+    outfile->Printf("        Use frozen natural orbitals?        %5s\n",options_.get_bool("NAT_ORBS") ? "yes" : "no");
+    outfile->Printf("        r_convergence:                  %5.3le\n",r_conv);
+    outfile->Printf("        e_convergence:                  %5.3le\n",e_conv);
+    outfile->Printf("        Number of DIIS vectors:             %5li\n",maxdiis);
+    outfile->Printf("        Number of frozen core orbitals:     %5li\n",nfzc);
+    outfile->Printf("        Number of active occupied orbitals: %5li\n",ndoccact);
+    outfile->Printf("        Number of active virtual orbitals:  %5li\n",nvirt);
+    outfile->Printf("        Number of frozen virtual orbitals:  %5li\n",nfzv);
 }
 
 /*===================================================================
@@ -414,17 +414,17 @@ PsiReturnType CoupledCluster::CCSDIterations() {
   boost::shared_ptr<PSIO> psio(new PSIO());
   psio_address addr;
 
-  psi::fprintf(outfile,"\n");
+  outfile->Printf("\n");
   if (isccsd) {
-     psi::fprintf(outfile,
+     outfile->Printf(
        "  Begin singles and doubles coupled cluster iterations\n\n");
   }else {
-     psi::fprintf(outfile,
+     outfile->Printf(
        "  Begin singles and doubles quadratic ci iterations\n\n");
   }
-  psi::fprintf(outfile,
+  outfile->Printf(
     "   Iter  DIIS          Energy       d(Energy)          |d(T)|     time\n");
-  fflush(outfile);
+  
 
   // zero residual
   psio->open(PSIF_DCC_R2,PSIO_OPEN_NEW);
@@ -456,13 +456,13 @@ PsiReturnType CoupledCluster::CCSDIterations() {
 
       // evaluate cc/qci diagrams
       memset((void*)w1,'\0',o*v*sizeof(double));
-      if (timer) psi::fprintf(outfile,"\n");
+      if (timer) outfile->Printf("\n");
       for (int i = 0; i < ncctasks; i++) {
           if (timer) s1 = omp_get_wtime();
           (*this.*CCTasklist[i].func)(CCParams[i]);
-          if (timer) psi::fprintf(outfile,"        %s ... %6.2lf s\n",CCTasklist[i].name,omp_get_wtime()-s1);
+          if (timer) outfile->Printf("        %s ... %6.2lf s\n",CCTasklist[i].name,omp_get_wtime()-s1);
       }
-      if (timer) psi::fprintf(outfile,"\n");
+      if (timer) outfile->Printf("\n");
 
       // update the amplitudes
       Eold = eccsd;
@@ -500,9 +500,9 @@ PsiReturnType CoupledCluster::CCSDIterations() {
       else    replace_diis_iter = 1;
 
       time_t iter_stop = time(NULL);
-      psi::fprintf(outfile,"  %5i   %i %i %15.10f %15.10f %15.10f %8d\n",
+      outfile->Printf("  %5i   %i %i %15.10f %15.10f %15.10f %8d\n",
             iter,diis_iter-1,replace_diis_iter,eccsd,eccsd-Eold,nrm,(int)iter_stop-(int)iter_start);
-      fflush(outfile);
+      
       iter++;
 
       // energy and amplitude convergence check
@@ -530,17 +530,17 @@ PsiReturnType CoupledCluster::CCSDIterations() {
      SCS_CCSD();
   }
 
-  psi::fprintf(outfile,"\n");
+  outfile->Printf("\n");
   if (isccsd)
-     psi::fprintf(outfile,"  CCSD iterations converged!\n");
+     outfile->Printf("  CCSD iterations converged!\n");
   else
-     psi::fprintf(outfile,"  QCISD iterations converged!\n");
-  psi::fprintf(outfile,"\n");
+     outfile->Printf("  QCISD iterations converged!\n");
+  outfile->Printf("\n");
 
   // T1 and D1 diagnostics:
 
   double t1diag = C_DNRM2(o*v,t1,1) / sqrt(2.0 * o);
-  psi::fprintf(outfile,"        T1 diagnostic:                   %20.12lf\n",t1diag);
+  outfile->Printf("        T1 diagnostic:                   %20.12lf\n",t1diag);
   boost::shared_ptr<Matrix>T (new Matrix(o,o));
   boost::shared_ptr<Matrix>eigvec (new Matrix(o,o));
   boost::shared_ptr<Vector>eigval (new Vector(o));
@@ -555,8 +555,8 @@ PsiReturnType CoupledCluster::CCSDIterations() {
       }
   }
   T->diagonalize(eigvec,eigval,descending);
-  psi::fprintf(outfile,"        D1 diagnostic:                   %20.12lf\n",sqrt(eigval->pointer()[0]));
-  psi::fprintf(outfile,"\n");
+  outfile->Printf("        D1 diagnostic:                   %20.12lf\n",sqrt(eigval->pointer()[0]));
+  outfile->Printf("\n");
 
   // delta mp2 correction for fno computations:
   if (options_.get_bool("NAT_ORBS")){
@@ -572,77 +572,77 @@ PsiReturnType CoupledCluster::CCSDIterations() {
       eccsd_os += delta_emp2_os;
       eccsd_ss += delta_emp2_ss;
 
-      psi::fprintf(outfile,"        OS MP2 FNO correction:           %20.12lf\n",delta_emp2_os);
-      psi::fprintf(outfile,"        SS MP2 FNO correction:           %20.12lf\n",delta_emp2_ss);
-      psi::fprintf(outfile,"        MP2 FNO correction:              %20.12lf\n",delta_emp2);
-      psi::fprintf(outfile,"\n");
+      outfile->Printf("        OS MP2 FNO correction:           %20.12lf\n",delta_emp2_os);
+      outfile->Printf("        SS MP2 FNO correction:           %20.12lf\n",delta_emp2_ss);
+      outfile->Printf("        MP2 FNO correction:              %20.12lf\n",delta_emp2);
+      outfile->Printf("\n");
   }
 
   if (options_.get_bool("SCS_MP2")){
-      psi::fprintf(outfile,"        OS SCS-MP2 correlation energy:   %20.12lf\n",emp2_os*emp2_os_fac);
-      psi::fprintf(outfile,"        SS SCS-MP2 correlation energy:   %20.12lf\n",emp2_ss*emp2_ss_fac);
-      psi::fprintf(outfile,"        SCS-MP2 correlation energy:      %20.12lf\n",emp2_os*emp2_os_fac+emp2_ss*emp2_ss_fac);
-      psi::fprintf(outfile,"      * SCS-MP2 total energy:            %20.12lf\n",emp2_os*emp2_os_fac+emp2_ss*emp2_ss_fac+escf);
-      psi::fprintf(outfile,"\n");
+      outfile->Printf("        OS SCS-MP2 correlation energy:   %20.12lf\n",emp2_os*emp2_os_fac);
+      outfile->Printf("        SS SCS-MP2 correlation energy:   %20.12lf\n",emp2_ss*emp2_ss_fac);
+      outfile->Printf("        SCS-MP2 correlation energy:      %20.12lf\n",emp2_os*emp2_os_fac+emp2_ss*emp2_ss_fac);
+      outfile->Printf("      * SCS-MP2 total energy:            %20.12lf\n",emp2_os*emp2_os_fac+emp2_ss*emp2_ss_fac+escf);
+      outfile->Printf("\n");
   }
-  psi::fprintf(outfile,"        OS MP2 correlation energy:       %20.12lf\n",emp2_os);
-  psi::fprintf(outfile,"        SS MP2 correlation energy:       %20.12lf\n",emp2_ss);
-  psi::fprintf(outfile,"        MP2 correlation energy:          %20.12lf\n",emp2);
-  psi::fprintf(outfile,"      * MP2 total energy:                %20.12lf\n",emp2+escf);
-  psi::fprintf(outfile,"\n");
-  psi::fprintf(outfile,"        OS MP2.5 correlation energy:     %20.12lf\n",emp2_os+0.5*emp3_os);
-  psi::fprintf(outfile,"        SS MP2.5 correlation energy:     %20.12lf\n",emp2_ss+0.5*emp3_ss);
-  psi::fprintf(outfile,"        MP2.5 correlation energy:        %20.12lf\n",emp2+0.5*emp3);
-  psi::fprintf(outfile,"      * MP2.5 total energy:              %20.12lf\n",emp2+0.5*emp3+escf);
-  psi::fprintf(outfile,"\n");
-  psi::fprintf(outfile,"        OS MP3 correlation energy:       %20.12lf\n",emp2_os+emp3_os);
-  psi::fprintf(outfile,"        SS MP3 correlation energy:       %20.12lf\n",emp2_ss+emp3_ss);
-  psi::fprintf(outfile,"        MP3 correlation energy:          %20.12lf\n",emp2+emp3);
-  psi::fprintf(outfile,"      * MP3 total energy:                %20.12lf\n",emp2+emp3+escf);
-  psi::fprintf(outfile,"\n");
-  psi::fprintf(outfile,"        OS MP4(SDQ) correlation energy:  %20.12lf\n",emp2_os+emp3_os+emp4_sd_os+emp4_q_os);
-  psi::fprintf(outfile,"        SS MP4(SDQ) correlation energy:  %20.12lf\n",emp2_ss+emp3_ss+emp4_sd_ss+emp4_q_os);
-  psi::fprintf(outfile,"        MP4(SDQ) correlation energy:     %20.12lf\n",emp2+emp3+emp4_sd+emp4_q);
-  psi::fprintf(outfile,"      * MP4(SDQ) total energy:           %20.12lf\n",emp2+emp3+emp4_sd+emp4_q+escf);
-  psi::fprintf(outfile,"\n");
+  outfile->Printf("        OS MP2 correlation energy:       %20.12lf\n",emp2_os);
+  outfile->Printf("        SS MP2 correlation energy:       %20.12lf\n",emp2_ss);
+  outfile->Printf("        MP2 correlation energy:          %20.12lf\n",emp2);
+  outfile->Printf("      * MP2 total energy:                %20.12lf\n",emp2+escf);
+  outfile->Printf("\n");
+  outfile->Printf("        OS MP2.5 correlation energy:     %20.12lf\n",emp2_os+0.5*emp3_os);
+  outfile->Printf("        SS MP2.5 correlation energy:     %20.12lf\n",emp2_ss+0.5*emp3_ss);
+  outfile->Printf("        MP2.5 correlation energy:        %20.12lf\n",emp2+0.5*emp3);
+  outfile->Printf("      * MP2.5 total energy:              %20.12lf\n",emp2+0.5*emp3+escf);
+  outfile->Printf("\n");
+  outfile->Printf("        OS MP3 correlation energy:       %20.12lf\n",emp2_os+emp3_os);
+  outfile->Printf("        SS MP3 correlation energy:       %20.12lf\n",emp2_ss+emp3_ss);
+  outfile->Printf("        MP3 correlation energy:          %20.12lf\n",emp2+emp3);
+  outfile->Printf("      * MP3 total energy:                %20.12lf\n",emp2+emp3+escf);
+  outfile->Printf("\n");
+  outfile->Printf("        OS MP4(SDQ) correlation energy:  %20.12lf\n",emp2_os+emp3_os+emp4_sd_os+emp4_q_os);
+  outfile->Printf("        SS MP4(SDQ) correlation energy:  %20.12lf\n",emp2_ss+emp3_ss+emp4_sd_ss+emp4_q_os);
+  outfile->Printf("        MP4(SDQ) correlation energy:     %20.12lf\n",emp2+emp3+emp4_sd+emp4_q);
+  outfile->Printf("      * MP4(SDQ) total energy:           %20.12lf\n",emp2+emp3+emp4_sd+emp4_q+escf);
+  outfile->Printf("\n");
 
   if (isccsd) {
      if (options_.get_bool("SCS_CCSD")){
-        psi::fprintf(outfile,"        OS SCS-CCSD correlation energy:  %20.12lf\n",eccsd_os*eccsd_os_fac);
-        psi::fprintf(outfile,"        SS SCS-CCSD correlation energy:  %20.12lf\n",eccsd_ss*eccsd_ss_fac);
-        psi::fprintf(outfile,"        SCS-CCSD correlation energy:     %20.12lf\n",eccsd_os*eccsd_os_fac+eccsd_ss*eccsd_ss_fac);
-        psi::fprintf(outfile,"      * SCS-CCSD total energy:           %20.12lf\n",eccsd_os*eccsd_os_fac+eccsd_ss*eccsd_ss_fac+escf);
-        psi::fprintf(outfile,"\n");
+        outfile->Printf("        OS SCS-CCSD correlation energy:  %20.12lf\n",eccsd_os*eccsd_os_fac);
+        outfile->Printf("        SS SCS-CCSD correlation energy:  %20.12lf\n",eccsd_ss*eccsd_ss_fac);
+        outfile->Printf("        SCS-CCSD correlation energy:     %20.12lf\n",eccsd_os*eccsd_os_fac+eccsd_ss*eccsd_ss_fac);
+        outfile->Printf("      * SCS-CCSD total energy:           %20.12lf\n",eccsd_os*eccsd_os_fac+eccsd_ss*eccsd_ss_fac+escf);
+        outfile->Printf("\n");
      }
-     psi::fprintf(outfile,"        OS CCSD correlation energy:      %20.12lf\n",eccsd_os);
-     psi::fprintf(outfile,"        SS CCSD correlation energy:      %20.12lf\n",eccsd_ss);
-     psi::fprintf(outfile,"        CCSD correlation energy:         %20.12lf\n",eccsd);
-     psi::fprintf(outfile,"      * CCSD total energy:               %20.12lf\n",eccsd+escf);
-     psi::fprintf(outfile,"\n");
-     psi::fprintf(outfile,"  Total time for CCSD iterations:  %10.2lf s (user)\n",user_stop-user_start);
+     outfile->Printf("        OS CCSD correlation energy:      %20.12lf\n",eccsd_os);
+     outfile->Printf("        SS CCSD correlation energy:      %20.12lf\n",eccsd_ss);
+     outfile->Printf("        CCSD correlation energy:         %20.12lf\n",eccsd);
+     outfile->Printf("      * CCSD total energy:               %20.12lf\n",eccsd+escf);
+     outfile->Printf("\n");
+     outfile->Printf("  Total time for CCSD iterations:  %10.2lf s (user)\n",user_stop-user_start);
   }else{
      if (options_.get_bool("SCS_CCSD")){
-        psi::fprintf(outfile,"        OS SCS-QCISD correlation energy: %20.12lf\n",eccsd_os*eccsd_os_fac);
-        psi::fprintf(outfile,"        SS SCS-QCISD correlation energy: %20.12lf\n",eccsd_ss*eccsd_ss_fac);
-        psi::fprintf(outfile,"        SCS-QCISD correlation energy:    %20.12lf\n",eccsd_os*eccsd_os_fac+eccsd_ss*eccsd_ss_fac);
-        psi::fprintf(outfile,"      * SCS-QCISD total energy:          %20.12lf\n",eccsd_os*eccsd_os_fac+eccsd_ss*eccsd_ss_fac+escf);
-        psi::fprintf(outfile,"\n");
+        outfile->Printf("        OS SCS-QCISD correlation energy: %20.12lf\n",eccsd_os*eccsd_os_fac);
+        outfile->Printf("        SS SCS-QCISD correlation energy: %20.12lf\n",eccsd_ss*eccsd_ss_fac);
+        outfile->Printf("        SCS-QCISD correlation energy:    %20.12lf\n",eccsd_os*eccsd_os_fac+eccsd_ss*eccsd_ss_fac);
+        outfile->Printf("      * SCS-QCISD total energy:          %20.12lf\n",eccsd_os*eccsd_os_fac+eccsd_ss*eccsd_ss_fac+escf);
+        outfile->Printf("\n");
      }
-     psi::fprintf(outfile,"        OS QCISD correlation energy:     %20.12lf\n",eccsd_os);
-     psi::fprintf(outfile,"        SS QCISD correlation energy:     %20.12lf\n",eccsd_ss);
-     psi::fprintf(outfile,"        QCISD correlation energy:        %20.12lf\n",eccsd);
-     psi::fprintf(outfile,"      * QCISD total energy:              %20.12lf\n",eccsd+escf);
-     psi::fprintf(outfile,"\n");
-     psi::fprintf(outfile,"  Total time for QCISD iterations: %10.2lf s (user)\n",user_stop-user_start);
+     outfile->Printf("        OS QCISD correlation energy:     %20.12lf\n",eccsd_os);
+     outfile->Printf("        SS QCISD correlation energy:     %20.12lf\n",eccsd_ss);
+     outfile->Printf("        QCISD correlation energy:        %20.12lf\n",eccsd);
+     outfile->Printf("      * QCISD total energy:              %20.12lf\n",eccsd+escf);
+     outfile->Printf("\n");
+     outfile->Printf("  Total time for QCISD iterations: %10.2lf s (user)\n",user_stop-user_start);
   }
 
-  psi::fprintf(outfile,"                                   %10.2lf s (system)\n",sys_stop-sys_start);
-  psi::fprintf(outfile,"                                   %10d s (total)\n",(int)time_stop-(int)time_start);
-  psi::fprintf(outfile,"\n");
-  psi::fprintf(outfile,"  Time per iteration:              %10.2lf s (user)\n",(user_stop-user_start)/iter);
-  psi::fprintf(outfile,"                                   %10.2lf s (system)\n",(sys_stop-sys_start)/iter);
-  psi::fprintf(outfile,"                                   %10.2lf s (total)\n",((double)time_stop-(double)time_start)/(iter-1));
-  fflush(outfile);
+  outfile->Printf("                                   %10.2lf s (system)\n",sys_stop-sys_start);
+  outfile->Printf("                                   %10d s (total)\n",(int)time_stop-(int)time_start);
+  outfile->Printf("\n");
+  outfile->Printf("  Time per iteration:              %10.2lf s (user)\n",(user_stop-user_start)/iter);
+  outfile->Printf("                                   %10.2lf s (system)\n",(sys_stop-sys_start)/iter);
+  outfile->Printf("                                   %10.2lf s (total)\n",((double)time_stop-(double)time_start)/(iter-1));
+  
 
   return Success;
 }
@@ -670,9 +670,9 @@ void CoupledCluster::DefineTilingCPU(){
   if (t2_on_disk){
      ndoubles += o*o*v*v;
   }else{
-     psi::fprintf(outfile,"\n");
-     psi::fprintf(outfile,"  ==> Define tiling <==\n");
-     psi::fprintf(outfile,"\n");
+     outfile->Printf("\n");
+     outfile->Printf("  ==> Define tiling <==\n");
+     outfile->Printf("\n");
   }
 
   // if not enough space, check to see if keeping t2 on disk will help
@@ -701,8 +701,8 @@ void CoupledCluster::DefineTilingCPU(){
   }
   lasttile = fulltile - (ntiles-1L)*tilesize;
 
-  psi::fprintf(outfile,"        v(ab,cd) diagrams will be evaluated in %3li blocks.\n",ntiles); 
-  fflush(outfile);
+  outfile->Printf("        v(ab,cd) diagrams will be evaluated in %3li blocks.\n",ntiles); 
+  
 
   // ov^3 type 1:
   if (v>ndoubles){
@@ -718,8 +718,8 @@ void CoupledCluster::DefineTilingCPU(){
   }
   lastov2tile = ov2 - (nov2tiles-1L)*ov2tilesize;
 
-  psi::fprintf(outfile,"        v(ab,ci) diagrams will be evaluated in %3li blocks over ov2.\n",nov2tiles); 
-  fflush(outfile);
+  outfile->Printf("        v(ab,ci) diagrams will be evaluated in %3li blocks over ov2.\n",nov2tiles); 
+  
 
   // ov^3 type 2:
   if (v*v > ndoubles){
@@ -734,8 +734,8 @@ void CoupledCluster::DefineTilingCPU(){
      if ( novtiles*ovtilesize < ov ) ovtilesize++;
   }
   lastovtile = ov - (novtiles-1L)*ovtilesize;
-  psi::fprintf(outfile,"        v(ab,ci) diagrams will be evaluated in %3li blocks over ov.\n",novtiles); 
-  fflush(outfile);
+  outfile->Printf("        v(ab,ci) diagrams will be evaluated in %3li blocks over ov.\n",novtiles); 
+  
 }
 
 /*===================================================================
@@ -750,29 +750,29 @@ void CoupledCluster::AllocateMemory() {
   long int o=ndoccact;
   long int v=nvirt;
   if (!options_.get_bool("RUN_MP2")) {
-    psi::fprintf(outfile,"\n");
-    psi::fprintf(outfile,"  ==> Memory <==\n\n");
-    psi::fprintf(outfile,"        available memory =                         %9.2lf mb\n",memory/1024./1024.);
+    outfile->Printf("\n");
+    outfile->Printf("  ==> Memory <==\n\n");
+    outfile->Printf("        available memory =                         %9.2lf mb\n",memory/1024./1024.);
     if (isccsd){
-       psi::fprintf(outfile,"        minimum memory requirements for CCSD =     %9.2lf mb\n",
+       outfile->Printf("        minimum memory requirements for CCSD =     %9.2lf mb\n",
            8./1024./1024.*(o*o*v*v+2.*(o*o*v*v+o*v)+2.*o*v+2.*v*v+o+v));
     }else{
-       psi::fprintf(outfile,"        minimum memory requirements for QCISD =    %9.2lf mb\n",
+       outfile->Printf("        minimum memory requirements for QCISD =    %9.2lf mb\n",
            8./1024./1024.*(o*o*v*v+2.*(o*o*v*v+o*v)+2.*o*v+2.*v*v+o+v));
     }
     if (options_.get_bool("COMPUTE_TRIPLES") || options_.get_bool("COMPUTE_MP4_TRIPLES")){
        double tempmem = 8.*(2L*o*o*v*v+o*o*o*v+o*v+3L*v*v*v*nthreads);
        if (tempmem > memory) {
-          psi::fprintf(outfile,"\n        <<< warning! >>> switched to low-memory (t) algorithm\n\n");
+          outfile->Printf("\n        <<< warning! >>> switched to low-memory (t) algorithm\n\n");
        }
        if (tempmem > memory || options_.get_bool("TRIPLES_LOW_MEMORY")){
           isLowMemory = true;
           tempmem = 8.*(2L*o*o*v*v+o*o*o*v+o*v+5L*o*o*o*nthreads);
        }
        if (isccsd)
-          psi::fprintf(outfile,"        memory requirements for CCSD(T) =          %9.2lf mb\n",tempmem/1024./1024.);
+          outfile->Printf("        memory requirements for CCSD(T) =          %9.2lf mb\n",tempmem/1024./1024.);
        else
-          psi::fprintf(outfile,"        memory requirements for QCISD(T) =         %9.2lf mb\n",tempmem/1024./1024.);
+          outfile->Printf("        memory requirements for QCISD(T) =         %9.2lf mb\n",tempmem/1024./1024.);
     }
 
   }
@@ -814,10 +814,10 @@ void CoupledCluster::AllocateMemory() {
 
   // if integrals buffer isn't at least o^2v^2, try tiling again assuming t2 is on disk.
   if (dim<o*o*v*v){
-     psi::fprintf(outfile,"\n");
-     psi::fprintf(outfile,"  Warning: cannot accomodate T2 in core. T2 will be stored on disk.\n");
-     psi::fprintf(outfile,"\n");
-     fflush(outfile);
+     outfile->Printf("\n");
+     outfile->Printf("  Warning: cannot accomodate T2 in core. T2 will be stored on disk.\n");
+     outfile->Printf("\n");
+     
      t2_on_disk = true;
      DefineTilingCPU();
      dim = 0;
@@ -829,9 +829,9 @@ void CoupledCluster::AllocateMemory() {
         throw PsiException("out of memory: general buffer cannot accomodate T2",__FILE__,__LINE__);
      }
 
-     psi::fprintf(outfile,"\n");
-     psi::fprintf(outfile,"  Increase memory by %7.2lf mb to hold T2 in core.\n",o*o*v*v*8L/1024./1024.);
-     psi::fprintf(outfile,"\n");
+     outfile->Printf("\n");
+     outfile->Printf("  Increase memory by %7.2lf mb to hold T2 in core.\n",o*o*v*v*8L/1024./1024.);
+     outfile->Printf("\n");
   }
 
   maxelem = dim;
@@ -841,8 +841,8 @@ void CoupledCluster::AllocateMemory() {
   if (t2_on_disk) total_memory = 1.*dim+2.*(oovv+o*v)+2.*o*v+2.*v*v;
   total_memory *= 8./1024./1024.;
 
-  psi::fprintf(outfile,"\n");
-  psi::fprintf(outfile,"  Allocate cpu memory (%9.2lf mb).....",total_memory);
+  outfile->Printf("\n");
+  outfile->Printf("  Allocate cpu memory (%9.2lf mb).....",total_memory);
 
   integrals = (double*)malloc(dim*sizeof(double));
   tempt     = (double*)malloc((oovv+o*v)*sizeof(double));
@@ -853,9 +853,9 @@ void CoupledCluster::AllocateMemory() {
   t1        = (double*)malloc(o*v*sizeof(double));
   I1        = (double*)malloc(v*v*sizeof(double));
   I1p       = (double*)malloc(v*v*sizeof(double));
-  psi::fprintf(outfile,"done.\n");
+  outfile->Printf("done.\n");
 
-  psi::fprintf(outfile,"  Initialize cpu memory..................");
+  outfile->Printf("  Initialize cpu memory..................");
   memset((void*)integrals,'\0',dim*sizeof(double));
   memset((void*)tempv,'\0',(oovv+o*v)*sizeof(double));
   memset((void*)tempt,'\0',(oovv+o*v)*sizeof(double));
@@ -864,7 +864,7 @@ void CoupledCluster::AllocateMemory() {
   memset((void*)t1,'\0',o*v*sizeof(double));
   memset((void*)I1,'\0',v*v*sizeof(double));
   memset((void*)I1p,'\0',v*v*sizeof(double));
-  psi::fprintf(outfile,"done.\n");
+  outfile->Printf("done.\n");
 
   // DIIS:
   diisvec    = (double*)malloc(sizeof(double)*(maxdiis+1));
@@ -2254,34 +2254,34 @@ void CoupledCluster::MP4_SDQ(){
   DefineQuadraticTasks();
 
   // 1st-order amplitudes
-  psi::fprintf(outfile,"\n");
+  outfile->Printf("\n");
   if (mp3_only) {
-      psi::fprintf(outfile,"  ==>   MP3   <==\n");
+      outfile->Printf("  ==>   MP3   <==\n");
   }else {
-      psi::fprintf(outfile,"  ==> MP4(SDQ) <==\n");
+      outfile->Printf("  ==> MP4(SDQ) <==\n");
   }
-  psi::fprintf(outfile,"\n");
-  psi::fprintf(outfile,"        1st-order doubles amplitudes...............done.\n");
-  psi::fprintf(outfile,"        MP2 energy.................................");
+  outfile->Printf("\n");
+  outfile->Printf("        1st-order doubles amplitudes...............done.\n");
+  outfile->Printf("        MP2 energy.................................");
   UpdateT2_mp4(0);
-  psi::fprintf(outfile,"done.\n");
+  outfile->Printf("done.\n");
 
   // <1|V|1> for mp3
-  psi::fprintf(outfile,"        MP3 energy.................................");
+  outfile->Printf("        MP3 energy.................................");
   memset((void*)w1,'\0',o*v*sizeof(double));
   for (int i=0; i<nltasks; i++) {
       (*this.*LTasklist[i].func)(LParams[i]);
   }
   // mp3 energy and 2nd-order doubles amplitudes
   UpdateT2_mp4(1);
-  psi::fprintf(outfile,"done.\n");
+  outfile->Printf("done.\n");
 
   if (!mp3_only) {
-      psi::fprintf(outfile,"        2nd-order singles and doubles amplitudes...");
+      outfile->Printf("        2nd-order singles and doubles amplitudes...");
 
       // 2nd-order singles amplitudes
       UpdateT1_mp4(1);
-      psi::fprintf(outfile,"done.\n");
+      outfile->Printf("done.\n");
 
       // V|2> for S and D parts of mp4
       psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
@@ -2295,7 +2295,7 @@ void CoupledCluster::MP4_SDQ(){
           C_DCOPY(o*o*v*v,tempt,1,tb,1);
       }
 
-      psi::fprintf(outfile,"        MP4(SD)....................................");
+      outfile->Printf("        MP4(SD)....................................");
       memset((void*)w1,'\0',o*v*sizeof(double));
       for (int i=0; i<nltasks; i++) {
           (*this.*LTasklist[i].func)(LParams[i]);
@@ -2308,15 +2308,15 @@ void CoupledCluster::MP4_SDQ(){
       psio->read_entry(PSIF_DCC_T2,"first",(char*)&tb[0],o*o*v*v*sizeof(double));
       psio->close(PSIF_DCC_T2,1);
       UpdateT2_mp4(2);
-      psi::fprintf(outfile,"done.\n");
+      outfile->Printf("done.\n");
 
       // quadruples: evaluate ccd residual using first-order doubles amplitudes
-      psi::fprintf(outfile,"        MP4(Q).....................................");
+      outfile->Printf("        MP4(Q).....................................");
       for (int i=0; i<nqtasks; i++) {
           (*this.*QTasklist[i].func)(QParams[i]);
       }
       UpdateT2_mp4(3);
-      psi::fprintf(outfile,"done.\n");
+      outfile->Printf("done.\n");
   }
 
   if (mp4_only) {
@@ -2329,33 +2329,33 @@ void CoupledCluster::MP4_SDQ(){
           emp2_os += delta_emp2_os;
           emp2_ss += delta_emp2_ss;
 
-          psi::fprintf(outfile,"\n");
-          psi::fprintf(outfile,"        OS MP2 FNO correction:          %20.12lf\n",delta_emp2_os);
-          psi::fprintf(outfile,"        SS MP2 FNO correction:          %20.12lf\n",delta_emp2_ss);
-          psi::fprintf(outfile,"        MP2 FNO correction:             %20.12lf\n",delta_emp2);
+          outfile->Printf("\n");
+          outfile->Printf("        OS MP2 FNO correction:          %20.12lf\n",delta_emp2_os);
+          outfile->Printf("        SS MP2 FNO correction:          %20.12lf\n",delta_emp2_ss);
+          outfile->Printf("        MP2 FNO correction:             %20.12lf\n",delta_emp2);
       }
  
-      psi::fprintf(outfile,"\n");
-      psi::fprintf(outfile,"        OS MP2 correlation energy:       %20.12lf\n",emp2_os);
-      psi::fprintf(outfile,"        SS MP2 correlation energy:       %20.12lf\n",emp2_ss);
-      psi::fprintf(outfile,"        MP2 correlation energy:          %20.12lf\n",emp2);
-      psi::fprintf(outfile,"      * MP2 total energy:                %20.12lf\n",emp2+escf);
-      psi::fprintf(outfile,"\n");
-      psi::fprintf(outfile,"        OS MP2.5 correlation energy:     %20.12lf\n",emp2_os/emp2_os_fac+0.5*emp3_os);
-      psi::fprintf(outfile,"        SS MP2.5 correlation energy:     %20.12lf\n",emp2_ss/emp2_ss_fac+0.5*emp3_ss);
-      psi::fprintf(outfile,"        MP2.5 correlation energy:        %20.12lf\n",emp2+0.5*emp3);
-      psi::fprintf(outfile,"      * MP2.5 total energy:              %20.12lf\n",emp2+0.5*emp3+escf);
-      psi::fprintf(outfile,"\n");
-      psi::fprintf(outfile,"        OS MP3 correlation energy:       %20.12lf\n",emp2_os/emp2_os_fac+emp3_os);
-      psi::fprintf(outfile,"        SS MP3 correlation energy:       %20.12lf\n",emp2_ss/emp2_ss_fac+emp3_ss);
-      psi::fprintf(outfile,"        MP3 correlation energy:          %20.12lf\n",emp2+emp3);
-      psi::fprintf(outfile,"      * MP3 total energy:                %20.12lf\n",emp2+emp3+escf);
-      psi::fprintf(outfile,"\n");
-      psi::fprintf(outfile,"        OS MP4(SDQ) correlation energy:  %20.12lf\n",emp2_os/emp2_os_fac+emp3_os+emp4_sd_os+emp4_q_os);
-      psi::fprintf(outfile,"        SS MP4(SDQ) correlation energy:  %20.12lf\n",emp2_ss/emp2_ss_fac+emp3_ss+emp4_sd_ss+emp4_q_os);
-      psi::fprintf(outfile,"        MP4(SDQ) correlation energy:     %20.12lf\n",emp2+emp3+emp4_sd+emp4_q);
-      psi::fprintf(outfile,"      * MP4(SDQ) total energy:           %20.12lf\n",emp2+emp3+emp4_sd+emp4_q+escf);
-      psi::fprintf(outfile,"\n");
+      outfile->Printf("\n");
+      outfile->Printf("        OS MP2 correlation energy:       %20.12lf\n",emp2_os);
+      outfile->Printf("        SS MP2 correlation energy:       %20.12lf\n",emp2_ss);
+      outfile->Printf("        MP2 correlation energy:          %20.12lf\n",emp2);
+      outfile->Printf("      * MP2 total energy:                %20.12lf\n",emp2+escf);
+      outfile->Printf("\n");
+      outfile->Printf("        OS MP2.5 correlation energy:     %20.12lf\n",emp2_os/emp2_os_fac+0.5*emp3_os);
+      outfile->Printf("        SS MP2.5 correlation energy:     %20.12lf\n",emp2_ss/emp2_ss_fac+0.5*emp3_ss);
+      outfile->Printf("        MP2.5 correlation energy:        %20.12lf\n",emp2+0.5*emp3);
+      outfile->Printf("      * MP2.5 total energy:              %20.12lf\n",emp2+0.5*emp3+escf);
+      outfile->Printf("\n");
+      outfile->Printf("        OS MP3 correlation energy:       %20.12lf\n",emp2_os/emp2_os_fac+emp3_os);
+      outfile->Printf("        SS MP3 correlation energy:       %20.12lf\n",emp2_ss/emp2_ss_fac+emp3_ss);
+      outfile->Printf("        MP3 correlation energy:          %20.12lf\n",emp2+emp3);
+      outfile->Printf("      * MP3 total energy:                %20.12lf\n",emp2+emp3+escf);
+      outfile->Printf("\n");
+      outfile->Printf("        OS MP4(SDQ) correlation energy:  %20.12lf\n",emp2_os/emp2_os_fac+emp3_os+emp4_sd_os+emp4_q_os);
+      outfile->Printf("        SS MP4(SDQ) correlation energy:  %20.12lf\n",emp2_ss/emp2_ss_fac+emp3_ss+emp4_sd_ss+emp4_q_os);
+      outfile->Printf("        MP4(SDQ) correlation energy:     %20.12lf\n",emp2+emp3+emp4_sd+emp4_q);
+      outfile->Printf("      * MP4(SDQ) total energy:           %20.12lf\n",emp2+emp3+emp4_sd+emp4_q+escf);
+      outfile->Printf("\n");
   }else if (mp3_only){
       if ( options_.get_bool("NAT_ORBS") ) {
           double delta_emp2 = Process::environment.globals["MP2 CORRELATION ENERGY"] - emp2;
@@ -2366,28 +2366,28 @@ void CoupledCluster::MP4_SDQ(){
           emp2_os += delta_emp2_os;
           emp2_ss += delta_emp2_ss;
 
-          psi::fprintf(outfile,"\n");
-          psi::fprintf(outfile,"        OS MP2 FNO correction:          %20.12lf\n",delta_emp2_os);
-          psi::fprintf(outfile,"        SS MP2 FNO correction:          %20.12lf\n",delta_emp2_ss);
-          psi::fprintf(outfile,"        MP2 FNO correction:             %20.12lf\n",delta_emp2);
+          outfile->Printf("\n");
+          outfile->Printf("        OS MP2 FNO correction:          %20.12lf\n",delta_emp2_os);
+          outfile->Printf("        SS MP2 FNO correction:          %20.12lf\n",delta_emp2_ss);
+          outfile->Printf("        MP2 FNO correction:             %20.12lf\n",delta_emp2);
       }
  
-      psi::fprintf(outfile,"\n");
-      psi::fprintf(outfile,"        OS MP2 correlation energy:       %20.12lf\n",emp2_os);
-      psi::fprintf(outfile,"        SS MP2 correlation energy:       %20.12lf\n",emp2_ss);
-      psi::fprintf(outfile,"        MP2 correlation energy:          %20.12lf\n",emp2);
-      psi::fprintf(outfile,"      * MP2 total energy:                %20.12lf\n",emp2+escf);
-      psi::fprintf(outfile,"\n");
-      psi::fprintf(outfile,"        OS MP2.5 correlation energy:     %20.12lf\n",emp2_os/emp2_os_fac+0.5*emp3_os);
-      psi::fprintf(outfile,"        SS MP2.5 correlation energy:     %20.12lf\n",emp2_ss/emp2_ss_fac+0.5*emp3_ss);
-      psi::fprintf(outfile,"        MP2.5 correlation energy:        %20.12lf\n",emp2+0.5*emp3);
-      psi::fprintf(outfile,"      * MP2.5 total energy:              %20.12lf\n",emp2+0.5*emp3+escf);
-      psi::fprintf(outfile,"\n");
-      psi::fprintf(outfile,"        OS MP3 correlation energy:       %20.12lf\n",emp2_os/emp2_os_fac+emp3_os);
-      psi::fprintf(outfile,"        SS MP3 correlation energy:       %20.12lf\n",emp2_ss/emp2_ss_fac+emp3_ss);
-      psi::fprintf(outfile,"        MP3 correlation energy:          %20.12lf\n",emp2+emp3);
-      psi::fprintf(outfile,"      * MP3 total energy:                %20.12lf\n",emp2+emp3+escf);
-      psi::fprintf(outfile,"\n");
+      outfile->Printf("\n");
+      outfile->Printf("        OS MP2 correlation energy:       %20.12lf\n",emp2_os);
+      outfile->Printf("        SS MP2 correlation energy:       %20.12lf\n",emp2_ss);
+      outfile->Printf("        MP2 correlation energy:          %20.12lf\n",emp2);
+      outfile->Printf("      * MP2 total energy:                %20.12lf\n",emp2+escf);
+      outfile->Printf("\n");
+      outfile->Printf("        OS MP2.5 correlation energy:     %20.12lf\n",emp2_os/emp2_os_fac+0.5*emp3_os);
+      outfile->Printf("        SS MP2.5 correlation energy:     %20.12lf\n",emp2_ss/emp2_ss_fac+0.5*emp3_ss);
+      outfile->Printf("        MP2.5 correlation energy:        %20.12lf\n",emp2+0.5*emp3);
+      outfile->Printf("      * MP2.5 total energy:              %20.12lf\n",emp2+0.5*emp3+escf);
+      outfile->Printf("\n");
+      outfile->Printf("        OS MP3 correlation energy:       %20.12lf\n",emp2_os/emp2_os_fac+emp3_os);
+      outfile->Printf("        SS MP3 correlation energy:       %20.12lf\n",emp2_ss/emp2_ss_fac+emp3_ss);
+      outfile->Printf("        MP3 correlation energy:          %20.12lf\n",emp2+emp3);
+      outfile->Printf("      * MP3 total energy:                %20.12lf\n",emp2+emp3+escf);
+      outfile->Printf("\n");
   }else {
      // guess for cc/qci should be |1> + |2>
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);

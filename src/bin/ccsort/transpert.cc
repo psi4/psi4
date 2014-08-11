@@ -115,7 +115,7 @@ void transpert(const char *pert)
       else if(alpha == 2) { name = PSIF_AO_NablaZ; moinfo.PZ = target; }
     }
 
-    iwl_rdone(PSIF_OEI, name.c_str(), scratch, noei_ao, 0, 0, outfile);
+    iwl_rdone(PSIF_OEI, name.c_str(), scratch, noei_ao, 0, 0, "outfile");
     for(i=0,ij=0; i < nao; i++)
       for(j=0; j <= i; j++,ij++) {
     TMP[i][j] = prefactor * sign * scratch[ij];

@@ -39,7 +39,7 @@ namespace psi{ namespace occwave{
 
 void OCCWave::get_moinfo()
 {      
-  //psi::fprintf(outfile,"\n get_moinfo is starting... \n"); fflush(outfile);
+  //outfile->Printf("\n get_moinfo is starting... \n"); 
 //===========================================================================================
 //========================= RHF =============================================================
 //===========================================================================================
@@ -197,11 +197,11 @@ if (reference_ == "RESTRICTED") {
       // print
       if (print_ > 1) {
           for(int p = 0; p < nmo_; p++) {
-              psi::fprintf(outfile," p, pitzer2symblk[p]: %2d %2d \n", p, pitzer2symblk[p]);
-              fflush(outfile);
+              outfile->Printf(" p, pitzer2symblk[p]: %2d %2d \n", p, pitzer2symblk[p]);
+              
           }
-          psi::fprintf(outfile,"\n");
-          fflush(outfile);
+          outfile->Printf("\n");
+          
       }
  
 /********************************************************************************************/
@@ -221,18 +221,18 @@ if (reference_ == "RESTRICTED") {
       // print
       if (print_ > 1) {
       for(int p = 0; p < nmo_; p++) {
-          psi::fprintf(outfile," p, pitzer2qtA[p]: %2d %2d \n", p, pitzer2qtA[p]);
-          fflush(outfile);
+          outfile->Printf(" p, pitzer2qtA[p]: %2d %2d \n", p, pitzer2qtA[p]);
+          
       }
-         psi::fprintf(outfile,"\n");
-         fflush(outfile);
+         outfile->Printf("\n");
+         
 
       for(int p = 0; p < nmo_; p++) {
-          psi::fprintf(outfile," p, qt2pitzerA[p]: %2d %2d \n", p, qt2pitzerA[p]);
-          fflush(outfile);
+          outfile->Printf(" p, qt2pitzerA[p]: %2d %2d \n", p, qt2pitzerA[p]);
+          
       }
-         psi::fprintf(outfile,"\n");
-         fflush(outfile);
+         outfile->Printf("\n");
+         
       }
     
 /********************************************************************************************/
@@ -261,18 +261,18 @@ if (reference_ == "RESTRICTED") {
       // print
       if (print_ > 1) {
           for(int h = 0; h < nirrep_; h++) {
-              psi::fprintf(outfile," h, occ_offA[h]: %2d %2d \n", h, occ_offA[h]);
-              fflush(outfile);
+              outfile->Printf(" h, occ_offA[h]: %2d %2d \n", h, occ_offA[h]);
+              
           }
-          psi::fprintf(outfile,"\n");
-          fflush(outfile);
+          outfile->Printf("\n");
+          
 
           for(int h = 0; h < nirrep_; h++) {
-              psi::fprintf(outfile," h, vir_offA[h]: %2d %2d \n", h, vir_offA[h]);
-              fflush(outfile);
+              outfile->Printf(" h, vir_offA[h]: %2d %2d \n", h, vir_offA[h]);
+              
           }
-          psi::fprintf(outfile,"\n");
-          fflush(outfile);
+          outfile->Printf("\n");
+          
       }
       
 /********************************************************************************************/
@@ -295,25 +295,25 @@ if (reference_ == "RESTRICTED") {
 
         if (print_ > 1) {
          for(int h=0; h < nirrep_; h++) {
-            psi::fprintf(outfile," h, oo_pairpiAA[h]: %2d %2d \n", h, oo_pairpiAA[h]);
-            fflush(outfile);
+            outfile->Printf(" h, oo_pairpiAA[h]: %2d %2d \n", h, oo_pairpiAA[h]);
+            
          }
-         psi::fprintf(outfile,"\n");
-         fflush(outfile);
+         outfile->Printf("\n");
+         
 
          for(int h=0; h < nirrep_; h++) {
-            psi::fprintf(outfile," h, ov_pairpiAA[h]: %2d %2d \n", h, ov_pairpiAA[h]);
-            fflush(outfile);
+            outfile->Printf(" h, ov_pairpiAA[h]: %2d %2d \n", h, ov_pairpiAA[h]);
+            
          }
-         psi::fprintf(outfile,"\n");
-         fflush(outfile);
+         outfile->Printf("\n");
+         
 
          for(int h=0; h < nirrep_; h++) {
-            psi::fprintf(outfile," h, vv_pairpiAA[h]: %2d %2d \n", h, vv_pairpiAA[h]);
-            fflush(outfile);
+            outfile->Printf(" h, vv_pairpiAA[h]: %2d %2d \n", h, vv_pairpiAA[h]);
+            
          }
-         psi::fprintf(outfile,"\n");
-         fflush(outfile);
+         outfile->Printf("\n");
+         
         }
 
 /********************************************************************************************/
@@ -371,8 +371,8 @@ if (reference_ == "RESTRICTED") {
 	
 	// read orbital coefficients from external files
 	if (read_mo_coeff == "TRUE"){
-	  psi::fprintf(outfile,"\n\tReading MO coefficients in pitzer order from the external file CmoA.psi...\n");  
-	  fflush(outfile);
+	  outfile->Printf("\n\tReading MO coefficients in pitzer order from the external file CmoA.psi...\n");  
+	  
 	  double **C_pitzerA = block_matrix(nso_,nmo_);
 	  memset(C_pitzerA[0], 0, sizeof(double)*nso_*nmo_);
 	
@@ -601,11 +601,11 @@ else if (reference_ == "UNRESTRICTED") {
       // print
       if (print_ > 1) {
           for(int p = 0; p < nmo_; p++) {
-              psi::fprintf(outfile," p, pitzer2symblk[p]: %2d %2d \n", p, pitzer2symblk[p]);
-              fflush(outfile);
+              outfile->Printf(" p, pitzer2symblk[p]: %2d %2d \n", p, pitzer2symblk[p]);
+              
           }
-          psi::fprintf(outfile,"\n");
-          fflush(outfile);
+          outfile->Printf("\n");
+          
       }
 
 /********************************************************************************************/
@@ -630,32 +630,32 @@ else if (reference_ == "UNRESTRICTED") {
        // print
       if (print_ > 1) {
       for(int p = 0; p < nmo_; p++) {
-          psi::fprintf(outfile," p, pitzer2qtA[p]: %2d %2d \n", p, pitzer2qtA[p]);
-          fflush(outfile);
+          outfile->Printf(" p, pitzer2qtA[p]: %2d %2d \n", p, pitzer2qtA[p]);
+          
       }
-         psi::fprintf(outfile,"\n");
-         fflush(outfile);
+         outfile->Printf("\n");
+         
 
       for(int p = 0; p < nmo_; p++) {
-          psi::fprintf(outfile," p, pitzer2qtB[p]: %2d %2d \n", p, pitzer2qtB[p]);
-          fflush(outfile);
+          outfile->Printf(" p, pitzer2qtB[p]: %2d %2d \n", p, pitzer2qtB[p]);
+          
       }
-         psi::fprintf(outfile,"\n");
-         fflush(outfile);
+         outfile->Printf("\n");
+         
 
       for(int p = 0; p < nmo_; p++) {
-          psi::fprintf(outfile," p, qt2pitzerA[p]: %2d %2d \n", p, qt2pitzerA[p]);
-          fflush(outfile);
+          outfile->Printf(" p, qt2pitzerA[p]: %2d %2d \n", p, qt2pitzerA[p]);
+          
       }
-         psi::fprintf(outfile,"\n");
-         fflush(outfile);
+         outfile->Printf("\n");
+         
 
       for(int p = 0; p < nmo_; p++) {
-          psi::fprintf(outfile," p, qt2pitzerB[p]: %2d %2d \n", p, qt2pitzerB[p]);
-          fflush(outfile);
+          outfile->Printf(" p, qt2pitzerB[p]: %2d %2d \n", p, qt2pitzerB[p]);
+          
       }
-         psi::fprintf(outfile,"\n");
-         fflush(outfile);
+         outfile->Printf("\n");
+         
       }// end if   
 
 
@@ -695,32 +695,32 @@ else if (reference_ == "UNRESTRICTED") {
       // print
       if (print_ > 1) {
           for(int h = 0; h < nirrep_; h++) {
-              psi::fprintf(outfile," h, occ_offA[h]: %2d %2d \n", h, occ_offA[h]);
-              fflush(outfile);
+              outfile->Printf(" h, occ_offA[h]: %2d %2d \n", h, occ_offA[h]);
+              
           }
-          psi::fprintf(outfile,"\n");
-          fflush(outfile);
+          outfile->Printf("\n");
+          
 
           for(int h = 0; h < nirrep_; h++) {
-              psi::fprintf(outfile," h, vir_offA[h]: %2d %2d \n", h, vir_offA[h]);
-              fflush(outfile);
+              outfile->Printf(" h, vir_offA[h]: %2d %2d \n", h, vir_offA[h]);
+              
           }
-          psi::fprintf(outfile,"\n");
-          fflush(outfile);
+          outfile->Printf("\n");
+          
 
           for(int h = 0; h < nirrep_; h++) {
-              psi::fprintf(outfile," h, occ_offB[h]: %2d %2d \n", h, occ_offB[h]);
-              fflush(outfile);
+              outfile->Printf(" h, occ_offB[h]: %2d %2d \n", h, occ_offB[h]);
+              
           }
-          psi::fprintf(outfile,"\n");
-          fflush(outfile);
+          outfile->Printf("\n");
+          
 
           for(int h = 0; h < nirrep_; h++) {
-              psi::fprintf(outfile," h, vir_offB[h]: %2d %2d \n", h, vir_offB[h]);
-              fflush(outfile);
+              outfile->Printf(" h, vir_offB[h]: %2d %2d \n", h, vir_offB[h]);
+              
           }
-          psi::fprintf(outfile,"\n");
-          fflush(outfile);
+          outfile->Printf("\n");
+          
       }
  
       
@@ -735,8 +735,8 @@ else if (reference_ == "UNRESTRICTED") {
 	
 	// read orbital coefficients from external files
 	if (read_mo_coeff == "TRUE"){
-	  psi::fprintf(outfile,"\n\tReading MO coefficients in pitzer order from external files CmoA.psi and CmoB.psi...\n");  
-	  fflush(outfile);
+	  outfile->Printf("\n\tReading MO coefficients in pitzer order from external files CmoA.psi and CmoB.psi...\n");  
+	  
 	  double **C_pitzerA = block_matrix(nso_,nmo_);
 	  double **C_pitzerB = block_matrix(nso_,nmo_);
 	  memset(C_pitzerA[0], 0, sizeof(double)*nso_*nmo_);
@@ -786,14 +786,14 @@ else if (reference_ == "UNRESTRICTED") {
 	
 	// Read SO-basis one-electron integrals
 	double *so_ints = init_array(ntri_so);
-        IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_T, so_ints, ntri_so, 0, 0, outfile);
+        IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_T, so_ints, ntri_so, 0, 0, "outfile");
         Tso->set(so_ints);
-        IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_V, so_ints, ntri_so, 0, 0, outfile);
+        IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_V, so_ints, ntri_so, 0, 0, "outfile");
         Vso->set(so_ints);
         free(so_ints);
 	Hso->copy(Tso); 
 	Hso->add(Vso);
-//psi::fprintf(outfile,"\n get_moinfo is done. \n"); fflush(outfile);
+//outfile->Printf("\n get_moinfo is done. \n"); 
 }
 }} // End Namespaces
 

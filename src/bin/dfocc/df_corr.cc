@@ -110,7 +110,7 @@ void DFOCC::trans_mp2()
 //=======================================================          
 void DFOCC::df_corr()
 {   
-    //psi::fprintf(outfile,"\tComputing DF-BASIS-CC integrals... \n"); fflush(outfile);
+    //outfile->Printf("\tComputing DF-BASIS-CC integrals... \n"); 
 
     // Read in the basis set informations
     boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());

@@ -78,11 +78,11 @@ boost::shared_ptr<MatrixFactory> get_matrix_factory()
     // We need a valid molecule with a valid point group to create a matrix factory.
     boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
     if (!molecule) {
-        psi::fprintf(outfile, "  Active molecule not set!");
+        outfile->Printf( "  Active molecule not set!");
         throw PSIEXCEPTION("Active molecule not set!");
     }
     if (!molecule->point_group()) {
-        psi::fprintf(outfile, "  Active molecule does not have point group set!");
+        outfile->Printf( "  Active molecule does not have point group set!");
         throw PSIEXCEPTION("Active molecule does not have point group set!");
     }
 

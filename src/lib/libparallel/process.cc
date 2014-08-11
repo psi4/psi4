@@ -208,12 +208,12 @@ int Process::Arguments::argc() const { return arguments_.size(); }
 namespace psi {
 void die_if_not_converged()
 {
-  psi::fprintf(outfile, "Iterations did not converge.");
+  outfile->Printf( "Iterations did not converge.");
 
   if (Process::environment.options.get_bool("DIE_IF_NOT_CONVERGED"))
     throw PSIEXCEPTION("Iterations did not converge.");
   else {
-    psi::fprintf(stderr, "Iterations did not converge.");
+    outfile->Printf( "Iterations did not converge.");
   }
 }
 }

@@ -56,8 +56,8 @@ int DPD::buf4_mat_irrep_row_wrt(dpdbuf4 *Buf, int irrep, int pq)
 
     /* Exit if buffer is antisymmetrized */
     if(Buf->anti) {
-        psi::fprintf(stderr, "\n\tCannot write antisymmetrized buffer\n");
-        psi::fprintf(stderr,   "\tback to original DPD file!\n");
+        outfile->Printf( "\n\tCannot write antisymmetrized buffer\n");
+        outfile->Printf(   "\tback to original DPD file!\n");
         exit(PSI_RETURN_FAILURE);
     }
 
@@ -68,7 +68,7 @@ int DPD::buf4_mat_irrep_row_wrt(dpdbuf4 *Buf, int irrep, int pq)
         if(f_perm_pq && !b_perm_pq) method = 21;
         else if(!f_perm_pq && b_perm_pq) method = 23;
         else {
-            psi::fprintf(stderr, "\n\tInvalid second-level method!\n");
+            outfile->Printf( "\n\tInvalid second-level method!\n");
             exit(PSI_RETURN_FAILURE);
         }
     }
@@ -77,7 +77,7 @@ int DPD::buf4_mat_irrep_row_wrt(dpdbuf4 *Buf, int irrep, int pq)
         if(f_perm_rs && !b_perm_rs) method = 31;
         else if(!f_perm_rs && b_perm_rs) method = 33;
         else {
-            psi::fprintf(stderr, "\n\tInvalid third-level method!\n");
+            outfile->Printf( "\n\tInvalid third-level method!\n");
             exit(PSI_RETURN_FAILURE);
         }
     }
@@ -91,12 +91,12 @@ int DPD::buf4_mat_irrep_row_wrt(dpdbuf4 *Buf, int irrep, int pq)
             else if(!f_perm_rs && b_perm_rs) method = 45;
         }
         else {
-            psi::fprintf(stderr, "\n\tInvalid fourth-level method!\n");
+            outfile->Printf( "\n\tInvalid fourth-level method!\n");
             exit(PSI_RETURN_FAILURE);
         }
     }
     else {
-        psi::fprintf(stderr, "\n\tInvalid method in dpd_buf_mat_irrep_rd!\n");
+        outfile->Printf( "\n\tInvalid method in dpd_buf_mat_irrep_rd!\n");
         exit(PSI_RETURN_FAILURE);
     }
 
@@ -144,7 +144,7 @@ int DPD::buf4_mat_irrep_row_wrt(dpdbuf4 *Buf, int irrep, int pq)
         break;
     case 23: /* Unpack pq; no change in rs */
         /* I don't know if I'll ever use this, so I'll avoid it for now */
-        psi::fprintf(stderr, "\n\tShould you be using method %d?\n", method);
+        outfile->Printf( "\n\tShould you be using method %d?\n", method);
         exit(PSI_RETURN_FAILURE);
 
         break;
@@ -175,7 +175,7 @@ int DPD::buf4_mat_irrep_row_wrt(dpdbuf4 *Buf, int irrep, int pq)
         break;
     case 33: /* No change in pq; unpack rs */
         /* I'm not sure if I'll ever need this, so I'm removing it for now */
-        psi::fprintf(stderr, "\n\tShould you be using method %d?\n", method);
+        outfile->Printf( "\n\tShould you be using method %d?\n", method);
         exit(PSI_RETURN_FAILURE);
 
         break;
@@ -210,23 +210,23 @@ int DPD::buf4_mat_irrep_row_wrt(dpdbuf4 *Buf, int irrep, int pq)
 
         break;
     case 42: /* Pack pq; unpack rs */
-        psi::fprintf(stderr, "\n\tHaven't programmed method 42 yet!\n");
+        outfile->Printf( "\n\tHaven't programmed method 42 yet!\n");
         exit(PSI_RETURN_FAILURE);
 
         break;
     case 43: /* Unpack pq; pack rs */
-        psi::fprintf(stderr, "\n\tHaven't programmed method 43 yet!\n");
+        outfile->Printf( "\n\tHaven't programmed method 43 yet!\n");
         exit(PSI_RETURN_FAILURE);
 
         break;
     case 45: /* Unpack pq and rs */
         /* I'm not sure if I'll ever need this, so I'm removing it for now */
-        psi::fprintf(stderr, "\n\tShould you be using method %d?\n", method);
+        outfile->Printf( "\n\tShould you be using method %d?\n", method);
         exit(PSI_RETURN_FAILURE);
 
         break;
     default:  /* Error trapping */
-        psi::fprintf(stderr, "\n\tInvalid switch case in dpd_buf_mat_irrep_rd!\n");
+        outfile->Printf( "\n\tInvalid switch case in dpd_buf_mat_irrep_rd!\n");
         exit(PSI_RETURN_FAILURE);
         break;
     }

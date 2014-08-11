@@ -38,8 +38,10 @@ namespace psi {
   
 void IWL::write_matrix(int ptr, int qtr, double **mat, int rfirst, int rlast, 
     int sfirst, int slast, int *reorder, int reorder_offset, 
-    int printflag, int *ioff, FILE *out)
+    int printflag, int *ioff, std::string out)
 {
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(out)));
     int idx, r, s, R, S, rtr, str;
     int ij, kl;
     double value;
@@ -79,7 +81,7 @@ void IWL::write_matrix(int ptr, int qtr, double **mat, int rfirst, int rlast,
                 }
 
                 if (printflag)
-                    psi::fprintf(out, ">%d %d %d %d [%d] [%d] = %20.10f\n",
+                    printer->Printf( ">%d %d %d %d [%d] [%d] = %20.10f\n",
                     ptr, qtr, rtr, str, ij, kl, value);
 
             } /* end if (fabs(value) > Buf->cutoff) ... */
@@ -89,8 +91,10 @@ void IWL::write_matrix(int ptr, int qtr, double **mat, int rfirst, int rlast,
 
 void IWL::write_matrix2(int ptr, int qtr, double **mat, int rfirst, int rlast, 
     int sfirst, int slast, int *reorder, int reorder_offset, 
-    int printflag, int *ioff, FILE *out)
+    int printflag, int *ioff, std::string out)
 {
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(out)));
     int idx, r, s, R, S, rtr, str;
     int ij, kl;
     double value;
@@ -130,7 +134,7 @@ void IWL::write_matrix2(int ptr, int qtr, double **mat, int rfirst, int rlast,
                 }
 
                 if (printflag)
-                    psi::fprintf(out, ">%d %d %d %d [%d] [%d] = %20.10f\n",
+                    printer->Printf( ">%d %d %d %d [%d] [%d] = %20.10f\n",
                     ptr, qtr, rtr, str, ij, kl, value);
             } /* end if (fabs(value) > Buf->cutoff) ... */
         } /* end loop over s */
@@ -168,7 +172,7 @@ void IWL::write_matrix2(int ptr, int qtr, double **mat, int rfirst, int rlast,
 void iwl_buf_wrt_mat(struct iwlbuf *Buf, int ptr, int qtr, 
      double **mat, int rfirst, int rlast, int sfirst, int slast,
      int *reorder, int reorder_offset, int printflag, int *ioff,
-      FILE *out)
+     std::string out)
 {
    int idx, r, s, R, S, rtr, str;
    int ij, kl;
@@ -207,9 +211,10 @@ void iwl_buf_wrt_mat(struct iwlbuf *Buf, int ptr, int qtr,
 	   iwl_buf_put(Buf);
 	   Buf->idx = 0;
 	 }
-	 
+	 boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+	          boost::shared_ptr<OutFile>(new OutFile(out)));
 	 if (printflag)
-	   psi::fprintf(out, ">%d %d %d %d [%d] [%d] = %20.10f\n",
+	   printer->Printf( ">%d %d %d %d [%d] [%d] = %20.10f\n",
 		   ptr, qtr, rtr, str, ij, kl, value);
 	 
        } /* end if (fabs(value) > Buf->cutoff) ... */
@@ -230,7 +235,7 @@ void iwl_buf_wrt_mat(struct iwlbuf *Buf, int ptr, int qtr,
 void iwl_buf_wrt_mat2(struct iwlbuf *Buf, int ptr, int qtr, 
      double **mat, int rfirst, int rlast, int sfirst, int slast,
      int *reorder, int reorder_offset, int printflag, int *ioff,
-      FILE *out)
+      std::string out)
 {
    int idx, r, s, R, S, rtr, str;
    int ij, kl;
@@ -269,9 +274,10 @@ void iwl_buf_wrt_mat2(struct iwlbuf *Buf, int ptr, int qtr,
 	   iwl_buf_put(Buf);
 	   Buf->idx = 0;
 	 }
-	 
+	 boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+	          boost::shared_ptr<OutFile>(new OutFile(out)));
 	 if (printflag)
-	   psi::fprintf(out, ">%d %d %d %d [%d] [%d] = %20.10f\n",
+	   printer->Printf( ">%d %d %d %d [%d] [%d] = %20.10f\n",
 		   ptr, qtr, rtr, str, ij, kl, value);
 	 
        } /* end if (fabs(value) > Buf->cutoff) ... */

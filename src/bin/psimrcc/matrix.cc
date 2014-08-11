@@ -32,7 +32,7 @@
 #include "matrix.h"
 
 namespace psi{
-    extern FILE *outfile;
+    
     namespace psimrcc{
     extern MOInfo *moinfo;
     extern MemoryManager* memory_manager;
@@ -105,14 +105,14 @@ CCMatrix::~CCMatrix()
  */
 void CCMatrix::print()
 {
-  psi::fprintf(outfile,"\n\n\t\t\t\t\t%s Matrix\n",label.c_str());
+  outfile->Printf("\n\n\t\t\t\t\t%s Matrix\n",label.c_str());
   for(int i=0;i<nirreps;i++){
     if(left->get_pairpi(i) * right->get_pairpi(i)){
-      psi::fprintf(outfile,"\nBlock %d (%s,%s)",i,moinfo->get_irr_labs(i),moinfo->get_irr_labs(i));
-      print_dpdmatrix(i,outfile);
+      outfile->Printf("\nBlock %d (%s,%s)",i,moinfo->get_irr_labs(i),moinfo->get_irr_labs(i));
+      print_dpdmatrix(i,"outfile");
     }
   }
-  fflush(outfile);
+  
 }
 
 void CCMatrix::add_numerical_factor(double factor)
@@ -325,11 +325,12 @@ double CCMatrix::dot_product(CCMatrix* B_Matrix, CCMatrix* C_Matrix, int h)
   return(value);
 }
 
-void CCMatrix::print_dpdmatrix(int irrep, FILE *out)
+void CCMatrix::print_dpdmatrix(int irrep, std::string OutFileRMR)
 {
   int ii,jj,kk,nn,ll;
   int i,j;
-
+  boost::shared_ptr<psi::PsiOutStream> printer(OutFileRMR=="outfile"? psi::outfile:
+     boost::shared_ptr<psi::OutFile>(new psi::OutFile(OutFileRMR,psi::APPEND)));
   double** mat=matrix[irrep];
   int left_offset  = left->get_first(irrep);
   int right_offset = right->get_first(irrep);
@@ -345,37 +346,36 @@ L200:
   nn=n;
   if (nn > kk) nn=kk;
   ll = 2*(nn-ii+1)+1;
-  psi::fprintf (out,"\n            ");
+  printer->Printf("\n            ");
   for (i=ii; i <= nn; i++){
 
     short* right_indices = right->get_tuple(i+right_offset-1);
-    psi::fprintf(out,"(");
+    printer->Printf("(");
     for(int p=0;p<right->get_nelements();p++)
-      psi::fprintf(out,"%3d",right_indices[p]);
-    psi::fprintf(out,")");
+      printer->Printf("%3d",right_indices[p]);
+    printer->Printf(")");
     int nspaces = 10-3*right->get_nelements();
     for(int p=0;p<nspaces;p++)
-      psi::fprintf(out," ");
+      printer->Printf(" ");
 
   }
-  psi::fprintf (out,"\n");
+  printer->Printf("\n");
   for (i=0; i < m; i++) {
     short* left_indices = left->get_tuple(i+left_offset);
-    psi::fprintf(out,"\n(");
+    printer->Printf("\n(");
     for(int p=0;p<left->get_nelements();p++)
-      psi::fprintf(out,"%3d",left_indices[p]);
-    psi::fprintf(out,")  ");
+      printer->Printf("%3d",left_indices[p]);
+    printer->Printf(")  ");
 
     for (j=ii-1; j < nn; j++) {
       if(fabs(mat[i][j]) < 100.0)
-        psi::fprintf (out,"%12.7f",mat[i][j]);
+        printer->Printf("%12.7f",mat[i][j]);
       else
-        psi::fprintf (out,"    infinity");
+        printer->Printf("    infinity");
     }
   }
-  psi::fprintf (out,"\n");
+  printer->Printf("\n");
   if (n <= kk) {
-    fflush(out);
     return;
   }
   ii=kk; goto L200;

@@ -83,8 +83,8 @@ void DPD::sort_3d(double ***Win, double ***Wout, int nirreps, int h, int *rowtot
     switch(index) {
 
     case abc:
-        psi::fprintf(stderr, "\ndpd_3d_sort: abc pattern is invalid.\n");
-        dpd_error("3d_sort", stderr);
+        outfile->Printf( "\ndpd_3d_sort: abc pattern is invalid.\n");
+        dpd_error("3d_sort", "outfile");
         break;
 
     case acb:

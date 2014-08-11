@@ -136,22 +136,22 @@ void DFJKGrad::common_init()
 void DFJKGrad::print_header() const
 {
     if (print_) {
-        psi::fprintf(outfile, "  ==> DFJKGrad: Density-Fitted SCF Gradients <==\n\n");
+        outfile->Printf( "  ==> DFJKGrad: Density-Fitted SCF Gradients <==\n\n");
 
-        psi::fprintf(outfile, "    Gradient:          %11d\n", deriv_);
-        psi::fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
-        psi::fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
-        psi::fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
+        outfile->Printf( "    Gradient:          %11d\n", deriv_);
+        outfile->Printf( "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
+        outfile->Printf( "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
+        outfile->Printf( "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
         if (do_wK_)
-            psi::fprintf(outfile, "    Omega:             %11.3E\n", omega_);
-        psi::fprintf(outfile, "    OpenMP threads:    %11d\n", omp_num_threads_);
-        psi::fprintf(outfile, "    Integrals threads: %11d\n", df_ints_num_threads_);
-        psi::fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
-        psi::fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n", cutoff_);
-        psi::fprintf(outfile, "    Fitting Condition: %11.0E\n\n", condition_);
+            outfile->Printf( "    Omega:             %11.3E\n", omega_);
+        outfile->Printf( "    OpenMP threads:    %11d\n", omp_num_threads_);
+        outfile->Printf( "    Integrals threads: %11d\n", df_ints_num_threads_);
+        outfile->Printf( "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        outfile->Printf( "    Schwarz Cutoff:    %11.0E\n", cutoff_);
+        outfile->Printf( "    Fitting Condition: %11.0E\n\n", condition_);
 
-        psi::fprintf(outfile, "   => Auxiliary Basis Set <=\n\n");
-        auxiliary_->print_by_level(outfile, print_);
+        outfile->Printf( "   => Auxiliary Basis Set <=\n\n");
+        auxiliary_->print_by_level("outfile", print_);
     }
 }
 void DFJKGrad::compute_gradient()
@@ -1608,17 +1608,17 @@ void DirectJKGrad::common_init()
 void DirectJKGrad::print_header() const
 {
     if (print_) {
-        psi::fprintf(outfile, "  ==> DirectJKGrad: Integral-Direct SCF Gradients <==\n\n");
+        outfile->Printf( "  ==> DirectJKGrad: Integral-Direct SCF Gradients <==\n\n");
 
-        psi::fprintf(outfile, "    Gradient:          %11d\n", deriv_);
-        psi::fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
-        psi::fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
-        psi::fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
+        outfile->Printf( "    Gradient:          %11d\n", deriv_);
+        outfile->Printf( "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
+        outfile->Printf( "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
+        outfile->Printf( "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
         if (do_wK_)
-            psi::fprintf(outfile, "    Omega:             %11.3E\n", omega_);
-        psi::fprintf(outfile, "    Integrals threads: %11d\n", ints_num_threads_);
-        psi::fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n", cutoff_);
-        psi::fprintf(outfile, "\n");
+            outfile->Printf( "    Omega:             %11.3E\n", omega_);
+        outfile->Printf( "    Integrals threads: %11d\n", ints_num_threads_);
+        outfile->Printf( "    Schwarz Cutoff:    %11.0E\n", cutoff_);
+        outfile->Printf( "\n");
     }
 }
 void DirectJKGrad::compute_gradient()
@@ -1705,7 +1705,7 @@ std::map<std::string, boost::shared_ptr<Matrix> > DirectJKGrad::compute1(std::ve
 
         if (!sieve_->shell_significant(P,Q,R,S)) continue;
 
-        //psi::fprintf(outfile,"(%d,%d,%d,%d)\n", P,Q,R,S);
+        //outfile->Printf("(%d,%d,%d,%d)\n", P,Q,R,S);
 
         int thread = 0;
         #ifdef _OPENMP
@@ -1948,7 +1948,7 @@ std::map<std::string, boost::shared_ptr<Matrix> > DirectJKGrad::compute2(std::ve
 
         if (!sieve_->shell_significant(P,Q,R,S)) continue;
 
-        //psi::fprintf(outfile,"(%d,%d,%d,%d)\n", P,Q,R,S);
+        //outfile->Printf("(%d,%d,%d,%d)\n", P,Q,R,S);
 
         int thread = 0;
         #ifdef _OPENMP

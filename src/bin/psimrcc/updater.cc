@@ -39,7 +39,7 @@
 #include "updater.h"
 
 namespace psi{
-    extern FILE *outfile;
+    
     namespace psimrcc{
     extern MOInfo *moinfo;
 
@@ -156,7 +156,7 @@ void Updater::zero_internal_amps()
 //      blas->print("t2[OO][VV]{u}");
 //    )
   }else{
-    psi::fprintf(outfile,"\n  Warning: the internal amplitudes are not zeroed.\n  This is not proper Mk-MRCC. Size-extensivity might be lost\n");
+    outfile->Printf("\n  Warning: the internal amplitudes are not zeroed.\n  This is not proper Mk-MRCC. Size-extensivity might be lost\n");
   }
 }
 
@@ -194,7 +194,7 @@ void Updater::zero_t1_internal_amps()
 //      blas->print("t1[O][V]{u}");
 //    )
   }else{
-    psi::fprintf(outfile,"\n  Warning: the internal amplitudes are not zeroed.\n  This is not proper Mk-MRCC. Size-extensivity might be lost\n");
+    outfile->Printf("\n  Warning: the internal amplitudes are not zeroed.\n  This is not proper Mk-MRCC. Size-extensivity might be lost\n");
   }
 }
 
@@ -300,7 +300,7 @@ void Updater::zero_internal_delta_amps()
 //      blas->print("t2_delta[OO][VV]{u}");
 //    )
   }else{
-    psi::fprintf(outfile,"\n  Warning: the internal amplitudes are not zeroed.\n  This is not proper Mk-MRCC. Size-extensivity might be lost\n");
+    outfile->Printf("\n  Warning: the internal amplitudes are not zeroed.\n  This is not proper Mk-MRCC. Size-extensivity might be lost\n");
   }
 }
 

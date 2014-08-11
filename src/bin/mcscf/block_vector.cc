@@ -130,11 +130,11 @@ void BlockVector::cleanup()
 
 void BlockVector::print()
 {
-  psi::fprintf(outfile,"\n\n  ## %s ##\n",label_.c_str());
+  outfile->Printf("\n\n  ## %s ##\n",label_.c_str());
   for(int h = 0; h < nirreps_; ++h){
     vector_base_[h]->print();
   }
-  fflush(outfile);
+  
 }
 
 

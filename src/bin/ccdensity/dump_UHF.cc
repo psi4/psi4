@@ -119,7 +119,7 @@ if (!params.onepdm) {
 
 	value = 2.0 * G.matrix[h][row][col];
 
-	iwl_buf_wrt_val(AB, P, R, Q, S, value, 0, (FILE *) NULL, 0);
+	iwl_buf_wrt_val(AB, P, R, Q, S, value, 0, "NULL", 0);
       }
     }
     global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -139,7 +139,7 @@ if (!params.onepdm) {
 
 	value = G.matrix[h][row][col];
 
-	iwl_buf_wrt_val(AA, P, R, Q, S, value, 0, (FILE *) NULL, 0);
+	iwl_buf_wrt_val(AA, P, R, Q, S, value, 0, "NULL", 0);
       }
     }
     global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -159,7 +159,7 @@ if (!params.onepdm) {
 
 	value = G.matrix[h][row][col];
 
-	iwl_buf_wrt_val(BB, P, R, Q, S, value, 0, (FILE *) NULL, 0);
+	iwl_buf_wrt_val(BB, P, R, Q, S, value, 0, "NULL", 0);
       }
     }
     global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -179,8 +179,8 @@ if (!params.onepdm) {
 
 	value = G.matrix[h][row][col];
 
-	iwl_buf_wrt_val(AB, P, R, Q, S, value, 0, (FILE *) NULL, 0);
-	iwl_buf_wrt_val(AB, P, R, S, Q, value, 0, (FILE *) NULL, 0);
+	iwl_buf_wrt_val(AB, P, R, Q, S, value, 0, "NULL", 0);
+	iwl_buf_wrt_val(AB, P, R, S, Q, value, 0, "NULL", 0);
       }
     }
     global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -200,8 +200,8 @@ if (!params.onepdm) {
 
 	value = G.matrix[h][row][col];
 
-	iwl_buf_wrt_val(AB, Q, S, P, R, value, 0, (FILE *) NULL, 0);
-	iwl_buf_wrt_val(AB, S, Q, P, R, value, 0, (FILE *) NULL, 0);
+	iwl_buf_wrt_val(AB, Q, S, P, R, value, 0, "NULL", 0);
+	iwl_buf_wrt_val(AB, S, Q, P, R, value, 0, "NULL", 0);
       }
     }
     global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -237,7 +237,7 @@ if (!params.onepdm) {
 
 	value = 2.0 * G.matrix[h][row][col];
 
-	iwl_buf_wrt_val(AB, P, R, Q, S, value, 0, (FILE *) NULL, 0);
+	iwl_buf_wrt_val(AB, P, R, Q, S, value, 0, "NULL", 0);
       }
     }
     global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -257,7 +257,7 @@ if (!params.onepdm) {
 
 	value = 0.5 * G.matrix[h][row][col];
 
-	iwl_buf_wrt_val(AA, P, R, Q, S, value, 0, (FILE *) NULL, 0);
+	iwl_buf_wrt_val(AA, P, R, Q, S, value, 0, "NULL", 0);
       }
     }
     global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -277,7 +277,7 @@ if (!params.onepdm) {
 
 	value = 0.5 * G.matrix[h][row][col];
 
-	iwl_buf_wrt_val(BB, P, R, Q, S, value, 0, (FILE *) NULL, 0);
+	iwl_buf_wrt_val(BB, P, R, Q, S, value, 0, "NULL", 0);
       }
     }
     global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -297,7 +297,7 @@ if (!params.onepdm) {
 
 	value = G.matrix[h][row][col];
 
-	iwl_buf_wrt_val(AB, P, R, Q, S, value, 0, (FILE *) NULL, 0);
+	iwl_buf_wrt_val(AB, P, R, Q, S, value, 0, "NULL", 0);
       }
     }
     global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -317,7 +317,7 @@ if (!params.onepdm) {
 
 	value = G.matrix[h][row][col];
 
-	iwl_buf_wrt_val(AB, Q, S, P, R, value, 0, (FILE *) NULL, 0);
+	iwl_buf_wrt_val(AB, Q, S, P, R, value, 0, "NULL", 0);
       }
     }
     global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -337,7 +337,7 @@ if (!params.onepdm) {
 
 	value = G.matrix[h][row][col];
 
-	iwl_buf_wrt_val(AA, P, R, Q, S, value, 0, (FILE *) NULL, 0);
+	iwl_buf_wrt_val(AA, P, R, Q, S, value, 0, "NULL", 0);
       }
     }
     global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -357,7 +357,7 @@ if (!params.onepdm) {
 
 	value = G.matrix[h][row][col];
 
-	iwl_buf_wrt_val(BB, P, R, Q, S, value, 0, (FILE *) NULL, 0);
+	iwl_buf_wrt_val(BB, P, R, Q, S, value, 0, "NULL", 0);
       }
     }
     global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -377,8 +377,8 @@ if (!params.onepdm) {
 
 	value = G.matrix[h][row][col];
 
-	iwl_buf_wrt_val(AB, P, R, Q, S, value, 0, (FILE *) NULL, 0);
-	iwl_buf_wrt_val(AB, P, R, S, Q, value, 0, (FILE *) NULL, 0);
+	iwl_buf_wrt_val(AB, P, R, Q, S, value, 0, "NULL", 0);
+	iwl_buf_wrt_val(AB, P, R, S, Q, value, 0, "NULL", 0);
       }
     }
     global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -398,8 +398,8 @@ if (!params.onepdm) {
 
 	value = G.matrix[h][row][col];
 
-	iwl_buf_wrt_val(AB, Q, S, P, R, value, 0, (FILE *) NULL, 0);
-	iwl_buf_wrt_val(AB, S, Q, P, R, value, 0, (FILE *) NULL, 0);
+	iwl_buf_wrt_val(AB, Q, S, P, R, value, 0, "NULL", 0);
+	iwl_buf_wrt_val(AB, S, Q, P, R, value, 0, "NULL", 0);
       }
     }
     global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -435,7 +435,7 @@ if (!params.onepdm) {
 
 	value = 2.0 * G.matrix[h][row][col];
 
-	iwl_buf_wrt_val(AB, P, R, Q, S, value, 0, (FILE *) NULL, 0);
+	iwl_buf_wrt_val(AB, P, R, Q, S, value, 0, "NULL", 0);
       }
     }
     global_dpd_->buf4_mat_irrep_close(&G, h);

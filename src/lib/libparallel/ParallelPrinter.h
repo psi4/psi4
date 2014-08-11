@@ -22,134 +22,82 @@
 #ifndef PARALLELPRINTER_H_
 #define PARALLELPRINTER_H_
 
-#include <iostream>
-#include <sstream>
+#include "StreamBase.h"
 #include <fstream>
-#include <cstdio>
+
 namespace psi{
 
-
-enum FileModes{NOMODE,READ,WRITE};
-
-enum FileOptions{NOOPTIONS,END,APPEND,TRUNCATE,BINARY};
+///For each value the first name is preferred, but let's face it typing stinks
+enum FileMode{NOFILEMODE=0,END=1,ATE=1,APPEND=2,APP=2,A=2,TRUNCATE=3,TRUNC=3,
+              T=3,BINARY=4,BIN=4};
 
 typedef std::fstream::openmode stdFMode;
-typedef std::ostream& (*StreamManips)(std::ostream&);
 
-/** \brief The base class for our new ParallelStream filesystem
+
+/** \brief The interface to the new Psi4 ASCII outfile writer
  *
- * The baseclass is never intended to be created, hence the reason it has no
- * public members.  You should interface to this class through the appropriate
- * derived class:
+ * First thing to note is that copying of this class is disallowed and is
+ * enforced by making the assignment operator and copy constructor private.
+ * This is because the C++ standard does not allow copying of streams, which
+ * is surprising to most people when they first hear it, but in the long run
+ * makes a lot of sense.  Streams are, as the name suggests, the mechanism
+ * through which data flows; they are not the data itself.  Most likely when
+ * someone wants to copy a stream, they want to copy the data itself (this is
+ * what we do in the copy constructor of PsiStreamBase) and not the mechanism
+ * by which the data flows.  In order to avoid this confusion the C++ standard
+ * makes copying prohibited.  Now in reality we could allow copying because we
+ * are dealing with pointers and not the actual objects; copying of a pointer
+ * is of course not prohibited, but I'll stick to the example laid forth by
+ * the C++ standard.
  *
- * OutFile for writing to files
- * InFile  for reading from files
- * OutputFile for writing to the equivalent of output.dat
+ * The other thing to note is that this class keeps the file open until it
+ * goes out of scope or you tell it to close.  With the exception of Psi4's main
+ * output file, this means you probably want to print what you gotta' print and
+ * then close it, don't keep it open any longer then you have to.
  *
- * TODO: Write PsiIO in terms of this unified file manager.  Likely you would
- * derive from OutFile and InFile: BinOutFile and BinInFile respectively.  The
- * interface to ParallelStream may need alterned slightly.
  */
-class ParallelStream{
+class OutFile: public PsiOutStream{
    private:
-      ///Where data for all processes exists. Master process bcasts to here.
-      std::stringstream Buffer;
+      ///Maps enumerated FileModes to those in c++ std library
+      std::map<FileMode,stdFMode> FOptions_;
 
-      ///The file buffer (only master process reads/writes to here)
-      std::fstream File;
+      ///Disallow copying of the filestream
+      OutFile(const OutFile& other){}
 
-      ///What Mode are we in
-      FileModes Mode;
+      ///Disallow assignment of the filestream
+      const OutFile& operator=(const OutFile& other){return *this;}
 
-      inline stdFMode GetFileOptions(const FileOptions& Options);
-      inline stdFMode ReadorWrite(const FileModes& Mode);
-   protected:
-      ///True if file exists and is open
-      bool IsGood(){return File.good();}
-      ///True if file is open (may be a new file)
-      bool IsOpen(){return File.is_open();}
-      ///True if the file has been read out
-      bool IsEoF(){return Buffer.eof();}
-      bool FileStatus(){return File;}
-      void OpenImpl(const std::string& name,const FileModes InMode=NOMODE,
-                const FileOptions=NOOPTIONS);
-
-      ///Close Implementation.  Free memory. Set Output to NULL. Clears buffer
-      void CloseImpl();
-
-      ///Very basic set-up, defaults to writing files
-      ParallelStream(FileModes InMode=NOMODE):Mode(InMode){}
-
-      ///Closes files if open, frees memory
-      virtual ~ParallelStream(){if(IsOpen())this->CloseImpl();}
-
-      ///Reads data into the buffer (hence is for a write operation)
-      template<class T>
-      void Read(T& Input){if(Mode==WRITE)Buffer<<Input;}
-
-      ///So you may pass std::endl or whatever other stream modifiers you want
-      void Read(StreamManips fp){if(Mode==WRITE)Buffer<<fp;}
-
-      ///Opposite of Read
-      template<class T>
-      void Write(T& Output){if(Mode==READ)Buffer>>Output;}
-
-      ///Returns a copy of the buffer as a stringstream
-      //std::stringstream CopyBuffer(){std::stringstream ACopy(Buffer);return ACopy;}
-};
-
-class OutFile:private ParallelStream{
+      ///Function that loads FOptions_ up
+      void LoadFOptions();
    public:
+      /** \brief Constructor that opens a file with name "filename"
+       *
+       *  Upon construction passes NULL to base, so that the pointer is
+       *  not set to cout.  This avoids free-ing cout in the Open call.
+       *  By default no file is opened, but supplying a filename will open
+       *  that file in APPEND mode.  Supplying a mode as well as a filename
+       *  opens the file in that mode instead.  The mechanism of the
+       *  constructor is to call Open so behavior is identical between
+       *  initializing an object with a file and calling Open after calling
+       *  the default constructor.
+       *
+       *  \param[in] filename Name of file to open (path relative to directory
+       *                      Psi was called from)
+       *
+       *  \param[in] mode     The mode the file will be opened in
+       *
+       *
+       */
+      OutFile(const std::string& filename="",const FileMode& mode=APPEND);
 
-      ///Defaults to writing in append mode
-      OutFile(const std::string& name="NONE",
-            const FileOptions& options=APPEND);
+      ///Calls Close to release memory
+      ~OutFile(){Close();}
 
-      ///Defaults to writing in append mode
-      void Open(const std::string&name,const FileOptions& options=APPEND);
+      ///Opens "filename" in write mode "mode"
+      void Open(const std::string& filename,const FileMode& mode);
 
-      ///Calling this actually writes the file
-      void Close(){CloseImpl();}
-
-      ///Reads a stream into the buffer
-      template<typename T>
-      void operator<<(T& buffer){ParallelStream::Read(buffer);}
-
-      ///So you may pass std::endl or whatever other stream modifiers you want
-      void operator<<(StreamManips fp){ParallelStream::Read(fp);}
-
-      ///For y'all who think streams suck...
-      void Printf(const char* format,...);
+      ///Closes file and frees Stream_ pointer
+      void Close();
 };
-
-class InFile:private ParallelStream{
-   private:
-      bool RealEoF;
-   public:
-      ///Sets this class up to read from a file
-      InFile(const std::string& name="NONE",
-            const FileOptions& options=NOOPTIONS);
-
-      ///Reads the data into a buffer
-      void Open(const std::string&name,
-            const FileOptions& options=NOOPTIONS);
-
-      ///Calling this closes the file
-      void Close(){CloseImpl();RealEoF=false;}
-
-      ///Dumps the file out word by word,returns true if there is more to read
-      template<typename T>
-      bool operator>>(T& buffer){
-         if(IsEoF())RealEoF=true;
-         ParallelStream::Write(buffer);
-         return !(IsEoF()&&RealEoF);}
-
-      ///True if the file exists
-      bool Exists(){return FileStatus();}
-
-      //std::stringstream DumpBuffer(){return CopyBuffer();}
-
-};
-
 }//End namespace psi
 #endif /* PARALLELPRINTER_H_ */

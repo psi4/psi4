@@ -787,118 +787,124 @@ double **Matrix::to_block_matrix() const
     return temp;
 }
 
-void Matrix::print_mat(const double *const *const a, int m, int n, FILE *out) const
+void Matrix::print_mat(const double *const *const a, int m, int n, std::string out) const
 {
-    const int print_ncol = Process::environment.options.get_int("MAT_NUM_COLUMN_PRINT");
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(out)));
+
+   const int print_ncol = Process::environment.options.get_int("MAT_NUM_COLUMN_PRINT");
     int num_frames = int(n/print_ncol);
     int num_frames_rem = n%print_ncol; //adding one for changing 0->1 start
     int num_frame_counter = 0;
     //for each frame
     for(num_frame_counter=0;num_frame_counter<num_frames;num_frame_counter++){
-        psi::fprintf(out,"\n");
+        printer->Printf("\n");
         for(int j=print_ncol*num_frame_counter+1;j<print_ncol*num_frame_counter+print_ncol+1;j++){
-            if(j==print_ncol*num_frame_counter+1){ psi::fprintf(out,"%18d",j); }
-            else{ psi::fprintf(out,"               %5d",j); }
+            if(j==print_ncol*num_frame_counter+1){ printer->Printf("%18d",j); }
+            else{ printer->Printf("               %5d",j); }
         }
-        psi::fprintf(out,"\n\n");
+        printer->Printf("\n\n");
 
         for(int k=1; k<=m; ++k){
             for(int j=print_ncol*num_frame_counter+1;j<print_ncol*num_frame_counter+print_ncol+2;j++){
-                if(j==print_ncol*num_frame_counter+1){ psi::fprintf(out,"%5d",k);}
-                else{ psi::fprintf(out," %20.14f",a[k-1][j-2]); }
+                if(j==print_ncol*num_frame_counter+1){ printer->Printf("%5d",k);}
+                else{ printer->Printf(" %20.14f",a[k-1][j-2]); }
             }
-            psi::fprintf(out,"\n");
+            printer->Printf("\n");
         }
     }
 
     // ALREADY DID THE FULL FRAMES BY THIS POINT
     // NEED TO TAKE CARE OF THE REMAINDER
     if(num_frames_rem != 0){
-        psi::fprintf(out,"\n");
+        printer->Printf("\n");
         for(int j=print_ncol*num_frame_counter+1;j<=n;j++){
-            if(j==print_ncol*num_frame_counter+1){ psi::fprintf(out,"%18d",j); }
-            else{ psi::fprintf(out,"               %5d",j); }
+            if(j==print_ncol*num_frame_counter+1){ printer->Printf("%18d",j); }
+            else{ printer->Printf("               %5d",j); }
         }
-        psi::fprintf(out,"\n\n");
+        printer->Printf("\n\n");
 
         for(int k=1; k<=m; ++k){
             for(int j=print_ncol*num_frame_counter+1;j<n+2;j++){
-                if(j==print_ncol*num_frame_counter+1){ psi::fprintf(out,"%5d",k); }
-                else{ psi::fprintf(out," %20.14f",a[k-1][j-2]); }
+                if(j==print_ncol*num_frame_counter+1){ printer->Printf("%5d",k); }
+                else{ printer->Printf(" %20.14f",a[k-1][j-2]); }
             }
-            psi::fprintf(out,"\n");
+            printer->Printf("\n");
         }
     }
-    psi::fprintf(out,"\n\n");
+    printer->Printf("\n\n");
     //R.I.P. goto statements - Aug 4th 2010 - MSM
 }
 
-void Matrix::print(FILE *out, const char *extra) const
+void Matrix::print(std::string out, const char *extra) const
 {
     int h;
-
+    boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+          boost::shared_ptr<OutFile>(new OutFile(out)));
     if (name_.length()) {
         if (extra == NULL)
-            psi::fprintf(out, "  ## %s (Symmetry %d) ##\n", name_.c_str(), symmetry_);
+            printer->Printf("  ## %s (Symmetry %d) ##\n", name_.c_str(), symmetry_);
         else
-            psi::fprintf(out, "  ## %s %s (Symmetry %d)##\n", name_.c_str(), extra, symmetry_);
+            printer->Printf("  ## %s %s (Symmetry %d)##\n", name_.c_str(), extra, symmetry_);
     }
 
     for (h=0; h<nirrep_; ++h) {
-        psi::fprintf(out, "  Irrep: %d Size: %d x %d\n", h+1, rowspi_[h], colspi_[h^symmetry_]);
+        printer->Printf("  Irrep: %d Size: %d x %d\n", h+1, rowspi_[h], colspi_[h^symmetry_]);
         if (rowspi_[h] == 0 || colspi_[h^symmetry_] == 0)
-            psi::fprintf(out, "\n\t(empty)\n");
+            printer->Printf("\n\t(empty)\n");
         else
             print_mat(matrix_[h], rowspi_[h], colspi_[h^symmetry_], out);
-        psi::fprintf(out, "\n");
+        printer->Printf("\n");
     }
-    fflush(out);
+
 }
 
-void Matrix::print_atom_vector(FILE *out)
+void Matrix::print_atom_vector(std::string out)
 {
     int i;
-
+    boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+          boost::shared_ptr<OutFile>(new OutFile(out)));
     if (name_.length()) {
-        psi::fprintf(out,"\n  -%s:\n", name_.c_str());
+        printer->Printf("\n  -%s:\n", name_.c_str());
     }
-    psi::fprintf(out,"     Atom            X                  Y                   Z\n");
-    psi::fprintf(out,"    ------   -----------------  -----------------  -----------------\n");
+    printer->Printf("     Atom            X                  Y                   Z\n");
+    printer->Printf("    ------   -----------------  -----------------  -----------------\n");
 
     for(i=0;i<nrow();i++) {
-        psi::fprintf(out,"    %4d   ",i+1);
-        psi::fprintf(out,"  %17.12lf  %17.12lf  %17.12lf", matrix_[0][i][0], matrix_[0][i][1], matrix_[0][i][2]);
-        psi::fprintf(out,"\n");
+        printer->Printf("    %4d   ",i+1);
+        printer->Printf("  %17.12lf  %17.12lf  %17.12lf", matrix_[0][i][0], matrix_[0][i][1], matrix_[0][i][2]);
+        printer->Printf("\n");
     }
-    psi::fprintf(out,"\n");
+    printer->Printf("\n");
 }
 
 
-void Matrix::eivprint(const Vector * const values, FILE *out)
+void Matrix::eivprint(const Vector * const values, std::string out)
 {
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(out)));
     if (symmetry_)
         throw PSIEXCEPTION("Matrix::eivprint: This print does not make sense for non-totally symmetric matrices.");
 
     int h;
 
     if (name_.length()) {
-        psi::fprintf(out, "  ## %s with eigenvalues ##\n", name_.c_str());
+        printer->Printf("  ## %s with eigenvalues ##\n", name_.c_str());
     }
 
     for (h=0; h<nirrep_; ++h) {
-        psi::fprintf(out, " Irrep: %d\n", h+1);
+        printer->Printf(" Irrep: %d\n", h+1);
         eivout(matrix_[h], values->vector_[h], rowspi_[h], colspi_[h^symmetry_], out);
-        psi::fprintf(out, "\n");
+        printer->Printf("\n");
     }
-    fflush(out);
 }
 
-void Matrix::eivprint(const Vector& values, FILE *out)
+void Matrix::eivprint(const Vector& values, std::string out)
 {
     eivprint(&values, out);
 }
 
-void Matrix::eivprint(const boost::shared_ptr<Vector>& values, FILE *out)
+void Matrix::eivprint(const boost::shared_ptr<Vector>& values, std::string out)
 {
     eivprint(values.get(), out);
 }
@@ -1357,9 +1363,9 @@ void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix* const a,
 {
     // Check symmetry
     if (symmetry_ != (a->symmetry_ ^ b->symmetry_)) {
-        psi::fprintf(outfile, "Matrix::gemm error: Input symmetries will not result in target symmetry.\n");
-        psi::fprintf(outfile, " Asym %d ^ Bsym %d != Csym %d\n", a->symmetry(), b->symmetry(), symmetry());
-        psi::fprintf(outfile, "Result is %d\n", a->symmetry_ ^ b->symmetry_);
+        outfile->Printf( "Matrix::gemm error: Input symmetries will not result in target symmetry.\n");
+        outfile->Printf( " Asym %d ^ Bsym %d != Csym %d\n", a->symmetry(), b->symmetry(), symmetry());
+        outfile->Printf( "Result is %d\n", a->symmetry_ ^ b->symmetry_);
         throw PSIEXCEPTION("Matrix::gemm error: Input symmetries will not result in target symmetry.");
     }
 
@@ -1630,10 +1636,10 @@ bool Matrix::schmidt_add_row(int h, int rows, double* v) throw()
     double dotval, normval;
     int i, I;
 
-//    psi::fprintf(outfile, "in schmidt_add\n");
+//    outfile->Printf( "in schmidt_add\n");
 //    for (i=0; i<coldim(h); ++i)
-//        psi::fprintf(outfile, "%lf ", v[i]);
-//    psi::fprintf(outfile, "\n");
+//        outfile->Printf( "%lf ", v[i]);
+//    outfile->Printf( "\n");
 
     for (i=0; i<rows; ++i) {
         dotval = C_DDOT(coldim(h), matrix_[h][i], 1, v, 1);
@@ -1649,8 +1655,8 @@ bool Matrix::schmidt_add_row(int h, int rows, double* v) throw()
             matrix_[h][rows][I] = v[I] / normval;
 
 //        for (i=0; i<coldim(h); ++i)
-//            psi::fprintf(outfile, "%lf ", matrix_[h][rows][i]);
-//        psi::fprintf(outfile, "\n");
+//            outfile->Printf( "%lf ", matrix_[h][rows][i]);
+//        outfile->Printf( "\n");
         return true;
     }
     else
@@ -1663,7 +1669,7 @@ void Matrix::project_out(Matrix &constraints)
     Matrix temp = *this;
     zero();
 
-//    psi::fprintf(outfile, "in project_out:\n");
+//    outfile->Printf( "in project_out:\n");
 
     temp.set_name("temp");
 //    temp.print();
@@ -1671,40 +1677,40 @@ void Matrix::project_out(Matrix &constraints)
 //    constraints.print();
 
     double *v = new double[coldim()];
-//    psi::fprintf(outfile, "coldim(): %d\n", coldim()); fflush(outfile);
+//    outfile->Printf( "coldim(): %d\n", coldim()); 
     for (int h=0; h<nirrep(); ++h) {
         for (int i=0; i<rowdim(h); ++i) {
-//            psi::fprintf(outfile, "i=%d, copying %d elements from temp[%d][%d] to v\n", i, coldim(h), h, i); fflush(outfile);
+//            outfile->Printf( "i=%d, copying %d elements from temp[%d][%d] to v\n", i, coldim(h), h, i); 
             memcpy(v, temp[h][i], sizeof(double)*coldim(h));
 
-//            psi::fprintf(outfile, "temp[%d][] ", h);
+//            outfile->Printf( "temp[%d][] ", h);
 //            for(int z=0; z<coldim(h); ++z)
-//                psi::fprintf(outfile, "%lf ", temp[h][i][z]);
-//            psi::fprintf(outfile, "\n");
+//                outfile->Printf( "%lf ", temp[h][i][z]);
+//            outfile->Printf( "\n");
 
-//            psi::fprintf(outfile, "v[] ", h);
+//            outfile->Printf( "v[] ", h);
 //            for(int z=0; z<coldim(h); ++z)
-//                psi::fprintf(outfile, "%lf ", v[z]);
-//            psi::fprintf(outfile, "\n");
+//                outfile->Printf( "%lf ", v[z]);
+//            outfile->Printf( "\n");
 
             for (int j=0; j<constraints.rowdim(0); ++j) {
                 // hand rolled ddot
                 double dotval = 0.0;
                 for (int z=0; z<coldim(h); ++z) {
                     dotval += temp[h][i][z] * constraints[0][j][z];
-//                    psi::fprintf(outfile, " %lf * %lf ", temp[h][i][z], constraints[0][j][z]);
+//                    outfile->Printf( " %lf * %lf ", temp[h][i][z], constraints[0][j][z]);
                 }
-//                psi::fprintf(outfile, "\n");
+//                outfile->Printf( "\n");
 //                double dotval = C_DDOT(coldim(h), &(temp[h][i][0]), 1, &(constraints[0][j][0]), 1);
-//                psi::fprintf(outfile, "dotval = %lf\n", dotval); fflush(outfile);
+//                outfile->Printf( "dotval = %lf\n", dotval); 
                 for (int I=0; I<coldim(h); ++I)
                     v[I] -= dotval * constraints[0][j][I];
             }
 
-//            psi::fprintf(outfile, "after removing constraints v[] ", h);
+//            outfile->Printf( "after removing constraints v[] ", h);
 //            for(int z=0; z<coldim(h); ++z)
-//                psi::fprintf(outfile, "%lf ", v[z]);
-//            psi::fprintf(outfile, "\n");
+//                outfile->Printf( "%lf ", v[z]);
+//            outfile->Printf( "\n");
 
             // At this point all constraints have been projected out of "v"
             // Normalize it add Schmidt orthogonalize it against this
@@ -1714,10 +1720,10 @@ void Matrix::project_out(Matrix &constraints)
                 for (int j=0; j<coldim(h); ++j)
                     v[j] /= normval;
 
-//                psi::fprintf(outfile, "calling schmidt_add sending i=%d\n", i);
+//                outfile->Printf( "calling schmidt_add sending i=%d\n", i);
 //                for(int z=0; z<coldim(h); ++z)
-//                    psi::fprintf(outfile, "%lf ", v[z]);
-//                psi::fprintf(outfile, "\n");
+//                    outfile->Printf( "%lf ", v[z]);
+//                outfile->Printf( "\n");
                 schmidt_add_row(h, i, v);
             }
         }
@@ -1802,13 +1808,13 @@ void Matrix::diagonalize(SharedMatrix& metric, SharedMatrix& eigvectors, boost::
 
         if (err != 0) {
             if (err < 0) {
-                psi::fprintf(outfile, "Matrix::diagonalize with metric: C_DSYGV: argument %d has invalid parameter.\n", -err);
-                fflush(outfile);
+                outfile->Printf( "Matrix::diagonalize with metric: C_DSYGV: argument %d has invalid parameter.\n", -err);
+                
                 abort();
             }
             if (err > 0) {
-                psi::fprintf(outfile, "Matrix::diagonalize with metric: C_DSYGV: error value: %d\n", err);
-                fflush(outfile);
+                outfile->Printf( "Matrix::diagonalize with metric: C_DSYGV: error value: %d\n", err);
+                
                 abort();
             }
         }
@@ -1878,13 +1884,13 @@ void Matrix::svd(SharedMatrix& U, SharedVector& S, SharedMatrix& V)
 
         if (info != 0) {
             if (info < 0) {
-                psi::fprintf(outfile, "Matrix::svd with metric: C_DGESDD: argument %d has invalid parameter.\n", -info);
-                fflush(outfile);
+                outfile->Printf( "Matrix::svd with metric: C_DGESDD: argument %d has invalid parameter.\n", -info);
+                
                 abort();
             }
             if (info > 0) {
-                psi::fprintf(outfile, "Matrix::svd with metric: C_DGESDD: error value: %d\n", info);
-                fflush(outfile);
+                outfile->Printf( "Matrix::svd with metric: C_DGESDD: error value: %d\n", info);
+                
                 abort();
             }
         }
@@ -1925,13 +1931,13 @@ void Matrix::svd_a(SharedMatrix& U, SharedVector& S, SharedMatrix& V)
 
             if (info != 0) {
                 if (info < 0) {
-                    psi::fprintf(outfile, "Matrix::svd with metric: C_DGESDD: argument %d has invalid parameter.\n", -info);
-                    fflush(outfile);
+                    outfile->Printf( "Matrix::svd with metric: C_DGESDD: argument %d has invalid parameter.\n", -info);
+                    
                     abort();
                 }
                 if (info > 0) {
-                    psi::fprintf(outfile, "Matrix::svd with metric: C_DGESDD: error value: %d\n", info);
-                    fflush(outfile);
+                    outfile->Printf( "Matrix::svd with metric: C_DGESDD: error value: %d\n", info);
+                    
                     abort();
                 }
             }
@@ -2075,15 +2081,15 @@ void Matrix::cholesky_factorize()
             int err = C_DPOTRF('L', rowspi_[h], matrix_[h][0], rowspi_[h]);
             if (err != 0) {
                 if (err < 0) {
-                    psi::fprintf(outfile, "cholesky_factorize: C_DPOTRF: argument %d has invalid paramter.\n", -err);
-                    fflush(outfile);
+                    outfile->Printf( "cholesky_factorize: C_DPOTRF: argument %d has invalid paramter.\n", -err);
+                    
                     abort();
                 }
                 if (err > 1) {
-                    psi::fprintf(outfile, "cholesky_factorize: C_DPOTRF: the leading minor of order %d is not "
+                    outfile->Printf( "cholesky_factorize: C_DPOTRF: the leading minor of order %d is not "
                             "positive definite, and the factorization could not be "
                             "completed.", err);
-                    fflush(outfile);
+                    
                     abort();
                 }
             }
@@ -2265,7 +2271,7 @@ void Matrix::invert()
     double **work = block_matrix(max_nrow(), max_ncol());
     for (int h=0; h<nirrep_; ++h) {
         if (rowspi_[h] && colspi_[h^symmetry_] && rowspi_[h] == colspi_[h^symmetry_]) {
-            invert_matrix(matrix_[h], work, rowspi_[h], outfile);
+            invert_matrix(matrix_[h], work, rowspi_[h], "outfile");
             memcpy(&(matrix_[h][0][0]), &(work[0][0]), sizeof(double)*rowspi_[h]*colspi_[h]);
         }
     }
@@ -2287,14 +2293,14 @@ void Matrix::general_invert()
             int err = C_DGETRF(rowspi_[h], colspi_[h], matrix_[h][0], rowspi_[h], ipiv);
             if (err != 0) {
                 if (err < 0) {
-                    psi::fprintf(outfile, "invert: C_DGETRF: argument %d has invalid paramter.\n", -err);
-                    fflush(outfile);
+                    outfile->Printf( "invert: C_DGETRF: argument %d has invalid paramter.\n", -err);
+                    
                     abort();
                 }
                 if (err > 1) {
-                    psi::fprintf(outfile, "invert: C_DGETRF: the (%d,%d) element of the factor U or L is "
+                    outfile->Printf( "invert: C_DGETRF: the (%d,%d) element of the factor U or L is "
                             "zero, and the inverse could not be computed.\n", err, err);
-                    fflush(outfile);
+                    
                     abort();
                 }
             }
@@ -2302,14 +2308,14 @@ void Matrix::general_invert()
             err = C_DGETRI(colspi_[h], matrix_[h][0], rowspi_[h], ipiv, work, lwork);
             if (err != 0) {
                 if (err < 0) {
-                    psi::fprintf(outfile, "invert: C_DGETRI: argument %d has invalid paramter.\n", -err);
-                    fflush(outfile);
+                    outfile->Printf( "invert: C_DGETRI: argument %d has invalid paramter.\n", -err);
+                    
                     abort();
                 }
                 if (err > 1) {
-                    psi::fprintf(outfile, "invert: C_DGETRI: the (%d,%d) element of the factor U or L is "
+                    outfile->Printf( "invert: C_DGETRI: the (%d,%d) element of the factor U or L is "
                             "zero, and the inverse could not be computed.\n", err, err);
-                    fflush(outfile);
+                    
                     abort();
                 }
             }
@@ -2470,9 +2476,9 @@ void Matrix::expm(int m, bool scale)
         C_DAXPY(n * (unsigned long int) n, -1.0, Y[0], 1, N[0], 1);
         C_DAXPY(n * (unsigned long int) n,  1.0, Y[0], 1, D[0], 1);
 
-        //psi::fprintf(outfile,"  ## N ##\n\n");
+        //outfile->Printf("  ## N ##\n\n");
         //print_mat(N,n,n,outfile); 
-        //psi::fprintf(outfile,"  ## D ##\n\n");
+        //outfile->Printf("  ## D ##\n\n");
         //print_mat(D,n,n,outfile); 
 
         // Solve exp(A) = N / D = D^{1} N = D \ N
@@ -2492,9 +2498,9 @@ void Matrix::expm(int m, bool scale)
             }
         }
 
-        //psi::fprintf(outfile,"  ## LU ##\n\n");
+        //outfile->Printf("  ## LU ##\n\n");
         //print_mat(D,n,n,outfile); 
-        //psi::fprintf(outfile,"  ## S(0) ##\n\n");
+        //outfile->Printf("  ## S(0) ##\n\n");
         //print_mat(N,n,n,outfile); 
 
         // D \ N
@@ -2504,7 +2510,7 @@ void Matrix::expm(int m, bool scale)
 
         delete[] ipiv;
     
-        //psi::fprintf(outfile,"  ## S ##\n\n");
+        //outfile->Printf("  ## S ##\n\n");
         //print_mat(N,n,n,outfile); 
 
         if (scale) {
@@ -2887,15 +2893,11 @@ void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, b
     if (symmetry_ && saveLowerTriangle)
         throw PSIEXCEPTION("Matrix::save: Unable to save lower triangle for non-totally symmetric matrix.");
 
-    FILE *out = NULL;
-    if (append == true) {
-        out = fopen(filename.c_str(), "a");
-    } else {
-        out = fopen(filename.c_str(), "w");
-    }
-
-    psi::fprintf(out, "%s\n", name_.c_str());
-    psi::fprintf(out, "symmetry %d\n", symmetry_);
+    boost::shared_ptr<psi::PsiOutStream> printer=
+          boost::shared_ptr<OutFile>(
+                new OutFile(filename,(append?APPEND:TRUNCATE)));
+    printer->Printf("%s\n", name_.c_str());
+    printer->Printf("symmetry %d\n", symmetry_);
 
     if (saveSubBlocks == false) {
         // Convert the matrix to a full matrix
@@ -2918,11 +2920,11 @@ void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, b
                     }
                 }
             }
-            psi::fprintf(out, "%5d\n", count);
+            printer->Printf("%5d\n", count);
             for (int i=0; i<sizer; ++i) {
                 for (int j=0; j<=i; ++j) {
                     if (fabs(fullblock[i][j]) > 1.0e-12) {
-                        psi::fprintf(out, str_full_format, i, j, fullblock[i][j]);
+                        printer->Printf(str_full_format, i, j, fullblock[i][j]);
                     }
                 }
             }
@@ -2936,11 +2938,11 @@ void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, b
                     }
                 }
             }
-            psi::fprintf(out, "%5d\n", count);
+            printer->Printf("%5d\n", count);
             for (int i=0; i<sizer; ++i) {
                 for (int j=0; j<sizec; ++j) {
                     if (fabs(fullblock[i][j]) > 1.0e-12) {
-                        psi::fprintf(out, str_full_format, i, j, fullblock[i][j]);
+                        printer->Printf(str_full_format, i, j, fullblock[i][j]);
                     }
                 }
             }
@@ -2959,12 +2961,12 @@ void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, b
                     }
                 }
             }
-            psi::fprintf(out, "%5d\n", count);
+            printer->Printf("%5d\n", count);
             for (int h=0; h<nirrep_; ++h) {
                 for (int i=0; i<rowspi_[h]; ++i) {
                     for (int j=0; j<=i; ++j) {
                         if (fabs(matrix_[h][i][j]) > 1.0e-12) {
-                            psi::fprintf(out, str_block_format, h, i, j, matrix_[h][i][j]);
+                            printer->Printf(str_block_format, h, i, j, matrix_[h][i][j]);
                         }
                     }
                 }
@@ -2981,20 +2983,18 @@ void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, b
                     }
                 }
             }
-            psi::fprintf(out, "%5d\n", count);
+            printer->Printf("%5d\n", count);
             for (int h=0; h<nirrep_; ++h) {
                 for (int i=0; i<rowspi_[h]; ++i) {
                     for (int j=0; j<colspi_[h^symmetry_]; ++j) {
                         if (fabs(matrix_[h][i][j]) > 1.0e-12) {
-                            psi::fprintf(out, str_block_format, h, i, j, matrix_[h][i][j]);
+                            printer->Printf(str_block_format, h, i, j, matrix_[h][i][j]);
                         }
                     }
                 }
             }
         }
     }
-
-    fclose(out);
 }
 
 void Matrix::save(boost::shared_ptr<psi::PSIO>& psio,
@@ -3074,9 +3074,9 @@ bool Matrix::load(psi::PSIO* const psio, unsigned int fileno, const string& toce
 
     // If psi fails to read in the data this will abort out.
     if (!tocentry.empty())
-        psi::IWL::read_one(psio, fileno, tocentry.c_str(), integrals, ioff[nso], 0, 0, outfile);
+        psi::IWL::read_one(psio, fileno, tocentry.c_str(), integrals, ioff[nso], 0, 0, "outfile");
     else
-        psi::IWL::read_one(psio, fileno, name_.c_str(), integrals, ioff[nso], 0, 0, outfile);
+        psi::IWL::read_one(psio, fileno, name_.c_str(), integrals, ioff[nso], 0, 0, "outfile");
 
     set(integrals);
 
@@ -3256,7 +3256,7 @@ void Matrix::load_mpqc(const std::string &filename)
                     string s2 = match[2];
                     string s3 = match[3];
 
-//                    psi::fprintf(outfile, "'%s' %s (%d) %s (%d) %s (%d)\n",
+//                    outfile->Printf( "'%s' %s (%d) %s (%d) %s (%d)\n",
 //                            string(match[0]).c_str(),
 //                            s1.c_str(), s1.length(),
 //                            s2.c_str(), s2.length(),

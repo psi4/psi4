@@ -149,8 +149,8 @@ void IDMRPT2::build_Heff_ijkabc()
 {
   Timer timer;
   DEBUGGING(1,
-    psi::fprintf(outfile,"\n\tBuilding the H_ijkabc Matrix Elements   ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the H_ijkabc Matrix Elements   ...");
+    
   );
 
   blas->reduce_spaces("t2_oovv[aaa][v]{u}","t2[oov][v]{u}");
@@ -187,8 +187,8 @@ void IDMRPT2::build_Heff_ijkabc()
   );
 
   DEBUGGING(1,
-    psi::fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   );
 }
 
@@ -196,8 +196,8 @@ void IDMRPT2::build_Heff_IJKABC()
 {
   Timer timer;
   DEBUGGING(1,
-    psi::fprintf(outfile,"\n\tBuilding the H_IJKABC Matrix Elements   ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the H_IJKABC Matrix Elements   ...");
+    
   );
 
   blas->reduce_spaces("t2_OOVV[AAA][V]{u}","t2[oov][v]{u}");
@@ -232,8 +232,8 @@ void IDMRPT2::build_Heff_IJKABC()
   );
 
   DEBUGGING(1,
-    psi::fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   );
 }
 

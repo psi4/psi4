@@ -33,10 +33,10 @@ namespace psi{ namespace dcft{
 SharedMatrix DCFTSolver::compute_gradient()
 {
     // Print out the header
-    psi::fprintf(outfile,"\n\n\t***********************************************************************************\n");
-    psi::fprintf(outfile,    "\t*                           DCFT Analytic Gradients Code                          *\n");
-    psi::fprintf(outfile,    "\t*                     by Alexander Sokolov and Andy Simmonett                     *\n");
-    psi::fprintf(outfile,    "\t***********************************************************************************\n\n");
+    outfile->Printf("\n\n\t***********************************************************************************\n");
+    outfile->Printf(    "\t*                           DCFT Analytic Gradients Code                          *\n");
+    outfile->Printf(    "\t*                     by Alexander Sokolov and Andy Simmonett                     *\n");
+    outfile->Printf(    "\t***********************************************************************************\n\n");
 
     // Transform the one and two-electron integrals to the MO basis and write them into the DPD file
     gradient_init();
@@ -67,17 +67,17 @@ DCFTSolver::compute_gradient_dc() {
 
     // Start two-step algorithm for solution of the response equations
     if(options_.get_str("RESPONSE_ALGORITHM") == "TWOSTEP"){
-        psi::fprintf(outfile, "\t*=================================================*\n"
+        outfile->Printf( "\t*=================================================*\n"
                 "\t* Cycle  RMS Orb. Resp.   RMS Cumul. Resp.   DIIS *\n"
                 "\t*-------------------------------------------------*");
 
         // Start macro-iterations
         while(!responseDone && iter_++ < maxiter_){
-            psi::fprintf(outfile, "\n\t              *** Macro Iteration %d ***\n", iter_);
+            outfile->Printf( "\n\t              *** Macro Iteration %d ***\n", iter_);
 
             // Solve the cumulant response equations iteratively
             if (iter_ > 1) {
-                psi::fprintf(outfile, "\t            Cumulant Response Iterations\n");
+                outfile->Printf( "\t            Cumulant Response Iterations\n");
                 iterate_cumulant_response();
             }
 
@@ -91,7 +91,7 @@ DCFTSolver::compute_gradient_dc() {
             compute_lagrangian_VO();
 
             // Solve the orbital response equations iteratively
-            psi::fprintf(outfile, "\t            Orbital Response Iterations\n");
+            outfile->Printf( "\t            Orbital Response Iterations\n");
             iterate_orbital_response();
 
             // Compute terms that couple orbital and cumulant responses (C intermediate) and return RMS of their change
@@ -100,10 +100,10 @@ DCFTSolver::compute_gradient_dc() {
             // Check convergence
             if (response_coupling_rms_ < cumulant_threshold_) responseDone = true;
 
-            psi::fprintf(outfile, "\t   RMS of Response Coupling Change: %11.3E \n", response_coupling_rms_);
+            outfile->Printf( "\t   RMS of Response Coupling Change: %11.3E \n", response_coupling_rms_);
         }
 
-        psi::fprintf(outfile, "\t*=================================================*\n");
+        outfile->Printf( "\t*=================================================*\n");
     }
     else {
         // Start the simultaneous algorithm for the solution of the response equations
@@ -135,7 +135,7 @@ DCFTSolver::compute_gradient_dc() {
         global_dpd_->file2_close(&zaa);
         global_dpd_->file2_close(&zbb);
 
-        psi::fprintf(outfile, "\t*==================================================================*\n"
+        outfile->Printf( "\t*==================================================================*\n"
                 "\t* Cycle  RMS Orb. Resp.   RMS Cumul. Resp.   RMS Coupling     DIIS *\n"
                 "\t*------------------------------------------------------------------*\n");
 
@@ -217,7 +217,7 @@ DCFTSolver::compute_gradient_dc() {
             response_coupling_rms_ = compute_response_coupling();
 
             // Print iterative trace
-            psi::fprintf(outfile, "\t*%4d    %11.3E       %11.3E       %11.3E      %-4s *\n", iter_,
+            outfile->Printf( "\t*%4d    %11.3E       %11.3E       %11.3E      %-4s *\n", iter_,
                     orbital_response_rms_, cumulant_response_rms_, response_coupling_rms_, diisString.c_str());
 
             // Check convergence
@@ -226,10 +226,10 @@ DCFTSolver::compute_gradient_dc() {
 
         }
 
-        psi::fprintf(outfile, "\t*==================================================================*\n");
+        outfile->Printf( "\t*==================================================================*\n");
     }
 
-    if (responseDone) psi::fprintf(outfile, "\n\t   DCFT response equations converged.\n");
+    if (responseDone) outfile->Printf( "\n\t   DCFT response equations converged.\n");
     else throw PSIEXCEPTION("DCFT response equations did not converge");
 
     // Compute the VVVV block of the relaxed TPDM
@@ -248,7 +248,7 @@ DCFTSolver::compute_gradient_odc() {
 
     // Compute the VVVV block of the relaxed TPDM
     compute_unrelaxed_density_VVVV();
-    psi::fprintf(outfile, "\t Computing energy-weighted density matrix from one- and two-particle densities...\n");
+    outfile->Printf( "\t Computing energy-weighted density matrix from one- and two-particle densities...\n");
     // Compute the OO block of MO Lagrangian
     compute_lagrangian_OO();
     // Compute the VV block of MO Lagrangian
@@ -1197,7 +1197,7 @@ DCFTSolver::iterate_orbital_response()
         converged = (fabs(orbital_response_rms_) < fabs(orbitals_threshold_));
 
         // Print iterative trace
-        psi::fprintf(outfile, "\t*%4d    %11.3E       %11.3E       %-4s *\n", cycle,
+        outfile->Printf( "\t*%4d    %11.3E       %11.3E       %-4s *\n", cycle,
                 orbital_response_rms_, cumulant_response_rms_, diisString.c_str());
 
         // Termination condition
@@ -2041,7 +2041,7 @@ DCFTSolver::iterate_cumulant_response()
         converged = (fabs(cumulant_response_rms_) < fabs(cumulant_threshold_));
 
         // Print iterative trace
-        psi::fprintf(outfile, "\t*%4d    %11.3E       %11.3E       %-4s *\n", cycle, orbital_response_rms_, cumulant_response_rms_, diisString.c_str());
+        outfile->Printf( "\t*%4d    %11.3E       %11.3E       %-4s *\n", cycle, orbital_response_rms_, cumulant_response_rms_, diisString.c_str());
 
         // Termination condition
         if (converged || cycle >= maxiter_) break;
@@ -4370,7 +4370,7 @@ DCFTSolver::compute_ewdm_dc()
                 int C = avir_qt[c];
                 int D = bvir_qt[d];
                 double value = 4.0 * G.matrix[h][ab][cd];
-                iwl_buf_wrt_val(&AB, A, C, B, D, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&AB, A, C, B, D, value, 0, "NULL", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4405,7 +4405,7 @@ DCFTSolver::compute_ewdm_dc()
                 int K = aocc_qt[k];
                 int L = bocc_qt[l];
                 double value = 4.0 * G.matrix[h][ij][kl];
-                iwl_buf_wrt_val(&AB, I, K, J, L, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&AB, I, K, J, L, value, 0, "NULL", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4439,7 +4439,7 @@ DCFTSolver::compute_ewdm_dc()
                 int A = avir_qt[a];
                 int B = bvir_qt[b];
                 double value = 4.0 * G.matrix[h][ij][ab];
-                iwl_buf_wrt_val(&AB, I, A, J, B, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&AB, I, A, J, B, value, 0, "NULL", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4470,7 +4470,7 @@ DCFTSolver::compute_ewdm_dc()
                 int J = aocc_qt[j];
                 int B = avir_qt[b];
                 double value = 0.5 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AA, I, J, A, B, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&AA, I, J, A, B, value, 0, "NULL", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4494,7 +4494,7 @@ DCFTSolver::compute_ewdm_dc()
                 int J = aocc_qt[j];
                 int B = avir_qt[b];
                 double value = -0.5 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AA, I, B, A, J, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&AA, I, B, A, J, value, 0, "NULL", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4522,7 +4522,7 @@ DCFTSolver::compute_ewdm_dc()
                 int J = bocc_qt[j];
                 int B = avir_qt[b];
                 double value = G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AB, A, B, I, J, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&AB, A, B, I, J, value, 0, "NULL", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4546,7 +4546,7 @@ DCFTSolver::compute_ewdm_dc()
                 int J = bocc_qt[j];
                 int B = avir_qt[b];
                 double value = (-2.0) * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AB, I, B, J, A, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&AB, I, B, J, A, value, 0, "NULL", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4571,7 +4571,7 @@ DCFTSolver::compute_ewdm_dc()
                 int J = bocc_qt[j];
                 int B = bvir_qt[b];
                 double value = 0.5 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&BB, I, J, A, B, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&BB, I, J, A, B, value, 0, "NULL", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4595,7 +4595,7 @@ DCFTSolver::compute_ewdm_dc()
                 int J = bocc_qt[j];
                 int B = bvir_qt[b];
                 double value = -0.5 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&BB, I, B, A, J, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&BB, I, B, A, J, value, 0, "NULL", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4624,8 +4624,8 @@ DCFTSolver::compute_ewdm_dc()
                 int K = aocc_qt[k];
                 int A = bvir_qt[a];
                 double value = G.matrix[h][ij][ka];
-                iwl_buf_wrt_val(&AB, I, K, J, A, value, 0, (FILE *) NULL, 0);
-                iwl_buf_wrt_val(&AB, I, K, A, J, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&AB, I, K, J, A, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AB, I, K, A, J, value, 0, "NULL", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4648,8 +4648,8 @@ DCFTSolver::compute_ewdm_dc()
                 int K = bocc_qt[k];
                 int A = avir_qt[a];
                 double value = G.matrix[h][ij][ka];
-                iwl_buf_wrt_val(&AB, A, J, K, I, value, 0, (FILE *) NULL, 0);
-                iwl_buf_wrt_val(&AB, J, A, K, I, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&AB, A, J, K, I, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AB, J, A, K, I, value, 0, "NULL", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4683,8 +4683,8 @@ DCFTSolver::compute_ewdm_dc()
                 int B = avir_qt[b];
                 int C = bvir_qt[c];
                 double value = G.matrix[h][ia][bc];
-                iwl_buf_wrt_val(&AB, I, B, A, C, value, 0, (FILE *) NULL, 0);
-                iwl_buf_wrt_val(&AB, B, I, A, C, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&AB, I, B, A, C, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AB, B, I, A, C, value, 0, "NULL", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4707,8 +4707,8 @@ DCFTSolver::compute_ewdm_dc()
                 int B = bvir_qt[b];
                 int C = avir_qt[c];
                 double value = G.matrix[h][ia][bc];
-                iwl_buf_wrt_val(&AB, C, A, B, I, value, 0, (FILE *) NULL, 0);
-                iwl_buf_wrt_val(&AB, C, A, I, B, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&AB, C, A, B, I, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AB, C, A, I, B, value, 0, "NULL", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -5002,7 +5002,7 @@ DCFTSolver::compute_ewdm_odc()
                 int C = avir_qt[c];
                 int D = bvir_qt[d];
                 double value = 4.0 * G.matrix[h][ab][cd];
-                iwl_buf_wrt_val(&AB, A, C, B, D, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&AB, A, C, B, D, value, 0, "NULL", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -5037,7 +5037,7 @@ DCFTSolver::compute_ewdm_odc()
                 int K = aocc_qt[k];
                 int L = bocc_qt[l];
                 double value = 4.0 * G.matrix[h][ij][kl];
-                iwl_buf_wrt_val(&AB, I, K, J, L, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&AB, I, K, J, L, value, 0, "NULL", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -5071,7 +5071,7 @@ DCFTSolver::compute_ewdm_odc()
                 int A = avir_qt[a];
                 int B = bvir_qt[b];
                 double value = 4.0 * G.matrix[h][ij][ab];
-                iwl_buf_wrt_val(&AB, I, A, J, B, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&AB, I, A, J, B, value, 0, "NULL", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -5102,7 +5102,7 @@ DCFTSolver::compute_ewdm_odc()
                 int J = aocc_qt[j];
                 int B = avir_qt[b];
                 double value = 0.5 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AA, I, J, A, B, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&AA, I, J, A, B, value, 0, "NULL", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -5126,7 +5126,7 @@ DCFTSolver::compute_ewdm_odc()
                 int J = aocc_qt[j];
                 int B = avir_qt[b];
                 double value = -0.5 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AA, I, B, A, J, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&AA, I, B, A, J, value, 0, "NULL", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -5154,7 +5154,7 @@ DCFTSolver::compute_ewdm_odc()
                 int J = bocc_qt[j];
                 int B = avir_qt[b];
                 double value = G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AB, A, B, I, J, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&AB, A, B, I, J, value, 0, "NULL", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -5178,7 +5178,7 @@ DCFTSolver::compute_ewdm_odc()
                 int J = bocc_qt[j];
                 int B = avir_qt[b];
                 double value = (-2.0) * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AB, I, B, J, A, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&AB, I, B, J, A, value, 0, "NULL", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -5203,7 +5203,7 @@ DCFTSolver::compute_ewdm_odc()
                 int J = bocc_qt[j];
                 int B = bvir_qt[b];
                 double value = 0.5 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&BB, I, J, A, B, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&BB, I, J, A, B, value, 0, "NULL", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -5227,7 +5227,7 @@ DCFTSolver::compute_ewdm_odc()
                 int J = bocc_qt[j];
                 int B = bvir_qt[b];
                 double value = -0.5 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&BB, I, B, A, J, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&BB, I, B, A, J, value, 0, "NULL", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);

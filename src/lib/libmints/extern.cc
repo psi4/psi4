@@ -49,37 +49,37 @@ void ExternalPotential::addBasis(boost::shared_ptr<BasisSet> basis, SharedVector
 {
     bases_.push_back(std::make_pair(basis, coefs));
 }
-void ExternalPotential::print(FILE* out) const
+void ExternalPotential::print(std::string out) const
 {
-    psi::fprintf(out, "   => External Potential Field: %s <= \n\n", name_.c_str());
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(out)));
+   printer->Printf("   => External Potential Field: %s <= \n\n", name_.c_str());
 
     // Charges
     if (charges_.size()) {
-        psi::fprintf(out, "    > Charges [a.u.] < \n\n");
-        psi::fprintf(out, "     %10s %10s %10s %10s\n","Z","x","y","z");
+        printer->Printf( "    > Charges [a.u.] < \n\n");
+        printer->Printf( "     %10s %10s %10s %10s\n","Z","x","y","z");
         for (int i = 0 ; i < charges_.size(); i++) {
-            psi::fprintf(out, "     %10.5f %10.5f %10.5f %10.5f\n",
+            printer->Printf( "     %10.5f %10.5f %10.5f %10.5f\n",
                 get<0>(charges_[i]), get<1>(charges_[i]), get<2>(charges_[i]), get<3>(charges_[i]));
         }
-        psi::fprintf(out,"\n");
+        printer->Printf("\n");
     }
 
     // Bases
     if (bases_.size()) {
-        psi::fprintf(out, "    > Diffuse Bases < \n\n");
+        printer->Printf( "    > Diffuse Bases < \n\n");
         for (int i = 0; i < bases_.size(); i++) {
-            psi::fprintf(out, "    Molecule %d\n\n", i+1);
+            printer->Printf( "    Molecule %d\n\n", i+1);
             bases_[i].first->molecule()->print();
-            psi::fprintf(out, "    Basis %d\n\n", i+1);
+            printer->Printf( "    Basis %d\n\n", i+1);
             bases_[i].first->print_by_level(out, print_);
             if (print_ > 2) {
-                psi::fprintf(out, "    Density Coefficients %d\n\n", i+1);
+                printer->Printf( "    Density Coefficients %d\n\n", i+1);
                 bases_[i].second->print();
             }
         }
     }
-
-    fflush(out);
 }
 SharedMatrix ExternalPotential::computePotentialMatrix(shared_ptr<BasisSet> basis)
 {

@@ -38,9 +38,11 @@ struct onestack{
 //void onestack_insert(struct onestack *stack, double value, int i, int a, int level, int stacklen);
     
 void 
-ADC::amps_write(dpdfile2 *B, int length, FILE *outfile)
+ADC::amps_write(dpdfile2 *B, int length, std::string out)
 {
-    struct onestack *t1stack;
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            boost::shared_ptr<OutFile>(new OutFile(out)));
+   struct onestack *t1stack;
     int Gia = B->my_irrep;
     
     t1stack = (struct onestack*)malloc(length*sizeof(struct onestack));
@@ -70,7 +72,7 @@ ADC::amps_write(dpdfile2 *B, int length, FILE *outfile)
     
     for(int m = 0;m < ((numt1 < length) ? numt1 : length);m++){
         if(fabs(t1stack[m].value) > 1e-6){
-            psi::fprintf(outfile, "\t        %3d %3d %20.10f\n", t1stack[m].i, t1stack[m].a, t1stack[m].value);
+            printer->Printf( "\t        %3d %3d %20.10f\n", t1stack[m].i, t1stack[m].a, t1stack[m].value);
         }
     }
     free(t1stack);

@@ -57,7 +57,7 @@ void SCF::construct_Feff(int cycle)
       }
     }
     if(cycle == options_.get_int("FAVG_START")){
-      psi::fprintf(outfile,"\n  *** Switching from Fc to F_avg ***");
+      outfile->Printf("\n  *** Switching from Fc to F_avg ***");
     }
   }
 
@@ -132,7 +132,7 @@ void SCF::construct_Feff(int cycle)
   }
 //  // Level shift
 //  double shift = options_.get_double("LEVELSHIFT");
-//  psi::fprintf(outfile,"\n  Setting level shift to %.3f",shift);
+//  outfile->Printf("\n  Setting level shift to %.3f",shift);
 //  for(int h =0; h < nirreps; ++h){
 //    for(int i = docc[h] + actv[h]; i < sopi[h]; ++i){
 //      Feff_t->add(h,i,i,shift);
@@ -140,7 +140,7 @@ void SCF::construct_Feff(int cycle)
 //  }
 //
 //  double dumping = static_cast<double>(options_.get_int("DUMPING")) / 100.0;
-//  psi::fprintf(outfile,"\n  Setting dumping to %.3f",dumping);
+//  outfile->Printf("\n  Setting dumping to %.3f",dumping);
 //  // Dumping
 //  for(int h =0; h < nirreps; ++h){
 //    // Set the (virtual,open) and (open,virtual) blocks to 2 Fo

@@ -36,8 +36,10 @@
 namespace psi {
   
 int IWL::read(int target_pq, double *ints, int *ioff_lt, int *ioff_rt, 
-    int mp2, int printflg, FILE *out)
+    int mp2, int printflg,std::string out)
 {
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(out)));
     int lastbuf;
     Value *valptr;
     Label *lblptr;
@@ -69,7 +71,7 @@ int IWL::read(int target_pq, double *ints, int *ioff_lt, int *ioff_rt,
         ints[rs] = (double) valptr[idx_];
 
         if (printflg) 
-            psi::fprintf(out, "<%d %d %d %d [%d][%d] = %20.10f\n",
+            printer->Printf( "<%d %d %d %d [%d][%d] = %20.10f\n",
             p, q, r, s, pq, rs, ints[rs]) ;
 
     } /*! end loop through current buffer */
@@ -100,7 +102,7 @@ int IWL::read(int target_pq, double *ints, int *ioff_lt, int *ioff_rt,
             ints[rs] = (double) valptr[idx_];
 
             if (printflg) 
-                psi::fprintf(out, "<%d %d %d %d [%d][%d] = %20.10f\n",
+                printer->Printf( "<%d %d %d %d [%d][%d] = %20.10f\n",
                 p, q, r, s, pq, rs, ints[rs]) ;
 
         } /*! end loop through current buffer */
@@ -132,8 +134,10 @@ int IWL::read(int target_pq, double *ints, int *ioff_lt, int *ioff_rt,
 */
 int iwl_buf_rd(struct iwlbuf *Buf, int target_pq, double *ints,
 	       int *ioff_lt, int *ioff_rt, int mp2, int printflg, 
-	       FILE *out)
+	       std::string out)
 {
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(out)));
   int lastbuf;
   Value *valptr;
   Label *lblptr;
@@ -165,7 +169,7 @@ int iwl_buf_rd(struct iwlbuf *Buf, int target_pq, double *ints,
     ints[rs] = (double) valptr[Buf->idx];
     
     if (printflg) 
-      psi::fprintf(out, "<%d %d %d %d [%d][%d] = %20.10f\n",
+      printer->Printf( "<%d %d %d %d [%d][%d] = %20.10f\n",
 	      p, q, r, s, pq, rs, ints[rs]) ;
     
   } /*! end loop through current buffer */
@@ -196,7 +200,7 @@ int iwl_buf_rd(struct iwlbuf *Buf, int target_pq, double *ints,
       ints[rs] = (double) valptr[Buf->idx];
       
       if (printflg) 
-	psi::fprintf(out, "<%d %d %d %d [%d][%d] = %20.10f\n",
+	printer->Printf( "<%d %d %d %d [%d][%d] = %20.10f\n",
 		p, q, r, s, pq, rs, ints[rs]) ;
       
     } /*! end loop through current buffer */

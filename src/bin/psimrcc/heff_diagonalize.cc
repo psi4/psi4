@@ -33,7 +33,7 @@
 #include <utility>
 
 namespace psi{
-    extern FILE *outfile;
+    
     namespace psimrcc{
     extern MemoryManager* memory_manager;
 
@@ -72,35 +72,35 @@ double Hamiltonian::diagonalize(int root)
 
 //  if(initial){
 //    if(ndets < 8){
-//      psi::fprintf(outfile,"\n\n  Heff Matrix\n");
+//      outfile->Printf("\n\n  Heff Matrix\n");
 //      for(int i=0;i<ndets;i++){
-//        psi::fprintf(outfile,"\n  ");
+//        outfile->Printf("\n  ");
 //        for(int j=0;j<ndets;j++)
-//          psi::fprintf(outfile," %22.12f",matrix[i][j]);
+//          outfile->Printf(" %22.12f",matrix[i][j]);
 //      }
 //
-//      psi::fprintf(outfile,"\n\n  Left Matrix\n");
+//      outfile->Printf("\n\n  Left Matrix\n");
 //      for(int i=0;i<ndets;i++){
-//        psi::fprintf(outfile,"\n  ");
+//        outfile->Printf("\n  ");
 //        for(int j=0;j<ndets;j++)
-//          psi::fprintf(outfile," %22.12f",left[j][i]);
+//          outfile->Printf(" %22.12f",left[j][i]);
 //      }
 //
-//      psi::fprintf(outfile,"\n\n  Right Matrix\n");
+//      outfile->Printf("\n\n  Right Matrix\n");
 //      for(int i=0;i<ndets;i++){
-//        psi::fprintf(outfile,"\n  ");
+//        outfile->Printf("\n  ");
 //        for(int j=0;j<ndets;j++)
-//          psi::fprintf(outfile," %22.12f",right[j][i]);
+//          outfile->Printf(" %22.12f",right[j][i]);
 //      }
 //
-//      psi::fprintf(outfile,"\n\n  Real                  Imaginary\n");
+//      outfile->Printf("\n\n  Real                  Imaginary\n");
 //      for(int i=0;i<ndets;i++)
-//        psi::fprintf(outfile,"\n  %22.12f   %22.12f",real[i],imaginary[i]);
-//      psi::fprintf(outfile,"\n");
+//        outfile->Printf("\n  %22.12f   %22.12f",real[i],imaginary[i]);
+//      outfile->Printf("\n");
 //    }else{
-//      psi::fprintf(outfile,"\n\n  There are too many determinants to print the eigensystem");
+//      outfile->Printf("\n\n  There are too many determinants to print the eigensystem");
 //    }
-//    psi::fprintf(outfile,"\n\n  The eigenvalue for root %d is %.12f (%.12f)",root,real[root],imaginary[root]);
+//    outfile->Printf("\n\n  The eigenvalue for root %d is %.12f (%.12f)",root,real[root],imaginary[root]);
 //  }
 
   bool initial = false;

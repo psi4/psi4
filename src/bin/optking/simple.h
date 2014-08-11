@@ -90,7 +90,7 @@ class SIMPLE {
     // each internal coordinate type must provide the following virtual functions:
 
     // function to print coordinate definitions to intco.dat
-    virtual void print_intco_dat(FILE *fp, int atom_offset=0) const = 0;
+    virtual void print_intco_dat(std::string OutFileRMR, int atom_offset=0) const = 0;
 
     // return value of internal coordinate
     virtual double value(GeomType geom) const = 0;
@@ -103,14 +103,14 @@ class SIMPLE {
     virtual double ** Dq2Dx2(GeomType geom) const = 0;
 
     // print coordinates and value to output file
-    virtual void print(FILE *fp, GeomType geom, int atom_offset=0) const = 0;
+    virtual void print(std::string OutFileRMR, GeomType geom, int atom_offset=0) const = 0;
 
     // print coordinates and displacements 
-    virtual void print_disp(FILE *fp, const double old_q, const double f_q,
+    virtual void print_disp(std::string OutFileRMR, const double old_q, const double f_q,
       const double dq, const double new_q, int atom_offset = 0) const = 0;
 
     // for debugging, print s vectors to output file
-    virtual void print_s(FILE *fp, GeomType geom) const = 0;
+    virtual void print_s(std::string OutFileRMR, GeomType geom) const = 0;
 
     // function to return string of coordinate definition
     virtual std::string get_definition_string(int atom_offset=0) const = 0;

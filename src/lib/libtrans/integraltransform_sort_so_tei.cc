@@ -48,7 +48,7 @@ IntegralTransform::presort_so_tei()
 
     if(alreadyPresorted_){
         if(print_>5)
-            psi::fprintf(outfile, "\tSO integrals are already sorted, moving on...\n");
+            outfile->Printf( "\tSO integrals are already sorted, moving on...\n");
             return;
     }
 
@@ -92,10 +92,10 @@ IntegralTransform::presort_so_tei()
     }
 
     double *T = init_array(nTriSo_);
-    if(print_>4) psi::fprintf(outfile, "The SO basis kinetic energy integrals\n");
-    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_T,   T, nTriSo_, 0, print_ > 4, outfile);
-    if(print_>4) psi::fprintf(outfile, "The SO basis nuclear attraction integrals\n");
-    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_V, aoH, nTriSo_, 0, print_ > 4, outfile);
+    if(print_>4) outfile->Printf( "The SO basis kinetic energy integrals\n");
+    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_T,   T, nTriSo_, 0, print_ > 4, "outfile");
+    if(print_>4) outfile->Printf( "The SO basis nuclear attraction integrals\n");
+    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_V, aoH, nTriSo_, 0, print_ > 4, "outfile");
 
     for(int pq=0; pq < nTriSo_; ++pq){
         aoH[pq] += T[pq];
@@ -112,8 +112,8 @@ IntegralTransform::presort_so_tei()
     dpd_set_default(myDPDNum_);
 
     if(print_){
-        psi::fprintf(outfile, "\tPresorting SO-basis two-electron integrals.\n");
-        fflush(outfile);
+        outfile->Printf( "\tPresorting SO-basis two-electron integrals.\n");
+        
     }
 
     dpdfile4 I;
@@ -174,8 +174,8 @@ IntegralTransform::presort_so_tei()
     }
 
     if(print_) {
-        psi::fprintf(outfile, "\tSorting File: %s nbuckets = %d\n", I.label, nBuckets);
-        fflush(outfile);
+        outfile->Printf( "\tSorting File: %s nbuckets = %d\n", I.label, nBuckets);
+        
     }
 
     next = PSIO_ZERO;
@@ -234,7 +234,7 @@ IntegralTransform::presort_so_tei()
     // We want to keep Pitzer ordering, so this is just an identity mapping
     for(int n = 0; n < nmo_; ++n) order[n] = n;
     if(print_)
-        psi::fprintf(outfile, "\tTransforming the one-electron integrals and constructing Fock matrices\n");
+        outfile->Printf( "\tTransforming the one-electron integrals and constructing Fock matrices\n");
     if(transformationType_ == Restricted){
 
         // Compute frozen core energy
@@ -255,8 +255,8 @@ IntegralTransform::presort_so_tei()
             moOffset += mopi_[h];
         }
         if(print_>4){
-            psi::fprintf(outfile, "The MO basis one-electron integrals\n");
-            print_array(moInts, nmo_, outfile);
+            outfile->Printf( "The MO basis one-electron integrals\n");
+            print_array(moInts, nmo_, "outfile");
         }
         IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_OEI, nTriMo_, moInts);
 
@@ -267,8 +267,8 @@ IntegralTransform::presort_so_tei()
             moOffset += mopi_[h];
         }
         if(print_>4){
-            psi::fprintf(outfile, "The MO basis frozen core operator\n");
-            print_array(moInts, nmo_, outfile);
+            outfile->Printf( "The MO basis frozen core operator\n");
+            print_array(moInts, nmo_, "outfile");
         }
         IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_FZC, nTriMo_, moInts);
 
@@ -279,8 +279,8 @@ IntegralTransform::presort_so_tei()
             moOffset += mopi_[h];
         }
         if(print_>4){
-            psi::fprintf(outfile, "The MO basis Fock operator\n");
-            print_array(moInts, nmo_, outfile);
+            outfile->Printf( "The MO basis Fock operator\n");
+            print_array(moInts, nmo_, "outfile");
         }
 
         IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_FOCK, nTriMo_, moInts);
@@ -304,8 +304,8 @@ IntegralTransform::presort_so_tei()
             moOffset += mopi_[h];
         }
         if(print_>4){
-            psi::fprintf(outfile, "The MO basis alpha one-electron integrals\n");
-            print_array(moInts, nmo_, outfile);
+            outfile->Printf( "The MO basis alpha one-electron integrals\n");
+            print_array(moInts, nmo_, "outfile");
         }
         IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_A_OEI, nTriMo_, moInts);
 
@@ -316,8 +316,8 @@ IntegralTransform::presort_so_tei()
             moOffset += mopi_[h];
         }
         if(print_>4){
-            psi::fprintf(outfile, "The MO basis beta one-electron integrals\n");
-            print_array(moInts, nmo_, outfile);
+            outfile->Printf( "The MO basis beta one-electron integrals\n");
+            print_array(moInts, nmo_, "outfile");
         }
         IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_B_OEI, nTriMo_, moInts);
 
@@ -328,8 +328,8 @@ IntegralTransform::presort_so_tei()
             moOffset += mopi_[h];
         }
         if(print_>4){
-            psi::fprintf(outfile, "The MO basis alpha frozen core operator\n");
-            print_array(moInts, nmo_, outfile);
+            outfile->Printf( "The MO basis alpha frozen core operator\n");
+            print_array(moInts, nmo_, "outfile");
         }
         IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_A_FZC, nTriMo_, moInts);
 
@@ -340,8 +340,8 @@ IntegralTransform::presort_so_tei()
             moOffset += mopi_[h];
         }
         if(print_>4){
-            psi::fprintf(outfile, "The MO basis beta frozen core operator\n");
-            print_array(moInts, nmo_, outfile);
+            outfile->Printf( "The MO basis beta frozen core operator\n");
+            print_array(moInts, nmo_, "outfile");
         }
         IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_B_FZC, nTriMo_, moInts);
         for(int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h){
@@ -351,8 +351,8 @@ IntegralTransform::presort_so_tei()
             moOffset += mopi_[h];
         }
         if(print_>4){
-            psi::fprintf(outfile, "The MO basis alpha Fock operator\n");
-            print_array(moInts, nmo_, outfile);
+            outfile->Printf( "The MO basis alpha Fock operator\n");
+            print_array(moInts, nmo_, "outfile");
         }
         IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_A_FOCK, nTriMo_, moInts);
 
@@ -363,8 +363,8 @@ IntegralTransform::presort_so_tei()
             moOffset += mopi_[h];
         }
         if(print_>4){
-            psi::fprintf(outfile, "The MO basis beta Fock operator\n");
-            print_array(moInts, nmo_, outfile);
+            outfile->Printf( "The MO basis beta Fock operator\n");
+            print_array(moInts, nmo_, "outfile");
         }
         IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_B_FOCK, nTriMo_, moInts);
     }

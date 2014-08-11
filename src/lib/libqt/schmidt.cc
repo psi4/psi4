@@ -50,7 +50,7 @@ namespace psi {
 ** Returns: none
 ** \ingroup QT
 */
-void schmidt(double **A, int rows, int cols, FILE * /*outfile*/)
+void schmidt(double **A, int rows, int cols, std::string OutFileRMR)
 {
    double *tmp;
    double normval, dotval;
@@ -75,8 +75,8 @@ void schmidt(double **A, int rows, int cols, FILE * /*outfile*/)
          }
       dot_arr(tmp, tmp, cols, &normval);
       normval = sqrt(normval);
-      /* psi::fprintf(outfile,"\n norm[%d] = %20.15f\n",i, (1.0/normval));
-      fflush(outfile); */
+      /* outfile->Printf("\n norm[%d] = %20.15f\n",i, (1.0/normval));
+       */
       for (I=0; I<cols; I++) A[i][I] = tmp[I] / normval;
       }
 
@@ -89,7 +89,7 @@ void schmidt(double **A, int rows, int cols, FILE * /*outfile*/)
 #ifdef STANDALONE
 main()
 {
-   FILE *outfile ;
+   std::string OutFileRMR ;
    double **mat, **mat_copy, **mat_x_mat ;
    void schmidt(double **A, int rows, int cols) ;
 
@@ -101,13 +101,13 @@ main()
    mat[2][0] = 0.0 ; mat[2][1] = 0.0 ; mat[2][2] = 0.5 ;
 
    ffile(&outfile, "output.dat", 0) ;
-   psi::fprintf(outfile, "Matrix before Gram-Schmidt process\n") ;
+   outfile->Printf( "Matrix before Gram-Schmidt process\n") ;
    print_mat(mat,3,3,outfile) ;
    schmidt(mat,3,3) ;
-   psi::fprintf(outfile, "\nMatrix after Gram-Schmidt process\n") ;
+   outfile->Printf( "\nMatrix after Gram-Schmidt process\n") ;
    print_mat(mat,3,3,outfile) ;
 
-   psi::fprintf(outfile, "\nTest A * A = \n") ;
+   outfile->Printf( "\nTest A * A = \n") ;
 
    mmult(mat, 0, mat, 1, mat_x_mat, 0, 3, 3, 3, 0) ;
    print_mat(mat_x_mat,3,3,outfile) ;

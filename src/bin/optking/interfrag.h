@@ -158,10 +158,10 @@ class INTERFRAG {
   double **compute_derivative_B(int intco_index, GeomType new_geom_A, GeomType new_geom_B);
 
   // print reference point definitions and values of coordinates
-  void print_intcos(FILE *fp, int A_off=0, int B_off=0) const;
+  void print_intcos(std::string OutFileRMR, int A_off=0, int B_off=0) const;
 
   // print coordinate definitions
-  void print_intco_dat(FILE *fp, int atom_offset_A=0, int atom_offset_B=0) const;
+  void print_intco_dat(std::string OutFileRMR, int atom_offset_A=0, int atom_offset_B=0) const;
 
   // return string of intco definition
   std::string get_intco_definition(int coord_index, int atom_offset_A=0, int atom_offset_B=0) const;

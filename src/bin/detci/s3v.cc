@@ -102,7 +102,7 @@ void s3_block_vdiag(struct stringwr *alplist, struct stringwr *betlist,
           jlen = form_ilist(betlist, Jb_list, nbs, ij, L, R, Sgn);
            
           if (!jlen) continue;
-          /*  psi::fprintf(outfile,"S3_BLOCK_VDIAG: ij = %d\t jlen = %d\n", ij, jlen);
+          /*  outfile->Printf("S3_BLOCK_VDIAG: ij = %d\t jlen = %d\n", ij, jlen);
            */
           Tptr = tei + ioff[ij];
        
@@ -149,12 +149,12 @@ void s3_block_vdiag(struct stringwr *alplist, struct stringwr *betlist,
                   Iaij = Ia->ij[Ja_list];
 
                   zero_arr(V, jlen);
-/*                  psi::fprintf(outfile,"Ia = %x\t Ia_idx = %d\n", Ia, Ia_idx);
-                    fflush(outfile);
+/*                  outfile->Printf("Ia = %x\t Ia_idx = %d\n", Ia, Ia_idx);
+                    
 
                     if (Jacnt) {
-                    psi::fprintf(outfile,"S3_BLOCK_VDIAG: Jacnt = %d\n", Jacnt);
-                    fflush(outfile);
+                    outfile->Printf("S3_BLOCK_VDIAG: Jacnt = %d\n", Jacnt);
+                    
                     }
 */
                   for (Ia_ex=0; Ia_ex < Jacnt && (kl = *Iaij++)<=ij; Ia_ex++) {
@@ -242,10 +242,10 @@ void s3_block_vdiag_pthread(void *threadarg)
   Iaij = Ia_local->ij[Ja_list];
 
 /*
-  psi::fprintf(outfile,"Ia_local = %x\t Ia_idx_local = %d\n", Ia_local, Ia_idx_local);
-  fflush(outfile);
+  outfile->Printf("Ia_local = %x\t Ia_idx_local = %d\n", Ia_local, Ia_idx_local);
   
-  psi::fprintf(outfile,"Jacnt = %d\n", Jacnt);
+  
+  outfile->Printf("Jacnt = %d\n", Jacnt);
 */
       
   zero_arr(V, jlen);
@@ -514,9 +514,9 @@ int form_ilist(struct stringwr *alplist, int Ja_list, int nas, int kl,
         }
     }  /* end loop over Ia */
 /*  if(inum) {
-      psi::fprintf(outfile,"form_ilist: nas = %d\n", nas);
-      psi::fprintf(outfile,"form_ilist: jlen = %d\n", inum);
-      fflush(outfile);
+      outfile->Printf("form_ilist: nas = %d\n", nas);
+      outfile->Printf("form_ilist: jlen = %d\n", inum);
+      
     }
 */
     return(inum);

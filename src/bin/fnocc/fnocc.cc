@@ -45,8 +45,8 @@ PsiReturnType fnocc(Options &options) {
 
           // transform integrals
           tstart();
-          psi::fprintf(outfile,"        ==> Transform all two-electron integrals <==\n");
-          psi::fprintf(outfile,"\n");
+          outfile->Printf("        ==> Transform all two-electron integrals <==\n");
+          outfile->Printf("\n");
 
           std::vector<shared_ptr<MOSpace> > spaces;
           spaces.push_back(MOSpace::all);
@@ -76,18 +76,18 @@ PsiReturnType fnocc(Options &options) {
   }else {
 
       tstart();
-      fflush(outfile);
-      psi::fprintf(outfile,"\n\n");
-      psi::fprintf(outfile, "        *******************************************************\n");
-      psi::fprintf(outfile, "        *                                                     *\n");
-      psi::fprintf(outfile, "        *                       DF-CCSD                       *\n");
-      psi::fprintf(outfile, "        *                 Density-fitted CCSD                 *\n");
-      psi::fprintf(outfile, "        *                                                     *\n");
-      psi::fprintf(outfile, "        *                   Eugene DePrince                   *\n");
-      psi::fprintf(outfile, "        *                                                     *\n");
-      psi::fprintf(outfile, "        *******************************************************\n");
-      psi::fprintf(outfile,"\n\n");
-      fflush(outfile);
+      
+      outfile->Printf("\n\n");
+      outfile->Printf( "        *******************************************************\n");
+      outfile->Printf( "        *                                                     *\n");
+      outfile->Printf( "        *                       DF-CCSD                       *\n");
+      outfile->Printf( "        *                 Density-fitted CCSD                 *\n");
+      outfile->Printf( "        *                                                     *\n");
+      outfile->Printf( "        *                   Eugene DePrince                   *\n");
+      outfile->Printf( "        *                                                     *\n");
+      outfile->Printf( "        *******************************************************\n");
+      outfile->Printf("\n\n");
+      
 
       // three-index integrals are generated/read by fno class
       boost::shared_ptr<DFFrozenNO> fno(new DFFrozenNO(Process::environment.wavefunction(),options));

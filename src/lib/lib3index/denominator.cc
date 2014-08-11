@@ -180,7 +180,7 @@ void LaplaceDenominator::decompose()
     err_table_file.close();
 
     //for (int r2 = 0; r2 < nR; r2++)
-    //    psi::fprintf(outfile, "  R[%4d] = %20.14E\n", r2+1, R_availp[r2]);
+    //    outfile->Printf( "  R[%4d] = %20.14E\n", r2+1, R_availp[r2]);
     //err_table->print();
 
     int indR;
@@ -232,11 +232,11 @@ void LaplaceDenominator::decompose()
 
     std::string quadfile = PSIDATADIR + "/quadratures/1_x/" + st.str().c_str();
 
-    psi::fprintf(outfile, "\n  ==> Laplace Denominator <==\n\n");
-    psi::fprintf(outfile, "  This system has an intrinsic R = (E_HUMO - E_LOMO)/(E_LUMO - E_HOMO) of %7.4E.\n", R);
-    psi::fprintf(outfile, "  A %d point minimax quadrature with R of %1.0E will be used for the denominator.\n", nvector_, R_availp[r]);
-    psi::fprintf(outfile, "  The worst-case Chebyshev norm for this quadrature rule is %7.4E.\n", accuracy);
-    psi::fprintf(outfile, "  Quadrature rule read from file %s.\n\n", quadfile.c_str());
+    outfile->Printf( "\n  ==> Laplace Denominator <==\n\n");
+    outfile->Printf( "  This system has an intrinsic R = (E_HUMO - E_LOMO)/(E_LUMO - E_HOMO) of %7.4E.\n", R);
+    outfile->Printf( "  A %d point minimax quadrature with R of %1.0E will be used for the denominator.\n", nvector_, R_availp[r]);
+    outfile->Printf( "  The worst-case Chebyshev norm for this quadrature rule is %7.4E.\n", accuracy);
+    outfile->Printf( "  Quadrature rule read from file %s.\n\n", quadfile.c_str());
 
     // The quadrature is defined as \omega_v exp(-\alpha_v x) = 1/x
     double* alpha = new double[nvector_];
@@ -313,11 +313,11 @@ void LaplaceDenominator::decompose()
 }
 void LaplaceDenominator::debug()
 {
-    psi::fprintf(outfile, "\n  DEBUG: Laplace Denominator. Compound results: \n");
+    outfile->Printf( "\n  DEBUG: Laplace Denominator. Compound results: \n");
 
     Denominator::debug();
 
-    psi::fprintf(outfile, "\n  DEBUG: Laplace Denominator. Compound results: \n");
+    outfile->Printf( "\n  DEBUG: Laplace Denominator. Compound results: \n");
 
     int nocc = eps_occ_->dimpi()[0];
     int nvir = eps_vir_->dimpi()[0];
@@ -449,9 +449,9 @@ void CholeskyDenominator::decompose()
         order.push_back(max_index);
     }
 
-    psi::fprintf(outfile, "\n  ==> Cholesky Denominator <==\n\n");
-    psi::fprintf(outfile, "  A %d point partial Cholesky decomposition will be used for the denominator.\n", nvector_);
-    psi::fprintf(outfile, "  The worst-case Chebyshev norm for this quadrature rule is %7.4E.\n\n", max_err);
+    outfile->Printf( "\n  ==> Cholesky Denominator <==\n\n");
+    outfile->Printf( "  A %d point partial Cholesky decomposition will be used for the denominator.\n", nvector_);
+    outfile->Printf( "  The worst-case Chebyshev norm for this quadrature rule is %7.4E.\n\n", max_err);
 
     denominator_ = SharedMatrix(new Matrix("Cholesky Delta Tensor", nvector_, nspan));
     double** Lar = denominator_->pointer();
@@ -463,7 +463,7 @@ void CholeskyDenominator::decompose()
 }
 void CholeskyDenominator::debug()
 {
-    psi::fprintf(outfile, "\n  DEBUG: Cholesky Denominator. Compound results: \n");
+    outfile->Printf( "\n  DEBUG: Cholesky Denominator. Compound results: \n");
 
     Denominator::debug();
 }
@@ -496,9 +496,9 @@ boost::shared_ptr<SAPTDenominator> SAPTDenominator::buildDenominator(const std::
 }
 void SAPTDenominator::debug()
 {
-    psi::fprintf(outfile, "\n  ==> Debug Monomer A Denominator <==\n\n");
+    outfile->Printf( "\n  ==> Debug Monomer A Denominator <==\n\n");
     check_denom(eps_occA_,eps_virA_,denominatorA_);
-    psi::fprintf(outfile, "\n  ==> Debug Monomer B Denominator <==\n\n");
+    outfile->Printf( "\n  ==> Debug Monomer B Denominator <==\n\n");
     check_denom(eps_occB_,eps_virB_,denominatorB_);
 }
 void SAPTDenominator::check_denom(boost::shared_ptr<Vector> eps_occ,
@@ -597,7 +597,7 @@ void SAPTLaplaceDenominator::decompose()
     err_table_file.close();
 
     //for (int r2 = 0; r2 < nR; r2++)
-    //    psi::fprintf(outfile, "  R[%4d] = %20.14E\n", r2+1, R_availp[r2]);
+    //    outfile->Printf( "  R[%4d] = %20.14E\n", r2+1, R_availp[r2]);
     //err_table->print();
 
     int indR;
@@ -650,11 +650,11 @@ void SAPTLaplaceDenominator::decompose()
     std::string quadfile = PSIDATADIR + "/quadratures/1_x/" + st.str().c_str();
 
     if (debug_) {
-        psi::fprintf(outfile, "\n  ==> Laplace Denominator <==\n\n");
-        psi::fprintf(outfile, "  This system has an intrinsic R = (E_HUMO - E_LOMO)/(E_LUMO - E_HOMO) of %7.4E.\n", R);
-        psi::fprintf(outfile, "  A %d point minimax quadrature with R of %1.0E will be used for the denominator.\n", nvector_, R_availp[r]);
-        psi::fprintf(outfile, "  The worst-case Chebyshev norm for this quadrature rule is %7.4E.\n", accuracy);
-        psi::fprintf(outfile, "  Quadrature rule read from file %s.\n", quadfile.c_str());
+        outfile->Printf( "\n  ==> Laplace Denominator <==\n\n");
+        outfile->Printf( "  This system has an intrinsic R = (E_HUMO - E_LOMO)/(E_LUMO - E_HOMO) of %7.4E.\n", R);
+        outfile->Printf( "  A %d point minimax quadrature with R of %1.0E will be used for the denominator.\n", nvector_, R_availp[r]);
+        outfile->Printf( "  The worst-case Chebyshev norm for this quadrature rule is %7.4E.\n", accuracy);
+        outfile->Printf( "  Quadrature rule read from file %s.\n", quadfile.c_str());
     }
 
     // The quadrature is defined as \omega_v exp(-\alpha_v x) = 1/x
@@ -757,9 +757,9 @@ void SAPTLaplaceDenominator::decompose()
 void SAPTLaplaceDenominator::debug()
 {
     SAPTDenominator::debug();
-    psi::fprintf(outfile, "\n  ==> Debug Monomer A Split Denominator <==\n\n");
+    outfile->Printf( "\n  ==> Debug Monomer A Split Denominator <==\n\n");
     check_split(eps_occA_,eps_virA_,denominator_occA_,denominator_virA_);
-    psi::fprintf(outfile, "\n  ==> Debug Monomer B Split Denominator <==\n\n");
+    outfile->Printf( "\n  ==> Debug Monomer B Split Denominator <==\n\n");
     check_split(eps_occB_,eps_virB_,denominator_occB_,denominator_virB_);
 }
 void SAPTLaplaceDenominator::check_split(boost::shared_ptr<Vector> eps_occ,
@@ -1006,9 +1006,9 @@ void SAPTCholeskyDenominator::decompose()
     }
 
     if (debug_) {
-        psi::fprintf(outfile, "\n  ==> Cholesky Denominator <==\n\n");
-        psi::fprintf(outfile, "  A %d point partial Cholesky decomposition will be used for the denominator.\n", nvector_);
-        psi::fprintf(outfile, "  The worst-case Chebyshev norm for this quadrature rule is %7.4E.\n\n", max_err);
+        outfile->Printf( "\n  ==> Cholesky Denominator <==\n\n");
+        outfile->Printf( "  A %d point partial Cholesky decomposition will be used for the denominator.\n", nvector_);
+        outfile->Printf( "  The worst-case Chebyshev norm for this quadrature rule is %7.4E.\n\n", max_err);
     }
 }
 
@@ -1062,7 +1062,7 @@ void TLaplaceDenominator::decompose()
     err_table_file.close();
 
     //for (int r2 = 0; r2 < nR; r2++)
-    //    psi::fprintf(outfile, "  R[%4d] = %20.14E\n", r2+1, R_availp[r2]);
+    //    outfile->Printf( "  R[%4d] = %20.14E\n", r2+1, R_availp[r2]);
     //err_table->print();
 
     int indR;
@@ -1114,11 +1114,11 @@ void TLaplaceDenominator::decompose()
 
     std::string quadfile = PSIDATADIR + "/quadratures/1_x/" + st.str().c_str();
 
-    psi::fprintf(outfile, "\n  ==> (T) Laplace Denominator <==\n\n");
-    psi::fprintf(outfile, "  This system has an intrinsic R = (E_HUMO - E_LOMO)/(E_LUMO - E_HOMO) of %7.4E.\n", R);
-    psi::fprintf(outfile, "  A %d point minimax quadrature with R of %1.0E will be used for the denominator.\n", nvector_, R_availp[r]);
-    psi::fprintf(outfile, "  The worst-case Chebyshev norm for this quadrature rule is %7.4E.\n", accuracy);
-    psi::fprintf(outfile, "  Quadrature rule read from file %s.\n\n", quadfile.c_str());
+    outfile->Printf( "\n  ==> (T) Laplace Denominator <==\n\n");
+    outfile->Printf( "  This system has an intrinsic R = (E_HUMO - E_LOMO)/(E_LUMO - E_HOMO) of %7.4E.\n", R);
+    outfile->Printf( "  A %d point minimax quadrature with R of %1.0E will be used for the denominator.\n", nvector_, R_availp[r]);
+    outfile->Printf( "  The worst-case Chebyshev norm for this quadrature rule is %7.4E.\n", accuracy);
+    outfile->Printf( "  Quadrature rule read from file %s.\n\n", quadfile.c_str());
 
     // The quadrature is defined as \omega_v exp(-\alpha_v x) = 1/x
     double* alpha = new double[nvector_];

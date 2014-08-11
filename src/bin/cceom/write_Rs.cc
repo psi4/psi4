@@ -62,9 +62,9 @@ void write_Rs(int C_irr, double *evals, int *converged) {
 			    etot = evals[eom_params.prop_root]+moinfo.eref;
 			  }
         chkpt_wt_etot(etot);
-        psi::fprintf(outfile,"Energy written to chkpt:Etot %15.10lf\n", etot);
+        outfile->Printf("Energy written to chkpt:Etot %15.10lf\n", etot);
         chkpt_wt_statespi(eom_params.states_per_irrep);
-        psi::fprintf(outfile,"States per irrep written to chkpt.\n");
+        outfile->Printf("States per irrep written to chkpt.\n");
         chkpt_close();
 			}
     }

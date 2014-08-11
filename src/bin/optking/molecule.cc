@@ -97,8 +97,8 @@ void MOLECULE::forces(void) {
   // B (u f_x)
   B = compute_B();
   if (Opt_params.print_lvl >= 3) {
-    fprintf(outfile, "B matrix\n");
-    print_matrix(outfile, B, Nintco, Ncart);
+    psi::outfile->Printf( "B matrix\n");
+    print_matrix("outfile", B, Nintco, Ncart);
   }
   temp_arr = init_array(Nintco);
   opt_matrix_mult(B, 0, &f_x, 1, &temp_arr, 1, Nintco, Ncart, 1, 0);
@@ -131,8 +131,8 @@ void MOLECULE::forces(void) {
 #endif
 
   if (Opt_params.print_lvl >= 3) {
-    fprintf(outfile,"Internal forces in au\n");
-    print_matrix(outfile, &f_q, 1, g_nintco()); fflush(outfile);
+    psi::outfile->Printf("Internal forces in au\n");
+    print_matrix("outfile", &f_q, 1, g_nintco());
   }
 
 /*
@@ -141,14 +141,14 @@ void MOLECULE::forces(void) {
     B = compute_B();
     temp_arr = init_array(Ncart);
     opt_matrix_mult(B, 1, &f_q, 1, &temp_arr, 1, Ncart, Nintco, 1, 0);
-    fprintf(outfile,"Recomputed forces in cartesian coordinates\n");
-    print_matrix(outfile, &temp_arr, 1, Ncart);
+    psi::outfile->Printf("Recomputed forces in cartesian coordinates\n");
+    print_matrix("outfile", &temp_arr, 1, Ncart);
     free_array(temp_arr);
     free_matrix(B);
   }
 */
 
-  fflush(outfile);
+  
   return ;
 }
 
@@ -178,9 +178,9 @@ void MOLECULE::apply_constraint_forces(void) {
         double val = fragments[f]->intco_value(i);
         //double force = (eq_val - val) * Opt_params.fixed_eq_val_force_constant;
         double force = (eq_val - val) * H[cnt][cnt];
-        fprintf(outfile,"\tAdding user-defined constraint for coordinate %d.\n", cnt+1);
-        fprintf(outfile,"\tValue is %8.4e; Eq. value is %8.4e; Force is set to %8.4e.\n", val, eq_val, force);
-        fprintf(outfile,"\tRemoving off-diagonal coupling of this coordinate with others.\n");
+        psi::outfile->Printf("\tAdding user-defined constraint for coordinate %d.\n", cnt+1);
+        psi::outfile->Printf("\tValue is %8.4e; Eq. value is %8.4e; Force is set to %8.4e.\n", val, eq_val, force);
+        psi::outfile->Printf("\tRemoving off-diagonal coupling of this coordinate with others.\n");
         f_q[cnt] = force;
 
         // If user eq. value is specified delete coupling between this coordinate and others.
@@ -217,8 +217,8 @@ void MOLECULE::project_f_and_H(void) {
   free_matrix(G_inv);
 
   if (Opt_params.print_lvl >= 3) {
-    fprintf(outfile,"\tProjection matrix for redundancies.\n");
-    print_matrix(outfile, P, Nintco, Nintco);
+    psi::outfile->Printf("\tProjection matrix for redundancies.\n");
+    print_matrix("outfile", P, Nintco, Nintco);
   }
 
   // add constraints to projection matrix
@@ -261,10 +261,10 @@ void MOLECULE::project_f_and_H(void) {
   free_array(temp_arr);
 
   if (Opt_params.print_lvl >= 3) {
-    fprintf(outfile,"\tInternal forces in au, after projection of redundancies and constraints.\n");
+    psi::outfile->Printf("\tInternal forces in au, after projection of redundancies and constraints.\n");
     if (Opt_params.efp_fragments)
-      fprintf(outfile,"\tEFP external coordinates are not projected.\n");
-    print_matrix(outfile, &f_q, 1, g_nintco());
+      psi::outfile->Printf("\tEFP external coordinates are not projected.\n");
+    print_matrix("outfile", &f_q, 1, g_nintco());
   }
 
   // Project redundances and constraints out of Hessian matrix
@@ -285,24 +285,24 @@ void MOLECULE::project_f_and_H(void) {
       H[j][i] = H[i][j] = H[i][j] + 1000 * (1.0 - P[i][j]);*/
 
   if (Opt_params.print_lvl >= 3) {
-    fprintf(outfile,"Projected (PHP) Hessian matrix\n");
+    psi::outfile->Printf("Projected (PHP) Hessian matrix\n");
     if (Opt_params.efp_fragments)
-      fprintf(outfile,"EFP external coordinates are not projected.\n");
-    print_matrix(outfile, H, g_nintco(), g_nintco());
+      psi::outfile->Printf("EFP external coordinates are not projected.\n");
+    print_matrix("outfile", H, g_nintco(), g_nintco());
   }
   free_matrix(P);
-  fflush(outfile);
+  
 }
 
 void MOLECULE::print_geom(void) {
 #if defined(OPTKING_PACKAGE_QCHEM)
-  fprintf(outfile,"\tCartesian Geometry (au)\n");
+  psi::outfile->Printf("\tCartesian Geometry (au)\n");
 #elif defined(OPTKING_PACKAGE_PSI)
-  fprintf(outfile,"\tCartesian Geometry (in Angstrom)\n");
+  psi::outfile->Printf("\tCartesian Geometry (in Angstrom)\n");
 #endif
-  fflush(outfile);
+  
   for (int i=0; i<fragments.size(); ++i)
-    fragments[i]->print_geom(outfile);
+    fragments[i]->print_geom("outfile");
 }
 
 void MOLECULE::apply_intrafragment_step_limit(double * & dq) {
@@ -317,14 +317,14 @@ void MOLECULE::apply_intrafragment_step_limit(double * & dq) {
         scale = limit / sqrt(array_dot(dq,dq,dim));
 
   if (scale != 1.0) {
-    fprintf(outfile,"\tChange in coordinate exceeds step limit of %10.5lf.\n", limit);
-    fprintf(outfile,"\tScaling displacements by %10.5lf\n", scale);
+    psi::outfile->Printf("\tChange in coordinate exceeds step limit of %10.5lf.\n", limit);
+    psi::outfile->Printf("\tScaling displacements by %10.5lf\n", scale);
 
     for (f=0; f<fragments.size(); ++f)
       for (i=0; i<fragments[f]->g_nintco(); ++i)
         dq[g_intco_offset(f)+i] *= scale;
   }
-  fflush(outfile);
+  
 }
 
 // don't let any angles get smaller than 0.0
@@ -337,15 +337,15 @@ void MOLECULE::H_guess(void) const {
   double **H = p_Opt_data->g_H_pointer();
 
   if (Opt_params.intrafragment_H == OPT_PARAMS::SCHLEGEL)
-    fprintf(outfile,"\tGenerating empirical Hessian (Schlegel '84) for each fragment.\n");
+    psi::outfile->Printf("\tGenerating empirical Hessian (Schlegel '84) for each fragment.\n");
   else if (Opt_params.intrafragment_H == OPT_PARAMS::FISCHER)
-    fprintf(outfile,"\tGenerating empirical Hessian (Fischer & Almlof '92) for each fragment.\n");
+    psi::outfile->Printf("\tGenerating empirical Hessian (Fischer & Almlof '92) for each fragment.\n");
   else if (Opt_params.intrafragment_H == OPT_PARAMS::SIMPLE)
-    fprintf(outfile,"\tGenerating simple diagonal Hessian (.5 .2 .1) for each fragment.\n");
+    psi::outfile->Printf("\tGenerating simple diagonal Hessian (.5 .2 .1) for each fragment.\n");
   else if (Opt_params.intrafragment_H == OPT_PARAMS::LINDH_SIMPLE)
-    fprintf(outfile,"\tGenerating diagonal Hessian from Lindh (1995) for each fragment.\n");
+    psi::outfile->Printf("\tGenerating diagonal Hessian from Lindh (1995) for each fragment.\n");
   else if (Opt_params.intrafragment_H == OPT_PARAMS::LINDH)
-    fprintf(outfile,"\tUsing model Hessian from Lindh (1995).\n");
+    psi::outfile->Printf("\tUsing model Hessian from Lindh (1995).\n");
 
   if (Opt_params.intrafragment_H == OPT_PARAMS::SCHLEGEL ||
       Opt_params.intrafragment_H == OPT_PARAMS::FISCHER  ||
@@ -392,10 +392,10 @@ void MOLECULE::H_guess(void) const {
   }
 
   if (Opt_params.print_lvl >= 2) {
-    fprintf(outfile,"\nInitial Hessian guess\n");
-    print_matrix(outfile, H, g_nintco(), g_nintco());
+    psi::outfile->Printf("\nInitial Hessian guess\n");
+    print_matrix("outfile", H, g_nintco(), g_nintco());
   }
-  fflush(outfile);
+  
   return;
 }
 
@@ -454,8 +454,8 @@ bool MOLECULE::cartesian_H_to_internals(double **H_cart) const {
   free_matrix(A);
 
   if (Opt_params.print_lvl >= 3) {
-    fprintf(outfile, "Hessian transformed to internal coordinates:\n");
-    print_matrix(outfile, H_int, Nintco, Nintco); fflush(outfile);
+    psi::outfile->Printf( "Hessian transformed to internal coordinates:\n");
+    print_matrix("outfile", H_int, Nintco, Nintco);
   }
 
   // Check by transforming internal coordinate Hessian back into cartesian coordinates:
@@ -475,8 +475,8 @@ bool MOLECULE::cartesian_H_to_internals(double **H_cart) const {
     free_matrix(dq2dx2);
   }
   free_array(grad_q);
-  fprintf(outfile, "Hessian transformed back into Cartesian coordinates\n");
-  print_matrix(outfile, H_cart, Ncart, Ncart); fflush(outfile);
+  psi::outfile->Printf( "Hessian transformed back into Cartesian coordinates\n");
+  print_matrix("outfile", H_cart, Ncart, Ncart); 
   free_matrix(B);
 */
   return success;
@@ -606,7 +606,7 @@ double ** MOLECULE::compute_derivative_B(int intco_index) const {
     int iA = 3*g_atom_offset(interfragments[fragment_index]->g_A_index());
     int iB = 3*g_atom_offset(interfragments[fragment_index]->g_B_index());
 
-    //print_matrix(outfile,dq2dx2_frag, 3*(nA+nB), 3*(nA+nB));
+    //print_matrix("outfile",dq2dx2_frag, 3*(nA+nB), 3*(nA+nB));
     for (int a=0; a<3*nA; ++a) // A-A block
       for (int aa=0; aa<3*nA; ++aa)
         dq2dx2[iA + a][iA + aa] = dq2dx2_frag[a][aa];
@@ -649,30 +649,32 @@ double ** MOLECULE::compute_G(bool use_masses) const {
   opt_matrix_mult(B, 0, B, 1, G, 0, Nintco, Ncart, Nintco, 0);
   free_matrix(B);
 
-  //fprintf(outfile,"G matrix\n");
-  //print_matrix(outfile, G, g_nintco(), g_nintco());
+  //psi::outfile->Printf("G matrix\n");
+  //print_matrix("outfile", G, g_nintco(), g_nintco());
 
   return G;
 }
 
 // print internal coordinates to text file
-void MOLECULE::print_intco_dat(FILE *fp_intco) {
-  for (int i=0; i<fragments.size(); ++i) {
+void MOLECULE::print_intco_dat(std::string OutFileRMR) {
+   boost::shared_ptr<psi::PsiOutStream> printer(OutFileRMR=="outfile"? psi::outfile:
+      boost::shared_ptr<psi::OutFile>(new psi::OutFile(OutFileRMR,psi::APPEND)));
+   for (int i=0; i<fragments.size(); ++i) {
     int first = g_atom_offset(i);
-    fprintf(fp_intco,"F %d %d\n", first+1, first + fragments[i]->g_natom()); fflush(outfile);
-    fragments[i]->print_intco_dat(fp_intco, g_atom_offset(i));
+    printer->Printf("F %d %d\n", first+1, first + fragments[i]->g_natom());
+    fragments[i]->print_intco_dat(OutFileRMR, g_atom_offset(i));
   }
 
   for (int I=0; I<interfragments.size(); ++I) {
     int frag_a = interfragments[I]->g_A_index();
     int frag_b = interfragments[I]->g_B_index();
-    fprintf(fp_intco,"I %d %d\n", frag_a+1, frag_b+1); fflush(outfile);
+    printer->Printf("I %d %d\n", frag_a+1, frag_b+1);
 
     for (int i=0; i<6; ++i) 
-      fprintf(fp_intco," %d", (int) interfragments[I]->coordinate_on(i));
-    fprintf(fp_intco,"\n"); fflush(outfile);
+      printer->Printf(" %d", (int) interfragments[I]->coordinate_on(i));
+    printer->Printf("\n");
 
-    interfragments[I]->print_intco_dat(fp_intco, g_atom_offset(frag_a), g_atom_offset(frag_b));
+    interfragments[I]->print_intco_dat(OutFileRMR, g_atom_offset(frag_a), g_atom_offset(frag_b));
   }
 }
 
@@ -684,7 +686,7 @@ bool MOLECULE::apply_input_constraints(void) {
   if (   !Opt_params.frozen_distance_str.empty()
       || !Opt_params.frozen_bend_str.empty() 
       || !Opt_params.frozen_dihedral_str.empty() ) {
-    fprintf(outfile,"\tAssuming in current code that numbering for constraints corresponds to unified fragment.\n");
+    psi::outfile->Printf("\tAssuming in current code that numbering for constraints corresponds to unified fragment.\n");
     frozen_present = fragments[0]->apply_frozen_constraints(Opt_params.frozen_distance_str,
       Opt_params.frozen_bend_str, Opt_params.frozen_dihedral_str);
   }
@@ -692,7 +694,7 @@ bool MOLECULE::apply_input_constraints(void) {
   if (   !Opt_params.fixed_distance_str.empty()
       || !Opt_params.fixed_bend_str.empty() 
       || !Opt_params.fixed_dihedral_str.empty() ) {
-    fprintf(outfile,"\tAssuming in current code that numbering for constraints corresponds to unified fragment.\n");
+    psi::outfile->Printf("\tAssuming in current code that numbering for constraints corresponds to unified fragment.\n");
     fixed_present = fragments[0]->apply_fixed_constraints(Opt_params.fixed_distance_str,
       Opt_params.fixed_bend_str, Opt_params.fixed_dihedral_str);
   }
@@ -728,10 +730,10 @@ double ** MOLECULE::compute_constraints(void) {
   }
 
   if (Opt_params.print_lvl >= 3) {
-    fprintf(outfile,"Constraint matrix\n");
-    print_matrix(outfile, C, g_nintco(), g_nintco()); fflush(outfile);
+    psi::outfile->Printf("Constraint matrix\n");
+    print_matrix("outfile", C, g_nintco(), g_nintco());
   }
-  fflush(outfile);
+  
   return C;
 }
 
@@ -750,8 +752,8 @@ bool MOLECULE::intco_combo_is_symmetric(double *intco_combo, int dim) {
       for (int intco=0; intco<dim; ++intco)
         displaced_geom[atom][xyz] += 0.1/norm * intco_combo[intco] * B[intco][3*atom+xyz];
 
-  //fprintf(outfile,"Displaced geometry\n");
-  //print_matrix(outfile, displaced_geom, natom, 3);
+  //psi::outfile->Printf("Displaced geometry\n");
+  //print_matrix("outfile", displaced_geom, natom, 3);
 
   bool symm_rfo_step = false;
 #if defined(OPTKING_PACKAGE_PSI)
@@ -782,7 +784,7 @@ std::string MOLECULE::get_intco_definition_from_global_index(int index) const{
 #endif
 
   if ( index < 0 || index >= (Nintra + Ninter + Nefp) ) {
-    fprintf(outfile, "get_intco_definition(): index %d out of range", index);
+    psi::outfile->Printf( "get_intco_definition(): index %d out of range", index);
     throw(INTCO_EXCEPT("get_intco_definition(): index out of range"));
   }
 
@@ -829,7 +831,7 @@ void MOLECULE::add_efp_fragments(void) {
 
   // get number of EFP fragments
   int num_efp_frags = ::EFP::GetInstance()->NFragments();
-  fprintf(outfile,"\tAdding %d EFP fragments.\n", num_efp_frags);
+  psi::outfile->Printf("\tAdding %d EFP fragments.\n", num_efp_frags);
 
   // get energy
   energy = ::EFP::GetInstance()->GetEnergy();

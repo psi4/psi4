@@ -45,48 +45,50 @@ THCE::THCE()
 THCE::~THCE()
 {
 }
-void THCE::print(FILE* fh, int level) const
+void THCE::print(std::string out, int level) const
 {
-    if (level >= 0) {
-        psi::fprintf(fh,"  ==> THCE <==\n\n");
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            boost::shared_ptr<OutFile>(new OutFile(out)));
+   if (level >= 0) {
+        printer->Printf("  ==> THCE <==\n\n");
         
-        psi::fprintf(fh,"  Tensors    = %11zu [--]\n", tensors_.size()); 
-        psi::fprintf(fh,"  Dimensions = %11zu [--]\n", dimensions_.size()); 
-        psi::fprintf(fh,"  Core       = %11zu [MB]\n", (core_doubles() * 8L) / (1024L * 1024L));
-        psi::fprintf(fh,"  Disk       = %11zu [MB]\n", (disk_doubles() * 8L) / (1024L * 1024L));
-        psi::fprintf(fh,"\n");
+        printer->Printf("  Tensors    = %11zu [--]\n", tensors_.size());
+        printer->Printf("  Dimensions = %11zu [--]\n", dimensions_.size());
+        printer->Printf("  Core       = %11zu [MB]\n", (core_doubles() * 8L) / (1024L * 1024L));
+        printer->Printf("  Disk       = %11zu [MB]\n", (disk_doubles() * 8L) / (1024L * 1024L));
+        printer->Printf("\n");
 
-        psi::fprintf(fh,"  Dimensions:\n\n");
-        psi::fprintf(fh,"  %11s %11s\n", "Name", "Size");
+        printer->Printf("  Dimensions:\n\n");
+        printer->Printf("  %11s %11s\n", "Name", "Size");
         for(std::map<std::string, int>::const_iterator it = dimensions_.begin();
             it != dimensions_.end(); ++it) {
-            psi::fprintf(fh,"  %11s %11d\n", (*it).first.c_str(), (*it).second);
+            printer->Printf("  %11s %11d\n", (*it).first.c_str(), (*it).second);
         } 
-        psi::fprintf(fh,"\n");
+        printer->Printf("\n");
 
-        psi::fprintf(fh,"  Tensors:\n\n");
-        psi::fprintf(fh,"  %11s %11s %11s %11s %11s\n", "Alias", "Name", "Order", "Storage", "Trust");
+        printer->Printf("  Tensors:\n\n");
+        printer->Printf("  %11s %11s %11s %11s %11s\n", "Alias", "Name", "Order", "Storage", "Trust");
         for(std::map<std::string, boost::shared_ptr<Tensor> >::const_iterator it = tensors_.begin();
             it != tensors_.end(); ++it) {
             std::string key = (*it).first;
             boost::shared_ptr<Tensor> T = (*it).second; 
-            psi::fprintf(fh,"  %11s %11s %11d %11s %11s\n", key.c_str(), T->name().c_str(), T->order(), 
+            printer->Printf("  %11s %11s %11d %11s %11s\n", key.c_str(), T->name().c_str(), T->order(),
                 (T->disk() ? "Disk" : "Core"), (T->trust() ? "Yes" : "No"));
         } 
-        psi::fprintf(fh,"\n");
+        printer->Printf("\n");
     } 
     if (level >= 1) {
-        psi::fprintf(fh,"  Tensor Details:\n\n");
+        printer->Printf("  Tensor Details:\n\n");
         for(std::map<std::string, boost::shared_ptr<Tensor> >::const_iterator it = tensors_.begin();
             it != tensors_.end(); ++it) {
-            (*it).second->print(fh,level);
+            (*it).second->print(out,level);
         } 
     }     
     //if (level >= 0) {
-    //    psi::fprintf(fh,"  \"More matter with less art\"\n");
-    //    psi::fprintf(fh,"\n");  
+    //    printer->Printf("  \"More matter with less art\"\n");
+    //    printer->Printf("\n");
     //}
-    fflush(fh);
+
 }
 size_t THCE::core_doubles() const 
 {
@@ -486,28 +488,28 @@ void Tensor::slice(boost::shared_ptr<Tensor> A, std::vector<boost::tuple<bool,in
 
     // => Debug printing <= //
 
-    psi::fprintf(outfile, "  ==> Slice <==\n\n");
-    psi::fprintf(outfile, "    Total Size: %11zu\n", size_data);
-    psi::fprintf(outfile, "    Slow Size:  %11zu\n", size_slow / delta);
-    psi::fprintf(outfile, "    Fast Size:  %11zu\n", size_fast * delta);
-    psi::fprintf(outfile, "\n");
+    outfile->Printf( "  ==> Slice <==\n\n");
+    outfile->Printf( "    Total Size: %11zu\n", size_data);
+    outfile->Printf( "    Slow Size:  %11zu\n", size_slow / delta);
+    outfile->Printf( "    Fast Size:  %11zu\n", size_fast * delta);
+    outfile->Printf( "\n");
 
-    psi::fprintf(outfile, "    Total Dims: %11zu\n", nindex);
-    psi::fprintf(outfile, "    Slow Dims:  %11zu\n", (nslow > 0 ? nslow - 1 : nslow));
-    psi::fprintf(outfile, "    Fast Dims:  %11zu\n", (nslow > 0 ? nfast + 1 : nfast));
-    psi::fprintf(outfile, "\n");
+    outfile->Printf( "    Total Dims: %11zu\n", nindex);
+    outfile->Printf( "    Slow Dims:  %11zu\n", (nslow > 0 ? nslow - 1 : nslow));
+    outfile->Printf( "    Fast Dims:  %11zu\n", (nslow > 0 ? nfast + 1 : nfast));
+    outfile->Printf( "\n");
 
-    psi::fprintf(outfile, "    %11s %11s %11s %11s %11s %11s %11s %11s %11s\n", 
+    outfile->Printf( "    %11s %11s %11s %11s %11s %11s %11s %11s %11s\n", 
         "startC", "endC", "deltaC", "strideC",
         "startA", "endA", "deltaA", "strideA",
         "full?");
     for (int ind = 0; ind < nindex; ind++) {
-        psi::fprintf(outfile, "    %11d %11d %11d %11d %11d %11d %11d %11d %11s\n", 
+        outfile->Printf( "    %11d %11d %11d %11d %11d %11d %11d %11d %11s\n", 
             startC[ind], endC[ind], deltaC[ind], strideC[ind],
             startA[ind], endA[ind], deltaA[ind], strideA[ind],
             (full[ind] ? "Yes" : "No"));
     }
-    psi::fprintf(outfile, "\n");
+    outfile->Printf( "\n");
 
     **/
 
@@ -681,27 +683,29 @@ boost::shared_ptr<Tensor> CoreTensor::build(const std::string& name,
 
     return boost::shared_ptr<Tensor>(new CoreTensor(name,dimensions,sizes,data,trust));
 }
-void CoreTensor::print(FILE* fh, int level) const
+void CoreTensor::print(std::string out, int level) const
 {
-    const int print_ncol = Process::environment.options.get_int("MAT_NUM_COLUMN_PRINT"); 
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            boost::shared_ptr<OutFile>(new OutFile(out)));
+   const int print_ncol = Process::environment.options.get_int("MAT_NUM_COLUMN_PRINT");
     if (level >= 0) {
-        psi::fprintf(fh, "  => CoreTensor %s <=\n\n", name_.c_str());
-        psi::fprintf(fh, "    Order   = %11d\n", order_);
-        psi::fprintf(fh, "    Numel   = %11zu\n", numel_);
-        psi::fprintf(fh, "    Swapped = %11s\n", swapped() ? "Yes" : "No");
-        psi::fprintf(fh, "    Trust   = %11s\n", trust_ ? "Yes" : "No");
-        psi::fprintf(fh, "\n");    
+        printer->Printf( "  => CoreTensor %s <=\n\n", name_.c_str());
+        printer->Printf( "    Order   = %11d\n", order_);
+        printer->Printf( "    Numel   = %11zu\n", numel_);
+        printer->Printf( "    Swapped = %11s\n", swapped() ? "Yes" : "No");
+        printer->Printf( "    Trust   = %11s\n", trust_ ? "Yes" : "No");
+        printer->Printf( "\n");
 
-        psi::fprintf(fh, "    Dimensions:\n\n");
-        psi::fprintf(fh, "    %2s %11s %11s %11s\n", "N", "Name", "Alloc Size", "Active Size");
+        printer->Printf( "    Dimensions:\n\n");
+        printer->Printf( "    %2s %11s %11s %11s\n", "N", "Name", "Alloc Size", "Active Size");
         for (int k = 0; k < order_; k++) {
-            psi::fprintf(fh, "    %2d %11s %11d %11d\n", k+1, dimensions_[k].c_str(), sizes_[k], active_sizes_[k]);
+            printer->Printf( "    %2d %11s %11d %11d\n", k+1, dimensions_[k].c_str(), sizes_[k], active_sizes_[k]);
         }
-        psi::fprintf(fh, "\n");    
+        printer->Printf( "\n");
     }
     if (level >= 2) {
         if (swapped()) {
-            psi::fprintf(fh, "    CoreTensor is swapped out, data is unavailable to print.\n\n");
+            printer->Printf( "    CoreTensor is swapped out, data is unavailable to print.\n\n");
         } else {
             size_t page_size = 1L;
             int rows = 1;
@@ -716,13 +720,13 @@ void CoreTensor::print(FILE* fh, int level) const
                 cols = sizes_[order_ - 1]; 
             }
 
-            psi::fprintf(fh, "    Data:\n\n");
+            printer->Printf( "    Data:\n\n");
 
             size_t pages = numel_ / page_size;
             for (size_t page = 0L; page < pages; page++) {
         
                 if (order_ > 2) {
-                    psi::fprintf(fh, "    Page (");
+                    printer->Printf( "    Page (");
                     size_t num = page;
                     size_t den = pages;
                     size_t val; 
@@ -730,49 +734,48 @@ void CoreTensor::print(FILE* fh, int level) const
                         den /= sizes_[k];
                         val = num / den;
                         num -= val * den; 
-                        psi::fprintf(fh,"%zu,",val);
+                        printer->Printf("%zu,",val);
                     }
-                    psi::fprintf(fh, "*,*):\n\n");
+                    printer->Printf( "*,*):\n\n");
                 }
        
                 double* vp = data_ + page * page_size; 
                 if (order_ == 0) {
-                    psi::fprintf(fh, "    %12.7f\n", *(vp));
-                    psi::fprintf(fh,"\n");
+                    printer->Printf( "    %12.7f\n", *(vp));
+                    printer->Printf("\n");
                 } else if(order_ == 1) {
                     for (int i=0; i<page_size; ++i) {
-                        psi::fprintf(fh, "    %5d %12.7f\n", i, *(vp + i));
+                        printer->Printf( "    %5d %12.7f\n", i, *(vp + i));
                     }
-                    psi::fprintf(fh,"\n");
+                    printer->Printf("\n");
                 } else {
                     int nframes = cols / print_ncol;
                     for (int j = 0; j < cols; j+= print_ncol) {
                         int ncols = (j + print_ncol >= cols ? cols - j : print_ncol);
 
                         // Column Header
-                        psi::fprintf(fh,"    %5s", "");
+                        printer->Printf("    %5s", "");
                         for (int jj = j; jj < j+ncols; jj++) {
-                            psi::fprintf(fh," %12d", jj);                        
+                            printer->Printf(" %12d", jj);
                         } 
-                        psi::fprintf(fh,"\n");                        
+                        printer->Printf("\n");
 
                         // Data
                         for (int i = 0; i < rows; i++) {
-                            psi::fprintf(fh,"    %5d", i);
+                            printer->Printf("    %5d", i);
                             for (int jj = j; jj < j+ncols; jj++) {
-                                psi::fprintf(fh," %12.7f", *(vp + i * cols + jj));                        
+                                printer->Printf(" %12.7f", *(vp + i * cols + jj));
                             } 
-                            psi::fprintf(fh,"\n");                        
+                            printer->Printf("\n");
                         }
  
                         // Block separator
-                        psi::fprintf(fh,"\n");
+                        printer->Printf("\n");
                     }
                 }
             }
         }
     }
-    fflush(fh);
 }
 void CoreTensor::set_pointer(double* data) 
 {
@@ -1453,24 +1456,26 @@ boost::shared_ptr<Tensor> DiskTensor::build(const std::string& name,
 
     return boost::shared_ptr<Tensor>(new DiskTensor(name,dimensions,sizes,save,load));
 }
-void DiskTensor::print(FILE* fh, int level) const
+void DiskTensor::print(std::string out, int level) const
 {
-    if (level >= 0) {
-        psi::fprintf(fh, "  => DiskTensor %s <=\n\n", name_.c_str());
-        psi::fprintf(fh, "    File    = %s\n", filename().c_str());
-        psi::fprintf(fh, "    Save    = %11s\n", (save_ ? "Yes" : "No"));
-        psi::fprintf(fh, "    Order   = %11d\n", order_);
-        psi::fprintf(fh, "    Numel   = %11zu\n", numel_);
-        psi::fprintf(fh, "\n");    
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            boost::shared_ptr<OutFile>(new OutFile(out)));
+   if (level >= 0) {
+        printer->Printf( "  => DiskTensor %s <=\n\n", name_.c_str());
+        printer->Printf( "    File    = %s\n", filename().c_str());
+        printer->Printf( "    Save    = %11s\n", (save_ ? "Yes" : "No"));
+        printer->Printf( "    Order   = %11d\n", order_);
+        printer->Printf( "    Numel   = %11zu\n", numel_);
+        printer->Printf( "\n");
 
-        psi::fprintf(fh, "    Dimensions:\n\n");
-        psi::fprintf(fh, "    %2s %11s %11s %11s\n", "N", "Name", "Alloc Size", "Active Size");
+        printer->Printf( "    Dimensions:\n\n");
+        printer->Printf( "    %2s %11s %11s %11s\n", "N", "Name", "Alloc Size", "Active Size");
         for (int k = 0; k < order_; k++) {
-            psi::fprintf(fh, "    %2d %11s %11d %11d\n", k+1, dimensions_[k].c_str(), sizes_[k], active_sizes_[k]);
+            printer->Printf( "    %2d %11s %11d %11d\n", k+1, dimensions_[k].c_str(), sizes_[k], active_sizes_[k]);
         }
-        psi::fprintf(fh, "\n");    
+        printer->Printf( "\n");
     }
-    fflush(fh);
+
 }
 void DiskTensor::zero()
 {

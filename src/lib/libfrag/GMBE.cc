@@ -50,11 +50,11 @@ void GMBE::MakeNmers(const NMerSet& Monomers, NMerSet& NMers) {
    for (int i=0,index=0; i<IsGood.size(); i++) {
       if (!IsGood[i]) NMers.erase(NMers.begin()+i-(index++));
    }
-   /*psi::fprintf(psi::outfile, "The Unique N-Mers:\n");
+   /*outfile->Printf( "The Unique N-Mers:\n");
    for (int i=0; i<NMers.size(); i++) {
       NMers[i]->print_out();
    }
-   psi::fprintf(psi::outfile, "******************\n");*/
+   outfile->Printf( "******************\n");*/
 }
 
 inline void MakeInts(NMerSet& ExistingNMers, SharedFrag& NMer,
@@ -146,7 +146,7 @@ double GMBE::Energy(const std::vector<NMerSet>& Systems,
       int index2=(N==1?Systems[1].size()+j:j);
       TEnergy-=NMults[j]*Energies[index1][index2];
    }
-   psi::fprintf(psi::outfile, "The total %d-body GMBE energy is: %16.12f (a.u.)", N,
+   psi::outfile->Printf( "The total %d-body GMBE energy is: %16.12f (a.u.)", N,
          TEnergy);
    return TEnergy;
 }

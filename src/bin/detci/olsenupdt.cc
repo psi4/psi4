@@ -105,7 +105,7 @@ void buf_ols_denom(double *a, double *hd, double E, int len)
 **
 */
 void buf_ols_updt(double *a, double *c, double *norm, double *ovrlap,  
-      double *tmpnorm, int len, FILE *outfile)
+      double *tmpnorm, int len, std::string OutFileRMR)
 {
    int i;
    double tval1, tval2, nx = 0.0, ox = 0.0, c1norm = 0.0;
@@ -114,7 +114,7 @@ void buf_ols_updt(double *a, double *c, double *norm, double *ovrlap,
       tval1 = c[i];
       tval2 = tval1 + a[i];
      /*
-      psi::fprintf(outfile,"C_0[%d] = %14.12lf " \
+      outfile->Printf("C_0[%d] = %14.12lf " \
        "C_1[%d] = %14.12lf C_new[%d] = %14.12lf\n",i,c[i],i,a[i],i,tval2); 
      */
       c[i] = tval2;

@@ -94,7 +94,7 @@ void sigmaCC3_RHF_obsolete(int i, int C_irr, double omega)
 
   global_dpd_->cc3_sigma_RHF(&CMnEf, &WAbEi, &WMbIj, 1,  &Dints, &SIA, 
     1, &FME, &WmAEf, &WMnIe, &SIjAb, moinfo.occpi, moinfo.occ_off,
-    moinfo.virtpi, moinfo.vir_off, omega, outfile, params.newtrips);
+    moinfo.virtpi, moinfo.vir_off, omega, "outfile", params.newtrips);
 
   global_dpd_->buf4_close(&CMnEf);
   global_dpd_->buf4_close(&WAbEi);
@@ -129,7 +129,7 @@ void sigmaCC3_RHF_obsolete(int i, int C_irr, double omega)
 
   global_dpd_->cc3_sigma_RHF(&tIjAb, &WAbEi, &WMbIj, 1,  &Dints, &SIA,
      1, &FME, &WmAEf, &WMnIe, &SIjAb, moinfo.occpi, moinfo.occ_off,
-     moinfo.virtpi, moinfo.vir_off, omega, outfile, params.newtrips);
+     moinfo.virtpi, moinfo.vir_off, omega, "outfile", params.newtrips);
 
   global_dpd_->buf4_close(&tIjAb);
   global_dpd_->buf4_close(&WAbEi);
@@ -162,7 +162,7 @@ void sigmaCC3_RHF_obsolete(int i, int C_irr, double omega)
 
   global_dpd_->cc3_sigma_RHF(&tIjAb, &WAbEi, &WMbIj, 0, NULL, NULL,
      1, &FME, &WmAEf, &WMnIe, &SIjAb, moinfo.occpi, moinfo.occ_off,
-     moinfo.virtpi, moinfo.vir_off, 0.0, outfile, params.newtrips);
+     moinfo.virtpi, moinfo.vir_off, 0.0, "outfile", params.newtrips);
 
   global_dpd_->buf4_close(&tIjAb); 
   global_dpd_->buf4_close(&WAbEi);

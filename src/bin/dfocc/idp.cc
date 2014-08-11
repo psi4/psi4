@@ -52,8 +52,8 @@ if (reference_ == "RESTRICTED") {
              nidpA += navirA * nfrzv; 
     }
 
-    psi::fprintf(outfile,"\n\tNumber of independent-pairs: %3d\n", nidpA);
-    fflush(outfile);  
+    outfile->Printf("\n\tNumber of independent-pairs: %3d\n", nidpA);
+      
     
     if (nidpA > 0) {
       idp_returnA = 1;
@@ -132,14 +132,14 @@ if (reference_ == "RESTRICTED") {
 
       if (print_ > 2){
          for(int i = 0; i < nidpA; i++){
-             psi::fprintf(outfile,"\ti, idprowA, idpcolA: %3d %3d %3d\n", i, idprowA->get(i), idpcolA->get(i));
-	     fflush(outfile);
+             outfile->Printf("\ti, idprowA, idpcolA: %3d %3d %3d\n", i, idprowA->get(i), idpcolA->get(i));
+	     
          }
       }
     }// end if nidpA != 0
 
     else if (nidpA == 0) {
-            psi::fprintf(outfile,"\tThere is not any non-redundant orbital rotation pair! \n");
+            outfile->Printf("\tThere is not any non-redundant orbital rotation pair! \n");
             tstop();
             exit(EXIT_SUCCESS);
     }
@@ -175,12 +175,12 @@ else if (reference_ == "UNRESTRICTED") {
              nidpB += navirB * nfrzv; 
     }
 
-    psi::fprintf(outfile,"\n\tNumber of alpha independent-pairs:%3d\n", nidpA);
-    psi::fprintf(outfile,"\tNumber of beta independent-pairs :%3d\n", nidpB);
-    fflush(outfile);  
+    outfile->Printf("\n\tNumber of alpha independent-pairs:%3d\n", nidpA);
+    outfile->Printf("\tNumber of beta independent-pairs :%3d\n", nidpB);
+      
 
     if (nidpA == 0 && nidpB == 0) {
-        psi::fprintf(outfile,"\tThere is not any non-redundant orbital rotation pair! \n");
+        outfile->Printf("\tThere is not any non-redundant orbital rotation pair! \n");
         tstop();
         exit(EXIT_SUCCESS);
     }
@@ -262,8 +262,8 @@ else if (reference_ == "UNRESTRICTED") {
 
       if (print_ > 2){
          for(int i = 0; i < nidpA; i++){
-             psi::fprintf(outfile,"\n\t i, idprowA, idpcolA: %3d %3d %3d\n", i, idprowA->get(i), idpcolA->get(i));
-	     fflush(outfile);
+             outfile->Printf("\n\t i, idprowA, idpcolA: %3d %3d %3d\n", i, idprowA->get(i), idpcolA->get(i));
+	     
          }
       }
     }// end if nidpA != 0
@@ -345,8 +345,8 @@ else if (reference_ == "UNRESTRICTED") {
 
       if (print_ > 2){
          for(int i = 0; i < nidpB; i++){
-             psi::fprintf(outfile,"\n\t i, idprowB, idpcolB: %3d %3d %3d\n", i, idprowB->get(i), idpcolB->get(i));
-	     fflush(outfile);
+             outfile->Printf("\n\t i, idprowB, idpcolB: %3d %3d %3d\n", i, idprowB->get(i), idpcolB->get(i));
+	     
          }
       }
     }// end if nidpB != 0
@@ -360,14 +360,14 @@ else if (reference_ == "UNRESTRICTED") {
 //=======================================================          
 void DFOCC::idp2()
 {
-    psi::fprintf(outfile,"\tForming independent-pairs...\n");
-    fflush(outfile);
+    outfile->Printf("\tForming independent-pairs...\n");
+    
 if (reference_ == "RESTRICTED") {
     // Form IDPs: All V-O
     nidpA=0;
     nidpA = nvirA * noccA; 
-    psi::fprintf(outfile,"\tNumber of independent-pairs: %3d\n", nidpA);
-    fflush(outfile);  
+    outfile->Printf("\tNumber of independent-pairs: %3d\n", nidpA);
+      
     wogA = SharedTensor1d(new Tensor1d("Alpha MO grad vector", nidpA));
     idprowA = SharedTensor1i(new Tensor1i("Alpha IDP Row", nidpA));
     idpcolA = SharedTensor1i(new Tensor1i("Alpha IDP Col", nidpA));
@@ -389,9 +389,9 @@ else if (reference_ == "UNRESTRICTED") {
     nidpB=0;
     nidpA = nvirA * noccA; 
     nidpB = nvirB * noccB; 
-    psi::fprintf(outfile,"\tNumber of alpha independent-pairs:%3d\n", nidpA);
-    psi::fprintf(outfile,"\tNumber of beta independent-pairs :%3d\n", nidpB);
-    fflush(outfile);  
+    outfile->Printf("\tNumber of alpha independent-pairs:%3d\n", nidpA);
+    outfile->Printf("\tNumber of beta independent-pairs :%3d\n", nidpB);
+      
     wogA = SharedTensor1d(new Tensor1d("Alpha MO grad vector", nidpA));
     wogB = SharedTensor1d(new Tensor1d("Beta MO grad vector", nidpB));
     idprowA = SharedTensor1i(new Tensor1i("Alpha IDP Row", nidpA));

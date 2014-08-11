@@ -22,12 +22,12 @@ void CCMRCC::build_t3_amplitudes()
   if(triples_type>ccsd_t){
     Timer timer;
     DEBUGGING(1,
-      psi::fprintf(outfile,"\n\tBuilding the T3 Amplitudes        ...");
-      fflush(outfile);
+      outfile->Printf("\n\tBuilding the T3 Amplitudes        ...");
+      
     )
     DEBUGGING(1,
-      psi::fprintf(outfile,"\n\tDiagram 1 and 2 ...");
-      fflush(outfile);
+      outfile->Printf("\n\tDiagram 1 and 2 ...");
+      
     );
     Timer timer1;
     build_t3_ijkabc_amplitudes_diagrams12();
@@ -35,13 +35,13 @@ void CCMRCC::build_t3_amplitudes()
     build_t3_iJKaBC_amplitudes_diagrams12();
     build_t3_IJKABC_amplitudes_diagrams12();
     DEBUGGING(1,
-      psi::fprintf(outfile," done. Timing %20.6f s",timer1.get());
-      fflush(outfile);
+      outfile->Printf(" done. Timing %20.6f s",timer1.get());
+      
     )
 
     DEBUGGING(1,
-      psi::fprintf(outfile,"\n\tDiagram 3     ...");
-      fflush(outfile);
+      outfile->Printf("\n\tDiagram 3     ...");
+      
     );
     Timer timer2;
     build_t3_ijkabc_amplitudes_diagram3();
@@ -49,13 +49,13 @@ void CCMRCC::build_t3_amplitudes()
     build_t3_iJKaBC_amplitudes_diagram3();
     build_t3_IJKABC_amplitudes_diagram3();
     DEBUGGING(1,
-      psi::fprintf(outfile," done. Timing %20.6f s",timer2.get());
-      fflush(outfile);
+      outfile->Printf(" done. Timing %20.6f s",timer2.get());
+      
     )
 
     DEBUGGING(1,
-      psi::fprintf(outfile,"\n\tDiagram 4     ...");
-      fflush(outfile);
+      outfile->Printf("\n\tDiagram 4     ...");
+      
     )
     Timer timer3;
     build_t3_ijkabc_amplitudes_diagram4();
@@ -63,13 +63,13 @@ void CCMRCC::build_t3_amplitudes()
     build_t3_iJKaBC_amplitudes_diagram4();
     build_t3_IJKABC_amplitudes_diagram4();
     DEBUGGING(1,
-      psi::fprintf(outfile," done. Timing %20.6f s",timer3.get());
-      fflush(outfile);
+      outfile->Printf(" done. Timing %20.6f s",timer3.get());
+      
     )
 
     DEBUGGING(1,
-      psi::fprintf(outfile," done. Timing %20.6f s",timer.get());
-      fflush(outfile);
+      outfile->Printf(" done. Timing %20.6f s",timer.get());
+      
     )
   }
 }

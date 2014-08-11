@@ -38,7 +38,6 @@
 #include "globals.h"
 
 namespace psi {
-extern FILE* outfile;
 namespace transqt {
 
 #define MIN0(a,b) (((a)<(b)) ? (a) : (b))
@@ -50,7 +49,7 @@ void trans_one_backwards(void);
 void tran_one(int nirreps, double ***C, int src_orbs, int *src_first,
   int *src_last, int *src_orbspi, int dst_orbs, int *dst_first, int *dst_last,
   int *dst_orbspi, double *src_ints, double *dst_ints, int *order,
-  const char *label, int backtran, int nfzc, int printflg,FILE *outfile);
+  const char *label, int backtran, int nfzc, int printflg,std::string OutFileRMR);
 double *** construct_evects(const char *spin, int nirreps, int *active, int *sopi,
   int *orbspi, int *first_so, int *last_so, int *first, int *last,
   int *fstact, int *lstact, int printflag);
@@ -105,8 +104,8 @@ void trans_one_forwards(void)
   double *oe_ints, *new_oe_ints;
 
   if (params.print_lvl) {
-    psi::fprintf(outfile, "\n\tTransforming one-electron integrals...\n");
-    fflush(outfile);
+    outfile->Printf( "\n\tTransforming one-electron integrals...\n");
+    
   }
 
   nirreps = moinfo.nirreps;
@@ -180,14 +179,14 @@ void trans_one_forwards(void)
                src_orbspi, dst_orbs, dst_first, dst_last, dst_orbspi, oe_ints,
                new_oe_ints, moinfo.order_alpha,
                "\n\n\tOne-Electron Alpha Integrals (MO Basis):\n",
-               params.backtr, nfzc, print_integrals, outfile);
+               params.backtr, nfzc, print_integrals, "outfile");
 
       iwl_wrtone(itap, PSIF_MO_A_OEI, dst_ntri, new_oe_ints);
 
       if (params.print_lvl) {
-        psi::fprintf(outfile, "\tOne-electron A integrals written to file %d.\n",
+        outfile->Printf( "\tOne-electron A integrals written to file %d.\n",
                 itap);
-        fflush(outfile);
+        
       }
 
       itap = params.h_bare_b_file;
@@ -199,13 +198,13 @@ void trans_one_forwards(void)
                src_orbspi, dst_orbs, dst_first, dst_last, dst_orbspi, oe_ints,
                new_oe_ints, moinfo.order_beta,
                "\n\n\tOne-Electron Beta Integrals (MO Basis):\n",
-               params.backtr, nfzc, print_integrals, outfile);
+               params.backtr, nfzc, print_integrals, "outfile");
 
       iwl_wrtone(itap, PSIF_MO_B_OEI, dst_ntri, new_oe_ints);
       if (params.print_lvl) {
-        psi::fprintf(outfile, "\tOne-electron B integrals written to file %d.\n",
+        outfile->Printf( "\tOne-electron B integrals written to file %d.\n",
                 itap);
-        fflush(outfile);
+        
       }
     }
     else {
@@ -216,13 +215,13 @@ void trans_one_forwards(void)
                src_orbspi, dst_orbs, dst_first, dst_last, dst_orbspi, oe_ints,
                new_oe_ints, moinfo.order,
                "\n\n\tOne-Electron Integrals (MO Basis):\n",
-               params.backtr, nfzc, print_integrals, outfile);
+               params.backtr, nfzc, print_integrals, "outfile");
 
 
       iwl_wrtone(itap, PSIF_MO_OEI, dst_ntri, new_oe_ints);
       if (params.print_lvl) {
-        psi::fprintf(outfile, "\tOne-electron integrals written to file %d.\n",itap);
-        fflush(outfile);
+        outfile->Printf( "\tOne-electron integrals written to file %d.\n",itap);
+        
       }
     }
 
@@ -241,14 +240,14 @@ void trans_one_forwards(void)
                src_orbspi, dst_orbs, dst_first, dst_last, dst_orbspi, oe_ints,
                new_oe_ints, moinfo.order_alpha,
                "\n\n\tAlpha Frozen-Core Operator (MO Basis):\n",
-               params.backtr, nfzc, print_integrals, outfile);
+               params.backtr, nfzc, print_integrals, "outfile");
 
       iwl_wrtone(itap, PSIF_MO_A_FZC, dst_ntri, new_oe_ints);
 
       if (params.print_lvl) {
-        psi::fprintf(outfile, "\tAlpha frozen-core operator written to file %d.\n",
+        outfile->Printf( "\tAlpha frozen-core operator written to file %d.\n",
                 itap);
-        fflush(outfile);
+        
       }
 
       /* Clear the new_oe_ints */
@@ -261,14 +260,14 @@ void trans_one_forwards(void)
                src_orbspi, dst_orbs, dst_first, dst_last, dst_orbspi, oe_ints,
                new_oe_ints, moinfo.order_beta,
                "\n\n\tBeta Frozen-Core Operator (MO Basis):\n",
-               params.backtr, nfzc, print_integrals, outfile);
+               params.backtr, nfzc, print_integrals, "outfile");
 
       iwl_wrtone(itap, PSIF_MO_B_FZC, dst_ntri, new_oe_ints);
 
       if (params.print_lvl) {
-        psi::fprintf(outfile, "\tBeta frozen-core operator written to file %d.\n",
+        outfile->Printf( "\tBeta frozen-core operator written to file %d.\n",
                 itap);
-        fflush(outfile);
+        
       }
     }
     else {
@@ -280,13 +279,13 @@ void trans_one_forwards(void)
                src_orbspi, dst_orbs, dst_first, dst_last, dst_orbspi, oe_ints,
                new_oe_ints, moinfo.order,
                "\n\n\tFrozen-Core Operator (MO Basis):\n",
-               params.backtr, nfzc, print_integrals, outfile);
+               params.backtr, nfzc, print_integrals, "outfile");
 
       iwl_wrtone(itap, PSIF_MO_FZC, dst_ntri, new_oe_ints);
 
       if (params.print_lvl) {
-        psi::fprintf(outfile, "\tFrozen-core operator written to file %d.\n", itap);
-        fflush(outfile);
+        outfile->Printf( "\tFrozen-core operator written to file %d.\n", itap);
+        
       }
 
     }
@@ -324,8 +323,8 @@ void trans_one_backwards(void)
   int I,J,P,Q,PQ;
 
   if (params.print_lvl) {
-    psi::fprintf(outfile, "\n\tTransforming one-electron integrals...\n");
-    fflush(outfile);
+    outfile->Printf( "\n\tTransforming one-electron integrals...\n");
+    
   }
 
   itap = params.opdm_out_file;
@@ -369,7 +368,7 @@ void trans_one_backwards(void)
     tran_one(nirreps, moinfo.evects_alpha, src_orbs, src_first, src_last, src_orbspi, dst_orbs,
              dst_first, dst_last, dst_orbspi, opdm_a, new_opdm_a, moinfo.order,
              "\n\n\tAlpha Contribution to One-Particle Density Matrix (AO Basis):\n",
-             params.backtr, nfzc, print_integrals, outfile);
+             params.backtr, nfzc, print_integrals, "outfile");
     free(opdm_a);
 
     psio_read_entry(PSIF_MO_OPDM, "MO-basis Beta OPDM", (char *) tmat[0],
@@ -389,17 +388,17 @@ void trans_one_backwards(void)
     tran_one(nirreps, moinfo.evects_beta, src_orbs, src_first, src_last, src_orbspi, dst_orbs,
              dst_first, dst_last, dst_orbspi, opdm_b, new_opdm_b, moinfo.order,
              "\n\n\tBeta Contribution to One-Particle Density Matrix (AO Basis):\n",
-             params.backtr, nfzc, print_integrals, outfile);
+             params.backtr, nfzc, print_integrals, "outfile");
     free(opdm_b);
 
     psio_close(PSIF_MO_OPDM, 1);
     free_block(tmat);
 
     if(print_integrals) {
-      psi::fprintf(outfile, "\n\tAlpha AO-basis OPDM:\n");
-      print_array(new_opdm_a, dst_orbs, outfile);
-      psi::fprintf(outfile, "\n\tBeta AO-basis OPDM:\n");
-      print_array(new_opdm_b, dst_orbs, outfile);
+      outfile->Printf( "\n\tAlpha AO-basis OPDM:\n");
+      print_array(new_opdm_a, dst_orbs, "outfile");
+      outfile->Printf( "\n\tBeta AO-basis OPDM:\n");
+      print_array(new_opdm_b, dst_orbs, "outfile");
     }
 
     /* combine the alpha and beta contributions */
@@ -407,8 +406,8 @@ void trans_one_backwards(void)
       new_opdm_a[p] += new_opdm_b[p];
 
     if(print_integrals) {
-      psi::fprintf(outfile, "\n\tTotal AO-basis OPDM:\n");
-      print_array(new_opdm_a, dst_orbs, outfile);
+      outfile->Printf( "\n\tTotal AO-basis OPDM:\n");
+      print_array(new_opdm_a, dst_orbs, "outfile");
     }
 
     psio_open(itap, PSIO_OPEN_OLD);
@@ -440,8 +439,8 @@ void trans_one_backwards(void)
     }
     psio_close(params.opdm_in_file, 1);
     if (params.print_lvl > 3) {
-      psi::fprintf(outfile, "One-particle density matrix\n");
-      print_mat(tmat, src_orbs, src_orbs, outfile);
+      outfile->Printf( "One-particle density matrix\n");
+      print_mat(tmat, src_orbs, src_orbs, "outfile");
     }
 
     /* reorder the opdm into the backtransform order */
@@ -460,7 +459,7 @@ void trans_one_backwards(void)
     tran_one(nirreps, moinfo.evects, src_orbs, src_first, src_last, src_orbspi, dst_orbs,
              dst_first, dst_last, dst_orbspi, oe_ints, new_oe_ints, moinfo.order,
              "\n\n\tOne-Particle Density Matrix (AO Basis):\n",
-             params.backtr, nfzc, print_integrals, outfile);
+             params.backtr, nfzc, print_integrals, "outfile");
 
     psio_open(itap, PSIO_OPEN_OLD);
     psio_write_entry(itap, "AO-basis OPDM", (char *) new_oe_ints, dst_ntri*sizeof(double));
@@ -528,7 +527,7 @@ void trans_one_backwards(void)
     tran_one(nirreps, moinfo.evects_alpha, src_orbs, src_first, src_last, src_orbspi, dst_orbs,
              dst_first, dst_last, dst_orbspi, lag_a, new_lag_a, moinfo.order,
              "\n\n\tAlpha Contribution to the Lagrangian (AO Basis):\n",
-             params.backtr, nfzc, print_integrals, outfile);
+             params.backtr, nfzc, print_integrals, "outfile");
     free(lag_a);
 
     psio_read_entry(PSIF_MO_LAG, "MO-basis Beta Lagrangian", (char *) tmat[0],
@@ -554,7 +553,7 @@ void trans_one_backwards(void)
     tran_one(nirreps, moinfo.evects_beta, src_orbs, src_first, src_last, src_orbspi, dst_orbs,
              dst_first, dst_last, dst_orbspi, lag_b, new_lag_b, moinfo.order,
              "\n\n\tBeta Contribution to the Lagrangian (AO Basis):\n",
-             params.backtr, nfzc, print_integrals, outfile);
+             params.backtr, nfzc, print_integrals, "outfile");
     free(lag_b);
 
     psio_close(PSIF_MO_LAG, 1);
@@ -565,8 +564,8 @@ void trans_one_backwards(void)
       new_lag_a[p] += new_lag_b[p];
 
     if(print_integrals) {
-      psi::fprintf(outfile, "\n\tTotal AO-basis Lagrangian:\n");
-      print_array(new_lag_a, dst_orbs, outfile);
+      outfile->Printf( "\n\tTotal AO-basis Lagrangian:\n");
+      print_array(new_lag_a, dst_orbs, "outfile");
     }
 
     /* append the AO Lagrangian to the AO one-particle density matrix */
@@ -590,8 +589,8 @@ void trans_one_backwards(void)
     mmult(so2ao,1,moinfo.scf_vector,0,moinfo.evects[0],0,moinfo.nao,moinfo.nso,
           moinfo.nmo,0);
     if (params.print_mos) {
-      psi::fprintf(outfile, "C matrix (including AO to SO)\n");
-      print_mat(moinfo.evects[0], moinfo.nao, moinfo.nmo, outfile);
+      outfile->Printf( "C matrix (including AO to SO)\n");
+      print_mat(moinfo.evects[0], moinfo.nao, moinfo.nmo, "outfile");
     }
     free_block(so2ao);
     tmat = block_matrix(src_orbs, src_orbs);
@@ -604,8 +603,8 @@ void trans_one_backwards(void)
                     src_orbs*src_orbs*sizeof(double));
     psio_close(params.lag_in_file, 1);
     if (params.print_lvl > 3) {
-      psi::fprintf(outfile, "Lagrangian (MO Basis):\n");
-      print_mat(tmat, src_orbs, src_orbs, outfile);
+      outfile->Printf( "Lagrangian (MO Basis):\n");
+      print_mat(tmat, src_orbs, src_orbs, "outfile");
     }
 
     /* reorder the Lagrangian to the back-transform order
@@ -625,15 +624,15 @@ void trans_one_backwards(void)
     free_block(tmat);
 
     if (params.print_lvl > 3) {
-      psi::fprintf(outfile, "Reordered, Symmetrized Lagrangian in MO basis\n");
-      print_array(opdm, src_orbs, outfile);
+      outfile->Printf( "Reordered, Symmetrized Lagrangian in MO basis\n");
+      print_array(opdm, src_orbs, "outfile");
     }
 
     /* now do the backtransformation */
     tran_one(nirreps, moinfo.evects, src_orbs, src_first, src_last, src_orbspi, dst_orbs,
              dst_first, dst_last, dst_orbspi, opdm, new_oe_ints, moinfo.order,
              "\n\n\tLagrangian (AO Basis):\n",
-             params.backtr, nfzc, print_integrals, outfile);
+             params.backtr, nfzc, print_integrals, "outfile");
 
     psio_open(itap, PSIO_OPEN_OLD);
     psio_write_entry(itap, "AO-basis Lagrangian", (char *) new_oe_ints, dst_ntri*sizeof(double));
@@ -645,7 +644,7 @@ void trans_one_backwards(void)
   }
 
   if (params.print_lvl) {
-    psi::fprintf(outfile, "\tOne-pdm and lagrangian written to file%d.\n", itap);
+    outfile->Printf( "\tOne-pdm and lagrangian written to file%d.\n", itap);
   }
 
 }
@@ -656,7 +655,7 @@ void trans_one_backwards(void)
 void tran_one(int nirreps, double ***C, int src_orbs, int *src_first, int *src_last,
               int *src_orbspi, int dst_orbs, int *dst_first, int *dst_last,
               int *dst_orbspi, double *src_ints, double *dst_ints, int *order,
-              const char *label, int backtran, int nfzc, int printflg, FILE *outfile)
+              const char *label, int backtran, int nfzc, int printflg, std::string OutFileRMR)
 {
 
   int psym, p, q, P, Q, pfirst, plast, pq;
@@ -671,7 +670,7 @@ void tran_one(int nirreps, double ***C, int src_orbs, int *src_first, int *src_l
   C_cols = backtran ? src_orbspi : dst_orbspi;
 
   if (printflg) {
-    psi::fprintf(outfile, "%s\n", label);
+    outfile->Printf( "%s\n", label);
   }
 
   for (psym=0; psym < nirreps; psym++) {
@@ -705,8 +704,8 @@ void tran_one(int nirreps, double ***C, int src_orbs, int *src_first, int *src_l
 
     if (printflg) {
       if (dst_orbspi[psym]) {
-        psi::fprintf(outfile, " Irrep %s\n", moinfo.labels[psym]);
-        print_mat(A,dst_orbspi[psym],dst_orbspi[psym],outfile);
+        outfile->Printf( " Irrep %s\n", moinfo.labels[psym]);
+        print_mat(A,dst_orbspi[psym],dst_orbspi[psym],"outfile");
       }
     }
 

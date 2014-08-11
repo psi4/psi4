@@ -20,10 +20,12 @@ void export_libfrag(){
 	    .def("GetNNMers",&LibFragHelper::GetNNMers)
 	    .def("GetGhostsNMerN",&LibFragHelper::GetGhostNMerN)
 	    .def("WriteMOs",&LibFragHelper::WriteMOs)
-	    .def("ReadMOs",&LibFragHelper::ReadMOs)
+	    .def("GatherData",&LibFragHelper::GatherData)
 	    .def("GetNFrags",&LibFragHelper::GetNFrags)
 	    .def("RunFrags",&LibFragHelper::RunFrags)
+	    .def("IsGMBE",&LibFragHelper::IsGMBE)
 	    .def("Sync",&LibFragHelper::Synchronize)
+	    .def("Iterate",&LibFragHelper::Iterate)
 	    .def("GetNMerN",&LibFragHelper::GetNMerN);
 }
 

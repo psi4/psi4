@@ -645,7 +645,7 @@ DCFTSolver::dump_density()
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
                       ID("[V,V]"), ID("[V,V]"), 1, "MO Ints <VV|VV>");
     VVVVEnergy += 0.25* global_dpd_->buf4_dot(&I, &L);
-//psi::fprintf(outfile, "testaa = %16.10f\n", 0.25*dpd_buf4_dot(&I, &L));
+//outfile->Printf( "testaa = %16.10f\n", 0.25*dpd_buf4_dot(&I, &L));
     global_dpd_->buf4_close(&I);
     global_dpd_->buf4_close(&L);
 
@@ -654,7 +654,7 @@ DCFTSolver::dump_density()
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,v]"), ID("[V,v]"),
                       ID("[V,v]"), ID("[V,v]"), 0, "MO Ints <Vv|Vv>");
     VVVVEnergy += global_dpd_->buf4_dot(&I, &L);
-//psi::fprintf(outfile, "testab = %16.10f\n", dpd_buf4_dot(&I, &L));
+//outfile->Printf( "testab = %16.10f\n", dpd_buf4_dot(&I, &L));
     global_dpd_->buf4_close(&I);
     global_dpd_->buf4_close(&L);
 
@@ -663,7 +663,7 @@ DCFTSolver::dump_density()
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[v,v]"),
                       ID("[v,v]"), ID("[v,v]"), 1, "MO Ints <vv|vv>");
     VVVVEnergy += 0.25 * global_dpd_->buf4_dot(&I, &L);
-//psi::fprintf(outfile, "testbb = %16.10f\n", 0.25*dpd_buf4_dot(&I, &L));
+//outfile->Printf( "testbb = %16.10f\n", 0.25*dpd_buf4_dot(&I, &L));
     global_dpd_->buf4_close(&I);
     global_dpd_->buf4_close(&L);
 
@@ -674,7 +674,7 @@ DCFTSolver::dump_density()
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"),
                       ID("[O,O]"), ID("[O,O]"), 1, "MO Ints <OO|OO>");
     OOOOEnergy += 0.25* global_dpd_->buf4_dot(&I, &L);
-//psi::fprintf(outfile, "testaa = %16.10f\n", 0.25*dpd_buf4_dot(&I, &L));
+//outfile->Printf( "testaa = %16.10f\n", 0.25*dpd_buf4_dot(&I, &L));
     global_dpd_->buf4_close(&I);
     global_dpd_->buf4_close(&L);
 
@@ -684,7 +684,7 @@ DCFTSolver::dump_density()
                       ID("[O,o]"), ID("[O,o]"), 0, "MO Ints <Oo|Oo>");
     OOOOEnergy += global_dpd_->buf4_dot(&I, &L);
 
-//psi::fprintf(outfile, "testab = %16.10f\n", dpd_buf4_dot(&I, &L));
+//outfile->Printf( "testab = %16.10f\n", dpd_buf4_dot(&I, &L));
     global_dpd_->buf4_close(&I);
     global_dpd_->buf4_close(&L);
 
@@ -693,7 +693,7 @@ DCFTSolver::dump_density()
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,o]"),
                       ID("[o,o]"), ID("[o,o]"), 1, "MO Ints <oo|oo>");
     OOOOEnergy += 0.25 * global_dpd_->buf4_dot(&I, &L);
-//psi::fprintf(outfile, "testbb = %16.10f\n", 0.25*dpd_buf4_dot(&I, &L));
+//outfile->Printf( "testbb = %16.10f\n", 0.25*dpd_buf4_dot(&I, &L));
     global_dpd_->buf4_close(&I);
     global_dpd_->buf4_close(&L);
 
@@ -705,7 +705,7 @@ DCFTSolver::dump_density()
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV> - <OV|VO>");
     OVOVEnergy += global_dpd_->buf4_dot(&I, &L);
-//psi::fprintf(outfile, "testaa = %16.10f\n", dpd_buf4_dot(&I, &L));
+//outfile->Printf( "testaa = %16.10f\n", dpd_buf4_dot(&I, &L));
     global_dpd_->buf4_close(&I);
     global_dpd_->buf4_close(&L);
 
@@ -714,7 +714,7 @@ DCFTSolver::dump_density()
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,v]"), ID("[O,v]"),
                   ID("[O,v]"), ID("[O,v]"), 0, "MO Ints <Ov|Ov>");
     OVOVEnergy += global_dpd_->buf4_dot(&L, &I);
-//psi::fprintf(outfile, "testab = %16.10f\n", dpd_buf4_dot(&I, &L));
+//outfile->Printf( "testab = %16.10f\n", dpd_buf4_dot(&I, &L));
     global_dpd_->buf4_close(&I);
     global_dpd_->buf4_close(&L);
 
@@ -723,7 +723,7 @@ DCFTSolver::dump_density()
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,V]"), ID("[o,V]"),
                   ID("[o,V]"), ID("[o,V]"), 0, "MO Ints <oV|oV>");
     OVOVEnergy += global_dpd_->buf4_dot(&L, &I);
-//psi::fprintf(outfile, "testba = %16.10f\n", dpd_buf4_dot(&I, &L));
+//outfile->Printf( "testba = %16.10f\n", dpd_buf4_dot(&I, &L));
     global_dpd_->buf4_close(&I);
     global_dpd_->buf4_close(&L);
 
@@ -740,23 +740,23 @@ DCFTSolver::dump_density()
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
                   ID("[o,v]"), ID("[o,v]"), 0, "MO Ints <ov|ov> - <ov|vo>");
     OVOVEnergy += global_dpd_->buf4_dot(&I, &L);
-//psi::fprintf(outfile, "testbb = %16.10f\n", dpd_buf4_dot(&I, &L));
+//outfile->Printf( "testbb = %16.10f\n", dpd_buf4_dot(&I, &L));
     global_dpd_->buf4_close(&I);
     global_dpd_->buf4_close(&L);
 
     double twoElectronEnergy = + OOOOEnergy + VVVVEnergy + OOVVEnergy + VVOOEnergy + OVOVEnergy;
 
-    psi::fprintf(outfile, "\tEnergy recomputed from the density matrices (should match the value shown above)...\n\n");
-    psi::fprintf(outfile, "\tNuclear Repulsion energy  = %16.10f\n", enuc_);
-    psi::fprintf(outfile, "\tOne electron energy       = %16.10f\n", hCoreEnergy);
-    psi::fprintf(outfile, "\tTwo electron energy       = %16.10f\n", twoElectronEnergy);
-    psi::fprintf(outfile, "\t    OOOO Energy   = %16.10f\n", OOOOEnergy);
-    psi::fprintf(outfile, "\t    OVOV Energy   = %16.10f\n", OVOVEnergy);
-    psi::fprintf(outfile, "\t    OOVV Energy   = %16.10f\n", OOVVEnergy);
-    psi::fprintf(outfile, "\t    VVOO Energy   = %16.10f\n", VVOOEnergy);
-    psi::fprintf(outfile, "\t    VVVV Energy   = %16.10f\n", VVVVEnergy);
-    psi::fprintf(outfile, "\t--------------------------------------------\n");
-    psi::fprintf(outfile, "\tTotal Energy              = %16.10f\n", enuc_ + hCoreEnergy + twoElectronEnergy);
+    outfile->Printf( "\tEnergy recomputed from the density matrices (should match the value shown above)...\n\n");
+    outfile->Printf( "\tNuclear Repulsion energy  = %16.10f\n", enuc_);
+    outfile->Printf( "\tOne electron energy       = %16.10f\n", hCoreEnergy);
+    outfile->Printf( "\tTwo electron energy       = %16.10f\n", twoElectronEnergy);
+    outfile->Printf( "\t    OOOO Energy   = %16.10f\n", OOOOEnergy);
+    outfile->Printf( "\t    OVOV Energy   = %16.10f\n", OVOVEnergy);
+    outfile->Printf( "\t    OOVV Energy   = %16.10f\n", OOVVEnergy);
+    outfile->Printf( "\t    VVOO Energy   = %16.10f\n", VVOOEnergy);
+    outfile->Printf( "\t    VVVV Energy   = %16.10f\n", VVVVEnergy);
+    outfile->Printf( "\t--------------------------------------------\n");
+    outfile->Printf( "\tTotal Energy              = %16.10f\n", enuc_ + hCoreEnergy + twoElectronEnergy);
 
     psio_->close(PSIF_DCFT_DENSITY, 1);
     psio_->close(PSIF_LIBTRANS_DPD, 1);
@@ -916,7 +916,7 @@ DCFTSolver::check_n_representability()
 
         // Contract the integra
 
-        print_mat(TPDMab, dim*dim, dim*dim, outfile);
+        print_mat(TPDMab, dim*dim, dim*dim, "outfile");
         free_block(OPDM);
         free_block(TPDMaa);
         free_block(TPDMab);

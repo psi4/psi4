@@ -138,7 +138,7 @@ void onepdm(struct RHO_Params rho_params)
     trace += global_dpd_->file2_trace(&D); 
     global_dpd_->file2_close(&D);
 
-    /*psi::fprintf(outfile, "\n\tTrace of onepdm = %20.15f\n", trace);*/
+    /*outfile->Printf( "\n\tTrace of onepdm = %20.15f\n", trace);*/
 
     /* This term is * L0 = 0 for excited states */
     if (rho_params.L_ground) {
@@ -281,10 +281,10 @@ void onepdm(struct RHO_Params rho_params)
     dpd_file2_init(&D, CC_OEI, 0, 1, 0, rho_params.Dai_lbl);
     dot_ai = dpd_file2_dot_self(&D);
     dpd_file2_close(&D);
-    psi::fprintf(outfile,"\tOverlaps of onepdm after ground-state parts added.\n");
-    psi::fprintf(outfile,"\t<DIA|DIA> = %15.10lf     <Dia|Dia> = %15.10lf\n", dot_IA, dot_ia);
-    psi::fprintf(outfile,"\t<DAI|DAI> = %15.10lf     <Dai|Dai> = %15.10lf\n", dot_AI, dot_ai);
-    psi::fprintf(outfile,"\t<Dpq|Dqp> = %15.10lf\n", dot_IA+dot_ia+dot_AI+dot_ai);
+    outfile->Printf("\tOverlaps of onepdm after ground-state parts added.\n");
+    outfile->Printf("\t<DIA|DIA> = %15.10lf     <Dia|Dia> = %15.10lf\n", dot_IA, dot_ia);
+    outfile->Printf("\t<DAI|DAI> = %15.10lf     <Dai|Dai> = %15.10lf\n", dot_AI, dot_ai);
+    outfile->Printf("\t<Dpq|Dqp> = %15.10lf\n", dot_IA+dot_ia+dot_AI+dot_ai);
     */
   }
   else if(params.ref == 2) { /** UHF **/
@@ -384,7 +384,7 @@ void onepdm(struct RHO_Params rho_params)
     trace += global_dpd_->file2_trace(&D); 
     global_dpd_->file2_close(&D);
 
-    /*psi::fprintf(outfile, "\n\tTrace of onepdm = %20.15f\n", trace);*/
+    /*outfile->Printf( "\n\tTrace of onepdm = %20.15f\n", trace);*/
 
     /* This term is * L0 = 0 for excited states */
     if (rho_params.L_ground) {
@@ -527,10 +527,10 @@ void onepdm(struct RHO_Params rho_params)
     dpd_file2_init(&D, CC_OEI, 0, 2, 3, rho_params.Dai_lbl);
     dot_ai = dpd_file2_dot_self(&D);
     dpd_file2_close(&D);
-    psi::fprintf(outfile,"\tOverlaps of onepdm after ground-state parts added.\n");
-    psi::fprintf(outfile,"\t<DIA|DIA> = %15.10lf     <Dia|Dia> = %15.10lf\n", dot_IA, dot_ia);
-    psi::fprintf(outfile,"\t<DAI|DAI> = %15.10lf     <Dai|Dai> = %15.10lf\n", dot_AI, dot_ai);
-    psi::fprintf(outfile,"\t<Dpq|Dqp> = %15.10lf\n", dot_IA+dot_ia+dot_AI+dot_ai);
+    outfile->Printf("\tOverlaps of onepdm after ground-state parts added.\n");
+    outfile->Printf("\t<DIA|DIA> = %15.10lf     <Dia|Dia> = %15.10lf\n", dot_IA, dot_ia);
+    outfile->Printf("\t<DAI|DAI> = %15.10lf     <Dai|Dai> = %15.10lf\n", dot_AI, dot_ai);
+    outfile->Printf("\t<Dpq|Dqp> = %15.10lf\n", dot_IA+dot_ia+dot_AI+dot_ai);
     */
   }
 }

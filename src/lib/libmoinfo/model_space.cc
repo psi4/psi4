@@ -26,7 +26,7 @@
 #include "psi4-dec.h"
 namespace psi {
 
-extern FILE *outfile;
+
 
 ModelSpace::ModelSpace(MOInfo* moinfo_obj_) : moinfo_obj(moinfo_obj_)
 {
@@ -52,18 +52,18 @@ void ModelSpace::cleanup()
 
 void ModelSpace::print()
 {
-  psi::fprintf(outfile,"\n\n  Model space:");
-  psi::fprintf(outfile,"\n  ------------------------------------------------------------------------------");
+  outfile->Printf("\n\n  Model space:");
+  outfile->Printf("\n  ------------------------------------------------------------------------------");
   for(int mu = 0; mu < determinants.size(); ++mu){
-    psi::fprintf(outfile,"\n  %2d %s",mu,determinants[mu].get_label().c_str());
+    outfile->Printf("\n  %2d %s",mu,determinants[mu].get_label().c_str());
   }
-  psi::fprintf(outfile,"\n\n  Closed-shell to model space mapping");
+  outfile->Printf("\n\n  Closed-shell to model space mapping");
   for(int mu = 0; mu < closed_to_all.size(); ++mu){
-    psi::fprintf(outfile,"\n  %d -> %d",mu,closed_to_all[mu]);
+    outfile->Printf("\n  %d -> %d",mu,closed_to_all[mu]);
   }
-  psi::fprintf(outfile,"\n\n  Open-shell to model space mapping");
+  outfile->Printf("\n\n  Open-shell to model space mapping");
   for(int mu = 0; mu < opensh_to_all.size(); ++mu){
-    psi::fprintf(outfile,"\n  %d -> %d",mu,opensh_to_all[mu]);
+    outfile->Printf("\n  %d -> %d",mu,opensh_to_all[mu]);
   }
 
 }

@@ -77,6 +77,7 @@ class Cap:public Atom{
          this->AtomIReplaced=other.AtomIReplaced;
       }
    public:
+      int ReplacedAtom(){return AtomIReplaced;}
       Cap(std::string Sym,double x,double y,double z,int ReplacedAtom):
          Atom(),AtomIReplaced(ReplacedAtom),Symbol(Sym){
          carts[0]=x;carts[1]=y;carts[2]=z;

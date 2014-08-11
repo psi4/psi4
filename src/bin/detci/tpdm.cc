@@ -381,7 +381,7 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
 
    if (writeflag) {
      
-     if (printflag) psi::fprintf(outfile, "\nTwo-particle density matrix\n\n");
+     if (printflag) outfile->Printf( "\nTwo-particle density matrix\n\n");
      iwl_buf_init(&TBuff, targetfile, 0.0, 0, 0);
      iwl_buf_init(&TBuff_aa, PSIF_MO_AA_TPDM, 0.0, 0, 0);
      iwl_buf_init(&TBuff_bb, PSIF_MO_BB_TPDM, 0.0, 0, 0);
@@ -411,18 +411,18 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
        /* core-core part */
        for (i=0; i<nfzc; i++) {
          for (j=0; j<i; j++) {
-           iwl_buf_wrt_val(&TBuff,i,i,j,j, 2.00,printflag,outfile,0);
-           iwl_buf_wrt_val(&TBuff_aa,i,i,j,j, 1.00,0,outfile,0);
-           iwl_buf_wrt_val(&TBuff_bb,i,i,j,j, 1.00,0,outfile,0);
-           iwl_buf_wrt_val(&TBuff_ab,i,i,j,j, 1.00,0,outfile,0);
-           iwl_buf_wrt_val(&TBuff_ab,j,j,i,i, 1.00,0,outfile,0);
+           iwl_buf_wrt_val(&TBuff,i,i,j,j, 2.00,printflag,"outfile",0);
+           iwl_buf_wrt_val(&TBuff_aa,i,i,j,j, 1.00,0,"outfile",0);
+           iwl_buf_wrt_val(&TBuff_bb,i,i,j,j, 1.00,0,"outfile",0);
+           iwl_buf_wrt_val(&TBuff_ab,i,i,j,j, 1.00,0,"outfile",0);
+           iwl_buf_wrt_val(&TBuff_ab,j,j,i,i, 1.00,0,"outfile",0);
 
-           iwl_buf_wrt_val(&TBuff,i,j,j,i,-1.00,printflag,outfile,0);
-           iwl_buf_wrt_val(&TBuff_aa,i,j,j,i,-1.00,0,outfile,0);
-           iwl_buf_wrt_val(&TBuff_bb,i,j,j,i,-1.00,0,outfile,0);
+           iwl_buf_wrt_val(&TBuff,i,j,j,i,-1.00,printflag,"outfile",0);
+           iwl_buf_wrt_val(&TBuff_aa,i,j,j,i,-1.00,0,"outfile",0);
+           iwl_buf_wrt_val(&TBuff_bb,i,j,j,i,-1.00,0,"outfile",0);
          }
-         iwl_buf_wrt_val(&TBuff,i,i,i,i,1.0,printflag,outfile,0);
-         iwl_buf_wrt_val(&TBuff_ab,i,i,i,i,1.0,0,outfile,0);
+         iwl_buf_wrt_val(&TBuff,i,i,i,i,1.0,printflag,"outfile",0);
+         iwl_buf_wrt_val(&TBuff_ab,i,i,i,i,1.0,0,"outfile",0);
        }
 
        /* core-active part */
@@ -431,15 +431,15 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
            const double value_a = onepdm_a[i][j];
            const double value_b = onepdm_b[i][j];
            for (k=0; k<nfzc; k++) {
-             iwl_buf_wrt_val(&TBuff,i,j,k,k,value_a + value_b,printflag,outfile,0);
-             iwl_buf_wrt_val(&TBuff_aa,i,j,k,k,value_a,0,outfile,0);
-             iwl_buf_wrt_val(&TBuff_bb,i,j,k,k,value_b,0,outfile,0);
-             iwl_buf_wrt_val(&TBuff_ab,i,j,k,k,value_a,0,outfile,0);
-             iwl_buf_wrt_val(&TBuff_ab,k,k,i,j,value_b,0,outfile,0);
+             iwl_buf_wrt_val(&TBuff,i,j,k,k,value_a + value_b,printflag,"outfile",0);
+             iwl_buf_wrt_val(&TBuff_aa,i,j,k,k,value_a,0,"outfile",0);
+             iwl_buf_wrt_val(&TBuff_bb,i,j,k,k,value_b,0,"outfile",0);
+             iwl_buf_wrt_val(&TBuff_ab,i,j,k,k,value_a,0,"outfile",0);
+             iwl_buf_wrt_val(&TBuff_ab,k,k,i,j,value_b,0,"outfile",0);
 
-             iwl_buf_wrt_val(&TBuff,i,k,k,j,-0.5*(value_a+value_b),printflag,outfile,0);
-             iwl_buf_wrt_val(&TBuff_aa,i,k,k,j,-value_a,0,outfile,0);
-             iwl_buf_wrt_val(&TBuff_bb,i,k,k,j,-value_b,0,outfile,0);
+             iwl_buf_wrt_val(&TBuff,i,k,k,j,-0.5*(value_a+value_b),printflag,"outfile",0);
+             iwl_buf_wrt_val(&TBuff_aa,i,k,k,j,-value_a,0,"outfile",0);
+             iwl_buf_wrt_val(&TBuff_bb,i,k,k,j,-value_b,0,"outfile",0);
            }
          }
        }
@@ -470,12 +470,12 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
              // For PSI the factor of 1/2 is not pulled outside...so put
              // it back inside now and then write out to the IWL buffer.
              value = 0.5 * (value_aa + value_bb + value_ab + value_ba);
-	     iwl_buf_wrt_val(&TBuff,i2,j2,k2,l2,value,printflag,outfile,0);
-         iwl_buf_wrt_val(&TBuff_aa,i2,j2,k2,l2,value_aa,0,outfile,0);
-         iwl_buf_wrt_val(&TBuff_bb,i2,j2,k2,l2,value_bb,0,outfile,0);
-         iwl_buf_wrt_val(&TBuff_ab,i2,j2,k2,l2,value_ab,0,outfile,0);
+	     iwl_buf_wrt_val(&TBuff,i2,j2,k2,l2,value,printflag,"outfile",0);
+         iwl_buf_wrt_val(&TBuff_aa,i2,j2,k2,l2,value_aa,0,"outfile",0);
+         iwl_buf_wrt_val(&TBuff_bb,i2,j2,k2,l2,value_bb,0,"outfile",0);
+         iwl_buf_wrt_val(&TBuff_ab,i2,j2,k2,l2,value_ab,0,"outfile",0);
          if (ij != kl)
-           iwl_buf_wrt_val(&TBuff_ab,k2,l2,i2,j2,value_ba,0,outfile,0);
+           iwl_buf_wrt_val(&TBuff_ab,k2,l2,i2,j2,value_ba,0,"outfile",0);
 	   }
 	 }
        }
@@ -488,7 +488,7 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
      iwl_buf_close(&TBuff_bb, 1);
      iwl_buf_flush(&TBuff_ab, 1);
      iwl_buf_close(&TBuff_ab, 1);
-     psi::fprintf(outfile, "\n");
+     outfile->Printf( "\n");
    }
 
 

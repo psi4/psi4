@@ -228,12 +228,12 @@ void get_moinfo(void)
     psio_read_entry(PSIF_CC_INFO, "Reference Energy", (char *) &(moinfo.eref),
                     sizeof(double));
 
-    psi::fprintf(outfile,"\n\tNuclear Rep. energy (chkpt)   = %20.15f\n",moinfo.enuc);
-    psi::fprintf(outfile,  "\tReference           (chkpt)   = %d\n",params.ref);
-    psi::fprintf(outfile,  "\tSCF energy          (chkpt)   = %20.15f\n",moinfo.escf);
-    psi::fprintf(outfile,  "\tReference energy    (CC_INFO) = %20.15f\n",moinfo.eref);
+    outfile->Printf("\n\tNuclear Rep. energy (chkpt)   = %20.15f\n",moinfo.enuc);
+    outfile->Printf(  "\tReference           (chkpt)   = %d\n",params.ref);
+    outfile->Printf(  "\tSCF energy          (chkpt)   = %20.15f\n",moinfo.escf);
+    outfile->Printf(  "\tReference energy    (CC_INFO) = %20.15f\n",moinfo.eref);
 
-    fflush(outfile);
+    
 }
 
 /* Frees memory allocated in get_moinfo() and dumps some info. */

@@ -138,14 +138,14 @@ void local_init(Options & options)
   /* C1 symmetry only */
   nirreps = moinfo.nirreps;
   if(nirreps != 1) {
-    psi::fprintf(outfile, "\nError: localization must use C1 symmetry.\n");
+    outfile->Printf( "\nError: localization must use C1 symmetry.\n");
     exit(PSI_RETURN_FAILURE);
   }
 
   nso = moinfo.nso;
   nmo = moinfo.nmo; /* should be the same as nso */
   if(nmo != nso) {
-    psi::fprintf(outfile, "\nError: NMO != NSO!  %d != %d\n", nmo, nso);
+    outfile->Printf( "\nError: NMO != NSO!  %d != %d\n", nmo, nso);
     exit(PSI_RETURN_FAILURE);
   }
 
@@ -169,7 +169,7 @@ void local_init(Options & options)
     for(j=0; j < nso; j++)
       Y[i][j] = C[i][j];
 
-  invert_matrix(C, Ci, nso, outfile);
+  invert_matrix(C, Ci, nso, "outfile");
 
   for(i=0; i < nso; i++)
     for(j=0; j < nso; j++)
@@ -178,7 +178,7 @@ void local_init(Options & options)
   /* Get the overlap integrals -- these should be identical to AO S */
   noei = nso*(nso+1)/2;
   ss = init_array(noei);
-  stat = iwl_rdone(PSIF_OEI,PSIF_SO_S,ss,noei,0,0,outfile);
+  stat = iwl_rdone(PSIF_OEI,PSIF_SO_S,ss,noei,0,0,"outfile");
   S = block_matrix(nso,nso);
   for(i=0,ij=0; i < nso; i++)
     for(j=0; j <= i; j++,ij++) {
@@ -187,7 +187,7 @@ void local_init(Options & options)
   free(ss);
 
   /*
-    psi::fprintf(outfile, "\n\tAO Overlap (S)\n");
+    outfile->Printf( "\n\tAO Overlap (S)\n");
     print_mat(S, nso, nso, outfile);
   */
 
@@ -199,7 +199,7 @@ void local_init(Options & options)
         D[i][j] += C[i][k] * C[j][k];
 
   /*
-    psi::fprintf(outfile, "\n\tAO-basis SCF Density (D):\n");
+    outfile->Printf( "\n\tAO-basis SCF Density (D):\n");
     print_mat(D, nso, nso, outfile);
   */
 
@@ -309,7 +309,7 @@ void local_init(Options & options)
 
       errcod = C_DGESV(row, 1, &(X[0][0]), nso, &(ipiv[0]), &(Z[0]), nso);
       if(errcod) {
-        psi::fprintf(outfile, "\nError in DGESV return in orbital domain construction.\n");
+        outfile->Printf( "\nError in DGESV return in orbital domain construction.\n");
         exit(PSI_RETURN_FAILURE);
       }
 
@@ -336,13 +336,13 @@ void local_init(Options & options)
       domain_bp[i][k] = domain[i][k];
   }
   /* Print the orbital domains */
-  psi::fprintf(outfile, "\n   ****** Boughton-Pulay Occupied Orbital Domains ******\n");
+  outfile->Printf( "\n   ****** Boughton-Pulay Occupied Orbital Domains ******\n");
   domain_print(nocc, natom, domain_len_bp, domain_bp, fR);
 
   /* Identify and/or remove weak pairs -- using Bougton-Pulay domains */
   weak_pairs = init_int_array(nocc*nocc);
   if(local.pairdef=="BP") {
-    psi::fprintf(outfile, "\n");
+    outfile->Printf( "\n");
     for(i=0,ij=0; i < nocc; i++)
       for(j=0; j < nocc; j++,ij++) {
         weak = 1;
@@ -353,9 +353,9 @@ void local_init(Options & options)
           weak_pairs[ij] = 1;
 
           if(local.weakp=="MP2")
-            psi::fprintf(outfile, "\tPair %d %d [%d] is weak and will be treated with MP2.\n", i, j, ij);
+            outfile->Printf( "\tPair %d %d [%d] is weak and will be treated with MP2.\n", i, j, ij);
           else if(local.weakp=="NEGLECT") {
-            psi::fprintf(outfile, "\tPair %d %d = [%d] is weak and will be deleted.\n", i, j, ij);
+            outfile->Printf( "\tPair %d %d = [%d] is weak and will be deleted.\n", i, j, ij);
           }
         }
         else weak_pairs[ij] = 0;
@@ -363,10 +363,10 @@ void local_init(Options & options)
   }
 
   /* If this is a response calculation, augment domains using polarized orbitals */
-  psi::fprintf(outfile, "\n");
+  outfile->Printf( "\n");
   if(local.domain_polar) {
-    psi::fprintf(outfile, "\tGenerating electric-field CPHF solutions for local-CC.\n");
-    fflush(outfile);
+    outfile->Printf( "\tGenerating electric-field CPHF solutions for local-CC.\n");
+    
     transpert("Mu");
     sort_pert("Mu", moinfo.MUX, moinfo.MUY, moinfo.MUZ,
               moinfo.irrep_x, moinfo.irrep_y, moinfo.irrep_z);
@@ -376,7 +376,7 @@ void local_init(Options & options)
       build_F_RHF(0);
       cphf_F("X");
       local_polar("X", domain, domain_len, natom, aostart, aostop);
-      psi::fprintf(outfile, "\nMu_X (%d)\n", 0);
+      outfile->Printf( "\nMu_X (%d)\n", 0);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
         domain_len[i] = domain_len_bp[i];
@@ -386,7 +386,7 @@ void local_init(Options & options)
 
       cphf_F("Y");
       local_polar("Y", domain, domain_len, natom, aostart, aostop);
-      psi::fprintf(outfile, "\nMu_Y (%d)\n", 0);
+      outfile->Printf( "\nMu_Y (%d)\n", 0);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
         domain_len[i] = domain_len_bp[i];
@@ -396,7 +396,7 @@ void local_init(Options & options)
 
       cphf_F("Z");
       local_polar("Z", domain, domain_len, natom, aostart, aostop);
-      psi::fprintf(outfile, "\nMu_Z (%d)\n", 0);
+      outfile->Printf( "\nMu_Z (%d)\n", 0);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
         domain_len[i] = domain_len_bp[i];
@@ -408,7 +408,7 @@ void local_init(Options & options)
       build_F_RHF(params.omega[0]);
       cphf_F("X");
       local_polar("X", domain, domain_len, natom,	aostart, aostop);
-      psi::fprintf(outfile, "\nMu_X (%lf)\n", params.omega[0]);
+      outfile->Printf( "\nMu_X (%lf)\n", params.omega[0]);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
         domain_len[i] = domain_len_bp[i];
@@ -419,7 +419,7 @@ void local_init(Options & options)
       cphf_F("Y");
       local_polar("Y", domain, domain_len, natom,
                   aostart, aostop);
-      psi::fprintf(outfile, "\nMu_Y (%lf)\n", params.omega[0]);
+      outfile->Printf( "\nMu_Y (%lf)\n", params.omega[0]);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
         domain_len[i] = domain_len_bp[i];
@@ -429,7 +429,7 @@ void local_init(Options & options)
 
       cphf_F("Z");
       local_polar("Z", domain, domain_len, natom,	aostart, aostop);
-      psi::fprintf(outfile, "\nMu_Z (%lf)\n", params.omega[0]);
+      outfile->Printf( "\nMu_Z (%lf)\n", params.omega[0]);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
         domain_len[i] = domain_len_bp[i];
@@ -441,7 +441,7 @@ void local_init(Options & options)
       build_F_RHF(-params.omega[0]);
       cphf_F("X");
       local_polar("X", domain, domain_len, natom,	aostart, aostop);
-      psi::fprintf(outfile, "\nMu_X (%lf)\n", -params.omega[0]);
+      outfile->Printf( "\nMu_X (%lf)\n", -params.omega[0]);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
         domain_len[i] = domain_len_bp[i];
@@ -452,7 +452,7 @@ void local_init(Options & options)
       cphf_F("Y");
       local_polar("Y", domain, domain_len, natom,
                   aostart, aostop);
-      psi::fprintf(outfile, "\nMu_Y (%lf)\n", -params.omega[0]);
+      outfile->Printf( "\nMu_Y (%lf)\n", -params.omega[0]);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
         domain_len[i] = domain_len_bp[i];
@@ -462,7 +462,7 @@ void local_init(Options & options)
 
       cphf_F("Z");
       local_polar("Z", domain, domain_len, natom,	aostart, aostop);
-      psi::fprintf(outfile, "\nMu_Z (%lf)\n", -params.omega[0]);
+      outfile->Printf( "\nMu_Z (%lf)\n", -params.omega[0]);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
         domain_len[i] = domain_len_bp[i];
@@ -482,8 +482,8 @@ void local_init(Options & options)
     }
   }
   if(local.domain_mag) {
-    psi::fprintf(outfile, "\tGenerating magnetic-field CPHF solutions for local-CC.\n");
-    fflush(outfile);
+    outfile->Printf( "\tGenerating magnetic-field CPHF solutions for local-CC.\n");
+    
     transpert("L");
     sort_pert("L", moinfo.LX, moinfo.LY, moinfo.LZ,
               moinfo.irrep_x, moinfo.irrep_y, moinfo.irrep_z);
@@ -493,7 +493,7 @@ void local_init(Options & options)
       build_B_RHF(0);
       cphf_B("X");
       local_magnetic("X", domain, domain_len, natom, aostart, aostop);
-      psi::fprintf(outfile, "\nL_X (%d)\n", 0);
+      outfile->Printf( "\nL_X (%d)\n", 0);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
         domain_len[i] = domain_len_bp[i];
@@ -504,7 +504,7 @@ void local_init(Options & options)
       cphf_B("Y");
       local_magnetic("Y", domain, domain_len, natom,
                      aostart, aostop);
-      psi::fprintf(outfile, "\nL_Y (%d)\n", 0);
+      outfile->Printf( "\nL_Y (%d)\n", 0);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
         domain_len[i] = domain_len_bp[i];
@@ -514,7 +514,7 @@ void local_init(Options & options)
 
       cphf_B("Z");
       local_magnetic("Z", domain, domain_len, natom, aostart, aostop);
-      psi::fprintf(outfile, "\nL_Z (%d)\n", 0);
+      outfile->Printf( "\nL_Z (%d)\n", 0);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
         domain_len[i] = domain_len_bp[i];
@@ -526,7 +526,7 @@ void local_init(Options & options)
       build_B_RHF(params.omega[0]);
       cphf_B("X");
       local_magnetic("X", domain, domain_len, natom, aostart, aostop);
-      psi::fprintf(outfile, "\nL_X (%lf)\n", params.omega[0]);
+      outfile->Printf( "\nL_X (%lf)\n", params.omega[0]);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
         domain_len[i] = domain_len_bp[i];
@@ -536,7 +536,7 @@ void local_init(Options & options)
 
       cphf_B("Y");
       local_magnetic("Y", domain, domain_len, natom, aostart, aostop);
-      psi::fprintf(outfile, "\nL_Y (%lf)\n", params.omega[0]);
+      outfile->Printf( "\nL_Y (%lf)\n", params.omega[0]);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
         domain_len[i] = domain_len_bp[i];
@@ -546,7 +546,7 @@ void local_init(Options & options)
 
       cphf_B("Z");
       local_magnetic("Z", domain, domain_len, natom, aostart, aostop);
-      psi::fprintf(outfile, "\nL_Z (%lf)\n", params.omega[0]);
+      outfile->Printf( "\nL_Z (%lf)\n", params.omega[0]);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
         domain_len[i] = domain_len_bp[i];
@@ -558,7 +558,7 @@ void local_init(Options & options)
       build_B_RHF(-params.omega[0]);
       cphf_B("X");
       local_magnetic("X", domain, domain_len, natom, aostart, aostop);
-      psi::fprintf(outfile, "\nL_X (%lf)\n", -params.omega[0]);
+      outfile->Printf( "\nL_X (%lf)\n", -params.omega[0]);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
         domain_len[i] = domain_len_bp[i];
@@ -568,7 +568,7 @@ void local_init(Options & options)
 
       cphf_B("Y");
       local_magnetic("Y", domain, domain_len, natom, aostart, aostop);
-      psi::fprintf(outfile, "\nL_Y (%lf)\n", -params.omega[0]);
+      outfile->Printf( "\nL_Y (%lf)\n", -params.omega[0]);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
         domain_len[i] = domain_len_bp[i];
@@ -578,7 +578,7 @@ void local_init(Options & options)
 
       cphf_B("Z");
       local_magnetic("Z", domain, domain_len, natom, aostart, aostop);
-      psi::fprintf(outfile, "\nL_Z (%lf)\n", -params.omega[0]);
+      outfile->Printf( "\nL_Z (%lf)\n", -params.omega[0]);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
         domain_len[i] = domain_len_bp[i];
@@ -645,7 +645,7 @@ void local_init(Options & options)
 
     errcod = C_DGESV(row, 1, &(X[0][0]), nso, &(ipiv[0]), &(Z[0]), nso);
     if(errcod) {
-      psi::fprintf(outfile, "\nError in DGESV return in orbital domain construction.\n");
+      outfile->Printf( "\nError in DGESV return in orbital domain construction.\n");
       exit(PSI_RETURN_FAILURE);
     }
 
@@ -662,7 +662,7 @@ void local_init(Options & options)
 
 
   /* Print the orbital domains */
-  psi::fprintf(outfile, "\n   ****** Final Occupied Orbital Domains ******\n");
+  outfile->Printf( "\n   ****** Final Occupied Orbital Domains ******\n");
   if(!local.domain_sep)
     domain_print(nocc, natom, domain_len, domain, fR);
 
@@ -680,7 +680,7 @@ void local_init(Options & options)
 
   /* Identify and/or remove weak pairs -- for CPHF "response" domains */
   if(local.domain_polar || local.domain_mag) {
-    psi::fprintf(outfile, "\n");
+    outfile->Printf( "\n");
     for(i=0,ij=0; i < nocc; i++)
       for(j=0; j < nocc; j++,ij++) {
         weak = 1;
@@ -691,9 +691,9 @@ void local_init(Options & options)
           weak_pairs[ij] = 1;
 
           if(local.weakp=="MP2")
-            psi::fprintf(outfile, "\tPair %d %d [%d] is weak and will be treated with MP2.\n", i, j, ij);
+            outfile->Printf( "\tPair %d %d [%d] is weak and will be treated with MP2.\n", i, j, ij);
           else if(local.weakp=="NEGLECT") {
-            psi::fprintf(outfile, "\tPair %d %d = [%d] is weak and will be deleted.\n", i, j, ij);
+            outfile->Printf( "\tPair %d %d = [%d] is weak and will be deleted.\n", i, j, ij);
           }
         }
         else weak_pairs[ij] = 0;
@@ -722,11 +722,11 @@ void local_init(Options & options)
   }
 
   /* Print excitation space reduction info */
-  psi::fprintf(outfile, "\n\tT1 Length = %d (local), %d (canonical)\n",
+  outfile->Printf( "\n\tT1 Length = %d (local), %d (canonical)\n",
           t1_length, nocc*nvir);
-  psi::fprintf(outfile, "\tT2 Length = %d (local), %d (canonical)\n\n",
+  outfile->Printf( "\tT2 Length = %d (local), %d (canonical)\n\n",
           t2_length, nocc*nocc*nvir*nvir);
-  fflush(outfile);
+  
 
   local.domain = domain;
   local.domain_len = domain_len;
@@ -752,7 +752,7 @@ void local_init(Options & options)
   print_test = 0;
   print_test = options.get_bool("DOMAIN_PRINT");
   if(print_test) {
-    psi::fprintf(outfile, "Printing of orbital domains requested...exiting.\n\n");
+    outfile->Printf( "Printing of orbital domains requested...exiting.\n\n");
     exit(PSI_RETURN_FAILURE);
   }
 
@@ -766,7 +766,7 @@ void local_init(Options & options)
           1.0,&(Rt_full[0][0]),nso);
 
   /*
-    psi::fprintf(outfile, "\n\tVirtual-Space Projector (R-tilde):\n");
+    outfile->Printf( "\n\tVirtual-Space Projector (R-tilde):\n");
     print_mat(Rt_full, nso, nso, stdout);
   */
 
@@ -778,12 +778,12 @@ void local_init(Options & options)
     }
     norm = sqrt(norm);
     if(norm < local.core_cutoff && local.freeze_core!="FALSE") {
-      psi::fprintf(outfile, "\tNorm of orbital %4d = %20.12f...deleteing\n", i, norm);
+      outfile->Printf( "\tNorm of orbital %4d = %20.12f...deleteing\n", i, norm);
       for(j=0; j < nso; j++) Rt_full[j][i] = 0.0;
     }
   }
-  psi::fprintf(outfile, "\n");
-  fflush(outfile);
+  outfile->Printf( "\n");
+  
 
   /* Grab the MO-basis Fock matrix */
   Fmo = block_matrix(nso, nso);
@@ -807,7 +807,7 @@ void local_init(Options & options)
   global_dpd_->file2_close(&fock);
 
   /*
-    psi::fprintf(outfile, "\n\tMO Basis Fock matrix:\n");
+    outfile->Printf( "\n\tMO Basis Fock matrix:\n");
     print_mat(Fmo, nso, nso, outfile);
   */
 
@@ -823,7 +823,7 @@ void local_init(Options & options)
   for(i=0;i < nocc; i++) eps_occ[i] = Fmo[i+nfzc][i+nfzc];
 
   /*
-    psi::fprintf(outfile, "\n\tAO-Basis Fock Matrix:\n");
+    outfile->Printf( "\n\tAO-Basis Fock Matrix:\n");
     print_mat(Fmo, nso, nso, outfile);
   */
 
@@ -863,8 +863,8 @@ void local_init(Options & options)
             &(V[ij][0][0]),pairdom_len[ij]);
 
     /*
-      psi::fprintf(outfile, "\nV[%d]:\n", ij);
-      psi::fprintf(outfile,   "======\n");
+      outfile->Printf( "\nV[%d]:\n", ij);
+      outfile->Printf(   "======\n");
       print_mat(V[ij], nvir, pairdom_len[ij], outfile);
     */
 
@@ -876,7 +876,7 @@ void local_init(Options & options)
             0.0,&(St[0][0]),pairdom_len[ij]);
 
     /*
-      psi::fprintf(outfile, "\n\tVirtual-Space Metric (S-tilde) for ij = %d:\n", ij);
+      outfile->Printf( "\n\tVirtual-Space Metric (S-tilde) for ij = %d:\n", ij);
       print_mat(St, pairdom_len[ij], pairdom_len[ij], outfile);
     */
 
@@ -891,10 +891,10 @@ void local_init(Options & options)
     pairdom_nrlen[ij] = pairdom_len[ij]-cnt;
 
     /*
-      psi::fprintf(outfile, "\n\tS-tilde eigenvalues for ij = %d:\n", ij);
-      for(i=0; i < pairdom_len[ij]; i++) psi::fprintf(outfile, "\t%d %20.12f\n", i, evals[i]);
+      outfile->Printf( "\n\tS-tilde eigenvalues for ij = %d:\n", ij);
+      for(i=0; i < pairdom_len[ij]; i++) outfile->Printf( "\t%d %20.12f\n", i, evals[i]);
 
-      psi::fprintf(outfile, "\n\tS-tilde eigenvectors for ij = %d:\n", ij);
+      outfile->Printf( "\n\tS-tilde eigenvectors for ij = %d:\n", ij);
       print_mat(evecs,pairdom_len[ij],pairdom_len[ij],outfile);
     */
 
@@ -911,7 +911,7 @@ void local_init(Options & options)
 
 
     /*
-      psi::fprintf(outfile, "\n\tTransform to non-redundant, projected virtuals (X-tilde) for ij = %d:\n", ij);
+      outfile->Printf( "\n\tTransform to non-redundant, projected virtuals (X-tilde) for ij = %d:\n", ij);
       print_mat(Xt, pairdom_len[ij], pairdom_nrlen[ij], outfile);
     */
 
@@ -933,7 +933,7 @@ void local_init(Options & options)
             &(X[0][0]),nso,&(Xt[0][0]),pairdom_nrlen[ij],0.0,&(Fbar[0][0]),pairdom_nrlen[ij]);
 
     /*
-      psi::fprintf(outfile, "\n\tFbar matrix for ij = %d:\n", ij);
+      outfile->Printf( "\n\tFbar matrix for ij = %d:\n", ij);
       print_mat(Fbar,pairdom_nrlen[ij],pairdom_nrlen[ij],outfile);
     */
 
@@ -943,7 +943,7 @@ void local_init(Options & options)
     sq_rsp(pairdom_nrlen[ij],pairdom_nrlen[ij],Fbar,evals,1,evecs,1e-12);
 
     /*
-      psi::fprintf(stdout, "\n\tFbar eigenvectors for ij = %d:\n", ij);
+      outfile->Printf(stdout, "\n\tFbar eigenvectors for ij = %d:\n", ij);
       print_mat(evecs,pairdom_nrlen[ij],pairdom_nrlen[ij],outfile);
     */
 
@@ -954,7 +954,7 @@ void local_init(Options & options)
             0.0,&(W[ij][0][0]),pairdom_nrlen[ij]);
 
     /*
-      psi::fprintf(outfile, "\n\tW Transformation Matrix for ij = %d:\n", ij);
+      outfile->Printf( "\n\tW Transformation Matrix for ij = %d:\n", ij);
       print_mat(W[ij],pairdom_len[ij],pairdom_nrlen[ij],outfile);
     */
 
@@ -964,9 +964,9 @@ void local_init(Options & options)
       eps_vir[ij][i] = evals[i]; /* virtual orbital energies */
 
     /*
-      psi::fprintf(outfile, "\n\tVirtual orbital Energies for ij = %d:\n", ij);
+      outfile->Printf( "\n\tVirtual orbital Energies for ij = %d:\n", ij);
       for(i=0; i < pairdom_nrlen[ij]; i++)
-      psi::fprintf(outfile, "%d %20.12f\n", i, eps_vir[ij][i]);
+      outfile->Printf( "%d %20.12f\n", i, eps_vir[ij][i]);
     */
 
     free(evals);
@@ -998,7 +998,7 @@ void local_init(Options & options)
 
   local.weak_pair_energy = 0.0;
 
-  fflush(outfile);
+  
   timer_off("Local");
 }
 

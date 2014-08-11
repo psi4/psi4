@@ -69,7 +69,6 @@ double ET_UHF_AAB(void)
   dpdfile2 T1A, T1B, fIJ, fij, fAB, fab, fIA, fia;
   double ***WABc, ***WBcA, ***WAcB, ***WcAB, ***WcBA, ***VABc;
   int nijk, mijk;
-  FILE *ijkfile;
 
   nirreps = moinfo.nirreps;
   aoccpi = moinfo.aoccpi; 
@@ -164,12 +163,12 @@ double ET_UHF_AAB(void)
 	    }
 	  }
 	}
+  boost::shared_ptr<OutFile> printer(new OutFile("ijk.dat",TRUNCATE));
+  //ffile(&ijkfile,"ijk.dat",0);
+  printer->Printf( "Spin Case: AAB\n");
+  printer->Printf( "Number of IJK combintions: %d\n", nijk);
+  printer->Printf( "\nCurrent IJK Combination:\n");
 
-  ffile(&ijkfile,"ijk.dat",0);
-  psi::fprintf(ijkfile, "Spin Case: AAB\n");
-  psi::fprintf(ijkfile, "Number of IJK combintions: %d\n", nijk);
-  psi::fprintf(ijkfile, "\nCurrent IJK Combination:\n");
-  fflush(ijkfile);
 
   mijk = 0;
   ET_AAB = 0.0;
@@ -201,8 +200,8 @@ double ET_UHF_AAB(void)
 	      if(I > J) {
 
 		mijk++;
-		psi::fprintf(ijkfile, "%d\n", mijk);
-		fflush(ijkfile);
+		printer->Printf( "%d\n", mijk);
+
 
 		ij = EAAints.params->rowidx[I][J];
 		ji = EAAints.params->rowidx[J][I];
@@ -774,8 +773,8 @@ double ET_UHF_AAB(void)
     } /* Gj */
   } /* Gi */
 
-  /*  psi::fprintf(outfile, "cnt = %d\n", cnt); */
-  /*  psi::fprintf(outfile, "ET_AAB = %20.14f\n", ET_AAB); */
+  /*  outfile->Printf( "cnt = %d\n", cnt); */
+  /*  outfile->Printf( "ET_AAB = %20.14f\n", ET_AAB); */
 
   free(WABc);
   free(WBcA);
@@ -784,7 +783,6 @@ double ET_UHF_AAB(void)
   free(WcBA);
   free(VABc);
 
-  fclose(ijkfile);
 
   for(h=0; h < nirreps; h++) {
     global_dpd_->buf4_mat_irrep_close(&T2AA, h);

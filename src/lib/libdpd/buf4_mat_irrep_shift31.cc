@@ -48,7 +48,7 @@ int DPD::buf4_mat_irrep_shift31(dpdbuf4 *Buf, int buf_block)
     all_buf_irrep = Buf->file.my_irrep;
 
     if(Buf->shift.shift_type) {
-        psi::fprintf(stderr, "\n\tShift is already on! %d\n",
+        outfile->Printf( "\n\tShift is already on! %d\n",
                 Buf->shift.shift_type);
         exit(PSI_RETURN_FAILURE);
     }

@@ -80,8 +80,8 @@ int CCTransform::read_tei_mo_integrals_block(int first_irrep)
 int CCTransform::allocate_tei_mo_block(int first_irrep)
 {
   if(first_irrep>moinfo->get_nirreps()){
-    psi::fprintf(outfile,"\n    Transform: allocate_tei_mo_block() was called with first_irrep > nirreps !");
-    fflush(outfile);
+    outfile->Printf("\n    Transform: allocate_tei_mo_block() was called with first_irrep > nirreps !");
+    
     exit(EXIT_FAILURE);
   }
 
@@ -112,10 +112,10 @@ int CCTransform::allocate_tei_mo_block(int first_irrep)
       last_irrep++;
     }
   }
-  psi::fprintf(outfile,"\n    Integrals from irreps %d -> %d will be read in core",first_irrep,last_irrep-1);
+  outfile->Printf("\n    Integrals from irreps %d -> %d will be read in core",first_irrep,last_irrep-1);
   if(first_irrep == last_irrep){
-    psi::fprintf(outfile,"\n    CCTransform: allocate_tei_mo_block() has not enough memory!");
-    fflush(outfile);
+    outfile->Printf("\n    CCTransform: allocate_tei_mo_block() has not enough memory!");
+    
     exit(EXIT_FAILURE);
   }
   first_irrep_in_core = first_irrep;
@@ -190,6 +190,6 @@ double CCTransform::tei_block(int p, int q, int r, int s)
 //      if(!ilsti)
 //        iwl_buf_fetch(&ERIIN);
 //    } while(!ilsti);
-//  psi::fprintf(outfile,"\n    Read %d non-zero integrals", elements);
-//  fflush(outfile);
+//  outfile->Printf("\n    Read %d non-zero integrals", elements);
+//  
 //  iwl_buf_close(&ERIIN,1);

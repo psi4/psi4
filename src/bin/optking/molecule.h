@@ -170,31 +170,33 @@ class MOLECULE {
       fragments[i]->update_connectivity_by_bonds();
   }
 
-  void print_connectivity(FILE *fout) const {
+  void print_connectivity(std::string OutFileRMR) const {
     for (int i=0; i<fragments.size(); ++i)
-      fragments[i]->print_connectivity(fout, i, g_atom_offset(i));
+      fragments[i]->print_connectivity(OutFileRMR, i, g_atom_offset(i));
   }
 
-  void print_geom(FILE *fout, bool print_mass = false) {
+  void print_geom(std::string OutFileRMR, bool print_mass = false) {
     for (int i=0; i<fragments.size(); ++i)
-      fragments[i]->print_geom(fout, i, print_mass);
+      fragments[i]->print_geom(OutFileRMR, i, print_mass);
   }
 
-  void print_geom_grad(FILE *fout, bool print_mass = false) {
+  void print_geom_grad(std::string OutFileRMR, bool print_mass = false) {
     for (int i=0; i<fragments.size(); ++i)
-      fragments[i]->print_geom_grad(fout, i, print_mass);
+      fragments[i]->print_geom_grad(OutFileRMR, i, print_mass);
   }
 
-  void print_intcos(FILE *fout) {
+  void print_intcos(std::string OutFileRMR) {
     int a,b;
+    boost::shared_ptr<psi::PsiOutStream> printer(OutFileRMR=="outfile"? psi::outfile:
+       boost::shared_ptr<psi::OutFile>(new psi::OutFile(OutFileRMR,psi::APPEND)));
     for (int i=0; i<fragments.size(); ++i) {
-      fprintf(fout,"\t---Fragment %d Intrafragment Coordinates---\n", i+1);
-      fragments[i]->print_intcos(fout, g_atom_offset(i));
+      printer->Printf("\t---Fragment %d Intrafragment Coordinates---\n", i+1);
+      fragments[i]->print_intcos(OutFileRMR, g_atom_offset(i));
     }
     for (int i=0; i<interfragments.size(); ++i) {
       a = interfragments[i]->g_A_index();
       b = interfragments[i]->g_B_index();
-      interfragments[i]->print_intcos(fout, g_atom_offset(a), g_atom_offset(b));
+      interfragments[i]->print_intcos(OutFileRMR, g_atom_offset(a), g_atom_offset(b));
     }
 
 #if defined (OPTKING_PACKAGE_QCHEM)
@@ -212,7 +214,7 @@ class MOLECULE {
   void update_efp_values(void);
 #endif
 
-  void print_intco_dat(FILE *fp_intco);
+  void print_intco_dat(std::string OutFileRMR_intco);
 
   int add_intrafragment_simples_by_connectivity(void) {
     int n=0;

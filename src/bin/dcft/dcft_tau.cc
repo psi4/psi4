@@ -289,35 +289,35 @@ DCFTSolver::print_opdm()
     int *bIrrepCount = init_int_array(nirrep_);
     char **irrepLabels = molecule_->irrep_labels();
 
-    psi::fprintf(outfile, "\n\tOrbital occupations:\n\t\tAlpha occupied orbitals\n\t\t");
+    outfile->Printf( "\n\tOrbital occupations:\n\t\tAlpha occupied orbitals\n\t\t");
     for (int i = 0, count = 0; i < nalpha_; ++i, ++count) {
         int irrep = aPairs[i].second;
-        psi::fprintf(outfile, "%4d%-4s%11.4f  ", ++aIrrepCount[irrep], irrepLabels[irrep], aPairs[i].first);
+        outfile->Printf( "%4d%-4s%11.4f  ", ++aIrrepCount[irrep], irrepLabels[irrep], aPairs[i].first);
         if (count % 4 == 3 && i != nalpha_)
-            psi::fprintf(outfile, "\n\t\t");
+            outfile->Printf( "\n\t\t");
     }
-    psi::fprintf(outfile, "\n\n\t\tBeta occupied orbitals\n\t\t");
+    outfile->Printf( "\n\n\t\tBeta occupied orbitals\n\t\t");
     for (int i = 0, count = 0; i < nbeta_; ++i, ++count) {
         int irrep = bPairs[i].second;
-        psi::fprintf(outfile, "%4d%-4s%11.4f  ", ++bIrrepCount[irrep], irrepLabels[irrep], bPairs[i].first);
+        outfile->Printf( "%4d%-4s%11.4f  ", ++bIrrepCount[irrep], irrepLabels[irrep], bPairs[i].first);
         if (count % 4 == 3 && i != nbeta_)
-            psi::fprintf(outfile, "\n\t\t");
+            outfile->Printf( "\n\t\t");
     }
-    psi::fprintf(outfile, "\n\n\t\tAlpha virtual orbitals\n\t\t");
+    outfile->Printf( "\n\n\t\tAlpha virtual orbitals\n\t\t");
     for (int i = nalpha_, count = 0; i < nmo_; ++i, ++count) {
         int irrep = aPairs[i].second;
-        psi::fprintf(outfile, "%4d%-4s%11.4f  ", ++aIrrepCount[irrep], irrepLabels[irrep], aPairs[i].first);
+        outfile->Printf( "%4d%-4s%11.4f  ", ++aIrrepCount[irrep], irrepLabels[irrep], aPairs[i].first);
         if (count % 4 == 3 && i != nmo_)
-            psi::fprintf(outfile, "\n\t\t");
+            outfile->Printf( "\n\t\t");
     }
-    psi::fprintf(outfile, "\n\n\t\tBeta virtual orbitals\n\t\t");
+    outfile->Printf( "\n\n\t\tBeta virtual orbitals\n\t\t");
     for (int i = nbeta_, count = 0; i < nmo_; ++i, ++count) {
         int irrep = bPairs[i].second;
-        psi::fprintf(outfile, "%4d%-4s%11.4f  ", ++bIrrepCount[irrep], irrepLabels[irrep], bPairs[i].first);
+        outfile->Printf( "%4d%-4s%11.4f  ", ++bIrrepCount[irrep], irrepLabels[irrep], bPairs[i].first);
         if (count % 4 == 3 && i != nmo_)
-            psi::fprintf(outfile, "\n\t\t");
+            outfile->Printf( "\n\t\t");
     }
-    psi::fprintf(outfile, "\n\n");
+    outfile->Printf( "\n\n");
     for (int h = 0; h < nirrep_; ++h)
         free(irrepLabels[h]);
     free(irrepLabels);
@@ -388,17 +388,17 @@ DCFTSolver::refine_tau() {
         converged = (rms < cumulant_threshold_);
         failed    = (++cycle == maxiter_);
 
-        if (print_ > 2) psi::fprintf(outfile, "\t Exact Tau Iterations: %-3d %20.12f\n", cycle, rms);
+        if (print_ > 2) outfile->Printf( "\t Exact Tau Iterations: %-3d %20.12f\n", cycle, rms);
 
     } // end of macroiterations
 
     // Test the trace of Tau
     // double trace = aocc_tau_->trace() + avir_tau_->trace() + bocc_tau_->trace() + bvir_tau_->trace();
-    // psi::fprintf(outfile, "\t Trace of Tau: %8.7e\n", trace);
+    // outfile->Printf( "\t Trace of Tau: %8.7e\n", trace);
 
     // If exact tau iterations failed, throw a message about it and compute it non-iteratively
     if (failed) {
-        psi::fprintf(outfile, "\t Exact Tau didn't converge. Evaluating it non-iteratively\n");
+        outfile->Printf( "\t Exact Tau didn't converge. Evaluating it non-iteratively\n");
         // Set old tau matrices to identity
         aocc_tau_old->identity();
         bocc_tau_old->identity();

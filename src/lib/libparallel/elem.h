@@ -95,11 +95,11 @@ public:
 
     inline void sync() { elem::mpi::Barrier(comm_); }
 
-    inline void print(FILE *out=outfile) const
+    inline void print(std::string OutFileRMR) const
     {
         if (me_ == 0) {
-            psi::fprintf(out, "\n    Using ElemCommWrapper  (Number of procs = %d)\n", nproc_);
-            psi::fprintf(out, "                          (Number of threads in pool = %d)\n\n", nthread_);
+            printer->Printf( "\n    Using ElemCommWrapper  (Number of procs = %d)\n", nproc_);
+            printer->Printf( "                          (Number of threads in pool = %d)\n\n", nthread_);
         }
     }
 

@@ -25,10 +25,11 @@ double MBE::Energy(const std::vector<NMerSet>& Systems, const std::vector<double
 	//Total energy of each set of n-mers
 	std::vector<double> En;
 	std::vector<double> Egys;
-	psi::fprintf(psi::outfile,
+	psi::outfile->Printf(
 	      "\n************ MBE Energy Analysis ************\n\n");
 	if(Systems.size()!=N&&N!=1)
-	   std::cout<<"Shit is about to hit the fan..."<<std::endl;
+	   throw psi::PSIEXCEPTION("The number of systems is not consistent with"
+	         " the MBE truncation order....\n");
 	for(int i=0;i<N;i++){
 		En.push_back(0);//Initialize our vector
 		int nfrags=Systems[i].size();
@@ -37,12 +38,12 @@ double MBE::Energy(const std::vector<NMerSet>& Systems, const std::vector<double
 		}
 		energy=NBodyE(i+1,Systems[0].size(),&En[0]);
 		Egys.push_back(energy);
-		psi::fprintf(psi::outfile,
+		psi::outfile->Printf(
 		      "%2d-body approximate energy: %16.15f (a.u.)\n",i+1,energy);
 	}
-	for(int i=0;i<N;i++){
+	for(int i=1;i<N;i++){
 	   double corr=(i==0?Egys[i]:Egys[i]-Egys[i-1]);
-	   psi::fprintf(psi::outfile,
+	   psi::outfile->Printf(
 	         "%2d-body correction: %16.15f (a.u.)\n",i+1,corr);
 	}
 	return energy;

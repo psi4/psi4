@@ -32,7 +32,7 @@ class MBEFrag: public AtomSet{
 		}
 
 		void PrintParents(){
-		   for(int i=0;i<MBEOrder;i++)psi::fprintf(psi::outfile,"%d ",Parents[i]);
+		   for(int i=0;i<MBEOrder;i++)psi::outfile->Printf("%d ",Parents[i]);
 		}
 		MBEFrag(const int MBEOrder_=0,const int *Parents_=NULL):
 			MBEOrder(MBEOrder_){if(Parents_!=NULL)SetParents(Parents_);}

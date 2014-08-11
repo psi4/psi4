@@ -28,7 +28,7 @@
 #include <cstring>
 #include <sstream>
 #include "molecule.h"
-
+#include "psi4-dec.h"
 #define EXTERN
 #include "globals.h"
 
@@ -75,7 +75,7 @@ int read_natoms(void) {
   if (Opt_params.efp_fragments) {
     int n = ::EFP::GetInstance()->GetNumEFPatoms();
     natom -= n;
-    fprintf(outfile, "\nNumber of atoms besides EFP fragments %d\n", natom);
+    psi::outfile->Printf( "\nNumber of atoms besides EFP fragments %d\n", natom);
   }
 
 #endif
@@ -199,7 +199,7 @@ void MOLECULE::read_geom_grad(void) {
   } // end try reading geometries
   catch (std::ios_base::failure & bf) {
     printf("Error reading molecular geometry and gradient\n");
-    fprintf(outfile,"Error reading molecular geometry and gradient\n");
+    psi::outfile->Printf("Error reading molecular geometry and gradient\n");
     throw(INTCO_EXCEPT("Error reading molecular geometry and gradient"));
   }
 #endif
@@ -213,7 +213,7 @@ void MOLECULE::read_geom_grad(void) {
     std::vector<int> AtomsinEFP = EFP::GetInstance()->NEFPAtoms();
     for (int i = 0; i < EFPfrag; ++i)
       EFPatom += AtomsinEFP[i];
-    fprintf(outfile,"\t %d EFP fragments containing %d atoms.\n", EFPfrag, EFPatom);
+    psi::outfile->Printf("\t %d EFP fragments containing %d atoms.\n", EFPfrag, EFPatom);
   }
 
   double *QX;
@@ -226,11 +226,11 @@ void MOLECULE::read_geom_grad(void) {
   if (QNATOMS_real != (QNATOMS-EFPatom))
     QCrash("Number of computed real atoms is inconsistent.");
 
-  fprintf(outfile, "\tNATOMS (total)=%d (minus EFP)=%d\n", QNATOMS, QNATOMS_real);
+  psi::outfile->Printf( "\tNATOMS (total)=%d (minus EFP)=%d\n", QNATOMS, QNATOMS_real);
 
   if (Opt_params.print_lvl >= 3) {
-    fprintf(outfile,"\tCartesian coordinates from ::get_carts().\n");
-    print_array(outfile, QX, 3*QNATOMS);
+    psi::outfile->Printf("\tCartesian coordinates from ::get_carts().\n");
+    print_array("outfile", QX, 3*QNATOMS);
   }
 
   int Numgrad = QNATOMS_real*3 + 6*EFPfrag;
@@ -357,7 +357,7 @@ double ** OPT_DATA::read_cartesian_H(void) const {
   }
   catch (std::ios_base::failure & bf) {
     printf("Error reading cartesian Hessian matrix\n");
-    fprintf(outfile,"Error reading cartesian Hessian matrix\n");
+    psi::outfile->Printf("Error reading cartesian Hessian matrix\n");
     throw(INTCO_EXCEPT("Error reading cartesian Hessian matrix"));
   }
 
@@ -368,7 +368,7 @@ double ** OPT_DATA::read_cartesian_H(void) const {
   FileMan_Open_Read(FILE_NUCLEAR_HESSIAN);
   FileMan(FM_READ, FILE_NUCLEAR_HESSIAN, FM_DP, Ncart*Ncart, 0, FM_BEG, Hess);
   FileMan_Close(FILE_NUCLEAR_HESSIAN);
-  //print_matrix(outfile, &Hess, 1, Ncart * Ncart);
+  //print_matrix("outfile", &Hess, 1, Ncart * Ncart);
 
 // instead read from $QCSCRATCH/scr_dir_name/HESS ?
 
@@ -382,13 +382,13 @@ double ** OPT_DATA::read_cartesian_H(void) const {
 #endif
 
   if (Opt_params.print_lvl >= 3) {
-    fprintf(outfile,"\tCartesian Hessian matrix read: \n");
-    print_matrix(outfile, H_cart, Ncart, Ncart);
-    fflush(outfile);
+    psi::outfile->Printf("\tCartesian Hessian matrix read: \n");
+    print_matrix("outfile", H_cart, Ncart, Ncart);
+    
   }
   else {
-      fprintf(outfile, "\tCartesian Hessian matrix read in from external file.\n");
-      fflush(outfile);
+      psi::outfile->Printf("\tCartesian Hessian matrix read in from external file.\n");
+      
   }
 
   return H_cart;

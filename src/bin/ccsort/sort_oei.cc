@@ -103,9 +103,9 @@ void sort_oei_uhf(void)
   tmp_oei = init_array(ntri_all);
   a_oei = init_array(ntri_act);
   b_oei = init_array(ntri_act);
-  iwl_rdone(PSIF_OEI, PSIF_MO_A_FZC, tmp_oei, ntri_all, 0, 0, outfile);
+  iwl_rdone(PSIF_OEI, PSIF_MO_A_FZC, tmp_oei, ntri_all, 0, 0, "outfile");
   filter(tmp_oei,a_oei,ioff,nmo,moinfo.nfzc,moinfo.nfzv);
-  iwl_rdone(PSIF_OEI, PSIF_MO_B_FZC, tmp_oei, ntri_all, 0, 0, outfile);
+  iwl_rdone(PSIF_OEI, PSIF_MO_B_FZC, tmp_oei, ntri_all, 0, 0, "outfile");
   filter(tmp_oei,b_oei,ioff,nmo,moinfo.nfzc,moinfo.nfzv);
   free(tmp_oei);
 
@@ -227,14 +227,14 @@ void sort_oei_rhf(void)
 
   tmp_oei = init_array(ntri_all);
   oei = init_array(ntri_act);
-  iwl_rdone(PSIF_OEI, PSIF_MO_FZC, tmp_oei, ntri_all, 0, 0, outfile);
+  iwl_rdone(PSIF_OEI, PSIF_MO_FZC, tmp_oei, ntri_all, 0, 0, "outfile");
   filter(tmp_oei, oei, ioff, nmo, moinfo.nfzc, moinfo.nfzv);
   free(tmp_oei);
 
   if(params.print_lvl > 5) {
-    psi::fprintf(outfile, "\n\tFrozen-Core Operator:\n");
-    psi::fprintf(outfile,   "\t---------------------");
-    print_array(oei, nactive, outfile);
+    outfile->Printf( "\n\tFrozen-Core Operator:\n");
+    outfile->Printf(   "\t---------------------");
+    print_array(oei, nactive, "outfile");
   }
 
   global_dpd_->file2_init(&Hoo, PSIF_CC_OEI, 0, 0, 0, "h(i,j)");

@@ -48,7 +48,7 @@
 #endif
 
 #if DebugPrint
-#define dprintf(...) psi::fprintf(outfile, __VA_ARGS__)
+#define dprintf(...) outfile->Printf( __VA_ARGS__)
 #else
 #define dprintf(...)
 #endif
@@ -674,13 +674,13 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
                 //                             (BasisSet.shells[sj].center!=BasisSet.shells[sk].center)||
                 //                             (BasisSet.shells[sk].center!=BasisSet.shells[sl].center)) {
 
-                //                psi::fprintf(outfile, "total_am %d siatom %d sjatom %d skatom %d slatom %d\n",
+                //                outfile->Printf( "total_am %d siatom %d sjatom %d skatom %d slatom %d\n",
                 //                        total_am, siatom, sjatom, skatom, slatom);
                 if (!(total_am % 2) ||
                     (siatom != sjatom) ||
                     (sjatom != skatom) ||
                     (skatom != slatom)) {
-                    //                    psi::fprintf(outfile, "\tadding\n");
+                    //                    outfile->Printf( "\tadding\n");
                     sj_arr.push_back(sj);
                     sk_arr.push_back(sk);
                     sl_arr.push_back(sl);

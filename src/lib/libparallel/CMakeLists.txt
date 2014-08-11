@@ -1,4 +1,9 @@
-set(SRC fprintf.cc p_fprintf.cc process.cc ParallelPrinter.cc)
+set(SRC StreamBase.h
+        StreamBase.cc
+        process.cc 
+        ParallelPrinter.h
+        ParallelPrinter.cc
+)
 if(${MPI_FOUND})
    set(SRC ${SRC} mpi_wrapper.cc)
 endif()

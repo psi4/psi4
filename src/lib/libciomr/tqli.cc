@@ -73,7 +73,7 @@ L1:
 L2:
          if (m != l) {
             if (iter++ == 30) {
-               psi::fprintf (stderr,"tqli not converging\n");
+               outfile->Printf("tqli not converging\n");
                 continue;
 #if 0
                exit(PSI_RETURN_FAILURE);

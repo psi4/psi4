@@ -33,23 +33,23 @@ namespace psi{ namespace dfoccwave{
 void DFOCC::occ_iterations()
 {
    
-psi::fprintf(outfile,"\n");
-psi::fprintf(outfile," ============================================================================== \n");
-if (wfn_type_ == "DF-OMP2") psi::fprintf(outfile," ================ Performing DF-OMP2 iterations... ============================ \n");  
-else if (wfn_type_ == "DF-OMP3") psi::fprintf(outfile," ================ Performing DF-OMP3 iterations... ============================ \n");  
-else if (wfn_type_ == "DF-OCEPA") psi::fprintf(outfile," ================ Performing DF-OCEPA iterations... =========================== \n");  
-else if (wfn_type_ == "DF-OMP2.5") psi::fprintf(outfile," ================ Performing DF-OMP2.5 iterations... ========================== \n");  
-else if (wfn_type_ == "CD-OMP2") psi::fprintf(outfile," ================ Performing CD-OMP2 iterations... ============================ \n");  
-psi::fprintf(outfile," ============================================================================== \n");
-if (wfn_type_ == "DF-OMP2") psi::fprintf(outfile, "\t            Minimizing DF-MP2-L Functional \n");
-else if (wfn_type_ == "DF-OMP3") psi::fprintf(outfile, "\t            Minimizing DF-MP3-L Functional \n");
-else if (wfn_type_ == "DF-OCEPA") psi::fprintf(outfile, "\t            Minimizing DF-CEPA-L Functional \n");
-else if (wfn_type_ == "DF-OMP2.5") psi::fprintf(outfile, "\t            Minimizing DF-MP2.5-L Functional \n");
-else if (wfn_type_ == "CD-OMP2") psi::fprintf(outfile, "\t            Minimizing CD-MP2-L Functional \n");
-psi::fprintf(outfile, "\t            ------------------------------ \n");
-psi::fprintf(outfile, " Iter       E_total           DE           RMS MO Grad      MAX MO Grad      RMS T2    \n");
-psi::fprintf(outfile, " ----    ---------------    ----------     -----------      -----------     ---------- \n");
-fflush(outfile);
+outfile->Printf("\n");
+outfile->Printf(" ============================================================================== \n");
+if (wfn_type_ == "DF-OMP2") outfile->Printf(" ================ Performing DF-OMP2 iterations... ============================ \n");  
+else if (wfn_type_ == "DF-OMP3") outfile->Printf(" ================ Performing DF-OMP3 iterations... ============================ \n");  
+else if (wfn_type_ == "DF-OCEPA") outfile->Printf(" ================ Performing DF-OCEPA iterations... =========================== \n");  
+else if (wfn_type_ == "DF-OMP2.5") outfile->Printf(" ================ Performing DF-OMP2.5 iterations... ========================== \n");  
+else if (wfn_type_ == "CD-OMP2") outfile->Printf(" ================ Performing CD-OMP2 iterations... ============================ \n");  
+outfile->Printf(" ============================================================================== \n");
+if (wfn_type_ == "DF-OMP2") outfile->Printf( "\t            Minimizing DF-MP2-L Functional \n");
+else if (wfn_type_ == "DF-OMP3") outfile->Printf( "\t            Minimizing DF-MP3-L Functional \n");
+else if (wfn_type_ == "DF-OCEPA") outfile->Printf( "\t            Minimizing DF-CEPA-L Functional \n");
+else if (wfn_type_ == "DF-OMP2.5") outfile->Printf( "\t            Minimizing DF-MP2.5-L Functional \n");
+else if (wfn_type_ == "CD-OMP2") outfile->Printf( "\t            Minimizing CD-MP2-L Functional \n");
+outfile->Printf( "\t            ------------------------------ \n");
+outfile->Printf( " Iter       E_total           DE           RMS MO Grad      MAX MO Grad      RMS T2    \n");
+outfile->Printf( " ----    ---------------    ----------     -----------      -----------     ---------- \n");
+
 
   
 //==========================================================================================
@@ -295,12 +295,12 @@ do
 	rms_t2=MAX0(rms_t2,rms_t2AB);
     }
 	
-if(wfn_type_ == "DF-OMP2") psi::fprintf(outfile," %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,Emp2L,DE,rms_wog,biggest_mograd,rms_t2);
-else if(wfn_type_ == "DF-OMP3") psi::fprintf(outfile," %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,Emp3L,DE,rms_wog,biggest_mograd,rms_t2);
-else if(wfn_type_ == "DF-OCEPA") psi::fprintf(outfile," %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,EcepaL,DE,rms_wog,biggest_mograd,rms_t2);
-else if(wfn_type_ == "DF-OMP2.5") psi::fprintf(outfile," %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,Emp3L,DE,rms_wog,biggest_mograd,rms_t2);
-else if(wfn_type_ == "CD-OMP2") psi::fprintf(outfile," %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,Emp2L,DE,rms_wog,biggest_mograd,rms_t2);
-fflush(outfile);
+if(wfn_type_ == "DF-OMP2") outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,Emp2L,DE,rms_wog,biggest_mograd,rms_t2);
+else if(wfn_type_ == "DF-OMP3") outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,Emp3L,DE,rms_wog,biggest_mograd,rms_t2);
+else if(wfn_type_ == "DF-OCEPA") outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,EcepaL,DE,rms_wog,biggest_mograd,rms_t2);
+else if(wfn_type_ == "DF-OMP2.5") outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,Emp3L,DE,rms_wog,biggest_mograd,rms_t2);
+else if(wfn_type_ == "CD-OMP2") outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,Emp2L,DE,rms_wog,biggest_mograd,rms_t2);
+
 
 //==========================================================================================
 //========================= Convergence? ===================================================
@@ -322,22 +322,22 @@ while(rms_wog >= tol_grad || biggest_mograd >= mograd_max);
 
 if (conver == 1) {
 mo_optimized = 1; 
-psi::fprintf(outfile,"\n");
-psi::fprintf(outfile," ============================================================================== \n");
-if (wfn_type_ == "DF-OMP2") psi::fprintf(outfile," ======================== DF-OMP2 ITERATIONS ARE CONVERGED ==================== \n");
-else if (wfn_type_ == "DF-OMP3") psi::fprintf(outfile," ======================== DF-OMP3 ITERATIONS ARE CONVERGED ==================== \n");
-else if (wfn_type_ == "DF-OCEPA") psi::fprintf(outfile," ======================== DF-OCEPA ITERATIONS ARE CONVERGED =================== \n");
-else if (wfn_type_ == "DF-OMP2.5") psi::fprintf(outfile," ======================== DF-OMP2.5 ITERATIONS ARE CONVERGED ================== \n");
-psi::fprintf(outfile," ============================================================================== \n");
-fflush(outfile);
+outfile->Printf("\n");
+outfile->Printf(" ============================================================================== \n");
+if (wfn_type_ == "DF-OMP2") outfile->Printf(" ======================== DF-OMP2 ITERATIONS ARE CONVERGED ==================== \n");
+else if (wfn_type_ == "DF-OMP3") outfile->Printf(" ======================== DF-OMP3 ITERATIONS ARE CONVERGED ==================== \n");
+else if (wfn_type_ == "DF-OCEPA") outfile->Printf(" ======================== DF-OCEPA ITERATIONS ARE CONVERGED =================== \n");
+else if (wfn_type_ == "DF-OMP2.5") outfile->Printf(" ======================== DF-OMP2.5 ITERATIONS ARE CONVERGED ================== \n");
+outfile->Printf(" ============================================================================== \n");
+
 }
 
 else if (conver == 0) {
-  if (wfn_type_ == "DF-OMP2") psi::fprintf(outfile,"\n ======================== DF-OMP2 IS NOT CONVERGED IN %2d ITERATIONS ========== \n", mo_maxiter);
-  else if (wfn_type_ == "DF-OMP3") psi::fprintf(outfile,"\n ======================== DF-OMP3 IS NOT CONVERGED IN %2d ITERATIONS ========== \n", mo_maxiter);
-  else if (wfn_type_ == "DF-OCEPA") psi::fprintf(outfile,"\n ======================== DF-OCEPA IS NOT CONVERGED IN %2d ITERATIONS ========= \n", mo_maxiter);
-  else if (wfn_type_ == "DF-OMP2.5") psi::fprintf(outfile,"\n ======================== DF-OMP2.5 IS NOT CONVERGED IN %2d ITERATIONS ======== \n", mo_maxiter);
-  fflush(outfile);
+  if (wfn_type_ == "DF-OMP2") outfile->Printf("\n ======================== DF-OMP2 IS NOT CONVERGED IN %2d ITERATIONS ========== \n", mo_maxiter);
+  else if (wfn_type_ == "DF-OMP3") outfile->Printf("\n ======================== DF-OMP3 IS NOT CONVERGED IN %2d ITERATIONS ========== \n", mo_maxiter);
+  else if (wfn_type_ == "DF-OCEPA") outfile->Printf("\n ======================== DF-OCEPA IS NOT CONVERGED IN %2d ITERATIONS ========= \n", mo_maxiter);
+  else if (wfn_type_ == "DF-OMP2.5") outfile->Printf("\n ======================== DF-OMP2.5 IS NOT CONVERGED IN %2d ITERATIONS ======== \n", mo_maxiter);
+  
   throw PSIEXCEPTION("DF-OCC iterations did not converge");
 }
 

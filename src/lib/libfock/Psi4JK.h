@@ -44,6 +44,7 @@ class Psi4JK:private JKFactory::Interface{
 		void MakeBasis(SharedPsiBasis &PsiBasis,pMyBasis &JKBasis);
 		SharedMatrix Unitary;
 		bool IsIdentity;
+		std::vector<double> ScaleFacts;
 	public:
 		Psi4JK(SharedPsiBasis &PsiBasis);
 		void UpdateDensity(SharedMatrix &Density,SharedMatrix& J,

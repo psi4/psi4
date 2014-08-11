@@ -31,7 +31,7 @@ namespace psi{ namespace dfoccwave{
 
 void DFOCC::z_vector()
 { 
-//psi::fprintf(outfile,"\n z_vector is starting... \n"); fflush(outfile);
+//outfile->Printf("\n z_vector is starting... \n"); 
 
     SharedTensor2d K;
 
@@ -59,9 +59,9 @@ if (reference_ == "RESTRICTED") {
          double det = 0.0;      
          Aorb->lineq_flin(zvectorA, &det);
          if (fabs(det) < DIIS_MIN_DET) { 
-             psi::fprintf(outfile, "Warning!!! MO Hessian matrix is near-singular\n");
-             psi::fprintf(outfile, "Determinant is %6.3E\n", det);
-             fflush(outfile);
+             outfile->Printf( "Warning!!! MO Hessian matrix is near-singular\n");
+             outfile->Printf( "Determinant is %6.3E\n", det);
+             
              pcg_conver = 0;// means unsuccessful
          }
     }
@@ -86,8 +86,8 @@ if (reference_ == "RESTRICTED") {
 
     // If LINEQ FAILED!
     if (pcg_conver == 0) {
-        psi::fprintf(outfile,"\tWarning!!! PCG did NOT converged in %2d iterations. \n", itr_pcg);
-        fflush(outfile);
+        outfile->Printf("\tWarning!!! PCG did NOT converged in %2d iterations. \n", itr_pcg);
+        
     } // end if pcg_conver = 0
  
 }// end if (reference_ == "RESTRICTED") 
@@ -122,9 +122,9 @@ else if (reference_ == "UNRESTRICTED") {
          double det = 0.0;      
          Aorb->lineq_flin(zvector, &det);
          if (fabs(det) < DIIS_MIN_DET) { 
-             psi::fprintf(outfile, "Warning!!! MO Hessian matrix is near-singular\n");
-             psi::fprintf(outfile, "Determinant is %6.3E\n", det);
-             fflush(outfile);
+             outfile->Printf( "Warning!!! MO Hessian matrix is near-singular\n");
+             outfile->Printf( "Determinant is %6.3E\n", det);
+             
              pcg_conver = 0;// means unsuccessful
          }
     }
@@ -177,12 +177,12 @@ else if (reference_ == "UNRESTRICTED") {
 
     // If LINEQ FAILED!
     if (pcg_conver == 0) {
-        psi::fprintf(outfile,"\tWarning!!! PCG did NOT converged in %2d iterations. \n", itr_pcg);
-        fflush(outfile);
+        outfile->Printf("\tWarning!!! PCG did NOT converged in %2d iterations. \n", itr_pcg);
+        
     } 
       
 }// end if (reference_ == "UNRESTRICTED") 
- //psi::fprintf(outfile,"\n z_vector done. \n"); fflush(outfile);
+ //outfile->Printf("\n z_vector done. \n"); 
 }// end z_vector
 
 //=======================================================

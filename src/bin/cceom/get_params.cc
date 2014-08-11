@@ -47,15 +47,15 @@ void get_params(Options &options)
   params.wfn = options.get_str("WFN");
   if(params.wfn == "EOM_CC2") {
     psio_read_entry(PSIF_CC_INFO, "CC2 Energy", (char *) &(moinfo.ecc), sizeof(double));
-    psi::fprintf(outfile,"\tCC2 energy          (file100) = %20.15f\n",moinfo.ecc);
+    outfile->Printf("\tCC2 energy          (file100) = %20.15f\n",moinfo.ecc);
   }
   else if(params.wfn == "EOM_CCSD") {
     psio_read_entry(PSIF_CC_INFO, "CCSD Energy", (char *) &(moinfo.ecc), sizeof(double));
-    psi::fprintf(outfile,"\tCCSD energy         (file100) = %20.15f\n",moinfo.ecc);
+    outfile->Printf("\tCCSD energy         (file100) = %20.15f\n",moinfo.ecc);
   }
   else if(params.wfn == "EOM_CC3") {
     psio_read_entry(PSIF_CC_INFO, "CC3 Energy", (char *) &(moinfo.ecc), sizeof(double));
-    psi::fprintf(outfile,"\tCC3 energy          (file100) = %20.15f\n",moinfo.ecc);
+    outfile->Printf("\tCC3 energy          (file100) = %20.15f\n",moinfo.ecc);
   }
 
   params.semicanonical = 0;
@@ -110,33 +110,33 @@ void get_params(Options &options)
 
   params.newtrips = options["NEW_TRIPLES"].to_integer();
 
-  psi::fprintf(outfile, "\n\tInput parameters:\n");
-  psi::fprintf(outfile, "\t-----------------\n");
+  outfile->Printf( "\n\tInput parameters:\n");
+  outfile->Printf( "\t-----------------\n");
   if(params.semicanonical)
-    psi::fprintf(outfile, "\tReference wfn   = ROHF changed to UHF for Semicanonical Orbitals\n");
+    outfile->Printf( "\tReference wfn   = ROHF changed to UHF for Semicanonical Orbitals\n");
   else 
-    psi::fprintf(outfile, "\tReference wfn   =    %4s\n", 
+    outfile->Printf( "\tReference wfn   =    %4s\n", 
              (params.ref == 0) ? "RHF" : ((params.ref == 1) ? "ROHF" : "UHF"));
-  psi::fprintf(outfile, "\tReference EOM wfn=    %4s\n", 
+  outfile->Printf( "\tReference EOM wfn=    %4s\n", 
              (params.eom_ref == 0) ? "RHF" : ((params.eom_ref == 1) ? "ROHF" : "UHF"));
-  psi::fprintf(outfile, "\tMemory (Mbytes) =  %5.1f\n",params.memory/1e6);
-  psi::fprintf(outfile, "\tABCD            =     %s\n", params.abcd.c_str());
-  psi::fprintf(outfile, "\tCache Level     =    %1d\n", params.cachelev);
-  psi::fprintf(outfile, "\tCache Type      =    %4s\n", params.cachetype ? "LOW" : "LRU");
-  if (params.wfn == "EOM_CC3") psi::fprintf(outfile, "\tT3 Ws incore  =    %4s\n", params.t3_Ws_incore ? "Yes" : "No");
-  psi::fprintf(outfile, "\tNum. of threads =     %d\n",params.nthreads);
-  psi::fprintf(outfile, "\tLocal CC        =     %s\n", params.local ? "Yes" : "No");
+  outfile->Printf( "\tMemory (Mbytes) =  %5.1f\n",params.memory/1e6);
+  outfile->Printf( "\tABCD            =     %s\n", params.abcd.c_str());
+  outfile->Printf( "\tCache Level     =    %1d\n", params.cachelev);
+  outfile->Printf( "\tCache Type      =    %4s\n", params.cachetype ? "LOW" : "LRU");
+  if (params.wfn == "EOM_CC3") outfile->Printf( "\tT3 Ws incore  =    %4s\n", params.t3_Ws_incore ? "Yes" : "No");
+  outfile->Printf( "\tNum. of threads =     %d\n",params.nthreads);
+  outfile->Printf( "\tLocal CC        =     %s\n", params.local ? "Yes" : "No");
   if(params.local) {
-    psi::fprintf(outfile, "\tLocal Cutoff    = %3.1e\n", local.cutoff);
-    psi::fprintf(outfile, "\tLocal Method    =    %s\n", local.method.c_str());
-    psi::fprintf(outfile, "\tWeak pairs      =    %s\n", local.weakp.c_str());
-    psi::fprintf(outfile, "\tLocal precon.   =    %s\n", local.precon.c_str());
-    psi::fprintf(outfile, "\tGhost atom      =    %d\n", local.ghost);
-    psi::fprintf(outfile, "\tLocal guess     =    %s\n", 
+    outfile->Printf( "\tLocal Cutoff    = %3.1e\n", local.cutoff);
+    outfile->Printf( "\tLocal Method    =    %s\n", local.method.c_str());
+    outfile->Printf( "\tWeak pairs      =    %s\n", local.weakp.c_str());
+    outfile->Printf( "\tLocal precon.   =    %s\n", local.precon.c_str());
+    outfile->Printf( "\tGhost atom      =    %d\n", local.ghost);
+    outfile->Printf( "\tLocal guess     =    %s\n", 
 	    local.do_singles ? "HBAR_SS" : "UNIT VECTORS" );
-    psi::fprintf(outfile, "\tFilter singles  =    %s\n", local.filter_singles ? "Yes" : "No");
+    outfile->Printf( "\tFilter singles  =    %s\n", local.filter_singles ? "Yes" : "No");
   }
-  psi::fprintf(outfile, "\n");
+  outfile->Printf( "\n");
 }
 
 

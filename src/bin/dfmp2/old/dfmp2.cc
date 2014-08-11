@@ -140,8 +140,8 @@ void  DFMP2::setup()
   // TODO: Verify that the basis assign does not messs this up
   if (options_.get_str("DF_BASIS_MP2") == "") {
       molecule_->set_basis_all_atoms(options_.get_str("BASIS") + "-RI", "DF_BASIS_MP2");
-      psi::fprintf(outfile, "  No auxiliary basis selected, defaulting to %s-RI\n\n", options_.get_str("BASIS").c_str());
-      fflush(outfile);
+      outfile->Printf( "  No auxiliary basis selected, defaulting to %s-RI\n\n", options_.get_str("BASIS").c_str());
+      
   }
 
   // Form ribasis object and auxiliary basis indexing:
@@ -255,16 +255,16 @@ void  DFMP2::setup()
   //
   //diagnostics
   if (print_>3) {
-    psi::fprintf(outfile, "  C_occ:\n");
+    outfile->Printf( "  C_occ:\n");
     print_mat(C_docc_,nso_,nact_docc_,outfile);
-    psi::fprintf(outfile, "  C_virt:\n");
+    outfile->Printf( "  C_virt:\n");
     print_mat(C_virt_,nso_,nact_virt_,outfile);
-    psi::fprintf(outfile, "  Eps_occ:\n");
+    outfile->Printf( "  Eps_occ:\n");
     for (int i = 0; i<nact_docc_; i++)
-        psi::fprintf(outfile,"  %5d: %14.10f\n", i+1, eps_docc_[i]);
-    psi::fprintf(outfile, "  Eps_virt:\n");
+        outfile->Printf("  %5d: %14.10f\n", i+1, eps_docc_[i]);
+    outfile->Printf( "  Eps_virt:\n");
     for (int i = 0; i<nact_virt_; i++)
-        psi::fprintf(outfile,"  %5d: %14.10f\n", i+1+nact_docc_, eps_virt_[i]);
+        outfile->Printf("  %5d: %14.10f\n", i+1+nact_docc_, eps_virt_[i]);
 
   }
   timer_off("Setup");
@@ -277,24 +277,24 @@ void DFMP2::print_header()
         nthreads = omp_get_max_threads();
     #endif
 
-    psi::fprintf(outfile, "\t********************************************************\n");
-    psi::fprintf(outfile, "\t*                                                      *\n");
-    psi::fprintf(outfile, "\t*                        DF-MP2                        *\n");
-    psi::fprintf(outfile, "\t*    2nd-Order Density-Fitted Moller-Plesset Theory    *\n");
-    psi::fprintf(outfile, "\t*             %4s Algorithm, %3d Threads              *\n",algorithm_type_.c_str(),nthreads);
-    psi::fprintf(outfile, "\t*                                                      *\n");
-    psi::fprintf(outfile, "\t*    Rob Parrish, Justin Turney, C. David Sherrill,    *\n");
-    psi::fprintf(outfile, "\t*        Andy Simmonett, and Edward Hohenstein         *\n");
-    psi::fprintf(outfile, "\t*                                                      *\n");
-    psi::fprintf(outfile, "\t********************************************************\n");
-    psi::fprintf(outfile, "\n\t  ==================================================\n");
-    psi::fprintf(outfile, "\t    NSO  NAUX  FOCC  DOCC  AOCC  AVIR  VIRT  FVIR \n");
-    psi::fprintf(outfile, "\t   ------------------------------------------------\n");
-    psi::fprintf(outfile, "\t   %5d %5d %5d %5d %5d %5d %5d %5d\n",
+    outfile->Printf( "\t********************************************************\n");
+    outfile->Printf( "\t*                                                      *\n");
+    outfile->Printf( "\t*                        DF-MP2                        *\n");
+    outfile->Printf( "\t*    2nd-Order Density-Fitted Moller-Plesset Theory    *\n");
+    outfile->Printf( "\t*             %4s Algorithm, %3d Threads              *\n",algorithm_type_.c_str(),nthreads);
+    outfile->Printf( "\t*                                                      *\n");
+    outfile->Printf( "\t*    Rob Parrish, Justin Turney, C. David Sherrill,    *\n");
+    outfile->Printf( "\t*        Andy Simmonett, and Edward Hohenstein         *\n");
+    outfile->Printf( "\t*                                                      *\n");
+    outfile->Printf( "\t********************************************************\n");
+    outfile->Printf( "\n\t  ==================================================\n");
+    outfile->Printf( "\t    NSO  NAUX  FOCC  DOCC  AOCC  AVIR  VIRT  FVIR \n");
+    outfile->Printf( "\t   ------------------------------------------------\n");
+    outfile->Printf( "\t   %5d %5d %5d %5d %5d %5d %5d %5d\n",
           nso_,naux_raw_,nf_docc_,ndocc_,nact_docc_,nact_virt_,nvirt_,nf_virt_);
-    psi::fprintf(outfile, "\t  ==================================================\n");
-    fflush(outfile);
-    fflush(outfile);
+    outfile->Printf( "\t  ==================================================\n");
+    
+    
 }
 DFMP2::~DFMP2()
 {
@@ -325,17 +325,17 @@ double DFMP2::compute_energy()
     E_tot_scs_ = E_scs_ + E_scf_;
 
     //Display energies
-    psi::fprintf(outfile,"\n   Canonical DF-MP2:\n");
-    psi::fprintf(outfile,"    Same-Spin Energy:                %20.16Lf [H]\n",E_ss_);
-    psi::fprintf(outfile,"    Opposite-Spin Energy:            %20.16Lf [H]\n",E_os_);
-    psi::fprintf(outfile,"    DF-MP2 Correlation Energy:       %20.16f [H]\n",E_);
-    psi::fprintf(outfile,"    DF-MP2 Total Energy:             %20.16f [H]\n",E_tot_);
-    psi::fprintf(outfile,"   SCS-DF-MP2 (Pss = %14.10f, Pos = %14.10f):\n",ss_scale_,os_scale_);
-    psi::fprintf(outfile,"    SCS-Same-Spin Energy:            %20.16f [H]\n",E_sss_);
-    psi::fprintf(outfile,"    SCS-Opposite-Spin Energy:        %20.16f [H]\n",E_sos_);
-    psi::fprintf(outfile,"    SCS-DF-MP2 Correlation Energy:   %20.16f [H]\n",E_scs_);
-    psi::fprintf(outfile,"    SCS-DF-MP2 Total Energy:         %20.16f [H]\n",E_tot_scs_);
-    fflush(outfile);
+    outfile->Printf("\n   Canonical DF-MP2:\n");
+    outfile->Printf("    Same-Spin Energy:                %20.16Lf [H]\n",E_ss_);
+    outfile->Printf("    Opposite-Spin Energy:            %20.16Lf [H]\n",E_os_);
+    outfile->Printf("    DF-MP2 Correlation Energy:       %20.16f [H]\n",E_);
+    outfile->Printf("    DF-MP2 Total Energy:             %20.16f [H]\n",E_tot_);
+    outfile->Printf("   SCS-DF-MP2 (Pss = %14.10f, Pos = %14.10f):\n",ss_scale_,os_scale_);
+    outfile->Printf("    SCS-Same-Spin Energy:            %20.16f [H]\n",E_sss_);
+    outfile->Printf("    SCS-Opposite-Spin Energy:        %20.16f [H]\n",E_sos_);
+    outfile->Printf("    SCS-DF-MP2 Correlation Energy:   %20.16f [H]\n",E_scs_);
+    outfile->Printf("    SCS-DF-MP2 Total Energy:         %20.16f [H]\n",E_tot_scs_);
+    
 
     // LAB TODO: drop DF- in labels to match DF-SCF behavior
     Process::environment.globals["CURRENT ENERGY"] = E_tot_;
@@ -494,7 +494,7 @@ int DFMP2::matrix_power(double** J, int n, double power, double max_cond)
   int stat = C_DSYEV('v','u',n,J1[0],n,eigval,
     work,lwork);
   if (stat != 0) {
-    psi::fprintf(outfile, "C_DSYEV failed\n");
+    outfile->Printf( "C_DSYEV failed\n");
     exit(PSI_RETURN_FAILURE);
   }
   free(work);
@@ -535,11 +535,11 @@ int DFMP2::matrix_power(double** J, int n, double power, double max_cond)
   free_block(J2);
 
   if (print_>1) {
-    psi::fprintf(outfile,"  Smallest eigenvalue in the matrix is %14.10E.\n",min_J);
-    psi::fprintf(outfile,"  Largest eigenvalue in the matrix is %14.10E.\n",max_J);
-    psi::fprintf(outfile,"  Condition number of the matrix is %14.10E.\n",max_J/min_J);
-    psi::fprintf(outfile,"  %d columns removed to maintain a condition number of %14.10E.\n",clipped,max_cond);
-    fflush(outfile);
+    outfile->Printf("  Smallest eigenvalue in the matrix is %14.10E.\n",min_J);
+    outfile->Printf("  Largest eigenvalue in the matrix is %14.10E.\n",max_J);
+    outfile->Printf("  Condition number of the matrix is %14.10E.\n",max_J/min_J);
+    outfile->Printf("  %d columns removed to maintain a condition number of %14.10E.\n",clipped,max_cond);
+    
   }
   return clipped;
 }
@@ -548,11 +548,11 @@ void DFMP2::cholesky_decomposition(double** J, int n)
   //Choleskify J (results returned in place, should not be touched)
   int stat = C_DPOTRF('U',n,J[0],n);
   if (stat < 0) {
-    psi::fprintf(outfile, "Cholesky argument %d is bad.\n",stat);
+    outfile->Printf( "Cholesky argument %d is bad.\n",stat);
     exit(PSI_RETURN_FAILURE);
   }
   else if (stat > 0) {
-    psi::fprintf(outfile, "W^+1/2 is not positive definite.\n");
+    outfile->Printf( "W^+1/2 is not positive definite.\n");
     exit(PSI_RETURN_FAILURE);
   }
 }
@@ -561,11 +561,11 @@ void DFMP2::cholesky_inverse(double** J, int n)
   //Choleskify J (results returned in place, should not be touched)
   int stat = C_DPOTRF('U',n,J[0],n);
   if (stat < 0) {
-    psi::fprintf(outfile, "Cholesky argument %d is bad.\n",stat);
+    outfile->Printf( "Cholesky argument %d is bad.\n",stat);
     exit(PSI_RETURN_FAILURE);
   }
   else if (stat > 0) {
-    psi::fprintf(outfile, "W^+1/2 is not positive definite.\n");
+    outfile->Printf( "W^+1/2 is not positive definite.\n");
     exit(PSI_RETURN_FAILURE);
   }
   //Inversion (in place)
@@ -592,7 +592,7 @@ double** DFMP2::form_X(double** W, int n, double max_cond, int* clipped)
     double* swork = init_array(lswork);
     int stat = C_DSYEV('v','u',naux_raw,SJ[0],naux_raw,s_eigval, swork,lswork);
     if (stat != 0) {
-        psi::fprintf(outfile, "C_DSYEV failed\n");
+        outfile->Printf( "C_DSYEV failed\n");
         exit(PSI_RETURN_FAILURE);
     }
     free(swork);
@@ -604,10 +604,10 @@ double** DFMP2::form_X(double** W, int n, double max_cond, int* clipped)
     //Print some stuff
     double cond_SJ = max_SJ/min_SJ;
     if (print_>1) {
-        psi::fprintf(outfile,"  Min overlap eigenvalue is %14.10E.\n",min_SJ);
-        psi::fprintf(outfile,"  Max overlap eigenvalue is %14.10E.\n",max_SJ);
-        psi::fprintf(outfile,"  Overlap condition number is %14.10E.\n",cond_SJ);
-        fflush(outfile);
+        outfile->Printf("  Min overlap eigenvalue is %14.10E.\n",min_SJ);
+        outfile->Printf("  Max overlap eigenvalue is %14.10E.\n",max_SJ);
+        outfile->Printf("  Overlap condition number is %14.10E.\n",cond_SJ);
+        
     }
 
     //Find the user's allowed condition number
@@ -645,9 +645,9 @@ double** DFMP2::form_X(double** W, int n, double max_cond, int* clipped)
 
     //So how'd that go?
     if (print_>1) {
-        psi::fprintf(outfile, "  %d of %d finished auxiliary functions eliminated by canonical orthogonalization.\n",clip, naux_raw);
-        psi::fprintf(outfile, "  Resultant condition number in overlap matrix is %14.10E.\n",max_SJ/new_min_SJ);
-        fflush(outfile);
+        outfile->Printf( "  %d of %d finished auxiliary functions eliminated by canonical orthogonalization.\n",clip, naux_raw);
+        outfile->Printf( "  Resultant condition number in overlap matrix is %14.10E.\n",max_SJ/new_min_SJ);
+        
     }
     //The famed transformation matrix
     double **X = block_matrix(naux_raw,naux_fin);
@@ -667,7 +667,7 @@ double** DFMP2::form_X(double** W, int n, double max_cond, int* clipped)
 void DFMP2::form_Wm12_fin()
 {
     if (print_>1)
-        psi::fprintf(outfile,"  Fitting metric conditioned by canonical orthogonalization.\n");
+        outfile->Printf("  Fitting metric conditioned by canonical orthogonalization.\n");
 
     timer_on("Form W_S");
     double** SJ = form_W_overlap(ribasis_);
@@ -717,14 +717,14 @@ void DFMP2::form_Wm12_fin()
     timer_off("XW'^-1/2");
 
     if (debug_) {
-        psi::fprintf(outfile,"  W:\n");
+        outfile->Printf("  W:\n");
         print_mat(W_,naux_raw_,naux_fin_,outfile);
     }
 }
 void DFMP2::form_Wm12_raw()
 {
   if (print_>1)
-    psi::fprintf(outfile,"  WARNING: No conditioning algorithm selected for fitting metric.\n");
+    outfile->Printf("  WARNING: No conditioning algorithm selected for fitting metric.\n");
 
   timer_on("Form W");
   W_ = form_W(ribasis_);
@@ -738,14 +738,14 @@ void DFMP2::form_Wm12_raw()
 
 
   if (debug_) {
-    psi::fprintf(outfile,"  W:\n");
+    outfile->Printf("  W:\n");
     print_mat(W_,naux_raw_,naux_fin_,outfile);
   }
 }
 void DFMP2::form_Wp12_chol()
 {
   if (print_>1)
-    psi::fprintf(outfile,"  Fitting metric conditioned by Cholesky decomposition.\n");
+    outfile->Printf("  Fitting metric conditioned by Cholesky decomposition.\n");
 
   timer_on("Form W");
   W_ = form_W(ribasis_);
@@ -760,7 +760,7 @@ void DFMP2::form_Wp12_chol()
   timer_off("Chol(W^+1/2)");
 
   if (debug_) {
-    psi::fprintf(outfile,"  W:\n");
+    outfile->Printf("  W:\n");
     print_mat(W_,naux_raw_,naux_fin_,outfile);
   }
 }
@@ -824,9 +824,9 @@ void DFMP2::form_Aia_disk()
 
   if (print_>1) {
 
-    psi::fprintf(outfile,"\n  Disk Formation of Aia, using %d blocks.\n",nblocks);
+    outfile->Printf("\n  Disk Formation of Aia, using %d blocks.\n",nblocks);
     //for (int b = 0; b<nblocks; b++)
-    //  psi::fprintf(outfile,"  block_starts = %d, block_stops  %d, block_sizes = %d, p_start = %d, p_sizes = %d.\n",
+    //  outfile->Printf("  block_starts = %d, block_stops  %d, block_sizes = %d, p_start = %d, p_sizes = %d.\n",
     //    block_starts[b], block_stops[b], block_sizes[b], p_starts[b], p_sizes[b]);
   }
 
@@ -898,7 +898,7 @@ void DFMP2::form_Aia_disk()
     }
     timer_off("(A|mn)");
 
-    //psi::fprintf(outfile, "  Amn\n");
+    //outfile->Printf( "  Amn\n");
     //print_mat(Amn,max_rows,norbs*norbs, outfile);
 
     //Transform to Ami
@@ -909,7 +909,7 @@ void DFMP2::form_Aia_disk()
     timer_off("(A|mi)");
 
 
-    //psi::fprintf(outfile, "  Ami\n");
+    //outfile->Printf( "  Ami\n");
     //print_mat(Ami,max_rows,nact_docc*norbs, outfile);
 
     #ifdef _MKL
@@ -931,7 +931,7 @@ void DFMP2::form_Aia_disk()
        mkl_set_num_threads(mkl_nthreads);
     #endif
 
-    //psi::fprintf(outfile, "  Aia\n");
+    //outfile->Printf( "  Aia\n");
     //print_mat(Aia,max_rows,nact_docc*nact_virt, outfile);
 
     //Stripe to disk
@@ -1031,7 +1031,7 @@ void DFMP2::form_Qia_disk()
     }
     timer_off("(Q|ia)");
 
-    //psi::fprintf(outfile,"  Nblocks = %d, Max cols = %d, current_columns = %d, current_column = %d\n",nblocks, max_cols, current_columns, current_column);
+    //outfile->Printf("  Nblocks = %d, Max cols = %d, current_columns = %d, current_column = %d\n",nblocks, max_cols, current_columns, current_column);
 
     //Write Qia out
     timer_on("(Q|ia) Write");
@@ -1084,10 +1084,10 @@ void DFMP2::evaluate_contributions_disk()
     }
 
     if (debug_) {
-        psi::fprintf(outfile, "  Nblocks = %ld, N_I = %ld\n", nblocks, N_I);
+        outfile->Printf( "  Nblocks = %ld, N_I = %ld\n", nblocks, N_I);
         for (int block = 0; block < nblocks; block++)
-            psi::fprintf(outfile,"  Block %d, start = %d, size = %d, stop = %d\n",block+1, block_starts[block], block_sizes[block], block_stops[block]);
-        fflush(outfile);
+            outfile->Printf("  Block %d, start = %d, size = %d, stop = %d\n",block+1, block_starts[block], block_sizes[block], block_stops[block]);
+        
     }
 
     //Integral buffers
@@ -1191,7 +1191,7 @@ void DFMP2::find_disk_contributions(double** Qia, double** Qjb, double***I, int*
         naux_fin_,&(Qjb[(j-starts[block2])*nact_virt_][0]),naux_fin_,0.0,&(I[rank][0][0]),nact_virt_);
       if (rank == 0) timer_off("(ia|jb)");
 
-      //psi::fprintf(outfile, "  ij = (%d,%d), I:\n",i,j);
+      //outfile->Printf( "  ij = (%d,%d), I:\n",i,j);
       //print_mat(I[0],nact_virt_,nact_virt_,outfile);
 
       if (rank == 0) timer_on("T_MP2");
@@ -1214,7 +1214,7 @@ void DFMP2::find_disk_contributions(double** Qia, double** Qjb, double***I, int*
   }
 
   if (debug_)
-    psi::fprintf(outfile,"  Block1 = %d, Block2 = %d, e_ss = %20Lf, e_os = %20Lf\n",block1,block2, e_ss, e_os);
+    outfile->Printf("  Block1 = %d, Block2 = %d, e_ss = %20Lf, e_os = %20Lf\n",block1,block2, e_ss, e_os);
 
   E_ss_ += e_ss;
   E_os_ += e_os;
@@ -1292,10 +1292,10 @@ double** DFMP2::form_Aia_core()
 
   if (print_>1) {
 
-    psi::fprintf(outfile,"\n  Core Formation of Aia, using %ld blocks.\n",nblocks);
+    outfile->Printf("\n  Core Formation of Aia, using %ld blocks.\n",nblocks);
     if (debug_) {
       for (int b = 0; b<nblocks; b++)
-        psi::fprintf(outfile,"  block_starts = %d, block_stops  %d, block_sizes = %d, p_start = %d, p_sizes = %d.\n",
+        outfile->Printf("  block_starts = %d, block_stops  %d, block_sizes = %d, p_start = %d, p_sizes = %d.\n",
           block_starts[b], block_stops[b], block_sizes[b], p_starts[b], p_sizes[b]);
     }
   }
@@ -1365,7 +1365,7 @@ double** DFMP2::form_Aia_core()
     }
 
     if (debug_) {
-      psi::fprintf(outfile, "  Amn\n");
+      outfile->Printf( "  Amn\n");
       print_mat(Amn,max_rows,norbs*norbs, outfile);
     }
     timer_off("(A|mn)");
@@ -1378,7 +1378,7 @@ double** DFMP2::form_Aia_core()
     timer_off("(A|mi)");
 
     if (debug_) {
-      psi::fprintf(outfile, "  Ami\n");
+      outfile->Printf( "  Ami\n");
       print_mat(Ami,max_rows,nact_docc*norbs, outfile);
     }
 
@@ -1403,7 +1403,7 @@ double** DFMP2::form_Aia_core()
 
   }
   if (debug_) {
-    psi::fprintf(outfile, "  Aia\n");
+    outfile->Printf( "  Aia\n");
     print_mat(Aia,naux_raw_,nact_docc*nact_virt, outfile);
   }
 
@@ -1497,7 +1497,7 @@ void DFMP2::form_Qia_core()
   timer_off("(Q|ia)");
 
   if (debug_) {
-    psi::fprintf(outfile,"  Qia");
+    outfile->Printf("  Qia");
     print_mat(Qia_,naux_fin_,nact_docc_*nact_virt_,outfile);
   }
 
@@ -1546,7 +1546,7 @@ void DFMP2::evaluate_contributions_core_sym()
         nact_docc_*(ULI) nact_virt_,&(Qia_[0][j*nact_virt_]),nact_docc_*(ULI) nact_virt_,0.0,&(I[rank][0][0]),nact_virt_);
       if (rank == 0) timer_off("(ia|jb)");
 
-      //psi::fprintf(outfile, "  ij = (%d,%d), I:\n",i,j);
+      //outfile->Printf( "  ij = (%d,%d), I:\n",i,j);
       //print_mat(I[0],nact_virt_,nact_virt_,outfile);
 
       if (rank == 0) timer_on("T_MP2");
@@ -1651,10 +1651,10 @@ double** DFMP2::form_Aia_core_parallel()
 
   if (print_>1) {
 
-    psi::fprintf(outfile,"\n  Core Formation of Aia, using %ld blocks.\n",nblocks);
+    outfile->Printf("\n  Core Formation of Aia, using %ld blocks.\n",nblocks);
     if (debug_) {
       for (int b = 0; b<nblocks; b++)
-        psi::fprintf(outfile,"  block_starts = %d, block_stops  %d, block_sizes = %d, p_start = %d, p_sizes = %d.\n",
+        outfile->Printf("  block_starts = %d, block_stops  %d, block_sizes = %d, p_start = %d, p_sizes = %d.\n",
           block_starts[b], block_stops[b], block_sizes[b], p_starts[b], p_sizes[b]);
     }
   }
@@ -1725,7 +1725,7 @@ double** DFMP2::form_Aia_core_parallel()
     }
 
     if (debug_) {
-      psi::fprintf(outfile, "  Amn\n");
+      outfile->Printf( "  Amn\n");
       print_mat(Amn,max_rows,norbs*norbs, outfile);
     }
     timer_off("(A|mn)");
@@ -1738,7 +1738,7 @@ double** DFMP2::form_Aia_core_parallel()
     timer_off("(A|mi)");
 
     if (debug_) {
-      psi::fprintf(outfile, "  Ami\n");
+      outfile->Printf( "  Ami\n");
       print_mat(Ami,max_rows,nact_docc*norbs, outfile);
     }
 
@@ -1763,7 +1763,7 @@ double** DFMP2::form_Aia_core_parallel()
 
   }
   if (debug_) {
-    psi::fprintf(outfile, "  Aia\n");
+    outfile->Printf( "  Aia\n");
     print_mat(Aia,naux_raw_,nact_docc*nact_virt, outfile);
   }
 
@@ -1857,7 +1857,7 @@ void DFMP2::form_Qia_core_parallel()
   timer_off("(Q|ia)");
 
   if (debug_) {
-    psi::fprintf(outfile,"  Qia");
+    outfile->Printf("  Qia");
     print_mat(Qia_,naux_fin_,nact_docc_*nact_virt_,outfile);
   }
 
@@ -1960,21 +1960,21 @@ void DFMP2::free_Qia_core()
 double DFMP2::compute_E_old()
 {
         /**g
-  psi::fprintf(outfile, "\t\t*************************\n");
-  psi::fprintf(outfile, "\t\t*                       *\n");
-  psi::fprintf(outfile, "\t\t*         DF-MP2        *\n");
-  psi::fprintf(outfile, "\t\t*                       *\n");
-  psi::fprintf(outfile, "\t\t*                       *\n");
-  psi::fprintf(outfile, "\t\t*************************\n");
-  fflush(outfile);
+  outfile->Printf( "\t\t*************************\n");
+  outfile->Printf( "\t\t*                       *\n");
+  outfile->Printf( "\t\t*         DF-MP2        *\n");
+  outfile->Printf( "\t\t*                       *\n");
+  outfile->Printf( "\t\t*                       *\n");
+  outfile->Printf( "\t\t*************************\n");
+  
 
   //How many processes are we running on?
   int nproc = WorldComm->nproc();
   //What process number is this?
   int rank = WorldComm->me();
 
-  psi::fprintf(outfile,"\n\n  Running on %d processes.\n",nproc);
-  fflush(outfile);
+  outfile->Printf("\n\n  Running on %d processes.\n",nproc);
+  
   // Required for libmints, allocates and computes:
 
   int nirreps;
@@ -2023,7 +2023,7 @@ double DFMP2::compute_E_old()
   SimpleMatrix *C_so =
     factory->create_simple_matrix("MO coefficients (SO basisset_)");
   if (vectors == NULL) {
-    psi::fprintf(stderr, "Could not find MO coefficients. Run cscf first.\n");
+    outfile->Printf( "Could not find MO coefficients. Run cscf first.\n");
     return EXIT_FAILURE;
   }
   C_so->set(vectors);
@@ -2082,24 +2082,24 @@ double DFMP2::compute_E_old()
     // Skip over the frozen virtual orbitals in this irrep
     offset += frzvpi[h];
   }
-    //psi::fprintf(outfile, "  C_occ:\n");
+    //outfile->Printf( "  C_occ:\n");
     //print_mat(Co,norbs,nact_docc,outfile);
-    //psi::fprintf(outfile, "  C_virt:\n");
+    //outfile->Printf( "  C_virt:\n");
     //print_mat(Cv,norbs,nact_virt,outfile);
-    //psi::fprintf(outfile, "  Eps_occ:\n");
+    //outfile->Printf( "  Eps_occ:\n");
     //for (int i = 0; i<nact_docc; i++)
-    //    psi::fprintf(outfile,"  %5d: %14.10f\n", i+1, epsilon_act_docc[i]);
-    //psi::fprintf(outfile, "  Eps_virt:\n");
+    //    outfile->Printf("  %5d: %14.10f\n", i+1, epsilon_act_docc[i]);
+    //outfile->Printf( "  Eps_virt:\n");
     //for (int i = 0; i<nact_virt; i++)
-    //    psi::fprintf(outfile,"  %5d: %14.10f\n", i+1+nact_docc, epsilon_act_virt[i]);
+    //    outfile->Printf("  %5d: %14.10f\n", i+1+nact_docc, epsilon_act_virt[i]);
 
-  psi::fprintf(outfile, "\n\t\t==============================================\n");
-  psi::fprintf(outfile, "\t\t #ORBITALS #RI  FOCC DOCC AOCC AVIR VIRT FVIR \n");
-  psi::fprintf(outfile, "\t\t----------------------------------------------\n");
-  psi::fprintf(outfile, "\t\t  %5d  %5d  %4d %4d %4d %4d %4d %4d\n",
+  outfile->Printf( "\n\t\t==============================================\n");
+  outfile->Printf( "\t\t #ORBITALS #RI  FOCC DOCC AOCC AVIR VIRT FVIR \n");
+  outfile->Printf( "\t\t----------------------------------------------\n");
+  outfile->Printf( "\t\t  %5d  %5d  %4d %4d %4d %4d %4d %4d\n",
           norbs,naux,nfocc,ndocc,nact_docc,nact_virt,nvirt,nfvir);
-  psi::fprintf(outfile, "\t\t==============================================\n");
-  fflush(outfile);
+  outfile->Printf( "\t\t==============================================\n");
+  
 
   // Taken from mp2 module, get_params.cc
   // get parameters related to SCS-MP2 or SCS-N-MP2
@@ -2111,14 +2111,14 @@ double DFMP2::compute_E_old()
   if (scs == 1) {
     scs_scale_os = options_.get_double("SCALE_OS");
     scs_scale_ss = options_.get_double("SCALE_SS");
-    psi::fprintf(outfile,"\n  Spin-Component Scaled RI-MP2 requested\n");
-    psi::fprintf(outfile,"    Opposite-spin scaled by %10.4lf\n",scs_scale_os);
-    psi::fprintf(outfile,"    Same-spin scaled by     %10.4lf\n",scs_scale_ss);
+    outfile->Printf("\n  Spin-Component Scaled RI-MP2 requested\n");
+    outfile->Printf("    Opposite-spin scaled by %10.4lf\n",scs_scale_os);
+    outfile->Printf("    Same-spin scaled by     %10.4lf\n",scs_scale_ss);
     }
   if (scsn == 1) {
-    psi::fprintf(outfile,"\n  SCSN-RI-MP2 energies will be printed\n");
+    outfile->Printf("\n  SCSN-RI-MP2 energies will be printed\n");
   }
-  fflush(outfile);
+  
 
 
   // Create integral factory
@@ -2156,11 +2156,11 @@ double DFMP2::compute_E_old()
     }
   }
 
-  // psi::fprintf(outfile, "J:\n");
+  // outfile->Printf( "J:\n");
   // print_mat(J, naux, naux, outfile);
   // Invert J matrix
   // invert_matrix(J, J_inverse, naux, outfile);
-  // psi::fprintf(outfile, "J^-1:\n");
+  // outfile->Printf( "J^-1:\n");
   // print_mat(J_inverse, naux, naux, outfile);
   // Form J^-1/2
   // First, diagonalize J
@@ -2171,7 +2171,7 @@ double DFMP2::compute_E_old()
   int stat = C_DSYEV('v','u',naux,J[0],naux,eigval,
     work,lwork);
   if (stat != 0) {
-    psi::fprintf(outfile, "C_DSYEV failed\n");
+    outfile->Printf( "C_DSYEV failed\n");
     exit(PSI_RETURN_FAILURE);
   }
   free(work);
@@ -2204,10 +2204,10 @@ double DFMP2::compute_E_old()
 
   timer_off("Form J");
 
-  psi::fprintf(outfile," J is formed\n");
-  fflush(outfile);
+  outfile->Printf(" J is formed\n");
+  
 
-  //psi::fprintf(outfile,"  W:\n");
+  //outfile->Printf("  W:\n");
   //print_mat(J_mhalf,naux,naux,outfile);
 
   const double *buffer = eri->buffer();
@@ -2241,10 +2241,10 @@ double DFMP2::compute_E_old()
     n_virt_blks++;
     }
   }
-  psi::fprintf(outfile,"  %d virtual/virtual blocks of dimension %d will be used.\n",n_full_blks,vir_blk_size);
-  psi::fprintf(outfile,"  The gimp index dimension is %d\n",gimp_blk_size);
-  psi::fprintf(outfile,"\n");
-  fflush(outfile);
+  outfile->Printf("  %d virtual/virtual blocks of dimension %d will be used.\n",n_full_blks,vir_blk_size);
+  outfile->Printf("  The gimp index dimension is %d\n",gimp_blk_size);
+  outfile->Printf("\n");
+  
 
 
   // find out the max number of P's in a P shell
@@ -2317,7 +2317,7 @@ for (block_A = 0; block_A < n_virt_blks; block_A++) {
   //How much is this block worth due to permutational symmetry?
   perm_scale = (block_A == block_B)? 1.0 : 2.0;
 
-  //psi::fprintf(outfile,"  Thread %d: a_start = %d, a_size = %d, b_start = %d, b_size = %d\n", rank, a_start, a_size, b_start, b_size);
+  //outfile->Printf("  Thread %d: a_start = %d, a_size = %d, b_start = %d, b_size = %d\n", rank, a_start, a_size, b_start, b_size);
 
   //Inner loop
   for (Pshell=0; Pshell < ribasis->nshell(); ++Pshell) {
@@ -2345,7 +2345,7 @@ for (block_A = 0; block_A < n_virt_blks; block_A++) {
     // now we've gone through all P, mu, nu for a given Pshell
     // transform the integrals for all P in the given P shell
     if (debug_) {
-      psi::fprintf(outfile, "  Amn for shell %d\n",Pshell);
+      outfile->Printf( "  Amn for shell %d\n",Pshell);
       print_mat(ao_buffer,numPshell,norbs*norbs,outfile);
     }
     // Do transform
@@ -2353,7 +2353,7 @@ for (block_A = 0; block_A < n_virt_blks; block_A++) {
         norbs, &(Co[0][0]), nact_docc, 0.0, &(half_buffer[0][0]), nact_docc);
 
     if (debug_) {
-      psi::fprintf(outfile, "  Ami for shell %d\n",Pshell);
+      outfile->Printf( "  Ami for shell %d\n",Pshell);
       print_mat(half_buffer,numPshell,norbs*ndocc,outfile);
     }
 
@@ -2369,7 +2369,7 @@ for (block_A = 0; block_A < n_virt_blks; block_A++) {
   } // end loop over P shells; done with forming MO basisset_ (P|ia)'s
 
   if (debug_) {
-    psi::fprintf(outfile,"  Aai:\n");
+    outfile->Printf("  Aai:\n");
     print_mat(Pia,naux,nact_docc*nact_virt,outfile);
   }
 
@@ -2384,7 +2384,7 @@ for (block_A = 0; block_A < n_virt_blks; block_A++) {
     0.0, Qjb[0], naux);
 
   if (debug_) {
-    psi::fprintf(outfile,"  Qai:\n");
+    outfile->Printf("  Qai:\n");
     print_mat(Qia,nact_docc*nact_virt,naux,outfile);
   }
 
@@ -2410,9 +2410,9 @@ for (block_A = 0; block_A < n_virt_blks; block_A++) {
       }
     } // end loop over j<=i
   } // end loop over i
-    //psi::fprintf(outfile,"  Thread %d: Block A = %d, Block B = %d, Hash = %d, energy contribution = %14.10f\n",rank, block_A, block_B, hash, emp2_ab);
-    //fflush(outfile);
-    //psi::fprintf(outfile,"  Thread %d: Block A = %d, Block B = %d, Hash = %d, energy contribution = %14.10f\n",rank, block_A, block_B, hash, emp2_ab);
+    //outfile->Printf("  Thread %d: Block A = %d, Block B = %d, Hash = %d, energy contribution = %14.10f\n",rank, block_A, block_B, hash, emp2_ab);
+    //
+    //outfile->Printf("  Thread %d: Block A = %d, Block B = %d, Hash = %d, energy contribution = %14.10f\n",rank, block_A, block_B, hash, emp2_ab);
   //end inner loop
 }} // end outer loop (parallelization)
 
@@ -2428,20 +2428,20 @@ for (block_A = 0; block_A < n_virt_blks; block_A++) {
   WorldComm->sum(emp2);
 
   //Print the results
-  psi::fprintf(outfile,"\tRI-MP2 correlation energy         = %20.15f\n",emp2);
-  psi::fprintf(outfile,"      * RI-MP2 total energy               = %20.15f\n\n",
+  outfile->Printf("\tRI-MP2 correlation energy         = %20.15f\n",emp2);
+  outfile->Printf("      * RI-MP2 total energy               = %20.15f\n\n",
     escf + emp2);
-//psi::fprintf(outfile,"\tOpposite-Spin correlation energy  = %20.15f\n",os_mp2);
-//psi::fprintf(outfile,"\tSame-Spin correlation energy      = %20.15f\n\n",ss_mp2);
-//psi::fprintf(outfile,"      * SCS-RI-MP2 total energy           = %20.15f\n\n",
+//outfile->Printf("\tOpposite-Spin correlation energy  = %20.15f\n",os_mp2);
+//outfile->Printf("\tSame-Spin correlation energy      = %20.15f\n\n",ss_mp2);
+//outfile->Printf("      * SCS-RI-MP2 total energy           = %20.15f\n\n",
 //  escf + scs_scale_os*os_mp2 + scs_scale_ss*ss_mp2);
 //if (scsn) {
-//  psi::fprintf(outfile,"      * SCSN-RI-MP2 total energy          = %20.15f\n\n",
+//  outfile->Printf("      * SCSN-RI-MP2 total energy          = %20.15f\n\n",
 //    escf + 1.76*ss_mp2);
 //  }
 
   // Get out
-  fflush(outfile);
+  
   return emp2;
 **/
 return 0.0;

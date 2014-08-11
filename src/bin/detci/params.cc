@@ -293,7 +293,7 @@ void get_parameters(Options &options)
   if (Parameters.perturbation_parameter <= 1.0 &&
       Parameters.perturbation_parameter >= -1.0) Parameters.z_scale_H = 1;
 /*
-   else { psi::fprintf(outfile, "Parameters.perturbation_parameters beyond the"
+   else { outfile->Printf( "Parameters.perturbation_parameters beyond the"
                  "bounds of -1.0 >= z <= 1.0\n");
          exit(0);
         }
@@ -347,7 +347,7 @@ void get_parameters(Options &options)
     Parameters.hd_otf = options["HD_OTF"].to_integer();
 
   if (Parameters.hd_otf == 0) {
-    psi::fprintf(outfile, "Warning: HD_OTF FALSE has not been tested recently\n");
+    outfile->Printf( "Warning: HD_OTF FALSE has not been tested recently\n");
   }
 
   if (options["NO_DFILE"].has_changed())
@@ -395,14 +395,14 @@ void get_parameters(Options &options)
 
   if (Parameters.diag_method < METHOD_DAVIDSON_LIU_SEM &&
       Parameters.update==UPDATE_DAVIDSON) {
-    psi::fprintf(outfile,"DAVIDSON update not available for OLSEN or MITRUSH"
+    outfile->Printf("DAVIDSON update not available for OLSEN or MITRUSH"
             " iterators\n");
     Parameters.update = UPDATE_OLSEN;
   }
   if (Parameters.precon==PRECON_EVANGELISTI &&
       (Parameters.update!=UPDATE_DAVIDSON
         || Parameters.diag_method!=METHOD_DAVIDSON_LIU_SEM)) {
-    psi::fprintf(outfile,"EVANGELISTI preconditioner not available for OLSEN or"
+    outfile->Printf("EVANGELISTI preconditioner not available for OLSEN or"
                     " MITRUSH iterators or updates.\n");
     Parameters.update = UPDATE_DAVIDSON;
   }
@@ -446,8 +446,8 @@ void get_parameters(Options &options)
   else { /* the user tried to specify a value for maxnvect...check it */
   /*    if (Parameters.maxnvect / (Parameters.collapse_size *
         Parameters.num_roots) < 2) {
-        psi::fprintf(outfile, "maxnvect must be at least twice collapse_size *");
-        psi::fprintf(outfile, " num_roots.\n");
+        outfile->Printf( "maxnvect must be at least twice collapse_size *");
+        outfile->Printf( " num_roots.\n");
         exit(0);
         }
   */
@@ -478,7 +478,7 @@ void get_parameters(Options &options)
    errcod = ip_data("RESTART_ITER","%d",&(Parameters.restart_iter),0);
    errcod = ip_data("RESTART_VECS","%d",&(Parameters.restart_vecs),0);
    if (Parameters.restart && (errcod!=IPE_OK || Parameters.restart_vecs==0)) {
-      psi::fprintf(outfile, "For RESTART must specify nonzero RESTART_VECS\n");
+      outfile->Printf( "For RESTART must specify nonzero RESTART_VECS\n");
       exit(0);
       }
  */
@@ -571,7 +571,7 @@ void get_parameters(Options &options)
     chkpt_close();
 
     if (!i) {
-      psi::fprintf(outfile, "Can't use d file guess: SCF phase not checked\n");
+      outfile->Printf( "Can't use d file guess: SCF phase not checked\n");
       if (Parameters.h0guess_size) {
         Parameters.guess_vector = PARM_GUESS_VEC_H0_BLOCK;
         if (Parameters.precon == PRECON_GEN_DAVIDSON)
@@ -586,7 +586,7 @@ void get_parameters(Options &options)
   if (Parameters.guess_vector == PARM_GUESS_VEC_UNIT &&
       Parameters.num_init_vecs > 1) {
     Parameters.guess_vector = PARM_GUESS_VEC_H0_BLOCK;
-    psi::fprintf(outfile,"Warning: Unit vec option not available for more than"
+    outfile->Printf("Warning: Unit vec option not available for more than"
             " one root\n");
   }
   if (Parameters.guess_vector == PARM_GUESS_VEC_UNIT)
@@ -607,7 +607,7 @@ void get_parameters(Options &options)
     if (options["NUM_VECS_WRITE"].has_changed())
       Parameters.num_export = options.get_int("NUM_VECS_WRITE");
     if (Parameters.num_export > Parameters.num_roots) {
-      psi::fprintf(outfile, "Warning: can't export %d roots if %d requested\n",
+      outfile->Printf( "Warning: can't export %d roots if %d requested\n",
               Parameters.num_export, Parameters.num_roots);
       Parameters.num_export = Parameters.num_roots;
     }
@@ -650,12 +650,12 @@ void get_parameters(Options &options)
     Parameters.filter_guess_sign = options.get_int("FILTER_GUESS_SIGN");
     if (Parameters.filter_guess_sign != 1 &&
          Parameters.filter_guess_sign != -1) {
-      psi::fprintf(outfile, "FILTER_GUESS_SIGN should be 1 or -1 !\n");
+      outfile->Printf( "FILTER_GUESS_SIGN should be 1 or -1 !\n");
       abort();
     }
 
     if (options["FILTER_GUESS_DET1"].size() != 2) {
-      psi::fprintf(outfile, "Need to specify FILTER_GUESS_DET1 = "
+      outfile->Printf( "Need to specify FILTER_GUESS_DET1 = "
                         "(alphastr betastr)\n");
       abort();
     }
@@ -663,7 +663,7 @@ void get_parameters(Options &options)
     Parameters.filter_guess_Ib = options["FILTER_GUESS_DET1"][1].to_integer();
 
     if (options["FILTER_GUESS_DET2"].size() != 2) {
-      psi::fprintf(outfile, "Need to specify FILTER_GUESS_DET2 = "
+      outfile->Printf( "Need to specify FILTER_GUESS_DET2 = "
                         "(alphastr betastr)\n");
       abort();
     }
@@ -682,7 +682,7 @@ void get_parameters(Options &options)
    Parameters.filter_zero_det = 0;
   if (options["FILTER_ZERO_DET"].has_changed()) {
     if (options["FILTER_ZERO_DET"].size() != 2) {
-      psi::fprintf(outfile, "Need to specify FILTER_ZERO_DET = "
+      outfile->Printf( "Need to specify FILTER_ZERO_DET = "
                        "(alphastr betastr)\n");
       abort();
     }
@@ -762,15 +762,15 @@ void get_parameters(Options &options)
 
       int isize = options["FOLLOW_VECTOR"][i].size();
       if (isize != 2) {
-        psi::fprintf(outfile, "Need format FOLLOW_VECTOR = \n");
-        psi::fprintf(outfile, "  [ [[alphastr_i, betastr_i], coeff_i], ... ] \n");
+        outfile->Printf( "Need format FOLLOW_VECTOR = \n");
+        outfile->Printf( "  [ [[alphastr_i, betastr_i], coeff_i], ... ] \n");
         abort();
       }
 
       int iisize = options["FOLLOW_VECTOR"][i][0].size();
       if (iisize != 2) {
-        psi::fprintf(outfile, "Need format FOLLOW_VECTOR = \n");
-        psi::fprintf(outfile, "  [ [[alphastr_i, betastr_i], coeff_i], ... ] \n");
+        outfile->Printf( "Need format FOLLOW_VECTOR = \n");
+        outfile->Printf( "  [ [[alphastr_i, betastr_i], coeff_i], ... ] \n");
         abort();
       }
 
@@ -864,224 +864,224 @@ void print_parameters(void)
 {
    int i;
 
-   psi::fprintf(outfile, "\n");
-   psi::fprintf(outfile, "PARAMETERS: \n");
-   psi::fprintf(outfile, "   EX LEVEL      =   %6d      H0 BLOCKSIZE =   %6d\n",
+   outfile->Printf( "\n");
+   outfile->Printf( "PARAMETERS: \n");
+   outfile->Printf( "   EX LEVEL      =   %6d      H0 BLOCKSIZE =   %6d\n",
       Parameters.ex_lvl, Parameters.h0blocksize);
-   psi::fprintf(outfile, "   VAL EX LEVEL  =   %6d      H0 GUESS SIZE=   %6d\n",
+   outfile->Printf( "   VAL EX LEVEL  =   %6d      H0 GUESS SIZE=   %6d\n",
       Parameters.val_ex_lvl, Parameters.h0guess_size);
-   psi::fprintf(outfile, "   H0COUPLINGSIZE=   %6d      H0 COUPLING  =   %6s\n",
+   outfile->Printf( "   H0COUPLINGSIZE=   %6d      H0 COUPLING  =   %6s\n",
       Parameters.h0block_coupling_size, Parameters.h0block_coupling ? "yes" : "no");
-   psi::fprintf(outfile, "   NUM PRINT     =   %6d\n", Parameters.nprint);
-   psi::fprintf(outfile, "   MAXITER       =   %6d      FREEZE CORE  =   %6s\n",
+   outfile->Printf( "   NUM PRINT     =   %6d\n", Parameters.nprint);
+   outfile->Printf( "   MAXITER       =   %6d      FREEZE CORE  =   %6s\n",
       Parameters.maxiter, Parameters.fzc ? "yes" : "no");
-   psi::fprintf(outfile, "   NUM ROOTS     =   %6d      ICORE        =   %6d\n",
+   outfile->Printf( "   NUM ROOTS     =   %6d      ICORE        =   %6d\n",
       Parameters.num_roots, Parameters.icore);
-   psi::fprintf(outfile, "   PRINT         =   %6d      FCI          =   %6s\n",
+   outfile->Printf( "   PRINT         =   %6d      FCI          =   %6s\n",
       Parameters.print_lvl, Parameters.fci ? "yes" : "no");
    if (Parameters.have_special_conv)
-      psi::fprintf(outfile,
+      outfile->Printf(
          "   R CONV        =   %8.2g    MIXED        =   %6s\n",
          Parameters.special_conv, Parameters.mixed ? "yes" : "no");
    else
-      psi::fprintf(outfile, "   R CONV        =   %6.2e      MIXED        =   %6s\n",
+      outfile->Printf( "   R CONV        =   %6.2e      MIXED        =   %6s\n",
          Parameters.convergence, Parameters.mixed ? "yes" : "no");
 
-   psi::fprintf(outfile, "   E CONV        =   %6.2e      MIXED4       =   %6s\n",
+   outfile->Printf( "   E CONV        =   %6.2e      MIXED4       =   %6s\n",
       Parameters.energy_convergence, Parameters.mixed4 ? "yes" : "no");
-   psi::fprintf(outfile, "   OEI FILE      =   %6d      R4S          =   %6s\n",
+   outfile->Printf( "   OEI FILE      =   %6d      R4S          =   %6s\n",
       Parameters.oei_file, Parameters.r4s ? "yes" : "no");
-   psi::fprintf(outfile, "   REPL OTF      =   %6s\n",
+   outfile->Printf( "   REPL OTF      =   %6s\n",
       Parameters.repl_otf ? "yes" : "no");
-   psi::fprintf(outfile, "   TEI FILE      =   %6d      DIAG METHOD  =   ",
+   outfile->Printf( "   TEI FILE      =   %6d      DIAG METHOD  =   ",
       Parameters.tei_file);
 
    switch (Parameters.diag_method) {
       case 0:
-         psi::fprintf(outfile, "%6s\n", "RSP");
+         outfile->Printf( "%6s\n", "RSP");
          break;
       case 1:
-         psi::fprintf(outfile, "%6s\n", "OLSEN");
+         outfile->Printf( "%6s\n", "OLSEN");
          break;
       case 2:
-         psi::fprintf(outfile, "%6s\n", "MITRUS");
+         outfile->Printf( "%6s\n", "MITRUS");
          break;
       case 3:
-         psi::fprintf(outfile, "%6s\n", "SEM");
+         outfile->Printf( "%6s\n", "SEM");
          break;
       case 4:
-         psi::fprintf(outfile, "%6s\n", "SEMTEST");
+         outfile->Printf( "%6s\n", "SEMTEST");
          break;
       default:
-         psi::fprintf(outfile, "%6s\n", "???");
+         outfile->Printf( "%6s\n", "???");
          break;
       }
 
-   psi::fprintf(outfile, "   PRECONDITIONER= ");
+   outfile->Printf( "   PRECONDITIONER= ");
    switch (Parameters.precon) {
       case PRECON_LANCZOS:
-         psi::fprintf(outfile, "%6s", " LANCZOS    ");
+         outfile->Printf( "%6s", " LANCZOS    ");
          break;
       case PRECON_DAVIDSON:
-         psi::fprintf(outfile, "%6s", "DAVIDSON    ");
+         outfile->Printf( "%6s", "DAVIDSON    ");
          break;
       case PRECON_GEN_DAVIDSON:
-         psi::fprintf(outfile, "%6s", "GEN_DAVIDSON");
+         outfile->Printf( "%6s", "GEN_DAVIDSON");
          break;
       case PRECON_H0BLOCK_INVERT:
-         psi::fprintf(outfile, "%6s", "H0BLOCK_INV ");
+         outfile->Printf( "%6s", "H0BLOCK_INV ");
          break;
       case PRECON_H0BLOCK_ITER_INVERT:
-         psi::fprintf(outfile, "%6s", "ITER_INV    ");
+         outfile->Printf( "%6s", "ITER_INV    ");
          break;
       case PRECON_H0BLOCK_COUPLING:
-         psi::fprintf(outfile, "%6s", "H0_COUPLING ");
+         outfile->Printf( "%6s", "H0_COUPLING ");
          break;
       case PRECON_EVANGELISTI:
-         psi::fprintf(outfile, "%6s", "EVANGELISTI ");
+         outfile->Printf( "%6s", "EVANGELISTI ");
          break;
       default:
-         psi::fprintf(outfile, "%6s", "???         ");
+         outfile->Printf( "%6s", "???         ");
          break;
       }
 
-   psi::fprintf(outfile, "  UPDATE       =   ");
+   outfile->Printf( "  UPDATE       =   ");
    switch (Parameters.update) {
      case 1:
-       psi::fprintf(outfile, "%6s\n", "DAVIDSON");
+       outfile->Printf( "%6s\n", "DAVIDSON");
        break;
      case 2:
-       psi::fprintf(outfile, "%6s\n", "OLSEN");
+       outfile->Printf( "%6s\n", "OLSEN");
        break;
      default:
-       psi::fprintf(outfile, "%6s\n", "???");
+       outfile->Printf( "%6s\n", "???");
        break;
       }
 
-   psi::fprintf(outfile, "   S             =   %.4lf      Ms0          =   %6s\n",
+   outfile->Printf( "   S             =   %.4lf      Ms0          =   %6s\n",
       Parameters.S, Parameters.Ms0 ? "yes" : "no");
-   psi::fprintf(outfile, "   MAX NUM VECS  =   %6d\n", Parameters.maxnvect);
-   psi::fprintf(outfile, "   RESTART       =   %6s\n",
+   outfile->Printf( "   MAX NUM VECS  =   %6d\n", Parameters.maxnvect);
+   outfile->Printf( "   RESTART       =   %6s\n",
       Parameters.restart ? "yes" : "no");
-   psi::fprintf(outfile, "   GUESS VECTOR  =  ");
+   outfile->Printf( "   GUESS VECTOR  =  ");
    switch (Parameters.guess_vector) {
       case PARM_GUESS_VEC_UNIT:
-         psi::fprintf(outfile, "%7s", "UNIT");
+         outfile->Printf( "%7s", "UNIT");
          break;
       case PARM_GUESS_VEC_H0_BLOCK:
-         psi::fprintf(outfile, "%7s", "H0BLOCK");
+         outfile->Printf( "%7s", "H0BLOCK");
          break;
       case PARM_GUESS_VEC_DFILE:
-         psi::fprintf(outfile, "%7s", "D FILE");
+         outfile->Printf( "%7s", "D FILE");
          break;
       case PARM_GUESS_VEC_IMPORT:
-         psi::fprintf(outfile, "%7s", "IMPORT");
+         outfile->Printf( "%7s", "IMPORT");
          break;
       default:
-         psi::fprintf(outfile, "%7s", "???");
+         outfile->Printf( "%7s", "???");
          break;
       }
-   psi::fprintf(outfile, "      OPENTYPE     = ");
+   outfile->Printf( "      OPENTYPE     = ");
    switch (Parameters.opentype) {
       case PARM_OPENTYPE_NONE:
-         psi::fprintf(outfile, "%8s\n", "NONE");
+         outfile->Printf( "%8s\n", "NONE");
          break;
       case PARM_OPENTYPE_HIGHSPIN:
-         psi::fprintf(outfile, "%8s\n", "HIGHSPIN");
+         outfile->Printf( "%8s\n", "HIGHSPIN");
          break;
       case PARM_OPENTYPE_SINGLET:
-         psi::fprintf(outfile, "%8s\n", "SINGLET");
+         outfile->Printf( "%8s\n", "SINGLET");
          break;
       default:
-         psi::fprintf(outfile, "%8s\n", "???");
+         outfile->Printf( "%8s\n", "???");
          break;
       }
    if (Parameters.ref_sym == -1)
-      psi::fprintf(outfile, "   REF SYM       =   %6s\n", "auto");
+      outfile->Printf( "   REF SYM       =   %6s\n", "auto");
    else
-      psi::fprintf(outfile, "   REF SYM       =   %6d\n", Parameters.ref_sym);
+      outfile->Printf( "   REF SYM       =   %6d\n", Parameters.ref_sym);
 
-   psi::fprintf(outfile, "   COLLAPSE SIZE =   %6d", Parameters.collapse_size);
-   psi::fprintf(outfile, "      HD AVG       =");
+   outfile->Printf( "   COLLAPSE SIZE =   %6d", Parameters.collapse_size);
+   outfile->Printf( "      HD AVG       =");
    switch (Parameters.hd_ave) {
      case HD_EXACT:
-       psi::fprintf(outfile," %11s\n", "HD_EXACT");
+       outfile->Printf(" %11s\n", "HD_EXACT");
        break;
      case HD_KAVE:
-       psi::fprintf(outfile," %11s\n", "HD_KAVE");
+       outfile->Printf(" %11s\n", "HD_KAVE");
        break;
      case ORB_ENER:
-       psi::fprintf(outfile," %11s\n", "ORB_ENER");
+       outfile->Printf(" %11s\n", "ORB_ENER");
        break;
      case EVANGELISTI:
-       psi::fprintf(outfile," %11s\n", "EVANGELISTI");
+       outfile->Printf(" %11s\n", "EVANGELISTI");
        break;
      case LEININGER:
-       psi::fprintf(outfile," %11s\n", "LEININGER");
+       outfile->Printf(" %11s\n", "LEININGER");
        break;
      default:
-       psi::fprintf(outfile," %11s\n", "???");
+       outfile->Printf(" %11s\n", "???");
        break;
      }
 
-   psi::fprintf(outfile, "   LSE           =   %6s      LSE ITER     =   %6d\n",
+   outfile->Printf( "   LSE           =   %6s      LSE ITER     =   %6d\n",
            Parameters.lse ? "yes" : "no", Parameters.lse_iter);
-   psi::fprintf(outfile, "   HD OTF        =   %6s      NO DFILE     =   %6s\n",
+   outfile->Printf( "   HD OTF        =   %6s      NO DFILE     =   %6s\n",
            Parameters.hd_otf ? "yes" : "no", Parameters.nodfile ? "yes":"no");
-   psi::fprintf(outfile, "   MPN           =   %6s      MPN SCHMIDT  =   %6s\n",
+   outfile->Printf( "   MPN           =   %6s      MPN SCHMIDT  =   %6s\n",
            Parameters.mpn ? "yes":"no", Parameters.mpn_schmidt ? "yes":"no");
-   psi::fprintf(outfile, "   ZAPTN         =   %6s      MPN WIGNER   =   %6s\n",
+   outfile->Printf( "   ZAPTN         =   %6s      MPN WIGNER   =   %6s\n",
            Parameters.zaptn ? "yes":"no", Parameters.wigner ? "yes":"no");
-   psi::fprintf(outfile, "   PERT Z        =   %1.4f    FOLLOW ROOT  =   %6d\n",
+   outfile->Printf( "   PERT Z        =   %1.4f    FOLLOW ROOT  =   %6d\n",
            Parameters.perturbation_parameter, Parameters.root);
-   psi::fprintf(outfile, "   NUM THREADS   =   %6d\n",
+   outfile->Printf( "   NUM THREADS   =   %6d\n",
            Parameters.nthreads);
-   psi::fprintf(outfile, "   VECS WRITE    =   %6s      NUM VECS WRITE =   %6d\n",
+   outfile->Printf( "   VECS WRITE    =   %6s      NUM VECS WRITE =   %6d\n",
            Parameters.export_ci_vector ? "yes":"no", Parameters.num_export);
-   psi::fprintf(outfile, "   FILTER GUESS  =   %6s      SF RESTRICT  =   %6s\n",
+   outfile->Printf( "   FILTER GUESS  =   %6s      SF RESTRICT  =   %6s\n",
            Parameters.filter_guess ?  "yes":"no",
            Parameters.sf_restrict ? "yes":"no");
    if (Parameters.cc && Parameters.diis) {
-     psi::fprintf(outfile, "   DIIS START    =   %6d      DIIS FREQ    =   %6d\n",
+     outfile->Printf( "   DIIS START    =   %6d      DIIS FREQ    =   %6d\n",
              Parameters.diis_start, Parameters.diis_freq);
-     psi::fprintf(outfile, "   DIIS MIN VECS =   %6d      DIIS MAX VECS=   %6d\n",
+     outfile->Printf( "   DIIS MIN VECS =   %6d      DIIS MAX VECS=   %6d\n",
              Parameters.diis_min_vecs, Parameters.diis_max_vecs);
    }
-   psi::fprintf(outfile, "   OPDM          =   %6s      TRANS DENSITY=   %6s\n",
+   outfile->Printf( "   OPDM          =   %6s      TRANS DENSITY=   %6s\n",
            Parameters.opdm ?  "yes":"no",
            Parameters.transdens ? "yes":"no");
-   psi::fprintf(outfile, "\n   FILES         = %3d %2d %2d %2d\n",
+   outfile->Printf( "\n   FILES         = %3d %2d %2d %2d\n",
       Parameters.first_hd_tmp_unit, Parameters.first_c_tmp_unit,
       Parameters.first_s_tmp_unit, Parameters.first_d_tmp_unit);
 
-   psi::fprintf(outfile, "\n   EX ALLOW      = ");
+   outfile->Printf( "\n   EX ALLOW      = ");
    for (i=0;i<Parameters.ex_lvl;i++) {
-     psi::fprintf(outfile, "%2d ", Parameters.ex_allow[i]);
+     outfile->Printf( "%2d ", Parameters.ex_allow[i]);
    }
 
-   psi::fprintf(outfile, "\n   STATE AVERAGE = ");
+   outfile->Printf( "\n   STATE AVERAGE = ");
    for (i=0; i<Parameters.average_num; i++) {
-     if (i%5==0 && i!=0) psi::fprintf(outfile, "\n");
-     psi::fprintf(outfile, "%2d(%4.2lf) ",Parameters.average_states[i]+1,
+     if (i%5==0 && i!=0) outfile->Printf( "\n");
+     outfile->Printf( "%2d(%4.2lf) ",Parameters.average_states[i]+1,
        Parameters.average_weights[i]);
    }
 
-   psi::fprintf(outfile, "\n   STATE AVERAGE = ");
+   outfile->Printf( "\n   STATE AVERAGE = ");
    for (i=0; i<Parameters.average_num; i++) {
-     if (i%5==0 && i!=0) psi::fprintf(outfile, "\n");
-     psi::fprintf(outfile, "%2d(%4.2lf) ",Parameters.average_states[i]+1,
+     if (i%5==0 && i!=0) outfile->Printf( "\n");
+     outfile->Printf( "%2d(%4.2lf) ",Parameters.average_states[i]+1,
        Parameters.average_weights[i]);
    }
 
    if (Parameters.follow_vec_num > 0) {
-     psi::fprintf(outfile,"\nDensity matrices will follow vector like:\n");
+     outfile->Printf("\nDensity matrices will follow vector like:\n");
      for (i=0; i<Parameters.follow_vec_num; i++)
-       psi::fprintf(outfile, "(%d %d) %12.6lf\n", Parameters.follow_vec_Ia[i],
+       outfile->Printf( "(%d %d) %12.6lf\n", Parameters.follow_vec_Ia[i],
          Parameters.follow_vec_Ib[i], Parameters.follow_vec_coef[i]);
    }
 
-   psi::fprintf(outfile, "\n\n");
-   fflush(outfile);
+   outfile->Printf( "\n\n");
+   
 }
 
 
@@ -1111,8 +1111,8 @@ void set_ras_parms(void)
      for (i=0; i<Parameters.ex_lvl; i++) Parameters.ex_allow[i] = 1;
 
      if (Parameters.print_lvl) {
-       psi::fprintf(outfile, "Note: Calculation requested is a full CI.\n");
-       psi::fprintf(outfile,
+       outfile->Printf( "Note: Calculation requested is a full CI.\n");
+       outfile->Printf(
                "Resetting EX_LEVEL to %d and turning on all excitations\n\n",
                Parameters.ex_lvl);
      }
@@ -1148,10 +1148,10 @@ void set_ras_parms(void)
          }
       if (j > 0) nras2alp += j;
       if (j > CalcInfo.ras_opi[1][i]) {
-         psi::fprintf(outfile, "(set_ras_parms): detecting %d electrons ",
+         outfile->Printf( "(set_ras_parms): detecting %d electrons ",
             j - CalcInfo.ras_opi[1][i]);
-         psi::fprintf(outfile, "in RAS III for irrep %d.\n", i);
-         psi::fprintf(outfile, "Some parts of DETCI assume all elec in I and II\n");
+         outfile->Printf( "in RAS III for irrep %d.\n", i);
+         outfile->Printf( "Some parts of DETCI assume all elec in I and II\n");
          }
       }
    /* beta electrons */
@@ -1167,10 +1167,10 @@ void set_ras_parms(void)
          }
       if (j > 0) nras2bet += j;
       if (j > CalcInfo.ras_opi[1][i]) {
-         psi::fprintf(outfile, "(set_ras_parms): detecting %d electrons ",
+         outfile->Printf( "(set_ras_parms): detecting %d electrons ",
             j - CalcInfo.ras_opi[1][i]);
-         psi::fprintf(outfile, "in RAS III for irrep %d.\n", i);
-         psi::fprintf(outfile, "Some parts of DETCI assume all elec in I and II\n");
+         outfile->Printf( "in RAS III for irrep %d.\n", i);
+         outfile->Printf( "Some parts of DETCI assume all elec in I and II\n");
          }
       }
 
@@ -1485,81 +1485,81 @@ void print_ras_parms(void)
 {
   int i, j;
 
-  psi::fprintf(outfile, "ORBITALS:\n") ;
-  psi::fprintf(outfile, "   NMO          =   %6d      NUM ALP      =   %6d\n",
+  outfile->Printf( "ORBITALS:\n") ;
+  outfile->Printf( "   NMO          =   %6d      NUM ALP      =   %6d\n",
     CalcInfo.nmo, CalcInfo.num_alp);
-  psi::fprintf(outfile, "   ORBS IN CI   =   %6d      NUM ALP EXPL =   %6d\n",
+  outfile->Printf( "   ORBS IN CI   =   %6d      NUM ALP EXPL =   %6d\n",
     CalcInfo.num_ci_orbs, CalcInfo.num_alp_expl);
-  psi::fprintf(outfile, "   FROZEN CORE  =   %6d      NUM BET      =   %6d\n",
+  outfile->Printf( "   FROZEN CORE  =   %6d      NUM BET      =   %6d\n",
     CalcInfo.num_fzc_orbs, CalcInfo.num_bet);
-  psi::fprintf(outfile, "   RESTR CORE   =   %6d      NUM BET EXPL =   %6d\n",
+  outfile->Printf( "   RESTR CORE   =   %6d      NUM BET EXPL =   %6d\n",
     CalcInfo.num_cor_orbs, CalcInfo.num_bet_expl);
-  psi::fprintf(outfile, "   IOPEN        =   %6s\n", CalcInfo.iopen ? "yes" :
+  outfile->Printf( "   IOPEN        =   %6s\n", CalcInfo.iopen ? "yes" :
     "no");
-  psi::fprintf(outfile, "   RAS1 LVL     =   %6d      A RAS3 MAX   =   %6d\n",
+  outfile->Printf( "   RAS1 LVL     =   %6d      A RAS3 MAX   =   %6d\n",
     Parameters.ras1_lvl, Parameters.a_ras3_max);
-  psi::fprintf(outfile, "   RAS1 MIN     =   %6d      B RAS3 MAX   =   %6d\n",
+  outfile->Printf( "   RAS1 MIN     =   %6d      B RAS3 MAX   =   %6d\n",
     Parameters.ras1_min, Parameters.b_ras3_max);
-  psi::fprintf(outfile, "   A RAS1 LVL   =   %6d      RAS4 LVL     =   %6d\n",
+  outfile->Printf( "   A RAS1 LVL   =   %6d      RAS4 LVL     =   %6d\n",
     Parameters.a_ras1_lvl, Parameters.ras4_lvl);
-  psi::fprintf(outfile, "   A RAS1 MIN   =   %6d      A RAS4 MAX   =   %6d\n",
+  outfile->Printf( "   A RAS1 MIN   =   %6d      A RAS4 MAX   =   %6d\n",
     Parameters.a_ras1_min, Parameters.a_ras4_max);
-  psi::fprintf(outfile, "   A RAS1 MAX   =   %6d      B RAS4 MAX   =   %6d\n",
+  outfile->Printf( "   A RAS1 MAX   =   %6d      B RAS4 MAX   =   %6d\n",
     Parameters.a_ras1_max, Parameters.b_ras4_max);
-  psi::fprintf(outfile, "   B RAS1 LVL   =   %6d      RAS4 MAX     =   %6d\n",
+  outfile->Printf( "   B RAS1 LVL   =   %6d      RAS4 MAX     =   %6d\n",
     Parameters.b_ras1_lvl, Parameters.ras4_max);
-  psi::fprintf(outfile, "   B RAS1 MIN   =   %6d      A RAS34 MAX  =   %6d\n",
+  outfile->Printf( "   B RAS1 MIN   =   %6d      A RAS34 MAX  =   %6d\n",
     Parameters.b_ras1_min, Parameters.a_ras34_max);
-  psi::fprintf(outfile, "   B RAS1 MAX   =   %6d      B RAS34 MAX  =   %6d\n",
+  outfile->Printf( "   B RAS1 MAX   =   %6d      B RAS34 MAX  =   %6d\n",
     Parameters.b_ras1_max, Parameters.b_ras34_max);
-  psi::fprintf(outfile, "   RAS3 LVL     =   %6d      RAS34 MAX    =   %6d\n",
+  outfile->Printf( "   RAS3 LVL     =   %6d      RAS34 MAX    =   %6d\n",
     Parameters.ras3_lvl, Parameters.ras34_max);
-  psi::fprintf(outfile, "   RAS3 MAX     =   %6d\n", Parameters.ras3_max);
+  outfile->Printf( "   RAS3 MAX     =   %6d\n", Parameters.ras3_max);
   if (Parameters.cc) {
-    psi::fprintf(outfile, "   CC RAS3 MAX  =   %6d      CC RAS4 MAX  =   %6d\n",
+    outfile->Printf( "   CC RAS3 MAX  =   %6d      CC RAS4 MAX  =   %6d\n",
       Parameters.cc_ras3_max, Parameters.cc_ras4_max);
-    psi::fprintf(outfile, "   CC A RAS3 MAX=   %6d      CC B RAS3 MAX=   %6d\n",
+    outfile->Printf( "   CC A RAS3 MAX=   %6d      CC B RAS3 MAX=   %6d\n",
       Parameters.cc_a_ras3_max, Parameters.cc_b_ras3_max);
-    psi::fprintf(outfile, "   CC A RAS4 MAX=   %6d      CC B RAS4 MAX=   %6d\n",
+    outfile->Printf( "   CC A RAS4 MAX=   %6d      CC B RAS4 MAX=   %6d\n",
       Parameters.cc_a_ras4_max, Parameters.cc_b_ras4_max);
-    psi::fprintf(outfile, "   CC RAS34 MAX =   %6d\n",
+    outfile->Printf( "   CC RAS34 MAX =   %6d\n",
       Parameters.cc_ras34_max);
-    psi::fprintf(outfile, "   CC A RAS34 MAX=  %6d      CC B RAS34 MAX=  %6d\n",
+    outfile->Printf( "   CC A RAS34 MAX=  %6d      CC B RAS34 MAX=  %6d\n",
       Parameters.cc_a_ras34_max, Parameters.cc_b_ras34_max);
-    psi::fprintf(outfile, "   CC MIXED     =   %6s      CC FIX EXTERN =  %6s\n",
+    outfile->Printf( "   CC MIXED     =   %6s      CC FIX EXTERN =  %6s\n",
       Parameters.cc_mixed ? "yes" : "no",
       Parameters.cc_fix_external ? "yes" : "no");
-    psi::fprintf(outfile, "   CC VARIATIONAL=  %6s\n",
+    outfile->Printf( "   CC VARIATIONAL=  %6s\n",
       Parameters.cc_variational ? "yes" : "no");
   }
 
-  psi::fprintf(outfile, "\n");
-  psi::fprintf(outfile, "   DOCC         = ") ;
+  outfile->Printf( "\n");
+  outfile->Printf( "   DOCC         = ") ;
   for (i=0; i<CalcInfo.nirreps; i++) {
-    psi::fprintf(outfile, "%2d ", CalcInfo.docc[i]) ;
+    outfile->Printf( "%2d ", CalcInfo.docc[i]) ;
   }
-  psi::fprintf(outfile, "\n   SOCC         = ") ;
+  outfile->Printf( "\n   SOCC         = ") ;
   for (i=0; i<CalcInfo.nirreps; i++) {
-    psi::fprintf(outfile, "%2d ", CalcInfo.socc[i]) ;
+    outfile->Printf( "%2d ", CalcInfo.socc[i]) ;
   }
-  psi::fprintf(outfile, "\n   FROZEN DOCC  = ") ;
+  outfile->Printf( "\n   FROZEN DOCC  = ") ;
   for (i=0; i<CalcInfo.nirreps; i++) {
-    psi::fprintf(outfile, "%2d ", CalcInfo.frozen_docc[i]) ;
+    outfile->Printf( "%2d ", CalcInfo.frozen_docc[i]) ;
   }
-  psi::fprintf(outfile, "\n   FROZEN UOCC  = ") ;
+  outfile->Printf( "\n   FROZEN UOCC  = ") ;
   for (i=0; i<CalcInfo.nirreps; i++) {
-    psi::fprintf(outfile, "%2d ", CalcInfo.frozen_uocc[i]) ;
+    outfile->Printf( "%2d ", CalcInfo.frozen_uocc[i]) ;
   }
-  psi::fprintf(outfile, "\n");
+  outfile->Printf( "\n");
   for (i=0; i<4; i++) {
-    psi::fprintf(outfile, "   RAS %d        = ",i+1);
+    outfile->Printf( "   RAS %d        = ",i+1);
     for (j=0; j<CalcInfo.nirreps; j++) {
-      psi::fprintf(outfile,"%2d ",CalcInfo.ras_opi[i][j]);
+      outfile->Printf("%2d ",CalcInfo.ras_opi[i][j]);
     }
-    psi::fprintf(outfile, "\n");
+    outfile->Printf( "\n");
   }
 
-  psi::fprintf(outfile,
+  outfile->Printf(
      "*******************************************************\n\n");
 }
 

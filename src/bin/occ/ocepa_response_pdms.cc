@@ -31,7 +31,7 @@ namespace psi{ namespace occwave{
 
 void OCCWave::ocepa_response_pdms()
 {   
-        //psi::fprintf(outfile,"\n response_pdms is starting... \n"); fflush(outfile);
+        //outfile->Printf("\n response_pdms is starting... \n"); 
 
         // Build G intermediates 
         timer_on("G int");
@@ -234,7 +234,7 @@ void OCCWave::ocepa_response_pdms()
 	tpdm_corr_opdm();
         timer_off("TPDM CORR OPDM");
  }// end if (reference_ == "UNRESTRICTED") 
-  //psi::fprintf(outfile,"\n response_pdms done... \n"); fflush(outfile);
+  //outfile->Printf("\n response_pdms done... \n"); 
 } // end of response_pdms
 }} // End Namespaces
 

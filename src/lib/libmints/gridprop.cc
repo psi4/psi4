@@ -203,26 +203,26 @@ void CubicScalarGrid::populate_grid()
 }
 void CubicScalarGrid::print_header()
 {
-    psi::fprintf(outfile,"  ==> CubicScalarGrid <==\n\n");
+    outfile->Printf("  ==> CubicScalarGrid <==\n\n");
 
-    psi::fprintf(outfile,"    Filepath     = %s\n", filepath_.c_str());
-    psi::fprintf(outfile,"    Total Points = %16zu\n", npoints_);
-    psi::fprintf(outfile,"    XYZ Blocking = %16zu\n", nxyz_);
-    psi::fprintf(outfile,"    X Points     = %16zu\n", N_[0] + 1L);
-    psi::fprintf(outfile,"    Y Points     = %16zu\n", N_[1] + 1L);
-    psi::fprintf(outfile,"    Z Points     = %16zu\n", N_[2] + 1L);
-    psi::fprintf(outfile,"    X Spacing    = %16.3E\n", D_[0]);
-    psi::fprintf(outfile,"    Y Spacing    = %16.3E\n", D_[1]);
-    psi::fprintf(outfile,"    Z Spacing    = %16.3E\n", D_[2]);
-    psi::fprintf(outfile,"    X Minimum    = %16.3E\n", O_[0]);
-    psi::fprintf(outfile,"    Y Minimum    = %16.3E\n", O_[1]);
-    psi::fprintf(outfile,"    Z Minimum    = %16.3E\n", O_[2]);
-    psi::fprintf(outfile,"    X Maximum    = %16.3E\n", O_[0] + D_[0] * N_[0]);
-    psi::fprintf(outfile,"    Y Maximum    = %16.3E\n", O_[1] + D_[1] * N_[1]);
-    psi::fprintf(outfile,"    Z Maximum    = %16.3E\n", O_[2] + D_[2] * N_[2]);
-    psi::fprintf(outfile,"\n");
+    outfile->Printf("    Filepath     = %s\n", filepath_.c_str());
+    outfile->Printf("    Total Points = %16zu\n", npoints_);
+    outfile->Printf("    XYZ Blocking = %16zu\n", nxyz_);
+    outfile->Printf("    X Points     = %16zu\n", N_[0] + 1L);
+    outfile->Printf("    Y Points     = %16zu\n", N_[1] + 1L);
+    outfile->Printf("    Z Points     = %16zu\n", N_[2] + 1L);
+    outfile->Printf("    X Spacing    = %16.3E\n", D_[0]);
+    outfile->Printf("    Y Spacing    = %16.3E\n", D_[1]);
+    outfile->Printf("    Z Spacing    = %16.3E\n", D_[2]);
+    outfile->Printf("    X Minimum    = %16.3E\n", O_[0]);
+    outfile->Printf("    Y Minimum    = %16.3E\n", O_[1]);
+    outfile->Printf("    Z Minimum    = %16.3E\n", O_[2]);
+    outfile->Printf("    X Maximum    = %16.3E\n", O_[0] + D_[0] * N_[0]);
+    outfile->Printf("    Y Maximum    = %16.3E\n", O_[1] + D_[1] * N_[1]);
+    outfile->Printf("    Z Maximum    = %16.3E\n", O_[2] + D_[2] * N_[2]);
+    outfile->Printf("\n");
 
-    fflush(outfile);
+    
 }
 void CubicScalarGrid::write_gen_file(double* v, const std::string& name, const std::string& type)
 {
@@ -264,26 +264,26 @@ void CubicScalarGrid::write_cube_file(double* v, const std::string& name)
     FILE* fh = fopen(ss.str().c_str(), "w");
 
     // Two comment lines
-    psi::fprintf(fh, "PSI4 Gaussian Cube File.\n");
-    psi::fprintf(fh, "Property: %s\n", name.c_str());
+    outfile->Printf(fh, "PSI4 Gaussian Cube File.\n");
+    outfile->Printf(fh, "Property: %s\n", name.c_str());
    
     // Number of atoms plus origin of data 
-    psi::fprintf(fh, "%6d %10.6f %10.6f %10.6f\n", mol_->natom(), O_[0], O_[1], O_[2]);
+    outfile->Printf(fh, "%6d %10.6f %10.6f %10.6f\n", mol_->natom(), O_[0], O_[1], O_[2]);
     
     // Number of points along axis, displacement along x,y,z
-    psi::fprintf(fh, "%6d %10.6f %10.6f %10.6f\n", N_[0] + 1, D_[0], 0.0, 0.0);
-    psi::fprintf(fh, "%6d %10.6f %10.6f %10.6f\n", N_[1] + 1, 0.0, D_[1], 0.0);
-    psi::fprintf(fh, "%6d %10.6f %10.6f %10.6f\n", N_[2] + 1, 0.0, 0.0, D_[2]);
+    outfile->Printf(fh, "%6d %10.6f %10.6f %10.6f\n", N_[0] + 1, D_[0], 0.0, 0.0);
+    outfile->Printf(fh, "%6d %10.6f %10.6f %10.6f\n", N_[1] + 1, 0.0, D_[1], 0.0);
+    outfile->Printf(fh, "%6d %10.6f %10.6f %10.6f\n", N_[2] + 1, 0.0, 0.0, D_[2]);
 
     // Atoms of molecule (Z, Q?, x, y, z)
     for (int A = 0; A < mol_->natom(); A++) {
-        psi::fprintf(fh, "%3d %10.6f %10.6f %10.6f %10.6f\n", (int) mol_->Z(A), 0.0, mol_->x(A), mol_->y(A), mol_->z(A));
+        outfile->Printf(fh, "%3d %10.6f %10.6f %10.6f %10.6f\n", (int) mol_->Z(A), 0.0, mol_->x(A), mol_->y(A), mol_->z(A));
     }
 
     // Data, striped (x, y, z)
     for (size_t ind = 0; ind < npoints_; ind++) {
-        psi::fprintf(fh, "%12.5E ", v2[ind]);
-        if (ind % 6 == 5) psi::fprintf(fh,"\n");
+        outfile->Printf(fh, "%12.5E ", v2[ind]);
+        if (ind % 6 == 5) outfile->Printf(fh,"\n");
     }
 
     fclose(fh);   

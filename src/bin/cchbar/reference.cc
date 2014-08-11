@@ -49,7 +49,7 @@ void reference(void)
 
   psio_write_entry(PSIF_CC_HBAR, "Reference expectation value", (char *) &energy,
     sizeof(double));
-  psi::fprintf(outfile,"Reference expectation value computed: %20.15lf\n", energy);
+  outfile->Printf("Reference expectation value computed: %20.15lf\n", energy);
 }
 
 double rhf_energy(void)
@@ -71,7 +71,7 @@ double rhf_energy(void)
   global_dpd_->buf4_close(&D);
   
   /*
-    psi::fprintf(outfile, "Two AB Energy = %20.14f\n", tauIjAb_energy);
+    outfile->Printf( "Two AB Energy = %20.14f\n", tauIjAb_energy);
   */
 
   return (tauIjAb_energy+tIA_energy);
@@ -111,11 +111,11 @@ double rohf_energy(void)
   global_dpd_->buf4_close(&D);
 
   /*
-  psi::fprintf(outfile, "One A Energy = %20.14f\n", tIA_energy);
-  psi::fprintf(outfile, "One B Energy = %20.14f\n", tia_energy);
-  psi::fprintf(outfile, "Two AA Energy = %20.14f\n", tauIJAB_energy);
-  psi::fprintf(outfile, "Two BB Energy = %20.14f\n", tauijab_energy);
-  psi::fprintf(outfile, "Two AB Energy = %20.14f\n", tauIjAb_energy);
+  outfile->Printf( "One A Energy = %20.14f\n", tIA_energy);
+  outfile->Printf( "One B Energy = %20.14f\n", tia_energy);
+  outfile->Printf( "Two AA Energy = %20.14f\n", tauIJAB_energy);
+  outfile->Printf( "Two BB Energy = %20.14f\n", tauijab_energy);
+  outfile->Printf( "Two AB Energy = %20.14f\n", tauIjAb_energy);
   */
 
   return (tIA_energy + tia_energy +
@@ -159,11 +159,11 @@ double uhf_energy(void)
   global_dpd_->buf4_close(&T2);
 
   /*
-  psi::fprintf(outfile, "One A Energy = %20.14f\n", T1A);
-  psi::fprintf(outfile, "One B Energy = %20.14f\n", T1B);
-  psi::fprintf(outfile, "Two AA Energy = %20.14f\n", E2AA);
-  psi::fprintf(outfile, "Two BB Energy = %20.14f\n", E2BB);
-  psi::fprintf(outfile, "Two AB Energy = %20.14f\n", E2AB);
+  outfile->Printf( "One A Energy = %20.14f\n", T1A);
+  outfile->Printf( "One B Energy = %20.14f\n", T1B);
+  outfile->Printf( "Two AA Energy = %20.14f\n", E2AA);
+  outfile->Printf( "Two BB Energy = %20.14f\n", E2BB);
+  outfile->Printf( "Two AB Energy = %20.14f\n", E2AB);
   */
 
   return(T1A + T1B + E2AA + E2BB + E2AB);

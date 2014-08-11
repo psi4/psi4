@@ -54,7 +54,7 @@ class SimpleMatrix;
 class Dimension;
 class Molecule;
 
-extern FILE *outfile;
+
 
 enum diagonalize_order {
     evals_only_ascending = 0,
@@ -97,7 +97,7 @@ protected:
     /// free a (block) matrix -- analogous to libciomr's free_block
     static void free(double** Block);
 
-    void print_mat(const double *const *const a, int m, int n, FILE *out) const;
+    void print_mat(const double *const *const a, int m, int n, std::string out) const;
 
 public:
 
@@ -534,7 +534,7 @@ public:
     const std::string& name() const { return name_; }
 
     /// Python compatible printer
-    void print_out() const { print(outfile); }
+    void print_out() const { print("outfile"); }
 
     /**
      * Print the matrix using print_mat
@@ -542,10 +542,10 @@ public:
      * @param outfile File point to use, defaults to Psi4's outfile.
      * @param extra When printing the name of the 'extra' will be printing after the name.
      */
-    void print(FILE *out = outfile, const char *extra=NULL) const;
+    void print(std::string OutFileRMR = "outfile", const char *extra=NULL) const;
 
     /// Prints the matrix with atom and xyz styling.
-    void print_atom_vector(FILE *out = outfile);
+    void print_atom_vector(std::string OutFileRMR = "outfile");
 
     /**
      * Print the matrix with corresponding eigenvalues below each column
@@ -553,11 +553,11 @@ public:
      * @param values Eigenvalues to print associated with eigenvectors.
      * @param out Where to print to, defaults to Psi4's outfile.
      */
-    void eivprint(const Vector * const values, FILE *out = outfile);
+    void eivprint(const Vector * const values, std::string OutFileRMR = "outfile");
     /// Print the matrix with corresponding eigenvalues below each column
-    void eivprint(const Vector& values, FILE *out = outfile);
+    void eivprint(const Vector& values, std::string OutFileRMR = "outfile");
     /// Print the matrix with corresponding eigenvalues below each column
-    void eivprint(const boost::shared_ptr<Vector>& values, FILE *out = outfile);
+    void eivprint(const boost::shared_ptr<Vector>& values, std::string OutFileRMR = "outfile");
 
     /// Returns the rows in irrep h
     int rowdim(const int& h = 0) const { return rowspi_[h]; }
@@ -673,9 +673,9 @@ public:
     void add(int h, int m, int n, double val) {
         #ifdef PSIDEBUG
         if (m > rowspi_[h] || n > colspi_[h^symmetry_]) {
-            psi::fprintf(outfile, "out of bounds: symmetry_ = %d, h = %d, m = %d, n = %d\n",
+            outfile->Printf( "out of bounds: symmetry_ = %d, h = %d, m = %d, n = %d\n",
                     symmetry_, h, m, n);
-            fflush(outfile);
+            
             throw PSIEXCEPTION("What are you doing, Rob?");
         }
         #endif
@@ -685,9 +685,9 @@ public:
     void add(int m, int n, double val) {
         #ifdef PSIDEBUG
         if (m > rowspi_[0] || n > colspi_[0^symmetry_]) {
-            psi::fprintf(outfile, "out of bounds: symmetry_ = %d, h = %d, m = %d, n = %d\n",
+            outfile->Printf( "out of bounds: symmetry_ = %d, h = %d, m = %d, n = %d\n",
                     symmetry_, 0, m, n);
-            fflush(outfile);
+            
             return;
         }
         #endif

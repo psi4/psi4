@@ -66,7 +66,7 @@ void normalize(double **A, int rows, int cols)
 #ifdef STANDALONE
 main()
 {
-FILE *outfile ;
+std::string OutFileRMR ;
 double **mat ;
 void normalize(double **A, int rows, int cols) ;
 
@@ -76,10 +76,10 @@ void normalize(double **A, int rows, int cols) ;
    mat[2][0] = 0.0 ; mat[2][1] = 0.0 ; mat[2][2] = 0.5 ;
 
    ffile(&outfile, "output.dat", 0) ;
-   psi::fprintf(outfile, "Matrix before normalization process\n") ;
+   outfile->Printf( "Matrix before normalization process\n") ;
    print_mat(mat,3,3,outfile) ;
    normalize(mat,3,3) ;
-   psi::fprintf(outfile, "\nMatrix after normalization process\n") ;
+   outfile->Printf( "\nMatrix after normalization process\n") ;
    print_mat(mat,3,3,outfile) ;
 
    free_matrix(mat,3) ;

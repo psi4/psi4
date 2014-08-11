@@ -167,18 +167,20 @@ void IntVector::set(int *vec) {
     }
 }
 
-void IntVector::print(FILE *out, const char* extra) const {
+void IntVector::print(std::string out, const char* extra) const {
     int h;
+    boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+          boost::shared_ptr<OutFile>(new OutFile(out)));
     if (extra == NULL) {
-        psi::fprintf(out, "\n # %s #\n", name_.c_str());
+        printer->Printf( "\n # %s #\n", name_.c_str());
     } else {
-        psi::fprintf(out, "\n # %s %s #\n", name_.c_str(), extra);
+        printer->Printf( "\n # %s %s #\n", name_.c_str(), extra);
     }
     for (h=0; h<nirrep_; ++h) {
-        psi::fprintf(out, " Irrep: %d\n", h+1);
+        printer->Printf( " Irrep: %d\n", h+1);
         for (int i=0; i<dimpi_[h]; ++i)
-            psi::fprintf(out, "   %4d: %10d\n", i+1, vector_[h][i]);
-        psi::fprintf(out, "\n");
+            printer->Printf( "   %4d: %10d\n", i+1, vector_[h][i]);
+        printer->Printf( "\n");
     }
 }
 

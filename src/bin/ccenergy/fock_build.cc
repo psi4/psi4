@@ -83,7 +83,7 @@ void rhf_fock_build(double **fock, double  **D)
       rs = INDEX(r,s);
 
       /*
-      psi::fprintf(outfile, "%d %d %d %d [%d] [%d] %20.15f\n", p, q, r, s, pq, rs, value);
+      outfile->Printf( "%d %d %d %d [%d] [%d] %20.15f\n", p, q, r, s, pq, rs, value);
       */
 
       /* (pq|rs) */
@@ -230,7 +230,7 @@ void uhf_fock_build(double **fock_a, double **fock_b, double **D_a, double **D_b
       rs = INDEX(r,s);
 
       /*
-      psi::fprintf(outfile, "%d %d %d %d [%d] [%d] %20.15f\n", p, q, r, s, pq, rs, value);
+      outfile->Printf( "%d %d %d %d [%d] [%d] %20.15f\n", p, q, r, s, pq, rs, value);
       */
 
       /* (pq|rs) */

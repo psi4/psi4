@@ -33,7 +33,7 @@ namespace psi{ namespace occwave{
 
 void OCCWave::tei_sort_iabc()
 {    
-    //psi::fprintf(outfile,"\n tei_sort_iabc is starting... \n"); fflush(outfile);
+    //outfile->Printf("\n tei_sort_iabc is starting... \n"); 
 /********************************************************************************************/
 /************************** sort chem -> phys ***********************************************/
 /********************************************************************************************/  
@@ -44,7 +44,7 @@ void OCCWave::tei_sort_iabc()
 	int ilsti,nbuf,index,fi;
 	double value = 0;
 
-        if (print_ > 2) psi::fprintf(outfile,"\n writing <ia|bc>... \n"); 
+        if (print_ > 2) outfile->Printf("\n writing <ia|bc>... \n"); 
  do
  {
         ilsti = ERIIN.last_buffer(); 
@@ -64,8 +64,8 @@ void OCCWave::tei_sort_iabc()
 
         // Make sure we are dealing with the (ia|bc) type integrals
         if (i < nooA && j >= nooA && k>= nooA && l >= nooA) {
-            iwl_buf_wrt_val(&AA, i, k, j, l, value, 0, (FILE *) NULL, 0);
-            if (k > l) iwl_buf_wrt_val(&AA, i, l, j, k, value, 0, (FILE *) NULL, 0);
+            iwl_buf_wrt_val(&AA, i, k, j, l, value, 0, "NULL", 0);
+            if (k > l) iwl_buf_wrt_val(&AA, i, l, j, k, value, 0, "NULL", 0);
         }
 
    }
@@ -88,7 +88,7 @@ void OCCWave::tei_sort_iabc()
 	dpd_buf4_close(&K);
 	//psio_->close(PSIF_LIBTRANS_DPD, 1);
 
-        psi::fprintf(outfile,"\n reading <ia|bc>... \n"); 
+        outfile->Printf("\n reading <ia|bc>... \n"); 
 	IWL ERIIN2(psio_.get(), PSIF_OCC_IABC, 0.0, 1, 1);
  do
  {
@@ -107,8 +107,8 @@ void OCCWave::tei_sort_iabc()
         value = ERIIN2.values()[idx];
         fi += 4;
 
-	psi::fprintf(outfile,"%3d %3d %3d %3d %20.14f\n",i,j,k,l,value);      
-        fflush(outfile);
+	outfile->Printf("%3d %3d %3d %3d %20.14f\n",i,j,k,l,value);      
+        
 
    }
         if(!ilsti)
@@ -116,7 +116,7 @@ void OCCWave::tei_sort_iabc()
 
  } while(!ilsti);
  */   
-  //psi::fprintf(outfile,"tei_sort_iabc done. \n"); fflush(outfile);
+  //outfile->Printf("tei_sort_iabc done. \n"); 
 }// end sort_iabc
 }} // End Namespaces
 

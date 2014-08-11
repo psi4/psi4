@@ -39,7 +39,7 @@
 #include "backsort.h"
 
 namespace psi {
-extern FILE* outfile;
+
 namespace transqt {
 
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
@@ -145,31 +145,31 @@ void transform_two_backtr_uhf(void)
   /** Presort the AA twopdm **/
 
   if(params.print_lvl) {
-    psi::fprintf(outfile, "\n\tPre-sorting AA two-particle density...\n\n"); fflush(outfile);
+    outfile->Printf( "\n\tPre-sorting AA two-particle density...\n\n"); 
   }
 
   yosh_init(&YBuffP, src_ntri, src_ntri, maxcor, maxcord, max_buckets,
-            first_tmp_file, tolerance, outfile);
-  if(print_lvl > 1) { yosh_print(&YBuffP, outfile); fflush(outfile); }
+            first_tmp_file, tolerance, "outfile");
+  if(print_lvl > 1) { yosh_print(&YBuffP, "outfile");  }
   yosh_init_buckets(&YBuffP);
-  yosh_rdtwo_backtr_uhf(AA, &YBuffP, PSIF_MO_AA_TPDM, ioff, 1, 1, 1, 0, outfile);
+  yosh_rdtwo_backtr_uhf(AA, &YBuffP, PSIF_MO_AA_TPDM, ioff, 1, 1, 1, 0, "outfile");
   yosh_close_buckets(&YBuffP, 0);
-  yosh_sort(&YBuffP, PSIF_AA_PRESORT, 0, ioff, NULL, src_orbs, src_ntri, 0, 1, 0, 0, 1, 0, outfile);
+  yosh_sort(&YBuffP, PSIF_AA_PRESORT, 0, ioff, NULL, src_orbs, src_ntri, 0, 1, 0, 0, 1, 0, "outfile");
   yosh_done(&YBuffP);
 
   /** Presort the AB twopdm **/
 
   if(params.print_lvl) {
-    psi::fprintf(outfile, "\n\tPre-sorting AB two-particle density...\n\n"); fflush(outfile);
+    outfile->Printf( "\n\tPre-sorting AB two-particle density...\n\n"); 
   }
 
   yosh_init(&YBuffP, src_ntri, src_ntri, maxcor, maxcord, max_buckets,
-            first_tmp_file, tolerance, outfile);
-  if(print_lvl > 1) { yosh_print(&YBuffP, outfile); fflush(outfile); }
+            first_tmp_file, tolerance, "outfile");
+  if(print_lvl > 1) { yosh_print(&YBuffP, "outfile");  }
   yosh_init_buckets(&YBuffP);
-  yosh_rdtwo_backtr_uhf(AB, &YBuffP, PSIF_MO_AB_TPDM, ioff, 0, 1, 1, 0, outfile);
+  yosh_rdtwo_backtr_uhf(AB, &YBuffP, PSIF_MO_AB_TPDM, ioff, 0, 1, 1, 0, "outfile");
   yosh_close_buckets(&YBuffP, 0);
-  yosh_sort(&YBuffP, PSIF_AB_PRESORT, 0, ioff, NULL, src_orbs, src_ntri, 0, 1, 0, 0, 1, 0, outfile);
+  yosh_sort(&YBuffP, PSIF_AB_PRESORT, 0, ioff, NULL, src_orbs, src_ntri, 0, 1, 0, 0, 1, 0, "outfile");
   yosh_done(&YBuffP);
 
   A_cols = MAX0(src_orbs, dst_orbs);
@@ -195,7 +195,7 @@ void transform_two_backtr_uhf(void)
     for(q=0; q <= p; q++, pq++) {
 
       zero_arr(ab_block, src_ntri);
-      iwl_buf_rd(&JBuff, pq, ab_block, ioff, ioff, 0, 0, outfile);
+      iwl_buf_rd(&JBuff, pq, ab_block, ioff, ioff, 0, 0, "outfile");
 
       for(r=0,rs=0; r < src_orbs; r++) {
         for(s=0; s <= r; s++,rs++) {
@@ -209,8 +209,8 @@ void transform_two_backtr_uhf(void)
   */
 
   /*
-    psi::fprintf(outfile, "\n\tMO-basis AA SCF Twopdm:\n");
-    print_mat(ab_dens1, dim, dim, outfile);
+    outfile->Printf( "\n\tMO-basis AA SCF Twopdm:\n");
+    print_mat(ab_dens1, dim, dim, "outfile");
   */
 
   /* Check energy in the MO basis */
@@ -218,7 +218,7 @@ void transform_two_backtr_uhf(void)
   ntei = src_ntri * (src_ntri + 1)/2;
   ints = init_array(ntei);
   iwl_buf_init(&JBuff, PSIF_MO_AA_TEI, tolerance, 1, 0);
-  iwl_buf_rd_all(&JBuff, ints, ioff, ioff, 0, ioff, 0, outfile);
+  iwl_buf_rd_all(&JBuff, ints, ioff, ioff, 0, ioff, 0, "outfile");
   iwl_buf_close(&JBuff, 1);
   energy = 0.0;
   for(p=0; p < src_orbs; p++)
@@ -232,7 +232,7 @@ void transform_two_backtr_uhf(void)
         }
       }
     }
-  psi::fprintf(outfile, "\n\tAA energy from MO-twopdm: %20.14f\n", energy);
+  outfile->Printf( "\n\tAA energy from MO-twopdm: %20.14f\n", energy);
   free(ints);
 
 
@@ -260,7 +260,7 @@ void transform_two_backtr_uhf(void)
     }
   }
 
-  psi::fprintf(outfile, "\n\tAA_norm (1st half) = %20.15f\n", AA_norm);
+  outfile->Printf( "\n\tAA_norm (1st half) = %20.15f\n", AA_norm);
   AA_norm = 0.0;
 
   for(p=0, pq=0; p < src_orbs; p++) {
@@ -299,7 +299,7 @@ void transform_two_backtr_uhf(void)
     }
   }
 
-  psi::fprintf(outfile, "\n\tAA_norm (2nd half) = %20.15f\n", AA_norm);
+  outfile->Printf( "\n\tAA_norm (2nd half) = %20.15f\n", AA_norm);
   AA_norm = 0.0;
   */
 
@@ -308,7 +308,7 @@ void transform_two_backtr_uhf(void)
   ntei = dst_ntri * (dst_ntri + 1)/2;
   ints = init_array(ntei);
   iwl_buf_init(&JBuff, PSIF_SO_TEI, tolerance, 1, 0);
-  iwl_buf_rd_all(&JBuff, ints, ioff, ioff, 0, ioff, 0, outfile);
+  iwl_buf_rd_all(&JBuff, ints, ioff, ioff, 0, ioff, 0, "outfile");
   iwl_buf_close(&JBuff, 1);
 
   energy = 0.0;
@@ -324,7 +324,7 @@ void transform_two_backtr_uhf(void)
       }
     }
   }
-  psi::fprintf(outfile, "\n\tAA energy from AO-twopdm: %20.14f\n", energy);
+  outfile->Printf( "\n\tAA energy from AO-twopdm: %20.14f\n", energy);
   free(ints);
 
   free_block(ab_dens1);
@@ -345,7 +345,7 @@ void transform_two_backtr_uhf(void)
     for(q=0; q <= p; q++, pq++) {
 
       zero_arr(ab_block, src_ntri);
-      iwl_buf_rd(&JBuff, pq, ab_block, ioff, ioff, 0, 0, outfile);
+      iwl_buf_rd(&JBuff, pq, ab_block, ioff, ioff, 0, 0, "outfile");
 
       for(r=0,rs=0; r < src_orbs; r++) {
         for(s=0; s <= r; s++,rs++) {
@@ -359,7 +359,7 @@ void transform_two_backtr_uhf(void)
   */
 
   /*
-    psi::fprintf(outfile, "\n\tMO-basis AB SCF Twopdm:\n");
+    outfile->Printf( "\n\tMO-basis AB SCF Twopdm:\n");
     print_mat(ab_dens1, dim, dim, outfile);
   */
 
@@ -368,7 +368,7 @@ void transform_two_backtr_uhf(void)
   ntei = src_ntri * (src_ntri + 1)/2;
   ab_ints = block_matrix(dim,dim);
   iwl_buf_init(&JBuff, PSIF_MO_AB_TEI, tolerance, 1, 0);
-  iwl_buf_rd_all2(&JBuff, ab_ints, ioff, ioff, 0, ioff, 0, outfile);
+  iwl_buf_rd_all2(&JBuff, ab_ints, ioff, ioff, 0, ioff, 0, "outfile");
   iwl_buf_close(&JBuff, 1);
   energy = 0.0;
   for(p=0; p < src_orbs; p++) {
@@ -385,7 +385,7 @@ void transform_two_backtr_uhf(void)
       }
     }
   }
-  psi::fprintf(outfile, "\n\tAB energy from MO-twopdm: %20.14f\n", energy);
+  outfile->Printf( "\n\tAB energy from MO-twopdm: %20.14f\n", energy);
   free_block(ab_ints);
 
 
@@ -453,7 +453,7 @@ void transform_two_backtr_uhf(void)
   ntei = dst_ntri * (dst_ntri + 1)/2;
   ints = init_array(ntei);
   iwl_buf_init(&JBuff, PSIF_SO_TEI, tolerance, 1, 0);
-  iwl_buf_rd_all(&JBuff, ints, ioff, ioff, 0, ioff, 0, outfile);
+  iwl_buf_rd_all(&JBuff, ints, ioff, ioff, 0, ioff, 0, "outfile");
   iwl_buf_close(&JBuff, 1);
 
   energy = 0.0;
@@ -471,7 +471,7 @@ void transform_two_backtr_uhf(void)
       }
     }
   }
-  psi::fprintf(outfile, "\n\tAB energy from AO-twopdm: %20.14f\n", energy);
+  outfile->Printf( "\n\tAB energy from AO-twopdm: %20.14f\n", energy);
   free(ints);
 
   free_block(ab_dens1);
@@ -479,7 +479,7 @@ void transform_two_backtr_uhf(void)
   */
 
   /** AA/AB First-half transformation **/
-  psi::fprintf(outfile, "\n\tBeginning AA/AB twopdm transform...\n");
+  outfile->Printf( "\n\tBeginning AA/AB twopdm transform...\n");
 
   PAA_block = init_array(src_ntri);
   PAB_block = init_array(src_ntri);
@@ -488,8 +488,8 @@ void transform_two_backtr_uhf(void)
 
   J_block = init_array(MAX0(src_ntri,dst_ntri));
   yosh_init(&YBuffJ, dst_ntri, src_ntri, maxcor, maxcord, max_buckets,
-            first_tmp_file, tolerance, outfile);
-  if(print_lvl > 1) { yosh_print(&YBuffJ, outfile); fflush(outfile); }
+            first_tmp_file, tolerance, "outfile");
+  if(print_lvl > 1) { yosh_print(&YBuffJ, "outfile");  }
   yosh_init_buckets(&YBuffJ);
 
   for(psym=0; psym < nirreps; psym++) {
@@ -506,8 +506,8 @@ void transform_two_backtr_uhf(void)
           zero_arr(PAA_block, src_ntri);
           zero_arr(PAB_block, src_ntri);
 
-          iwl_buf_rd(&PAA_Buff, pq, PAA_block, ioff, ioff, 0, 0, outfile);
-          iwl_buf_rd(&PAB_Buff, pq, PAB_block, ioff, ioff, 0, 0, outfile);
+          iwl_buf_rd(&PAA_Buff, pq, PAA_block, ioff, ioff, 0, 0, "outfile");
+          iwl_buf_rd(&PAB_Buff, pq, PAB_block, ioff, ioff, 0, 0, "outfile");
 
           for (rsym=0; rsym < nirreps; rsym++) {
             rfirst = src_first[rsym];
@@ -570,7 +570,7 @@ void transform_two_backtr_uhf(void)
               }
 
               yosh_wrt_arr(&YBuffJ, p, q, pq, pqsym, J_block,
-                           moinfo.nao, ioff, dst_orbsym, dst_first, dst_last, 1, 0, outfile);
+                           moinfo.nao, ioff, dst_orbsym, dst_first, dst_last, 1, 0, "outfile");
 
             }
           }
@@ -585,30 +585,30 @@ void transform_two_backtr_uhf(void)
   free(PAB_block);
 
   if (params.print_lvl) {
-    psi::fprintf(outfile, "\tSorting AA/AB half-transformed twopdm...\n"); fflush(outfile);
+    outfile->Printf( "\tSorting AA/AB half-transformed twopdm...\n"); 
   }
   yosh_flush(&YBuffJ);
   yosh_close_buckets(&YBuffJ, 0);
-  yosh_sort(&YBuffJ, params.jfile, 0, ioff, NULL, src_orbs, src_ntri, 0, 1, 0, 0, 1, 0, outfile);
+  yosh_sort(&YBuffJ, params.jfile, 0, ioff, NULL, src_orbs, src_ntri, 0, 1, 0, 0, 1, 0, "outfile");
   yosh_done(&YBuffJ);
   free(J_block);
   if (print_lvl) {
-    psi::fprintf(outfile, "\tFinished AA/AB half-transformation...\n"); fflush(outfile);
+    outfile->Printf( "\tFinished AA/AB half-transformation...\n"); 
   }
 
   /** Presort the BB twopdm **/
 
   if(params.print_lvl) {
-    psi::fprintf(outfile, "\n\tPre-sorting BB two-particle density...\n\n"); fflush(outfile);
+    outfile->Printf( "\n\tPre-sorting BB two-particle density...\n\n"); 
   }
 
   yosh_init(&YBuffP, src_ntri, src_ntri, maxcor, maxcord, max_buckets,
-            first_tmp_file, tolerance, outfile);
-  if(print_lvl > 1) { yosh_print(&YBuffP, outfile); fflush(outfile); }
+            first_tmp_file, tolerance, "outfile");
+  if(print_lvl > 1) { yosh_print(&YBuffP, "outfile");  }
   yosh_init_buckets(&YBuffP);
-  yosh_rdtwo_backtr_uhf(BB, &YBuffP, PSIF_MO_BB_TPDM, ioff, 1, 1, 1, 0, outfile);
+  yosh_rdtwo_backtr_uhf(BB, &YBuffP, PSIF_MO_BB_TPDM, ioff, 1, 1, 1, 0, "outfile");
   yosh_close_buckets(&YBuffP, 0);
-  yosh_sort(&YBuffP, PSIF_BB_PRESORT, 0, ioff, NULL, src_orbs, src_ntri, 0, 1, 0, 0, 1, 0, outfile);
+  yosh_sort(&YBuffP, PSIF_BB_PRESORT, 0, ioff, NULL, src_orbs, src_ntri, 0, 1, 0, 0, 1, 0, "outfile");
   yosh_done(&YBuffP);
 
   /* Try an in-core backtr of the BB density */
@@ -624,7 +624,7 @@ void transform_two_backtr_uhf(void)
     for(q=0; q <= p; q++, pq++) {
 
       zero_arr(ab_block, src_ntri);
-      iwl_buf_rd(&JBuff, pq, ab_block, ioff, ioff, 0, 0, outfile);
+      iwl_buf_rd(&JBuff, pq, ab_block, ioff, ioff, 0, 0, "outfile");
 
       for(r=0,rs=0; r < src_orbs; r++) {
         for(s=0; s <= r; s++,rs++) {
@@ -638,8 +638,8 @@ void transform_two_backtr_uhf(void)
   */
 
   /*
-    psi::fprintf(outfile, "\n\tMO-basis BB SCF Twopdm:\n");
-    print_mat(ab_dens1, dim, dim, outfile);
+    outfile->Printf( "\n\tMO-basis BB SCF Twopdm:\n");
+    print_mat(ab_dens1, dim, dim, "outfile");
   */
 
   /* Check energy in the MO basis */
@@ -647,7 +647,7 @@ void transform_two_backtr_uhf(void)
   ntei = src_ntri * (src_ntri + 1)/2;
   ints = init_array(ntei);
   iwl_buf_init(&JBuff, PSIF_MO_BB_TEI, tolerance, 1, 0);
-  iwl_buf_rd_all(&JBuff, ints, ioff, ioff, 0, ioff, 0, outfile);
+  iwl_buf_rd_all(&JBuff, ints, ioff, ioff, 0, ioff, 0, "outfile");
   iwl_buf_close(&JBuff, 1);
   energy = 0.0;
   for(p=0; p < src_orbs; p++) {
@@ -664,7 +664,7 @@ void transform_two_backtr_uhf(void)
       }
     }
   }
-  psi::fprintf(outfile, "\n\tBB energy from MO-twopdm: %20.14f\n", energy);
+  outfile->Printf( "\n\tBB energy from MO-twopdm: %20.14f\n", energy);
   free(ints);
 
 
@@ -692,7 +692,7 @@ void transform_two_backtr_uhf(void)
     }
   }
 
-  psi::fprintf(outfile, "\n\tBB_norm (1st half) = %20.15f\n", BB_norm);
+  outfile->Printf( "\n\tBB_norm (1st half) = %20.15f\n", BB_norm);
   BB_norm = 0.0;
 
   for(p=0, pq=0; p < src_orbs; p++) {
@@ -731,7 +731,7 @@ void transform_two_backtr_uhf(void)
     }
   }
 
-  psi::fprintf(outfile, "\n\tBB_norm (2nd half) = %20.15f\n", BB_norm);
+  outfile->Printf( "\n\tBB_norm (2nd half) = %20.15f\n", BB_norm);
   BB_norm = 0.0;
   */
 
@@ -758,7 +758,7 @@ void transform_two_backtr_uhf(void)
       }
     }
   }
-  psi::fprintf(outfile, "\n\tBB energy from AO-twopdm: %20.14f\n", energy);
+  outfile->Printf( "\n\tBB energy from AO-twopdm: %20.14f\n", energy);
   free(ints);
 
   free_block(ab_dens1);
@@ -766,15 +766,15 @@ void transform_two_backtr_uhf(void)
   */
 
   /** BB First-half transformation **/
-  psi::fprintf(outfile, "\n\tBeginning BB twopdm transform...\n");
+  outfile->Printf( "\n\tBeginning BB twopdm transform...\n");
 
   PBB_block = init_array(src_ntri);
   iwl_buf_init(&PBB_Buff, PSIF_BB_PRESORT, tolerance, 1, 1);
 
   J_block = init_array(MAX0(src_ntri,dst_ntri));
   yosh_init(&YBuffJ, dst_ntri, src_ntri, maxcor, maxcord, max_buckets,
-            first_tmp_file, tolerance, outfile);
-  if(print_lvl > 1) { yosh_print(&YBuffJ, outfile); fflush(outfile); }
+            first_tmp_file, tolerance, "outfile");
+  if(print_lvl > 1) { yosh_print(&YBuffJ, "outfile");  }
   yosh_init_buckets(&YBuffJ);
 
   for(psym=0; psym < nirreps; psym++) {
@@ -790,7 +790,7 @@ void transform_two_backtr_uhf(void)
 
           zero_arr(PBB_block, src_ntri);
 
-          iwl_buf_rd(&PBB_Buff, pq, PBB_block, ioff, ioff, 0, 0, outfile);
+          iwl_buf_rd(&PBB_Buff, pq, PBB_block, ioff, ioff, 0, 0, "outfile");
 
           for (rsym=0; rsym < nirreps; rsym++) {
             rfirst = src_first[rsym];
@@ -841,7 +841,7 @@ void transform_two_backtr_uhf(void)
               }
 
               yosh_wrt_arr(&YBuffJ, p, q, pq, pqsym, J_block,
-                           moinfo.nao, ioff, dst_orbsym, dst_first, dst_last, 1, 0, outfile);
+                           moinfo.nao, ioff, dst_orbsym, dst_first, dst_last, 1, 0, "outfile");
 
             }
           }
@@ -854,19 +854,19 @@ void transform_two_backtr_uhf(void)
   free(PBB_block);
 
   if (params.print_lvl) {
-    psi::fprintf(outfile, "\tSorting BB half-transformed twopdm...\n"); fflush(outfile);
+    outfile->Printf( "\tSorting BB half-transformed twopdm...\n"); 
   }
   yosh_flush(&YBuffJ);
   yosh_close_buckets(&YBuffJ, 0);
-  yosh_sort(&YBuffJ, params.jfile+1, 0, ioff, NULL, src_orbs, src_ntri, 0, 1, 0, 0, 1, 0, outfile);
+  yosh_sort(&YBuffJ, params.jfile+1, 0, ioff, NULL, src_orbs, src_ntri, 0, 1, 0, 0, 1, 0, "outfile");
   yosh_done(&YBuffJ);
   free(J_block);
   if (print_lvl) {
-    psi::fprintf(outfile, "\tFinished BB half-transformation...\n"); fflush(outfile);
+    outfile->Printf( "\tFinished BB half-transformation...\n"); 
   }
 
   if (print_lvl) {
-    psi::fprintf(outfile, "\tStarting final half-transformation...\n"); fflush(outfile);
+    outfile->Printf( "\tStarting final half-transformation...\n"); 
   }
 
   JA_block = init_array(MAX0(src_ntri,dst_ntri));
@@ -899,8 +899,8 @@ void transform_two_backtr_uhf(void)
 
           zero_arr(JA_block, dst_ntri);
           zero_arr(JB_block, dst_ntri);
-          iwl_buf_rd(&JA_Buff, kl, JA_block, ioff, ioff, 0, 0, outfile);
-          iwl_buf_rd(&JB_Buff, kl, JB_block, ioff, ioff, 0, 0, outfile);
+          iwl_buf_rd(&JA_Buff, kl, JA_block, ioff, ioff, 0, 0, "outfile");
+          iwl_buf_rd(&JB_Buff, kl, JB_block, ioff, ioff, 0, 0, "outfile");
 
           for (psym=0; psym < nirreps; psym++) {
             pfirst = src_first[psym];
@@ -948,10 +948,10 @@ void transform_two_backtr_uhf(void)
 
               /*
               iwl_buf_wrt_mat2(&MBuff, k, l, A_AA, ifirst, ilast, jfirst, jlast, reorder, 0, 0,
-                               ioff, outfile);
+                               ioff, "outfile");
               */
 
-              backsort_write(k, l, A_AA, ifirst, ilast, jfirst, jlast, 0, outfile, twopdm_out, 1);
+              backsort_write(k, l, A_AA, ifirst, ilast, jfirst, jlast, 0, "outfile", twopdm_out, 1);
 
             }
           }
@@ -982,19 +982,19 @@ void transform_two_backtr_uhf(void)
   }
   free(twopdm_out);
   if(print_lvl) {
-    psi::fprintf(outfile, "\n\tSorting AO-basis twopdm...");
-    fflush(outfile);
+    outfile->Printf( "\n\tSorting AO-basis twopdm...");
+    
   }
   backsort(first_tmp_file, tolerance, 1);
   if(print_lvl) {
-    psi::fprintf(outfile, "\n\tdone.");
-    fflush(outfile);
+    outfile->Printf( "\n\tdone.");
+    
   }
 
   if (print_lvl) {
-    psi::fprintf(outfile, "\n\tAA/AB/BB twopdm transformation finished.\n");
-    psi::fprintf(outfile, "\tAO-basis twopdm written to file%d.\n",params.mfile);
-    fflush(outfile);
+    outfile->Printf( "\n\tAA/AB/BB twopdm transformation finished.\n");
+    outfile->Printf( "\tAO-basis twopdm written to file%d.\n",params.mfile);
+    
   }
 
   /*
@@ -1003,9 +1003,9 @@ void transform_two_backtr_uhf(void)
   dens = block_matrix(dst_ntri, dst_ntri);
 
   iwl_buf_init(&MBuff, 78, tolerance, 1, 0);
-  iwl_buf_rd_all2(&MBuff, dens, ioff, ioff, 0, ioff, 0, outfile);
+  iwl_buf_rd_all2(&MBuff, dens, ioff, ioff, 0, ioff, 0, "outfile");
   iwl_buf_init(&JBuff, PSIF_SO_TEI, tolerance, 1, 0);
-  iwl_buf_rd_all(&JBuff, ints, ioff, ioff, 0, ioff, 0, outfile);
+  iwl_buf_rd_all(&JBuff, ints, ioff, ioff, 0, ioff, 0, "outfile");
   energy = 0.0;
   for(p=0; p < dst_orbs; p++) {
     for(q=0; q < dst_orbs; q++) {
@@ -1019,7 +1019,7 @@ void transform_two_backtr_uhf(void)
       }
     }
   }
-  psi::fprintf(outfile, "\n\tTotal energy from AO-twopdm: %20.14f\n", energy);
+  outfile->Printf( "\n\tTotal energy from AO-twopdm: %20.14f\n", energy);
   iwl_buf_close(&MBuff, 1);
   iwl_buf_close(&JBuff, 1);
 

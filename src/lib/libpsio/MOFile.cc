@@ -106,36 +106,36 @@ void MOFile::Copy(const MOFile& other) {
    }
 }
 
-void MOFile::Init() {
-   boost::shared_ptr<PSIO> psio_=psi::_default_psio_lib_;
-   psio_->open(PSIF_SCF_MOS, PSIO_OPEN_OLD);
-   psio_->read_entry(PSIF_SCF_MOS, "BASIS NAME LENGTH",
-         (char *)(&BasisNameLength), sizeof(int));
+void MOFile::Read() {
+   psio->open(FileNumber, PSIO_OPEN_OLD);
+   psio->read_entry(FileNumber,"BASIS NAME LENGTH",(char *)&BasisNameLength,
+         sizeof(int));
    BasisName=new char[BasisNameLength];
-   psio_->read_entry(PSIF_SCF_MOS, "BASIS NAME", BasisName,
+   psio->read_entry(FileNumber, "BASIS NAME", BasisName,
          BasisNameLength*sizeof(char));
-   psio_->read_entry(PSIF_SCF_MOS, "PUREAM", (char *)(&puream), sizeof(int));
-   psio_->read_entry(PSIF_SCF_MOS, "SCF ENERGY", (char *)&(energy),
+   psio->read_entry(FileNumber, "PUREAM", (char *)(&puream), sizeof(int));
+   psio->read_entry(FileNumber, "SCF ENERGY", (char *)&(energy),
          sizeof(double));
-   psio_->read_entry(PSIF_SCF_MOS, "NIRREP", (char *)&(NIrrep), sizeof(int));
+   psio->read_entry(FileNumber, "NIRREP", (char *)&(NIrrep), sizeof(int));
 
    std::size_t size=NIrrep*sizeof(int);
    NSOPI=new int[size];
    NAlpha=new int[size];
    NBeta=new int[size];
-   psio_->read_entry(PSIF_SCF_MOS, "NSOPI", (char *)NSOPI, size);
-   psio_->read_entry(PSIF_SCF_MOS, "NALPHAPI", (char *)NAlpha, size);
-   psio_->read_entry(PSIF_SCF_MOS, "NBETAPI", (char *)NBeta, size);
+   psio->read_entry(FileNumber, "NSOPI", (char *)NSOPI, size);
+   psio->read_entry(FileNumber, "NALPHAPI", (char *)NAlpha, size);
+   psio->read_entry(FileNumber, "NBETAPI", (char *)NBeta, size);
    Ca=SharedMatrix(new psi::Matrix("ALPHA MOS", NIrrep, NSOPI, NAlpha));
-   Ca->load(psio_, PSIF_SCF_MOS, psi::Matrix::SubBlocks);
+   Ca->load(psio, FileNumber, psi::Matrix::SubBlocks);
    Cb=SharedMatrix(new psi::Matrix("BETA MOS", NIrrep, NSOPI, NBeta));
-   Cb->load(psio_, PSIF_SCF_MOS, psi::Matrix::SubBlocks);
-   psio_->close(PSIF_SCF_MOS, 1);
+   Cb->load(psio, FileNumber, psi::Matrix::SubBlocks);
+   psio->close(FileNumber, 1);
 }
 
 MOFile::MOFile() :
       BasisName(NULL), NSOPI(NULL), NAlpha(NULL), NBeta(NULL),
-      BasisNameLength(0),puream(-1),energy(0.0),NIrrep(0){
+      BasisNameLength(0),puream(-1),energy(0.0),NIrrep(0),
+      BinaryFile(PSIF_SCF_MOS){
 }
 
 MOFile MOFile::DirectSum(const MOFile& other) const {
@@ -158,52 +158,42 @@ MOFile MOFile::DirectSum(const MOFile& other) const {
    NewFile.Ca->set(0.0);
    NewFile.Cb->set(0.0);
    for (int i=0; i<this->NSOPI[0]; i++) {
-      for (int j=0; j<this->NAlpha[0]; j++) {
+      for (int j=0; j<this->NAlpha[0]; j++)
          NewFile.Ca->set(i, j, (*this->Ca)(i, j));
-      }
-      for (int j=0; j<this->NBeta[0]; j++) {
+      for (int j=0; j<this->NBeta[0]; j++)
          NewFile.Cb->set(i, j, (*this->Cb)(i, j));
-      }
    }
    int rowoff=this->NSOPI[0];
    int acoloff=this->NAlpha[0];
    int bcoloff=this->NBeta[0];
    for (int i=0; i<other.NSOPI[0]; i++) {
-      std::vector<double> arow(other.NAlpha[0]+acoloff, 0.0);
-      std::vector<double> brow(other.NBeta[0]+bcoloff, 0.0);
-      for (int j=0; j<other.NAlpha[0]; j++) {
+      for (int j=0; j<other.NAlpha[0]; j++)
          NewFile.Ca->set(i+rowoff, j+acoloff, (*(other.Ca))(i, j));
-         arow[acoloff+j]=(*(other.Ca))(i, j);
-      }
-      for (int j=0; j<other.NBeta[0]; j++) {
+
+      for (int j=0; j<other.NBeta[0]; j++)
          NewFile.Cb->set(i+rowoff, j+bcoloff, (*(other.Cb))(i, j));
-         brow[bcoloff+j]=(*(other.Cb))(i, j);
-      }
-      //NewFile.Ca->schmidt_add_row(0,rowoff+i,&arow[0]);
-      //NewFile.Cb->schmidt_add_row(0,rowoff+i,&brow[0]);
+
    }
    return NewFile;
 }
-
-void MOFile::WriteFile() {
-   boost::shared_ptr<PSIO> psio_=psi::_default_psio_lib_;
-   psio_->open(PSIF_SCF_MOS, PSIO_OPEN_NEW);
-   psio_->write_entry(PSIF_SCF_MOS, "SCF ENERGY", (char *)&(energy),
+void MOFile::print_out(){Ca->print_out();}
+void MOFile::Write() {
+   psio->open(FileNumber, PSIO_OPEN_NEW);
+   psio->write_entry(FileNumber, "SCF ENERGY", (char *)&(energy),
          sizeof(double));
-   psio_->write_entry(PSIF_SCF_MOS, "NIRREP", (char *)&(NIrrep), sizeof(int));
+   psio->write_entry(FileNumber, "NIRREP", (char *)&(NIrrep), sizeof(int));
    std::size_t size=NIrrep*sizeof(int);
-   psio_->write_entry(PSIF_SCF_MOS, "NSOPI", (char *)NSOPI, size);
-   psio_->write_entry(PSIF_SCF_MOS, "NALPHAPI", (char *)NAlpha, size);
-   psio_->write_entry(PSIF_SCF_MOS, "NBETAPI", (char *)NBeta, size);
-   psio_->write_entry(PSIF_SCF_MOS, "BASIS NAME LENGTH",
+   psio->write_entry(FileNumber, "NSOPI", (char *)NSOPI, size);
+   psio->write_entry(FileNumber, "NALPHAPI", (char *)NAlpha, size);
+   psio->write_entry(FileNumber, "NBETAPI", (char *)NBeta, size);
+   psio->write_entry(FileNumber, "BASIS NAME LENGTH",
          (char *)(&BasisNameLength), sizeof(int));
-   psio_->write_entry(PSIF_SCF_MOS, "BASIS NAME", BasisName,
+   psio->write_entry(FileNumber, "BASIS NAME", BasisName,
          BasisNameLength*sizeof(char));
-   psio_->write_entry(PSIF_SCF_MOS, "PUREAM", (char *)(&puream), sizeof(int));
-   Ca->print_out();
-   Ca->save(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
-   Cb->save(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
-   psio_->close(PSIF_SCF_MOS, 1);
+   psio->write_entry(FileNumber, "PUREAM", (char *)(&puream), sizeof(int));
+   Ca->save(psio, FileNumber, Matrix::SubBlocks);
+   Cb->save(psio, FileNumber, Matrix::SubBlocks);
+   psio->close(FileNumber, 1);
 
 }
 }      //End namespace psi

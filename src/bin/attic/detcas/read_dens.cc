@@ -98,9 +98,9 @@ double **rdopdm(int nbf, int print_lvl, int opdm_file, int erase, Options &optio
   }
 
   if (print_lvl > 3) {
-    psi::fprintf(outfile,"\nOne-Particle Density Matrix\n");
+    outfile->Printf("\nOne-Particle Density Matrix\n");
     print_mat(opdm, nbf, nbf, outfile);
-    psi::fprintf(outfile,"\n\n");
+    outfile->Printf("\n\n");
   }
 
   psio_close(opdm_file, erase ? 0 : 1);
@@ -151,7 +151,7 @@ double *rdtpdm(int nbf, int print_lvl, int tpdm_file, int erase)
                 (print_lvl>5), outfile);
 
   if (print_lvl > 4) {
-    psi::fprintf(outfile,"Non-symmetrized Two-Particle Density Matrix\n");
+    outfile->Printf("Non-symmetrized Two-Particle Density Matrix\n");
     for (p=0; p<nbf; p++) {
       for (q=0; q<nbf; q++) {
         for (r=0; r<=p; r++) {
@@ -160,13 +160,13 @@ double *rdtpdm(int nbf, int print_lvl, int tpdm_file, int erase)
             pq = p * nbf + q;
             rs = r * nbf + s;
             pqrs = INDEX(pq,rs);
-            psi::fprintf(outfile, "%2d %2d %2d %2d = %12.6lf\n", p, q, r, s, 
+            outfile->Printf( "%2d %2d %2d %2d = %12.6lf\n", p, q, r, s, 
                     tpdm[pqrs]);
           }
         }
       }
     }
-    psi::fprintf(outfile,"\n\n");
+    outfile->Printf("\n\n");
   }
 
   iwl_buf_close(&TBuff, 1);
@@ -206,13 +206,13 @@ double *rdtpdm(int nbf, int print_lvl, int tpdm_file, int erase)
   free(tpdm);
 
   if (print_lvl > 4) {
-    psi::fprintf(outfile,"Symmetrized Two-Particle Density Matrix\n");
+    outfile->Printf("Symmetrized Two-Particle Density Matrix\n");
     for (p=0,target=0; p<nbf; p++) {
       for (q=0; q<=p; q++) {
         for (r=0; r<=p; r++) {
           smax = (r==p) ? q+1 : r+1;
           for (s=0; s<smax; s++,target++) {
-            psi::fprintf(outfile, "%2d %2d %2d %2d = %12.6lf\n", p, q, r, s, 
+            outfile->Printf( "%2d %2d %2d %2d = %12.6lf\n", p, q, r, s, 
                     symm_tpdm[target]);
           }
         }

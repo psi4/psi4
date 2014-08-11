@@ -139,7 +139,7 @@ static double new_d1diag_t1_rohf(void)
   max_xp = sqrt(max_xp);
 
   /*
-  psi::fprintf(outfile, "ND1: hp=%8.6f hx=%8.6f xp=%8.6f\n", max_hp, max_hx, max_xp);
+  outfile->Printf( "ND1: hp=%8.6f hx=%8.6f xp=%8.6f\n", max_hp, max_hx, max_xp);
   */
 
   max = max_hp;

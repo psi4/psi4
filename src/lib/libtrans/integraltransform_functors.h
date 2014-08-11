@@ -530,10 +530,10 @@ private:
                int pq, int rs, int pq_sym, int rs_sym)
     {
 
-        psi::fprintf(outfile, "\n\tDPD Parameter Error in %s\n", message);
-        psi::fprintf(outfile,"\t-------------------------------------------------\n");
-        psi::fprintf(outfile,"\t    p      q      r      s  [   pq]  [   rs] pq_symm rs_symm\n");
-        psi::fprintf(outfile,"\t%5d  %5d  %5d  %5d  [%5d]  [%5d]   %1d   %1d\n", p,q,r,s,
+        outfile->Printf( "\n\tDPD Parameter Error in %s\n", message);
+        outfile->Printf("\t-------------------------------------------------\n");
+        outfile->Printf("\t    p      q      r      s  [   pq]  [   rs] pq_symm rs_symm\n");
+        outfile->Printf("\t%5d  %5d  %5d  %5d  [%5d]  [%5d]   %1d   %1d\n", p,q,r,s,
                 pq,rs,pq_sym,rs_sym);
         throw PsiException("DPD idx failure.", __FILE__, __LINE__);
     }

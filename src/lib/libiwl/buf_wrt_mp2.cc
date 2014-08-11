@@ -35,8 +35,10 @@ namespace psi {
 void IWL::write_mp2(int p, int q, int pq,
     int pqsym, double **arr, int rsym, int *firstr, int *lastr, 
     int *firsts, int *lasts, int *occ, int *vir, int *ioff, 
-    int printflag, FILE *out)
+    int printflag, std::string out)
 {
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(out)));
     int idx, r, s, rs, ssym;
     int R,S,rnew,snew;
     double value;
@@ -79,7 +81,7 @@ void IWL::write_mp2(int p, int q, int pq,
                 }
 
                 if(printflag)
-                    psi::fprintf(out, "<%d %d %d %d [%d] [%d] = %20.10f\n",
+                    printer->Printf( "<%d %d %d %d [%d] [%d] = %20.10f\n",
                     p, q, rnew, snew, pq, rs, value);
 
             } /* end if (fabs(value) > Buf->cutoff) ... */
@@ -103,8 +105,10 @@ void IWL::write_mp2(int p, int q, int pq,
 */
 void iwl_buf_wrt_mp2(struct iwlbuf *Buf, int p, int q, int pq, int pqsym,
    double **arr, int rsym, int *firstr, int *lastr, int *firsts, int *lasts,
-   int *occ, int *vir, int *ioff, int printflag, FILE *out)
+   int *occ, int *vir, int *ioff, int printflag, std::string out)
 {
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(out)));
    int idx, r, s, rs, ssym;
    int R,S,rnew,snew;
    double value;
@@ -147,7 +151,7 @@ void iwl_buf_wrt_mp2(struct iwlbuf *Buf, int p, int q, int pq, int pqsym,
 	 }
 	 
 	 if(printflag)
-	   psi::fprintf(out, "<%d %d %d %d [%d] [%d] = %20.10f\n",
+	   printer->Printf( "<%d %d %d %d [%d] [%d] = %20.10f\n",
 		   p, q, rnew, snew, pq, rs, value);
 	 
        } /* end if (fabs(value) > Buf->cutoff) ... */

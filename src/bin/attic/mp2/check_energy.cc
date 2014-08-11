@@ -59,8 +59,8 @@ void rhf_check_energy(int chk)
   dpdbuf4 G, I, I2;
 
   if(chk == 1) {
-    psi::fprintf(outfile, "\n\tEnergies re-computed from MP2 density:\n");
-    psi::fprintf(outfile,   "\t-------------------------------------\n");
+    outfile->Printf( "\n\tEnergies re-computed from MP2 density:\n");
+    outfile->Printf(   "\t-------------------------------------\n");
     global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "DIJ");
     global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 0, "fIJ");
     E_opdm += global_dpd_->file2_dot(&D, &F);
@@ -80,8 +80,8 @@ void rhf_check_energy(int chk)
     global_dpd_->buf4_close(&G);
   }
   else if(chk == 2) {
-    psi::fprintf(outfile, "\n\tEnergies re-computed from Fock-adjusted MP2 density:\n");
-    psi::fprintf(outfile,   "\t----------------------------------------------------\n");
+    outfile->Printf( "\n\tEnergies re-computed from Fock-adjusted MP2 density:\n");
+    outfile->Printf(   "\t----------------------------------------------------\n");
     global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "DIJ");
     global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 0, "h(i,j)");
     E_opdm += global_dpd_->file2_dot(&D, &F);
@@ -141,8 +141,8 @@ void rhf_check_energy(int chk)
     global_dpd_->buf4_close(&G);
   }
   else if(chk == 3) {
-    psi::fprintf(outfile, "\n\tEnergies re-computed from MP2 Mulliken density:\n");
-    psi::fprintf(outfile,   "\t-----------------------------------------------\n");
+    outfile->Printf( "\n\tEnergies re-computed from MP2 Mulliken density:\n");
+    outfile->Printf(   "\t-----------------------------------------------\n");
     global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "DIJ");
     global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 0, "h(i,j)");
     E_opdm += global_dpd_->file2_dot(&D, &F);
@@ -198,11 +198,11 @@ void rhf_check_energy(int chk)
 
   }
 
-  psi::fprintf(outfile,"\n");
-  psi::fprintf(outfile,"\tE_OPDM                  = %20.15f\n",E_opdm);
-  psi::fprintf(outfile,"\tE_TPDM                  = %20.15f\n",E_tpdm);
-  psi::fprintf(outfile,"\tMP2 correlation energy  = %20.15f\n",E_opdm+E_tpdm);
-  fflush(outfile);
+  outfile->Printf("\n");
+  outfile->Printf("\tE_OPDM                  = %20.15f\n",E_opdm);
+  outfile->Printf("\tE_TPDM                  = %20.15f\n",E_tpdm);
+  outfile->Printf("\tMP2 correlation energy  = %20.15f\n",E_opdm+E_tpdm);
+  
 }
 
 void uhf_check_energy(int chk)

@@ -67,10 +67,10 @@ void SAPT0::ind20()
   e_ind20_ = indA_B + indB_A;
 
   if (print_) {
-    psi::fprintf(outfile,"    Ind20 (A<-B)        = %18.12lf H\n",indA_B);
-    psi::fprintf(outfile,"    Ind20 (B<-A)        = %18.12lf H\n",indB_A);
-    psi::fprintf(outfile,"    Ind20               = %18.12lf H\n",e_ind20_);
-    fflush(outfile);
+    outfile->Printf("    Ind20 (A<-B)        = %18.12lf H\n",indA_B);
+    outfile->Printf("    Ind20 (B<-A)        = %18.12lf H\n",indB_A);
+    outfile->Printf("    Ind20               = %18.12lf H\n",e_ind20_);
+    
   }
 }
 
@@ -93,10 +93,10 @@ void SAPT0::ind20r()
   e_ind20_ = indA_B + indB_A;
 
   if (print_) {
-    psi::fprintf(outfile,"    Ind20,r (A<-B)      = %18.12lf H\n",indA_B);
-    psi::fprintf(outfile,"    Ind20,r (B<-A)      = %18.12lf H\n",indB_A);
-    psi::fprintf(outfile,"    Ind20,r             = %18.12lf H\n",e_ind20_);
-    fflush(outfile);
+    outfile->Printf("    Ind20,r (A<-B)      = %18.12lf H\n",indA_B);
+    outfile->Printf("    Ind20,r (B<-A)      = %18.12lf H\n",indB_A);
+    outfile->Printf("    Ind20,r             = %18.12lf H\n",e_ind20_);
+    
   }
 }
 
@@ -132,13 +132,13 @@ void SAPT0::ind20rA_B()
   conv = 1.0;
 
   if (debug_) {
-    psi::fprintf(outfile,"\n    Maxiter = %d\n",maxiter_);
-    psi::fprintf(outfile,"    D converge = %lE\n",d_conv_);
-    psi::fprintf(outfile,"    E converge = %lE\n",e_conv_);
+    outfile->Printf("\n    Maxiter = %d\n",maxiter_);
+    outfile->Printf("    D converge = %lE\n",d_conv_);
+    outfile->Printf("    E converge = %lE\n",e_conv_);
   }
 
   if (print_)
-    psi::fprintf(outfile,"\n    Iter     Energy (mH)           dE (mH)          Residual      Time (s)\n");
+    outfile->Printf("\n    Iter     Energy (mH)           dE (mH)          Residual      Time (s)\n");
 
   SAPTDFInts C_p_AA = set_C_AA();
   SAPTDFInts C_p_AR = set_C_AR();
@@ -262,9 +262,9 @@ void SAPT0::ind20rA_B()
     iter++;
     stop = time(NULL);
     if (print_) {
-      psi::fprintf(outfile,"    %4d %16.8lf %17.9lf %17.9lf    %10ld\n",
+      outfile->Printf("    %4d %16.8lf %17.9lf %17.9lf    %10ld\n",
         iter,E*1000.0,dE*1000.0,conv*1000.0,stop-start);
-      fflush(outfile);
+      
     }
     E_old = E;
   }
@@ -272,10 +272,10 @@ void SAPT0::ind20rA_B()
 
   if ((conv <= d_conv_) && (fabs(dE) <= e_conv_)) {
     if (print_)
-      psi::fprintf(outfile,"\n    CHF Iterations converged\n\n");
+      outfile->Printf("\n    CHF Iterations converged\n\n");
     }
   else {
-    psi::fprintf(outfile,"\n    CHF Iterations did not converge\n\n");
+    outfile->Printf("\n    CHF Iterations did not converge\n\n");
     }
 
   CHFA_ = block_matrix(noccA_,nvirA_);
@@ -327,13 +327,13 @@ void SAPT0::ind20rB_A()
   conv = 1.0;
 
   if (debug_) {
-    psi::fprintf(outfile,"    Maxiter = %d\n",maxiter_);
-    psi::fprintf(outfile,"    D converge = %lE\n",d_conv_);
-    psi::fprintf(outfile,"    E converge = %lE\n",e_conv_);
+    outfile->Printf("    Maxiter = %d\n",maxiter_);
+    outfile->Printf("    D converge = %lE\n",d_conv_);
+    outfile->Printf("    E converge = %lE\n",e_conv_);
   }
 
   if (print_)
-    psi::fprintf(outfile,"\n    Iter     Energy (mH)           dE (mH)          Residual      Time (s)\n");
+    outfile->Printf("\n    Iter     Energy (mH)           dE (mH)          Residual      Time (s)\n");
 
   SAPTDFInts C_p_BB = set_C_BB();
   SAPTDFInts C_p_BS = set_C_BS();
@@ -457,9 +457,9 @@ void SAPT0::ind20rB_A()
     iter++;
     stop = time(NULL);
     if (print_) {
-      psi::fprintf(outfile,"    %4d %16.8lf %17.9lf %17.9lf    %10ld\n",
+      outfile->Printf("    %4d %16.8lf %17.9lf %17.9lf    %10ld\n",
         iter,E*1000.0,dE*1000.0,conv*1000.0,stop-start);
-      fflush(outfile);
+      
     }
     E_old = E;
   }
@@ -467,10 +467,10 @@ void SAPT0::ind20rB_A()
 
   if ((conv <= d_conv_) && (fabs(dE) <= e_conv_)) {
     if (print_)
-      psi::fprintf(outfile,"\n    CHF Iterations converged\n\n");
+      outfile->Printf("\n    CHF Iterations converged\n\n");
     }
   else {
-    psi::fprintf(outfile,"\n    CHF Iterations did not converge\n\n");
+    outfile->Printf("\n    CHF Iterations did not converge\n\n");
     }
 
   CHFB_ = block_matrix(noccB_,nvirB_);
@@ -522,13 +522,13 @@ void SAPT0::ind20rA_B_aio()
   conv = 1.0;
 
   if (debug_) {
-    psi::fprintf(outfile,"\n    Maxiter = %d\n",maxiter_);
-    psi::fprintf(outfile,"    D converge = %lE\n",d_conv_);
-    psi::fprintf(outfile,"    E converge = %lE\n",e_conv_);
+    outfile->Printf("\n    Maxiter = %d\n",maxiter_);
+    outfile->Printf("    D converge = %lE\n",d_conv_);
+    outfile->Printf("    E converge = %lE\n",e_conv_);
   }
 
   if (print_)
-    psi::fprintf(outfile,"\n    Iter     Energy (mH)           dE (mH)          Residual      Time (s)\n");
+    outfile->Printf("\n    Iter     Energy (mH)           dE (mH)          Residual      Time (s)\n");
 
   SAPTDFInts C_p_AR = set_C_AR();
 
@@ -696,9 +696,9 @@ void SAPT0::ind20rA_B_aio()
     iter++;
     stop = time(NULL);
     if (print_) {
-      psi::fprintf(outfile,"    %4d %16.8lf %17.9lf %17.9lf    %10ld\n",
+      outfile->Printf("    %4d %16.8lf %17.9lf %17.9lf    %10ld\n",
         iter,E*1000.0,dE*1000.0,conv*1000.0,stop-start);
-      fflush(outfile);
+      
     }
     E_old = E;
   }
@@ -706,10 +706,10 @@ void SAPT0::ind20rA_B_aio()
 
   if ((conv <= d_conv_) && (fabs(dE) <= e_conv_)) {
     if (print_)
-      psi::fprintf(outfile,"\n    CHF Iterations converged\n\n");
+      outfile->Printf("\n    CHF Iterations converged\n\n");
     }
   else {
-    psi::fprintf(outfile,"\n    CHF Iterations did not converge\n\n");
+    outfile->Printf("\n    CHF Iterations did not converge\n\n");
     }
 
   CHFA_ = block_matrix(noccA_,nvirA_);
@@ -761,13 +761,13 @@ void SAPT0::ind20rB_A_aio()
   conv = 1.0;
 
   if (debug_) {
-    psi::fprintf(outfile,"    Maxiter = %d\n",maxiter_);
-    psi::fprintf(outfile,"    D converge = %lE\n",d_conv_);
-    psi::fprintf(outfile,"    E converge = %lE\n",e_conv_);
+    outfile->Printf("    Maxiter = %d\n",maxiter_);
+    outfile->Printf("    D converge = %lE\n",d_conv_);
+    outfile->Printf("    E converge = %lE\n",e_conv_);
   }
 
   if (print_)
-    psi::fprintf(outfile,"\n    Iter     Energy (mH)           dE (mH)          Residual      Time (s)\n");
+    outfile->Printf("\n    Iter     Energy (mH)           dE (mH)          Residual      Time (s)\n");
 
   SAPTDFInts C_p_BS = set_C_BS();
 
@@ -935,9 +935,9 @@ void SAPT0::ind20rB_A_aio()
     iter++;
     stop = time(NULL);
     if (print_) {
-      psi::fprintf(outfile,"    %4d %16.8lf %17.9lf %17.9lf    %10ld\n",
+      outfile->Printf("    %4d %16.8lf %17.9lf %17.9lf    %10ld\n",
         iter,E*1000.0,dE*1000.0,conv*1000.0,stop-start);
-      fflush(outfile);
+      
     }
     E_old = E;
   }
@@ -945,10 +945,10 @@ void SAPT0::ind20rB_A_aio()
 
   if ((conv <= d_conv_) && (fabs(dE) <= e_conv_)) {
     if (print_)
-      psi::fprintf(outfile,"\n    CHF Iterations converged\n\n");
+      outfile->Printf("\n    CHF Iterations converged\n\n");
     }
   else {
-    psi::fprintf(outfile,"\n    CHF Iterations did not converge\n\n");
+    outfile->Printf("\n    CHF Iterations did not converge\n\n");
     }
 
   CHFB_ = block_matrix(noccB_,nvirB_);
@@ -988,10 +988,10 @@ void SAPT2::ind20r()
   e_ind20_ = indA_B + indB_A;
 
   if (print_) {
-    psi::fprintf(outfile,"    Ind20,r (A<-B)      = %18.12lf H\n",indA_B);
-    psi::fprintf(outfile,"    Ind20,r (B<-A)      = %18.12lf H\n",indB_A);
-    psi::fprintf(outfile,"    Ind20,r             = %18.12lf H\n",e_ind20_);
-    fflush(outfile);
+    outfile->Printf("    Ind20,r (A<-B)      = %18.12lf H\n",indA_B);
+    outfile->Printf("    Ind20,r (B<-A)      = %18.12lf H\n",indB_A);
+    outfile->Printf("    Ind20,r             = %18.12lf H\n",e_ind20_);
+    
   }
 }
 

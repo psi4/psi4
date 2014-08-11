@@ -171,7 +171,7 @@ void IndepPairs::set(int nirr, int num_ras, int **ras_opi, int ***ras_orbs,
 
   if (npairs==0)  {
     printf("(IndepPairs): Constructor called but no pairs!!\n");
-    psi::fprintf(stderr, "(IndepPairs): Constructor called but no pairs!!\n");
+    outfile->Printf( "(IndepPairs): Constructor called but no pairs!!\n");
     return;
   }
 
@@ -266,7 +266,7 @@ void IndepPairs::set(int nirr, int num_ras, int **ras_opi, int ***ras_orbs,
   // check things
   if (count != npairs) {
     printf("(IndepPairs::set): mismatch in counted pairs!\n");
-    psi::fprintf(stderr, "(IndepPairs::set): mismatch in counted pairs!\n");
+    outfile->Printf( "(IndepPairs::set): mismatch in counted pairs!\n");
   }
 
 
@@ -352,17 +352,17 @@ IndepPairs::~IndepPairs() // Destructor
 }
 
 
-void IndepPairs::print(FILE *outfile)
+void IndepPairs::print(std::string OutFileRMR)
 {
   int h;
 
-  psi::fprintf(outfile, "\nList of all independent pairs:\n");
+  outfile->Printf( "\nList of all independent pairs:\n");
   print_selected(npairs, p, q, outfile);
-  psi::fprintf(outfile, "\nLists of independent pairs by irrep:\n");
+  outfile->Printf( "\nLists of independent pairs by irrep:\n");
   
   for (h=0; h<nirreps; h++) {
     if (!ir_npairs[h]) continue;
-    psi::fprintf(outfile, "\n\t Irrep %d:\n", h);
+    outfile->Printf( "\n\t Irrep %d:\n", h);
     print_selected(ir_npairs[h], ir_p[h], ir_q[h], 
                    ir_p_rel[h], ir_q_rel[h], outfile);
   }
@@ -370,51 +370,51 @@ void IndepPairs::print(FILE *outfile)
 }
 
 
-void IndepPairs::print_selected(int num, int *parr, int *qarr, FILE *outfile)
+void IndepPairs::print_selected(int num, int *parr, int *qarr, std::string OutFileRMR)
 {
   int ii;
 
-  psi::fprintf(outfile, "\n  %4d Independent Pairs\n", num);
-  psi::fprintf(outfile, "\t p\t q\n");
-  psi::fprintf(outfile,   "    -------------------\n");
+  outfile->Printf( "\n  %4d Independent Pairs\n", num);
+  outfile->Printf( "\t p\t q\n");
+  outfile->Printf(   "    -------------------\n");
 
   for (ii=0; ii<num; ii++) {
-    psi::fprintf(outfile,"\t %2d\t",parr[ii]);
-    psi::fprintf(outfile,"%2d\n",qarr[ii]);
+    outfile->Printf("\t %2d\t",parr[ii]);
+    outfile->Printf("%2d\n",qarr[ii]);
   }
-  fflush(outfile);
+  
 
 }
 
 void IndepPairs::print_selected(int num, int *parr, int *qarr, 
-                                int *prel, int *qrel, FILE *outfile)
+                                int *prel, int *qrel, std::string OutFileRMR)
 {
   int ii;
 
-  psi::fprintf(outfile, "\n\t %4d Independent Pairs\n", num);
-  psi::fprintf(outfile, "\t p\t q\t P\t Q\n");
-  psi::fprintf(outfile,   "    ----------------------------------\n");
+  outfile->Printf( "\n\t %4d Independent Pairs\n", num);
+  outfile->Printf( "\t p\t q\t P\t Q\n");
+  outfile->Printf(   "    ----------------------------------\n");
 
   for (ii=0; ii<num; ii++) {
-    psi::fprintf(outfile,"\t %2d\t%2d\t%2d\t%2d\n",
+    outfile->Printf("\t %2d\t%2d\t%2d\t%2d\n",
             parr[ii],qarr[ii],prel[ii],qrel[ii]);
   }
-  fflush(outfile);
+  
 
 }
 
 
-void IndepPairs::print_vec(double *arr, const char *label, FILE *outfile) 
+void IndepPairs::print_vec(double *arr, const char *label, std::string OutFileRMR) 
 {
   int pair;
 
-  psi::fprintf(outfile, "%s\n", label);
+  outfile->Printf( "%s\n", label);
   for (pair=0; pair<npairs; pair++) {
-    psi::fprintf(outfile, "Pair (%2d,%2d) = %12.7lf\n",
+    outfile->Printf( "Pair (%2d,%2d) = %12.7lf\n",
             p[pair], q[pair], arr[pair]);
   }
-  psi::fprintf(outfile, "\n");
-  fflush(outfile);
+  outfile->Printf( "\n");
+  
 
 }
 

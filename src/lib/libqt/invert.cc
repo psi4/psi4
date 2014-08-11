@@ -58,8 +58,10 @@ namespace psi {
 ** Note: The original matrix is modified by invert_matrix()
 ** \ingroup QT
 */
-double invert_matrix(double **a, double **y, int N, FILE *outfile)
+double invert_matrix(double **a, double **y, int N, std::string out)
 {
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            boost::shared_ptr<OutFile>(new OutFile(out)));
    double  d, *col, *colptr;
    register int i, j;
    int *indx ;
@@ -70,13 +72,13 @@ double invert_matrix(double **a, double **y, int N, FILE *outfile)
    ludcmp(a,N,indx,&d) ;
    for (j=0; j<N; j++) d *= a[j][j];
 
-   /* psi::fprintf(outfile,"detH0 in invert = %lf\n", fabs(d));
-   fflush(outfile); */
+   /* outfile->Printf("detH0 in invert = %lf\n", fabs(d));
+    */
 
     if (fabs(d) < SMALL_DET) {
-      psi::fprintf(outfile,"Warning (invert_matrix): Determinant is %g\n", d);
+      printer->Printf("Warning (invert_matrix): Determinant is %g\n", d);
       printf("Warning (invert_matrix): Determinant is %g\n", d);
-      fflush(outfile);
+      
       }
 
    for (j=0; j<N; j++) {

@@ -28,7 +28,7 @@
 #include "matrix.h"
 #include "psi4-dec.h"
 namespace psi{
-    extern FILE *outfile;
+    
     namespace psimrcc{
 
 double* CCOperation::local_work = NULL;
@@ -63,48 +63,48 @@ CCOperation::~CCOperation()
 void CCOperation::print()
 {
   if(reindexing.size())
-    psi::fprintf(outfile,"\n\tReindexing = %s",reindexing.c_str());
-  psi::fprintf(outfile,"\n\tNumericalFactor = %lf",factor);
-  psi::fprintf(outfile,"\tAssigment = %s",assignment.c_str());
-  psi::fprintf(outfile,"\tOperation = %s",operation.c_str());
-  psi::fprintf(outfile,"\n\tA = %s",A_Matrix->get_label().c_str());
+    outfile->Printf("\n\tReindexing = %s",reindexing.c_str());
+  outfile->Printf("\n\tNumericalFactor = %lf",factor);
+  outfile->Printf("\tAssigment = %s",assignment.c_str());
+  outfile->Printf("\tOperation = %s",operation.c_str());
+  outfile->Printf("\n\tA = %s",A_Matrix->get_label().c_str());
   if(B_Matrix!=NULL)
-    psi::fprintf(outfile,"\tB = %s",B_Matrix->get_label().c_str());
+    outfile->Printf("\tB = %s",B_Matrix->get_label().c_str());
   if(C_Matrix!=NULL)
-    psi::fprintf(outfile,"\tC = %s",C_Matrix->get_label().c_str());
+    outfile->Printf("\tC = %s",C_Matrix->get_label().c_str());
 }
 
 void CCOperation::print_operation()
 {
-  psi::fprintf(outfile,"%s",A_Matrix->get_label().c_str());
-  psi::fprintf(outfile," %s",assignment.c_str());
+  outfile->Printf("%s",A_Matrix->get_label().c_str());
+  outfile->Printf(" %s",assignment.c_str());
   if(reindexing.size())
-    psi::fprintf(outfile," %s",reindexing.c_str());
-  psi::fprintf(outfile," %lf",factor);
+    outfile->Printf(" %s",reindexing.c_str());
+  outfile->Printf(" %lf",factor);
   if(B_Matrix!=NULL)
-    psi::fprintf(outfile," %s",B_Matrix->get_label().c_str());
-  psi::fprintf(outfile," %s",operation.c_str());
+    outfile->Printf(" %s",B_Matrix->get_label().c_str());
+  outfile->Printf(" %s",operation.c_str());
   if(C_Matrix!=NULL)
-    psi::fprintf(outfile," %s",C_Matrix->get_label().c_str());
+    outfile->Printf(" %s",C_Matrix->get_label().c_str());
 }
 
 void CCOperation::print_timing()
 {
   DEBUGGING(1,
-  psi::fprintf(outfile,"\n-----------------------------------------");
-  psi::fprintf(outfile,"\nzero_timing             = %f",zero_timing);
-  psi::fprintf(outfile,"\nnumerical_timing        = %f",numerical_timing);
-  psi::fprintf(outfile,"\ncontract_timing         = %f",contract_timing);
-  psi::fprintf(outfile,"\ntensor_timing           = %f",tensor_timing);
-  psi::fprintf(outfile,"\ndot_timing              = %f",dot_timing);
-  psi::fprintf(outfile,"\nplus_timing             = %f",plus_timing);
-  psi::fprintf(outfile,"\nproduct_timing          = %f",product_timing);
-  psi::fprintf(outfile,"\ndivision_timing         = %f",division_timing);
-  psi::fprintf(outfile,"\nsort_timing             = %f",sort_timing);
-  psi::fprintf(outfile,"\nPartA_timing            = %f",PartA_timing);
-  psi::fprintf(outfile,"\nPartB_timing            = %f",PartB_timing);
-  psi::fprintf(outfile,"\nPartC_timing            = %f",PartC_timing);
-  psi::fprintf(outfile,"\n-----------------------------------------\n");
+  outfile->Printf("\n-----------------------------------------");
+  outfile->Printf("\nzero_timing             = %f",zero_timing);
+  outfile->Printf("\nnumerical_timing        = %f",numerical_timing);
+  outfile->Printf("\ncontract_timing         = %f",contract_timing);
+  outfile->Printf("\ntensor_timing           = %f",tensor_timing);
+  outfile->Printf("\ndot_timing              = %f",dot_timing);
+  outfile->Printf("\nplus_timing             = %f",plus_timing);
+  outfile->Printf("\nproduct_timing          = %f",product_timing);
+  outfile->Printf("\ndivision_timing         = %f",division_timing);
+  outfile->Printf("\nsort_timing             = %f",sort_timing);
+  outfile->Printf("\nPartA_timing            = %f",PartA_timing);
+  outfile->Printf("\nPartB_timing            = %f",PartB_timing);
+  outfile->Printf("\nPartC_timing            = %f",PartC_timing);
+  outfile->Printf("\n-----------------------------------------\n");
   );
 }
 

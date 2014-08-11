@@ -38,7 +38,7 @@
 
 
 namespace psi{
-    extern FILE *outfile;
+    
     namespace psimrcc{
     extern MOInfo *moinfo;
     extern MemoryManager* memory_manager;
@@ -95,7 +95,7 @@ void CCBLAS::diis(int cycle, double delta, DiisType diis_type)
         }
       }
     }
-    psi::fprintf(outfile,"   S");
+    outfile->Printf("   S");
 
 
     // Decide if we are doing a DIIS extrapolation in this cycle
@@ -202,9 +202,9 @@ void CCBLAS::diis(int cycle, double delta, DiisType diis_type)
         }
 
       }
-      psi::fprintf(outfile,"/E");
+      outfile->Printf("/E");
       if(singularities_found)
-        psi::fprintf(outfile," (singularities found)");
+        outfile->Printf(" (singularities found)");
       release1(diis_A);
       release2(diis_B);
     }

@@ -166,19 +166,19 @@ boost::shared_ptr<Molecule> BasisSet::molecule() const
     return molecule_;
 }
 
-void BasisSet::print(FILE *out) const
+void BasisSet::print(std::string out) const
 {
-
-        psi::fprintf(out, "  Basis Set: %s\n", name_.c_str());
-        psi::fprintf(out, "    Number of shells: %d\n", nshell());
-        psi::fprintf(out, "    Number of basis function: %d\n", nbf());
-        psi::fprintf(out, "    Number of Cartesian functions: %d\n", nao());
-        psi::fprintf(out, "    Spherical Harmonics?: %s\n", has_puream() ? "true" : "false");
-        psi::fprintf(out, "    Max angular momentum: %d\n\n", max_am());
-
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(out)));
+        printer->Printf("  Basis Set: %s\n", name_.c_str());
+        printer->Printf("    Number of shells: %d\n", nshell());
+        printer->Printf("    Number of basis function: %d\n", nbf());
+        printer->Printf("    Number of Cartesian functions: %d\n", nao());
+        printer->Printf("    Spherical Harmonics?: %s\n", has_puream() ? "true" : "false");
+        printer->Printf("    Max angular momentum: %d\n\n", max_am());
 }
 
-void BasisSet::print_by_level(FILE* out, int level) const
+void BasisSet::print_by_level(std::string out,  int level) const
 {
     if (level < 1)
         return;
@@ -190,22 +190,24 @@ void BasisSet::print_by_level(FILE* out, int level) const
         print_detail(out);
 }
 
-void BasisSet::print_summary(FILE* out) const
+void BasisSet::print_summary(std::string out) const
 {
 
-        psi::fprintf(out, "  -AO BASIS SET INFORMATION:\n");
-        psi::fprintf(out, "    Name                   = %s\n", name_.c_str());
-        psi::fprintf(out, "    Total number of shells = %d\n", nshell());
-        psi::fprintf(out, "    Number of primitives   = %d\n", nprimitive_);
-        psi::fprintf(out, "    Number of AO           = %d\n", nao_);
-        psi::fprintf(out, "    Number of SO           = %d\n", nbf_);
-        psi::fprintf(out, "    Maximum AM             = %d\n", max_am_);
-        psi::fprintf(out, "    Spherical Harmonics    = %s\n", (puream_ ? "TRUE" : "FALSE"));
-        psi::fprintf(out, "\n");
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(out)));
+   printer->Printf("  -AO BASIS SET INFORMATION:\n");
+   printer->Printf("    Name                   = %s\n", name_.c_str());
+   printer->Printf("    Total number of shells = %d\n", nshell());
+   printer->Printf("    Number of primitives   = %d\n", nprimitive_);
+   printer->Printf("    Number of AO           = %d\n", nao_);
+   printer->Printf("    Number of SO           = %d\n", nbf_);
+   printer->Printf("    Maximum AM             = %d\n", max_am_);
+   printer->Printf("    Spherical Harmonics    = %s\n", (puream_ ? "TRUE" : "FALSE"));
+   printer->Printf( "\n");
 
-        psi::fprintf(out,"  -Contraction Scheme:\n");
-        psi::fprintf(out, "    Atom   Type   All Primitives // Shells:\n");
-        psi::fprintf(out, "   ------ ------ --------------------------\n");
+   printer->Printf("  -Contraction Scheme:\n");
+   printer->Printf( "    Atom   Type   All Primitives // Shells:\n");
+   printer->Printf( "   ------ ------ --------------------------\n");
 
 
     int *nprims = new int[max_am_ + 1];
@@ -220,8 +222,8 @@ void BasisSet::print_summary(FILE* out) const
         memset((void*) nshells, '\0', (max_am_ + 1) * sizeof(int));
 
 
-            psi::fprintf(out, "    %4d    ", A+1);
-            psi::fprintf(out, "%2s     ", molecule_->symbol(A).c_str());
+           printer->Printf( "    %4d    ", A+1);
+           printer->Printf( "%2s     ", molecule_->symbol(A).c_str());
 
 
         int first_shell = center_to_shell_[A];
@@ -239,18 +241,18 @@ void BasisSet::print_summary(FILE* out) const
         for (int l = 0; l < max_am_ + 1; l++) {
             if (nprims[l] == 0)
                 continue;
-                psi::fprintf(out, "%d%c ", nprims[l], amtypes[l]);
+                printer->Printf( "%d%c ", nprims[l], amtypes[l]);
         }
         // Shells
-            psi::fprintf(out, "// ");
+            printer->Printf( "// ");
         for (int l = 0; l < max_am_ + 1; l++) {
             if (nshells[l] == 0)
                 continue;
-                psi::fprintf(out, "%d%c ", nshells[l], amtypes[l]);
+                printer->Printf( "%d%c ", nshells[l], amtypes[l]);
         }
-            psi::fprintf(out, "\n");
+            printer->Printf( "\n");
     }
-        psi::fprintf(out, "\n");
+        printer->Printf( "\n");
 
     delete[] nprims;
     delete[] nunique;
@@ -258,25 +260,26 @@ void BasisSet::print_summary(FILE* out) const
     delete[] amtypes;
 }
 
-void BasisSet::print_detail(FILE* out) const
+void BasisSet::print_detail(std::string out) const
 {
     print_summary(out);
+    boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+          boost::shared_ptr<OutFile>(new OutFile(out)));
 
-
-        psi::fprintf(out, "  ==> AO Basis Functions <==\n");
-        psi::fprintf(out, "\n");
-        psi::fprintf(out, "    [ %s ]\n",name_.c_str());
+        printer->Printf( "  ==> AO Basis Functions <==\n");
+        printer->Printf( "\n");
+        printer->Printf( "    [ %s ]\n",name_.c_str());
         if (has_puream())
-            psi::fprintf(out, "    spherical\n");
+            printer->Printf( "    spherical\n");
         else
-            psi::fprintf(out, "    cartesian\n");
-        psi::fprintf(out, "    ****\n");
+            printer->Printf( "    cartesian\n");
+        printer->Printf( "    ****\n");
 
 
     for (int uA = 0; uA < molecule_->nunique(); uA++) {
         const int A = molecule_->unique(uA);
 
-            psi::fprintf(out, "   %2s %3d\n",molecule_->symbol(A).c_str(),A+1);
+            printer->Printf( "   %2s %3d\n",molecule_->symbol(A).c_str(),A+1);
 
 
         int first_shell = center_to_shell_[A];
@@ -286,11 +289,11 @@ void BasisSet::print_detail(FILE* out) const
             shells_[Q + first_shell].print(out);
 
 
-            psi::fprintf(out, "    ****\n");
+            printer->Printf( "    ****\n");
 
     }
 
-        psi::fprintf(out, "\n");
+        printer->Printf( "\n");
 
 }
 
@@ -414,9 +417,9 @@ std::string BasisSet::print_detail_cfour() const
 const GaussianShell& BasisSet::shell(int si) const
 {
     if (si < 0 || si > nshell()) {
-        psi::fprintf(stderr, "BasisSet::shell(si = %d), requested a shell out-of-bound.\n", si);
-        psi::fprintf(stderr, "     Max shell size: %d\n", nshell());
-        psi::fprintf(stderr, "     Name: %s\n", name().c_str());
+        outfile->Printf("BasisSet::shell(si = %d), requested a shell out-of-bound.\n", si);
+        outfile->Printf("     Max shell size: %d\n", nshell());
+        outfile->Printf("     Name: %s\n", name().c_str());
         throw PSIEXCEPTION("BasisSet::shell: requested shell is out-of-bounds.");
     }
     return shells_[si];
@@ -477,7 +480,7 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
 
     BOOST_FOREACH(map_ssv::value_type& basis, basis_atom_shell)
     {
-//psi::fprintf(outfile, "Working on basis %s\n", basis.first.c_str());
+//outfile->Printf( "Working on basis %s\n", basis.first.c_str());
         bool not_found = true;
         std::list<std::string> user_list;
         user_list.clear();
@@ -487,7 +490,7 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
         tokenizer tokens(psiPath, sep);
         for( tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter) {
             std::string psiPathWithBasis = *tok_iter + "/" + BasisSet::make_filename(basis.first);
-//psi::fprintf(outfile, "file %s\n", psiPathWithBasis.c_str());
+//outfile->Printf( "file %s\n", psiPathWithBasis.c_str());
             try {
                 parser->load_file(psiPathWithBasis); 
                 user_list.push_front(psiPathWithBasis.c_str());
@@ -513,14 +516,14 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
                     basis_atom_shell[basis.first][symbol] = parser->parse(symbol, file);
 
 
-                        psi::fprintf(outfile, "  Basis set %s for %s read from %s\n",
+                        outfile->Printf( "  Basis set %s for %s read from %s\n",
                                 basis.first.c_str(), symbol.c_str(), user_file.c_str());
                     not_found = false;
                 }
                 catch (BasisSetNotFound& e) {
                     // This is thrown when load_file fails
 
-                        psi::fprintf(outfile, "  Unable to find %s for %s in %s.\n",
+                        outfile->Printf( "  Unable to find %s for %s in %s.\n",
                                 basis.first.c_str(), symbol.c_str(), user_file.c_str());
                     not_found = true;
                 }
@@ -544,7 +547,7 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
             }
         }
         catch (BasisSetFileNotFound& e) {
-            psi::fprintf(outfile, " Unable to load %s from the default Psi4 basis set library.\n", filename.c_str());
+            outfile->Printf( " Unable to load %s from the default Psi4 basis set library.\n", filename.c_str());
             throw PSIEXCEPTION("  Unable to load "+ filename + " from the default Psi4 basis set library.");
         }
     }
@@ -696,7 +699,7 @@ BasisSet::BasisSet(const std::string& basistype, SharedMolecule mol,
             GaussianType puream = thisshell.is_pure() ? Pure : Cartesian;
             if(puream)
                 puream_ = true;
-//            psi::fprintf(outfile, "atom %d basis %s shell %d nprim %d atom_nprim %d\n", n, basis.c_str(), i, shell_nprim, atom_nprim);
+//            outfile->Printf( "atom %d basis %s shell %d nprim %d atom_nprim %d\n", n, basis.c_str(), i, shell_nprim, atom_nprim);
             shells_[shell_count] = GaussianShell(am, shell_nprim, &uoriginal_coefficients_[ustart+atom_nprim],
                     &ucoefficients_[ustart+atom_nprim], &uerd_coefficients_[ustart+atom_nprim], &uexponents_[ustart+atom_nprim], puream, n, xyz_ptr, bf_count);
             for(int thisbf = 0; thisbf < thisshell.nfunction(); ++thisbf){

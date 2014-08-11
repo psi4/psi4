@@ -33,7 +33,7 @@ namespace psi{ namespace occwave{
 
 void OCCWave::update_mo()
 {
-//psi::fprintf(outfile,"\n update_mo is starting... \n"); fflush(outfile);     
+//outfile->Printf("\n update_mo is starting... \n");      
 //===========================================================================================
 //========================= RHF =============================================================
 //===========================================================================================
@@ -167,7 +167,7 @@ else if (orth_type == "GS") {
     double **AdumA = block_matrix(rowA, colA);
     memset(AdumA[0], 0, sizeof(double)*rowA*colA);
     AdumA = UorbA->to_block_matrix();    
-    schmidt(AdumA, rowA, colA, outfile);  
+    schmidt(AdumA, rowA, colA, "outfile");
     UorbA->set(AdumA);    
     free_block(AdumA);
 }
@@ -370,7 +370,7 @@ else if (orth_type == "GS") {
     double **AdumA = block_matrix(rowA, colA);
     memset(AdumA[0], 0, sizeof(double)*rowA*colA);
     AdumA = UorbA->to_block_matrix();    
-    schmidt(AdumA, rowA, colA, outfile);  
+    schmidt(AdumA, rowA, colA, "outfile");
     UorbA->set(AdumA);    
     free_block(AdumA);
     
@@ -380,7 +380,7 @@ else if (orth_type == "GS") {
     double **AdumB = block_matrix(rowB, colB);
     memset(AdumB[0], 0, sizeof(double)*rowB*colB);
     AdumB = UorbB->to_block_matrix();    
-    schmidt(AdumB, rowB, colB, outfile);  
+    schmidt(AdumB, rowB, colB, "outfile");
     UorbB->set(AdumB);    
     free_block(AdumB);
 }

@@ -72,8 +72,8 @@ void CCBLAS::append(string str)
   // Main driver for solving expressions
   int noperations_added = 0;
   DEBUGGING(5,
-    psi::fprintf(outfile,"\n\nYou have requested the following operation :\n\t\"%s\"",str.c_str());
-    psi::fprintf(outfile,"\n\nCCBLAS::append() has parsed the following:");
+    outfile->Printf("\n\nYou have requested the following operation :\n\t\"%s\"",str.c_str());
+    outfile->Printf("\n\nCCBLAS::append() has parsed the following:");
   )
   vector<string> names = moinfo->get_matrix_names(str);
   for(int n=0;n<names.size();n++){
@@ -102,11 +102,11 @@ void CCBLAS::append(string str)
 void CCBLAS::compute()
 {
 
-//   psi::fprintf(outfile,"\n\nsmart_compute::size of current deque = %d",operations.size());
+//   outfile->Printf("\n\nsmart_compute::size of current deque = %d",operations.size());
 //
-//   psi::fprintf(outfile,"\nsmart_compute::content of the deque:");
+//   outfile->Printf("\nsmart_compute::content of the deque:");
 //   for(OpDeque::iterator it = operations.begin();it!=operations.end();++it){
-//     psi::fprintf(outfile,"\n");
+//     outfile->Printf("\n");
 //     it->print();
 //   }
 
@@ -135,27 +135,27 @@ void CCBLAS::compute()
 //   }
 //
 //   // Print the map for debugging purposes
-//   psi::fprintf(outfile,"\n\nsmart_compute::printing the matrix_count map");
+//   outfile->Printf("\n\nsmart_compute::printing the matrix_count map");
 //   for(map<string,int>::iterator it=matrix_count.begin();it!=matrix_count.end();++it){
-//     psi::fprintf(outfile,"\n %s(%d)",it->first.c_str(),it->second);
+//     outfile->Printf("\n %s(%d)",it->first.c_str(),it->second);
 //   }
 //
 //   // Print the map for debugging purposes
-//   psi::fprintf(outfile,"\n\nsmart_compute::printing the target_count map");
+//   outfile->Printf("\n\nsmart_compute::printing the target_count map");
 //   for(map<string,int>::iterator it=target_count.begin();it!=target_count.end();++it){
-//     psi::fprintf(outfile,"\n %s(%d)",it->first.c_str(),it->second);
+//     outfile->Printf("\n %s(%d)",it->first.c_str(),it->second);
 //   }
 //
 //   // Print the map for debugging purposes
-//   psi::fprintf(outfile,"\n\nsmart_compute::printing the source_count map");
+//   outfile->Printf("\n\nsmart_compute::printing the source_count map");
 //   for(map<string,int>::iterator it=source_count.begin();it!=source_count.end();++it){
-//     psi::fprintf(outfile,"\n %s(%d)",it->first.c_str(),it->second);
+//     outfile->Printf("\n %s(%d)",it->first.c_str(),it->second);
 //   }
 //
 //   // Print the map for debugging purposes
-//   psi::fprintf(outfile,"\n\nsmart_compute::printing the intermediates_count map");
+//   outfile->Printf("\n\nsmart_compute::printing the intermediates_count map");
 //   for(map<string,int>::iterator it=intermediates_count.begin();it!=intermediates_count.end();++it){
-//     psi::fprintf(outfile,"\n %s(%d)",it->first.c_str(),it->second);
+//     outfile->Printf("\n %s(%d)",it->first.c_str(),it->second);
 //   }
 
 //   map<string,bool> matrix_on_disk;
@@ -173,7 +173,7 @@ void CCBLAS::compute()
 //
 //   for(OpDeque::iterator it = operations.begin();it!=operations.end();++it){
 //     int nop = distance(it-operations.begin());
-//     psi::fprintf(outfile,"\nI will process operation #%3d",nop);
+//     outfile->Printf("\nI will process operation #%3d",nop);
 //     int memA=0;
 //     if(it->get_A_Matrix()!=NULL){
 //       memA=it->get_A_Matrix()->get_memory();

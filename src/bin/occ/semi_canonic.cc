@@ -89,33 +89,33 @@ void OCCWave::semi_canonic()
 
         // Print orbital energies
 	if (occ_orb_energy == "TRUE" && mo_optimized == 1) {
-	  psi::fprintf(outfile,"\n\n\t  OMP2 Alpha Orbital Energies (a.u.) \n"); 
-	  psi::fprintf(outfile,"\t  ---------------------------------- \n"); 
-	  fflush(outfile);
+	  outfile->Printf("\n\n\t  OMP2 Alpha Orbital Energies (a.u.) \n"); 
+	  outfile->Printf("\t  ---------------------------------- \n"); 
+	  
 	  
 	  Molecule& mol = *reference_wavefunction_->molecule().get();
 	  CharacterTable ct = mol.point_group()->char_table();
           string pgroup = mol.point_group()->symbol();
 	  
 	  // print occ orb energy
-	  psi::fprintf(outfile, "\t  Alpha occupied orbitals\n");
+	  outfile->Printf( "\t  Alpha occupied orbitals\n");
 	  for (int h=0; h<nirrep_; h++){
 	    int count=1;
 	    for (int i = 0; i < occpiA[h]; i++){
-	      psi::fprintf(outfile,"\t %2d%-3s %20.10f \n",count,ct.gamma(h).symbol(),eigooA->get(h,i));
-	      fflush(outfile);   
+	      outfile->Printf("\t %2d%-3s %20.10f \n",count,ct.gamma(h).symbol(),eigooA->get(h,i));
+	         
 	      count++;
 	    }// end loop over occpi
 	  }// end loop over h
 	  
 	  
 	  // print vir orb energy
-	  psi::fprintf(outfile, "\n\t  Alpha virtual orbitals\n");
+	  outfile->Printf( "\n\t  Alpha virtual orbitals\n");
 	  for (int h=0; h<nirrep_; h++){
 	    int count=1;
 	    for (int i = 0; i < virtpiA[h]; i++){
-	      psi::fprintf(outfile,"\t %2d%-3s %20.10f \n",count,ct.gamma(h).symbol(),eigvvA->get(h,i));
-	      fflush(outfile);
+	      outfile->Printf("\t %2d%-3s %20.10f \n",count,ct.gamma(h).symbol(),eigvvA->get(h,i));
+	      
 	      count++;
 	    }// end loop over occpi
 	  }// end loop over h
@@ -226,9 +226,9 @@ void OCCWave::semi_canonic()
 
         // print orbital energies
 	if (occ_orb_energy == "TRUE" && mo_optimized == 1 && reference_ == "UNRESTRICTED") {
-	  psi::fprintf(outfile,"\n\n\t  OMP2 Beta Orbital Energies (a.u.) \n"); 
-	  psi::fprintf(outfile,"\t  --------------------------------- \n"); 
-	  fflush(outfile);
+	  outfile->Printf("\n\n\t  OMP2 Beta Orbital Energies (a.u.) \n"); 
+	  outfile->Printf("\t  --------------------------------- \n"); 
+	  
 	  
 	  
 	  Molecule& mol = *reference_wavefunction_->molecule().get();
@@ -236,24 +236,24 @@ void OCCWave::semi_canonic()
           string pgroup = mol.point_group()->symbol();
 	  
 	  // print occ orb energy
-	  psi::fprintf(outfile, "\t  Beta occupied orbitals\n");
+	  outfile->Printf( "\t  Beta occupied orbitals\n");
 	  for (int h=0; h<nirrep_; h++){
 	    int count=1;
 	    for (int i = 0; i < occpiB[h]; i++){
-	      psi::fprintf(outfile,"\t %2d%-3s %20.10f \n",count,ct.gamma(h).symbol(),eigooB->get(h,i));
-	      fflush(outfile);
+	      outfile->Printf("\t %2d%-3s %20.10f \n",count,ct.gamma(h).symbol(),eigooB->get(h,i));
+	      
 	      count++;
 	    }// end loop over occpi
 	  }// end loop over h
 	  
 	  
 	  // print vir orb energy
-	  psi::fprintf(outfile, "\n\t  Beta virtual orbitals\n");
+	  outfile->Printf( "\n\t  Beta virtual orbitals\n");
 	  for (int h=0; h<nirrep_; h++){
 	    int count=1;
 	    for (int i = 0; i < virtpiB[h]; i++){
-	      psi::fprintf(outfile,"\t %2d%-3s %20.10f \n",count,ct.gamma(h).symbol(),eigvvB->get(h,i));
-	      fflush(outfile);
+	      outfile->Printf("\t %2d%-3s %20.10f \n",count,ct.gamma(h).symbol(),eigvvB->get(h,i));
+	      
 	      count++;
 	    }// end loop over occpi
 	  }// end loop over h

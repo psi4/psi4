@@ -33,33 +33,35 @@ namespace psi {
 **
 ** Arguments:
 **   struct dpdfile2 *File: A pointer to the dpdfile to be printed.
-**   FILE *outfile: The formatted output file stream.
+**   std::string OutFileRMR: The formatted output file stream.
 */
 
-int DPD::file2_print(dpdfile2 *File, FILE *outfile)
+int DPD::file2_print(dpdfile2 *File, std::string out)
 {
-    int i, my_irrep;
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            boost::shared_ptr<OutFile>(new OutFile(out)));
+   int i, my_irrep;
     dpdparams2 *Params;
 
     my_irrep = File->my_irrep;
     Params = File->params;
 
-    psi::fprintf(outfile, "\n\tDPD File2: %s\n", File->label);
-    psi::fprintf(outfile,   "\tDPD Parameters:\n");
-    psi::fprintf(outfile,   "\t------------------\n");
-    psi::fprintf(outfile,   "\tpnum = %d   qnum = %d   irrep = %d \n",
+    printer->Printf( "\n\tDPD File2: %s\n", File->label);
+    printer->Printf(   "\tDPD Parameters:\n");
+    printer->Printf(   "\t------------------\n");
+    printer->Printf(   "\tpnum = %d   qnum = %d   irrep = %d \n",
             Params->pnum, Params->qnum, File->my_irrep);
-    psi::fprintf(outfile,   "\tIrreps = %1d\n\n", Params->nirreps);
-    psi::fprintf(outfile, "\t   Row and column dimensions for DPD Block:\n");
-    psi::fprintf(outfile, "\t   ----------------------------------------\n");
+    printer->Printf(   "\tIrreps = %1d\n\n", Params->nirreps);
+    printer->Printf( "\t   Row and column dimensions for DPD Block:\n");
+    printer->Printf( "\t   ----------------------------------------\n");
     for(i=0; i < Params->nirreps; i++)
-        psi::fprintf(outfile,   "\t   Irrep: %1d row = %5d\tcol = %5d\n", i,
+        printer->Printf(   "\t   Irrep: %1d row = %5d\tcol = %5d\n", i,
                 Params->rowtot[i], Params->coltot[i^my_irrep]);
-    fflush(outfile);
+    
 
     file2_mat_init(File);
     file2_mat_rd(File);
-    file2_mat_print(File, outfile);
+    file2_mat_print(File, "outfile");
     file2_mat_close(File);
 
     return 0;

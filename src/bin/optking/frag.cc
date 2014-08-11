@@ -36,7 +36,7 @@
 #include "opt_data.h"
 #include "physconst.h"
 #include "linear_algebra.h"
-
+#include "psi4-dec.h"
 #define EXTERN
 #include "globals.h"
 
@@ -94,77 +94,81 @@ void FRAG::set_masses(void) {
   return;
 }
 
-void FRAG::print_geom(FILE *fp, const int id, bool print_masses) {
+void FRAG::print_geom(std::string OutFileRMR, const int id, bool print_masses) {
   int i;
-  fprintf(fp,"\t---Fragment %d Geometry---\n", id+1);
+  boost::shared_ptr<psi::PsiOutStream> printer(OutFileRMR=="outfile"? psi::outfile:
+     boost::shared_ptr<psi::OutFile>(new psi::OutFile(OutFileRMR,psi::APPEND)));
+  printer->Printf("\t---Fragment %d Geometry---\n", id+1);
   if (print_masses) {
     for (i=0; i<natom; ++i)
-      fprintf(fp,"\t %-4s%20.10lf%20.10lf%20.10lf%20.10lf\n",
+      printer->Printf("\t %-4s%20.10lf%20.10lf%20.10lf%20.10lf\n",
         Z_to_symbol[(int) Z[i]], mass[i], geom[i][0], geom[i][1], geom[i][2]);
   }
   else {
     for (i=0; i<natom; ++i)
-      fprintf(fp,"\t %-4s%20.10lf%20.10lf%20.10lf\n",
+      printer->Printf("\t %-4s%20.10lf%20.10lf%20.10lf\n",
         Z_to_symbol[(int) Z[i]], geom[i][0], geom[i][1], geom[i][2]);
   }
-  fprintf(fp, "\n");
-  fflush(fp);
+  printer->Printf( "\n");
 }
 
-void FRAG::print_geom_grad(FILE *fp, const int id, bool print_masses) {
+void FRAG::print_geom_grad(std::string OutFileRMR, const int id, bool print_masses) {
   int i;
-  fprintf(fp,"\t---Fragment %d Geometry and Gradient---\n", id+1);
+  boost::shared_ptr<psi::PsiOutStream> printer(OutFileRMR=="outfile"? psi::outfile:
+     boost::shared_ptr<psi::OutFile>(new psi::OutFile(OutFileRMR,psi::APPEND)));
+  printer->Printf("\t---Fragment %d Geometry and Gradient---\n", id+1);
   if (print_masses) {
     for (i=0; i<natom; ++i)
-      fprintf(fp,"\t %-4s%20.10lf%20.10lf%20.10lf%20.10lf\n",
+      printer->Printf("\t %-4s%20.10lf%20.10lf%20.10lf%20.10lf\n",
         Z_to_symbol[(int) Z[i]], mass[i], geom[i][0], geom[i][1], geom[i][2]);
   }
   else {
     for (i=0; i<natom; ++i)
-      fprintf(fp,"\t %-4s%20.10lf%20.10lf%20.10lf\n",
+      printer->Printf("\t %-4s%20.10lf%20.10lf%20.10lf\n",
         Z_to_symbol[(int) Z[i]], geom[i][0], geom[i][1], geom[i][2]);
   }
   for (i=0; i<natom; ++i)
-    fprintf(fp,"\t %24.10lf%20.10lf%20.10lf\n", grad[i][0], grad[i][1], grad[i][2]);
-  fprintf(fp, "\n");
-  fflush(fp);
+    printer->Printf("\t %24.10lf%20.10lf%20.10lf\n", grad[i][0], grad[i][1], grad[i][2]);
+  printer->Printf( "\n");
 }
 
 #if defined(OPTKING_PACKAGE_QCHEM)
-void FRAG::print_geom(FILE *fp_geom) {
+void FRAG::print_geom(std::string OutFileRMR_geom) {
   for (int i=0; i<natom; ++i)
     fprintf(fp_geom, "\t  %3s  %15.10lf%15.10lf%15.10lf\n",
       Z_to_symbol[(int) Z[i]], geom[i][0], geom[i][1], geom[i][2]);
   fflush(fp_geom);
 }
 #elif defined(OPTKING_PACKAGE_PSI)
-void FRAG::print_geom(FILE *fp_geom) {
-  for (int i=0; i<natom; ++i)
-    fprintf(fp_geom, "\t  %3s  %15.10lf%15.10lf%15.10lf\n",
+void FRAG::print_geom(std::string OutFileRMR_geom) {
+   boost::shared_ptr<psi::PsiOutStream> printer(OutFileRMR=="outfile"? psi::outfile:
+      boost::shared_ptr<psi::OutFile>(new psi::OutFile(OutFileRMR,psi::APPEND)));
+   for (int i=0; i<natom; ++i)
+    printer->Printf("\t  %3s  %15.10lf%15.10lf%15.10lf\n",
       Z_to_symbol[(int) Z[i]], geom[i][0] * _bohr2angstroms, 
       geom[i][1] * _bohr2angstroms, geom[i][2] * _bohr2angstroms);
-  fflush(fp_geom);
 }
 #endif
 
-void FRAG::print_intcos(FILE *fp, int atom_offset) {
-  fprintf(fp,"\t - Coordinate -           - BOHR/RAD -       - ANG/DEG -\n");
+void FRAG::print_intcos(std::string OutFileRMR, int atom_offset) {
+   boost::shared_ptr<psi::PsiOutStream> printer(OutFileRMR=="outfile"? psi::outfile:
+      boost::shared_ptr<psi::OutFile>(new psi::OutFile(OutFileRMR,psi::APPEND)));
+  printer->Printf("\t - Coordinate -           - BOHR/RAD -       - ANG/DEG -\n");
   for (int i=0; i<intcos.size(); ++i)
-    intcos.at(i)->print(fp,geom,atom_offset);
-  fprintf(fp, "\n");
-  fflush(fp);
+    intcos.at(i)->print(OutFileRMR,geom,atom_offset);
+  printer->Printf( "\n");
 }
 
 // fetch string definition of intco
 std::string FRAG::get_intco_definition(int coord_index, int atom_offset) {
-  fprintf(outfile,"coord_index: %d; atom_offset: %d\n", coord_index, atom_offset);
+  psi::outfile->Printf("coord_index: %d; atom_offset: %d\n", coord_index, atom_offset);
   return intcos.at(coord_index)->get_definition_string(atom_offset);
 }
 
-void FRAG::print_intco_dat(FILE *fp, int atom_offset) {
+void FRAG::print_intco_dat(std::string OutFileRMR, int atom_offset) {
   //fprintf(fp,"\t---Fragment %d Intrafragment Coordinates---\n", id+1);
   for (int i=0; i<intcos.size(); ++i)
-    intcos.at(i)->print_intco_dat(fp,atom_offset);
+    intcos.at(i)->print_intco_dat(OutFileRMR,atom_offset);
 }
 
 // automatically determine bond connectivity by comparison of interatomic distance
@@ -210,17 +214,18 @@ void FRAG::update_connectivity_by_bonds(void) {
   }
 }
 
-void FRAG::print_connectivity(FILE *fp, const int id, const int offset) const {
-  fprintf(fp,"\t---Fragment %d Bond Connectivity---\n", id+1);
+void FRAG::print_connectivity(std::string OutFileRMR, const int id, const int offset) const {
+   boost::shared_ptr<psi::PsiOutStream> printer(OutFileRMR=="outfile"? psi::outfile:
+      boost::shared_ptr<psi::OutFile>(new psi::OutFile(OutFileRMR,psi::APPEND)));
+  printer->Printf("\t---Fragment %d Bond Connectivity---\n", id+1);
   int i,j;
   for (i=0; i<natom; ++i) {
-    fprintf(fp,"\t %d :", i+1+offset);
+    printer->Printf("\t %d :", i+1+offset);
       for (j=0; j<natom; ++j)
-        if (connectivity[i][j]) fprintf(fp," %d", j+1+offset);
-    fprintf(fp,"\n");
+        if (connectivity[i][j]) printer->Printf(" %d", j+1+offset);
+    printer->Printf("\n");
   }
-  fprintf(fp,"\n");
-  fflush(fp);
+  printer->Printf("\n");
 }
 
 // automatically add bond stretch coodinates based on connectivity matrix
@@ -335,7 +340,7 @@ int FRAG::add_auxiliary_bonds(void) {
           else delete one_stre;
         }
         else {
-          fprintf(outfile,"\tOmitting auxiliary bond %d %d bc of connectivity.\n", a+1, b+1);
+          psi::outfile->Printf("\tOmitting auxiliary bond %d %d bc of connectivity.\n", a+1, b+1);
         }
       }
     }
@@ -591,12 +596,13 @@ void FRAG::compute_G(double **G, bool use_masses) const {
 }
 
 // computes and print B matrix
-void FRAG::print_B(FILE *fp) const {
+void FRAG::print_B(std::string OutFileRMR) const {
   double **B = compute_B();
-  fprintf(fp,"\t---B matrix---\n");
-  print_matrix(fp, B, intcos.size(), 3*natom);
-  fprintf(fp,"\n");
-  fflush(fp);
+  boost::shared_ptr<psi::PsiOutStream> printer(OutFileRMR=="outfile"? psi::outfile:
+     boost::shared_ptr<psi::OutFile>(new psi::OutFile(OutFileRMR,psi::APPEND)));
+  printer->Printf("\t---B matrix---\n");
+  print_matrix(OutFileRMR, B, intcos.size(), 3*natom);
+  printer->Printf("\n");
   free_matrix(B);
 }
 

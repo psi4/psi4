@@ -49,7 +49,7 @@ int DPD::trans4_mat_irrep_shift13(dpdtrans4 *Trans, int buf_block)
     all_buf_irrep = Trans->buf.file.my_irrep;
 
     if(Trans->shift.shift_type) {
-        psi::fprintf(stderr, "\n\tShift is already on! %d\n",
+        outfile->Printf( "\n\tShift is already on! %d\n",
                 Trans->shift.shift_type);
         exit(PSI_RETURN_FAILURE);
     }

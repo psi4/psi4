@@ -38,13 +38,14 @@ namespace psi {
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
 
 int IWL::read_all(double *ints, int *ioff_lt, int *ioff_rt, int no_pq_perm,
-    int *ioff, int printflg, FILE *out)
+    int *ioff, int printflg, std::string out)
 {
     int lastbuf;
     Label *lblptr;
     Value *valptr;
     int idx, p, q, r, s, pq, rs, pqrs;
-
+    boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+          boost::shared_ptr<OutFile>(new OutFile(out)));
     lblptr = labels_;
     valptr = values_;
 
@@ -70,7 +71,7 @@ int IWL::read_all(double *ints, int *ioff_lt, int *ioff_rt, int no_pq_perm,
         ints[pqrs] = (double) valptr[idx_];
 
         if (printflg) 
-            psi::fprintf(out, "<%2d %2d %2d %2d [%2d][%2d] [[%3d]] = %20.10f\n",
+            printer->Printf( "<%2d %2d %2d %2d [%2d][%2d] [[%3d]] = %20.10f\n",
             p, q, r, s, pq, rs, pqrs, ints[pqrs]) ;
 
     } /*! end loop through current buffer */
@@ -100,7 +101,7 @@ int IWL::read_all(double *ints, int *ioff_lt, int *ioff_rt, int no_pq_perm,
             ints[pqrs] = (double) valptr[idx_];
 
             if (printflg) 
-                psi::fprintf(out, "<%d %d %d %d [%d][%d] [[%d]] = %20.10f\n",
+                printer->Printf( "<%d %d %d %d [%d][%d] [[%d]] = %20.10f\n",
                 p, q, r, s, pq, rs, pqrs, ints[pqrs]) ;
 
         } /*! end loop through current buffer */
@@ -111,8 +112,10 @@ int IWL::read_all(double *ints, int *ioff_lt, int *ioff_rt, int no_pq_perm,
 }
 
 int IWL::read_all2(double **ints, int *ioff_lt, int *ioff_rt, int no_pq_perm, 
-    int *, int printflg, FILE *out)
+    int *, int printflg, std::string out)
 {
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(out)));
     int lastbuf;
     Label *lblptr;
     Value *valptr;
@@ -141,7 +144,7 @@ int IWL::read_all2(double **ints, int *ioff_lt, int *ioff_rt, int no_pq_perm,
         ints[pq][rs] = (double) valptr[idx_];
 
         if (printflg) 
-            psi::fprintf(out, "<%2d %2d %2d %2d [%2d][%2d] = %20.10f\n",
+            printer->Printf( "<%2d %2d %2d %2d [%2d][%2d] = %20.10f\n",
             p, q, r, s, pq, rs, ints[pq][rs]) ;
 
     } /*! end loop through current buffer */
@@ -169,7 +172,7 @@ int IWL::read_all2(double **ints, int *ioff_lt, int *ioff_rt, int no_pq_perm,
             ints[pq][rs] = (double) valptr[idx_];
 
             if (printflg) 
-                psi::fprintf(out, "<%d %d %d %d [%d][%d] = %20.10f\n",
+                printer->Printf( "<%d %d %d %d [%d][%d] = %20.10f\n",
                 p, q, r, s, pq, rs, ints[pq][rs]) ;
 
         } /*! end loop through current buffer */
@@ -201,9 +204,11 @@ int IWL::read_all2(double **ints, int *ioff_lt, int *ioff_rt, int no_pq_perm,
 */
 int iwl_buf_rd_all(struct iwlbuf *Buf, double *ints,
 		   int *ioff_lt, int *ioff_rt, int no_pq_perm, int *ioff,
-                   int printflg, FILE *out)
+                   int printflg, std::string out)
 {
-  int lastbuf;
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(out)));
+   int lastbuf;
   Label *lblptr;
   Value *valptr;
   int idx, p, q, r, s, pq, rs, pqrs;
@@ -233,7 +238,7 @@ int iwl_buf_rd_all(struct iwlbuf *Buf, double *ints,
     ints[pqrs] = (double) valptr[Buf->idx];
     
     if (printflg) 
-      psi::fprintf(out, "<%2d %2d %2d %2d [%2d][%2d] [[%3d]] = %20.10f\n",
+      printer->Printf( "<%2d %2d %2d %2d [%2d][%2d] [[%3d]] = %20.10f\n",
 	      p, q, r, s, pq, rs, pqrs, ints[pqrs]) ;
     
   } /*! end loop through current buffer */
@@ -263,7 +268,7 @@ int iwl_buf_rd_all(struct iwlbuf *Buf, double *ints,
       ints[pqrs] = (double) valptr[Buf->idx];
       
       if (printflg) 
-	psi::fprintf(out, "<%d %d %d %d [%d][%d] [[%d]] = %20.10f\n",
+	printer->Printf( "<%d %d %d %d [%d][%d] [[%d]] = %20.10f\n",
 		p, q, r, s, pq, rs, pqrs, ints[pqrs]) ;
       
     } /*! end loop through current buffer */
@@ -289,8 +294,11 @@ int iwl_buf_rd_all(struct iwlbuf *Buf, double *ints,
 
 int iwl_buf_rd_all2(struct iwlbuf *Buf, double **ints,
 		   int *ioff_lt, int *ioff_rt, int no_pq_perm, int *,
-                   int printflg, FILE *out)
+                   int printflg, std::string out)
 {
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(out)));
+
   int lastbuf;
   Label *lblptr;
   Value *valptr;
@@ -319,7 +327,7 @@ int iwl_buf_rd_all2(struct iwlbuf *Buf, double **ints,
     ints[pq][rs] = (double) valptr[Buf->idx];
     
     if (printflg) 
-      psi::fprintf(out, "<%2d %2d %2d %2d [%2d][%2d] = %20.10f\n",
+      printer->Printf( "<%2d %2d %2d %2d [%2d][%2d] = %20.10f\n",
 	      p, q, r, s, pq, rs, ints[pq][rs]) ;
     
   } /*! end loop through current buffer */
@@ -347,7 +355,7 @@ int iwl_buf_rd_all2(struct iwlbuf *Buf, double **ints,
       ints[pq][rs] = (double) valptr[Buf->idx];
       
       if (printflg) 
-	psi::fprintf(out, "<%d %d %d %d [%d][%d] = %20.10f\n",
+	printer->Printf( "<%d %d %d %d [%d][%d] = %20.10f\n",
 		p, q, r, s, pq, rs, ints[pq][rs]) ;
       
     } /*! end loop through current buffer */

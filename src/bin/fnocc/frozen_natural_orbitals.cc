@@ -94,18 +94,18 @@ double FrozenNO::compute_energy(){
 void FrozenNO::ComputeNaturalOrbitals(){
     tstart();
 
-    fflush(outfile);
-    psi::fprintf(outfile,"\n\n");
-    psi::fprintf(outfile, "        *******************************************************\n");
-    psi::fprintf(outfile, "        *                                                     *\n");
-    psi::fprintf(outfile, "        *               Frozen Natural Orbitals               *\n");
-    psi::fprintf(outfile, "        *                                                     *\n");
-    psi::fprintf(outfile, "        *******************************************************\n");
-    psi::fprintf(outfile,"\n\n");
-    fflush(outfile);
+    
+    outfile->Printf("\n\n");
+    outfile->Printf( "        *******************************************************\n");
+    outfile->Printf( "        *                                                     *\n");
+    outfile->Printf( "        *               Frozen Natural Orbitals               *\n");
+    outfile->Printf( "        *                                                     *\n");
+    outfile->Printf( "        *******************************************************\n");
+    outfile->Printf("\n\n");
+    
 
-    psi::fprintf(outfile,"        ==> Transform (OV|OV) integrals <==\n");
-    psi::fprintf(outfile,"\n");
+    outfile->Printf("        ==> Transform (OV|OV) integrals <==\n");
+    outfile->Printf("\n");
 
     std::vector<shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::occ);
@@ -119,9 +119,9 @@ void FrozenNO::ComputeNaturalOrbitals(){
     ints->initialize();
     ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);
 
-    psi::fprintf(outfile,"\n");
-    psi::fprintf(outfile,"        ==> Build MP2 amplitudes, OPDM, and NOs <==\n");
-    psi::fprintf(outfile,"\n");
+    outfile->Printf("\n");
+    outfile->Printf("        ==> Build MP2 amplitudes, OPDM, and NOs <==\n");
+    outfile->Printf("\n");
 
     dpdbuf4 amps1,amps2;
     boost::shared_ptr<PSIO> psio = _default_psio_lib_;
@@ -217,11 +217,11 @@ void FrozenNO::ComputeNaturalOrbitals(){
     global_dpd_->buf4_close(&amps1);
     global_dpd_->buf4_close(&amps2);
 
-    psi::fprintf(outfile,"        OS MP2 correlation energy:       %20.12lf\n",emp2_os);
-    psi::fprintf(outfile,"        SS MP2 correlation energy:       %20.12lf\n",emp2_ss);
-    psi::fprintf(outfile,"        MP2 correlation energy:          %20.12lf\n",emp2_os+emp2_ss);
-    psi::fprintf(outfile,"      * MP2 total energy:                %20.12lf\n",emp2_os+emp2_ss+escf);
-    psi::fprintf(outfile,"\n");
+    outfile->Printf("        OS MP2 correlation energy:       %20.12lf\n",emp2_os);
+    outfile->Printf("        SS MP2 correlation energy:       %20.12lf\n",emp2_ss);
+    outfile->Printf("        MP2 correlation energy:          %20.12lf\n",emp2_os+emp2_ss);
+    outfile->Printf("      * MP2 total energy:                %20.12lf\n",emp2_os+emp2_ss+escf);
+    outfile->Printf("\n");
 
     // scale amps by denominator
     global_dpd_->buf4_init(&amps2, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
@@ -330,8 +330,8 @@ void FrozenNO::ComputeNaturalOrbitals(){
                 if ( vec[a] > cutoff ) newVirOrbsPI[h]++;
             }
         }
-        psi::fprintf(outfile,"        Cutoff for significant NO occupancy: %5.3le\n",cutoff);
-        psi::fprintf(outfile,"\n");
+        outfile->Printf("        Cutoff for significant NO occupancy: %5.3le\n",cutoff);
+        outfile->Printf("\n");
     }else{
         // use user-specified number of virtuals
         for (int h = 0; h < nirrep_; h++) {
@@ -339,13 +339,13 @@ void FrozenNO::ComputeNaturalOrbitals(){
         }
     }
 
-    psi::fprintf(outfile,"        No. virtuals per irrep (original):  [");
-    for (int h = 0; h < nirrep_; h++) psi::fprintf(outfile,"%4i",aVirOrbsPI[h]);
-    psi::fprintf(outfile," ]\n");
-    psi::fprintf(outfile,"        No. virtuals per irrep (truncated): [");
-    for (int h = 0; h < nirrep_; h++) psi::fprintf(outfile,"%4i",newVirOrbsPI[h]);
-    psi::fprintf(outfile," ]\n");
-    psi::fprintf(outfile,"\n");
+    outfile->Printf("        No. virtuals per irrep (original):  [");
+    for (int h = 0; h < nirrep_; h++) outfile->Printf("%4i",aVirOrbsPI[h]);
+    outfile->Printf(" ]\n");
+    outfile->Printf("        No. virtuals per irrep (truncated): [");
+    for (int h = 0; h < nirrep_; h++) outfile->Printf("%4i",newVirOrbsPI[h]);
+    outfile->Printf(" ]\n");
+    outfile->Printf("\n");
 
     int nvirt_no = 0;
     int nvirt    = 0;
@@ -353,8 +353,8 @@ void FrozenNO::ComputeNaturalOrbitals(){
         nvirt    += aVirOrbsPI[h];
         nvirt_no += newVirOrbsPI[h];
     }
-    psi::fprintf(outfile,"        Retaining %i of %i virtual orbitals.\n",nvirt_no,nvirt);
-    psi::fprintf(outfile,"\n");
+    outfile->Printf("        Retaining %i of %i virtual orbitals.\n",nvirt_no,nvirt);
+    outfile->Printf("\n");
 
     // transform Fock matrix to truncated NO basis
 
@@ -455,8 +455,8 @@ double DFFrozenNO::compute_energy(){
 
 void DFFrozenNO::ThreeIndexIntegrals() {
 
-  psi::fprintf(outfile,"  ==> 3-index integrals <==\n");
-  psi::fprintf(outfile,"\n");
+  outfile->Printf("  ==> 3-index integrals <==\n");
+  outfile->Printf("\n");
 
   long int o = ndoccact;
   long int v = nvirt;
@@ -517,7 +517,7 @@ void DFFrozenNO::ThreeIndexIntegrals() {
       psio->open(PSIF_DCC_QSO,PSIO_OPEN_OLD);
       psio->write_entry(PSIF_DCC_QSO,"Qso CC",(char*)&Qso[0][0],nQ*nso*nso*sizeof(double));
       psio->close(PSIF_DCC_QSO,1);
-      psi::fprintf(outfile,"        Number of auxiliary functions:       %5li\n",nQ);
+      outfile->Printf("        Number of auxiliary functions:       %5li\n",nQ);
 
       // stick nQ in process environment so ccsd can know it
       Process::environment.globals["NAUX (CC)"] = (double)nQ;
@@ -527,10 +527,10 @@ void DFFrozenNO::ThreeIndexIntegrals() {
 
       // read integrals from disk if they were generated in the SCF
       if ( options_.get_str("SCF_TYPE") == "CD" ) {
-          psi::fprintf(outfile,"        Reading Cholesky vectors from disk ...\n");
+          outfile->Printf("        Reading Cholesky vectors from disk ...\n");
           nQ = Process::environment.globals["NAUX (SCF)"];
-          psi::fprintf(outfile,"        Cholesky decomposition threshold: %8.2le\n", options_.get_double("CHOLESKY_TOLERANCE"));
-          psi::fprintf(outfile,"        Number of Cholesky vectors:          %5li\n",nQ);
+          outfile->Printf("        Cholesky decomposition threshold: %8.2le\n", options_.get_double("CHOLESKY_TOLERANCE"));
+          outfile->Printf("        Number of Cholesky vectors:          %5li\n",nQ);
 
           // ntri comes from sieve above
           boost::shared_ptr<Matrix> Qmn = SharedMatrix(new Matrix("Qmn Integrals",nQ,ntri));
@@ -556,7 +556,7 @@ void DFFrozenNO::ThreeIndexIntegrals() {
       }else {
 
           // generate Cholesky 3-index integrals
-          psi::fprintf(outfile,"        Generating Cholesky vectors ...\n");
+          outfile->Printf("        Generating Cholesky vectors ...\n");
           boost::shared_ptr<BasisSet> primary = basisset();
           boost::shared_ptr<IntegralFactory> integral (new IntegralFactory(primary,primary,primary,primary));
           double tol = options_.get_double("CHOLESKY_TOLERANCE");
@@ -570,15 +570,15 @@ void DFFrozenNO::ThreeIndexIntegrals() {
           psio->open(PSIF_DCC_QSO,PSIO_OPEN_OLD);
           psio->write_entry(PSIF_DCC_QSO,"Qso CC",(char*)&Lp[0][0],nQ*nso*nso*sizeof(double));
           psio->close(PSIF_DCC_QSO,1);
-          psi::fprintf(outfile,"        Cholesky decomposition threshold: %8.2le\n", tol);
-          psi::fprintf(outfile,"        Number of Cholesky vectors:          %5li\n",nQ);
+          outfile->Printf("        Cholesky decomposition threshold: %8.2le\n", tol);
+          outfile->Printf("        Number of Cholesky vectors:          %5li\n",nQ);
 
       }
 
       // stick nQ in process environment so ccsd can know it
       Process::environment.globals["NAUX (CC)"] = (double)nQ;
   }
-  psi::fprintf(outfile,"\n");
+  outfile->Printf("\n");
 }
 
 /* 
@@ -586,8 +586,8 @@ void DFFrozenNO::ThreeIndexIntegrals() {
 */
 void DFFrozenNO::FourIndexIntegrals() {
 
-    psi::fprintf(outfile,"  ==> Build 4-index ERI's from 3-index integrals <==\n");
-    psi::fprintf(outfile,"\n");
+    outfile->Printf("  ==> Build 4-index ERI's from 3-index integrals <==\n");
+    outfile->Printf("\n");
 
     long int o  = ndoccact;
     long int v  = nvirt;
@@ -637,7 +637,7 @@ void DFFrozenNO::FourIndexIntegrals() {
                     int rs = Position(r,s);
                     if ( rs > pq ) continue;
                     double val = C_DDOT(nQ,Qmo+pq,nmo*(nmo+1)/2,Qmo+rs,nmo*(nmo+1)/2);
-                    iwl->write_value(p, q, r, s, val, false, outfile, 0);
+                    iwl->write_value(p, q, r, s, val, false, "outfile", 0);
                 }
             }
         }
@@ -654,10 +654,10 @@ void DFFrozenNO::FourIndexIntegrals() {
  */
 void DFFrozenNO::ComputeNaturalOrbitals(){
 
-  fflush(outfile);
-  psi::fprintf(outfile, "  ==> Frozen Natural Orbitals <==\n");
-  psi::fprintf(outfile,"\n");
-  fflush(outfile);
+  
+  outfile->Printf( "  ==> Frozen Natural Orbitals <==\n");
+  outfile->Printf("\n");
+  
 
   long int o      = ndoccact;
   long int v      = nvirt;
@@ -733,8 +733,8 @@ void DFFrozenNO::ComputeNaturalOrbitals(){
   }
   emp2 = emp2_os + emp2_ss;
 
-  psi::fprintf(outfile,"        Doubles contribution to MP2 energy in full space: %20.12lf\n",emp2);
-  psi::fprintf(outfile,"\n");
+  outfile->Printf("        Doubles contribution to MP2 energy in full space: %20.12lf\n",emp2);
+  outfile->Printf("\n");
 
   Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = emp2_os;
   Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = emp2_ss;
@@ -773,16 +773,16 @@ void DFFrozenNO::ComputeNaturalOrbitals(){
   if (!options_["ACTIVE_NAT_ORBS"].has_changed()) {
       // use occupancy tolerance:
       for (long int i=0; i<v; i++) if (eigvalDab[i]>cutoff) nvirt_no++;
-      psi::fprintf(outfile,"        Cutoff for significant NO occupancy: %5.3le\n",cutoff);
-      psi::fprintf(outfile,"\n");
+      outfile->Printf("        Cutoff for significant NO occupancy: %5.3le\n",cutoff);
+      outfile->Printf("\n");
   }else{
       // use user-specified number of virtuals
       nvirt_no = (long int)options_["ACTIVE_NAT_ORBS"][0].to_double();
   }
 
-  psi::fprintf(outfile,"        Number of virtual orbitals in original space:  %5li\n",v);
-  psi::fprintf(outfile,"        Number of virtual orbitals in truncated space: %5li\n",nvirt_no);
-  psi::fprintf(outfile,"\n");
+  outfile->Printf("        Number of virtual orbitals in original space:  %5li\n",v);
+  outfile->Printf("        Number of virtual orbitals in truncated space: %5li\n",nvirt_no);
+  outfile->Printf("\n");
 
   // transform Fock matrix to MP2 NO basis
   memset((void*)newFock,'\0',v*v*sizeof(double));

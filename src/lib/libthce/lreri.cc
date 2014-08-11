@@ -263,41 +263,41 @@ void DFERI::clear()
 }
 void DFERI::print_header(int level)
 {
-    psi::fprintf(outfile, "  ==> DFERI: Density Fitted 3-Index Tensors <==\n\n");
+    outfile->Printf( "  ==> DFERI: Density Fitted 3-Index Tensors <==\n\n");
     if (omega_ != 0.0) {
-        psi::fprintf(outfile, "    LRC Omega      = %11.3E\n", omega_);
+        outfile->Printf( "    LRC Omega      = %11.3E\n", omega_);
     }
-    psi::fprintf(outfile, "    Schwarz cutoff = %11.3E\n", schwarz_cutoff_);
-    psi::fprintf(outfile, "    J cutoff       = %11.3E\n", J_cutoff_);
-    psi::fprintf(outfile, "    Mem (GB)       = %11zu\n", (memory_ * 8L / 1073741824L)); 
-    psi::fprintf(outfile, "\n");
+    outfile->Printf( "    Schwarz cutoff = %11.3E\n", schwarz_cutoff_);
+    outfile->Printf( "    J cutoff       = %11.3E\n", J_cutoff_);
+    outfile->Printf( "    Mem (GB)       = %11zu\n", (memory_ * 8L / 1073741824L)); 
+    outfile->Printf( "\n");
 
     if (level > 1) {
-        psi::fprintf(outfile, "   => Primary Basis <=\n\n");
-        primary_->print_by_level(outfile, print_);
+        outfile->Printf( "   => Primary Basis <=\n\n");
+        primary_->print_by_level("outfile", print_);
     }
     
-    psi::fprintf(outfile, "   => Auxiliary Basis <=\n\n");
-    auxiliary_->print_by_level(outfile, print_);
+    outfile->Printf( "   => Auxiliary Basis <=\n\n");
+    auxiliary_->print_by_level("outfile", print_);
     
     if (level > 1) {
-        psi::fprintf(outfile, "   => Orbital Spaces: <=\n\n");
-        psi::fprintf(outfile, "    %12s %12s %12s\n", "Space", "Start", "End");
+        outfile->Printf( "   => Orbital Spaces: <=\n\n");
+        outfile->Printf( "    %12s %12s %12s\n", "Space", "Start", "End");
         for (int i = 0; i < spaces_order_.size(); i++) {
-            psi::fprintf(outfile, "    %12s %12d %12d\n", spaces_order_[i].c_str(), spaces_[spaces_order_[i]].first, spaces_[spaces_order_[i]].second);
+            outfile->Printf( "    %12s %12d %12d\n", spaces_order_[i].c_str(), spaces_[spaces_order_[i]].first, spaces_[spaces_order_[i]].second);
         }
-        psi::fprintf(outfile, "\n");
+        outfile->Printf( "\n");
     }
     
     if (level > 1) {
-        psi::fprintf(outfile, "   => Required Orbital Pair Spaces: <=\n\n");
-        psi::fprintf(outfile, "    %12s %12s %12s %11s %11s\n", "Tensor", "Space 1", "Space 2", "J Power", "Transpose12");
+        outfile->Printf( "   => Required Orbital Pair Spaces: <=\n\n");
+        outfile->Printf( "    %12s %12s %12s %11s %11s\n", "Tensor", "Space 1", "Space 2", "J Power", "Transpose12");
         for (int i = 0; i < pair_spaces_order_.size(); i++) {
-            psi::fprintf(outfile, "    %12s %12s %12s %11.3E %11s\n", pair_spaces_order_[i].c_str(), pair_spaces_[pair_spaces_order_[i]].first.c_str(), pair_spaces_[pair_spaces_order_[i]].second.c_str(),
+            outfile->Printf( "    %12s %12s %12s %11.3E %11s\n", pair_spaces_order_[i].c_str(), pair_spaces_[pair_spaces_order_[i]].first.c_str(), pair_spaces_[pair_spaces_order_[i]].second.c_str(),
                 pair_powers_[pair_spaces_order_[i]],
                 pair_transposes_[pair_spaces_order_[i]]);
         }
-        psi::fprintf(outfile, "\n");
+        outfile->Printf( "\n");
     }
 }
 boost::shared_ptr<Matrix> DFERI::Jpow(double power)
@@ -776,43 +776,43 @@ void LSTHCERI::clear()
 }
 void LSTHCERI::print_header(int level)
 {
-    psi::fprintf(outfile, "  ==> LSTHCERI: LS-THC 2-Index Tensors <==\n\n");
+    outfile->Printf( "  ==> LSTHCERI: LS-THC 2-Index Tensors <==\n\n");
 
-    psi::fprintf(outfile, "    Schwarz cutoff = %11.3E\n", schwarz_cutoff_);
-    psi::fprintf(outfile, "    J cutoff       = %11.3E\n", J_cutoff_);
-    psi::fprintf(outfile, "    S cutoff       = %11.3E\n", S_cutoff_);
-    psi::fprintf(outfile, "    Balance        = %11s\n", (balance_ ? "Yes" : "No"));
-    psi::fprintf(outfile, "    Mem (GB)       = %11zu\n", (memory_ * 8L / 1073741824L)); 
-    psi::fprintf(outfile, "\n");
+    outfile->Printf( "    Schwarz cutoff = %11.3E\n", schwarz_cutoff_);
+    outfile->Printf( "    J cutoff       = %11.3E\n", J_cutoff_);
+    outfile->Printf( "    S cutoff       = %11.3E\n", S_cutoff_);
+    outfile->Printf( "    Balance        = %11s\n", (balance_ ? "Yes" : "No"));
+    outfile->Printf( "    Mem (GB)       = %11zu\n", (memory_ * 8L / 1073741824L)); 
+    outfile->Printf( "\n");
 
     if (level > 1) {
-        psi::fprintf(outfile, "   => Primary Basis <=\n\n");
-        primary_->print_by_level(outfile, print_);
+        outfile->Printf( "   => Primary Basis <=\n\n");
+        primary_->print_by_level("outfile", print_);
     }
 
     if (auxiliary_) {
-        psi::fprintf(outfile, "   => Auxiliary Basis <=\n\n");
-        auxiliary_->print_by_level(outfile, print_);
+        outfile->Printf( "   => Auxiliary Basis <=\n\n");
+        auxiliary_->print_by_level("outfile", print_);
     }    
     
     if (level > 1) {
-        psi::fprintf(outfile, "   => Orbital Spaces: <=\n\n");
-        psi::fprintf(outfile, "    %12s %12s %12s\n", "Space", "Start", "End");
+        outfile->Printf( "   => Orbital Spaces: <=\n\n");
+        outfile->Printf( "    %12s %12s %12s\n", "Space", "Start", "End");
         for (int i = 0; i < spaces_order_.size(); i++) {
-            psi::fprintf(outfile, "    %12s %12d %12d\n", spaces_order_[i].c_str(), spaces_[spaces_order_[i]].first, spaces_[spaces_order_[i]].second);
+            outfile->Printf( "    %12s %12d %12d\n", spaces_order_[i].c_str(), spaces_[spaces_order_[i]].first, spaces_[spaces_order_[i]].second);
         }
-        psi::fprintf(outfile, "\n");
+        outfile->Printf( "\n");
     }
 
     if (level > 1) {
-        psi::fprintf(outfile, "   => Required ERI Spaces: <=\n\n");
-        psi::fprintf(outfile, "    %12s %12s %12s %12s %12s\n", "Tensor", "Space 1", "Space 2", "Space 3", "Space 4");
+        outfile->Printf( "   => Required ERI Spaces: <=\n\n");
+        outfile->Printf( "    %12s %12s %12s %12s %12s\n", "Tensor", "Space 1", "Space 2", "Space 3", "Space 4");
         for (int i = 0; i < eri_spaces_order_.size(); i++) {
             std::string tensor = eri_spaces_order_[i];
             std::vector<std::string> task = eri_spaces_[tensor];
-            psi::fprintf(outfile, "    %12s %12s %12s %12s %12s\n", tensor.c_str(), task[0].c_str(), task[1].c_str(), task[2].c_str(), task[3].c_str());
+            outfile->Printf( "    %12s %12s %12s %12s %12s\n", tensor.c_str(), task[0].c_str(), task[1].c_str(), task[2].c_str(), task[3].c_str());
         }
-        psi::fprintf(outfile, "\n");
+        outfile->Printf( "\n");
     }
 }
 void LSTHCERI::compute()

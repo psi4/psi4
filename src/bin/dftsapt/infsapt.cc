@@ -100,31 +100,31 @@ double INFSAPT::compute_energy()
 }
 void INFSAPT::print_header() const 
 {
-    psi::fprintf(outfile, "\t --------------------------------------------------------\n");
-    psi::fprintf(outfile, "\t                         INF-SAPT0                       \n");
-    psi::fprintf(outfile, "\t               Rob Parrish and Ed Hohenstein             \n");
-    psi::fprintf(outfile, "\t --------------------------------------------------------\n");
-    psi::fprintf(outfile, "\n");
+    outfile->Printf( "\t --------------------------------------------------------\n");
+    outfile->Printf( "\t                         INF-SAPT0                       \n");
+    outfile->Printf( "\t               Rob Parrish and Ed Hohenstein             \n");
+    outfile->Printf( "\t --------------------------------------------------------\n");
+    outfile->Printf( "\n");
 
-    psi::fprintf(outfile, "  ==> Sizes <==\n");
-    psi::fprintf(outfile, "\n");
+    outfile->Printf( "  ==> Sizes <==\n");
+    outfile->Printf( "\n");
 
-    psi::fprintf(outfile, "   => Parameters <=\n\n");
+    outfile->Printf( "   => Parameters <=\n\n");
 
     int threads = 1;
     #ifdef _OPENMP
         threads = omp_get_max_threads();
     #endif
     
-    psi::fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
-    psi::fprintf(outfile, "    Threads:           %11d\n", threads);
-    psi::fprintf(outfile, "    Schwarz Cutoff:    %11.3E\n", schwarz_);
-    psi::fprintf(outfile, "\n");
+    outfile->Printf( "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+    outfile->Printf( "    Threads:           %11d\n", threads);
+    outfile->Printf( "    Schwarz Cutoff:    %11.3E\n", schwarz_);
+    outfile->Printf( "\n");
 
-    psi::fprintf(outfile,"   => Molecular Cluster <=\n\n");
+    outfile->Printf("   => Molecular Cluster <=\n\n");
     cluster_->molecule()->print_cluster();
 
-    psi::fprintf(outfile, "   => Orbital Ranges (Pauli Blockade Space) <=\n\n");
+    outfile->Printf( "   => Orbital Ranges (Pauli Blockade Space) <=\n\n");
 
     int nso = cluster_->nso();
     int nmo = cluster_->nmo();
@@ -135,12 +135,12 @@ void INFSAPT::print_header() const
     int naocc = nocc - nfocc;
     int navir = nvir - nfvir;
 
-    psi::fprintf(outfile,"    ---------------------------------------------------------------\n");
-    psi::fprintf(outfile,"    %-7s %6s %6s %6s %6s %6s %6s %6s %6s\n", 
+    outfile->Printf("    ---------------------------------------------------------------\n");
+    outfile->Printf("    %-7s %6s %6s %6s %6s %6s %6s %6s %6s\n", 
         "Unit", "Nso", "Nmo", "Nocc", "Nvir", "Nfocc", "Naocc", "Navir", "Nfvir");
 
-    psi::fprintf(outfile,"    ---------------------------------------------------------------\n");
-    psi::fprintf(outfile,"    %-7s %6d %6d %6d %6d %6d %6d %6d %6d\n", 
+    outfile->Printf("    ---------------------------------------------------------------\n");
+    outfile->Printf("    %-7s %6d %6d %6d %6d %6d %6d %6d %6d\n", 
         "Cluster", nso, nmo, nocc, nvir, nfocc, naocc, navir, nfvir);
     
     for (int A = 0; A < monomers_.size(); A++) {
@@ -149,20 +149,20 @@ void INFSAPT::print_header() const
         nfocc = m->frzcpi().sum();
         naocc = nocc - nfocc;
         
-        psi::fprintf(outfile,"    %-7d %6d %6d %6d %6d %6d %6d %6d %6d\n", 
+        outfile->Printf("    %-7d %6d %6d %6d %6d %6d %6d %6d %6d\n", 
             A+1, nso, nmo, nocc, nvir, nfocc, naocc, navir, nfvir);
     }
-    psi::fprintf(outfile,"    ---------------------------------------------------------------\n");
-    psi::fprintf(outfile, "\n");
+    outfile->Printf("    ---------------------------------------------------------------\n");
+    outfile->Printf( "\n");
 
-    psi::fprintf(outfile, "   => Primary Cluster Basis Set <=\n\n");
-    primary_->print_by_level(outfile, print_);
+    outfile->Printf( "   => Primary Cluster Basis Set <=\n\n");
+    primary_->print_by_level("outfile", print_);
 
-    fflush(outfile);
+    
 }
 void INFSAPT::scf_terms()
 {
-    psi::fprintf(outfile, "  SCF TERMS:\n\n");
+    outfile->Printf( "  SCF TERMS:\n\n");
 
     // ==> Setup <== //
 
@@ -272,117 +272,117 @@ void INFSAPT::scf_terms()
 
     // ==> Printing <== //
 
-    psi::fprintf(outfile, "  ==> SCF Analysis <==\n\n");
+    outfile->Printf( "  ==> SCF Analysis <==\n\n");
     
-    psi::fprintf(outfile, "   => Electrostatics <=\n\n");
+    outfile->Printf( "   => Electrostatics <=\n\n");
 
-    psi::fprintf(outfile,"    Total:\n\n");
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
-    psi::fprintf(outfile,"    %-11s %18s %18s\n",
+    outfile->Printf("    Total:\n\n");
+    outfile->Printf("    -------------------------------------------------\n");
+    outfile->Printf("    %-11s %18s %18s\n",
         "Interaction", "mH", "kcal mol^-1");
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
+    outfile->Printf("    -------------------------------------------------\n");
     for (int A = 0; A < monomers_.size(); A++) {
         for (int B = A+1; B < monomers_.size(); B++) {
             double Eval = EJ_0->get(A,B);
-            psi::fprintf(outfile, "    %-3d <-> %3d %18.12f %18.12f\n",
+            outfile->Printf( "    %-3d <-> %3d %18.12f %18.12f\n",
                 A+1, B+1, 1.0E3*Eval, pc_hartree2kcalmol*Eval);
         }
     }    
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
-    psi::fprintf(outfile,"    %-11s %18.12f %18.12f\n",
+    outfile->Printf("    -------------------------------------------------\n");
+    outfile->Printf("    %-11s %18.12f %18.12f\n",
         "Total", 1.0E3*E_elst, pc_hartree2kcalmol*E_elst);
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
-    psi::fprintf(outfile,"\n");
+    outfile->Printf("    -------------------------------------------------\n");
+    outfile->Printf("\n");
 
-    psi::fprintf(outfile,"   => Exchange <=\n\n");
+    outfile->Printf("   => Exchange <=\n\n");
 
-    psi::fprintf(outfile,"    Pauli Term:\n\n");
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
-    psi::fprintf(outfile,"    %-11s %18s %18s\n",
+    outfile->Printf("    Pauli Term:\n\n");
+    outfile->Printf("    -------------------------------------------------\n");
+    outfile->Printf("    %-11s %18s %18s\n",
         "Interaction", "mH", "kcal mol^-1");
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
+    outfile->Printf("    -------------------------------------------------\n");
     for (int A = 0; A < monomers_.size(); A++) {
             double Eval = EK_A->get(A,A);
-            psi::fprintf(outfile, "    %-3d <-> %3d %18.12f %18.12f\n",
+            outfile->Printf( "    %-3d <-> %3d %18.12f %18.12f\n",
                 A+1, A+1, 1.0E3*Eval, pc_hartree2kcalmol*Eval);
     }    
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
-    psi::fprintf(outfile, "    %-11s %18.12f %18.12f\n",
+    outfile->Printf("    -------------------------------------------------\n");
+    outfile->Printf( "    %-11s %18.12f %18.12f\n",
         "Total", 1.0E3*E_Pauli, pc_hartree2kcalmol*E_Pauli);
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
-    psi::fprintf(outfile,"\n");
+    outfile->Printf("    -------------------------------------------------\n");
+    outfile->Printf("\n");
 
-    psi::fprintf(outfile,"    Tunneling Term:\n\n");
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
-    psi::fprintf(outfile,"    %-11s %18s %18s\n",
+    outfile->Printf("    Tunneling Term:\n\n");
+    outfile->Printf("    -------------------------------------------------\n");
+    outfile->Printf("    %-11s %18s %18s\n",
         "Interaction", "mH", "kcal mol^-1");
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
+    outfile->Printf("    -------------------------------------------------\n");
     for (int A = 0; A < monomers_.size(); A++) {
         for (int B = A+1; B < monomers_.size(); B++) {
             double Eval = EK_0->get(A,B);
-            psi::fprintf(outfile, "    %-3d <-> %3d %18.12f %18.12f\n",
+            outfile->Printf( "    %-3d <-> %3d %18.12f %18.12f\n",
                 A+1, B+1, 1.0E3*Eval, pc_hartree2kcalmol*Eval);
         }
     }    
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
-    psi::fprintf(outfile, "    %-11s %18.12f %18.12f\n",
+    outfile->Printf("    -------------------------------------------------\n");
+    outfile->Printf( "    %-11s %18.12f %18.12f\n",
         "Total", 1.0E3*E_tunnel, pc_hartree2kcalmol*E_tunnel);
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
-    psi::fprintf(outfile,"\n");
+    outfile->Printf("    -------------------------------------------------\n");
+    outfile->Printf("\n");
 
-    psi::fprintf(outfile,"    Rearrangement Term:\n\n");
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
-    psi::fprintf(outfile,"    %-11s %18s %18s\n",
+    outfile->Printf("    Rearrangement Term:\n\n");
+    outfile->Printf("    -------------------------------------------------\n");
+    outfile->Printf("    %-11s %18s %18s\n",
         "Interaction", "mH", "kcal mol^-1");
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
+    outfile->Printf("    -------------------------------------------------\n");
     for (int A = 0; A < monomers_.size(); A++) {
         for (int B = A+1; B < monomers_.size(); B++) {
             double Eval = EK_A->get(A,B);
-            psi::fprintf(outfile, "    %-3d <-> %3d %18.12f %18.12f\n",
+            outfile->Printf( "    %-3d <-> %3d %18.12f %18.12f\n",
                 A+1, B+1, 1.0E3*Eval, pc_hartree2kcalmol*Eval);
         }
     }    
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
-    psi::fprintf(outfile,"    %-11s %18.12f %18.12f\n",
+    outfile->Printf("    -------------------------------------------------\n");
+    outfile->Printf("    %-11s %18.12f %18.12f\n",
         "Total", 1.0E3*E_cross, pc_hartree2kcalmol*E_cross);
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
-    psi::fprintf(outfile,"\n");
+    outfile->Printf("    -------------------------------------------------\n");
+    outfile->Printf("\n");
 
-    psi::fprintf(outfile,"    Total:\n\n");
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
-    psi::fprintf(outfile,"    %-11s %18s %18s\n",
+    outfile->Printf("    Total:\n\n");
+    outfile->Printf("    -------------------------------------------------\n");
+    outfile->Printf("    %-11s %18s %18s\n",
         "Interaction", "mH", "kcal mol^-1");
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
+    outfile->Printf("    -------------------------------------------------\n");
     for (int A = 0; A < monomers_.size(); A++) {
         for (int B = A; B < monomers_.size(); B++) {
             double Eval = EK_0->get(A,B) + EK_A->get(A,B);
-            psi::fprintf(outfile, "    %-3d <-> %3d %18.12f %18.12f\n",
+            outfile->Printf( "    %-3d <-> %3d %18.12f %18.12f\n",
                 A+1, B+1, 1.0E3*Eval, pc_hartree2kcalmol*Eval);
         }
     }    
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
-    psi::fprintf(outfile,"    %-11s %18.12f %18.12f\n",
+    outfile->Printf("    -------------------------------------------------\n");
+    outfile->Printf("    %-11s %18.12f %18.12f\n",
         "Total", 1.0E3*E_exch, pc_hartree2kcalmol*E_exch);
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
-    psi::fprintf(outfile,"\n");
+    outfile->Printf("    -------------------------------------------------\n");
+    outfile->Printf("\n");
 
-    psi::fprintf(outfile, "   => Induction <=\n\n");
+    outfile->Printf( "   => Induction <=\n\n");
 
-    psi::fprintf(outfile,"    Total:\n\n");
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
-    psi::fprintf(outfile,"    %-11s %18s %18s\n",
+    outfile->Printf("    Total:\n\n");
+    outfile->Printf("    -------------------------------------------------\n");
+    outfile->Printf("    %-11s %18s %18s\n",
         "Interaction", "mH", "kcal mol^-1");
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
-    psi::fprintf(outfile,"    %-11s %18.12f %18.12f\n",
+    outfile->Printf("    -------------------------------------------------\n");
+    outfile->Printf("    %-11s %18.12f %18.12f\n",
         "Total", 1.0E3*E_ind, pc_hartree2kcalmol*E_ind);
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
-    psi::fprintf(outfile,"\n");
+    outfile->Printf("    -------------------------------------------------\n");
+    outfile->Printf("\n");
 
     energies_["Elst"] = E_elst;
     energies_["Exch"] = E_exch;
     energies_["Ind"] = E_ind;
 
-    fflush(outfile);
+    
 
     // => Setup PT2 Terms <= //
 
@@ -426,12 +426,12 @@ void INFSAPT::scf_terms()
 }
 void INFSAPT::pt2_terms()
 {
-    psi::fprintf(outfile, "  PT2 TERMS:\n\n");
+    outfile->Printf( "  PT2 TERMS:\n\n");
 
-    psi::fprintf(outfile, "   => MP2FIT Auxiliary Basis Set <=\n\n");
-    mp2fit_->print_by_level(outfile, print_);
+    outfile->Printf( "   => MP2FIT Auxiliary Basis Set <=\n\n");
+    mp2fit_->print_by_level("outfile", print_);
 
-    fflush(outfile);
+    
 
     // ==> Sizing <== //
 
@@ -586,95 +586,95 @@ void INFSAPT::pt2_terms()
 
     // ==> Printing <== //
 
-    psi::fprintf(outfile, "  ==> PT2 Analysis <==\n\n");
+    outfile->Printf( "  ==> PT2 Analysis <==\n\n");
     
-    psi::fprintf(outfile,"    Dispersion (Uncoupled, Casimir-Polder):\n\n");
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
-    psi::fprintf(outfile,"    %-11s %18s %18s\n",
+    outfile->Printf("    Dispersion (Uncoupled, Casimir-Polder):\n\n");
+    outfile->Printf("    -------------------------------------------------\n");
+    outfile->Printf("    %-11s %18s %18s\n",
         "Interaction", "mH", "kcal mol^-1");
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
+    outfile->Printf("    -------------------------------------------------\n");
     for (int A = 0; A < monomers_.size(); A++) {
         for (int B = A+1; B < monomers_.size(); B++) {
             double Eval = EJ_PT2->get(A,B);
-            psi::fprintf(outfile, "    %-3d <-> %3d %18.12f %18.12f\n",
+            outfile->Printf( "    %-3d <-> %3d %18.12f %18.12f\n",
                 A+1, B+1, 1.0E3*Eval, pc_hartree2kcalmol*Eval);
         }
     }    
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
-    psi::fprintf(outfile,"    %-11s %18.12f %18.12f\n",
+    outfile->Printf("    -------------------------------------------------\n");
+    outfile->Printf("    %-11s %18.12f %18.12f\n",
         "Total", 1.0E3*EJ, pc_hartree2kcalmol*EJ);
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
-    psi::fprintf(outfile,"\n");
+    outfile->Printf("    -------------------------------------------------\n");
+    outfile->Printf("\n");
     
-    psi::fprintf(outfile,"    Exchange-Dispersion (Tunneling):\n\n");
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
-    psi::fprintf(outfile,"    %-11s %18s %18s\n",
+    outfile->Printf("    Exchange-Dispersion (Tunneling):\n\n");
+    outfile->Printf("    -------------------------------------------------\n");
+    outfile->Printf("    %-11s %18s %18s\n",
         "Interaction", "mH", "kcal mol^-1");
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
+    outfile->Printf("    -------------------------------------------------\n");
     for (int A = 0; A < monomers_.size(); A++) {
         for (int B = A+1; B < monomers_.size(); B++) {
             double Eval = EK_PT2->get(A,B);
-            psi::fprintf(outfile, "    %-3d <-> %3d %18.12f %18.12f\n",
+            outfile->Printf( "    %-3d <-> %3d %18.12f %18.12f\n",
                 A+1, B+1, 1.0E3*Eval, pc_hartree2kcalmol*Eval);
         }
     }    
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
-    psi::fprintf(outfile,"    %-11s %18.12f %18.12f\n",
+    outfile->Printf("    -------------------------------------------------\n");
+    outfile->Printf("    %-11s %18.12f %18.12f\n",
         "Total", 1.0E3*EK, pc_hartree2kcalmol*EK);
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
-    psi::fprintf(outfile,"\n");
+    outfile->Printf("    -------------------------------------------------\n");
+    outfile->Printf("\n");
     
-    psi::fprintf(outfile,"    Total:\n\n");
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
-    psi::fprintf(outfile,"    %-11s %18s %18s\n",
+    outfile->Printf("    Total:\n\n");
+    outfile->Printf("    -------------------------------------------------\n");
+    outfile->Printf("    %-11s %18s %18s\n",
         "Interaction", "mH", "kcal mol^-1");
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
+    outfile->Printf("    -------------------------------------------------\n");
     for (int A = 0; A < monomers_.size(); A++) {
         for (int B = A+1; B < monomers_.size(); B++) {
             double Eval = EJ_PT2->get(A,B) + EK_PT2->get(A,B);
-            psi::fprintf(outfile, "    %-3d <-> %3d %18.12f %18.12f\n",
+            outfile->Printf( "    %-3d <-> %3d %18.12f %18.12f\n",
                 A+1, B+1, 1.0E3*Eval, pc_hartree2kcalmol*Eval);
         }
     }    
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
-    psi::fprintf(outfile,"    %-11s %18.12f %18.12f\n",
+    outfile->Printf("    -------------------------------------------------\n");
+    outfile->Printf("    %-11s %18.12f %18.12f\n",
         "Total", 1.0E3*(EJ+EK), pc_hartree2kcalmol*(EJ+EK));
-    psi::fprintf(outfile,"    -------------------------------------------------\n");
-    psi::fprintf(outfile,"\n");
+    outfile->Printf("    -------------------------------------------------\n");
+    outfile->Printf("\n");
 
     energies_["Disp"] = EJ + EK;
 
-    fflush(outfile);
+    
 }
 void INFSAPT::print_trailer()
 {
-    psi::fprintf(outfile, "  ALL TERMS:\n\n");
+    outfile->Printf( "  ALL TERMS:\n\n");
 
     energies_["Total"] = energies_["Elst"] + energies_["Exch"] + energies_["Ind"] + energies_["Disp"];
     
-    psi::fprintf(outfile,"    ----------------------------------------------------\n");
-    psi::fprintf(outfile,"    %-14s %18s %18s\n",
+    outfile->Printf("    ----------------------------------------------------\n");
+    outfile->Printf("    %-14s %18s %18s\n",
         "Term", "mH", "kcal mol^-1");
-    psi::fprintf(outfile,"    ----------------------------------------------------\n");
-    psi::fprintf(outfile,"    %-14s %18.12f %18.12f\n",
+    outfile->Printf("    ----------------------------------------------------\n");
+    outfile->Printf("    %-14s %18.12f %18.12f\n",
         "Electrostatics", 1.0E3*energies_["Elst"], pc_hartree2kcalmol*energies_["Elst"]);
-    psi::fprintf(outfile,"    %-14s %18.12f %18.12f\n",
+    outfile->Printf("    %-14s %18.12f %18.12f\n",
         "Exchange", 1.0E3*energies_["Exch"], pc_hartree2kcalmol*energies_["Exch"]);
-    psi::fprintf(outfile,"    %-14s %18.12f %18.12f\n",
+    outfile->Printf("    %-14s %18.12f %18.12f\n",
         "Induction", 1.0E3*energies_["Ind"], pc_hartree2kcalmol*energies_["Ind"]);
-    psi::fprintf(outfile,"    %-14s %18.12f %18.12f\n",
+    outfile->Printf("    %-14s %18.12f %18.12f\n",
         "Dispersion", 1.0E3*energies_["Disp"], pc_hartree2kcalmol*energies_["Disp"]);
-    psi::fprintf(outfile,"    ----------------------------------------------------\n");
-    psi::fprintf(outfile,"    %-14s %18.12f %18.12f\n",
+    outfile->Printf("    ----------------------------------------------------\n");
+    outfile->Printf("    %-14s %18.12f %18.12f\n",
         "Total", 1.0E3*energies_["Total"], pc_hartree2kcalmol*energies_["Total"]);
-    psi::fprintf(outfile,"    ----------------------------------------------------\n");
-    psi::fprintf(outfile,"\n");
+    outfile->Printf("    ----------------------------------------------------\n");
+    outfile->Printf("\n");
 
-    psi::fprintf(outfile, "    \"You can observe a lot by just watching.\"\n");
-    psi::fprintf(outfile, "                      --Yogi Berra\n");
-    psi::fprintf(outfile, "\n");
+    outfile->Printf( "    \"You can observe a lot by just watching.\"\n");
+    outfile->Printf( "                      --Yogi Berra\n");
+    outfile->Printf( "\n");
 
-    fflush(outfile);
+    
 }
 
 void INFSAPT::build_iaQ(
@@ -1083,25 +1083,25 @@ void PB::initialize()
 }
 void PB::print_header() const 
 {
-    psi::fprintf(outfile, "  ==> Pauli Blockade <==\n\n");
+    outfile->Printf( "  ==> Pauli Blockade <==\n\n");
 
-    psi::fprintf(outfile, "    Lambda:               %11.3E\n", lambda_);
-    psi::fprintf(outfile, "    S cutoff:             %11.3E\n", S_cutoff_);
-    psi::fprintf(outfile, "    Maximum iterations:   %11d\n", maxiter_);
-    psi::fprintf(outfile, "    Energy threshold:     %11.3E\n", E_convergence_);
-    psi::fprintf(outfile, "    Commutator threshold: %11.3E\n", D_convergence_);
-    psi::fprintf(outfile, "    DIIS:                 %11s\n", diis_ ? "Yes" : "No");
-    psi::fprintf(outfile, "\n");
+    outfile->Printf( "    Lambda:               %11.3E\n", lambda_);
+    outfile->Printf( "    S cutoff:             %11.3E\n", S_cutoff_);
+    outfile->Printf( "    Maximum iterations:   %11d\n", maxiter_);
+    outfile->Printf( "    Energy threshold:     %11.3E\n", E_convergence_);
+    outfile->Printf( "    Commutator threshold: %11.3E\n", D_convergence_);
+    outfile->Printf( "    DIIS:                 %11s\n", diis_ ? "Yes" : "No");
+    outfile->Printf( "\n");
 
     jk_->print_header();
 
-    fflush(outfile);
+    
 }
 void PB::compute()
 {
-    psi::fprintf(outfile,"    Unconstrained Total Energy: %24.14f\n\n", E_);
+    outfile->Printf("    Unconstrained Total Energy: %24.14f\n\n", E_);
     
-    psi::fprintf(outfile,"    Occupied guess via symmetric orthogonalization.\n\n");
+    outfile->Printf("    Occupied guess via symmetric orthogonalization.\n\n");
 
     // Do a Pauli explosion to start from a good spot
     symmetric_orthogonalize();
@@ -1113,12 +1113,12 @@ void PB::compute()
     E_HF_L_ = boost::shared_ptr<Vector>(E_HF_A_->clone());
     E_HF_L_->zero();
 
-    psi::fprintf(outfile,"   => Pauli Blockade Iterations <=\n\n");
+    outfile->Printf("   => Pauli Blockade Iterations <=\n\n");
 
-    psi::fprintf(outfile, "    %-14s %24s %11s %11s %s\n",
+    outfile->Printf( "    %-14s %24s %11s %11s %s\n",
         "", "Total Energy", "DeltaE", "Q RMS", "");
-    psi::fprintf(outfile, "\n");
-    fflush(outfile);
+    outfile->Printf( "\n");
+    
 
     for (int iter = 0; iter < maxiter_ || converged; iter++) {
 
@@ -1138,9 +1138,9 @@ void PB::compute()
         converged = check_convergence();
         
         // Message to the user
-        psi::fprintf(outfile, "    @PB Iter %4d: %24.14f %11.3E %11.3E %s\n",
+        outfile->Printf( "    @PB Iter %4d: %24.14f %11.3E %11.3E %s\n",
             iter + 1, E_, dE_, dQ_, (extrapolated ? "DIIS" : ""));
-        fflush(outfile);
+        
 
         // New Fock matrix components are built, we are self-consistent
         if (converged) break; 
@@ -1160,11 +1160,11 @@ void PB::compute()
         throw PSIEXCEPTION("PB did not converge");
     }
 
-    psi::fprintf(outfile,"\n    Pauli Blockade Converged.\n\n");
+    outfile->Printf("\n    Pauli Blockade Converged.\n\n");
 
-    psi::fprintf(outfile,"    Constrained Total Energy: %24.14f\n", E_);
-    psi::fprintf(outfile,"    Pauli Total Energy:       %24.14f\n", E_ - E_0_);
-    psi::fprintf(outfile,"\n");
+    outfile->Printf("    Constrained Total Energy: %24.14f\n", E_);
+    outfile->Printf("    Pauli Total Energy:       %24.14f\n", E_ - E_0_);
+    outfile->Printf("\n");
 
     // Remove the penalty function from the orbitals
     purify_eigenvalues();
@@ -1179,7 +1179,7 @@ void PB::symmetric_orthogonalize()
     boost::shared_ptr<Matrix> Soo = compute_Soo();
 
     if (debug_) {
-        psi::fprintf(outfile, "    > Symmetric Orthogonalization <\n\n");
+        outfile->Printf( "    > Symmetric Orthogonalization <\n\n");
         Soo->print();
     }
 
@@ -1486,52 +1486,52 @@ boost::shared_ptr<Vector> PB::HF_energy()
 }
 void PB::print_summary()
 {
-    psi::fprintf(outfile,"   => Pauli Blockade Results <=\n\n");
+    outfile->Printf("   => Pauli Blockade Results <=\n\n");
     
     for (int A = 0; A < Cocc_.size(); A++) {
-        psi::fprintf(outfile,"    Monomer %d:\n\n", A+1);
+        outfile->Printf("    Monomer %d:\n\n", A+1);
 
-        psi::fprintf(outfile,"    Unconstrained Energy: %24.14f\n", E_HF_0_->get(A));
-        psi::fprintf(outfile,"    Constrained Energy:   %24.14f\n", E_HF_A_->get(A));
-        psi::fprintf(outfile,"    Pauli Energy:         %24.14f\n", E_HF_A_->get(A) - E_HF_0_->get(A));
-        psi::fprintf(outfile,"\n");
+        outfile->Printf("    Unconstrained Energy: %24.14f\n", E_HF_0_->get(A));
+        outfile->Printf("    Constrained Energy:   %24.14f\n", E_HF_A_->get(A));
+        outfile->Printf("    Pauli Energy:         %24.14f\n", E_HF_A_->get(A) - E_HF_0_->get(A));
+        outfile->Printf("\n");
 
         int count;
         int n;  
         int offset;
         double* ep;
 
-        psi::fprintf(outfile, "\t%-70s\n\n\t", "Purified Occupied Orbital Eigenvalues:");
+        outfile->Printf( "\t%-70s\n\n\t", "Purified Occupied Orbital Eigenvalues:");
         count = 0;
         n = eps_occ_[A]->dimpi()[0];
         offset = 0;
         ep = eps_occ_[A]->pointer();
         for (int i = 0; i < n; i++) {
-            psi::fprintf(outfile, "%4d%-4s%11.6f  ", i + offset + 1, "A", ep[i]);
+            outfile->Printf( "%4d%-4s%11.6f  ", i + offset + 1, "A", ep[i]);
             if (count++ % 3 == 2 && count != n)
-                psi::fprintf(outfile, "\n\t");
+                outfile->Printf( "\n\t");
         }
-        psi::fprintf(outfile, "\n\n");
+        outfile->Printf( "\n\n");
 
-        psi::fprintf(outfile, "\t%-70s\n\n\t", "Purified Virtual Orbital Eigenvalues:");
+        outfile->Printf( "\t%-70s\n\n\t", "Purified Virtual Orbital Eigenvalues:");
         count = 0;
         n = eps_vir_[A]->dimpi()[0];
         offset = eps_occ_[A]->dimpi()[0];
         ep = eps_vir_[A]->pointer();
         for (int i = 0; i < n; i++) {
-            psi::fprintf(outfile, "%4d%-4s%11.6f  ", i + offset + 1, "A", ep[i]);
+            outfile->Printf( "%4d%-4s%11.6f  ", i + offset + 1, "A", ep[i]);
             if (count++ % 3 == 2 && count != n)
-                psi::fprintf(outfile, "\n\t");
+                outfile->Printf( "\n\t");
         }
-        psi::fprintf(outfile, "\n\n");
+        outfile->Printf( "\n\n");
         
     }    
 
-    fflush(outfile);
+    
 }
 void PB::print_errors()
 {
-    psi::fprintf(outfile,"   => Pauli Blockade Overlap Errors <=\n\n");
+    outfile->Printf("   => Pauli Blockade Overlap Errors <=\n\n");
     
     boost::shared_ptr<Matrix> Soo = compute_Soo();
 
@@ -1541,10 +1541,10 @@ void PB::print_errors()
     double SAG = 0.0;
     double S0G = 0.0;
     
-    psi::fprintf(outfile, "    -----------------------------------------------\n");
-    psi::fprintf(outfile, "    %-11s %11s %11s %11s\n",
+    outfile->Printf( "    -----------------------------------------------\n");
+    outfile->Printf( "    %-11s %11s %11s %11s\n",
         "Interaction", "HF^(A)", "HF^(0)", "Ratio");
-    psi::fprintf(outfile, "    -----------------------------------------------\n");
+    outfile->Printf( "    -----------------------------------------------\n");
 
     for (int A = 0; A < monomers_.size(); A++) {
         for (int B = A+1; B < monomers_.size(); B++) {
@@ -1561,18 +1561,18 @@ void PB::print_errors()
             SAG = (SAG > SA ? SAG : SA);
             S0G = (S0G > S0 ? S0G : S0);
 
-            psi::fprintf(outfile, "    %-3d <-> %3d %11.3E %11.3E %11.3E\n",
+            outfile->Printf( "    %-3d <-> %3d %11.3E %11.3E %11.3E\n",
                 A+1, B+1, SA, S0, SA / S0);
         }
     }
 
-    psi::fprintf(outfile, "    -----------------------------------------------\n");
-    psi::fprintf(outfile, "    %-11s %11.3E %11.3E %11.3E\n",
+    outfile->Printf( "    -----------------------------------------------\n");
+    outfile->Printf( "    %-11s %11.3E %11.3E %11.3E\n",
         "Overall", SAG, S0G, SAG / S0G);
-    psi::fprintf(outfile, "    -----------------------------------------------\n");
-    psi::fprintf(outfile, "\n");
+    outfile->Printf( "    -----------------------------------------------\n");
+    outfile->Printf( "\n");
 
-    fflush(outfile);
+    
 }
 
 DIISN::DIISN(const std::string& name,

@@ -124,11 +124,11 @@ boost::shared_ptr<CGRSolver> CGRSolver::build_solver(Options& options,
 void CGRSolver::print_header() const
 {
     if (print_) {
-    	psi::fprintf(outfile, "  ==> CGRSolver (by Rob Parrish) <==\n\n");
-        psi::fprintf(outfile, "   Number of roots    = %9zu\n", b_.size());
-        psi::fprintf(outfile, "   Preconditioning    = %9s\n", precondition_.c_str());
-        psi::fprintf(outfile, "   Convergence cutoff = %9.0E\n", criteria_);
-        psi::fprintf(outfile, "   Maximum iterations = %9d\n\n", maxiter_); 
+    	outfile->Printf( "  ==> CGRSolver (by Rob Parrish) <==\n\n");
+        outfile->Printf( "   Number of roots    = %9zu\n", b_.size());
+        outfile->Printf( "   Preconditioning    = %9s\n", precondition_.c_str());
+        outfile->Printf( "   Convergence cutoff = %9.0E\n", criteria_);
+        outfile->Printf( "   Maximum iterations = %9d\n\n", maxiter_); 
     }
 }
 unsigned long int CGRSolver::memory_estimate()
@@ -178,9 +178,9 @@ void CGRSolver::solve()
     convergence_ = 0.0;
 
     if (print_ > 1) {
-        psi::fprintf(outfile, "  => Iterations <=\n\n");
-        psi::fprintf(outfile, "  %10s %4s %10s %10s %11s\n", "", "Iter", "Converged", "Remaining", "Residual"); 
-        fflush(outfile);
+        outfile->Printf( "  => Iterations <=\n\n");
+        outfile->Printf( "  %10s %4s %10s %10s %11s\n", "", "Iter", "Converged", "Remaining", "Residual"); 
+        
     }
 
     setup();
@@ -199,9 +199,9 @@ void CGRSolver::solve()
         update_r();
         check_convergence();
         if (print_) {
-            psi::fprintf(outfile, "  %-10s %4d %10d %10zu %11.3E\n", name_.c_str(), iteration_, nconverged_, 
+            outfile->Printf( "  %-10s %4d %10d %10zu %11.3E\n", name_.c_str(), iteration_, nconverged_, 
                 b_.size() - nconverged_, convergence_);
-            fflush(outfile);
+            
         }
         update_z();
         beta();
@@ -210,13 +210,13 @@ void CGRSolver::solve()
     } while (iteration_ < maxiter_ && !converged_);
 
     if (print_ > 1) {
-        psi::fprintf(outfile, "\n");
+        outfile->Printf( "\n");
         if (!converged_) {
-            psi::fprintf(outfile, "    %sSolver did not converge.\n\n", name_.c_str());
+            outfile->Printf( "    %sSolver did not converge.\n\n", name_.c_str());
         } else {
-            psi::fprintf(outfile, "    %sSolver converged.\n\n", name_.c_str());
+            outfile->Printf( "    %sSolver converged.\n\n", name_.c_str());
         }
-        fflush(outfile);
+        
     }
 }
 void CGRSolver::finalize()
@@ -374,7 +374,7 @@ void CGRSolver::residual()
     }
 
     if (debug_) {
-        psi::fprintf(outfile, "  > Residuals x <\n\n");
+        outfile->Printf( "  > Residuals x <\n\n");
         for (int N = 0; N < r_.size(); N++) {
             r_[N]->print();
         }
@@ -394,7 +394,7 @@ void CGRSolver::products_x()
     }
 
     if (debug_) {
-        psi::fprintf(outfile, "  > Products x <\n\n");
+        outfile->Printf( "  > Products x <\n\n");
         for (int N = 0; N < Ap_.size(); N++) {
             Ap_[N]->print();
         }
@@ -424,7 +424,7 @@ void CGRSolver::products_p()
     }
 
     if (debug_) {
-        psi::fprintf(outfile, "  > Products p <\n\n");
+        outfile->Printf( "  > Products p <\n\n");
         for (int N = 0; N < Ap_.size(); N++) {
             Ap_[N]->print();
         }
@@ -450,9 +450,9 @@ void CGRSolver::alpha()
     }
 
     if (debug_) {
-        psi::fprintf(outfile, "  > Alpha <\n\n");
+        outfile->Printf( "  > Alpha <\n\n");
         for (int N = 0; N < alpha_.size(); N++) {
-            psi::fprintf(outfile, "Alpha %d = %24.16E\n", N+1, alpha_[N]);
+            outfile->Printf( "Alpha %d = %24.16E\n", N+1, alpha_[N]);
         }
     }
 }
@@ -470,7 +470,7 @@ void CGRSolver::update_x()
     }
 
     if (debug_) {
-        psi::fprintf(outfile, "  > Update x <\n\n");
+        outfile->Printf( "  > Update x <\n\n");
         for (int N = 0; N < x_.size(); N++) {
             x_[N]->print();
         }
@@ -490,7 +490,7 @@ void CGRSolver::update_r()
     }
 
     if (debug_) {
-        psi::fprintf(outfile, "  > Update r <\n\n");
+        outfile->Printf( "  > Update r <\n\n");
         for (int N = 0; N < r_.size(); N++) {
             r_[N]->print();
         }
@@ -578,7 +578,7 @@ void CGRSolver::update_z()
     }
 
     if (debug_) {
-        psi::fprintf(outfile, "  > Update z <\n\n");
+        outfile->Printf( "  > Update z <\n\n");
         for (int N = 0; N < z_.size(); N++) {
             z_[N]->print();
         }
@@ -600,9 +600,9 @@ void CGRSolver::beta()
     }
 
     if (debug_) {
-        psi::fprintf(outfile, "  > Beta <\n\n");
+        outfile->Printf( "  > Beta <\n\n");
         for (int N = 0; N < beta_.size(); N++) {
-            psi::fprintf(outfile, "Beta %d = %24.16E\n", N+1, beta_[N]);
+            outfile->Printf( "Beta %d = %24.16E\n", N+1, beta_[N]);
         }
     }
 }
@@ -615,7 +615,7 @@ void CGRSolver::update_p()
     }
 
     if (debug_) {
-        psi::fprintf(outfile, "  > Update p <\n\n");
+        outfile->Printf( "  > Update p <\n\n");
         for (int N = 0; N < p_.size(); N++) {
             p_[N]->print();
         }
@@ -681,15 +681,15 @@ boost::shared_ptr<DLRSolver> DLRSolver::build_solver(Options& options,
 void DLRSolver::print_header() const 
 {
     if (print_) {
-        psi::fprintf(outfile, "  ==> DLRSolver (by Rob Parrish) <== \n\n");
-        psi::fprintf(outfile, "   Number of roots         = %11d\n", nroot_);
-        psi::fprintf(outfile, "   Number of guess vectors = %11d\n", nguess_);
-        psi::fprintf(outfile, "   Maximum subspace size   = %11d\n", max_subspace_);
-        psi::fprintf(outfile, "   Minimum subspace size   = %11d\n", min_subspace_);
-        psi::fprintf(outfile, "   Subspace expansion norm = %11.0E\n", norm_);
-        psi::fprintf(outfile, "   Convergence cutoff      = %11.0E\n", criteria_);
-        psi::fprintf(outfile, "   Maximum iterations      = %11d\n", maxiter_); 
-        psi::fprintf(outfile, "   Preconditioning         = %11s\n\n", precondition_.c_str());
+        outfile->Printf( "  ==> DLRSolver (by Rob Parrish) <== \n\n");
+        outfile->Printf( "   Number of roots         = %11d\n", nroot_);
+        outfile->Printf( "   Number of guess vectors = %11d\n", nguess_);
+        outfile->Printf( "   Maximum subspace size   = %11d\n", max_subspace_);
+        outfile->Printf( "   Minimum subspace size   = %11d\n", min_subspace_);
+        outfile->Printf( "   Subspace expansion norm = %11.0E\n", norm_);
+        outfile->Printf( "   Convergence cutoff      = %11.0E\n", criteria_);
+        outfile->Printf( "   Maximum iterations      = %11d\n", maxiter_); 
+        outfile->Printf( "   Preconditioning         = %11s\n\n", precondition_.c_str());
     }
 }
 unsigned long int DLRSolver::memory_estimate()
@@ -718,9 +718,9 @@ void DLRSolver::solve()
     convergence_ = 0.0;
 
     if (print_ > 1) {
-        psi::fprintf(outfile, "  => Iterations <=\n\n"); 
-        psi::fprintf(outfile, "  %10s %4s %10s %10s %11s\n", "", "Iter", "Converged", "Subspace", "Residual"); 
-        fflush(outfile);
+        outfile->Printf( "  => Iterations <=\n\n"); 
+        outfile->Printf( "  %10s %4s %10s %10s %11s\n", "", "Iter", "Converged", "Subspace", "Residual"); 
+        
     }
 
     // Compute the first set of sigma vectors
@@ -742,9 +742,9 @@ void DLRSolver::solve()
         residuals();
 
         if (print_) {
-            psi::fprintf(outfile, "  %-10s %4d %10d %10d %11.3E\n", name_.c_str(), iteration_, nconverged_, 
+            outfile->Printf( "  %-10s %4d %10d %10d %11.3E\n", name_.c_str(), iteration_, nconverged_, 
                 nsubspace_, convergence_);
-            fflush(outfile);       
+                   
         } 
 
         // Check for convergence
@@ -762,13 +762,13 @@ void DLRSolver::solve()
     } while (true);
 
     if (print_ > 1) {
-        psi::fprintf(outfile, "\n");
+        outfile->Printf( "\n");
         if (!converged_ && print_ > 1) {
-            psi::fprintf(outfile, "    %sSolver did not converge.\n\n", name_.c_str());
+            outfile->Printf( "    %sSolver did not converge.\n\n", name_.c_str());
         } else if (print_ > 1) {
-            psi::fprintf(outfile, "    %sSolver converged.\n\n", name_.c_str());
+            outfile->Printf( "    %sSolver converged.\n\n", name_.c_str());
         }
-        fflush(outfile);
+        
     }
 }
 void DLRSolver::finalize()
@@ -863,13 +863,13 @@ void DLRSolver::guess()
     nsubspace_ = nroot_;
 
     if (debug_) {
-        psi::fprintf(outfile, "   > Guess <\n\n");
+        outfile->Printf( "   > Guess <\n\n");
         diag_->print();
         A_->print();
         for (int i = 0; i < b_.size(); ++i) {
             b_[i]->print();
         }
-        fflush(outfile);
+        
     }
 }
 void DLRSolver::sigma()
@@ -893,11 +893,11 @@ void DLRSolver::sigma()
     H_->product(x,b);
 
     if (debug_) { 
-        psi::fprintf(outfile, "   > Sigma <\n\n");
+        outfile->Printf( "   > Sigma <\n\n");
         for (int i = 0; i < s_.size(); i++) {
             s_[i]->print();
         }
-        fflush(outfile);
+        
     }
 }
 void DLRSolver::subspaceHamiltonian()
@@ -927,9 +927,9 @@ void DLRSolver::subspaceHamiltonian()
     }
 
     if (debug_) { 
-        psi::fprintf(outfile, "   > SubspaceHamiltonian <\n\n");
+        outfile->Printf( "   > SubspaceHamiltonian <\n\n");
         G_->print();
-        fflush(outfile);
+        
     }
 }
 void DLRSolver::subspaceDiagonalization()
@@ -973,10 +973,10 @@ void DLRSolver::subspaceDiagonalization()
     }
 
     if (debug_) { 
-        psi::fprintf(outfile, "   > SubspaceDiagonalize <\n\n");
+        outfile->Printf( "   > SubspaceDiagonalize <\n\n");
         a_->print();
         l_->print();
-        fflush(outfile);
+        
     }
 }
 void DLRSolver::eigenvecs()
@@ -1009,11 +1009,11 @@ void DLRSolver::eigenvecs()
     }
 
     if (debug_) { 
-        psi::fprintf(outfile, "   > Eigenvectors <\n\n");
+        outfile->Printf( "   > Eigenvectors <\n\n");
         for (int m = 0; m < c_.size(); m++) {
             c_[m]->print();
         }
-        fflush(outfile);
+        
     }
 }
 void DLRSolver::eigenvals()
@@ -1028,14 +1028,14 @@ void DLRSolver::eigenvals()
     }
 
     if (debug_) { 
-        psi::fprintf(outfile, "   > Eigenvalues <\n\n");
+        outfile->Printf( "   > Eigenvalues <\n\n");
         for (int m = 0; m < E_.size(); m++) {
             for (int h = 0; h < E_[0].size(); ++h) {
-                psi::fprintf(outfile, "    Eigenvalue %d, Irrep %d = %24.16E\n", m, h, E_[m][h]);
+                outfile->Printf( "    Eigenvalue %d, Irrep %d = %24.16E\n", m, h, E_[m][h]);
             }
         }
-        psi::fprintf(outfile, "\n");
-        fflush(outfile);
+        outfile->Printf( "\n");
+        
     }
 }
 void DLRSolver::residuals()
@@ -1099,17 +1099,17 @@ void DLRSolver::residuals()
 
     if (nconverged_ == nroot_) converged_ = true; 
     if (debug_) { 
-        psi::fprintf(outfile, "   > Residuals <\n\n");
+        outfile->Printf( "   > Residuals <\n\n");
         for (int i = 0; i < r_.size(); i++) {
             r_[i]->print();
         }
         for (int i = 0; i < n_.size(); i++) {
-            psi::fprintf(outfile, "    Residual %d = %24.16E\n", i, n_[i]);
+            outfile->Printf( "    Residual %d = %24.16E\n", i, n_[i]);
         }
-        psi::fprintf(outfile,"\n");
-        psi::fprintf(outfile,"    %d of %d roots converged, we are %s\n\n",
+        outfile->Printf("\n");
+        outfile->Printf("    %d of %d roots converged, we are %s\n\n",
             nconverged_, nroot_, (converged_ ? "converged": "not converged"));
-        fflush(outfile);
+        
     }
 }
 void DLRSolver::correctors()
@@ -1196,17 +1196,17 @@ void DLRSolver::correctors()
         d_.push_back(d);
     }
     if (debug_) { 
-        psi::fprintf(outfile, "   > Correctors <\n\n");
+        outfile->Printf( "   > Correctors <\n\n");
         for (int i = 0; i < d_.size(); i++) {
             d_[i]->print();
         }
-        fflush(outfile);
+        
     }
 }
 void DLRSolver::subspaceExpansion()
 {
     if (debug_) {
-        psi::fprintf(outfile, "   > SubspaceExpansion <\n\n");
+        outfile->Printf( "   > SubspaceExpansion <\n\n");
     }
 
     // Which vectors are significant?
@@ -1258,11 +1258,11 @@ void DLRSolver::subspaceExpansion()
     nsubspace_ = b_.size();
 
     if (debug_) {
-        psi::fprintf(outfile, "Final subspace after addition\n\n");
+        outfile->Printf( "Final subspace after addition\n\n");
         for (int i = 0; i < b_.size(); i++) {
             b_[i]->print();
         }
-        fflush(outfile);
+        
     }
 }
 void DLRSolver::subspaceCollapse()
@@ -1305,7 +1305,7 @@ void DLRSolver::subspaceCollapse()
     nsubspace_ = b_.size();
 
     if (debug_) {
-        psi::fprintf(outfile, "   > SubspaceCollapse <\n\n");
+        outfile->Printf( "   > SubspaceCollapse <\n\n");
         for (int i = 0; i < b_.size(); i++) {
             b_[i]->print();
         }
@@ -1379,23 +1379,23 @@ boost::shared_ptr<RayleighRSolver> RayleighRSolver::build_solver(Options& option
 void RayleighRSolver::print_header() const 
 {
     if (print_) {
-        psi::fprintf(outfile, "  ==> RayleighRSolver (by Rob Parrish) <== \n\n");
-        psi::fprintf(outfile, "   Number of roots         = %11d\n", nroot_);
-        psi::fprintf(outfile, "   Number of guess vectors = %11d\n", nguess_);
-        psi::fprintf(outfile, "   Expansion quantity      = %11s\n", quantity_.c_str());
+        outfile->Printf( "  ==> RayleighRSolver (by Rob Parrish) <== \n\n");
+        outfile->Printf( "   Number of roots         = %11d\n", nroot_);
+        outfile->Printf( "   Number of guess vectors = %11d\n", nguess_);
+        outfile->Printf( "   Expansion quantity      = %11s\n", quantity_.c_str());
         if (quantity_ == "RESIDUAL") {
-            psi::fprintf(outfile, "   Maximum subspace size   = %11d\n", max_subspace_);
-            psi::fprintf(outfile, "   Minimum subspace size   = %11d\n", min_subspace_);
+            outfile->Printf( "   Maximum subspace size   = %11d\n", max_subspace_);
+            outfile->Printf( "   Minimum subspace size   = %11d\n", min_subspace_);
         }
-        psi::fprintf(outfile, "   Convergence cutoff      = %11.0E\n", criteria_);
-        psi::fprintf(outfile, "   Maximum iterations      = %11d\n", maxiter_); 
-        psi::fprintf(outfile, "   Rayleigh step type      = %11s\n", precondition_steps_.c_str()); 
+        outfile->Printf( "   Convergence cutoff      = %11.0E\n", criteria_);
+        outfile->Printf( "   Maximum iterations      = %11d\n", maxiter_); 
+        outfile->Printf( "   Rayleigh step type      = %11s\n", precondition_steps_.c_str()); 
         if (precondition_steps_ == "CONSTANT") {
-            psi::fprintf(outfile, "   Rayleigh step maxiter   = %11d\n", precondition_maxiter_); 
+            outfile->Printf( "   Rayleigh step maxiter   = %11d\n", precondition_maxiter_); 
         } else {
-            psi::fprintf(outfile, "   Rayleigh step factor    = %11d\n", precondition_maxiter_); 
+            outfile->Printf( "   Rayleigh step factor    = %11d\n", precondition_maxiter_); 
         }
-        psi::fprintf(outfile, "   Preconditioning         = %11s\n\n", precondition_.c_str());
+        outfile->Printf( "   Preconditioning         = %11s\n\n", precondition_.c_str());
     }
 }
 void RayleighRSolver::initialize()
@@ -1537,14 +1537,14 @@ boost::shared_ptr<DLRXSolver> DLRXSolver::build_solver(Options& options,
 void DLRXSolver::print_header() const 
 {
     if (print_) {
-        psi::fprintf(outfile, "  ==> DLRXSolver (by Rob Parrish) <== \n\n");
-        psi::fprintf(outfile, "   Number of roots         = %11d\n", nroot_);
-        psi::fprintf(outfile, "   Number of guess vectors = %11d\n", nguess_);
-        psi::fprintf(outfile, "   Maximum subspace size   = %11d\n", max_subspace_);
-        psi::fprintf(outfile, "   Minimum subspace size   = %11d\n", min_subspace_);
-        psi::fprintf(outfile, "   Subspace expansion norm = %11.0E\n", norm_);
-        psi::fprintf(outfile, "   Convergence cutoff      = %11.0E\n", criteria_);
-        psi::fprintf(outfile, "   Maximum iterations      = %11d\n\n", maxiter_); 
+        outfile->Printf( "  ==> DLRXSolver (by Rob Parrish) <== \n\n");
+        outfile->Printf( "   Number of roots         = %11d\n", nroot_);
+        outfile->Printf( "   Number of guess vectors = %11d\n", nguess_);
+        outfile->Printf( "   Maximum subspace size   = %11d\n", max_subspace_);
+        outfile->Printf( "   Minimum subspace size   = %11d\n", min_subspace_);
+        outfile->Printf( "   Subspace expansion norm = %11.0E\n", norm_);
+        outfile->Printf( "   Convergence cutoff      = %11.0E\n", criteria_);
+        outfile->Printf( "   Maximum iterations      = %11d\n\n", maxiter_); 
     }
 }
 unsigned long int DLRXSolver::memory_estimate()
@@ -1573,9 +1573,9 @@ void DLRXSolver::solve()
     convergence_ = 0.0;
 
     if (print_) {
-        psi::fprintf(outfile, "  => Iterations <=\n\n"); 
-        psi::fprintf(outfile, "   %4s  %10s  %10s  %11s\n", "Iter", "NConverged", "NSubspace", "Residual"); 
-        fflush(outfile);
+        outfile->Printf( "  => Iterations <=\n\n"); 
+        outfile->Printf( "   %4s  %10s  %10s  %11s\n", "Iter", "NConverged", "NSubspace", "Residual"); 
+        
     }
 
     // Compute the first set of sigma vectors
@@ -1596,9 +1596,9 @@ void DLRXSolver::solve()
         // Find residuals, update convergence 
         residuals();
 
-        psi::fprintf(outfile, "   %4d  %10d  %10d  %11.3E\n", iteration_, nconverged_, 
+        outfile->Printf( "   %4d  %10d  %10d  %11.3E\n", iteration_, nconverged_, 
             nsubspace_, convergence_);
-        fflush(outfile);       
+               
  
         // Check for convergence
         if (converged_) break;
@@ -1615,16 +1615,16 @@ void DLRXSolver::solve()
     } while (iteration_ < maxiter_ && !converged_);
 
     if (print_) {
-        psi::fprintf(outfile, "\n");
+        outfile->Printf( "\n");
     }
 
     if (!converged_) {
         throw PSIEXCEPTION("DLRXSolver did not converge");
     } else if (print_) {
-        psi::fprintf(outfile, "    DLRXSolver converged.\n\n");
+        outfile->Printf( "    DLRXSolver converged.\n\n");
     }
 
-    fflush(outfile);
+    
 }
 void DLRXSolver::finalize()
 {
@@ -1664,12 +1664,12 @@ void DLRXSolver::guess()
     nsubspace_ = nguess_;
 
     if (debug_) {
-        psi::fprintf(outfile, "   > Guess <\n\n");
+        outfile->Printf( "   > Guess <\n\n");
         diag_->print();
         for (int i = 0; i < b_.size(); ++i) {
             b_[i]->print();
         }
-        fflush(outfile);
+        
     }
 }
 void DLRXSolver::sigma()
@@ -1693,11 +1693,11 @@ void DLRXSolver::sigma()
     H_->product(x,b);
 
     if (debug_) { 
-        psi::fprintf(outfile, "   > Sigma <\n\n");
+        outfile->Printf( "   > Sigma <\n\n");
         for (int i = 0; i < s_.size(); i++) {
             s_[i]->print();
         }
-        fflush(outfile);
+        
     }
 }
 void DLRXSolver::subspaceHamiltonian()
@@ -1740,9 +1740,9 @@ void DLRXSolver::subspaceHamiltonian()
     }
 
     if (debug_) { 
-        psi::fprintf(outfile, "   > SubspaceHamiltonian <\n\n");
+        outfile->Printf( "   > SubspaceHamiltonian <\n\n");
         G_->print();
-        fflush(outfile);
+        
     }
 }
 void DLRXSolver::subspaceDiagonalization()
@@ -1851,10 +1851,10 @@ void DLRXSolver::subspaceDiagonalization()
     }
 
     if (debug_) { 
-        psi::fprintf(outfile, "   > SubspaceDiagonalize <\n\n");
+        outfile->Printf( "   > SubspaceDiagonalize <\n\n");
         a_->print();
         l_->print();
-        fflush(outfile);
+        
     }
 }
 void DLRXSolver::eigenvecs()
@@ -1892,11 +1892,11 @@ void DLRXSolver::eigenvecs()
     }
 
     if (debug_) { 
-        psi::fprintf(outfile, "   > Eigenvectors <\n\n");
+        outfile->Printf( "   > Eigenvectors <\n\n");
         for (int m = 0; m < c_.size(); m++) {
             c_[m]->print();
         }
-        fflush(outfile);
+        
     }
 }
 void DLRXSolver::eigenvals()
@@ -1911,14 +1911,14 @@ void DLRXSolver::eigenvals()
     }
 
     if (debug_) { 
-        psi::fprintf(outfile, "   > Eigenvalues <\n\n");
+        outfile->Printf( "   > Eigenvalues <\n\n");
         for (int m = 0; m < E_.size(); m++) {
             for (int h = 0; h < E_[0].size(); ++h) {
-                psi::fprintf(outfile, "    Eigenvalue %d, Irrep %d = %24.16E\n", m, h, E_[m][h]);
+                outfile->Printf( "    Eigenvalue %d, Irrep %d = %24.16E\n", m, h, E_[m][h]);
             }
         }
-        psi::fprintf(outfile, "\n");
-        fflush(outfile);
+        outfile->Printf( "\n");
+        
     }
 }
 void DLRXSolver::residuals()
@@ -1983,17 +1983,17 @@ void DLRXSolver::residuals()
 
     if (nconverged_ == nroot_) converged_ = true; 
     if (debug_) { 
-        psi::fprintf(outfile, "   > Residuals <\n\n");
+        outfile->Printf( "   > Residuals <\n\n");
         for (int i = 0; i < r_.size(); i++) {
             r_[i]->print();
         }
         for (int i = 0; i < n_.size(); i++) {
-            psi::fprintf(outfile, "    Residual %d = %24.16E\n", i, n_[i]);
+            outfile->Printf( "    Residual %d = %24.16E\n", i, n_[i]);
         }
-        psi::fprintf(outfile,"\n");
-        psi::fprintf(outfile,"    %d of %d roots converged, we are %s\n\n",
+        outfile->Printf("\n");
+        outfile->Printf("    %d of %d roots converged, we are %s\n\n",
             nconverged_, nroot_, (converged_ ? "converged": "not converged"));
-        fflush(outfile);
+        
     }
 }
 void DLRXSolver::correctors()
@@ -2046,17 +2046,17 @@ void DLRXSolver::correctors()
         d_.push_back(d);
     }
     if (debug_) { 
-        psi::fprintf(outfile, "   > Correctors <\n\n");
+        outfile->Printf( "   > Correctors <\n\n");
         for (int i = 0; i < d_.size(); i++) {
             d_[i]->print();
         }
-        fflush(outfile);
+        
     }
 }
 void DLRXSolver::subspaceExpansion()
 {
     if (debug_) {
-        psi::fprintf(outfile, "   > SubspaceExpansion <\n\n");
+        outfile->Printf( "   > SubspaceExpansion <\n\n");
     }
 
     // Which vectors are significant?
@@ -2138,11 +2138,11 @@ void DLRXSolver::subspaceExpansion()
     nsubspace_ = b_.size();
 
     if (debug_) {
-        psi::fprintf(outfile, "Final subspace after addition\n\n");
+        outfile->Printf( "Final subspace after addition\n\n");
         for (int i = 0; i < b_.size(); i++) {
             b_[i]->print();
         }
-        fflush(outfile);
+        
     }
 }
 void DLRXSolver::subspaceCollapse()
@@ -2194,7 +2194,7 @@ void DLRXSolver::subspaceCollapse()
     nsubspace_ = b_.size();
 
     if (debug_) {
-        psi::fprintf(outfile, "   > SubspaceCollapse <\n\n");
+        outfile->Printf( "   > SubspaceCollapse <\n\n");
         for (int i = 0; i < b_.size(); i++) {
             b_[i]->print();
         }

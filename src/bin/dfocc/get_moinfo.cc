@@ -35,7 +35,7 @@ namespace psi{ namespace dfoccwave{
 
 void DFOCC::get_moinfo()
 {      
-  //psi::fprintf(outfile,"\n get_moinfo is starting... \n"); fflush(outfile);
+  //outfile->Printf("\n get_moinfo is starting... \n"); 
 //===========================================================================================
 //========================= RHF =============================================================
 //===========================================================================================
@@ -110,8 +110,8 @@ if (reference_ == "RESTRICTED") {
             msd_oo_scale = ( FockA->get(noccA,noccA) - FockA->get(noccA-1,noccA-1) ) / ( FockA->get(nfrzc+1,nfrzc+1) - FockA->get(nfrzc,nfrzc) ); 
             msd_oo_scale /= 3.0;
             if (hess_type == "APPROX_DIAG_HF" || hess_type == "APPROX_DIAG_EKT") {
-                psi::fprintf(outfile,"\tOO Scale is changed to: %12.10f\n", msd_oo_scale);
-                fflush(outfile);
+                outfile->Printf("\tOO Scale is changed to: %12.10f\n", msd_oo_scale);
+                
             }
         }
 
@@ -274,8 +274,8 @@ else if (reference_ == "UNRESTRICTED") {
             scaleB /= 3.0;
             msd_oo_scale = 0.5 * (scaleA + scaleB);
             if (hess_type == "APPROX_DIAG_HF" || hess_type == "APPROX_DIAG_EKT") {
-                psi::fprintf(outfile,"\tOO Scale is changed to: %12.10f\n", msd_oo_scale);
-                fflush(outfile);
+                outfile->Printf("\tOO Scale is changed to: %12.10f\n", msd_oo_scale);
+                
             }
         }
 
@@ -392,11 +392,11 @@ else if (reference_ == "UNRESTRICTED") {
 	
 	// Read SO-basis one-electron integrals
 	double *so_ints = init_array(ntri_so);
-        IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_T, so_ints, ntri_so, 0, 0, outfile);
+        IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_T, so_ints, ntri_so, 0, 0, "outfile");
         Tso_->set(so_ints);
-        IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_V, so_ints, ntri_so, 0, 0, outfile);
+        IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_V, so_ints, ntri_so, 0, 0, "outfile");
         Vso_->set(so_ints);
-        IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_S, so_ints, ntri_so, 0, 0, outfile);
+        IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_S, so_ints, ntri_so, 0, 0, "outfile");
         Sso_->set(so_ints);
         free(so_ints);
 	Hso_->copy(Tso_); 
@@ -410,7 +410,7 @@ else if (reference_ == "UNRESTRICTED") {
         Sso->set(Sso_);
         Sso_.reset();
 
-//psi::fprintf(outfile,"\n get_moinfo is done. \n"); fflush(outfile);
+//outfile->Printf("\n get_moinfo is done. \n"); 
 }// end get_moinfo
 }} // End Namespaces
 

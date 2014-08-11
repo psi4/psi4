@@ -75,10 +75,10 @@ public:
     double computeNuclearEnergy(boost::shared_ptr<Molecule> mol);
     
     /// Print a trace of the external potential
-    void print(FILE* out = outfile) const;
+    void print(std::string OutFileRMR = "outfile") const;
 
     /// Python print helper
-    void py_print() const { print(outfile); }
+    void py_print() const { print("outfile"); }
 
     /// Print flag 
     void set_print(int print) { print_ = print; } 

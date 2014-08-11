@@ -93,7 +93,7 @@ void yosh_init(struct yoshimine *YBuff, unsigned bra_indices,
                unsigned ket_indices, long maxcor,
                long maxcord, const int max_buckets,
                unsigned int first_tmp_file,
-               double cutoff, FILE *outfile)
+               double cutoff, std::string OutFileRMR)
 {
    unsigned long long int twoel_array_size;              /*--- Although on 32-bit systems one can only allocate 2GB arrays
                                                            in 1 process space, one can store much bigger integrals files on disk ---*/
@@ -110,9 +110,9 @@ void yosh_init(struct yoshimine *YBuff, unsigned bra_indices,
    YBuff->bra_indices = bra_indices;
    YBuff->ket_indices = ket_indices;
    if (nbuckets > max_buckets) {
-      psi::fprintf(stderr, "(yosh_init): maximum number of buckets exceeded\n") ;
-      psi::fprintf(outfile, "(yosh_init): maximum number of buckets exceeded\n") ;
-      psi::fprintf(outfile, "   wanted %d buckets\n", nbuckets) ;
+      outfile->Printf( "(yosh_init): maximum number of buckets exceeded\n") ;
+      outfile->Printf( "(yosh_init): maximum number of buckets exceeded\n") ;
+      outfile->Printf( "   wanted %d buckets\n", nbuckets) ;
       tstop() ;
       exit(PSI_RETURN_FAILURE) ;
       }
@@ -193,16 +193,16 @@ void yosh_init_buckets(struct yoshimine *YBuff)
 ** YOSH_PRINT(): Print out the Yoshimine structure
 **
 */
-void yosh_print(struct yoshimine *YBuff, FILE *outfile)
+void yosh_print(struct yoshimine *YBuff, std::string OutFileRMR)
 {
-   psi::fprintf(outfile, " Yoshimine structure:\n");
-   psi::fprintf(outfile, "\tbra_indices  = %10d\n", YBuff->bra_indices);
-   psi::fprintf(outfile, "\tket_indices  = %10d\n", YBuff->ket_indices);
-   psi::fprintf(outfile, "\tbin size   = %10lu\n", YBuff->bucketsize) ;
-   psi::fprintf(outfile, "\tbins       = %10d\n", YBuff->nbuckets) ;
-   psi::fprintf(outfile, "\tcore loads = %10d\n", YBuff->core_loads) ;
-   psi::fprintf(outfile, "\tpq/bin     = %10d\n", YBuff->pq_per_bucket) ;
-   psi::fprintf(outfile, "\tcutoff     = %10.2E\n", YBuff->cutoff) ;
+   outfile->Printf( " Yoshimine structure:\n");
+   outfile->Printf( "\tbra_indices  = %10d\n", YBuff->bra_indices);
+   outfile->Printf( "\tket_indices  = %10d\n", YBuff->ket_indices);
+   outfile->Printf( "\tbin size   = %10lu\n", YBuff->bucketsize) ;
+   outfile->Printf( "\tbins       = %10d\n", YBuff->nbuckets) ;
+   outfile->Printf( "\tcore loads = %10d\n", YBuff->core_loads) ;
+   outfile->Printf( "\tpq/bin     = %10d\n", YBuff->pq_per_bucket) ;
+   outfile->Printf( "\tcutoff     = %10.2E\n", YBuff->cutoff) ;
 }
 
 
@@ -263,7 +263,7 @@ void yosh_close_buckets(struct yoshimine *YBuff, int erase)
 */
 void yosh_rdtwo(struct yoshimine *YBuff, int itapERI, int del_tei_file, int *num_so,
       int nirreps, int *ioff, int elbert, int fzcflag, double *P, double *Hc,
-      int matrix, int printflag, FILE *outfile)
+      int matrix, int printflag, std::string OutFileRMR)
 {
   int ilsti, nbuf;
   int i, ij, kl, ijkl;
@@ -283,8 +283,8 @@ void yosh_rdtwo(struct yoshimine *YBuff, int itapERI, int del_tei_file, int *num
   struct iwlbuf ERIIN;
 
   if (printflag) {
-    psi::fprintf(outfile, "Yoshimine rdtwo routine entered\n");
-    psi::fprintf(outfile, "Two-electron integrals from file%d:\n",itapERI);
+    outfile->Printf( "Yoshimine rdtwo routine entered\n");
+    outfile->Printf( "Two-electron integrals from file%d:\n",itapERI);
   }
 
   firstfile = YBuff->first_tmp_file;
@@ -469,7 +469,7 @@ void yosh_rdtwo(struct yoshimine *YBuff, int itapERI, int del_tei_file, int *num
       bptr->val[tmpi] = value;
 
       if (printflag)
-        psi::fprintf(outfile, "%4d %4d %4d %4d  %4d   %10.6lf\n",
+        outfile->Printf( "%4d %4d %4d %4d  %4d   %10.6lf\n",
                 iabs, jabs, kabs, labs, ijkl, value) ;
       if ((tmpi+1) == YBuff->bucketsize) { /* need to flush bucket to disk */
         flush_bucket(bptr, 0);
@@ -538,7 +538,7 @@ void yosh_rdtwo(struct yoshimine *YBuff, int itapERI, int del_tei_file, int *num
 */
 void yosh_rdtwo_uhf(struct yoshimine *YBuff, int itapERI, int del_tei_file, int *num_so,
                     int nirreps, int *ioff, int elbert, int fzcflag, double *Pa, double *Pb,
-                    double *Hca, double *Hcb, int matrix, int printflag, FILE *outfile)
+                    double *Hca, double *Hcb, int matrix, int printflag, std::string OutFileRMR)
 {
   int ilsti, nbuf;
   int i, ij, kl, ijkl;
@@ -558,8 +558,8 @@ void yosh_rdtwo_uhf(struct yoshimine *YBuff, int itapERI, int del_tei_file, int 
   struct iwlbuf ERIIN;
 
   if (printflag) {
-    psi::fprintf(outfile, "Yoshimine rdtwo routine entered\n");
-    psi::fprintf(outfile, "Two-electron integrals from file%d:\n",itapERI);
+    outfile->Printf( "Yoshimine rdtwo routine entered\n");
+    outfile->Printf( "Two-electron integrals from file%d:\n",itapERI);
   }
 
   firstfile = YBuff->first_tmp_file;
@@ -790,7 +790,7 @@ void yosh_rdtwo_uhf(struct yoshimine *YBuff, int itapERI, int del_tei_file, int 
       bptr->val[tmpi] = value;
 
       if (printflag)
-        psi::fprintf(outfile, "%4d %4d %4d %4d  %4d   %10.6lf\n",
+        outfile->Printf( "%4d %4d %4d %4d  %4d   %10.6lf\n",
                 iabs, jabs, kabs, labs, ijkl, value) ;
       if ((tmpi+1) == YBuff->bucketsize) { /* need to flush bucket to disk */
         flush_bucket(bptr, 0);
@@ -868,7 +868,7 @@ void yosh_rdtwo_uhf(struct yoshimine *YBuff, int itapERI, int del_tei_file, int 
 */
 void yosh_rdtwo_backtr(struct yoshimine *YBuff, int tei_file, int *ioff,
                        int symmetrize, int add_ref_pt, int del_tei_file,
-                       int printflag, FILE *outfile)
+                       int printflag, std::string OutFileRMR)
 {
   int i, ij, kl, ijkl;
   int iabs, jabs, kabs, labs;
@@ -881,8 +881,8 @@ void yosh_rdtwo_backtr(struct yoshimine *YBuff, int tei_file, int *ioff,
   Label *lblptr;
 
   if (printflag) {
-    psi::fprintf(outfile, "Yoshimine rdtwo_backtr routine entered\n");
-    psi::fprintf(outfile, "Two-particle density from file %d:\n", tei_file);
+    outfile->Printf( "Yoshimine rdtwo_backtr routine entered\n");
+    outfile->Printf( "Two-particle density from file %d:\n", tei_file);
   }
 
   iwl_buf_init(&Inbuf, tei_file, YBuff->cutoff, 1, 0);
@@ -926,7 +926,7 @@ void yosh_rdtwo_backtr(struct yoshimine *YBuff, int tei_file, int *ioff,
       bptr->val[tmpi] = value;
 
       if (printflag)
-        psi::fprintf(outfile, "%4d %4d %4d %4d  %4d   %10.6lf\n",
+        outfile->Printf( "%4d %4d %4d %4d  %4d   %10.6lf\n",
                 iabs, jabs, kabs, labs, ijkl, value) ;
       if ((tmpi+1) == YBuff->bucketsize) { /* need to flush bucket to disk */
         flush_bucket(bptr, 0);
@@ -946,7 +946,7 @@ void yosh_rdtwo_backtr(struct yoshimine *YBuff, int tei_file, int *ioff,
         bptr->s[tmpi] = jabs;
         bptr->val[tmpi] = value;
         if (printflag)
-          psi::fprintf(outfile, "%4d %4d %4d %4d  %4d   %10.6lf\n",
+          outfile->Printf( "%4d %4d %4d %4d  %4d   %10.6lf\n",
                   kabs, labs, iabs, jabs, ijkl, value) ;
         if ((tmpi+1) == YBuff->bucketsize) {
           flush_bucket(bptr, 0);
@@ -959,7 +959,7 @@ void yosh_rdtwo_backtr(struct yoshimine *YBuff, int tei_file, int *ioff,
   } while(!lastbuf);
 
   /* now add in contributions from the reference determinant if requested */
-  if (add_ref_pt) add_2pdm_ref_pt(YBuff, ioff, printflag, outfile);
+  if (add_ref_pt) add_2pdm_ref_pt(YBuff, ioff, printflag, "outfile");
 
   /* flush partially filled buckets */
   for (i=0; i<YBuff->nbuckets; i++) {
@@ -1016,7 +1016,7 @@ void yosh_rdtwo_backtr(struct yoshimine *YBuff, int tei_file, int *ioff,
 */
 void yosh_rdtwo_backtr_uhf(std::string spin, struct yoshimine *YBuff, int tei_file, int *ioff,
                            int swap_bk, int symm_pq, int del_tei_file,
-                           int printflag, FILE *outfile)
+                           int printflag, std::string OutFileRMR)
 {
   int i, ij, kl, ijkl;
   int iabs, jabs, kabs, labs;
@@ -1030,8 +1030,8 @@ void yosh_rdtwo_backtr_uhf(std::string spin, struct yoshimine *YBuff, int tei_fi
   int *iorder, *jorder, *korder, *lorder;
 
   if (printflag) {
-    psi::fprintf(outfile, "Yoshimine rdtwo_backtr routine entered\n");
-    psi::fprintf(outfile, "Two-particle density from file %d:\n", tei_file);
+    outfile->Printf( "Yoshimine rdtwo_backtr routine entered\n");
+    outfile->Printf( "Two-particle density from file %d:\n", tei_file);
   }
 
   if(spin == "AA") {
@@ -1053,7 +1053,7 @@ void yosh_rdtwo_backtr_uhf(std::string spin, struct yoshimine *YBuff, int tei_fi
     lorder = moinfo.corr2pitz_nofzv_b;
   }
   else {
-    psi::fprintf(outfile, "\n\tInvalid spin cases requested for backtransformation!\n");
+    outfile->Printf( "\n\tInvalid spin cases requested for backtransformation!\n");
     exit(PSI_RETURN_FAILURE);
   }
 
@@ -1099,7 +1099,7 @@ void yosh_rdtwo_backtr_uhf(std::string spin, struct yoshimine *YBuff, int tei_fi
       bptr->val[tmpi] = value;
 
       if (printflag)
-        psi::fprintf(outfile, "%4d %4d %4d %4d  %4d   %10.6lf\n",
+        outfile->Printf( "%4d %4d %4d %4d  %4d   %10.6lf\n",
                 iabs, jabs, kabs, labs, ijkl, value) ;
       if ((tmpi+1) == YBuff->bucketsize) { /* need to flush bucket to disk */
         flush_bucket(bptr, 0);
@@ -1118,7 +1118,7 @@ void yosh_rdtwo_backtr_uhf(std::string spin, struct yoshimine *YBuff, int tei_fi
         bptr->s[tmpi] = jabs;
         bptr->val[tmpi] = value;
         if (printflag)
-          psi::fprintf(outfile, "%4d %4d %4d %4d  %4d   %10.6lf\n",
+          outfile->Printf( "%4d %4d %4d %4d  %4d   %10.6lf\n",
                   kabs, labs, iabs, jabs, ijkl, value) ;
         if ((tmpi+1) == YBuff->bucketsize) {
           flush_bucket(bptr, 0);
@@ -1152,7 +1152,7 @@ void yosh_rdtwo_backtr_uhf(std::string spin, struct yoshimine *YBuff, int tei_fi
 ** David Sherrill, Feb 1998
 */
 void add_2pdm_ref_pt(struct yoshimine *YBuff, int *ioff, int pflg,
-                     FILE *outfile)
+                     std::string OutFileRMR)
 {
    int i, j, ii, jj, ij;
    int iabs, jabs;
@@ -1170,17 +1170,17 @@ void add_2pdm_ref_pt(struct yoshimine *YBuff, int *ioff, int pflg,
        jj = ioff[jabs] + jabs;
        ij = ioff[iabs] + jabs;
 
-       yosh_buff_put_val(YBuff,ioff,ii,iabs,iabs,jabs,jabs, 2.0,pflg,outfile);
-       yosh_buff_put_val(YBuff,ioff,jj,jabs,jabs,iabs,iabs, 2.0,pflg,outfile);
-       yosh_buff_put_val(YBuff,ioff,ij,iabs,jabs,jabs,iabs,-0.25,pflg,outfile);
-       yosh_buff_put_val(YBuff,ioff,ij,jabs,iabs,iabs,jabs,-0.25,pflg,outfile);
+       yosh_buff_put_val(YBuff,ioff,ii,iabs,iabs,jabs,jabs, 2.0,pflg,"outfile");
+       yosh_buff_put_val(YBuff,ioff,jj,jabs,jabs,iabs,iabs, 2.0,pflg,"outfile");
+       yosh_buff_put_val(YBuff,ioff,ij,iabs,jabs,jabs,iabs,-0.25,pflg,"outfile");
+       yosh_buff_put_val(YBuff,ioff,ij,jabs,iabs,iabs,jabs,-0.25,pflg,"outfile");
 
      }
 
      jabs = moinfo.corr2pitz_nofzv[j];
      jj = ioff[jabs] + jabs;
      ij = ioff[iabs] + jabs;
-     yosh_buff_put_val(YBuff,ioff,ii,iabs,iabs,jabs,jabs, 1.0,pflg,outfile);
+     yosh_buff_put_val(YBuff,ioff,ii,iabs,iabs,jabs,jabs, 1.0,pflg,"outfile");
 
    }
 
@@ -1195,10 +1195,10 @@ void add_2pdm_ref_pt(struct yoshimine *YBuff, int *ioff, int pflg,
        jj = ioff[jabs] + jabs;
        ij = ioff[iabs] + jabs;
 
-       yosh_buff_put_val(YBuff,ioff,ii,iabs,iabs,jabs,jabs, 1.0,pflg,outfile);
-       yosh_buff_put_val(YBuff,ioff,jj,jabs,jabs,iabs,iabs, 1.0,pflg,outfile);
-       yosh_buff_put_val(YBuff,ioff,ij,iabs,jabs,jabs,iabs,-0.125,pflg,outfile);
-       yosh_buff_put_val(YBuff,ioff,ij,jabs,iabs,iabs,jabs,-0.125,pflg,outfile);
+       yosh_buff_put_val(YBuff,ioff,ii,iabs,iabs,jabs,jabs, 1.0,pflg,"outfile");
+       yosh_buff_put_val(YBuff,ioff,jj,jabs,jabs,iabs,iabs, 1.0,pflg,"outfile");
+       yosh_buff_put_val(YBuff,ioff,ij,iabs,jabs,jabs,iabs,-0.125,pflg,"outfile");
+       yosh_buff_put_val(YBuff,ioff,ij,jabs,iabs,iabs,jabs,-0.125,pflg,"outfile");
      }
 
      for (j=ndocc; j<i; j++) {
@@ -1206,10 +1206,10 @@ void add_2pdm_ref_pt(struct yoshimine *YBuff, int *ioff, int pflg,
        jj = ioff[jabs] + jabs;
        ij = ioff[iabs] + jabs;
 
-       yosh_buff_put_val(YBuff,ioff,ii,iabs,iabs,jabs,jabs, 0.5,pflg,outfile);
-       yosh_buff_put_val(YBuff,ioff,jj,jabs,jabs,iabs,iabs, 0.5,pflg,outfile);
-       yosh_buff_put_val(YBuff,ioff,ij,iabs,jabs,jabs,iabs,-0.125,pflg,outfile);
-       yosh_buff_put_val(YBuff,ioff,ij,jabs,iabs,iabs,jabs,-0.125,pflg,outfile);
+       yosh_buff_put_val(YBuff,ioff,ii,iabs,iabs,jabs,jabs, 0.5,pflg,"outfile");
+       yosh_buff_put_val(YBuff,ioff,jj,jabs,jabs,iabs,iabs, 0.5,pflg,"outfile");
+       yosh_buff_put_val(YBuff,ioff,ij,iabs,jabs,jabs,iabs,-0.125,pflg,"outfile");
+       yosh_buff_put_val(YBuff,ioff,ij,jabs,iabs,iabs,jabs,-0.125,pflg,"outfile");
      }
 
    }
@@ -1226,7 +1226,7 @@ void add_2pdm_ref_pt(struct yoshimine *YBuff, int *ioff, int pflg,
 */
 void yosh_buff_put_val(struct yoshimine *YBuff, int *ioff, int pq,
                        int p, int q, int r, int s, double value, int prtflg,
-                       FILE *outfile)
+                       std::string OutFileRMR)
 {
    struct bucket *bptr;
    int whichbucket;
@@ -1242,7 +1242,7 @@ void yosh_buff_put_val(struct yoshimine *YBuff, int *ioff, int pq,
    bptr->val[tmpi] = value;
 
    if (prtflg)
-     psi::fprintf(outfile, "%4d %4d %4d %4d         %10.6lf\n", p, q, r, s,
+     outfile->Printf( "%4d %4d %4d %4d         %10.6lf\n", p, q, r, s,
              value);
 
    if ((tmpi+1) == YBuff->bucketsize) { /* need to flush bucket to disk */
@@ -1288,7 +1288,7 @@ void yosh_buff_put_val(struct yoshimine *YBuff, int *ioff, int pq,
 void yosh_sort(struct yoshimine *YBuff, int out_tape, int keep_bins,
       int *ioff, int *ioff2, int nbfso, int ket_indices, int elbert,
       int intermediate, int no_pq_perm, int qdim, int add, int print_lvl,
-      FILE *outfile)
+      std::string OutFileRMR)
 {
    double *twoel_ints;
    int i, max_pq;
@@ -1306,25 +1306,25 @@ void yosh_sort(struct yoshimine *YBuff, int out_tape, int keep_bins,
    iwl_buf_init(&outbuf, out_tape, YBuff->cutoff, 0, 0);
 
    for (i=0; i<YBuff->core_loads-1; i++) {
-      if (print_lvl > 1) psi::fprintf(outfile, "Sorting bin %d\n", i+1);
+      if (print_lvl > 1) outfile->Printf( "Sorting bin %d\n", i+1);
       iwl_buf_init(&inbuf, YBuff->first_tmp_file+i, YBuff->cutoff, 1, 0);
       sortbuf(&inbuf, &outbuf, twoel_ints, (YBuff->buckets)[i].lo,
               (YBuff->buckets)[i].hi, ioff, ioff2, nbfso, elbert,
-               intermediate, no_pq_perm, qdim, add, (print_lvl > 4), outfile);
+               intermediate, no_pq_perm, qdim, add, (print_lvl > 4), "outfile");
       zero_arr(twoel_ints, max_pq * ket_indices);
       /* zero_arr(twoel_ints, YBuff->pq_per_bucket * YBuff->bra_indices); */
       iwl_buf_close(&inbuf, keep_bins);
       }
 
 
-   if (print_lvl > 1) psi::fprintf(outfile, "Sorting bin %d\n", i+1) ;
+   if (print_lvl > 1) outfile->Printf( "Sorting bin %d\n", i+1) ;
    iwl_buf_init(&inbuf, YBuff->first_tmp_file+i, YBuff->cutoff, 1, 0);
    sortbuf(&inbuf, &outbuf, twoel_ints, (YBuff->buckets)[i].lo,
            (YBuff->buckets)[i].hi, ioff, ioff2, nbfso, elbert,
-           intermediate, no_pq_perm, qdim, add, (print_lvl > 4), outfile);
+           intermediate, no_pq_perm, qdim, add, (print_lvl > 4), "outfile");
    iwl_buf_close(&inbuf, keep_bins);
 
-   if (print_lvl > 1) psi::fprintf(outfile, "Done sorting.\n");
+   if (print_lvl > 1) outfile->Printf( "Done sorting.\n");
 
    iwl_buf_flush(&outbuf, 1);
    iwl_buf_close(&outbuf, 1);
@@ -1410,7 +1410,7 @@ void flush_bucket(struct bucket *bptr, int lastbuf)
 */
 void yosh_wrt_arr(struct yoshimine *YBuff, int p, int q, int pq, int pqsym,
    double *arr, int rmax, int *ioff, int *orbsym, int *firsti,
-   int *lasti, int sortby_rs, int printflag, FILE *outfile)
+   int *lasti, int sortby_rs, int printflag, std::string OutFileRMR)
 {
    int r, s, rs, rsym, ssym, smax;
    long int tmpi;
@@ -1420,7 +1420,7 @@ void yosh_wrt_arr(struct yoshimine *YBuff, int p, int q, int pq, int pqsym,
    double value;
 
    if (printflag) {
-     psi::fprintf(outfile, "\nyosh_wrt_arr called for p=%d,q=%d\n", p, q);
+     outfile->Printf( "\nyosh_wrt_arr called for p=%d,q=%d\n", p, q);
    }
 
    firstfile = YBuff->first_tmp_file;
@@ -1463,7 +1463,7 @@ void yosh_wrt_arr(struct yoshimine *YBuff, int p, int q, int pq, int pqsym,
             bptr->val[tmpi] = value;
 
             if (printflag)
-               psi::fprintf(outfile, "%4d %4d %4d %4d  %10.6lf\n",
+               outfile->Printf( "%4d %4d %4d %4d  %10.6lf\n",
                   p, q, r, s, arr[rs]);
 
             /* if we need to flush bucket to disk */
@@ -1488,7 +1488,7 @@ void yosh_wrt_arr(struct yoshimine *YBuff, int p, int q, int pq, int pqsym,
 
       }  /* end loop over r */
 
-   if (printflag) fflush(outfile);
+
 
 }
 
@@ -1519,7 +1519,7 @@ void yosh_wrt_arr(struct yoshimine *YBuff, int p, int q, int pq, int pqsym,
 */
 void yosh_wrt_arr2(struct yoshimine *YBuff, int size, double *arr,
    int p, int q, int *rlist, int *slist, int *ioff, int printflag,
-   FILE *outfile)
+   std::string OutFileRMR)
 {
    int x;
    int i1, j1, k1, l1, ij1, kl1;
@@ -1577,7 +1577,7 @@ void yosh_wrt_arr2(struct yoshimine *YBuff, int size, double *arr,
 
    bptr->val[tmpi] = value;
 
-   if (printflag) psi::fprintf(outfile, "%4d %4d %4d %4d  %10.6lf\n",
+   if (printflag) outfile->Printf( "%4d %4d %4d %4d  %10.6lf\n",
          i2, j2, k2, l2, value);
 
    /* if we need to flush bucket to disk */
@@ -1634,7 +1634,7 @@ void yosh_wrt_arr_mp2(struct yoshimine *YBuff, int p, int q, int pq,
                       int pqsym, double **arr, int rsym, int *firstr,
                       int *lastr, int *firsts, int *lasts, int sortby_rs,
                       int ndocc, int nvirt, int *occ, int *vir, int *ioff3,
-                      int printflag, FILE *outfile)
+                      int printflag, std::string OutFileRMR)
 {
    int r, s, rs, ssym;
    int rnew,snew;
@@ -1683,7 +1683,7 @@ void yosh_wrt_arr_mp2(struct yoshimine *YBuff, int p, int q, int pq,
             bptr->val[tmpi] = value;
 
             if (printflag)
-               psi::fprintf(outfile, "%4d %4d %4d %4d  %10.6lf\n",
+               outfile->Printf( "%4d %4d %4d %4d  %10.6lf\n",
                   p, q, r, s, value);
 
             /* if we need to flush bucket to disk */
@@ -1743,7 +1743,7 @@ void yosh_wrt_arr_mp2r12a(struct yoshimine *YBuff, int p, int q, int pq,
                           int pqsym, double **arr, int rsym, int *firstr,
                           int *lastr, int *firsts, int *lasts, int sortby_rs,
                           int *occ, int *ioff3,
-                          int printflag, FILE *outfile)
+                          int printflag, std::string OutFileRMR)
 {
    int r, s, rs, ssym;
    int rnew,snew;
@@ -1792,7 +1792,7 @@ void yosh_wrt_arr_mp2r12a(struct yoshimine *YBuff, int p, int q, int pq,
             bptr->val[tmpi] = value;
 
             if (printflag)
-               psi::fprintf(outfile, "%4d %4d %4d %4d  %10.6lf\n",
+               outfile->Printf( "%4d %4d %4d %4d  %10.6lf\n",
                   p, q, r, s, value);
 
             /* if we need to flush bucket to disk */

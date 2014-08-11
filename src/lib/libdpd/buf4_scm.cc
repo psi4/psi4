@@ -88,8 +88,8 @@ int DPD::buf4_scm(dpdbuf4 *InBuf, double alpha)
         if(coltot) {
             maxrows = DPD_BIGNUM/coltot;
             if(maxrows < 1) {
-                psi::fprintf(stderr, "\nLIBDPD Error: cannot compute even the number of rows in buf4_scm.\n");
-                dpd_error("buf4_scm", stderr);
+                outfile->Printf( "\nLIBDPD Error: cannot compute even the number of rows in buf4_scm.\n");
+                dpd_error("buf4_scm", "outfile");
             }
         }
         else maxrows = DPD_BIGNUM;

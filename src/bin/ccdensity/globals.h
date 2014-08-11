@@ -30,7 +30,7 @@
 #include <libciomr/libciomr.h>
 
 namespace psi {
-extern FILE* outfile;
+
 namespace ccdensity {
 
 /* Global variables */

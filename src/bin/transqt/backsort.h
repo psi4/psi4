@@ -32,7 +32,7 @@ namespace psi { namespace transqt {
 void backsort_prep(int uhf);
 void backsort(int first_tmp_file, double tolerance, int uhf);
 void backsort_write(int i, int j, double **A, int kfirst, int klast,
-		    int lfirst, int llast, int printflag, FILE *outfile,
+		    int lfirst, int llast, int printflag, std::string OutFileRMR,
 		       struct iwlbuf *twopdm_out, int uhf);
 
 }} // end namespace psi::transqt

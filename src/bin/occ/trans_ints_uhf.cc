@@ -36,7 +36,7 @@ namespace psi{ namespace occwave{
 
 void OCCWave::trans_ints_uhf()
 {    
-    //psi::fprintf(outfile,"\n trans_ints is starting... \n"); fflush(outfile);
+    //outfile->Printf("\n trans_ints is starting... \n"); 
 /********************************************************************************************/
 /************************** Transform 2-electron int. to MO space ***************************/
 /********************************************************************************************/  
@@ -743,9 +743,9 @@ if (wfn_type_ != "OMP2" || ekt_ea_ == "TRUE") {
 
       else if (orb_opt_ == "FALSE" || reference == "ROHF") {
 	double *mo_ints = init_array(ntri);
-        IWL::read_one(psio_.get(), PSIF_OEI, PSIF_MO_A_FOCK, mo_ints, ntri, 0, 0, outfile);
+        IWL::read_one(psio_.get(), PSIF_OEI, PSIF_MO_A_FOCK, mo_ints, ntri, 0, 0, "outfile");
         FockA->set(mo_ints);
-        IWL::read_one(psio_.get(), PSIF_OEI, PSIF_MO_B_FOCK, mo_ints, ntri, 0, 0, outfile);
+        IWL::read_one(psio_.get(), PSIF_OEI, PSIF_MO_B_FOCK, mo_ints, ntri, 0, 0, "outfile");
         FockB->set(mo_ints);
         free(mo_ints);
       }
@@ -764,14 +764,14 @@ if (wfn_type_ != "OMP2" || ekt_ea_ == "TRUE") {
       else if (orb_opt_ == "FALSE" && reference != "ROHF") denominators_ump2();
       timer_off("Build Denominators");
       psio_->close(PSIF_LIBTRANS_DPD, 1);
-      //psi::fprintf(outfile,"\n trans_ints done. \n"); fflush(outfile);
+      //outfile->Printf("\n trans_ints done. \n"); 
  
 }//
 
 
 void OCCWave::denominators_uhf()
 {
-    //psi::fprintf(outfile,"\n denominators is starting... \n"); fflush(outfile);
+    //outfile->Printf("\n denominators is starting... \n"); 
     dpdbuf4 D;
     dpdfile2 Fo,Fv;
     
@@ -811,7 +811,7 @@ void OCCWave::denominators_uhf()
         global_dpd_->buf4_mat_irrep_wrt(&D, h);
         global_dpd_->buf4_mat_irrep_close(&D, h);
     }
-    if (print_ > 2) global_dpd_->buf4_print(&D, outfile, 1);
+    if (print_ > 2) global_dpd_->buf4_print(&D, "outfile", 1);
     global_dpd_->buf4_close(&D);
     
 
@@ -832,7 +832,7 @@ void OCCWave::denominators_uhf()
         global_dpd_->buf4_mat_irrep_wrt(&D, h);
         global_dpd_->buf4_mat_irrep_close(&D, h);
     }
-    if (print_ > 2) global_dpd_->buf4_print(&D, outfile, 1);
+    if (print_ > 2) global_dpd_->buf4_print(&D, "outfile", 1);
     global_dpd_->buf4_close(&D);
     
     
@@ -853,33 +853,33 @@ void OCCWave::denominators_uhf()
         global_dpd_->buf4_mat_irrep_wrt(&D, h);
         global_dpd_->buf4_mat_irrep_close(&D, h);
     }
-    if (print_ > 2) global_dpd_->buf4_print(&D, outfile, 1);
+    if (print_ > 2) global_dpd_->buf4_print(&D, "outfile", 1);
     global_dpd_->buf4_close(&D);
     
     //Print
     if(print_ > 1){
-      psi::fprintf(outfile,"\n \n"); fflush(outfile);
+      outfile->Printf("\n \n"); 
       for(int i = 0; i<nacooA; i++) {
-	psi::fprintf(outfile,"\taOccEvals[%1d]: %20.14f\n", i, aOccEvals[i]); 
-	fflush(outfile);
+	outfile->Printf("\taOccEvals[%1d]: %20.14f\n", i, aOccEvals[i]); 
+	
       }
       
-      psi::fprintf(outfile,"\n \n"); fflush(outfile);
+      outfile->Printf("\n \n"); 
       for(int i = 0; i<nacooB; i++) {
-	psi::fprintf(outfile,"\tbOccEvals[%1d]: %20.14f\n", i, bOccEvals[i]); 
-	fflush(outfile);
+	outfile->Printf("\tbOccEvals[%1d]: %20.14f\n", i, bOccEvals[i]); 
+	
       }
       
-      psi::fprintf(outfile,"\n \n"); fflush(outfile);
+      outfile->Printf("\n \n"); 
       for(int i = 0; i<nacvoA; i++) {
-	psi::fprintf(outfile,"\taVirEvals[%1d]: %20.14f\n", i, aVirEvals[i]); 
-	fflush(outfile);
+	outfile->Printf("\taVirEvals[%1d]: %20.14f\n", i, aVirEvals[i]); 
+	
       }
       
-      psi::fprintf(outfile,"\n \n"); fflush(outfile);
+      outfile->Printf("\n \n"); 
       for(int i = 0; i<nacvoB; i++) {
-	psi::fprintf(outfile,"\tbVirEvals[%1d]: %20.14f\n", i, bVirEvals[i]);
-	fflush(outfile);
+	outfile->Printf("\tbVirEvals[%1d]: %20.14f\n", i, bVirEvals[i]);
+	
       }      
     }
     
@@ -908,7 +908,7 @@ void OCCWave::denominators_uhf()
     if (print_ > 2) {
       global_dpd_->file2_init(&Fo, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F <O|O>");
       global_dpd_->file2_mat_init(&Fo);
-      global_dpd_->file2_mat_print(&Fo, outfile);
+      global_dpd_->file2_mat_print(&Fo, "outfile");
       global_dpd_->file2_close(&Fo);
     }
     
@@ -930,7 +930,7 @@ void OCCWave::denominators_uhf()
     if (print_ > 2) {
       global_dpd_->file2_init(&Fo, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('o'), "F <o|o>");
       global_dpd_->file2_mat_init(&Fo);
-      global_dpd_->file2_mat_print(&Fo, outfile);
+      global_dpd_->file2_mat_print(&Fo, "outfile");
       global_dpd_->file2_close(&Fo);
     }
     
@@ -953,7 +953,7 @@ void OCCWave::denominators_uhf()
     if (print_ > 2) {
       global_dpd_->file2_init(&Fv, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "F <V|V>");
       global_dpd_->file2_mat_init(&Fv);
-      global_dpd_->file2_mat_print(&Fv, outfile);
+      global_dpd_->file2_mat_print(&Fv, "outfile");
       global_dpd_->file2_close(&Fv);
     }
     
@@ -975,11 +975,11 @@ void OCCWave::denominators_uhf()
     if (print_ > 2) {
       global_dpd_->file2_init(&Fv, PSIF_LIBTRANS_DPD, 0, ID('v'), ID('v'), "F <v|v>");
       global_dpd_->file2_mat_init(&Fv);
-      global_dpd_->file2_mat_print(&Fv, outfile);
+      global_dpd_->file2_mat_print(&Fv, "outfile");
       global_dpd_->file2_close(&Fv);
     }    
 
-//psi::fprintf(outfile,"\n denominators done. \n"); fflush(outfile);
+//outfile->Printf("\n denominators done. \n"); 
 }// end denominators
 }} // End Namespaces
 

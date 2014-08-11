@@ -52,7 +52,7 @@ void Lmag(int L_irr)
     norm += global_dpd_->buf4_dot_self(&LIJAB);
     norm += global_dpd_->buf4_dot_self(&Lijab);
     norm += global_dpd_->buf4_dot_self(&LIjAb);
-    psi::fprintf(outfile,"size of L <L|L>     %15.10lf\n",norm);
+    outfile->Printf("size of L <L|L>     %15.10lf\n",norm);
 
     global_dpd_->file2_close(&LIA);
     global_dpd_->file2_close(&Lia);

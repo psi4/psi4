@@ -74,9 +74,9 @@ void HF::MOM_start()
     if (!options_["MOM_OCC"].size()) return;
 
     // If we're here, its an exciting MOM
-    psi::fprintf(outfile, "\n");
+    outfile->Printf( "\n");
     print_orbitals();
-    psi::fprintf(outfile, "\n  ==> MOM Excited-State Iterations <==\n\n");
+    outfile->Printf( "\n  ==> MOM Excited-State Iterations <==\n\n");
 
     // Reset iterations and DIIS (will automagically restart)
     iteration_ = 0;
@@ -121,7 +121,7 @@ void HF::MOM_start()
 
     CharacterTable ct = molecule_->point_group()->char_table();
 
-    psi::fprintf(outfile, "  Excitations:\n");
+    outfile->Printf( "  Excitations:\n");
 
     for (int n = 0; n < options_["MOM_OCC"].size(); n++) {
         int i = options_["MOM_OCC"][n].to_integer();
@@ -166,7 +166,7 @@ void HF::MOM_start()
 
                 delete[] Ct;
 
-                psi::fprintf(outfile, "   %8s: %4d%-4s -> %4d%-4s \n", "AB -> AB", pi + 1, ct.gamma(hi).symbol(), pa + 1, ct.gamma(ha).symbol());
+                outfile->Printf( "   %8s: %4d%-4s -> %4d%-4s \n", "AB -> AB", pi + 1, ct.gamma(hi).symbol(), pa + 1, ct.gamma(ha).symbol());
             } else {
                 // Different irrep
                 // Occ -> Vir
@@ -226,7 +226,7 @@ void HF::MOM_start()
                 nbetapi_[ha]++;
                 doccpi_[ha]++;
 
-                psi::fprintf(outfile, "   %8s: %4d%-4s -> %4d%-4s \n", "AB -> AB", pi + 1, ct.gamma(hi).symbol(), pa + 1, ct.gamma(ha).symbol());
+                outfile->Printf( "   %8s: %4d%-4s -> %4d%-4s \n", "AB -> AB", pi + 1, ct.gamma(hi).symbol(), pa + 1, ct.gamma(ha).symbol());
             }
 
         } else if (options_.get_str("REFERENCE") == "UHF" || options_.get_str("REFERENCE") == "UKS") {
@@ -262,7 +262,7 @@ void HF::MOM_start()
 
                     delete[] Ct;
 
-                    psi::fprintf(outfile, "   %8s: %4d%-4s -> %4d%-4s \n", "A  -> A ", pi + 1, ct.gamma(hi).symbol(), pa + 1, ct.gamma(ha).symbol());
+                    outfile->Printf( "   %8s: %4d%-4s -> %4d%-4s \n", "A  -> A ", pi + 1, ct.gamma(hi).symbol(), pa + 1, ct.gamma(ha).symbol());
                 } else {
                     // Different irrep
                     // Occ -> Vir
@@ -318,7 +318,7 @@ void HF::MOM_start()
                     // Redo indexing
                     nalphapi_[ha]++;
 
-                    psi::fprintf(outfile, "   %8s: %4d%-4s -> %4d%-4s \n", "A  -> A ", pi + 1, ct.gamma(hi).symbol(), pa + 1, ct.gamma(ha).symbol());
+                    outfile->Printf( "   %8s: %4d%-4s -> %4d%-4s \n", "A  -> A ", pi + 1, ct.gamma(hi).symbol(), pa + 1, ct.gamma(ha).symbol());
                 }
             } else if (!si && !sa) {
                 // Beta->Beta
@@ -350,7 +350,7 @@ void HF::MOM_start()
 
                     delete[] Ct;
 
-                    psi::fprintf(outfile, "   %8s: %4d%-4s -> %4d%-4s \n", "B  -> B ", pi + 1, ct.gamma(hi).symbol(), pa + 1, ct.gamma(ha).symbol());
+                    outfile->Printf( "   %8s: %4d%-4s -> %4d%-4s \n", "B  -> B ", pi + 1, ct.gamma(hi).symbol(), pa + 1, ct.gamma(ha).symbol());
                 } else {
                     // Different irrep
                     // Occ -> Vir
@@ -406,7 +406,7 @@ void HF::MOM_start()
                     // Redo indexing
                     nbetapi_[ha]++;
 
-                    psi::fprintf(outfile, "   %8s: %4d%-4s -> %4d%-4s \n", "B  -> B ", pi + 1, ct.gamma(hi).symbol(), pa + 1, ct.gamma(ha).symbol());
+                    outfile->Printf( "   %8s: %4d%-4s -> %4d%-4s \n", "B  -> B ", pi + 1, ct.gamma(hi).symbol(), pa + 1, ct.gamma(ha).symbol());
                 }
             } else if (!si && sa) {
                 // Beta->Alpha
@@ -469,7 +469,7 @@ void HF::MOM_start()
                 nalphapi_[ha]++;
                 nalpha_++;
 
-                psi::fprintf(outfile, "   %8s: %4d%-4s -> %4d%-4s \n", "B  -> A ", pi + 1, ct.gamma(hi).symbol(), pa + 1, ct.gamma(ha).symbol());
+                outfile->Printf( "   %8s: %4d%-4s -> %4d%-4s \n", "B  -> A ", pi + 1, ct.gamma(hi).symbol(), pa + 1, ct.gamma(ha).symbol());
             } else if (si && !sa) {
                 // Alpha->Beta
                 int hi = orbs_a[i].second.first;
@@ -531,7 +531,7 @@ void HF::MOM_start()
                 nbetapi_[ha]++;
                 nbeta_++;
 
-                psi::fprintf(outfile, "   %8s: %4d%-4s -> %4d%-4s \n", "A  -> B ", pi + 1, ct.gamma(hi).symbol(), pa + 1, ct.gamma(ha).symbol());
+                outfile->Printf( "   %8s: %4d%-4s -> %4d%-4s \n", "A  -> B ", pi + 1, ct.gamma(hi).symbol(), pa + 1, ct.gamma(ha).symbol());
             }
             if (nalpha_ < nbeta_) throw PSIEXCEPTION("PSI::MOM_start: Nbeta ends up being less than Nalpha, this is not supported");
 
@@ -575,7 +575,7 @@ void HF::MOM_start()
     Ca_old_->copy(Ca_);
     Cb_old_->copy(Cb_);
 
-    psi::fprintf(outfile, "\n                        Total Energy        Delta E      Density RMS\n\n");
+    outfile->Printf( "\n                        Total Energy        Delta E      Density RMS\n\n");
 }
 void HF::MOM()
 {
@@ -607,9 +607,9 @@ void HF::MOM()
         C_DGEMV('N',nso,nso,1.0,S[0],nso,c,1,0.0,d,1);
         C_DGEMV('T',nso,nmo,1.0,Cnew[0],nmo,d,1,0.0,p,1);
 
-        //psi::fprintf(outfile,"  P_a:\n");
+        //outfile->Printf("  P_a:\n");
         //for (int a = 0; a < nmo; a++)
-        //    psi::fprintf(outfile,"   a = %3d: %14.10f\n", a + 1, p[a]);
+        //    outfile->Printf("   a = %3d: %14.10f\n", a + 1, p[a]);
 
         // Find the largest contributions
         std::vector<std::pair<double, int> > pvec;
@@ -618,9 +618,9 @@ void HF::MOM()
             pvec[a] = make_pair(fabs(p[a]), a);
         sort(pvec.begin(),pvec.end(), greater<std::pair<double, int> >());
 
-        //psi::fprintf(outfile,"  P_a sorted:\n");
+        //outfile->Printf("  P_a sorted:\n");
         //for (int a = 0; a < nmo; a++)
-        //    psi::fprintf(outfile,"   a = %3d: Index = %3d, %14.10f\n", a + 1, pvec[a].second, pvec[a].first);
+        //    outfile->Printf("   a = %3d: Index = %3d, %14.10f\n", a + 1, pvec[a].second, pvec[a].first);
 
         // Now order the mos in each group
         std::vector<std::pair<double, int> > occvec;
@@ -629,9 +629,9 @@ void HF::MOM()
             occvec[a] = make_pair(eps[pvec[a].second], pvec[a].second);
         sort(occvec.begin(),occvec.end());
 
-        //psi::fprintf(outfile,"  P_a_occ sorted:\n");
+        //outfile->Printf("  P_a_occ sorted:\n");
         //for (int a = 0; a < nalpha; a++)
-        //    psi::fprintf(outfile,"   a = %3d: Index = %3d, %14.10f\n", a + 1, occvec[a].second, occvec[a].first);
+        //    outfile->Printf("   a = %3d: Index = %3d, %14.10f\n", a + 1, occvec[a].second, occvec[a].first);
 
         std::vector<std::pair<double, int> > virvec;
         virvec.resize(nmo - nalpha);
@@ -639,9 +639,9 @@ void HF::MOM()
             virvec[a] = make_pair(eps[pvec[a + nalpha].second], pvec[a + nalpha].second);
         sort(virvec.begin(),virvec.end());
 
-        //psi::fprintf(outfile,"  P_a_vir sorted:\n");
+        //outfile->Printf("  P_a_vir sorted:\n");
         //for (int a = 0; a < nmo - nalpha; a++)
-        //    psi::fprintf(outfile,"   a = %3d: Index = %3d, %14.10f\n", a + 1, virvec[a].second, virvec[a].first);
+        //    outfile->Printf("   a = %3d: Index = %3d, %14.10f\n", a + 1, virvec[a].second, virvec[a].first);
 
         double** Ct = block_matrix(nso,nmo);
 
@@ -695,9 +695,9 @@ void HF::MOM()
         C_DGEMV('N',nso,nso,1.0,S[0],nso,c,1,0.0,d,1);
         C_DGEMV('T',nso,nmo,1.0,Cnew[0],nmo,d,1,0.0,p,1);
 
-        //psi::fprintf(outfile,"  P_a:\n");
+        //outfile->Printf("  P_a:\n");
         //for (int a = 0; a < nmo; a++)
-        //    psi::fprintf(outfile,"   a = %3d: %14.10f\n", a + 1, p[a]);
+        //    outfile->Printf("   a = %3d: %14.10f\n", a + 1, p[a]);
 
         // Find the largest contributions
         std::vector<std::pair<double, int> > pvec;
@@ -706,9 +706,9 @@ void HF::MOM()
             pvec[a] = make_pair(fabs(p[a]), a);
         sort(pvec.begin(),pvec.end(), greater<std::pair<double, int> >());
 
-        //psi::fprintf(outfile,"  P_a sorted:\n");
+        //outfile->Printf("  P_a sorted:\n");
         //for (int a = 0; a < nmo; a++)
-        //    psi::fprintf(outfile,"   a = %3d: Index = %3d, %14.10f\n", a + 1, pvec[a].second, pvec[a].first);
+        //    outfile->Printf("   a = %3d: Index = %3d, %14.10f\n", a + 1, pvec[a].second, pvec[a].first);
 
         // Now order the mos in each group
         std::vector<std::pair<double, int> > occvec;
@@ -717,9 +717,9 @@ void HF::MOM()
             occvec[a] = make_pair(eps[pvec[a].second], pvec[a].second);
         sort(occvec.begin(),occvec.end());
 
-        //psi::fprintf(outfile,"  P_a_occ sorted:\n");
+        //outfile->Printf("  P_a_occ sorted:\n");
         //for (int a = 0; a < nbeta; a++)
-        //    psi::fprintf(outfile,"   a = %3d: Index = %3d, %14.10f\n", a + 1, occvec[a].second, occvec[a].first);
+        //    outfile->Printf("   a = %3d: Index = %3d, %14.10f\n", a + 1, occvec[a].second, occvec[a].first);
 
         std::vector<std::pair<double, int> > virvec;
         virvec.resize(nmo - nbeta);
@@ -727,9 +727,9 @@ void HF::MOM()
             virvec[a] = make_pair(eps[pvec[a + nbeta].second], pvec[a + nbeta].second);
         sort(virvec.begin(),virvec.end());
 
-        //psi::fprintf(outfile,"  P_a_vir sorted:\n");
+        //outfile->Printf("  P_a_vir sorted:\n");
         //for (int a = 0; a < nmo - nalpha; a++)
-        //    psi::fprintf(outfile,"   a = %3d: Index = %3d, %14.10f\n", a + 1, virvec[a].second, virvec[a].first);
+        //    outfile->Printf("   a = %3d: Index = %3d, %14.10f\n", a + 1, virvec[a].second, virvec[a].first);
 
         double** Ct = block_matrix(nso,nmo);
 

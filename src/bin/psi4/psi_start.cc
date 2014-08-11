@@ -45,7 +45,7 @@ using namespace std;
 namespace psi {
 
 void create_new_plugin(std::string plugin_name, const std::string& template_name);
-void print_version(FILE *);
+void print_version(std::string);
 void print_usage();
 
 /*!
@@ -172,7 +172,7 @@ int psi_start(int argc, char *argv[])
                 break;
 
             case 'V': // -V or --version
-                print_version(stdout);
+                print_version("stdout");
                 exit(EXIT_SUCCESS);
                 break;
 
@@ -268,7 +268,7 @@ int psi_start(int argc, char *argv[])
         }
 
         if(infile == NULL) {
-            psi::fprintf(stderr, "Error: could not open input file %s\n",ifname.c_str());
+            outfile->Printf( "Error: could not open input file %s\n",ifname.c_str());
             return(PSI_RETURN_FAILURE);
         }
     }
@@ -277,27 +277,17 @@ int psi_start(int argc, char *argv[])
 #if defined(MAKE_PYTHON_MODULE)
     outfile = stdout;
 #else
-    if(append) {
-        if(ofname == "stdout")
-            outfile=stdout;
-        else
-            outfile = fopen(ofname.c_str(), "a");
-    }
-    else {
-        if(ofname == "stdout")
-            outfile=stdout;
-        else
-            outfile = fopen(ofname.c_str(), "w");
-    }
-
-    if(outfile == NULL) {
-        psi::fprintf(stderr, "Error: could not open output file %s\n",ofname.c_str());
-        return(PSI_RETURN_FAILURE);
-    }
+        if(ofname == "stdout"){
+            outfile=boost::shared_ptr<PsiOutStream>(new PsiOutStream());
+        }
+        else{
+           outfile=boost::shared_ptr<PsiOutStream>
+              (new OutFile(ofname,(append?APPEND:TRUNCATE)));
+        }
 #endif
 
-    if(debug)
-        setbuf(outfile,NULL);
+    //if(debug)
+    //    setbuf(outfile,NULL);
 
     // Initialize Yeti's env
     //yetiEnv.init(WorldComm->me(), ofname.c_str());
@@ -314,8 +304,8 @@ int psi_start(int argc, char *argv[])
     psi_file_prefix = strdup(fprefix.c_str());
 
     // If check_only, force output to stdout because we don't need anything more
-    if (check_only)
-        outfile = stdout;
+    //if (check_only)
+    //    outfile = stdout;
     outfile_name = ofname;
 
     return(PSI_RETURN_SUCCESS);

@@ -102,25 +102,25 @@ namespace psi {
                     for(int j=0; j < nso; j++)
                       V_eff[i][j] += pot_val * xstep * ystep * zstep * phi_so[i] * phi_so[j] / b2a3;
 
-//                  psi::fprintf(outfile, "x = %f; y = %f; z = %f; v = %f\n", x, y, z, pot_val);
+//                  outfile->Printf( "x = %f; y = %f; z = %f; v = %f\n", x, y, z, pot_val);
                   num_steps++;
                   zinc++;
                   if(zinc == zsteps) { yinc++; zinc = 0; }
                   if(yinc == ysteps) { xinc++; yinc = 0; }
                   if(xinc == xsteps) {
-                    psi::fprintf(outfile, "Total points read: %d\n", num_steps);
+                    outfile->Printf( "Total points read: %d\n", num_steps);
                     data_ready = false;
                   }
                 }
               }
 
               if(tokens[0] == "#") // comment lines
-                psi::fprintf(outfile, "%s\n", buf);
+                outfile->Printf( "%s\n", buf);
               if(tokens[0] == "origin") {
                 xmin = atof(tokens[1].c_str());
                 ymin = atof(tokens[2].c_str());
                 zmin = atof(tokens[3].c_str());
-                psi::fprintf(outfile, "%f %f %f\n", xmin, ymin, zmin);
+                outfile->Printf( "%f %f %f\n", xmin, ymin, zmin);
               }
 
              if(tokens[0] == "delta") {
@@ -130,7 +130,7 @@ namespace psi {
                  ystep = atof(tokens[2].c_str());
                else if(delta_count == 2) {
                  zstep = atof(tokens[3].c_str());
-                 psi::fprintf(outfile, "Step sizes: %f %f %f\n", xstep, ystep, zstep);
+                 outfile->Printf( "Step sizes: %f %f %f\n", xstep, ystep, zstep);
                }
                delta_count++;
              }
@@ -140,11 +140,11 @@ namespace psi {
                  xsteps = atoi(tokens[5].c_str());
                  ysteps = atoi(tokens[6].c_str());
                  zsteps = atoi(tokens[7].c_str());
-                 psi::fprintf(outfile, "%d %d %d\n", xsteps, ysteps, zsteps);
+                 outfile->Printf( "%d %d %d\n", xsteps, ysteps, zsteps);
                }
                else if(tokens[1] == "3") {
                  total = atoi(tokens[9].c_str());
-                 psi::fprintf(outfile, "%d\n", total);
+                 outfile->Printf( "%d\n", total);
                  data_ready = true;
                }
              }

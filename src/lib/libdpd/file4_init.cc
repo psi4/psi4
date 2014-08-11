@@ -85,9 +85,9 @@ int DPD::file4_init(dpdfile4 *File, int filenum, int irrep, int pqnum,
             /* number of rows for which we can compute the address offset directly */
             maxrows = DPD_BIGNUM/(coltot*sizeof(double));
             if(maxrows < 1) {
-                psi::fprintf(stderr, "\nLIBDPD Error: each row of %s is too long to compute an address.\n",
+                outfile->Printf( "\nLIBDPD Error: each row of %s is too long to compute an address.\n",
                         File->label);
-                dpd_error("dpd_file4_init", stderr);
+                dpd_error("dpd_file4_init", "outfile");
             }
         }
         else maxrows = DPD_BIGNUM;

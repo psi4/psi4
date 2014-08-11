@@ -171,7 +171,7 @@ void wPBECFunctional::compute_functional(const std::map<std::string,SharedVector
             v_gamma_bb[Q] += A * F_s * s_gamma_bb;
         }
 
-        //psi::fprintf(outfile,"rho = %11.3E, gamma = %11.3E, %11.3E %11.3E %11.3E\n", rho_a, gamma_aa, v[Q], v_rho_a[Q], v_gamma_aa[Q]);
+        //outfile->Printf("rho = %11.3E, gamma = %11.3E, %11.3E %11.3E %11.3E\n", rho_a, gamma_aa, v[Q], v_rho_a[Q], v_gamma_aa[Q]);
     }
 }
 void wPBECFunctional::pw92c_eps(

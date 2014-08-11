@@ -35,14 +35,13 @@
 #include "globals.h"
 
 namespace psi {
-extern FILE* outfile;
   namespace transqt2 {
 
 void frozen_core(int,int,int,int,double,double *,double *,double *,
                  double *,int);
 
 void idx_permute_presort(dpdfile4 *,int,int **,int **,int,int,int,int,
-                           double,FILE *);
+                           double,std::string);
 
 int file_build_presort(dpdfile4 *File, int inputfile, double tolerance,
                        long int memoryb, int keep, int fzc, double *D_a,
@@ -120,8 +119,8 @@ int file_build_presort(dpdfile4 *File, int inputfile, double tolerance,
   }
 
   if(params.print_lvl) {
-    psi::fprintf(outfile, "\tSorting File: %s nbuckets = %d\n", File->label, nbuckets);
-    fflush(outfile);
+    outfile->Printf( "\tSorting File: %s nbuckets = %d\n", File->label, nbuckets);
+    
   }
 
   next = PSIO_ZERO;
@@ -146,7 +145,7 @@ int file_build_presort(dpdfile4 *File, int inputfile, double tolerance,
 
       value = (double) valptr[InBuf.idx];
 
-      idx_permute_presort(File,n,bucket_map,bucket_offset,p,q,r,s,value,outfile);
+      idx_permute_presort(File,n,bucket_map,bucket_offset,p,q,r,s,value,"outfile");
 
       if(fzc && !n) /* build frozen-core operator only on first pass*/
         frozen_core(p,q,r,s,value,D_a,D_b,fock_a,fock_b,ref);
@@ -166,7 +165,7 @@ int file_build_presort(dpdfile4 *File, int inputfile, double tolerance,
 
         value = (double) valptr[InBuf.idx];
 
-        idx_permute_presort(File,n,bucket_map,bucket_offset,p,q,r,s,value,outfile);
+        idx_permute_presort(File,n,bucket_map,bucket_offset,p,q,r,s,value,"outfile");
 
         if(fzc && !n) /* build frozen-core operator only on first pass */
           frozen_core(p,q,r,s,value,D_a,D_b,fock_a,fock_b,ref);

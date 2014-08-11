@@ -92,7 +92,7 @@ void DFMP2::compute_opdm_and_nos(const SharedMatrix Dnosym, SharedMatrix Dso, Sh
         }
         delete [] CStemp;
         if(symcol != nmopi_[h]){
-            psi::fprintf(outfile, "Problem determining natural orbital and density matrix symmetries.\n"
+            outfile->Printf( "Problem determining natural orbital and density matrix symmetries.\n"
                     "Future calls to oeprop will not work, using this density.  Try disabling symmetry.\n\n");
             occ->zero();
             Cno->zero();
@@ -362,8 +362,8 @@ void DFMP2::form_singles()
 
         Fia_a->print();
         Fia_b->print();
-        psi::fprintf(outfile, "  Alpha singles energy = %24.16E\n", E_singles_a);
-        psi::fprintf(outfile, "  Beta  singles energy = %24.16E\n\n", E_singles_b);
+        outfile->Printf( "  Alpha singles energy = %24.16E\n", E_singles_a);
+        outfile->Printf( "  Beta  singles energy = %24.16E\n\n", E_singles_b);
     }
 }
 SharedMatrix DFMP2::form_inverse_metric()
@@ -376,7 +376,7 @@ SharedMatrix DFMP2::form_inverse_metric()
     if (options_.get_str("DF_INTS_IO") == "LOAD") {
 
         SharedMatrix Jm12(new Matrix("SO Basis Fitting Inverse (Eig)", naux, naux));
-        psi::fprintf(outfile,"\t Will attempt to load fitting metric from file %d.\n\n", PSIF_DFSCF_BJ); fflush(outfile);
+        outfile->Printf("\t Will attempt to load fitting metric from file %d.\n\n", PSIF_DFSCF_BJ); 
         psio_->open(PSIF_DFSCF_BJ, PSIO_OPEN_OLD);
         psio_->read_entry(PSIF_DFSCF_BJ, "DFMP2 Jm12", (char*) Jm12->pointer()[0], sizeof(double) * naux * naux);
         psio_->close(PSIF_DFSCF_BJ, 1);
@@ -394,7 +394,7 @@ SharedMatrix DFMP2::form_inverse_metric()
 
         // Save inverse metric to the SCF three-index integral file if it exists
         if (options_.get_str("DF_INTS_IO") == "SAVE") {
-            psi::fprintf(outfile,"\t Will save fitting metric to file %d.\n\n", PSIF_DFSCF_BJ); fflush(outfile);
+            outfile->Printf("\t Will save fitting metric to file %d.\n\n", PSIF_DFSCF_BJ); 
             psio_->open(PSIF_DFSCF_BJ, PSIO_OPEN_OLD);
             psio_->write_entry(PSIF_DFSCF_BJ, "DFMP2 Jm12", (char*) Jm12->pointer()[0], sizeof(double) * naux * naux);
             psio_->close(PSIF_DFSCF_BJ, 1);
@@ -718,27 +718,27 @@ void DFMP2::print_energies()
     energies_["SCS Correlation Energy"] = energies_["SCS Opposite-Spin Energy"] + energies_["SCS Same-Spin Energy"] + energies_["Singles Energy"];
     energies_["SCS Total Energy"] = energies_["Reference Energy"] + energies_["SCS Correlation Energy"];
 
-    psi::fprintf(outfile, "\t----------------------------------------------------------\n");
-    psi::fprintf(outfile, "\t ==================> DF-MP2 Energies <=================== \n");
-    psi::fprintf(outfile, "\t----------------------------------------------------------\n");
-    psi::fprintf(outfile, "\t %-25s = %24.16f [H]\n", "Reference Energy",         energies_["Reference Energy"]);
-    psi::fprintf(outfile, "\t %-25s = %24.16f [H]\n", "Singles Energy",           energies_["Singles Energy"]);
-    psi::fprintf(outfile, "\t %-25s = %24.16f [H]\n", "Same-Spin Energy",         energies_["Same-Spin Energy"]);
-    psi::fprintf(outfile, "\t %-25s = %24.16f [H]\n", "Opposite-Spin Energy",     energies_["Opposite-Spin Energy"]);
-    psi::fprintf(outfile, "\t %-25s = %24.16f [H]\n", "Correlation Energy",       energies_["Correlation Energy"]);
-    psi::fprintf(outfile, "\t %-25s = %24.16f [H]\n", "Total Energy",             energies_["Total Energy"]);
-    psi::fprintf(outfile, "\t----------------------------------------------------------\n");
-    psi::fprintf(outfile, "\t ================> DF-SCS-MP2 Energies <================= \n");
-    psi::fprintf(outfile, "\t----------------------------------------------------------\n");
-    psi::fprintf(outfile, "\t %-25s = %24.16f [-]\n", "SCS Same-Spin Scale",      sss_);
-    psi::fprintf(outfile, "\t %-25s = %24.16f [-]\n", "SCS Opposite-Spin Scale",  oss_);
-    psi::fprintf(outfile, "\t %-25s = %24.16f [H]\n", "SCS Same-Spin Energy",     energies_["SCS Same-Spin Energy"]);
-    psi::fprintf(outfile, "\t %-25s = %24.16f [H]\n", "SCS Opposite-Spin Energy", energies_["SCS Opposite-Spin Energy"]);
-    psi::fprintf(outfile, "\t %-25s = %24.16f [H]\n", "SCS Correlation Energy",   energies_["SCS Correlation Energy"]);
-    psi::fprintf(outfile, "\t %-25s = %24.16f [H]\n", "SCS Total Energy",         energies_["SCS Total Energy"]);
-    psi::fprintf(outfile, "\t----------------------------------------------------------\n");
-    psi::fprintf(outfile, "\n");
-    fflush(outfile);
+    outfile->Printf( "\t----------------------------------------------------------\n");
+    outfile->Printf( "\t ==================> DF-MP2 Energies <=================== \n");
+    outfile->Printf( "\t----------------------------------------------------------\n");
+    outfile->Printf( "\t %-25s = %24.16f [H]\n", "Reference Energy",         energies_["Reference Energy"]);
+    outfile->Printf( "\t %-25s = %24.16f [H]\n", "Singles Energy",           energies_["Singles Energy"]);
+    outfile->Printf( "\t %-25s = %24.16f [H]\n", "Same-Spin Energy",         energies_["Same-Spin Energy"]);
+    outfile->Printf( "\t %-25s = %24.16f [H]\n", "Opposite-Spin Energy",     energies_["Opposite-Spin Energy"]);
+    outfile->Printf( "\t %-25s = %24.16f [H]\n", "Correlation Energy",       energies_["Correlation Energy"]);
+    outfile->Printf( "\t %-25s = %24.16f [H]\n", "Total Energy",             energies_["Total Energy"]);
+    outfile->Printf( "\t----------------------------------------------------------\n");
+    outfile->Printf( "\t ================> DF-SCS-MP2 Energies <================= \n");
+    outfile->Printf( "\t----------------------------------------------------------\n");
+    outfile->Printf( "\t %-25s = %24.16f [-]\n", "SCS Same-Spin Scale",      sss_);
+    outfile->Printf( "\t %-25s = %24.16f [-]\n", "SCS Opposite-Spin Scale",  oss_);
+    outfile->Printf( "\t %-25s = %24.16f [H]\n", "SCS Same-Spin Energy",     energies_["SCS Same-Spin Energy"]);
+    outfile->Printf( "\t %-25s = %24.16f [H]\n", "SCS Opposite-Spin Energy", energies_["SCS Opposite-Spin Energy"]);
+    outfile->Printf( "\t %-25s = %24.16f [H]\n", "SCS Correlation Energy",   energies_["SCS Correlation Energy"]);
+    outfile->Printf( "\t %-25s = %24.16f [H]\n", "SCS Total Energy",         energies_["SCS Total Energy"]);
+    outfile->Printf( "\t----------------------------------------------------------\n");
+    outfile->Printf( "\n");
+    
 
     Process::environment.globals["CURRENT ENERGY"] = energies_["Total Energy"];
     Process::environment.globals["CURRENT CORRELATION ENERGY"] = energies_["Correlation Energy"];
@@ -802,15 +802,15 @@ void RDFMP2::print_header()
         nthread = omp_get_max_threads();
     #endif
 
-    psi::fprintf(outfile, "\t --------------------------------------------------------\n");
-    psi::fprintf(outfile, "\t                          DF-MP2                         \n");
-    psi::fprintf(outfile, "\t      2nd-Order Density-Fitted Moller-Plesset Theory     \n");
-    psi::fprintf(outfile, "\t              RMP2 Wavefunction, %3d Threads             \n", nthread);
-    psi::fprintf(outfile, "\t                                                         \n");
-    psi::fprintf(outfile, "\t        Rob Parrish, Justin Turney, Andy Simmonett,      \n");
-    psi::fprintf(outfile, "\t           Ed Hohenstein, and C. David Sherrill          \n");
-    psi::fprintf(outfile, "\t --------------------------------------------------------\n");
-    psi::fprintf(outfile, "\n");
+    outfile->Printf( "\t --------------------------------------------------------\n");
+    outfile->Printf( "\t                          DF-MP2                         \n");
+    outfile->Printf( "\t      2nd-Order Density-Fitted Moller-Plesset Theory     \n");
+    outfile->Printf( "\t              RMP2 Wavefunction, %3d Threads             \n", nthread);
+    outfile->Printf( "\t                                                         \n");
+    outfile->Printf( "\t        Rob Parrish, Justin Turney, Andy Simmonett,      \n");
+    outfile->Printf( "\t           Ed Hohenstein, and C. David Sherrill          \n");
+    outfile->Printf( "\t --------------------------------------------------------\n");
+    outfile->Printf( "\n");
 
     int focc = frzcpi_.sum();
     int fvir = frzvpi_.sum();
@@ -820,16 +820,16 @@ void RDFMP2::print_header()
     int vir = fvir + avir;
 
     if (print_ >= 1) {
-        psi::fprintf(outfile, "   => Auxiliary Basis Set <=\n\n");
-        ribasis_->print_by_level(outfile, print_);
+        outfile->Printf( "   => Auxiliary Basis Set <=\n\n");
+        ribasis_->print_by_level("outfile", print_);
     }
 
-    psi::fprintf(outfile, "\t --------------------------------------------------------\n");
-    psi::fprintf(outfile, "\t                 NBF = %5d, NAUX = %5d\n", basisset_->nbf(), ribasis_->nbf());
-    psi::fprintf(outfile, "\t --------------------------------------------------------\n");
-    psi::fprintf(outfile, "\t %7s %7s %7s %7s %7s %7s %7s\n", "CLASS", "FOCC", "OCC", "AOCC", "AVIR", "VIR", "FVIR");
-    psi::fprintf(outfile, "\t %7s %7d %7d %7d %7d %7d %7d\n", "PAIRS", focc, occ, aocc, avir, vir, fvir);
-    psi::fprintf(outfile, "\t --------------------------------------------------------\n\n");
+    outfile->Printf( "\t --------------------------------------------------------\n");
+    outfile->Printf( "\t                 NBF = %5d, NAUX = %5d\n", basisset_->nbf(), ribasis_->nbf());
+    outfile->Printf( "\t --------------------------------------------------------\n");
+    outfile->Printf( "\t %7s %7s %7s %7s %7s %7s %7s\n", "CLASS", "FOCC", "OCC", "AOCC", "AVIR", "VIR", "FVIR");
+    outfile->Printf( "\t %7s %7d %7d %7d %7d %7d %7d\n", "PAIRS", focc, occ, aocc, avir, vir, fvir);
+    outfile->Printf( "\t --------------------------------------------------------\n\n");
 }
 void RDFMP2::form_Aia()
 {
@@ -2939,15 +2939,15 @@ void UDFMP2::print_header()
         nthread = omp_get_max_threads();
     #endif
 
-    psi::fprintf(outfile, "\t --------------------------------------------------------\n");
-    psi::fprintf(outfile, "\t                          DF-MP2                         \n");
-    psi::fprintf(outfile, "\t      2nd-Order Density-Fitted Moller-Plesset Theory     \n");
-    psi::fprintf(outfile, "\t              UMP2 Wavefunction, %3d Threads             \n", nthread);
-    psi::fprintf(outfile, "\t                                                         \n");
-    psi::fprintf(outfile, "\t        Rob Parrish, Justin Turney, Andy Simmonett,      \n");
-    psi::fprintf(outfile, "\t           Ed Hohenstein, and C. David Sherrill          \n");
-    psi::fprintf(outfile, "\t --------------------------------------------------------\n");
-    psi::fprintf(outfile, "\n");
+    outfile->Printf( "\t --------------------------------------------------------\n");
+    outfile->Printf( "\t                          DF-MP2                         \n");
+    outfile->Printf( "\t      2nd-Order Density-Fitted Moller-Plesset Theory     \n");
+    outfile->Printf( "\t              UMP2 Wavefunction, %3d Threads             \n", nthread);
+    outfile->Printf( "\t                                                         \n");
+    outfile->Printf( "\t        Rob Parrish, Justin Turney, Andy Simmonett,      \n");
+    outfile->Printf( "\t           Ed Hohenstein, and C. David Sherrill          \n");
+    outfile->Printf( "\t --------------------------------------------------------\n");
+    outfile->Printf( "\n");
 
     int focc_a = frzcpi_.sum();
     int fvir_a = frzvpi_.sum();
@@ -2963,13 +2963,13 @@ void UDFMP2::print_header()
     int occ_b = focc_b + aocc_b;
     int vir_b = fvir_b + avir_b;
 
-    psi::fprintf(outfile, "\t --------------------------------------------------------\n");
-    psi::fprintf(outfile, "\t                 NBF = %5d, NAUX = %5d\n", basisset_->nbf(), ribasis_->nbf());
-    psi::fprintf(outfile, "\t --------------------------------------------------------\n");
-    psi::fprintf(outfile, "\t %7s %7s %7s %7s %7s %7s %7s\n", "CLASS", "FOCC", "OCC", "AOCC", "AVIR", "VIR", "FVIR");
-    psi::fprintf(outfile, "\t %7s %7d %7d %7d %7d %7d %7d\n", "ALPHA", focc_a, occ_a, aocc_a, avir_a, vir_a, fvir_a);
-    psi::fprintf(outfile, "\t %7s %7d %7d %7d %7d %7d %7d\n", "BETA", focc_b, occ_b, aocc_b, avir_b, vir_b, fvir_b);
-    psi::fprintf(outfile, "\t --------------------------------------------------------\n\n");
+    outfile->Printf( "\t --------------------------------------------------------\n");
+    outfile->Printf( "\t                 NBF = %5d, NAUX = %5d\n", basisset_->nbf(), ribasis_->nbf());
+    outfile->Printf( "\t --------------------------------------------------------\n");
+    outfile->Printf( "\t %7s %7s %7s %7s %7s %7s %7s\n", "CLASS", "FOCC", "OCC", "AOCC", "AVIR", "VIR", "FVIR");
+    outfile->Printf( "\t %7s %7d %7d %7d %7d %7d %7d\n", "ALPHA", focc_a, occ_a, aocc_a, avir_a, vir_a, fvir_a);
+    outfile->Printf( "\t %7s %7d %7d %7d %7d %7d %7d\n", "BETA", focc_b, occ_b, aocc_b, avir_b, vir_b, fvir_b);
+    outfile->Printf( "\t --------------------------------------------------------\n\n");
 }
 void UDFMP2::form_Aia()
 {
@@ -3613,15 +3613,15 @@ void RODFMP2::print_header()
         nthread = omp_get_max_threads();
     #endif
 
-    psi::fprintf(outfile, "\t --------------------------------------------------------\n");
-    psi::fprintf(outfile, "\t                          DF-MP2                         \n");
-    psi::fprintf(outfile, "\t      2nd-Order Density-Fitted Moller-Plesset Theory     \n");
-    psi::fprintf(outfile, "\t          ROHF-MBPT(2) Wavefunction, %3d Threads         \n", nthread);
-    psi::fprintf(outfile, "\t                                                         \n");
-    psi::fprintf(outfile, "\t        Rob Parrish, Justin Turney, Andy Simmonett,      \n");
-    psi::fprintf(outfile, "\t           Ed Hohenstein, and C. David Sherrill          \n");
-    psi::fprintf(outfile, "\t --------------------------------------------------------\n");
-    psi::fprintf(outfile, "\n");
+    outfile->Printf( "\t --------------------------------------------------------\n");
+    outfile->Printf( "\t                          DF-MP2                         \n");
+    outfile->Printf( "\t      2nd-Order Density-Fitted Moller-Plesset Theory     \n");
+    outfile->Printf( "\t          ROHF-MBPT(2) Wavefunction, %3d Threads         \n", nthread);
+    outfile->Printf( "\t                                                         \n");
+    outfile->Printf( "\t        Rob Parrish, Justin Turney, Andy Simmonett,      \n");
+    outfile->Printf( "\t           Ed Hohenstein, and C. David Sherrill          \n");
+    outfile->Printf( "\t --------------------------------------------------------\n");
+    outfile->Printf( "\n");
 
     int focc_a = frzcpi_.sum();
     int fvir_a = frzvpi_.sum();
@@ -3637,13 +3637,13 @@ void RODFMP2::print_header()
     int occ_b = focc_b + aocc_b;
     int vir_b = fvir_b + avir_b;
 
-    psi::fprintf(outfile, "\t --------------------------------------------------------\n");
-    psi::fprintf(outfile, "\t                 NBF = %5d, NAUX = %5d\n", basisset_->nbf(), ribasis_->nbf());
-    psi::fprintf(outfile, "\t --------------------------------------------------------\n");
-    psi::fprintf(outfile, "\t %7s %7s %7s %7s %7s %7s %7s\n", "CLASS", "FOCC", "OCC", "AOCC", "AVIR", "VIR", "FVIR");
-    psi::fprintf(outfile, "\t %7s %7d %7d %7d %7d %7d %7d\n", "ALPHA", focc_a, occ_a, aocc_a, avir_a, vir_a, fvir_a);
-    psi::fprintf(outfile, "\t %7s %7d %7d %7d %7d %7d %7d\n", "BETA", focc_b, occ_b, aocc_b, avir_b, vir_b, fvir_b);
-    psi::fprintf(outfile, "\t --------------------------------------------------------\n\n");
+    outfile->Printf( "\t --------------------------------------------------------\n");
+    outfile->Printf( "\t                 NBF = %5d, NAUX = %5d\n", basisset_->nbf(), ribasis_->nbf());
+    outfile->Printf( "\t --------------------------------------------------------\n");
+    outfile->Printf( "\t %7s %7s %7s %7s %7s %7s %7s\n", "CLASS", "FOCC", "OCC", "AOCC", "AVIR", "VIR", "FVIR");
+    outfile->Printf( "\t %7s %7d %7d %7d %7d %7d %7d\n", "ALPHA", focc_a, occ_a, aocc_a, avir_a, vir_a, fvir_a);
+    outfile->Printf( "\t %7s %7d %7d %7d %7d %7d %7d\n", "BETA", focc_b, occ_b, aocc_b, avir_b, vir_b, fvir_b);
+    outfile->Printf( "\t --------------------------------------------------------\n\n");
 }
 
 }}

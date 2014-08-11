@@ -60,14 +60,14 @@ Connections::Connections(std::vector<AtomSet>& Groups,
 
 
 void Connections::print_out(){
-   psi::fprintf(psi::outfile,"Connections by atom:");
+   psi::outfile->Printf("Connections by atom:");
    for(int i=0;i<NConnecs.size();i++){
-      psi::fprintf(psi::outfile,"\n%d 's connections: ",i+1);
+      psi::outfile->Printf("\n%d 's connections: ",i+1);
       for(int j=0;j<NConnecs[i];j++){
-         psi::fprintf(psi::outfile," %d",CTable[i*nbonds+j]);
+         psi::outfile->Printf(" %d",CTable[i*nbonds+j]);
       }
    }
-   psi::fprintf(psi::outfile,"\n");
+   psi::outfile->Printf("\n");
 }
 
 Connections::Connections(SharedMol& Mol):Distance(Mol->distance_matrix()),

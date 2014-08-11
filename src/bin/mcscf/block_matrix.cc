@@ -181,12 +181,12 @@ void BlockMatrix::zero_diagonal()
 
 void BlockMatrix::print()
 {
-  psi::fprintf(outfile,"\n\n  ## %s ##\n",label_.c_str());
+  outfile->Printf("\n\n  ## %s ##\n",label_.c_str());
   for(int h = 0; h < nirreps_; ++h){
-    psi::fprintf(outfile,"\n[%zu*%zu]\n",rows_size_[h],cols_size_[h]);
+    outfile->Printf("\n[%zu*%zu]\n",rows_size_[h],cols_size_[h]);
     matrix_base_[h]->print();
   }
-  fflush(outfile);
+  
 }
 
 void BlockMatrix::scale(double factor)

@@ -45,18 +45,18 @@ ADC::rhf_init_tensors()
     _ints->set_keep_dpd_so_ints(true);
     dpd_set_default(_ints->get_dpd_id());
     // Make (OV|OV) integrals
-    psi::fprintf(outfile, "\n\t==> Transforming (OV|OV) Integrals <==\n");
+    outfile->Printf( "\n\t==> Transforming (OV|OV) Integrals <==\n");
     _ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);
     // Make (OO|VV) integrals
-    psi::fprintf(outfile, "\n\t==> Transforming (OO|VV) Integrals <==\n");
+    outfile->Printf( "\n\t==> Transforming (OO|VV) Integrals <==\n");
     _ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::vir);
     // Make (OO|OV) integrals
-    psi::fprintf(outfile, "\n\t==> Transforming (OV|OO) Integrals <==\n");
+    outfile->Printf( "\n\t==> Transforming (OV|OO) Integrals <==\n");
     _ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::occ);
     // Make (OV|VV) integrals
-    psi::fprintf(outfile, "\n\t==> Transforming (OV|VV) Integrals <==\n");
+    outfile->Printf( "\n\t==> Transforming (OV|VV) Integrals <==\n");
     _ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::vir, MOSpace::vir);
-    fflush(outfile);
+    
     
     // Preparing MP1 amplitudes then calculating MP2 energy 
     // and use of LMO is not considered in this code.
@@ -110,16 +110,16 @@ ADC::rhf_init_tensors()
     
     do_pr = options_.get_bool("PR");
     
-    psi::fprintf(outfile, "\n\t==> Ground State <==\n");
-    if(!do_pr) psi::fprintf(outfile, "->");
-    psi::fprintf(outfile, "\tMP2 energy    = %20.14f\n", energy);
-    psi::fprintf(outfile, "\t[Squared-norm of MP1 wavefunction    = %10.7f]\n", sq_norm);
+    outfile->Printf( "\n\t==> Ground State <==\n");
+    if(!do_pr) outfile->Printf( "->");
+    outfile->Printf( "\tMP2 energy    = %20.14f\n", energy);
+    outfile->Printf( "\t[Squared-norm of MP1 wavefunction    = %10.7f]\n", sq_norm);
     // Partially renormalized MP2 energy and the MP1 wavefunction
     // Reference: IJQC 78 (2000) 226, CPL 443 (2007) 389.
     global_dpd_->file2_init(&A, PSIF_ADC, 0, ID('O'), ID('O'), "RHO_OO");
     global_dpd_->contract442(&V, &K, &A, 0, 0, 1, 0);
     global_dpd_->buf4_close(&K);
-    fflush(outfile);
+    
     
     global_dpd_->file2_mat_init(&A);
     global_dpd_->file2_mat_rd(&A);
@@ -162,17 +162,17 @@ ADC::rhf_init_tensors()
     sq_norm = 1 + global_dpd_->buf4_dot(&V, &K);
 
 #if DEBUG_
-    psi::fprintf(outfile, ">> In init_tensor <<\n");
+    outfile->Printf( ">> In init_tensor <<\n");
     global_dpd_->buf4_print(&K, outfile, 1);
 #endif
 
     global_dpd_->buf4_close(&K);
     global_dpd_->buf4_close(&V);
     
-    if(do_pr) psi::fprintf(outfile, "->");
-    psi::fprintf(outfile, "\tPR-MP2 energy = %20.14f\n", ePR2);
-    psi::fprintf(outfile, "\t[Squared-norm of PR-MP1 wavefunction = %10.7f]\n\n", sq_norm);
-    fflush(outfile);
+    if(do_pr) outfile->Printf( "->");
+    outfile->Printf( "\tPR-MP2 energy = %20.14f\n", ePR2);
+    outfile->Printf( "\t[Squared-norm of PR-MP1 wavefunction = %10.7f]\n\n", sq_norm);
+    
     
     if(do_pr) energy = ePR2;
     

@@ -341,7 +341,7 @@ int LMP2::first_half_integral_transformation(const int &M, const int &N,
 #endif
         for (int i=0; i < ndocc_; i++) {
             eri_1[i]->set_name("eri_1[" + occ_val.str() + "]");
-            psi::fprintf(outfile, "eri_1[%d]", i);
+            outfile->Printf( "eri_1[%d]", i);
             eri_1[i]->print();
         }
 #ifdef HAVE_MADNESS

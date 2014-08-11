@@ -38,7 +38,6 @@
 #define MIN0(a,b) (((a)<(b)) ? (a) : (b))
 
 namespace psi {
-extern FILE* outfile;
 namespace transqt {
 
 int get_p(int i);
@@ -447,9 +446,9 @@ void backsort(int first_tmp_file, double tolerance, int uhf)
                           counter[nquarts]);
 
           /*
-          psi::fprintf(outfile, "%d %d %d %d  count = %d\n", p, q, r, s, counter[nquarts]);
+          outfile->Printf( "%d %d %d %d  count = %d\n", p, q, r, s, counter[nquarts]);
           for(i=0; i < counter[nquarts]; i++) {
-            psi::fprintf(outfile, "%d %d %d %d gamma = %20.12f\n",
+            outfile->Printf( "%d %d %d %d gamma = %20.12f\n",
                     pidx[nquarts][i], qidx[nquarts][i],
                     ridx[nquarts][i], sidx[nquarts][i],
                     gamma[nquarts][i]);
@@ -459,8 +458,8 @@ void backsort(int first_tmp_file, double tolerance, int uhf)
           /* Mark the end of the shell quartet */
           if(!(snuc[p] == snuc[q] && snuc[r] == snuc[s] && snuc[p] == snuc[r])) {
             value = 9.9999999999;
-            iwl_buf_wrt_val(&OutBuf, -1, -1, -1, -1, value, 0, outfile, 0);
-            /*	    psi::fprintf(outfile, "-1 -1 -1 -1 gamma = %20.12f\n", value); */
+            iwl_buf_wrt_val(&OutBuf, -1, -1, -1, -1, value, 0, "outfile", 0);
+            /*	    outfile->Printf( "-1 -1 -1 -1 gamma = %20.12f\n", value); */
           }
 
           num_tpdm += counter[nquarts]+1;
@@ -483,7 +482,7 @@ void backsort(int first_tmp_file, double tolerance, int uhf)
   iwl_buf_flush(&OutBuf, 1);
   iwl_buf_close(&OutBuf, 1);
 
-  /*  psi::fprintf(outfile, "num_tpdm = %d\n", num_tpdm); */
+  /*  outfile->Printf( "num_tpdm = %d\n", num_tpdm); */
 
   /* Free up the global data */
   free(shell);
@@ -497,7 +496,7 @@ void backsort(int first_tmp_file, double tolerance, int uhf)
 }
 
 void backsort_write(int i, int j, double **A, int kfirst, int klast,
-                    int lfirst, int llast, int printflag,FILE *outfile,
+                    int lfirst, int llast, int printflag,std::string OutFileRMR,
                     struct iwlbuf *twopdm_out, int uhf)
 {
 
@@ -522,7 +521,7 @@ void backsort_write(int i, int j, double **A, int kfirst, int klast,
       else if(kl != ij && uhf) value *= 0.5;
 
       if (printflag) {
-        psi::fprintf(outfile, ">%d %d %d %d [%d] [%d] = %20.10lf\n",
+        outfile->Printf( ">%d %d %d %d [%d] [%d] = %20.10lf\n",
                 i, j, k, l, ij, kl, value);
       }
 
@@ -535,20 +534,20 @@ void backsort_write(int i, int j, double **A, int kfirst, int klast,
         if(shell_i >= shell_j) {
           if(shell_k >= shell_l) {
             iwl_buf_wrt_val(&twopdm_out[ij_bucket], i, j, k, l,
-                            value,0,outfile,0);
+                            value,0,"outfile",0);
           }
           else
             iwl_buf_wrt_val(&twopdm_out[ij_bucket], i, j, l, k,
-                            value,0,outfile,0);
+                            value,0,"outfile",0);
         }
         else {
           if(shell_k >= shell_l) {
             iwl_buf_wrt_val(&twopdm_out[ij_bucket], j, i, k, l,
-                            value,0,outfile,0);
+                            value,0,"outfile",0);
           }
           else {
             iwl_buf_wrt_val(&twopdm_out[ij_bucket], j, i, l, k,
-                            value,0,outfile,0);
+                            value,0,"outfile",0);
           }
         }
       }
@@ -556,21 +555,21 @@ void backsort_write(int i, int j, double **A, int kfirst, int klast,
         if(shell_k >= shell_l) {
           if(shell_i >= shell_j) {
             iwl_buf_wrt_val(&twopdm_out[kl_bucket], k, l, i, j,
-                            value,0,outfile,0);
+                            value,0,"outfile",0);
           }
           else {
             iwl_buf_wrt_val(&twopdm_out[kl_bucket], k, l, j, i,
-                            value,0,outfile,0);
+                            value,0,"outfile",0);
           }
         }
         else {
           if(shell_i >= shell_j) {
             iwl_buf_wrt_val(&twopdm_out[kl_bucket], l, k, i, j,
-                            value,0,outfile,0);
+                            value,0,"outfile",0);
           }
           else {
             iwl_buf_wrt_val(&twopdm_out[kl_bucket], l, k, j, i,
-                            value,0,outfile,0);
+                            value,0,"outfile",0);
           }
         }
       }
