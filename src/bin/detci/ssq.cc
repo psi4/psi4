@@ -73,7 +73,7 @@ double ssq(struct stringwr *alplist, struct stringwr *betlist,
 
    /* loop over Ia */
    #ifdef DEBUG
-   psi::fprintf(outfile,"number of alpha strings = %d\n",nas);
+   outfile->Printf("number of alpha strings = %d\n",nas);
    #endif
    for (Ia=alplist,Ia_idx=0; Ia_idx < nas; Ia_idx++,Ia++) {
 
@@ -91,7 +91,7 @@ double ssq(struct stringwr *alplist, struct stringwr *betlist,
 
          /* loop over Ib */
          #ifdef DEBUG
-         psi::fprintf(outfile,"number of beta strings = %d\n",nbs);
+         outfile->Printf("number of beta strings = %d\n",nbs);
          #endif
          for (Ib=betlist, Ib_idx=0; Ib_idx < nbs; Ib_idx++, Ib++) {
 
@@ -112,15 +112,15 @@ double ssq(struct stringwr *alplist, struct stringwr *betlist,
                tval += CR[Ia_idx][Ib_idx] * CL[Ja_idx][Jb_idx] *
                    (double) Ja_sgn * (double) Jb_sgn;
                #ifdef DEBUG
-               psi::fprintf(outfile,"\n\nIa_idx = %d\n",Ia_idx);
-               psi::fprintf(outfile,"Ib_idx = %d\n",Ib_idx);
-               psi::fprintf(outfile,"Ja_idx = %d\n",Ja_idx);
-               psi::fprintf(outfile,"Jb_idx = %d\n",Jb_idx);
-               psi::fprintf(outfile,"tval_ssq = %lf\n",-tval);
-               psi::fprintf(outfile,"CR = %lf\n",CR[Ia_idx][Ib_idx]);
-               psi::fprintf(outfile,"LR = %lf\n",CL[Ja_idx][Jb_idx]);
-               psi::fprintf(outfile,"Ja_sgn = %lf\n",Ja_sgn);
-               psi::fprintf(outfile,"Jb_sgn = %lf\n",Jb_sgn);
+               outfile->Printf("\n\nIa_idx = %d\n",Ia_idx);
+               outfile->Printf("Ib_idx = %d\n",Ib_idx);
+               outfile->Printf("Ja_idx = %d\n",Ja_idx);
+               outfile->Printf("Jb_idx = %d\n",Jb_idx);
+               outfile->Printf("tval_ssq = %lf\n",-tval);
+               outfile->Printf("CR = %lf\n",CR[Ia_idx][Ib_idx]);
+               outfile->Printf("LR = %lf\n",CL[Ja_idx][Jb_idx]);
+               outfile->Printf("Ja_sgn = %lf\n",Ja_sgn);
+               outfile->Printf("Jb_sgn = %lf\n",Jb_sgn);
                #endif
                }
             smin_spls += tval;

@@ -40,7 +40,7 @@ namespace psi { namespace thermo {
 
 PsiReturnType thermo(Options &options) {
   title();
-  fflush(outfile);
+  
 
   double T = options.get_double("T"); // T in K
   double P = options.get_double("P"); // P in Pascals
@@ -69,7 +69,7 @@ PsiReturnType thermo(Options &options) {
   mol->set_full_point_group();
   std::string pg = mol->full_point_group_with_n();
   std::string pg_n_replaced = mol->full_point_group();
-  psi::fprintf(outfile,"    Full point group: %s (%s)\n", pg.c_str(), pg_n_replaced.c_str());
+  outfile->Printf("    Full point group: %s (%s)\n", pg.c_str(), pg_n_replaced.c_str());
   int full_pg_n = mol->full_pg_n();
 
   int rot_symm_num;
@@ -99,45 +99,45 @@ PsiReturnType thermo(Options &options) {
   else if (rot_type == 3) nvib_freqs = 3*Natom-5; //linear
   else nvib_freqs = 3*Natom-6;
   if (vib_freqs->dim() != nvib_freqs) {
-    psi::fprintf(outfile,"\n");
-    psi::fprintf(outfile,"    Not all frequencies have been computed, skipping thermodynamic analysis.\n");
+    outfile->Printf("\n");
+    outfile->Printf("    Not all frequencies have been computed, skipping thermodynamic analysis.\n");
     return Failure;
     //throw PsiException("thermo(): Wrong number of vibrational frequencies provided.", __FILE__, __LINE__);
-    //psi::fprintf(outfile, "    ERROR: Number of vibrational frequencies provided inconsistent with rotor type and number of atoms.\n");
+    //outfile->Printf( "    ERROR: Number of vibrational frequencies provided inconsistent with rotor type and number of atoms.\n");
   }
 
-  psi::fprintf(outfile,"\n    Data used to determine thermochemical information:\n");
-  psi::fprintf(outfile,  "    Temperature (K): %15.2lf\n",T);
-  psi::fprintf(outfile,  "    Pressure (Pa)  : %15.2lf\n",P);
-  psi::fprintf(outfile,  "    Multiplicity   : %15d\n",multiplicity);
+  outfile->Printf("\n    Data used to determine thermochemical information:\n");
+  outfile->Printf(  "    Temperature (K): %15.2lf\n",T);
+  outfile->Printf(  "    Pressure (Pa)  : %15.2lf\n",P);
+  outfile->Printf(  "    Multiplicity   : %15d\n",multiplicity);
 
-  psi::fprintf(outfile,  "    Rotor type     : %15s\n", RotorTypeList[rot_type].c_str());
-  psi::fprintf(outfile,  "    Rotational symmetry number : %3d\n",rot_symm_num);
+  outfile->Printf(  "    Rotor type     : %15s\n", RotorTypeList[rot_type].c_str());
+  outfile->Printf(  "    Rotational symmetry number : %3d\n",rot_symm_num);
 
-  psi::fprintf(outfile, "\n    Rotational constants:\n");
-  psi::fprintf(outfile, "           wavenumbers          GHz\n");
+  outfile->Printf( "\n    Rotational constants:\n");
+  outfile->Printf( "           wavenumbers          GHz\n");
   if (rot_type < 4) {
-    psi::fprintf(outfile,"        A:  %10.6lf   %10.5lf\n",rot_const[0],pc_c*rot_const[0]/1e7);
-    psi::fprintf(outfile,"        B:  %10.6lf   %10.5lf\n",rot_const[1],pc_c*rot_const[1]/1e7);
-    psi::fprintf(outfile,"        C:  %10.6lf   %10.5lf\n",rot_const[2],pc_c*rot_const[2]/1e7);
+    outfile->Printf("        A:  %10.6lf   %10.5lf\n",rot_const[0],pc_c*rot_const[0]/1e7);
+    outfile->Printf("        B:  %10.6lf   %10.5lf\n",rot_const[1],pc_c*rot_const[1]/1e7);
+    outfile->Printf("        C:  %10.6lf   %10.5lf\n",rot_const[2],pc_c*rot_const[2]/1e7);
   }
 
   // Can eliminate when debugged - should be printed out in freq. code
-  psi::fprintf(outfile, "\n    Nuclear masses:\n");
+  outfile->Printf( "\n    Nuclear masses:\n");
   int cnt=0;
   for (int i=0; i<Natom; ++i) {
-    if (cnt == 0) psi::fprintf(outfile,"        ");
-    psi::fprintf(outfile,"%10.6f", mol->mass(i));
+    if (cnt == 0) outfile->Printf("        ");
+    outfile->Printf("%10.6f", mol->mass(i));
     ++cnt;
     if (cnt == 6 || i == (Natom-1)) {
       cnt = 0;
-      psi::fprintf(outfile,"\n");
+      outfile->Printf("\n");
     }
   }
 
   for (int i=0; i<nvib_freqs; ++i)
     if (vib_freqs->get(i) < 0) {
-      psi::fprintf(outfile, "    WARNING: At least one vibrational frequency is imaginary!\n");
+      outfile->Printf( "    WARNING: At least one vibrational frequency is imaginary!\n");
     }
 
   Vector vib_temp(nvib_freqs);
@@ -194,14 +194,14 @@ PsiReturnType thermo(Options &options) {
     vib_temp[i] = 100 * pc_h * pc_c * vib_freqs->get(i) / pc_kb;
 
   if (nvib_freqs)
-    psi::fprintf(outfile,"\n    No.    Vib. Freq. (cm^-1)      Vib. Temp. (K)\n");
+    outfile->Printf("\n    No.    Vib. Freq. (cm^-1)      Vib. Temp. (K)\n");
   for (int i=0; i<nvib_freqs; ++i)
-    psi::fprintf(outfile, "    %3i  %20.3f          %10.3f\n", i+1,vib_freqs->get(i), vib_temp[i]);
+    outfile->Printf( "    %3i  %20.3f          %10.3f\n", i+1,vib_freqs->get(i), vib_temp[i]);
 
   for(int i=0; i < nvib_freqs; i++) {
     double rT = vib_temp[i] / T; // reduced T
     if (vib_temp[i] < 900)
-      psi::fprintf(outfile,"    Warning: used thermodynamic relations are not appropriate for low frequency modes.");
+      outfile->Printf("    Warning: used thermodynamic relations are not appropriate for low frequency modes.");
     Evib += vib_temp[i] * (0.5 + 1.0 / (exp(rT) - 1));
     Svib += rT/(exp(rT) - 1) - log(1 - exp(-rT));
     Cvvib += exp(rT) * pow(rT/(exp(rT)-1), 2);
@@ -230,19 +230,19 @@ PsiReturnType thermo(Options &options) {
   Cvvib *= R_to_cal;
   Cvtotal = Cvelec + Cvtrans + Cvrot + Cvvib;
 
-  psi::fprintf(outfile,"\n");
-  psi::fprintf(outfile,"    Component        Thermal Energy             Cv              S\n");
-  psi::fprintf(outfile,"                           kcal/mol    cal/(mol K)    cal/(mol K) \n");
-  psi::fprintf(outfile,"    Electronic      %15.3lf%15.3lf%15.3lf\n", Eelec,  Cvelec,  Selec);
-  psi::fprintf(outfile,"    Translational   %15.3lf%15.3lf%15.3lf\n", Etrans, Cvtrans, Strans);
-  psi::fprintf(outfile,"    Rotational      %15.3lf%15.3lf%15.3lf\n", Erot,   Cvrot,   Srot);
-  psi::fprintf(outfile,"    Vibrational     %15.3lf%15.3lf%15.3lf\n", Evib,   Cvvib,   Svib);
-  psi::fprintf(outfile,"    Total           %15.3lf%15.3lf%15.3lf\n", Etotal, Cvtotal, Stotal);
+  outfile->Printf("\n");
+  outfile->Printf("    Component        Thermal Energy             Cv              S\n");
+  outfile->Printf("                           kcal/mol    cal/(mol K)    cal/(mol K) \n");
+  outfile->Printf("    Electronic      %15.3lf%15.3lf%15.3lf\n", Eelec,  Cvelec,  Selec);
+  outfile->Printf("    Translational   %15.3lf%15.3lf%15.3lf\n", Etrans, Cvtrans, Strans);
+  outfile->Printf("    Rotational      %15.3lf%15.3lf%15.3lf\n", Erot,   Cvrot,   Srot);
+  outfile->Printf("    Vibrational     %15.3lf%15.3lf%15.3lf\n", Evib,   Cvvib,   Svib);
+  outfile->Printf("    Total           %15.3lf%15.3lf%15.3lf\n", Etotal, Cvtotal, Stotal);
 
   double ZPVE_au = ZPVE * 100 * pc_h * pc_c / pc_hartree2J ; // cm^-1 -> au/particle
 
-  psi::fprintf(outfile,"\n                               cm^(-1)              au        kcal/mol\n");
-  psi::fprintf(outfile,"    Zero-point energy  %15.4lf %15.8lf %15.4lf\n", ZPVE, ZPVE_au,
+  outfile->Printf("\n                               cm^(-1)              au        kcal/mol\n");
+  outfile->Printf("    Zero-point energy  %15.4lf %15.8lf %15.4lf\n", ZPVE, ZPVE_au,
     ZPVE_au * pc_hartree2J / 1000 * pc_na / pc_cal2J);
 
   double DU = Etotal * 1000.0 * pc_cal2J / pc_na / pc_hartree2J ;
@@ -260,12 +260,12 @@ PsiReturnType thermo(Options &options) {
   Process::environment.globals["ENTHALPY"]          = E_elec+DH;
   Process::environment.globals["GIBBS FREE ENERGY"] = E_elec+DG;
 
-  psi::fprintf(outfile,"\n");
-  psi::fprintf(outfile,"    Energies in Hartree/particle:   Correction            Total\n");
-  psi::fprintf(outfile,"    Energy (0 K)               %15.8lf  %15.8lf\n", ZPVE_au, E_elec+ZPVE_au);
-  psi::fprintf(outfile,"    Internal energy            %15.8lf  %15.8lf\n",  DU, E_elec + DU);
-  psi::fprintf(outfile,"    Enthalpy                   %15.8lf  %15.8lf\n",  DH, E_elec + DH);
-  psi::fprintf(outfile,"    Gibbs Free Energy          %15.8lf  %15.8lf\n",  DG, E_elec + DG);
+  outfile->Printf("\n");
+  outfile->Printf("    Energies in Hartree/particle:   Correction            Total\n");
+  outfile->Printf("    Energy (0 K)               %15.8lf  %15.8lf\n", ZPVE_au, E_elec+ZPVE_au);
+  outfile->Printf("    Internal energy            %15.8lf  %15.8lf\n",  DU, E_elec + DU);
+  outfile->Printf("    Enthalpy                   %15.8lf  %15.8lf\n",  DH, E_elec + DH);
+  outfile->Printf("    Gibbs Free Energy          %15.8lf  %15.8lf\n",  DG, E_elec + DG);
 
   Process::environment.globals["GIBBS FREE ENERGY"] = E_elec + DG;
 
@@ -274,11 +274,11 @@ PsiReturnType thermo(Options &options) {
 
 void title(void)
 {
-  psi::fprintf(outfile,"\n");
-  psi::fprintf(outfile, "            *********************************************\n");
-  psi::fprintf(outfile, "            * Thermodynamic Analysis by R.A. King, 2012 *\n");
-  psi::fprintf(outfile, "            *********************************************\n");
-  psi::fprintf(outfile,"\n");
+  outfile->Printf("\n");
+  outfile->Printf( "            *********************************************\n");
+  outfile->Printf( "            * Thermodynamic Analysis by R.A. King, 2012 *\n");
+  outfile->Printf( "            *********************************************\n");
+  outfile->Printf("\n");
 }
 
 }}

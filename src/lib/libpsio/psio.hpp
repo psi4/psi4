@@ -17,7 +17,7 @@ class thread;
 
 namespace psi {
 
-extern FILE *outfile;
+
 
 class PSIO;
 class PSIOManager;
@@ -136,12 +136,12 @@ public:
             * Print the current status of PSI4 files
             * \param out, file to print fo
             */
-    void print(FILE* out = outfile);
+    void print(std::string OutFileRMR = "outfile");
     /**
             * Print the current status of PSI4 files
             * \param out, file to print fo
             */
-    void print_out() { print(outfile); }
+    void print_out() { print("outfile"); }
     /**
             * Execute the psiclean protocol, deleting all recorded files
             * except for those currently marked for retention.

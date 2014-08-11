@@ -677,7 +677,7 @@ PSIO_INIT
 PSIO_OPEN(unit,PSIO_OPEN_OLD)
 
   if (vectnum < 0 || vectnum > 99) {
-    psi::fprintf(stderr, "(slaterdetset_write_vect): vectnum out of bounds\n");
+    outfile->Printf( "(slaterdetset_write_vect): vectnum out of bounds\n");
     abort();
   }
 

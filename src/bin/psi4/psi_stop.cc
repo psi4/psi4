@@ -45,22 +45,22 @@ namespace psi {
 ** \ingroup CIOMR
 */
 
-int psi_stop(FILE* infile, FILE* outfile, char* psi_file_prefix)
+int psi_stop(FILE* infile, std::string OutFileRMR, char* psi_file_prefix)
 {
   free(psi_file_prefix);
  
   // Success Flag, so a user can tell via grep that the outfile worked (or at least didn't segfault)
   // With a little PSI4 flavor to it. 
-  psi::fprintf(outfile, "\n*** PSI4 exiting successfully. Buy a developer a beer!\n");
+  outfile->Printf( "\n*** PSI4 exiting successfully. Buy a developer a beer!\n");
 
-  fflush(outfile);
-  if (outfile)
-      fclose(outfile);
+  
+  //if (outfile)
+  //    fclose(outfile);
   if (infile)
       fclose(infile);
 
   infile = NULL;
-  outfile = NULL;
+  outfile = boost::shared_ptr<OutFile>();
   psi_file_prefix = NULL;
 
   //psi::yetiEnv.free();

@@ -37,7 +37,7 @@ namespace psi{ namespace psimrcc{
 
 using namespace std;
 
-extern FILE *infile, *outfile;
+
 
 
 

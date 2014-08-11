@@ -113,7 +113,7 @@ void DFOCC::trans_cd_mp2()
 //=======================================================          
 void DFOCC::cd_ints()
 {   
-    //psi::fprintf(outfile,"\tComputing DF-BASIS-CC integrals... \n"); fflush(outfile);
+    //outfile->Printf("\tComputing DF-BASIS-CC integrals... \n"); 
 
   // 1.  read scf 3-index integrals from disk
 
@@ -126,11 +126,11 @@ void DFOCC::cd_ints()
 
       // read integrals from disk if they were generated in the SCF
       if ( options_.get_str("SCF_TYPE") == "CD" ) {
-          psi::fprintf(outfile,"\tReading Cholesky vectors from disk ...\n");
+          outfile->Printf("\tReading Cholesky vectors from disk ...\n");
           nQ = Process::environment.globals["NAUX (SCF)"];
           nQ_ref = nQ;
-          psi::fprintf(outfile,"\tCholesky decomposition threshold: %8.2le\n", options_.get_double("CHOLESKY_TOLERANCE"));
-          psi::fprintf(outfile,"\tNumber of Cholesky vectors:   %5li\n",nQ);
+          outfile->Printf("\tCholesky decomposition threshold: %8.2le\n", options_.get_double("CHOLESKY_TOLERANCE"));
+          outfile->Printf("\tNumber of Cholesky vectors:   %5li\n",nQ);
 
           // ntri comes from sieve above
           boost::shared_ptr<Matrix> Qmn = SharedMatrix(new Matrix("Qmn Integrals",nQ,ntri_cd));
@@ -155,7 +155,7 @@ void DFOCC::cd_ints()
 
       else {
           // generate Cholesky 3-index integrals
-          psi::fprintf(outfile,"\tGenerating Cholesky vectors ...\n");
+          outfile->Printf("\tGenerating Cholesky vectors ...\n");
           boost::shared_ptr<BasisSet> primary = basisset();
           boost::shared_ptr<IntegralFactory> integral (new IntegralFactory(primary,primary,primary,primary));
           double tol_cd = options_.get_double("CHOLESKY_TOLERANCE");
@@ -168,9 +168,9 @@ void DFOCC::cd_ints()
           bQso->set(L);
           L.reset();
           bQso->write(psio_, PSIF_DFOCC_INTS, true, true);
-          psi::fprintf(outfile,"\tCholesky decomposition threshold: %8.2le\n", options_.get_double("CHOLESKY_TOLERANCE"));
-          psi::fprintf(outfile,"\tNumber of Cholesky vectors:   %5li\n",nQ);
-          fflush(outfile);
+          outfile->Printf("\tCholesky decomposition threshold: %8.2le\n", options_.get_double("CHOLESKY_TOLERANCE"));
+          outfile->Printf("\tNumber of Cholesky vectors:   %5li\n",nQ);
+          
       }
 
 } // end df_corr

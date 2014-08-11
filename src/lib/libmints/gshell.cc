@@ -149,13 +149,16 @@ int ShellInfo::nprimitive() const
     return exp_.size();
 }
 
-void ShellInfo::print(FILE *out) const
+void ShellInfo::print(std::string out) const
 {
-        psi::fprintf(outfile, "    %c %3d 1.00\n", AMCHAR(), nprimitive());
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(out)));
+
+   printer->Printf( "    %c %3d 1.00\n", AMCHAR(), nprimitive());
 
     for (int K = 0; K < nprimitive(); K++) {
 
-            psi::fprintf(outfile, "               %20.8f %20.8f\n",exp_[K], original_coef_[K]);
+            printer->Printf( "               %20.8f %20.8f\n",exp_[K], original_coef_[K]);
 
     }
 }
@@ -194,14 +197,16 @@ int GaussianShell::nprimitive() const
     return nprimitive_;
 }
 
-void GaussianShell::print(FILE *out) const
+void GaussianShell::print(std::string out) const
 {
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(out)));
 
-        psi::fprintf(outfile, "    %c %3d 1.00\n", AMCHAR(), nprimitive());
+        printer->Printf( "    %c %3d 1.00\n", AMCHAR(), nprimitive());
 
     for (int K = 0; K < nprimitive(); K++) {
 
-            psi::fprintf(outfile, "               %20.8f %20.8f\n",exp_[K], original_coef_[K]);
+            printer->Printf( "               %20.8f %20.8f\n",exp_[K], original_coef_[K]);
 
     }
 }

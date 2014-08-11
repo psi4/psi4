@@ -50,8 +50,8 @@ void add_core_ROHF(struct iwlbuf *OutBuf)
 	  value = moinfo.opdm[p][q];
 	  for(m=0; m < nfzc; m++) {
 	      
-	      iwl_buf_wrt_val(OutBuf, p, q, m, m,value,0,outfile,0);
-     	      iwl_buf_wrt_val(OutBuf, p, m, m, q,-0.5*value,0,outfile,0);
+	      iwl_buf_wrt_val(OutBuf, p, q, m, m,value,0,"outfile",0);
+     	      iwl_buf_wrt_val(OutBuf, p, m, m, q,-0.5*value,0,"outfile",0);
 	      
 	    }
 	}

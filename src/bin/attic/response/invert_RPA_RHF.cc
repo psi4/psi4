@@ -83,7 +83,7 @@ void invert_RPA_RHF(double omega)
       info = C_DGETRF(2*dim, 2*dim, &(C[h][0][0]), 2*dim, ipiv);
       info = C_DGETRI(2*dim, &(C[h][0][0]), 2*dim, ipiv, work, lwork);
       if(info) {
-        psi::fprintf(outfile, "\n\tDGETRI failed. info = %d. Exiting.\n", info);
+        outfile->Printf( "\n\tDGETRI failed. info = %d. Exiting.\n", info);
         exit(PSI_RETURN_FAILURE);
       }
 

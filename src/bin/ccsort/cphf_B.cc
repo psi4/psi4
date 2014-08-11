@@ -75,7 +75,7 @@ void cphf_B(const char *cart)
     ipiv = init_int_array(num_ai);
     info = C_DGESV(num_ai, 1, &(A.matrix[irrep][0][0]), num_ai, ipiv, vector, num_ai);
     if(info) {
-      psi::fprintf(outfile, "CCSORT: cphf_B: Error in C_DGESV.  Info = %d.  Exiting.\n", info);
+      outfile->Printf( "CCSORT: cphf_B: Error in C_DGESV.  Info = %d.  Exiting.\n", info);
       exit(PSI_RETURN_FAILURE);
     }
     free(ipiv);
@@ -124,7 +124,7 @@ void cphf_B(const char *cart)
     ipiv = init_int_array(num_ai);
     info = C_DGESV(num_ai, 1, &(A.matrix[irrep][0][0]), num_ai, ipiv, vector, num_ai);
     if(info) {
-      psi::fprintf(outfile, "CCSORT: cphf_B: Error in C_DGESV.  Info = %d.  Exiting.\n", info);
+      outfile->Printf( "CCSORT: cphf_B: Error in C_DGESV.  Info = %d.  Exiting.\n", info);
       exit(PSI_RETURN_FAILURE);
     }
     free(ipiv);
@@ -177,7 +177,7 @@ void cphf_B(const char *cart)
     ipiv = init_int_array(num_ai);
     info = C_DGESV(num_ai, 1, &(A.matrix[irrep][0][0]), num_ai, ipiv, vector, num_ai);
     if(info) {
-      psi::fprintf(outfile, "CCSORT: cphf_B: Error in C_DGESV.  Info = %d.  Exiting.\n", info);
+      outfile->Printf( "CCSORT: cphf_B: Error in C_DGESV.  Info = %d.  Exiting.\n", info);
       exit(PSI_RETURN_FAILURE);
     }
     free(ipiv);
@@ -188,7 +188,7 @@ void cphf_B(const char *cart)
       polar = 0.0;
       for(row=0; row < num_ai; row++) polar += vector2[row] * vector[row];
       polar *= 4.0;
-      psi::fprintf(outfile, "\talpha_zz = %20.12f\n", polar);
+      outfile->Printf( "\talpha_zz = %20.12f\n", polar);
       free(vector2);
     */
 

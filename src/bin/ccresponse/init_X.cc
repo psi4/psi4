@@ -57,7 +57,7 @@ void init_X(const char *pert, int irrep, double omega)
     else denom1(&X1, omega);
     global_dpd_->file2_close(&X1);
   }
-  else psi::fprintf(outfile, "\tUsing existing %s amplitudes.\n", lbl);
+  else outfile->Printf( "\tUsing existing %s amplitudes.\n", lbl);
   global_dpd_->file2_close(&mu1);
 
   sprintf(lbl, "%sBAR_IjAb", pert);
@@ -70,7 +70,7 @@ void init_X(const char *pert, int irrep, double omega)
     else denom2(&X2, omega);
     global_dpd_->buf4_close(&X2);
   }
-  else psi::fprintf(outfile, "\tUsing existing %s amplitudes.\n", lbl);
+  else outfile->Printf( "\tUsing existing %s amplitudes.\n", lbl);
   global_dpd_->buf4_close(&mu2);
 }
 

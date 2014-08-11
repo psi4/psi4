@@ -68,7 +68,7 @@ void print_vec(unsigned int nprint, int *Ialist, int *Iblist,
       int *Iaidx, int *Ibidx, double *coeff,
       struct olsen_graph *AlphaG, struct olsen_graph *BetaG, 
       struct stringwr **alplist, struct stringwr **betlist,
-      FILE *outfile)
+      std::string out)
 {
    int i,j,k;
    unsigned long *index;
@@ -82,7 +82,7 @@ void print_vec(unsigned int nprint, int *Ialist, int *Iblist,
    #endif
 
    /* print out the list of most important determinants */
-   psi::fprintf(outfile, "\n\nThe %d most important determinants\n\n", nprint) ;
+   outfile->Printf( "\n\nThe %d most important determinants\n\n", nprint) ;
    for (i=0; i<nprint; i++) {
 
       if (fabs(coeff[i]) < MIN_COEFF) continue;
@@ -100,21 +100,21 @@ void print_vec(unsigned int nprint, int *Ialist, int *Iblist,
             break; 
             }
          }
-      psi::fprintf(outfile, "%c", found_inblock ? ' ' : '*');
+      outfile->Printf( "%c", found_inblock ? ' ' : '*');
       #endif
 
-      psi::fprintf(outfile, "%4d  %10.6lf  (%5d,%5d)  ", i+1, coeff[i], 
+      outfile->Printf( "%4d  %10.6lf  (%5d,%5d)  ", i+1, coeff[i], 
          Ia_abs, Ib_abs);
 
       print_config(AlphaG->num_orb, AlphaG->num_el_expl, BetaG->num_el_expl,
          alplist[Ialist[i]] + Iaidx[i], betlist[Iblist[i]] + Ibidx[i],
          AlphaG->num_fzc_orbs, configstring);
 
-      psi::fprintf(outfile, "%s\n", configstring);
+      outfile->Printf( "%s\n", configstring);
 
       } /* end loop over important determinants */
 
-   psi::fprintf(outfile, "\n\n");
+   outfile->Printf( "\n\n");
  
 }
 
@@ -183,21 +183,21 @@ void print_config(int nbf, int num_alp_el, int num_bet_el,
 **    outfile     = file to print to
 */
 void print_ci_space(struct stringwr *strlist, int num_strings, 
-      int nirreps, int strtypes, int nel, FILE *outfile) 
+      int nirreps, int strtypes, int nel,std::string out)
 {
    int i, j, strsym, cnt=0 ;
 
    while (cnt != num_strings) {
-      psi::fprintf(outfile, "\nString %4d (", cnt++);
+      outfile->Printf( "\nString %4d (", cnt++);
       for (i=0; i<nel; i++)
-         psi::fprintf(outfile, "%2d ", (int) (strlist->occs)[i]) ;
-      psi::fprintf(outfile, ")\n");
+         outfile->Printf( "%2d ", (int) (strlist->occs)[i]) ;
+      outfile->Printf( ")\n");
 
       if (!Parameters.repl_otf) {
-         psi::fprintf(outfile, "   Links:\n") ;
+         outfile->Printf( "   Links:\n") ;
          for (strsym=0; strsym < strtypes; strsym++) {
             for (j=0; j<strlist->cnt[strsym]; j++) {
-               psi::fprintf(outfile, "   %3d [%3d] %c (%2d %3d)   %d\n",
+               outfile->Printf( "   %3d [%3d] %c (%2d %3d)   %d\n",
                   strlist->ij[strsym][j], 
                   strlist->oij[strsym][j],
                   (strlist->sgn[strsym][j] == 1) ? '+' : '-', 
@@ -248,7 +248,7 @@ void orb2lbl(int orbnum, char *label)
    pitzer_orb = CalcInfo.order[orbnum];
    
    if (pitzer_orb > CalcInfo.nmo) {
-      psi::fprintf(outfile, "(orb2lbl): pitzer_orb > nmo!\n");
+      outfile->Printf( "(orb2lbl): pitzer_orb > nmo!\n");
       }
 
    for (ir=0,j=0; ir<CalcInfo.nirreps; ir++) {
@@ -259,10 +259,10 @@ void orb2lbl(int orbnum, char *label)
    rel_orb = pitzer_orb - j;
 
    if (rel_orb < 0) {
-      psi::fprintf(outfile, "(orb2lbl): rel_orb < 0\n");
+      outfile->Printf( "(orb2lbl): rel_orb < 0\n");
       }
    else if (rel_orb > CalcInfo.orbs_per_irr[ir]) {
-      psi::fprintf(outfile, "(orb2lbl): rel_orb > orbs_per_irrep[ir]\n");
+      outfile->Printf( "(orb2lbl): rel_orb > orbs_per_irrep[ir]\n");
       }
  
    sprintf(label, "%d%s", rel_orb+1, CalcInfo.labels[ir]);
@@ -309,7 +309,7 @@ int lbl2orb(char *orbstring)
    }
 
    if (ir == -1) {
-     psi::fprintf(outfile, "lbl2orb: can't find label %s!\n", orblbl);
+     outfile->Printf( "lbl2orb: can't find label %s!\n", orblbl);
      return(0);
    }
 
@@ -326,7 +326,7 @@ int lbl2orb(char *orbstring)
    corr_orb -= CalcInfo.num_fzc_orbs;
 
    if (corr_orb < 0 || corr_orb > CalcInfo.num_ci_orbs) {
-     psi::fprintf(outfile, "lbl2orb: error corr_orb out of bounds, %d\n", 
+     outfile->Printf( "lbl2orb: error corr_orb out of bounds, %d\n", 
        corr_orb);
      return(0);
    }
@@ -336,8 +336,10 @@ int lbl2orb(char *orbstring)
 }
 
 
-void eivout_t(double **a, double *b, int m, int n, FILE *out)
+void eivout_t(double **a, double *b, int m, int n, std::string out)
    {
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(out)));
       int ii,jj,kk,nn,ll;
       int i,j,k;
 
@@ -349,23 +351,22 @@ L200:
       nn=n;
       if (nn > kk) nn=kk;
       ll = 2*(nn-ii+1)+1;
-      psi::fprintf (out,"\n");
-      for (i=ii; i <= nn; i++) psi::fprintf(out,"       %5d",i);
-      psi::fprintf (out,"\n");
+      printer->Printf("\n");
+      for (i=ii; i <= nn; i++) printer->Printf("       %5d",i);
+      printer->Printf("\n");
       for (i=0; i < m; i++) {
-         psi::fprintf (out,"\n%5d",i+1);
+         printer->Printf("\n%5d",i+1);
          for (j=ii-1; j < nn; j++) {
-            psi::fprintf (out,"%12.7f",a[j][i]);
+            printer->Printf("%12.7f",a[j][i]);
             }
          }
-      psi::fprintf (out,"\n");
-      psi::fprintf (out,"\n     ");
+      printer->Printf("\n");
+      printer->Printf("\n     ");
       for (j=ii-1; j < nn; j++) {
-         psi::fprintf(out,"%12.7f",b[j]);
+         printer->Printf("%12.7f",b[j]);
          }
-      psi::fprintf (out,"\n");
+      printer->Printf("\n");
       if (n <= kk) {
-         fflush(out);
          return;
          }
       ii=kk; goto L200;
@@ -379,13 +380,13 @@ L200:
 ** April 1996
 **
 */
-void print_ciblk_summary(FILE *outfile)
+void print_ciblk_summary(std::string out)
 {
    int blk;
 
-   psi::fprintf(outfile, "\nCI Block Summary:\n");
+   outfile->Printf( "\nCI Block Summary:\n");
    for (blk=0; blk<CIblks.num_blocks; blk++) {
-      psi::fprintf(outfile,"Block %3d: Alp=%3d, Bet=%3d  Size = %4d x %4d = %ld\n", 
+      outfile->Printf("Block %3d: Alp=%3d, Bet=%3d  Size = %4d x %4d = %ld\n", 
               blk, CIblks.Ia_code[blk], CIblks.Ib_code[blk], 
               CIblks.Ia_size[blk], CIblks.Ib_size[blk],
               (unsigned long) CIblks.Ia_size[blk] * 
@@ -400,15 +401,14 @@ void print_ciblk_summary(FILE *outfile)
 */
 void write_energy(int nroots, double *evals, double offset)
 {
-  FILE *efile;
-  int i;
 
-  ffile(&efile,"detci_energies.dat",1);
+  int i;
+  boost::shared_ptr<OutFile> printer(new OutFile("detci_energies.dat",APPEND));
+  //ffile(&efile,"detci_energies.dat",1);
   for (i=0; i<nroots; i++) { 
-    psi::fprintf(efile, "%8.6lf ", evals[i]+offset);
+    printer->Printf("%8.6lf ", evals[i]+offset);
   }
-  psi::fprintf(efile, "\n");
-  fclose(efile);
+  printer->Printf("\n");
 }
 
 }} // namespace psi::detci

@@ -143,27 +143,27 @@ void get_moinfo(void)
     mo.nvirt += mo.virtpi[i];
   }
   
-  /*psi::fprintf(outfile,"\n");
-  psi::fprintf(outfile,"\tChkpt Parameters:\n");
-  psi::fprintf(outfile,"\t--------------------\n");
-  psi::fprintf(outfile,"\tNumber of irreps     = %d\n",mo.nirreps);
-  psi::fprintf(outfile,"\tNumber of MOs        = %d\n",mo.nmo);
-  psi::fprintf(outfile,"\n");
-  psi::fprintf(outfile,
+  /*outfile->Printf("\n");
+  outfile->Printf("\tChkpt Parameters:\n");
+  outfile->Printf("\t--------------------\n");
+  outfile->Printf("\tNumber of irreps     = %d\n",mo.nirreps);
+  outfile->Printf("\tNumber of MOs        = %d\n",mo.nmo);
+  outfile->Printf("\n");
+  outfile->Printf(
     "\tLabel\tFZDC\tACTD\tDOCC\tSOCC\tACTV\tFZVI\tVIRT\tMOs\n");
-  psi::fprintf(outfile,
+  outfile->Printf(
     "\t-----\t----\t----\t----\t----\t----\t----\t----\t---\n");
   for(i=0; i<mo.nirreps; i++) {
-    psi::fprintf(outfile,
+    outfile->Printf(
     "\t  %s \t  %d\t  %d\t  %d\t  %d\t  %d\t  %d\t  %d\t %d\n",
 	    mo.irreplabels[i],mo.fzdoccpi[i],mo.occpi[i],mo.doccpi[i],mo.soccpi[i],
 	    mo.virpi[i],mo.fzvirtpi[i],mo.virtpi[i],mo.mopi[i]);
   }*/
   
-  psi::fprintf(outfile,"\n");
-  psi::fprintf(outfile,"\tNuclear rep. energy     = %20.15f\n",mo.Enuc);
-  psi::fprintf(outfile,"\tSCF energy              = %20.15f\n",mo.Escf);
-  fflush(outfile);
+  outfile->Printf("\n");
+  outfile->Printf("\tNuclear rep. energy     = %20.15f\n",mo.Enuc);
+  outfile->Printf("\tSCF energy              = %20.15f\n",mo.Escf);
+  
 }
 
 }} /* End namespace */

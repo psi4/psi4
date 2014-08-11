@@ -189,7 +189,7 @@ class PrintIntegralsFunctor
   */
   void operator()(int bf1, int bf2, int center, double integral)
   {
-    psi::fprintf(outfile, "bf1: %3d bf2 %3d center (%5d) integral %16.10f\n", bf1, bf2, center, integral);
+    outfile->Printf( "bf1: %3d bf2 %3d center (%5d) integral %16.10f\n", bf1, bf2, center, integral);
   }
 };
 

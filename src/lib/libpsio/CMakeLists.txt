@@ -1,4 +1,6 @@
-set(SRC aio_handler.cc 
+set(SRC aio_handler.cc
+		BinaryFile.h
+		BinaryFile.cc  
         change_namespace.cc 
         close.cc 
         done.cc 
@@ -11,7 +13,8 @@ set(SRC aio_handler.cc
         get_length.cc 
         get_numvols.cc 
         get_volpath.cc 
-        init.cc 
+        init.cc
+        MOFile.h
         MOFile.cc
         open.cc 
         open_check.cc 

@@ -29,7 +29,11 @@ namespace LibFrag{
 class AtomSet:public Set{
    private:
 
-      ///Makes this a copy of other
+      /** \brief Makes this a copy of other
+       *
+       *   Although it may be counterintuitive at first, this constructor
+       *   does not copy all AtomSet members.  It only copies the
+       */
       void Copy(const AtomSet& other);
 
       /** \brief This maps the atom number in the input file to data.
@@ -68,6 +72,10 @@ class AtomSet:public Set{
       calls like Set.Ghosts[i] to distinguish from Set[i], which gives
       the real atom i*/
       std::vector<int> Ghosts;
+
+      std::vector<double> Charges;
+      std::vector<int> Atom2Charge;
+
 
       std::vector<Cap> Caps;
       ///Wrapper function to add ghost atoms

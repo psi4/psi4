@@ -48,10 +48,10 @@ int mat_in(FILE *fp, double **array, int width, int max_length, int *stat);
 void fill_sym_matrix(double **A, int size);
 double combinations(int n, int k);
 double factorial(int n);
-void schmidt(double **A, int rows, int cols, FILE *outfile);
+void schmidt(double **A, int rows, int cols, std::string OutFileRMR);
 int schmidt_add(double **A, int rows, int cols, double *v);
 void normalize(double **A, int rows, int cols);
-double invert_matrix(double **a, double **y, int N, FILE *outfile);
+double invert_matrix(double **a, double **y, int N, std::string OutFileRMR);
 void solve_2x2_pep(double **H, double S, double *evals, double **evecs);
 void reorder_qt(int *docc_in, int *socc_in, int *frozen_docc_in,
       int *frozen_uocc_in, int *order, int *orbs_per_irrep, int nirreps);
@@ -78,8 +78,8 @@ void newmm_rking(double **A, int transa, double **B, int transb, double **C,
 double dot_block(double **A, double **B, int rows, int cols, double alpha);
 void dirprd_block(double **A, double **B, int rows, int cols);
 int pople(double **A, double *x, int dimen, int num_vecs, double tolerance,
-           FILE *outfile, int print_lvl);
-void mat_print(double **A, int rows, int cols, FILE *outfile);
+           std::string OutFileRMR, int print_lvl);
+void mat_print(double **A, int rows, int cols, std::string OutFileRMR);
 
 void timer_init(void);
 void timer_done(void);
@@ -109,7 +109,7 @@ int ci_wfn(char *wfn);
 int ci_wfn(std::string wfn);
 void orient_fragment(int natom_A, int natom_B, int P_A, int P_B, double **geom_A, double **geom_B,
   double **ref_coeff_A, double **ref_coeff_B, double R_AB, double theta_A, double theta_B,
-  double tau, double phi_A, double phi_B, FILE *outfile);
+  double tau, double phi_A, double phi_B, std::string OutFileRMR);
 void zmat_point(double *A, double *B, double *C, double R_CD, double theta_BCD, double phi_ABCD, double *D);
 void rotate_vecs(double *axis, double phi, double **vectors, int num_vectors);
 double dot_prod(double *v1, double *v2);

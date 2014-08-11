@@ -40,8 +40,10 @@ namespace psi {
 void IWL::sort_buffer(IWL *Inbuf, IWL *Outbuf,
     double *ints, int fpq, int lpq, int *ioff, int *ioff2, 
     int nbfso, int elbert, int intermediate, int no_pq_perm, 
-    int qdim, int add, int printflg, FILE *out)
+    int qdim, int add, int printflg, std::string out)
 {
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(out)));
     int i;
     Value *valptr;              /* array of integral values */
     Label *lblptr;              /* array of integral labels */
@@ -53,12 +55,12 @@ void IWL::sort_buffer(IWL *Inbuf, IWL *Outbuf,
     int nbstri;
 
     if (printflg) {
-        psi::fprintf(out, "\nsortbuf for pq=%d to %d\n", fpq, lpq);
+        printer->Printf( "\nsortbuf for pq=%d to %d\n", fpq, lpq);
     }
 
     if (no_pq_perm && !intermediate) {
-        psi::fprintf(out,"(sortbuf): illegal parameter combination.\n");
-        psi::fprintf(stderr, "(sortbuf): illegal parameter combination.\n");
+        printer->Printf("(sortbuf): illegal parameter combination.\n");
+        outfile->Printf( "(sortbuf): illegal parameter combination.\n");
     }
 
     nbstri = nbfso * (nbfso + 1) / 2;
@@ -68,14 +70,14 @@ void IWL::sort_buffer(IWL *Inbuf, IWL *Outbuf,
     i = 0;
     while (fpq >= ioff[i] && i < BIGNUM) i++;
     if (i == BIGNUM) {
-        psi::fprintf(out, "(sortbuf): parameter error\n") ;
+        printer->Printf( "(sortbuf): parameter error\n") ;
         return;
     }
     first_p = i-1 ; first_q = fpq - ioff[i-1];
     first_pq = ioff[first_p] + first_q;
     if (first_pq != fpq) {
-        psi::fprintf(out, "(sortbuf): fpq != first_pq.\n");
-        psi::fprintf(stderr,  "(sortbuf): fpq != first_pq.\n");
+        printer->Printf( "(sortbuf): fpq != first_pq.\n");
+        outfile->Printf(  "(sortbuf): fpq != first_pq.\n");
     }
 
     if (!intermediate) {
@@ -87,7 +89,7 @@ void IWL::sort_buffer(IWL *Inbuf, IWL *Outbuf,
     i=0; 
     while (lpq >= ioff[i] && i < BIGNUM) i++ ;
     if (i == BIGNUM) {
-        psi::fprintf(out, "(sortbuf): parameter error\n") ;
+        printer->Printf( "(sortbuf): parameter error\n") ;
         return ;
     }
     last_p = i-1 ; last_q = lpq - ioff[i-1] ;
@@ -134,14 +136,14 @@ void IWL::sort_buffer(IWL *Inbuf, IWL *Outbuf,
             }
 
             if (printflg && ints[pqrs-offset] != 0.0) 
-                psi::fprintf(out, "Adding %10.6f to el %d %d %d %d = %10.6f\n", 
+                printer->Printf( "Adding %10.6f to el %d %d %d %d = %10.6f\n", 
                 valptr[Inbuf->idx_], p, q, r, s, ints[pqrs-offset]);
 
             if (add) ints[pqrs-offset] += valptr[Inbuf->idx_];
             else ints[pqrs-offset] += valptr[Inbuf->idx_];
 
             if (printflg) 
-                psi::fprintf(out, "<%d %d %d %d | %d %d [%ld] = %10.6f\n",
+                printer->Printf( "<%d %d %d %d | %d %d [%ld] = %10.6f\n",
                 p, q, r, s, pq, rs, pqrs, ints[pqrs-offset]) ;
         }
     } while (!lastbuf);
@@ -209,7 +211,7 @@ void IWL::sort_buffer(IWL *Inbuf, IWL *Outbuf,
                         lblptr[idx++] = s;
                         valptr[Outbuf->idx_] = ints[pqrs-offset];
                         if (printflg) 
-                            psi::fprintf(out, ">%d %d %d %d | %d %d [%ld] = %10.6f\n",
+                            printer->Printf( ">%d %d %d %d | %d %d [%ld] = %10.6f\n",
                             p, q, r, s, pq, rs, pqrs, ints[pqrs-offset]) ;
 
                         Outbuf->idx_++;
@@ -286,7 +288,7 @@ void IWL::sort_buffer(IWL *Inbuf, IWL *Outbuf,
 void sortbuf(struct iwlbuf *Inbuf, struct iwlbuf *Outbuf,
       double *ints, int fpq, int lpq, int *ioff, int *ioff2, 
       int nbfso, int elbert, int intermediate, int no_pq_perm, 
-      int qdim, int add, int printflg, FILE *out) 
+      int qdim, int add, int printflg, std::string out)
 {
    int i;
    Value *valptr;              /* array of integral values */
@@ -297,14 +299,15 @@ void sortbuf(struct iwlbuf *Inbuf, struct iwlbuf *Outbuf,
    long int pqrs, offset;
    int first_p, first_q, first_pq, last_p, last_q;
    int nbstri;
-
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            boost::shared_ptr<OutFile>(new OutFile(out)));
    if (printflg) {
-     psi::fprintf(out, "\nsortbuf for pq=%d to %d\n", fpq, lpq);
+     printer->Printf( "\nsortbuf for pq=%d to %d\n", fpq, lpq);
    }
 
    if (no_pq_perm && !intermediate) {
-     psi::fprintf(out,"(sortbuf): illegal parameter combination.\n");
-     psi::fprintf(stderr, "(sortbuf): illegal parameter combination.\n");
+     printer->Printf("(sortbuf): illegal parameter combination.\n");
+     outfile->Printf( "(sortbuf): illegal parameter combination.\n");
    }
    
    nbstri = nbfso * (nbfso + 1) / 2;
@@ -314,14 +317,14 @@ void sortbuf(struct iwlbuf *Inbuf, struct iwlbuf *Outbuf,
    i = 0;
    while (fpq >= ioff[i] && i < BIGNUM) i++;
    if (i == BIGNUM) {
-     psi::fprintf(out, "(sortbuf): parameter error\n") ;
+     printer->Printf( "(sortbuf): parameter error\n") ;
      return;
    }
    first_p = i-1 ; first_q = fpq - ioff[i-1];
    first_pq = ioff[first_p] + first_q;
    if (first_pq != fpq) {
-     psi::fprintf(out, "(sortbuf): fpq != first_pq.\n");
-     psi::fprintf(stderr,  "(sortbuf): fpq != first_pq.\n");
+     printer->Printf( "(sortbuf): fpq != first_pq.\n");
+     outfile->Printf(  "(sortbuf): fpq != first_pq.\n");
    }
    
    if (!intermediate) {
@@ -333,7 +336,7 @@ void sortbuf(struct iwlbuf *Inbuf, struct iwlbuf *Outbuf,
    i=0; 
    while (lpq >= ioff[i] && i < BIGNUM) i++ ;
    if (i == BIGNUM) {
-     psi::fprintf(out, "(sortbuf): parameter error\n") ;
+     printer->Printf( "(sortbuf): parameter error\n") ;
      return ;
    }
    last_p = i-1 ; last_q = lpq - ioff[i-1] ;
@@ -380,14 +383,14 @@ void sortbuf(struct iwlbuf *Inbuf, struct iwlbuf *Outbuf,
 	}
 	
         if (printflg && ints[pqrs-offset] != 0.0) 
-	   psi::fprintf(out, "Adding %10.6f to el %d %d %d %d = %10.6f\n", 
+	   printer->Printf( "Adding %10.6f to el %d %d %d %d = %10.6f\n", 
                    valptr[Inbuf->idx], p, q, r, s, ints[pqrs-offset]);
 
         if (add) ints[pqrs-offset] += valptr[Inbuf->idx];
         else ints[pqrs-offset] += valptr[Inbuf->idx];
 
 	if (printflg) 
-	  psi::fprintf(out, "<%d %d %d %d | %d %d [%ld] = %10.6f\n",
+	  printer->Printf( "<%d %d %d %d | %d %d [%ld] = %10.6f\n",
 		  p, q, r, s, pq, rs, pqrs, ints[pqrs-offset]) ;
       }
    } while (!lastbuf);
@@ -455,7 +458,7 @@ void sortbuf(struct iwlbuf *Inbuf, struct iwlbuf *Outbuf,
 	     lblptr[idx++] = s;
 	     valptr[Outbuf->idx] = ints[pqrs-offset];
 	     if (printflg) 
-	       psi::fprintf(out, ">%d %d %d %d | %d %d [%ld] = %10.6f\n",
+	       printer->Printf( ">%d %d %d %d | %d %d [%ld] = %10.6f\n",
 		       p, q, r, s, pq, rs, pqrs, ints[pqrs-offset]) ;
 	     
 	     Outbuf->idx++;

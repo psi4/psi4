@@ -59,13 +59,19 @@ namespace psi {
             ABS->AddShell(l,isCart);
             int nprims=(PsiBasis->shell(atom,shell)).nprimitive();
             boost::shared_ptr<JKFactory::Shell> Dashell=(*ABS)[shell];
+            if(l>1) {
+               double prefactor=sqrt(pow(2.0,2*l)/df[2*l]);
+               for(int degen=0;degen<Dashell->GetNBasis();degen++)
+               ScaleFacts.push_back(1/prefactor);
+            }
+            else{
+               for(int degen=0;degen<Dashell->GetNBasis();degen++)
+                  ScaleFacts.push_back(1.0);
+            }
             for(int prim=0;prim<nprims;prim++) {
                double beta=(PsiBasis->shell(atom,shell)).exp(prim);
                double c0=(PsiBasis->shell(atom,shell)).erd_coef(prim);
-               if(l>1) {
-                  double prefactor=sqrt(pow(2.0,2*l)/df[2*l]);
-                  c0/=prefactor;
-               }
+               c0*=ScaleFacts.back();
                Dashell->AddPrimitive(c0,beta);
             }
          }

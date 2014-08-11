@@ -211,28 +211,28 @@ void init_ioff(void)
 void title(void)
 {
   if (Params.print_lvl) {
-   psi::fprintf(outfile,"\n");
-   psi::fprintf(outfile,"*******************************************************\n");
-   psi::fprintf(outfile,"                      D E T C A S \n");
-   psi::fprintf(outfile,"\n");
-   psi::fprintf(outfile,"                   C. David Sherrill\n") ;
-   psi::fprintf(outfile,"                     April 27 1998\n") ;
-   psi::fprintf(outfile,"*******************************************************\n");
-   psi::fprintf(outfile,"\n\n\n");
+   outfile->Printf("\n");
+   outfile->Printf("*******************************************************\n");
+   outfile->Printf("                      D E T C A S \n");
+   outfile->Printf("\n");
+   outfile->Printf("                   C. David Sherrill\n") ;
+   outfile->Printf("                     April 27 1998\n") ;
+   outfile->Printf("*******************************************************\n");
+   outfile->Printf("\n\n\n");
    }
   else {
-   psi::fprintf(outfile, 
+   outfile->Printf( 
      "\nD E T C A S: C. David Sherrill, April 27 1998\n");
    }
-  fflush(outfile);
+  
 }
 
 
 void quote(void)
 {
-  psi::fprintf(outfile,"\n\t\t \"Good bug ... dead bug\" \n\n");
-  psi::fprintf(outfile,"\t\t\t - Ed Valeev\n\n");
-  fflush(outfile);
+  outfile->Printf("\n\t\t \"Good bug ... dead bug\" \n\n");
+  outfile->Printf("\t\t\t - Ed Valeev\n\n");
+  
 }
 
 
@@ -297,7 +297,7 @@ void calc_gradient(void)
     get_mat_block(CalcInfo.lag, ir_lag, ir_norbs, offset, CalcInfo.pitz2ci);
 
     if (Params.print_lvl > 3) {
-      psi::fprintf(outfile, "Irrep %d of lagrangian:\n", h);
+      outfile->Printf( "Irrep %d of lagrangian:\n", h);
       print_mat(ir_lag, ir_norbs, ir_norbs, outfile);
     }
 
@@ -307,7 +307,7 @@ void calc_gradient(void)
     C_DSCAL(ir_norbs*ir_norbs, 2.0, ir_lag[0], 1);
 
     if (Params.print_lvl > 3) {
-      psi::fprintf(outfile, "Irrep %d of 2 * lagrangian:\n", h);
+      outfile->Printf( "Irrep %d of 2 * lagrangian:\n", h);
       print_mat(ir_lag, ir_norbs, ir_norbs, outfile);
     }
 
@@ -317,7 +317,7 @@ void calc_gradient(void)
                    ir_ppair, ir_qpair, ir_theta_cur);
 
       if (Params.print_lvl > 3) {
-        psi::fprintf(outfile, "dE/dU:\n", h);
+        outfile->Printf( "dE/dU:\n", h);
         print_mat(ir_lag, ir_norbs, ir_norbs, outfile);
       }
 
@@ -354,7 +354,7 @@ void calc_gradient(void)
   CalcInfo.mo_grad_rms = rms;
 
   if (Params.print_lvl)
-    psi::fprintf(outfile, "\n\tRMS Orbital Gradient: %6.4E\n", rms);
+    outfile->Printf( "\n\tRMS Orbital Gradient: %6.4E\n", rms);
 }
 
 
@@ -399,11 +399,11 @@ void bfgs_hessian(void)
       ludcmp(hess_copy,npairs,idx,&hess_det);
 
       for (i=0;i<npairs;i++) hess_det *= hess_copy[i][i];
-      psi::fprintf(outfile,"The determinant of the hessian is %8.3E\n",hess_det);
+      outfile->Printf("The determinant of the hessian is %8.3E\n",hess_det);
 
       if (Params.level_shift) {
         while (hess_det < Params.determ_min) {
-          psi::fprintf(outfile, "Level shifting hessian by %8.3E\n", Params.shift);
+          outfile->Printf( "Level shifting hessian by %8.3E\n", Params.shift);
           for (i=0; i<npairs; i++) {
             CalcInfo.mo_hess[i][i] += Params.shift;
             for (j=0; j<npairs; j++) {
@@ -412,7 +412,7 @@ void bfgs_hessian(void)
           }
           ludcmp(hess_copy,npairs,idx,&hess_det);
           for (i=0;i<npairs;i++) hess_det *= hess_copy[i][i];
-          psi::fprintf(outfile,"The determinant of the hessian is %8.3E\n",hess_det);
+          outfile->Printf("The determinant of the hessian is %8.3E\n",hess_det);
 
           for (i=0; i<npairs; i++) {
             for (j=0; j<npairs; j++) {
@@ -426,9 +426,9 @@ void bfgs_hessian(void)
       invert_matrix(hess_copy,CalcInfo.mo_hess,npairs,outfile);
 
       if (Params.print_lvl > 3) {
-        psi::fprintf(outfile, "\nInitial MO Hessian Inverse:\n");
+        outfile->Printf( "\nInitial MO Hessian Inverse:\n");
         print_mat(CalcInfo.mo_hess,npairs,npairs,outfile);
-        psi::fprintf(outfile, "\n");
+        outfile->Printf( "\n");
       }
 
       free(idx);
@@ -475,9 +475,9 @@ void bfgs_hessian(void)
   }
 
   if (Params.print_lvl > 3) {
-    psi::fprintf(outfile, "Delta Theta and Delta Grad arrays:\n");
+    outfile->Printf( "Delta Theta and Delta Grad arrays:\n");
     for (i=0; i<npairs; i++) {
-      psi::fprintf(outfile, "%12.7lf   %12.7lf\n", dx[i], dg[i]);
+      outfile->Printf( "%12.7lf   %12.7lf\n", dx[i], dg[i]);
     }
   }
 
@@ -509,9 +509,9 @@ void bfgs_hessian(void)
   }
 
   if (Params.print_lvl > 3) {
-    psi::fprintf(outfile, "\nBFGS MO Hessian Inverse:\n");
+    outfile->Printf( "\nBFGS MO Hessian Inverse:\n");
     print_mat(CalcInfo.mo_hess,npairs,npairs,outfile);
-    psi::fprintf(outfile, "\n");
+    outfile->Printf( "\n");
   }
 
   /* 
@@ -520,13 +520,13 @@ void bfgs_hessian(void)
    */
   /*
   if (Params.print_lvl > 3) {
-    psi::fprintf(outfile, "Check of dx = H dg\n");
+    outfile->Printf( "Check of dx = H dg\n");
     for (i=0; i<npairs; i++) {
       tval = 0.0;
       for (j=0; j<npairs; j++) {
         tval += CalcInfo.mo_hess[i][j] * dg[j];
       }
-      psi::fprintf(outfile, "%12.7lf vs %12.7lf\n", dx[i], tval);
+      outfile->Printf( "%12.7lf vs %12.7lf\n", dx[i], tval);
     }
   }
   */
@@ -541,7 +541,7 @@ void bfgs_hessian(void)
   }
   ludcmp(hess_copy,npairs,idx,&hess_det);
   for (i=0; i<npairs; i++) hess_det *= CalcInfo.mo_hess[i][i];
-  psi::fprintf(outfile, "The determinant of the inverse Hessian is %8.3E\n",
+  outfile->Printf( "The determinant of the inverse Hessian is %8.3E\n",
     hess_det);
 
   /* just debug check */
@@ -558,18 +558,18 @@ void bfgs_hessian(void)
     invert_matrix(hess_copy,hess_copy2,npairs,outfile);
 
     if (Params.print_lvl > 3) {
-      psi::fprintf(outfile, "\nMO Hessian:\n");
+      outfile->Printf( "\nMO Hessian:\n");
       print_mat(hess_copy2,npairs,npairs,outfile);
-      psi::fprintf(outfile, "\n");
+      outfile->Printf( "\n");
     }
 
     ludcmp(hess_copy2,npairs,idx,&hess_det);
     for (i=0;i<npairs;i++) hess_det *= hess_copy2[i][i];
-    psi::fprintf(outfile,"The determinant of the hessian is %8.3E\n",hess_det);
+    outfile->Printf("The determinant of the hessian is %8.3E\n",hess_det);
 
       if (Params.level_shift) {
         while (hess_det < Params.determ_min) {
-          psi::fprintf(outfile, "Level shifting hessian by %8.3E\n", Params.shift);
+          outfile->Printf( "Level shifting hessian by %8.3E\n", Params.shift);
           for (i=0; i<npairs; i++) {
             hess_copy2[i][i] += Params.shift;
             for (j=0; j<npairs; j++) {
@@ -578,7 +578,7 @@ void bfgs_hessian(void)
           }
           ludcmp(hess_copy,npairs,idx,&hess_det);
           for (i=0;i<npairs;i++) hess_det *= hess_copy[i][i];
-          psi::fprintf(outfile,"The determinant of the hessian is %8.3E\n",hess_det);                                                                                
+          outfile->Printf("The determinant of the hessian is %8.3E\n",hess_det);                                                                                
           for (i=0; i<npairs; i++) {
             for (j=0; j<npairs; j++) {
               hess_copy2[i][j] = hess_copy[i][j];
@@ -645,16 +645,16 @@ void ds_hessian(void)
     }
     for (i=0; i<npairs; i++) {
       if (CalcInfo.mo_hess_diag[i] < MO_HESS_MIN) {
-        psi::fprintf(outfile, "Warning: MO Hessian denominator too small\n");
+        outfile->Printf( "Warning: MO Hessian denominator too small\n");
         CalcInfo.mo_hess_diag[i] = MO_HESS_MIN;
       }
     }
 
     if (Params.print_lvl > 3) {
-      psi::fprintf(outfile, "\nInitial MO Hessian:\n");
+      outfile->Printf( "\nInitial MO Hessian:\n");
       for (i=0; i<npairs; i++) 
-        psi::fprintf(outfile, "%12.6lf\n", CalcInfo.mo_hess_diag[i]);
-      psi::fprintf(outfile, "\n");
+        outfile->Printf( "%12.6lf\n", CalcInfo.mo_hess_diag[i]);
+      outfile->Printf( "\n");
     }
 
     /* write Hessian */
@@ -694,9 +694,9 @@ void ds_hessian(void)
   }
 
   if (Params.print_lvl > 3) {
-    psi::fprintf(outfile, "Delta Theta and Delta Grad arrays:\n");
+    outfile->Printf( "Delta Theta and Delta Grad arrays:\n");
     for (i=0; i<npairs; i++) {
-      psi::fprintf(outfile, "%12.7lf   %12.7lf\n", dx[i], dg[i]);
+      outfile->Printf( "%12.7lf   %12.7lf\n", dx[i], dg[i]);
     }
   }
 
@@ -711,10 +711,10 @@ void ds_hessian(void)
   }
 
   if (Params.print_lvl > 3) {
-    psi::fprintf(outfile, "\nDS MO Hessian:\n");
+    outfile->Printf( "\nDS MO Hessian:\n");
     for (i=0; i<npairs; i++) 
-      psi::fprintf(outfile, "%12.6lf\n", CalcInfo.mo_hess_diag[i]);
-    psi::fprintf(outfile, "\n");
+      outfile->Printf( "%12.6lf\n", CalcInfo.mo_hess_diag[i]);
+    outfile->Printf( "\n");
   }
 
   /* write thetas */
@@ -790,13 +790,13 @@ void calc_hessian(void)
       CalcInfo.twoel_ints, CalcInfo.opdm, CalcInfo.tpdm, CalcInfo.lag,
       CalcInfo.mo_hess);
     if (Params.print_lvl > 3) {
-      psi::fprintf(outfile, "\nMO Hessian:\n");
+      outfile->Printf( "\nMO Hessian:\n");
       print_mat(CalcInfo.mo_hess,npairs,npairs,outfile);
-      psi::fprintf(outfile, "\n");
+      outfile->Printf( "\n");
     }
   }
   else {
-    psi::fprintf(outfile, "(detcas): Unrecognized Hessian option %s\n", 
+    outfile->Printf( "(detcas): Unrecognized Hessian option %s\n", 
       Params.hessian.c_str());
   }
  
@@ -861,7 +861,7 @@ void scale_gradient(void)
   CalcInfo.scaled_mo_grad_rms = rms;
  
   if (Params.print_lvl)
-    psi::fprintf(outfile, "\n\tScaled RMS Orbital Gradient: %6.4E\n", rms);
+    outfile->Printf( "\n\tScaled RMS Orbital Gradient: %6.4E\n", rms);
 
   if (Params.scale_step != 1.0) {
     for (pair=0; pair<npairs; pair++) 
@@ -889,7 +889,7 @@ int take_step(void)
   /* for debugging purposes */
   if (Params.force_step) {
     CalcInfo.theta_cur[Params.force_pair] = Params.force_value;
-    psi::fprintf(outfile, "Forcing step for pair %d of size %8.3E\n",
+    outfile->Printf( "Forcing step for pair %d of size %8.3E\n",
       Params.force_pair, Params.force_value);
     return(1);
   }
@@ -906,7 +906,7 @@ int take_step(void)
 
   if (!took_diis) {
     if (Params.print_lvl) 
-      psi::fprintf(outfile, "Taking regular step\n");
+      outfile->Printf( "Taking regular step\n");
   }
 
   return(took_diis+1);
@@ -938,18 +938,18 @@ void rotate_orbs(void)
       ir_qpair  = IndPairs.get_ir_qrel_ptr(h);
       
       if (Params.print_lvl > 3) {
-        psi::fprintf(outfile, "Thetas for irrep %d\n", h);
+        outfile->Printf( "Thetas for irrep %d\n", h);
         for (pair=0; pair<ir_npairs; pair++) {
-          psi::fprintf(outfile, "Pair (%2d,%2d) = %12.6lf\n",
+          outfile->Printf( "Pair (%2d,%2d) = %12.6lf\n",
                   ir_ppair[pair], ir_qpair[pair], ir_theta[pair]);
         }
-        psi::fprintf(outfile, "\n");
-        fflush(outfile);
+        outfile->Printf( "\n");
+        
       }
 
       /* print old coefficients */
       if (Params.print_mos) {
-        psi::fprintf(outfile, "\n\tOld molecular orbitals for irrep %s\n", 
+        outfile->Printf( "\n\tOld molecular orbitals for irrep %s\n", 
           CalcInfo.labels[h]);
         print_mat(CalcInfo.mo_coeffs[h], ir_norbs, ir_norbs, outfile);
       }
@@ -963,7 +963,7 @@ void rotate_orbs(void)
 
       /* print new coefficients */
       if (Params.print_mos) {
-        psi::fprintf(outfile, "\n\tNew molecular orbitals for irrep %s\n", 
+        outfile->Printf( "\n\tNew molecular orbitals for irrep %s\n", 
           CalcInfo.labels[h]);
         print_mat(CalcInfo.mo_coeffs[h], ir_norbs, ir_norbs, outfile);
       }
@@ -1008,7 +1008,7 @@ int check_conv(void)
   }
 
   if (fscanf(sumfile, "%d", &entries) != 1) {
-    psi::fprintf(outfile,"(print_step): Trouble reading num entries in file %s\n",
+    outfile->Printf("(print_step): Trouble reading num entries in file %s\n",
             sumfile_name);
     fclose(sumfile);
     CalcInfo.iter = 0;
@@ -1036,11 +1036,11 @@ int check_conv(void)
     last_converged = 1;
 
   if (converged_grad && converged_energy && !last_converged) {
-    psi::fprintf(outfile, "\n\t*** Calculation Converged ***\n");
+    outfile->Printf( "\n\t*** Calculation Converged ***\n");
     return(1);
   }
   else {
-    psi::fprintf(outfile, "\n\t... calculation continuing ...\n");
+    outfile->Printf( "\n\t... calculation continuing ...\n");
     return(0);
   }
 }

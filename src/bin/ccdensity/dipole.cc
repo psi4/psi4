@@ -97,7 +97,7 @@ void dipole(void)
 
     // TODO: This section needs work to duplicate the generic CC DIPOLE X, etc.
     //  into the exact method and/or root, like in DETCI
-    psi::fprintf(outfile, "\nCC Density OPDM (Spin densities are not correct)\n\n");
+    outfile->Printf( "\nCC Density OPDM (Spin densities are not correct)\n\n");
     oe->set_title("CC");
 
     oe->compute();

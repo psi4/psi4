@@ -96,10 +96,10 @@ bool Fragmenter::SortUnique(NMerSet& Monomers, NMerSet& temp) {
    for (int i=0; i<Monomers2Erase.size(); i++) {
       if (!Monomers2Erase[i]) Monomers.push_back(temp[i]);
    }
-   psi::fprintf(psi::outfile,"The unique monomers are:\n");
+   psi::outfile->Printf("The unique monomers are:\n");
    for (int i=0; i<Monomers.size(); i++)
       Monomers[i]->print_out();
-   psi::fprintf(psi::outfile,"************************\n");
+   psi::outfile->Printf("************************\n");
    return disjoint;
 }
 

@@ -28,7 +28,7 @@
 
 #include <liboptions/liboptions.h>
 #include <libciomr/libciomr.h>
-
+#include "psi4-dec.h"
 #include "memory_manager.h"
 
 namespace psi{
@@ -58,13 +58,13 @@ void MemoryManager::RegisterMemory(void *mem, AllocationEntry& entry, size_t siz
   if (CurrentAllocated > MaximumAllocated)
     MaximumAllocated = CurrentAllocated;
 //  if(options_get_int("DEBUG") > 1){
-//    psi::fprintf(outfile, "\n  ==============================================================================");
-//    psi::fprintf(outfile, "\n  MemoryManager Allocated   %12ld bytes (%8.1f Mb)",size,double(size)/1048576.0);
-//    psi::fprintf(outfile, "\n  %-15s allocated   at %s:%d", entry.variableName.c_str(), entry.fileName.c_str(), entry.lineNumber);
-//    psi::fprintf(outfile, "\n  Currently used            %12ld bytes (%8.1f Mb)",CurrentAllocated,
+//    outfile->Printf( "\n  ==============================================================================");
+//    outfile->Printf( "\n  MemoryManager Allocated   %12ld bytes (%8.1f Mb)",size,double(size)/1048576.0);
+//    outfile->Printf( "\n  %-15s allocated   at %s:%d", entry.variableName.c_str(), entry.fileName.c_str(), entry.lineNumber);
+//    outfile->Printf( "\n  Currently used            %12ld bytes (%8.1f Mb)",CurrentAllocated,
 //                 double(CurrentAllocated)/1048576.0);
-//    psi::fprintf(outfile, "\n  ==============================================================================");
-//    fflush(outfile);
+//    outfile->Printf( "\n  ==============================================================================");
+//    
 //  }
 }
 
@@ -73,41 +73,40 @@ void MemoryManager::UnregisterMemory(void *mem, size_t size, const char *fileNam
   CurrentAllocated -= size;
 //  AllocationEntry& entry = AllocationTable[mem];
 //  if(options_get_int("DEBUG") > 1){
-//    psi::fprintf(outfile, "\n  ==============================================================================");
-//    psi::fprintf(outfile, "\n  MemoryManager Deallocated %12ld bytes (%8.1f Mb)",size,double(size)/1048576.0);
-//    psi::fprintf(outfile, "\n  %-15s allocated   at %s:%d", entry.variableName.c_str(), entry.fileName.c_str(), entry.lineNumber);
-//    psi::fprintf(outfile, "\n  %-15s deallocated at %s:%d", entry.variableName.c_str(), fileName, lineNumber);
-//    psi::fprintf(outfile, "\n  Currently used            %12ld bytes (%8.1f Mb)",CurrentAllocated,
+//    outfile->Printf( "\n  ==============================================================================");
+//    outfile->Printf( "\n  MemoryManager Deallocated %12ld bytes (%8.1f Mb)",size,double(size)/1048576.0);
+//    outfile->Printf( "\n  %-15s allocated   at %s:%d", entry.variableName.c_str(), entry.fileName.c_str(), entry.lineNumber);
+//    outfile->Printf( "\n  %-15s deallocated at %s:%d", entry.variableName.c_str(), fileName, lineNumber);
+//    outfile->Printf( "\n  Currently used            %12ld bytes (%8.1f Mb)",CurrentAllocated,
 //                 double(CurrentAllocated)/1048576.0);
-//    psi::fprintf(outfile, "\n  ==============================================================================");
-//    fflush(outfile);
+//    outfile->Printf( "\n  ==============================================================================");
+//    
 //  }
   AllocationTable.erase(mem);
 }
 
-void MemoryManager::MemCheck(FILE *output)
+void MemoryManager::MemCheck(std::string out)
 {
-  static bool alreadyChecked = false;
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            boost::shared_ptr<OutFile>(new OutFile(out)));
+   static bool alreadyChecked = false;
 
-  psi::fprintf(output, "\n\n");
-  psi::fprintf(output, "  ==============================================================================\n");
-  psi::fprintf(output, "  Memory Usage Report\n\n");
-  psi::fprintf(output, "  Maximum memory used: %8.1f Mb \n",double(MaximumAllocated)/1048576.0);
-  psi::fprintf(output, "  Number of objects still in memory: %-6lu  Current bytes used: %-14lu",(long unsigned)CurrentAllocated,(long unsigned)AllocationTable.size());
+  printer->Printf( "\n\n");
+  printer->Printf( "  ==============================================================================\n");
+  printer->Printf( "  Memory Usage Report\n\n");
+  printer->Printf( "  Maximum memory used: %8.1f Mb \n",double(MaximumAllocated)/1048576.0);
+  printer->Printf( "  Number of objects still in memory: %-6lu  Current bytes used: %-14lu",(long unsigned)CurrentAllocated,(long unsigned)AllocationTable.size());
 
-  fflush(output);
   if (AllocationTable.size() > 0) {
     if (alreadyChecked == false)
-      psi::fprintf(output, "\n\n  Attempting to free the following objects:\n");
+      printer->Printf( "\n\n  Attempting to free the following objects:\n");
     else
-      psi::fprintf(output, "\n\n  Unable to delete the following objects:\n");
-    fflush(output);
+      printer->Printf( "\n\n  Unable to delete the following objects:\n");
 
     std::map<void*, AllocationEntry>::iterator it;
 
     for (it=AllocationTable.begin(); it != AllocationTable.end(); it++)
-      psi::fprintf(output, "  %15s allocated at %s:%lu\n", (*it).second.variableName.c_str(), (*it).second.fileName.c_str(), (long unsigned)(*it).second.lineNumber);
-      fflush(output);
+      printer->Printf( "  %15s allocated at %s:%lu\n", (*it).second.variableName.c_str(), (*it).second.fileName.c_str(), (long unsigned)(*it).second.lineNumber);
     //
 //    it = AllocationTable.begin();
 //    while (it != AllocationTable.end()) {
@@ -200,11 +199,11 @@ void MemoryManager::MemCheck(FILE *output)
 
     if (alreadyChecked == false && AllocationTable.size() > 0) {
             alreadyChecked = true;
-            psi::fprintf(output, "\nRechecking memory.\n");
-            MemCheck(output);
+            printer->Printf( "\nRechecking memory.\n");
+            MemCheck("output");
     }
   }
-  psi::fprintf(output, "\n  ==============================================================================\n");
+  printer->Printf( "\n  ==============================================================================\n");
 }
 
 } /* End Namespace */

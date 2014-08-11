@@ -36,7 +36,7 @@
 #include "index.h"
 
 namespace psi{
-    extern FILE *outfile;
+    
     namespace psimrcc{
 
 extern MemoryManager* memory_manager;
@@ -122,8 +122,8 @@ void CCIndex::init()
       make_three_index();
       break;
     default:{
-      psi::fprintf(outfile,"\n\n\tThe CCIndex class cannot handle %s because there are more than three indices!!!\n\n",label.c_str());
-      fflush(outfile);
+      outfile->Printf("\n\n\tThe CCIndex class cannot handle %s because there are more than three indices!!!\n\n",label.c_str());
+      
       exit(1);
     }
   }
@@ -316,8 +316,8 @@ void CCIndex::make_two_index()
 void CCIndex::make_three_index()
 {
   if(label.find(">")!=string::npos){
-    psi::fprintf(outfile,"\n\n\tThe CCIndex class cannot handle restricted loops for triplets!!!\n\n");
-    fflush(outfile);
+    outfile->Printf("\n\n\tThe CCIndex class cannot handle restricted loops for triplets!!!\n\n");
+    
     exit(1);
   }
 
@@ -414,22 +414,22 @@ void CCIndex::make_three_index()
 
 void CCIndex::print()
 {
-  psi::fprintf(outfile,"\n\n---------------------------------");
-  psi::fprintf(outfile,"\n\tPair Type %s has %lu elements",label.c_str(),(unsigned long) ntuples);
-  psi::fprintf(outfile,"\n---------------------------------");
+  outfile->Printf("\n\n---------------------------------");
+  outfile->Printf("\n\tPair Type %s has %lu elements",label.c_str(),(unsigned long) ntuples);
+  outfile->Printf("\n---------------------------------");
   int index=0;
   for(int h=0;h<nirreps;h++){
     if(tuplespi[h]>0)
-      psi::fprintf(outfile,"\n\t%s",moinfo->get_irr_labs(h));
+      outfile->Printf("\n\t%s",moinfo->get_irr_labs(h));
     for(size_t tuple = 0; tuple < tuplespi[h]; ++tuple){
-      psi::fprintf(outfile,"\n\t\t( ");
+      outfile->Printf("\n\t\t( ");
       for(int k=0;k<nelements;k++)
-        psi::fprintf(outfile,"%d ",tuples[index][k]);
-      psi::fprintf(outfile,")");
+        outfile->Printf("%d ",tuples[index][k]);
+      outfile->Printf(")");
       index++;
     }
   }
-  psi::fprintf(outfile,"\n---------------------------------");
+  outfile->Printf("\n---------------------------------");
 }
 
 }} /* End Namespaces */

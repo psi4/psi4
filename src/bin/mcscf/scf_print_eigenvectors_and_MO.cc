@@ -69,41 +69,41 @@ void SCF::print_eigenvectors_and_MO()
   sort(virt_evals.begin(),virt_evals.end());  
 
 
-  psi::fprintf(outfile,"\n\n  =========================================================================");
-  psi::fprintf(outfile,"\n  Eigenvalues (Eh)");
-  psi::fprintf(outfile,"\n  -------------------------------------------------------------------------");
+  outfile->Printf("\n\n  =========================================================================");
+  outfile->Printf("\n  Eigenvalues (Eh)");
+  outfile->Printf("\n  -------------------------------------------------------------------------");
 
   int print_nrows = 3;
-  psi::fprintf(outfile,"\n  Doubly occupied orbitals");
+  outfile->Printf("\n  Doubly occupied orbitals");
   int printed     = 0;
   int mo          = 1;
   for(vecstr_it it = docc_evals.begin(); it!= docc_evals.end(); ++it){
-    psi::fprintf(outfile,"%s  %5d %13.6f %3s",printed++ % print_nrows == 0 ? "\n" : "",
+    outfile->Printf("%s  %5d %13.6f %3s",printed++ % print_nrows == 0 ? "\n" : "",
                                        mo++,
                                        it->first,
                                        it->second.c_str());
   }
 
   if(!actv_evals.empty()){
-    psi::fprintf(outfile,"\n  Active orbitals");
+    outfile->Printf("\n  Active orbitals");
     printed     = 0;
     for(vecstr_it it = actv_evals.begin(); it!= actv_evals.end(); ++it){
-      psi::fprintf(outfile,"%s  %5d %13.6f %3s",printed++ % print_nrows == 0 ? "\n" : "",
+      outfile->Printf("%s  %5d %13.6f %3s",printed++ % print_nrows == 0 ? "\n" : "",
                                         mo++,
                                         it->first,
                                         it->second.c_str());
     }
   }
 
-  psi::fprintf(outfile,"\n  Unoccupied orbitals");
+  outfile->Printf("\n  Unoccupied orbitals");
   printed     = 0;
   for(vecstr_it it = virt_evals.begin(); it!= virt_evals.end(); ++it){
-    psi::fprintf(outfile,"%s  %5d %13.6f %3s",printed++ % print_nrows == 0 ? "\n" : "",
+    outfile->Printf("%s  %5d %13.6f %3s",printed++ % print_nrows == 0 ? "\n" : "",
                                        mo++,
                                        it->first,
                                        it->second.c_str());
   }
-  psi::fprintf(outfile,"\n  =========================================================================\n");
+  outfile->Printf("\n  =========================================================================\n");
 }
 
 }} // End namespace

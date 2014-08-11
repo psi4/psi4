@@ -39,7 +39,7 @@ namespace psi { namespace ccsort {
 void idx_permute(dpdfile4 *File, struct iwlbuf *OutBuf,
                  int **bucket_map, int p, int q, int r, int s,
                  int perm_pr, int perm_qs, int perm_prqs,
-                 double value, FILE *outfile);
+                 double value, std::string OutFileRMR);
 
 int file_build(dpdfile4 *File, int inputfile, double tolerance,
                int perm_pr, int perm_qs, int perm_prqs, int keep)
@@ -131,7 +131,7 @@ int file_build(dpdfile4 *File, int inputfile, double tolerance,
         }
     }
 
-  psi::fprintf(outfile, "\tSorting File: %s nbuckets = %d\n", File->label, nbuckets);
+  outfile->Printf( "\tSorting File: %s nbuckets = %d\n", File->label, nbuckets);
 
   /* Set up IWL buffers for sorting */
   SortBuf = (struct iwlbuf *) malloc(nbuckets * sizeof(struct iwlbuf));
@@ -153,7 +153,7 @@ int file_build(dpdfile4 *File, int inputfile, double tolerance,
       value = (double) valptr[InBuf.idx];
 
       idx_permute(File,SortBuf,bucket_map,p,q,r,s,
-                  perm_pr,perm_qs,perm_prqs,value,outfile);
+                  perm_pr,perm_qs,perm_prqs,value,"outfile");
 
   } /* end loop through current buffer */
 
@@ -171,7 +171,7 @@ int file_build(dpdfile4 *File, int inputfile, double tolerance,
       value = (double) valptr[InBuf.idx];
 
       idx_permute(File,SortBuf,bucket_map,p,q,r,s,
-                  perm_pr,perm_qs,perm_prqs,value,outfile);
+                  perm_pr,perm_qs,perm_prqs,value,"outfile");
 
       } /* end loop through current buffer */
     } /* end loop over reading buffers */
@@ -218,11 +218,11 @@ int file_build(dpdfile4 *File, int inputfile, double tolerance,
 
               if(row >= File->params->rowtot[h] ||
                  col >= File->params->coltot[h]) {
-                    psi::fprintf(outfile, "CCSORT ERROR: DPD File Build Problem!\n");
-                    psi::fprintf(outfile, "CCSORT ERROR: %s\n", File->label);
-                    psi::fprintf(outfile, "CCSORT ERROR: p = %d; q = %d; r = %d; s = %d; value = %20.14f\n", p, q, r, s, value);
-                    psi::fprintf(outfile, "CCSORT ERROR: irrep = %d; row = %d; col = %d\n", h, row, col);
-                    psi::fprintf(outfile, "CCSORT ERROR: rowtot = %d; coltot = %d\n", File->params->rowtot[h], File->params->coltot[h]);
+                    outfile->Printf( "CCSORT ERROR: DPD File Build Problem!\n");
+                    outfile->Printf( "CCSORT ERROR: %s\n", File->label);
+                    outfile->Printf( "CCSORT ERROR: p = %d; q = %d; r = %d; s = %d; value = %20.14f\n", p, q, r, s, value);
+                    outfile->Printf( "CCSORT ERROR: irrep = %d; row = %d; col = %d\n", h, row, col);
+                    outfile->Printf( "CCSORT ERROR: rowtot = %d; coltot = %d\n", File->params->rowtot[h], File->params->coltot[h]);
                     exit(PSI_RETURN_FAILURE);
                 }
 

@@ -34,6 +34,8 @@ void FullBSSE::AddBSSEJobs(NMerSet& NMers){
       DaNMer->Ghosts.clear();
       for(int atoms=0;atoms<DaNMer->size();atoms++)
          Is_Real[(*DaNMer)[atoms]]=true;
+      for(int caps=0;caps<DaNMer->Caps.size();caps++)
+         Is_Real[DaNMer->Caps[caps].ReplacedAtom()]=true;
       for(int atoms=0;atoms<NAtoms;atoms++){
          if(!Is_Real[atoms])DaNMer->AddGhost(atoms);
       }

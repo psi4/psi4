@@ -88,12 +88,12 @@ void sigmaCC3(int i, int C_irr, double omega) {
     if (params.t3_Ws_incore)
       global_dpd_->cc3_sigma_RHF_ic(&CMnEf, &WAbEi, &WMbIj, 1,  &Dints, &SIA, 
         1, &FME, &WmAEf, &WMnIe, &SIjAb, moinfo.occpi, moinfo.occ_off,
-        moinfo.virtpi, moinfo.vir_off, omega, outfile, params.nthreads,
+        moinfo.virtpi, moinfo.vir_off, omega, "outfile", params.nthreads,
         params.newtrips);
     else
       global_dpd_->cc3_sigma_RHF(&CMnEf, &WAbEi, &WMbIj, 1,  &Dints, &SIA, 
         1, &FME, &WmAEf, &WMnIe, &SIjAb, moinfo.occpi, moinfo.occ_off,
-        moinfo.virtpi, moinfo.vir_off, omega, outfile, params.newtrips);
+        moinfo.virtpi, moinfo.vir_off, omega, "outfile", params.newtrips);
   
     global_dpd_->buf4_close(&CMnEf);
     global_dpd_->buf4_close(&WAbEi);
@@ -129,12 +129,12 @@ void sigmaCC3(int i, int C_irr, double omega) {
     if (params.t3_Ws_incore)
       global_dpd_->cc3_sigma_RHF_ic(&tIjAb, &WAbEi, &WMbIj, 1,  &Dints, &SIA, 
         1, &FME, &WmAEf, &WMnIe, &SIjAb, moinfo.occpi, moinfo.occ_off,
-        moinfo.virtpi, moinfo.vir_off, omega, outfile, params.nthreads,
+        moinfo.virtpi, moinfo.vir_off, omega, "outfile", params.nthreads,
         params.newtrips);
     else
       global_dpd_->cc3_sigma_RHF(&tIjAb, &WAbEi, &WMbIj, 1,  &Dints, &SIA,
          1, &FME, &WmAEf, &WMnIe, &SIjAb, moinfo.occpi, moinfo.occ_off,
-         moinfo.virtpi, moinfo.vir_off, omega, outfile, params.newtrips);
+         moinfo.virtpi, moinfo.vir_off, omega, "outfile", params.newtrips);
   
     global_dpd_->buf4_close(&tIjAb);
     global_dpd_->buf4_close(&WAbEi);
@@ -168,12 +168,12 @@ void sigmaCC3(int i, int C_irr, double omega) {
     if (params.t3_Ws_incore)
       global_dpd_->cc3_sigma_RHF_ic(&tIjAb, &WAbEi, &WMbIj, 0, NULL, NULL, 
         1, &FME, &WmAEf, &WMnIe, &SIjAb, moinfo.occpi, moinfo.occ_off,
-        moinfo.virtpi, moinfo.vir_off, 0.0, outfile, params.nthreads,
+        moinfo.virtpi, moinfo.vir_off, 0.0, "outfile", params.nthreads,
         params.newtrips);
     else
     global_dpd_->cc3_sigma_RHF(&tIjAb, &WAbEi, &WMbIj, 0, NULL, NULL,
        1, &FME, &WmAEf, &WMnIe, &SIjAb, moinfo.occpi, moinfo.occ_off,
-       moinfo.virtpi, moinfo.vir_off, 0.0, outfile, params.newtrips);
+       moinfo.virtpi, moinfo.vir_off, 0.0, "outfile", params.newtrips);
   
     global_dpd_->buf4_close(&tIjAb); 
     global_dpd_->buf4_close(&WAbEi);
@@ -226,7 +226,7 @@ void sigmaCC3(int i, int C_irr, double omega) {
 
     global_dpd_->cc3_sigma_UHF_AAA(&CMNEF, &WABEI, &WMBIJ, 1, &DIJAB_anti, &SIA,
         1, &FME, &WAMEF, &WMNIE, &SIJAB, moinfo.aoccpi, moinfo.aocc_off,
-        moinfo.avirtpi, moinfo.avir_off, omega, outfile);
+        moinfo.avirtpi, moinfo.avir_off, omega, "outfile");
 
     global_dpd_->buf4_close(&CMNEF);
     global_dpd_->buf4_close(&WABEI);
@@ -252,7 +252,7 @@ void sigmaCC3(int i, int C_irr, double omega) {
 
     global_dpd_->cc3_sigma_UHF_BBB(&Cmnef, &Wabei, &Wmbij, 1, &Dijab_anti, &Sia,
         1, &Fme, &Wamef, &Wmnie, &Sijab, moinfo.boccpi, moinfo.bocc_off,
-        moinfo.bvirtpi, moinfo.bvir_off, omega, outfile);
+        moinfo.bvirtpi, moinfo.bvir_off, omega, "outfile");
 
     global_dpd_->buf4_close(&Cmnef);
     global_dpd_->buf4_close(&Wabei);
@@ -297,7 +297,7 @@ void sigmaCC3(int i, int C_irr, double omega) {
        1, &FME, &Fme, &WAMEF, &WaMeF, &WAmEf, &WMNIE, &WMnIe, &WmNiE,
        &SIJAB, &SIjAb, moinfo.aoccpi, moinfo.aocc_off, moinfo.boccpi,
        moinfo.bocc_off, moinfo.avirtpi, moinfo.avir_off, moinfo.bvirtpi,
-       moinfo.bvir_off, omega, outfile);
+       moinfo.bvir_off, omega, "outfile");
 
     global_dpd_->buf4_close(&CMNEF); global_dpd_->buf4_close(&CMnEf); global_dpd_->buf4_close(&CmNeF);
     global_dpd_->buf4_close(&WABEI); global_dpd_->buf4_close(&WaBeI); global_dpd_->buf4_close(&WAbEi);
@@ -342,7 +342,7 @@ void sigmaCC3(int i, int C_irr, double omega) {
       1, &FME, &Fme, &Wamef, &WaMeF, &WAmEf, &Wmnie, &WMnIe, &WmNiE,
       &Sijab, &SIjAb, moinfo.aoccpi, moinfo.aocc_off, moinfo.boccpi,
       moinfo.bocc_off, moinfo.avirtpi, moinfo.avir_off, moinfo.bvirtpi,
-      moinfo.bvir_off, omega, outfile);
+      moinfo.bvir_off, omega, "outfile");
 
     global_dpd_->buf4_close(&Cmnef); global_dpd_->buf4_close(&CMnEf); global_dpd_->buf4_close(&CmNeF);
     global_dpd_->buf4_close(&Wabei); global_dpd_->buf4_close(&WaBeI); global_dpd_->buf4_close(&WAbEi);
@@ -386,7 +386,7 @@ void sigmaCC3(int i, int C_irr, double omega) {
 
     global_dpd_->cc3_sigma_UHF_AAA(&TIJAB, &WABEI, &WMBIJ, 1, &DIJAB_anti, &SIA,
         1, &FME, &WAMEF, &WMNIE, &SIJAB, moinfo.aoccpi, moinfo.aocc_off, 
-        moinfo.avirtpi, moinfo.avir_off, omega, outfile);
+        moinfo.avirtpi, moinfo.avir_off, omega, "outfile");
 
     global_dpd_->buf4_close(&TIJAB);
     global_dpd_->buf4_close(&WABEI);
@@ -411,7 +411,7 @@ void sigmaCC3(int i, int C_irr, double omega) {
 
     global_dpd_->cc3_sigma_UHF_BBB(&Tijab, &Wabei, &Wmbij, 1, &Dijab_anti, &Sia,
         1, &Fme, &Wamef, &Wmnie, &Sijab, moinfo.boccpi, moinfo.bocc_off,
-        moinfo.bvirtpi, moinfo.bvir_off, omega, outfile);
+        moinfo.bvirtpi, moinfo.bvir_off, omega, "outfile");
 
     global_dpd_->buf4_close(&Tijab);
     global_dpd_->buf4_close(&Wabei);
@@ -454,7 +454,7 @@ void sigmaCC3(int i, int C_irr, double omega) {
        1, &FME, &Fme, &WAMEF, &WaMeF, &WAmEf, &WMNIE, &WMnIe, &WmNiE,
        &SIJAB, &SIjAb, moinfo.aoccpi, moinfo.aocc_off, moinfo.boccpi,
        moinfo.bocc_off, moinfo.avirtpi, moinfo.avir_off, moinfo.bvirtpi,
-       moinfo.bvir_off, omega, outfile);
+       moinfo.bvir_off, omega, "outfile");
 
     global_dpd_->buf4_close(&TIJAB); global_dpd_->buf4_close(&TIjAb); global_dpd_->buf4_close(&TiJaB);
     global_dpd_->buf4_close(&WABEI); global_dpd_->buf4_close(&WaBeI); global_dpd_->buf4_close(&WAbEi);
@@ -497,7 +497,7 @@ void sigmaCC3(int i, int C_irr, double omega) {
       1, &FME, &Fme, &Wamef, &WaMeF, &WAmEf, &Wmnie, &WMnIe, &WmNiE,
       &Sijab, &SIjAb, moinfo.aoccpi, moinfo.aocc_off, moinfo.boccpi,
       moinfo.bocc_off, moinfo.avirtpi, moinfo.avir_off, moinfo.bvirtpi,
-      moinfo.bvir_off, omega, outfile);
+      moinfo.bvir_off, omega, "outfile");
 
     global_dpd_->buf4_close(&Tijab); global_dpd_->buf4_close(&TIjAb); global_dpd_->buf4_close(&TiJaB);
     global_dpd_->buf4_close(&Wabei); global_dpd_->buf4_close(&WaBeI); global_dpd_->buf4_close(&WAbEi);
@@ -539,7 +539,7 @@ void sigmaCC3(int i, int C_irr, double omega) {
 
     global_dpd_->cc3_sigma_UHF_AAA(&TIJAB, &WABEI, &WMBIJ, 0, NULL, NULL,
         1, &FME, &WAMEF, &WMNIE, &SIJAB, moinfo.aoccpi, moinfo.aocc_off,
-        moinfo.avirtpi, moinfo.avir_off, 0.0, outfile);
+        moinfo.avirtpi, moinfo.avir_off, 0.0, "outfile");
 
     global_dpd_->buf4_close(&TIJAB);
     global_dpd_->buf4_close(&WABEI);
@@ -561,7 +561,7 @@ void sigmaCC3(int i, int C_irr, double omega) {
 
     global_dpd_->cc3_sigma_UHF_BBB(&Tijab, &Wabei, &Wmbij, 0, NULL, NULL,
         1, &Fme, &Wamef, &Wmnie, &Sijab, moinfo.boccpi, moinfo.bocc_off, 
-        moinfo.bvirtpi, moinfo.bvir_off, 0.0, outfile);
+        moinfo.bvirtpi, moinfo.bvir_off, 0.0, "outfile");
 
     global_dpd_->buf4_close(&Tijab);
     global_dpd_->buf4_close(&Wabei);
@@ -599,7 +599,7 @@ void sigmaCC3(int i, int C_irr, double omega) {
        1, &FME, &Fme, &WAMEF, &WaMeF, &WAmEf, &WMNIE, &WMnIe, &WmNiE,
        &SIJAB, &SIjAb, moinfo.aoccpi, moinfo.aocc_off, moinfo.boccpi,
        moinfo.bocc_off, moinfo.avirtpi, moinfo.avir_off, moinfo.bvirtpi,
-       moinfo.bvir_off, 0.0, outfile);
+       moinfo.bvir_off, 0.0, "outfile");
 
     global_dpd_->buf4_close(&TIJAB); global_dpd_->buf4_close(&TIjAb); global_dpd_->buf4_close(&TiJaB);
     global_dpd_->buf4_close(&WABEI); global_dpd_->buf4_close(&WaBeI); global_dpd_->buf4_close(&WAbEi);
@@ -637,7 +637,7 @@ void sigmaCC3(int i, int C_irr, double omega) {
       1, &FME, &Fme, &Wamef, &WaMeF, &WAmEf, &Wmnie, &WMnIe, &WmNiE,
       &Sijab, &SIjAb, moinfo.aoccpi, moinfo.aocc_off, moinfo.boccpi,
       moinfo.bocc_off, moinfo.avirtpi, moinfo.avir_off, moinfo.bvirtpi,
-      moinfo.bvir_off, 0.0, outfile);
+      moinfo.bvir_off, 0.0, "outfile");
 
     global_dpd_->buf4_close(&Tijab); global_dpd_->buf4_close(&TIjAb); global_dpd_->buf4_close(&TiJaB);
     global_dpd_->buf4_close(&Wabei); global_dpd_->buf4_close(&WaBeI); global_dpd_->buf4_close(&WAbEi);

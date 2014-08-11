@@ -108,18 +108,18 @@ void LMP2::print_results(const int &iter) const {
     if (me_ == 0) {
         if(iter != 0) {
             if(iter > diis_start_ & diis_) {
-                psi::fprintf(outfile, "  %3d %20.12f %20.12f %20.12f  DIIS\n", iter, Elmp2_, Delta_Elmp2_, Drms_T2_);
+                outfile->Printf( "  %3d %20.12f %20.12f %20.12f  DIIS\n", iter, Elmp2_, Delta_Elmp2_, Drms_T2_);
             }
             else  {
-                psi::fprintf(outfile, "  %3d %20.12f %20.12f %20.12f\n", iter, Elmp2_, Delta_Elmp2_, Drms_T2_);
+                outfile->Printf( "  %3d %20.12f %20.12f %20.12f\n", iter, Elmp2_, Delta_Elmp2_, Drms_T2_);
             }
         }
         else {
-            psi::fprintf(outfile, "      \t     Correlation\t     Delta    \t\t   RMS\n");
-            psi::fprintf(outfile, "  Iter\t       Energy\t\t (Corr. Energy)\t     (T2 Amplitudes)\n");
-            psi::fprintf(outfile, "  ------------------------------------------------------------------------\n");
+            outfile->Printf( "      \t     Correlation\t     Delta    \t\t   RMS\n");
+            outfile->Printf( "  Iter\t       Energy\t\t (Corr. Energy)\t     (T2 Amplitudes)\n");
+            outfile->Printf( "  ------------------------------------------------------------------------\n");
 
-            psi::fprintf(outfile, "  %3d %20.12f\n", iter, Elmp2_);
+            outfile->Printf( "  %3d %20.12f\n", iter, Elmp2_);
         }
     }
 

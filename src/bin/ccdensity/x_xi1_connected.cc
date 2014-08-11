@@ -93,7 +93,7 @@ void x_xi1_connected(void)
     global_dpd_->buf4_close(&L2);
 
     tval =  params.cceom_energy;
-    /* psi::fprintf(outfile,"\nenergy: %15.10lf\n",tval); */
+    /* outfile->Printf("\nenergy: %15.10lf\n",tval); */
     global_dpd_->file2_scm(&HIA, tval);
 
     /* -= (Fme Rme) Lia */
@@ -199,7 +199,7 @@ void x_xi1_connected(void)
     global_dpd_->buf4_close(&L2);
 
     tval =  params.cceom_energy;
-    psi::fprintf(outfile,"\nenergy: %15.10lf\n",tval);
+    outfile->Printf("\nenergy: %15.10lf\n",tval);
     global_dpd_->file2_scm(&HIA, tval);
     global_dpd_->file2_scm(&Hia, tval);
 
@@ -385,7 +385,7 @@ void x_xi1_connected(void)
     global_dpd_->buf4_close(&L2);
 
     tval =  params.cceom_energy;
-    psi::fprintf(outfile,"\nenergy: %15.10lf\n",tval);
+    outfile->Printf("\nenergy: %15.10lf\n",tval);
     global_dpd_->file2_scm(&HIA, tval);
     global_dpd_->file2_scm(&Hia, tval);
 
@@ -550,13 +550,13 @@ double aug_xi_check(dpdfile2 *HIA, dpdfile2 *Hia)
 
   if (params.ref == 0) {
     tvalA = dpd_file2_dot_self(HIA);
-    psi::fprintf(outfile, "<HIA|HIA> = %15.10lf\n", tvalA);
+    outfile->Printf( "<HIA|HIA> = %15.10lf\n", tvalA);
   }
   else {
     tvalB = dpd_file2_dot_self(Hia);
-    psi::fprintf(outfile, "<HIA|HIA> = %15.10lf\n", tvalA);
+    outfile->Printf( "<HIA|HIA> = %15.10lf\n", tvalA);
   }
-  psi::fprintf(outfile, "<H1|H1> = %15.10lf\n", tvalA + tvalB);
+  outfile->Printf( "<H1|H1> = %15.10lf\n", tvalA + tvalB);
   return;
 }
 */

@@ -51,7 +51,7 @@ void FRAG::displace(double *dq, double *fq, int atom_offset) {
   double * q_orig = intco_values();
 
   // Do your best to backtransform all internal coordinate displacments.
-  fprintf(outfile,"\n\tBack-transformation to cartesian coordinates...\n");
+  psi::outfile->Printf("\n\tBack-transformation to cartesian coordinates...\n");
   displace_util(dq, false);
 
   /* Algorithms that compute DQ, and the backtransformation above may
@@ -70,7 +70,7 @@ void FRAG::displace(double *dq, double *fq, int atom_offset) {
       if (intcos[i]->is_frozen())
         dq_adjust_frozen[i] = q_orig[i] - q_before_adjustment[i];
 
-    fprintf(outfile,"\n\tBack-transformation to cartesian coordinates to adjust frozen coordinates...\n");
+    psi::outfile->Printf("\n\tBack-transformation to cartesian coordinates to adjust frozen coordinates...\n");
     displace_util(dq_adjust_frozen, true);
 
     free_array(q_before_adjustment);
@@ -91,15 +91,15 @@ void FRAG::displace(double *dq, double *fq, int atom_offset) {
     }
   }
 
-  fprintf(outfile,"\n\t--- Internal Coordinate Step in ANG or DEG, aJ/ANG or AJ/DEG ---\n");
-  fprintf(outfile,  "\t ---------------------------------------------------------------------------\n");
-  fprintf(outfile,  "\t   Coordinate                Previous        Force       Change         New \n");
-  fprintf(outfile,  "\t   ----------                --------       ------       ------       ------\n");
+  psi::outfile->Printf("\n\t--- Internal Coordinate Step in ANG or DEG, aJ/ANG or AJ/DEG ---\n");
+  psi::outfile->Printf(  "\t ---------------------------------------------------------------------------\n");
+  psi::outfile->Printf(  "\t   Coordinate                Previous        Force       Change         New \n");
+  psi::outfile->Printf(  "\t   ----------                --------       ------       ------       ------\n");
   for (int i=0; i<intcos.size(); ++i) {
-    fprintf(outfile,"\t %4d ",i+1);
-    intcos.at(i)->print_disp(outfile, q_orig[i], fq[i], dq[i], q_final[i], atom_offset);
+    psi::outfile->Printf("\t %4d ",i+1);
+    intcos.at(i)->print_disp("outfile", q_orig[i], fq[i], dq[i], q_final[i], atom_offset);
   }
-  fprintf(outfile,  "\t ---------------------------------------------------------------------------\n");
+  psi::outfile->Printf(  "\t ---------------------------------------------------------------------------\n");
 
   free_array(q_orig);
   free_array(q_final);
@@ -128,15 +128,15 @@ void FRAG::displace_util(double *dq, bool focus_on_constraints) {
     q_target[i] = q_orig[i] + dq[i];
 
   if (Opt_params.print_lvl >= 3) {
-    fprintf(outfile,"\t       Original         Target      Target-Dq\n");
+    psi::outfile->Printf("\t       Original         Target      Target-Dq\n");
     for (i=0; i<Nints; ++i)
-      fprintf(outfile, "\t%15.10lf%15.10lf\n", q_orig[i], q_target[i], dq[i]);
+      psi::outfile->Printf( "\t%15.10lf%15.10lf\n", q_orig[i], q_target[i], dq[i]);
   }
 
   if (Opt_params.print_lvl >= 2) {
-    fprintf(outfile,"\t---------------------------------------------------\n");
-    fprintf(outfile,"\t Iter        RMS(dx)        Max(dx)        RMS(dq) \n");
-    fprintf(outfile,"\t---------------------------------------------------\n");
+    psi::outfile->Printf("\t---------------------------------------------------\n");
+    psi::outfile->Printf("\t Iter        RMS(dx)        Max(dx)        RMS(dq) \n");
+    psi::outfile->Printf("\t---------------------------------------------------\n");
   }
 
   double * new_geom   = g_geom_array(); // cart geometry to start each iter
@@ -206,33 +206,33 @@ void FRAG::displace_util(double *dq, bool focus_on_constraints) {
     dq_rms = array_rms(dq, Nints);
 
     if (Opt_params.print_lvl >= 2)
-      fprintf (outfile,"\t%5d %14.1e %14.1e %14.1e\n", bmat_iter_cnt+1, dx_rms, dx_max, dq_rms);
+      psi::outfile->Printf("\t%5d %14.1e %14.1e %14.1e\n", bmat_iter_cnt+1, dx_rms, dx_max, dq_rms);
 
     ++bmat_iter_cnt;
   }
 
   if (Opt_params.print_lvl >= 2)
-    fprintf(outfile,"\t---------------------------------------------------\n");
+    psi::outfile->Printf("\t---------------------------------------------------\n");
 
   if (Opt_params.print_lvl >= 2) {
-    fprintf(outfile,"\n\tReport of back-transformation:\n");
-    fprintf(outfile,"\t  int       q_target          Error\n");
-    fprintf(outfile,"\t-----------------------------------\n");
+    psi::outfile->Printf("\n\tReport of back-transformation:\n");
+    psi::outfile->Printf("\t  int       q_target          Error\n");
+    psi::outfile->Printf("\t-----------------------------------\n");
     for (i=0; i<Nints; ++i)
-      fprintf(outfile,"\t%5d%15.10lf%15.10lf\n", i+1, q_target[i], -dq[i]);
-    fprintf(outfile,"\n");
+      psi::outfile->Printf("\t%5d%15.10lf%15.10lf\n", i+1, q_target[i], -dq[i]);
+    psi::outfile->Printf("\n");
   }
 
   if (bt_converged) {
-    fprintf(outfile, "\tSuccessfully converged to displaced geometry.\n");
+    psi::outfile->Printf( "\tSuccessfully converged to displaced geometry.\n");
     if (dq_rms > first_dq_rms) {
-      fprintf(outfile,"\tFirst geometry is closer to target in internal coordinates, so am using that one.\n");
+      psi::outfile->Printf("\tFirst geometry is closer to target in internal coordinates, so am using that one.\n");
       set_geom_array(first_geom);
     }
   }
   else if (!focus_on_constraints) { // if we are fixing constraints, we'll keep the best we got.
-    fprintf(outfile,"\tCould not converge backtransformation.\n");
-    fprintf(outfile,"\tUsing first guess instead.\n");
+    psi::outfile->Printf("\tCould not converge backtransformation.\n");
+    psi::outfile->Printf("\tUsing first guess instead.\n");
     if (Opt_params.opt_type == OPT_PARAMS::IRC)
       throw(INTCO_EXCEPT("Could not take constrained step in an IRC computation."));
     set_geom_array(first_geom);
@@ -248,7 +248,7 @@ void FRAG::displace_util(double *dq, bool focus_on_constraints) {
   free_array(q_target);
   free_array(q_orig);
 
-  fflush(outfile);
+  
   return;
 }
 

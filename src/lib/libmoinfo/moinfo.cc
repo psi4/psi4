@@ -44,7 +44,7 @@
 
 #include "moinfo.h"
 
-extern FILE *outfile;
+
 
 using namespace std;
 
@@ -214,21 +214,21 @@ void MOInfo::setup_model_space()
  */
 void MOInfo::print_info()
 {
-    psi::fprintf(outfile,"\n");
-    psi::fprintf(outfile,"\n  ==============================================================================");
-    psi::fprintf(outfile,"\n  System Info:");
-    psi::fprintf(outfile,"\n  ------------------------------------------------------------------------------");
-    psi::fprintf(outfile,"\n  Nuclear Energy   = %-15.9f  SCF Energy       = %-15.9f",nuclear_energy,scf_energy);
-    psi::fprintf(outfile,"\n");
-    psi::fprintf(outfile,"\n  MOs and Symmetry:");
-    psi::fprintf(outfile,"\n  ------------------------------------------------------------------------------");
-    psi::fprintf(outfile,"\n  nirreps          = %-10d       root             = %-10d",nirreps,root);
-    psi::fprintf(outfile,"\n  nso              = %-10d       nmo              = %-10d",nso,nmo);
-    psi::fprintf(outfile,"\n  nael             = %-10d       nbel             = %-10d",nael,nbel);
-    psi::fprintf(outfile,"\n  nactive_ael      = %-10d       nactive_bel      = %-10d",nactive_ael,nactive_bel);
-    psi::fprintf(outfile,"\n");
-    psi::fprintf(outfile,"\n  Details of the Computation:");
-    psi::fprintf(outfile,"\n  ------------------------------------------------------------------------------");
+    outfile->Printf("\n");
+    outfile->Printf("\n  ==============================================================================");
+    outfile->Printf("\n  System Info:");
+    outfile->Printf("\n  ------------------------------------------------------------------------------");
+    outfile->Printf("\n  Nuclear Energy   = %-15.9f  SCF Energy       = %-15.9f",nuclear_energy,scf_energy);
+    outfile->Printf("\n");
+    outfile->Printf("\n  MOs and Symmetry:");
+    outfile->Printf("\n  ------------------------------------------------------------------------------");
+    outfile->Printf("\n  nirreps          = %-10d       root             = %-10d",nirreps,root);
+    outfile->Printf("\n  nso              = %-10d       nmo              = %-10d",nso,nmo);
+    outfile->Printf("\n  nael             = %-10d       nbel             = %-10d",nael,nbel);
+    outfile->Printf("\n  nactive_ael      = %-10d       nactive_bel      = %-10d",nactive_ael,nactive_bel);
+    outfile->Printf("\n");
+    outfile->Printf("\n  Details of the Computation:");
+    outfile->Printf("\n  ------------------------------------------------------------------------------");
 }
 
 /*!
@@ -304,7 +304,7 @@ void MOInfo::read_mo_spaces()
         //    read_mo_space(nirreps_ref,nactv_docc,actv_docc_ref,"ACTIVE_DOCC");
     }else{
         // For a single-point only
-        psi::fprintf(outfile,"\n  For a single-point only"); fflush(outfile);
+        outfile->Printf("\n  For a single-point only"); 
 
         focc = convert_int_array_to_vector(nirreps, Process::environment.wavefunction()->frzcpi());
         docc = convert_int_array_to_vector(nirreps, Process::environment.wavefunction()->doccpi());
@@ -420,15 +420,15 @@ void MOInfo::read_mo_spaces()
 void MOInfo::print_mo()
 {
     /// @todo implement me
-    psi::fprintf(outfile,"\n");
-    psi::fprintf(outfile,"\n  MOs per irrep:                  ");
+    outfile->Printf("\n");
+    outfile->Printf("\n  MOs per irrep:                  ");
 
     for(int i=nirreps;i<8;i++)
-        psi::fprintf(outfile,"     ");
+        outfile->Printf("     ");
     for(int i=0;i<nirreps;i++)
-        psi::fprintf(outfile,"  %s",irr_labs[i]);
-    psi::fprintf(outfile," Total");
-    psi::fprintf(outfile,"\n  ------------------------------------------------------------------------------");
+        outfile->Printf("  %s",irr_labs[i]);
+    outfile->Printf(" Total");
+    outfile->Printf("\n  ------------------------------------------------------------------------------");
     print_mo_space(nmo,mopi,"Total                           ");
     print_mo_space(nfocc,focc,"Frozen Occupied                 ");
     print_mo_space(ndocc,docc,"Doubly Occupied                 ");
@@ -438,7 +438,7 @@ void MOInfo::print_mo()
     }
     print_mo_space(nextr,extr,"External                        ");
     print_mo_space(nfvir,fvir,"Frozen Virtual                  ");
-    fflush(outfile);
+    
 }
 
 /**

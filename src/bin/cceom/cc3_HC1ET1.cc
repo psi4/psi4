@@ -209,22 +209,22 @@ void HC1ET1_Wmbij(int i, int C_irr)
     dpd_buf4_init(&W, CC3_HC1ET1, 0, 0, 20, 2, 20, 0, "Ht_WMBIJ (I>J,MB)");
     dot = dpd_buf4_dot_self(&W);
     dpd_buf4_close(&W);
-    psi::fprintf(outfile,"\t<WMBIJ (I>J,MB)|WMBIJ> = %15.10lf\n", dot);
+    outfile->Printf("\t<WMBIJ (I>J,MB)|WMBIJ> = %15.10lf\n", dot);
 
     dpd_buf4_init(&W, CC3_HC1ET1, 0, 10, 30, 12, 30, 0, "Ht_Wmbij (i>j,mb)");
     dot = dpd_buf4_dot_self(&W);
     dpd_buf4_close(&W);
-    psi::fprintf(outfile,"\t<Wmbij (i>j,mb)|Wmbij> = %15.10lf\n", dot);
+    outfile->Printf("\t<Wmbij (i>j,mb)|Wmbij> = %15.10lf\n", dot);
 
     dpd_buf4_init(&W, CC3_HC1ET1, 0, 22, 24, 22, 24, 0, "Ht_WMbIj (Ij,Mb)");
     dot = dpd_buf4_dot_self(&W);
     dpd_buf4_close(&W);
-    psi::fprintf(outfile,"\t<WMbIj (Ij,Mb)|WMbIj> = %15.10lf\n", dot);
+    outfile->Printf("\t<WMbIj (Ij,Mb)|WMbIj> = %15.10lf\n", dot);
 
     dpd_buf4_init(&W, CC3_HC1ET1, 0, 23, 27, 23, 27, 0, "Ht_WmBiJ (iJ,mB)");
     dot = dpd_buf4_dot_self(&W);
     dpd_buf4_close(&W);
-    psi::fprintf(outfile,"\t<WmBiJ (iJ,mB)|WmBiJ> = %15.10lf\n", dot);
+    outfile->Printf("\t<WmBiJ (iJ,mB)|WmBiJ> = %15.10lf\n", dot);
     */
 
     global_dpd_->file2_close(&CME);
@@ -552,22 +552,22 @@ void HC1ET1_Wabei(int i, int C_irr)
     dpd_buf4_init(&W, CC3_HC1ET1, 0, 20, 5, 20, 7, 0, "Ht_WABEI (IE,B>A)");
     dot = dpd_buf4_dot_self(&W);
     dpd_buf4_close(&W);
-    psi::fprintf(outfile,"\t<WABEI(IE,B>A)|WABEI> = %15.10lf\n", dot);
+    outfile->Printf("\t<WABEI(IE,B>A)|WABEI> = %15.10lf\n", dot);
 
     dpd_buf4_init(&W, CC3_HC1ET1, 0, 30, 15, 30, 17, 0, "Ht_Wabei (ie,b>a)");
     dot = dpd_buf4_dot_self(&W);
     dpd_buf4_close(&W);
-    psi::fprintf(outfile,"\t<Wabei (ie,b>a)|Wabei> = %15.10lf\n", dot);
+    outfile->Printf("\t<Wabei (ie,b>a)|Wabei> = %15.10lf\n", dot);
 
     dpd_buf4_init(&W, CC3_HC1ET1, 0, 27, 29, 27, 29, 0, "Ht_WAbEi (iE,bA)");
     dot = dpd_buf4_dot_self(&W);
     dpd_buf4_close(&W);
-    psi::fprintf(outfile,"\t<WAbEi (iE,bA)|WAbEi> = %15.10lf\n", dot);
+    outfile->Printf("\t<WAbEi (iE,bA)|WAbEi> = %15.10lf\n", dot);
 
     dpd_buf4_init(&W, CC3_HC1ET1, 0, 24, 28, 24, 28, 0, "Ht_WaBeI (Ie,Ba)");
     dot = dpd_buf4_dot_self(&W);
     dpd_buf4_close(&W);
-    psi::fprintf(outfile,"\t<WaBeI (Ie,Ba)|WaBeI> = %15.10lf\n", dot);
+    outfile->Printf("\t<WaBeI (Ie,Ba)|WaBeI> = %15.10lf\n", dot);
     */
 
   }

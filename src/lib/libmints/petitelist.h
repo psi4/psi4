@@ -32,7 +32,7 @@
 
 namespace psi {
 
-extern FILE *outfile;
+
 
 class BasisSet;
 class Molecule;
@@ -135,10 +135,10 @@ struct SOCoefficients{
     }
 
     void print() const {
-        psi::fprintf(outfile, "\nSOCoefficients, irrep = %d\n", irrep);
+        outfile->Printf("\nSOCoefficients, irrep = %d\n", irrep);
         std::map<int, double>::const_iterator iter;
         for(iter = coefficients.begin(); iter != coefficients.end(); ++iter){
-            psi::fprintf(outfile, "Basis function:%d Coefficient: %.5f\n", iter->first, iter->second);
+            outfile->Printf( "Basis function:%d Coefficient: %.5f\n", iter->first, iter->second);
         }
     }
 
@@ -238,7 +238,7 @@ public:
      */
     int nblocks() const { return nblocks_; }
 
-    void print(FILE *out=outfile);
+    void print(std::string out="outfile");
 
     /** The symmetry operations that keep the atom unchanged in bit representation.
      *  \param atom The atom of interest.

@@ -47,7 +47,7 @@ namespace psi{ namespace dfmp2{
   void title(void);
 }}
 
-FILE *infile = NULL, *outfile = NULL;
+std::string OutFileRMR = NULL;
 char *psi_file_prefix = NULL;
 
 extern "C" {
@@ -71,12 +71,12 @@ namespace psi{ namespace dfmp2{
 
 void title(void)
 {
-  psi::fprintf(outfile, "\t\t\t*************************\n");
-  psi::fprintf(outfile, "\t\t\t*                       *\n");
-  psi::fprintf(outfile, "\t\t\t*         DF-MP2        *\n");
-  psi::fprintf(outfile, "\t\t\t*                       *\n");
-  psi::fprintf(outfile, "\t\t\t*************************\n");
-  fflush(outfile);
+  outfile->Printf( "\t\t\t*************************\n");
+  outfile->Printf( "\t\t\t*                       *\n");
+  outfile->Printf( "\t\t\t*         DF-MP2        *\n");
+  outfile->Printf( "\t\t\t*                       *\n");
+  outfile->Printf( "\t\t\t*************************\n");
+  
 }
 
 }} // end namespaces

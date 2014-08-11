@@ -140,7 +140,7 @@ int DPD::file4_cache_add(dpdfile4 *File, unsigned int priority)
             (this_entry == NULL && (File->incore))) {
         /* Either the file4 appears in the cache but incore is not set,
      or incore is set and the file4 isn't in the cache */
-        dpd_error("File4 cache add error!", stderr);
+        dpd_error("File4 cache add error!", "outfile");
     }
     else if(this_entry != NULL && File->incore) {
         /* We already have this one in cache, but change its priority level */
@@ -220,7 +220,7 @@ int DPD::file4_cache_del(dpdfile4 *File)
     if((this_entry == NULL && File->incore) ||
             (this_entry != NULL && !(File->incore)) ||
             (this_entry == NULL && !(File->incore))) {
-        dpd_error("File4 cache delete error!", stderr);
+        dpd_error("File4 cache delete error!", "outfile");
     }
     else {
 
@@ -270,13 +270,13 @@ void DPD::file4_cache_print_screen(void)
 
     this_entry = dpd_main.file4_cache;
 
-    psi::fprintf(stdout, "\n\tDPD File4 Cache Listing:\n\n");
-    psi::fprintf(stdout,
+    outfile->Printf("\n\tDPD File4 Cache Listing:\n\n");
+    outfile->Printf(
             "Cache Label            DPD File symm  pq  rs  use acc clean    pri lock size(kB)\n");
-    psi::fprintf(stdout,
+    outfile->Printf(
             "--------------------------------------------------------------------------------\n");
     while(this_entry != NULL) {
-        psi::fprintf(stdout,
+        outfile->Printf(
                 "%-22s  %1d   %3d   %1d   %2d  %2d  %3d %3d    %1d  %6d   %1d  %8.1f\n",
                 this_entry->label, this_entry->dpdnum, this_entry->filenum, this_entry->irrep,
                 this_entry->pqnum, this_entry->rsnum, this_entry->usage, this_entry->access,
@@ -285,36 +285,38 @@ void DPD::file4_cache_print_screen(void)
         total_size += this_entry->size;
         this_entry = this_entry->next;
     }
-    psi::fprintf(stdout,
+    outfile->Printf(
             "--------------------------------------------------------------------------------\n");
-    psi::fprintf(stdout, "Total cached: %9.1f kB; MRU = %6d; LRU = %6d\n",
+    outfile->Printf( "Total cached: %9.1f kB; MRU = %6d; LRU = %6d\n",
             (total_size*sizeof(double))/1e3,dpd_main.file4_cache_most_recent,
             dpd_main.file4_cache_least_recent);
-    psi::fprintf(stdout, "#LRU deletions = %6d; #Low-priority deletions = %6d\n",
+    outfile->Printf( "#LRU deletions = %6d; #Low-priority deletions = %6d\n",
             dpd_main.file4_cache_lru_del,dpd_main.file4_cache_low_del);
-    psi::fprintf(stdout, "Core max size:  %9.1f kB\n", (dpd_main.memory)*sizeof(double)/1e3);
-    psi::fprintf(stdout, "Core used:      %9.1f kB\n", (dpd_main.memused)*sizeof(double)/1e3);
-    psi::fprintf(stdout, "Core available: %9.1f kB\n", dpd_memfree()*sizeof(double)/1e3);
-    psi::fprintf(stdout, "Core cached:    %9.1f kB\n", (dpd_main.memcache)*sizeof(double)/1e3);
-    psi::fprintf(stdout, "Locked cached:  %9.1f kB\n", (dpd_main.memlocked)*sizeof(double)/1e3);
-    psi::fprintf(stdout, "Most recent entry  = %d\n", dpd_main.file4_cache_most_recent);
-    psi::fprintf(stdout, "Least recent entry = %d\n", dpd_main.file4_cache_least_recent);
+    outfile->Printf( "Core max size:  %9.1f kB\n", (dpd_main.memory)*sizeof(double)/1e3);
+    outfile->Printf( "Core used:      %9.1f kB\n", (dpd_main.memused)*sizeof(double)/1e3);
+    outfile->Printf( "Core available: %9.1f kB\n", dpd_memfree()*sizeof(double)/1e3);
+    outfile->Printf( "Core cached:    %9.1f kB\n", (dpd_main.memcache)*sizeof(double)/1e3);
+    outfile->Printf( "Locked cached:  %9.1f kB\n", (dpd_main.memlocked)*sizeof(double)/1e3);
+    outfile->Printf( "Most recent entry  = %d\n", dpd_main.file4_cache_most_recent);
+    outfile->Printf( "Least recent entry = %d\n", dpd_main.file4_cache_least_recent);
 }
 
-void DPD::file4_cache_print(FILE *outfile)
+void DPD::file4_cache_print(std::string out)
 {
     int total_size=0;
+    boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+             boost::shared_ptr<OutFile>(new OutFile(out)));
     dpd_file4_cache_entry *this_entry;
 
     this_entry = dpd_main.file4_cache;
 
-    psi::fprintf(outfile, "\n\tDPD File4 Cache Listing:\n\n");
-    psi::fprintf(outfile,
+    printer->Printf( "\n\tDPD File4 Cache Listing:\n\n");
+    printer->Printf(
             "Cache Label            DPD File symm  pq  rs  use acc clean    pri lock size(kB)\n");
-    psi::fprintf(outfile,
+    printer->Printf(
             "--------------------------------------------------------------------------------\n");
     while(this_entry != NULL) {
-        psi::fprintf(outfile,
+        printer->Printf(
                 "%-22s  %1d   %3d   %1d   %2d  %2d  %3d %3d    %1d  %6d   %1d  %8.1f\n",
                 this_entry->label, this_entry->dpdnum, this_entry->filenum, this_entry->irrep,
                 this_entry->pqnum, this_entry->rsnum, this_entry->usage, this_entry->access,
@@ -323,20 +325,20 @@ void DPD::file4_cache_print(FILE *outfile)
         total_size += this_entry->size;
         this_entry = this_entry->next;
     }
-    psi::fprintf(outfile,
+    printer->Printf(
             "--------------------------------------------------------------------------------\n");
-    psi::fprintf(outfile, "Total cached: %8.1f kB; MRU = %6d; LRU = %6d\n",
+    printer->Printf( "Total cached: %8.1f kB; MRU = %6d; LRU = %6d\n",
             (total_size*sizeof(double))/1e3,dpd_main.file4_cache_most_recent,
             dpd_main.file4_cache_least_recent);
-    psi::fprintf(outfile, "#LRU deletions = %6d; #Low-priority deletions = %6d\n",
+    printer->Printf( "#LRU deletions = %6d; #Low-priority deletions = %6d\n",
             dpd_main.file4_cache_lru_del,dpd_main.file4_cache_low_del);
-    psi::fprintf(outfile, "Core max size:  %9.1f kB\n", (dpd_main.memory)*sizeof(double)/1e3);
-    psi::fprintf(outfile, "Core used:      %9.1f kB\n", (dpd_main.memused)*sizeof(double)/1e3);
-    psi::fprintf(outfile, "Core available: %9.1f kB\n", dpd_memfree()*sizeof(double)/1e3);
-    psi::fprintf(outfile, "Core cached:    %9.1f kB\n", (dpd_main.memcache)*sizeof(double)/1e3);
-    psi::fprintf(outfile, "Locked cached:  %9.1f kB\n", (dpd_main.memlocked)*sizeof(double)/1e3);
-    psi::fprintf(outfile, "Most recent entry  = %d\n", dpd_main.file4_cache_most_recent);
-    psi::fprintf(outfile, "Least recent entry = %d\n", dpd_main.file4_cache_least_recent);
+    printer->Printf( "Core max size:  %9.1f kB\n", (dpd_main.memory)*sizeof(double)/1e3);
+    printer->Printf( "Core used:      %9.1f kB\n", (dpd_main.memused)*sizeof(double)/1e3);
+    printer->Printf( "Core available: %9.1f kB\n", dpd_memfree()*sizeof(double)/1e3);
+    printer->Printf( "Core cached:    %9.1f kB\n", (dpd_main.memcache)*sizeof(double)/1e3);
+    printer->Printf( "Locked cached:  %9.1f kB\n", (dpd_main.memlocked)*sizeof(double)/1e3);
+    printer->Printf( "Most recent entry  = %d\n", dpd_main.file4_cache_most_recent);
+    printer->Printf( "Least recent entry = %d\n", dpd_main.file4_cache_least_recent);
 }
 
 dpd_file4_cache_entry*
@@ -365,9 +367,9 @@ DPD::file4_cache_find_lru(void)
     }
 
     /*
-  dpd_file4_cache_print(stderr);
-  psi::fprintf(stderr, "Possibly out of memory!\n");
-  dpd_error("Error locating file4_cache LRU!", stderr);
+  dpd_file4_cache_print("outfile");
+  outfile->Printf( "Possibly out of memory!\n");
+  dpd_error("Error locating file4_cache LRU!", "outfile");
   */
     return(NULL);
 }
@@ -434,7 +436,7 @@ void DPD::file4_cache_dirty(dpdfile4 *File)
     if((this_entry == NULL && File->incore) ||
             (this_entry != NULL && !File->incore) ||
             (this_entry == NULL && !File->incore))
-        dpd_error("Error setting file4_cache dirty flag!", stderr);
+        dpd_error("Error setting file4_cache dirty flag!", "outfile");
     else {
         this_entry->clean = 0;
     }

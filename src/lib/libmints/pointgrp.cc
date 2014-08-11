@@ -320,7 +320,7 @@ const char* PointGroup::bits_to_full_name(unsigned char bits)
     case PointGroups::D2h:
         return "D2h";
     default:
-        psi::fprintf(stderr, "Unrecognized point group bits: %d\n", bits);
+        outfile->Printf( "Unrecognized point group bits: %d\n", bits);
         throw PSIEXCEPTION("Unrecognized point group bits");
     }
 }
@@ -353,15 +353,17 @@ const char* PointGroup::bits_to_basic_name(unsigned char bits)
     case PointGroups::D2h:
         return "d2h";
     default:
-        psi::fprintf(stderr, "Unrecognized point group bits: %d\n", bits);
+        outfile->Printf( "Unrecognized point group bits: %d\n", bits);
         throw PSIEXCEPTION("Unrecognized point group bits");
     }
 }
 
 void
-PointGroup::print(FILE *out) const
+PointGroup::print(std::string out) const
 {
-    psi::fprintf(outfile, "PointGroup: %s\n", symb.c_str());
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(out)));
+   printer->Printf( "PointGroup: %s\n", symb.c_str());
 }
 
 /////////////////////////////////////////////////////////////////////////////

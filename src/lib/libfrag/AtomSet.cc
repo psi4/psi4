@@ -76,7 +76,10 @@ double AtomSet::Distance(AtomSet&other) {
 
 void AtomSet::Copy(const AtomSet& other) {
    this->Ghosts=other.Ghosts;
+   this->Charges=other.Charges;
+   this->Caps=other.Caps;
    this->Elem2Atoms=other.Elem2Atoms;
+   this->CoM=other.CoM;
 }
 
 }//End namespace

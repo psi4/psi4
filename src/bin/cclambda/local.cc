@@ -70,13 +70,13 @@ void local_init(void)
   local.nocc = moinfo.occpi[0]; /* active doubly occupied orbitals */
   local.nvir = moinfo.virtpi[0]; /* active virtual orbitals */
 
-  psi::fprintf(outfile, "\tLocalization parameters ready.\n\n");
-  fflush(outfile);
+  outfile->Printf( "\tLocalization parameters ready.\n\n");
+  
 }
 
 void local_done(void)
 {
-  psi::fprintf(outfile, "\tLocal parameters free.\n");
+  outfile->Printf( "\tLocal parameters free.\n");
 }
 
 void local_filter_T1(dpdfile2 *T1)
@@ -128,7 +128,7 @@ void local_filter_T1(dpdfile2 *T1)
     ii = i * nocc + i;  /* diagonal element of pair matrices */
 
     if(!local.pairdom_len[ii]) {
-      psi::fprintf(outfile, "\n\tlocal_filter_T1: Pair ii = [%d] is zero-length, which makes no sense.\n",ii);
+      outfile->Printf( "\n\tlocal_filter_T1: Pair ii = [%d] is zero-length, which makes no sense.\n",ii);
       throw PsiException("cclambda: error", __FILE__, __LINE__);
     }
 

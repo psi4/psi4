@@ -73,14 +73,14 @@ void mp2(void)
     global_dpd_->buf4_close(&D);
 
     if(params.local) {
-      psi::fprintf(outfile, "\n\tSolving for LMP2 wave function:\n");
-      psi::fprintf(outfile,   "\t-------------------------------\n");
-      psi::fprintf(outfile, "\titer = %d  LMP2 Energy = %20.14f\n", 0, energy);
+      outfile->Printf( "\n\tSolving for LMP2 wave function:\n");
+      outfile->Printf(   "\t-------------------------------\n");
+      outfile->Printf( "\titer = %d  LMP2 Energy = %20.14f\n", 0, energy);
     }
     else {
-      psi::fprintf(outfile, "\n\tSolving for MP2 wave function:\n");
-      psi::fprintf(outfile,   "\t-------------------------------\n");
-      psi::fprintf(outfile, "\titer = %d  MP2 Energy = %20.14f\n", 0, energy);
+      outfile->Printf( "\n\tSolving for MP2 wave function:\n");
+      outfile->Printf(   "\t-------------------------------\n");
+      outfile->Printf( "\titer = %d  MP2 Energy = %20.14f\n", 0, energy);
     }
 
     conv = 0;
@@ -149,15 +149,15 @@ void mp2(void)
       rms = sqrt(rms);
 
       if(params.local) {
-	psi::fprintf(outfile, "\titer = %d   LMP2 Energy = %20.14f   RMS = %4.3e\n", iter, energy, rms);
+	outfile->Printf( "\titer = %d   LMP2 Energy = %20.14f   RMS = %4.3e\n", iter, energy, rms);
       }
       else {
-	psi::fprintf(outfile, "\titer = %d   MP2 Energy = %20.14f   RMS = %4.3e\n", iter, energy, rms);
+	outfile->Printf( "\titer = %d   MP2 Energy = %20.14f   RMS = %4.3e\n", iter, energy, rms);
       }
 
       if(rms < params.convergence) {
 	conv = 1;
-	psi::fprintf(outfile, "\n\tMP2 iterations converged.\n\n");
+	outfile->Printf( "\n\tMP2 iterations converged.\n\n");
 	break;
       }
       else {
@@ -168,7 +168,7 @@ void mp2(void)
     }
 
     if(!conv) {
-      psi::fprintf(outfile, "\n\tMP2 iterative procedure failed.\n");
+      outfile->Printf( "\n\tMP2 iterative procedure failed.\n");
       throw PsiException("cis MP2 iteration error", __FILE__, __LINE__);
     }
 

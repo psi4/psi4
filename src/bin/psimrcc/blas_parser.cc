@@ -28,7 +28,7 @@
 #include <algorithm>
 
 namespace psi{
-    extern FILE *outfile;
+    
     namespace psimrcc{
 
 typedef std::vector<std::string>            strvec;
@@ -54,7 +54,7 @@ int CCBLAS::parse(std::string& str){
   std::string assignment(split_str[1]);
   strvec::iterator strveciter(find(allowed_assignments.begin(),allowed_assignments.end(),assignment));
   if(strveciter==allowed_assignments.end())
-    psi::fprintf(outfile,"\n\nCCBLAS::parse() %s is not a proper assigment\n\nin the expression:\n\t%s\n\n",assignment.c_str(),str.c_str());
+    outfile->Printf("\n\nCCBLAS::parse() %s is not a proper assigment\n\nin the expression:\n\t%s\n\n",assignment.c_str(),str.c_str());
 
   // Eliminate the first two strings and store the rest of the terms
   strvec::iterator iter = split_str.begin();
@@ -159,9 +159,9 @@ double get_number(const std::string& str){
     if(unsigned_numerator.size() * denominator.size()!=0){
       value=ToDouble(numerator)/ToDouble(denominator);
     }else{
-      psi::fprintf(outfile,"\n\nSolve couldn't parse the numerical factor %s\n\n",str.c_str());
-      psi::fprintf(outfile,"\n\nCritical Breakdown of the Program. Blame the programmers!!!\n\n");
-      fflush(outfile);
+      outfile->Printf("\n\nSolve couldn't parse the numerical factor %s\n\n",str.c_str());
+      outfile->Printf("\n\nCritical Breakdown of the Program. Blame the programmers!!!\n\n");
+      
       exit(1);
     }
 

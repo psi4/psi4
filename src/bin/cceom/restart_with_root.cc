@@ -46,7 +46,7 @@ void restart_with_root(int prop_root, int C_irr) {
   dpdbuf4 CMNEF, Cmnef, CMnEf;
   char lbl[32];
 
-  psi::fprintf(outfile,"Copying root %d to start of EOM_Cxxx files.\n",prop_root+1);
+  outfile->Printf("Copying root %d to start of EOM_Cxxx files.\n",prop_root+1);
 
   if (params.eom_ref == 0) {
     sprintf(lbl, "CME %d", prop_root);
@@ -123,7 +123,7 @@ void save_C_ccsd(int prop_root, int C_irr) {
   dpdbuf4 CMNEF, Cmnef, CMnEf;
   char lbl[32];
 
-  psi::fprintf(outfile,"Copying root %d to CC3_MISC file.\n",prop_root+1);
+  outfile->Printf("Copying root %d to CC3_MISC file.\n",prop_root+1);
 
   if (params.eom_ref == 0) {
     sprintf(lbl, "CME %d", prop_root);

@@ -75,21 +75,21 @@ SharedMatrix SCFGrad::compute_gradient()
 {
     // => Echo <= //
 
-    psi::fprintf(outfile, "\n");
-    psi::fprintf(outfile, "         ------------------------------------------------------------\n");
-    psi::fprintf(outfile, "                                   SCF GRAD                          \n"); 
-    psi::fprintf(outfile, "                          Rob Parrish, Justin Turney,                \n"); 
-    psi::fprintf(outfile, "                       Andy Simmonett, and Alex Sokolov              \n"); 
-    psi::fprintf(outfile, "         ------------------------------------------------------------\n\n");
+    outfile->Printf( "\n");
+    outfile->Printf( "         ------------------------------------------------------------\n");
+    outfile->Printf( "                                   SCF GRAD                          \n"); 
+    outfile->Printf( "                          Rob Parrish, Justin Turney,                \n"); 
+    outfile->Printf( "                       Andy Simmonett, and Alex Sokolov              \n"); 
+    outfile->Printf( "         ------------------------------------------------------------\n\n");
 
-    psi::fprintf(outfile, "  ==> Geometry <==\n\n");
+    outfile->Printf( "  ==> Geometry <==\n\n");
     molecule_->print();
 
-    psi::fprintf(outfile, "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
-    psi::fprintf(outfile, "\n");
+    outfile->Printf( "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
+    outfile->Printf( "\n");
 
-    psi::fprintf(outfile, "  ==> Basis Set <==\n\n");
-    basisset_->print_by_level(outfile, print_);
+    outfile->Printf( "  ==> Basis Set <==\n\n");
+    basisset_->print_by_level("outfile", print_);
 
     // => Registers <= //
 
@@ -519,21 +519,21 @@ SharedMatrix SCFGrad::compute_hessian()
 {
     // => Echo <= //
 
-    psi::fprintf(outfile, "\n");
-    psi::fprintf(outfile, "         ------------------------------------------------------------\n");
-    psi::fprintf(outfile, "                                   SCF HESS                          \n"); 
-    psi::fprintf(outfile, "                          Rob Parrish, Justin Turney,                \n"); 
-    psi::fprintf(outfile, "                       Andy Simmonett, and Alex Sokolov              \n"); 
-    psi::fprintf(outfile, "         ------------------------------------------------------------\n\n");
+    outfile->Printf( "\n");
+    outfile->Printf( "         ------------------------------------------------------------\n");
+    outfile->Printf( "                                   SCF HESS                          \n"); 
+    outfile->Printf( "                          Rob Parrish, Justin Turney,                \n"); 
+    outfile->Printf( "                       Andy Simmonett, and Alex Sokolov              \n"); 
+    outfile->Printf( "         ------------------------------------------------------------\n\n");
 
-    psi::fprintf(outfile, "  ==> Geometry <==\n\n");
+    outfile->Printf( "  ==> Geometry <==\n\n");
     molecule_->print();
 
-    psi::fprintf(outfile, "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
-    psi::fprintf(outfile, "\n");
+    outfile->Printf( "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
+    outfile->Printf( "\n");
 
-    psi::fprintf(outfile, "  ==> Basis Set <==\n\n");
-    basisset_->print_by_level(outfile, print_);
+    outfile->Printf( "  ==> Basis Set <==\n\n");
+    basisset_->print_by_level("outfile", print_);
 
     // => Registers <= //
 

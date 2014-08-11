@@ -74,9 +74,9 @@ void get_params(Options &options)
 
   /* Make sure the value of ref matches that from CC_INFO */
   if(params.ref != ref) {
-    psi::fprintf(outfile, "Value of REFERENCE from input.dat (%1d) and CC_INFO (%1d) do not match!\n",
+    outfile->Printf( "Value of REFERENCE from input.dat (%1d) and CC_INFO (%1d) do not match!\n",
             ref, params.ref);
-    psi::fprintf(outfile, "Is this what you want to do?\n");
+    outfile->Printf( "Is this what you want to do?\n");
     params.ref = ref;
   }
 
@@ -194,50 +194,50 @@ void get_params(Options &options)
   params.sekino = options.get_bool("SEKINO");
   params.linear = options.get_bool("LINEAR");
 
-  psi::fprintf(outfile, "\n\tInput parameters:\n");
-  psi::fprintf(outfile, "\t-----------------\n");
+  outfile->Printf( "\n\tInput parameters:\n");
+  outfile->Printf( "\t-----------------\n");
   if(params.prop == "ALL")
-    psi::fprintf(outfile, "\tProperty         =    POLARIZABILITY + ROTATION\n");
+    outfile->Printf( "\tProperty         =    POLARIZABILITY + ROTATION\n");
   else
-    psi::fprintf(outfile, "\tProperty         =    %s\n", params.prop.c_str());
-  psi::fprintf(outfile, "\tReference wfn    =    %5s\n",
+    outfile->Printf( "\tProperty         =    %s\n", params.prop.c_str());
+  outfile->Printf( "\tReference wfn    =    %5s\n",
           (params.ref == 0) ? "RHF" : ((params.ref == 1) ? "ROHF" : "UHF"));
-  psi::fprintf(outfile, "\tMemory (Mbytes)  =  %5.1f\n",params.memory/1e6);
-  psi::fprintf(outfile, "\tCache Level      =    %1d\n", params.cachelev);
-  psi::fprintf(outfile, "\tPrint Level      =    %1d\n",  params.print);
-  psi::fprintf(outfile, "\tMaxiter          =    %3d\n",  params.maxiter);
-  psi::fprintf(outfile, "\tConvergence      = %3.1e\n", params.convergence);
-  psi::fprintf(outfile, "\tRestart          =     %s\n", params.restart ? "Allowed" : "Not Allowed");
-  psi::fprintf(outfile, "\tDIIS             =     %s\n", params.diis ? "Yes" : "No");
-  psi::fprintf(outfile, "\tModel III        =     %s\n", params.sekino ? "Yes" : "No");
-  psi::fprintf(outfile, "\tLinear Model     =     %s\n", params.linear ? "Yes" : "No");
-  psi::fprintf(outfile, "\tABCD             =     %s\n", params.abcd.c_str());
-  psi::fprintf(outfile, "\tIrrep X          =    %3s\n", moinfo.labels[moinfo.mu_irreps[0]]);
-  psi::fprintf(outfile, "\tIrrep Y          =    %3s\n", moinfo.labels[moinfo.mu_irreps[1]]);
-  psi::fprintf(outfile, "\tIrrep Z          =    %3s\n", moinfo.labels[moinfo.mu_irreps[2]]);
-  psi::fprintf(outfile, "\tIrrep RX         =    %3s\n", moinfo.labels[moinfo.l_irreps[0]]);
-  psi::fprintf(outfile, "\tIrrep RY         =    %3s\n", moinfo.labels[moinfo.l_irreps[1]]);
-  psi::fprintf(outfile, "\tIrrep RZ         =    %3s\n", moinfo.labels[moinfo.l_irreps[2]]);
-  psi::fprintf(outfile, "\tGauge            =    %s\n", params.gauge.c_str());
+  outfile->Printf( "\tMemory (Mbytes)  =  %5.1f\n",params.memory/1e6);
+  outfile->Printf( "\tCache Level      =    %1d\n", params.cachelev);
+  outfile->Printf( "\tPrint Level      =    %1d\n",  params.print);
+  outfile->Printf( "\tMaxiter          =    %3d\n",  params.maxiter);
+  outfile->Printf( "\tConvergence      = %3.1e\n", params.convergence);
+  outfile->Printf( "\tRestart          =     %s\n", params.restart ? "Allowed" : "Not Allowed");
+  outfile->Printf( "\tDIIS             =     %s\n", params.diis ? "Yes" : "No");
+  outfile->Printf( "\tModel III        =     %s\n", params.sekino ? "Yes" : "No");
+  outfile->Printf( "\tLinear Model     =     %s\n", params.linear ? "Yes" : "No");
+  outfile->Printf( "\tABCD             =     %s\n", params.abcd.c_str());
+  outfile->Printf( "\tIrrep X          =    %3s\n", moinfo.labels[moinfo.mu_irreps[0]]);
+  outfile->Printf( "\tIrrep Y          =    %3s\n", moinfo.labels[moinfo.mu_irreps[1]]);
+  outfile->Printf( "\tIrrep Z          =    %3s\n", moinfo.labels[moinfo.mu_irreps[2]]);
+  outfile->Printf( "\tIrrep RX         =    %3s\n", moinfo.labels[moinfo.l_irreps[0]]);
+  outfile->Printf( "\tIrrep RY         =    %3s\n", moinfo.labels[moinfo.l_irreps[1]]);
+  outfile->Printf( "\tIrrep RZ         =    %3s\n", moinfo.labels[moinfo.l_irreps[2]]);
+  outfile->Printf( "\tGauge            =    %s\n", params.gauge.c_str());
   for(i=0; i < params.nomega; i++) {
     if(params.omega[i] == 0.0)
-      psi::fprintf(outfile, "\tApplied field %2d =  0.000\n", i);
+      outfile->Printf( "\tApplied field %2d =  0.000\n", i);
     else
-      psi::fprintf(outfile, "\tApplied field %2d =    %5.3f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", i, params.omega[i],
+      outfile->Printf( "\tApplied field %2d =    %5.3f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", i, params.omega[i],
               (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]), pc_hartree2ev*params.omega[i],
               pc_hartree2wavenumbers*params.omega[i]);
   }
-  psi::fprintf(outfile, "\tAnalyze X2 Amps  =    %s\n", params.analyze ? "Yes" : "No");
-  psi::fprintf(outfile, "\tLocal CC         =    %s\n", params.local ? "Yes" : "No");
+  outfile->Printf( "\tAnalyze X2 Amps  =    %s\n", params.analyze ? "Yes" : "No");
+  outfile->Printf( "\tLocal CC         =    %s\n", params.local ? "Yes" : "No");
   if(params.local) {
-    psi::fprintf(outfile, "\tLocal Cutoff      = %3.1e\n", local.cutoff);
-    psi::fprintf(outfile, "\tLocal Method      =    %s\n", local.method.c_str());
-    psi::fprintf(outfile, "\tWeak pairs        =    %s\n", local.weakp.c_str());
-    psi::fprintf(outfile, "\tFilter singles    =    %s\n", local.filter_singles ? "Yes" : "No");
-    psi::fprintf(outfile, "\tLocal pairs       =    %s\n", local.pairdef.c_str());
-    psi::fprintf(outfile, "\tLocal CPHF cutoff =  %3.1e\n", local.cphf_cutoff);
+    outfile->Printf( "\tLocal Cutoff      = %3.1e\n", local.cutoff);
+    outfile->Printf( "\tLocal Method      =    %s\n", local.method.c_str());
+    outfile->Printf( "\tWeak pairs        =    %s\n", local.weakp.c_str());
+    outfile->Printf( "\tFilter singles    =    %s\n", local.filter_singles ? "Yes" : "No");
+    outfile->Printf( "\tLocal pairs       =    %s\n", local.pairdef.c_str());
+    outfile->Printf( "\tLocal CPHF cutoff =  %3.1e\n", local.cphf_cutoff);
   }
-  psi::fprintf(outfile, "\n");
+  outfile->Printf( "\n");
 }
 
 

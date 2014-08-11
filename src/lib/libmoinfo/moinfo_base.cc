@@ -32,7 +32,7 @@
 
 #include "moinfo_base.h"
 
-extern FILE *outfile;
+
 
 using namespace std;
 
@@ -125,8 +125,8 @@ void MOInfoBase::read_mo_space(int nirreps_ref, int& n, intvec& mo, string label
         mo.assign(nirreps_ref,0);
         n = 0;
         if(read){
-            psi::fprintf(outfile,"\n\n  libmoinfo has found a redundancy in the input keywords %s , please fix it!",labels.c_str());
-            fflush(outfile);
+            outfile->Printf("\n\n  libmoinfo has found a redundancy in the input keywords %s , please fix it!",labels.c_str());
+            
             exit(1);
         }else{
             read = true;
@@ -137,8 +137,8 @@ void MOInfoBase::read_mo_space(int nirreps_ref, int& n, intvec& mo, string label
                 n += mo[i];
             }
         }else{
-            psi::fprintf(outfile,"\n\n  The size of the %s array (%d) does not match the number of irreps (%d), please fix the input file",label_vec[k].c_str(),size,nirreps_ref);
-            fflush(outfile);
+            outfile->Printf("\n\n  The size of the %s array (%d) does not match the number of irreps (%d), please fix the input file",label_vec[k].c_str(),size,nirreps_ref);
+            
             exit(1);
         }
     }
@@ -146,13 +146,13 @@ void MOInfoBase::read_mo_space(int nirreps_ref, int& n, intvec& mo, string label
 
 void MOInfoBase::print_mo_space(int& n, intvec& mo, std::string labels)
 {
-  psi::fprintf(outfile,"\n  %s",labels.c_str());
+  outfile->Printf("\n  %s",labels.c_str());
 
   for(int i=nirreps;i<8;i++)
-    psi::fprintf(outfile,"     ");
+    outfile->Printf("     ");
   for(int i=0;i<nirreps;i++)
-    psi::fprintf(outfile," %3d ",mo[i]);
-  psi::fprintf(outfile,"  %3d",n);
+    outfile->Printf(" %3d ",mo[i]);
+  outfile->Printf("  %3d",n);
 }
 
 void MOInfoBase::correlate(char *ptgrp, int irrep, int& nirreps_old, int& nirreps_new,int*& arr)
@@ -176,7 +176,7 @@ void MOInfoBase::correlate(char *ptgrp, int irrep, int& nirreps_old, int& nirrep
   else if (strcmp(ptgrp,"D2h") == 0)
     nirreps_old = 8;
   else {
-    psi::fprintf(outfile,"point group %s unknown.\n",ptgrp);
+    outfile->Printf("point group %s unknown.\n",ptgrp);
     exit(1);
   }
 
@@ -245,7 +245,7 @@ void MOInfoBase::correlate(char *ptgrp, int irrep, int& nirreps_old, int& nirrep
     }
   }
   else {
-    psi::fprintf(outfile,"Point group unknown for correlation table.\n");
+    outfile->Printf("Point group unknown for correlation table.\n");
   }
   return;
 }

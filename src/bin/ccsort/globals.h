@@ -29,7 +29,7 @@
 #include <libciomr/libciomr.h>
 
 namespace psi {
-extern FILE* outfile;
+
 namespace ccsort {
 
 /* Global variables */

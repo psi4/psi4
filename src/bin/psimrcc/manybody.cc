@@ -46,7 +46,7 @@
 #include "sort.h"
 
 namespace psi{
-    extern FILE *outfile;
+    
     namespace psimrcc{
     extern MOInfo *moinfo;
     extern MemoryManager* memory_manager;
@@ -100,8 +100,8 @@ void CCManyBody::generate_integrals()
 {
   Timer timer;
   DEBUGGING(1,
-    psi::fprintf(outfile,"\n\tvoid CCManyBody::generate_integrals()");
-    fflush(outfile);
+    outfile->Printf("\n\tvoid CCManyBody::generate_integrals()");
+    
   )
   // CCSort reads the one and two electron integrals
   // and creates the Fock matrices
@@ -111,8 +111,8 @@ void CCManyBody::generate_integrals()
 //   blas->show_storage();
 
   DEBUGGING(1,
-    psi::fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   )
 }
 
@@ -313,8 +313,8 @@ void CCManyBody::compute_reference_energy()
 {
   Timer timer;
   DEBUGGING(3,
-    psi::fprintf(outfile,"\n\tvoid CCManyBody::compute_reference_energy()");
-    fflush(outfile);
+    outfile->Printf("\n\tvoid CCManyBody::compute_reference_energy()");
+    
   )
 
   // Compute the zeroth-order energy for the unique references
@@ -353,29 +353,29 @@ void CCManyBody::compute_reference_energy()
 
   DEBUGGING(3,
     blas->print("ERef{u}");
-    psi::fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   )
 }
 
 void CCManyBody::print_method(const char* text)
 {
-  psi::fprintf(outfile,"\n");
-  psi::fprintf(outfile,"\n  ==============================================================================");
-  psi::fprintf(outfile,"\n  %s",text);
-  psi::fprintf(outfile,"\n  ==============================================================================");
-  psi::fprintf(outfile,"\n");
-  fflush(outfile);
+  outfile->Printf("\n");
+  outfile->Printf("\n  ==============================================================================");
+  outfile->Printf("\n  %s",text);
+  outfile->Printf("\n  ==============================================================================");
+  outfile->Printf("\n");
+  
 }
 
 void CCManyBody::print_eigensystem(int ndets, double** Heff,double*& eigenvector)
 {
   if(ndets < 8){
-    psi::fprintf(outfile,"\n\n  Heff Matrix\n");
+    outfile->Printf("\n\n  Heff Matrix\n");
     for(int i=0;i<ndets;i++){
-      psi::fprintf(outfile,"\n  ");
+      outfile->Printf("\n  ");
       for(int j=0;j<ndets;j++)
-        psi::fprintf(outfile," %22.15f",Heff[i][j]);
+        outfile->Printf(" %22.15f",Heff[i][j]);
     }
   }
 
@@ -385,10 +385,10 @@ void CCManyBody::print_eigensystem(int ndets, double** Heff,double*& eigenvector
   }
   sort(eigenvector_index_pair.begin(),eigenvector_index_pair.end(),greater<pair<double,int> >());
   int max_size_list = std::min(10,static_cast<int>(eigenvector_index_pair.size()));
-  psi::fprintf(outfile,"\n\n  Most important determinants in the wave function");
-  psi::fprintf(outfile,"\n\n  determinant  eigenvector   eigenvector^2\n");
+  outfile->Printf("\n\n  Most important determinants in the wave function");
+  outfile->Printf("\n\n  determinant  eigenvector   eigenvector^2\n");
   for(int i = 0; i < max_size_list; ++i){
-    psi::fprintf(outfile,"\n  %11d   %9.6f    %9.6f  %s",eigenvector_index_pair[i].second
+    outfile->Printf("\n  %11d   %9.6f    %9.6f  %s",eigenvector_index_pair[i].second
                                              ,eigenvector[eigenvector_index_pair[i].second]
                                              ,eigenvector_index_pair[i].first
                                              ,moinfo->get_determinant_label(eigenvector_index_pair[i].second).c_str());
@@ -451,35 +451,35 @@ double CCManyBody::diagonalize_Heff(int root,int ndets, double** Heff,double*& r
 
   if(initial){
     if(ndets < 8){
-      psi::fprintf(outfile,"\n\n  Heff Matrix\n");
+      outfile->Printf("\n\n  Heff Matrix\n");
       for(int i=0;i<ndets;i++){
-        psi::fprintf(outfile,"\n  ");
+        outfile->Printf("\n  ");
         for(int j=0;j<ndets;j++)
-          psi::fprintf(outfile," %22.12f",Heff[i][j]);
+          outfile->Printf(" %22.12f",Heff[i][j]);
       }
 
-      psi::fprintf(outfile,"\n\n  Left Matrix\n");
+      outfile->Printf("\n\n  Left Matrix\n");
       for(int i=0;i<ndets;i++){
-        psi::fprintf(outfile,"\n  ");
+        outfile->Printf("\n  ");
         for(int j=0;j<ndets;j++)
-          psi::fprintf(outfile," %22.12f",left[j][i]);
+          outfile->Printf(" %22.12f",left[j][i]);
       }
 
-      psi::fprintf(outfile,"\n\n  Right Matrix\n");
+      outfile->Printf("\n\n  Right Matrix\n");
       for(int i=0;i<ndets;i++){
-        psi::fprintf(outfile,"\n  ");
+        outfile->Printf("\n  ");
         for(int j=0;j<ndets;j++)
-          psi::fprintf(outfile," %22.12f",right[j][i]);
+          outfile->Printf(" %22.12f",right[j][i]);
       }
 
-      psi::fprintf(outfile,"\n\n  Real                  Imaginary\n");
+      outfile->Printf("\n\n  Real                  Imaginary\n");
       for(int i=0;i<ndets;i++)
-        psi::fprintf(outfile,"\n  %22.12f   %22.12f",real[i],imaginary[i]);
-      psi::fprintf(outfile,"\n");
+        outfile->Printf("\n  %22.12f   %22.12f",real[i],imaginary[i]);
+      outfile->Printf("\n");
     }else{
-      psi::fprintf(outfile,"\n\n  There are too many determinants to print the eigensystem");
+      outfile->Printf("\n\n  There are too many determinants to print the eigensystem");
     }
-    psi::fprintf(outfile,"\n\n  The eigenvalue for root %d is %.12f (%.12f)",root,real[root],imaginary[root]);
+    outfile->Printf("\n\n  The eigenvalue for root %d is %.12f (%.12f)",root,real[root],imaginary[root]);
   }
 
   // Select the eigenvector to follow
@@ -493,7 +493,7 @@ double CCManyBody::diagonalize_Heff(int root,int ndets, double** Heff,double*& r
     // Eliminate the triplet solution if required
     if((options_.get_bool("LOCK_SINGLET")==1)&&(ndets==4)){
       if((fabs(right_eigenvector[0])<5.0e-2)&& (fabs(right_eigenvector[3])<5.0e-2) && ((right_eigenvector[1]/right_eigenvector[2])<-0.5)){
-        psi::fprintf(outfile,"\n\tSelecting root %d since original root is a triplet\n",root+1);
+        outfile->Printf("\n\tSelecting root %d since original root is a triplet\n",root+1);
         root++;
         for(int k=0;k<ndets;k++){
           right_eigenvector[k] = right[root][k];
@@ -684,7 +684,7 @@ void CCManyBody::sort_eigensystem(int ndets,double*& real,double*& imaginary,dou
 //      blas->print("t2[OO][VV]{u}");
 //    )
 //  }else{
-//    psi::fprintf(outfile,"\n  Warning: the internal amplitudes are not zeroed.\n  This is not proper Mk-MRCC. Size-extensivity might be lost\n");
+//    outfile->Printf("\n  Warning: the internal amplitudes are not zeroed.\n  This is not proper Mk-MRCC. Size-extensivity might be lost\n");
 //  }
 //}
 //
@@ -722,7 +722,7 @@ void CCManyBody::sort_eigensystem(int ndets,double*& real,double*& imaginary,dou
 //      blas->print("t1[O][V]{u}");
 //    )
 //  }else{
-//    psi::fprintf(outfile,"\n  Warning: the internal amplitudes are not zeroed.\n  This is not proper Mk-MRCC. Size-extensivity might be lost\n");
+//    outfile->Printf("\n  Warning: the internal amplitudes are not zeroed.\n  This is not proper Mk-MRCC. Size-extensivity might be lost\n");
 //  }
 //}
 //
@@ -828,7 +828,7 @@ void CCManyBody::sort_eigensystem(int ndets,double*& real,double*& imaginary,dou
 //      blas->print("t2_delta[OO][VV]{u}");
 //    )
 //  }else{
-//    psi::fprintf(outfile,"\n  Warning: the internal amplitudes are not zeroed.\n  This is not proper Mk-MRCC. Size-extensivity might be lost\n");
+//    outfile->Printf("\n  Warning: the internal amplitudes are not zeroed.\n  This is not proper Mk-MRCC. Size-extensivity might be lost\n");
 //  }
 //}
 

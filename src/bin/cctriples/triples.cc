@@ -137,14 +137,14 @@ PsiReturnType cctriples(Options &options)
   }
 
   count_ijk();
-  fflush(outfile);
+  
 
   if(params.ref == 0) { /** RHF **/
 
     if(params.wfn=="CCSD_T" || params.wfn=="BCCD_T") {
       ET = ET_RHF();
-      psi::fprintf(outfile, "\t(T) energy                    = %20.15f\n", ET);
-      psi::fprintf(outfile, "      * CCSD(T) total energy          = %20.15f\n",
+      outfile->Printf( "\t(T) energy                    = %20.15f\n", ET);
+      outfile->Printf( "      * CCSD(T) total energy          = %20.15f\n",
           ET + moinfo.ecc + moinfo.eref);
 
       Process::environment.globals["(T) CORRECTION ENERGY"] = ET;
@@ -153,8 +153,8 @@ PsiReturnType cctriples(Options &options)
     }
     else if(params.wfn=="CCSD_AT") {
       ET = EaT_RHF();
-      psi::fprintf(outfile, "\t(aT) energy                    = %20.15f\n", ET);
-      psi::fprintf(outfile, "      * CCSD(aT) total energy          = %20.15f\n",
+      outfile->Printf( "\t(aT) energy                    = %20.15f\n", ET);
+      outfile->Printf( "      * CCSD(aT) total energy          = %20.15f\n",
           ET + moinfo.ecc + moinfo.eref);
 
       Process::environment.globals["A-(T) CORRECTION ENERGY"] = ET;
@@ -172,16 +172,16 @@ PsiReturnType cctriples(Options &options)
     throw PsiException("ROHF-CCSD(T) is not yet available",__FILE__,__LINE__);
 
     ETAAA = ET_AAA();
-    psi::fprintf(outfile, "\tAAA (T) energy                = %20.15f\n", ETAAA);
+    outfile->Printf( "\tAAA (T) energy                = %20.15f\n", ETAAA);
     ETAAB = ET_AAB();
-    psi::fprintf(outfile, "\tAAB (T) energy                = %20.15f\n", ETAAB);
+    outfile->Printf( "\tAAB (T) energy                = %20.15f\n", ETAAB);
     ETABB = ET_ABB();
-    psi::fprintf(outfile, "\tABB (T) energy                = %20.15f\n", ETABB);
+    outfile->Printf( "\tABB (T) energy                = %20.15f\n", ETABB);
     ETBBB = ET_BBB();
-    psi::fprintf(outfile, "\tBBB (T) energy                = %20.15f\n", ETBBB);
+    outfile->Printf( "\tBBB (T) energy                = %20.15f\n", ETBBB);
     ET = ETAAA + ETAAB + ETABB + ETBBB;
-    psi::fprintf(outfile, "\t(T) energy                    = %20.15f\n", ET);
-    psi::fprintf(outfile, "      * CCSD(T) total energy          = %20.15f\n",
+    outfile->Printf( "\t(T) energy                    = %20.15f\n", ET);
+    outfile->Printf( "      * CCSD(T) total energy          = %20.15f\n",
         ET + moinfo.ecc + moinfo.eref);
 
     Process::environment.globals["AAA (T) CORRECTION ENERGY"] = ETAAA;
@@ -196,46 +196,46 @@ PsiReturnType cctriples(Options &options)
 
     if(params.dertype == 0) {
       ETAAA = ET_UHF_AAA();
-      psi::fprintf(outfile, "\tAAA (T) energy                = %20.15f\n", ETAAA);
-      fflush(outfile);
+      outfile->Printf( "\tAAA (T) energy                = %20.15f\n", ETAAA);
+      
 
       ETBBB = ET_UHF_BBB();
-      psi::fprintf(outfile, "\tBBB (T) energy                = %20.15f\n", ETBBB);
-      fflush(outfile);
+      outfile->Printf( "\tBBB (T) energy                = %20.15f\n", ETBBB);
+      
 
       ETAAB = ET_UHF_AAB();
-      psi::fprintf(outfile, "\tAAB (T) energy                = %20.15f\n", ETAAB);
-      fflush(outfile);
+      outfile->Printf( "\tAAB (T) energy                = %20.15f\n", ETAAB);
+      
 
       ETABB = ET_UHF_ABB();
-      psi::fprintf(outfile, "\tABB (T) energy                = %20.15f\n", ETABB);
-      fflush(outfile);
+      outfile->Printf( "\tABB (T) energy                = %20.15f\n", ETABB);
+      
     }
     else if(params.dertype==1) {
       transpose_integrals();
-      psi::fprintf(outfile, "\n\tComputing (T) contributions to CC density...\n");
-      fflush(outfile);
+      outfile->Printf( "\n\tComputing (T) contributions to CC density...\n");
+      
 
       ETAAA = T3_grad_UHF_AAA();
-      psi::fprintf(outfile, "\tAAA (T) energy                = %20.15f\n", ETAAA);
-      fflush(outfile);
+      outfile->Printf( "\tAAA (T) energy                = %20.15f\n", ETAAA);
+      
 
       ETBBB = T3_grad_UHF_BBB();
-      psi::fprintf(outfile, "\tBBB (T) energy                = %20.15f\n", ETBBB);
-      fflush(outfile);
+      outfile->Printf( "\tBBB (T) energy                = %20.15f\n", ETBBB);
+      
 
       ETAAB = T3_grad_UHF_AAB();
-      psi::fprintf(outfile, "\tAAB (T) energy                = %20.15f\n", ETAAB);
-      fflush(outfile);
+      outfile->Printf( "\tAAB (T) energy                = %20.15f\n", ETAAB);
+      
 
       ETABB = T3_grad_UHF_BBA();
-      psi::fprintf(outfile, "\tABB (T) energy                = %20.15f\n", ETABB);
-      fflush(outfile);
+      outfile->Printf( "\tABB (T) energy                = %20.15f\n", ETABB);
+      
     }
 
     ET = ETAAA + ETAAB + ETABB + ETBBB;
-    psi::fprintf(outfile, "\t(T) energy                    = %20.15f\n", ET);
-    psi::fprintf(outfile, "      * CCSD(T) total energy          = %20.15f\n",
+    outfile->Printf( "\t(T) energy                    = %20.15f\n", ET);
+    outfile->Printf( "      * CCSD(T) total energy          = %20.15f\n",
         ET + moinfo.ecc + moinfo.eref);
 
     Process::environment.globals["AAA (T) CORRECTION ENERGY"] = ETAAA;
@@ -248,7 +248,7 @@ PsiReturnType cctriples(Options &options)
 
   } // UHF
 
-  psi::fprintf(outfile, "\n");
+  outfile->Printf( "\n");
 
   /* Write total energy and (T) contribution to the checkpoint file */
   chkpt_init(PSIO_OPEN_OLD);
@@ -285,11 +285,11 @@ void init_io()
 
 void title(void)
 {
-  psi::fprintf(outfile, "\t\t\t**************************\n");
-  psi::fprintf(outfile, "\t\t\t*                        *\n");
-  psi::fprintf(outfile, "\t\t\t*        CCTRIPLES       *\n");
-  psi::fprintf(outfile, "\t\t\t*                        *\n");
-  psi::fprintf(outfile, "\t\t\t**************************\n");
+  outfile->Printf( "\t\t\t**************************\n");
+  outfile->Printf( "\t\t\t*                        *\n");
+  outfile->Printf( "\t\t\t*        CCTRIPLES       *\n");
+  outfile->Printf( "\t\t\t*                        *\n");
+  outfile->Printf( "\t\t\t**************************\n");
 }
 
 void exit_io(void)

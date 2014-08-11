@@ -77,8 +77,8 @@ void deanti_UHF(struct RHO_Params rho_params)
   dpdbuf4 G, G2, A, B, C, D, E, F;
   double one_energy=0.0, two_energy=0.0, total_two_energy=0.0;
 
-  psi::fprintf(outfile, "\n\tEnergies re-computed from Mulliken density:\n");
-  psi::fprintf(outfile,   "\t-------------------------------------------\n");
+  outfile->Printf( "\n\tEnergies re-computed from Mulliken density:\n");
+  outfile->Printf(   "\t-------------------------------------------\n");
 
   global_dpd_->file2_init(&d, PSIF_CC_OEI, 0, 0, 0, rho_params.DIJ_lbl);
   global_dpd_->file2_init(&h, PSIF_CC_OEI, 0, 0, 0, "h(I,J)");
@@ -128,8 +128,8 @@ void deanti_UHF(struct RHO_Params rho_params)
   global_dpd_->file2_close(&h);
   global_dpd_->file2_close(&d);
 
-  psi::fprintf(outfile, "\tOne-electron energy        = %20.15f\n", one_energy);
-  fflush(outfile);
+  outfile->Printf( "\tOne-electron energy        = %20.15f\n", one_energy);
+  
 
   /* G(Ij,Kl) = 1/2 G(Ij,Kl) */
   global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 22, 22, 22, 22, 0, "GIjKl");
@@ -138,7 +138,7 @@ void deanti_UHF(struct RHO_Params rho_params)
   two_energy = 2*global_dpd_->buf4_dot(&A, &G);
   global_dpd_->buf4_close(&A);
   global_dpd_->buf4_close(&G);
-  psi::fprintf(outfile, "\tIjKl energy                = %20.15f\n", two_energy);
+  outfile->Printf( "\tIjKl energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
 
   /* G(IJ,KL) = 1/2 G(IJ,KL) */
@@ -148,7 +148,7 @@ void deanti_UHF(struct RHO_Params rho_params)
   two_energy = global_dpd_->buf4_dot(&A, &G);
   global_dpd_->buf4_close(&A);
   global_dpd_->buf4_close(&G);
-  psi::fprintf(outfile, "\tIJKL energy                = %20.15f\n", two_energy);
+  outfile->Printf( "\tIJKL energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
 
   /* G(ij,kl) = 1/2 G(ij,kl) */
@@ -158,7 +158,7 @@ void deanti_UHF(struct RHO_Params rho_params)
   two_energy = global_dpd_->buf4_dot(&A, &G);
   global_dpd_->buf4_close(&A);
   global_dpd_->buf4_close(&G);
-  psi::fprintf(outfile, "\tijkl energy                = %20.15f\n", two_energy);
+  outfile->Printf( "\tijkl energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
 
   /* No change to G(IJ,KA) components */
@@ -173,7 +173,7 @@ void deanti_UHF(struct RHO_Params rho_params)
   two_energy += 2*global_dpd_->buf4_dot(&E, &G);
   global_dpd_->buf4_close(&E);
   global_dpd_->buf4_close(&G);
-  psi::fprintf(outfile, "\tIjKa+iJkA energy           = %20.15f\n", two_energy);
+  outfile->Printf( "\tIjKa+iJkA energy           = %20.15f\n", two_energy);
   total_two_energy += two_energy;
 
   global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 20, 2, 20, 0, "GIJKA");
@@ -181,7 +181,7 @@ void deanti_UHF(struct RHO_Params rho_params)
   two_energy = 2*global_dpd_->buf4_dot(&E, &G);
   global_dpd_->buf4_close(&E);
   global_dpd_->buf4_close(&G);
-  psi::fprintf(outfile, "\tIJKA energy                = %20.15f\n", two_energy);
+  outfile->Printf( "\tIJKA energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
 
   global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 30, 12, 30, 0, "Gijka");
@@ -189,7 +189,7 @@ void deanti_UHF(struct RHO_Params rho_params)
   two_energy = 2*global_dpd_->buf4_dot(&E, &G);
   global_dpd_->buf4_close(&E);
   global_dpd_->buf4_close(&G);
-  psi::fprintf(outfile, "\tijka energy                = %20.15f\n", two_energy);
+  outfile->Printf( "\tijka energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
 
   /* G(Ij,Ab) <-- G(Ij,Ab) - G(Ib,jA) */
@@ -204,7 +204,7 @@ void deanti_UHF(struct RHO_Params rho_params)
   two_energy = 2 * global_dpd_->buf4_dot(&D, &G);
   global_dpd_->buf4_close(&D);
   global_dpd_->buf4_close(&G);
-  psi::fprintf(outfile, "\tIjAb energy                = %20.15f\n", two_energy);
+  outfile->Printf( "\tIjAb energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
   
   /* G(IJ,AB) <-- G(IJ,AB) - G(IB,JA) */
@@ -222,7 +222,7 @@ void deanti_UHF(struct RHO_Params rho_params)
   two_energy = global_dpd_->buf4_dot(&D, &G);
   global_dpd_->buf4_close(&D);
   global_dpd_->buf4_close(&G);
-  psi::fprintf(outfile, "\tIJAB energy                = %20.15f\n", two_energy);
+  outfile->Printf( "\tIJAB energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
   
   /* G(ij,ab) <-- G(ij,ab) - G(ib,ja) */
@@ -240,7 +240,7 @@ void deanti_UHF(struct RHO_Params rho_params)
   two_energy = global_dpd_->buf4_dot(&D, &G);
   global_dpd_->buf4_close(&D);
   global_dpd_->buf4_close(&G);
-  psi::fprintf(outfile, "\tijab energy                = %20.15f\n", two_energy);
+  outfile->Printf( "\tijab energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
   
   /* No change to G(IB,JA) components */
@@ -249,7 +249,7 @@ void deanti_UHF(struct RHO_Params rho_params)
   two_energy = global_dpd_->buf4_dot(&C, &G);
   global_dpd_->buf4_close(&C);
   global_dpd_->buf4_close(&G);
-  psi::fprintf(outfile, "\tIBJA energy                = %20.15f\n", two_energy);
+  outfile->Printf( "\tIBJA energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
   
   global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 30, 30, 30, 30, 0, "Gibja");
@@ -257,7 +257,7 @@ void deanti_UHF(struct RHO_Params rho_params)
   two_energy = global_dpd_->buf4_dot(&C, &G);
   global_dpd_->buf4_close(&C);
   global_dpd_->buf4_close(&G); 
-  psi::fprintf(outfile, "\tibja energy                = %20.15f\n", two_energy);
+  outfile->Printf( "\tibja energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
   
   global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 24, 24, 24, 24, 0, "GIbJa");
@@ -271,7 +271,7 @@ void deanti_UHF(struct RHO_Params rho_params)
   two_energy += global_dpd_->buf4_dot(&C, &G);
   global_dpd_->buf4_close(&C);
   global_dpd_->buf4_close(&G);
-  psi::fprintf(outfile, "\tiBjA+IbJa energy           = %20.15f\n", two_energy);
+  outfile->Printf( "\tiBjA+IbJa energy           = %20.15f\n", two_energy);
   total_two_energy += two_energy;
   
 
@@ -287,7 +287,7 @@ void deanti_UHF(struct RHO_Params rho_params)
   two_energy += 2*global_dpd_->buf4_dot(&F, &G);
   global_dpd_->buf4_close(&F);
   global_dpd_->buf4_close(&G); 
-  psi::fprintf(outfile, "\tcIaB+CiAb energy           = %20.15f\n", two_energy);
+  outfile->Printf( "\tcIaB+CiAb energy           = %20.15f\n", two_energy);
   total_two_energy += two_energy;
   
   global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 21, 5, 21, 7, 0, "GCIAB");
@@ -295,7 +295,7 @@ void deanti_UHF(struct RHO_Params rho_params)
   two_energy = 2*global_dpd_->buf4_dot(&F, &G);
   global_dpd_->buf4_close(&F);
   global_dpd_->buf4_close(&G); 
-  psi::fprintf(outfile, "\tCIAB energy                = %20.15f\n", two_energy);
+  outfile->Printf( "\tCIAB energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
   
   global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 31, 15, 31, 17, 0, "Gciab");
@@ -303,7 +303,7 @@ void deanti_UHF(struct RHO_Params rho_params)
   two_energy = 2*global_dpd_->buf4_dot(&F, &G);
   global_dpd_->buf4_close(&F);
   global_dpd_->buf4_close(&G);
-  psi::fprintf(outfile, "\tciab energy                = %20.15f\n", two_energy);
+  outfile->Printf( "\tciab energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
   
   /* G(Ab,Cd) = 1/2 G(Ab,Cd) */
@@ -313,7 +313,7 @@ void deanti_UHF(struct RHO_Params rho_params)
   two_energy = 2*global_dpd_->buf4_dot(&B, &G);
   global_dpd_->buf4_close(&B);
   global_dpd_->buf4_close(&G);
-  psi::fprintf(outfile, "\tAbCd energy                = %20.15f\n", two_energy);
+  outfile->Printf( "\tAbCd energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
   
   /* G(AB,CD) = 1/2 G(AB,CD) */
@@ -323,7 +323,7 @@ void deanti_UHF(struct RHO_Params rho_params)
   two_energy = global_dpd_->buf4_dot(&B, &G);
   global_dpd_->buf4_close(&B);
   global_dpd_->buf4_close(&G);
-  psi::fprintf(outfile, "\tABCD energy                = %20.15f\n", two_energy);
+  outfile->Printf( "\tABCD energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
   
   /* G(ab,cd) = 1/2 G(ab,cd) */
@@ -333,14 +333,14 @@ void deanti_UHF(struct RHO_Params rho_params)
   two_energy = global_dpd_->buf4_dot(&B, &G);
   global_dpd_->buf4_close(&B);
   global_dpd_->buf4_close(&G);
-  psi::fprintf(outfile, "\tabcd energy                = %20.15f\n", two_energy);
+  outfile->Printf( "\tabcd energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
   
-  psi::fprintf(outfile, "\tTotal two-electron energy  = %20.15f\n", total_two_energy);
+  outfile->Printf( "\tTotal two-electron energy  = %20.15f\n", total_two_energy);
 
-  psi::fprintf(outfile, "\t%-7s correlation energy = %20.15f\n", params.wfn == "CCSD_T" ? "CCSD(T)" : params.wfn.c_str(),
+  outfile->Printf( "\t%-7s correlation energy = %20.15f\n", params.wfn == "CCSD_T" ? "CCSD(T)" : params.wfn.c_str(),
 	  one_energy + total_two_energy);
-  psi::fprintf(outfile, "\tTotal %-7s energy       = %20.15f\n", params.wfn == "CCSD_T" ? "CCSD(T)" : params.wfn.c_str(),
+  outfile->Printf( "\tTotal %-7s energy       = %20.15f\n", params.wfn == "CCSD_T" ? "CCSD(T)" : params.wfn.c_str(),
 	  one_energy + total_two_energy + moinfo.eref);
 }
 

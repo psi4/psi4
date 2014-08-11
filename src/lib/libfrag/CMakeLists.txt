@@ -2,16 +2,19 @@ set(libfragsrc LibFragTypes.h
 		       Fragmenter.h
                FragOptions.h
                BSSEer.h
+               Embedder.h
                Capper.h
                GMBE.h
                Connections.h
                libfrag.h
-               LibFragPrinter.h
+               LibFragBase.h
+               LibFragBase.cc
                MBE.h
                MBEFrag.h
                Set.h
                AtomSet.h
                Fragmenter.cc
+               Embedder.cc
                GMBE.cc
                Connections.cc
                BSSEer.cc

@@ -29,34 +29,36 @@
 
 namespace psi {
 
-int DPD::file4_print(dpdfile4 *File, FILE *outfile)
+int DPD::file4_print(dpdfile4 *File, std::string out)
 {
-    int i, h, my_irrep;
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            boost::shared_ptr<OutFile>(new OutFile(out)));
+   int i, h, my_irrep;
     dpdparams4 *Params;
 
     my_irrep = File->my_irrep;
     Params = File->params;
 
-    psi::fprintf(outfile, "\n\tDPD File4: %s\n", File->label);
-    psi::fprintf(outfile, "\n\tDPD Parameters:\n");
-    psi::fprintf(outfile,   "\t---------------\n");
-    psi::fprintf(outfile,   "\tpqnum = %d   rsnum = %d\n",
+    printer->Printf( "\n\tDPD File4: %s\n", File->label);
+    printer->Printf( "\n\tDPD Parameters:\n");
+    printer->Printf(   "\t---------------\n");
+    printer->Printf(   "\tpqnum = %d   rsnum = %d\n",
             Params->pqnum, Params->rsnum);
-    psi::fprintf(outfile, "\t   Row and column dimensions for DPD Block:\n");
-    psi::fprintf(outfile, "\t   ----------------------------------------\n");
+    printer->Printf( "\t   Row and column dimensions for DPD Block:\n");
+    printer->Printf( "\t   ----------------------------------------\n");
     for(i=0; i < Params->nirreps; i++)
-        psi::fprintf(outfile,   "\t   Irrep: %1d row = %5d\tcol = %5d\n", i,
+        printer->Printf(   "\t   Irrep: %1d row = %5d\tcol = %5d\n", i,
                 Params->rowtot[i], Params->coltot[i^my_irrep]);
-    fflush(outfile);
+    
 
     for(h=0; h < File->params->nirreps; h++) {
-        psi::fprintf(outfile, "\n\tFile %3d DPD File4: %s\n", File->filenum,
+        printer->Printf( "\n\tFile %3d DPD File4: %s\n", File->filenum,
                 File->label);
-        psi::fprintf(outfile,   "\tMatrix for Irrep %1d\n", h);
-        psi::fprintf(outfile,   "\t----------------------------------------\n");
+        printer->Printf(   "\tMatrix for Irrep %1d\n", h);
+        printer->Printf(   "\t----------------------------------------\n");
         file4_mat_irrep_init(File, h);
         file4_mat_irrep_rd(File, h);
-        mat4_irrep_print(File->matrix[h], File->params, h, my_irrep, outfile);
+        mat4_irrep_print(File->matrix[h], File->params, h, my_irrep, "outfile");
         file4_mat_irrep_close(File, h);
     }
 

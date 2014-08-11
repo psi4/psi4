@@ -34,14 +34,14 @@ adc(Options &options)
 {
     tstart();
 
-    psi::fprintf(outfile, "\n");
-    psi::fprintf(outfile, "\t****************************************\n");
-    psi::fprintf(outfile, "\t                 A D C                  \n");
-    psi::fprintf(outfile, "\t An Algebraic-Diagrammatic Construction \n");
-    psi::fprintf(outfile, "\t based on direct-product decomposition  \n");
-    psi::fprintf(outfile, "\t             Masaaki Saitow             \n");
-    psi::fprintf(outfile, "\t****************************************\n\n");
-    fflush(outfile);
+    outfile->Printf( "\n");
+    outfile->Printf( "\t****************************************\n");
+    outfile->Printf( "\t                 A D C                  \n");
+    outfile->Printf( "\t An Algebraic-Diagrammatic Construction \n");
+    outfile->Printf( "\t based on direct-product decomposition  \n");
+    outfile->Printf( "\t             Masaaki Saitow             \n");
+    outfile->Printf( "\t****************************************\n\n");
+    
 
     //
     // I've never verified whether this Libtrans version works correctly with frozen orbitals. I first developed the ADC code with transqt2 
@@ -54,11 +54,11 @@ adc(Options &options)
     
     tstop();
     
-    psi::fprintf(outfile, "\n");
-    psi::fprintf(outfile, "  ∩==\n"); 
-    psi::fprintf(outfile, "(: 3)))== kskkskkskksk         BOOOoooooOOOON!\n"); 
-    psi::fprintf(outfile, "  ∪==\n"); 
-    fflush(outfile);
+    outfile->Printf( "\n");
+    outfile->Printf( "  ∩==\n"); 
+    outfile->Printf( "(: 3)))== kskkskkskksk         BOOOoooooOOOON!\n"); 
+    outfile->Printf( "  ∪==\n"); 
+    
 
     return Success;
 }

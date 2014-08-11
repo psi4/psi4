@@ -68,8 +68,8 @@ int DPD::buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 
         switch(index) {
         case pqrs:
-            psi::fprintf(stderr, "\nDPD sort error: invalid index ordering.\n");
-            dpd_error("buf_sort", stderr);
+            outfile->Printf( "\nDPD sort error: invalid index ordering.\n");
+            dpd_error("buf_sort", "outfile");
             break;
 
         case pqsr:
@@ -90,7 +90,7 @@ int DPD::buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
                 if(rows_per_bucket > InBuf->params->rowtot[h])
                     rows_per_bucket = InBuf->params->rowtot[h];
 
-                if(!rows_per_bucket) dpd_error("buf4_sort_pqsr: Not enough memory for one row!", stderr);
+                if(!rows_per_bucket) dpd_error("buf4_sort_pqsr: Not enough memory for one row!", "outfile");
 
                 nbuckets = (int) ceil(((double) InBuf->params->rowtot[h])/((double) rows_per_bucket));
 
@@ -100,12 +100,12 @@ int DPD::buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
                 if(nbuckets > 1) {
                     incore = 0;
 #if DPD_DEBUG
-                    psi::fprintf(stderr, "buf4_sort_pqsr: memory information.\n");
-                    psi::fprintf(stderr, "buf4_sort_pqsr: rowtot[%d] = %d\n", h, InBuf->params->rowtot[h]);
-                    psi::fprintf(stderr, "buf4_sort_pqsr: nbuckets = %d\n", nbuckets);
-                    psi::fprintf(stderr, "buf4_sort_pqsr: rows_per_bucket = %d\n", rows_per_bucket);
-                    psi::fprintf(stderr, "buf4_sort_pqsr: rows_left = %d\n", rows_left);
-                    psi::fprintf(stderr, "buf4_sort_pqsr: out-of-core algorithm used\n");
+                    outfile->Printf( "buf4_sort_pqsr: memory information.\n");
+                    outfile->Printf( "buf4_sort_pqsr: rowtot[%d] = %d\n", h, InBuf->params->rowtot[h]);
+                    outfile->Printf( "buf4_sort_pqsr: nbuckets = %d\n", nbuckets);
+                    outfile->Printf( "buf4_sort_pqsr: rows_per_bucket = %d\n", rows_per_bucket);
+                    outfile->Printf( "buf4_sort_pqsr: rows_left = %d\n", rows_left);
+                    outfile->Printf( "buf4_sort_pqsr: out-of-core algorithm used\n");
 #endif
                 }
 
@@ -580,13 +580,13 @@ int DPD::buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
             break;
 
         case qspr:
-            psi::fprintf(stderr,"\nDPD sort error: index ordering not yet coded.\n");
-            dpd_error("buf_sort", stderr);
+            outfile->Printf("\nDPD sort error: index ordering not yet coded.\n");
+            dpd_error("buf_sort", "outfile");
             break;
 
         case qsrp:
-            psi::fprintf(stderr,"\nDPD sort error: index ordering not yet coded.\n");
-            dpd_error("buf_sort", stderr);
+            outfile->Printf("\nDPD sort error: index ordering not yet coded.\n");
+            dpd_error("buf_sort", "outfile");
             break;
 
         case rqps:
@@ -935,8 +935,8 @@ int DPD::buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
             break;
 
         case sqpr:
-            psi::fprintf(stderr,"\nDPD sort error: index ordering not yet coded.\n");
-            dpd_error("buf_sort", stderr);
+            outfile->Printf("\nDPD sort error: index ordering not yet coded.\n");
+            dpd_error("buf_sort", "outfile");
             break;
 
         case srqp:

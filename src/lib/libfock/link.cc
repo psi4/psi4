@@ -420,15 +420,15 @@ void LinK::set_do_K(bool do_it)
 void LinK::print_header() const
 {
   
-  psi::fprintf(outfile, "  ==> LinK Exchange Matrix Calculation <==\n\n");
+  outfile->Printf( "  ==> LinK Exchange Matrix Calculation <==\n\n");
   
-  psi::fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
-  psi::fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
-  psi::fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
+  outfile->Printf( "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
+  outfile->Printf( "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
+  outfile->Printf( "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
   
-  //psi::fprintf(outfile, "    OpenMP threads:    %11d\n", omp_nthread_);
-  //psi::fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
-  //psi::fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n\n", cutoff_);
+  //outfile->Printf( "    OpenMP threads:    %11d\n", omp_nthread_);
+  //outfile->Printf( "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+  //outfile->Printf( "    Schwarz Cutoff:    %11.0E\n\n", cutoff_);
 
 }
 

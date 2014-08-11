@@ -143,7 +143,7 @@ int DPD::contract442(dpdbuf4 *X, dpdbuf4 *Y, dpdfile2 *Z, int target_X,
 #endif	    
         }
         else {
-            psi::fprintf(stderr, "Junk X index %d in dpd_contract442\n", target_X);
+            outfile->Printf( "Junk X index %d in dpd_contract442\n", target_X);
             exit(PSI_RETURN_FAILURE);
         }
 
@@ -208,7 +208,7 @@ int DPD::contract442(dpdbuf4 *X, dpdbuf4 *Y, dpdfile2 *Z, int target_X,
 #endif	  
         }
         else {
-            psi::fprintf(stderr, "Junk Y index %d in contract442\n", target_Y);
+            outfile->Printf( "Junk Y index %d in contract442\n", target_Y);
             exit(PSI_RETURN_FAILURE);
         }
 
@@ -217,9 +217,9 @@ int DPD::contract442(dpdbuf4 *X, dpdbuf4 *Y, dpdfile2 *Z, int target_X,
 #ifdef DPD_DEBUG
                 if((xrow[Hx] != zrow[Hx]) || (ycol[Hx] != zcol[Hx]) ||
                         (xcol[Hx] != yrow[Hx])) {
-                    psi::fprintf(stderr, "** Alignment error in contract442 **\n");
-                    psi::fprintf(stderr, "** Irrep %d; Subirrep %d **\n", h,Hx);
-                    dpd_error("dpd_contract442", stderr);
+                    outfile->Printf( "** Alignment error in contract442 **\n");
+                    outfile->Printf( "** Irrep %d; Subirrep %d **\n", h,Hx);
+                    dpd_error("dpd_contract442", "outfile");
                 }
 #endif
                 if      ((!Xtrans) && (!Ytrans)) { Hy = Hx^GX;    Hz = Hx;    }
@@ -229,12 +229,12 @@ int DPD::contract442(dpdbuf4 *X, dpdbuf4 *Y, dpdfile2 *Z, int target_X,
 
                 /*
         if (!Xtrans && !Ytrans) {
-    psi::fprintf(outfile,"rows[%d]=%d links[%d]=%d cols[%d]=%d\n",
+    outfile->Printf("rows[%d]=%d links[%d]=%d cols[%d]=%d\n",
        Hz, Z->params->rowtot[Hz], Hx, numlinks[Hx], Hz^GZ,
        Z->params->coltot[Hz^GZ]);
-    fflush(outfile);
+    
     print_mat(Ymat[Hy], numlinks[Hx], Z->params->coltot[Hz^GZ], outfile);
-    fflush(outfile);
+    
         }
         */
 
@@ -248,16 +248,16 @@ int DPD::contract442(dpdbuf4 *X, dpdbuf4 *Y, dpdfile2 *Z, int target_X,
 #ifdef DPD_DEBUG
                 if((xrow[Hx] != zrow[Hx]) || (ycol[Hx] != zcol[Hx]) ||
                         (xcol[Hx] != yrow[Hx])) {
-                    psi::fprintf(stderr, "** Alignment error in contract442 **\n");
-                    psi::fprintf(stderr, "** Irrep %d; Subirrep %d **\n", h,Hx);
-                    dpd_error("dpd_contract442", stderr);
+                    outfile->Printf( "** Alignment error in contract442 **\n");
+                    outfile->Printf( "** Irrep %d; Subirrep %d **\n", h,Hx);
+                    dpd_error("dpd_contract442", "outfile");
                 }
 #endif	      
                 if      ((!Xtrans) && (!Ytrans)) { Hy = Hx^GX;    Hz = Hx;    }
                 else if ((!Xtrans) && (Ytrans) ) { Hy = Hx^GX^GY; Hz = Hx;    }
                 else if ( (Xtrans) && (!Ytrans)) { Hy = Hx;       Hz = Hx^GX; }
                 else /* ( (Xtrans) && (Ytrans))*/{ Hy = Hx^GY;    Hz = Hx^GX; }
-                /* psi::fprintf(stdout,"rows %d links %d cols %d\n",
+                /* outfile->Printf(stdout,"rows %d links %d cols %d\n",
        Z->params->rowtot[Hz], numlinks[Hx], Z->params->coltot[Hz]); */
 
                 if(Z->params->rowtot[Hz] &&

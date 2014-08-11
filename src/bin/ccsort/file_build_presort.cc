@@ -40,7 +40,7 @@ namespace psi { namespace ccsort {
 void idx_permute_presort(dpdfile4 *File, int this_bucket,
                            int **bucket_map, unsigned long int **bucket_offset,
                            int p, int q, int r, int s,
-                           double value, FILE *outfile);
+                           double value, std::string OutFileRMR);
 
 int file_build_presort(dpdfile4 *File, int inputfile, double tolerance, int keep)
 {
@@ -130,8 +130,8 @@ int file_build_presort(dpdfile4 *File, int inputfile, double tolerance, int keep
     }
   }
 
-  psi::fprintf(outfile, "\tSorting File: %s nbuckets = %d\n", File->label, nbuckets);
-  fflush(outfile);
+  outfile->Printf( "\tSorting File: %s nbuckets = %d\n", File->label, nbuckets);
+  
 
   next = PSIO_ZERO;
   for(n=0; n < nbuckets; n++) { /* nbuckets = number of passes */
@@ -155,9 +155,9 @@ int file_build_presort(dpdfile4 *File, int inputfile, double tolerance, int keep
 
       value = (double) valptr[InBuf.idx];
 
-/*       psi::fprintf(outfile, "%d %d %d %d %20.12f\n", p, q, r, s, value); */
+/*       outfile->Printf( "%d %d %d %d %20.12f\n", p, q, r, s, value); */
 
-      idx_permute_presort(File,n,bucket_map,bucket_offset,p,q,r,s,value,outfile);
+      idx_permute_presort(File,n,bucket_map,bucket_offset,p,q,r,s,value,"outfile");
 
     } /* end loop through current buffer */
 
@@ -174,9 +174,9 @@ int file_build_presort(dpdfile4 *File, int inputfile, double tolerance, int keep
 
         value = (double) valptr[InBuf.idx];
 
-/* 	psi::fprintf(outfile, "%d %d %d %d %20.12f\n", p, q, r, s, value); */
+/* 	outfile->Printf( "%d %d %d %d %20.12f\n", p, q, r, s, value); */
 
-        idx_permute_presort(File,n,bucket_map,bucket_offset,p,q,r,s,value,outfile);
+        idx_permute_presort(File,n,bucket_map,bucket_offset,p,q,r,s,value,"outfile");
 
       } /* end loop through current buffer */
     } /* end loop over reading buffers */

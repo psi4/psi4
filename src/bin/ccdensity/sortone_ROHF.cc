@@ -220,17 +220,17 @@ void sortone_ROHF(struct RHO_Params rho_params)
   /*
   for (i=0;i<(nmo-nfzv);++i) {
     for (j=0;j<(nmo-nfzv); ++j) {
-      psi::fprintf(outfile,"%15.10lf\n", O[i][j]);
+      outfile->Printf("%15.10lf\n", O[i][j]);
     }
-    psi::fprintf(outfile,"\n");
+    outfile->Printf("\n");
   }
-  psi::fprintf(outfile,"End of sortone\n");
+  outfile->Printf("End of sortone\n");
 	*/
   /*
   for (i=0;i<2;++i) {
     for (j=0;j<5;++j)
-      psi::fprintf(outfile,"%15.10lf",O[i][j]);
-    psi::fprintf(outfile,"\n");
+      outfile->Printf("%15.10lf",O[i][j]);
+    outfile->Printf("\n");
   }
   print_mat(O,nmo-nfzv,nmo-nfzv,outfile);
   */

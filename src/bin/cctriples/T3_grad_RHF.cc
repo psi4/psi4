@@ -61,7 +61,6 @@ namespace psi { namespace cctriples {
       dpdbuf4 T2, Fints, Eints, Dints, S2, F2ints;
       dpdfile2 fIJ, fAB, fIA, T1, S1;
       int nijk, mijk;
-      FILE *ijkfile;
       double value, value1, value2, ET=0.0;
       int id;
       double **Z;
@@ -127,10 +126,10 @@ namespace psi { namespace cctriples {
 		}
 	      }
 	    }
-
-      ffile(&ijkfile,"ijk.dat", 0);
-      psi::fprintf(ijkfile, "Number of IJK combintions: %d\n", nijk);
-      psi::fprintf(ijkfile, "\nCurrent IJK Combination: ");
+      boost::shared_ptr<OutFile> printer(new OutFile("ijk.dat",TRUNCATE));
+      //ffile(&ijkfile,"ijk.dat", 0);
+      printer->Printf( "Number of IJK combintions: %d\n", nijk);
+      printer->Printf( "\nCurrent IJK Combination: ");
 
       W0 = (double ***) malloc(nirreps * sizeof(double **));
       W1 = (double ***) malloc(nirreps * sizeof(double **));
@@ -156,8 +155,8 @@ namespace psi { namespace cctriples {
 		  K = occ_off[Gk] + k;
 
 		  mijk++;
-		  psi::fprintf(ijkfile, "%d\n", mijk);
-		  fflush(ijkfile);
+		  printer->Printf( "%d\n", mijk);
+
 
 		  ij = T2.params->rowidx[I][J];
 		  ji = T2.params->rowidx[J][I];
@@ -754,11 +753,11 @@ namespace psi { namespace cctriples {
 	} /* Gj */
       } /* Gi */
 
-      psi::fprintf(outfile, "\tE(T) = %20.14f\n", ET);
+      outfile->Printf( "\tE(T) = %20.14f\n", ET);
 
       free(W0); free(W1); free(V); free(M);
 
-      fclose(ijkfile);
+
 
       for(h=0; h < nirreps; h++) {
 	global_dpd_->buf4_mat_irrep_wrt(&S2, h);
@@ -768,7 +767,7 @@ namespace psi { namespace cctriples {
 	global_dpd_->buf4_mat_irrep_close(&F2ints, h);
 	global_dpd_->buf4_mat_irrep_close(&Dints, h);
       }
-      global_dpd_->buf4_print(&S2, outfile, 1);
+      global_dpd_->buf4_print(&S2, "outfile", 1);
       global_dpd_->buf4_close(&S2);
       global_dpd_->buf4_close(&T2);
       global_dpd_->buf4_close(&Eints);
@@ -778,7 +777,7 @@ namespace psi { namespace cctriples {
 
       global_dpd_->file2_mat_wrt(&S1);
       global_dpd_->file2_mat_close(&S1);
-      global_dpd_->file2_print(&S1, outfile);
+      global_dpd_->file2_print(&S1, "outfile");
       global_dpd_->file2_close(&S1);
 
       global_dpd_->file2_mat_close(&T1);

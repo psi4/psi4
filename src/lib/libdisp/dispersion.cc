@@ -182,27 +182,28 @@ boost::shared_ptr<Dispersion> Dispersion::build(const std::string & name, double
         throw PSIEXCEPTION("Dispersion: Unknown -D type specified");
     }
 }
-void Dispersion::print(FILE* out, int level) const
+void Dispersion::print(std::string out, int level) const
 {
     if (level < 1) return;
+    boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+             boost::shared_ptr<OutFile>(new OutFile(out)));
+    printer->Printf( "   => %s: Empirical Dispersion <=\n\n", name_.c_str());
 
-    psi::fprintf(out, "   => %s: Empirical Dispersion <=\n\n", name_.c_str());
+    printer->Printf( "%s", description_.c_str());
+    printer->Printf( "\n");
 
-    psi::fprintf(out, "%s", description_.c_str());
-    psi::fprintf(out, "\n");
+    printer->Printf( "%s", citation_.c_str());
+    printer->Printf( "\n");
 
-    psi::fprintf(out, "%s", citation_.c_str());
-    psi::fprintf(out, "\n");
-
-    psi::fprintf(out, "    S6  = %14.6E\n", s6_);
-    if ((name_ == "-D3ZERO") || (name_ == "-D3BJ")) { psi::fprintf(out, "    S8  = %14.6E\n", s8_); }
-    if (name_ == "-D3ZERO") { psi::fprintf(out, "    SR6 = %14.6E\n", sr6_); }
-    if (name_ == "-D3BJ") { psi::fprintf(out, "    A1  = %14.6E\n", a1_); }
-    if (name_ == "-D3BJ") { psi::fprintf(out, "    A2  = %14.6E\n", a2_); }
+    printer->Printf( "    S6  = %14.6E\n", s6_);
+    if ((name_ == "-D3ZERO") || (name_ == "-D3BJ")) { printer->Printf( "    S8  = %14.6E\n", s8_); }
+    if (name_ == "-D3ZERO") { printer->Printf( "    SR6 = %14.6E\n", sr6_); }
+    if (name_ == "-D3BJ") { printer->Printf( "    A1  = %14.6E\n", a1_); }
+    if (name_ == "-D3BJ") { printer->Printf( "    A2  = %14.6E\n", a2_); }
     if ((name_ == "-D1") || (name_ == "-D2") || (name_ == "-CHG") || (name_ == "-D2GR") || (name_ == "-D3ZERO")) {
-        psi::fprintf(out, "    A6  = %14.6E\n", d_);
+        printer->Printf( "    A6  = %14.6E\n", d_);
     }
-    psi::fprintf(out, "\n");
+    printer->Printf( "\n");
 }
 std::string Dispersion::print_energy(boost::shared_ptr<Molecule> m)
 {

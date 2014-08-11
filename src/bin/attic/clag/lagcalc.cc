@@ -42,7 +42,7 @@
 
 extern "C" {
   extern FILE *infile;
-  extern FILE *outfile;
+  
 }
 
 namespace psi { namespace clag {
@@ -130,11 +130,11 @@ double lagcalc(double **OPDM, double *TPDM, double *h, double *TwoElec,
     nmo*nmo*sizeof(double));
 
   if (print_lvl > 1) {
-    psi::fprintf(outfile,"\n\n One-electron part of the Lagrangian");
+    outfile->Printf("\n\n One-electron part of the Lagrangian");
     print_mat(oe_lag, nmo, nmo, outfile);
-    psi::fprintf(outfile,"\n\n Two-electron part of the Lagrangian");
+    outfile->Printf("\n\n Two-electron part of the Lagrangian");
     print_mat(te_lag, nmo, nmo, outfile);
-    psi::fprintf(outfile,"\nLagrangian Matrix\n\n");
+    outfile->Printf("\nLagrangian Matrix\n\n");
     print_mat(lag, nmo, nmo, outfile);
     }
 

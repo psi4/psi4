@@ -130,8 +130,8 @@ void OCCWave::common_init()
             temp = 5.0;
         }
         tol_grad = pow(10.0, -temp);
-    psi::fprintf(outfile,"\tRMS orbital gradient is changed to : %12.2e\n", tol_grad);
-    fflush(outfile);
+    outfile->Printf("\tRMS orbital gradient is changed to : %12.2e\n", tol_grad);
+    
 
     }
 
@@ -146,8 +146,8 @@ void OCCWave::common_init()
             temp2 = 4.0;
         }
         mograd_max = pow(10.0, -temp2);
-    psi::fprintf(outfile,"\tMAX orbital gradient is changed to : %12.2e\n", mograd_max);
-    fflush(outfile);
+    outfile->Printf("\tMAX orbital gradient is changed to : %12.2e\n", mograd_max);
+    
     }
 
         // Figure out REF
@@ -196,15 +196,15 @@ if (reference_ == "RESTRICTED") {
 
         Molecule& mol = *reference_wavefunction_->molecule().get();
         CharacterTable ct = mol.point_group()->char_table();
-        psi::fprintf(outfile,"\tMO spaces per irreps... \n\n"); fflush(outfile);
-        psi::fprintf(outfile, "\tIRREP   FC    OCC   VIR  FV \n");
-        psi::fprintf(outfile, "\t==============================\n");
+        outfile->Printf("\tMO spaces per irreps... \n\n"); 
+        outfile->Printf( "\tIRREP   FC    OCC   VIR  FV \n");
+        outfile->Printf( "\t==============================\n");
         for(int h = 0; h < nirrep_; ++h){
-         psi::fprintf(outfile, "\t %3s   %3d   %3d   %3d  %3d\n",
+         outfile->Printf( "\t %3s   %3d   %3d   %3d  %3d\n",
                              ct.gamma(h).symbol(), frzcpi_[h], aoccpiA[h], avirtpiA[h], frzvpi_[h]);
         }
-        psi::fprintf(outfile,     "\t==============================\n");
-        fflush(outfile);
+        outfile->Printf(     "\t==============================\n");
+        
 
         // Compute costs
         //cost_iabc_ = 8 * nooA * nvoA * nvoA * nvoA;
@@ -225,31 +225,31 @@ if (reference_ == "RESTRICTED") {
         // Print memory
         memory = Process::environment.get_memory();
         memory_mb_ = memory/1000000L;
-        psi::fprintf(outfile,"\n\tMemory is %6lu MB \n", memory_mb_);
-        psi::fprintf(outfile,"\tCost of iabc is %6lu MB \n", cost_iabc_);
-        psi::fprintf(outfile,"\tCost of abcd is %6lu MB \n", cost_abcd_);
-        fflush(outfile);
+        outfile->Printf("\n\tMemory is %6lu MB \n", memory_mb_);
+        outfile->Printf("\tCost of iabc is %6lu MB \n", cost_iabc_);
+        outfile->Printf("\tCost of abcd is %6lu MB \n", cost_abcd_);
+        
         if (cost_iabc_ < memory_mb_) {
             incore_iabc_ = 1;
-            psi::fprintf(outfile,     "\tSwitching to the incore algoritm for iabc..\n");
-            fflush(outfile);
+            outfile->Printf(     "\tSwitching to the incore algoritm for iabc..\n");
+            
         }
         else {
             incore_iabc_ = 0;
-            psi::fprintf(outfile,     "\tSwitching to the out of core algoritm for iabc..\n");
-            fflush(outfile);
+            outfile->Printf(     "\tSwitching to the out of core algoritm for iabc..\n");
+            
         }
 
         //cost_abcd_ = 8 * nvoA * nvoA * nvoA * nvoA;
         if (cost_abcd_ < memory_mb_) {
             incore_abcd_ = 1;
-            psi::fprintf(outfile,     "\tSwitching to the incore algoritm for abcd..\n");
-            fflush(outfile);
+            outfile->Printf(     "\tSwitching to the incore algoritm for abcd..\n");
+            
         }
         else {
             incore_abcd_ = 0;
-            psi::fprintf(outfile,     "\tSwitching to the out of core algoritm for abcd..\n");
-            fflush(outfile);
+            outfile->Printf(     "\tSwitching to the out of core algoritm for abcd..\n");
+            
         }
     }// end if (wfn_type_ == "OMP2")
 
@@ -328,15 +328,15 @@ else if (reference_ == "UNRESTRICTED") {
 
         Molecule& mol = *reference_wavefunction_->molecule().get();
         CharacterTable ct = mol.point_group()->char_table();
-        psi::fprintf(outfile,"\tMO spaces per irreps... \n\n"); fflush(outfile);
-        psi::fprintf(outfile, "\tIRREP   FC   AOCC  BOCC  AVIR    BVIR  FV \n");
-        psi::fprintf(outfile, "\t==========================================\n");
+        outfile->Printf("\tMO spaces per irreps... \n\n"); 
+        outfile->Printf( "\tIRREP   FC   AOCC  BOCC  AVIR    BVIR  FV \n");
+        outfile->Printf( "\t==========================================\n");
         for(int h = 0; h < nirrep_; ++h){
-         psi::fprintf(outfile, "\t %3s   %3d   %3d   %3d   %3d    %3d   %3d\n",
+         outfile->Printf( "\t %3s   %3d   %3d   %3d   %3d    %3d   %3d\n",
                              ct.gamma(h).symbol(), frzcpi_[h], aoccpiA[h], aoccpiB[h], avirtpiA[h], avirtpiB[h], frzvpi_[h]);
         }
-        psi::fprintf(outfile,     "\t==========================================\n");
-        fflush(outfile);
+        outfile->Printf(     "\t==========================================\n");
+        
 
     // Alloc ints
     std::vector<boost::shared_ptr<MOSpace> > spaces;
@@ -369,27 +369,27 @@ else if (reference_ == "UNRESTRICTED") {
 
 void OCCWave::title()
 {
-   psi::fprintf(outfile,"\n");
-   psi::fprintf(outfile," ============================================================================== \n");
-   psi::fprintf(outfile," ============================================================================== \n");
-   psi::fprintf(outfile," ============================================================================== \n");
-   psi::fprintf(outfile,"\n");
-   if (wfn_type_ == "OMP2" && orb_opt_ == "TRUE") psi::fprintf(outfile,"                       OMP2 (OO-MP2)   \n");
-   else if (wfn_type_ == "OMP2" && orb_opt_ == "FALSE") psi::fprintf(outfile,"                       MP2   \n");
-   else if (wfn_type_ == "OMP3" && orb_opt_ == "TRUE") psi::fprintf(outfile,"                       OMP3 (OO-MP3)   \n");
-   else if (wfn_type_ == "OMP3" && orb_opt_ == "FALSE") psi::fprintf(outfile,"                       MP3   \n");
-   else if (wfn_type_ == "OCEPA" && orb_opt_ == "TRUE") psi::fprintf(outfile,"                       OCEPA (OO-CEPA)   \n");
-   else if (wfn_type_ == "OCEPA" && orb_opt_ == "FALSE") psi::fprintf(outfile,"                       CEPA   \n");
-   else if (wfn_type_ == "OMP2.5" && orb_opt_ == "TRUE") psi::fprintf(outfile,"                       OMP2.5 (OO-MP2.5)   \n");
-   else if (wfn_type_ == "OMP2.5" && orb_opt_ == "FALSE") psi::fprintf(outfile,"                       MP2.5  \n");
-   psi::fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ;
-   psi::fprintf(outfile,"              Latest Revision June 12, 2014.\n") ;
-   psi::fprintf(outfile,"\n");
-   psi::fprintf(outfile," ============================================================================== \n");
-   psi::fprintf(outfile," ============================================================================== \n");
-   psi::fprintf(outfile," ============================================================================== \n");
-   psi::fprintf(outfile,"\n");
-   fflush(outfile);
+   outfile->Printf("\n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf("\n");
+   if (wfn_type_ == "OMP2" && orb_opt_ == "TRUE") outfile->Printf("                       OMP2 (OO-MP2)   \n");
+   else if (wfn_type_ == "OMP2" && orb_opt_ == "FALSE") outfile->Printf("                       MP2   \n");
+   else if (wfn_type_ == "OMP3" && orb_opt_ == "TRUE") outfile->Printf("                       OMP3 (OO-MP3)   \n");
+   else if (wfn_type_ == "OMP3" && orb_opt_ == "FALSE") outfile->Printf("                       MP3   \n");
+   else if (wfn_type_ == "OCEPA" && orb_opt_ == "TRUE") outfile->Printf("                       OCEPA (OO-CEPA)   \n");
+   else if (wfn_type_ == "OCEPA" && orb_opt_ == "FALSE") outfile->Printf("                       CEPA   \n");
+   else if (wfn_type_ == "OMP2.5" && orb_opt_ == "TRUE") outfile->Printf("                       OMP2.5 (OO-MP2.5)   \n");
+   else if (wfn_type_ == "OMP2.5" && orb_opt_ == "FALSE") outfile->Printf("                       MP2.5  \n");
+   outfile->Printf("              Program Written by Ugur Bozkaya,\n") ;
+   outfile->Printf("              Latest Revision June 12, 2014.\n") ;
+   outfile->Printf("\n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf("\n");
+   
 }//
 
 
@@ -425,8 +425,8 @@ double OCCWave::compute_energy()
 
     // Write MO coefficients to Cmo.psi
     if (write_mo_coeff == "TRUE"){
-      psi::fprintf(outfile,"\n\tWriting MO coefficients in pitzer order to external file CmoA.psi...\n");
-      fflush(outfile);
+      outfile->Printf("\n\tWriting MO coefficients in pitzer order to external file CmoA.psi...\n");
+      
       double **C_pitzerA = block_matrix(nso_,nmo_);
       memset(C_pitzerA[0], 0, sizeof(double)*nso_*nmo_);
 
@@ -441,8 +441,8 @@ double OCCWave::compute_energy()
       free_block(C_pitzerA);
 
           if (reference_ == "UNRESTRICTED" ) {
-          psi::fprintf(outfile,"\n\tWriting MO coefficients in pitzer order to external file CmoB.psi...\n");
-          fflush(outfile);
+          outfile->Printf("\n\tWriting MO coefficients in pitzer order to external file CmoB.psi...\n");
+          
           double **C_pitzerB = block_matrix(nso_,nmo_);
           memset(C_pitzerB[0], 0, sizeof(double)*nso_*nmo_);
 
@@ -473,13 +473,13 @@ double OCCWave::compute_energy()
 void OCCWave::nbo()
 {
 
-psi::fprintf(outfile,"\n  \n");
-psi::fprintf(outfile," ============================================================================== \n");
-psi::fprintf(outfile," ======================== NBO ANALYSIS ======================================== \n");
-psi::fprintf(outfile," ============================================================================== \n");
-psi::fprintf(outfile,"\n Diagonalizing one-particle response density matrix... \n");
-psi::fprintf(outfile,"\n");
-fflush(outfile);
+outfile->Printf("\n  \n");
+outfile->Printf(" ============================================================================== \n");
+outfile->Printf(" ======================== NBO ANALYSIS ======================================== \n");
+outfile->Printf(" ============================================================================== \n");
+outfile->Printf("\n Diagonalizing one-particle response density matrix... \n");
+outfile->Printf("\n");
+
 
       SharedMatrix Udum = boost::shared_ptr<Matrix>(new Matrix("Udum", nirrep_, nmopi_, nmopi_));
       SharedVector diag = boost::shared_ptr<Vector>(new Vector("Natural orbital occupation numbers", nirrep_, nmopi_));
@@ -506,8 +506,8 @@ fflush(outfile);
       }
     }
 
-      psi::fprintf(outfile, "\n Trace of one-particle density matrix: %20.14f \n\n",  sum);
-      fflush(outfile);
+      outfile->Printf( "\n Trace of one-particle density matrix: %20.14f \n\n",  sum);
+      
  }// end rhf
 
  else if (reference_ == "UNRESTRICTED") {
@@ -522,8 +522,8 @@ fflush(outfile);
       }
     }
 
-      psi::fprintf(outfile, "\n Trace of alpha one-particle density matrix: %20.14f \n\n",  sum);
-      fflush(outfile);
+      outfile->Printf( "\n Trace of alpha one-particle density matrix: %20.14f \n\n",  sum);
+      
 
       //print
       diag->print();
@@ -549,9 +549,9 @@ fflush(outfile);
       }
     }
 
-      psi::fprintf(outfile, "\n Trace of beta one-particle density matrix: %20.14f \n",  sum);
-      psi::fprintf(outfile,"\n");
-      fflush(outfile);
+      outfile->Printf( "\n Trace of beta one-particle density matrix: %20.14f \n",  sum);
+      outfile->Printf("\n");
+      
 
  }// end uhf
 
@@ -646,7 +646,7 @@ void OCCWave::mem_release()
     GvvA.reset();
     GvvB.reset();
        }
-//psi::fprintf(outfile,"\n mem_release done. \n"); fflush(outfile);
+//outfile->Printf("\n mem_release done. \n"); 
 }//
 
 } }

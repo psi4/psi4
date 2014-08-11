@@ -71,8 +71,8 @@ if (reference_ == "RESTRICTED") {
     // print
     if(print_ > 2){
       for(int i = 0; i < nidpA; i++){
-        psi::fprintf(outfile,"\n i, idpirrA, idprowA, idpcolA, wogA: %3d %3d %3d %3d %20.14f\n", i, idpirrA[i], idprowA[i],idpcolA[i],wogA->get(i)); 
-	fflush(outfile);
+        outfile->Printf("\n i, idpirrA, idprowA, idpcolA, wogA: %3d %3d %3d %3d %20.14f\n", i, idpirrA[i], idprowA[i],idpcolA[i],wogA->get(i)); 
+	
       }
     }
 
@@ -139,13 +139,13 @@ else if (reference_ == "UNRESTRICTED") {
     // print
     if(print_ > 2){
       for(int i = 0; i < nidpA; i++){
-        psi::fprintf(outfile,"\n i, idpirrA, idprowA, idpcolA, wogA: %3d %3d %3d %3d %20.14f\n", i, idpirrA[i], idprowA[i],idpcolA[i],wogA->get(i)); 
-	fflush(outfile);
+        outfile->Printf("\n i, idpirrA, idprowA, idpcolA, wogA: %3d %3d %3d %3d %20.14f\n", i, idpirrA[i], idprowA[i],idpcolA[i],wogA->get(i)); 
+	
       }
       
       for(int i = 0; i < nidpB; i++){
-        psi::fprintf(outfile,"\n i, idpirrB, idprowB, idpcolB, wogB: %3d %3d %3d %3d %20.14f\n", i, idpirrB[i], idprowB[i],idpcolB[i],wogB->get(i));
-	fflush(outfile);
+        outfile->Printf("\n i, idpirrB, idprowB, idpcolB, wogB: %3d %3d %3d %3d %20.14f\n", i, idpirrB[i], idprowB[i],idpcolB[i],wogB->get(i));
+	
       }
     }
 

@@ -49,9 +49,9 @@
 
 namespace psi {
     int psi_start(int argc, char *argv[]);
-    int psi_stop(FILE* infile, FILE* outfile, char* psi_file_prefix);
-    void print_version(FILE *);
-    void set_memory(FILE *outfile);
+    int psi_stop(FILE* infile, std::string, char* psi_file_prefix);
+    void print_version(std::string);
+    void set_memory(std::string OutFileRMR);
     int psi4_driver();
     void psiclean(void);
 
@@ -87,10 +87,10 @@ int main(int argc, char **argv)
 
     if(psi_start(argc, argv) == PSI_RETURN_FAILURE) return EXIT_FAILURE;
 
-    if(!clean_only) print_version(outfile);
+    if(!clean_only) print_version("outfile");
 
     // Set the default memory limit for Psi4
-    set_memory(outfile);
+    set_memory("outfile");
 
     // Initialize the I/O library
     psio_init();
@@ -118,7 +118,7 @@ int main(int argc, char **argv)
     // There is only one timer:
     timer_done();
 
-    psi_stop(infile, outfile, psi_file_prefix);
+    psi_stop(infile, "outfile", psi_file_prefix);
     Script::language->finalize();
 
     WorldComm->sync();

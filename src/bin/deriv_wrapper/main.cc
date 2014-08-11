@@ -39,7 +39,7 @@ PsiReturnType deriv(Options &)
 {
     tstart();
 
-    psi::fprintf(outfile, " DERIV: Derivative code.\n   by Justin Turney\n\n");
+    outfile->Printf( " DERIV: Derivative code.\n   by Justin Turney\n\n");
 
     Deriv test(Process::environment.wavefunction(),
                0x1,

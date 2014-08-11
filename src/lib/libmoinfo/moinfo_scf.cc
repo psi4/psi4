@@ -32,7 +32,7 @@
 
 #include "moinfo_scf.h"
 
-extern FILE *outfile;
+
 
 using namespace std;
 
@@ -127,24 +127,24 @@ void MOInfoSCF::read_mo_spaces()
 
 void MOInfoSCF::print_mo()
 {
-    psi::fprintf(outfile,"\n");
-    psi::fprintf(outfile,"\n  MOs per irrep:                ");
+    outfile->Printf("\n");
+    outfile->Printf("\n  MOs per irrep:                ");
 
     for(int i=nirreps;i<8;i++)
-        psi::fprintf(outfile,"     ");
+        outfile->Printf("     ");
     for(int i=0;i<nirreps;i++)
-        psi::fprintf(outfile,"  %s",irr_labs[i]);
-    psi::fprintf(outfile," Total");
-    psi::fprintf(outfile,"\n  ----------------------------------------------------------------------------");
+        outfile->Printf("  %s",irr_labs[i]);
+    outfile->Printf(" Total");
+    outfile->Printf("\n  ----------------------------------------------------------------------------");
     print_mo_space(nso,sopi,"Total                         ");
     if(!guess_occupation){
         print_mo_space(ndocc,docc,"Doubly Occupied               ");
         print_mo_space(nactv,actv,"Active/Singly Occupied        ");
     }
-    psi::fprintf(outfile,"\n  ----------------------------------------------------------------------------");
+    outfile->Printf("\n  ----------------------------------------------------------------------------");
     if(guess_occupation)
-        psi::fprintf(outfile,"\n\n  Guessing orbital occupation");
-    fflush(outfile);
+        outfile->Printf("\n\n  Guessing orbital occupation");
+    
 }
 
 }

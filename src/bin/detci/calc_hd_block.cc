@@ -91,7 +91,7 @@ void calc_hd_block(struct stringwr *alplist_local, struct stringwr *betlist_loca
             i = (int) alplist_local->occs[a1];
             ii = ioff[i] + i;
             value += oei[ii];  
-            /* psi::fprintf(outfile,"oei[%d] = %lf\n",ii,oei[ii]); */ 
+            /* outfile->Printf("oei[%d] = %lf\n",ii,oei[ii]); */ 
             iii = ioff[ii];
 
             for (a2=0; a2<a1; a2++) {
@@ -129,7 +129,7 @@ void calc_hd_block(struct stringwr *alplist_local, struct stringwr *betlist_loca
 
          H0[acnt][bcnt] = value;
       /*   
-         psi::fprintf(outfile,"H0[%d][%d] = %lf\n",acnt,bcnt,value); 
+         outfile->Printf("H0[%d][%d] = %lf\n",acnt,bcnt,value); 
       */ 
          betlist_local++;
          } /* end loop over bcnt */
@@ -192,7 +192,7 @@ void calc_hd_block_ave(struct stringwr *alplist_local, struct stringwr *betlist_
             ii = ioff[i] + i;
             /* h_ii bar alpha alpha */
             value += tf_oei[ii];
-            /* psi::fprintf(outfile,"tf_oei[%d] = %lf\n",ii,tf_oei[ii]); */
+            /* outfile->Printf("tf_oei[%d] = %lf\n",ii,tf_oei[ii]); */
             iii = ioff[ii];
 
             /* loop over alpha occs */
@@ -218,7 +218,7 @@ void calc_hd_block_ave(struct stringwr *alplist_local, struct stringwr *betlist_
             i = (int) betlist_local->occs[b1];
             ii = ioff[i] + i;
             value += tf_oei[ii];
-            /* psi::fprintf(outfile,"tf_oei[%d] = %lf\n",ii,tf_oei[ii]); */
+            /* outfile->Printf("tf_oei[%d] = %lf\n",ii,tf_oei[ii]); */
             iii = ioff[ii];
 
             /* loop over beta occs */
@@ -236,7 +236,7 @@ void calc_hd_block_ave(struct stringwr *alplist_local, struct stringwr *betlist_
          num_unique = 0;
          for (a1=0; a1<na; a1++) unique_occs[num_unique++] = (int) alplist_local->occs[a1];
          /* for (j=0; j<num_unique; j++) 
-            psi::fprintf(outfile,"unique_occs[%d] = %d\n",j,unique_occs[j]); */
+            outfile->Printf("unique_occs[%d] = %d\n",j,unique_occs[j]); */
             for (b1=0; b1<nb; b1++) {
                j = (int) betlist_local->occs[b1];
                for (a1=0; a1<na; a1++) {
@@ -244,19 +244,19 @@ void calc_hd_block_ave(struct stringwr *alplist_local, struct stringwr *betlist_
                   if (a1==(na-1)) unique_occs[num_unique++] = j;
                   }
                }
-         /* psi::fprintf(outfile,"num_unique = %d\n",num_unique);
-         psi::fprintf(outfile,"num_el = %d\n",num_el);
+         /* outfile->Printf("num_unique = %d\n",num_unique);
+         outfile->Printf("num_el = %d\n",num_el);
          */
-         if (num_unique>num_el) psi::fprintf(outfile,"WARNING: The number of explicit electrons" \
+         if (num_unique>num_el) outfile->Printf("WARNING: The number of explicit electrons" \
                              "!= num_el\n");
                
        /*   
          for (j=0; j<na; j++) 
-            psi::fprintf(outfile,"alp_occs[%d] = %d\n",j,(int)alplist_local->occs[j]);
+            outfile->Printf("alp_occs[%d] = %d\n",j,(int)alplist_local->occs[j]);
          for (j=0; j<nb; j++) 
-            psi::fprintf(outfile,"bet_occs[%d] = %d\n",j,(int)betlist_local->occs[j]);
+            outfile->Printf("bet_occs[%d] = %d\n",j,(int)betlist_local->occs[j]);
          for (j=0; j<num_unique; j++) 
-            psi::fprintf(outfile,"unique_occs[%d] = %d\n",j,unique_occs[j]);
+            outfile->Printf("unique_occs[%d] = %d\n",j,unique_occs[j]);
        */
  
          Kave = 0.0;
@@ -267,32 +267,32 @@ void calc_hd_block_ave(struct stringwr *alplist_local, struct stringwr *betlist_
                ij = ioff[MAX0(i,j)] + MIN0(i,j);
                ijij = ioff[ij] + ij;
                Kave += tei[ijij];
-               /* psi::fprintf(outfile,"tei[%d] = %lf\n",ijij,tei[ijij]); */ 
+               /* outfile->Printf("tei[%d] = %lf\n",ijij,tei[ijij]); */ 
                }
             }
          
-         /* psi::fprintf(outfile,"num_unique = %d\n",num_unique);
-         psi::fprintf(outfile,"ioff[num_unique-1] = %d\n",ioff[num_unique]);
-         psi::fprintf(outfile,"k_total = %d\n",k_total);
+         /* outfile->Printf("num_unique = %d\n",num_unique);
+         outfile->Printf("ioff[num_unique-1] = %d\n",ioff[num_unique]);
+         outfile->Printf("k_total = %d\n",k_total);
          */
 
          if (num_unique > 1) Kave /= ioff[num_unique-1];
          value -= 0.5 * Kave * k_total; 
-         /* psi::fprintf(outfile,"Kave = %lf\n",Kave); */
+         /* outfile->Printf("Kave = %lf\n",Kave); */
 
          if (Parameters.print_lvl > 5) {
-           psi::fprintf(outfile,"acnt = %d\t bcnt = %d\n",acnt,bcnt); 
-           psi::fprintf(outfile,"tval = %lf\n",tval);
+           outfile->Printf("acnt = %d\t bcnt = %d\n",acnt,bcnt); 
+           outfile->Printf("tval = %lf\n",tval);
            for(a1=0; a1<na; a1++)
-             psi::fprintf(outfile," %d",alplist_local->occs[a1]);
-           psi::fprintf(outfile," \n");
+             outfile->Printf(" %d",alplist_local->occs[a1]);
+           outfile->Printf(" \n");
            for(b1=0; b1<nb; b1++)
-             psi::fprintf(outfile," %d",betlist_local->occs[b1]);
-           psi::fprintf(outfile," \n");
+             outfile->Printf(" %d",betlist_local->occs[b1]);
+           outfile->Printf(" \n");
            } 
 
          H0[acnt][bcnt] = value;
-         /* psi::fprintf(outfile,"H0[%d][%d] = %lf\n",acnt,bcnt,value); */
+         /* outfile->Printf("H0[%d][%d] = %lf\n",acnt,bcnt,value); */
          betlist_local++;
          } /* end loop over bcnt */
 
@@ -374,7 +374,7 @@ void calc_hd_block_orbenergy(struct stringwr *alplist_local,
          value = orb_e_diff_bet[bcnt] + tval; 
          H0[acnt][bcnt] = value;
         /* 
-         psi::fprintf(outfile,"H0[%d][%d] = %lf\n",acnt,bcnt,value); 
+         outfile->Printf("H0[%d][%d] = %lf\n",acnt,bcnt,value); 
         */ 
          betlist_local++;
          } /* end loop over bcnt */
@@ -473,7 +473,7 @@ void calc_hd_block_evangelisti(struct stringwr *alplist_local, struct stringwr *
          value = 0.0;
          value = orb_e_diff_bet[bcnt] + tval; 
          H0[acnt][bcnt] = value;
-         /* psi::fprintf(outfile,"H0[%d][%d] = %lf\n",acnt,bcnt,value); */ 
+         /* outfile->Printf("H0[%d][%d] = %lf\n",acnt,bcnt,value); */ 
          betlist_local++;
          } /* end loop over bcnt */
       alplist_local++;
@@ -668,7 +668,7 @@ int nb, int nbf)
          num_unique = 0;
          for (a1=0; a1<na; a1++) unique_occs[num_unique++] = (int) alplist_local->occs[a1];
          /* for (j=0; j<num_unique; j++)
-            psi::fprintf(outfile,"unique_occs[%d] = %d\n",j,unique_occs[j]); */
+            outfile->Printf("unique_occs[%d] = %d\n",j,unique_occs[j]); */
             for (b1=0; b1<nb; b1++) {
                j = (int) betlist_local->occs[b1];
                for (a1=0; a1<na; a1++) {
@@ -676,19 +676,19 @@ int nb, int nbf)
                   if (a1==(na-1)) unique_occs[num_unique++] = j;
                   }
                }
-         /* psi::fprintf(outfile,"num_unique = %d\n",num_unique);
-         psi::fprintf(outfile,"num_el = %d\n",num_el);
+         /* outfile->Printf("num_unique = %d\n",num_unique);
+         outfile->Printf("num_el = %d\n",num_el);
          */
-         if (num_unique>num_el) psi::fprintf(outfile,"WARNING: The number of explicit electrons" \
+         if (num_unique>num_el) outfile->Printf("WARNING: The number of explicit electrons" \
                              "!= num_el\n");
 
        /*
          for (j=0; j<na; j++)
-            psi::fprintf(outfile,"alp_occs[%d] = %d\n",j,(int)alplist_local->occs[j]);
+            outfile->Printf("alp_occs[%d] = %d\n",j,(int)alplist_local->occs[j]);
          for (j=0; j<nb; j++)
-            psi::fprintf(outfile,"bet_occs[%d] = %d\n",j,(int)betlist_local->occs[j]);
+            outfile->Printf("bet_occs[%d] = %d\n",j,(int)betlist_local->occs[j]);
          for (j=0; j<num_unique; j++)
-            psi::fprintf(outfile,"unique_occs[%d] = %d\n",j,unique_occs[j]);
+            outfile->Printf("unique_occs[%d] = %d\n",j,unique_occs[j]);
        */
 
          Kave = 0.0;
@@ -699,31 +699,31 @@ int nb, int nbf)
                ij = ioff[MAX0(i,j)] + MIN0(i,j);
                ijij = ioff[ij] + ij;
                Kave += tei[ijij];
-               /* psi::fprintf(outfile,"tei[%d] = %lf\n",ijij,tei[ijij]); */
+               /* outfile->Printf("tei[%d] = %lf\n",ijij,tei[ijij]); */
                }
             }
 
-         /* psi::fprintf(outfile,"num_unique = %d\n",num_unique);
-         psi::fprintf(outfile,"ioff[num_unique-1] = %d\n",ioff[num_unique]);
-         psi::fprintf(outfile,"k_total = %d\n",k_total);
+         /* outfile->Printf("num_unique = %d\n",num_unique);
+         outfile->Printf("ioff[num_unique-1] = %d\n",ioff[num_unique]);
+         outfile->Printf("k_total = %d\n",k_total);
          */
          if (num_unique > 1) Kave /= ioff[num_unique-1];
          value += 0.5 * Kave * k_total * pert_param;
-         /* psi::fprintf(outfile,"Kave = %lf\n",Kave); */
+         /* outfile->Printf("Kave = %lf\n",Kave); */
 
          if (Parameters.print_lvl > 5) {
-           psi::fprintf(outfile,"acnt = %d\t bcnt = %d\n",acnt,bcnt);
-           psi::fprintf(outfile,"tval = %lf\n",tval);
+           outfile->Printf("acnt = %d\t bcnt = %d\n",acnt,bcnt);
+           outfile->Printf("tval = %lf\n",tval);
            for(a1=0; a1<na; a1++)
-             psi::fprintf(outfile," %d",alplist_local->occs[a1]);
-           psi::fprintf(outfile," \n");
+             outfile->Printf(" %d",alplist_local->occs[a1]);
+           outfile->Printf(" \n");
            for(b1=0; b1<nb; b1++)
-             psi::fprintf(outfile," %d",betlist_local->occs[b1]);
-           psi::fprintf(outfile," \n");
+             outfile->Printf(" %d",betlist_local->occs[b1]);
+           outfile->Printf(" \n");
            }
          H0[acnt][bcnt] = value;
        /*
-         psi::fprintf(outfile,"H0[%d][%d] = %lf\n",acnt,bcnt,value);
+         outfile->Printf("H0[%d][%d] = %lf\n",acnt,bcnt,value);
        */
          betlist_local++;
          } /* end loop over bcnt */

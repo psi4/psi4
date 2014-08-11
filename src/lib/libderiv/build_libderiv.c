@@ -13,7 +13,7 @@
 
 #include "libderiv_config.h"
 
-FILE *outfile, *d1hrr_header,
+FILE* outfile, *d1hrr_header,
      *deriv_header, *libderiv_header, *init_code;
 int libderiv1_stack_size[MAX_AM/2+1];
 #if EMIT_DERIV2_MANAGERS

@@ -90,11 +90,11 @@ void IDMRPT2::compute_mrpt2_energy(Updater* updater)
   }
 
   print_method("  Second-order Mukherjee Multireference Perturbation Theory (Mk-MRPT2)\n    Using the DPD Library");
-  psi::fprintf(outfile,"\n  ------------------------------------------------------------------------------");
-  psi::fprintf(outfile,"\n    @PT  Cycle         Energy           Delta E   ");
-  psi::fprintf(outfile,"\n    @PT               (Hartree)        (Hartree)  ");
-  psi::fprintf(outfile,"\n  ------------------------------------------------------------------------------");
-  fflush(outfile);
+  outfile->Printf("\n  ------------------------------------------------------------------------------");
+  outfile->Printf("\n    @PT  Cycle         Energy           Delta E   ");
+  outfile->Printf("\n    @PT               (Hartree)        (Hartree)  ");
+  outfile->Printf("\n  ------------------------------------------------------------------------------");
+  
 
   // Start MRPT cycle
   bool converged = false;
@@ -118,18 +118,18 @@ void IDMRPT2::compute_mrpt2_energy(Updater* updater)
     current_energy=c_H_c(moinfo->get_nrefs(),Heff_mrpt2,zeroth_order_eigenvector);
     delta_energy = current_energy - old_energy;
     converged = (fabs(delta_energy) < options_.get_double("E_CONVERGENCE"));
-    psi::fprintf(outfile,"\n    @PT %5d   %20.15f  %11.4e",cycle,current_energy,delta_energy);
+    outfile->Printf("\n    @PT %5d   %20.15f  %11.4e",cycle,current_energy,delta_energy);
     old_energy=current_energy;
 
     if(cycle>options_.get_int("MAXITER")){
-      psi::fprintf(outfile,"\n\n\tThe calculation did not converge in %d cycles\n\tQuitting PSIMRCC\n",options_.get_int("MAXITER"));
-      fflush(outfile);
+      outfile->Printf("\n\n\tThe calculation did not converge in %d cycles\n\tQuitting PSIMRCC\n",options_.get_int("MAXITER"));
+      
       exit(1);
     }
     cycle++;
-    fflush(outfile);
+    
   }
-  psi::fprintf(outfile,"\n  ------------------------------------------------------------------------------");
+  outfile->Printf("\n  ------------------------------------------------------------------------------");
 
   double second_order_energy = current_energy;
 
@@ -154,34 +154,34 @@ void IDMRPT2::compute_mrpt2_energy(Updater* updater)
 
   double scs_pseudo_second_order_energy = current_energy;
 
-  psi::fprintf(outfile,"\n\n%6c* Mk-MRPT2 total energy         = %20.12f",' ',second_order_energy);
-  psi::fprintf(outfile,"\n%6c* relaxed Mk-MRPT2 total energy = %20.12f\n",' ',pseudo_second_order_energy);
-//  psi::fprintf(outfile,"\n    @SCSPT@        %-5s%-10s  Energy = %-20.15f",options_.get_str("CORR_ANSATZ").c_str(),options_.get_str("CORR_WFN").c_str(),scs_second_order_energy);
-//  psi::fprintf(outfile,"\n    @SCSPT-i@      %-5s%-10s  Energy = %-20.15f",options_.get_str("CORR_ANSATZ").c_str(),options_.get_str("CORR_WFN").c_str(),scs_pseudo_second_order_energy);
+  outfile->Printf("\n\n%6c* Mk-MRPT2 total energy         = %20.12f",' ',second_order_energy);
+  outfile->Printf("\n%6c* relaxed Mk-MRPT2 total energy = %20.12f\n",' ',pseudo_second_order_energy);
+//  outfile->Printf("\n    @SCSPT@        %-5s%-10s  Energy = %-20.15f",options_.get_str("CORR_ANSATZ").c_str(),options_.get_str("CORR_WFN").c_str(),scs_second_order_energy);
+//  outfile->Printf("\n    @SCSPT-i@      %-5s%-10s  Energy = %-20.15f",options_.get_str("CORR_ANSATZ").c_str(),options_.get_str("CORR_WFN").c_str(),scs_pseudo_second_order_energy);
 
   if(options_.get_str("PT_ENERGY")=="SECOND_ORDER"){
     Process::environment.globals["CURRENT ENERGY"]    = second_order_energy;
     Process::environment.globals["MRPT TOTAL ENERGY"] = second_order_energy;
-    psi::fprintf(outfile,"\n\n  Wrote second order energy to checkpoint file");
+    outfile->Printf("\n\n  Wrote second order energy to checkpoint file");
   }
   if(options_.get_str("PT_ENERGY")=="SCS_SECOND_ORDER"){
     Process::environment.globals["CURRENT ENERGY"]    = scs_second_order_energy;
     Process::environment.globals["MRPT TOTAL ENERGY"] = scs_second_order_energy;
-    psi::fprintf(outfile,"\n\n  Wrote spin-component-scaled second order energy to checkpoint file");
+    outfile->Printf("\n\n  Wrote spin-component-scaled second order energy to checkpoint file");
   }
   if(options_.get_str("PT_ENERGY")=="PSEUDO_SECOND_ORDER"){
     Process::environment.globals["CURRENT ENERGY"]    = pseudo_second_order_energy;
     Process::environment.globals["MRPT TOTAL ENERGY"] = pseudo_second_order_energy;
-    psi::fprintf(outfile,"\n\n  Wrote pseudo-second order energy to checkpoint file");
+    outfile->Printf("\n\n  Wrote pseudo-second order energy to checkpoint file");
   }
   if(options_.get_str("PT_ENERGY")=="SCS_PSEUDO_SECOND_ORDER"){
     Process::environment.globals["CURRENT ENERGY"]    = scs_pseudo_second_order_energy;
     Process::environment.globals["MRPT TOTAL ENERGY"] = scs_pseudo_second_order_energy;
-    psi::fprintf(outfile,"\n\n  Wrote spin-component-scaled pseudo-second order energy to checkpoint file");
+    outfile->Printf("\n\n  Wrote spin-component-scaled pseudo-second order energy to checkpoint file");
   }
 
 //   print_eigensystem(moinfo->get_nrefs(),Heff_mrpt2,right_eigenvector);
-  fflush(outfile);
+  
 }
 
 void IDMRPT2::build_Heff_mrpt2_diagonal()

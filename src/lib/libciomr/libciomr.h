@@ -32,7 +32,7 @@
 #define _psi_src_lib_libciomr_libciomr_h_
 
 #include <cstdio>
-
+#include <string>
 namespace psi {
 
 int psi_start(FILE** infile, FILE** outfile, char** psi_file_prefix, int argc, char *argv[], int overwrite_output);
@@ -56,7 +56,7 @@ double dot_mat(double **a,double **b,int n);
 
 void eigout(double **a,double *b,double *c,int m,int n,FILE *out);
 void eigsort(double *d,double **v,int n);
-void eivout(double **a, double *b, int m, int n, FILE *out) ;
+void eivout(double **a, double *b, int m, int n, std::string out) ;
 void mosort(double *d, double **v, int *sym, int nso, int nmo);
 
 void flin(double **a,double *b,int in,int im,double *det);
@@ -76,8 +76,8 @@ void mmult(double **AF, int ta, double **BF, int tb, double **CF, int tc,
            int nr, int nl, int nc, int add) ;
 void mxmb(double **a,int ia,int ja,double **b,int ib,int jb,double **c,
           int ic,int jc, int nrow, int nlnk, int ncol);
-void print_array(double *a, int m, FILE *out) ;
-void print_mat(double **a, int rows, int cols, FILE *out) ;
+void print_array(double *a, int m, std::string out) ;
+void print_mat(double **a, int rows, int cols, std::string out) ;
 
 void rsp(int nm, int n, int nv, double *array, double *evals, int matz,
          double **evecs, double toler) ;
@@ -105,7 +105,7 @@ void zero_int_array(int *a, int size);
 int **init_int_matrix(int rows, int cols);
 void free_int_matrix(int **array);
 void zero_int_matrix(int **array, int rows, int cols);
-void print_int_mat(int **a, int m, int n, FILE *out);
+void print_int_mat(int **a, int m, int n, std::string out);
 
 /* Functions in long_int_array.c */
 long int * init_long_int_array(int size) ;
@@ -113,14 +113,14 @@ void zero_long_int_array(long int *a, int size);
 long int **init_long_int_matrix(int rows, int cols);
 void free_long_int_matrix(long int **array);
 void zero_long_int_matrix(long int **array, int rows, int cols);
-void print_long_int_mat(long int **a, int m, int n, FILE *out);
+void print_long_int_mat(long int **a, int m, int n, std::string out);
 
 /* Functions in block_matrix.c */
 double ** block_matrix(unsigned long int n, unsigned long int m, bool mlock = false);
 void free_block(double **array);
 
 /* Functions in fndcor */
-void fndcor(long int *maxcrb, FILE *infile, FILE *outfile);
+void fndcor(long int *maxcrb, std::string OutFileRMR);
 
 }
 

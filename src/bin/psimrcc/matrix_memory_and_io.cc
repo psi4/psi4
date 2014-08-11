@@ -41,7 +41,7 @@
 #include "matrix.h"
 
 namespace psi{
-    extern FILE *outfile;
+    
     namespace psimrcc{
     extern MOInfo *moinfo;
     extern MemoryManager *memory_manager;
@@ -99,17 +99,17 @@ void CCMatrix::allocate_block(int h)
       if(memorypi2[h] < memory_manager->get_FreeMemory()){
         allocate2(double,matrix[h],left_pairpi[h],right_pairpi[h]);
         DEBUGGING(2,
-          psi::fprintf(outfile,"\n  %s[%s] <- allocated",label.c_str(),moinfo->get_irr_labs(h));
-          fflush(outfile);
+          outfile->Printf("\n  %s[%s] <- allocated",label.c_str(),moinfo->get_irr_labs(h));
+          
         )
       }else{
-        psi::fprintf(outfile,"\n\nNot enough memory to allocate irrep %d of %s\n",h,label.c_str());
-        fflush(outfile);
+        outfile->Printf("\n\nNot enough memory to allocate irrep %d of %s\n",h,label.c_str());
+        
         exit(1);
       }
     }else{
-      psi::fprintf(outfile,"\n\nCCMatrix::allocate_block(): You are trying to allocate irrep %d of %s when is already allocated!!!\n",h,label.c_str());
-      fflush(outfile);
+      outfile->Printf("\n\nCCMatrix::allocate_block(): You are trying to allocate irrep %d of %s when is already allocated!!!\n",h,label.c_str());
+      
       exit(EXIT_FAILURE);
     }
   }
@@ -131,8 +131,8 @@ void CCMatrix::free_block(int h)
     if(is_block_allocated(h)){
       release2(matrix[h]);
       DEBUGGING(2,
-        psi::fprintf(outfile,"\n  %s[%s] <- deallocated",label.c_str(),moinfo->get_irr_labs(h));
-        fflush(outfile);
+        outfile->Printf("\n  %s[%s] <- deallocated",label.c_str(),moinfo->get_irr_labs(h));
+        
       )
     }
   }
@@ -183,8 +183,8 @@ void CCMatrix::write_block_to_disk(int h)
       sprintf(data_label,"%s_%d",label.c_str(),h);
       _default_psio_lib_->write_entry(PSIF_PSIMRCC_INTEGRALS,data_label,(char*)&(matrix[h][0][0]),block_sizepi[h]*sizeof(double));
     }else{
-//       psi::fprintf(outfile,"\n    CCMatrix::write_block_to_disk(): writing %s irrep %d to disk",label.c_str(),h);
-//       psi::fprintf(outfile,"\n    This is a %d x %d block",left_pairpi[h],right_pairpi[h]);
+//       outfile->Printf("\n    CCMatrix::write_block_to_disk(): writing %s irrep %d to disk",label.c_str(),h);
+//       outfile->Printf("\n    This is a %d x %d block",left_pairpi[h],right_pairpi[h]);
       // for two electron integrals store strips of the symmetry block on disk
       size_t max_strip_size = static_cast<size_t>(fraction_of_memory_for_buffer * static_cast<double>(memory_manager->get_FreeMemory()));
 
@@ -201,7 +201,7 @@ void CCMatrix::write_block_to_disk(int h)
           strip_length = last_row - first_row;
           strip_size = sizeof(double) * strip_length * right_pairpi[h];
         }
-//         psi::fprintf(outfile,"\n    Writing strip %d of lenght %d (%d -> %d)",strip,strip_length,first_row,last_row);
+//         outfile->Printf("\n    Writing strip %d of lenght %d (%d -> %d)",strip,strip_length,first_row,last_row);
         // Write the size of the strip
         char size_label[80];
         sprintf(size_label ,"%s_%d_%d_size",label.c_str(),h,strip);
@@ -215,7 +215,7 @@ void CCMatrix::write_block_to_disk(int h)
         strip++;
       }
 
-//       psi::fprintf(outfile,"\n    Written %d strip%s",strip,strip>1 ? "" : "s");
+//       outfile->Printf("\n    Written %d strip%s",strip,strip>1 ? "" : "s");
       // Write the number of strips
       char nstrips_label[80];
       sprintf(nstrips_label ,"%s_%d_nstrips",label.c_str(),h);
@@ -320,8 +320,8 @@ size_t CCMatrix::read_strip_from_disk(int h, int strip, double* buffer)
   if(block_sizepi[h]>0){
     // for generic matrices read the entire symmetry block on disk
     if(!is_integral()){
-      psi::fprintf(outfile,"\nMatrix %s is not stored in strips!!!",label.c_str());
-      fflush(outfile);
+      outfile->Printf("\nMatrix %s is not stored in strips!!!",label.c_str());
+      
       exit(EXIT_FAILURE);
     }else{
       // Read the number of strips

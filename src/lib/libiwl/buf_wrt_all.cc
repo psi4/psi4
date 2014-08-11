@@ -33,8 +33,11 @@
 namespace psi {
   
 void IWL::write_all(int nbfso, double *ints, 
-    int *ioff, int printflg, FILE *out)
+    int *ioff, int printflg, std::string out)
 {
+
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(out)));
     int idx, p, q, r, s, smax, pq, rs, pqrs;
     Label *lblptr;
     Value *valptr;
@@ -59,7 +62,7 @@ void IWL::write_all(int nbfso, double *ints,
                         lblptr[idx++] = (Label) s;
                         valptr[idx_] = (Value) ints[pqrs];
                         idx_++;
-                        if (printflg) psi::fprintf(out, "%d %d %d %d [%d] = %10.6f\n",
+                        if (printflg) printer->Printf( "%d %d %d %d [%d] = %10.6f\n",
                             p, q, r, s, pqrs, ints[pqrs]) ;
 
                         if (idx_ == ints_per_buf_) {
@@ -100,8 +103,10 @@ void IWL::write_all(int nbfso, double *ints,
 ** \ingroup IWL
 */
 void iwl_buf_wrt_all(struct iwlbuf *Buf, int nbfso, double *ints, int *ioff,
-      int printflg, FILE *out)
+      int printflg, std::string out)
 {
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(out)));
   int idx, p, q, r, s, smax, pq, rs, pqrs;
   Label *lblptr;
   Value *valptr;
@@ -126,7 +131,7 @@ void iwl_buf_wrt_all(struct iwlbuf *Buf, int nbfso, double *ints, int *ioff,
 	    lblptr[idx++] = (Label) s;
 	    valptr[Buf->idx] = (Value) ints[pqrs];
 	    Buf->idx++;
-	    if (printflg) psi::fprintf(out, "%d %d %d %d [%d] = %10.6f\n",
+	    if (printflg) printer->Printf( "%d %d %d %d [%d] = %10.6f\n",
 				  p, q, r, s, pqrs, ints[pqrs]) ;
 	    
 	    if (Buf->idx == Buf->ints_per_buf) {

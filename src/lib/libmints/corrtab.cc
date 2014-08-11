@@ -80,7 +80,7 @@ CorrelationTable::CorrelationTable(const boost::shared_ptr<PointGroup>& group,
         // ExEnv::err0()
         //     << "ERROR: CorrelationTable: " << error(rc) << endl;
         // abort();
-        psi::fprintf(outfile, "CorrelationTable error: %s\n", error(rc));
+        outfile->Printf( "CorrelationTable error: %s\n", error(rc));
         throw PSIEXCEPTION("ERROR: CorrelationTable");
     }
 }

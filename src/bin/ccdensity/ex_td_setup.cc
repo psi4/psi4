@@ -44,7 +44,7 @@ void ex_td_setup(struct TD_Params S, struct TD_Params U)
   if((params.ref == 0) || (params.ref == 1)) {
     global_dpd_->file2_init(&L1, PSIF_CC_LAMPS, 0, 0, 1, "LIA 0 -1");
     global_dpd_->file2_copy(&L1, PSIF_CC_GLG, "LIA");
-    //psi::fprintf(stdout, "\t*** LAMBDA ***\n");
+    //outfile->Printf(stdout, "\t*** LAMBDA ***\n");
     //global_dpd_->file2_print(&L1, stdout);
     global_dpd_->file2_close(&L1);
 
@@ -90,9 +90,9 @@ void ex_td_setup(struct TD_Params S, struct TD_Params U)
   if((params.ref==0) || (params.ref==1)) {
     global_dpd_->file2_init(&L1, PSIF_CC_LAMPS, S.irrep, 0, 1, S.L1A_lbl);
     global_dpd_->file2_copy(&L1, PSIF_CC_GL, "LIA");
-    //psi::fprintf(stdout, "\t*** LHS ***\n");
+    //outfile->Printf(stdout, "\t*** LHS ***\n");
     //global_dpd_->file2_print(&L1, stdout);
-    //psi::fprintf(outfile, "\t*** LHS ***\n");
+    //outfile->Printf( "\t*** LHS ***\n");
     //global_dpd_->file2_print(&L1, outfile);
     global_dpd_->file2_close(&L1);
 
@@ -138,9 +138,9 @@ void ex_td_setup(struct TD_Params S, struct TD_Params U)
   if((params.ref == 0) || (params.ref == 1)) {
     global_dpd_->file2_init(&R1, PSIF_CC_RAMPS, U.irrep, 0, 1, U.R1A_lbl);
     global_dpd_->file2_copy(&R1, PSIF_CC_GR, "RIA");
-    //psi::fprintf(stdout, "\t*** RHS ***\n");
+    //outfile->Printf(stdout, "\t*** RHS ***\n");
     //global_dpd_->file2_print(&R1, stdout);
-    //psi::fprintf(outfile, "\t*** RHS ***\n");
+    //outfile->Printf( "\t*** RHS ***\n");
     //global_dpd_->file2_print(&R1, outfile);
     global_dpd_->file2_close(&R1);
 

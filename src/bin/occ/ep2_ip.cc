@@ -38,7 +38,7 @@ namespace psi{ namespace occwave{
 void OCCWave::ep2_ip()
 {   
 
-//psi::fprintf(outfile,"\n ep2_ip is starting... \n"); fflush(outfile);
+//outfile->Printf("\n ep2_ip is starting... \n"); 
 //===========================================================================================
 //========================= RHF =============================================================
 //===========================================================================================
@@ -70,8 +70,8 @@ if (reference_ == "RESTRICTED") {
 
     // Set omega = e_I
     omega = aOccEvals[aOccCount-1];
-    psi::fprintf(outfile,"\n\tOmega: %20.10f \n", omega);
-    fflush(outfile);   
+    outfile->Printf("\n\tOmega: %20.10f \n", omega);
+       
 
     // Build denominators
     // Build D_IJ^AB again 
@@ -238,7 +238,7 @@ if (reference_ == "RESTRICTED") {
           }
     }
 
-    //psi::fprintf(outfile,"\tI am here. \n"); fflush(outfile);
+    //outfile->Printf("\tI am here. \n"); 
 
     for (int i = 0; i < nooA; ++i) {
          for(int j = nooA-1; j > i; --j) {
@@ -255,22 +255,22 @@ if (reference_ == "RESTRICTED") {
 
 
     // Print occupied orbital energies
-    if (mo_optimized == 1) psi::fprintf(outfile,"\n\tOEP2 Occupied Orbital Energies (a.u.) \n"); 
-    else if (mo_optimized == 0) psi::fprintf(outfile,"\n\tEP2 Occupied Orbital Energies (a.u.) \n"); 
-    psi::fprintf(outfile,"\t----------------------------------------------- \n"); 
-    fflush(outfile);
+    if (mo_optimized == 1) outfile->Printf("\n\tOEP2 Occupied Orbital Energies (a.u.) \n"); 
+    else if (mo_optimized == 0) outfile->Printf("\n\tEP2 Occupied Orbital Energies (a.u.) \n"); 
+    outfile->Printf("\t----------------------------------------------- \n"); 
+    
 	  
     Molecule& mol = *reference_wavefunction_->molecule().get();
     CharacterTable ct = mol.point_group()->char_table();
     string pgroup = mol.point_group()->symbol();
 
     // print alpha occ orb energy
-    psi::fprintf(outfile, "\tAlpha occupied orbitals\n");
+    outfile->Printf( "\tAlpha occupied orbitals\n");
     count = 1;
     for (int i = 0; i < nooA; ++i) {
          int h = irrep_A->get(i);
-	 psi::fprintf(outfile,"\t%3d (%-3s) %20.10f \n",count,ct.gamma(h).symbol(),evals_A->get(i));
-	 fflush(outfile);   
+	 outfile->Printf("\t%3d (%-3s) %20.10f \n",count,ct.gamma(h).symbol(),evals_A->get(i));
+	    
 	 count++;
     }
 
@@ -695,7 +695,7 @@ else if (reference_ == "UNRESTRICTED") {
           }
     }
 
-    //psi::fprintf(outfile,"\tI am here. \n"); fflush(outfile);
+    //outfile->Printf("\tI am here. \n"); 
 
     for (int i = 0; i < nooA; ++i) {
          for(int j = nooA-1; j > i; --j) {
@@ -734,32 +734,32 @@ else if (reference_ == "UNRESTRICTED") {
 
 
     // Print occupied orbital energies
-    if (mo_optimized == 1) psi::fprintf(outfile,"\n\tOMP2 Occupied Orbital Energies (a.u.) \n"); 
-    else if (mo_optimized == 0) psi::fprintf(outfile,"\n\tMP2 Occupied Orbital Energies (a.u.) \n"); 
-    psi::fprintf(outfile,"\t----------------------------------------------- \n"); 
-    fflush(outfile);
+    if (mo_optimized == 1) outfile->Printf("\n\tOMP2 Occupied Orbital Energies (a.u.) \n"); 
+    else if (mo_optimized == 0) outfile->Printf("\n\tMP2 Occupied Orbital Energies (a.u.) \n"); 
+    outfile->Printf("\t----------------------------------------------- \n"); 
+    
 	  
     Molecule& mol = *reference_wavefunction_->molecule().get();
     CharacterTable ct = mol.point_group()->char_table();
     string pgroup = mol.point_group()->symbol();
 
     // print alpha occ orb energy
-    psi::fprintf(outfile, "\tAlpha occupied orbitals\n");
+    outfile->Printf( "\tAlpha occupied orbitals\n");
     count = 1;
     for (int i = 0; i < nooA; ++i) {
          int h = irrep_A->get(i);
-	 psi::fprintf(outfile,"\t%3d (%-3s) %20.10f \n",count,ct.gamma(h).symbol(),evals_A->get(i));
-	 fflush(outfile);   
+	 outfile->Printf("\t%3d (%-3s) %20.10f \n",count,ct.gamma(h).symbol(),evals_A->get(i));
+	    
 	 count++;
     }
 
     // print beta occ orb energy
-    psi::fprintf(outfile, "\n\tBeta occupied orbitals\n");
+    outfile->Printf( "\n\tBeta occupied orbitals\n");
     count = 1;
     for (int i = 0; i < nooB; ++i) {
          int h = irrep_B->get(i);
-	 psi::fprintf(outfile,"\t%3d (%-3s) %20.10f \n",count,ct.gamma(h).symbol(),evals_B->get(i));
-	 fflush(outfile);   
+	 outfile->Printf("\t%3d (%-3s) %20.10f \n",count,ct.gamma(h).symbol(),evals_B->get(i));
+	    
 	 count++;
     }
 
@@ -771,7 +771,7 @@ else if (reference_ == "UNRESTRICTED") {
        delete irrep_B;
 
 }// end if (reference_ == "UNRESTRICTED") 
-//psi::fprintf(outfile,"\n ep2_ip is done. \n"); fflush(outfile);
+//outfile->Printf("\n ep2_ip is done. \n"); 
 } // end ep2_ip
 }} // End Namespaces
 

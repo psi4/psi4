@@ -50,11 +50,11 @@ MatrixBase::~MatrixBase()
 void MatrixBase::print()
 {
   for(size_t i=0 ; i < rows_; i++){
-    psi::fprintf(outfile,"\n  ");
+    outfile->Printf("\n  ");
     for(size_t j=0 ; j < cols_; j++)
-      psi::fprintf(outfile,"%10.6f",matrix_[i][j]);
+      outfile->Printf("%10.6f",matrix_[i][j]);
   }
-  psi::fprintf(outfile,"\n");
+  outfile->Printf("\n");
 }
 
 void MatrixBase::scale(double factor)

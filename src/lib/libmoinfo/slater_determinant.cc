@@ -22,7 +22,7 @@
 
 #include "slater_determinant.h"
 
-extern FILE *outfile;
+
 
 namespace psi {
 

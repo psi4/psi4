@@ -57,22 +57,22 @@ void get_params(Options& options)
   if(params.wfn == "CC2" || params.wfn == "EOM_CC2") {
     psio_read_entry(PSIF_CC_INFO, "CC2 Energy", (char *) &(moinfo.ecc),
                     sizeof(double));
-    psi::fprintf(outfile,  "\tCC2 energy          (CC_INFO) = %20.15f\n",moinfo.ecc);
-    psi::fprintf(outfile,  "\tTotal CC2 energy    (CC_INFO) = %20.15f\n",
+    outfile->Printf(  "\tCC2 energy          (CC_INFO) = %20.15f\n",moinfo.ecc);
+    outfile->Printf(  "\tTotal CC2 energy    (CC_INFO) = %20.15f\n",
             moinfo.eref+moinfo.ecc);
   }
   else if(params.wfn == "CCSD" || params.wfn == "EOM_CCSD") {
     psio_read_entry(PSIF_CC_INFO, "CCSD Energy", (char *) &(moinfo.ecc),
                     sizeof(double));
-    psi::fprintf(outfile,  "\tCCSD energy         (CC_INFO) = %20.15f\n",moinfo.ecc);
-    psi::fprintf(outfile,  "\tTotal CCSD energy   (CC_INFO) = %20.15f\n",
+    outfile->Printf(  "\tCCSD energy         (CC_INFO) = %20.15f\n",moinfo.ecc);
+    outfile->Printf(  "\tTotal CCSD energy   (CC_INFO) = %20.15f\n",
             moinfo.eref+moinfo.ecc);
   }
   else if(params.wfn == "CC3" || params.wfn == "EOM_CC3") {
     psio_read_entry(PSIF_CC_INFO, "CC3 Energy", (char *) &(moinfo.ecc),
                     sizeof(double));
-    psi::fprintf(outfile,  "\tCC3 energy          (CC_INFO) = %20.15f\n",moinfo.ecc);
-    psi::fprintf(outfile,  "\tTotal CC3 energy    (CC_INFO) = %20.15f\n",
+    outfile->Printf(  "\tCC3 energy          (CC_INFO) = %20.15f\n",moinfo.ecc);
+    outfile->Printf(  "\tTotal CC3 energy    (CC_INFO) = %20.15f\n",
             moinfo.eref+moinfo.ecc);
   }
 
@@ -105,7 +105,7 @@ void get_params(Options& options)
 
   params.abcd = options.get_str("ABCD");
   if(params.abcd == "NEW" && params.abcd == "OLD") {
-    psi::fprintf(outfile, "Invalid ABCD algorithm: %s\n", params.abcd.c_str());
+    outfile->Printf( "Invalid ABCD algorithm: %s\n", params.abcd.c_str());
     throw PsiException("cclambda: error", __FILE__, __LINE__);
   }
 
@@ -133,7 +133,7 @@ void get_params(Options& options)
   if(options["LOCAL_METHOD"].has_changed()) {
     local.method = options.get_str("LOCAL_METHOD");
     if(local.method == "AOBASIS" && local.method == "WERNER") {
-      psi::fprintf(outfile, "Invalid local correlation method: %s\n", local.method.c_str());
+      outfile->Printf( "Invalid local correlation method: %s\n", local.method.c_str());
       throw PsiException("cclambda: error", __FILE__, __LINE__);
     }
   }
@@ -144,7 +144,7 @@ void get_params(Options& options)
   if(options["LOCAL_WEAKP"].has_changed()) {
     local.weakp = options.get_str("LOCAL_WEAKP");
     if(local.weakp != "MP2" && local.weakp != "NEGLECT" && local.weakp != "NONE") {
-      psi::fprintf(outfile, "Invalid method for treating local pairs: %s\n", local.weakp.c_str());
+      outfile->Printf( "Invalid method for treating local pairs: %s\n", local.weakp.c_str());
       throw PsiException("cclambda: error", __FILE__, __LINE__);
     }
   }
@@ -168,7 +168,7 @@ void get_params(Options& options)
   if(options["LOCAL_PAIRDEF"].has_changed()){
     local.pairdef = options.get_str("LOCAL_PAIRDEF");
     if(local.pairdef != "BP" && local.pairdef != "RESPONSE") {
-      psi::fprintf(outfile, "Invalid keyword for strong/weak pair definition: %s\n", local.pairdef.c_str());
+      outfile->Printf( "Invalid keyword for strong/weak pair definition: %s\n", local.pairdef.c_str());
       throw PsiException("cclambda: error", __FILE__, __LINE__);
     }
   }
@@ -242,7 +242,7 @@ void get_params(Options& options)
           params.nstates = 1;
     pL_params = (struct L_Params *) malloc(params.nstates * sizeof(struct L_Params));
     psio_read_entry(PSIF_CC_INFO, "XI Irrep", (char *) &i,sizeof(int));
-    psi::fprintf(outfile,"\tIrrep of Zeta       (CC_INFO) = %d\n", i);
+    outfile->Printf("\tIrrep of Zeta       (CC_INFO) = %d\n", i);
     pL_params[0].irrep = prop_sym = i; /* is this always A1? I forget */
     pL_params[0].root = prop_root = 0;
     pL_params[0].ground = 0;
@@ -446,41 +446,41 @@ void get_params(Options& options)
   params.maxiter = 50 * params.nstates;
   params.maxiter = options.get_int("MAXITER");
 
-  psi::fprintf(outfile, "\n\tInput parameters:\n");
-  psi::fprintf(outfile, "\t-----------------\n");
-  psi::fprintf(outfile, "\tMaxiter       =    %4d\n", params.maxiter);
-  psi::fprintf(outfile, "\tConvergence   = %3.1e\n", params.convergence);
-  psi::fprintf(outfile, "\tRestart       =     %s\n", params.restart ? "Yes" : "No");
-  psi::fprintf(outfile, "\tCache Level   =     %1d\n", params.cachelev);
-  psi::fprintf(outfile, "\tModel III     =     %s\n", params.sekino ? "Yes" : "No");
-  psi::fprintf(outfile, "\tDIIS          =     %s\n", params.diis ? "Yes" : "No");
-  psi::fprintf(outfile, "\tAO Basis      =     %s\n",
+  outfile->Printf( "\n\tInput parameters:\n");
+  outfile->Printf( "\t-----------------\n");
+  outfile->Printf( "\tMaxiter       =    %4d\n", params.maxiter);
+  outfile->Printf( "\tConvergence   = %3.1e\n", params.convergence);
+  outfile->Printf( "\tRestart       =     %s\n", params.restart ? "Yes" : "No");
+  outfile->Printf( "\tCache Level   =     %1d\n", params.cachelev);
+  outfile->Printf( "\tModel III     =     %s\n", params.sekino ? "Yes" : "No");
+  outfile->Printf( "\tDIIS          =     %s\n", params.diis ? "Yes" : "No");
+  outfile->Printf( "\tAO Basis      =     %s\n",
           params.aobasis ? "Yes" : "No");
-  psi::fprintf(outfile, "\tABCD            =     %s\n", params.abcd.c_str());
-  psi::fprintf(outfile, "\tLocal CC        =     %s\n", params.local ? "Yes" : "No");
+  outfile->Printf( "\tABCD            =     %s\n", params.abcd.c_str());
+  outfile->Printf( "\tLocal CC        =     %s\n", params.local ? "Yes" : "No");
   if(params.local) {
-    psi::fprintf(outfile, "\tLocal Cutoff    = %3.1e\n", local.cutoff);
-    psi::fprintf(outfile, "\tLocal Method    =    %s\n", local.method.c_str());
-    psi::fprintf(outfile, "\tWeak pairs      =    %s\n", local.weakp.c_str());
-    psi::fprintf(outfile, "\tFilter singles  =    %s\n", local.filter_singles ? "Yes" : "No");
-    psi::fprintf(outfile, "\tLocal pairs       =    %s\n", local.pairdef.c_str());
-    psi::fprintf(outfile, "\tLocal CPHF cutoff =  %3.1e\n", local.cphf_cutoff);
+    outfile->Printf( "\tLocal Cutoff    = %3.1e\n", local.cutoff);
+    outfile->Printf( "\tLocal Method    =    %s\n", local.method.c_str());
+    outfile->Printf( "\tWeak pairs      =    %s\n", local.weakp.c_str());
+    outfile->Printf( "\tFilter singles  =    %s\n", local.filter_singles ? "Yes" : "No");
+    outfile->Printf( "\tLocal pairs       =    %s\n", local.pairdef.c_str());
+    outfile->Printf( "\tLocal CPHF cutoff =  %3.1e\n", local.cphf_cutoff);
   }
 
-  psi::fprintf(outfile,"\tParamaters for left-handed eigenvectors:\n");
-  psi::fprintf(outfile,"\t    Irr   Root  Ground-State?    EOM energy        R0\n");
+  outfile->Printf("\tParamaters for left-handed eigenvectors:\n");
+  outfile->Printf("\t    Irr   Root  Ground-State?    EOM energy        R0\n");
   for (i=0; i<params.nstates; ++i) {
-    psi::fprintf(outfile,"\t%3d %3d %5d %10s %18.10lf %14.10lf\n", i+1, pL_params[i].irrep, pL_params[i].root+1,
+    outfile->Printf("\t%3d %3d %5d %10s %18.10lf %14.10lf\n", i+1, pL_params[i].irrep, pL_params[i].root+1,
             (pL_params[i].ground ? "Yes":"No"), pL_params[i].cceom_energy, pL_params[i].R0);
   }
 
   for (i=0; i<params.nstates; ++i) {
-    psi::fprintf(outfile,"\tLabels for eigenvector %d:\n\t%s, %s, %s, %s, %s, %s\n",
+    outfile->Printf("\tLabels for eigenvector %d:\n\t%s, %s, %s, %s, %s, %s\n",
             i+1,pL_params[i].L1A_lbl,pL_params[i].L1B_lbl,pL_params[i].L2AA_lbl,pL_params[i].L2BB_lbl,
             pL_params[i].L2AB_lbl, pL_params[i].L2RHF_lbl);
   }
 
-  fflush(outfile);
+  
   return;
 }
 

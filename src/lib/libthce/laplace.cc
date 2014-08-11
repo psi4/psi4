@@ -142,7 +142,7 @@ void LaplaceDenom::compute(const std::string& occ_name, const std::string& vir_n
     err_table_file.close();
 
     //for (int r2 = 0; r2 < nR; r2++)
-    //    psi::fprintf(outfile, "  R[%4d] = %20.14E\n", r2+1, R_availp[r2]);
+    //    outfile->Printf( "  R[%4d] = %20.14E\n", r2+1, R_availp[r2]);
     //err_table->print();
 
     int indR;
@@ -194,11 +194,11 @@ void LaplaceDenom::compute(const std::string& occ_name, const std::string& vir_n
 
     std::string quadfile = PSIDATADIR + "/quadratures/1_x/" + st.str().c_str();
 
-    psi::fprintf(outfile, "\n  ==> Laplace Denominator <==\n\n");
-    psi::fprintf(outfile, "  This system has an intrinsic R = (E_HUMO - E_LOMO)/(E_LUMO - E_HOMO) of %7.4E.\n", R);
-    psi::fprintf(outfile, "  A %d point minimax quadrature with R of %1.0E will be used for the denominator.\n", npoints_, R_availp[r]);
-    psi::fprintf(outfile, "  The worst-case Chebyshev norm for this quadrature rule is %7.4E.\n", accuracy);
-    psi::fprintf(outfile, "  Quadrature rule read from file %s.\n\n", quadfile.c_str());
+    outfile->Printf( "\n  ==> Laplace Denominator <==\n\n");
+    outfile->Printf( "  This system has an intrinsic R = (E_HUMO - E_LOMO)/(E_LUMO - E_HOMO) of %7.4E.\n", R);
+    outfile->Printf( "  A %d point minimax quadrature with R of %1.0E will be used for the denominator.\n", npoints_, R_availp[r]);
+    outfile->Printf( "  The worst-case Chebyshev norm for this quadrature rule is %7.4E.\n", accuracy);
+    outfile->Printf( "  Quadrature rule read from file %s.\n\n", quadfile.c_str());
 
     // The quadrature is defined as \omega_v exp(-\alpha_v x) = 1/x
     double* alpha = new double[npoints_];

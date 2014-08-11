@@ -138,7 +138,7 @@ double LMP2::compute_energy()
 
 
     if (me_ == 0)
-        psi::fprintf(outfile, "\n  ====> Begin LMP2 Iterations <====\n\n");
+        outfile->Printf( "\n  ====> Begin LMP2 Iterations <====\n\n");
     int iter = 0;
     int conv = 0;
     while (conv != 1) {
@@ -154,7 +154,7 @@ double LMP2::compute_energy()
 
 
         print_results(iter);
-        fflush(outfile);
+        
         iter++;
 
 //        if (iter == 2) conv = 1;
@@ -162,7 +162,7 @@ double LMP2::compute_energy()
     }
 
     if (me_ == 0)
-        psi::fprintf(outfile, "\n  =================================\n\n");
+        outfile->Printf( "\n  =================================\n\n");
 
     print_summary();
 
@@ -256,12 +256,12 @@ void LMP2::common_init() {
 void LMP2::print_header() const
 {
     if (me_ == 0) {
-        psi::fprintf(outfile, "\n");
-        psi::fprintf(outfile, "         ---------------------------------------------------------\n");
-        psi::fprintf(outfile, "                                 LMP2\n");
-        psi::fprintf(outfile, "                           written by Ben Mintz\n");
-        psi::fprintf(outfile, "         ---------------------------------------------------------\n");
-        psi::fprintf(outfile, "\n");
+        outfile->Printf( "\n");
+        outfile->Printf( "         ---------------------------------------------------------\n");
+        outfile->Printf( "                                 LMP2\n");
+        outfile->Printf( "                           written by Ben Mintz\n");
+        outfile->Printf( "         ---------------------------------------------------------\n");
+        outfile->Printf( "\n");
     }
 
     WorldComm->print();
@@ -369,16 +369,16 @@ void LMP2::print_moinfo() const {
     }
 
     if (me_ == 0) {
-        psi::fprintf(outfile, "\n  ====> Orbital Information <====\n\n");
-        psi::fprintf(outfile, "  Irreps\t\t= %d\n", nirreps_);
-        psi::fprintf(outfile, "  AO's\t\t\t= %d\n", nso_);
-        psi::fprintf(outfile, "  Doubly Occupied\t= %d\n", ndocc_);
-        psi::fprintf(outfile, "  Active Occupied\t= %d\n", nact_docc_);
-        psi::fprintf(outfile, "  Frozen Occupied\t= %d\n", nfocc_);
-        psi::fprintf(outfile, "  Total Virtuals\t= %d\n", nvirt_);
-        psi::fprintf(outfile, "  Active Virtuals\t= %d\n", nact_virt_);
-        psi::fprintf(outfile, "  Frozen Virtuals\t= %d\n", nfvir_);
-        psi::fprintf(outfile, "\n  ===============================\n\n");
+        outfile->Printf( "\n  ====> Orbital Information <====\n\n");
+        outfile->Printf( "  Irreps\t\t= %d\n", nirreps_);
+        outfile->Printf( "  AO's\t\t\t= %d\n", nso_);
+        outfile->Printf( "  Doubly Occupied\t= %d\n", ndocc_);
+        outfile->Printf( "  Active Occupied\t= %d\n", nact_docc_);
+        outfile->Printf( "  Frozen Occupied\t= %d\n", nfocc_);
+        outfile->Printf( "  Total Virtuals\t= %d\n", nvirt_);
+        outfile->Printf( "  Active Virtuals\t= %d\n", nact_virt_);
+        outfile->Printf( "  Frozen Virtuals\t= %d\n", nfvir_);
+        outfile->Printf( "\n  ===============================\n\n");
     }
 
 }
@@ -405,9 +405,9 @@ void LMP2::reference() {
     F_AO_->set_name("Fock Matrix (AO)");
 
     if (me_ == 0) {
-        psi::fprintf(outfile, "\n  ====> Reference WFN Information <====\n\n");
-        psi::fprintf(outfile,"  Nuclear repusion\t= %5.15f\n",enuc_);
-        psi::fprintf(outfile,"  SCF energy\t\t= %5.15f\n",escf_);
+        outfile->Printf( "\n  ====> Reference WFN Information <====\n\n");
+        outfile->Printf("  Nuclear repusion\t= %5.15f\n",enuc_);
+        outfile->Printf("  SCF energy\t\t= %5.15f\n",escf_);
 
         if (print_ >= 2) {
             C_->print();
@@ -415,9 +415,9 @@ void LMP2::reference() {
             F_AO_->print();
         }
 
-        psi::fprintf(outfile, "\n  =====================================\n\n");
+        outfile->Printf( "\n  =====================================\n\n");
 
-        fflush(outfile);
+        
     }
 }
 
@@ -578,17 +578,17 @@ void LMP2::setup_diis(const int &iter) {
 
 void LMP2::print_summary() const {
     if (me_ == 0) {
-        psi::fprintf(outfile, "\n  ====> LMP2 Summary <====\n\n");
-        psi::fprintf(outfile, "  SCF energy\t\t = %20.12f\n",escf_);
-        psi::fprintf(outfile, "  LMP2 Corr. Energy\t = %20.12f\n", Elmp2_);
-        psi::fprintf(outfile, "  LMP2 Total Energy\t = %20.12f\n", escf_ + Elmp2_);
-        psi::fprintf(outfile, "\n  ========================\n\n");
-        fflush(outfile);
+        outfile->Printf( "\n  ====> LMP2 Summary <====\n\n");
+        outfile->Printf( "  SCF energy\t\t = %20.12f\n",escf_);
+        outfile->Printf( "  LMP2 Corr. Energy\t = %20.12f\n", Elmp2_);
+        outfile->Printf( "  LMP2 Total Energy\t = %20.12f\n", escf_ + Elmp2_);
+        outfile->Printf( "\n  ========================\n\n");
+        
     }
 }
 
 int LMP2::print_matrix(const SharedMatrix mat, const std::string &str) const {
-    if (mat->name().c_str() == NULL) mat->print(outfile, str.c_str());
+    if (mat->name().c_str() == NULL) mat->print("outfile", str.c_str());
     else {
         mat->set_name(str);
         mat->print();

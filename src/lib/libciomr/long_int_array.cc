@@ -53,8 +53,8 @@ long int * init_long_int_array(int size)
   long int *array;
 
   if ((array = (long int *) malloc(sizeof(long int)*size))==NULL) {
-    psi::fprintf(stderr,"init_array:  trouble allocating memory \n");
-    psi::fprintf(stderr,"size = %d\n",size);
+    outfile->Printf("init_array:  trouble allocating memory \n");
+    outfile->Printf("size = %d\n",size);
     exit(PSI_RETURN_FAILURE);
   }
   bzero(array,sizeof(long int)*size);

@@ -43,7 +43,7 @@ void idx_permute_multipass(dpdfile4 *File, int this_bucket,
                            int **bucket_map, unsigned long int **bucket_offset,
                            int p, int q, int r, int s,
                            int perm_pr, int perm_qs, int perm_prqs,
-                           double value, FILE *outfile);
+                           double value, std::string);
 
 int build_abcd_packed(int inputfile, double tolerance, int keep)
 {
@@ -148,8 +148,8 @@ int build_abcd_packed(int inputfile, double tolerance, int keep)
     }
   }
 
-  psi::fprintf(outfile, "\tSorting File: %s nbuckets = %d\n", B.label, nbuckets);
-  fflush(outfile);
+  outfile->Printf( "\tSorting File: %s nbuckets = %d\n", B.label, nbuckets);
+  
 
   next = PSIO_ZERO;
   for(n=0; n < nbuckets; n++) { /* nbuckets = number of passes */
@@ -174,7 +174,7 @@ int build_abcd_packed(int inputfile, double tolerance, int keep)
       value = (double) valptr[InBuf.idx];
 
       idx_permute_multipass(&B,n,bucket_map,bucket_offset,
-                            p,q,r,s,1,1,1,value,outfile);
+                            p,q,r,s,1,1,1,value,"outfile");
 
     } /* end loop through current buffer */
 
@@ -192,7 +192,7 @@ int build_abcd_packed(int inputfile, double tolerance, int keep)
         value = (double) valptr[InBuf.idx];
 
         idx_permute_multipass(&B,n,bucket_map,bucket_offset,
-                              p,q,r,s,1,1,1,value,outfile);
+                              p,q,r,s,1,1,1,value,"outfile");
 
       } /* end loop through current buffer */
     } /* end loop over reading buffers */

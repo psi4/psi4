@@ -48,7 +48,6 @@ ADC::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, doubl
     double **Alpha, **G, *lambda, *lambda_o, *residual_norm, cutoff;
     dpdfile2 B, S, Bp, Bn, F, L, V;
     dpdfile4 A;
-    FILE *iter_adc;
     
     maxdim = 10 * rpi_[irrep];
     iter = 0;
@@ -69,12 +68,12 @@ ADC::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, doubl
     for(int I = 0;I < rpi_[irrep];I++) lambda_o[I] = omega_guess_->get(irrep, I);
     shift_denom4(irrep, omega_in);
     
-    ffile(&iter_adc, "iter.dat", 1);
+    boost::shared_ptr<OutFile> printer(new OutFile("iter.dat",APPEND));
     
     timer_on("SEM");
     while(converged < rpi_[irrep] && iter < sem_max_){
         skip_check = 0;
-        psi::fprintf(iter_adc, "\niter = %d, dim = %d\n", iter, length);
+        printer->Printf("\niter = %d, dim = %d\n", iter, length);
 
         // Evaluating the sigma vectors
         timer_on("Sigma construction");
@@ -166,8 +165,8 @@ ADC::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, doubl
         }
     
         if(maxdim-length < rpi_[irrep] || (nxspi_[irrep]-length) < rpi_[irrep]){
-            psi::fprintf(iter_adc, "Subspace too large:maxdim = %d, L = %d\n", maxdim, length);
-            psi::fprintf(iter_adc, "Collapsing eigenvectors.\n");
+            printer->Printf( "Subspace too large:maxdim = %d, L = %d\n", maxdim, length);
+            printer->Printf( "Collapsing eigenvectors.\n");
 
             for(int k = 0;k < rpi_[irrep];k++){
                 sprintf(lbl, "Bn^(%d)_[%d]12", k, irrep);
@@ -195,8 +194,8 @@ ADC::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, doubl
     
         if(!skip_check){
             zero_int_array(conv, rpi_[irrep]);
-            psi::fprintf(iter_adc, "Root          Eigenvalue   Delta     Res_Norm     Conv?\n");
-            psi::fprintf(iter_adc, "----     ---------------- -------    --------- ----------\n");
+            printer->Printf("Root          Eigenvalue   Delta     Res_Norm     Conv?\n");
+            printer->Printf("----     ---------------- -------    --------- ----------\n");
         
             for(int k = 0;k < rpi_[irrep];k++){
                 double diff = fabs(lambda[k]-lambda_o[k]);
@@ -205,8 +204,7 @@ ADC::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, doubl
                     converged++;
                 }
                 lambda_o[k] = lambda[k];
-                psi::fprintf(iter_adc, "%3d  %20.14f %4.3e   %4.3e     %1s\n", k, lambda[k], diff, residual_norm[k], conv[k] == 1 ? "Y" : "N");
-                fflush(iter_adc);
+                printer->Printf("%3d  %20.14f %4.3e   %4.3e     %1s\n", k, lambda[k], diff, residual_norm[k], conv[k] == 1 ? "Y" : "N");
             }
         }
         
@@ -214,7 +212,7 @@ ADC::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, doubl
         for(int i = 0;i < num_root;i++) all_conv += conv[i];
 
         if(all_conv == num_root && converged >= num_root){
-            psi::fprintf(iter_adc, "Davidson algorithm converged in %d iterations for %dth root.\n", iter, num_root-1);
+            printer->Printf("Davidson algorithm converged in %d iterations for %dth root.\n", iter, num_root-1);
             for(int I = 0;I < num_root;I++){
                 eps[I] = lambda[I];
                 sprintf(lbl, "V^(%d)_[%d]12", I, irrep);
@@ -234,7 +232,6 @@ ADC::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, doubl
     }
     timer_off("SEM");
     
-    fclose(iter_adc);
     free(residual_ok);
     free(residual_norm);
     free(conv);

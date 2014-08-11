@@ -34,7 +34,7 @@
 #include "debugging.h"
 
 namespace psi{
-    extern FILE *outfile;
+    
     namespace psimrcc{
 
 /**

@@ -35,7 +35,7 @@
 
 extern "C" {
   extern FILE *infile;
-  extern FILE *outfile;
+  
 }
 
 namespace psi { namespace clag {
@@ -85,7 +85,7 @@ void compute_zorb (double *tei,
     }
   }
 
-  psi::fprintf(outfile, "Delta_X matrix:\n");
+  outfile->Printf( "Delta_X matrix:\n");
   print_mat(Delta_X,nmo,nmo,outfile);
 
   // form Delta_X_tilde[ai] = Delta_X[a][i] + Delta_X_prime[ai] +
@@ -122,7 +122,7 @@ void compute_zorb (double *tei,
             tei[paqi] - tei[piqa]) / (epsilon[q] - epsilon[p]);
         }
       }
-      psi::fprintf(outfile, "Delta_X_tilde[%d][%d] = %10.6lf\n", Delta_X_tilde[idx],
+      outfile->Printf( "Delta_X_tilde[%d][%d] = %10.6lf\n", Delta_X_tilde[idx],
         a, i);
     }
   }
@@ -149,7 +149,7 @@ void compute_zorb (double *tei,
     }
   } 
 
-  psi::fprintf(outfile, "A matrix:\n");
+  outfile->Printf( "A matrix:\n");
   print_mat(A,nocc*nvir,nocc*nvir,outfile);
 
   // Solve \sum_{ai} A^T_{bj,ai} Z_{ai} = \Delta_X_tilde_{bj}
@@ -159,7 +159,7 @@ void compute_zorb (double *tei,
   C_DCOPY(nocc*nvir,Delta_X_tilde,1,Zai,1);
   // flin(A,Zai,nocc*nvir,1, &det);
   if (C_DGESV(nocc*nvir,1,A[0],nocc*nvir,tmpi,Zai,nocc*nvir) != 0) {
-    psi::fprintf(outfile, "compute_zorb: C_DGESV returned an error\n");
+    outfile->Printf( "compute_zorb: C_DGESV returned an error\n");
     exit(1);
   }
   free_block(A);
@@ -170,7 +170,7 @@ void compute_zorb (double *tei,
     for (int i=0; i<nocc; i++,idx++) {
       int ai = ioff[a] + i;
       Zvec[ai] = Zai[idx];
-      // psi::fprintf(outfile, "Zvec[%d][%d] = %10.6lf\n", a, i, Zai[idx]);
+      // outfile->Printf( "Zvec[%d][%d] = %10.6lf\n", a, i, Zai[idx]);
     }
   }   
 

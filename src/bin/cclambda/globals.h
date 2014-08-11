@@ -30,7 +30,7 @@
 #include <libpsio/psio.h>
 
 namespace psi {
-extern FILE* outfile;
+
 namespace cclambda {
 
 /* Global variables */

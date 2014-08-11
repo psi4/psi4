@@ -225,9 +225,11 @@ void RKSFunctions::compute_orbitals(boost::shared_ptr<BlockOPoints> block)
 }
 
 
-void RKSFunctions::print(FILE* out, int print) const
+void RKSFunctions::print(std::string out, int print) const
 {
-    std::string ans;
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::string ans;
     if (ansatz_ == 0) {
         ans = "LSDA";
     } else if (ansatz_ == 1) {
@@ -236,17 +238,17 @@ void RKSFunctions::print(FILE* out, int print) const
         ans = "Meta-GGA";
     }
 
-    psi::fprintf(out, "   => RKSFunctions: %s Ansatz <=\n\n", ans.c_str());
+    printer->Printf( "   => RKSFunctions: %s Ansatz <=\n\n", ans.c_str());
 
-    psi::fprintf(out, "    Point Values:\n");
+    printer->Printf( "    Point Values:\n");
     for (std::map<std::string, boost::shared_ptr<Vector> >::const_iterator it = point_values_.begin();
         it != point_values_.end(); it++) {
-        psi::fprintf(out, "    %s\n", (*it).first.c_str());
+        printer->Printf( "    %s\n", (*it).first.c_str());
         if (print > 3) {
             (*it).second->print();
         }
     }
-    psi::fprintf(out,"\n\n");
+    printer->Printf("\n\n");
 
     BasisFunctions::print(out,print);
 }
@@ -508,9 +510,11 @@ void UKSFunctions::compute_orbitals(boost::shared_ptr<BlockOPoints> block)
 }
 
 
-void UKSFunctions::print(FILE* out, int print) const
+void UKSFunctions::print(std::string out, int print) const
 {
-    std::string ans;
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            boost::shared_ptr<OutFile>(new OutFile(out)));
+   std::string ans;
     if (ansatz_ == 0) {
         ans = "LSDA";
     } else if (ansatz_ == 1) {
@@ -519,17 +523,17 @@ void UKSFunctions::print(FILE* out, int print) const
         ans = "Meta-GGA";
     }
 
-    psi::fprintf(out, "   => UKSFunctions: %s Ansatz <=\n\n", ans.c_str());
+    printer->Printf( "   => UKSFunctions: %s Ansatz <=\n\n", ans.c_str());
 
-    psi::fprintf(out, "    Point Values:\n");
+    printer->Printf( "    Point Values:\n");
     for (std::map<std::string, boost::shared_ptr<Vector> >::const_iterator it = point_values_.begin();
         it != point_values_.end(); it++) {
-        psi::fprintf(out, "    %s\n", (*it).first.c_str());
+        printer->Printf( "    %s\n", (*it).first.c_str());
         if (print > 3) {
             (*it).second->print();
         }
     }
-    psi::fprintf(out,"\n\n");
+    printer->Printf("\n\n");
 
     BasisFunctions::print(out,print);
 }
@@ -999,19 +1003,21 @@ void BasisFunctions::compute_functions(boost::shared_ptr<BlockOPoints> block)
     delete[] yc_pow;
     delete[] zc_pow;
 }
-void BasisFunctions::print(FILE* out, int print) const
+void BasisFunctions::print(std::string out, int print) const
 {
-    psi::fprintf(out, "   => BasisFunctions: Derivative = %d, Max Points = %d <=\n\n", deriv_, max_points_);
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            boost::shared_ptr<OutFile>(new OutFile(out)));
+   printer->Printf( "   => BasisFunctions: Derivative = %d, Max Points = %d <=\n\n", deriv_, max_points_);
 
-    psi::fprintf(out, "    Basis Values:\n");
+    printer->Printf( "    Basis Values:\n");
     for (std::map<std::string, SharedMatrix >::const_iterator it = basis_values_.begin();
         it != basis_values_.end(); it++) {
-        psi::fprintf(out, "    %s\n", (*it).first.c_str());
+        printer->Printf( "    %s\n", (*it).first.c_str());
         if (print > 3) {
             (*it).second->print();
         }
     }
-    psi::fprintf(out,"\n\n");
+    printer->Printf("\n\n");
 }
 
 } // Namespace psi

@@ -77,22 +77,22 @@ DPD::dpd_block_matrix(size_t n, size_t m)
         /* Priority-based cache */
         if(dpd_main.cachetype == 1) {
             if(file4_cache_del_low()) {
-                file4_cache_print(stderr);
-                psi::fprintf(stderr, "dpd_block_matrix: n = %zd  m = %zd\n", n, m);
-                dpd_error("dpd_block_matrix: No memory left.", stderr);
+                file4_cache_print("outfile");
+                outfile->Printf( "dpd_block_matrix: n = %zd  m = %zd\n", n, m);
+                dpd_error("dpd_block_matrix: No memory left.", "outfile");
             }
         }
 
         /* Least-recently-used cache */
         else if(dpd_main.cachetype == 0) {
             if(file4_cache_del_lru()) {
-                file4_cache_print(stderr);
-                psi::fprintf(stderr, "dpd_block_matrix: n = %zd  m = %zd\n", n, m);
-                dpd_error("dpd_block_matrix: No memory left.", stderr);
+                file4_cache_print("outfile");
+                outfile->Printf( "dpd_block_matrix: n = %zd  m = %zd\n", n, m);
+                dpd_error("dpd_block_matrix: No memory left.", "outfile");
             }
         }
 
-        else dpd_error("LIBDPD Error: invalid cachetype.", stderr);
+        else dpd_error("LIBDPD Error: invalid cachetype.", "outfile");
     }
 
     if(!m || !n) {
@@ -103,8 +103,8 @@ DPD::dpd_block_matrix(size_t n, size_t m)
     }
 
     if((A = (double **) malloc(n * sizeof(double *)))==NULL) {
-        psi::fprintf(stderr,"dpd_block_matrix: trouble allocating memory \n");
-        psi::fprintf(stderr,"n = %zd  m = %zd\n",n, m);
+        outfile->Printf("dpd_block_matrix: trouble allocating memory \n");
+        outfile->Printf("n = %zd  m = %zd\n",n, m);
         exit(PSI_RETURN_FAILURE);
     }
 
@@ -115,18 +115,18 @@ DPD::dpd_block_matrix(size_t n, size_t m)
         /* Priority-based cache */
         if(dpd_main.cachetype == 1) {
             if(file4_cache_del_low()) {
-                file4_cache_print(stderr);
-                psi::fprintf(stderr, "dpd_block_matrix: n = %zd  m = %zd\n", n, m);
-                dpd_error("dpd_block_matrix: No memory left.", stderr);
+                file4_cache_print("outfile");
+                outfile->Printf( "dpd_block_matrix: n = %zd  m = %zd\n", n, m);
+                dpd_error("dpd_block_matrix: No memory left.", "outfile");
             }
         }
 
         /* Least-recently-used cache */
         else if(dpd_main.cachetype == 0) {
             if(file4_cache_del_lru()) {
-                file4_cache_print(stderr);
-                psi::fprintf(stderr, "dpd_block_matrix: n = %zd  m = %zd\n", n, m);
-                dpd_error("dpd_block_matrix: No memory left.", stderr);
+                file4_cache_print("outfile");
+                outfile->Printf( "dpd_block_matrix: n = %zd  m = %zd\n", n, m);
+                dpd_error("dpd_block_matrix: No memory left.", "outfile");
             }
         }
     }

@@ -23,6 +23,7 @@ class GMBE;
 class Fragmenter;
 class BSSEer;
 class Capper;
+class Embedder;
 class FragOptions{
 	private:
         ///Sets all members to the default options
@@ -62,6 +63,9 @@ class FragOptions{
         boost::shared_ptr<BSSEer> MakeBSSEFactory(const int natoms) const;
         ///Returns a capping factory based on CMethod
         boost::shared_ptr<Capper> MakeCapFactory(SharedMol& AMol)const;
+        ///Returns an embedding factory fased on EMethod
+        boost::shared_ptr<Embedder> MakeEmbedFactory(SharedMol& AMol)const;
+
 
         ///Nice, pretty printing of all the desired options
         void PrintOptions();

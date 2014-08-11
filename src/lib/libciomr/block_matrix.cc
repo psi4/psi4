@@ -87,15 +87,15 @@ double ** block_matrix(unsigned long int n, unsigned long int m, bool memlock)
 
     A = new double*[n];
     if (A==NULL) {
-        psi::fprintf(stderr,"block_matrix: trouble allocating memory \n");
-        psi::fprintf(stderr,"n = %ld\n",n);
+        outfile->Printf("block_matrix: trouble allocating memory \n");
+        outfile->Printf("n = %ld\n",n);
         exit(PSI_RETURN_FAILURE);
     }
 
     B = new double[n*m];
     if (B == NULL) {
-        psi::fprintf(stderr,"block_matrix: trouble allocating memory \n");
-        psi::fprintf(stderr,"m = %ld\n",m);
+        outfile->Printf("block_matrix: trouble allocating memory \n");
+        outfile->Printf("m = %ld\n",m);
         exit(PSI_RETURN_FAILURE);
     }
     memset(static_cast<void*>(B), 0, m*n*sizeof(double));
@@ -118,7 +118,7 @@ double ** block_matrix(unsigned long int n, unsigned long int m, bool memlock)
         size += page_offset;  /* Adjust size with page_offset */
 
         if ( mlock(addr, size) ) {  /* Lock the memory */
-            psi::fprintf(stderr,"block_matrix: trouble locking memory \n");
+            outfile->Printf("block_matrix: trouble locking memory \n");
             fflush(stderr);
             exit(PSI_RETURN_FAILURE);
         }
@@ -132,7 +132,7 @@ double ** block_matrix(unsigned long int n, unsigned long int m, bool memlock)
         size += page_offset;  /* Adjust size with page_offset */
 
         if ( mlock(addr, size) ) {  /* Lock the memory */
-            psi::fprintf(stderr,"block_matrix: trouble locking memory \n");
+            outfile->Printf("block_matrix: trouble locking memory \n");
             fflush(stderr);
             exit(PSI_RETURN_FAILURE);
         }

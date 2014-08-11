@@ -31,9 +31,9 @@ namespace psi{ namespace dfoccwave{
 
 void DFOCC::effective_mograd()
 { 
-    //psi::fprintf(outfile,"\n effective_mograd is starting... \n"); fflush(outfile);
-    psi::fprintf(outfile,"\tForming effective orbital gradient...\n");
-    fflush(outfile);
+    //outfile->Printf("\n effective_mograd is starting... \n"); 
+    outfile->Printf("\tForming effective orbital gradient...\n");
+    
 
     if (reference_ == "RESTRICTED") WvoA->form_vo(WorbA);
     else if (reference_ == "UNRESTRICTED") {
@@ -45,7 +45,7 @@ void DFOCC::effective_mograd()
         z_vector_fc();
         fc_grad_terms();
     }
-    //psi::fprintf(outfile,"\n effective_mograd done. \n"); fflush(outfile);
+    //outfile->Printf("\n effective_mograd done. \n"); 
 }// end effective_mograd
 
 //=======================================================

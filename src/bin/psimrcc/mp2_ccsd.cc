@@ -64,10 +64,10 @@ void MP2_CCSD::compute_mp2_ccsd_energy()
 
   print_method("  MP2");
 
-  psi::fprintf(outfile,"\n  ------------------------------------------------------------------------------");
-  psi::fprintf(outfile,"\n     MP2      Cycle        Energy            Delta E    DIIS");
-  psi::fprintf(outfile,"\n     MP2                  (Hartree)         (Hartree)");
-  psi::fprintf(outfile,"\n  ------------------------------------------------------------------------------");
+  outfile->Printf("\n  ------------------------------------------------------------------------------");
+  outfile->Printf("\n     MP2      Cycle        Energy            Delta E    DIIS");
+  outfile->Printf("\n     MP2                  (Hartree)         (Hartree)");
+  outfile->Printf("\n  ------------------------------------------------------------------------------");
 
   // Start the MP2 cycle
   bool converged = false;
@@ -75,7 +75,7 @@ void MP2_CCSD::compute_mp2_ccsd_energy()
   delta_energy = 0.0;
   current_energy = compute_energy();
   while(!converged){
-    psi::fprintf(outfile,"\n    @MP2      %5d   %20.15f  %11.4e",cycle,current_energy,delta_energy);
+    outfile->Printf("\n    @MP2      %5d   %20.15f  %11.4e",cycle,current_energy,delta_energy);
     build_mp2_t2_iJaB_amplitudes();
     blas->diis_save_t_amps(cycle);
     blas->diis(cycle,delta_energy,DiisEachCycle);
@@ -94,12 +94,12 @@ void MP2_CCSD::compute_mp2_ccsd_energy()
     converged = (fabs(delta_energy) < options_.get_double("E_CONVERGENCE"));
 
     cycle++;
-    fflush(outfile);
+    
   }
 
-  psi::fprintf(outfile,"\n  ------------------------------------------------------------------------------");
+  outfile->Printf("\n  ------------------------------------------------------------------------------");
 
-  psi::fprintf(outfile,"\n\n   * MP2@       =%25.15f\n",current_energy);
+  outfile->Printf("\n\n   * MP2@       =%25.15f\n",current_energy);
 
   // Compute the singlet and triplet MP2 contribution to the energy
   compute_mp2_components();
@@ -107,10 +107,10 @@ void MP2_CCSD::compute_mp2_ccsd_energy()
 
   print_method("  MP2-CCSD");
 
-  psi::fprintf(outfile,"\n  ------------------------------------------------------------------------------");
-  psi::fprintf(outfile,"\n     MP2-CCSD Cycle        Energy            Delta E    DIIS");
-  psi::fprintf(outfile,"\n     MP2-CCSD             (Hartree)         (Hartree)");
-  psi::fprintf(outfile,"\n  ------------------------------------------------------------------------------");
+  outfile->Printf("\n  ------------------------------------------------------------------------------");
+  outfile->Printf("\n     MP2-CCSD Cycle        Energy            Delta E    DIIS");
+  outfile->Printf("\n     MP2-CCSD             (Hartree)         (Hartree)");
+  outfile->Printf("\n  ------------------------------------------------------------------------------");
 
   blas->diis_add("t1[o][v]{u}","t1_delta[o][v]{u}");
 
@@ -119,7 +119,7 @@ void MP2_CCSD::compute_mp2_ccsd_energy()
   cycle     = 0;
   delta_energy = 0.0;
   while(!converged){
-    psi::fprintf(outfile,"\n    @MP2-CCSD %5d   %20.15f  %11.4e",cycle,current_energy,delta_energy);
+    outfile->Printf("\n    @MP2-CCSD %5d   %20.15f  %11.4e",cycle,current_energy,delta_energy);
 
     // These two go together before updating any other intermediate
     build_F_intermediates();
@@ -145,20 +145,20 @@ void MP2_CCSD::compute_mp2_ccsd_energy()
     old_energy=current_energy;
 
     if(cycle>options_.get_int("MAXITER")){
-      psi::fprintf(outfile,"\n\n\tThe calculation did not converge in %d cycles\n\tQuitting PSIMRCC\n",options_.get_int("MAXITER"));
-      fflush(outfile);
+      outfile->Printf("\n\n\tThe calculation did not converge in %d cycles\n\tQuitting PSIMRCC\n",options_.get_int("MAXITER"));
+      
       exit(1);
     }
     cycle++;
-    fflush(outfile);
+    
   }
-  psi::fprintf(outfile,"\n  ------------------------------------------------------------------------------");
+  outfile->Printf("\n  ------------------------------------------------------------------------------");
 
-  psi::fprintf(outfile,"\n\n   * MP2-CCSD total energy = %25.15f\n",current_energy);
+  outfile->Printf("\n\n   * MP2-CCSD total energy = %25.15f\n",current_energy);
 
   compute_mp2_ccsd_components();
 
-  fflush(outfile);
+  
 }
 
 double MP2_CCSD::compute_energy()
@@ -206,8 +206,8 @@ void MP2_CCSD::compute_mp2_components()
   double mp2_triplet = blas->get_scalar("Eaaaa",0) + blas->get_scalar("Ebbbb",0);
   double mp2_singlet = blas->get_scalar("Eabab",0);
 
-  psi::fprintf(outfile,"\n   * MP2 Singlet correlation energy = %20.15f",mp2_singlet);
-  psi::fprintf(outfile,"\n   * MP2 Triplet correlation energy = %20.15f",mp2_triplet);
+  outfile->Printf("\n   * MP2 Singlet correlation energy = %20.15f",mp2_singlet);
+  outfile->Printf("\n   * MP2 Triplet correlation energy = %20.15f",mp2_triplet);
 }
 
 void MP2_CCSD::compute_mp2_ccsd_components()
@@ -223,9 +223,9 @@ void MP2_CCSD::compute_mp2_ccsd_components()
   double mp2_ccsd_triplet = blas->get_scalar("Eaaaa",0) + blas->get_scalar("Ebbbb",0);
   double mp2_ccsd_singlet = blas->get_scalar("Eabab",0);
 
-  psi::fprintf(outfile,"\n   * MP2-CCSD  Singles                    = %20.15f",mp2_ccsd_singles);
-  psi::fprintf(outfile,"\n   * MP2-CCSD  Singlet correlation energy = %20.15f",mp2_ccsd_singlet);
-  psi::fprintf(outfile,"\n   * MP2-CCSD  Triplet correlation energy = %20.15f\n",mp2_ccsd_triplet);
+  outfile->Printf("\n   * MP2-CCSD  Singles                    = %20.15f",mp2_ccsd_singles);
+  outfile->Printf("\n   * MP2-CCSD  Singlet correlation energy = %20.15f",mp2_ccsd_singlet);
+  outfile->Printf("\n   * MP2-CCSD  Triplet correlation energy = %20.15f\n",mp2_ccsd_triplet);
 
 
   /////////////////////////////////
@@ -309,10 +309,10 @@ void MP2_CCSD::compute_mp2_ccsd_components()
   double mp2_term_singlet = blas->get_scalar("Eabab",0);
   double mp2_term_triplet = blas->get_scalar("Eaaaa",0) + blas->get_scalar("Ebbbb",0);
 
-  psi::fprintf(outfile,"\n   * MP2  Term Singlet correlation energy = %20.15f",mp2_term_singlet);
-  psi::fprintf(outfile,"\n   * MP2  Term Triplet correlation energy = %20.15f\n",mp2_term_triplet);
-  psi::fprintf(outfile,"\n   * CCSD Term Singlet correlation energy = %20.15f",ccsd_term_singlet);
-  psi::fprintf(outfile,"\n   * CCSD Term Triplet correlation energy = %20.15f",ccsd_term_triplet);
+  outfile->Printf("\n   * MP2  Term Singlet correlation energy = %20.15f",mp2_term_singlet);
+  outfile->Printf("\n   * MP2  Term Triplet correlation energy = %20.15f\n",mp2_term_triplet);
+  outfile->Printf("\n   * CCSD Term Singlet correlation energy = %20.15f",ccsd_term_singlet);
+  outfile->Printf("\n   * CCSD Term Triplet correlation energy = %20.15f",ccsd_term_triplet);
 }
 
 }} /* End Namespaces */

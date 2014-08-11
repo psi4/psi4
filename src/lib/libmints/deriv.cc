@@ -452,7 +452,7 @@ SharedMatrix Deriv::compute()
 
     if (natom_ == 1) {
         // This is an atom...there is no gradient.
-        psi::fprintf(outfile, "    A single atom has no gradient.\n");
+        outfile->Printf( "    A single atom has no gradient.\n");
         // Save the gradient to the wavefunction so that optking can optimize with it
         wfn_->set_gradient(gradient_);
         return gradient_;
@@ -529,7 +529,7 @@ SharedMatrix Deriv::compute()
         }
         for (int cd=0; cd < cdsalcs_.ncd(); ++cd)
             TPDMcont[cd] = TPDMcont_vector->get(cd);
-        fflush(outfile);
+        
     } 
     else {
         /* For correlated calculations, we have two different types.  The older CI/CC codes dump the
@@ -613,10 +613,10 @@ SharedMatrix Deriv::compute()
 
             for (int cd=0; cd < cdsalcs_.ncd(); ++cd)
                 TPDMcont[cd] = TPDMcont_vector->get(cd);
-            fflush(outfile);
+            
         }
 
-        psi::fprintf(outfile, "\n");
+        outfile->Printf( "\n");
     }
 
     // Now, compute the one electron terms

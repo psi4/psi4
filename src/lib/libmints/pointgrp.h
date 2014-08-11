@@ -84,7 +84,7 @@
 
 namespace psi {
 
-extern FILE *outfile;
+
 
 #define NUM_TO_OPERATOR_ID(x) ((x) ? 1<<((x)-1) : 0)
 #define SKIP_THIS_OPERATOR(num,bit) ((bit) ? !((1<<((bit)-1)) & (num)) : 0 )
@@ -199,7 +199,7 @@ class SymmetryOperation {
     void transpose();
 
     /// print the matrix
-    void print(FILE *out);
+    void print(std::string out);
 };
 
 // //////////////////////////////////////////////////////////////////
@@ -380,7 +380,7 @@ class IrreducibleRepresentation {
     /** This prints the irrep to the given file, or stdout if none is
      given.  The second argument is an optional string of spaces to offset
      by. */
-     void print(FILE *out=outfile) const;
+     void print(std::string ="outfile") const;
 };
 
 // ///////////////////////////////////////////////////////////
@@ -475,7 +475,7 @@ class CharacterTable {
     unsigned char bits();
 
     /// This prints the irrep to the given file, or stdout if none is given.
-     void print(FILE *out=outfile) const;
+     void print(std::string ="outfile") const;
 };
 
 // ///////////////////////////////////////////////////////////
@@ -574,7 +574,7 @@ class PointGroup {
     static const char* bits_to_basic_name(unsigned char bits);
     static bool full_name_to_bits(const std::string& pg, unsigned char& bits);
 
-    void print(FILE *out = outfile) const;
+    void print(std::string OutFileRMR = "outfile") const;
 };
 
 }

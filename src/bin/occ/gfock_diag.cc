@@ -33,7 +33,7 @@ namespace psi{ namespace occwave{
 
 void OCCWave::gfock_diag()
 {
-//psi::fprintf(outfile,"\n gfock_diag is starting... \n"); fflush(outfile);
+//outfile->Printf("\n gfock_diag is starting... \n"); 
 //===========================================================================================
 //========================= RHF =============================================================
 //===========================================================================================
@@ -757,7 +757,7 @@ if (wfn_type_ != "OMP2") {
 	}
 	
 }// end if (reference_ == "UNRESTRICTED") 
-//psi::fprintf(outfile,"\n gfock_diag done. \n"); fflush(outfile);
+//outfile->Printf("\n gfock_diag done. \n"); 
 
 }// end gfock_diag 
 }} // End Namespaces

@@ -61,8 +61,8 @@ void SAPT2p3::disp30()
   }
 
   if (print_) {
-    psi::fprintf(outfile,"    Disp30              = %18.12lf H\n",e_disp30_);
-    fflush(outfile);
+    outfile->Printf("    Disp30              = %18.12lf H\n",e_disp30_);
+    
   }
 }
 

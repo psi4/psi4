@@ -284,10 +284,10 @@ void x_onepdm_uhf(struct RHO_Params rho_params)
   global_dpd_->file2_init(&Dai, PSIF_CC_OEI, G_irr, 2, 3, rho_params.Dai_lbl);
   dot_ai = global_dpd_->file2_dot_self(&Dai);
   global_dpd_->file2_close(&Dai);
-    psi::fprintf(outfile,"\tOverlaps of onepdm after excited-state parts added.\n");
-    psi::fprintf(outfile,"\t<DIA|DIA> = %15.10lf     <Dia|Dia> = %15.10lf\n", dot_IA, dot_ia);
-    psi::fprintf(outfile,"\t<DAI|DAI> = %15.10lf     <Dai|Dai> = %15.10lf\n", dot_AI, dot_ai);
-    psi::fprintf(outfile,"\t<Dpq|Dqp> = %15.10lf\n", dot_IA+dot_ia+dot_AI+dot_ai);
+    outfile->Printf("\tOverlaps of onepdm after excited-state parts added.\n");
+    outfile->Printf("\t<DIA|DIA> = %15.10lf     <Dia|Dia> = %15.10lf\n", dot_IA, dot_ia);
+    outfile->Printf("\t<DAI|DAI> = %15.10lf     <Dai|Dai> = %15.10lf\n", dot_AI, dot_ai);
+    outfile->Printf("\t<Dpq|Dqp> = %15.10lf\n", dot_IA+dot_ia+dot_AI+dot_ai);
   return;
 }
 

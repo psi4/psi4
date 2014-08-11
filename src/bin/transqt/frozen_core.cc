@@ -37,7 +37,7 @@
 #include <cstdio>
 #include "psi4-dec.h"
 
-extern FILE *outfile;
+
 
 namespace psi { namespace transqt {
 
@@ -129,7 +129,7 @@ void ivo_density(int nirreps, int *fzdocc, int *docc, int *socc,
    }
 
 
-   psi::fprintf(outfile, "%f valence electrons", N);
+   outfile->Printf( "%f valence electrons", N);
 
    for (ir=0; ir<nirreps; ir++) {  /* loop over irreps */
       for (i=0,it=first[ir]; i<fzdocc[ir]; i++,it++) { /* loop over fzc */
@@ -143,12 +143,12 @@ void ivo_density(int nirreps, int *fzdocc, int *docc, int *socc,
 
       /* loop over docc */
       for (i=0,it=first[ir]+fzdocc[ir]; i<docc[ir]-fzdocc[ir]; i++,it++) { 
-        psi::fprintf(outfile, "Doing docc orbital ir=%d, orb=%d\n", ir, i);
+        outfile->Printf( "Doing docc orbital ir=%d, orb=%d\n", ir, i);
         for (p=first_so[ir]; p <= last_so[ir]; p++) {
            pq = ioff[p] + first_so[ir];
            for (q=first_so[ir]; q <= p; q++,pq++) {
               tval = (N-1)/N * C[p][it] * C[q][it];
-              psi::fprintf(outfile, "%lf\n", tval);
+              outfile->Printf( "%lf\n", tval);
               P[pq] += (N-1)/N * C[p][it] * C[q][it];
               }
            }     
@@ -162,7 +162,7 @@ void ivo_density(int nirreps, int *fzdocc, int *docc, int *socc,
        * get this density right, but here's something anyway --CDS
        */   
       for (i=0,it=first[ir]+docc[ir]; i<socc[ir]; i++,it++) { 
-        psi::fprintf(outfile, "Doing socc orbital ir=%d, orb=%d\n", ir, i);
+        outfile->Printf( "Doing socc orbital ir=%d, orb=%d\n", ir, i);
         for (p=first_so[ir]; p <= last_so[ir]; p++) {
            pq = ioff[p] + first_so[ir];
            for (q=first_so[ir]; q <= p; q++,pq++) {

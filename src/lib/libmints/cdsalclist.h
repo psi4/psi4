@@ -33,7 +33,7 @@ class shared_ptr;
 
 namespace psi {
 
-extern FILE *outfile;
+
 
 class Molecule;
 class Matrix;

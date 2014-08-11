@@ -249,22 +249,22 @@ IntegralTransform::initialize()
     }
 
     if(print_ > 4){
-        psi::fprintf(outfile, "\tThe Alpha Pitzer to QT mapping array:\n\t\t");
+        outfile->Printf( "\tThe Alpha Pitzer to QT mapping array:\n\t\t");
         for(int p = 0; p < nmo_; ++p)
-            psi::fprintf(outfile, "%d ", aQT_[p]);
-        psi::fprintf(outfile, "\n");
-        psi::fprintf(outfile, "\tThe Beta Pitzer to QT mapping array:\n\t\t");
+            outfile->Printf( "%d ", aQT_[p]);
+        outfile->Printf( "\n");
+        outfile->Printf( "\tThe Beta Pitzer to QT mapping array:\n\t\t");
         for(int p = 0; p < nmo_; ++p)
-            psi::fprintf(outfile, "%d ", bQT_[p]);
-        psi::fprintf(outfile, "\n");
-        psi::fprintf(outfile, "\tThe Alpha Correlated to Pitzer mapping array:\n\t\t");
+            outfile->Printf( "%d ", bQT_[p]);
+        outfile->Printf( "\n");
+        outfile->Printf( "\tThe Alpha Correlated to Pitzer mapping array:\n\t\t");
         for(int p = 0; p < nmo_; ++p)
-            psi::fprintf(outfile, "%d ", aCorrToPitzer_[p]);
-        psi::fprintf(outfile, "\n");
-        psi::fprintf(outfile, "\tThe Beta Correlated to Pitzer mapping array:\n\t\t");
+            outfile->Printf( "%d ", aCorrToPitzer_[p]);
+        outfile->Printf( "\n");
+        outfile->Printf( "\tThe Beta Correlated to Pitzer mapping array:\n\t\t");
         for(int p = 0; p < nmo_; ++p)
-            psi::fprintf(outfile, "%d ", bCorrToPitzer_[p]);
-        psi::fprintf(outfile, "\n");
+            outfile->Printf( "%d ", bCorrToPitzer_[p]);
+        outfile->Printf( "\n");
     }
 
     process_spaces();

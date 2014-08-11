@@ -63,12 +63,12 @@ using namespace std;
  */
 void CCTransform::presort_integrals()
 {
-  psi::fprintf(outfile,"\n\n  Presorting two-electron integrals from IWL buffer");
-  psi::fprintf(outfile,"\n    Memory available                       = %14lu bytes",
+  outfile->Printf("\n\n  Presorting two-electron integrals from IWL buffer");
+  outfile->Printf("\n    Memory available                       = %14lu bytes",
                   (unsigned long)memory_manager->get_FreeMemory());
 
   size_t presort_memory = static_cast<size_t>(static_cast<double>(memory_manager->get_FreeMemory())*fraction_of_memory_for_presorting);
-  psi::fprintf(outfile,"\n    Memory available for presorting        = %14lu bytes (%.1f%%)",
+  outfile->Printf("\n    Memory available for presorting        = %14lu bytes (%.1f%%)",
                   (unsigned long)presort_memory,fraction_of_memory_for_presorting*100.0);
 
 
@@ -81,11 +81,11 @@ void CCTransform::presort_integrals()
     memory_required += (INDEX(pairpi[h]-1,pairpi[h]-1) + 1) * static_cast<size_t>(sizeof(double));
   }
 
-  psi::fprintf(outfile,"\n    Memory required for in-core presort    = %14lu bytes",
+  outfile->Printf("\n    Memory required for in-core presort    = %14lu bytes",
                   (unsigned long)memory_required);
 
   if(memory_required < static_cast<size_t>(3) * memory_manager->get_FreeMemory()){
-    psi::fprintf(outfile,"\n    Presorting is not required");
+    outfile->Printf("\n    Presorting is not required");
   }
 
   int first_irrep = 0;
@@ -110,13 +110,13 @@ void CCTransform::presort_integrals()
     if(last_irrep >= moinfo->get_nirreps())  done = true;
     first_irrep = last_irrep;
   }
-  fflush(outfile);
+  
 }
 
 void CCTransform::presort_blocks(int first_irrep, int last_irrep)
 {
-  psi::fprintf(outfile,"\n    Reading irreps %d -> %d",first_irrep,last_irrep - 1);
-  fflush(outfile);
+  outfile->Printf("\n    Reading irreps %d -> %d",first_irrep,last_irrep - 1);
+  
 
   CCIndex* pair_index = blas->get_index("[n>=n]");
   std::vector<size_t> pairpi = pair_index->get_pairpi();
@@ -161,8 +161,8 @@ void CCTransform::presort_blocks(int first_irrep, int last_irrep)
     } while(!lastbuf);
   iwl_buf_close(&ERIIN,1);
 
-  psi::fprintf(outfile," (%lu non-zero integrals)", (unsigned long)elements);
-  fflush(outfile);
+  outfile->Printf(" (%lu non-zero integrals)", (unsigned long)elements);
+  
 
   // Write integrals to disk
   for(int h = first_irrep; h < last_irrep; ++h){

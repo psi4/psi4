@@ -90,11 +90,11 @@ void HF::frac()
             throw PSIEXCEPTION("Fractional Occupation SCF: Don't try an excited-state MOM");
     
         // Close off a previous burn-in SCF
-        psi::fprintf(outfile, "\n");
+        outfile->Printf( "\n");
         print_orbitals(); 
         
         // frac header
-        psi::fprintf(outfile, "\n  ==> Fractionally-Occupied SCF Iterations <==\n\n");
+        outfile->Printf( "\n  ==> Fractionally-Occupied SCF Iterations <==\n\n");
         for (int ind = 0; ind < options_["FRAC_OCC"].size(); ind++) {
             int i = options_["FRAC_OCC"][ind].to_integer();
             double val = options_["FRAC_VAL"][ind].to_double(); 
@@ -112,9 +112,9 @@ void HF::frac()
             if (val < 0.0)
                 throw PSIEXCEPTION("Fractional Occupation SCF: PSI4 is not configured for positrons. Please annihilate and start again");             
 
-            psi::fprintf(outfile, "    %-5s orbital %4d will contain %11.3E electron.\n", (i > 0 ? "Alpha" : "Beta"), abs(i), val);
+            outfile->Printf( "    %-5s orbital %4d will contain %11.3E electron.\n", (i > 0 ? "Alpha" : "Beta"), abs(i), val);
         }
-        psi::fprintf(outfile, "\n");
+        outfile->Printf( "\n");
 
         // Make sure diis restarts correctly/frac plays well with MOM
         if (initialized_diis_manager_) {
@@ -131,13 +131,13 @@ void HF::frac()
 
         // Load the old orbitals in if requested
         if (options_.get_bool("FRAC_LOAD")) {
-            psi::fprintf(outfile, "    Orbitals reloaded from file, your previous iterations are garbage.\n\n");
+            outfile->Printf( "    Orbitals reloaded from file, your previous iterations are garbage.\n\n");
             load_orbitals();
         }
 
         // Keep the printing nice
-        psi::fprintf(outfile, "                        Total Energy        Delta E      Density RMS\n\n");
-        fflush(outfile);
+        outfile->Printf( "                        Total Energy        Delta E      Density RMS\n\n");
+        
 
         // Prevent spurious convergence (technically this iteration comes from the N-electron system anyways)
         frac_performed_ = false;
@@ -183,7 +183,7 @@ void HF::frac_renormalize()
     if (!options_.get_bool("FRAC_RENORMALIZE") || !frac_enabled_) return;
 
     // Renormalize the fractional occupations back to 1, if possible before storage 
-    psi::fprintf(outfile, "    FRAC: Renormalizing orbitals to 1.0 for storage.\n\n");
+    outfile->Printf( "    FRAC: Renormalizing orbitals to 1.0 for storage.\n\n");
 
     // Sort the eigenvalues in the usual manner
     std::vector<boost::tuple<double,int,int> > pairs_a;
@@ -277,17 +277,17 @@ void HF::compute_spin_contamination()
     double nm = (nalpha - nbeta) / 2.0;
     double S2 = fabs(nm) * (fabs(nm) + 1.0);
 
-    psi::fprintf(outfile, "   @Spin Contamination Metric: %17.9E\n", dS);
-    psi::fprintf(outfile, "   @S^2 Expected:              %17.9E\n", S2);
-    psi::fprintf(outfile, "   @S^2 Observed:              %17.9E\n", S2 + dS);
-    psi::fprintf(outfile, "   @S   Expected:              %17.9E\n", nm);
-    psi::fprintf(outfile, "   @S   Observed:              %17.9E\n", nm);
+    outfile->Printf( "   @Spin Contamination Metric: %17.9E\n", dS);
+    outfile->Printf( "   @S^2 Expected:              %17.9E\n", S2);
+    outfile->Printf( "   @S^2 Observed:              %17.9E\n", S2 + dS);
+    outfile->Printf( "   @S   Expected:              %17.9E\n", nm);
+    outfile->Printf( "   @S   Observed:              %17.9E\n", nm);
 
     if (frac_performed_) {
-        psi::fprintf(outfile, "   @Nalpha:                    %17.9E\n", nalpha);
-        psi::fprintf(outfile, "   @Nbeta:                     %17.9E\n", nbeta);
+        outfile->Printf( "   @Nalpha:                    %17.9E\n", nalpha);
+        outfile->Printf( "   @Nbeta:                     %17.9E\n", nbeta);
     }
-    psi::fprintf(outfile, "\n");
+    outfile->Printf( "\n");
 }
 
 }}

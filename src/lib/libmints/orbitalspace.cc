@@ -199,10 +199,10 @@ SharedMatrix OrbitalSpace::overlap(const boost::shared_ptr<BasisSet>& basis1,
 
 void OrbitalSpace::print() const
 {
-    psi::fprintf(outfile, "    Orbital space %s (%s)\n", name_.c_str(), id_.c_str());
-    psi::fprintf(outfile, "        Basis: %s\n", basis_->name().c_str());
-    psi::fprintf(outfile, "        Dimensions: "); dim_.print();
-    psi::fprintf(outfile, "        Transformation matrix:\n");
+    outfile->Printf( "    Orbital space %s (%s)\n", name_.c_str(), id_.c_str());
+    outfile->Printf( "        Basis: %s\n", basis_->name().c_str());
+    outfile->Printf( "        Dimensions: "); dim_.print();
+    outfile->Printf( "        Transformation matrix:\n");
     C_->print();
 }
 
@@ -222,7 +222,7 @@ namespace { // anonymous
         o_engine->compute(overlap);
         delete o_engine;
 
-        psi::fprintf(outfile, "    Orthogonalizing basis for space %s.\n", name.c_str());
+        outfile->Printf( "    Orthogonalizing basis for space %s.\n", name.c_str());
         Dimension remaining = overlap->power(-0.5, lindep_tol);
 
         View Cview(overlap, overlap->rowspi(), remaining);
@@ -237,7 +237,7 @@ namespace { // anonymous
 
     OrbitalSpace orthogonal_compliment(const OrbitalSpace& space1, const OrbitalSpace& space2, const std::string& id, const std::string& name, const double& lindep_tol)
     {
-        psi::fprintf(outfile, "    Projecting out '%s' from '%s' to obtain space '%s'\n",
+        outfile->Printf( "    Projecting out '%s' from '%s' to obtain space '%s'\n",
                 space1.name().c_str(), space2.name().c_str(), name.c_str());
 
         // If space1 is empty, return a copy of the original space.
@@ -297,13 +297,13 @@ namespace { // anonymous
 
             if (info != 0) {
                 if (info < 0) {
-                    psi::fprintf(outfile, "Matrix::svd with metric: C_DGESDD: argument %d has invalid parameter.\n", -info);
-                    fflush(outfile);
+                    outfile->Printf( "Matrix::svd with metric: C_DGESDD: argument %d has invalid parameter.\n", -info);
+                    
                     abort();
                 }
                 if (info > 0) {
-                    psi::fprintf(outfile, "Matrix::svd with metric: C_DGESDD: error value: %d\n", info);
-                    fflush(outfile);
+                    outfile->Printf( "Matrix::svd with metric: C_DGESDD: error value: %d\n", info);
+                    
                     abort();
                 }
             }
@@ -340,7 +340,7 @@ namespace { // anonymous
             remove[h] = nsigma - nzeros;
         }
 
-        psi::fprintf(outfile, "    "); // indents the remove.print output
+        outfile->Printf( "    "); // indents the remove.print output
         remove.print();
 
         Dimension zero(Vao->nirrep());

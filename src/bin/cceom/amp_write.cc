@@ -100,7 +100,7 @@ void amp_write_RHF(dpdfile2 *RIA, dpdbuf4 *RIjAb, int namps) {
   vector<R1_amp> R1_stack;
   get_largest_R1_amps(RIA, namps, R1_stack);
 
-  psi::fprintf(outfile," RIA (libdpd indices) : (cscf notation)\n");
+  outfile->Printf(" RIA (libdpd indices) : (cscf notation)\n");
   for(m=0; m < R1_stack.size(); m++) {
     if(fabs(R1_stack[m].value) > MIN_TO_SHOW) {
       Gi = R1_stack[m].Gi;
@@ -109,7 +109,7 @@ void amp_write_RHF(dpdfile2 *RIA, dpdbuf4 *RIjAb, int namps) {
       a = frdocc[Ga] + clsdpi[Ga] + R1_stack[m].a + 1;
       sprintf(lbli,"%d%s", i, moinfo.irr_labs_lowercase[Gi]);
       sprintf(lbla,"%d%s", a, moinfo.irr_labs_lowercase[Ga]);
-      psi::fprintf(outfile, "       %3d > %3d      :    %6s > %6s : %15.10f\n",
+      outfile->Printf( "       %3d > %3d      :    %6s > %6s : %15.10f\n",
         R1_stack[m].i, R1_stack[m].a, lbli, lbla, R1_stack[m].value);
     }
   }
@@ -119,7 +119,7 @@ void amp_write_RHF(dpdfile2 *RIA, dpdbuf4 *RIjAb, int namps) {
   vector<R2_amp> R2_stack;
   get_largest_R2_amps(RIjAb, namps, R2_stack);
 
-  psi::fprintf(outfile," RIjAb (libdpd indices)     : (cscf notation)\n");
+  outfile->Printf(" RIjAb (libdpd indices)     : (cscf notation)\n");
   for(m=0; m < R2_stack.size(); m++) {
     if(fabs(R2_stack[m].value) > MIN_TO_SHOW) {
       Gi = R2_stack[m].Gi;
@@ -136,7 +136,7 @@ void amp_write_RHF(dpdfile2 *RIA, dpdbuf4 *RIjAb, int namps) {
       sprintf(lblj,"%d%s", j, moinfo.irr_labs_lowercase[Gj]);
       sprintf(lbla,"%d%s", a, moinfo.irr_labs_lowercase[Ga]);
       sprintf(lblb,"%d%s", b, moinfo.irr_labs_lowercase[Gb]);
-      psi::fprintf(outfile, "      %3d %3d > %3d %3d     : %6s %6s > %6s %6s : %15.10f\n",
+      outfile->Printf( "      %3d %3d > %3d %3d     : %6s %6s > %6s %6s : %15.10f\n",
         R2_stack[m].i, R2_stack[m].j, R2_stack[m].a, R2_stack[m].b,
           lbli, lblj, lbla, lblb, R2_stack[m].value);
     }
@@ -158,7 +158,7 @@ void amp_write_UHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB,
   vector<R1_amp> R1_stack;
   get_largest_R1_amps(RIA, namps, R1_stack);
 
-  psi::fprintf(outfile," RIA (libdpd indices) : (cscf notation)\n");
+  outfile->Printf(" RIA (libdpd indices) : (cscf notation)\n");
   for(m=0; m < R1_stack.size(); m++) {
     if(fabs(R1_stack[m].value) > MIN_TO_SHOW) {
       Gi = R1_stack[m].Gi;
@@ -167,7 +167,7 @@ void amp_write_UHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB,
       a = frdocc[Ga] + clsdpi[Ga] + openpi[Ga] + R1_stack[m].a + 1;
       sprintf(lbli,"%d%s", i, moinfo.irr_labs_lowercase[Gi]);
       sprintf(lbla,"%d%s", a, moinfo.irr_labs_lowercase[Ga]);
-      psi::fprintf(outfile, "       %3d > %3d      :    %6s > %6s : %15.10f\n",
+      outfile->Printf( "       %3d > %3d      :    %6s > %6s : %15.10f\n",
         R1_stack[m].i, R1_stack[m].a, lbli, lbla, R1_stack[m].value);
     }
   }
@@ -176,7 +176,7 @@ void amp_write_UHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB,
   // Do Ria 
   get_largest_R1_amps(Ria, namps, R1_stack);
 
-  psi::fprintf(outfile," Ria (libdpd indices) : (cscf notation)\n");
+  outfile->Printf(" Ria (libdpd indices) : (cscf notation)\n");
   for(m=0; m < R1_stack.size(); m++) {
     if(fabs(R1_stack[m].value) > MIN_TO_SHOW) {
       Gi = R1_stack[m].Gi;
@@ -185,7 +185,7 @@ void amp_write_UHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB,
       a = frdocc[Ga] + clsdpi[Ga] + R1_stack[m].a + 1;
       sprintf(lbli,"%d%s", i, moinfo.irr_labs_lowercase[Gi]);
       sprintf(lbla,"%d%s", a, moinfo.irr_labs_lowercase[Ga]);
-      psi::fprintf(outfile, "       %3d > %3d      :    %6s > %6s : %15.10f\n",
+      outfile->Printf( "       %3d > %3d      :    %6s > %6s : %15.10f\n",
         R1_stack[m].i, R1_stack[m].a, lbli, lbla, R1_stack[m].value);
     }
   }
@@ -195,7 +195,7 @@ void amp_write_UHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB,
   vector<R2_amp> R2_stack;
   get_largest_R2_amps(RIjAb, namps, R2_stack);
 
-  psi::fprintf(outfile," RIjAb (libdpd indices)     : (cscf notation)\n");
+  outfile->Printf(" RIjAb (libdpd indices)     : (cscf notation)\n");
   for(m=0; m < R2_stack.size(); m++) {
     if(fabs(R2_stack[m].value) > MIN_TO_SHOW) {
       Gi = R2_stack[m].Gi;
@@ -212,7 +212,7 @@ void amp_write_UHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB,
       sprintf(lblj,"%d%s", j, moinfo.irr_labs_lowercase[Gj]);
       sprintf(lbla,"%d%s", a, moinfo.irr_labs_lowercase[Ga]);
       sprintf(lblb,"%d%s", b, moinfo.irr_labs_lowercase[Gb]);
-      psi::fprintf(outfile, "      %3d %3d > %3d %3d     : %6s %6s > %6s %6s : %15.10f\n",
+      outfile->Printf( "      %3d %3d > %3d %3d     : %6s %6s > %6s %6s : %15.10f\n",
         R2_stack[m].i, R2_stack[m].j, R2_stack[m].a, R2_stack[m].b,
           lbli, lblj, lbla, lblb, R2_stack[m].value);
     }
@@ -222,7 +222,7 @@ void amp_write_UHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB,
   // Do RIJAB
   get_largest_R2_amps(RIJAB, namps, R2_stack);
 
-  psi::fprintf(outfile," RIJAB (libdpd indices)     : (cscf notation)\n");
+  outfile->Printf(" RIJAB (libdpd indices)     : (cscf notation)\n");
   for(m=0; m < R2_stack.size(); m++) {
     if(fabs(R2_stack[m].value) > MIN_TO_SHOW) {
       Gi = R2_stack[m].Gi;
@@ -239,7 +239,7 @@ void amp_write_UHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB,
       sprintf(lblj,"%d%s", j, moinfo.irr_labs_lowercase[Gj]);
       sprintf(lbla,"%d%s", a, moinfo.irr_labs_lowercase[Ga]);
       sprintf(lblb,"%d%s", b, moinfo.irr_labs_lowercase[Gb]);
-      psi::fprintf(outfile, "      %3d %3d > %3d %3d     : %6s %6s > %6s %6s : %15.10f\n",
+      outfile->Printf( "      %3d %3d > %3d %3d     : %6s %6s > %6s %6s : %15.10f\n",
         R2_stack[m].i, R2_stack[m].j, R2_stack[m].a, R2_stack[m].b,
           lbli, lblj, lbla, lblb, R2_stack[m].value);
     }
@@ -249,7 +249,7 @@ void amp_write_UHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB,
   // Do Rijab
   get_largest_R2_amps(Rijab, namps, R2_stack);
 
-  psi::fprintf(outfile," Rijab (libdpd indices)     : (cscf notation)\n");
+  outfile->Printf(" Rijab (libdpd indices)     : (cscf notation)\n");
   for(m=0; m < R2_stack.size(); m++) {
     if(fabs(R2_stack[m].value) > MIN_TO_SHOW) {
       Gi = R2_stack[m].Gi;
@@ -266,7 +266,7 @@ void amp_write_UHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB,
       sprintf(lblj,"%d%s", j, moinfo.irr_labs_lowercase[Gj]);
       sprintf(lbla,"%d%s", a, moinfo.irr_labs_lowercase[Ga]);
       sprintf(lblb,"%d%s", b, moinfo.irr_labs_lowercase[Gb]);
-      psi::fprintf(outfile, "      %3d %3d > %3d %3d     : %6s %6s > %6s %6s : %15.10f\n",
+      outfile->Printf( "      %3d %3d > %3d %3d     : %6s %6s > %6s %6s : %15.10f\n",
         R2_stack[m].i, R2_stack[m].j, R2_stack[m].a, R2_stack[m].b,
           lbli, lblj, lbla, lblb, R2_stack[m].value);
     }
@@ -289,7 +289,7 @@ void amp_write_ROHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB,
   vector<R1_amp> R1_stack;
   get_largest_R1_amps(RIA, namps, R1_stack);
 
-  psi::fprintf(outfile," RIA (libdpd indices) : (cscf notation)\n");
+  outfile->Printf(" RIA (libdpd indices) : (cscf notation)\n");
   for(m=0; m < R1_stack.size(); m++) {
     if(fabs(R1_stack[m].value) > MIN_TO_SHOW) {
       Gi = R1_stack[m].Gi;
@@ -298,7 +298,7 @@ void amp_write_ROHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB,
       a = frdocc[Ga] + clsdpi[Ga] + openpi[Ga] + R1_stack[m].a + 1;
       sprintf(lbli,"%d%s", i, moinfo.irr_labs_lowercase[Gi]);
       sprintf(lbla,"%d%s", a, moinfo.irr_labs_lowercase[Ga]);
-      psi::fprintf(outfile, "       %3d > %3d      :    %6s > %6s : %15.10f\n",
+      outfile->Printf( "       %3d > %3d      :    %6s > %6s : %15.10f\n",
         R1_stack[m].i, R1_stack[m].a, lbli, lbla, R1_stack[m].value);
     }
   }
@@ -307,7 +307,7 @@ void amp_write_ROHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB,
   // Do Ria 
   get_largest_R1_amps(Ria, namps, R1_stack);
 
-  psi::fprintf(outfile," Ria (libdpd indices) : (cscf notation)\n");
+  outfile->Printf(" Ria (libdpd indices) : (cscf notation)\n");
   for(m=0; m < R1_stack.size(); m++) {
     if(fabs(R1_stack[m].value) > MIN_TO_SHOW) {
       Gi = R1_stack[m].Gi;
@@ -321,7 +321,7 @@ void amp_write_ROHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB,
 
       sprintf(lbli,"%d%s", i, moinfo.irr_labs_lowercase[Gi]);
       sprintf(lbla,"%d%s", a, moinfo.irr_labs_lowercase[Ga]);
-      psi::fprintf(outfile, "       %3d > %3d      :    %6s > %6s : %15.10f\n",
+      outfile->Printf( "       %3d > %3d      :    %6s > %6s : %15.10f\n",
         R1_stack[m].i, R1_stack[m].a, lbli, lbla, R1_stack[m].value);
     }
   }
@@ -331,7 +331,7 @@ void amp_write_ROHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB,
   vector<R2_amp> R2_stack;
   get_largest_R2_amps(RIjAb, namps, R2_stack);
 
-  psi::fprintf(outfile," RIjAb (libdpd indices)     : (cscf notation)\n");
+  outfile->Printf(" RIjAb (libdpd indices)     : (cscf notation)\n");
   for(m=0; m < R2_stack.size(); m++) {
     if(fabs(R2_stack[m].value) > MIN_TO_SHOW) {
       Gi = R2_stack[m].Gi;
@@ -351,7 +351,7 @@ void amp_write_ROHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB,
       sprintf(lblj,"%d%s", j, moinfo.irr_labs_lowercase[Gj]);
       sprintf(lbla,"%d%s", a, moinfo.irr_labs_lowercase[Ga]);
       sprintf(lblb,"%d%s", b, moinfo.irr_labs_lowercase[Gb]);
-      psi::fprintf(outfile, "      %3d %3d > %3d %3d     : %6s %6s > %6s %6s : %15.10f\n",
+      outfile->Printf( "      %3d %3d > %3d %3d     : %6s %6s > %6s %6s : %15.10f\n",
         R2_stack[m].i, R2_stack[m].j, R2_stack[m].a, R2_stack[m].b,
           lbli, lblj, lbla, lblb, R2_stack[m].value);
     }
@@ -361,7 +361,7 @@ void amp_write_ROHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB,
   // Do RIJAB
   get_largest_R2_amps(RIJAB, namps, R2_stack);
 
-  psi::fprintf(outfile," RIJAB (libdpd indices)     : (cscf notation)\n");
+  outfile->Printf(" RIJAB (libdpd indices)     : (cscf notation)\n");
   for(m=0; m < R2_stack.size(); m++) {
     if(fabs(R2_stack[m].value) > MIN_TO_SHOW) {
       Gi = R2_stack[m].Gi;
@@ -378,7 +378,7 @@ void amp_write_ROHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB,
       sprintf(lblj,"%d%s", j, moinfo.irr_labs_lowercase[Gj]);
       sprintf(lbla,"%d%s", a, moinfo.irr_labs_lowercase[Ga]);
       sprintf(lblb,"%d%s", b, moinfo.irr_labs_lowercase[Gb]);
-      psi::fprintf(outfile, "      %3d %3d > %3d %3d     : %6s %6s > %6s %6s : %15.10f\n",
+      outfile->Printf( "      %3d %3d > %3d %3d     : %6s %6s > %6s %6s : %15.10f\n",
         R2_stack[m].i, R2_stack[m].j, R2_stack[m].a, R2_stack[m].b,
           lbli, lblj, lbla, lblb, R2_stack[m].value);
     }
@@ -388,7 +388,7 @@ void amp_write_ROHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB,
   // Do Rijab
   get_largest_R2_amps(Rijab, namps, R2_stack);
 
-  psi::fprintf(outfile," Rijab (libdpd indices)     : (cscf notation)\n");
+  outfile->Printf(" Rijab (libdpd indices)     : (cscf notation)\n");
   for(m=0; m < R2_stack.size(); m++) {
     if(fabs(R2_stack[m].value) > MIN_TO_SHOW) {
       Gi = R2_stack[m].Gi;
@@ -413,7 +413,7 @@ void amp_write_ROHF(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB,
       sprintf(lblj,"%d%s", j, moinfo.irr_labs_lowercase[Gj]);
       sprintf(lbla,"%d%s", a, moinfo.irr_labs_lowercase[Ga]);
       sprintf(lblb,"%d%s", b, moinfo.irr_labs_lowercase[Gb]);
-      psi::fprintf(outfile, "      %3d %3d > %3d %3d     : %6s %6s > %6s %6s : %15.10f\n",
+      outfile->Printf( "      %3d %3d > %3d %3d     : %6s %6s > %6s %6s : %15.10f\n",
         R2_stack[m].i, R2_stack[m].j, R2_stack[m].a, R2_stack[m].b,
           lbli, lblj, lbla, lblb, R2_stack[m].value);
     }

@@ -63,7 +63,7 @@ int py_psi_plugin_load(std::string fullpathname)
     // Make sure the plugin isn't already loaded.
     if (plugins.count(uc) == 0) {
         plugins[uc] = plugin_load(fullpathname);
-        psi::fprintf(outfile, "%s loaded.\n", fullpathname.c_str());
+        outfile->Printf( "%s loaded.\n", fullpathname.c_str());
         ret = 1;
     }
     else
@@ -91,17 +91,17 @@ int py_psi_plugin(std::string fullpathname)
     }
     plugin_info& tmpinfo = plugins[uc];
 //    Process::environment.options.set_current_module(name);
-    psi::fprintf(outfile, "Reading options from the %s block\n", tmpinfo.name.c_str());
+    outfile->Printf( "Reading options from the %s block\n", tmpinfo.name.c_str());
     py_psi_prepare_options_for_module(tmpinfo.name);
-    fflush(outfile);
+    
     tmpinfo.read_options(tmpinfo.name, Process::environment.options);
 
     plugin_info& info = plugins[uc];
 
     // Call the plugin
     // Should be wrapped in a try/catch block.
-    psi::fprintf(outfile, "Calling plugin %s.\n", fullpathname.c_str());
-    fflush(outfile);
+    outfile->Printf( "Calling plugin %s.\n", fullpathname.c_str());
+    
 
     // Have the plugin copy the environment to get current options.
     info.init_plugin();

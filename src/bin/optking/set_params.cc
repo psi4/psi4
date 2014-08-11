@@ -625,161 +625,161 @@ void set_params(void)
 
 void print_params(void) {
 
-  fprintf(outfile, "conv_max_force         = %18.2e\n", Opt_params.conv_max_force);
-  fprintf(outfile, "conv_rms_force         = %18.2e\n", Opt_params.conv_rms_force);
-  fprintf(outfile, "conv_max_DE            = %18.2e\n", Opt_params.conv_max_DE);
-  fprintf(outfile, "conv_max_disp          = %18.2e\n", Opt_params.conv_max_disp);
-  fprintf(outfile, "conv_rms_disp          = %18.2e\n", Opt_params.conv_rms_disp);
+  psi::outfile->Printf( "conv_max_force         = %18.2e\n", Opt_params.conv_max_force);
+  psi::outfile->Printf( "conv_rms_force         = %18.2e\n", Opt_params.conv_rms_force);
+  psi::outfile->Printf( "conv_max_DE            = %18.2e\n", Opt_params.conv_max_DE);
+  psi::outfile->Printf( "conv_max_disp          = %18.2e\n", Opt_params.conv_max_disp);
+  psi::outfile->Printf( "conv_rms_disp          = %18.2e\n", Opt_params.conv_rms_disp);
 
-  fprintf(outfile, "scale_connectivity     = %18.2e\n", Opt_params.scale_connectivity);
-  fprintf(outfile, "interfragment_scale_connectivity = %18.2e\n",
+  psi::outfile->Printf( "scale_connectivity     = %18.2e\n", Opt_params.scale_connectivity);
+  psi::outfile->Printf( "interfragment_scale_connectivity = %18.2e\n",
     Opt_params.interfragment_scale_connectivity);
 
   if (Opt_params.fragment_mode == OPT_PARAMS::SINGLE)
-  fprintf(outfile, "fragment_mode          = %18s\n", "single");
+  psi::outfile->Printf( "fragment_mode          = %18s\n", "single");
   else if (Opt_params.fragment_mode == OPT_PARAMS::MULTI)
-  fprintf(outfile, "fragment_mode          = %18s\n", "multi");
+  psi::outfile->Printf( "fragment_mode          = %18s\n", "multi");
 
   if (Opt_params.interfragment_mode == OPT_PARAMS::FIXED)
-  fprintf(outfile, "interfragment_mode        = %18s\n", "fixed");
+  psi::outfile->Printf( "interfragment_mode        = %18s\n", "fixed");
   else if (Opt_params.interfragment_mode == OPT_PARAMS::PRINCIPAL_AXES)
-  fprintf(outfile, "interfragment_mode        = %18s\n", "principal axes");
+  psi::outfile->Printf( "interfragment_mode        = %18s\n", "principal axes");
 
   if (Opt_params.generate_intcos_only)
-  fprintf(outfile, "generate_intcos_only   = %18s\n", "true");
+  psi::outfile->Printf( "generate_intcos_only   = %18s\n", "true");
   else
-  fprintf(outfile, "generate_intcos_only   = %18s\n", "false");
+  psi::outfile->Printf( "generate_intcos_only   = %18s\n", "false");
 
   if (Opt_params.rfo_follow_root)
-  fprintf(outfile, "rfo_follow_root        = %18s\n", "true");
+  psi::outfile->Printf( "rfo_follow_root        = %18s\n", "true");
   else
-  fprintf(outfile, "rfo_follow_root        = %18s\n", "false");
+  psi::outfile->Printf( "rfo_follow_root        = %18s\n", "false");
 
-  fprintf(outfile, "rfo_root               = %18d\n", Opt_params.rfo_root);
+  psi::outfile->Printf( "rfo_root               = %18d\n", Opt_params.rfo_root);
 
-  fprintf(outfile, "rfo_normalization_min  = %18.2e\n", Opt_params.rfo_normalization_min);
+  psi::outfile->Printf( "rfo_normalization_min  = %18.2e\n", Opt_params.rfo_normalization_min);
 
   if (Opt_params.step_type == OPT_PARAMS::NR)
-  fprintf(outfile, "step_type              = %18s\n", "N-R");
+  psi::outfile->Printf( "step_type              = %18s\n", "N-R");
   else if (Opt_params.step_type == OPT_PARAMS::RFO)
-  fprintf(outfile, "step_type              = %18s\n", "RFO");
+  psi::outfile->Printf( "step_type              = %18s\n", "RFO");
   else if (Opt_params.step_type == OPT_PARAMS::P_RFO)
-  fprintf(outfile, "step_type              = %18s\n", "P_RFO");
+  psi::outfile->Printf( "step_type              = %18s\n", "P_RFO");
   else if (Opt_params.step_type == OPT_PARAMS::LINESEARCH_STATIC)
-  fprintf(outfile, "step_type              = %18s\n", "Static linesearch");
+  psi::outfile->Printf( "step_type              = %18s\n", "Static linesearch");
 
-  fprintf(outfile, "linesearch_static_N    = %18d\n", Opt_params.linesearch_static_N);
-  fprintf(outfile, "linesearch_static_min  = %18.3e\n", Opt_params.linesearch_static_min);
-  fprintf(outfile, "linesearch_static_max  = %18.3e\n", Opt_params.linesearch_static_max);
+  psi::outfile->Printf( "linesearch_static_N    = %18d\n", Opt_params.linesearch_static_N);
+  psi::outfile->Printf( "linesearch_static_min  = %18.3e\n", Opt_params.linesearch_static_min);
+  psi::outfile->Printf( "linesearch_static_max  = %18.3e\n", Opt_params.linesearch_static_max);
 
   if (Opt_params.intrafragment_H == OPT_PARAMS::FISCHER)
-  fprintf(outfile, "intrafragment_H        = %18s\n", "Fischer");
+  psi::outfile->Printf( "intrafragment_H        = %18s\n", "Fischer");
   else if (Opt_params.intrafragment_H == OPT_PARAMS::SCHLEGEL)
-  fprintf(outfile, "intrafragment_H        = %18s\n", "Schlegel");
+  psi::outfile->Printf( "intrafragment_H        = %18s\n", "Schlegel");
   else if (Opt_params.intrafragment_H == OPT_PARAMS::SIMPLE)
-  fprintf(outfile, "intrafragment_H        = %18s\n", "Simple");
+  psi::outfile->Printf( "intrafragment_H        = %18s\n", "Simple");
   else if (Opt_params.intrafragment_H == OPT_PARAMS::LINDH)
-  fprintf(outfile, "intrafragment_H        = %18s\n", "Lindh");
+  psi::outfile->Printf( "intrafragment_H        = %18s\n", "Lindh");
   else if (Opt_params.intrafragment_H == OPT_PARAMS::LINDH_SIMPLE)
-  fprintf(outfile, "intrafragment_H        = %18s\n", "Lindh - Simple");
+  psi::outfile->Printf( "intrafragment_H        = %18s\n", "Lindh - Simple");
 
   if (Opt_params.interfragment_H == OPT_PARAMS::DEFAULT)
-  fprintf(outfile, "interfragment_H        = %18s\n", "Default");
+  psi::outfile->Printf( "interfragment_H        = %18s\n", "Default");
   else if (Opt_params.interfragment_H == OPT_PARAMS::FISCHER_LIKE)
-  fprintf(outfile, "interfragment_H        = %18s\n", "Fischer_like");
+  psi::outfile->Printf( "interfragment_H        = %18s\n", "Fischer_like");
 
   if (Opt_params.H_update == OPT_PARAMS::NONE)
-  fprintf(outfile, "H_update               = %18s\n", "None");
+  psi::outfile->Printf( "H_update               = %18s\n", "None");
   else if (Opt_params.H_update == OPT_PARAMS::BFGS)
-  fprintf(outfile, "H_update               = %18s\n", "BFGS");
+  psi::outfile->Printf( "H_update               = %18s\n", "BFGS");
   else if (Opt_params.H_update == OPT_PARAMS::MS)
-  fprintf(outfile, "H_update               = %18s\n", "MS");
+  psi::outfile->Printf( "H_update               = %18s\n", "MS");
   else if (Opt_params.H_update == OPT_PARAMS::POWELL)
-  fprintf(outfile, "H_update               = %18s\n", "Powell");
+  psi::outfile->Printf( "H_update               = %18s\n", "Powell");
   else if (Opt_params.H_update == OPT_PARAMS::BOFILL)
-  fprintf(outfile, "H_update               = %18s\n", "Bofill");
+  psi::outfile->Printf( "H_update               = %18s\n", "Bofill");
 
-  fprintf(outfile, "H_update_use_last      = %18d\n", Opt_params.H_update_use_last);
+  psi::outfile->Printf( "H_update_use_last      = %18d\n", Opt_params.H_update_use_last);
 
   if (Opt_params.freeze_intrafragment)
-  fprintf(outfile, "freeze_intrafragment   = %18s\n", "true");
+  psi::outfile->Printf( "freeze_intrafragment   = %18s\n", "true");
   else
-  fprintf(outfile, "freeze_intrafragment   = %18s\n", "false");
+  psi::outfile->Printf( "freeze_intrafragment   = %18s\n", "false");
 
-  fprintf(outfile, "intrafragment_step_limit=%18.2e\n", Opt_params.intrafragment_step_limit);
+  psi::outfile->Printf( "intrafragment_step_limit=%18.2e\n", Opt_params.intrafragment_step_limit);
 
-  fprintf(outfile, "interfragment_step_limit=%18.2e\n", Opt_params.interfragment_step_limit);
+  psi::outfile->Printf( "interfragment_step_limit=%18.2e\n", Opt_params.interfragment_step_limit);
 
   if (Opt_params.add_auxiliary_bonds)
-    fprintf(outfile, "add_auxiliary_bonds   = %18s\n", "true");
+    psi::outfile->Printf( "add_auxiliary_bonds   = %18s\n", "true");
   else
-    fprintf(outfile, "add_auxiliary_bonds   = %18s\n", "false");
+    psi::outfile->Printf( "add_auxiliary_bonds   = %18s\n", "false");
 
   if (Opt_params.H_guess_every)
-    fprintf(outfile, "H_guess_every         = %18s\n", "true");
+    psi::outfile->Printf( "H_guess_every         = %18s\n", "true");
   else
-    fprintf(outfile, "H_guess_every         = %18s\n", "false");
+    psi::outfile->Printf( "H_guess_every         = %18s\n", "false");
 
-  fprintf(outfile, "auxiliary_bond_factor =%18.2e\n", Opt_params.auxiliary_bond_factor);
+  psi::outfile->Printf( "auxiliary_bond_factor =%18.2e\n", Opt_params.auxiliary_bond_factor);
 
   if (Opt_params.H_update_limit)
-    fprintf(outfile, "H_update_limit         = %18s\n", "true");
+    psi::outfile->Printf( "H_update_limit         = %18s\n", "true");
   else
-    fprintf(outfile, "H_update_limit         = %18s\n", "false");
+    psi::outfile->Printf( "H_update_limit         = %18s\n", "false");
 
-  fprintf(outfile, "H_update_limit_scale   = %18.2e\n", Opt_params.H_update_limit_scale);
-  fprintf(outfile, "H_update_limit_max     = %18.2e\n", Opt_params.H_update_limit_max);
+  psi::outfile->Printf( "H_update_limit_scale   = %18.2e\n", Opt_params.H_update_limit_scale);
+  psi::outfile->Printf( "H_update_limit_max     = %18.2e\n", Opt_params.H_update_limit_max);
 
   if (Opt_params.interfragment_distance_inverse)
-  fprintf(outfile, "interfragment_distance_inverse=%12s\n", "true");
+  psi::outfile->Printf( "interfragment_distance_inverse=%12s\n", "true");
   else
-  fprintf(outfile, "interfragment_distance_inverse=%12s\n", "false");
+  psi::outfile->Printf( "interfragment_distance_inverse=%12s\n", "false");
 
   if (Opt_params.write_final_step_geometry)
-  fprintf(outfile, "write_final_step_geometry= %16s\n", "true");
+  psi::outfile->Printf( "write_final_step_geometry= %16s\n", "true");
   else
-  fprintf(outfile, "write_final_step_geometry= %16s\n", "false");
+  psi::outfile->Printf( "write_final_step_geometry= %16s\n", "false");
 
-  fprintf(outfile, "maximum_H_bond_distance= %18.2e\n", Opt_params.maximum_H_bond_distance);
+  psi::outfile->Printf( "maximum_H_bond_distance= %18.2e\n", Opt_params.maximum_H_bond_distance);
 
   if (Opt_params.read_cartesian_H)
-  fprintf(outfile, "read_cartesian_H       = %18s\n", "true");
+  psi::outfile->Printf( "read_cartesian_H       = %18s\n", "true");
   else
-  fprintf(outfile, "read_cartesian_H       = %18s\n", "false");
+  psi::outfile->Printf( "read_cartesian_H       = %18s\n", "false");
 
   if (Opt_params.efp_fragments)
-  fprintf(outfile, "efp_fragments          = %18s\n", "true");
+  psi::outfile->Printf( "efp_fragments          = %18s\n", "true");
   else
-  fprintf(outfile, "efp_fragments          = %18s\n", "false");
+  psi::outfile->Printf( "efp_fragments          = %18s\n", "false");
 
   if (Opt_params.efp_fragments_only)
-  fprintf(outfile, "efp_fragments_only     = %18s\n", "true");
+  psi::outfile->Printf( "efp_fragments_only     = %18s\n", "true");
   else
-  fprintf(outfile, "efp_fragments_only     = %18s\n", "false");
+  psi::outfile->Printf( "efp_fragments_only     = %18s\n", "false");
 
-  fprintf(outfile, "frozen_distance: \n");
+  psi::outfile->Printf( "frozen_distance: \n");
   if (!Opt_params.frozen_distance_str.empty())
-    fprintf(outfile, "%s\n", Opt_params.frozen_distance_str.c_str());
+    psi::outfile->Printf( "%s\n", Opt_params.frozen_distance_str.c_str());
 
-  fprintf(outfile, "frozen_bend: \n");
+  psi::outfile->Printf( "frozen_bend: \n");
   if (!Opt_params.frozen_bend_str.empty())
-    fprintf(outfile, "%s\n", Opt_params.frozen_bend_str.c_str());
+    psi::outfile->Printf( "%s\n", Opt_params.frozen_bend_str.c_str());
 
-  fprintf(outfile, "frozen_dihedral: \n");
+  psi::outfile->Printf( "frozen_dihedral: \n");
   if (!Opt_params.frozen_dihedral_str.empty())
-    fprintf(outfile, "%s\n", Opt_params.frozen_dihedral_str.c_str());
+    psi::outfile->Printf( "%s\n", Opt_params.frozen_dihedral_str.c_str());
 
-  fprintf(outfile, "fixed_distance: \n");
+  psi::outfile->Printf( "fixed_distance: \n");
   if (!Opt_params.fixed_distance_str.empty())
-    fprintf(outfile, "%s\n", Opt_params.fixed_distance_str.c_str());
+    psi::outfile->Printf( "%s\n", Opt_params.fixed_distance_str.c_str());
 
-  fprintf(outfile, "fixed_bend: \n");
+  psi::outfile->Printf( "fixed_bend: \n");
   if (!Opt_params.fixed_bend_str.empty())
-    fprintf(outfile, "%s\n", Opt_params.fixed_bend_str.c_str());
+    psi::outfile->Printf( "%s\n", Opt_params.fixed_bend_str.c_str());
 
-  fprintf(outfile, "fixed_dihedral: \n");
+  psi::outfile->Printf( "fixed_dihedral: \n");
   if (!Opt_params.fixed_dihedral_str.empty())
-    fprintf(outfile, "%s\n", Opt_params.fixed_dihedral_str.c_str());
+    psi::outfile->Printf( "%s\n", Opt_params.fixed_dihedral_str.c_str());
 }
 
 }

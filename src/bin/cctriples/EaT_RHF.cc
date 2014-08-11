@@ -115,7 +115,8 @@ double EaT_RHF(void)
     global_dpd_->buf4_mat_irrep_init(&Dints, h);
     global_dpd_->buf4_mat_irrep_rd(&Dints, h);
   }
-  ffile(&ijkfile,"ijk.dat", 0);
+  boost::shared_ptr<OutFile> printer(new OutFile("ijk.dat",TRUNCATE));
+  //ffile(&ijkfile,"ijk.dat", 0);
 
   /* each thread gets its own F buffer to assign memory and read blocks
      into and its own energy double - all else shared */
@@ -153,8 +154,7 @@ double EaT_RHF(void)
             }
           }
         }
-  psi::fprintf(ijkfile, "Total number of IJK combinations =: %d\n", nijk);
-  fflush(ijkfile);
+  printer->Printf( "Total number of IJK combinations =: %d\n", nijk);
 
   ET = 0.0;
   for(Gi=0; Gi < nirreps; Gi++) {
@@ -172,8 +172,7 @@ double EaT_RHF(void)
             }
           }
         }
-        psi::fprintf(ijkfile, "Num. of IJK with (Gi,Gj,Gk)=(%d,%d,%d) =: %d\n", Gi, Gj, Gk, nijk);
-        fflush(ijkfile);
+        printer->Printf( "Num. of IJK with (Gi,Gj,Gk)=(%d,%d,%d) =: %d\n", Gi, Gj, Gk, nijk);
         if (nijk == 0) continue;
 
         for (thread=0; thread<nthreads;++thread) {
@@ -196,9 +195,8 @@ double EaT_RHF(void)
         /* execute threads */
         for (thread=0; thread<nthreads;++thread) {
           if (!ijk_part[thread]) continue;
-          psi::fprintf(ijkfile,"\tthread %d: first_ijk=%d,  last_ijk=%d\n", thread,
+          printer->Printf("\tthread %d: first_ijk=%d,  last_ijk=%d\n", thread,
             thread_data_array[thread].first_ijk, thread_data_array[thread].last_ijk);
-          fflush(ijkfile);
         }
 
         for (thread=0;thread<nthreads;++thread) {
@@ -227,7 +225,6 @@ double EaT_RHF(void)
 
   ET /= 3.0;
 
-  fclose(ijkfile);
 
   for(h=0; h < nirreps; h++) {
     global_dpd_->buf4_mat_irrep_close(&T2, h);

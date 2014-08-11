@@ -76,7 +76,7 @@ if (reference_ == "RESTRICTED") {
      global_dpd_->buf4_close(&Tau);
      global_dpd_->buf4_close(&Tss);
      
-     if (print_ > 4) global_dpd_->buf4_print(&T, outfile, 1);
+     if (print_ > 4) global_dpd_->buf4_print(&T, "outfile", 1);
      global_dpd_->buf4_close(&T);
      
      psio_->close(PSIF_LIBTRANS_DPD, 1);
@@ -109,7 +109,7 @@ else if (reference_ == "UNRESTRICTED") {
                   ID("[O,O]"), ID("[V,V]"), 0, "T2_1 <OO|VV>");
     global_dpd_->buf4_dirprd(&D, &T);
     global_dpd_->buf4_close(&D);
-    if (print_ > 1) global_dpd_->buf4_print(&T, outfile, 1);
+    if (print_ > 1) global_dpd_->buf4_print(&T, "outfile", 1);
     global_dpd_->buf4_close(&T);
     
     
@@ -128,7 +128,7 @@ else if (reference_ == "UNRESTRICTED") {
                   ID("[o,o]"), ID("[v,v]"), 0, "T2_1 <oo|vv>");
     global_dpd_->buf4_dirprd(&D, &T);
     global_dpd_->buf4_close(&D);
-    if (print_ > 1) global_dpd_->buf4_print(&T, outfile, 1);
+    if (print_ > 1) global_dpd_->buf4_print(&T, "outfile", 1);
     global_dpd_->buf4_close(&T);
     
     
@@ -147,7 +147,7 @@ else if (reference_ == "UNRESTRICTED") {
                   ID("[O,o]"), ID("[V,v]"), 0, "T2_1 <Oo|Vv>");
     global_dpd_->buf4_dirprd(&D, &T);
     global_dpd_->buf4_close(&D);
-    if (print_ > 1) global_dpd_->buf4_print(&T, outfile, 1);
+    if (print_ > 1) global_dpd_->buf4_print(&T, "outfile", 1);
     global_dpd_->buf4_close(&T);
      
      
@@ -161,7 +161,7 @@ else if (reference_ == "UNRESTRICTED") {
 
 void OCCWave::omp2_t2_1st_general()
 {   
-     //psi::fprintf(outfile,"\n omp2_t2_1st_general is starting... \n"); fflush(outfile);
+     //outfile->Printf("\n omp2_t2_1st_general is starting... \n"); 
 
 //===========================================================================================
 //========================= RHF =============================================================
@@ -245,7 +245,7 @@ if (reference_ == "RESTRICTED") {
     
     // Reset
     global_dpd_->buf4_copy(&Tnew, PSIF_OCC_DPD, "T <OO|VV>");
-    if (print_ > 1) global_dpd_->buf4_print(&Tnew, outfile, 1);
+    if (print_ > 1) global_dpd_->buf4_print(&Tnew, "outfile", 1);
     
     // close
     global_dpd_->buf4_close(&Tnew);
@@ -404,7 +404,7 @@ else if (reference_ == "UNRESTRICTED") {
     
     // Reset
     global_dpd_->buf4_copy(&Tnew, PSIF_OCC_DPD, "T2_1 <OO|VV>");
-    if (print_ > 1) global_dpd_->buf4_print(&Tnew, outfile, 1);
+    if (print_ > 1) global_dpd_->buf4_print(&Tnew, "outfile", 1);
     global_dpd_->buf4_close(&Tnew);
     
     
@@ -428,7 +428,7 @@ else if (reference_ == "UNRESTRICTED") {
     
     // Reset
     global_dpd_->buf4_copy(&Tnew, PSIF_OCC_DPD, "T2_1 <oo|vv>");
-    if (print_ > 1) global_dpd_->buf4_print(&Tnew, outfile, 1);
+    if (print_ > 1) global_dpd_->buf4_print(&Tnew, "outfile", 1);
     global_dpd_->buf4_close(&Tnew);
     
     
@@ -452,7 +452,7 @@ else if (reference_ == "UNRESTRICTED") {
     
     // Reset
     global_dpd_->buf4_copy(&Tnew, PSIF_OCC_DPD, "T2_1 <Oo|Vv>");
-    if (print_ > 1) global_dpd_->buf4_print(&Tnew, outfile, 1);
+    if (print_ > 1) global_dpd_->buf4_print(&Tnew, "outfile", 1);
     global_dpd_->buf4_close(&Tnew);
     
     // close files
@@ -461,7 +461,7 @@ else if (reference_ == "UNRESTRICTED") {
     
 }// end if (reference_ == "UNRESTRICTED") 
 
-    //psi::fprintf(outfile,"\n omp2_t2_1st_general done. \n"); fflush(outfile);
+    //outfile->Printf("\n omp2_t2_1st_general done. \n"); 
 } // end omp2_t2_1st_general
 
 }} // End Namespaces

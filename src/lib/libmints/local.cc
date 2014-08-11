@@ -141,11 +141,11 @@ void BoysLocalizer::common_init()
 }
 void BoysLocalizer::print_header() const 
 {
-    psi::fprintf(outfile, "  ==> Boys Localizer <==\n\n");
-    psi::fprintf(outfile, "    Convergence = %11.3E\n", convergence_);
-    psi::fprintf(outfile, "    Maxiter     = %11d\n", maxiter_);
-    psi::fprintf(outfile, "\n");
-    fflush(outfile);
+    outfile->Printf( "  ==> Boys Localizer <==\n\n");
+    outfile->Printf( "    Convergence = %11.3E\n", convergence_);
+    outfile->Printf( "    Maxiter     = %11d\n", maxiter_);
+    outfile->Printf( "\n");
+    
 }
 void BoysLocalizer::localize() 
 {
@@ -211,8 +211,8 @@ void BoysLocalizer::localize()
     double old_metric = metric;
     
     // => Iteration Print <= //
-    psi::fprintf(outfile, "    Iteration %24s %14s\n", "Metric", "Residual");
-    psi::fprintf(outfile, "    @Boys %4d %24.16E %14s\n", 0, metric, "-");
+    outfile->Printf( "    Iteration %24s %14s\n", "Metric", "Residual");
+    outfile->Printf( "    @Boys %4d %24.16E %14s\n", 0, metric, "-");
     
     // ==> Master Loop <== //
 
@@ -277,7 +277,7 @@ void BoysLocalizer::localize()
                     if (O1 < O0) {
                         theta = M_PI / 4.0;
                         if (debug_ > 3) {
-                            psi::fprintf(outfile, "@Break\n");
+                            outfile->Printf( "@Break\n");
                         }
                     }
                 }
@@ -287,8 +287,8 @@ void BoysLocalizer::localize()
                 ss = sin(theta);
 
                 if (debug_ > 3) {
-                    psi::fprintf(outfile, "@Rotation, i = %4d, j = %4d, Theta = %24.16E\n", i, j,theta);
-                    psi::fprintf(outfile, "@Info, a = %24.16E, b = %24.16E, c = %24.16E\n", a, b, c);
+                    outfile->Printf( "@Rotation, i = %4d, j = %4d, Theta = %24.16E\n", i, j,theta);
+                    outfile->Printf( "@Info, a = %24.16E, b = %24.16E, c = %24.16E\n", a, b, c);
                 }
 
                 // > Apply the rotation < //
@@ -317,7 +317,7 @@ void BoysLocalizer::localize()
         
         // => Iteration Print <= //
 
-        psi::fprintf(outfile, "    @Boys %4d %24.16E %14.6E\n", iter, metric, conv);
+        outfile->Printf( "    @Boys %4d %24.16E %14.6E\n", iter, metric, conv);
         
         // => Convergence Check <= //
 
@@ -328,11 +328,11 @@ void BoysLocalizer::localize()
 
     }   
 
-    psi::fprintf(outfile, "\n");
+    outfile->Printf( "\n");
     if (converged_) {
-        psi::fprintf(outfile, "    Boys Localizer converged.\n\n");
+        outfile->Printf( "    Boys Localizer converged.\n\n");
     } else {
-        psi::fprintf(outfile, "    Boys Localizer failed.\n\n");
+        outfile->Printf( "    Boys Localizer failed.\n\n");
     }
     
     U_->transpose_this();
@@ -352,11 +352,11 @@ void PMLocalizer::common_init()
 }
 void PMLocalizer::print_header() const 
 {
-    psi::fprintf(outfile, "  ==> Pipek-Mezey Localizer <==\n\n");
-    psi::fprintf(outfile, "    Convergence = %11.3E\n", convergence_);
-    psi::fprintf(outfile, "    Maxiter     = %11d\n", maxiter_);
-    psi::fprintf(outfile, "\n");
-    fflush(outfile);
+    outfile->Printf( "  ==> Pipek-Mezey Localizer <==\n\n");
+    outfile->Printf( "    Convergence = %11.3E\n", convergence_);
+    outfile->Printf( "    Maxiter     = %11d\n", maxiter_);
+    outfile->Printf( "\n");
+    
 }
 void PMLocalizer::localize() 
 {
@@ -431,8 +431,8 @@ void PMLocalizer::localize()
     double old_metric = metric;
     
     // => Iteration Print <= //
-    psi::fprintf(outfile, "    Iteration %24s %14s\n", "Metric", "Residual");
-    psi::fprintf(outfile, "    @PM %4d %24.16E %14s\n", 0, metric, "-");
+    outfile->Printf( "    Iteration %24s %14s\n", "Metric", "Residual");
+    outfile->Printf( "    @PM %4d %24.16E %14s\n", 0, metric, "-");
     
     // ==> Master Loop <== //
 
@@ -510,7 +510,7 @@ void PMLocalizer::localize()
                     if (O1 < O0) {
                         theta = M_PI / 4.0;
                         if (debug_ > 3) {
-                            psi::fprintf(outfile, "@Break\n");
+                            outfile->Printf( "@Break\n");
                         }
                     }
                 }
@@ -520,8 +520,8 @@ void PMLocalizer::localize()
                 ss = sin(theta);
 
                 if (debug_ > 3) {
-                    psi::fprintf(outfile, "@Rotation, i = %4d, j = %4d, Theta = %24.16E\n", i, j,theta);
-                    psi::fprintf(outfile, "@Info, a = %24.16E, b = %24.16E, c = %24.16E\n", a, b, c);
+                    outfile->Printf( "@Rotation, i = %4d, j = %4d, Theta = %24.16E\n", i, j,theta);
+                    outfile->Printf( "@Info, a = %24.16E, b = %24.16E, c = %24.16E\n", a, b, c);
                 }
 
                 // > Apply the rotation < //
@@ -552,7 +552,7 @@ void PMLocalizer::localize()
         
         // => Iteration Print <= //
 
-        psi::fprintf(outfile, "    @PM %4d %24.16E %14.6E\n", iter, metric, conv);
+        outfile->Printf( "    @PM %4d %24.16E %14.6E\n", iter, metric, conv);
         
         // => Convergence Check <= //
 
@@ -563,11 +563,11 @@ void PMLocalizer::localize()
 
     }   
 
-    psi::fprintf(outfile, "\n");
+    outfile->Printf( "\n");
     if (converged_) {
-        psi::fprintf(outfile, "    PM Localizer converged.\n\n");
+        outfile->Printf( "    PM Localizer converged.\n\n");
     } else {
-        psi::fprintf(outfile, "    PM Localizer failed.\n\n");
+        outfile->Printf( "    PM Localizer failed.\n\n");
     }
     
     U_->transpose_this();

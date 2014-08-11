@@ -33,7 +33,7 @@ namespace psi{ namespace occwave{
 
 void OCCWave::ccl_energy()
 {      
-    //psi::fprintf(outfile,"\n ccl_energy is starting... \n"); fflush(outfile);
+    //outfile->Printf("\n ccl_energy is starting... \n"); 
     // Two-electron contribution
     dpdbuf4 G, K;
     
@@ -276,12 +276,12 @@ void OCCWave::ccl_energy()
     Etpdm = Ecc_rdm - Eopdm;
     
     /*
-    psi::fprintf(outfile,"\tOPDM energy (a.u.)          : %12.14f\n", Eopdm);
-    psi::fprintf(outfile,"\tTPDM energy (a.u.)          : %12.14f\n", Etpdm);
-    psi::fprintf(outfile,"\tTotal PDM energy (a.u.)     : %12.14f\n", Ecc_rdm);
-    fflush(outfile);
+    outfile->Printf("\tOPDM energy (a.u.)          : %12.14f\n", Eopdm);
+    outfile->Printf("\tTPDM energy (a.u.)          : %12.14f\n", Etpdm);
+    outfile->Printf("\tTotal PDM energy (a.u.)     : %12.14f\n", Ecc_rdm);
+    
     */
-    //psi::fprintf(outfile,"\n ccl_energy is done... \n"); fflush(outfile);
+    //outfile->Printf("\n ccl_energy is done... \n"); 
     
 } // end of ccl_energy
 }} // End Namespaces

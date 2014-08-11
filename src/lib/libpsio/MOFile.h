@@ -21,12 +21,12 @@
  */
 #ifndef MOFILE_H_
 #define MOFILE_H_
-
 #include <boost/shared_ptr.hpp>
+#include "BinaryFile.h"
 namespace psi{
 class Matrix;
 typedef boost::shared_ptr<Matrix> SharedMatrix;
-class MOFile{
+class MOFile:public BinaryFile{
    private:
       int BasisNameLength;
       char* BasisName;
@@ -41,20 +41,31 @@ class MOFile{
       void Copy(const MOFile& other);
    public:
       MOFile();
-      MOFile(const MOFile& other){this->Copy(other);}
-      void Init();
+      MOFile(const MOFile& other):BinaryFile(other){this->Copy(other);}
+
+      void Read();
+
+      ///Note Broadcast and Receive are written lazily and do not check if
+      ///the destination is the same as source, so don't call them in
+      ///non-MPI runs
+
+
       ///Wrapper fxn that broadcasts this file
       void Broadcast(std::string& Comm,const int proc);
+
       ///Wrapper fxn that receives the broadcast of this file
       void Receive(std::string& Comm,const int proc);
 
       const MOFile& operator=(const MOFile& other){
+         BinaryFile::operator=(other);
          if(this!=&other)this->Copy(other);return *this;
       }
+
       ~MOFile();
+      void print_out();
       ///Returns an MOFile that is the direct sum of the current file and other
       MOFile DirectSum(const MOFile& other)const;
-      void WriteFile();
+      void Write();
 
 };
 }//End namespace psi

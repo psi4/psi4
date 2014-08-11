@@ -52,8 +52,10 @@ namespace psi {
 ** \ingroup QT
 */
 int pople(double **A, double *x, int dimen, int /*num_vecs*/, double tolerance,
-          FILE *outfile, int print_lvl)
+          std::string out, int print_lvl)
 {
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            boost::shared_ptr<OutFile>(new OutFile(out)));
    double det, tval;
    double **Bmat; /* Matrix of expansion vectors */
    double **Ab;   /* Matrix of A x expansion vectors */
@@ -85,10 +87,10 @@ int pople(double **A, double *x, int dimen, int /*num_vecs*/, double tolerance,
    sign = init_array(dimen);
 
    if (print_lvl > 6) {
-   psi::fprintf(outfile,"\n\n Using Pople's Method for solving linear equations.\n");
-   psi::fprintf(outfile,"     --------------------------------------------------\n");
-   psi::fprintf(outfile,"         Iter             Norm of Residual Vector      \n");
-   psi::fprintf(outfile,"        ------           -------------------------     \n");
+   printer->Printf("\n\n Using Pople's Method for solving linear equations.\n");
+   printer->Printf("     --------------------------------------------------\n");
+   printer->Printf("         Iter             Norm of Residual Vector      \n");
+   printer->Printf("        ------           -------------------------     \n");
    }
 
    norm = 0.0;
@@ -107,15 +109,15 @@ int pople(double **A, double *x, int dimen, int /*num_vecs*/, double tolerance,
            b[i] = x[i];
            dvec[i] = sqrt(fabs(A[i][i]));
            b[i] /= dvec[i];
-           /*   psi::fprintf(outfile,"A[%d][%d] = %lf\n",i,i, A[i][i]);
-                psi::fprintf(outfile,"dvec[%d] = %lf\n",i, dvec[i]);
-                psi::fprintf(outfile,"x[%d] = %lf\n",i, x[i]);
+           /*   outfile->Printf("A[%d][%d] = %lf\n",i,i, A[i][i]);
+                outfile->Printf("dvec[%d] = %lf\n",i, dvec[i]);
+                outfile->Printf("x[%d] = %lf\n",i, x[i]);
            */
          }
 
        if (print_lvl > 8) {
-           psi::fprintf(outfile," A matrix in POPLE(LIBQT):\n");
-           print_mat(A, dimen, dimen, outfile);
+           printer->Printf(" A matrix in POPLE(LIBQT):\n");
+           print_mat(A, dimen, dimen, out);
          }
 
        /* Constructing P matrix */
@@ -126,8 +128,8 @@ int pople(double **A, double *x, int dimen, int /*num_vecs*/, double tolerance,
              }
          }
        if (print_lvl > 8) {
-           psi::fprintf(outfile," P matrix in POPLE(LIBQT):\n");
-           print_mat(A, dimen, dimen, outfile);
+           printer->Printf(" P matrix in POPLE(LIBQT):\n");
+           print_mat(A, dimen, dimen, out);
          }
 
        /* Precondition P matrix with diagonal elements of A */
@@ -138,8 +140,8 @@ int pople(double **A, double *x, int dimen, int /*num_vecs*/, double tolerance,
              }
 
        if (print_lvl > 8) {
-           psi::fprintf(outfile," Preconditioned P matrix in POPLE(LIBQT):\n");
-           print_mat(A, dimen, dimen, outfile);
+           printer->Printf(" Preconditioned P matrix in POPLE(LIBQT):\n");
+           print_mat(A, dimen, dimen, out);
          }
 
        /*
@@ -208,19 +210,19 @@ int pople(double **A, double *x, int dimen, int /*num_vecs*/, double tolerance,
            dot_arr(r, r, dimen, &rnorm);
            rnorm = sqrt(rnorm);
            if (print_lvl > 6) {
-               psi::fprintf(outfile,
+               printer->Printf(
                  "        %3d                     %10.3E\n",L+1,rnorm);
-               fflush(outfile);
+               
              }
 
            if (L+1>dimen) {
-               psi::fprintf(outfile,"POPLE: Too many vectors in expansion space.\n");
+               printer->Printf("POPLE: Too many vectors in expansion space.\n");
                return 1;
              }
 
            /* place residual in b vector space */
            if (L+1>= maxdimen) {
-               psi::fprintf(outfile,
+               printer->Printf(
                  "POPLE (LIBQT): Number of expansion vectors exceeds"
                        " maxdimen (%d)\n", L+1);
                return 1;
@@ -249,7 +251,7 @@ int pople(double **A, double *x, int dimen, int /*num_vecs*/, double tolerance,
                for (i=0; i<=L+1; i++) {
                    for (j=0; j<=i; j++) {
                        dot_arr(Bmat[i], Bmat[j], dimen, &tval);
-                       psi::fprintf(outfile, "Bvec[%d] * Bvec[%d] = %f\n",i,j,tval);
+                       printer->Printf( "Bvec[%d] * Bvec[%d] = %f\n",i,j,tval);
                      }
                  }
              }

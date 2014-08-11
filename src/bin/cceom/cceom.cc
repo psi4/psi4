@@ -67,12 +67,12 @@ PsiReturnType cceom(Options &options)
 {
   int i, h, done=0, *cachefiles, **cachelist;
   init_io();
-  psi::fprintf(outfile,"\n\t**********************************************************\n");
-  psi::fprintf(outfile,"\t*  CCEOM: An Equation of Motion Coupled Cluster Program  *\n");
-  psi::fprintf(outfile,"\t**********************************************************\n");
+  outfile->Printf("\n\t**********************************************************\n");
+  outfile->Printf("\t*  CCEOM: An Equation of Motion Coupled Cluster Program  *\n");
+  outfile->Printf("\t**********************************************************\n");
 
   get_moinfo();
-  fflush(outfile);
+  
   get_params(options);
   get_eom_params(options);
 #ifdef TIME_CCEOM

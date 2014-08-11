@@ -67,11 +67,11 @@ void cc3(void)
     if (params.t3_Ws_incore)
       global_dpd_->cc3_sigma_RHF_ic(&TIjAb, &WAbEi, &WMbIj, 1, &Dints, &TIA_new, 1, &FME, &WAmEf,
         &WMnIe, &TIjAb_new, moinfo.occpi, moinfo.occ_off, moinfo.virtpi,
-        moinfo.vir_off, 0.0, outfile, params.nthreads, params.newtrips);
+        moinfo.vir_off, 0.0, "outfile", params.nthreads, params.newtrips);
     else 
       global_dpd_->cc3_sigma_RHF(&TIjAb, &WAbEi, &WMbIj, 1, &Dints, &TIA_new, 1, &FME, &WAmEf,
         &WMnIe, &TIjAb_new, moinfo.occpi, moinfo.occ_off, moinfo.virtpi,
-        moinfo.vir_off, 0.0, outfile, params.newtrips);
+        moinfo.vir_off, 0.0, "outfile", params.newtrips);
 
     global_dpd_->buf4_close(&TIjAb);
     global_dpd_->buf4_close(&WAbEi);
@@ -103,7 +103,7 @@ void cc3(void)
 
     global_dpd_->cc3_sigma_UHF_AAA(&TIJAB, &WABEI, &WMBIJ, 1, &DIJAB_anti, &TIA_new,
         1, &FME, &WAMEF, &WMNIE, &TIJAB_new, moinfo.aoccpi, moinfo.aocc_off,
-        moinfo.avirtpi, moinfo.avir_off, 0.0, outfile);
+        moinfo.avirtpi, moinfo.avir_off, 0.0, "outfile");
 
     global_dpd_->buf4_close(&TIJAB);
     global_dpd_->buf4_close(&WABEI);
@@ -125,7 +125,7 @@ void cc3(void)
 
     global_dpd_->cc3_sigma_UHF_BBB(&Tijab, &Wabei, &Wmbij, 1, &Dijab_anti, &Tia_new,
         1, &Fme, &Wamef, &Wmnie, &Tijab_new, moinfo.boccpi, moinfo.bocc_off,
-        moinfo.bvirtpi, moinfo.bvir_off, 0.0, outfile);
+        moinfo.bvirtpi, moinfo.bvir_off, 0.0, "outfile");
 
     global_dpd_->buf4_close(&Tijab);
     global_dpd_->buf4_close(&Wabei);
@@ -164,7 +164,7 @@ void cc3(void)
        1, &FME, &Fme, &WAMEF, &WaMeF, &WAmEf, &WMNIE, &WMnIe, &WmNiE,
        &TIJAB_new, &TIjAb_new, moinfo.aoccpi, moinfo.aocc_off, moinfo.boccpi,
        moinfo.bocc_off, moinfo.avirtpi, moinfo.avir_off, moinfo.bvirtpi,
-       moinfo.bvir_off, 0.0, outfile);
+       moinfo.bvir_off, 0.0, "outfile");
 
     global_dpd_->buf4_close(&TIJAB); global_dpd_->buf4_close(&TIjAb); global_dpd_->buf4_close(&TiJaB);
     global_dpd_->buf4_close(&WABEI); global_dpd_->buf4_close(&WaBeI); global_dpd_->buf4_close(&WAbEi);
@@ -203,7 +203,7 @@ void cc3(void)
       1, &FME, &Fme, &Wamef, &WaMeF, &WAmEf, &Wmnie, &WMnIe, &WmNiE,
       &Tijab_new, &TIjAb_new, moinfo.aoccpi, moinfo.aocc_off, moinfo.boccpi,
       moinfo.bocc_off, moinfo.avirtpi, moinfo.avir_off, moinfo.bvirtpi,
-      moinfo.bvir_off, 0.0, outfile);
+      moinfo.bvir_off, 0.0, "outfile");
 
     global_dpd_->buf4_close(&Tijab); global_dpd_->buf4_close(&TIjAb); global_dpd_->buf4_close(&TiJaB);
     global_dpd_->buf4_close(&Wabei); global_dpd_->buf4_close(&WaBeI); global_dpd_->buf4_close(&WAbEi);

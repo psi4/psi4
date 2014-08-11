@@ -75,7 +75,7 @@ void cphf_F(const char *cart)
     ipiv = init_int_array(num_ai);
     info = C_DGESV(num_ai, 1, &(A.matrix[irrep][0][0]), num_ai, ipiv, vector, num_ai);
     if(info) {
-      psi::fprintf(outfile, "CCSORT: cphf_F: Error in C_DGESV.  Info = %d.  Cart = X. Exiting.\n", info);
+      outfile->Printf( "CCSORT: cphf_F: Error in C_DGESV.  Info = %d.  Cart = X. Exiting.\n", info);
       exit(PSI_RETURN_FAILURE);
     }
     free(ipiv);
@@ -124,7 +124,7 @@ void cphf_F(const char *cart)
     ipiv = init_int_array(num_ai);
     info = C_DGESV(num_ai, 1, &(A.matrix[irrep][0][0]), num_ai, ipiv, vector, num_ai);
     if(info) {
-      psi::fprintf(outfile, "CCSORT: cphf_F: Error in C_DGESV.  Info = %d.  Cart = Y. Exiting.\n", info);
+      outfile->Printf( "CCSORT: cphf_F: Error in C_DGESV.  Info = %d.  Cart = Y. Exiting.\n", info);
       exit(PSI_RETURN_FAILURE);
     }
     free(ipiv);
@@ -172,7 +172,7 @@ void cphf_F(const char *cart)
     ipiv = init_int_array(num_ai);
     info = C_DGESV(num_ai, 1, &(A.matrix[irrep][0][0]), num_ai, ipiv, vector, num_ai);
     if(info) {
-      psi::fprintf(outfile, "CCSORT: cphf_F: Error in C_DGESV.  Info = %d.  Cart = Z. Exiting.\n", info);
+      outfile->Printf( "CCSORT: cphf_F: Error in C_DGESV.  Info = %d.  Cart = Z. Exiting.\n", info);
       exit(PSI_RETURN_FAILURE);
     }
     free(ipiv);

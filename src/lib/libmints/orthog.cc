@@ -101,7 +101,7 @@ void OverlapOrthog::compute_overlap_eig(Matrix& overlap_eigvec,
     }
 
     if (nlindep_ > 0 && orthog_method_ == Symmetric) {
-        psi::fprintf(outfile, "    WARNING: %d basis function%s ignored in symmetric orthogonalization.\n", nlindep_, (dim_.sum()-orthog_dim_.sum()>1)?"s":"");
+        outfile->Printf( "    WARNING: %d basis function%s ignored in symmetric orthogonalization.\n", nlindep_, (dim_.sum()-orthog_dim_.sum()>1)?"s":"");
     }
 
     if (orthog_method_ == Symmetric) {
@@ -143,7 +143,7 @@ void OverlapOrthog::compute_overlap_eig(Matrix& overlap_eigvec,
         overlap_eigvec.print();
         isqrt_eigval.print();
         sqrt_eigval.print();
-        fflush(outfile);
+        
     }
 }
 
@@ -204,15 +204,15 @@ void OverlapOrthog::compute_orthog_trans()
 {
     switch(orthog_method_) {
     case GramSchmidt:
-        psi::fprintf(outfile, "    Using Gram-Schmidt orthogonalization.\n");
+        outfile->Printf( "    Using Gram-Schmidt orthogonalization.\n");
         compute_gs_orthog();
         break;
     case Symmetric:
-        psi::fprintf(outfile, "    Using symmetric orthogonalization.\n");
+        outfile->Printf( "    Using symmetric orthogonalization.\n");
         compute_symmetric_orthog();
         break;
     case Canonical:
-        psi::fprintf(outfile, "    Using canonical orthogonalization.\n");
+        outfile->Printf( "    Using canonical orthogonalization.\n");
         compute_canonical_orthog();
         break;
     default:

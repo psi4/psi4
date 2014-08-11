@@ -27,7 +27,7 @@ namespace psi { namespace sapt {
 void SAPT2p::disp22t()
 {
   if (print_) {
-    psi::fprintf(outfile,"\n");
+    outfile->Printf("\n");
   }
 
   double e_disp220t;
@@ -46,8 +46,8 @@ void SAPT2p::disp22t()
   }
 
   if (print_) {
-    psi::fprintf(outfile,"\n    Disp220 (T)         = %18.12lf H\n\n",e_disp220t);
-    fflush(outfile);
+    outfile->Printf("\n    Disp220 (T)         = %18.12lf H\n\n",e_disp220t);
+    
   }
 
   double e_disp202t;
@@ -66,15 +66,15 @@ void SAPT2p::disp22t()
   }
 
   if (print_) {
-    psi::fprintf(outfile,"\n    Disp202 (T)         = %18.12lf H\n\n",e_disp202t);
-    fflush(outfile);
+    outfile->Printf("\n    Disp202 (T)         = %18.12lf H\n\n",e_disp202t);
+    
   }
 
   e_disp22t_ = e_disp220t + e_disp202t;
 
   if (print_) {
-    psi::fprintf(outfile,"    Disp22 (T)          = %18.12lf H\n",e_disp22t_);
-    fflush(outfile);
+    outfile->Printf("    Disp22 (T)          = %18.12lf H\n",e_disp22t_);
+    
   }
 
   if (nat_orbs_t3_) {
@@ -84,10 +84,10 @@ void SAPT2p::disp22t()
     e_est_disp22t_ = e_disp220t + e_disp202t;
 
     if (print_) {
-      psi::fprintf(outfile,"\n    Est. Disp220 (T)    = %18.12lf H\n",e_disp220t);
-      psi::fprintf(outfile,"    Est. Disp202 (T)    = %18.12lf H\n\n",e_disp202t);
-      psi::fprintf(outfile,"    Est. Disp22 (T)     = %18.12lf H\n",e_est_disp22t_);
-      fflush(outfile);
+      outfile->Printf("\n    Est. Disp220 (T)    = %18.12lf H\n",e_disp220t);
+      outfile->Printf("    Est. Disp202 (T)    = %18.12lf H\n\n",e_disp202t);
+      outfile->Printf("    Est. Disp22 (T)     = %18.12lf H\n",e_est_disp22t_);
+      
     }
   }
 }
@@ -95,7 +95,7 @@ void SAPT2p::disp22t()
 void SAPT2p::disp22tccd()
 {
   if (print_) {
-    psi::fprintf(outfile,"\n");
+    outfile->Printf("\n");
   }
 
   if (nat_orbs_t3_) {
@@ -119,8 +119,8 @@ void SAPT2p::disp22tccd()
   }
 
   if (print_) {
-    psi::fprintf(outfile,"\n    Disp220 (T)         = %18.12lf H\n\n",e_disp220t);
-    fflush(outfile);
+    outfile->Printf("\n    Disp220 (T)         = %18.12lf H\n\n",e_disp220t);
+    
   }
 
   double e_disp202t;
@@ -139,15 +139,15 @@ void SAPT2p::disp22tccd()
   }
 
   if (print_) {
-    psi::fprintf(outfile,"\n    Disp202 (T)         = %18.12lf H\n\n",e_disp202t);
-    fflush(outfile);
+    outfile->Printf("\n    Disp202 (T)         = %18.12lf H\n\n",e_disp202t);
+    
   }
 
   e_disp22t_ccd_ = e_disp220t + e_disp202t;
 
   if (print_) {
-    psi::fprintf(outfile,"    Disp22 (T)          = %18.12lf H\n",e_disp22t_ccd_);
-    fflush(outfile);
+    outfile->Printf("    Disp22 (T)          = %18.12lf H\n",e_disp22t_ccd_);
+    
   }
 
   if (nat_orbs_t3_) {
@@ -157,10 +157,10 @@ void SAPT2p::disp22tccd()
     e_est_disp22t_ccd_ = e_disp220t + e_disp202t;
 
     if (print_) {
-      psi::fprintf(outfile,"\n    Est. Disp220 (T)    = %18.12lf H\n",e_disp220t);
-      psi::fprintf(outfile,"    Est. Disp202 (T)    = %18.12lf H\n\n",e_disp202t);
-      psi::fprintf(outfile,"    Est. Disp22 (T)     = %18.12lf H\n",e_est_disp22t_ccd_);
-      fflush(outfile);
+      outfile->Printf("\n    Est. Disp220 (T)    = %18.12lf H\n",e_disp220t);
+      outfile->Printf("    Est. Disp202 (T)    = %18.12lf H\n\n",e_disp202t);
+      outfile->Printf("    Est. Disp22 (T)     = %18.12lf H\n",e_est_disp22t_ccd_);
+      
     }
   }
 }
@@ -351,9 +351,9 @@ double SAPT2p::disp220t(int AAfile, const char *AAlabel, const char *ARlabel,
    }
   stop = time(NULL);
   if (print_) {
-    psi::fprintf(outfile,"    (i = %3d of %3d) %10ld seconds\n",b+1,aoccB,
+    outfile->Printf("    (i = %3d of %3d) %10ld seconds\n",b+1,aoccB,
       stop-start);
-  } fflush(outfile); }
+  }  }
 
   free(B_p_bs);
   free_block(wARAR);
@@ -506,8 +506,8 @@ double SAPT2p::disp220tccd(int AAnum, const char *AA_label, int Rnum, const char
     }}
    }
   stop = time(NULL);
-    psi::fprintf(outfile,"    (i = %3d of %3d) %10ld seconds\n",b+1,noccB,stop-start);
-  fflush(outfile);
+    outfile->Printf("    (i = %3d of %3d) %10ld seconds\n",b+1,noccB,stop-start);
+  
   }
 
   free(B_p_bs);

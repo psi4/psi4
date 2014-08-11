@@ -42,8 +42,10 @@ namespace psi {
 **
 ** \ingroup CIOMR
 */
-void print_array(double *a, int m, FILE *out)
+void print_array(double *a, int m, std::string out)
    {
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(out)));
       int ii,jj,kk,mm,nn,ll;
       int i,j,i1,i2;
 
@@ -56,21 +58,20 @@ L200:
       mm=m;
       if (m > kk) mm=kk;
       ll = 2*(mm-ii+1)+1;
-      psi::fprintf (out,"\n");
-      for (i=ii; i <= mm; i++) psi::fprintf(out,"       %5d",i);
-      psi::fprintf (out,"\n");
+      printer->Printf("\n");
+      for (i=ii; i <= mm; i++) printer->Printf("       %5d",i);
+      printer->Printf("\n");
       for (i=ii; i <= m; i++) {
          i1=i*(i-1)/2+ii;
          i2=i+i*(i-1)/2;
          if (i2 > nn) i2 = i1+9;
-         psi::fprintf (out,"\n%5d",i);
+         printer->Printf("\n%5d",i);
          for (j=i1; j <= i2; j++) {
-            psi::fprintf (out,"%12.7f",a[j-1]);
+            printer->Printf("%12.7f",a[j-1]);
             }
          }
       if (m <= kk) {
-         psi::fprintf(out,"\n");
-         fflush(out);
+         printer->Printf("\n");
          return;
          }
       ii=kk; goto L200;

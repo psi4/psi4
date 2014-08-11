@@ -32,7 +32,7 @@
 #include "matrix.h"
 
 namespace psi{
-    extern FILE *outfile;
+    
     namespace psimrcc{
     extern MOInfo *moinfo;
 

@@ -56,22 +56,22 @@ void add_ref_ROHF(struct iwlbuf *OutBuf)
 
   /* docc-docc */
   for(i=0; i < (nfzc + nclsd); i++) {
-      iwl_buf_wrt_val(OutBuf, i, i, i, i, 1.0, 0, outfile, 0);
+      iwl_buf_wrt_val(OutBuf, i, i, i, i, 1.0, 0, "outfile", 0);
       for(j=0; j < i; j++) {
-	  iwl_buf_wrt_val(OutBuf, i, i, j, j, 2.0, 0, outfile, 0);
-	  iwl_buf_wrt_val(OutBuf, i, j, j, i,-1.0, 0, outfile, 0);
+	  iwl_buf_wrt_val(OutBuf, i, i, j, j, 2.0, 0, "outfile", 0);
+	  iwl_buf_wrt_val(OutBuf, i, j, j, i,-1.0, 0, "outfile", 0);
 	}
     }
 
   /* socc-docc && socc-socc*/
   for(i=(nfzc + nclsd); i < (nfzc + nclsd + nopen); i++) {
       for(j=0; j < (nfzc + nclsd); j++) {
-	  iwl_buf_wrt_val(OutBuf, i, i, j, j, 1.0, 0, outfile, 0);
-	  iwl_buf_wrt_val(OutBuf, i, j, j, i,-0.5, 0, outfile, 0);
+	  iwl_buf_wrt_val(OutBuf, i, i, j, j, 1.0, 0, "outfile", 0);
+	  iwl_buf_wrt_val(OutBuf, i, j, j, i,-0.5, 0, "outfile", 0);
 	}
       for(j=(nfzc + nclsd); j < i; j++) {
-	  iwl_buf_wrt_val(OutBuf, i, i, j, j, 0.5, 0, outfile, 0);
-	  iwl_buf_wrt_val(OutBuf, i, j, j, i,-0.5, 0, outfile, 0);
+	  iwl_buf_wrt_val(OutBuf, i, i, j, j, 0.5, 0, "outfile", 0);
+	  iwl_buf_wrt_val(OutBuf, i, j, j, i,-0.5, 0, "outfile", 0);
 	}
     }
 }

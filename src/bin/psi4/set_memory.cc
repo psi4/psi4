@@ -36,17 +36,17 @@ namespace psi {
 
 #define DEF_MAXCRR (256000000)  // default maxcor 256 M bytes
 
-void set_memory(FILE *outfile)
+void set_memory(std::string OutFileRMR)
 {
     long int maxcrr;
 
     maxcrr = DEF_MAXCRR; // set to default
 
     if (maxcrr < 1e9) {
-       psi::fprintf(outfile,"    Memory level set to %.3lf MB\n", maxcrr / 1e6 );
+       outfile->Printf("    Memory level set to %.3lf MB\n", maxcrr / 1e6 );
     }
     else {
-        psi::fprintf(outfile,"    Memory level set to %.3lf GB\n", maxcrr / 1e9 );
+        outfile->Printf("    Memory level set to %.3lf GB\n", maxcrr / 1e9 );
     }
 
     Process::environment.set_memory(maxcrr);

@@ -189,9 +189,9 @@ void sortI_UHF(void)
   }
 
   /*
-  psi::fprintf(outfile, "\n\tAlpha MO Lag:\n");
+  outfile->Printf( "\n\tAlpha MO Lag:\n");
   mat_print(O_a, nmo, nmo, outfile);
-  psi::fprintf(outfile, "\n\tBeta MO Lag:\n");
+  outfile->Printf( "\n\tBeta MO Lag:\n");
   mat_print(O_b, nmo, nmo, outfile);
   */
 

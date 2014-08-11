@@ -64,8 +64,8 @@ bool Set::IsEqual(const Set& other)const{
 }
 
 void Set::print_out()const{
-   for(int i=0;i<size();i++)psi::fprintf(psi::outfile,"%d ",Atoms[i]);
-   psi::fprintf(psi::outfile,"\n");
+   for(int i=0;i<size();i++)psi::outfile->Printf("%d ",Atoms[i]);
+   psi::outfile->Printf("\n");
 }
 
 }//End namespace LibFrag

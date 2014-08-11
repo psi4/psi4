@@ -36,25 +36,25 @@ void print_evals(double **evals, int *rank)
 {
   int h, i;
 
-  psi::fprintf(outfile, "\t  #  ");
+  outfile->Printf( "\t  #  ");
   for(h=0; h < moinfo.nirreps; h++)
-      psi::fprintf(outfile, "    %3s  ",moinfo.labels[h]);
-  psi::fprintf(outfile, "\n");
-  psi::fprintf(outfile, "\t---- ");
+      outfile->Printf( "    %3s  ",moinfo.labels[h]);
+  outfile->Printf( "\n");
+  outfile->Printf( "\t---- ");
   for(h=0; h < moinfo.nirreps; h++)
-      psi::fprintf(outfile, "---------");
-  psi::fprintf(outfile, "\n");
+      outfile->Printf( "---------");
+  outfile->Printf( "\n");
 
   for(i=0; i < 5; i++) {
-    psi::fprintf(outfile, "\t %2d  ", i);
+    outfile->Printf( "\t %2d  ", i);
       for(h=0; h < moinfo.nirreps; h++) {
-	  if(rank[h] <= i) psi::fprintf(outfile, "         ");
-	  else psi::fprintf(outfile, " %7.4f ", evals[h][i]);
+	  if(rank[h] <= i) outfile->Printf( "         ");
+	  else outfile->Printf( " %7.4f ", evals[h][i]);
 	}
-      psi::fprintf(outfile, "\n");
+      outfile->Printf( "\n");
     }
 
-  psi::fprintf(outfile, "\n");
+  outfile->Printf( "\n");
 }
 
 }} // namespace psi::stable

@@ -63,8 +63,10 @@ void DPD::cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
                            int do_singles, dpdbuf4 *Dints, dpdfile2 *SIA,
                            int do_doubles, dpdfile2 *FME, dpdbuf4 *WmAEf, dpdbuf4 *WMnIe,
                            dpdbuf4 *SIjAb, int *occpi, int *occ_off, int *virtpi, int *vir_off,
-                           double omega, FILE *outfile, int nthreads, int newtrips)
+                           double omega, std::string out, int nthreads, int newtrips)
 {
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            boost::shared_ptr<OutFile>(new OutFile(out)));
     int h, nirreps, thread, nijk, *ijk_part, errcod=0;
     int Gi, Gj, Gk, Gl, Ga, Gb, Gc, Gd;
     int i, j, k, l, a, b, c, d, row, col;
@@ -114,7 +116,7 @@ void DPD::cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
     GW = WmAEf->file.my_irrep;
     GS = SIjAb->file.my_irrep;
     if (GS != (GX3^GW)) {
-        psi::fprintf(outfile,"problem with irreps in cc3_sigma_RHF()\n");
+        outfile->Printf("problem with irreps in cc3_sigma_RHF()\n");
         exit(1);
     }
 
@@ -182,7 +184,7 @@ void DPD::cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
         thread_data_array[thread].omega = omega;
         thread_data_array[thread].fIJ = &fIJ;
         thread_data_array[thread].fAB = &fAB;
-        thread_data_array[thread].outfile = outfile;
+        thread_data_array[thread].outfile = out;
         thread_data_array[thread].thr_id = thread;
         thread_data_array[thread].SIA_local = SIA_local[thread];
         thread_data_array[thread].SIjAb_local = SIjAb_local[thread];
@@ -234,7 +236,7 @@ void DPD::cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
                     errcod = pthread_create(&(p_thread[thread]), NULL, cc3_sigma_RHF_ic_thread,
                                             (void *) &thread_data_array[thread]);
                     if (errcod) {
-                        psi::fprintf(stderr,"pthread_create in cc3_sigma_RHF_ic failed\n");
+                        outfile->Printf("pthread_create in cc3_sigma_RHF_ic failed\n");
                         exit(PSI_RETURN_FAILURE);
                     }
                 }
@@ -243,7 +245,7 @@ void DPD::cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
                     if (!ijk_part[thread]) continue;
                     errcod = pthread_join(p_thread[thread], NULL);
                     if (errcod) {
-                        psi::fprintf(stderr,"pthread_join in cc3_sigma_RHF_ic failed\n");
+                        outfile->Printf("pthread_join in cc3_sigma_RHF_ic failed\n");
                         exit(PSI_RETURN_FAILURE);
                     }
                 }
@@ -336,7 +338,7 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
     double omega;
     dpdfile2 *FME, *fIJ, *fAB;
     dpdbuf4 *CIjAb, *WAbEi, *WMbIj, *Dints, *WmAEf, *WMnIe;
-    FILE *outfile;
+    std::string OutFileRMR;
     int newtrips;
     int Gcb, Gac, cb, ac;
 
@@ -365,7 +367,7 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
     Gk    =  data.Gk;
     first_ijk = data.first_ijk;
     last_ijk = data.last_ijk;
-    outfile = data.outfile;
+    std::string out = data.outfile;
     thr_id = data.thr_id;
     SIA_local = data.SIA_local;
     SIjAb_local = data.SIjAb_local;

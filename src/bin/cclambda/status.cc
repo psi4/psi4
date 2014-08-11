@@ -28,10 +28,12 @@
 #include "psi4-dec.h"
 namespace psi { namespace cclambda {
 
-void status(const char *s, FILE *out)
+void status(const char *s, std::string out)
 {
-  psi::fprintf(out, "     %-15s...complete\n", s);
-  fflush(out);
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+           boost::shared_ptr<OutFile>(new OutFile(out)));
+  printer->Printf( "     %-15s...complete\n", s);
+
 }
 
 }} // namespace psi::cclambda

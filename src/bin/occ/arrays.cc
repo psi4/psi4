@@ -101,20 +101,21 @@ void Array1d::zero()
 
 void Array1d::print()
 {
-  if (name_.length()) psi::fprintf(outfile, "\n ## %s ##\n", name_.c_str());
+  if (name_.length()) outfile->Printf( "\n ## %s ##\n", name_.c_str());
   for (int p=0; p<dim1_; p++){
-    psi::fprintf(outfile," %3d %10.7f \n",p,A1d_[p]);
+    outfile->Printf(" %3d %10.7f \n",p,A1d_[p]);
   }
-  fflush(outfile);
+  
 }//
 
-void Array1d::print(FILE *out)
+void Array1d::print(std::string OutFileRMR)
 {
-  if (name_.length()) psi::fprintf(out, "\n ## %s ##\n", name_.c_str());
+   boost::shared_ptr<psi::PsiOutStream> printer=(OutFileRMR=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(OutFileRMR,APPEND)));
+  if (name_.length()) printer->Printf( "\n ## %s ##\n", name_.c_str());
   for (int p=0; p<dim1_; p++){
-    psi::fprintf(out," %3d %10.7f \n",p,A1d_[p]);
+    printer->Printf(" %3d %10.7f \n",p,A1d_[p]);
   }
-  fflush(out);
 }//
 
 
@@ -386,16 +387,17 @@ void Array2d::zero_diagonal()
 
 void Array2d::print()
 {
-  if (name_.length()) psi::fprintf(outfile, "\n ## %s ##\n", name_.c_str());
-  print_mat(A2d_,dim1_,dim2_,outfile);
-  fflush(outfile);
+  if (name_.length()) outfile->Printf( "\n ## %s ##\n", name_.c_str());
+  print_mat(A2d_,dim1_,dim2_,"outfile");
+  
 }//
 
-void Array2d::print(FILE *out)
+void Array2d::print(std::string OutFileRMR)
 {
-  if (name_.length()) psi::fprintf(out, "\n ## %s ##\n", name_.c_str());
-  print_mat(A2d_,dim1_,dim2_,out);
-  fflush(out);
+   boost::shared_ptr<psi::PsiOutStream> printer=(OutFileRMR=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(OutFileRMR,APPEND)));
+  if (name_.length()) printer->Printf( "\n ## %s ##\n", name_.c_str());
+  print_mat(A2d_,dim1_,dim2_,OutFileRMR);
 }//
 
 void Array2d::release()
@@ -612,7 +614,7 @@ void Array2d::lineq_flin(double* Xvec, double *det)
 void Array2d::lineq_pople(Array1d* Xvec, int num_vecs, double cutoff)
 {
       if (dim1_) {
-	pople(A2d_, Xvec->A1d_, dim1_, num_vecs, cutoff, outfile, 0);  
+	pople(A2d_, Xvec->A1d_, dim1_, num_vecs, cutoff, "outfile", 0);
       }
 }//
 
@@ -620,7 +622,7 @@ void Array2d::lineq_pople(Array1d* Xvec, int num_vecs, double cutoff)
 void Array2d::lineq_pople(double* Xvec, int num_vecs, double cutoff)
 {
       if (dim1_) {
-	pople(A2d_, Xvec, dim1_, num_vecs, cutoff, outfile, 0);  
+	pople(A2d_, Xvec, dim1_, num_vecs, cutoff, "outfile", 0);
       }
 }//
 
@@ -716,8 +718,8 @@ void Array2d::triple_gemm(const Array2d* a, const Array2d* b, const Array2d* c)
     delete bc;
   }
   else {
-    psi::fprintf(outfile,"\n Warning!!! Matrix dimensions do NOT match in triple_gemm().\n");
-    fflush(outfile);
+    outfile->Printf("\n Warning!!! Matrix dimensions do NOT match in triple_gemm().\n");
+    
   } 
 
 }//
@@ -875,7 +877,7 @@ void Array2d::mgs()
 void Array2d::gs()
 {
     if (dim1_ != 0 && dim2_ != 0 ) {
-       schmidt(A2d_, dim1_, dim2_, outfile);
+       schmidt(A2d_, dim1_, dim2_, "outfile");
     }
 }//
 
@@ -986,12 +988,12 @@ void Array3d::zero()
 
 void Array3d::print()
 {
-  if (name_.length()) psi::fprintf(outfile, "\n ## %s ##\n", name_.c_str());
+  if (name_.length()) outfile->Printf( "\n ## %s ##\n", name_.c_str());
   for (int i=0; i<dim1_;i++){	
-    psi::fprintf(outfile, "\n Irrep: %d\n", i+1);
-    print_mat(A3d_[i],dim2_,dim3_,outfile);
+    outfile->Printf( "\n Irrep: %d\n", i+1);
+    print_mat(A3d_[i],dim2_,dim3_,"outfile");
   }
-  fflush(outfile);
+  
 }//
 
 void Array3d::release()
@@ -1082,11 +1084,11 @@ void Array1i::zero()
 
 void Array1i::print()
 {
-  if (name_.length()) psi::fprintf(outfile, "\n ## %s ##\n", name_.c_str());
+  if (name_.length()) outfile->Printf( "\n ## %s ##\n", name_.c_str());
   for (int p=0; p<dim1_; p++){
-    psi::fprintf(outfile," %3d %3d \n",p,A1i_[p]);
+    outfile->Printf(" %3d %3d \n",p,A1i_[p]);
   }
-  fflush(outfile);
+  
 }//
 
 void Array1i::release()
@@ -1234,12 +1236,12 @@ void Array3i::zero()
 
 void Array3i::print()
 {
-  if (name_.length()) psi::fprintf(outfile, "\n ## %s ##\n", name_.c_str());
+  if (name_.length()) outfile->Printf( "\n ## %s ##\n", name_.c_str());
   for (int i=0; i<dim1_;i++){	
-    psi::fprintf(outfile, "\n Irrep: %d\n", i+1);
-    print_int_mat(A3i_[i],dim2_,dim3_,outfile);
+    outfile->Printf( "\n Irrep: %d\n", i+1);
+    print_int_mat(A3i_[i],dim2_,dim3_,"outfile");
   }
-  fflush(outfile);
+  
 }//
 
 void Array3i::release()

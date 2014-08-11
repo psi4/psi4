@@ -54,10 +54,10 @@ int DPD::buf4_dump(dpdbuf4 *DPDBuf, struct iwlbuf *IWLBuf,
 
                     if(swap23)
                         iwl_buf_wrt_val(IWLBuf, P, R, Q, S, value, 0,
-                                        (FILE *) NULL, 0);
+                                        "NULL", 0);
                     else
                         iwl_buf_wrt_val(IWLBuf, P, Q, R, S, value, 0,
-                                        (FILE *) NULL, 0);
+                                        "NULL", 0);
                 }
             }
             else {
@@ -69,10 +69,10 @@ int DPD::buf4_dump(dpdbuf4 *DPDBuf, struct iwlbuf *IWLBuf,
 
                     if(swap23)
                         iwl_buf_wrt_val(IWLBuf, P, R, Q, S, value, 0,
-                                        (FILE *) NULL, 0);
+                                        "NULL", 0);
                     else
                         iwl_buf_wrt_val(IWLBuf, P, Q, R, S, value, 0,
-                                        (FILE *) NULL, 0);
+                                        "NULL", 0);
                 }
             }
         }

@@ -40,7 +40,7 @@ void idx_permute_multipass(dpdfile4 *File, int this_bucket,
                            int **bucket_map, unsigned long int **bucket_offset,
                            int p, int q, int r, int s,
                            int perm_pr, int perm_qs, int perm_prqs,
-                           double value, FILE *outfile);
+                           double value, std::string OutFileRMR);
 
 int file_build_multipass(dpdfile4 *File, int inputfile, double tolerance,
                          int perm_pr, int perm_qs, int perm_prqs, int keep)
@@ -131,8 +131,8 @@ int file_build_multipass(dpdfile4 *File, int inputfile, double tolerance,
     }
   }
 
-  psi::fprintf(outfile, "\tSorting File: %s nbuckets = %d\n", File->label, nbuckets);
-  fflush(outfile);
+  outfile->Printf( "\tSorting File: %s nbuckets = %d\n", File->label, nbuckets);
+  
 
   next = PSIO_ZERO;
   for(n=0; n < nbuckets; n++) { /* nbuckets = number of passes */
@@ -158,7 +158,7 @@ int file_build_multipass(dpdfile4 *File, int inputfile, double tolerance,
 
       idx_permute_multipass(File,n,bucket_map,bucket_offset,
                             p,q,r,s,perm_pr,perm_qs,
-                            perm_prqs,value,outfile);
+                            perm_prqs,value,"outfile");
 
     } /* end loop through current buffer */
 
@@ -177,7 +177,7 @@ int file_build_multipass(dpdfile4 *File, int inputfile, double tolerance,
 
         idx_permute_multipass(File,n,bucket_map,bucket_offset,
                               p,q,r,s,perm_pr,perm_qs,
-                              perm_prqs,value,outfile);
+                              perm_prqs,value,"outfile");
 
       } /* end loop through current buffer */
     } /* end loop over reading buffers */

@@ -59,28 +59,29 @@ void scf_energy(double *H, double *TE, double *energy_1, double *energy_2,
 */
 double check_energy(double *H, double *twoel_ints, int *docc, int *frozen_docc,
       int fzc_flag, double escf, double enuc, double efzc, 
-      int nirreps, int *reorder, int *opi, int print_lvl, FILE *outfile)
+      int nirreps, int *reorder, int *opi, int print_lvl, std::string out)
 {
    double energy_1 ;     /* one-electron energy */
    double energy_2 ;     /* two-electron energy */
    double energy_e ;     /* total electronic energy */
-
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(out)));
    scf_energy(H, twoel_ints, &energy_1, &energy_2, &energy_e, docc,
       frozen_docc, fzc_flag, nirreps, reorder, opi);
 
    if (print_lvl) {
-     psi::fprintf(outfile,"\nCheck SCF Energy from 1- and 2-electron integrals\n\n");
-     psi::fprintf(outfile,"SCF Energy (ref):          %16.10lf\n", escf) ;
-     psi::fprintf(outfile,"Nuclear repulsion energy:  %16.10lf\n", enuc) ;
-     psi::fprintf(outfile,"One-electron energy:       %16.10lf\n", energy_1) ;
-     psi::fprintf(outfile,"Two-electron energy:       %16.10lf\n", energy_2) ;
-     psi::fprintf(outfile,"Frozen core energy:        %16.10lf\n", efzc) ;
-     psi::fprintf(outfile,"Total electronic energy:   %16.10lf\n", energy_e+efzc) ;
-     psi::fprintf(outfile,"Total SCF energy:          %16.10lf\n", enuc + 
+     printer->Printf("\nCheck SCF Energy from 1- and 2-electron integrals\n\n");
+     printer->Printf("SCF Energy (ref):          %16.10lf\n", escf) ;
+     printer->Printf("Nuclear repulsion energy:  %16.10lf\n", enuc) ;
+     printer->Printf("One-electron energy:       %16.10lf\n", energy_1) ;
+     printer->Printf("Two-electron energy:       %16.10lf\n", energy_2) ;
+     printer->Printf("Frozen core energy:        %16.10lf\n", efzc) ;
+     printer->Printf("Total electronic energy:   %16.10lf\n", energy_e+efzc) ;
+     printer->Printf("Total SCF energy:          %16.10lf\n", enuc +
         energy_e + efzc) ;
     
      if (fabs(enuc + efzc + energy_e - escf) > 0.00000001) {
-        psi::fprintf(outfile, 
+        printer->Printf(
            "\n*** Calculated Energy Differs from SCF Energy in CHKPT ! ***\n") ;
         }
    }

@@ -96,7 +96,7 @@ void close_io(void)
 void check(int a, const char *errmsg)
 {
   if (!a) {
-    psi::fprintf(outfile, "%s\n", errmsg);
+    outfile->Printf( "%s\n", errmsg);
     close_io();
     throw PsiException("detcas: error", __FILE__, __LINE__);
   }

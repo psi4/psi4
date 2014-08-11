@@ -393,7 +393,7 @@ x_xi_check("terms 18, 19 (Wmnie, Wamef)");
   global_dpd_->file2_init(&XIA, PSIF_EOM_XI, G_irr, 0, 1, "XIA");
   tval = 2.0 * global_dpd_->file2_dot_self(&XIA);
   global_dpd_->file2_close(&XIA);
-  psi::fprintf(outfile,"XI_IA amplitudes: Norm=%15.10lf, Dot=%15.10lf\n", sqrt(tval), tval );
+  outfile->Printf("XI_IA amplitudes: Norm=%15.10lf, Dot=%15.10lf\n", sqrt(tval), tval );
 
   global_dpd_->buf4_init(&XIjAb, PSIF_EOM_XI, G_irr, 0, 5, 0, 5, 0, "XIjAb");
   global_dpd_->buf4_sort(&XIjAb, PSIF_EOM_TMP1, pqsr, 0, 5, "XIjbA");
@@ -403,7 +403,7 @@ x_xi_check("terms 18, 19 (Wmnie, Wamef)");
   global_dpd_->file2_close(&XIA);
   global_dpd_->buf4_close(&XIjAb);
   global_dpd_->buf4_close(&Z2);
-  psi::fprintf(outfile,"XI amplitudes   : Norm=%15.10lf, Dot=%15.10lf\n", sqrt(tval), tval );
+  outfile->Printf("XI amplitudes   : Norm=%15.10lf, Dot=%15.10lf\n", sqrt(tval), tval );
 
   psio_close(PSIF_EOM_TMP1,0);
   psio_open(PSIF_EOM_TMP1, PSIO_OPEN_NEW);

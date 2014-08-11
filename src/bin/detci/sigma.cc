@@ -378,7 +378,7 @@ void sigma(struct stringwr **alplist, struct stringwr **betlist,
          sigma_c(alplist, betlist, C, S, oei, tei, fci, ivec);
          break;
       default:
-         psi::fprintf(stderr, "(sigma): Error, invalid icore option\n");
+         outfile->Printf( "(sigma): Error, invalid icore option\n");
          break;
       } 
 
@@ -779,7 +779,7 @@ void sigma_block(struct stringwr **alplist, struct stringwr **betlist,
 
    
    #ifdef DEBUG
-   psi::fprintf(outfile, "s2: Contribution to sblock=%d from cblock=%d\n",
+   outfile->Printf( "s2: Contribution to sblock=%d from cblock=%d\n",
       sblock, cblock);
    print_mat(smat, nas, nbs, outfile);
    #endif
@@ -837,7 +837,7 @@ void sigma_block(struct stringwr **alplist, struct stringwr **betlist,
       } /* end sigma1 */
 
    #ifdef DEBUG
-   psi::fprintf(outfile, "s1: Contribution to sblock=%d from cblock=%d\n",
+   outfile->Printf( "s1: Contribution to sblock=%d from cblock=%d\n",
       sblock, cblock);
    print_mat(smat, nas, nbs, outfile);
    #endif
@@ -906,7 +906,7 @@ void sigma_block(struct stringwr **alplist, struct stringwr **betlist,
          }
 
       #ifdef DEBUG
-      psi::fprintf(outfile, "s3: Contribution to sblock=%d from cblock=%d\n",
+      outfile->Printf( "s3: Contribution to sblock=%d from cblock=%d\n",
          sblock, cblock);
       print_mat(smat, nas, nbs, outfile);
       #endif

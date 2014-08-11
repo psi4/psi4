@@ -545,7 +545,7 @@ double ET_AAB(void)
 			/*
 			if(fabs(value_c) > 1e-7) {
 			  cnt++;
-			  psi::fprintf(outfile, "%d %d %d %d %d %d %20.14f\n", I, J, K, A, B, C, value_c);
+			  outfile->Printf( "%d %d %d %d %d %d %20.14f\n", I, J, K, A, B, C, value_c);
 			}
 			*/
 
@@ -581,9 +581,9 @@ double ET_AAB(void)
     } /* Gj */
   } /* Gi */
 
-  /*  psi::fprintf(outfile, "cnt = %d\n", cnt); */
+  /*  outfile->Printf( "cnt = %d\n", cnt); */
   ET_AAB /= 4.0;
-  /*  psi::fprintf(outfile, "ET_AAB = %20.14f\n", ET_AAB); */
+  /*  outfile->Printf( "ET_AAB = %20.14f\n", ET_AAB); */
 
   for(h=0; h < nirreps; h++) {
     global_dpd_->buf4_mat_irrep_close(&T2AA, h);

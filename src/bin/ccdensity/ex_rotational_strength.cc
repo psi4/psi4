@@ -66,9 +66,9 @@ void ex_rotational_strength(struct TD_Params *S, struct TD_Params *U, struct XTD
 
   transdip();
 
-  psi::fprintf(outfile,"\n\tLength-Gauge Rotational Strength for %d%3s to %d%3s Transition\n",S->root+1,
+  outfile->Printf("\n\tLength-Gauge Rotational Strength for %d%3s to %d%3s Transition\n",S->root+1,
           moinfo.labels[S->irrep], U->root+1, moinfo.labels[U->irrep]);
-  psi::fprintf(outfile,"\t                              X    \t       Y    \t       Z\n");
+  outfile->Printf("\t                              X    \t       Y    \t       Z\n");
 
   lt_x = lt_y = lt_z = 0.0;
   rt_x = rt_y = rt_z = 0.0;
@@ -96,9 +96,9 @@ void ex_rotational_strength(struct TD_Params *S, struct TD_Params *U, struct XTD
   rs_ly = lt_y * rt_y;
   rs_lz = lt_z * rt_z;
 
-  psi::fprintf(outfile,"\t<p|mu_e|q>              %11.8lf \t %11.8lf \t %11.8lf\n",
+  outfile->Printf("\t<p|mu_e|q>              %11.8lf \t %11.8lf \t %11.8lf\n",
           lt_x,lt_y,lt_z);
-  psi::fprintf(outfile,"\t<q|mu_m|p>              %11.8lf \t %11.8lf \t %11.8lf\n",
+  outfile->Printf("\t<q|mu_m|p>              %11.8lf \t %11.8lf \t %11.8lf\n",
           rt_x,rt_y,rt_z);
 
   // Complex Conjugate
@@ -131,9 +131,9 @@ void ex_rotational_strength(struct TD_Params *S, struct TD_Params *U, struct XTD
   rs_ry = lt_y * rt_y;
   rs_rz = lt_z * rt_z;
 
-  psi::fprintf(outfile,"\t<p|mu_m|q>*             %11.8lf \t %11.8lf \t %11.8lf\n",
+  outfile->Printf("\t<p|mu_m|q>*             %11.8lf \t %11.8lf \t %11.8lf\n",
           lt_x,lt_y,lt_z);
-  psi::fprintf(outfile,"\t<q|mu_e|p>*             %11.8lf \t %11.8lf \t %11.8lf\n",
+  outfile->Printf("\t<q|mu_e|p>*             %11.8lf \t %11.8lf \t %11.8lf\n",
           rt_x,rt_y,rt_z);
 
   rs_x = 0.5 * ( rs_lx + rs_rx);
@@ -146,14 +146,14 @@ void ex_rotational_strength(struct TD_Params *S, struct TD_Params *U, struct XTD
   /* Fill in XTD Data */
   xtd_data->RS_length = rs;
 
-  psi::fprintf(outfile,"\n");
-  psi::fprintf(outfile,"\tRotational Strength (au)                 %11.8lf\n",rs);
-  psi::fprintf(outfile,"\tRotational Strength (10^-40 esu^2 cm^2)  %11.8lf\n",rs*_au2cgs);
-  fflush(outfile);
+  outfile->Printf("\n");
+  outfile->Printf("\tRotational Strength (au)                 %11.8lf\n",rs);
+  outfile->Printf("\tRotational Strength (10^-40 esu^2 cm^2)  %11.8lf\n",rs*_au2cgs);
+  
 
-  psi::fprintf(outfile,"\n\tVelocity-Gauge Rotational Strength for %d%3s\n",S->root+1,
+  outfile->Printf("\n\tVelocity-Gauge Rotational Strength for %d%3s\n",S->root+1,
           moinfo.labels[S->irrep], U->root+1, moinfo.labels[U->irrep]);
-  psi::fprintf(outfile,"\t                              X    \t       Y    \t       Z\n");
+  outfile->Printf("\t                              X    \t       Y    \t       Z\n");
 
   lt_x = lt_y = lt_z = 0.0;
   rt_x = rt_y = rt_z = 0.0;
@@ -183,9 +183,9 @@ void ex_rotational_strength(struct TD_Params *S, struct TD_Params *U, struct XTD
   rs_ly = lt_y * rt_y;
   rs_lz = lt_z * rt_z;
 
-  psi::fprintf(outfile,"\t<p|mu_e|q>              %11.8lf \t %11.8lf \t %11.8lf\n",
+  outfile->Printf("\t<p|mu_e|q>              %11.8lf \t %11.8lf \t %11.8lf\n",
           lt_x,lt_y,lt_z);
-  psi::fprintf(outfile,"\t<q|mu_m|p>              %11.8lf \t %11.8lf \t %11.8lf\n",
+  outfile->Printf("\t<q|mu_m|p>              %11.8lf \t %11.8lf \t %11.8lf\n",
           rt_x,rt_y,rt_z);
 
   // Complex Conjugate
@@ -226,9 +226,9 @@ void ex_rotational_strength(struct TD_Params *S, struct TD_Params *U, struct XTD
   rs_y = 0.5 * ( rs_ly + rs_ry);
   rs_z = 0.5 * ( rs_lz + rs_rz);
 
-  psi::fprintf(outfile,"\t<p|mu_m|q>*             %11.8lf \t %11.8lf \t %11.8lf\n",
+  outfile->Printf("\t<p|mu_m|q>*             %11.8lf \t %11.8lf \t %11.8lf\n",
           lt_x,lt_y,lt_z);
-  psi::fprintf(outfile,"\t<q|mu_e|p>*             %11.8lf \t %11.8lf \t %11.8lf\n",
+  outfile->Printf("\t<q|mu_e|p>*             %11.8lf \t %11.8lf \t %11.8lf\n",
           rt_x,rt_y,rt_z);
 
   /* Use (w2 - w1) for rotational strengths */
@@ -247,10 +247,10 @@ void ex_rotational_strength(struct TD_Params *S, struct TD_Params *U, struct XTD
   /* Fill in XTD Data */
   xtd_data->RS_velocity = rs;
 
-  psi::fprintf(outfile,"\n");
-  psi::fprintf(outfile,"\tRotational Strength (au)                 %11.8lf\n",rs);
-  psi::fprintf(outfile,"\tRotational Strength (10^-40 esu^2 cm^2)  %11.8lf\n",rs*_au2cgs);
-  fflush(outfile);
+  outfile->Printf("\n");
+  outfile->Printf("\tRotational Strength (au)                 %11.8lf\n",rs);
+  outfile->Printf("\tRotational Strength (10^-40 esu^2 cm^2)  %11.8lf\n",rs*_au2cgs);
+  
 
   return;
 }
