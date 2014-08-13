@@ -116,10 +116,10 @@ parser.add_argument('--with-max-am-eri',
 # Plugins
 pluginsgroup = parser.add_mutually_exclusive_group()
 pluginsgroup.add_argument('--with-plugins',
-                    action="store_false",
+                    action="store_true",
                     help='Compile with support for pluginss.')
 pluginsgroup.add_argument('--without-plugins',
-                    action="store_true",
+                    action="store_false",
                     help='Compile without support for plugins.')
 # Prefix
 parser.add_argument('--prefix',
@@ -205,22 +205,32 @@ cmakeflags['PREFIX'] = args.prefix
 # MAX-AM-ERI
 cmakeflags['MAX_AM_ERI'] = args.with_max_am_eri
 # CXX/F77 FLAGS
+cmakeflags['CXXFLAGS'] = ['']
+cmakeflags['F77FLAGS'] = ['']
 if args.without_opt:
-    cmakeflags['CXXFLAGS'] = ["-O0"]
-    cmakeflags['F77FLAGS'] = ["-O0"]
+    cmakeflags['CXXFLAGS'].append("-O0")
+    cmakeflags['F77FLAGS'].append("-O0")
 else:
-    cmakeflags['CXXFLAGS'] = ["-O2"]
-    cmakeflags['F77FLAGS'] = ["-O2"]
+    cmakeflags['CXXFLAGS'].append("-O2")
+    cmakeflags['F77FLAGS'].append("-O2")
 
 if args.with_debug:
     cmakeflags['CXXFLAGS'].append("-g")
     cmakeflags['F77FLAGS'].append("-g")
+
 if args.with_erd:
-    cmakeflags['ERD']=["TRUE"]
+    cmakeflags['USEERD']=["TRUE"]
+
+#For some reason making plugins is false if we are making them
+if args.with_plugins :
+    cmakeflags['CXXFLAGS'].append("-fPIC")
+    cmakeflags['F77FLAGS'].append("-fPIC")
+
 if args.with_cxxflags != blankstring:
     cmakeflags['CXXFLAGS'].append(args.with_cxxflags)
 if args.with_f77flags != blankstring:
     cmakeflags['F77FLAGS'].append(args.with_f77flags)
+
 # LDFLAGS
 if args.with_ldflags != blankstring:
     cmakeflags['LDFLAGS'] = [args.with_ldflags]

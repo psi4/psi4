@@ -1,0 +1,389 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.6 [en] (WinNT; I) [Netscape]">
+<!-- DO NOT EDIT:  this is a cleared public file -->
+</head>
+<body bgcolor="#FFF8DC" link="#0000EE" vlink="#551A8B">
+
+<center>
+<h3>
+Exclusive Access File Library</h3></center>
+An exclusive access file is a file which is generated and/or read by a
+single process of a distributed parallel application. Files are not shared
+between different processes. The&nbsp; library is an abstract high-performance
+file system which provides a common interface for a variety of architecture
+specific parallel storage systems.&nbsp; The library also makes available
+features like asynchronous input and output to Fortran.&nbsp; EAF's syntax
+is similar to the standard Unix C file operations, differences indicate
+new semantics or extended features available through EAF.
+<br>
+<hr ALIGN=LEFT SIZE=1 NOSHADE WIDTH="100%">
+<p><a NAME="OP"></a><font size=+2>EAF_Open</font>
+<p><b>Description:</b>
+<ul>Open a file.</ul>
+<b>Prototype:</b>
+<ul>
+<pre>integer EAF_Open(fname, type, fh)</pre>
+
+<ul>
+<pre>character *(*) fname</pre>
+
+<pre>integer type</pre>
+
+<pre>integer fd</pre>
+</ul>
+</ul>
+<b>Parameters:</b>
+<ul><tt>fname</tt>
+<ul>Character string of a globally unique filename (path may be fully qualified)</ul>
+<tt>type</tt>
+<ul>Read write permissions. Legal values are EAF_W, EAF_R, and EAF_RW</ul>
+fh
+<ul>File descriptor (handle).</ul>
+</ul>
+<b>Returns:</b>
+<ul>0 or error code</ul>
+
+<hr ALIGN=LEFT SIZE="6">
+<p><a NAME="WR"></a><font size=+2>EAF_Write</font>
+<p><b>Description:</b>
+<ul>Synchronously write to the file specified by the file handle</ul>
+<b>Prototype:</b>
+<ul>
+<pre>integer EAF_Write(fh, offset, buf, bytes)</pre>
+
+<ul>
+<pre>integer fh</pre>
+
+<pre>double offset</pre>
+
+<pre>_______ buf</pre>
+
+<pre>double bytes</pre>
+</ul>
+</ul>
+<b>Parameters:</b>
+<ul><tt>fh</tt>
+<ul>File Handle offset Absolute offset, in bytes, to start writing at</ul>
+<tt>buf</tt>
+<ul>Scalar or array of data</ul>
+<tt>bytes</tt>
+<ul>Size of buffer in bytes</ul>
+</ul>
+<b>Returns:</b>
+<ul>0 or error code if an error occured</ul>
+
+<hr ALIGN=LEFT SIZE="6">
+<p><a NAME="AW"></a><font size=+2>EAF_AWrite</font>
+<p><b>Description:</b>
+<ul>Asynchronously write to the file specified by the file handle, and
+return a handle to the asynchronous operation.
+<p>If there are more than MAX_AIO_REQ asynchronous requests (reading and/or
+writing) pending, the operation is handled in a synchronous fashion and
+returns a <b>CHEMIO_DONE</b> handle.
+<p>On architectures where asynchronous I/O operations are not supported,
+all requests are handled synchronously, returning a <b>CHEMIO_DONE</b>
+handle.</ul>
+<b>Prototype:</b>
+<ul>
+<pre>integer EAF_AWrite(fh, offset, buf, bytes, req_id)</pre>
+
+<ul>
+<pre>integer fh</pre>
+
+<pre>double offset</pre>
+
+<pre>_______
+&nbsp;&nbsp;&nbsp; buf</pre>
+
+<pre>double bytes</pre>
+
+<pre>integer req_id</pre>
+</ul>
+</ul>
+<b>Parameters:</b>
+<ul><tt>fh</tt>
+<ul>File Handle</ul>
+<tt>offset</tt>
+<ul>Absolute offset, in bytes, to start writing at</ul>
+<tt>buf</tt>
+<ul>Scalar or array of data</ul>
+<tt>bytes</tt>
+<ul>Size of buffer, in bytes</ul>
+<tt>req_id</tt>
+<ul>Handle of asynchronous operation</ul>
+</ul>
+<b>Returns:</b>
+<ul>0 or error code if an error occured</ul>
+
+<hr ALIGN=LEFT SIZE="6">
+<p><a NAME="RD"></a><font size=+2>EAF_Read</font>
+<p><b>Description:</b>
+<ul>Synchronously read from the file specified by the file handle</ul>
+<b>Prototype:</b>
+<ul>
+<pre>integer EAF_Read(fh, offset, buf, bytes)</pre>
+
+<ul>
+<pre>integer fh</pre>
+
+<pre>double offset</pre>
+
+<pre>_______
+&nbsp;&nbsp;&nbsp; buf</pre>
+
+<pre>double bytes</pre>
+
+<pre>integer req_id</pre>
+</ul>
+</ul>
+<b>Parameters:</b>
+<ul><tt>fh</tt>
+<ul>File Handle</ul>
+<tt>offset</tt>
+<ul>Absolute offset, in bytes, to start writing at</ul>
+<tt>buf</tt>
+<ul>Scalar or array of data</ul>
+<tt>bytes</tt>
+<ul>Size of buffer, in bytes</ul>
+<b>Returns:</b>
+<ul>0, or error code if an error occured</ul>
+</ul>
+
+<hr ALIGN=LEFT SIZE="6">
+<p><a NAME="AR"></a><font size=+2>EAF_ARead</font>
+<p><b>Description:</b>
+<ul>Asynchronously read from the file specified by the file handle, and
+return a handle to the asynchronous operation.
+<p>If there are more than MAX_AIO_REQ asynchronous requests (reading and/or
+writing) pending, the operation is handled in a synchronous fashion and
+returns a <b>EAF_DONE</b> handle.
+<p>On architectures where asynchronous I/O operations are not supported,
+all requests are handled synchronously, returning a <b>EAF_DONE</b> handle.</ul>
+<b>Prototype:</b>
+<ul>
+<pre>integer EAF_ARead(fh, offset, buf,bytes, req_id)</pre>
+
+<ul>
+<pre>integer fh</pre>
+
+<pre>double offset</pre>
+
+<pre>_______
+&nbsp;&nbsp;&nbsp; buf</pre>
+
+<pre>double bytes</pre>
+
+<pre>integer req_id</pre>
+</ul>
+</ul>
+<b>Parameters:</b>
+<ul><tt>fh</tt>
+<ul>File Handle</ul>
+<tt>offset</tt>
+<ul>Absolute offset, in bytes, to start reading from</ul>
+<tt>buf</tt>
+<ul>Scalar or array of data</ul>
+<tt>bytes</tt>
+<ul>Size of buffer, in bytes</ul>
+<tt>req_id</tt>
+<ul>Handle of asynchronous operation</ul>
+</ul>
+<b>Returns:</b>
+<ul>0 if succeeded, or error code if an error occured</ul>
+
+<hr ALIGN=LEFT SIZE="6">
+<p><a NAME="PR"></a><font size=+2>EAF_Probe</font>
+<p><b>Description:</b>
+<ul>Determine if an asynchronous request has completed or is pending.</ul>
+<b>Prototype:</b>
+<ul>
+<pre>integer EAF_Probe(id, status)</pre>
+
+<ul>
+<pre>integer id</pre>
+
+<pre>integer status</pre>
+</ul>
+</ul>
+<b>Parameters:</b>
+<ul><tt>id</tt>
+<ul>Handle of asynchronous request</ul>
+<tt>status</tt> Pending or completed status argument</ul>
+<b>Returns:</b>
+<ul>0 if probe succeeded, else returns error code .
+<p><b>status</b> returns 0 if the asynchronous operation is complete, or
+1 otherwise.
+<p>If the asynchronous request is complete, <b>id</b> is invalidated.</ul>
+
+<hr ALIGN=LEFT SIZE="6">
+<p><a NAME="WA"></a><font size=+2>EAF_Wait</font>
+<p><b>Description:</b>
+<ul>Wait for the completion of the asynchronous request associated with
+id</ul>
+<b>Prototype:</b>
+<ul>
+<pre>integer EAF_Wait(id)</pre>
+
+<ul>
+<pre>integer id</pre>
+</ul>
+</ul>
+<b>Parameters:</b>
+<ul><tt>id</tt>
+<ul>Handle of asynchronous request</ul>
+</ul>
+<b>Returns:</b>
+<ul>0 if EAF is able to wait for completion, else returns error code.
+<p><b>id</b> is invalidated.</ul>
+
+<hr ALIGN=LEFT SIZE="6">
+<p><a NAME="CL"></a><font size=+2>EAF_Close</font>
+<p><b>Description:</b>
+<ul>Close a file</ul>
+<b>Prototype:</b>
+<ul>
+<pre>integer EAF_Close(fh)</pre>
+
+<ul>
+<pre>integer fh</pre>
+</ul>
+</ul>
+<b>Parameters:</b>
+<ul><tt>fh</tt>
+<ul>File Handle</ul>
+</ul>
+<b>Returns:</b>
+<ul>0 if the file was closed, else returns error code.</ul>
+
+<hr ALIGN=LEFT SIZE="6">
+<p><a NAME="DL"></a><font size=+2>EAF_Delete</font>
+<p><b>Description:</b>
+<ul>Delete a file</ul>
+<b>Prototype:</b>
+<ul>
+<pre>integer EAF_Delete(fname)</pre>
+
+<ul>
+<pre>character*(*) fname</pre>
+</ul>
+</ul>
+<b>Parameters:</b>
+<ul><tt>fname</tt>
+<ul>File name</ul>
+</ul>
+<b>Returns:</b>
+<ul>0 if the file was deleted, else returns error code.</ul>
+
+<hr ALIGN=LEFT SIZE="6">
+<p><a NAME="LN"></a><font size=+2>EAF_Length</font>
+<p><b>Description:</b>
+<ul>Determine the length of a file</ul>
+<b>Prototype:</b>
+<ul>
+<pre>double EAF_Length(fh)</pre>
+
+<ul>
+<pre>integer fh</pre>
+</ul>
+</ul>
+<b>Parameters:</b>
+<ul><tt>fh</tt>
+<ul>File Handle</ul>
+</ul>
+<b>Returns:</b>
+<ul>file length in bytes</ul>
+
+<hr ALIGN=LEFT SIZE="6">
+<p><a NAME="EF"></a><font size=+2>EAF_Eof</font>
+<p><b>Description:</b>
+<ul>Determines if the enod of file was reached</ul>
+<b>Prototype:</b>
+<ul>
+<pre>logical EAF_Eof(ierr)</pre>
+
+<ul>
+<pre>integer ierr</pre>
+</ul>
+</ul>
+<b>Parameters:</b>
+<ul><tt>ierr</tt>
+<ul>error code</ul>
+</ul>
+<b>Returns:</b>
+<ul>true if the end of file was reached, else returns false.
+<p>ierr=0 means success, otherwise an error.</ul>
+
+<hr ALIGN=LEFT SIZE="6">
+<p><a NAME="TR"></a><font size=+2>EAF_Truncate</font>
+<p><b>Description:</b>
+<ul>Truncate a file at specified offset</ul>
+<b>Prototype:</b>
+<ul>
+<pre>integer EAF_Close(fh, offset)</pre>
+
+<ul>
+<pre>integer fh</pre>
+
+<pre>double offset</pre>
+</ul>
+</ul>
+<b>Parameters:</b>
+<ul><tt>fh</tt>
+<ul>File Handle</ul>
+<tt>offset</tt>
+<ul>offset in bytes</ul>
+</ul>
+<b>Returns:</b>
+<ul>0 if the file was truncated, else returns error code.</ul>
+
+<hr ALIGN=LEFT SIZE="6">
+<p><a NAME="ST"></a><font size=+2>EAF_Stat</font>
+<p><b>Description:</b>
+<ul>Determine available disk space and type for a filesystem</ul>
+<b>Prototype:</b>
+<ul>
+<pre>integer EAF_Stat(fname, avail, fstype)</pre>
+
+<ul>
+<pre>character*(*) fname</pre>
+
+<pre>integer avail</pre>
+
+<pre>integer fstype</pre>
+</ul>
+</ul>
+<b>Parameters:</b>
+<ul><tt>fname</tt>
+<ul>File/directory name</ul>
+<tt>avail</tt>
+<ul>amount of available disk space in kilobytes</ul>
+<tt>fstype</tt>
+<ul>filesystem type (Unix/PIOFS/PFS/...)</ul>
+</ul>
+<b>Returns:</b>
+<ul>0 if success, else returns error code.</ul>
+
+<hr ALIGN=LEFT SIZE="6">
+<p><a NAME="ER"></a><font size=+2>EAF_Errmsg</font>
+<p><b>Description:</b>
+<ul>Prints to <i>stdout</i> an error message associated with error code</ul>
+<b>Prototype:</b>
+<ul>
+<pre>subroutine EAF_Errmsg(ierr)</pre>
+
+<ul>
+<pre>integer ierr</pre>
+</ul>
+</ul>
+<b>Parameters:</b>
+<ul><tt>ierr</tt>
+<ul>error code returned from other EAF routines</ul>
+</ul>
+<b>Returns:</b>
+<ul>nothing</ul>
+
+</body>
+</html>

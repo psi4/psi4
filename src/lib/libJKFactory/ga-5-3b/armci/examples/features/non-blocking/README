@@ -1,0 +1,35 @@
+Nonblocking operations initiate a communication call and then return control
+to the application. The user who wishes to exploit nonblocking communication
+as a technique for latency hiding by overlapping communication with
+computation implicitly assumes that progress in communication can be made in a
+purely computational phase of the program execution when no communication
+calls are made.
+
+All the non-blocking transfer functions are prototyped to work as transfers
+with both "explicit" and "implicit handle".  It stores important information
+about the initiated data transfer. The descriptor is implemented as an
+abstract data type.  This is motivated by a simpler implementation so that a
+data transfer descriptor can be stored and managed in the application rather
+in the ARMCI library space. If a NULL value is passed to the argument
+representing a  handle (thus representing "implicit handle"), the function
+does an implicit handle non-blocking transfer. A request data structure
+embedded in the handle should not be copied in the application.  Upon
+completion of the data transfer, handle can be reused.  A handle can be used
+to represent multiple operations of the same type (i.e., all puts or all
+gets). Such handle is an aggregate handle. Underneath, ARMCI combines multiple
+requests and processes them as a single message (actually by calling
+ARMCI_PutV/GetV/AccV). An explict handle should be initialized using the
+following macro, before it is used in any non-blocking operation.  It is
+initialized as follows:
+
+- ARMCI_INIT_HANDLE(armci_hdl_t* nb_handle)
+
+  Nonblocking operations in ARMCI allow user ot initiate a one-sided call and
+  then return control to the user program. The data transfer is completed
+  locally by calling a wait operation. Waiting on a nonblocking put operation
+  assures was injected into the network and the user buffer can be now reused.
+   
+  Both in case of blocking and nonblocking store operations, to access the
+  modified data safely from other nodes programmer has to call an ARMCI_Fence
+  call first. ARMCI_Fence completes data transfers on the remote side.  Unlike
+  the blocking operation, the nonblocking operations are NOT ordered.

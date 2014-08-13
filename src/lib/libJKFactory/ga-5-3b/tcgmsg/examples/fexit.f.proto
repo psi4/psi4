@@ -1,0 +1,13 @@
+      subroutine fexit
+IF ARDENT
+c     Fortran returns a non-zero status unless we STOP, which
+c     produces the irritating FORTRAN STOP message, or we
+c     explicitly call exit
+      call exit(0)
+ELSE
+ENDIF
+      end
+IF HPUX HPUXNOEXT IBM IBMNOEXT
+      subroutine flush(iunit)
+      end
+ENDIF

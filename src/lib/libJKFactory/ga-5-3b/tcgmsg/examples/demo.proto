@@ -1,0 +1,130 @@
+#!/bin/csh
+
+set path = (../ipcv4.0 $path)
+
+echo  "                 Example Message Passing Programs"
+echo  "                 --------------------------------"
+echo  ""
+
+IF IPSC
+if (! -e template.p)  make template.p
+
+# Get cube size etc.
+
+echo -n 'Input options for parallel (default = -w -t 4 -C tcgmsg) '
+set cube="$<"
+if ("$cube" == "") set cube = '-w -t 4 -C tcgmsg'
+echo " "
+ELSEIF DELTA
+# Get mesh size for the Delta
+
+echo -n 'Input desired submesh with no spaces (default = 4,4) '
+set mesh="$<"
+if ("$mesh" == "") set mesh = "4,4"
+echo " "
+ELSE
+# Find/generate template PROCGRP file
+
+if (! -e template.p) then
+  echo "$0 : template.p not found. A default using this host only will be made."
+  echo "$0 : ... add extra hosts and processes as desired. "
+
+  make template.p
+endif
+ENDIF
+
+# Check no. of arguments
+
+if ($#argv != 1) then
+  echo "$0 : a single argument is required"
+  echo "usage: $0 scf|md|mc|jacobi|grid"
+  exit 1
+endif
+
+# Jump to desired example
+
+set ARGS = " "
+
+switch ("$1")
+  case "scf":
+    goto SCF
+    breaksw
+
+  case "grid"
+    goto GRID
+    breaksw
+
+  case "md":
+  case "mc":
+  case "jacobi":
+    set PROGRAM = "$1"
+    goto RUNIT
+    breaksw
+
+  default:
+    echo "usage: $0 scf|md|mc|jacobi|grid"
+    exit 1
+endsw
+
+# For GRID find out how big a grid
+
+GRID:
+echo -n 'Input arguments for grid program '
+set ARGS="$<"
+set PROGRAM = grid
+goto RUNIT
+
+# For SCF find out how many basis functions
+
+SCF:
+getnbfn:
+echo -n 'Input no. of basis functions to use (15, 30, 60) '
+set nbfn="$<"
+if ( ("$nbfn" != 15) && ("$nbfn" != 30) && ("$nbfn" != 60) ) goto getnbfn
+echo  ""
+if ($nbfn == 60) then
+  echo 'Sixty basis functions can take a long time ... be patient'
+  echo  ""
+endif
+set PROGRAM = scf$nbfn
+goto RUNIT
+
+
+
+RUNIT:
+
+IF DELTA
+echo " "
+echo "Run $PROGRAM on the mesh ($mesh)"
+echo " "
+
+# Actually run the sucker ... assumes can use rcp and rsh to delta1
+
+echo rcp $PROGRAM delta1:
+rcp $PROGRAM delta1:
+echo rsh delta1 mexec "-t\(${mesh}\)  -f '$PROGRAM $ARGS'"
+rsh delta1 mexec "-t\(${mesh}\)  -f '$PROGRAM $ARGS'"
+
+ELSE
+
+# Generate the actual PROCGRP file from the template and print out
+# summary of it
+
+sed "s/PROGRAM/$PROGRAM/" < template.p > {$PROGRAM}.p
+
+IF IPSC
+echo "time parallel $cube $PROGRAM"
+time parallel $cube $PROGRAM
+ELSE
+
+echo ""
+echo 'The following hosts/processes will be used:'
+echo ' '
+awk 'NF==5 {printf("%25s ... %d processes\n",$2,$3)}' < {$PROGRAM}.p
+echo ""
+
+echo time parallel $PROGRAM $ARGS
+echo ""
+time parallel $PROGRAM $ARGS
+ENDIF
+ENDIF

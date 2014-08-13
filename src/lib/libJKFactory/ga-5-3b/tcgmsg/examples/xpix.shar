@@ -1,0 +1,609 @@
+
+# This is a shell archive.  Remove anything before this line, then
+# unpack it by saving it in a file and typing "sh file".  (Files
+# unpacked will be owned by you and have default permissions.)
+#
+# This archive contains:
+# check.bitmap makefile xpix.c
+
+echo x - check.bitmap
+sed -e 's/^X//' > "check.bitmap" << '//E*O*F check.bitmap//'
+X#define check_width 8
+X#define check_height 8
+Xstatic char check_bits[] = {
+X   0x40, 0x20, 0x20, 0x10, 0x10, 0x09, 0x0a, 0x04};
+//E*O*F check.bitmap//
+
+echo x - makefile
+sed -e 's/^X//' > "makefile" << '//E*O*F makefile//'
+X#
+X CFLAGS = -O4 -DSUN -dalign -I/msrc/apps/X11R5/include
+X  XLIBS = -L/msrc/apps/X11R5/lib -lXaw -lXmu -lXt -lX11 -lXau -lXdmcp -lXext
+X
+X#SUN R4
+X#          XLIBS = -lXaw -lXmu -lXt -lX11 -lXau -lXdmcp -lXext -lXinput
+X
+Xxpix:	xpix.o
+X	cc $(CFLAGS) -o xpix xpix.o $(XLIBS) -lm
+//E*O*F makefile//
+
+echo x - xpix.c
+sed -e 's/^X//' > "xpix.c" << '//E*O*F xpix.c//'
+X#include <sys/types.h>
+X#include <netinet/in.h>
+X#include <stdio.h>
+X#include <string.h>
+X
+X#include "check.bitmap"
+X
+X#include <X11/Xlib.h>
+X#include <X11/Xutil.h>
+X#include <X11/StringDefs.h>
+X#include <X11/Intrinsic.h>
+X#include <X11/IntrinsicP.h>
+X#include <X11/Shell.h>
+X#include <X11/ShellP.h>
+X#include <X11/Xaw/Scrollbar.h>
+X#include <X11/Xaw/Form.h>
+X#include <X11/Xaw/Command.h>
+X#include <X11/Xaw/Label.h>
+X#include <X11/Xaw/MenuButton.h>
+X#include <X11/Xaw/SimpleMenu.h>
+X#include <X11/Xaw/Sme.h>
+X#include <X11/Xaw/SmeBSB.h>
+X
+Xextern char *malloc();
+X
+X/* Globals needed for display etc. */
+X
+Xstatic  Widget top_level_widget, box_widget, file_menu_button, start_button,
+X               canvas_widget, title_widget, grid_data_widget,
+X               scroll_widget, interval_widget, file_menu;
+X#define n_file_menu_entries 3
+Xstatic  String file_menu_entries[] = {"Tail ","Cycle ","Quit"};
+Xstatic  Widget file_menu_widgets[n_file_menu_entries];
+Xstatic  Pixmap check_mark;
+Xstatic  Arg arg[25]; 
+Xstatic  Display *display;
+Xstatic  Window window;
+Xstatic  int screen, depth;
+Xstatic  Visual *visual;
+Xstatic  XtIntervalId timer;
+Xstatic  XImage *image;
+Xstatic  u_char *pict;
+Xstatic  GC gc;
+Xstatic  char title[80];
+Xstatic  char grid_data[80];
+Xstatic  char interval_string[10];
+X
+Xstatic  long first_time = True; /* Used to set scroll bar on first expose */
+Xstatic  long interval_max = 2000;
+Xstatic  long interval = 500;   /* 0.5s between exposures by default */
+X
+Xstatic  int tail_mode = False; /* By default cycle thru frames
+X				  instead of tailing a file */
+X
+X#define TCG_MAX(a,b) (((a)>(b)) ? (a) : (b))
+X#define TCG_MIN(a,b) (((a)<(b)) ? (a) : (b))
+X
+X#define MAX_COL 64
+Xstatic u_char cmap[MAX_COL];
+X
+X
+Xstatic int n_grid = 0;       /* The number of the current grid */
+Xstatic int grid_size;        /* The size of the current grid */
+Xstatic int max_grid_size=-1; /* Size of the largest grid */
+X
+X#define PICT_SIZE  max_grid_size
+X
+Xstatic  u_char *grid;
+Xstatic  int working = False;
+X
+Xvoid Error(string, integer)
+X     char *string;
+X     int integer;
+X{
+X  (void) fflush(stdout);
+X  (void) fprintf(stderr,"\n\nError was called.\n");
+X  (void) fprintf(stderr,string);
+X  (void) fprintf(stderr," %d (%#x).\n",integer,integer);
+X  exit(1);
+X}
+X
+X/*ARGSUSED*/
+Xvoid FileMenuCallback(w, pane_num, data)
+X     Widget w;
+X     int pane_num;
+X     caddr_t data;
+X{
+X  switch (pane_num) {
+X  case 0:      /* Tail mode */
+X    tail_mode = True;
+X    XtSetArg(arg[0], XtNrightBitmap, check_mark);  /* Check tail */
+X    XtSetValues(file_menu_widgets[0], arg, 1);
+X    XtSetArg(arg[0], XtNrightBitmap, NULL);        /* Un-check cycle */
+X    XtSetValues(file_menu_widgets[1], arg, 1);
+X    break;
+X
+X  case 1:      /* Cycle mode */
+X    tail_mode = False;
+X    XtSetArg(arg[0], XtNrightBitmap, check_mark);  /* Check cycle */
+X    XtSetValues(file_menu_widgets[1], arg, 1);
+X    XtSetArg(arg[0], XtNrightBitmap, NULL);        /* Un-check tail */
+X    XtSetValues(file_menu_widgets[0], arg, 1);
+X    break;
+X
+X  case 2:      /* Quit */
+X    exit(0);
+X    break;
+X
+X  default:
+X    Error("Unknown menu item", pane_num);
+X  }
+X}
+X
+Xint GetNextGrid(grid)
+X     u_char *grid;
+X{
+X  int n, junk, nread;
+X  u_char *temp;
+X
+X  if (fread(&grid_size, sizeof(int), 1, stdin) != 1) {
+X    clearerr(stdin);
+X
+X    if (tail_mode) {
+X      /* In this mode just wait for next time out and try again then */
+X      return False;
+X    }
+X    else {
+X      /* Cycling ... retry at the front of the file */
+X      n_grid = 0;
+X      fseek(stdin, 0, 0);
+X      (void) fread(&junk, sizeof(int), 1, stdin);  /* Ignore first word */
+X      
+X      if (fread(&grid_size, sizeof(int), 1, stdin) != 1) {
+X	(void) fprintf(stderr, 
+X		       "GetNextGrid: Failed to read first grid size\n");
+X	return False;
+X      }
+X    }
+X  }
+X
+X  grid_size = ntohl(grid_size);  /* Convert to machine format */
+X
+X  /* Have read the grid size so there must be a grid on the way */
+X
+X  n = grid_size*grid_size;
+X  temp = grid;
+X
+X  while(n) {
+X    nread = fread(temp, 1, n, stdin);
+X    if (!nread) {
+X      clearerr(stdin);
+X      sleep(1);    /* Don't be too agressive */
+X    }
+X    temp += nread;
+X    n -= nread;
+X  }
+X  n_grid++;
+X  return True;
+X}
+X
+Xvoid DrawGrid(grid)
+X     u_char *grid;
+X{
+X  register int scale = max_grid_size/grid_size;
+X  register int i,j,k,l,npix,index;
+X  register u_char *from, *to, *tempk, *tempkl, value;
+X
+X  from = grid; to = pict;   /* For clarity and convenience */
+X  
+X  if (scale > 1) {
+X    for (i=0; i<grid_size; i++)
+X      for (j=0; j<grid_size; j++) {
+X	to = pict + (i*max_grid_size + j)*scale;
+X
+X	index = *from++;
+X	value = cmap[TCG_MIN(index,MAX_COL)];
+X	
+X	for (k=0, tempk=to; k<scale; k++, tempk+=max_grid_size)
+X	  for (l=0, tempkl=tempk; l<scale; l++, tempkl++)
+X	    *tempkl = value;
+X      }
+X  }
+X  else {
+X    npix = grid_size * grid_size;
+X    while (npix--) {
+X      index = *from++;
+X      *to++ = cmap[TCG_MIN(index,MAX_COL)];
+X    }
+X  }
+X
+X  XPutImage(display, window, gc, image, 0, 0, 0, 0, 
+X	    image->width, image->height);
+X  (void) sprintf(grid_data, "Grid %d (%d x %d)",
+X		 n_grid, grid_size, grid_size);
+X  
+X  XtSetArg(arg[0], XtNlabel, grid_data);   /* Reset the grid data */
+X  XtSetValues(grid_data_widget,arg,1);
+X  XFlush(display);
+X}
+X
+Xvoid DisplayIntervalValue()
+X{
+X  (void) sprintf(interval_string, "%4d ms", interval);
+X  XtSetArg(arg[0], XtNlabel, interval_string);
+X  XtSetValues(interval_widget,arg,1);
+X}
+X
+X/*ARGSUSED*/
+Xvoid ScrollProc(scrollbar, data, position)
+X     Widget scrollbar;
+X     caddr_t data;
+X     caddr_t position;
+X/*
+X  Called when the left or right buttons are used to step the
+X  scrollbar left or right. We have the responsibility of
+X  moving the scrollbar.
+X*/
+X{
+X  Dimension length;
+X  float fraction, shown;
+X
+X  /* Get the scrollbar length and move the scroll bar */
+X
+X  XtSetArg(arg[0], XtNlength, &length);
+X  XtGetValues(scrollbar, arg, 1);
+X  fraction = ((int) position)/ (double) length;
+X
+X  interval -= fraction*0.05*interval_max;   
+X  interval = TCG_MIN(interval, interval_max);
+X  interval = TCG_MAX(interval, 1);
+X
+X  fraction = (float) interval/ (float) interval_max;
+X  shown = -1.0;
+X
+X  DisplayIntervalValue();
+X  XawScrollbarSetThumb(scrollbar, fraction, shown);
+X}
+X
+X/*ARGSUSED*/
+Xvoid JumpProc(scrollbar, data, fraction_ptr)
+X     Widget scrollbar;
+X     caddr_t data;
+X     caddr_t fraction_ptr;
+X/*
+X  Called when the middle button is used to drag to 
+X  the scrollbar. The scrollbar is moved for us.
+X*/
+X{
+X  float fraction = *(float *) fraction_ptr;
+X
+X  interval = fraction*interval_max;
+X  interval = TCG_MIN(interval, interval_max);
+X  interval = TCG_MAX(interval, 1);
+X
+X  DisplayIntervalValue();
+X}
+X
+X/*ARGSUSED*/
+Xvoid Exposed(widget, data, event)
+X     Widget widget;
+X     caddr_t data;
+X     XEvent *event;
+X{
+X  /* Now we are exposed we can draw ... only if we have a grid! */
+X
+X  if (first_time) {
+X    /* Cannot seem to set this before now ? */
+X    ScrollProc(scroll_widget, NULL, 0);
+X    first_time = False;
+X  }
+X
+X  if (n_grid)
+X    DrawGrid(grid);
+X}  
+X
+X/*ARGSUSED*/
+Xvoid TimeOutCallback(data)
+X     caddr_t data;
+X{
+X  /* If there's another grid available draw it */
+X
+X  if (GetNextGrid(grid))
+X    DrawGrid(grid);
+X  
+X  /* Always restore the call back */
+X
+X  timer = XtAddTimeOut(interval, TimeOutCallback, NULL);
+X
+X}  
+X
+X/*ARGSUSED*/
+Xvoid StartStop(widget, data, event)
+X     Widget widget;
+X     caddr_t data;
+X     XEvent *event;
+X{
+X  /* Toggle propagation of display */
+X
+X  if (working) {
+X    XtRemoveTimeOut(timer);
+X    working = False;
+X    XtSetArg(arg[0], XtNlabel, "Start");   /* Reset button label */
+X    XtSetValues(start_button,arg,1);
+X    XFlush(display);
+X  }
+X  else {
+X    XtSetArg(arg[0], XtNlabel, "Stop");   /* Reset button label */
+X    XtSetValues(start_button,arg,1);
+X    timer = XtAddTimeOut(interval, TimeOutCallback, NULL);
+X    working = True;
+X    XFlush(display);
+X  }
+X}  
+X
+Xvoid HSVtoRGB(h, s, v, r, g, b)
+X     double h, s, v, *r, *g, *b;
+X/*
+X  hue (0-360), s&v (0-1), r&g&b (0-1)
+X*/
+X{
+X  int ih;
+X  double rh, x, y, z;
+X
+X  /* Zero saturation means gray */
+X
+X  if (s < 0.0001) {
+X    *r = v; *g = v; *b = v;
+X    return;
+X  }
+X
+X  /* Put hue in [0,6) */
+X
+X  if (h > 359.999)
+X    h = 0.0;
+X  else
+X    h = h/60.0;
+X
+X  ih = h; rh = h - ih;     /* Integer and fractional parts */
+X
+X  x = v*(1.0 - s);
+X  y = v*(1.0-s*rh);
+X  z = v*(1.0-s*(1.0-rh));
+X
+X  switch (ih) {
+X  case 0:
+X    *r = v; *g = z; *b = x; break;
+X  case 1:
+X    *r = y; *g = v; *b = x; break;
+X  case 2:
+X    *r = x; *g = v; *b = z; break;
+X  case 3:
+X    *r = x; *g = y; *b = v; break;
+X  case 4:
+X    *r = z; *g = x; *b = v; break;
+X  case 5:
+X    *r = v; *g = x; *b = y; break;
+X  default:
+X    Error("HLStoRGB: invalid hue", ih);
+X  }
+X}
+X
+Xvoid Setcmap()
+X/*
+X  Make the color map ... scheme base on linear interpolation of hsv.
+X*/
+X{
+X  int i;
+X  XColor color;
+X  Colormap colormap;
+X  double scale = 1.0 / ((double) (MAX_COL-1));
+X  double hue, saturation, value, red, green, blue;
+X
+X  colormap = DefaultColormap(display, screen);
+X
+X  for (i=0; i<MAX_COL; i++) {
+X
+X    saturation = scale * i;
+X    hue = 360.0 * saturation;
+X    value = 1.0;
+X
+X    HSVtoRGB(hue, saturation, value, &red, &green, &blue);
+X
+X    color.red   = (short) (red   * 65535.0);
+X    color.green = (short) (green * 65535.0);
+X    color.blue  = (short) (blue  * 65535.0);
+X
+X    if (XAllocColor(display, colormap, &color) == 0)
+X      Error("couldn't assign color",i);
+X
+X    cmap[i] = color.pixel;
+X/*
+X    (void) printf("Colour %d red=%x, green=%x, blue=%x, pixel=%x\n",
+X		  i, color.red, color.green, color.blue, color.pixel);
+X*/
+X  }
+X
+X  /* Unused */
+X  /* Get rgb color from ascii name */
+X  /*    if (XParseColor(display, colormap, colors[i], &color) == 0)
+X	Error("Setcmap: error parsing color number ",i); */
+X
+X}
+X
+Xint main(argc, argv)
+X     unsigned int argc;
+X     char **argv;
+X{
+X  int n;
+X  Dimension frame_size;
+X
+X  /* First input is the MAXIMUM grid size ... can't do anything
+X     without this */
+X
+X  if (fread(&max_grid_size, sizeof(int), 1, stdin) != 1)
+X    Error("Failed to get max_grid_size", -1);
+X
+X  max_grid_size = ntohl(max_grid_size);  /* Convert to machine format */
+X
+X  frame_size = TCG_MAX(max_grid_size, 256);
+X
+X  /* Create top level shell widget */
+X  
+X  top_level_widget = XtInitialize("toplevel", "TopLevel",
+X				  NULL, 0, &argc, argv);
+X
+X  /* Create form widget to hold everything else */
+X
+X  n = 0;
+X  box_widget = XtCreateManagedWidget("box", formWidgetClass, 
+X				     top_level_widget, arg, n);
+X
+X  /* Create the label to hold the title */
+X
+X  (void) strcpy(title, "2-D Grid Display");
+X  n = 0;
+X  XtSetArg(arg[n], XtNx, 10); n++;
+X  XtSetArg(arg[n], XtNy, 10); n++;
+X  XtSetArg(arg[n], XtNwidth, frame_size); n++;
+X  XtSetArg(arg[n], XtNlabel, title); n++;
+X  XtSetArg(arg[n], XtNborderWidth, (Dimension) 0); n++;
+X  title_widget = XtCreateManagedWidget("title", labelWidgetClass,
+X				       box_widget, arg, n);
+X
+X  /* Create the label to hold the grid data */
+X
+X  (void) strcpy(grid_data, " ");
+X  n = 0;
+X  XtSetArg(arg[n], XtNvertDistance, 10); n++;
+X  XtSetArg(arg[n], XtNfromVert, title_widget); n++;
+X  XtSetArg(arg[n], XtNjustify, XtJustifyLeft); n++;
+X  XtSetArg(arg[n], XtNwidth, frame_size); n++;
+X  XtSetArg(arg[n], XtNlabel, " "); n++;
+X  grid_data_widget = XtCreateManagedWidget("grid data", labelWidgetClass,
+X					   box_widget, arg, n);
+X
+X  /* Create the file menu button and the menu ... also a bit
+X     further down make and add the check mark */
+X
+X  n = 0;
+X  XtSetArg(arg[n], XtNvertDistance, 10); n++;
+X  XtSetArg(arg[n], XtNfromVert, grid_data_widget); n++;
+X  XtSetArg(arg[n], XtNlabel, "File"); n++;
+X  XtSetArg(arg[n], XtNmenuName, "file menu"); n++;
+X  XtSetArg(arg[n], XtNshapeStyle, XmuShapeOval); n++;
+X  file_menu_button = XtCreateManagedWidget("file", menuButtonWidgetClass,
+X				      box_widget, arg, n);
+X  file_menu = XtCreatePopupShell("file menu", simpleMenuWidgetClass,
+X				 file_menu_button, NULL, 0);
+X
+X  for (n=0; n<n_file_menu_entries; n++) {
+X    String item = file_menu_entries[n];
+X    file_menu_widgets[n] = XtCreateManagedWidget(item, smeBSBObjectClass, 
+X					      file_menu, NULL, 0);
+X    XtAddCallback(file_menu_widgets[n], XtNcallback,
+X		  FileMenuCallback, (caddr_t) n);
+X  }
+X
+X  /* Create the Start/Stop command button */
+X
+X  n = 0;
+X  XtSetArg(arg[n], XtNvertDistance, 10); n++;
+X  XtSetArg(arg[n], XtNfromVert, grid_data_widget); n++;
+X  XtSetArg(arg[n], XtNhorizDistance, 10); n++;
+X  XtSetArg(arg[n], XtNfromHoriz, file_menu_button); n++;
+X  XtSetArg(arg[n], XtNlabel, "Start"); n++;
+X  XtSetArg(arg[n], XtNshapeStyle, XmuShapeOval); n++;
+X  start_button = XtCreateManagedWidget("start/stop", commandWidgetClass,
+X				       box_widget, arg, n);
+X  XtAddCallback(start_button, XtNcallback, StartStop, NULL);
+X
+X  /* Create the scroll bar for the interval */
+X
+X  n = 0;
+X  XtSetArg(arg[n], XtNvertDistance, 10); n++;
+X  XtSetArg(arg[n], XtNfromVert, grid_data_widget); n++;
+X  XtSetArg(arg[n], XtNhorizDistance, 10); n++;
+X  XtSetArg(arg[n], XtNfromHoriz, start_button); n++;
+X  XtSetArg(arg[n], XtNorientation, XtorientHorizontal); n++;
+X  XtSetArg(arg[n], XtNlength, 100); n++;
+X  XtSetArg(arg[n], XtNthickness, 15); n++;
+X  scroll_widget = XtCreateManagedWidget("scroll", scrollbarWidgetClass,
+X					box_widget, arg, n);
+X  XtAddCallback(scroll_widget, XtNscrollProc, ScrollProc, NULL);
+X  XtAddCallback(scroll_widget, XtNjumpProc, JumpProc, NULL);
+X
+X  /* Create the label widget which displays the interval value
+X     associated with the scrollbar. */
+X
+X  n = 0;
+X  (void) sprintf(interval_string, "%4d ms", interval);
+X  XtSetArg(arg[n], XtNvertDistance, 10); n++;
+X  XtSetArg(arg[n], XtNfromVert, grid_data_widget); n++;
+X  XtSetArg(arg[n], XtNhorizDistance, 10); n++;
+X  XtSetArg(arg[n], XtNfromHoriz, scroll_widget); n++;
+X  XtSetArg(arg[n], XtNjustify, XtJustifyRight); n++;
+X  XtSetArg(arg[n], XtNlabel, interval_string); n++;
+X  XtSetArg(arg[n], XtNborderWidth, (Dimension) 0); n++;
+X  interval_widget = XtCreateManagedWidget("interval", labelWidgetClass,
+X					   box_widget, arg, n);
+X  
+X  /* Now add the actual canvas ... PICT_SIZE square pixels*/
+X
+X  n=0;
+X  XtSetArg(arg[n],XtNheight, PICT_SIZE); n++;
+X  XtSetArg(arg[n],XtNwidth,  PICT_SIZE); n++;
+X  XtSetArg(arg[n], XtNvertDistance, 10); n++;
+X  XtSetArg(arg[n], XtNfromVert, file_menu_button); n++;
+X  canvas_widget = XtCreateManagedWidget("canvas", compositeWidgetClass,
+X					box_widget, arg, n);
+X
+X  /* Add callback for exposure */
+X
+X  XtAddEventHandler(canvas_widget,ExposureMask,False,Exposed,NULL);
+X
+X  /* Realize everything */
+X
+X  XtRealizeWidget(top_level_widget);
+X
+X  /* Set up the drawing environment */
+X
+X  display = XtDisplay(canvas_widget);
+X  window = XtWindow(canvas_widget); 
+X  screen = DefaultScreen(display);
+X  visual = DefaultVisual(display, screen);
+X  depth = DisplayPlanes(display, screen);
+X  (void) printf("depth = %d\n",depth);
+X  gc = XCreateGC(display, window, 0, (XGCValues *) NULL); 
+X  
+X  Setcmap();
+X
+X  /* Make the pixmap for the check mark for a selected menu item
+X     and mark the cycle item as selected */
+X
+X  check_mark = XCreateBitmapFromData(display, window, 
+X				     check_bits, check_width, check_height);
+X  n=0;
+X  XtSetArg(arg[n], XtNrightBitmap, check_mark); n++;
+X  XtSetValues(file_menu_widgets[1], arg, n);
+X
+X  /* Make image to match the size of our canvas .. PICT_SIZExPICT_SIZE */
+X
+X  pict  = (u_char *) malloc(PICT_SIZE*PICT_SIZE);
+X  image = XCreateImage(display, visual, depth, ZPixmap, 0,
+X		       pict, PICT_SIZE, PICT_SIZE, 8, 0);
+X
+X  /* Make the byte array which will hold the frames */
+X
+X  grid = (u_char *) malloc(max_grid_size*max_grid_size);
+X
+X  /* Enter the event loop */
+X
+X  XtMainLoop();
+X
+X  return 0;  /* Never actually does this */
+X}
+//E*O*F xpix.c//
+
+exit 0

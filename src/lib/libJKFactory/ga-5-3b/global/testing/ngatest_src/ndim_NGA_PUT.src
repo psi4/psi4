@@ -1,0 +1,87 @@
+      subroutine m4_func_NGA_PUT(m4_test_type, m4_ndim)
+      implicit none
+#include "mafdecls.fh"
+#include "global.fh"
+c     
+      integer n,m
+      integer ndim
+      parameter (n = m4_n)
+      parameter (m = (m4_n**m4_ndim)/100)
+      parameter (ndim = m4_ndim)
+      m4_data_type a(substr(m4_array, 1, eval(m4_ndim*2-1)))
+      m4_data_type b(substr(m4_array, 1, eval(m4_ndim*2-1)))
+      integer lo(ndim),hi(ndim),dims(ndim),ld(ndim)
+      integer g_a
+      integer chunk(ndim)
+      integer i, total, loop
+      integer lop(ndim),hip(ndim)
+      integer elems, count_elems
+      integer nproc, me
+      integer proc
+      logical status
+c     
+      nproc = ga_nnodes()
+      me    = ga_nodeid()
+c     
+c---------------------- initialize the GA -----------------------
+c     initialize the chunk, dims, ld, and calculate the number 
+c     of elements
+      total=1
+      do i = 1,ndim
+         chunk(i) = 0
+         dims(i) = n
+         ld(i) = n
+         total = total * dims(i)
+      enddo
+c
+c***  Create global arrays
+      if (.not. nga_create(m4_MT, ndim, dims, 'a', chunk, g_a))
+     $     call ga_error(' ga_create failed ',1)
+c     
+      call ga_sync()
+c
+c------------------------------- NGA_PUT ----------------------------
+      m4_print_info(nga_put)
+c
+      proc =  nproc-1 -me       ! access other process memory 
+      call nga_distribution(g_a, proc, lo,hi)
+      elems = count_elems(lo,hi,ndim)
+      call m4_util_init_array(m4_test_type)(a,total)
+c
+      call ga_sync()
+      if(elems.gt.0) then
+         call nga_put(g_a,lo,hi,
+     $        a(substr(m4_lo_all, 1, eval(m4_ndim*6-1))),ld)
+         do loop = 1, MAXLOOP 
+            call random_range(lo,hi,lop,hip,ndim)
+            if(me.eq.0 .and. Mod(loop,10).eq.0)then
+               call print_range(loop,lop,hip,ndim)
+            endif
+            call nga_put(g_a,lop,hip,
+     $           a(substr(m4_lop_all, 1, eval(m4_ndim*7-1))),ld)
+         enddo
+         
+         call nga_get(g_a,lo,hi,
+     $        b(substr(m4_lo_all, 1, eval(m4_ndim*6-1))),ld)
+c
+         call m4_util_compare_patches(m4_test_type)(0d0,total,
+     $        a,lo,hi,ndim,dims,total,b,lo,hi,ndim,dims)
+      else
+c     so that the random_range can be call the same number of times
+c     in other words, drand can generate the same number for the
+c     collective operations
+         do loop=1, MAXLOOP
+            call random_range(lo,hi,lop,hip,ndim)
+         enddo
+      endif
+c
+      call ga_sync()
+      if(me.eq.0)then
+         print *, 'OK'
+         print *, ' '
+         call ffflush(6)
+      endif
+c---------------------------
+c     
+      status= ga_destroy(g_a)
+      end

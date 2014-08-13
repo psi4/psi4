@@ -1,0 +1,14 @@
+This directory contains a prototype of the Disk Resident Arrays library.
+
+You need GNU make (version > 3.68) to build this software.
+
+To build test program, from the top-level type:  
+
+    make pario/dra/test.x
+
+Documentation is located in disk_arrays.doc and implementation notes in
+Notes.doc.
+
+Bug report, comments, questions:
+
+    hpctools@pnl.gov

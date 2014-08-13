@@ -1,0 +1,150 @@
+c     fill array with random numbers
+      subroutine m4_util_fill_array(m4_test_type)(a,n,val)
+      implicit none
+      integer n
+      m4_data_type a(n),val
+      integer i
+      do i= 1, n
+         a(i) = val
+      enddo
+      end       
+
+c     initialize the array with random numbers
+      subroutine m4_util_init_array(m4_test_type)(a,n)
+      implicit none
+      integer n
+      m4_data_type a(n)
+      double precision drand
+      integer i
+      do i= 1, n
+         a(i) = m4_rand(i)
+      enddo
+      end       
+
+c     if the elements do match, stop the program
+      subroutine m4_util_compare_patches(m4_test_type)(eps,
+     $     total1,array1,lo1,hi1,ndim1,dims1,
+     $     total2,array2,lo2,hi2,ndim2,dims2)
+      implicit none
+      double precision eps
+      integer ndim1,ndim2,total1,total2
+      m4_data_type array1(total1),array2(total2)
+      integer lo1(ndim1),hi1(ndim1),lo2(ndim2),hi2(ndim2)
+      integer dims1(ndim1),dims2(ndim2)
+      integer next_index
+      integer index1,index2
+      double precision diff,maxval
+c     
+c     initialize index1 and index2, searching from zeros
+      index1 = 0
+      index2 = 0
+c     compare corresponding elements in each array
+      index1 = next_index(index1,total1,ndim1,lo1,hi1,dims1)
+      index2 = next_index(index2,total2,ndim2,lo2,hi2,dims2)
+      do while((index1.ne.0).and.(index2.ne.0))
+         diff = abs(array1(index1) - array2(index2))
+         maxval = max(abs(array1(index1)), abs(array2(index2)))
+         if((maxval.eq.0).or.(maxval.lt.eps)) maxval = 1
+         if(eps .lt. abs(diff)/maxval) then
+            print *, 'Error: Comparison failed!'
+            print *, array1(index1), array2(index2)
+            call ga_error('bye',0)
+         endif
+         index1 = next_index(index1,total1,ndim1,lo1,hi1,dims1)
+         index2 = next_index(index2,total2,ndim2,lo2,hi2,dims2)
+      enddo
+c
+c     at this point both index1 and index2 should be 0
+      if((index1.ne.0).or.(index2.ne.0)) then
+         print *, 'Error: # of elems dont match'
+         call ga_error('bye',0)
+      endif
+c
+      end
+
+c     do patch = patch + buf * alpha
+      subroutine m4_util_scale_patch(m4_test_type)(total,
+     $     alpha,arr1,lo1,hi1,ndim1,dims1,beta,arr2,lo2,hi2,ndim2,dims2)
+      implicit none
+      integer ndim1,ndim2,total
+      integer lo1(ndim1),hi1(ndim1),lo2(ndim2),hi2(ndim2)
+      integer dims1(ndim1),dims2(ndim2)
+      m4_data_type arr1(total),arr2(total)
+      m4_data_type alpha, beta
+      integer next_index
+      integer ind1, ind2
+c
+      ind1 = 0
+      ind2 = 0
+      ind1 = next_index(ind1,total,ndim1,lo1,hi1,dims1)
+      ind2 = next_index(ind2,total,ndim2,lo2,hi2,dims2)
+c
+      do while(ind1.ne.0)
+         arr1(ind1) = arr1(ind1)*alpha + arr2(ind2)*beta
+         ind1 = next_index(ind1,total,ndim1,lo1,hi1,dims1)
+         ind2 = next_index(ind2,total,ndim2,lo2,hi2,dims2)
+      enddo
+c
+      end
+
+c     transpose an array
+      subroutine m4_util_transpose(m4_test_type)(a1,a2,total,ndim,dims)
+      implicit none
+      integer ndim,total
+      integer dims(ndim)
+      m4_data_type a1(total),a2(total)
+      integer i, j
+      integer idx
+      integer bv(m4_max_dim), bunit(m4_max_dim)
+c
+      bv(1)=0
+      bunit(1)=1
+      do i=2, ndim
+         bv(i) = 0
+         bunit(i) = bunit(i-1) * dims(i-1)
+      enddo
+c
+      do i=1, total
+         idx = 1
+         do j=1, ndim
+            idx = idx + bv(j) * bunit(ndim-j+1)
+            if(mod(i,bunit(j)).eq.0) bv(j) = bv(j) + 1
+            if(bv(j).ge.dims(j)) bv(j) = 0
+         enddo
+c         print *, 'i = ',i, 'idx = ',idx
+         a2(idx) = a1(i)
+      enddo
+c
+      do i=1, total
+         a1(i) = a2(i)
+      enddo
+c
+      end
+
+c     do patch = patch + buf * alpha
+      m4_data_type function m4_util_dot_patch(m4_test_type)(
+     $     total,arr1,lo1,hi1,ndim1,dims1,arr2,lo2,hi2,ndim2,dims2)
+      implicit none
+      integer ndim1,ndim2,total
+      integer lo1(ndim1),hi1(ndim1),lo2(ndim2),hi2(ndim2)
+      integer dims1(ndim1),dims2(ndim2)
+      m4_data_type arr1(total),arr2(total)
+      integer next_index
+      integer ind1, ind2
+      m4_data_type res
+c
+      ind1 = 0
+      ind2 = 0
+      res = 0
+      ind1 = next_index(ind1,total,ndim1,lo1,hi1,dims1)
+      ind2 = next_index(ind2,total,ndim2,lo2,hi2,dims2)
+c
+      do while(ind1.ne.0)
+         res = res + arr1(ind1)*arr2(ind2)
+         ind1 = next_index(ind1,total,ndim1,lo1,hi1,dims1)
+         ind2 = next_index(ind2,total,ndim2,lo2,hi2,dims2)
+      enddo
+c
+      m4_util_dot_patch(m4_test_type) = res
+c
+      end

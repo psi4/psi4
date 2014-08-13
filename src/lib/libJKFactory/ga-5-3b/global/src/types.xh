@@ -1,0 +1,7 @@
+TYPE_CASE(C_INT,int,reg)
+TYPE_CASE(C_LONG,long,reg)
+TYPE_CASE(C_LONGLONG,long long,reg)
+TYPE_CASE(C_FLOAT,float,reg)
+TYPE_CASE(C_DBL,double,reg)
+TYPE_CASE(C_SCPL,SingleComplex,cpl)
+TYPE_CASE(C_DCPL,DoubleComplex,cpl)

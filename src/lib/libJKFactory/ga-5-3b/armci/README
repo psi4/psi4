@@ -1,0 +1,374 @@
+Aggregate Remote Memory Copy Interface (ARMCI)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+DISCLAIMER
+==========
+
+This material was prepared as an account of work sponsored by an
+agency of the United States Government.  Neither the United States
+Government nor the United States Department of Energy, nor Battelle,
+nor any of their employees, MAKES ANY WARRANTY, EXPRESS OR IMPLIED,
+OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY,
+COMPLETENESS, OR USEFULNESS OF ANY INFORMATION, APPARATUS, PRODUCT,
+SOFTWARE, OR PROCESS DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT
+INFRINGE PRIVATELY OWNED RIGHTS.
+
+ACKNOWLEDGMENT
+==============
+
+This software and its documentation were produced with United States
+Government support under Contract Number DE-AC06-76RLO-1830 awarded
+by the United States Department of Energy. The United States
+Government retains a paid-up non-exclusive, irrevocable worldwide
+license to reproduce, prepare derivative works, perform publicly and
+display publicly by or for the US Government, including the right to
+distribute to other US Government contractors.
+
+FOR THE IMPATIENT
+=================
+
+The command::
+
+    ./configure && make && make install
+
+should compile the static ARMCI library (libarmci.a) to use sockets and
+install headers and libraries to /usr/local/include and /usr/local/lib,
+respectively.
+
+Please refer to the INSTALL file for generic build instructions.  That is a
+good place to start if you are new to using "configure; make; make install"
+types of builds.  Detailed instructions are covered later in this file.
+
+QUESTIONS/HELP/SUPPORT/BUG-REPORT
+=================================
+
+email: hpctools@pnl.gov
+
+website: http://www.emsl.pnl.gov/docs/parsoft/armci
+
+ABOUT THIS SOFTWARE
+===================
+
+This document lists the platforms supported by ARMCI and operating system
+configuration/settings for these platform. Additional limited documentation is
+available at ./doc/armci.pdf. Test programs test.c and perf.c are in ./testing
+directory. SPLASH LU benchmark it in ./examples directory.
+
+Index
+-----
+1.  Supported Platforms
+2.  General Settings
+3.  Building ARMCI on SGI.
+4.  Building ARMCI on IBM.
+5.  Building ARMCI on CRAY.
+6.  Building ARMCI on other platforms
+7.  Platform specific issues/tuning
+
+Supported Platforms
+-------------------
+- leadership class machines: Cray XE6, Cray XTs, IBM Blue Gene/L, IBM Blue
+  Gene /P
+- shared-memory systems: SUN Solaris, SGI, SGI Altix, IBM, Linux, DEC, HP,
+  Cray SV1, Cray X1, and Windows NT/95/2000
+- distributed-memory systems: Cray T3E, IBM SP(TARGET=LAPI), FUJITSU VX/VPP.
+- clusters of workstations (InfiniBand, sockets)
+
+configure options
+-----------------
+
+ARMCI should be run with MPI. PVM and TCGMSG message-passing libraries are no
+longer supported.  ARMCI has been tested with MPI vendor implementations in
+addition to MPICH and WMPI(NT).  ARMCI has been tested with TCGMSG by
+developers of the NWChem package on many platforms. GNU make is REQUIRED on
+Unix. For command line build on Windows, microsoft nmake instead of GNU make
+should be used.
+
+Historically, the TARGET environment variable needed to be set.  This variable
+is now detected automatically by configure.  It also detects whether the
+system is a 64-bit platform.
+
+Historically, the MSG_COMMS environment variable needed to be set.  This
+variable is obsolete.  Instead, options are passed to configure.  Read on for
+details.
+
+There are many options available when configuring ARMCI.  Although configure
+can be safely run within this distributions' root folder, we recommend
+performing an out-of-source (aka VPATH) build.  This will cleanly separate the
+generated Makefiles and compiled object files and libraries from the source
+code.  This will allow, for example, one build using sockets versus another
+build using OpenIB for the communication layer to use the same source tree
+e.g.::
+
+    mkdir bld_mpi_sockets && cd bld_mpi_sockets && ../configure
+    mkdir bld_mpi_openib  && cd bld_mpi_openib  && ../configure --with-openib
+
+Regardless of your choice to perform a VPATH build, the following should
+hopefully elucidate the myriad options to configure.  Only the options
+requiring additional details are documented here.  ./configure --help will
+certainly list more options in addition to limited documentation.
+
+For most of the external software packages an optional argument is allowed
+(represented as ARG below.) **ARG can be omitted** or can be one or more
+whitespace-separated directories, linker or preprocessor directives.  For
+example::
+
+    --with-mpi="/path/to/mpi -lmylib -I/mydir"
+    --with-mpi=/path/to/mpi/base
+    --with-mpi=-lmpich
+
+The messaging libraries supported include MPI.  If you omit their respective
+--with-* option, MPI is the default.
+
+--with-mpi=ARG          Select MPI as the messaging library (default). If you
+                        omit ARG, we attempt to locate the MPI compiler
+                        wrappers. If you supply anything for ARG, we will
+                        parse ARG as indicated above.
+
+The ARMCI_NETWORK environment variable is now also obsolete.  Instead use one
+of the following configure options.  Our ability to automatically locate
+required headers libraries is currently inadequate.  Therefore, you will
+likely need to specify the optional ARG pointing to the necessary directories
+and/or libraries. sockets is the default ARMCI network if nothing else is
+specified.
+
+--with-bgml=ARG         select armci network as IBM BG/L
+--with-cray-shmem=ARG   select armci network as Cray XT shmem
+--with-dcmf=ARG         select armci network as IBM BG/P Deep Computing
+                        Message Framework
+--with-lapi=ARG         select armci network as IBM LAPI
+--with-mpi-spawn=ARG    select armci network as MPI-2 dynamic process mgmt
+--with-openib=ARG       select armci network as InfiniBand OpenIB
+--with-portals=ARG      select armci network as Cray XT portals
+--with-sockets=ARG      select armci network as Ethernet TCP/IP (default)
+--enable-autodetect     attempt to locate ARMCI network besides sockets
+
+SOCKETS is the assumed default for clusters connected with Ethernet.  This
+protocol might also work on other networks however, the performance might be
+sub-optimal and on Myrinet it could even hang (GM does not work with fork and
+the standard version of ARMCI uses fork).
+
+Cross-Compilation Issues
+------------------------
+
+Certain platforms cross-compile from a login node for a compute node, or one
+might choose to cross-compile for other reasons. Cross-compiling requires the
+use of the --host option to configure which indicates to configure that certain
+run-time tests should not be executed. See INSTALL for details on use of the
+--host option.
+
+Two of our target platforms are known to require cross-compilation, Cray XT and
+IBM Blue Gene.
+
+Cray XT
++++++++
+
+It has been noted that configure still succeeds without the use of the --host
+flag.  If you experience problems without --host, we recommend::
+
+    configure --host=x86_64-unknown-linux-gnu
+
+And if that doesn't work (cross-compilation is not detected) you must then
+*force* cross-compilation using both --host and --build together::
+
+    configure --host=x86_64-unknown-linux-gnu --build=x86_64-unknown-linux-gnu
+
+BlueGene/P
+++++++++++
+
+Currently the only way to detect the BGP platform and compile correctly is to
+use::
+
+    configure --host=powerpc-bgp-linux
+
+The rest of the configure options apply as usual e.g. --with-dcmf in this case.
+
+Compiler Selection
+------------------
+
+Unless otherwise noted you can try to overwrite the default compiler names
+detected by configure by defining F77, CC, and CXX for Fortran (77), C, and C++
+compilers, respectively.  Or when using the MPI compilers MPIF77, MPICC, and
+MPICXX for MPI Fortran (77), C, and C++ compilers, respectively::
+
+    configure F77=f90 CC=gcc
+    configure MPIF77=mpif90 MPICC=mpicc
+
+Although you can change the compiler at make-time it will likely fail.  Many
+platform-specific compiler flags are detected at configure-time based on the
+compiler selection. If changing compilers, we recommend rerunning configure as
+above.
+
+After Configuration
+-------------------
+
+By this point we assume you have successfully run configure either from the
+base distribution directory or from a separate build directory (aka VPATH
+build.)  You are now ready to run 'make'.  You can optionally run parallel
+make using the "-j" option which significantly speeds up the build.  If using
+the MPI compiler wrappers, occasionally using "-j" will cause build failures
+because the MPI compiler wrapper creates a temporary symlink to the mpif.h
+header.  In that case, you won't be able to use the "-j" option.  Further, the
+influential environment variables used at configure-time can be overridden at
+make-time in case problems are encountered.  For example::
+
+    ./configure CFLAGS=-Wimplicit
+    ...
+    make CFLAGS="-Wimplicit -g -O0"
+
+One particularly influential make variable is "V" which controls the verbosity
+of the make output. This variable corresponds to the --dis/enable-silent-riles
+configure-time option, but I often prefer the make-time variable::
+
+    make V=0 (configure  --enable-silent-rules)
+    make V=1 (configure --disable-silent-rules)
+
+Test Programs
+-------------
+
+Running "make checkprogs" will build most test and example programs.  Note that
+not all tests are built -- some tests depend on certain features being
+detected or enabled during configure.  These programs are not intented to be
+examples of good ARMCI coding practices because they often include private
+headers.  However, they help us debug or time our ARMCI library.
+
+Test Suite
+++++++++++
+
+Running "make check" will build most test and example programs (See "make
+checkprogs" notes above) in addition to running the test suite.  The test suite
+runs both the serial and parallel tests.  The test suite must know how to
+launch the parallel tests via the MPIEXEC variable.  Please read your MPI
+flavor's documentation on how to launch.  For example, the following is the
+command to launch the test suite when compiled with OpenMPI::
+
+    make check MPIEXEC="mpiexec -np 4"
+
+All tests have a per-test log file containing the output of the test.  So if
+the test is testing/test.x, the log file would be testing/test.log.  The output
+of failed tests is collected in the top-level log summary test-suite.log.
+
+ANCIENT WISDOM
+==============
+
+Building on SGI
+---------------
+
+For running on SGI machines running the irix os, three target settings are
+available:
+
+- TARGET=SGI generates a MIPS-4 64-bit code with 32-bit address space when
+  compiling on any R8000 based machines and a 32 bit MPIS-2 code on any
+  non-R8000 machines.
+- Use TARGET=SGI64 For generating a 64 bit code with 64-bit address space.
+- TARGET=SGI_N32 generates a 32bit code with a 32bit address space.
+
+By default, SGI_N32 generates a MIPS3 code and SGI64 generates a MIPS4 code.
+
+There is a possibility of conflict between the SGI's implementation of MPI
+(but not others, MPICH for example) and ARMCI in their use of the SGI specific
+inter-processor communication facility called arena.
+
+Building on IBM
+---------------
+
+Running on IBM without LAPI
++++++++++++++++++++++++++++
+
+On IBM's running AIX, target can be set to IBM or IBM64 to run 32/64 bit
+versions of the code.
+
+Running on the IBM-SP
++++++++++++++++++++++
+
+TARGET on IBM-SP can be set to LAPI (LAPI64 for 64 bit object).  POE
+environment variable settings for the parallel environment PSSP 3.1:
+
+- ARMCI applications like any other LAPI-based codes must define
+  MP_MSG_API=lapi  or MP_MSG_API=mpi,lapi (when using ARMCI and MPI)
+- The LAPI-based implementation of ARMCI cannot be used on the very old SP-2
+  systems because LAPI did not support the TB2 switch used in those models.
+  If in doubt which switch you got use odmget command: odmget -q name=css0
+  CuDv
+- For AIX versions 4.3.1 and later, environment variable AIXTHREAD_SCOPE=S
+  must be set to assure correct operation of LAPI (IBM should  do it in PSSP
+  by default).
+- Under AIX 4.3.3 and later  an additional environment variable is
+  required(RT_GRQ=ON) to restore the original thread scheduling that LAPI
+  relies on.
+
+Building on CRAY
+----------------
+
+- TARGET environment variable is also used by cc on CRAY. It has to be set to
+  CRAY-SV1 on SV1, CRAY-YMP on YMP, CRAY-T3E on T3E. ARMCI on CRAY'S hence
+  uses the same values to this environment variable as cc requires.
+
+- On CRAY-T3E, ARMCI can be run with either of the CRAY Message Passing
+  Libraries(PVM and MPI). For more information on running with PVM look at
+  docs/README.PVM. If running with PVM, MSG_COMMS has to be set to PVM.
+
+Building on other platforms
+---------------------------
+
+On other platforms, only setting required is the TARGET environment
+environment variable. Optionally, MSG_COMMS and related environment can be set
+as described in the General Settings section.
+
+Platform specific issues/tuning
+-------------------------------
+
+The Linux kernel has traditionally fairly small limit for the shared memory
+segment size (SHMMAX). In kernels 2.2.x it is 32MB on Intel, 16MB on Sun
+Ultra, and 4MB on Alpha processors. There are two ways to increase this limit:
+
+- rebuild the kernel after changing SHMMAX in
+  /usr/src/linux/include/asm-i386/shmparam.h, for example, setting SHMMAX as
+  0x8000000 (128MB)
+- A system admin can increase the limit without rebuilding the kernel, for
+  example::
+
+    echo "134217728" >/proc/sys/kernel/shmmax 
+
+SUN
++++
+
+Solaris by default provides only 1MB limit for the largest shared memory
+segment. You need to increase this value to do any useful work with ARMCI.
+For example to make SHMMAX= 2GB, add either of the lines to /etc/system::
+
+    set shmsys:shminfo_shmmax=0x80000000 /* hexidecimal */
+    set shmsys:shminfo_shmmax=2147483648 /* decimal     */
+    
+After rebooting, you should be able to take advantage of the increased shared
+memory limits.
+
+Compaq/DEC
+++++++++++
+
+Tru64 is another example of an OS with a pitifully small size of the shared
+memory region limit. Here are instruction on how to modify shared memory max
+segment size to 256MB on  the Tru64 UNIX Version 4.0F:
+
+1. create a file called /etc/sysconfig.shmmax::
+
+    cat > /etc/sysconfig.shmmax << EOF ipc: shm-max = 268435456 EOF
+    
+   You can check if the file created is OK by typing::
+
+    /sbin/sysconfigdb -l -t /etc/sysconfig.shmmax
+
+2. Modify kernel values::
+
+    sysconfigdb -a -f /etc/sysconfig.shmmax ipc
+    
+3. Reboot
+4. To check new values::
+
+    /sbin/sysconfig -q ipc|egrep shm-max 
+
+HP-UX
++++++
+
+In most HP-UX/11 installations, the default limit  for the largest shared
+memory segment is 64MB. A system administrator should be able to.
+

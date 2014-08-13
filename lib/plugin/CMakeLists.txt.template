@@ -1,0 +1,17 @@
+#Sources for your plugin go here
+set(SRC @plugin@.cc )
+
+#This is where the library will truly live (don't move it)
+set(@plugin@HOME ${PROJECT_BINARY_DIR}/lib)
+
+#These commands make your plugin a shared library, tell Psi about it, declare
+#libplugin.a to be a dependency of your library (needed for linking correctly)
+#and finally make a symbolic link so we don't break the old plugin system
+add_library( @plugin@ SHARED ${SRC})
+set_target_properties( @plugin@ PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${@plugin@HOME})
+set(PLUGINS ${PLUGINS} lib@plugin@ PARENT_SCOPE)
+target_link_libraries(@plugin@ plugin)
+ADD_CUSTOM_COMMAND(
+   TARGET @plugin@ POST_BUILD
+   COMMAND ${CMAKE_COMMAND} -E create_symlink ${PROJECT_BINARY_DIR}/lib/lib@plugin@.so ${CMAKE_CURRENT_SOURCE_DIR}/@plugin@.so
+)

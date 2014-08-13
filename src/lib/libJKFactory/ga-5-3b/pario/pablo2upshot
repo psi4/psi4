@@ -1,0 +1,51 @@
+#!/bin/csh -f
+/home/aydt/pablo/bin/SDDFconverter << CONV_END
+Pablo.bin
+a
+pab.ascii
+n
+CONV_END
+./pabody
+/bin/rm -f pab.sort pab.upshot
+sort -n +5 pab.out > pab.sort
+set nevents=`wc pab.sort | awk '{print $1}'`
+set tfirst=`head -1 pab.sort | awk '{print $6}'`
+set tlast=`tail -1 pab.sort | awk '{print $6}'`
+
+cat > pab.upshot << END_HEADER
+-1 0 0 0 0 0 sddf
+-2 0 0  $nevents  0 0
+-3 0 0 1 0 0
+-4 0 0 1 0 0
+-5 0 0 10 0 0
+-6 0 0 0 0  $tfirst
+-7 0 0 0 0  $tlast
+-8 0 0 1 0 0
+-11 0 0 0 0 4294967295
+-13 0 700001 701001 0 0 blue: Native Open
+-13 0 700003 701003 0 0 blue: Native fopen
+-13 0 700005 701005 0 0 red: Native close
+-13 0 700007 701007 0 0 red: Native fclose
+-13 0 700009 701009 0 0 green: Native read
+-13 0 700011 701011 0 0 green: Native fread
+-13 0 700013 701013 0 0 yellow: Native lseek
+-13 0 700015 701015 0 0 yellow: Native fseek
+-13 0 700017 701017 0 0 magenta: Native write
+-13 0 700019 701019 0 0 magenta: Native fwrite
+-13 0 710000 711000 0 0 chocolate1: elio_write
+-13 0 710001 711001 0 0 chocolate4: elio_awrite
+-13 0 710002 711002 0 0 brown1: elio_read
+-13 0 710003 711003 0 0 brown4: elio_aread
+-13 0 710004 711004 0 0 LightSalmon1: elio_probe
+-13 0 710005 711005 0 0 LightSalmon4: elio_wait
+-13 0 710006 711006 0 0 coral1: elio_stat
+-13 0 710007 711007 0 0 coral4: elio_open
+-13 0 710009 711009 0 0 DeepPink1: elio_close
+-13 0 710010 711010 0 0 DeepPink4: elio_set_cb
+-13 0 710011 711011 0 0 HotPink1: elio_delete
+-13 0 710012 711012 0 0 HotPink4: elio_init
+END_HEADER
+
+cat pab.sort >> pab.upshot
+#/bin/rm -f pab.sort pab.out pab.ascii
+

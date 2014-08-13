@@ -1,0 +1,37 @@
+=============================================
+README for Global Arrays and ARMCI Benchmarks
+=============================================
+
+How to Build the Benchmarks
+---------------------------
+The Makefile assumes you have installed GA 5-1 or later which also installs
+the "ga-config" helper script. This script contains the various linker,
+compiler, and preprocessor flags used to build GA. You must specify the path
+to ga-config or else edit the Makefile to add the necessary flags manually.
+For example::
+
+    make GA_CONFIG=/path/to/ga/install/bin/ga-config
+    make CPPFLAGS=-I/path/to/ga/install/include LDFLAGS=-L/path/to/ga/install/lib LIBS=-lga
+
+It is *much* easier to use the installed ga-config script!
+
+Directory Contents
+------------------
+-armci_perf.c   ARMCI benchmark where proc 0 sequentially communicates with
+                the other 1..P procs
+-config.fh      a few necessary preprocessor symbols for Fortran
+-config.h       a few necessary preprocessor symbols for C
+-ga_perf.c      GA benchmark demonstrating the overhead added by the GA layer
+                compared to the "armci_perf.c" benchmark
+-ga_ptp.F       GA benchmark where all procs communicate
+-ga_shift.F     GA benchmark using a shift algorithm
+-LICENSE        legal information about these files
+-Makefile       makefile for building these benchmarks
+-mp3.fh         message passing init and termination symbols for Fortran
+-mp3.h          message passing init and termination symbols for C
+-README         this file
+-testutil.fh    contains a few Fortran declarations for extra functions
+
+How to Run the Benchmarks
+-------------------------
+TODO

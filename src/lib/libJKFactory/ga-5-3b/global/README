@@ -1,0 +1,75 @@
+GLOBAL ARRAYS LIBRARY
+~~~~~~~~~~~~~~~~~~~~~
+
+DEPENDENCIES ON OTHER SOFTWARE
+==============================
+
+- ARMCI - one-sided communication library used by GA as its run-time system
+  This s/w is new in release 3.0
+
+- MPI or TCGMSG: more or less extensive run-time support is required. For
+  example, a message-passing library is used on some platforms to
+  fork processes, implement broadcast, ga_dgop;
+
+- MA (memory allocator by Greg Thomas)
+
+- GA eigensolver, ga_diag, is a wrapper for the eigensolver from
+  PEIGS library; (Please contact George Fann <gi_fann@pnl.gov> about
+  PEIGS)
+
+- BLAS library is required for the eigensolver and ga_dgemm;
+
+- LAPACK library is required for the eigensolver;
+
+- MPI, SCALAPACK, PBBLAS, and BLACS libraries are required for
+  ga_lu_solve, ga_cholesky, ga_llt_solve, ga_spd_invert, ga_solve. If
+  you do not install these libs, the named operations will not be
+  available.
+
+BUILDING GA 
+===========
+Please refer to the README in the base distribution directory.
+
+TEST PROGRAMS
+=============
+Please refer to the README in the base distribution directory for details on
+running the GA test suite.
+
+TEST PROGRAM NOTES
+==================
+- Program testspd.x should work only with the ScaLAPACK and MPI.
+
+- Another example program that uses GA is called jacobi.x. The Jacobi
+  iterative method is used to solve a system of linear equations
+  generated in the solution process of a partial differential
+  equation by the finite differences method.
+
+- To run test programs with TCGMSG that creates the GA processes on
+  the shared memory and (network of) workstations; execute them you
+  should use 'parallel' program -- built in tcgmsg/ipcv4.0::
+
+    parallel testing/test.x
+
+  For a single processor execution 'parallel' is not required and the
+  program can be run as::
+            
+    testing/test.x
+
+  or under control of your favorite debugger. 
+
+  On MPP like T3D, IBM SP, and Intel machines, use appropriate system
+  command to specify the number of processors, load and run the
+  programs. For example, to run on four processors of the Cray T3D
+  use::
+
+    mppexec testing/test.x -npes 4
+
+DOCUMENTATION
+=============
+The documentation is located in doc/ and on the web at:
+
+    http://www.emsl.pnl.gov/docs/global.
+
+CONTACT
+=======
+For suggestions, comments and bug reports: hpctools@pnl.gov

@@ -1,0 +1,81 @@
+The GA Test Programs
+~~~~~~~~~~~~~~~~~~~~
+
+These programs can be built after the GA library is configure and compiled.
+To build C and Fortran programs type:
+
+    "make checkprogs"
+
+:test.x:      general test program for GA
+:patch.x:     tests GA patch operations
+:testsolve.x: tests linear equation solver based on LU factorization
+:testeig.x:   tests GA eigensolver, matrix multiply, and symmetrization
+:ndim.x:      Fortran test program for n-dim GA
+:perf.x:      tests performance of GA primitives: get, put, accumulate
+:testc.x:     C test program for GA
+:ntestc.x:    C test program for n-dim GA
+:ga-mpi.x:    C test program for GA that demonstrates the interface to MPI
+:mtest.x:     test program for matrix functions
+:testmult.x:  test program for GEMM functions (Eg:dgemm).
+:elempatch.x: test program for the element-wise functions 
+
+M4-based N-dim test program
+===========================
+
+The following are special steps required to configure and build source file 
+for testing of n-dim global arrays based on the M4 source files. 
+The full functionality test might take several hours to complete. Therefore
+you might want to limit the test to a subset of functionality supported.
+The configuration steps are:
+
+Edit the file ngatest.m4 (this step is optional if you want to test all):
+
+1.  Specify data type:
+
+    - To test Integer, set "m4_test_int" to "yes", otherwise, "no"
+    - To test Double Precision, set "m4_test_dbl" to "yes", otherwise, "no"
+    - To test Double Complex, set "m4_test_dcpl" to "yes", otherwise, "no"
+
+2.  Specify range of dimensions to test (upt 7 supported in GA Fortran API):
+
+    Example: to test from 2 to 4 dimensions, set "m4_dim_from" to 2 and
+    "m4_dim_to" to 4
+
+3.  Specify functions to test:
+
+    Functions that can be tested include:
+
+    - ga_fill         Set "m4_test_GA_FILL" to "yes" to test
+    - nga_get         Set "m4_test_NGA_GET" to "yes" to test
+    - nga_put         Set "m4_test_NGA_PUT" to "yes" to test
+    - nga_acc         Set "m4_test_NGA_ACC" to "yes" to test
+    - nga_scatter     Set "m4_test_NGA_SCATTER" to "yes" to test
+    - nga_gather      Set "m4_test_NGA_GATHER" to "yes" to test
+    - nga_fill_patch  Set "m4_test_NGA_FILL_PATCH" to "yes" to test
+    - nga_copy_patch  Set "m4_test_NGA_COPY_PATCH" to "yes" to test
+    - nga_scale_patch Set "m4_test_NGA_SCALE_PATCH" to "yes" to test
+    - nga_add_patch   Set "m4_test_NGA_ADD_PATCH" to "yes" to test
+    - nga_idot_patch  Set "m4_test_NGA_DOT_PATCH" to "yes" to test
+    - nga_ddot_patch  Set "m4_test_NGA_DOT_PATCH" to "yes" to test
+    - nga_zdot_patch  Set "m4_test_NGA_DOT_PATCH" to "yes" to test
+
+    Setting any variable to "no" will bypass testing the corresponding function
+
+To compile, type "make global/testing/ngatest.x" from the top-level.
+
+Source files: 
+
+- ngatest.m4
+- ngatest_src/ndim.src
+- ngatest_src/ndim_main.src
+- ngatest_src/ndim_GA_FILL.src
+- ngatest_src/ndim_NGA_GET.src
+- ngatest_src/ndim_NGA_PUT.src
+- ngatest_src/ndim_NGA_ACC.src
+- ngatest_src/ndim_NGA_SCATTER.src
+- ngatest_src/ndim_NGA_GATHER.src
+- ngatest_src/ndim_NGA_FILL_PATCH.src
+- ngatest_src/ndim_NGA_COPY_PATCH.src
+- ngatest_src/ndim_NGA_SCALE_PATCH.src
+- ngatest_src/ndim_NGA_ADD_PATCH.src 
+- ngatest_src/ndim_NGA_DOT_PATCH.src

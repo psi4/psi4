@@ -1,0 +1,45 @@
+This directory contains the source code for a simple lattice Boltzmann
+simulation of flow in a lid-driven square cavity. The algorithm used is
+described in BJ Palmer and DR Rector, Journal of Computational Physics, vol.
+161, pp. 1-20 (2000). The temperature has been set to a constant for this
+simulation, eliminating the need for the second distribution and an ideal gas
+has been used for equation of state. The output from the simulation is sent to
+the file bltz.gmv and can be viewed using the General Mesh Viewer program
+developed at Los Alamos National Laboratory. More information on this program
+can be obtained from the web page at:
+
+    http://www-xdiv.lanl.gov/XCM/gmv/GMVHome.html
+
+The global arrays used in the code are all declared in the file main.F and
+then passed by reference to the subroutines. The output file is created by the
+subroutine in printdat.F; if you are interested in writing your own output
+routine, you should consult this file. The size of the grid used for the
+simulation is set in the include file "common" using the variable NSIZE, the
+remaining system parameters are set in the subroutine in setup.F. The
+parameters are currently set to model a relatively low velocity flow and
+should take a couple of minutes to run on a modest number of processors.
+Performance will, of course, depend on the particular system.
+
+For those wishing to try some calculations at other conditions, some of the
+remaining parameters are:
+
+- xmax: the dimensions of the square cavity
+- viscosity: viscosity
+- delta_t: time increment
+- tmprtr0: temperature of fluid
+- rho0: initial uniform density of fluid in cavity
+- uxbc: velocity of lid
+
+The executable name is boltz.x
+
+The parameters are currently set to run at a Reynolds number of 128. A
+calculation at a much higher Reynolds number of 2560 can be run by changing
+the value of NSIZE to 4097 and resetting the following parameters:
+
+- viscosity: 0.05
+- delta_t: 0.1
+
+Note that the simulation will have to be run for a considerably longer time
+period before any significant flow patterns begin to develop, on the order of
+100000-200000 steps. This calculation also involves a much larger number of
+grid cells and requires a significant number of processors to run.

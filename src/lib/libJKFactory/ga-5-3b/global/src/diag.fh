@@ -1,0 +1,25 @@
+c
+c limit number of processors active in diagonalization according to
+c problem size:
+c   - first group are MPPs
+c   - second group are (multiprocessor) workstations
+c 
+#if defined(KSR)||defined(CRAY_T3D)||defined(NX)||defined(SP1)||defined(SP)||defined(LAPI)
+#   define SIZE1 200
+#   define SIZE2 400
+#   define SIZE3 800
+#   define SIZE4 2000
+#   define PROC1 4
+#   define PROC2 16
+#   define PROC3 64
+#   define PROC4 256
+#else
+#   define SIZE1 400
+#   define SIZE2 800
+#   define SIZE3 1200
+#   define SIZE4 2000
+#   define PROC1 4
+#   define PROC2 8
+#   define PROC3 12
+#   define PROC4 16
+#endif

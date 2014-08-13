@@ -1,0 +1,48 @@
+This is a converted version of the scf test code in the tcgmsg directory
+that solves the Hartree-Fock equations for a cluster of beryllium atoms.
+The main modifications are that this code is uses distributed data
+instead of replicated data and is based on the GA function calls instead
+of TCGMSG. The input is a simple XYZ format file of the form
+
+1 Number of beryllium atoms
+2 Blank line
+3 4 x y z
+4 4 x y z
+.
+.
+.
+
+Other parameters that control convergence etc. can be found in the cscf.h
+file. The two-electron Fock build does not make use of the 8-fold symmetry
+of the two-electron integrals. The default diagonalization routine makes
+use of a similarity transform so that only a standard eigenvalue problem
+needs to be solved. A direct solution using a generalized eigenvalue solver
+can be had by setting the USE_TRANSFORM compiler directive to 0 in the top
+of the scf.F file.
+
+A larger system containing 16 atoms has also been included in this
+directory. To run the larger problem, just copy the file be16.inpt to
+be.inpt and run the code.
+
+-------------------------------------------------------------------------------
+d3y186: 
+(1). C version file list
+1.cscc.h
+2.input.h
+3.input.c
+4.integ.h
+5.integ.c
+6.output.h
+7.output.c
+8.timer.h
+9.timer.c
+10.scf.c
+
+(2). remove all .F files after checking out from SVN
+
+(3). change the path for GA in the Makefile
+
+(4). use the command "module load pgi/10.6" to load pgcc
+     use the command "module load mpi/mvapich/1.1/pgi" to load mpi
+
+(5). You can compile your GA in Trinity by "gmake TARGET=LINUX64 USE_MPI=y ARMCI_NETWORK=OPENIB CC=pgcc FC=pgf90 LIBMPI="-lmpich -libumad" 2>&1 | tee make.log"

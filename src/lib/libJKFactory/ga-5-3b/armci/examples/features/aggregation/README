@@ -1,0 +1,72 @@
+Introduction
+============
+
+ARMCI has support for aggregating messages via its aggregate non-blocking
+handles.  Any ARMCI non-blocking handle can be explicitly made as an aggregate
+handle and all subsequent messages that use the same handle are aggregated and
+sent as a single message. The details of the implementation can be found in
+the cluster 2003 paper from the ARMCI publications website.
+
+Description
+============
+
+The implicit aggregation of data transfers is implemented using the
+generalized I/O vector operations available in ARMCI. This interface enables
+the representation of a data transfer as a combination of multiple sets of
+equally sized contiguous data segments. When the first call involving
+aggregate nonblocking handle is executed, the library starts building a vector
+descriptor stored in one of the preallocated internal buffers. The actual data
+transfer takes place when the user calls wait operation or the buffer storing
+the vector descriptor fills up. 
+
+Function Definitions
+====================
+
+ARMCI_SET_AGGREGATE_HANDLE (armci_hdl_t* handle)
+------------------------------------------------
+
+handle - Pointer to a desciptor associated with a particular non-blocking
+transfer.
+
+PURPOSE: Mark a handle as aggregate. This will allow ARMCI to combine
+nonblocking operations that use that particular handle and process them as a
+single operation. In the initial implementation only contiguous puts or gets
+could use aggregate handle. Specifying the same handle for a mix of put anmd
+get calls is not allowed i.e., only multiple put or only multiple get calls
+can use the same handle.
+
+ARMCI_UNSET_AGGREGATE_HANDLE (armci_hdl_t* handle)
+--------------------------------------------------
+
+handle - Pointer to a desciptor associated with a particular non-blocking
+transfer.
+
+PURPOSE: Clears a handle that has been marked as aggregate. 
+
+Sample Programs
+===============
+
+1. Sparse matrix-vector multiplication
+
+   Sparse matrix-vector multiplication is one of the common computational
+   kernels, for example in solving linear systems using conjugate gradient
+   method. It is described as Ax = b, where A is an nxn nonsingular sparse
+   matrix, b is an n-dimensional vector, and x is an n-dimensional vector of
+   unknowns. In this benchmark, one of the sparse matrices (Figure 8a) from
+   the Harwell-Boeing collection is used [9] to test the matrix-vector
+   multiplication. The sparse matrix size is 41092 and has 1683902 (~.1%)
+   nonzero elements.
+   
+   The experiments were conducted on the Linux cluster (dual node, 1GHz
+   Itanium-2, Myrinet-2000 interconnect) at PNNL. Sparse matrix-vector
+   multiplication was done with aggregation enabled and disabled. The sparse
+   matrix and the vector are distributed among processors. Instead of
+   gathering the entire vector, each process caches the vector elements
+   corresponding to the non-zero element columns of its locally owned part of
+   the matrix. When aggregation is enabled, all the get calls corresponding to
+   a single processor are aggregated into a single request, thus reducing the
+   overall latency and improving the data transfer rate.
+    
+   This sample program is in the sparse_matvecmul directory. There is an input
+   required for this program. The method to obtain the input is given in the
+   sparse_matvecmul directory in a README file

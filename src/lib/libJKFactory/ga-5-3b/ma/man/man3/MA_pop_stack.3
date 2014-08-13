@@ -1,0 +1,80 @@
+.TH MA_POP_STACK 3 "20 February 1997" "MA Release 1.8" "MA LIBRARY ROUTINES"
+.SH NAME
+MA_pop_stack -
+deallocate a stack block
+.SH "C SYNOPSIS"
+.nf
+#include "macdecls.h"
+
+Boolean MA_pop_stack(memhandle)
+    Integer     memhandle;      /* read-only */
+.fi
+.SH "FORTRAN SYNOPSIS"
+.nf
+#include "mafdecls.fh"
+
+logical function MA_pop_stack(memhandle)
+    integer     memhandle
+.fi
+.SH DESCRIPTION
+MA_pop_stack() deallocates the stack block corresponding to the handle
+.I memhandle
+(which was returned by MA_push_get() or MA_push_stack()
+when the block was allocated),
+which must be at the top of the stack
+(i.e., the stack block most recently allocated).
+.\" .SH USAGE
+.SH DIAGNOSTICS
+invalid memhandle: %d
+.in +0.5i
+.I memhandle
+is not a valid handle.
+.in
+invalid checksum for memhandle %d (name: '%s')
+.in +0.5i
+The block's computed checksum does not match its stored checksum.
+This indicates that the block has been corrupted
+by having its internal state overwritten.
+.in
+invalid guard(s) for memhandle %d (name: '%s')
+.in +0.5i
+This indicates that the block has been corrupted
+by being overwritten at one or both ends.
+The likely cause of this is an application indexing bug.
+.in
+memhandle %d (name: '%s') not in stack
+.in +0.5i
+The block is not currently allocated in the stack.
+.in
+memhandle %d (name: '%s') not top of stack
+.in +0.5i
+The block is currently allocated in the stack,
+but is not at the top of the stack.
+.in
+
+Other diagnostics are possible.
+If seen,
+they indicate corruption of the internal state of MA,
+caused by bugs in either MA or the application.
+.SH "RETURN VALUE"
+C: MA_TRUE upon success, MA_FALSE upon failure.
+.br
+FORTRAN: .true. upon success, .false. upon failure.
+.\" .SH NOTES
+.SH FILES
+.nf
+Include files: /msrc/proj/hpctools/ma/release/current/include
+Library:       /msrc/proj/hpctools/ma/release/current/lib/\fIplatform\fR/libma.a
+Man pages:     /msrc/proj/hpctools/ma/release/current/man/man3
+Source code:   /msrc/proj/hpctools/ma/release/current/tar/ma\fIrelease\fR.tar
+.fi
+.SH "SEE ALSO"
+.na
+MA(3),
+MA_push_get(3),
+MA_push_stack(3),
+MA_inquire_avail(3),
+MA_inquire_stack(3)
+.ad
+.SH AUTHOR
+Gregory S. Thomas, Pacific Northwest National Laboratory

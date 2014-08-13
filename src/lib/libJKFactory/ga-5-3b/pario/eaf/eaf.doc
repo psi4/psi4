@@ -1,0 +1,135 @@
+Here is the Fortran interface.  Below this is the C interface with
+a full description of each parameter.
+
+FORTRAN interface
+-----------------
+
+All functions return an integer error code with the value zero
+implying success, non-zero implying some error condition.  Offsets are
+doubles and an offset with a fractional component generates an error.
+
+The include file "eaf.fh" defines all of the functions along with
+EAF_R, EAF_W and EAF_rw.
+
+  integer function eaf_write(fd, offset, buf, bytes)
+  integer function eaf_read (fd, offset, buf, bytes)
+  integer function eaf_awrite(fd, offset, buf, bytes, req_id)
+  integer function eaf_aread (fd, offset, buf, bytes, req_id)
+  integer function eaf_wait(fd, req_id)
+  integer function eaf_probe(req_id, status)
+  integer function eaf_open(fname, type, fd)
+    [type can be one of EAF_R, EAF_RW, and EAF_W]
+  integer function eaf_close(fd)
+  integer function eaf_delete(fname)
+  integer function eaf_length(fd)
+  integer function eaf_truncate(fd, offset)
+  logical function eaf_eof(ierr)
+     Returns true if ierr corresponds to EOF
+  subroutine eaf_errmsg(ierr,message)
+     Returns a string interpretation of the error code, or 
+     an empty string (Fortran all blanks, C null first character)
+     if the error code is not recognized.
+  integer function eaf_stat(fname, avail, fstype)
+  subroutine eaf_print_stats(fd)
+
+
+C interface
+-----------
+
+
+int eaf_open(const char *fname, int type, int *fd)
+/*
+  Open the named file returning the EAF file descriptor in fd.
+  Return 0 on success, non-zero on failure
+  */
+
+void eaf_print_stats(int fd)
+/*
+  Print performance statistics for this file to standard output
+  */
+
+int eaf_close(int fd)
+/*
+  Close the EAF file and return 0 on success, non-zero on failure
+  */
+
+int eaf_write(int fd, eaf_off_t offset, const void *buf, size_t bytes)
+/*
+  Write the buffer to the file at the specified offset.
+  Return 0 on success, non-zero on failure
+  */
+
+int eaf_awrite(int fd, eaf_off_t offset, const void *buf, size_t bytes,
+	       int *req_id)
+/*
+  Initiate an asynchronous write of the buffer to the file at the
+  specified offset.  Return in *req_id the ID of the request for
+  subsequent use in eaf_wait/probe.  The buffer may not be reused until
+  the operation has completed.
+  Return 0 on success, non-zero on failure
+  */
+
+int eaf_read(int fd, eaf_off_t offset, void *buf, size_t bytes)
+/*
+  Read the buffer from the specified offset in the file.
+  Return 0 on success, non-zero on failure
+  */
+
+int eaf_aread(int fd, eaf_off_t offset, void *buf, size_t bytes, 
+	      int *req_id)
+/*
+  Initiate an asynchronous read of the buffer from the file at the
+  specified offset.  Return in *req_id the ID of the request for
+  subsequent use in eaf_wait/probe.  The buffer may not be reused until
+  the operation has completed.
+  Return 0 on success, non-zero on failure
+  */
+
+int eaf_wait(int fd, int req_id)
+/*
+  Wait for the I/O operation referred to by req_id to complete.
+  Return 0 on success, non-zero on failure
+  */
+
+int eaf_probe(int req_id, int *status)
+/*
+ *status returns 0 if the I/O operation reffered to by req_id
+  is complete, 1 otherwise. 
+  Return 0 on success, non-zero on failure.
+  */
+
+int eaf_delete(const char *fname)
+/*
+  Delete the named file.  If the delete succeeds, or the file
+  does not exist, return 0.  Otherwise return non-zero.
+  */
+
+int eaf_length(int fd, eaf_off_t *length)
+/*
+  Return in *length the length of the given file.  Reutrn 0 on 
+  success, non-zero on failure
+  */
+
+int eaf_stat(const char *path, int *avail_kb, char *fstype, int fslen)
+/*
+  Return in *avail_kb and *fstype the amount of free space (in Kb)
+  and filesystem type (currenly UFS, PFS, or PIOFS) of the filesystem
+  associated with path.  Path should be either a filename, or a directory
+  name ending in a slash (/).  fslen should specify the size of the
+  buffer pointed to by fstype.
+
+  Return 0 on success, non-zero on failure.
+  */
+
+int eaf_eof(int code)
+/*
+  Return 0 if code corresponds to EOF, or non-zero.
+  */
+
+void eaf_errmsg(int code, char *msg)
+/*
+  Return in msg (assumed to hold up to 80 characters)
+  a description of the error code obtained from an EAF call,
+  or an empty string if there is no such code
+  */
+

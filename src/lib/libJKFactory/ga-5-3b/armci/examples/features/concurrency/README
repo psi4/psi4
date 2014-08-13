@@ -1,0 +1,21 @@
+High-performance networks have developed significantly over the past several
+years.  Many of these networks are capable of remote direct memory access
+(RDMA) communication that involves movement of data between processor memories
+without memory copies or remote host processor involvement.
+
+Current high-speed networks deploy powerful communication processor(s) in the
+network interface card (NIC) to handle processing of multiple incoming and
+outgoing messages without interrupting the host processor. For example, the
+Quadrics Elan4 network interconnect can do two overlapping DMAs and allows
+multiple outstanding read/write transactions from and to the network
+interconnect.
+
+Switches used in the modern interconnects also have developed significantly in
+the last several years, facilitating multiple communication paths between
+network endpoints and hence roviding increased levels of concurrency and
+redundancy communication between network endpoints. As a result, the modern
+networks are very capable of handling simultaneous and concurrent data
+movements.
+
+ARMCI allows for its applications to utilize concurrency by its low-overhead
+implementation of one-sided calls

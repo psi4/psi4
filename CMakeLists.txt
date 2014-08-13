@@ -38,6 +38,7 @@ get_value(useroptLIBINT_MAX_AM  MAX_AM_ERI  5)
 set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${useroptLDFLAGS}")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${useroptCXX_FLAGS}")
 set (CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${useroptF77_FLAGS}")
+
 # This will be echoed at the end of configure, and also output to a file so the build can be replicated
 set(CONFIGURE_CMD "${CMAKE_COMMAND} ${PROJECT_SOURCE_DIR}")
 foreach(opt ${ALL_USEROPTS})
@@ -93,7 +94,11 @@ include(cmake/Restrict.cmake)
 test_restrict(restrict)
 
 if(CMAKE_Fortran_COMPILER)
-    set(HAVE_ERD 1)
+    if(DEFINED USEERD)
+       message("USEERD is set to ${USEERD}")
+       message("Building/Using LibERD instead of LibInts!!!!")
+       add_definitions(-DHAVE_ERD)
+    endif()
 endif()
 configure_file(include/psiconfig.h.cmake.in include/psiconfig.h)
 
@@ -251,11 +256,6 @@ file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
-#TODO: this variable should be started here, then appended to by each
-#subdirectory, this way new libraries can be added more naturally at the
-#level they are included at.  When that is done the defintion of the
-#executable should be moved up to this directory so that plugins and such
-#can be linked in easier
 set(PSILIB mints_wrapper dfmp2 dfocc scf ccenergy ccsort psimrcc transqt2 
            cctriples scf_solver fock dcft lmp2 mcscf sapt dftsapt sapt_solver
            cchbar cclambda ccdensity transqt ccresponse detci occ mrcc fnocc
@@ -263,34 +263,45 @@ set(PSILIB mints_wrapper dfmp2 dfocc scf ccenergy ccsort psimrcc transqt2
            findif mints trans dpd chkpt iwl psio qt ciomr options moinfo util
            stable deriv scfgrad int util diis plugin parallel frag)
 
-if(DEFINED ERD)
+
+#RMR---This is our plugin workaround
+#Here we start a list of plugins
+set(PLUGINS "")
+add_subdirectory(plugins)
+#Add plugins to the libraries Psi depends on
+set(PSILIB ${PSILIB} ${PLUGINS})
+
+
+if(DEFINED USEERD)
     set(PSILIB ${PSILIB} erd)
     set(JK_ERD ${CMAKE_BINARY_DIR}/lib/liberd.a)
-    add_definitions(-DHAVE_ERD)
 endif()
 
 #If we have MPI also build the JKFactory library for awesome SCF performance
 if(MPI_FOUND)
-   set(BUILD_JK_FACTORY "FALSE")
+   set(BUILD_JK_FACTORY "TRUE")
 endif()
 
 if(BUILD_JK_FACTORY)
     add_definitions(-DHAVE_JK_FACTORY)
-    set(JKROOT ${CMAKE_CURRENT_SOURCE_DIR}/plugins/JKFactory)
+    set(JKROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/libJKFactory)
     set(JK_BLAS_INC ${LAPACK_INCLUDE_DIR})
-    add_subdirectory(plugins/JKFactory)
     set(PSILIB ${PSILIB} JKFactory)
     set(PSILIB ${PSILIB} pfock)
     set(PSILIB ${PSILIB} cint)
     set(PSILIB ${PSILIB} ${CMAKE_BINARY_DIR}/lib/libga.a)
     set(PSILIB ${PSILIB} ${CMAKE_BINARY_DIR}/lib/libarmci.a)
     set(PSILIB ${PSILIB} oed)
-    if(NOT DEFINED ERD)
+    if(NOT DEFINED USEERD)
        set(PSILIB ${PSILIB} erd)
     endif()
     set(PSILIB ${PSILIB} -lmkl_scalapack_lp64 -lmkl_blacs_lp64)
 endif()
 
+#Goodbye f-ing python warning messages and boost warning messages...
+#all remaining warnings should be addressed as they are actually caused by
+#poor psi4 coding...
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd47 -wd2196 -wd411 -wd279")
 
 #
 # Recursively add source directories

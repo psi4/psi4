@@ -1,0 +1,31 @@
+      implicit none
+      integer NDIM, NSIZE
+      parameter (NDIM=2, NSIZE=129)
+      common /indices/ lo(NDIM+1), hi(NDIM+1), size(NDIM), width(NDIM),
+     +                 dims(NDIM)
+      integer lo, hi, size, width, dims
+      common /ghstdat/ dims_fg(NDIM+1), dims_fld(NDIM+1),
+     +                 dims_bc(NDIM)
+      integer dims_fg, dims_fld, dims_bc
+      common /lattice/ ei(8,NDIM), cspd
+      double precision ei, cspd
+      common /distributions/ ffa(0:8), ffb(0:8), ffc(0:8), ffd(0:8),
+     +                       ffe(0:8)
+      double precision ffa, ffb, ffc, ffd, ffe
+      common /boundary/ bcpar(10,3)
+      double precision bcpar
+      common /props/ rtot, uxtot, uytot
+      double precision rtot, uxtot, uytot
+      common /constants/ a_vdw, b_vdw, rgas, tmprtr0
+      double precision a_vdw, b_vdw, rgas, tmprtr0
+      common /simpar/ delta_t, delta_x, xmax, viscosity, nsteps
+      double precision delta_t, delta_x, xmax, viscosity
+      integer nsteps
+      common /patch/ fgp(-1:1,-1:1,9), hash(-1:1,-1:1),
+     +               ihash(-1:1,-1:1)
+      double precision fgp
+      integer hash, ihash
+      common /bcparams/ uxbc, uybc, rhobc
+      double precision uxbc, uybc, rhobc
+      common /timing/ tstats(50)
+      double precision tstats

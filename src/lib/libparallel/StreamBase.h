@@ -72,7 +72,7 @@ class PsiStreamBase{
 class PsiOutStream:public PsiStreamBase{
    private:
       ///Dumps Buffer to Stream_
-      inline void DumpBuffer();
+      void DumpBuffer();
 
       /** \brief This is the interface for Printf and << operator to
        *           Buffer_ for most writable objects
@@ -80,14 +80,14 @@ class PsiOutStream:public PsiStreamBase{
        *  \param[in] Input An object that can be passed to an ostream
        */
       template<typename T>
-      void Write2Buffer(const T& Input);
+      std::ostream& Write2Buffer(const T& Input);
 
       /** \brief This is the interface for Printf and << operator to
        *     Buffer_ for special iostream functions.
        *
        *     \param[in] fp iostream functions like std::endl
        */
-      void Write2Buffer(StreamManips fp);
+      std::ostream& Write2Buffer(StreamManips fp);
 
       /** \brief Copies Stream_ of other over to this
        *
@@ -156,10 +156,10 @@ class PsiOutStream:public PsiStreamBase{
 
       ///Allows c++ like interface for most objects
       template<typename T>
-      void operator<<(const T& Input){Write2Buffer(Input);}
+      std::ostream& operator<<(const T& Input){return Write2Buffer(Input);}
 
       ///Allows c++ like interface for things like std::endl
-      void operator<<(StreamManips fp){Write2Buffer(fp);}
+      std::ostream& operator<<(StreamManips fp){return Write2Buffer(fp);}
 
       /** \brief Makes a banner
        *
@@ -196,9 +196,10 @@ class PsiOutStream:public PsiStreamBase{
 };
 
 template<typename T>
-void PsiOutStream::Write2Buffer(const T& Input){
+std::ostream& PsiOutStream::Write2Buffer(const T& Input){
    Buffer_<<Input;
    this->DumpBuffer();
+   return Buffer_;
 }
 
 

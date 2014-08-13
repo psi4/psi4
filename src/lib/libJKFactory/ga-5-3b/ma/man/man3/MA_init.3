@@ -1,0 +1,133 @@
+.TH MA_INITIALIZE 3 "20 February 1997" "MA Release 1.8" "MA LIBRARY ROUTINES"
+.SH NAME
+MA_init -
+initialize the memory allocator
+.SH "C SYNOPSIS"
+.nf
+#include "macdecls.h"
+
+Boolean MA_init(datatype, nominal_stack, nominal_heap)
+    Integer     datatype;       /* read-only */
+    Integer     nominal_stack;  /* read-only */
+    Integer     nominal_heap;   /* read-only */
+.fi
+.SH "FORTRAN SYNOPSIS"
+.nf
+#include "mafdecls.fh"
+
+logical function MA_init(datatype, nominal_stack, nominal_heap)
+    integer     datatype
+    integer     nominal_stack
+    integer     nominal_heap
+.fi
+.SH DESCRIPTION
+MA_init() initializes the memory allocator
+by requesting from the operating system
+a single segment of memory
+that is used to satisfy allocations
+for both the heap and the stack.
+The memory segment is large enough to hold
+.I nominal_heap
+elements of type
+.I datatype
+in the heap
+and
+.I nominal_stack
+elements of type
+.I datatype
+in the stack,
+plus the overhead for two allocations
+(one heap and one stack);
+if more than two allocations will exist concurrently,
+overhead may be computed using MA_sizeof_overhead()
+and factored into
+.I nominal_heap
+and
+.IR nominal_stack .
+If
+.I nominal_heap
+is less than zero,
+a default total size for the heap is used.
+If
+.I nominal_stack
+is less than zero,
+a default total size for the stack is used.
+
+MA_init() must be called before any other MA routine is called,
+except
+MA_set_auto_verify(),
+MA_set_error_print(),
+MA_set_hard_fail(),
+MA_sizeof(),
+or MA_sizeof_overhead().
+.SH USAGE
+The following FORTRAN code illustrates the use of MA_init()
+by computing the space required for
+100 integers in 5 allocations in the heap,
+200 logicals in 4 allocations in the heap,
+300 reals in 3 allocations in the stack,
+and 400 doubles in 2 allocations in the stack.
+
+.nf
+#include "mafdecls.fh"
+
+    logical ok
+    integer heap_bytes_data
+    integer heap_bytes_overhead
+    integer heap_bytes_total
+    integer stack_bytes_data
+    integer stack_bytes_overhead
+    integer stack_bytes_total
+
+    heap_bytes_data = MA_sizeof(MT_INT, 100, MT_BYTE)
+                    + MA_sizeof(MT_LOG, 200, MT_BYTE)
+    heap_bytes_overhead = (5 + 4) * MA_sizeof_overhead(MT_BYTE)
+    heap_bytes_total = heap_bytes_data + heap_bytes_overhead
+    stack_bytes_data = MA_sizeof(MT_REAL, 300, MT_BYTE)
+                     + MA_sizeof(MT_DBL, 400, MT_BYTE)
+    stack_bytes_overhead = (3 + 2) * MA_sizeof_overhead(MT_BYTE)
+    stack_bytes_total = stack_bytes_data + stack_bytes_overhead
+    ok = MA_init(MT_BYTE, stack_bytes_total, heap_bytes_total)
+.fi
+.SH DIAGNOSTICS
+unable to set sizes of FORTRAN datatypes
+.in +0.5i
+This indicates either that the internal state of MA is corrupted
+or that there is a problem in the C-FORTRAN linkage.
+.in
+MA already initialized
+.in +0.5i
+MA_init() may not be called after it has returned successfully.
+.in
+invalid datatype: %d
+.in +0.5i
+.I datatype
+must be one of those listed in macdecls.h or mafdecls.fh.
+.in
+could not allocate %d bytes
+.in +0.5i
+The request for memory to the operating system failed.
+Recovery may be attempted by calling MA_init() again
+and requesting less memory.
+.in
+.SH "RETURN VALUE"
+C: MA_TRUE upon success, MA_FALSE upon failure.
+.br
+FORTRAN: .true. upon success, .false. upon failure.
+.\" .SH NOTES
+.SH FILES
+.nf
+Include files: /msrc/proj/hpctools/ma/release/current/include
+Library:       /msrc/proj/hpctools/ma/release/current/lib/\fIplatform\fR/libma.a
+Man pages:     /msrc/proj/hpctools/ma/release/current/man/man3
+Source code:   /msrc/proj/hpctools/ma/release/current/tar/ma\fIrelease\fR.tar
+.fi
+.SH "SEE ALSO"
+.na
+MA(3),
+MA_initialized(3),
+MA_sizeof(3),
+MA_sizeof_overhead(3)
+.ad
+.SH AUTHOR
+Gregory S. Thomas, Pacific Northwest National Laboratory
