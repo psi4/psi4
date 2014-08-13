@@ -1,0 +1,213 @@
+.TH MA 3 "20 February 1997" "MA Release 1.8" "MA LIBRARY ROUTINES"
+.SH NAME
+MA -
+introduction to the MA dynamic memory allocator
+.SH DESCRIPTION
+MA is a library of routines that comprises a dynamic memory allocator
+for use by C, FORTRAN, or mixed-language applications.
+C applications can benefit from using MA
+instead of the ordinary malloc() and free() routines
+because of the extra features MA provides:
+both heap and stack memory management disciplines,
+debugging and verification support,
+usage statistics,
+and quantitative memory availability information.
+FORTRAN applications can take advantage of the same features,
+and may in fact require a library such as MA
+because dynamic memory allocation is not supported
+by all versions of the language.
+
+MA is designed to be portable across a variety of platforms.
+The following platforms are currently supported:
+
+.in +0.5i
+.nf
+alpha_osf13     DEC Alpha, DEC OSF/1 V1.3
+alpha_osf13_i8  DEC Alpha, DEC OSF/1 V1.3, f77 -i8
+crayc90_7c_dp   Cray Y-MP C90, UNICOS 7.C, cf77 -Wf-dp
+crayt3d_802_dp  Cray T3D, UNICOS 8.0.2, cf77 -Wf-dp
+delta_pgi40     Intel DELTA, NX/M R1.5 (cross-compiled by PGI 4.0)
+hp700_ux90      HP 9000/700, HP-UX 9.0, gcc
+ipsc_pgi40      Intel iPSC/860, NX/M R1.4 (cross-compiled by PGI 4.0)
+ksr1_1141       KSR1, KSR OS R1.1.4.1
+ksr1_1141_i4    KSR1, KSR OS R1.1.4.1, f77 -i4
+ksr1_1141_i4r8  KSR1, KSR OS R1.1.4.1, f77 -i4 -r8
+ksr1_1141_r8    KSR1, KSR OS R1.1.4.1, f77 -r8
+paragon_osf12   Intel Paragon, OSF/1 R1.2
+rs_aix32        IBM RS/6000, AIX 3.2
+sgi_405f        SGI, IRIX 4.0.5F
+sgi_5111        SGI, IRIX 5.1.1.1
+sgi_60          SGI Power Challenge, IRIX 6.0
+sgi_60_i8       SGI Power Challenge, IRIX 6.0, f77 -i8
+sun4m_412       Sun SPARC, SunOS 4.1.x
+sun4x_55        Sun SPARC, SunOS 5.5.x
+.fi
+.in
+.SH IMPLEMENTATION
+Memory layout:
+
+.in +0.5i
+.nf
+segment = heap_region stack_region
+region = block block block ...
+block = AD gap1 guard1 client_space guard2 gap2
+.fi
+.in
+
+A segment of memory is obtained from the OS upon initialization.
+The low end of the segment is managed as a heap; the heap region
+grows from low addresses to high addresses.  The high end of the
+segment is managed as a stack; the stack region grows from high
+addresses to low addresses.
+
+Each region consists of a series of contiguous blocks, one per
+allocation request, and possibly some unused space.  Blocks in
+the heap region are either in use by the client (allocated and
+not yet deallocated) or not in use by the client (allocated and
+already deallocated).  A block on the rightmost end of the heap
+region becomes part of the unused space upon deallocation.
+Blocks in the stack region are always in use by the client,
+because when a stack block is deallocated, it becomes part of
+the unused space.
+
+A block consists of the client space, i.e., the range of memory
+available for use by the application; guard words adjacent to
+each end of the client space to help detect improper memory access
+by the client; bookkeeping info (in an "allocation descriptor,"
+AD); and two gaps, each zero or more bytes long, to satisfy
+alignment constraints (specifically, to ensure that AD and
+client_space are aligned properly).
+.SH "LIST OF ROUTINES"
+All MA routines are shown below,
+grouped by category
+and listed alphabetically within each category.
+
+Initialization
+.in +0.5i
+.nf
+MA_init()
+MA_initialized()
+MA_sizeof()
+MA_sizeof_overhead()
+.fi
+.in
+Allocation
+.in +0.5i
+.nf
+MA_alloc_get()
+MA_allocate_heap()
+MA_get_index()
+MA_get_pointer()
+MA_inquire_avail()
+MA_inquire_heap()
+MA_inquire_stack()
+MA_push_get()
+MA_push_stack()
+.fi
+.in
+Deallocation
+.in +0.5i
+.nf
+MA_chop_stack()
+MA_free_heap()
+MA_pop_stack()
+.fi
+.in
+Debugging
+.in +0.5i
+.nf
+MA_set_auto_verify()
+MA_set_error_print()
+MA_set_hard_fail()
+MA_summarize_allocated_blocks()
+MA_verify_allocator_stuff()
+.fi
+.in
+Iteration Over Allocated Blocks
+.in +0.5i
+.nf
+MA_get_next_memhandle()
+MA_init_memhandle_iterator()
+.fi
+.in
+Statistics
+.in +0.5i
+.nf
+MA_print_stats()
+.fi
+.in
+.SH TYPES
+There are three MA-specific types in the public C interface to MA:
+Integer, Boolean, and Pointer.
+They are accessible by including macdecls.h.
+Integer is defined in such a way that sizeof(Integer)
+is equal to the number of bytes in a FORTRAN integer,
+which varies according to compiler options and platform.
+Boolean is equivalent to Integer,
+and Pointer is equivalent to char *.
+.SH ERRORS
+Errors considered fatal by MA
+result in program termination.
+Errors considered nonfatal by MA
+cause the MA routine to return an error value to the caller.
+For most boolean functions,
+false is returned upon failure and true is returned upon success.
+(The boolean functions for which the return value
+means something other than success or failure are
+MA_set_auto_verify(),
+MA_set_error_print(),
+and MA_set_hard_fail().)
+Integer functions return zero upon failure;
+depending on the function,
+zero may or may not be distinguishable as an exceptional value.
+
+An application can force MA to treat all errors as fatal
+via MA_set_hard_fail().
+
+If a fatal error occurs,
+an error message is printed on the standard error (stderr).
+By default,
+error messages are also printed for nonfatal errors.
+An application can force MA to print or not print
+error messages for nonfatal errors
+via MA_set_error_print().
+.SH FILES
+To access required MA definitions,
+C applications should include macdecls.h
+and FORTRAN applications should include mafdecls.fh.
+
+.nf
+Include files: /msrc/proj/hpctools/ma/release/current/include
+Library:       /msrc/proj/hpctools/ma/release/current/lib/\fIplatform\fR/libma.a
+Man pages:     /msrc/proj/hpctools/ma/release/current/man/man3
+Source code:   /msrc/proj/hpctools/ma/release/current/tar/ma\fIrelease\fR.tar
+.fi
+.SH "SEE ALSO"
+.na
+MA_alloc_get(3),
+MA_allocate_heap(3),
+MA_chop_stack(3),
+MA_free_heap(3),
+MA_get_index(3),
+MA_get_next_memhandle(3),
+MA_get_pointer(3),
+MA_init(3),
+MA_initialized(3),
+MA_init_memhandle_iterator(3),
+MA_inquire_avail(3),
+MA_inquire_heap(3),
+MA_inquire_stack(3),
+MA_pop_stack(3),
+MA_print_stats(3),
+MA_push_get(3),
+MA_push_stack(3),
+MA_set_auto_verify(3),
+MA_set_error_print(3),
+MA_set_hard_fail(3),
+MA_sizeof(3),
+MA_sizeof_overhead(3),
+MA_summarize_allocated_blocks(3),
+MA_verify_allocator_stuff(3)
+.ad
+.SH AUTHOR
+Gregory S. Thomas, Pacific Northwest National Laboratory

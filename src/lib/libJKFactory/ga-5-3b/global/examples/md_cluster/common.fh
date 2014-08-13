@@ -1,0 +1,193 @@
+c
+c                                   NOTICE
+c
+c   This software is being made available for internal testing and
+c   evaluation purposes only. This software is a pre-release test version
+c   which has not yet been authenticated and cleared for publication. Adherence
+c   to this notice may be necessary for the author, Battelle Memorial
+c   Institute, to successfully assert copyright in and commercialize this
+c   software. This software is not intended for duplication or distribution
+c   to third parties without the permission of the Manager of Software
+c   Products at Pacific Northwest Laboratory, Richland, Washington,  99352.
+c
+      implicit none
+#include "mafdecls.fh"
+#include "global.fh"
+#ifdef MPI
+#   include "mpif.h"
+#else
+#   include "tcgmsg.fh"
+#endif
+      integer MAXNRG,MAXNB,MAXAT,MAXTIM
+      integer NSTES,NSTDF
+      integer MD_MAXPROC,MAXBINS
+      parameter (MAXNRG=50, MAXNB=100)
+      parameter (MAXAT = 40000)
+      parameter (MAXTIM=50)
+      parameter (NSTES=1000)
+      parameter (MAXBINS = 2000)
+      parameter (MD_MAXPROC=1024)
+c
+c   Arrays containing locally held atoms and their properties. atot is
+c   the total number of atoms and antot is the number of locally held
+c   atoms. aidx is an array containing the absolute atomic index of
+c   each locally held atom. at is an array containing an index to the
+c   atom type, and ra is an array containing the coordinates, velocities,
+c   and forces of each locally held atom. The array ra contains
+c        ra(i,j,1): periodic coordinates that all are within the
+c                   simulation cell
+c        ra(i,j,2): velocities
+c        ra(i,j,3): accelerations
+c        ra(i,j,4): forces (not including constraint forces)
+c        ra(i,j,5): momentum
+c        ra(i,j,6): absolute coordinates
+c        ra(i,j,7): complete forces from previous timestep
+c        ra(i,j,8): temporary storage to construct accelations with
+c                   constraints
+c
+      common /syspar/ ra(MAXAT,3,8),mass(MAXAT),at(MAXAT),aidx(MAXAT),
+     +                atot,antot
+      double precision ra,mass
+      integer at,aidx,atot,antot
+c
+c   Global array handles and utility arrays for moving data around
+c
+      common /ga_data/ g_size, gsize_lo(0:MD_MAXPROC), gsize_hi,
+     +                 g_coords, gcoords_lo(2,0:MD_MAXPROC),
+     +                 gcoords_hi(2),
+     +                 g_frc, gfrc_lo(2,0:MD_MAXPROC), gfrc_hi(2),
+     +                 g_acc, gacc_lo(2,0:MD_MAXPROC), gacc_hi(2),
+     +                 g_index, gindex_lo(0:MD_MAXPROC), gindex_hi,
+     +                 g_iat, giat_lo(2,0:MD_MAXPROC), giat_hi(2),
+     +                 g_rvec, grvec_lo(0:MD_MAXPROC), grvec_hi
+      integer g_size, gsize_lo, gsize_hi, g_coords,gcoords_lo,
+     +        gcoords_hi, g_frc, gfrc_hi, gfrc_lo, g_acc, gacc_lo,
+     +        gacc_hi, g_index, gindex_lo, gindex_hi, g_iat, giat_hi,
+     +        giat_lo, g_rvec, grvec_lo, grvec_hi
+      common /md_par/ tau,dftmp,dfprs,dftm,dfpm,rsc(20,4),
+     +                tmprtr,prssr,tmass,pmass,tvol,tavg,tmstrt,
+     +                nsc,nstep,istep,ilist,dflalg,isc(20,4),istart,
+     +                istop,tmpflg,prsflg,ptflg,istat,itarg,itavg,
+     +                ipmode,iseed,mbflg,cmflg
+      double precision tau,dftmp,dfprs,dftm,dfpm,rsc,
+     +                tmprtr,prssr,tmass,pmass,tvol,tavg
+      integer tmstrt,nsc,nstep,istep,ilist,dflalg,isc
+      integer istart,istop,istat,itarg
+      integer itavg,ipmode,iseed
+      logical tmpflg,prsflg,ptflg,mbflg,cmflg
+      common /simpar/ xbox,ybox,zbox,xbox2,ybox2,zbox2,
+     +                vol1,vol2,vol3,scal1,scal2,scal3,
+     +                alen1(3),alen2(3),alen3(3)
+      double precision xbox,ybox,zbox,xbox2,ybox2,zbox2,
+     +       vol1,vol2,vol3,scal1,scal2,scal3,alen1,alen2,alen3
+      common /nrgpar/ nrg(MAXNRG),anrg(MAXNRG),anrg2(MAXNRG),
+     +                presf,presfx,presfy,presfz,esvr,esvd,esvoh,
+     +                esva,asev(MAXAT),nrgcnt,nrg2ct
+      double precision nrg,anrg,anrg2,presf,esvr,esvd,esvoh,esva,asev,
+     +       presfx,presfy,presfz
+      integer nrgcnt,nrg2ct
+      common /apars/ amass(50),e12(50,50),e6(50,50),
+     +               dcorr(50,50),rcorr(50,50),
+     +               frcorr(50,50),fdcorr(50,50),
+     +               rcut,acut(50,50),acut2(50,50),rcmax,icut,atnum
+      double precision amass,e12,e6,dcorr,rcorr,frcorr,fdcorr,acut,rcut,
+     +               acut2,rcmax
+      integer icut,atnum
+      common /md_timer/ tmstat(MAXTIM)
+      double precision tmstat
+      common /espar/ pmvac(NSTES),tmvac(NSTES),ipmvac(NSTES),
+     +               itmvac(NSTES),esinc,esstps,esflg
+      double precision pmvac,tmvac
+      integer ipmvac,itmvac,esinc,esstps
+      logical esflg
+c
+c   coordinates of atoms that are not held locally are stored in xcrc,
+c   ycrd, zcrd, similarly, forces for atoms not held locally are stored
+c   in xfrc, yfrc, zfrc
+c
+      common /md_buffer/xcrd(MAXAT),ycrd(MAXAT),zcrd(MAXAT),xfrc(MAXAT),
+     +                  yfrc(MAXAT),zfrc(MAXAT),xacc(MAXAT),yacc(MAXAT),
+     +                  zacc(MAXAT),mbuf(MAXAT),bidx(MAXAT),bat(MAXAT),
+     +                  btot,savtot
+      double precision xcrd,ycrd,zcrd,xfrc,yfrc,zfrc,xacc,yacc,zacc,mbuf
+      integer bidx,bat,btot,savtot
+c
+      common /md_cell/rcell,kcmax,nix(2000),niy(2000),niz(2000)
+      double precision rcell
+      integer kcmax,nix,niy,niz
+c
+c   the xgru, xgrd etc. buffers keep track of which atoms are within a
+c   cutoff distance of the upper (u) and lower (d) boundaries of the
+c   cell. The ygbu, ygbd etc. buffers keep track of which buffer atoms
+c   are within a cutoff distance of the boundaries (these buffers are
+c   not needed for the x-direction updates). The ygbu, etc. buffers are
+c   used in the gather routine. The ysbu, etc. buffers are used in a
+c   similar way in the scatter routine.
+c
+      common /svlist/ xgru(MAXAT),xgrd(MAXAT),ygru(MAXAT),ygrd(MAXAT),
+     +                zgru(MAXAT),zgrd(MAXAT),
+     +                ygbu(MAXAT),ygbd(MAXAT),zgbu(MAXAT),zgbd(MAXAT),
+     +                xsbu(MAXAT),xsbd(MAXAT),ysbu(MAXAT),ysbd(MAXAT),
+     +                zsbu(MAXAT),zsbd(MAXAT),
+     +                clist(6,MAXAT),
+     +                ixgru,ixgrd,iygru,iygrd,izgru,izgrd,
+     +                iygbu,iygbd,izgbu,izgbd
+      integer xgru,xgrd,ygru,ygrd,zgru,zgrd,
+     +        ygbu,ygbd,zgbu,zgbd,
+     +        ixgru,ixgrd,iygru,iygrd,izgru,izgrd,
+     +        iygbu,iygbd,izgbu,izgbd,ixsbu,ixsbd,iysbu,iysbd,
+     +        izsbu,izsbd
+      logical xsbu,xsbd,ysbu,ysbd,zsbu,zsbd
+      logical clist
+c
+      common /neighbors/ nblist(MAXAT*MAXNB),nalast(MAXAT),
+     +                   nblast(MAXAT),nafirst(MAXAT),nbfirst(MAXAT),
+     +                   blist(3*MAXAT),balast(MAXAT),
+     +                   bblast(MAXAT),bafirst(MAXAT),bbfirst(MAXAT)
+      integer nblist,nalast,nblast,nafirst,nbfirst
+      integer blist,balast,bblast,bafirst,bbfirst
+c
+      common /clusterpar/ cl_cmx, cl_cmy, cl_cmz, r_cluster, cl_sep,
+     +                    cl_vcmx, cl_vcmy, cl_vcmz,
+     +                    cl_acmx, cl_acmy, cl_acmz,
+     +                    cl_prssr, cl_mass, r_cluster_old,
+     +                    cl_old(MAXAT,3,3), cl_cm_old(3),
+     +                    cl_vcm_old(3), cl_vol1_old, cl_vol2_old,
+     +                    cl_box_old(3), cl_alen1_old(3),
+     +                    cl_alen2_old(3), cl_scal1_old, cl_scal2_old,
+     +                    cl_at(MAXAT), cl_tot, ctot, nocluster
+      double precision cl_cmx, cl_cmy, cl_cmz, r_cluster, cl_sep,
+     +                 cl_vcmx, cl_vcmy, cl_vcmz,
+     +                 cl_acmx, cl_acmy, cl_acmz,
+     +                 cl_prssr, cl_mass, cl_old, r_cluster_old,
+     +                 cl_cm_old, cl_vcm_old, cl_vol1_old, cl_vol2_old,
+     +                 cl_box_old, cl_alen1_old, cl_alen2_old,
+     +                 cl_scal1_old, cl_scal2_old 
+      integer cl_at, ctot, cl_tot
+      logical nocluster
+      common /solventpar/ sl_old(MAXAT,3,3),sl_at(MAXAT),sl_tot
+      double precision sl_old
+      integer sl_at, sl_tot
+      common /equil_protocol/ r_confine, equil_1, equil_2, equil_3,
+     +                        window_1, window_2
+      double precision r_confine
+      integer equil_1, equil_2, equil_3, window_1, window_2
+      common /cllsnpar/ mmass, cllsn_idx, l_cllsn, cllsn_cnt,
+     +                  cllsn_isav, failcount
+      double precision mmass
+      integer cllsn_idx, cllsn_cnt, cllsn_isav, failcount
+      logical l_cllsn
+      common /mcpar/ cl_lower, cl_upper, mc_step, mc_tmprtr, mc_dr,
+     +               r_distr(0:MAXBINS,10), r_cnt(10), mcbins, mcfreq,
+     +               mc_cnt, mc_start
+      double precision cl_lower, cl_upper, mc_step, mc_tmprtr, mc_dr
+      integer r_distr, r_cnt, mcbins, mcfreq, mc_cnt, mc_start
+      common /taskpar/ task_id, g_counter
+      integer task_id, g_counter
+      common /iopar/ l_stdio, l_rad, l_rst, l_step, l_oldcfg
+      logical l_stdio, l_rad, l_rst, l_step, l_oldcfg
+      common /adapt/ t_done, t_rmndr
+      double precision t_done, t_rmndr
+      common /hashpar/ link_a(MAXAT), top_a(MAXAT), hash_key_a(MAXAT),
+     +                 hash_value_a(MAXAT), a_cnt
+      integer link_a, top_a, hash_key_a, hash_value_a, a_cnt

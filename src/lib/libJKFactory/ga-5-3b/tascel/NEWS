@@ -1,0 +1,4 @@
+0.1   November 2010
+    * initial implementation of dynamic load balancing capability
+    * both API and implementation not stable yet
+

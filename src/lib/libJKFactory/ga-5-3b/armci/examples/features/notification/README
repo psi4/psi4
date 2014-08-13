@@ -1,0 +1,68 @@
+Introduction
+============
+
+A new notification functionality has been introduced in ARMCI primarify for
+the Co-Array fortran compiler.
+
+Description
+===========
+
+Notification is a mechanism for synchronization.
+
+1. process s is the process doing a notify call
+2. process d is the destiniation of this notification call
+
+Process s makes a armci_notify(d) call. This call is guarenteed to reach the
+process d (the destination here) only after all prior calls made by process s
+to process d complete and are commited into process d's memory.  armci_notify
+is a mechanism by which if s notifies d and d does a corresponding
+notify_wait, after d returns from notify_wait it knows that all communication
+calls initiated to d by s, before s issued the notification message, are
+completed and d's memory will reflect that they are completed.
+
+Function Definitions
+====================
+
+int armci_notify(int proc)
+--------------------------
+
+::
+ 
+    parameter
+        proc the process/task to which the notification message is sent to
+    return
+        the current value of the pending operations count for process proc
+    blocking:
+        this is a non-blocking call on most networks
+
+int armci_notify_wait(int proc,int * pval)
+------------------------------------------
+
+::
+
+    parameter
+        proc the process/task to which the notification message is sent to
+        pval pointer to the current received count from the initiator of the 
+             notify call at the moment. 
+    return
+        returns the number of calls that were sent from s (initiator of notify)
+        since the invocation of the last notify_wait
+    blocking:
+        this is a blocking call
+
+Sample Program
+==============
+An example program is at armci/src/testnotify.c
+
+Here is a sample where process waits for message from left and sends to
+right::
+
+    left=me-1;right=(me==nproc-1)?-1:me+1;
+    if(left!=-1){
+      rc = armci_notify_wait(left,&wc);
+    } 
+    if(right!=-1){
+      ARMCI_PutS((double*)b[me]+idx, stride,
+                 (double*)b[right]+idx, stride, count, strl,right);
+      lc=armci_notify(right);
+    }

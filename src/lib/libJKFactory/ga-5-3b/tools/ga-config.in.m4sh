@@ -1,0 +1,94 @@
+dnl run "autom4te -l m4sh ga-config.in.m4sh > ga-config.in"
+AS_INIT
+
+f77="@F77@"
+cc="@CC@"
+cppflags="@SCALAPACK_CPPFLAGS@ @LAPACK_CPPFLAGS@ @BLAS_CPPFLAGS@ @GA_MP_CPPFLAGS@ @ARMCI_NETWORK_CPPFLAGS@ -I@prefix@/include"
+cflags="@GA_COPT@"
+fflags="@GA_FOPT@ @FFLAG_INT@"
+fint="@FFLAG_INT@"
+ldflags="@SCALAPACK_LDFLAGS@ @LAPACK_LDFLAGS@ @BLAS_LDFLAGS@ @GA_MP_LDFLAGS@ @ARMCI_NETWORK_LDFLAGS@ -L@prefix@/lib"
+libs="-lga @SCALAPACK_LIBS@ @LAPACK_LIBS@ @BLAS_LIBS@ -larmci @GA_MP_LIBS@ @ARMCI_NETWORK_LIBS@"
+flibs="@FLIBS@"
+enable_f77_true="@ENABLE_F77_TRUE@"
+version="@PACKAGE_VERSION@"
+
+AS_IF([test "x$enable_f77_true" = x], [enable_f77=yes], [enable_f77=no])
+
+[usage="Usage: ga-config [OPTIONS]...
+
+With the exception of --version and --help, all other options can be combined
+or run exclusively.  Output is echoed to stdout.
+
+Options:
+
+  --f77
+  --cc
+  --cppflags
+  --cflags
+  --fflags
+  --fint
+  --ldflags
+  --libs
+  --flibs
+  --enable-f77
+  --version
+  --help
+"]
+
+result=
+
+while test $# != 0
+do
+  case $1 in
+  --*=?*)
+    ac_option=`expr "X$1" : 'X\([^=]*\)='`
+    ac_optarg=`expr "X$1" : 'X[^=]*=\(.*\)'`
+    ac_shift=:
+    ;;
+  --*=)
+    ac_option=`expr "X$1" : 'X\([^=]*\)='`
+    ac_optarg=
+    ac_shift=:
+    ;;
+  *)
+    ac_option=$1
+    ac_optarg=$2
+    ac_shift=shift
+    ;;
+  esac
+
+  case $ac_option in
+  # Handling of the options.
+  -help | --help | --hel | --he | -h )
+    AS_ECHO(["$usage"]); exit ;;
+  -version | --version | --versio | --versi | --vers | --ver | --ve | --v | -V )
+    AS_ECHO(["$version"]); exit ;;
+  -f77 | --f77)
+    result="$result $f77" ;;
+  -cc | --cc )
+    result="$result $cc" ;;
+  -cppflags | --cppflags )
+    result="$result $cppflags" ;;
+  -cflags | --cflags )
+    result="$result $cflags" ;;
+  -fflags | --fflags )
+    result="$result $fflags" ;;
+  -ldflags | --ldflags )
+    result="$result $ldflags" ;;
+  -libs | --libs )
+    result="$result $libs" ;;
+  -flibs | --flibs )
+    result="$result $flibs" ;;
+  -fint | --fint )
+    result="$result $fint" ;;
+  -enable-f77 | --enable-f77 )
+    result="$result $enable_f77" ;;
+  # This is an error.
+  *) AS_ECHO(["unrecognized option: \`$1'
+Try \`$0 --help' for more information."]); exit ;;
+  esac
+  shift
+done
+
+AS_ECHO(["$result"]) | sed 's/ [ ]*/ /g;s/" /"/g;s/ "/"/g;s/^ [ ]*//;s/ [ ]*$//'

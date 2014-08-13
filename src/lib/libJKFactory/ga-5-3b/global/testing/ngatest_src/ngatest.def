@@ -1,0 +1,297 @@
+divert(-1)
+  # ------------------------------------------------------------
+  # up to 8 dimensions
+  # testing from "m4_from" to "m4_to" dimensions
+  define(m4_from, m4_dim_from)
+  define(m4_to, m4_dim_to)
+
+  # data type can be integer, double precision, or double complex
+  define(m4_data_type_int, `integer')
+  define(m4_data_type_dbl, `double precision')
+  define(m4_data_type_dcpl, `double complex')
+
+  define(m4_test_type_int, `int')
+  define(m4_test_type_dbl, `dbl')
+  define(m4_test_type_dcpl, `dcpl')
+
+  define(m4_max_dim, 8)
+  #--------------------------------------------------------------
+  # n values for each dimension
+  define(m4_n_1dim, 20000)
+  define(m4_n_2dim, 140)
+  define(m4_n_3dim, 27)
+  define(m4_n_4dim, 11)
+  define(m4_n_5dim, 7)
+  define(m4_n_6dim, 5)
+  define(m4_n_7dim, 4)
+  define(m4_n_8dim, 3)
+  # define(m4_n_1dim, 2000)
+  # define(m4_n_2dim, 100)
+  # define(m4_n_3dim, 20)
+  # define(m4_n_4dim, 10)
+  # define(m4_n_5dim, 5)
+  # define(m4_n_6dim, 4)
+  # define(m4_n_7dim, 3)
+  # define(m4_n_8dim, 2)
+
+  # to access n value
+  define(m4_n_val, m4_n_$1dim)
+
+  # common definitions
+  define(m4_array, (n,n,n,n,n,n,n,n,n))
+  define(m4_lo_all, (lo(1),lo(2),lo(3),lo(4),lo(5),lo(6),lo(7),lo(8)))
+  define(m4_lop_all, (lop(1),lop(2),lop(3),lop(4),lop(5),lop(6),lop(7),lop(8)))
+  define(m4_ind_all, (d(1,i),d(2,i),d(3,i),d(4,i),d(5,i),d(6,i),d(7,i),d(8,i)))
+  define(m4_alo_all, (alo(1),alo(2),alo(3),alo(4),alo(5),alo(6),alo(7),alo(8)))
+  define(m4_ahi_all, (ahi(1),ahi(2),ahi(3),ahi(4),ahi(5),ahi(6),ahi(7),ahi(8)))
+  define(m4_ald_all, (ald(1),ald(2),ald(3),ald(4),ald(5),ald(6),ald(7),ald(8)))
+  define(m4_blo_all, (blo(1),blo(2),blo(3),blo(4),blo(5),blo(6),blo(7),blo(8)))
+  define(m4_bhi_all, (bhi(1),bhi(2),bhi(3),bhi(4),bhi(5),bhi(6),bhi(7),bhi(8)))
+  define(m4_bld_all, (bld(1),bld(2),bld(3),bld(4),bld(5),bld(6),bld(7),bld(8)))
+  define(m4_clo_all, (clo(1),clo(2),clo(3),clo(4),clo(5),clo(6),clo(7),clo(8)))
+  define(m4_chi_all, (chi(1),chi(2),chi(3),chi(4),chi(5),chi(6),chi(7),chi(8)))
+  define(m4_cld_all, (cld(1),cld(2),cld(3),cld(4),cld(5),cld(6),cld(7),cld(8)))
+  define(m4_dlo_all, (dlo(1),dlo(2),dlo(3),dlo(4),dlo(5),dlo(6),dlo(7),dlo(8)))
+  define(m4_func_GA_FILL, testit_GA_FILL_$1$2())
+  define(m4_func_NGA_PUT, testit_NGA_PUT_$1$2())
+  define(m4_func_NGA_GET, testit_NGA_GET_$1$2())
+  define(m4_func_NGA_ACC, testit_NGA_ACC_$1$2())
+  define(m4_func_NGA_SCATTER, testit_NGA_SCATTER_$1$2())
+  define(m4_func_NGA_SCATTER_ACC, testit_NGA_SCATTER_ACC_$1$2())
+  define(m4_func_NGA_GATHER, testit_NGA_GATHER_$1$2())
+  define(m4_func_NGA_PERIODIC_PUT, testit_NGA_PERIODIC_PUT_$1$2())
+  define(m4_func_NGA_PERIODIC_GET, testit_NGA_PERIODIC_GET_$1$2())
+  define(m4_func_NGA_PERIODIC_ACC, testit_NGA_PERIODIC_ACC_$1$2())
+  define(m4_func_NGA_FILL_PATCH, testit_NGA_FILL_PATCH_$1$2())
+  define(m4_func_NGA_COPY_PATCH, testit_NGA_COPY_PATCH_$1$2())
+  define(m4_func_NGA_SCALE_PATCH, testit_NGA_SCALE_PATCH_$1$2())
+  define(m4_func_NGA_ADD_PATCH, testit_NGA_ADD_PATCH_$1$2())
+  define(m4_func_NGA_DOT_PATCH, testit_NGA_DOT_PATCH_$1$2())
+  define(m4_util_fill_array, fill_array_$1)
+  define(m4_util_init_array, init_array_$1)
+  define(m4_util_compare_patches, compare_patches_$1)
+  define(m4_util_scale_patch, scale_patch_$1)
+  define(m4_util_dot_patch, dot_patch_$1)
+  define(m4_util_transpose, transpose_$1)
+  define(m4_nga_dot_patch, `nga_$1_patch')
+
+  changequote([,])
+  define(m4_print_info,
+      [if(me.eq.0)then 
+         print *, ' '
+         print *, 'TESTING $1'
+         print *, '   - Data Type: m4_data_type'
+         print *, '   - Dimension: m4_ndim'
+         print *, '   - Running on',nproc,'processes (processors)'
+         call ffflush(6)
+      endif])
+  changequote(`,')
+
+  # utility
+  # forloop(i, from, to, stmt)
+  define(`forloop', `pushdef(`$1', `$2')_forloop(`$1', `$2', `$3', 
+	 `$4')popdef(`$1')')
+  define(`_forloop',`$4`'ifelse($1, `$3', ,
+	 `define(`$1', incr($1))_forloop(`$1', `$2', `$3', `$4')')')
+  
+  #---------------------------------------------------------------------
+  # insert the main program
+divert
+include(`ngatest_src/ndim_main.src')
+c-----------------
+divert(-1)
+  # insert the testing subroutines
+divert
+      ifelse(m4_test_int, `yes',
+      	`divert(-1)
+	 undefine(`m4_data_type')
+	 undefine(`m4_test_type')
+	 undefine(`m4_MT')
+	 undefine(`m4_conv')
+	 undefine(`m4_rand')
+	 define(m4_data_type, m4_data_type_int)
+	 define(m4_test_type, m4_test_type_int)
+	 define(m4_MT, `MT_INT')
+	 define(m4_conv, `int($1)')
+	 define(m4_rand, `int(drand(0) * $1 * 2)')
+	 define(m4_dot, `idot')
+	 divert
+         forloop(`m4_i', m4_from, m4_to,
+     	   `divert(-1)
+ 	    undefine(`m4_n')
+            undefine(`m4_ndim')
+            define(m4_n, m4_n_val(m4_i))
+            define(m4_ndim, m4_i)
+	    divert
+            ifelse(m4_test_GA_FILL, `yes', `
+include(`ngatest_src/ndim_GA_FILL.src')')
+	    ifelse(m4_test_NGA_PUT, `yes', `
+include(`ngatest_src/ndim_NGA_PUT.src')')
+	    ifelse(m4_test_NGA_GET, `yes', `
+include(`ngatest_src/ndim_NGA_GET.src')')
+	    ifelse(m4_test_NGA_ACC, `yes', `
+include(`ngatest_src/ndim_NGA_ACC.src')')
+	    ifelse(m4_test_NGA_SCATTER, `yes', `
+include(`ngatest_src/ndim_NGA_SCATTER.src')')
+	    ifelse(m4_test_NGA_SCATTER_ACC, `yes', `
+include(`ngatest_src/ndim_NGA_SCATTER_ACC.src')')
+	    ifelse(m4_test_NGA_GATHER, `yes', `
+include(`ngatest_src/ndim_NGA_GATHER.src')')
+	    ifelse(m4_test_NGA_PERIODIC_PUT, `yes', `
+include(`ngatest_src/ndim_NGA_PERIODIC_PUT.src')')
+	    ifelse(m4_test_NGA_PERIODIC_GET, `yes', `
+include(`ngatest_src/ndim_NGA_PERIODIC_GET.src')')
+	    ifelse(m4_test_NGA_PERIODIC_ACC, `yes', `
+include(`ngatest_src/ndim_NGA_PERIODIC_ACC.src')')
+	    ifelse(m4_test_NGA_FILL_PATCH, `yes', `
+include(`ngatest_src/ndim_NGA_FILL_PATCH.src')')
+	    ifelse(m4_test_NGA_COPY_PATCH, `yes', `
+include(`ngatest_src/ndim_NGA_COPY_PATCH.src')')
+	    ifelse(m4_test_NGA_SCALE_PATCH, `yes', `
+include(`ngatest_src/ndim_NGA_SCALE_PATCH.src')')
+	    ifelse(m4_test_NGA_ADD_PATCH, `yes', `
+include(`ngatest_src/ndim_NGA_ADD_PATCH.src')')
+	    ifelse(m4_test_NGA_DOT_PATCH, `yes', `
+include(`ngatest_src/ndim_NGA_DOT_PATCH.src')')')')
+      ifelse(m4_test_dbl, `yes',
+      	`divert(-1)
+	 undefine(`m4_data_type')
+	 undefine(`m4_test_type')
+	 undefine(`m4_MT')
+	 undefine(`m4_conv')
+	 undefine(`m4_rand')
+	 undefine(`m4_dot')
+	 define(m4_data_type, m4_data_type_dbl)
+	 define(m4_test_type, m4_test_type_dbl)
+	 define(m4_MT, `MT_DBL')
+	 define(m4_conv, `dble($1)')
+	 define(m4_rand, `drand(0) * $1 * 2')
+	 define(m4_dot, `ddot')
+	 divert
+         forloop(`m4_i', m4_from, m4_to,
+	   `divert(-1)
+	    undefine(`m4_n')
+            undefine(`m4_ndim')
+            define(m4_n, m4_n_val(m4_i))
+            define(m4_ndim, m4_i)
+	    divert
+            ifelse(m4_test_GA_FILL, `yes', `
+include(`ngatest_src/ndim_GA_FILL.src')')
+	    ifelse(m4_test_NGA_PUT, `yes', `
+include(`ngatest_src/ndim_NGA_PUT.src')')
+	    ifelse(m4_test_NGA_GET, `yes', `
+include(`ngatest_src/ndim_NGA_GET.src')')
+	    ifelse(m4_test_NGA_ACC, `yes', `
+include(`ngatest_src/ndim_NGA_ACC.src')')
+	    ifelse(m4_test_NGA_SCATTER, `yes', `
+include(`ngatest_src/ndim_NGA_SCATTER.src')')
+	    ifelse(m4_test_NGA_SCATTER_ACC, `yes', `
+include(`ngatest_src/ndim_NGA_SCATTER_ACC.src')')
+	    ifelse(m4_test_NGA_GATHER, `yes', `
+include(`ngatest_src/ndim_NGA_GATHER.src')')
+	    ifelse(m4_test_NGA_PERIODIC_PUT, `yes', `
+include(`ngatest_src/ndim_NGA_PERIODIC_PUT.src')')
+	    ifelse(m4_test_NGA_PERIODIC_GET, `yes', `
+include(`ngatest_src/ndim_NGA_PERIODIC_GET.src')')
+	    ifelse(m4_test_NGA_PERIODIC_ACC, `yes', `
+include(`ngatest_src/ndim_NGA_PERIODIC_ACC.src')')
+	    ifelse(m4_test_NGA_FILL_PATCH, `yes', `
+include(`ngatest_src/ndim_NGA_FILL_PATCH.src')')
+	    ifelse(m4_test_NGA_COPY_PATCH, `yes', `
+include(`ngatest_src/ndim_NGA_COPY_PATCH.src')')
+	    ifelse(m4_test_NGA_SCALE_PATCH, `yes', `
+include(`ngatest_src/ndim_NGA_SCALE_PATCH.src')')
+	    ifelse(m4_test_NGA_ADD_PATCH, `yes', `
+include(`ngatest_src/ndim_NGA_ADD_PATCH.src')')
+	    ifelse(m4_test_NGA_DOT_PATCH, `yes', `
+include(`ngatest_src/ndim_NGA_DOT_PATCH.src')')')')
+      ifelse(m4_test_dcpl, `yes',
+      	`divert(-1)
+         undefine(`m4_data_type')
+ 	 undefine(`m4_test_type')
+	 undefine(`m4_MT')
+	 undefine(`m4_conv')
+	 undefine(`m4_rand')
+	 undefine(`m4_dot')
+	 define(m4_data_type, m4_data_type_dcpl)
+	 define(m4_test_type, m4_test_type_dcpl)
+	 define(m4_MT, `MT_DCPL')
+	 define(m4_conv, `dcmplx(dble($1),dble(0))')
+	 define(m4_rand, `dcmplx(drand(0) * $1 * 2,
+     $    -drand(0) * $1 * 2)')
+	 define(m4_dot, `zdot')
+	 divert
+         forloop(`m4_i', m4_from, m4_to, 
+     	   `divert(-1)
+	    undefine(`m4_n')
+            undefine(`m4_ndim')
+            define(m4_n, m4_n_val(m4_i))
+            define(m4_ndim, m4_i)
+	    divert
+            ifelse(m4_test_GA_FILL, `yes', `
+include(`ngatest_src/ndim_GA_FILL.src')')
+	    ifelse(m4_test_NGA_PUT, `yes', `
+include(`ngatest_src/ndim_NGA_PUT.src')')
+	    ifelse(m4_test_NGA_GET, `yes', `
+include(`ngatest_src/ndim_NGA_GET.src')')
+	    ifelse(m4_test_NGA_ACC, `yes', `
+include(`ngatest_src/ndim_NGA_ACC.src')')
+	    ifelse(m4_test_NGA_SCATTER, `yes', `
+include(`ngatest_src/ndim_NGA_SCATTER.src')')
+	    ifelse(m4_test_NGA_SCATTER_ACC, `yes', `
+include(`ngatest_src/ndim_NGA_SCATTER_ACC.src')')
+	    ifelse(m4_test_NGA_GATHER, `yes', `
+include(`ngatest_src/ndim_NGA_GATHER.src')')
+	    ifelse(m4_test_NGA_PERIODIC_PUT, `yes', `
+include(`ngatest_src/ndim_NGA_PERIODIC_PUT.src')')
+	    ifelse(m4_test_NGA_PERIODIC_GET, `yes', `
+include(`ngatest_src/ndim_NGA_PERIODIC_GET.src')')
+	    ifelse(m4_test_NGA_PERIODIC_ACC, `yes', `
+include(`ngatest_src/ndim_NGA_PERIODIC_ACC.src')')
+	    ifelse(m4_test_NGA_FILL_PATCH, `yes', `
+include(`ngatest_src/ndim_NGA_FILL_PATCH.src')')
+	    ifelse(m4_test_NGA_COPY_PATCH, `yes', `
+include(`ngatest_src/ndim_NGA_COPY_PATCH.src')')
+	    ifelse(m4_test_NGA_SCALE_PATCH, `yes', `
+include(`ngatest_src/ndim_NGA_SCALE_PATCH.src')')
+	    ifelse(m4_test_NGA_ADD_PATCH, `yes', `
+include(`ngatest_src/ndim_NGA_ADD_PATCH.src')')
+	    ifelse(m4_test_NGA_DOT_PATCH, `yes', `
+include(`ngatest_src/ndim_NGA_DOT_PATCH.src')')')')
+c-----------------------
+c 	Utility functions
+divert(-1)
+  # insert the utility program
+divert
+include(`ngatest_src/ndim_util_comm.src')
+ifelse(m4_test_int, `yes',
+  `divert(-1)
+   undefine(`m4_data_type')
+   undefine(`m4_test_type')
+   undefine(`m4_rand')
+   define(m4_data_type, m4_data_type_int)
+   define(m4_test_type, m4_test_type_int)
+   define(m4_rand, `int(drand(0) * i * 2)')
+   divert
+include(`ngatest_src/ndim_util.src')')
+ifelse(m4_test_dbl, `yes',
+  `divert(-1)
+   undefine(`m4_data_type')
+   undefine(`m4_test_type')
+   undefine(`m4_rand')
+   define(m4_data_type, m4_data_type_dbl)
+   define(m4_test_type, m4_test_type_dbl)
+   define(m4_rand, `drand(0) * i * 2')
+   divert
+include(`ngatest_src/ndim_util.src')')
+ifelse(m4_test_dcpl, `yes',
+  `divert(-1)
+   undefine(`m4_data_type')
+   undefine(`m4_test_type')
+   undefine(`m4_rand')
+   define(m4_data_type, m4_data_type_dcpl)
+   define(m4_test_type, m4_test_type_dcpl)
+   define(m4_rand, `dcmplx(drand(0) * i * 2,
+     $    -drand(0) * i * 2)')
+   divert
+include(`ngatest_src/ndim_util.src')')

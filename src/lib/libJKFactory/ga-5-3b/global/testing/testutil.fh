@@ -1,0 +1,4 @@
+      double precision drand, util_timer
+      integer util_mitob, util_mdtob
+      external drand, util_timer
+      external util_mitob, util_mdtob

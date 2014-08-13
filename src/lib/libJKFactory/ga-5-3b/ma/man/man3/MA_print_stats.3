@@ -1,0 +1,47 @@
+.TH MA_PRINT_STATS 3 "20 February 1997" "MA Release 1.8" "MA LIBRARY ROUTINES"
+.SH NAME
+MA_print_stats -
+print MA usage statistics on the standard output (stdout)
+.SH "C SYNOPSIS"
+.nf
+#include "macdecls.h"
+
+void MA_print_stats()
+.fi
+.SH "FORTRAN SYNOPSIS"
+.nf
+#include "mafdecls.fh"
+
+subroutine MA_print_stats
+.fi
+.SH DESCRIPTION
+MA_print_stats() prints MA allocation statistics
+(current and maximum number of blocks and total bytes for heap and stack)
+and calls per MA routine
+on the standard output (stdout).
+.\" .SH USAGE
+.SH DIAGNOSTICS
+unavailable; recompile MA with -DSTATS
+.in +0.5i
+To use this routine,
+MA must be compiled with cpp option -DSTATS.
+.in
+.SH "RETURN VALUE"
+C: None.
+.br
+FORTRAN: None.
+.\" .SH NOTES
+.SH FILES
+.nf
+Include files: /msrc/proj/hpctools/ma/release/current/include
+Library:       /msrc/proj/hpctools/ma/release/current/lib/\fIplatform\fR/libma.a
+Man pages:     /msrc/proj/hpctools/ma/release/current/man/man3
+Source code:   /msrc/proj/hpctools/ma/release/current/tar/ma\fIrelease\fR.tar
+.fi
+.SH "SEE ALSO"
+.na
+MA(3),
+MA_summarize_allocated_blocks(3)
+.ad
+.SH AUTHOR
+Gregory S. Thomas, Pacific Northwest National Laboratory

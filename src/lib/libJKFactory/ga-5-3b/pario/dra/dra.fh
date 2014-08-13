@@ -1,0 +1,53 @@
+!****************** Fortran header file for Disk Arrays *****************
+
+#include  "chemio.h"
+#define   DRA_RW ELIO_RW
+#define   DRA_R  ELIO_R
+#define   DRA_W  ELIO_W
+          Integer           DRA_REQ_INVALID
+          parameter        (DRA_REQ_INVALID = -333)
+          Integer           DRA_CREATE
+          Integer           NDRA_CREATE
+          Integer           NDRA_CREATE_CONFIG
+          Integer           DRA_OPEN
+          Integer           DRA_INQUIRE
+          Integer           NDRA_INQUIRE
+          Integer           DRA_INIT
+          Integer           DRA_CLOSE
+          Integer           DRA_DELETE
+          Integer           DRA_WRITE
+          Integer           NDRA_WRITE
+          Integer           DRA_READ
+          Integer           NDRA_READ
+          Integer           DRA_WRITE_SECTION
+          Integer           NDRA_WRITE_SECTION
+          Integer           DRA_READ_SECTION
+          Integer           NDRA_READ_SECTION
+          Integer           DRA_PROBE
+          Integer           DRA_SET_DEBUG
+          Integer           DRA_WAIT
+          Integer           DRA_TERMINATE  
+          External          DRA_CREATE
+          External          NDRA_CREATE
+          External          NDRA_CREATE_CONFIG
+          External          DRA_OPEN
+          External          DRA_INQUIRE
+          External          NDRA_INQUIRE
+          External          DRA_INIT
+          External          DRA_CLOSE
+          External          DRA_DELETE
+          External          DRA_WRITE
+          External          NDRA_WRITE
+          External          DRA_READ
+          External          NDRA_READ
+          External          DRA_WRITE_SECTION
+          External          NDRA_WRITE_SECTION
+          External          DRA_READ_SECTION
+          External          NDRA_READ_SECTION
+          External          DRA_PROBE
+          External          DRA_SET_DEBUG
+          External          DRA_WAIT
+          External          DRA_TERMINATE
+          External          DRA_FLICK
+
+

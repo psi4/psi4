@@ -141,7 +141,7 @@ class PluginFileManager{
             // Load in Makefile.template
             FILE* fp = fopen(source_name.c_str(), "r");
             if (fp == NULL) {
-                printf("create_new_plugin: Unable to open Makefile template.\n");
+                printf("create_new_plugin: Unable to open %s template.\n",source_name.c_str());
                 exit(1);
             }
             // Stupid way to read in entire file.
@@ -211,7 +211,8 @@ void create_new_plugin(std::string name, const std::string& template_name)
 
     // Process the files
     PluginFileManager file_manager(plugin_name);
-    file_manager.add_file("/Makefile.template", "Makefile");
+    //file_manager.add_file("/Makefile.template", "Makefile");
+    file_manager.add_file("/CMakeLists.txt.template","CMakeLists.txt");
     file_manager.add_file("/input.dat.template", "input.dat");
     file_manager.add_file("pymodule.py.template", "pymodule.py");
     file_manager.add_file("__init__.py.template", "__init__.py");

@@ -1,0 +1,32 @@
+#!ccaffeine bootstrap file. 
+# ------- don't change anything ABOVE this line.-------------
+path set /msrc/proj/cca/manoj/dccafe/cxx/dc/component:/msrc/proj/cca/manoj/dccafe/lib/babel-components
+
+# Added by Manoj
+path append /msrc/home/manoj/ga_cca_classic
+path append /msrc/home/manoj/ga_cca_classic/TestComponent
+
+! The above line should be path /usr/local/ccafe/cxx/dc/component
+! unless you hack/add your own component directories in a : separated list.
+repository get-global StarterComponent
+repository get-global TimeStamper
+repository get-global Timer
+repository get-global PrinterComponent
+repository get-global RevalidateTest
+repository get ccafe1.StarterComponent
+repository get ccafe0.PrinterComponent
+repository get ccafe_eg.PortTranslatorStarter
+
+repository get-global GA::GAServices
+repository get-global TestComponent
+
+# create component instatiations
+create GA::GAServices ga
+create TestComponent tc
+
+#connect the components
+connect tc ga_classic_port ga ga_classic_port
+
+go
+
+quit

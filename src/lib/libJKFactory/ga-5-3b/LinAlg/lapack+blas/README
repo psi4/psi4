@@ -1,0 +1,4 @@
+This directory contains a subset of LAPACK and BLAS subroutines.
+They have been prefixed with "gal_" so as not to conflict with any external
+BLAS/LAPACK libraries. These sources are unconditionally compiled so long as a
+valid Fortran compiler is detected.

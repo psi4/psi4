@@ -1,0 +1,101 @@
+      subroutine m4_func_NGA_ACC(m4_test_type, m4_ndim)
+      implicit none
+#include "mafdecls.fh"
+#include "global.fh"
+c     
+      integer n,m
+      integer ndim
+      parameter (n = m4_n)
+      parameter (m = (m4_n**m4_ndim)/100)
+      parameter (ndim = m4_ndim)
+      m4_data_type a(substr(m4_array, 1, eval(m4_ndim*2-1)))
+      m4_data_type b(substr(m4_array, 1, eval(m4_ndim*2-1)))
+      m4_data_type c(substr(m4_array, 1, eval(m4_ndim*2-1)))
+      integer lo(ndim),hi(ndim),dims(ndim),ld(ndim)
+      integer g_a
+      integer lop(ndim),hip(ndim)
+      integer chunk(ndim)
+      integer i, total, loop
+      double precision drand
+      m4_data_type val, alpha
+      integer nproc, me, proc
+      logical status
+c     
+      nproc = ga_nnodes()
+      me    = ga_nodeid()
+c     
+c---------------------- initialize the GA -----------------------
+c     initialize the chunk, dims, ld, and calculate the number 
+c     of elements
+      total=1
+      do i = 1,ndim
+         chunk(i) = 0
+         dims(i) = n
+         ld(i) = n
+         total = total * dims(i)
+      enddo
+c
+c***  Create global arrays
+      if (.not. nga_create(m4_MT, ndim, dims, 'a', chunk, g_a))
+     $     call ga_error(' ga_create failed ',1)
+c     
+      call ga_sync()
+c
+c------------------------------- NGA_ACC ----------------------------
+      m4_print_info(nga_acc)
+c
+      call ga_sync()
+      val = m4_rand(me*2+1)
+      call ga_fill(g_a,val)
+      call ga_sync()
+      proc =  nproc-1 -me       ! access other process memory 
+      call nga_distribution(g_a,proc,lop,hip)
+c      
+      call m4_util_init_array(m4_test_type)(b,total)
+c
+      do loop = 1, MAXLOOP 
+         call random_range(lop,hip,lo,hi,ndim)
+         if(Mod(loop,10).eq.0)then
+            if(Mod((loop/10),ndim).eq.me) then
+               call print_range(loop,lo,hi,ndim)
+            endif
+         endif
+         call ga_sync()
+c        keep a copy of the original patch
+         if(hi(1).ne.-1) call nga_get(g_a,lo,hi,
+     $        a(substr(m4_lo_all, 1, eval(m4_ndim*6-1))),ld)
+c        generate the alpha
+         alpha = val
+c
+         call ga_sync()
+c        keep a copy of the original patch
+         if(hi(1).ne.-1) call nga_acc(g_a,lo,hi,
+     $        b(substr(m4_lo_all, 1, eval(m4_ndim*6-1))),ld,alpha)
+c     
+         call ga_sync()
+c
+         if(hi(1).ne.-1) then
+c           scale the local copy of array            
+            call m4_util_scale_patch(m4_test_type)(total,
+     $        m4_conv(1),a,lo,hi,ndim,dims,
+     $        alpha,b,lo,hi,ndim,dims) 
+c
+c           get the patch from the global array
+            call nga_get(g_a,lo,hi,
+     $        c(substr(m4_lo_all, 1, eval(m4_ndim*6-1))),ld)
+c
+            call m4_util_compare_patches(m4_test_type)(1d-2,total,
+     $        a,lo,hi,ndim,dims,total,c,lo,hi,ndim,dims)
+         endif
+      enddo
+c
+      call ga_sync()
+      if(me.eq.0)then
+         print *, 'OK'
+         print *, ' '
+         call ffflush(6)
+      endif
+c---------------------------
+c     
+      status= ga_destroy(g_a)
+      end

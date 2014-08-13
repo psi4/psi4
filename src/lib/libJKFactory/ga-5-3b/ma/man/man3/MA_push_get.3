@@ -1,0 +1,119 @@
+.TH MA_PUSH_GET 3 "20 February 1997" "MA Release 1.8" "MA LIBRARY ROUTINES"
+.SH NAME
+MA_push_get -
+allocate a stack block and get the corresponding base index
+.SH "C SYNOPSIS"
+.nf
+#include "macdecls.h"
+
+Boolean MA_push_get(datatype, nelem, name, memhandle, index)
+    Integer     datatype;       /* read-only */
+    Integer     nelem;          /* read-only */
+    char        *name;          /* read-only */
+    Integer     *memhandle;     /* write-only */
+    Integer     *index;         /* write-only */
+.fi
+.SH "FORTRAN SYNOPSIS"
+.nf
+#include "mafdecls.fh"
+
+logical function MA_push_get(datatype, nelem, name, memhandle, index)
+    integer     datatype
+    integer     nelem
+    character*(*) name
+    integer     memhandle
+    integer     index
+.fi
+.SH DESCRIPTION
+MA_push_get() is a convenience function
+that combines MA_push_stack() and MA_get_index().
+MA_push_get() allocates a stack block large enough to hold
+.I nelem
+elements of type
+.I datatype
+and associates
+.I name
+with the block for debugging purposes.
+A handle for the block is returned in
+.I memhandle
+and the base index
+for the type-specific data array that is appropriate
+for the block
+is returned in
+.IR index .
+.SH USAGE
+The following FORTRAN code illustrates the use of MA_push_get()
+by allocating a block of 5 integers on the stack
+and then storing values into the integers.
+
+.nf
+#include "mafdecls.fh"
+
+    logical ok
+    integer mhandle
+    integer index
+    integer i
+
+    ok = MA_push_get(MT_INT, 5, 'stack int block', mhandle, index)
+    if (ok) then
+        do 10 i = 0, 4
+            int_mb(index + i) = 0
+10      continue
+    endif
+.fi
+.SH DIAGNOSTICS
+block '%s', MA not yet initialized
+.in +0.5i
+MA_init() must be called before this routine is called.
+.in
+block '%s', invalid datatype: %d
+.in +0.5i
+.I datatype
+must be one of those listed in macdecls.h or mafdecls.fh.
+.in
+block '%s', invalid nelem: %d
+.in +0.5i
+.I nelem
+must be greater than zero.
+.in
+block '%s', not enough space to allocate %d bytes
+.in +0.5i
+Recovery may be attempted by deallocating unneeded blocks
+and resubmitting the request,
+or the application may be rewritten to request more memory
+initially in the call to MA_init().
+.in
+
+Other diagnostics are possible.
+If seen,
+they indicate corruption of the internal state of MA,
+caused by bugs in either MA or the application.
+.SH "RETURN VALUE"
+C: MA_TRUE upon success, MA_FALSE upon failure.
+.br
+FORTRAN: .true. upon success, .false. upon failure.
+.SH NOTES
+Type-specific data arrays are not yet available in C,
+so employ pointers instead of indices
+by using MA_push_stack() and MA_get_pointer()
+instead of MA_push_get().
+.SH FILES
+.nf
+Include files: /msrc/proj/hpctools/ma/release/current/include
+Library:       /msrc/proj/hpctools/ma/release/current/lib/\fIplatform\fR/libma.a
+Man pages:     /msrc/proj/hpctools/ma/release/current/man/man3
+Source code:   /msrc/proj/hpctools/ma/release/current/tar/ma\fIrelease\fR.tar
+.fi
+.SH "SEE ALSO"
+.na
+MA(3),
+MA_chop_stack(3),
+MA_get_index(3),
+MA_get_pointer(3),
+MA_inquire_avail(3),
+MA_inquire_stack(3),
+MA_pop_stack(3),
+MA_push_stack(3)
+.ad
+.SH AUTHOR
+Gregory S. Thomas, Pacific Northwest National Laboratory

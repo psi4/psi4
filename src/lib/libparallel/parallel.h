@@ -97,6 +97,8 @@ class Parallel {
 
       virtual void MakeComm(const std::string& Name, const int Color,
             const std::string& Comm2Split="NONE"){}
+
+      virtual void FreeComm(const std::string& Name="NONE"){}
 };// End Parallel base class
 }//End namespace psi
 #endif  /* _psi_src_lib_libparallel_parallel_h_ */

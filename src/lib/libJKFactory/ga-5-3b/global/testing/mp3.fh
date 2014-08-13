@@ -1,0 +1,23 @@
+#ifdef TCGMSG
+#   include "tcgmsg.fh"
+#   define MP_TIMER tcgtime
+#   define MP_FINALIZE() pend()
+#else
+#   include "mpif.h"
+#   define MP_TIMER mpi_wtime
+#   define MP_FINALIZE() mpi_finalize(ierr)
+#endif
+#ifndef MP_DEFINES_ONLY
+#   ifdef TCGMSG
+      call pbeginf
+#   else
+      integer ierr
+#       if defined(DCMF) || defined(MPI_MT)
+      integer required, provided
+      required=MPI_THREAD_MULTIPLE
+      call mpi_init_thread(required, provided, ierr)
+#       else
+      call mpi_init(ierr)
+#       endif
+#   endif
+#endif

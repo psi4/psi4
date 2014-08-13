@@ -1,0 +1,70 @@
+.TH MA_GET_NEXT_MEMHANDLE 3 "20 February 1997" "MA Release 1.8" " "
+.SH NAME
+MA_get_next_memhandle -
+get the handle for the next block in the scan of currently allocated blocks
+.SH "C SYNOPSIS"
+.nf
+#include "macdecls.h"
+
+Boolean MA_get_next_memhandle(ithandle, memhandle)
+    Integer     *ithandle;      /* read-write */
+    Integer     *memhandle;     /* write-only */
+.fi
+.SH "FORTRAN SYNOPSIS"
+.nf
+#include "mafdecls.fh"
+
+logical function MA_get_next_memhandle(ithandle, memhandle)
+    integer     ithandle
+    integer     memhandle
+.fi
+.SH DESCRIPTION
+MA_get_next_memhandle() returns in
+.I memhandle
+the handle for the next block in the scan of currently allocated blocks
+corresponding to the iterator handle
+.I ithandle
+(which was returned by MA_init_memhandle_iterator()
+when the scan was initialized).
+.SH USAGE
+The following FORTRAN code illustrates the use of MA_get_next_memhandle()
+by looping over all currently allocated blocks.
+
+.nf
+#include "mafdecls.fh"
+
+    logical ok
+    integer ihandle
+    integer mhandle
+
+    ok = MA_init_memhandle_iterator(ihandle)
+    if (ok) then
+        ok = MA_get_next_memhandle(ihandle, mhandle)
+10      if (ok) then
+            ... process mhandle
+            ok = MA_get_next_memhandle(ihandle, mhandle)
+            goto 10
+        endif
+    endif
+.fi
+.\" .SH DIAGNOSTICS
+.SH "RETURN VALUE"
+C: MA_TRUE upon success, MA_FALSE upon failure.
+.br
+FORTRAN: .true. upon success, .false. upon failure.
+.SH NOTES
+This routine is not yet implemented.
+.SH FILES
+.nf
+Include files: /msrc/proj/hpctools/ma/release/current/include
+Library:       /msrc/proj/hpctools/ma/release/current/lib/\fIplatform\fR/libma.a
+Man pages:     /msrc/proj/hpctools/ma/release/current/man/man3
+Source code:   /msrc/proj/hpctools/ma/release/current/tar/ma\fIrelease\fR.tar
+.fi
+.SH "SEE ALSO"
+.na
+MA(3),
+MA_init_memhandle_iterator(3)
+.ad
+.SH AUTHOR
+Gregory S. Thomas, Pacific Northwest National Laboratory

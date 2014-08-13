@@ -1,0 +1,28 @@
+#ifndef GALINALG_FH_
+#define GALINALG_FH_
+
+#if HAVE_BLAS
+#else
+#define sgemm gal_sgemm
+#define SGEMM GAL_SGEMM
+#define dgemm gal_dgemm
+#define DGEMM GAL_DGEMM
+#define zgemm gal_zgemm
+#define ZGEMM GAL_ZGEMM
+#define cgemm gal_cgemm
+#define CGEMM GAL_CGEMM
+#endif
+
+#if HAVE_LAPACK
+#else
+#define dgetrf gal_dgetrf
+#define DGETRF GAL_DGETRF
+#define dtrsm  gal_dtrsm
+#define DTRSM  GAL_DTRSM
+#define lsame  gal_lsame
+#define LSAME  GAL_LSAME
+#define xerbla gal_xerbla
+#define XERBLA GAL_XERBLA
+#endif
+
+#endif /* GALINALG_FH_ */

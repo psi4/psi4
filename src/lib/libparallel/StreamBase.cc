@@ -78,10 +78,10 @@ void PsiOutStream::MakeBanner(const std::string& message,const char delimiter,
          int lsize=(size-(size%2))/2+(size%2);
          int rsize=size-lsize;
          //Number of times to print character
-         int lchars=Width_/2-nspaces-lsize;
-         int rchars=Width_/2-nspaces-rsize;
-         std::string lsym(lchars,symbol);
-         std::string rsym(rchars,symbol);
+         int lchars=width/2-nspaces-lsize;
+         int rchars=width/2-nspaces-rsize;
+         std::string lsym(lchars,delimiter);
+         std::string rsym(rchars,delimiter);
          std::string spaces(nspaces,' ');
          (*this)<<lsym<<spaces<<message<<spaces<<rsym<<std::endl;
       }
@@ -115,9 +115,10 @@ void PsiOutStream::Flush(){
    }
 }
 
-void PsiOutStream::Write2Buffer(StreamManips fp){
+std::ostream& PsiOutStream::Write2Buffer(StreamManips fp){
    Buffer_<<fp;
    this->DumpBuffer();
+   return Buffer_;
 }
 }//End psi namespace
 

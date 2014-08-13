@@ -1,0 +1,19 @@
+
+The following packages are need to compile cca directory.These packages 
+can be obtained from www.cca-forum.org
+CCAFFEINE
+ - cca-spec-classic
+ - ccafe
+
+
+Set the following Environment Variables appropriately. Other envs are 
+taken from $CCAFE_HOME/Makefile.Vars (Makefile.Vars is included in 
+Makefile.Rules)
+	For example:
+		export CCAFE_HOME=/msrc/proj/cca/manoj/dccafe/cxx
+		export GA_HOME=/msrc/home/manoj/GA
+
+Supported Platforms:
+	GA-CCA stuff is curently tested only in Linux and Solaris as the 
+	CCA software (CCAFFEINE) is still under development.
+

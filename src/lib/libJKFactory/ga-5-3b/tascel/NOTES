@@ -1,0 +1,48 @@
+
+* op: Process a task pool until all tasks have been executed
+* op: Insert task into task pool
+
+
+Assertions to optimize for:
+* All tasks are of the same size (or differebt)
+* All tasks have been inserted before any task is processed
+* All tasks are sequential (or parallel)
+* Tasks perform no communication and require no data
+* Task perform communication, data required specified
+* Tasks can create other tasks
+* Data is in memory or disk
+
+Features:
+* Choices of termination detection and signalling
+  -- GA_Sync() style global termination detection
+  -- Wait for global termination of a specific taskpool
+     -- ala split-phase barriers
+
+API list (more rough notes to be structured into a specification later):
+------------------------------------------------------------------------
+
+1. Single global counter. Supports atomic read increment (and that is it)
+  -- Identifying the task from the counter done by user
+  -- Termination detection done by user (typically GA_Sync)
+
+2. Single global counter with known bound on number of tasks. API would support 
+increment and check whether more tasks exist.
+  -- Identifying the task from the counter done by user
+  -- Termination detection supported by API
+
+3. Single global counter backing a task iterator.  
+  -- Task created by the API from the iterator
+  -- Termination detection by API
+
+4. Single global counter backing a global list of tasks
+
+5. 2-3 with global counters in multiple processes. 1 does not make sense without 
+allowing repeated task execution. When backing an iterator, the iterator can be 
+sliced appropriately.
+
+6. Distributed tasks queues with work stealing. tasks are integers.
+
+7. Distributed task queues with work stealing. all tasks of the same size
+
+8. Distributed task queues with work stealing. tasks of different sizes. 
+

@@ -1,0 +1,780 @@
+##############################################################################
+# This is the Artistic Style (astyle) options file used by tascel.
+##############################################################################
+# 
+# The command line options have precedence. If there is a conflict between
+# a command line option and an option in the default options file, the
+# command line option will be used.
+#
+# Lines within this options file that begin with '#' are considered
+# line-comments.
+#
+# astyle looks for this file in the following locations (in order):
+# 1. the file indicated by the --options= command line option;
+# 2. the file and directory indicated by the environment variable
+#    ARTISTIC_STYLE_OPTIONS (if it exists);
+# 3. the file named .astylerc in the directory pointed to by the HOME
+#    environment variable (e.g. "$HOME/.astylerc" on Linux);
+# 4. the file named astylerc in the directory pointed to by the
+#    USERPROFILE environment variable (e.g. "%USERPROFILE%\astylerc" on
+#    Windows).
+#
+##############################################################################
+### tascel Style Options #####################################################
+##############################################################################
+#
+--indent=spaces=2
+--brackets=attach
+--indent-classes
+--indent-switches
+--indent-namespaces
+--indent-col1-comments
+--max-instatement-indent=40
+--pad-oper
+--pad-header
+--unpad-paren
+--break-closing-brackets
+--add-brackets
+--convert-tabs
+--align-pointer=name
+#
+##############################################################################
+### Tab and Bracket Options ##################################################
+##############################################################################
+# 
+## default indent option
+## If no indentation option is set, the default option of 4 spaces will be
+## used (e.g. -s4 --indent=spaces=4).
+# 
+# ----------------------------------------------------------------------------
+# --indent=spaces / --indent=spaces=# / -s#
+# Indent using # spaces per indent (e.g. -s6 --indent=spaces=6). # must be
+# between 2 and 20. Not specifying # will result in a default of 4 spaces per
+# indent.
+# 
+# ----------------------------------------------------------------------------
+# --indent=tab / --indent=tab=# / -t / -t#
+# Indent using tab characters. Treat each tab as # spaces
+# (e.g. -t6 / --indent=tab=6). # must be between 2 and 20. If no # is set,
+# treats tabs as 4 spaces.
+# 
+# ----------------------------------------------------------------------------
+# --indent=force-tab / --indent=force-tab=# / -T / -T#
+# Indent using tab characters. Treat each tab as # spaces
+# (e.g. -T6 / --indent=force-tab=6). Uses tabs as indents where ‑‑indent=tab
+# prefers to use spaces, such as inside multi-line statements. # must be
+# between 2 and 20. If no # is set, treats tabs as 4 spaces.
+# 
+# ----------------------------------------------------------------------------
+## default brackets option
+## If no brackets option is set, the brackets will not be changed.
+# 
+# ----------------------------------------------------------------------------
+# --brackets=break / -b
+# Break brackets from their pre-block statements ( e.g. Allman / ANSI style ).
+# 
+# void Foo(bool isFoo)
+# {
+#     if (isFoo)
+#     {
+#         bar();
+#     }
+#     else
+#     {
+#         anotherBar();
+#     }
+# }
+# 
+# ----------------------------------------------------------------------------
+# --brackets=attach / -a
+# Attach brackets to their pre-block statements ( e.g. Java style ).
+# 
+# void Foo(bool isFoo) {
+#     if (isFoo) {
+#         bar();
+#     } else {
+#         anotherBar();
+#     }
+# }
+#
+# ----------------------------------------------------------------------------
+# --brackets=linux / -l
+# Break brackets from namespace, class, and function definitions, but attach
+# brackets to statements within a function  ( e.g. K&R / Linux style ).
+#
+# With C++ files brackets are attached for function definitions within a class
+# (inline class functions). The brackets are also attached for arrays, structs,
+# enums, and other top level objects that are not classes or functions. This
+# option is effective for C/C++ files only.
+#
+# void Foo(bool isFoo)
+# {
+#     if (isFoo) {
+#         bar();
+#     } else {
+#         anotherBar;
+#     }
+# }
+#
+# ----------------------------------------------------------------------------
+# --brackets=stroustrup / -u
+# Break brackets from function definitions only. Attach brackets to
+# namespaces, classes, and statements within a function ( e.g. Stroustrup
+# style ).
+# 
+# With C++ files brackets are attached for function definitions within a class
+# (inline class functions). The brackets are also attached for arrays, structs,
+# enums, and other top level objects that are not classes or functions. This
+# option is effective for C/C++ files only.
+# 
+# void Foo(bool isFoo)
+# {
+#     if (isFoo) {
+#         bar();
+#     } else {
+#         anotherBar;
+#     }
+# }
+# 
+# ----------------------------------------------------------------------------
+# --brackets=horstmann / -g
+# Break brackets from their pre-block statements but allow run-in statements
+# on the same line as an opening bracket ( e.g. Horstmann style ).
+# 
+# void Foo(bool isFoo)
+# {   if (isFoo())
+#     {   bar1();
+#         bar2();
+#     }
+#     else
+#     {   anotherBar();
+#     }
+# }
+# 
+##############################################################################
+### Indentation Options ######################################################
+##############################################################################
+#
+# --indent-classes / -C
+# Indent 'class' and 'struct' blocks so that the blocks 'public:',
+# 'protected:' and 'private:' are indented. The struct blocks are indented
+# only if an access modifier is declared somewhere in the struct. The entire
+# block is indented. This option is effective for C++ files only.
+# 
+# class Foo
+# {
+# public:
+#     Foo();
+#     virtual ~Foo();
+# };
+# 
+# becomes:
+# 
+# class Foo
+# {
+#     public:
+#         Foo();
+#         virtual ~Foo();
+# };
+# 
+# ----------------------------------------------------------------------------
+# --indent-switches / -S
+# Indent 'switch' blocks so that the 'case X:' statements are indented in the
+# switch block. The entire case block is indented.
+# 
+# switch (foo)
+# {
+# case 1:
+#     a += 1;
+#     break;
+# 
+# case 2:
+# {
+#     a += 2;
+#     break;
+# }
+# }
+# 
+# becomes:
+# 
+# switch (foo)
+# {
+#     case 1:
+#         a += 1;
+#         break;
+# 
+#     case 2:
+#     {
+#         a += 2;
+#         break;
+#     }
+# }
+# 
+# ----------------------------------------------------------------------------
+# --indent-cases / -K
+# Indent 'case X:' blocks from the 'case X:' headers. Case statements not
+# enclosed in blocks are NOT indented.
+# 
+# switch (foo)
+# {
+#     case 1:
+#         a += 1;
+#         break;
+# 
+#     case 2:
+#     {
+#         a += 2;
+#         break;
+#     }
+# }
+# 
+# becomes:
+# 
+# switch (foo)
+# {
+#     case 1:
+#         a += 1;
+#         break;
+# 
+#     case 2:
+#         {
+#             a += 2;
+#             break;
+#         }
+# }
+# 
+# ----------------------------------------------------------------------------
+# --indent-brackets / -B
+# Add extra indentation to brackets. This is the option used for Whitesmith
+# and Banner style formatting/indenting. If both ‑‑indent‑brackets and
+# ‑‑indent‑blocks are used the result will be ‑‑indent‑blocks. This option
+# will be ignored if used with a predefined style.
+# 
+# if (isFoo)
+# {
+#     bar();
+# }
+# else
+#     anotherBar();
+# 
+# becomes:
+# 
+# if (isFoo)
+#     {
+#     bar();
+#     }
+# else
+#     anotherBar();
+# 
+# ----------------------------------------------------------------------------
+# --indent-blocks / -G
+# Add extra indentation to blocks within a function. The opening bracket for
+# namespaces, classes, and functions is not indented. This is the option used
+# for GNU style formatting/indenting. This option will be ignored if used with
+# a predefined style.
+# 
+# if (isFoo)
+# {
+#     bar();
+# }
+# else
+#     anotherBar();
+# 
+# becomes:
+# 
+# if (isFoo)
+#     {
+#         bar();
+#     }
+# else
+#     anotherBar();
+# 
+# ----------------------------------------------------------------------------
+# --indent-namespaces / -N
+# Add extra indentation to namespace blocks. This option has no effect on Java
+# files.
+# 
+# namespace foospace
+# {
+# class Foo
+# {
+#     public:
+#         Foo();
+#         virtual ~Foo();
+# };
+# }
+# 
+# becomes:
+# 
+# namespace foospace
+# {
+#     class Foo
+#     {
+#         public:
+#             Foo();
+#             virtual ~Foo();
+#     };
+# }
+# 
+# ----------------------------------------------------------------------------
+#  --indent-labels / -L
+# Add extra indentation to labels so they appear 1 indent less than the
+# current indentation, rather than being flushed to the left (the default).
+# 
+# void Foo() {
+#     while (isFoo) {
+#         if (isFoo)
+#             goto error;
+#         ...
+# error:
+#         ...
+#     }
+# }
+# 
+# becomes (with indented 'error:'):
+# 
+# void Foo() {
+#     while (isFoo) {
+#         if (isFoo)
+#             goto error;
+#         ... 
+#     error:
+#         ...
+#     }        
+# }
+#  
+# ----------------------------------------------------------------------------
+# --indent-preprocessor / -w
+# Indent multi-line preprocessor definitions ending with a backslash. Should
+# be used with --convert-tabs for proper results. Does a pretty good job, but
+# can not perform miracles in obfuscated preprocessor definitions. Without
+# this option the preprocessor statements remain unchanged.
+# 
+# #define Is_Bar(arg,a,b) \
+# (Is_Foo((arg), (a)) \
+# || Is_Foo((arg), (b)))
+# 
+# becomes:
+# 
+# #define Is_Bar(arg,a,b) \
+#     (Is_Foo((arg), (a)) \
+#      || Is_Foo((arg), (b)))
+# 
+# ----------------------------------------------------------------------------
+# --indent-col1-comments / -Y
+# Indent C++ comments beginning in column one. By default C++ comments
+# beginning in column one are not indented. This option will allow the
+# comments to be indented with the code.
+# 
+# void Foo()\n"
+# {
+# // comment
+#     if (isFoo)
+#         bar();
+# }
+# 
+# becomes:
+# 
+# void Foo()\n"
+# {
+#     // comment
+#     if (isFoo)
+#         bar();
+# }
+# 
+# ----------------------------------------------------------------------------
+# --max-instatement-indent=# / -M#
+# Indent a maximum of # spaces in a continuous statement, relative to the
+# previous line (e.g. ‑‑max‑instatement‑indent=40). # must be less than 80. If
+# no # is set, the default value of 40 will be used. A maximum of less than
+# two indent lengths will be ignored.
+# 
+# fooArray[] = { red,
+#          green,
+#          blue };
+# 
+# fooFunction(barArg1,
+#          barArg2,
+#          barArg3);
+# 
+# becomes (with larger value):
+# 
+# fooArray[] = { red,
+#                green,
+#                blue };
+# 
+# fooFunction(barArg1,
+#             barArg2,
+#             barArg3);
+#  
+# ----------------------------------------------------------------------------
+# --min-conditional-indent=# / -m#
+# Set the minimal indent that is added when a header is built of
+# multiple-lines. This indent makes helps to easily separate the header from
+# the command statements that follow. The value for # must be less than 40.
+# The default setting for this option is twice the current indent
+# (e.g. --min-conditional-indent=8).
+# 
+# // default setting makes this non-bracketed code clear
+# if (a < b
+#         || c > d)
+#     foo++;
+# 
+# // but creates an exaggerated indent in this bracketed code
+# if (a < b
+#         || c > d)
+# {
+#     foo++;
+# }
+# 
+# becomes (when setting --min-conditional-indent=0):
+# 
+# // setting makes this non-bracketed code less clear
+# if (a < b
+#     || c > d)
+#     foo++;
+# 
+# // but makes this bracketed code clearer
+# if (a < b
+#     || c > d)
+# {
+#     foo++;
+# }
+# 
+##############################################################################
+### Padding Options ##########################################################
+##############################################################################
+#
+# --break-blocks / -f
+# Pad empty lines around header blocks (e.g. 'if', 'for', 'while'...).
+# 
+# isFoo = true;
+# if (isFoo) {
+#     bar();
+# } else {
+#     anotherBar();
+# }
+# isBar = false;
+# 
+# becomes:
+# 
+# isFoo = true;
+# 
+# if (isFoo) {
+#     bar();
+# } else {
+#     anotherBar();
+# }
+# 
+# isBar = false;
+# 
+# ----------------------------------------------------------------------------
+# --break-blocks=all / -F
+# Pad empty lines around header blocks (e.g. 'if', 'for', 'while'...). Treat
+# closing header blocks (e.g. 'else', 'catch') as stand-alone blocks.
+# 
+# isFoo = true;
+# if (isFoo) {
+#     bar();
+# } else {
+#     anotherBar();
+# }
+# isBar = false;
+# 
+# becomes:
+# 
+# isFoo = true;
+# 
+# if (isFoo) {
+#     bar();
+#     
+# } else {
+#     anotherBar();
+# }
+# 
+# isBar = false;
+# 
+# ----------------------------------------------------------------------------
+# --pad-oper / -p
+# Insert space padding around operators. Operators inside block parens [] are
+# not padded. Any end of line comments will remain in the original column, if
+# possible. Note that there is no option to unpad. Once padded, they stay
+# padded.
+# 
+# if (foo==2)
+#     a=bar((b-c)*a,*d--);
+# 
+# becomes:
+# 
+# if (foo == 2)
+#      a = bar((b - c) * a, * d--);
+# 
+# ----------------------------------------------------------------------------
+# --pad-paren / -P
+# Insert space padding around parenthesis on both the outside and the inside.
+# Any end of line comments will remain in the original column, if possible.
+# 
+# if (isFoo(a, b))
+#     bar(a, b);
+# 
+# becomes:
+# 
+# if ( isFoo ( a, b ) )
+#     bar ( a, b );
+# 
+# ----------------------------------------------------------------------------
+# --pad-paren-out / -d
+# Insert space padding around parenthesis on the outside only. Any end of line
+# comments will remain in the original column, if possible. This can be used
+# with unpad-paren below to remove unwanted spaces.
+# 
+# if (isFoo(a, b))
+#     bar(a, b);
+# 
+# becomes:
+# 
+# if (isFoo (a, b) )
+#     bar (a, b);
+# 
+# ----------------------------------------------------------------------------
+# --pad-paren-in / -D
+# Insert space padding around parenthesis on the inside only. Any end of line
+# comments will remain in the original column, if possible. This can be used
+# with unpad-paren below to remove unwanted spaces.
+# 
+# if (isFoo(a, b))
+#     bar(a, b);
+# 
+# becomes:
+# 
+# if ( isFoo( a, b ) )
+#     bar( a, b );
+# 
+# ----------------------------------------------------------------------------
+# --pad-header / -H
+# Insert space padding after paren headers only (e.g. 'if', 'for', 'while'...).
+# Any end of line comments will remain in the original column, if possible.
+# This can be used with unpad-paren to remove unwanted spaces.
+# 
+# if(isFoo(a, b))
+#     bar(a, b);
+# 
+# becomes:
+# 
+# if (isFoo(a, b))
+#     bar(a, b);
+# 
+# ----------------------------------------------------------------------------
+# --unpad-paren / -U
+# Remove extra space padding around parenthesis on the inside and outside.
+# Any end of line comments will remain in the original column, if possible.
+# This option can be used in combination with the paren padding options
+# pad‑paren, pad‑paren‑out, pad‑paren‑in, and pad‑header above. Only padding
+# that has not been requested by other options will be removed.
+# 
+# For example, if a source has parens padded on both the inside and outside,
+# and you want inside only. You need to use unpad-paren to remove the outside
+# padding, and pad‑paren‑in to retain the inside padding. Using only
+# pad‑paren‑in would not remove the outside padding.
+# 
+# if ( isFoo( a, b ) )
+#     bar ( a, b );
+# 
+# becomes (with no padding option requested):
+# 
+# if (isFoo(a, b))
+#     bar(a, b);
+# 
+# ----------------------------------------------------------------------------
+# --delete-empty-lines / -x
+# Delete empty lines within a function or method. Empty lines outside of
+# functions or methods are NOT deleted. If used with break-blocks or
+# break-blocks=all it will delete all lines EXCEPT the lines added by the
+# break-blocks options.
+# 
+# void Foo()
+# {
+#     
+#     foo1 = 1;
+#     
+#     foo2 = 2;
+#     
+# }
+# 
+# becomes:
+# 
+# void Foo()
+# {
+#     foo1 = 1;
+#     foo2 = 2;
+# }
+# 
+# ----------------------------------------------------------------------------
+# --fill-empty-lines / -E
+# Fill empty lines with the white space of the previous line.
+#
+##############################################################################
+### Formatting Options #######################################################
+##############################################################################
+#
+# --break-closing-brackets / -y
+# When used with --brackets=attach, --brackets=linux, or --brackets=stroustrup,
+# this breaks closing headers (e.g. 'else', 'catch', ...) from their
+# immediately preceding closing brackets. Closing header brackets are always
+# broken with broken brackets, horstmann brackets, indented blocks, and
+# indented brackets.
+# 
+# void Foo(bool isFoo) {
+#     if (isFoo) {
+#         bar();
+#     } else {
+#         anotherBar();
+#     }
+# }
+# 
+# becomes (with a broken 'else'):
+# 
+# void Foo(bool isFoo) {
+#     if (isFoo) {
+#         bar();
+#     }
+#     else {
+#         anotherBar();
+#     }
+# }
+# 
+# ----------------------------------------------------------------------------
+# --break-elseifs / -e
+# Break "else if" header combinations into separate lines. This option has no
+# effect if keep-one-line-statements is used, the "else if" statements will
+# remain as they are.
+# 
+# If this option is NOT used, "else if" header combinations will be placed on
+# a single line.
+# 
+# if (isFoo) {
+#     bar();
+# }
+# else if (isFoo1()) {
+#     bar1();
+# }
+# else if (isFoo2()) }
+#     bar2;
+# }
+# 
+# becomes:
+# 
+# if (isFoo) {
+#     bar();
+# }
+# else
+#     if (isFoo1()) {
+#         bar1();
+#     }
+#   else
+#         if (isFoo2()) {
+#             bar2();
+#         }
+# 
+# ----------------------------------------------------------------------------
+# --add-brackets / -j
+# Add brackets to unbracketed one line conditional statements  (e.g. 'if',
+# 'for', 'while'...). The statement must be on a single line. The brackets
+# will be added according to the currently requested predefined style or
+# bracket type. If no style or bracket type is requested the brackets will be
+# attached. If --add-one-line-brackets is also used the result will be one
+# line brackets.
+# 
+# if (isFoo)
+#     isFoo = false;
+# 
+# becomes:
+# 
+# if (isFoo) {
+#     isFoo = false;
+# }
+# 
+# ----------------------------------------------------------------------------
+# --add-one-line-brackets / -J
+# Add one line brackets to unbracketed one line conditional statements  (e.g.
+# 'if', 'for', 'while'...). The statement must be on a single line. The option
+# implies --keep-one-line-blocks and will not break the one line blocks.
+# 
+# if (isFoo)
+#     isFoo = false;
+# 
+# becomes:
+# 
+# if (isFoo)
+#     { isFoo = false; }
+# 
+# ----------------------------------------------------------------------------
+# --keep-one-line-blocks / -O
+# Don't break one-line blocks.
+# 
+# if (isFoo)
+# { isFoo = false; cout << isFoo << endl; }
+# 
+# remains unchanged.
+# 
+# ----------------------------------------------------------------------------
+# --keep-one-line-statements / -o
+# Don't break complex statements and multiple statements residing on a single
+# line.
+# 
+# if (isFoo)
+# {
+#     isFoo = false; cout << isFoo << endl;
+# }
+# 
+# remains unchanged.
+# 
+# if (isFoo) DoBar();
+# 
+# remains unchanged.
+# 
+# ----------------------------------------------------------------------------
+# --convert-tabs / -c
+# Converts tabs into spaces in the non-indentation part of the line. The
+# number of spaces inserted will maintain the spacing of the tab. The current
+# setting for spaces per tab is used. It may not produce the expected results
+# if convert-tabs is used when changing spaces per tab. Tabs are not replaced
+# in quotes.
+# 
+# ----------------------------------------------------------------------------
+# --align-pointer=type   / -k1
+# --align-pointer=middle / -k2
+# --align-pointer=name   / -k3
+# Attach a pointer or reference operator (* or &) to either the variable type
+# (left) or variable name (right), or place it between the type and name. The
+# spacing between the type and name will be preserved, if possible. This
+# option is effective for C/C++ files only.
+# 
+# char *foo1;
+# 
+# becomes (with align-pointer=type):
+# 
+# char* foo1;
+# 
+# char* foo2;
+# 
+# becomes (with align-pointer=middle):
+# 
+# char * foo2;
+# 
+# char& foo3;
+# 
+# becomes (with align-pointer=name):
+# 
+# char &foo3;
+# 
+# ----------------------------------------------------------------------------
+# --mode=c
+# --mode=cs
+# --mode=java
+# Indent a C/C++, C#, or Java file. The option is usually set from the file
+# extension for each file. You can override the setting with this entry. It
+# will be used for all files regardless of the file extension. It allows the
+# formatter to identify language specific syntax such as C++ classes,
+# templates, and keywords.
+# 
