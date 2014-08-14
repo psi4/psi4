@@ -903,7 +903,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Controls whether to relax tau during the cumulant updates or not !expert-*/
       options.add_bool("RELAX_TAU", true);
       /*- Chooses appropriate DCFT method -*/
-      options.add_str("DCFT_FUNCTIONAL", "DC-06", "DC-06 DC-12 ODC-06 ODC-12 CEPA0");
+      options.add_str("DCFT_FUNCTIONAL", "DC-06", "DC-06 DC-12 ODC-06 ODC-12 ODC-13 CEPA0");
+      /*- Whether to compute three-particle energy correction or not -*/
+      options.add_str("THREE_PARTICLE", "NONE", "NONE PERTURBATIVE");
+      /*- Do write a MOLDEN output file?  If so, the filename will end in
+      .molden, and the prefix is determined by |globals__writer_file_label|
+      (if set), or else by the name of the output file plus the name of
+      the current molecule. -*/
+      options.add_bool("MOLDEN_WRITE", false);
 
   }
   if (name == "MINTS"|| options.read_globals()) {
@@ -964,6 +971,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     (if set), or else by the name of the output file plus the name of
     the current molecule. -*/
     options.add_bool("MOLDEN_WRITE", false);
+    /*- If true, then repeat the specified guess procedure for the orbitals every time -
+    even during a geometry optimization. -*/
+    options.add_bool("GUESS_PERSIST", false);
 
     /*- Flag to print the molecular orbitals. -*/
     options.add_bool("PRINT_MOS", false);
@@ -1852,6 +1862,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("EOM_GUESS", "SINGLES", "SINGLES DISK INPUT");
     /*- Convert ROHF MOs to semicanonical MOs -*/
     options.add_bool("SEMICANONICAL", true);
+    /*- Report overlaps with old excited-state wave functions, if
+ * available, and store current wave functions for later use. -*/
+    options.add_bool("OVERLAP_CHECK", false);
   }
   if(name == "CCRESPONSE"|| options.read_globals()) {
      /*- MODULEDESCRIPTION Performs coupled cluster response property computations. -*/
@@ -2365,6 +2378,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("INTRAFRAG_STEP_LIMIT_MAX", 1.0);
       /*- Maximum step size in bohr or radian along an interfragment coordinate -*/
       options.add_double("INTERFRAG_STEP_LIMIT", 0.4);
+      /*- Reduce step size as necessary to ensure back-transformation of internal
+          coordinate step to cartesian coordinates. -*/
+      options.add_bool("ENSURE_BT_CONVERGENCE", false);
       /*= Do stupid, linear scaling of internal coordinates to step limit (not RS-RFO) -*/
       options.add_bool("SIMPLE_STEP_SCALING", false);
       /*- Set number of consecutive backward steps allowed in optimization -*/
@@ -2770,6 +2786,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("OEPROP",false);
     /*- Do compute <S2> for DF-OMP2/DF-MP2?  -*/
     options.add_bool("COMPUT_S2",false);
+    /*- Do perform a QCHF computation?  -*/
+    options.add_bool("QCHF",false);
   }
   if (name == "MRCC"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/

@@ -303,6 +303,12 @@ double Tensor1d::xay(const SharedTensor2d &a, const SharedTensor1d &y)
   return value;
 }//
 
+void Tensor1d::axpy(const SharedTensor1d &a, double alpha)
+{
+    ULI length = (ULI)dim1_;
+    C_DAXPY(length, alpha, a->A1d_, 1, A1d_, 1);
+}
+
 void Tensor1d::scale(double a)
 {
     //size_t size = dim1_ ;
@@ -3059,6 +3065,18 @@ void Tensor2d::form_act_ov(int frzc, int occ, const SharedTensor2d &A)
     for (int i = 0; i < occ2; i++) {
          for (int a = 0; a < vir; a++) {
               A2d_[i][a] = A->get(i + frzc, a + occ);
+         }
+    }
+}//
+
+void Tensor2d::form_ooAB(const SharedTensor2d &A)
+{
+    int occA = dim1_;
+    int occB = dim2_;
+    #pragma omp parallel for
+    for (int i = 0; i < occA; i++) {
+         for (int j = 0; j < occB; j++) {
+              A2d_[i][j] = A->get(i,j);
          }
     }
 }//

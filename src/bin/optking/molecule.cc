@@ -294,6 +294,62 @@ void MOLECULE::project_f_and_H(void) {
   
 }
 
+// project redundancies out of displacement vector; so far, doesn't seem to make much difference
+void MOLECULE::project_dq(double *dq) {
+  int Nintco = g_nintco();
+  int Ncart = 3*g_natom();
+
+  double *dq_orig; //only for printing
+  if (Opt_params.print_lvl >=2) {
+    dq_orig = init_array(Nintco);
+    array_copy(dq, dq_orig, g_nintco());
+  }
+
+  double **B = compute_B();
+
+  //double **G = compute_G(true);
+  double **G = init_matrix(Ncart, Ncart);
+  opt_matrix_mult(B, 1, B, 0, G, 0, Ncart, Nintco, Ncart, 0);
+
+/*  will need fixed if this function ever helps
+#if defined (OPTKING_PACKAGE_QCHEM)
+  // Put 1's on diagonal for EFP coordinates
+  for (int I=0; I<efp_fragments.size(); ++I)
+    for (int i=0; i<efp_fragments[i]->g_nintco(); ++i)
+      G[g_efp_fragment_intco_offset(I) + i][g_efp_fragment_intco_offset(I) + i] = 1.0;
+#endif
+*/
+
+  // B dx = dq
+  // B^t B dx = B^t dq
+  // dx = (B^t B)^-1 B^t dq
+  double **G_inv = symm_matrix_inv(G, Ncart, 1);
+  free_matrix(G);
+
+  double **B_inv = init_matrix(Ncart, Nintco);
+  opt_matrix_mult(G_inv, 0, B, 1, B_inv, 0, Ncart, Ncart, Nintco, 0);
+  free_matrix(G_inv);
+
+  double **P = init_matrix(Nintco, Nintco);
+  opt_matrix_mult(B, 0, B_inv, 0, P, 0, Nintco, Ncart, Nintco, 0);
+  free_matrix(B);
+  free_matrix(B_inv);
+
+  double * temp_arr = init_array(Nintco);
+  opt_matrix_mult(P, 0, &dq, 1, &temp_arr, 1, Nintco, Nintco, 1, 0);
+  array_copy(temp_arr, dq, g_nintco());
+  free_array(temp_arr);
+  free_matrix(P);
+
+  if (Opt_params.print_lvl >=2) {
+    psi::outfile->Printf("Projection of redundancies out of step:\n");
+    psi::outfile->Printf("\tOriginal dq     Projected dq     Difference\n");
+    for (int i=0; i<Nintco; ++i)
+      psi::outfile->Printf("\t%12.6lf    %12.6lf   %12.6lf\n", dq_orig[i], dq[i], dq[i]-dq_orig[i]);
+    free_array(dq_orig);
+  }
+}
+
 void MOLECULE::print_geom(void) {
 #if defined(OPTKING_PACKAGE_QCHEM)
   psi::outfile->Printf("\tCartesian Geometry (au)\n");

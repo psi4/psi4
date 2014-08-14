@@ -102,12 +102,7 @@ PSIO::PSIO()
     filecfg_kwd("DEFAULT", "NAME", -1, psi_file_prefix);
     filecfg_kwd("DEFAULT", "NVOLUME", -1, "1");
 
-
-    // Get the process ID and convert to string.
-    pid_t pid = getpid();
-    std::stringstream ss;
-    ss << pid;
-    pid_ = ss.str();
+    pid_ = getpid();
 }
 
 boost::shared_ptr<PSIO> PSIO::shared_object()

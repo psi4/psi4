@@ -47,6 +47,8 @@ procedures = {
             'oldmp2'        : run_oldmp2,
             'dfmp2'         : run_dfmp2,
             'df-mp2'        : run_dfmp2,
+            'rimp2'         : run_rimp2,
+            'ri-mp2'        : run_rimp2,
             'conv-mp2'      : run_mp2,
             'mp3'           : run_mp3,
             'mp2.5'         : run_mp2_5,
@@ -172,6 +174,8 @@ procedures = {
             'conv-mp2'      : run_mp2_gradient,
             'df-mp2'        : run_dfmp2_gradient,
             'dfmp2'         : run_dfmp2_gradient,
+            'rimp2'         : run_rimp2_gradient,
+            'ri-mp2'        : run_rimp2_gradient,
             'eom-ccsd'      : run_eom_cc_gradient,
             'dcft'          : run_dcft_gradient,
             'omp2'          : run_omp2_gradient,
@@ -195,6 +199,8 @@ procedures = {
             'ccsd'     : run_cc_property,
             'df-mp2'   : run_dfmp2_property,
             'dfmp2'    : run_dfmp2_property,
+            'rimp2'    : run_rimp2_property,
+            'ri-mp2'   : run_rimp2_property,
             'dfomp2'   : run_dfomp2_property,
             'df-omp2'  : run_dfomp2_property,
             'omp2'     : run_dfomp2_property,
@@ -1039,6 +1045,7 @@ def optimize(name, **kwargs):
     mol = psi4.get_active_molecule()
     mol.update_geometry()
     initial_sym = mol.schoenflies_symbol()
+    guessPersist = psi4.get_global_option('GUESS_PERSIST')
     while n <= psi4.get_global_option('GEOM_MAXITER'):
         mol = psi4.get_active_molecule()
         mol.update_geometry()
@@ -1051,7 +1058,7 @@ def optimize(name, **kwargs):
         kwargs['opt_iter'] = n
 
         # Use orbitals from previous iteration as a guess
-        if (n > 1) and (not isSowReap):
+        if (n > 1) and (not isSowReap) and (not guessPersist):
             psi4.set_local_option('SCF', 'GUESS', 'READ')
 
         # Compute the gradient

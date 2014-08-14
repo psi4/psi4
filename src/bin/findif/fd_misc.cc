@@ -130,7 +130,7 @@ void print_vibrations(std::vector<VIBRATION *> modes) {
 }
 
 // displaces from a reference geometry: geom += salclist[salc_i] * disp_i * disp_size
-// disp_size is in mass-weighted coordinates; cartesian displacment is DX/sqrt(mass)
+// disp_size is in mass-weighted coordinates; cartesian displacement is DX/sqrt(mass)
 void displace_cart(SharedMatrix geom, const CdSalcList & salclist,
   int salc_i, int disp_factor, double disp_size) {
 
@@ -153,7 +153,7 @@ void displace_cart(SharedMatrix geom, const CdSalcList & salclist,
 
 // displaces from a reference geometry.
 // geom += salclist[salc_i] * disp_i * disp_size + salclist[salc_j] * disp_j * disp_size
-// disp_size is in mass-weighted coordinates; cartesian displacment is DX/sqrt(mass)
+// disp_size is in mass-weighted coordinates; cartesian displacement is DX/sqrt(mass)
 void displace_cart(SharedMatrix geom, const CdSalcList & salclist,
   int salc_i, int salc_j, int disp_factor_i, int disp_factor_j, double disp_size) {
 

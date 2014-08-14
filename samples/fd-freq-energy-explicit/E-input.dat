@@ -1,0 +1,16 @@
+# Input to be used for energy computations, minus the geometry.
+
+memory 20 GB
+
+molecule {
+}
+
+set globals {
+  basis sto-3g
+  scf_type pk
+}
+
+energy('ccsd')
+
+psi4.print_out('\n\tFD ENERGY = %20.15f\n' % psi4.get_variable('CURRENT ENERGY'))
+

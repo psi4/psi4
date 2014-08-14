@@ -110,8 +110,11 @@ void get_params(Options &options)
 
   params.newtrips = options["NEW_TRIPLES"].to_integer();
 
+
   outfile->Printf( "\n\tInput parameters:\n");
   outfile->Printf( "\t-----------------\n");
+  params.overlap = options["OVERLAP_CHECK"].to_integer();
+
   if(params.semicanonical)
     outfile->Printf( "\tReference wfn   = ROHF changed to UHF for Semicanonical Orbitals\n");
   else 

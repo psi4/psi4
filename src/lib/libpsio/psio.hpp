@@ -209,6 +209,8 @@ public:
     void open(unsigned int unit, int status);
     /// close unit. if keep == 0, will remove the file, else keep it
     void close(unsigned int unit, int keep);
+    /// lookup process id
+    std::string getpid(void);
     /// sync up the object to the file on disk by closing and opening the file, if necessary
     void rehash(unsigned int unit);
     /// return 1 if unit is open

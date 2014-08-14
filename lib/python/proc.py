@@ -145,9 +145,6 @@ def run_dfomp2(name, **kwargs):
     molecule.reset_point_group(user_pg)
     molecule.update_geometry()
 
-    # restore options
-    optstash.restore()
-
     return psi4.get_variable("CURRENT ENERGY")
 
 
@@ -178,6 +175,42 @@ def run_dfomp2_property(name, **kwargs):
     run_dfomp2(name, **kwargs)
 
     optstash.restore()
+
+
+def run_rimp2(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a density-fitted MP2 computation
+
+    """
+    optstash = p4util.OptionsState(
+        ['DFOCC', 'ORB_OPT'])
+
+    psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
+    run_dfomp2(name, **kwargs)
+
+
+def run_rimp2_gradient(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a density-fitted MP2 computation
+
+    """
+    optstash = p4util.OptionsState(
+        ['DFOCC', 'ORB_OPT'])
+
+    psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
+    run_dfomp2_gradient(name, **kwargs)
+
+
+def run_rimp2_property(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a cholesky-decomposed MP2 computation
+
+    """
+    optstash = p4util.OptionsState(
+        ['DFOCC', 'ORB_OPT'])
+
+    psi4.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
+    run_dfomp2_property(name, **kwargs)
 
 
 def run_cdomp2(name, **kwargs):

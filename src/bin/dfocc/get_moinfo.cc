@@ -49,6 +49,8 @@ if (reference_ == "RESTRICTED") {
         doccpi_  = reference_wavefunction_->doccpi();
         frzcpi_  = reference_wavefunction_->frzcpi();
         frzvpi_  = reference_wavefunction_->frzvpi();
+        nalphapi_ = reference_wavefunction_->nalphapi();
+        nbetapi_ = reference_wavefunction_->nbetapi();
         natom   = molecule_->natom();
 
 	// Read in nuclear repulsion energy
@@ -119,7 +121,7 @@ if (reference_ == "RESTRICTED") {
 	Ca_ = SharedMatrix(reference_wavefunction_->Ca());
         CmoA = SharedTensor2d(new Tensor2d("Alpha MO Coefficients", nso_, nmo_));
         CmoA->set(Ca_);
-        if (orb_opt_ == "TRUE") {
+        if (orb_opt_ == "TRUE" || qchf_ == "TRUE") {
             Cmo_refA = SharedTensor2d(new Tensor2d("Alpha Reference MO Coefficients", nso_, nmo_));
             Cmo_refA->copy(CmoA);
         }
@@ -177,6 +179,8 @@ else if (reference_ == "UNRESTRICTED") {
         soccpi_  = reference_wavefunction_->soccpi();
         frzcpi_  = reference_wavefunction_->frzcpi();
         frzvpi_  = reference_wavefunction_->frzvpi();
+        nalphapi_ = reference_wavefunction_->nalphapi();
+        nbetapi_ = reference_wavefunction_->nbetapi();
         natom   = molecule_->natom();
 
 	// Read in nuclear repulsion energy
@@ -288,7 +292,7 @@ else if (reference_ == "UNRESTRICTED") {
         Cb_ = SharedMatrix(reference_wavefunction_->Cb());
         CmoB = SharedTensor2d(new Tensor2d("Beta MO Coefficients", nso_, nmo_));
         CmoB->set(Cb_);
-        if (orb_opt_ == "TRUE") {
+        if (orb_opt_ == "TRUE" || qchf_ == "TRUE") {
             Cmo_refA = SharedTensor2d(new Tensor2d("Alpha Reference MO Coefficients", nso_, nmo_));
             Cmo_refB = SharedTensor2d(new Tensor2d("Beta Reference MO Coefficients", nso_, nmo_));
             Cmo_refA->copy(CmoA);

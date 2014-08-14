@@ -12,6 +12,7 @@ set(SRC aio_handler.cc
         get_global_address.cc 
         get_length.cc 
         get_numvols.cc 
+        getpid.cc
         get_volpath.cc 
         init.cc
         MOFile.h
