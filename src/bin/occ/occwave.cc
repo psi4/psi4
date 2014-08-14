@@ -369,6 +369,7 @@ else if (reference_ == "UNRESTRICTED") {
 
 void OCCWave::title()
 {
+
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");
@@ -383,13 +384,13 @@ void OCCWave::title()
    else if (wfn_type_ == "OMP2.5" && orb_opt_ == "TRUE") outfile->Printf("                       OMP2.5 (OO-MP2.5)   \n");
    else if (wfn_type_ == "OMP2.5" && orb_opt_ == "FALSE") outfile->Printf("                       MP2.5  \n");
    outfile->Printf("              Program Written by Ugur Bozkaya,\n") ;
-   outfile->Printf("              Latest Revision June 12, 2014.\n") ;
+   outfile->Printf("              Latest Revision June 25, 2014.\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf("\n");
-   
+
 }//
 
 

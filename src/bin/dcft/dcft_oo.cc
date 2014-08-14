@@ -99,7 +99,7 @@ DCFTSolver::run_simult_dcft_oo()
         old_total_energy_ = new_total_energy_;
         // Add SCF energy contribution to the total DCFT energy
         new_total_energy_ = scf_energy_;
-        // Build G and F intermediates needed for the density cumulant residual equations and DCFT energy computation
+        // Build cumulant intermediates needed for the density cumulant residual equations and DCFT energy computation
         build_cumulant_intermediates();
         // Compute the residuals for density cumulant equations
         cumulant_convergence_ = compute_cumulant_residual();

@@ -85,6 +85,10 @@ void set_params(void)
 
     Opt_params.interfragment_step_limit = options.get_double("INTERFRAG_STEP_LIMIT");
 
+// Reduce step size to ensure convergence of back-transformation of internal coordinate
+// step to cartesians.
+    Opt_params.ensure_bt_convergence = options.get_bool("ENSURE_BT_CONVERGENCE");
+
 // do stupid, linear scaling of internal coordinates to step limit (not RS-RFO);
     Opt_params.simple_step_scaling = options.get_bool("SIMPLE_STEP_SCALING");
 
@@ -390,6 +394,10 @@ void set_params(void)
   i = rem_read(REM_GEOM_OPT2_INTERFRAG_STEP_LIMIT);
   Opt_params.interfragment_step_limit     = i / 1000.0; // default is  400 -> 0.4
 
+  // Reduce step size to ensure convergence of back-transformation of internal coordinate
+  // step to cartesians.
+  Opt_params.ensure_bt_convergence = rem_read("REM_GEOM_OPT2_ENSURE_BT_CONVERGENCE");
+
 // follow root   (default 0)
   Opt_params.rfo_follow_root = rem_read(REM_GEOM_OPT2_RFO_FOLLOW_ROOT);
 
@@ -650,6 +658,11 @@ void print_params(void) {
   else
   psi::outfile->Printf( "generate_intcos_only   = %18s\n", "false");
 
+  if (Opt_params.ensure_bt_convergence)
+    psi::outfile->Printf("ensure_bt_convergence = %17s\n", "true");
+  else
+    psi::outfile->Printf("ensure_bt_convergence = %17s\n", "false");
+
   if (Opt_params.rfo_follow_root)
   psi::outfile->Printf( "rfo_follow_root        = %18s\n", "true");
   else
@@ -671,6 +684,8 @@ void print_params(void) {
   psi::outfile->Printf( "linesearch_static_N    = %18d\n", Opt_params.linesearch_static_N);
   psi::outfile->Printf( "linesearch_static_min  = %18.3e\n", Opt_params.linesearch_static_min);
   psi::outfile->Printf( "linesearch_static_max  = %18.3e\n", Opt_params.linesearch_static_max);
+
+  psi::outfile->Printf("consecutive_backsteps  = %18d\n",  Opt_params.consecutive_backsteps_allowed);
 
   if (Opt_params.intrafragment_H == OPT_PARAMS::FISCHER)
   psi::outfile->Printf( "intrafragment_H        = %18s\n", "Fischer");

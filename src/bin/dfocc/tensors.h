@@ -99,6 +99,8 @@ class Tensor1d
   void gbmv(bool transa, const SharedTensor2d& a, const SharedTensor1d& b, double alpha, double beta);
   // xay: return result of A1d_' * A * y
   double xay(const SharedTensor2d &a, const SharedTensor1d &y);
+  // axpy: Y <-- a * X + Y
+  void axpy(const SharedTensor1d &a, double alpha);
   void scale(double a);
   void copy(double *x);
   void copy(const SharedTensor1d &x);
@@ -331,6 +333,7 @@ class Tensor2d
   void form_ov(int occ, const SharedTensor2d &A);
   void form_act_ov(int frzc, const SharedTensor2d &A);
   void form_act_ov(int frzc, int occ, const SharedTensor2d &A);
+  void form_ooAB(const SharedTensor2d &A);
 
   void form_b_ij(int frzc, const SharedTensor2d &A);
   void form_b_ia(int frzc, const SharedTensor2d &A);

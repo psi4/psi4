@@ -60,6 +60,7 @@ void MOLECULE::rfo_step(void) {
   double *fq = p_Opt_data->g_forces_pointer();
   double **H = p_Opt_data->g_H_pointer();
   double *dq = p_Opt_data->g_dq_pointer();
+  const int max_projected_rfo_iter = 25;
 
   // Determine the eigenvectors/eigenvalues of H.  Used in RS-RFO
   double **Hevects = matrix_return_copy(H,dim,dim); 
@@ -99,21 +100,23 @@ void MOLECULE::rfo_step(void) {
   double *rfo_u = init_array(dim); // unit vector in step direction
   bool converged = false;
 
-  //Iterative sequence to find alpha; we'll give it 15 tries
+  //Iterative sequence to find alpha; we'll give it max_projected_rfo_iter tries
   int iter = -1;
-  while (!converged && iter<16) {
+  while (!converged && iter<max_projected_rfo_iter) {
 
     ++iter;
 
     // If we get to iteration 14, and we haven't not yet converged, than
     // bail out on the restricted-step algorithm.  Set alpha=1 and apply the crude
     // intrafragment_step_limit below.
-    if (iter == 16) {
-      psi::outfile->Printf( "\tFailed to converge alpha.  Doing simple step scaling instead.\n");
+
+    if (iter == max_projected_rfo_iter) {
+      psi::outfile->Printf("\tFailed to converge alpha.  Doing simple step scaling instead.\n");
+
       alpha = 1;
     }
     else if (Opt_params.simple_step_scaling) // If simple_step_scaling is on, not an iterative method.
-      iter = 16;
+      iter = max_projected_rfo_iter;
 
     // Scale the RFO matrix.
     for (i=0; i<=dim; i++) {
@@ -131,11 +134,17 @@ void MOLECULE::rfo_step(void) {
     //Find the eigenvectors and eigenvalues of RFO matrix.
     opt_asymm_matrix_eig(SRFO, dim+1, SRFOevals);
     if (Opt_params.print_lvl >= 4) {
+
       psi::outfile->Printf("Eigenvectors of scaled RFO matrix.\n");
       print_matrix("outfile", SRFO, dim+1,dim+1);
+    }
+    if (Opt_params.print_lvl >= 2) {
       psi::outfile->Printf("Eigenvalues of scaled RFO matrix.\n");
-      for (i=0; i<dim+1; ++i)
+      int cnt2=0;
+      for (i=0; i<dim+1; ++i) {
         psi::outfile->Printf("%10.6lf", SRFOevals[i]);
+        if (++cnt2 == 6) psi::outfile->Printf("\n");
+      }
       psi::outfile->Printf("\n");
     }
 
@@ -206,6 +215,11 @@ void MOLECULE::rfo_step(void) {
     for (j=0; j<dim; ++j)
       dq[j] = SRFO[rfo_root][j]; // leave out last column
 
+    // Project out redundancies in steps.
+    // Project out redundancies in steps.
+    // RAK added this projection in 2014, but doesn't seem to be necessary. f,H are already projected.
+    project_dq(dq);
+
     // Zero steps for frozen fragment.  If user has specified.
     for (f=0; f<fragments.size(); ++f) {
       if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
@@ -225,15 +239,16 @@ void MOLECULE::rfo_step(void) {
       converged = true;
 
     if (iter == 0 && !converged) {
+
       psi::outfile->Printf("\n\tDetermining step-restricting scale parameter for RS-RFO.\n");
       psi::outfile->Printf("\tMaximum step size allowed %10.5lf\n\n", trust);
-      psi::outfile->Printf("\t Iter      |step|      alpha \n");
-      psi::outfile->Printf("\t-------------------------------\n");
-      psi::outfile->Printf("\t%5d%12.5lf%12.5lf\n", iter, sqrt(dqtdq), alpha);
+      psi::outfile->Printf("\t Iter      |step|        alpha \n");
+      psi::outfile->Printf("\t---------------------------------\n");
+      psi::outfile->Printf("\t%5d%12.5lf%14.5lf\n", iter, sqrt(dqtdq), alpha);
     }
     else if ( (iter > 0) && !Opt_params.simple_step_scaling)
-      psi::outfile->Printf("\t%5d%12.5lf%12.5lf\n", iter, sqrt(dqtdq), alpha);
-    
+      psi::outfile->Printf("\t%5d%12.5lf%14.5lf\n", iter, sqrt(dqtdq), alpha);
+
 
     // Find the analytical derivative.
     lambda = -1 * array_dot(fq, dq, dim);
@@ -303,7 +318,6 @@ void MOLECULE::rfo_step(void) {
   psi::outfile->Printf("Step-size in mass-weighted internal coordinates: %20.10lf\n", N);
 */
 
-// do displacements for each fragment separately
   for (f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
       psi::outfile->Printf("\tDisplacements for frozen fragment %d skipped.\n", f+1);
