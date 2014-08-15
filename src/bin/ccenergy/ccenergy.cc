@@ -281,6 +281,7 @@ PsiReturnType ccenergy(Options &options)
         if(params.ref == 2) cachedone_uhf(cachelist); else cachedone_rhf(cachelist);
         free(cachefiles);
         cleanup();
+        free(ioff);
         exit_io();
         return Success;
     }
@@ -454,6 +455,7 @@ PsiReturnType ccenergy(Options &options)
 #ifdef TIME_CCENERGY
         timer_off("CCEnergy");
 #endif
+        free(ioff);
         exit_io();
         return Failure;
     }
@@ -634,6 +636,7 @@ PsiReturnType ccenergy(Options &options)
     //Process::environment.globals["CC TOTAL ENERGY"] = moinfo.ecc+moinfo.eref;
     //Process::environment.globals["CC CORRELATION ENERGY"] = moinfo.ecc;
 
+    free(ioff);
     exit_io();
     //  if(params.brueckner && brueckner_done)
     //     throw FeatureNotImplemented("CCENERGY", "Brueckner end loop", __FILE__, __LINE__);

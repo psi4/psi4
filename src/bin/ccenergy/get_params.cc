@@ -188,6 +188,7 @@ void get_params(Options &options)
     fprintf(outfile, "\tReference wfn   =   %5s\n",
         (params.ref == 0) ? "RHF" : ((params.ref == 1) ? "ROHF" : "UHF"));
   }
+  fprintf(outfile, "\tBrueckner       =     %s\n", params.brueckner ? "Yes" : "No");
   if(params.brueckner)
     fprintf(outfile, "\tBrueckner conv. =     %3.1e\n", params.bconv);
   fprintf(outfile, "\tMemory (Mbytes) =     %5.1f\n",params.memory/1e6);
