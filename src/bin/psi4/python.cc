@@ -102,6 +102,7 @@ namespace psi {
     namespace scfgrad    { PsiReturnType scfgrad(Options &);  }
     namespace scfgrad    { PsiReturnType scfhess(Options &);  }
     namespace scf        { PsiReturnType scf(Options &, PyObject* pre, PyObject* post);   }
+    namespace scf        { PsiReturnType scf_dummy(Options &);   }
     namespace libfock    { PsiReturnType libfock(Options &);  }
     namespace dfmp2      { PsiReturnType dfmp2(Options &);    }
     namespace dfmp2      { PsiReturnType dfmp2grad(Options &);}
@@ -380,6 +381,12 @@ PsiReturnType py_psi_fd_freq_1(const boost::python::list& grads, int irrep)
 double py_psi_scf()
 {
     return py_psi_scf_callbacks(Py_None, Py_None);
+}
+
+double py_psi_scf_dummy()
+{
+    py_psi_prepare_options_for_module("SCF");
+    return scf::scf_dummy(Process::environment.options);
 }
 
 double py_psi_dcft()
@@ -1332,6 +1339,7 @@ BOOST_PYTHON_MODULE(psi4)
 
     def("scf", py_psi_scf_callbacks, "Runs the SCF code.");
     def("scf", py_psi_scf, "Runs the SCF code.");
+    def("scf_dummy", py_psi_scf_dummy, "Builds SCF wavefunctionobject only. Does not execute scf.");
     def("dcft", py_psi_dcft, "Runs the density cumulant functional theory code.");
     def("lmp2", py_psi_lmp2, "Runs the local MP2 code.");
     def("libfock", py_psi_libfock, "Runs a CPHF calculation, using libfock.");
