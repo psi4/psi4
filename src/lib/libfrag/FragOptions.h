@@ -12,6 +12,8 @@
 #include <string>
 #include <boost/shared_ptr.hpp>
 #include "LibFragTypes.h"
+
+namespace psi{
 namespace LibFrag{
 enum FragMethods {USER_DEFINED,BOND_BASED,DISTANCE_BASED};
 enum EmbedMethods {NO_EMBED,POINT_CHARGE,ITR_POINT_CHARGE,DENSITY,
@@ -78,7 +80,7 @@ class FragOptions{
 		}
 };
 
-}
+}}// End namespaces
 
 
 #endif /* FRAGOPTIONS_H_ */

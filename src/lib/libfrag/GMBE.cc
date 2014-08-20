@@ -8,6 +8,8 @@
 #include "GMBE.h"
 #include "MBEFrag.h"
 #include "psi4-dec.h"
+
+namespace psi{
 namespace LibFrag {
 
 void GMBE::MakeNmers(const NMerSet& Monomers, NMerSet& NMers) {
@@ -62,8 +64,10 @@ inline void MakeInts(NMerSet& ExistingNMers, SharedFrag& NMer,
    for (int j=0; j<ExistingNMers.size(); j++) {
       SharedFrag temp=boost::shared_ptr<MBEFrag>(new MBEFrag((*NMer)));
       (*temp)/=(*ExistingNMers[j]);
-      if (temp->size()>0) {
-         if (temp->size()!=ExistingNMers[j]->size()) FoundNMers.push_back(temp);
+      int tempsize=temp->Atoms().size();
+      if (tempsize>0) {
+         if (tempsize!=ExistingNMers[j]->Atoms().size())
+            FoundNMers.push_back(temp);
          else //This means it is the same as the n-mer
          Mults[j]--;
       }
@@ -150,5 +154,5 @@ double GMBE::Energy(const std::vector<NMerSet>& Systems,
          TEnergy);
    return TEnergy;
 }
-}
+}}//End namespaces
 

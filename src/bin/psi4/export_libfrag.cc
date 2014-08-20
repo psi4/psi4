@@ -9,8 +9,8 @@
 #include "../lib/libfrag/libfrag.h"
 #include "../lib/libmints/molecule.h"
 void export_libfrag(){
+    using namespace psi::LibFrag;
 	using namespace boost::python;
-	using namespace LibFrag;
 	class_<LibFragHelper>("LibFragHelper")
 	    .def("FragHelper",&LibFragHelper::Fragment_Helper)
 	    .def("EmbedHelper",&LibFragHelper::Embed_Helper)

@@ -28,7 +28,6 @@
 #include "physconst.h"
 namespace psi{
    class Molecule;
-}
 
 namespace LibFrag{
 ///Typedefs I use all over the place
@@ -38,7 +37,7 @@ class MBEFrag;
 typedef boost::shared_ptr<MBEFrag> SharedFrag;
 typedef std::vector<SharedFrag> NMerSet;
 
-///Tiny wrapper class for atomic properties
+/*//Tiny wrapper class for atomic properties
 class Atom{
    private:
 
@@ -98,9 +97,9 @@ class Cap:public Atom{
          return temp.str();
       }
 
-};
+};*/
 
-}
+}}//End namespaces
 
 
 

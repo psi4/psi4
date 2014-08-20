@@ -23,23 +23,50 @@
 #include "BSSEer.h"
 #include "MBEFrag.h"
 
+namespace psi{
 namespace LibFrag{
 
-void FullBSSE::AddBSSEJobs(NMerSet& NMers){
+
+void BSSEer::CommonInit(GhostType& Ghosts,NMerSet& NMers){
+   Set<SharedGhost> TempSet;
+   Ghosts.push_back(TempSet);
+   if(Ghosts.size()==1){
+      for(int i=0;i<NAtoms_;i++){
+         SharedAtom Atom=NMers[0]->Atoms_.Object(i);
+         SharedGhost temp(new Ghost(i,Atom->Z(),Atom->Carts()[0],Atom->Carts()[1],
+               Atom->Carts()[2]));
+      }
+   }
+   else{
+      Ghosts.back()=Ghosts[0];
+      Ghosts.back().Clear();
+   }
+}
+
+void BSSEer::AddBSSEJobs(NMerSet& NMers){
+   GhostType Ghosts;
+   BSSEImpl(Ghosts,NMers);
+   if(Ghosts.size()!=NMers.size())throw PSIEXCEPTION(
+     "Each fragment must have a ghost atom set, even if it is just empty");
+   for(int i=0;i<Ghosts.size();i++)
+      NMers[i]->Ghosts_=Ghosts[i];
+}
+
+void FullBSSE::BSSEImpl(GhostType& Ghosts,NMerSet& NMers){
    for(int NMer=0;NMer<NMers.size();NMer++){
-      std::vector<bool>Is_Real(NAtoms,false);
+      std::vector<bool>Is_Real(NAtoms_,false);
       SharedFrag DaNMer=NMers[NMer];
-      //If n-mer was made by copying another n-mer as a starting point, then
-      //it also got it's list of ghosts
-      DaNMer->Ghosts.clear();
-      for(int atoms=0;atoms<DaNMer->size();atoms++)
-         Is_Real[(*DaNMer)[atoms]]=true;
-      for(int caps=0;caps<DaNMer->Caps.size();caps++)
-         Is_Real[DaNMer->Caps[caps].ReplacedAtom()]=true;
-      for(int atoms=0;atoms<NAtoms;atoms++){
-         if(!Is_Real[atoms])DaNMer->AddGhost(atoms);
+      CommonInit(Ghosts,NMers);
+      for(int atoms=0;atoms<DaNMer->Atoms().size();atoms++)
+         Is_Real[(*DaNMer).Atoms()[atoms]]=true;
+      for(int caps=0;caps<DaNMer->Caps().size();caps++){
+         int ActualCap=DaNMer->Caps()[caps];
+         Is_Real[DaNMer->Caps().Object(ActualCap)->ReplacedAtom()]=true;
+      }
+      for(int atoms=0;atoms<NAtoms_;atoms++){
+         if(!Is_Real[atoms])Ghosts.back()<<atoms;
       }
    }
 }
-}
+}}//End namespaces
 

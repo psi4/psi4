@@ -22,21 +22,23 @@
 #include "process.h"
 #include "Embedder.h"
 #include "libciomr/libciomr.h"
+#include "MBEFrag.h"
 
 typedef std::vector<int> SVec;
-typedef LibFrag::MBEFrag* pSet;
-typedef std::vector<pSet> FragSet;
 typedef std::string str;
-typedef std::vector<psi::MOFile> MOtype;
 typedef const int cint;
 typedef std::vector<boost::shared_ptr<double[]> > GMatrix; //Ghetto matrix
-typedef boost::shared_ptr<LibFrag::Embedder> ShareEmbed;
 typedef boost::python::list PyList;
 typedef boost::python::str PyStr;
 
-using psi::outfile;
-
+namespace psi{
+typedef std::vector<MOFile> MOtype;
 namespace LibFrag {
+
+typedef MBEFrag* pSet;
+typedef std::vector<pSet> FragSet;
+typedef boost::shared_ptr<Embedder> ShareEmbed;
+
 ShareEmbed LibFragHelper::EmbedFactory=ShareEmbed();
 
 //Handy template for switching python things to c++ things
@@ -46,38 +48,34 @@ void ToC(T& cvalue, S& pyvalue) {
 }
 
 LibFragHelper::LibFragHelper(){
-   psi::tstart();
+   tstart();
 }
 
 LibFragHelper::~LibFragHelper(){
-   psi::tstop();
+   tstop();
 }
 
 PyList baseGetCall(cint NMer, cint N, std::vector<NMerSet>& Systems,
       bool IsGhost) {
    PyList DaList;
    SharedFrag DaNMer=(Systems[NMer])[N];
-   if (!IsGhost) {
-      for (int i=0; i<DaNMer->size(); i++)
-         DaList.append((*DaNMer)[i]);
+   if(IsGhost){
+      for (int i=0; i<DaNMer->Ghosts().size(); i++)
+         DaList.append(DaNMer->Ghosts()[i]);
    }
-   else {
-      for (int i=0; i<DaNMer->Ghosts.size(); i++)
-         DaList.append(DaNMer->Ghosts[i]);
+   else{
+      for (int i=0;i<DaNMer->Atoms().size();i++)
+         DaList.append(DaNMer->Atoms()[i]);
    }
    return DaList;
 }
 
-PyList LibFragHelper::GetNMerN(cint NMer, cint N) {
-   return baseGetCall(NMer, N, Systems, false);
+PyList LibFragHelper::GetNMerN(const int NMer,const int N){
+   return baseGetCall(NMer,N,Systems,false);
 }
 
-PyList LibFragHelper::GetGhostNMerN(cint NMer, cint N) {
-   return baseGetCall(NMer, N, Systems, true);
-}
-
-int LibFragHelper::RunFrags() {
-   return Expansion->RunFrags();
+PyList LibFragHelper::GetGhostNMerN(const int NMer, const int N){
+   return baseGetCall(NMer,N,Systems,true);
 }
 
 void LibFragHelper::GatherData() {
@@ -91,7 +89,6 @@ void LibFragHelper::GatherData() {
    }
 
 }
-
 int LibFragHelper::Iterate(cint itr) {
    return (EmbedFactory ? EmbedFactory->Iterate(itr) : false);
 }
@@ -134,7 +131,7 @@ void LibFragHelper::Fragment_Helper(PyStr& FragMethod, cint N,
    boost::shared_ptr<Fragmenter> FragFactory=DaOptions.MakeFragFactory();
    FragProps FProp=FragFactory->Fragment(AMol, Systems[0]);
    Expansion=(
-         FProp.disjoint ? boost::shared_ptr<GMBE>(new MBE(N)) :
+         FProp.Disjoint_ ? boost::shared_ptr<GMBE>(new MBE(N)) :
                boost::shared_ptr<GMBE>(new GMBE(N)));
 
    ///If the user wants a one-body GMBE calc, we hack a bit here and add
@@ -144,13 +141,10 @@ void LibFragHelper::Fragment_Helper(PyStr& FragMethod, cint N,
       Expansion->MakeIntersections(Systems);
       Systems[0]=Systems[1];
       Systems[0].insert(Systems[0].end(), Systems[2].begin(), Systems[2].end());
-      for (int j=0; j<Systems[0].size(); j++) {
-         Systems[0][j]->print_out();
-      }
    }
 
    ///If we broke bonds add some caps
-   if (FProp.severed) {
+   if (FProp.Severed_) {
       CapFactory=DaOptions.MakeCapFactory(AMol);
       CapFactory->MakeCaps(Systems[0]);
    }
@@ -175,8 +169,8 @@ PyList LibFragHelper::Embed_Helper(cint N, cint x) {
    if (EmbedFactory) {//Don't derefrence pointer if it's not set
       if (EmbedFactory->HaveCharges()) {
          SharedFrag NMer=Systems[N][x];
-         for (int i=0; i<NMer->Charges.size(); i++)
-            DaList.append(NMer->Charges[i]);
+         for (int i=0; i<NMer->Charges().size(); i++)
+            DaList.append(NMer->Charges()[i]);
       }
    }
    return DaList;
@@ -184,8 +178,8 @@ PyList LibFragHelper::Embed_Helper(cint N, cint x) {
 
 str LibFragHelper::Cap_Helper(int order, int frag) {
    std::stringstream caps;
-   for (int i=0; i<Systems[order][frag]->Caps.size(); i++)
-      caps<<Systems[order][frag]->Caps[i].print_out();
+   //for (int i=0; i<Systems[order][frag]->Caps.size(); i++)
+   //   caps<<Systems[order][frag]->Caps[i].print_out();
    return caps.str();
 }
 
@@ -233,20 +227,8 @@ void LibFragHelper::NMer_Helper(cint N) {
       Systems.push_back(NMerSet());
       Expansion->MakeNmers(Systems[0], Systems.back());
       Expansion->MakeIntersections(Systems);
-      for (int i=0; i<Systems.size(); i++) {
-         for (int j=0; j<Systems[i].size(); j++) {
-            Systems[i][j]->print_out();
-         }
-      }
    }
-   for (int i=1; i<Systems.size(); i++) {
-      if (CapFactory) CapFactory->MakeCaps(Systems[i]);
-      if (EmbedFactory) EmbedFactory->Embed(Systems[i]);
-   }
-   if (DaOptions.BMethod!=NO_BSSE) {
-      for (int order=1; order<Systems.size(); order++)
-         BSSEFactory->AddBSSEJobs(Systems[order]);
-   }
+
 }
 
 int LibFragHelper::IsGMBE() {
@@ -264,7 +246,7 @@ void LibFragHelper::BroadCastWrapper(cint i, cint j, str& comm,
       tempfiles.back().Receive(comm, i);
    }
    if (EmbedFactory) {
-      int natoms=Systems[0][tempfiles.size()]->size();
+      int natoms=Systems[0][tempfiles.size()]->Atoms().size();
       if (bcast) {
          psi::WorldComm->bcast(&(ChargeSets[j][0]), natoms, i, comm);
          tempChargeSets.push_back(ChargeSets[j]);
@@ -284,8 +266,8 @@ void LibFragHelper::Synchronize(boost::python::str& Comm, cint N, cint itr) {
    if (N==0) {
       if (UpdateCharges) {
          for (int frag=0; frag<Systems[0].size(); frag++) {
-            for (int atom=0; atom<Systems[0][frag]->size(); atom++) {
-               int atomI=(*Systems[0][frag])[atom];
+            for (int atom=0; atom<Systems[0][frag]->Atoms().size(); atom++) {
+               int atomI=Systems[0][frag]->Atoms()[atom];
                EmbedFactory->SetCharge(atomI, ChargeSets[frag][atom]);
             }
          }
@@ -317,7 +299,7 @@ void LibFragHelper::Synchronize(boost::python::str& Comm, cint N, cint itr) {
          MOFiles=tempfiles;
       }
    }
-
 }
 
-}	//End namespace LibFrag
+bool LibFragHelper::RunFrags(){return Expansion->RunFrags();}
+}}	//End namespaces

@@ -10,6 +10,7 @@
 #include "../../bin/psi4/psi4.h"
 #include "../../../include/psi4-dec.h"
 #include <iomanip>
+namespace psi{
 namespace LibFrag{
 void MBE::MakeIntersections(std::vector<NMerSet>& Systems){
 	int oldN=N;
@@ -59,7 +60,7 @@ double MBE::NBodyE(const int N,const int nfrags,const double *DeltaEs){
 	return energy;
 }
 
-}
+}}//End namespaces
 
 
 

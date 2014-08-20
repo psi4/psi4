@@ -24,6 +24,7 @@
 
 #include <string>
 
+namespace psi{
 namespace LibFrag{
 
 
@@ -37,7 +38,7 @@ class LibFragBase{
       LibFragBase():Width_(80){}
 };
 
-}//End namespace LibFragBase
+}}//End namespace LibFragBase
 
 
 #endif /* LIBFRAGBASE_CC_ */

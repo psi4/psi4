@@ -23,62 +23,92 @@
 #include "Embedder.h"
 #include "psi4-dec.h"
 #include <math.h>
+namespace psi{
 namespace LibFrag{
 
 void Embedder::print_out(){
-   for(int i=0;i<Charges.size();i++){
-      psi::outfile->Printf("%16.15f ",Charges[i]);
+   for(int i=0;i<Charges_.size();i++){
+      psi::outfile->Printf("%16.15f ",Charges_[i]);
       for(int j=0;j<3;j++){
-         psi::outfile->Printf("%16.15f ",Carts[i*3+j]);
+         psi::outfile->Printf("%16.15f ",Carts_[i*3+j]);
       }
       psi::outfile->Printf("\n");
    }
    double corr=0.0;
-   for(int i=0;i<Charges.size();i++){
-      for(int j=i+1;j<Charges.size();j++){
+   for(int i=0;i<Charges_.size();i++){
+      for(int j=i+1;j<Charges_.size();j++){
          double dr=0.0;
-         for(int k=0;k<3;k++)dr+=pow(Carts[i*3+k]-Carts[j*3+k],2);
-         corr+=Charges[i]*Charges[j]/sqrt(dr);
+         for(int k=0;k<3;k++)dr+=pow(Carts_[i*3+k]-Carts_[j*3+k],2);
+         corr+=Charges_[i]*Charges_[j]/sqrt(dr);
       }
    }
    psi::outfile->Printf("Self-interaction correction is: %16.15f\n",corr);
 }
 
 bool Embedder::Iterate(const int itr){
-   return ((itr==0)?true : DoIterate);
+   return ((itr==0)?true : DoIterate_);
 }
 
 void Embedder::SetCharge(int i,double q){
-   NotFirstItr=true;
-   Charges[i]=q;
+   NotFirstItr_=true;
+   Charges_[i]=q;
 }
 
 Embedder::Embedder(SharedMol& AMol,bool Iterating):
-      DoIterate(Iterating),Charges(AMol->natom(),0.0),NotFirstItr(false){
+      DoIterate_(Iterating),Charges_(AMol->natom(),0.0),
+      NotFirstItr_(false){
    for(int i=0;i<AMol->natom();i++){
-      Carts.push_back(AMol->fx(i));
-      Carts.push_back(AMol->fy(i));
-      Carts.push_back(AMol->fz(i));
+      Carts_.push_back(AMol->fx(i));
+      Carts_.push_back(AMol->fy(i));
+      Carts_.push_back(AMol->fz(i));
    }
 }
 
-void APCEmbedder::Embed(NMerSet& Set2Embed){
+void Embedder::Embed(NMerSet& Set2Embed){
+   ChargeType ChargesBySet;
+   EmbedImpl(ChargesBySet,Set2Embed);
+   if(ChargesBySet.size()!=Set2Embed.size())
+      throw PSIEXCEPTION("Each fragment must have an embedding set even"
+            " if it is just empty.");
+   for(int i=0;i<ChargesBySet.size();i++){
+      Set2Embed[i]->Charges_=ChargesBySet[i];
+   }
+}
+
+void Embedder::CommonInit(ChargeType& ChargesBySet){
+   Set<SharedCharge> newcharge;
+   ChargesBySet.push_back(newcharge);
+   if(ChargesBySet.size()==1){
+     for(int charge=0;charge<Charges_.size();charge++){
+        SharedCharge temp=SharedCharge(new Charge(
+                 Charges_[charge],charge,&Carts_[charge*3]));
+      ChargesBySet[0].AddSet(charge,temp);
+     }
+   }
+   else{
+      ChargesBySet.back()=ChargesBySet[0];
+      ChargesBySet.back().Clear();
+   }
+}
+
+void APCEmbedder::EmbedImpl(ChargeType& ChargesBySet, NMerSet& Set2Embed){
+   if(Set2Embed.size()==0)
+      throw PSIEXCEPTION("Expected fragments to embed");
    for(int set=0;set<Set2Embed.size();set++){
-      std::vector<bool> IsCharge(Charges.size(),true);
+      CommonInit(ChargesBySet);
+      std::vector<bool> IsCharge(Charges_.size(),true);
       SharedFrag NMer=Set2Embed[set];
-      NMer->Charges.clear();
-      for(int atom=0;atom<NMer->size();atom++)
-         IsCharge[(*NMer)[atom]]=false;
-      for(int cap=0;cap<NMer->Caps.size();cap++)
-         IsCharge[NMer->Caps[cap].ReplacedAtom()]=false;
-      for(int i=0;i<IsCharge.size();i++){
-         if(IsCharge[i]){
-            NMer->Charges.push_back(Charges[i]);
-            for(int j=0;j<3;j++)NMer->Charges.push_back(Carts[i*3+j]);
-         }
+      for(int atom=0;atom<NMer->Atoms().size();atom++)
+         IsCharge[NMer->Atoms()[atom]]=false;
+      for(int cap=0;cap<NMer->Caps().size();cap++){
+         int ActualCap=NMer->Caps()[cap];
+         IsCharge[NMer->Caps().Object(ActualCap)->ReplacedAtom()]=false;
       }
+      for(int i=0;i<IsCharge.size();i++)
+         if(IsCharge[i])ChargesBySet.back()<<i;
+
    }
 }
 
-}//End namespace LibFrag
+}}//End namespaces
 

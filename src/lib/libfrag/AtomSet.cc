@@ -21,66 +21,94 @@
  */
 
 #include "AtomSet.h"
-#include <cmath>
-namespace LibFrag{
 
-void Atom::Copy(const Atom& other){
-   this->mass=other.mass;
-   this->carts=other.carts;
+namespace psi {
+namespace LibFrag {
+
+/***********Atom Object Functions***********/
+void Atom::Copy(const Atom& other) {
+   this->Z_=other.Z_;
+   this->mass_=other.mass_;
 }
 
-
-const AtomSet& AtomSet::operator=(const AtomSet& other) {
-   if (this!=&other) {
-      this->Set::operator=(other);
-      this->Copy(other);
-   }
+const Atom& Atom::operator=(const Atom& other) {
+   CartObject::operator=(other);
+   if (this!=&other) this->Copy(other);
    return *this;
 }
 
-void AtomSet::AddMass(const int i, const double m){
-   CoM.clear();
-   Elem2Atoms[i].mass=m;
+Atom::Atom(const int Z, const double m, const double*Carts) :
+      Z_(Z), mass_(m), CartObject(Carts) {
 }
 
-void AtomSet::AddCarts(const int i, const double x, const double y,
-      const double z) {
-   CoM.clear();
-   Elem2Atoms[i].carts[0]=x;
-   Elem2Atoms[i].carts[1]=y;
-   Elem2Atoms[i].carts[2]=z;
+Atom::Atom(const int Z, const double m, const double x, const double y,
+      const double z) :
+      Z_(Z), mass_(m), CartObject(x, y, z) {
 }
 
-void AtomSet::CalcCoM() {
-   double M=0.0;
-   CoM.clear();
-   for(int i=0;i<3;i++)CoM.push_back(0.0);
-   for (int i=0; i<Atoms.size(); i++) {
-      M+=Mass(i);
-      std::vector<double> tempcarts=Carts(i);
-      for (int j=0; j<3; j++)
-         CoM[j]+=Mass(i)*tempcarts[j];
-   }
-   for (int i=0; i<3; i++)
-      CoM[i]/=M;
+/*********Stand In Functions***************/
+
+StandIn::StandIn(const int R, const double x, const double y, const double z) :
+      CartObject(x, y, z), AtomIReplace_(R) {
 }
 
-double AtomSet::Distance(AtomSet&other) {
-   if (this->CoM.size()!=3) this->CalcCoM();
-   if (other.CoM.size()!=3) other.CalcCoM();
-   double distsq=0.0;
-   for (int i=0; i<3; i++)
-      distsq+=(this->CoM[i]-other.CoM[i])*(this->CoM[i]-other.CoM[i]);
-   return sqrt(distsq);
+StandIn::StandIn(const int R, const double* Carts) :
+      CartObject(Carts), AtomIReplace_(R) {
 }
 
-void AtomSet::Copy(const AtomSet& other) {
-   this->Ghosts=other.Ghosts;
-   this->Charges=other.Charges;
-   this->Caps=other.Caps;
-   this->Elem2Atoms=other.Elem2Atoms;
-   this->CoM=other.CoM;
+const StandIn& StandIn::operator=(const StandIn& other) {
+   CartObject::operator=(other);
+   if (this!=&other) this->Copy(other);
+   return *this;
 }
 
-}//End namespace
+/***********Cap Functions*******************/
+Cap::Cap(const int BA, const int RA, const int Z, const int m,
+      const double* Carts) :
+      CartObject(Carts), StandIn(RA, Carts), Atom(Z, m, Carts),
+            AtomIBonded2_(BA) {
+}
+Cap::Cap(const int BondAtom, const int ReplaceAtom, const int Z, const int m,
+      const double x, const double y, const double z) :
+      StandIn(ReplaceAtom, x, y, z), Atom(Z, m, x, y, z), CartObject(x, y, z),
+            AtomIBonded2_(BondAtom) {
+}
+
+Cap::Cap(const Cap& other) :
+      StandIn(other), Atom(other), CartObject(other) {
+   this->Copy(other);
+}
+
+const Cap& Cap::operator=(const Cap& other) {
+   Atom::operator=(other);
+   StandIn::operator=(other);
+   CartObject::operator=(other);
+   if (this!=&other) this->Copy(other);
+   return *this;
+}
+
+/**********Ghost Functions (Spooky!!)*********/
+
+Ghost::Ghost(const int RA, const int Z, const double* Carts) :
+      StandIn(RA, Carts), Atom(Z, 0.0, Carts), CartObject(Carts) {
+}
+
+Ghost::Ghost(const int RA, const int Z, const double x, const double y,
+      const double z) :
+      StandIn(RA, x, y, z), Atom(RA, 0.0, x, y, z), CartObject(x, y, z) {
+}
+
+Ghost::Ghost(const Ghost& other) :
+      StandIn(other), Atom(other), CartObject(other) {
+}
+
+const Ghost& Ghost::operator=(const Ghost& other) {
+   StandIn::operator=(other);
+   Atom::operator=(other);
+   CartObject::operator=(other);
+   return *this;
+}
+
+}
+} //End namespaces
 

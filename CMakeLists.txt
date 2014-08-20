@@ -49,7 +49,7 @@ endforeach()
 # Psi4 configuration
 #
 set(PSI_VERSION \"4.0\")
-set(psi4datadir \"${CMAKE_INSTALL_PREFIX}\")
+set(psi4datadir \"${CMAKE_INSTALL_PREFIX}/lib\")
 set(top_srcdir \"${PROJECT_SOURCE_DIR}\")
 set(top_objdir \"${PROJECT_BINARY_DIR}\")
 
@@ -279,7 +279,7 @@ endif()
 
 #If we have MPI also build the JKFactory library for awesome SCF performance
 if(MPI_FOUND)
-   set(BUILD_JK_FACTORY "TRUE")
+   set(BUILD_JK_FACTORY "FALSE")
 endif()
 
 if(BUILD_JK_FACTORY)

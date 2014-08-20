@@ -77,6 +77,9 @@ MatrixMPIData::MatrixMPIData(int NBasis) :
    int stride=endcol-startcol+1;
 
    MyBuffer=boost::shared_ptr<double[]>(new double[stride*(endrow-startrow+1)]);
+   if(!MyBuffer){
+      std::cout<<"Memory Allocation of Buffer failed!!!"<<std::endl;
+   }
 }
 
 double* Matrix::GetMyBlock() {

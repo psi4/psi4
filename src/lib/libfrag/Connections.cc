@@ -28,9 +28,10 @@
 #include "cov_radii.h"
 #include <algorithm>
 
+namespace psi{
 namespace LibFrag{
 
-Connections::Connections(std::vector<AtomSet>& Groups,
+Connections::Connections(GroupType& Groups,
       const Connections& AtomConnec):
       NConnecs(Groups.size(),0),CTable(nbonds*Groups.size(),0),
       Distance(Groups.size(),Groups.size()),
@@ -38,14 +39,14 @@ Connections::Connections(std::vector<AtomSet>& Groups,
   for(int i=0;i<Groups.size();i++){
      Distance(i,i)=0.0;
      for(int j=i+1;j<Groups.size();j++){
-        Distance(i,j)=Groups[i].Distance(Groups[j]);
+        Distance(i,j)=Groups[i]->Distance((*Groups[j]));
         Distance(j,i)=Distance(i,j);
         bool bonded=false;
-        for(int k=0;k<Groups[i].size()&&!bonded;k++){
-           int atom=(Groups[i])[k];
+        for(int k=0;k<Groups[i]->size()&&!bonded;k++){
+           int atom=(*Groups[i])[k];
            for(int l=0;l<AtomConnec.GetNConnecs(atom)&&!bonded;l++){
               int atom2=AtomConnec(atom,l)-1;
-              bonded=Groups[j].contains(atom2);
+              bonded=Groups[j]->Contains(atom2);
            }
         }
         if(bonded){
@@ -97,6 +98,6 @@ void Connections::RoughTable(SharedMol Mol){
 
 
 
-}//End libfrag namespace
+}}//End namespaces
 
 

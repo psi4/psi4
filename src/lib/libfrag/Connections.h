@@ -27,8 +27,15 @@
 #include "libmints/matrix.h"
 #include "AtomSet.h"
 #include "LibFragTypes.h"
-typedef boost::shared_ptr<psi::Matrix> SharedMatrix;
+
+
+namespace psi{
+typedef boost::shared_ptr<Matrix> SharedMatrix;
 namespace LibFrag{
+typedef boost::shared_ptr<CartSet<SharedAtom> > SharedAtomSet;
+
+///The type of the groups
+typedef std::vector<SharedAtomSet> GroupType;
 class Connections{
    private:
       ///The connectivity table
@@ -36,7 +43,7 @@ class Connections{
       ///The number of connections each atom has
       std::vector<int> NConnecs;
       ///The distance matrix;
-      psi::Matrix Distance;
+      Matrix Distance;
       ///Things below bondthresh are likely bonds (in a.u.)
       double bondthresh;
       ///Things can only have this many bonds
@@ -49,7 +56,7 @@ class Connections{
       Connections(SharedMol& Mol);
       ///Given a set of groups and the atom connectivity table makes a group
       ///connectivity table
-      Connections(std::vector<AtomSet>& Groups,const Connections& AtomConnec);
+      Connections(GroupType& Groups,const Connections& AtomConnec);
       int GetNConnecs(const int Atom)const{return NConnecs[Atom];}
       /**Returns the "Conn"-th atom bonded to "Atom", a return value of 0
          means "Atom" doesn't make that many bonds or you requested a value
@@ -62,7 +69,7 @@ class Connections{
       ///Debugging function
       void print_out();
 };
-}
+}}//End namespaces
 
 
 #endif /* CONNECTIONS_H_ */

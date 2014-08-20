@@ -24,20 +24,27 @@
 #include "LibFragTypes.h"
 #include "libmints/molecule.h"
 
+namespace psi{
 namespace LibFrag{
+
+typedef std::vector<Set<SharedCharge> > ChargeType;
+
 class AtomSet;
 class Embedder{
    protected:
       ///Are we iterating
-      bool DoIterate;
+      bool DoIterate_;
       ///A vector of all charges for the supersystem
-      std::vector<double> Charges;
-      std::vector<double>Carts;
+      std::vector<double> Charges_;
+      std::vector<double>Carts_;
       ///Did we just get the point charges
-      bool NotFirstItr;
+      bool NotFirstItr_;
+
+      virtual void EmbedImpl(ChargeType& ChargesBySet, NMerSet& Set2Embed)=0;
+      void CommonInit(ChargeType& ChargesBySet);
    public:
       Embedder(SharedMol& AMol,bool Iterating);
-      bool HaveCharges(){return NotFirstItr;}
+      bool HaveCharges(){return NotFirstItr_;}
       virtual ~Embedder(){}
       /** \brief Tells you whether you need to rerun the calculations
        *
@@ -51,20 +58,23 @@ class Embedder{
       bool Iterate(const int itr);
       ///Only call set charge once you are ready to set all the charges
       void SetCharge(int i,double q);
-      virtual void Embed(NMerSet& Set2Embed)=0;
+      virtual void Embed(NMerSet& Set2Embed);
       void print_out();
 
 };
 
 class APCEmbedder:public Embedder{
+   protected:
+      void EmbedImpl(ChargeType& ChargesBySet, NMerSet& Set2Embed);
+
    public:
       APCEmbedder(SharedMol& AMol,bool Iterating):
          Embedder(AMol,Iterating){}
 
-      void Embed(NMerSet& Set2Embed);
+
 };
 
-}//End namespace libfrag
+}}//End namespaces
 
 
 #endif /* EMBEDDER_H_ */

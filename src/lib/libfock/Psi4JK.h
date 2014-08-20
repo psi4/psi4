@@ -33,8 +33,8 @@ typedef boost::shared_ptr<psi::BasisSet> SharedPsiBasis;
 }
 
 #if HAVE_JK_FACTORY
-#include "APIs/Interface.hpp"
-#include "BasisReorderer.hpp"
+#include "libJKFactory/src/Interface.hpp"
+#include "libJKFactory/src/BasisReorderer.hpp"
 namespace psi{
 
 
