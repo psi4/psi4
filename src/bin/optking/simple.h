@@ -34,7 +34,7 @@
 
 namespace opt {
 
-enum INTCO_TYPE {min_type, stre_type, bend_type, tors_type, max_type};
+enum INTCO_TYPE {min_type, stre_type, bend_type, tors_type, cart_type, max_type};
 
 typedef const double * const * const GeomType;
 
@@ -86,6 +86,9 @@ class SIMPLE {
 
     // do-nothing function overridden by bend class
     virtual bool is_linear_bend(void) const { return false; }
+
+    // do-nothing function overridden by cartesian class
+    virtual int g_xyz(void) const { return 0; }
 
     // each internal coordinate type must provide the following virtual functions:
 

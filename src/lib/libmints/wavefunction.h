@@ -259,7 +259,8 @@ public:
     /// Compute gradient.  Subclasses override this function to compute the gradient.
 
     /// Initialize internal variables from checkpoint file.
-    void init_with_chkpt();
+    //void init_with_chkpt(); // Does this function exist??
+    void load_values_from_chkpt();
 
     /// Is this a restricted wavefunction?
     virtual bool same_a_b_orbs() const { return true;  }

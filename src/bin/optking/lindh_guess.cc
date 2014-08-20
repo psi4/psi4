@@ -286,7 +286,9 @@ in this set of internals. */
                       * Lindh_rho(b, c, R[b][c])
                       * Lindh_rho(c, d, R[c][d]);
     }
-    //psi::outfile->Printf("internal Lindh_k: %15.10lf\n", Lindh_k);
+    else if (q->g_type() == cart_type) {
+      Lindh_k = 0.1;
+    }
 
     // Hxy += k dq/dx dq/dy
     for (int a=0; a < natom_intco; ++a) {

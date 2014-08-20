@@ -155,17 +155,22 @@ OptReturnType optking(void) {
     mol1->fragmentize();
     mol1->print_connectivity("outfile");
 
-    if (Opt_params.fragment_mode == OPT_PARAMS::SINGLE) {
-      mol1->add_intrafragment_simples_by_connectivity();
-      if (Opt_params.add_auxiliary_bonds)
-        mol1->add_intrafragment_auxiliary_bonds();
-    }
-    else if (Opt_params.fragment_mode == OPT_PARAMS::MULTI) {
-      mol1->add_intrafragment_simples_by_connectivity();
-      if (Opt_params.add_auxiliary_bonds)
-        mol1->add_intrafragment_auxiliary_bonds();
-      mol1->add_interfragment();
-      mol1->freeze_interfragment_asymm(); // remove problematic ones?
+    if (Opt_params.coordinates == OPT_PARAMS::CARTESIAN || Opt_params.coordinates == OPT_PARAMS::BOTH)
+      mol1->add_cartesians();
+
+    if (Opt_params.coordinates == OPT_PARAMS::INTERNAL || Opt_params.coordinates == OPT_PARAMS::BOTH) {
+      if (Opt_params.fragment_mode == OPT_PARAMS::SINGLE) {
+        mol1->add_intrafragment_simples_by_connectivity();
+        if (Opt_params.add_auxiliary_bonds)
+          mol1->add_intrafragment_auxiliary_bonds();
+      }
+      else if (Opt_params.fragment_mode == OPT_PARAMS::MULTI) {
+        mol1->add_intrafragment_simples_by_connectivity();
+        if (Opt_params.add_auxiliary_bonds)
+          mol1->add_intrafragment_auxiliary_bonds();
+        mol1->add_interfragment();
+        mol1->freeze_interfragment_asymm(); // remove problematic ones?
+      }
     }
 
     mol1->apply_input_constraints();
