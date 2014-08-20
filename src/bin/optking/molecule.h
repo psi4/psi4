@@ -72,6 +72,8 @@ class MOLECULE {
 
   void add_interfragment(void);
 
+  int add_cartesians(void);
+
   int g_nfragment(void) const { return fragments.size(); };
 
 #if defined(OPTKING_PACKAGE_QCHEM)

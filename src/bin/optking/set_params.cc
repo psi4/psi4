@@ -77,6 +77,14 @@ void set_params(void)
      // else if (Opt_params.opt_type == OPT_PARAMS::IRC) options?
    }
 
+   s = options.get_str("OPT_COORDINATES");
+   if (s == "INTERNAL")
+     Opt_params.coordinates = OPT_PARAMS::INTERNAL;
+   else if (s == "CARTESIAN")
+     Opt_params.coordinates = OPT_PARAMS::CARTESIAN;
+   else if (s == "BOTH")
+     Opt_params.coordinates = OPT_PARAMS::BOTH;
+
 // Maximum step size in bohr or radian along an internal coordinate {double}
 //  Opt_params.intrafragment_step_limit = 0.4;
     Opt_params.intrafragment_step_limit = options.get_double("INTRAFRAG_STEP_LIMIT");
@@ -383,6 +391,15 @@ void set_params(void)
   if (i == 0)      Opt_params.step_type = OPT_PARAMS::RFO;
   else if (i == 1) Opt_params.step_type = OPT_PARAMS::NR;
   else if (i == 2) Opt_params.step_type = OPT_PARAMS::P_RFO;
+
+// coordinates for optimization; default is 0
+  i = rem_read(REM_GEOM_OPT2_OPT_COORDINATES);
+  if (i == 0)
+    Opt_params.coordinates = OPT_PARAMS::INTERNAL;
+  else if (i == 1)
+    Opt_params.coordinates = OPT_PARAMS::CARTESIAN;
+  else if (i == 2)
+    Opt_params.coordinates = OPT_PARAMS::BOTH;
 
   // Maximum change in an internal coordinate is au; limits on steps are rem / 1000
   i = rem_read(REM_GEOM_OPT2_INTRAFRAG_STEP_LIMIT);     // default is  400 -> 0.4

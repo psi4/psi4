@@ -484,6 +484,20 @@ bool FRAG::present(const SIMPLE *one) const {
   return false;
 }
 
+int FRAG::add_cartesians(void) {
+  int nadded = 0;
+
+  for (int i=0; i<natom; ++i)
+    for (int xyz=0; xyz<3;++xyz) {
+      CART *one_cart = new CART(i,xyz);
+      if (!present(one_cart)) {
+        intcos.push_back(one_cart);
+        ++nadded;
+      }
+    }
+  return nadded;
+}
+
 // given any simple coordinate - this function looks to see if that coordinate
 // is already present in the set.  If so, it returns the index.
 // If not, it returns the index of the end + 1.
