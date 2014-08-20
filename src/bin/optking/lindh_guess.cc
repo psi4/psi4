@@ -286,6 +286,9 @@ in this set of internals. */
                       * Lindh_rho(b, c, R[b][c])
                       * Lindh_rho(c, d, R[c][d]);
     }
+    else if (q->g_type() == cart_type) {
+      Lindh_k = 0.1;
+    }
     //fprintf(outfile,"internal Lindh_k: %15.10lf\n", Lindh_k);
 
     // Hxy += k dq/dx dq/dy
