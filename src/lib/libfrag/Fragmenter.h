@@ -12,33 +12,59 @@
 #include "AtomSet.h"
 #include "physconst.h"
 
+namespace psi{
 namespace LibFrag{
 class Connections;
 
+///Tiny class that tells us quickly the properties of our fragments
 class FragProps{
    private:
+      ///Copies our properties
       void Copy(const FragProps& other){
-         this->disjoint=other.disjoint;
-         this->severed=other.severed;
+         this->Disjoint_=other.Disjoint_;
+         this->Severed_=other.Severed_;
       }
    public:
-      bool disjoint;
-      bool severed;
-      FragProps(const bool d=true,const bool s=false):
-         disjoint(d),severed(s){}
+      ///True if all fragments are disjoint
+      bool Disjoint_;
+      ///True if we broke any bonds
+      bool Severed_;
+      FragProps(const bool s=false,const bool d=true):
+         Disjoint_(d),Severed_(s){}
       FragProps(const FragProps& other){this->Copy(other);}
       const FragProps& operator=(const FragProps& other){
          if(this!=&other)this->Copy(other);return *this;
       }
 };
+typedef boost::shared_ptr<CartSet<SharedAtom> > SharedAtomSet;
 
+///The type of the groups
+typedef std::vector<SharedAtomSet > GroupType;
+
+
+/** \brief The class that is in charge of setting up the Atoms_ array of
+ *  a MBEFrag that is a fragment.
+ *
+ *  The Fragmenter class is a friend of MBEFrag, which allows it to set
+ *  the Atoms_ arrays.  The various algorithms that are implemented by
+ *  deriving from this class are not.  What this means is your algorithm
+ *  needs to implement the function FragmentImpl().  It should return
+ *  a FragProps object, with Severed_ set correctly, and the GroupType
+ *  object named Monomers should be set-up with the fragments you created.
+ *  Disjoint_ of FragProps will be set when the uniqueness of your
+ *  fragments is checked by Fragmenter.
+ *
+ *  It is the responsibility of the Fragmenter base class to set-up the
+ *  MBEFrags, and in doing so will also check your Monomers for uniqueness
+ *  so your algorithm need not do that, although the check will go faster
+ *  if you do not generate redundant Monomers if at all possible.
+ */
 class Fragmenter{
    protected:
       ///Function takes a SharedMol and returns a vector of the groups in it
-      std::vector<AtomSet> MakeGroups(Connections& CTable,
-            SharedMol& Mol2Frag);
+      GroupType MakeGroups(Connections& CTable,SharedMol& Mol2Frag);
 
-      /** \brief Function for converting groups to fragments
+      /** \brief Function for converting copying groups to fragments
        *
        *  \param[in] Groups      The vector of groups from MakeGroups
        *  \param[in] Groups2Add  A vector of groups we are adding
@@ -47,22 +73,31 @@ class Fragmenter{
        *  \param[out] Monomers   The set of fragments plus our new frag
        *  \param[in]  Check      Should we check if the new frag is unique?
        */
-      void Groups2Frag(std::vector<AtomSet>& Groups,
-            std::vector<int>& Groups2Add, int NGroups, NMerSet& Monomers,
+      void Groups2Frag(GroupType& Groups,
+            std::vector<int>& Groups2Add, int NGroups, GroupType& Monomers,
             bool check);
 
       ///Copies unique frags in temp to Monomers, returns true if disjoint
-      bool SortUnique(NMerSet& Monomers,NMerSet& temp);
+      bool SortUnique(NMerSet& Monomers,GroupType& temp);
+
+      ///Establishes the universe for the Monomers
+      void MakeUniv(const SharedMol& AMol, NMerSet& Monomers)const;
+
+      ///Function that adds a fresh SharedAtomSet onto Frags
+      inline void CommonInit(SharedMol& Mol2Frag,GroupType& Frags);
+
+      virtual FragProps FragmentImpl(SharedMol& Mol2Frag,
+            GroupType& Monomers)=0;
    public:
         ///Returns properties of resulting fragments
-		virtual FragProps Fragment(SharedMol& Mol2Frag,NMerSet& Fragments)=0;
+		FragProps Fragment(SharedMol& Mol2Frag,NMerSet& Fragments);
 		virtual ~Fragmenter(){}
 };
 
 class UDFragmenter:public Fragmenter{
-   public:
+   protected:
       ///Returns properties of resulting fragments
-      FragProps Fragment(SharedMol& Mol2Frag,NMerSet& Fragments);
+      FragProps FragmentImpl(SharedMol& Mol2Frag,GroupType& Fragments);
 };
 
 class BondFragmenter:public Fragmenter{
@@ -132,24 +167,27 @@ class BondFragmenter:public Fragmenter{
        *
        */
       void BondRecursion(std::vector<int>& BondedGroups,
-            Connections* GConnec, std::vector<AtomSet>& Groups,
-            NMerSet& Monomers, int depth, bool check,bool& severed);
+            Connections* GConnec, GroupType& Groups,
+            GroupType& Monomers, int depth, bool check,bool& severed,
+            SharedMol& AMol);
+   protected:
+      ///Returns properties of resulting fragments
+      FragProps FragmentImpl(SharedMol& Mol2Frag,GroupType& Fragments);
    public:
       BondFragmenter(int nbonds=2):Bonds(nbonds){}
-
-      ///Returns properties of resulting fragments
-      FragProps Fragment(SharedMol& Mol2Frag,NMerSet& Fragments);
 };
 
 class DistFragmenter:public Fragmenter{
    private:
       double cutoff;
+   protected:
+      ///Returns properties of resulting fragments
+      FragProps FragmentImpl(SharedMol& Mol2Frag,GroupType& Fragments);
    public:
       DistFragmenter(double newcutoff=2.0):
          cutoff(newcutoff/pc_bohr2angstroms){}
 
-      ///Returns properties of resulting fragments
-      FragProps Fragment(SharedMol& Mol2Frag,NMerSet& Fragments);
+
 };
-}
+}}//End namespaces
 #endif /* FRAGMENTER_H_ */

@@ -198,6 +198,7 @@ def mbe(name,n=2,bsse_method="NONE",frag_method="USER_DEFINED",
     if(n>=2):
         mbe_impl.nmers(name,molecule,n,Egys,suppress_print,**kwargs)
     Best_Approx_Egy=mbe_impl.SystemEnergy(Egys)
+    mbe_impl.Done()
     return Best_Approx_Egy
 
 #######################

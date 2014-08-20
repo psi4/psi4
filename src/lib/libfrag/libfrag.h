@@ -15,6 +15,7 @@
 #include "libpsio/MOFile.h"
 #include "LibFragBase.h"
 
+namespace psi{
 namespace LibFrag {
 class GMBE;
 class BSSEer;
@@ -126,8 +127,6 @@ class LibFragHelper : public LibFragBase {
       ///Constructs a MOFile that is the direct sum of the N fragments in
       ///the "x"-th "N"-mer
       void WriteMOs(const int N, const int x);
-      ///Technically need to check for embedding, but it's not ready yet
-      int RunFrags();
 
       int IsGMBE();
 
@@ -137,6 +136,8 @@ class LibFragHelper : public LibFragBase {
       ///Turn off self-interaction in point charges
       bool SelfIntOff();
 
+      ///Do we need to run the fragments
+      bool RunFrags();
 
       /** \brief This function is called after a batch is run. It synchronizes
        *         all the processes
@@ -148,6 +149,6 @@ class LibFragHelper : public LibFragBase {
       void Synchronize(boost::python::str& Comm,const int N,const int itr);
       ~LibFragHelper();
 };
-}
+}}//End namespaces
 
 #endif /* LIBFRAG_H_ */

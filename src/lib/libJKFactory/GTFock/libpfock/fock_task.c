@@ -15,6 +15,7 @@
 #include "fock_task.h"
 
 
+
 static void update_F (double *integrals, int numdmat2,
                       int dimM, int dimN, int dimP, int dimQ,
                       int flag1, int flag2, int flag3, int flagsymm,
@@ -45,6 +46,11 @@ static void update_F (double *integrals, int numdmat2,
     double *K_MQ;
     double *K_NQ;
     int i;
+    int index;
+    int indexi;
+    int indexj;
+    int indexk;
+    int indexl;
 
     flag4 = (flag1 == 1 && flag2 == 1) ? 1 : 0;
     flag5 = (flag1 == 1 && flag3 == 1) ? 1 : 0;
@@ -74,14 +80,14 @@ static void update_F (double *integrals, int numdmat2,
                     for (iQ = 0; iQ < dimQ; iQ++)
                     {
                         I = integrals[iM + dimM * (iN + dimN * (iP + dimP * iQ))];                    
-                    
+
                         // F(m, n) += D(p, q) * 2 * I(m, n, p, q)
                         // F(n, m) += D(p, q) * 2 * I(n, m, p, q)
                         // F(m, n) += D(q, p) * 2 * I(m, n, q, p)
                         // F(n, m) += D(q, p) * 2 * I(n, m, q, p)
                         J_MN[iM * ldX1 + iN] += 0.25 * (1 + flag1 + flag2 + flag4) *
                                 D_PQ[iP * ldX2 + iQ] * I * (1 + flagsymm);
-                    
+
                         // F(p, q) += D(m, n) * 2 * I(p, q, m, n)
                         // F(p, q) += D(n, m) * 2 * I(p, q, n, m)
                         // F(q, p) += D(m, n) * 2 * I(q, p, m, n)

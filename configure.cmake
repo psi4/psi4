@@ -10,7 +10,7 @@ import sys
 import os.path
 
 def execute(command, die_on_error = True):
-    print("\tExecuting %s" % command)
+    #print("\tExecuting %s" % command)
     failed = 0;
     process = subprocess.Popen(command)
     (stdout, stderr) = process.communicate()

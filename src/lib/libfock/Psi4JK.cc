@@ -60,7 +60,7 @@ namespace psi {
             int nprims=(PsiBasis->shell(atom,shell)).nprimitive();
             boost::shared_ptr<JKFactory::Shell> Dashell=(*ABS)[shell];
             if(l>1) {
-               double prefactor=sqrt(pow(2.0,2*l)/df[2*l]);
+               double prefactor=sqrt(pow(2.0,2*l-1)/df[2*l]);
                for(int degen=0;degen<Dashell->GetNBasis();degen++)
                ScaleFacts.push_back(1/prefactor);
             }
@@ -71,7 +71,7 @@ namespace psi {
             for(int prim=0;prim<nprims;prim++) {
                double beta=(PsiBasis->shell(atom,shell)).exp(prim);
                double c0=(PsiBasis->shell(atom,shell)).erd_coef(prim);
-               c0*=ScaleFacts.back();
+               if(!isCart)c0*=ScaleFacts.back();
                Dashell->AddPrimitive(c0,beta);
             }
          }
@@ -79,7 +79,9 @@ namespace psi {
    }
 
    Psi4JK::Psi4JK(SharedPsiBasis &PsiBasis):
-   JKFactory::Interface(1e-10,WorldComm->GetMPIComm()) {
+   JKFactory::Interface(
+         Process::environment.options["INTS_TOLERANCE"].to_double(),
+         WorldComm->GetMPIComm()) {
       MakeMolecule(PsiBasis,System);
       MakeBasis(PsiBasis,Basis);
       Unitary=SharedMatrix(
@@ -101,6 +103,10 @@ namespace psi {
       JKFactory::Interface::UpdateK(&((*K)(0,0)));
       if(!IsIdentity) {
          SharedMatrix TempDensity(new Matrix(*Density));
+         //for(int i=0;i<TempDensity->nrow();i++){
+         //   for(int j=0;j<TempDensity->ncol();j++)
+         //      (*TempDensity)(i,j)*=ScaleFacts[i]*ScaleFacts[j];
+         //}
          TempDensity->transform(Unitary);
          JKFactory::Interface::UpdateDensity(&(*TempDensity)(0,0));
       }

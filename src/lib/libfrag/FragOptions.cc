@@ -26,6 +26,8 @@
 #include "Fragmenter.h"
 #include "Capper.h"
 #include "Embedder.h"
+
+namespace psi{
 namespace LibFrag{
 
 std::string FragOptions::ToString(const FragMethods& F){
@@ -251,6 +253,6 @@ boost::shared_ptr<Embedder> FragOptions::MakeEmbedFactory(SharedMol& AMol)const{
    }
    return Factory;
 }
-}//End namespace
+}}//End namespaces
 
 

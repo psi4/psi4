@@ -11,6 +11,7 @@ set(libfragsrc LibFragTypes.h
                LibFragBase.cc
                MBE.h
                MBEFrag.h
+               MBEFrag.cc
                Set.h
                AtomSet.h
                Fragmenter.cc
@@ -23,6 +24,6 @@ set(libfragsrc LibFragTypes.h
                MBE.cc
                Capper.cc
                AtomSet.cc
-               Set.cc)
+)
 add_library(frag STATIC ${libfragsrc})
                

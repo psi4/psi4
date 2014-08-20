@@ -25,13 +25,26 @@
 #include<boost/python.hpp>
 #include "AtomSet.h"
 #include "LibFragTypes.h"
+
+namespace psi{
 namespace LibFrag{
 class Connections;
 
+typedef std::vector<CartSet<SharedCap> > CapType;
+
+
+/** \brief The factory that makes the caps for the fragments.
+ *
+ *  Unlike the other three factories, this one has no common initialization
+ *  function, because the carts of the caps depends on the algorithm. Each
+ *  algorithm is therefore responsible for making it's own CapType array.
+ *  There is an unofficial initializer that is designed to set-up
+ *  "number of fragments" empty cap sets.
+ */
 class Capper{
    protected:
-      std::vector<double> AtomCarts;
-      boost::shared_ptr<Connections> AtomConnect;
+      std::vector<double> AtomCarts_;
+      boost::shared_ptr<Connections> AtomConnect_;
       /** \brief Returns array of bonds to cap
        *
        *  If the returned array is called bonds, nbonds=bonds.size()/3, and
@@ -42,31 +55,36 @@ class Capper{
        *  the cap is replacing.
        */
       std::vector<int> Atoms2Replace(NMerSet& Set2Cap)const;
+      virtual void CapImpl(CapType& Caps,NMerSet& Set2Cap)=0;
+
    public:
       ///Given a molecule sets up AtomConnect for you, and saves the
       ///molecule's carts to AtomCarts
       Capper(SharedMol& AMol);
       virtual ~Capper(){}
-      virtual void MakeCaps(NMerSet& Set2Cap)=0;
+      void MakeCaps(NMerSet& Set2Cap);
 };
 
 class ReplaceAndCap:public Capper{
+   protected:
+      void CapImpl(CapType& Caps, NMerSet& Set2Cap);
    public:
       ReplaceAndCap(SharedMol& AMol):Capper(AMol){}
-      void MakeCaps(NMerSet& Set2Cap);
+
 };
 
 class ShiftAndCap:public Capper{
    private:
       ///The atomic numbers of the system
-      std::vector<int> Zs;
+      std::vector<int> Zs_;
+      ///Taken from Collins' fragmentation method
+      void CapImpl(CapType& Caps,NMerSet& Set2Cap);
    public:
       ShiftAndCap(SharedMol& AMol);
-      ///Taken from Collins' fragmentation method
-      void MakeCaps(NMerSet& Set2Cap);
+
 };
 
-}//End namespace
+}}//End namespaces
 
 
 #endif /* CAPPER_H_ */

@@ -140,6 +140,7 @@ void GTFockInter::BuildJK(const pMyBasis& BasisSet,const pMol& System){
 		double* JBlock=&((Js[i]->MPIData())->MyBuffer[0]);
 		PFock_getMat(GTFock,i,PFOCK_MAT_TYPE_J,startr,endr,startc,endc,
 				JBlock,stride);
+
 		Js[i]->Gather();
 		if(Ks.size()>0){
 			double* KBlock=&((Ks[i]->MPIData())->MyBuffer[0]);

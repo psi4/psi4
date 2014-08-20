@@ -26,7 +26,10 @@ import sys
 #Our instance of the MBE c++ API
 lfrag=psi4.LibFragHelper()
 
-       
+def Done():
+    global lfrag
+    del lfrag
+
 
 def RunCalc(name,molecule,atoms,caps,charges,ghosts,Egys,**kwargs):
     old_geom=molecule.save_string_xyz()

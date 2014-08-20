@@ -10,6 +10,7 @@
 
 #include "GMBE.h"
 #include <boost/math/special_functions/binomial.hpp>
+namespace psi{
 namespace LibFrag{
 ///Specialization of the GMBE to non-intersecting fragments
 class MBE:public GMBE{
@@ -36,7 +37,7 @@ class MBE:public GMBE{
 		bool RunFrags()const{return true;}
 		bool IsGMBE()const{return false;}
 };
-}
+}}
 
 
 #endif /* MBE_H_ */

@@ -23,26 +23,363 @@
 #define ATOMSET_H_
 #include "Set.h"
 #include "LibFragTypes.h"
-
+#include "libmints/vector3.h"
+#include <boost/shared_ptr.hpp>
+namespace psi{
 namespace LibFrag{
-///A set of atoms, knows basic atom-y stuff like carts and masses
+
+///A class for things with Cartesian coordinates
+class CartObject{
+   private:
+      ///The actual copy function
+      void Copy(const CartObject& other){
+         this->Carts_=other.Carts_;
+      }
+
+   protected:
+      Vector3 Carts_;
+
+   public:
+      ///Returns the coordinates
+      const Vector3 Carts()const{return Carts_;}
+
+      ///Sets carts via pointer
+      CartObject(const double *Carts):Carts_(Carts){}
+
+      ///Sets carts via components
+      CartObject(const double x,const double y,const double z):
+         Carts_(x,y,z){}
+
+      ///Deep copies Carts_
+      CartObject(const CartObject& other){this->Copy(other);}
+
+      ///No memory to free up
+      virtual ~CartObject(){}
+
+      ///Sets this Carts object equal to other
+      CartObject& operator=(const CartObject& other){
+         if(this!=&other)this->Copy(other);
+         return *this;
+      }
+
+      ///Returns the distance between this Carts object and other
+      double Distance(const CartObject& other)const{
+         return this->Carts_.distance(other.Carts_);
+      }
+};
+
+///A handy typedef for a boost pointer to a CartObject
+typedef boost::shared_ptr<CartObject> SharedCarts;
+
+/** \brief A class that holds data associated with Atoms
+ *
+ *  An atom is defined by it's chemical identity and mass.  It also
+ *  has Cartesian coordinates, the properties of which it gets from
+ *  CartObject.
+ */
+class Atom:public virtual CartObject{
+   private:
+      ///The atomic number of the atom
+      int Z_;
+      ///The mass of the atom
+      double mass_;
+
+      ///Actual function that copies an atom
+      void Copy(const Atom& other);
+
+   public:
+
+      ///Constructor for Cart array
+      Atom(const int Z,const double m,const double *Carts);
+
+      ///Constructor if coordinates are not in an array
+      Atom(const int Z,const double m, const double x,const double y,
+            const double z);
+
+      ///Copy constructor
+      Atom(const Atom& other):CartObject(other){this->Copy(other);}
+
+      ///Destructor, does nothing
+      virtual ~Atom(){}
+
+      ///Assignment operator, checks for self assignment
+      const Atom& operator=(const Atom& other);
+
+      ///Returns the atomic number of the atom
+      int Z()const{return Z_;}
+
+      ///Returns the mass of the atom
+      double Mass()const{return mass_;}
+};
+
+///A handy typedef for a boost pointer to an Atom object
+typedef boost::shared_ptr<Atom> SharedAtom;
+
+/** \brief StandIns are objects that "stand in" for actual atoms
+ *
+ *  Things like ghosts, caps, and charges replace actual atoms.  They may
+ *  possess some or all of the properties of an Atom.  Minimally though
+ *  they have Cartesian coordinates, which we get from CartObject
+ */
+class StandIn: public virtual CartObject{
+   private:
+
+      ///Copies AtomIReplace_
+      void Copy(const StandIn& other){
+         this->AtomIReplace_=other.AtomIReplace_;
+      }
+
+   protected:
+
+      ///The identity of the Atom that this StandIn replaced
+      int AtomIReplace_;
+
+   public:
+
+      ///Constructor for explicit components
+      StandIn(const int ReplacedAtom, const double x, const double y,
+            const double z);
+
+      ///Constructor for array of components
+      StandIn(const int ReplacedAtom,const double* Carts);
+
+      ///Copy constructor
+      StandIn(const StandIn& other):CartObject(other){this->Copy(other);}
+
+      ///No memory to free up
+      virtual ~StandIn(){}
+
+      ///Assignment operator, checks for self-assignment
+      const StandIn& operator=(const StandIn& other);
+
+      ///Returns the replaced atom
+      int ReplacedAtom()const{return AtomIReplace_;}
+};
+
+///A handy typdef for a boost pointer to a StandIn
+typedef boost::shared_ptr<StandIn> SharedStandIn;
+
+
+/** \brief Caps take care of severed bonds.
+ *
+ *  Caps are both StandIns and Atoms. They also need to know the atom they
+ *  are bonded to.
+ */
+class Cap:public StandIn, public Atom{
+   private:
+
+      ///Copies the bonded atom
+      void Copy(const Cap& other){
+         this->AtomIBonded2_=other.AtomIBonded2_;
+      }
+
+   protected:
+
+      ///The atom this cap is bonded to
+      int AtomIBonded2_;
+
+   public:
+
+      ///Constructor if we have Carts array
+      Cap(const int BondAtom,const int ReplaceAtom,const int Z, const int m,
+            const double* Carts);
+
+      ///Constructor for components
+      Cap(const int BondAt,const int RepAt,const int Z,const int m,
+            const double x,const double y,const double z);
+
+      ///Constructor for copying a cap
+      Cap(const Cap& other);
+
+      ///Assignment operator
+      const Cap& operator=(const Cap& other);
+
+      ///No memory to free up
+      ~Cap(){}
+
+      ///Returns the atom this cap is bonded to
+      int BondedAtom() const{return AtomIBonded2_;}
+
+};
+
+///Convenient typedef of a shared pointer to a cap
+typedef boost::shared_ptr<Cap> SharedCap;
+
+/** \brief Ghosts are added to fragments for the purposes of BSSE
+ *   corrections
+ *
+ *   We define the mass of a ghost atom to be 0.  Thus the only thing
+ *   needed for a ghost is the atom it replaces, it's atomic number, and
+ *   it's spatial location.
+ */
+class Ghost:public StandIn,public Atom{
+   public:
+      ///Makes a ghost via Cart array
+      Ghost(const int ReplacedAtom,const int Z,const double *Carts);
+
+      ///Makes a ghost via Cart comps
+      Ghost(const int ReplacedAtom,const int Z, const double x,
+            const double y,const double z);
+
+      ///Makes a ghost via a copy
+      Ghost(const Ghost& other);
+
+      ///Makes this ghost via assignment
+      const Ghost& operator=(const Ghost& other);
+
+      ///Destructor, does nothing
+      ~Ghost(){}
+};
+
+///Another typedef, because I hate typing, this time for Ghosts
+typedef boost::shared_ptr<Ghost> SharedGhost;
+
+/** \brief Charges are atomic-centered point charges
+ *
+ *  Charges possess no mass, or other atomic properties, but they
+ *  do replace atoms and (get this) have a charge.
+ */
+class Charge:public StandIn{
+   private:
+
+      ///The actual charge of this Charge
+      double q_;
+
+      ///Copies the charge
+      void Copy(const Charge& other){
+         this->q_=other.q_;
+      }
+   public:
+
+      ///Construction with Carts array
+      Charge(const double q,const int ReplacedAtom, const double* Carts):
+         StandIn(ReplacedAtom,Carts),CartObject(Carts),q_(q){}
+
+      ///Construction with components
+      Charge(const double q, const int ReplacedAtom, const double x,
+            const double y, const double z):
+         StandIn(ReplacedAtom,x,y,z),CartObject(x,y,z),q_(q){}
+
+      ///Copy constructor
+      Charge(const Charge& other):StandIn(other),CartObject(other){this->Copy(other);}
+
+      ///Assignment operator
+      const Charge& operator=(const Charge& other){
+         StandIn::operator=(other);
+         if(this!=&other)this->Copy(other);
+         return *this;
+      }
+
+      ///Destructor, does nothing
+      ~Charge(){}
+
+      ///Returns the charge
+      double Q()const{return q_;}
+};
+
+typedef boost::shared_ptr<Charge> SharedCharge;
+
+/** \brief A set for things with mass and Cartesian coordinates
+ *
+ *   In addition to basic set stuff this class also can compute
+ *   some additional properties like center of mass, and the distance
+ *   between it and other object's centers of mass.
+ *
+ *   \param[in] T Type of object stored in the set, must have a Mass()
+ *                and Carts() fxn.  T is assumed to be a boost::pointer.
+ *                If you want T to be something else pass it in as pointer
+ *                or else the dereference calls won't work.
+ *
+ */
+template<typename T>
+class CartSet: public Set<T>{
+   private:
+
+      ///The center of mass of this set
+      Vector3 CoM_;
+
+
+      ///The mass of this Set
+      double Mass_;
+
+      ///Call that actually does the copy
+      void Copy(const CartSet<T>& other){
+         this->CoM_=other.CoM_;
+         this->Mass_=other.Mass_;
+      }
+
+      ///Calculates the CoM
+      void CalcCoM(){
+         Mass_=0.0;
+            CoM_*=0.0;
+            for(int i=0;i<this->size();i++){
+               double massi=this->Object(i)->Mass();
+               Mass_+=massi;
+               CoM_+=massi*this->Object(i)->Carts();
+            }
+            if(Mass_>=0.1)CoM_/=Mass_;
+      }
+
+   public:
+      ///Returns the CoM
+      const Vector3 Carts(){return CoM_;}
+
+      ///Returns the mass
+      double Mass(){return Mass_;}
+
+      ///Calculates the distance between this set's CoM and other's
+      double Distance(const CartSet<T>& other)const{
+         return this->CoM_.distance(other.CoM_);
+      }
+
+      CartSet<T>():Mass_(0.0){}
+
+      ///Construction via copy
+      CartSet<T>(const CartSet& other):Set<T>(other){this->Copy(other);}
+
+      ///Assignment operator
+      const CartSet<T>& operator=(const CartSet<T>& other){
+         Set<T>::operator=(other);
+         if(this!=&other)this->Copy(other);
+         return *this;
+      }
+
+      ///Nothing to free up
+      virtual ~CartSet<T>(){}
+
+      ///Operators for adding elements, need to update CoM
+      //@{
+      void operator+=(const int newelem){
+         Set<T>::operator+=(newelem);
+         CalcCoM();
+      }
+
+      Set<T> operator<<(const int newelem){
+         Set<T>::operator<<(newelem);
+         CalcCoM();
+         return (*(dynamic_cast<Set<T>* >(this)));
+      }
+      //@}
+};
+
+/*A set of atoms, knows basic atom-y stuff like carts and masses
 class AtomSet:public Set{
    private:
 
       /** \brief Makes this a copy of other
        *
-       *   Although it may be counterintuitive at first, this constructor
+       *   Although it may be counter intuitive at first, this constructor
        *   does not copy all AtomSet members.  It only copies the
-       */
+       /
       void Copy(const AtomSet& other);
 
       /** \brief This maps the atom number in the input file to data.
        *
        * Atoms in Elem2Atoms are specified by atom number from the input file
-       * so as to prevent problems from arising from reording the elements
+       * so as to prevent problems from arising from reordering the elements
        * of the set, which is necessary because they must always be in
        * numeric order for the intersection and union operations to work.
-       */
+       /
       std::map<int,Atom> Elem2Atoms;
 
       ///This set's center of mass (a.u.) with coords given to set
@@ -70,7 +407,7 @@ class AtomSet:public Set{
 
       /**For BSSE purposes ghosts attached to this set, made it public for
       calls like Set.Ghosts[i] to distinguish from Set[i], which gives
-      the real atom i*/
+      the real atom i/
       std::vector<int> Ghosts;
 
       std::vector<double> Charges;
@@ -96,7 +433,8 @@ class AtomSet:public Set{
          return Elem2Atoms[Atoms[i]].carts;
       }
 };
-}
+*/
+}}//End namespaces
 
 
 

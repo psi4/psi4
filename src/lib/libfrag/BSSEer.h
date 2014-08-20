@@ -22,29 +22,36 @@
 #ifndef BSSEER_H_
 #define BSSEER_H_
 
-#include "LibFragTypes.h"
+#include "AtomSet.h"
+#include "MBEFrag.h"
 
+namespace psi{
 namespace LibFrag{
+
+typedef std::vector<Set<SharedGhost> > GhostType;
 
 class BSSEer{
    protected:
       ///The total number of atoms in the entire system
-      int NAtoms;
+      int NAtoms_;
+      void CommonInit(GhostType& Ghosts,NMerSet& NMers);
+      virtual void BSSEImpl(GhostType& Ghosts,NMerSet& NMers)=0;
    public:
-      BSSEer(int natoms):NAtoms(natoms){}
+      BSSEer(int natoms):NAtoms_(natoms){}
       virtual ~BSSEer(){}
-      virtual void AddBSSEJobs(NMerSet& NMers)=0;
-};
-
-class FullBSSE:public BSSEer{
-   public:
-      FullBSSE(int natoms):BSSEer(natoms){}
-      ~FullBSSE(){}
       void AddBSSEJobs(NMerSet& NMers);
 };
 
+class FullBSSE:public BSSEer{
+   protected:
+      void BSSEImpl(GhostType& Ghosts,NMerSet& NMers);
+   public:
+      FullBSSE(int natoms):BSSEer(natoms){}
+      ~FullBSSE(){}
+};
 
-}//End namespace
+
+}}//End namespaces
 
 
 
