@@ -170,6 +170,10 @@ double ** FRAG::H_guess(void) {
           f[cnt++] = (A - (B*(R[b][c] - rBCcov)));
         break;
 
+        case (cart_type) :
+          f[cnt++] = 0.1;
+        break;
+
         default:
           psi::outfile->Printf("H_guess encountered unknown internal type.\n");
           f[cnt++] = 1.0;
@@ -232,6 +236,10 @@ double ** FRAG::H_guess(void) {
           f[cnt++] = A + B * pow(L,D) / pow(R[b][c] * rBCcov, E) * exp(-C * (R[b][c] - rBCcov));
         break;
 
+        case (cart_type) :
+          f[cnt++] = 0.1;
+        break;
+
         default:
           psi::outfile->Printf("H_guess encountered unknown internal type.\n");
           f[cnt++] = 1.0;
@@ -251,6 +259,10 @@ double ** FRAG::H_guess(void) {
         break;
 
         case (tors_type) :
+          f[cnt++] = 0.1;
+        break;
+
+        case (cart_type) :
           f[cnt++] = 0.1;
         break;
 
@@ -292,6 +304,10 @@ double ** FRAG::H_guess(void) {
           c = q->g_atom(2);
           d = q->g_atom(3);
           f[cnt++] = k_tau * Lindh_rho(a, b, R[a][b]) * Lindh_rho(b, c, R[b][c]) * Lindh_rho(c, d, R[c][d]);
+        break;
+
+        case (cart_type) :
+          f[cnt++] = 0.1;
         break;
 
         default:

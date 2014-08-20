@@ -34,7 +34,7 @@
 #include "print.h"
 #include "atom_data.h"
 #include "physconst.h"
-
+#include "psi4-dec.h"
 #define EXTERN
 #include "globals.h"
 
@@ -58,6 +58,12 @@ void MOLECULE::sd_step(void) {
 
   double *last_fq = p_Opt_data->g_last_forces_pointer();
   double h = 1;
+  bool use_cartesians = false;
+
+  if (use_cartesians) {
+    sd_step_cartesians();
+    return;
+  }
 
   if (last_fq != NULL) {
     // compute overlap of previous forces with current forces
@@ -152,6 +158,56 @@ void MOLECULE::sd_step(void) {
   free_array(sd_u);
   
 
+}
+
+// make primitive for now
+void MOLECULE::sd_step_cartesians(void) {
+
+  double *step = g_grad_array();
+
+  // Zero out frozen fragments
+  for (int f=0; f<fragments.size(); ++f) {
+    if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
+     psi::outfile->Printf("\tZero'ing out displacements for frozen fragment %d\n", f+1);
+      for (int i=0; i<fragments[f]->g_natom(); ++i)
+        step[ g_intco_offset(f) + i ] = 0.0;
+    }
+  }
+
+  // Impose step limit
+  double limit = Opt_params.intrafragment_step_limit;
+  int dim_xyz = 3*g_natom();
+
+  double scale = 1;
+  for (int i=0; i<dim_xyz; ++i)
+    if ((scale * sqrt(array_dot(step,step,dim_xyz)))> limit)
+      scale = limit / sqrt(array_dot(step,step,dim_xyz));
+
+  if (scale != 1.0) {
+   psi::outfile->Printf("\tChange in coordinate exceeds step limit of %10.5lf.\n", limit);
+   psi::outfile->Printf("\tScaling displacements by %10.5lf\n", scale);
+    for (int i=0; i<dim_xyz; ++i)
+      step[i] *= scale;
+  }
+
+  double *x = g_geom_array();
+  for (int i=0; i<dim_xyz; ++i)
+    x[i] -= step[i];
+
+  set_geom_array(x);
+
+  double *sd_u = init_array(g_nintco());
+
+  symmetrize_geom(); // now symmetrize the geometry for next step
+
+  double *gx = g_grad_array();
+  double DE_projected = -1.0 * array_dot(step, gx, dim_xyz);
+ psi::outfile->Printf("\tProjected energy change: %20.10lf\n", DE_projected);
+  free_array(gx);
+
+  p_Opt_data->save_step_info(DE_projected, sd_u, 0.0, 0.0, 0.0);
+
+  free_array(sd_u);
 }
 
 }

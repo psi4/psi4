@@ -95,6 +95,7 @@ class FRAG {
   int add_stre_by_connectivity(void);
   int add_bend_by_connectivity(void);
   int add_tors_by_connectivity(void);
+  int add_cartesians(void);
 
   int add_simples_by_connectivity(void) {
     int n;

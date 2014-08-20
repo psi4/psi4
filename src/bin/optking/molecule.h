@@ -72,6 +72,8 @@ class MOLECULE {
 
   void add_interfragment(void);
 
+  int add_cartesians(void);
+
   int g_nfragment(void) const { return fragments.size(); };
 
 #if defined(OPTKING_PACKAGE_QCHEM)
@@ -350,6 +352,7 @@ class MOLECULE {
   void prfo_step(void);
   void backstep(void);
   void sd_step(void);
+  void sd_step_cartesians(void);
   void linesearch_step(void);
 
   void apply_intrafragment_step_limit(double * & dq);

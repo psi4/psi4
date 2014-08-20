@@ -389,6 +389,35 @@ bool FRAG::read_intco(vector<string> & s, int offset) {
 
     return true;
   }
+  if (s[0] == "X") { // read cartesian coordinate
+    if ( s.size() != 3 && s.size() != 4)
+      throw(INTCO_EXCEPT("Format of cartesian entry is \"X atom_1 xyz\""));
+    if ( s.size() == 4 ) {
+      if (stof(s[3], &eq_val))
+        has_eq_val = true;
+      else
+        throw(INTCO_EXCEPT("Format of cartesian entry is \"X atom_1 xyz (eq_val)\""));
+    }
+    if ( !stoi(s[1], &a) ) // Read atom
+      throw(INTCO_EXCEPT("Format of cartesian entry is \"X atom_1 xyz\""));
+    --a;
+
+    // read x, y or z
+    if      ( s[2] == "X" ) b = 0;
+    else if ( s[2] == "Y" ) b = 1;
+    else if ( s[2] == "Z" ) b = 2;
+    else throw(INTCO_EXCEPT("Format of cartesian entry is \"X atom_1 xyz\""));
+
+    CART *one_cart = new CART(a-offset, b, frozen);
+    if (has_eq_val) one_cart->set_fixed_eq_val(eq_val);
+
+    if ( !present(one_cart) )
+      intcos.push_back(one_cart);
+    else
+      delete one_cart;
+
+    return true;
+  }
   else if ((s[0] == "B") || (s[0] == "L")) {
     if (s.size() != 4 && s.size() != 5)
       throw(INTCO_EXCEPT("Format of bend entry is \"B atom_1 atom_2 atom_3\""));

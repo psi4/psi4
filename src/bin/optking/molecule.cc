@@ -758,6 +758,17 @@ bool MOLECULE::apply_input_constraints(void) {
   return (fixed_present || frozen_present);
 }
 
+// Add cartesian coordinates
+int MOLECULE::add_cartesians(void) {
+  int nadded = 0;
+  for (int f=0; f<fragments.size(); ++f)
+    nadded += fragments[f]->add_cartesians();
+  return nadded;
+}
+
+// The values of the EFP coordinates will be taken to be the total change
+// since the beginning of the optimization.  These values are determined
+
 // Compute constraint matrix.
 double ** MOLECULE::compute_constraints(void) {
   double **C, **C_frag, **C_inter;
@@ -912,8 +923,6 @@ void MOLECULE::add_efp_fragments(void) {
   }
 }
 
-// The values of the EFP coordinates will be taken to be the total change
-// since the beginning of the optimization.  These values are determined
 // from the data in opt_data after that data is read.
 void MOLECULE::update_efp_values(void) {
   for (int i=0; i<efp_fragments.size(); ++i) {
