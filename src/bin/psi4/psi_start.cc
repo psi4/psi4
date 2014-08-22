@@ -45,6 +45,7 @@ using namespace std;
 namespace psi {
 
 void create_new_plugin(std::string plugin_name, const std::string& template_name);
+void create_new_plugin_makefile();
 void print_version(FILE *);
 void print_usage();
 
@@ -101,6 +102,7 @@ int psi_start(int argc, char *argv[])
         { "skip-preprocessor",  0, NULL, 'k' },
         { "interactive", 0, NULL, 't' },
         { "new-plugin", 1, NULL, 1 },  // requires 1 argument
+        { "new-plugin-makefile", 0, NULL, 2 },
         { NULL,      0, NULL,  0  }
     };
 
@@ -122,6 +124,11 @@ int psi_start(int argc, char *argv[])
                     }
                 }
                 create_new_plugin(pluginname, templatename);
+                exit(EXIT_SUCCESS);
+                break;
+
+            case 2: // --new-plugin-makefile
+                create_new_plugin_makefile();
                 exit(EXIT_SUCCESS);
                 break;
 
