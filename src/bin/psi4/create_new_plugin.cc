@@ -181,6 +181,13 @@ class PluginFileManager{
     }
 };
 
+void create_new_plugin_makefile()
+{
+    // Process the files
+    PluginFileManager file_manager(".");
+    file_manager.add_file("/Makefile.template", "Makefile");
+    file_manager.process();
+}
 void create_new_plugin(std::string name, const std::string& template_name)
 {
     std::string template_name_lower(template_name);
