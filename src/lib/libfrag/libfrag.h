@@ -1,8 +1,23 @@
 /*
- * libfrag.h
+ *@BEGIN LICENSE
  *
- *  Created on: May 13, 2014
- *      Author: richard
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
  */
 
 #ifndef LIBFRAG_H_
@@ -13,12 +28,14 @@
 #include "FragOptions.h"
 #include "LibFragTypes.h"
 #include "libpsio/MOFile.h"
-#include "LibFragBase.h"
 
 namespace psi{
 namespace LibFrag {
 class GMBE;
 class BSSEer;
+
+typedef boost::python::str PyStr;
+typedef boost::python::list PyList;
 
 
 /** \brief This class is a mess from a c++ point of view; however my python
@@ -29,7 +46,7 @@ class BSSEer;
  *   an extension here.
  *
  */
-class LibFragHelper : public LibFragBase {
+class LibFragHelper {
    private:
       /** \brief These are the actual fragments, dimers, etc.
        *
@@ -47,30 +64,37 @@ class LibFragHelper : public LibFragBase {
        *   Python doesn't need to know what it is running it just
        *   needs to know what to loop over...
        *
+       *   Expect this to become a proper class sometime in the future.
+       *
        *
        */
-      std::vector<NMerSet> Systems;
+      std::vector<NMerSet> Systems_;
 
       ///The actual energy expansion
-      boost::shared_ptr<GMBE> Expansion;
+      boost::shared_ptr<GMBE> Expansion_;
 
-      ///The way we are correcting for BSSE (if we are)
-      boost::shared_ptr<BSSEer> BSSEFactory;
-
-      ///The factory for adding caps
-      boost::shared_ptr<Capper> CapFactory;
-
-      ///The factory for embedding calculations
-      static boost::shared_ptr<Embedder> EmbedFactory;
+      /** \brief The factory for embedding calculations
+       *
+       *   I can't really think of any other way to do iterative point
+       *   charges than to have this factory hang around at all times.
+       *   This is because I presume that when a user specifies that they
+       *   want iterative point charges, I assume they want them updated
+       *   iteratively for dimers, trimers, etc.  Thus every MBE order
+       *   we need to use the factory to reset the point charges.
+       */
+      static boost::shared_ptr<Embedder> EmbedFactory_;
 
       ///The list of options
-      FragOptions DaOptions;
+      boost::shared_ptr<LibFragOptions> DaOptions_;
 
+      ///Things we need to do MPI on
+      ///@{
       ///A vector of the MO files
-      std::vector<psi::MOFile> MOFiles;
+      std::vector<MOFile> MOFiles_;
 
       ///A vector of the charge sets we read in
-      std::vector<boost::shared_ptr<double[]> > ChargeSets;
+      std::vector<boost::shared_ptr<double[]> > ChargeSets_;
+      ///@}
 
       ///A wrapper for the broadcast/receive operations of Synch
       void BroadCastWrapper(const int i, const int j,std::string& comm,
@@ -79,14 +103,18 @@ class LibFragHelper : public LibFragBase {
             bool bcast);
 
    public:
+
+      ///Starts a timer so that we know how long it takes us to run
       LibFragHelper();
 
-      ///Sets up the class and makes the fragments
-      void Fragment_Helper(boost::python::str& FragMethod, const int N,
-            boost::python::str& EmbedMethod,
-            boost::python::str& CapMethod,
-            boost::python::str& BSSEMethod);
+      ///Stops the timer
+      ~LibFragHelper();
 
+      ///Sets up the class and makes the fragments
+      void Fragment_Helper(PyStr& FragMethod, const int N,
+            PyStr& EmbedMethod,PyStr& CapMethod,PyStr& BSSEMethod);
+
+      ///Makes "N"-mers (N>1)
       void NMer_Helper(const int N);
 
       boost::python::list Embed_Helper(const int N, const int x);
@@ -94,17 +122,21 @@ class LibFragHelper : public LibFragBase {
       ///Returns a string: cap_symbol <carts>\n for each cap in "N"-mer "NMer"
       std::string Cap_Helper(const int NMer,const int N);
 
+      ///Prints the energies, in a nice, neat table
+      void PrintEnergy(PyList& Energies, const int N);
+
       ///Returns the highest n-body approximate energy available
-      double CalcEnergy(boost::python::list& Energies);
+      double CalcEnergy(PyList& Energies);
 
       int GetNNMers(const int i) {
-         if (i<Systems.size()) return Systems[i].size();
+         if (i<Systems_.size()) return Systems_[i].size();
          else return 0;
       }
 
       int GetNFrags() {
          return GetNNMers(0);
       }
+
       boost::python::list GetNMerN(const int NMer, const int N);
 
       boost::python::list GetGhostNMerN(const int NMer, const int N);
@@ -134,7 +166,7 @@ class LibFragHelper : public LibFragBase {
       int Iterate(const int itr);
 
       ///Turn off self-interaction in point charges
-      bool SelfIntOff();
+      //bool SelfIntOff();
 
       ///Do we need to run the fragments
       bool RunFrags();
@@ -147,7 +179,7 @@ class LibFragHelper : public LibFragBase {
        *                synched)
        */
       void Synchronize(boost::python::str& Comm,const int N,const int itr);
-      ~LibFragHelper();
+
 };
 }}//End namespaces
 

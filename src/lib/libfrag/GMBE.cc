@@ -52,11 +52,6 @@ void GMBE::MakeNmers(const NMerSet& Monomers, NMerSet& NMers) {
    for (int i=0,index=0; i<IsGood.size(); i++) {
       if (!IsGood[i]) NMers.erase(NMers.begin()+i-(index++));
    }
-   /*outfile->Printf( "The Unique N-Mers:\n");
-   for (int i=0; i<NMers.size(); i++) {
-      NMers[i]->print_out();
-   }
-   outfile->Printf( "******************\n");*/
 }
 
 inline void MakeInts(NMerSet& ExistingNMers, SharedFrag& NMer,
@@ -138,7 +133,7 @@ void GMBE::MakeIntersections(std::vector<NMerSet>& Systems) {
 }
 
 double GMBE::Energy(const std::vector<NMerSet>& Systems,
-      const std::vector<double*>& Energies) {
+      const std::vector<boost::shared_ptr<double[]> >& Energies) {
    double TEnergy=0.0;
    //If N==1 special case and energies are only in Energies[0],but
    //we get sizes from Systems[1] and Systems[2]

@@ -19,6 +19,8 @@ CMakeLists.txt.user
 
 # Hidden files (swap)
 .*
+*.in
+*.out
 
 # Compiled Python files. Regenerated automatically
 *.pyc
@@ -55,6 +57,47 @@ svn_source
 psi4.xcodeproj
 do-configure*
 update_debug_latest.sh
+
+#Files created by Global Arrays when it is built
+include/armci.h
+include/chemio.h
+include/coms.h
+include/dra.fh
+include/dra.h
+include/eaf.fh
+include/eaf.h
+include/elio.h
+include/error.h
+include/farg.h
+include/ga-mpi.fh
+include/ga-mpi.h
+include/ga-papi.h
+include/ga-wapi.h
+include/ga.h
+include/gacommon.h
+include/global.fh
+include/gpc.h
+include/macdecls.h
+include/macommon.h
+include/maf2c.fh
+include/mafdecls.fh
+include/matypes.h
+include/message.h
+include/msgtypesc.h
+include/msgtypesf.h
+include/parmci.h
+include/scope.h
+include/sf.fh
+include/sf.h
+include/string-util.h
+include/table.h
+include/tcgmsg.fh
+include/tcgmsg.h
+include/typesf2c.h
+bin/adjust.x
+bin/collisions.x
+bin/ga-config
+
 
 # Ignore Jet's Vagrantfile (might be added later for auto testing)
 Vagrantfile

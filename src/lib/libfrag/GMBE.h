@@ -48,7 +48,8 @@ class GMBE{
 		///Given a set of Monomers and Nmers, makes the intersections of the Nmers
 		virtual void MakeIntersections(std::vector<NMerSet>& Systems);
 		///Returns the total energy of this GMBE expansion
-		virtual double Energy(const std::vector<NMerSet>& Systems,const std::vector<double*>& Energies);
+		virtual double Energy(const std::vector<NMerSet>& Systems,
+		      const std::vector<boost::shared_ptr<double[]> >& Energies);
 		///No memory allocated
 		virtual ~GMBE(){}
 		/** \brief Returns true if we need to run the fragments

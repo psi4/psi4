@@ -34,7 +34,7 @@
 #include "libparallel/local.h"
 #include "libparallel/mpi_wrapper.h"
 #include "process.h"
-#include "libparallel/ParallelPrinter.h"
+
 
 #include <cstdarg>
 namespace psi {
@@ -61,9 +61,12 @@ extern std::string restart_id;
 #endif
 
 extern boost::shared_ptr<worldcomm> WorldComm;
-extern boost::shared_ptr<PsiOutStream> outfile;
 void die_if_not_converged();
-
+}
+//I know this is weird, but I need WorldComm in ParallelPrinter.h
+#include "libparallel/ParallelPrinter.h"
+namespace psi{
+   extern boost::shared_ptr<PsiOutStream> outfile;
 }
 
 

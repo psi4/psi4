@@ -200,6 +200,9 @@ class Cap:public StandIn, public Atom{
       ///Returns the atom this cap is bonded to
       int BondedAtom() const{return AtomIBonded2_;}
 
+      ///Returns a string that can be fed to python
+      std::string print_out()const;
+
 };
 
 ///Convenient typedef of a shared pointer to a cap
