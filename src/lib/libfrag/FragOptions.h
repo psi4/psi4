@@ -10,10 +10,13 @@
 
 
 #include <string>
+#include <map>
 #include <boost/shared_ptr.hpp>
-#include "LibFragTypes.h"
+#include "exception.h"
 
 namespace psi{
+class Molecule;
+typedef boost::shared_ptr<Molecule> SharedMol;
 namespace LibFrag{
 enum FragMethods {USER_DEFINED,BOND_BASED,DISTANCE_BASED};
 enum EmbedMethods {NO_EMBED,POINT_CHARGE,ITR_POINT_CHARGE,DENSITY,
@@ -26,58 +29,127 @@ class Fragmenter;
 class BSSEer;
 class Capper;
 class Embedder;
-class FragOptions{
+
+template<typename T,typename T2>
+T2 MapDeRef(const std::map<T,T2>& Map,const T& Key,const std::string& Error){
+   T2 returnvalue;
+   if(Map.count(Key)==1)
+      returnvalue=(const_cast<std::map<T,T2>* >(&Map))->operator[](Key);
+   else
+      throw PSIEXCEPTION(Error.c_str());
+   return returnvalue;
+}
+
+
+template<typename T,typename T2>
+class CoreOptions{
+   private:
+      void Copy(const CoreOptions<T,T2>& other){
+         this->DaMethod_=other.DaMethod_;
+         this->Methods_=other.Methods_;
+         this->Converter_=other.Converter_;
+      }
+   protected:
+      ///This is the method
+      T DaMethod_;
+
+      ///Map that prints out the official name of our methods
+      std::map<T,std::string> Methods_;
+
+      ///Map that takes officially recognized aliases and returns the method
+      std::map<std::string,T> Converter_;
+
+   public:
+      virtual boost::shared_ptr<T2> MakeFactory(SharedMol& AMol)const=0;
+      std::string MethodName()const{
+         return MapDeRef(Methods_,DaMethod_,"Not Possible");
+      }
+      T Method()const{return DaMethod_;}
+      void SetMethod(const T Method){DaMethod_=Method;}
+      void SetMethod(const std::string& Method){
+         std::string Error="Desired method:" + Method+ " not found";
+         DaMethod_=MapDeRef(Converter_,Method,Error);
+      }
+      CoreOptions<T,T2>(const CoreOptions<T,T2>& other){this->Copy(other);}
+      CoreOptions<T,T2>(T Method):DaMethod_(Method){}
+      virtual ~CoreOptions(){}
+};
+
+class FragOptions: public CoreOptions<FragMethods,Fragmenter>{
+   private:
+      void SetDefaults();
+   public:
+      boost::shared_ptr<Fragmenter> MakeFactory(SharedMol& AMol)const;
+      FragOptions(FragMethods Method=USER_DEFINED):
+         CoreOptions<FragMethods,Fragmenter>(Method){
+         SetDefaults();
+      }
+};
+
+class EmbedOptions: public CoreOptions<EmbedMethods,Embedder>{
+   private:
+      void SetDefaults();
+   public:
+      boost::shared_ptr<Embedder> MakeFactory(SharedMol& AMol)const;
+      EmbedOptions(EmbedMethods Method=NO_EMBED):
+         CoreOptions<EmbedMethods,Embedder>(Method){
+         SetDefaults();
+      }
+};
+
+class CapOptions: public CoreOptions<CapMethods,Capper>{
+   private:
+      void SetDefaults();
+   public:
+      boost::shared_ptr<Capper> MakeFactory(SharedMol& AMol)const;
+      CapOptions(CapMethods Method=NO_CAPS):
+         CoreOptions<CapMethods,Capper>(Method){
+         SetDefaults();
+      }
+};
+
+class BSSEOptions: public CoreOptions<BSSEMethods,BSSEer>{
+   private:
+      void SetDefaults();
+   public:
+      boost::shared_ptr<BSSEer> MakeFactory(SharedMol& AMol)const;
+      BSSEOptions(BSSEMethods Method=NO_BSSE):
+         CoreOptions<BSSEMethods,BSSEer>(Method){
+         SetDefaults();
+      }
+};
+
+class LibFragOptions{
 	private:
-        ///Sets all members to the default options
-        void DefaultOptions();
-        ///Actually preforms copy
-		void copy(const FragOptions& other);
-		std::string ToString(const FragMethods& F);
-		std::string ToString(const EmbedMethods& E);
-		std::string ToString(const CapMethods& C);
-		std::string ToString(const BSSEMethods& B);
+        FragOptions FOptions_;
+        CapOptions COptions_;
+        BSSEOptions BOptions_;
+        EmbedOptions EOptions_;
+
 	public:
-        ///Options
-		FragMethods FMethod;
-        EmbedMethods EMethod;
-        CapMethods CMethod;
-        BSSEMethods BMethod;
-        int MBEOrder;
-
-        ///Given a lowercase string, the following will set things up right
-        void SetFMethod(const std::string& FMethodIn);
-        void SetEMethod(const std::string& EMethodIn);
-        void SetCMethod(const std::string& CMethodIn);
-        void SetBMethod(const std::string& BMethodIn);
-
-        ///Returns a pointer to the Fragmenter determined by this->FMethod
-        boost::shared_ptr<Fragmenter> MakeFragFactory()const;
-        /** \brief Returns a pointer to the BSSE factory determined by
-         *         this->BMethod
-         *
-         *
-         *   Most BSSE methods need to know the number of atoms in the
-         *   supersystem so you will need to pass that to this fxn.
-         *
-         *   \param[in] natoms The number of atoms in the supersystem
-         *
-         */
-        boost::shared_ptr<BSSEer> MakeBSSEFactory(const int natoms) const;
-        ///Returns a capping factory based on CMethod
-        boost::shared_ptr<Capper> MakeCapFactory(SharedMol& AMol)const;
-        ///Returns an embedding factory fased on EMethod
-        boost::shared_ptr<Embedder> MakeEmbedFactory(SharedMol& AMol)const;
-
+		const FragOptions& FOptions(){return FOptions_;}
+		const CapOptions& COptions(){return COptions_;}
+		const BSSEOptions& BOptions(){return BOptions_;}
+		const EmbedOptions& EOptions(){return EOptions_;}
+        int MBEOrder_;
 
         ///Nice, pretty printing of all the desired options
         void PrintOptions();
-		///Constructor, calls DefaultOptions() for initialization
-		FragOptions(){DefaultOptions();}
-		~FragOptions(){}
-		FragOptions(const FragOptions& other){this->copy(other);}
-		FragOptions operator=(const FragOptions& other){
-		   if(this!=&other)this->copy(other);return *this;
-		}
+
+        LibFragOptions(const int MBEOrder,const std::string& FMethod,
+              const std::string& EMethod,const std::string& CMethod,
+              const std::string& BMethod):MBEOrder_(MBEOrder){
+           FOptions_.SetMethod(FMethod);
+           EOptions_.SetMethod(EMethod);
+           BOptions_.SetMethod(BMethod);
+           COptions_.SetMethod(CMethod);
+        }
+		~LibFragOptions(){}
+
+		//LibFragOptions(const LibFragOptions& other){this->copy(other);}
+		//FragOptions operator=(const FragOptions& other){
+		//   if(this!=&other)this->copy(other);return *this;
+		//}
 };
 
 }}// End namespaces

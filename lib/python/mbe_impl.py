@@ -146,7 +146,6 @@ def setup(frag_method,N,embed_method,cap_method,bsse_method):
 def fragment(name,molecule,Egys,SuppressPrint,**kwargs):
     size=lfrag.GetNFrags()
     if(lfrag.RunFrags()!=0):
-        psi4.print_out('The system contains %d monomers\n'% (size))
         itr=0;
         done =False
         while (not done): 
@@ -161,17 +160,17 @@ def fragment(name,molecule,Egys,SuppressPrint,**kwargs):
             if(lfrag.Iterate(itr)==0):
                 done=True
             itr=itr+1
-        psi4.print_out('Finished running monomer calculations\n')
+        lfrag.PrintEnergies([Egys],1)
+
     
 def nmers(name,molecule,N,Egys,SuppressPrint,**kwargs):
     lfrag.NMerHelper(N)
     i=1
     while lfrag.GetNNMers(i)!=0:
         NNMers=lfrag.GetNNMers(i)
-        psi4.print_out('The system contains %d %d-mers\n'% (NNMers,i+1))
         Egys.append([])
         BaseCall(name,molecule,NNMers,Egys[i],i,SuppressPrint,0,**kwargs)
-        psi4.print_out('Finished running %d-body calculations\n'% (i+1))
+        lfrag.PrintEnergies(Egys,i+1)
         i+=1
        
 def SystemEnergy(Egys):

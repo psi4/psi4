@@ -21,7 +21,8 @@ void MBE::MakeIntersections(std::vector<NMerSet>& Systems){
 	}
 	this->SetN(oldN);
 }
-double MBE::Energy(const std::vector<NMerSet>& Systems, const std::vector<double*>& Energies){
+double MBE::Energy(const std::vector<NMerSet>& Systems,
+      const std::vector<boost::shared_ptr<double[]> >& Energies){
 	double energy=0;
 	//Total energy of each set of n-mers
 	std::vector<double> En;

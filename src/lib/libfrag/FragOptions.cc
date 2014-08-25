@@ -26,149 +26,28 @@
 #include "Fragmenter.h"
 #include "Capper.h"
 #include "Embedder.h"
-
+#include "libparallel/TableSpecs.h"
+#include <sstream>
+#include "libmints/molecule.h"
 namespace psi{
 namespace LibFrag{
 
-std::string FragOptions::ToString(const FragMethods& F){
-   std::string method;
-   switch(F){
-      case(USER_DEFINED):{method="user defined";break;}
-      case(BOND_BASED):{method="bond based";break;}
-      case(DISTANCE_BASED):{method="distance based";break;}
-   }
-   return method;
+void FragOptions::SetDefaults(){
+   Methods_[USER_DEFINED]="User Defined";
+   Methods_[BOND_BASED]="Bond Based";
+   Methods_[DISTANCE_BASED]="Distance Based";
+   Converter_["user_defined"]=USER_DEFINED;
+   Converter_["ud"]=USER_DEFINED;
+   Converter_["user"]=USER_DEFINED;
+   Converter_["bond_based"]=BOND_BASED;
+   Converter_["bond"]=BOND_BASED;
+   Converter_["distance_based"]=DISTANCE_BASED;
+   Converter_["distance"]=DISTANCE_BASED;
+   Converter_["dist"]=DISTANCE_BASED;
 }
-
-std::string FragOptions::ToString(const EmbedMethods& E){
-   std::string method;
-   switch(E){
-      case(NO_EMBED):{method="no embedding";break;}
-      case(POINT_CHARGE):{method="non-iterative point charges";break;}
-      case(ITR_POINT_CHARGE):{method="iterative point charges";break;}
-      case(DENSITY):{method="non-iterative density embedding";break;}
-      case(ITR_DENSITY):{method="iterative density embedding";break;}
-   }
-   return method;
-}
-
-std::string FragOptions::ToString(const CapMethods& C){
-   std::string method;
-   switch(C){
-      case(NO_CAPS):{method="no capping";break;}
-      case(H_REPLACE):{method="strict hydrogen replacement";break;}
-      case(H_SHIFTED):{method="shifted hydrogen replacement";break;}
-   }
-   return method;
-}
-
-std::string FragOptions::ToString(const BSSEMethods& B){
-   std::string method;
-   switch(B){
-      case(NO_BSSE):{method="no BSSE correction";break;}
-      case(FULL):{
-         method="supersystem basis applied to all terms (FULL)";
-         break;
-      }
-      case(MBCPN):{
-         method="Many-body counterpoise correction trunctated at order n";
-         break;
-      }
-      case(VMFCN):{
-         method="Valiron-Mayer Functional counterpoise correction truncated at order n";
-         break;
-      }
-   }
-   return method;
-}
-
-void FragOptions::copy(const FragOptions& other){
-   this->MBEOrder=other.MBEOrder;
-      this->FMethod=other.FMethod;
-      this->EMethod=other.EMethod;
-      this->CMethod=other.CMethod;
-      this->BMethod=other.BMethod;
-}
-
-void FragOptions::SetFMethod(const std::string& Frag){
-   if(Frag=="user_defined"||Frag=="ud"||Frag=="user")
-      FMethod=USER_DEFINED;
-   else if(Frag=="bond_based"||Frag=="bond")
-      FMethod=BOND_BASED;
-   else if(Frag=="distance_based"||Frag=="distance"||Frag=="dist")
-      FMethod=DISTANCE_BASED;
-   else
-      throw psi::PSIEXCEPTION("Unrecognized Fragmentation method");
-}
-
-void FragOptions::SetEMethod(const std::string& Embed){
-   if(Embed=="none"||Embed=="no_embed"||Embed=="no"||Embed=="false")
-      EMethod=NO_EMBED;
-   else if(Embed=="point_charge"||Embed=="charges"||Embed=="charge")
-      EMethod=POINT_CHARGE;
-   else if(Embed=="iterative"||Embed=="itr_charges"||Embed=="itr_charge"||
-         Embed=="iterative_point_charge")
-      EMethod=ITR_POINT_CHARGE;
-   else if(Embed=="density")EMethod=DENSITY;
-   else if(Embed=="itr_density"||Embed=="iterative_density")
-      EMethod=ITR_DENSITY;
-   else
-      throw psi::PSIEXCEPTION("Unrecognized embedding method");
-}
-
-void FragOptions::SetCMethod(const std::string& Cap){
-   if(Cap=="none"||Cap=="no_cap"||Cap=="no"||Cap=="false")CMethod=NO_CAPS;
-   else if(Cap=="h_replace"||Cap=="replace")CMethod=H_REPLACE;
-   else if(Cap=="h_shifted"||Cap=="shift")CMethod=H_SHIFTED;
-   else
-      throw psi::PSIEXCEPTION
-      ("You requested an unrecognized capping method");
-}
-
-void FragOptions::SetBMethod(const std::string& BSSE){
-   if(BSSE=="none"||BSSE=="false"||BSSE=="no_bsse"||BSSE=="no")
-      BMethod=NO_BSSE;
-   else if(BSSE=="full"||BSSE=="bettens")BMethod=FULL;
-   else if(BSSE=="MBCPN")BMethod=MBCPN;
-   else if(BSSE=="VMFCN")BMethod=VMFCN;
-}
-
-
-void FragOptions::PrintOptions(){
-   std::string stars=
-         "\n**************************************************************************";
-   psi::outfile->Printf(stars.c_str());
-   psi::outfile->Printf(
-"\n******************** Many-Body Expansion (MBE) module ********************"
-    );
-   psi::outfile->Printf(stars.c_str());
-   psi::outfile->Printf(
-     "\n\nA %d-body expansion is being performed with the following options:\n"
-         ,MBEOrder);
-   psi::outfile->Printf("Fragmenting system via: %s\n",
-         (ToString(FMethod)).c_str());
-   if(EMethod!=NO_EMBED)psi::outfile->Printf("Embedding via: %s\n",
-         (ToString(EMethod)).c_str());
-   if(CMethod!=NO_CAPS)psi::outfile->Printf("Capping via: %s\n",
-         (ToString(CMethod)).c_str());
-   if(BMethod!=NO_BSSE)psi::outfile->Printf("BSSE Corrections via: %s\n",
-         (ToString(BMethod)).c_str());
-   psi::outfile->Printf(
-   "\n**************************************************************************\n"
-    );
-}
-
-void FragOptions::DefaultOptions(){
-   FMethod=USER_DEFINED;
-   EMethod=NO_EMBED;
-   CMethod=NO_CAPS;
-   BMethod=NO_BSSE;
-   MBEOrder=2;
-}
-
-boost::shared_ptr<Fragmenter> FragOptions::MakeFragFactory()const{
+boost::shared_ptr<Fragmenter> FragOptions::MakeFactory(SharedMol& AMol)const{
    boost::shared_ptr<Fragmenter> FragFactory;
-   switch(FMethod){
+   switch(DaMethod_){
       case(USER_DEFINED):{
           FragFactory=boost::shared_ptr<Fragmenter>(new UDFragmenter);
           break;
@@ -188,27 +67,66 @@ boost::shared_ptr<Fragmenter> FragOptions::MakeFragFactory()const{
    }
    return FragFactory;
 }
-boost::shared_ptr<BSSEer> FragOptions::MakeBSSEFactory(int natoms)const{
-   boost::shared_ptr<BSSEer> BSSEFactory;
-   switch(BMethod){
-      case(NO_BSSE):{
+
+void EmbedOptions::SetDefaults(){
+   Methods_[NO_EMBED]="None Specified";
+   Methods_[POINT_CHARGE]="Atomic-Centered Point Charges";
+   Methods_[ITR_POINT_CHARGE]="Iterative Atomic-Centered Poitn Charges";
+   Methods_[DENSITY]="Frozen Density";
+   Methods_[ITR_DENSITY]="Iterative Density";
+   Converter_["none"]=NO_EMBED;
+   Converter_["no_embed"]=NO_EMBED;
+   Converter_["no"]=NO_EMBED;
+   Converter_["false"]=NO_EMBED;
+   Converter_["point_charge"]=POINT_CHARGE;
+   Converter_["charges"]=POINT_CHARGE;
+   Converter_["charge"]=POINT_CHARGE;
+   Converter_["iterative"]=ITR_POINT_CHARGE;
+   Converter_["itr_charges"]=ITR_POINT_CHARGE;
+   Converter_["itr_charge"]=ITR_POINT_CHARGE;
+   Converter_["iterative_point_charge"]=ITR_POINT_CHARGE;
+   Converter_["density"]=DENSITY;
+   Converter_["itr_density"]=ITR_DENSITY;
+   Converter_["iterative_density"]=ITR_DENSITY;
+}
+boost::shared_ptr<Embedder> EmbedOptions::MakeFactory(SharedMol& AMol)const{
+   boost::shared_ptr<Embedder> Factory;
+   switch(DaMethod_){
+      case(NO_EMBED):{
          break;
       }
-      case(FULL):{
-       BSSEFactory=boost::shared_ptr<BSSEer>(new FullBSSE(natoms));
-       break;
-    }
-    default:{
-       throw psi::PSIEXCEPTION(
-             "Unrecognized BSSE correction method or it's not coded yet");
-       break;
-    }
+      case(POINT_CHARGE):{
+         Factory=boost::shared_ptr<Embedder>(new APCEmbedder(AMol,false));
+         break;
+      }
+      case(ITR_POINT_CHARGE):{
+         Factory=boost::shared_ptr<Embedder>(new APCEmbedder(AMol,true));
+         break;
+      }
+      default:{
+         throw psi::PSIEXCEPTION("Unrecognized or un-coded Embedding method");
+         break;
+      }
    }
-   return BSSEFactory;
+   return Factory;
 }
-boost::shared_ptr<Capper> FragOptions::MakeCapFactory(SharedMol& AMol)const{
+
+void CapOptions::SetDefaults(){
+   Methods_[NO_CAPS]="None Specified";
+   Methods_[H_REPLACE]="Literal Replace Using H Atom";
+   Methods_[H_SHIFTED]="Shifted H Atom Cap";
+   Converter_["none"]=NO_CAPS;
+   Converter_["no_cap"]=NO_CAPS;
+   Converter_["no"]=NO_CAPS;
+   Converter_["false"]=NO_CAPS;
+   Converter_["h_replace"]=H_REPLACE;
+   Converter_["replace"]=H_REPLACE;
+   Converter_["shift"]=H_SHIFTED;
+   Converter_["h_shifted"]=H_SHIFTED;
+}
+boost::shared_ptr<Capper> CapOptions::MakeFactory(SharedMol& AMol)const{
    boost::shared_ptr<Capper> Factory;
-   switch(CMethod){
+   switch(DaMethod_){
       case(NO_CAPS):{
          throw psi::PSIEXCEPTION(
                "You requested no caps be made (or didn't specify a method "
@@ -232,27 +150,81 @@ boost::shared_ptr<Capper> FragOptions::MakeCapFactory(SharedMol& AMol)const{
    }
    return Factory;
 }
-boost::shared_ptr<Embedder> FragOptions::MakeEmbedFactory(SharedMol& AMol)const{
-   boost::shared_ptr<Embedder> Factory;
-   switch(EMethod){
-      case(NO_EMBED):{
-         break;
-      }
-      case(POINT_CHARGE):{
-         Factory=boost::shared_ptr<Embedder>(new APCEmbedder(AMol,false));
-         break;
-      }
-      case(ITR_POINT_CHARGE):{
-         Factory=boost::shared_ptr<Embedder>(new APCEmbedder(AMol,true));
-         break;
-      }
-      default:{
-         throw psi::PSIEXCEPTION("Unrecognized or un-coded Embedding method");
-         break;
-      }
-   }
-   return Factory;
+
+void BSSEOptions::SetDefaults(){
+   Methods_[NO_BSSE]="None Specified";
+   Methods_[FULL]="Full Supersystem Basis Set";
+   Methods_[MBCPN]="Many-Body Counterpoise Correction";
+   Methods_[VMFCN]="Truncated Valiron-Mayer Functional Counterpoise Correction";
+   Converter_["none"]=NO_BSSE;
+   Converter_["false"]=NO_BSSE;
+   Converter_["no_bsse"]=NO_BSSE;
+   Converter_["no"]=NO_BSSE;
+   Converter_["full"]=FULL;
+   Converter_["mbcpn"]=MBCPN;
+   Converter_["vmfcn"]=VMFCN;
+   DaMethod_=NO_BSSE;
 }
+boost::shared_ptr<BSSEer> BSSEOptions::MakeFactory(SharedMol& AMol)const{
+  int natoms=AMol->natom();
+   boost::shared_ptr<BSSEer> BSSEFactory;
+   switch(DaMethod_){
+      case(NO_BSSE):{
+         break;
+      }
+      case(FULL):{
+       BSSEFactory=boost::shared_ptr<BSSEer>(new FullBSSE(natoms));
+       break;
+    }
+    default:{
+       throw psi::PSIEXCEPTION(
+             "Unrecognized BSSE correction method or it's not coded yet");
+       break;
+    }
+   }
+   return BSSEFactory;
+}
+
+void LibFragOptions::PrintOptions(){
+   outfile->MakeBanner("Fragmentation Method Module");
+   outfile->Printf("\n");
+
+   (*outfile)<<"Performing the following fragment method expansion:\n\n";
+   int noptions=5;
+   std::vector<std::string> Titles;
+   Titles.push_back("Option Name");
+   Titles.push_back("Choice");
+
+   std::vector<std::string> OptionNames;
+   std::vector<std::string> Choices;
+
+   OptionNames.push_back("Expansion Order:");
+   std::stringstream Order;
+   Order<<MBEOrder_;
+   Choices.push_back(Order.str());
+
+   OptionNames.push_back("Fragmentation Method:");
+   Choices.push_back(FOptions_.MethodName());
+
+   OptionNames.push_back("Capping Method:");
+   Choices.push_back(COptions_.MethodName());
+
+   OptionNames.push_back("Embedding Method:");
+   Choices.push_back(EOptions_.MethodName());
+
+   OptionNames.push_back("BSSE Method:");
+   Choices.push_back(BOptions_.MethodName());
+
+   TableSpecs<std::string,std::string> Table(noptions);
+   Table.SetTitles(Titles);
+   Table.Init(&OptionNames[0],&Choices[0]);
+   (*outfile)<<Table.Table();
+   (*outfile)<<std::endl;
+}
+
+
+
+
 }}//End namespaces
 
 

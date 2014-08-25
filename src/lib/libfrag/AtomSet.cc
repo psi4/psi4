@@ -21,6 +21,7 @@
  */
 
 #include "AtomSet.h"
+#include "masses.h"
 
 namespace psi {
 namespace LibFrag {
@@ -87,6 +88,13 @@ const Cap& Cap::operator=(const Cap& other) {
    return *this;
 }
 
+std::string Cap::print_out()const{
+ std::stringstream message;
+ message<<atomic_labels[this->Z()]<<" ";
+ for(int i=0;i<3;i++)message<<this->Carts()[i]<<" ";
+ message<<"\n";
+ return message.str();
+}
 /**********Ghost Functions (Spooky!!)*********/
 
 Ghost::Ghost(const int RA, const int Z, const double* Carts) :

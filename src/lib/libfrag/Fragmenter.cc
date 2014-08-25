@@ -135,12 +135,13 @@ bool Fragmenter::SortUnique(NMerSet& Monomers, GroupType& temp) {
       if (!Monomers2Erase[i]) {
          Monomers.push_back(SharedFrag(new MBEFrag(1,&index)));
          (Monomers.back())->Atoms_=(*temp[i]);
+         index++;
       }
    }
    psi::outfile->Printf("The unique monomers are:\n");
    for (int i=0; i<Monomers.size(); i++)
       Monomers[i]->Atoms_.print_out();
-   psi::outfile->Printf("************************\n");
+
    return disjoint;
 }
 

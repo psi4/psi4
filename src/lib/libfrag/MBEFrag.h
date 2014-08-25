@@ -174,9 +174,11 @@ class MBEFrag {
             Parents.push_back(Ps[i]);
       }
 
-      void PrintParents() {
+      std::string PrintParents() {
+         std::stringstream parents;
          for (int i=0; i<MBEOrder; i++)
-            psi::outfile->Printf("%d ", Parents[i]);
+            parents<<Parents[i]<<" ";
+         return parents.str();
       }
 
       MBEFrag(const int MBEOrder_=0, const int *Parents_=NULL) :

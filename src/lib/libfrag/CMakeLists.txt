@@ -7,8 +7,6 @@ set(libfragsrc LibFragTypes.h
                GMBE.h
                Connections.h
                libfrag.h
-               LibFragBase.h
-               LibFragBase.cc
                MBE.h
                MBEFrag.h
                MBEFrag.cc
@@ -25,5 +23,4 @@ set(libfragsrc LibFragTypes.h
                Capper.cc
                AtomSet.cc
 )
-add_library(frag STATIC ${libfragsrc})
-               
+add_library(frag STATIC ${libfragsrc})               
