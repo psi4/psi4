@@ -303,6 +303,9 @@ endif()
 #poor psi4 coding...
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd47 -wd2196 -wd411 -wd279")
 
+#Add the doxygen documentation
+add_subdirectory(doc/doxygen)
+
 #
 # Recursively add source directories
 #
