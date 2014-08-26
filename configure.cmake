@@ -112,7 +112,7 @@ parser.add_argument('--with-max-am-eri',
                     metavar="= MAX_ANGULAR_MOMENTUM",
                     type=int,
                     default=5,
-                    help='The maximum angular momentum level for the libint integrals package (p=1,d=2,3=f, etc.).')
+                    help='The maximum angular momentum level (1=p, 2=d, 3=f, etc.) for the libint and libderiv packages.  Note: A value of N implies a maximum first derivative of N-1, and maximum second derivative of N-2.')
 # Plugins
 pluginsgroup = parser.add_mutually_exclusive_group()
 pluginsgroup.add_argument('--with-plugins',
