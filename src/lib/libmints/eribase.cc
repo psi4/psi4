@@ -1075,8 +1075,9 @@ TwoElectronInt::TwoElectronInt(const IntegralFactory* integral, int deriv, bool 
 
     // Make sure libint is compiled to handle our max AM
     if (max_am >= LIBINT_MAX_AM) {
-        outfile->Printf( "ERROR: ERI - libint cannot handle angular momentum this high.\n"
-                        "       In a fresh object directory, reconfigure libint for higher angular momentum, then recompile.\n");
+        outfile->Printf( "ERROR: ERI - libint cannot handle angular momentum this high (%d).\n"
+                        "       In a fresh object directory, reconfigure libint for higher angular momentum, then recompile.\n"
+                        "       LibInt was compiled for angular momentum of: %d\n",max_am,LIBINT_MAX_AM);
         throw LimitExceeded<int>("ERI - libint cannot handle angular momentum this high.\n"
                                  "In a fresh object directory, reconfigure libint for higher angular momentum, then recompile.", LIBINT_MAX_AM, max_am, __FILE__, __LINE__);
     }
