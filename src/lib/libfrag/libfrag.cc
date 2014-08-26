@@ -134,7 +134,7 @@ void LibFragHelper::Fragment_Helper(PyStr& FragMethod, cint N,
    ToC(ename, EmbedMethod);
    ToC(cname, CapMethod);
    DaOptions_=boost::shared_ptr<LibFragOptions>(
-         new LibFragOptions(N,fname,ename,bname,cname));
+         new LibFragOptions(N,fname,ename,cname,bname));
    DaOptions_->PrintOptions();
    SharedMol AMol=psi::Process::environment.molecule();
    Systems_.push_back(NMerSet());
@@ -240,9 +240,9 @@ void LibFragHelper::PrintEnergy(PyList& Energies,const int N){
 }
 
 
-double LibFragHelper::CalcEnergy(PyList& Energies) {
+double LibFragHelper::CalcEnergy(PyList& Energies,bool IsCorr) {
    GMatrix energies=ExtractEnergies(Energies);
-   return Expansion_->Energy(Systems_, energies);
+   return Expansion_->Energy(Systems_, energies,IsCorr);
 }
 
 //bool LibFragHelper::SelfIntOff() {

@@ -1,1 +1,0 @@
- The Global Arrays (GA) toolkit provides an efficient and portable "shared-memory" programming interface for distributed-memory computers.

@@ -1,9 +1,0 @@
-/** \mainpage  The Home of the JK Builder Library
-
-   The JK Builder Library is a collaborative effort to produce
-   a library that is able to handle the creation of J and K Matrices
-   in electronic strcutre theory, in a common, fast, and unified way. 
-   The JK Builder library is designed to work fast and efficiently on both shared
-   and distributed memory architectures and to be transparent to which architecture
-   it is implemented on. 
-*/

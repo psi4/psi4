@@ -183,7 +183,8 @@ def mbe(name,n=2,bsse_method="NONE",frag_method="USER_DEFINED",
     embed_method=How are higher order MBE effects being accounted for
     cap_method=How are we dealing with severed covalent bonds
     suppress_print=True means you will not see the underlying electronic
-        structure outputs.  Setting to false will generte a lot of output
+        structure outputs.  Setting to false will generte a lot of output,
+        but is useful for debugging purposes
     """
 
     if 'molecule' in kwargs:
@@ -192,12 +193,15 @@ def mbe(name,n=2,bsse_method="NONE",frag_method="USER_DEFINED",
     molecule = psi4.get_active_molecule()
     molecule.update_geometry()
     Egys=[[]]
+    CEgys=[[]]
     mbe_impl.setup(frag_method,n,embed_method,cap_method,bsse_method)
-    mbe_impl.fragment(name,molecule,Egys[0],suppress_print,**kwargs)
-    print(Egys[0])
+    mbe_impl.fragment(name,molecule,Egys[0],CEgys[0],suppress_print,**kwargs)
     if(n>=2):
-        mbe_impl.nmers(name,molecule,n,Egys,suppress_print,**kwargs)
-    Best_Approx_Egy=mbe_impl.SystemEnergy(Egys)
+        mbe_impl.nmers(name,molecule,n,Egys,CEgys,suppress_print,**kwargs)
+    Best_Approx_Egy=mbe_impl.SystemEnergy(Egys,False)
+    ###Assume that if any correlation was run, it was run for all of them 
+    if(len(CEgys[0])>0):
+        mbe_impl.SystemEnergy(CEgys,True)
     mbe_impl.Done()
     return Best_Approx_Egy
 

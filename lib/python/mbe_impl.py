@@ -31,7 +31,7 @@ def Done():
     del lfrag
 
 
-def RunCalc(name,molecule,atoms,caps,charges,ghosts,Egys,**kwargs):
+def RunCalc(name,molecule,atoms,caps,charges,ghosts,Egys,CEgys,**kwargs):
     old_geom=molecule.save_string_xyz()
     temp_geom=old_geom.split('\n')
     new_geom=[]
@@ -55,6 +55,11 @@ def RunCalc(name,molecule,atoms,caps,charges,ghosts,Egys,**kwargs):
     activate(frag)
     frag.update_geometry()
     Egys.append(energy(name,**kwargs))
+    cegy=psi4.get_variable('CURRENT CORRELATION ENERGY')
+    thresh=0.0000001
+    #I don't think the correlation energy can be posititve, but...
+    if(cegy>thresh or cegy<(-1*thresh)):
+        CEgys.append(cegy)
     if(len(charges)>=4):
         psi4.set_global_option_python("EXTERN", None)
     oep=psi4.OEProp()
@@ -84,7 +89,7 @@ def DoMPI(PMan,size):
 
 
 #This is where the magic happens
-def Magic(frag,N,Egys,name,molecule,**kwargs):
+def Magic(frag,N,Egys,CEgys,name,molecule,**kwargs):
     atoms=lfrag.GetNMerN(N,frag)
     caps=lfrag.CapHelper(N,frag)
     charges=lfrag.EmbedHelper(N,frag)
@@ -93,7 +98,7 @@ def Magic(frag,N,Egys,name,molecule,**kwargs):
     if((N!=0 and lfrag.IsGMBE()==0) or len(charges)>=4):
         lfrag.WriteMOs(N,frag)
         psi4.set_global_option("GUESS","READ")
-    RunCalc(name,molecule,atoms,caps,charges,ghosts,Egys,**kwargs)
+    RunCalc(name,molecule,atoms,caps,charges,ghosts,Egys,CEgys,**kwargs)
     if(N==0):
         lfrag.GatherData()
         psi4.set_global_option("GUESS",oldguess)
@@ -102,7 +107,7 @@ def Magic(frag,N,Egys,name,molecule,**kwargs):
 
 #Both the fragments and NMers go through the same sequence of calls,
 #we term them the basecall
-def BaseCall(name,molecule,size,Egys,i,SuppressPrint,itr,**kwargs):
+def BaseCall(name,molecule,size,Egys,CEgys,i,SuppressPrint,itr,**kwargs):
     PMan=Parallel() 
     old_comm=PMan.CurrentComm()
     PMan.sync(old_comm)
@@ -110,25 +115,32 @@ def BaseCall(name,molecule,size,Egys,i,SuppressPrint,itr,**kwargs):
         psi4.be_quiet()
     [mystart,myend,remainder]=DoMPI(PMan,size)
     for x in range(mystart,myend):
-        Magic(x,i,Egys,name,molecule,**kwargs)
+        Magic(x,i,Egys,CEgys,name,molecule,**kwargs)
     PMan.all_gather(Egys,old_comm)
+    PMan.all_gather(CEgys,old_comm)
     offset=size-remainder
     for x in range(0,remainder):
         Egys.append(0)
+        CEgys.append(0)
     #Last element in the list is the value
     for x in range(0,remainder):
         if PMan.me(old_comm)==x:
-            Magic(x+offset,i,Egys,name,molecule,**kwargs)
+            Magic(x+offset,i,Egys,CEgys,name,molecule,**kwargs)
     PMan.sync(old_comm)
     for x in range(0,remainder):
         #Has to be a list...
         value=[]
+        cvalue=[]
         if PMan.me(old_comm)==x:
             value.append(Egys.pop())
+            cvalue.append(CEgys.pop())
         else:
             value.append(0)
+            cvalue.append(0)
         PMan.bcast(value,x,old_comm)
+        PMan.bcast(cvalue,x,old_comm)
         Egys[offset+x]=value[0]
+        CEgys[offset+x]=cvalue[0]
     lfrag.Sync(old_comm,i,itr)
     PMan.free_comm(PMan.CurrentComm())
     if(SuppressPrint):
@@ -143,35 +155,33 @@ def setup(frag_method,N,embed_method,cap_method,bsse_method):
     lfrag.FragHelper(lcfrag_method,N,lcembed_method,lccap_method,
                      lcbsse_method)
 
-def fragment(name,molecule,Egys,SuppressPrint,**kwargs):
+def fragment(name,molecule,Egys,CEgys,SuppressPrint,**kwargs):
     size=lfrag.GetNFrags()
     if(lfrag.RunFrags()!=0):
         itr=0;
         done =False
         while (not done): 
-            if(itr==1):
-                psi4.print_out('Rerunning monomer\'s with embedding\n')
-            if(itr>1):
-                psi4.print_out('Embedding Iteration %d \n'%itr)
             if(itr>=1):
                 #Reset energies
                 del Egys[:]
-            BaseCall(name,molecule,size,Egys,0,SuppressPrint,itr,**kwargs)
+                del CEgys[:]
+            BaseCall(name,molecule,size,Egys,CEgys,0,SuppressPrint,itr,**kwargs)
             if(lfrag.Iterate(itr)==0):
                 done=True
             itr=itr+1
         lfrag.PrintEnergies([Egys],1)
 
     
-def nmers(name,molecule,N,Egys,SuppressPrint,**kwargs):
+def nmers(name,molecule,N,Egys,CEgys,SuppressPrint,**kwargs):
     lfrag.NMerHelper(N)
     i=1
     while lfrag.GetNNMers(i)!=0:
         NNMers=lfrag.GetNNMers(i)
         Egys.append([])
-        BaseCall(name,molecule,NNMers,Egys[i],i,SuppressPrint,0,**kwargs)
+        CEgys.append([])
+        BaseCall(name,molecule,NNMers,Egys[i],CEgys[i],i,SuppressPrint,0,**kwargs)
         lfrag.PrintEnergies(Egys,i+1)
         i+=1
        
-def SystemEnergy(Egys):
-    return lfrag.CalcEnergy(Egys)
+def SystemEnergy(Egys,IsCorr):
+    return lfrag.CalcEnergy(Egys,IsCorr)

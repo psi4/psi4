@@ -24,6 +24,7 @@
 #include "MBEFrag.h"
 #include "../../bin/psi4/psi4.h"
 #include "../../../include/psi4-dec.h"
+#include "libparallel/TableSpecs.h"
 #include <iomanip>
 namespace psi{
 namespace LibFrag{
@@ -37,13 +38,23 @@ void MBE::MakeIntersections(std::vector<NMerSet>& Systems){
 	this->SetN(oldN);
 }
 double MBE::Energy(const std::vector<NMerSet>& Systems,
-      const std::vector<boost::shared_ptr<double[]> >& Energies){
+      const std::vector<boost::shared_ptr<double[]> >& Energies,bool IsCorr){
 	double energy=0;
+	std::string energyname=(IsCorr?"Correlation Energy":"Energy");
 	//Total energy of each set of n-mers
 	std::vector<double> En;
 	std::vector<double> Egys;
-	psi::outfile->Printf(
-	      "\n************ MBE Energy Analysis ************\n\n");
+	std::vector<int> Widths(1,9);
+	psi::outfile->MakeBanner("MBE "+energyname+" Analysis");
+	(*psi::outfile)<<std::endl;
+	std::vector<std::string> Titles;
+    Titles.push_back("");
+    Titles.push_back("");
+	Titles.push_back("n-body correction (a.u.)");
+    Titles.push_back("MBE Order");
+    Titles.push_back("Total "+energyname+" (a.u.)");
+	Titles.push_back("[E(n)-E(n-1)]");
+	std::vector<int> orders;
 	if(Systems.size()!=N&&N!=1)
 	   throw psi::PSIEXCEPTION("The number of systems is not consistent with"
 	         " the MBE truncation order....\n");
@@ -55,14 +66,18 @@ double MBE::Energy(const std::vector<NMerSet>& Systems,
 		}
 		energy=NBodyE(i+1,Systems[0].size(),&En[0]);
 		Egys.push_back(energy);
-		psi::outfile->Printf(
-		      "%2d-body approximate energy: %16.15f (a.u.)\n",i+1,energy);
 	}
-	for(int i=1;i<N;i++){
-	   double corr=(i==0?Egys[i]:Egys[i]-Egys[i-1]);
-	   psi::outfile->Printf(
-	         "%2d-body correction: %16.15f (a.u.)\n",i+1,corr);
+	std::vector<double> Corrs;
+	for(int i=0;i<N;i++){
+	   Corrs.push_back((i==0?0:Egys[i]-Egys[i-1]));
+	   orders.push_back(i+1);
 	}
+	TableSpecs<int,double,double> Table(N);
+	Table.SetTitles(Titles);
+	Table.Init(&orders[0],&Egys[0],&Corrs[0]);
+	Table.SetWidths(Widths);
+	(*outfile)<<Table.Table();
+	(*outfile)<<std::endl;
 	return energy;
 }
 
