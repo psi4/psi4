@@ -232,11 +232,15 @@ class TableSpecs<Nothing, Nothing, Nothing, Nothing, Nothing, Nothing> {
 
       ///This is the width (in columns) of the table, defaults to 80
       int Width_;
-
       virtual int Width() const {
          return Width_;
       }
 
+      ///This is the user requested widths, value of 0 means calculate it
+      std::vector<int> ReqWidth_;
+      virtual std::vector<int> ReqWidth()const{
+         return ReqWidth_;
+      }
    public:
       ///Sets the titles
       void SetTitles(const std::vector<std::string>& Titles) {
@@ -248,6 +252,10 @@ class TableSpecs<Nothing, Nothing, Nothing, Nothing, Nothing, Nothing> {
          Alignments_=Alignments;
       }
 
+      ///Sets the width of each column
+      void SetWidths(const std::vector<int>& Widths){
+         ReqWidth_=Widths;
+      }
       ///Returns a NULL string
       virtual std::string GetData(int row) const {
          return std::string(" "+TokenSep_+" ");
@@ -337,11 +345,20 @@ class TableSpecs:public TableSpecs<T2, T3, T4, T5, T6> {
          return BaseType::NRows();
       }
 
+      ///Returns the requested width of the column
+      virtual std::vector<int> ReqWidth()const{
+         return BaseType::ReqWidth();
+      }
    public:
 
       ///Sets the titles
       virtual void SetTitles(const std::vector<std::string>& Titles) {
          BaseType::SetTitles(Titles);
+      }
+
+      ///Sets the width of each column
+      virtual void SetWidths(const std::vector<int>& Widths){
+         BaseType::SetWidths(Widths);
       }
 
       ///Sets the alignment of the columns
@@ -369,10 +386,25 @@ class TableSpecs:public TableSpecs<T2, T3, T4, T5, T6> {
          if (Data2!=NULL) BaseType::Init(Data2, Data3, Data4, Data5, Data6);
       }
 
+      ///Overloaded function to catch doubles
+      template<typename NotDouble>
+      std::string PrintData(const NotDouble Data)const{
+         std::stringstream RawData;
+         RawData<<Data<<" "<<TokenSep_<<" ";
+         return RawData.str();
+      }
+
+
+      std::string PrintData(const double Data)const{
+         std::stringstream RawData;
+         RawData<<std::fixed<<std::setprecision(16)<<Data<<" "<<TokenSep_<<" ";
+         return RawData.str();
+      }
+
       ///Returns the Data for row "row" as a string (non-EOL terminated)
       virtual std::string GetData(const int row) const {
          std::stringstream RowData;
-         RowData<<Data_[row]<<" "<<TokenSep_<<" ";
+         RowData<<PrintData(Data_[row]);
          if (!BaseType::IsBase()) RowData<<BaseType::GetData(row);
          return RowData.str();
       }
@@ -444,15 +476,42 @@ static inline std::string MakeRow(const int ncols, std::stringstream& tokenizer,
 template <typename T1, typename T2, typename T3, typename T4, typename T5,
       typename T6>
 std::string TableSpecs<T1, T2, T3, T4, T5, T6>::Table()const{///Returns the Table as a string
-                std::stringstream DaTable;
+                std::stringstream DaTable;//This will be the table
+
+                ///Start with the number of rows
                 int ncols=NCols();
+                ///Then the widths the user set up
+                std::vector<int> ColspCell=ReqWidth();
+                std::vector<bool> OrigSet(ncols,false);
+                int tempsize=ColspCell.size();
+                if(tempsize<ncols){
+                   for(int i=0;i<(ncols-tempsize);i++)
+                      ColspCell.push_back(0);
+                }
+                int nColsByUser=0;
+                int accountedforcolumns=0;
+                for(int i=0;i<ncols;i++){
+                   if(ColspCell[i]!=0){
+                      OrigSet[i]=true;
+                      nColsByUser++;
+                      accountedforcolumns+=ColspCell[i];
+                   }
+                }
                 int width=Width();
                 int nseparators=ncols-1;
-                int EffWidth=width-nseparators;
+                int EffWidth=width-nseparators-accountedforcolumns;
+                ncols-=nColsByUser;
+                if(ncols==0&&EffWidth!=0)throw
+                 PSIEXCEPTION("You micro-managed the columns and didn't count"
+                       "them out right, noob...");
                 int LeftOverCols=EffWidth%ncols;
-                std::vector<int> ColspCell(ncols, (EffWidth-LeftOverCols)/ncols);
+                int othercolumns=(EffWidth-LeftOverCols)/ncols;
+                ncols=NCols();
+                for(int i=0;i<ncols;i++){
+                   if(!OrigSet[i])ColspCell[i]=othercolumns;
+                }
                 for (int i=0; i<LeftOverCols; i++)
-                   ColspCell[i]++;
+                   if(!OrigSet[i])ColspCell[i]++;
 
                 //Add the titles
                 std::vector<std::string>Titles=Title();
