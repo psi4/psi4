@@ -126,7 +126,7 @@ class LibFragHelper {
       void PrintEnergy(PyList& Energies, const int N);
 
       ///Returns the highest n-body approximate energy available
-      double CalcEnergy(PyList& Energies);
+      double CalcEnergy(PyList& Energies,bool IsCorr);
 
       int GetNNMers(const int i) {
          if (i<Systems_.size()) return Systems_[i].size();

@@ -49,7 +49,8 @@ class GMBE{
 		virtual void MakeIntersections(std::vector<NMerSet>& Systems);
 		///Returns the total energy of this GMBE expansion
 		virtual double Energy(const std::vector<NMerSet>& Systems,
-		      const std::vector<boost::shared_ptr<double[]> >& Energies);
+		      const std::vector<boost::shared_ptr<double[]> >& Energies,
+		      bool IsCorr=false);
 		///No memory allocated
 		virtual ~GMBE(){}
 		/** \brief Returns true if we need to run the fragments

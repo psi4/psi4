@@ -148,7 +148,8 @@ void GMBE::MakeIntersections(std::vector<NMerSet>& Systems) {
 }
 
 double GMBE::Energy(const std::vector<NMerSet>& Systems,
-      const std::vector<boost::shared_ptr<double[]> >& Energies) {
+      const std::vector<boost::shared_ptr<double[]> >& Energies,
+      bool IsCorr) {
    double TEnergy=0.0;
    //If N==1 special case and energies are only in Energies[0],but
    //we get sizes from Systems[1] and Systems[2]
@@ -160,7 +161,9 @@ double GMBE::Energy(const std::vector<NMerSet>& Systems,
       int index2=(N==1?Systems[1].size()+j:j);
       TEnergy-=NMults[j]*Energies[index1][index2];
    }
-   psi::outfile->Printf( "The total %d-body GMBE energy is: %16.12f (a.u.)", N,
+   if(!IsCorr)psi::outfile->Printf( "The total %d-body GMBE energy is: %16.12f (a.u.)", N,
+         TEnergy);
+   else psi::outfile->Printf( "The total %d-body GMBE correlation energy is: %16.12f (a.u.)", N,
          TEnergy);
    return TEnergy;
 }
