@@ -1126,8 +1126,12 @@ def run_ccenergy(name, **kwargs):
     if not bypass:
         scf_helper(name, **kwargs)
 
-    # If the scf type is DF/CD, then the AO integrals were never written to disk
-    if bypass or psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
+    # If the scf type is DF/CD/or DIRECT, then the AO integrals were never
+    # written to disk
+    IsDF= psi4.get_option('SCF', 'SCF_TYPE') == 'DF'
+    IsCD=psi4.get_option('SCF', 'SCF_TYPE') == 'CD'
+    IsDirect=psi4.get_option('SCF','SCF_TYPE') == 'DIRECT'
+    if bypass or IsDF or IsCD or IsDirect:
         mints = psi4.MintsHelper()
         mints.integrals()
 
