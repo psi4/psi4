@@ -301,7 +301,10 @@ endif()
 #Goodbye f-ing python warning messages and boost warning messages...
 #all remaining warnings should be addressed as they are actually caused by
 #poor psi4 coding...
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd47 -wd2196 -wd411 -wd279")
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd47 -wd2196 -wd411 -wd279")
+endif()
+
 
 #Add the doxygen documentation
 add_subdirectory(doc/doxygen)
