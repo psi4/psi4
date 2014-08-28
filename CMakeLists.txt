@@ -43,7 +43,7 @@ endif()
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${useroptCXX_FLAGS}")
 set (CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${useroptF77_FLAGS}")
 
-#On F-ing Ubuntu -lm needs to be last...
+#On Ubuntu -lm needs to be last...
 if(UNIX)
    link_libraries(m)
 endif(UNIX)
