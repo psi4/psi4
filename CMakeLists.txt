@@ -112,7 +112,7 @@ check_function_exists(MKL_Free_Buffers HAVE_MKL) # NEEDS TO BE TESTED
 
 
 check_function_exists(erf HAVE_FUNC_ERF)
-#GCC is a piece of shit and thinks it's funny "building in" types
+#GCC thinks it's funny "building in" types
 #including erf....
 if(CMAKE_COMPILER_IS_GNUCC)
    set(HAVE_FUNC_ERF TRUE)
@@ -328,7 +328,7 @@ if(BUILD_JK_FACTORY)
     set(PSILIB ${PSILIB} -lmkl_scalapack_lp64 -lmkl_blacs_lp64)
 endif()
 
-#Goodbye f-ing python warning messages and boost warning messages...
+#Goodbye python warning messages and boost warning messages...
 #all remaining warnings should be addressed as they are actually caused by
 #poor psi4 coding...
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
