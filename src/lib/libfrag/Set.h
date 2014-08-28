@@ -293,7 +293,7 @@ template <typename T>
 Set<T> Set<T>::Complement()const{
    Set<T> temp(*this);
    Set<T> temp2();
-   std::map<int,T>::iterator itr=Universe_.begin();
+   typename std::map<int,T>::iterator itr=Universe_.begin();
    for(; itr!=Universe_.end();++itr)
       temp2<<(itr->first);
    temp2-=temp;

@@ -231,6 +231,7 @@ if args.with_cxxflags != blankstring:
 if args.with_f77flags != blankstring:
     cmakeflags['F77FLAGS'].append(args.with_f77flags)
 
+cmakeflags['LDFLAGS']=[]
 # LDFLAGS
 if args.with_ldflags != blankstring:
     cmakeflags['LDFLAGS'] = [args.with_ldflags]
