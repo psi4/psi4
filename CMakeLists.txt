@@ -89,18 +89,23 @@ endif()
 # Find MPI
 #
 find_package(MPI)
+
+if(MPI_FOUND)
+   #This checks if we have the wrapper compilers, not just MPI
+   #it's too much work compiling without the wrapper compilers
+   if(MPI_CXX_COMPILER AND MPI_C_COMPILER)
+      add_definitions(-DHAVE_MPI)
+   else()
+      message(WARNING "MPI was found on your system, but you did not specify
+the MPI wrapper compilers.  Assuming you want a non-MPI version of Psi4")
+      #Even if we found MPI, we didn't use the wrappers so don't build
+      #any of the MPI stuff
+      set(MPI_FOUND FALSE)
+   endif()
+endif(MPI_FOUND)
+
 include(CheckIncludeFiles)
 check_include_files(dlfcn.h HAVE_DLFCN)
-#This checks if we have the wrapper compilers, not just MPI
-#it's too much work compiling without the wrapper compilers
-if(MPI_CXX_COMPILER AND MPI_CC_COMPILER)
-   message("${MPI_CXX_COMPILER}")
-   add_definitions(-DHAVE_MPI)
-else()
-   #Even if we found MPI, we didn't use the wrappers so don't build
-   #any of the MPI stuff
-   set(MPI_FOUND FALSE)
-endif()
 
 include(CheckFunctionExists)
 check_function_exists(MKL_Free_Buffers HAVE_MKL) # NEEDS TO BE TESTED
@@ -109,7 +114,6 @@ check_function_exists(MKL_Free_Buffers HAVE_MKL) # NEEDS TO BE TESTED
 check_function_exists(erf HAVE_FUNC_ERF)
 #GCC is a piece of shit and thinks it's funny "building in" types
 #including erf....
-message("Compilers: ${CMAKE_COMPILER_IS_GNUCC} and ${CMAKE_COMPILER_IS_GNUXX}")
 if(CMAKE_COMPILER_IS_GNUCC)
    set(HAVE_FUNC_ERF TRUE)
 endif()
