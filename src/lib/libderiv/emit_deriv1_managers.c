@@ -12,7 +12,7 @@
 #include <libint/libint.h>
 #include "mem_man.h"
 #include "build_libderiv.h"
-#define MAXNODE 5000
+#define MAXNODE 20000
 #define NONODE -1000000
 #define NUMPARENTS 21
 
