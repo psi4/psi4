@@ -47,7 +47,7 @@ class LocalCommWrapper:public Parallel<LocalCommWrapper> {
             std::memcpy(const_cast<type*>(localdata), target,
                   sizeof(type)*nelem);
       }
-      friend Parallel<LocalCommWrapper> ;
+      friend class Parallel<LocalCommWrapper> ;
    public:
       LocalCommWrapper(const int &argc, char **argv) {
          //The next three lines are what the old local comm did
