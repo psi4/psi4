@@ -1,5 +1,5 @@
 add_custom_command(
-    COMMAND tar -xvzf ${PROJECT_SOURCE_DIR}/boost/${BOOSTVER}.tar.gz 
+    COMMAND tar -xzf ${PROJECT_SOURCE_DIR}/boost/${BOOSTVER}.tar.gz 
     OUTPUT ${BOOSTVER}
     COMMENT Unpacking Boost
     DEPENDS ${PROJECT_SOURCE_DIR}/boost/${BOOSTVER}.tar.gz
