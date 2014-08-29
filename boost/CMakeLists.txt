@@ -26,7 +26,11 @@ if(${CMAKE_CXX_COMPILER} MATCHES "icc*")
     set(toolset "intel-windows")
   endif()
 else()
+  if(APPLE)
+    set(toolset "darwin")
+  else()
    set(toolset "gcc")
+  endif()
 endif()
 
 add_custom_command(
