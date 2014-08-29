@@ -35,8 +35,6 @@ get_value(useroptPYTHON  PYTHON   ${EMPTY})
 get_value(useroptUSE_SYSTEM_BOOST  USE_SYSTEM_BOOST   TRUE)
 #OPTION MAX_AM_ERI    The maximum angular momentum to allow for integrals (1=p,2=d,3=f, etc.).  First and second derivatives are supported up to MAX_AM_ERI-1 and MAX_AM_ERI-2, respectively. (int)
 get_value(useroptLIBINT_MAX_AM  MAX_AM_ERI  5)
-#OPTION WITH_MPI
-get_value(useroptMPI WITH_MPI false)
 
 #Not setting ldflags was causing a problem
 if(${useroptLDFLAGS})
@@ -90,24 +88,18 @@ endif()
 #
 # Find MPI
 #
-if(WITH_MPI)
-   find_package(MPI)
-
-   if(MPI_FOUND)
-      #This checks if we have the wrapper compilers, not just MPI
-      #it's too much work compiling without the wrapper compilers
-      if(MPI_CXX_COMPILER AND MPI_C_COMPILER)
-         add_definitions(-DHAVE_MPI)
-      else()
-         message(WARNING "MPI was found on your system, but you did not specify the MPI wrapper compilers.  Assuming you want a non-MPI version of Psi4")
-         #Even if we found MPI, we didn't use the wrappers so don't build
-         #any of the MPI stuff
-         set(MPI_FOUND FALSE)
-      endif()
-   endif(MPI_FOUND)
-else()
-   set(MPI_FOUND false)
-endif(WITH_MPI)
+if(DEFINED USEMPI)
+   find_package(MPI REQUIRED)
+   #This checks if we have the wrapper compilers, not just MPI
+   #it's too much work compiling without the wrapper compilers
+   if((MPI_CXX_COMPILER EQUAL CMAKE_CXX_COMPILER) AND 
+      (MPI_C_COMPILER EQUAL CMAKE_C_COMPILER))   
+       add_definitions(-DHAVE_MPI)
+   else()
+       message(FATAL_ERROR "MPI was found on your system, but you did not
+specify the MPI wrapper compilers.  Please use the MPI Compiler Wrappers")
+   endif()
+endif()
 
 include(CheckIncludeFiles)
 check_include_files(dlfcn.h HAVE_DLFCN)
@@ -131,7 +123,7 @@ test_restrict(restrict)
 
 if(CMAKE_Fortran_COMPILER)
     if(DEFINED USEERD)
-       message("Building/Using LibERD instead of LibInts!!!!")
+       message(WARNING "Building/Using LibERD instead of LibInts!!!!")
        add_definitions(-DHAVE_ERD)
     endif()
 endif()
