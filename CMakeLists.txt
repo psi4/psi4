@@ -342,6 +342,9 @@ endif()
 #Add the doxygen documentation
 add_subdirectory(doc/doxygen)
 
+# Add the sphinx documentation
+add_subdirectory(doc/sphinxman)
+
 #
 # Recursively add source directories
 #
