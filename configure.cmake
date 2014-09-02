@@ -69,6 +69,14 @@ erdgroup.add_argument('--with-erd',
 erdgroup.add_argument('--without-erd',
                         action="store_false",
                         help='Do not use the ERD integral package.')
+#MPI package
+mpigroup = parser.add_mutually_exclusive_group()
+mpigroup.add_argument('--with-mpi',
+                        action="store_true",
+                        help='Add support for MPI.')
+mpigroup.add_argument('--without-mpi',
+                        action="store_false",
+                        help='Do not use MPI.')
 # The Fortran compiler
 parser.add_argument('--with-f77',
                     metavar='= F77',
@@ -221,6 +229,9 @@ if args.with_debug:
 if args.with_erd:
     cmakeflags['USEERD']=["TRUE"]
 
+if args.with_mpi:
+    cmakeflags['USEMPI']=["TRUE"]
+
 #For some reason making plugins is false if we are making them
 if args.with_plugins :
     cmakeflags['CXXFLAGS'].append("-fPIC")
@@ -231,6 +242,7 @@ if args.with_cxxflags != blankstring:
 if args.with_f77flags != blankstring:
     cmakeflags['F77FLAGS'].append(args.with_f77flags)
 
+cmakeflags['LDFLAGS']=[]
 # LDFLAGS
 if args.with_ldflags != blankstring:
     cmakeflags['LDFLAGS'] = [args.with_ldflags]

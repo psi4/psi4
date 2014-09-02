@@ -26,7 +26,10 @@
 #include "parallel.h"
 #include <cstring>
 #include <string>
+#ifdef _OPENMP
 #include <omp.h>
+#endif
+
 namespace psi {
 
 class LocalCommWrapper:public Parallel<LocalCommWrapper> {
@@ -47,7 +50,7 @@ class LocalCommWrapper:public Parallel<LocalCommWrapper> {
             std::memcpy(const_cast<type*>(localdata), target,
                   sizeof(type)*nelem);
       }
-      friend Parallel<LocalCommWrapper> ;
+      friend class Parallel<LocalCommWrapper> ;
    public:
       LocalCommWrapper(const int &argc, char **argv) {
          //The next three lines are what the old local comm did
@@ -55,7 +58,9 @@ class LocalCommWrapper:public Parallel<LocalCommWrapper> {
          //The way I understand this is that the number of openmp threads
          //is getting hard-coded to 1, and somewhere in the code people are
          //counting on this behavior...
+#ifdef _OPENMP
          omp_set_nested(0);
+#endif
          if (Process::environment("OMP_NUM_THREADS")=="")
             Process::environment.set_n_threads(1);
       }

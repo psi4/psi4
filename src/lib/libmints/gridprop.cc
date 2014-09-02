@@ -261,28 +261,28 @@ void CubicScalarGrid::write_cube_file(double* v, const std::string& name)
 
     std::stringstream ss;
     ss << filepath_ << "/" << name << ".cube";
-    FILE* fh = fopen(ss.str().c_str(), "w");
+    printer=boost::shared_ptr<OutFile>(new OutFile(ss.str()));
 
     // Two comment lines
-    outfile->Printf(fh, "PSI4 Gaussian Cube File.\n");
-    outfile->Printf(fh, "Property: %s\n", name.c_str());
+    printer->Printf("PSI4 Gaussian Cube File.\n");
+    printer->Printf("Property: %s\n", name.c_str());
    
     // Number of atoms plus origin of data 
-    outfile->Printf(fh, "%6d %10.6f %10.6f %10.6f\n", mol_->natom(), O_[0], O_[1], O_[2]);
+    printer->Printf("%6d %10.6f %10.6f %10.6f\n", mol_->natom(), O_[0], O_[1], O_[2]);
     
     // Number of points along axis, displacement along x,y,z
-    outfile->Printf(fh, "%6d %10.6f %10.6f %10.6f\n", N_[0] + 1, D_[0], 0.0, 0.0);
-    outfile->Printf(fh, "%6d %10.6f %10.6f %10.6f\n", N_[1] + 1, 0.0, D_[1], 0.0);
-    outfile->Printf(fh, "%6d %10.6f %10.6f %10.6f\n", N_[2] + 1, 0.0, 0.0, D_[2]);
+    printer->Printf("%6d %10.6f %10.6f %10.6f\n", N_[0] + 1, D_[0], 0.0, 0.0);
+    printer->Printf("%6d %10.6f %10.6f %10.6f\n", N_[1] + 1, 0.0, D_[1], 0.0);
+    printer->Printf("%6d %10.6f %10.6f %10.6f\n", N_[2] + 1, 0.0, 0.0, D_[2]);
 
     // Atoms of molecule (Z, Q?, x, y, z)
     for (int A = 0; A < mol_->natom(); A++) {
-        outfile->Printf(fh, "%3d %10.6f %10.6f %10.6f %10.6f\n", (int) mol_->Z(A), 0.0, mol_->x(A), mol_->y(A), mol_->z(A));
+        printer->Printf("%3d %10.6f %10.6f %10.6f %10.6f\n", (int) mol_->Z(A), 0.0, mol_->x(A), mol_->y(A), mol_->z(A));
     }
 
     // Data, striped (x, y, z)
     for (size_t ind = 0; ind < npoints_; ind++) {
-        outfile->Printf(fh, "%12.5E ", v2[ind]);
+        printer->Printf("%12.5E ", v2[ind]);
         if (ind % 6 == 5) outfile->Printf(fh,"\n");
     }
 
