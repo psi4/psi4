@@ -1,5 +1,5 @@
 add_custom_command(
-    COMMAND tar -xvzf ${PROJECT_SOURCE_DIR}/boost/${BOOSTVER}.tar.gz 
+    COMMAND tar -xzf ${PROJECT_SOURCE_DIR}/boost/${BOOSTVER}.tar.gz 
     OUTPUT ${BOOSTVER}
     COMMENT Unpacking Boost
     DEPENDS ${PROJECT_SOURCE_DIR}/boost/${BOOSTVER}.tar.gz
@@ -11,7 +11,7 @@ set(MPI_SENT "")
 if(MPI_FOUND)
   set(BOOST_LIBS_2_MAKE
 "filesystem,mpi,python,regex,serialization,system,thread")
-  set(MPI_SENT "using mpi \\;")
+  set(MPI_SENT "using mpi : ${CMAKE_CXX_COMPILER} \\;")
 else()
   set(BOOST_LIBS_2_MAKE "filesystem,python,regex,serialization,system,thread")
 endif()
@@ -26,15 +26,20 @@ if(${CMAKE_CXX_COMPILER} MATCHES "icc*")
     set(toolset "intel-windows")
   endif()
 else()
+  if(APPLE)
+    set(toolset "darwin")
+  else()
    set(toolset "gcc")
+  endif()
 endif()
 
 add_custom_command(
+    COMMAND echo "using ${toolset} : : ${CMAKE_CXX_COMPILER} \\;">user-config.jam
+    COMMAND echo "${MPI_SENT}">>user-config.jam
     COMMAND ./bootstrap.sh --with-toolset=${toolset}
             --with-libraries=${BOOST_LIBS_2_MAKE}
            --with-python=${PYTHON}
-    COMMAND echo "using ${toolset} : : ${CMAKE_CXX_COMPILER} \\;">user-config.jam
-    COMMAND echo "${MPI_SENT}">>user-config.jam
+    COMMAND echo "${MPI_SENT}">>project-config.jam
     COMMAND ./b2
     COMMAND touch ../boost.compiled
     WORKING_DIRECTORY ${BOOSTVER}

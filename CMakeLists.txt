@@ -25,7 +25,8 @@ get_value(useroptLAPACKLIBS  LAPACKLIBS   ${EMPTY})
 #OPTION LAPACK Incs          Compiler flags to use for Lapack (and BLAS), instead of detecting system library (string)
 get_value(useroptLAPACKINCS  LAPACKINCS   ${EMPTY})
 #OPTION LD_FLAGS         Extra flags to be used in linking (string)
-get_value(useroptLDFLAGS  LDFLAGS   ${EMPTY})
+get_value(useroptLDFLAGS  LDFLAGS ${EMPTY})
+
 #OPTION PREFIX           The installation directory for psi4 (string)
 get_value(CMAKE_INSTALL_PREFIX  PREFIX  "/usr/local/psi4")
 #OPTION PYTHON           Full path to python interpreter to use. If omitted Python will be detected. There should be a corresponding python-config script in this location for Psi to work, i.e. Python development version. (string)
@@ -35,9 +36,17 @@ get_value(useroptUSE_SYSTEM_BOOST  USE_SYSTEM_BOOST   TRUE)
 #OPTION MAX_AM_ERI    The maximum angular momentum to allow for integrals (1=p,2=d,3=f, etc.).  First and second derivatives are supported up to MAX_AM_ERI-1 and MAX_AM_ERI-2, respectively. (int)
 get_value(useroptLIBINT_MAX_AM  MAX_AM_ERI  5)
 
-set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${useroptLDFLAGS}")
+#Not setting ldflags was causing a problem
+if(${useroptLDFLAGS})
+   set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${useroptLDFLAGS}")
+endif()
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${useroptCXX_FLAGS}")
 set (CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${useroptF77_FLAGS}")
+
+#On Ubuntu -lm needs to be last...
+if(UNIX)
+   link_libraries(m)
+endif(UNIX)
 
 # This will be echoed at the end of configure, and also output to a file so the build can be replicated
 set(CONFIGURE_CMD "${CMAKE_COMMAND} ${PROJECT_SOURCE_DIR}")
@@ -70,7 +79,7 @@ endif()
 #
 # OpenMP
 #
-find_package(OpenMP REQUIRED)
+find_package(OpenMP)
 if (OPENMP_FOUND)
     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
@@ -79,24 +88,42 @@ endif()
 #
 # Find MPI
 #
-find_package(MPI)
+if(DEFINED USEMPI)
+   find_package(MPI REQUIRED)
+   #This checks if we have the wrapper compilers, not just MPI
+   #it's too much work compiling without the wrapper compilers
+   if((MPI_CXX_COMPILER EQUAL CMAKE_CXX_COMPILER) AND 
+      (MPI_C_COMPILER EQUAL CMAKE_C_COMPILER))   
+       add_definitions(-DHAVE_MPI)
+   else()
+       message(FATAL_ERROR "MPI was found on your system, but you did not
+specify the MPI wrapper compilers.  Please use the MPI Compiler Wrappers")
+   endif()
+endif()
+
 include(CheckIncludeFiles)
 check_include_files(dlfcn.h HAVE_DLFCN)
-if(MPI_FOUND)
-   add_definitions(-DHAVE_MPI)
-endif()
 
 include(CheckFunctionExists)
 check_function_exists(MKL_Free_Buffers HAVE_MKL) # NEEDS TO BE TESTED
-check_function_exists(erf HAVE_FUNC_ERF)
 
+
+check_function_exists(erf HAVE_FUNC_ERF)
+#GCC thinks it's funny "building in" types
+#including erf....
+if(CMAKE_COMPILER_IS_GNUCC)
+   set(HAVE_FUNC_ERF TRUE)
+endif()
+
+if(NOT HAVE_FUNC_ERF)
+   message(FATAL_ERROR "ERROR: ERF was not found")
+endif()
 include(cmake/Restrict.cmake)
 test_restrict(restrict)
 
 if(CMAKE_Fortran_COMPILER)
     if(DEFINED USEERD)
-       message("USEERD is set to ${USEERD}")
-       message("Building/Using LibERD instead of LibInts!!!!")
+       message(WARNING "Building/Using LibERD instead of LibInts!!!!")
        add_definitions(-DHAVE_ERD)
     endif()
 endif()
@@ -134,7 +161,7 @@ include_directories(
 #
 # BLAS and LAPACK
 #
-if(NOT useroptLAPACKLIBS STREQUAL EMPTY)
+if(NOT ${useroptLAPACKLIBS} STREQUAL ${EMPTY})
     #RMR only have a library check at this time
     # and then set the variables that would be set by find_package
     set(LAPACK_LIBRARIES ${useroptLAPACKLIBS})
@@ -298,10 +325,13 @@ if(BUILD_JK_FACTORY)
     set(PSILIB ${PSILIB} -lmkl_scalapack_lp64 -lmkl_blacs_lp64)
 endif()
 
-#Goodbye f-ing python warning messages and boost warning messages...
+#Goodbye python warning messages and boost warning messages...
 #all remaining warnings should be addressed as they are actually caused by
 #poor psi4 coding...
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd47 -wd2196 -wd411 -wd279")
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd47 -wd2196 -wd411 -wd279")
+endif()
+
 
 #Add the doxygen documentation
 add_subdirectory(doc/doxygen)
@@ -323,17 +353,6 @@ set(RECONFIGURE_PSI "${PROJECT_BINARY_DIR}/reconfigure.sh")
 message("The following command can be used to exactly reproduce this build. It can also be found in ${RECONFIGURE_PSI}:\n")
 message("${CONFIGURE_CMD}\n")
 configure_file(cmake/reconfigure.sh.in reconfigure.sh)
-
-#
-# Output the build settings, for plugins to read later
-#
-#set(buildsettingsfile ${PROJECT_BINARY_DIR}/buildsettings.cmake)
-#export(TARGETS psi4 FILE ${buildsettingsfile})
-
-#get_cmake_property(_variableNames VARIABLES)
-#foreach (_variableName ${_variableNames})
-#    message(STATUS "${_variableName}=${${_variableName}}")
-#endforeach()
 
 #If we are making boost add it as a dependency
 if(NOT Boost_FOUND)

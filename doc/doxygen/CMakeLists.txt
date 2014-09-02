@@ -30,7 +30,7 @@ endforeach(mssg)
 #Write the new contents into a new doxygen file
 FILE(WRITE doxygen.cfg ${FILE_CONTENT})
 
-find_package(Doxygen)
+find_package(Doxygen QUIET)
 if(DOXYGEN_FOUND)
    add_custom_target(doc ${DOXYGEN_EXECUTABLE}
                          ${CMAKE_CURRENT_SOURCE_DIR}/doxygen.cfg
@@ -38,6 +38,5 @@ if(DOXYGEN_FOUND)
                          COMMENT "Generating Doxygen code for Psi 4" VERBATIM
 )
    add_dependencies(doc ${CMAKE_CURRENT_SOURCE_DIR}/doxygen.cfg.in)
-   add_dependencies(doc ${CMAKE_CURRENT_SOURCE_DIR}/doxygen.cfg)
 endif(DOXYGEN_FOUND)
 
