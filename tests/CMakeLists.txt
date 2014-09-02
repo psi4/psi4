@@ -188,7 +188,7 @@ foreach(Tests2Run ${TestSet})
    set(AUTOTEST 'true')
    add_test(
       NAME ${Tests2Run}
-      WORKING_DIRECTORY ${RUNDIR}
+      WORKING_DIRECTORY ${CMAKE_BIN_DIR}/tests/${Tests2Run}
       COMMAND perl ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${OUTFILE} ${PSIEXE})
    #In theory would like to make sure all tests run in parallel as well
    #but....most do not right now...
