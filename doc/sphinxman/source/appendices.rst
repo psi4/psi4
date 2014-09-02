@@ -1,6 +1,4 @@
 
-.. #####  HTML-ALL START
-
 .. _`sec:appendices`:
 
 ==========
@@ -45,6 +43,4 @@ Miscellaneous
    dft_byfunctional
    autodoc_psifiles
    bibliography
-
-.. #####  HTML-ALL STOP
 
