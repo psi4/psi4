@@ -101,7 +101,7 @@ class MPICommunicator:public Parallel<MPICommunicator> {
       boost::mpi::communicator GetComm(const std::string& CommName) const;
 
       ///So that the base class can access the implementation
-      friend Parallel<MPICommunicator> ;
+      friend class Parallel<MPICommunicator> ;
 
       /* \brief Wrapper to MPI's Allgatherv
        *
