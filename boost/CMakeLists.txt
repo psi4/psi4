@@ -34,12 +34,12 @@ else()
 endif()
 
 add_custom_command(
-    COMMAND echo "using ${toolset} : : ${CMAKE_CXX_COMPILER} \\;">user-config.jam
-    COMMAND echo "${MPI_SENT}">>user-config.jam
+    COMMAND ${CMAKE_COMMAND} -E echo "using ${toolset} : : ${CMAKE_CXX_COMPILER} \\;" > user-config.jam
+    COMMAND ${CMAKE_COMMAND} -E echo "${MPI_SENT}" >> user-config.jam
     COMMAND ./bootstrap.sh --with-toolset=${toolset}
             --with-libraries=${BOOST_LIBS_2_MAKE}
            --with-python=${PYTHON}
-    COMMAND echo "${MPI_SENT}">>project-config.jam
+    COMMAND ${CMAKE_COMMAND} -E echo "${MPI_SENT}" >> project-config.jam
     COMMAND ./b2
     COMMAND touch ../boost.compiled
     WORKING_DIRECTORY ${BOOSTVER}
