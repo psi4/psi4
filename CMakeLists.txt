@@ -92,8 +92,12 @@ if(DEFINED USEMPI)
    find_package(MPI REQUIRED)
    #This checks if we have the wrapper compilers, not just MPI
    #it's too much work compiling without the wrapper compilers
-   if((MPI_CXX_COMPILER EQUAL CMAKE_CXX_COMPILER) AND 
-      (MPI_C_COMPILER EQUAL CMAKE_C_COMPILER))   
+   string(COMPARE EQUAL "${MPI_C_COMPILER}" "${CMAKE_C_COMPILER}" HAVE_MPI_C_COMPILER)
+   string(COMPARE EQUAL "${MPI_CXX_COMPILER}" "${CMAKE_CXX_COMPILER}" HAVE_MPI_CXX_COMPILER)
+   #message("${HAVE_MPI_C_COMPILER}")
+   #message("${HAVE_MPI_CXX_COMPILER}")
+   #message("${MPI_CXX_COMPILER} ${CMAKE_CXX_COMPILER}")
+   if(${HAVE_MPI_C_COMPILER} AND ${HAVE_MPI_CXX_COMPILER})   
        add_definitions(-DHAVE_MPI)
    else()
        message(FATAL_ERROR "MPI was found on your system, but you did not
