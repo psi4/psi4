@@ -46,7 +46,7 @@ void OutFile::Close() {
 }
 
 void OutFile::Open(const std::string& filename, const FileMode& mode) {
-   if (ImSpecial()) {
+   if (ImSpecial()&&filename!="NULL") {
       this->Close();
       Stream_=SharedStream(
             new std::ofstream(filename.c_str(), FOptions_[mode]));
