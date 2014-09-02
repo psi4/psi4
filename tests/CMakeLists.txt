@@ -181,14 +181,15 @@ set(LOGFILE ${CMAKE_BINARY_DIR}/testresults.log)
 #want to run individual tests.  In the end makes our job easier
 foreach(Tests2Run ${TestSet})
    #The directory the test will be run in
-   set(RUNDIR ${TESTDIR}/${Tests2Run})
- 
-   set(INPUTFILE ${RUNDIR}/input.dat)
-   set(OUTFILE ${RUNDIR}/output.dat)
+   set(TEST_SRC_DIR ${TESTDIR}/${Tests2Run})
+   set(TEST_RUN_DIR ${CMAKE_BINARY_DIR}/tests/${Tests2Run})
+   file(MAKE_DIRECTORY ${TEST_RUN_DIR})
+   set(INPUTFILE ${TEST_SRC_DIR}/input.dat)
+   set(OUTFILE ${TEST_RUN_DIR}/output.dat)
    set(AUTOTEST 'true')
    add_test(
       NAME ${Tests2Run}
-      WORKING_DIRECTORY ${CMAKE_BIN_DIR}/tests/${Tests2Run}
+      WORKING_DIRECTORY ${TEST_RUN_DIR}
       COMMAND perl ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${OUTFILE} ${PSIEXE})
    #In theory would like to make sure all tests run in parallel as well
    #but....most do not right now...
