@@ -7,7 +7,7 @@ set(STRINGS2FIND "\@PSI_VERSION\@"
                  "\@DOT_PATH\@"
 )
 
-#What they should be replace with
+#What they should be replaced with
 set(STRINGS2REPLACE "${PSI_VERSION}"
                     "${CMAKE_SOURCE_DIR}"
                     "NO"
@@ -16,7 +16,7 @@ set(STRINGS2REPLACE "${PSI_VERSION}"
                     ""
 )
 
-#Read in the doxygen file, and repalce it's contents
+#Read in the doxygen file, and replace its contents
 FILE(READ doxygen.cfg.in FILE_CONTENT)
 set(index 0)
 foreach(mssg ${STRINGS2FIND})
