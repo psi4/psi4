@@ -26,6 +26,7 @@
 */
 #include <cstdio>
 #include "psi4-dec.h"
+#include "libparallel/ParallelPrinter.h"
 namespace psi { namespace cclambda {
 
 void status(const char *s, std::string out)

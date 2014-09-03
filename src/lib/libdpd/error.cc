@@ -27,6 +27,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include "dpd.h"
+#include "libparallel/ParallelPrinter.h"
 namespace psi {
 
 

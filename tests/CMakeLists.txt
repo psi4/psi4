@@ -177,6 +177,14 @@ exit \$return;\n")
 #Finally run these beasts
 set(LOGFILE ${CMAKE_BINARY_DIR}/testresults.log)
 
+find_package(Perl QUIET)
+if(NOT PERL_FOUND)
+   #I think this is what this means...
+   message(WARNING "Perl was not found.  Some Coupled Cluster test cases will
+not be thoroughly checked.")
+endif()
+
+
 #Declare each test as a possible test target even though noone will likely
 #want to run individual tests.  In the end makes our job easier
 foreach(Tests2Run ${TestSet})
@@ -186,17 +194,26 @@ foreach(Tests2Run ${TestSet})
    file(MAKE_DIRECTORY ${TEST_RUN_DIR})
    set(INPUTFILE ${TEST_SRC_DIR}/input.dat)
    set(OUTFILE ${TEST_RUN_DIR}/output.dat)
-   set(AUTOTEST 'true')
+   set(AUTOTEST false)
+   list(FIND CCShort ${Tests2Run} InShort)
+   list(FIND CCLong ${Tests2Run} InLong)
+   if(NOT(${InLong} EQUAL -1 AND ${InShort} EQUAL -1) AND ${PERL_FOUND})
+     set(AUTOTEST true)
+   endif()
    add_test(
       NAME ${Tests2Run}
       WORKING_DIRECTORY ${TEST_RUN_DIR}
       COMMAND perl ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${OUTFILE} ${PSIEXE})
+   add_custom_target(${Tests2Run} ${CMAKE_CTEST_COMMAND} -R ${Tests2Run})
+   set_tests_properties(${Tests2Run} PROPERTIES DEPENDS 
+	${CMAKE_BINARY_DIR}/bin/psi4)
    #In theory would like to make sure all tests run in parallel as well
    #but....most do not right now...
    if( MPI_FOUND AND FALSE)
      add_test(
         NAME MPI-${Tests2Run}
         WORKING_DIRECTORY ${RUNDIR}
-        COMMAND mpirun -n 2 perl ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${OUTFILE} ${PSIEXE})
+        COMMAND mpirun -n 2 perl ${TESTEXE} ${INPUTFILE} ${LOGFILE}
+${AUTOTEST} ${OUTFILE} ${PSIEXE})
     endif()
 endforeach(Tests2Run)

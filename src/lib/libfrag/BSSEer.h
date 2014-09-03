@@ -42,6 +42,14 @@ class BSSEer{
       void AddBSSEJobs(NMerSet& NMers);
 };
 
+///Class that does nothing, removes check to see if factory exists
+class NullBSSE:public BSSEer{
+   protected:
+      void BSSEImpl(GhostType& Ghosts,NMerSet& NMers){}
+   public:
+      NullBSSE():BSSEer(0){}
+};
+
 class FullBSSE:public BSSEer{
    protected:
       void BSSEImpl(GhostType& Ghosts,NMerSet& NMers);

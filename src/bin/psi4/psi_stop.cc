@@ -33,6 +33,7 @@
 #include <psi4-dec.h>
 #include <libciomr/libciomr.h>
 #include <libplugin/plugin.h>
+#include "libparallel/ParallelPrinter.h"
 namespace psi {
 
 /*!

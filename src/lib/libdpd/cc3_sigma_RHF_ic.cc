@@ -36,6 +36,7 @@
 #include <psiconfig.h>
 #include "dpd.h"
 #include "psi4-dec.h"
+#include "libparallel/ParallelPrinter.h"
 //MKL Header
 #ifdef HAVE_MKL
 #include <mkl.h>

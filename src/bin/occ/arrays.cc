@@ -29,7 +29,7 @@
 using namespace boost;
 using namespace psi;
 using namespace std;
-
+#include "libparallel/ParallelPrinter.h"
 namespace psi{ namespace occwave{
   
 

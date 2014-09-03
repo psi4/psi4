@@ -27,7 +27,7 @@
 #include "defines.h"
 #include "arrays.h"
 #include "dpd.h"
-
+#include "libparallel/ParallelPrinter.h"
 using namespace boost;
 using namespace psi;
 using namespace std;

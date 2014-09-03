@@ -29,7 +29,7 @@
 #include <cstring>
 #include <libqt/qt.h>
 #include "dpd.h"
-
+#include "libparallel/ParallelPrinter.h"
 namespace psi {
 
 void DPD::file4_cache_init(void)

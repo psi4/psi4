@@ -30,7 +30,7 @@
 #include <cstdio>
 #include <vector>
 #include <string>
-
+#include "libparallel/ParallelPrinter.h"
 #include "intcos.h"
 #include "psi4-dec.h"
 

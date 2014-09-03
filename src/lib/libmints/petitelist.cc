@@ -50,7 +50,7 @@
 //
 
 #include "mints.h"
-
+#include "libparallel/ParallelPrinter.h"
 using namespace boost;
 
 #if FC_SYMBOL==2

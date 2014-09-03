@@ -21,61 +21,20 @@
  */
 
 #include "MBEFrag.h"
+#include "FragOptions.h"
+#include "Fragmenter.h"
 
 namespace psi {
 namespace LibFrag {
 
 void MBEFrag::Copy(const MBEFrag& other) {
-   this->Parents=other.Parents;
-   this->MBEOrder=other.MBEOrder;
+   this->Parents_=other.Parents_;
+   this->MBEOrder_=other.MBEOrder_;
+   this->Mult_=other.Mult_;
    this->Atoms_=other.Atoms_;
    this->Caps_=other.Caps_;
    this->Charges_=other.Charges_;
    this->Ghosts_=other.Ghosts_;
-}
-
-void UpdateCaps(CartSet<SharedCap>& ThisCaps,
-      const CartSet<SharedCap>& OtherCaps, MBEFrag* Frag) {
-   ThisCaps*=OtherCaps;
-   if (ThisCaps.size()>0) {
-      CartSet<SharedCap> temp(ThisCaps);
-      temp.Clear();
-      //less any that are now in Atoms_
-      const CartSet<SharedAtom> Atoms=Frag->Atoms();
-      for (int i=0; i<ThisCaps.size(); i++) {
-         int Atom2Check=ThisCaps.Object(i)->ReplacedAtom();
-         if (!Atoms.Contains(Atom2Check)) {
-            temp<<Atom2Check;
-         }
-      }
-      ThisCaps=temp;
-   }
-}
-
-void MBEFrag::operator*=(const MBEFrag& other) {
-   this->Atoms_*=other.Atoms_;
-
-   //For the Charges and and Ghosts need to subtract out new Atoms
-   this->Charges_-=other.Atoms_;
-   this->Ghosts_-=other.Atoms_;
-
-   //For the Caps we have their union
-   UpdateCaps(this->Caps_, other.Caps_, this);
-
-}
-
-void MBEFrag::operator/=(const MBEFrag& other) {
-   //For the Charges and Ghosts need union with old Atoms_
-   this->Ghosts_*=this->Atoms_;
-   this->Charges_*=this->Atoms_;
-
-   //Now take the intersection, to get our new set of atoms
-   this->Atoms_/=other.Atoms_;
-
-   //Subtract it out of the Charges and Ghosts
-   this->Ghosts_-=this->Atoms_;
-   this->Charges_-=this->Atoms_;
-   UpdateCaps(this->Caps_, other.Caps_, this);
 }
 
 }

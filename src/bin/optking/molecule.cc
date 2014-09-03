@@ -34,7 +34,7 @@
 #include "print.h"
 #include "atom_data.h"
 #include "physconst.h"
-
+#include "libparallel/ParallelPrinter.h"
 #define EXTERN
 #include "globals.h"
 

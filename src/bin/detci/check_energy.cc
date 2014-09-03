@@ -28,6 +28,7 @@
 #include <cstdio>
 #include <cmath>
 #include "psi4-dec.h"
+#include "libparallel/ParallelPrinter.h"
 namespace psi { namespace detci {
 
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))

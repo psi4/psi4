@@ -27,7 +27,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include "dpd.h"
-
+#include "libparallel/ParallelPrinter.h"
 namespace psi {
 
 int DPD::file2_mat_print(dpdfile2 *File, std::string out)

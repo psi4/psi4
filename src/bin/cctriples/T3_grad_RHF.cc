@@ -35,7 +35,7 @@
 #include "Params.h"
 #define EXTERN
 #include "globals.h"
-
+#include "libparallel/ParallelPrinter.h"
 namespace psi { namespace cctriples {
 
     void T3_grad_RHF(void)
