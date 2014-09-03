@@ -20,7 +20,7 @@
  *@END LICENSE
  */
 
-#include "StupidWorkAround.h"
+#include "BasesBase.h"
 #include "psi4-dec.h"
 namespace psi{
 ///Returns the integer of the Lucky MPI process
