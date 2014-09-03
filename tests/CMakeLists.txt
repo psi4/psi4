@@ -83,6 +83,8 @@ set(TutorialLong tu6-cp-ne2)
 set(MISCShort ci-multi sad1 matrix1 gibbs)
 set(MISCLong frac ghosts large_atoms min_input mom psithon1 psithon2 pubchem1 zaptn-nh2)
 
+set(AutoTestSubjects cc11 cc18 cc19 cc28 cc29 cc30 cc31 cc34 cc36 cc37 cc38 cc39 cc40 cc41 cc42 cc43 cc46 cc47 cc48 cc49 cc50 cc51 cc52 cc55 cc8 cc9)
+
 ###### END test definitions ################
 
 #These are the truly long tests
@@ -125,57 +127,17 @@ set(PSIEXE ${CMAKE_BINARY_DIR}/bin/psi4)
 #This is where the test directories live
 set(TESTDIR ${CMAKE_CURRENT_SOURCE_DIR})
 #This is the perl script that we call, to call the psi, to run the tests
-set(TESTEXE ${TESTDIR}/runtest.pl)
-
-#CMake way of the Make runtest.pl.in
-file(WRITE ${TESTEXE}
-"use strict;
-use warnings;
-
-die \"Usage\\n\\t\\t\$0 input_file logfile [output_file]\\n\" unless (@ARGV == 3) || (@ARGV == 4) || (@ARGV == 5);
-
-my \$psi = \"../../bin/psi4\";
-my \$input = \$ARGV[0];
-my \$logfile = \$ARGV[1];
-my \$psiautotest = \$ARGV[2];
-my \$outfile = \"output.dat\";
-if (@ARGV == 4) { \$outfile = $ARGV[3]; }
-if (@ARGV == 5) { \$psi = $ARGV[4]; }
-
-open(LOGFILE,\">\$logfile\") or die \"I can't write to \$logfile\\n\";
-
-sub backtick(@)
-{
-    my \$pid = open(KID, '-|');
-    die \"fork: \$!\" unless defined(\$pid);
-    if (\$pid) {
-        my \$output;
-        while (<KID>) {
-            print STDOUT;
-            print LOGFILE;
-        }
-        close(KID);
-        return \$output;
-    } else {
-        exec @_;
-    }
-}
-
-my @cmd = (\$psi, \$input, \$outfile);
-backtick(@cmd);
-
-my \$return = \$? ? 1 : 0;
-close LOGFILE;
-
-if (\$psiautotest eq \"true\") {
-  require(\"${TESTDIR}/psitest.pl\");
-  do_tests(@ARGV);
-}
-
-exit \$return;\n")
+set(TESTEXE ${TESTDIR}/runtest.py)
 
 #Finally run these beasts
 set(LOGFILE ${CMAKE_BINARY_DIR}/testresults.log)
+
+find_package(Perl QUIET)
+if(NOT PERL_FOUND)
+   #I think this is what this means...
+   message(WARNING "Perl was not found. Some Coupled Cluster test cases will
+not be thoroughly checked.")
+endif()
 
 #Declare each test as a possible test target even though noone will likely
 #want to run individual tests.  In the end makes our job easier
@@ -186,17 +148,25 @@ foreach(Tests2Run ${TestSet})
    file(MAKE_DIRECTORY ${TEST_RUN_DIR})
    set(INPUTFILE ${TEST_SRC_DIR}/input.dat)
    set(OUTFILE ${TEST_RUN_DIR}/output.dat)
-   set(AUTOTEST 'true')
+   set(AUTOTEST false)
+
+   list(FIND AutoTestSubjects ${Tests2Run} InThrall)
+   if(NOT(${InThrall} EQUAL -1) AND ${PERL_FOUND})
+     set(AUTOTEST true)
+   endif()
    add_test(
       NAME ${Tests2Run}
       WORKING_DIRECTORY ${TEST_RUN_DIR}
-      COMMAND perl ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${OUTFILE} ${PSIEXE})
+      COMMAND ${PYTHON_EXECUTABLE} ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${PROJECT_SOURCE_DIR} ${OUTFILE} ${PSIEXE})
+   add_custom_target(${Tests2Run} ${CMAKE_CTEST_COMMAND} -R ${Tests2Run})
+   set_tests_properties(${Tests2Run} PROPERTIES DEPENDS 
+   ${CMAKE_BINARY_DIR}/bin/psi4)
    #In theory would like to make sure all tests run in parallel as well
    #but....most do not right now...
    if( MPI_FOUND AND FALSE)
      add_test(
         NAME MPI-${Tests2Run}
         WORKING_DIRECTORY ${RUNDIR}
-        COMMAND mpirun -n 2 perl ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${OUTFILE} ${PSIEXE})
+        COMMAND mpirun -n 2 ${PYTHON_EXECUTABLE} ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${PROJECT_SOURCE_DIR} ${OUTFILE} ${PSIEXE})
     endif()
 endforeach(Tests2Run)
