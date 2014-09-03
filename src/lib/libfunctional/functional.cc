@@ -22,7 +22,7 @@
 
 #include "functional.h"
 #include <psi4-dec.h>
-
+#include "libparallel/ParallelPrinter.h"
 namespace psi {
 
 Functional::Functional()

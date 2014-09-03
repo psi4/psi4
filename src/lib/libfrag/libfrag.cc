@@ -39,6 +39,7 @@
 #include "libciomr/libciomr.h"
 #include "MBEFrag.h"
 #include "libparallel/TableSpecs.h"
+#include "libparallel/ParallelScanner.h"
 
 typedef std::vector<int> SVec;
 typedef std::string str;
@@ -54,8 +55,6 @@ typedef MBEFrag* pSet;
 typedef std::vector<pSet> FragSet;
 typedef boost::shared_ptr<Embedder> ShareEmbed;
 
-ShareEmbed LibFragHelper::EmbedFactory_=ShareEmbed();
-
 //Handy template for switching python things to c++ things
 template <typename T, typename S>
 void ToC(T& cvalue, S& pyvalue) {
@@ -70,10 +69,10 @@ LibFragHelper::~LibFragHelper(){
    tstop();
 }
 
-PyList baseGetCall(cint NMer, cint N, std::vector<NMerSet>& Systems,
+PyList baseGetCall(cint NMer, cint N, std::vector<MBEFragSet>& Systems,
       bool IsGhost) {
    PyList DaList;
-   SharedFrag DaNMer=(Systems[NMer])[N];
+   boost::shared_ptr<const MBEFrag> DaNMer=(Systems[NMer])[N];
    if(IsGhost){
       for (int i=0; i<DaNMer->Ghosts().size(); i++)
          DaList.append(DaNMer->Ghosts()[i]);
@@ -98,20 +97,17 @@ void LibFragHelper::GatherData() {
       MOFiles_.push_back(psi::MOFile());
       MOFiles_.back().Read();
    }
-   if (EmbedFactory_) {
-      ChargeSets_.push_back(
-            psi::Process::environment.wavefunction()->atomic_point_charges());
-   }
-
+   ChargeSets_.push_back(
+            Process::environment.wavefunction()->atomic_point_charges());
 }
 int LibFragHelper::Iterate(cint itr) {
-   return (EmbedFactory_ ? EmbedFactory_->Iterate(itr) : false);
+   return Systems_[0].EmbedFactory()->Iterate(itr);
 }
 
 void LibFragHelper::WriteMOs(cint N, cint x) {
    if (!this->IsGMBE()) {
       if (N>0) {
-         SharedFrag nmer=Systems_[N][x];
+         boost::shared_ptr<const MBEFrag> nmer=Systems_[N][x];
          psi::MOFile File2Write(MOFiles_[nmer->ParentI(0)]);
          for (int i=1; i<=N; i++) {
             int frag=nmer->ParentI(i);
@@ -137,57 +133,28 @@ void LibFragHelper::Fragment_Helper(PyStr& FragMethod, cint N,
          new LibFragOptions(N,fname,ename,cname,bname));
    DaOptions_->PrintOptions();
    SharedMol AMol=psi::Process::environment.molecule();
-   Systems_.push_back(NMerSet());
-
-   ///Fragment the system
-   boost::shared_ptr<Fragmenter> FragFactory=
-         DaOptions_->FOptions().MakeFactory(AMol);
-   FragProps FProp=FragFactory->Fragment(AMol, Systems_[0]);
+   Systems_.push_back(MBEFragSet(DaOptions_,AMol));
 
    ///Set-up either a MBE or a GMBE based on whether frags are disjoint
    Expansion_=(
-         FProp.Disjoint_ ? boost::shared_ptr<GMBE>(new MBE(N)) :
+         Systems_[0].Disjoint() ? boost::shared_ptr<GMBE>(new MBE(N)) :
                boost::shared_ptr<GMBE>(new GMBE(N)));
 
-   ///If the user wants a one-body GMBE calc, we hack a bit here and add
-   ///the intersections into the fragments
-   if (Expansion_->IsGMBE()&&N==1) {
-      Systems_.push_back(Systems_[0]);
-      Expansion_->MakeIntersections(Systems_);
-      Systems_[0]=Systems_[1];
-      Systems_[0].insert(Systems_[0].end(), Systems_[2].begin(),
-            Systems_[2].end());
+   if(!Systems_[0].Disjoint()){
+      (*outfile)<<"Warning!!!! GMBE is in zeta testing (before alpha testing)"
+                <<" i.e. it's here, because I plan on having it, but I haven't"
+                <<" tested it yet, like at all.  You probably shouldn't use it."
+                <<std::endl;
    }
 
-   ///If we broke bonds add some caps
-   if (FProp.Severed_) {
-      boost::shared_ptr<Capper> CapFactory=
-            DaOptions_->COptions().MakeFactory(AMol);
-      CapFactory->MakeCaps(Systems_[0]);
-   }
-
-   ///If the user wants embedding, anything that's not a cap or an atom is
-   ///a charge
-   EmbedFactory_=DaOptions_->EOptions().MakeFactory(AMol);
-
-   ///Actual embedding of the monomers is done in synchronize, as this is
-   ///the first time we have the charges/densities
-
-   ///Add in any BSSE corrections we may need
-   boost::shared_ptr<BSSEer>BSSEFactory=
-         DaOptions_->BOptions().MakeFactory(AMol);
-
-   ///Caps and real atoms are real, embedding and ghost atoms are ghosts
-   ///in particular this means we have ghost atoms, literally on top of
-   ///point charges, this needs tested...
-   if (BSSEFactory) BSSEFactory->AddBSSEJobs(Systems_[0]);
 }
 
 PyList LibFragHelper::Embed_Helper(cint N, cint x) {
+
    PyList DaList;
-   if (EmbedFactory_) {
-      if (EmbedFactory_->HaveCharges()) {
-         SharedFrag NMer=Systems_[N][x];
+   if(DaOptions_->EOptions().Method()!=NO_EMBED){
+      if (Systems_[N].EmbedFactory()->HaveCharges()) {
+         boost::shared_ptr<const MBEFrag> NMer=Systems_[N][x];
          for (int i=0; i<NMer->Charges().size(); i++)
             DaList.append(NMer->Charges()[i]);
       }
@@ -197,7 +164,7 @@ PyList LibFragHelper::Embed_Helper(cint N, cint x) {
 
 str LibFragHelper::Cap_Helper(int order, int frag) {
    std::stringstream caps;
-   SharedFrag Frag=Systems_[order][frag];
+   boost::shared_ptr<const MBEFrag> Frag=Systems_[order][frag];
    for (int i=0; i<Frag->Caps().size(); i++){
       int ActualCap=Frag->Caps()[i];
       caps<<Frag->Caps().Object(ActualCap)->print_out();
@@ -217,8 +184,10 @@ GMatrix ExtractEnergies(PyList& Energies){
    return energies;
 }
 
-void LibFragHelper::PrintEnergy(PyList& Energies,const int N){
+void LibFragHelper::PrintEnergy(PyList& Energies,const int N,PyStr& Name){
    GMatrix energies=ExtractEnergies(Energies);
+   std::string RealName;
+   ToC(RealName,Name);
    std::vector<std::string> Titles;
    if(N==1) Titles.push_back("Monomer #");
    else{
@@ -226,7 +195,7 @@ void LibFragHelper::PrintEnergy(PyList& Energies,const int N){
       temp<<N<<"-Mer #";
       Titles.push_back(temp.str());
    }
-   Titles.push_back("Energy (a.u.)");
+   Titles.push_back(RealName+" (a.u.)");
    std::vector<std::string> Parents;
    int NRows=Systems_[N-1].size();
    for(int i=0;i<NRows;i++){
@@ -240,34 +209,25 @@ void LibFragHelper::PrintEnergy(PyList& Energies,const int N){
 }
 
 
-double LibFragHelper::CalcEnergy(PyList& Energies,bool IsCorr) {
+double LibFragHelper::CalcEnergy(PyList& Energies,PyStr& Name) {
    GMatrix energies=ExtractEnergies(Energies);
-   return Expansion_->Energy(Systems_, energies,IsCorr);
+   std::string RealName;
+   ToC(RealName,Name);
+   return Expansion_->Energy(Systems_, energies,RealName);
 }
-
-//bool LibFragHelper::SelfIntOff() {
- //  return (EmbedFactory);
-//}
 
 void LibFragHelper::NMer_Helper(cint N) {
    DaOptions_->MBEOrder_=N;
    Expansion_->SetN(N);
-   if (!Expansion_->IsGMBE()) {
-      Expansion_->MakeIntersections(Systems_);
-      Systems_.push_back(NMerSet());
-      Expansion_->MakeNmers(Systems_[0], Systems_.back());
+   if (Expansion_->IsGMBE())
+      Systems_.push_back(MBEFragSet(Systems_[0],N));
+   else{
+      for(int i=2;i<=N;i++)
+         Systems_.push_back(MBEFragSet(Systems_[0],i));
    }
-   else {	//We make the n-Mers first for the GMBE
-      Systems_.push_back(NMerSet());
-      Expansion_->MakeNmers(Systems_[0], Systems_.back());
-      Expansion_->MakeIntersections(Systems_);
-   }
-
 }
 
-int LibFragHelper::IsGMBE() {
-   return Expansion_->IsGMBE();
-}
+int LibFragHelper::IsGMBE() {return Expansion_->IsGMBE();}
 
 void LibFragHelper::BroadCastWrapper(cint i, cint j, str& comm,
       MOtype& tempfiles, GMatrix& tempChargeSets, bool bcast) {
@@ -279,7 +239,7 @@ void LibFragHelper::BroadCastWrapper(cint i, cint j, str& comm,
       tempfiles.push_back(psi::MOFile());
       tempfiles.back().Receive(comm, i);
    }
-   if (EmbedFactory_) {
+   if (DaOptions_->EOptions().Method()!=NO_EMBED) {
       int natoms=Systems_[0][tempfiles.size()]->Atoms().size();
       if (bcast) {
          psi::WorldComm->bcast(&(ChargeSets_[j][0]), natoms, i, comm);
@@ -299,14 +259,15 @@ void LibFragHelper::Synchronize(boost::python::str& Comm, cint N, cint itr) {
    bool Parallel=(psi::WorldComm->nproc(comm)>1);
    if (N==0) {
       if (UpdateCharges) {
+         boost::shared_ptr<Embedder> EmbedFactory=Systems_[0].EmbedFactory();
          for (int frag=0; frag<Systems_[0].size(); frag++) {
             for (int atom=0; atom<Systems_[0][frag]->Atoms().size(); atom++) {
                int atomI=Systems_[0][frag]->Atoms()[atom];
-               EmbedFactory_->SetCharge(atomI, ChargeSets_[frag][atom]);
+               EmbedFactory->SetCharge(atomI, ChargeSets_[frag][atom]);
             }
          }
-         EmbedFactory_->print_out();
-         EmbedFactory_->Embed(Systems_[0]);
+         EmbedFactory->print_out();
+         Systems_[0].Embed();
       }
       if (itr>=1) {
          ///Update our fragment MO coefficients (we've been putting the new

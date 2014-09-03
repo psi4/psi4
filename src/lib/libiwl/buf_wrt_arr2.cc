@@ -29,7 +29,7 @@
 #include <libciomr/libciomr.h>
 #include "iwl.h"
 #include "iwl.hpp"
-
+#include "libparallel/ParallelPrinter.h"
 namespace psi {
   
 void IWL::write_array2(double *arr, int p, int q, int *rlist, int *slist, int size, 

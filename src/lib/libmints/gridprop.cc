@@ -29,7 +29,7 @@
 #include <libciomr/libciomr.h>
 #include <psi4-dec.h>
 #include <physconst.h>
-
+#include "libparallel/ParallelPrinter.h"
 #ifdef _OPENMP
 #include <omp.h>
 #endif

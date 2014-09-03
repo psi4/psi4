@@ -27,6 +27,7 @@
 
 #include "print.h"
 #include "psi4-dec.h"
+#include "libparallel/ParallelPrinter.h"
 namespace opt {
 
 

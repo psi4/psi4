@@ -26,7 +26,7 @@
 */
 #include <cstdio>
 #include "dpd.h"
-
+#include "libparallel/ParallelPrinter.h"
 namespace psi {
 
 /* dpd_file2_print(): Prints out data for all irreps of a two-index dpdfile.

@@ -27,6 +27,9 @@
 #include <vector>
 namespace psi {
 namespace LibFrag {
+
+enum MBEProps{MBE_ENERGY,MBE_DENSITY};
+
 /** \brief Fragments in the (G)MBE are comprised of atoms, caps, ghosts, and
  *   charges
  *
@@ -77,17 +80,33 @@ class MBEFrag {
       CartSet<SharedCap> Caps_;
       Set<SharedCharge> Charges_;
       Set<SharedGhost> Ghosts_;
-      std::vector<int> Parents;
-      int MBEOrder;
-
+      std::vector<int> Parents_;
+      int MBEOrder_;
+      /** \brief The number of times this fragment appears
+       *
+       *  For fragments that use the MBE this will always be 1, unless
+       *  the system is symmetric.  If the system is symmetric this will
+       *  be the number of identical occurrences of this fragment.  In
+       *  particular note that this means that it is not equal to the
+       *  binomial coefficient and sign of each term in the MBE, the thought
+       *  being we plan on returning the value of the property for all
+       *  orders lower than or equal to the current order so the coefficient
+       *  and sign changes.
+       *
+       *  TODO: Account for symmetry
+       *  (Note: Symmetry doesn't actually work right now).
+       *
+       *  For the GMBE this will be the fragment/intersection's signed
+       *  coefficent.  This is because I do not know a formula that allows
+       *  me to recursively find the value of the property for all lower
+       *  orders at the time of writing.
+       */
+      int Mult_;
+      //std::map<MBEProps,Property> Properties_;
    public:
       /** \brief Accessors for the atoms,caps, ghosts, and
        *   charges.
        *
-       *   If this MBEFrag doesn't have atoms, caps, charges, or
-       *   ghosts the returned shared_ptr will evaluate to false.
-       *   The top four take care of the boost symantics of upcasting
-       *   for you.
        *
        */
       //@{
@@ -105,92 +124,40 @@ class MBEFrag {
       }
       //@}
 
-      /** \brief Set operations
-       *
-       * With the exception of the intersection and union operators,
-       * these operations only worry about the atoms part of the
-       * fragment.  For example: this->operator<(other) will return true
-       * if the Atoms contained in this are a proper subset of those in
-       * other.  The status of the other sets can be inferred from this
-       * behavior and your logic should reflect this.
-       *
-       * For the intersection and union operations, the caps, ghosts, and
-       * charges will be updated accordingly.  This means that under
-       * union, the charges/ghosts will be the set difference
-       * between the charges/ghosts in this and the atoms in other (taking
-       * away caps/ghosts that are now atoms).  We have to check the
-       * union of the caps manually
-       *
-       * For intersection, charges/ghosts are the union less
-       * whatever atoms survive the intersection.  The search space for
-       * caps is again the union of the caps, and needs checked manually.
-       */
-      //@{
-      bool operator<(const MBEFrag& other) {
-         return this->Atoms_<other.Atoms_;
+      int Mult()const{return Mult_;}
+      int GetMBEOrder()const {
+         return MBEOrder_;
       }
-      bool operator>(const MBEFrag& other) {
-         return this->Atoms_>other.Atoms_;
-      }
-      bool operator==(const MBEFrag& other) {
-         return this->Atoms_==other.Atoms_;
-      }
-      bool operator<=(const MBEFrag& other) {
-         return this->Atoms_<=other.Atoms_;
-      }
-      bool operator>=(const MBEFrag& other) {
-         return this->Atoms_>=other.Atoms_;
-      }
-      bool operator!=(const MBEFrag& other) {
-         return this->Atoms_!=other.Atoms_;
-      }
-      void operator*=(const MBEFrag& other);
-      void operator/=(const MBEFrag& other);
-      MBEFrag operator*(const MBEFrag& other) {
-         MBEFrag temp(*this);
-         temp*=other;
-         return temp;
-      }
-      MBEFrag operator/(const MBEFrag& other) {
-         MBEFrag temp(*this);
-         temp/=other;
-         return temp;
-      }
-      //@}
-
-      int GetMBEOrder() {
-         return MBEOrder;
-      }
-      int ParentI(const int I) {
-         return Parents[I];
+      int ParentI(const int I) const{
+         return Parents_[I];
       }
       void SetMBEOrder(const int N) {
-         MBEOrder=N;
+         MBEOrder_=N;
       }
 
       void SetParents(const int* Ps) {
-         Parents.clear();
-         for (int i=0; i<MBEOrder; i++)
-            Parents.push_back(Ps[i]);
+         Parents_.clear();
+         for (int i=0; i<MBEOrder_; i++)
+            Parents_.push_back(Ps[i]);
       }
 
-      std::string PrintParents() {
+      std::string PrintParents()const {
          std::stringstream parents;
-         for (int i=0; i<MBEOrder; i++)
-            parents<<Parents[i]<<" ";
+         for (int i=0; i<MBEOrder_; i++)
+            parents<<Parents_[i]<<" ";
          return parents.str();
       }
 
-      MBEFrag(const int MBEOrder_=0, const int *Parents_=NULL) :
-            MBEOrder(MBEOrder_) {
-         if (Parents_!=NULL) SetParents(Parents_);
+      MBEFrag(const int MBEOrder=0, const int *Parents=NULL,const int Mult=1) :
+            MBEOrder_(MBEOrder), Mult_(Mult) {
+         if (Parents!=NULL) SetParents(Parents);
       }
 
       MBEFrag(const MBEFrag& other) {
          Copy(other);
       }
 
-      MBEFrag& operator=(const MBEFrag& other) {
+      const MBEFrag& operator=(const MBEFrag& other) {
          if (this!=&other) Copy(other);
          return *this;
       }

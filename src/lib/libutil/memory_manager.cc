@@ -30,7 +30,7 @@
 #include <libciomr/libciomr.h>
 #include "psi4-dec.h"
 #include "memory_manager.h"
-
+#include "libparallel/ParallelPrinter.h"
 namespace psi{
 
 using namespace std;

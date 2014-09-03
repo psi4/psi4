@@ -28,6 +28,7 @@
  
 #include <cstdio>
 #include "psi4-dec.h"
+#include "libparallel/ParallelPrinter.h"
 namespace psi {
 
 /*!

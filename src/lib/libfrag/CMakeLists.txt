@@ -1,5 +1,4 @@
-set(libfragsrc LibFragTypes.h
-		       Fragmenter.h
+set(libfragsrc Fragmenter.h
                FragOptions.h
                BSSEer.h
                Embedder.h
@@ -10,6 +9,8 @@ set(libfragsrc LibFragTypes.h
                MBE.h
                MBEFrag.h
                MBEFrag.cc
+               MBEFragSet.h
+               MBEFragSet.cc
                Set.h
                AtomSet.h
                Fragmenter.cc
@@ -23,4 +24,5 @@ set(libfragsrc LibFragTypes.h
                Capper.cc
                AtomSet.cc
 )
-add_library(frag STATIC ${libfragsrc})               
+add_library(frag STATIC ${libfragsrc})  
+target_link_libraries(frag parallel)             

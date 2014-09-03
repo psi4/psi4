@@ -58,11 +58,6 @@ endforeach()
 # Psi4 configuration
 #
 set(PSI_VERSION \"4.0\")
-set(psi4datadir \"${CMAKE_INSTALL_PREFIX}/lib\")
-set(top_srcdir \"${PROJECT_SOURCE_DIR}\")
-set(top_objdir \"${PROJECT_BINARY_DIR}\")
-
-#set(PSI_VERSION "4.0")
 set(PACKAGE_VERSION "4.0git")
 set(PACKAGE_NAME "Psi")
 set(PACKAGE_STRING "${PACKAGE_NAME} ${PACKAGE_VERSION}")
@@ -90,19 +85,7 @@ endif()
 #
 if(DEFINED USEMPI)
    find_package(MPI REQUIRED)
-   #This checks if we have the wrapper compilers, not just MPI
-   #it's too much work compiling without the wrapper compilers
-   string(COMPARE EQUAL "${MPI_C_COMPILER}" "${CMAKE_C_COMPILER}" HAVE_MPI_C_COMPILER)
-   string(COMPARE EQUAL "${MPI_CXX_COMPILER}" "${CMAKE_CXX_COMPILER}" HAVE_MPI_CXX_COMPILER)
-   #message("${HAVE_MPI_C_COMPILER}")
-   #message("${HAVE_MPI_CXX_COMPILER}")
-   #message("${MPI_CXX_COMPILER} ${CMAKE_CXX_COMPILER}")
-   if(${HAVE_MPI_C_COMPILER} AND ${HAVE_MPI_CXX_COMPILER})   
-       add_definitions(-DHAVE_MPI)
-   else()
-       message(FATAL_ERROR "MPI was found on your system, but you did not
-specify the MPI wrapper compilers.  Please use the MPI Compiler Wrappers")
-   endif()
+   add_definitions(-DHAVE_MPI)
 endif()
 
 include(CheckIncludeFiles)
@@ -131,7 +114,6 @@ if(CMAKE_Fortran_COMPILER)
        add_definitions(-DHAVE_ERD)
     endif()
 endif()
-configure_file(include/psiconfig.h.cmake.in include/psiconfig.h)
 
 # Is this needed for the script?
 # TODO: Fix gitversion.py to work without setting top_srcdir...maybe use 
@@ -354,6 +336,22 @@ add_subdirectory(src)
 # Add the library directory, for install purposes
 #
 add_subdirectory(lib)
+
+#
+# Handle creation of Makefile for plugins
+#
+get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
+get_property(defs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY COMPILE_DEFINITIONS)
+foreach(dir ${dirs})
+    set(PLUGIN_INCLUDE_DIRECTORIES "-I${dir} ${PLUGIN_INCLUDE_DIRECTORIES}")
+endforeach()
+foreach(def ${defs})
+    set(PLUGIN_DEFINES "-D${def} ${PLUGIN_DEFINES}")
+endforeach()
+string(STRIP ${CMAKE_CXX_FLAGS} CMAKE_CXX_FLAGS)
+string(STRIP ${PLUGIN_INCLUDE_DIRECTORIES} PLUGIN_INCLUDE_DIRECTORIES)
+string(STRIP ${PLUGIN_DEFINES} PLUGIN_DEFINES)
+configure_file(include/psiconfig.h.cmake.in include/psiconfig.h)
 
 #
 # Echo the directory information back

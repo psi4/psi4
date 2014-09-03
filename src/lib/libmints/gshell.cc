@@ -30,7 +30,7 @@
 
 #include <psiconfig.h>
 #include <psi4-dec.h>
-
+#include "libparallel/ParallelPrinter.h"
 using namespace psi;
 
 ShellInfo::ShellInfo(int am, const std::vector<double> &c,

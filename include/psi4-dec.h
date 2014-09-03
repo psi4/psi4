@@ -33,6 +33,7 @@
 #include <libmints/typedefs.h>
 #include "libparallel/local.h"
 #include "libparallel/mpi_wrapper.h"
+
 #include "process.h"
 
 
@@ -63,8 +64,9 @@ extern std::string restart_id;
 extern boost::shared_ptr<worldcomm> WorldComm;
 void die_if_not_converged();
 }
-//I know this is weird, but I need WorldComm in ParallelPrinter.h
-#include "libparallel/ParallelPrinter.h"
+//I know this is a weird place for an include, but I need WorldComm in
+//StreamBase
+#include "libparallel/PsiOutStream.h"
 namespace psi{
    extern boost::shared_ptr<PsiOutStream> outfile;
 }

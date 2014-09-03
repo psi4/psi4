@@ -32,7 +32,7 @@
 #include <libqt/qt.h>
 #include <psifiles.h>
 #include <physconst.h>
-
+#include "libparallel/ParallelPrinter.h"
 namespace psi  {
 
 /*

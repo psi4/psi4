@@ -31,11 +31,13 @@ def Done():
     del lfrag
 
 
-def RunCalc(name,molecule,atoms,caps,charges,ghosts,Egys,CEgys,**kwargs):
+def RunCalc(name,molecule,atoms,caps,charges,ghosts,Egys,CEgys,N,**kwargs):
     old_geom=molecule.save_string_xyz()
     temp_geom=old_geom.split('\n')
     new_geom=[]
     qmmm=QMMM()
+    dfscfbasis=psi4.get_global_option('DF_BASIS_SCF')
+    dfccbasis=psi4.get_global_option('DF_BASIS_CC')
     for i in range(0,len(charges)/4):
         qmmm.addChargeBohr(charges[i*4],charges[i*4+1],
                               charges[i*4+2],charges[i*4+3])
@@ -54,19 +56,20 @@ def RunCalc(name,molecule,atoms,caps,charges,ghosts,Egys,CEgys,**kwargs):
     frag=geometry(fragstr)
     activate(frag)
     frag.update_geometry()
-    Egys.append(energy(name,**kwargs))
-    cegy=psi4.get_variable('CURRENT CORRELATION ENERGY')
-    thresh=0.0000001
-    #I don't think the correlation energy can be posititve, but...
-    if(cegy>thresh or cegy<(-1*thresh)):
-        CEgys.append(cegy)
+    if(not ((dfscfbasis == '') or (dfscfbasis == 'NONE'))):
+        psi4.set_global_option('DF_BASIS_SCF',dfscfbasis)
+    if(not ((dfccbasis == '') or (dfccbasis == 'NONE'))):
+        psi4.set_global_option('DF_BASIS_CC',dfccbasis)
+    Egys[N].append(energy(name,**kwargs))
+    for k,v in CEgys.iteritems():
+        CEgys[k][N].append(psi4.get_variable(k))
     if(len(charges)>=4):
         psi4.set_global_option_python("EXTERN", None)
     oep=psi4.OEProp()
     oep.add("MULLIKEN_CHARGES")
     oep.compute()
     activate(molecule)
-    molecule.update_geometry
+    molecule.update_geometry()
 
 #This call is incharge of setting up basic MPI stuff
 
@@ -98,7 +101,7 @@ def Magic(frag,N,Egys,CEgys,name,molecule,**kwargs):
     if((N!=0 and lfrag.IsGMBE()==0) or len(charges)>=4):
         lfrag.WriteMOs(N,frag)
         psi4.set_global_option("GUESS","READ")
-    RunCalc(name,molecule,atoms,caps,charges,ghosts,Egys,CEgys,**kwargs)
+    RunCalc(name,molecule,atoms,caps,charges,ghosts,Egys,CEgys,N,**kwargs)
     if(N==0):
         lfrag.GatherData()
         psi4.set_global_option("GUESS",oldguess)
@@ -116,12 +119,14 @@ def BaseCall(name,molecule,size,Egys,CEgys,i,SuppressPrint,itr,**kwargs):
     [mystart,myend,remainder]=DoMPI(PMan,size)
     for x in range(mystart,myend):
         Magic(x,i,Egys,CEgys,name,molecule,**kwargs)
-    PMan.all_gather(Egys,old_comm)
-    PMan.all_gather(CEgys,old_comm)
+    PMan.all_gather(Egys[i],old_comm)
+    for k,v in CEgys.iteritems():
+        PMan.all_gather(CEgys[k][i],old_comm)
     offset=size-remainder
     for x in range(0,remainder):
-        Egys.append(0)
-        CEgys.append(0)
+        Egys[i].append(0)
+        for k,v in CEgys.iteritems():
+            CEgys[k][i].append(0)
     #Last element in the list is the value
     for x in range(0,remainder):
         if PMan.me(old_comm)==x:
@@ -131,16 +136,22 @@ def BaseCall(name,molecule,size,Egys,CEgys,i,SuppressPrint,itr,**kwargs):
         #Has to be a list...
         value=[]
         cvalue=[]
+        
         if PMan.me(old_comm)==x:
-            value.append(Egys.pop())
-            cvalue.append(CEgys.pop())
+            value.append(Egys[i].pop())
+            for k,v in CEgys.iteritems():
+                cvalue.append(CEgys[k][i].pop())
         else:
             value.append(0)
-            cvalue.append(0)
+            for k,v in CEgys.iteritems():
+                cvalue.append(0)
         PMan.bcast(value,x,old_comm)
         PMan.bcast(cvalue,x,old_comm)
-        Egys[offset+x]=value[0]
-        CEgys[offset+x]=cvalue[0]
+        Egys[i][offset+x]=value[0]
+        index=0
+        for k,v in CEgys.iteritems():
+            CEgys[k][i][offset+x]=cvalue[index]
+            index=index + 1
     lfrag.Sync(old_comm,i,itr)
     PMan.free_comm(PMan.CurrentComm())
     if(SuppressPrint):
@@ -163,13 +174,14 @@ def fragment(name,molecule,Egys,CEgys,SuppressPrint,**kwargs):
         while (not done): 
             if(itr>=1):
                 #Reset energies
-                del Egys[:]
-                del CEgys[:]
+                del Egys[0][:]
+                for k,v in CEgys.iteritems():
+                    del CEgys[v][0][:]
             BaseCall(name,molecule,size,Egys,CEgys,0,SuppressPrint,itr,**kwargs)
             if(lfrag.Iterate(itr)==0):
                 done=True
             itr=itr+1
-        lfrag.PrintEnergies([Egys],1)
+        lfrag.PrintEnergies(Egys,1,'Total Energy')
 
     
 def nmers(name,molecule,N,Egys,CEgys,SuppressPrint,**kwargs):
@@ -178,9 +190,10 @@ def nmers(name,molecule,N,Egys,CEgys,SuppressPrint,**kwargs):
     while lfrag.GetNNMers(i)!=0:
         NNMers=lfrag.GetNNMers(i)
         Egys.append([])
-        CEgys.append([])
-        BaseCall(name,molecule,NNMers,Egys[i],CEgys[i],i,SuppressPrint,0,**kwargs)
-        lfrag.PrintEnergies(Egys,i+1)
+        for k,v in CEgys.iteritems():
+            CEgys[k].append([])
+        BaseCall(name,molecule,NNMers,Egys,CEgys,i,SuppressPrint,0,**kwargs)
+        lfrag.PrintEnergies(Egys,i+1,'Total Energy')
         i+=1
        
 def SystemEnergy(Egys,IsCorr):

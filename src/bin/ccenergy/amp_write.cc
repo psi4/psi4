@@ -32,6 +32,7 @@
 #include "Params.h"
 #define EXTERN
 #include "globals.h"
+#include "libparallel/ParallelPrinter.h"
 
 namespace psi { namespace ccenergy {
 

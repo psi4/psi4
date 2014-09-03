@@ -36,6 +36,7 @@ void FragOptions::SetDefaults(){
    Methods_[USER_DEFINED]="User Defined";
    Methods_[BOND_BASED]="Bond Based";
    Methods_[DISTANCE_BASED]="Distance Based";
+   Converter_["none"]=USER_DEFINED;
    Converter_["user_defined"]=USER_DEFINED;
    Converter_["ud"]=USER_DEFINED;
    Converter_["user"]=USER_DEFINED;
@@ -93,6 +94,7 @@ boost::shared_ptr<Embedder> EmbedOptions::MakeFactory(SharedMol& AMol)const{
    boost::shared_ptr<Embedder> Factory;
    switch(DaMethod_){
       case(NO_EMBED):{
+         Factory=boost::shared_ptr<Embedder>(new NullEmbedder());
          break;
       }
       case(POINT_CHARGE):{
@@ -170,6 +172,7 @@ boost::shared_ptr<BSSEer> BSSEOptions::MakeFactory(SharedMol& AMol)const{
    boost::shared_ptr<BSSEer> BSSEFactory;
    switch(DaMethod_){
       case(NO_BSSE):{
+         BSSEFactory=boost::shared_ptr<NullBSSE>(new NullBSSE());
          break;
       }
       case(FULL):{

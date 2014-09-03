@@ -26,7 +26,7 @@
 #include "points.h"
 #include "cubature.h"
 #include "psiconfig.h"
-
+#include "libparallel/ParallelPrinter.h"
 namespace psi {
 
 RKSFunctions::RKSFunctions(boost::shared_ptr<BasisSet> primary, int max_points, int max_functions) :

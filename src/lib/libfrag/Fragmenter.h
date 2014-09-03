@@ -103,9 +103,17 @@ class Fragmenter{
 
       virtual FragProps FragmentImpl(SharedMol& Mol2Frag,
             GroupType& Monomers)=0;
+
+      ///If fragments are non-disjont this function appends the intersections
+      void MakeIntersections(NMerSet& NMers)const;
    public:
         ///Returns properties of resulting fragments
 		FragProps Fragment(SharedMol& Mol2Frag,NMerSet& Fragments);
+
+		///Function that tells the Fragmenter to make NMers
+		void MakeNMers(const NMerSet& Monomers,const int N, NMerSet& NMers,
+		      bool Disjoint);
+
 		virtual ~Fragmenter(){}
 };
 

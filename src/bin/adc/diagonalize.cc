@@ -21,6 +21,7 @@
  */
 
 #include "psi4-dec.h"
+#include "libparallel/ParallelPrinter.h"
 #include <liboptions/liboptions.h>
 #include <libpsio/psio.h>
 #include <libtrans/integraltransform.h>

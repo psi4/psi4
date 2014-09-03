@@ -32,7 +32,7 @@
 #include <cmath>
 #include <libciomr/libciomr.h>
 #include "qt.h"
-
+#include "libparallel/ParallelPrinter.h"
 namespace psi {
 
 #define SMALL_DET 1.0E-10

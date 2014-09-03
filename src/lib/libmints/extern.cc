@@ -25,7 +25,7 @@
 
 #include "mints.h"
 #include "extern.h"
-
+#include "libparallel/ParallelPrinter.h"
 using namespace boost;
 using namespace psi;
 
