@@ -87,8 +87,12 @@ if(DEFINED USEMPI)
    find_package(MPI REQUIRED)
    #This checks if we have the wrapper compilers, not just MPI
    #it's too much work compiling without the wrapper compilers
-   if((MPI_CXX_COMPILER EQUAL CMAKE_CXX_COMPILER) AND 
-      (MPI_C_COMPILER EQUAL CMAKE_C_COMPILER))   
+   string(COMPARE EQUAL "${MPI_C_COMPILER}" "${CMAKE_C_COMPILER}" HAVE_MPI_C_COMPILER)
+   string(COMPARE EQUAL "${MPI_CXX_COMPILER}" "${CMAKE_CXX_COMPILER}" HAVE_MPI_CXX_COMPILER)
+   #message("${HAVE_MPI_C_COMPILER}")
+   #message("${HAVE_MPI_CXX_COMPILER}")
+   #message("${MPI_CXX_COMPILER} ${CMAKE_CXX_COMPILER}")
+   if(${HAVE_MPI_C_COMPILER} AND ${HAVE_MPI_CXX_COMPILER})   
        add_definitions(-DHAVE_MPI)
    else()
        message(FATAL_ERROR "MPI was found on your system, but you did not
@@ -203,8 +207,10 @@ else()
 endif()
 set(PYCONFIG ${PYTHON_EXECUTABLE}-config)
 execute_process(COMMAND ${PYCONFIG} --ldflags  OUTPUT_VARIABLE PYTHON_LIBRARIES OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND ${PYCONFIG} --include  OUTPUT_VARIABLE PYTHON_INCLUDE_DIRS OUTPUT_STRIP_TRAILING_WHITESPACE)
-# Turn the flags into proper lists
+execute_process(COMMAND ${PYCONFIG} --includes  OUTPUT_VARIABLE PYTHON_INCLUDE_DIRS OUTPUT_STRIP_TRAILING_WHITESPACE)
+# Strip leading whitespace & turn the flags into proper lists
+string(STRIP ${PYTHON_INCLUDE_DIRS} PYTHON_INCLUDE_DIRS)
+string(STRIP ${PYTHON_LIBRARIES} PYTHON_LIBRARIES)
 string(REPLACE "-I" "" PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIRS})
 string(REPLACE " " ";" PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIRS})
 
