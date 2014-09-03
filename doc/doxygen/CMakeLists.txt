@@ -28,15 +28,18 @@ foreach(mssg ${STRINGS2FIND})
 endforeach(mssg)
 
 #Write the new contents into a new doxygen file
-FILE(WRITE doxygen.cfg ${FILE_CONTENT})
+set(DOXY_OUT_DIR ${CMAKE_BINARY_DIR}/doc/doxygen)
+FILE(MAKE_DIRECTORY ${DOXY_OUT_DIR})
+set(DOXY_OUT_FILE ${DOXY_OUT_DIR}/doxygen.cfg)
+FILE(WRITE ${DOXY_OUT_FILE} ${FILE_CONTENT})
 
 find_package(Doxygen QUIET)
 if(DOXYGEN_FOUND)
    add_custom_target(doc ${DOXYGEN_EXECUTABLE}
-                         ${CMAKE_CURRENT_SOURCE_DIR}/doxygen.cfg
-                         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/doc/doxygen
+                         ${DOXY_OUT_FILE}
+                         WORKING_DIRECTORY ${DOXY_OUT_DIR}
                          COMMENT "Generating Doxygen code for Psi 4" VERBATIM
 )
-   add_dependencies(doc ${CMAKE_CURRENT_SOURCE_DIR}/doxygen.cfg.in)
+add_dependencies(doc ${CMAKE_CURRENT_SOURCE_DIR}/doxygen.cfg.in)
 endif(DOXYGEN_FOUND)
 
