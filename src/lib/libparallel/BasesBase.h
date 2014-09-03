@@ -22,6 +22,7 @@
 #ifndef STUPIDWORKAROUND_H_
 #define STUPIDWORKAROUND_H_
 
+namespace psi{
 ///I needed to syphon off the calls that involve Worldcomm, hence this class
 class BasesBase{
 protected:
@@ -32,7 +33,7 @@ protected:
       bool ImSpecial()const;
 };
 
-
+}
 
 
 #endif /* STUPIDWORKAROUND_H_ */
