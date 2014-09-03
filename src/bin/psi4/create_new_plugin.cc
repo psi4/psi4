@@ -81,7 +81,7 @@ std::string make_filename(const std::string& name)
 namespace psi {
 
 /**
- * 
+ *
  */
 class PluginFileManager{
   protected:
@@ -128,8 +128,13 @@ class PluginFileManager{
         Name[0] = ::toupper(Name[0]);
 
         // Formatted strings, to be substituted in later
-        std::string format_top_srcdir(PSI_TOP_SRCDIR);
-        std::string format_top_objdir(PSI_TOP_OBJDIR);
+        //std::string format_top_srcdir(PSI_TOP_SRCDIR);
+        //std::string format_top_objdir(PSI_TOP_OBJDIR);
+        std::string format_cxx(PLUGIN_CXX);
+        std::string format_defines(PLUGIN_DEFINES);
+        std::string format_flags(PLUGIN_FLAGS);
+        std::string format_includes(PLUGIN_INCLUDES);
+        std::string format_objdir(PLUGIN_OBJDIR);
         std::string format_plugin(plugin_name_);
         std::string format_PLUGIN = boost::algorithm::to_upper_copy(plugin_name_);
 
@@ -153,16 +158,27 @@ class PluginFileManager{
             fclose(fp);
 
             // Search and replace placeholders in the string
-            boost::xpressive::sregex match_format = xpressive::as_xpr("@top_srcdir@");
-            filestring = xpressive::regex_replace(filestring, match_format, format_top_srcdir);
-            match_format = boost::xpressive::as_xpr("@top_objdir@");
-            filestring = xpressive::regex_replace(filestring, match_format, format_top_objdir);
+            boost::xpressive::sregex match_format;
+            //boost::xpressive::sregex match_format = xpressive::as_xpr("@top_srcdir@");
+            //filestring = xpressive::regex_replace(filestring, match_format, format_top_srcdir);
+            //match_format = boost::xpressive::as_xpr("@top_objdir@");
+            //filestring = xpressive::regex_replace(filestring, match_format, format_top_objdir);
             match_format = boost::xpressive::as_xpr("@plugin@");
             filestring = xpressive::regex_replace(filestring, match_format, format_plugin);
             match_format = boost::xpressive::as_xpr("@Plugin@");
             filestring = xpressive::regex_replace(filestring, match_format, Name);
             match_format = boost::xpressive::as_xpr("@PLUGIN@");
             filestring = xpressive::regex_replace(filestring, match_format, format_PLUGIN);
+            match_format = boost::xpressive::as_xpr("@PLUGIN_CXX@");
+            filestring = xpressive::regex_replace(filestring, match_format, format_cxx);
+            match_format = boost::xpressive::as_xpr("@PLUGIN_DEFINES@");
+            filestring = xpressive::regex_replace(filestring, match_format, format_defines);
+            match_format = boost::xpressive::as_xpr("@PLUGIN_FLAGS@");
+            filestring = xpressive::regex_replace(filestring, match_format, format_flags);
+            match_format = boost::xpressive::as_xpr("@PLUGIN_INCLUDES@");
+            filestring = xpressive::regex_replace(filestring, match_format, format_includes);
+            match_format = boost::xpressive::as_xpr("@PLUGIN_OBJDIR@");
+            filestring = xpressive::regex_replace(filestring, match_format, format_objdir);
 
             // Write the new file out
             fp = fopen(target_name.c_str(), "w");
@@ -211,9 +227,9 @@ void create_new_plugin(std::string name, const std::string& template_name)
 
     // Process the files
     PluginFileManager file_manager(plugin_name);
-    //file_manager.add_file("/Makefile.template", "Makefile");
-    file_manager.add_file("/CMakeLists.txt.template","CMakeLists.txt");
-    file_manager.add_file("/input.dat.template", "input.dat");
+    file_manager.add_file("Makefile.template", "Makefile");
+    //file_manager.add_file("CMakeLists.txt.template","CMakeLists.txt");
+    file_manager.add_file("input.dat.template", "input.dat");
     file_manager.add_file("pymodule.py.template", "pymodule.py");
     file_manager.add_file("__init__.py.template", "__init__.py");
     file_manager.add_file("doc.rst.template", "doc.rst");
