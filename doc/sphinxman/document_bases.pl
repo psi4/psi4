@@ -5,11 +5,11 @@ if ($#ARGV == 0) { $DriverPath = $ARGV[0] . "/"; }
 my $BasisFolder = $DriverPath . "../../lib/basis/";
 
 # Create a HTML table for the Trac page
-open(HTML_OUT,">psi4bases.html") or die "I can't write to psi4bases.html\n";
-print_html_topfile ();
+#open(HTML_OUT,">psi4bases.html") or die "I can't write to psi4bases.html\n";
+#print_html_topfile ();
 # Make a LaTeX version for the manual, too
-open(LATEX_OUT,">psi4bases.tex") or die "I can't write to psi4bases.tex\n";
-print_latex_topfile();
+#open(LATEX_OUT,">psi4bases.tex") or die "I can't write to psi4bases.tex\n";
+#print_latex_topfile();
 # Make a RST table for the newest incarnation of the manual, too
 open(RST_OUT,">source/autodoc_psi4bases.rst") or die "I can't write to psi4basis.rst\n";
 print_rst_topfile();
@@ -188,8 +188,8 @@ printf RST_OUT "   $divdash\n   | %-65s | %-6s |", "Basis Set", "PUREAM";
 foreach $element (@HELEM) { print RST_OUT "$SELEM{$element}"; }
 print RST_OUT "\n   $diveqal\n";
 
-print HTML_OUT "<tr><td><big><b>Pople</b></big></td></tr>\n\n";
-print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Pople}} \\\\*\n";
+#print HTML_OUT "<tr><td><big><b>Pople</b></big></td></tr>\n\n";
+#print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Pople}} \\\\*\n";
 printf RST_OUT "   $divdash\n   | %-65s | %6s | %501s |\n   $divdash\n", "**Pople**", "", "";
 @HPOPLE = ("sto-3g.gbs","3-21g.gbs");
 foreach $b (@HGBS) { if ($b =~ /^6-31g.*\.gbs$/) { push(@HPOPLE, $b); } }
@@ -198,16 +198,16 @@ foreach $b (@HGBS) { if ($b =~ /^6-311.*\.gbs$/) { push(@HPOPLE, $b); } }
 foreach $gbs (@HPOPLE) { htmlline($gbs); }
 printf "Auto-documenting basis set files %s\n", "Pople";
 
-print HTML_OUT "<tr><td><big><b>Ahlrichs/Karlsruhe</b></big></td></tr>\n\n";
-print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Ahlrichs/Karlsruhe}} \\\\*\n";
+#print HTML_OUT "<tr><td><big><b>Ahlrichs/Karlsruhe</b></big></td></tr>\n\n";
+#print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Ahlrichs/Karlsruhe}} \\\\*\n";
 printf RST_OUT "   $divdash\n   | %-65s | %6s | %501s |\n   $divdash\n", "**Ahlrichs/Karlsruhe**", "", "";
 @HAHLRICHS = ();
 foreach $b (@HGBS) { if ($b =~ /^def2-.*\.gbs$/) { push(@HAHLRICHS, $b); } }
 foreach $gbs (@HAHLRICHS) { htmlline($gbs); }
 printf "Auto-documenting basis set files %s\n", "Ahlrichs";
 
-print HTML_OUT "<tr><td><big><b>Dunning D&#950;</b></big></td></tr>\n\n";
-print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Dunning D\$\\bm\\zeta\$}} \\\\*\n";
+#print HTML_OUT "<tr><td><big><b>Dunning D&#950;</b></big></td></tr>\n\n";
+#print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Dunning D\$\\bm\\zeta\$}} \\\\*\n";
 printf RST_OUT "   $divdash\n   | %-65s | %6s | %501s |\n   $divdash\n", "**Dunning D-zeta**", "", "";
 @HDDUNNING = ();
 foreach $b (@HGBS) { if ($b =~ /^cc-.*dz.*\.gbs$/) { push(@HDDUNNING, $b); } }
@@ -223,8 +223,8 @@ foreach $b (@HGBS) { if ($b =~ /^jun-cc-.*dpd.*\.gbs$/) { push(@HDDUNNING, $b); 
 foreach $gbs (@HDDUNNING) { htmlline($gbs); }
 printf "Auto-documenting basis set files %s\n", "Dunning double-zeta";
 
-print HTML_OUT "<tr><td><big><b>Dunning T&#950;</b></big></td></tr>\n\n";
-print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Dunning T\$\\bm\\zeta\$}} \\\\*\n";
+#print HTML_OUT "<tr><td><big><b>Dunning T&#950;</b></big></td></tr>\n\n";
+#print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Dunning T\$\\bm\\zeta\$}} \\\\*\n";
 printf RST_OUT "   $divdash\n   | %-65s | %6s | %501s |\n   $divdash\n", "**Dunning T-zeta**", "", "";
 @HTDUNNING = ();
 foreach $b (@HGBS) { if ($b =~ /^cc-.*tz.*\.gbs$/) { push(@HTDUNNING, $b); } }
@@ -242,8 +242,8 @@ foreach $b (@HGBS) { if ($b =~ /^may-cc-.*tpd.*\.gbs$/) { push(@HTDUNNING, $b); 
 foreach $gbs (@HTDUNNING) { htmlline($gbs); }
 printf "Auto-documenting basis set files %s\n", "Dunning triple-zeta";
 
-print HTML_OUT "<tr><td><big><b>Dunning Q&#950;</b></big></td></tr>\n\n";
-print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Dunning Q\$\\bm\\zeta\$}} \\\\*\n";
+#print HTML_OUT "<tr><td><big><b>Dunning Q&#950;</b></big></td></tr>\n\n";
+#print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Dunning Q\$\\bm\\zeta\$}} \\\\*\n";
 printf RST_OUT "   $divdash\n   | %-65s | %6s | %501s |\n   $divdash\n", "**Dunning Q-zeta**", "", "";
 @HQDUNNING = ();
 foreach $b (@HGBS) { if ($b =~ /^cc-.*qz.*\.gbs$/) { push(@HQDUNNING, $b); } }
@@ -263,8 +263,8 @@ foreach $b (@HGBS) { if ($b =~ /^apr-cc-.*qpd.*\.gbs$/) { push(@HQDUNNING, $b); 
 foreach $gbs (@HQDUNNING) { htmlline($gbs); }
 printf "Auto-documenting basis set files %s\n", "Dunning quadruple-zeta";
 
-print HTML_OUT "<tr><td><big><b>Dunning 5&#950;</b></big></td></tr>\n\n";
-print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Dunning 5\$\\bm\\zeta\$}} \\\\*\n";
+#print HTML_OUT "<tr><td><big><b>Dunning 5&#950;</b></big></td></tr>\n\n";
+#print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Dunning 5\$\\bm\\zeta\$}} \\\\*\n";
 printf RST_OUT "   $divdash\n   | %-65s | %6s | %501s |\n   $divdash\n", "**Dunning 5-zeta**", "", "";
 @H5DUNNING = ();
 foreach $b (@HGBS) { if ($b =~ /^cc-.*5z.*\.gbs$/) { push(@H5DUNNING, $b); } }
@@ -286,8 +286,8 @@ foreach $b (@HGBS) { if ($b =~ /^mar-cc-.*5pd.*\.gbs$/) { push(@H5DUNNING, $b); 
 foreach $gbs (@H5DUNNING) { htmlline($gbs); }
 printf "Auto-documenting basis set files %s\n", "Dunning 5-zeta";
 
-print HTML_OUT "<tr><td><big><b>Dunning 6&#950;</b></big></td></tr>\n\n";
-print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Dunning 6\$\\bm\\zeta\$}} \\\\*\n";
+#print HTML_OUT "<tr><td><big><b>Dunning 6&#950;</b></big></td></tr>\n\n";
+#print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Dunning 6\$\\bm\\zeta\$}} \\\\*\n";
 printf RST_OUT "   $divdash\n   | %-65s | %6s | %501s |\n   $divdash\n", "**Dunning 6-zeta**", "", "";
 @H6DUNNING = ();
 foreach $b (@HGBS) { if ($b =~ /^cc-.*6z.*\.gbs$/) { push(@H6DUNNING, $b); } }
@@ -322,8 +322,8 @@ foreach my $item (@HGBS) {
    }
 }
 
-print HTML_OUT "<tr><td><big><b>Others</b></big></td></tr>\n\n";
-print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Others}} \\\\*\n";
+#print HTML_OUT "<tr><td><big><b>Others</b></big></td></tr>\n\n";
+#print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Others}} \\\\*\n";
 printf RST_OUT "   $divdash\n   | %-65s | %6s | %501s |\n   $divdash\n", "**Others**", "", "";
 foreach $gbs (@HREST) { htmlline($gbs); }
 printf "Auto-documenting basis set files %s\n", "others";
@@ -368,13 +368,13 @@ sub htmlline {
 
    }
 
-   print HTML_OUT "<tr><td>$basisfile</td><td>$puream</td>";
-   foreach $element (@HELEM) { print HTML_OUT "$entryhash{$element}"; }
-   print HTML_OUT "</tr>\n\n";
+   #print HTML_OUT "<tr><td>$basisfile</td><td>$puream</td>";
+   #foreach $element (@HELEM) { print HTML_OUT "$entryhash{$element}"; }
+   #print HTML_OUT "</tr>\n\n";
 
-   print LATEX_OUT "$basisfilepl & $puream & ";
-   foreach $element (@HELEM) { print LATEX_OUT "$latexhash{$element}"; }
-   print LATEX_OUT "\\\\\n\n";
+   #print LATEX_OUT "$basisfilepl & $puream & ";
+   #foreach $element (@HELEM) { print LATEX_OUT "$latexhash{$element}"; }
+   #print LATEX_OUT "\\\\\n\n";
 
    $basislink = ":srcbasis:`" . $basisfile . "`";
    printf RST_OUT "   | %-65s | %-6s |", $basislink, $puream;
@@ -382,29 +382,29 @@ sub htmlline {
    print RST_OUT "\n   $divdash\n";
 }
 
-print_latex_endfile();
+#print_latex_endfile();
 print RST_OUT "\n";
 close(RST_OUT);
-close(LATEX_OUT);
-close(HTML_OUT);
+#close(LATEX_OUT);
+#close(HTML_OUT);
 #system("open -a /Applications/Safari.app psi4bases.html");
 
 
-sub print_html_topfile {
-
-   print HTML_OUT "<table border=\"1\" cellpadding=\"4\" cellspacing=\"3\" width=\"100%\">
-   <tr><th>Basis&nbsp;Set&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th><th>puream</th>
-   <th bgcolor=#ffdddd>H</th><th bgcolor=#ffdddd>He</th><th bgcolor=#99ccee>Li</th><th bgcolor=#99ccee>Be</th>
-   <th bgcolor=#99ccee>B</th><th bgcolor=#99ccee>C</th><th bgcolor=#99ccee>N</th><th bgcolor=#99ccee>O</th>
-   <th bgcolor=#99ccee>F</th><th bgcolor=#99ccee>Ne</th><th bgcolor=#ccccee>Na</th><th bgcolor=#ccccee>Mg</th>
-   <th bgcolor=#ccccee>Al</th><th bgcolor=#ccccee>Si</th><th bgcolor=#ccccee>P</th><th bgcolor=#ccccee>S</th>
-   <th bgcolor=#ccccee>Cl</th><th bgcolor=#ccccee>Ar</th><th bgcolor=#cceecc>K</th><th bgcolor=#cceecc>Ca</th>
-   <th bgcolor=#cceecc>Sc</th><th bgcolor=#cceecc>Ti</th><th bgcolor=#cceecc>V</th><th bgcolor=#cceecc>Cr</th>
-   <th bgcolor=#cceecc>Mn</th><th bgcolor=#cceecc>Fe</th><th bgcolor=#cceecc>Co</th><th bgcolor=#cceecc>Ni</th>
-   <th bgcolor=#cceecc>Cu</th><th bgcolor=#cceecc>Zn</th><th bgcolor=#cceecc>Ga</th><th bgcolor=#cceecc>Ge</th>
-   <th bgcolor=#cceecc>As</th><th bgcolor=#cceecc>Se</th><th bgcolor=#cceecc>Br</th><th bgcolor=#cceecc>Kr</th>
-   <tr>\n";
-}
+#sub print_html_topfile {
+#
+#   print HTML_OUT "<table border=\"1\" cellpadding=\"4\" cellspacing=\"3\" width=\"100%\">
+#   <tr><th>Basis&nbsp;Set&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th><th>puream</th>
+#   <th bgcolor=#ffdddd>H</th><th bgcolor=#ffdddd>He</th><th bgcolor=#99ccee>Li</th><th bgcolor=#99ccee>Be</th>
+#   <th bgcolor=#99ccee>B</th><th bgcolor=#99ccee>C</th><th bgcolor=#99ccee>N</th><th bgcolor=#99ccee>O</th>
+#   <th bgcolor=#99ccee>F</th><th bgcolor=#99ccee>Ne</th><th bgcolor=#ccccee>Na</th><th bgcolor=#ccccee>Mg</th>
+#   <th bgcolor=#ccccee>Al</th><th bgcolor=#ccccee>Si</th><th bgcolor=#ccccee>P</th><th bgcolor=#ccccee>S</th>
+#   <th bgcolor=#ccccee>Cl</th><th bgcolor=#ccccee>Ar</th><th bgcolor=#cceecc>K</th><th bgcolor=#cceecc>Ca</th>
+#   <th bgcolor=#cceecc>Sc</th><th bgcolor=#cceecc>Ti</th><th bgcolor=#cceecc>V</th><th bgcolor=#cceecc>Cr</th>
+#   <th bgcolor=#cceecc>Mn</th><th bgcolor=#cceecc>Fe</th><th bgcolor=#cceecc>Co</th><th bgcolor=#cceecc>Ni</th>
+#   <th bgcolor=#cceecc>Cu</th><th bgcolor=#cceecc>Zn</th><th bgcolor=#cceecc>Ga</th><th bgcolor=#cceecc>Ge</th>
+#   <th bgcolor=#cceecc>As</th><th bgcolor=#cceecc>Se</th><th bgcolor=#cceecc>Br</th><th bgcolor=#cceecc>Kr</th>
+#   <tr>\n";
+#}
 
 
 sub print_rst_topfile {
@@ -566,52 +566,52 @@ sub print_rst_topfile {
 
 
 
-sub print_latex_topfile {
+#sub print_latex_topfile {
+#
+#   print LATEX_OUT "\\section{Basis Set Availability by Element}\\label{basisElement}\n\n";
+#   print LATEX_OUT "{\n\\tiny\n";
+#   print LATEX_OUT "\\definecolor{W0}{cmyk}{0.0,0.0,0.0,0.05}\n";
+#   print LATEX_OUT "\\definecolor{R0}{cmyk}{0.0,0.2,0.2,0.0}\n";
+#   print LATEX_OUT "\\definecolor{R1}{cmyk}{0.18,0.04,0.0,0.07}\n";
+#   print LATEX_OUT "\\definecolor{R2}{cmyk}{0.11,0.11,0.0,0.05}\n";
+#   print LATEX_OUT "\\definecolor{R3}{cmyk}{0.13,0.0,0.16,0.11}\n\n";
+#
+#   print LATEX_OUT "\\renewcommand{\\arraystretch}{0.5}\n";
+#   #print LATEX_OUT "\\tiny\n";
+#   #print LATEX_OUT "\\begin{center}\n";
+#   print LATEX_OUT "\\begin{landscape}\n";
+#   print LATEX_OUT "\\begin{longtable}{p{3cm} p{1cm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm}\n";
+#   print LATEX_OUT "      p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm}\n";
+#   print LATEX_OUT "      p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm}}\n";
+#   print LATEX_OUT "\\caption{Element availibility for basis sets built into \\PSIfour.} \\label{table:basisElement} \\\\\n";
+#
+#   print LATEX_OUT "\\hline\\hline\n";
+#   print LATEX_OUT "Basis Set & puream & \\cellcolor{R0} H & \\cellcolor{R0} He &\n";
+#   print LATEX_OUT "\\cellcolor{R1} Li & \\cellcolor{R1} Be & \\cellcolor{R1} B & \\cellcolor{R1} C & \\cellcolor{R1} N & \\cellcolor{R1} O & \n";
+#   print LATEX_OUT "\\cellcolor{R1} F & \\cellcolor{R1} Ne & \\cellcolor{R2} Na & \\cellcolor{R2} Mg & \\cellcolor{R2} Al & \\cellcolor{R2} Si & \n";
+#   print LATEX_OUT "\\cellcolor{R2} P & \\cellcolor{R2} S & \\cellcolor{R2} Cl & \\cellcolor{R2} Ar & \\cellcolor{R3} K & \\cellcolor{R3} Ca & \n";
+#   print LATEX_OUT "\\cellcolor{R3} Sc & \\cellcolor{R3} Ti & \\cellcolor{R3} V & \\cellcolor{R3} Cr & \\cellcolor{R3} Mn & \\cellcolor{R3} Fe & \n";
+#   print LATEX_OUT "\\cellcolor{R3} Co & \\cellcolor{R3} Ni & \\cellcolor{R3} Cu & \\cellcolor{R3} Zn & \\cellcolor{R3} Ga & \\cellcolor{R3} Ge & \n";
+#   print LATEX_OUT "\\cellcolor{R3} As & \\cellcolor{R3} Se \\cellcolor{R3} & \\cellcolor{R3} Br & \\cellcolor{R3} Kr & \\\\\n";
+#   print LATEX_OUT "\\hline\n";
+#   print LATEX_OUT "\\endfirsthead\n\n";
+#   print LATEX_OUT "\\hline\n";
+#   print LATEX_OUT "\\endhead\n\n";
+#   print LATEX_OUT "\\hline\\hline\n";
+#   print LATEX_OUT "\\endfoot\n\n";
+#}
 
-   print LATEX_OUT "\\section{Basis Set Availability by Element}\\label{basisElement}\n\n";
-   print LATEX_OUT "{\n\\tiny\n";
-   print LATEX_OUT "\\definecolor{W0}{cmyk}{0.0,0.0,0.0,0.05}\n";
-   print LATEX_OUT "\\definecolor{R0}{cmyk}{0.0,0.2,0.2,0.0}\n";
-   print LATEX_OUT "\\definecolor{R1}{cmyk}{0.18,0.04,0.0,0.07}\n";
-   print LATEX_OUT "\\definecolor{R2}{cmyk}{0.11,0.11,0.0,0.05}\n";
-   print LATEX_OUT "\\definecolor{R3}{cmyk}{0.13,0.0,0.16,0.11}\n\n";
 
-   print LATEX_OUT "\\renewcommand{\\arraystretch}{0.5}\n";
-   #print LATEX_OUT "\\tiny\n";
-   #print LATEX_OUT "\\begin{center}\n";
-   print LATEX_OUT "\\begin{landscape}\n";
-   print LATEX_OUT "\\begin{longtable}{p{3cm} p{1cm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm}\n";
-   print LATEX_OUT "      p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm}\n";
-   print LATEX_OUT "      p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm} p{1mm}}\n";
-   print LATEX_OUT "\\caption{Element availibility for basis sets built into \\PSIfour.} \\label{table:basisElement} \\\\\n";
-
-   print LATEX_OUT "\\hline\\hline\n";
-   print LATEX_OUT "Basis Set & puream & \\cellcolor{R0} H & \\cellcolor{R0} He &\n";
-   print LATEX_OUT "\\cellcolor{R1} Li & \\cellcolor{R1} Be & \\cellcolor{R1} B & \\cellcolor{R1} C & \\cellcolor{R1} N & \\cellcolor{R1} O & \n";
-   print LATEX_OUT "\\cellcolor{R1} F & \\cellcolor{R1} Ne & \\cellcolor{R2} Na & \\cellcolor{R2} Mg & \\cellcolor{R2} Al & \\cellcolor{R2} Si & \n";
-   print LATEX_OUT "\\cellcolor{R2} P & \\cellcolor{R2} S & \\cellcolor{R2} Cl & \\cellcolor{R2} Ar & \\cellcolor{R3} K & \\cellcolor{R3} Ca & \n";
-   print LATEX_OUT "\\cellcolor{R3} Sc & \\cellcolor{R3} Ti & \\cellcolor{R3} V & \\cellcolor{R3} Cr & \\cellcolor{R3} Mn & \\cellcolor{R3} Fe & \n";
-   print LATEX_OUT "\\cellcolor{R3} Co & \\cellcolor{R3} Ni & \\cellcolor{R3} Cu & \\cellcolor{R3} Zn & \\cellcolor{R3} Ga & \\cellcolor{R3} Ge & \n";
-   print LATEX_OUT "\\cellcolor{R3} As & \\cellcolor{R3} Se \\cellcolor{R3} & \\cellcolor{R3} Br & \\cellcolor{R3} Kr & \\\\\n";
-   print LATEX_OUT "\\hline\n";
-   print LATEX_OUT "\\endfirsthead\n\n";
-   print LATEX_OUT "\\hline\n";
-   print LATEX_OUT "\\endhead\n\n";
-   print LATEX_OUT "\\hline\\hline\n";
-   print LATEX_OUT "\\endfoot\n\n";
-}
-
-
-sub print_latex_endfile {
-
-   print LATEX_OUT "\\hline\\hline\n";
-   print LATEX_OUT "\\end{longtable}\n";
-   print LATEX_OUT "\\end{landscape}\n";
-   #print LATEX_OUT "\\end{center}\n";
-   #print LATEX_OUT "\\tiny\n";
-   print LATEX_OUT "\\renewcommand{\\arraystretch}{1.0}\n";
-   print LATEX_OUT "}\n";
-   print LATEX_OUT "\\newpage\n\n";
-
-}
+#sub print_latex_endfile {
+#
+#   print LATEX_OUT "\\hline\\hline\n";
+#   print LATEX_OUT "\\end{longtable}\n";
+#   print LATEX_OUT "\\end{landscape}\n";
+#   #print LATEX_OUT "\\end{center}\n";
+#   #print LATEX_OUT "\\tiny\n";
+#   print LATEX_OUT "\\renewcommand{\\arraystretch}{1.0}\n";
+#   print LATEX_OUT "}\n";
+#   print LATEX_OUT "\\newpage\n\n";
+#
+#}
 
