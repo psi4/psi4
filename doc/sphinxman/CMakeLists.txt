@@ -31,7 +31,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
     # * duplicate index.rst as contents.rst for toc link
     # * copy fake psi4.py over to objdir
     # * copy logo image file (configure_file corrupts file)
-    execute_process(COMMAND ${PYTHON_EXECUTABLE} ${CCSD}/relpath.py ${CMAKE_SOURCE_DIR} ${CCBD} OUTPUT_VARIABLE SFNX_INCLUDE OUTPUT_STRIP_TRAILING_WHITESPACE)
+    execute_process(COMMAND ${PYTHON_EXECUTABLE} ${CCSD}/extract_relpath.py ${CMAKE_SOURCE_DIR} ${CCBD} OUTPUT_VARIABLE SFNX_INCLUDE OUTPUT_STRIP_TRAILING_WHITESPACE)
     foreach(rst ${STATICDOC})
        configure_file(
         "${CCSD}/source/${rst}"
@@ -41,36 +41,77 @@ if(PERL_FOUND AND SPHINX_FOUND)
     execute_process(COMMAND ${CMAKE_COMMAND} -E copy "${CCBD}/source/index.rst" "${CCBD}/source/contents.rst")
     execute_process(COMMAND ${CMAKE_COMMAND} -E copy "${CCSD}/source/psi4.py" "${CCBD}/source")
     execute_process(COMMAND ${CMAKE_COMMAND} -E copy "${CCSD}/source/psi4banner.png" "${CCBD}/source")
-    message("Staticdoc reST")
     
     # Autodoc basis sets
     add_custom_command(
         COMMAND ${PERL_EXECUTABLE} ${CCSD}/document_bases.pl ${CCSD}
-        OUTPUT ${CCBD}/source/autodoc_psi4bases.rst
+        OUTPUT  ${CCBD}/source/autodoc_psi4bases.rst
         DEPENDS ${CCSD}/document_bases.pl
         COMMENT "Autodoc basis sets"
         # TODO leftout dependency @top_srcdir@/lib/basis/*.gbs \
     )
     
     
-    # Autodoc binary files
+    # Autodoc binary scratch files
     add_custom_command(
         COMMAND ${PYTHON_EXECUTABLE} ${CCSD}/document_psifiles.py ${CCSD}
-        OUTPUT ${CCBD}/source/autodoc_psifiles.rst
+        OUTPUT  ${CCBD}/source/autodoc_psifiles.rst
+                ${top_srcdir}/lib/python/p4const/psifiles.py
         DEPENDS ${CCSD}/document_psifiles.py
                 ${top_srcdir}/include/psifiles.h
-        COMMENT "Autodoc binary files"
-        # TODO leftout target @top_srcdir@/lib/python/p4const/psifiles.py \
+        COMMENT "Autodoc binary scratch files"
     )
 
     # Autodoc physical constants
     add_custom_command(
         COMMAND ${PERL_EXECUTABLE} ${CCSD}/document_physconst.pl ${CCSD}
-        OUTPUT ${top_srcdir}/lib/python/p4const/physconst.py
+        OUTPUT  ${top_srcdir}/lib/python/p4const/physconst.py
         DEPENDS ${CCSD}/document_physconst.pl
                 ${top_srcdir}/include/physconst.h
         COMMENT "Autodoc physical constants"
     )
+
+    # Autodoc options c-side
+    add_custom_command(
+        COMMAND ${CMAKE_COMMAND} -E make_directory source/autodir_options_c
+        COMMAND ${PERL_EXECUTABLE} ${CCSD}/document_options_c.pl ${CCSD}
+        OUTPUT  ${CCBD}/source/autodoc_abbr_options_c.rst
+                ${CCBD}/source/autodoc_glossary_options_c.rst
+                ${CCBD}/source/autodoc_options_c_bymodule.rst
+                ${CCBD}/source/autodir_options_c/module__scf.rst  # representative
+                ${CCBD}/source/autodir_options_c/scf__scf_type.rst  # representative
+        DEPENDS ${CCSD}/document_options_c.pl
+                ${top_srcdir}/src/bin/psi4/read_options.cc
+        COMMENT "Autodoc options c-side"
+    )
+
+    # Autodoc PSI variables c-side
+    add_custom_command(
+        COMMAND ${CMAKE_COMMAND} -E make_directory source/autodir_psivariables
+        COMMAND ${PERL_EXECUTABLE} ${CCSD}/document_psivariables.pl ${CCSD}
+        OUTPUT  ${CCBD}/source/autodoc_psivariables_bymodule.rst
+                ${CCBD}/source/autodir_psivariables/module__scf.rst  # representative
+        DEPENDS ${CCSD}/document_psivariables.pl
+                ${top_srcdir}/src/*/*/*.cc
+        COMMENT "Autodoc PSI variables c-side"
+    )
+
+    # Autodoc Cfour PSI variables
+    add_custom_command(
+        COMMAND ${CMAKE_COMMAND} -E make_directory source/autodir_psivariables
+        COMMAND ${PYTHON_EXECUTABLE} ${CCSD}/document_cfour.py ${CCSD}
+        OUTPUT  ${CCBD}/source/autodir_psivariables/module__cfour.rst
+        DEPENDS ${CCSD}/document_cfour.py
+                ${top_srcdir}/lib/python/qcdb/cfour.py
+        COMMENT "Autodoc Cfour PSI variables"
+    )
+
+
+
+#    add_custom_command(
+#        COMMAND ${CMAKE_COMMAND} -E make_directory source/autodir_plugins
+#    )
+
 
 
 
@@ -87,6 +128,14 @@ if(PERL_FOUND AND SPHINX_FOUND)
         DEPENDS ${CCBD}/source/autodoc_psi4bases.rst
                 ${CCBD}/source/autodoc_psifiles.rst
                 ${top_srcdir}/lib/python/p4const/physconst.py
+                ${CCBD}/source/autodoc_abbr_options_c.rst
+                ${CCBD}/source/autodoc_glossary_options_c.rst
+                ${CCBD}/source/autodoc_options_c_bymodule.rst
+                ${CCBD}/source/autodir_options_c/module__scf.rst  # representative
+                ${CCBD}/source/autodir_options_c/scf__scf_type.rst  # representative
+                ${CCBD}/source/autodoc_psivariables_bymodule.rst
+                ${CCBD}/source/autodir_psivariables/module__scf.rst  # representative
+                ${CCBD}/source/autodir_psivariables/module__cfour.rst
         COMMENT "Building documentation with Sphinx")
 
     foreach (SPHINX_TARGET ${SPHINX_TARGETS})
