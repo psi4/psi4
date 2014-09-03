@@ -57,7 +57,7 @@
 #include <ctype.h>
 #include <sstream>
 #include <string>
-
+#include "libparallel/ParallelPrinter.h"
 using namespace boost;
 using namespace psi;
 using namespace std;

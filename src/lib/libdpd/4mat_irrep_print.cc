@@ -28,6 +28,7 @@
 #include <cstdlib>
 #include "dpd.h"
 #include "psi4-dec.h"
+#include "libparallel/ParallelPrinter.h"
 namespace psi {
 
 int DPD::mat4_irrep_print(double **matrix, dpdparams4 *Params,

@@ -31,7 +31,7 @@
 #include <cmath>
 #include <libciomr/libciomr.h>
 #include "qt.h"
-
+#include "libparallel/ParallelPrinter.h"
 namespace psi {
 
 #define ZERO 1e-13

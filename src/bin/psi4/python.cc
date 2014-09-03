@@ -48,7 +48,7 @@
 #include <psi4-dec.h>
 #include "script.h"
 #include "psi4.h"
-
+#include "libparallel/ParallelPrinter.h"
 #include "../ccenergy/ccwave.h"
 #include "../cclambda/cclambda.h"
 //#include "../mp2/mp2wave.h"

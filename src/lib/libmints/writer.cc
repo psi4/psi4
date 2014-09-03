@@ -28,7 +28,7 @@
 #include <cstdio>
 #include <utility>
 #include <algorithm>
-
+#include "libparallel/ParallelPrinter.h"
 using namespace std;
 using namespace psi;
 using namespace boost;

@@ -28,7 +28,7 @@
 #include <boost/tuple/tuple_comparison.hpp>
 #include <boost/algorithm/string.hpp>
 #include <unistd.h>
-
+#include "libparallel/ParallelPrinter.h"
 #ifdef _OPENMP
 #include <omp.h>
 #endif

@@ -64,7 +64,7 @@ using namespace boost;
 #include <string>
 #include <sstream>
 #include <iostream>
-
+#include "libparallel/ParallelPrinter.h"
 namespace {
 const double dzero = 0.0;
 }

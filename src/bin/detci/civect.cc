@@ -53,7 +53,7 @@
 #include "globals.h"
 #include "ci_tol.h"
 #include "civect.h"
-
+#include "libparallel/ParallelPrinter.h"
 namespace psi { namespace detci {
 
 extern void calc_hd_block(struct stringwr *alplist,

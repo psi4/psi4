@@ -28,11 +28,11 @@ namespace LibFrag{
 
 void Embedder::print_out(){
    for(int i=0;i<Charges_.size();i++){
-      psi::outfile->Printf("%16.15f ",Charges_[i]);
+      outfile->Printf("%16.15f ",Charges_[i]);
       for(int j=0;j<3;j++){
-         psi::outfile->Printf("%16.15f ",Carts_[i*3+j]);
+         outfile->Printf("%16.15f ",Carts_[i*3+j]);
       }
-      psi::outfile->Printf("\n");
+      outfile->Printf("\n");
    }
    double corr=0.0;
    for(int i=0;i<Charges_.size();i++){
@@ -64,18 +64,18 @@ Embedder::Embedder(SharedMol& AMol,bool Iterating):
    }
 }
 
-void Embedder::Embed(NMerSet& Set2Embed){
+void Embedder::Embed(NMerSet& Set2Embed)const{
    ChargeType ChargesBySet;
    EmbedImpl(ChargesBySet,Set2Embed);
-   if(ChargesBySet.size()!=Set2Embed.size())
-      throw PSIEXCEPTION("Each fragment must have an embedding set even"
-            " if it is just empty.");
+   if(ChargesBySet.size()!=Set2Embed.size()&&ChargesBySet.size()!=0)
+      throw PSIEXCEPTION("Each fragment must have an embedding set or "
+            " no fragment may have one.");
    for(int i=0;i<ChargesBySet.size();i++){
       Set2Embed[i]->Charges_=ChargesBySet[i];
    }
 }
 
-void Embedder::CommonInit(ChargeType& ChargesBySet){
+void Embedder::CommonInit(ChargeType& ChargesBySet)const{
    Set<SharedCharge> newcharge;
    ChargesBySet.push_back(newcharge);
    if(ChargesBySet.size()==1){
@@ -91,7 +91,7 @@ void Embedder::CommonInit(ChargeType& ChargesBySet){
    }
 }
 
-void APCEmbedder::EmbedImpl(ChargeType& ChargesBySet, NMerSet& Set2Embed){
+void APCEmbedder::EmbedImpl(ChargeType& ChargesBySet, NMerSet& Set2Embed)const{
    if(Set2Embed.size()==0)
       throw PSIEXCEPTION("Expected fragments to embed");
    for(int set=0;set<Set2Embed.size();set++){

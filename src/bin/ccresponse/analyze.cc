@@ -36,7 +36,7 @@
 #include "Local.h"
 #define EXTERN
 #include "globals.h"
-
+#include "libparallel/ParallelPrinter.h"
 namespace psi { namespace ccresponse {
 
 double **Build_R(void);

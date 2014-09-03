@@ -45,7 +45,7 @@
 #include <boost/python.hpp>
 #include <boost/python/object.hpp>
 #include <liboptions/liboptions.h>
-
+#include "libparallel/ParallelPrinter.h"
 #define PY_TRY(ptr, command)  \
      if(!(ptr = command)){    \
          PyErr_Print();       \

@@ -25,7 +25,7 @@
 #include <libqt/qt.h>
 #include "matrix.h"
 #include "vector.h"
-
+#include "libparallel/ParallelPrinter.h"
 using namespace psi;
 
 IntVector::IntVector() {

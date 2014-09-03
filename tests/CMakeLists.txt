@@ -149,7 +149,6 @@ foreach(Tests2Run ${TestSet})
    set(INPUTFILE ${TEST_SRC_DIR}/input.dat)
    set(OUTFILE ${TEST_RUN_DIR}/output.dat)
    set(AUTOTEST false)
-
    list(FIND AutoTestSubjects ${Tests2Run} InThrall)
    if(NOT(${InThrall} EQUAL -1) AND ${PERL_FOUND})
      set(AUTOTEST true)
@@ -160,7 +159,7 @@ foreach(Tests2Run ${TestSet})
       COMMAND ${PYTHON_EXECUTABLE} ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${PROJECT_SOURCE_DIR} ${OUTFILE} ${PSIEXE})
    add_custom_target(${Tests2Run} ${CMAKE_CTEST_COMMAND} -R ${Tests2Run})
    set_tests_properties(${Tests2Run} PROPERTIES DEPENDS 
-   ${CMAKE_BINARY_DIR}/bin/psi4)
+	${CMAKE_BINARY_DIR}/bin/psi4)
    #In theory would like to make sure all tests run in parallel as well
    #but....most do not right now...
    if( MPI_FOUND AND FALSE)

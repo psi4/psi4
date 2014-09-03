@@ -33,7 +33,7 @@
 #include "MOInfo.h"
 #define EXTERN
 #include "globals.h"
-
+#include "libparallel/ParallelPrinter.h"
 namespace psi { namespace ccenergy {
 
 double **Build_R(void);

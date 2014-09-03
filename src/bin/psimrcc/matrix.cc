@@ -30,7 +30,7 @@
 
 #include "index.h"
 #include "matrix.h"
-
+#include "libparallel/ParallelPrinter.h"
 namespace psi{
     
     namespace psimrcc{

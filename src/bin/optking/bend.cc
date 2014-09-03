@@ -31,7 +31,7 @@
 #include "physconst.h"
 #include <math.h>
 #include "linear_algebra.h"
-
+#include "libparallel/ParallelPrinter.h"
 #include "print.h"
 #define EXTERN
 #include "globals.h"

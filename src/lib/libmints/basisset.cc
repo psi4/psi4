@@ -57,7 +57,7 @@
 #include "pointgrp.h"
 #include "wavefunction.h"
 #include "coordentry.h"
-
+#include "libparallel/ParallelPrinter.h"
 using namespace std;
 using namespace psi;
 using namespace boost;

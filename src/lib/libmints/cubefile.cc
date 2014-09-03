@@ -30,7 +30,7 @@
 #include <libqt/qt.h>
 #include <cstdio>
 #include "cubefile.h"
-
+#include "libparallel/ParallelPrinter.h"
 namespace psi{
 
 CubeFile::CubeFile()

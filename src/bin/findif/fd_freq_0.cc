@@ -30,7 +30,7 @@
 #include <boost/python.hpp>
 #include <boost/python/list.hpp>
 #include <libmints/writer_file_prefix.h>
-
+#include "libparallel/ParallelPrinter.h"
 using namespace boost::python;
 
 #include <physconst.h>

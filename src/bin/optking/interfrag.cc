@@ -29,7 +29,7 @@
 #include "interfrag.h"
 #include "print.h"
 #include "v3d.h" // for H_guess
-
+#include "libparallel/ParallelPrinter.h"
 #include <sstream>
 
 #define EXTERN

@@ -32,7 +32,7 @@
 #include <libqt/qt.h>
 #include <libdpd/dpd.h>
 #include <psifiles.h>
-
+#include "libparallel/ParallelPrinter.h"
 namespace psi {
 
 /*
