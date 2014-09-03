@@ -4,30 +4,30 @@
 # You shouldn't need to modify anything in this file.
 #
 
-# Location of your PSI4 source
-top_srcdir = @top_srcdir@
-# Location of your PSI4 install, by default as listed
-top_objdir = @top_objdir@
+# The name of your plugin. Taken from the directory name.
+NAME = $(shell basename `pwd`)
 
-# Start by figuring out whether we're on Linux or Mac (sorry, Mr. Gates)
-UNAME := $(shell uname)
-
-include $(top_objdir)/src/bin/MakeVars
-
-# Reset these values, MakeVars changes them to valud only valid in Psi4's objdir
-# Location of your PSI4 source
-top_srcdir = @top_srcdir@
-# Location of your PSI4 install, by default as listed
-top_objdir = @top_objdir@
-
-PSITARGET = $(shell basename `pwd`).so
-PSILIBS = -L$(top_objdir)/lib -lPSI_plugin
-
+# C++ source files for your plugin. By default we grab all *.cc files.
 CXXSRC = $(notdir $(wildcard *.cc))
-DEPENDINCLUDE = $(notdir $(wildcard *.h))
 
-BINOBJ = $(CXXSRC:%.cc=%.o)
+# Flags that were used to compile Psi4.
+CXX = @PLUGIN_CXX@
+CXXDEFS = @PLUGIN_DEFINES@
+CXXFLAGS = @PLUGIN_FLAGS@
+INCLUDES = @PLUGIN_INCLUDES@
+OBJDIR = @PLUGIN_OBJDIR@
 
+# Used to determine linking flags.
+UNAME = $(shell uname)
+
+# Need to link against Psi4 plugin library
+PSIPLUGIN = -L$(OBJDIR)/lib -lplugin
+
+DEPENDINCLUDE = $(notdir $(wildcard *.h*))
+
+PSITARGET = $(NAME).so
+
+# Start the compilation rules
 default:: $(PSITARGET)
 
 # Add the flags needed for shared library creation
@@ -36,26 +36,20 @@ ifeq ($(UNAME), Linux)
 endif
 ifeq ($(UNAME), Darwin)
     LDFLAGS = -shared -undefined dynamic_lookup
-    CXXOTH += -fno-common
+    CXXFLAGS += -fno-common
 endif
 
 # The object files
+BINOBJ = $(CXXSRC:%.cc=%.o)
+
 %.o: %.cc
-	$(CXX) $(CXXFLAGS) $(CXXINCLUDE) -c $< $(OUTPUT_OPTION)
+	$(CXX) $(CXXDEFS) $(CXXFLAGS) $(INCLUDES) -c $<
 
 $(PSITARGET): $(BINOBJ)
-	$(CXX) $(LDFLAGS) -o $@ $^ $(CXXDBG) $(PSILIBS)
+	$(CXX) $(LDFLAGS) -o $@ $^ $(CXXDEFS) $(PSIPLUGIN)
 
 # Erase all compiled intermediate files
 clean:
 	rm -f $(BINOBJ) $(PSITARGET) *.d *.pyc *.test output.dat psi.timer.dat
 
-# Dependency handling
-%.d: %.cc
-	$(CXXDEPEND) $(CXXDEPENDFLAGS) $(CXXFLAGS) $(CXXINCLUDE) $< | sed 's/^$*.o/$*.o $*.d/g' > $(@F)
-
-ifneq ($(DODEPEND),no)
-$(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
-include $(BINOBJ:%.o=%.d)
-endif
 
