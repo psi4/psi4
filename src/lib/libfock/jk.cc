@@ -40,7 +40,7 @@
 #include<lib3index/cholesky.h>
 
 #include <sstream>
-
+#include "libparallel/ParallelPrinter.h"
 #ifdef _OPENMP
 #include <omp.h>
 #endif

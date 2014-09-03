@@ -40,9 +40,11 @@ class Embedder{
       ///Did we just get the point charges
       bool NotFirstItr_;
 
-      virtual void EmbedImpl(ChargeType& ChargesBySet, NMerSet& Set2Embed)=0;
-      void CommonInit(ChargeType& ChargesBySet);
+      virtual void EmbedImpl(ChargeType& ChargesBySet, NMerSet& Set2Embed)const=0;
+      void CommonInit(ChargeType& ChargesBySet)const;
    public:
+      ///Should only be used with the Null Embedder
+      Embedder():NotFirstItr_(false),DoIterate_(false){}
       Embedder(SharedMol& AMol,bool Iterating);
       bool HaveCharges(){return NotFirstItr_;}
       virtual ~Embedder(){}
@@ -55,18 +57,26 @@ class Embedder{
        *  Either way, this fxn returns the appropriate response.
        *
        */
-      bool Iterate(const int itr);
+      virtual bool Iterate(const int itr);
       ///Only call set charge once you are ready to set all the charges
       void SetCharge(int i,double q);
-      virtual void Embed(NMerSet& Set2Embed);
+      virtual void Embed(NMerSet& Set2Embed)const;
       void print_out();
 
 };
 
+///Class that does nothing.  Prevents us from having to check if factory exists
+class NullEmbedder:public Embedder{
+   protected:
+      void EmbedImpl(ChargeType& ChargesBySet, NMerSet& Set2Embed)const{}
+   public:
+      bool Iterate(const int itr){return false;}
+      NullEmbedder(){}
+};
+
 class APCEmbedder:public Embedder{
    protected:
-      void EmbedImpl(ChargeType& ChargesBySet, NMerSet& Set2Embed);
-
+      void EmbedImpl(ChargeType& ChargesBySet, NMerSet& Set2Embed)const;
    public:
       APCEmbedder(SharedMol& AMol,bool Iterating):
          Embedder(AMol,Iterating){}

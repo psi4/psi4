@@ -28,6 +28,7 @@
 #include <cstdio>
 #include "exception.h"
 #include "psi4-dec.h"
+#include "libparallel/ParallelPrinter.h"
 namespace psi{
 
 PSIOManager::PSIOManager() : default_path_("/tmp/")

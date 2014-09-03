@@ -27,7 +27,7 @@
 #include <libpsio/psio.hpp>
 #include <libiwl/iwl.hpp>
 #include "arrays.h"
-
+#include "libparallel/ParallelPrinter.h"
 using namespace boost;
 using namespace psi;
 using namespace std;

@@ -34,7 +34,7 @@
 #include <libfock/apps.h>
 #include <libqt/qt.h>
 #include <vector>
-
+#include "libparallel/ParallelPrinter.h"
 #include <../bin/fnocc/frozen_natural_orbitals.h>
 
 #include <psifiles.h>

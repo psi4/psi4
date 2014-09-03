@@ -25,36 +25,22 @@
 
 namespace psi {
 
-void OutFile::LoadFOptions() {
-   FOptions_[NOFILEMODE]=std::fstream::out;
-   FOptions_[END]=std::fstream::ate;
-   FOptions_[APPEND]=std::fstream::app;
-   FOptions_[TRUNCATE]=std::fstream::trunc;
-   FOptions_[BINARY]=std::fstream::binary;
-}
+
 
 OutFile::OutFile(const std::string& filename, const FileMode& mode) :
-      PsiOutStream(SharedStream()) {
-   this->LoadFOptions();
-   if (filename!="") Open(filename, mode);
+      PsiOutStream(SharedOutStream()) {
+   if (filename!="") this->Open(filename, mode);
 }
 
-void OutFile::Close() {
-   if (Stream_) Stream_.reset();
-   Buffer_.str("");
-   Buffer_.clear();
+void OutFile::Close(){
+   FileBase::Close(Stream_);
+   this->EmptyBuffer();
 }
 
-void OutFile::Open(const std::string& filename, const FileMode& mode) {
-   if (ImSpecial()&&filename!="NULL") {
-      this->Close();
-      Stream_=SharedStream(
-            new std::ofstream(filename.c_str(), FOptions_[mode]));
-      if (!Stream_) {
-         std::string error="Could not open file: "+filename;
-         throw PSIEXCEPTION(error.c_str());
-      }
-   }
+void OutFile::Open(const std::string& filename,const FileMode& mode){
+   FileBase::Open(filename,mode,Stream_,ImSpecial());
 }
+
+
 
 } //End namespace psi

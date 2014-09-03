@@ -25,14 +25,14 @@
 
 #include <string>
 #include <boost/python.hpp>
-#include "FragOptions.h"
-#include "LibFragTypes.h"
+//#include "LibFragTypes.h"
+#include "MBEFragSet.h"
 #include "libpsio/MOFile.h"
 
 namespace psi{
 namespace LibFrag {
 class GMBE;
-class BSSEer;
+class LibFragOptions;
 
 typedef boost::python::str PyStr;
 typedef boost::python::list PyList;
@@ -57,32 +57,19 @@ class LibFragHelper {
        *   Systems[n-1]={n-mers}
        *
        *   For the GMBE this looks like:
-       *   Systems[0]={Monomers}
-       *   Systems[1]={n-mers, positive intersections}
-       *   Systems[2]={negative intersections}
+       *   Systems[0]={Monomers and monomer intersections}
+       *   Systems[1]={n-mers, n-mer intersections}
        *
        *   Python doesn't need to know what it is running it just
        *   needs to know what to loop over...
        *
-       *   Expect this to become a proper class sometime in the future.
        *
        *
        */
-      std::vector<NMerSet> Systems_;
+      std::vector<MBEFragSet> Systems_;
 
       ///The actual energy expansion
       boost::shared_ptr<GMBE> Expansion_;
-
-      /** \brief The factory for embedding calculations
-       *
-       *   I can't really think of any other way to do iterative point
-       *   charges than to have this factory hang around at all times.
-       *   This is because I presume that when a user specifies that they
-       *   want iterative point charges, I assume they want them updated
-       *   iteratively for dimers, trimers, etc.  Thus every MBE order
-       *   we need to use the factory to reset the point charges.
-       */
-      static boost::shared_ptr<Embedder> EmbedFactory_;
 
       ///The list of options
       boost::shared_ptr<LibFragOptions> DaOptions_;
@@ -123,10 +110,10 @@ class LibFragHelper {
       std::string Cap_Helper(const int NMer,const int N);
 
       ///Prints the energies, in a nice, neat table
-      void PrintEnergy(PyList& Energies, const int N);
+      void PrintEnergy(PyList& Energies, const int N,PyStr& Name);
 
       ///Returns the highest n-body approximate energy available
-      double CalcEnergy(PyList& Energies,bool IsCorr);
+      double CalcEnergy(PyList& Energies,PyStr& Name);
 
       int GetNNMers(const int i) {
          if (i<Systems_.size()) return Systems_[i].size();
@@ -164,9 +151,6 @@ class LibFragHelper {
 
       ///Are we iterating for whatever embedding reason:
       int Iterate(const int itr);
-
-      ///Turn off self-interaction in point charges
-      //bool SelfIntOff();
 
       ///Do we need to run the fragments
       bool RunFrags();

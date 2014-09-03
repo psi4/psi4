@@ -38,7 +38,7 @@
 #ifdef HAVE_MKL
 #include <mkl.h>
 #endif
-
+#include "libparallel/ParallelPrinter.h"
 using namespace psi;
 
 namespace psi {

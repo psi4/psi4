@@ -32,7 +32,7 @@
 #include <cstdio>
 #include <limits>
 #include <ctype.h>
-
+#include "libparallel/ParallelPrinter.h"
 using namespace boost;
 using namespace std;
 using namespace psi;

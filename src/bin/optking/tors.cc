@@ -33,7 +33,7 @@
 #include "v3d.h"
 #include "physconst.h"
 #include "opt_params.h"
-
+#include "libparallel/ParallelPrinter.h"
 #define EXTERN
 #include "globals.h"
 

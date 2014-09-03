@@ -72,7 +72,7 @@
 #include <stdlib.h>
 
 #include <libmints/pointgrp.h>
-
+#include "libparallel/ParallelPrinter.h"
 using namespace std;
 using namespace psi;
 

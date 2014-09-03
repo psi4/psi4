@@ -21,14 +21,14 @@
  */
 
 #include "MBE.h"
-#include "MBEFrag.h"
+#include "MBEFragSet.h"
 #include "../../bin/psi4/psi4.h"
 #include "../../../include/psi4-dec.h"
 #include "libparallel/TableSpecs.h"
 #include <iomanip>
 namespace psi{
 namespace LibFrag{
-void MBE::MakeIntersections(std::vector<NMerSet>& Systems){
+/*void MBE::MakeIntersections(std::vector<NMerSet>& Systems){
 	int oldN=N;
 	for(int i=2;i<oldN;i++){
 		this->SetN(i);
@@ -36,11 +36,12 @@ void MBE::MakeIntersections(std::vector<NMerSet>& Systems){
 		MakeNmers(Systems[0],Systems[Systems.size()-1]);
 	}
 	this->SetN(oldN);
-}
-double MBE::Energy(const std::vector<NMerSet>& Systems,
-      const std::vector<boost::shared_ptr<double[]> >& Energies,bool IsCorr){
+}*/
+double MBE::Energy(const std::vector<MBEFragSet>& Systems,
+      const std::vector<boost::shared_ptr<double[]> >& Energies,
+      std::string& RealName){
 	double energy=0;
-	std::string energyname=(IsCorr?"Correlation Energy":"Energy");
+	std::string energyname=RealName;
 	//Total energy of each set of n-mers
 	std::vector<double> En;
 	std::vector<double> Egys;
@@ -52,7 +53,7 @@ double MBE::Energy(const std::vector<NMerSet>& Systems,
     Titles.push_back("");
 	Titles.push_back("n-body correction (a.u.)");
     Titles.push_back("MBE Order");
-    Titles.push_back("Total "+energyname+" (a.u.)");
+    Titles.push_back(energyname+" (a.u.)");
 	Titles.push_back("[E(n)-E(n-1)]");
 	std::vector<int> orders;
 	if(Systems.size()!=N&&N!=1)

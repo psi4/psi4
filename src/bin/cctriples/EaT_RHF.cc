@@ -36,7 +36,7 @@
 #include "Params.h"
 #define EXTERN
 #include "globals.h"
-
+#include "libparallel/ParallelPrinter.h"
 //MKL Header
 #ifdef HAVE_MKL
 #include <mkl.h>

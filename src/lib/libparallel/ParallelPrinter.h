@@ -22,16 +22,11 @@
 #ifndef PARALLELPRINTER_H_
 #define PARALLELPRINTER_H_
 
-#include "StreamBase.h"
+#include "PsiOutStream.h"
+#include "PsiFileImpl.h"
 #include <fstream>
 
 namespace psi{
-
-///For each value the first name is preferred, but let's face it typing stinks
-enum FileMode{NOFILEMODE=0,END=1,ATE=1,APPEND=2,APP=2,A=2,TRUNCATE=3,TRUNC=3,
-              T=3,BINARY=4,BIN=4};
-
-typedef std::fstream::openmode stdFMode;
 
 
 /** \brief The interface to the new Psi4 ASCII outfile writer
@@ -56,19 +51,10 @@ typedef std::fstream::openmode stdFMode;
  * then close it, don't keep it open any longer then you have to.
  *
  */
-class OutFile: public PsiOutStream{
+class OutFile: public PsiOutStream,private PsiFileImpl<std::ofstream>{
    private:
-      ///Maps enumerated FileModes to those in c++ std library
-      std::map<FileMode,stdFMode> FOptions_;
+      typedef PsiFileImpl<std::ofstream> FileBase;
 
-      ///Disallow copying of the filestream
-      OutFile(const OutFile& other){}
-
-      ///Disallow assignment of the filestream
-      const OutFile& operator=(const OutFile& other){return *this;}
-
-      ///Function that loads FOptions_ up
-      void LoadFOptions();
    public:
       /** \brief Constructor that opens a file with name "filename"
        *
@@ -99,5 +85,6 @@ class OutFile: public PsiOutStream{
       ///Closes file and frees Stream_ pointer
       void Close();
 };
+
 }//End namespace psi
 #endif /* PARALLELPRINTER_H_ */

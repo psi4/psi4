@@ -44,7 +44,7 @@
 #include "structs.h"
 #define EXTERN
 #include "globals.h"
-
+#include "libparallel/ParallelPrinter.h"
 namespace psi { namespace detci {
 
 #define CONFIG_STRING_MAX 200

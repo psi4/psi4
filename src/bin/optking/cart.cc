@@ -28,7 +28,7 @@
 #include "cart.h"
 #include <sstream>
 #include "opt_except.h"
-
+#include "libparallel/ParallelPrinter.h"
 #include "v3d.h"
 #include "physconst.h"
 #include "psi4-dec.h"

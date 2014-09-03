@@ -33,7 +33,7 @@
 
 #include <algorithm>
 #include <numeric>
-
+#include "libparallel/ParallelPrinter.h"
 using namespace boost;
 using namespace psi;
 

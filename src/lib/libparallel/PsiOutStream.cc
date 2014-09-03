@@ -19,56 +19,24 @@
  *
  *@END LICENSE
  */
+#include "PsiOutStream.h"
 #include <stdarg.h>
-#include "psi4-dec.h"
-#include "StreamBase.h"
-
+#include <stdio.h>
 namespace psi{
-/** \brief Destructor for Stream_
- *
- * We don't want to free the cout/cerr/etc. so we use this fxn
- * as boost::shared_ptr<std::ostream>'s destructor
- */
 void Destructor(std::ostream* Stream_){}
 
 
-void PsiStreamBase::Clone(const PsiStreamBase& other){
-   this->Buffer_.str(other.Buffer_.str());
-}
-
-
-
-const PsiStreamBase& PsiStreamBase::operator=(const PsiStreamBase& other){
-   if(this!=&other)this->Clone(other);
-   return *this;
-}
-
-void PsiOutStream::DumpBuffer(){
+void PsiOutStream::Buffer2Stream(){
    if(this->ImSpecial()){
         (*Stream_)<<Buffer_.rdbuf();
         this->Flush();
      }
-     Buffer_.str("");
-     Buffer_.clear();
-}
-
-void PsiOutStream::Clone(const PsiOutStream& other){
-   this->Stream_=other.Stream_;
-}
-
-PsiOutStream::PsiOutStream(const PsiOutStream& other):PsiStreamBase(other){
-   this->Clone(other);
-}
-
-const PsiOutStream& PsiOutStream::operator=(const PsiOutStream& other){
-   PsiStreamBase::operator=(other);
-   if(this!=&other)Clone(other);
-   return *this;
+   this->EmptyBuffer();
 }
 
 
-void PsiOutStream::MakeBanner(const std::string& message,const char delimiter,
-      const int width){
+void PsiOutStream::MakeBanner(const std::string& message,
+      const char delimiter,const int width){
       std::string symbols(width,delimiter);
       (*this)<<symbols<<std::endl;
       int size=message.size();
@@ -89,15 +57,12 @@ void PsiOutStream::MakeBanner(const std::string& message,const char delimiter,
 }
 
 
-PsiOutStream::PsiOutStream(SharedStream Stream){
+PsiOutStream::PsiOutStream(SharedOutStream Stream){
    if(this->ImSpecial()){
-      Stream_=(Stream?Stream:SharedStream(&std::cout,Destructor));
+      Stream_=(Stream?Stream:SharedOutStream(&std::cout,Destructor));
    }
 }
 
-bool PsiStreamBase::ImSpecial()const{
-   return(WorldComm->me("COMM_WORLD")==0);
-}
 
 void PsiOutStream::Printf(const char* format,...){
    char buffer[1000];
@@ -109,16 +74,11 @@ void PsiOutStream::Printf(const char* format,...){
    Write2Buffer(buffer);
 }
 
-void PsiOutStream::Flush(){
-   if(this->ImSpecial()){
-      Stream_->flush();
-   }
-}
-
 std::ostream& PsiOutStream::Write2Buffer(StreamManips fp){
    Buffer_<<fp;
-   this->DumpBuffer();
+   this->Buffer2Stream();
    return Buffer_;
 }
-}//End psi namespace
+
+}
 

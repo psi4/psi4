@@ -45,7 +45,7 @@
 #elif defined (OPTKING_PACKAGE_QCHEM)
  #include "qcmath.h"
 #endif
-
+#include "libparallel/ParallelPrinter.h"
 namespace opt {
 
 using namespace v3d;

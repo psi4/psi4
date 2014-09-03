@@ -39,7 +39,7 @@
 #include <psiconfig.h>
 #include <libplugin/plugin.h>
 #include <libparallel/parallel.h>
-
+#include "libparallel/ParallelPrinter.h"
 using namespace std;
 
 namespace psi {

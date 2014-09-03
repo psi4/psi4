@@ -21,6 +21,7 @@
  */
 
 #include "psi4-dec.h"
+#include "libparallel/ParallelPrinter.h"
 #include <libqt/qt.h>
 #include <cmath>
 #include "adc.h"

@@ -26,7 +26,7 @@
 #include <sstream>
 #include <psiconfig.h>
 #include <psi4-dec.h>
-
+#include "libparallel/ParallelPrinter.h"
 #include "gitversion.h"
 
 namespace psi {

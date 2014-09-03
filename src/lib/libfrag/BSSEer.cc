@@ -46,8 +46,8 @@ void BSSEer::CommonInit(GhostType& Ghosts,NMerSet& NMers){
 void BSSEer::AddBSSEJobs(NMerSet& NMers){
    GhostType Ghosts;
    BSSEImpl(Ghosts,NMers);
-   if(Ghosts.size()!=NMers.size())throw PSIEXCEPTION(
-     "Each fragment must have a ghost atom set, even if it is just empty");
+   if(Ghosts.size()!=NMers.size()&&Ghosts.size()!=0)throw PSIEXCEPTION(
+     "Each fragment must have a ghost atom set, or no fragment may have one");
    for(int i=0;i<Ghosts.size();i++)
       NMers[i]->Ghosts_=Ghosts[i];
 }

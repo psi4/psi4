@@ -63,7 +63,7 @@
 #include <libciomr/libciomr.h>
 #include <psifiles.h>
 #include <psi4-dec.h>
-
+#include "libparallel/ParallelPrinter.h"
 /* guess for HZ, if missing */
 #ifndef HZ
 #define HZ 60
