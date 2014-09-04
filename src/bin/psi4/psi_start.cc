@@ -275,7 +275,7 @@ int psi_start(int argc, char *argv[])
         }
 
         if(infile == NULL) {
-            outfile->Printf( "Error: could not open input file %s\n",ifname.c_str());
+            printf( "Error: could not open input file %s\n",ifname.c_str());
             return(PSI_RETURN_FAILURE);
         }
     }
