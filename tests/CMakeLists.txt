@@ -141,6 +141,7 @@ endif()
 
 #Declare each test as a possible test target even though noone will likely
 #want to run individual tests.  In the end makes our job easier
+set(index 1)
 foreach(Tests2Run ${TestSet})
    #The directory the test will be run in
    set(TEST_SRC_DIR ${TESTDIR}/${Tests2Run})
@@ -157,7 +158,7 @@ foreach(Tests2Run ${TestSet})
       NAME ${Tests2Run}
       WORKING_DIRECTORY ${TEST_RUN_DIR}
       COMMAND ${PYTHON_EXECUTABLE} ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${PROJECT_SOURCE_DIR} ${OUTFILE} ${PSIEXE})
-   add_custom_target(${Tests2Run} ${CMAKE_CTEST_COMMAND} -R ${Tests2Run})
+   add_custom_target(${Tests2Run} ${CMAKE_CTEST_COMMAND} -I ${index},${index})
    set_tests_properties(${Tests2Run} PROPERTIES DEPENDS 
 	${CMAKE_BINARY_DIR}/bin/psi4)
    #In theory would like to make sure all tests run in parallel as well
@@ -168,4 +169,5 @@ foreach(Tests2Run ${TestSet})
         WORKING_DIRECTORY ${RUNDIR}
         COMMAND mpirun -n 2 ${PYTHON_EXECUTABLE} ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${PROJECT_SOURCE_DIR} ${OUTFILE} ${PSIEXE})
     endif()
+    math(EXPR index "${index}+1")
 endforeach(Tests2Run)
