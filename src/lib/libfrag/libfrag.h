@@ -23,9 +23,10 @@
 #ifndef LIBFRAG_H_
 #define LIBFRAG_H_
 
-#include <string>
+#include <Python.h>
 #include <boost/python.hpp>
 //#include "LibFragTypes.h"
+#include <string>
 #include "MBEFragSet.h"
 #include "libpsio/MOFile.h"
 
