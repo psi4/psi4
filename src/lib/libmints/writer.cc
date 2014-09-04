@@ -110,7 +110,7 @@ void MoldenWriter::write(const std::string &filename, boost::shared_ptr<Matrix> 
             fprintf(molden, " %c%5d  1.00\n", gs.amchar(), gs.nprimitive());
 
             for (int prim=0; prim<gs.nprimitive(); ++prim) {
-                fprintf(molden, "%20.10f %20.10f\n", gs.exp(prim), gs.coef(prim));
+                fprintf(molden, "%20.10f %20.10f\n", gs.exp(prim), gs.original_coef(prim));
             }
         }
 
