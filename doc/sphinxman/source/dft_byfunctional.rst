@@ -68,7 +68,7 @@ Double-Hybrid
 SCS Double-Hybrid
 -----------------
 
-.. include:: autodoc_dft_scsdhybrid.rst
+.. comment .. include:: autodoc_dft_scsdhybrid.rst  # commented until populated again to appease Sphinx
 
 
 .. _`table:dft_disp`:

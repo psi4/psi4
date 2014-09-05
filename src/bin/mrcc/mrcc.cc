@@ -34,7 +34,7 @@
 #include <libfock/apps.h>
 #include <libqt/qt.h>
 #include <vector>
-
+#include "libparallel/ParallelPrinter.h"
 #include <../bin/fnocc/frozen_natural_orbitals.h>
 
 #include <psifiles.h>
@@ -49,7 +49,7 @@ namespace psi{ namespace mrcc {
 
 namespace {
 
-void write_oei_to_disk(FILE* fort55, SharedMatrix moH)
+void write_oei_to_disk(boost::shared_ptr<OutFile>& printer, SharedMatrix moH)
 {
     // Walk through moH and save the non-zero values
     int offset = 0;
@@ -57,7 +57,7 @@ void write_oei_to_disk(FILE* fort55, SharedMatrix moH)
         for (int m=0; m<moH->rowdim(h); ++m) {
             for (int n=0; n<=m; ++n) {
                 if (fabs(moH->get(h, m, n)) > 1.0e-12) {
-                    fprintf(fort55, "%28.20E%4d%4d%4d%4d\n", moH->get(h, m, n), m+offset+1, n+offset+1, 0, 0);
+                    printer->Printf("%28.20E%4d%4d%4d%4d\n", moH->get(h, m, n), m+offset+1, n+offset+1, 0, 0);
                 }
             }
         }
@@ -65,9 +65,9 @@ void write_oei_to_disk(FILE* fort55, SharedMatrix moH)
     }
 }
 
-void write_tei_to_disk(FILE* fort55, int nirrep, dpdbuf4& K, double ints_tolerance)
+void write_tei_to_disk(boost::shared_ptr<OutFile>& printer, int nirrep, dpdbuf4& K, double ints_tolerance)
 {
-    for(int h = 0; h < nirrep; ++h){
+   for(int h = 0; h < nirrep; ++h){
         global_dpd_->buf4_mat_irrep_init(&K, h);
         global_dpd_->buf4_mat_irrep_rd(&K, h);
         for(int pq = 0; pq < K.params->rowtot[h]; ++pq){
@@ -78,7 +78,7 @@ void write_tei_to_disk(FILE* fort55, int nirrep, dpdbuf4& K, double ints_toleran
                 int s = K.params->colorb[h][rs][1];
 
                 if (fabs(K.matrix[h][pq][rs]) > ints_tolerance)
-                    fprintf(fort55, "%28.20E%4d%4d%4d%4d\n",
+                    printer->Printf("%28.20E%4d%4d%4d%4d\n",
                             K.matrix[h][pq][rs], p+1, q+1, r+1, s+1);
             }
         }
@@ -88,13 +88,13 @@ void write_tei_to_disk(FILE* fort55, int nirrep, dpdbuf4& K, double ints_toleran
 
 void print_dim(const std::string& name, const Dimension& dim)
 {
-    fprintf(outfile, "        %15s [ ", name.c_str());
+    outfile->Printf( "        %15s [ ", name.c_str());
     for (int h=0; h<dim.n(); ++h) {
-        fprintf(outfile, "%3d", dim[h]);
+        outfile->Printf( "%3d", dim[h]);
         if (h != dim.n()-1)
-            fprintf(outfile, ",");
+            outfile->Printf( ",");
     }
-    fprintf(outfile, "]\n");
+    outfile->Printf( "]\n");
 }
 
 class DPDFillerFunctor {
@@ -166,10 +166,10 @@ private:
                int pq, int rs, int pq_sym, int rs_sym)
     {
 
-        fprintf(outfile, "\n\tDPD Parameter Error in %s\n", message);
-        fprintf(outfile,"\t-------------------------------------------------\n");
-        fprintf(outfile,"\t    p      q      r      s  [   pq]  [   rs] pq_symm rs_symm\n");
-        fprintf(outfile,"\t%5d  %5d  %5d  %5d  [%5d]  [%5d]   %1d   %1d\n", p,q,r,s,
+        outfile->Printf( "\n\tDPD Parameter Error in %s\n", message);
+        outfile->Printf("\t-------------------------------------------------\n");
+        outfile->Printf("\t    p      q      r      s  [   pq]  [   rs] pq_symm rs_symm\n");
+        outfile->Printf("\t%5d  %5d  %5d  %5d  [%5d]  [%5d]   %1d   %1d\n", p,q,r,s,
                 pq,rs,pq_sym,rs_sym);
         throw PsiException("DPD idx failure.", __FILE__, __LINE__);
     }
@@ -236,7 +236,7 @@ public:
             for (size_t i=0; i<readin; ++i) {
                 if (sscanf(batch+offset, "%lE %d %d %d %d\n", &value, &p, &q, &r, &s) != 5) {
                     std::string line(batch+offset, line_length);
-                    fprintf(stderr, "Malformed line: %s\n", line.c_str());
+                    outfile->Printf( "Malformed line: %s\n", line.c_str());
                     throw PSIEXCEPTION("MRCC interface: Unable to interpret line.");
                 }
 
@@ -416,12 +416,12 @@ void load_restricted(FILE* ccdensities, double tolerance, const Dimension& activ
 
 
     /****START OF HACK****/
-    fprintf(outfile, "    Beginning integral transformation.\n");
+    outfile->Printf( "    Beginning integral transformation.\n");
     // This transforms everything (OEI and TEI)
     ints.transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all);
     // Use the IntegralTransform object's DPD instance, for convenience
     dpd_set_default(ints.get_dpd_id());
-    fprintf(outfile, "    Transformation complete.\n\n");
+    outfile->Printf( "    Transformation complete.\n\n");
     /****END HACK****/
 
     /*
@@ -455,10 +455,10 @@ void load_restricted(FILE* ccdensities, double tolerance, const Dimension& activ
     double enuc = Process::environment.molecule()->nuclear_repulsion_energy();
     double E1e = one_particle->vector_dot(H);
     double E2e = global_dpd_->buf4_dot(&G, &D);
-    fprintf(outfile, "\tEnergies recomputed from MRCC's density matrices:\n");
-    fprintf(outfile, "\t\tOne-electron energy = %16.10f\n",E1e);
-    fprintf(outfile, "\t\tTwo-electron energy = %16.10f\n",E2e);
-    fprintf(outfile, "\t\tTotal energy        = %16.10f\n",enuc + E1e + E2e);
+    outfile->Printf( "\tEnergies recomputed from MRCC's density matrices:\n");
+    outfile->Printf( "\t\tOne-electron energy = %16.10f\n",E1e);
+    outfile->Printf( "\t\tTwo-electron energy = %16.10f\n",E2e);
+    outfile->Printf( "\t\tTotal energy        = %16.10f\n",enuc + E1e + E2e);
 
     global_dpd_->contract442(&G, &D, &X2, 0, 0, 2.0, 0.0);
     SharedMatrix X2mat(new Matrix(&X2));
@@ -571,7 +571,7 @@ PsiReturnType mrcc_load_ccdensities(Options& options, const boost::python::dict&
 {
     tstart();
 
-    fprintf(outfile, "  PSI4 interface to MRCC:\n");
+    outfile->Printf( "  PSI4 interface to MRCC:\n");
 
     // Ensure the dict provided has everything we need.
     if (!level.has_key("method") ||
@@ -585,7 +585,7 @@ PsiReturnType mrcc_load_ccdensities(Options& options, const boost::python::dict&
     bool pertcc = exlevel > 0 ? false : true;
     exlevel = abs(exlevel);
 
-    fprintf(outfile, "    Loading gradient data for %s.\n\n", fullname.c_str());
+    outfile->Printf( "    Loading gradient data for %s.\n\n", fullname.c_str());
 
     // Currently, only do RHF case
     if (options.get_str("REFERENCE") != "RHF")
@@ -630,7 +630,7 @@ PsiReturnType mrcc_generate_input(Options& options, const boost::python::dict& l
 {
     tstart();
 
-    fprintf(outfile, "  PSI4 interface to MRCC:\n");
+    outfile->Printf( "  PSI4 interface to MRCC:\n");
 
     // Ensure the dict provided has everything we need.
     if (!level.has_key("method") ||
@@ -644,10 +644,10 @@ PsiReturnType mrcc_generate_input(Options& options, const boost::python::dict& l
     bool pertcc = exlevel > 0 ? false : true;
     exlevel = abs(exlevel);
 
-    fprintf(outfile, "    Generating inputs for %s.\n\n", fullname.c_str());
+    outfile->Printf( "    Generating inputs for %s.\n\n", fullname.c_str());
 
-    fprintf(outfile, "    Automatically determined settings:\n");
-    fprintf(outfile, "        method %d\n        exlevel %d\n        fullname %s\n\n",
+    outfile->Printf( "    Automatically determined settings:\n");
+    outfile->Printf( "        method %d\n        exlevel %d\n        fullname %s\n\n",
             method, exlevel, fullname.c_str());
 
     boost::shared_ptr<Wavefunction> wave;
@@ -673,35 +673,36 @@ PsiReturnType mrcc_generate_input(Options& options, const boost::python::dict& l
     int nirrep = wave->nirrep();
     int nelectron = 2 * active_docc.sum() + active_socc.sum();
 
-    fprintf(outfile, "    Orbital Information:\n\n");
+    outfile->Printf( "    Orbital Information:\n\n");
     print_dim("Frozen Core", frzcpi);
     print_dim("Active DOCC", active_docc);
     print_dim("SOCC", active_socc);
     print_dim("Frozen Virtual", frzvpi);
 
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
     print_dim("Total MOs", active_mopi);
 
-    fprintf(outfile, "\n");
-    FILE* fort55 = fopen("fort.55", "w");
-    fprintf(fort55, "%22d%22d\n", nbf, nelectron);
+    outfile->Printf( "\n");
+    //FILE* fort55 = fopen("fort.55", "w");
+    boost::shared_ptr<OutFile> printer(new OutFile("fort.55",TRUNCATE));
+    printer->Printf("%22d%22d\n", nbf, nelectron);
 
     // Print out orbital symmetries
     int count=0;
     for (int h=0; h<active_mopi.n(); ++h) {
         for (int n=0; n<active_mopi[h]; ++n) {
-            fprintf(fort55, "%22d", h+1);  // 1 based irrep ordering
+            printer->Printf("%22d", h+1);  // 1 based irrep ordering
 
             count++;
             if (count % 3 == 0) // We only want 3 per line
-                fprintf(fort55, "\n");
+                printer->Printf("\n");
         }
     }
 
     if (count % 3) // integrals start on their own line
-        fprintf(fort55, "\n");
+        printer->Printf("\n");
 
-    fprintf(outfile, "    Beginning integral transformation.\n");
+    outfile->Printf( "    Beginning integral transformation.\n");
 
     // Define the orbital space of the MO integrals we need.
     std::vector<boost::shared_ptr<MOSpace> > spaces;
@@ -717,11 +718,11 @@ PsiReturnType mrcc_generate_input(Options& options, const boost::python::dict& l
         throw PSIEXCEPTION("Perturbative methods not implemented for ROHF references.");
 
     if (!_default_psio_lib_->exists(PSIF_SO_TEI)) {
-        fprintf(outfile, "\n");
-        fprintf(outfile, "  WARNING: Integrals were not found on disk. Computing them now.\n");
-        fprintf(outfile, "           If you modified any of the integrals those modifications\n");
-        fprintf(outfile, "           will be lost. If you need them file an issue on GitHub:\n");
-        fprintf(outfile, "               https://github.com/psi4/psi4public/issues\n\n");
+        outfile->Printf( "\n");
+        outfile->Printf( "  WARNING: Integrals were not found on disk. Computing them now.\n");
+        outfile->Printf( "           If you modified any of the integrals those modifications\n");
+        outfile->Printf( "           will be lost. If you need them file an issue on GitHub:\n");
+        outfile->Printf( "               https://github.com/psi4/psi4public/issues\n\n");
 
         // Integrals do not exist on disk. Compute them.
         MintsHelper helper;
@@ -736,15 +737,15 @@ PsiReturnType mrcc_generate_input(Options& options, const boost::python::dict& l
     // Use the IntegralTransform object's DPD instance, for convenience
     dpd_set_default(ints.get_dpd_id());
 
-    fprintf(outfile, "    Transformation complete.\n\n");
-    fprintf(outfile, "  Generating fort.55 integral file...");
+    outfile->Printf( "    Transformation complete.\n\n");
+    outfile->Printf( "  Generating fort.55 integral file...");
 
     double ints_tolerance = options.get_double("INTS_TOLERANCE");
 
     _default_psio_lib_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
     dpdbuf4 K;
 
-    fprintf(fort55, " 150000\n");
+    printer->Printf(" 150000\n");
 
     // RHF
     if (restricted) {
@@ -755,7 +756,7 @@ PsiReturnType mrcc_generate_input(Options& options, const boost::python::dict& l
                       ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), // On disk
                       0,
                       "MO Ints (AA|AA)");
-        write_tei_to_disk(fort55, nirrep, K, ints_tolerance);
+        write_tei_to_disk(printer, nirrep, K, ints_tolerance);
         global_dpd_->buf4_close(&K);
 
         // Load in frozen core operator, in the event of FREEZE_CORE = FALSE this is the MO OEI
@@ -763,11 +764,11 @@ PsiReturnType mrcc_generate_input(Options& options, const boost::python::dict& l
         moH->load(_default_psio_lib_, PSIF_OEI);
         View vmoH(moH, active_mopi, active_mopi, wave->frzcpi(), wave->frzcpi());
         moH = vmoH();
-        write_oei_to_disk(fort55, moH);
+        write_oei_to_disk(printer, moH);
 
         // Print nuclear repulsion energy.
         // Eventually needs to be changed to frozen core energy + nuclear repulsion energy
-        fprintf(fort55, "%28.20E%4d%4d%4d%4d\n", ints.get_frozen_core_energy() + molecule->nuclear_repulsion_energy(), 0, 0, 0, 0);
+        printer->Printf("%28.20E%4d%4d%4d%4d\n", ints.get_frozen_core_energy() + molecule->nuclear_repulsion_energy(), 0, 0, 0, 0);
     }
     else {
 
@@ -779,11 +780,11 @@ PsiReturnType mrcc_generate_input(Options& options, const boost::python::dict& l
                       ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), // On disk
                       0,
                       "MO Ints (AA|AA)");
-        write_tei_to_disk(fort55, nirrep, K, ints_tolerance);
+        write_tei_to_disk(printer, nirrep, K, ints_tolerance);
         global_dpd_->buf4_close(&K);
 
         // Write out separator
-        fprintf(fort55, "%28.20E%4d%4d%4d%4d\n", 0.0, 0, 0, 0, 0);
+        printer->Printf("%28.20E%4d%4d%4d%4d\n", 0.0, 0, 0, 0, 0);
 
         // Load up beta beta
         global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0,
@@ -791,11 +792,11 @@ PsiReturnType mrcc_generate_input(Options& options, const boost::python::dict& l
                       ints.DPD_ID("[a>=a]+"), ints.DPD_ID("[a>=a]+"), // On disk
                       0,
                       "MO Ints (aa|aa)");
-        write_tei_to_disk(fort55, nirrep, K, ints_tolerance);
+        write_tei_to_disk(printer, nirrep, K, ints_tolerance);
         global_dpd_->buf4_close(&K);
 
         // Write out separator
-        fprintf(fort55, "%28.20E%4d%4d%4d%4d\n", 0.0, 0, 0, 0, 0);
+        printer->Printf("%28.20E%4d%4d%4d%4d\n", 0.0, 0, 0, 0, 0);
 
         // Load up alpha beta
         global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0,
@@ -803,41 +804,39 @@ PsiReturnType mrcc_generate_input(Options& options, const boost::python::dict& l
                       ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[a>=a]+"), // On disk
                       0,
                       "MO Ints (AA|aa)");
-        write_tei_to_disk(fort55, nirrep, K, ints_tolerance);
+        write_tei_to_disk(printer, nirrep, K, ints_tolerance);
         global_dpd_->buf4_close(&K);
 
         // Write out separator
-        fprintf(fort55, "%28.20E%4d%4d%4d%4d\n", 0.0, 0, 0, 0, 0);
+        printer->Printf("%28.20E%4d%4d%4d%4d\n", 0.0, 0, 0, 0, 0);
 
         // Load in alpha frozen core operator, in the event of FREEZE_CORE = FALSE this is the MO OEI
         SharedMatrix moH(new Matrix(PSIF_MO_A_FZC, wave->nmopi(), wave->nmopi()));
         moH->load(_default_psio_lib_, PSIF_OEI);
         View vmoH(moH, active_mopi, active_mopi, wave->frzcpi(), wave->frzcpi());
         moH = vmoH();
-        write_oei_to_disk(fort55, moH);
+        write_oei_to_disk(printer, moH);
 
         // Write out separator
-        fprintf(fort55, "%28.20E%4d%4d%4d%4d\n", 0.0, 0, 0, 0, 0);
+        printer->Printf("%28.20E%4d%4d%4d%4d\n", 0.0, 0, 0, 0, 0);
 
         // Load in beta frozen core operator, in the event of FREEZE_CORE = FALSE this is the MO OEI
         SharedMatrix moHb(new Matrix(PSIF_MO_B_FZC, wave->nmopi(), wave->nmopi()));
         moHb->load(_default_psio_lib_, PSIF_OEI);
         View vmoHb(moHb, active_mopi, active_mopi, wave->frzcpi(), wave->frzcpi());
         moHb = vmoHb();
-        write_oei_to_disk(fort55, moHb);
+        write_oei_to_disk(printer, moHb);
 
         // Write out separator
-        fprintf(fort55, "%28.20E%4d%4d%4d%4d\n", 0.0, 0, 0, 0, 0);
+        printer->Printf("%28.20E%4d%4d%4d%4d\n", 0.0, 0, 0, 0, 0);
 
         // Print nuclear repulsion energy.
         // Eventually needs to be changed to frozen core energy + nuclear repulsion energy
-        fprintf(fort55, "%28.20E%4d%4d%4d%4d\n", ints.get_frozen_core_energy() + molecule->nuclear_repulsion_energy(), 0, 0, 0, 0);
+        printer->Printf("%28.20E%4d%4d%4d%4d\n", ints.get_frozen_core_energy() + molecule->nuclear_repulsion_energy(), 0, 0, 0, 0);
     }
     _default_psio_lib_->close(PSIF_LIBTRANS_DPD, 1);
 
-    fclose(fort55);
-
-    fprintf(outfile, "done.\n  Generating fort.56 input file...");
+    outfile->Printf( "done.\n  Generating fort.56 input file...");
 
     // Determine energy convergence to pass to MRCC
     double user_e = fabs(Process::environment.options.get_double("E_CONVERGENCE"));
@@ -904,9 +903,9 @@ PsiReturnType mrcc_generate_input(Options& options, const boost::python::dict& l
         for (int n=0; n<active_socc[h]; ++n)
             symm ^= h;
     symm += 1; // stupid 1 based fortran
-
-    FILE* fort56 = fopen("fort.56", "w");
-    fprintf(fort56, "%6d%6d%6d%6d%6d      0     0%6d     0%6d%6d     1%6d      0      0%6d     0     0    0.00    0%6lu\n",
+    printer=boost::shared_ptr<OutFile>(new OutFile("fort.56",TRUNCATE));
+    //FILE* fort56 = fopen("fort.56", "w");
+    printer->Printf("%6d%6d%6d%6d%6d      0     0%6d     0%6d%6d     1%6d      0      0%6d     0     0    0.00    0%6lu\n",
             exlevel,                                         // # 1
             nsing,                                           // # 2
             ntrip,                                           // # 3
@@ -920,7 +919,7 @@ PsiReturnType mrcc_generate_input(Options& options, const boost::python::dict& l
             Process::environment.get_memory() / 1000 / 1000  // #21
         );
 
-    fprintf(fort56, "ex.lev,nsing,ntrip, rest,CC/CI, dens,conver, symm, diag,   CS,spatial, HF,ndoub, nacto, nactv,  tol,maxex, sacc,   freq,dboc,  mem\n");
+    printer->Printf("ex.lev,nsing,ntrip, rest,CC/CI, dens,conver, symm, diag,   CS,spatial, HF,ndoub, nacto, nactv,  tol,maxex, sacc,   freq,dboc,  mem\n");
 
     for (int h=0; h < nirrep; ++h) {
         for (int nmo = 0; nmo < active_mopi[h]; ++nmo) {
@@ -930,14 +929,13 @@ PsiReturnType mrcc_generate_input(Options& options, const boost::python::dict& l
             else if (nmo < (active_docc[h] + active_socc[h]))
                 val = 1;
 
-            fprintf(fort56, "%3d", val);
+            printer->Printf("%3d", val);
         }
     }
-    fprintf(fort56, "\n");
-    fclose(fort56);
+    printer->Printf("\n");
 
-    fprintf(outfile, "done.\n");
-    fflush(outfile);
+    outfile->Printf( "done.\n");
+    
 
     tstop();
 

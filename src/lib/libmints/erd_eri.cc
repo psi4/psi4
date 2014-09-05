@@ -77,7 +77,7 @@ ERDTwoElectronInt::ERDTwoElectronInt(const IntegralFactory* integral, int deriv,
         tformbuf_ = new double[max_cart];
     }
     catch (std::bad_alloc& e) {
-        fprintf(stderr, "Error allocating tformbuf_.\n%s\n", e.what());
+        outfile->Printf( "Error allocating tformbuf_.\n%s\n", e.what());
         exit(EXIT_FAILURE);
     }
     memset(tformbuf_, 0, sizeof(double)*max_cart);
@@ -87,7 +87,7 @@ ERDTwoElectronInt::ERDTwoElectronInt(const IntegralFactory* integral, int deriv,
         target_ = new double[max_cart];
     }
     catch (std::bad_alloc& e) {
-        fprintf(stderr, "Error allocating target_.\n%s\n", e.what());
+        outfile->Printf( "Error allocating target_.\n%s\n", e.what());
         exit(EXIT_FAILURE);
     }
     memset(target_, 0, sizeof(double)*max_cart);
@@ -157,7 +157,7 @@ ERDTwoElectronInt::ERDTwoElectronInt(const IntegralFactory* integral, int deriv,
         dscratch_ = new double[d_buffer_size_];
     }
     catch (std::bad_alloc& e) {
-        fprintf(stderr, "Error allocating dscratch_.\n%s\n", e.what());
+        outfile->Printf( "Error allocating dscratch_.\n%s\n", e.what());
         exit(EXIT_FAILURE);
     }
     memset(dscratch_, 0, sizeof(double)*d_buffer_size_);
@@ -166,7 +166,7 @@ ERDTwoElectronInt::ERDTwoElectronInt(const IntegralFactory* integral, int deriv,
         iscratch_ = new F_INT[i_buffer_size_];
     }
     catch (std::bad_alloc& e) {
-        fprintf(stderr, "Error allocating iscratch.\n%s\n", e.what());
+        outfile->Printf( "Error allocating iscratch.\n%s\n", e.what());
         exit(EXIT_FAILURE);
     }
 
@@ -307,7 +307,7 @@ void ERDTwoElectronInt::compute_scratch_size()
                             x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4, 
                             alpha_, cc_, spheric_, imin, iopt, zmin, zopt);
 #if DEBUG
-    fprintf(outfile, "\timin %d iopt %d zmin %d zopt %d\n", imin, iopt, zmin, zopt);
+    outfile->Printf( "\timin %d iopt %d zmin %d zopt %d\n", imin, iopt, zmin, zopt);
 #endif
     i_buffer_size_ = iopt;
     d_buffer_size_ = zopt;
@@ -584,25 +584,25 @@ size_t ERDTwoElectronInt::compute_shell(int shell_i, int shell_j, int shell_k, i
 #endif
 
 #if DEBUG
-    fprintf(outfile, "\n\nShell (%2d %2d | %2d %2d) - center (%2d %2d | %2d %2d) - angular momentum (%d %d | %d %d)\n",
+    outfile->Printf( "\n\nShell (%2d %2d | %2d %2d) - center (%2d %2d | %2d %2d) - angular momentum (%d %d | %d %d)\n",
                     shell_i, shell_j, shell_k, shell_l,
                     bs1_->shell(shell_i).ncenter(), bs2_->shell(shell_j).ncenter(), bs3_->shell(shell_k).ncenter(), bs4_->shell(shell_l).ncenter(), 
                     am1, am2, am3, am4);
-    fprintf(outfile, "XYZ1: %16.10f %16.10f %16.10f\n", x1, y1, z1);
-    fprintf(outfile, "XYZ2: %16.10f %16.10f %16.10f\n", x2, y2, z2);
-    fprintf(outfile, "XYZ3: %16.10f %16.10f %16.10f\n", x3, y3, z3);
-    fprintf(outfile, "XYZ4: %16.10f %16.10f %16.10f\n", x4, y4, z4);
-    fprintf(outfile, "Indices  -> %d, %d\n", ccbeg_[0], ccend_[0]);
+    outfile->Printf( "XYZ1: %16.10f %16.10f %16.10f\n", x1, y1, z1);
+    outfile->Printf( "XYZ2: %16.10f %16.10f %16.10f\n", x2, y2, z2);
+    outfile->Printf( "XYZ3: %16.10f %16.10f %16.10f\n", x3, y3, z3);
+    outfile->Printf( "XYZ4: %16.10f %16.10f %16.10f\n", x4, y4, z4);
+    outfile->Printf( "Indices  -> %d, %d\n", ccbeg_[0], ccend_[0]);
 
-    fprintf(outfile, "Number of primitives: %d %d %d %d\n", npgto1, npgto2, npgto3, npgto4);
-    fprintf(outfile, "Coefficients: ");
+    outfile->Printf( "Number of primitives: %d %d %d %d\n", npgto1, npgto2, npgto3, npgto4);
+    outfile->Printf( "Coefficients: ");
     for(int n = 0; n < npgto; ++n)
-        fprintf(outfile, "%14.10f ", cc_[n]);
-    fprintf(outfile, "\n");
-    fprintf(outfile, "Exponents:    ");
+        outfile->Printf( "%14.10f ", cc_[n]);
+    outfile->Printf( "\n");
+    outfile->Printf( "Exponents:    ");
     for(int n = 0; n < npgto; ++n)
-        fprintf(outfile, "%14.10f ", alpha_[n]);
-    fprintf(outfile, "\n");
+        outfile->Printf( "%14.10f ", alpha_[n]);
+    outfile->Printf( "\n");
 #endif
 
     F_INT nbatch;
@@ -617,8 +617,8 @@ size_t ERDTwoElectronInt::compute_shell(int shell_i, int shell_j, int shell_k, i
                            iscratch_, nbatch, buffer_offset_, dscratch_);
 
 #if DEBUG
-    fprintf(outfile, "Buffer offset is %d\n", buffer_offset_-1);
-    fprintf(outfile, "%d integrals were computed\n", nbatch);
+    outfile->Printf( "Buffer offset is %d\n", buffer_offset_-1);
+    outfile->Printf( "%d integrals were computed\n", nbatch);
 #endif
 
     if(nbatch == 0){

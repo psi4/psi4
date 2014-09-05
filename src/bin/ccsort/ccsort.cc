@@ -121,7 +121,7 @@ int ccsort(Options &options)
   /* run a small computation of memory and disk requirements */
   cc_memcheck();
 
-  fprintf(outfile, "\n");
+  outfile->Printf( "\n");
 
   sort_oei();
   sort_tei();
@@ -178,13 +178,13 @@ void init_io()
 
 void title(void)
 {
-  fprintf(outfile, "\n");
-  fprintf(outfile, "\t\t\t**************************\n");
-  fprintf(outfile, "\t\t\t*                        *\n");
-  fprintf(outfile, "\t\t\t*         CCSORT         *\n");
-  fprintf(outfile, "\t\t\t*                        *\n");
-  fprintf(outfile, "\t\t\t**************************\n");
-  fprintf(outfile, "\n");
+  outfile->Printf( "\n");
+  outfile->Printf( "\t\t\t**************************\n");
+  outfile->Printf( "\t\t\t*                        *\n");
+  outfile->Printf( "\t\t\t*         CCSORT         *\n");
+  outfile->Printf( "\t\t\t*                        *\n");
+  outfile->Printf( "\t\t\t**************************\n");
+  outfile->Printf( "\n");
 }
 
 void exit_io(void)

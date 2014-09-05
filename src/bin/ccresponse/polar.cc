@@ -77,7 +77,7 @@ void polar(void)
 	if(params.omega[i] != 0.0) compute_X(pert, moinfo.mu_irreps[alpha], -params.omega[i]);
       }
 
-      fprintf(outfile, "\n\tComputing %s tensor.\n", lbl); fflush(outfile);
+      outfile->Printf( "\n\tComputing %s tensor.\n", lbl); 
       for(alpha=0; alpha < 3; alpha++) {
         for(beta=0; beta < 3; beta++) {
           sprintf(pert_x,"Mu_%1s", cartcomp[alpha]);
@@ -94,7 +94,7 @@ void polar(void)
       psio_open(PSIF_CC_LR, 0);
     }
     else {
-      fprintf(outfile, "Using %s tensor found on disk.\n", lbl);
+      outfile->Printf( "Using %s tensor found on disk.\n", lbl);
       psio_read_entry(PSIF_CC_INFO, lbl, (char *) tensor[i], 9*sizeof(double));
     }
 
@@ -108,39 +108,39 @@ void polar(void)
       }
 
     if (params.wfn == "CC2")
-      fprintf(outfile, "\n                 CC2 Dipole Polarizability [(e^2 a0^2)/E_h]:\n");
+      outfile->Printf( "\n                 CC2 Dipole Polarizability [(e^2 a0^2)/E_h]:\n");
     else
-      fprintf(outfile, "\n                 CCSD Dipole Polarizability [(e^2 a0^2)/E_h]:\n");
-    fprintf(outfile, "  -------------------------------------------------------------------------\n");
+      outfile->Printf( "\n                 CCSD Dipole Polarizability [(e^2 a0^2)/E_h]:\n");
+    outfile->Printf( "  -------------------------------------------------------------------------\n");
     if(params.omega[i] != 0.0) 
       omega_nm = (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]);
     omega_ev = pc_hartree2ev*params.omega[i];
     omega_cm = pc_hartree2wavenumbers*params.omega[i];
     if(params.omega[i] != 0.0)
-      fprintf(outfile,   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", 
+      outfile->Printf(   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", 
 	      params.omega[i], omega_nm, omega_ev, omega_cm);
     else
-      fprintf(outfile,   "   Evaluated at omega = %8.6f E_h (Inf nm, %5.3f eV, %8.2f cm-1)\n", 
+      outfile->Printf(   "   Evaluated at omega = %8.6f E_h (Inf nm, %5.3f eV, %8.2f cm-1)\n", 
 	      params.omega[i], omega_ev, omega_cm);
-    fprintf(outfile, "  -------------------------------------------------------------------------\n");
-    mat_print(tensor[i], 3, 3, outfile);
+    outfile->Printf( "  -------------------------------------------------------------------------\n");
+    mat_print(tensor[i], 3, 3, "outfile");
     trace[i] = tensor[i][0][0] + tensor[i][1][1] + tensor[i][2][2];
-    fprintf(outfile, "\n\talpha_(%5.3f) = %20.12f a.u.\n", params.omega[i], trace[i]);
+    outfile->Printf( "\n\talpha_(%5.3f) = %20.12f a.u.\n", params.omega[i], trace[i]);
   }
 
   if(params.nomega > 1) {  /* print a summary table for multi-wavelength calcs */
 
-    fprintf(outfile, "\n\t-------------------------------\n");
+    outfile->Printf( "\n\t-------------------------------\n");
     if (params.wfn == "CC2")
-      fprintf(outfile,   "\t      CC2 Polarizability\n");
+      outfile->Printf(   "\t      CC2 Polarizability\n");
     else
-      fprintf(outfile,   "\t      CCSD Polarizability\n");
-    fprintf(outfile,   "\t-------------------------------\n");
-    fprintf(outfile,   "\t    Omega          alpha\n");
-    fprintf(outfile,   "\t E_h      nm        a.u.        \n");
-    fprintf(outfile,   "\t-----   ------ ----------------\n");
+      outfile->Printf(   "\t      CCSD Polarizability\n");
+    outfile->Printf(   "\t-------------------------------\n");
+    outfile->Printf(   "\t    Omega          alpha\n");
+    outfile->Printf(   "\t E_h      nm        a.u.        \n");
+    outfile->Printf(   "\t-----   ------ ----------------\n");
     for(i=0; i < params.nomega; i++)
-      fprintf(outfile, "\t%5.3f   %6.2f      %10.5f\n", params.omega[i], (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]), trace[i]);
+      outfile->Printf( "\t%5.3f   %6.2f      %10.5f\n", params.omega[i], (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]), trace[i]);
   }
 
   for(i=0; i < params.nomega; i++)

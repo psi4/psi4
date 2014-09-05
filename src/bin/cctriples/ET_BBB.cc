@@ -603,7 +603,7 @@ double ET_BBB(void)
 			/*
 			if(fabs(value_c) > 1e-7) {
 			  cnt++;
-			  fprintf(outfile, "%d %d %d %d %d %d %20.14f\n", I, J, K, A, B, C, value_c);
+			  outfile->Printf( "%d %d %d %d %d %d %20.14f\n", I, J, K, A, B, C, value_c);
 			}
 			*/
 
@@ -640,9 +640,9 @@ double ET_BBB(void)
     } /* Gj */
   } /* Gi */
 
-  /*  fprintf(outfile, "cnt = %d\n", cnt); */
+  /*  outfile->Printf( "cnt = %d\n", cnt); */
   ET_BBB /= 36.0;
-  /*  fprintf(outfile, "ET_BBB = %20.14f\n", ET_BBB); */
+  /*  outfile->Printf( "ET_BBB = %20.14f\n", ET_BBB); */
 
   for(h=0; h < nirreps; h++) {
     global_dpd_->buf4_mat_irrep_close(&T2, h);

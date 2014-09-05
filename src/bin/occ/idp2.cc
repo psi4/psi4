@@ -41,8 +41,8 @@ if (reference_ == "RESTRICTED") {
       nidpA += virtpiA[h] * occpiA[h]; 
     }
 
-    fprintf(outfile,"\tNumber of independent-pairs: %3d\n", nidpA);
-    fflush(outfile);  
+    outfile->Printf("\tNumber of independent-pairs: %3d\n", nidpA);
+      
     
     if (nidpA != 0) {
       wogA = new Array1d("Alpha MO grad vector", nidpA);
@@ -74,8 +74,8 @@ if (reference_ == "RESTRICTED") {
      
     if (print_ > 2){
      for(int i = 0; i < nidpA; i++){
-        fprintf(outfile,"\n i, idpirrA, idprowA, idpcolA: %3d %3d %3d %3d\n", i, idpirrA[i], idprowA[i],idpcolA[i]);
-	fflush(outfile);
+        outfile->Printf("\n i, idpirrA, idprowA, idpcolA: %3d %3d %3d %3d\n", i, idpirrA[i], idprowA[i],idpcolA[i]);
+	
       }
     }
 
@@ -92,9 +92,9 @@ else if (reference_ == "UNRESTRICTED") {
       nidpB += virtpiB[h] * occpiB[h]; 
     }
 
-    fprintf(outfile,"\tNumber of alpha independent-pairs:%3d\n", nidpA);
-    fprintf(outfile,"\tNumber of beta independent-pairs :%3d\n", nidpB);
-    fflush(outfile);  
+    outfile->Printf("\tNumber of alpha independent-pairs:%3d\n", nidpA);
+    outfile->Printf("\tNumber of beta independent-pairs :%3d\n", nidpB);
+      
     
     if (nidpA != 0) {
       idp_returnA = 1;
@@ -152,13 +152,13 @@ else if (reference_ == "UNRESTRICTED") {
 
     if(print_ > 2){
      for(int i = 0; i < nidpA; i++){
-        fprintf(outfile,"\n i, idpirrA, idprowA, idpcolA: %3d %3d %3d %3d\n", i, idpirrA[i], idprowA[i],idpcolA[i]);
-	fflush(outfile);
+        outfile->Printf("\n i, idpirrA, idprowA, idpcolA: %3d %3d %3d %3d\n", i, idpirrA[i], idprowA[i],idpcolA[i]);
+	
       }
       
       for(int i = 0; i < nidpB; i++){
-        fprintf(outfile,"\n i, idpirrB, idprowB, idpcolB: %3d %3d %3d %3d\n", i, idpirrB[i], idprowB[i],idpcolB[i]); 
-	fflush(outfile);
+        outfile->Printf("\n i, idpirrB, idprowB, idpcolB: %3d %3d %3d %3d\n", i, idpirrB[i], idprowB[i],idpcolB[i]); 
+	
       }
     }
       

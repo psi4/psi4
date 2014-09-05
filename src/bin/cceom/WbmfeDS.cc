@@ -231,7 +231,7 @@ void WbmfeDS(int i, int C_irr) {
     global_dpd_->buf4_close(&WAmEf);
     global_dpd_->file2_close(&Cme);
 /*
-fprintf(outfile,"XBF self dot %15.10lf\n", dpd_file2_dot_self(&XBF));
+outfile->Printf("XBF self dot %15.10lf\n", dpd_file2_dot_self(&XBF));
 */
     global_dpd_->file2_close(&XBF);
 
@@ -249,7 +249,7 @@ fprintf(outfile,"XBF self dot %15.10lf\n", dpd_file2_dot_self(&XBF));
     global_dpd_->buf4_close(&WaMeF);
     global_dpd_->file2_close(&CME);
 /*
-fprintf(outfile,"Xbf self dot %15.10lf\n", dpd_file2_dot_self(&Xbf));
+outfile->Printf("Xbf self dot %15.10lf\n", dpd_file2_dot_self(&Xbf));
 */
     global_dpd_->file2_close(&Xbf);
 

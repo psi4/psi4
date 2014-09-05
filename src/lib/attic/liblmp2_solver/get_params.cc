@@ -79,10 +79,10 @@ void LMP2::params() {
     diis_start_ = options_.get_int("DIIS_START_ITER");
     if(diis_start_ < 3) {
     if (me_ == 0) {
-      fprintf(outfile, "\n\t*** WARNING ***\n");
-      fprintf(outfile, "\tDIIS_START_ITER can not be less than 3\n");
-      fprintf(outfile, "\tReseting DIIS_START_ITER to 3\n");
-      fprintf(outfile, "\t***************\n");
+      outfile->Printf( "\n\t*** WARNING ***\n");
+      outfile->Printf( "\tDIIS_START_ITER can not be less than 3\n");
+      outfile->Printf( "\tReseting DIIS_START_ITER to 3\n");
+      outfile->Printf( "\t***************\n");
     }
     diis_start_ = 3;
     }
@@ -104,28 +104,28 @@ void LMP2::params() {
 void LMP2::print_params() const {
 
     if (me_ == 0) {
-        fprintf(outfile, "\n  ========> LMP2 Parameters <========\n\n");
-        fprintf(outfile, "  Ref WFN \t\t= %s\n", reference_.c_str());
-        fprintf(outfile, "  Processes \t\t= %d\n", nproc_);
-        fprintf(outfile, "  Max Iter \t\t= %d\n", maxiter_);
-        fprintf(outfile, "  Energy Conv \t\t= %3.1e\n", econv_);
-        fprintf(outfile, "  RMS Conv \t\t= %3.1e\n", rmsconv_);
-        fprintf(outfile, "  Int Screen \t\t= %3.1e\n", escreen_);
-        fprintf(outfile, "  F-Skip \t\t= %3.1e\n", fskip_);
-        fprintf(outfile, "  Print \t\t= %d\n", print_);
-        fprintf(outfile, "  Local Cutoff \t\t= %3.1e\n", cutoff_);
-        fprintf(outfile, "  RI Approximation \t= %s\n", ri_lmp2_ ? "Yes" : "No");
-        fprintf(outfile, "  Neglect Distant Pairs = %s\n", neglect_dp_ ? "Yes" : "No");
+        outfile->Printf( "\n  ========> LMP2 Parameters <========\n\n");
+        outfile->Printf( "  Ref WFN \t\t= %s\n", reference_.c_str());
+        outfile->Printf( "  Processes \t\t= %d\n", nproc_);
+        outfile->Printf( "  Max Iter \t\t= %d\n", maxiter_);
+        outfile->Printf( "  Energy Conv \t\t= %3.1e\n", econv_);
+        outfile->Printf( "  RMS Conv \t\t= %3.1e\n", rmsconv_);
+        outfile->Printf( "  Int Screen \t\t= %3.1e\n", escreen_);
+        outfile->Printf( "  F-Skip \t\t= %3.1e\n", fskip_);
+        outfile->Printf( "  Print \t\t= %d\n", print_);
+        outfile->Printf( "  Local Cutoff \t\t= %3.1e\n", cutoff_);
+        outfile->Printf( "  RI Approximation \t= %s\n", ri_lmp2_ ? "Yes" : "No");
+        outfile->Printf( "  Neglect Distant Pairs = %s\n", neglect_dp_ ? "Yes" : "No");
         if (neglect_dp_)
-          fprintf(outfile, "  Distace Pair Cutoff \t= %2.1f\n", dp_cutoff_);
-        //  fprintf(outfile,"  Opposite-spin scaled by %10.4lf\n",scs_scale_os);
-        //  fprintf(outfile,"  Same-spin scaled by     %10.4lf\n",scs_scale_ss);
-        fprintf(outfile, "  DIIS \t\t\t= %s\n", diis_ ? "Yes" : "No");
+          outfile->Printf( "  Distace Pair Cutoff \t= %2.1f\n", dp_cutoff_);
+        //  outfile->Printf("  Opposite-spin scaled by %10.4lf\n",scs_scale_os);
+        //  outfile->Printf("  Same-spin scaled by     %10.4lf\n",scs_scale_ss);
+        outfile->Printf( "  DIIS \t\t\t= %s\n", diis_ ? "Yes" : "No");
         if (diis_) {
-            fprintf(outfile, "  DIIS Start \t\t= %d\n", diis_start_);
-            fprintf(outfile, "  Max DIIS Matrices \t= %d\n", max_diis_vectors_);
+            outfile->Printf( "  DIIS Start \t\t= %d\n", diis_start_);
+            outfile->Printf( "  Max DIIS Matrices \t= %d\n", max_diis_vectors_);
         }
-        fprintf(outfile, "\n  ===================================\n");
+        outfile->Printf( "\n  ===================================\n");
     }
 
 }

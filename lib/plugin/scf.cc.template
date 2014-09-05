@@ -39,13 +39,13 @@ PsiReturnType @plugin@(Options &options)
         // vector = [ 1, 2, 3 ]
         for(int i = 0; i < 3; ++i)
             vector->set(i, i+1);
-        fprintf(outfile, "After creating\n");
+        psi::fprintf(outfile, "After creating\n");
         vector->print();
         matrix->print();
 
         // Assign the elements of the vector to the diagonal of matrix
         matrix->set_diagonal(vector);
-        fprintf(outfile, "After assigning the diagonals\n");
+        psi::fprintf(outfile, "After assigning the diagonals\n");
         matrix->print();
 
         // Try some matrix multiplies
@@ -54,7 +54,7 @@ PsiReturnType @plugin@(Options &options)
         identity->identity();
         identity->scale(2.0);
         new_matrix->gemm(false, false, 1.0, identity, matrix, 0.0);
-        fprintf(outfile, "The product, from the built-in function");
+        psi::fprintf(outfile, "The product, from the built-in function");
         new_matrix->print();
         // Now, do the same by hand
         for(int row = 0; row < 3; ++row){
@@ -66,14 +66,14 @@ PsiReturnType @plugin@(Options &options)
                 new_matrix->set(row, col, val);
             }
         }
-        fprintf(outfile, "The product, from the hand computed version");
+        psi::fprintf(outfile, "The product, from the hand computed version");
         matrix->print();
 
         // Now diagonalize the matrix, ordering by ascending order of eigenvalues
         SharedMatrix evecs(new Matrix("Matrix Eigenvectors", 3, 3));
         SharedVector evals(new Vector("Matrix Eigenvalues", 3));
         matrix->diagonalize(evecs, evals, ascending);
-        fprintf(outfile, "After diagonalizing\n");
+        psi::fprintf(outfile, "After diagonalizing\n");
         matrix->print();
         evecs->print();
         evals->print();
@@ -86,17 +86,17 @@ PsiReturnType @plugin@(Options &options)
         SharedMatrix DU(new Matrix("D X U", 3, 3));
         DU->gemm(false, false, 1.0, D, evecs, 0.0);
         matrix->gemm(true, false, 1.0, evecs, DU, 0.0);
-        fprintf(outfile, "Matrix Reconstructed from the evecs/evals (the hard way)\n");
+        psi::fprintf(outfile, "Matrix Reconstructed from the evecs/evals (the hard way)\n");
         matrix->print();
         // Now the easy way.  If we wanted U D U(t), we would call back_transform instead
         // Also, D->transform(evecs) would do the same thing, but store the result in D itself.
         matrix->transform(D, evecs);
-        fprintf(outfile, "Matrix Reconstructed from the evecs/evals (the easy way)\n");
+        psi::fprintf(outfile, "Matrix Reconstructed from the evecs/evals (the easy way)\n");
         matrix->print();
 
         // Finally, zero out the matrix
         matrix->zero();
-        fprintf(outfile, "After zeroing\n");
+        psi::fprintf(outfile, "After zeroing\n");
         matrix->print();
     }
 

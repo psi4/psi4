@@ -68,7 +68,7 @@ void get_params(Options & options)
   if (options["ROOTS_PER_IRREP"].size() > 0) {
     i = options["ROOTS_PER_IRREP"].size();
     if (i != moinfo.nirreps) {
-      fprintf(outfile,"Dim. of states_per_irrep vector must be %d\n", moinfo.nirreps);
+      outfile->Printf("Dim. of states_per_irrep vector must be %d\n", moinfo.nirreps);
       throw PsiException("cis input comparison error ROOTS_PER_IRREP and moinfo.nirreps", __FILE__, __LINE__);
     }
     // possibly replace the following
@@ -89,7 +89,7 @@ void get_params(Options & options)
   if (ip_exist("ROOTS_PER_IRREP",0)) {  
     ip_count("ROOTS_PER_IRREP", &i, 0);
     if (i != moinfo.nirreps) {
-      fprintf(outfile,"Dim. of states_per_irrep vector must be %d\n", 
+      outfile->Printf("Dim. of states_per_irrep vector must be %d\n", 
         moinfo.nirreps) ;
       throw PsiException("cis input comparison error ROOTS_PER_IRREP and moinfo.nirreps", __FILE__, __LINE__);
     }
@@ -113,8 +113,8 @@ end pre-porting */
       else max_dim += moinfo.aoccpi[i] * moinfo.avirtpi[j] + moinfo.boccpi[i] * moinfo.bvirtpi[j];
     }
     if(params.rpi[h] > max_dim) {
-      fprintf(outfile, "\n\tRequested no. of roots for irrep %d exceeds basis limit.\n", h);
-      fprintf(outfile, "\tSetting rpi[%d] = %d.\n", h, max_dim);
+      outfile->Printf( "\n\tRequested no. of roots for irrep %d exceeds basis limit.\n", h);
+      outfile->Printf( "\tSetting rpi[%d] = %d.\n", h, max_dim);
       params.rpi[h] = max_dim;
     }
   }
@@ -129,30 +129,30 @@ end pre-porting */
   params.memory = module.get_memory();
 //  fndcor(&(params.memory),infile,outfile);
 
-  fprintf(outfile, "\n\tInput parameters:\n");
-  fprintf(outfile, "\t-----------------\n");
-  fprintf(outfile, "\tWave function          = %6s\n", params.wfn.c_str());
-  fprintf(outfile, "\tReference wfn          = %5s\n",
+  outfile->Printf( "\n\tInput parameters:\n");
+  outfile->Printf( "\t-----------------\n");
+  outfile->Printf( "\tWave function          = %6s\n", params.wfn.c_str());
+  outfile->Printf( "\tReference wfn          = %5s\n",
 	  (params.ref == 0) ? "RHF" : ((params.ref == 1) ? "ROHF" : "UHF"));
-  fprintf(outfile, "\tMemory (Mbytes)        = %5.1f\n",params.memory/1e6);
-  fprintf(outfile, "\tRoots sought per irrep =  ");
-  for (i=0;i<moinfo.nirreps;++i) fprintf(outfile, "%3d", params.rpi[i]);
-  fprintf(outfile,"\n");
-  fprintf(outfile, "\tDiagonalization        = %s\n", params.diag_method.c_str());
+  outfile->Printf( "\tMemory (Mbytes)        = %5.1f\n",params.memory/1e6);
+  outfile->Printf( "\tRoots sought per irrep =  ");
+  for (i=0;i<moinfo.nirreps;++i) outfile->Printf( "%3d", params.rpi[i]);
+  outfile->Printf("\n");
+  outfile->Printf( "\tDiagonalization        = %s\n", params.diag_method.c_str());
   if(params.diag_method == "DAVIDSON") {
-    fprintf(outfile, "\tMaxiter                = %4d\n", params.maxiter);
-    fprintf(outfile, "\tConvergence            = %3.1e\n", params.convergence);
+    outfile->Printf( "\tMaxiter                = %4d\n", params.maxiter);
+    outfile->Printf( "\tConvergence            = %3.1e\n", params.convergence);
   }
-  fprintf(outfile, "\tPrint Level            =    %1d\n",  params.print);
-  fprintf(outfile, "\tLocal CC        =     %s\n", params.local ? "Yes" : "No");
+  outfile->Printf( "\tPrint Level            =    %1d\n",  params.print);
+  outfile->Printf( "\tLocal CC        =     %s\n", params.local ? "Yes" : "No");
   if(params.local) {
-    fprintf(outfile, "\tLocal Cutoff    = %3.1e\n", local.cutoff);
-    fprintf(outfile, "\tLocal Method    =    %s\n", local.method.c_str());
-    fprintf(outfile, "\tWeak pairs      =    %s\n", local.weakp.c_str());
-    fprintf(outfile, "\tGhost atom      =    %d\n", local.ghost);
-    fprintf(outfile, "\tAmp Print Cutoff =   %f\n", local.amp_print_cutoff);
+    outfile->Printf( "\tLocal Cutoff    = %3.1e\n", local.cutoff);
+    outfile->Printf( "\tLocal Method    =    %s\n", local.method.c_str());
+    outfile->Printf( "\tWeak pairs      =    %s\n", local.weakp.c_str());
+    outfile->Printf( "\tGhost atom      =    %d\n", local.ghost);
+    outfile->Printf( "\tAmp Print Cutoff =   %f\n", local.amp_print_cutoff);
   }
-  fprintf(outfile, "\n");
+  outfile->Printf( "\n");
 
 }
 

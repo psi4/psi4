@@ -29,13 +29,15 @@
 #include <libciomr/libciomr.h>
 #include "iwl.h"
 #include "iwl.hpp"
-
+#include "libparallel/ParallelPrinter.h"
 namespace psi {
 
 void IWL::write_mp2r12a(int p, int q, int pq, int pqsym, double **arr, 
     int rsym, int *firstr, int *lastr, int *firsts, int *lasts, 
-    int *occ, int bra_ket_symm, int *ioff, int printflag, FILE *out)
+    int *occ, int bra_ket_symm, int *ioff, int printflag, std::string out)
 {
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(out)));
     int idx, r, s, rs, ssym;
     int R,S,rnew,snew;
     double value;
@@ -78,7 +80,7 @@ void IWL::write_mp2r12a(int p, int q, int pq, int pqsym, double **arr,
                 }
 
                 if(printflag)
-                    fprintf(out, "<%d %d %d %d [%d] [%d] = %20.10f\n",
+                    printer->Printf( "<%d %d %d %d [%d] [%d] = %20.10f\n",
                     p, q, rnew, snew, pq, rs, value);
 
             } /* end if (fabs(value) > Buf->cutoff) ... */
@@ -106,8 +108,10 @@ void IWL::write_mp2r12a(int p, int q, int pq, int pqsym, double **arr,
 */
 void iwl_buf_wrt_mp2r12a(struct iwlbuf *Buf, int p, int q, int pq, int pqsym,
    double **arr, int rsym, int *firstr, int *lastr, int *firsts, int *lasts,
-   int *occ, int bra_ket_symm, int *ioff, int printflag, FILE *out)
+   int *occ, int bra_ket_symm, int *ioff, int printflag,std::string out)
 {
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(out)));
    int idx, r, s, rs, ssym;
    int R,S,rnew,snew;
    double value;
@@ -150,7 +154,7 @@ void iwl_buf_wrt_mp2r12a(struct iwlbuf *Buf, int p, int q, int pq, int pqsym,
 	 }
 	 
 	 if(printflag)
-	   fprintf(out, "<%d %d %d %d [%d] [%d] = %20.10f\n",
+	   printer->Printf( "<%d %d %d %d [%d] [%d] = %20.10f\n",
 		   p, q, rnew, snew, pq, rs, value);
 	 
        } /* end if (fabs(value) > Buf->cutoff) ... */

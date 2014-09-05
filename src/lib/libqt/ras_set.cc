@@ -34,7 +34,7 @@
 #include <liboptions/liboptions.h>
 
 namespace psi {
-extern FILE* outfile;
+
 
 /*!
 ** ras_set(): Deprecated
@@ -76,7 +76,7 @@ int ras_set(int nirreps, int nbfso, int freeze_core, int *orbspi,
             int *docc, int *socc, int *frdocc, int *fruocc,
             int **ras_opi, int *order, int ras_type)
 {
-    fprintf(outfile, "libqt::ras_set: Not converted to liboptions yet...beware!");
+    outfile->Printf( "libqt::ras_set: Not converted to liboptions yet...beware!");
     return 1;
 #if 0
   int i, irrep, point, tmpi, cnt=0;
@@ -134,7 +134,7 @@ int ras_set(int nirreps, int nbfso, int freeze_core, int *orbspi,
   if (errcod == IPE_KEY_NOT_FOUND) do_ras4=0;
 
   if (errbad == 1) {
-    fprintf(stderr, "(ras_set): trouble parsing RAS keyword\n");
+    outfile->Printf( "(ras_set): trouble parsing RAS keyword\n");
     return(0);
   }
 
@@ -165,7 +165,7 @@ int ras_set(int nirreps, int nbfso, int freeze_core, int *orbspi,
       for (irrep = 0; irrep<nirreps; irrep++) {
          ras_opi[1][irrep] -= ras_opi[0][irrep];
          if (ras_opi[1][irrep] < 0) {
-           fprintf(stderr, "(ras_set): val_orb must be larger than RAS I\n");
+           outfile->Printf( "(ras_set): val_orb must be larger than RAS I\n");
            return(0);
          }
       }
@@ -181,7 +181,7 @@ int ras_set(int nirreps, int nbfso, int freeze_core, int *orbspi,
       ras_opi[1][irrep];
     if (do_ras4) tmpi += ras_opi[2][irrep];
     if (tmpi > orbspi[irrep]) {
-      fprintf(stderr, "(ras_set): orbitals don't add up for irrep %d\n",
+      outfile->Printf( "(ras_set): orbitals don't add up for irrep %d\n",
           irrep);
       return(0);
     }
@@ -227,14 +227,14 @@ int ras_set(int nirreps, int nbfso, int freeze_core, int *orbspi,
 
   for (irrep=0; irrep<nirreps; irrep++) {
     if (used[irrep] > orbspi[irrep]) {
-      fprintf(stderr, "(ras_set): on final check, used more orbitals");
-      fprintf(stderr, "   than were available (%d vs %d) for irrep %d\n",
+      outfile->Printf( "(ras_set): on final check, used more orbitals");
+      outfile->Printf( "   than were available (%d vs %d) for irrep %d\n",
           used[irrep], orbspi[irrep], irrep);
       errbad = 1;
     }
     if (used[irrep] < orbspi[irrep]) {
-      fprintf(stderr, "(ras_set): on final check, used fewer orbitals");
-      fprintf(stderr, "   than were available (%d vs %d) for irrep %d\n",
+      outfile->Printf( "(ras_set): on final check, used fewer orbitals");
+      outfile->Printf( "   than were available (%d vs %d) for irrep %d\n",
           used[irrep], orbspi[irrep], irrep);
       errbad = 1;
     }
@@ -455,7 +455,7 @@ int ras_set2(int nirreps, int nmo, int delete_fzdocc,
       options.fill_int_array("ACTIVE", ras_opi[1]);
 
       if (parsed_ras1)
-        fprintf(outfile, "ras_set(): Warning: ACTIVE overrides RAS 1\n");
+        outfile->Printf( "ras_set(): Warning: ACTIVE overrides RAS 1\n");
 
       for (irrep=0; irrep<nirreps; irrep++)
         ras_opi[0][irrep] = 0; /* ACTIVE overrides RAS 1 */
@@ -475,7 +475,7 @@ int ras_set2(int nirreps, int nmo, int delete_fzdocc,
       for (irrep=0; irrep<nirreps; irrep++) {
         if (frdocc[irrep]+restrdocc[irrep]+ras_opi[0][irrep]+ras_opi[1][irrep]
             < docc[irrep] + socc[irrep])
-          fprintf(outfile,
+          outfile->Printf(
                   "ras_set():Warning:Occupied electrons beyond ACTIVE orbs!\n");
       }
     } /* end case where we found ACTIVE keyword */
@@ -507,7 +507,7 @@ int ras_set2(int nirreps, int nmo, int delete_fzdocc,
            + ras_opi[0][irrep] + ras_opi[1][irrep];
     if (do_ras4) tmpi += ras_opi[2][irrep];
     if (tmpi > orbspi[irrep]) {
-      fprintf(stderr, "(ras_set): orbitals don't add up for irrep %d\n",
+      outfile->Printf( "(ras_set): orbitals don't add up for irrep %d\n",
           irrep);
       return(0);
     }
@@ -587,14 +587,14 @@ int ras_set2(int nirreps, int nmo, int delete_fzdocc,
   /* do a final check */
   for (irrep=0; irrep<nirreps; irrep++) {
     if (used[irrep] > orbspi[irrep]) {
-      fprintf(stderr, "(ras_set): on final check, used more orbitals");
-      fprintf(stderr, "   than were available (%d vs %d) for irrep %d\n",
+      outfile->Printf( "(ras_set): on final check, used more orbitals");
+      outfile->Printf( "   than were available (%d vs %d) for irrep %d\n",
           used[irrep], orbspi[irrep], irrep);
       errbad = 1;
     }
     if (used[irrep] < orbspi[irrep]) {
-      fprintf(stderr, "(ras_set): on final check, used fewer orbitals");
-      fprintf(stderr, "   than were available (%d vs %d) for irrep %d\n",
+      outfile->Printf( "(ras_set): on final check, used fewer orbitals");
+      outfile->Printf( "   than were available (%d vs %d) for irrep %d\n",
           used[irrep], orbspi[irrep], irrep);
       errbad = 1;
     }

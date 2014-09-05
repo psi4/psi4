@@ -45,7 +45,7 @@ const char* getIntcoFileName();
 #endif
 
 namespace opt {
-  EXTERN FILE *outfile;
+  EXTERN std::string OutFileRMR;
 
   int read_natoms(void);
 }

@@ -34,17 +34,17 @@ namespace psi { namespace findif {
 
 std::vector< SharedMatrix > fd_geoms_hessian_0(Options &options) {
 
-  fprintf(outfile,"\n-------------------------------------------------------------\n\n");
+  outfile->Printf("\n-------------------------------------------------------------\n\n");
 
-  fprintf(outfile,"  Using finite-differences of energies to determine hessian.\n");
+  outfile->Printf("  Using finite-differences of energies to determine hessian.\n");
 
   int pts = options.get_int("POINTS");
-  fprintf(outfile,"\tGenerating geometries for use with %d-point formula.\n", pts);
+  outfile->Printf("\tGenerating geometries for use with %d-point formula.\n", pts);
   if (pts != 3 && pts != 5)
     throw PsiException("FINDIF: Invalid number of points!",__FILE__,__LINE__);
 
   double disp_size = options.get_double("DISP_SIZE");
-  fprintf(outfile,"\tDisplacement size will be %6.2e.\n", disp_size);
+  outfile->Printf("\tDisplacement size will be %6.2e.\n", disp_size);
 
   const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
 
@@ -54,13 +54,13 @@ std::vector< SharedMatrix > fd_geoms_hessian_0(Options &options) {
   CdSalcList salc_list(mol, fact, 0xFF, true, true);
 
   int Natom = mol->natom();
-  fprintf(outfile,"\tNumber of atoms is %d.\n", Natom);
+  outfile->Printf("\tNumber of atoms is %d.\n", Natom);
 
   int Nirrep = salc_list.nirrep();
-  fprintf(outfile,"\tNumber of irreps is %d.\n", Nirrep);
+  outfile->Printf("\tNumber of irreps is %d.\n", Nirrep);
 
   int Nsalc_all = salc_list.ncd();
-  fprintf(outfile,"\tNumber of SALCS is %d.\n", Nsalc_all);
+  outfile->Printf("\tNumber of SALCS is %d.\n", Nsalc_all);
 
   // build vectors that list indices of salcs for each irrep
   std::vector<int> symm_salcs;
@@ -69,7 +69,7 @@ std::vector< SharedMatrix > fd_geoms_hessian_0(Options &options) {
     if (salc_list[i].irrep() == 0)
       symm_salcs.push_back(i);
 
-  fprintf(outfile,"\tNumber of symmetric SALC's is %zu\n", symm_salcs.size());
+  outfile->Printf("\tNumber of symmetric SALC's is %zu\n", symm_salcs.size());
 
   int Ndisp=1; // for reference geometry
 
@@ -85,7 +85,7 @@ std::vector< SharedMatrix > fd_geoms_hessian_0(Options &options) {
   else if (pts == 5)
     Ndisp += 8 * symm_salcs.size() * (symm_salcs.size() - 1) / 2;
 
-  fprintf(outfile,"\tNumber of symmetric displacements (including reference) is %d.\n", Ndisp);
+  outfile->Printf("\tNumber of symmetric displacements (including reference) is %d.\n", Ndisp);
 
   if (options.get_int("PRINT") > 1)
     for (int i=0; i<salc_list.ncd(); ++i)
@@ -185,7 +185,7 @@ std::vector< SharedMatrix > fd_geoms_hessian_0(Options &options) {
   // put reference geometry list in list
   disp_geoms.push_back(ref_geom);
 
-  fprintf(outfile,"\n-------------------------------------------------------------\n");
+  outfile->Printf("\n-------------------------------------------------------------\n");
 
   return disp_geoms;
 }

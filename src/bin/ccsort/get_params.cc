@@ -58,7 +58,7 @@ void get_params(Options & options)
      params.wfn!="CC2" && params.wfn!="CC3" &&
      params.wfn!="EOM_CC3" && params.wfn!="EOM_CC2" &&
      params.wfn!="CCSD_MVD" && params.wfn!="CCSD_AT") {
-    fprintf(outfile, "Invalid value of input keyword WFN: %s\n", params.wfn.c_str());
+    outfile->Printf( "Invalid value of input keyword WFN: %s\n", params.wfn.c_str());
     throw PsiException("ccsort failure", __FILE__, __LINE__);
   }
 
@@ -104,7 +104,7 @@ void get_params(Options & options)
   if(params.prop!="POLARIZABILITY" && params.prop!="ROTATION" &&
      params.prop!="ALL" && params.prop!="MAGNETIZABILITY"
      && params.prop!="ROA") {
-     fprintf(outfile, "Invalid choice of response property: %s\n", params.prop.c_str());
+     outfile->Printf( "Invalid choice of response property: %s\n", params.prop.c_str());
      throw PsiException("ccsort error", __FILE__, __LINE__);
   }
 
@@ -115,13 +115,13 @@ void get_params(Options & options)
 
   local.method = options.get_str("LOCAL_METHOD");
   if(local.method!="AOBASIS" && local.method!="WERNER") {
-    fprintf(outfile, "Invalid local correlation method: %s\n", local.method.c_str());
+    outfile->Printf( "Invalid local correlation method: %s\n", local.method.c_str());
     throw PsiException("ccsort error", __FILE__, __LINE__);
   }
 
   local.weakp = options.get_str("LOCAL_WEAKP");
   if(local.weakp!="MP2" && local.weakp!="NEGLECT" && local.weakp!="NONE") {
-    fprintf(outfile, "Invalid method for treating local pairs: %s\n", local.weakp.c_str());
+    outfile->Printf( "Invalid method for treating local pairs: %s\n", local.weakp.c_str());
     throw PsiException("ccsort failure", __FILE__, __LINE__);
   }
 
@@ -129,7 +129,7 @@ void get_params(Options & options)
 
   local.pairdef = options.get_str("LOCAL_PAIRDEF");
   if(local.pairdef!="BP" && local.pairdef!="RESPONSE") {
-    fprintf(outfile, "Invalid keyword for strong/weak pair definition: %s\n", local.pairdef.c_str());
+    outfile->Printf( "Invalid keyword for strong/weak pair definition: %s\n", local.pairdef.c_str());
     throw PsiException("ccsort failure", __FILE__, __LINE__);
   }
 
@@ -221,16 +221,16 @@ void get_params(Options & options)
       else if(units=="NM") params.omega[i] = (_c*_h*1e9)/(params.omega[i]*_hartree2J);
       else if(units=="EV") params.omega[i] /= _hartree2ev;
       else {
-        fprintf(outfile, "\n\tError in unit for input field frequencies.  Must use one of:\n");
-        fprintf(outfile,   "\tau, hz, nm, or ev.\n");
+        outfile->Printf( "\n\tError in unit for input field frequencies.  Must use one of:\n");
+        outfile->Printf(   "\tau, hz, nm, or ev.\n");
         throw PsiException("ccsort error", __FILE__, __LINE__);
       }
     }
   }
   else {
-    fprintf(outfile, "\n\tError reading input field frequencies.  Please use the format:\n");
-    fprintf(outfile,   "\t  omega = (value1 value2 ... units)\n");
-    fprintf(outfile,   "\twhere units = hartrees, hz, nm, or ev.\n");
+    outfile->Printf( "\n\tError reading input field frequencies.  Please use the format:\n");
+    outfile->Printf(   "\t  omega = (value1 value2 ... units)\n");
+    outfile->Printf(   "\twhere units = hartrees, hz, nm, or ev.\n");
     throw PsiException("Failure in ccsort.", __FILE__, __LINE__);
   }
   mu_irreps = init_int_array(3);
@@ -239,39 +239,39 @@ void get_params(Options & options)
   moinfo.irrep_z = options["MU_IRREPS"][2].to_integer();
 #endif
 
-  fprintf(outfile, "\n\tInput parameters:\n");
-  fprintf(outfile, "\t-----------------\n");
-  fprintf(outfile, "\tWave function   =\t%s\n", params.wfn.c_str());
+  outfile->Printf( "\n\tInput parameters:\n");
+  outfile->Printf( "\t-----------------\n");
+  outfile->Printf( "\tWave function   =\t%s\n", params.wfn.c_str());
   if(params.semicanonical) {
-    fprintf(outfile, "\tReference wfn   =\tROHF changed to UHF for Semicanonical Orbitals\n");
+    outfile->Printf( "\tReference wfn   =\tROHF changed to UHF for Semicanonical Orbitals\n");
   }
   else {
-    fprintf(outfile, "\tReference wfn   =\t%s\n",
+    outfile->Printf( "\tReference wfn   =\t%s\n",
             (params.ref == 0) ? "RHF" : ((params.ref == 1) ? "ROHF" : "UHF"));
   }
-  if(params.dertype == 0) fprintf(outfile, "\tDerivative      =\tNone\n");
-  else if(params.dertype == 1) fprintf(outfile, "\tDerivative      =\tFirst\n");
-  else if(params.dertype == 3) fprintf(outfile, "\tDerivative      =\tResponse\n");
-  fprintf(outfile, "\tMemory (Mbytes) =\t%.1f\n", params.memory/1e6);
-  fprintf(outfile, "\tAO Basis        =\t%s\n", params.aobasis.c_str());
-  fprintf(outfile, "\tMake (ab|cd)    =\t%s\n",
+  if(params.dertype == 0) outfile->Printf( "\tDerivative      =\tNone\n");
+  else if(params.dertype == 1) outfile->Printf( "\tDerivative      =\tFirst\n");
+  else if(params.dertype == 3) outfile->Printf( "\tDerivative      =\tResponse\n");
+  outfile->Printf( "\tMemory (Mbytes) =\t%.1f\n", params.memory/1e6);
+  outfile->Printf( "\tAO Basis        =\t%s\n", params.aobasis.c_str());
+  outfile->Printf( "\tMake (ab|cd)    =\t%s\n",
           (params.make_abcd == 1) ? "True" : "False");
-  fprintf(outfile, "\tMake unpacked (ab|cd) =\t%s\n",
+  outfile->Printf( "\tMake unpacked (ab|cd) =\t%s\n",
           (params.make_unpacked_abcd == 1) ? "True" : "False");
-  fprintf(outfile, "\tCache Level     =\t%d\n", params.cachelev);
-  fprintf(outfile, "\tCache Type      =\t%s\n", "LRU");
-  fprintf(outfile, "\tLocal CC        =     %s\n", params.local ? "Yes" : "No");
+  outfile->Printf( "\tCache Level     =\t%d\n", params.cachelev);
+  outfile->Printf( "\tCache Type      =\t%s\n", "LRU");
+  outfile->Printf( "\tLocal CC        =     %s\n", params.local ? "Yes" : "No");
   if(params.local) {
-    fprintf(outfile, "\tLocal Cutoff       = %3.1e\n", local.cutoff);
-    fprintf(outfile, "\tLocal Core Cutoff  = %3.1e\n", local.core_cutoff);
-    fprintf(outfile, "\tLocal Method      =    %s\n", local.method.c_str());
-    fprintf(outfile, "\tWeak pairs        =    %s\n", local.weakp.c_str());
-    fprintf(outfile, "\tFilter singles    =    %s\n", local.filter_singles ? "Yes" : "No");
-    fprintf(outfile, "\tLocal pairs       =    %s\n", local.pairdef.c_str());
-    fprintf(outfile, "\tLocal CPHF cutoff =  %3.1e\n", local.cphf_cutoff);
+    outfile->Printf( "\tLocal Cutoff       = %3.1e\n", local.cutoff);
+    outfile->Printf( "\tLocal Core Cutoff  = %3.1e\n", local.core_cutoff);
+    outfile->Printf( "\tLocal Method      =    %s\n", local.method.c_str());
+    outfile->Printf( "\tWeak pairs        =    %s\n", local.weakp.c_str());
+    outfile->Printf( "\tFilter singles    =    %s\n", local.filter_singles ? "Yes" : "No");
+    outfile->Printf( "\tLocal pairs       =    %s\n", local.pairdef.c_str());
+    outfile->Printf( "\tLocal CPHF cutoff =  %3.1e\n", local.cphf_cutoff);
   }
-  fprintf(outfile, "\n");
-  fflush(outfile);
+  outfile->Printf( "\n");
+  
 }
 
 }} // namespace psi::ccsort

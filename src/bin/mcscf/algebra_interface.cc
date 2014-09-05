@@ -25,7 +25,7 @@
 #include "algebra_interface.h"
 
 namespace psi{
-    extern FILE *outfile;
+    
  namespace mcscf{
 
 /*

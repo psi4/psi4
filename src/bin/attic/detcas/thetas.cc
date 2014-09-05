@@ -178,7 +178,7 @@ void rotate_test(int dim, int npairs, int *p_arr, int *q_arr,
   }
  
   /* print new coefficients */
-  fprintf(outfile, "\n\tOld molecular orbitals\n");
+  outfile->Printf( "\n\tOld molecular orbitals\n");
   print_mat(tmpmat, dim, dim, outfile);
 
 
@@ -190,18 +190,18 @@ void rotate_test(int dim, int npairs, int *p_arr, int *q_arr,
     theta = -theta;  /* DROT rotates around the other way */
     costheta = cos(theta);
     sintheta = sin(theta);
-    fprintf(outfile, "\nApplying rotation (%2d,%2d) = %12.6lf\n", p, q, theta);
-    fprintf(outfile, "Cos(theta)=%12.6lf, Sin(theta)=%12.6lf\n", 
+    outfile->Printf( "\nApplying rotation (%2d,%2d) = %12.6lf\n", p, q, theta);
+    outfile->Printf( "Cos(theta)=%12.6lf, Sin(theta)=%12.6lf\n", 
             costheta, sintheta);
     C_DROT(dim,&(tmpmat[0][q]),dim,&(tmpmat[0][p]),dim,costheta,sintheta);
     if (Params.print_lvl > 3) {
-      fprintf(outfile, "\n\tMatrix after transformation:\n");
+      outfile->Printf( "\n\tMatrix after transformation:\n");
       print_mat(tmpmat, dim, dim, outfile);
     }
   }
 
   /* print new coefficients */
-  fprintf(outfile, "\n\tNew molecular orbitals\n");
+  outfile->Printf( "\n\tNew molecular orbitals\n");
   print_mat(tmpmat, dim, dim, outfile);
 
   free_block(tmpmat);
@@ -226,9 +226,9 @@ void read_thetas(int npairs)
   ffileb_noexit(&fp,"thetas.dat",2);
   if (fp != NULL) {
     if (Params.print_lvl > 2)
-      fprintf(outfile, "\nReading orbital rotation angles\n");
+      outfile->Printf( "\nReading orbital rotation angles\n");
     if (fread(CalcInfo.theta_cur, sizeof(double), npairs, fp) != npairs) {
-      fprintf(outfile, "Error reading angles.\n");
+      outfile->Printf( "Error reading angles.\n");
       zero_arr(CalcInfo.theta_cur, npairs);
     }
     fclose(fp);
@@ -252,15 +252,15 @@ void write_thetas(int npairs)
   ffileb_noexit(&fp,"thetas.dat",0);
   if (fp != NULL) {
     if (Params.print_lvl > 2)
-      fprintf(outfile, "\nWriting orbital rotation angles\n");
+      outfile->Printf( "\nWriting orbital rotation angles\n");
     if (fwrite(CalcInfo.theta_cur, sizeof(double), npairs, fp) != npairs) {
-      fprintf(outfile, "Error writing angles.\n");
+      outfile->Printf( "Error writing angles.\n");
     }
     fclose(fp);
   }
 
   else {
-    fprintf(outfile, "Error opening thetas.dat for writing\n");
+    outfile->Printf( "Error opening thetas.dat for writing\n");
   }
     
 }
@@ -322,7 +322,7 @@ void calc_dE_dT(int n, double **dEU, int npairs, int *ppair, int *qpair,
   }
 
   if (Params.print_lvl > 3) {
-    fprintf(outfile, "dE/dU after backtransform: \n");
+    outfile->Printf( "dE/dU after backtransform: \n");
     print_mat(dEU, n, n, outfile);
   }
 
@@ -337,8 +337,8 @@ void calc_dE_dT(int n, double **dEU, int npairs, int *ppair, int *qpair,
     sintheta = sin(theta[pair]);
 
     /*
-    fprintf(outfile, "Derivative (i=%d, a=%d)\n", i, a);
-    fprintf(outfile, "Cos = %lf, Sin=%lf\n", costheta, sintheta);
+    outfile->Printf( "Derivative (i=%d, a=%d)\n", i, a);
+    outfile->Printf( "Cos = %lf, Sin=%lf\n", costheta, sintheta);
     */
 
     /* post-multiply Uleft by G(+) */
@@ -349,7 +349,7 @@ void calc_dE_dT(int n, double **dEU, int npairs, int *ppair, int *qpair,
     }
 
     /*
-    fprintf(outfile, "Uleft after postmultiplication by G(+)(%d,%d)\n",
+    outfile->Printf( "Uleft after postmultiplication by G(+)(%d,%d)\n",
       i, a);
     print_mat(Uleft, n, n, outfile);
     */
@@ -364,7 +364,7 @@ void calc_dE_dT(int n, double **dEU, int npairs, int *ppair, int *qpair,
     }
 
     /*
-    fprintf(outfile, "Uleft * dG/dTheta(%d,%d) * Uright\n", i, a);
+    outfile->Printf( "Uleft * dG/dTheta(%d,%d) * Uright\n", i, a);
     print_mat(Scratch, n, n, outfile);
     */
 
@@ -374,15 +374,15 @@ void calc_dE_dT(int n, double **dEU, int npairs, int *ppair, int *qpair,
         /*
         if ((fabs(Scratch[l][m]) > 0.0001) && ((l<nocc && m<nocc) ||
           (l >= nocc && m >= nocc))) {
-          fprintf(outfile, "nonzero element for theta(%d, %d) element", i, a);
-          fprintf(outfile, "%d %d\n", l, m);
+          outfile->Printf( "nonzero element for theta(%d, %d) element", i, a);
+          outfile->Printf( "%d %d\n", l, m);
         }
         */
       }
     }
 
     /*
-    fprintf(outfile, "dE/dTheta(%d,%d) = %12.6lf\n", i, a, dET[pair]);
+    outfile->Printf( "dE/dTheta(%d,%d) = %12.6lf\n", i, a, dET[pair]);
     */
 
     /* pre-multiply Uright by G */
@@ -393,7 +393,7 @@ void calc_dE_dT(int n, double **dEU, int npairs, int *ppair, int *qpair,
     }
 
     /*
-    fprintf(outfile, "Uright after premultiplication by G \n");
+    outfile->Printf( "Uright after premultiplication by G \n");
     print_mat(Uright, n, n, outfile);
     */
 

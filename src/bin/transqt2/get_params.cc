@@ -107,28 +107,28 @@ void get_params(Options & options)
     params.delete_tei = 0;
 
   if(params.print_lvl) {
-    fprintf(outfile, "\n\tInput parameters:\n");
-    fprintf(outfile, "\t-----------------\n");
-    fprintf(outfile, "\tWave function   =\t%s\n", params.wfn.c_str());
-    fprintf(outfile, "\tBacktransform   =\t%s\n", params.backtr ? "Yes" : "No");
-    fprintf(outfile, "\tPrint Level     =\t%d\n", params.print_lvl);
-    fprintf(outfile, "\tPrint TEIs      =\t%s\n", params.print_tei ? "Yes" : "No");
+    outfile->Printf( "\n\tInput parameters:\n");
+    outfile->Printf( "\t-----------------\n");
+    outfile->Printf( "\tWave function   =\t%s\n", params.wfn.c_str());
+    outfile->Printf( "\tBacktransform   =\t%s\n", params.backtr ? "Yes" : "No");
+    outfile->Printf( "\tPrint Level     =\t%d\n", params.print_lvl);
+    outfile->Printf( "\tPrint TEIs      =\t%s\n", params.print_tei ? "Yes" : "No");
     if(params.semicanonical) {
-      fprintf(outfile, "\tReference wfn   =\tROHF (using UHF for semicanonical orbitals)\n");
+      outfile->Printf( "\tReference wfn   =\tROHF (using UHF for semicanonical orbitals)\n");
     }
     else {
-      fprintf(outfile, "\tReference wfn   =\t%s\n",
+      outfile->Printf( "\tReference wfn   =\t%s\n",
           (params.ref == 0) ? "RHF" : ((params.ref == 1) ? "ROHF" : "UHF"));
     }
-    if(params.dertype == 0) fprintf(outfile, "\tDerivative      =\tNone\n");
-    else if(params.dertype == 1) fprintf(outfile, "\tDerivative      =\tFirst\n");
-    else if(params.dertype == 2) fprintf(outfile, "\tDerivative      =\tSecond\n");
-    else if(params.dertype == 3) fprintf(outfile, "\tDerivative      =\tResponse\n");
-    fprintf(outfile, "\tDelete TEI File =\t%s\n", params.delete_tei ? "Yes" : "No");
-    fprintf(outfile, "\tMemory (Mbytes) =\t%.1f\n", params.memory/1e6);
-    fprintf(outfile, "\tCache Level     =\t%d\n", params.cachelev);
-    fprintf(outfile, "\tCache Type      =\t%s\n", "LRU");
-    fflush(outfile);
+    if(params.dertype == 0) outfile->Printf( "\tDerivative      =\tNone\n");
+    else if(params.dertype == 1) outfile->Printf( "\tDerivative      =\tFirst\n");
+    else if(params.dertype == 2) outfile->Printf( "\tDerivative      =\tSecond\n");
+    else if(params.dertype == 3) outfile->Printf( "\tDerivative      =\tResponse\n");
+    outfile->Printf( "\tDelete TEI File =\t%s\n", params.delete_tei ? "Yes" : "No");
+    outfile->Printf( "\tMemory (Mbytes) =\t%.1f\n", params.memory/1e6);
+    outfile->Printf( "\tCache Level     =\t%d\n", params.cachelev);
+    outfile->Printf( "\tCache Type      =\t%s\n", "LRU");
+    
   }
 }
 

@@ -73,7 +73,7 @@ void resort_tei(void)
   file_build(&F, 95, tolerance, 0, 1, 0, 0);
   global_dpd_->file4_close(&F);
 
-  fflush(outfile);
+  
 
 }
 

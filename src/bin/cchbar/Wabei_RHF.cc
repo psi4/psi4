@@ -64,19 +64,19 @@ void Wabei_RHF(void)
   /** Term I **/
   /** <Ei|Ab> **/
   if(params.print & 2) {
-    fprintf(outfile, "\tF -> Wabei...");
-    fflush(outfile);
+    outfile->Printf( "\tF -> Wabei...");
+    
   }
   global_dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
   global_dpd_->buf4_sort(&F, PSIF_CC_HBAR, qpsr, 11, 5, "WAbEi (Ei,Ab)");
   global_dpd_->buf4_close(&F);
-  if(params.print & 2) fprintf(outfile, "done.\n");
+  if(params.print & 2) outfile->Printf( "done.\n");
 
   /** Term II **/
   /** - F_ME t_Mi^Ab **/
   if(params.print & 2) {
-    fprintf(outfile, "\tFME*T2 -> Wabei...");
-    fflush(outfile);
+    outfile->Printf( "\tFME*T2 -> Wabei...");
+    
   }
   global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
   global_dpd_->file2_init(&Fme, PSIF_CC_OEI, 0, 0, 1, "FME");
@@ -125,13 +125,13 @@ void Wabei_RHF(void)
   global_dpd_->file2_close(&Fme);
   global_dpd_->buf4_close(&T2);
 
-  if(params.print & 2) fprintf(outfile, "done.\n");
+  if(params.print & 2) outfile->Printf( "done.\n");
 
   /** Term IIIa **/
   /** <Ab|Ef> t_i^f **/
   if(params.print & 2) {
-    fprintf(outfile, "\tB*T1 -> Wabei...");
-    fflush(outfile);
+    outfile->Printf( "\tB*T1 -> Wabei...");
+    
   }
   /* Term re-written to use only (Ei,Ab) ordering on the target, TDC, 5/11/05 */
   /* Code modified to use only symmetric and antisymmetry <ab|cd> ints, TDC, 9/25/05 */
@@ -206,12 +206,12 @@ void Wabei_RHF(void)
   global_dpd_->buf4_close(&Z2);
   global_dpd_->buf4_close(&Z1);
 
-  if(params.print & 2) fprintf(outfile, "done.\n");
+  if(params.print & 2) outfile->Printf( "done.\n");
 
   /** Terms IIIc + IIId + IV **/
   if(params.print & 2) {
-    fprintf(outfile, "\tD*T1*T2 + E*T2 -> Wabei...");
-    fflush(outfile);
+    outfile->Printf( "\tD*T1*T2 + E*T2 -> Wabei...");
+    
   }
   global_dpd_->buf4_init(&Z, PSIF_CC_HBAR, 0, 0, 11, 0, 11, 0, "WMnIe (nM,eI)");
   global_dpd_->buf4_sort(&Z, PSIF_CC_HBAR, rspq, 11, 0, "WMnIe (eI,nM)");
@@ -244,13 +244,13 @@ void Wabei_RHF(void)
   global_dpd_->buf4_close(&T);
   global_dpd_->buf4_close(&Z);
   global_dpd_->buf4_close(&W);
-  if(params.print & 2) fprintf(outfile, "done.\n");
+  if(params.print & 2) outfile->Printf( "done.\n");
 
   /*** Terms IIIB + V ***/
   /* Wabei <-- Z1(mi,fb) <ma|fe> - t(mi,fb) <ma|ef> - tau(mi,af) <mb|ef> */
   if(params.print & 2) {
-    fprintf(outfile, "\t(T2+T1*T1) * F -> Wabei...");
-    fflush(outfile);
+    outfile->Printf( "\t(T2+T1*T1) * F -> Wabei...");
+    
   }
   build_Z1(); /* Z1(ib,mf) = 2 t(mi,fb) - t(mi,bf) - t(m,b) t(i,f) */
 
@@ -270,7 +270,7 @@ void Wabei_RHF(void)
       if(coltot)
 	maxrows = DPD_BIGNUM/coltot;
       if(maxrows < 1) {
-	fprintf(stderr, "\nWabei_RHF Error: A single row of ovvv > 2 GW.\n");
+	outfile->Printf( "\nWabei_RHF Error: A single row of ovvv > 2 GW.\n");
 	exit(PSI_RETURN_FAILURE);
       }
       else maxrows = DPD_BIGNUM;
@@ -284,7 +284,7 @@ void Wabei_RHF(void)
     }
     if(core_total > dpd_memfree()) incore = 0;
     if(!incore && (params.print & 2)) 
-      fprintf(outfile, "\nUsing out-of-core algorithm for (T2+T1*T1)*F -> Wabei.\n");
+      outfile->Printf( "\nUsing out-of-core algorithm for (T2+T1*T1)*F -> Wabei.\n");
 
     global_dpd_->buf4_init(&W, PSIF_CC_TMP0, 0, 10, 5, 10, 5, 0, "W(ib,ea)");
     global_dpd_->buf4_init(&F, PSIF_CC_TMP0, 0, 10, 5, 10, 5, 0, "F <ia|bc> (ib,ca)");
@@ -319,7 +319,7 @@ void Wabei_RHF(void)
   ** ovvv terms beyond <ia|bc> integrals and the WAbEi target, but it's very slow. */
   else {
     if(params.print & 2) 
-      fprintf(outfile, "\nUsing low-disk algorithm for (T2+T1*T1)*F -> Wabei.\n");
+      outfile->Printf( "\nUsing low-disk algorithm for (T2+T1*T1)*F -> Wabei.\n");
 
     global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 11, 5, 11, 5, 0, "WAbEi (Ei,Ab)");
     /* prepare rows of W in advance */
@@ -421,14 +421,14 @@ void Wabei_RHF(void)
     global_dpd_->buf4_close(&W);
   }
 
-  if(params.print & 2) fprintf(outfile, "done.\n");
+  if(params.print & 2) outfile->Printf( "done.\n");
 
   /** Terms VI and VII **/
 
   /** t_in^bf  <Mn|Ef> + t_iN^bF <MN||EF> --> Z1_MEib **/
   if(params.print & 2) {
-    fprintf(outfile, "\tT1*(C+D*T2) -> Wabei...");
-    fflush(outfile);
+    outfile->Printf( "\tT1*(C+D*T2) -> Wabei...");
+    
   }
   global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "Z(ME,ib)");
   global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 10, 10, 10, 10, 0, "D 2<ij|ab> - <ij|ba> (ia,jb)");
@@ -528,7 +528,7 @@ void Wabei_RHF(void)
   global_dpd_->buf4_close(&W);
   global_dpd_->buf4_close(&Z);
 
-  if(params.print & 2) fprintf(outfile, "done.\n");
+  if(params.print & 2) outfile->Printf( "done.\n");
 }
 
 /*

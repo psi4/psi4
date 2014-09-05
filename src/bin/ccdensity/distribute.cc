@@ -77,7 +77,7 @@ void distribute(void)
     /* Check integral into each class */
     classify(p,q,r,s,value,&ABuf,&BBuf,&CBuf,&DBuf,&EBuf,&FBuf);
 
-/*    fprintf(outfile, "(%d %d|%d %d) = %20.10lf\n", p, q, r, s, value);  */
+/*    outfile->Printf( "(%d %d|%d %d) = %20.10lf\n", p, q, r, s, value);  */
 
     } /* end loop through current buffer */
 
@@ -97,7 +97,7 @@ void distribute(void)
       /* Check integral into each class */
       classify(p,q,r,s,value,&ABuf,&BBuf,&CBuf,&DBuf,&EBuf,&FBuf);
 
-/*      fprintf(outfile, "(%d %d|%d %d) = %20.10lf\n", p, q, r, s, value); */
+/*      outfile->Printf( "(%d %d|%d %d) = %20.10lf\n", p, q, r, s, value); */
 
       } /* end loop through current buffer */
     } /* end loop over reading buffers */
@@ -117,7 +117,7 @@ void distribute(void)
   iwl_buf_close(&EBuf, 1);
   iwl_buf_close(&FBuf, 1);
 
-  fflush(outfile);
+  
 }
 
 

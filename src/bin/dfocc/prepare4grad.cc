@@ -36,14 +36,14 @@ void DFOCC::prepare4grad()
 {      
     separable_tpdm();
     idp2();
-    fprintf(outfile,"\tComputing the generalized Fock matrix (GFM)...\n");
-    fflush(outfile);
+    outfile->Printf("\tComputing the generalized Fock matrix (GFM)...\n");
+    
     gfock_vo();
     gfock_ov();
     gfock_oo();
     gfock_vv();
-    fprintf(outfile,"\tComputing the orbital gradient...\n");
-    fflush(outfile);
+    outfile->Printf("\tComputing the orbital gradient...\n");
+    
     mograd();
     effective_mograd();
     timer_on("Z-vector");
@@ -63,8 +63,8 @@ void DFOCC::prepare4grad()
 //=======================================================          
 void DFOCC::effective_pdms()
 {   
-    fprintf(outfile,"\tComputing the relaxed response density matrices...\n");
-    fflush(outfile);
+    outfile->Printf("\tComputing the relaxed response density matrices...\n");
+    
 
     SharedTensor2d K, L, G, Gsep, Z, Z2;
     timer_on("effective_pdms");
@@ -292,8 +292,8 @@ else if (reference_ == "UNRESTRICTED") {
 //=======================================================          
 void DFOCC::effective_gfm()
 {   
-    fprintf(outfile,"\tComputing the relaxed GFM...\n");
-    fflush(outfile);
+    outfile->Printf("\tComputing the relaxed GFM...\n");
+    
 
     SharedTensor2d K, L;
     timer_on("effective_gfm");
@@ -537,8 +537,8 @@ else if (reference_ == "UNRESTRICTED") {
 //=======================================================          
 void DFOCC::effective_pdm_gfm()
 {   
-    fprintf(outfile,"\tComputing the relaxed PDMs and GFM...\n");
-    fflush(outfile);
+    outfile->Printf("\tComputing the relaxed PDMs and GFM...\n");
+    
 
     SharedTensor2d K, L, G, Gsep, Z, Z2;
     timer_on("Gamma^eff");

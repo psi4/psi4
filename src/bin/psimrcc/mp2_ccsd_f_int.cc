@@ -65,8 +65,8 @@ void MP2_CCSD::build_F_ae_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the F_ae Intermediates   ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the F_ae Intermediates   ...");
+    
   );
   // Add the VV Fock matrix with the diagonal terms zeroed
   blas->solve("F_ae[v][v]{u} = fock[v][v]{u}");
@@ -86,8 +86,8 @@ void MP2_CCSD::build_F_ae_intermediates()
     blas->print("F_ae[v][v]{u}");
   );
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   );
 }
 
@@ -95,8 +95,8 @@ void MP2_CCSD::build_F_AE_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the F_AE Intermediates   ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the F_AE Intermediates   ...");
+    
   );
   // Add the VV Fock matrix with the diagonal terms zeroed
   blas->solve("F_AE[V][V]{u} = fock[V][V]{u}");
@@ -116,8 +116,8 @@ void MP2_CCSD::build_F_AE_intermediates()
   DEBUGGING(3,blas->print("F_AE[V][V]{u}"););
 
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   );
 }
 
@@ -125,8 +125,8 @@ void MP2_CCSD::build_F_mi_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the F_mi Intermediates   ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the F_mi Intermediates   ...");
+    
   )
 
   // Add the VV Fock matrix with the diagonal terms zeroed
@@ -145,8 +145,8 @@ void MP2_CCSD::build_F_mi_intermediates()
     blas->print("F_mi[o][o]{u}"););
 
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   )
 }
 
@@ -154,8 +154,8 @@ void MP2_CCSD::build_F_MI_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the F_MI Intermediates   ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the F_MI Intermediates   ...");
+    
   )
   // Open-shell
   // Add the VV Fock matrix with the diagonal terms zeroed
@@ -176,8 +176,8 @@ void MP2_CCSD::build_F_MI_intermediates()
   DEBUGGING(3,blas->print("F_MI[O][O]{u}"););
 
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   );
 }
 
@@ -185,16 +185,16 @@ void MP2_CCSD::build_F_prime_mi_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the F'_mi Intermediates  ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the F'_mi Intermediates  ...");
+    
   )
   blas->solve("F'_mi[o][o]{u} = F_mi[o][o]{u}");
   blas->solve("F'_mi[o][o]{u} += #12# 1/2 F_me[o][v]{u} 2@2 t1[o][v]{u}");
   blas->reduce_spaces("F'_mi[o][a]{u}","F'_mi[o][o]{u}");
 
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   );
 }
 
@@ -202,8 +202,8 @@ void MP2_CCSD::build_F_prime_MI_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the F'_MI Intermediates  ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the F'_MI Intermediates  ...");
+    
   );
 
   blas->reduce_spaces("F'_MI[O][A]{u}","F_MI[O][O]{u}");
@@ -214,8 +214,8 @@ void MP2_CCSD::build_F_prime_MI_intermediates()
   DEBUGGING(3,blas->print("F'_MI[O][A]{u}"););
 
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   );
 }
 
@@ -223,8 +223,8 @@ void MP2_CCSD::build_F_me_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the F_me Intermediates   ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the F_me Intermediates   ...");
+    
   )
   // Add the VV Fock matrix with the diagonal terms zeroed
   blas->solve("F_me[o][v]{u} = fock[o][v]{u}");
@@ -237,8 +237,8 @@ void MP2_CCSD::build_F_me_intermediates()
   DEBUGGING(3,blas->print("F_me[o][v]{u}"););
 
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   );
 }
 
@@ -246,8 +246,8 @@ void MP2_CCSD::build_F_ME_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the F_ME Intermediates   ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the F_ME Intermediates   ...");
+    
   );
   // Add the VV Fock matrix with the diagonal terms zeroed
   blas->solve("F_ME[O][V]{u} = fock[O][V]{u}");
@@ -260,8 +260,8 @@ void MP2_CCSD::build_F_ME_intermediates()
   DEBUGGING(3,blas->print("F_ME[O][V]{u}"););
 
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   );
 }
 
@@ -269,8 +269,8 @@ void MP2_CCSD::build_F_prime_ae_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the F'_ae Intermediates  ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the F'_ae Intermediates  ...");
+    
   )
   // Closed-Shell + Open-Shell Spin-Adapted Form
   // Add the VV Fock matrix with the diagonal terms zeroed
@@ -286,8 +286,8 @@ void MP2_CCSD::build_F_prime_ae_intermediates()
     blas->print("F'_ae[a][v]{u}"););
 
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   );
 }
 
@@ -295,8 +295,8 @@ void MP2_CCSD::build_F_prime_AE_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the F'_AE Intermediates  ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the F'_AE Intermediates  ...");
+    
   )
   // Open-Shell
   // Add the VV Fock matrix with the diagonal terms zeroed
@@ -306,8 +306,8 @@ void MP2_CCSD::build_F_prime_AE_intermediates()
   DEBUGGING(3,blas->print("F'_AE[A][V]{u}"););
 
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   );
 }
 

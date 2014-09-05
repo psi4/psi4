@@ -70,8 +70,8 @@ if (reference_ == "RESTRICTED") {
     // print
     if(print_ > 2){
       for(int i = 0; i < nidpA; i++){
-        fprintf(outfile,"\ti, idprowA, idpcolA, wogA: %3d %3d %3d %20.14f\n", i, idprowA->get(i), idpcolA->get(i), wogA->get(i)); 
-	fflush(outfile);
+        outfile->Printf("\ti, idprowA, idpcolA, wogA: %3d %3d %3d %20.14f\n", i, idprowA->get(i), idpcolA->get(i), wogA->get(i)); 
+	
       }
     }
 
@@ -135,12 +135,12 @@ else if (reference_ == "UNRESTRICTED") {
     // print
     if(print_ > 2){
       for(int i = 0; i < nidpA; i++){
-        fprintf(outfile,"\ti, idprowA, idpcolA, wogA: %3d %3d %3d %20.14f\n", i, idprowA->get(i), idpcolA->get(i), wogA->get(i)); 
-	fflush(outfile);
+        outfile->Printf("\ti, idprowA, idpcolA, wogA: %3d %3d %3d %20.14f\n", i, idprowA->get(i), idpcolA->get(i), wogA->get(i)); 
+	
       }
       for(int i = 0; i < nidpB; i++){
-        fprintf(outfile,"\ti, idprowB, idpcolB, wogB: %3d %3d %3d %20.14f\n", i, idprowB->get(i), idpcolB->get(i), wogB->get(i)); 
-	fflush(outfile);
+        outfile->Printf("\ti, idprowB, idpcolB, wogB: %3d %3d %3d %20.14f\n", i, idprowB->get(i), idpcolB->get(i), wogB->get(i)); 
+	
       }
     }
 

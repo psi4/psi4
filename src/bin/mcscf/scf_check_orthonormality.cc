@@ -49,11 +49,11 @@ void SCF::check_orthonormality()
         offdiagonal += fabs(CSC->get(h,i,j));
 
   if((offdiagonal > 1.0e-8) || ((diagonal-double(nso)) > 1.0e-8)){
-    fprintf(outfile,"\n\n  Warning: CSC has an orthonormality index of %lf",offdiagonal);
-    fprintf(outfile,"\n  Trace(CSC) - nso = %lf",diagonal-nso);
-    fprintf(outfile,"      Sum_i>j (CSC)ij  = %lf",offdiagonal);
+    outfile->Printf("\n\n  Warning: CSC has an orthonormality index of %lf",offdiagonal);
+    outfile->Printf("\n  Trace(CSC) - nso = %lf",diagonal-nso);
+    outfile->Printf("      Sum_i>j (CSC)ij  = %lf",offdiagonal);
   }else{
-    fprintf(outfile,"\n  MOs orthonormality check passed.");
+    outfile->Printf("\n  MOs orthonormality check passed.");
   }
 }
 

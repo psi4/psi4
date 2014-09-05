@@ -36,7 +36,7 @@ namespace psi{ namespace occwave{
 void OCCWave::ekt_ea()
 {   
 
-//fprintf(outfile,"\n ekt_ea is starting... \n"); fflush(outfile);
+//outfile->Printf("\n ekt_ea is starting... \n"); 
 
      SharedMatrix GFock_copyA = boost::shared_ptr<Matrix>(new Matrix("Alpha GF copy", nirrep_, nmopi_, nmopi_));
      SharedMatrix g1symm_copyA = boost::shared_ptr<Matrix>(new Matrix("Alpha OPDM copy", nirrep_, nmopi_, nmopi_));
@@ -270,9 +270,9 @@ void OCCWave::ekt_ea()
     }
  
     // Print EAs
-    fprintf(outfile,"\n\tEKT-OCC Electron Affinities (Alpha Spin Case) \n"); 
-    fprintf(outfile,"\t------------------------------------------------------------------- \n"); 
-    fflush(outfile);
+    outfile->Printf("\n\tEKT-OCC Electron Affinities (Alpha Spin Case) \n"); 
+    outfile->Printf("\t------------------------------------------------------------------- \n"); 
+    
 	  
     Molecule& mol = *reference_wavefunction_->molecule().get();
     CharacterTable ct = mol.point_group()->char_table();
@@ -280,31 +280,31 @@ void OCCWave::ekt_ea()
 
  // print alpha EAs
  if (print_ < 2) {
-    fprintf(outfile, "\tState    Symmetry   -EA (a.u.)       EA (eV)        Pole Strength \n");
-    fprintf(outfile,"\t------------------------------------------------------------------- \n"); 
-    fflush(outfile);   
+    outfile->Printf( "\tState    Symmetry   -EA (a.u.)       EA (eV)        Pole Strength \n");
+    outfile->Printf("\t------------------------------------------------------------------- \n"); 
+       
     for (int i = 0; i < nvoA; ++i){
          int h = irrep_virA->get(i);
-	 fprintf(outfile,"\t%3d %10s %15.6f %15.6f %15.6f \n", i+1, ct.gamma(h).symbol(), 
+	 outfile->Printf("\t%3d %10s %15.6f %15.6f %15.6f \n", i+1, ct.gamma(h).symbol(), 
                           evirA->get(i), -evirA->get(i)*pc_hartree2ev, ps_virA->get(i));
-	 fflush(outfile);   
+	    
     }
-    fprintf(outfile,"\t------------------------------------------------------------------- \n"); 
-    fflush(outfile);   
+    outfile->Printf("\t------------------------------------------------------------------- \n"); 
+       
  }// end if
 
  else if (print_ >= 2) {
-    fprintf(outfile, "\tState    Symmetry   -EA (a.u.)       EA (eV)        Pole Strength \n");
-    fprintf(outfile,"\t------------------------------------------------------------------- \n"); 
-    fflush(outfile);   
+    outfile->Printf( "\tState    Symmetry   -EA (a.u.)       EA (eV)        Pole Strength \n");
+    outfile->Printf("\t------------------------------------------------------------------- \n"); 
+       
     for (int i = 0; i < nmo_; ++i){
          int h = irrep_A->get(i);
-	 fprintf(outfile,"\t%3d %10s %15.6f %15.6f %15.6f \n", i+1, ct.gamma(h).symbol(), 
+	 outfile->Printf("\t%3d %10s %15.6f %15.6f %15.6f \n", i+1, ct.gamma(h).symbol(), 
                           evals_A->get(i), -evals_A->get(i)*pc_hartree2ev, ps_vec2A->get(i));
-	 fflush(outfile);   
+	    
     }
-    fprintf(outfile,"\t------------------------------------------------------------------- \n"); 
-    fflush(outfile);   
+    outfile->Printf("\t------------------------------------------------------------------- \n"); 
+       
  }// end else if
 
 //===========================================================================================
@@ -451,37 +451,37 @@ if (reference_ == "UNRESTRICTED") {
     }
 
     // Print EAs
-    fprintf(outfile,"\n\tEKT-OCC Electron Affinities (Beta Spin Case) \n"); 
-    fprintf(outfile,"\t------------------------------------------------------------------- \n"); 
-    fflush(outfile);
+    outfile->Printf("\n\tEKT-OCC Electron Affinities (Beta Spin Case) \n"); 
+    outfile->Printf("\t------------------------------------------------------------------- \n"); 
+    
 
 // print alpha EAs
  if (print_ < 2) {
-    fprintf(outfile, "\tState    Symmetry   -EA (a.u.)       EA (eV)        Pole Strength \n");
-    fprintf(outfile,"\t------------------------------------------------------------------- \n"); 
-    fflush(outfile);   
+    outfile->Printf( "\tState    Symmetry   -EA (a.u.)       EA (eV)        Pole Strength \n");
+    outfile->Printf("\t------------------------------------------------------------------- \n"); 
+       
     for (int i = 0; i < nvoB; ++i){
          int h = irrep_virB->get(i);
-	 fprintf(outfile,"\t%3d %10s %15.6f %15.6f %15.6f \n", i+1, ct.gamma(h).symbol(), 
+	 outfile->Printf("\t%3d %10s %15.6f %15.6f %15.6f \n", i+1, ct.gamma(h).symbol(), 
                           evirB->get(i), -evirB->get(i)*pc_hartree2ev, ps_virB->get(i));
-	 fflush(outfile);   
+	    
     }
-    fprintf(outfile,"\t------------------------------------------------------------------- \n"); 
-    fflush(outfile);   
+    outfile->Printf("\t------------------------------------------------------------------- \n"); 
+       
  }// end if
 
  else if (print_ >= 2) {
-    fprintf(outfile, "\tState    Symmetry   -EA (a.u.)       EA (eV)        Pole Strength \n");
-    fprintf(outfile,"\t------------------------------------------------------------------- \n"); 
-    fflush(outfile);   
+    outfile->Printf( "\tState    Symmetry   -EA (a.u.)       EA (eV)        Pole Strength \n");
+    outfile->Printf("\t------------------------------------------------------------------- \n"); 
+       
     for (int i = 0; i < nmo_; ++i){
          int h = irrep_B->get(i);
-	 fprintf(outfile,"\t%3d %10s %15.6f %15.6f %15.6f \n", i+1, ct.gamma(h).symbol(), 
+	 outfile->Printf("\t%3d %10s %15.6f %15.6f %15.6f \n", i+1, ct.gamma(h).symbol(), 
                           evals_B->get(i), -evals_B->get(i)*pc_hartree2ev, ps_vec2B->get(i));
-	 fflush(outfile);   
+	    
     }
-    fprintf(outfile,"\t------------------------------------------------------------------- \n"); 
-    fflush(outfile);  
+    outfile->Printf("\t------------------------------------------------------------------- \n"); 
+      
  }// end else if
 
        GFock_primeB.reset();
@@ -531,7 +531,7 @@ if (reference_ == "UNRESTRICTED") {
        delete ps_virA;
        delete evirA;
 
-//fprintf(outfile,"\n ekt_ea is done. \n"); fflush(outfile);
+//outfile->Printf("\n ekt_ea is done. \n"); 
 
 } // end ekt_ip
 }} // End Namespaces

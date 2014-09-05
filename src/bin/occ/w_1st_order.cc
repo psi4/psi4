@@ -210,27 +210,27 @@ else if (reference_ == "UNRESTRICTED") {
     if (print_ > 3) {
       global_dpd_->buf4_init(&W, PSIF_OCC_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "W_1 (OV|OV)");
-      global_dpd_->buf4_print(&W, outfile, 1);
+      global_dpd_->buf4_print(&W, "outfile", 1);
       global_dpd_->buf4_close(&W);
 
       global_dpd_->buf4_init(&W, PSIF_OCC_DPD, 0, ID("[o,v]"), ID("[o,v]"),
                   ID("[o,v]"), ID("[o,v]"), 0, "W_1 (ov|ov)");
-      global_dpd_->buf4_print(&W, outfile, 1);
+      global_dpd_->buf4_print(&W, "outfile", 1);
       global_dpd_->buf4_close(&W);
 
       global_dpd_->buf4_init(&W, PSIF_OCC_DPD, 0, ID("[O,V]"), ID("[o,v]"),
                   ID("[O,V]"), ID("[o,v]"), 0, "W_1 (OV|ov)");
-      global_dpd_->buf4_print(&W, outfile, 1);
+      global_dpd_->buf4_print(&W, "outfile", 1);
       global_dpd_->buf4_close(&W);
 
       global_dpd_->buf4_init(&W, PSIF_OCC_DPD, 0, ID("[O,v]"), ID("[O,v]"),
                   ID("[O,v]"), ID("[O,v]"), 0, "W_1 (Ov|Ov)");
-      global_dpd_->buf4_print(&W, outfile, 1);
+      global_dpd_->buf4_print(&W, "outfile", 1);
       global_dpd_->buf4_close(&W);
 
       global_dpd_->buf4_init(&W, PSIF_OCC_DPD, 0, ID("[o,V]"), ID("[o,V]"),
                   ID("[o,V]"), ID("[o,V]"), 0, "W_1 (oV|oV)");
-      global_dpd_->buf4_print(&W, outfile, 1);
+      global_dpd_->buf4_print(&W, "outfile", 1);
       global_dpd_->buf4_close(&W);
     }
     

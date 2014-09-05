@@ -83,8 +83,8 @@ int DPD::contract444(dpdbuf4 *X, dpdbuf4 *Y, dpdbuf4 *Z,
     zrow = Z->params->rowtot; zcol = Z->params->coltot;
 
     if((zrow != xrow) || (zcol != ycol) || (xcol != yrow)) {
-        fprintf(stderr, "** Alignment error in contract444 **\n");
-        dpd_error("dpd_contract444",stderr);
+        outfile->Printf( "** Alignment error in contract444 **\n");
+        dpd_error("dpd_contract444","outfile");
     }
 #endif
 
@@ -112,7 +112,7 @@ int DPD::contract444(dpdbuf4 *X, dpdbuf4 *Y, dpdbuf4 *Z,
                 rows_per_bucket = X->params->rowtot[Hx];
 
             if(!rows_per_bucket)
-                dpd_error("contract444: Not enough memory for one row", stderr);
+                dpd_error("contract444: Not enough memory for one row", "outfile");
 
             nbuckets = (int) ceil((double) X->params->rowtot[Hx]/
                                   (double) rows_per_bucket);
@@ -126,29 +126,29 @@ int DPD::contract444(dpdbuf4 *X, dpdbuf4 *Y, dpdbuf4 *Z,
 
 #if DPD_DEBUG
         if(!incore) {
-            fprintf(stderr, "Contract444: memory information.\n");
-            fprintf(stderr, "Contract444: h = %d, row = %d, col = %d, tot = %d\n",
+            outfile->Printf( "Contract444: memory information.\n");
+            outfile->Printf( "Contract444: h = %d, row = %d, col = %d, tot = %d\n",
                     Hx, X->params->rowtot[Hx], X->params->coltot[Hx^GX],
                     X->params->rowtot[Hx] * X->params->coltot[Hx^GX]);
 
-            fprintf(stderr, "Contract444: nbuckets = %d\n", nbuckets);
-            fprintf(stderr, "Contract444: rows_per_bucket = %d\n",rows_per_bucket);
-            fprintf(stderr, "Contract444: rows_left = %d\n",rows_left);
+            outfile->Printf( "Contract444: nbuckets = %d\n", nbuckets);
+            outfile->Printf( "Contract444: rows_per_bucket = %d\n",rows_per_bucket);
+            outfile->Printf( "Contract444: rows_left = %d\n",rows_left);
             memtotal = X->params->rowtot[Hx] * X->params->coltot[Hx^GX];
             byte_conv = ((double) sizeof(double))/1e6;
-            fprintf(stderr, "Contract444: out of core algorithm used.\n");
-            fprintf(stderr, "Contract444: memtotal = %d.\n", memtotal);
-            fprintf(stderr, "Contract444: Need %5.2f MB to run in memory.\n",
+            outfile->Printf( "Contract444: out of core algorithm used.\n");
+            outfile->Printf( "Contract444: memtotal = %d.\n", memtotal);
+            outfile->Printf( "Contract444: Need %5.2f MB to run in memory.\n",
                     ((double) memtotal)*byte_conv);
-            dpd_file4_cache_print(stderr);
-            fflush(stderr);
+            dpd_file4_cache_print("outfile");
+            fflush("outfile");
         }
 #endif
 
         /*
       if(!incore && Xtrans) {
-      dpd_file4_cache_print(stderr);
-      dpd_error("out-of-core contract444 Xtrans=1 not coded", stderr);
+      dpd_file4_cache_print("outfile");
+      dpd_error("out-of-core contract444 Xtrans=1 not coded", "outfile");
       }
     */
 
@@ -180,8 +180,8 @@ int DPD::contract444(dpdbuf4 *X, dpdbuf4 *Y, dpdbuf4 *Z,
 
             /* out-of-core algorithm coded only for NT and TN arrangements, not NN or TT */
             if((!Ytrans && !Xtrans) || (Ytrans && Xtrans)) {
-                fprintf(stderr, "Out-of-core algorithm not yet coded for NN or TT DGEMM.\n");
-                dpd_error("contract444", stderr);
+                outfile->Printf( "Out-of-core algorithm not yet coded for NN or TT DGEMM.\n");
+                dpd_error("contract444", "outfile");
             }
 
             buf4_mat_irrep_init_block(X, Hx, rows_per_bucket);

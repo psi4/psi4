@@ -56,7 +56,7 @@
 */
 
 namespace psi {
-extern FILE* outfile;
+
   namespace transqt2 {
 
 void uhf_fock_build(double **fock_a, double **fock_b, double **D_a, double **D_b);
@@ -94,18 +94,18 @@ void semicanonical_fock(void)
   chkpt_close();
 
   if(params.print_lvl > 2) {
-    fprintf(outfile, "\nAlpha Eigenvalues\n");
+    outfile->Printf( "\nAlpha Eigenvalues\n");
     for (i=0; i<nmo; i++)
-      fprintf(outfile, "%10.7lf\n", alpha_evals[i]);
-    fprintf(outfile, "\nBeta Eigenvalues\n");
+      outfile->Printf( "%10.7lf\n", alpha_evals[i]);
+    outfile->Printf( "\nBeta Eigenvalues\n");
     for (i=0; i<nmo; i++)
-      fprintf(outfile, "%10.7lf\n", beta_evals[i]);
-    fflush(outfile);
+      outfile->Printf( "%10.7lf\n", beta_evals[i]);
+    
 
-    fprintf(outfile, "\nAlpha Eigenvectors\n");
-    print_mat(C_a, nso, nmo, outfile);
-    fprintf(outfile, "\nBeta Eigenvectors\n");
-    print_mat(C_b, nso, nmo, outfile);
+    outfile->Printf( "\nAlpha Eigenvectors\n");
+    print_mat(C_a, nso, nmo, "outfile");
+    outfile->Printf( "\nBeta Eigenvectors\n");
+    print_mat(C_b, nso, nmo, "outfile");
   }
 
   free_block(C_a);
@@ -166,7 +166,7 @@ void uhf_fock_build(double **fock_a, double **fock_b, double **D_a, double **D_b
       pq = INDEX(p,q);
       rs = INDEX(r,s);
 
-      /* fprintf(outfile, "%d %d %d %d [%d] [%d] %20.15f\n", p, q, r, s, pq, rs, value); */
+      /* outfile->Printf( "%d %d %d %d [%d] [%d] %20.15f\n", p, q, r, s, pq, rs, value); */
 
       /* (pq|rs) */
       fock_a[p][q] += Dt[r][s] * value;

@@ -30,7 +30,7 @@
 
 namespace psi {
 
-    extern FILE *outfile;
+    
 
 /*!
 ** psiclean():

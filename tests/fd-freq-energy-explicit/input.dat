@@ -1,3 +1,6 @@
+#! Frequency by finite difference of energies.
+#! Automated version of this in pywrap-freq-e-sowreap. !nosample
+
 # This python input file facilitates a frequency computation by energy points, allowing
 # the user freedom to run the energy points in a distributed, parallel fashion.
 # The user must do the following:

@@ -56,9 +56,9 @@ namespace psi {
 
 void CdSalc::print() const
 {
-    fprintf(outfile, "\tirrep = %d, ncomponent = %ld\n", irrep_, ncomponent());
+    outfile->Printf( "\tirrep = %d, ncomponent = %ld\n", irrep_, ncomponent());
     for (int i=0; i<ncomponent(); ++i) {
-        fprintf(outfile, "\t\t%d: atom %d, direction %c, coef %lf\n",
+        outfile->Printf( "\t\t%d: atom %d, direction %c, coef %lf\n",
                 i,
                 components_[i].atom,
                 direction(components_[i].xyz),
@@ -68,27 +68,27 @@ void CdSalc::print() const
 
 void CdSalcWRTAtom::print() const
 {
-    fprintf(outfile, "\tx component, size = %ld\n", x_.size());
+    outfile->Printf( "\tx component, size = %ld\n", x_.size());
     for (int i=0; i<x_.size(); ++i) {
-        fprintf(outfile, "\t\t%d: salc %d, irrep %d, coef %lf\n",
+        outfile->Printf( "\t\t%d: salc %d, irrep %d, coef %lf\n",
                 i,
                 x_[i].salc,
                 x_[i].irrep,
                 x_[i].coef);
     }
 
-    fprintf(outfile, "\ty component, size = %ld\n", y_.size());
+    outfile->Printf( "\ty component, size = %ld\n", y_.size());
     for (int i=0; i<y_.size(); ++i) {
-        fprintf(outfile, "\t\t%d: salc %d, irrep %d, coef %lf\n",
+        outfile->Printf( "\t\t%d: salc %d, irrep %d, coef %lf\n",
                 i,
                 y_[i].salc,
                 y_[i].irrep,
                 y_[i].coef);
     }
 
-    fprintf(outfile, "\tz component, size = %ld\n", z_.size());
+    outfile->Printf( "\tz component, size = %ld\n", z_.size());
     for (int i=0; i<z_.size(); ++i) {
-        fprintf(outfile, "\t\t%d: salc %d, irrep %d, coef %lf\n",
+        outfile->Printf( "\t\t%d: salc %d, irrep %d, coef %lf\n",
                 i,
                 z_[i].salc,
                 z_[i].irrep,
@@ -121,7 +121,7 @@ CdSalcList::CdSalcList(boost::shared_ptr<Molecule> mol,
     Matrix X(3, 3);
     pI->diagonalize(X, ev);
 
-//    fprintf(outfile, "pI[0][1] = %20.14lf\n", pI->get(0, 1));
+//    outfile->Printf( "pI[0][1] = %20.14lf\n", pI->get(0, 1));
 //    molecule_->inertia_tensor()->print();
 //    X.eivprint(ev);
 
@@ -274,7 +274,7 @@ CdSalcList::CdSalcList(boost::shared_ptr<Molecule> mol,
     }
 
     // Raw - non-projected cartesian displacements
-    //salcs.print(outfile, "Raw, Nonprojected Cartesian Displacements");
+    //salcs.print("outfile", "Raw, Nonprojected Cartesian Displacements");
 
     // Project out any constraints
     salcs.project_out(constraints_ortho);
@@ -398,8 +398,8 @@ SharedMatrix CdSalcList::matrix_irrep(int h)
 
 void CdSalcList::print() const
 {
-    fprintf(outfile, "  Cartesian Displacement SALCs\n  By SALC:\n");
-    fprintf(outfile, "  Number of SALCs: %ld, nirreps: %d\n"
+    outfile->Printf( "  Cartesian Displacement SALCs\n  By SALC:\n");
+    outfile->Printf( "  Number of SALCs: %ld, nirreps: %d\n"
             "  Project out translations: %s\n"
             "  Project out rotations: %s\n",
             salcs_.size(), needed_irreps_,
@@ -409,13 +409,13 @@ void CdSalcList::print() const
     for (int i=0; i<salcs_.size(); ++i)
         salcs_[i].print();
 
-    fprintf(outfile, "\n  By Atomic Center:\n");
-    fprintf(outfile, "  Number of atomic centers: %ld\n", atom_salcs_.size());
+    outfile->Printf( "\n  By Atomic Center:\n");
+    outfile->Printf( "  Number of atomic centers: %ld\n", atom_salcs_.size());
     for (int i=0; i<atom_salcs_.size(); ++i) {
-        fprintf(outfile, "   Atomic Center %d:\n", i);
+        outfile->Printf( "   Atomic Center %d:\n", i);
         atom_salcs_[i].print();
     }
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
 }
 
 // Generate and return those translations or rotations that

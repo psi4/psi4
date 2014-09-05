@@ -76,9 +76,9 @@ public:
     boost::shared_ptr<Tensor>& operator[] (const std::string& key) { return tensors_[key]; }
 
     /// Print a brief summary
-    void print_header(FILE* fh = outfile) const { print(fh,0); } 
+    void print_header(std::string fh="outfile") const { print(fh,0); }
     /// Print a more detailed trace of the object
-    void print(FILE* fh = outfile, int print = 1) const; 
+    void print(std::string fh="outfile", int print = 1) const;
     
     /// Return the current core memory utilization of this instance, in doubles
     size_t core_doubles() const;
@@ -183,9 +183,9 @@ public:
     virtual size_t disk_doubles() const = 0;
 
     /// Print the full tensor data in scalar/vector/matrix/pages style if print >= 2
-    virtual void print(FILE* fh = outfile, int level = 2) const = 0;
+    virtual void print(std::string fh="outfile", int level = 2) const = 0;
     /// Print only name and sizing data
-    void print_header(FILE* fh = outfile) const { print(fh, 0); }
+    void print_header(std::string fh="outfile") const { print(fh, 0); }
     
 
     // => Common Interface <= //
@@ -334,7 +334,7 @@ public:
     virtual size_t disk_doubles() const { return 0L; }
     
     /// Print the full tensor data in scalar/vector/matrix/pages style if print >= 2
-    virtual void print(FILE* fh = outfile, int level = 2) const;
+    virtual void print(std::string fh="outfile", int level = 2) const;
     
     // => Conditional Accessors <= //
 
@@ -464,7 +464,7 @@ public:
     virtual size_t disk_doubles() const { return numel_; }
     
     /// Print the available tensor data
-    virtual void print(FILE* fh = outfile, int level = 2) const;
+    virtual void print(std::string fh="outfile", int level = 2) const;
     
     // => Conditional Accessors <= //
 

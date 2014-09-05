@@ -31,7 +31,8 @@
 
 #include "v3d.h"
 #include "physconst.h"
-
+#include "psi4-dec.h"
+#include "libparallel/ParallelPrinter.h"
 namespace opt {
 
 using namespace v3d;
@@ -139,16 +140,16 @@ double ** STRE::Dq2Dx2(GeomType geom) const {
 }
 
 // print stretch and value
-void STRE::print(FILE *fp, GeomType geom, int off) const {
+void STRE::print(std::string OutFileRMR, GeomType geom, int off) const {
   ostringstream iss(ostringstream::out); // create stream; allow output to it
   iss << get_definition_string(off);
-
+  boost::shared_ptr<psi::PsiOutStream> printer(OutFileRMR=="outfile"? psi::outfile:
+     boost::shared_ptr<psi::OutFile>(new psi::OutFile(OutFileRMR,psi::APPEND)));
   double val = value(geom);
   if (!s_frozen)
-    fprintf(fp,"\t %-15s  =  %15.6lf\t%15.6lf\n", iss.str().c_str(), val, val*_bohr2angstroms);
+    printer->Printf("\t %-15s  =  %15.6lf\t%15.6lf\n", iss.str().c_str(), val, val*_bohr2angstroms);
   else
-    fprintf(fp,"\t*%-15s  =  %15.6lf\t%15.6lf\n", iss.str().c_str(), val, val*_bohr2angstroms);
-  fflush(fp);
+    printer->Printf("\t*%-15s  =  %15.6lf\t%15.6lf\n", iss.str().c_str(), val, val*_bohr2angstroms);
 }
 
 // function to return string of coordinate definition
@@ -161,47 +162,51 @@ std::string STRE::get_definition_string(int off) const {
   return iss.str();
 }
 
-void STRE::print_intco_dat(FILE *fp, int off) const {
-  if (hbond) {
+void STRE::print_intco_dat(std::string OutFileRMR, int off) const {
+   boost::shared_ptr<psi::PsiOutStream> printer(OutFileRMR=="outfile"? psi::outfile:
+      boost::shared_ptr<psi::OutFile>(new psi::OutFile(OutFileRMR,psi::APPEND)));
+   if (hbond) {
     if (s_frozen)
-      fprintf(fp, "H*%6d%6d", s_atom[0]+1+off, s_atom[1]+1+off);
+      printer->Printf("H*%6d%6d", s_atom[0]+1+off, s_atom[1]+1+off);
     else
-      fprintf(fp, "H %6d%6d", s_atom[0]+1+off, s_atom[1]+1+off);
+      printer->Printf("H %6d%6d", s_atom[0]+1+off, s_atom[1]+1+off);
   }
   else {
     if (s_frozen)
-      fprintf(fp, "R*%6d%6d", s_atom[0]+1+off, s_atom[1]+1+off);
+      printer->Printf("R*%6d%6d", s_atom[0]+1+off, s_atom[1]+1+off);
     else
-      fprintf(fp, "R %6d%6d", s_atom[0]+1+off, s_atom[1]+1+off);
+      printer->Printf("R %6d%6d", s_atom[0]+1+off, s_atom[1]+1+off);
   }
   if (s_has_fixed_eq_val)
-    fprintf(fp, "%10.5lf", s_fixed_eq_val);
-  fprintf(fp, "\n");
-  fflush(fp);
+    printer->Printf("%10.5lf", s_fixed_eq_val);
+  printer->Printf("\n");
 }
 
 // print displacement
-void STRE::print_disp(FILE *fp, const double q_orig, const double f_q,
+void STRE::print_disp(std::string OutFileRMR, const double q_orig, const double f_q,
     const double dq, const double new_q, int atom_offset) const {
   ostringstream iss(ostringstream::out);
+  boost::shared_ptr<psi::PsiOutStream> printer(OutFileRMR=="outfile"? psi::outfile:
+     boost::shared_ptr<psi::OutFile>(new psi::OutFile(OutFileRMR,psi::APPEND)));
   if (s_frozen) iss << "*";
   iss << "R(" << s_atom[0]+atom_offset+1 << "," << s_atom[1]+atom_offset+1 << ")" << std::flush ;
-  fprintf(fp,"%-15s = %13.6lf%13.6lf%13.6lf%13.6lf\n",
+  printer->Printf("%-15s = %13.6lf%13.6lf%13.6lf%13.6lf\n",
     iss.str().c_str(), q_orig*_bohr2angstroms, f_q*_hartree2aJ/_bohr2angstroms,
     dq*_bohr2angstroms, new_q*_bohr2angstroms);
-  fflush(fp);
+
 }
 
 
 // print s vectors
-void STRE::print_s(FILE *fp, GeomType geom) const {
-  fprintf(fp,"S vector for stretch R(%d %d): \n",
+void STRE::print_s(std::string OutFileRMR, GeomType geom) const {
+   boost::shared_ptr<psi::PsiOutStream> printer(OutFileRMR=="outfile"? psi::outfile:
+      boost::shared_ptr<psi::OutFile>(new psi::OutFile(OutFileRMR,psi::APPEND)));
+   printer->Printf("S vector for stretch R(%d %d): \n",
     s_atom[0]+1, s_atom[1]+1);
   double **dqdx = DqDx(geom);
-  fprintf(fp,"Atom 1: %12.8f %12.8f,%12.8f\n", dqdx[0][0],dqdx[0][1],dqdx[0][2]);
-  fprintf(fp,"Atom 2: %12.8f %12.8f,%12.8f\n", dqdx[1][0],dqdx[1][1],dqdx[1][2]);
+  printer->Printf("Atom 1: %12.8f %12.8f,%12.8f\n", dqdx[0][0],dqdx[0][1],dqdx[0][2]);
+  printer->Printf("Atom 2: %12.8f %12.8f,%12.8f\n", dqdx[1][0],dqdx[1][1],dqdx[1][2]);
   free_matrix(dqdx);
-  fflush(fp);
 }
 
 bool STRE::operator==(const SIMPLE & s2) const {

@@ -19,136 +19,130 @@
  *
  *@END LICENSE
  */
+#ifndef _psi_src_lib_libparallel_mpi_wrapper_h_
+#define _psi_src_lib_libparallel_mpi_wrapper_h_
 
-#if defined(HAVE_MPI)
-
-#include <cstring>
 #include <string>
+
+#include <boost/shared_ptr.hpp>
+#include "parallel.h"
+#include <map>
+
+#if HAVE_MPI
+#include <boost/mpi.hpp>
+#include <boost/mpi/communicator.hpp>
 #include <mpi.h>
-
 namespace psi {
+class MPICommunicator:public Parallel<MPICommunicator> {
+   public:
+      //Convenient typedef of base type
+      typedef Parallel<MPICommunicator> Base;
 
-class MPICommunicator {
-    int me_;
-    int nproc_;
-    int nthread_;
-    std::string communicator_;
-    MPI_Comm comm_;
-public:
-    MPICommunicator(const int &argc, char **argv)
-    {
-        MPI_Init(const_cast<int*>(&argc), &argv);
+      ///Starts an MPI session, really should only be used in the beginning of Psi's execution
+      MPICommunicator(int &argc, char **argv);
 
-        comm_ = MPI_COMM_WORLD;
-        MPI_Comm_rank(comm_, &me_);
-        MPI_Comm_size(comm_, &nproc_);
-        nthread_ = 1;
-        communicator_ = "MPI";
-    }
+      ///Memory management is handled via smart pointer, so does nothing
+      ~MPICommunicator() {}
 
-    MPICommunicator(const MPICommunicator &copy) :
-        me_(copy.me_), nproc_(copy.nproc_),
-        nthread_(copy.nthread_), communicator_(copy.communicator_),
-        comm_(copy.comm_)
-    { }
+      /** \brief Basic assignment operator, checks for self-assignment.
+       *
+       * As is standard practice, this MPICommunicator calls the base assingment
+       * operator before copying MPICommunicator member variables.
+       *
+       * \param[in] other The MPICommunicator we are copying
+       */
+      MPICommunicator& operator=(const MPICommunicator& other);
 
-    ~MPICommunicator()
-    { }
+      /** \brief Provides MPI_Barrier functionality
+       *
+       * The point of MPI_Barrier is to halt further execution of a program until
+       * all processes in the communicator reach that point.  In that sense it
+       * synchronizes the processes.  Note in particular that this is specific
+       * to the communicator that it is called on.
+       *
+       * \param[in] Comm The communicator we are erecting a barrier on.  Defaults to current Comm.
+       */
+      void sync(const std::string& CommName="NONE") const;
 
-    MPICommunicator& operator =(const MPICommunicator& other)
-    {
-        if (this != &other) {
-            me_   = other.me_;
-            nproc_ = other.nproc_;
-            nthread_ = other.nthread_;
-            comm_ = other.comm_;
-        }
-        return *this;
-    }
+      int me(const std::string& CommName="NONE") const;
 
-    void sync()
-    {
-        MPI_Barrier(comm_);
-    }
+      int nproc(const std::string& CommName="NONE") const;
 
+      void MakeComm(const std::string& Name, const int Color,
+            const std::string& Comm2Split="NONE");
 
-    void raw_send(const void* data, int nbyte, int target)
-    {
-        MPI_Send(const_cast<void*>(data), nbyte, MPI_BYTE, target, 0, comm_);
-    }
+      ///Frees the processes in the communicator
+      void FreeComm(const std::string& Name="NONE");
 
-    void raw_recv(void* data, int nbyte, int sender)
-    {
-        MPI_Status status;
-        MPI_Recv(data, nbyte, MPI_BYTE, sender, 0, comm_, &status);
-    }
+      ///Returns the MPI_Comm associated with the current communicator
+      MPI_Comm GetMPIComm()const{return (MPI_Comm)GetComm("NONE");}
 
-    void raw_bcast(void* data, int nbyte, int broadcaster)
-    {
-        MPI_Bcast(data, nbyte, MPI_BYTE, broadcaster, comm_);
-    }
+   private:
+      /**\brief This is Boost's MPI environment object.
+       *
+       * In its creation Boost calls MPI_Initialize and in its destruction
+       *  MPI_Finalize is called.  Consequentially, it is imperative that
+       *  only one of these objects exist, and it is the first thing
+       *  created by Psi and the last thing destroyed by Psi.
+       *
+       */
+      boost::shared_ptr<boost::mpi::environment> Env;
 
-    template<typename type>
-    inline void bcast(type *data, int nelem, int broadcaster) {
-        raw_bcast(data, nelem * sizeof(type), broadcaster);
-    }
+      ///This is a mapping between communicator names and communicators.
+      std::map<std::string, boost::mpi::communicator> Communicators;
 
-    template<typename type>
-    inline void bcast_serializable(type& data, int broadcaster) {
+      /** \brief Helper function that returns the appropriate communicator by name.
+       *
+       * If Comm is "", then the default communicator is used, otherwise whatever
+       * is passed in as Comm is used as the key value.
+       *
+       * \param[in] Comm The name of the communicator we want
+       */
+      boost::mpi::communicator GetComm(const std::string& CommName) const;
 
-    }
+      ///So that the base class can access the implementation
+      friend class Parallel<MPICommunicator> ;
 
-    void sum(double* data, size_t nelem) {
-        double *receive_buffer = new double[nelem];
-        MPI_Allreduce(static_cast<void*>(data), static_cast<void*>(receive_buffer), nelem, MPI_DOUBLE, MPI_SUM, comm_);
-        std::memcpy(static_cast<void*>(data), static_cast<void*>(receive_buffer), sizeof(double)*nelem);
-        delete[] receive_buffer;
-    }
+      /* \brief Wrapper to MPI's Allgatherv
+       *
+       * Allgatherv parallelizes the process of calculating the elements of some vector V by P
+       * processes.  Unlike Allgather, Allgatherv allows each process to do different sized chunks
+       * of V.  At the end of the computation Allgatherv makes sure each process has its own copy
+       * of V.
+       *
+       * Let's assume we have P processes, that are splitting up the task of computing the
+       * elements of a vector V.  The i'th process, is incharge of n_i data points in V.
+       *
+       * \param[in]  data   This is the data calculated on i
+       * \param[in]  nbyte  This is the number of bytes that is to be transferred
+       * \param[out] target This is V
+       * \param[in]  counts This is a P element long array, where P_i=n_i
+       * \param[in]  displs This is the offset in V, where i's elements go
+       *
+       *
+       */
+      template <typename T>
+      void all_gatherImpl(const T* data, int nelem, T* target,
+            const std::string& Comm="NONE") const {
+         boost::mpi::all_gather(GetComm(Comm), data, nelem, target);
+      }
 
-#define SUMMEMBER(T, M) \
-    void raw_sum(T *data, int n, T *receive_buffer, int target) \
-    { \
-        bool alloc = false; \
-        if (receive_buffer == NULL) { \
-            alloc = true; \
-            receive_buffer = new T[n]; \
-        } \
-     \
-        if (target >= 0) \
-            MPI_Reduce(static_cast<void*>(data), static_cast<void*>(receive_buffer), n, M, MPI_SUM, target, comm_); \
-        else \
-            MPI_Allreduce(static_cast<void*>(data), static_cast<void*>(receive_buffer), n, M, MPI_SUM, comm_); \
-     \
-        if (alloc) { \
-            std::memcpy(static_cast<void*>(data), static_cast<void*>(receive_buffer), sizeof(T)*n); \
-            delete[] receive_buffer; \
-        } \
-    }
+      template <typename T>
+      void bcastImpl(T* data, int nelem,const int broadcaster,
+            const std::string& Comm="NONE") const {
+         boost::mpi::broadcast(GetComm(Comm), data, nelem, broadcaster);
+      }
 
-    SUMMEMBER(double, MPI_DOUBLE)
-    SUMMEMBER(unsigned int, MPI_INT)
-    SUMMEMBER(int, MPI_INT)
-    SUMMEMBER(char, MPI_CHAR)
-    SUMMEMBER(long, MPI_LONG)
+      template <typename T>
+      void bcastImpl(T& data,const int broadcaster,
+            const std::string&Comm="NONE")const{
+         boost::mpi::broadcast(GetComm(Comm), data, broadcaster);
+      }
 
-    void print(FILE *out) const
-    {
-        if (me() == 0) {
-            fprintf(out, "\n    Using MPICommunicator (Number of processes = %d)\n\n", nproc());
-        }
-    }
-
-    void finalize() {
-        MPI_Finalize();
-    }
-
-    inline int me() const { return me_; }
-    inline int nproc() const { return nproc_; }
-    inline int nthread() const { return nthread_; }
-    inline int thread_id(pthread_t) const { return 0; }
-    inline const std::string& communicator() const { return communicator_; }
 };
+}//End namespace psi
+//End mpiwrapper class
+#endif //End on HAVE_MPI
 
-}
 
-#endif
+#endif //End on header guard

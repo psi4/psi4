@@ -56,7 +56,7 @@ void EFP_FRAG::add_dummy_intcos(int ndummy) {
 
 // We will assign a value of 0 to these on the first iteration; subsequently, the
 // values will be calculated as total Delta(q) from the start of the optimization
-void EFP_FRAG::print_intcos(FILE *fp) {
+void EFP_FRAG::print_intcos(std::string OutFileRMR) {
   double *v = get_values_pointer();
   fprintf(fp,"\t * Coordinate *           * BOHR/RAD *       * ANG/DEG *\n");
   fprintf(fp,"\t     COM X        %20.10lf%20.10lf \n", v[0], v[0] * _bohr2angstroms);

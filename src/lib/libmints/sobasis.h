@@ -35,7 +35,7 @@ class shared_ptr;
 
 namespace psi {
 
-extern FILE *outfile;
+
 
 class BasisSet;
 class IntegralFactory;
@@ -228,7 +228,7 @@ public:
     //! Returns the vector of sorted shell list.
     std::vector<int> get_so_sorted_list() { return sorted_so_shell_list_; }
 
-    void print(FILE *out = outfile) const;
+    void print(std::string OutFileRMR = "outfile") const;
 };
 
 inline int SOBasisSet::function(int ishell)

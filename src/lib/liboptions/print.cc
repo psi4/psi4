@@ -98,10 +98,10 @@ namespace psi {
 
   void Options::print() {
     std::string list = to_string();
-    fprintf(outfile, "\n\n  Options:");
-    fprintf(outfile, "\n  ----------------------------------------------------------------------------\n");
-    fprintf(outfile, "%s\n", list.c_str());
-    fflush(outfile);
+    outfile->Printf( "\n\n  Options:");
+    outfile->Printf( "\n  ----------------------------------------------------------------------------\n");
+    outfile->Printf( "%s\n", list.c_str());
+    
   }
 
   std::string Options::globals_to_string() const {
@@ -141,9 +141,9 @@ namespace psi {
 
   void Options::print_globals() {
     std::string list = globals_to_string();
-    fprintf(outfile, "\n\n  Global Options:");
-    fprintf(outfile, "\n  ----------------------------------------------------------------------------\n");
-    fprintf(outfile, "%s\n", list.c_str());
+    outfile->Printf( "\n\n  Global Options:");
+    outfile->Printf( "\n  ----------------------------------------------------------------------------\n");
+    outfile->Printf( "%s\n", list.c_str());
   }
 
   std::vector<std::string> Options::list_globals() {

@@ -33,12 +33,12 @@
 #include <string>
 #include <ctime>
 #define EXTERN
-
+#include "psi4-dec.h"
 #include <sys/times.h>
 
 namespace psi {
 
-extern FILE *outfile;
+
 
 time_t time_start, time_end;
 time_t time_start_overall;
@@ -83,8 +83,8 @@ void tstart()
   sys_start = ((double) total_tmstime.tms_stime)/clk_tck;
 
 
-  fprintf(outfile,"\n*** tstart() called on %s\n", name);
-  fprintf(outfile,"*** at %s\n",ctime(&time_start));
+  outfile->Printf("\n*** tstart() called on %s\n", name);
+  outfile->Printf("*** at %s\n",ctime(&time_start));
 
   free(name);
 }
@@ -122,27 +122,27 @@ void tstop()
   sys_s = sys_stop - sys_start;
 
 
-  fprintf(outfile,"\n*** tstop() called on %s at %s", name, ctime(&time_end));
+  outfile->Printf("\n*** tstop() called on %s at %s", name, ctime(&time_end));
 
   /// print all module timings
-  fprintf(outfile,"Module time:\n");
-  fprintf(outfile,"\tuser time   = %10.2f seconds = %10.2f minutes\n",
+  outfile->Printf("Module time:\n");
+  outfile->Printf("\tuser time   = %10.2f seconds = %10.2f minutes\n",
           user_s, user_s/60.0);
-  fprintf(outfile,"\tsystem time = %10.2f seconds = %10.2f minutes\n",
+  outfile->Printf("\tsystem time = %10.2f seconds = %10.2f minutes\n",
           sys_s, sys_s/60.0);
-  fprintf(outfile,"\ttotal time  = %10d seconds = %10.2f minutes\n",
+  outfile->Printf("\ttotal time  = %10d seconds = %10.2f minutes\n",
           (int)total_time, ((double) total_time)/60.0);
 
   user_s = user_stop - user_start_overall;
   sys_s = sys_stop - sys_start_overall;
 
   /// print all overall timings
-  fprintf(outfile,"Total time:\n");
-  fprintf(outfile,"\tuser time   = %10.2f seconds = %10.2f minutes\n",
+  outfile->Printf("Total time:\n");
+  outfile->Printf("\tuser time   = %10.2f seconds = %10.2f minutes\n",
           user_s, user_s/60.0);
-  fprintf(outfile,"\tsystem time = %10.2f seconds = %10.2f minutes\n",
+  outfile->Printf("\tsystem time = %10.2f seconds = %10.2f minutes\n",
           sys_s, sys_s/60.0);
-  fprintf(outfile,"\ttotal time  = %10d seconds = %10.2f minutes\n",
+  outfile->Printf("\ttotal time  = %10d seconds = %10.2f minutes\n",
           (int)total_time_overall, ((double) total_time_overall)/60.0);
 
 

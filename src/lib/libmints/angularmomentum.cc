@@ -161,7 +161,7 @@ void AngularMomentumInt::compute_pair(const GaussianShell& s1, const GaussianShe
                             if (n2)
                                 Sxz2 = x10 * y00 * z[n1][n2-1] * over_pf;
 
-//                            fprintf(outfile, "Sxy1 %f Sxy2 %f Sxz1 %f Sxz2 %f\n", Sxy1, Sxy2, Sxz1, Sxz2);
+//                            outfile->Printf( "Sxy1 %f Sxy2 %f Sxz1 %f Sxz2 %f\n", Sxy1, Sxy2, Sxz1, Sxz2);
 
                             Syx1 = Syx2 = Syz1 = Syz2 = 0.0;
 
@@ -176,7 +176,7 @@ void AngularMomentumInt::compute_pair(const GaussianShell& s1, const GaussianShe
                             if (n2)
                                 Syz2 = x00 * y10 * z[n1][n2-1] * over_pf;
 
-//                            fprintf(outfile, "Syx1 %f Syx2 %f Syz1 %f Syz2 %f\n", Syx1, Syx2, Syz1, Syz2);
+//                            outfile->Printf( "Syx1 %f Syx2 %f Syz1 %f Syz2 %f\n", Syx1, Syx2, Syz1, Syz2);
 
                             Szx1 = Szx2 = Szy1 = Szy2 = 0.0;
 
@@ -191,7 +191,7 @@ void AngularMomentumInt::compute_pair(const GaussianShell& s1, const GaussianShe
                             if (m2)
                                 Szy2 = x00 * y[m1][m2-1] * z10 * over_pf;
 
-//                            fprintf(outfile, "Szx1 %f Szx2 %f Szy1 %f Szy2 %f\n", Szx1, Szx2, Szy1, Szy2);
+//                            outfile->Printf( "Szx1 %f Szx2 %f Szy1 %f Szy2 %f\n", Szx1, Szx2, Szy1, Szy2);
 
                             S0x1 = S0x2 = S0y1 = S0y2 = S0z1 = S0z2 = 0.0;
 
@@ -211,7 +211,7 @@ void AngularMomentumInt::compute_pair(const GaussianShell& s1, const GaussianShe
                             if (n2)
                                 S0z2 = x00 * y00 * z[n1][n2-1] * over_pf;
 
-//                            fprintf(outfile, "S0x1 %f S0x2 %f S0y1 %f S0y2 %f S0z1 S0z2\n", S0x1, S0x2, S0y1, S0y2, S0z1, S0z2);
+//                            outfile->Printf( "S0x1 %f S0x2 %f S0y1 %f S0y2 %f S0z1 S0z2\n", S0x1, S0x2, S0y1, S0y2, S0z1, S0z2);
 
                             //
                             // Moment integrals

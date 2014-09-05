@@ -60,11 +60,11 @@ void calc_orb_step(int npairs, double *grad, double *hess_diag, double *theta)
     numer = grad[pair];
     denom = hess_diag[pair];
     if (denom < 0.0) {
-      fprintf(outfile, "Warning: MO Hessian denominator negative\n");
+      outfile->Printf( "Warning: MO Hessian denominator negative\n");
       denom = -denom;
     }
     if (denom < MO_HESS_MIN) {
-      fprintf(outfile, "Warning: MO Hessian denominator too small\n");
+      outfile->Printf( "Warning: MO Hessian denominator too small\n");
       denom = MO_HESS_MIN;
     } 
     theta[pair] =  - numer / denom;
@@ -108,8 +108,8 @@ void calc_orb_step_full(int npairs, double *grad, double **hess, double *theta)
   for (j=0;j<npairs;j++){
     hess_det *= hess_copy[j][j];
   }
-  fprintf(outfile,"The determinant of the hessian is %8.3E\n",hess_det);
-  fflush(outfile);
+  outfile->Printf("The determinant of the hessian is %8.3E\n",hess_det);
+  
 
   /* 
      if the orbital Hessian is not positive definite, we may have some
@@ -118,7 +118,7 @@ void calc_orb_step_full(int npairs, double *grad, double **hess, double *theta)
   */
   if (Params.level_shift) {
     while (hess_det < Params.determ_min) {
-      fprintf(outfile,"Level shifting the hessian by %8.3E\n",Params.shift);
+      outfile->Printf("Level shifting the hessian by %8.3E\n",Params.shift);
       for (i=0;i<npairs;i++) {
         hess[i][i] += Params.shift;
       }
@@ -131,9 +131,9 @@ void calc_orb_step_full(int npairs, double *grad, double **hess, double *theta)
       for (j=0;j<npairs;j++){
         hess_det *= hess_copy[j][j];
       }
-      fprintf(outfile,"The determinant of the hessian is %8.3E\n",hess_det);
+      outfile->Printf("The determinant of the hessian is %8.3E\n",hess_det);
     }
-    fprintf(outfile,"Determinant of the hessian is greater than %8.3E\n",
+    outfile->Printf("Determinant of the hessian is greater than %8.3E\n",
       Params.determ_min);
   }
 
@@ -146,7 +146,7 @@ void calc_orb_step_full(int npairs, double *grad, double **hess, double *theta)
   }
  
   if (!Params.invert_hessian) { /* solve H delta = - g */
-    fprintf(outfile,"Solving system of linear equations for orbital step...");
+    outfile->Printf("Solving system of linear equations for orbital step...");
     BVector = init_array(npairs);
     pivots = init_int_array((npairs * (npairs - 1))/2);
     for(i=0;i<npairs;i++){
@@ -156,14 +156,14 @@ void calc_orb_step_full(int npairs, double *grad, double **hess, double *theta)
     solved = C_DGESV(npairs,1,&(hess_copy[0][0]),npairs,pivots,
       BVector,npairs);
     if (solved == 0) {
-      fprintf(outfile,"equations solved!\n");
+      outfile->Printf("equations solved!\n");
       for(i=0;i<npairs;i++) {
         theta[i] = BVector[i];
       }
     }
     else {
-      fprintf(outfile,"FAILED TO SOLVE FOR THETA VALUES\n");
-      fprintf(outfile,"DGESV returned error %5d \n",solved);
+      outfile->Printf("FAILED TO SOLVE FOR THETA VALUES\n");
+      outfile->Printf("DGESV returned error %5d \n",solved);
       exit( PSI_RETURN_SUCCESS );
     }
     free(BVector);
@@ -171,7 +171,7 @@ void calc_orb_step_full(int npairs, double *grad, double **hess, double *theta)
   } /* end solution of linear equations H delta = -g */
 
   else { /* direct inversion of orbital Hessian */
-    fprintf(outfile,"Attempting to directly invert the Hessian matrix\n");
+    outfile->Printf("Attempting to directly invert the Hessian matrix\n");
     hess_inv = block_matrix(npairs,npairs);
 
     /* note: this will destroy hessian matrix; don't use it again later! */
@@ -179,9 +179,9 @@ void calc_orb_step_full(int npairs, double *grad, double **hess, double *theta)
 
     /* debug check */
     mmult(hess_inv,0,hess,0,hess_copy,0,npairs,npairs,npairs,0);
-    fprintf(outfile, "Hessian * Hessian inverse = \n");
+    outfile->Printf( "Hessian * Hessian inverse = \n");
     print_mat(hess_copy,npairs,npairs,outfile); 
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
   
     /* step = - B^{-1} * g */
     zero_arr(theta,npairs);
@@ -207,9 +207,9 @@ void calc_orb_step_full(int npairs, double *grad, double **hess, double *theta)
     tval = theta[i];
     if (fabs(tval) > biggest_step) biggest_step = fabs(tval);
   }
-  fprintf(outfile,"\nLargest step in theta space is %12.6lf \n", biggest_step);
+  outfile->Printf("\nLargest step in theta space is %12.6lf \n", biggest_step);
   if (biggest_step > Params.step_max) {
-    fprintf(outfile, "Scaling the step\n");
+    outfile->Printf( "Scaling the step\n");
     for (i=0;i<npairs;i++) {
       theta[i] = theta[i] * Params.step_max / biggest_step;
     }
@@ -250,9 +250,9 @@ void calc_orb_step_bfgs(int npairs, double *grad, double **hess, double *theta)
     tval = theta[i];
     if (fabs(tval) > biggest_step) biggest_step = fabs(tval);
   }
-  fprintf(outfile,"\nLargest step in theta space is %12.6lf \n", biggest_step);
+  outfile->Printf("\nLargest step in theta space is %12.6lf \n", biggest_step);
   if (biggest_step > Params.step_max) {
-    fprintf(outfile, "Largest allowed step %12.6lf --- scaling the step\n",
+    outfile->Printf( "Largest allowed step %12.6lf --- scaling the step\n",
       Params.step_max);
     for (i=0;i<npairs;i++) {
       theta[i] = theta[i] * Params.step_max / biggest_step;
@@ -281,11 +281,11 @@ void print_step(int npairs, int steptype)
   if (sumfile == NULL) { /* the file doesn't exist yet */
     entries = 0;
     if (Params.print_lvl)
-      fprintf(outfile, "\nPreparing new file %s\n", sumfile_name);
+      outfile->Printf( "\nPreparing new file %s\n", sumfile_name);
   }
   else {
     if (fscanf(sumfile, "%d", &entries) != 1) {
-      fprintf(outfile,"(print_step): Trouble reading num entries in file %s\n",
+      outfile->Printf("(print_step): Trouble reading num entries in file %s\n",
         sumfile_name);
       fclose(sumfile);
       return;
@@ -326,7 +326,7 @@ void print_step(int npairs, int steptype)
   else if (steptype == 2)
     strcpy(comments[entries], "DIIS"); 
   else {
-    fprintf(outfile, "(print_step): Unrecognized steptype %d\n", steptype);
+    outfile->Printf( "(print_step): Unrecognized steptype %d\n", steptype);
     strcpy(comments[entries], "?");
   }
 
@@ -335,13 +335,13 @@ void print_step(int npairs, int steptype)
   /* now open file for writing, write out old info plus new */
   ffile_noexit(&sumfile,"file14.dat",0);
   if (sumfile == NULL) {
-    fprintf(outfile, "(print_step): Unable to open file %s\n", sumfile_name);
+    outfile->Printf( "(print_step): Unable to open file %s\n", sumfile_name);
   }
   else {
     entries++;
-    fprintf(sumfile, "%5d\n", entries);
+    outfile->Printf(sumfile, "%5d\n", entries);
     for (i=0; i<entries; i++) {
-      fprintf(sumfile, "%5d %5d %14.9lf %14.9lf %20.12lf %9s\n", i+1, nind[i], 
+      outfile->Printf(sumfile, "%5d %5d %14.9lf %14.9lf %20.12lf %9s\n", i+1, nind[i], 
               scaled_rmsgrad[i], rmsgrad[i], energies[i], comments[i]);
     }
     fclose(sumfile);

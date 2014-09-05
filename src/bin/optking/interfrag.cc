@@ -29,7 +29,7 @@
 #include "interfrag.h"
 #include "print.h"
 #include "v3d.h" // for H_guess
-
+#include "libparallel/ParallelPrinter.h"
 #include <sstream>
 
 #define EXTERN
@@ -194,10 +194,10 @@ void INTERFRAG::add_coordinates_of_reference_pts(void) {
 
   if (Opt_params.interfragment_distance_inverse) {
     one_stre->make_inverse_stre(); 
-    fprintf(outfile,"Using interfragment 1/R distance coordinate.\n");
+    psi::outfile->Printf("Using interfragment 1/R distance coordinate.\n");
   }
   if (one_stre->is_hbond())
-    fprintf(outfile,"Detected H-bonding interfragment coordinate.\n");
+    psi::outfile->Printf("Detected H-bonding interfragment coordinate.\n");
 
   if (one_stre  != NULL) inter_frag->intcos.push_back(one_stre);
   if (one_bend  != NULL) inter_frag->intcos.push_back(one_bend);
@@ -236,7 +236,7 @@ void INTERFRAG::update_reference_points(GeomType new_geom_A, GeomType new_geom_B
     double **axes=NULL, *moi=NULL;
     int i = A->principal_axes(new_geom_A, axes, moi);
 
-    fprintf(outfile,"Number of principal axes returned is %d\n", i);
+    psi::outfile->Printf("Number of principal axes returned is %d\n", i);
 
     for (i=0; i<ndA-1; ++i) // i can only be 0 or 1
       for (int xyz=0; xyz<3; ++xyz)
@@ -252,7 +252,7 @@ void INTERFRAG::update_reference_points(GeomType new_geom_A, GeomType new_geom_B
 
     i = B->principal_axes(new_geom_B, axes, moi);
 
-    fprintf(outfile,"Number of principal axes returned is %d\n", i);
+    psi::outfile->Printf("Number of principal axes returned is %d\n", i);
 
     for (i=0; i<ndB-1; ++i) // i can only be 0 or 1
       for (int xyz=0; xyz<3; ++xyz)
@@ -263,13 +263,13 @@ void INTERFRAG::update_reference_points(GeomType new_geom_A, GeomType new_geom_B
     free_array(fragment_com);
 
     if (Opt_params.print_lvl >= 3) {
-      fprintf(outfile,"\tndA: %d ; ndB: %d\n", ndA, ndB);
-      fprintf(outfile,"\tReference points are at the following locations.\n");
+      psi::outfile->Printf("\tndA: %d ; ndB: %d\n", ndA, ndB);
+      psi::outfile->Printf("\tReference points are at the following locations.\n");
       for (int i=2; i>2-ndA; --i)
-        fprintf(outfile,"%15.10lf %15.10lf %15.10lf\n",
+        psi::outfile->Printf("%15.10lf %15.10lf %15.10lf\n",
           inter_frag->geom[i][0], inter_frag->geom[i][1], inter_frag->geom[i][2]);
       for (int i=0; i<ndB; ++i)
-        fprintf(outfile,"%15.10lf %15.10lf %15.10lf\n",
+        psi::outfile->Printf("%15.10lf %15.10lf %15.10lf\n",
           inter_frag->geom[3+i][0], inter_frag->geom[3+i][1], inter_frag->geom[3+i][2]);
     }
   }
@@ -299,7 +299,7 @@ void INTERFRAG::freeze(bool *D_freeze) {
 // freeze coordinate i; index is among the coordinates that are 'on'
 void INTERFRAG::freeze(int index_to_freeze) {
   if (index_to_freeze<0 || index_to_freeze>g_nintco()) {
-    fprintf(outfile,"INTERFRAG::freeze() : Invalid index %d\n", index_to_freeze);
+    psi::outfile->Printf("INTERFRAG::freeze() : Invalid index %d\n", index_to_freeze);
     return;
   }
   inter_frag->intcos[index_to_freeze]->freeze();
@@ -558,8 +558,8 @@ double **INTERFRAG::compute_derivative_B(int J, GeomType new_geom_A, GeomType ne
       }
       else if (J == 3) { //tau, angle is A1-A0-B0-B1
 
-//fprintf(outfile,"tau Dq2\n");
-//print_matrix(outfile,B2_ref, 12, 12);
+//psi::outfile->Printf("tau Dq2\n");
+//print_matrix("outfile",B2_ref, 12, 12);
 
         for (i=0; i<nA; ++i)
           for (j=0; j<=nA; ++j) { // d^2(D) / d_Ai[0,1] d_Aj[0,1]
@@ -653,47 +653,49 @@ double **INTERFRAG::compute_derivative_B(int J, GeomType new_geom_A, GeomType ne
 }
 
 
-void INTERFRAG::print_intcos(FILE *fp, int off_A, int off_B) const {
-  fprintf(fp,"\t---Interfragment Coordinates Between Fragments %d and %d---\n", 
+void INTERFRAG::print_intcos(std::string OutFileRMR, int off_A, int off_B) const {
+   boost::shared_ptr<psi::PsiOutStream> printer(OutFileRMR=="outfile"? psi::outfile:
+      boost::shared_ptr<psi::OutFile>(new psi::OutFile(OutFileRMR,psi::APPEND)));
+   printer->Printf("\t---Interfragment Coordinates Between Fragments %d and %d---\n",
     A_index+1, B_index+1);
-  fprintf(fp,"\t * Reference Points *\n");
+  printer->Printf("\t * Reference Points *\n");
   int cnt=0;
   for (int i=2; i>=0; --i, ++cnt) {
     if (i<ndA) {
-      fprintf(fp,"\t\t %d A%d :", cnt+1, i+1);
+      printer->Printf("\t\t %d A%d :", cnt+1, i+1);
       for (int j=0; j<A->g_natom(); ++j)
         if (weightA[i][j] != 0.0)
-          fprintf(fp," %d/%5.3f", off_A+j+1, weightA[i][j]);
-      fprintf(fp,"\n");
+          printer->Printf(" %d/%5.3f", off_A+j+1, weightA[i][j]);
+      printer->Printf("\n");
     }
   }
   for (int i=0; i<3; ++i, ++cnt) {
     if (i < ndB) {
-      fprintf(fp,"\t\t %d B%d :", cnt+1, i+1);
+      printer->Printf("\t\t %d B%d :", cnt+1, i+1);
       for (int j=0; j<B->g_natom(); ++j)
         if (weightB[i][j] != 0.0)
-          fprintf(fp," %d/%5.3f", off_B+j+1, weightB[i][j]);
-      fprintf(fp,"\n");
+          printer->Printf(" %d/%5.3f", off_B+j+1, weightB[i][j]);
+      printer->Printf("\n");
     }
   }
-  fflush(fp);
-  inter_frag->print_intcos(fp);
+  inter_frag->print_intcos(OutFileRMR);
 }
 
-void INTERFRAG::print_intco_dat(FILE *fp, int off_A, int off_B) const {
-  for (int i=0; i<ndA; ++i) {
-    fprintf(fp,"A%d",i+1);
+void INTERFRAG::print_intco_dat(std::string OutFileRMR, int off_A, int off_B) const {
+   boost::shared_ptr<psi::PsiOutStream> printer(OutFileRMR=="outfile"? psi::outfile:
+      boost::shared_ptr<psi::OutFile>(new psi::OutFile(OutFileRMR,psi::APPEND)));
+   for (int i=0; i<ndA; ++i) {
+    printer->Printf("A%d",i+1);
     for (int j=0; j<A->g_natom(); ++j)
-      if (weightA[i][j] != 0.0) fprintf(fp," %d", j+1+off_A);
-    fprintf(fp,"\n");
+      if (weightA[i][j] != 0.0) printer->Printf(" %d", j+1+off_A);
+    printer->Printf("\n");
   }
   for (int i=0; i<ndB; ++i) {
-    fprintf(fp,"B%d",i+1);
+    printer->Printf("B%d",i+1);
     for (int j=0; j<B->g_natom(); ++j)
-      if (weightB[i][j] != 0.0) fprintf(fp," %d", j+1+off_B);
-    fprintf(fp,"\n");
+      if (weightB[i][j] != 0.0) printer->Printf(" %d", j+1+off_B);
+    printer->Printf("\n");
   }
-  fflush(fp);
 }
 
 // TODO - fix this up later
