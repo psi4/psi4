@@ -334,20 +334,50 @@ def auto_fragments(name, **kwargs):
     psi4.print_out("Exiting auto_fragments\n")
     
 
-def mbe(name,n=2,bsse_method="NONE",frag_method="USER_DEFINED",
-        embed_method="NONE",cap_method="NONE",suppress_print=True,**kwargs):
-    """ The driver routine for running calculations with the MBE or the 
-        GMBE.    
-    Arguments:
-    name=level of theory that things will be performed on
-    n=(G)MBE truncation order.
-    bsse_method=How are we applying BSSE corrections
-    frag_method=How are the fragments being made
-    embed_method=How are higher order MBE effects being accounted for
-    cap_method=How are we dealing with severed covalent bonds
-    suppress_print=True means you will not see the underlying electronic
-        structure outputs.  Setting to false will generte a lot of output,
-        but is useful for debugging purposes
+def mbe(name, n=2, bsse_method="NONE", frag_method="USER_DEFINED",
+        embed_method="NONE", cap_method="NONE", print_underlying=False, **kwargs):
+    r"""The driver routine for running calculations with the MBE or the 
+    GMBE.    
+
+    :type name: string
+    :param name: ``'scf'`` || ``'ccsd(t)'`` || etc.
+
+        First argument, usually unlabeled. Indicates the computational method
+        to be applied to the molecule. May be any valid argument to
+        :py:func:`~driver.energy`; however, SAPT is not appropriate.
+
+    :type n: integer
+    :param n: |dl| ``2`` |dr| || ``3`` || etc.
+
+        Indicates the (generalized)-many-body-expansion truncation order.
+
+    :type bsse_method: string
+    :param bsse_method: 
+
+        Indicates how BSSE corrections are applied.
+
+    :type frag_method: string
+    :param frag_method: 
+
+        Indicates how the fragments are being make.
+
+    :type embed_method: string
+    :param embed_method: 
+
+        Indicates how are higher order MBE effects being accounted for.
+
+    :type cap_method: string
+    :param cap_method: 
+
+        Indicates how are we dealing with severed covalent bonds.
+
+    :type print_underlying: :ref:`boolean <op_py_boolean>`
+    :param print_underlying: ``'on'`` || |dl| ``'off'`` |dr|
+
+        Indicates whether underlying electronic structure outputs will be 
+        printed to file. Setting to true will generate a lot of output, 
+        but is useful for debugging purposes.
+
     """
 
     if 'molecule' in kwargs:
@@ -361,9 +391,9 @@ def mbe(name,n=2,bsse_method="NONE",frag_method="USER_DEFINED",
     for k,v in VARH[name].iteritems():
         CEgys[v]=[[]]
     mbe_impl.setup(frag_method,n,embed_method,cap_method,bsse_method)
-    mbe_impl.fragment(name,molecule,Egys,CEgys,suppress_print,**kwargs)
+    mbe_impl.fragment(name,molecule,Egys,CEgys,not print_underlying,**kwargs)
     if(n>=2):
-        mbe_impl.nmers(name,molecule,n,Egys,CEgys,suppress_print,**kwargs)
+        mbe_impl.nmers(name,molecule,n,Egys,CEgys,not print_underlying,**kwargs)
     if(len(CEgys)>1):
         for k,v in CEgys.iteritems():
             mbe_impl.SystemEnergy(CEgys[k],k)
