@@ -1084,6 +1084,7 @@ def optimize(name, **kwargs):
             G = psi4.get_gradient()
             psi4.IOManager.shared_object().set_specific_retention(1, True)
             psi4.IOManager.shared_object().set_specific_path(1, './')
+            psi4.set_global_option('HESSIAN_WRITE',True)
             frequencies(name, **kwargs)
             steps_since_last_hessian = 0
             psi4.set_gradient(G)
