@@ -138,6 +138,7 @@ foreach my $Dir(readdir TESTS){
 }
 print RSTSUMMARY "=============================================   ============\n\n";
 close TEXSUMMARY ;
+unlink("tests_descriptions_" . $ExeFolder{$exe} . ".tex");
 close RSTSUMMARY;
 close SUMMARY;
 unlink($SamplesFolder."/SUMMARY");
