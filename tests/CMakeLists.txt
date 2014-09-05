@@ -1,5 +1,5 @@
 #These tests aren't set-up the same way as the others
-set(TestsNotSetUpRight dftd3 cfour optking testgrendel)
+set(TestsNotSetUpRight cfour optking testgrendel)
 
 #In order to get CTest to run tests in three seperate categories:
 #
@@ -105,7 +105,31 @@ ${MCSCFLong} ${MintsLong} ${MP2Long} ${MRCCLong} ${OCEPALong} ${OMPLong}
 ${OPTLong} ${PropsLong} ${PSIMRCCLong} ${PYWrapLong} ${RASCILong} ${SAPTLong}
 ${SCFLong} ${TutorialLong} ${MISCLong})
 
+###### START external-executable-dependent tests ################
 
+# Set up groups of test cases analogous to dftd3 below
+#   In particular, new ext-exe-dep tests should 
+#   * get their own directory in tests (e.g., tests/dftd3)
+#   * have a name that doesn't repeat the exe (e.g., test/dftd3/energy)
+#   * be listed in the exeShort and exeLong variable name as exe-name (e.g., dftd3-energy)
+#   * be sure the exe is listed in the python code below (search 'partition')
+
+# <<<  DFTD3  >>>
+
+set(DFTD3Short dftd3-energy)
+set(DFTD3Long dftd3-grad dftd3-psithon2)
+
+find_program (DFTD3_EXECUTABLE
+             NAMES dftd3
+             DOC "Path to Grimme's dftd3 executable")
+
+if(DFTD3_EXECUTABLE)
+    list(APPEND QuickTests ${DFTD3Short})
+    list(APPEND LongerTests ${DFTD3Long})
+    message("-- dftd3 interfaced executable found. Test cases added.")
+endif()
+
+###### END external-executable-dependent tests ################
 
 set(TestSet ${LongTests} ${QuickTests} ${LongerTests})
 
@@ -113,13 +137,14 @@ list(LENGTH TestSet NumberOfTests)
 list(LENGTH LongTests NLong)
 list(LENGTH QuickTests NShort)
 MATH(EXPR Start "${NLong} +1")
+MATH(EXPR Stop "${NLong} + ${NShort}")
 
 add_custom_target(longtests ${CMAKE_CTEST_COMMAND} -I 1,${NLong})
-add_custom_target(quicktests ${CMAKE_CTEST_COMMAND} -I ${Start},${NShort})
+add_custom_target(quicktests ${CMAKE_CTEST_COMMAND} -I ${Start},${Stop})
 add_custom_target(tests ${CMAKE_CTEST_COMMAND} -I ${Start},${NumberOfTests})
 
 
-#The commands below this poitn are used to set-up cmakes test suite with
+#The commands below this point are used to set up cmake's test suite with
 #the info given up to this point
 
 #This is the psi command to actually run the tests
@@ -134,40 +159,59 @@ set(LOGFILE ${CMAKE_BINARY_DIR}/testresults.log)
 
 find_package(Perl QUIET)
 if(NOT PERL_FOUND)
-   #I think this is what this means...
    message(WARNING "Perl was not found. Some Coupled Cluster test cases will
 not be thoroughly checked.")
 endif()
 
-#Declare each test as a possible test target even though noone will likely
-#want to run individual tests.  In the end makes our job easier
+# Declare each test as a possible test target even though no one will likely
+#   want to run individual tests. In the end, makes our job easier.
 set(index 1)
 foreach(Tests2Run ${TestSet})
-   #The directory the test will be run in
-   set(TEST_SRC_DIR ${TESTDIR}/${Tests2Run})
-   set(TEST_RUN_DIR ${CMAKE_BINARY_DIR}/tests/${Tests2Run})
-   file(MAKE_DIRECTORY ${TEST_RUN_DIR})
-   set(INPUTFILE ${TEST_SRC_DIR}/input.dat)
-   set(OUTFILE ${TEST_RUN_DIR}/output.dat)
-   set(AUTOTEST false)
-   list(FIND AutoTestSubjects ${Tests2Run} InThrall)
-   if(NOT(${InThrall} EQUAL -1) AND ${PERL_FOUND})
-     set(AUTOTEST true)
-   endif()
-   add_test(
-      NAME ${Tests2Run}
-      WORKING_DIRECTORY ${TEST_RUN_DIR}
-      COMMAND ${PYTHON_EXECUTABLE} ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${PROJECT_SOURCE_DIR} ${OUTFILE} ${PSIEXE})
-   add_custom_target(${Tests2Run} ${CMAKE_CTEST_COMMAND} -I ${index},${index})
-   set_tests_properties(${Tests2Run} PROPERTIES DEPENDS 
-	${CMAKE_BINARY_DIR}/bin/psi4)
-   #In theory would like to make sure all tests run in parallel as well
-   #but....most do not right now...
-   if( MPI_FOUND AND FALSE)
-     add_test(
-        NAME MPI-${Tests2Run}
-        WORKING_DIRECTORY ${RUNDIR}
-        COMMAND mpirun -n 2 ${PYTHON_EXECUTABLE} ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${PROJECT_SOURCE_DIR} ${OUTFILE} ${PSIEXE})
+
+    # Check if a test case from subdirectory (ext-exec-dep)
+    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c 
+        "pieces = '${Tests2Run}'.partition('-'); print '%s;%s' % (pieces[0], pieces[2]) if pieces[0] in ['dftd3', 'cfour'] else ''"
+        OUTPUT_VARIABLE TEST_PIECES OUTPUT_STRIP_TRAILING_WHITESPACE)
+    list(LENGTH TEST_PIECES LEN_PIECES)
+
+    # Directory the test will be run from and in
+    if(${LEN_PIECES} EQUAL 2)
+        list(GET TEST_PIECES 0 SubDir)
+        list(GET TEST_PIECES 1 TestName)
+        set(TEST_SRC_DIR ${TESTDIR}/${SubDir}/${TestName})
+        set(TEST_RUN_DIR ${CMAKE_BINARY_DIR}/tests/${SubDir}/${TestName})
+    else() 
+        set(TEST_SRC_DIR ${TESTDIR}/${Tests2Run})
+        set(TEST_RUN_DIR ${CMAKE_BINARY_DIR}/tests/${Tests2Run})
+    endif()
+
+    # Generic setup
+    file(MAKE_DIRECTORY ${TEST_RUN_DIR})
+    set(INPUTFILE ${TEST_SRC_DIR}/input.dat)
+    set(OUTFILE ${TEST_RUN_DIR}/output.dat)
+
+    # Turn on psitest.pl if eligible 
+    set(AUTOTEST false)
+    list(FIND AutoTestSubjects ${Tests2Run} InThrall)
+    if(NOT(${InThrall} EQUAL -1) AND ${PERL_FOUND})
+        set(AUTOTEST true)
+    endif()
+
+    # Add (serial) target for each test case
+    add_test(
+        NAME ${Tests2Run}
+        WORKING_DIRECTORY ${TEST_RUN_DIR}
+        COMMAND ${PYTHON_EXECUTABLE} ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${PROJECT_SOURCE_DIR} ${OUTFILE} ${PSIEXE})
+    add_custom_target(${Tests2Run} ${CMAKE_CTEST_COMMAND} -I ${index},${index})
+    set_tests_properties(${Tests2Run} PROPERTIES DEPENDS ${PSIEXE})
+
+    #In theory would like to make sure all tests run in parallel as well
+    #but....most do not right now...
+    if( MPI_FOUND AND FALSE)
+        add_test(
+            NAME MPI-${Tests2Run}
+            WORKING_DIRECTORY ${RUNDIR}
+            COMMAND mpirun -n 2 ${PYTHON_EXECUTABLE} ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${PROJECT_SOURCE_DIR} ${OUTFILE} ${PSIEXE})
     endif()
     math(EXPR index "${index}+1")
 endforeach(Tests2Run)
