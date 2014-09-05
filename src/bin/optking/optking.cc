@@ -215,6 +215,10 @@ OptReturnType optking(void) {
     fprintf(stdout,"IRC data object created\n");
   }
 
+  // If first iteration, start optional xyz trajectory file.
+  if (p_Opt_data->g_iteration() == 1)
+    if (Opt_params.print_trajectory_xyz_file) mol1->print_xyz(-1);
+
 #if defined(OPTKING_PACKAGE_QCHEM)
   mol1->update_efp_values(); // EFP values calculated from old opt_data
 #endif
@@ -326,6 +330,7 @@ OptReturnType optking(void) {
         if (Opt_params.write_final_step_geometry) {
           fprintf(outfile,"\tFinal (next step) structure:\n");
           mol1->print_geom();  // write geometry -> output file
+          if (Opt_params.print_trajectory_xyz_file) mol1->print_xyz();
           fprintf(outfile,"\tSaving final (next step) structure.\n");
         }
         else { // default - get last geometry and write that one
@@ -333,6 +338,7 @@ OptReturnType optking(void) {
           mol1->set_geom_array(x);
           fprintf(outfile,"\tFinal (previous) structure:\n");
           mol1->print_geom();  // write geometry -> output file
+          if (Opt_params.print_trajectory_xyz_file) mol1->print_xyz();
           fprintf(outfile,"\tSaving final (previous) structure.\n");
         }
         p_irc_data->progress_report(*mol1);
@@ -367,6 +373,7 @@ OptReturnType optking(void) {
       if (Opt_params.write_final_step_geometry) {
         fprintf(outfile,"\tFinal (next step) structure:\n");
         mol1->print_geom();  // write geometry -> output file
+        if (Opt_params.print_trajectory_xyz_file) mol1->print_xyz();
         fprintf(outfile,"\tSaving final (next step) structure.\n");
       }
       else { // default - get last geometry and write that one
@@ -374,6 +381,7 @@ OptReturnType optking(void) {
         mol1->set_geom_array(x);
         fprintf(outfile,"\tFinal (previous) structure:\n");
         mol1->print_geom();  // write geometry -> output file
+        if (Opt_params.print_trajectory_xyz_file) mol1->print_xyz();
         fprintf(outfile,"\tSaving final (previous) structure.\n");
       }
 
@@ -390,10 +398,9 @@ OptReturnType optking(void) {
   p_Opt_data->write();
   delete p_Opt_data;
 
-//#if defined(OPTKING_PACKAGE_PSI)
   fprintf(outfile,"\tStructure for next step:\n");
   mol1->print_geom(); // write geometry for next step to output file
-//#endif
+  if (Opt_params.print_trajectory_xyz_file) mol1->print_xyz();
 
   mol1->write_geom(); // write geometry -> chkpt (also output for QChem)
   print_end();
@@ -443,6 +450,7 @@ OptReturnType optking(void) {
     delete p_Opt_data;
     fprintf(outfile,"\tStructure for next step:\n");
     mol1->print_geom(); // write geometry for next step to output file
+    if (Opt_params.print_trajectory_xyz_file) mol1->print_xyz();
 
     mol1->write_geom(); // write geometry -> chkpt (also output for QChem)
     print_end();

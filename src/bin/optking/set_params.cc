@@ -327,6 +327,8 @@ void set_params(void)
 //  Opt_params.print_lvl = 1;
     Opt_params.print_lvl = options.get_int("PRINT");
 
+    Opt_params.print_trajectory_xyz_file = options.get_bool("PRINT_TRAJECTORY_XYZ_FILE");
+
 // Read cartesian Hessian.  Make reading the default for IRC.
     if ((Opt_params.opt_type == OPT_PARAMS::IRC) &&
         (options["CART_HESS_READ"].has_changed() == 0))
@@ -516,6 +518,8 @@ void set_params(void)
 
 // (default 1)
   Opt_params.print_lvl = rem_read(REM_GEOM_OPT2_PRINT_LVL);
+
+  Opt_params.print_trajectory_xyz_file = rem_read(REM_GEOM_OPT2_PRINT_TRAJECTORY_XYZ_FILE);
 
 // read Hessian (default 0)
   Opt_params.read_cartesian_H = rem_read(REM_GEOM_OPT2_READ_CARTESIAN_H);
@@ -812,6 +816,12 @@ void print_params(void) {
   fprintf(outfile, "fixed_dihedral: \n");
   if (!Opt_params.fixed_dihedral_str.empty())
     fprintf(outfile, "%s\n", Opt_params.fixed_dihedral_str.c_str());
+
+  if (Opt_params.print_trajectory_xyz_file)
+    fprintf(outfile, "print_trajectory_xyz_file = %18s\n", "true");
+  else
+    fprintf(outfile, "print_trajectory_xyz_file = %18s\n", "false");
+
 }
 
 }

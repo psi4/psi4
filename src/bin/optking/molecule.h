@@ -182,6 +182,8 @@ class MOLECULE {
       fragments[i]->print_geom(fout, i, print_mass);
   }
 
+  void print_xyz(int iter_shift = 0);
+
   void print_geom_grad(FILE *fout, bool print_mass = false) {
     for (int i=0; i<fragments.size(); ++i)
       fragments[i]->print_geom_grad(fout, i, print_mass);
