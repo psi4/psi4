@@ -387,18 +387,18 @@ double DFCoupledCluster::compute_energy() {
 }
 
 void DFCoupledCluster::WriteBanner(){
-  fflush(outfile);
-  fprintf(outfile,"\n\n");
-  fprintf(outfile, "        *******************************************************\n");
-  fprintf(outfile, "        *                                                     *\n");
-  fprintf(outfile, "        *                       DF-CCSD                       *\n");
-  fprintf(outfile, "        *                 Density-fitted CCSD                 *\n");
-  fprintf(outfile, "        *                                                     *\n");
-  fprintf(outfile, "        *                   Eugene DePrince                   *\n");
-  fprintf(outfile, "        *                                                     *\n");
-  fprintf(outfile, "        *******************************************************\n");
-  fprintf(outfile,"\n\n");
-  fflush(outfile);
+  
+  outfile->Printf("\n\n");
+  outfile->Printf( "        *******************************************************\n");
+  outfile->Printf( "        *                                                     *\n");
+  outfile->Printf( "        *                       DF-CCSD                       *\n");
+  outfile->Printf( "        *                 Density-fitted CCSD                 *\n");
+  outfile->Printf( "        *                                                     *\n");
+  outfile->Printf( "        *                   Eugene DePrince                   *\n");
+  outfile->Printf( "        *                                                     *\n");
+  outfile->Printf( "        *******************************************************\n");
+  outfile->Printf("\n\n");
+  
 }
 
 /*===================================================================
@@ -447,10 +447,10 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
   T1Fock();
   T1Integrals();
 
-  fprintf(outfile,"\n");
-  fprintf(outfile,"  Begin singles and doubles coupled cluster iterations\n\n");
-  fprintf(outfile,"   Iter  DIIS          Energy       d(Energy)          |d(T)|     time\n");
-  fflush(outfile);
+  outfile->Printf("\n");
+  outfile->Printf("  Begin singles and doubles coupled cluster iterations\n\n");
+  outfile->Printf("   Iter  DIIS          Energy       d(Energy)          |d(T)|     time\n");
+  
 
   memset((void*)diisvec,'\0',(maxdiis+1)*sizeof(double));
   while(iter < maxiter) {
@@ -484,8 +484,8 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
       T1Fock();
       T1Integrals();
       if (timer) {
-          fprintf(outfile,"        T1-transformed integrals                                        %6.2lf\n",omp_get_wtime() - start);
-          fprintf(outfile,"\n");
+          outfile->Printf("        T1-transformed integrals                                        %6.2lf\n",omp_get_wtime() - start);
+          outfile->Printf("\n");
       }
 
       Eold = eccsd;
@@ -508,9 +508,9 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
       else replace_diis_iter = 1;
 
       time_t iter_stop = time(NULL);
-      fprintf(outfile,"  %5i   %i %i %15.10f %15.10f %15.10f %8d\n",
+      outfile->Printf("  %5i   %i %i %15.10f %15.10f %15.10f %8d\n",
             iter,diis_iter-1,replace_diis_iter,eccsd,eccsd-Eold,nrm,(int)iter_stop-(int)iter_start);
-      fflush(outfile);
+      
       iter++;
       if (iter==1){
          emp2 = eccsd;
@@ -539,14 +539,14 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
       SCS_CCSD();
   }
 
-  fprintf(outfile,"\n");
-  fprintf(outfile,"  CCSD iterations converged!\n");
-  fprintf(outfile,"\n");
+  outfile->Printf("\n");
+  outfile->Printf("  CCSD iterations converged!\n");
+  outfile->Printf("\n");
 
   // T1 and D1 diagnostics:
 
   double t1diag = C_DNRM2(o*v,t1,1) / sqrt(2.0 * o);
-  fprintf(outfile,"        T1 diagnostic:                  %20.12lf\n",t1diag);
+  outfile->Printf("        T1 diagnostic:                  %20.12lf\n",t1diag);
   boost::shared_ptr<Matrix>T (new Matrix(o,o));
   boost::shared_ptr<Matrix>eigvec (new Matrix(o,o));
   boost::shared_ptr<Vector>eigval (new Vector(o));
@@ -561,8 +561,8 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
       }
   }
   T->diagonalize(eigvec,eigval,descending);
-  fprintf(outfile,"        D1 diagnostic:                  %20.12lf\n",sqrt(eigval->pointer()[0]));
-  fprintf(outfile,"\n");
+  outfile->Printf("        D1 diagnostic:                  %20.12lf\n",sqrt(eigval->pointer()[0]));
+  outfile->Printf("\n");
 
   // delta mp2 correction for fno computations:
   if (options_.get_bool("NAT_ORBS")){
@@ -578,45 +578,45 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
       eccsd_os += delta_emp2_os;
       eccsd_ss += delta_emp2_ss;
 
-      fprintf(outfile,"        OS MP2 FNO correction:          %20.12lf\n",delta_emp2_os);
-      fprintf(outfile,"        SS MP2 FNO correction:          %20.12lf\n",delta_emp2_ss);
-      fprintf(outfile,"        MP2 FNO correction:             %20.12lf\n",delta_emp2);
-      fprintf(outfile,"\n");
+      outfile->Printf("        OS MP2 FNO correction:          %20.12lf\n",delta_emp2_os);
+      outfile->Printf("        SS MP2 FNO correction:          %20.12lf\n",delta_emp2_ss);
+      outfile->Printf("        MP2 FNO correction:             %20.12lf\n",delta_emp2);
+      outfile->Printf("\n");
   }
 
   if (options_.get_bool("SCS_MP2")){
-      fprintf(outfile,"        OS SCS-MP2 correlation energy:  %20.12lf\n",emp2_os*emp2_os_fac);
-      fprintf(outfile,"        SS SCS-MP2 correlation energy:  %20.12lf\n",emp2_ss*emp2_ss_fac);
-      fprintf(outfile,"        SCS-MP2 correlation energy:     %20.12lf\n",emp2_os*emp2_os_fac+emp2_ss*emp2_ss_fac);
-      fprintf(outfile,"      * SCS-MP2 total energy:           %20.12lf\n",emp2_os*emp2_os_fac+emp2_ss*emp2_ss_fac+escf);
-      fprintf(outfile,"\n");
+      outfile->Printf("        OS SCS-MP2 correlation energy:  %20.12lf\n",emp2_os*emp2_os_fac);
+      outfile->Printf("        SS SCS-MP2 correlation energy:  %20.12lf\n",emp2_ss*emp2_ss_fac);
+      outfile->Printf("        SCS-MP2 correlation energy:     %20.12lf\n",emp2_os*emp2_os_fac+emp2_ss*emp2_ss_fac);
+      outfile->Printf("      * SCS-MP2 total energy:           %20.12lf\n",emp2_os*emp2_os_fac+emp2_ss*emp2_ss_fac+escf);
+      outfile->Printf("\n");
   }
-  fprintf(outfile,"        OS MP2 correlation energy:      %20.12lf\n",emp2_os);
-  fprintf(outfile,"        SS MP2 correlation energy:      %20.12lf\n",emp2_ss);
-  fprintf(outfile,"        MP2 correlation energy:         %20.12lf\n",emp2);
-  fprintf(outfile,"      * MP2 total energy:               %20.12lf\n",emp2+escf);
-  fprintf(outfile,"\n");
+  outfile->Printf("        OS MP2 correlation energy:      %20.12lf\n",emp2_os);
+  outfile->Printf("        SS MP2 correlation energy:      %20.12lf\n",emp2_ss);
+  outfile->Printf("        MP2 correlation energy:         %20.12lf\n",emp2);
+  outfile->Printf("      * MP2 total energy:               %20.12lf\n",emp2+escf);
+  outfile->Printf("\n");
   if (options_.get_bool("SCS_CCSD")){
-      fprintf(outfile,"        OS SCS-CCSD correlation energy: %20.12lf\n",eccsd_os*eccsd_os_fac);
-      fprintf(outfile,"        SS SCS-CCSD correlation energy: %20.12lf\n",eccsd_ss*eccsd_ss_fac);
-      fprintf(outfile,"        SCS-CCSD correlation energy:    %20.12lf\n",eccsd_os*eccsd_os_fac+eccsd_ss*eccsd_ss_fac);
-      fprintf(outfile,"      * SCS-CCSD total energy:          %20.12lf\n",eccsd_os*eccsd_os_fac+eccsd_ss*eccsd_ss_fac+escf);
-      fprintf(outfile,"\n");
+      outfile->Printf("        OS SCS-CCSD correlation energy: %20.12lf\n",eccsd_os*eccsd_os_fac);
+      outfile->Printf("        SS SCS-CCSD correlation energy: %20.12lf\n",eccsd_ss*eccsd_ss_fac);
+      outfile->Printf("        SCS-CCSD correlation energy:    %20.12lf\n",eccsd_os*eccsd_os_fac+eccsd_ss*eccsd_ss_fac);
+      outfile->Printf("      * SCS-CCSD total energy:          %20.12lf\n",eccsd_os*eccsd_os_fac+eccsd_ss*eccsd_ss_fac+escf);
+      outfile->Printf("\n");
   }
-  fprintf(outfile,"        OS CCSD correlation energy:     %20.12lf\n",eccsd_os);
-  fprintf(outfile,"        SS CCSD correlation energy:     %20.12lf\n",eccsd_ss);
-  fprintf(outfile,"        CCSD correlation energy:        %20.12lf\n",eccsd);
-  fprintf(outfile,"      * CCSD total energy:              %20.12lf\n",eccsd+escf);
-  fprintf(outfile,"\n");
+  outfile->Printf("        OS CCSD correlation energy:     %20.12lf\n",eccsd_os);
+  outfile->Printf("        SS CCSD correlation energy:     %20.12lf\n",eccsd_ss);
+  outfile->Printf("        CCSD correlation energy:        %20.12lf\n",eccsd);
+  outfile->Printf("      * CCSD total energy:              %20.12lf\n",eccsd+escf);
+  outfile->Printf("\n");
 
-  fprintf(outfile,"  Total time for CCSD iterations: %10.2lf s (user)\n",user_stop-user_start);
-  fprintf(outfile,"                                  %10.2lf s (system)\n",sys_stop-sys_start);
-  fprintf(outfile,"                                  %10d s (total)\n",(int)time_stop-(int)time_start);
-  fprintf(outfile,"\n");
-  fprintf(outfile,"  Time per iteration:             %10.2lf s (user)\n",(user_stop-user_start)/(iter-1));
-  fprintf(outfile,"                                  %10.2lf s (system)\n",(sys_stop-sys_start)/(iter-1));
-  fprintf(outfile,"                                  %10.2lf s (total)\n",((double)time_stop-(double)time_start)/(iter-1));
-  fflush(outfile);
+  outfile->Printf("  Total time for CCSD iterations: %10.2lf s (user)\n",user_stop-user_start);
+  outfile->Printf("                                  %10.2lf s (system)\n",sys_stop-sys_start);
+  outfile->Printf("                                  %10d s (total)\n",(int)time_stop-(int)time_start);
+  outfile->Printf("\n");
+  outfile->Printf("  Time per iteration:             %10.2lf s (user)\n",(user_stop-user_start)/(iter-1));
+  outfile->Printf("                                  %10.2lf s (system)\n",(sys_stop-sys_start)/(iter-1));
+  outfile->Printf("                                  %10.2lf s (total)\n",((double)time_stop-(double)time_start)/(iter-1));
+  
 
   if (options_.get_bool("COMPUTE_TRIPLES")){
       // need to generate non-t1-transformed 3-index integrals
@@ -1128,51 +1128,51 @@ void DFCoupledCluster::AllocateMemory() {
   if (available_memory < total_memory + df_memory) {
 
       if ( available_memory > total_memory + df_memory - size_of_t2) {
-          fprintf(outfile,"\n");
-          fprintf(outfile,"        Warning: cannot accomodate T2 in core. T2 will be stored on disk.\n");
-          fprintf(outfile,"\n");
-          fflush(outfile);
+          outfile->Printf("\n");
+          outfile->Printf("        Warning: cannot accomodate T2 in core. T2 will be stored on disk.\n");
+          outfile->Printf("\n");
+          
           t2_on_disk = true;
       } else {
-          fprintf(outfile,"\n");
-          fprintf(outfile,"        error: not enough memory for ccsd.  increase available memory by %7.2lf mb\n",
+          outfile->Printf("\n");
+          outfile->Printf("        error: not enough memory for ccsd.  increase available memory by %7.2lf mb\n",
                           total_memory + df_memory - size_of_t2 - available_memory);
-          fprintf(outfile,"\n");
-          fflush(outfile);
+          outfile->Printf("\n");
+          
           throw PsiException("not enough memory (ccsd).",__FILE__,__LINE__);
       }
 
   }
 
-  fprintf(outfile,"  ==> Memory <==\n\n");
-  fprintf(outfile,"        Total memory requirements:       %9.2lf mb\n",df_memory+total_memory-size_of_t2*t2_on_disk);
-  fprintf(outfile,"        3-index integrals:               %9.2lf mb\n",df_memory);
-  fprintf(outfile,"        CCSD intermediates:              %9.2lf mb\n",total_memory-size_of_t2*t2_on_disk);
-  fprintf(outfile,"\n");
+  outfile->Printf("  ==> Memory <==\n\n");
+  outfile->Printf("        Total memory requirements:       %9.2lf mb\n",df_memory+total_memory-size_of_t2*t2_on_disk);
+  outfile->Printf("        3-index integrals:               %9.2lf mb\n",df_memory);
+  outfile->Printf("        CCSD intermediates:              %9.2lf mb\n",total_memory-size_of_t2*t2_on_disk);
+  outfile->Printf("\n");
 
   if (options_.get_bool("COMPUTE_TRIPLES")) {
       long int nthreads = omp_get_max_threads();
       double tempmem = 8.*(2L*o*o*v*v+o*o*o*v+o*v+3L*v*v*v*nthreads);
       if (tempmem > memory) {
-          fprintf(outfile,"\n        <<< warning! >>> switched to low-memory (t) algorithm\n\n");
+          outfile->Printf("\n        <<< warning! >>> switched to low-memory (t) algorithm\n\n");
       }
       if (tempmem > memory || options_.get_bool("TRIPLES_LOW_MEMORY")){
          isLowMemory = true;
          tempmem = 8.*(2L*o*o*v*v+o*o*o*v+o*v+5L*o*o*o*nthreads);
       }
-      fprintf(outfile,"        memory requirements for CCSD(T): %9.2lf mb\n\n",tempmem/1024./1024.);
+      outfile->Printf("        memory requirements for CCSD(T): %9.2lf mb\n\n",tempmem/1024./1024.);
   }
-  fprintf(outfile,"  ==> Input parameters <==\n\n");
-  fprintf(outfile,"        Freeze core orbitals?               %5s\n",nfzc > 0 ? "yes" : "no");
-  fprintf(outfile,"        Use frozen natural orbitals?        %5s\n",options_.get_bool("NAT_ORBS") ? "yes" : "no");
-  fprintf(outfile,"        r_convergence:                  %5.3le\n",r_conv);
-  fprintf(outfile,"        e_convergence:                  %5.3le\n",e_conv);
-  fprintf(outfile,"        Number of DIIS vectors:             %5li\n",maxdiis);
-  fprintf(outfile,"        Number of frozen core orbitals:     %5li\n",nfzc);
-  fprintf(outfile,"        Number of active occupied orbitals: %5li\n",ndoccact);
-  fprintf(outfile,"        Number of active virtual orbitals:  %5li\n",nvirt);
-  fprintf(outfile,"        Number of frozen virtual orbitals:  %5li\n",nfzv);
-  fprintf(outfile,"\n");
+  outfile->Printf("  ==> Input parameters <==\n\n");
+  outfile->Printf("        Freeze core orbitals?               %5s\n",nfzc > 0 ? "yes" : "no");
+  outfile->Printf("        Use frozen natural orbitals?        %5s\n",options_.get_bool("NAT_ORBS") ? "yes" : "no");
+  outfile->Printf("        r_convergence:                  %5.3le\n",r_conv);
+  outfile->Printf("        e_convergence:                  %5.3le\n",e_conv);
+  outfile->Printf("        Number of DIIS vectors:             %5li\n",maxdiis);
+  outfile->Printf("        Number of frozen core orbitals:     %5li\n",nfzc);
+  outfile->Printf("        Number of active occupied orbitals: %5li\n",ndoccact);
+  outfile->Printf("        Number of active virtual orbitals:  %5li\n",nvirt);
+  outfile->Printf("        Number of frozen virtual orbitals:  %5li\n",nfzv);
+  outfile->Printf("\n");
 
 
   // allocate some memory for 3-index tensors
@@ -1523,9 +1523,9 @@ void DFCoupledCluster::CCResidual(){
     psio->write_entry(PSIF_DCC_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
     psio->close(PSIF_DCC_R2,1);
     if (timer) {
-        fprintf(outfile,"\n");
-        fprintf(outfile,"        C2 = -1/2 t(b,c,k,j) [ (ki|ac) - 1/2 t(a,d,l,i) (kd|lc) ]\n");
-        fprintf(outfile,"                + t(b,c,k,i) [ (kj|ac) - 1/2 t(a,d,l,j) (kd|lc) ]       %6.2lf\n",omp_get_wtime()-start);
+        outfile->Printf("\n");
+        outfile->Printf("        C2 = -1/2 t(b,c,k,j) [ (ki|ac) - 1/2 t(a,d,l,i) (kd|lc) ]\n");
+        outfile->Printf("                + t(b,c,k,i) [ (kj|ac) - 1/2 t(a,d,l,j) (kd|lc) ]       %6.2lf\n",omp_get_wtime()-start);
         start = omp_get_wtime();
     }
 
@@ -1607,7 +1607,7 @@ void DFCoupledCluster::CCResidual(){
     psio->write_entry(PSIF_DCC_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
     psio->close(PSIF_DCC_R2,1);
     if (timer) {
-        fprintf(outfile,"        D2 =  1/2 U(b,c,j,k) [ L(a,i,k,c) + 1/2 U(a,d,i,l) L(l,d,k,c) ] %6.2lf\n",omp_get_wtime()-start);
+        outfile->Printf("        D2 =  1/2 U(b,c,j,k) [ L(a,i,k,c) + 1/2 U(a,d,i,l) L(l,d,k,c) ] %6.2lf\n",omp_get_wtime()-start);
         start = omp_get_wtime();
     }
 
@@ -1673,7 +1673,7 @@ void DFCoupledCluster::CCResidual(){
     psio->write_entry(PSIF_DCC_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
     psio->close(PSIF_DCC_R2,1);
     if (timer) {
-        fprintf(outfile,"        E2 =      t(a,c,i,j) [ F(b,c) - U(b,d,k,l) (ld|kc) ]            %6.2lf\n",omp_get_wtime()-start);
+        outfile->Printf("        E2 =      t(a,c,i,j) [ F(b,c) - U(b,d,k,l) (ld|kc) ]            %6.2lf\n",omp_get_wtime()-start);
         start = omp_get_wtime();
     }
 
@@ -1717,7 +1717,7 @@ void DFCoupledCluster::CCResidual(){
     psio->write_entry(PSIF_DCC_R2,"residual",(char*)&integrals[0],o*o*v*v*sizeof(double));
     psio->close(PSIF_DCC_R2,1);
     if (timer) {
-        fprintf(outfile,"                - t(a,b,i,k) [ F(k,j) - U(c,d,l,j) (kd|lc) ]            %6.2lf\n",omp_get_wtime()-start);
+        outfile->Printf("                - t(a,b,i,k) [ F(k,j) - U(c,d,l,j) (kd|lc) ]            %6.2lf\n",omp_get_wtime()-start);
         start = omp_get_wtime();
     }
 
@@ -1766,7 +1766,7 @@ void DFCoupledCluster::CCResidual(){
     psio->close(PSIF_DCC_R2,1);
 
     if (timer) {
-        fprintf(outfile,"        B2 =      t(a,b,k,l) [ (ki|lj) + t(c,d,i,j) (kc|ld) ]           %6.2lf\n",omp_get_wtime()-start);
+        outfile->Printf("        B2 =      t(a,b,k,l) [ (ki|lj) + t(c,d,i,j) (kc|ld) ]           %6.2lf\n",omp_get_wtime()-start);
         start = omp_get_wtime();
     }
 
@@ -1796,7 +1796,7 @@ void DFCoupledCluster::CCResidual(){
     F_DGEMM('n','t',o,v,v*nQ,1.0,tempv,o,integrals,v,1.0,w1,o);
 
     if (timer) {
-        fprintf(outfile,"        A1 =      U(c,d,k,l) (ad|kc)                                    %6.2lf\n",omp_get_wtime()-start);
+        outfile->Printf("        A1 =      U(c,d,k,l) (ad|kc)                                    %6.2lf\n",omp_get_wtime()-start);
         start = omp_get_wtime();
     }
 
@@ -1830,7 +1830,7 @@ void DFCoupledCluster::CCResidual(){
     F_DGEMM('t','n',o,v,o*o*v,-2.0,tempv,o*o*v,tempt,o*o*v,1.0,w1,o);
 
     if (timer) {
-        fprintf(outfile,"        B1 =    - U(a,c,k,l) (ki|lc)                                    %6.2lf\n",omp_get_wtime()-start);
+        outfile->Printf("        B1 =    - U(a,c,k,l) (ki|lc)                                    %6.2lf\n",omp_get_wtime()-start);
         start = omp_get_wtime();
     }
 
@@ -1855,13 +1855,13 @@ void DFCoupledCluster::CCResidual(){
     }
  
     if (timer) {
-        fprintf(outfile,"        C1 =      F(k,c) U(a,c,i,k)                                     %6.2lf\n",omp_get_wtime()-start);
+        outfile->Printf("        C1 =      F(k,c) U(a,c,i,k)                                     %6.2lf\n",omp_get_wtime()-start);
         start = omp_get_wtime();
     }
 
     Vabcd1();
     if (timer) {
-        fprintf(outfile,"        A2 =      t(c,d,i,j) (ac|bd)                                    %6.2lf\n",omp_get_wtime()-start);
+        outfile->Printf("        A2 =      t(c,d,i,j) (ac|bd)                                    %6.2lf\n",omp_get_wtime()-start);
     }
 }
 

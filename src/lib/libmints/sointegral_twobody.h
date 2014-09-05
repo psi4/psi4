@@ -48,7 +48,7 @@
 #endif
 
 #if DebugPrint
-#define dprintf(...) fprintf(outfile, __VA_ARGS__)
+#define dprintf(...) outfile->Printf( __VA_ARGS__)
 #else
 #define dprintf(...)
 #endif
@@ -674,13 +674,13 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
                 //                             (BasisSet.shells[sj].center!=BasisSet.shells[sk].center)||
                 //                             (BasisSet.shells[sk].center!=BasisSet.shells[sl].center)) {
 
-                //                fprintf(outfile, "total_am %d siatom %d sjatom %d skatom %d slatom %d\n",
+                //                outfile->Printf( "total_am %d siatom %d sjatom %d skatom %d slatom %d\n",
                 //                        total_am, siatom, sjatom, skatom, slatom);
                 if (!(total_am % 2) ||
                     (siatom != sjatom) ||
                     (sjatom != skatom) ||
                     (skatom != slatom)) {
-                    //                    fprintf(outfile, "\tadding\n");
+                    //                    outfile->Printf( "\tadding\n");
                     sj_arr.push_back(sj);
                     sk_arr.push_back(sk);
                     sl_arr.push_back(sl);
@@ -1134,38 +1134,16 @@ template<typename TwoBodySOIntFunctor>
 void TwoBodySOInt::compute_integrals(TwoBodySOIntFunctor &functor)
 {
     if (comm_ == "MADNESS") {
-#ifdef HAVE_MADNESS
-
-        int v=0;
-        boost::shared_ptr<SO_PQ_Iterator> PQIter(new SO_PQ_Iterator(b1_));
-
-        for (PQIter->first(); PQIter->is_done() == false; PQIter->next()) {
-            if (me_ == v%nproc_) {
-                task(me_, &TwoBodySOInt::compute_pq_pair<TwoBodySOIntFunctor>,
-                     PQIter->p(), PQIter->q(), functor);
-            }
-            v++;
-        }
-
-        WorldComm->sync();
-#else
         throw PSIEXCEPTION("PSI4 was not built with MADNESS. "
                            "Please rebuild PSI4 with MADNESS, or "
                            "change your COMMUNICATOR "
                            "environment variable to MPI or LOCAL.\n");
-#endif
     }
-    //else if (comm_ == "LOCAL") {
     else {
-        boost::shared_ptr<SOShellCombinationsIterator> shellIter(new
-                                                                 SOShellCombinationsIterator(b1_, b2_, b3_, b4_));
+        boost::shared_ptr<SOShellCombinationsIterator>
+        shellIter(new SOShellCombinationsIterator(b1_, b2_, b3_, b4_));
         this->compute_quartets(shellIter, functor);
     }
-//    else {
-//        throw PSIEXCEPTION("Your COMMUNICATOR is not known. "
-//                           "Please change your COMMUNICATOR "
-//                           "environment variable.\n");
-//    }
 }
 
 template<typename TwoBodySOIntFunctor>
@@ -1175,30 +1153,7 @@ void TwoBodySOInt::compute_integrals_deriv1(TwoBodySOIntFunctor &functor)
         throw PSIEXCEPTION("The way the TPDM is stored and iterated enables only totally symmetric"
                            " perturbations to be considered right now!");
 
-    if (comm_ == "MADNESS") {
-#ifdef HAVE_MADNESS
-
-        int v=0;
-        boost::shared_ptr<SO_PQ_Iterator> PQIter(new SO_PQ_Iterator(b1_));
-
-        for (PQIter->first(); PQIter->is_done() == false; PQIter->next()) {
-            size_t pair_number = 0;
-            if (me_ == v%nproc_) {
-                task(me_, &TwoBodySOInt::compute_pq_pair_deriv1<TwoBodySOIntFunctor>,
-                     PQIter->p(), PQIter->q(), pair_number, functor);
-            }
-            v++;
-        }
-
-        WorldComm->sync();
-#else
-        throw PSIEXCEPTION("PSI4 was not built with MADNESS. "
-                           "Please rebuild PSI4 with MADNESS, or "
-                           "change your COMMUNICATOR "
-                           "environment variable to MPI or LOCAL.\n");
-#endif
-    }
-    //else if (comm_ == "LOCAL") {
+    if (comm_ == "MADNESS") {  }
     else {
         boost::shared_ptr<SO_PQ_Iterator> PQIter(new SO_PQ_Iterator(b1_));
         size_t pair_number = 0;
@@ -1208,11 +1163,6 @@ void TwoBodySOInt::compute_integrals_deriv1(TwoBodySOIntFunctor &functor)
             pair_number++;
         }
     }
-//    else {
-//        throw PSIEXCEPTION("Your COMMUNICATOR is not known. "
-//                           "Please change your COMMUNICATOR "
-//                           "environment variable.\n");
-//    }
 }
 
 typedef boost::shared_ptr<OneBodySOInt> SharedOneBodySOInt;

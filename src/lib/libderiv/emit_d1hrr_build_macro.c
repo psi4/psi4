@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include "build_libderiv.h"
 
-extern FILE *outfile, *libint_src, *d1hrr_header;
+extern FILE* outfile, *libint_src, *d1hrr_header;
 extern LibderivParams_t Params;
 
 extern void punt(char *);

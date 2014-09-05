@@ -31,7 +31,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <psifiles.h>
-
+#include "psi4-dec.h"
 namespace psi {
 
 extern char* psi_file_prefix;
@@ -65,10 +65,10 @@ void ffile(FILE **fptr, const char *suffix, int code)
     *fptr = fopen(name,"r+");
     break;
   default:
-    fprintf(stderr,"error in ffile: invalid code %d\n",code);
+    outfile->Printf("error in ffile: invalid code %d\n",code);
   }
   if (*fptr == NULL) {
-    fprintf(stderr,"error in ffile: cannot open file %s\n", suffix);
+    outfile->Printf("error in ffile: cannot open file %s\n", suffix);
     exit(PSI_RETURN_FAILURE);
   }
 }
@@ -104,7 +104,7 @@ void ffile_noexit(FILE **fptr, char *suffix, int code)
     *fptr = fopen(name,"r+");
     break;
   default:
-    fprintf(stderr,"error in ffile_noexit: invalid code %d\n",code);
+    outfile->Printf("error in ffile_noexit: invalid code %d\n",code);
   }
 }
 
@@ -139,12 +139,12 @@ void ffileb(FILE **fptr, char *suffix, int code)
     *fptr = fopen(name,"rb");
     break;
   default:
-    fprintf(stderr,"error in ffileb: invalid code %d\n",code);
+    outfile->Printf("error in ffileb: invalid code %d\n",code);
   }
   free(name);
 
   if (*fptr == NULL) {
-    fprintf(stderr,"error in ffileb: cannot open file %s\n", suffix);
+    outfile->Printf("error in ffileb: cannot open file %s\n", suffix);
     exit(PSI_RETURN_FAILURE);
   }
 }
@@ -181,7 +181,7 @@ void ffileb_noexit(FILE **fptr, char *suffix, int code)
     *fptr = fopen(name,"rb");
     break;
   default:
-    fprintf(stderr,"error in ffileb_noexit: invalid code %d\n",code);
+    outfile->Printf("error in ffileb_noexit: invalid code %d\n",code);
   }
   free(name);
 }

@@ -33,23 +33,23 @@ double
 DCFTSolver::compute_three_particle_energy()
 {
 
-    fprintf(outfile, "\n\tEvaluating three-particle DCFT energy correction...\n\n");
+    outfile->Printf("\n\tEvaluating three-particle DCFT energy correction...\n\n");
 
     // Tansform OOOV and VVVO two-electron integrals and two-particle cumulants to semicanonical basis
     dcft_semicanonicalize();
 
     // Compute the three-particle energy contributions
     double triples_energy_aaa = compute_triples_aaa();
-    fprintf(outfile,   "\t*Lambda_3 Energy (AAA)                             = %20.15f\n", triples_energy_aaa);
+    outfile->Printf("\t*Lambda_3 Energy (AAA)                             = %20.15f\n", triples_energy_aaa);
 
     double triples_energy_aab = compute_triples_aab();
-    fprintf(outfile,   "\t*Lambda_3 Energy (AAB)                             = %20.15f\n", triples_energy_aab);
+    outfile->Printf("\t*Lambda_3 Energy (AAB)                             = %20.15f\n", triples_energy_aab);
 
     double triples_energy_abb = compute_triples_abb();
-    fprintf(outfile,   "\t*Lambda_3 Energy (ABB)                             = %20.15f\n", triples_energy_abb);
+    outfile->Printf("\t*Lambda_3 Energy (ABB)                             = %20.15f\n", triples_energy_abb);
 
     double triples_energy_bbb = compute_triples_bbb();
-    fprintf(outfile,   "\t*Lambda_3 Energy (BBB)                             = %20.15f\n\n", triples_energy_bbb);
+    outfile->Printf("\t*Lambda_3 Energy (BBB)                             = %20.15f\n\n", triples_energy_bbb);
 
     return triples_energy_aaa + triples_energy_aab + triples_energy_abb + triples_energy_bbb;
 
@@ -62,28 +62,28 @@ DCFTSolver::dcft_semicanonicalize()
     // If OOOV or VVVO integrals have not yet been transformed - do it
     if ((options_.get_str("ALGORITHM") != "QC" || !options_.get_bool("QC_COUPLING")
          || options_.get_str("QC_TYPE") != "SIMULTANEOUS") && !orbital_optimized_) {
-        fprintf(outfile, "\tTransforming OVVV and OOOV integrals ... \t\t\t");
+        outfile->Printf("\tTransforming OVVV and OOOV integrals ... \t\t\t");
         transform_integrals_triples();
-        fprintf(outfile, "DONE\n");
+        outfile->Printf("DONE\n");
     }
 
     // Compute transformation to the semicanonical basis and dump it to disk
     dump_semicanonical();
 
     // Transform <OV||VV> integrals to the semicanonical basis
-    fprintf(outfile, "\tSemicanonicalizing OVVV integrals ... \t\t\t");
+    outfile->Printf( "\tSemicanonicalizing OVVV integrals ... \t\t\t");
     semicanonicalize_gbar_ovvv();
-    fprintf(outfile, "DONE\n");
+    outfile->Printf( "DONE\n");
 
-    fprintf(outfile, "\tSemicanonicalizing OOOV integrals ... \t\t\t");
+    outfile->Printf( "\tSemicanonicalizing OOOV integrals ... \t\t\t");
     // Transform <OO||OV> integrals to the semicanonical basis
     semicanonicalize_gbar_ooov();
-    fprintf(outfile, "DONE\n");
+    outfile->Printf( "DONE\n");
 
-    fprintf(outfile, "\tSemicanonicalizing density cumulant ...\t\t\t");
+    outfile->Printf( "\tSemicanonicalizing density cumulant ...\t\t\t");
     // Transform OOVV cumulants to the semicanonical basis
     semicanonicalize_dc();
-    fprintf(outfile, "DONE\n\n");
+    outfile->Printf( "DONE\n\n");
 
 }
 

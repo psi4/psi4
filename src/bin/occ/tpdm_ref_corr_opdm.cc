@@ -194,7 +194,7 @@ void OCCWave::tpdm_corr_opdm()
     if (print_ > 3) {
       global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
                   ID("[O,O]"), ID("[O,O]"), 0, "TPDM <OO|OO>");
-      global_dpd_->buf4_print(&G, outfile, 1);
+      global_dpd_->buf4_print(&G, "outfile", 1);
       global_dpd_->buf4_close(&G);
     }
   
@@ -228,7 +228,7 @@ void OCCWave::tpdm_corr_opdm()
     if (print_ > 3) {
       global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "TPDM <OO|VV>");
-      global_dpd_->buf4_print(&G, outfile, 1);
+      global_dpd_->buf4_print(&G, "outfile", 1);
       global_dpd_->buf4_close(&G);
     }
     
@@ -266,7 +266,7 @@ void OCCWave::tpdm_corr_opdm()
     if (print_ > 3) {
       global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "TPDM <OV|OV>");  
-      global_dpd_->buf4_print(&G, outfile, 1);
+      global_dpd_->buf4_print(&G, "outfile", 1);
       global_dpd_->buf4_close(&G);
     }
 
@@ -383,17 +383,17 @@ void OCCWave::tpdm_corr_opdm()
     if (print_ > 3) {
       global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
                   ID("[O,O]"), ID("[O,O]"), 0, "TPDM <OO|OO>");
-      global_dpd_->buf4_print(&G, outfile, 1);
+      global_dpd_->buf4_print(&G, "outfile", 1);
       global_dpd_->buf4_close(&G);
       
       global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[o,o]"), ID("[o,o]"),
                   ID("[o,o]"), ID("[o,o]"), 0, "TPDM <oo|oo>");
-      global_dpd_->buf4_print(&G, outfile, 1);
+      global_dpd_->buf4_print(&G, "outfile", 1);
       global_dpd_->buf4_close(&G);
       
       global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,o]"), ID("[O,o]"),
                   ID("[O,o]"), ID("[O,o]"), 0, "TPDM <Oo|Oo>");
-      global_dpd_->buf4_print(&G, outfile, 1);
+      global_dpd_->buf4_print(&G, "outfile", 1);
       global_dpd_->buf4_close(&G);
     }
  
@@ -488,17 +488,17 @@ void OCCWave::tpdm_corr_opdm()
     if (print_ > 3) {
       global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "TPDM <OV|OV>");  
-      global_dpd_->buf4_print(&G, outfile, 1);
+      global_dpd_->buf4_print(&G, "outfile", 1);
       global_dpd_->buf4_close(&G);
       
       global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[o,v]"), ID("[o,v]"),
                   ID("[o,v]"), ID("[o,v]"), 0, "TPDM <ov|ov>");    
-      global_dpd_->buf4_print(&G, outfile, 1);
+      global_dpd_->buf4_print(&G, "outfile", 1);
       global_dpd_->buf4_close(&G);
       
       global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,v]"), ID("[O,v]"),
                   ID("[O,v]"), ID("[O,v]"), 0, "TPDM <Ov|Ov>");  
-      global_dpd_->buf4_print(&G, outfile, 1);
+      global_dpd_->buf4_print(&G, "outfile", 1);
       global_dpd_->buf4_close(&G);
     }
     
@@ -536,7 +536,7 @@ void OCCWave::tpdm_corr_opdm()
     if (print_ > 3) {
       global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,o]"), ID("[V,o]"),
                   ID("[V,o]"), ID("[V,o]"), 0, "TPDM <Vo|Vo>");  
-      global_dpd_->buf4_print(&G, outfile, 1);
+      global_dpd_->buf4_print(&G, "outfile", 1);
       global_dpd_->buf4_close(&G);
     }
    

@@ -147,8 +147,8 @@ PsiReturnType transqt2(Options & options)
                         D[pq] += C[p][i] * C[q][i];
                 }
         if(params.print_lvl > 2) {
-            fprintf(outfile, "\n\tFrozen-core density (SO):\n");
-            print_array(D, nso, outfile);
+            outfile->Printf( "\n\tFrozen-core density (SO):\n");
+            print_array(D, nso, "outfile");
         }
     }
     else { /* UHF */
@@ -164,10 +164,10 @@ PsiReturnType transqt2(Options & options)
                     }
                 }
         if(params.print_lvl > 2) {
-            fprintf(outfile, "\n\tAlpha Frozen-core density (SO):\n");
-            print_array(D_a, nso, outfile);
-            fprintf(outfile, "\n\tBeta Frozen-core density (SO):\n");
-            print_array(D_b, nso, outfile);
+            outfile->Printf( "\n\tAlpha Frozen-core density (SO):\n");
+            print_array(D_a, nso, "outfile");
+            outfile->Printf( "\n\tBeta Frozen-core density (SO):\n");
+            print_array(D_b, nso, "outfile");
         }
     }
 
@@ -184,8 +184,8 @@ PsiReturnType transqt2(Options & options)
 
     timer_on("presort");
     if(params.print_lvl) {
-        fprintf(outfile, "\n\tPresorting SO-basis two-electron integrals.\n");
-        fflush(outfile);
+        outfile->Printf( "\n\tPresorting SO-basis two-electron integrals.\n");
+        
     }
     psio_open(PSIF_SO_PRESORT, 0);
     global_dpd_->file4_init(&I, PSIF_SO_PRESORT, 0, 3, 3, "SO Ints (pq,rs)");
@@ -210,7 +210,7 @@ PsiReturnType transqt2(Options & options)
 
     oei = init_array(ntri_so);
     H = init_array(ntri_so);
-    stat = iwl_rdone(PSIF_OEI, PSIF_SO_H, H, ntri_so, 0, 0, outfile);
+    stat = iwl_rdone(PSIF_OEI, PSIF_SO_H, H, ntri_so, 0, 0, "outfile");
 
     /* add the remaining one-electron terms to the fzc operator(s) */
     if(params.ref == 0 || params.ref == 1) {
@@ -249,8 +249,8 @@ PsiReturnType transqt2(Options & options)
         }
     }
     if(params.print_lvl) {
-        fprintf(outfile, "\tFrozen-core energy = %20.15f\n", efzc);
-        fflush(outfile);
+        outfile->Printf( "\tFrozen-core energy = %20.15f\n", efzc);
+        
     }
     chkpt_init(PSIO_OPEN_OLD);
     chkpt_wt_efzc(efzc);
@@ -263,8 +263,8 @@ PsiReturnType transqt2(Options & options)
     if(params.ref == 0 || params.ref == 1) {
         transone(nso, nmo, H, oei, C, nmo, moinfo.pitz2corr_one);
         if(params.print_lvl > 2) {
-            fprintf(outfile, "\n\tOne-electron integrals (MO basis):\n");
-            print_array(oei, nmo, outfile);
+            outfile->Printf( "\n\tOne-electron integrals (MO basis):\n");
+            print_array(oei, nmo, "outfile");
         }
         iwl_wrtone(PSIF_OEI, PSIF_MO_OEI, ntri_mo, oei);
     }
@@ -272,16 +272,16 @@ PsiReturnType transqt2(Options & options)
         /* alpha */
         transone(nso, nmo, H, oei, C_a, nmo, moinfo.pitz2corr_one_A);
         if(params.print_lvl > 2) {
-            fprintf(outfile, "\n\tAlpha one-electron integrals (MO basis):\n");
-            print_array(oei, nmo, outfile);
+            outfile->Printf( "\n\tAlpha one-electron integrals (MO basis):\n");
+            print_array(oei, nmo, "outfile");
         }
         iwl_wrtone(PSIF_OEI, PSIF_MO_A_OEI, ntri_mo, oei);
 
         /* beta */
         transone(nso, nmo, H, oei, C_b, nmo, moinfo.pitz2corr_one_B);
         if(params.print_lvl > 2) {
-            fprintf(outfile, "\n\tBeta one-electron integrals (MO basis):\n");
-            print_array(oei, nmo, outfile);
+            outfile->Printf( "\n\tBeta one-electron integrals (MO basis):\n");
+            print_array(oei, nmo, "outfile");
         }
         iwl_wrtone(PSIF_OEI, PSIF_MO_B_OEI, ntri_mo, oei);
     }
@@ -290,8 +290,8 @@ PsiReturnType transqt2(Options & options)
     if(params.ref == 0 || params.ref == 1) { /* RHF/ROHF */
         transone(nso, nmo, F, oei, C, nmo, moinfo.pitz2corr_one);
         if(params.print_lvl > 2) {
-            fprintf(outfile, "\n\tFrozen-core operator (MO basis):\n");
-            print_array(oei, nmo, outfile);
+            outfile->Printf( "\n\tFrozen-core operator (MO basis):\n");
+            print_array(oei, nmo, "outfile");
         }
         iwl_wrtone(PSIF_OEI, PSIF_MO_FZC, ntri_mo, oei);
     }
@@ -300,16 +300,16 @@ PsiReturnType transqt2(Options & options)
         /* alpha */
         transone(nso, nmo, F_a, oei, C_a, nmo, moinfo.pitz2corr_one_A);
         if(params.print_lvl > 2) {
-            fprintf(outfile, "\n\tAlpha frozen-core operator (MO basis):\n");
-            print_array(oei, nmo, outfile);
+            outfile->Printf( "\n\tAlpha frozen-core operator (MO basis):\n");
+            print_array(oei, nmo, "outfile");
         }
         iwl_wrtone(PSIF_OEI, PSIF_MO_A_FZC, ntri_mo, oei);
 
         /* beta */
         transone(nso, nmo, F_b, oei, C_b, nmo, moinfo.pitz2corr_one_B);
         if(params.print_lvl > 2) {
-            fprintf(outfile, "\n\tBeta frozen-core operator (MO basis):\n");
-            print_array(oei, nmo, outfile);
+            outfile->Printf( "\n\tBeta frozen-core operator (MO basis):\n");
+            print_array(oei, nmo, "outfile");
         }
         iwl_wrtone(PSIF_OEI, PSIF_MO_B_FZC, ntri_mo, oei);
     }
@@ -376,14 +376,14 @@ void init_io()
 void title(void)
 {
     if(params.print_lvl) {
-        fprintf(outfile, "\n");
-        fprintf(outfile,"\t**************************************************\n");
-        fprintf(outfile,"\t* TRANSQT2: Program to transform integrals from  *\n");
-        fprintf(outfile,"\t*           the SO basis to the MO basis.        *\n");
-        fprintf(outfile,"\t*                                                *\n");
-        fprintf(outfile,"\t*            Daniel, David, & Justin             *\n");
-        fprintf(outfile,"\t**************************************************\n");
-        fprintf(outfile, "\n");
+        outfile->Printf( "\n");
+        outfile->Printf("\t**************************************************\n");
+        outfile->Printf("\t* TRANSQT2: Program to transform integrals from  *\n");
+        outfile->Printf("\t*           the SO basis to the MO basis.        *\n");
+        outfile->Printf("\t*                                                *\n");
+        outfile->Printf("\t*            Daniel, David, & Justin             *\n");
+        outfile->Printf("\t**************************************************\n");
+        outfile->Printf( "\n");
     }
 }
 

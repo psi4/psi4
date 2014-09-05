@@ -43,7 +43,7 @@ ThreeCenterOverlapInt::ThreeCenterOverlapInt(std::vector<SphericalTransform>& st
         buffer_ = new double[size];
     }
     catch (std::bad_alloc& e) {
-        fprintf(stderr, "Error allocating memory for buffer_\n");
+        outfile->Printf( "Error allocating memory for buffer_\n");
         exit(EXIT_FAILURE);
     }
     ::memset(buffer_, 0, sizeof(double)*size);
@@ -52,7 +52,7 @@ ThreeCenterOverlapInt::ThreeCenterOverlapInt(std::vector<SphericalTransform>& st
         temp_ = new double[size];
     }
     catch (std::bad_alloc& e) {
-        fprintf(stderr, "Error allocating memory for temp_\n");
+        outfile->Printf("Error allocating memory for temp_\n");
         exit(EXIT_FAILURE);
     }
     ::memset(temp_, 0, sizeof(double)*size);

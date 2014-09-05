@@ -33,7 +33,7 @@
 #include <libmoinfo/libmoinfo.h>
 
 namespace psi{
-    extern FILE *outfile;
+    
     namespace psimrcc{
     extern MOInfo *moinfo;
 

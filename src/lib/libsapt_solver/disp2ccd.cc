@@ -30,7 +30,7 @@ void SAPT2p::disp2ccd() //!
   int occB = noccB_ - foccB_;
 
   if (print_) {
-    fprintf(outfile,"\n==> CCD Dispersion <==\n\n");
+    outfile->Printf("\n==> CCD Dispersion <==\n\n");
   }
 
   boost::shared_ptr<Matrix> mo2noA;
@@ -40,16 +40,16 @@ void SAPT2p::disp2ccd() //!
     mo2noA = mo2no(PSIF_SAPT_AMPS,"pRR Density Matrix", nvirA_,cutoff);
     mo2noB = mo2no(PSIF_SAPT_AMPS,"pSS Density Matrix", nvirB_,cutoff);
     //if (print_) {
-    //  fprintf(outfile,"Natural Orbital (vv|vv): Cutoff %11.3E\n", cutoff);
-    //  fprintf(outfile,"Monomer A: %4d of %4d nvir used.\n", mo2noA->colspi()[0], mo2noA->rowspi()[0]);
-    //  fprintf(outfile,"Monomer B: %4d of %4d nvir used.\n", mo2noB->colspi()[0], mo2noB->rowspi()[0]);
-    //  fprintf(outfile,"\n");
+    //  outfile->Printf("Natural Orbital (vv|vv): Cutoff %11.3E\n", cutoff);
+    //  outfile->Printf("Monomer A: %4d of %4d nvir used.\n", mo2noA->colspi()[0], mo2noA->rowspi()[0]);
+    //  outfile->Printf("Monomer B: %4d of %4d nvir used.\n", mo2noB->colspi()[0], mo2noB->rowspi()[0]);
+    //  outfile->Printf("\n");
     //}
   }
 
   if (print_) {
-    fprintf(outfile,"Beginning Monomer A CCD\n\n");
-    fflush(outfile);
+    outfile->Printf("Beginning Monomer A CCD\n\n");
+    
   }
 
   // Calculate monomer A CCD amplitudes
@@ -67,8 +67,8 @@ timer_off("CCD Prep           ");
     noccA_,nvirA_,foccA_,mo2noA);
 
   if (print_) {
-    fprintf(outfile,"Beginning Monomer B CCD\n\n");
-    fflush(outfile);
+    outfile->Printf("Beginning Monomer B CCD\n\n");
+    
   }
   // Calculate monomer B CCD amplitudes
 timer_on("CCD Prep           ");
@@ -85,8 +85,8 @@ timer_off("CCD Prep           ");
     noccB_,nvirB_,foccB_,mo2noB);
 
   if (print_) {
-    fprintf(outfile,"Beginning CCD Dispersion Amplitude Formation\n\n");
-    fflush(outfile);
+    outfile->Printf("Beginning CCD Dispersion Amplitude Formation\n\n");
+    
   }
   // Calculate dispersion CCD amplitudes
 timer_on("CCD Disp Prep      ");
@@ -139,8 +139,8 @@ timer_off("CCD Disp Prep      ");
   free_block(BSAR); //!
 
   if (print_) {
-    fprintf(outfile,"Beginning Intramonomer A CCD Dispersion\n\n");
-    fflush(outfile);
+    outfile->Printf("Beginning Intramonomer A CCD Dispersion\n\n");
+    
   }
   // Calculate intramonomer dispersion CCD amplitudes for monomer A
 timer_on("CCD Intra Prep     ");
@@ -157,8 +157,8 @@ timer_off("CCD Intra Prep     ");
     mo2noA);
 
   if (print_) {
-    fprintf(outfile,"Beginning Intramonomer B CCD Dispersion\n\n");
-    fflush(outfile);
+    outfile->Printf("Beginning Intramonomer B CCD Dispersion\n\n");
+    
   }
   // Calculate intramonomer dispersion CCD amplitudes for monomer B
 timer_on("CCD Intra Prep     ");
@@ -175,7 +175,7 @@ timer_off("CCD Intra Prep     ");
     mo2noB);
 
   e_disp2d_ccd_ = disp2_ccd;
-  fprintf(outfile,"    Disp2 (CCD)         = %18.12lf H\n",e_disp2d_ccd_);
+  outfile->Printf("    Disp2 (CCD)         = %18.12lf H\n",e_disp2d_ccd_);
 
   // => (S) <= //
 
@@ -200,10 +200,10 @@ timer_off("CCD Intra Prep     ");
   e_disp22s_ccd_ = d220s + d202s;
 
   if (print_) {
-    fprintf(outfile,"\n    Disp220 (S)         = %18.12lf mH\n",d220s*1000.0);
-    fprintf(outfile,"    Disp202 (S)         = %18.12lf mH\n",d202s*1000.0);
-    fprintf(outfile,"    Disp22 (S)          = %18.12lf mH\n\n",e_disp22s_ccd_*1000.0);
-    fflush(outfile);
+    outfile->Printf("\n    Disp220 (S)         = %18.12lf mH\n",d220s*1000.0);
+    outfile->Printf("    Disp202 (S)         = %18.12lf mH\n",d202s*1000.0);
+    outfile->Printf("    Disp22 (S)          = %18.12lf mH\n\n",e_disp22s_ccd_*1000.0);
+    
   }
 }
 void SAPT2p::r_ccd_prep(const char *TARBS, const char *ARBS, const char *CA_RBS, const char *TARAR, //!
@@ -404,8 +404,8 @@ double SAPT2p::r_ccd_iterate(const char *TARBS, const char *TARBSerr, const char
   int occB = noccB_ - foccB_;
 
   if (print_) {
-    fprintf(outfile,"Iter      Energy (mH)         dE (mH)            RMS (mH)\n");
-    fflush(outfile);
+    outfile->Printf("Iter      Energy (mH)         dE (mH)            RMS (mH)\n");
+    
   }
 
   int iter = 1;
@@ -416,14 +416,14 @@ double SAPT2p::r_ccd_iterate(const char *TARBS, const char *TARBSerr, const char
 
   do {
     E_new = r_ccd_energy(TARBS,ARBS,occA,virA,occB,virB);
-    fprintf(outfile,"%4d %16.8lf %17.9lf %17.9lf",iter,E_new*4000.0,
+    outfile->Printf("%4d %16.8lf %17.9lf %17.9lf",iter,E_new*4000.0,
       (E_old-E_new)*4000.0,RMS*4000.0);
-    fflush(outfile);
+    
 
     if (iter > 1 && (4000.0*fabs(E_old-E_new) < ccd_e_conv_ &&
       4000.0*RMS < ccd_t_conv_)) {
       if (iter > min_ccd_vecs_) {
-        fprintf(outfile,"  DIIS\n");
+        outfile->Printf("  DIIS\n");
       }
       break;
     }
@@ -437,17 +437,17 @@ timer_off("CCD Disp Amps      ");
     diis.store_vectors();
     if (iter > min_ccd_vecs_) {
       diis.get_new_vector();
-      fprintf(outfile,"  DIIS\n");
+      outfile->Printf("  DIIS\n");
     }
     else {
-      fprintf(outfile,"\n");
+      outfile->Printf("\n");
     }
 
     iter++;
   }
   while(iter<ccd_maxiter_+1);
 
-  fprintf(outfile,"\n");
+  outfile->Printf("\n");
 
   return(4.0*E_new);
 }
@@ -697,8 +697,8 @@ double SAPT2p::s_ccd_iterate(const char *SARAR, const char *SARARerr, const char
   int occA = noccA_ - foccA_;
 
   if (print_) {
-    fprintf(outfile,"Iter      Energy (mH)         dE (mH)            RMS (mH)\n");
-    fflush(outfile);
+    outfile->Printf("Iter      Energy (mH)         dE (mH)            RMS (mH)\n");
+    
   }
 
   int iter = 1;
@@ -709,14 +709,14 @@ double SAPT2p::s_ccd_iterate(const char *SARAR, const char *SARARerr, const char
 
   do {
     E_new = ccd_energy(SARAR,GARAR,occA,virA);
-    fprintf(outfile,"%4d %16.8lf %17.9lf %17.9lf",iter,E_new*1000.0,
+    outfile->Printf("%4d %16.8lf %17.9lf %17.9lf",iter,E_new*1000.0,
       (E_old-E_new)*1000.0,RMS*1000.0);
-    fflush(outfile);
+    
 
     if (iter > 1 && (1000.0*fabs(E_old-E_new) < ccd_e_conv_ &&
       1000.0*RMS < ccd_t_conv_)) {
       if (iter > min_ccd_vecs_) {
-        fprintf(outfile,"  DIIS\n");
+        outfile->Printf("  DIIS\n");
       }
       break;
     }
@@ -730,17 +730,17 @@ timer_off("CCD Intra Amps     ");
     diis.store_vectors();
     if (iter > min_ccd_vecs_) {
       diis.get_new_vector();
-      fprintf(outfile,"  DIIS\n");
+      outfile->Printf("  DIIS\n");
     }
     else {
-      fprintf(outfile,"\n");
+      outfile->Printf("\n");
     }
 
     iter++;
   }
   while(iter<ccd_maxiter_+1);
 
-  fprintf(outfile,"\n");
+  outfile->Printf("\n");
 
   return(E_new);
 }
@@ -1646,8 +1646,8 @@ void SAPT2p::ccd_iterate(const char *TARAR, const char *TARARerr, const char *Th
   int occA = noccA - foccA;
 
   if (print_) {
-    fprintf(outfile,"Iter       Energy (H)          dE (H)             RMS (H)\n");
-    fflush(outfile);
+    outfile->Printf("Iter       Energy (H)          dE (H)             RMS (H)\n");
+    
   }
 
   int iter = 1;
@@ -1658,13 +1658,13 @@ void SAPT2p::ccd_iterate(const char *TARAR, const char *TARARerr, const char *Th
 
   do {
     E_new = ccd_energy(TARAR,GARAR,occA,virA);
-    fprintf(outfile,"%4d %16.8lf %17.9lf %17.9lf",iter,E_new,E_old-E_new,RMS);
-    fflush(outfile);
+    outfile->Printf("%4d %16.8lf %17.9lf %17.9lf",iter,E_new,E_old-E_new,RMS);
+    
 
     if (iter > 1 && (fabs(E_old-E_new) < ccd_e_conv_ &&
       RMS < ccd_t_conv_)) {
       if (iter > min_ccd_vecs_) {
-        fprintf(outfile,"  DIIS\n");
+        outfile->Printf("  DIIS\n");
       }
       break;
     }
@@ -1679,17 +1679,17 @@ timer_off("CCD Amps           ");
     diis.store_vectors();
     if (iter > min_ccd_vecs_) {
       diis.get_new_vector();
-      fprintf(outfile,"  DIIS\n");
+      outfile->Printf("  DIIS\n");
     }
     else {
-      fprintf(outfile,"\n");
+      outfile->Printf("\n");
     }
 
     iter++;
   }
   while(iter<ccd_maxiter_+1);
 
-  fprintf(outfile,"\n");
+  outfile->Printf("\n");
 }
 
 double SAPT2p::ccd_energy(const char *TARAR, const char *GARAR, int occA, int virA) //!

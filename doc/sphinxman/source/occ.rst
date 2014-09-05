@@ -203,6 +203,7 @@ The conventional and orbital-optimized MP2 methods currently supported in |Psifo
 
 .. comment    | scs-mi-omp2             | A special version of SCS-OMP2 (from S22 database)            |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
 .. comment    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+
 The conventional and orbital-optimized MP3 methods currently supported in |Psifour| are outlined in Table :ref:`OMP3 Methods <table:omp3_calls>`.
 
     .. _`table:omp3_calls`:

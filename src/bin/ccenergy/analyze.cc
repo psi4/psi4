@@ -33,7 +33,7 @@
 #include "MOInfo.h"
 #define EXTERN
 #include "globals.h"
-
+#include "libparallel/ParallelPrinter.h"
 namespace psi { namespace ccenergy {
 
 double **Build_R(void);
@@ -46,7 +46,7 @@ void analyze(void)
   double width, max, min, value, value2;
   double *amp_array;
   double **tmp, **T2trans, **T1trans;
-  FILE *efile;
+
   dpdfile2 T1;
   dpdbuf4 I, T2, D;
 
@@ -55,8 +55,7 @@ void analyze(void)
   max = 9;
   min = 0;
   width = (max-min) / (num_div);
-
-  ffile(&efile, (char *) "tamps.dat", 1);
+  boost::shared_ptr<OutFile> printer(new OutFile("tamps.dat",APPEND));
   amp_array = init_array(num_div);
 
   nvir = moinfo.virtpi[0];
@@ -104,23 +103,22 @@ void analyze(void)
   for (i = num_div-1; i >= 0; i--) {
     value = amp_array[i] / tot1;
     value2 += value;
-    fprintf(efile, "%10.5lf %lf\n", -((i)*width)-min, value);
+    printer->Printf("%10.5lf %lf\n", -((i)*width)-min, value);
   }
   free(amp_array);
   printf("Total number of converged T2 amplitudes = %d\n", tot2);
   printf("Number of T2 amplitudes in analysis= %d\n", tot1);
-  fclose(efile);
+
 
   num_div = 40;
   max = 2;
   min = -5;
   width = (max-min) / (num_div);
-
-  ffile(&efile, (char *) "t1amps.dat", 1);
+  boost::shared_ptr<OutFile> printer2(new OutFile("t1amps.dat",APPEND));
   amp_array = init_array(num_div);
 
   global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
-  global_dpd_->file2_print(&T1, outfile);
+  global_dpd_->file2_print(&T1, "outfile");
   global_dpd_->file2_mat_init(&T1);
   global_dpd_->file2_mat_rd(&T1);
   /*
@@ -160,11 +158,10 @@ void analyze(void)
   for (i = num_div-1; i >= 0; i--) {
     value = amp_array[i] / tot1;
     value2 += value;
-    fprintf(efile, "%10.5lf %lf\n", ((i)*width)-min, value);
+    printer2->Printf("%10.5lf %lf\n", ((i)*width)-min, value);
   }
 
   free(amp_array);
-  fclose(efile);
 
 }
 

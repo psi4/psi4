@@ -223,6 +223,7 @@ sub print_test_header
 
 sub test_finished
 {
+  # interrupted is never set, so script has always been exiting 0
   my $fail = $_[0];
   my $interrupted = $_[1];
 
@@ -232,12 +233,13 @@ sub test_finished
   system("cat $target");
   #system("cat $target >> $PSITEST_SUMMARY_FILE");
 
-  if ($interrupted) {
-    exit($fail);
-  }
-  else {
-    exit(0);
-  }
+  #if ($interrupted) {
+  #  exit($fail);
+  #}
+  #else {
+  #  exit(0);
+  #}
+  exit($fail);
 }
 
 sub get_test_name
@@ -3190,6 +3192,8 @@ sub get_proptype_string
 
   return $proptype;
 }
+
+do_tests(@ARGV);
 
 1;
 

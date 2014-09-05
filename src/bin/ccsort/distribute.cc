@@ -76,7 +76,7 @@ void distribute_rhf(int filenum, int first_tmp, double tolerance, int keep_input
     /* Check integral into each class */
     classify(p,q,r,s,value,&ABuf,&BBuf,&CBuf,&DBuf,&EBuf,&F1Buf, &F2Buf);
 
-    /*    fprintf(outfile, "(%d %d|%d %d) = %20.10lf\n", p, q, r, s, value);  */
+    /*    outfile->Printf( "(%d %d|%d %d) = %20.10lf\n", p, q, r, s, value);  */
 
   } /* end loop through current buffer */
 
@@ -96,7 +96,7 @@ void distribute_rhf(int filenum, int first_tmp, double tolerance, int keep_input
       /* Check integral into each class */
       classify(p,q,r,s,value,&ABuf,&BBuf,&CBuf,&DBuf,&EBuf,&F1Buf, &F2Buf);
 
-      /*      fprintf(outfile, "(%d %d|%d %d) = %20.10lf\n", p, q, r, s, value); */
+      /*      outfile->Printf( "(%d %d|%d %d) = %20.10lf\n", p, q, r, s, value); */
 
     } /* end loop through current buffer */
   } /* end loop over reading buffers */
@@ -118,7 +118,7 @@ void distribute_rhf(int filenum, int first_tmp, double tolerance, int keep_input
   iwl_buf_close(&F1Buf, 1);
   if(params.make_aibc) iwl_buf_close(&F2Buf, 1);
 
-  fflush(outfile);
+  
 }
 
 void classify_uhf(int p, int q, int r, int s, double value, const char *spin,
@@ -170,7 +170,7 @@ void distribute_uhf(const char *spin, int filenum, int first_tmp, double toleran
     classify_uhf(p,q,r,s,value,spin,&ABuf1,&BBuf1,&CBuf1,&CBuf2,
 		 &DBuf1,&EBuf1,&EBuf2,&FBuf1,&FBuf2,&FBuf3,&FBuf4);
 
-    /*    fprintf(outfile, "(%d %d|%d %d) = %20.10lf\n", p, q, r, s, value);  */
+    /*    outfile->Printf( "(%d %d|%d %d) = %20.10lf\n", p, q, r, s, value);  */
 
   } /* end loop through current buffer */
 
@@ -191,7 +191,7 @@ void distribute_uhf(const char *spin, int filenum, int first_tmp, double toleran
       classify_uhf(p,q,r,s,value,spin,&ABuf1,&BBuf1,&CBuf1,&CBuf2,
 		   &DBuf1,&EBuf1,&EBuf2,&FBuf1,&FBuf2,&FBuf3,&FBuf4);
 
-      /*      fprintf(outfile, "(%d %d|%d %d) = %20.10lf\n", p, q, r, s, value); */
+      /*      outfile->Printf( "(%d %d|%d %d) = %20.10lf\n", p, q, r, s, value); */
 
     } /* end loop through current buffer */
   } /* end loop over reading buffers */
@@ -221,7 +221,7 @@ void distribute_uhf(const char *spin, int filenum, int first_tmp, double toleran
   iwl_buf_close(&FBuf3, 1);
   iwl_buf_close(&FBuf4, 1);
 
-  fflush(outfile);
+  
 }
 
 }} // namespace psi::ccsort

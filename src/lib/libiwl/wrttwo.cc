@@ -33,7 +33,7 @@
 namespace psi {
   
 void IWL::write_two(PSIO *psio, int itap, int nbfso, double *ints, int *ioff, 
-    double toler, int printflg, FILE *out)
+    double toler, int printflg, std::string out)
 {
     IWL Buf(psio, itap, toler, 0, 0);
     Buf.write_all(nbfso, ints, ioff, printflg, out);
@@ -59,7 +59,7 @@ void IWL::write_two(PSIO *psio, int itap, int nbfso, double *ints, int *ioff,
 ** \ingroup IWL
 */
 void iwl_wrttwo(int itap, int nbfso, double *ints, int *ioff, double toler, 
-                int printflg, FILE *out)
+                int printflg, std::string out)
 {
   struct iwlbuf Buf;
 

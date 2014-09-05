@@ -53,7 +53,7 @@
 #include "wavefunction.h"
 #include "integralparameters.h"
 #include <libciomr/libciomr.h>
-
+#include "psi4-dec.h"
 using namespace psi;
 using namespace std;
 using namespace boost;
@@ -434,8 +434,8 @@ FJT::values(int J,double wval)
     int i, itable, irange;
 
     if (J>maxj) {
-        fprintf(stderr, "the int_fjt routine has been incorrectly used\n");
-        fprintf(stderr, "J = %d but maxj = %d\n", J, maxj);
+        outfile->Printf( "the int_fjt routine has been incorrectly used\n");
+        outfile->Printf( "J = %d but maxj = %d\n", J, maxj);
         abort();
     }
 

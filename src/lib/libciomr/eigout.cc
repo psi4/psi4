@@ -27,7 +27,8 @@
 */
 
 #include <cstdio>
-
+#include "psi4-dec.h"
+#include "libparallel/ParallelPrinter.h"
 namespace psi {
 
 /*!
@@ -49,8 +50,10 @@ namespace psi {
 **
 ** \ingroup CIOMR
 */
-void eigout(double **a, double *b, double *c, int m, int n, FILE *out)
+void eigout(double **a, double *b, double *c, int m, int n, std::string out)
    {
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(out)));
       int ii,jj,kk,nn;
       int i,j;
 
@@ -61,28 +64,27 @@ L200:
       kk=10*jj;
       nn=n;
       if (nn > kk) nn=kk;
-      fprintf (out,"\n");
-      for (i=ii; i <= nn; i++) fprintf(out,"       %5d",i);
-      fprintf (out,"\n");
+      printer->Printf("\n");
+      for (i=ii; i <= nn; i++) printer->Printf("       %5d",i);
+      printer->Printf("\n");
       for (i=0; i < m; i++) {
-         fprintf (out,"\n%5d",i+1);
+         printer->Printf("\n%5d",i+1);
          for (j=ii-1; j < nn; j++) {
-            fprintf (out,"%12.7f",a[i][j]);
+            printer->Printf("%12.7f",a[i][j]);
             }
          }
-      fprintf (out,"\n");
-      fprintf (out,"\n     ");
+      printer->Printf("\n");
+      printer->Printf("\n     ");
       for (j=ii-1; j < nn; j++) {
-         fprintf(out,"%12.7f",b[j]);
+         printer->Printf("%12.7f",b[j]);
          }
-      fprintf (out,"\n");
-      fprintf (out,"\n     ");
+      printer->Printf("\n");
+      printer->Printf("\n     ");
       for (j=ii-1; j < nn; j++) {
-         fprintf(out,"%12.7f",c[j]);
+         printer->Printf("%12.7f",c[j]);
          }
-      fprintf (out,"\n");
+      printer->Printf("\n");
       if (n <= kk) {
-         fflush(out);
          return;
          }
       ii=kk; goto L200;

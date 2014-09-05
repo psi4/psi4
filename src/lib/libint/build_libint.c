@@ -41,7 +41,7 @@
 #include "libint_config.h"
 
 /* Global data */
-FILE *outfile, *vrr_header, *hrr_header, *libint_header, *init_code;
+FILE* outfile, *vrr_header, *hrr_header, *libint_header, *init_code;
 char *real_type;   /*--- C type for real numbers ---*/
 int libint_stack_size[MAX_AM/2+1];
 LibintParams_t Params;

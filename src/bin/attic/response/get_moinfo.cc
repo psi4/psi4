@@ -89,7 +89,7 @@ void get_moinfo(void)
     nfzv += moinfo.fruocc[h];
   }
   if(nfzc || nfzv) {
-    fprintf(outfile, "\n\tStability analysis incorrect for frozen orbital calculations.\n");
+    outfile->Printf( "\n\tStability analysis incorrect for frozen orbital calculations.\n");
     exit(PSI_RETURN_FAILURE);
   }
 

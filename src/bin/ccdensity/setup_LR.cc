@@ -53,21 +53,21 @@ void setup_LR(struct RHO_Params rho_params)
   R0 = rho_params.R0;
 
   /*
-  fprintf(outfile,"\n");
+  outfile->Printf("\n");
   if(L_root+1 == 0)
-    fprintf(outfile,"\tDensity for GS %3s\n",moinfo.labels[L_irr]);
+    outfile->Printf("\tDensity for GS %3s\n",moinfo.labels[L_irr]);
   else 
-    fprintf(outfile,"\tDensity for ES %d%3s\n",L_root+1,moinfo.labels[L_irr]);
-  fflush(outfile);
+    outfile->Printf("\tDensity for ES %d%3s\n",L_root+1,moinfo.labels[L_irr]);
+  
   */
   
   /*
-  fprintf(outfile,"\n\tSetting up L and R to compute density\n");
-  fprintf(outfile,"\tLeft-hand eigenvector: symmetry %s and excited root %d\n",
+  outfile->Printf("\n\tSetting up L and R to compute density\n");
+  outfile->Printf("\tLeft-hand eigenvector: symmetry %s and excited root %d\n",
 	  moinfo.labels[L_irr], L_root+1); 
-  fprintf(outfile,"\tRight-hand eigenvector: symmetry %s and excited root %d\n",
+  outfile->Printf("\tRight-hand eigenvector: symmetry %s and excited root %d\n",
 	  moinfo.labels[R_irr], R_root+1); 
-  fprintf(outfile,"\tR0 = %15.10lf\n",params.R0); 
+  outfile->Printf("\tR0 = %15.10lf\n",params.R0); 
   */
 
   /* form labels for the L to be copied */
@@ -276,7 +276,7 @@ void setup_LR(struct RHO_Params rho_params)
       global_dpd_->file2_init(&L1, PSIF_CC_GLG, G_irr, 0, 1, "LIA");
       tval = global_dpd_->file2_dot_self(&L1);
       global_dpd_->file2_close(&L1);
-      fprintf(outfile,"Ro*L+Zeta in CC_GLG, LIA before zeta: %15.10lf\n",tval);
+      outfile->Printf("Ro*L+Zeta in CC_GLG, LIA before zeta: %15.10lf\n",tval);
 
       if (params.use_zeta) {
         global_dpd_->file2_init(&Z1, PSIF_CC_LAMPS, G_irr, 0, 1, "ZIA");
@@ -308,7 +308,7 @@ void setup_LR(struct RHO_Params rho_params)
 	global_dpd_->file2_init(&L1, PSIF_CC_GLG, G_irr, 0, 1, "LIA");
 	tval = global_dpd_->file2_dot_self(&L1);
 	global_dpd_->file2_close(&L1);
-	fprintf(outfile,"Ro*L+Zeta in CC_GLG, LIA: %15.10lf\n",tval);
+	outfile->Printf("Ro*L+Zeta in CC_GLG, LIA: %15.10lf\n",tval);
       }
     }
   }

@@ -22,7 +22,7 @@
 
 #include "functional.h"
 #include <psi4-dec.h>
-
+#include "libparallel/ParallelPrinter.h"
 namespace psi {
 
 Functional::Functional()
@@ -50,32 +50,33 @@ void Functional::set_parameter(const std::string& key, double val)
 {
     parameters_[key] = val;
 }
-void Functional::print(FILE* out, int level) const
+void Functional::print(std::string out, int level) const
 {
     if (level < 1) return;
+    boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+             boost::shared_ptr<OutFile>(new OutFile(out)));
+    printer->Printf( "   => %s Functional <=\n\n", name_.c_str());
 
-    fprintf(out, "   => %s Functional <=\n\n", name_.c_str());
-
-    fprintf(out, "%s", description_.c_str());
-    fprintf(out, "\n");
+    printer->Printf( "%s", description_.c_str());
+    printer->Printf( "\n");
     
-    fprintf(out, "%s", citation_.c_str());
-    fprintf(out, "\n");
+    printer->Printf( "%s", citation_.c_str());
+    printer->Printf( "\n");
     
-    fprintf(out, "    GGA   = %14s\n", (gga_ ? "TRUE" : "FALSE"));
-    fprintf(out, "    Meta  = %14s\n", (meta_ ? "TRUE" : "FALSE"));
-    fprintf(out, "    LRC   = %14s\n", (lrc_ ? "TRUE" : "FALSE"));
-    fprintf(out, "    Alpha = %14.6E\n", alpha_);
-    fprintf(out, "    Omega = %14.6E\n", omega_);
-    fprintf(out, "\n");
+    printer->Printf( "    GGA   = %14s\n", (gga_ ? "TRUE" : "FALSE"));
+    printer->Printf( "    Meta  = %14s\n", (meta_ ? "TRUE" : "FALSE"));
+    printer->Printf( "    LRC   = %14s\n", (lrc_ ? "TRUE" : "FALSE"));
+    printer->Printf( "    Alpha = %14.6E\n", alpha_);
+    printer->Printf( "    Omega = %14.6E\n", omega_);
+    printer->Printf( "\n");
     
     if (level > 2) {
-        fprintf(out, "    > Parameters <\n\n");
+        printer->Printf( "    > Parameters <\n\n");
         for (std::map<std::string, double>::const_iterator it = parameters_.begin();  
             it != parameters_.end(); ++it) {
-            fprintf(out,"    %11s = %24.16E\n", (*it).first.c_str(), (*it).second);
+            printer->Printf("    %11s = %24.16E\n", (*it).first.c_str(), (*it).second);
         }    
-        fprintf(out, "\n");
+        printer->Printf( "\n");
     }
 } 
 void Functional::compute_functional(const std::map<std::string,SharedVector>& in, const std::map<std::string,SharedVector>& out, int npoints, int deriv, double alpha)

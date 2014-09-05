@@ -11,8 +11,7 @@ InsertPath = '/../../../'
 if (len(sys.argv) == 2):
     DriverPath = sys.argv[1] + '/'
     sys.path.insert(0, os.path.abspath(os.getcwd()))
-    import apply_relpath
-    IncludePath = apply_relpath.get_topsrcdir_asrelativepathto_objdirsfnxsource()[1]
+
 
 def pts(category, pyfile):
     print 'Auto-documenting %s module %s' % (category, pyfile)
@@ -27,11 +26,10 @@ for pyfile in glob.glob(DriverPath + '../../lib/python/qcdb/cfour.py'):
     filename = os.path.split(pyfile)[1]
     basename = os.path.splitext(filename)[0]
     div = '=' * len(basename)
-    print pyfile, filename, basename
 
     if basename not in []:
         pts('psi variables', basename)
-    
+
         fdriver.write('.. _`apdx:%s_psivar`:\n\n' % (basename.lower()))
         fdriver.write('\n%s\n%s\n\n' % (basename.upper(), '"' * len(basename)))
         fdriver.write('.. hlist::\n   :columns: 1\n\n')
@@ -53,7 +51,10 @@ for pv in sorted(psivars):
 fdriver.write('\n')
 fdriver.close()
 
-fdriver = open('source/autodoc_psivariables_bymodule.rst', 'a')
-fdriver.write('   autodir_psivariables/module__cfour\n\n')
-fdriver.close()
-
+for line in open('source/autodoc_psivariables_bymodule.rst'):
+    if 'module__cfour' in line:
+        break
+else:
+    fdriver = open('source/autodoc_psivariables_bymodule.rst', 'a')
+    fdriver.write('   autodir_psivariables/module__cfour\n\n')
+    fdriver.close()

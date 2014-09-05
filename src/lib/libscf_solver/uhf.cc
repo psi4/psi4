@@ -165,10 +165,10 @@ void UHF::form_initialF()
     Fb_->copy(H_);
 
     if (debug_) {
-        fprintf(outfile, "Initial Fock alpha matrix:\n");
-        Fa_->print(outfile);
-        fprintf(outfile, "Initial Fock beta matrix:\n");
-        Fb_->print(outfile);
+        outfile->Printf( "Initial Fock alpha matrix:\n");
+        Fa_->print("outfile");
+        outfile->Printf( "Initial Fock beta matrix:\n");
+        Fb_->print("outfile");
     }
 }
 
@@ -181,8 +181,8 @@ void UHF::form_F()
     Fb_->add(Gb_);
 
     if (debug_) {
-        Fa_->print(outfile);
-        Fb_->print(outfile);
+        Fa_->print("outfile");
+        Fb_->print("outfile");
     }
 }
 
@@ -192,8 +192,8 @@ void UHF::form_C()
     diagonalize_F(Fb_, Cb_, epsilon_b_);
     find_occupation();
     if (debug_) {
-        Ca_->print(outfile);
-        Cb_->print(outfile);
+        Ca_->print("outfile");
+        Cb_->print("outfile");
     }
 }
 
@@ -226,7 +226,7 @@ void UHF::form_D()
     Dt_->add(Db_);
 
     if (debug_) {
-        fprintf(outfile, "in UHF::form_D:\n");
+        outfile->Printf( "in UHF::form_D:\n");
         Da_->print();
         Db_->print();
     }
@@ -255,7 +255,7 @@ double UHF::compute_E()
     double DFa = Da_->vector_dot(Fa_);
     double DFb = Db_->vector_dot(Fb_);
     double Eelec = 0.5 * (DH + DFa + DFb);
-    // fprintf(outfile, "electronic energy = %20.14f\n", Eelec);
+    // outfile->Printf( "electronic energy = %20.14f\n", Eelec);
     double Etotal = nuclearrep_ + Eelec;
     return Etotal;
 }
@@ -471,7 +471,7 @@ void UHF::stability_analysis()
                     status = "\tNegative hessian eigenvalue detected: rotating orbitals.\n";
                     double scale = pc_pi*options_.get_double("FOLLOW_STEP_SCALE")/2.0;
                     // Rotate the alpha orbitals
-//                    fprintf(outfile, "OLD ORBS");
+//                    outfile->Printf( "OLD ORBS");
 //                    Ca_->print();
                     for(int ia = 0; ia < Aaa.params->rowtot[h]; ++ia){
                         int iabs = Aaa.params->roworb[h][ia][0];
@@ -482,10 +482,10 @@ void UHF::stability_analysis()
                         int arel = aabs - Aaa.params->qoff[asym] + doccpi_[asym] + soccpi_[asym];
 
                         Ca_->rotate_columns(isym, irel, arel, scale*evecs[ia][0]);
-                        fprintf(outfile, "Rotating %d and %d in irrep %d by %f\n",
+                        outfile->Printf( "Rotating %d and %d in irrep %d by %f\n",
                                 irel, arel, isym, scale*evecs[0][ia]);
                     }
-//                    fprintf(outfile, "NEW ORBS");
+//                    outfile->Printf( "NEW ORBS");
 //                    Ca_->print();
                     // Rotate the beta orbitals
                     for(int ia = 0; ia < Abb.params->rowtot[h]; ++ia){
@@ -508,22 +508,22 @@ void UHF::stability_analysis()
             delete [] evals;
         }
 
-        fprintf(outfile, "\tLowest UHF->UHF stability eigenvalues:-\n");
+        outfile->Printf( "\tLowest UHF->UHF stability eigenvalues:-\n");
         print_stability_analysis(eval_sym);
 
         psio_->close(PSIF_LIBTRANS_DPD, 1);
         delete ints;
 
-        fprintf(outfile, "%s", status.c_str());
+        outfile->Printf( "%s", status.c_str());
 
         if(redo){
             if(attempt_number_ > 1){
                 // Make sure we don't get stuck in an infinite loop
-                fprintf(outfile, "\tThere's still a negative eigenvalue.  Try increasing FOLLOW_STEP_SCALE");
+                outfile->Printf( "\tThere's still a negative eigenvalue.  Try increasing FOLLOW_STEP_SCALE");
                 return;
             }
             attempt_number_++;
-            fprintf(outfile, "\tRe-running the SCF, using the rotated orbitals\n");
+            outfile->Printf( "\tRe-running the SCF, using the rotated orbitals\n");
             diis_manager_->reset_subspace();
             compute_energy();
         }

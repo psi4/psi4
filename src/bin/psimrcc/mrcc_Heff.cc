@@ -72,7 +72,7 @@ bool CCMRCC::build_diagonalize_Heff(int cycle, double time)
 //       if(fabs(delta_energy) < moinfo->get_no_damp_convergence()){
 //         double damping_factor = moinfo->get_damping_factor();
 //         damping_factor *= 0.95;
-//         fprintf(outfile,"\n\t# Scaling damp factor to zero, damping_factor = %lf",moinfo->get_damping_factor());
+//         outfile->Printf("\n\t# Scaling damp factor to zero, damping_factor = %lf",moinfo->get_damping_factor());
 //         moinfo->set_damping_factor(damping_factor);
 //       }
 //     }

@@ -801,7 +801,7 @@ void OEProp::common_init()
             throw PSIEXCEPTION("Invalid specification of PROPERTIES_ORIGIN.  Please consult the manual.");
         }
     }
-    fprintf(outfile, "\n\nProperties will be evaluated at %10.6f, %10.6f, %10.6f Bohr\n",
+    outfile->Printf( "\n\nProperties will be evaluated at %10.6f, %10.6f, %10.6f Bohr\n",
             origin_[0], origin_[1], origin_[2]);
 
 
@@ -830,7 +830,7 @@ void OEProp::common_init()
 
         for (int xyz = 0; xyz < 3; ++xyz) {
             if(fabs(t[xyz] > 1.0E-8)){
-                fprintf(outfile, "The origin chosen breaks symmetry; multipoles will be computed without symmetry.\n");
+                outfile->Printf( "The origin chosen breaks symmetry; multipoles will be computed without symmetry.\n");
                 origin_preserves_symmetry_ = false;
             }
         }
@@ -840,9 +840,9 @@ void OEProp::common_init()
 
 void OEProp::print_header()
 {
-    fprintf(outfile, "\n OEPROP: One-electron properties/analyses.\n");
-    fprintf(outfile, "  by Rob Parrish and Justin Turney.\n");
-    fprintf(outfile, "  built on LIBMINTS.\n\n");
+    outfile->Printf( "\n OEPROP: One-electron properties/analyses.\n");
+    outfile->Printf( "  by Rob Parrish and Justin Turney.\n");
+    outfile->Printf( "  built on LIBMINTS.\n\n");
 }
 
 template <class T>
@@ -857,7 +857,7 @@ bool from_string(T& t,
 void OEProp::compute()
 {
 
-    fprintf(outfile, "\nProperties computed using the %s density matrix\n\n", title_.c_str());
+    outfile->Printf( "\nProperties computed using the %s density matrix\n\n", title_.c_str());
 
     // Search for multipole strings, which are handled separately
     std::set<std::string>::const_iterator iter = tasks_.begin();
@@ -946,10 +946,10 @@ void OEProp::compute_multipoles(int order, bool transition)
 
     SharedVector nuclear_contributions = MultipoleInt::nuclear_contribution(mol, order, origin_);
 
-    fprintf(outfile,"\n%s Multipole Moments:\n", transition ? "Transition" : "");
-    fprintf(outfile, "\n ------------------------------------------------------------------------------------\n");
-    fprintf(outfile, "     Multipole             Electric (a.u.)       Nuclear  (a.u.)        Total (a.u.)\n");
-    fprintf(outfile, " ------------------------------------------------------------------------------------\n\n");
+    outfile->Printf("\n%s Multipole Moments:\n", transition ? "Transition" : "");
+    outfile->Printf( "\n ------------------------------------------------------------------------------------\n");
+    outfile->Printf( "     Multipole             Electric (a.u.)       Nuclear  (a.u.)        Total (a.u.)\n");
+    outfile->Printf( " ------------------------------------------------------------------------------------\n\n");
     double convfac = pc_dipmom_au2debye;
     int address = 0;
     for(int l = 1; l <= order; ++l){
@@ -960,14 +960,14 @@ void OEProp::compute_multipoles(int order, bool transition)
         if(l > 2)
             ss << "^" << l-1;
         std::string exp = ss.str();
-        fprintf(outfile, " L = %d.  Multiply by %.10f to convert to Debye%s\n", l, convfac, exp.c_str());
+        outfile->Printf( " L = %d.  Multiply by %.10f to convert to Debye%s\n", l, convfac, exp.c_str());
         for(int component = 0; component < ncomponents; ++component){
             SharedMatrix mpmat = mp_ints[address];
             std::string name = mpmat->name();
             double nuc = transition ? 0.0 : nuclear_contributions->get(address);
             double elec = Da->vector_dot(mpmat) + Db->vector_dot(mpmat);
             double tot = nuc + elec;
-            fprintf(outfile, " %-20s: %18.7f   %18.7f   %18.7f\n",
+            outfile->Printf( " %-20s: %18.7f   %18.7f   %18.7f\n",
                     name.c_str(), elec, nuc, tot);
             std::string upper_name = boost::algorithm::to_upper_copy(name);
             /*- Process::environment.globals["DIPOLE X"] -*/
@@ -977,12 +977,12 @@ void OEProp::compute_multipoles(int order, bool transition)
             Process::environment.globals[upper_name] = tot;
             ++address;
         }
-        fprintf(outfile, "\n");
+        outfile->Printf( "\n");
         convfac *= pc_bohr2angstroms;
     }
-    fprintf(outfile, " --------------------------------------------------------------------------------\n");
+    outfile->Printf( " --------------------------------------------------------------------------------\n");
 
-    fflush(outfile);
+    
 }
 
 void OEProp::compute_esp_at_nuclei()
@@ -1002,10 +1002,10 @@ void OEProp::compute_esp_at_nuclei()
     }
 
     Matrix dist = mol->distance_matrix();
-    fprintf(outfile, "\n Electrostatic potentials at the nuclear coordinates:\n");
-    fprintf(outfile, " ---------------------------------------------\n");
-    fprintf(outfile, "   Center     Electrostatic Potential (a.u.)\n");
-    fprintf(outfile, " ---------------------------------------------\n");
+    outfile->Printf( "\n Electrostatic potentials at the nuclear coordinates:\n");
+    outfile->Printf( " ---------------------------------------------\n");
+    outfile->Printf( "   Center     Electrostatic Potential (a.u.)\n");
+    outfile->Printf( " ---------------------------------------------\n");
     for(int atom1 = 0; atom1 < natoms; ++atom1){
         std::stringstream s;
         s << "ESP AT CENTER " << atom1+1;
@@ -1020,12 +1020,12 @@ void OEProp::compute_esp_at_nuclei()
                 continue;
             nuc += mol->Z(atom2) / dist[0][atom1][atom2];
         }
-        fprintf(outfile, "  %3d %2s           %16.12f\n",
+        outfile->Printf( "  %3d %2s           %16.12f\n",
                 atom1+1, mol->label(atom1).c_str(), nuc+elec);
         /*- Process::environment.globals["ESP AT CENTER n"] -*/
         Process::environment.globals[s.str()] = nuc+elec;
     }
-    fprintf(outfile, " ---------------------------------------------\n");
+    outfile->Printf( " ---------------------------------------------\n");
 }
 
 void OEProp::compute_dipole(bool transition)
@@ -1080,30 +1080,30 @@ void OEProp::compute_dipole(bool transition)
 
     if (!transition) {
 
-        fprintf(outfile, "  Nuclear Dipole Moment: (a.u.)\n");
-        fprintf(outfile,"     X: %10.4lf      Y: %10.4lf      Z: %10.4lf\n",
+        outfile->Printf( "  Nuclear Dipole Moment: (a.u.)\n");
+        outfile->Printf("     X: %10.4lf      Y: %10.4lf      Z: %10.4lf\n",
                 ndip->get(0), ndip->get(1), ndip->get(2));
-        fprintf(outfile, "\n");
-        fprintf(outfile, "  Electronic Dipole Moment: (a.u.)\n");
-        fprintf(outfile,"     X: %10.4lf      Y: %10.4lf      Z: %10.4lf\n",
+        outfile->Printf( "\n");
+        outfile->Printf( "  Electronic Dipole Moment: (a.u.)\n");
+        outfile->Printf("     X: %10.4lf      Y: %10.4lf      Z: %10.4lf\n",
                 de[0], de[1], de[2]);
-        fprintf(outfile, "\n");
+        outfile->Printf( "\n");
 
         de[0] += ndip->get(0, 0);
         de[1] += ndip->get(0, 1);
         de[2] += ndip->get(0, 2);
     }
 
-    fprintf(outfile,"  %sDipole Moment: (a.u.)\n", (transition ? "Transition " : ""));
-    fprintf(outfile,"     X: %10.4lf      Y: %10.4lf      Z: %10.4lf     Total: %10.4lf\n",
+    outfile->Printf("  %sDipole Moment: (a.u.)\n", (transition ? "Transition " : ""));
+    outfile->Printf("     X: %10.4lf      Y: %10.4lf      Z: %10.4lf     Total: %10.4lf\n",
        de[0], de[1], de[2], de.norm());
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
 
     double dfac = pc_dipmom_au2debye;
-    fprintf(outfile,"  %sDipole Moment: (Debye)\n", (transition ? "Transition " : ""));
-    fprintf(outfile,"     X: %10.4lf      Y: %10.4lf      Z: %10.4lf     Total: %10.4lf\n",
+    outfile->Printf("  %sDipole Moment: (Debye)\n", (transition ? "Transition " : ""));
+    outfile->Printf("     X: %10.4lf      Y: %10.4lf      Z: %10.4lf     Total: %10.4lf\n",
        de[0]*dfac, de[1]*dfac, de[2]*dfac, de.norm()*dfac);
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
 
     // Dipole components in Debye
     std::stringstream s;
@@ -1116,7 +1116,7 @@ void OEProp::compute_dipole(bool transition)
     s << title_ << " DIPOLE Z";
     Process::environment.globals[s.str()] = de[2]*dfac;
 
-    fflush(outfile);
+    
 }
 
 void OEProp::compute_quadrupole(bool transition)
@@ -1184,20 +1184,20 @@ void OEProp::compute_quadrupole(bool transition)
 
     // Print multipole components
     double dfac = pc_dipmom_au2debye * pc_bohr2angstroms;
-    fprintf(outfile, "  %sQuadrupole Moment: (Debye Ang)\n", (transition ? "Transition " : ""));
-    fprintf(outfile, "    XX: %10.4lf     YY: %10.4lf     ZZ: %10.4lf\n", \
+    outfile->Printf( "  %sQuadrupole Moment: (Debye Ang)\n", (transition ? "Transition " : ""));
+    outfile->Printf( "    XX: %10.4lf     YY: %10.4lf     ZZ: %10.4lf\n", \
        qe[0]*dfac, qe[3]*dfac, qe[5]*dfac);
-    fprintf(outfile, "    XY: %10.4lf     XZ: %10.4lf     YZ: %10.4lf\n", \
+    outfile->Printf( "    XY: %10.4lf     XZ: %10.4lf     YZ: %10.4lf\n", \
        qe[1]*dfac, qe[2]*dfac, qe[4]*dfac);
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
 
     double dtrace = (1.0 / 3.0) * (qe[0] + qe[3] + qe[5]);
-    fprintf(outfile, "  Traceless %sQuadrupole Moment: (Debye Ang)\n", (transition ? "Transition " : ""));
-    fprintf(outfile, "    XX: %10.4lf     YY: %10.4lf     ZZ: %10.4lf\n", \
+    outfile->Printf( "  Traceless %sQuadrupole Moment: (Debye Ang)\n", (transition ? "Transition " : ""));
+    outfile->Printf( "    XX: %10.4lf     YY: %10.4lf     ZZ: %10.4lf\n", \
        (qe[0]-dtrace)*dfac, (qe[3]-dtrace)*dfac, (qe[5]-dtrace)*dfac);
-    fprintf(outfile, "    XY: %10.4lf     XZ: %10.4lf     YZ: %10.4lf\n", \
+    outfile->Printf( "    XY: %10.4lf     XZ: %10.4lf     YZ: %10.4lf\n", \
        qe[1]*dfac, qe[2]*dfac, qe[4]*dfac);
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
 
     // Quadrupole components in Debye Ang
     std::stringstream s;
@@ -1219,7 +1219,7 @@ void OEProp::compute_quadrupole(bool transition)
     s << title_ << " QUADRUPOLE YZ";
     Process::environment.globals[s.str()] = qe[4]*dfac;
 
-    fflush(outfile);
+    
 }
 void OEProp::compute_mo_extents()
 {
@@ -1334,8 +1334,8 @@ void OEProp::compute_mo_extents()
         }
         std::sort(metric.begin(),metric.end());
 
-        fprintf(outfile, "\n  Orbital extents (a.u.):\n");
-        fprintf(outfile, "\t%10s%15s%15s%15s%15s\n", "MO", "<x^2>", "<y^2>", "<z^2>", "<r^2>");
+        outfile->Printf( "\n  Orbital extents (a.u.):\n");
+        outfile->Printf( "\t%10s%15s%15s%15s%15s\n", "MO", "<x^2>", "<y^2>", "<z^2>", "<r^2>");
 
         for (int i = 0; i < nmo; i++) {
             int n = boost::get<1>(metric[i]);
@@ -1344,7 +1344,7 @@ void OEProp::compute_mo_extents()
             double xx = quadrupole[0]->get(0, i),
                    yy = quadrupole[1]->get(0, i),
                    zz = quadrupole[2]->get(0, i);
-            fprintf(outfile, "\t%4d%3s%3d%15.10f%15.10f%15.10f%15.10f\n",
+            outfile->Printf( "\t%4d%3s%3d%15.10f%15.10f%15.10f%15.10f\n",
                     i,
                     labels[h],
                     n,
@@ -1354,9 +1354,9 @@ void OEProp::compute_mo_extents()
                     fabs(xx + yy + zz));
         }
 
-        fprintf(outfile, "\n");
+        outfile->Printf( "\n");
         for(int h = 0; h < epsilon_a_->nirrep(); h++) free(labels[h]); free(labels);
-        fflush(outfile);
+        
 
     } else {
 
@@ -1367,10 +1367,10 @@ void OEProp::compute_mo_extents()
 
 void OEProp::compute_mulliken_charges()
 {
-    fprintf(outfile, "  Mulliken Charges: (a.u.)\n");
+    outfile->Printf( "  Mulliken Charges: (a.u.)\n");
 
     boost::shared_ptr<Molecule> mol = basisset_->molecule();
-
+    boost::shared_ptr<double[]> apcs(new double[mol->natom()]);
     double* Qa = new double[mol->natom()];
     double* PSa = new double[basisset_->nbf()];
     double suma = 0.0;
@@ -1426,33 +1426,35 @@ void OEProp::compute_mulliken_charges()
 
 //    Print out the Mulliken populations and charges
 
-    fprintf(outfile, "   Center  Symbol    Alpha    Beta     Spin     Total\n");
+    outfile->Printf( "   Center  Symbol    Alpha    Beta     Spin     Total\n");
     double nuc = 0.0;
     for (int A = 0; A < mol->natom(); A++) {
         double Qs = Qa[A] - Qb[A];
         double Qt = mol->Z(A) - (Qa[A] + Qb[A]);
-        fprintf(outfile,"   %5d    %2s    %8.5f %8.5f %8.5f %8.5f\n", A+1,mol->label(A).c_str(), \
+        apcs[A]=Qt;
+        outfile->Printf("   %5d    %2s    %8.5f %8.5f %8.5f %8.5f\n", A+1,mol->label(A).c_str(), \
             Qa[A], Qb[A], Qs, Qt);
         nuc += (double) mol->Z(A);
    }
 
-    fprintf(outfile, "\n   Total alpha = %8.5f, Total beta = %8.5f, Total charge = %8.5f\n", \
+    outfile->Printf( "\n   Total alpha = %8.5f, Total beta = %8.5f, Total charge = %8.5f\n", \
         suma, sumb, nuc - suma - sumb);
+    wfn_->set_atomic_point_charges(apcs);
 //    Free memory
     delete[] Qa;
     delete[] Qb;
     delete[] PSa;
     delete[] PSb;
 
-    fprintf(outfile, "\n");
-    fflush(outfile);
+    outfile->Printf( "\n");
+    
 }
 void OEProp::compute_lowdin_charges()
 {
-    fprintf(outfile, "\n\n  Lowdin Charges [a.u.]:\n\n");
+    outfile->Printf( "\n\n  Lowdin Charges [a.u.]:\n\n");
 
     boost::shared_ptr<Molecule> mol = basisset_->molecule();
-
+    boost::shared_ptr<double[]> apcs(new double[mol->natom()]);
     double* Qa = new double[mol->natom()];
     double suma = 0.0;
 
@@ -1512,27 +1514,28 @@ void OEProp::compute_lowdin_charges()
 
 //    Print out the populations and charges
 
-    fprintf(outfile, "   Center  Symbol    Alpha    Beta     Spin     Total\n");
+    outfile->Printf( "   Center  Symbol    Alpha    Beta     Spin     Total\n");
     double nuc = 0.0;
     for (int A = 0; A < mol->natom(); A++) {
         double Qs = Qa[A] - Qb[A];
         double Qt = mol->Z(A) - (Qa[A] + Qb[A]);
-        fprintf(outfile,"   %5d    %2s    %8.5f %8.5f %8.5f %8.5f\n", A+1,mol->label(A).c_str(), \
+        apcs[A]=Qt;
+        outfile->Printf("   %5d    %2s    %8.5f %8.5f %8.5f %8.5f\n", A+1,mol->label(A).c_str(), \
             Qa[A], Qb[A], Qs, Qt);
         nuc += (double) mol->Z(A);
     }
 
-    fprintf(outfile, "\n  Total alpha = %8.5f, Total beta = %8.5f, Total charge = %8.5f\n", \
+    outfile->Printf( "\n  Total alpha = %8.5f, Total beta = %8.5f, Total charge = %8.5f\n", \
         suma, sumb, nuc - suma - sumb);
-
+    wfn_->set_atomic_point_charges(apcs);
     delete[] Qa;
     delete[] Qb;
 
-    fflush(outfile);
+    
 }
 void OEProp::compute_mayer_indices()
 {
-    fprintf(outfile, "\n\n  Mayer Bond Indices:\n\n");
+    outfile->Printf( "\n\n  Mayer Bond Indices:\n\n");
 
     boost::shared_ptr<Molecule> mol = basisset_->molecule();
 
@@ -1624,25 +1627,25 @@ void OEProp::compute_mayer_indices()
 
     if (same_dens_) {
         MBI_total->print();
-        fprintf(outfile, "  Atomic Valences: \n");
+        outfile->Printf( "  Atomic Valences: \n");
         MBI_valence->print();
     }
     else {
-        fprintf(outfile, "  Total Bond Index: \n");
+        outfile->Printf( "  Total Bond Index: \n");
         MBI_total->print();
-        fprintf(outfile, "  Alpha Contribution: \n");
+        outfile->Printf( "  Alpha Contribution: \n");
         MBI_alpha->print();
-        fprintf(outfile, "  Beta Contribution: \n");
+        outfile->Printf( "  Beta Contribution: \n");
         MBI_beta->print();
-        fprintf(outfile, "  Atomic Valences: \n");
+        outfile->Printf( "  Atomic Valences: \n");
         MBI_valence->print();
     }
 
-    fflush(outfile);
+    
 }
 void OEProp::compute_wiberg_lowdin_indices()
 {
-    fprintf(outfile, "\n\n  Wiberg Bond Indices using Orthogonal Lowdin Orbitals:\n\n");
+    outfile->Printf( "\n\n  Wiberg Bond Indices using Orthogonal Lowdin Orbitals:\n\n");
 
 //    We may wanna get rid of these if we have NAOs...
 
@@ -1739,28 +1742,28 @@ void OEProp::compute_wiberg_lowdin_indices()
 
     if (same_dens_) {
         WBI_total->print();
-        fprintf(outfile, "  Atomic Valences: \n");
+        outfile->Printf( "  Atomic Valences: \n");
         WBI_valence->print();
     }
     else {
-        fprintf(outfile, "  Total Bond Index: \n");
+        outfile->Printf( "  Total Bond Index: \n");
         WBI_total->print();
-        fprintf(outfile, "  Alpha Contribution: \n");
+        outfile->Printf( "  Alpha Contribution: \n");
         WBI_alpha->print();
-        fprintf(outfile, "  Beta Contribution: \n");
+        outfile->Printf( "  Beta Contribution: \n");
         WBI_beta->print();
-        fprintf(outfile, "  Atomic Valences: \n");
+        outfile->Printf( "  Atomic Valences: \n");
         WBI_valence->print();
     }
 
-    fflush(outfile);
+    
 }
 void OEProp::compute_no_occupations(int max_num)
 {
 
     char** labels = basisset_->molecule()->irrep_labels();
 
-    fprintf(outfile, "  Natural Orbital Occupations:\n\n");
+    outfile->Printf( "  Natural Orbital Occupations:\n\n");
 
     if (!same_dens_) {
 
@@ -1790,19 +1793,19 @@ void OEProp::compute_no_occupations(int max_num)
         int stop_vir_a = offset_a + max_num + 1;
         stop_vir_a = (stop_vir_a >= metric_a.size() ? metric_a.size()  : stop_vir_a);
 
-        fprintf(outfile, "  Alpha Occupations:\n");
+        outfile->Printf( "  Alpha Occupations:\n");
         for (int index = start_occ_a; index < stop_vir_a; index++) {
             if (index < offset_a) {
-                fprintf(outfile, "  HONO-%-2d: %4d%3s %8.3f\n", offset_a - index - 1,
+                outfile->Printf( "  HONO-%-2d: %4d%3s %8.3f\n", offset_a - index - 1,
                 boost::get<1>(metric_a[index])+1,labels[boost::get<2>(metric_a[index])],
                 boost::get<0>(metric_a[index]));
             } else {
-                fprintf(outfile, "  LUNO+%-2d: %4d%3s %8.3f\n", index - offset_a,
+                outfile->Printf( "  LUNO+%-2d: %4d%3s %8.3f\n", index - offset_a,
                 boost::get<1>(metric_a[index])+1,labels[boost::get<2>(metric_a[index])],
                 boost::get<0>(metric_a[index]));
             }
         }
-        fprintf(outfile, "\n");
+        outfile->Printf( "\n");
 
         std::vector<boost::tuple<double, int, int> > metric_b;
         for (int h = 0; h < Ob->nirrep(); h++) {
@@ -1819,19 +1822,19 @@ void OEProp::compute_no_occupations(int max_num)
         int stop_vir_b = offset_b + max_num + 1;
         stop_vir_b = (stop_vir_b >= metric_b.size() ? metric_b.size()  : stop_vir_b);
 
-        fprintf(outfile, "  Beta Occupations:\n");
+        outfile->Printf( "  Beta Occupations:\n");
         for (int index = start_occ_b; index < stop_vir_b; index++) {
             if (index < offset_b) {
-                fprintf(outfile, "  HONO-%-2d: %4d%3s %8.3f\n", offset_b - index - 1,
+                outfile->Printf( "  HONO-%-2d: %4d%3s %8.3f\n", offset_b - index - 1,
                 boost::get<1>(metric_b[index])+1,labels[boost::get<2>(metric_b[index])],
                 boost::get<0>(metric_b[index]));
             } else {
-                fprintf(outfile, "  LUNO+%-2d: %4d%3s %8.3f\n", index - offset_b,
+                outfile->Printf( "  LUNO+%-2d: %4d%3s %8.3f\n", index - offset_b,
                 boost::get<1>(metric_b[index])+1,labels[boost::get<2>(metric_b[index])],
                 boost::get<0>(metric_b[index]));
             }
         }
-        fprintf(outfile, "\n");
+        outfile->Printf( "\n");
 
     }
 
@@ -1853,22 +1856,22 @@ void OEProp::compute_no_occupations(int max_num)
     int stop_vir = offset + max_num + 1;
     stop_vir = (stop_vir >= metric.size() ? metric.size()  : stop_vir);
 
-    fprintf(outfile, "  Total Occupations:\n");
+    outfile->Printf( "  Total Occupations:\n");
     for (int index = start_occ; index < stop_vir; index++) {
         if (index < offset) {
-            fprintf(outfile, "  HONO-%-2d: %4d%3s %8.3f\n", offset - index - 1,
+            outfile->Printf( "  HONO-%-2d: %4d%3s %8.3f\n", offset - index - 1,
             boost::get<1>(metric[index])+1,labels[boost::get<2>(metric[index])],
             boost::get<0>(metric[index]));
         } else {
-            fprintf(outfile, "  LUNO+%-2d: %4d%3s %8.3f\n", index - offset,
+            outfile->Printf( "  LUNO+%-2d: %4d%3s %8.3f\n", index - offset,
             boost::get<1>(metric[index])+1,labels[boost::get<2>(metric[index])],
             boost::get<0>(metric[index]));
         }
     }
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
 
     //for(int h = 0; h < epsilon_a_->nirrep(); h++) free(labels[h]); free(labels);
-    fflush(outfile);
+    
 }
 
 //GridProp::GridProp(boost::shared_ptr<Wavefunction> wfn) : filename_("out.grid"), Prop(wfn)
@@ -1923,9 +1926,9 @@ void OEProp::compute_no_occupations(int max_num)
 //}
 //void GridProp::print_header()
 //{
-//    fprintf(outfile, "\n GRIDPROP: One-electron grid properties.\n");
-//    fprintf(outfile, "  by Rob Parrish and Justin Turney.\n");
-//    fprintf(outfile, "  built on LIBMINTS.\n\n");
+//    outfile->Printf( "\n GRIDPROP: One-electron grid properties.\n");
+//    outfile->Printf( "  by Rob Parrish and Justin Turney.\n");
+//    outfile->Printf( "  built on LIBMINTS.\n\n");
 //}
 //double*** GridProp::block_grid(int nx, int ny, int nz)
 //{
@@ -2177,15 +2180,15 @@ void OEProp::compute_no_occupations(int max_num)
 //        int i,j,k;
 //        std::string file = filename_ + "." + key + ".dat";
 //        FILE* fptr = fopen(file.c_str(),"w");
-//        fprintf(fptr,"%d %d %d\n\n", nx,ny,nz);
+//        outfile->Printf(fptr,"%d %d %d\n\n", nx,ny,nz);
 //        for (k=0;k<nz;k++) {
 //           for (j=0;j<ny;j++) {
 //              for (i=0;i<nx;i++) {
-//                    fprintf(fptr,"%24.16f ", data[i][j][k]);
+//                    outfile->Printf(fptr,"%24.16f ", data[i][j][k]);
 //                }
-//            fprintf(fptr,"\n");
+//            outfile->Printf(fptr,"\n");
 //           }
-//           fprintf(fptr,"\n");
+//           outfile->Printf(fptr,"\n");
 //        }
 //        fclose(fptr);
 //    }

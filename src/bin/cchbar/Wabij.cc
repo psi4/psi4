@@ -42,7 +42,7 @@ T amplitudes were determined by ccenergy with the same H */
 void DT2(void), FaetT2(void), FmitT2(void), WmnijT2(void), WmbejT2(void);
 void BT2(void), ZT2(void), FT2(void), ET2(void), CT2(void), dijabT2(void);
 void BT2_AO(void); void Z_build(void);
-void status(const char *, FILE *);
+void status(const char *, std::string);
 void FT2_CC2(void);
 void Wmnij_for_Wabij(void); 
 void Wmbej_for_Wabij(void); 
@@ -58,48 +58,48 @@ void Wabij_build(void)
   Wmnij_for_Wabij();
 
   DT2();
-  if(params.print & 2) status("<ij||ab> -> T2", outfile);
+  if(params.print & 2) status("<ij||ab> -> T2", "outfile");
 
   if(params.wfn != "CC2") { /* skip all this is wfn=CC2 */
 
     FaetT2();
     FmitT2();
-    if(params.print & 2) status("F -> T2", outfile);
+    if(params.print & 2) status("F -> T2", "outfile");
 
     timer_on("WmnijT2");
     WmnijT2();
-    if(params.print & 2) status("Wmnij -> T2", outfile);
+    if(params.print & 2) status("Wmnij -> T2", "outfile");
     timer_off("WmnijT2");
 
     timer_on("BT2");
     /* didn't bother to put BT2_AO in here yet */
     BT2();
-    if(params.print & 2) status("<ab||cd> -> T2", outfile);
+    if(params.print & 2) status("<ab||cd> -> T2", "outfile");
     timer_off("BT2");
 
     timer_on("ZT2");
     ZT2();
-    if(params.print & 2) status("Z -> T2", outfile);
+    if(params.print & 2) status("Z -> T2", "outfile");
     timer_off("ZT2");
 
     timer_on("FT2");
     FT2();
-    if(params.print & 2) status("<ia||bc> -> T2", outfile);
+    if(params.print & 2) status("<ia||bc> -> T2", "outfile");
     timer_off("FT2");
 
     timer_on("ET2");
     ET2();
-    if(params.print & 2) status("<ij||ka> -> T2", outfile);
+    if(params.print & 2) status("<ij||ka> -> T2", "outfile");
     timer_off("ET2");
 
     timer_on("WmbejT2");
     WmbejT2();
-    if(params.print & 2) status("Wmbej -> T2", outfile);
+    if(params.print & 2) status("Wmbej -> T2", "outfile");
     timer_off("WmbejT2");
 
     timer_on("CT2");
     CT2();
-    if(params.print & 2) status("<ia||jb> -> T2", outfile);
+    if(params.print & 2) status("<ia||jb> -> T2", "outfile");
     timer_off("CT2");
 
   }
@@ -113,29 +113,29 @@ void Wabij_build(void)
   if(params.ref == 0) { /** RHF **/
     global_dpd_->buf4_init(&newtIjAb, PSIF_CC_HBAR, 0, 0, 5, 0, 5, 0, "WAbIj residual");
     dotval = global_dpd_->buf4_dot_self(&newtIjAb);
-    fprintf(outfile,"Norm squared of <Phi^IJ_AB|Hbar|0>: %20.15lf\n",dotval);
+    outfile->Printf("Norm squared of <Phi^IJ_AB|Hbar|0>: %20.15lf\n",dotval);
     global_dpd_->buf4_close(&newtIjAb);
   }
   else if (params.ref == 1) {
     global_dpd_->buf4_init(&newtIJAB, PSIF_CC_HBAR, 0, 2, 7, 2, 7, 0, "WABIJ residual");
-    global_dpd_->buf4_print(&newtIJAB,outfile,1);
+    global_dpd_->buf4_print(&newtIJAB,"outfile",1);
     global_dpd_->buf4_close(&newtIJAB);
     global_dpd_->buf4_init(&newtijab, PSIF_CC_HBAR, 0, 2, 7, 2, 7, 0, "Wabij residual");
-    global_dpd_->buf4_print(&newtijab,outfile,1);
+    global_dpd_->buf4_print(&newtijab,"outfile",1);
     global_dpd_->buf4_close(&newtijab);
     global_dpd_->buf4_init(&newtIjAb, PSIF_CC_HBAR, 0, 0, 5, 0, 5, 0, "WAbIj residual");
-    global_dpd_->buf4_print(&newtIjAb,outfile,1);
+    global_dpd_->buf4_print(&newtIjAb,"outfile",1);
     global_dpd_->buf4_close(&newtIjAb);
   }
   else if (params.ref == 2) {
     global_dpd_->buf4_init(&newtIJAB, PSIF_CC_HBAR, 0, 2, 7, 2, 7, 0, "WABIJ residual");
-    global_dpd_->buf4_print(&newtIJAB,outfile,1);
+    global_dpd_->buf4_print(&newtIJAB,"outfile",1);
     global_dpd_->buf4_close(&newtIJAB);
     global_dpd_->buf4_init(&newtijab, PSIF_CC_HBAR, 0, 12, 17, 12, 17, 0, "Wabij residual");
-    global_dpd_->buf4_print(&newtijab,outfile,1);
+    global_dpd_->buf4_print(&newtijab,"outfile",1);
     global_dpd_->buf4_close(&newtijab);
     global_dpd_->buf4_init(&newtIjAb, PSIF_CC_HBAR, 0, 22, 28, 22, 28, 0, "WAbIj residual");
-    global_dpd_->buf4_print(&newtIjAb,outfile,1);
+    global_dpd_->buf4_print(&newtIjAb,"outfile",1);
     global_dpd_->buf4_close(&newtIjAb);
   }
 }

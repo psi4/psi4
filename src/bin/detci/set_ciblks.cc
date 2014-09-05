@@ -37,7 +37,7 @@ namespace psi { namespace detci {
 
 extern int og_lex_addr(struct olsen_graph *Graph, int *occs, int nel,
       int *listnum);
-extern void print_ciblk_summary(FILE *outfile);
+extern void print_ciblk_summary(std::string out);
 
 
 void set_ciblks(struct olsen_graph *AlphaG, struct olsen_graph *BetaG)
@@ -58,8 +58,8 @@ void set_ciblks(struct olsen_graph *AlphaG, struct olsen_graph *BetaG)
    xlvl = Parameters.ex_lvl;
 
    if (Parameters.print_lvl) {
-      fprintf(outfile, "\nThere are %d alpha strings\n", CalcInfo.num_alp_str);
-      fprintf(outfile, "There are %d beta strings\n", CalcInfo.num_bet_str);
+      outfile->Printf( "\nThere are %d alpha strings\n", CalcInfo.num_alp_str);
+      outfile->Printf( "There are %d beta strings\n", CalcInfo.num_bet_str);
       }
 
    /* Get the occupations for the reference alpha and beta strings.
@@ -86,7 +86,7 @@ void set_ciblks(struct olsen_graph *AlphaG, struct olsen_graph *BetaG)
          occs2[cnt2++] = CalcInfo.ras_orbs[1][i][m-k];
       if (CalcInfo.socc[i] != 0) {
          if (Parameters.opentype == PARM_OPENTYPE_NONE)
-            fprintf(outfile,"Warning: ignoring socc since opentype=none\n");
+            outfile->Printf("Warning: ignoring socc since opentype=none\n");
          else if (Parameters.opentype == PARM_OPENTYPE_HIGHSPIN) {
             j += CalcInfo.socc[i];
             l = (j<k) ? j : k;
@@ -134,7 +134,7 @@ void set_ciblks(struct olsen_graph *AlphaG, struct olsen_graph *BetaG)
             occs2[cnt2++] = CalcInfo.ras_orbs[1][i][m-k];
          if (CalcInfo.socc[i] != 0) {
             if (Parameters.opentype == PARM_OPENTYPE_NONE)
-               fprintf(outfile,"Warning: ignoring socc since opentype=none\n");
+               outfile->Printf("Warning: ignoring socc since opentype=none\n");
             else if (Parameters.opentype == PARM_OPENTYPE_SINGLET &&
                      betsocc < CalcInfo.spab) {
                if (betsocc + CalcInfo.socc[i] <= CalcInfo.spab) {
@@ -320,7 +320,7 @@ void set_ciblks(struct olsen_graph *AlphaG, struct olsen_graph *BetaG)
    CIblks.num_blocks = nblocks;
 
    if (Parameters.print_lvl)
-      fprintf(outfile, "CI space contains %4d blocks\n", nblocks);
+      outfile->Printf( "CI space contains %4d blocks\n", nblocks);
 
    if (nblocks > CI_BLK_MAX) {
       std::string str = "nblocks = ";
@@ -341,9 +341,9 @@ void set_ciblks(struct olsen_graph *AlphaG, struct olsen_graph *BetaG)
                     (BIGINT) CIblks.Ib_size[nblocks-1];
 
    if (Parameters.print_lvl) {
-     fprintf(outfile,
+     outfile->Printf(
        "\nCI space requires %.0lf determinants\n", (double) CIblks.vectlen);
-     fflush(outfile);
+     
      }
 
    /* set up the decode array */
@@ -358,7 +358,7 @@ void set_ciblks(struct olsen_graph *AlphaG, struct olsen_graph *BetaG)
      }
    free(occs);  free(occs2);
 
-   if (Parameters.print_ciblks) print_ciblk_summary(outfile);
+   if (Parameters.print_ciblks) print_ciblk_summary("outfile");
 }
 
 }} // namespace psi::detci

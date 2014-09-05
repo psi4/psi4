@@ -53,10 +53,10 @@ class STRE : public SIMPLE {
     // returned matrix is order 3N cart by 3N cart
     double **Dq2Dx2(GeomType geom) const;
 
-    void print(FILE *fp, GeomType geom, int atom_offset=0) const;
-    void print_intco_dat(FILE *fp, int atom_offset=0) const;
-    void print_s(FILE *fp, GeomType geom) const;
-    void print_disp(FILE *fp, const double old_q, const double f_q,
+    void print(std::string OutFileRMR, GeomType geom, int atom_offset=0) const;
+    void print_intco_dat(std::string OutFileRMR, int atom_offset=0) const;
+    void print_s(std::string OutFileRMR, GeomType geom) const;
+    void print_disp(std::string OutFileRMR, const double old_q, const double f_q,
       const double dq, const double new_q, int atom_offset = 0) const;
     bool operator==(const SIMPLE & s2) const;
     std::string get_definition_string(int atom_offset=0) const;

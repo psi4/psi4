@@ -76,19 +76,19 @@ bool FRAG::apply_frozen_constraints(string R_string, string B_string, string D_s
     throw(INTCO_EXCEPT("Frozen dihedral string should contain 4*(whole number) of atoms."));
 
   if (R_atoms.size()) {
-    fprintf(outfile,"\tFrozen distance atom list: \n");
+    psi::outfile->Printf("\tFrozen distance atom list: \n");
     for (int i=0; i<R_atoms.size(); i+=2)
-      fprintf(outfile,"\t %5d %5d\n", R_atoms[i]+1, R_atoms[i+1]+1);
+      psi::outfile->Printf("\t %5d %5d\n", R_atoms[i]+1, R_atoms[i+1]+1);
   }
   if (B_atoms.size()) {
-    fprintf(outfile,"\tFrozen bend atom list: \n");
+    psi::outfile->Printf("\tFrozen bend atom list: \n");
     for (int i=0; i<B_atoms.size(); i+=3)
-      fprintf(outfile,"\t %5d %5d %5d\n", B_atoms[i]+1, B_atoms[i+1]+1, B_atoms[i+2]+1);
+      psi::outfile->Printf("\t %5d %5d %5d\n", B_atoms[i]+1, B_atoms[i+1]+1, B_atoms[i+2]+1);
   }
   if (D_atoms.size()) {
-    fprintf(outfile,"\tFrozen dihedral atom list: \n");
+    psi::outfile->Printf("\tFrozen dihedral atom list: \n");
     for (int i=0; i<D_atoms.size(); i+=4)
-      fprintf(outfile,"\t %5d %5d %5d %5d\n", D_atoms[i]+1, D_atoms[i+1]+1,
+      psi::outfile->Printf("\t %5d %5d %5d %5d\n", D_atoms[i]+1, D_atoms[i+1]+1,
         D_atoms[i+2]+1, D_atoms[i+3]+1);
   }
 
@@ -171,23 +171,23 @@ bool FRAG::apply_fixed_constraints(string R_string, string B_string, string D_st
     return false;
 
   if (R.size()) {
-    fprintf(outfile,"\tFixed distance atom list: \n");
+    psi::outfile->Printf("\tFixed distance atom list: \n");
     for (int i=0; i<R.size(); ++i)
-      fprintf(outfile,"\t %5d %5d\n", R[i].atoms[0]+1, R[i].atoms[1]+1);
+      psi::outfile->Printf("\t %5d %5d\n", R[i].atoms[0]+1, R[i].atoms[1]+1);
   }
 
   if (B.size()) {
-    fprintf(outfile,"\tFixed bend atom list: \n");
+    psi::outfile->Printf("\tFixed bend atom list: \n");
     for (int i=0; i<B.size(); ++i)
-      fprintf(outfile,"\t %5d %5d %5d\n", B[i].atoms[0]+1, B[i].atoms[1]+1, B[i].atoms[2]+1);
+      psi::outfile->Printf("\t %5d %5d %5d\n", B[i].atoms[0]+1, B[i].atoms[1]+1, B[i].atoms[2]+1);
   }
 
   if (D.size()) {
-    fprintf(outfile,"\tFixed dihedral atom list: \n");
+    psi::outfile->Printf("\tFixed dihedral atom list: \n");
     for (int i=0; i<D.size(); ++i)
-      fprintf(outfile,"\t %5d %5d %5d %5d\n", D[i].atoms[0]+1, D[i].atoms[i+1]+1, D[i].atoms[2]+1, D[i].atoms[3]+1);
+      psi::outfile->Printf("\t %5d %5d %5d %5d\n", D[i].atoms[0]+1, D[i].atoms[i+1]+1, D[i].atoms[2]+1, D[i].atoms[3]+1);
   }
-  fflush(outfile);
+  
 
   // do fixed distances
   for (int i=0; i<R.size(); ++i) {

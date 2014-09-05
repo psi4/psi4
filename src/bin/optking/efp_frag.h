@@ -81,7 +81,7 @@ class EFP_FRAG : public FRAG {
 
 // We will assign a value of 0 to these on the first iteration; subsequently, the
 // values will be calculated as total Delta(q) from the start of the optimization
-  void print_intcos(FILE *fp);
+  void print_intcos(std::string OutFileRMR);
 
 /* Add function to return a string definition of EFP fragment, if needed
   // return string of intco definition

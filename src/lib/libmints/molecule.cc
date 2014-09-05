@@ -64,7 +64,7 @@ using namespace boost;
 #include <string>
 #include <sstream>
 #include <iostream>
-
+#include "libparallel/ParallelPrinter.h"
 namespace {
 const double dzero = 0.0;
 }
@@ -308,7 +308,7 @@ double Molecule::mass(int atom) const
         return atoms_[atom]->mass();
 
     if (fabs(atoms_[atom]->Z() - static_cast<int>(atoms_[atom]->Z())) > 0.0)
-        fprintf(outfile, "WARNING: Obtaining masses from atom with fractional charge...may be incorrect!!!\n");
+        outfile->Printf( "WARNING: Obtaining masses from atom with fractional charge...may be incorrect!!!\n");
 
     return an2masses[static_cast<int>(atoms_[atom]->Z())];
 }
@@ -945,7 +945,7 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
 
     for(unsigned int lineNumber = 0; lineNumber < lines.size(); ++lineNumber) {
         if(pubchemerror)
-            fprintf(outfile, "%s\n", lines[lineNumber].c_str());
+            outfile->Printf( "%s\n", lines[lineNumber].c_str());
         if(regex_match(lines[lineNumber], reMatches, fragmentMarker_)) {
             // Check that there are more lines remaining
             if(lineNumber == lines.size() - 1)
@@ -1141,7 +1141,7 @@ std::string Molecule::create_psi4_string_from_molecule() const
     char buffer[120];
     std::stringstream ss;
 
-    if (WorldComm->me() == 0) {
+
         if (nallatom()) {
             // append units and any other non-default molecule keywords
             sprintf(buffer,"    units %-s\n", units_ == Angstrom ? "Angstrom" : "Bohr");
@@ -1204,7 +1204,7 @@ std::string Molecule::create_psi4_string_from_molecule() const
                 ss << buffer;
             }
         }
-    }
+
     return ss.str();
 }
 
@@ -1480,27 +1480,27 @@ void Molecule::save_to_chkpt(boost::shared_ptr<Chkpt> chkpt, std::string prefix)
 void Molecule::print_in_angstrom() const
 {
     // Sometimes one just wants angstroms regardless of input units
-    if (WorldComm->me() == 0) {
+
         if (natom()) {
-            if (pg_) fprintf(outfile,"    Molecular point group: %s\n", pg_->symbol().c_str());
-            if (full_pg_) fprintf(outfile,"    Full point group: %s\n\n", full_point_group().c_str());
-            fprintf(outfile,"    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
+            if (pg_) outfile->Printf("    Molecular point group: %s\n", pg_->symbol().c_str());
+            if (full_pg_) outfile->Printf("    Full point group: %s\n\n", full_point_group().c_str());
+            outfile->Printf("    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
                     "Angstrom", molecular_charge_, multiplicity_);
-            fprintf(outfile,"       Center              X                  Y                   Z       \n");
-            fprintf(outfile,"    ------------   -----------------  -----------------  -----------------\n");
+            outfile->Printf("       Center              X                  Y                   Z       \n");
+            outfile->Printf("    ------------   -----------------  -----------------  -----------------\n");
 
             for(int i = 0; i < natom(); ++i){
-                fprintf(outfile, "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)"); fflush(outfile);
+                outfile->Printf( "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)"); 
                 for(int j = 0; j < 3; j++)
-                    fprintf(outfile, "  %17.12f", xyz(i, j) * pc_bohr2angstroms);
-                fprintf(outfile,"\n");
+                    outfile->Printf( "  %17.12f", xyz(i, j) * pc_bohr2angstroms);
+                outfile->Printf("\n");
             }
-            fprintf(outfile,"\n");
-            fflush(outfile);
+            outfile->Printf("\n");
+            
         }
         else
-            fprintf(outfile, "  No atoms in this molecule.\n");
-    }
+            outfile->Printf( "  No atoms in this molecule.\n");
+
 }
 
 
@@ -1508,103 +1508,102 @@ void Molecule::print_in_bohr() const
 {
     // I'm tired of wanting to compare geometries with cints and psi4 will use what's in the input
     // and psi3 using bohr.
-    if (WorldComm->me() == 0) {
+
         if (natom()) {
-            if (pg_) fprintf(outfile,"    Molecular point group: %s\n", pg_->symbol().c_str());
-            if (full_pg_) fprintf(outfile,"    Full point group: %s\n\n", full_point_group().c_str());
-            fprintf(outfile,"    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
+            if (pg_) outfile->Printf("    Molecular point group: %s\n", pg_->symbol().c_str());
+            if (full_pg_) outfile->Printf("    Full point group: %s\n\n", full_point_group().c_str());
+            outfile->Printf("    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
                     "Bohr", molecular_charge_, multiplicity_);
-            fprintf(outfile,"       Center              X                  Y                   Z       \n");
-            fprintf(outfile,"    ------------   -----------------  -----------------  -----------------\n");
+            outfile->Printf("       Center              X                  Y                   Z       \n");
+            outfile->Printf("    ------------   -----------------  -----------------  -----------------\n");
 
             for(int i = 0; i < natom(); ++i){
-                fprintf(outfile, "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)"); fflush(outfile);
+                outfile->Printf( "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)"); 
                 for(int j = 0; j < 3; j++)
-                    fprintf(outfile, "  %17.12f", xyz(i, j));
-                fprintf(outfile,"\n");
+                    outfile->Printf( "  %17.12f", xyz(i, j));
+                outfile->Printf("\n");
             }
-            fprintf(outfile,"\n");
-            fflush(outfile);
+            outfile->Printf("\n");
+            
         }
         else
-            fprintf(outfile, "  No atoms in this molecule.\n");
-    }
+            outfile->Printf( "  No atoms in this molecule.\n");
+
 }
 
 void Molecule::print_in_input_format() const
 {
-    if (WorldComm->me() == 0) {
         if (nallatom()) {
-            if (pg_) fprintf(outfile,"    Molecular point group: %s\n", pg_->symbol().c_str());
-            if (full_pg_) fprintf(outfile,"    Full point group: %s\n\n", full_point_group().c_str());
-            fprintf(outfile,"    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
+            if (pg_) outfile->Printf("    Molecular point group: %s\n", pg_->symbol().c_str());
+            if (full_pg_) outfile->Printf("    Full point group: %s\n\n", full_point_group().c_str());
+            outfile->Printf("    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
                     units_ == Angstrom ? "Angstrom" : "Bohr", molecular_charge_, multiplicity_);
 
             for(int i = 0; i < nallatom(); ++i){
                 if (fZ(i) || (fsymbol(i) == "X")) {
-                    fprintf(outfile, "    %-8s", fsymbol(i).c_str());
+                    outfile->Printf( "    %-8s", fsymbol(i).c_str());
                 } else {
                     std::string stmp = std::string("Gh(") + fsymbol(i) + ")";
-                    fprintf(outfile, "    %-8s", stmp.c_str());
+                    outfile->Printf( "    %-8s", stmp.c_str());
                 }
                 full_atoms_[i]->print_in_input_format();
             }
-            fprintf(outfile,"\n");
-            fflush(outfile);
+            outfile->Printf("\n");
+            
             if(geometry_variables_.size()){
                 std::map<std::string, double>::const_iterator iter;
                 for(iter = geometry_variables_.begin(); iter!=geometry_variables_.end(); ++iter){
-                    fprintf(outfile, "    %-10s=%16.10f\n", iter->first.c_str(), iter->second);
+                    outfile->Printf( "    %-10s=%16.10f\n", iter->first.c_str(), iter->second);
                 }
-                fprintf(outfile, "\n");
+                outfile->Printf( "\n");
             }
         }
-    }
+
 }
 
 void Molecule::print() const
 {
-    if (WorldComm->me() == 0) {
+
         if (natom()) {
-            if (pg_) fprintf(outfile,"    Molecular point group: %s\n", pg_->symbol().c_str());
-            if (full_pg_) fprintf(outfile,"    Full point group: %s\n\n", full_point_group().c_str());
-            fprintf(outfile,"    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
+            if (pg_) outfile->Printf("    Molecular point group: %s\n", pg_->symbol().c_str());
+            if (full_pg_) outfile->Printf("    Full point group: %s\n\n", full_point_group().c_str());
+            outfile->Printf("    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
                     units_ == Angstrom ? "Angstrom" : "Bohr", molecular_charge_, multiplicity_);
-            fprintf(outfile,"       Center              X                  Y                   Z       \n");
-            fprintf(outfile,"    ------------   -----------------  -----------------  -----------------\n");
+            outfile->Printf("       Center              X                  Y                   Z       \n");
+            outfile->Printf("    ------------   -----------------  -----------------  -----------------\n");
 
             for(int i = 0; i < natom(); ++i){
                 Vector3 geom = atoms_[i]->compute();
-                fprintf(outfile, "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)"); fflush(outfile);
+                outfile->Printf( "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)"); 
                 for(int j = 0; j < 3; j++)
-                    fprintf(outfile, "  %17.12f", geom[j]);
-                fprintf(outfile,"\n");
+                    outfile->Printf( "  %17.12f", geom[j]);
+                outfile->Printf("\n");
             }
-            fprintf(outfile,"\n");
-            fflush(outfile);
+            outfile->Printf("\n");
+            
         }
         else
-            fprintf(outfile, "  No atoms in this molecule.\n");
-    }
+            outfile->Printf( "  No atoms in this molecule.\n");
+
 }
 
 void Molecule::print_cluster() const
 {
-    if (WorldComm->me() == 0) {
+
         if (natom()) {
-            if (pg_) fprintf(outfile,"    Molecular point group: %s\n", pg_->symbol().c_str());
-            if (full_pg_) fprintf(outfile,"    Full point group: %s\n\n", full_point_group().c_str());
-            fprintf(outfile,"    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
+            if (pg_) outfile->Printf("    Molecular point group: %s\n", pg_->symbol().c_str());
+            if (full_pg_) outfile->Printf("    Full point group: %s\n\n", full_point_group().c_str());
+            outfile->Printf("    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
                     units_ == Angstrom ? "Angstrom" : "Bohr", molecular_charge_, multiplicity_);
-            fprintf(outfile,"       Center              X                  Y                   Z       \n");
-            fprintf(outfile,"    ------------   -----------------  -----------------  -----------------\n");
+            outfile->Printf("       Center              X                  Y                   Z       \n");
+            outfile->Printf("    ------------   -----------------  -----------------  -----------------\n");
 
             int cluster_index = 1;
             bool look_for_separators = (fragments_.size() > 1);
 
             for(int i = 0; i < natom(); ++i){
                 if (look_for_separators && fragments_[cluster_index].first == i) {
-                    fprintf(outfile,"    ------------   -----------------  -----------------  -----------------\n");
+                    outfile->Printf("    ------------   -----------------  -----------------  -----------------\n");
                     cluster_index++;
                     if (cluster_index == fragments_.size()) {
                         look_for_separators = false;
@@ -1612,61 +1611,61 @@ void Molecule::print_cluster() const
                 }
 
                 Vector3 geom = atoms_[i]->compute();
-                fprintf(outfile, "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)"); fflush(outfile);
+                outfile->Printf( "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)"); 
                 for(int j = 0; j < 3; j++)
-                    fprintf(outfile, "  %17.12f", geom[j]);
-                fprintf(outfile,"\n");
+                    outfile->Printf( "  %17.12f", geom[j]);
+                outfile->Printf("\n");
             }
-            fprintf(outfile,"\n");
-            fflush(outfile);
+            outfile->Printf("\n");
+            
         }
         else
-            fprintf(outfile, "  No atoms in this molecule.\n");
-    }
+            outfile->Printf( "  No atoms in this molecule.\n");
+
 }
 
 void Molecule::print_full() const
 {
-    if (WorldComm->me() == 0) {
+
         if (natom()) {
-            if (pg_) fprintf(outfile,"    Molecular point group: %s\n", pg_->symbol().c_str());
-            if (full_pg_) fprintf(outfile,"    Full point group: %s\n\n", full_point_group().c_str());
-            fprintf(outfile,"    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
+            if (pg_) outfile->Printf("    Molecular point group: %s\n", pg_->symbol().c_str());
+            if (full_pg_) outfile->Printf("    Full point group: %s\n\n", full_point_group().c_str());
+            outfile->Printf("    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
                     units_ == Angstrom ? "Angstrom" : "Bohr", molecular_charge_, multiplicity_);
-            fprintf(outfile,"       Center              X                  Y                   Z       \n");
-            fprintf(outfile,"    ------------   -----------------  -----------------  -----------------\n");
+            outfile->Printf("       Center              X                  Y                   Z       \n");
+            outfile->Printf("    ------------   -----------------  -----------------  -----------------\n");
 
             for(int i = 0; i < full_atoms_.size(); ++i){
                 Vector3 geom = full_atoms_[i]->compute();
-                fprintf(outfile, "    %8s%4s ",fsymbol(i).c_str(),fZ(i) ? "" : "(Gh)"); fflush(outfile);
+                outfile->Printf( "    %8s%4s ",fsymbol(i).c_str(),fZ(i) ? "" : "(Gh)"); 
                 for(int j = 0; j < 3; j++)
-                    fprintf(outfile, "  %17.12f", geom[j]);
-                fprintf(outfile,"\n");
+                    outfile->Printf( "  %17.12f", geom[j]);
+                outfile->Printf("\n");
             }
-            fprintf(outfile,"\n");
-            fflush(outfile);
+            outfile->Printf("\n");
+            
         }
         else
-            fprintf(outfile, "  No atoms in this molecule.\n");
-    }
+            outfile->Printf( "  No atoms in this molecule.\n");
+
 }
 
 void Molecule::print_distances() const
 {
-    fprintf(outfile, "        Interatomic Distances (Angstroms)\n\n");
+    outfile->Printf( "        Interatomic Distances (Angstroms)\n\n");
     for(int i=0;i<natom();i++) {
         for(int j=i+1;j<natom();j++) {
             Vector3 eij = xyz(j)-xyz(i);
             double distance=eij.norm();
-            fprintf(outfile, "        Distance %d to %d %-8.3lf\n",i+1,j+1,distance*pc_bohr2angstroms);
+            outfile->Printf( "        Distance %d to %d %-8.3lf\n",i+1,j+1,distance*pc_bohr2angstroms);
         }
     }
-    fprintf(outfile, "\n\n");
+    outfile->Printf( "\n\n");
 }
 
 void Molecule::print_bond_angles() const
 {
-    fprintf(outfile, "        Bond Angles (degrees)\n\n");
+    outfile->Printf( "        Bond Angles (degrees)\n\n");
     for(int j=0;j<natom();j++) {
         for(int i=0;i<natom();i++){
             if(i==j)
@@ -1680,16 +1679,16 @@ void Molecule::print_bond_angles() const
                 ejk.normalize ();
                 double dotproduct=eji.dot (ejk);
                 double phi = 180*acos(dotproduct)/pc_pi;
-                fprintf(outfile, "        Angle %d-%d-%d: %8.3lf\n", i+1, j+1, k+1, phi);
+                outfile->Printf( "        Angle %d-%d-%d: %8.3lf\n", i+1, j+1, k+1, phi);
             }
         }
     }
-    fprintf(outfile, "\n\n");
+    outfile->Printf( "\n\n");
 }
 
 void Molecule::print_dihedrals() const
 {
-    fprintf(outfile, "        Dihedral Angles (Degrees)\n\n");
+    outfile->Printf( "        Dihedral Angles (Degrees)\n\n");
     for(int i=0; i<natom(); i++) {
         for(int j=0; j<natom(); j++) {
             if(i==j)
@@ -1722,17 +1721,17 @@ void Molecule::print_dihedrals() const
                     if(costau<-1.00 && costau>-1.000001)
                         costau=-1.00;
                     double tau = 180*acos(costau)/pc_pi;
-                    fprintf(outfile, "        Dihedral %d-%d-%d-%d: %8.3lf\n", i+1, j+1, k+1, l+1, tau);
+                    outfile->Printf( "        Dihedral %d-%d-%d-%d: %8.3lf\n", i+1, j+1, k+1, l+1, tau);
                 }
             }
         }
     }
-    fprintf(outfile, "\n\n");
+    outfile->Printf( "\n\n");
 }
 
 void Molecule::print_out_of_planes () const
 {
-    fprintf(outfile, "        Out-Of-Plane Angles (Degrees)\n\n");
+    outfile->Printf( "        Out-Of-Plane Angles (Degrees)\n\n");
     for(int i=0; i<natom(); i++) {
         for(int j=0; j<natom(); j++) {
             if(i==j)
@@ -1762,12 +1761,12 @@ void Molecule::print_out_of_planes () const
                     if(sinetheta<-1.00)
                         sinetheta=-1.000;
                     double theta = 180*asin(sinetheta)/pc_pi;
-                    fprintf(outfile, "        Out-of-plane %d-%d-%d-%d: %8.3lf\n", i+1, j+1, k+1, l+1, theta);
+                    outfile->Printf( "        Out-of-plane %d-%d-%d-%d: %8.3lf\n", i+1, j+1, k+1, l+1, theta);
                 }
             }
         }
     }
-    fprintf(outfile, "\n\n");
+    outfile->Printf( "\n\n");
 }
 
 void Molecule::save_xyz_file(const std::string& filename, bool save_ghosts) const
@@ -1775,7 +1774,7 @@ void Molecule::save_xyz_file(const std::string& filename, bool save_ghosts) cons
     double factor = (units_ == Angstrom ? 1.0 : pc_bohr2angstroms);
 
     if (WorldComm->me() == 0) {
-        FILE* fh = fopen(filename.c_str(), "w");
+        boost::shared_ptr<OutFile> printer(new OutFile(filename,TRUNCATE));
 
         int N = natom();
         if (!save_ghosts) {
@@ -1784,15 +1783,14 @@ void Molecule::save_xyz_file(const std::string& filename, bool save_ghosts) cons
                 if (Z(i)) N++;
             }
         }
-        fprintf(fh,"%d\n\n", N);
+        printer->Printf("%d\n\n", N);
 
         for (int i = 0; i < natom(); i++) {
             Vector3 geom = atoms_[i]->compute();
             if (save_ghosts || Z(i))
-                fprintf(fh, "%2s %17.12f %17.12f %17.12f\n", (Z(i) ? symbol(i).c_str() : "Gh"), factor*geom[0], factor*geom[1], factor*geom[2]);
+                printer->Printf( "%2s %17.12f %17.12f %17.12f\n", (Z(i) ? symbol(i).c_str() : "Gh"), factor*geom[0], factor*geom[1], factor*geom[2]);
         }
 
-        fclose(fh);
     }
 }
 
@@ -1802,7 +1800,7 @@ std::string Molecule::save_string_xyz_file() const
 
     double factor = (units_ == Angstrom ? 1.0 : pc_bohr2angstroms);
 
-    if (WorldComm->me() == 0) {
+
 
         int N = natom();
         stream << boost::format("%d\n\n") % N;
@@ -1811,9 +1809,9 @@ std::string Molecule::save_string_xyz_file() const
             Vector3 geom = atoms_[i]->compute();
             if (Z(i))
                 stream << boost::format("%2s %17.12f %17.12f %17.12f\n") % (Z(i) ? symbol(i).c_str() : "Gh") % (factor*geom[0]) % (factor*geom[1]) % (factor*geom[2]);
-                //fprintf(fh, "%2s %17.12f %17.12f %17.12f\n", (Z(i) ? symbol(i).c_str() : "Gh"), factor*geom[0], factor*geom[1], factor*geom[2]);
+                //outfile->Printf(fh, "%2s %17.12f %17.12f %17.12f\n", (Z(i) ? symbol(i).c_str() : "Gh"), factor*geom[0], factor*geom[1], factor*geom[2]);
         }
-    }
+
     return stream.str();
 }
 
@@ -1823,7 +1821,7 @@ std::string Molecule::save_string_xyz() const
     char buffer[120];
     std::stringstream ss;
 
-    if (WorldComm->me() == 0) {
+
         sprintf(buffer,"%d %d\n", molecular_charge(), multiplicity());
         ss << buffer;
 
@@ -1832,7 +1830,7 @@ std::string Molecule::save_string_xyz() const
             sprintf(buffer, "%2s %17.12f %17.12f %17.12f\n", (Z(i) ? symbol(i).c_str() : "Gh"), factor*geom[0], factor*geom[1], factor*geom[2]);
             ss << buffer;
         }
-    }
+
     return ss.str();
 }
 
@@ -1891,41 +1889,41 @@ Vector Molecule::rotational_constants(double zero_tol) const {
   }
 
 /*
-  fprintf(outfile,"\n\tRotational constants (cm^-1) :\n");
+  outfile->Printf("\n\tRotational constants (cm^-1) :\n");
   if (rot_const[0] == 0) // linear
-    fprintf(outfile,"\tA = **********  ");
+    outfile->Printf("\tA = **********  ");
   else               // non-linear
-    fprintf(outfile,"\tA = %10.5lf  ", rot_const[0]);
+    outfile->Printf("\tA = %10.5lf  ", rot_const[0]);
 
   if (rot_const[1] == 0) // atom
-    fprintf(outfile,"  B = **********    C = **********  \n");
+    outfile->Printf("  B = **********    C = **********  \n");
   else               // molecule
-    fprintf(outfile,"  B = %10.5lf   C = %10.5lf\n", rot_const[1], rot_const[2]);
+    outfile->Printf("  B = %10.5lf   C = %10.5lf\n", rot_const[1], rot_const[2]);
 */
   return rot_const;
 }
 
 void Molecule::print_rotational_constants(void) const {
   Vector rot_const = rotational_constants(1e-8);
-  fprintf(outfile,"\n\tRotational constants (cm^-1):\n");
+  outfile->Printf("\n\tRotational constants (cm^-1):\n");
   if (rot_const[0] == 0.0) // linear
-    fprintf(outfile,"\tA = **********  ");
+    outfile->Printf("\tA = **********  ");
   else               // non-linear
-    fprintf(outfile,"\tA = %10.5lf  ", rot_const[0]);
+    outfile->Printf("\tA = %10.5lf  ", rot_const[0]);
   if (rot_const[1] == 0.0) // atom
-    fprintf(outfile,"  B = **********    C = **********  \n");
+    outfile->Printf("  B = **********    C = **********  \n");
   else               // molecule
-    fprintf(outfile,"  B = %10.5lf   C = %10.5lf\n", rot_const[1], rot_const[2]);
+    outfile->Printf("  B = %10.5lf   C = %10.5lf\n", rot_const[1], rot_const[2]);
 
-  fprintf(outfile,"\n\tRotational constants (MHz):\n");
+  outfile->Printf("\n\tRotational constants (MHz):\n");
   if (rot_const[0] == 0.0) // linear
-    fprintf(outfile,"\tA = **********  ");
+    outfile->Printf("\tA = **********  ");
   else               // non-linear
-    fprintf(outfile,"\tA = %10.5lf  ", rot_const[0]*pc_c/10000);
+    outfile->Printf("\tA = %10.5lf  ", rot_const[0]*pc_c/10000);
   if (rot_const[1] == 0.0) // atom
-    fprintf(outfile,"  B = **********    C = **********  \n");
+    outfile->Printf("  B = **********    C = **********  \n");
   else               // molecule
-    fprintf(outfile,"  B = %10.5lf   C = %10.5lf\n", rot_const[1]*pc_c/10000, rot_const[2]*pc_c/10000);
+    outfile->Printf("  B = %10.5lf   C = %10.5lf\n", rot_const[1]*pc_c/10000, rot_const[2]*pc_c/10000);
 }
 
 RotorType Molecule::rotor_type(double zero_tol) const {
@@ -1947,7 +1945,7 @@ RotorType Molecule::rotor_type(double zero_tol) const {
         degen++;
     }
   }
-  //fprintf(outfile, "\tDegeneracy is %d\n", degen);
+  //outfile->Printf( "\tDegeneracy is %d\n", degen);
 
   // Determine rotor type
   RotorType rotor_type;
@@ -2425,9 +2423,9 @@ found_sigma:
     // the y is then -x cross z
     yaxis = -xaxis.cross(zaxis);
 
-//    fprintf(outfile, "xaxis %20.14lf %20.14lf %20.14lf\n", xaxis[0], xaxis[1], xaxis[2]);
-//    fprintf(outfile, "yaxis %20.14lf %20.14lf %20.14lf\n", yaxis[0], yaxis[1], yaxis[2]);
-//    fprintf(outfile, "zaxis %20.14lf %20.14lf %20.14lf\n", zaxis[0], zaxis[1], zaxis[2]);
+//    outfile->Printf( "xaxis %20.14lf %20.14lf %20.14lf\n", xaxis[0], xaxis[1], xaxis[2]);
+//    outfile->Printf( "yaxis %20.14lf %20.14lf %20.14lf\n", yaxis[0], yaxis[1], yaxis[2]);
+//    outfile->Printf( "zaxis %20.14lf %20.14lf %20.14lf\n", zaxis[0], zaxis[1], zaxis[2]);
 
     SharedMatrix frame(new Matrix(3, 3));
     for (i=0; i<3; ++i) {
@@ -2679,7 +2677,7 @@ void Molecule::form_symmetry_information(double tol)
         equiv_   = 0;
         nequiv_  = 0;
         atom_to_unique_ = 0;
-        //fprintf(outfile, "No atoms detected, returning\n");fflush(outfile);
+        //outfile->Printf( "No atoms detected, returning\n");
         return;
     }
 
@@ -2957,8 +2955,8 @@ void Molecule::set_variable(const std::string &str, double val)
 {
     lock_frame_ = false;
     geometry_variables_[str] = val;
-    if (WorldComm->me() == 0)
-        fprintf(outfile, "Setting geometry variable %s to %f\n", str.c_str(), val);
+
+        outfile->Printf( "Setting geometry variable %s to %f\n", str.c_str(), val);
     try {
         update_geometry();
     }
@@ -3071,19 +3069,19 @@ void Molecule::set_full_point_group(double zero_tol) {
 
   // Get rotor type
   RotorType rotor = rotor_type(zero_tol);
-  //fprintf(outfile,"\t\tRotor type        : %s\n", RotorTypeList[rotor].c_str());
+  //outfile->Printf("\t\tRotor type        : %s\n", RotorTypeList[rotor].c_str());
 
   // Get the D2h point group from Jet and Ed's code: c1 ci c2 cs d2 c2v c2h d2h
   // and ignore the user-specified subgroup in this case.
   boost::shared_ptr<PointGroup> pg = find_highest_point_group(zero_tol);
   std::string d2h_subgroup = pg->symbol();
   //std::string d2h_subgroup = point_group()->symbol();
-  //fprintf(outfile,"d2h_subgroup %s \n", d2h_subgroup.c_str());
+  //outfile->Printf("d2h_subgroup %s \n", d2h_subgroup.c_str());
 
   // Check inversion
   Vector3 v3_zero(0, 0, 0);
   bool op_i = has_inversion(v3_zero, zero_tol);
-  //fprintf(outfile,"\t\tInversion symmetry: %s\n", (op_i ? "yes" : "no"));
+  //outfile->Printf("\t\tInversion symmetry: %s\n", (op_i ? "yes" : "no"));
 
   int i;
   double dot, phi;
@@ -3113,7 +3111,7 @@ void Molecule::set_full_point_group(double zero_tol) {
       // Oh has a S4 and should be oriented properly already.
       test_mat = geom.matrix_3d_rotation(z_axis, pc_pi/2, true);
       bool op_symm = geom.equal_but_for_row_order(test_mat, zero_tol);
-      //fprintf(outfile,"\t\tS4z : %s\n", (op_symm ? "yes" : "no"));
+      //outfile->Printf("\t\tS4z : %s\n", (op_symm ? "yes" : "no"));
 
       if (op_symm) {
         full_pg_ = PG_Oh;
@@ -3160,7 +3158,7 @@ void Molecule::set_full_point_group(double zero_tol) {
       full_pg_n_ = 2;
     }
     else
-      fprintf(outfile,"\t\tWarning: Cannot determine point group.\n");
+      outfile->Printf("\t\tWarning: Cannot determine point group.\n");
   }
   else if (rotor == RT_SYMMETRIC_TOP) {
 
@@ -3170,7 +3168,7 @@ void Molecule::set_full_point_group(double zero_tol) {
     SharedMatrix I_evects(new Matrix(3, 3));
     It->diagonalize(I_evects, I_evals, ascending);
     // I_evects->print_out();
-    // fprintf(outfile,"I_evals %15.10lf %15.10lf %15.10lf\n", I_evals[0], I_evals[1], I_evals[2]);
+    // outfile->Printf("I_evals %15.10lf %15.10lf %15.10lf\n", I_evals[0], I_evals[1], I_evals[2]);
 
     int unique_axis = 1;
     if (fabs(I_evals[0] - I_evals[1]) < zero_tol)
@@ -3196,21 +3194,21 @@ void Molecule::set_full_point_group(double zero_tol) {
     if (fabs(phi) > 1.0e-14) {
       rot_axis = z_axis.cross(old_axis);
       test_mat = geom.matrix_3d_rotation(rot_axis, phi, false);
-      //fprintf(outfile, "Rotating by %lf to get principal axis on z-axis.\n", phi);
+      //outfile->Printf( "Rotating by %lf to get principal axis on z-axis.\n", phi);
       geom.copy(test_mat);
     }
 
-    //fprintf(outfile,"Geometry to analyze - principal axis on z-axis:\n");
+    //outfile->Printf("Geometry to analyze - principal axis on z-axis:\n");
     //for (i=0; i<natom(); ++i)
-      //fprintf(outfile,"%20.15lf %20.15lf %20.15lf\n", geom(i,0), geom(i,1), geom(i,2));
-    //fprintf(outfile,"\n");
+      //outfile->Printf("%20.15lf %20.15lf %20.15lf\n", geom(i,0), geom(i,1), geom(i,2));
+    //outfile->Printf("\n");
 
     // Determine order Cn and Sn of principal axis.
     int Cn_z = matrix_3d_rotation_Cn(geom, z_axis, false, zero_tol);
-    //fprintf(outfile,"\t\tHighest rotation axis (Cn_z) : %d\n", Cn_z);
+    //outfile->Printf("\t\tHighest rotation axis (Cn_z) : %d\n", Cn_z);
 
     int Sn_z = matrix_3d_rotation_Cn(geom, z_axis, true, zero_tol);
-    //fprintf(outfile,"\t\tHighest rotation axis (Sn_z) : %d\n", Sn_z);
+    //outfile->Printf("\t\tHighest rotation axis (Sn_z) : %d\n", Sn_z);
 
     // Check for sigma_h (xy plane).
     bool op_sigma_h = false;
@@ -3225,7 +3223,7 @@ void Molecule::set_full_point_group(double zero_tol) {
     }
     if (i == natom())
       op_sigma_h = true;
-    //fprintf(outfile,"\t\t sigma_h : %s\n", (op_sigma_h ? "yes" : "no"));
+    //outfile->Printf("\t\t sigma_h : %s\n", (op_sigma_h ? "yes" : "no"));
 
     // Rotate one off-axis atom to the yz plane and check for sigma_v's.
     int pivot_atom_i;
@@ -3255,7 +3253,7 @@ void Molecule::set_full_point_group(double zero_tol) {
     bool is_D = false;
     if (fabs(phi) > 1.0e-14) {
       test_mat = geom.matrix_3d_rotation(z_axis, phi, false);
-      //fprintf(outfile, "Rotating by %8.3e to get atom %d in yz-plane.\n", phi, pivot_atom_i+1);
+      //outfile->Printf( "Rotating by %8.3e to get atom %d in yz-plane.\n", phi, pivot_atom_i+1);
       geom.copy(test_mat);
     }
 
@@ -3272,12 +3270,12 @@ void Molecule::set_full_point_group(double zero_tol) {
     }
     if (i == natom())
       op_sigma_v = true;
-    //fprintf(outfile,"\t\tsigma_v : %s\n", (op_sigma_v ? "yes" : "no"));
+    //outfile->Printf("\t\tsigma_v : %s\n", (op_sigma_v ? "yes" : "no"));
 
-    //fprintf(outfile,"geom to analyze - one atom in yz plane\n");
+    //outfile->Printf("geom to analyze - one atom in yz plane\n");
     //for (i=0; i<natom(); ++i)
-      //fprintf(outfile,"%20.15lf %20.15lf %20.15lf\n", geom(i,0), geom(i,1), geom(i,2));
-    //fprintf(outfile,"\n");
+      //outfile->Printf("%20.15lf %20.15lf %20.15lf\n", geom(i,0), geom(i,1), geom(i,2));
+    //outfile->Printf("\n");
 
     // Check for perpendicular C2's.
     // Loop through pairs of atoms to find c2 axis candidates.
@@ -3304,7 +3302,7 @@ void Molecule::set_full_point_group(double zero_tol) {
           is_D = true;
       }
     }
-    //fprintf(outfile,"\t\tperp. C2's :  %s\n", (is_D ? "yes" : "no"));
+    //outfile->Printf("\t\tperp. C2's :  %s\n", (is_D ? "yes" : "no"));
 
     // Now assign point groups!  Sn first.
     if (Sn_z == 2 * Cn_z && !is_D) {

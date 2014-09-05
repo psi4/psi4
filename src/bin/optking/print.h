@@ -30,14 +30,14 @@
 
 #include <cstdlib>
 #include <cstdio>
-
+#include <string>
 namespace opt {
 
-void print_matrix(const FILE *fp, double **A, const int x, const int y);
+void print_matrix(const std::string OutFileRMR, double **A, const int x, const int y);
 
-void print_array(const FILE *fp, double *A, const int x);
+void print_array(const std::string OutFileRMR, double *A, const int x);
 
-void print_geom_array(const FILE *fp, double *A, const int natom);
+void print_geom_array(const std::string OutFileRMR, double *A, const int natom);
 
 }
 

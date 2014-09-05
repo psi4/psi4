@@ -114,16 +114,16 @@ void DFCorrGrad::common_init()
 void DFCorrGrad::print_header() const
 {
     if (print_) {
-        fprintf(outfile, "  ==> DFCorrGrad: Density-Fitted Correlated Gradients <==\n\n");
+        outfile->Printf( "  ==> DFCorrGrad: Density-Fitted Correlated Gradients <==\n\n");
 
-        fprintf(outfile, "    OpenMP threads:    %11d\n", omp_num_threads_);
-        fprintf(outfile, "    Integrals threads: %11d\n", df_ints_num_threads_);
-        fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
-        fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n", cutoff_);
-        fprintf(outfile, "    Fitting Condition: %11.0E\n\n", condition_);
+        outfile->Printf( "    OpenMP threads:    %11d\n", omp_num_threads_);
+        outfile->Printf( "    Integrals threads: %11d\n", df_ints_num_threads_);
+        outfile->Printf( "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        outfile->Printf( "    Schwarz Cutoff:    %11.0E\n", cutoff_);
+        outfile->Printf( "    Fitting Condition: %11.0E\n\n", condition_);
 
-        fprintf(outfile, "   => Auxiliary Basis Set <=\n\n");
-        auxiliary_->print_by_level(outfile, print_);
+        outfile->Printf( "   => Auxiliary Basis Set <=\n\n");
+        auxiliary_->print_by_level("outfile", print_);
     }
 }
 void DFCorrGrad::compute_gradient()

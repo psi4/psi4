@@ -13,11 +13,17 @@
 //#define @PSI_BUGREPORT@
 
 /* Top source code directory */
-#define PSI_TOP_SRCDIR @top_srcdir@
-#define PSI_TOP_OBJDIR @top_objdir@
+#define PSI_TOP_SRCDIR "@PROJECT_SOURCE_DIR@"
+#define PSI_TOP_OBJDIR "@PROJECT_BINARY_DIR@"
+
+#define PLUGIN_CXX "@CMAKE_CXX_COMPILER@"
+#define PLUGIN_DEFINES "@PLUGIN_DEFINES@"
+#define PLUGIN_FLAGS "@CMAKE_CXX_FLAGS@"
+#define PLUGIN_INCLUDES "@PLUGIN_INCLUDE_DIRECTORIES@"
+#define PLUGIN_OBJDIR "@PROJECT_BINARY_DIR@"
 
 /* The PSI4 Datadir */
-#define INSTALLEDPSIDATADIR @psi4datadir@
+#define INSTALLEDPSIDATADIR "@CMAKE_INSTALL_PREFIX@/lib"
 
 /* MPI? */
 #cmakedefine HAVE_MPI
@@ -63,9 +69,6 @@
 
 /* Restrict keyword definition */
 #cmakedefine restrict
-
-/* Whether to compile the ERD integral module */
-#cmakedefine HAVE_ERD
 
 #endif /* _psi_src_psiconfig_h */
 

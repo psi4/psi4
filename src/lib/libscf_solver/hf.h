@@ -43,6 +43,7 @@ class Vector;
 class SimpleVector;
 class TwoBodySOInt;
 class JK;
+class Psi4JK;
 namespace scf {
 
 class HF : public Wavefunction {
@@ -123,6 +124,7 @@ protected:
 
     /// The soon to be ubiquitous JK object
     boost::shared_ptr<JK> jk_;
+    boost::shared_ptr<Psi4JK> JKFactory;
 
     /// Are we to do MOM?
     bool MOM_enabled_;

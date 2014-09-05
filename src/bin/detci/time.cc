@@ -58,18 +58,18 @@ init_time_new(struct detci_timings time)
 void
 print_time_new(struct detci_timings time)
 {
-  fprintf(outfile,"\n");
-  fprintf(outfile,"        Total Time (s)     %%Time 		%%Relative\n");
-  fprintf(outfile," -----------------------------------------------------\n");
-  fprintf(outfile," Read      %lf\n", time.read_total_time);
-  fprintf(outfile," Write     %lf\n", time.write_total_time);
-  fprintf(outfile," Sigma1    %lf\n", time.s1_total_time);
-  fprintf(outfile," Sigma2    %lf\n", time.s2_total_time);
-  fprintf(outfile," Sigma3    %lf\n", time.s3_total_time);
-  fprintf(outfile," S1 Thread %lf\n", time.s1_mt_total_time);
-  fprintf(outfile," S2 Thread %lf\n", time.s2_mt_total_time);
-  fprintf(outfile," S3 Thread %lf\n", time.s3_mt_total_time);
-  fprintf(outfile,"\n");
+  outfile->Printf("\n");
+  outfile->Printf("        Total Time (s)     %%Time 		%%Relative\n");
+  outfile->Printf(" -----------------------------------------------------\n");
+  outfile->Printf(" Read      %lf\n", time.read_total_time);
+  outfile->Printf(" Write     %lf\n", time.write_total_time);
+  outfile->Printf(" Sigma1    %lf\n", time.s1_total_time);
+  outfile->Printf(" Sigma2    %lf\n", time.s2_total_time);
+  outfile->Printf(" Sigma3    %lf\n", time.s3_total_time);
+  outfile->Printf(" S1 Thread %lf\n", time.s1_mt_total_time);
+  outfile->Printf(" S2 Thread %lf\n", time.s2_mt_total_time);
+  outfile->Printf(" S3 Thread %lf\n", time.s3_mt_total_time);
+  outfile->Printf("\n");
 }
 
 }} // namespace psi::detci

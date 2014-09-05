@@ -159,7 +159,7 @@ int LMP2::compute_T2_energy(const int &iter) {
           conv = 1;
           if (iter >= maxiter_)
             if (me_ == 0)
-              fprintf(outfile, "LMP2 has not converged in the maximum number of iterations.\n maxiter = %d\n", maxiter_);
+              outfile->Printf( "LMP2 has not converged in the maximum number of iterations.\n maxiter = %d\n", maxiter_);
         }
         else conv = 0;
     }
@@ -680,7 +680,7 @@ SharedMatrix LMP2::amplitudes_T2(const SharedMatrix T2, const int &ij, const int
 //            }
 
 //            if (lmp2_info.print_ > 6 & lmp2_info.me_ == 0) {
-//                fprintf(outfile, "\tF_sum ij: %d\n", ij);
+//                outfile->Printf( "\tF_sum ij: %d\n", ij);
 //                print_mat(F_sum, lmp2_info.nso_, lmp2_info.nso_, outfile);
 //            }
 //            double **temp1 = block_matrix(lmp2_info.pair_domain_len_[ij], lmp2_info.nso_);
@@ -698,10 +698,10 @@ SharedMatrix LMP2::amplitudes_T2(const SharedMatrix T2, const int &ij, const int
 //            }
 
 //            if (lmp2_info.print_ > 5 & lmp2_info.me_ == 0) {
-//                fprintf(outfile, "\tSij: %d\n", ij);
+//                outfile->Printf( "\tSij: %d\n", ij);
 //                print_mat(Sij, lmp2_info.pair_domain_len_[ij], lmp2_info.nso_, outfile);
 
-//                fprintf(outfile, "\tF_sum: %d\n", ij);
+//                outfile->Printf( "\tF_sum: %d\n", ij);
 //                print_mat(F_sum, lmp2_info.nso_, lmp2_info.nso_, outfile);
 //            }
 

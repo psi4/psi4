@@ -33,10 +33,10 @@ namespace psi {
   namespace transqt2 {
 
 void idx_error(const char *message, int p, int q, int r, int s, int pq, int rs,
-	       int pq_sym, int rs_sym, FILE *outfile);
+	       int pq_sym, int rs_sym, std::string OutFileRMR);
 void idx_permute_presort(dpdfile4 *File, int this_bucket, int **bucket_map, 
 			 int **bucket_offset, int p, int q, int r, int s, 
-			 double value, FILE *outfile)
+			 double value, std::string OutFileRMR)
 {
   int p_sym, q_sym, r_sym, s_sym;
   int pq_sym, rs_sym, rq_sym, ps_sym, qp_sym, sp_sym, sr_sym, qr_sym;
@@ -63,7 +63,7 @@ void idx_permute_presort(dpdfile4 *File, int this_bucket, int **bucket_map,
     pq = Params->rowidx[p][q];
     rs = Params->colidx[r][s];
     if((pq >= Params->rowtot[pq_sym]) || (rs >= Params->coltot[rs_sym]))
-      idx_error("MP Params_make: pq, rs", p,q,r,s,pq,rs,pq_sym,rs_sym,outfile);
+      idx_error("MP Params_make: pq, rs", p,q,r,s,pq,rs,pq_sym,rs_sym,"outfile");
 
     //printf("p = %d, q = %d, pq_sym = %d, offset = %d, rs = %d, pq = %d\n", p,q,pq_sym, offset, rs, pq);
 
@@ -77,7 +77,7 @@ void idx_permute_presort(dpdfile4 *File, int this_bucket, int **bucket_map,
     pq = Params->colidx[p][q];
     if((rs >= Params->rowtot[rs_sym])||(pq >= Params->coltot[pq_sym]))
       idx_error("MP Params_make: rs, pq", p,q,r,s,rs,pq,rs_sym,pq_sym,
-		outfile);
+		"outfile");
 
     offset = bucket_offset[this_bucket][rs_sym];
     File->matrix[rs_sym][rs-offset][pq] = value;

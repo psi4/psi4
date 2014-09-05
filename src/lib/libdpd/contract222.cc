@@ -29,7 +29,7 @@
 #include <cmath>
 #include <libqt/qt.h>
 #include "dpd.h"
-
+#include "psi4-dec.h"
 namespace psi {
 
 int DPD::contract222(dpdfile2 *X, dpdfile2 *Y, dpdfile2 *Z, int target_X,
@@ -59,13 +59,13 @@ int DPD::contract222(dpdfile2 *X, dpdfile2 *Y, dpdfile2 *Z, int target_X,
     if(target_X == 0) { Xtrans = 0; numlinks = X->params->coltot; symlink = GX; }
     else if(target_X == 1) { Xtrans = 1; numlinks = X->params->rowtot; symlink = 0; }
     else {
-        fprintf(stderr, "Junk X index %d in contract222\n", target_X);
+        outfile->Printf( "Junk X index %d in contract222\n", target_X);
         exit(PSI_RETURN_FAILURE);
     }
     if(target_Y == 0) Ytrans = 1;
     else if(target_Y == 1) Ytrans = 0;
     else {
-        fprintf(stderr, "Junk Y index %d in contract222\n", target_Y);
+        outfile->Printf( "Junk Y index %d in contract222\n", target_Y);
         exit(PSI_RETURN_FAILURE);
     }
 
@@ -79,8 +79,8 @@ int DPD::contract222(dpdfile2 *X, dpdfile2 *Y, dpdfile2 *Z, int target_X,
     zrow = Z->params->rowtot; zcol = Z->params->coltot;
 
     if((zrow != xrow) || (zcol != ycol) || (xcol != yrow)) {
-        fprintf(stderr, "** Alignment error in contract222 **\n");
-        dpd_error("dpd_contract222", stderr);
+        outfile->Printf( "** Alignment error in contract222 **\n");
+        dpd_error("dpd_contract222", "outfile");
     }
 #endif  
 

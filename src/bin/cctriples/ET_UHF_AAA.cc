@@ -33,7 +33,7 @@
 #include "Params.h"
 #define EXTERN
 #include "globals.h"
-
+#include "libparallel/ParallelPrinter.h"
 namespace psi { namespace cctriples {
 
 double ET_UHF_AAA(void)
@@ -117,12 +117,12 @@ double ET_UHF_AAA(void)
 	    }
 	  }
 	}
+  boost::shared_ptr<OutFile> printer(new OutFile("ijk.dat",TRUNCATE));
+  //ffile(&ijkfile,"ijk.dat", 0);
+  printer->Printf("Spin Case: AAA\n");
+  printer->Printf("Number of IJK combintions: %d\n", nijk);
+  printer->Printf("\nCurrent IJK Combination:\n");
 
-  ffile(&ijkfile,"ijk.dat", 0);
-  fprintf(ijkfile, "Spin Case: AAA\n");
-  fprintf(ijkfile, "Number of IJK combintions: %d\n", nijk);
-  fprintf(ijkfile, "\nCurrent IJK Combination:\n");
-  fflush(ijkfile);
 
   WABC = (double ***) malloc(nirreps * sizeof(double **));
   VABC = (double ***) malloc(nirreps * sizeof(double **));
@@ -152,8 +152,8 @@ double ET_UHF_AAA(void)
 	      if(I > J && J > K) {
 
 		mijk++;
-		fprintf(ijkfile, "%d\n", mijk);
-		fflush(ijkfile);
+		printer->Printf("%d\n", mijk);
+
 
 		ij = Eints.params->rowidx[I][J];
 		ji = Eints.params->rowidx[J][I];
@@ -747,7 +747,7 @@ double ET_UHF_AAA(void)
 		      }
 
 // 		      if(fabs(WABC[Gab][ab][c]) > 1e-7)
-// 			fprintf(outfile, "%d %d %d %d %d %d %20.15f\n", I,J,K,A,B,C,WABC[Gab][ab][c]);
+// 			outfile->Printf( "%d %d %d %d %d %d %20.15f\n", I,J,K,A,B,C,WABC[Gab][ab][c]);
 
 		      /* Sum V and W into V */
 		      VABC[Gab][ab][c] += WABC[Gab][ab][c];
@@ -789,7 +789,6 @@ double ET_UHF_AAA(void)
   free(WBCA);
   free(WACB);
 
-  fclose(ijkfile);
 
   for(h=0; h < nirreps; h++) {
     global_dpd_->buf4_mat_irrep_close(&T2, h);

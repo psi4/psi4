@@ -12,14 +12,14 @@
 #include <libint/libint.h>
 #include "mem_man.h"
 #include "build_libderiv.h"
-#define MAXNODE 5000
+#define MAXNODE 20000
 #define NONODE -1000000
 #define NUMPARENTS 21
 
 static int last_hrr_node = 0;      /* Global pointer to the last node on the HRR stack */
 static int last_vrr_node = 0;      /* Global pointer to the last node on the VRR stack */
 
-extern FILE *outfile, *d1hrr_header, *init_code;
+extern FILE* outfile, *d1hrr_header, *init_code;
 extern int libderiv1_stack_size[MAX_AM/2+1];
 extern LibderivParams_t Params;
 

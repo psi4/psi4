@@ -171,17 +171,17 @@ void OCCWave::tpdm_oovv()
     if (print_ > 3) {
       global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "TPDM <OO|VV>");
-      global_dpd_->buf4_print(&G, outfile, 1);
+      global_dpd_->buf4_print(&G, "outfile", 1);
       global_dpd_->buf4_close(&G);
       
       global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "TPDM <oo|vv>");
-      global_dpd_->buf4_print(&G, outfile, 1);
+      global_dpd_->buf4_print(&G, "outfile", 1);
       global_dpd_->buf4_close(&G);
       
       global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,o]"), ID("[V,v]"),
                  ID("[O,o]"), ID("[V,v]"), 0, "TPDM <Oo|Vv>");
-      global_dpd_->buf4_print(&G, outfile, 1);
+      global_dpd_->buf4_print(&G, "outfile", 1);
       global_dpd_->buf4_close(&G);
     }    
     
@@ -342,7 +342,7 @@ void OCCWave::omp3_tpdm_vvvv()
     if (print_ > 3) {
       global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
                   ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>"); 
-      global_dpd_->buf4_print(&G, outfile, 1);
+      global_dpd_->buf4_print(&G, "outfile", 1);
       global_dpd_->buf4_close(&G);
     }  
  }// end if (reference_ == "RESTRICTED") 
@@ -417,17 +417,17 @@ void OCCWave::omp3_tpdm_vvvv()
     if (print_ > 3) {
       global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
                   ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>"); 
-      global_dpd_->buf4_print(&G, outfile, 1);
+      global_dpd_->buf4_print(&G, "outfile", 1);
       global_dpd_->buf4_close(&G);
       
       global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[v,v]"), ID("[v,v]"),
                   ID("[v,v]"), ID("[v,v]"), 0, "TPDM <vv|vv>");
-      global_dpd_->buf4_print(&G, outfile, 1);
+      global_dpd_->buf4_print(&G, "outfile", 1);
       global_dpd_->buf4_close(&G);
       
       global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,v]"), ID("[V,v]"),
                   ID("[V,v]"), ID("[V,v]"), 0, "TPDM <Vv|Vv>");
-      global_dpd_->buf4_print(&G, outfile, 1);
+      global_dpd_->buf4_print(&G, "outfile", 1);
       global_dpd_->buf4_close(&G);
     }    
  }// end if (reference_ == "UNRESTRICTED") 
@@ -442,7 +442,7 @@ void OCCWave::omp3_tpdm_vvvv()
 /*=======================*/
 void OCCWave::ocepa_tpdm_vvvv()
 {      
-    //fprintf(outfile,"\n ocepa_tpdm_vvvv is starting... \n"); fflush(outfile);
+    //outfile->Printf("\n ocepa_tpdm_vvvv is starting... \n"); 
     // NOTE: contract444 can handle only TN and NT type contractions, which means (0,0) and (1,1) type target indices,
     //  with out-of-core algorithm!!!!     
     dpdbuf4  T, L, G, V;
@@ -522,7 +522,7 @@ void OCCWave::ocepa_tpdm_vvvv()
     if (print_ > 3) {
       global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
                   ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>"); 
-      global_dpd_->buf4_print(&G, outfile, 1);
+      global_dpd_->buf4_print(&G, "outfile", 1);
       global_dpd_->buf4_close(&G);
     }  
  }// end if (reference_ == "RESTRICTED") 
@@ -573,24 +573,24 @@ void OCCWave::ocepa_tpdm_vvvv()
     if (print_ > 3) {
       global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
                   ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>"); 
-      global_dpd_->buf4_print(&G, outfile, 1);
+      global_dpd_->buf4_print(&G, "outfile", 1);
       global_dpd_->buf4_close(&G);
       
       global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[v,v]"), ID("[v,v]"),
                   ID("[v,v]"), ID("[v,v]"), 0, "TPDM <vv|vv>");
-      global_dpd_->buf4_print(&G, outfile, 1);
+      global_dpd_->buf4_print(&G, "outfile", 1);
       global_dpd_->buf4_close(&G);
       
       global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,v]"), ID("[V,v]"),
                   ID("[V,v]"), ID("[V,v]"), 0, "TPDM <Vv|Vv>");
-      global_dpd_->buf4_print(&G, outfile, 1);
+      global_dpd_->buf4_print(&G, "outfile", 1);
       global_dpd_->buf4_close(&G);
     }    
  }// end if (reference_ == "UNRESTRICTED") 
     
     psio_->close(PSIF_OCC_DENSITY, 1);
     psio_->close(PSIF_OCC_DPD, 1);
-    //fprintf(outfile,"\n ocepa_tpdm_vvvv done. \n"); fflush(outfile);
+    //outfile->Printf("\n ocepa_tpdm_vvvv done. \n"); 
 
 } // end of twopdm_vvvv
 
@@ -742,7 +742,7 @@ void OCCWave::tpdm_ovvo()
     if (print_ > 3) {
       global_dpd_->buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,v]"), ID("[V,o]"),
                   ID("[O,v]"), ID("[V,o]"), 0, "TPDM <Ov|Vo>");
-      global_dpd_->buf4_print(&G, outfile, 1);
+      global_dpd_->buf4_print(&G, "outfile", 1);
       global_dpd_->buf4_close(&G);
     }
     

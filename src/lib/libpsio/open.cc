@@ -37,7 +37,7 @@
 #include <sstream>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
-#include <libparallel/parallel.h>
+#include "psi4-dec.h"
 
 namespace psi {
 

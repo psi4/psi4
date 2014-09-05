@@ -327,6 +327,7 @@ Extended Koopmans' Theorem
   (doi: `10.1021/ct500186j <http://dx.doi.org/10.1021/ct500186j>`_).
 
 
+
 Second-Order Algebraic-Diagrammatic Construction [ADC(2)]
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

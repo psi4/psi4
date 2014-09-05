@@ -16,10 +16,10 @@ import sys, os
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('@top_srcdir@/lib/python/'))
-sys.path.insert(0, os.path.abspath('@top_srcdir@/lib/databases/'))
-sys.path.insert(0, os.path.abspath('@top_srcdir@/plugins/'))
-sys.path.insert(0, os.path.abspath('@srcdir@'))
+sys.path.insert(0, os.path.abspath('@CMAKE_SOURCE_DIR@/lib/python/'))
+sys.path.insert(0, os.path.abspath('@CMAKE_SOURCE_DIR@/lib/databases/'))
+sys.path.insert(0, os.path.abspath('@CMAKE_SOURCE_DIR@/plugins/'))
+sys.path.insert(0, os.path.abspath('@CMAKE_CURRENT_SOURCE_DIR@/source'))
 
 # Import Sphinx themes
 import cloud_sptheme as csp
@@ -53,7 +53,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'PSI4'
-copyright = u'2013, The Psi4 Project'
+copyright = u'2014, The Psi4 Project'
 
 def get_gitversion():
     file = '../../../src/bin/psi4/gitversion.h'
@@ -319,11 +319,11 @@ rst_prolog = """
 #            'srcdb':     ('https://github.com/psi4/psi4/blob/master/lib/databases/%s.py', '') }
 
 # Uncomment these lines for named releases
-extlinks = {'source':    ('https://github.com/psi4/psi4release/blob/master/%s', 'psi4/'),
-            'srcsample': ('http://vergil.chemistry.gatech.edu/psi_doc/master/samples/%s/input.dat', ''),
-            'srcbasis':  ('https://github.com/psi4/psi4release/blob/master/lib/basis/%s.gbs', ''),
-            'srcplugin': ('https://github.com/psi4/psi4release/blob/master/master/plugins/%s', ''),
-            'srcdb':     ('https://github.com/psi4/psi4release/blob/master/lib/databases/%s.py', '') }
+extlinks = {'source':    ('https://github.com/psi4/psi4public/blob/master/%s', 'psi4/'),
+            'srcsample': ('https://github.com/psi4/psi4public/blob/master/samples/%s/input.dat', ''),
+            'srcbasis':  ('https://github.com/psi4/psi4public/blob/master/lib/basis/%s.gbs', ''),
+            'srcplugin': ('https://github.com/psi4/psi4public/blob/master/master/plugins/%s', ''),
+            'srcdb':     ('https://github.com/psi4/psi4public/blob/master/lib/databases/%s.py', '') }
 
 # corrects baseline for inline math + other custom stuff for inline math, such as non-default math fonts etc.
 pngmath_latex_preamble=r'\usepackage[active]{preview}'

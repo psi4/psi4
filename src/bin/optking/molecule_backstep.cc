@@ -83,8 +83,8 @@ inline double DE_rfo_energy(double rfo_t, double rfo_g, double rfo_h) {
 
 void MOLECULE::backstep(void) {
 
-  fprintf(outfile,"\tRe-doing last optimization step - smaller this time.\n");
-  fprintf(outfile,"\tConsecutive backstep number %d.\n", p_Opt_data->g_consecutive_backsteps()+1);
+  psi::outfile->Printf("\tRe-doing last optimization step - smaller this time.\n");
+  psi::outfile->Printf("\tConsecutive backstep number %d.\n", p_Opt_data->g_consecutive_backsteps()+1);
 
   // Erase data created when opt_data was initialized for this step.
   p_Opt_data->erase_last_step();
@@ -117,14 +117,14 @@ void MOLECULE::backstep(void) {
   else if (Opt_params.step_type == OPT_PARAMS::SD)
     DE_projected = DE_nr_energy(dq_norm, dq_grad, dq_hess);
 
-  fprintf(outfile, "\tNewly projected energy change : %20.10lf\n", DE_projected);
+  psi::outfile->Printf( "\tNewly projected energy change : %20.10lf\n", DE_projected);
 
   double *fq = p_Opt_data->g_forces_pointer();
 
   // do displacements for each fragment separately
   for (int f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
-      fprintf(outfile,"\tDisplacements for frozen fragment %d skipped.\n", f+1);
+      psi::outfile->Printf("\tDisplacements for frozen fragment %d skipped.\n", f+1);
       continue;
     }
     fragments[f]->displace(&(dq[g_intco_offset(f)]), &(fq[g_intco_offset(f)]), g_atom_offset(f));
@@ -133,7 +133,7 @@ void MOLECULE::backstep(void) {
   // do displacements for interfragment coordinates
   for (int I=0; I<interfragments.size(); ++I) {
     if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
-      fprintf(outfile,"\tDisplacements for frozen interfragment %d skipped.\n", I+1);
+      psi::outfile->Printf("\tDisplacements for frozen interfragment %d skipped.\n", I+1);
       continue;
     }
     interfragments[I]->orient_fragment( &(dq[g_interfragment_intco_offset(I)]),
@@ -151,7 +151,7 @@ void MOLECULE::backstep(void) {
   // save values in step data
   p_Opt_data->save_step_info(DE_projected, rfo_u, dq_norm, dq_grad, dq_hess);
 
-  fflush(outfile);
+  
 } // end take RFO step
 
 }

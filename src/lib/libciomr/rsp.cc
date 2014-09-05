@@ -29,7 +29,7 @@
 #include <psifiles.h>
 #include <cstdlib>
 #include "libciomr.h"
-
+#include "psi4-dec.h"
 namespace psi {
   
 extern void tred2(int n,double** a,double* d,double* e,int matz);
@@ -86,14 +86,14 @@ void rsp(int nm, int n,int nv,double *array, double *e_vals, int matz,
 
       if (n > nm) {
          ierr = 10*n;
-         fprintf(stderr,"n = %d is greater than nm = %d in rsp\n",n,nm);
+         outfile->Printf("n = %d is greater than nm = %d in rsp\n",n,nm);
          exit(PSI_RETURN_FAILURE);
          }
 
       if (nv < (n*(n+1)/2)) {
          int num = n*(n+1)/2;
          ierr = 20*n;
-         fprintf(stderr,"nv = %d is less than n*(n+1)/2 = %d in rsp\n",nv,num);
+         outfile->Printf("nv = %d is less than n*(n+1)/2 = %d in rsp\n",nv,num);
          exit(PSI_RETURN_FAILURE);
          }
 

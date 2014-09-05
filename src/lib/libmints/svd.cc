@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-
+#include "psi4-dec.h"
 typedef double real;
 typedef int integer;
 
@@ -300,8 +300,8 @@ sing_(real *q, int *lq, int *iq, double *s, double *p,
 	goto L20;
     }
 L10:
-    fprintf(stderr,"ERROR: INPUT PARAMETER IQ FOR SUBROUTINE SING\n");
-    fprintf(stderr,"EITHER LESS THAN 0 OR GREATER THAN 3\n");
+    psi::outfile->Printf("ERROR: INPUT PARAMETER IQ FOR SUBROUTINE SING\n");
+    psi::outfile->Printf("EITHER LESS THAN 0 OR GREATER THAN 3\n");
     abort();
 L20:
     if (*iq > 3) {
@@ -320,8 +320,8 @@ L30:
 	goto L50;
     }
 L40:
-    fprintf(stderr,"ERROR: INPUT PARAMETER IP FOR SUBROUTINE SING\n");
-    fprintf(stderr,"EITHER LESS THAN 0 OR GREATER THAN 3\n");
+    psi::outfile->Printf("ERROR: INPUT PARAMETER IP FOR SUBROUTINE SING\n");
+    psi::outfile->Printf("EITHER LESS THAN 0 OR GREATER THAN 3\n");
     abort();
 L50:
     if (*ip > 3) {
@@ -455,8 +455,8 @@ bidag2_(double *d, double *b, double *q, int *lq, int *iq,
 	goto L20;
     }
 L10:
-    fprintf(stderr,"ERROR: INPUT PARAMETER IQ FOR SUBROUTINE BIDAG2\n");
-    fprintf(stderr,"EITHER LESS THAN 0 OR GREATER THAN 3\n");
+    psi::outfile->Printf("ERROR: INPUT PARAMETER IQ FOR SUBROUTINE BIDAG2\n");
+    psi::outfile->Printf("EITHER LESS THAN 0 OR GREATER THAN 3\n");
     abort();
 L20:
     if (*iq > 3) {
@@ -477,8 +477,8 @@ L30:
 	goto L50;
     }
 L40:
-    fprintf(stderr,"ERROR: INPUT PARAMETER IP FOR SUBROUTINE BIDAG2\n");
-    fprintf(stderr,"EITHER LESS THAN 0 OR GREATER THAN 3\n");
+    psi::outfile->Printf("ERROR: INPUT PARAMETER IP FOR SUBROUTINE BIDAG2\n");
+    psi::outfile->Printf("EITHER LESS THAN 0 OR GREATER THAN 3\n");
     abort();
 L50:
     if (*ip > 3) {
@@ -1114,7 +1114,7 @@ hsr3_(double *a, int *la, int *m, int *n)
     if (*m >= *n) {
 	goto L10;
     }
-    fprintf(stderr,"ERROR: ARGUMENT M MUST BE .GE. N IN SUBROUTINE HSR3\n");
+    psi::outfile->Printf("ERROR: ARGUMENT M MUST BE .GE. N IN SUBROUTINE HSR3\n");
     abort();
 L10:
     s = -(double)a[k + k * a_dim1];
@@ -1172,7 +1172,7 @@ hsr4_(double *a, int *la, int *m, int *n)
     if (*m > *n) {
 	goto L10;
     }
-    fprintf(stderr,"ERROR: ARGUMENT M MUST BE .GE. N IN SUBROUTINE HSR4\n");
+    psi::outfile->Printf("ERROR: ARGUMENT M MUST BE .GE. N IN SUBROUTINE HSR4\n");
     abort();
 L10:
     s = -(double)a[k + *n * a_dim1];
@@ -1243,7 +1243,7 @@ hsr5_(double *a, int *la, int *m, int *n)
     if (*m >= *n) {
 	goto L10;
     }
-    fprintf(stderr,"ERROR: ARGUMENT M MUST BE .GE. N IN SUBROUTINE HSR5\n");
+    psi::outfile->Printf("ERROR: ARGUMENT M MUST BE .GE. N IN SUBROUTINE HSR5\n");
     abort();
 L10:
     if (*m == *n) {
@@ -1908,9 +1908,9 @@ L520:
     return 0;
 L530:
     k = *n - k + 1;
-    fprintf(stderr,"SINCE THE STOPPING CRITERION NOT SATISFIED\n");
-    fprintf(stderr,"AFTER %d ITERATIONS, WE STOP WHILE COMPUTING\n", ns);
-    fprintf(stderr,"EIGENVALUE NUMBER %d", k);
+    psi::outfile->Printf("SINCE THE STOPPING CRITERION NOT SATISFIED\n");
+    psi::outfile->Printf("AFTER %d ITERATIONS, WE STOP WHILE COMPUTING\n", ns);
+    psi::outfile->Printf("EIGENVALUE NUMBER %d", k);
     e[1] = (real) k;
     return 0;
 } /* singb_ */

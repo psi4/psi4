@@ -147,19 +147,19 @@ void PSTensorII::buildDealiased()
 }
 void PSTensorII::print_header()
 {
-    fprintf(outfile,"  ==> PS Tensor II (by Rob Parrish) <==\n\n");
+    outfile->Printf("  ==> PS Tensor II (by Rob Parrish) <==\n\n");
 
-    fprintf(outfile, "    %s fitting algorithm will be applied.\n", options_.get_str("PS_FITTING_ALGORITHM").c_str());
+    outfile->Printf( "    %s fitting algorithm will be applied.\n", options_.get_str("PS_FITTING_ALGORITHM").c_str());
 
     if (do_omega_) {
-        fprintf(outfile, "    Range separation will be performed with \\omega of %11.4E.\n\n", omega_);
+        outfile->Printf( "    Range separation will be performed with \\omega of %11.4E.\n\n", omega_);
     } else {
-        fprintf(outfile, "    No range separation requested.\n\n");
+        outfile->Printf( "    No range separation requested.\n\n");
     }
 
     if (print_) {
         molecule_->print();
-        primary_->print_by_level(outfile, print_);
+        primary_->print_by_level("outfile", print_);
     }
 
     if (debug_ > 1) {
@@ -169,8 +169,8 @@ void PSTensorII::print_header()
     }
 
     if (print_) {
-        grid_->print(outfile, print_);
-        fflush(outfile);
+        grid_->print("outfile", print_);
+        
     }
 }
 void PSTensorII::buildGrid()
@@ -192,17 +192,17 @@ void PSTensorII::buildGrid()
 void PSTensorII::buildDealiasSet()
 {
     if (print_)
-        fprintf(outfile," => Dealias Basis Set <= \n\n");
+        outfile->Printf(" => Dealias Basis Set <= \n\n");
 
     if (options_.get_str("DEALIAS_BASIS_CC") == "") {
         if (print_)
-            fprintf(outfile,"  Dealias Basis Automatically Generated.\n\n");
+            outfile->Printf("  Dealias Basis Automatically Generated.\n\n");
 
         boost::shared_ptr<DealiasBasisSet> d(new DealiasBasisSet(primary_, options_));
         dealias_ = d->dealiasSet();
     } else {
         if (print_)
-            fprintf(outfile,"  Dealias Basis Read from %s.\n\n", options_.get_str("DEALIAS_BASIS_CC").c_str());
+            outfile->Printf("  Dealias Basis Read from %s.\n\n", options_.get_str("DEALIAS_BASIS_CC").c_str());
 
         boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
         molecule_->set_basis_all_atoms(options_.get_str("DEALIAS_BASIS_CC"),"DEALIAS_BASIS");
@@ -210,8 +210,8 @@ void PSTensorII::buildDealiasSet()
     }
 
     if (print_) {
-        dealias_->print_by_level(outfile,print_);
-        fflush(outfile);
+        dealias_->print_by_level("outfile",print_);
+        
     }
 
     ndso_ = ndmo_ = dealias_->nbf();
@@ -825,9 +825,9 @@ void PSTensorII::form_Cdd()
     }
 
     if (print_) {
-        fprintf(outfile, "  %d of %d dealias functions selected, %d projected out.\n\n", ndmo_, ndso_,
+        outfile->Printf( "  %d of %d dealias functions selected, %d projected out.\n\n", ndmo_, ndso_,
             ndso_ - ndmo_);
-        fflush(outfile);
+        
     }
 
 
@@ -918,12 +918,12 @@ void PSTensor::common_init()
 }
 void PSTensor::print_header()
 {
-    fprintf(outfile,"  ==> PS Tensor (by Rob Parrish) <==\n\n");
-    fprintf(outfile,"   => Range-Separation Lowpass Proceedure\n\n");
+    outfile->Printf("  ==> PS Tensor (by Rob Parrish) <==\n\n");
+    outfile->Printf("   => Range-Separation Lowpass Proceedure\n\n");
     if (use_omega_) {
-        fprintf(outfile, "    Range separation will be performed with \\omega of %11.4E.\n\n", omega_);
+        outfile->Printf( "    Range separation will be performed with \\omega of %11.4E.\n\n", omega_);
     } else {
-        fprintf(outfile, "    No range separation requested.\n\n");
+        outfile->Printf( "    No range separation requested.\n\n");
     }
 }
 void PSTensor::buildDealiasSet()
@@ -931,31 +931,31 @@ void PSTensor::buildDealiasSet()
     boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
 
     if (print_) {
-        fprintf(outfile," => Primary Basis Set <= \n\n");
-        primary_->print_by_level(outfile,print_);
-        fflush(outfile);
+        outfile->Printf(" => Primary Basis Set <= \n\n");
+        primary_->print_by_level("outfile",print_);
+        
     }
 
     if (print_) {
-        fprintf(outfile," => Dealias Basis Set <= \n\n");
+        outfile->Printf(" => Dealias Basis Set <= \n\n");
         if (options_.get_str("DEALIAS_BASIS_CC") == "") {
 
-            fprintf(outfile,"  Dealias Basis Automatically Generated\n\n");
+            outfile->Printf("  Dealias Basis Automatically Generated\n\n");
 
             boost::shared_ptr<DealiasBasisSet> d(new DealiasBasisSet(primary_, options_));
             dealias_ = d->dealiasSet();
 
         } else {
-            fprintf(outfile,"  Dealias Basis Read from %s", options_.get_str("DEALIAS_BASIS_CC").c_str());
+            outfile->Printf("  Dealias Basis Read from %s", options_.get_str("DEALIAS_BASIS_CC").c_str());
             molecule_->set_basis_all_atoms(options_.get_str("DEALIAS_BASIS_CC"),"DEALIAS_BASIS");
             dealias_ = BasisSet::construct(parser,molecule_,"DEALIAS_BASIS");
         }
-        dealias_->print_by_level(outfile,print_);
+        dealias_->print_by_level("outfile",print_);
     }
 
     ndealias_ = ndealias2_ = dealias_->nbf();
     naug_ = nmo_ + ndealias_;
-    fflush(outfile);
+    
 }
 void PSTensor::buildGrid()
 {
@@ -967,8 +967,8 @@ void PSTensor::buildGrid()
             primary_, options_.get_str("PS_GRID_FILE"), options_));
     }
 
-    grid_->print(outfile, print_);
-    fflush(outfile);
+    grid_->print("outfile", print_);
+    
 
     naux_ = grid_->npoints();
     w_ = boost::shared_ptr<Vector>(new Vector("Grid Weights", naux_));
@@ -1110,7 +1110,7 @@ void PSTensor::form_Ra()
 }
 void PSTensor::buildQ()
 {
-    fprintf(outfile, "   => Fitting Procedure: Conditioned <=\n\n");
+    outfile->Printf( "   => Fitting Procedure: Conditioned <=\n\n");
 
     form_Cpp();
     form_U();
@@ -1130,7 +1130,7 @@ void PSTensor::buildQ()
 }
 void PSTensor::buildQ_canonical()
 {
-    fprintf(outfile, "   => Fitting Procedure: Canonical <=\n\n");
+    outfile->Printf( "   => Fitting Procedure: Canonical <=\n\n");
 
     nmo2_ = nmo_;
     ndealias2_ = ndealias_;
@@ -1156,7 +1156,7 @@ void PSTensor::buildQ_canonical()
     C->power(-1.0);
 
     if (debug_)
-        C->print(outfile, "After Inversion");
+        C->print("outfile", "After Inversion");
 
     Qmo_ = SharedMatrix (new Matrix("Qmo", nmo_, naux_));
     double** Qmop = Qmo_->pointer();
@@ -1168,7 +1168,7 @@ void PSTensor::buildQ_canonical()
 }
 void PSTensor::buildQ_renormalized()
 {
-    fprintf(outfile, "   => Fitting Procedure: Renormalized <=\n\n");
+    outfile->Printf( "   => Fitting Procedure: Renormalized <=\n\n");
 
     nmo2_ = nmo_;
     ndealias2_ = 0;
@@ -1179,7 +1179,7 @@ void PSTensor::buildQ_renormalized()
     Cpp_->power(-1.0);
 
     if (debug_)
-        Cpp_->print(outfile, "After Inversion");
+        Cpp_->print("outfile", "After Inversion");
 
     SharedMatrix Rw(new Matrix("Rw", nmo_, naux_));
     double** Rp = Ra_->pointer();
@@ -1201,7 +1201,7 @@ void PSTensor::buildQ_renormalized()
 }
 void PSTensor::buildQ_quadrature()
 {
-    fprintf(outfile, "   => Fitting Procedure: Quadrature <=\n\n");
+    outfile->Printf( "   => Fitting Procedure: Quadrature <=\n\n");
 
     nmo2_ = nmo_;
     ndealias2_ = 0;
@@ -1258,8 +1258,8 @@ void PSTensor::form_U()
     }
 
     if (nmo2_ < nmo_) {
-        fprintf(outfile, "  WARNING: This grid cannot numerically distinguish primary basis functions.\n");
-        fprintf(outfile, "           These pseudospectral results may be inaccurate.\n\n");
+        outfile->Printf( "  WARNING: This grid cannot numerically distinguish primary basis functions.\n");
+        outfile->Printf( "           These pseudospectral results may be inaccurate.\n\n");
     }
 
     U_ = SharedMatrix(new Matrix("U", nmo_, nmo2_));
@@ -1343,7 +1343,7 @@ void PSTensor::form_Cdd()
     Rw.reset();
 
     if (debug_ > 1)
-        Cdd_->print(outfile, "before orthogonalization");
+        Cdd_->print("outfile", "before orthogonalization");
 
     double** Cpdp = Cpd_->pointer();
 
@@ -1371,9 +1371,9 @@ void PSTensor::form_W()
     }
 
     if (print_) {
-        fprintf(outfile, "  %d of %d dealias functions selected, %d projected out.\n\n", ndealias2_, ndealias_,
+        outfile->Printf( "  %d of %d dealias functions selected, %d projected out.\n\n", ndealias2_, ndealias_,
             ndealias_ - ndealias2_);
-        fflush(outfile);
+        
     }
 
 

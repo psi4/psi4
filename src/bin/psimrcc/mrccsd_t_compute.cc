@@ -47,50 +47,50 @@ namespace psi{ namespace psimrcc{
 
 void MRCCSD_T::compute()
 {
-  fprintf(outfile,"\n\n  Computing (T) correction using the unrestricted loop algorithm.\n");
-  fflush(outfile);
+  outfile->Printf("\n\n  Computing (T) correction using the unrestricted loop algorithm.\n");
+  
 
   compute_ooo_triples();
   compute_ooO_triples();
   compute_oOO_triples();
   compute_OOO_triples();
 
-  fprintf(outfile,"\n\n  Mk-MRCCSD(T) diagonal contributions to the effective Hamiltonian:\n");
-  fprintf(outfile,"\n   Ref         E[4]              E_T[4]            E_ST[4]           E_DT[4]");
-  fprintf(outfile,"\n  ------------------------------------------------------------------------------");
+  outfile->Printf("\n\n  Mk-MRCCSD(T) diagonal contributions to the effective Hamiltonian:\n");
+  outfile->Printf("\n   Ref         E[4]              E_T[4]            E_ST[4]           E_DT[4]");
+  outfile->Printf("\n  ------------------------------------------------------------------------------");
   if(nrefs < 100){
     for(int mu = 0; mu < nrefs; ++mu){
-      fprintf(outfile,"\n   %2d  ",mu);
-      fprintf(outfile," %17.12lf",E4_ooo[mu] + E4_ooO[mu] + E4_oOO[mu] + E4_OOO[mu]);
-      fprintf(outfile," %17.12lf",E4T_ooo[mu] + E4T_ooO[mu] + E4T_oOO[mu] + E4T_OOO[mu]);
-      fprintf(outfile," %17.12lf",E4ST_ooo[mu] + E4ST_ooO[mu] + E4ST_oOO[mu] + E4ST_OOO[mu]);
-      fprintf(outfile," %17.12lf",E4DT_ooo[mu] + E4DT_ooO[mu] + E4DT_oOO[mu] + E4DT_OOO[mu]);
+      outfile->Printf("\n   %2d  ",mu);
+      outfile->Printf(" %17.12lf",E4_ooo[mu] + E4_ooO[mu] + E4_oOO[mu] + E4_OOO[mu]);
+      outfile->Printf(" %17.12lf",E4T_ooo[mu] + E4T_ooO[mu] + E4T_oOO[mu] + E4T_OOO[mu]);
+      outfile->Printf(" %17.12lf",E4ST_ooo[mu] + E4ST_ooO[mu] + E4ST_oOO[mu] + E4ST_OOO[mu]);
+      outfile->Printf(" %17.12lf",E4DT_ooo[mu] + E4DT_ooO[mu] + E4DT_oOO[mu] + E4DT_OOO[mu]);
     }
   }
-  fprintf(outfile,"\n   Tot ");
+  outfile->Printf("\n   Tot ");
   double E4 = 0.0;
   for(int mu = 0; mu < nrefs; ++mu)
     E4 += (E4_ooo[mu] + E4_ooO[mu] + E4_oOO[mu] + E4_OOO[mu]) * h_eff->get_left_eigenvector(mu) * h_eff->get_right_eigenvector(mu);
-  fprintf(outfile," %17.12lf",E4);
+  outfile->Printf(" %17.12lf",E4);
   double E4T = 0.0;
   for(int mu = 0; mu < nrefs; ++mu)
     E4T += (E4T_ooo[mu] + E4T_ooO[mu] + E4T_oOO[mu] + E4T_OOO[mu])  * h_eff->get_left_eigenvector(mu) * h_eff->get_right_eigenvector(mu);
-  fprintf(outfile," %17.12lf",E4T);
+  outfile->Printf(" %17.12lf",E4T);
   double E4ST = 0.0;
   for(int mu = 0; mu < nrefs; ++mu)
     E4ST += (E4ST_ooo[mu] + E4ST_ooO[mu] + E4ST_oOO[mu] + E4ST_OOO[mu])  * h_eff->get_left_eigenvector(mu) * h_eff->get_right_eigenvector(mu);
-  fprintf(outfile," %17.12lf",E4ST);
+  outfile->Printf(" %17.12lf",E4ST);
   double E4DT = 0.0;
   for(int mu = 0; mu < nrefs; ++mu)
     E4DT += (E4DT_ooo[mu] + E4DT_ooO[mu] + E4DT_oOO[mu] + E4DT_OOO[mu]) * h_eff->get_left_eigenvector(mu) * h_eff->get_right_eigenvector(mu);
-  fprintf(outfile," %17.12lf",E4DT);
-  fprintf(outfile,"\n  ------------------------------------------------------------------------------");
+  outfile->Printf(" %17.12lf",E4DT);
+  outfile->Printf("\n  ------------------------------------------------------------------------------");
 
-  fprintf(outfile,"\n\n  Mk-MRCCSD(T) off-diagonal contributions to the effective Hamiltonian:\n");
+  outfile->Printf("\n\n  Mk-MRCCSD(T) off-diagonal contributions to the effective Hamiltonian:\n");
   for(int mu = 0; mu < nrefs; ++mu){
-    fprintf(outfile,"\n");
+    outfile->Printf("\n");
     for(int nu = 0; nu < nrefs; ++nu){
-      fprintf(outfile," %17.12lf",d_h_eff[mu][nu]);
+      outfile->Printf(" %17.12lf",d_h_eff[mu][nu]);
     }
   }
 
@@ -105,14 +105,14 @@ void MRCCSD_T::compute()
     }
     double total = 0.0;
     if(options_.get_bool("DIAGONAL_CCSD_T")){
-      fprintf(outfile,"\n\n  Total     diagonal (T) correction: %17.12f",E4);
+      outfile->Printf("\n\n  Total     diagonal (T) correction: %17.12f",E4);
       total += E4;
     }
     if(options_.get_bool("OFFDIAGONAL_CCSD_T")){
-      fprintf(outfile,"\n  Total off-diagonal (T) correction: %17.12f",Heff_E);
+      outfile->Printf("\n  Total off-diagonal (T) correction: %17.12f",Heff_E);
       total += Heff_E;
     }
-    fprintf(outfile,"\n  Total              (T) correction: %17.12f",total);
+    outfile->Printf("\n  Total              (T) correction: %17.12f",total);
   }
 
   for(int mu = 0; mu < nrefs; ++mu){
@@ -257,9 +257,9 @@ void MRCCSD_T::compute_ooo_triples()
   } // End loop over ijk
 
   for(int mu = 0; mu < nrefs; ++mu){
-    fprintf(outfile,"\n  E_T[4]  (aaa) = %20.15lf (%d)",E4T_ooo[mu],mu);
-    fprintf(outfile,"\n  E_ST[4] (aaa) = %20.15lf (%d)",E4ST_ooo[mu],mu);
-    fprintf(outfile,"\n  E_DT[4] (aaa) = %20.15lf (%d)",E4DT_ooo[mu],mu);
+    outfile->Printf("\n  E_T[4]  (aaa) = %20.15lf (%d)",E4T_ooo[mu],mu);
+    outfile->Printf("\n  E_ST[4] (aaa) = %20.15lf (%d)",E4ST_ooo[mu],mu);
+    outfile->Printf("\n  E_DT[4] (aaa) = %20.15lf (%d)",E4DT_ooo[mu],mu);
     E4_ooo[mu] = E4T_ooo[mu] + E4ST_ooo[mu] + E4DT_ooo[mu];
   }
 }
@@ -386,9 +386,9 @@ void MRCCSD_T::compute_OOO_triples()
   }
 
   for(int mu = 0; mu < nrefs; ++mu){
-//    fprintf(outfile,"\n  E_T[4]  (bbb) = %20.15lf (%d)",E4T_OOO[mu],mu);
-//    fprintf(outfile,"\n  E_ST[4] (bbb) = %20.15lf (%d)",E4ST_OOO[mu],mu);
-//    fprintf(outfile,"\n  E_DT[4] (bbb) = %20.15lf (%d)",E4DT_OOO[mu],mu);
+//    outfile->Printf("\n  E_T[4]  (bbb) = %20.15lf (%d)",E4T_OOO[mu],mu);
+//    outfile->Printf("\n  E_ST[4] (bbb) = %20.15lf (%d)",E4ST_OOO[mu],mu);
+//    outfile->Printf("\n  E_DT[4] (bbb) = %20.15lf (%d)",E4DT_OOO[mu],mu);
     E4_OOO[mu] = E4T_OOO[mu] + E4ST_OOO[mu] + E4DT_OOO[mu];
   }
 }
@@ -545,9 +545,9 @@ void MRCCSD_T::compute_ooO_triples()
   } // End loop over ijk
 
   for(int mu = 0; mu < nrefs; ++mu){
-    fprintf(outfile,"\n  E_T[4]  (aab) = %20.15lf (%d)",E4T_ooO[mu],mu);
-    fprintf(outfile,"\n  E_ST[4] (aab) = %20.15lf (%d)",E4ST_ooO[mu],mu);
-    fprintf(outfile,"\n  E_DT[4] (aab) = %20.15lf (%d)",E4DT_ooO[mu],mu);
+    outfile->Printf("\n  E_T[4]  (aab) = %20.15lf (%d)",E4T_ooO[mu],mu);
+    outfile->Printf("\n  E_ST[4] (aab) = %20.15lf (%d)",E4ST_ooO[mu],mu);
+    outfile->Printf("\n  E_DT[4] (aab) = %20.15lf (%d)",E4DT_ooO[mu],mu);
     E4_ooO[mu] = E4T_ooO[mu] + E4ST_ooO[mu] + E4DT_ooO[mu];
   }
 }
@@ -702,9 +702,9 @@ void MRCCSD_T::compute_oOO_triples()
   }
 
   for(int mu = 0; mu < nrefs; ++mu){
-    fprintf(outfile,"\n  E_T[4]  (abb) = %20.15lf (%d)",E4T_oOO[mu],mu);
-    fprintf(outfile,"\n  E_ST[4] (abb) = %20.15lf (%d)",E4ST_oOO[mu],mu);
-    fprintf(outfile,"\n  E_DT[4] (abb) = %20.15lf (%d)",E4DT_oOO[mu],mu);
+    outfile->Printf("\n  E_T[4]  (abb) = %20.15lf (%d)",E4T_oOO[mu],mu);
+    outfile->Printf("\n  E_ST[4] (abb) = %20.15lf (%d)",E4ST_oOO[mu],mu);
+    outfile->Printf("\n  E_DT[4] (abb) = %20.15lf (%d)",E4DT_oOO[mu],mu);
     E4_oOO[mu] = E4T_oOO[mu] + E4ST_oOO[mu] + E4DT_oOO[mu];
   }
 }

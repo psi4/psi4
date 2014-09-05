@@ -59,8 +59,8 @@ double pseudopolar(const char *pert, int irrep, double omega)
   global_dpd_->buf4_close(&X2);
 
 /*   if(params.print & 2) { */
-/*     fprintf(outfile, "\tpolar1 = %20.12f\n", -2.0*polar1); */
-/*     fprintf(outfile, "\tpolar2 = %20.12f\n", -2.0*polar2); */
+/*     outfile->Printf( "\tpolar1 = %20.12f\n", -2.0*polar1); */
+/*     outfile->Printf( "\tpolar2 = %20.12f\n", -2.0*polar2); */
 /*   } */
 
   return polar1+polar2;

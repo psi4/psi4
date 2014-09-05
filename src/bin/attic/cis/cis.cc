@@ -55,7 +55,7 @@ void build_A(void);
 void d_corr(void);
 void local_init(Options & options);
 void local_done(void);
-void amp_write_T1(dpdfile2 *T1, int length, FILE *outfile);
+void amp_write_T1(dpdfile2 *T1, int length, std::string OutFileRMR);
 void diag(void);
 
 PsiReturnType cis(Options & options, int argc, char *argv[])
@@ -103,18 +103,18 @@ PsiReturnType cis(Options & options, int argc, char *argv[])
   /* print eigenvalues and largest components of eigenvectors in ascending order */
   if(params.ref == 0) {
 
-    fprintf(outfile, "\tRHF-CIS Singlet Excitation Energies:\n");
-    fprintf(outfile, "\t------------------------------------\n\n");
-    fprintf(outfile, "\t  Root Irrep       Hartree          eV          cm-1  \n");
-    fprintf(outfile, "\t  ---- ----- ------------------  ---------  ----------\n");
+    outfile->Printf( "\tRHF-CIS Singlet Excitation Energies:\n");
+    outfile->Printf( "\t------------------------------------\n\n");
+    outfile->Printf( "\t  Root Irrep       Hartree          eV          cm-1  \n");
+    outfile->Printf( "\t  ---- ----- ------------------  ---------  ----------\n");
     for(h=0; h < moinfo.nirreps; h++) {
       for(i=0; i < params.rpi[h]; i++) {
         value = moinfo.singlet_evals[h][i];
 
-        fprintf(outfile,   "CIS State %4d   %3s %18.14f  %9.5f  %10.2f\n", i, moinfo.labels[h],
+        outfile->Printf(   "CIS State %4d   %3s %18.14f  %9.5f  %10.2f\n", i, moinfo.labels[h],
             value, value*pc_hartree2ev, value*pc_hartree2wavenumbers);
 
-        fprintf(outfile, "\nLargest components of singlet excited wave function #%d/#%d:\n",
+        outfile->Printf( "\nLargest components of singlet excited wave function #%d/#%d:\n",
             h, i);
         sprintf(lbl, "BIA(%d)[%d] singlet", i, h);
         global_dpd_->file2_init(&B, PSIF_CC_OEI, h, 0, 1, lbl);
@@ -123,136 +123,136 @@ PsiReturnType cis(Options & options, int argc, char *argv[])
 
       }
     }
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
 
-    fprintf(outfile, "\tRHF-CIS Triplet Excitation Energies:\n");
-    fprintf(outfile, "\t------------------------------------\n\n");
-    fprintf(outfile, "\t  Root Irrep       Hartree          eV          cm-1  \n");
-    fprintf(outfile, "\t  ---- ----- ------------------  ---------  ----------\n");
+    outfile->Printf( "\tRHF-CIS Triplet Excitation Energies:\n");
+    outfile->Printf( "\t------------------------------------\n\n");
+    outfile->Printf( "\t  Root Irrep       Hartree          eV          cm-1  \n");
+    outfile->Printf( "\t  ---- ----- ------------------  ---------  ----------\n");
     for(h=0; h < moinfo.nirreps; h++) {
       for(i=0; i < params.rpi[h]; i++) {
         value = moinfo.triplet_evals[h][i];
 
-        fprintf(outfile,   "CIS State %4d   %3s %18.14f  %9.5f  %10.2f\n", i, moinfo.labels[h],
+        outfile->Printf(   "CIS State %4d   %3s %18.14f  %9.5f  %10.2f\n", i, moinfo.labels[h],
             value, value*pc_hartree2ev, value*pc_hartree2wavenumbers);
 
-        fprintf(outfile, "\nLargest components of triplet excited wave function #%d/#%d:\n", h, i);
+        outfile->Printf( "\nLargest components of triplet excited wave function #%d/#%d:\n", h, i);
         sprintf(lbl, "BIA(%d)[%d] triplet", i, h);
         global_dpd_->file2_init(&B, PSIF_CC_OEI, h, 0, 1, lbl);
         amp_write_T1(&B, 5, outfile);
         global_dpd_->file2_close(&B);
-        fprintf(outfile, "\n");
+        outfile->Printf( "\n");
 
       }
     }
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
 
   }
 
-  fflush(outfile);
+  
 
   /* compute the (D) correction to each CIS singlet excitation energy */
   d_corr();
 
-  fprintf(outfile, "\n");
+  outfile->Printf( "\n");
 
   if(params.local) local_done();
 
   /* print corrected eigenvalues in ascending order */
   if(params.ref == 0) {
 
-    fprintf(outfile, "\tRHF-CIS(D) Singlet Corrections:\n");
-    fprintf(outfile, "\t-------------------------------\n");
-    fprintf(outfile, "\t  Root Irrep       Hartree          eV          cm-1  \n");
-    fprintf(outfile, "\t  ---- ----- ------------------  ---------  ----------\n");
+    outfile->Printf( "\tRHF-CIS(D) Singlet Corrections:\n");
+    outfile->Printf( "\t-------------------------------\n");
+    outfile->Printf( "\t  Root Irrep       Hartree          eV          cm-1  \n");
+    outfile->Printf( "\t  ---- ----- ------------------  ---------  ----------\n");
     for(h=0; h < moinfo.nirreps; h++) {
       for(i=0; i < params.rpi[h]; i++) {
         value = moinfo.singlet_d[h][i];
 
-        fprintf(outfile,   "CIS State %4d   %3s %18.14f  %9.5f  %10.2f\n", i, moinfo.labels[h],
+        outfile->Printf(   "CIS State %4d   %3s %18.14f  %9.5f  %10.2f\n", i, moinfo.labels[h],
             value, value*pc_hartree2ev, value*pc_hartree2wavenumbers);
       }
     }
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
 
-    fprintf(outfile, "\tRHF-CIS(D) Singlet Excitation Energies:\n");
-    fprintf(outfile, "\t---------------------------------------\n\n");
-    fprintf(outfile, "\t  Root Irrep       Hartree          eV          cm-1  \n");
-    fprintf(outfile, "\t  ---- ----- ------------------  ---------  ----------\n");
+    outfile->Printf( "\tRHF-CIS(D) Singlet Excitation Energies:\n");
+    outfile->Printf( "\t---------------------------------------\n\n");
+    outfile->Printf( "\t  Root Irrep       Hartree          eV          cm-1  \n");
+    outfile->Printf( "\t  ---- ----- ------------------  ---------  ----------\n");
     for(h=0; h < moinfo.nirreps; h++) {
       for(i=0; i < params.rpi[h]; i++) {
         value = moinfo.singlet_evals[h][i];
         value += moinfo.singlet_d[h][i];
 
-        fprintf(outfile,   "CIS State %4d   %3s %18.14f  %9.5f  %10.2f\n", i, moinfo.labels[h],
+        outfile->Printf(   "CIS State %4d   %3s %18.14f  %9.5f  %10.2f\n", i, moinfo.labels[h],
             value, value*pc_hartree2ev, value*pc_hartree2wavenumbers);
       }
     }
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
 
     if(params.local) {
-      fprintf(outfile, "\tRHF-CIS(D) Weak Pair Corrections:\n");
-      fprintf(outfile, "\t---------------------------------\n");
-      fprintf(outfile, "\t  Root Irrep       Hartree          eV          cm-1  \n");
-      fprintf(outfile, "\t  ---- ----- ------------------  ---------  ----------\n");
+      outfile->Printf( "\tRHF-CIS(D) Weak Pair Corrections:\n");
+      outfile->Printf( "\t---------------------------------\n");
+      outfile->Printf( "\t  Root Irrep       Hartree          eV          cm-1  \n");
+      outfile->Printf( "\t  ---- ----- ------------------  ---------  ----------\n");
       for(h=0; h < moinfo.nirreps; h++) {
         for(i=0; i < params.rpi[h]; i++) {
           value = moinfo.singlet_weakp[h][i];
 
-          fprintf(outfile,   "CIS State %4d   %3s %18.14f  %9.5f  %10.2f\n", i, moinfo.labels[h],
+          outfile->Printf(   "CIS State %4d   %3s %18.14f  %9.5f  %10.2f\n", i, moinfo.labels[h],
               value, value*pc_hartree2ev, value*pc_hartree2wavenumbers);
         }
       }
-      fprintf(outfile, "\n");
+      outfile->Printf( "\n");
     }
   }
 
   else if(params.ref == 2) {
 
-    fprintf(outfile, "\tUHF-CIS Excitation Energies:\n");
-    fprintf(outfile, "\t----------------------------\n\n");
-    fprintf(outfile, "\t  Root Irrep       Hartree          eV          cm-1\n");
-    fprintf(outfile, "\t  ---- ----- ------------------  ---------  -----------\n");
+    outfile->Printf( "\tUHF-CIS Excitation Energies:\n");
+    outfile->Printf( "\t----------------------------\n\n");
+    outfile->Printf( "\t  Root Irrep       Hartree          eV          cm-1\n");
+    outfile->Printf( "\t  ---- ----- ------------------  ---------  -----------\n");
     for(h=0; h < moinfo.nirreps; h++) {
       for(i=0; i < params.rpi[h]; i++) {
         value = moinfo.uhf_evals[h][i];
 
-        fprintf(outfile,   "CIS State %4d   %3s %18.14f  %9.5f  %10.2f\n", i, moinfo.labels[h],
+        outfile->Printf(   "CIS State %4d   %3s %18.14f  %9.5f  %10.2f\n", i, moinfo.labels[h],
             value, value*pc_hartree2ev, value*pc_hartree2wavenumbers);
       }
     }
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
 
-    fprintf(outfile, "\tUHF-CIS(D) Corrections:\n");
-    fprintf(outfile, "\t-----------------------\n\n");
+    outfile->Printf( "\tUHF-CIS(D) Corrections:\n");
+    outfile->Printf( "\t-----------------------\n\n");
 
-    fprintf(outfile, "\t  Root Irrep       Hartree          eV         cm-1\n");
-    fprintf(outfile, "\t  ---- ----- ------------------  ---------  ----------\n");
+    outfile->Printf( "\t  Root Irrep       Hartree          eV         cm-1\n");
+    outfile->Printf( "\t  ---- ----- ------------------  ---------  ----------\n");
     for(h=0; h < moinfo.nirreps; h++) {
       for(i=0; i < params.rpi[h]; i++) {
         value = moinfo.uhf_d[h][i];
 
-        fprintf(outfile,   "CIS State %4d   %3s %18.14f  %9.5f  %10.2f\n", i, moinfo.labels[h],
+        outfile->Printf(   "CIS State %4d   %3s %18.14f  %9.5f  %10.2f\n", i, moinfo.labels[h],
             value, value*pc_hartree2ev, value*pc_hartree2wavenumbers);
       }
     }
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
 
-    fprintf(outfile, "\tUHF-CIS(D) Excitation Energies:\n");
-    fprintf(outfile, "\t-------------------------------\n\n");
+    outfile->Printf( "\tUHF-CIS(D) Excitation Energies:\n");
+    outfile->Printf( "\t-------------------------------\n\n");
 
-    fprintf(outfile, "\t  Root Irrep       Hartree          eV         cm-1\n");
-    fprintf(outfile, "\t  ---- ----- ------------------  ---------  ----------\n");
+    outfile->Printf( "\t  Root Irrep       Hartree          eV         cm-1\n");
+    outfile->Printf( "\t  ---- ----- ------------------  ---------  ----------\n");
     for(h=0; h < moinfo.nirreps; h++) {
       for(i=0; i < params.rpi[h]; i++) {
         value = moinfo.uhf_evals[h][i];
         value += moinfo.uhf_d[h][i];
 
-        fprintf(outfile,   "CIS State %4d   %3s %18.14f  %9.5f  %10.2f\n", i, moinfo.labels[h],
+        outfile->Printf(   "CIS State %4d   %3s %18.14f  %9.5f  %10.2f\n", i, moinfo.labels[h],
             value, value*pc_hartree2ev, value*pc_hartree2wavenumbers);
       }
     }
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
 
   }
 
@@ -285,11 +285,11 @@ void init_io(int argc, char *argv[])
 
 void title(void)
 {
-  fprintf(outfile, "\t\t\t*************************\n");
-  fprintf(outfile, "\t\t\t*                       *\n");
-  fprintf(outfile, "\t\t\t*          CIS          *\n");
-  fprintf(outfile, "\t\t\t*                       *\n");
-  fprintf(outfile, "\t\t\t*************************\n");
+  outfile->Printf( "\t\t\t*************************\n");
+  outfile->Printf( "\t\t\t*                       *\n");
+  outfile->Printf( "\t\t\t*          CIS          *\n");
+  outfile->Printf( "\t\t\t*                       *\n");
+  outfile->Printf( "\t\t\t*************************\n");
 }
 
 void exit_io(void)

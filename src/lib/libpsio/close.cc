@@ -32,12 +32,12 @@
 #include <cstdlib>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
-#include <libparallel/parallel.h>
+#include "psi4-dec.h"
 
 namespace psi {
 
 void PSIO::close(unsigned int unit, int keep) {
-    WorldComm->sync();
+    //WorldComm->sync();
   unsigned int i;
   psio_ud *this_unit;
   psio_tocentry *this_entry, *next_entry;

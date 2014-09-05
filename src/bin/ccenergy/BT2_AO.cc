@@ -182,7 +182,7 @@ void BT2_AO(void)
 
                 iwl_buf_close(&InBuf, 1);
 
-                if(params.print & 2) fprintf(outfile, "     *** Processed %d SO integrals for <ab||cd> --> T2\n", counter);
+                if(params.print & 2) outfile->Printf( "     *** Processed %d SO integrals for <ab||cd> --> T2\n", counter);
 
                 for(h=0; h < nirreps; h++) {
                     global_dpd_->buf4_mat_irrep_wrt(&tau2_AO, h);
@@ -280,7 +280,7 @@ void BT2_AO(void)
 
         iwl_buf_close(&InBuf, 1);
 
-        if(params.print & 2) fprintf(outfile, "     *** Processed %d SO integrals for <AB||CD> --> T2\n", counterAA);
+        if(params.print & 2) outfile->Printf( "     *** Processed %d SO integrals for <AB||CD> --> T2\n", counterAA);
 
         for(h=0; h < nirreps; h++) {
             global_dpd_->buf4_mat_irrep_wrt(&tau2_AO, h);
@@ -354,7 +354,7 @@ void BT2_AO(void)
 
         iwl_buf_close(&InBuf, 1);
 
-        if(params.print & 2) fprintf(outfile, "     *** Processed %d SO integrals for <ab||cd> --> T2\n", counterBB);
+        if(params.print & 2) outfile->Printf( "     *** Processed %d SO integrals for <ab||cd> --> T2\n", counterBB);
 
         for(h=0; h < nirreps; h++) {
             global_dpd_->buf4_mat_irrep_wrt(&tau2_AO, h);
@@ -429,7 +429,7 @@ void BT2_AO(void)
 
         iwl_buf_close(&InBuf, 1);
 
-        if(params.print & 2) fprintf(outfile, "     *** Processed %d SO integrals for <Ab|Cd> --> T2\n", counterAB);
+        if(params.print & 2) outfile->Printf( "     *** Processed %d SO integrals for <Ab|Cd> --> T2\n", counterAB);
 
         for(h=0; h < nirreps; h++) {
             global_dpd_->buf4_mat_irrep_wrt(&tau2_AO, h);
@@ -505,7 +505,7 @@ void BT2_AO(void)
 
         iwl_buf_close(&InBuf, 1);
 
-        if(params.print & 2) fprintf(outfile, "     *** Processed %d SO integrals for <AB||CD> --> T2\n", counterAA);
+        if(params.print & 2) outfile->Printf( "     *** Processed %d SO integrals for <AB||CD> --> T2\n", counterAA);
 
         for(h=0; h < nirreps; h++) {
             global_dpd_->buf4_mat_irrep_wrt(&tau2_AO, h);
@@ -579,7 +579,7 @@ void BT2_AO(void)
 
         iwl_buf_close(&InBuf, 1);
 
-        if(params.print & 2) fprintf(outfile, "     *** Processed %d SO integrals for <ab||cd> --> T2\n", counterBB);
+        if(params.print & 2) outfile->Printf( "     *** Processed %d SO integrals for <ab||cd> --> T2\n", counterBB);
 
         for(h=0; h < nirreps; h++) {
             global_dpd_->buf4_mat_irrep_wrt(&tau2_AO, h);
@@ -654,7 +654,7 @@ void BT2_AO(void)
 
         iwl_buf_close(&InBuf, 1);
 
-        if(params.print & 2) fprintf(outfile, "     *** Processed %d SO integrals for <Ab|Cd> --> T2\n", counterAB);
+        if(params.print & 2) outfile->Printf( "     *** Processed %d SO integrals for <Ab|Cd> --> T2\n", counterAB);
 
         for(h=0; h < nirreps; h++) {
             global_dpd_->buf4_mat_irrep_wrt(&tau2_AO, h);

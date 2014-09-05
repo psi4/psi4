@@ -28,7 +28,7 @@
 #include <cstdlib>
 #include <cstring>
 #include "dpd.h"
-
+#include "libparallel/ParallelPrinter.h"
 namespace psi {
 
 void DPD::file2_cache_init(void)
@@ -152,7 +152,7 @@ int DPD::file2_cache_add(dpdfile2 *File)
     }
 
     /* The Buffer appears in the cache, but incore is not set */
-    dpd_error("File2 cache add error!", stderr);
+    dpd_error("File2 cache add error!", "outfile");
 
     return 0;
 }
@@ -163,14 +163,14 @@ int DPD::file2_cache_del(dpdfile2 *File)
     dpd_file2_cache_entry *this_entry, *next_entry, *last_entry;
 
     /* The input buffer isn't in the cache! */
-    if(!File->incore) dpd_error("File2 cache delete error!", stderr);
+    if(!File->incore) dpd_error("File2 cache delete error!", "outfile");
 
     this_entry = file2_cache_scan(File->filenum, File->my_irrep,
                                   File->params->pnum, File->params->qnum,
                                   File->label, File->dpdnum);
 
 
-    if(this_entry == NULL) dpd_error("File2 cache delete error!", stderr);
+    if(this_entry == NULL) dpd_error("File2 cache delete error!", "outfile");
     else {
         File->incore = 0;
 
@@ -200,20 +200,22 @@ int DPD::file2_cache_del(dpdfile2 *File)
     return 0;
 }
 
-void DPD::file2_cache_print(FILE *outfile)
+void DPD::file2_cache_print(std::string out)
 {
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            boost::shared_ptr<OutFile>(new OutFile(out)));
     int total_size=0;
     dpd_file2_cache_entry *this_entry;
 
     this_entry = dpd_main.file2_cache;
 
-    fprintf(outfile, "\n\tDPD File2 Cache Listing:\n\n");
-    fprintf(outfile,
+    printer->Printf( "\n\tDPD File2 Cache Listing:\n\n");
+    printer->Printf(
             "Cache Label                     File symm  p  q  size(kB)\n");
-    fprintf(outfile,
+    printer->Printf(
             "---------------------------------------------------------\n");
     while(this_entry != NULL) {
-        fprintf(outfile,
+        printer->Printf(
                 "%-32s %3d    %1d  %1d  %1d  %8.1f\n",
                 this_entry->label, this_entry->filenum, this_entry->irrep,
                 this_entry->pnum, this_entry->qnum,
@@ -221,9 +223,9 @@ void DPD::file2_cache_print(FILE *outfile)
         total_size += this_entry->size;
         this_entry = this_entry->next;
     }
-    fprintf(outfile,
+    printer->Printf(
             "---------------------------------------------------------\n");
-    fprintf(outfile, "Total cached: %8.1f kB\n", total_size*sizeof(double)/1e3);
+    printer->Printf( "Total cached: %8.1f kB\n", total_size*sizeof(double)/1e3);
 }
 
 void DPD::file2_cache_dirty(dpdfile2 *File)
@@ -237,7 +239,7 @@ void DPD::file2_cache_dirty(dpdfile2 *File)
     if((this_entry == NULL && File->incore) ||
             (this_entry != NULL && !File->incore) ||
             (this_entry == NULL && !File->incore))
-        dpd_error("Error setting file4_cache dirty flag!", stderr);
+        dpd_error("Error setting file4_cache dirty flag!", "outfile");
     else {
         this_entry->clean = 0;
     }

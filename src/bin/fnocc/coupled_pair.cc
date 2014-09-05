@@ -91,46 +91,46 @@ CoupledPair::~CoupledPair()
 }
 
 void CoupledPair::WriteBanner(){
-  fflush(outfile);
-  fprintf(outfile,"\n\n");
-  fprintf(outfile, "        *******************************************************\n");
-  fprintf(outfile, "        *                                                     *\n");
+  
+  outfile->Printf("\n\n");
+  outfile->Printf( "        *******************************************************\n");
+  outfile->Printf( "        *                                                     *\n");
   if (options_.get_str("CEPA_LEVEL")=="CEPA(0)"){
-     fprintf(outfile, "        *                       CEPA(0)                       *\n");
-     fprintf(outfile, "        *        Coupled Electron Pair Approximation          *\n");
+     outfile->Printf( "        *                       CEPA(0)                       *\n");
+     outfile->Printf( "        *        Coupled Electron Pair Approximation          *\n");
   }
   else if (options_.get_str("CEPA_LEVEL")=="CEPA(1)"){
-     fprintf(outfile, "        *                       CEPA(1)                       *\n");
-     fprintf(outfile, "        *        Coupled Electron Pair Approximation          *\n");
+     outfile->Printf( "        *                       CEPA(1)                       *\n");
+     outfile->Printf( "        *        Coupled Electron Pair Approximation          *\n");
   }
   else if (options_.get_str("CEPA_LEVEL")=="CEPA(2)"){
-     fprintf(outfile, "        *                       CEPA(2)                       *\n");
-     fprintf(outfile, "        *        Coupled Electron Pair Approximation          *\n");
+     outfile->Printf( "        *                       CEPA(2)                       *\n");
+     outfile->Printf( "        *        Coupled Electron Pair Approximation          *\n");
   }
   if (options_.get_str("CEPA_LEVEL")=="CEPA(3)"){
-     fprintf(outfile, "        *                       CEPA(3)                       *\n");
-     fprintf(outfile, "        *        Coupled Electron Pair Approximation          *\n");
+     outfile->Printf( "        *                       CEPA(3)                       *\n");
+     outfile->Printf( "        *        Coupled Electron Pair Approximation          *\n");
   }
   else if (options_.get_str("CEPA_LEVEL")=="ACPF"){
-     fprintf(outfile, "        *                        ACPF                         *\n");
-     fprintf(outfile, "        *          Averaged Coupled Pair Functional           *\n");
+     outfile->Printf( "        *                        ACPF                         *\n");
+     outfile->Printf( "        *          Averaged Coupled Pair Functional           *\n");
   }
   else if (options_.get_str("CEPA_LEVEL")=="AQCC"){
-     fprintf(outfile, "        *                        AQCC                         *\n");
-     fprintf(outfile, "        *         Averaged Quadratic Coupled Cluster          *\n");
+     outfile->Printf( "        *                        AQCC                         *\n");
+     outfile->Printf( "        *         Averaged Quadratic Coupled Cluster          *\n");
   }
   else if (options_.get_str("CEPA_LEVEL")=="CISD"){
-     fprintf(outfile, "        *                        CISD                         *\n");
-     fprintf(outfile, "        *      Singles Doubles Configuration Interaction      *\n");
+     outfile->Printf( "        *                        CISD                         *\n");
+     outfile->Printf( "        *      Singles Doubles Configuration Interaction      *\n");
   }
 
 
-  fprintf(outfile, "        *                                                     *\n");
-  fprintf(outfile, "        *                   Eugene DePrince                   *\n");
-  fprintf(outfile, "        *                                                     *\n");
-  fprintf(outfile, "        *******************************************************\n");
-  fprintf(outfile,"\n\n");
-  fflush(outfile);
+  outfile->Printf( "        *                                                     *\n");
+  outfile->Printf( "        *                   Eugene DePrince                   *\n");
+  outfile->Printf( "        *                                                     *\n");
+  outfile->Printf( "        *******************************************************\n");
+  outfile->Printf("\n\n");
+  
   WriteOptions();
 }
 
@@ -205,10 +205,10 @@ double CoupledPair::compute_energy() {
   // build opdm in case we want properties.  don't build if cim.
   if ( cepa_level<=0 && !reference_wavefunction_->isCIM() ) {
       if (options_.get_bool("NAT_ORBS")) {
-          //fprintf(outfile,"\n");
-          //fprintf(outfile,"\n");
-          //fprintf(outfile,"       <<< Warning >>>  %s OPDM will have no correction for FNO truncation.\n",cepa_type);
-          //fprintf(outfile,"\n");
+          //outfile->Printf("\n");
+          //outfile->Printf("\n");
+          //outfile->Printf("       <<< Warning >>>  %s OPDM will have no correction for FNO truncation.\n",cepa_type);
+          //outfile->Printf("\n");
       } else {
           OPDM();
       }
@@ -238,12 +238,12 @@ PsiReturnType CoupledPair::CEPAIterations(){
   double Eold           = 1.0e9;
   eccsd                 = 0.0;
 
-  fprintf(outfile,"\n");
-  fprintf(outfile,
+  outfile->Printf("\n");
+  outfile->Printf(
     "  Begin %s iterations\n\n",cepa_type);
-  fprintf(outfile,
+  outfile->Printf(
     "   Iter  DIIS          Energy       d(Energy)          |d(T)|     time\n");
-  fflush(outfile);
+  
 
   boost::shared_ptr<PSIO> psio(new PSIO());
   psio_address addr;
@@ -337,9 +337,9 @@ PsiReturnType CoupledPair::CEPAIterations(){
       time_t iter_stop = time(NULL);
       double dume = ( cepa_level < 1 ) ? evar : eccsd ;
       if ( iter==0 ) dume = eccsd; // use mp2 energy on first iteration
-      fprintf(outfile,"  %5i   %i %i %15.10f %15.10f %15.10f %8d\n",
+      outfile->Printf("  %5i   %i %i %15.10f %15.10f %15.10f %8d\n",
             iter,diis_iter-1,replace_diis_iter,dume,dume-Eold,nrm,(int)iter_stop-(int)iter_start);
-      fflush(outfile);
+      
       iter++;
       if (iter==1) emp2 = eccsd;
       if (iter==1) SCS_MP2();
@@ -365,14 +365,14 @@ PsiReturnType CoupledPair::CEPAIterations(){
      SCS_CEPA();
   }
 
-  fprintf(outfile,"\n");
-  fprintf(outfile,"  %s iterations converged!\n",cepa_type);
-  fprintf(outfile,"\n");
+  outfile->Printf("\n");
+  outfile->Printf("  %s iterations converged!\n",cepa_type);
+  outfile->Printf("\n");
 
   if (cepa_level < 1) {
-      fprintf(outfile,"  %s variational energy: %20.12lf\n",cepa_type,evar);
-      fprintf(outfile,"  %s transition energy:  %20.12lf\n",cepa_type,eccsd);
-      fprintf(outfile,"\n");
+      outfile->Printf("  %s variational energy: %20.12lf\n",cepa_type,evar);
+      outfile->Printf("  %s transition energy:  %20.12lf\n",cepa_type,eccsd);
+      outfile->Printf("\n");
       eccsd = evar;
   }
 
@@ -390,56 +390,56 @@ PsiReturnType CoupledPair::CEPAIterations(){
       eccsd_os += delta_emp2_os;
       eccsd_ss += delta_emp2_ss;
 
-      fprintf(outfile,"        OS MP2 FNO correction:             %20.12lf\n",delta_emp2_os);
-      fprintf(outfile,"        SS MP2 FNO correction:             %20.12lf\n",delta_emp2_ss);
-      fprintf(outfile,"        MP2 FNO correction:                %20.12lf\n",delta_emp2);
-      fprintf(outfile,"\n");
+      outfile->Printf("        OS MP2 FNO correction:             %20.12lf\n",delta_emp2_os);
+      outfile->Printf("        SS MP2 FNO correction:             %20.12lf\n",delta_emp2_ss);
+      outfile->Printf("        MP2 FNO correction:                %20.12lf\n",delta_emp2);
+      outfile->Printf("\n");
   }
 
-  fprintf(outfile,"        OS SCS-MP2 correlation energy:     %20.12lf\n",emp2_os*emp2_os_fac);
-  fprintf(outfile,"        SS SCS-MP2 correlation energy:     %20.12lf\n",emp2_ss*emp2_ss_fac);
-  fprintf(outfile,"        SCS-MP2 correlation energy:        %20.12lf\n",emp2_os*emp2_os_fac+emp2_ss*emp2_ss_fac);
-  fprintf(outfile,"      * SCS-MP2 total energy:              %20.12lf\n",emp2_os*emp2_os_fac+emp2_ss*emp2_ss_fac+escf);
-  fprintf(outfile,"\n");
-  fprintf(outfile,"        OS MP2 correlation energy:         %20.12lf\n",emp2_os);
-  fprintf(outfile,"        SS MP2 correlation energy:         %20.12lf\n",emp2_ss);
-  fprintf(outfile,"        MP2 correlation energy:            %20.12lf\n",emp2);
-  fprintf(outfile,"      * MP2 total energy:                  %20.12lf\n",emp2+escf);
-  fprintf(outfile,"\n");
+  outfile->Printf("        OS SCS-MP2 correlation energy:     %20.12lf\n",emp2_os*emp2_os_fac);
+  outfile->Printf("        SS SCS-MP2 correlation energy:     %20.12lf\n",emp2_ss*emp2_ss_fac);
+  outfile->Printf("        SCS-MP2 correlation energy:        %20.12lf\n",emp2_os*emp2_os_fac+emp2_ss*emp2_ss_fac);
+  outfile->Printf("      * SCS-MP2 total energy:              %20.12lf\n",emp2_os*emp2_os_fac+emp2_ss*emp2_ss_fac+escf);
+  outfile->Printf("\n");
+  outfile->Printf("        OS MP2 correlation energy:         %20.12lf\n",emp2_os);
+  outfile->Printf("        SS MP2 correlation energy:         %20.12lf\n",emp2_ss);
+  outfile->Printf("        MP2 correlation energy:            %20.12lf\n",emp2);
+  outfile->Printf("      * MP2 total energy:                  %20.12lf\n",emp2+escf);
+  outfile->Printf("\n");
   if (cepa_level>=0){
      if (options_.get_bool("SCS_CEPA")){
-        fprintf(outfile,"        OS SCS-%s correlation energy: %20.12lf\n",cepa_type,eccsd_os*eccsd_os_fac);
-        fprintf(outfile,"        SS SCS-%s correlation energy: %20.12lf\n",cepa_type,eccsd_ss*eccsd_ss_fac);
-        fprintf(outfile,"        SCS-%s correlation energy:    %20.12lf\n",cepa_type,eccsd_os*eccsd_os_fac+eccsd_ss*eccsd_ss_fac);
-        fprintf(outfile,"      * SCS-%s total energy:          %20.12lf\n",cepa_type,eccsd_os*eccsd_os_fac+eccsd_ss*eccsd_ss_fac+escf);
-        fprintf(outfile,"\n");
+        outfile->Printf("        OS SCS-%s correlation energy: %20.12lf\n",cepa_type,eccsd_os*eccsd_os_fac);
+        outfile->Printf("        SS SCS-%s correlation energy: %20.12lf\n",cepa_type,eccsd_ss*eccsd_ss_fac);
+        outfile->Printf("        SCS-%s correlation energy:    %20.12lf\n",cepa_type,eccsd_os*eccsd_os_fac+eccsd_ss*eccsd_ss_fac);
+        outfile->Printf("      * SCS-%s total energy:          %20.12lf\n",cepa_type,eccsd_os*eccsd_os_fac+eccsd_ss*eccsd_ss_fac+escf);
+        outfile->Printf("\n");
      }
-     fprintf(outfile,"        OS %s correlation energy:     %20.12lf\n",cepa_type,eccsd_os);
-     fprintf(outfile,"        SS %s correlation energy:     %20.12lf\n",cepa_type,eccsd_ss);
-     fprintf(outfile,"        %s correlation energy:        %20.12lf\n",cepa_type,eccsd);
-     fprintf(outfile,"      * %s total energy:              %20.12lf\n",cepa_type,eccsd+escf);
+     outfile->Printf("        OS %s correlation energy:     %20.12lf\n",cepa_type,eccsd_os);
+     outfile->Printf("        SS %s correlation energy:     %20.12lf\n",cepa_type,eccsd_ss);
+     outfile->Printf("        %s correlation energy:        %20.12lf\n",cepa_type,eccsd);
+     outfile->Printf("      * %s total energy:              %20.12lf\n",cepa_type,eccsd+escf);
   }else{
      if (options_.get_bool("SCS_CEPA")){
-        fprintf(outfile,"        OS SCS-%s correlation energy:    %20.12lf\n",cepa_type,eccsd_os*eccsd_os_fac);
-        fprintf(outfile,"        SS SCS-%s correlation energy:    %20.12lf\n",cepa_type,eccsd_ss*eccsd_ss_fac);
-        fprintf(outfile,"        SCS-%s correlation energy:       %20.12lf\n",cepa_type,eccsd_os*eccsd_os_fac+eccsd_ss*eccsd_ss_fac);
-        fprintf(outfile,"      * SCS-%s total energy:             %20.12lf\n",cepa_type,eccsd_os*eccsd_os_fac+eccsd_ss*eccsd_ss_fac+escf);
-        fprintf(outfile,"\n");
+        outfile->Printf("        OS SCS-%s correlation energy:    %20.12lf\n",cepa_type,eccsd_os*eccsd_os_fac);
+        outfile->Printf("        SS SCS-%s correlation energy:    %20.12lf\n",cepa_type,eccsd_ss*eccsd_ss_fac);
+        outfile->Printf("        SCS-%s correlation energy:       %20.12lf\n",cepa_type,eccsd_os*eccsd_os_fac+eccsd_ss*eccsd_ss_fac);
+        outfile->Printf("      * SCS-%s total energy:             %20.12lf\n",cepa_type,eccsd_os*eccsd_os_fac+eccsd_ss*eccsd_ss_fac+escf);
+        outfile->Printf("\n");
      }
-     fprintf(outfile,"        OS %s correlation energy:        %20.12lf\n",cepa_type,eccsd_os);
-     fprintf(outfile,"        SS %s correlation energy:        %20.12lf\n",cepa_type,eccsd_ss);
-     fprintf(outfile,"        %s correlation energy:           %20.12lf\n",cepa_type,eccsd);
-     fprintf(outfile,"      * %s total energy:                 %20.12lf\n",cepa_type,eccsd+escf);
+     outfile->Printf("        OS %s correlation energy:        %20.12lf\n",cepa_type,eccsd_os);
+     outfile->Printf("        SS %s correlation energy:        %20.12lf\n",cepa_type,eccsd_ss);
+     outfile->Printf("        %s correlation energy:           %20.12lf\n",cepa_type,eccsd);
+     outfile->Printf("      * %s total energy:                 %20.12lf\n",cepa_type,eccsd+escf);
   }
-  fprintf(outfile,"\n");
-  fprintf(outfile,"  Total time for %s iterations: %10.2lf s (user)\n",cepa_type,user_stop-user_start);
-  fprintf(outfile,"                                  %10.2lf s (system)\n",sys_stop-sys_start);
-  fprintf(outfile,"                                  %10d s (total)\n",(int)time_stop-(int)time_start);
-  fprintf(outfile,"\n");
-  fprintf(outfile,"  Time per iteration:             %10.2lf s (user)\n",(user_stop-user_start)/(iter-1));
-  fprintf(outfile,"                                  %10.2lf s (system)\n",(sys_stop-sys_start)/(iter-1));
-  fprintf(outfile,"                                  %10.2lf s (total)\n",((double)time_stop-(double)time_start)/(iter-1));
-  fflush(outfile);
+  outfile->Printf("\n");
+  outfile->Printf("  Total time for %s iterations: %10.2lf s (user)\n",cepa_type,user_stop-user_start);
+  outfile->Printf("                                  %10.2lf s (system)\n",sys_stop-sys_start);
+  outfile->Printf("                                  %10d s (total)\n",(int)time_stop-(int)time_start);
+  outfile->Printf("\n");
+  outfile->Printf("  Time per iteration:             %10.2lf s (user)\n",(user_stop-user_start)/(iter-1));
+  outfile->Printf("                                  %10.2lf s (system)\n",(sys_stop-sys_start)/(iter-1));
+  outfile->Printf("                                  %10.2lf s (total)\n",((double)time_stop-(double)time_start)/(iter-1));
+  
 
   free(pair_energy);
   return Success;

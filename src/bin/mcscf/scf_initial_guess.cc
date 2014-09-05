@@ -58,7 +58,7 @@ void SCF::initial_guess()
         free(block);
       }
     }
-    fprintf(outfile,"\n  Reading MOs from the checkpoint file.");
+    outfile->Printf("\n  Reading MOs from the checkpoint file.");
   }else{
     SBlockMatrix H_t("H_t",nirreps,sopi,sopi);
     SBlockVector eigenvectors("H_t",nirreps,sopi);

@@ -59,7 +59,7 @@ void OCCWave::v_int()
     if (print_ > 3) {
       global_dpd_->buf4_init(&V, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
                   ID("[O,O]"), ID("[O,O]"), 0, "V <OO|OO>");
-      global_dpd_->buf4_print(&V, outfile, 1);
+      global_dpd_->buf4_print(&V, "outfile", 1);
       global_dpd_->buf4_close(&V);
     }
 
@@ -162,17 +162,17 @@ void OCCWave::v_int()
     if (print_ > 3) {
       global_dpd_->buf4_init(&V, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
                   ID("[O,O]"), ID("[O,O]"), 0, "V <OO|OO>");
-      global_dpd_->buf4_print(&V, outfile, 1);
+      global_dpd_->buf4_print(&V, "outfile", 1);
       global_dpd_->buf4_close(&V);
     
       global_dpd_->buf4_init(&V, PSIF_OCC_DENSITY, 0, ID("[o,o]"), ID("[o,o]"),
                   ID("[o,o]"), ID("[o,o]"), 0, "V <oo|oo>");
-      global_dpd_->buf4_print(&V, outfile, 1);
+      global_dpd_->buf4_print(&V, "outfile", 1);
       global_dpd_->buf4_close(&V);
     
       global_dpd_->buf4_init(&V, PSIF_OCC_DENSITY, 0, ID("[O,o]"), ID("[O,o]"),
                   ID("[O,o]"), ID("[O,o]"), 0, "V <Oo|Oo>");
-      global_dpd_->buf4_print(&V, outfile, 1);
+      global_dpd_->buf4_print(&V, "outfile", 1);
       global_dpd_->buf4_close(&V); 
     }
     

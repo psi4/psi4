@@ -137,7 +137,7 @@ void rhf_sort_W(void)
   }
 
   /*
-  fprintf(outfile,"\n\tEnergy Weighted OPDM:\n");
+  outfile->Printf("\n\tEnergy Weighted OPDM:\n");
   print_mat(O,nmo,nmo,outfile);
   */
 

@@ -48,7 +48,7 @@
 namespace psi{ namespace mp2{
 // BJM removing the following four lines
 //extern "C" {
-//  EXTERN FILE *infile, *outfile;
+//  EXTERN std::string OutFileRMR;
 //  EXTERN char *psi_file_prefix;
 //}
 EXTERN struct moinfo mo;

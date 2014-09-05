@@ -34,7 +34,7 @@ void SCF::canonicalize_MO()
     bool canonicalize_active_favg   = options_.get_bool("CANONICALIZE_ACTIVE_FAVG"); 
     bool canonicalize_inactive_favg = options_.get_bool("CANONICALIZE_INACTIVE_FAVG");
     if(canonicalize_active_favg || canonicalize_inactive_favg){
-      fprintf(outfile,"\n\n  Forming Favg for final canonicalization");
+      outfile->Printf("\n\n  Forming Favg for final canonicalization");
       construct_Favg();
       transform(Favg,Favg_t,C);
       
@@ -86,16 +86,16 @@ void SCF::canonicalize_MO()
     }
   }
   
-  fprintf(outfile,"\n\n  Orbitals are canonicalized as:");
+  outfile->Printf("\n\n  Orbitals are canonicalized as:");
   if(options_.get_bool("FAVG") || options_.get_bool("CANONICALIZE_INACTIVE_FAVG"))
-    fprintf(outfile,"\n  inactive (docc + uocc) : Fock(avg)");
+    outfile->Printf("\n  inactive (docc + uocc) : Fock(avg)");
   else
-    fprintf(outfile,"\n  inactive (docc + uocc) : Fock(core)");
+    outfile->Printf("\n  inactive (docc + uocc) : Fock(core)");
   
   if(options_.get_bool("CANONICALIZE_ACTIVE_FAVG"))
-    fprintf(outfile,"\n  active   (actv)        : Fock(avg)");
+    outfile->Printf("\n  active   (actv)        : Fock(avg)");
   else
-    fprintf(outfile,"\n  active   (actv)        : Fock(core)");
+    outfile->Printf("\n  active   (actv)        : Fock(core)");
   
 }
 
