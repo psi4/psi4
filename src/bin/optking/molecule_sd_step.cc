@@ -58,12 +58,13 @@ void MOLECULE::sd_step(void) {
 
   double *last_fq = p_Opt_data->g_last_forces_pointer();
   double h = 1;
-  bool use_cartesians = false;
+  // now obseleted by addition of cartesian coordinate type
+  //bool use_cartesians = true;
 
-  if (use_cartesians) {
-    sd_step_cartesians();
-    return;
-  }
+  //if (use_cartesians) {
+    //sd_step_cartesians();
+    //return;
+  //}
 
   if (last_fq != NULL) {
     // compute overlap of previous forces with current forces

@@ -362,6 +362,18 @@ void MOLECULE::print_geom(void) {
     fragments[i]->print_geom(outfile);
 }
 
+// This function is only used for an optional trajectory file.
+// The awkward itershift is to decrement in the initial geometry to "iteration 0"
+void MOLECULE::print_xyz(int iter_shift) {
+  FILE *fxyz = fopen("geoms.xyz", "a");
+  fprintf(fxyz,"%d\n", g_natom());
+  fprintf(fxyz,"Geometry for iteration %d\n", p_Opt_data->g_iteration()+iter_shift);
+  for (int i=0; i<fragments.size(); ++i)
+    fragments[i]->print_geom(fxyz);
+  fclose(fxyz);
+  return;
+}
+
 void MOLECULE::apply_intrafragment_step_limit(double * & dq) {
   int i, f;
   int dim = g_nintco();
