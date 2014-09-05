@@ -1143,12 +1143,17 @@ void HF::guess()
     }
 
     if (guess_type == "READ") {
-
-
-            outfile->Printf( "  SCF Guess: Projection.\n\n");
-
-        load_orbitals(); // won't save the energy from here
-        form_D();
+        if (do_use_fock_guess()) {
+            outfile->Printf( "  SCF Guess: Guess MOs from previously saved Fock matrix.\n\n");
+            load_fock(); // won't save the energy from here
+            form_C();
+            form_D();
+        }
+        else {
+            outfile->Printf( "  SCF Guess: Reading in previously saved MOs, projecting if necessary.\n\n");
+            load_orbitals(); // won't save the energy from here
+            form_D();
+        }
 
     } else if (guess_type == "SAD") {
 
@@ -1224,9 +1229,11 @@ void HF::save_orbitals()
 
     char *basisname = strdup(options_.get_str("BASIS").c_str());
     int basislength = strlen(options_.get_str("BASIS").c_str()) + 1;
+    int nbf = basisset_->nbf();
 
     psio_->write_entry(PSIF_SCF_MOS,"BASIS NAME LENGTH",(char *)(&basislength),sizeof(int));
     psio_->write_entry(PSIF_SCF_MOS,"BASIS NAME",basisname,basislength*sizeof(char));
+    psio_->write_entry(PSIF_SCF_MOS,"NUMBER OF BASIS FUNCTIONS",(char *)(&nbf),sizeof(int));
 
     // upon loading, need to know what value of puream was used
     int old_puream = (basisset_->has_puream() ? 1 : 0);
@@ -1245,9 +1252,60 @@ void HF::save_orbitals()
             for (int i = 0; i<nbetapi_[h]; i++)
                 Ctemp_b->set(h,m,i,Cb_->get(h,m,i));
     Ctemp_b->save(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
+    // Write Fock matrix to file 280 after removing symmetry
+    MintsHelper helper(options_, 0);
+    SharedMatrix sotoao = helper.petite_list()->sotoao();
+    SharedMatrix Fa(new Matrix(nbf,nbf));
+    SharedMatrix Fb(new Matrix(nbf,nbf));
+    Fa->remove_symmetry(Fa_,sotoao);
+    Fb->remove_symmetry(Fb_,sotoao);
+    Fa->set_name("ALPHA FOCK C1");
+    Fb->set_name("BETA FOCK C1");
+    Fa->save(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
+    Fb->save(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
 
     psio_->close(PSIF_SCF_MOS,1);
     free(basisname);
+}
+
+bool HF::do_use_fock_guess() // only use this approach when symmetry changes are causing issues
+{
+  psio_->open(PSIF_SCF_MOS,PSIO_OPEN_OLD);
+  // Compare current basis with old basis to see if fock guess will work
+  bool is_same_basis = false;
+  int nbf = basisset_->nbf(), basislength, old_nbf;
+  psio_->read_entry(PSIF_SCF_MOS,"BASIS NAME LENGTH",(char *)(&basislength),sizeof(int));
+  char *basisnamec = new char[basislength];
+  psio_->read_entry(PSIF_SCF_MOS,"BASIS NAME",basisnamec,basislength*sizeof(char));
+  psio_->read_entry(PSIF_SCF_MOS,"NUMBER OF BASIS FUNCTIONS",(char *)(&old_nbf),sizeof(int));
+  std::string old_basisname(basisnamec); delete[] basisnamec;
+  is_same_basis = (options_.get_str("BASIS") == old_basisname && nbf == old_nbf);
+  // Compare number of irreps with old number to see if fock guess is necessary
+  bool is_different_symmetry = false;
+  int old_nirrep;
+  psio_->read_entry(PSIF_SCF_MOS,"NIRREP",(char *) &(old_nirrep),sizeof(int));
+  is_different_symmetry = (nirrep_ != old_nirrep);
+  psio_->close(PSIF_SCF_MOS,1);
+
+  // Final comparison: Use a Fock guess if you are using the same basis as before and
+  //                   the symmetry has changed
+  return (is_same_basis && is_different_symmetry);
+}
+
+void HF::load_fock()
+{
+  int nbf = basisset_->nbf();
+  psio_->open(PSIF_SCF_MOS,PSIO_OPEN_OLD);
+  // Read Fock matrix from file 280, applying current symmetry
+  MintsHelper helper(options_, 0);
+  SharedMatrix aotoso = helper.petite_list()->aotoso();
+  SharedMatrix Fa(new Matrix("ALPHA FOCK C1",nbf,nbf));
+  SharedMatrix Fb(new Matrix("BETA FOCK C1",nbf,nbf));
+  Fa->load(psio_,PSIF_SCF_MOS,Matrix::SubBlocks);
+  Fb->load(psio_,PSIF_SCF_MOS,Matrix::SubBlocks);
+  Fa_->apply_symmetry(Fa,aotoso);
+  Fb_->apply_symmetry(Fb,aotoso);
+  psio_->close(PSIF_SCF_MOS,1);
 }
 
 void HF::load_orbitals()
