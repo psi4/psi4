@@ -2364,8 +2364,10 @@ def run_mrcc(name, **kwargs):
     psi4.print_out(open('fort.56', 'r').read())
     psi4.print_out('===== End   fort.56 input for MRCC ======\n')
 
-    # Close output file
+    # Close psi4 output file and reopen with filehandle
     psi4.close_outfile()
+    pathfill = '' if os.path.isabs(psi4.outfile_name()) else current_directory + os.path.sep
+    p4out = open(pathfill + psi4.outfile_name(), 'a')
 
     # Modify the environment:
     #    PGI Fortan prints warning to screen if STOP is used
@@ -2381,22 +2383,42 @@ def run_mrcc(name, **kwargs):
         os.environ['OMP_NUM_THREADS'] = str(psi4.get_option('MRCC', 'MRCC_OMP_NUM_THREADS'))
 
     # Call dmrcc, directing all screen output to the output file
+    external_exe = 'dmrcc'
     try:
-        if psi4.outfile_name() == 'stdout':
-            retcode = subprocess.call('dmrcc', shell=True, env=lenv)
-        else:
-            retcode = subprocess.call('dmrcc >> ' + current_directory + '/' + psi4.outfile_name(), shell=True, env=lenv)
-
-        if retcode < 0:
-            print('MRCC was terminated by signal %d' % -retcode, file=sys.stderr)
-            exit(1)
-        elif retcode > 0:
-            print('MRCC errored %d' % retcode, file=sys.stderr)
-            exit(1)
-
+        retcode = subprocess.Popen([external_exe], bufsize=0, stdout=subprocess.PIPE, env=lenv)
     except OSError as e:
-        print('Execution failed: %s' % e, file=sys.stderr)
-        exit(1)
+        sys.stderr.write('Program %s not found in path or execution failed: %s\n' % (cfour_executable, e.strerror))
+        p4out.write('Program %s not found in path or execution failed: %s\n' % (external_exe, e.strerror))
+        sys.exit(1)
+
+    c4out = ''
+    while True:
+        data = retcode.stdout.readline()
+        if not data:
+            break
+        if psi4.outfile_name() == 'stdout':
+            sys.stdout.write(data)
+        else:
+            p4out.write(data)
+            p4out.flush()
+        c4out += data
+
+#    try:
+#        if psi4.outfile_name() == 'stdout':
+#            retcode = subprocess.call('dmrcc', shell=True, env=lenv)
+#        else:
+#            retcode = subprocess.call('dmrcc >> ' + current_directory + '/' + psi4.outfile_name(), shell=True, env=lenv)
+#
+#        if retcode < 0:
+#            print('MRCC was terminated by signal %d' % -retcode, file=sys.stderr)
+#            exit(1)
+#        elif retcode > 0:
+#            print('MRCC errored %d' % retcode, file=sys.stderr)
+#            exit(1)
+#
+#    except OSError as e:
+#        print('Execution failed: %s' % e, file=sys.stderr)
+#        exit(1)
 
     # Restore the OMP_NUM_THREADS that the user set.
     if omp_num_threads_found == True:
@@ -2435,10 +2457,9 @@ def run_mrcc(name, **kwargs):
         print('Unable to remove MRCC temporary directory %s' % e, file=sys.stderr)
         exit(1)
 
-    # Revert to previous current directory location
+    # Return to submission directory and reopen output file
     os.chdir(current_directory)
-
-    # Reopen output file
+    p4out.close()
     psi4.reopen_outfile()
 
     # If we're told to keep the files or the user provided a path, do nothing.

@@ -53,8 +53,6 @@ set(MintsShort mints1 mints2)
 set(MintsLong mints3 mints4 mints5 mints6 mints8)
 set(MP2Short mp2_5-grad1 mpn-bh)
 set(MP2Long mp2-1 mp2_5-grad2 mp2-grad1 mp2-grad2 mp3-grad1 mp3-grad2)
-#No MRCCShort
-set(MRCCLong mrcc1 mrcc2 mrcc3 mrcc4)
 
 set(OCEPAShort ocepa1 ocepa-grad2)
 set(OCEPALong ocepa2 ocepa3 ocepa-freq1 ocepa-grad1)
@@ -101,7 +99,7 @@ ${TutorialShort} ${MISCShort}
 #And these are the rest of the tests
 set(LongerTests ${ADCLong} ${CastUpLong} ${CCLong} ${CEPALong} ${CISDLong}
 ${DCFTLong} ${DFLong} ${DFTLong} ${DocsLong} ${FCILong} ${FDLong} ${FNOCCLong}
-${MCSCFLong} ${MintsLong} ${MP2Long} ${MRCCLong} ${OCEPALong} ${OMPLong}
+${MCSCFLong} ${MintsLong} ${MP2Long} ${OCEPALong} ${OMPLong}
 ${OPTLong} ${PropsLong} ${PSIMRCCLong} ${PYWrapLong} ${RASCILong} ${SAPTLong}
 ${SCFLong} ${TutorialLong} ${MISCLong})
 
@@ -126,7 +124,22 @@ find_program (DFTD3_EXECUTABLE
 if(DFTD3_EXECUTABLE)
     list(APPEND QuickTests ${DFTD3Short})
     list(APPEND LongerTests ${DFTD3Long})
-    message("-- dftd3 interfaced executable found. Test cases added.")
+    message("-- dftd3 executable for interfaced DFTD3 found. Test cases added.")
+endif()
+
+# <<<  MRCC  >>>
+
+set(MRCCShort mrcc-ccsdt mrcc-ccsd_t_)
+set(MRCCLong mrcc-ccsdt_q_ mrcc-optfreq)
+
+find_program (MRCC_EXECUTABLE
+             NAMES dmrcc
+             DOC "Path to Kallay's mrcc executable")
+
+if(MRCC_EXECUTABLE)
+    list(APPEND QuickTests ${MRCCShort})
+    list(APPEND LongerTests ${MRCCLong})
+    message("-- dmrcc executable for interfaced MRCC found. Test cases added.")
 endif()
 
 ###### END external-executable-dependent tests ################
@@ -170,7 +183,7 @@ foreach(Tests2Run ${TestSet})
 
     # Check if a test case from subdirectory (ext-exec-dep)
     execute_process(COMMAND ${PYTHON_EXECUTABLE} -c 
-        "pieces = '${Tests2Run}'.partition('-'); print '%s;%s' % (pieces[0], pieces[2]) if pieces[0] in ['dftd3', 'cfour'] else ''"
+        "pieces = '${Tests2Run}'.partition('-'); print '%s;%s' % (pieces[0], pieces[2]) if pieces[0] in ['dftd3', 'mrcc', 'cfour'] else ''"
         OUTPUT_VARIABLE TEST_PIECES OUTPUT_STRIP_TRAILING_WHITESPACE)
     list(LENGTH TEST_PIECES LEN_PIECES)
 

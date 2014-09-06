@@ -1144,6 +1144,11 @@ def parse_arbitrary_order(name):
 
     # matches 'mrccsdt(q)'
     if namelower.startswith('mrcc'):
+
+        # avoid undoing fn's good work when called twice
+        if namelower == 'mrcc':
+            return namelower, None
+
         # grabs 'sdt(q)'
         ccfullname = namelower[4:]
 
