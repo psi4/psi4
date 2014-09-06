@@ -101,7 +101,8 @@ set(LongerTests ${ADCLong} ${CastUpLong} ${CCLong} ${CEPALong} ${CISDLong}
 ${DCFTLong} ${DFLong} ${DFTLong} ${DocsLong} ${FCILong} ${FDLong} ${FNOCCLong}
 ${MCSCFLong} ${MintsLong} ${MP2Long} ${OCEPALong} ${OMPLong}
 ${OPTLong} ${PropsLong} ${PSIMRCCLong} ${PYWrapLong} ${RASCILong} ${SAPTLong}
-${SCFLong} ${TutorialLong} ${MISCLong})
+${SCFLong} ${TutorialLong} ${MISCLong}
+)
 
 ###### START external-executable-dependent tests ################
 
@@ -140,6 +141,21 @@ if(MRCC_EXECUTABLE)
     list(APPEND QuickTests ${MRCCShort})
     list(APPEND LongerTests ${MRCCLong})
     message("-- dmrcc executable for interfaced MRCC found. Test cases added.")
+endif()
+
+# <<<  CFOUR  >>>
+
+set(CFOURShort cfour-sp-uhf-mp2 cfour-sp-rohf-scf cfour-sp-rhf-ccsd_t_-ecc cfour-opt-rhf-scf cfour-psi-rhf-scsmp2 cfour-pywrap-cbs1)
+set(CFOURLong cfour-puream cfour-mints5 cfour-mints5-grad cfour-kw-1 cfour-kw-2 cfour-kw-3 cfour-kw-4 cfour-kw-5 cfour-kw-6 cfour-kw-7 cfour-kw-8 cfour-psi-ghost-grad cfour-scf4 cfour-mp2-1 cfour-pywrap-db1 cfour-pywrap-basis cfour-dfmp2-1 cfour-sp-rhf-scf cfour-sp-rhf-mp2 cfour-sp-rhf-ccsd cfour-sp-rhf-ccsd-ao cfour-sp-rhf-ccsd_t_ cfour-sp-rhf-ccsd_t_-ao cfour-sp-rhf-ccsd_t_-ao-ecc cfour-sp-rhf-ccsd_t_-fc cfour-sp-rhf-cc3 cfour-sp-rhf-ccsdt cfour-sp-uhf-scf cfour-sp-uhf-ccsd cfour-sp-uhf-ccsd_t_ cfour-sp-uhf-ccsd_t_-ao cfour-sp-uhf-ccsd_t_-ao-ecc cfour-sp-uhf-ccsd_t_-ecc cfour-sp-uhf-cc3 cfour-sp-uhf-ccsdt cfour-sp-rohf-mp2-sc cfour-sp-rohf-mp4-sc cfour-sp-rohf-ccsd cfour-sp-rohf-ccsd_t_ cfour-sp-rohf-ccsdt cfour-sp-rohf-ccsd-ao cfour-sp-rohf-ccsd_t_-ao cfour-sp-rohf-ccsd_t_-ao-ecc cfour-sp-rohf-ccsd_t_-fc cfour-opt-rhf-mp2 cfour-opt-rhf-ccsd_t_ cfour-opt-rhf-ccsd_t_-ecc cfour-psi-a24-grad cfour-psi-uhf-scsmp2 cfour-psi-rohf-scsmp2 cfour-psi-rhf-mp3 cfour-psi-uhf-mp3 cfour-psi-mp4)
+
+find_program (CFOUR_EXECUTABLE
+             NAMES xcfour
+             DOC "Path to Stanton and Gauss's xcfour executable")
+
+if(CFOUR_EXECUTABLE)
+    list(APPEND QuickTests ${CFOURShort})
+    list(APPEND LongerTests ${CFOURLong})
+    message("-- xcfour executable for interfaced CFOUR found. Test cases added.")
 endif()
 
 ###### END external-executable-dependent tests ################
