@@ -1599,6 +1599,7 @@ def complete_basis_set(name, **kwargs):
            * mp4
            * mp\ *n*
            * omp2
+           * omp2.5
            * omp3
            * ocepa
            * cepa0
@@ -1906,6 +1907,11 @@ def complete_basis_set(name, **kwargs):
                             'scftot': 'SCF TOTAL ENERGY',
                            'mp2corl': 'MP2 CORRELATION ENERGY',
                           'omp2corl': 'OMP2 CORRELATION ENERGY'}
+    VARH['omp2.5'] = {
+                            'scftot': 'SCF TOTAL ENERGY',
+                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                           'mp2.5corl': 'MP2.5 CORRELATION ENERGY',
+                          'omp2.5corl': 'OMP2.5 CORRELATION ENERGY'}
     VARH['omp3'] = {
                             'scftot': 'SCF TOTAL ENERGY',
                            'mp2corl': 'MP2 CORRELATION ENERGY',
