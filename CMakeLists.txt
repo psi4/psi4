@@ -370,6 +370,8 @@ endif()
 INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bin/psi4 DESTINATION
 ${CMAKE_INSTALL_PREFIX}/bin)
 
+add_subdirectory(external)
+
 enable_testing()
 add_subdirectory(tests)
 
