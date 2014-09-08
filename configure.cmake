@@ -53,7 +53,10 @@ parser.add_argument('--with-cxxflags',
                     type=str,
                     default=blankstring,
                     help="Any extra flags to pass to the C++ compiler.")
-
+parser.add_argument('--with-cmake',
+                    type=str,
+                    default='cmake',
+                    help="The CMake executable to use.  If not specified, attempts to use cmake in your path")
 # Debug symbols
 debuggroup = parser.add_mutually_exclusive_group()
 debuggroup.add_argument('--with-debug',
@@ -281,8 +284,8 @@ cmakeflags['F77SYMBOL'] = args.with_f77symbol
 if args.with_external:
     for arg in args.with_external:
         cmakeflags['USEEXT_%s' % (arg.upper())] = ["TRUE"]
-
-args = ["cmake", scriptdir]
+CMAKE_CALL=args.with_cmake
+args = [CMAKE_CALL, scriptdir]
 args.extend(dict_to_list(cmakeflags))
 execute(args)
 
