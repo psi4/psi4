@@ -278,8 +278,9 @@ if args.with_lapack_incs != blankstring:
 # F77SYMBOL
 cmakeflags['F77SYMBOL'] = args.with_f77symbol
 # External
-for arg in args.with_external:
-    cmakeflags['USEEXT_%s' % (arg.upper())] = ["TRUE"]
+if args.with_external:
+    for arg in args.with_external:
+        cmakeflags['USEEXT_%s' % (arg.upper())] = ["TRUE"]
 
 args = ["cmake", scriptdir]
 args.extend(dict_to_list(cmakeflags))
