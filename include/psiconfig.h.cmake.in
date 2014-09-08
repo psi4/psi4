@@ -23,7 +23,7 @@
 #define PLUGIN_OBJDIR "@PROJECT_BINARY_DIR@"
 
 /* The PSI4 Datadir */
-#define INSTALLEDPSIDATADIR "@CMAKE_INSTALL_PREFIX@/lib"
+#define INSTALLEDPSIDATADIR "@CMAKE_INSTALL_PREFIX@/share/psi"
 
 /* MPI? */
 #cmakedefine HAVE_MPI
