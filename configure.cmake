@@ -53,6 +53,7 @@ parser.add_argument('--with-cxxflags',
                     type=str,
                     default=blankstring,
                     help="Any extra flags to pass to the C++ compiler.")
+
 # Debug symbols
 debuggroup = parser.add_mutually_exclusive_group()
 debuggroup.add_argument('--with-debug',
@@ -162,6 +163,12 @@ optgroup.add_argument('--without-opt',
                     action="store_true",
                     help='Do not add optimization flags.')
 
+# External plugins
+parser.add_argument('--with-external',
+                    type=str,
+                    nargs='*',
+                    choices=['gpu_dfcc', 'dummy_plugin'],
+                    help='Any external plugins to download and build.')
 
 def dict_to_list(dictionary):
     l = [ ]
@@ -270,6 +277,10 @@ if args.with_lapack_incs != blankstring:
     cmakeflags['LAPACKINCS'] = [args.with_lapack_incs]
 # F77SYMBOL
 cmakeflags['F77SYMBOL'] = args.with_f77symbol
+# External
+if args.with_external:
+    for arg in args.with_external:
+        cmakeflags['USEEXT_%s' % (arg.upper())] = ["TRUE"]
 
 args = ["cmake", scriptdir]
 args.extend(dict_to_list(cmakeflags))
