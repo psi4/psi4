@@ -10,7 +10,8 @@ Interface to MRCC by M. K\ |a_acute|\ llay
 .. codeauthor:: Justin M. Turney and Andrew C. Simmonett
 .. sectionauthor:: Justin M. Turney
 
-*Module:* :ref:`Keywords <apdx:mrcc>`, :ref:`PSI Variables <apdx:mrcc_psivar>`, :source:`MRCC <src/bin/mrcc>`
+
+*Module:* :ref:`Keywords <apdx:mrcc>`, :ref:`PSI Variables <apdx:mrcc_psivar>`, :source:`MRCC <src/bin/mrcc>`, :ref:`Samples <apdx:testSuitedftd3>`
 
 |PSIfour| contains code to interface to the MRCC program of M. K\ |a_acute|\ llay
 and J. Gauss.  The license and source code of the MRCC program must be
