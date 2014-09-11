@@ -4,14 +4,22 @@
 #
 # Andy Simmonett (05/13)
 #
-import argparse
-import subprocess
-import sys
 import os.path
+import sys
+try:
+    import argparse
+except ImportError:
+    print(
+"""Error: Your Python interpreter (version %s) is older than 2.7.
+Since psi4 needs 2.7, too, please consider upgrading. Get the python
+development libraries (provides "python-config") while you're at it.""" % (sys.version[:6].strip()))
+    sys.exit(1)
+import subprocess
 
-def execute(command, die_on_error = True):
+
+def execute(command, die_on_error=True):
     #print("\tExecuting %s" % command)
-    failed = 0;
+    failed = 0
     process = subprocess.Popen(command)
     (stdout, stderr) = process.communicate()
     status = process.returncode
@@ -32,21 +40,21 @@ formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 #
 # Add options
 #
-blankstring = "No default" # This looks prettier when the user prints out the help
+blankstring = "No default"  # This looks prettier when the user prints out the help
 # The C compiler
 parser.add_argument('--with-cc',
                     metavar='= CC',
                     type=str,
                     default=blankstring,
                     help='The C compiler to use.  If not specified the environmental variable $CC will be used. '\
-                         +'If that is not set, CMake will use the first working compiler it finds.')
+                         + 'If that is not set, CMake will use the first working compiler it finds.')
 # The C++ compiler
 parser.add_argument('--with-cxx',
                     metavar='= CXX',
                     type=str,
                     default=blankstring,
                     help='The C++ compiler to use.  If not specified the environmental variable $CXX will be used. '\
-                         +'If that is not set, CMake will use the first working compiler it finds.')
+                         + 'If that is not set, CMake will use the first working compiler it finds.')
 # CXXFLAGS flags
 parser.add_argument('--with-cxxflags',
                     metavar='= CXXFLAGS',
@@ -87,7 +95,7 @@ parser.add_argument('--with-f77',
                     type=str,
                     default=blankstring,
                     help='The Fortran compiler to use.  If not specified the environmental variable $F77 will be used. '\
-                         +'If that is not set, CMake will use the first working compiler it finds.')
+                         + 'If that is not set, CMake will use the first working compiler it finds.')
 # F77FLAGS flags
 parser.add_argument('--with-f77flags',
                     metavar='= F77FLAGS',
@@ -173,8 +181,9 @@ parser.add_argument('--with-external',
                     choices=['gpu_dfcc', 'dummy_plugin'],
                     help='Any external plugins to download and build.')
 
+
 def dict_to_list(dictionary):
-    l = [ ]
+    l = []
     for k in sorted(dictionary.keys()):
         s = "-D" + k + "="
         if not dictionary[k]:
@@ -191,6 +200,7 @@ def dict_to_list(dictionary):
                 raise Exception("Unexpected keyword type: %r" % dictionary[k])
         l.append(s)
     return l
+
 
 def dict_to_string(dictionary):
     """Converts a dictionary of keywords into a string of arguments to pass to CMake"""
@@ -237,13 +247,13 @@ if args.with_debug:
     cmakeflags['F77FLAGS'].append("-g")
 
 if args.with_erd:
-    cmakeflags['USEERD']=["TRUE"]
+    cmakeflags['USEERD'] = ["TRUE"]
 
 if args.with_mpi:
-    cmakeflags['USEMPI']=["TRUE"]
+    cmakeflags['USEMPI'] = ["TRUE"]
 
 #For some reason making plugins is false if we are making them
-if args.with_plugins :
+if args.with_plugins:
     cmakeflags['CXXFLAGS'].append("-fPIC")
     cmakeflags['F77FLAGS'].append("-fPIC")
 
@@ -252,7 +262,7 @@ if args.with_cxxflags != blankstring:
 if args.with_f77flags != blankstring:
     cmakeflags['F77FLAGS'].append(args.with_f77flags)
 
-cmakeflags['LDFLAGS']=[]
+cmakeflags['LDFLAGS'] = []
 # LDFLAGS
 if args.with_ldflags != blankstring:
     cmakeflags['LDFLAGS'] = [args.with_ldflags]
@@ -284,8 +294,7 @@ cmakeflags['F77SYMBOL'] = args.with_f77symbol
 if args.with_external:
     for arg in args.with_external:
         cmakeflags['USEEXT_%s' % (arg.upper())] = ["TRUE"]
-CMAKE_CALL=args.with_cmake
+CMAKE_CALL = args.with_cmake
 args = [CMAKE_CALL, scriptdir]
 args.extend(dict_to_list(cmakeflags))
 execute(args)
-
