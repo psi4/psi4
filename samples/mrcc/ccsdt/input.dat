@@ -1,4 +1,4 @@
-#! CCSD(T) cc-pVDZ geometry optimization for the H2O molecule using MRCC.
+#! CCSDT cc-pVDZ energy for the H2O molecule using MRCC
 
 memory 500 mb
 
@@ -13,5 +13,6 @@ set {
     freeze_core true
 }
 
-optimize('mrccsd(t)')
+energy('mrccsdt')
+
 
