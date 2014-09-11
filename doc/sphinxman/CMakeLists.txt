@@ -8,10 +8,9 @@ find_package(Sphinx QUIET)
 if(NOT SPHINX_FOUND)
     message(WARNING "No Sphinx, no docs. Pre-built documentation at http://sirius.chem.vt.edu/psi4manual/latest/index.html")
 endif()
-option(SPHINX_BUILD_LATEX "Build LaTeX version of Sphinx documentation (to create PDF)." OFF)
 find_package(LATEX QUIET)
-if(NOT LATEX_COMPILER)
-    message(WARNING "No LaTeX, no PDF docs. Pre-built documentation at http://sirius.chem.vt.edu/psi4manual/latest/index.html")
+if(NOT (LATEX_COMPILER AND PDFLATEX_COMPILER))
+    message(WARNING "No LaTeX (incl. pdflatex), no PDF docs. Pre-built documentation at http://sirius.chem.vt.edu/psi4manual/latest/index.html")
 endif()
 
 
@@ -216,7 +215,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
     # Establishing dependencies for docs targets
 
     # * announcement
-    if (LATEX_COMPILER)
+    if (LATEX_COMPILER AND PDFLATEX_COMPILER)
         message("-- Documentation targets available: sphinxman (html), sphinxmini (quick html), sphinxpdf (LaTeX --> PDF)")
     else()
         message("-- Documentation targets available: sphinxman (html), sphinxmini (quick html)")
@@ -260,7 +259,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
         COMMENT "Preparing Sphinx HTML documentation build")
 
     # * full, proper build with LaTeX
-    if (LATEX_COMPILER)
+    if (LATEX_COMPILER AND PDFLATEX_COMPILER)
         add_custom_target(sphinxpdf
             DEPENDS sphinxman
             COMMENT "Preparing Sphinx HTML and PDF documentation build")
@@ -315,7 +314,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
         COMMENT "Building latex documentation ...")
     add_custom_command(
         TARGET sphinxpdf POST_BUILD
-        COMMAND pdflatex 
+        COMMAND ${PDFLATEX_COMPILER}
             -interaction=nonstopmode 
             "Psi4.tex" > /dev/null 2>&1
         WORKING_DIRECTORY ${CCBD}/latex
