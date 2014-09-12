@@ -61,7 +61,6 @@ if(PERL_FOUND AND SPHINX_FOUND)
     add_custom_command(
         COMMAND ${PYTHON_EXECUTABLE} ${CCSD}/document_psifiles.py ${CCSD}
         OUTPUT  ${CCBD}/source/autodoc_psifiles.rst
-                ${CMAKE_SOURCE_DIR}/lib/python/p4const/psifiles.py
         DEPENDS ${CCSD}/document_psifiles.py
                 ${CMAKE_SOURCE_DIR}/include/psifiles.h
         COMMENT "Autodoc binary scratch files")
@@ -70,7 +69,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
     # Autodoc physical constants
     add_custom_command(
         COMMAND ${PERL_EXECUTABLE} ${CCSD}/document_physconst.pl ${CCSD}
-        OUTPUT  ${CMAKE_SOURCE_DIR}/lib/python/p4const/physconst.py
+        OUTPUT  ${CCBD}/source/autodoc_physconst.rst
         DEPENDS ${CCSD}/document_physconst.pl
                 ${CMAKE_SOURCE_DIR}/include/physconst.h
         COMMENT "Autodoc physical constants")
@@ -230,7 +229,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
     add_custom_target(sphinxman
         DEPENDS ${CCBD}/source/autodoc_psi4bases.rst
                 ${CCBD}/source/autodoc_psifiles.rst
-                ${CMAKE_SOURCE_DIR}/lib/python/p4const/physconst.py
+                ${CCBD}/source/autodoc_physconst.rst
                 ${CCBD}/source/autodoc_abbr_options_c.rst
                 ${CCBD}/source/autodoc_glossary_options_c.rst
                 ${CCBD}/source/autodoc_options_c_bymodule.rst
