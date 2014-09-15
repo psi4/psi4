@@ -1,5 +1,5 @@
 #These tests aren't set-up the same way as the others
-set(TestsNotSetUpRight dftd3 cfour optking testgrendel)
+set(TestsNotSetUpRight cfour optking testgrendel)
 
 #In order to get CTest to run tests in three seperate categories:
 #
@@ -53,8 +53,6 @@ set(MintsShort mints1 mints2)
 set(MintsLong mints3 mints4 mints5 mints6 mints8)
 set(MP2Short mp2_5-grad1 mpn-bh)
 set(MP2Long mp2-1 mp2_5-grad2 mp2-grad1 mp2-grad2 mp3-grad1 mp3-grad2)
-#No MRCCShort
-set(MRCCLong mrcc1 mrcc2 mrcc3 mrcc4)
 
 set(OCEPAShort ocepa1 ocepa-grad2)
 set(OCEPALong ocepa2 ocepa3 ocepa-freq1 ocepa-grad1)
@@ -101,11 +99,66 @@ ${TutorialShort} ${MISCShort}
 #And these are the rest of the tests
 set(LongerTests ${ADCLong} ${CastUpLong} ${CCLong} ${CEPALong} ${CISDLong}
 ${DCFTLong} ${DFLong} ${DFTLong} ${DocsLong} ${FCILong} ${FDLong} ${FNOCCLong}
-${MCSCFLong} ${MintsLong} ${MP2Long} ${MRCCLong} ${OCEPALong} ${OMPLong}
+${MCSCFLong} ${MintsLong} ${MP2Long} ${OCEPALong} ${OMPLong}
 ${OPTLong} ${PropsLong} ${PSIMRCCLong} ${PYWrapLong} ${RASCILong} ${SAPTLong}
-${SCFLong} ${TutorialLong} ${MISCLong})
+${SCFLong} ${TutorialLong} ${MISCLong}
+)
 
+###### START external-executable-dependent tests ################
 
+# Set up groups of test cases analogous to dftd3 below
+#   In particular, new ext-exe-dep tests should 
+#   * get their own directory in tests (e.g., tests/dftd3)
+#   * have a name that doesn't repeat the exe (e.g., test/dftd3/energy)
+#   * be listed in the exeShort and exeLong variable name as exe-name (e.g., dftd3-energy)
+#   * be sure the exe is listed in the python code below (search 'partition')
+
+# <<<  DFTD3  >>>
+
+set(DFTD3Short dftd3-energy)
+set(DFTD3Long dftd3-grad dftd3-psithon2)
+
+find_program (DFTD3_EXECUTABLE
+             NAMES dftd3
+             DOC "Path to Grimme's dftd3 executable")
+
+if(DFTD3_EXECUTABLE)
+    list(APPEND QuickTests ${DFTD3Short})
+    list(APPEND LongerTests ${DFTD3Long})
+    message("-- dftd3 executable for interfaced DFTD3 found. Test cases added.")
+endif()
+
+# <<<  MRCC  >>>
+
+set(MRCCShort mrcc-ccsdt mrcc-ccsd_t_)
+set(MRCCLong mrcc-ccsdt_q_ mrcc-optfreq)
+
+find_program (MRCC_EXECUTABLE
+             NAMES dmrcc
+             DOC "Path to Kallay's mrcc executable")
+
+if(MRCC_EXECUTABLE)
+    list(APPEND QuickTests ${MRCCShort})
+    list(APPEND LongerTests ${MRCCLong})
+    message("-- dmrcc executable for interfaced MRCC found. Test cases added.")
+endif()
+
+# <<<  CFOUR  >>>
+
+set(CFOURShort cfour-sp-uhf-mp2 cfour-sp-rohf-scf cfour-sp-rhf-ccsd_t_-ecc cfour-opt-rhf-scf cfour-psi-rhf-scsmp2 cfour-pywrap-cbs1)
+set(CFOURLong cfour-puream cfour-mints5 cfour-mints5-grad cfour-kw-1 cfour-kw-2 cfour-kw-3 cfour-kw-4 cfour-kw-5 cfour-kw-6 cfour-kw-7 cfour-kw-8 cfour-psi-ghost-grad cfour-scf4 cfour-mp2-1 cfour-pywrap-db1 cfour-pywrap-basis cfour-dfmp2-1 cfour-sp-rhf-scf cfour-sp-rhf-mp2 cfour-sp-rhf-ccsd cfour-sp-rhf-ccsd-ao cfour-sp-rhf-ccsd_t_ cfour-sp-rhf-ccsd_t_-ao cfour-sp-rhf-ccsd_t_-ao-ecc cfour-sp-rhf-ccsd_t_-fc cfour-sp-rhf-cc3 cfour-sp-rhf-ccsdt cfour-sp-uhf-scf cfour-sp-uhf-ccsd cfour-sp-uhf-ccsd_t_ cfour-sp-uhf-ccsd_t_-ao cfour-sp-uhf-ccsd_t_-ao-ecc cfour-sp-uhf-ccsd_t_-ecc cfour-sp-uhf-cc3 cfour-sp-uhf-ccsdt cfour-sp-rohf-mp2-sc cfour-sp-rohf-mp4-sc cfour-sp-rohf-ccsd cfour-sp-rohf-ccsd_t_ cfour-sp-rohf-ccsdt cfour-sp-rohf-ccsd-ao cfour-sp-rohf-ccsd_t_-ao cfour-sp-rohf-ccsd_t_-ao-ecc cfour-sp-rohf-ccsd_t_-fc cfour-opt-rhf-mp2 cfour-opt-rhf-ccsd_t_ cfour-opt-rhf-ccsd_t_-ecc cfour-psi-a24-grad cfour-psi-uhf-scsmp2 cfour-psi-rohf-scsmp2 cfour-psi-rhf-mp3 cfour-psi-uhf-mp3 cfour-psi-mp4)
+
+find_program (CFOUR_EXECUTABLE
+             NAMES xcfour
+             DOC "Path to Stanton and Gauss's xcfour executable")
+
+if(CFOUR_EXECUTABLE)
+    list(APPEND QuickTests ${CFOURShort})
+    list(APPEND LongerTests ${CFOURLong})
+    message("-- xcfour executable for interfaced CFOUR found. Test cases added.")
+endif()
+
+###### END external-executable-dependent tests ################
 
 set(TestSet ${LongTests} ${QuickTests} ${LongerTests})
 
@@ -113,13 +166,14 @@ list(LENGTH TestSet NumberOfTests)
 list(LENGTH LongTests NLong)
 list(LENGTH QuickTests NShort)
 MATH(EXPR Start "${NLong} +1")
+MATH(EXPR Stop "${NLong} + ${NShort}")
 
 add_custom_target(longtests ${CMAKE_CTEST_COMMAND} -I 1,${NLong})
-add_custom_target(quicktests ${CMAKE_CTEST_COMMAND} -I ${Start},${NShort})
+add_custom_target(quicktests ${CMAKE_CTEST_COMMAND} -I ${Start},${Stop})
 add_custom_target(tests ${CMAKE_CTEST_COMMAND} -I ${Start},${NumberOfTests})
 
 
-#The commands below this poitn are used to set-up cmakes test suite with
+#The commands below this point are used to set up cmake's test suite with
 #the info given up to this point
 
 #This is the psi command to actually run the tests
@@ -134,40 +188,59 @@ set(LOGFILE ${CMAKE_BINARY_DIR}/testresults.log)
 
 find_package(Perl QUIET)
 if(NOT PERL_FOUND)
-   #I think this is what this means...
    message(WARNING "Perl was not found. Some Coupled Cluster test cases will
 not be thoroughly checked.")
 endif()
 
-#Declare each test as a possible test target even though noone will likely
-#want to run individual tests.  In the end makes our job easier
+# Declare each test as a possible test target even though no one will likely
+#   want to run individual tests. In the end, makes our job easier.
 set(index 1)
 foreach(Tests2Run ${TestSet})
-   #The directory the test will be run in
-   set(TEST_SRC_DIR ${TESTDIR}/${Tests2Run})
-   set(TEST_RUN_DIR ${CMAKE_BINARY_DIR}/tests/${Tests2Run})
-   file(MAKE_DIRECTORY ${TEST_RUN_DIR})
-   set(INPUTFILE ${TEST_SRC_DIR}/input.dat)
-   set(OUTFILE ${TEST_RUN_DIR}/output.dat)
-   set(AUTOTEST false)
-   list(FIND AutoTestSubjects ${Tests2Run} InThrall)
-   if(NOT(${InThrall} EQUAL -1) AND ${PERL_FOUND})
-     set(AUTOTEST true)
-   endif()
-   add_test(
-      NAME ${Tests2Run}
-      WORKING_DIRECTORY ${TEST_RUN_DIR}
-      COMMAND ${PYTHON_EXECUTABLE} ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${PROJECT_SOURCE_DIR} ${OUTFILE} ${PSIEXE})
-   add_custom_target(${Tests2Run} ${CMAKE_CTEST_COMMAND} -I ${index},${index})
-   set_tests_properties(${Tests2Run} PROPERTIES DEPENDS 
-	${CMAKE_BINARY_DIR}/bin/psi4)
-   #In theory would like to make sure all tests run in parallel as well
-   #but....most do not right now...
-   if( MPI_FOUND AND FALSE)
-     add_test(
-        NAME MPI-${Tests2Run}
-        WORKING_DIRECTORY ${RUNDIR}
-        COMMAND mpirun -n 2 ${PYTHON_EXECUTABLE} ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${PROJECT_SOURCE_DIR} ${OUTFILE} ${PSIEXE})
+
+    # Check if a test case from subdirectory (ext-exec-dep)
+    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c 
+        "pieces = '${Tests2Run}'.partition('-'); print '%s;%s' % (pieces[0], pieces[2]) if pieces[0] in ['dftd3', 'mrcc', 'cfour'] else ''"
+        OUTPUT_VARIABLE TEST_PIECES OUTPUT_STRIP_TRAILING_WHITESPACE)
+    list(LENGTH TEST_PIECES LEN_PIECES)
+
+    # Directory the test will be run from and in
+    if(${LEN_PIECES} EQUAL 2)
+        list(GET TEST_PIECES 0 SubDir)
+        list(GET TEST_PIECES 1 TestName)
+        set(TEST_SRC_DIR ${TESTDIR}/${SubDir}/${TestName})
+        set(TEST_RUN_DIR ${CMAKE_BINARY_DIR}/tests/${SubDir}/${TestName})
+    else() 
+        set(TEST_SRC_DIR ${TESTDIR}/${Tests2Run})
+        set(TEST_RUN_DIR ${CMAKE_BINARY_DIR}/tests/${Tests2Run})
+    endif()
+
+    # Generic setup
+    file(MAKE_DIRECTORY ${TEST_RUN_DIR})
+    set(INPUTFILE ${TEST_SRC_DIR}/input.dat)
+    set(OUTFILE ${TEST_RUN_DIR}/output.dat)
+
+    # Turn on psitest.pl if eligible 
+    set(AUTOTEST false)
+    list(FIND AutoTestSubjects ${Tests2Run} InThrall)
+    if(NOT(${InThrall} EQUAL -1) AND ${PERL_FOUND})
+        set(AUTOTEST true)
+    endif()
+
+    # Add (serial) target for each test case
+    add_test(
+        NAME ${Tests2Run}
+        WORKING_DIRECTORY ${TEST_RUN_DIR}
+        COMMAND ${PYTHON_EXECUTABLE} ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${PROJECT_SOURCE_DIR} ${OUTFILE} ${PSIEXE})
+    add_custom_target(${Tests2Run} ${CMAKE_CTEST_COMMAND} -I ${index},${index})
+    set_tests_properties(${Tests2Run} PROPERTIES DEPENDS ${PSIEXE})
+
+    #In theory would like to make sure all tests run in parallel as well
+    #but....most do not right now...
+    if( MPI_FOUND AND FALSE)
+        add_test(
+            NAME MPI-${Tests2Run}
+            WORKING_DIRECTORY ${RUNDIR}
+            COMMAND mpirun -n 2 ${PYTHON_EXECUTABLE} ${TESTEXE} ${INPUTFILE} ${LOGFILE} ${AUTOTEST} ${PROJECT_SOURCE_DIR} ${OUTFILE} ${PSIEXE})
     endif()
     math(EXPR index "${index}+1")
 endforeach(Tests2Run)

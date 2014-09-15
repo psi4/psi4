@@ -282,7 +282,7 @@ int psi_start(int argc, char *argv[])
 #endif
 
 #if defined(MAKE_PYTHON_MODULE)
-    outfile = stdout;
+        outfile = boost::shared_ptr<PsiOutStream>(new PsiOutStream());
 #else
         if(ofname == "stdout"){
             outfile=boost::shared_ptr<PsiOutStream>(new PsiOutStream());

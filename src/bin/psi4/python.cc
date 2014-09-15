@@ -61,7 +61,7 @@
 #include <libparallel/parallel.h>
 namespace psi {
     int psi_start(int argc, char *argv[]);
-    int psi_stop(FILE* infile, FILE* outfile, char* psi_file_prefix);
+    int psi_stop(FILE* infile, std::string, char* psi_file_prefix);
 }
 #endif
 
@@ -153,7 +153,7 @@ namespace psi {
     }
 
     extern int read_options(const std::string &name, Options & options, bool suppress_printing = false);
-    extern void print_version(FILE *myout);
+    extern void print_version(std::string);
     
 }
 
@@ -1200,7 +1200,7 @@ bool psi4_python_module_initialize()
         return true;
     }
 
-    print_version(stdout);
+    print_version("stdout");
 
     // Track down the location of PSI4's python script directory.
     std::string psiDataDirName = Process::environment("PSIDATADIR");
@@ -1243,7 +1243,7 @@ void psi4_python_module_finalize()
     // There is only one timer:
     timer_done();
 
-    psi_stop(infile, outfile, psi_file_prefix);
+    psi_stop(infile, "outfile", psi_file_prefix);
     Script::language->finalize();
 
     WorldComm->sync();
@@ -1263,12 +1263,12 @@ BOOST_PYTHON_FUNCTION_OVERLOADS(set_local_option_overloads, py_psi_set_local_opt
 BOOST_PYTHON_MODULE(psi4)
 {
 #if defined(MAKE_PYTHON_MODULE)
+    // Initialize the world communicator
+    WorldComm = boost::shared_ptr<worldcomm>(new worldcomm(0, 0));
+
     // Setup the environment
     Process::arguments.initialize(0, 0);
     Process::environment.initialize(); // Defaults to obtaining the environment from the global environ variable
-
-    // Initialize the world communicator
-    WorldComm = initialize_communicator(0, 0);
 
     // There is only one timer:
     timer_init();

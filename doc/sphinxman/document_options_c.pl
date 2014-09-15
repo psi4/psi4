@@ -400,3 +400,6 @@ sub determine_keyword_type_and_default
  ($Keyword, $Type, $Default, $Possibilities);
 }
 
+unlink("keywords.tex");
+unlink("expert_keywords.tex");
+

@@ -183,7 +183,8 @@ def run_cfour(name, **kwargs):
     # Close psi4 output file and reopen with filehandle
     print('output in', current_directory + '/' + psi4.outfile_name())
     psi4.close_outfile()
-    p4out = open(current_directory + '/' + psi4.outfile_name(), 'a')
+    pathfill = '' if os.path.isabs(psi4.outfile_name()) else current_directory + os.path.sep
+    p4out = open(pathfill + psi4.outfile_name(), 'a')
 
     # Handle user's OMP_NUM_THREADS and CFOUR_OMP_NUM_THREADS
     omp_num_threads_found = 'OMP_NUM_THREADS' in os.environ
