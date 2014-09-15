@@ -258,7 +258,7 @@ in this set of internals. */
 
   double **Hx = init_matrix(3*natom, 3*natom);
 
-  print_intcos(outfile,qc_outfile,0);
+  print_intcos(psi_outfile,qc_outfile,0);
 
   for (int i=0; i<intcos.size(); ++i) {  // loop over intcos
     SIMPLE * q = intcos.at(i);

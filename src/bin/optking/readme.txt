@@ -94,7 +94,7 @@ OPTKING_PACKAGE_PSI/QCHEM specifies package
 contains declarations for wrapper functions to read and write from the binary i/o file
 
 *globals.h
-PSI/QCHEM : declares text output file (opt::outfile)
+PSI/QCHEM : declares text output file (string or filename
 PSI :
 defines set names of files for input/output
 includes "psi4-dec.h"
@@ -104,7 +104,7 @@ PSI/QCHEM :
  define return type OptReturnType for optking function
  defines the possible optking return values (at top of file)
 
- functions to open/set and close opt::outfile file pointer
+ functions to open/set and close outfile file
 
  opens/closes intco.dat file for writing
  opens/closes intco.dat file stream for reading

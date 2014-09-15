@@ -183,7 +183,7 @@ void FRAG::displace(double *dq, double *fq, int atom_offset) {
   oprintf_out(  "\t   ----------                --------       ------       ------       ------\n");
   for (int i=0; i<intcos.size(); ++i) {
     oprintf_out("\t %4d ",i+1);
-    intcos.at(i)->print_disp(outfile, qc_outfile, q_orig[i], fq[i], dq[i], q_final[i], atom_offset);
+    intcos.at(i)->print_disp(psi_outfile, qc_outfile, q_orig[i], fq[i], dq[i], q_final[i], atom_offset);
   }
   oprintf_out(  "\t ---------------------------------------------------------------------------\n");
 

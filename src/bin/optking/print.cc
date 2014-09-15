@@ -45,7 +45,7 @@ void oprintf(const std::string psi_fp, const FILE *qc_fp, const char* format,...
   boost::shared_ptr<psi::PsiOutStream> printer(psi_fp=="outfile"? psi::outfile:
      boost::shared_ptr<psi::OutFile>(new psi::OutFile(psi_fp,psi::APPEND)));
 
-  oprintf(psi_fp, qc_fp, %s, line);
+  printer->Printf("%s", line);
 #elif defined(OPTKING_PACKAGE_QCHEM)
   fprintf(qc_fp, "%s", line);
 #endif
@@ -75,7 +75,7 @@ void oprint_matrix(const std::string psi_fp, const FILE *qc_fp, double **A, cons
       oprintf(psi_fp, qc_fp, "%10.6f", A[i][j]);
       ++col;
       if ((col == max_col) && (j != ncol-1)) {
-        oprintf(OutFileRME, qc_fp, "\n");
+        oprintf(psi_fp, qc_fp, "\n");
         col = 0;
       }
     }
@@ -110,7 +110,7 @@ void oprint_array(const std::string psi_fp, const FILE *qc_fp, double *A, const 
   const int max_col = 8;
 
   for (int j=0; j<ncol; ++j) {
-    oprintf(OutFileRME, qc_fp, "%10.6f", A[j]);
+    oprintf(psi_fp, qc_fp, "%10.6f", A[j]);
     ++col;
     if ((col == max_col) && (j != ncol-1)) {
       oprintf(psi_fp, qc_fp, "\n");
