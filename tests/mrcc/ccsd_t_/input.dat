@@ -15,3 +15,6 @@ set {
 
 optimize('mrccsd(t)')
 
+compare_values(9.115096584684, get_variable("NUCLEAR REPULSION ENERGY"), 4, 'nre')  #TEST
+compare_values(-76.2413050123293, get_variable('CCSD(T) TOTAL ENERGY'), 6, 'ccsd(t)')  #TEST
+

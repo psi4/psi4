@@ -8,10 +8,9 @@ find_package(Sphinx QUIET)
 if(NOT SPHINX_FOUND)
     message(WARNING "No Sphinx, no docs. Pre-built documentation at http://sirius.chem.vt.edu/psi4manual/latest/index.html")
 endif()
-option(SPHINX_BUILD_LATEX "Build LaTeX version of Sphinx documentation (to create PDF)." OFF)
 find_package(LATEX QUIET)
-if(NOT LATEX_COMPILER)
-    message(WARNING "No LaTeX, no PDF docs. Pre-built documentation at http://sirius.chem.vt.edu/psi4manual/latest/index.html")
+if(NOT (LATEX_COMPILER AND PDFLATEX_COMPILER))
+    message(WARNING "No LaTeX (incl. pdflatex), no PDF docs. Pre-built documentation at http://sirius.chem.vt.edu/psi4manual/latest/index.html")
 endif()
 
 
@@ -62,7 +61,6 @@ if(PERL_FOUND AND SPHINX_FOUND)
     add_custom_command(
         COMMAND ${PYTHON_EXECUTABLE} ${CCSD}/document_psifiles.py ${CCSD}
         OUTPUT  ${CCBD}/source/autodoc_psifiles.rst
-                ${CMAKE_SOURCE_DIR}/lib/python/p4const/psifiles.py
         DEPENDS ${CCSD}/document_psifiles.py
                 ${CMAKE_SOURCE_DIR}/include/psifiles.h
         COMMENT "Autodoc binary scratch files")
@@ -71,7 +69,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
     # Autodoc physical constants
     add_custom_command(
         COMMAND ${PERL_EXECUTABLE} ${CCSD}/document_physconst.pl ${CCSD}
-        OUTPUT  ${CMAKE_SOURCE_DIR}/lib/python/p4const/physconst.py
+        OUTPUT  ${CCBD}/source/autodoc_physconst.rst
         DEPENDS ${CCSD}/document_physconst.pl
                 ${CMAKE_SOURCE_DIR}/include/physconst.h
         COMMENT "Autodoc physical constants")
@@ -216,7 +214,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
     # Establishing dependencies for docs targets
 
     # * announcement
-    if (LATEX_COMPILER)
+    if (LATEX_COMPILER AND PDFLATEX_COMPILER)
         message("-- Documentation targets available: sphinxman (html), sphinxmini (quick html), sphinxpdf (LaTeX --> PDF)")
     else()
         message("-- Documentation targets available: sphinxman (html), sphinxmini (quick html)")
@@ -231,7 +229,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
     add_custom_target(sphinxman
         DEPENDS ${CCBD}/source/autodoc_psi4bases.rst
                 ${CCBD}/source/autodoc_psifiles.rst
-                ${CMAKE_SOURCE_DIR}/lib/python/p4const/physconst.py
+                ${CCBD}/source/autodoc_physconst.rst
                 ${CCBD}/source/autodoc_abbr_options_c.rst
                 ${CCBD}/source/autodoc_glossary_options_c.rst
                 ${CCBD}/source/autodoc_options_c_bymodule.rst
@@ -260,7 +258,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
         COMMENT "Preparing Sphinx HTML documentation build")
 
     # * full, proper build with LaTeX
-    if (LATEX_COMPILER)
+    if (LATEX_COMPILER AND PDFLATEX_COMPILER)
         add_custom_target(sphinxpdf
             DEPENDS sphinxman
             COMMENT "Preparing Sphinx HTML and PDF documentation build")
@@ -315,7 +313,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
         COMMENT "Building latex documentation ...")
     add_custom_command(
         TARGET sphinxpdf POST_BUILD
-        COMMAND pdflatex 
+        COMMAND ${PDFLATEX_COMPILER}
             -interaction=nonstopmode 
             "Psi4.tex" > /dev/null 2>&1
         WORKING_DIRECTORY ${CCBD}/latex

@@ -42,5 +42,6 @@ Miscellaneous
    testsuite
    dft_byfunctional
    autodoc_psifiles
+   autodoc_physconst
    bibliography
 

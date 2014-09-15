@@ -15,23 +15,18 @@ add_custom_command(
     DEPENDS gitversion.h
 )
 
-add_executable(psi4 clean.cc create_new_plugin.cc export_benchmarks.cc 
-                    export_blas_lapack.cc export_libfrag.cc 
-                    export_chkpt.cc export_cubefile.cc export_functional.cc export_mints.cc export_oeprop.cc 
-                    export_plugins.cc export_psio.cc psi4.cc psi_start.cc psi_stop.cc python.cc
-                    read_options.cc script.cc set_memory.cc version.cc)
+set(SRC clean.cc create_new_plugin.cc export_benchmarks.cc export_blas_lapack.cc export_libfrag.cc export_chkpt.cc export_cubefile.cc export_functional.cc export_mints.cc export_oeprop.cc export_plugins.cc export_psio.cc psi4.cc psi_start.cc psi_stop.cc python.cc read_options.cc script.cc set_memory.cc version.cc)
 
-# Add the python link commands in as raw commands
-set(LINKLIBS ${BOOSTLIB} ${PSILIB} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
-#set_target_properties(psi4 PROPERTIES LINK_FLAGS ${PYLIB})
+set (LINKLIBS ${PSILIB} ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} ${PYTHON_LIBRARIES})
 
-#add_dependencies(psi4 ${LINKLIBS})
-target_link_libraries(psi4
-    ${PSILIB}
-    ${Boost_LIBRARIES}
-    ${LAPACK_LIBRARIES}
-    ${BLAS_LIBRARIES}
-    ${PYTHON_LIBRARIES}
-)
+# executable psi4
+add_executable(psi4 ${SRC})
+target_link_libraries(psi4 ${LINKLIBS})
 
+# standalone python module psi4.so
+add_executable(psi4so EXCLUDE_FROM_ALL ${SRC})
+set_property(TARGET psi4so PROPERTY COMPILE_DEFINITIONS MAKE_PYTHON_MODULE)
+set_property(TARGET psi4so PROPERTY LINK_FLAGS "-shared")
+set_property(TARGET psi4so PROPERTY OUTPUT_NAME "psi4.so")
+target_link_libraries(psi4so ${LINKLIBS})
 
