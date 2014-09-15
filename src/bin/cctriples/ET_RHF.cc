@@ -75,13 +75,43 @@ double ET_RHF(void)
   vir_off = moinfo.vir_off;
 
   nthreads = params.nthreads;
-  thread_data_array = (struct thread_data *) malloc(nthreads*sizeof(struct thread_data));
-  p_thread = (pthread_t *) malloc(nthreads*sizeof(pthread_t));
 
+  long int mem_avail = dpd_memfree();
+  // Find the size of 4 abc-blocks of the largest irrep
+  long int max_a = 0;
+  for (h=0; h<nirreps; ++h)
+    if (virtpi[h] > max_a)
+      max_a = virtpi[h];
+  long int thread_mem_estimate = 4 * max_a * max_a * max_a;
+  fflush(outfile);
+
+  fprintf(outfile,"\tMemory available in words        : %15ld\n", mem_avail);
+  fprintf(outfile,"\t~Words needed per explicit thread: %15ld\n", thread_mem_estimate);
+
+  // subtract at least 1/2 for non-abc quantities (mainly 2 ijab's + other buffers)
+  double tval = (double) mem_avail / (double) thread_mem_estimate;
+  int possible_nthreads = tval - 0.5;
+  if (possible_nthreads < 1) possible_nthreads = 1;
+
+  // note keyword is not detected in cctriples section if cctriples is called 
+  // by ccenergy directly as in energy(ccsd't') at present.
+  if (possible_nthreads < nthreads) {
+    nthreads = possible_nthreads;
+    fprintf(outfile,"\tReducing threads due to memory limitations.\n");
+  }
+
+  fprintf(outfile,"\tNumber of threads for explicit ijk threading: %4d.\n", nthreads);
+
+// Don't parallelize mkl if explicit threads are used; should be added for acml too.
 #ifdef HAVE_MKL
   int old_threads = mkl_get_max_threads();
   mkl_set_num_threads(1);
+  fprintf(outfile,"\tMKL num_threads set to 1 for explicit threading.\n\n");
 #endif
+  fflush(outfile);
+
+  thread_data_array = (struct thread_data *) malloc(nthreads*sizeof(struct thread_data));
+  p_thread = (pthread_t *) malloc(nthreads*sizeof(pthread_t));
 
   global_dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
   global_dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");

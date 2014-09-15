@@ -146,6 +146,7 @@ PsiReturnType cctriples(Options &options)
       fprintf(outfile, "\t(T) energy                    = %20.15f\n", ET);
       fprintf(outfile, "      * CCSD(T) total energy          = %20.15f\n",
           ET + moinfo.ecc + moinfo.eref);
+      fflush(outfile);
 
       Process::environment.globals["(T) CORRECTION ENERGY"] = ET;
       Process::environment.globals["CCSD(T) CORRELATION ENERGY"] = ET + moinfo.ecc;
