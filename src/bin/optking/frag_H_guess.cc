@@ -31,7 +31,7 @@
 #include "cov_radii.h"
 #include "physconst.h"
 #include "v3d.h"
-
+#include "psi4-dec.h"
 #define EXTERN
 #include "globals.h"
 
@@ -170,8 +170,12 @@ double ** FRAG::H_guess(void) {
           f[cnt++] = (A - (B*(R[b][c] - rBCcov)));
         break;
 
+        case (cart_type) :
+          f[cnt++] = 0.1;
+        break;
+
         default:
-          fprintf(outfile,"H_guess encountered unknown internal type.\n");
+          psi::outfile->Printf("H_guess encountered unknown internal type.\n");
           f[cnt++] = 1.0;
       } // end switch coordinate type
     } // loop over intcos
@@ -232,8 +236,12 @@ double ** FRAG::H_guess(void) {
           f[cnt++] = A + B * pow(L,D) / pow(R[b][c] * rBCcov, E) * exp(-C * (R[b][c] - rBCcov));
         break;
 
+        case (cart_type) :
+          f[cnt++] = 0.1;
+        break;
+
         default:
-          fprintf(outfile,"H_guess encountered unknown internal type.\n");
+          psi::outfile->Printf("H_guess encountered unknown internal type.\n");
           f[cnt++] = 1.0;
       } // end switch intcos
     } // end loop intcos
@@ -254,8 +262,12 @@ double ** FRAG::H_guess(void) {
           f[cnt++] = 0.1;
         break;
 
+        case (cart_type) :
+          f[cnt++] = 0.1;
+        break;
+
         default:
-          fprintf(outfile,"H_guess encountered unknown internal type.\n");
+          psi::outfile->Printf("H_guess encountered unknown internal type.\n");
           f[cnt++] = 1.0;
       }
     }
@@ -294,14 +306,18 @@ double ** FRAG::H_guess(void) {
           f[cnt++] = k_tau * Lindh_rho(a, b, R[a][b]) * Lindh_rho(b, c, R[b][c]) * Lindh_rho(c, d, R[c][d]);
         break;
 
+        case (cart_type) :
+          f[cnt++] = 0.1;
+        break;
+
         default:
-          fprintf(outfile,"H_guess encountered unknown internal type.\n");
+          psi::outfile->Printf("H_guess encountered unknown internal type.\n");
           f[cnt++] = 1.0;
       }
     }
   }
   else {
-    fprintf(outfile,"FRAG::H_guess(): Unknown Hessian guess type.\n");
+    psi::outfile->Printf("FRAG::H_guess(): Unknown Hessian guess type.\n");
   }
 
   free_matrix(R);

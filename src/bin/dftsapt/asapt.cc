@@ -164,21 +164,21 @@ double ASAPT::compute_energy()
 }
 void ASAPT::print_header() const
 {
-    fprintf(outfile, "\t --------------------------------------------------------\n");
-    fprintf(outfile, "\t                      A-SAPT Analysis                    \n");
-    fprintf(outfile, "\t                        Rob Parrish                      \n");
-    fprintf(outfile, "\t --------------------------------------------------------\n");
-    fprintf(outfile, "\n");
+    outfile->Printf( "\t --------------------------------------------------------\n");
+    outfile->Printf( "\t                      A-SAPT Analysis                    \n");
+    outfile->Printf( "\t                        Rob Parrish                      \n");
+    outfile->Printf( "\t --------------------------------------------------------\n");
+    outfile->Printf( "\n");
 
-    fprintf(outfile, "  ==> Sizes <==\n");
-    fprintf(outfile, "\n");
+    outfile->Printf( "  ==> Sizes <==\n");
+    outfile->Printf( "\n");
 
-    fprintf(outfile, "   => Resources <=\n\n");
+    outfile->Printf( "   => Resources <=\n\n");
 
-    fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
-    fprintf(outfile, "\n");
+    outfile->Printf( "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+    outfile->Printf( "\n");
 
-    fprintf(outfile, "   => Orbital Ranges <=\n\n");
+    outfile->Printf( "   => Orbital Ranges <=\n\n");
 
     int nmo_A = eps_focc_A_->dim() + eps_aocc_A_->dim() + eps_avir_A_->dim() + eps_fvir_A_->dim();
     int nmo_B = eps_focc_B_->dim() + eps_aocc_B_->dim() + eps_avir_B_->dim() + eps_fvir_B_->dim();
@@ -193,25 +193,25 @@ void ASAPT::print_header() const
         if (monomer_B_->Z(B) != 0.0) nB++;
     }
 
-    fprintf(outfile, "    ------------------\n");
-    fprintf(outfile, "    %-6s %5s %5s\n", "Range", "M_A", "M_B");
-    fprintf(outfile, "    ------------------\n");
-    fprintf(outfile, "    %-6s %5d %5d\n", "natom", nA, nB);
-    fprintf(outfile, "    %-6s %5d %5d\n", "nso", primary_A_->nbf(), primary_B_->nbf());
-    fprintf(outfile, "    %-6s %5d %5d\n", "nmo", nmo_A, nmo_B);
-    fprintf(outfile, "    %-6s %5d %5d\n", "nocc", eps_aocc_A_->dim() + eps_focc_A_->dim(), eps_aocc_B_->dim() + eps_focc_B_->dim());
-    fprintf(outfile, "    %-6s %5d %5d\n", "nvir", eps_avir_A_->dim() + eps_fvir_A_->dim(), eps_avir_B_->dim() + eps_fvir_B_->dim());
-    fprintf(outfile, "    %-6s %5d %5d\n", "nfocc", eps_focc_A_->dim(), eps_focc_B_->dim());
-    fprintf(outfile, "    %-6s %5d %5d\n", "naocc", eps_aocc_A_->dim(), eps_aocc_B_->dim());
-    fprintf(outfile, "    %-6s %5d %5d\n", "navir", eps_avir_A_->dim(), eps_avir_B_->dim());
-    fprintf(outfile, "    %-6s %5d %5d\n", "nfvir", eps_fvir_A_->dim(), eps_fvir_B_->dim());
-    fprintf(outfile, "    ------------------\n");
-    fprintf(outfile, "\n");
+    outfile->Printf( "    ------------------\n");
+    outfile->Printf( "    %-6s %5s %5s\n", "Range", "M_A", "M_B");
+    outfile->Printf( "    ------------------\n");
+    outfile->Printf( "    %-6s %5d %5d\n", "natom", nA, nB);
+    outfile->Printf( "    %-6s %5d %5d\n", "nso", primary_A_->nbf(), primary_B_->nbf());
+    outfile->Printf( "    %-6s %5d %5d\n", "nmo", nmo_A, nmo_B);
+    outfile->Printf( "    %-6s %5d %5d\n", "nocc", eps_aocc_A_->dim() + eps_focc_A_->dim(), eps_aocc_B_->dim() + eps_focc_B_->dim());
+    outfile->Printf( "    %-6s %5d %5d\n", "nvir", eps_avir_A_->dim() + eps_fvir_A_->dim(), eps_avir_B_->dim() + eps_fvir_B_->dim());
+    outfile->Printf( "    %-6s %5d %5d\n", "nfocc", eps_focc_A_->dim(), eps_focc_B_->dim());
+    outfile->Printf( "    %-6s %5d %5d\n", "naocc", eps_aocc_A_->dim(), eps_aocc_B_->dim());
+    outfile->Printf( "    %-6s %5d %5d\n", "navir", eps_avir_A_->dim(), eps_avir_B_->dim());
+    outfile->Printf( "    %-6s %5d %5d\n", "nfvir", eps_fvir_A_->dim(), eps_fvir_B_->dim());
+    outfile->Printf( "    ------------------\n");
+    outfile->Printf( "\n");
 
-    fprintf(outfile, "   => Primary Basis Set <=\n\n");
-    primary_->print_by_level(outfile, print_);
+    outfile->Printf( "   => Primary Basis Set <=\n\n");
+    primary_->print_by_level("outfile", print_);
 
-    fflush(outfile);
+    
 }
 void ASAPT::print_trailer()
 {
@@ -226,51 +226,51 @@ void ASAPT::print_trailer()
     energies_["Dispersion"]     = energies_["Disp20"] + energies_["Exch-Disp20"];
     energies_["SAPT"]           = energies_["Electrostatics"] + energies_["Exchange"] + energies_["Induction"] + energies_["Dispersion"];
 
-    fprintf(outfile,"\n    SAPT Results  \n");
-    fprintf(outfile,"  -----------------------------------------------------------------------\n");
-    fprintf(outfile,"    Electrostatics     %16.8lf mH %16.8lf kcal mol^-1\n",
+    outfile->Printf("\n    SAPT Results  \n");
+    outfile->Printf("  -----------------------------------------------------------------------\n");
+    outfile->Printf("    Electrostatics     %16.8lf mH %16.8lf kcal mol^-1\n",
       energies_["Electrostatics"]*1000.0,energies_["Electrostatics"]*pc_hartree2kcalmol);
-    fprintf(outfile,"      Elst10,r         %16.8lf mH %16.8lf kcal mol^-1\n\n",
+    outfile->Printf("      Elst10,r         %16.8lf mH %16.8lf kcal mol^-1\n\n",
       energies_["Elst10,r"]*1000.0,energies_["Elst10,r"]*pc_hartree2kcalmol);
-    fprintf(outfile,"    Exchange           %16.8lf mH %16.8lf kcal mol^-1\n",
+    outfile->Printf("    Exchange           %16.8lf mH %16.8lf kcal mol^-1\n",
       energies_["Exchange"]*1000.0,energies_["Exchange"]*pc_hartree2kcalmol);
-    fprintf(outfile,"      Exch10           %16.8lf mH %16.8lf kcal mol^-1\n",
+    outfile->Printf("      Exch10           %16.8lf mH %16.8lf kcal mol^-1\n",
       energies_["Exch10"]*1000.0,energies_["Exch10"]*pc_hartree2kcalmol);
-    fprintf(outfile,"      Exch10(S^2)      %16.8lf mH %16.8lf kcal mol^-1\n\n",
+    outfile->Printf("      Exch10(S^2)      %16.8lf mH %16.8lf kcal mol^-1\n\n",
       energies_["Exch10(S^2)"]*1000.0,energies_["Exch10(S^2)"]*pc_hartree2kcalmol);
-    fprintf(outfile,"    Induction          %16.8lf mH %16.8lf kcal mol^-1\n",
+    outfile->Printf("    Induction          %16.8lf mH %16.8lf kcal mol^-1\n",
       energies_["Induction"]*1000.0,energies_["Induction"]*pc_hartree2kcalmol);
-    fprintf(outfile,"      Ind20,r          %16.8lf mH %16.8lf kcal mol^-1\n",
+    outfile->Printf("      Ind20,r          %16.8lf mH %16.8lf kcal mol^-1\n",
       energies_["Ind20,r"]*1000.0,energies_["Ind20,r"]*pc_hartree2kcalmol);
-    fprintf(outfile,"      Exch-Ind20,r     %16.8lf mH %16.8lf kcal mol^-1\n",
+    outfile->Printf("      Exch-Ind20,r     %16.8lf mH %16.8lf kcal mol^-1\n",
       energies_["Exch-Ind20,r"]*1000.0,energies_["Exch-Ind20,r"]*pc_hartree2kcalmol);
-    fprintf(outfile,"      delta HF,r (2)   %16.8lf mH %16.8lf kcal mol^-1\n\n",
+    outfile->Printf("      delta HF,r (2)   %16.8lf mH %16.8lf kcal mol^-1\n\n",
       energies_["delta HF,r (2)"]*1000.0,energies_["delta HF,r (2)"]*pc_hartree2kcalmol);
-    fprintf(outfile,"    Dispersion         %16.8lf mH %16.8lf kcal mol^-1\n",
+    outfile->Printf("    Dispersion         %16.8lf mH %16.8lf kcal mol^-1\n",
       energies_["Dispersion"]*1000.0,energies_["Dispersion"]*pc_hartree2kcalmol);
-    fprintf(outfile,"      Disp20           %16.8lf mH %16.8lf kcal mol^-1\n",
+    outfile->Printf("      Disp20           %16.8lf mH %16.8lf kcal mol^-1\n",
       energies_["Disp20"]*1000.0,energies_["Disp20"]*pc_hartree2kcalmol);
-    fprintf(outfile,"      Exch-Disp20      %16.8lf mH %16.8lf kcal mol^-1\n\n",
+    outfile->Printf("      Exch-Disp20      %16.8lf mH %16.8lf kcal mol^-1\n\n",
       energies_["Exch-Disp20"]*1000.0,energies_["Exch-Disp20"]*pc_hartree2kcalmol);
 
-    fprintf(outfile,"    Total HF           %16.8lf mH %16.8lf kcal mol^-1\n",
+    outfile->Printf("    Total HF           %16.8lf mH %16.8lf kcal mol^-1\n",
       energies_["HF"]*1000.0,energies_["HF"]*pc_hartree2kcalmol);
-    fprintf(outfile,"    Total SAPT0        %16.8lf mH %16.8lf kcal mol^-1\n",
+    outfile->Printf("    Total SAPT0        %16.8lf mH %16.8lf kcal mol^-1\n",
       energies_["SAPT"]*1000.0,energies_["SAPT"]*pc_hartree2kcalmol);
-    fprintf(outfile,"\n");
+    outfile->Printf("\n");
 
-    fprintf(outfile, "  To the pessimist, the glass is half empty.\n");
-    fprintf(outfile, "  To the optimist, the glass is half full.\n");
-    fprintf(outfile, "  To the engineer, the glass is twice as big as it needs to be.\n");
-    fprintf(outfile, "\n");
+    outfile->Printf( "  To the pessimist, the glass is half empty.\n");
+    outfile->Printf( "  To the optimist, the glass is half full.\n");
+    outfile->Printf( "  To the engineer, the glass is twice as big as it needs to be.\n");
+    outfile->Printf( "\n");
 
-    fprintf(outfile, "  WARNING: ASAPT is not a finished/published code.\n");
-    fprintf(outfile, "  If you would like to use this feature, please contact the Sherrill group.\n");
-    fprintf(outfile, "\n");
+    outfile->Printf( "  WARNING: ASAPT is not a finished/published code.\n");
+    outfile->Printf( "  If you would like to use this feature, please contact the Sherrill group.\n");
+    outfile->Printf( "\n");
 }
 void ASAPT::atomize()
 {
-    fprintf(outfile," ATOMIZATION:\n\n");
+    outfile->Printf(" ATOMIZATION:\n\n");
     
     atomic_A_ = AtomicDensity::build("STOCKHOLDER", primary_A_, Process::environment.options);
     atomic_A_->compute(Matrix::doublet(Cocc_A_,Cocc_A_,false,true));
@@ -282,11 +282,11 @@ void ASAPT::atomize()
 }
 void ASAPT::localize()
 {
-    fprintf(outfile," LOCALIZATION:\n\n");
+    outfile->Printf(" LOCALIZATION:\n\n");
 
     if (sep_core_) {
 
-        fprintf(outfile,"  Local Core Orbitals for Monomer A:\n\n");
+        outfile->Printf("  Local Core Orbitals for Monomer A:\n\n");
         boost::shared_ptr<Localizer> localfA = Localizer::build(primary_, Cfocc_A_, Process::environment.options);
         localfA->localize();
         boost::shared_ptr<Matrix> Lfocc_A = localfA->L();
@@ -300,7 +300,7 @@ void ASAPT::localize()
         //FcfA->print();
         //FlfA->print();
 
-        fprintf(outfile,"  Local Valence Orbitals for Monomer A:\n\n");
+        outfile->Printf("  Local Valence Orbitals for Monomer A:\n\n");
         boost::shared_ptr<Localizer> localaA = Localizer::build(primary_, Caocc_A_, Process::environment.options);
         localaA->localize();
         boost::shared_ptr<Matrix> Laocc_A = localaA->L();
@@ -330,7 +330,7 @@ void ASAPT::localize()
             ::memcpy(&Uocc_Ap[i+nfA][nfA],&Uaocc_Ap[i][0],sizeof(double)*naA);
         }
 
-        fprintf(outfile,"  Local Core Orbitals for Monomer B:\n\n");
+        outfile->Printf("  Local Core Orbitals for Monomer B:\n\n");
         boost::shared_ptr<Localizer> localfB = Localizer::build(primary_, Cfocc_B_, Process::environment.options);
         localfB->localize();
         boost::shared_ptr<Matrix> Lfocc_B = localfB->L();
@@ -344,7 +344,7 @@ void ASAPT::localize()
         //FcfB->print();
         //FlfB->print();
 
-        fprintf(outfile,"  Local Valence Orbitals for Monomer B:\n\n");
+        outfile->Printf("  Local Valence Orbitals for Monomer B:\n\n");
         boost::shared_ptr<Localizer> localaB = Localizer::build(primary_, Caocc_B_, Process::environment.options);
         localaB->localize();
         boost::shared_ptr<Matrix> Laocc_B = localaB->L();
@@ -376,7 +376,7 @@ void ASAPT::localize()
 
     } else {
 
-        fprintf(outfile,"  Local Orbitals for Monomer A:\n\n");
+        outfile->Printf("  Local Orbitals for Monomer A:\n\n");
         boost::shared_ptr<Localizer> localA = Localizer::build(primary_, Cocc_A_, Process::environment.options);
         localA->localize();
         Locc_A_ = localA->L();
@@ -391,7 +391,7 @@ void ASAPT::localize()
         //FcA->print();
         //FlA->print();
 
-        fprintf(outfile,"  Local Orbitals for Monomer B:\n\n");
+        outfile->Printf("  Local Orbitals for Monomer B:\n\n");
         boost::shared_ptr<Localizer> localB = Localizer::build(primary_, Cocc_B_, Process::environment.options);
         localB->localize();
         Locc_B_ = localB->L();
@@ -408,11 +408,11 @@ void ASAPT::localize()
 
     }
 
-    fflush(outfile);
+    
 }
 void ASAPT::populate()
 {
-    fprintf(outfile,"  POPULATION:\n\n");
+    outfile->Printf("  POPULATION:\n\n");
 
     // => Sizing <= //
 
@@ -492,31 +492,31 @@ void ASAPT::populate()
         offset += npoints;
     }
 
-    fprintf(outfile,"    Grid-based orbital charges.\n\n");
+    outfile->Printf("    Grid-based orbital charges.\n\n");
 
-    fprintf(outfile,"    Monomer A Grid Errors (Orbital Normalizations):\n");
+    outfile->Printf("    Monomer A Grid Errors (Orbital Normalizations):\n");
     for (int a = 0; a < na; a++) {
         double val = 0.0;
         for (int A = 0; A < nA; A++) {
             val += Q2Ap[A][a]; 
         } 
         C_DSCAL(nA,1.0/val,&Q2Ap[0][a],na);
-        fprintf(outfile,"    %4d: %11.3E\n", a+1, fabs(1.0 - val));
+        outfile->Printf("    %4d: %11.3E\n", a+1, fabs(1.0 - val));
     }
-    fprintf(outfile,"\n");
+    outfile->Printf("\n");
 
-    fprintf(outfile,"    Monomer B Grid Errors (Orbital Normalizations):\n");
+    outfile->Printf("    Monomer B Grid Errors (Orbital Normalizations):\n");
     for (int b = 0; b < nb; b++) {
         double val = 0.0;
         for (int B = 0; B < nB; B++) {
             val += Q2Bp[B][b]; 
         } 
         C_DSCAL(nB,1.0/val,&Q2Bp[0][b],nb);
-        fprintf(outfile,"    %4d: %11.3E\n", b+1, fabs(1.0 - val));
+        outfile->Printf("    %4d: %11.3E\n", b+1, fabs(1.0 - val));
     }
-    fprintf(outfile,"\n");
+    outfile->Printf("\n");
 
-    fprintf(outfile,"    Orbital charges renormalized.\n\n");
+    outfile->Printf("    Orbital charges renormalized.\n\n");
 
     // => Globals <= //
 
@@ -531,7 +531,7 @@ void ASAPT::populate()
 }
 void ASAPT::elst()
 {
-    fprintf(outfile,"  ELECTROSTATICS:\n\n");
+    outfile->Printf("  ELECTROSTATICS:\n\n");
 
     // ==> Sizing <== //
 
@@ -812,22 +812,22 @@ void ASAPT::elst()
     }
     if (debug_) {
         for (int k = 0; k < Elst10_terms.size(); k++) {
-            fprintf(outfile,"    Elst10,r (%1d)        = %18.12lf H\n",k+1,Elst10_terms[k]);
+            outfile->Printf("    Elst10,r (%1d)        = %18.12lf H\n",k+1,Elst10_terms[k]);
         }
     }
     //energies_["Elst10,r"] = Elst10;
-    fprintf(outfile,"    Elst10,r            = %18.12lf H\n",Elst10);
-    fprintf(outfile,"\n");
-    fflush(outfile);
+    outfile->Printf("    Elst10,r            = %18.12lf H\n",Elst10);
+    outfile->Printf("\n");
+    
 
     // Grid error analysis 
-    fprintf(outfile,"  ==> Grid Errors <==\n\n");
-    fprintf(outfile,"    True Elst10,r       = %18.12lf H\n",energies_["Elst10,r"]);
-    fprintf(outfile,"    Grid Elst10,r       = %18.12lf H\n",Elst10);
-    fprintf(outfile,"    Grid Elst10,r Error = %18.12lf H\n",Elst10 - energies_["Elst10,r"]);
-    fprintf(outfile,"    Grid Elst10,r Rel   = %18.3E -\n",(Elst10 - energies_["Elst10,r"]) / energies_["Elst10,r"]);
-    fprintf(outfile,"\n");
-    fflush(outfile);
+    outfile->Printf("  ==> Grid Errors <==\n\n");
+    outfile->Printf("    True Elst10,r       = %18.12lf H\n",energies_["Elst10,r"]);
+    outfile->Printf("    Grid Elst10,r       = %18.12lf H\n",Elst10);
+    outfile->Printf("    Grid Elst10,r Error = %18.12lf H\n",Elst10 - energies_["Elst10,r"]);
+    outfile->Printf("    Grid Elst10,r Rel   = %18.3E -\n",(Elst10 - energies_["Elst10,r"]) / energies_["Elst10,r"]);
+    outfile->Printf("\n");
+    
 
     vis_->vars()["Elst_AB"] = Elst_atoms;
 
@@ -918,7 +918,7 @@ void ASAPT::elst()
 }
 void ASAPT::exch()
 {
-    fprintf(outfile, "  EXCHANGE:\n\n");
+    outfile->Printf( "  EXCHANGE:\n\n");
 
     // ==> Sizing <== //
 
@@ -1139,27 +1139,27 @@ void ASAPT::exch()
     }
     if (debug_) {
         for (int k = 0; k < Exch10_2_terms.size(); k++) {
-            fprintf(outfile,"    Exch10(S^2) (%1d)     = %18.12lf H\n",k+1,Exch10_2_terms[k]);
+            outfile->Printf("    Exch10(S^2) (%1d)     = %18.12lf H\n",k+1,Exch10_2_terms[k]);
         }
     }
     //energies_["Exch10(S^2)"] = Exch10_2;
-    fprintf(outfile,"    Exch10(S^2)         = %18.12lf H\n",Exch10_2);
-    fprintf(outfile, "\n");
-    fflush(outfile);
+    outfile->Printf("    Exch10(S^2)         = %18.12lf H\n",Exch10_2);
+    outfile->Printf( "\n");
+    
 
     // => Exchange scaling <= //
 
     if (exch_scale_) {
         double scale = energies_["Exch10"] / energies_["Exch10(S^2)"];
         E_exch->scale(scale);
-        fprintf(outfile,"    Scaling ASAPT Exchange by %11.3E to match S^\\infty\n\n", scale);
+        outfile->Printf("    Scaling ASAPT Exchange by %11.3E to match S^\\infty\n\n", scale);
     }
     
     vis_->vars()["Exch_ab"] = E_exch;
 }
 void ASAPT::ind()
 {
-    fprintf(outfile, "  INDUCTION:\n\n");
+    outfile->Printf( "  INDUCTION:\n\n");
 
     // => Sizing <= //
 
@@ -1377,17 +1377,17 @@ void ASAPT::ind()
     } 
 
     double Ind20u = Ind20u_AB + Ind20u_BA;
-    fprintf(outfile,"    Ind20,u (A<-B)      = %18.12lf H\n",Ind20u_AB);
-    fprintf(outfile,"    Ind20,u (A->B)      = %18.12lf H\n",Ind20u_BA);
-    fprintf(outfile,"    Ind20,u             = %18.12lf H\n",Ind20u);
-    fflush(outfile);
+    outfile->Printf("    Ind20,u (A<-B)      = %18.12lf H\n",Ind20u_AB);
+    outfile->Printf("    Ind20,u (A->B)      = %18.12lf H\n",Ind20u_BA);
+    outfile->Printf("    Ind20,u             = %18.12lf H\n",Ind20u);
+    
 
     double ExchInd20u = ExchInd20u_AB + ExchInd20u_BA;
-    fprintf(outfile,"    Exch-Ind20,u (A<-B) = %18.12lf H\n",ExchInd20u_AB);
-    fprintf(outfile,"    Exch-Ind20,u (B<-A) = %18.12lf H\n",ExchInd20u_BA);
-    fprintf(outfile,"    Exch-Ind20,u        = %18.12lf H\n",ExchInd20u);
-    fprintf(outfile,"\n");
-    fflush(outfile);
+    outfile->Printf("    Exch-Ind20,u (A<-B) = %18.12lf H\n",ExchInd20u_AB);
+    outfile->Printf("    Exch-Ind20,u (B<-A) = %18.12lf H\n",ExchInd20u_BA);
+    outfile->Printf("    Exch-Ind20,u        = %18.12lf H\n",ExchInd20u);
+    outfile->Printf("\n");
+    
 
     double Ind = Ind20u + ExchInd20u;
     boost::shared_ptr<Matrix> Ind_AB_terms = Indu_AB_terms;
@@ -1395,7 +1395,7 @@ void ASAPT::ind()
 
     if (ind_resp_) {
 
-        fprintf(outfile, "  COUPLED INDUCTION (You asked for it!):\n\n");
+        outfile->Printf( "  COUPLED INDUCTION (You asked for it!):\n\n");
 
         // ==> Coupled Targets <== //
 
@@ -1454,7 +1454,7 @@ void ASAPT::ind()
             if (C < nB) fread(wBp[0],sizeof(double),na*nr,WBarf); 
             if (C < nA) fread(wAp[0],sizeof(double),nb*ns,WAbsf); 
 
-            fprintf(outfile,"    Responses for (A <- Atom B = %3d) and (B <- Atom A = %3d)\n\n",
+            outfile->Printf("    Responses for (A <- Atom B = %3d) and (B <- Atom A = %3d)\n\n",
                     (C < nB ? C : nB - 1), (C < nA ? C : nA - 1));
 
             std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix> > x_sol = compute_x(jk,wB,wA);
@@ -1501,17 +1501,17 @@ void ASAPT::ind()
         }
 
         double Ind20r = Ind20r_AB + Ind20r_BA;
-        fprintf(outfile,"    Ind20,r (A<-B)      = %18.12lf H\n",Ind20r_AB);
-        fprintf(outfile,"    Ind20,r (A->B)      = %18.12lf H\n",Ind20r_BA);
-        fprintf(outfile,"    Ind20,r             = %18.12lf H\n",Ind20r);
-        fflush(outfile);
+        outfile->Printf("    Ind20,r (A<-B)      = %18.12lf H\n",Ind20r_AB);
+        outfile->Printf("    Ind20,r (A->B)      = %18.12lf H\n",Ind20r_BA);
+        outfile->Printf("    Ind20,r             = %18.12lf H\n",Ind20r);
+        
 
         double ExchInd20r = ExchInd20r_AB + ExchInd20r_BA;
-        fprintf(outfile,"    Exch-Ind20,r (A<-B) = %18.12lf H\n",ExchInd20r_AB);
-        fprintf(outfile,"    Exch-Ind20,r (B<-A) = %18.12lf H\n",ExchInd20r_BA);
-        fprintf(outfile,"    Exch-Ind20,r        = %18.12lf H\n",ExchInd20r);
-        fprintf(outfile,"\n");
-        fflush(outfile);
+        outfile->Printf("    Exch-Ind20,r (A<-B) = %18.12lf H\n",ExchInd20r_AB);
+        outfile->Printf("    Exch-Ind20,r (B<-A) = %18.12lf H\n",ExchInd20r_BA);
+        outfile->Printf("    Exch-Ind20,r        = %18.12lf H\n",ExchInd20r);
+        outfile->Printf("\n");
+        
 
         Ind = Ind20r + ExchInd20r;
         Ind_AB_terms = Indr_AB_terms;
@@ -1529,7 +1529,7 @@ void ASAPT::ind()
         double scale = IndSAPT0 / Ind;
         Ind_AB_terms->scale(scale);
         Ind_BA_terms->scale(scale);
-        fprintf(outfile,"    Scaling ASAPT Induction by %11.3E to match SAPT0\n\n", scale);
+        outfile->Printf("    Scaling ASAPT Induction by %11.3E to match SAPT0\n\n", scale);
     }
     
     vis_->vars()["IndAB_aB"] = Ind_AB_terms;
@@ -1537,7 +1537,7 @@ void ASAPT::ind()
 }
 void ASAPT::disp()
 {
-    fprintf(outfile, "  DISPERSION:\n\n");
+    outfile->Printf( "  DISPERSION:\n\n");
 
     // => Sizing <= //
 
@@ -2078,10 +2078,10 @@ void ASAPT::disp()
 
     energies_["Disp20"] = Disp20;
     energies_["Exch-Disp20"] = ExchDisp20;
-    fprintf(outfile,"    Disp20              = %18.12lf H\n",Disp20);
-    fprintf(outfile,"    Exch-Disp20         = %18.12lf H\n",ExchDisp20);
-    fprintf(outfile,"\n");
-    fflush(outfile);
+    outfile->Printf("    Disp20              = %18.12lf H\n",Disp20);
+    outfile->Printf("    Exch-Disp20         = %18.12lf H\n",ExchDisp20);
+    outfile->Printf("\n");
+    
 
     vis_->vars()["Disp_ab"] = E_disp;
 }

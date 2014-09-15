@@ -73,14 +73,14 @@ void diag(void)
         nroot = david(A_AA.matrix[h], dim, params.rpi[h], eps, v, params.convergence, 0);
 
 	if(nroot != params.rpi[h])
-	  fprintf(outfile, "\tDavidson algorithm converged only %d roots in irrep %d.\n", 
+	  outfile->Printf( "\tDavidson algorithm converged only %d roots in irrep %d.\n", 
 		  nroot, h);
       }
 
       global_dpd_->buf4_mat_irrep_close(&A_AA, h);
 
       /*
-	fprintf(outfile, "RHF-CIS Singlet Eigenvectors for irrep %d:\n", h);
+	outfile->Printf( "RHF-CIS Singlet Eigenvectors for irrep %d:\n", h);
 	print_mat(v, dim, params.rpi[h], outfile);
       */
 
@@ -134,7 +134,7 @@ void diag(void)
 	nroot = david(A_AA.matrix[h], dim, params.rpi[h], eps, v, params.convergence, 0);
 
 	if(nroot != params.rpi[h])
-	  fprintf(outfile, "\tDavidson algorithm converged only %d roots in irrep %d.\n", 
+	  outfile->Printf( "\tDavidson algorithm converged only %d roots in irrep %d.\n", 
 		  nroot, h);
       }
 
@@ -219,12 +219,12 @@ void diag(void)
 	nroot = david(A, dim, params.rpi[h], eps, v, params.convergence, 0);
 
 	if(nroot != params.rpi[h])
-	  fprintf(outfile, "\tDavidson algorithm converged only %d roots in irrep %d.\n", 
+	  outfile->Printf( "\tDavidson algorithm converged only %d roots in irrep %d.\n", 
 		  nroot, h);
       }
 
       /*
-	fprintf(outfile, "UHF-CIS Eigenvectors for irrep %d:\n", h);
+	outfile->Printf( "UHF-CIS Eigenvectors for irrep %d:\n", h);
 	print_mat(v, dim, params.rpi[h], outfile);
       */
 

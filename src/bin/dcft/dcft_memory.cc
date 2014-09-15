@@ -168,7 +168,7 @@ DCFTSolver::init()
 
     // Store the AO overlap matrix
     double *sArray = new double[ntriso_];
-    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_S, sArray, ntriso_, 0, 0, outfile);
+    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_S, sArray, ntriso_, 0, 0, "outfile");
     ao_s_->set(sArray);
     delete [] sArray;
 

@@ -62,7 +62,7 @@ void read_integrals()
    double value;
    extern double check_energy(double *H, double *twoel_ints, int *docc, 
       int *frozen_docc, int fzc_flag, double escf, double enuc, double efzc, 
-      int nirreps, int *reorder, int *opi, int print_lvl, FILE *outfile);
+      int nirreps, int *reorder, int *opi, int print_lvl, std::string out);
    int junk;
    double *tmp_onel_ints;
    int *tmp_frdocc, *tmp_fruocc;
@@ -85,7 +85,7 @@ void read_integrals()
 
    tmp_onel_ints = init_array(nmotri_full);
    iwl_rdone(Parameters.oei_file, PSIF_MO_FZC, tmp_onel_ints, nmotri_full,
-             0, (Parameters.print_lvl>4), outfile);
+             0, (Parameters.print_lvl>4), "outfile");
    filter(tmp_onel_ints, CalcInfo.onel_ints, ioff, CalcInfo.nmo, 
 	  CalcInfo.num_fzc_orbs, CalcInfo.num_fzv_orbs);
    free(tmp_onel_ints);
@@ -111,7 +111,7 @@ void read_integrals()
 
   iwl_rdtwo(Parameters.tei_file, CalcInfo.twoel_ints, ioff, CalcInfo.nmo,
              nfilter_core, nfilter_vir, 
-             (Parameters.print_lvl>4), outfile);
+             (Parameters.print_lvl>4), "outfile");
 
    /* Determine maximum K integral for use in averaging the diagonal */
    /* Hamiltonian matrix elements over spin-coupling set */
@@ -128,24 +128,24 @@ void read_integrals()
         if(CalcInfo.maxK[i] > CalcInfo.maxKlist)
           CalcInfo.maxKlist = CalcInfo.maxK[i];
         if (Parameters.print_lvl > 4)
-          fprintf(outfile,"maxK[%d] = %lf\n",i, CalcInfo.maxK[i]);
+          outfile->Printf("maxK[%d] = %lf\n",i, CalcInfo.maxK[i]);
         } 
       }
 
    if (Parameters.print_lvl > 4) {
-      fprintf(outfile, "\nOne-electron integrals\n") ;
+      outfile->Printf( "\nOne-electron integrals\n") ;
       for (i=0, ij=0; i<CalcInfo.num_ci_orbs; i++) {
          for (j=0; j<=i; j++, ij++) {
-            fprintf(outfile, "h(%d)(%d) = %11.7lf\n", i, j, 
+            outfile->Printf( "h(%d)(%d) = %11.7lf\n", i, j, 
                CalcInfo.onel_ints[ij]) ;
             }
          }
-      fprintf(outfile, "\n") ;
+      outfile->Printf( "\n") ;
       }
 
    if (Parameters.print_lvl > 4) {
-      fprintf(outfile, "\nmaxKlist = %lf\n",CalcInfo.maxKlist);
-      fprintf(outfile, "\nTwo-electron integrals\n");
+      outfile->Printf( "\nmaxKlist = %lf\n",CalcInfo.maxKlist);
+      outfile->Printf( "\nTwo-electron integrals\n");
       for (i=0; i<CalcInfo.num_ci_orbs; i++) {
          for (j=0; j<=i; j++) {
             ij = ioff[MAX0(i,j)] + MIN0(i,j) ;
@@ -153,7 +153,7 @@ void read_integrals()
                for (l=0; l<=k; l++) {
                   kl = ioff[MAX0(k,l)] + MIN0(k,l) ;
                   ijkl = ioff[MAX0(ij,kl)] + MIN0(ij,kl) ;
-                  fprintf(outfile, "%2d %2d %2d %2d (%4d) = %10.6lf\n",
+                  outfile->Printf( "%2d %2d %2d %2d (%4d) = %10.6lf\n",
                      i, j, k, l, ijkl, CalcInfo.twoel_ints[ijkl]);
                   } 
                }
@@ -164,7 +164,7 @@ void read_integrals()
    CalcInfo.eref = check_energy(CalcInfo.onel_ints, CalcInfo.twoel_ints, 
       CalcInfo.docc, CalcInfo.frozen_docc, Parameters.fzc, CalcInfo.escf, 
       CalcInfo.enuc, CalcInfo.efzc, CalcInfo.nirreps, CalcInfo.reorder, 
-      CalcInfo.orbs_per_irr, Parameters.print_lvl, outfile);
+      CalcInfo.orbs_per_irr, Parameters.print_lvl, "outfile");
 
 } 
 
@@ -213,7 +213,7 @@ double get_twoel(int i, int j, int k, int l)
 **    equation (20) of Olsen, Roos, et. al. JCP 1988
 **
 */
-void tf_onel_ints(int printflag, FILE *outfile)
+void tf_onel_ints(int printflag, std::string out)
 {
    int i, j, k, ij, ik, kj, ikkj ;
    int nbf ;
@@ -256,9 +256,9 @@ void tf_onel_ints(int printflag, FILE *outfile)
          }
    /* print if necessary */
    if (printflag) {
-      fprintf(outfile, "\nh' matrix\n") ;
-      print_array(CalcInfo.tf_onel_ints, nbf, outfile) ;
-      fprintf(outfile, "\n") ;
+      outfile->Printf( "\nh' matrix\n") ;
+      print_array(CalcInfo.tf_onel_ints, nbf, "outfile") ;
+      outfile->Printf( "\n") ;
       }
 }
 
@@ -270,7 +270,7 @@ void tf_onel_ints(int printflag, FILE *outfile)
 **    See equations (28-29) in Olsen, Roos, et. al. JCP 1988
 **
 */
-void form_gmat(int printflag, FILE *outfile)
+void form_gmat(int printflag, std::string out)
 {
    int nbf ;
    double *tei, *oei ;
@@ -325,9 +325,9 @@ void form_gmat(int printflag, FILE *outfile)
       }
 
    if (printflag) {
-      fprintf(outfile, "\ng matrix\n") ;
-      print_mat(CalcInfo.gmat, nbf, nbf, outfile) ;
-      fprintf(outfile, "\n") ;
+      outfile->Printf( "\ng matrix\n") ;
+      print_mat(CalcInfo.gmat, nbf, nbf, "outfile") ;
+      outfile->Printf( "\n") ;
       }
 }
 

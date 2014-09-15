@@ -21,9 +21,10 @@
  */
 
 // This tells us the Python version number
+#include <boost/python.hpp>
 #include <boost/python/detail/wrap_python.hpp>
 #include <boost/python/module.hpp>
-#include <boost/python.hpp>
+
 #include <boost/tokenizer.hpp>
 #include <boost/python/list.hpp>
 #include <boost/python/dict.hpp>
@@ -47,7 +48,7 @@
 #include <psi4-dec.h>
 #include "script.h"
 #include "psi4.h"
-
+#include "libparallel/ParallelPrinter.h"
 #include "../ccenergy/ccwave.h"
 #include "../cclambda/cclambda.h"
 //#include "../mp2/mp2wave.h"
@@ -60,7 +61,7 @@
 #include <libparallel/parallel.h>
 namespace psi {
     int psi_start(int argc, char *argv[]);
-    int psi_stop(FILE* infile, FILE* outfile, char* psi_file_prefix);
+    int psi_stop(FILE* infile, std::string, char* psi_file_prefix);
 }
 #endif
 
@@ -79,6 +80,8 @@ void export_mints();
 void export_functional();
 void export_oeprop();
 void export_cubefile();
+void export_libfrag();
+
 
 // In export_plugins.cc
 void py_psi_plugin_close_all();
@@ -150,30 +153,30 @@ namespace psi {
     }
 
     extern int read_options(const std::string &name, Options & options, bool suppress_printing = false);
-    extern void print_version(FILE *myout);
-    extern FILE *outfile;
+    extern void print_version(std::string);
+    
 }
 
 void py_flush_outfile()
 {
-    fflush(outfile);
+    
 }
 
 void py_close_outfile()
 {
-    if (outfile != stdout) {
-        fclose(outfile);
-        outfile = NULL;
+    if (outfile) {
+        outfile =boost::shared_ptr<OutFile>();
     }
 }
 
 void py_reopen_outfile()
 {
-    if (outfile_name == "stdout")
-        outfile = stdout;
+    if (outfile_name == "stdout"){
+        //outfile = stdout;
+    }
     else {
-        outfile = fopen(outfile_name.c_str(), "a");
-        if (outfile == NULL)
+        outfile = boost::shared_ptr<OutFile>(new OutFile(outfile_name,APPEND));
+        if(!outfile)
             throw PSIEXCEPTION("PSI4: Unable to reopen output file.");
     }
 }
@@ -181,8 +184,8 @@ void py_reopen_outfile()
 void py_be_quiet()
 {
 	py_close_outfile();
-	outfile = fopen("/dev/null", "a");
-	if (outfile == NULL)
+	outfile = boost::shared_ptr<OutFile>(new OutFile("/dev/null", APPEND));
+	if (!outfile)
 		throw PSIEXCEPTION("PSI4: Unable to redirect output to /dev/null.");
 }
 
@@ -661,7 +664,7 @@ boost::python::list py_psi_get_global_option_list()
 
 void py_psi_print_out(std::string s)
 {
-    fprintf(outfile,"%s",s.c_str());
+    outfile->Printf("%s",s.c_str());
 }
 
 /**
@@ -998,7 +1001,6 @@ void py_psi_set_parent_symmetry(std::string pg)
     Process::environment.set_parent_symmetry(group);
 }
 
-
 boost::shared_ptr<Molecule> py_psi_get_active_molecule()
 {
     return Process::environment.molecule();
@@ -1064,7 +1066,7 @@ void py_psi_clean_variable_map()
 void py_psi_set_memory(unsigned long int mem)
 {
     Process::environment.set_memory(mem);
-    fprintf(outfile,"\n  Memory set to %7.3f %s by Python script.\n",(mem > 1000000000 ? mem/1.0E9 : mem/1.0E6), \
+    outfile->Printf("\n  Memory set to %7.3f %s by Python script.\n",(mem > 1000000000 ? mem/1.0E9 : mem/1.0E6), \
         (mem > 1000000000 ? "GiB" : "MiB" ));
 }
 
@@ -1083,14 +1085,72 @@ int py_psi_get_n_threads()
     return Process::environment.get_n_threads();
 }
 
-int py_psi_get_nproc()
+int py_psi_get_nproc(const std::string& CommName)
 {
-    return WorldComm->nproc();
+    return WorldComm->nproc(CommName);
 }
 
-int py_psi_get_me()
+int py_psi_get_me(const std::string& CommName)
 {
-    return WorldComm->me();
+    return WorldComm->me(CommName);
+}
+
+void py_make_comm(const std::string& CommName,const int Color,const std::string& Comm2Split){
+	WorldComm->MakeComm(CommName,Color,Comm2Split);
+}
+
+void py_free_comm(const std::string& CommName){
+	WorldComm->FreeComm(CommName);
+}
+
+std::string py_get_comm(){
+	std::string the_comm=WorldComm->communicator();
+	return the_comm;
+}
+
+
+template <typename T>
+boost::python::list bcast_wrapper(T* data,int nelem, int broadcaster,const std::string& CommName){
+	int me=WorldComm->me(CommName);
+	T* datatarget;
+	if(me!=broadcaster)datatarget=new T[nelem];
+	else datatarget=data;
+	WorldComm->bcast(datatarget,nelem,broadcaster,CommName);
+	boost::python::list data2return;
+	for(int i=0;i<nelem;i++)data2return.append(datatarget[i]);
+	if(me!=broadcaster)delete [] datatarget;
+	return data2return;
+}
+
+boost::python::list py_bcast_double(boost::python::list& data,int broadcaster,const std::string& CommName){
+	std::vector<double>data2bcast;
+	int nelem=boost::python::len(data);
+	for(int i=0;i<nelem;i++)data2bcast.push_back(boost::python::extract<double>(data[i]));
+	return bcast_wrapper(&data2bcast[0],nelem,broadcaster,CommName);
+}
+
+template <typename T>
+boost::python::list all_gather_wrapper(const T* data, int nelem,const std::string& CommName){
+	int nproc=WorldComm->nproc(CommName);
+	int TotalElem=nproc*nelem;
+	T *datatarget=new T[TotalElem];
+	WorldComm->all_gather(data,nelem,datatarget,CommName);
+	boost::python::list data2return;
+	for(int i=0;i<TotalElem;i++)data2return.append(datatarget[i]);
+	delete [] datatarget;
+	return data2return;
+}
+
+
+boost::python::list py_all_gather_double(const boost::python::list& data,const std::string& CommName){
+	std::vector<double>data2gather;
+	int nelem=boost::python::len(data);
+	for(int i=0;i<nelem;i++)data2gather.push_back(boost::python::extract<double>(data[i]));
+	return all_gather_wrapper(&data2gather[0],nelem,CommName);
+}
+
+void py_sync(const std::string& CommName){
+	WorldComm->sync(CommName);
 }
 
 boost::shared_ptr<Wavefunction> py_psi_wavefunction()
@@ -1120,9 +1180,9 @@ void py_psi_print_variable_map()
             std::fixed << std::setprecision(12) << it->second << std::endl;
     }
 
-    fprintf(outfile, "\n\n  Variable Map:");
-    fprintf(outfile, "\n  ----------------------------------------------------------------------------\n");
-    fprintf(outfile, "%s\n\n", line.str().c_str());
+    outfile->Printf( "\n\n  Variable Map:");
+    outfile->Printf( "\n  ----------------------------------------------------------------------------\n");
+    outfile->Printf( "%s\n\n", line.str().c_str());
 }
 
 std::string py_psi_top_srcdir()
@@ -1140,7 +1200,7 @@ bool psi4_python_module_initialize()
         return true;
     }
 
-    print_version(stdout);
+    print_version("stdout");
 
     // Track down the location of PSI4's python script directory.
     std::string psiDataDirName = Process::environment("PSIDATADIR");
@@ -1183,11 +1243,11 @@ void psi4_python_module_finalize()
     // There is only one timer:
     timer_done();
 
-    psi_stop(infile, outfile, psi_file_prefix);
+    psi_stop(infile, "outfile", psi_file_prefix);
     Script::language->finalize();
 
     WorldComm->sync();
-    WorldComm->finalize();
+    //WorldComm->finalize();
 }
 #endif
 
@@ -1203,12 +1263,12 @@ BOOST_PYTHON_FUNCTION_OVERLOADS(set_local_option_overloads, py_psi_set_local_opt
 BOOST_PYTHON_MODULE(psi4)
 {
 #if defined(MAKE_PYTHON_MODULE)
+    // Initialize the world communicator
+    WorldComm = boost::shared_ptr<worldcomm>(new worldcomm(0, 0));
+
     // Setup the environment
     Process::arguments.initialize(0, 0);
     Process::environment.initialize(); // Defaults to obtaining the environment from the global environ variable
-
-    // Initialize the world communicator
-    WorldComm = initialize_communicator(0, 0);
 
     // There is only one timer:
     timer_init();
@@ -1229,6 +1289,10 @@ BOOST_PYTHON_MODULE(psi4)
     def("initialize", &psi4_python_module_initialize);
     def("finalize", &psi4_python_module_finalize);
 #endif
+
+
+
+
 
     register_exception_translator<PsiException>(&translate_psi_exception);
 
@@ -1273,8 +1337,14 @@ BOOST_PYTHON_MODULE(psi4)
     def("get_memory", py_psi_get_memory, "Returns the amount of memory available to Psi (in bytes).");
     def("set_nthread", &py_psi_set_n_threads, "Sets the number of threads to use in SMP parallel computations.");
     def("nthread", &py_psi_get_n_threads, "Returns the number of threads to use in SMP parallel computations.");
-    def("nproc", &py_psi_get_nproc, "Returns the number of processors being used in a MADNESS parallel run.");
-    def("me", &py_psi_get_me, "Returns the current process ID in a MADNESS parallel run.");
+    def("nproc", &py_psi_get_nproc, "Returns the number of processes.");
+    def("me", &py_psi_get_me, "Returns the current process ID.");
+    def("make_comm",&py_make_comm, "Makes a communicator");
+    def("free_comm",&py_free_comm, "Frees a communicator");
+    def("get_comm",&py_get_comm, "Returns the current communicator");
+    def("sync",&py_sync,"Waits for all MPI processes to ketchup");
+    def("bcast_double",&py_bcast_double,"broadcasts a list of doubles");
+    def("all_gather_double",&py_all_gather_double,"all_gathers a list of doubles");
 
     def("set_parent_symmetry", py_psi_set_parent_symmetry, "Sets the symmetry of the 'parent' (undisplaced) geometry, by Schoenflies symbol, at the beginning of a finite difference computation.");
     def("print_options", py_psi_print_options, "Prints the currently set options (to the output file) for the current module.");
@@ -1389,6 +1459,8 @@ BOOST_PYTHON_MODULE(psi4)
     export_chkpt();
     export_mints();
     export_functional();
+    export_libfrag();
+
 
     typedef string (Process::Environment::*environmentStringFunction)(const string&);
 
@@ -1433,12 +1505,12 @@ void Python::run(FILE *input)
 
 #if PY_MAJOR_VERSION == 2
         if (PyImport_AppendInittab(strdup("psi4"), initpsi4) == -1) {
-            fprintf(stderr, "Unable to register psi4 with your Python.\n");
+            outfile->Printf( "Unable to register psi4 with your Python.\n");
             abort();
         }
 #else
         if (PyImport_AppendInittab(strdup("psi4"), PyInit_psi4) == -1) {
-            fprintf(stderr, "Unable to register psi4 with your Python.\n");
+            outfile->Printf( "Unable to register psi4 with your Python.\n");
             abort();
         }
 #endif
@@ -1548,8 +1620,8 @@ void Python::run(FILE *input)
                     inputfile = file.str();
 
                 if (verbose) {
-                    fprintf(outfile, "\n Input file to run:\n%s", inputfile.c_str());
-                    fflush(outfile);
+                    outfile->Printf( "\n Input file to run:\n%s", inputfile.c_str());
+                    
                 }
 
                 str strStartScript(inputfile);
@@ -1574,7 +1646,7 @@ void Python::run(FILE *input)
         }
     }
     else {
-        fprintf(stderr, "Unable to run Python input file.\n");
+        outfile->Printf( "Unable to run Python input file.\n");
         return;
     }
 

@@ -84,8 +84,8 @@ IntegralTransform::backtransform_density()
           }
         }
         if(print_>4){
-            fprintf(outfile, "The MO basis OPDM");
-            print_array(tempMo, nmo_, outfile);
+            outfile->Printf( "The MO basis OPDM");
+            print_array(tempMo, nmo_, "outfile");
         }
 
         for(int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h){
@@ -95,8 +95,8 @@ IntegralTransform::backtransform_density()
             moOffset += mopi_[h];
         }
         if(print_>4){
-            fprintf(outfile, "The SO basis OPDM");
-            print_array(tempSo, nso_, outfile);
+            outfile->Printf( "The SO basis OPDM");
+            print_array(tempSo, nso_, "outfile");
         }
         psio_->write_entry(PSIF_AO_OPDM, "SO-basis OPDM", (char *) tempSo, sizeof(double)*nTriSo_);
 
@@ -113,8 +113,8 @@ IntegralTransform::backtransform_density()
           }
         }
         if(print_>4){
-            fprintf(outfile, "The MO basis Lagrangian\n");
-            print_array(tempMo, nmo_, outfile);
+            outfile->Printf( "The MO basis Lagrangian\n");
+            print_array(tempMo, nmo_, "outfile");
         }
 
         for(int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h){
@@ -124,8 +124,8 @@ IntegralTransform::backtransform_density()
             moOffset += mopi_[h];
         }
         if(print_>4){
-            fprintf(outfile, "The SO basis Lagrangian\n");
-            print_array(tempSo, nso_, outfile);
+            outfile->Printf( "The SO basis Lagrangian\n");
+            print_array(tempSo, nso_, "outfile");
         }
         psio_->write_entry(PSIF_AO_OPDM, "SO-basis Lagrangian", (char *) tempSo, sizeof(double)*nTriSo_);
 
@@ -147,8 +147,8 @@ IntegralTransform::backtransform_density()
           }
         }
         if(print_>4){
-            fprintf(outfile, "The MO basis Alpha OPDM");
-            print_array(tempMo, nmo_, outfile);
+            outfile->Printf( "The MO basis Alpha OPDM");
+            print_array(tempMo, nmo_, "outfile");
         }
 
         for(int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h){
@@ -167,8 +167,8 @@ IntegralTransform::backtransform_density()
           }
         }
         if(print_>4){
-            fprintf(outfile, "The MO basis Beta OPDM");
-            print_array(tempMo, nmo_, outfile);
+            outfile->Printf( "The MO basis Beta OPDM");
+            print_array(tempMo, nmo_, "outfile");
         }
         for(int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h){
             // Note the final argument here, which tells the code to accumulate the beta contribution into the alpha
@@ -178,8 +178,8 @@ IntegralTransform::backtransform_density()
             moOffset += mopi_[h];
         }
         if(print_>4){
-            fprintf(outfile, "The SO basis OPDM");
-            print_array(tempSo, nso_, outfile);
+            outfile->Printf( "The SO basis OPDM");
+            print_array(tempSo, nso_, "outfile");
         }
         psio_->write_entry(PSIF_AO_OPDM, "SO-basis OPDM", (char *) tempSo, sizeof(double)*nTriSo_);
 
@@ -196,8 +196,8 @@ IntegralTransform::backtransform_density()
           }
         }
         if(print_>4){
-            fprintf(outfile, "The MO basis Alpha Lagrangian\n");
-            print_array(tempMo, nmo_, outfile);
+            outfile->Printf( "The MO basis Alpha Lagrangian\n");
+            print_array(tempMo, nmo_, "outfile");
         }
         for(int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h){
             double **pC = Ca_->pointer(h);
@@ -215,8 +215,8 @@ IntegralTransform::backtransform_density()
           }
         }
         if(print_>4){
-            fprintf(outfile, "The MO basis Beta Lagrangian\n");
-            print_array(tempMo, nmo_, outfile);
+            outfile->Printf( "The MO basis Beta Lagrangian\n");
+            print_array(tempMo, nmo_, "outfile");
         }
         for(int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h){
             // Note the final argument here, which tells the code to accumulate the beta contribution into the alpha
@@ -226,8 +226,8 @@ IntegralTransform::backtransform_density()
             moOffset += mopi_[h];
         }
         if(print_>4){
-            fprintf(outfile, "The SO basis Lagrangian\n");
-            print_array(tempSo, nso_, outfile);
+            outfile->Printf( "The SO basis Lagrangian\n");
+            print_array(tempSo, nso_, "outfile");
         }
         psio_->write_entry(PSIF_AO_OPDM, "SO-basis Lagrangian", (char *) tempSo, sizeof(double)*nTriSo_);
 

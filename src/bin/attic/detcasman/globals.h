@@ -40,7 +40,7 @@
 #define _psi_src_bin_detcasman_globals_h_ 
 
 extern "C" {
-  extern FILE *infile, *outfile;
+  
   extern char *psi_file_prefix;
 }
 

@@ -86,7 +86,7 @@ MAD_MP2::MAD_MP2(Options& options, boost::shared_ptr<PSIO> psio) :
         Ca_->print();
         AO2USO_->print();
         epsilon_a_->print();
-        fflush(outfile);
+        
         printf("Start of MadMP2\n");
         ORDER_PRINT_END
     }
@@ -227,7 +227,7 @@ void MAD_MP2::common_init()
 
     if (debug_) {
         for (int h = 0; h < nirrep_; h++) {
-            fprintf(outfile, "  h = %1d: naocc = %4d aocc_off = %4d navir = %4d avir_off = %4d\n",
+            outfile->Printf( "  h = %1d: naocc = %4d aocc_off = %4d navir = %4d avir_off = %4d\n",
                 h, naoccpi_[h], offset_aocc_[h], navirpi_[h], offset_avir_[h]);
         }
     }
@@ -286,7 +286,7 @@ void MAD_MP2::common_init()
 
     if (debug_ > 2) {
         AO2USO_aux_->print();
-        fflush(outfile);
+        
     }
 
     Dimension dim = pet2->SO_basisdim();
@@ -564,52 +564,52 @@ void MAD_MP2::parallel_init()
 }
 void MAD_MP2::print_header()
 {
-    fprintf(outfile, "\n");
-    fprintf(outfile, "         ------------------------------------------------------------\n");
-    fprintf(outfile, "                                DFMP2 MADNESS\n");
-    fprintf(outfile, "                          %8s Implementation\n", (options_.get_bool("PARALLEL") ? "MADNESS" : "SERIAL"));
-    fprintf(outfile, "                              %6s Algorithm\n", options_.get_str("MP2_ALGORITHM").c_str());
-    fprintf(outfile, "                        %3d Threads, %6ld MiB Core\n", omp_nthread_, memory_ / 1000000L);
-    fprintf(outfile, "          Ben Mintz, Rob Parrish, Andy Simmonnett, and Justin Turney\n");
-    fprintf(outfile, "         ------------------------------------------------------------\n\n");
+    outfile->Printf( "\n");
+    outfile->Printf( "         ------------------------------------------------------------\n");
+    outfile->Printf( "                                DFMP2 MADNESS\n");
+    outfile->Printf( "                          %8s Implementation\n", (options_.get_bool("PARALLEL") ? "MADNESS" : "SERIAL"));
+    outfile->Printf( "                              %6s Algorithm\n", options_.get_str("MP2_ALGORITHM").c_str());
+    outfile->Printf( "                        %3d Threads, %6ld MiB Core\n", omp_nthread_, memory_ / 1000000L);
+    outfile->Printf( "          Ben Mintz, Rob Parrish, Andy Simmonnett, and Justin Turney\n");
+    outfile->Printf( "         ------------------------------------------------------------\n\n");
 
-    fprintf(outfile, " ==> Geometry <==\n\n");
+    outfile->Printf( " ==> Geometry <==\n\n");
     molecule_->print();
-    fprintf(outfile, "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
-    fprintf(outfile, "  Reference energy  = %20.15f\n\n", Eref_);
+    outfile->Printf( "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
+    outfile->Printf( "  Reference energy  = %20.15f\n\n", Eref_);
 
-    fprintf(outfile, "  ==> Primary Basis <==\n\n");
-    basisset_->print_by_level(outfile, print_);
+    outfile->Printf( "  ==> Primary Basis <==\n\n");
+    basisset_->print_by_level("outfile", print_);
 
-    fprintf(outfile, "  ==> Auxiliary Basis <==\n\n");
+    outfile->Printf( "  ==> Auxiliary Basis <==\n\n");
     if (auxiliary_automatic_) {
-        fprintf(outfile, "  No auxiliary basis selected, defaulting to %s-RI\n\n", options_.get_str("BASIS").c_str());
+        outfile->Printf( "  No auxiliary basis selected, defaulting to %s-RI\n\n", options_.get_str("BASIS").c_str());
     }
-    auxiliary_->print_by_level(outfile, print_);
+    auxiliary_->print_by_level("outfile", print_);
 
-    fprintf(outfile, "  ==> Orbital Dimensions <==\n\n");
+    outfile->Printf( "  ==> Orbital Dimensions <==\n\n");
     CharacterTable ct = molecule_->point_group()->char_table();
-    fprintf(outfile, "   ------------------------------------------------------------------\n");
-    fprintf(outfile, "    Irrep    %6s %6s %6s %6s %6s %6s %6s %6s\n",
+    outfile->Printf( "   ------------------------------------------------------------------\n");
+    outfile->Printf( "    Irrep    %6s %6s %6s %6s %6s %6s %6s %6s\n",
             "Nso", "Nmo", "Nfocc", "Nocc", "Naocc", "Navir", "Nvir", "Nfvir");
-    fprintf(outfile, "   ------------------------------------------------------------------\n");
+    outfile->Printf( "   ------------------------------------------------------------------\n");
     for (int h= 0; h < nirrep_; h++) {
-        fprintf(outfile, "    %-3s      %6d %6d %6d %6d %6d %6d %6d %6d\n",
+        outfile->Printf( "    %-3s      %6d %6d %6d %6d %6d %6d %6d %6d\n",
             ct.gamma(h).symbol(), nsopi_[h], nmopi_[h], frzcpi_[h], doccpi_[h],
             doccpi_[h] - frzcpi_[h], nmopi_[h] - doccpi_[h] - frzvpi_[h], nmopi_[h] - doccpi_[h],
             frzvpi_[h]);
     }
-    fprintf(outfile, "   ------------------------------------------------------------------\n");
-    fprintf(outfile, "    Total    %6d %6d %6d %6d %6d %6d %6d %6d\n",
+    outfile->Printf( "   ------------------------------------------------------------------\n");
+    outfile->Printf( "    Total    %6d %6d %6d %6d %6d %6d %6d %6d\n",
         nso_, nmo_, nfocc_, nfocc_ + naocc_, naocc_, navir_, navir_ + nfvir_, nfvir_);
-    fprintf(outfile, "   ------------------------------------------------------------------\n\n");
-    fflush(outfile);
+    outfile->Printf( "   ------------------------------------------------------------------\n\n");
+    
 }
 void MAD_MP2::check_memory()
 {
     #define MEM_SAFETY 0.8
 
-    fprintf(outfile, "  ==> Memory Checking <==\n\n");
+    outfile->Printf( "  ==> Memory Checking <==\n\n");
 
     int max_pshell = auxiliary_->max_function_per_shell();
 
@@ -671,27 +671,27 @@ void MAD_MP2::check_memory()
     overhead += J_mem_AO; // AO2USO_aux_
     required += overhead;
 
-    fprintf(outfile, "    ------------------------------------------------------------\n");
-    fprintf(outfile, "     %-20s %18s %18s\n", "Tensor/Operation", "Doubles", "MiB");
-    fprintf(outfile, "    ------------------------------------------------------------\n");
-    fprintf(outfile, "     %-20s %18ld %18ld\n", "(A|B) Tensor AO", J_mem_AO, J_mem_AO * 8L / 1000000L);
-    fprintf(outfile, "     %-20s %18ld %18ld\n", "(A|B) Tensor USO", J_mem_SO, J_mem_SO * 8L / 1000000L);
-    fprintf(outfile, "     %-20s %18ld %18ld\n", "(Q|ia) Tensor AO", Qia_mem_AO, Qia_mem_AO * 8L / 1000000L);
-    fprintf(outfile, "     %-20s %18ld %18ld\n", "(Q|ia) Tensor USO", Qia_mem_SO, Qia_mem_SO * 8L / 1000000L);
-    fprintf(outfile, "     %-20s %18ld %18ld\n", "I_ab Tensor USO", I_SO, I_SO * 8L / 1000000L);
-    fprintf(outfile, "     %-20s %18ld %18ld\n", "MO Transform (A|ia)", Amn_mem, Amn_mem * 8L / 1000000L);
+    outfile->Printf( "    ------------------------------------------------------------\n");
+    outfile->Printf( "     %-20s %18s %18s\n", "Tensor/Operation", "Doubles", "MiB");
+    outfile->Printf( "    ------------------------------------------------------------\n");
+    outfile->Printf( "     %-20s %18ld %18ld\n", "(A|B) Tensor AO", J_mem_AO, J_mem_AO * 8L / 1000000L);
+    outfile->Printf( "     %-20s %18ld %18ld\n", "(A|B) Tensor USO", J_mem_SO, J_mem_SO * 8L / 1000000L);
+    outfile->Printf( "     %-20s %18ld %18ld\n", "(Q|ia) Tensor AO", Qia_mem_AO, Qia_mem_AO * 8L / 1000000L);
+    outfile->Printf( "     %-20s %18ld %18ld\n", "(Q|ia) Tensor USO", Qia_mem_SO, Qia_mem_SO * 8L / 1000000L);
+    outfile->Printf( "     %-20s %18ld %18ld\n", "I_ab Tensor USO", I_SO, I_SO * 8L / 1000000L);
+    outfile->Printf( "     %-20s %18ld %18ld\n", "MO Transform (A|ia)", Amn_mem, Amn_mem * 8L / 1000000L);
     if (nirrep_ > 1) {
-        fprintf(outfile, "     %-20s %18ld %18ld\n", "USO Transform (A|ia)", Aia_USO_mem, Amn_mem * 8L / 1000000L);
-        fprintf(outfile, "     %-20s %18ld %18ld\n", "USO Transform (A|B)", J_USO_mem, J_USO_mem * 8L / 1000000L);
+        outfile->Printf( "     %-20s %18ld %18ld\n", "USO Transform (A|ia)", Aia_USO_mem, Amn_mem * 8L / 1000000L);
+        outfile->Printf( "     %-20s %18ld %18ld\n", "USO Transform (A|B)", J_USO_mem, J_USO_mem * 8L / 1000000L);
     }
-    fprintf(outfile, "     %-20s %18ld %18ld\n", "Fitting Transform", Aia_mem, Aia_mem * 8L / 1000000L);
-    fprintf(outfile, "     %-20s %18ld %18ld\n", "Energy Computation", I_mem, I_mem * 8L / 1000000L);
-    fprintf(outfile, "     %-20s %18ld %18ld\n", "Overhead", overhead, overhead * 8L / 1000000L);
-    fprintf(outfile, "    ------------------------------------------------------------\n");
-    fprintf(outfile, "     %-20s %18ld %18ld\n", "Required Memory", required, required * 8L / 1000000L);
-    fprintf(outfile, "     %-20s %18ld %18ld\n", "Available Memory", ((ULI)( MEM_SAFETY * memory_)) / 8L, ((ULI) (MEM_SAFETY * memory_)) / 1000000L);
-    fprintf(outfile, "    ------------------------------------------------------------\n\n");
-    fflush(outfile);
+    outfile->Printf( "     %-20s %18ld %18ld\n", "Fitting Transform", Aia_mem, Aia_mem * 8L / 1000000L);
+    outfile->Printf( "     %-20s %18ld %18ld\n", "Energy Computation", I_mem, I_mem * 8L / 1000000L);
+    outfile->Printf( "     %-20s %18ld %18ld\n", "Overhead", overhead, overhead * 8L / 1000000L);
+    outfile->Printf( "    ------------------------------------------------------------\n");
+    outfile->Printf( "     %-20s %18ld %18ld\n", "Required Memory", required, required * 8L / 1000000L);
+    outfile->Printf( "     %-20s %18ld %18ld\n", "Available Memory", ((ULI)( MEM_SAFETY * memory_)) / 8L, ((ULI) (MEM_SAFETY * memory_)) / 1000000L);
+    outfile->Printf( "    ------------------------------------------------------------\n\n");
+    
 
     if ((double)required > MEM_SAFETY * ((double) memory_ / 8L)) {
         throw PSIEXCEPTION("MAD_MP2 does not have enough memory");
@@ -752,7 +752,7 @@ void MAD_MP2::J()
     timer_off("MP2 J AO");
 
     if (debug_ > 2) {
-        fprintf(outfile, "  ==> After J Generation <==\n\n");
+        outfile->Printf( "  ==> After J Generation <==\n\n");
         J->print();
     }
 
@@ -765,7 +765,7 @@ void MAD_MP2::Jm12()
     timer_off("MP2 J^-1/2");
 
     if (debug_ > 2) {
-        fprintf(outfile, "  ==> After J^-1/2 <==\n\n");
+        outfile->Printf( "  ==> After J^-1/2 <==\n\n");
         Jm12_->print();
     }
 }
@@ -1225,7 +1225,7 @@ void MAD_MP2::IJ()
 }
 void MAD_MP2::print_energy()
 {
-    fprintf(outfile, "  ==> Energies <==\n\n");
+    outfile->Printf( "  ==> Energies <==\n\n");
     energies_["Reference Energy"]         = Eref_;
     energies_["MP2J Energy"]              = E_MP2J_;
     energies_["MP2K Energy"]              = E_MP2K_;
@@ -1247,28 +1247,28 @@ void MAD_MP2::print_energy()
     Process::environment.globals["E_MP2J"] = E_MP2J_;
     Process::environment.globals["E_MP2K"] = E_MP2K_;
 
-    fprintf(outfile, "\t----------------------------------------------------------\n");
-    fprintf(outfile, "\t ====================> MP2 Energies <==================== \n");
-    fprintf(outfile, "\t----------------------------------------------------------\n");
-    fprintf(outfile, "\t %-25s = %24.16f [H]\n", "Reference Energy",         energies_["Reference Energy"]);
-    fprintf(outfile, "\t %-25s = %24.16f [H]\n", "MP2J Energy",              energies_["MP2J Energy"]);
-    fprintf(outfile, "\t %-25s = %24.16f [H]\n", "MP2K Energy",              energies_["MP2K Energy"]);
-    fprintf(outfile, "\t %-25s = %24.16f [H]\n", "Same-Spin Energy",         energies_["Same-Spin Energy"]);
-    fprintf(outfile, "\t %-25s = %24.16f [H]\n", "Opposite-Spin Energy",     energies_["Opposite-Spin Energy"]);
-    fprintf(outfile, "\t %-25s = %24.16f [H]\n", "Correlation Energy",       energies_["Correlation Energy"]);
-    fprintf(outfile, "\t %-25s = %24.16f [H]\n", "Total Energy",             energies_["Total Energy"]);
-    fprintf(outfile, "\t----------------------------------------------------------\n");
-    fprintf(outfile, "\t ==================> SCS-MP2 Energies <================== \n");
-    fprintf(outfile, "\t----------------------------------------------------------\n");
-    fprintf(outfile, "\t %-25s = %24.16f [-]\n", "SCS Same-Spin Scale",      scale_ss_);
-    fprintf(outfile, "\t %-25s = %24.16f [-]\n", "SCS Opposite-Spin Scale",  scale_os_);
-    fprintf(outfile, "\t %-25s = %24.16f [H]\n", "SCS Same-Spin Energy",     energies_["SCS Same-Spin Energy"]);
-    fprintf(outfile, "\t %-25s = %24.16f [H]\n", "SCS Opposite-Spin Energy", energies_["SCS Opposite-Spin Energy"]);
-    fprintf(outfile, "\t %-25s = %24.16f [H]\n", "SCS Correlation Energy",   energies_["SCS Correlation Energy"]);
-    fprintf(outfile, "\t %-25s = %24.16f [H]\n", "SCS Total Energy",         energies_["SCS Total Energy"]);
-    fprintf(outfile, "\t----------------------------------------------------------\n");
-    fprintf(outfile, "\n");
-    fflush(outfile);
+    outfile->Printf( "\t----------------------------------------------------------\n");
+    outfile->Printf( "\t ====================> MP2 Energies <==================== \n");
+    outfile->Printf( "\t----------------------------------------------------------\n");
+    outfile->Printf( "\t %-25s = %24.16f [H]\n", "Reference Energy",         energies_["Reference Energy"]);
+    outfile->Printf( "\t %-25s = %24.16f [H]\n", "MP2J Energy",              energies_["MP2J Energy"]);
+    outfile->Printf( "\t %-25s = %24.16f [H]\n", "MP2K Energy",              energies_["MP2K Energy"]);
+    outfile->Printf( "\t %-25s = %24.16f [H]\n", "Same-Spin Energy",         energies_["Same-Spin Energy"]);
+    outfile->Printf( "\t %-25s = %24.16f [H]\n", "Opposite-Spin Energy",     energies_["Opposite-Spin Energy"]);
+    outfile->Printf( "\t %-25s = %24.16f [H]\n", "Correlation Energy",       energies_["Correlation Energy"]);
+    outfile->Printf( "\t %-25s = %24.16f [H]\n", "Total Energy",             energies_["Total Energy"]);
+    outfile->Printf( "\t----------------------------------------------------------\n");
+    outfile->Printf( "\t ==================> SCS-MP2 Energies <================== \n");
+    outfile->Printf( "\t----------------------------------------------------------\n");
+    outfile->Printf( "\t %-25s = %24.16f [-]\n", "SCS Same-Spin Scale",      scale_ss_);
+    outfile->Printf( "\t %-25s = %24.16f [-]\n", "SCS Opposite-Spin Scale",  scale_os_);
+    outfile->Printf( "\t %-25s = %24.16f [H]\n", "SCS Same-Spin Energy",     energies_["SCS Same-Spin Energy"]);
+    outfile->Printf( "\t %-25s = %24.16f [H]\n", "SCS Opposite-Spin Energy", energies_["SCS Opposite-Spin Energy"]);
+    outfile->Printf( "\t %-25s = %24.16f [H]\n", "SCS Correlation Energy",   energies_["SCS Correlation Energy"]);
+    outfile->Printf( "\t %-25s = %24.16f [H]\n", "SCS Total Energy",         energies_["SCS Total Energy"]);
+    outfile->Printf( "\t----------------------------------------------------------\n");
+    outfile->Printf( "\n");
+    
 
 }
 

@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 use File::Path qw(remove_tree);
+no warnings 'deprecated';
 
 # This script reads the driver's options setup to provide a list of 
 # keywords expected by each module. The results of this parsing is put into TeX files, which are
@@ -398,4 +399,7 @@ sub determine_keyword_type_and_default
  }
  ($Keyword, $Type, $Default, $Possibilities);
 }
+
+unlink("keywords.tex");
+unlink("expert_keywords.tex");
 

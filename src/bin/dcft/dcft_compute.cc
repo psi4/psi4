@@ -49,12 +49,12 @@ DCFTSolver::compute_energy()
     mp2_guess();
 
     // Print out information about the job
-    fprintf(outfile, "\n\tDCFT Functional:    \t\t %s", options_.get_str("DCFT_FUNCTIONAL").c_str());
-    fprintf(outfile, "\n\tAlgorithm:          \t\t %s", options_.get_str("ALGORITHM").c_str());
-    fprintf(outfile, "\n\tAO-Basis Integrals: \t\t %s", options_.get_str("AO_BASIS").c_str());
+    outfile->Printf( "\n\tDCFT Functional:    \t\t %s", options_.get_str("DCFT_FUNCTIONAL").c_str());
+    outfile->Printf( "\n\tAlgorithm:          \t\t %s", options_.get_str("ALGORITHM").c_str());
+    outfile->Printf( "\n\tAO-Basis Integrals: \t\t %s", options_.get_str("AO_BASIS").c_str());
     if (options_.get_str("ALGORITHM") == "QC") {
-        fprintf(outfile, "\n\tQC type:            \t\t %s", options_.get_str("QC_TYPE").c_str());
-        fprintf(outfile, "\n\tQC coupling:        \t\t %s", options_.get_bool("QC_COUPLING") ? "TRUE" : "FALSE");
+        outfile->Printf( "\n\tQC type:            \t\t %s", options_.get_str("QC_TYPE").c_str());
+        outfile->Printf( "\n\tQC coupling:        \t\t %s", options_.get_bool("QC_COUPLING") ? "TRUE" : "FALSE");
     }
 
     // Things that are not implemented yet...
@@ -94,9 +94,10 @@ DCFTSolver::compute_energy()
     if(!orbitalsDone_ || !cumulantDone_ || !densityConverged_)
         throw ConvergenceError<int>("DCFT", maxiter_, cumulant_threshold_, cumulant_convergence_, __FILE__, __LINE__);
 
-    fprintf(outfile, "\n\t*%6s SCF Energy                                 = %20.15f\n", options_.get_str("DCFT_FUNCTIONAL").c_str(), scf_energy_);
-    fprintf(outfile,   "\t*%6s Lambda Energy                              = %20.15f\n", options_.get_str("DCFT_FUNCTIONAL").c_str(), lambda_energy_);
-    fprintf(outfile,   "\t*%6s Total Energy                               = %20.15f\n", options_.get_str("DCFT_FUNCTIONAL").c_str(), new_total_energy_);
+    outfile->Printf("\n\t*%6s SCF Energy                                 = %20.15f\n", options_.get_str("DCFT_FUNCTIONAL").c_str(), scf_energy_);
+    outfile->Printf("\t*%6s Lambda Energy                              = %20.15f\n", options_.get_str("DCFT_FUNCTIONAL").c_str(), lambda_energy_);
+    outfile->Printf("\t*%6s Total Energy                               = %20.15f\n", options_.get_str("DCFT_FUNCTIONAL").c_str(), new_total_energy_);
+
 
     Process::environment.globals["DCFT SCF ENERGY"]    = scf_energy_;
     Process::environment.globals["DCFT LAMBDA ENERGY"] = lambda_energy_;
@@ -109,8 +110,8 @@ DCFTSolver::compute_energy()
             throw FeatureNotImplemented("DCFT three-particle energy correction", "Analytic gradients", __FILE__, __LINE__);
         // Compute the three-particle energy
         double three_particle_energy = compute_three_particle_energy();
-        fprintf(outfile,   "\t*DCFT Three-particle Energy                        = %20.15f\n", three_particle_energy);
-        fprintf(outfile,   "\t*DCFT Total Energy                                 = %20.15f\n", new_total_energy_ + three_particle_energy);
+        outfile->Printf("\t*DCFT Three-particle Energy                        = %20.15f\n", three_particle_energy);
+        outfile->Printf("\t*DCFT Total Energy                                 = %20.15f\n", new_total_energy_ + three_particle_energy);
         // Set global variables
         Process::environment.globals["DCFT THREE-PARTICLE ENERGY"] = three_particle_energy;
         Process::environment.globals["CURRENT ENERGY"]             = new_total_energy_ + three_particle_energy;
@@ -120,7 +121,7 @@ DCFTSolver::compute_energy()
     }
 
     if(!options_.get_bool("MO_RELAX")){
-        fprintf(outfile, "Warning!  The orbitals were not relaxed\n");
+        outfile->Printf( "Warning!  The orbitals were not relaxed\n");
     }
 
     // Print natural occupations
@@ -170,7 +171,7 @@ DCFTSolver::run_twostep_dcft()
     // the desired cutoff, we're done
 
     int cycle = 0;
-    fprintf(outfile, "\n\n\t*=================================================================================*\n"
+    outfile->Printf( "\n\n\t*=================================================================================*\n"
                          "\t* Cycle  RMS [F, Kappa]   RMS Lambda Error   delta E        Total Energy     DIIS *\n"
                          "\t*---------------------------------------------------------------------------------*\n");
 
@@ -186,13 +187,13 @@ DCFTSolver::run_twostep_dcft()
     orbitals_convergence_ = compute_scf_error_vector();
     // Start macro-iterations
     while((!orbitalsDone_ || !cumulantDone_) && cycle++ < maxiter_){
-        fprintf(outfile, "\t                          *** Macro Iteration %d ***\n"
+        outfile->Printf( "\t                          *** Macro Iteration %d ***\n"
                          "\tCumulant Iterations\n",cycle);
         // If it's the first iteration and the user requested to relax guess orbitals, then skip the density cumulant update
         if ((cycle != 1) || !options_.get_bool("RELAX_GUESS_ORBITALS")) {
             run_twostep_dcft_cumulant_updates();
         }
-        else fprintf(outfile, "\tSkipping the cumulant update to relax guess orbitals\n");
+        else outfile->Printf( "\tSkipping the cumulant update to relax guess orbitals\n");
         // Break if it's a CEPA0 computation
         if (options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") {
             orbitalsDone_ = true;
@@ -210,7 +211,7 @@ DCFTSolver::run_twostep_dcft()
         run_twostep_dcft_orbital_updates();
     }
 
-    fprintf(outfile, "\t*=================================================================================*\n");
+    outfile->Printf( "\t*=================================================================================*\n");
 
 }
 
@@ -320,12 +321,12 @@ DCFTSolver::run_twostep_dcft_cumulant_updates() {
         cumulantDone_ = cumulant_convergence_ < cumulant_threshold_;
         energyConverged_ = fabs(new_total_energy_ - old_total_energy_) < cumulant_threshold_;
         if (options_.get_str("ALGORITHM") == "TWOSTEP") {
-            fprintf(outfile, "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %-3s *\n",
+            outfile->Printf( "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %-3s *\n",
                     nLambdaIterations, orbitals_convergence_, cumulant_convergence_, new_total_energy_ - old_total_energy_,
                     new_total_energy_, diisString.c_str());
         }
         if (fabs(cumulant_convergence_) > 100.0) throw PSIEXCEPTION("DCFT density cumulant equations diverged");
-        fflush(outfile);
+        
     }
 
     return nLambdaIterations;
@@ -351,7 +352,7 @@ DCFTSolver::run_twostep_dcft_orbital_updates() {
     // Reset the booleans that control the convergence
     densityConverged_ = false;
     energyConverged_ = false;
-    fprintf(outfile, "\tOrbital Updates\n");
+    outfile->Printf( "\tOrbital Updates\n");
     while((!densityConverged_ || !orbitalsDone_ || !energyConverged_) && (nSCFCycles++ < maxiter_)){
         std::string diisString;
         // Copy core hamiltonian into the Fock matrix array: F = H
@@ -403,11 +404,11 @@ DCFTSolver::run_twostep_dcft_orbital_updates() {
         new_total_energy_ = scf_energy_ + lambda_energy_;
         // Check convergence of the total DCFT energy
         energyConverged_ = fabs(new_total_energy_ - old_total_energy_) < cumulant_threshold_;
-        fprintf(outfile, "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %-3s *\n",
+        outfile->Printf( "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %-3s *\n",
                 nSCFCycles, orbitals_convergence_, cumulant_convergence_, new_total_energy_ - old_total_energy_,
                 new_total_energy_, diisString.c_str());
         if (fabs(orbitals_convergence_) > 100.0) throw PSIEXCEPTION("DCFT orbital updates diverged");
-        fflush(outfile);
+        
     }
     // Write orbitals to the checkpoint file
     write_orbitals_to_checkpoint();
@@ -425,7 +426,7 @@ DCFTSolver::run_simult_dcft()
 {
     // This is the simultaneous orbital/lambda update algorithm
     int cycle = 0;
-    fprintf(outfile, "\n\n\t*=================================================================================*\n"
+    outfile->Printf( "\n\n\t*=================================================================================*\n"
                          "\t* Cycle  RMS [F, Kappa]   RMS Lambda Error   delta E        Total Energy     DIIS *\n"
                          "\t*---------------------------------------------------------------------------------*\n");
 
@@ -542,7 +543,7 @@ DCFTSolver::run_simult_dcft()
         Cb_->gemm(false, false, 1.0, s_half_inv_, tmp, 0.0);
         // Make sure that the orbital phase is retained
         if(!correct_mo_phases(false)){
-            fprintf(outfile,"\t\tThere was a problem correcting the MO phases.\n"
+            outfile->Printf("\t\tThere was a problem correcting the MO phases.\n"
                             "\t\tIf this does not converge, try ALGORITHM=TWOSTEP\n");
         }
         // Write orbitals to the checkpoint file
@@ -553,13 +554,13 @@ DCFTSolver::run_simult_dcft()
         densityConverged_ = update_scf_density() < orbitals_threshold_;
         // If we've performed enough lambda updates since the last orbitals
         // update, reset the counter so another SCF update is performed
-        fprintf(outfile, "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %-3s *\n",
+        outfile->Printf( "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %-3s *\n",
                 cycle, orbitals_convergence_, cumulant_convergence_, new_total_energy_ - old_total_energy_,
                 new_total_energy_, diisString.c_str());
-        fflush(outfile);
+        
     }
 
-    fprintf(outfile, "\t*=================================================================================*\n");
+    outfile->Printf( "\t*=================================================================================*\n");
 }
 
 }} // Namespaces

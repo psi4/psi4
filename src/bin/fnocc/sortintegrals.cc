@@ -67,16 +67,16 @@ namespace psi{namespace fnocc{
 void SortIntegrals(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&options,bool iscim){
   struct iwlbuf Buf;
   iwl_buf_init(&Buf,PSIF_MO_TEI,0.0,1,1);
-  fflush(outfile);
-  fprintf(outfile,"\n");
-  fprintf(outfile, "        **********************************************************\n");
-  fprintf(outfile, "        *                                                        *\n");
-  fprintf(outfile, "        *                   CCSD Integral Sort                   *\n");
-  fprintf(outfile, "        *                                                        *\n");
-  fprintf(outfile, "        **********************************************************\n");
-  fprintf(outfile,"\n");
-  fprintf(outfile,"\n");
-  fflush(outfile);
+  
+  outfile->Printf("\n");
+  outfile->Printf( "        **********************************************************\n");
+  outfile->Printf( "        *                                                        *\n");
+  outfile->Printf( "        *                   CCSD Integral Sort                   *\n");
+  outfile->Printf( "        *                                                        *\n");
+  outfile->Printf( "        **********************************************************\n");
+  outfile->Printf("\n");
+  outfile->Printf("\n");
+  
   SortAllIntegrals(&Buf,nfzc,nfzv,norbs,ndoccact,nvirt,options,iscim);
 
   iwl_buf_close(&Buf,1);
@@ -119,13 +119,13 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
   // maxelem should be, at max, the size of the biggest block
   if (maxelem > maxblock) maxelem = maxblock;
 
-  fprintf(outfile,"        CC integral sort will use                   %7.2lf mb\n",
+  outfile->Printf("        CC integral sort will use                   %7.2lf mb\n",
          maxelem*(sizeof(double) + sizeof(struct integral))/1024./1024.);
   if (maxelem <2*v*(v+1)/2*v*(v+1)/2){
-     fprintf(outfile,"       (for most efficient sort, increase memory by %7.2lf mb)\n",
+     outfile->Printf("       (for most efficient sort, increase memory by %7.2lf mb)\n",
          (2*v*(v+1)/2*v*(v+1)/2-maxelem)*(sizeof(double) + sizeof(struct integral))/1024./1024.);
   }
-  fprintf(outfile,"\n");
+  outfile->Printf("\n");
 
 
   // how many files does (ac|bd) need to be?
@@ -164,11 +164,11 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
   else
      integralbuffer= new integral[maxelem];
 
-  fprintf(outfile,"        Number of (ab|cd) temporary files:            %5li\n",2*nfiles);
-  fprintf(outfile,"        Number of (ab|ci) temporary files:            %5li\n",3*ov3nfiles);
-  fprintf(outfile,"        Starting temporary file number:               %5i\n",PSIF_DCC_SORT_START);
-  fprintf(outfile,"\n");
-  fflush(outfile);
+  outfile->Printf("        Number of (ab|cd) temporary files:            %5li\n",2*nfiles);
+  outfile->Printf("        Number of (ab|ci) temporary files:            %5li\n",3*ov3nfiles);
+  outfile->Printf("        Starting temporary file number:               %5i\n",PSIF_DCC_SORT_START);
+  outfile->Printf("\n");
+  
 
   // buckets:
   ULI bucketsize = nelem;
@@ -295,7 +295,7 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
       psio->close(PSIF_DCC_SORT_START+k+2*nfiles+2*ov3nfiles,1);
   }
 
-  fprintf(outfile,"        Initial sort........");fflush(outfile);
+  outfile->Printf("        Initial sort........");
   /**
     * first buffer (read in when Buf was initialized)
     */
@@ -503,7 +503,7 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
       }
 
   }
-  fprintf(outfile,"done.\n\n");fflush(outfile);
+  outfile->Printf("done.\n\n");
   /**
     * write any leftover bits that might not have been dumped to disk
     */
@@ -588,46 +588,46 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
   double *tmp;
   tmp = new double[maxelem];
 
-  fprintf(outfile,"        Sort (IJ|KL)........");fflush(outfile);
+  outfile->Printf("        Sort (IJ|KL)........");
   SortBlock(totalnijkl,o*o*o*o,integralbuffer,tmp,PSIF_DCC_IJKL,"E2ijkl",maxelem);
-  fprintf(outfile,"done.\n");fflush(outfile);
-  fprintf(outfile,"        Sort (IJ|KA) 1/2....");fflush(outfile);
+  outfile->Printf("done.\n");
+  outfile->Printf("        Sort (IJ|KA) 1/2....");
   SortBlock(totalnijak,o*o*o*v,integralbuffer,tmp,PSIF_DCC_IJAK,"E2ijak",maxelem);
-  fprintf(outfile,"done.\n");fflush(outfile);
-  fprintf(outfile,"        Sort (IJ|KA) 2/2....");fflush(outfile);
+  outfile->Printf("done.\n");
+  outfile->Printf("        Sort (IJ|KA) 2/2....");
   SortBlock(totalnijak2,o*o*o*v,integralbuffer,tmp,PSIF_DCC_IJAK2,"E2ijak2",maxelem);
-  fprintf(outfile,"done.\n");fflush(outfile);
-  fprintf(outfile,"        Sort (IA|JB)........");fflush(outfile);
+  outfile->Printf("done.\n");
+  outfile->Printf("        Sort (IA|JB)........");
   SortBlock(totalnklcd,o*o*v*v,integralbuffer,tmp,PSIF_DCC_IAJB,"E2iajb",maxelem);
-  fprintf(outfile,"done.\n");fflush(outfile);
-  fprintf(outfile,"        Sort (IJ|AB)........");fflush(outfile);
+  outfile->Printf("done.\n");
+  outfile->Printf("        Sort (IJ|AB)........");
   SortBlock(totalnakjc,o*o*v*v,integralbuffer,tmp,PSIF_DCC_IJAB,"E2ijab",maxelem);
-  fprintf(outfile,"done.\n");fflush(outfile);
+  outfile->Printf("done.\n");
 
   delete integralbuffer;
 
   struct integral * integralbuffer2 = new integral[maxelem];
 
-  fprintf(outfile,"        Sort (IA|BC) 1/3....");fflush(outfile);
+  outfile->Printf("        Sort (IA|BC) 1/3....");
   //SortBlock(totalnabci1,o*v*v*v,integralbuffer,tmp,PSIF_DCC_ABCI,"E2abci",maxelem);
   SortBlockNewNew(totalnabci1,ov3,integralbuffer2,tmp,PSIF_DCC_ABCI,"E2abci",maxelem,PSIF_DCC_SORT_START+2*nfiles,ov3nfiles);
-  fprintf(outfile,"done.\n");fflush(outfile);
-  fprintf(outfile,"        Sort (IA|BC) 2/3....");fflush(outfile);
+  outfile->Printf("done.\n");
+  outfile->Printf("        Sort (IA|BC) 2/3....");
   SortBlockNewNew(totalnabci3,ov3,integralbuffer2,tmp,PSIF_DCC_ABCI3,"E2abci3",maxelem,PSIF_DCC_SORT_START+2*nfiles+ov3nfiles,ov3nfiles);
   //SortBlock(totalnabci3,o*v*v*v,integralbuffer,tmp,PSIF_DCC_ABCI3,"E2abci3",maxelem);
-  fprintf(outfile,"done.\n");fflush(outfile);
-  fprintf(outfile,"        Sort (IA|BC) 3/3....");fflush(outfile);
+  outfile->Printf("done.\n");
+  outfile->Printf("        Sort (IA|BC) 3/3....");
   SortBlockNewNew(totalnabci5,ov3,integralbuffer2,tmp,PSIF_DCC_ABCI2,"E2abci2",maxelem,PSIF_DCC_SORT_START+2*nfiles+2*ov3nfiles,ov3nfiles);
   //SortBlock(totalnabci5,o*v*v*v,integralbuffer,tmp,PSIF_DCC_ABCI2,"E2abci2",maxelem);
-  fprintf(outfile,"done.\n");fflush(outfile);
+  outfile->Printf("done.\n");
 
-  fprintf(outfile,"        Sort (AB|CD) 1/2....");fflush(outfile);
+  outfile->Printf("        Sort (AB|CD) 1/2....");
   SortBlockNewNew(totalnabcd1,v*(v+1)/2*v*(v+1)/2,integralbuffer2,tmp,PSIF_DCC_ABCD1,"E2abcd1",maxelem,PSIF_DCC_SORT_START,nfiles);
-  fprintf(outfile,"done.\n");fflush(outfile);
-  fprintf(outfile,"        Sort (AB|CD) 2/2....");fflush(outfile);
+  outfile->Printf("done.\n");
+  outfile->Printf("        Sort (AB|CD) 2/2....");
   SortBlockNewNew(totalnabcd2,v*(v+1)/2*v*(v+1)/2,integralbuffer2,tmp,PSIF_DCC_ABCD2,"E2abcd2",maxelem,PSIF_DCC_SORT_START+nfiles,nfiles);
-  fprintf(outfile,"done.\n");fflush(outfile);
-  fprintf(outfile,"\n");
+  outfile->Printf("done.\n");
+  outfile->Printf("\n");
 
   delete integralbuffer2;
 
@@ -1970,7 +1970,7 @@ void SortBlockNew(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI P
          }
      }
      lastbin = blockdim - (nbins-1)*binsize;
-     fprintf(stdout,"  %5li files, %5li %5li\n",nbins,blockdim,binsize);
+     outfile->Printf("  %5li files, %5li %5li\n",nbins,blockdim,binsize);
 
      // new integral buffers to hold rough sorted ints
      struct integral**buffer2;
@@ -2208,10 +2208,10 @@ void SortBlock(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIF
  */
 void Sort_OV3_LowMemory(long int memory, long int o,long int v,bool islocal){
 
-  fprintf(outfile,"\n");
-  fprintf(outfile,"\n");
-  fprintf(outfile,"        ==> Resort (ov|vv) integrals for %s computation <==\n",islocal ? "CIM (T)" : "low-memory (T)");
-  fprintf(outfile,"\n");
+  outfile->Printf("\n");
+  outfile->Printf("\n");
+  outfile->Printf("        ==> Resort (ov|vv) integrals for %s computation <==\n",islocal ? "CIM (T)" : "low-memory (T)");
+  outfile->Printf("\n");
 
   long int maxelem = memory / 8 / 2;
   double * tmp  = new double[maxelem];
@@ -2287,7 +2287,7 @@ void SortOVOV(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nv
   ULI maxelem = memory / (sizeof(double));
   if (maxelem > o*o*v*v) maxelem = o*o*v*v;
 
-  fprintf(outfile,"        CC integral sort will use %7.2lf mb\n",
+  outfile->Printf("        CC integral sort will use %7.2lf mb\n",
          maxelem*(sizeof(double))/1024./1024.);
   if (maxelem <o*o*v*v){
      throw PsiException("out of memory: o^2v^2 won't fit in core.",__FILE__,__LINE__);
@@ -2296,7 +2296,7 @@ void SortOVOV(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nv
   double* klcd  = new double[o*o*v*v];
   memset((void*)klcd,'\0',o*o*v*v*sizeof(double));
 
-  fprintf(outfile,"        Sort (IA|JB)........");fflush(outfile);
+  outfile->Printf("        Sort (IA|JB)........");
   /**
     * first buffer (read in when Buf was initialized)
     */
@@ -2363,8 +2363,8 @@ void SortOVOV(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nv
 
   delete klcd;
 
-  fprintf(outfile,"done.\n");fflush(outfile);
-  fprintf(outfile,"\n");
+  outfile->Printf("done.\n");
+  outfile->Printf("\n");
 }
 
 }} // end of namespaces

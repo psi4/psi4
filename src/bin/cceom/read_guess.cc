@@ -56,7 +56,7 @@ void read_guess_init(void)
   /* Read number of guess = number of final states to solve for */
   errcod = ip_count("EOM_GUESS_VECTORS",&num_vectors,0);
   if(errcod != IPE_OK) {
-    fprintf(outfile, "\nread_guess(): Unable to read number of guesses from input.\n");
+    outfile->Printf( "\nread_guess(): Unable to read number of guesses from input.\n");
     exit(2);
   }
 
@@ -70,7 +70,7 @@ void read_guess_init(void)
       errcod = ip_data("EOM_GUESS_VECTORS", "%d", &spin, 4, k, l, 3);
 
       if ((spin != 0) && (params.eom_ref == 0)) {
-        fprintf(outfile,"only alpha guesses allowed for EOM_REF = RHF\n");
+        outfile->Printf("only alpha guesses allowed for EOM_REF = RHF\n");
         exit(1);
       }
 
@@ -82,7 +82,7 @@ void read_guess_init(void)
         }
         else { /* check consistency of other excitations */
           if (moinfo.occ_sym[i]^moinfo.vir_sym[a] != this_irrep) {
-            fprintf(outfile, "\nInconsisent symmetries in components of guess %d.\n", k);
+            outfile->Printf( "\nInconsisent symmetries in components of guess %d.\n", k);
             exit(2);
           }
         }
@@ -100,13 +100,13 @@ void read_guess_init(void)
         else { /* check consistency of other excitations */
           if (spin == 0) {
             if (moinfo.aocc_sym[i]^moinfo.avir_sym[a] != this_irrep) {
-              fprintf(outfile, "\nInconsisent symmetries in components of guess %d.\n", k);
+              outfile->Printf( "\nInconsisent symmetries in components of guess %d.\n", k);
               exit(2);
             }
           }
           else {
             if (moinfo.bocc_sym[i]^moinfo.bvir_sym[a] != this_irrep) {
-              fprintf(outfile, "\nInconsisent symmetries in components of guess %d.\n", k);
+              outfile->Printf( "\nInconsisent symmetries in components of guess %d.\n", k);
               exit(2);
             }
           }
@@ -115,16 +115,16 @@ void read_guess_init(void)
     }
   }
 
-  fprintf(outfile,"EOM_GUESS_VECTORS implies roots_per_irrep: \n\t");
+  outfile->Printf("EOM_GUESS_VECTORS implies roots_per_irrep: \n\t");
   for (i=0;i<moinfo.nirreps;++i)
-    fprintf(outfile,"%s %d, ",moinfo.irr_labs[i], eom_params.states_per_irrep[i]);
-  fprintf(outfile,"\n");
-  fprintf(outfile,"and Rs_per_irrep: \n\t");
+    outfile->Printf("%s %d, ",moinfo.irr_labs[i], eom_params.states_per_irrep[i]);
+  outfile->Printf("\n");
+  outfile->Printf("and Rs_per_irrep: \n\t");
   for (i=0;i<moinfo.nirreps;++i)
-    fprintf(outfile,"%s %d, ",moinfo.irr_labs[i], eom_params.cs_per_irrep[i]);
-  fprintf(outfile,"These numbers should match those given by the roots_per_irrep keyword\n");
-  fprintf(outfile,"\n\n");
-  fflush(outfile);
+    outfile->Printf("%s %d, ",moinfo.irr_labs[i], eom_params.cs_per_irrep[i]);
+  outfile->Printf("These numbers should match those given by the roots_per_irrep keyword\n");
+  outfile->Printf("\n\n");
+  
   return;
 }
 
@@ -138,7 +138,7 @@ void read_guess(int C_irr)
 
   errcod = ip_count("EOM_GUESS_VECTORS",&num_vectors,0);
   if(errcod != IPE_OK) {
-    fprintf(outfile, "\nread_guess(): Unable to read number of guesses from input.\n");
+    outfile->Printf( "\nread_guess(): Unable to read number of guesses from input.\n");
     exit(2);
   }
 
@@ -176,7 +176,7 @@ void read_guess(int C_irr)
         }
         else{ /* check other excitations for consistency */
           if (moinfo.occ_sym[i]^moinfo.vir_sym[a] != this_irrep) {
-            fprintf(outfile, "\nInconsisent symmetries in components of guess %d.\n", k);
+            outfile->Printf( "\nInconsisent symmetries in components of guess %d.\n", k);
             exit(2);
           }
         }
@@ -191,13 +191,13 @@ void read_guess(int C_irr)
         else{ /* check other excitations for consistency */
           if (spin == 0) {
             if (moinfo.aocc_sym[i]^moinfo.avir_sym[a] != this_irrep) {
-              fprintf(outfile, "\nInconsisent symmetries in components of guess %d.\n", k);
+              outfile->Printf( "\nInconsisent symmetries in components of guess %d.\n", k);
               exit(2);
             }
           }
           else {
             if (moinfo.bocc_sym[i]^moinfo.bvir_sym[a] != this_irrep) {
-              fprintf(outfile, "\nInconsisent symmetries in components of guess %d.\n", k);
+              outfile->Printf( "\nInconsisent symmetries in components of guess %d.\n", k);
               exit(2);
             }
           }

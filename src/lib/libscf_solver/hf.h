@@ -43,6 +43,7 @@ class Vector;
 class SimpleVector;
 class TwoBodySOInt;
 class JK;
+class Psi4JK;
 namespace scf {
 
 class HF : public Wavefunction {
@@ -123,6 +124,7 @@ protected:
 
     /// The soon to be ubiquitous JK object
     boost::shared_ptr<JK> jk_;
+    boost::shared_ptr<Psi4JK> JKFactory;
 
     /// Are we to do MOM?
     bool MOM_enabled_;
@@ -329,6 +331,12 @@ protected:
 
     /** Save orbitals to use later as a guess **/
     virtual void save_orbitals();
+
+    /** Tells whether or not to read Fock matrix as a guess **/
+    bool do_use_fock_guess();
+
+    /** Load fock matrix from previous computation to form guess MO coefficients **/
+    virtual void load_fock();
 
     /** Load orbitals from previous computation, projecting if needed **/
     virtual void load_orbitals();

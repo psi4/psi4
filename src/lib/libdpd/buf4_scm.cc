@@ -30,7 +30,7 @@
 #include <libpsio/psio.h>
 #define EXTERN
 #include "dpd.gbl"
-
+#include "psi4-dec.h"
 namespace psi {
 
 /* dpd_buf4_scm(): Multiplies every element of a four-index dpdbuf by a scalar.
@@ -88,8 +88,8 @@ int DPD::buf4_scm(dpdbuf4 *InBuf, double alpha)
         if(coltot) {
             maxrows = DPD_BIGNUM/coltot;
             if(maxrows < 1) {
-                fprintf(stderr, "\nLIBDPD Error: cannot compute even the number of rows in buf4_scm.\n");
-                dpd_error("buf4_scm", stderr);
+                outfile->Printf( "\nLIBDPD Error: cannot compute even the number of rows in buf4_scm.\n");
+                dpd_error("buf4_scm", "outfile");
             }
         }
         else maxrows = DPD_BIGNUM;

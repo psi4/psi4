@@ -76,7 +76,7 @@ void build_Z_RHF(void)
   global_dpd_->file2_close(&X1);
 
   /* Trying out Matt's Pople code --- way to go, Matt! */
-  pople(A.matrix[0], X, A.params->rowtot[0], 1, 1e-12, outfile, 0);
+  pople(A.matrix[0], X, A.params->rowtot[0], 1, 1e-12, "outfile", 0);
 
   /* Build the orbital component of Dai */
   global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 0, "D(orb)(A,I)");

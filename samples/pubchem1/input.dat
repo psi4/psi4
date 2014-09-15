@@ -1,5 +1,6 @@
 #! Benzene vertical singlet-triplet energy difference computation, using the
-#! PubChem database to obtain the initial geometry, at the UHF an ROHF levels of theory.
+#! PubChem database to obtain the initial geometry, which is optimized at the HF/STO-3G
+#! level, before computing single point energies at the RHF, UHF and ROHF levels of theory.
 
 memory 250 mb
 
@@ -8,13 +9,15 @@ molecule benz{
 }
 
 set {
-   basis     DZ
+   basis     sto-3g
    reference rhf
    max_energy_g_convergence 8
-   scf_type pk
 }
 
-e_sing_rhf = optimize('scf')
+optimize('scf')
+
+set basis cc-pvdz
+e_sing_rhf = energy('scf')
 
 benz.set_multiplicity(3)
 #

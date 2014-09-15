@@ -37,7 +37,7 @@
 #include "yoshimine.h"
 
 namespace psi {
-extern FILE* outfile;
+
 namespace transqt {
 
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
@@ -131,18 +131,18 @@ void transform_two_uhf(void)
   /** Presort the two-electron integrals **/
 
   if (params.print_lvl) {
-    fprintf(outfile, "\n\tPre-sorting two-electron integrals...\n\n");
-    fflush(outfile);
+    outfile->Printf( "\n\tPre-sorting two-electron integrals...\n\n");
+    
   }
 
   yosh_init(&YBuffP, src_ntri, src_ntri, maxcor, maxcord,
-            max_buckets, first_tmp_file, tolerance, outfile);
+            max_buckets, first_tmp_file, tolerance, "outfile");
 
   if (print_lvl > 1) {
-    fprintf(outfile, "\tPresort Yoshimine Parameters");
-    yosh_print(&YBuffP, outfile);
-    fprintf(outfile, "\n");
-    fflush(outfile);
+    outfile->Printf( "\tPresort Yoshimine Parameters");
+    yosh_print(&YBuffP, "outfile");
+    outfile->Printf( "\n");
+    
   }
 
   yosh_init_buckets(&YBuffP);
@@ -151,12 +151,12 @@ void transform_two_uhf(void)
                  params.delete_src_tei, src_orbspi, nirreps, ioff, 0,
                  params.fzc && moinfo.nfzc, moinfo.fzc_density_alpha,
                  moinfo.fzc_density_beta, moinfo.fzc_operator_alpha,
-                 moinfo.fzc_operator_beta, 1, (print_lvl > 5), outfile);
+                 moinfo.fzc_operator_beta, 1, (print_lvl > 5), "outfile");
 
   yosh_close_buckets(&YBuffP, 0);
 
   yosh_sort(&YBuffP, params.presort_file, 0, ioff, NULL, src_orbs, src_ntri,
-            0, 1, 0, 0, 1, (print_lvl > 5), outfile);
+            0, 1, 0, 0, 1, (print_lvl > 5), "outfile");
 
   yosh_done(&YBuffP);
 
@@ -180,7 +180,7 @@ void transform_two_uhf(void)
   chkpt_close();
 
   if (params.print_lvl)
-    fprintf(outfile, "\n\tFrozen core energy = %20.15lf\n", moinfo.efzc);
+    outfile->Printf( "\n\tFrozen core energy = %20.15lf\n", moinfo.efzc);
 
   P_block = init_array(src_ntri);
   J_block = init_array(MAX0(src_ntri,dst_ntri));
@@ -192,21 +192,21 @@ void transform_two_uhf(void)
 
   /** AA/AB First-half transformation **/
 
-  fprintf(outfile, "\n\tBeginning AA/AB two-electron transform...\n");
+  outfile->Printf( "\n\tBeginning AA/AB two-electron transform...\n");
 
   C = moinfo.evects_alpha;
 
   iwl_buf_init(&PBuff, params.presort_file, tolerance, 1, 1);
   yosh_init(&YBuffJ, dst_ntri, src_ntri, maxcor, maxcord, max_buckets,
-            first_tmp_file, tolerance, outfile);
+            first_tmp_file, tolerance, "outfile");
 
   yosh_init_buckets(&YBuffJ);
 
   if (print_lvl > 1) {
-    fprintf(outfile, "\tHalf-transform Yoshimine Parameters");
-    yosh_print(&YBuffJ, outfile);
-    fprintf(outfile, "\n");
-    fflush(outfile);
+    outfile->Printf( "\tHalf-transform Yoshimine Parameters");
+    yosh_print(&YBuffJ, "outfile");
+    outfile->Printf( "\n");
+    
   }
 
   for (psym=0; psym < nirreps; psym++) {
@@ -222,7 +222,7 @@ void transform_two_uhf(void)
 
           zero_arr(P_block,src_ntri);
           iwl_buf_rd(&PBuff, pq, P_block, ioff, ioff, 0, (print_lvl>4),
-                     outfile);
+                     "outfile");
 
           for (rsym=0; rsym < nirreps; rsym++) {
             rfirst = src_first[rsym];
@@ -275,7 +275,7 @@ void transform_two_uhf(void)
 
               yosh_wrt_arr(&YBuffJ, p, q, pq, pqsym, J_block,
                            moinfo.nmo, ioff, dst_orbsym, dst_first, dst_last,
-                           1, (print_lvl > 4), outfile);
+                           1, (print_lvl > 4), "outfile");
 
             }
           }
@@ -288,17 +288,17 @@ void transform_two_uhf(void)
   iwl_buf_close(&PBuff, 1);
 
   if (params.print_lvl)
-    fprintf(outfile, "\tSorting AA/AB half-transformed integrals...\n");
+    outfile->Printf( "\tSorting AA/AB half-transformed integrals...\n");
 
   yosh_flush(&YBuffJ);
   yosh_close_buckets(&YBuffJ, 0);
   yosh_sort(&YBuffJ, params.jfile, 0, ioff, NULL, src_orbs, src_ntri, 0, 1, 0, 0,
-            1, (print_lvl > 5), outfile);
+            1, (print_lvl > 5), "outfile");
   yosh_done(&YBuffJ);
 
   if (print_lvl) {
-    fprintf(outfile, "\tFinished AA/AB half-transformation...\n");
-    fflush(outfile);
+    outfile->Printf( "\tFinished AA/AB half-transformation...\n");
+    
   }
 
   /** AA Second-half transformation **/
@@ -324,7 +324,7 @@ void transform_two_uhf(void)
           }
 
           zero_arr(J_block, src_ntri);
-          iwl_buf_rd(&JBuff, kl, J_block, ioff, ioff, 0, 0, outfile);
+          iwl_buf_rd(&JBuff, kl, J_block, ioff, ioff, 0, 0, "outfile");
 
           for (psym=0; psym < nirreps; psym++) {
             pfirst = src_first[psym];
@@ -359,7 +359,7 @@ void transform_two_uhf(void)
               iwl_buf_wrt_mat(&MBuff, ktr, ltr, A,
                               ifirst, ilast, jfirst, jlast,
                               reorder_alpha, fzc_offset, params.print_te_ints,
-                              ioff, outfile);
+                              ioff, "outfile");
             }
           }
         }
@@ -373,9 +373,9 @@ void transform_two_uhf(void)
   iwl_buf_close(&MBuff, 1);
 
   if (print_lvl) {
-    fprintf(outfile, "\n\tAA Transformation finished.\n");
-    fprintf(outfile, "\tTwo-electron AA integrals written to file%d.\n",params.aa_mfile);
-    fflush(outfile);
+    outfile->Printf( "\n\tAA Transformation finished.\n");
+    outfile->Printf( "\tTwo-electron AA integrals written to file%d.\n",params.aa_mfile);
+    
   }
 
   /** AB Second-half transformation **/
@@ -401,7 +401,7 @@ void transform_two_uhf(void)
           }
 
           zero_arr(J_block, src_ntri);
-          iwl_buf_rd(&JBuff, kl, J_block, ioff, ioff, 0, 0, outfile);
+          iwl_buf_rd(&JBuff, kl, J_block, ioff, ioff, 0, 0, "outfile");
 
           for (psym=0; psym < nirreps; psym++) {
             pfirst = src_first[psym];
@@ -436,7 +436,7 @@ void transform_two_uhf(void)
               iwl_buf_wrt_mat2(&MBuff, ktr, ltr, A,
                                ifirst, ilast, jfirst, jlast,
                                reorder_beta, fzc_offset, params.print_te_ints,
-                               ioff, outfile);
+                               ioff, "outfile");
             }
           }
         }
@@ -450,28 +450,28 @@ void transform_two_uhf(void)
   iwl_buf_close(&MBuff, 1);
 
   if (print_lvl) {
-    fprintf(outfile, "\n\tAB Transformation finished.\n");
-    fprintf(outfile, "\tTwo-electron AB integrals written to file%d.\n",params.ab_mfile);
-    fflush(outfile);
+    outfile->Printf( "\n\tAB Transformation finished.\n");
+    outfile->Printf( "\tTwo-electron AB integrals written to file%d.\n",params.ab_mfile);
+    
   }
 
   /** BB First-half transformation **/
 
-  fprintf(outfile, "\n\tBeginning BB two-electron transform...\n");
+  outfile->Printf( "\n\tBeginning BB two-electron transform...\n");
 
   C = moinfo.evects_beta;
 
   iwl_buf_init(&PBuff, params.presort_file, tolerance, 1, 1);
   yosh_init(&YBuffJ, dst_ntri, src_ntri, maxcor, maxcord, max_buckets,
-            first_tmp_file, tolerance, outfile);
+            first_tmp_file, tolerance, "outfile");
 
   yosh_init_buckets(&YBuffJ);
 
   if (print_lvl > 1) {
-    fprintf(outfile, "\tHalf-transform Yoshimine Parameters");
-    yosh_print(&YBuffJ, outfile);
-    fprintf(outfile, "\n");
-    fflush(outfile);
+    outfile->Printf( "\tHalf-transform Yoshimine Parameters");
+    yosh_print(&YBuffJ, "outfile");
+    outfile->Printf( "\n");
+    
   }
 
   for (psym=0; psym < nirreps; psym++) {
@@ -487,7 +487,7 @@ void transform_two_uhf(void)
 
           zero_arr(P_block,src_ntri);
           iwl_buf_rd(&PBuff, pq, P_block, ioff, ioff, 0, (print_lvl>4),
-                     outfile);
+                     "outfile");
 
           for (rsym=0; rsym < nirreps; rsym++) {
             rfirst = src_first[rsym];
@@ -540,7 +540,7 @@ void transform_two_uhf(void)
 
               yosh_wrt_arr(&YBuffJ, p, q, pq, pqsym, J_block,
                            moinfo.nmo, ioff, dst_orbsym, dst_first, dst_last,
-                           1, (print_lvl > 4), outfile);
+                           1, (print_lvl > 4), "outfile");
 
             }
           }
@@ -553,17 +553,17 @@ void transform_two_uhf(void)
   iwl_buf_close(&PBuff, params.keep_presort);
 
   if (params.print_lvl)
-    fprintf(outfile, "\tSorting BB half-transformed integrals...\n");
+    outfile->Printf( "\tSorting BB half-transformed integrals...\n");
 
   yosh_flush(&YBuffJ);
   yosh_close_buckets(&YBuffJ, 0);
   yosh_sort(&YBuffJ, params.jfile, 0, ioff, NULL, src_orbs, src_ntri, 0, 1, 0, 0,
-            1, (print_lvl > 5), outfile);
+            1, (print_lvl > 5), "outfile");
   yosh_done(&YBuffJ);
 
   if (print_lvl) {
-    fprintf(outfile, "\tFinished BB half-transformation...\n");
-    fflush(outfile);
+    outfile->Printf( "\tFinished BB half-transformation...\n");
+    
   }
 
   /** BB Second-half transformation **/
@@ -589,7 +589,7 @@ void transform_two_uhf(void)
           }
 
           zero_arr(J_block, src_ntri);
-          iwl_buf_rd(&JBuff, kl, J_block, ioff, ioff, 0, 0, outfile);
+          iwl_buf_rd(&JBuff, kl, J_block, ioff, ioff, 0, 0, "outfile");
 
           for (psym=0; psym < nirreps; psym++) {
             pfirst = src_first[psym];
@@ -624,7 +624,7 @@ void transform_two_uhf(void)
               iwl_buf_wrt_mat(&MBuff, ktr, ltr, A,
                               ifirst, ilast, jfirst, jlast,
                               reorder_beta, fzc_offset, params.print_te_ints,
-                              ioff, outfile);
+                              ioff, "outfile");
             }
           }
         }
@@ -638,9 +638,9 @@ void transform_two_uhf(void)
   iwl_buf_close(&MBuff, 1);
 
   if (print_lvl) {
-    fprintf(outfile, "\n\tBB Transformation finished.\n");
-    fprintf(outfile, "\tTwo-electron BB integrals written to file%d.\n",params.bb_mfile);
-    fflush(outfile);
+    outfile->Printf( "\n\tBB Transformation finished.\n");
+    outfile->Printf( "\tTwo-electron BB integrals written to file%d.\n",params.bb_mfile);
+    
   }
 
   free(P_block);

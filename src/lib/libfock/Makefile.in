@@ -6,8 +6,8 @@ include ../MakeVars
 
 PSITARGET = $(top_objdir)/lib/libPSI_fock.a
 
-TRUECXXSRC = $(notdir $(wildcard $(srcdir)/*.cc))
-DEPENDINCLUDE = $(notdir $(wildcard $(srcdir)/*.h))
+TRUECXXSRC = apps.cc cubature.cc direct_screening.cc hamiltonian.cc jk.cc link.cc points.cc solver.cc v.cc wrapper.cc
+DEPENDINCLUDE = apps.h cubature.h direct_screening.h gridblocker.h hamiltonian.h jk_independent_impl.h jk_independent.h jk.h link.h points.h solver.h v.h
 LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
 
 include ../MakeRules

@@ -60,7 +60,7 @@ void sort_tei(void)
   if(params.ref == 2) { /*** UHF ***/
     distribute_uhf("AA", PSIF_MO_AA_TEI, FIRST_TMP, tolerance, keep);
 
-    fflush(outfile);
+    
 
     global_dpd_->file4_init_nocache(&A, PSIF_CC_AINTS, 0, 0, 0, "A <IJ|KL>");
     file_build(&A, FIRST_TMP, tolerance, 1, 1, 1, 0);
@@ -212,7 +212,7 @@ void sort_tei(void)
     }
   }
 
-  fflush(outfile);
+  
 }
 
 }} // namespace psi::ccsort

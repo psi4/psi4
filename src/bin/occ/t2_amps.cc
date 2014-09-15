@@ -35,7 +35,7 @@ namespace psi{ namespace occwave{
 
 void OCCWave::t2_amps()
 {   
-     //fprintf(outfile,"\n t2_amps is starting... \n"); fflush(outfile);
+     //outfile->Printf("\n t2_amps is starting... \n"); 
 
 //===========================================================================================
 //========================= RHF =============================================================
@@ -200,7 +200,7 @@ if (reference_ == "RESTRICTED") {
     
     // Reset
     global_dpd_->buf4_copy(&Tnew, PSIF_OCC_DPD, "T2 <OO|VV>");
-    if (print_ > 3) global_dpd_->buf4_print(&Tnew, outfile, 1);
+    if (print_ > 3) global_dpd_->buf4_print(&Tnew, "outfile", 1);
     global_dpd_->buf4_close(&Tnew);
 
     // DIIS
@@ -753,7 +753,7 @@ else if (reference_ == "UNRESTRICTED") {
     
     // Reset
     global_dpd_->buf4_copy(&Tnew, PSIF_OCC_DPD, "T2 <OO|VV>");
-    if (print_ > 3) global_dpd_->buf4_print(&Tnew, outfile, 1);
+    if (print_ > 3) global_dpd_->buf4_print(&Tnew, "outfile", 1);
     global_dpd_->buf4_close(&Tnew);
     
     
@@ -783,7 +783,7 @@ else if (reference_ == "UNRESTRICTED") {
     
     // Reset
     global_dpd_->buf4_copy(&Tnew, PSIF_OCC_DPD, "T2 <oo|vv>");
-    if (print_ > 3) global_dpd_->buf4_print(&Tnew, outfile, 1);
+    if (print_ > 3) global_dpd_->buf4_print(&Tnew, "outfile", 1);
     global_dpd_->buf4_close(&Tnew);
     
     
@@ -812,7 +812,7 @@ else if (reference_ == "UNRESTRICTED") {
 
     // Reset
     global_dpd_->buf4_copy(&Tnew, PSIF_OCC_DPD, "T2 <Oo|Vv>");
-    if (print_ > 3) global_dpd_->buf4_print(&Tnew, outfile, 1);
+    if (print_ > 3) global_dpd_->buf4_print(&Tnew, "outfile", 1);
     global_dpd_->buf4_close(&Tnew);
     
     // DIIS
@@ -874,7 +874,7 @@ else if (reference_ == "UNRESTRICTED") {
     psio_->close(PSIF_OCC_DPD, 1);
     
 }// end if (reference_ == "UNRESTRICTED") 
- //fprintf(outfile,"\n t2_amps done. \n"); fflush(outfile);
+ //outfile->Printf("\n t2_amps done. \n"); 
 
 } // end t2_amps
 }} // End Namespaces

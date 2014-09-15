@@ -30,7 +30,7 @@
 namespace psi { namespace nonbonded {
 
 extern "C" {
-  EXTERN FILE *infile,*outfile;
+  EXTERN std::string OutFileRMR;
   EXTERN char *psi_file_prefix;
 }
 

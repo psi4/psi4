@@ -119,7 +119,7 @@ MatrixRHamiltonian::~MatrixRHamiltonian()
 void MatrixRHamiltonian::print_header() const 
 {
     if (print_) {
-        fprintf(outfile, "  ==> MatrixRHamiltonian (by Rob Parrish) <== \n\n");
+        outfile->Printf( "  ==> MatrixRHamiltonian (by Rob Parrish) <== \n\n");
     }
 }
 boost::shared_ptr<Vector> MatrixRHamiltonian::diagonal()
@@ -161,7 +161,7 @@ MatrixUHamiltonian::~MatrixUHamiltonian()
 void MatrixUHamiltonian::print_header() const 
 {
     if (print_) {
-        fprintf(outfile, "  ==> MatrixUHamiltonian (by Rob Parrish) <== \n\n");
+        outfile->Printf( "  ==> MatrixUHamiltonian (by Rob Parrish) <== \n\n");
     }
 }
 std::pair<boost::shared_ptr<Vector>, boost::shared_ptr<Vector> > MatrixUHamiltonian::diagonal()
@@ -216,7 +216,7 @@ CISRHamiltonian::~CISRHamiltonian()
 void CISRHamiltonian::print_header() const 
 {
     if (print_) {
-        fprintf(outfile, "  ==> CISRHamiltonian (by Rob Parrish) <== \n\n");
+        outfile->Printf( "  ==> CISRHamiltonian (by Rob Parrish) <== \n\n");
     }
 }
 boost::shared_ptr<Vector> CISRHamiltonian::diagonal()
@@ -263,9 +263,9 @@ boost::shared_ptr<Vector> CISRHamiltonian::diagonal()
                     diag->add(symm,ia,iaia->get(symm,ia)); 
                 }
             } 
-            fprintf(outfile, "    CISR Hamiltonian: (ia|ia) integrals used to form exact diagonal.\n\n");
+            outfile->Printf( "    CISR Hamiltonian: (ia|ia) integrals used to form exact diagonal.\n\n");
         } catch (...) {
-            fprintf(outfile, "    CISR Hamiltonian: (ia|ia) integrals not available for JK type.\n\n");
+            outfile->Printf( "    CISR Hamiltonian: (ia|ia) integrals not available for JK type.\n\n");
         }
     }
 
@@ -470,7 +470,7 @@ TDHFRHamiltonian::~TDHFRHamiltonian()
 void TDHFRHamiltonian::print_header() const 
 {
     if (print_) {
-        fprintf(outfile, "  ==> TDHFRHamiltonian (by Rob Parrish) <== \n\n");
+        outfile->Printf( "  ==> TDHFRHamiltonian (by Rob Parrish) <== \n\n");
     }
 }
 boost::shared_ptr<Vector> TDHFRHamiltonian::diagonal()
@@ -696,7 +696,7 @@ CPHFRHamiltonian::~CPHFRHamiltonian()
 void CPHFRHamiltonian::print_header() const 
 {
     if (print_) {
-        fprintf(outfile, "  ==> CPHFRHamiltonian (by Rob Parrish) <== \n\n");
+        outfile->Printf( "  ==> CPHFRHamiltonian (by Rob Parrish) <== \n\n");
     }
 }
 boost::shared_ptr<Vector> CPHFRHamiltonian::diagonal()
@@ -926,7 +926,7 @@ TDARHamiltonian::~TDARHamiltonian()
 void TDARHamiltonian::print_header() const 
 {
     if (print_) {
-        fprintf(outfile, "  ==> TDARHamiltonian (by Rob Parrish) <== \n\n");
+        outfile->Printf( "  ==> TDARHamiltonian (by Rob Parrish) <== \n\n");
     }
 }
 void TDARHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
@@ -1086,7 +1086,7 @@ TDDFTRHamiltonian::~TDDFTRHamiltonian()
 void TDDFTRHamiltonian::print_header() const 
 {
     if (print_) {
-        fprintf(outfile, "  ==> TDDFTHamiltonian (by Rob Parrish) <== \n\n");
+        outfile->Printf( "  ==> TDDFTHamiltonian (by Rob Parrish) <== \n\n");
     }
 }
 void TDDFTRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
@@ -1288,7 +1288,7 @@ CPKSRHamiltonian::~CPKSRHamiltonian()
 void CPKSRHamiltonian::print_header() const 
 {
     if (print_) {
-        fprintf(outfile, "  ==> CPKSRHamiltonian (by Rob Parrish) <== \n\n");
+        outfile->Printf( "  ==> CPKSRHamiltonian (by Rob Parrish) <== \n\n");
     }
 }
 void CPKSRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,

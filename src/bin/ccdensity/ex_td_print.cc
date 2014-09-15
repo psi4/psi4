@@ -42,12 +42,12 @@ void ex_td_print(std::vector<struct XTD_Params> xtd_list)
 {
   int i;
 
-  fprintf(outfile,"\n\t                   Excited State -> Excited State Transitions\n");
-  fprintf(outfile,"\n\t                        Excitation Energy          OS       RS        RS     Einstein A\n");
-  fprintf(outfile,"\tTransition   (eV)    (cm^-1)    (nm)     (au)              (l,au)   (v,au)     (s^-1)\n");
+  outfile->Printf("\n\t                   Excited State -> Excited State Transitions\n");
+  outfile->Printf("\n\t                        Excitation Energy          OS       RS        RS     Einstein A\n");
+  outfile->Printf("\tTransition   (eV)    (cm^-1)    (nm)     (au)              (l,au)   (v,au)     (s^-1)\n");
   for(i=0; i<xtd_list.size(); i++) {
-    //fprintf(outfile,"\t  %d%s->%d%s %7.3lf %9.1lf %7.1lf %10.6lf %8.4lf %8.4lf %8.4lf  %12.1lf\n",
-    fprintf(outfile,"\t  %d%s->%d%s %7.3lf %9.1lf %7.1lf %10.6lf %8.4lf %8.4lf %8.4lf  %7.6E\n",
+    //outfile->Printf("\t  %d%s->%d%s %7.3lf %9.1lf %7.1lf %10.6lf %8.4lf %8.4lf %8.4lf  %12.1lf\n",
+    outfile->Printf("\t  %d%s->%d%s %7.3lf %9.1lf %7.1lf %10.6lf %8.4lf %8.4lf %8.4lf  %7.6E\n",
             xtd_list[i].root1+1,moinfo.labels[xtd_list[i].irrep1],
             xtd_list[i].root2+1,moinfo.labels[xtd_list[i].irrep2],
             xtd_list[i].cceom_energy*pc_hartree2ev,
@@ -57,7 +57,7 @@ void ex_td_print(std::vector<struct XTD_Params> xtd_list)
             xtd_list[i].RS_length,xtd_list[i].RS_velocity,
             xtd_list[i].einstein_a);
   }
-  fprintf(outfile,"\n");
+  outfile->Printf("\n");
 }
 
 }} // namespace psi::ccdensity

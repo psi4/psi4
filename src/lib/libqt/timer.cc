@@ -63,7 +63,7 @@
 #include <libciomr/libciomr.h>
 #include <psifiles.h>
 #include <psi4-dec.h>
-
+#include "libparallel/ParallelPrinter.h"
 /* guess for HZ, if missing */
 #ifndef HZ
 #define HZ 60
@@ -113,7 +113,7 @@ void timer_init(void)
 */
 void timer_done(void)
 {
-  FILE *timer_out;
+
   char *host;
   extern time_t timer_start, timer_end;
   struct timer *this_timer, *next_timer;
@@ -125,23 +125,23 @@ void timer_done(void)
   gethostname(host, 40);
 
   /* Dump the timing data to timer.dat and free the timers */
-  ffile(&timer_out, "timer.dat", 1);
-  fprintf(timer_out, "\n");
-  fprintf(timer_out, "Host: %s\n", host);
-  fprintf(timer_out, "\n");
-  fprintf(timer_out, "Timers On : %s", ctime(&timer_start));
-  fprintf(timer_out, "Timers Off: %s", ctime(&timer_end));
-  fprintf(timer_out, "\nWall Time:  %10.2f seconds\n\n",
+  boost::shared_ptr<OutFile> printer(new OutFile("timer.dat",APPEND));
+  printer->Printf( "\n");
+  printer->Printf( "Host: %s\n", host);
+  printer->Printf( "\n");
+  printer->Printf( "Timers On : %s", ctime(&timer_start));
+  printer->Printf( "Timers Off: %s", ctime(&timer_end));
+  printer->Printf( "\nWall Time:  %10.2f seconds\n\n",
           (double) timer_end - timer_start);
 
   this_timer = global_timer;
   while(this_timer != NULL) {
       if(this_timer->calls > 1)
-          fprintf(timer_out, "%-12s: %10.2fu %10.2fs %10.2fw %6d calls\n",
+          printer->Printf( "%-12s: %10.2fu %10.2fs %10.2fw %6d calls\n",
                   this_timer->key, this_timer->utime, this_timer->stime,
                   this_timer->wtime, this_timer->calls);
       else if(this_timer->calls == 1)
-          fprintf(timer_out, "%-12s: %10.2fu %10.2fs %10.2fw %6d call\n",
+          printer->Printf( "%-12s: %10.2fu %10.2fs %10.2fw %6d call\n",
                   this_timer->key, this_timer->utime, this_timer->stime,
                   this_timer->wtime, this_timer->calls);
       next_timer = this_timer->next;
@@ -149,9 +149,8 @@ void timer_done(void)
       this_timer = next_timer;
     }
 
-  fprintf(timer_out,
+  printer->Printf(
           "\n***********************************************************\n");
-  fclose(timer_out);
 
   free(host);
 

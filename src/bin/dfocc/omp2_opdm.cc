@@ -74,8 +74,8 @@ if (reference_ == "RESTRICTED") {
   if(print_ > 2) {
     G1->print();
     double trace = G1->trace();
-    fprintf(outfile,"\t trace: %12.12f \n", trace);
-    fflush(outfile);
+    outfile->Printf("\t trace: %12.12f \n", trace);
+    
   }
 
 }// end if (reference_ == "RESTRICTED")
@@ -124,7 +124,7 @@ else if (reference_ == "UNRESTRICTED") {
     t2.reset();
     l2.reset();
 
-    //fprintf(outfile,"\tI am here.\n"); fflush(outfile);
+    //outfile->Printf("\tI am here.\n"); 
 
    if (reference == "ROHF" && orb_opt_ == "FALSE") {
        // G_ia = t_i^a
@@ -183,10 +183,10 @@ else if (reference_ == "UNRESTRICTED") {
     G1A->print();
     G1B->print();
     double trace = G1A->trace();
-    fprintf(outfile,"\t Alpha trace: %12.12f \n", trace);
+    outfile->Printf("\t Alpha trace: %12.12f \n", trace);
     trace = G1B->trace();
-    fprintf(outfile,"\t Beta trace: %12.12f \n", trace);
-    fflush(outfile);
+    outfile->Printf("\t Beta trace: %12.12f \n", trace);
+    
   }
 
 }// else if (reference_ == "UNRESTRICTED")

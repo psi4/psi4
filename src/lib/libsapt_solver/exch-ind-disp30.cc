@@ -96,16 +96,16 @@ void SAPT2p3::exch_ind_disp30()
   e_exch_ind_disp30_ = ex_1 + ex_2 + ex_3 + ex_4 + ex_5;
 
   if (debug_) {
-    fprintf(outfile,"\n    Exch-Ind-Disp_1     = %18.12lf H\n",ex_1);
-    fprintf(outfile,"    Exch-Ind-Disp_2     = %18.12lf H\n",ex_2);
-    fprintf(outfile,"    Exch-Ind-Disp_3     = %18.12lf H\n",ex_3);
-    fprintf(outfile,"    Exch-Ind-Disp_4     = %18.12lf H\n",ex_4);
-    fprintf(outfile,"    Exch-Ind-Disp_5     = %18.12lf H\n",ex_5);
+    outfile->Printf("\n    Exch-Ind-Disp_1     = %18.12lf H\n",ex_1);
+    outfile->Printf("    Exch-Ind-Disp_2     = %18.12lf H\n",ex_2);
+    outfile->Printf("    Exch-Ind-Disp_3     = %18.12lf H\n",ex_3);
+    outfile->Printf("    Exch-Ind-Disp_4     = %18.12lf H\n",ex_4);
+    outfile->Printf("    Exch-Ind-Disp_5     = %18.12lf H\n",ex_5);
   }
   if (print_) {
-    fprintf(outfile,"    Exch-Ind-Disp30     = %18.12lf H\n",
+    outfile->Printf("    Exch-Ind-Disp30     = %18.12lf H\n",
       e_exch_ind_disp30_);
-    fflush(outfile);
+    
   }
 }
 

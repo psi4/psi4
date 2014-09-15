@@ -222,14 +222,14 @@ public:
     }
 
     /// Python compatible printer
-    void print_out() { print(outfile); }
+    void print_out() { print("outfile"); }
     /**
      * Print the matrix using print_mat
      *
      * @param outfile File point to use, defaults to Psi4's outfile.
      * @param extra When printing the name of the 'extra' will be printing after the name.
      */
-    void print(FILE *out = outfile, const char *extra=NULL) const;
+    void print(std::string OutFileRMR = "outfile", const char *extra=NULL) const;
 
     /// Copies rhs to this
     void copy(const Vector* rhs);
@@ -390,7 +390,7 @@ public:
         return name_;
     }
     /// Python compatible printer
-    void print_out() { print(outfile); }
+    void print_out() { print("outfile"); }
 
     /**
      * Print the matrix using print_mat
@@ -398,7 +398,7 @@ public:
      * @param outfile File point to use, defaults to Psi4's outfile.
      * @param extra When printing the name of the 'extra' will be printing after the name.
      */
-    void print(FILE *out = outfile, const char *extra=NULL) const;
+    void print(std::string OutFileRMR = "outfile", const char *extra=NULL) const;
     /// Copies rhs to this
     void copy(const IntVector* rhs);
     /// Copies rhs to this

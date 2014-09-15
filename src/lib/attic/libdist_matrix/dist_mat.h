@@ -47,7 +47,7 @@ namespace python {
 
 namespace psi {
 
-extern FILE *outfile;
+
 
 //template <typename T>
 //class Tile;

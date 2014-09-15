@@ -150,7 +150,7 @@ virtual bool is_inverse_stre() // for stretches - whether 1/R
 
 Contains the following virtual functions which must be provided by derived classes:
 // function to print coordinate definitions to file
-virtual void print_intco_dat(FILE *fp, int atom_offset=0) const = 0;
+virtual void print_intco_dat(std::string OutFileRMR, int atom_offset=0) const = 0;
 // return value of internal coordinate
 virtual double value(GeomType geom) const = 0;
 // compute s vector (dq/dx, dq/dy, dq/dz)
@@ -159,12 +159,12 @@ virtual double ** DqDx(GeomType geom) const = 0;
 // dq_i dq_j / dx^2, dydx, dy^2, dzdx, dzdy, dz^2 
 virtual double ** Dq2Dx2(GeomType geom) const = 0;
 // print coordinates and value to output file
-virtual void print(FILE *fp, GeomType geom, int atom_offset=0) const = 0;
+virtual void print(std::string OutFileRMR, GeomType geom, int atom_offset=0) const = 0;
 // print coordinates and displacements 
-virtual void print_disp(FILE *fp, const double old_q, const double f_q,
+virtual void print_disp(std::string OutFileRMR, const double old_q, const double f_q,
 const double dq, const double new_q, int atom_offset = 0) const = 0;
 // for debugging, print s vectors to output file
-virtual void print_s(FILE *fp, GeomType geom) const = 0;
+virtual void print_s(std::string OutFileRMR, GeomType geom) const = 0;
 // an equality operator
 virtual bool operator==(const SIMPLE & s2) const  = 0;
 

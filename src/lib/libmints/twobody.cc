@@ -45,7 +45,7 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory* intsfactory, int deriv) :
     target_(0),
     target_pybuffer_(&target_, true)
 {
-    //fprintf(stderr, "TwoBodyAOInt object created with: %s, %s, %s, %s\n",
+    //outfile->Printf( "TwoBodyAOInt object created with: %s, %s, %s, %s\n",
     //        original_bs1_->name().c_str(),
     //        original_bs2_->name().c_str(),
     //        original_bs3_->name().c_str(),
@@ -542,7 +542,7 @@ static void transform2e_1(int am, SphericalTransformIter& sti, double *s, double
         double *tptr = t + sti.pureindex()*njkl;
         double coef = sti.coef();
 
-//        fprintf(outfile, "2e_1: cart = %d pure = %d coef = %8.5f\n", sti.cartindex(), sti.pureindex(), sti.coef());
+//        outfile->Printf( "2e_1: cart = %d pure = %d coef = %8.5f\n", sti.cartindex(), sti.pureindex(), sti.coef());
 
         for(int jkl=0; jkl<njkl; jkl++)
             *(tptr++) += coef * *(sptr++);
@@ -562,7 +562,7 @@ static void transform2e_2(int am, SphericalTransformIter& sti, double *s, double
         double *tptr = t + sti.pureindex()*nkl;
         double coef = sti.coef();
 
-//        fprintf(outfile, "2e_2: cart = %d pure = %d coef = %8.5f\n", sti.cartindex(), sti.pureindex(), sti.coef());
+//        outfile->Printf( "2e_2: cart = %d pure = %d coef = %8.5f\n", sti.cartindex(), sti.pureindex(), sti.coef());
 
         for(int i=0; i<ni; i++,sptr+=sjkl,tptr+=tjkl) {
             for(int kl=0; kl<nkl; kl++)
@@ -584,7 +584,7 @@ static void transform2e_3(int am, SphericalTransformIter& sti, double *s, double
         double *tptr = t + sti.pureindex()*nl;
         // printf("cartindex = %d, pureindex = %d\n", sti.cartindex(), sti.pureindex());
 
-//        fprintf(outfile, "2e_3: cart = %d pure = %d coef = %8.5f\n", sti.cartindex(), sti.pureindex(), sti.coef());
+//        outfile->Printf( "2e_3: cart = %d pure = %d coef = %8.5f\n", sti.cartindex(), sti.pureindex(), sti.coef());
 
         double coef = sti.coef();
         for(int ij=0; ij<nij; ij++,sptr+=skl,tptr+=tkl) {
@@ -614,7 +614,7 @@ static void transform2e_4(int am, SphericalTransformIter& sti, double *s, double
         double *sptr = s + sti.cartindex();
         double *tptr = t + sti.pureindex();
 
-//        fprintf(outfile, "2e_4: cart = %d pure = %d coef = %8.5f\n", sti.cartindex(), sti.pureindex(), sti.coef());
+//        outfile->Printf( "2e_4: cart = %d pure = %d coef = %8.5f\n", sti.cartindex(), sti.pureindex(), sti.coef());
 
         // What's the coefficient we're using
         double coef = sti.coef();

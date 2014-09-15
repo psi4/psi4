@@ -34,10 +34,10 @@
 #include "molecule.h"
 
 #include <boost/shared_ptr.hpp>
-
+#include "psi4-dec.h"
 namespace psi {
 
-    extern FILE *outfile;
+    
 
     class Molecule;
     class GaussianShell;
@@ -239,8 +239,8 @@ public:
      *  Print the basis set.
      *  @param out The file stream to use for printing. Defaults to outfile.
      */
-    void print(FILE *out) const;
-    void print() const { print(outfile); }
+    void print(std::string out) const;
+    void print() const { print("outfile"); }
     /// @}
 
     /// Returns the name of this basis set
@@ -255,17 +255,17 @@ public:
                             > 2: Full details
                             Defaults to 2
      */
-    void print_by_level(FILE* out = outfile, int print_level = 2) const;
+    void print_by_level(std::string OutFileRMR = "outfile", int print_level = 2) const;
     /** Prints a short string summarizing the basis set
      *  @param out The file stream to use for printing. Defaults to outfile.
      */
-    void print_summary(FILE *out = outfile) const;
+    void print_summary(std::string OutFileRMR = "outfile") const;
 
     /** Prints a detailed PSI3-style summary of the basis (per-atom)
      *  @param out The file stream to use for printing. Defaults to outfile.
      */
-    void print_detail(FILE *out) const;
-    void print_detail() const { print_detail(outfile); }
+    void print_detail(std::string out) const;
+    void print_detail() const { print_detail("outfile"); }
 
     /** Returns a string in CFOUR-style of the basis (per-atom)
      *  Format from http://slater.chemie.uni-mainz.de/cfour/index.php?n=Main.OldFormatOfAnEntryInTheGENBASFile
@@ -393,7 +393,7 @@ bool shell_sorter_am(const GaussianShell& d1, const GaussianShell& d2)
 inline
 BasisSet operator +(const BasisSet& a, const BasisSet& b) {
     if (a.molecule() != b.molecule()) {
-        fprintf(stderr, "BasisSet::operator+ : Unable to add basis sets from different molecules.");
+        throw PSIEXCEPTION("BasisSet::operator+ : Unable to add basis sets from different molecules.");
         return BasisSet();
     }
     BasisSet temp;

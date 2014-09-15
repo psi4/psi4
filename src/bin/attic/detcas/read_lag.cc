@@ -60,7 +60,7 @@ void read_lagrangian(void)
     (char *) CalcInfo.lag[0], nmo*nmo*sizeof(double));
 
   if (Params.print_lvl > 3) {
-    fprintf(outfile, "Lagrangian matrix\n");
+    outfile->Printf( "Lagrangian matrix\n");
     print_mat(CalcInfo.lag, nmo, nmo, outfile);
   }
 

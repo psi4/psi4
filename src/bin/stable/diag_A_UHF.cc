@@ -91,26 +91,26 @@ void diag_A_UHF(void)
       moinfo.A_evals[h][i] = eps[i];
 
     if (params.num_evecs_print > 0) {
-      fprintf(outfile, "First %d eigenvectors for %s block:\n",
+      outfile->Printf( "First %d eigenvectors for %s block:\n",
         MIN0(moinfo.rank[h], params.num_evecs_print), moinfo.labels[h]);
-      eivout(v,eps,dim,MIN0(moinfo.rank[h],params.num_evecs_print),outfile); 
+      eivout(v,eps,dim,MIN0(moinfo.rank[h],params.num_evecs_print),"outfile");
     }
 
     /* try to follow eigenvector downhill */
     if (h==0 && params.follow_instab) {
       if (eps[0] >= 0.0) 
-        fprintf(outfile, "\nNo negative eigenvalues to follow.\n");
+        outfile->Printf( "\nNo negative eigenvalues to follow.\n");
       else {
         evec_to_follow = init_array(dim);
         for (i=0; i<dim; i++) evec_to_follow[i] = v[i][0];
 
-        fprintf(outfile, "\nAttempting to follow eigenvector using ");
+        outfile->Printf( "\nAttempting to follow eigenvector using ");
         if (params.rotation_method == 0) {
-          fprintf(outfile, "orbital rotation method.\n");
+          outfile->Printf( "orbital rotation method.\n");
           follow_evec_UHF(evec_to_follow, dim_A, dim_B);
         }  
         else {
-          fprintf(outfile, "antisymmetric matrix method.\n");
+          outfile->Printf( "antisymmetric matrix method.\n");
           follow_evec_UHF2(evec_to_follow, dim_A, dim_B);
         } 
         free(evec_to_follow);

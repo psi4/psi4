@@ -47,7 +47,7 @@ void init_amps(void)
     global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
     if(!params.restart || !psio_tocscan(PSIF_CC_OEI, "tIA"))
       global_dpd_->file2_scm(&tIA, 0);
-    else fprintf(outfile, "\tUsing old T1 amplitudes.\n");
+    else outfile->Printf( "\tUsing old T1 amplitudes.\n");
     global_dpd_->file2_close(&tIA);
 
     if(!params.restart || !psio_tocscan(PSIF_CC_TAMPS, "tIjAb")) {
@@ -66,7 +66,7 @@ void init_amps(void)
       }
       global_dpd_->buf4_close(&tIjAb);
     }
-    else fprintf(outfile, "\tUsing old T2 amplitudes.\n\n");
+    else outfile->Printf( "\tUsing old T2 amplitudes.\n\n");
   }
   else if(params.ref == 1) { /*** ROHF ***/
     if(!params.restart || !psio_tocscan(PSIF_CC_OEI, "tIA") ||
@@ -98,7 +98,7 @@ void init_amps(void)
       global_dpd_->file2_close(&tia);
       global_dpd_->file2_close(&dia);
     }
-    else fprintf(outfile, "\tUsing old T1 amplitudes.\n");
+    else outfile->Printf( "\tUsing old T1 amplitudes.\n");
 
     if(!params.restart || !psio_tocscan(PSIF_CC_TAMPS, "tIjAb") || 
        !psio_tocscan(PSIF_CC_TAMPS, "tIJAB") || !psio_tocscan(PSIF_CC_TAMPS, "tijab")) {
@@ -131,7 +131,7 @@ void init_amps(void)
       global_dpd_->buf4_close(&dIjAb);
     }
     else 
-      fprintf(outfile, "\tUsing old T2 amplitudes.\n");
+      outfile->Printf( "\tUsing old T2 amplitudes.\n");
   }
   else if(params.ref == 2) { /*** UHF ***/
 
@@ -164,7 +164,7 @@ void init_amps(void)
       global_dpd_->file2_close(&tia);
       global_dpd_->file2_close(&dia);
     }
-    else fprintf(outfile, "\tUsing old T1 amplitudes.\n");
+    else outfile->Printf( "\tUsing old T1 amplitudes.\n");
 
     if(!params.restart || !psio_tocscan(PSIF_CC_TAMPS, "tIjAb") || 
        !psio_tocscan(PSIF_CC_TAMPS, "tIJAB") || !psio_tocscan(PSIF_CC_TAMPS, "tijab")) {
@@ -197,7 +197,7 @@ void init_amps(void)
       global_dpd_->buf4_close(&dIJAB);
     }
     else 
-      fprintf(outfile, "\tUsing old T2 amplitudes.\n");
+      outfile->Printf( "\tUsing old T2 amplitudes.\n");
   }
   else {  /*** RHF/ROHF ***/
 

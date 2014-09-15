@@ -456,7 +456,7 @@ void x_Gciab_uhf(void) {
   dpd_buf4_init(&V, CC_GAMMA, G_irr, 25, 29, 25, 29, 0, "GcIaB");
   value += dpd_buf4_dot_self(&V);
   dpd_buf4_close(&V);
-  fprintf(outfile,"<Gciab|Gciab> = %15.10lf\n",value);
+  outfile->Printf("<Gciab|Gciab> = %15.10lf\n",value);
   */
 
 }

@@ -75,8 +75,8 @@ void CCMRCC::build_F_ae_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the F_ae Intermediates   ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the F_ae Intermediates   ...");
+    
   );
   // Closed-shell
   // Add the VV Fock matrix with the diagonal terms zeroed
@@ -107,8 +107,8 @@ void CCMRCC::build_F_ae_intermediates()
     blas->print("F_ae[v][v]{u}");
   );
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   );
 }
 
@@ -116,8 +116,8 @@ void CCMRCC::build_F_AE_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the F_AE Intermediates   ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the F_AE Intermediates   ...");
+    
   );
   // Open-shell
   // Add the VV Fock matrix with the diagonal terms zeroed
@@ -136,8 +136,8 @@ void CCMRCC::build_F_AE_intermediates()
   DEBUGGING(3,blas->print("F_AE[V][V]{o}"););
 
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   );
 }
 
@@ -145,8 +145,8 @@ void CCMRCC::build_F_mi_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the F_mi Intermediates   ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the F_mi Intermediates   ...");
+    
   )
   // Closed-shell
   // Add the VV Fock matrix with the diagonal terms zeroed
@@ -178,8 +178,8 @@ void CCMRCC::build_F_mi_intermediates()
     blas->print("F_mi[o][o]{u}"););
 
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   )
 }
 
@@ -187,8 +187,8 @@ void CCMRCC::build_F_MI_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the F_MI Intermediates   ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the F_MI Intermediates   ...");
+    
   )
   // Open-shell
   // Add the VV Fock matrix with the diagonal terms zeroed
@@ -207,8 +207,8 @@ void CCMRCC::build_F_MI_intermediates()
   DEBUGGING(3,blas->print("F_MI[O][O]{o}"););
 
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   );
 }
 
@@ -216,8 +216,8 @@ void CCMRCC::build_F_me_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the F_me Intermediates   ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the F_me Intermediates   ...");
+    
   )
   // Closed-Shell
   // Add the VV Fock matrix with the diagonal terms zeroed
@@ -240,8 +240,8 @@ void CCMRCC::build_F_me_intermediates()
   DEBUGGING(3,blas->print("F_me[o][v]{u}"););
 
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   );
 }
 
@@ -249,8 +249,8 @@ void CCMRCC::build_F_ME_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the F_ME Intermediates   ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the F_ME Intermediates   ...");
+    
   );
   if(triples_type >= ccsd_t){
     blas->append("F_ME[O][V]{c} = fock[O][V]{c}");
@@ -271,8 +271,8 @@ void CCMRCC::build_F_ME_intermediates()
   DEBUGGING(3,blas->print("F_ME[O][V]{o}"););
 
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   );
 }
 
@@ -280,8 +280,8 @@ void CCMRCC::build_F_prime_ae_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the F'_ae Intermediates  ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the F'_ae Intermediates  ...");
+    
   )
   // Closed-Shell + Open-Shell Spin-Adapted Form
   // Add the VV Fock matrix with the diagonal terms zeroed
@@ -292,8 +292,8 @@ void CCMRCC::build_F_prime_ae_intermediates()
     blas->print("F'_ae[v][v]{u}"););
 
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   );
 }
 
@@ -301,8 +301,8 @@ void CCMRCC::build_F_prime_AE_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the F'_AE Intermediates  ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the F'_AE Intermediates  ...");
+    
   )
   // Open-Shell
   // Add the VV Fock matrix with the diagonal terms zeroed
@@ -312,8 +312,8 @@ void CCMRCC::build_F_prime_AE_intermediates()
   DEBUGGING(3,blas->print("F'_AE[V][V]{o}"););
   
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   );
 }
 
@@ -321,8 +321,8 @@ void CCMRCC::build_F_prime_mi_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the F'_mi Intermediates  ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the F'_mi Intermediates  ...");
+    
   )
   // Closed-Shell + Open-Shell Spin-Adapted Form
   // Add the VV Fock matrix with the diagonal terms zeroed
@@ -332,8 +332,8 @@ void CCMRCC::build_F_prime_mi_intermediates()
   DEBUGGING(3,blas->print("F'_mi[o][o]{u}"););
 
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   );
 }
 
@@ -341,8 +341,8 @@ void CCMRCC::build_F_prime_MI_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the F'_MI Intermediates  ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the F'_MI Intermediates  ...");
+    
   );
   // Open-Shell
   // Add the VV Fock matrix with the diagonal terms zeroed
@@ -353,8 +353,8 @@ void CCMRCC::build_F_prime_MI_intermediates()
   DEBUGGING(3,blas->print("F'_MI[O][O]{o}"););
 
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   );
 }
 
@@ -362,8 +362,8 @@ void CCMRCC::build_F2_me_intermediates()
 {
 //  Timer timer;
 //  DEBUGGING(1,
-//    fprintf(outfile,"\n\tBuilding the F2_me Intermediates   ...");
-//    fflush(outfile);
+//    outfile->Printf("\n\tBuilding the F2_me Intermediates   ...");
+//    
 //  );
 //  // Closed-Shell
 //  // Add the VV Fock matrix with the diagonal terms zeroed
@@ -384,8 +384,8 @@ void CCMRCC::build_F2_me_intermediates()
 //  DEBUGGING(3,blas->print("F2_me[o][v]{u}"););
 //
 //  DEBUGGING(1,
-//    fprintf(outfile," done. Timing %20.6f s",timer.get());
-//    fflush(outfile);
+//    outfile->Printf(" done. Timing %20.6f s",timer.get());
+//    
 //  );
 }
 
@@ -393,8 +393,8 @@ void CCMRCC::build_F2_ME_intermediates()
 {
 //  Timer timer;
 //  DEBUGGING(1,
-//    fprintf(outfile,"\n\tBuilding the F_ME Intermediates   ...");
-//    fflush(outfile);
+//    outfile->Printf("\n\tBuilding the F_ME Intermediates   ...");
+//    
 //  );
 //  // Closed-Shell
 //  if(triples_type==ccsdt_1a){
@@ -413,8 +413,8 @@ void CCMRCC::build_F2_ME_intermediates()
 //  DEBUGGING(3,blas->print("F2_ME[O][V]{o}"););
 //
 //  DEBUGGING(1,
-//    fprintf(outfile," done. Timing %20.6f s",timer.get());
-//    fflush(outfile);
+//    outfile->Printf(" done. Timing %20.6f s",timer.get());
+//    
 //  );
 }
 

@@ -34,7 +34,7 @@ namespace psi{ namespace occwave{
 
 void OCCWave::kappa_orb_resp()
 { 
-//fprintf(outfile,"\n kappa_orb_resp is starting... \n"); fflush(outfile);
+//outfile->Printf("\n kappa_orb_resp is starting... \n"); 
 
 if (reference_ == "RESTRICTED") {
     // Set the kappa to -negative of the mo grad
@@ -145,9 +145,9 @@ if (reference_ == "RESTRICTED") {
          double det = 0.0;      
          Aorb->lineq_flin(kappaA, &det);
          if (fabs(det) < DIIS_MIN_DET) { 
-             fprintf(outfile, "Warning!!! MO Hessian matrix is near-singular\n");
-             fprintf(outfile, "Determinant is %6.3E\n", det);
-             fflush(outfile);
+             outfile->Printf( "Warning!!! MO Hessian matrix is near-singular\n");
+             outfile->Printf( "Determinant is %6.3E\n", det);
+             
              pcg_conver = 1;// here 1 means unsuccessful
          }
     }
@@ -165,8 +165,8 @@ if (reference_ == "RESTRICTED") {
 	  kappaA->set(x, -wogA->get(x) / (2.0*value));
        }
 
-       fprintf(outfile,"\tWarning!!! MO Hessian matrix is near-singular, switching to MSD. \n");
-       fflush(outfile);
+       outfile->Printf("\tWarning!!! MO Hessian matrix is near-singular, switching to MSD. \n");
+       
     } // end if pcg_conver = 0
 
         // find biggest_kappa 
@@ -471,9 +471,9 @@ else if (reference_ == "UNRESTRICTED") {
          Aorb->lineq_flin(kappa, &det);
          if (fabs(det) < DIIS_MIN_DET) { 
          //if (fabs(det) < 1e-2) { 
-             fprintf(outfile, "Warning!!! MO Hessian matrix is near-singular\n");
-             fprintf(outfile, "Determinant is %6.3E\n", det);
-             fflush(outfile);
+             outfile->Printf( "Warning!!! MO Hessian matrix is near-singular\n");
+             outfile->Printf( "Determinant is %6.3E\n", det);
+             
              pcg_conver = 1;// here 1 means unsuccessful
          }
     }
@@ -506,8 +506,8 @@ else if (reference_ == "UNRESTRICTED") {
 	  double value = FockB->get(h, a + occpiB[h], a + occpiB[h]) - FockB->get(h, i, i);  
 	  kappaB->set(x, -wogB->get(x) / (2.0*value));
 	}
-       fprintf(outfile,"\tWarning!!! MO Hessian matrix is near-singular, switching to MSD. \n");
-       fflush(outfile);
+       outfile->Printf("\tWarning!!! MO Hessian matrix is near-singular, switching to MSD. \n");
+       
     } // end if pcg_conver = 0
 
 
@@ -569,7 +569,7 @@ else if (reference_ == "UNRESTRICTED") {
         }
       
 }// end if (reference_ == "UNRESTRICTED") 
- //fprintf(outfile,"\n kappa_orb_resp done. \n"); fflush(outfile);
+ //outfile->Printf("\n kappa_orb_resp done. \n"); 
 }// end kappa_orb_resp
 }} // End Namespaces
 

@@ -38,32 +38,32 @@
 #ifdef HAVE_MKL
 #include <mkl.h>
 #endif
-
+#include "libparallel/ParallelPrinter.h"
 using namespace psi;
 
 namespace psi {
 
 void benchmark_blas1(int N, double min_time)
 {
-    fprintf(outfile, "\n");
-    fprintf(outfile, "                              ------------------------------- \n");
-    fprintf(outfile, "                              ======> BLAS1 BENCHMARKS <===== \n");
-    fprintf(outfile, "                              ------------------------------- \n");
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
+    outfile->Printf( "                              ------------------------------- \n");
+    outfile->Printf( "                              ======> BLAS1 BENCHMARKS <===== \n");
+    outfile->Printf( "                              ------------------------------- \n");
+    outfile->Printf( "\n");
 
-    fprintf(outfile, "  Parameters:\n");
-    fprintf(outfile, "   -Minimum runtime (per operation, per size): %14.10f [s].\n", min_time);
-    fprintf(outfile, "   -Maximum dimension exponent N: %d. Arrays are D x D = 2^N x 2^N doubles in size. The D\n", N);
-    fprintf(outfile, "        value is reported below\n");
-    fprintf(outfile, "\n");
+    outfile->Printf( "  Parameters:\n");
+    outfile->Printf( "   -Minimum runtime (per operation, per size): %14.10f [s].\n", min_time);
+    outfile->Printf( "   -Maximum dimension exponent N: %d. Arrays are D x D = 2^N x 2^N doubles in size. The D\n", N);
+    outfile->Printf( "        value is reported below\n");
+    outfile->Printf( "\n");
 
-    fprintf(outfile, "  Notes:\n");
-    fprintf(outfile, "   -Access: c = A[i]; (stride 1).\n");
-    fprintf(outfile, "   -Assign: A[i] = c; (stride 1).\n");
-    fprintf(outfile, "   -Cross:  A[i] = B[i]; (stride 1).\n");
-    fprintf(outfile, "   -Strides: (XX) indicates the strides used for the various arrays of BLAS 1 operations. 1\n");
-    fprintf(outfile, "        indicates stride 1, N indicates stride D.\n");
-    fprintf(outfile, "\n");
+    outfile->Printf( "  Notes:\n");
+    outfile->Printf( "   -Access: c = A[i]; (stride 1).\n");
+    outfile->Printf( "   -Assign: A[i] = c; (stride 1).\n");
+    outfile->Printf( "   -Cross:  A[i] = B[i]; (stride 1).\n");
+    outfile->Printf( "   -Strides: (XX) indicates the strides used for the various arrays of BLAS 1 operations. 1\n");
+    outfile->Printf( "        indicates stride 1, N indicates stride D.\n");
+    outfile->Printf( "\n");
 
     double T;
     unsigned long int rounds;
@@ -499,82 +499,82 @@ void benchmark_blas1(int N, double min_time)
         free(B);
 
     }
-    fprintf(outfile, "BLAS 1 Timings [s]:\n\n");
+    outfile->Printf( "BLAS 1 Timings [s]:\n\n");
     dim = 1;
-    fprintf(outfile, "Operation  ");
+    outfile->Printf( "Operation  ");
     for (int k = 0; k < N; k++) {
         dim *= 2;
-        fprintf(outfile, "  %9d", dim);
+        outfile->Printf( "  %9d", dim);
     }
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
     for (int s = 0; s < ops1.size(); s++) {
-        fprintf(outfile, "%-11s", ops1[s].c_str());
+        outfile->Printf( "%-11s", ops1[s].c_str());
         for (int k = 0; k < N; k++) {
-            fprintf(outfile, "  %9.3E", timings1[ops1[s]][k]);
+            outfile->Printf( "  %9.3E", timings1[ops1[s]][k]);
         }
-        fprintf(outfile, "\n");
+        outfile->Printf( "\n");
     }
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
 
-    fprintf(outfile, "BLAS 1 Timings Per Double [s]:\n\n");
+    outfile->Printf( "BLAS 1 Timings Per Double [s]:\n\n");
     dim = 1;
-    fprintf(outfile, "Operation  ");
+    outfile->Printf( "Operation  ");
     for (int k = 0; k < N; k++) {
         dim *= 2;
-        fprintf(outfile, "  %9d", dim);
+        outfile->Printf( "  %9d", dim);
     }
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
     for (int s = 0; s < ops1.size(); s++) {
-        fprintf(outfile, "%-11s", ops1[s].c_str());
+        outfile->Printf( "%-11s", ops1[s].c_str());
         dim = 1;
         for (int k = 0; k < N; k++) {
             dim *= 2;
             unsigned long int full_dim = dim * (unsigned long int) dim;
-            fprintf(outfile, "  %9.3E", timings1[ops1[s]][k] / (double) full_dim);
+            outfile->Printf( "  %9.3E", timings1[ops1[s]][k] / (double) full_dim);
         }
-        fprintf(outfile, "\n");
+        outfile->Printf( "\n");
     }
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
 
-    fprintf(outfile, "BLAS 1 FLOPS [Hz]:\n\n");
+    outfile->Printf( "BLAS 1 FLOPS [Hz]:\n\n");
     dim = 1;
-    fprintf(outfile, "Operation  ");
+    outfile->Printf( "Operation  ");
     for (int k = 0; k < N; k++) {
         dim *= 2;
-        fprintf(outfile, "  %9d", dim);
+        outfile->Printf( "  %9d", dim);
     }
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
     for (int s = 0; s < ops1.size(); s++) {
-        fprintf(outfile, "%-11s", ops1[s].c_str());
+        outfile->Printf( "%-11s", ops1[s].c_str());
         dim = 1;
         for (int k = 0; k < N; k++) {
             dim *= 2;
             unsigned long int full_dim = dim * (unsigned long int) dim;
-            fprintf(outfile, "  %9.3E", full_dim / timings1[ops1[s]][k]);
+            outfile->Printf( "  %9.3E", full_dim / timings1[ops1[s]][k]);
         }
-        fprintf(outfile, "\n");
+        outfile->Printf( "\n");
     }
-    fprintf(outfile, "\n");
-    fflush(outfile);
+    outfile->Printf( "\n");
+
 }
 void benchmark_blas2(int N, double min_time)
 {
-    fprintf(outfile, "\n");
-    fprintf(outfile, "                              ------------------------------- \n");
-    fprintf(outfile, "                              ======> BLAS2 BENCHMARKS <===== \n");
-    fprintf(outfile, "                              ------------------------------- \n");
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
+    outfile->Printf( "                              ------------------------------- \n");
+    outfile->Printf( "                              ======> BLAS2 BENCHMARKS <===== \n");
+    outfile->Printf( "                              ------------------------------- \n");
+    outfile->Printf( "\n");
 
-    fprintf(outfile, "  Parameters:\n");
-    fprintf(outfile, "   -Minimum runtime (per operation, per size): %14.10f [s].\n", min_time);
-    fprintf(outfile, "   -Maximum dimension exponent N: %d. Arrays are D x D = 2^N x 2^N doubles in size. The D\n", N);
-    fprintf(outfile, "        value is reported below.\n");
-    fprintf(outfile, "\n");
+    outfile->Printf( "  Parameters:\n");
+    outfile->Printf( "   -Minimum runtime (per operation, per size): %14.10f [s].\n", min_time);
+    outfile->Printf( "   -Maximum dimension exponent N: %d. Arrays are D x D = 2^N x 2^N doubles in size. The D\n", N);
+    outfile->Printf( "        value is reported below.\n");
+    outfile->Printf( "\n");
 
-    fprintf(outfile, "  Notes:\n");
-    fprintf(outfile, "   -Operations: (OXX) indicates transpose and stride arguments in the order they appear in \n");
-    fprintf(outfile, "        the function call. All lda values are D.\n");
-    fprintf(outfile, "\n");
+    outfile->Printf( "  Notes:\n");
+    outfile->Printf( "   -Operations: (OXX) indicates transpose and stride arguments in the order they appear in \n");
+    outfile->Printf( "        the function call. All lda values are D.\n");
+    outfile->Printf( "\n");
 
     double T;
     unsigned long int rounds;
@@ -781,63 +781,63 @@ void benchmark_blas2(int N, double min_time)
 
     }
 
-    fprintf(outfile, "BLAS 2 Timings [s]:\n\n");
+    outfile->Printf( "BLAS 2 Timings [s]:\n\n");
     dim = 1;
-    fprintf(outfile, "Operation  ");
+    outfile->Printf( "Operation  ");
     for (int k = 0; k < N; k++) {
         dim *= 2;
-        fprintf(outfile, "  %9d", dim);
+        outfile->Printf( "  %9d", dim);
     }
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
     for (int s = 0; s < ops2.size(); s++) {
-        fprintf(outfile, "%-11s", ops2[s].c_str());
+        outfile->Printf( "%-11s", ops2[s].c_str());
         for (int k = 0; k < N; k++) {
-            fprintf(outfile, "  %9.3E", timings2[ops2[s]][k]);
+            outfile->Printf( "  %9.3E", timings2[ops2[s]][k]);
         }
-        fprintf(outfile, "\n");
+        outfile->Printf( "\n");
     }
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
 
-    fprintf(outfile, "BLAS 2 FLOPS [Hz] (FLOP: += A * B):\n\n");
+    outfile->Printf( "BLAS 2 FLOPS [Hz] (FLOP: += A * B):\n\n");
     dim = 1;
-    fprintf(outfile, "Operation  ");
+    outfile->Printf( "Operation  ");
     for (int k = 0; k < N; k++) {
         dim *= 2;
-        fprintf(outfile, "  %9d", dim);
+        outfile->Printf( "  %9d", dim);
     }
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
     for (int s = 0; s < ops2.size(); s++) {
-        fprintf(outfile, "%-11s", ops2[s].c_str());
+        outfile->Printf( "%-11s", ops2[s].c_str());
         dim = 1;
         for (int k = 0; k < N; k++) {
             dim *= 2;
             unsigned long int full_dim = dim * (unsigned long int) dim;
-            fprintf(outfile, "  %9.3E", full_dim / timings2[ops2[s]][k]);
+            outfile->Printf( "  %9.3E", full_dim / timings2[ops2[s]][k]);
         }
-        fprintf(outfile, "\n");
+        outfile->Printf( "\n");
     }
-    fprintf(outfile, "\n");
-    fflush(outfile);
+    outfile->Printf( "\n");
+
 }
 void benchmark_blas3(int N, double min_time, int max_threads)
 {
-    fprintf(outfile, "\n");
-    fprintf(outfile, "                              -------------------------------------- \n");
-    fprintf(outfile, "                              ======> BLAS3/LAPACK BENCHMARKS <===== \n");
-    fprintf(outfile, "                              -------------------------------------- \n");
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
+    outfile->Printf( "                              -------------------------------------- \n");
+    outfile->Printf( "                              ======> BLAS3/LAPACK BENCHMARKS <===== \n");
+    outfile->Printf( "                              -------------------------------------- \n");
+    outfile->Printf( "\n");
 
-    fprintf(outfile, "  Parameters:\n");
-    fprintf(outfile, "   -Minimum runtime (per operation, per size): %14.10f [s].\n", min_time);
-    fprintf(outfile, "   -Maximum dimension exponent N: %d. Arrays are D x D = 2^N x 2^N doubles in size. The D\n", N);
-    fprintf(outfile, "        value is reported below.\n");
-    fprintf(outfile, "   -Max threads: %d. Currently only supported with MKL.\n", max_threads);
-    fprintf(outfile, "\n");
+    outfile->Printf( "  Parameters:\n");
+    outfile->Printf( "   -Minimum runtime (per operation, per size): %14.10f [s].\n", min_time);
+    outfile->Printf( "   -Maximum dimension exponent N: %d. Arrays are D x D = 2^N x 2^N doubles in size. The D\n", N);
+    outfile->Printf( "        value is reported below.\n");
+    outfile->Printf( "   -Max threads: %d. Currently only supported with MKL.\n", max_threads);
+    outfile->Printf( "\n");
 
-    fprintf(outfile, "  Notes:\n");
-    fprintf(outfile, "   -Operations: (OXX) indicates transpose, side, eigenvector request and stride arguments in\n");
-    fprintf(outfile, "        the order they appear in the function call. All lda values are D.\n");
-    fprintf(outfile, "\n");
+    outfile->Printf( "  Notes:\n");
+    outfile->Printf( "   -Operations: (OXX) indicates transpose, side, eigenvector request and stride arguments in\n");
+    outfile->Printf( "        the order they appear in the function call. All lda values are D.\n");
+    outfile->Printf( "\n");
     double T;
     unsigned long int rounds;
     double t;
@@ -1232,120 +1232,120 @@ void benchmark_blas3(int N, double min_time, int max_threads)
         }
         timings[thread] = timings3;
 
-        fprintf(outfile, "BLAS 3 Timings [s], Threads = %d:\n\n", thread);
+        outfile->Printf( "BLAS 3 Timings [s], Threads = %d:\n\n", thread);
         dim = 1;
-        fprintf(outfile, "Operation  ");
+        outfile->Printf( "Operation  ");
         for (int k = 0; k < N; k++) {
             dim *= 2;
-            fprintf(outfile, "  %9d", dim);
+            outfile->Printf( "  %9d", dim);
         }
-        fprintf(outfile, "\n");
+        outfile->Printf( "\n");
         for (int s = 0; s < ops3.size(); s++) {
-            fprintf(outfile, "%-11s", ops3[s].c_str());
+            outfile->Printf( "%-11s", ops3[s].c_str());
             for (int k = 0; k < N; k++) {
-                fprintf(outfile, "  %9.3E", timings3[ops3[s]][k]);
+                outfile->Printf( "  %9.3E", timings3[ops3[s]][k]);
             }
-            fprintf(outfile, "\n");
+            outfile->Printf( "\n");
         }
-        fprintf(outfile, "\n");
+        outfile->Printf( "\n");
 
-        fprintf(outfile, "BLAS 3 Effective DGEMMs [-] (NN):\n\n");
+        outfile->Printf( "BLAS 3 Effective DGEMMs [-] (NN):\n\n");
         dim = 1;
-        fprintf(outfile, "Operation  ");
+        outfile->Printf( "Operation  ");
         for (int k = 0; k < N; k++) {
             dim *= 2;
-            fprintf(outfile, "  %9d", dim);
+            outfile->Printf( "  %9d", dim);
         }
-        fprintf(outfile, "\n");
+        outfile->Printf( "\n");
         for (int s = 0; s < ops3.size(); s++) {
-            fprintf(outfile, "%-11s", ops3[s].c_str());
+            outfile->Printf( "%-11s", ops3[s].c_str());
             dim = 1;
             for (int k = 0; k < N; k++) {
                 dim *= 2;
                 unsigned long int full_dim = dim * (unsigned long int) dim;
-                fprintf(outfile, "  %9.3E", timings3[ops3[s]][k] / timings3["DGEMM (NN)"][k]);
+                outfile->Printf( "  %9.3E", timings3[ops3[s]][k] / timings3["DGEMM (NN)"][k]);
             }
-            fprintf(outfile, "\n");
+            outfile->Printf( "\n");
         }
-        fprintf(outfile, "\n");
+        outfile->Printf( "\n");
     }
     if (max_threads > 1) {
-        fprintf(outfile, "BLAS 3 Speedups [-]:\n\n");
+        outfile->Printf( "BLAS 3 Speedups [-]:\n\n");
         dim = 1;
-        fprintf(outfile, "Operation  Threads  ");
+        outfile->Printf( "Operation  Threads  ");
         for (int k = 0; k < N; k++) {
             dim *= 2;
-            fprintf(outfile, "  %9d", dim);
+            outfile->Printf( "  %9d", dim);
         }
-        fprintf(outfile, "\n");
+        outfile->Printf( "\n");
         for (int s = 0; s < ops3.size(); s++) {
             for (int thread = 1; thread <= max_threads; thread++) {
                 if (thread > 4 && thread % 8 != 0) continue;
-                fprintf(outfile, "%-11s  %-7d", ops3[s].c_str(), thread);
+                outfile->Printf( "%-11s  %-7d", ops3[s].c_str(), thread);
                 dim = 1;
                 for (int k = 0; k < N; k++) {
                     dim *= 2;
                     unsigned long int full_dim = dim * (unsigned long int) dim;
-                    fprintf(outfile, "  %9.3E", timings[1][ops3[s]][k] / timings[thread][ops3[s]][k]);
+                    outfile->Printf( "  %9.3E", timings[1][ops3[s]][k] / timings[thread][ops3[s]][k]);
                 }
-                fprintf(outfile, "\n");
+                outfile->Printf( "\n");
             }
         }
-        fprintf(outfile, "\n");
+        outfile->Printf( "\n");
 
-        fprintf(outfile, "BLAS 3 Parallel Efficiency [-]:\n\n");
+        outfile->Printf( "BLAS 3 Parallel Efficiency [-]:\n\n");
         dim = 1;
-        fprintf(outfile, "Operation  Threads  ");
+        outfile->Printf( "Operation  Threads  ");
         for (int k = 0; k < N; k++) {
             dim *= 2;
-            fprintf(outfile, "  %9d", dim);
+            outfile->Printf( "  %9d", dim);
         }
-        fprintf(outfile, "\n");
+        outfile->Printf( "\n");
         for (int s = 0; s < ops3.size(); s++) {
             for (int thread = 1; thread <= max_threads; thread++) {
                 if (thread > 4 && thread % 8 != 0) continue;
-                fprintf(outfile, "%-11s  %-7d", ops3[s].c_str(), thread);
+                outfile->Printf( "%-11s  %-7d", ops3[s].c_str(), thread);
                 dim = 1;
                 for (int k = 0; k < N; k++) {
                     dim *= 2;
                     unsigned long int full_dim = dim * (unsigned long int) dim;
-                    fprintf(outfile, "  %9.3E", timings[1][ops3[s]][k] / (timings[thread][ops3[s]][k] * (double) thread));
+                    outfile->Printf( "  %9.3E", timings[1][ops3[s]][k] / (timings[thread][ops3[s]][k] * (double) thread));
                 }
-                fprintf(outfile, "\n");
+                outfile->Printf( "\n");
             }
         }
-        fprintf(outfile, "\n");
+        outfile->Printf( "\n");
     }
-    fflush(outfile);
+
 
 }
 void benchmark_disk(int N, double min_time)
 {
-    fprintf(outfile, "\n");
-    fprintf(outfile, "                              ------------------------------ \n");
-    fprintf(outfile, "                              ======> PSIO BENCHMARKS <===== \n");
-    fprintf(outfile, "                              ------------------------------ \n");
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
+    outfile->Printf( "                              ------------------------------ \n");
+    outfile->Printf( "                              ======> PSIO BENCHMARKS <===== \n");
+    outfile->Printf( "                              ------------------------------ \n");
+    outfile->Printf( "\n");
 
-    fprintf(outfile, "  Parameters:\n");
-    fprintf(outfile, "   -Minimum runtime (per operation, per size): %14.10f [s].\n", min_time);
-    fprintf(outfile, "   -Maximum dimension exponent N: %d. Arrays are D x D = 2^N x 2^N doubles in size. The D\n", N);
-    fprintf(outfile, "        value is reported below\n");
-    fprintf(outfile, "\n");
+    outfile->Printf( "  Parameters:\n");
+    outfile->Printf( "   -Minimum runtime (per operation, per size): %14.10f [s].\n", min_time);
+    outfile->Printf( "   -Maximum dimension exponent N: %d. Arrays are D x D = 2^N x 2^N doubles in size. The D\n", N);
+    outfile->Printf( "        value is reported below\n");
+    outfile->Printf( "\n");
 
-    fprintf(outfile, "  Operations:\n");
-    fprintf(outfile, "   -OPEN/CLOSE: Open and close a file repeatedly witout discard (Data rates are meaningless).\n");
-    fprintf(outfile, "   -ZERO: Write the first pass of data, expanding the file. Performed in one op. Timing may\n");
-    fprintf(outfile, "        be inaccurate, as only one pass is performed.\n");
-    fprintf(outfile, "   -READ (Continuous): Repeatedly read the entire array in one operation of dimension N x N.\n");
-    fprintf(outfile, "   -READ (Blocked): Repeatedly read the entire array in N operations of dimension N.\n");
-    fprintf(outfile, "   -READ (Transposed): Repeatedly read the entire array in N operations of dimension N. Arrays\n");
-    fprintf(outfile, "        are staggered to simulate reading the N/2 blocked transpose of the array.\n");
-    fprintf(outfile, "   -WRITE (Continuous): Repeatedly write the entire array in one operation of dimension N x N.\n");
-    fprintf(outfile, "   -WRITE (Blocked): Repeatedly write the entire array in N operations of dimension N.\n");
-    fprintf(outfile, "   -WRITE (Transposed): Repeatedly write the entire array in N operations of dimension N. Arrays\n");
-    fprintf(outfile, "        are staggered to simulate writing the N/2 blocked transpose of the array.\n");
-    fprintf(outfile, "\n");
+    outfile->Printf( "  Operations:\n");
+    outfile->Printf( "   -OPEN/CLOSE: Open and close a file repeatedly witout discard (Data rates are meaningless).\n");
+    outfile->Printf( "   -ZERO: Write the first pass of data, expanding the file. Performed in one op. Timing may\n");
+    outfile->Printf( "        be inaccurate, as only one pass is performed.\n");
+    outfile->Printf( "   -READ (Continuous): Repeatedly read the entire array in one operation of dimension N x N.\n");
+    outfile->Printf( "   -READ (Blocked): Repeatedly read the entire array in N operations of dimension N.\n");
+    outfile->Printf( "   -READ (Transposed): Repeatedly read the entire array in N operations of dimension N. Arrays\n");
+    outfile->Printf( "        are staggered to simulate reading the N/2 blocked transpose of the array.\n");
+    outfile->Printf( "   -WRITE (Continuous): Repeatedly write the entire array in one operation of dimension N x N.\n");
+    outfile->Printf( "   -WRITE (Blocked): Repeatedly write the entire array in N operations of dimension N.\n");
+    outfile->Printf( "   -WRITE (Transposed): Repeatedly write the entire array in N operations of dimension N. Arrays\n");
+    outfile->Printf( "        are staggered to simulate writing the N/2 blocked transpose of the array.\n");
+    outfile->Printf( "\n");
 
     double T;
     unsigned long int rounds;
@@ -1502,63 +1502,63 @@ void benchmark_disk(int N, double min_time)
         psio_->close(0, 0);
         free(A);
     }
-    fprintf(outfile, "PSIO Timings [s]\n\n");
+    outfile->Printf( "PSIO Timings [s]\n\n");
     dim = 1;
-    fprintf(outfile, "Operation           ");
+    outfile->Printf( "Operation           ");
     for (int k = 0; k < N; k++) {
         dim *= 2;
-        fprintf(outfile, "  %9d", dim);
+        outfile->Printf( "  %9d", dim);
     }
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
     for (int s = 0; s < ops.size(); s++) {
-        fprintf(outfile, "%-20s", ops[s].c_str());
+        outfile->Printf( "%-20s", ops[s].c_str());
         for (int k = 0; k < N; k++) {
-            fprintf(outfile, "  %9.3E", timings[ops[s]][k]);
+            outfile->Printf( "  %9.3E", timings[ops[s]][k]);
         }
-        fprintf(outfile, "\n");
+        outfile->Printf( "\n");
     }
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
 
-    fprintf(outfile, "PSIO Performance [doubles/s]\n\n");
+    outfile->Printf( "PSIO Performance [doubles/s]\n\n");
     dim = 1;
-    fprintf(outfile, "Operation           ");
+    outfile->Printf( "Operation           ");
     for (int k = 0; k < N; k++) {
         dim *= 2;
-        fprintf(outfile, "  %9d", dim);
+        outfile->Printf( "  %9d", dim);
     }
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
     for (int s = 0; s < ops.size(); s++) {
-        fprintf(outfile, "%-20s", ops[s].c_str());
+        outfile->Printf( "%-20s", ops[s].c_str());
         dim = 1;
         for (int k = 0; k < N; k++) {
             dim *= 2;
             unsigned long int full_dim = dim * (unsigned long int) dim;
-            fprintf(outfile, "  %9.3E", full_dim / timings[ops[s]][k]);
+            outfile->Printf( "  %9.3E", full_dim / timings[ops[s]][k]);
         }
-        fprintf(outfile, "\n");
+        outfile->Printf( "\n");
     }
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
 
-    fprintf(outfile, "PSIO Performance [GiB/s]\n\n");
+    outfile->Printf( "PSIO Performance [GiB/s]\n\n");
     dim = 1;
-    fprintf(outfile, "Operation           ");
+    outfile->Printf( "Operation           ");
     for (int k = 0; k < N; k++) {
         dim *= 2;
-        fprintf(outfile, "  %9d", dim);
+        outfile->Printf( "  %9d", dim);
     }
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
     for (int s = 0; s < ops.size(); s++) {
-        fprintf(outfile, "%-20s", ops[s].c_str());
+        outfile->Printf( "%-20s", ops[s].c_str());
         dim = 1;
         for (int k = 0; k < N; k++) {
             dim *= 2;
             unsigned long int full_dim = dim * (unsigned long int) dim;
-            fprintf(outfile, "  %9.3E", 8.0E-9 *full_dim / timings[ops[s]][k]);
+            outfile->Printf( "  %9.3E", 8.0E-9 *full_dim / timings[ops[s]][k]);
         }
-        fprintf(outfile, "\n");
+        outfile->Printf( "\n");
     }
-    fprintf(outfile, "\n");
-    fflush(outfile);
+    outfile->Printf( "\n");
+
 
 }
 void benchmark_math(double min_time)
@@ -1600,7 +1600,7 @@ void benchmark_math(double min_time)
     ops.push_back("fabs");
 
     // In case the compiler gets awesome
-    FILE* fh = fopen("dump.dat", "w");
+    boost::shared_ptr<OutFile> printer(new OutFile("dump.dat",TRUNCATE));
 
     #define LOOP_SIZE 10000
     #define UNROLL_SIZE 10
@@ -1627,7 +1627,7 @@ void benchmark_math(double min_time)
         T = qq->get();
         rounds++;
     }
-    fprintf(fh, "%14.10f\n", c);
+    printer->Printf("%14.10f\n", c);
     delete qq;
     t = T / (double) (rounds * LOOP_SIZE * (unsigned long int)UNROLL_SIZE);
     timings["+"] = t;
@@ -1654,7 +1654,7 @@ void benchmark_math(double min_time)
         T = qq->get();
         rounds++;
     }
-    fprintf(fh, "%14.10f\n", c);
+    printer->Printf("%14.10f\n", c);
     delete qq;
     t = T / (double) (rounds * LOOP_SIZE * (unsigned long int)UNROLL_SIZE);
     timings["-"] = t;
@@ -1681,7 +1681,7 @@ void benchmark_math(double min_time)
         T = qq->get();
         rounds++;
     }
-    fprintf(fh, "%14.10f\n", c);
+    printer->Printf("%14.10f\n", c);
     delete qq;
     t = T / (double) (rounds * LOOP_SIZE * (unsigned long int)UNROLL_SIZE);
     timings["*"] = t;
@@ -1708,7 +1708,7 @@ void benchmark_math(double min_time)
         T = qq->get();
         rounds++;
     }
-    fprintf(fh, "%14.10f\n", c);
+    printer->Printf( "%14.10f\n", c);
     delete qq;
     t = T / (double) (rounds * LOOP_SIZE * (unsigned long int)UNROLL_SIZE);
     timings["/"] = t;
@@ -1733,7 +1733,7 @@ void benchmark_math(double min_time)
         T = qq->get();
         rounds++;
     }
-    fprintf(fh, "%14.10f\n", c);
+    printer->Printf( "%14.10f\n", c);
     delete qq;
     t = T / (double) (rounds * LOOP_SIZE * (unsigned long int)UNROLL_SIZE);
     timings["+="] = t;
@@ -1760,7 +1760,7 @@ void benchmark_math(double min_time)
         T = qq->get();
         rounds++;
     }
-    fprintf(fh, "%14.10f\n", c);
+    printer->Printf( "%14.10f\n", c);
     delete qq;
     t = T / (double) (rounds * LOOP_SIZE * (unsigned long int)UNROLL_SIZE);
     timings["-="] = t;
@@ -1787,7 +1787,7 @@ void benchmark_math(double min_time)
         T = qq->get();
         rounds++;
     }
-    fprintf(fh, "%14.10f\n", c);
+    printer->Printf( "%14.10f\n", c);
     delete qq;
     t = T / (double) (rounds * LOOP_SIZE * (unsigned long int)UNROLL_SIZE);
     timings["*="] = t;
@@ -1814,7 +1814,7 @@ void benchmark_math(double min_time)
         T = qq->get();
         rounds++;
     }
-    fprintf(fh, "%14.10f\n", c);
+    printer->Printf( "%14.10f\n", c);
     delete qq;
     t = T / (double) (rounds * LOOP_SIZE * (unsigned long int)UNROLL_SIZE);
     timings["/="] = t;
@@ -1840,7 +1840,7 @@ void benchmark_math(double min_time)
         T = qq->get();
         rounds++;
     }
-    fprintf(fh, "%14.10f\n", c);
+    printer->Printf( "%14.10f\n", c);
     delete qq;
     t = T / (double) (rounds * LOOP_SIZE * (unsigned long int)UNROLL_SIZE);
     timings["sin"] = t;
@@ -1866,7 +1866,7 @@ void benchmark_math(double min_time)
         T = qq->get();
         rounds++;
     }
-    fprintf(fh, "%14.10f\n", c);
+    printer->Printf( "%14.10f\n", c);
     delete qq;
     t = T / (double) (rounds * LOOP_SIZE * (unsigned long int)UNROLL_SIZE);
     timings["cos"] = t;
@@ -1892,7 +1892,7 @@ void benchmark_math(double min_time)
         T = qq->get();
         rounds++;
     }
-    fprintf(fh, "%14.10f\n", c);
+    printer->Printf( "%14.10f\n", c);
     delete qq;
     t = T / (double) (rounds * LOOP_SIZE * (unsigned long int)UNROLL_SIZE);
     timings["tan"] = t;
@@ -1919,7 +1919,7 @@ void benchmark_math(double min_time)
         T = qq->get();
         rounds++;
     }
-    fprintf(fh, "%14.10f\n", c);
+    printer->Printf( "%14.10f\n", c);
     delete qq;
     t = T / (double) (rounds * LOOP_SIZE * (unsigned long int)UNROLL_SIZE);
     timings["asin"] = t;
@@ -1945,7 +1945,7 @@ void benchmark_math(double min_time)
         T = qq->get();
         rounds++;
     }
-    fprintf(fh, "%14.10f\n", c);
+    printer->Printf( "%14.10f\n", c);
     delete qq;
     t = T / (double) (rounds * LOOP_SIZE * (unsigned long int)UNROLL_SIZE);
     timings["acos"] = t;
@@ -1971,7 +1971,7 @@ void benchmark_math(double min_time)
         T = qq->get();
         rounds++;
     }
-    fprintf(fh, "%14.10f\n", c);
+    printer->Printf( "%14.10f\n", c);
     delete qq;
     t = T / (double) (rounds * LOOP_SIZE * (unsigned long int)UNROLL_SIZE);
     timings["atan"] = t;
@@ -1998,7 +1998,7 @@ void benchmark_math(double min_time)
         T = qq->get();
         rounds++;
     }
-    fprintf(fh, "%14.10f\n", c);
+    printer->Printf( "%14.10f\n", c);
     delete qq;
     t = T / (double) (rounds * LOOP_SIZE * (unsigned long int)UNROLL_SIZE);
     timings["atan2"] = t;
@@ -2024,7 +2024,7 @@ void benchmark_math(double min_time)
         T = qq->get();
         rounds++;
     }
-    fprintf(fh, "%14.10f\n", c);
+    printer->Printf( "%14.10f\n", c);
     delete qq;
     t = T / (double) (rounds * LOOP_SIZE * (unsigned long int)UNROLL_SIZE);
     timings["cosh"] = t;
@@ -2050,7 +2050,7 @@ void benchmark_math(double min_time)
         T = qq->get();
         rounds++;
     }
-    fprintf(fh, "%14.10f\n", c);
+    printer->Printf( "%14.10f\n", c);
     delete qq;
     t = T / (double) (rounds * LOOP_SIZE * (unsigned long int)UNROLL_SIZE);
     timings["sinh"] = t;
@@ -2076,7 +2076,7 @@ void benchmark_math(double min_time)
         T = qq->get();
         rounds++;
     }
-    fprintf(fh, "%14.10f\n", c);
+    printer->Printf( "%14.10f\n", c);
     delete qq;
     t = T / (double) (rounds * LOOP_SIZE * (unsigned long int)UNROLL_SIZE);
     timings["tanh"] = t;
@@ -2104,7 +2104,7 @@ void benchmark_math(double min_time)
         T = qq->get();
         rounds++;
     }
-    fprintf(fh, "%14.10f\n", c);
+    printer->Printf( "%14.10f\n", c);
     delete qq;
     t = T / (double) (rounds * LOOP_SIZE * (unsigned long int)UNROLL_SIZE);
     timings["exp"] = t;
@@ -2129,7 +2129,7 @@ void benchmark_math(double min_time)
         T = qq->get();
         rounds++;
     }
-    fprintf(fh, "%14.10f\n", c);
+    printer->Printf( "%14.10f\n", c);
     delete qq;
     t = T / (double) (rounds * LOOP_SIZE * (unsigned long int)UNROLL_SIZE);
     timings["pow"] = t;
@@ -2154,7 +2154,7 @@ void benchmark_math(double min_time)
         T = qq->get();
         rounds++;
     }
-    fprintf(fh, "%14.10f\n", c);
+    printer->Printf( "%14.10f\n", c);
     delete qq;
     t = T / (double) (rounds * LOOP_SIZE * (unsigned long int)UNROLL_SIZE);
     timings["log"] = t;
@@ -2180,7 +2180,7 @@ void benchmark_math(double min_time)
         T = qq->get();
         rounds++;
     }
-    fprintf(fh, "%14.10f\n", c);
+    printer->Printf( "%14.10f\n", c);
     delete qq;
     t = T / (double) (rounds * LOOP_SIZE * (unsigned long int)UNROLL_SIZE);
     timings["floor"] = t;
@@ -2205,7 +2205,7 @@ void benchmark_math(double min_time)
         T = qq->get();
         rounds++;
     }
-    fprintf(fh, "%14.10f\n", c);
+    printer->Printf( "%14.10f\n", c);
     delete qq;
     t = T / (double) (rounds * LOOP_SIZE * (unsigned long int)UNROLL_SIZE);
     timings["ceil"] = t;
@@ -2230,40 +2230,38 @@ void benchmark_math(double min_time)
         T = qq->get();
         rounds++;
     }
-    fprintf(fh, "%14.10f\n", c);
+    printer->Printf( "%14.10f\n", c);
     delete qq;
     t = T / (double) (rounds * LOOP_SIZE * (unsigned long int)UNROLL_SIZE);
     timings["fabs"] = t;
 
-    fclose(fh);
+    outfile->Printf( "\n");
+    outfile->Printf( "           ------------------------------ \n");
+    outfile->Printf( "           ======> MATH BENCHMARKS <===== \n");
+    outfile->Printf( "           ------------------------------ \n");
+    outfile->Printf( "\n");
 
-    fprintf(outfile, "\n");
-    fprintf(outfile, "           ------------------------------ \n");
-    fprintf(outfile, "           ======> MATH BENCHMARKS <===== \n");
-    fprintf(outfile, "           ------------------------------ \n");
-    fprintf(outfile, "\n");
-
-    fprintf(outfile, "  Parameters:\n");
-    fprintf(outfile, "   -Minimum runtime (per operation): %14.10f [s].\n", min_time);
-    fprintf(outfile, "\n");
-    fprintf(outfile, "  Notes:\n");
-    fprintf(outfile, "   -All operations are for doubles, loops unrolled.\n");
-    fprintf(outfile, "   -exp, log, pow, and - are probably optimized out, and unreliable.\n");
-    fprintf(outfile, "\n");
-    fprintf(outfile, "Operation  ");
-    fprintf(outfile, "  %9s  %9s  %9s", "Time", "FLOPS", "Adds");
-    fprintf(outfile, "\n");
+    outfile->Printf( "  Parameters:\n");
+    outfile->Printf( "   -Minimum runtime (per operation): %14.10f [s].\n", min_time);
+    outfile->Printf( "\n");
+    outfile->Printf( "  Notes:\n");
+    outfile->Printf( "   -All operations are for doubles, loops unrolled.\n");
+    outfile->Printf( "   -exp, log, pow, and - are probably optimized out, and unreliable.\n");
+    outfile->Printf( "\n");
+    outfile->Printf( "Operation  ");
+    outfile->Printf( "  %9s  %9s  %9s", "Time", "FLOPS", "Adds");
+    outfile->Printf( "\n");
 
     double add_time = timings["+"];
 
     for (int s = 0; s < ops.size(); s++) {
         t = timings[ops[s]];
-        fprintf(outfile, "%-11s", ops[s].c_str());
-        fprintf(outfile, "    %9.3E  %9.3E  %9.3E", t, 1 / t, t / add_time);
-        fprintf(outfile, "\n");
+        outfile->Printf( "%-11s", ops[s].c_str());
+        outfile->Printf( "    %9.3E  %9.3E  %9.3E", t, 1 / t, t / add_time);
+        outfile->Printf( "\n");
     }
-    fprintf(outfile, "\n");
-    fflush(outfile);
+    outfile->Printf( "\n");
+
 }
 void benchmark_integrals(int max_am, double min_time)
 {
@@ -2562,46 +2560,46 @@ void benchmark_integrals(int max_am, double min_time)
     }
 
 
-    fprintf(outfile, "\n");
-    fprintf(outfile, "                              ----------------------------------- \n");
-    fprintf(outfile, "                              ======> INTEGRALS BENCHMARKS <===== \n");
-    fprintf(outfile, "                              ----------------------------------- \n");
-    fprintf(outfile, "\n");
+    outfile->Printf( "\n");
+    outfile->Printf( "                              ----------------------------------- \n");
+    outfile->Printf( "                              ======> INTEGRALS BENCHMARKS <===== \n");
+    outfile->Printf( "                              ----------------------------------- \n");
+    outfile->Printf( "\n");
 
-    fprintf(outfile, "  Parameters:\n");
-    fprintf(outfile, "   -Maximum angular momentum %s\n", shell_names[shell_names.size() - 1].c_str());
-    fprintf(outfile, "   -Minimum runtime (per integral, per combination): %14.10f [s].\n", min_time);
-    fprintf(outfile, "\n");
+    outfile->Printf( "  Parameters:\n");
+    outfile->Printf( "   -Maximum angular momentum %s\n", shell_names[shell_names.size() - 1].c_str());
+    outfile->Printf( "   -Minimum runtime (per integral, per combination): %14.10f [s].\n", min_time);
+    outfile->Printf( "\n");
 
-    fprintf(outfile, "  Notes:\n");
-    fprintf(outfile, "    -All integrals are computed from different centers.\n");
-    fprintf(outfile, "    -(s,p,d,f,g,h,i) are single-primitive shells.\n");
-    fprintf(outfile, "    -(S,P,D) are [10, 6, 2]-primitive shells, respectively.\n");
-    fprintf(outfile, "    -Only up to i functions are currently supported.\n");
-    fprintf(outfile, "    -All shells use Spherical Harmonics.\n");
-    fprintf(outfile, "    -Timings are reported per double produced (function combination and possibly direction).\n");
-    fprintf(outfile, "     Therefore, the cost for a (p|p) overlap shell would be 9x the value reported, while the\n");
-    fprintf(outfile, "     cost for a (p|p) dipole shell would be 27x the value reported.\n");
-    fprintf(outfile, "\n");
+    outfile->Printf( "  Notes:\n");
+    outfile->Printf( "    -All integrals are computed from different centers.\n");
+    outfile->Printf( "    -(s,p,d,f,g,h,i) are single-primitive shells.\n");
+    outfile->Printf( "    -(S,P,D) are [10, 6, 2]-primitive shells, respectively.\n");
+    outfile->Printf( "    -Only up to i functions are currently supported.\n");
+    outfile->Printf( "    -All shells use Spherical Harmonics.\n");
+    outfile->Printf( "    -Timings are reported per double produced (function combination and possibly direction).\n");
+    outfile->Printf( "     Therefore, the cost for a (p|p) overlap shell would be 9x the value reported, while the\n");
+    outfile->Printf( "     cost for a (p|p) dipole shell would be 27x the value reported.\n");
+    outfile->Printf( "\n");
 
 
-    fprintf(outfile, "Test Basis Set:\n");
-    basis->print_by_level(outfile, 3);
+    outfile->Printf( "Test Basis Set:\n");
+    basis->print_by_level("outfile", 3);
 
     for (int op = 0; op < int_types.size(); op++) {
         this_type = int_types[op];
         this_ncenter = centers[op];
-        fprintf(outfile, "  Integral Type: %s\n\n", this_type.c_str());
+        outfile->Printf( "  Integral Type: %s\n\n", this_type.c_str());
 
         // Time per element
-        fprintf(outfile, "Combination%11s  %11s    %11s\n", "T [s]", "1/T [Hz]", "1/T [GiB/s]");
+        outfile->Printf( "Combination%11s  %11s    %11s\n", "T [s]", "1/T [Hz]", "1/T [GiB/s]");
         for (index = 0; index < combinations[this_ncenter].size(); index++) {
             t = timings[this_type][index];
-            fprintf(outfile, "%-10s    %9.3E    %9.3E    %9.3E\n", combinations[this_ncenter][index].c_str(), t, 1.0 / t, 8.0E-9 / t);
+            outfile->Printf( "%-10s    %9.3E    %9.3E    %9.3E\n", combinations[this_ncenter][index].c_str(), t, 1.0 / t, 8.0E-9 / t);
         }
-        fprintf(outfile,"\n");
+        outfile->Printf("\n");
     }
-    fflush(outfile);
+
 
 }
 

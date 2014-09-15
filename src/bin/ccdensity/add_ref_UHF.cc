@@ -75,29 +75,29 @@ void add_ref_UHF(struct iwlbuf *AA, struct iwlbuf *BB, struct iwlbuf *AB)
   /* AA */
   for(i=0; i < (nfzc + nclsd + nopen); i++) {
     for(j=0; j < i; j++) {
-      iwl_buf_wrt_val(AA, i, i, j, j, 0.5, 0, outfile, 0);
+      iwl_buf_wrt_val(AA, i, i, j, j, 0.5, 0, "outfile", 0);
 
-      iwl_buf_wrt_val(AA, i, j, i, j,-0.25, 0, outfile, 0);
-      iwl_buf_wrt_val(AA, j, i, j, i,-0.25, 0, outfile, 0);
-      iwl_buf_wrt_val(AA, i, j, j, i,-0.25, 0, outfile, 0);
+      iwl_buf_wrt_val(AA, i, j, i, j,-0.25, 0, "outfile", 0);
+      iwl_buf_wrt_val(AA, j, i, j, i,-0.25, 0, "outfile", 0);
+      iwl_buf_wrt_val(AA, i, j, j, i,-0.25, 0, "outfile", 0);
     }
   }
 
   /* BB */
   for(i=0; i < (nfzc + nclsd); i++) {
     for(j=0; j < i; j++) {
-      iwl_buf_wrt_val(BB, i, i, j, j, 0.5, 0, outfile, 0);
+      iwl_buf_wrt_val(BB, i, i, j, j, 0.5, 0, "outfile", 0);
 
-      iwl_buf_wrt_val(BB, i, j, i, j,-0.25, 0, outfile, 0);
-      iwl_buf_wrt_val(BB, j, i, j, i,-0.25, 0, outfile, 0);
-      iwl_buf_wrt_val(BB, i, j, j, i,-0.25, 0, outfile, 0);
+      iwl_buf_wrt_val(BB, i, j, i, j,-0.25, 0, "outfile", 0);
+      iwl_buf_wrt_val(BB, j, i, j, i,-0.25, 0, "outfile", 0);
+      iwl_buf_wrt_val(BB, i, j, j, i,-0.25, 0, "outfile", 0);
     }
   }
 
   /* AB */
   for(i=0; i < (nfzc + nclsd + nopen); i++)
     for(j=0; j < (nfzc + nclsd); j++)
-      iwl_buf_wrt_val(AB, i, i, j, j, 1.0, 0, outfile, 0);
+      iwl_buf_wrt_val(AB, i, i, j, j, 1.0, 0, "outfile", 0);
 
 }
 

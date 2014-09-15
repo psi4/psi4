@@ -36,14 +36,14 @@ namespace psi{ namespace occwave{
 void OCCWave::cepa_iterations()
 {
   
-fprintf(outfile,"\n  \n");      
-fprintf(outfile," ============================================================================== \n");    
-fprintf(outfile," ================ Performing CEPA iterations... =============================== \n");  
-fprintf(outfile," ============================================================================== \n");
-fprintf(outfile,"\n");
-fprintf(outfile, "  Iter    E_corr           E_total            DE           T2 RMS        \n");
-fprintf(outfile, "  ----   -------------    ---------------    ----------   ----------    \n");
-fflush(outfile);
+outfile->Printf("\n  \n");
+outfile->Printf(" ============================================================================== \n");
+outfile->Printf(" ================ Performing CEPA iterations... =============================== \n");
+outfile->Printf(" ============================================================================== \n");
+outfile->Printf("\n");
+outfile->Printf( "  Iter    E_corr           E_total            DE           T2 RMS        \n");
+outfile->Printf( "  ----   -------------    ---------------    ----------   ----------    \n");
+
 
   
 /********************************************************************************************/
@@ -107,8 +107,8 @@ do
 	rms_t2=MAX0(rms_t2,rms_t2AB);
     }
 	
-fprintf(outfile," %3d     %12.10f    %12.10f  %12.2e %12.2e \n", itr_occ, Ecorr, Ecepa, DE, rms_t2);
-fflush(outfile);
+outfile->Printf(" %3d     %12.10f    %12.10f  %12.2e %12.2e \n", itr_occ, Ecorr, Ecepa, DE, rms_t2);
+
 
     if (itr_occ >= cc_maxiter) {
       conver = 0; // means iterations were NOT converged
@@ -127,16 +127,16 @@ delete t2DiisManager;
 
 if (conver == 1) {
 EcepaL = Ecepa;
-fprintf(outfile,"\n");
-fprintf(outfile," ============================================================================== \n");
-fprintf(outfile," ======================== CEPA ITERATIONS ARE CONVERGED ======================= \n");
-fprintf(outfile," ============================================================================== \n");
-fflush(outfile);
+outfile->Printf("\n");
+outfile->Printf(" ============================================================================== \n");
+outfile->Printf(" ======================== CEPA ITERATIONS ARE CONVERGED ======================= \n");
+outfile->Printf(" ============================================================================== \n");
+
 }
 
 else if (conver == 0) {
-  fprintf(outfile,"\n ======================= CEPA IS NOT CONVERGED IN %2d ITERATIONS ============ \n", cc_maxiter);
-  fflush(outfile);
+  outfile->Printf("\n ======================= CEPA IS NOT CONVERGED IN %2d ITERATIONS ============ \n", cc_maxiter);
+  
   throw PSIEXCEPTION("CEPA iterations did not converge");
 }
 

@@ -66,6 +66,9 @@ struct OPT_PARAMS {
   // Newton-Raphson (NR), rational function optimization step, steepest descent step
   enum STEP_TYPE {NR, RFO, P_RFO, SD, LINESEARCH_STATIC} step_type;
 
+  // Coordinates for optimization
+  enum COORDINATES {INTERNAL, CARTESIAN, BOTH} coordinates;
+
   // Hessian guess
   // Note the Lindh "intrafragment" option is cartesian so it applies to all coordinates.
   enum INTRAFRAGMENT_HESSIAN {FISCHER, SCHLEGEL, SIMPLE, LINDH, LINDH_SIMPLE} intrafragment_H;

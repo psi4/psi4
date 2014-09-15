@@ -231,7 +231,7 @@ public:
 //template <typename T, unsigned int NumDims>
 //class process_grid_ref;
 
-//extern FILE *outfile;
+//
 
 //template <typename T, unsigned int NumDims>
 //class process_grid_ref : public boost::multi_array_ref<T,NumDims>

@@ -134,7 +134,7 @@ void get_params(Options &options)
     else if(cachetype == "LRU")
       params.cachetype = 0;
     else {
-      fprintf(outfile, "Invalide CACHETYPE = %s\n",cachetype.c_str());
+      outfile->Printf( "Invalide CACHETYPE = %s\n",cachetype.c_str());
       abort();
     }
   }
@@ -155,29 +155,29 @@ void get_params(Options &options)
 
   params.memory = Process::environment.get_memory();
  
-  fprintf(outfile, "\n");
-  fprintf(outfile, "\tInput parameters:\n");
-  fprintf(outfile, "\t-----------------\n");
-  fprintf(outfile, "\tWave function \t=\t%s\n", params.wfn.c_str());
+  outfile->Printf( "\n");
+  outfile->Printf( "\tInput parameters:\n");
+  outfile->Printf( "\t-----------------\n");
+  outfile->Printf( "\tWave function \t=\t%s\n", params.wfn.c_str());
   if(params.semicanonical) {
-  fprintf(outfile, "\tReference WFN \t=\tROHF changed to UHF for Semicanonical Orbitals\n");
+  outfile->Printf( "\tReference WFN \t=\tROHF changed to UHF for Semicanonical Orbitals\n");
   }
   else {
-  fprintf(outfile, "\tReference WFN \t=\t%s\n", (params.ref==0)?"RHF":((params.ref==1)?"ROHF":"UHF"));
+  outfile->Printf( "\tReference WFN \t=\t%s\n", (params.ref==0)?"RHF":((params.ref==1)?"ROHF":"UHF"));
   } 
-  fprintf(outfile, "\tDerivative    \t=\t%s\n", params.dertype.c_str());
-  fprintf(outfile, "\tCache Level   \t=\t%d\n", params.cachelev);
-  fprintf(outfile, "\tCache Type    \t=\t%s\n", params.cachetype ? "LOW":"LRU");
-  fprintf(outfile, "\tMemory (MB)   \t=\t%.1f\n",params.memory/1e6);
-  fprintf(outfile, "\tPrint Level   \t=\t%d\n", params.print);
-  fprintf(outfile, "\tOPDM          \t=\t%s\n", params.opdm ? "YES":"NO");
-  fprintf(outfile, "\tSCS           \t=\t%s\n", (params.scs == 1) ? "True" : "False");
-  fprintf(outfile, "\tMP2_OS_SCALE  \t=\t%.6f\n",params.scs_scale_os);
-  fprintf(outfile, "\tMP2_SS_SCALE  \t=\t%.6f\n",params.scs_scale_ss);
+  outfile->Printf( "\tDerivative    \t=\t%s\n", params.dertype.c_str());
+  outfile->Printf( "\tCache Level   \t=\t%d\n", params.cachelev);
+  outfile->Printf( "\tCache Type    \t=\t%s\n", params.cachetype ? "LOW":"LRU");
+  outfile->Printf( "\tMemory (MB)   \t=\t%.1f\n",params.memory/1e6);
+  outfile->Printf( "\tPrint Level   \t=\t%d\n", params.print);
+  outfile->Printf( "\tOPDM          \t=\t%s\n", params.opdm ? "YES":"NO");
+  outfile->Printf( "\tSCS           \t=\t%s\n", (params.scs == 1) ? "True" : "False");
+  outfile->Printf( "\tMP2_OS_SCALE  \t=\t%.6f\n",params.scs_scale_os);
+  outfile->Printf( "\tMP2_SS_SCALE  \t=\t%.6f\n",params.scs_scale_ss);
 
   if (params.scs && params.dertype != "NONE") {
-    fprintf(outfile,"\nWarning: SCS-MP2 computation requested but\n");
-    fprintf(outfile,"derivative will be evaluated for standard MP2 energy.\n");
+    outfile->Printf("\nWarning: SCS-MP2 computation requested but\n");
+    outfile->Printf("derivative will be evaluated for standard MP2 energy.\n");
   }
 
 }

@@ -925,7 +925,7 @@ void DFOCC::tei_iajb_anti_symm()
     IiajbBB.reset();
     AIiajbBB->write(psio_, PSIF_DFOCC_INTS);
     AIiajbBB.reset();
-    //fprintf(outfile,"\tI am here.\n"); fflush(outfile);
+    //outfile->Printf("\tI am here.\n"); 
  }
     timer_off("Build <ia||jb>");
 }// end tei_iajb_anti_symm
@@ -965,7 +965,7 @@ void DFOCC::tei_ovov_anti_symm()
     IovovBB.reset();
     AIovovBB->write(psio_, PSIF_DFOCC_INTS);
     AIovovBB.reset();
-    //fprintf(outfile,"\tI am here.\n"); fflush(outfile);
+    //outfile->Printf("\tI am here.\n"); 
  }
     timer_off("Build <ia||jb>");
 }// end tei_ovov_anti_symm

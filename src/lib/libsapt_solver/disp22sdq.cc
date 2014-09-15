@@ -29,8 +29,8 @@ void SAPT2p::disp22sdq()
   double e_disp211 = disp211();
 
   if (debug_) {
-    fprintf(outfile,"    Disp211             = %18.12lf H\n",e_disp211);
-    fflush(outfile);
+    outfile->Printf("    Disp211             = %18.12lf H\n",e_disp211);
+    
   }
 
   double e_disp220s = disp220s(PSIF_SAPT_AMPS,"T2 AR Amplitudes",
@@ -38,8 +38,8 @@ void SAPT2p::disp22sdq()
     "RR RI Integrals",foccA_,noccA_,nvirA_);
 
   if (debug_) {
-    fprintf(outfile,"    Disp220 (S)         = %18.12lf H\n",e_disp220s);
-    fflush(outfile);
+    outfile->Printf("    Disp220 (S)         = %18.12lf H\n",e_disp220s);
+    
   }
 
   double e_disp202s = disp220s(PSIF_SAPT_AMPS,"T2 BS Amplitudes",
@@ -47,8 +47,8 @@ void SAPT2p::disp22sdq()
     "SS RI Integrals",foccB_,noccB_,nvirB_);
 
   if (debug_) {
-    fprintf(outfile,"    Disp202 (S)         = %18.12lf H\n",e_disp202s);
-    fflush(outfile);
+    outfile->Printf("    Disp202 (S)         = %18.12lf H\n",e_disp202s);
+    
   }
 
   double e_disp220d = disp220d_1(PSIF_SAPT_AMPS,"t2ARAR Amplitudes",
@@ -59,8 +59,8 @@ void SAPT2p::disp22sdq()
     foccA_,noccA_,nvirA_,foccB_,noccB_,nvirB_,evalsA_,evalsB_,'N');
 
   if (debug_) {
-    fprintf(outfile,"    Disp220 (D)         = %18.12lf H\n",e_disp220d);
-    fflush(outfile);
+    outfile->Printf("    Disp220 (D)         = %18.12lf H\n",e_disp220d);
+    
   }
 
   double e_disp202d = disp220d_1(PSIF_SAPT_AMPS,"t2BSBS Amplitudes",
@@ -71,8 +71,8 @@ void SAPT2p::disp22sdq()
     foccB_,noccB_,nvirB_,foccA_,noccA_,nvirA_,evalsB_,evalsA_,'T');
 
   if (debug_) {
-    fprintf(outfile,"    Disp202 (D)         = %18.12lf H\n",e_disp202d);
-    fflush(outfile);
+    outfile->Printf("    Disp202 (D)         = %18.12lf H\n",e_disp202d);
+    
   }
 
   double e_disp220q = disp220q_1(PSIF_SAPT_AMPS,"tARAR Amplitudes",
@@ -88,8 +88,8 @@ void SAPT2p::disp22sdq()
     foccA_,noccA_,nvirA_,foccB_,noccB_,nvirB_);
 
   if (debug_) {
-    fprintf(outfile,"    Disp220 (Q)         = %18.12lf H\n",e_disp220q);
-    fflush(outfile);
+    outfile->Printf("    Disp220 (Q)         = %18.12lf H\n",e_disp220q);
+    
   }
 
   double e_disp202q = disp220q_1(PSIF_SAPT_AMPS,"tBSBS Amplitudes",
@@ -105,16 +105,16 @@ void SAPT2p::disp22sdq()
     foccB_,noccB_,nvirB_,foccA_,noccA_,nvirA_);
 
   if (debug_) {
-    fprintf(outfile,"    Disp202 (Q)         = %18.12lf H\n\n",e_disp202q);
-    fflush(outfile);
+    outfile->Printf("    Disp202 (Q)         = %18.12lf H\n\n",e_disp202q);
+    
   }
 
   e_disp22sdq_ = e_disp211 + e_disp220s + e_disp202s + e_disp220d +
     e_disp202d + e_disp220q + e_disp202q;
 
   if (print_) {
-    fprintf(outfile,"    Disp22 (SDQ)        = %18.12lf H\n",e_disp22sdq_);
-    fflush(outfile);
+    outfile->Printf("    Disp22 (SDQ)        = %18.12lf H\n",e_disp22sdq_);
+    
   }
 }
 
@@ -252,8 +252,8 @@ double SAPT2p::disp220d_1(int ampfile, const char *tlabel,
   free(xARAR);
 
   if (debug_) {
-    fprintf(outfile,"\n    Disp22d_1           = %18.12lf H\n",energy);
-    fflush(outfile);
+    outfile->Printf("\n    Disp22d_1           = %18.12lf H\n",energy);
+    
   }
 
   return(energy);
@@ -322,8 +322,8 @@ double SAPT2p::disp220d_2(int ampfile, const char *glabel,
   free_block(B_p_BS);
 
   if (debug_) {
-    fprintf(outfile,"    Disp22d_2           = %18.12lf H\n",energy);
-    fflush(outfile);
+    outfile->Printf("    Disp22d_2           = %18.12lf H\n",energy);
+    
   }
 
   return(energy);
@@ -361,8 +361,8 @@ double SAPT2p::disp220q_1(int ampfile, const char *tlabel,
   free_block(xARAR);
 
   if (debug_) {
-    fprintf(outfile,"\n    Disp22q_1           = %18.12lf H\n",energy);
-    fflush(outfile);
+    outfile->Printf("\n    Disp22q_1           = %18.12lf H\n",energy);
+    
   }
 
   return(energy);
@@ -410,8 +410,8 @@ double SAPT2p::disp220q_2(int ampfile, const char *pAAlabel,
   free_block(qRR);
 
   if (debug_) {
-    fprintf(outfile,"    Disp22q_2           = %18.12lf H\n",energy);
-    fflush(outfile);
+    outfile->Printf("    Disp22q_2           = %18.12lf H\n",energy);
+    
   }
 
   return(energy);
@@ -475,8 +475,8 @@ double SAPT2p::disp220q_3(int ampfile, const char *tARARlabel,
   free_block(B_p_AR);
 
   if (debug_) {
-    fprintf(outfile,"    Disp22q_3           = %18.12lf H\n",energy);
-    fflush(outfile);
+    outfile->Printf("    Disp22q_3           = %18.12lf H\n",energy);
+    
   }
 
   return(energy);
@@ -559,8 +559,8 @@ double SAPT2p::disp220q_4(int ampfile, const char *tARARlabel,
   free_block(sRR);
 
   if (debug_) {
-    fprintf(outfile,"    Disp22q_4           = %18.12lf H\n",energy);
-    fflush(outfile);
+    outfile->Printf("    Disp22q_4           = %18.12lf H\n",energy);
+    
   }
 
   return(energy);

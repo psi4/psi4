@@ -61,7 +61,7 @@ namespace psi{ namespace occwave{
 void OCCWave::omp3_ip_poles()
 {   
 
-//fprintf(outfile,"\n omp3_ip_poles is starting... \n"); fflush(outfile);
+//outfile->Printf("\n omp3_ip_poles is starting... \n"); 
 //===========================================================================================
 //========================= RHF =============================================================
 //===========================================================================================
@@ -215,7 +215,7 @@ if (reference_ == "RESTRICTED") {
           }
     }
 
-    //fprintf(outfile,"\tI am here. \n"); fflush(outfile);
+    //outfile->Printf("\tI am here. \n"); 
 
     for (int i = 0; i < nooA; ++i) {
          for(int j = nooA-1; j > i; --j) {
@@ -232,22 +232,22 @@ if (reference_ == "RESTRICTED") {
 
 
     // Print occupied orbital energies
-    if (mo_optimized == 1) fprintf(outfile,"\n\tOMP3 Occupied Orbital Energies (a.u.) \n"); 
-    else if (mo_optimized == 0) fprintf(outfile,"\n\tMP3 Occupied Orbital Energies (a.u.) \n"); 
-    fprintf(outfile,"\t----------------------------------------------- \n"); 
-    fflush(outfile);
+    if (mo_optimized == 1) outfile->Printf("\n\tOMP3 Occupied Orbital Energies (a.u.) \n"); 
+    else if (mo_optimized == 0) outfile->Printf("\n\tMP3 Occupied Orbital Energies (a.u.) \n"); 
+    outfile->Printf("\t----------------------------------------------- \n"); 
+    
 	  
     Molecule& mol = *reference_wavefunction_->molecule().get();
     CharacterTable ct = mol.point_group()->char_table();
     string pgroup = mol.point_group()->symbol();
 
     // print alpha occ orb energy
-    fprintf(outfile, "\tAlpha occupied orbitals\n");
+    outfile->Printf( "\tAlpha occupied orbitals\n");
     count = 1;
     for (int i = 0; i < nooA; ++i) {
          int h = irrep_A->get(i);
-	 fprintf(outfile,"\t%3d (%-3s) %20.10f \n",count,ct.gamma(h).symbol(),evals_A->get(i));
-	 fflush(outfile);   
+	 outfile->Printf("\t%3d (%-3s) %20.10f \n",count,ct.gamma(h).symbol(),evals_A->get(i));
+	    
 	 count++;
     }
 
@@ -670,7 +670,7 @@ else if (reference_ == "UNRESTRICTED") {
           }
     }
 
-    //fprintf(outfile,"\tI am here. \n"); fflush(outfile);
+    //outfile->Printf("\tI am here. \n"); 
 
     for (int i = 0; i < nooA; ++i) {
          for(int j = nooA-1; j > i; --j) {
@@ -709,32 +709,32 @@ else if (reference_ == "UNRESTRICTED") {
 
 
     // Print occupied orbital energies
-    if (mo_optimized == 1) fprintf(outfile,"\n\tOMP3 Occupied Orbital Energies (a.u.) \n"); 
-    else if (mo_optimized == 0) fprintf(outfile,"\n\tMP3 Occupied Orbital Energies (a.u.) \n"); 
-    fprintf(outfile,"\t----------------------------------------------- \n"); 
-    fflush(outfile);
+    if (mo_optimized == 1) outfile->Printf("\n\tOMP3 Occupied Orbital Energies (a.u.) \n"); 
+    else if (mo_optimized == 0) outfile->Printf("\n\tMP3 Occupied Orbital Energies (a.u.) \n"); 
+    outfile->Printf("\t----------------------------------------------- \n"); 
+    
 	  
     Molecule& mol = *reference_wavefunction_->molecule().get();
     CharacterTable ct = mol.point_group()->char_table();
     string pgroup = mol.point_group()->symbol();
 
     // print alpha occ orb energy
-    fprintf(outfile, "\tAlpha occupied orbitals\n");
+    outfile->Printf( "\tAlpha occupied orbitals\n");
     count = 1;
     for (int i = 0; i < nooA; ++i) {
          int h = irrep_A->get(i);
-	 fprintf(outfile,"\t%3d (%-3s) %20.10f \n",count,ct.gamma(h).symbol(),evals_A->get(i));
-	 fflush(outfile);   
+	 outfile->Printf("\t%3d (%-3s) %20.10f \n",count,ct.gamma(h).symbol(),evals_A->get(i));
+	    
 	 count++;
     }
 
     // print beta occ orb energy
-    fprintf(outfile, "\n\tBeta occupied orbitals\n");
+    outfile->Printf( "\n\tBeta occupied orbitals\n");
     count = 1;
     for (int i = 0; i < nooB; ++i) {
          int h = irrep_B->get(i);
-	 fprintf(outfile,"\t%3d (%-3s) %20.10f \n",count,ct.gamma(h).symbol(),evals_B->get(i));
-	 fflush(outfile);   
+	 outfile->Printf("\t%3d (%-3s) %20.10f \n",count,ct.gamma(h).symbol(),evals_B->get(i));
+	    
 	 count++;
     }
 
@@ -746,7 +746,7 @@ else if (reference_ == "UNRESTRICTED") {
        delete irrep_B;
 
 }// end if (reference_ == "UNRESTRICTED") 
-//fprintf(outfile,"\n omp3_ip_poles is done. \n"); fflush(outfile);
+//outfile->Printf("\n omp3_ip_poles is done. \n"); 
 } // end omp3_ip_poles
 }} // End Namespaces
 

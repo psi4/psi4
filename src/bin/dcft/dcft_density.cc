@@ -2024,8 +2024,8 @@ DCFTSolver::compute_TPDM_trace() {
     double opdm_dev = N - opdm_trace;
     double tpdm_dev = N * (N - 1.0) - tpdm_trace;
 
-    fprintf(outfile, "\t OPDM trace: \t%10.6f\t\tDeviation: \t%8.4e\n", opdm_trace, opdm_dev);
-    fprintf(outfile, "\t TPDM trace: \t%10.6f\t\tDeviation: \t%8.4e\n", tpdm_trace, tpdm_dev);
+    outfile->Printf("\t OPDM trace: \t%10.6f\t\tDeviation: \t%8.4e\n", opdm_trace, opdm_dev);
+    outfile->Printf("\t TPDM trace: \t%10.6f\t\tDeviation: \t%8.4e\n", tpdm_trace, tpdm_dev);
 
     psio_->close(PSIF_DCFT_DENSITY, 1);
 

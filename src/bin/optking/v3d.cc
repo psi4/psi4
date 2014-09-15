@@ -40,19 +40,19 @@ bool v3d_angle(const double *A, const double *B, const double *C, double & phi, 
 
   // eBA
   if (! v3d_eAB(B, A, eBA) ) {
-fprintf(outfile, "could not normalize eBA, B:");
-for (int i=0; i<3; ++i) fprintf(outfile,"%15.10lf", B[i]);
-fprintf(outfile,"\n A:");
-for (int i=0; i<3; ++i) fprintf(outfile,"%15.10lf", A[i]);
+psi::outfile->Printf( "could not normalize eBA, B:");
+for (int i=0; i<3; ++i) psi::outfile->Printf("%15.10lf", B[i]);
+psi::outfile->Printf("\n A:");
+for (int i=0; i<3; ++i) psi::outfile->Printf("%15.10lf", A[i]);
     return false;
   }
 
   // eBC
   if (! v3d_eAB(B, C, eBC) ) {
-fprintf(outfile, "could not normalize eBC, B:");
-for (int i=0; i<3; ++i) fprintf(outfile,"%15.10lf", B[i]);
-fprintf(outfile,"\n A:");
-for (int i=0; i<3; ++i) fprintf(outfile,"%15.10lf", A[i]);
+psi::outfile->Printf( "could not normalize eBC, B:");
+for (int i=0; i<3; ++i) psi::outfile->Printf("%15.10lf", B[i]);
+psi::outfile->Printf("\n A:");
+for (int i=0; i<3; ++i) psi::outfile->Printf("%15.10lf", A[i]);
     return false;
   }
 

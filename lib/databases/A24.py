@@ -77,32 +77,33 @@ for rxn in HRXN:
                                       '%s-%s-monoA-unCP' % (dbse, rxn),
                                       '%s-%s-monoB-unCP' % (dbse, rxn) ]
 
-# <<< Reference Values [kcal/mol] >>>
+# <<< Reference Values [kcal/mol] from Rezac and Hobza dx.doi.org/10.1021/ct400057w >>>
 BIND = {}
-BIND['%s-%s'            % (dbse, 1  )] =    0.000
-BIND['%s-%s'            % (dbse, 2  )] =    0.000
-BIND['%s-%s'            % (dbse, 3  )] =    0.000
-BIND['%s-%s'            % (dbse, 4  )] =    0.000
-BIND['%s-%s'            % (dbse, 5  )] =    0.000
-BIND['%s-%s'            % (dbse, 6  )] =    0.000
-BIND['%s-%s'            % (dbse, 7  )] =    0.000
-BIND['%s-%s'            % (dbse, 8  )] =    0.000
-BIND['%s-%s'            % (dbse, 9  )] =    0.000
-BIND['%s-%s'            % (dbse, 10 )] =    0.000
-BIND['%s-%s'            % (dbse, 11 )] =    0.000
-BIND['%s-%s'            % (dbse, 12 )] =    0.000
-BIND['%s-%s'            % (dbse, 13 )] =    0.000
-BIND['%s-%s'            % (dbse, 14 )] =    0.000
-BIND['%s-%s'            % (dbse, 15 )] =    0.000
-BIND['%s-%s'            % (dbse, 16 )] =    0.000
-BIND['%s-%s'            % (dbse, 17 )] =    0.000
-BIND['%s-%s'            % (dbse, 18 )] =    0.000
-BIND['%s-%s'            % (dbse, 19 )] =    0.000
-BIND['%s-%s'            % (dbse, 20 )] =    0.000
-BIND['%s-%s'            % (dbse, 21 )] =    0.000
-BIND['%s-%s'            % (dbse, 22 )] =    0.000
-BIND['%s-%s'            % (dbse, 23 )] =    0.000
-BIND['%s-%s'            % (dbse, 24 )] =    0.000
+BIND['%s-%s'            % (dbse, 1  )] =    -6.524
+BIND['%s-%s'            % (dbse, 2  )] =    -5.014
+BIND['%s-%s'            % (dbse, 3  )] =    -4.749
+BIND['%s-%s'            % (dbse, 4  )] =    -4.572
+BIND['%s-%s'            % (dbse, 5  )] =    -3.157
+BIND['%s-%s'            % (dbse, 6  )] =    -1.679
+BIND['%s-%s'            % (dbse, 7  )] =    -0.779
+BIND['%s-%s'            % (dbse, 8  )] =    -0.672
+BIND['%s-%s'            % (dbse, 9  )] =    -4.474
+BIND['%s-%s'            % (dbse, 10 )] =    -2.578
+BIND['%s-%s'            % (dbse, 11 )] =    -1.629
+BIND['%s-%s'            % (dbse, 12 )] =    -1.537
+BIND['%s-%s'            % (dbse, 13 )] =    -1.389
+BIND['%s-%s'            % (dbse, 14 )] =    -1.110
+BIND['%s-%s'            % (dbse, 15 )] =    -0.514
+BIND['%s-%s'            % (dbse, 16 )] =    -1.518
+BIND['%s-%s'            % (dbse, 17 )] =    -0.837
+BIND['%s-%s'            % (dbse, 18 )] =    -0.615
+BIND['%s-%s'            % (dbse, 19 )] =    -0.538
+BIND['%s-%s'            % (dbse, 20 )] =    -0.408
+BIND['%s-%s'            % (dbse, 21 )] =    -0.370
+BIND['%s-%s'            % (dbse, 22 )] =    0.784
+BIND['%s-%s'            % (dbse, 23 )] =    0.897
+BIND['%s-%s'            % (dbse, 24 )] =    1.075
+
 
 # <<< Comment Lines >>>
 TAGL = {}

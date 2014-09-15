@@ -56,8 +56,8 @@ void CCMRCC::build_W_mnij_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the W_mnij Intermediates ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the W_mnij Intermediates ...");
+    
   );
 
   blas->append("W_mnij[oo][oo]{u}  = <[oo]:[oo]>");
@@ -68,8 +68,8 @@ void CCMRCC::build_W_mnij_intermediates()
   DEBUGGING(3,blas->print("W_mnij[oo][oo]{u}"););
 
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   );
 }
 
@@ -77,8 +77,8 @@ void CCMRCC::build_W_mNiJ_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the W_mNiJ Intermediates ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the W_mNiJ Intermediates ...");
+    
   );
 
   blas->append("W_mNiJ[oO][oO]{u}  = <[oo]|[oo]>");
@@ -89,8 +89,8 @@ void CCMRCC::build_W_mNiJ_intermediates()
   DEBUGGING(3,blas->print("W_mNiJ[oO][oO]{u}"););
 
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   );
 }
 
@@ -98,8 +98,8 @@ void CCMRCC::build_W_MNIJ_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the W_MNIJ Intermediates ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the W_MNIJ Intermediates ...");
+    
   );
   blas->append("W_MNIJ[OO][OO]{u}  = <[oo]:[oo]>");
   blas->append("W_MNIJ[OO][OO]{u} += #1234# <[ooo]:[v]> 2@2 t1[O][V]{u}");
@@ -109,8 +109,8 @@ void CCMRCC::build_W_MNIJ_intermediates()
   DEBUGGING(3,blas->print("W_MNIJ[OO][OO]{u}"););
 
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   );
 }
 
@@ -118,8 +118,8 @@ void CCMRCC::build_W_jbme_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the W_jbme Intermediates ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the W_jbme Intermediates ...");
+    
   );
 
   blas->append("W_jbme[ov][ov]{u}  = #3241# <[ov]:[vo]>");
@@ -138,8 +138,8 @@ void CCMRCC::build_W_jbme_intermediates()
   DEBUGGING(3,blas->print("W_jbme[ov][ov]{u}"););
 
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   );
 }
 
@@ -148,8 +148,8 @@ void CCMRCC::build_W_JBme_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the W_JBme Intermediates ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the W_JBme Intermediates ...");
+    
   );
   // Open-Shell
   blas->append("W_JBme[OV][ov]{o}  = #3241# <[ov]|[vo]>");
@@ -162,8 +162,8 @@ void CCMRCC::build_W_JBme_intermediates()
   DEBUGGING(3,blas->print("W_JBme[OV][ov]{o}"););
 
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   );
 }
 
@@ -171,8 +171,8 @@ void CCMRCC::build_W_jBmE_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the W_jBmE Intermediates ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the W_jBmE Intermediates ...");
+    
   );
 
   blas->append("W_jBmE[oV][oV]{u}  = #3214# - <[ov]|[ov]>");
@@ -185,8 +185,8 @@ void CCMRCC::build_W_jBmE_intermediates()
   );
 
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   );
 }
 
@@ -194,8 +194,8 @@ void CCMRCC::build_W_jbME_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the W_jbME Intermediates ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the W_jbME Intermediates ...");
+    
   );
 
   blas->append("W_jbME[ov][OV]{u}  = #3241# <[ov]|[vo]>");
@@ -209,8 +209,8 @@ void CCMRCC::build_W_jbME_intermediates()
     blas->print("W_jbME[ov][OV]{u}");
   );
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   );
 }
 
@@ -219,8 +219,8 @@ void CCMRCC::build_W_JbMe_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the W_JbMe Intermediates ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the W_JbMe Intermediates ...");
+    
   );
   // Open-shell
   blas->append("W_JbMe[Ov][Ov]{o}  = #3214# - <[ov]|[ov]>");
@@ -232,8 +232,8 @@ void CCMRCC::build_W_JbMe_intermediates()
     blas->print("W_JbMe[Ov][Ov]{o}");
   );
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   );
 }
 
@@ -241,8 +241,8 @@ void CCMRCC::build_W_JBME_intermediates()
 {
   Timer timer;
   DEBUGGING(1,
-    fprintf(outfile,"\n\tBuilding the W_jbme Intermediates ...");
-    fflush(outfile);
+    outfile->Printf("\n\tBuilding the W_jbme Intermediates ...");
+    
   );
 
   blas->append("W_JBME[OV][OV]{o}  = #3241# <[ov]:[vo]>");
@@ -262,8 +262,8 @@ void CCMRCC::build_W_JBME_intermediates()
     blas->print("W_JBME[OV][OV]{o}");
   );
   DEBUGGING(1,
-    fprintf(outfile," done. Timing %20.6f s",timer.get());
-    fflush(outfile);
+    outfile->Printf(" done. Timing %20.6f s",timer.get());
+    
   );
 }
 
