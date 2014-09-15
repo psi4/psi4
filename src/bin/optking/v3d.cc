@@ -27,6 +27,7 @@
 
 #include "v3d.h"
 
+#include "print.h"
 #define EXTERN
 #include "globals.h"
 
@@ -40,19 +41,19 @@ bool v3d_angle(const double *A, const double *B, const double *C, double & phi, 
 
   // eBA
   if (! v3d_eAB(B, A, eBA) ) {
-psi::outfile->Printf( "could not normalize eBA, B:");
-for (int i=0; i<3; ++i) psi::outfile->Printf("%15.10lf", B[i]);
-psi::outfile->Printf("\n A:");
-for (int i=0; i<3; ++i) psi::outfile->Printf("%15.10lf", A[i]);
+oprintf_out( "could not normalize eBA, B:");
+for (int i=0; i<3; ++i) oprintf_out("%15.10lf", B[i]);
+oprintf_out("\n A:");
+for (int i=0; i<3; ++i) oprintf_out("%15.10lf", A[i]);
     return false;
   }
 
   // eBC
   if (! v3d_eAB(B, C, eBC) ) {
-psi::outfile->Printf( "could not normalize eBC, B:");
-for (int i=0; i<3; ++i) psi::outfile->Printf("%15.10lf", B[i]);
-psi::outfile->Printf("\n A:");
-for (int i=0; i<3; ++i) psi::outfile->Printf("%15.10lf", A[i]);
+oprintf_out( "could not normalize eBC, B:");
+for (int i=0; i<3; ++i) oprintf_out("%15.10lf", B[i]);
+oprintf_out("\n A:");
+for (int i=0; i<3; ++i) oprintf_out("%15.10lf", A[i]);
     return false;
   }
 
@@ -80,16 +81,16 @@ bool v3d_tors(const double *A, const double *B, const double *C, const double *D
   if ( !v3d_eAB(A,B,eAB) || !v3d_eAB(B,C,eBC) || !v3d_eAB(C,D,eCD) )
     throw(INTCO_EXCEPT("v3d_tors: distances are not reasonably normalized for e vectors.",true));
 
-  //printf("v3d_eAB : %15.10lf %15.10lf %15.10lf \n", eAB[0], eAB[1], eAB[2]);
-  //printf("v3d_eBC : %15.10lf %15.10lf %15.10lf \n", eBC[0], eBC[1], eBC[2]);
-  //printf("v3d_eCD : %15.10lf %15.10lf %15.10lf \n", eCD[0], eCD[1], eCD[2]);
+  //oprintf_out("v3d_eAB : %15.10lf %15.10lf %15.10lf \n", eAB[0], eAB[1], eAB[2]);
+  //oprintf_out("v3d_eBC : %15.10lf %15.10lf %15.10lf \n", eBC[0], eBC[1], eBC[2]);
+  //oprintf_out("v3d_eCD : %15.10lf %15.10lf %15.10lf \n", eCD[0], eCD[1], eCD[2]);
 
   // compute bond angles
   if ( !v3d_angle(A, B, C, phi_123) || !v3d_angle(B, C, D, phi_234) )
     throw(INTCO_EXCEPT("v3d_tors: distances are not reasonably normalized for angles.",true));
 
-  //printf("v3d_tors : phi123 = %15.10lf\n", phi_123);
-  //printf("v3d_tors : phi234 = %15.10lf\n", phi_234);
+  //oprintf_out("v3d_tors : phi123 = %15.10lf\n", phi_123);
+  //oprintf_out("v3d_tors : phi234 = %15.10lf\n", phi_234);
 
   v3d_cross_product(eAB,eBC,tmp);
   v3d_cross_product(eBC,eCD,tmp2);

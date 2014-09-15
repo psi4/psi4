@@ -31,10 +31,10 @@
 #include <sstream>
 
 #include "linear_algebra.h"
-#include "print.h"
 #include "atom_data.h"
 #include "physconst.h"
 #include "psi4-dec.h"
+#include "print.h"
 #define EXTERN
 #include "globals.h"
 
@@ -77,7 +77,7 @@ void MOLECULE::sd_step(void) {
     array_normalize(fq_u, dim);
 
     double fq_overlap = array_dot(last_fq_u, fq_u, dim);
-    psi::outfile->Printf("\tOverlap of current forces with previous forces %8.4lf\n", fq_overlap);
+    oprintf_out("\tOverlap of current forces with previous forces %8.4lf\n", fq_overlap);
     free_array(fq_u);
     free_array(last_fq_u);
 
@@ -87,13 +87,13 @@ void MOLECULE::sd_step(void) {
       // component of previous forces in step direction
       double last_fq_norm = array_dot(last_fq, fq, dim) / fq_norm;
 
-      //psi::outfile->Printf( "fq_norm:        %15.10lf\n", fq_norm);
-      //psi::outfile->Printf( "last_fq_norm:   %15.10lf\n", last_fq_norm);
-      //psi::outfile->Printf( "g_last_dq_norm: %15.10lf\n", p_Opt_data->g_last_dq_norm());
+      //oprintf_out( "fq_norm:        %15.10lf\n", fq_norm);
+      //oprintf_out( "last_fq_norm:   %15.10lf\n", last_fq_norm);
+      //oprintf_out( "g_last_dq_norm: %15.10lf\n", p_Opt_data->g_last_dq_norm());
       if (p_Opt_data->g_last_dq_norm() != 0.0)
         h = (last_fq_norm - fq_norm) / p_Opt_data->g_last_dq_norm();
 
-      psi::outfile->Printf("\tEstimate of Hessian along step: %10.5e\n", h);
+      oprintf_out("\tEstimate of Hessian along step: %10.5e\n", h);
     }
   }
 
@@ -103,7 +103,7 @@ void MOLECULE::sd_step(void) {
   // Zero steps for frozen fragment
   for (int f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
-      psi::outfile->Printf("\tZero'ing out displacements for frozen fragment %d\n", f+1);
+      oprintf_out("\tZero'ing out displacements for frozen fragment %d\n", f+1);
       for (int i=0; i<fragments[f]->g_nintco(); ++i)
         dq[ g_intco_offset(f) + i ] = 0.0;
     }
@@ -124,12 +124,12 @@ void MOLECULE::sd_step(void) {
   double sd_h = 0;
 
   double DE_projected = DE_quadratic_energy(sd_dqnorm, sd_g, sd_h);
-  psi::outfile->Printf("\tProjected energy change: %20.10lf\n", DE_projected);
+  oprintf_out("\tProjected energy change: %20.10lf\n", DE_projected);
 
   // do displacements for each fragment separately
   for (int f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
-      psi::outfile->Printf("\tDisplacements for frozen fragment %d skipped.\n", f+1);
+      oprintf_out("\tDisplacements for frozen fragment %d skipped.\n", f+1);
       continue;
     }
     fragments[f]->displace(&(dq[g_intco_offset(f)]), &(fq[g_intco_offset(f)]), g_atom_offset(f));
@@ -138,7 +138,7 @@ void MOLECULE::sd_step(void) {
   // do displacements for interfragment coordinates
   for (int I=0; I<interfragments.size(); ++I) {
     if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
-      psi::outfile->Printf("\tDisplacements for frozen interfragment %d skipped.\n", I+1);
+      oprintf_out("\tDisplacements for frozen interfragment %d skipped.\n", I+1);
       continue;
     }
     interfragments[I]->orient_fragment( &(dq[g_interfragment_intco_offset(I)]),
@@ -169,7 +169,7 @@ void MOLECULE::sd_step_cartesians(void) {
   // Zero out frozen fragments
   for (int f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
-     psi::outfile->Printf("\tZero'ing out displacements for frozen fragment %d\n", f+1);
+     oprintf_out("\tZero'ing out displacements for frozen fragment %d\n", f+1);
       for (int i=0; i<fragments[f]->g_natom(); ++i)
         step[ g_intco_offset(f) + i ] = 0.0;
     }
@@ -185,8 +185,8 @@ void MOLECULE::sd_step_cartesians(void) {
       scale = limit / sqrt(array_dot(step,step,dim_xyz));
 
   if (scale != 1.0) {
-   psi::outfile->Printf("\tChange in coordinate exceeds step limit of %10.5lf.\n", limit);
-   psi::outfile->Printf("\tScaling displacements by %10.5lf\n", scale);
+   oprintf_out("\tChange in coordinate exceeds step limit of %10.5lf.\n", limit);
+   oprintf_out("\tScaling displacements by %10.5lf\n", scale);
     for (int i=0; i<dim_xyz; ++i)
       step[i] *= scale;
   }
@@ -203,7 +203,7 @@ void MOLECULE::sd_step_cartesians(void) {
 
   double *gx = g_grad_array();
   double DE_projected = -1.0 * array_dot(step, gx, dim_xyz);
- psi::outfile->Printf("\tProjected energy change: %20.10lf\n", DE_projected);
+ oprintf_out("\tProjected energy change: %20.10lf\n", DE_projected);
   free_array(gx);
 
   p_Opt_data->save_step_info(DE_projected, sd_u, 0.0, 0.0, 0.0);

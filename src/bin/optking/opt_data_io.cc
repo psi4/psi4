@@ -27,6 +27,7 @@
 
 #include "io.h"
 
+#include "print.h"
 #define EXTERN
 #include "globals.h"
 
@@ -104,7 +105,7 @@ void opt_clean(void) {
   opt_io_remove();        // remove file1
   if (!Opt_params.keep_intcos)
     opt_intco_dat_remove(); // remove intco.dat
-  printf("\tCleaning optimization helper files.\n");
+  oprintf_out("\tCleaning optimization helper files.\n");
 }
 
 // if OPT_IO_OPEN_OLD, open old file or new one

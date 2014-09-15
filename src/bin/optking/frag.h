@@ -31,6 +31,7 @@
 #include <vector>
 #include <string>
 #include "libparallel/ParallelPrinter.h"
+#include "print.h"
 #include "intcos.h"
 #include "psi4-dec.h"
 
@@ -80,16 +81,16 @@ class FRAG {
 
   void set_masses(void);
 
-  void print_geom(std::string OutFileRMR, const int id, bool print_mass = false);
-  void print_geom_grad(std::string OutFileRMR, const int id, bool print_mass = false);
-  void print_intcos(std::string OutFileRMR, int atom_offset=0);
-  void print_intco_dat(std::string OutFileRMR, int atom_offset=0);
+  void print_geom(std::string psi_fp, FILE *qc_fp, const int id, bool print_mass = false);
+  void print_geom_grad(std::string psi_fp, FILE *qc_fp, const int id, bool print_mass = false);
+  void print_intcos(std::string psi_fp, FILE *qc_fp, int atom_offset=0);
+  void print_intco_dat(std::string psi_fp, FILE *qc_fp, int atom_offset=0);
   std::string get_intco_definition(int coord_index, int atom_offset=0);
 
   void update_connectivity_by_distances(void);
   void update_connectivity_by_bonds(void);
 
-  void print_connectivity(std::string OutFileRMR, const int id, const int offset = 0) const ;
+  void print_connectivity(std::string psi_fp, FILE *qc_fp, const int id, const int offset = 0) const ;
 
   // add simple internals based on connectivity; return number added
   int add_stre_by_connectivity(void);
@@ -124,7 +125,7 @@ class FRAG {
   double ** compute_derivative_B(int intco_index, GeomType new_geom) const;
 
   // compute and print B matrix (for debugging)
-  void print_B(std::string OutFileRMR) const ;
+  void print_B(std::string psi_fp, FILE *qc_fp) const ;
 
   // check nearness to 180 and save value
   void fix_tors_near_180(void);
@@ -153,12 +154,10 @@ class FRAG {
   void check_zero_angles(double const * const dq);
 
   //print s vectors to output file
-  void print_s(std::string OutFileRMR, const double ** const geom) const {
-     boost::shared_ptr<psi::PsiOutStream> printer(OutFileRMR=="outfile"? psi::outfile:
-        boost::shared_ptr<psi::OutFile>(new psi::OutFile(OutFileRMR,psi::APPEND)));
-    printer->Printf("\t---S vectors for internals---\n");
+  void print_s(std::string psi_fp, FILE *qc_fp, const double ** const geom) const {
+    oprintf(psi_fp, qc_fp, "\t---S vectors for internals---\n");
     for(int i=0; i<intcos.size(); ++i)
-      intcos.at(i)->print_s(OutFileRMR, geom);
+      intcos.at(i)->print_s(psi_fp, qc_fp, geom);
   }
 
   // compute and return values of internal coordinates from member geometry
@@ -190,7 +189,7 @@ class FRAG {
   void set_geom(double ** geom_in);
   void set_grad(double **grad_in);
 
-  void print_geom(std::string OutFileRMR_geom); // write cartesian geometry out for next step
+  void print_geom(std::string psi_fp, FILE *qc_fp); // write cartesian geometry out for next step
 
   double ** H_guess(void);
   // function to help with Lindh guess hessian
