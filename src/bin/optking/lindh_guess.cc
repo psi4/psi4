@@ -47,6 +47,7 @@ work for not obvious gain in optimization efficiency.
 
 #include "v3d.h"
 
+#include "print.h"
 #define EXTERN
 #include "globals.h"
 
@@ -67,7 +68,7 @@ using namespace v3d;
 // Returns cartesian Lindh guess Hessian for whole system
 double **MOLECULE::Lindh_guess(void) const {
 
-  // Build one temporary fragment that contains ALL the atoms.
+  // Build one oprint_matrix_out( fragment that contains ALL the atoms.
   int natom = g_natom();
   double **coord_xyz = g_geom_2D();
   double *atomic_numbers = g_Z();
@@ -231,8 +232,8 @@ in this set of internals. */
   long int Nintco = intcos.size();
   double **B = compute_B();
   double *g_x = g_grad_array();
-  //psi::outfile->Printf("g_x\n");
-  //print_array("outfile",g_x,3*natom);
+  //oprintf_out("g_x\n");
+  //oprint_array_out(g_x,3*natom);
 
   double *temp_arr = init_array(Nintco);
   opt_matrix_mult(B, 0, &g_x, 1, &temp_arr, 1, Nintco, 3*natom, 1, 0);
@@ -252,12 +253,12 @@ in this set of internals. */
   free_matrix(G_inv);
   free_array(temp_arr);
   // Done computing g_q
-  //psi::outfile->Printf("g_q\n");
-  //print_array("outfile",g_q,Nintco);
+  //oprintf_out("g_q\n");
+  //oprint_array_out(g_q,Nintco);
 
   double **Hx = init_matrix(3*natom, 3*natom);
 
-  print_intcos("outfile",0);
+  print_intcos(outfile,qc_outfile,0);
 
   for (int i=0; i<intcos.size(); ++i) {  // loop over intcos
     SIMPLE * q = intcos.at(i);
@@ -323,8 +324,8 @@ in this set of internals. */
   free_array(g_q);
   free_matrix(R);
   if (Opt_params.print_lvl >= 2) {
-    psi::outfile->Printf("Lindh cartesian Hessian guess\n");
-    print_matrix("outfile", Hx, 3*natom, 3*natom);
+    oprintf_out("Lindh cartesian Hessian guess\n");
+    oprint_matrix_out(Hx, 3*natom, 3*natom);
     
   }
   return Hx;

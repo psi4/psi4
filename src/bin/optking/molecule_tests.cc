@@ -31,10 +31,10 @@
 #include <sstream>
 
 #include "linear_algebra.h"
-#include "print.h"
 #include "atom_data.h"
 #include "physconst.h"
 
+#include "print.h"
 #define EXTERN
 #include "globals.h"
 
@@ -57,13 +57,13 @@ void MOLECULE::test_B(void) {
   // 5-point formula should be good to h^4; a few will be slightly worse
   const double MAX_ERROR = 50*disp_size*disp_size*disp_size*disp_size;
 
-  psi::outfile->Printf("\n\tTesting B-matrix numerically...\n");
+  oprintf_out("\n\tTesting B-matrix numerically...\n");
 
   double **B_analytic = compute_B();
 
   if (Opt_params.print_lvl >= 3) {
-    psi::outfile->Printf( "Analytic B matrix in au\n");
-    print_matrix("outfile", B_analytic, Nintco, 3*Natom);
+    oprintf_out( "Analytic B matrix in au\n");
+    oprint_matrix_out(B_analytic, Nintco, 3*Natom);
     
   }
 
@@ -99,8 +99,8 @@ void MOLECULE::test_B(void) {
   }
 
   } catch (const char *s) {
-    psi::outfile->Printf("Unable to compute all internal coordinate values at displaced geometries.\n");
-    psi::outfile->Printf("%s\n",s);
+    oprintf_out("Unable to compute all internal coordinate values at displaced geometries.\n");
+    oprintf_out("%s\n",s);
     free_matrix(coord);
     free_matrix(B_analytic);
     free_matrix(B_fd);
@@ -109,8 +109,8 @@ void MOLECULE::test_B(void) {
 
   free_matrix(coord);
   if (Opt_params.print_lvl >= 3) {
-    psi::outfile->Printf("\nNumerical B matrix in au, disp_size = %lf\n",disp_size);
-    print_matrix("outfile", B_fd, Nintco, 3*Natom);
+    oprintf_out("\nNumerical B matrix in au, disp_size = %lf\n",disp_size);
+    oprint_matrix_out(B_fd, Nintco, 3*Natom);
     
   }
 
@@ -123,18 +123,18 @@ void MOLECULE::test_B(void) {
         max_error_intco = i;
       }
 
-  psi::outfile->Printf("\t\tMaximum difference is %.1e for internal coordinate %d.\n",
+  oprintf_out("\t\tMaximum difference is %.1e for internal coordinate %d.\n",
     max_error, max_error_intco+1);
   string coord_def = get_intco_definition_from_global_index(max_error_intco);
-psi::outfile->Printf("a, \n");
-  psi::outfile->Printf("\t\tThis coordinate is %s\n", coord_def.c_str() );
-psi::outfile->Printf("b, \n");
+oprintf_out("a, \n");
+  oprintf_out("\t\tThis coordinate is %s\n", coord_def.c_str() );
+oprintf_out("b, \n");
   if (max_error > MAX_ERROR) {
-    psi::outfile->Printf( "\t\tB-matrix could be in error.  However, numerical test will fail for ");
-    psi::outfile->Printf( "linear bond angles.  This is OK.\n");
+    oprintf_out( "\t\tB-matrix could be in error.  However, numerical test will fail for ");
+    oprintf_out( "linear bond angles.  This is OK.\n");
   }
   else {
-    psi::outfile->Printf("\t...Passed.\n");
+    oprintf_out("\t...Passed.\n");
   }
 
   free_matrix(B_analytic);
@@ -159,14 +159,14 @@ void MOLECULE::test_derivative_B(void) {
 
   q = intco_values(coord); // necesessary to set torsional near-180 variables?
 
-  psi::outfile->Printf("\n\tTesting Derivative B-matrix numerically...\n");
+  oprintf_out("\n\tTesting Derivative B-matrix numerically...\n");
   for (int i=0; i<Nintco; ++i) {
     warn = false;
-    psi::outfile->Printf("\t\tInternal coordinate %d : ", i+1); 
+    oprintf_out("\t\tInternal coordinate %d : ", i+1); 
     dq2dx2_analytic = compute_derivative_B(i);
     if (Opt_params.print_lvl >= 3) {
-      psi::outfile->Printf( "Analytic B' (Dq2Dx2) matrix in au\n");
-      print_matrix("outfile", dq2dx2_analytic, 3*Natom, 3*Natom); 
+      oprintf_out( "Analytic B' (Dq2Dx2) matrix in au\n");
+      oprint_matrix_out(dq2dx2_analytic, 3*Natom, 3*Natom); 
     }
 
     // compute B' matrix from B matrices
@@ -206,8 +206,8 @@ void MOLECULE::test_derivative_B(void) {
 
 
     if (Opt_params.print_lvl >= 3) {
-      psi::outfile->Printf("\nNumerical B' matrix by values in au, disp_size = %lf\n",disp_size);
-      print_matrix("outfile", dq2dx2_fd, 3*Natom, 3*Natom);
+      oprintf_out("\nNumerical B' matrix by values in au, disp_size = %lf\n",disp_size);
+      oprint_matrix_out(dq2dx2_fd, 3*Natom, 3*Natom);
     }
 
     double max_error = 0.0;
@@ -216,23 +216,23 @@ void MOLECULE::test_derivative_B(void) {
         if ( fabs(dq2dx2_analytic[ii][j] - dq2dx2_fd[ii][j]) > max_error )
           max_error = fabs(dq2dx2_analytic[ii][j] - dq2dx2_fd[ii][j]);
 
-    psi::outfile->Printf("Maximum difference is %.1e. ", max_error);
+    oprintf_out("Maximum difference is %.1e. ", max_error);
     if (max_error > MAX_ERROR) {
-      psi::outfile->Printf( "Uh-Oh.  See below\n");
+      oprintf_out( "Uh-Oh.  See below\n");
       warn = true;
     }
-    else { psi::outfile->Printf(" Passed.\n"); }
+    else { oprintf_out(" Passed.\n"); }
 
     if (warn) {
-      psi::outfile->Printf( "\nWarning: Perhaps a bug or your angular coordinates are at a discontinuity.\n");
-      psi::outfile->Printf( "Try restarting your optimization at a new or updated geometry.\n");
-      psi::outfile->Printf( "Also, remove angular coordinates that are fixed by symmetry.\n");
+      oprintf_out( "\nWarning: Perhaps a bug or your angular coordinates are at a discontinuity.\n");
+      oprintf_out( "Try restarting your optimization at a new or updated geometry.\n");
+      oprintf_out( "Also, remove angular coordinates that are fixed by symmetry.\n");
     }
 
     free_matrix(dq2dx2_analytic);
     
   }
-  psi::outfile->Printf("\n");
+  oprintf_out("\n");
   free_matrix(dq2dx2_fd);
   
   return;
