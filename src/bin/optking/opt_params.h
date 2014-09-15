@@ -110,6 +110,7 @@ struct OPT_PARAMS {
   // optimization, i.e., the one at which a gradient was computed.
   // If true, then the structure obtained from the last anticipated step is printed and saved instead.
   bool write_final_step_geometry;
+  bool print_trajectory_xyz_file;
 
   double maximum_H_bond_distance;
 
