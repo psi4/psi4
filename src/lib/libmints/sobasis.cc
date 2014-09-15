@@ -31,7 +31,7 @@
 #include "matrix.h"
 #include <psi4-dec.h>
 #include <cstdio>
-
+#include "libparallel/ParallelPrinter.h"
 using namespace boost;
 using namespace psi;
 
@@ -60,7 +60,7 @@ void SOTransform::set_naoshell(int n)
 void SOTransform::add_transform(int aoshellnum, int irrep,
                                 double coef, int aofunc, int sofunc)
 {
-//    fprintf(outfile, "SOTransform::add_transform(aoshellnum = %d, irrep = %d, coef = %lf, aofunc = %d, sofunc = %d)\n", aoshellnum, irrep, coef, aofunc, sofunc);
+//    outfile->Printf( "SOTransform::add_transform(aoshellnum = %d, irrep = %d, coef = %lf, aofunc = %d, sofunc = %d)\n", aoshellnum, irrep, coef, aofunc, sofunc);
 
     int i;
     for (i=0; i<naoshell; i++) {
@@ -151,8 +151,8 @@ void SOBasisSet::init()
     }
 
     //=----- Begin debug printing -----=
-//    fprintf(outfile, "SOBasis:\n");
-//    fprintf(outfile, "nshell_ = %d\n", nshell_);
+//    outfile->Printf( "SOBasis:\n");
+//    outfile->Printf( "nshell_ = %d\n", nshell_);
     //=-----  End debug printing  -----=
 
     // Allocate memory for unique shell to am
@@ -166,7 +166,7 @@ void SOBasisSet::init()
             for (k=0; k<mol->nequivalent(i); k++) {
                 int aoshell = basis_->shell_on_center(mol->equivalent(i,k),j);
                 aoshell_to_soshell[aoshell] = soshell;
-//                fprintf(outfile, "i = %d j = %d k = %d aoshell = %d soshell = %d, mol->equivalent = %d\n",
+//                outfile->Printf( "i = %d j = %d k = %d aoshell = %d soshell = %d, mol->equivalent = %d\n",
 //                        i, j, k, aoshell, soshell, mol->equivalent(i,k));
             }
 
@@ -178,9 +178,9 @@ void SOBasisSet::init()
     }
 
     //=----- Begin debug printing -----=
-//    fprintf(outfile, "Final aoshell_to_soshell:\n");
+//    outfile->Printf( "Final aoshell_to_soshell:\n");
 //    for (i = 0; i < basis_->nshell(); ++i) {
-//        fprintf(outfile, "aoshell_to_soshell[%d] = %d\n", i, aoshell_to_soshell[i]);
+//        outfile->Printf( "aoshell_to_soshell[%d] = %d\n", i, aoshell_to_soshell[i]);
 //    }
     //=-----  End debug printing  -----=
 
@@ -216,7 +216,7 @@ void SOBasisSet::init()
     SO_block *soblocks(petite_->compute_aotoso_info());
 
 //    for (i=0; i<nblocks; ++i) {
-//        fprintf(outfile, "soblock[%d]\n", i); fflush(outfile);
+//        outfile->Printf( "soblock[%d]\n", i); 
 //        soblocks[i].print("");
 //    }
 
@@ -234,7 +234,7 @@ void SOBasisSet::init()
             int atom0 = basis_->shell_to_center(aoshell0);
             int nequiv0 = mol->nequivalent(mol->atom_to_unique(atom0));
             sotrans_[soshell0].set_naoshell(nequiv0);
-//            fprintf(outfile, "i = %d j = %d bfn0 = %d aoshell0 = %d soshell0 = %d atom0 = %d nequiv0 = %d\n", i, j, bfn0, aoshell0, soshell0, atom0, nequiv0);
+//            outfile->Printf( "i = %d j = %d bfn0 = %d aoshell0 = %d soshell0 = %d atom0 = %d nequiv0 = %d\n", i, j, bfn0, aoshell0, soshell0, atom0, nequiv0);
         }
     }
 
@@ -286,7 +286,7 @@ void SOBasisSet::init()
         funcoff_[i][0] = 0;
         for (j=1; j<nirrep_; j++) {
             funcoff_[i][j] = funcoff_[i][j-1] + nfunc_[i][j-1];
-//            fprintf(outfile, "funcoff_[%d][%d] = %d\n", i, j, funcoff_[i][j]);
+//            outfile->Printf( "funcoff_[%d][%d] = %d\n", i, j, funcoff_[i][j]);
         }
     }
 
@@ -309,7 +309,7 @@ void SOBasisSet::init()
         func_[0] = 0;
         for (i=1; i<nshell_; i++) {
             func_[i] = func_[i-1] + nfunction(i-1);
-//            fprintf(outfile, "func_[%d] = %d\n", i, func_[i]);
+//            outfile->Printf( "func_[%d] = %d\n", i, func_[i]);
         }
         int ibasis_ = 0;
         for (i=0; i<nshell_; i++) {
@@ -317,7 +317,7 @@ void SOBasisSet::init()
                 for (k=0; k<nfunc_[i][j]; k++,ibasis_++) {
                     irrep_[ibasis_] = j;
                     func_within_irrep_[ibasis_] = nfunc_in_irrep_[j]++;
-//                    fprintf(outfile, "irrep_[%d] = %d func_within_irrep_[%d] = %d\n", ibasis_, j, ibasis_, func_within_irrep_[ibasis_]);
+//                    outfile->Printf( "irrep_[%d] = %d func_within_irrep_[%d] = %d\n", ibasis_, j, ibasis_, func_within_irrep_[ibasis_]);
                 }
             }
         }
@@ -381,65 +381,66 @@ int SOBasisSet::nfunction(int ishell) const
     return n;
 }
 
-void SOBasisSet::print(FILE *out) const
+void SOBasisSet::print(std::string out) const
 {
     int i,j,k;
+    boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+          boost::shared_ptr<OutFile>(new OutFile(out)));
+    printer->Printf( "  SOBasis:\n");
+    printer->Printf( "    nshell(SO) = %d\n", nshell_);
+    printer->Printf( "    nirrep = %d\n", nirrep_);
 
-    fprintf(out, "  SOBasis:\n");
-    fprintf(out, "    nshell(SO) = %d\n", nshell_);
-    fprintf(out, "    nirrep = %d\n", nirrep_);
-
-    fprintf(out, "    ncomp = [");
+    printer->Printf( "    ncomp = [");
     for (i=0; i<nirrep_; i++)
-        fprintf(out, " %3d", ncomp_[i]);
-    fprintf(out, " ]\n");
+        printer->Printf( " %3d", ncomp_[i]);
+    printer->Printf( " ]\n");
 
-    fprintf(out, "    nfunc:\n");
+    printer->Printf( "    nfunc:\n");
     for (i=0; i<nshell_; i++) {
-        fprintf(out, "      %3d:", i);
+        printer->Printf( "      %3d:", i);
         for (j=0; j<nirrep_; j++)
-            fprintf(out, "  %3d", nfunc_[i][j]);
-        fprintf(out, "\n");
+            printer->Printf( "  %3d", nfunc_[i][j]);
+        printer->Printf( "\n");
     }
 
-    fprintf(out, "    irrep             = [");
+    printer->Printf( "    irrep             = [");
     for (i=0; i<basis_->nbf(); ++i) {
-        fprintf(out, " %4d", irrep_[i]);
+        printer->Printf( " %4d", irrep_[i]);
     }
-    fprintf(out, "]\n");
+    printer->Printf( "]\n");
 
-    fprintf(out, "    func              = [");
+    printer->Printf( "    func              = [");
     for (i=0; i<nshell_; ++i) {
-        fprintf(out, " %4d", func_[i]);
+        printer->Printf( " %4d", func_[i]);
     }
-    fprintf(out, "]\n");
+    printer->Printf( "]\n");
 
-    fprintf(out, "    func_within_irrep = [");
+    printer->Printf( "    func_within_irrep = [");
     for (i=0; i<basis_->nbf(); ++i) {
-        fprintf(out, " %4d", func_within_irrep_[i]);
+        printer->Printf( " %4d", func_within_irrep_[i]);
     }
-    fprintf(out, "]\n");
+    printer->Printf( "]\n");
 
-    fprintf(out, "    nfunc_in_irrep    = [");
+    printer->Printf( "    nfunc_in_irrep    = [");
     for (i=0; i<nirrep_; ++i) {
-        fprintf(out, " %4d", nfunc_in_irrep_[i]);
+        printer->Printf( " %4d", nfunc_in_irrep_[i]);
     }
-    fprintf(out, "]\n");
+    printer->Printf( "]\n");
 
-    fprintf(out, "    funcoff           = [\n");
+    printer->Printf( "    funcoff           = [\n");
     for (i=0; i<nshell_; i++) {
-        fprintf(out, "      %3d:", i);
+        printer->Printf( "      %3d:", i);
         for (j=0; j<nirrep_; j++)
-            fprintf(out, "  %3d", funcoff_[i][j]);
-        fprintf(out, "\n");
+            printer->Printf( "  %3d", funcoff_[i][j]);
+        printer->Printf( "\n");
     }
 
-    fprintf(out, "    sotransform:\n");
+    printer->Printf( "    sotransform:\n");
     for (i=0; i<nshell_; i++) {
-        if (i>0) fprintf(out, "\n");
+        if (i>0) printer->Printf( "\n");
         for (j=0; j<sotrans_[i].naoshell; j++) {
             for (k=0; k<sotrans_[i].aoshell[j].nfunc; k++) {
-                fprintf(out, "      SO(%3d %2d %d [%2d]) += %12.8f * AO(%3d %2d)\n",
+                printer->Printf( "      SO(%3d %2d %d [%2d]) += %12.8f * AO(%3d %2d)\n",
                         i,
                         sotrans_[i].aoshell[j].func[k].sofunc,
                         sotrans_[i].aoshell[j].func[k].irrep,
@@ -453,11 +454,11 @@ void SOBasisSet::print(FILE *out) const
         }
     }
 
-    fprintf(out, "    aotransform:\n");
+    printer->Printf( "    aotransform:\n");
     for (i=0; i<basis_->nshell(); ++i) {
-        if (i>0) fprintf(out, "\n");
+        if (i>0) printer->Printf( "\n");
         for (j=0; j<aotrans_[i].soshell.size(); ++j) {
-            fprintf(out, "      AO(%3d) sofunc %d aofunc %d irrep %d coef %12.8f\n",
+            printer->Printf( "      AO(%3d) sofunc %d aofunc %d irrep %d coef %12.8f\n",
                     i,
                     aotrans_[i].soshell[j].sofunc,
                     aotrans_[i].soshell[j].aofunc,

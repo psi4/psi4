@@ -27,5 +27,5 @@
 #include "moinfo.h"
 #include "moinfo_scf.h"
 #include "model_space.h"
-
+#include "psi4-dec.h"
 #endif // _psi_src_lib_libmoinfo_libmoinfo_h_

@@ -11,6 +11,8 @@ memory 250 mb
 
 
 
+# ODC-13
+
 molecule HF {
 1 2
 H
@@ -119,6 +121,23 @@ energy('dcft')
 
 #ODC-12
 set dcft_functional odc-12
+set ao_basis none
+set algorithm simultaneous
+energy('dcft')
+
+
+set ao_basis disk
+set algorithm simultaneous
+energy('dcft')
+
+set ao_basis none
+set algorithm qc
+set qc_type simultaneous
+energy('dcft')
+
+
+#ODC-13
+set dcft_functional odc-13
 set ao_basis none
 set algorithm simultaneous
 energy('dcft')

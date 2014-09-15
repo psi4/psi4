@@ -27,7 +27,8 @@
 */
 #include <cstdio>
 #include <cmath>
-
+#include "psi4-dec.h"
+#include "libparallel/ParallelPrinter.h"
 namespace psi { namespace detci {
 
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
@@ -59,28 +60,29 @@ void scf_energy(double *H, double *TE, double *energy_1, double *energy_2,
 */
 double check_energy(double *H, double *twoel_ints, int *docc, int *frozen_docc,
       int fzc_flag, double escf, double enuc, double efzc, 
-      int nirreps, int *reorder, int *opi, int print_lvl, FILE *outfile)
+      int nirreps, int *reorder, int *opi, int print_lvl, std::string out)
 {
    double energy_1 ;     /* one-electron energy */
    double energy_2 ;     /* two-electron energy */
    double energy_e ;     /* total electronic energy */
-
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(out)));
    scf_energy(H, twoel_ints, &energy_1, &energy_2, &energy_e, docc,
       frozen_docc, fzc_flag, nirreps, reorder, opi);
 
    if (print_lvl) {
-     fprintf(outfile,"\nCheck SCF Energy from 1- and 2-electron integrals\n\n");
-     fprintf(outfile,"SCF Energy (ref):          %16.10lf\n", escf) ;
-     fprintf(outfile,"Nuclear repulsion energy:  %16.10lf\n", enuc) ;
-     fprintf(outfile,"One-electron energy:       %16.10lf\n", energy_1) ;
-     fprintf(outfile,"Two-electron energy:       %16.10lf\n", energy_2) ;
-     fprintf(outfile,"Frozen core energy:        %16.10lf\n", efzc) ;
-     fprintf(outfile,"Total electronic energy:   %16.10lf\n", energy_e+efzc) ;
-     fprintf(outfile,"Total SCF energy:          %16.10lf\n", enuc + 
+     printer->Printf("\nCheck SCF Energy from 1- and 2-electron integrals\n\n");
+     printer->Printf("SCF Energy (ref):          %16.10lf\n", escf) ;
+     printer->Printf("Nuclear repulsion energy:  %16.10lf\n", enuc) ;
+     printer->Printf("One-electron energy:       %16.10lf\n", energy_1) ;
+     printer->Printf("Two-electron energy:       %16.10lf\n", energy_2) ;
+     printer->Printf("Frozen core energy:        %16.10lf\n", efzc) ;
+     printer->Printf("Total electronic energy:   %16.10lf\n", energy_e+efzc) ;
+     printer->Printf("Total SCF energy:          %16.10lf\n", enuc +
         energy_e + efzc) ;
     
      if (fabs(enuc + efzc + energy_e - escf) > 0.00000001) {
-        fprintf(outfile, 
+        printer->Printf(
            "\n*** Calculated Energy Differs from SCF Energy in CHKPT ! ***\n") ;
         }
    }

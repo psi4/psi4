@@ -202,13 +202,13 @@ void get_moinfo(Options &options)
                 moinfo.openpi[i] - moinfo.fruocc[i] -
                 moinfo.frdocc[i];
 
-    fprintf(outfile,"\n\n");
-    fprintf(outfile, "\tWave function   =    %6s\n",params.wfn.c_str());
+    outfile->Printf("\n\n");
+    outfile->Printf( "\tWave function   =    %6s\n",params.wfn.c_str());
     if(params.semicanonical) {
-        fprintf(outfile, "\tReference wfn   =    ROHF changed to UHF for Semicanonical Orbitals\n");
+        outfile->Printf( "\tReference wfn   =    ROHF changed to UHF for Semicanonical Orbitals\n");
     }
     else {
-        fprintf(outfile, "\tReference wfn   =    %5s\n",
+        outfile->Printf( "\tReference wfn   =    %5s\n",
                 (params.ref == 0) ? "RHF" : ((params.ref == 1) ? "ROHF" : "UHF"));
     }
     psio_read_entry(PSIF_CC_INFO, "Reference Energy", (char *) &(moinfo.eref),
@@ -216,11 +216,11 @@ void get_moinfo(Options &options)
     psio_read_entry(PSIF_CC_INFO, "CCSD Energy", (char *) &(moinfo.ecc),
                     sizeof(double));
 
-    fprintf(outfile,"\n\tNuclear Rep. energy (chkpt)   = %20.15f\n",moinfo.enuc);
-    fprintf(outfile,  "\tSCF energy          (chkpt)   = %20.15f\n",moinfo.escf);
-    fprintf(outfile,  "\tReference energy    (file100) = %20.15f\n",moinfo.eref);
-    fprintf(outfile,  "\tCCSD energy         (file100) = %20.15f\n",moinfo.ecc);
-    fprintf(outfile,  "\tTotal CCSD energy   (file100) = %20.15f\n",
+    outfile->Printf("\n\tNuclear Rep. energy (chkpt)   = %20.15f\n",moinfo.enuc);
+    outfile->Printf(  "\tSCF energy          (chkpt)   = %20.15f\n",moinfo.escf);
+    outfile->Printf(  "\tReference energy    (file100) = %20.15f\n",moinfo.eref);
+    outfile->Printf(  "\tCCSD energy         (file100) = %20.15f\n",moinfo.ecc);
+    outfile->Printf(  "\tTotal CCSD energy   (file100) = %20.15f\n",
             moinfo.eref+moinfo.ecc);
 }
 

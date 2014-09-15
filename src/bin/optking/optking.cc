@@ -109,7 +109,7 @@ OptReturnType optking(void) {
 
   if (if_intco.is_open()) { // old internal coordinates are present
 
-    fprintf(outfile,"\n\tPrevious internal coordinate definitions found.\n"); fflush(outfile);
+    psi::outfile->Printf("\n\tPrevious internal coordinate definitions found.\n"); 
     newly_generated_coordinates = false;
 
     mol1 = new MOLECULE(0);    // make an empty molecule
@@ -117,9 +117,7 @@ OptReturnType optking(void) {
     // read internal coordinate and fragment definitions
     // create, allocate, and add fragment objects
     mol1->read_intcos(if_intco);
-#if defined(OPTKING_PACKAGE_PSI)
-    psi::WorldComm->sync();
-#endif
+
     if_intco.close();
 
     mol1->update_connectivity_by_bonds();
@@ -131,7 +129,7 @@ OptReturnType optking(void) {
   }
   else { // automatically generate coordinates
 
-    fprintf(outfile,"\n\tInternal coordinates to be generated automatically.\n"); fflush(outfile);
+    psi::outfile->Printf("\n\tInternal coordinates to be generated automatically.\n"); 
     newly_generated_coordinates = true;
 
     // read number of atoms ; make one fragment of that size ;
@@ -142,7 +140,7 @@ OptReturnType optking(void) {
 
     // Quit nicely if there is only one atom present
     if (mol1->g_natom() == 1) {
-      fprintf(outfile,"\tThere is only one atom present, so your optimization is complete!\n");
+      psi::outfile->Printf("\tThere is only one atom present, so your optimization is complete!\n");
       close_output_dat();
       return OptReturnEndloop;
     }
@@ -155,34 +153,37 @@ OptReturnType optking(void) {
     // if fragment_mode == SINGLE, connects all separated groups of atoms by modifying frag.connectivity
     // if fragment_mode == MULTI, splits into fragments and makes interfragment coordinates
     mol1->fragmentize();
-    mol1->print_connectivity(outfile);
+    mol1->print_connectivity("outfile");
 
-    if (Opt_params.fragment_mode == OPT_PARAMS::SINGLE) {
-      mol1->add_intrafragment_simples_by_connectivity();
-      if (Opt_params.add_auxiliary_bonds)
-        mol1->add_intrafragment_auxiliary_bonds();
-    }
-    else if (Opt_params.fragment_mode == OPT_PARAMS::MULTI) {
-      mol1->add_intrafragment_simples_by_connectivity();
-      if (Opt_params.add_auxiliary_bonds)
-        mol1->add_intrafragment_auxiliary_bonds();
-      mol1->add_interfragment();
-      mol1->freeze_interfragment_asymm(); // remove problematic ones?
+    if (Opt_params.coordinates == OPT_PARAMS::CARTESIAN || Opt_params.coordinates == OPT_PARAMS::BOTH)
+      mol1->add_cartesians();
+
+    if (Opt_params.coordinates == OPT_PARAMS::INTERNAL || Opt_params.coordinates == OPT_PARAMS::BOTH) {
+      if (Opt_params.fragment_mode == OPT_PARAMS::SINGLE) {
+        mol1->add_intrafragment_simples_by_connectivity();
+        if (Opt_params.add_auxiliary_bonds)
+          mol1->add_intrafragment_auxiliary_bonds();
+      }
+      else if (Opt_params.fragment_mode == OPT_PARAMS::MULTI) {
+        mol1->add_intrafragment_simples_by_connectivity();
+        if (Opt_params.add_auxiliary_bonds)
+          mol1->add_intrafragment_auxiliary_bonds();
+        mol1->add_interfragment();
+        mol1->freeze_interfragment_asymm(); // remove problematic ones?
+      }
     }
 
     mol1->apply_input_constraints();
 
     // print out internal coordinates for future steps
-    FILE *fp_intco = fopen(FILENAME_INTCO_DAT, "w");
-    mol1->print_intco_dat(fp_intco);
-#if defined(OPTKING_PACKAGE_PSI)
-    psi::WorldComm->sync();
-#endif
-    fclose(fp_intco);
+    //std::string OutFileRMR_intco = fopen(FILENAME_INTCO_DAT, "w");
+    mol1->print_intco_dat(FILENAME_INTCO_DAT);
+
+    //fclose(fp_intco);
 
     // only generate coordinates and print them out
     if (Opt_params.generate_intcos_only) {
-      fprintf(outfile,"\tGenerating intcos and halting.");
+      psi::outfile->Printf("\tGenerating intcos and halting.");
       close_output_dat();
 #if defined(OPTKING_PACKAGE_PSI)
       psi::psiclean();
@@ -200,8 +201,8 @@ OptReturnType optking(void) {
 #endif
 
   // print geometry and gradient
-  mol1->print_geom_grad(outfile);
-  //mol1->print_connectivity(outfile); fflush(outfile);
+  mol1->print_geom_grad("outfile");
+  //mol1->print_connectivity(outfile); 
 
   // read binary file for previous steps ; history needed to compute EFP values
   p_Opt_data = new OPT_DATA(mol1->g_nintco(), 3*mol1->g_natom());
@@ -215,7 +216,7 @@ OptReturnType optking(void) {
 #endif
 
   // print internal coordinate definitions and values
-  mol1->print_intcos(outfile);
+  mol1->print_intcos("outfile");
 
   if (Opt_params.test_B)
     mol1->test_B();
@@ -244,11 +245,11 @@ OptReturnType optking(void) {
     read_H_worked = mol1->cartesian_H_to_internals(H_cart); // transform to internal coordinates
     free_matrix(H_cart);                                    // free Cartesian Hessian
     if (read_H_worked) {
-      fprintf(outfile,"\tRead in cartesian Hessian and transformed it.\n");
+      psi::outfile->Printf("\tRead in cartesian Hessian and transformed it.\n");
       p_Opt_data->reset_steps_since_last_H();
     }
     else { 
-      fprintf(outfile,"\tUnable to read and transform cartesian Hessian.\n");
+      psi::outfile->Printf("\tUnable to read and transform cartesian Hessian.\n");
       mol1->H_guess(); // empirical model guess Hessian
     }
   }
@@ -260,8 +261,8 @@ OptReturnType optking(void) {
         p_Opt_data->H_update(*mol1);
     } catch (const char * str) {
       fprintf(stderr, "%s\n", str);
-      fprintf(outfile, "H_update failed\n");
-      fprintf(outfile, "%s\n", str);
+      psi::outfile->Printf( "H_update failed\n");
+      psi::outfile->Printf( "%s\n", str);
       return OptReturnFailure;
     }
   }
@@ -314,21 +315,21 @@ OptReturnType optking(void) {
     {
       if(!p_irc_data->go)
       {
-        fprintf(outfile,"\n\t **** Optimization is complete! ****\n");
+        psi::outfile->Printf("\n\t **** Optimization is complete! ****\n");
         p_Opt_data->write(); // save data to optimization binary file
-        fprintf(outfile,"\tFinal energy is %20.13lf\n", p_Opt_data->g_energy());
+        psi::outfile->Printf("\tFinal energy is %20.13lf\n", p_Opt_data->g_energy());
 
         if (Opt_params.write_final_step_geometry) {
-          fprintf(outfile,"\tFinal (next step) structure:\n");
+          psi::outfile->Printf("\tFinal (next step) structure:\n");
           mol1->print_geom();  // write geometry -> output file
-          fprintf(outfile,"\tSaving final (next step) structure.\n");
+          psi::outfile->Printf("\tSaving final (next step) structure.\n");
         }
         else { // default - get last geometry and write that one
           double *x = p_Opt_data->g_geom_const_pointer(p_Opt_data->nsteps()-1);
           mol1->set_geom_array(x);
-          fprintf(outfile,"\tFinal (previous) structure:\n");
+          psi::outfile->Printf("\tFinal (previous) structure:\n");
           mol1->print_geom();  // write geometry -> output file
-          fprintf(outfile,"\tSaving final (previous) structure.\n");
+          psi::outfile->Printf("\tSaving final (previous) structure.\n");
         }
         p_irc_data->progress_report(*mol1);
 
@@ -353,23 +354,23 @@ OptReturnType optking(void) {
     }
     else
     {
-      fprintf(outfile,"\n  **** Optimization is complete! ****\n");
+      psi::outfile->Printf("\n  **** Optimization is complete! ****\n");
       p_Opt_data->summary();
       p_Opt_data->write(); // save data to optimization binary file
 
-      fprintf(outfile,"\tFinal energy is %20.13lf\n", p_Opt_data->g_energy());
+      psi::outfile->Printf("\tFinal energy is %20.13lf\n", p_Opt_data->g_energy());
 
       if (Opt_params.write_final_step_geometry) {
-        fprintf(outfile,"\tFinal (next step) structure:\n");
+        psi::outfile->Printf("\tFinal (next step) structure:\n");
         mol1->print_geom();  // write geometry -> output file
-        fprintf(outfile,"\tSaving final (next step) structure.\n");
+        psi::outfile->Printf("\tSaving final (next step) structure.\n");
       }
       else { // default - get last geometry and write that one
         double *x = p_Opt_data->g_geom_const_pointer(p_Opt_data->nsteps()-1);
         mol1->set_geom_array(x);
-        fprintf(outfile,"\tFinal (previous) structure:\n");
+        psi::outfile->Printf("\tFinal (previous) structure:\n");
         mol1->print_geom();  // write geometry -> output file
-        fprintf(outfile,"\tSaving final (previous) structure.\n");
+        psi::outfile->Printf("\tSaving final (previous) structure.\n");
       }
 
       p_Opt_data->reset_trust_radius();
@@ -386,7 +387,7 @@ OptReturnType optking(void) {
   delete p_Opt_data;
 
 //#if defined(OPTKING_PACKAGE_PSI)
-  fprintf(outfile,"\tStructure for next step:\n");
+  psi::outfile->Printf("\tStructure for next step:\n");
   mol1->print_geom(); // write geometry for next step to output file
 //#endif
 
@@ -398,8 +399,8 @@ OptReturnType optking(void) {
 
     if (exc.try_again() && !exc.already_tried_other_intcos) {
 
-      fprintf(outfile,"\tThe optimizer encountered the following error:\n\t%s\n", exc.g_message());
-      fprintf(outfile,"\tWill attempt to restart optimization with redefined internal coordinates.\n");
+      psi::outfile->Printf("\tThe optimizer encountered the following error:\n\t%s\n", exc.g_message());
+      psi::outfile->Printf("\tWill attempt to restart optimization with redefined internal coordinates.\n");
 
       opt_intco_dat_remove(); // rm intco definitions
       opt_io_remove(); // rm optimization data
@@ -417,7 +418,7 @@ OptReturnType optking(void) {
     }
     else {
       fprintf(stderr, "%s\n", exc.g_message());
-      fprintf(outfile, "%s\n", exc.g_message());
+      psi::outfile->Printf( "%s\n", exc.g_message());
 #if defined (OPTKING_PACKAGE_QCHEM)
       QCrash(exc.g_message());
 #elif defined (OPTKING_PACKAGE_PSI)
@@ -427,8 +428,8 @@ OptReturnType optking(void) {
   }
   catch (BAD_STEP_EXCEPT exc) {
 
-    fprintf(outfile,"\tA bad-step exception has been caught.\n");
-    fprintf(outfile,"\t%s", exc.g_message());
+    psi::outfile->Printf("\tA bad-step exception has been caught.\n");
+    psi::outfile->Printf("\t%s", exc.g_message());
 
     p_Opt_data->decrease_trust_radius();
 
@@ -436,7 +437,7 @@ OptReturnType optking(void) {
 
     p_Opt_data->write();
     delete p_Opt_data;
-    fprintf(outfile,"\tStructure for next step:\n");
+    psi::outfile->Printf("\tStructure for next step:\n");
     mol1->print_geom(); // write geometry for next step to output file
 
     mol1->write_geom(); // write geometry -> chkpt (also output for QChem)
@@ -447,7 +448,7 @@ OptReturnType optking(void) {
   }
 #if defined (OPTKING_PACKAGE_PSI)
   catch (psi::PsiException e){
-      fprintf(outfile,"\t%s", e.what());
+      psi::outfile->Printf("\t%s", e.what());
   }
 #endif
   catch (...) {
@@ -466,7 +467,7 @@ OptReturnType optking(void) {
 // the standard text output file
 void open_output_dat(void) {
 #if defined (OPTKING_PACKAGE_PSI)
-  outfile = psi::outfile;
+  //outfile = psi::outfile;
 #elif defined (OPTKING_PACKAGE_QCHEM)
   outfile = stdout;
 #endif
@@ -474,23 +475,23 @@ void open_output_dat(void) {
 
 void close_output_dat(void) {
 #if defined(OPTKING_PACKAGE_QCHEM)
-  fflush(outfile);
+  
 #endif
 }
 
 void print_title(void) {
-  fprintf(outfile, "\n\t\t\t-----------------------------------------\n");
-  fprintf(outfile,   "\t\t\t OPTKING 2.0: for geometry optimizations \n");
-  fprintf(outfile,   "\t\t\t  - R.A. King,  Bethel University        \n");
-  fprintf(outfile,   "\t\t\t-----------------------------------------\n");
-  fflush(outfile);
+  psi::outfile->Printf( "\n\t\t\t-----------------------------------------\n");
+  psi::outfile->Printf(   "\t\t\t OPTKING 2.0: for geometry optimizations \n");
+  psi::outfile->Printf(   "\t\t\t  - R.A. King,  Bethel University        \n");
+  psi::outfile->Printf(   "\t\t\t-----------------------------------------\n");
+  
 }
 
 void print_end(void) {
 #if defined (OPTKING_PACKAGE_PSI)
-  fprintf(outfile, "\t\t\t--------------------------\n");
-  fprintf(outfile, "\t\t\t OPTKING Finished Execution \n");
-  fprintf(outfile, "\t\t\t--------------------------\n");
+  psi::outfile->Printf( "\t\t\t--------------------------\n");
+  psi::outfile->Printf( "\t\t\t OPTKING Finished Execution \n");
+  psi::outfile->Printf( "\t\t\t--------------------------\n");
 #endif
 }
 

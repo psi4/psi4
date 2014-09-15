@@ -34,7 +34,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <strings.h>
-
+#include "psi4-dec.h"
+#include "libparallel/ParallelPrinter.h"
 namespace psi {
 
 /*!
@@ -57,8 +58,8 @@ int * init_int_array(int size)
   int *array;
 
   if ((array = (int *) malloc(sizeof(int)*size))==NULL) {
-    fprintf(stderr,"init_array:  trouble allocating memory \n");
-    fprintf(stderr,"size = %d\n",size);
+    outfile->Printf("init_array:  trouble allocating memory \n");
+    outfile->Printf("size = %d\n",size);
     exit(PSI_RETURN_FAILURE);
   }
   bzero(array,sizeof(int)*size);
@@ -102,14 +103,14 @@ int **init_int_matrix(int rows, int cols)
    int i;
 
    if ((array = (int **) malloc(sizeof(int *)*rows))==NULL) {
-     fprintf(stderr,"init_int_matrix: trouble allocating memory \n"); 
-     fprintf(stderr,"rows = %d\n", rows);
+     outfile->Printf("init_int_matrix: trouble allocating memory \n"); 
+     outfile->Printf("rows = %d\n", rows);
      exit(PSI_RETURN_FAILURE);
    }
 
    if ((array[0] = (int *) malloc (sizeof(int)*cols*rows))==NULL) {
-     fprintf(stderr,"init_int_matrix: trouble allocating memory \n"); 
-     fprintf(stderr,"rows = %d, cols = %d", rows, cols);
+     outfile->Printf("init_int_matrix: trouble allocating memory \n"); 
+     outfile->Printf("rows = %d, cols = %d", rows, cols);
      exit(PSI_RETURN_FAILURE) ;
    }
    for (i=1; i<rows; i++) {
@@ -169,9 +170,11 @@ void zero_int_matrix(int **array, int rows, int cols)
 **
 ** \ingroup CIOMR
 */
-void print_int_mat(int **a, int m, int n, FILE *out)
+void print_int_mat(int **a, int m, int n, std::string out)
 {
-  int ii,jj,kk,nn,ll;
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(out)));
+   int ii,jj,kk,nn,ll;
   int i,j;
 
   ii=0;jj=0;
@@ -182,18 +185,17 @@ L200:
   nn=n;
   if (nn > kk) nn=kk;
   ll = 2*(nn-ii+1)+1;
-  fprintf (out,"\n   ");
-  for (i=ii; i <= nn; i++) fprintf(out,"   %5d",i);
-  fprintf (out,"\n");
+  printer->Printf("\n   ");
+  for (i=ii; i <= nn; i++) printer->Printf("   %5d",i);
+  printer->Printf("\n");
   for (i=0; i < m; i++) {
-    fprintf (out,"\n%5d",i+1);
+    printer->Printf("\n%5d",i+1);
     for (j=ii-1; j < nn; j++) {
-      fprintf (out,"%8d",a[i][j]);
+      printer->Printf("%8d",a[i][j]);
     }
   }
-  fprintf (out,"\n");
+  printer->Printf("\n");
   if (n <= kk) {
-    fflush(out);
     return;
   }
   ii=kk; goto L200;

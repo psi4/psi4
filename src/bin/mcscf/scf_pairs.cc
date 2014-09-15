@@ -88,9 +88,9 @@ void SCF::generate_pairs()
     }
   }
 
-  fprintf(outfile,"\n\n  Generated %d pairs\n  Distributed as ",npairs);
+  outfile->Printf("\n\n  Generated %d pairs\n  Distributed as ",npairs);
   for(int h=0; h< nirreps; ++h)
-    fprintf(outfile,"[%d %s]",pairpi[h],moinfo_scf->get_irr_labs(h));
+    outfile->Printf("[%d %s]",pairpi[h],moinfo_scf->get_irr_labs(h));
 }
 
 }} /* End Namespaces */

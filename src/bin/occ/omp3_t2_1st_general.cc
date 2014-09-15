@@ -34,7 +34,7 @@ namespace psi{ namespace occwave{
   
 void OCCWave::omp3_t2_1st_general()
 {   
-     //fprintf(outfile,"\n omp3_t2_1st_general is starting... \n"); fflush(outfile);
+     //outfile->Printf("\n omp3_t2_1st_general is starting... \n"); 
 
 //===========================================================================================
 //========================= RHF =============================================================
@@ -117,7 +117,7 @@ if (reference_ == "RESTRICTED") {
     
     // Reset
     global_dpd_->buf4_copy(&Tnew, PSIF_OCC_DPD, "T2_1 <OO|VV>");
-    if (print_ > 2) global_dpd_->buf4_print(&Tnew, outfile, 1);
+    if (print_ > 2) global_dpd_->buf4_print(&Tnew, "outfile", 1);
     global_dpd_->buf4_close(&Tnew);
 
     // Build amplitudes in chemist notation
@@ -358,7 +358,7 @@ else if (reference_ == "UNRESTRICTED") {
     
     // Reset
     global_dpd_->buf4_copy(&Tnew, PSIF_OCC_DPD, "T2_1 <OO|VV>");
-    if (print_ > 1) global_dpd_->buf4_print(&Tnew, outfile, 1);
+    if (print_ > 1) global_dpd_->buf4_print(&Tnew, "outfile", 1);
     global_dpd_->buf4_close(&Tnew);
     
     
@@ -382,7 +382,7 @@ else if (reference_ == "UNRESTRICTED") {
     
     // Reset
     global_dpd_->buf4_copy(&Tnew, PSIF_OCC_DPD, "T2_1 <oo|vv>");
-    if (print_ > 1) global_dpd_->buf4_print(&Tnew, outfile, 1);
+    if (print_ > 1) global_dpd_->buf4_print(&Tnew, "outfile", 1);
     global_dpd_->buf4_close(&Tnew);
     
     
@@ -406,7 +406,7 @@ else if (reference_ == "UNRESTRICTED") {
     
     // Reset
     global_dpd_->buf4_copy(&Tnew, PSIF_OCC_DPD, "T2_1 <Oo|Vv>");
-    if (print_ > 1) global_dpd_->buf4_print(&Tnew, outfile, 1);
+    if (print_ > 1) global_dpd_->buf4_print(&Tnew, "outfile", 1);
     global_dpd_->buf4_close(&Tnew);
     
     
@@ -462,7 +462,7 @@ else if (reference_ == "UNRESTRICTED") {
     psio_->close(PSIF_OCC_DPD, 1);
 }// end if (reference_ == "UNRESTRICTED") 
     
- //fprintf(outfile,"\n omp3_t2_1st_general done. \n"); fflush(outfile);
+ //outfile->Printf("\n omp3_t2_1st_general done. \n"); 
 
 } // end omp3_t2_1st_general
 }} // End Namespaces

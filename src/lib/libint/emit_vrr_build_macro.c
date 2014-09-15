@@ -9,7 +9,7 @@
 #include "build_libint.h"
 #include <libint/constants.h>
 
-extern FILE *outfile, *vrr_header;
+extern FILE* outfile, *vrr_header;
 extern void punt(char *);
 extern LibintParams_t Params;
 

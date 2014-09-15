@@ -62,10 +62,10 @@ void SCF::diis(int cycle)
     }
   }
 
-  fprintf(outfile," S");
+  outfile->Printf(" S");
 
   if(cycle >= ndiis){
-    fprintf(outfile,"/E");
+    outfile->Printf("/E");
     int  matrix_size = ndiis + 1;
 
     double** diis_B;
@@ -117,7 +117,7 @@ void SCF::diis(int cycle)
       }
 
     }else{
-      fprintf(outfile," (singularities found)");
+      outfile->Printf(" (singularities found)");
     }
 
     release1(diis_A);

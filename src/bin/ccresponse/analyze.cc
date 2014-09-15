@@ -36,7 +36,7 @@
 #include "Local.h"
 #define EXTERN
 #include "globals.h"
-
+#include "libparallel/ParallelPrinter.h"
 namespace psi { namespace ccresponse {
 
 double **Build_R(void);
@@ -62,7 +62,8 @@ void analyze(const char *pert, int irrep, double omega)
 
 
   sprintf(lbl, "X_%s_%5.3f", pert, omega);
-  ffile(&efile, lbl, 1);
+  boost::shared_ptr<OutFile> printer(new OutFile(lbl,APPEND));
+  //ffile(&efile, lbl, 1);
   amp_array = init_array(num_div);
 
   nvir = moinfo.virtpi[0];
@@ -111,12 +112,11 @@ void analyze(const char *pert, int irrep, double omega)
   for (i = num_div-1; i >= 0; i--) {
     value = amp_array[i] / tot1;
     value2 += value;
-    fprintf(efile, "%10.5lf %lf\n", -((i)*width)-min, value);
+    printer->Printf("%10.5lf %lf\n", -((i)*width)-min, value);
   }
   free(amp_array);
-  fprintf(outfile, "Total number of converged T2 amplitudes = %d\n", tot2);
-  fprintf(outfile, "Number of T2 amplitudes in analysis= %d\n", tot1);
-  fclose(efile);
+  outfile->Printf( "Total number of converged T2 amplitudes = %d\n", tot2);
+  outfile->Printf( "Number of T2 amplitudes in analysis= %d\n", tot1);
 
   num_div = 40;
   max = 2;
@@ -124,12 +124,13 @@ void analyze(const char *pert, int irrep, double omega)
   width = (max-min) / (num_div);
 
   sprintf(lbl, "X1_%s_%5.3f", pert, omega);
-  ffile(&efile, lbl, 1);
+  boost::shared_ptr<OutFile> printer2(new OutFile(lbl,APPEND));
+  //ffile(&efile, lbl, 1);
   amp_array = init_array(num_div);
 
   sprintf(lbl, "X_%s_IA (%5.3f)", pert, omega);
   global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, lbl);
-  global_dpd_->file2_print(&T1, outfile);
+  global_dpd_->file2_print(&T1, "outfile");
   global_dpd_->file2_mat_init(&T1);
   global_dpd_->file2_mat_rd(&T1);
 
@@ -170,11 +171,10 @@ void analyze(const char *pert, int irrep, double omega)
   for (i = num_div-1; i >= 0; i--) {
     value = amp_array[i] / tot1;
     value2 += value;
-    fprintf(efile, "%10.5lf %lf\n", ((i)*width)-min, value);
+    printer->Printf("%10.5lf %lf\n", ((i)*width)-min, value);
   }
 
   free(amp_array);
-  fclose(efile);
 
 }
 

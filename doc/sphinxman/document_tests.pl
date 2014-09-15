@@ -24,7 +24,7 @@ if ($#ARGV == 0) { $DriverPath = $ARGV[0] . "/"; }
 my %ExeFolder = (
    "."          => "corepsi4",
    "dftd3/"     => "dftd3",
-   #"mrcc/"      => "mrcc",
+   "mrcc/"      => "mrcc",
    "cfour/"     => "cfour",
    #"libefp/"    => "efp",
 );
@@ -41,7 +41,7 @@ foreach my $File(readdir SAMPLES){
     next unless $File =~ /\w+/; # Make sure we don't nuke .. or . !
     next if $File =~ /example_psi4rc_file/; # Keep the example psi4rc file
     next if $File =~ /^dftd3$/;  # Keep the interface subdirectories
-    #next if $File =~ /^mrcc$/;
+    next if $File =~ /^mrcc$/;
     next if $File =~ /^cfour$/;
     #next if $File =~ /^libefp$/;
     next if (-d $File);  # Don't remove subdirectories
@@ -138,6 +138,7 @@ foreach my $Dir(readdir TESTS){
 }
 print RSTSUMMARY "=============================================   ============\n\n";
 close TEXSUMMARY ;
+unlink("tests_descriptions_" . $ExeFolder{$exe} . ".tex");
 close RSTSUMMARY;
 close SUMMARY;
 unlink($SamplesFolder."/SUMMARY");

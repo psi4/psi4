@@ -166,11 +166,11 @@ void init_io(void)
 
 void title(void)
 {
-  fprintf(outfile, "\t\t\t**************************\n");
-  fprintf(outfile, "\t\t\t*                        *\n");
-  fprintf(outfile, "\t\t\t*       ccresponse       *\n");
-  fprintf(outfile, "\t\t\t*                        *\n");
-  fprintf(outfile, "\t\t\t**************************\n");
+  outfile->Printf( "\t\t\t**************************\n");
+  outfile->Printf( "\t\t\t*                        *\n");
+  outfile->Printf( "\t\t\t*       ccresponse       *\n");
+  outfile->Printf( "\t\t\t*                        *\n");
+  outfile->Printf( "\t\t\t**************************\n");
 }
 
 void exit_io(void)

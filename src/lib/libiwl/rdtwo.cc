@@ -36,7 +36,7 @@
 namespace psi {
   
 void IWL::read_two(PSIO *psio, int itap, double *ints, int *ioff, int norbs, 
-    int nfzc, int nfzv, int printflg, FILE *out)
+    int nfzc, int nfzv, int printflg, std::string out)
 {
     IWL Buf(psio, itap, 0.0, 1, 1);
     if ((nfzc == 0) && (nfzv == 0))
@@ -64,7 +64,7 @@ void IWL::read_two(PSIO *psio, int itap, double *ints, int *ioff, int norbs,
 ** \ingroup IWL
 */
 void iwl_rdtwo(int itap, double *ints, int *ioff, int norbs, 
-      int nfzc, int nfzv, int printflg, FILE *out)
+      int nfzc, int nfzv, int printflg, std::string out)
 {
   struct iwlbuf Buf;
   

@@ -30,7 +30,6 @@
 #include <libpsio/psio.h>
 
 namespace psi {
-extern FILE* outfile;
 namespace cchbar {
 
 /* Global variables */

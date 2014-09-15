@@ -7,7 +7,7 @@ include ../MakeVars
 PSITARGET = $(top_objdir)/lib/libPSI_parallel.a
 CXXDEF += -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\"
 
-TRUECXXSRC = fprintf.cc process.cc parallel.cc
+TRUECXXSRC = psi::fprintf.cc process.cc parallel.cc
 
 INC = parallel.h local.h mad.h elem.h openmp.h
 

@@ -52,7 +52,7 @@
 
 #ifndef _psi_src_bin_detci_slaterd_h
 #define _psi_src_bin_detci_slaterd_h
-
+#include <string>
 namespace psi { namespace detci {
 
 class SlaterDeterminant {
@@ -71,8 +71,8 @@ class SlaterDeterminant {
       void set(unsigned int nalp, unsigned char *alpoccs, 
          unsigned int nbet, unsigned char *betoccs);
       void print(void);
-      void print(FILE *outfile);
-      void print_config(FILE *outfile) ;
+      void print(std::string OutFileRMR);
+      void print_config(std::string OutFileRMR) ;
       SlaterDeterminant& operator=(const SlaterDeterminant& s) ;
       friend int operator==(SlaterDeterminant& s1, SlaterDeterminant& s2) ;
       friend double matrix_element(SlaterDeterminant* I, SlaterDeterminant* J);

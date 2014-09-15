@@ -39,7 +39,7 @@ DCFTSolver::run_simult_dcft_oo()
     // This is the simultaneous orbital/lambda update algorithm for the orbital-optimized methods
     int cycle = 0;
 
-    fprintf(outfile, "\n\n\t*=================================================================================*\n"
+    outfile->Printf( "\n\n\t*=================================================================================*\n"
                          "\t* Cycle   Max Orb Grad    RMS Lambda Error   delta E        Total Energy     DIIS *\n"
                          "\t*---------------------------------------------------------------------------------*\n");
 
@@ -153,7 +153,7 @@ DCFTSolver::run_simult_dcft_oo()
         rotate_orbitals();
         // Make sure that the orbital phase is retained
         if(!correct_mo_phases(false)){
-            fprintf(outfile,"\t\tThere was a problem correcting the MO phases.\n"
+            outfile->Printf("\t\tThere was a problem correcting the MO phases.\n"
                             "\t\tIf this does not converge, try ALGORITHM=TWOSTEP\n");
         }
         // Write orbitals to the checkpoint file
@@ -164,13 +164,13 @@ DCFTSolver::run_simult_dcft_oo()
         densityConverged_ = update_scf_density() < orbitals_threshold_;
         // If we've performed enough lambda updates since the last orbitals
         // update, reset the counter so another SCF update is performed
-        fprintf(outfile, "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %-3s *\n",
+        outfile->Printf( "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %-3s *\n",
                 cycle, orbitals_convergence_, cumulant_convergence_, new_total_energy_ - old_total_energy_,
                 new_total_energy_, diisString.c_str());
-        fflush(outfile);
+        
     }
 
-    fprintf(outfile, "\t*=================================================================================*\n");
+    outfile->Printf( "\t*=================================================================================*\n");
 }
 
 void
@@ -184,8 +184,8 @@ DCFTSolver::run_simult_dc_guess()
     orbitals_threshold_ = options_.get_double("GUESS_R_CONVERGENCE");
     orbital_optimized_ = false;
 
-    fprintf(outfile, "\n\n\tComputing the guess using the %s functional", exact_tau_ ? "DC-12" : "DC-06");
-    fprintf(outfile, "\n\tGuess energy, orbitals and cumulants will be converged to %4.3e", options_.get_double("GUESS_R_CONVERGENCE"));
+    outfile->Printf( "\n\n\tComputing the guess using the %s functional", exact_tau_ ? "DC-12" : "DC-06");
+    outfile->Printf( "\n\tGuess energy, orbitals and cumulants will be converged to %4.3e", options_.get_double("GUESS_R_CONVERGENCE"));
     run_simult_dcft();
 
     orbital_optimized_ = true;
@@ -195,7 +195,7 @@ DCFTSolver::run_simult_dc_guess()
     cumulant_threshold_ = lambda_conv;
     orbitals_threshold_ = orbital_conv;
 
-    fprintf(outfile, "\n\tNow running the %s computation...", options_.get_str("DCFT_FUNCTIONAL").c_str());
+    outfile->Printf( "\n\tNow running the %s computation...", options_.get_str("DCFT_FUNCTIONAL").c_str());
 
 }
 
@@ -915,7 +915,7 @@ DCFTSolver::rotate_orbitals()
     double **U_a_block = block_matrix(rowA, colA);
     memset(U_a_block[0], 0, sizeof(double)*rowA*colA);
     U_a_block = U_a->to_block_matrix();
-    schmidt(U_a_block, rowA, colA, outfile);
+    schmidt(U_a_block, rowA, colA, "outfile");
     U_a->set(U_a_block);
     free_block(U_a_block);
 
@@ -925,7 +925,7 @@ DCFTSolver::rotate_orbitals()
     double **U_b_block = block_matrix(rowB, colB);
     memset(U_b_block[0], 0, sizeof(double)*rowB*colB);
     U_b_block = U_b->to_block_matrix();
-    schmidt(U_b_block, rowB, colB, outfile);
+    schmidt(U_b_block, rowB, colB, "outfile");
     U_b->set(U_b_block);
     free_block(U_b_block);
 

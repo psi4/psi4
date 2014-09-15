@@ -25,12 +25,15 @@
     \brief Enter brief description of file here 
 */
 #include <cstdio>
-
+#include "psi4-dec.h"
+#include "libparallel/ParallelPrinter.h"
 namespace psi { namespace ccenergy {
 
-void status(const char *s, FILE *out)
+void status(const char *s, std::string out)
 {
-  fprintf(out, "     %-15s...complete\n", s);
-  fflush(out);
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+           boost::shared_ptr<OutFile>(new OutFile(out)));
+  printer->Printf( "     %-15s...complete\n", s);
+
 }
 }} // namespace psi::ccenergy

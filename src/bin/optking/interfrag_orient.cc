@@ -104,11 +104,11 @@ bool INTERFRAG::orient_fragment(double *dq, double *fq) {
   lbl[4] += "phi_A";
   lbl[5] += "phi_B";
 
-  fprintf(outfile,"\t---Interfragment coordinates between fragments %d and %d\n", A_index+1, B_index+1);
-  fprintf(outfile,"\t---Internal Coordinate Step in ANG or DEG, aJ/ANG or AJ/DEG ---\n");
-  fprintf(outfile,"\t ----------------------------------------------------------------------\n");
-  fprintf(outfile,"\t Coordinate             Previous        Force       Change         New \n");
-  fprintf(outfile,"\t ----------             --------       ------       ------       ------\n");
+  psi::outfile->Printf("\t---Interfragment coordinates between fragments %d and %d\n", A_index+1, B_index+1);
+  psi::outfile->Printf("\t---Internal Coordinate Step in ANG or DEG, aJ/ANG or AJ/DEG ---\n");
+  psi::outfile->Printf("\t ----------------------------------------------------------------------\n");
+  psi::outfile->Printf("\t Coordinate             Previous        Force       Change         New \n");
+  psi::outfile->Printf("\t ----------             --------       ------       ------       ------\n");
 
   cnt = 0;
   for (i=0; i<6; ++i) {
@@ -138,11 +138,11 @@ bool INTERFRAG::orient_fragment(double *dq, double *fq) {
         change *= 180.0/_pi;
         target *= 180.0/_pi;
       }
-      fprintf(outfile,"\t%-20s%12.5f%13.5f%13.5f%13.5f\n", lbl[i].c_str(), val, force, change, target);
+      psi::outfile->Printf("\t%-20s%12.5f%13.5f%13.5f%13.5f\n", lbl[i].c_str(), val, force, change, target);
       ++cnt;
     }
   }
-  fprintf(outfile,  "\t ----------------------------------------------------------------------\n");
+  psi::outfile->Printf(  "\t ----------------------------------------------------------------------\n");
 
   // copy B->geom in case this fails
   double **B_geom = B->g_geom();
@@ -187,10 +187,10 @@ bool INTERFRAG::orient_fragment(double *dq, double *fq) {
   if (ndB>2)
     zmat_point(ref_A[0], ref_B_final[0], ref_B_final[1], R_B2B3, B_angle, phi_B, ref_B_final[2]);
 
-  //fprintf(outfile,"ref_B original location\n");
-  //print_matrix(outfile, ref_B, ndB, 3);
-  //fprintf(outfile,"ref_B_final target\n");
-  //print_matrix(outfile, ref_B_final, ndB, 3);
+  //psi::outfile->Printf("ref_B original location\n");
+  //print_matrix("outfile", ref_B, ndB, 3);
+  //psi::outfile->Printf("ref_B_final target\n");
+  //print_matrix("outfile", ref_B_final, ndB, 3);
 
   // translate B->geom to place B1 in correct location
   for (xyz=0; xyz<3; ++xyz) {
@@ -206,8 +206,8 @@ bool INTERFRAG::orient_fragment(double *dq, double *fq) {
       for (xyz=0; xyz<3; ++xyz)
         ref_B[pts][xyz] += weightB[pts][i] * B_geom[i][xyz];
 
-  //fprintf(outfile,"ref_B with B1 corrected\n");
-  //print_matrix(outfile, ref_B, ndB, 3);
+  //psi::outfile->Printf("ref_B with B1 corrected\n");
+  //print_matrix("outfile", ref_B, ndB, 3);
 
   if (ndB>1) { /* move fragment B to place reference point B2 in correct location */
     /* Determine rotational angle and axis */
@@ -238,8 +238,8 @@ bool INTERFRAG::orient_fragment(double *dq, double *fq) {
           for (i=0; i<B->natom;++i)
             ref_B[pts][xyz] += weightB[pts][i] * B_geom[i][xyz];
     }
-    //fprintf(outfile,"ref_B with B2 corrected\n");
-    //print_matrix(outfile, ref_B, ndB, 3);
+    //psi::outfile->Printf("ref_B with B2 corrected\n");
+    //print_matrix("outfile", ref_B, ndB, 3);
   }
   if (ndB==3) { // move fragment B to place reference point B3 in correct location
     // Determine rotational angle and axis
@@ -248,7 +248,7 @@ bool INTERFRAG::orient_fragment(double *dq, double *fq) {
     // Calculate B3-B1-B2-B3' torsion angle
     v3d_tors(ref_B[2], ref_B[0], ref_B[1], ref_B_final[2], B_angle);
 
-    //fprintf(outfile,"B_angle: %15.10lf\n",B_angle);
+    //psi::outfile->Printf("B_angle: %15.10lf\n",B_angle);
     if (fabs(B_angle) > 1.0e-10) {
 
       // Move B to put B2 at origin
@@ -270,8 +270,8 @@ bool INTERFRAG::orient_fragment(double *dq, double *fq) {
           for (i=0; i<B->natom;++i)
             ref_B[pts][xyz] += weightB[pts][i] * B_geom[i][xyz];
     }
-    //fprintf(outfile,"ref_B with B3 corrected\n");
-    //print_matrix(outfile, ref_B, ndB, 3);
+    //psi::outfile->Printf("ref_B with B3 corrected\n");
+    //print_matrix("outfile", ref_B, ndB, 3);
   }
 
   // check to see if desired reference points were obtained
@@ -285,16 +285,16 @@ bool INTERFRAG::orient_fragment(double *dq, double *fq) {
   free_matrix(ref_B);
   free_matrix(ref_B_final);
 
-  fprintf(outfile,"\tDifference from target, |x_target - x_achieved| = %.2e\n",tval);
+  psi::outfile->Printf("\tDifference from target, |x_target - x_achieved| = %.2e\n",tval);
 
   if (tval > 1.0e-8) {
-    fprintf(outfile,"\tUnsuccessful at orienting fragments!\n");
-    fflush(outfile);
+    psi::outfile->Printf("\tUnsuccessful at orienting fragments!\n");
+    
     return false;
   }
   else {
-    fprintf(outfile,"\tSuccessfully oriented fragments.\n");
-    fflush(outfile);
+    psi::outfile->Printf("\tSuccessfully oriented fragments.\n");
+    
     B->set_geom(B_geom);
     free_matrix(B_geom);
     return true;

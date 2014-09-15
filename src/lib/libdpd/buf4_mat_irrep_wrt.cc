@@ -28,7 +28,7 @@
 #include <cstdlib>
 #include <libqt/qt.h>
 #include "dpd.h"
-
+#include "psi4-dec.h"
 namespace psi {
 
 /* dpd_buf4_mat_irrep_wrt(): Writes an entire irrep from disk into a dpd

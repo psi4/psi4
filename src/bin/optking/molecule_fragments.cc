@@ -109,19 +109,19 @@ void MOLECULE::fragmentize(void) {
   }
 
   for (i=0; i<nfrag; ++i) {
-    fprintf(outfile, "\tDetected frag with atoms: ");
+    psi::outfile->Printf( "\tDetected frag with atoms: ");
     int cnt = 0;
     for (j=0; j<natom; ++j) {
       if (frag_atoms[i][j]) {
-        fprintf(outfile," %d", j+1);
+        psi::outfile->Printf(" %d", j+1);
         ++cnt;
         if (cnt == 20 && (j != natom-1)) {
           cnt = 0;
-          fprintf(outfile,"\n\t");
+          psi::outfile->Printf("\n\t");
         }
       }
     }
-    fprintf(outfile,"\n"); 
+    psi::outfile->Printf("\n");
   }
 
   // Do nothing.  Atoms are all happily connected.
@@ -195,7 +195,7 @@ void MOLECULE::fragmentize(void) {
             }
           }
           // keep track of which fragments have now been connected
-          fprintf(outfile,"\tConnecting fragments %d and %d\n", f1+1, f2+1);
+          psi::outfile->Printf("\tConnecting fragments %d and %d\n", f1+1, f2+1);
           frag_connectivity[f1][f2] = frag_connectivity[f2][f1] = true;
         }
       }
@@ -216,10 +216,10 @@ void MOLECULE::fragmentize(void) {
               set_label[j] = ii;
           }
           if (Opt_params.print_lvl >= 2) {
-            fprintf(outfile,"set_label: ");
+            psi::outfile->Printf("set_label: ");
             for (int k=0; k<nfrag; ++k)
-              fprintf(outfile," %d", set_label[k]);
-            fprintf(outfile,"\n");
+              psi::outfile->Printf(" %d", set_label[k]);
+            psi::outfile->Printf("\n");
           }
         }
     
@@ -232,7 +232,7 @@ void MOLECULE::fragmentize(void) {
 
       if (!all_connected) {
         scale_dist += 0.4;
-        fprintf(outfile,"\tIncreasing scaling to %6.3f to connect fragments.\n", scale_dist);
+        psi::outfile->Printf("\tIncreasing scaling to %6.3f to connect fragments.\n", scale_dist);
       }
      } // end while(!all_connected)
      free_bool_matrix(frag_connectivity);
@@ -299,9 +299,9 @@ void MOLECULE::add_interfragment(void) {
   if (fragments.size() == 1) return;
 
   if (Opt_params.interfragment_mode == OPT_PARAMS::FIXED)
-    fprintf(outfile,"\tInterfragment coordinate reference points to be selected from closest atoms and neighbors.\n");
+    psi::outfile->Printf("\tInterfragment coordinate reference points to be selected from closest atoms and neighbors.\n");
   else if (Opt_params.interfragment_mode == OPT_PARAMS::PRINCIPAL_AXES)
-    fprintf(outfile,"\tInterfragment coordinate reference points to be determined by principal axes.\n");
+    psi::outfile->Printf("\tInterfragment coordinate reference points to be determined by principal axes.\n");
 
   for (int frag_i=0; frag_i<(fragments.size()-1); ++frag_i) {
 
@@ -332,7 +332,7 @@ void MOLECULE::add_interfragment(void) {
       }
       ndA = ndB = 1;
 
-      fprintf(outfile,"\tNearest atoms on two fragments are %d and %d.\n",
+      psi::outfile->Printf("\tNearest atoms on two fragments are %d and %d.\n",
         g_atom_offset(frag_i)+A1+1, g_atom_offset(frag_i+1)+B1+1);
 
       // A2 is bonded to A1, but A2-A1-B1 must not be collinear
@@ -348,7 +348,7 @@ void MOLECULE::add_interfragment(void) {
         }
       }
       if (ndA == 1 && nA > 1) {
-        fprintf(outfile, "Fragment A has >1 atoms but no non-collinear atom found bonded to %d", A1+1);
+        psi::outfile->Printf( "Fragment A has >1 atoms but no non-collinear atom found bonded to %d", A1+1);
         sprintf(error_msg, "Fragment A has >1 atoms but no non-collinear atom found bonded to %d", A1+1);
         INTCO_EXCEPT(error_msg, true);
       }
@@ -366,7 +366,7 @@ void MOLECULE::add_interfragment(void) {
         }
       }
       if (ndB == 1 && nB > 1) {
-        fprintf(outfile, "Fragment B has >1 atoms but no non-collinear atom found bonded to %d", B1+1);
+        psi::outfile->Printf( "Fragment B has >1 atoms but no non-collinear atom found bonded to %d", B1+1);
         sprintf(error_msg, "Fragment B has >1 atoms but no non-collinear atom found bonded to %d", B1+1);
         INTCO_EXCEPT(error_msg,true);
       }
@@ -440,10 +440,10 @@ void MOLECULE::add_interfragment(void) {
       weight_B[2][B3] = 1.0;
   
       if (Opt_params.print_lvl >= 3) {
-        fprintf(outfile, "\tReference points are linear combination on fragment A\n");
-        print_matrix(outfile, weight_A, 3, nA);
-        fprintf(outfile, "\tReference points are linear combination on fragment B\n");
-        print_matrix(outfile, weight_B, 3, nB);
+        psi::outfile->Printf( "\tReference points are linear combination on fragment A\n");
+        print_matrix("outfile", weight_A, 3, nA);
+        psi::outfile->Printf( "\tReference points are linear combination on fragment B\n");
+        print_matrix("outfile", weight_B, 3, nB);
       }
 
       INTERFRAG * one_IF = new INTERFRAG(Afrag, Bfrag, frag_i, frag_i+1, weight_A, weight_B, ndA, ndB);
@@ -477,7 +477,7 @@ void MOLECULE::add_interfragment(void) {
     }
   }
 
-  fflush(outfile);
+  
 }
 
 // Check to see if displacement along any of the interfragment modes breakes
@@ -487,8 +487,8 @@ void MOLECULE::freeze_interfragment_asymm(void) {
   double **coord_orig = g_geom_2D();
   double disp_size = 0.1;
 
-  fprintf(outfile,"\tChecking interfragment coordinates for ones that break symmetry.\n");
-  fflush(outfile);
+  psi::outfile->Printf("\tChecking interfragment coordinates for ones that break symmetry.\n");
+  
 
   for (int I=0; I<interfragments.size(); ++I) {
     double **B = interfragments[I]->compute_B(); // ->g_nintco() X (3*atom A)+3(natom_B)
@@ -519,10 +519,10 @@ void MOLECULE::freeze_interfragment_asymm(void) {
   // not implemented yet
 #endif
       if (symmetric_intco)
-        fprintf(outfile,"\tInterfragment coordinate %d, %d is symmetric.\n", I+1, i+1);
+        psi::outfile->Printf("\tInterfragment coordinate %d, %d is symmetric.\n", I+1, i+1);
       else {
-        fprintf(outfile,"\tInterfragment coordinate %d, %d breaks symmetry - freezing.\n", I+1, i+1);
-        fflush(outfile);
+        psi::outfile->Printf("\tInterfragment coordinate %d, %d breaks symmetry - freezing.\n", I+1, i+1);
+        
         interfragments[I]->freeze(i);
       }
       free(coord);

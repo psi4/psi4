@@ -35,9 +35,9 @@ namespace psi{ namespace mcscf{
 
 void SCF::iterate_scf_equations()
 {
-  fprintf(outfile,"\n\n  =========================================================================================");
-  fprintf(outfile,"\n         Cycle          Energy               D(Energy)            D(Density)            DIIS");
-  fprintf(outfile,"\n  ===========================================================================================");
+  outfile->Printf("\n\n  =========================================================================================");
+  outfile->Printf("\n         Cycle          Energy               D(Energy)            D(Density)            DIIS");
+  outfile->Printf("\n  ===========================================================================================");
 
 
   bool   converged  = false;
@@ -110,19 +110,19 @@ void SCF::iterate_scf_equations()
     double rms_dens = sqrt(delta_dens/(nso*nso*nci));
 
     //Print SCF energy,energy difference and RMS density change
-     fprintf(outfile,"\n  @SCF %4d  %20.12f %20.12f %20.12f",cycle,total_energy,total_energy-old_energy, rms_dens);
+     outfile->Printf("\n  @SCF %4d  %20.12f %20.12f %20.12f",cycle,total_energy,total_energy-old_energy, rms_dens);
   if(reference == tcscf){
-    fprintf(outfile,"\n    ci      = [");
+    outfile->Printf("\n    ci      = [");
     for(int I = 0 ; I < nci; ++I)
-      fprintf(outfile,"%11.8f%s",ci[I], I != nci -1 ? "," : "");
-    fprintf(outfile,"]");
+      outfile->Printf("%11.8f%s",ci[I], I != nci -1 ? "," : "");
+    outfile->Printf("]");
 
-    fprintf(outfile,"\n    ci_grad = [");
+    outfile->Printf("\n    ci_grad = [");
     for(int I = 0 ; I < nci; ++I)
-      fprintf(outfile,"%11.8f%s",ci_grad[I], I != nci -1 ? "," : "");
-    fprintf(outfile,"]");
+      outfile->Printf("%11.8f%s",ci_grad[I], I != nci -1 ? "," : "");
+    outfile->Printf("]");
   }
-  fflush(outfile);
+  
 
     if( (fabs(delta_energy) < options_.get_double("E_CONVERGENCE"))
           && (rms_dens < options_.get_double("D_CONVERGENCE") )){
@@ -135,49 +135,49 @@ void SCF::iterate_scf_equations()
     }
 
     if(cycle>options_.get_int("MAXITER")){
-      fprintf(outfile,"\n\n  The calculation did not converge in %d cycles",options_.get_int("MAXITER"));
-      fprintf(outfile,"\n  Quitting MCSCF.\n");
-      fflush(outfile);
+      outfile->Printf("\n\n  The calculation did not converge in %d cycles",options_.get_int("MAXITER"));
+      outfile->Printf("\n  Quitting MCSCF.\n");
+      
       exit(1);
     }
 
     cycle++;
   }
 
-  fprintf(outfile,"\n  =========================================================================================");
+  outfile->Printf("\n  =========================================================================================");
 
-  fprintf(outfile,"\n\n%6c* SCF total energy   = %20.12f\n",' ',new_energy);
+  outfile->Printf("\n\n%6c* SCF total energy   = %20.12f\n",' ',new_energy);
 
 
   if(reference == tcscf){
-    fprintf(outfile,"\n\n      CI coefficients  = [");
+    outfile->Printf("\n\n      CI coefficients  = [");
     for(int I = 0 ; I < nci; ++I)
-      fprintf(outfile,"%12.9f%s",ci[I], I != nci -1 ? "," : "");
-    fprintf(outfile,"]");
+      outfile->Printf("%12.9f%s",ci[I], I != nci -1 ? "," : "");
+    outfile->Printf("]");
   }
 
   if(moinfo_scf->get_guess_occupation()){
-    fprintf(outfile,"\n  Final occupation");
-    fprintf(outfile,"\n  docc = [");
+    outfile->Printf("\n  Final occupation");
+    outfile->Printf("\n  docc = [");
     for(int h = 0; h < nirreps; ++h){
-      fprintf(outfile," %d",docc[h]);
-      if(h==! nirreps)fprintf(outfile,", ");
+      outfile->Printf(" %d",docc[h]);
+      if(h==! nirreps)outfile->Printf(", ");
     }
-    fprintf(outfile," ]");
-    fprintf(outfile,"\n  actv = [");
+    outfile->Printf(" ]");
+    outfile->Printf("\n  actv = [");
     for(int h = 0; h < nirreps; ++h){
-      fprintf(outfile," %d",actv[h]);
-      if(h==! nirreps)fprintf(outfile,", ");
+      outfile->Printf(" %d",actv[h]);
+      if(h==! nirreps)outfile->Printf(", ");
     }
-    fprintf(outfile," ]");
+    outfile->Printf(" ]");
     int sym = 0;
     for(int h = 0; h < nirreps; ++h)
       for(int n = 0; n < actv[h]; ++n) sym ^= h;
-    fprintf(outfile,"\n  sym  = %d",sym);
+    outfile->Printf("\n  sym  = %d",sym);
   }
 
-  fprintf(outfile,"\n\n  End of SCF");
-  fflush(outfile);
+  outfile->Printf("\n\n  End of SCF");
+  
 }
 
 }} /* End Namespaces */

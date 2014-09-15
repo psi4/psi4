@@ -137,9 +137,9 @@ int clag(int argc, char **argv)
   /*
   ** print out header information
   */
-  fprintf(outfile,"CLAG: PROGRAM TO FORM LAGRANGIAN AND CALCULATE CI ENERGY\n");
-  fprintf(outfile,"WRITTEN BY DAVID SHERRILL, BRIAN HOFFMAN, ");
-  fprintf(outfile,"AND MATT LEININGER\n"); 
+  outfile->Printf("CLAG: PROGRAM TO FORM LAGRANGIAN AND CALCULATE CI ENERGY\n");
+  outfile->Printf("WRITTEN BY DAVID SHERRILL, BRIAN HOFFMAN, ");
+  outfile->Printf("AND MATT LEININGER\n"); 
 
   /*
   ** calculate some needed numbers 
@@ -195,17 +195,17 @@ int clag(int argc, char **argv)
   twoel_ints = init_array(ntri2); 
 
   if (print_lvl>4) {
-    fprintf(outfile, "\nOne-electron integrals\n");
+    outfile->Printf( "\nOne-electron integrals\n");
   }
 
   if (!iwl_rdone(oei_file, PSIF_MO_OEI, onel_ints, ntri, oei_erase,
             (print_lvl>4), outfile)) {
-    fprintf(outfile, "Failed to read one-electron integrals\n");
+    outfile->Printf( "Failed to read one-electron integrals\n");
     throw PsiException("CLAG",__FILE__,__LINE__);
   }
 
   if (print_lvl>4) {
-    fprintf(outfile, "\nTwo-electron integrals\n");
+    outfile->Printf( "\nTwo-electron integrals\n");
   }
 
   iwl_rdtwo(tei_file, twoel_ints, ioff, nmo, 0, 0, (print_lvl>4), outfile); 
@@ -313,7 +313,7 @@ int clag(int argc, char **argv)
       IndPairs, nmo, nocc, nmo-nocc, Zvec, X_tilde);
 
     if (print_lvl > 1) {
-      fprintf(outfile,"Z vector:\n");
+      outfile->Printf("Z vector:\n");
       print_array(Zvec,nmo,outfile);
     }
 
@@ -421,9 +421,9 @@ double **rdopdm(int nbf, int print_lvl, int opdm_file)
   }
 
   if (print_lvl > 2) {
-    fprintf(outfile,"One-Particle Density Matrix\n");
+    outfile->Printf("One-Particle Density Matrix\n");
     print_mat(opdm, nbf, nbf, outfile); 
-    fprintf(outfile,"\n\n"); 
+    outfile->Printf("\n\n"); 
   }
 
   psio_close(opdm_file,1);
@@ -463,9 +463,9 @@ double *rdtpdm(int nbf, int print_lvl, int tpdm_file)
                 (print_lvl>5), outfile);
   
  if (print_lvl > 3) {
-   fprintf(outfile,"Two-Particle Density Matrix\n");
+   outfile->Printf("Two-Particle Density Matrix\n");
    print_array(tpdm, sqnbf, outfile);
-   fprintf(outfile,"\n\n"); 
+   outfile->Printf("\n\n"); 
    }
 
  iwl_buf_close(&TBuff, 1);
@@ -486,7 +486,7 @@ void trace_opdm(double **opdm, int nbf)
     sum += opdm[i][i];
   }
 
-  fprintf(outfile, "\n\tTrace of one-pdm = %16.12lf\n", sum);
+  outfile->Printf( "\n\tTrace of one-pdm = %16.12lf\n", sum);
 
 }
 
@@ -508,7 +508,7 @@ void trace_tpdm(double *tpdm, int nbf)
     }
   }
 
-  fprintf(outfile, "\tTrace of two-pdm = %16.12lf\n", sum);
+  outfile->Printf( "\tTrace of two-pdm = %16.12lf\n", sum);
 
 }
 

@@ -86,8 +86,8 @@ PsiReturnType scf_dummy(Options & options)
         energy = 0.0;
     }
 
-    fprintf(outfile,"\tWarning: Constructing empty scf wavefunction object.\n");
-    fprintf(outfile,"\tLoading _some_ variables from chkpt (not all coded yet).\n");
+    outfile->Printf("\tWarning: Constructing empty scf wavefunction object.\n");
+    outfile->Printf("\tLoading _some_ variables from chkpt (not all coded yet).\n");
 
     scf->load_values_from_chkpt();
 

@@ -3,7 +3,6 @@
 
 .. index::
    triple: setting; keywords; anharmonicity()
-   see: anharmonicity()
 
 .. _`sec:anharmonicity()`:
 

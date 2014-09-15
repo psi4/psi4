@@ -27,7 +27,8 @@
 #include <unistd.h>
 #include <cstdio>
 #include "exception.h"
-
+#include "psi4-dec.h"
+#include "libparallel/ParallelPrinter.h"
 namespace psi{
 
 PSIOManager::PSIOManager() : default_path_("/tmp/")
@@ -109,50 +110,51 @@ void PSIOManager::move_file(const std::string& old_full_path, const std::string&
     files_.erase(old_full_path);
     mirror_to_disk();
 }
-void PSIOManager::print(FILE* out)
+void PSIOManager::print(std::string out)
 {
-    fprintf(out, "                    --------------------------------\n");
-    fprintf(out, "                    ==> PSI4 Current File Status <==\n");
-    fprintf(out, "                    --------------------------------\n");
-    fprintf(out, "\n");
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            boost::shared_ptr<OutFile>(new OutFile(out)));
+    printer->Printf("                    --------------------------------\n");
+    printer->Printf("                    ==> PSI4 Current File Status <==\n");
+    printer->Printf( "                    --------------------------------\n");
+    printer->Printf( "\n");
 
-    fprintf(out, "  Default Path: %s\n\n", default_path_.c_str());
+    printer->Printf( "  Default Path: %s\n\n", default_path_.c_str());
 
-    fprintf(out, "  Specific File Paths:\n\n");
-    fprintf(out, "  %-6s %-50s\n", "FileNo", "Path");
-    fprintf(out, "  ----------------------------------------------------------------------\n");
+    printer->Printf( "  Specific File Paths:\n\n");
+    printer->Printf( "  %-6s %-50s\n", "FileNo", "Path");
+    printer->Printf( "  ----------------------------------------------------------------------\n");
     for (std::map<int, std::string>::iterator it = specific_paths_.begin(); it != specific_paths_.end(); it++) {
-        fprintf(out, "  %-6d %-50s\n", (*it).first, (*it).second.c_str());
+        printer->Printf( "  %-6d %-50s\n", (*it).first, (*it).second.c_str());
     }
-    fprintf(out, "\n");
+    printer->Printf( "\n");
 
-    fprintf(out, "  Specific File Retentions:\n\n");
-    fprintf(out, "  %-6s \n", "FileNo");
-    fprintf(out, "  -------\n");
+    printer->Printf( "  Specific File Retentions:\n\n");
+    printer->Printf( "  %-6s \n", "FileNo");
+    printer->Printf( "  -------\n");
     for (std::set<int>::iterator it = specific_retains_.begin(); it != specific_retains_.end(); it++) {
-        fprintf(out, "  %-6d\n", (*it));
+        printer->Printf( "  %-6d\n", (*it));
     }
-    fprintf(out, "\n");
+    printer->Printf( "\n");
 
-    fprintf(out, "  Current File Retention Rules:\n\n");
+    printer->Printf( "  Current File Retention Rules:\n\n");
 
-    fprintf(out, "  %-6s \n", "Filename");
-    fprintf(out, "  --------------------------------------------------\n");
+    printer->Printf( "  %-6s \n", "Filename");
+    printer->Printf( "  --------------------------------------------------\n");
     for (std::set<std::string>::iterator it = retained_files_.begin(); it != retained_files_.end(); it++) {
-        fprintf(out, "  %-50s\n", (*it).c_str());
+        printer->Printf( "  %-50s\n", (*it).c_str());
     }
-    fprintf(out, "\n");
+    printer->Printf( "\n");
 
-    fprintf(out, "  Current Files:\n\n");
+    printer->Printf( "  Current Files:\n\n");
 
-    fprintf(out, "  %-50s%-9s%-13s\n", "Filename", "Status", "Fate");
-    fprintf(out, "  ----------------------------------------------------------------------\n");
+    printer->Printf( "  %-50s%-9s%-13s\n", "Filename", "Status", "Fate");
+    printer->Printf( "  ----------------------------------------------------------------------\n");
     for (std::map<std::string, bool>::iterator it = files_.begin(); it != files_.end(); it++) {
-        fprintf(out, "  %-50s%-9s%-13s\n", (*it).first.c_str(), ((*it).second ? "OPEN": "CLOSED"), \
+        printer->Printf( "  %-50s%-9s%-13s\n", (*it).first.c_str(), ((*it).second ? "OPEN": "CLOSED"), \
             (retained_files_.count((*it).first) == 0 ? "DEREZZ" : "SAVE"));
     }
-    fprintf(out, "\n");
-    fflush(out);
+    printer->Printf( "\n");
 }
 void PSIOManager::mirror_to_disk()
 {

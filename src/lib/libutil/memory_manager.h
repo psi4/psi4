@@ -61,7 +61,7 @@ public:
   MemoryManager(size_t maxcor = 256000000);
   ~MemoryManager();
 
-  void MemCheck(FILE *output);
+  void MemCheck(std::string output);
 
   size_t      get_FreeMemory()                   const {return(MaximumAllowed - CurrentAllocated);}
   size_t      get_CurrentAllocated()             const {return(CurrentAllocated);}

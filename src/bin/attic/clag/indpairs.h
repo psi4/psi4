@@ -70,11 +70,11 @@ class IndepPairs {
       int *ci2relpitz, int ignore_ras_ras, int ignore_fz);
     void set_part(int &count, int *ir_cnt, int *num_orbs_i, 
       int *num_orbs_j, int **orbs_i, int **orbs_j, int *ci2relpitz);
-    void print(FILE *outfile);
+    void print(std::string OutFileRMR);
     int get_num_pairs(void) { return npairs; }
     int * get_p_ptr(void) { return p; }
     int * get_q_ptr(void) { return q; }
-    void print_vec(double *arr, const char *label, FILE *outfile);
+    void print_vec(double *arr, const char *label, std::string OutFileRMR);
     int get_ir_num_pairs(int h) { return ir_npairs[h]; }
     int * get_ir_p_ptr(int h) { return ir_p[h]; }
     int * get_ir_q_ptr(int h) { return ir_q[h]; }
@@ -84,9 +84,9 @@ class IndepPairs {
     void put_irrep_vec(int irrep, double *ir_vec, double *tot_vec);
 
   private:
-    void print_selected(int num, int *parr, int *qarr, FILE *outfile);
+    void print_selected(int num, int *parr, int *qarr, std::string OutFileRMR);
     void print_selected(int num, int *parr, int *qarr,
-                        int *prel, int *qrel, FILE *outfile);
+                        int *prel, int *qrel, std::string OutFileRMR);
 
 };
 

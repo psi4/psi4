@@ -108,17 +108,17 @@ mp2(Options & options)
 
   mo.Emp2 = energy();
 
-  fprintf(outfile,"\n");
-  fprintf(outfile,"\tScaled_OS correlation energy      = %20.15f\n",mo.escsmp2_os);
-  fprintf(outfile,"\tScaled_SS correlation energy      = %20.15f\n",mo.escsmp2_ss);
-  fprintf(outfile,"\tSCS-MP2 correlation energy        = %20.15f\n",mo.escsmp2_os+mo.escsmp2_ss);
-  fprintf(outfile,"      * SCS-MP2 total energy              = %20.15f\n",mo.Escf+mo.escsmp2_os+mo.escsmp2_ss);
+  outfile->Printf("\n");
+  outfile->Printf("\tScaled_OS correlation energy      = %20.15f\n",mo.escsmp2_os);
+  outfile->Printf("\tScaled_SS correlation energy      = %20.15f\n",mo.escsmp2_ss);
+  outfile->Printf("\tSCS-MP2 correlation energy        = %20.15f\n",mo.escsmp2_os+mo.escsmp2_ss);
+  outfile->Printf("      * SCS-MP2 total energy              = %20.15f\n",mo.Escf+mo.escsmp2_os+mo.escsmp2_ss);
 
-  fprintf(outfile,"\n\tOpposite-spin correlation energy  = %20.15f\n",mo.emp2_os);
-  fprintf(outfile,"\tSame-spin correlation energy      = %20.15f\n",mo.emp2_ss);
-  fprintf(outfile,"\tMP2 correlation energy            = %20.15f\n",mo.Emp2);
-  fprintf(outfile,"      * MP2 total energy                  = %20.15f\n\n",mo.Escf + mo.Emp2);
-  fflush(outfile);
+  outfile->Printf("\n\tOpposite-spin correlation energy  = %20.15f\n",mo.emp2_os);
+  outfile->Printf("\tSame-spin correlation energy      = %20.15f\n",mo.emp2_ss);
+  outfile->Printf("\tMP2 correlation energy            = %20.15f\n",mo.Emp2);
+  outfile->Printf("      * MP2 total energy                  = %20.15f\n\n",mo.Escf + mo.Emp2);
+  
 
   Process::environment.globals["SCS-MP2 SAME-SPIN CORRELATION ENERGY"] = mo.escsmp2_ss;
   Process::environment.globals["SCS-MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = mo.escsmp2_os;
@@ -206,12 +206,12 @@ void init_io()
 
 void title(void)
 {
-  fprintf(outfile, "\t\t\t*************************\n");
-  fprintf(outfile, "\t\t\t*                       *\n");
-  fprintf(outfile, "\t\t\t*          MP2          *\n");
-  fprintf(outfile, "\t\t\t*                       *\n");
-  fprintf(outfile, "\t\t\t*************************\n");
-  fflush(outfile);
+  outfile->Printf( "\t\t\t*************************\n");
+  outfile->Printf( "\t\t\t*                       *\n");
+  outfile->Printf( "\t\t\t*          MP2          *\n");
+  outfile->Printf( "\t\t\t*                       *\n");
+  outfile->Printf( "\t\t\t*************************\n");
+  
 }
 
 void init_ioff(void)

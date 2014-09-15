@@ -65,8 +65,8 @@ void check_ortho(struct L_Params *pL_params) {
         O[L][R] = tval;
       }
     }
-    fprintf(outfile,"\t<L|R> overlap matrix with ROHF quantities (-99 => 0 by symmetry)\n");
-    print_mat(O, params.nstates, params.nstates, outfile);
+    outfile->Printf("\t<L|R> overlap matrix with ROHF quantities (-99 => 0 by symmetry)\n");
+    print_mat(O, params.nstates, params.nstates, "outfile");
     free_block(O);
   }
 
@@ -91,8 +91,8 @@ void check_ortho(struct L_Params *pL_params) {
         O[L][R] = tval;
       }
     }
-    fprintf(outfile,"\t<L|R> overlap matrix with RHF quantities (-99 => 0 by symmetry)\n"); 
-    print_mat(O, params.nstates, params.nstates, outfile);
+    outfile->Printf("\t<L|R> overlap matrix with RHF quantities (-99 => 0 by symmetry)\n"); 
+    print_mat(O, params.nstates, params.nstates, "outfile");
     free_block(O);
   }
   return;
@@ -184,8 +184,8 @@ double LR_overlap_RHF(int IRR, int L_index, int R_index) {
   global_dpd_->buf4_close(&L2);
 
   if (fabs(overlap2 - overlap3) > 1E-14) {
-    fprintf(outfile,"Bad anti-symmetry detected in RHF quantities\n");
-    fprintf(outfile,"error: %15.10lf\n",overlap2-overlap3);
+    outfile->Printf("Bad anti-symmetry detected in RHF quantities\n");
+    outfile->Printf("error: %15.10lf\n",overlap2-overlap3);
   }
 
   overlap += overlap2;

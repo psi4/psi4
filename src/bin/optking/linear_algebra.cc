@@ -223,7 +223,7 @@ double ** symm_matrix_inv(double **A, int dim, bool redundant) {
 
   if (! opt_symm_matrix_eig(A_evects, dim, evals) )
     throw(INTCO_EXCEPT("symm_matrix_inv : opt_symm_matrix_eig could not diagonalize"));
-  //for (i=0; i<dim; ++i) fprintf(outfile, "evals[%d] = %15.10lf\n", i, evals[i]);
+  //for (i=0; i<dim; ++i) psi::outfile->Printf( "evals[%d] = %15.10lf\n", i, evals[i]);
 
   for (i=0;i<dim;++i)
     det *= evals[i];

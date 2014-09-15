@@ -72,7 +72,7 @@
 #include <stdlib.h>
 
 #include <libmints/pointgrp.h>
-
+#include "libparallel/ParallelPrinter.h"
 using namespace std;
 using namespace psi;
 
@@ -148,24 +148,25 @@ IrreducibleRepresentation::init(int order, int d, const char *lab,
     }
 }
 
-void IrreducibleRepresentation::print(FILE *out) const
+void IrreducibleRepresentation::print(std::string out) const
 {
     if (!g)
         return;
-
+    boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+          boost::shared_ptr<OutFile>(new OutFile(out)));
     int i,d;
 
-    fprintf(out, "  %-5s", symb);
+    printer->Printf( "  %-5s", symb);
 
     for (i=0; i < g; i++)
-        fprintf(out, " %6.3f", character(i));
-    fprintf(out, " | %d t, %d R\n", ntrans_, nrot_);
+        printer->Printf( " %6.3f", character(i));
+    printer->Printf( " | %d t, %d R\n", ntrans_, nrot_);
 
     for (d=0; d < nproj(); d++) {
-        fprintf(out, "       ");
+        printer->Printf( "       ");
         for (i=0; i < g; i++)
-            fprintf(out, " %6.3f", p(d,i));
-        fprintf(out, "\n");
+            printer->Printf( " %6.3f", p(d,i));
+        printer->Printf( "\n");
     }
 }
 

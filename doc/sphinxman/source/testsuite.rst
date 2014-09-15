@@ -16,6 +16,7 @@ Sample inputs accessible through :ref:`interfaced executables
 .. toctree::
 
    autodoc_testsuite_dftd3
+   autodoc_testsuite_mrcc
    autodoc_testsuite_cfour
 
 Sample inputs for |PSIfour| as distributed are below.

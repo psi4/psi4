@@ -36,7 +36,7 @@
 #include "yoshimine.h"
 
 namespace psi {
-extern FILE* outfile;
+
 namespace transqt {
 
 #define MAXIOFF3 255
@@ -97,9 +97,9 @@ void transform_two_mp2r12a_gr(void)
 
 
   if(moinfo.iopen) {
-      fprintf(outfile,"\n\tThis system seems to be open-shell.\n");
-      fprintf(outfile,"MP2R12/A restricted transformations are available only ");
-      fprintf(outfile,"for closed-shell molecules.\n");
+      outfile->Printf("\n\tThis system seems to be open-shell.\n");
+      outfile->Printf("MP2R12/A restricted transformations are available only ");
+      outfile->Printf("for closed-shell molecules.\n");
       exit_io();
       exit(PSI_RETURN_FAILURE);
     }
@@ -132,30 +132,30 @@ void transform_two_mp2r12a_gr(void)
 
   /** Pre-sort the two-electron Integrals **/
   if (params.print_lvl) {
-    fprintf(outfile, "\n\tPre-sorting two-electron ints...\n\n");
-    fflush(outfile);
+    outfile->Printf( "\n\tPre-sorting two-electron ints...\n\n");
+    
   }
 
   yosh_init(&YBuffP, ntri, ntri, maxcor, maxcord, max_buckets,
-            first_tmp_file, tolerance, outfile);
+            first_tmp_file, tolerance, "outfile");
 
   if (print_lvl > 1) {
-    fprintf(outfile, "\tPresort");
-    yosh_print(&YBuffP, outfile);
-    fprintf(outfile, "\n");
-    fflush(outfile);
+    outfile->Printf( "\tPresort");
+    yosh_print(&YBuffP, "outfile");
+    outfile->Printf( "\n");
+    
   }
 
   yosh_init_buckets(&YBuffP);
 
   yosh_rdtwo(&YBuffP, params.src_tei_file, params.delete_src_tei, sopi, nirreps, ioff, 0,
              0, moinfo.fzc_density,
-             moinfo.fzc_operator, 1, (print_lvl > 5), outfile);
+             moinfo.fzc_operator, 1, (print_lvl > 5), "outfile");
 
   yosh_close_buckets(&YBuffP, 0);
 
   yosh_sort(&YBuffP, presort_file, 0, ioff, NULL, nso, ntri,
-            0, 1, 0, 0, 1, (print_lvl > 5), outfile);
+            0, 1, 0, 0, 1, (print_lvl > 5), "outfile");
 
   yosh_done(&YBuffP);  /* Pre-transform complete */
 
@@ -168,19 +168,19 @@ void transform_two_mp2r12a_gr(void)
       nvirt += orbspi[h] - clsdpi[h];
     }
 
-  fprintf(outfile,
+  outfile->Printf(
           "\tEntering MP2R12/A two-electron integral transformation...\n\n");
 
   iwl_buf_init(&PBuff, presort_file, tolerance, 1, 1);
   yosh_init(&YBuffJ, ndocc*nmo, ntri, maxcor, maxcord, max_buckets,
-            first_tmp_file, tolerance, outfile);
+            first_tmp_file, tolerance, "outfile");
 
   yosh_init_buckets(&YBuffJ);
 
-  fprintf(outfile, "\tHalf-transform");
-  yosh_print(&YBuffJ, outfile);
-  fprintf(outfile, "\n");
-  fflush(outfile);
+  outfile->Printf( "\tHalf-transform");
+  yosh_print(&YBuffJ, "outfile");
+  outfile->Printf( "\n");
+  
 
   A = block_matrix(nso,nso);
   B = block_matrix(nso,nso);
@@ -201,7 +201,7 @@ void transform_two_mp2r12a_gr(void)
                   pq = ioff[p] + q;
 
                   zero_arr(P_block,ntri);
-                  iwl_buf_rd(&PBuff, pq, P_block, ioff, ioff, 0, 0, outfile);
+                  iwl_buf_rd(&PBuff, pq, P_block, ioff, ioff, 0, 0, "outfile");
 
                  for(rsym=0; rsym < nirreps; rsym++) {
                       rfirst = first_so[rsym];
@@ -227,25 +227,25 @@ void transform_two_mp2r12a_gr(void)
                       yosh_wrt_arr_mp2r12a(&YBuffJ, p, q, pq, pqsym, A,
                                            rsym, focact, locact, first, last,
                                            1, occ, ioff3,
-                                           (print_lvl >4), outfile);
+                                           (print_lvl >4), "outfile");
                    }
                 }
             }
         }
     }
 
-  fprintf(outfile, "\tSorting half-transformed integrals...\n");
+  outfile->Printf( "\tSorting half-transformed integrals...\n");
 
   iwl_buf_close(&PBuff, keep_presort);
   yosh_flush(&YBuffJ);
   yosh_close_buckets(&YBuffJ,0);
   yosh_sort(&YBuffJ, jfile, 0, ioff3, ioff, nso, ntri, 0, 1, 1, nmo,
-            0, (print_lvl > 5), outfile);
+            0, (print_lvl > 5), "outfile");
   yosh_done(&YBuffJ);
 
-  fprintf(outfile, "\tFinished half-transform...\n");
-  fprintf(outfile, "\tWorking on second half...\n");
-  fflush(outfile);
+  outfile->Printf( "\tFinished half-transform...\n");
+  outfile->Printf( "\tWorking on second half...\n");
+  
 
   iwl_buf_init(&JBuff, jfile, tolerance, 1, 1);
   iwl_buf_init(&MBuff, mfile, tolerance, 0, 0);
@@ -264,7 +264,7 @@ void transform_two_mp2r12a_gr(void)
                   kl = ioff3[k] + l;
 
                   zero_arr(J_block, ntri);
-                  iwl_buf_rd(&JBuff, kl, J_block, ioff3, ioff, 1, 0, outfile);
+                  iwl_buf_rd(&JBuff, kl, J_block, ioff3, ioff, 1, 0, "outfile");
 
                   for(psym=0; psym < nirreps; psym++) {
                       pfirst = first_so[psym];
@@ -288,7 +288,7 @@ void transform_two_mp2r12a_gr(void)
                             sopi[psym],orbspi[qsym],0);
                       iwl_buf_wrt_mp2r12a(&MBuff, k, l, kl, klsym, A, psym,
                                           focact, locact, first, last,
-                                          occ, 1, ioff3,print_integrals,outfile);
+                                          occ, 1, ioff3,print_integrals,"outfile");
                     }
                 }
             }
@@ -303,10 +303,10 @@ void transform_two_mp2r12a_gr(void)
   iwl_buf_flush(&MBuff, 1);
   iwl_buf_close(&MBuff, 1);
 
-  fprintf(outfile, "\n\tTransformation finished.\n");
+  outfile->Printf( "\n\tTransformation finished.\n");
 
-  fprintf(outfile, "\tTwo-electron integrals written to file%d.\n",mfile);
-  fflush(outfile);
+  outfile->Printf( "\tTwo-electron integrals written to file%d.\n",mfile);
+  
 
   return;
 }
@@ -409,8 +409,8 @@ void make_arrays(double ****Cdocc,
 
   /* Organize MOs for docc set only */
   if(params.print_mos) {
-      fprintf(outfile,"\n\tSCF Eigenvectors (Occupied Set):\n");
-      fprintf(outfile,  "\t--------------------------------\n");
+      outfile->Printf("\n\tSCF Eigenvectors (Occupied Set):\n");
+      outfile->Printf(  "\t--------------------------------\n");
     }
   *Cdocc = (double ***) malloc(moinfo.nirreps * sizeof(double **));
   for(h=0; h < moinfo.nirreps; h++) {
@@ -425,10 +425,10 @@ void make_arrays(double ****Cdocc,
                 }
             }
           if(params.print_mos) {
-              fprintf(outfile,"\n\tDoubly Occupied Orbitals for Irrep %s\n",
+              outfile->Printf("\n\tDoubly Occupied Orbitals for Irrep %s\n",
                       moinfo.labels[h]);
               print_mat((*Cdocc)[h],moinfo.sopi[h],(*active_docc)[h],
-                        outfile);
+                        "outfile");
             }
         }
   }

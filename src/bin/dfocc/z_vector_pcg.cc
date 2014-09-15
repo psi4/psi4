@@ -30,9 +30,9 @@ namespace psi{ namespace dfoccwave{
 
 void DFOCC::z_vector_pcg()
 { 
-//fprintf(outfile,"\n z_vector_pcg is starting... \n"); fflush(outfile);
-    fprintf(outfile,"\tSolving orbital Z-vector equations...\n");
-    fflush(outfile);
+//outfile->Printf("\n z_vector_pcg is starting... \n"); 
+    outfile->Printf("\tSolving orbital Z-vector equations...\n");
+    
 
     SharedTensor2d K, L;
 
@@ -109,11 +109,11 @@ if (reference_ == "RESTRICTED") {
 
     // If LINEQ FAILED!
     if (pcg_conver == 0) {
-        fprintf(outfile,"\tWarning!!! PCG did NOT converged in %2d iterations. \n", itr_pcg);
-        fprintf(outfile,"\tI will solve the z-vector equation with a direct method.\n");
-        fflush(outfile);
+        outfile->Printf("\tWarning!!! PCG did NOT converged in %2d iterations. \n", itr_pcg);
+        outfile->Printf("\tI will solve the z-vector equation with a direct method.\n");
+        
         z_vector();
-        fflush(outfile);
+        
     } // end if pcg_conver = 0
 
 
@@ -266,15 +266,15 @@ else if (reference_ == "UNRESTRICTED") {
 
     // If LINEQ FAILED!
     if (pcg_conver == 0) {
-        fprintf(outfile,"\tWarning!!! PCG did NOT converged in %2d iterations. \n", itr_pcg);
-        fprintf(outfile,"\tI will solve the z-vector equation with a direct method.\n");
-        fflush(outfile);
+        outfile->Printf("\tWarning!!! PCG did NOT converged in %2d iterations. \n", itr_pcg);
+        outfile->Printf("\tI will solve the z-vector equation with a direct method.\n");
+        
         z_vector();
-        fflush(outfile);
+        
     } 
 
 }// end if (reference_ == "UNRESTRICTED") 
- //fprintf(outfile,"\n z_vector_pcg done. \n"); fflush(outfile);
+ //outfile->Printf("\n z_vector_pcg done. \n"); 
 }// end z_vector_pcg
 
 //=======================================================
@@ -292,17 +292,16 @@ void DFOCC::pcg_solver_rhf()
     double b_pcgA = 0.0;
     pcg_conver = 1; // assuming pcg will converge
 
-fprintf(outfile, "\n\t            PCG Solver \n");
-fprintf(outfile, "\t   ------------------------------ \n");
-fprintf(outfile, "\tIter     RMS Z Vector        RMS Residual  \n");
-fprintf(outfile, "\t----    ---------------    ---------------\n");
-fflush(outfile);
+outfile->Printf( "\n\t            PCG Solver \n");
+outfile->Printf( "\t   ------------------------------ \n");
+outfile->Printf( "\tIter     RMS Z Vector        RMS Residual  \n");
+outfile->Printf( "\t----    ---------------    ---------------\n");
 
  // Head of the loop
  do
  {
 
-    //fprintf(outfile, "pcg iter: %3d \n", itr_pcg); fflush(outfile);
+    //outfile->Printf( "pcg iter: %3d \n", itr_pcg); 
     // Build sigma
     sigma_rhf(sigma_pcgA, p_pcgA);
 
@@ -368,8 +367,8 @@ fflush(outfile);
    itr_pcg++;
 
    // Print
-   fprintf(outfile,"\t%3d     %12.2e     %12.2e\n",itr_pcg,rms_pcg,rms_r_pcgA);
-   fflush(outfile);
+   outfile->Printf("\t%3d     %12.2e     %12.2e\n",itr_pcg,rms_pcg,rms_r_pcgA);
+   
 
    // If we exceed maximum number of iteration, break the loop
    if (itr_pcg >= pcg_maxiter) {
@@ -383,8 +382,8 @@ fflush(outfile);
  while(fabs(rms_pcg) >= tol_pcg || fabs(rms_r_pcgA) >= tol_pcg);  
 
     // Converged?
-    fprintf(outfile,"\n");
-    fflush(outfile);
+    outfile->Printf("\n");
+    
     //residualA->print();
 
 }// end pcg_sover_rhf
@@ -404,16 +403,16 @@ void DFOCC::pcg_solver_uhf()
     double rms_residual = 0.0;
     pcg_conver = 1; // assuming pcg will converge
 
-fprintf(outfile, "\n\t            PCG Solver \n");
-fprintf(outfile, "\t   ------------------------------ \n");
-fprintf(outfile, "\tIter     RMS Z Vector        RMS Residual  \n");
-fprintf(outfile, "\t----    ---------------    ---------------\n");
-fflush(outfile);
+outfile->Printf( "\n\t            PCG Solver \n");
+outfile->Printf( "\t   ------------------------------ \n");
+outfile->Printf( "\tIter     RMS Z Vector        RMS Residual  \n");
+outfile->Printf( "\t----    ---------------    ---------------\n");
+
 
  // Head of the loop
  do
  {
-    //fprintf(outfile, "pcg iter: %3d \n", itr_pcg); fflush(outfile);
+    //outfile->Printf( "pcg iter: %3d \n", itr_pcg); 
     // Build sigma
     sigma_uhf(sigma_pcgA, sigma_pcgB, p_pcgA, p_pcgB);
 
@@ -503,8 +502,8 @@ fflush(outfile);
    itr_pcg++;
 
    // Print
-   fprintf(outfile,"\t%3d     %12.2e     %12.2e\n",itr_pcg,rms_pcg,rms_r_pcg);
-   fflush(outfile);
+   outfile->Printf("\t%3d     %12.2e     %12.2e\n",itr_pcg,rms_pcg,rms_r_pcg);
+   
 
    // If we exceed maximum number of iteration, break the loop
    if (itr_pcg >= pcg_maxiter) {
@@ -517,8 +516,8 @@ fflush(outfile);
  }
  while(fabs(rms_pcg) >= tol_pcg || fabs(rms_r_pcg) >= tol_pcg);  
     // Converged?
-    fprintf(outfile,"\n");
-    fflush(outfile);
+    outfile->Printf("\n");
+    
 
 }// end pcg_solver_uhf
 

@@ -88,8 +88,8 @@ SBlockVector& SBlockVector::operator= (const SBlockVector& src)
 void SBlockVector::check(const char* cstr)
 {
   if(!is_allocated()){
-    fprintf(outfile,"\n\n  Error: SBlockVector operation '%s' is using an uninitialized matrix",cstr);
-    fflush(outfile);
+    outfile->Printf("\n\n  Error: SBlockVector operation '%s' is using an uninitialized matrix",cstr);
+    
     exit(PSI_RETURN_FAILURE);
   }
 }

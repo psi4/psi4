@@ -19,7 +19,7 @@
 static int last_hrr_node = 0;      /* Global pointer to the last node on the HRR stack */
 static int last_vrr_node = 0;      /* Global pointer to the last node on the VRR stack */
 
-extern FILE *outfile, *hrr_header, *init_code;
+extern FILE* outfile, *hrr_header, *init_code;
 extern int libint_stack_size[MAX_AM/2+1];
 extern LibintParams_t Params;
 

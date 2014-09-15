@@ -22,7 +22,8 @@
 
 #include <cstdio>
 #include <cstdlib>
-
+#include "psi4-dec.h"
+#include "libparallel/ParallelPrinter.h"
 /*!
 ** \file
 ** \brief Print a matrix to a file in a formatted style
@@ -43,9 +44,11 @@ namespace psi {
 **
 ** \ingroup QT
 */
-int mat_print(double **matrix, int rows, int cols, FILE *outfile)
+int mat_print(double **matrix, int rows, int cols, std::string out)
 {
-  div_t fraction;
+   boost::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+            boost::shared_ptr<OutFile>(new OutFile(out)));
+   div_t fraction;
   int i,j;
   int cols_per_page, num_pages, last_page, page, first_col;
 
@@ -60,38 +63,38 @@ int mat_print(double **matrix, int rows, int cols, FILE *outfile)
   for(page=0; page < num_pages; page++) {
       first_col = page*cols_per_page;
 
-      fprintf(outfile,"\n      ");
+      outfile->Printf("\n      ");
       for(i=first_col; i < first_col+cols_per_page; i++) 
-          fprintf(outfile,"         %5d        ",i);
+          printer->Printf("         %5d        ",i);
 
-      fprintf (outfile,"\n");
+      printer->Printf("\n");
       for(i=0; i < rows; i++) {
-          fprintf(outfile,"\n%5d ",i);
+          printer->Printf("\n%5d ",i);
 
           for(j=first_col; j < first_col+cols_per_page; j++)        
-              fprintf (outfile,"%22.15f",matrix[i][j]);
+              printer->Printf("%22.15f",matrix[i][j]);
         }
 
-      fprintf (outfile,"\n");
+      printer->Printf("\n");
     }
 
   /* Now print the remaining columns */
   if(last_page) {
       first_col = page*cols_per_page;
 
-      fprintf(outfile,"\n      ");
+      printer->Printf("\n      ");
       for(i=first_col; i < first_col+last_page; i++) 
-          fprintf(outfile,"         %5d        ",i);
+          printer->Printf("         %5d        ",i);
       
-      fprintf (outfile,"\n");
+      printer->Printf("\n");
       for(i=0; i < rows; i++) {
-	  fprintf(outfile,"\n%5d ",i);
+	  printer->Printf("\n%5d ",i);
 
 	  for(j=first_col; j < first_col+last_page; j++)
-	      fprintf (outfile,"%22.15f",matrix[i][j]);
+	      printer->Printf("%22.15f",matrix[i][j]);
 	}
 
-      fprintf (outfile,"\n");
+      printer->Printf("\n");
     }
 
   return 0;

@@ -30,7 +30,7 @@
 #include "matrix.h"
 
 namespace psi{
-    extern FILE *outfile;
+    
     namespace psimrcc{
 
 using namespace std;
@@ -69,8 +69,8 @@ double CCMatrix::get_two_address_element(short p, short q)
     // Case C
     return(matrix[left->get_tuple_irrep(p)][left->get_tuple_rel_index(p)][right->get_tuple_rel_index(q)]);
   }
-  fprintf(outfile,"\n\n\tdouble CCMatrix::get_two_address_element(int p, int q) Critical Error!!!");
-  fflush(outfile);
+  outfile->Printf("\n\n\tdouble CCMatrix::get_two_address_element(int p, int q) Critical Error!!!");
+  
   exit(1);
   return(0.0);
 }
@@ -192,8 +192,8 @@ double CCMatrix::get_four_address_element(short p, short q, short r, short s)
     // Case C
     return(matrix[right->get_tuple_irrep(s)][left->get_tuple_rel_index(p,q,r)][right->get_tuple_rel_index(s)]);
   }
-  fprintf(outfile,"\n\n\tdouble CCMatrix::get_four_address_element(int p, int q, int r, int s) Critical Error!!!");
-  fflush(outfile);
+  outfile->Printf("\n\n\tdouble CCMatrix::get_four_address_element(int p, int q, int r, int s) Critical Error!!!");
+  
   exit(1);
   return(0.0);
 }
@@ -671,13 +671,13 @@ double CCMatrix::get_two_address_element_check(short p, short q)
 {
   if(left->get_nelements() == 2){
     // Case A
-    fprintf(outfile,"double CCMatrix::get_two_address_element_check(int p, int q) Case A non implemented");
-    fflush(outfile);
+    outfile->Printf("double CCMatrix::get_two_address_element_check(int p, int q) Case A non implemented");
+    
     exit(1);
   }else if (left->get_nelements() == 0){
     // Case B
-    fprintf(outfile,"double CCMatrix::get_two_address_element_check(int p, int q) Case B non implemented");
-    fflush(outfile);
+    outfile->Printf("double CCMatrix::get_two_address_element_check(int p, int q) Case B non implemented");
+    
     exit(1);
   }else if (left->get_nelements() == 1){
     // Case C
@@ -685,8 +685,8 @@ double CCMatrix::get_two_address_element_check(short p, short q)
       return(matrix[left->get_tuple_irrep(p)][left->get_tuple_rel_index(p)][right->get_tuple_rel_index(q)]);
     else return(0.0);
   }
-  fprintf(outfile,"\n\n\tdouble CCMatrix::get_two_address_element_check(int p, int q) Critical Error!!!");
-  fflush(outfile);
+  outfile->Printf("\n\n\tdouble CCMatrix::get_two_address_element_check(int p, int q) Critical Error!!!");
+  
   exit(1);
   return(0.0);
 }

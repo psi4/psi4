@@ -27,7 +27,7 @@
 #include "defines.h"
 #include "arrays.h"
 #include "dpd.h"
-
+#include "libparallel/ParallelPrinter.h"
 using namespace boost;
 using namespace psi;
 using namespace std;
@@ -432,30 +432,31 @@ double **SymBlockMatrix::to_block_matrix()
     return temp;
 }//
 
-void SymBlockMatrix::print(FILE *out)
+void SymBlockMatrix::print(std::string OutFileRMR)
 {
-    if (name_.length()) fprintf(out, "\n ## %s ##\n", name_.c_str());
+   boost::shared_ptr<psi::PsiOutStream> printer=(OutFileRMR=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(OutFileRMR,APPEND)));
+   if (name_.length()) printer->Printf( "\n ## %s ##\n", name_.c_str());
     for (int h=0; h<nirreps_; h++) {
       if (rowspi_[h] != 0 && colspi_[h] != 0) {
-	fprintf(out, "\n Irrep: %d\n", h+1);
-	print_mat(matrix_[h], rowspi_[h], colspi_[h], out);
-	fprintf(out, "\n");
+	printer->Printf( "\n Irrep: %d\n", h+1);
+	print_mat(matrix_[h], rowspi_[h], colspi_[h], OutFileRMR);
+	printer->Printf( "\n");
       }
     }
-    fflush(out);
 }//
 
 void SymBlockMatrix::print()
 {
-    if (name_.length()) fprintf(outfile, "\n ## %s ##\n", name_.c_str());
+    if (name_.length()) outfile->Printf( "\n ## %s ##\n", name_.c_str());
     for (int h=0; h<nirreps_; h++) {
       if (rowspi_[h] != 0 && colspi_[h] != 0) {
-	fprintf(outfile, "\n Irrep: %d\n", h+1);
-	print_mat(matrix_[h], rowspi_[h], colspi_[h], outfile);
-	fprintf(outfile, "\n");
+	outfile->Printf( "\n Irrep: %d\n", h+1);
+	print_mat(matrix_[h], rowspi_[h], colspi_[h], "outfile");
+	outfile->Printf( "\n");
       }
     }
-    fflush(outfile);
+    
 }//
 
 void SymBlockMatrix::set_to_identity()
@@ -498,7 +499,7 @@ bool SymBlockMatrix::load(PSIO* psio, int itap, const char *label, int dim)
     int ntri = 0.5 * dim * (dim  + 1);
     double *mybuffer=init_array(ntri);
     memset(mybuffer, 0.0, sizeof(double)*ntri);
-    IWL::read_one(psio, itap, label, mybuffer, ntri, 0, 0, outfile);
+    IWL::read_one(psio, itap, label, mybuffer, ntri, 0, 0, "outfile");
     
     double **Asq;
     Asq=block_matrix(dim,dim);
@@ -516,7 +517,7 @@ bool SymBlockMatrix::load(boost::shared_ptr<psi::PSIO> psio, int itap, const cha
     int ntri = 0.5 * dim * (dim  + 1);
     double *mybuffer=init_array(ntri);
     memset(mybuffer, 0.0, sizeof(double)*ntri);         
-    IWL::read_one(psio.get(), itap, label, mybuffer, ntri, 0, 0, outfile);
+    IWL::read_one(psio.get(), itap, label, mybuffer, ntri, 0, 0, "outfile");
     
     double **Asq;
     Asq=block_matrix(dim,dim);
@@ -583,12 +584,12 @@ void SymBlockMatrix::lineq_flin(SymBlockVector* Xvec, double *det)
     }
 }//
  
-//int pople(double **A, double *x, int dimen, int num_vecs, double tolerance, FILE *outfile, int print_lvl) 
+//int pople(double **A, double *x, int dimen, int num_vecs, double tolerance, std::string OutFileRMR, int print_lvl) 
 void SymBlockMatrix::lineq_pople(SymBlockVector* Xvec, int num_vecs, double cutoff)
 {
     for (int h=0; h<nirreps_; h++) {
       if (rowspi_[h]) {
-	pople(matrix_[h], Xvec->vector_[h], rowspi_[h], num_vecs, cutoff, outfile, 0);  
+	pople(matrix_[h], Xvec->vector_[h], rowspi_[h], num_vecs, cutoff, "outfile", 0);
       }
     }
 }//
@@ -632,7 +633,7 @@ void SymBlockMatrix::gs()
 {
     for (int h=0; h<nirreps_; h++) {
       if (rowspi_[h] != 0 && colspi_[h] != 0 ) {
-	schmidt(matrix_[h], rowspi_[h], colspi_[h], outfile);
+	schmidt(matrix_[h], rowspi_[h], colspi_[h], "outfile");
       }
     }
 }//
@@ -1143,32 +1144,33 @@ double SymBlockVector::trace()
     return value;
 }//
 
-void SymBlockVector::print(FILE *out)
+void SymBlockVector::print(std::string OutFileRMR)
 {
-    if (name_.length()) fprintf(out, "\n ## %s ##\n", name_.c_str());
+   boost::shared_ptr<psi::PsiOutStream> printer=(OutFileRMR=="outfile"?outfile:
+         boost::shared_ptr<OutFile>(new OutFile(OutFileRMR,APPEND)));
+   if (name_.length()) printer->Printf( "\n ## %s ##\n", name_.c_str());
     for (int h=0; h<nirreps_; h++) {
       if (dimvec_[h] != 0) {
-	fprintf(out, "\n Irrep: %d\n", h+1);
+	printer->Printf( "\n Irrep: %d\n", h+1);
 	for (int j=0; j<dimvec_[h]; ++j) {
-	  fprintf(out, "%20.14f \n", vector_[h][j]);
+	  printer->Printf( "%20.14f \n", vector_[h][j]);
 	}
       }
     }
-    fflush(out);
 }//
 
 void SymBlockVector::print()
 {
-     if (name_.length()) fprintf(outfile, "\n ## %s ##\n", name_.c_str());
+     if (name_.length()) outfile->Printf( "\n ## %s ##\n", name_.c_str());
     for (int h=0; h<nirreps_; h++) {
       if (dimvec_[h] != 0) {
-	fprintf(outfile, "\n Irrep: %d\n", h+1);
+	outfile->Printf( "\n Irrep: %d\n", h+1);
 	for (int j=0; j<dimvec_[h]; ++j) {
-	  fprintf(outfile, "%20.14f \n", vector_[h][j]);
+	  outfile->Printf( "%20.14f \n", vector_[h][j]);
 	}
       }
     }
-    fflush(outfile);
+    
 }//
 
 void SymBlockVector::set_to_unit()

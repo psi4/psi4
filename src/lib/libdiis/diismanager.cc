@@ -437,10 +437,10 @@ DIISManager::extrapolate(int numQuantities, ...)
     double *array;
     va_list args;
     int print  = Process::environment.options.get_int("PRINT");
-    if(print > 2) fprintf(outfile, "DIIS coefficients: ");
+    if(print > 2) outfile->Printf( "DIIS coefficients: ");
     for(int n = 0; n < _subspace.size(); ++n){
         double coefficient = coefficients[n];
-        if(print > 2) fprintf(outfile, " %.3f ", coefficient);
+        if(print > 2) outfile->Printf( " %.3f ", coefficient);
         const double *arrayPtr = _subspace[n]->vector();
         va_start(args, numQuantities);
         for(int i=0; i < numQuantities; ++i) {
@@ -522,7 +522,7 @@ DIISManager::extrapolate(int numQuantities, ...)
 
     timer_off("DIISManager::extrapolate: form new data");
 
-    if(print > 2) fprintf(outfile, "\n");
+    if(print > 2) outfile->Printf( "\n");
     free(coefficients);
     free(force);
 

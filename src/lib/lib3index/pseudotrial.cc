@@ -68,7 +68,7 @@ PseudoTrial::~PseudoTrial()
 void PseudoTrial::common_init()
 {
     print_header();
-    fflush(outfile);
+    
 
     debug_ = options_.get_int("DEBUG");
     print_ = options_.get_int("PRINT");   
@@ -76,11 +76,11 @@ void PseudoTrial::common_init()
     min_S_dealias_ = options_.get_double("PS_MIN_S_DEALIAS");
 
     form_molecule();
-    fflush(outfile);
+    
 
     form_bases();
     form_grid();
-    fflush(outfile);
+    
 
     form_Spp();
     form_Spd();
@@ -121,20 +121,20 @@ void PseudoTrial::common_init()
 
 void PseudoTrial::print_header()
 {
-    fprintf(outfile,"\t\t--------------------------------------------------\n");
-    fprintf(outfile,"\t\t                                                  \n");
-    fprintf(outfile,"\t\t      PseudoTrial: A Pseudospectral Sandbox       \n");
-    fprintf(outfile,"\t\t                  Rob Parrish                     \n");
-    fprintf(outfile,"\t\t                  21 May 2011                     \n");
-    fprintf(outfile,"\t\t                                                  \n");
-    fprintf(outfile,"\t\t--------------------------------------------------\n\n");
-    fflush(outfile);
+    outfile->Printf("\t\t--------------------------------------------------\n");
+    outfile->Printf("\t\t                                                  \n");
+    outfile->Printf("\t\t      PseudoTrial: A Pseudospectral Sandbox       \n");
+    outfile->Printf("\t\t                  Rob Parrish                     \n");
+    outfile->Printf("\t\t                  21 May 2011                     \n");
+    outfile->Printf("\t\t                                                  \n");
+    outfile->Printf("\t\t--------------------------------------------------\n\n");
+    
 }
 
 void PseudoTrial::form_molecule()
 {
     molecule_ = Process::environment.molecule(); 
-    fprintf(outfile," => Molecule <= \n\n");
+    outfile->Printf(" => Molecule <= \n\n");
     molecule_->print();
 }
 
@@ -147,19 +147,19 @@ void PseudoTrial::form_bases()
     primary_ = BasisSet::construct(parser,molecule_,"BASIS");  
     nso_ = primary_->nbf();   
  
-    fprintf(outfile," => Primary Basis Set <= \n\n");
-    primary_->print_by_level(outfile,print_);
+    outfile->Printf(" => Primary Basis Set <= \n\n");
+    primary_->print_by_level("outfile",print_);
 
-    fprintf(outfile," => Dealias Basis Set <= \n\n");
+    outfile->Printf(" => Dealias Basis Set <= \n\n");
     if (options_.get_str("DEALIAS_BASIS_CC") == "") {
 
-        fprintf(outfile,"  Dealias Basis Automatically Generated\n\n");
+        outfile->Printf("  Dealias Basis Automatically Generated\n\n");
 
         boost::shared_ptr<DealiasBasisSet> d(new DealiasBasisSet(primary_, options_));
         dealias_ = d->dealiasSet();
 
     } else {
-        fprintf(outfile,"  Dealias Basis Read from %s", options_.get_str("DEALIAS_BASIS_CC").c_str()); 
+        outfile->Printf("  Dealias Basis Read from %s", options_.get_str("DEALIAS_BASIS_CC").c_str()); 
         molecule_->set_basis_all_atoms(options_.get_str("DEALIAS_BASIS_CC"),"DEALIAS_BASIS");
         dealias_ = BasisSet::construct(parser,molecule_,"DEALIAS_BASIS");  
 
@@ -168,7 +168,7 @@ void PseudoTrial::form_bases()
     ndealias_ = dealias_->nbf();
     naug_ = nso_ + ndealias_;
 
-    dealias_->print_by_level(outfile,print_);
+    dealias_->print_by_level("outfile",print_);
 }
 
 void PseudoTrial::form_grid()

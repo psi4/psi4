@@ -31,12 +31,12 @@
 namespace psi { namespace ccdensity {
 
 void idx_error(const char *message, int p, int q, int r, int s, int pq, int rs,
-	       int pq_sym, int rs_sym, FILE *outfile);
+	       int pq_sym, int rs_sym, std::string OutFileRMR);
 
 void idx_permute(dpdfile4 *File, struct iwlbuf *OutBuf,
 		 int **bucket_map, int p, int q, int r, int s,
 		 int perm_pr, int perm_qs, int perm_prqs,
-		 double value, FILE *outfile)
+		 double value, std::string)
 {
   int p_sym, q_sym, r_sym, s_sym;
   int pq_sym, rs_sym, rq_sym, ps_sym, qp_sym, sp_sym, sr_sym, qr_sym;
@@ -63,10 +63,10 @@ void idx_permute(dpdfile4 *File, struct iwlbuf *OutBuf,
   pq = Params->rowidx[p][q];
   rs = Params->colidx[r][s];
   if((pq >= Params->rowtot[pq_sym]) || (rs >= Params->coltot[rs_sym]))
-      idx_error("Params_make: pq, rs", p,q,r,s,pq,rs,pq_sym,rs_sym,outfile);
+      idx_error("Params_make: pq, rs", p,q,r,s,pq,rs,pq_sym,rs_sym,"outfile");
 
   this_bucket = bucket_map[p][q];
-  iwl_buf_wrt_val(&OutBuf[this_bucket], p, q, r, s, value, 0, outfile, 0);
+  iwl_buf_wrt_val(&OutBuf[this_bucket], p, q, r, s, value, 0, "outfile", 0);
 
   if(perm_pr) {
       rq_sym = r_sym^q_sym;
@@ -74,10 +74,10 @@ void idx_permute(dpdfile4 *File, struct iwlbuf *OutBuf,
       rq = Params->rowidx[r][q];
       ps = Params->colidx[p][s];
       if((rq >= Params->rowtot[rq_sym]) || (ps >= Params->coltot[ps_sym]))
-	  idx_error("Params_make: rq, ps", p,q,r,s,rq,ps,rq_sym,ps_sym,outfile);
+	  idx_error("Params_make: rq, ps", p,q,r,s,rq,ps,rq_sym,ps_sym,"outfile");
 
       this_bucket = bucket_map[r][q];
-      iwl_buf_wrt_val(&OutBuf[this_bucket], r, q, p, s, value, 0, outfile, 0);
+      iwl_buf_wrt_val(&OutBuf[this_bucket], r, q, p, s, value, 0, "outfile", 0);
     }
 
   if(perm_qs) {
@@ -86,10 +86,10 @@ void idx_permute(dpdfile4 *File, struct iwlbuf *OutBuf,
       ps = Params->rowidx[p][s];
       rq = Params->colidx[r][q];
       if((ps >= Params->rowtot[ps_sym]) || (rq >= Params->coltot[rq_sym]))
-	  idx_error("Params_make: ps, rq", p,q,r,s,ps,rq,ps_sym,rq_sym,outfile);
+	  idx_error("Params_make: ps, rq", p,q,r,s,ps,rq,ps_sym,rq_sym,"outfile");
 
       this_bucket = bucket_map[p][s];
-      iwl_buf_wrt_val(&OutBuf[this_bucket], p, s, r, q, value, 0, outfile, 0);
+      iwl_buf_wrt_val(&OutBuf[this_bucket], p, s, r, q, value, 0, "outfile", 0);
     }
 
   if(perm_pr && perm_qs) {
@@ -98,10 +98,10 @@ void idx_permute(dpdfile4 *File, struct iwlbuf *OutBuf,
       rs = Params->rowidx[r][s];
       pq = Params->colidx[p][q];
       if((rs >= Params->rowtot[rs_sym]) || (pq >= Params->coltot[pq_sym]))
-	  idx_error("Params_make: rs, pq", p,q,r,s,rs,pq,rs_sym,pq_sym,outfile);
+	  idx_error("Params_make: rs, pq", p,q,r,s,rs,pq,rs_sym,pq_sym,"outfile");
 
       this_bucket = bucket_map[r][s];
-      iwl_buf_wrt_val(&OutBuf[this_bucket], r, s, p, q, value, 0, outfile, 0);
+      iwl_buf_wrt_val(&OutBuf[this_bucket], r, s, p, q, value, 0, "outfile", 0);
     }
 
   if(perm_prqs) {
@@ -110,10 +110,10 @@ void idx_permute(dpdfile4 *File, struct iwlbuf *OutBuf,
       qp = Params->rowidx[q][p];
       sr = Params->colidx[s][r];
       if((qp >= Params->rowtot[qp_sym]) || (sr >= Params->coltot[sr_sym]))
-	  idx_error("Params_make: qp, sr", p,q,r,s,qp,sr,qp_sym,sr_sym,outfile);
+	  idx_error("Params_make: qp, sr", p,q,r,s,qp,sr,qp_sym,sr_sym,"outfile");
 
       this_bucket = bucket_map[q][p];
-      iwl_buf_wrt_val(&OutBuf[this_bucket], q, p, s, r, value, 0, outfile, 0);
+      iwl_buf_wrt_val(&OutBuf[this_bucket], q, p, s, r, value, 0, "outfile", 0);
       
 
       if(perm_pr) {
@@ -123,10 +123,10 @@ void idx_permute(dpdfile4 *File, struct iwlbuf *OutBuf,
 	  sp = Params->colidx[s][p];
 	  if((qr >= Params->rowtot[qr_sym])||(sp >= Params->coltot[sp_sym]))
 	      idx_error("Params_make: qr, sp", p,q,r,s,qr,sp,qr_sym,sp_sym,
-			       outfile);
+			       "outfile");
 
 	  this_bucket = bucket_map[q][r];
-	  iwl_buf_wrt_val(&OutBuf[this_bucket], q, r, s, p, value, 0, outfile, 0);
+	  iwl_buf_wrt_val(&OutBuf[this_bucket], q, r, s, p, value, 0, "outfile", 0);
 	}
 
       if(perm_qs) {
@@ -136,10 +136,10 @@ void idx_permute(dpdfile4 *File, struct iwlbuf *OutBuf,
 	  qr = Params->colidx[q][r];
 	  if((sp >= Params->rowtot[sp_sym])||(qr >= Params->coltot[qr_sym]))
 	      idx_error("Params_make: sp, qr", p,q,r,s,sp,qr,sp_sym,qr_sym,
-			       outfile);
+			       "outfile");
 
 	  this_bucket = bucket_map[s][p];
-	  iwl_buf_wrt_val(&OutBuf[this_bucket], s, p, q, r, value, 0, outfile, 0);
+	  iwl_buf_wrt_val(&OutBuf[this_bucket], s, p, q, r, value, 0, "outfile", 0);
 	}
       
       if(perm_pr && perm_qs) {
@@ -149,10 +149,10 @@ void idx_permute(dpdfile4 *File, struct iwlbuf *OutBuf,
 	  qp = Params->colidx[q][p];
 	  if((sr >= Params->rowtot[sr_sym])||(qp >= Params->coltot[qp_sym]))
 	      idx_error("Params_make: sr, qp", p,q,r,s,sr,qp,sr_sym,qp_sym,
-			       outfile);
+			       "outfile");
 
 	  this_bucket = bucket_map[s][r];
-	  iwl_buf_wrt_val(&OutBuf[this_bucket], s, r, q, p, value, 0, outfile, 0);
+	  iwl_buf_wrt_val(&OutBuf[this_bucket], s, r, q, p, value, 0, "outfile", 0);
 	}
     }
 }

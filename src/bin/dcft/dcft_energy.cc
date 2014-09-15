@@ -139,14 +139,14 @@ DCFTSolver::compute_dcft_energy()
 
 
 #if PRINT_ENERGY_COMPONENTS
-    fprintf(outfile, "\tAA G Energy = %20.12f\n", eGaa);
-    fprintf(outfile, "\tAB G Energy = %20.12f\n", eGab);
-    fprintf(outfile, "\tBB G Energy = %20.12f\n", eGbb);
-    fprintf(outfile, "\tAA I Energy = %20.12f\n", eIaa);
-    fprintf(outfile, "\tAB I Energy = %20.12f\n", eIab);
-    fprintf(outfile, "\tBB I Energy = %20.12f\n", eIbb);
-    fprintf(outfile, "\tTotal G Energy = %20.12f\n", eGaa + eGab + eGbb);
-    fprintf(outfile, "\tTotal I Energy = %20.12f\n", eIaa + eIab + eIbb);
+    outfile->Printf( "\tAA G Energy = %20.12f\n", eGaa);
+    outfile->Printf( "\tAB G Energy = %20.12f\n", eGab);
+    outfile->Printf( "\tBB G Energy = %20.12f\n", eGbb);
+    outfile->Printf( "\tAA I Energy = %20.12f\n", eIaa);
+    outfile->Printf( "\tAB I Energy = %20.12f\n", eIab);
+    outfile->Printf( "\tBB I Energy = %20.12f\n", eIbb);
+    outfile->Printf( "\tTotal G Energy = %20.12f\n", eGaa + eGab + eGbb);
+    outfile->Printf( "\tTotal I Energy = %20.12f\n", eIaa + eIab + eIbb);
 #endif
 
     lambda_energy_ = eGaa + eGab + eGbb + eIaa + eIab + eIbb;

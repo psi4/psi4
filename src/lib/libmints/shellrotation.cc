@@ -57,7 +57,7 @@
 using namespace psi;
 
 namespace psi {
-    extern FILE *outfile;
+    
 }
 
 ShellRotation::ShellRotation(int n)
@@ -210,10 +210,10 @@ void ShellRotation::init_pure(int a, SymmetryOperation &so, const IntegralFactor
         for (J.first(); !J.is_done(); J.next()) {
             double coef = I.coef()*J.coef();
             double tmp = 0.0;
-//            fprintf(outfile, "J.a = %d J.b = %d J.c = %d\n", J.a(), J.b(), J.c());
-//            fprintf(outfile, "I.coef = %lf, J.coef = %lf\n", I.coef(), J.coef());
+//            outfile->Printf( "J.a = %d J.b = %d J.c = %d\n", J.a(), J.b(), J.c());
+//            outfile->Printf( "I.coef = %lf, J.coef = %lf\n", I.coef(), J.coef());
             for (K.start(J.a(), J.b(), J.c()); K; K.next()) {
-//                fprintf(outfile, "T(%d,%d) += %6.4f", I.pureindex(), J.pureindex(), coef);
+//                outfile->Printf( "T(%d,%d) += %6.4f", I.pureindex(), J.pureindex(), coef);
                 double tmp2 = coef;
                 for (m=0; m<3; ++m)
                     lI[m] = I.l(m);
@@ -223,10 +223,10 @@ void ShellRotation::init_pure(int a, SymmetryOperation &so, const IntegralFactor
                     lI[iI]--;
 
                     tmp2 *= so(K.axis(m), iI);
-//                    fprintf(outfile, " * so(%d,%d) [=%4.2f]",
+//                    outfile->Printf( " * so(%d,%d) [=%4.2f]",
 //                            iI,K.axis(m),so(iI,K.axis(m)));
                 }
-//                fprintf(outfile, " = %8.6f\n", tmp2);
+//                outfile->Printf( " = %8.6f\n", tmp2);
                 tmp += tmp2;
             }
             r_[I.pureindex()][J.pureindex()] += tmp;
@@ -303,6 +303,6 @@ double ShellRotation::trace() const
 
 void ShellRotation::print() const
 {
-    fprintf(outfile, "ShellRotation\n");
-    print_mat(r_, n_, n_, outfile);
+    outfile->Printf( "ShellRotation\n");
+    print_mat(r_, n_, n_, "outfile");
 }

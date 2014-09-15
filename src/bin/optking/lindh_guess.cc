@@ -231,8 +231,8 @@ in this set of internals. */
   long int Nintco = intcos.size();
   double **B = compute_B();
   double *g_x = g_grad_array();
-  //fprintf(outfile,"g_x\n");
-  //print_array(outfile,g_x,3*natom);
+  //psi::outfile->Printf("g_x\n");
+  //print_array("outfile",g_x,3*natom);
 
   double *temp_arr = init_array(Nintco);
   opt_matrix_mult(B, 0, &g_x, 1, &temp_arr, 1, Nintco, 3*natom, 1, 0);
@@ -252,12 +252,12 @@ in this set of internals. */
   free_matrix(G_inv);
   free_array(temp_arr);
   // Done computing g_q
-  //fprintf(outfile,"g_q\n");
-  //print_array(outfile,g_q,Nintco);
+  //psi::outfile->Printf("g_q\n");
+  //print_array("outfile",g_q,Nintco);
 
   double **Hx = init_matrix(3*natom, 3*natom);
 
-  print_intcos(outfile,0);
+  print_intcos("outfile",0);
 
   for (int i=0; i<intcos.size(); ++i) {  // loop over intcos
     SIMPLE * q = intcos.at(i);
@@ -286,7 +286,9 @@ in this set of internals. */
                       * Lindh_rho(b, c, R[b][c])
                       * Lindh_rho(c, d, R[c][d]);
     }
-    //fprintf(outfile,"internal Lindh_k: %15.10lf\n", Lindh_k);
+    else if (q->g_type() == cart_type) {
+      Lindh_k = 0.1;
+    }
 
     // Hxy += k dq/dx dq/dy
     for (int a=0; a < natom_intco; ++a) {
@@ -321,9 +323,9 @@ in this set of internals. */
   free_array(g_q);
   free_matrix(R);
   if (Opt_params.print_lvl >= 2) {
-    fprintf(outfile,"Lindh cartesian Hessian guess\n");
-    print_matrix(outfile, Hx, 3*natom, 3*natom);
-    fflush(outfile);
+    psi::outfile->Printf("Lindh cartesian Hessian guess\n");
+    print_matrix("outfile", Hx, 3*natom, 3*natom);
+    
   }
   return Hx;
 }

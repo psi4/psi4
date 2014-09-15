@@ -28,7 +28,7 @@
 #include <libqt/qt.h>
 #include <psi4-dec.h>
 #include <physconst.h>
-
+#include "libparallel/ParallelPrinter.h"
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -71,7 +71,7 @@ ASAPTVis::~ASAPTVis()
 }
 void ASAPTVis::analyze()
 {
-    fprintf(outfile, "  ANALYSIS:\n\n");
+    outfile->Printf( "  ANALYSIS:\n\n");
 
     monomer_A_->save_xyz_file("d.xyz", true);
     monomer_A_->save_xyz_file("mA.xyz",false);
@@ -140,7 +140,7 @@ void ASAPTVis::summations()
 }
 void ASAPTVis::drop_atomic_1()
 {
-    fprintf(outfile,"    Saving Order-1 Atomic Partition.\n");
+    outfile->Printf("    Saving Order-1 Atomic Partition.\n");
 
     drop("Elst_A");
     drop("Elst_B");
@@ -155,7 +155,7 @@ void ASAPTVis::drop_atomic_1()
 }
 void ASAPTVis::drop_atomic_2()
 {
-    fprintf(outfile,"    Saving Order-2 Atomic Partition.\n");
+    outfile->Printf("    Saving Order-2 Atomic Partition.\n");
 
     drop("Elst_AB");
     drop("Exch_AB");
@@ -165,7 +165,7 @@ void ASAPTVis::drop_atomic_2()
 }
 void ASAPTVis::drop_orbital_1()
 {
-    fprintf(outfile,"    Saving Order-1 Orbital Partition.\n");
+    outfile->Printf("    Saving Order-1 Orbital Partition.\n");
 
     drop("Exch_a");
     drop("Exch_b");
@@ -176,7 +176,7 @@ void ASAPTVis::drop_orbital_1()
 }
 void ASAPTVis::drop_orbital_2()
 {
-    fprintf(outfile,"    Saving Order-2 Orbital Partition.\n");
+    outfile->Printf("    Saving Order-2 Orbital Partition.\n");
 
     drop("Exch_ab");
     drop("IndAB_aB");
@@ -192,18 +192,19 @@ void ASAPTVis::drop(const std::string& var)
 
     std::stringstream ss;
     ss << var << ".dat";
-    FILE* fh = fopen(ss.str().c_str(),"w");
+    boost::shared_ptr<OutFile> printer(new OutFile(ss.str(),TRUNCATE));
+    //FILE* fh = fopen(ss.str().c_str(),"w");
     for (int i = 0; i < nrow; i++) {
         for (int j = 0; j < ncol; j++) {
-            fprintf(fh,"%24.16E%s", Tp[i][j], (j + 1 == ncol ? "" : " "));
+            printer->Printf("%24.16E%s", Tp[i][j], (j + 1 == ncol ? "" : " "));
         }
-        fprintf(fh,"\n");
+        printer->Printf("\n");
     }
-    fclose(fh);
+    //fclose(fh);
 }
 void ASAPTVis::drop_voxel()
 {
-    fprintf(outfile,"    Saving Order-1 Voxel Partition:\n\n");
+    outfile->Printf("    Saving Order-1 Voxel Partition:\n\n");
 
     // ==> Sizing <== //
 
@@ -256,7 +257,7 @@ void ASAPTVis::drop_voxel()
 
     // ==> Elst <== //
 
-    fprintf(outfile, "    Saving Elst Voxel Partition.\n");
+    outfile->Printf( "    Saving Elst Voxel Partition.\n");
 
     EAp = vars_["Elst_A"]->pointer();
     EBp = vars_["Elst_B"]->pointer();
@@ -275,7 +276,7 @@ void ASAPTVis::drop_voxel()
 
     // ==> Exch <== //
 
-    fprintf(outfile, "    Saving Exch Voxel Partition.\n");
+    outfile->Printf( "    Saving Exch Voxel Partition.\n");
 
     EAp = vars_["Exch_a"]->pointer();
     EBp = vars_["Exch_b"]->pointer();
@@ -301,7 +302,7 @@ void ASAPTVis::drop_voxel()
 
     // ==> IndAB <== //
 
-    fprintf(outfile, "    Saving IndAB Voxel Partition.\n");
+    outfile->Printf( "    Saving IndAB Voxel Partition.\n");
 
     EAp = vars_["IndAB_a"]->pointer();
     EBp = vars_["IndAB_B"]->pointer();
@@ -325,7 +326,7 @@ void ASAPTVis::drop_voxel()
 
     // ==> IndBA <== //
 
-    fprintf(outfile, "    Saving IndBA Voxel Partition.\n");
+    outfile->Printf( "    Saving IndBA Voxel Partition.\n");
 
     EBp = vars_["IndBA_b"]->pointer();
     EAp = vars_["IndBA_A"]->pointer();
@@ -349,7 +350,7 @@ void ASAPTVis::drop_voxel()
 
     // ==> Disp <== //
 
-    fprintf(outfile, "    Saving Disp Voxel Partition.\n");
+    outfile->Printf( "    Saving Disp Voxel Partition.\n");
 
     EAp = vars_["Disp_a"]->pointer();
     EBp = vars_["Disp_b"]->pointer();
@@ -375,7 +376,7 @@ void ASAPTVis::drop_voxel()
 
     // ==> Dens <== //
 
-    fprintf(outfile, "    Saving Dens Voxel Partition.\n");
+    outfile->Printf( "    Saving Dens Voxel Partition.\n");
 
     DA = Matrix::doublet(Locc_A_,Locc_A_,false,true);
     DB = Matrix::doublet(Locc_B_,Locc_B_,false,true);
@@ -389,7 +390,7 @@ void ASAPTVis::drop_voxel()
 }
 void ASAPTVis::drop_debug()
 {
-    fprintf(outfile,"    Saving Debug Visualizations:\n\n");
+    outfile->Printf("    Saving Debug Visualizations:\n\n");
 
     // ==> Saturation Scales <== //
 
@@ -402,21 +403,21 @@ void ASAPTVis::drop_debug()
     grid->build_grid();
     grid->print_header();
 
-    fprintf(outfile,"    Saving Monomer A Atomic Density Voxel Partition:\n\n");
+    outfile->Printf("    Saving Monomer A Atomic Density Voxel Partition:\n\n");
     grid->compute_atomic_densities(atomic_A_,dens_scale,"A");
-    fprintf(outfile,"\n");
+    outfile->Printf("\n");
 
-    fprintf(outfile,"    Saving Monomer B Atomic Density Voxel Partition:\n\n");
+    outfile->Printf("    Saving Monomer B Atomic Density Voxel Partition:\n\n");
     grid->compute_atomic_densities(atomic_B_,dens_scale,"B");
-    fprintf(outfile,"\n");
+    outfile->Printf("\n");
 
-    fprintf(outfile,"    Saving Monomer A Local Orbital Voxel Partition:\n\n");
+    outfile->Printf("    Saving Monomer A Local Orbital Voxel Partition:\n\n");
     grid->compute_orbitals(Locc_A_,orbs_scale,"A");
-    fprintf(outfile,"\n");
+    outfile->Printf("\n");
 
-    fprintf(outfile,"    Saving Monomer B Local Orbital Voxel Partition:\n\n");
+    outfile->Printf("    Saving Monomer B Local Orbital Voxel Partition:\n\n");
     grid->compute_orbitals(Locc_B_,orbs_scale,"B");
-    fprintf(outfile,"\n");
+    outfile->Printf("\n");
 }
 
 CubicDensityGrid::CubicDensityGrid(
@@ -527,25 +528,25 @@ void CubicDensityGrid::build_grid()
 }
 void CubicDensityGrid::print_header()
 {
-    fprintf(outfile,"  ==> CubicDensityGrid <==\n\n");
+    outfile->Printf("  ==> CubicDensityGrid <==\n\n");
 
-    fprintf(outfile,"    Total Points = %16zu\n", npoints_);
-    fprintf(outfile,"    XYZ Blocking = %16zu\n", nxyz_);
-    fprintf(outfile,"    X Points     = %16zu\n", N_[0] + 1L);
-    fprintf(outfile,"    Y Points     = %16zu\n", N_[1] + 1L);
-    fprintf(outfile,"    Z Points     = %16zu\n", N_[2] + 1L);
-    fprintf(outfile,"    X Spacing    = %16.3E\n", D_[0]);
-    fprintf(outfile,"    Y Spacing    = %16.3E\n", D_[1]);
-    fprintf(outfile,"    Z Spacing    = %16.3E\n", D_[2]);
-    fprintf(outfile,"    X Maximum    = %16.3E\n", O_[0]);
-    fprintf(outfile,"    Y Maximum    = %16.3E\n", O_[1]);
-    fprintf(outfile,"    Z Maximum    = %16.3E\n", O_[2]);
-    fprintf(outfile,"    X Minimum    = %16.3E\n", O_[0] + D_[0] * N_[0]);
-    fprintf(outfile,"    Y Minimum    = %16.3E\n", O_[1] + D_[1] * N_[1]);
-    fprintf(outfile,"    Z Minimum    = %16.3E\n", O_[2] + D_[2] * N_[2]);
-    fprintf(outfile,"\n");
+    outfile->Printf("    Total Points = %16zu\n", npoints_);
+    outfile->Printf("    XYZ Blocking = %16zu\n", nxyz_);
+    outfile->Printf("    X Points     = %16zu\n", N_[0] + 1L);
+    outfile->Printf("    Y Points     = %16zu\n", N_[1] + 1L);
+    outfile->Printf("    Z Points     = %16zu\n", N_[2] + 1L);
+    outfile->Printf("    X Spacing    = %16.3E\n", D_[0]);
+    outfile->Printf("    Y Spacing    = %16.3E\n", D_[1]);
+    outfile->Printf("    Z Spacing    = %16.3E\n", D_[2]);
+    outfile->Printf("    X Maximum    = %16.3E\n", O_[0]);
+    outfile->Printf("    Y Maximum    = %16.3E\n", O_[1]);
+    outfile->Printf("    Z Maximum    = %16.3E\n", O_[2]);
+    outfile->Printf("    X Minimum    = %16.3E\n", O_[0] + D_[0] * N_[0]);
+    outfile->Printf("    Y Minimum    = %16.3E\n", O_[1] + D_[1] * N_[1]);
+    outfile->Printf("    Z Minimum    = %16.3E\n", O_[2] + D_[2] * N_[2]);
+    outfile->Printf("\n");
 
-    fflush(outfile);
+    
 }
 void CubicDensityGrid::zero()
 {
@@ -628,11 +629,11 @@ void CubicDensityGrid::compute_atomic_densities(boost::shared_ptr<AtomicDensity>
     }
 
     for (int A = 0; A < nA; A++) {
-        fprintf(outfile,"    Saving %4d Atomic Weight Voxel Partition.\n", A+1);
+        outfile->Printf("    Saving %4d Atomic Weight Voxel Partition.\n", A+1);
         std::stringstream ss1;
         ss1 << label << "w" << A+1 << ".raw";
         drop_raw(ss1.str(), 1.0, Wp[A]);
-        fprintf(outfile,"    Saving %4d Atomic Density Voxel Partition.\n", A+1);
+        outfile->Printf("    Saving %4d Atomic Density Voxel Partition.\n", A+1);
         std::stringstream ss2;
         ss2 << label << "q" << A+1 << ".raw";
         drop_raw(ss2.str(), clamp, Qp[A]);
@@ -664,7 +665,7 @@ void CubicDensityGrid::compute_orbitals(boost::shared_ptr<Matrix> C, double clam
     }
 
     for (int A = 0; A < na; A++) {
-        fprintf(outfile,"    Saving %4d Orbital Voxel Partition.\n", A+1);
+        outfile->Printf("    Saving %4d Orbital Voxel Partition.\n", A+1);
         std::stringstream ss;
         ss << label << "f" << A+1 << ".raw";
         drop_raw(ss.str(), clamp, Wp[A]);
@@ -679,7 +680,7 @@ void CubicDensityGrid::drop_raw(const std::string& file, double clamp, double* v
     //ss2 << V_->name() << ".debug";
     //FILE* fh2 = fopen(ss2.str().c_str(), "w");
     //for (size_t ind = 0; ind < npoints_; ind++) {
-    //    fprintf(fh2,"  %16zu %24.16E %24.16E %24.16E %24.16E\n", ind, x_[ind], y_[ind], z_[ind], v_[ind]);
+    //    outfile->Printf(fh2,"  %16zu %24.16E %24.16E %24.16E %24.16E\n", ind, x_[ind], y_[ind], z_[ind], v_[ind]);
     //}
     //fclose(fh2);
 
@@ -719,10 +720,10 @@ void CubicDensityGrid::drop_raw(const std::string& file, double clamp, double* v
         }
     }
 
-    fprintf(outfile,"    Max val = %11.3E out of %11.3E: %s.\n", maxval, clamp, (clamp >= maxval ? "No clamping" : "Clamped"));
+    outfile->Printf("    Max val = %11.3E out of %11.3E: %s.\n", maxval, clamp, (clamp >= maxval ? "No clamping" : "Clamped"));
 
     //total *= D_[0] * D_[1] * D_[2];
-    //fprintf(outfile,"    Integral value is %24.16E\n", total);
+    //outfile->Printf("    Integral value is %24.16E\n", total);
 
     //Dirty Hack: I love it!
     v2[npoints_-1L] =  0.0;
@@ -771,7 +772,7 @@ void CubicDensityGrid::drop_uvf(const std::string& file, double clamp, double* v
         }
     }
 
-    fprintf(outfile,"    Max val = %11.3E out of %11.3E: %s.\n", maxval, clamp, (clamp >= maxval ? "No clamping" : "Clamped"));
+    outfile->Printf("    Max val = %11.3E out of %11.3E: %s.\n", maxval, clamp, (clamp >= maxval ? "No clamping" : "Clamped"));
 
     //Dirty Hack: I love it!
     v2[npoints_-1L] =  0.0;

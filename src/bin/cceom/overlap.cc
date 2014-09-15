@@ -47,7 +47,7 @@ int overlap(int C_irr, int current) {
   dpdbuf4 R2_old, R2AA_old, R2BB_old, R2AB_old;
   char lbl[32];
 
-  fprintf(outfile, "Overlap of EOM state %d with saved wfns:\n");
+  outfile->Printf( "Overlap of EOM state %d with saved wfns:\n");
 
   // Current wfn
   if(params.eom_ref == 0) {
@@ -132,7 +132,7 @@ int overlap(int C_irr, int current) {
       overlap += global_dpd_->buf4_dot(&R2AB, &R2AB_old);
     }
 
-    fprintf(outfile, "State %d --> %5.3f\n", i, fabs(overlap));
+    outfile->Printf( "State %d --> %5.3f\n", i, fabs(overlap));
 
     if(params.eom_ref == 0) {
       global_dpd_->file2_close(&R1_old);

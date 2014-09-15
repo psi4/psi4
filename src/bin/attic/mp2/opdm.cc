@@ -100,11 +100,11 @@ void rhf_opdm(void)
   }
   
 /*
-  fprintf(outfile, "\n\tTrace of OPDM(2)_IJ     = %20.15f\n", trace_IJ);
-  fprintf(outfile, "\n\tTrace of OPDM(2)_AB     = %20.15f\n", trace_AB);
+  outfile->Printf( "\n\tTrace of OPDM(2)_IJ     = %20.15f\n", trace_IJ);
+  outfile->Printf( "\n\tTrace of OPDM(2)_AB     = %20.15f\n", trace_AB);
 */
-  fprintf(outfile, "\tTrace of OPDM(2)        = %20.15f\n", trace_IJ+trace_AB);
-  fflush(outfile);
+  outfile->Printf( "\tTrace of OPDM(2)        = %20.15f\n", trace_IJ+trace_AB);
+  
 
   return;
 }
@@ -244,9 +244,9 @@ void uhf_opdm(void)
   global_dpd_->file2_close(&D);
    
   /*
-  fprintf(outfile,"\n");
-  fprintf(outfile,"\tTrace of Alpha OPDM(2)  = %20.15f\n", fabs(traceA));
-  fprintf(outfile,"\tTrace of Beta OPDM(2)   = %20.15f\n", fabs(traceB));
+  outfile->Printf("\n");
+  outfile->Printf("\tTrace of Alpha OPDM(2)  = %20.15f\n", fabs(traceA));
+  outfile->Printf("\tTrace of Beta OPDM(2)   = %20.15f\n", fabs(traceB));
   */
     
   return;
@@ -358,18 +358,18 @@ void rhf_sf_opdm(void)
   global_dpd_->file2_close(&D);
   
 
-  fprintf(outfile, "\n\tTrace of IJ onepdm = %20.15f\n", trace_IJ);
-  fprintf(outfile, "\tTrace of ij onepdm = %20.15f\n", trace_ij);
-  fprintf(outfile, "\tTrace of oo onepdm = %20.15f\n", trace_IJ+trace_ij);
-  fprintf(outfile, "\tTrace of AB onepdm = %20.15f\n", trace_AB);
-  fprintf(outfile, "\tTrace of ab onepdm = %20.15f\n", trace_ab);
-  fprintf(outfile, "\tTrace of vv onepdm = %20.15f\n", (trace_AB+trace_ab));
-  fprintf(outfile, "\tTrace of total onepdm = %20.15f\n", trace_IJ+trace_ij+trace_AB+trace_ab);
+  outfile->Printf( "\n\tTrace of IJ onepdm = %20.15f\n", trace_IJ);
+  outfile->Printf( "\tTrace of ij onepdm = %20.15f\n", trace_ij);
+  outfile->Printf( "\tTrace of oo onepdm = %20.15f\n", trace_IJ+trace_ij);
+  outfile->Printf( "\tTrace of AB onepdm = %20.15f\n", trace_AB);
+  outfile->Printf( "\tTrace of ab onepdm = %20.15f\n", trace_ab);
+  outfile->Printf( "\tTrace of vv onepdm = %20.15f\n", (trace_AB+trace_ab));
+  outfile->Printf( "\tTrace of total onepdm = %20.15f\n", trace_IJ+trace_ij+trace_AB+trace_ab);
 }
 
 void uhf_sf_opdm(void)
 {
-  fprintf(outfile,"\n\tNot yet yo! -MLA\n");
+  outfile->Printf("\n\tNot yet yo! -MLA\n");
   exit(PSI_RETURN_FAILURE);
 }
 

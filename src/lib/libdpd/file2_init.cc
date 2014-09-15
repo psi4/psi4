@@ -45,7 +45,7 @@ namespace psi {
 **             dpd_init()].
 **   char *label: A string labelling for this buffer.
 **   int print_flag: A boolean for the print routines.
-**   FILE *outfile: The formatted output file stream.
+**   std::string OutFileRMR: The formatted output file stream.
 */
 
 int DPD::file2_init(dpdfile2 *File, int filenum, int irrep, int pnum,

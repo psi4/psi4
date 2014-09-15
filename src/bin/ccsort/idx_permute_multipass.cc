@@ -32,12 +32,12 @@
 namespace psi { namespace ccsort {
 
 void idx_error(const char *message, int p, int q, int r, int s, int pq, int rs,
-	       int pq_sym, int rs_sym, FILE *outfile);
+	       int pq_sym, int rs_sym, std::string OutFileRMR);
 void idx_permute_multipass(dpdfile4 *File, int this_bucket, int **bucket_map, 
 			   unsigned long int **bucket_offset, 
                            int p, int q, int r, int s, 
 			   int perm_pr, int perm_qs, int perm_prqs,
-			   double value, FILE *outfile)
+			   double value, std::string OutFileRMR)
 {
   int p_sym, q_sym, r_sym, s_sym;
   int pq_sym, rs_sym, rq_sym, ps_sym, qp_sym, sp_sym, sr_sym, qr_sym;
@@ -66,7 +66,7 @@ void idx_permute_multipass(dpdfile4 *File, int this_bucket, int **bucket_map,
     pq = Params->rowidx[p][q];
     rs = Params->colidx[r][s];
     if((pq >= Params->rowtot[pq_sym]) || (rs >= Params->coltot[rs_sym]))
-      idx_error("MP Params_make: pq, rs", p,q,r,s,pq,rs,pq_sym,rs_sym,outfile);
+      idx_error("MP Params_make: pq, rs", p,q,r,s,pq,rs,pq_sym,rs_sym,OutFileRMR);
 
     offset = bucket_offset[this_bucket][pq_sym];
     File->matrix[pq_sym][pq-offset][rs] = value;
@@ -79,7 +79,7 @@ void idx_permute_multipass(dpdfile4 *File, int this_bucket, int **bucket_map,
       rq = Params->rowidx[r][q];
       ps = Params->colidx[p][s];
       if((rq >= Params->rowtot[rq_sym]) || (ps >= Params->coltot[ps_sym]))
-	idx_error("MP Params_make: rq, ps", p,q,r,s,rq,ps,rq_sym,ps_sym,outfile);
+	idx_error("MP Params_make: rq, ps", p,q,r,s,rq,ps,rq_sym,ps_sym,OutFileRMR);
 
       offset = bucket_offset[this_bucket][rq_sym];
       File->matrix[rq_sym][rq-offset][ps] = value;
@@ -93,7 +93,7 @@ void idx_permute_multipass(dpdfile4 *File, int this_bucket, int **bucket_map,
       ps = Params->rowidx[p][s];
       rq = Params->colidx[r][q];
       if((ps >= Params->rowtot[ps_sym]) || (rq >= Params->coltot[rq_sym]))
-	idx_error("MP Params_make: ps, rq", p,q,r,s,ps,rq,ps_sym,rq_sym,outfile);
+	idx_error("MP Params_make: ps, rq", p,q,r,s,ps,rq,ps_sym,rq_sym,OutFileRMR);
 
       offset = bucket_offset[this_bucket][ps_sym];
       File->matrix[ps_sym][ps-offset][rq] = value;
@@ -107,7 +107,7 @@ void idx_permute_multipass(dpdfile4 *File, int this_bucket, int **bucket_map,
       rs = Params->rowidx[r][s];
       pq = Params->colidx[p][q];
       if((rs >= Params->rowtot[rs_sym]) || (pq >= Params->coltot[pq_sym]))
-	idx_error("MP Params_make: rs, pq", p,q,r,s,rs,pq,rs_sym,pq_sym,outfile);
+	idx_error("MP Params_make: rs, pq", p,q,r,s,rs,pq,rs_sym,pq_sym,OutFileRMR);
 
       offset = bucket_offset[this_bucket][rs_sym];
       File->matrix[rs_sym][rs-offset][pq] = value;
@@ -121,7 +121,7 @@ void idx_permute_multipass(dpdfile4 *File, int this_bucket, int **bucket_map,
       qp = Params->rowidx[q][p];
       sr = Params->colidx[s][r];
       if((qp >= Params->rowtot[qp_sym]) || (sr >= Params->coltot[sr_sym]))
-	idx_error("MP Params_make: qp, sr", p,q,r,s,qp,sr,qp_sym,sr_sym,outfile);
+	idx_error("MP Params_make: qp, sr", p,q,r,s,qp,sr,qp_sym,sr_sym,OutFileRMR);
 
       offset = bucket_offset[this_bucket][qp_sym];
       File->matrix[qp_sym][qp-offset][sr] = value;
@@ -135,7 +135,7 @@ void idx_permute_multipass(dpdfile4 *File, int this_bucket, int **bucket_map,
 	sp = Params->colidx[s][p];
 	if((qr >= Params->rowtot[qr_sym])||(sp >= Params->coltot[sp_sym]))
 	  idx_error("MP Params_make: qr, sp", p,q,r,s,qr,sp,qr_sym,sp_sym,
-		    outfile);
+		    OutFileRMR);
 
 	offset = bucket_offset[this_bucket][qr_sym];
 	File->matrix[qr_sym][qr-offset][sp] = value;
@@ -150,7 +150,7 @@ void idx_permute_multipass(dpdfile4 *File, int this_bucket, int **bucket_map,
 	qr = Params->colidx[q][r];
 	if((sp >= Params->rowtot[sp_sym])||(qr >= Params->coltot[qr_sym]))
 	  idx_error("MP Params_make: sp, qr", p,q,r,s,sp,qr,sp_sym,qr_sym,
-		    outfile);
+		    OutFileRMR);
 
 	offset = bucket_offset[this_bucket][sp_sym];
 	File->matrix[sp_sym][sp-offset][qr] = value;
@@ -165,7 +165,7 @@ void idx_permute_multipass(dpdfile4 *File, int this_bucket, int **bucket_map,
 	qp = Params->colidx[q][p];
 	if((sr >= Params->rowtot[sr_sym])||(qp >= Params->coltot[qp_sym]))
 	  idx_error("MP Params_make: sr, qp", p,q,r,s,sr,qp,sr_sym,qp_sym,
-		    outfile);
+		    OutFileRMR);
 
 	offset = bucket_offset[this_bucket][sr_sym];
 	File->matrix[sr_sym][sr-offset][qp] = value;
