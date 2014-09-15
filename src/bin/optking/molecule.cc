@@ -358,7 +358,7 @@ void MOLECULE::print_geom_out(void) {
 #endif
   
   for (int i=0; i<fragments.size(); ++i)
-    fragments[i]->print_geom(outfile, qc_outfile);
+    fragments[i]->print_geom(psi_outfile, qc_outfile);
 }
 
 // This function is only used for an optional trajectory file.

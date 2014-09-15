@@ -153,7 +153,7 @@ OptReturnType optking(void) {
     // if fragment_mode == SINGLE, connects all separated groups of atoms by modifying frag.connectivity
     // if fragment_mode == MULTI, splits into fragments and makes interfragment coordinates
     mol1->fragmentize();
-    mol1->print_connectivity(outfile, qc_outfile);
+    mol1->print_connectivity(psi_outfile, qc_outfile);
 
     if (Opt_params.coordinates == OPT_PARAMS::CARTESIAN || Opt_params.coordinates == OPT_PARAMS::BOTH)
       mol1->add_cartesians();
@@ -206,8 +206,8 @@ OptReturnType optking(void) {
 #endif
 
   // print geometry and gradient
-  mol1->print_geom_grad(outfile, qc_outfile);
-  //mol1->print_connectivity(outfile, qc_outfile); 
+  mol1->print_geom_grad(psi_outfile, qc_outfile);
+  //mol1->print_connectivity(psi_outfile, qc_outfile); 
 
   // read binary file for previous steps ; history needed to compute EFP values
   p_Opt_data = new OPT_DATA(mol1->g_nintco(), 3*mol1->g_natom());
@@ -225,7 +225,7 @@ OptReturnType optking(void) {
 #endif
 
   // print internal coordinate definitions and values
-  mol1->print_intcos(outfile, qc_outfile);
+  mol1->print_intcos(psi_outfile, qc_outfile);
 
   if (Opt_params.test_B)
     mol1->test_B();
@@ -476,11 +476,11 @@ OptReturnType optking(void) {
   return OptReturnSuccess;
 }
 
-// Functions to set and release (possibly open and close) the file pointer for
-// the standard text output file
+// Standard text output file string (psi) or file pointer (qchem)
+// Interpreted by functions in print.cc
 void open_output_dat(void) {
 #if defined (OPTKING_PACKAGE_PSI)
-  //outfile = psi::outfile;
+  psi_outfile = "outfile";
 #elif defined (OPTKING_PACKAGE_QCHEM)
   qc_outfile = stdout;
 #endif

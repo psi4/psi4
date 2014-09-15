@@ -179,7 +179,7 @@ void IRC_DATA::progress_report(opt::MOLECULE &mol)
   oprintf_out("\n");
   oprintf_out("\n");
 
-  mol.print_intcos(outfile, qc_outfile);
+  mol.print_intcos(psi_outfile, qc_outfile);
 }
 
 
