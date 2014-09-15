@@ -2399,6 +2399,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_str("FIXED_BEND", "");
       /*- Specify dihedral angles between atoms to be fixed (eq. value specified) -*/
       options.add_str("FIXED_DIHEDRAL", "");
+      /*- Should an xyz trajectory file be kept (useful for visualization)? -*/
+      options.add_bool("PRINT_TRAJECTORY_XYZ_FILE", false);
 
       /*- SUBSECTION Convergence Control -*/
 

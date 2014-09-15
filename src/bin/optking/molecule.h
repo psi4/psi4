@@ -172,42 +172,24 @@ class MOLECULE {
       fragments[i]->update_connectivity_by_bonds();
   }
 
-  void print_connectivity(std::string OutFileRMR) const {
+  void print_connectivity(std::string psi_fp, FILE *qc_fp) const {
     for (int i=0; i<fragments.size(); ++i)
-      fragments[i]->print_connectivity(OutFileRMR, i, g_atom_offset(i));
+      fragments[i]->print_connectivity(psi_fp, qc_fp, i, g_atom_offset(i));
   }
 
-  void print_geom(std::string OutFileRMR, bool print_mass = false) {
+  void print_geom(std::string psi_fp, FILE *qc_fp, bool print_mass = false) {
     for (int i=0; i<fragments.size(); ++i)
-      fragments[i]->print_geom(OutFileRMR, i, print_mass);
+      fragments[i]->print_geom(psi_fp, qc_fp, i, print_mass);
   }
 
-  void print_geom_grad(std::string OutFileRMR, bool print_mass = false) {
+  void print_xyz(int iter_shift = 0);
+
+  void print_geom_grad(std::string psi_fp, FILE *qc_fp, bool print_mass = false) {
     for (int i=0; i<fragments.size(); ++i)
-      fragments[i]->print_geom_grad(OutFileRMR, i, print_mass);
+      fragments[i]->print_geom_grad(psi_fp, qc_fp, i, print_mass);
   }
 
-  void print_intcos(std::string OutFileRMR) {
-    int a,b;
-    boost::shared_ptr<psi::PsiOutStream> printer(OutFileRMR=="outfile"? psi::outfile:
-       boost::shared_ptr<psi::OutFile>(new psi::OutFile(OutFileRMR,psi::APPEND)));
-    for (int i=0; i<fragments.size(); ++i) {
-      printer->Printf("\t---Fragment %d Intrafragment Coordinates---\n", i+1);
-      fragments[i]->print_intcos(OutFileRMR, g_atom_offset(i));
-    }
-    for (int i=0; i<interfragments.size(); ++i) {
-      a = interfragments[i]->g_A_index();
-      b = interfragments[i]->g_B_index();
-      interfragments[i]->print_intcos(OutFileRMR, g_atom_offset(a), g_atom_offset(b));
-    }
-
-#if defined (OPTKING_PACKAGE_QCHEM)
-    for (int i=0; i<efp_fragments.size(); ++i) {
-      fprintf(fout,"\t---Fragment %d EFP fragment Coordinates---\n", i+1);
-      efp_fragments[i]->print_intcos(fout);
-    }
-#endif
-  }
+  void print_intcos(std::string psi_fp, FILE *qc_fp);
 
   // print definition of an internal coordinate from global index 
   std::string get_intco_definition_from_global_index(int coord_index) const;
@@ -216,7 +198,7 @@ class MOLECULE {
   void update_efp_values(void);
 #endif
 
-  void print_intco_dat(std::string OutFileRMR_intco);
+  void print_intco_dat(std::string psi_fp_intco, FILE *qc_fp);
 
   int add_intrafragment_simples_by_connectivity(void) {
     int n=0;
@@ -271,7 +253,7 @@ class MOLECULE {
 
   void write_geom(void);
   void symmetrize_geom(void);
-  void print_geom(void);
+  void print_geom_out(void);
 
   double ** compute_B(void) const;
   double ** compute_derivative_B(int intco_index) const ;

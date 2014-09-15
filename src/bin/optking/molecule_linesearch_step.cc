@@ -41,10 +41,10 @@
 #include <sstream>
 
 #include "linear_algebra.h"
-#include "print.h"
 #include "atom_data.h"
 #include "physconst.h"
 
+#include "print.h"
 #define EXTERN
 #include "globals.h"
 
@@ -67,7 +67,7 @@ void MOLECULE::linesearch_step(void) {
   // Zero steps for frozen fragment
   for (int f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
-      psi::outfile->Printf("\tZero'ing out displacements for frozen fragment %d\n", f+1);
+      oprintf_out("\tZero'ing out displacements for frozen fragment %d\n", f+1);
       for (int i=0; i<fragments[f]->g_nintco(); ++i)
         dq[ g_intco_offset(f) + i ] = 0.0;
     }
@@ -91,8 +91,6 @@ void MOLECULE::linesearch_step(void) {
   double disp_min = Opt_params.linesearch_static_min;
   double disp_max = Opt_params.linesearch_static_max;
 
-  FILE *fout = fopen("linesearch_geoms.py", "w");
-
   double step_size =(disp_max - disp_min)/(Ndisp-1);
   
   for (int igeom=0; igeom<Ndisp; ++igeom) {
@@ -108,7 +106,7 @@ void MOLECULE::linesearch_step(void) {
     // do displacements for each fragment separately
     for (int f=0; f<fragments.size(); ++f) {
       if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
-        psi::outfile->Printf("\tDisplacements for frozen fragment %d skipped.\n", f+1);
+        oprintf_out("\tDisplacements for frozen fragment %d skipped.\n", f+1);
         continue;
       }
       fragments[f]->displace(&(dq[g_intco_offset(f)]), &(fq[g_intco_offset(f)]), g_atom_offset(f));
@@ -117,7 +115,7 @@ void MOLECULE::linesearch_step(void) {
     // do displacements for interfragment coordinates
     for (int I=0; I<interfragments.size(); ++I) {
       if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
-        psi::outfile->Printf("\tDisplacements for frozen interfragment %d skipped.\n", I+1);
+        oprintf_out("\tDisplacements for frozen interfragment %d skipped.\n", I+1);
         continue;
       }
       interfragments[I]->orient_fragment( &(dq[g_interfragment_intco_offset(I)]),
@@ -133,24 +131,32 @@ void MOLECULE::linesearch_step(void) {
     symmetrize_geom(); // now symmetrize the geometry for next step
 
     // Now write out file.
-    psi::outfile->Printf("\t Line search structure #%d : maximum intco change %8.4f\n", igeom+1, max_dq);
-    print_geom();
+    oprintf_out("\t Line search structure #%d : maximum intco change %8.4f\n", igeom+1, max_dq);
+    print_geom_out();
 
     std::stringstream geom_string;
     geom_string << "geom_" << igeom+1;
 
     double *coord = g_geom_array();
 
-    fprintf(fout,"%s = [ \n", geom_string.str().c_str());
+    FILE *qc_fout;
+    std::string psi_fout = "linesearch_geoms.py";
+#if defined(OPTKING_PACKAGE_QCHEM)
+    FILE *qc_fout = fopen("linesearch_geoms.py", "w");
+#endif
+
+    oprintf(psi_fout, qc_fout, "%s = [ \n", geom_string.str().c_str());
     for (int i=0; i<g_natom(); ++i)  {
       for (int xyz=0; xyz<3; ++xyz)
-        fprintf(fout, "%15.10lf,", coord[3*i+xyz]);
-      fprintf(fout,"\n");
+        oprintf(psi_fout, qc_fout, "%15.10lf,", coord[3*i+xyz]);
+      oprintf(psi_fout, qc_fout,"\n");
     }
-    fprintf(fout, " ] \n");
+    oprintf(psi_fout, qc_fout, " ] \n");
 
   }
+#if defined(OPTKING_PACKAGE_QCHEM)
   fclose(fout);
+#endif
   free_array(dq_orig);
 }
 

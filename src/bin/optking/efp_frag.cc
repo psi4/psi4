@@ -26,6 +26,7 @@
 
 #include "efp_frag.h"
 
+#include "print.h"
 #define EXTERN
 #include "globals.h"
 
@@ -56,16 +57,16 @@ void EFP_FRAG::add_dummy_intcos(int ndummy) {
 
 // We will assign a value of 0 to these on the first iteration; subsequently, the
 // values will be calculated as total Delta(q) from the start of the optimization
-void EFP_FRAG::print_intcos(std::string OutFileRMR) {
+void EFP_FRAG::print_intcos(std::string psi_fp, FILE *qc_fp) {
   double *v = get_values_pointer();
-  fprintf(fp,"\t * Coordinate *           * BOHR/RAD *       * ANG/DEG *\n");
-  fprintf(fp,"\t     COM X        %20.10lf%20.10lf \n", v[0], v[0] * _bohr2angstroms);
-  fprintf(fp,"\t     COM Y        %20.10lf%20.10lf \n", v[1], v[1] * _bohr2angstroms);
-  fprintf(fp,"\t     COM Z        %20.10lf%20.10lf \n", v[2], v[2] * _bohr2angstroms);
-  fprintf(fp,"\t     alpha        %20.10lf%20.10lf \n", v[3], v[3] / _pi * 180.0);
-  fprintf(fp,"\t     beta         %20.10lf%20.10lf \n", v[4], v[4] / _pi * 180.0);
-  fprintf(fp,"\t     gamma        %20.10lf%20.10lf \n", v[5], v[5] / _pi * 180.0);
-  fprintf(fp, "\n");
+  oprintf(psi_fp, qc_fp,"\t * Coordinate *           * BOHR/RAD *       * ANG/DEG *\n");
+  oprintf(psi_fp, qc_fp,"\t     COM X        %20.10lf%20.10lf \n", v[0], v[0] * _bohr2angstroms);
+  oprintf(psi_fp, qc_fp,"\t     COM Y        %20.10lf%20.10lf \n", v[1], v[1] * _bohr2angstroms);
+  oprintf(psi_fp, qc_fp,"\t     COM Z        %20.10lf%20.10lf \n", v[2], v[2] * _bohr2angstroms);
+  oprintf(psi_fp, qc_fp,"\t     alpha        %20.10lf%20.10lf \n", v[3], v[3] / _pi * 180.0);
+  oprintf(psi_fp, qc_fp,"\t     beta         %20.10lf%20.10lf \n", v[4], v[4] / _pi * 180.0);
+  oprintf(psi_fp, qc_fp,"\t     gamma        %20.10lf%20.10lf \n", v[5], v[5] / _pi * 180.0);
+  oprintf(psi_fp, qc_fp, "\n");
 }
 
 double **EFP_FRAG::H_guess(void) {
