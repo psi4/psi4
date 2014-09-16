@@ -94,7 +94,7 @@ OPTKING_PACKAGE_PSI/QCHEM specifies package
 contains declarations for wrapper functions to read and write from the binary i/o file
 
 *globals.h
-PSI/QCHEM : declares text output file (opt::outfile)
+PSI/QCHEM : declares text output file (string or filename
 PSI :
 defines set names of files for input/output
 includes "psi4-dec.h"
@@ -104,7 +104,7 @@ PSI/QCHEM :
  define return type OptReturnType for optking function
  defines the possible optking return values (at top of file)
 
- functions to open/set and close opt::outfile file pointer
+ functions to open/set and close outfile file
 
  opens/closes intco.dat file for writing
  opens/closes intco.dat file stream for reading
@@ -150,7 +150,7 @@ virtual bool is_inverse_stre() // for stretches - whether 1/R
 
 Contains the following virtual functions which must be provided by derived classes:
 // function to print coordinate definitions to file
-virtual void print_intco_dat(std::string OutFileRMR, int atom_offset=0) const = 0;
+virtual void print_intco_dat(std::string psi_fp, FILE *qc_fp, int atom_offset=0) const = 0;
 // return value of internal coordinate
 virtual double value(GeomType geom) const = 0;
 // compute s vector (dq/dx, dq/dy, dq/dz)
@@ -159,12 +159,12 @@ virtual double ** DqDx(GeomType geom) const = 0;
 // dq_i dq_j / dx^2, dydx, dy^2, dzdx, dzdy, dz^2 
 virtual double ** Dq2Dx2(GeomType geom) const = 0;
 // print coordinates and value to output file
-virtual void print(std::string OutFileRMR, GeomType geom, int atom_offset=0) const = 0;
+virtual void print(std::string psi_fp, FILE *qc_fp, GeomType geom, int atom_offset=0) const = 0;
 // print coordinates and displacements 
-virtual void print_disp(std::string OutFileRMR, const double old_q, const double f_q,
+virtual void print_disp(std::string psi_fp, FILE *qc_fp, const double old_q, const double f_q,
 const double dq, const double new_q, int atom_offset = 0) const = 0;
 // for debugging, print s vectors to output file
-virtual void print_s(std::string OutFileRMR, GeomType geom) const = 0;
+virtual void print_s(std::string psi_fp, FILE *qc_fp, GeomType geom) const = 0;
 // an equality operator
 virtual bool operator==(const SIMPLE & s2) const  = 0;
 
