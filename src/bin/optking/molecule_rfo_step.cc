@@ -31,10 +31,10 @@
 #include <sstream>
 
 #include "linear_algebra.h"
-#include "print.h"
 #include "atom_data.h"
 #include "physconst.h"
 
+#include "print.h"
 #define EXTERN
 #include "globals.h"
 
@@ -78,8 +78,8 @@ void MOLECULE::rfo_step(void) {
     RFO[i][dim]= RFO[dim][i] = -fq[i]; 
 
   if (Opt_params.print_lvl >= 4) {
-    psi::outfile->Printf("Original, unscaled RFO mat\n");
-    print_matrix("outfile", RFO, dim+1, dim+1);
+    oprintf_out("Original, unscaled RFO mat\n");
+    oprint_matrix_out(RFO, dim+1, dim+1);
   }
 
   int rfo_root, f;     // root to follow
@@ -111,7 +111,7 @@ void MOLECULE::rfo_step(void) {
     // intrafragment_step_limit below.
 
     if (iter == max_projected_rfo_iter) {
-      psi::outfile->Printf("\tFailed to converge alpha.  Doing simple step scaling instead.\n");
+      oprintf_out("\tFailed to converge alpha.  Doing simple step scaling instead.\n");
 
       alpha = 1;
     }
@@ -126,8 +126,8 @@ void MOLECULE::rfo_step(void) {
       SRFO[dim][i] = RFO[dim][i];
     }
     if (Opt_params.print_lvl >= 4) {
-      psi::outfile->Printf("\nScaled RFO matrix.\n");
-      print_matrix("outfile",  SRFO, dim+1, dim+1);
+      oprintf_out("\nScaled RFO matrix.\n");
+      oprint_matrix_out( SRFO, dim+1, dim+1);
       
     }
 
@@ -135,17 +135,17 @@ void MOLECULE::rfo_step(void) {
     opt_asymm_matrix_eig(SRFO, dim+1, SRFOevals);
     if (Opt_params.print_lvl >= 4) {
 
-      psi::outfile->Printf("Eigenvectors of scaled RFO matrix.\n");
-      print_matrix("outfile", SRFO, dim+1,dim+1);
+      oprintf_out("Eigenvectors of scaled RFO matrix.\n");
+      oprint_matrix_out(SRFO, dim+1,dim+1);
     }
     if (Opt_params.print_lvl >= 2) {
-      psi::outfile->Printf("Eigenvalues of scaled RFO matrix.\n");
+      oprintf_out("Eigenvalues of scaled RFO matrix.\n");
       int cnt2=0;
       for (i=0; i<dim+1; ++i) {
-        psi::outfile->Printf("%10.6lf", SRFOevals[i]);
-        if (++cnt2 == 6) psi::outfile->Printf("\n");
+        oprintf_out("%10.6lf", SRFOevals[i]);
+        if (++cnt2 == 6) oprintf_out("\n");
       }
-      psi::outfile->Printf("\n");
+      oprintf_out("\n");
     }
 
     // Do intermediate normalization.  
@@ -160,8 +160,8 @@ void MOLECULE::rfo_step(void) {
       }
     }
     if (Opt_params.print_lvl >= 4) {
-      psi::outfile->Printf("All scaled RFO eigenvectors (rows).\n");
-      print_matrix("outfile", SRFO, dim+1, dim+1);
+      oprintf_out("All scaled RFO eigenvectors (rows).\n");
+      oprint_matrix_out(SRFO, dim+1, dim+1);
     }
 
     // Choose which RFO eigenvector to use.
@@ -169,16 +169,16 @@ void MOLECULE::rfo_step(void) {
     if ( (!Opt_params.rfo_follow_root) || (p_Opt_data->g_iteration() == 1)) {
       rfo_root = Opt_params.rfo_root;
       if (iter == 0)
-        psi::outfile->Printf("\tGoing to follow RFO solution %d.\n", rfo_root+1);
+        oprintf_out("\tGoing to follow RFO solution %d.\n", rfo_root+1);
 
       // Now test RFO eigenvector and make sure that it is totally symmetric.
       while (!symm_rfo_step) {
         symm_rfo_step = intco_combo_is_symmetric(SRFO[rfo_root], dim);
 
         if (!symm_rfo_step) {
-          psi::outfile->Printf("\tRejecting RFO root %d because it breaks the molecular point group.\n", rfo_root+1);
-          psi::outfile->Printf("\tIf you are doing an energy minimization, there may exist a lower-energy, ");
-          psi::outfile->Printf("structure with less symmetry.\n");
+          oprintf_out("\tRejecting RFO root %d because it breaks the molecular point group.\n", rfo_root+1);
+          oprintf_out("\tIf you are doing an energy minimization, there may exist a lower-energy, ");
+          oprintf_out("structure with less symmetry.\n");
           ++rfo_root;
         }
 
@@ -196,18 +196,18 @@ void MOLECULE::rfo_step(void) {
         }
       }
       if (iter == 0)
-        psi::outfile->Printf("RFO vector %d overlaps most with earlier step.\n", rfo_root+1);
+        oprintf_out("RFO vector %d overlaps most with earlier step.\n", rfo_root+1);
     }
 
     // Print only the lowest eigenvalues/eigenvectors
     if (Opt_params.print_lvl >= 2) {
-      psi::outfile->Printf("\trfo_root is %d\n", rfo_root);
+      oprintf_out("\trfo_root is %d\n", rfo_root);
       for (i=0; i<dim+1; ++i) {
         if ((SRFOevals[i] < -0.000001) || (i <rfo_root)) {
-          psi::outfile->Printf("\nScaled RFO eigenvalue %d: %15.10lf (or 2*%-15.10lf)\n", i+1, SRFOevals[i], SRFOevals[i]/2);
-          psi::outfile->Printf("eigenvector:\n");
-          print_matrix("outfile", &(SRFO[i]), 1, dim+1);
-          psi::outfile->Printf("\n");
+          oprintf_out("\nScaled RFO eigenvalue %d: %15.10lf (or 2*%-15.10lf)\n", i+1, SRFOevals[i], SRFOevals[i]/2);
+          oprintf_out("eigenvector:\n");
+          oprint_matrix_out(&(SRFO[i]), 1, dim+1);
+          oprintf_out("\n");
         }
       }
     }
@@ -223,7 +223,7 @@ void MOLECULE::rfo_step(void) {
     // Zero steps for frozen fragment.  If user has specified.
     for (f=0; f<fragments.size(); ++f) {
       if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
-        psi::outfile->Printf("\tZero'ing out displacements for frozen fragment %d\n", f+1);
+        oprintf_out("\tZero'ing out displacements for frozen fragment %d\n", f+1);
         for (i=0; i<fragments[f]->g_nintco(); ++i)
           dq[ g_intco_offset(f) + i ] = 0.0;
       }
@@ -240,20 +240,20 @@ void MOLECULE::rfo_step(void) {
 
     if (iter == 0 && !converged) {
 
-      psi::outfile->Printf("\n\tDetermining step-restricting scale parameter for RS-RFO.\n");
-      psi::outfile->Printf("\tMaximum step size allowed %10.5lf\n\n", trust);
-      psi::outfile->Printf("\t Iter      |step|        alpha \n");
-      psi::outfile->Printf("\t---------------------------------\n");
-      psi::outfile->Printf("\t%5d%12.5lf%14.5lf\n", iter, sqrt(dqtdq), alpha);
+      oprintf_out("\n\tDetermining step-restricting scale parameter for RS-RFO.\n");
+      oprintf_out("\tMaximum step size allowed %10.5lf\n\n", trust);
+      oprintf_out("\t Iter      |step|        alpha \n");
+      oprintf_out("\t---------------------------------\n");
+      oprintf_out("\t%5d%12.5lf%14.5lf\n", iter, sqrt(dqtdq), alpha);
     }
     else if ( (iter > 0) && !Opt_params.simple_step_scaling)
-      psi::outfile->Printf("\t%5d%12.5lf%14.5lf\n", iter, sqrt(dqtdq), alpha);
+      oprintf_out("\t%5d%12.5lf%14.5lf\n", iter, sqrt(dqtdq), alpha);
 
 
     // Find the analytical derivative.
     lambda = -1 * array_dot(fq, dq, dim);
     if (Opt_params.print_lvl >= 2)
-      psi::outfile->Printf("\tlambda calculated by (dq^t).(-f)     = %20.10lf\n", lambda);
+      oprintf_out("\tlambda calculated by (dq^t).(-f)     = %20.10lf\n", lambda);
 
     // Calculate derivative of step size wrt alpha.
     // Equation 20, Besalu and Bofill, Theor. Chem. Acc., 1999, 100:265-274
@@ -263,7 +263,7 @@ void MOLECULE::rfo_step(void) {
 
     analyticDerivative = 2*lambda / (1+alpha*dqtdq ) * sum;
     if (Opt_params.print_lvl >= 2)
-      psi::outfile->Printf("\tAnalytic derivative d(norm)/d(alpha) = %20.10lf\n", analyticDerivative);
+      oprintf_out("\tAnalytic derivative d(norm)/d(alpha) = %20.10lf\n", analyticDerivative);
 
     // Calculate new scaling alpha value.
     // Equation 20, Besalu and Bofill, Theor. Chem. Acc., 1999, 100:265-274
@@ -271,15 +271,15 @@ void MOLECULE::rfo_step(void) {
   }
 
   if ((iter > 0) && !Opt_params.simple_step_scaling)
-    psi::outfile->Printf("\t-------------------------------\n");
+    oprintf_out("\t-------------------------------\n");
 
   // Crude/old way to limit step size if restricted step algorithm failed.
   if (!converged)
     apply_intrafragment_step_limit(dq);
 
   if (Opt_params.print_lvl >= 3) {
-    psi::outfile->Printf("\tFinal scaled step dq:\n");
-    print_matrix("outfile", &dq, 1, dim);
+    oprintf_out("\tFinal scaled step dq:\n");
+    oprint_matrix_out(&dq, 1, dim);
   }
 
   // Save and print out RFO eigenvector(s) 
@@ -296,7 +296,7 @@ void MOLECULE::rfo_step(void) {
     rfo_h += rfo_u[i] * array_dot(Hevects[i], rfo_u, dim);
 
   DE_projected = DE_rfo_energy(rfo_dqnorm, rfo_g, rfo_h);
-  psi::outfile->Printf("\tProjected energy change by RFO approximation: %20.10lf\n", DE_projected);
+  oprintf_out("\tProjected energy change by RFO approximation: %20.10lf\n", DE_projected);
 
   free_matrix(Hevects);
   free_array(h);
@@ -315,12 +315,12 @@ void MOLECULE::rfo_step(void) {
   double N = array_dot(dq, Gdq, dim);
   N = sqrt(N);
   free_array(Gdq);
-  psi::outfile->Printf("Step-size in mass-weighted internal coordinates: %20.10lf\n", N);
+  oprintf_out("Step-size in mass-weighted internal coordinates: %20.10lf\n", N);
 */
 
   for (f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
-      psi::outfile->Printf("\tDisplacements for frozen fragment %d skipped.\n", f+1);
+      oprintf_out("\tDisplacements for frozen fragment %d skipped.\n", f+1);
       continue;
     }
     fragments[f]->displace(&(dq[g_intco_offset(f)]), &(fq[g_intco_offset(f)]), g_atom_offset(f));
@@ -329,7 +329,7 @@ void MOLECULE::rfo_step(void) {
   // do displacements for interfragment coordinates
   for (int I=0; I<interfragments.size(); ++I) {
     if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
-      psi::outfile->Printf("\tDisplacements for frozen interfragment %d skipped.\n", I+1);
+      oprintf_out("\tDisplacements for frozen interfragment %d skipped.\n", I+1);
       continue;
     }
     interfragments[I]->orient_fragment( &(dq[g_interfragment_intco_offset(I)]),
@@ -355,7 +355,7 @@ void MOLECULE::rfo_step(void) {
                * masses[i];
 
   sum = sqrt(sum);
-  psi::outfile->Printf("Step-size in mass-weighted cartesian coordinates [bohr (amu)^1/2] : %20.10lf\n", sum);
+  oprintf_out("Step-size in mass-weighted cartesian coordinates [bohr (amu)^1/2] : %20.10lf\n", sum);
   free_array(x_after);
   free_array(x_before);
   free_array(masses);

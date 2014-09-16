@@ -25,6 +25,7 @@
     \brief set optimization parameters
 */
 
+#include "print.h"
 #define EXTERN
 #include "globals.h"
 
@@ -38,7 +39,7 @@
 
 namespace opt {
 
-void print_params(void);
+void print_params_out(void);
 
 #if defined(OPTKING_PACKAGE_PSI)
 void set_params(psi::Options & options)
@@ -327,6 +328,8 @@ void set_params(void)
 //  Opt_params.print_lvl = 1;
     Opt_params.print_lvl = options.get_int("PRINT");
 
+    Opt_params.print_trajectory_xyz_file = options.get_bool("PRINT_TRAJECTORY_XYZ_FILE");
+
 // Read cartesian Hessian.  Make reading the default for IRC.
     if ((Opt_params.opt_type == OPT_PARAMS::IRC) &&
         (options["CART_HESS_READ"].has_changed() == 0))
@@ -517,6 +520,8 @@ void set_params(void)
 // (default 1)
   Opt_params.print_lvl = rem_read(REM_GEOM_OPT2_PRINT_LVL);
 
+  Opt_params.print_trajectory_xyz_file = rem_read(REM_GEOM_OPT2_PRINT_TRAJECTORY_XYZ_FILE);
+
 // read Hessian (default 0)
   Opt_params.read_cartesian_H = rem_read(REM_GEOM_OPT2_READ_CARTESIAN_H);
 
@@ -644,174 +649,179 @@ void set_params(void)
     Opt_params.test_derivative_B = false;
   }
 
-  if (Opt_params.print_lvl > 1) print_params();
+  if (Opt_params.print_lvl > 1) print_params_out();
 
 }
 
-void print_params(void) {
+void print_params_out(void) {
 
-  psi::outfile->Printf( "conv_max_force         = %18.2e\n", Opt_params.conv_max_force);
-  psi::outfile->Printf( "conv_rms_force         = %18.2e\n", Opt_params.conv_rms_force);
-  psi::outfile->Printf( "conv_max_DE            = %18.2e\n", Opt_params.conv_max_DE);
-  psi::outfile->Printf( "conv_max_disp          = %18.2e\n", Opt_params.conv_max_disp);
-  psi::outfile->Printf( "conv_rms_disp          = %18.2e\n", Opt_params.conv_rms_disp);
+  oprintf_out( "conv_max_force         = %18.2e\n", Opt_params.conv_max_force);
+  oprintf_out( "conv_rms_force         = %18.2e\n", Opt_params.conv_rms_force);
+  oprintf_out( "conv_max_DE            = %18.2e\n", Opt_params.conv_max_DE);
+  oprintf_out( "conv_max_disp          = %18.2e\n", Opt_params.conv_max_disp);
+  oprintf_out( "conv_rms_disp          = %18.2e\n", Opt_params.conv_rms_disp);
 
-  psi::outfile->Printf( "scale_connectivity     = %18.2e\n", Opt_params.scale_connectivity);
-  psi::outfile->Printf( "interfragment_scale_connectivity = %18.2e\n",
+  oprintf_out( "scale_connectivity     = %18.2e\n", Opt_params.scale_connectivity);
+  oprintf_out( "interfragment_scale_connectivity = %18.2e\n",
     Opt_params.interfragment_scale_connectivity);
 
   if (Opt_params.fragment_mode == OPT_PARAMS::SINGLE)
-  psi::outfile->Printf( "fragment_mode          = %18s\n", "single");
+  oprintf_out( "fragment_mode          = %18s\n", "single");
   else if (Opt_params.fragment_mode == OPT_PARAMS::MULTI)
-  psi::outfile->Printf( "fragment_mode          = %18s\n", "multi");
+  oprintf_out( "fragment_mode          = %18s\n", "multi");
 
   if (Opt_params.interfragment_mode == OPT_PARAMS::FIXED)
-  psi::outfile->Printf( "interfragment_mode        = %18s\n", "fixed");
+  oprintf_out( "interfragment_mode        = %18s\n", "fixed");
   else if (Opt_params.interfragment_mode == OPT_PARAMS::PRINCIPAL_AXES)
-  psi::outfile->Printf( "interfragment_mode        = %18s\n", "principal axes");
+  oprintf_out( "interfragment_mode        = %18s\n", "principal axes");
 
   if (Opt_params.generate_intcos_only)
-  psi::outfile->Printf( "generate_intcos_only   = %18s\n", "true");
+  oprintf_out( "generate_intcos_only   = %18s\n", "true");
   else
-  psi::outfile->Printf( "generate_intcos_only   = %18s\n", "false");
+  oprintf_out( "generate_intcos_only   = %18s\n", "false");
 
   if (Opt_params.ensure_bt_convergence)
-    psi::outfile->Printf("ensure_bt_convergence = %17s\n", "true");
+    oprintf_out("ensure_bt_convergence = %17s\n", "true");
   else
-    psi::outfile->Printf("ensure_bt_convergence = %17s\n", "false");
+    oprintf_out("ensure_bt_convergence = %17s\n", "false");
 
   if (Opt_params.rfo_follow_root)
-  psi::outfile->Printf( "rfo_follow_root        = %18s\n", "true");
+  oprintf_out( "rfo_follow_root        = %18s\n", "true");
   else
-  psi::outfile->Printf( "rfo_follow_root        = %18s\n", "false");
+  oprintf_out( "rfo_follow_root        = %18s\n", "false");
 
-  psi::outfile->Printf( "rfo_root               = %18d\n", Opt_params.rfo_root);
+  oprintf_out( "rfo_root               = %18d\n", Opt_params.rfo_root);
 
-  psi::outfile->Printf( "rfo_normalization_min  = %18.2e\n", Opt_params.rfo_normalization_min);
+  oprintf_out( "rfo_normalization_min  = %18.2e\n", Opt_params.rfo_normalization_min);
 
   if (Opt_params.step_type == OPT_PARAMS::NR)
-  psi::outfile->Printf( "step_type              = %18s\n", "N-R");
+  oprintf_out( "step_type              = %18s\n", "N-R");
   else if (Opt_params.step_type == OPT_PARAMS::RFO)
-  psi::outfile->Printf( "step_type              = %18s\n", "RFO");
+  oprintf_out( "step_type              = %18s\n", "RFO");
   else if (Opt_params.step_type == OPT_PARAMS::P_RFO)
-  psi::outfile->Printf( "step_type              = %18s\n", "P_RFO");
+  oprintf_out( "step_type              = %18s\n", "P_RFO");
   else if (Opt_params.step_type == OPT_PARAMS::LINESEARCH_STATIC)
-  psi::outfile->Printf( "step_type              = %18s\n", "Static linesearch");
+  oprintf_out( "step_type              = %18s\n", "Static linesearch");
 
-  psi::outfile->Printf( "linesearch_static_N    = %18d\n", Opt_params.linesearch_static_N);
-  psi::outfile->Printf( "linesearch_static_min  = %18.3e\n", Opt_params.linesearch_static_min);
-  psi::outfile->Printf( "linesearch_static_max  = %18.3e\n", Opt_params.linesearch_static_max);
+  oprintf_out( "linesearch_static_N    = %18d\n", Opt_params.linesearch_static_N);
+  oprintf_out( "linesearch_static_min  = %18.3e\n", Opt_params.linesearch_static_min);
+  oprintf_out( "linesearch_static_max  = %18.3e\n", Opt_params.linesearch_static_max);
 
-  psi::outfile->Printf("consecutive_backsteps  = %18d\n",  Opt_params.consecutive_backsteps_allowed);
+  oprintf_out("consecutive_backsteps  = %18d\n",  Opt_params.consecutive_backsteps_allowed);
 
   if (Opt_params.intrafragment_H == OPT_PARAMS::FISCHER)
-  psi::outfile->Printf( "intrafragment_H        = %18s\n", "Fischer");
+  oprintf_out( "intrafragment_H        = %18s\n", "Fischer");
   else if (Opt_params.intrafragment_H == OPT_PARAMS::SCHLEGEL)
-  psi::outfile->Printf( "intrafragment_H        = %18s\n", "Schlegel");
+  oprintf_out( "intrafragment_H        = %18s\n", "Schlegel");
   else if (Opt_params.intrafragment_H == OPT_PARAMS::SIMPLE)
-  psi::outfile->Printf( "intrafragment_H        = %18s\n", "Simple");
+  oprintf_out( "intrafragment_H        = %18s\n", "Simple");
   else if (Opt_params.intrafragment_H == OPT_PARAMS::LINDH)
-  psi::outfile->Printf( "intrafragment_H        = %18s\n", "Lindh");
+  oprintf_out( "intrafragment_H        = %18s\n", "Lindh");
   else if (Opt_params.intrafragment_H == OPT_PARAMS::LINDH_SIMPLE)
-  psi::outfile->Printf( "intrafragment_H        = %18s\n", "Lindh - Simple");
+  oprintf_out( "intrafragment_H        = %18s\n", "Lindh - Simple");
 
   if (Opt_params.interfragment_H == OPT_PARAMS::DEFAULT)
-  psi::outfile->Printf( "interfragment_H        = %18s\n", "Default");
+  oprintf_out( "interfragment_H        = %18s\n", "Default");
   else if (Opt_params.interfragment_H == OPT_PARAMS::FISCHER_LIKE)
-  psi::outfile->Printf( "interfragment_H        = %18s\n", "Fischer_like");
+  oprintf_out( "interfragment_H        = %18s\n", "Fischer_like");
 
   if (Opt_params.H_update == OPT_PARAMS::NONE)
-  psi::outfile->Printf( "H_update               = %18s\n", "None");
+  oprintf_out( "H_update               = %18s\n", "None");
   else if (Opt_params.H_update == OPT_PARAMS::BFGS)
-  psi::outfile->Printf( "H_update               = %18s\n", "BFGS");
+  oprintf_out( "H_update               = %18s\n", "BFGS");
   else if (Opt_params.H_update == OPT_PARAMS::MS)
-  psi::outfile->Printf( "H_update               = %18s\n", "MS");
+  oprintf_out( "H_update               = %18s\n", "MS");
   else if (Opt_params.H_update == OPT_PARAMS::POWELL)
-  psi::outfile->Printf( "H_update               = %18s\n", "Powell");
+  oprintf_out( "H_update               = %18s\n", "Powell");
   else if (Opt_params.H_update == OPT_PARAMS::BOFILL)
-  psi::outfile->Printf( "H_update               = %18s\n", "Bofill");
+  oprintf_out( "H_update               = %18s\n", "Bofill");
 
-  psi::outfile->Printf( "H_update_use_last      = %18d\n", Opt_params.H_update_use_last);
+  oprintf_out( "H_update_use_last      = %18d\n", Opt_params.H_update_use_last);
 
   if (Opt_params.freeze_intrafragment)
-  psi::outfile->Printf( "freeze_intrafragment   = %18s\n", "true");
+  oprintf_out( "freeze_intrafragment   = %18s\n", "true");
   else
-  psi::outfile->Printf( "freeze_intrafragment   = %18s\n", "false");
+  oprintf_out( "freeze_intrafragment   = %18s\n", "false");
 
-  psi::outfile->Printf( "intrafragment_step_limit=%18.2e\n", Opt_params.intrafragment_step_limit);
+  oprintf_out( "intrafragment_step_limit=%18.2e\n", Opt_params.intrafragment_step_limit);
 
-  psi::outfile->Printf( "interfragment_step_limit=%18.2e\n", Opt_params.interfragment_step_limit);
+  oprintf_out( "interfragment_step_limit=%18.2e\n", Opt_params.interfragment_step_limit);
 
   if (Opt_params.add_auxiliary_bonds)
-    psi::outfile->Printf( "add_auxiliary_bonds   = %18s\n", "true");
+    oprintf_out( "add_auxiliary_bonds   = %18s\n", "true");
   else
-    psi::outfile->Printf( "add_auxiliary_bonds   = %18s\n", "false");
+    oprintf_out( "add_auxiliary_bonds   = %18s\n", "false");
 
   if (Opt_params.H_guess_every)
-    psi::outfile->Printf( "H_guess_every         = %18s\n", "true");
+    oprintf_out( "H_guess_every         = %18s\n", "true");
   else
-    psi::outfile->Printf( "H_guess_every         = %18s\n", "false");
+    oprintf_out( "H_guess_every         = %18s\n", "false");
 
-  psi::outfile->Printf( "auxiliary_bond_factor =%18.2e\n", Opt_params.auxiliary_bond_factor);
+  oprintf_out( "auxiliary_bond_factor =%18.2e\n", Opt_params.auxiliary_bond_factor);
 
   if (Opt_params.H_update_limit)
-    psi::outfile->Printf( "H_update_limit         = %18s\n", "true");
+    oprintf_out( "H_update_limit         = %18s\n", "true");
   else
-    psi::outfile->Printf( "H_update_limit         = %18s\n", "false");
+    oprintf_out( "H_update_limit         = %18s\n", "false");
 
-  psi::outfile->Printf( "H_update_limit_scale   = %18.2e\n", Opt_params.H_update_limit_scale);
-  psi::outfile->Printf( "H_update_limit_max     = %18.2e\n", Opt_params.H_update_limit_max);
+  oprintf_out( "H_update_limit_scale   = %18.2e\n", Opt_params.H_update_limit_scale);
+  oprintf_out( "H_update_limit_max     = %18.2e\n", Opt_params.H_update_limit_max);
 
   if (Opt_params.interfragment_distance_inverse)
-  psi::outfile->Printf( "interfragment_distance_inverse=%12s\n", "true");
+  oprintf_out( "interfragment_distance_inverse=%12s\n", "true");
   else
-  psi::outfile->Printf( "interfragment_distance_inverse=%12s\n", "false");
+  oprintf_out( "interfragment_distance_inverse=%12s\n", "false");
 
   if (Opt_params.write_final_step_geometry)
-  psi::outfile->Printf( "write_final_step_geometry= %16s\n", "true");
+  oprintf_out( "write_final_step_geometry= %16s\n", "true");
   else
-  psi::outfile->Printf( "write_final_step_geometry= %16s\n", "false");
+  oprintf_out( "write_final_step_geometry= %16s\n", "false");
 
-  psi::outfile->Printf( "maximum_H_bond_distance= %18.2e\n", Opt_params.maximum_H_bond_distance);
+  oprintf_out( "maximum_H_bond_distance= %18.2e\n", Opt_params.maximum_H_bond_distance);
 
   if (Opt_params.read_cartesian_H)
-  psi::outfile->Printf( "read_cartesian_H       = %18s\n", "true");
+  oprintf_out( "read_cartesian_H       = %18s\n", "true");
   else
-  psi::outfile->Printf( "read_cartesian_H       = %18s\n", "false");
+  oprintf_out( "read_cartesian_H       = %18s\n", "false");
 
   if (Opt_params.efp_fragments)
-  psi::outfile->Printf( "efp_fragments          = %18s\n", "true");
+  oprintf_out( "efp_fragments          = %18s\n", "true");
   else
-  psi::outfile->Printf( "efp_fragments          = %18s\n", "false");
+  oprintf_out( "efp_fragments          = %18s\n", "false");
 
   if (Opt_params.efp_fragments_only)
-  psi::outfile->Printf( "efp_fragments_only     = %18s\n", "true");
+  oprintf_out( "efp_fragments_only     = %18s\n", "true");
   else
-  psi::outfile->Printf( "efp_fragments_only     = %18s\n", "false");
+  oprintf_out( "efp_fragments_only     = %18s\n", "false");
 
-  psi::outfile->Printf( "frozen_distance: \n");
+  oprintf_out( "frozen_distance: \n");
   if (!Opt_params.frozen_distance_str.empty())
-    psi::outfile->Printf( "%s\n", Opt_params.frozen_distance_str.c_str());
+    oprintf_out( "%s\n", Opt_params.frozen_distance_str.c_str());
 
-  psi::outfile->Printf( "frozen_bend: \n");
+  oprintf_out( "frozen_bend: \n");
   if (!Opt_params.frozen_bend_str.empty())
-    psi::outfile->Printf( "%s\n", Opt_params.frozen_bend_str.c_str());
+    oprintf_out( "%s\n", Opt_params.frozen_bend_str.c_str());
 
-  psi::outfile->Printf( "frozen_dihedral: \n");
+  oprintf_out( "frozen_dihedral: \n");
   if (!Opt_params.frozen_dihedral_str.empty())
-    psi::outfile->Printf( "%s\n", Opt_params.frozen_dihedral_str.c_str());
+    oprintf_out( "%s\n", Opt_params.frozen_dihedral_str.c_str());
 
-  psi::outfile->Printf( "fixed_distance: \n");
+  oprintf_out( "fixed_distance: \n");
   if (!Opt_params.fixed_distance_str.empty())
-    psi::outfile->Printf( "%s\n", Opt_params.fixed_distance_str.c_str());
+    oprintf_out( "%s\n", Opt_params.fixed_distance_str.c_str());
 
-  psi::outfile->Printf( "fixed_bend: \n");
+  oprintf_out( "fixed_bend: \n");
   if (!Opt_params.fixed_bend_str.empty())
-    psi::outfile->Printf( "%s\n", Opt_params.fixed_bend_str.c_str());
+    oprintf_out( "%s\n", Opt_params.fixed_bend_str.c_str());
 
-  psi::outfile->Printf( "fixed_dihedral: \n");
+  oprintf_out( "fixed_dihedral: \n");
   if (!Opt_params.fixed_dihedral_str.empty())
-    psi::outfile->Printf( "%s\n", Opt_params.fixed_dihedral_str.c_str());
+    oprintf_out( "%s\n", Opt_params.fixed_dihedral_str.c_str());
+
+  if (Opt_params.print_trajectory_xyz_file)
+    oprintf_out("print_trajectory_xyz_file = %18s\n", "true");
+  else
+    oprintf_out("print_trajectory_xyz_file = %18s\n", "false");
 }
 
 }

@@ -31,10 +31,10 @@
 #include <sstream>
 
 #include "linear_algebra.h"
-#include "print.h"
 #include "atom_data.h"
 #include "physconst.h"
 
+#include "print.h"
 #define EXTERN
 #include "globals.h"
 
@@ -74,7 +74,7 @@ void MOLECULE::nr_step(void) {
   // Zero steps for frozen fragment
   for (f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
-      psi::outfile->Printf("\tZero'ing out displacements for frozen fragment %d\n", f+1);
+      oprintf_out("\tZero'ing out displacements for frozen fragment %d\n", f+1);
       for (i=0; i<fragments[f]->g_nintco(); ++i)
         dq[ g_intco_offset(f) + i ] = 0.0;
     }
@@ -97,12 +97,12 @@ void MOLECULE::nr_step(void) {
     nr_h += nr_u[i] * array_dot(H[i], nr_u, Nintco);
 
   DE_projected = DE_nr_energy(nr_dqnorm, nr_g, nr_h);
-  psi::outfile->Printf("\tProjected energy change by quadratic approximation: %20.10lf\n", DE_projected);
+  oprintf_out("\tProjected energy change by quadratic approximation: %20.10lf\n", DE_projected);
 
   // do displacements for each fragment separately
   for (f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
-      psi::outfile->Printf("\tDisplacements for frozen fragment %d skipped.\n", f+1);
+      oprintf_out("\tDisplacements for frozen fragment %d skipped.\n", f+1);
       continue;
     }
     fragments[f]->displace(&(dq[g_intco_offset(f)]), &(fq[g_intco_offset(f)]), g_atom_offset(f));
@@ -111,7 +111,7 @@ void MOLECULE::nr_step(void) {
   // do displacements for interfragment coordinates
   for (int I=0; I<interfragments.size(); ++I) {
     if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
-      psi::outfile->Printf("\tDisplacements for frozen interfragment %d skipped.\n", I+1);
+      oprintf_out("\tDisplacements for frozen interfragment %d skipped.\n", I+1);
       continue;
     }
     interfragments[I]->orient_fragment( &(dq[g_interfragment_intco_offset(I)]),
