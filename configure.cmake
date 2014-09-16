@@ -10,9 +10,28 @@ try:
     import argparse
 except ImportError:
     print(
-"""Error: Your Python interpreter (version %s) is older than 2.7.
-Since psi4 needs 2.7, too, please consider upgrading. Get the python
-development libraries (provides "python-config") while you're at it.""" % (sys.version[:6].strip()))
+"""ERROR: Unable to import module "argparse" needed by this script. This
+is probably because your Python interpreter (version %s) is older
+than 2.7. While psi4 itself runs with >=2.6 at present, we may require
+>=2.7 in future. You can:
+
+(a) Upgrade python now to 2.7. Get the the python development libraries
+    (provides "python-config") while you're at it. Then re-execute this
+    script and continue with the psi4 build.
+
+(b) Keep python 2.6 and install just the "argparse" module from
+    https://pypi.python.org/pypi/argparse . Then re-execute this script
+    and continue with the psi4 build.
+
+(c) This script is just a wrapper that translates --with-option=VALUE
+    specifications into cmake -DOPTION=VALUE style arguments, does some
+    sanity checking, and defines common sets of options (e.g., --with-opt).
+    It does not peer into your computer's libraries or compilers. So, you
+    are welcome to skip this script and call "cmake" directly. Or, you
+    can run this script with the options you want on a computer with
+    python >=2.7, note the options passed to "cmake" and use those to
+    proceed on this computer with the psi4 build.
+""" % (sys.version[:6].strip()))
     sys.exit(1)
 import subprocess
 
