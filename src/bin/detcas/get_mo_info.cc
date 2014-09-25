@@ -68,8 +68,7 @@ void get_mo_info(void)
                 CalcInfo.rstr_docc, CalcInfo.rstr_uocc,
                 CalcInfo.ras_opi, CalcInfo.pitz2ci, 1, 0)) 
    { 
-     fprintf(outfile, "Error in ras_set().  Aborting.\n");
-     exit(1);
+     throw PsiException("Error in ras_set().  Aborting.", __FILE__, __LINE__) ;
    }
    
 

@@ -15,6 +15,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
+#include <string>
 #include <libciomr/libciomr.h>
 #include <libipv1/ip_lib.h>
 #include <libpsio/psio.h>
@@ -80,9 +81,10 @@ void close_io(void)
 void check(int a, const char *errmsg)
 {
   if (!a) {
-    fprintf(outfile, "%s\n", errmsg);
+    // fprintf(outfile, "%s\n", errmsg);
     close_io();
-    exit(1);
+    throw PsiException(std::string str(errmsg), __FILE__, __LINE__);
+    //exit(1);
   }
 }
 

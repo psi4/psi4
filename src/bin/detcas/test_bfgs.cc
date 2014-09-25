@@ -62,8 +62,9 @@ void test_bfgs(void)
     printf("\n");
 
     if (fabs(E - E_last) < 0.00001) {
-      printf("Converged\n");
-      exit(1);
+      //printf("Converged\n");
+      //exit(1);
+      throw PsiException("Converged", __FILE__, __LINE__) ;
     }
 
     for (i=0; i<ndim; i++) {
@@ -119,7 +120,9 @@ void test_bfgs(void)
   free(x_cur);  free(x_last);  free(g_cur);  free(g_last);
   free(dx);  free(dg);  free(hdg);
   free_block(hessin);
-  exit(0); 
+
+  //exit(0); 
+  throw PsiException("BFGS Test end.", __FILE__, __LINE__) ;
 }
 
 double dfunc(double *x, double *g)

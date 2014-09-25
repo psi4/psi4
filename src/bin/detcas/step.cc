@@ -139,9 +139,10 @@ void calc_orb_step_full(int npairs, double *grad, double **hess, double *theta)
       }
     }
     else {
-      fprintf(outfile,"FAILED TO SOLVE FOR THETA VALUES\n");
-      fprintf(outfile,"DGESV returned error %5d \n",solved);
-      exit(0);
+      //fprintf(outfile,"FAILED TO SOLVE FOR THETA VALUES\n");
+      //fprintf(outfile,"DGESV returned error %5d \n",solved);
+      throw PsiException("FAILED TO SOLVE FOR THETA VALUES\n"), __FILE__, __LINE__) ;
+      //exit(0);
     }
     free(BVector);
     free(pivots);
