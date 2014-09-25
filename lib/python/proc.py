@@ -2808,3 +2808,43 @@ def run_cepa(name, **kwargs):
 
     return psi4.get_variable("CURRENT ENERGY")
 
+
+def run_detcas(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    determinant-based multireference wavefuncations,
+    namely CASSCF and RASSCF.
+    """
+
+    optstash = p4util.OptionsState(
+        ['TRANSQT2', 'WFN'],
+        ['DETCI', 'WFN'],
+        ['DETCAS', 'WFN']
+    )
+
+
+    user_ref = psi4.get_option('DETCI', 'REFERENCE')
+    if (user_ref != 'RHF') and (user_ref != 'ROHF'):
+        raise ValidationError('Reference %s for DETCI is not available.' % user_ref)
+
+    if (name.lower() == 'rasscf'):
+        psi4.set_local_option('TRANSQT2', 'WFN', 'RASSCF')
+        psi4.set_local_option('DETCI', 'WFN', 'RASSCF')
+        psi4.set_local_option('DETCAS', 'WFN', 'RASSCF')
+    elif (name.lower() == 'casscf'):
+        psi4.set_local_option('TRANSQT2', 'WFN', 'CASSCF')
+        psi4.set_local_option('DETCI', 'WFN', 'CASSCF')
+        psi4.set_local_option('DETCAS', 'WFN', 'CASSCF')
+
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
+
+        # If the scf type is DF/CD, then the AO integrals were never written to disk
+        if psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
+            psi4.MintsHelper().integrals()
+
+    psi4.transqt2()
+    psi4.detci()
+    psi4.detcas()
+
+    optstash.restore()

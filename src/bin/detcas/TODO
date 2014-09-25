@@ -7,6 +7,4 @@ Driver:
 
 Problems:
 
-Params.oei_file is now a bool not int
-ints.cc:    iwl_rdone(Params.oei_file, PSIF_MO_FZC, CalcInfo.onel_ints, nbstri,
 

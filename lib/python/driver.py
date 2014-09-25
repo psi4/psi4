@@ -116,6 +116,8 @@ procedures = {
             'cisdtq'        : run_detci,
             'ci'            : run_detci,  # arbitrary order ci(n)
             'fci'           : run_detci,
+            'casscf'        : run_detcas,
+            'rasscf'        : run_detcas,
             'adc'           : run_adc,
             'cphf'          : run_libfock,
             'cis'           : run_libfock,
@@ -358,6 +360,10 @@ def energy(name, **kwargs):
     | fci                     | full configuration interaction (FCI) :ref:`[manual] <sec:ci>`                         |
     +-------------------------+---------------------------------------------------------------------------------------+
     | detci                   | **expert** full control over detci module                                             |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | casscf                  | complete active space self consistent field (CASSCF)  :ref:`[manual] <sec:cas>`    |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | rasscf                  | restricted active space self consistent field (RASSCF)  :ref:`[manual] <sec:cas>`    |
     +-------------------------+---------------------------------------------------------------------------------------+
     | gaussian-2 (g2)         | gaussian-2 composite method :ref:`[manual] <sec:fnogn>`                               |
     +-------------------------+---------------------------------------------------------------------------------------+

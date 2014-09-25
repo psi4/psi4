@@ -21,6 +21,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
+#include <string>
 #include <libipv1/ip_lib.h>
 #include <libqt/qt.h>
 #include <libciomr/libciomr.h>
@@ -29,6 +30,7 @@
 #include "globals.h"
 #include "setup_io.h"
 #include "indpairs.h"
+#include "psi4-dec.h"
 
 namespace psi { namespace detcas {
 
@@ -109,9 +111,66 @@ extern "C" {
   char *psi_file_prefix;
 }
 
+namespace psi { namespace detcas {
+
+DETCASWavefunction::DETCASWavefunction(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options)
+    : Wavefunction(options, _default_psio_lib_)
+{
+    set_reference_wavefunction(reference_wavefunction);
+    init();
+}
+
+DETCASWavefunction::~DETCASWavefunction()
+{
+
+}
+
+void DETCASWavefunction::init()
+{
+    // TODO-CDS:
+    // The CC codes destroy the checkpoint object created by Wavefunction.
+    // We'd like to be able to do the same here.  Need to convert everything
+    // such that we don't explicitly need checkpoint
+    // Destroy it. Otherwise we will see a "file already open" error.
+    chkpt_.reset();
+
+    // We're copying this stuff over like it's done in ccenergy, but
+    // these Wavefunction member data are not actually used by the code
+    // yet (Sept 2011 CDS).  Copying these only in case they're needed
+    // by someone else who uses the CIWavefunction and expects them to
+    // be available.
+
+    // CDS-TODO: Note, some of these data should be updated to reflect what
+    // the CI wavefunction is doing, not what the reference wavefunction
+    // is doing, in case these are actually used elsewhere.
+    nso_        = reference_wavefunction_->nso();
+    nirrep_     = reference_wavefunction_->nirrep();
+    nmo_        = reference_wavefunction_->nmo();
+    for(int h = 0; h < nirrep_; ++h){
+        soccpi_[h] = reference_wavefunction_->soccpi()[h];
+        doccpi_[h] = reference_wavefunction_->doccpi()[h];
+        frzcpi_[h] = reference_wavefunction_->frzcpi()[h];
+        frzvpi_[h] = reference_wavefunction_->frzvpi()[h];
+        nmopi_[h]  = reference_wavefunction_->nmopi()[h];
+        nsopi_[h]  = reference_wavefunction_->nsopi()[h];
+    }
+}
+
+double DETCASWavefunction::compute_energy()
+{
+    energy_ = 0.0;
+    PsiReturnType cas_return;
+    if ((cas_return = psi::detcas::detcas(options_)) == Success) {
+        // Get the total energy
+        energy_ = Process::environment.globals["CURRENT ENERGY"];
+    }
+
+    return energy_;
+}
+
 using namespace psi::detcas;
 
-int main(int argc, char *argv[])
+PsiReturnType detcas(Options &options)
 {
   int converged = 0;
   int num_pairs = 0;
@@ -173,7 +232,8 @@ int main(int argc, char *argv[])
   if (Params.print_lvl) quote();
   cleanup();
   close_io();
-  return(converged);
+  /* TODO  Fix this! Likely need to return non-Success flag*/
+  return Success;
 }
 
 namespace psi { namespace detcas {
