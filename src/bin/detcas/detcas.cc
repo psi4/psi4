@@ -1014,7 +1014,8 @@ int check_conv(void)
   chkpt_close();
 
   /* check for convergence */
-  if (rmsgrad < Params.rms_grad_convergence) converged_grad = 1;
+  if (rmsgrad < Params.rms_grad_convergence)
+    converged_grad = 1;
   if (fabs(energy_last - energy) < Params.energy_convergence)
     converged_energy = 1;
   if (strstr(comment, "CONV") != NULL)

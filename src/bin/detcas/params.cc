@@ -43,14 +43,13 @@ void get_parameters(Options &options)
   }
 
   if (options["R_CONVERGENCE"].has_changed()) {
-    Parameters.convergence = options.get_double("R_CONVERGENCE");
+    Params.convergence = options.get_double("R_CONVERGENCE");
   }
   if (options["E_CONVERGENCE"].has_changed()) {
-    Parameters.energy_convergence = options.get_double("E_CONVERGENCE");
+    Params.energy_convergence = options.get_double("E_CONVERGENCE");
   }
 
 
-  /* Params.print_lvl is set in detcas.cc */
   Params.filter_ints = 0;  /* assume we need all for MCSCF */
   Params.oei_file = PSIF_OEI;  /* contains frozen core operator */
   Params.tei_file = PSIF_MO_TEI;
@@ -64,28 +63,6 @@ void get_parameters(Options &options)
     Params.ignore_ras_ras = true;   /* ignore RAS/RAS independent pairs? */
   else
     Params.ignore_ras_ras = false;
-
-  Params.scale_grad = true;    /* scale the orbital gradient? */
-  Params.diis_start = 3;       /* iteration to turn on DIIS */
-  Params.diis_freq  = 1;       /* how often to do a DIIS extrapolation */
-  Params.diis_min_vecs = 2;
-  Params.diis_max_vecs = 8;
-  Params.scale_step = 1.0;
-  Params.use_fzc_h = true;
-  Params.level_shift = true;   /* levelshift by default */
-  Params.shift = 0.01;         /* default shift value if level_shift=1 */
-  Params.determ_min = 0.00001; /* lowest allowed MO Hess before levelshift */
-  Params.step_max = 0.30;      /* max allowed theta step */
-  Params.use_thetas = true;    /* Use thetas by default */
-  Params.invert_hessian = true;/* directly invert MO Hessian instead
-                                  of solving system of linear equations for
-                                  orbital step if full Hessian available */
-  Params.force_step = false;   /* ignore usual step and force user-given */
-  Params.force_pair = 0;       /* which pair to force a step along */
-  Params.force_value = 0.0;    /* how far to step along forced direction */
-  Params.scale_act_act = 1.0;  /* scale act/act Hessian elements by this */
-  Params.bfgs = false;         /* BFGS update of Hessian? */
-  Params.ds_hessian = false;   /* Do a DS update of the Hessian? */
 
   Params.print_lvl = options.get_int("PRINT");
   Params.print_mos = options.get_bool("PRINT_MOS");

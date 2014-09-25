@@ -10,5 +10,3 @@ Problems:
 Params.oei_file is now a bool not int
 ints.cc:    iwl_rdone(Params.oei_file, PSIF_MO_FZC, CalcInfo.onel_ints, nbstri,
 
-erase is not a int not bool
-psio_close(opdm_file, erase ? 0 : 1);
