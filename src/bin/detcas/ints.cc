@@ -42,13 +42,13 @@ void read_integrals()
     if (Params.print_lvl > 3) 
       fprintf(outfile, "\n\tOne-electron integrals (frozen core operator):\n");
     iwl_rdone(Params.oei_file, PSIF_MO_FZC, CalcInfo.onel_ints, nbstri, 
-              Params.oei_erase, (Params.print_lvl>3), outfile);
+              Params.oei_erase ? 0 : 1, (Params.print_lvl>3), outfile);
   }
   else {
     if (Params.print_lvl > 3) 
       fprintf(outfile, "\n\tOne-electron integrals (bare):\n");
     iwl_rdone(Params.oei_file, PSIF_MO_OEI, CalcInfo.onel_ints, nbstri, 
-              Params.oei_erase, (Params.print_lvl>3), outfile);
+              Params.oei_erase ? 0 : 1, (Params.print_lvl>3), outfile);
   }
 
   if (Params.print_lvl > 6) 
