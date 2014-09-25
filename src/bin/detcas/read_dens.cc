@@ -52,7 +52,7 @@ void read_density_matrices(void)
 ** Taken from CLAG, April 1998
 ** upgraded to libpsio 6/03 by CDS
 */
-double **rdopdm(int nbf, int print_lvl, int opdm_file, int erase)
+double **rdopdm(int nbf, int print_lvl, int opdm_file, bool erase)
 {
 
   int i, root, errcod;
@@ -102,7 +102,7 @@ double **rdopdm(int nbf, int print_lvl, int opdm_file, int erase)
 ** C. David Sherrill
 ** April 1998
 */
-double *rdtpdm(int nbf, int print_lvl, int tpdm_file, int erase)
+double *rdtpdm(int nbf, int print_lvl, int tpdm_file, bool erase)
 {
 
   double *tpdm, *symm_tpdm;

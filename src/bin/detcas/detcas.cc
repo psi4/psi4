@@ -370,7 +370,7 @@ void bfgs_hessian(void)
   /* If no Hessian in the file */
   if (psio_tocscan(PSIF_DETCAS, "Hessian Inverse") == NULL) {
     calc_hessian();
-    if (strcmp(Params.hessian, "FULL") != 0) {
+    if (Params.hessian == "FULL") {
       CalcInfo.mo_hess = block_matrix(npairs,npairs);
       for (i=0; i<npairs; i++) {
         CalcInfo.mo_hess[i][i] = 1.0 / CalcInfo.mo_hess_diag[i];
@@ -625,7 +625,7 @@ void ds_hessian(void)
   /* If no Hessian in the file */
   if (psio_tocscan(PSIF_DETCAS, "Hessian") == NULL) {
     calc_hessian();
-    if (strcmp(Params.hessian, "FULL") == 0) {
+    if (Params.hessian == "FULL") {
       CalcInfo.mo_hess_diag = init_array(npairs);
       for (i=0; i<npairs; i++) {
         CalcInfo.mo_hess_diag[i] = CalcInfo.mo_hess[i][i];
@@ -746,7 +746,7 @@ void calc_hessian(void)
   /* Now calculate the approximate diagonal MO Hessian */
   ncore = CalcInfo.num_fzc_orbs + CalcInfo.num_cor_orbs;
 
-  if (strcmp(Params.hessian, "DIAG") == 0) {
+  if (Params.hessian == "DIAG") {
     CalcInfo.mo_hess_diag = init_array(npairs);
     
     if (Params.use_fzc_h == 1) 
@@ -762,7 +762,7 @@ void calc_hessian(void)
       IndPairs.print_vec(CalcInfo.mo_hess_diag,"\n\tDiagonal MO Hessian:", 
         outfile);
   }
-  else if (strcmp(Params.hessian, "APPROX_DIAG") == 0) {
+  else if (Params.hessian == "APPROX_DIAG") {
     CalcInfo.mo_hess_diag = init_array(npairs);
     form_appx_diag_mo_hess(npairs, ppair, qpair, CalcInfo.onel_ints, 
                       CalcInfo.twoel_ints, CalcInfo.opdm, CalcInfo.tpdm, 
@@ -772,7 +772,7 @@ void calc_hessian(void)
       IndPairs.print_vec(CalcInfo.mo_hess_diag,"\n\tAppx Diagonal MO Hessian:", 
         outfile);
   }
-  else if (strcmp(Params.hessian, "FULL") == 0) {
+  else if (Params.hessian == "FULL") {
     CalcInfo.mo_hess = block_matrix(npairs,npairs);
     form_full_mo_hess(npairs, ppair, qpair, CalcInfo.onel_ints, 
       CalcInfo.twoel_ints, CalcInfo.opdm, CalcInfo.tpdm, CalcInfo.lag,
@@ -818,13 +818,13 @@ void scale_gradient(void)
       CalcInfo.theta_step);
   }
   // non-BFGS diagonal Hessian
-  else if (Params.scale_grad && (strcmp(Params.hessian,"DIAG")==0 || 
-       strcmp(Params.hessian,"APPROX_DIAG")==0)) {
+  else if (Params.scale_grad && ((Params.hessian == "DIAG") || 
+       (Params.hessian == "APPROX_DIAG"))) {
     calc_orb_step(npairs, CalcInfo.mo_grad, CalcInfo.mo_hess_diag,
       CalcInfo.theta_step);
   }
   // non-BFGS full Hessian
-  else if ((Params.scale_grad && strcmp(Params.hessian,"FULL")==0) ||
+  else if ((Params.scale_grad && (Params.hessian == "FULL")) ||
     Params.bfgs) {
     calc_orb_step_full(npairs, CalcInfo.mo_grad, CalcInfo.mo_hess,
       CalcInfo.theta_step);
@@ -986,7 +986,6 @@ int check_conv(void)
   int i, entries, iter, nind;
   double rmsgrad, scaled_rmsgrad, energy, energy_last;
   int converged_energy=0, converged_grad=0, last_converged=0;
-  double conv_rms_grad, conv_e;
 
   ffile_noexit(&sumfile,sumfile_name,2);
 
@@ -1015,10 +1014,8 @@ int check_conv(void)
   chkpt_close();
 
   /* check for convergence */
-  conv_rms_grad = pow(10.0, -(Params.rms_grad_convergence));
-  conv_e = pow(10.0, -(Params.energy_convergence));
-  if (rmsgrad < conv_rms_grad) converged_grad = 1;
-  if (fabs(energy_last - energy) < conv_e)
+  if (rmsgrad < Params.rms_grad_convergence) converged_grad = 1;
+  if (fabs(energy_last - energy) < Params.energy_convergence)
     converged_energy = 1;
   if (strstr(comment, "CONV") != NULL)
     last_converged = 1;
