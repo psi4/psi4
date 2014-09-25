@@ -1,0 +1,8 @@
+Driver:
+    CASSCF program 
+        Orbital rotations
+        Build Hessians
+    DETCI
+        Everything else
+
+
