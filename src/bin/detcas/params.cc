@@ -16,9 +16,9 @@
 #include <cstdio>
 #include <cstring>
 #include <libciomr/libciomr.h>
-#include <libipv1/ip_lib.h>
 #include <psifiles.h>
 #include "globals.h"
+#include "psi4-dec.h"
 
 namespace psi { namespace detcas {
 
@@ -26,18 +26,13 @@ namespace psi { namespace detcas {
 ** get_parameters(): Function gets the program running parameters such
 **   as convergence.  These are stored in the Parameters data structure.
 */
-void get_parameters(void)
+void get_parameters(Options &options)
 {
   int i, errcod;
   char line1[133];
    
-  errcod = ip_string("DERTYPE", &(Params.dertype),0);
-  if(errcod == IPE_KEY_NOT_FOUND) {
-    Params.dertype = (char *) malloc(sizeof(char)*5);
-    strcpy(Params.dertype, "NONE");
-  }
-
-  if (strcmp(Params.dertype, "NONE")==0) {
+  Params.dertype = options.get_str("DERTYPE");
+  if (Params.dertype == "NONE") {
     Params.rms_grad_convergence = 4;
     Params.energy_convergence = 7;
   }
@@ -46,11 +41,8 @@ void get_parameters(void)
     Params.energy_convergence = 11;
   }
 
-  errcod = ip_string("WFN", &(Params.wfn),0);
-  if (errcod == IPE_KEY_NOT_FOUND) {
-    Params.wfn = (char *) malloc(sizeof(char)*5);
-    strcpy(Params.wfn, "NONE");
-  }
+  Params.wfn = options.get_str("WFN");
+
 
   /* Params.print_lvl is set in detcas.cc */
   Params.print_mos = 0;
@@ -95,23 +87,20 @@ void get_parameters(void)
   Params.bfgs = 0;             /* BFGS update of Hessian? */
   Params.ds_hessian = 0;       /* Do a DS update of the Hessian? */
 
-  errcod = ip_data("PRINT","%d",&(Params.print_lvl),0);
-  errcod = ip_boolean("PRINT_MOS",&(Params.print_mos),0);
-  errcod = ip_data("CONVERGENCE","%d",
-                   &(Params.rms_grad_convergence),0);
-  errcod = ip_data("ENERGY_CONVERGENCE","%d",
-                   &(Params.energy_convergence),0);
-  errcod = ip_data("OEI_FILE","%d",&(Params.oei_file),0);
-  errcod = ip_boolean("OEI_ERASE",&(Params.oei_erase),0);
-  errcod = ip_data("TEI_FILE","%d",&(Params.tei_file),0);
-  errcod = ip_data("LAG_FILE","%d",&(Params.lag_file),0);
-  errcod = ip_boolean("TEI_ERASE",&(Params.tei_erase),0);
-  errcod = ip_boolean("IGNORE_FZ",&(Params.ignore_fz),0);
-  errcod = ip_boolean("IGNORE_RAS_RAS",&(Params.ignore_ras_ras),0);
-  errcod = ip_data("OPDM_FILE","%d",&(Params.opdm_file),0);
-  errcod = ip_data("TPDM_FILE","%d",&(Params.tpdm_file),0);
-  errcod = ip_boolean("SCALE_GRAD",&(Params.scale_grad),0);
-  errcod = ip_data("DIIS_START","%d",&(Params.diis_start),0);
+  Params.print_lvl = options.get_int("PRINT");
+  Params.print_mos = options.get_bool("PRINT_MOS");
+
+  Params.rms_grad_convergence = options.get_double("R_CONVERGENCE");
+  Params.energy_convergence = options.get_double("E_CONVERGENCE");
+
+  Params.oei_erase = options.get_bool("OEI_ERASE");
+  Params.tei_erase = options.get_bool("TEI_ERASE");
+  Params.ignore_fz = options.get_bool("IGNORE_FZ");
+  Params.ignore_ras_ras = options.get_bool("IGNORE_RAS_RAS");
+  Params.scale_grad = options.get_bool("SCALE_GRAD");
+
+  Params.diis_start = options.get_int("DIIS_START");
+
   errcod = ip_data("DIIS_FREQ","%d",&(Params.diis_freq),0);
   errcod = ip_data("DIIS_MIN_VECS","%d",&(Params.diis_min_vecs),0);
   errcod = ip_data("DIIS_MAX_VECS","%d",&(Params.diis_max_vecs),0);
