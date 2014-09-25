@@ -700,6 +700,41 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("BENDAZZOLI", false);
   }
 
+  if (name == "DETCAS" || options.read_globals()) {
+    /*- Wavefunction type.  This should be set automatically from 
+     *     the calling Psithon function.  !expert -*/
+    options.add_str("WFN", "DETCAS", "DETCAS CASSCF RASSCF");
+
+    /*- Convergence criterion for CI residual vector in the Davidson
+    algorithm (RMS error).
+    The default is 1e-4 for energies and 1e-7 for gradients. -*/
+    options.add_double("R_CONVERGENCE", 1e-4);
+
+    /*- Convergence criterion for energy. See Table :ref:`Post-SCF
+    Convergence <table:conv_corl>` for default convergence criteria for
+    different calculation types. -*/
+    options.add_double("E_CONVERGENCE", 1e-7);
+
+    /*- Print the MOs? -*/
+    options.add_bool("PRINT_MOS", false); 
+ 
+    /*- Erase the one-electron integrals after DETCAS executes? !expert -*/
+    options.add_bool("OEI_ERASE", false);
+
+    /*- Erase the two-electron integrals after DETCAS executes? !expert -*/
+    options.add_bool("TEI_ERASE", false);
+
+    /*- Erase the one-particle density matrix after DETCAS executes? !expert -*/
+    options.add_bool("OPDM_ERASE", false);
+
+    options.add_bool("TPDM_ERASE", false);
+    options.add_bool("LAG_ERASE", false);
+  
+    /*- Ignore frozen orbitals for independent pairs? !expert -*/
+    options.add_bool("IGNORE_FZ", true);
+  
+  }
+
   if (name == "SAPT"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs symmetry adapted perturbation theory (SAPT)
     analysis to quantitatively analyze noncovalent interactions. -*/
