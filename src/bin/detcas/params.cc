@@ -70,7 +70,7 @@ void get_parameters(Options &options)
   Params.oei_erase = options.get_bool("OEI_ERASE");
   Params.tei_erase = options.get_bool("TEI_ERASE");
   Params.ignore_fz = options.get_bool("IGNORE_FZ");
-  Params.scale_grad = options.get_bool("SCALE_GRAD");
+  Params.scale_grad = true; /* scale orb grad by inverse Hessian? */
 
   Params.diis_start = options.get_int("DIIS_START");
   Params.diis_freq = options.get_int("DIIS_FREQ");
