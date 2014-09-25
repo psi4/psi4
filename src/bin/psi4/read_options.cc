@@ -727,12 +727,72 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Erase the one-particle density matrix after DETCAS executes? !expert -*/
     options.add_bool("OPDM_ERASE", false);
 
+    /*- Erase the two-particle density matrix after DETCAS executes? !expert -*/
     options.add_bool("TPDM_ERASE", false);
+
     options.add_bool("LAG_ERASE", false);
   
     /*- Ignore frozen orbitals for independent pairs? !expert -*/
     options.add_bool("IGNORE_FZ", true);
-  
+
+    /*- Scale the orbital gradient?- */ 
+    options.add_bool("SCALE_GRAD", true);
+
+    /*- Iteration to turn on DIIS -*/
+    options.add_int("DIIS_START", 3);
+
+    /*- How often to do a DIIS extrapolation -*/
+    options.add_int("DIIS_FREQ", 1);
+
+    /*- Maximum number of DIIS vectors -*/
+    options.add_int("DIIS_MAX_VECS", 8);
+
+    /*- Minimum number of DIIS vectors -*/
+    options.add_int("DIIS_MIN_VECS", 2);
+
+    /*- Scale step by this.  -*/
+    options.add_double("SCALE_STEP", 1.0);
+
+    /*- Use frozen core hamiltonian.  -*/
+    options.add_bool("USE_FZC_H", true);
+
+    /*- Level shift?  -*/
+    options.add_bool("LEVEL_SHIFT", true);
+
+    /*- Level shift value  -*/
+    options.add_double("SHIFT", 0.01);
+
+    /*- Lowest allowed MO Hess before levelshift  -*/
+    options.add_double("DETERM_MIN", 0.00001);
+
+    /*- Maximum allowed theta step  -*/
+    options.add_double("STEP_MAX", 0.30);
+
+    /*- Use thetas by default  -*/
+    options.add_bool("USE_THETAS", true);
+
+    /*- directly invert MO Hessian instead of solving system of
+    linear equations for orbital step if full Hessian available.  -*/
+    options.add_bool("INVERT_HESSIAN", true);
+    
+    /*- Ignore usual step and force user-given  -*/
+    options.add_bool("FORCE_STEP", false);
+
+    /*- Which pair to force a step along  -*/
+    options.add_int("FORCE_PAIR", 0);
+
+    /*- How far to step along forced direction  -*/
+    options.add_double("FORCE_VALUE", 0.0);
+
+    /*- Scale for act/act Hessian elements.  -*/
+    options.add_double("SCALE_ACT_ACT", 1.0);
+
+    /*- Use BFGS to update hessian.  -*/
+    options.add_bool("BFGS", false);
+
+    /*- Use DS to update hessian.  -*/
+    options.add_bool("DS_HESSIAN", false);
+ 
   }
 
   if (name == "SAPT"|| options.read_globals()) {
