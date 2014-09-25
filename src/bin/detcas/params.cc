@@ -31,32 +31,32 @@ void get_parameters(Options &options)
   int i, errcod;
   char line1[133];
    
+  Params.wfn = options.get_str("WFN");
   Params.dertype = options.get_str("DERTYPE");
   if (Params.dertype == "NONE") {
-    Params.rms_grad_convergence = 4;
-    Params.energy_convergence = 7;
+    Params.rms_grad_convergence = 1e-4;
+    Params.energy_convergence = 1e-7;
   }
   else {
-    Params.rms_grad_convergence = 7;
-    Params.energy_convergence = 11;
+    Params.rms_grad_convergence = 1e-7;
+    Params.energy_convergence = 1e-10;
   }
 
-  Params.wfn = options.get_str("WFN");
+  if (options["R_CONVERGENCE"].has_changed()) {
+    Parameters.convergence = options.get_double("R_CONVERGENCE");
+  }
+  if (options["E_CONVERGENCE"].has_changed()) {
+    Parameters.energy_convergence = options.get_double("E_CONVERGENCE");
+  }
 
 
   /* Params.print_lvl is set in detcas.cc */
-  Params.print_mos = false;
   Params.filter_ints = 0;  /* assume we need all for MCSCF */
   Params.oei_file = PSIF_OEI;  /* contains frozen core operator */
-  Params.oei_erase = false;
   Params.tei_file = PSIF_MO_TEI;
-  Params.tei_erase = false;
   Params.opdm_file = PSIF_MO_OPDM;
-  Params.opdm_erase = false;
   Params.tpdm_file = PSIF_MO_TPDM;
-  Params.tpdm_erase = false;
   Params.lag_file = PSIF_MO_LAG;
-  Params.lag_erase = false;
 
   Params.ignore_fz = true;     /* ignore frozen orbitals for ind pairs? */
   
@@ -90,13 +90,9 @@ void get_parameters(Options &options)
   Params.print_lvl = options.get_int("PRINT");
   Params.print_mos = options.get_bool("PRINT_MOS");
 
-  Params.rms_grad_convergence = options.get_double("R_CONVERGENCE");
-  Params.energy_convergence = options.get_double("E_CONVERGENCE");
-
   Params.oei_erase = options.get_bool("OEI_ERASE");
   Params.tei_erase = options.get_bool("TEI_ERASE");
   Params.ignore_fz = options.get_bool("IGNORE_FZ");
-  Params.ignore_ras_ras = options.get_bool("IGNORE_RAS_RAS");
   Params.scale_grad = options.get_bool("SCALE_GRAD");
 
   Params.diis_start = options.get_int("DIIS_START");
