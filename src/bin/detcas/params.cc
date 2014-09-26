@@ -65,7 +65,7 @@ void get_parameters(Options &options)
   }
 
   if (options["R_CONVERGENCE"].has_changed()) {
-    Params.convergence = options.get_double("R_CONVERGENCE");
+    Params.rms_grad_convergence = options.get_double("R_CONVERGENCE");
   }
   if (options["E_CONVERGENCE"].has_changed()) {
     Params.energy_convergence = options.get_double("E_CONVERGENCE");
@@ -102,19 +102,19 @@ void get_parameters(Options &options)
   Params.scale_step = options.get_double("SCALE_STEP");
   Params.use_fzc_h = options.get_bool("USE_FZC_H");
   Params.invert_hessian = options.get_bool("INVERT_HESSIAN");
-  Params.hessian = option.get_str("HESSIAN");
+  Params.hessian = options.get_str("HESSIAN");
  
-  Params.level_shift = option.get_bool("LEVEL_SHIFT");
-  Params.shift = option.get_double("SHIFT");
-  Params.determ_min = option.get_double("DETERM_MIN");
-  Params.step_max = option.get_double("MAX_STEP");
-  Params.use_thetas = option.get_bool("USE_THETAS");
-  Params.force_step = option.get_bool("FORCE_STEP");
-  Params.force_pair = option.get_int("FORCE_PAIR");
-  Params.force_value = option.get_double("FORCE_VALUE");
-  Params.scale_act_act = option.get_double("SCALE_ACT_ACT");
-  Params.bfgs = option.get_bool("BFGS");
-  Params.ds_hessian = option.get_bool("DS_HESSIAN");
+  Params.level_shift = options.get_bool("LEVEL_SHIFT");
+  Params.shift = options.get_double("SHIFT");
+  Params.determ_min = options.get_double("DETERM_MIN");
+  Params.step_max = options.get_double("MAX_STEP");
+  Params.use_thetas = options.get_bool("USE_THETAS");
+  Params.force_step = options.get_bool("FORCE_STEP");
+  Params.force_pair = options.get_int("FORCE_PAIR");
+  Params.force_value = options.get_double("FORCE_VALUE");
+  Params.scale_act_act = options.get_double("SCALE_ACT_ACT");
+  Params.bfgs = options.get_bool("BFGS");
+  Params.ds_hessian = options.get_bool("DS_HESSIAN");
 
   Params.level_shift = options.get_bool("LEVEL_SHIFT");
   Params.shift = options.get_double("SHIFT");
@@ -165,7 +165,7 @@ void print_parameters(void)
   outfile->Printf("   LEVEL SHIFT   =   %6s      SHIFT         =   %6.2lf\n",
       Params.level_shift ? "yes" : "no", Params.shift);
   outfile->Printf("   USE FZC H     =   %6s      HESSIAN       = %-12s\n",
-      Params.use_fzc_h ? "yes" : "no", Params.hessian);
+      Params.use_fzc_h ? "yes" : "no", Params.hessian.c_str());
   outfile->Printf("\n") ;
   //fflush(outfile);
 }

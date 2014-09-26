@@ -38,6 +38,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <libciomr/libciomr.h>
+#include "psi4-dec.h"
 
 namespace psi { namespace detcas {
 

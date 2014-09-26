@@ -43,8 +43,8 @@ namespace psi { namespace detcas {
 ** parameters structure: holds user-specified parameters
 */
 struct params {
-   std::string *dertype;        /* derivative level: none, first, etc.          */
-   std::string *wfn;            /* wavefunction, CASSCF, RASSCF, ..             */
+   std::string dertype;        /* derivative level: none, first, etc.          */
+   std::string wfn;            /* wavefunction, CASSCF, RASSCF, ..             */
    int print_lvl;               /* print verbosity level                        */ 
    bool print_mos;              /* print the molecular orbitals ?               */
    double rms_grad_convergence; /* convergence on RMS of orbital grad           */
@@ -68,7 +68,7 @@ struct params {
    int diis_min_vecs;           /* how many vectors required before do diis?    */
    int diis_max_vecs;           /* how many vectors maximum to hold?            */
    double scale_step;           /* stepsize scaling factor                      */
-   std::string *hessian;        /* string describing type of MO Hessian         */
+   std::string hessian;         /* string describing type of MO Hessian         */
                                 /* DIAG, APPROX_DIAG, or FULL                   */
    bool use_fzc_h;              /* Use frozen-core operator h?(1) Or bare h?(0) */
                                 /* this determines which onel ints are read     */ 

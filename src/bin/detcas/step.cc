@@ -27,14 +27,16 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
-#include <libipv1/ip_lib.h>
+//#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.h>
 #include <libqt/qt.h>
 #include <cmath>
+#include <psifiles.h>
+#include <psi4-dec.h>
 #include "globaldefs.h"
 #include "globals.h"
-#include "psi4-dec.h"
+#include "libpsio/psio.h"
 
 namespace psi { namespace detcas {
 
@@ -164,7 +166,7 @@ void calc_orb_step_full(int npairs, double *grad, double **hess, double *theta)
     else {
       //outfile->Printf("FAILED TO SOLVE FOR THETA VALUES\n");
       //outfile->Printf("DGESV returned error %5d \n",solved);
-      throw PsiException("FAILED TO SOLVE FOR THETA VALUES\n"), __FILE__, __LINE__) ;
+      throw PsiException("FAILED TO SOLVE FOR THETA VALUES\n", __FILE__, __LINE__) ;
       //exit(0);
     }
     free(BVector);
@@ -176,12 +178,12 @@ void calc_orb_step_full(int npairs, double *grad, double **hess, double *theta)
     hess_inv = block_matrix(npairs,npairs);
 
     /* note: this will destroy hessian matrix; don't use it again later! */
-    invert_matrix(hess_copy,hess_inv,npairs,outfile);
+    invert_matrix(hess_copy,hess_inv,npairs,"outfile");
 
     /* debug check */
     mmult(hess_inv,0,hess,0,hess_copy,0,npairs,npairs,npairs,0);
     outfile->Printf("Hessian * Hessian inverse = \n");
-    print_mat(hess_copy,npairs,npairs,outfile); 
+    print_mat(hess_copy,npairs,npairs,"outfile"); 
     outfile->Printf("\n");
   
     /* step = - B^{-1} * g */
