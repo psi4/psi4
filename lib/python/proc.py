@@ -2843,15 +2843,20 @@ def run_detcas(name, **kwargs):
         if psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
             psi4.MintsHelper().integrals()
 
-    psi4.transqt2()
-    print("Finish TRANSQT!\n")
-    psi4.detci()
-    print("Finish DETCI!\n")
-    # psi4.print_out('finished detci! \n')
-    psi4.detcas()
-    print("Finish DETCAS!\n")
-    # psi4.print_out('Finished DETCAS! \n')
+    # psioh = psi4.IOManager.shared_object()
+    # psioh.set_specific_retention(p4const.PSIF_CHKPT, True)
 
+    for x in range(10):
+        psi4.transqt2()
+        print("Finish TRANSQT!\n")
+        psi4.detci()
+        # psi4.clean()
+        print("Finish DETCI!\n")
+        psi4.detcas()
+        print("Finish DETCAS!\n")
+        print("Finished iteration %d\n" % x)
+
+#   For Future
 #        if psi4.optking() == psi4.PsiReturnType.EndLoop:
 #            print('Optimizer: Optimization complete!')
 #            psi4.print_out('\n    Final optimized geometry and variables:\n')
