@@ -33,6 +33,7 @@ double** lagcalc(double **OPDM, double *TPDM, double *h, double *TwoElec,
   int m,k,l;                    /* indecies of integrals needed            */ 
   int im,kl,imkl;               /* integral indecies combined              */
   int Tjm,Tmj,Tkl,Tjmkl,Tmjkl;  /* TPDM indices combined                   */
+  int mj, mjkl;                 /* revised TPDM indices                    */
   double **oe_lag;              /* One-electron part of lagrangian         */
   double **te_lag;              /* Two-electron part of lagrangian         */ 
   double OEsum;                 /* QjmHim sumed over MO index m            */
@@ -80,12 +81,15 @@ double** lagcalc(double **OPDM, double *TPDM, double *h, double *TwoElec,
                     **  need two terms, unlike in Dr. Yamaguchi's book.
                     ** We use two terms below.
                     */
-                    Tjm = j * npop + m;
-                    Tmj = m * npop + j;
-                    Tkl = k * npop + l;
-                    Tjmkl = INDEX(Tjm,Tkl);
-                    Tmjkl = INDEX(Tmj,Tkl);
-                    TEsum += (TPDM[Tmjkl] + TPDM[Tjmkl]) * TwoElec[imkl]; 
+                    // Tjm = j * npop + m;
+                    // Tmj = m * npop + j;
+                    // Tkl = k * npop + l;
+                    // Tjmkl = INDEX(Tjm,Tkl);
+                    // Tmjkl = INDEX(Tmj,Tkl);
+                    // TEsum += (TPDM[Tmjkl] + TPDM[Tjmkl]) * TwoElec[imkl]; 
+                    mj = INDEX(m,j);
+                    mjkl = INDEX(mj,kl);
+                    TEsum += (2.0 * TPDM[Tmjkl]) * TwoElec[imkl]; 
                   } /* end l loop */
             } /* end m loop */
 
