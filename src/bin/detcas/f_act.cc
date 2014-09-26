@@ -26,12 +26,12 @@
 */
 #include <cstdlib>
 #include <cstdio>
-#include <libipv1/ip_lib.h>
+//#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
+#include <psi4-dec.h>
 #include "globaldefs.h"
 #include "globals.h"
-#include "psi4-dec.h"
 
 namespace psi { namespace detcas {
 
@@ -67,7 +67,7 @@ void form_F_act(void)
 
   if (Params.print_lvl > 3) {
     outfile->Printf("\nActive Fock matrix:\n");
-    print_array(CalcInfo.F_act, CalcInfo.nmo, outfile);
+    print_array(CalcInfo.F_act, CalcInfo.nmo, "outfile");
   }
 
 }
@@ -194,7 +194,7 @@ void test_lag(int nbf, int ncore, int npop, double *oei,
   }
 
   outfile->Printf("\nTest lag:\n");
-  print_array(lag, nbf, outfile);
+  print_array(lag, nbf, "outfile");
   free(lag);
 }
 
@@ -219,7 +219,7 @@ void test_fzc(int nbf, int ncore, double *oei, double *tei)
     }
   }
 
-  print_array(fzc_op, nbf, outfile);
+  print_array(fzc_op, nbf, "outfile");
   free(fzc_op);
 
 }
@@ -239,7 +239,7 @@ void test_lag2(int nbf, int ncore, int npop, double *oei,
   for (r=0; r<npop; r++) {
     pr = INDEX(p,r);
     val = 2.0 * opdm[q][r] * oei[pr];
-    outilfe->Printf(
+    outfile->Printf(
        "2.0 * opdm[%d][%d] (%12.6lf) x oei[%d][%d] (%12.6lf) = %12.6lf\n",
        q, r, opdm[q][r], p, r, oei[pr], val);
     sum += val;

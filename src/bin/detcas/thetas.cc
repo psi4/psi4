@@ -27,7 +27,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
-#include <libipv1/ip_lib.h>
+//#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "globaldefs.h"
@@ -115,7 +115,7 @@ void postmult_by_exp_R(int irrep, int dim, double **mat,
     U[p][p] += 1.0;
   }
 
-  schmidt(U,dim,dim,outfile);
+  schmidt(U,dim,dim,"outfile");
 
   /* C = C0 * U */
   C_DGEMM('n','n',dim,dim,dim,1.0,&(C0[0][0]),dim,&(U[0][0]),dim,0.0,
@@ -180,7 +180,7 @@ void rotate_test(int dim, int npairs, int *p_arr, int *q_arr,
  
   /* print new coefficients */
   outfile->Printf("\n\tOld molecular orbitals\n");
-  print_mat(tmpmat, dim, dim, outfile);
+  print_mat(tmpmat, dim, dim, "outfile");
 
 
   /* now apply U, as a series of Givens rotation matrices */
@@ -197,13 +197,13 @@ void rotate_test(int dim, int npairs, int *p_arr, int *q_arr,
     C_DROT(dim,&(tmpmat[0][q]),dim,&(tmpmat[0][p]),dim,costheta,sintheta);
     if (Params.print_lvl > 3) {
       outfile->Printf("\n\tMatrix after transformation:\n");
-      print_mat(tmpmat, dim, dim, outfile);
+      print_mat(tmpmat, dim, dim, "outfile");
     }
   }
 
   /* print new coefficients */
   outfile->Printf("\n\tNew molecular orbitals\n");
-  print_mat(tmpmat, dim, dim, outfile);
+  print_mat(tmpmat, dim, dim, "outfile");
 
   free_block(tmpmat);
 
@@ -324,7 +324,7 @@ void calc_dE_dT(int n, double **dEU, int npairs, int *ppair, int *qpair,
 
   if (Params.print_lvl > 3) {
     outfile->Printf("dE/dU after backtransform: \n");
-    print_mat(dEU, n, n, outfile);
+    print_mat(dEU, n, n, "outfile");
   }
 
   /* Loop over i,a to form dE/d(theta): we are working right to left in this
@@ -352,7 +352,7 @@ void calc_dE_dT(int n, double **dEU, int npairs, int *ppair, int *qpair,
     /*
     outfile->Printf("Uleft after postmultiplication by G(+)(%d,%d)\n",
       i, a);
-    print_mat(Uleft, n, n, outfile);
+    print_mat(Uleft, n, n, "outfile");
     */
 
     /* Now do Uleft*dG/d(theta)*Uright series of multi */
@@ -366,7 +366,7 @@ void calc_dE_dT(int n, double **dEU, int npairs, int *ppair, int *qpair,
 
     /*
     outfile->Printf("Uleft * dG/dTheta(%d,%d) * Uright\n", i, a);
-    print_mat(Scratch, n, n, outfile);
+    print_mat(Scratch, n, n, "outfile");
     */
 
     for(l=0; l < n; l++)  {
@@ -395,7 +395,7 @@ void calc_dE_dT(int n, double **dEU, int npairs, int *ppair, int *qpair,
 
     /*
     outfile->Printf("Uright after premultiplication by G \n");
-    print_mat(Uright, n, n, outfile);
+    print_mat(Uright, n, n, "outfile");
     */
 
   }

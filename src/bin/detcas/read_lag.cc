@@ -41,6 +41,7 @@
 #include <libiwl/iwl.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
+#include <libpsio/psio.hpp>
 #include "globaldefs.h"
 #include "globals.h"
 #include "psi4-dec.h"
@@ -62,7 +63,7 @@ void read_lagrangian(void)
 
   if (Params.print_lvl > 3) {
     outfile->Printf("Lagrangian matrix\n");
-    print_mat(CalcInfo.lag, nmo, nmo, outfile);
+    print_mat(CalcInfo.lag, nmo, nmo, "outfile");
   }
 
   psio_close(Params.lag_file, Params.lag_erase ? 0 : 1);

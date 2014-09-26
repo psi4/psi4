@@ -44,23 +44,28 @@
 #include <cstdio>
 #include <cstring>
 #include <string>
-#include <libipv1/ip_lib.h>
+//#include <libipv1/ip_lib.h>
 #include <libqt/qt.h>
 #include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.h>
-#include <psifiles.h>
+#include <libmints/wavefunction.h>
+#include <libmints/molecule.h>
+#include <libpsio/psio.h>
+#include <libpsio/psio.hpp>
+#include "psifiles.h"
+#include "psi4-dec.h"
 #include "globals.h"
 #include "setup_io.h"
 #include "indpairs.h"
-#include "psi4-dec.h"
+#include "caswave.h"
 
 namespace psi { namespace detcas {
 
-extern void get_mo_info(void);
+extern void get_mo_info(Options& options);
 extern void get_parameters(void);
 extern void print_parameters(void);
 extern void read_integrals(void);
-extern void read_density_matrices(void);
+extern void read_density_matrices(Options& options);
 extern void read_lagrangian(void);
 extern void form_independent_pairs(void);
 extern void read_thetas(int npairs);
@@ -122,6 +127,7 @@ struct calcinfo CalcInfo;
 struct params Params;
 int *ioff;
 IndepPairs IndPairs;
+PsiReturnType detcas(Options &options);
 
 #define MO_HESS_MIN 1.0E-1
 
@@ -135,19 +141,19 @@ extern "C" {
 
 namespace psi { namespace detcas {
 
-DETCASWavefunction::DETCASWavefunction(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options)
+CASWavefunction::CASWavefunction(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options)
     : Wavefunction(options, _default_psio_lib_)
 {
     set_reference_wavefunction(reference_wavefunction);
     init();
 }
 
-DETCASWavefunction::~DETCASWavefunction()
+CASWavefunction::~CASWavefunction()
 {
 
 }
 
-void DETCASWavefunction::init()
+void CASWavefunction::init()
 {
     // TODO-CDS:
     // The CC codes destroy the checkpoint object created by Wavefunction.
@@ -159,7 +165,7 @@ void DETCASWavefunction::init()
     // We're copying this stuff over like it's done in ccenergy, but
     // these Wavefunction member data are not actually used by the code
     // yet (Sept 2011 CDS).  Copying these only in case they're needed
-    // by someone else who uses the CIWavefunction and expects them to
+    // by someone else who uses the CASWavefunction and expects them to
     // be available.
 
     // CDS-TODO: Note, some of these data should be updated to reflect what
@@ -178,7 +184,7 @@ void DETCASWavefunction::init()
     }
 }
 
-double DETCASWavefunction::compute_energy()
+double CASWavefunction::compute_energy()
 {
     energy_ = 0.0;
     PsiReturnType cas_return;
@@ -190,7 +196,7 @@ double DETCASWavefunction::compute_energy()
     return energy_;
 }
 
-using namespace psi::detcas;
+//using namespace psi::detcas;
 
 PsiReturnType detcas(Options &options)
 {
@@ -202,16 +208,16 @@ PsiReturnType detcas(Options &options)
   CalcInfo.mo_hess = NULL;
   CalcInfo.mo_hess_diag = NULL;
 
-  init_io(argc,argv);          /* open input and output files              */
+  if (Params.print_lvl) tstart();
   get_parameters();            /* get running params (convergence, etc)    */
   init_ioff();                 /* set up the ioff array                    */
   title();                     /* print program identification             */
 
   if (Params.print_lvl) print_parameters();
 
-  get_mo_info();               /* read DOCC, SOCC, frozen, nbfso, etc      */
+  get_mo_info(options);               /* read DOCC, SOCC, frozen, nbfso, etc      */
   read_integrals();            /* get the 1 and 2 elec MO integrals        */
-  read_density_matrices();
+  read_density_matrices(options);
   read_lagrangian();
 
   form_independent_pairs();
@@ -219,7 +225,7 @@ PsiReturnType detcas(Options &options)
 
   read_thetas(num_pairs);
   if (Params.print_lvl > 2)
-    IndPairs.print_vec(CalcInfo.theta_cur, "\n\tRotation Angles:", outfile);
+    IndPairs.print_vec(CalcInfo.theta_cur, "\n\tRotation Angles:");
 
   if (!read_ref_orbs()) {
     read_cur_orbs();
@@ -253,12 +259,12 @@ PsiReturnType detcas(Options &options)
 
   if (Params.print_lvl) quote();
   cleanup();
-  close_io();
+  //close_io();
+  if (Params.print_lvl) tstop();
   /* TODO  Fix this! Likely need to return non-Success flag */
   return Success;
 }
 
-namespace psi { namespace detcas {
 
 /*
 ** init_ioff(): Set up the ioff array for quick indexing
@@ -317,7 +323,7 @@ void form_independent_pairs(void)
                CalcInfo.frozen_uocc, CalcInfo.fzv_orbs,
                CalcInfo.ci2relpitz, Params.ignore_ras_ras, Params.ignore_fz);
 
-  if (Params.print_lvl > 3) IndPairs.print(outfile);
+  if (Params.print_lvl > 3) IndPairs.print();
 
 }
 
@@ -368,7 +374,7 @@ void calc_gradient(void)
 
     if (Params.print_lvl > 3) {
       outfile->Printf( "Irrep %d of lagrangian:\n", h);
-      print_mat(ir_lag, ir_norbs, ir_norbs, outfile);
+      print_mat(ir_lag, ir_norbs, ir_norbs, "outfile");
     }
 
     ir_theta_cur = IndPairs.get_irrep_vec(h, CalcInfo.theta_cur); 
@@ -378,7 +384,7 @@ void calc_gradient(void)
 
     if (Params.print_lvl > 3) {
       outfile->Printf( "Irrep %d of 2 * lagrangian:\n", h);
-      print_mat(ir_lag, ir_norbs, ir_norbs, outfile);
+      print_mat(ir_lag, ir_norbs, ir_norbs, "outfile");
     }
 
     if (Params.use_thetas) {
@@ -388,7 +394,7 @@ void calc_gradient(void)
 
       if (Params.print_lvl > 3) {
         outfile->Printf( "dE/dU:\n", h);
-        print_mat(ir_lag, ir_norbs, ir_norbs, outfile);
+        print_mat(ir_lag, ir_norbs, ir_norbs, "outfile");
       }
 
       // Calculate dEdTheta
@@ -418,7 +424,7 @@ void calc_gradient(void)
   }
 
   if (Params.print_lvl > 2) 
-    IndPairs.print_vec(CalcInfo.mo_grad, "\n\tOrbital Gradient:", outfile);
+    IndPairs.print_vec(CalcInfo.mo_grad, "\n\tOrbital Gradient:");
 
   rms = sqrt(rms);
   CalcInfo.mo_grad_rms = rms;
@@ -493,11 +499,11 @@ void bfgs_hessian(void)
       }
 
       /* n.b. this destroys hess_copy, and mo_hess now is INVERSE Hess */
-      invert_matrix(hess_copy,CalcInfo.mo_hess,npairs,outfile);
+      invert_matrix(hess_copy,CalcInfo.mo_hess,npairs,"outfile");
 
       if (Params.print_lvl > 3) {
         outfile->Printf( "\nInitial MO Hessian Inverse:\n");
-        print_mat(CalcInfo.mo_hess,npairs,npairs,outfile);
+        print_mat(CalcInfo.mo_hess,npairs,npairs,"outfile");
         outfile->Printf( "\n");
       }
 
@@ -580,7 +586,7 @@ void bfgs_hessian(void)
 
   if (Params.print_lvl > 3) {
     outfile->Printf( "\nBFGS MO Hessian Inverse:\n");
-    print_mat(CalcInfo.mo_hess,npairs,npairs,outfile);
+    print_mat(CalcInfo.mo_hess,npairs,npairs,"outfile");
     outfile->Printf( "\n");
   }
 
@@ -625,11 +631,11 @@ void bfgs_hessian(void)
     }
 
     /* n.b. this destroys hess_copy */
-    invert_matrix(hess_copy,hess_copy2,npairs,outfile);
+    invert_matrix(hess_copy,hess_copy2,npairs,"outfile");
 
     if (Params.print_lvl > 3) {
       outfile->Printf( "\nMO Hessian:\n");
-      print_mat(hess_copy2,npairs,npairs,outfile);
+      print_mat(hess_copy2,npairs,npairs,"outfile");
       outfile->Printf( "\n");
     }
 
@@ -658,7 +664,7 @@ void bfgs_hessian(void)
       }
                                                                                 
     /* n.b. this destroys hess_copy2, and mo_hess now is INVERSE Hess */
-    invert_matrix(hess_copy2,CalcInfo.mo_hess,npairs,outfile);
+    invert_matrix(hess_copy2,CalcInfo.mo_hess,npairs,"outfile");
 
     free_block(hess_copy2);
   }
@@ -841,8 +847,7 @@ void calc_hessian(void)
         CalcInfo.mo_hess_diag);
 
     if (Params.print_lvl > 3)  
-      IndPairs.print_vec(CalcInfo.mo_hess_diag,"\n\tDiagonal MO Hessian:", 
-        outfile);
+      IndPairs.print_vec(CalcInfo.mo_hess_diag,"\n\tDiagonal MO Hessian:");
   }
   else if (Params.hessian == "APPROX_DIAG") {
     CalcInfo.mo_hess_diag = init_array(npairs);
@@ -851,8 +856,7 @@ void calc_hessian(void)
                       CalcInfo.F_act, ncore, CalcInfo.npop, 
                       CalcInfo.mo_hess_diag);
     if (Params.print_lvl > 3)  
-      IndPairs.print_vec(CalcInfo.mo_hess_diag,"\n\tAppx Diagonal MO Hessian:", 
-        outfile);
+      IndPairs.print_vec(CalcInfo.mo_hess_diag,"\n\tAppx Diagonal MO Hessian:");
   }
   else if (Params.hessian == "FULL") {
     CalcInfo.mo_hess = block_matrix(npairs,npairs);
@@ -861,13 +865,13 @@ void calc_hessian(void)
       CalcInfo.mo_hess);
     if (Params.print_lvl > 3) {
       outfile->Printf( "\nMO Hessian:\n");
-      print_mat(CalcInfo.mo_hess,npairs,npairs,outfile);
+      print_mat(CalcInfo.mo_hess,npairs,npairs,"outfile");
       outfile->Printf( "\n");
     }
   }
   else {
     outfile->Printf( "(detcas): Unrecognized Hessian option %s\n", 
-      Params.hessian);
+      Params.hessian.c_str());
   }
  
 
@@ -919,7 +923,7 @@ void scale_gradient(void)
     
 
   if (Params.print_lvl > 3)  
-    IndPairs.print_vec(CalcInfo.theta_step,"\n\tScaled Orbital Grad:", outfile);
+    IndPairs.print_vec(CalcInfo.theta_step,"\n\tScaled Orbital Grad:");
 
   rms = 0.0;
   for (pair=0; pair<npairs; pair++) {
@@ -1021,7 +1025,7 @@ void rotate_orbs(void)
       if (Params.print_mos) {
         outfile->Printf( "\n\tOld molecular orbitals for irrep %s\n", 
           CalcInfo.labels[h]);
-        print_mat(CalcInfo.mo_coeffs[h], ir_norbs, ir_norbs, outfile);
+        print_mat(CalcInfo.mo_coeffs[h], ir_norbs, ir_norbs, "outfile");
       }
 
       if (Params.use_thetas)
@@ -1035,7 +1039,7 @@ void rotate_orbs(void)
       if (Params.print_mos) {
         outfile->Printf( "\n\tNew molecular orbitals for irrep %s\n", 
           CalcInfo.labels[h]);
-        print_mat(CalcInfo.mo_coeffs[h], ir_norbs, ir_norbs, outfile);
+        print_mat(CalcInfo.mo_coeffs[h], ir_norbs, ir_norbs, "outfile");
       }
 
 

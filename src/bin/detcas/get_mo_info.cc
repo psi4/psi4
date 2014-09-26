@@ -26,13 +26,15 @@
 */
 #include <cstdlib>
 #include <cstdio>
-#include <libipv1/ip_lib.h>
+//#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.h>
+#include <libpsio/psio.h>
+#include <libpsio/psio.hpp>
 #include <libqt/qt.h>
+#include <psi4-dec.h>
 #include "globaldefs.h"
 #include "globals.h"
-#include "psi4-dec.h"
 
 namespace psi { namespace detcas {
 
@@ -55,7 +57,7 @@ extern void check(int a, const char *errmsg);
 ** based on the version in DETCI
 **
 */
-void get_mo_info(void)
+void get_mo_info(Options &options)
 {
    int h, i, j, k, tmp, cnt, irrep, errcod, errbad;
    int size;
@@ -89,7 +91,7 @@ void get_mo_info(void)
                 CalcInfo.orbs_per_irr, CalcInfo.docc, CalcInfo.socc, 
                 CalcInfo.frozen_docc, CalcInfo.frozen_uocc, 
                 CalcInfo.rstr_docc, CalcInfo.rstr_uocc,
-                CalcInfo.ras_opi, CalcInfo.pitz2ci, 1, 0)) 
+                CalcInfo.ras_opi, CalcInfo.pitz2ci, 1, 0, options)) 
    { 
      throw PsiException("Error in ras_set().  Aborting.", __FILE__, __LINE__) ;
    }
@@ -419,7 +421,7 @@ double *** construct_evects(int nirreps, int *active, int *orbspi,
       if(printflag) {
         outfile->Prinft("\n\tMolecular Orbitals for Irrep %s\n",
                 CalcInfo.labels[h]);
-        print_mat(evects[h],orbspi[h],active[h],outfile);
+        print_mat(evects[h],orbspi[h],active[h],"outfile");
       }
     }
 

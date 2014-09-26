@@ -65,13 +65,13 @@ void read_integrals()
     if (Params.print_lvl > 3) 
       outfile->Printf("\n\tOne-electron integrals (frozen core operator):\n");
     iwl_rdone(Params.oei_file, PSIF_MO_FZC, CalcInfo.onel_ints, nbstri, 
-              Params.oei_erase ? 0 : 1, (Params.print_lvl>3), outfile);
+              Params.oei_erase ? 0 : 1, (Params.print_lvl>3), "outfile");
   }
   else {
     if (Params.print_lvl > 3) 
       outfile->Printf("\n\tOne-electron integrals (bare):\n");
     iwl_rdone(Params.oei_file, PSIF_MO_OEI, CalcInfo.onel_ints, nbstri, 
-              Params.oei_erase ? 0 : 1, (Params.print_lvl>3), outfile);
+              Params.oei_erase ? 0 : 1, (Params.print_lvl>3), "outfile");
   }
 
   if (Params.print_lvl > 6) 
@@ -80,7 +80,7 @@ void read_integrals()
   iwl_rdtwo(Params.tei_file, CalcInfo.twoel_ints, ioff, 
      CalcInfo.nmo, Params.filter_ints ? CalcInfo.num_fzc_orbs : 0, 
      Params.filter_ints ? CalcInfo.num_fzv_orbs : 0, 
-     (Params.print_lvl>6), outfile);
+     (Params.print_lvl>6), "outfile");
 
 } 
 

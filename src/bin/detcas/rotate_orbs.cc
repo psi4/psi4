@@ -27,10 +27,12 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
-#include <libipv1/ip_lib.h>
+//#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.h>
 #include <libqt/qt.h>
+#include <libpsio/psio.h>
+#include <libpsio/psio.hpp>
 #include "globaldefs.h"
 #include "globals.h"
 #include "psi4-dec.h"
@@ -73,7 +75,7 @@ void rotate_orbs_irrep(int irrep, int dim, double **mo_coeffs,
   if (Params.print_mos) {
     outfile->Printf("\n\tOld molecular orbitals for irrep %s\n", 
       CalcInfo.labels[irrep]);
-    print_mat(tmpmat, dim, dim, outfile);
+    print_mat(tmpmat, dim, dim, "outfile");
   }
 
   /* now apply U, as a series of Givens rotation matrices */
@@ -92,7 +94,7 @@ void rotate_orbs_irrep(int irrep, int dim, double **mo_coeffs,
   if (Params.print_mos) {
     outfile->Printf("\n\tNew molecular orbitals for irrep %s\n", 
       CalcInfo.labels[irrep]);
-    print_mat(tmpmat, dim, dim, outfile);
+    print_mat(tmpmat, dim, dim, "outfile");
   }
 
 
@@ -126,7 +128,7 @@ void rotate_test(int dim, int npairs, int *p_arr, int *q_arr,
  
   /* print new coefficients */
   outfile->Printf("\n\tOld molecular orbitals\n");
-  print_mat(tmpmat, dim, dim, outfile);
+  print_mat(tmpmat, dim, dim, "outfile");
 
 
   /* now apply U, as a series of Givens rotation matrices */
@@ -142,12 +144,12 @@ void rotate_test(int dim, int npairs, int *p_arr, int *q_arr,
             costheta, sintheta);
     C_DROT(dim,&(tmpmat[0][q]),dim,&(tmpmat[0][p]),dim,costheta,sintheta);
     outfile->Printf("\n\tMatrix after transformation:\n");
-    print_mat(tmpmat, dim, dim, outfile);
+    print_mat(tmpmat, dim, dim, "outfile");
   }
 
   /* print new coefficients */
   outfile->Printf("\n\tNew molecular orbitals\n");
-  print_mat(tmpmat, dim, dim, outfile);
+  print_mat(tmpmat, dim, dim, "outfile");
 
   free_block(tmpmat);
 

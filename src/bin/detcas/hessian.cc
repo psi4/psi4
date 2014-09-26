@@ -26,7 +26,7 @@
 */
 #include <cstdlib>
 #include <cstdio>
-#include <libipv1/ip_lib.h>
+//#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "globaldefs.h"

@@ -38,6 +38,7 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <string>
 #include "indpairs.h"
 #include "psi4-dec.h"
 
@@ -175,8 +176,7 @@ void IndepPairs::set(int nirr, int num_ras, int **ras_opi, int ***ras_orbs,
     npairs += ir_npairs[irrep];
 
   if (npairs==0)  {
-    printf("(IndepPairs): Constructor called but no pairs!!\n");
-    fprintf(stderr, "(IndepPairs): Constructor called but no pairs!!\n");
+    outfile->Printf("(IndepPairs): Constructor called but no pairs!!\n");
     return;
   }
 
@@ -270,8 +270,7 @@ void IndepPairs::set(int nirr, int num_ras, int **ras_opi, int ***ras_orbs,
 
   // check things
   if (count != npairs) {
-    printf("(IndepPairs::set): mismatch in counted pairs!\n");
-    fprintf(stderr, "(IndepPairs::set): mismatch in counted pairs!\n");
+    outfile->Printf("(IndepPairs::set): mismatch in counted pairs!\n");
   }
 
 
@@ -357,25 +356,25 @@ IndepPairs::~IndepPairs() // Destructor
 }
 
 
-void IndepPairs::print(FILE *outfile)
+void IndepPairs::print(void)
 {
   int h;
 
   outfile->Printf("\nList of all independent pairs:\n");
-  print_selected(npairs, p, q, outfile);
+  print_selected(npairs, p, q);
   outfile->Printf("\nLists of independent pairs by irrep:\n");
   
   for (h=0; h<nirreps; h++) {
     if (!ir_npairs[h]) continue;
     outfile->Printf("\n\t Irrep %d:\n", h);
     print_selected(ir_npairs[h], ir_p[h], ir_q[h], 
-                   ir_p_rel[h], ir_q_rel[h], outfile);
+                   ir_p_rel[h], ir_q_rel[h]);
   }
 
 }
 
 
-void IndepPairs::print_selected(int num, int *parr, int *qarr, FILE *outfile)
+void IndepPairs::print_selected(int num, int *parr, int *qarr)
 {
   int ii;
 
@@ -392,7 +391,7 @@ void IndepPairs::print_selected(int num, int *parr, int *qarr, FILE *outfile)
 }
 
 void IndepPairs::print_selected(int num, int *parr, int *qarr, 
-                                int *prel, int *qrel, FILE *outfile)
+                                int *prel, int *qrel)
 {
   int ii;
 
@@ -409,7 +408,7 @@ void IndepPairs::print_selected(int num, int *parr, int *qarr,
 }
 
 
-void IndepPairs::print_vec(double *arr, const char *label, FILE *outfile) 
+void IndepPairs::print_vec(double *arr, const char *label) 
 {
   int pair;
 

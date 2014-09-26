@@ -39,9 +39,9 @@
 #include <cstdio>
 #include <cmath>
 #include <libciomr/libciomr.h>
+#include <psi4-dec.h>
 #include "globaldefs.h"
 #include "globals.h"
-#include "psi4-dec.h"
 
 namespace psi { namespace detcas {
 
@@ -194,7 +194,7 @@ int diis(int veclen, double *vec, double *errvec)
 
   if (Params.print_lvl > 2) {
     outfile->Printf("DIIS B Matrix:\n");
-    print_mat(bmat, new_num_vecs+1, new_num_vecs+1, outfile);
+    print_mat(bmat, new_num_vecs+1, new_num_vecs+1, "outfile");
   }
 
   /* scale the B matrix */
@@ -207,7 +207,7 @@ int diis(int veclen, double *vec, double *errvec)
 
   if (Params.print_lvl > 2) {
     outfile->Printf("DIIS B Matrix:\n");
-    print_mat(bmat, new_num_vecs+1, new_num_vecs+1, outfile);
+    print_mat(bmat, new_num_vecs+1, new_num_vecs+1, "outfile");
   }
 
   /* now solve the linear equations */ 

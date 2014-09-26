@@ -39,7 +39,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <libiwl/iwl.h>
-#include <libipv1/ip_lib.h>
+//#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include "globaldefs.h"
 #include "globals.h"
@@ -47,16 +47,16 @@
 
 namespace psi { namespace detcas {
 
-double **rdopdm(int nbf, int print_lvl, int opdm_file, int erase);
+double **rdopdm(int nbf, int print_lvl, int opdm_file, int erase, Options& options);
 double *rdtpdm(int nbf, int print_lvl, int tpdm_file, int erase);
 
 
-void read_density_matrices(void)
+void read_density_matrices(Options& options)
 {
 
   /* read the one-particle density matrix */
   CalcInfo.opdm = rdopdm(CalcInfo.npop, Params.print_lvl, Params.opdm_file,
-                         Params.opdm_erase);
+                         Params.opdm_erase, options);
 
   /* read the two-particle density matrix */
   CalcInfo.tpdm = rdtpdm(CalcInfo.npop, Params.print_lvl, Params.tpdm_file,
@@ -75,7 +75,7 @@ void read_density_matrices(void)
 ** Taken from CLAG, April 1998
 ** upgraded to libpsio 6/03 by CDS
 */
-double **rdopdm(int nbf, int print_lvl, int opdm_file, bool erase)
+double **rdopdm(int nbf, int print_lvl, int opdm_file, bool erase, Options& options)
 {
 
   int i, root, errcod;
@@ -87,13 +87,13 @@ double **rdopdm(int nbf, int print_lvl, int opdm_file, bool erase)
   opdm = block_matrix(nbf, nbf);
 
   /* if the user hasn't specified a root, just get "the" onepdm */
-  if (!ip_exist("ROOT",0)) {
+  if (!options["FOLLOW_ROOT"].has_changed()) {
     psio_read_entry(opdm_file, "MO-basis OPDM", (char *) opdm[0], 
                     nbf*nbf*sizeof(double));
   }
   else {
     root = 1;
-    errcod = ip_data("ROOT","%d",&root,0);
+    root = options.get_int("FOLLOW_ROOT");
     sprintf(opdm_key, "MO-basis OPDM Root %d", root);
     psio_read_entry(opdm_file, opdm_key, (char *) opdm[0], 
                     nbf*nbf*sizeof(double));
@@ -101,7 +101,7 @@ double **rdopdm(int nbf, int print_lvl, int opdm_file, bool erase)
 
   if (print_lvl > 3) {
     outfile->Printf("\nOne-Particle Density Matrix\n");
-    print_mat(opdm, nbf, nbf, outfile);
+    print_mat(opdm, nbf, nbf, "outfile");
     outfile->Printf("\n\n");
   }
 
@@ -150,7 +150,7 @@ double *rdtpdm(int nbf, int print_lvl, int tpdm_file, bool erase)
   }
 
  iwl_buf_rd_all(&TBuff, tpdm, ioff_lt, ioff_lt, 1, ioff,
-                (print_lvl>5), outfile);
+                (print_lvl>5), "outfile");
 
   if (print_lvl > 6) {
     outfile->Printf("Non-symmetrized Two-Particle Density Matrix\n");
