@@ -561,8 +561,11 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
       if (Jroot + 1 == Parameters.num_roots) outfile->Printf( "\n");
     }
     */
-
+    
+    /* DS EDIT */
+    outfile->Printf("Calling OEProp\n");
     /* Call OEProp here for each root opdm */
+    /*
     boost::shared_ptr<OEProp> oe(new OEProp());
     boost::shared_ptr<Wavefunction> wfn = 
       Process::environment.wavefunction(); 
@@ -651,9 +654,12 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
             oe->add("TRANSITION_QUADRUPOLE");
         }
     }
+    */
     
-    outfile->Printf( "  ==> Properties %s <==\n", ss.str().c_str());
-    oe->compute();
+    // outfile->Printf( "  ==> Properties %s <==\n", ss.str().c_str());
+    // oe->compute();
+    /* DS EDIT */
+    outfile->Printf("Finishing OEProp\n");
 
     // std::pair<SharedMatrix,SharedVector> nos = oe->Na_mo();
 
@@ -679,6 +685,8 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
     // if this is the "special" root, then copy over OEProp 
     // Process::environment variables from the current root into
     // more general locations
+
+    /* DS EDIT
     if (Iroot == Parameters.root) {
       std::stringstream ss2;
       ss2 << oeprop_label.str() << " DIPOLE X"; 
@@ -719,6 +727,7 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
            Process::environment.globals[ss2.str()]; 
       }
     }
+    */
 
     
     if (!transdens) Iroot++;

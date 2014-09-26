@@ -104,27 +104,14 @@ void get_parameters(Options &options)
   Params.invert_hessian = options.get_bool("INVERT_HESSIAN");
   Params.hessian = options.get_str("HESSIAN");
  
-  Params.level_shift = options.get_bool("LEVEL_SHIFT");
+  Params.level_shift = options.get_bool("DO_LEVEL_SHIFT");
   Params.shift = options.get_double("SHIFT");
   Params.determ_min = options.get_double("DETERM_MIN");
-  Params.step_max = options.get_double("MAX_STEP");
+  Params.step_max = options.get_double("STEP_MAX");
   Params.use_thetas = options.get_bool("USE_THETAS");
   Params.force_step = options.get_bool("FORCE_STEP");
   Params.force_pair = options.get_int("FORCE_PAIR");
   Params.force_value = options.get_double("FORCE_VALUE");
-  Params.scale_act_act = options.get_double("SCALE_ACT_ACT");
-  Params.bfgs = options.get_bool("BFGS");
-  Params.ds_hessian = options.get_bool("DS_HESSIAN");
-
-  Params.level_shift = options.get_bool("LEVEL_SHIFT");
-  Params.shift = options.get_double("SHIFT");
-  Params.determ_min = options.get_double("DETERM_MIN");
-  Params.step_max = options.get_double("MAX_STEP");
-  Params.use_thetas = options.get_bool("USE_THETAS");
-  Params.force_step = options.get_bool("FORCE_STEP");
-  Params.force_pair = options.get_int("FORCE_PAIR");
-  Params.force_value = options.get_double("FORCE_VALUE");
-  /* at the moment, the following only work for diagonal (non-YY) Hessians */
   Params.scale_act_act = options.get_double("SCALE_ACT_ACT");
   Params.bfgs = options.get_bool("BFGS");
   Params.ds_hessian = options.get_bool("DS_HESSIAN");
@@ -142,7 +129,7 @@ void print_parameters(void)
   outfile->Printf("PARAMETERS: \n") ;
   outfile->Printf("   PRINT         =   %6d      PRINT_MOS     =   %6s\n", 
       Params.print_lvl, Params.print_mos ? "yes" : "no");
-  outfile->Printf("   CONVERGENCE   =   %6d      E CONVERG     =   %6d\n",
+  outfile->Printf("   R_CONVERGENCE   =   %6.2e  E CONVERG     =   %6.2e\n",
       Params.rms_grad_convergence, Params.energy_convergence);
   outfile->Printf("   IGNORE_RAS_RAS=   %6s      IGNORE_FZ     =   %6s\n", 
       Params.ignore_ras_ras ? "yes" : "no", Params.ignore_fz ? "yes" : "no") ;
@@ -162,7 +149,7 @@ void print_parameters(void)
       Params.diis_min_vecs, Params.diis_max_vecs);
   outfile->Printf("   SCALE STEP    =   %6.2E    MAX STEP      =   %6.2lf\n",
       Params.scale_step, Params.step_max);
-  outfile->Printf("   LEVEL SHIFT   =   %6s      SHIFT         =   %6.2lf\n",
+  outfile->Printf("   DO_LEVEL SHIFT   =   %6s   SHIFT         =   %6.2lf\n",
       Params.level_shift ? "yes" : "no", Params.shift);
   outfile->Printf("   USE FZC H     =   %6s      HESSIAN       = %-12s\n",
       Params.use_fzc_h ? "yes" : "no", Params.hessian.c_str());

@@ -2844,7 +2844,24 @@ def run_detcas(name, **kwargs):
             psi4.MintsHelper().integrals()
 
     psi4.transqt2()
+    print("Finish TRANSQT!\n")
     psi4.detci()
+    print("Finish DETCI!\n")
+    # psi4.print_out('finished detci! \n')
     psi4.detcas()
+    print("Finish DETCAS!\n")
+    # psi4.print_out('Finished DETCAS! \n')
+
+#        if psi4.optking() == psi4.PsiReturnType.EndLoop:
+#            print('Optimizer: Optimization complete!')
+#            psi4.print_out('\n    Final optimized geometry and variables:\n')
+#            psi4.get_active_molecule().print_in_input_format()
+#            # Check if user wants to see the intcos; if so, don't delete them.
+#            if (psi4.get_option('OPTKING', 'INTCOS_GENERATE_EXIT') == False):
+#                psi4.opt_clean()
+#            psi4.clean()
+#    while n <= psi4.get_global_option('GEOM_MAXITER'):
 
     optstash.restore()
+
+    return psi4.get_variable("CURRENT ENERGY")
