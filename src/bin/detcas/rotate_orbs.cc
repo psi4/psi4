@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup DETCAS
     \brief Enter brief description of file here 
@@ -11,6 +33,7 @@
 #include <libqt/qt.h>
 #include "globaldefs.h"
 #include "globals.h"
+#include "psi4-dec.h"
 
 namespace psi { namespace detcas {
 
@@ -26,13 +49,13 @@ void rotate_orbs_irrep(int irrep, int dim, double **mo_coeffs,
   double **tmpmat, theta, sintheta, costheta;
 
   if (Params.print_lvl > 3) {
-    fprintf(outfile, "Thetas for irrep %d\n", irrep);
+    outfile->Printf("Thetas for irrep %d\n", irrep);
     for (pair=0; pair<npairs; pair++) {
-      fprintf(outfile, "Pair (%2d,%2d) = %12.6lf\n",
+      outfile->Printf("Pair (%2d,%2d) = %12.6lf\n",
               p_arr[pair], q_arr[pair], theta_arr[pair]);
     }
-    fprintf(outfile, "\n");
-    fflush(outfile);
+    outfile->Printf("\n");
+    //fflush(outfile);
   }
 
   /* apply the transformation C = C^0 U, using the fact that */
@@ -48,7 +71,7 @@ void rotate_orbs_irrep(int irrep, int dim, double **mo_coeffs,
  
   /* print new coefficients */
   if (Params.print_mos) {
-    fprintf(outfile, "\n\tOld molecular orbitals for irrep %s\n", 
+    outfile->Printf("\n\tOld molecular orbitals for irrep %s\n", 
       CalcInfo.labels[irrep]);
     print_mat(tmpmat, dim, dim, outfile);
   }
@@ -67,7 +90,7 @@ void rotate_orbs_irrep(int irrep, int dim, double **mo_coeffs,
 
   /* print new coefficients */
   if (Params.print_mos) {
-    fprintf(outfile, "\n\tNew molecular orbitals for irrep %s\n", 
+    outfile->Printf("\n\tNew molecular orbitals for irrep %s\n", 
       CalcInfo.labels[irrep]);
     print_mat(tmpmat, dim, dim, outfile);
   }
@@ -102,7 +125,7 @@ void rotate_test(int dim, int npairs, int *p_arr, int *q_arr,
   }
  
   /* print new coefficients */
-  fprintf(outfile, "\n\tOld molecular orbitals\n");
+  outfile->Printf("\n\tOld molecular orbitals\n");
   print_mat(tmpmat, dim, dim, outfile);
 
 
@@ -114,16 +137,16 @@ void rotate_test(int dim, int npairs, int *p_arr, int *q_arr,
     theta = -theta;  /* DROT rotates around the other way */
     costheta = cos(theta);
     sintheta = sin(theta);
-    fprintf(outfile, "\nApplying rotation (%2d,%2d) = %12.6lf\n", p, q, theta);
-    fprintf(outfile, "Cos(theta)=%12.6lf, Sin(theta)=%12.6lf\n", 
+    outfile->Printf("\nApplying rotation (%2d,%2d) = %12.6lf\n", p, q, theta);
+    outfile->Printf("Cos(theta)=%12.6lf, Sin(theta)=%12.6lf\n", 
             costheta, sintheta);
     C_DROT(dim,&(tmpmat[0][q]),dim,&(tmpmat[0][p]),dim,costheta,sintheta);
-    fprintf(outfile, "\n\tMatrix after transformation:\n");
+    outfile->Printf("\n\tMatrix after transformation:\n");
     print_mat(tmpmat, dim, dim, outfile);
   }
 
   /* print new coefficients */
-  fprintf(outfile, "\n\tNew molecular orbitals\n");
+  outfile->Printf("\n\tNew molecular orbitals\n");
   print_mat(tmpmat, dim, dim, outfile);
 
   free_block(tmpmat);

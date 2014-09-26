@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup DETCAS
     \brief Enter brief description of file here 
@@ -19,6 +41,7 @@
 #include <libciomr/libciomr.h>
 #include "globaldefs.h"
 #include "globals.h"
+#include "psi4-dec.h"
 
 namespace psi { namespace detcas {
 
@@ -50,12 +73,12 @@ int diis(int veclen, double *vec, double *errvec)
   if (fp != NULL) {
 
     if (fread(&num_vecs, sizeof(int), 1, fp) != 1) {
-      fprintf(outfile, "(diis): Error reading number of diis vectors.\n");
+      outfile->Printf("(diis): Error reading number of diis vectors.\n");
       return(0);
     }
 
     if (fread(&diis_iter, sizeof(int), 1, fp) != 1) {
-      fprintf(outfile, "(diis): Error reading diis iteration number.\n");
+      outfile->Printf("(diis): Error reading diis iteration number.\n");
       return(0);
     }
 
@@ -65,12 +88,12 @@ int diis(int veclen, double *vec, double *errvec)
     for (i=0; i<num_vecs; i++) {
 
       if (fread(vecs[i], sizeof(double), veclen, fp) != veclen) { 
-        fprintf(outfile, "(diis): Error reading diis vector %d\n", i);
+        outfile->Printf("(diis): Error reading diis vector %d\n", i);
         return(0);
       }
 
       if (fread(errvecs[i], sizeof(double), veclen, fp) != veclen) { 
-        fprintf(outfile, "(diis): Error reading diis error vector %d\n", i);
+        outfile->Printf("(diis): Error reading diis error vector %d\n", i);
         return(0);
       }
 
@@ -102,7 +125,7 @@ int diis(int veclen, double *vec, double *errvec)
     offset = num_vecs - Params.diis_max_vecs;
 
   if (Params.print_lvl > 2) 
-    fprintf(outfile, "Diis: iter %2d, vecs %d, do_diis %d, offset %d\n", 
+    outfile->Printf("Diis: iter %2d, vecs %d, do_diis %d, offset %d\n", 
             diis_iter, num_vecs, do_diis, offset);
 
   new_num_vecs = num_vecs - offset;
@@ -110,26 +133,26 @@ int diis(int veclen, double *vec, double *errvec)
   /* write out the diis info */
   ffileb_noexit(&fp,"diis.dat",0);
   if (fp == NULL) {
-    fprintf(outfile, "(diis): Error opening diis.dat\n");
+    outfile->Printf("(diis): Error opening diis.dat\n");
     return(0);
   } 
 
   if (fwrite(&new_num_vecs, sizeof(int), 1, fp) != 1) {
-    fprintf(outfile, "(diis): Error writing number of diis vectors.\n");
+    outfile->Printf("(diis): Error writing number of diis vectors.\n");
     return(0);
   }
 
   if (fwrite(&diis_iter, sizeof(int), 1, fp) != 1) {
-    fprintf(outfile, "(diis): Error writing diis iteration number.\n");
+    outfile->Printf("(diis): Error writing diis iteration number.\n");
     return(0);
   }
 
   for (i=offset; i<num_vecs; i++) {
     if (fwrite(vecs[i], sizeof(double), veclen, fp) != veclen) {
-      fprintf(outfile, "(diis): Error writing vector %d.\n", i);
+      outfile->Printf("(diis): Error writing vector %d.\n", i);
     }
     if (fwrite(errvecs[i], sizeof(double), veclen, fp) != veclen) {
-      fprintf(outfile, "(diis): Error writing error vector %d.\n", i);
+      outfile->Printf("(diis): Error writing error vector %d.\n", i);
     }
   }
 
@@ -145,7 +168,7 @@ int diis(int veclen, double *vec, double *errvec)
 
   /* form diis matrix, solve equations */
   if (Params.print_lvl) 
-    fprintf(outfile, "Attempting a DIIS step\n");
+    outfile->Printf("Attempting a DIIS step\n");
 
   bmat = block_matrix(new_num_vecs+1, new_num_vecs+1);
   bvec = init_array(new_num_vecs+1);
@@ -170,7 +193,7 @@ int diis(int veclen, double *vec, double *errvec)
   bvec[new_num_vecs] = -1.0;
 
   if (Params.print_lvl > 2) {
-    fprintf(outfile, "DIIS B Matrix:\n");
+    outfile->Printf("DIIS B Matrix:\n");
     print_mat(bmat, new_num_vecs+1, new_num_vecs+1, outfile);
   }
 
@@ -183,7 +206,7 @@ int diis(int veclen, double *vec, double *errvec)
   }
 
   if (Params.print_lvl > 2) {
-    fprintf(outfile, "DIIS B Matrix:\n");
+    outfile->Printf("DIIS B Matrix:\n");
     print_mat(bmat, new_num_vecs+1, new_num_vecs+1, outfile);
   }
 
@@ -191,17 +214,17 @@ int diis(int veclen, double *vec, double *errvec)
   flin(bmat, bvec, new_num_vecs+1, 1, &det); 
 
   if (fabs(det) < DIIS_MIN_DET) {
-    fprintf(outfile, "Warning: diis matrix near-singular\n");
-    fprintf(outfile, "Determinant is %6.3E\n", det);
+    outfile->Printf("Warning: diis matrix near-singular\n");
+    outfile->Printf("Determinant is %6.3E\n", det);
   }
 
   if (Params.print_lvl > 3) {
-    fprintf(outfile, "\nCoefficients of DIIS extrapolant:\n");
+    outfile->Printf("\nCoefficients of DIIS extrapolant:\n");
     for (i=0; i<new_num_vecs; i++) {
-      fprintf(outfile, "%12.6lf\n", bvec[i]);
+      outfile->Printf("%12.6lf\n", bvec[i]);
     }
-    fprintf(outfile, "Lambda:\n");
-    fprintf(outfile, "%12.6lf\n", bvec[i]);
+    outfile->Printf("Lambda:\n");
+    outfile->Printf("%12.6lf\n", bvec[i]);
   }
 
   /* get extrapolated vector */

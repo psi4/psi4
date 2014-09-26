@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup DETCAS
     \brief Enter brief description of file here 
@@ -17,6 +39,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include "indpairs.h"
+#include "psi4-dec.h"
 
 namespace psi { namespace detcas {
 
@@ -338,13 +361,13 @@ void IndepPairs::print(FILE *outfile)
 {
   int h;
 
-  fprintf(outfile, "\nList of all independent pairs:\n");
+  outfile->Printf("\nList of all independent pairs:\n");
   print_selected(npairs, p, q, outfile);
-  fprintf(outfile, "\nLists of independent pairs by irrep:\n");
+  outfile->Printf("\nLists of independent pairs by irrep:\n");
   
   for (h=0; h<nirreps; h++) {
     if (!ir_npairs[h]) continue;
-    fprintf(outfile, "\n\t Irrep %d:\n", h);
+    outfile->Printf("\n\t Irrep %d:\n", h);
     print_selected(ir_npairs[h], ir_p[h], ir_q[h], 
                    ir_p_rel[h], ir_q_rel[h], outfile);
   }
@@ -356,15 +379,15 @@ void IndepPairs::print_selected(int num, int *parr, int *qarr, FILE *outfile)
 {
   int ii;
 
-  fprintf(outfile, "\n  %4d Independent Pairs\n", num);
-  fprintf(outfile, "\t p\t q\n");
-  fprintf(outfile,   "    -------------------\n");
+  outfile->Printf("\n  %4d Independent Pairs\n", num);
+  outfile->Printf("\t p\t q\n");
+  outfile->Printf(  "    -------------------\n");
 
   for (ii=0; ii<num; ii++) {
-    fprintf(outfile,"\t %2d\t",parr[ii]);
-    fprintf(outfile,"%2d\n",qarr[ii]);
+    outfile->Printf("\t %2d\t",parr[ii]);
+    outfile->Printf("%2d\n",qarr[ii]);
   }
-  fflush(outfile);
+  //fflush(outfile);
 
 }
 
@@ -373,15 +396,15 @@ void IndepPairs::print_selected(int num, int *parr, int *qarr,
 {
   int ii;
 
-  fprintf(outfile, "\n\t %4d Independent Pairs\n", num);
-  fprintf(outfile, "\t p\t q\t P\t Q\n");
-  fprintf(outfile,   "    ----------------------------------\n");
+  outfile->Printf("\n\t %4d Independent Pairs\n", num);
+  outfile->Printf("\t p\t q\t P\t Q\n");
+  outfile->Printf(  "    ----------------------------------\n");
 
   for (ii=0; ii<num; ii++) {
-    fprintf(outfile,"\t %2d\t%2d\t%2d\t%2d\n",
+    outfile->Printf("\t %2d\t%2d\t%2d\t%2d\n",
             parr[ii],qarr[ii],prel[ii],qrel[ii]);
   }
-  fflush(outfile);
+  //fflush(outfile);
 
 }
 
@@ -390,13 +413,13 @@ void IndepPairs::print_vec(double *arr, const char *label, FILE *outfile)
 {
   int pair;
 
-  fprintf(outfile, "%s\n", label);
+  outfile->Printf("%s\n", label);
   for (pair=0; pair<npairs; pair++) {
-    fprintf(outfile, "Pair (%2d,%2d) = %12.7lf\n",
+    outfile->Printf("Pair (%2d,%2d) = %12.7lf\n",
             p[pair], q[pair], arr[pair]);
   }
-  fprintf(outfile, "\n");
-  fflush(outfile);
+  outfile->Printf("\n");
+  //fflush(outfile);
 
 }
 

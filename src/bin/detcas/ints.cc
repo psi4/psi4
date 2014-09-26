@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup DETCAS
     \brief Enter brief description of file here 
@@ -22,6 +44,7 @@
 #include <psifiles.h>
 #include "globaldefs.h"
 #include "globals.h"
+#include "psi4-dec.h"
 
 namespace psi { namespace detcas {
 
@@ -40,19 +63,19 @@ void read_integrals()
 
   if (Params.use_fzc_h) {
     if (Params.print_lvl > 3) 
-      fprintf(outfile, "\n\tOne-electron integrals (frozen core operator):\n");
+      outfile->Printf("\n\tOne-electron integrals (frozen core operator):\n");
     iwl_rdone(Params.oei_file, PSIF_MO_FZC, CalcInfo.onel_ints, nbstri, 
               Params.oei_erase ? 0 : 1, (Params.print_lvl>3), outfile);
   }
   else {
     if (Params.print_lvl > 3) 
-      fprintf(outfile, "\n\tOne-electron integrals (bare):\n");
+      outfile->Printf("\n\tOne-electron integrals (bare):\n");
     iwl_rdone(Params.oei_file, PSIF_MO_OEI, CalcInfo.onel_ints, nbstri, 
               Params.oei_erase ? 0 : 1, (Params.print_lvl>3), outfile);
   }
 
   if (Params.print_lvl > 6) 
-    fprintf(outfile, "\n\tTwo-electron integrals:\n");
+    outfile->Printf("\n\tTwo-electron integrals:\n");
 
   iwl_rdtwo(Params.tei_file, CalcInfo.twoel_ints, ioff, 
      CalcInfo.nmo, Params.filter_ints ? CalcInfo.num_fzc_orbs : 0, 
