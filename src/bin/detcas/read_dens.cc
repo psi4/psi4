@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup DETCAS
     \brief Enter brief description of file here 
@@ -21,6 +43,7 @@
 #include <libciomr/libciomr.h>
 #include "globaldefs.h"
 #include "globals.h"
+#include "psi4-dec.h"
 
 namespace psi { namespace detcas {
 
@@ -77,9 +100,9 @@ double **rdopdm(int nbf, int print_lvl, int opdm_file, bool erase)
   }
 
   if (print_lvl > 3) {
-    fprintf(outfile,"\nOne-Particle Density Matrix\n");
+    outfile->Printf("\nOne-Particle Density Matrix\n");
     print_mat(opdm, nbf, nbf, outfile);
-    fprintf(outfile,"\n\n");
+    outfile->Printf("\n\n");
   }
 
   psio_close(opdm_file, erase ? 0 : 1);
@@ -130,7 +153,7 @@ double *rdtpdm(int nbf, int print_lvl, int tpdm_file, bool erase)
                 (print_lvl>5), outfile);
 
   if (print_lvl > 6) {
-    fprintf(outfile,"Non-symmetrized Two-Particle Density Matrix\n");
+    outfile->Printf("Non-symmetrized Two-Particle Density Matrix\n");
     for (p=0; p<nbf; p++) {
       for (q=0; q<nbf; q++) {
         for (r=0; r<=p; r++) {
@@ -139,13 +162,13 @@ double *rdtpdm(int nbf, int print_lvl, int tpdm_file, bool erase)
             pq = p * nbf + q;
             rs = r * nbf + s;
             pqrs = INDEX(pq,rs);
-            fprintf(outfile, "%2d %2d %2d %2d = %12.6lf\n", p, q, r, s, 
+            outfile->Printf("%2d %2d %2d %2d = %12.6lf\n", p, q, r, s, 
                     tpdm[pqrs]);
           }
         }
       }
     }
-    fprintf(outfile,"\n\n");
+    outfile->Printf("\n\n");
   }
 
   iwl_buf_close(&TBuff, 1);
@@ -185,13 +208,13 @@ double *rdtpdm(int nbf, int print_lvl, int tpdm_file, bool erase)
   free(tpdm);
 
   if (print_lvl > 6) {
-    fprintf(outfile,"Symmetrized Two-Particle Density Matrix\n");
+    outfile->Printf("Symmetrized Two-Particle Density Matrix\n");
     for (p=0,target=0; p<nbf; p++) {
       for (q=0; q<=p; q++) {
         for (r=0; r<=p; r++) {
           smax = (r==p) ? q+1 : r+1;
           for (s=0; s<smax; s++,target++) {
-            fprintf(outfile, "%2d %2d %2d %2d = %12.6lf\n", p, q, r, s, 
+            outfile->Printf("%2d %2d %2d %2d = %12.6lf\n", p, q, r, s, 
                     symm_tpdm[target]);
           }
         }

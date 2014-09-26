@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup DETCAS
     \brief Enter brief description of file here 
@@ -9,6 +31,7 @@
 #include <libqt/qt.h>
 #include "globaldefs.h"
 #include "globals.h"
+#include "psi4-dec.h"
 
 namespace psi { namespace detcas {
 
@@ -40,7 +63,7 @@ void form_appx_diag_mo_hess(int npairs, int *ppair, int *qpair,
   int qv,puvw,quvw,pv,pu,qu,pupv,quqv,ppuv,qquv,pvqu,puqv,pquv;
   double value;
 
-  fprintf(outfile, "Forming approximate diagonal orbital Hessian\n");
+  outfile->Printf("Forming approximate diagonal orbital Hessian\n");
 
   /* loop over the independent pairs */
   for (pair=0; pair<npairs; pair++) {
@@ -176,7 +199,7 @@ void form_appx_diag_mo_hess(int npairs, int *ppair, int *qpair,
 
 
     else {
-      fprintf(outfile, 
+      outfile->Printf(
              "(form_diag_mo_hess): Error, unrecognized class of indep pair\n");
     }
 
@@ -218,7 +241,7 @@ void form_diag_mo_hess(int npairs, int *ppair, int *qpair,
   int delta;
   double value;
 
-  fprintf(outfile, "Forming diagonal orbital Hessian\n");
+  outfile->Printf("Forming diagonal orbital Hessian\n");
 
   /* loop over the independent pairs */
   for (pair=0; pair<npairs; pair++) {
@@ -411,7 +434,7 @@ void form_diag_mo_hess(int npairs, int *ppair, int *qpair,
     } /* end case H_{t1t2,t1t2} */
 
     else {
-      fprintf(outfile, 
+      outfile->Printf(
              "(form_diag_mo_hess): Error, unrecognized class of indep pair\n");
     }
 
@@ -457,7 +480,7 @@ void form_full_mo_hess(int npairs, int *ppair, int *qpair, double *oei,
   int qsmn, prmn, qmsn, pmrn, psmn, pmsn, qrmn, qmrn;  
   double sum, ysum;
 
-  fprintf(outfile, "Forming full MCSCF orbital Hessian\n");
+  outfile->Printf("Forming full MCSCF orbital Hessian\n");
  
   nmo = CalcInfo.nmo;
   npop = CalcInfo.npop;
@@ -611,7 +634,7 @@ void form_diag_mo_hess_yy(int npairs, int *ppair, int *qpair, double *oei,
   int qqmn, ppmn, qmqn, pmpn, pqmn, qpmn, pmqn, qmpn;
   double sum, ysum;
  
-  fprintf(outfile, "Forming diagonal MCSCF orbital Hessian (YY)\n");
+  outfile->Printf("Forming diagonal MCSCF orbital Hessian (YY)\n");
 
   nmo = CalcInfo.nmo;
   npop = CalcInfo.npop;

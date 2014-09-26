@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup DETCAS
     \brief Enter brief description of file here 
@@ -10,6 +32,7 @@
 #include <libqt/qt.h>
 #include "globaldefs.h"
 #include "globals.h"
+#include "psi4-dec.h"
 
 namespace psi { namespace detcas {
 
@@ -106,11 +129,11 @@ void get_mo_info(void)
   } 
 
   if (Params.print_lvl > 4) {
-    fprintf(outfile, "\nPitzer to CI order array = \n");
+    outfile->Printf("\nPitzer to CI order array = \n");
     for (i=0; i<CalcInfo.nmo; i++) {
-      fprintf(outfile, "%3d ", CalcInfo.pitz2ci[i]);
+      outfile->Printf("%3d ", CalcInfo.pitz2ci[i]);
     }
-    fprintf(outfile, "\n");
+    outfile->Printf("\n");
   }
 
 
@@ -211,44 +234,44 @@ void get_mo_info(void)
   }
   
   if (Params.print_lvl > 0) {
-    fprintf(outfile, "ORBITALS:");
-    fprintf(outfile, "\n   FROZEN_DOCC   = ");
+    outfile->Printf("ORBITALS:");
+    outfile->Printf("\n   FROZEN_DOCC   = ");
     for (i=0; i<CalcInfo.nirreps; i++) {
-      fprintf(outfile, "%2d ", CalcInfo.frozen_docc[i]);
+      outfile->Printf("%2d ", CalcInfo.frozen_docc[i]);
     }
-    fprintf(outfile, "\n   RESTR_DOCC    = ");
+    outfile->Printf("\n   RESTR_DOCC    = ");
     for (i=0; i<CalcInfo.nirreps; i++) {
-      fprintf(outfile, "%2d ", CalcInfo.rstr_docc[i]);
+      outfile->Printf("%2d ", CalcInfo.rstr_docc[i]);
     }
-    fprintf(outfile, "\n   DOCC          = ");
+    outfile->Printf("\n   DOCC          = ");
     for (i=0; i<CalcInfo.nirreps; i++) {
-      fprintf(outfile, "%2d ", CalcInfo.docc[i]);
+      outfile->Printf("%2d ", CalcInfo.docc[i]);
     }
-    fprintf(outfile, "\n   SOCC          = ");
+    outfile->Printf("\n   SOCC          = ");
     for (i=0; i<CalcInfo.nirreps; i++) {
-      fprintf(outfile, "%2d ", CalcInfo.socc[i]);
+      outfile->Printf("%2d ", CalcInfo.socc[i]);
     }
-    fprintf(outfile, "\n   RESTR_UOCC    = ");
+    outfile->Printf("\n   RESTR_UOCC    = ");
     for (i=0; i<CalcInfo.nirreps; i++) {
-      fprintf(outfile, "%2d ", CalcInfo.rstr_uocc[i]);
+      outfile->Printf("%2d ", CalcInfo.rstr_uocc[i]);
     }
-    fprintf(outfile, "\n   FROZEN_UOCC   = ");
+    outfile->Printf("\n   FROZEN_UOCC   = ");
     for (i=0; i<CalcInfo.nirreps; i++) {
-      fprintf(outfile, "%2d ", CalcInfo.frozen_uocc[i]);
+      outfile->Printf("%2d ", CalcInfo.frozen_uocc[i]);
     }
 
     for (i=0; i<MAX_RAS_SPACES; i++) {
-      fprintf(outfile, "\n   RAS %d         = ",i+1);
+      outfile->Printf("\n   RAS %d         = ",i+1);
       for (j=0; j<CalcInfo.nirreps; j++) {
-        fprintf(outfile, "%2d ", CalcInfo.ras_opi[i][j]);
+        outfile->Printf("%2d ", CalcInfo.ras_opi[i][j]);
       }
     }
-    fprintf(outfile, "\n");
+    outfile->Printf("\n");
 
-    fprintf(outfile, "   MOL ORBS      =   %6d\n", CalcInfo.nmo);
-    fprintf(outfile, "   FROZEN CORE   =   %6d      RESTR CORE   =   %6d\n",
+    outfile->Printf("   MOL ORBS      =   %6d\n", CalcInfo.nmo);
+    outfile->Printf("   FROZEN CORE   =   %6d      RESTR CORE   =   %6d\n",
         CalcInfo.num_fzc_orbs, CalcInfo.num_cor_orbs);
-    fprintf(outfile, "\n");
+    outfile->Printf("\n");
   }
 }
 
@@ -394,7 +417,7 @@ double *** construct_evects(int nirreps, int *active, int *orbspi,
       }
 
       if(printflag) {
-        fprintf(outfile,"\n\tMolecular Orbitals for Irrep %s\n",
+        outfile->Prinft("\n\tMolecular Orbitals for Irrep %s\n",
                 CalcInfo.labels[h]);
         print_mat(evects[h],orbspi[h],active[h],outfile);
       }
