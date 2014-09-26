@@ -47,8 +47,8 @@
 
 namespace psi { namespace detcas {
 
-double **rdopdm(int nbf, int print_lvl, int opdm_file, int erase, Options& options);
-double *rdtpdm(int nbf, int print_lvl, int tpdm_file, int erase);
+double **rdopdm(int nbf, int print_lvl, int opdm_file, bool erase, Options& options);
+double *rdtpdm(int nbf, int print_lvl, int tpdm_file, bool erase);
 
 
 void read_density_matrices(Options& options)

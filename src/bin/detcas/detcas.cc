@@ -62,7 +62,7 @@
 namespace psi { namespace detcas {
 
 extern void get_mo_info(Options& options);
-extern void get_parameters(void);
+extern void get_parameters(Options &options);
 extern void print_parameters(void);
 extern void read_integrals(void);
 extern void read_density_matrices(Options& options);
@@ -122,6 +122,8 @@ void scale_gradient(void);
 int check_conv(void);
 int take_step(void);
 void rotate_orbs(void);
+double** lagcalc(double **OPDM, double *TPDM, double *h, double *TwoElec,
+               int nmo, int npop, int print_lvl, int lag_file);
 
 struct calcinfo CalcInfo;
 struct params Params;
@@ -209,7 +211,7 @@ PsiReturnType detcas(Options &options)
   CalcInfo.mo_hess_diag = NULL;
 
   if (Params.print_lvl) tstart();
-  get_parameters();            /* get running params (convergence, etc)    */
+  get_parameters(options);     /* get running params (convergence, etc)    */
   init_ioff();                 /* set up the ioff array                    */
   title();                     /* print program identification             */
 
@@ -218,6 +220,11 @@ PsiReturnType detcas(Options &options)
   get_mo_info(options);               /* read DOCC, SOCC, frozen, nbfso, etc      */
   read_integrals();            /* get the 1 and 2 elec MO integrals        */
   read_density_matrices(options);
+
+  CalcInfo.lag = lagcalc(CalcInfo.opdm, CalcInfo.tpdm, CalcInfo.onel_ints,
+                     CalcInfo.twoel_ints, CalcInfo.nmo,
+                     CalcInfo.npop, Params.print_lvl, PSIF_MO_LAG); 
+
   read_lagrangian();
 
   form_independent_pairs();

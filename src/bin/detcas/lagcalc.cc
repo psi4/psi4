@@ -18,6 +18,7 @@
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>         
 #include <libpsio/psio.h>
+#include "psi4-dec.h"
 #include "globaldefs.h"
 #include "globals.h"
 
@@ -25,8 +26,8 @@ namespace psi { namespace detcas {
 
 #define INDEX(x,y) ((x>y) ? ioff[x] + y : ioff[y] + x)
 
-double lagcalc(double **OPDM, double *TPDM, double *h, double *TwoElec,
-             double **lag, int nmo, int npop, int print_lvl, int lag_file)
+double** lagcalc(double **OPDM, double *TPDM, double *h, double *TwoElec,
+                 int nmo, int npop, int print_lvl, int lag_file)
 {
   int i,j;                      /* indecies of lagrangian element          */
   int m,k,l;                    /* indecies of integrals needed            */ 
@@ -37,9 +38,13 @@ double lagcalc(double **OPDM, double *TPDM, double *h, double *TwoElec,
   double OEsum;                 /* QjmHim sumed over MO index m            */
   double TEsum;                 /* Gjmkl(im,kl) summed over m,k,l          */
   double lagtrace;              /* Trace of the Lagrangian (as a check)    */
+  double **lag;                 /* Lagrangian                              */
+
+
 
   psio_open(lag_file, PSIO_OPEN_OLD);
 
+  lag = block_matrix(nmo, nmo);
   oe_lag = block_matrix(nmo, nmo);
   te_lag = block_matrix(nmo, nmo);
 
@@ -100,12 +105,12 @@ double lagcalc(double **OPDM, double *TPDM, double *h, double *TwoElec,
     nmo*nmo*sizeof(double));
 
   if (print_lvl > 1) {
-    fprintf(outfile,"\n\n One-electron part of the Lagrangian");
-    print_mat(oe_lag, nmo, nmo, outfile);
-    fprintf(outfile,"\n\n Two-electron part of the Lagrangian");
-    print_mat(te_lag, nmo, nmo, outfile);
-    fprintf(outfile,"\nLagrangian Matrix\n\n");
-    print_mat(lag, nmo, nmo, outfile);
+    outfile->Printf("\n\n One-electron part of the Lagrangian");
+    print_mat(oe_lag, nmo, nmo, "outfile");
+    outfile->Printf("\n\n Two-electron part of the Lagrangian");
+    print_mat(te_lag, nmo, nmo, "outfile");
+    outfile->Printf("\nLagrangian Matrix\n\n");
+    print_mat(lag, nmo, nmo, "outfile");
     }
 
   psio_close(lag_file, 1);
@@ -113,7 +118,7 @@ double lagcalc(double **OPDM, double *TPDM, double *h, double *TwoElec,
   free_block(oe_lag);
   free_block(te_lag);
 
-  return(lagtrace);
+  return(lag);
 }
 
 }} // end namespace psi::detcas
