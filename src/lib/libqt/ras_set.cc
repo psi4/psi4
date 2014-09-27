@@ -572,6 +572,7 @@ int ras_set2(int nirreps, int nmo, int delete_fzdocc,
     for (irrep=0; irrep<nirreps; irrep++) {
       while (tras[i][irrep]) {
         point = used[irrep] + offset[irrep];
+        outfile->Printf("%d %d %d %d %d %d %d \n", i, irrep, tras[i][irrep], used[irrep], offset[irrep], point, nmo);
         if (point < 0 || point >= nmo) {
           throw PsiException("ras_set2(): Invalid point value",
             __FILE__, __LINE__);

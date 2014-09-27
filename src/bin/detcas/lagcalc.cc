@@ -89,7 +89,7 @@ double** lagcalc(double **OPDM, double *TPDM, double *h, double *TwoElec,
                     // TEsum += (TPDM[Tmjkl] + TPDM[Tjmkl]) * TwoElec[imkl]; 
                     mj = INDEX(m,j);
                     mjkl = INDEX(mj,kl);
-                    TEsum += (2.0 * TPDM[Tmjkl]) * TwoElec[imkl]; 
+                    TEsum += (2.0 * TPDM[mjkl]) * TwoElec[imkl]; 
                   } /* end l loop */
             } /* end m loop */
 
@@ -105,6 +105,7 @@ double** lagcalc(double **OPDM, double *TPDM, double *h, double *TwoElec,
   for (lagtrace=0.0,i=0; i<nmo; i++)
     lagtrace += oe_lag[i][i] + 0.5 * te_lag[i][i];
 
+  outfile->Printf("Lagrangian Trace is %6.10f", lagtrace);
   psio_write_entry(lag_file, "MO-basis Lagrangian", (char *) lag[0],
     nmo*nmo*sizeof(double));
 
