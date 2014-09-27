@@ -2854,7 +2854,7 @@ def run_detcas(name, **kwargs):
         #psi4.detcas()
         #print("Finish DETCAS!\n")
         print("Finished iteration %d\n" % x)
-        psi4.clean()
+        #psi4.clean()
 
 #   For Future
 #        if psi4.optking() == psi4.PsiReturnType.EndLoop:
