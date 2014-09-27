@@ -107,15 +107,22 @@ void get_moinfo(Options& options)
     moinfo.clsdpi = chkpt_rd_clsdpi();
     moinfo.openpi = chkpt_rd_openpi();
 
-    /* might update this bit to be consistent with how handled in DETCI/DETCAS */
-    moinfo.frdocc = Process::environment.wavefunction()->frzcpi();
+    moinfo.frdocc = init_int_array(moinfo.nirreps);
+    moinfo.fruocc = init_int_array(moinfo.nirreps);
+
+   for (int h=0; h<moinfo.nirreps; h++) {
+     moinfo.frdocc[h] = Process::environment.wavefunction()->frzcpi()[h];
+     moinfo.fruocc[h] = Process::environment.wavefunction()->frzvpi()[h];
+   }
+
+    //moinfo.frdocc = Process::environment.wavefunction()->frzcpi();
     if(options["FROZEN_DOCC"].has_changed()){
         if(options["FROZEN_DOCC"].size() != moinfo.nirreps)
             throw PSIEXCEPTION("FROZEN_DOCC array should be the same size as the number of irreps.");
         for(int h = 0; h < moinfo.nirreps; ++h)
             moinfo.frdocc[h] = options["FROZEN_DOCC"][h].to_integer();
     }
-    moinfo.fruocc = Process::environment.wavefunction()->frzvpi();
+    //moinfo.fruocc = Process::environment.wavefunction()->frzvpi();
     if(options["FROZEN_UOCC"].has_changed()){
         if(options["FROZEN_UOCC"].size() != moinfo.nirreps)
             throw PSIEXCEPTION("FROZEN_UOCC array should be the same size as the number of irreps.");
@@ -526,9 +533,9 @@ void cleanup(void)
     free(moinfo.clsdpi);
     free(moinfo.openpi);
     free(moinfo.uoccpi);
-    // Wavefunction owns these two arrays
-    //      free(moinfo.frdocc);
-    //      free(moinfo.fruocc);
+    // Wavefunction did own the following 2 arrays, but not in current test
+    free(moinfo.frdocc);
+    free(moinfo.fruocc);
     free(moinfo.core);
 }
 
