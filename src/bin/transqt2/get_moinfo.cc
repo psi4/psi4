@@ -106,8 +106,9 @@ void get_moinfo(Options& options)
     moinfo.mopi = chkpt_rd_orbspi();
     moinfo.clsdpi = chkpt_rd_clsdpi();
     moinfo.openpi = chkpt_rd_openpi();
-    moinfo.frdocc = Process::environment.wavefunction()->frzcpi();
 
+    /* might update this bit to be consistent with how handled in DETCI/DETCAS */
+    moinfo.frdocc = Process::environment.wavefunction()->frzcpi();
     if(options["FROZEN_DOCC"].has_changed()){
         if(options["FROZEN_DOCC"].size() != moinfo.nirreps)
             throw PSIEXCEPTION("FROZEN_DOCC array should be the same size as the number of irreps.");

@@ -26,13 +26,14 @@
 */
 #include <cstdlib>
 #include <cstdio>
-//#include <libipv1/ip_lib.h>
+#include <cstring>
 #include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.h>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 #include <libqt/qt.h>
 #include <psi4-dec.h>
+#include <libmints/wavefunction.h>
 #include "globaldefs.h"
 #include "globals.h"
 
@@ -82,6 +83,25 @@ void get_mo_info(Options &options)
  
    CalcInfo.frozen_docc = init_int_array(CalcInfo.nirreps);
    CalcInfo.frozen_uocc = init_int_array(CalcInfo.nirreps);
+
+   //Process::environment.wavefunction()->frzcpi().copy_into_int_array(CalcInfo.frozen_docc);
+   for (int h=0; h<CalcInfo.nirreps; h++) {
+     CalcInfo.frozen_docc[h] = Process::environment.wavefunction()->frzcpi()[h];
+     CalcInfo.frozen_uocc[h] = Process::environment.wavefunction()->frzvpi()[h];
+   }
+    if(options["FROZEN_DOCC"].has_changed()){
+        if(options["FROZEN_DOCC"].size() != CalcInfo.nirreps)
+            throw PSIEXCEPTION("FROZEN_DOCC array should be the same size as the number of irreps.");
+        for(int h = 0; h < CalcInfo.nirreps; ++h)
+            CalcInfo.frozen_docc[h] = options["FROZEN_DOCC"][h].to_integer();
+    }
+    if(options["FROZEN_UOCC"].has_changed()){
+        if(options["FROZEN_UOCC"].size() != CalcInfo.nirreps)
+            throw PSIEXCEPTION("FROZEN_UOCC array should be the same size as the number of irreps.");
+        for(int h = 0; h < CalcInfo.nirreps; ++h)
+            CalcInfo.frozen_uocc[h] = options["FROZEN_UOCC"][h].to_integer();
+    }
+
    CalcInfo.rstr_docc = init_int_array(CalcInfo.nirreps);
    CalcInfo.rstr_uocc = init_int_array(CalcInfo.nirreps);
    CalcInfo.pitz2ci = init_int_array(CalcInfo.nmo);

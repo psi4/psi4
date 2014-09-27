@@ -101,6 +101,24 @@ void get_mo_info(Options &options)
    //CalcInfo.frozen_uocc =
    //  Process::environment.wavefunction()->frzvpi();
 
+   //Process::environment.wavefunction()->frzcpi().copy_into_int_array(CalcInfo.frozen_docc);
+   for (int h=0; h<CalcInfo.nirreps; h++) {
+     CalcInfo.frozen_docc[h] = Process::environment.wavefunction()->frzcpi()[h];
+     CalcInfo.frozen_uocc[h] = Process::environment.wavefunction()->frzvpi()[h];
+   }
+    if(options["FROZEN_DOCC"].has_changed()){
+        if(options["FROZEN_DOCC"].size() != CalcInfo.nirreps)
+            throw PSIEXCEPTION("FROZEN_DOCC array should be the same size as the number of irreps.");
+        for(int h = 0; h < CalcInfo.nirreps; ++h)
+            CalcInfo.frozen_docc[h] = options["FROZEN_DOCC"][h].to_integer();
+    }
+    if(options["FROZEN_UOCC"].has_changed()){
+        if(options["FROZEN_UOCC"].size() != CalcInfo.nirreps)
+            throw PSIEXCEPTION("FROZEN_UOCC array should be the same size as the number of irreps.");
+        for(int h = 0; h < CalcInfo.nirreps; ++h)
+            CalcInfo.frozen_uocc[h] = options["FROZEN_UOCC"][h].to_integer();
+    }
+
    rstr_docc = init_int_array(CalcInfo.nirreps);
    rstr_uocc = init_int_array(CalcInfo.nirreps);
    CalcInfo.explicit_core = init_int_array(CalcInfo.nirreps);
