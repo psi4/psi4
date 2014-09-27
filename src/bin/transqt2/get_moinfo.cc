@@ -200,14 +200,13 @@ void get_moinfo(Options& options)
 
         outfile->Printf("nirreps %d\n", moinfo.nirreps);
         outfile->Printf("nmo %d\n", moinfo.nmo);
+        outfile->Printf("orb_irr, docc, socc, fdocc, fuocc\n"); 
         for(i=0; i<moinfo.nirreps; i++){
           outfile->Printf("%d  ", moinfo.mopi[i]);
           outfile->Printf("%d  ", moinfo.clsdpi[i]);
           outfile->Printf("%d  ", moinfo.openpi[i]);
           outfile->Printf("%d  ", moinfo.frdocc[i]);
           outfile->Printf("%d  ", moinfo.fruocc[i]);
-          outfile->Printf("%d  ", rstr_docc[i]);
-          outfile->Printf("%d  ", rstr_uocc[i]);
           outfile->Printf("\n");    
         }
 
