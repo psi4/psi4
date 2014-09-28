@@ -2846,13 +2846,13 @@ def run_detcas(name, **kwargs):
     psioh = psi4.IOManager.shared_object()
     psioh.set_specific_retention(p4const.PSIF_CHKPT, True)
 
-    for x in range(10):
+    for x in range(5):
         psi4.transqt2()
-        print("Finish TRANSQT!\n")
+        print("Finished TRANSQT!")
         psi4.detci()
-        print("Finish DETCI!\n")
-        #psi4.detcas()
-        #print("Finish DETCAS!\n")
+        print("Finished DETCI!")
+        psi4.detcas()
+        print("Finished DETCAS!")
         print("Finished iteration %d\n" % x)
         #psi4.clean()
 
