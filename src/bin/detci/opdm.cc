@@ -654,11 +654,11 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
             oe->add("TRANSITION_QUADRUPOLE");
         }
     }
-    */
     
-    // outfile->Printf( "  ==> Properties %s <==\n", ss.str().c_str());
-    // oe->compute();
-    /* DS EDIT */
+    
+    outfile->Printf( "  ==> Properties %s <==\n", ss.str().c_str());
+    oe->compute();
+    DS EDIT */
     outfile->Printf("Finishing OEProp\n");
 
     // std::pair<SharedMatrix,SharedVector> nos = oe->Na_mo();
