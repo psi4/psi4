@@ -26,6 +26,14 @@ namespace psi { namespace detcas {
 
 // #define INDEX(x,y) ((x>y) ? ioff[x] + y : ioff[y] + x)
 
+// Compute the Lagrangian matrix
+//
+// this code assumes h is the bare one-electron ints, not the frozen
+// core operator [if desired, it is possible to write one that would take the 
+// fzc operator, along the lines of equations 4.3 in Chaban, Schmidt, and
+// Gordon, Theor. Chem. Acc. 97, 88-95 (1997), but the computational cost
+// of this step is pretty negligible anyway] 
+//
 double** lagcalc(double **OPDM, double *TPDM, double *h, double *TwoElec,
                  int nmo, int npop, int print_lvl, int lag_file)
 {
