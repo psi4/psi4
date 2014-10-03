@@ -221,7 +221,7 @@ PsiReturnType detcas(Options &options)
   read_integrals();            /* get the 1 and 2 elec MO integrals        */
   read_density_matrices(options);
 
-  CalcInfo.lag = lagcalc(CalcInfo.opdm, CalcInfo.tpdm, CalcInfo.onel_ints,
+  CalcInfo.lag = lagcalc(CalcInfo.opdm, CalcInfo.tpdm, CalcInfo.onel_ints_bare,
                      CalcInfo.twoel_ints, CalcInfo.nmo,
                      CalcInfo.npop, Params.print_lvl, PSIF_MO_LAG); 
 
