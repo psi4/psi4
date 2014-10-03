@@ -225,6 +225,28 @@ PsiReturnType detcas(Options &options)
                      CalcInfo.twoel_ints, CalcInfo.nmo,
                      CalcInfo.npop, Params.print_lvl, PSIF_MO_LAG); 
 
+  // DS EDIT
+  int i;
+  double sum;
+ 
+  for (sum=0.0, i=0; i<CalcInfo.npop; i++) {
+    sum += CalcInfo.opdm[i][i];
+  }
+  outfile->Printf("\n\tTrace of one-pdm = %16.12lf\n", sum);
+ 
+  int j,ii,jj,iijj;
+ 
+  for (sum=0.0,i=0; i<CalcInfo.npop; i++) {
+    ii = INDEX(i,i);
+    for (j=0; j<CalcInfo.npop; j++) {
+      jj = INDEX(j,j);
+      iijj = INDEX(ii,jj);
+      sum += CalcInfo.tpdm[iijj];
+    }
+  }
+  outfile->Printf("\n\tTrace of two-pdm = %16.12lf\n", sum);
+  // DS EDIT
+
   read_lagrangian();
 
   form_independent_pairs();
