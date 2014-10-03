@@ -2840,33 +2840,30 @@ def run_detcas(name, **kwargs):
         scf_helper(name, **kwargs)
 
         # If the scf type is DF/CD, then the AO integrals were never written to disk
-        if psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
+        if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF') or (psi4.get_option('SCF', 'SCF_TYPE') == 'CD'):
             psi4.MintsHelper().integrals()
 
-    psioh = psi4.IOManager.shared_object()
-    psioh.set_specific_retention(p4const.PSIF_CHKPT, True)
 
-    for x in range(5):
+    for iteration in range(1, psi4.get_option('DETCAS', 'MAXITER')+1):
+        psi4.print_out("\n")
+        psi4.print_out("Starting DETCAS iteration %d." % iteration)
+        psi4.print_out("\n")
+
+        # Run DETCAS
         psi4.transqt2()
-        print("Finished TRANSQT!")
         psi4.detci()
-        print("Finished DETCI!")
-        psi4.detcas()
-        print("Finished DETCAS!")
-        print("Finished iteration %d\n" % x)
-        #psi4.clean()
+        finished = psi4.detcas()
+        print(finished)
 
-#   For Future
-#        if psi4.optking() == psi4.PsiReturnType.EndLoop:
-#            print('Optimizer: Optimization complete!')
-#            psi4.print_out('\n    Final optimized geometry and variables:\n')
-#            psi4.get_active_molecule().print_in_input_format()
-#            # Check if user wants to see the intcos; if so, don't delete them.
-#            if (psi4.get_option('OPTKING', 'INTCOS_GENERATE_EXIT') == False):
-#                psi4.opt_clean()
-#            psi4.clean()
-#    while n <= psi4.get_global_option('GEOM_MAXITER'):
+        # Check convergence
+        if finished == 0.0:
+            psi4.print_out('DETCAS has successfully converged! \n')
+            psi4.clean()
+            break
+
 
     optstash.restore()
 
     return psi4.get_variable("CURRENT ENERGY")
+
+

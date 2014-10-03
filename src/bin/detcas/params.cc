@@ -127,31 +127,31 @@ void print_parameters(void)
 {
   outfile->Printf("\n") ;
   outfile->Printf("PARAMETERS: \n") ;
-  outfile->Printf("   PRINT         =   %6d      PRINT_MOS     =   %6s\n", 
+  outfile->Printf("   PRINT          =   %6d      PRINT_MOS     =   %6s\n", 
       Params.print_lvl, Params.print_mos ? "yes" : "no");
-  outfile->Printf("   R_CONVERGENCE   =   %6.2e  E CONVERG     =   %6.2e\n",
+  outfile->Printf("   R_CONVERGENCE  =   %6.2e    E CONVERG     =   %6.2e\n",
       Params.rms_grad_convergence, Params.energy_convergence);
-  outfile->Printf("   IGNORE_RAS_RAS=   %6s      IGNORE_FZ     =   %6s\n", 
+  outfile->Printf("   IGNORE_RAS_RAS =   %6s      IGNORE_FZ     =   %6s\n", 
       Params.ignore_ras_ras ? "yes" : "no", Params.ignore_fz ? "yes" : "no") ;
-  outfile->Printf("   OEI FILE      =   %6d      OEI ERASE     =   %6s\n", 
+  outfile->Printf("   OEI FILE       =   %6d      OEI ERASE     =   %6s\n", 
       Params.oei_file, Params.oei_erase ? "yes" : "no");
-  outfile->Printf("   TEI FILE      =   %6d      TEI ERASE     =   %6s\n", 
+  outfile->Printf("   TEI FILE       =   %6d      TEI ERASE     =   %6s\n", 
       Params.tei_file, Params.tei_erase ? "yes" : "no");
-  outfile->Printf("   OPDM FILE     =   %6d      OPDM ERASE    =   %6s\n", 
+  outfile->Printf("   OPDM FILE      =   %6d      OPDM ERASE    =   %6s\n", 
       Params.lag_file, Params.opdm_erase ? "yes" : "no");
-  outfile->Printf("   TPDM FILE     =   %6d      TPDM ERASE    =   %6s\n", 
+  outfile->Printf("   TPDM FILE      =   %6d      TPDM ERASE    =   %6s\n", 
       Params.tpdm_file, Params.tpdm_erase ? "yes" : "no");
-  outfile->Printf("   LAG FILE      =   %6d      LAG ERASE     =   %6s\n", 
+  outfile->Printf("   LAG FILE       =   %6d      LAG ERASE     =   %6s\n", 
       Params.lag_file, Params.lag_erase ? "yes" : "no");
-  outfile->Printf("   DIIS START    =   %6d      DIIS FREQ     =   %6d\n", 
+  outfile->Printf("   DIIS START     =   %6d      DIIS FREQ     =   %6d\n", 
       Params.diis_start, Params.diis_freq);
-  outfile->Printf("   DIIS MIN VECS =   %6d      DIIS MAX VECS =   %6d\n", 
+  outfile->Printf("   DIIS MIN VECS  =   %6d      DIIS MAX VECS =   %6d\n", 
       Params.diis_min_vecs, Params.diis_max_vecs);
-  outfile->Printf("   SCALE STEP    =   %6.2E    MAX STEP      =   %6.2lf\n",
+  outfile->Printf("   SCALE STEP     =   %6.2E    MAX STEP      =   %6.2lf\n",
       Params.scale_step, Params.step_max);
-  outfile->Printf("   DO_LEVEL SHIFT   =   %6s   SHIFT         =   %6.2lf\n",
+  outfile->Printf("   DO_LEVEL SHIFT =   %6s      SHIFT         =   %6.2lf\n",
       Params.level_shift ? "yes" : "no", Params.shift);
-  outfile->Printf("   USE FZC H     =   %6s      HESSIAN       = %-12s\n",
+  outfile->Printf("   USE FZC H      =   %6s      HESSIAN       = %-12s\n",
       Params.use_fzc_h ? "yes" : "no", Params.hessian.c_str());
   outfile->Printf("\n") ;
   //fflush(outfile);

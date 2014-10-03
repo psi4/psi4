@@ -186,17 +186,26 @@ void CASWavefunction::init()
     }
 }
 
-double CASWavefunction::compute_energy()
-{
-    energy_ = 0.0;
-    PsiReturnType cas_return;
-    if ((cas_return = psi::detcas::detcas(options_)) == Success) {
-        // Get the total energy
-        energy_ = Process::environment.globals["CURRENT ENERGY"];
-    }
+// double CASWavefunction::compute_energy()
+// {
+//     energy_ = 0.0;
+//     PsiReturnType cas_return;
+//     if ((cas_return = psi::detcas::detcas(options_)) == Success) {
+//         // Get the total energy
+//         energy_ = Process::environment.globals["CURRENT ENERGY"];
+//     }
+//     
+//     return energy_;
+// 
+// }
 
-    return energy_;
+PsiReturnType CASWavefunction::cas_update()
+{
+    PsiReturnType cas_return;
+    cas_return = psi::detcas::detcas(options_);
+    return cas_return;
 }
+
 
 //using namespace psi::detcas;
 
@@ -225,27 +234,6 @@ PsiReturnType detcas(Options &options)
                      CalcInfo.twoel_ints, CalcInfo.nmo,
                      CalcInfo.npop, Params.print_lvl, PSIF_MO_LAG); 
 
-  // DS EDIT
-  int i;
-  double sum;
- 
-  for (sum=0.0, i=0; i<CalcInfo.npop; i++) {
-    sum += CalcInfo.opdm[i][i];
-  }
-  outfile->Printf("\n\tTrace of one-pdm = %16.12lf\n", sum);
- 
-  int j,ii,jj,iijj;
- 
-  for (sum=0.0,i=0; i<CalcInfo.npop; i++) {
-    ii = INDEX(i,i);
-    for (j=0; j<CalcInfo.npop; j++) {
-      jj = INDEX(j,j);
-      iijj = INDEX(ii,jj);
-      sum += CalcInfo.tpdm[iijj];
-    }
-  }
-  outfile->Printf("\n\tTrace of two-pdm = %16.12lf\n", sum);
-  // DS EDIT
 
   read_lagrangian();
 
@@ -290,8 +278,14 @@ PsiReturnType detcas(Options &options)
   cleanup();
   //close_io();
   if (Params.print_lvl) tstop();
+
   /* TODO  Fix this! Likely need to return non-Success flag */
-  return Success;
+  if (converged){
+    return EndLoop; 
+  }
+  else{
+    return Success;
+  }
 }
 
 

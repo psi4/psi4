@@ -14,10 +14,8 @@ set {
     active          [3, 0, 1, 2] 
 }
 
-set detcas e_convergence 5
-
 set detci dipmom False
-set detcas print 2
+# set detcas print 2
 energy('casscf')
 
 
