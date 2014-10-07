@@ -2845,20 +2845,22 @@ def run_detcas(name, **kwargs):
 
 
     for iteration in range(1, psi4.get_option('DETCAS', 'MAXITER')+1):
-        psi4.print_out("\n")
-        psi4.print_out("Starting DETCAS iteration %d." % iteration)
-        psi4.print_out("\n")
+        psi4.print_out("\nStarting DETCAS iteration %d.\n" % iteration)
 
         # Run DETCAS
         psi4.transqt2()
         psi4.detci()
         finished = psi4.detcas()
-        print(finished)
 
         # Check convergence
-        if finished == 0.0:
-            psi4.print_out('DETCAS has successfully converged! \n')
-            psi4.clean()
+        if finished == psi4.PsiReturnType.EndLoop:
+            print_string =  '\n*******************************************************\n'
+            print_string += '                  ORBITALS CONVERGED\n\n'
+            print_string += '         * %s total energy = %16.12f\n\n' % (name.upper(), psi4.get_variable("CURRENT ENERGY"))
+            print_string += '                    DETCAS Exiting\n'
+            print_string += '*******************************************************'
+                              
+            psi4.print_out(print_string)
             break
 
 

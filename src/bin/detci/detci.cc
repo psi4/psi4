@@ -246,6 +246,7 @@ PsiReturnType detci(Options &options)
    if (Parameters.istop) {      /* Print size of space, other stuff, only   */
      close_io();
      cleanup();
+     outfile->Printf("DS: DETCI complete \n");
      Process::environment.globals["CURRENT ENERGY"] = 0.0;
      Process::environment.globals["CURRENT CORRELATION ENERGY"] = 0.0;
      Process::environment.globals["CI TOTAL ENERGY"] = 0.0;
