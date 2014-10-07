@@ -14,9 +14,6 @@ set {
     active          [3, 0, 1, 2] 
 }
 
-set detci dipmom False
-# set detcas print 2
-energy('casscf')
+casscf_energy = energy('casscf')
 
-
-# compare_values(-76.073865006902, get_variable("CURRENT_ENERGY"), 6, 'CASSCF Energy')
+compare_values(-76.073865006902, casscf_energy, 6, 'CASSCF Energy')
