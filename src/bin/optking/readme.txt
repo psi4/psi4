@@ -132,7 +132,7 @@ and deallocation functions.
 Internal Coordinate Classes
 ****
 
-The "simple.h" header declares SIMPLE, a simple internal coordinate base class containing
+The "simple_base.h" header declares SIMPLE_COORDINATE, a simple internal coordinate base class containing
 INTCO_TYPE s_type  - the type of simple coordinate (stre, bend, etc.)
 int s_natom   - the # of atoms in definition
 int *s_atom   - indices of atoms in definition (numbering within the fragment)
@@ -166,9 +166,17 @@ const double dq, const double new_q, int atom_offset = 0) const = 0;
 // for debugging, print s vectors to output file
 virtual void print_s(std::string psi_fp, FILE *qc_fp, GeomType geom) const = 0;
 // an equality operator
-virtual bool operator==(const SIMPLE & s2) const  = 0;
+virtual bool operator==(const SIMPLE_COORDINATE & s2) const  = 0;
 
 The derived classes are STRE, BEND, TORS.
+
+***
+COMBO_COORDINATES class
+***
+The combo_coordinates.h file contains a linear combination class for coordinates.
+    vector<SIMPLE *>      simples;  // collection of simple and/or cartesian coordinates
+    vector<vector<int>>     index;  // collection of coordinate index for linear combination
+    vector<vector<double>>  coeff;  // collection of coefficients for linear combination
 
 ****
 FRAG class
@@ -181,7 +189,7 @@ The frag.h file declares a fragment class whose members include:
  nuclear masses 
  connectivity 
  // a vector of pointers to the intrafragment internal coordinates
- vector<SIMPLE *> simples
+ COMBO_COORDINATES coords
 
 ****
 INTERFRAG class

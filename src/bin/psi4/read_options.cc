@@ -2360,8 +2360,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_str("OPT_TYPE", "MIN", "MIN TS IRC");
       /*- Geometry optimization step type, either Newton-Raphson or Rational Function Optimization -*/
       options.add_str("STEP_TYPE", "RFO", "RFO NR SD LINESEARCH_STATIC");
-      /*- Geometry optimization coordinates to use. -*/
-      options.add_str("OPT_COORDINATES", "INTERNAL", "INTERNAL CARTESIAN BOTH");
+      /*- Geometry optimization coordinates to use. 
+          REDUNDANT and INTERNAL are synonyms and the default.
+          DELOCALIZED are the coordinates of Baker.
+          NATURAL are the coordinates of Pulay.
+          CARTESIAN uses only cartesian coordinates.
+          BOTH uses both redundant and cartesian coordinates.  -*/
+      options.add_str("OPT_COORDINATES", "INTERNAL", "REDUNDANT INTERNAL DELOCALIZED NATURAL CARTESIAN BOTH");
       /*- Do follow the initial RFO vector after the first step? -*/
       options.add_bool("RFO_FOLLOW_ROOT", false);
       /*- Root for RFO to follow, 0 being lowest (for a minimum) -*/

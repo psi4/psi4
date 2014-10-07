@@ -50,7 +50,7 @@ using namespace v3d;
 using std::ostringstream;
 
 // constructor - canonical order is A < D
-TORS::TORS(int A_in, int B_in, int C_in, int D_in, bool freeze_in) : SIMPLE(tors_type, 4, freeze_in) {
+TORS::TORS(int A_in, int B_in, int C_in, int D_in, bool freeze_in) : SIMPLE_COORDINATE(tors_type, 4, freeze_in) {
 
   // fprintf(stdout,"constructing TORS A_in:%d B_in:%d C_in:%d D_in: %d, frozen %d\n",
   //  A_in, B_in, C_in, D_in, freeze_in);
@@ -336,7 +336,7 @@ void TORS::print_s(std::string psi_fp, FILE *qc_fp, GeomType geom) const {
   free_matrix(dqdx);
 }
 
-bool TORS::operator==(const SIMPLE & s2) const {
+bool TORS::operator==(const SIMPLE_COORDINATE & s2) const {
   if (tors_type != s2.g_type())
     return false;
 

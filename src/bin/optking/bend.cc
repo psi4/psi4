@@ -27,9 +27,10 @@
 #include "bend.h"
 
 #include <sstream>
+#include <math.h>
+
 #include "v3d.h"
 #include "physconst.h"
-#include <math.h>
 #include "linear_algebra.h"
 #include "libparallel/ParallelPrinter.h"
 #include "print.h"
@@ -42,7 +43,7 @@ using namespace v3d;
 using namespace std;
 
 // constructor - makes sure A<C
-BEND::BEND(int A_in, int B_in, int C_in, bool freeze_in) : SIMPLE(bend_type, 3, freeze_in) {
+BEND::BEND(int A_in, int B_in, int C_in, bool freeze_in) : SIMPLE_COORDINATE(bend_type, 3, freeze_in) {
   //oprintf("constructing BEND A_in:%d B_in:%d C_in:%d, frozen %d\n", A_in, B_in, C_in, freeze_in);
   linear_bend = false;
 
@@ -308,7 +309,7 @@ void BEND::print_s(std::string psi_fp, FILE *qc_fp, GeomType geom) const {
   free_matrix(dqdx);
 }
 
-bool BEND::operator==(const SIMPLE & s2) const {
+bool BEND::operator==(const SIMPLE_COORDINATE & s2) const {
   if (bend_type != s2.g_type())
     return false;
 

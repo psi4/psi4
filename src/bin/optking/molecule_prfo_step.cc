@@ -51,7 +51,7 @@ void MOLECULE::prfo_step(void) {
   double **Horig = p_Opt_data->g_H_pointer();
   double *fq = p_Opt_data->g_forces_pointer();
   double *dq = p_Opt_data->g_dq_pointer();
-  int Nintco = g_nintco();
+  int Nintco = Ncoord();
   int rfo_root; // ultimately, should be array of roots to maximize
   int cnt_i, cnt_j;
 
@@ -281,7 +281,7 @@ double rfo_dqnorm_min;
       oprintf_out("\tDisplacements for frozen fragment %d skipped.\n", f+1);
       continue;
     }
-    fragments[f]->displace(&(dq[g_intco_offset(f)]), &(fq[g_intco_offset(f)]), g_atom_offset(f));
+    fragments[f]->displace(&(dq[g_coord_offset(f)]), &(fq[g_coord_offset(f)]), g_atom_offset(f));
   }
 
   for (int I=0; I<interfragments.size(); ++I) {
@@ -289,15 +289,13 @@ double rfo_dqnorm_min;
       oprintf_out("\tDisplacements for frozen interfragment %d skipped.\n", I+1);
       continue;
     }
-    interfragments[I]->orient_fragment( &(dq[g_interfragment_intco_offset(I)]),
-                                        &(fq[g_interfragment_intco_offset(I)]) );
+    interfragments[I]->orient_fragment( &(dq[g_interfragment_coord_offset(I)]),
+                                        &(fq[g_interfragment_coord_offset(I)]) );
   }
 
-#if defined(OPTKING_PACKAGE_QCHEM)
   // fix rotation matrix for rotations in QCHEM EFP code
-  for (int I=0; I<efp_fragments.size(); ++I)
-    efp_fragments[I]->displace( I, &(dq[g_efp_fragment_intco_offset(I)]) );
-#endif
+  for (int I=0; I<fb_fragments.size(); ++I)
+    fb_fragments[I]->displace( I, &(dq[g_fb_fragment_coord_offset(I)]) );
 
   symmetrize_geom(); // now symmetrize the geometry for next step
 

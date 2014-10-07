@@ -20,18 +20,23 @@
  *@END LICENSE
  */
 
-/*! \file intcos.h
+/*! \file coordinates.h
     \ingroup optking
-    \brief internal coordinate includes class declaration
+    \brief Header for coordinate classes (simple and combination).
 */
 
-#ifndef _opt_intcos_h_
-#define _opt_intcos_h_
+#ifndef _opt_simples_h_
+#define _opt_simples_h_
 
-#include "simple.h"
+#include "simple_base.h"
+
+// The following classes all derive from the SIMPLE_COORDINATE class.
 #include "stre.h"
 #include "bend.h"
 #include "tors.h"
 #include "cart.h"
+
+// Any combination of simple coordinates may be contained in COMBO_COORDINATE class.
+#include "combo_coordinates.h"
 
 #endif

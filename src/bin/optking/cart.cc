@@ -39,7 +39,7 @@ using namespace v3d;
 using std::ostringstream;
 
 // constructor - makes sure A<B ; default freeze_in =false
-CART::CART(int A_in, int xyz_in, bool freeze_in) : SIMPLE(cart_type, 1, freeze_in) {
+CART::CART(int A_in, int xyz_in, bool freeze_in) : SIMPLE_COORDINATE(cart_type, 1, freeze_in) {
   s_atom[0] = A_in;
   xyz = xyz_in;
 }
@@ -139,7 +139,7 @@ void CART::print_s(std::string psi_fp, FILE *qc_fp, GeomType geom) const {
   free_matrix(dqdx);
 }
 
-bool CART::operator==(const SIMPLE & s2) const {
+bool CART::operator==(const SIMPLE_COORDINATE & s2) const {
   if (cart_type != s2.g_type())
     return false;
 

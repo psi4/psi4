@@ -32,13 +32,12 @@
 #include <string>
 #include "libparallel/ParallelPrinter.h"
 #include "print.h"
-#include "intcos.h"
+#include "coordinates.h"
 #include "psi4-dec.h"
 
 namespace opt {
 
 class INTERFRAG;
-
 using std::vector;
 
 /*!
@@ -48,16 +47,16 @@ using std::vector;
   */
 class FRAG {
 
- protected: // private, except the efp derived class can access
-  int natom;      //< number of atoms in fragment
-  double *Z;      //< atomic numbers
-  double **geom;  //< cartesian coordinates
-  double **grad;  //< cartesian coordinates
-  double *mass;   //< nuclear masses
+ protected:              // private, except the EFP derived class can access
+  int natom;             //< number of atoms in fragment
+  double *Z;             //< atomic numbers
+  double **geom;         //< cartesian coordinates
+  double **grad;         //< cartesian coordinates
+  double *mass;          //< nuclear masses
   bool   **connectivity; //< connectivity matrix
-  vector<SIMPLE *> intcos;
-  bool frozen; //< whether to optimize
-
+  bool frozen;           //< whether to optimize
+  COMBO_COORDINATES coords; //< simple or linear combinations of simple coordinates
+  
  public:
   friend class INTERFRAG;
 
@@ -83,9 +82,13 @@ class FRAG {
 
   void print_geom(std::string psi_fp, FILE *qc_fp, const int id, bool print_mass = false);
   void print_geom_grad(std::string psi_fp, FILE *qc_fp, const int id, bool print_mass = false);
-  void print_intcos(std::string psi_fp, FILE *qc_fp, int atom_offset=0);
-  void print_intco_dat(std::string psi_fp, FILE *qc_fp, int atom_offset=0);
-  std::string get_intco_definition(int coord_index, int atom_offset=0);
+  void print_simples(std::string psi_fp, FILE *qc_fp, int atom_offset=0) const;
+  void print_coords(std::string psi_fp, FILE *qc_fp, int atom_offset=0) const;
+  void print_combinations(std::string psi_fp, FILE *qc_fp) const;
+  void print_intco_dat(std::string psi_fp, FILE *qc_fp, int atom_offset=0) const;
+
+  std::string get_coord_definition(int coord_index, int atom_offset=0);
+  std::string get_simple_definition(int simple_index, int atom_offset=0);
 
   void update_connectivity_by_distances(void);
   void update_connectivity_by_bonds(void);
@@ -97,6 +100,10 @@ class FRAG {
   int add_bend_by_connectivity(void);
   int add_tors_by_connectivity(void);
   int add_cartesians(void);
+
+  int form_trivial_coord_combinations(void);
+  int form_delocalized_coord_combinations(void);
+  int form_natural_coord_combinations(void);
 
   int add_simples_by_connectivity(void) {
     int n;
@@ -113,16 +120,25 @@ class FRAG {
     connectivity[i][j] = connectivity[j][i] = true;
   }
 
-  // compute B matrix (intcos.size x 3*natom)
+  // Compute B matrix for only this fragment
   double ** compute_B(void) const ;
-  void compute_B(double **) const ; // use prevously allocated memory
+
+  // Compute B matrix. Use prevously allocated memory.  Offsets are ideal for molecule.
+  void compute_B(double **B_in, int coord_offset, int atom_offset) const ;
+
+  // Compute B only for the simple coordinates.
+  //void compute_B_simples(double **B, int coord_offset, int atom_offset) const;
+
   void compute_G(double **, bool use_masses=false) const;
 
-  // compute B' matrix for one internal coordinate computed with member geometry
-  double ** compute_derivative_B(int intco_index) const;
+  // Compute B' matrix for one coordinate in given memory with given geometry.
+  void compute_derivative_B(GeomType g, int coord_index, double **Bprime, int atom_offset) const;
 
-  // compute B' matrix for one internal coordinate computed with given geometry
-  double ** compute_derivative_B(int intco_index, GeomType new_geom) const;
+  // Compute B' matrix for one coordinate in given memory with present geometry.
+  void compute_derivative_B(int coord_index, double **Bprime, int atom_offset) const;
+
+  // Compute B' matrix for one coordinate for fragment.
+  double ** compute_derivative_B(int coord_index) const;
 
   // compute and print B matrix (for debugging)
   void print_B(std::string psi_fp, FILE *qc_fp) const ;
@@ -134,42 +150,44 @@ class FRAG {
   //bool check_tors_for_bad_angles(void) const;
 
   // return number of intrafragment coordinates
-  int g_nintco(void) const { return intcos.size(); };
+  int Ncoord(void) const { return coords.index.size(); };
 
-  // return natom in definition of intco # intco_index
-  int g_intco_natom(const int intco_index) const {
-    return intcos.at(intco_index)->g_natom();
+  // The following 2 functions are only used by the B matrix testing routines.
+  // return natom in definition of coord # coord_index
+  int g_simple_natom(const int coord_index) const {
+    return coords.simples.at(coord_index)->g_natom();
   }
 
-  // return atom i in definition of intco # intco_index
-  int g_intco_atom(const int intco_index, const int atom) const {
-    return intcos.at(intco_index)->g_atom(atom);
+  // return atom i in definition of coord # coord_index
+  int g_simple_atom(const int coord_index, const int atom) const {
+    return coords.simples.at(coord_index)->g_atom(atom);
   }
 
   // return array of atomic numbers
   double *g_Z(void) const;
   double *g_Z_pointer(void) { return Z; }
 
+  //print s vectors to output file
+  void print_s(std::string psi_fp, FILE *qc_fp, GeomType geom) const {
+    coords.print_s(psi_fp, qc_fp, geom);
+    return;
+  }
+
+  // Get all values.
+  double *coord_values(void) const;
+  double *coord_values(GeomType geom) const;
+
+  // Get one value.
+  double coord_value(int lookup) const;
+  double coord_value(GeomType geom, int lookup) const;
+
   // don't let angles pass through 0
   void check_zero_angles(double const * const dq);
 
-  //print s vectors to output file
-  void print_s(std::string psi_fp, FILE *qc_fp, const double ** const geom) const {
-    oprintf(psi_fp, qc_fp, "\t---S vectors for internals---\n");
-    for(int i=0; i<intcos.size(); ++i)
-      intcos.at(i)->print_s(psi_fp, qc_fp, geom);
-  }
-
-  // compute and return values of internal coordinates from member geometry
-  double * intco_values(void) const ;
-
-  // compute and return values of internal coordinates from given geometry
-  double * intco_values(GeomType new_geom) const ;
-
   // is simple one already present?
-  bool present(const SIMPLE *one) const;
+  bool present(const SIMPLE_COORDINATE *one) const;
 
-  int find(const SIMPLE *one) const;
+  int find(const SIMPLE_COORDINATE *one) const;
 
   // displace fragment by dq ; forces and offset are provided for printing
   void displace(double *dq, double *fq, int atom_offset=0);
@@ -199,7 +217,7 @@ class FRAG {
   bool **g_connectivity(void) const;
   const bool * const * g_connectivity_pointer(void) const;
 
-  bool read_intco(std::vector<std::string> & tokens, int first_atom_offset);
+  bool read_coord(std::vector<std::string> & tokens, int first_atom_offset);
 
   // return matrix of constraints on coordinates
   double ** compute_constraints(void) const;
@@ -208,8 +226,8 @@ class FRAG {
   // return number added
   int add_hbonds(void);
 
-  void intco_add(SIMPLE * i) {
-    intcos.push_back(i);
+  void simple_add(SIMPLE_COORDINATE * i) {
+    coords.simples.push_back(i);
   }
 
   double g_mass(int i) { return mass[i]; }
@@ -253,13 +271,13 @@ class FRAG {
 
   // These functions are needed for the forces() function
   // to apply user-defined equilibrium extra forces.
-  bool intco_has_fixed_eq_val(int intco_index) const {
-    return intcos[intco_index]->has_fixed_eq_val();
+  bool coord_has_fixed_eq_val(int coord_index) const {
+    return coords.simples[coord_index]->has_fixed_eq_val();
   }
-  double intco_fixed_eq_val(int intco_index) const {
-    return intcos[intco_index]->fixed_eq_val();
+  double coord_fixed_eq_val(int coord_index) const {
+    return coords.simples[coord_index]->fixed_eq_val();
   }
-  double intco_value(int intco_index) const;
+  void add_combination_coord(vector<int> ids, vector<double> coeffs); // for molecule_read_coord
 
   /**
    * @param R_list string of atom pairs for frozen distances
@@ -277,7 +295,7 @@ class FRAG {
   */
   bool apply_fixed_constraints(std::string R_string, std::string B_string, std::string D_string);
 
-
+  void erase_combo_coord(int index) { coords.erase_combo(index); } ;
 };
 
 }

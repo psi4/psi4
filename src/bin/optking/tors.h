@@ -28,11 +28,11 @@
 #ifndef _opt_tors_h_
 #define _opt_tors_h_
 
-#include "simple.h"
+#include "simple_base.h"
 
 namespace opt {
 
-class TORS : public SIMPLE {
+class TORS : public SIMPLE_COORDINATE {
 
   private:
     int near_180;
@@ -44,7 +44,7 @@ class TORS : public SIMPLE {
 
     TORS(int A_in, int B_in, int C_in, int D_in, bool freeze_in=false);
 
-    ~TORS() { } // also calls ~SIMPLE
+    ~TORS() { } // also calls ~SIMPLE_COORDINATE
 
     double value(GeomType geom) const;
     //bool fix_tors_value_corrected(GeomType geom) const;
@@ -60,7 +60,7 @@ class TORS : public SIMPLE {
     void print_s(std::string psi_fp, FILE *qc_fp, GeomType geom) const;
     void print_disp(std::string psi_fp, FILE *qc_fp, const double old_q, const double f_q, 
       const double dq, const double new_q, int atom_offset=0) const;
-    bool operator==(const SIMPLE & s2) const;
+    bool operator==(const SIMPLE_COORDINATE & s2) const;
     std::string get_definition_string(int atom_offset=0) const;
 
     void fix_tors_near_180(GeomType geom);
