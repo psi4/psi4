@@ -73,7 +73,7 @@ int read_natoms(void) {
   natom = rem_read(REM_NATOMS);
 
   // now substract out EFP fragment atoms ?
-  if (Opt_params.efp_fragments) {
+  if (Opt_params.fb_fragments) {
     int n = ::EFP::GetInstance()->GetNumEFPatoms();
     natom -= n;
     oprintf_out( "\nNumber of atoms besides EFP fragments %d\n", natom);
@@ -207,14 +207,14 @@ void MOLECULE::read_geom_grad(void) {
 
 #elif defined(OPTKING_PACKAGE_QCHEM)
 
-  int EFPfrag = 0;
-  int EFPatom = 0;
-  if (Opt_params.efp_fragments) {
-    EFPfrag = EFP::GetInstance()->NFragments();
-    std::vector<int> AtomsinEFP = EFP::GetInstance()->NEFPAtoms();
-    for (int i = 0; i < EFPfrag; ++i)
-      EFPatom += AtomsinEFP[i];
-    oprintf_out("\t %d EFP fragments containing %d atoms.\n", EFPfrag, EFPatom);
+  int FBfrag = 0;
+  int FBatom = 0;
+  if (Opt_params.fb_fragments) {
+    FBfrag = EFP::GetInstance()->NFragments();
+    std::vector<int> AtomsinFB = EFP::GetInstance()->NEFPAtoms();
+    for (int i = 0; i < FBfrag; ++i)
+      FBatom += AtomsinFB[i];
+    oprintf_out("\t %d FB fragments containing %d atoms.\n", FBfrag, FBatom);
   }
 
   double *QX;
@@ -224,7 +224,7 @@ void MOLECULE::read_geom_grad(void) {
   ::get_carts(NULL, &QX, &QZ, &QNATOMS, Qnoghosts);
 
   int QNATOMS_real = g_natom();
-  if (QNATOMS_real != (QNATOMS-EFPatom))
+  if (QNATOMS_real != (QNATOMS-FBatom))
     QCrash("Number of computed real atoms is inconsistent.");
 
   oprintf_out( "\tNATOMS (total)=%d (minus EFP)=%d\n", QNATOMS, QNATOMS_real);
@@ -234,7 +234,7 @@ void MOLECULE::read_geom_grad(void) {
     oprint_array_out(QX, 3*QNATOMS);
   }
 
-  int Numgrad = QNATOMS_real*3 + 6*EFPfrag;
+  int Numgrad = QNATOMS_real*3 + 6*FBfrag;
   double* QGrad = init_array(Numgrad);
 
   ::FileMan_Open_Read(FILE_NUCLEAR_GRADIENT);
@@ -260,7 +260,7 @@ void MOLECULE::read_geom_grad(void) {
 
   }
   // Now read in gradients for EFP fragments
-  for (int f=0; f<EFPfrag; ++f) {
+  for (int f=0; f<FBfrag; ++f) {
 
     double *efp_f = init_array(6);
     for (int i=0; i<6; ++i)

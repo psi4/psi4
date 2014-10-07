@@ -28,11 +28,11 @@
 #ifndef _opt_stretch_h_
 #define _opt_stretch_h_
 
-#include "simple.h"
+#include "simple_base.h"
 
 namespace opt {
 
-class STRE : public SIMPLE {
+class STRE : public SIMPLE_COORDINATE {
 
     bool hbond; // whether stretch is a hydrogen bond
     bool inverse_stre; // whether stretch is really 1/R
@@ -41,7 +41,7 @@ class STRE : public SIMPLE {
 
     STRE(int A_in, int B_in, bool freeze_in=false);
 
-    ~STRE() { } // also calls ~SIMPLE()
+    ~STRE() { } // also calls ~SIMPLE_COORDINATE()
 
     double value(GeomType geom) const;
 
@@ -58,7 +58,7 @@ class STRE : public SIMPLE {
     void print_s(std::string psi_fp, FILE *qc_fp, GeomType geom) const;
     void print_disp(std::string psi_fp, FILE *qc_fp, const double old_q, const double f_q,
       const double dq, const double new_q, int atom_offset = 0) const;
-    bool operator==(const SIMPLE & s2) const;
+    bool operator==(const SIMPLE_COORDINATE & s2) const;
     std::string get_definition_string(int atom_offset=0) const;
 
     void make_hbond(void) { hbond = true; }

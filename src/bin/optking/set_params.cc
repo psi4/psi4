@@ -79,8 +79,12 @@ void set_params(void)
    }
 
    s = options.get_str("OPT_COORDINATES");
-   if (s == "INTERNAL")
-     Opt_params.coordinates = OPT_PARAMS::INTERNAL;
+   if (s == "INTERNAL" || s == "REDUNDANT")
+     Opt_params.coordinates = OPT_PARAMS::REDUNDANT;
+   else if (s == "DELOCALIZED")
+     Opt_params.coordinates = OPT_PARAMS::DELOCALIZED;
+   else if (s == "NATURAL")
+     Opt_params.coordinates = OPT_PARAMS::NATURAL;
    else if (s == "CARTESIAN")
      Opt_params.coordinates = OPT_PARAMS::CARTESIAN;
    else if (s == "BOTH")
@@ -340,8 +344,8 @@ void set_params(void)
 // only treating "dummy fragments"
     // These are not found in psi4/read_options.cc
     // Not sure if we need these.
-  Opt_params.efp_fragments = false;
-  Opt_params.efp_fragments_only = false;
+  Opt_params.fb_fragments = false;
+  Opt_params.fb_fragments_only = false;
 
 //IRC stepsize
   Opt_params.IRC_step_size = options.get_double("IRC_STEP_SIZE");
@@ -527,13 +531,13 @@ void set_params(void)
 
 // This optimizer will not work unless only EFP fragments are present
 // Last I tried, I can't even get geometry data when running EFP_opt.in
-  Opt_params.efp_fragments = rem_read(REM_EFP);
+  Opt_params.fb_fragments = rem_read(REM_EFP);
 
 // are ONLY EFP fragments present
-  if(Opt_params.efp_fragments)
-    Opt_params.efp_fragments_only = rem_read(REM_EFP_FRAGMENTS_ONLY);
+  if(Opt_params.fb_fragments)
+    Opt_params.fb_fragments_only = rem_read(REM_EFP_FRAGMENTS_ONLY);
   else {
-    Opt_params.efp_fragments_only = false;
+    Opt_params.fb_fragments_only = false;
   }
 
   // for intcos with user-specified equilibrium values - this is the force constant
@@ -644,7 +648,7 @@ void set_params(void)
   Opt_params.H_update_dq_tol = 0.5;
 
 // Some parameter error-checking / modification
-  if (Opt_params.efp_fragments_only) {
+  if (Opt_params.fb_fragments_only) {
     Opt_params.test_B = false;
     Opt_params.test_derivative_B = false;
   }
@@ -702,6 +706,17 @@ void print_params_out(void) {
   oprintf_out( "step_type              = %18s\n", "P_RFO");
   else if (Opt_params.step_type == OPT_PARAMS::LINESEARCH_STATIC)
   oprintf_out( "step_type              = %18s\n", "Static linesearch");
+
+  if (Opt_params.coordinates == OPT_PARAMS::REDUNDANT)
+  oprintf_out( "opt. coordinates       = %18s\n", "Redundant Internals");
+  else if (Opt_params.coordinates == OPT_PARAMS::DELOCALIZED)
+  oprintf_out( "opt. coordinates       = %18s\n", "Delocalized");
+  else if (Opt_params.coordinates == OPT_PARAMS::NATURAL)
+  oprintf_out( "opt. coordinates       = %18s\n", "Natural");
+  else if (Opt_params.coordinates == OPT_PARAMS::CARTESIAN)
+  oprintf_out( "opt. coordinates       = %18s\n", "Cartesian");
+  else if (Opt_params.coordinates == OPT_PARAMS::BOTH)
+  oprintf_out( "opt. coordinates       = %18s\n", "Add Cartesians");
 
   oprintf_out( "linesearch_static_N    = %18d\n", Opt_params.linesearch_static_N);
   oprintf_out( "linesearch_static_min  = %18.3e\n", Opt_params.linesearch_static_min);
@@ -784,15 +799,15 @@ void print_params_out(void) {
   else
   oprintf_out( "read_cartesian_H       = %18s\n", "false");
 
-  if (Opt_params.efp_fragments)
-  oprintf_out( "efp_fragments          = %18s\n", "true");
+  if (Opt_params.fb_fragments)
+  oprintf_out( "fb_fragments          = %18s\n", "true");
   else
-  oprintf_out( "efp_fragments          = %18s\n", "false");
+  oprintf_out( "fb_fragments          = %18s\n", "false");
 
-  if (Opt_params.efp_fragments_only)
-  oprintf_out( "efp_fragments_only     = %18s\n", "true");
+  if (Opt_params.fb_fragments_only)
+  oprintf_out( "fb_fragments_only     = %18s\n", "true");
   else
-  oprintf_out( "efp_fragments_only     = %18s\n", "false");
+  oprintf_out( "fb_fragments_only     = %18s\n", "false");
 
   oprintf_out( "frozen_distance: \n");
   if (!Opt_params.frozen_distance_str.empty())

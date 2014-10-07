@@ -199,12 +199,12 @@ void INTERFRAG::add_coordinates_of_reference_pts(void) {
   if (one_stre->is_hbond())
     oprintf_out("Detected H-bonding interfragment coordinate.\n");
 
-  if (one_stre  != NULL) inter_frag->intcos.push_back(one_stre);
-  if (one_bend  != NULL) inter_frag->intcos.push_back(one_bend);
-  if (one_bend2 != NULL) inter_frag->intcos.push_back(one_bend2);
-  if (one_tors  != NULL) inter_frag->intcos.push_back(one_tors);
-  if (one_tors2 != NULL) inter_frag->intcos.push_back(one_tors2);
-  if (one_tors3 != NULL) inter_frag->intcos.push_back(one_tors3);
+  if (one_stre  != NULL) inter_frag->coords.simples.push_back(one_stre);
+  if (one_bend  != NULL) inter_frag->coords.simples.push_back(one_bend);
+  if (one_bend2 != NULL) inter_frag->coords.simples.push_back(one_bend2);
+  if (one_tors  != NULL) inter_frag->coords.simples.push_back(one_tors);
+  if (one_tors2 != NULL) inter_frag->coords.simples.push_back(one_tors2);
+  if (one_tors3 != NULL) inter_frag->coords.simples.push_back(one_tors3);
 }
 
 // update location of reference points using given geometries
@@ -275,7 +275,7 @@ void INTERFRAG::update_reference_points(GeomType new_geom_A, GeomType new_geom_B
   }
 }
 
-int INTERFRAG::g_nintco(void) const {
+int INTERFRAG::Ncoord(void) const {
   int dim = 0;
   for (int i=0; i<6; ++i)
     if (D_on[i]) ++dim;
@@ -290,7 +290,7 @@ void INTERFRAG::freeze(bool *D_freeze) {
     if (D_on[i]) {
       ++cnt;
       if (D_freeze[i])
-        inter_frag->intcos[cnt]->freeze();
+        inter_frag->coords.simples[cnt]->freeze();
     }
   }
 }
@@ -298,11 +298,11 @@ void INTERFRAG::freeze(bool *D_freeze) {
 
 // freeze coordinate i; index is among the coordinates that are 'on'
 void INTERFRAG::freeze(int index_to_freeze) {
-  if (index_to_freeze<0 || index_to_freeze>g_nintco()) {
+  if (index_to_freeze<0 || index_to_freeze>Ncoord()) {
     oprintf_out("INTERFRAG::freeze() : Invalid index %d\n", index_to_freeze);
     return;
   }
-  inter_frag->intcos[index_to_freeze]->freeze();
+  inter_frag->coords.simples[index_to_freeze]->freeze();
 }
 
 void INTERFRAG::freeze(void) {
@@ -311,9 +311,9 @@ void INTERFRAG::freeze(void) {
 
 // is coordinate J frozen?  J runs over only active coordinates.
 bool INTERFRAG::is_frozen(int J) { 
-  if (J < 0 || J >= g_nintco())
+  if (J < 0 || J >= Ncoord())
     throw(INTCO_EXCEPT("INTERFRAG::is_frozen() index J runs only over active coordinates"));
-  return inter_frag->intcos[J]->is_frozen();
+  return inter_frag->coords.simples[J]->is_frozen();
 }
 
 // are all interfragment modes frozen?
@@ -322,24 +322,24 @@ bool INTERFRAG::is_frozen(void) {
 }
 
 // compute and return coordinate values - using given fragment geometries
-double * INTERFRAG::intco_values(GeomType new_geom_A, GeomType new_geom_B) {
+double * INTERFRAG::coord_values(GeomType new_geom_A, GeomType new_geom_B) {
   update_reference_points(new_geom_A, new_geom_B);
-  double *q = init_array(g_nintco());
+  double *q = init_array(Ncoord());
 
-  for (int i=0; i<g_nintco(); ++i)
-    q[i] = inter_frag->intcos.at(i)->value(inter_frag->geom);
+  for (int i=0; i<Ncoord(); ++i)
+    q[i] = inter_frag->coords.simples.at(i)->value(inter_frag->geom);
 
   return q;
 }
 
 // returns B matrix (internals by 3*natomA + 3*natomB)
-double ** INTERFRAG::compute_B(GeomType new_geom_A, GeomType new_geom_B) {
+void INTERFRAG::compute_B(GeomType new_geom_A, GeomType new_geom_B, double **Bin, int A_off, int B_off) {
 
   update_reference_points(new_geom_A, new_geom_B);
   int natomA = A->natom;
   int natomB = B->natom;
 
-  double **B = init_matrix(g_nintco(), 3*(natomA+natomB));
+  double **B = init_matrix(Ncoord(), 3*(natomA+natomB));
 
   if (!principal_axes) {
 
@@ -347,39 +347,49 @@ double ** INTERFRAG::compute_B(GeomType new_geom_A, GeomType new_geom_B) {
   double **B_ref; // derivative of interfragment D wrt reference point position
 
   if (D_on[0]) {
-    B_ref = inter_frag->intcos.at(cnt)->DqDx(inter_frag->geom); // RAB, returns (2,3)
+    B_ref = inter_frag->coords.simples.at(cnt)->DqDx(inter_frag->geom); // RAB, returns (2,3)
     for (xyz=0; xyz<3; ++xyz) {
-      for (int a=0; a<natomA; ++a)
-        B[cnt][3*a + xyz] += weightA[0][a] * B_ref[0][xyz];
-      for (int b=0; b<natomB; ++b)
-        B[cnt][3*natomA + 3*b + xyz] += weightB[0][b] * B_ref[1][xyz];
+      for (int a=0; a<natomA; ++a) {
+        int atom_a = a + A_off;
+        Bin[cnt][3*atom_a + xyz] += weightA[0][a] * B_ref[0][xyz];
+        for (int b=0; b<natomB; ++b) {
+          int atom_b = b + B_off;
+          Bin[cnt][3*atom_b + xyz] += weightB[0][b] * B_ref[1][xyz];
+        }
+      }
     }
     free_matrix(B_ref);
     ++cnt;
   }
 
   if (D_on[1]) {
-    B_ref = inter_frag->intcos.at(cnt)->DqDx(inter_frag->geom); // theta_A, returns (3,3)
+    B_ref = inter_frag->coords.simples.at(cnt)->DqDx(inter_frag->geom); // theta_A, returns (3,3)
     for (xyz=0; xyz<3; ++xyz)  {
       for (int a=0; a<natomA; ++a) {
-        B[cnt][3*a + xyz] += weightA[1][a] * B_ref[0][xyz];
-        B[cnt][3*a + xyz] += weightA[0][a] * B_ref[1][xyz];
+        int atom_a = a + A_off;
+        Bin[cnt][3*atom_a + xyz] += weightA[1][a] * B_ref[0][xyz];
+        Bin[cnt][3*atom_a + xyz] += weightA[0][a] * B_ref[1][xyz];
       }
-      for (int b=0; b<natomB; ++b)
-        B[cnt][3*natomA + 3*b + xyz] += weightB[0][b] * B_ref[2][xyz];
+      for (int b=0; b<natomB; ++b) {
+        int atom_b = b + B_off;
+        Bin[cnt][3*atom_b + xyz] += weightB[0][b] * B_ref[2][xyz];
+      }
     }
     free_matrix(B_ref);
     ++cnt;
   }
 
   if (D_on[2]) {
-    B_ref = inter_frag->intcos.at(cnt)->DqDx(inter_frag->geom); // theta_B, returns (3,3)
+    B_ref = inter_frag->coords.simples.at(cnt)->DqDx(inter_frag->geom); // theta_B, returns (3,3)
     for (xyz=0; xyz<3; ++xyz)  {
-      for (int a=0; a<natomA; ++a)
-        B[cnt][3*a + xyz] += weightA[0][a] * B_ref[0][xyz];
+      for (int a=0; a<natomA; ++a) {
+        int atom_a = a + A_off;
+        Bin[cnt][3*atom_a + xyz] += weightA[0][a] * B_ref[0][xyz];
+      }
       for (int b=0; b<natomB; ++b) {
-        B[cnt][3*natomA + 3*b + xyz] += weightB[0][b] * B_ref[1][xyz];
-        B[cnt][3*natomA + 3*b + xyz] += weightB[1][b] * B_ref[2][xyz];
+        int atom_b = b + B_off;
+        Bin[cnt][3*atom_b + xyz] += weightB[0][b] * B_ref[1][xyz];
+        Bin[cnt][3*atom_b + xyz] += weightB[1][b] * B_ref[2][xyz];
       }
     }
     free_matrix(B_ref);
@@ -387,15 +397,17 @@ double ** INTERFRAG::compute_B(GeomType new_geom_A, GeomType new_geom_B) {
   }
 
   if (D_on[3]) {
-    B_ref = inter_frag->intcos.at(cnt)->DqDx(inter_frag->geom); // tau, returns (4,3)
+    B_ref = inter_frag->coords.simples.at(cnt)->DqDx(inter_frag->geom); // tau, returns (4,3)
     for (xyz=0; xyz<3; ++xyz)  {
       for (int a=0; a<natomA; ++a) {
-        B[cnt][3*a + xyz] += weightA[1][a] * B_ref[0][xyz];
-        B[cnt][3*a + xyz] += weightA[0][a] * B_ref[1][xyz];
+        int atom_a = a + A_off;
+        Bin[cnt][3*atom_a + xyz] += weightA[1][a] * B_ref[0][xyz];
+        Bin[cnt][3*atom_a + xyz] += weightA[0][a] * B_ref[1][xyz];
       }
       for (int b=0; b<natomB; ++b) {
-        B[cnt][3*natomB + 3*b + xyz] += weightB[0][b] * B_ref[2][xyz];
-        B[cnt][3*natomB + 3*b + xyz] += weightB[1][b] * B_ref[3][xyz];
+        int atom_b = b + B_off;
+        Bin[cnt][3*atom_b + xyz] += weightB[0][b] * B_ref[2][xyz];
+        Bin[cnt][3*atom_b + xyz] += weightB[1][b] * B_ref[3][xyz];
       }
     }
     free_matrix(B_ref);
@@ -403,29 +415,35 @@ double ** INTERFRAG::compute_B(GeomType new_geom_A, GeomType new_geom_B) {
   }
 
   if (D_on[4]) {
-    B_ref = inter_frag->intcos.at(cnt)->DqDx(inter_frag->geom); // phi_A, returns (4,3)
+    B_ref = inter_frag->coords.simples.at(cnt)->DqDx(inter_frag->geom); // phi_A, returns (4,3)
     for (xyz=0; xyz<3; ++xyz)  {
       for (int a=0; a<natomA; ++a) {
-        B[cnt][3*a + xyz] += weightA[2][a] * B_ref[0][xyz];
-        B[cnt][3*a + xyz] += weightA[1][a] * B_ref[1][xyz];
-        B[cnt][3*a + xyz] += weightA[0][a] * B_ref[2][xyz];
+        int atom_a = a + A_off;
+        Bin[cnt][3*atom_a + xyz] += weightA[2][a] * B_ref[0][xyz];
+        Bin[cnt][3*atom_a + xyz] += weightA[1][a] * B_ref[1][xyz];
+        Bin[cnt][3*atom_a + xyz] += weightA[0][a] * B_ref[2][xyz];
       }
-      for (int b=0; b<natomB; ++b)
-        B[cnt][3*natomA + 3*b + xyz] += weightB[0][b] * B_ref[3][xyz];
+      for (int b=0; b<natomB; ++b) {
+        int atom_b = b + B_off;
+        Bin[cnt][3*atom_b + xyz] += weightB[0][b] * B_ref[3][xyz];
+      }
     }
     free_matrix(B_ref);
     ++cnt;
   }
 
   if (D_on[5]) {
-    B_ref = inter_frag->intcos.at(cnt)->DqDx(inter_frag->geom); // phi_B, returns (4,3)
+    B_ref = inter_frag->coords.simples.at(cnt)->DqDx(inter_frag->geom); // phi_B, returns (4,3)
     for (xyz=0; xyz<3; ++xyz)  {
-      for (int a=0; a<natomA; ++a)
-        B[cnt][3*a + xyz] += weightA[0][a] * B_ref[0][xyz];
+      for (int a=0; a<natomA; ++a) {
+        int atom_a = a + A_off;
+        Bin[cnt][3*atom_a + xyz] += weightA[0][a] * B_ref[0][xyz];
+      }
       for (int b=0; b<natomB; ++b) {
-        B[cnt][3*natomB + 3*b + xyz] += weightB[0][b] * B_ref[1][xyz];
-        B[cnt][3*natomB + 3*b + xyz] += weightB[1][b] * B_ref[2][xyz];
-        B[cnt][3*natomB + 3*b + xyz] += weightB[2][b] * B_ref[3][xyz];
+        int atom_b = b + B_off;
+        Bin[cnt][3*atom_b + xyz] += weightB[0][b] * B_ref[1][xyz];
+        Bin[cnt][3*atom_b + xyz] += weightB[1][b] * B_ref[2][xyz];
+        Bin[cnt][3*atom_b + xyz] += weightB[2][b] * B_ref[3][xyz];
       }
     }
     free_matrix(B_ref);
@@ -434,7 +452,7 @@ double ** INTERFRAG::compute_B(GeomType new_geom_A, GeomType new_geom_B) {
 
   }
   else { // principal axis
-  //natomA natomB //double **B = init_matrix(g_nintco(), 3*(natomA+natomB));
+  //natomA natomB //double **B = init_matrix(Ncoord(), 3*(natomA+natomB));
 
 /*
 
@@ -449,12 +467,12 @@ double ** INTERFRAG::compute_B(GeomType new_geom_A, GeomType new_geom_B) {
 
     // First reference points are the centers of mass.  These are fixed weights.
     if (D_on[0]) {
-      B_ref = inter_frag->intcos.at(cnt)->DqDx(inter_frag->geom); // RAB, returns (2,3)
+      B_ref = inter_frag->coords.simples.at(cnt)->DqDx(inter_frag->geom); // RAB, returns (2,3)
       for (xyz=0; xyz<3; ++xyz) {
         for (int a=0; a<natomA; ++a)
-          B[cnt][3*a + xyz] += A_mass[a]/A_mass_total * B_ref[0][xyz];
+          Bin[cnt][3*a + xyz] += A_mass[a]/A_mass_total * B_ref[0][xyz];
         for (int b=0; b<natomB; ++b)
-          B[cnt][3*natomA + 3*b + xyz] += B_mass[b]/B_mass_total * B_ref[1][xyz];
+          Bin[cnt][3*natomA + 3*b + xyz] += B_mass[b]/B_mass_total * B_ref[1][xyz];
       }
       free_matrix(B_ref);
       ++cnt;
@@ -469,13 +487,17 @@ TODO
 */
   }
 
-  return B;
+  return;
 }
 
-// returns derivative B matrix for one internal, returns (3*natomA + 3*natomB) by same
-double **INTERFRAG::compute_derivative_B(int J, GeomType new_geom_A, GeomType new_geom_B) {
+// returns derivative B matrix for one internal
+/*
+void INTERFRAG::compute_derivative_B(int J, GeomType new_geom_A,
+   GeomType new_geom_B, double **Bprim, int A_offset, int B_offset) {
 
   update_reference_points(new_geom_A, new_geom_B);
+
+TODO: Need to work in A_offset and B_offset
 
   int nA = A->natom;
   int nB = B->natom;
@@ -494,7 +516,7 @@ double **INTERFRAG::compute_derivative_B(int J, GeomType new_geom_A, GeomType ne
   double **B2 = init_matrix(3*(nA+nB) , 3*(nA+nB));  // d^2(D)/d(r)^2 (sides are dA, then dB)
   int i, i_xyz, j, j_xyz;
 
-  B2_ref = inter_frag->intcos.at(J)->Dq2Dx2(inter_frag->geom); // d^2(D)/d(reference point)^2
+  B2_ref = inter_frag->coords.simples.at(J)->Dq2Dx2(inter_frag->geom); // d^2(D)/d(reference point)^2
 
   for (i_xyz=0; i_xyz<3; ++i_xyz) {
     for (j_xyz=0; j_xyz<3; ++j_xyz) {
@@ -651,9 +673,10 @@ double **INTERFRAG::compute_derivative_B(int J, GeomType new_geom_A, GeomType ne
 
   return B2;
 }
+*/
 
 
-void INTERFRAG::print_intcos(std::string psi_fp, FILE *qc_fp, int off_A, int off_B) const {
+void INTERFRAG::print_coords(std::string psi_fp, FILE *qc_fp, int off_A, int off_B) const {
   oprintf(psi_fp, qc_fp, "\t---Interfragment Coordinates Between Fragments %d and %d---\n",
     A_index+1, B_index+1);
   oprintf(psi_fp, qc_fp, "\t * Reference Points *\n");
@@ -676,7 +699,7 @@ void INTERFRAG::print_intcos(std::string psi_fp, FILE *qc_fp, int off_A, int off
       oprintf(psi_fp, qc_fp, "\n");
     }
   }
-  inter_frag->print_intcos(psi_fp, qc_fp);
+  inter_frag->print_simples(psi_fp, qc_fp);
 }
 
 void INTERFRAG::print_intco_dat(std::string psi_fp, FILE *qc_fp, int off_A, int off_B) const {
@@ -695,7 +718,7 @@ void INTERFRAG::print_intco_dat(std::string psi_fp, FILE *qc_fp, int off_A, int 
 }
 
 // TODO - fix this up later
-std::string INTERFRAG::get_intco_definition(int coord_index, int off_A, int off_B) const {
+std::string INTERFRAG::get_coord_definition(int coord_index, int off_A, int off_B) const {
   ostringstream iss;
   for (int i=0; i<ndA; ++i) {
     iss << "A" << i+1;
@@ -727,14 +750,14 @@ double ** INTERFRAG::H_guess(void) {
     Opt_params.intrafragment_H = i;
   }
   else { // DEFAULT
-    H = init_matrix(inter_frag->g_nintco(), inter_frag->g_nintco());
+    H = init_matrix(inter_frag->Ncoord(), inter_frag->Ncoord());
     int cnt=0;
     double rAB;
 
     if (Opt_params.interfragment_distance_inverse)
-      rAB = inter_frag->intcos[0]->value(inter_frag->geom);
+      rAB = inter_frag->coords.simples[0]->value(inter_frag->geom);
 
-    if (inter_frag->intcos[0]->is_hbond()) {
+    if (inter_frag->coords.simples[0]->is_hbond()) {
 
       H[cnt][cnt] = 0.03;
       if (Opt_params.interfragment_distance_inverse)
@@ -767,11 +790,11 @@ double ** INTERFRAG::H_guess(void) {
 
 // return matrix with 1's on diagonal for frozen coordinates
 double ** INTERFRAG::compute_constraints(void) const {
-  double **C = init_matrix(g_nintco(), g_nintco());
+  double **C = init_matrix(Ncoord(), Ncoord());
   int cnt = 0;
   for (int i=0; i<6; ++i) {
     if (D_on[i]) {
-      if (inter_frag->intcos[cnt++]->is_frozen())
+      if (inter_frag->coords.simples[cnt++]->is_frozen())
         C[i][i] = 1.0;
     }
   }

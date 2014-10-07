@@ -102,7 +102,7 @@ class INTERFRAG {
   // update location of reference points using given geometries
   void update_reference_points(GeomType new_geom_A, GeomType new_geom_B);
 
-  int g_nintco(void) const;
+  int Ncoord(void) const;
 
   // return vector index of fragments in molecule vector
   int g_A_index(void) const { return A_index; }
@@ -112,8 +112,8 @@ class INTERFRAG {
   int g_ndB(void) const { return ndB; }
 
   // compute and return coordinate values - using fragment member geometries
-  double *intco_values(void) {
-    double *q = intco_values(A->geom, B->geom);
+  double *coord_values(void) {
+    double *q = coord_values(A->geom, B->geom);
     return q;
   }
 
@@ -133,7 +133,7 @@ class INTERFRAG {
   bool is_frozen(void);
 
   // compute and return coordinate values - using given fragment geometries
-  double *intco_values(GeomType new_geom_A, GeomType new_geom_B);
+  double *coord_values(GeomType new_geom_A, GeomType new_geom_B);
 
   // check nearness to 180 and save value
   void fix_tors_near_180(void) {
@@ -141,30 +141,43 @@ class INTERFRAG {
     inter_frag->fix_tors_near_180();
   }
 
-  // returns B matrix from member geometries
-  double **compute_B(void) {
-    double **bmat = compute_B(A->geom, B->geom);
-    return bmat;
-  }
-  // returns B matrix (internals by 3*natomA + 3*natomB)
-  double **compute_B(GeomType new_geom_A, GeomType new_geom_B);
+  // Fills in B matrix rows. Provide geometries.
+  void compute_B(GeomType new_geom_A, GeomType new_geom_B, double **Bin, int A_off, int B_off);
 
-  // returns derivative B matrix from member geometries
-  double **compute_derivative_B(int intco_index) {
-    double **Bder = compute_derivative_B(intco_index, A->geom, B->geom);
+  // Fills in B matrix rows.
+  void compute_B(double **Bin, int A_offset, int B_offset) {
+    compute_B(A->geom, B->geom, Bin, A_offset, B_offset);
+    return;
+  }
+
+  // allocate and return B matrix only for this interfragment.
+  double **compute_B(void) {
+    double **Bout = init_matrix(Ncoord(), 3*g_natom());
+    compute_B(A->geom, B->geom, Bout, 0, 0);
+    return Bout;
+  }
+
+/*
+  // Returns derivative B matrix from member geometries
+// This would have to contain both fragments
+  double **compute_derivative_B(int coord_index) {
+    double **Bder = init_matrix ( , )
+    compute_derivative_B(coord_index, A->geom, B->geom, **Bdir, 0, 0);
     return Bder;
   }
+*/
   // returns derivative B matrix for one internal, returns 3*natomA x 3*natomA
-  double **compute_derivative_B(int intco_index, GeomType new_geom_A, GeomType new_geom_B);
+  void compute_derivative_B(int coord_index, GeomType new_geom_A, GeomType new_geom_B,
+    double **Bprim, int A_offset, int B_offset);
 
   // print reference point definitions and values of coordinates
-  void print_intcos(std::string psi_fp, FILE *qc_fp, int A_off=0, int B_off=0) const;
+  void print_coords(std::string psi_fp, FILE *qc_fp, int A_off=0, int B_off=0) const;
 
   // print coordinate definitions
   void print_intco_dat(std::string psi_fp, FILE *qc_fp, int atom_offset_A=0, int atom_offset_B=0) const;
 
-  // return string of intco definition
-  std::string get_intco_definition(int coord_index, int atom_offset_A=0, int atom_offset_B=0) const;
+  // return string of coord definition
+  std::string get_coord_definition(int coord_index, int atom_offset_A=0, int atom_offset_B=0) const;
 
   // get number of atoms in the two fragments
   int g_natom(void) const { return (A->g_natom() + B->g_natom()); }

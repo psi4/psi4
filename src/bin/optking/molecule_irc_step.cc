@@ -69,7 +69,7 @@ cout << "we made it.";
   oprintf_out("\tPoint is converged. Setting sphere_step to 0, and calling irc_step().\n\n");
   if(steps.size() > 1)
   {
-    double f_dot = array_dot(steps[steps.size()-1]->g_f_q(), steps[steps.size()-2]->g_f_q(), mol.g_nintco());
+    double f_dot = array_dot(steps[steps.size()-1]->g_f_q(), steps[steps.size()-2]->g_f_q(), mol.Ncoord());
     oprintf_out("\nforce vector - current dotted with previous: %f\n", f_dot);
   }
 
@@ -81,7 +81,7 @@ cout << "we made it.";
 void IRC_DATA::progress_report(opt::MOLECULE &mol) 
 {
   double DE;
-  int dim = mol.g_nintco();
+  int dim = mol.Ncoord();
   int blocks = 4;
   int sign = 1;
 
@@ -179,7 +179,8 @@ void IRC_DATA::progress_report(opt::MOLECULE &mol)
   oprintf_out("\n");
   oprintf_out("\n");
 
-  mol.print_intcos(psi_outfile, qc_outfile);
+  mol.print_coords(psi_outfile, qc_outfile);
+  mol.print_simples(psi_outfile, qc_outfile);
 }
 
 
@@ -202,7 +203,7 @@ for a first step toward new point on path.\n");
   p_irc_data->step_length = s;
   double *dq  = p_Opt_data->g_dq_pointer();    //internal coordinate change
   double *f_q = p_Opt_data->g_forces_pointer();//internal coordinate gradient
-  int Nintco = g_nintco();
+  int Nintco = Ncoord();
   int Natom = g_natom();
   int Ncart = 3 * Natom;
   bool answer = 1;
@@ -265,7 +266,7 @@ cout << "line_dist: " << p_irc_data->g_line_dist(p_irc_data->size()-1);
     }
 /*    if(!p_irc_data->go)
     {
-      double *q = intco_values();
+      double *q = coord_values();
       double *q_pivot = init_array(Nintco);
 
       double *x = g_geom_array();
@@ -382,7 +383,7 @@ free_array(G_inv_dq);
 free_matrix(G_inv);
 // */
 
-    double *q = intco_values();
+    double *q = coord_values();
     double *q_pivot = init_array(Nintco);
     for(int i=0; i<Nintco; i++)
       q_pivot[i] = q[i] + dq_pivot[i];
@@ -404,7 +405,7 @@ free_matrix(G_inv);
         oprintf_out("\tDisplacements for frozen fragment %d skipped.\n", f+1);
         continue;
       }
-      fragments[f]->displace(&(dq[g_intco_offset(f)]), &(f_q[g_intco_offset(f)]), g_atom_offset(f));
+      fragments[f]->displace(&(dq[g_coord_offset(f)]), &(f_q[g_coord_offset(f)]), g_atom_offset(f));
     }
     // Do displacements for interfragment coordinates.
     for (int I=0; I<interfragments.size(); ++I) {
@@ -412,8 +413,8 @@ free_matrix(G_inv);
         oprintf_out("\tDisplacements for frozen interfragment %d skipped.\n", I+1);
         continue;
       }
-      interfragments[I]->orient_fragment( &(dq[g_interfragment_intco_offset(I)]),
-                                         &(f_q[g_interfragment_intco_offset(I)]) );
+      interfragments[I]->orient_fragment( &(dq[g_interfragment_coord_offset(I)]),
+                                         &(f_q[g_interfragment_coord_offset(I)]) );
     }
 
     // Compute norm, unit vector, gradient and Hessian in the step direction
@@ -471,7 +472,7 @@ free_matrix(G_inv);
   oprint_array_out(h, Nintco);
 
 //2. Express p and g, in mass-weighted coordinates and in the eigenbasis of Hm, the mass-weighted Hessian.
-  double *q = intco_values();
+  double *q = coord_values();
   double *q_pivot = p_irc_data->steps.back()->g_q_pivot();
 
   double *dq_0 = p_Opt_data->g_dq_pointer(p_Opt_data->nsteps() - 2);
@@ -697,7 +698,7 @@ oprint_array_out(g_m, Nintco);
       oprintf_out("\tDisplacements for frozen fragment %d skipped.\n", f+1);
       continue;
     }
-    fragments[f]->displace(&(dq[g_intco_offset(f)]), &(f_q[g_intco_offset(f)]), g_atom_offset(f));
+    fragments[f]->displace(&(dq[g_coord_offset(f)]), &(f_q[g_coord_offset(f)]), g_atom_offset(f));
   }
   // Do displacements for interfragment coordinates.
   for (int I=0; I<interfragments.size(); ++I) {
@@ -705,12 +706,12 @@ oprint_array_out(g_m, Nintco);
       oprintf_out("\tDisplacements for frozen interfragment %d skipped.\n", I+1);
       continue;
     }
-    interfragments[I]->orient_fragment( &(dq[g_interfragment_intco_offset(I)]),
-                                       &(f_q[g_interfragment_intco_offset(I)]) );
+    interfragments[I]->orient_fragment( &(dq[g_interfragment_coord_offset(I)]),
+                                       &(f_q[g_interfragment_coord_offset(I)]) );
   }
 
 //find arclength of step and pass to irc_data to be stored on convergence
-  double *new_q = intco_values();
+  double *new_q = coord_values();
   double *old_q = p_irc_data->g_q();
   double *new_dq = init_array(Nintco);
   for(int i=0; i<Nintco; i++)

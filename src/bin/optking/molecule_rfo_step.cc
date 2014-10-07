@@ -54,7 +54,7 @@ inline double DE_rfo_energy(double rfo_t, double rfo_g, double rfo_h) {
 // Take Rational Function Optimization step
 void MOLECULE::rfo_step(void) {
   int i, j;
-  int dim = g_nintco();
+  int dim = Ncoord();
   int natom = g_natom();
   double tval, tval2;
   double *fq = p_Opt_data->g_forces_pointer();
@@ -173,7 +173,7 @@ void MOLECULE::rfo_step(void) {
 
       // Now test RFO eigenvector and make sure that it is totally symmetric.
       while (!symm_rfo_step) {
-        symm_rfo_step = intco_combo_is_symmetric(SRFO[rfo_root], dim);
+        symm_rfo_step = coord_combo_is_symmetric(SRFO[rfo_root], dim);
 
         if (!symm_rfo_step) {
           oprintf_out("\tRejecting RFO root %d because it breaks the molecular point group.\n", rfo_root+1);
@@ -224,8 +224,8 @@ void MOLECULE::rfo_step(void) {
     for (f=0; f<fragments.size(); ++f) {
       if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
         oprintf_out("\tZero'ing out displacements for frozen fragment %d\n", f+1);
-        for (i=0; i<fragments[f]->g_nintco(); ++i)
-          dq[ g_intco_offset(f) + i ] = 0.0;
+        for (i=0; i<fragments[f]->Ncoord(); ++i)
+          dq[ g_coord_offset(f) + i ] = 0.0;
       }
     }
 
@@ -323,7 +323,7 @@ void MOLECULE::rfo_step(void) {
       oprintf_out("\tDisplacements for frozen fragment %d skipped.\n", f+1);
       continue;
     }
-    fragments[f]->displace(&(dq[g_intco_offset(f)]), &(fq[g_intco_offset(f)]), g_atom_offset(f));
+    fragments[f]->displace(&(dq[g_coord_offset(f)]), &(fq[g_coord_offset(f)]), g_atom_offset(f));
   }
 
   // do displacements for interfragment coordinates
@@ -332,15 +332,13 @@ void MOLECULE::rfo_step(void) {
       oprintf_out("\tDisplacements for frozen interfragment %d skipped.\n", I+1);
       continue;
     }
-    interfragments[I]->orient_fragment( &(dq[g_interfragment_intco_offset(I)]),
-                                        &(fq[g_interfragment_intco_offset(I)]) );
+    interfragments[I]->orient_fragment( &(dq[g_interfragment_coord_offset(I)]),
+                                        &(fq[g_interfragment_coord_offset(I)]) );
   }
 
-#if defined(OPTKING_PACKAGE_QCHEM)
   // fix rotation matrix for rotations in QCHEM EFP code
-  for (int I=0; I<efp_fragments.size(); ++I)
-    efp_fragments[I]->displace( I, &(dq[g_efp_fragment_intco_offset(I)]) );
-#endif
+  for (int I=0; I<fb_fragments.size(); ++I)
+    fb_fragments[I]->displace( I, &(dq[g_fb_fragment_coord_offset(I)]) );
 
   symmetrize_geom(); // now symmetrize the geometry for next step
   

@@ -67,7 +67,7 @@ struct OPT_PARAMS {
   enum STEP_TYPE {NR, RFO, P_RFO, SD, LINESEARCH_STATIC} step_type;
 
   // Coordinates for optimization
-  enum COORDINATES {INTERNAL, CARTESIAN, BOTH} coordinates;
+  enum COORDINATES {REDUNDANT, DELOCALIZED, NATURAL, CARTESIAN, BOTH} coordinates;
 
   // Hessian guess
   // Note the Lindh "intrafragment" option is cartesian so it applies to all coordinates.
@@ -116,8 +116,8 @@ struct OPT_PARAMS {
 
   bool read_cartesian_H;
 
-  bool efp_fragments;
-  bool efp_fragments_only;
+  bool fb_fragments;
+  bool fb_fragments_only;
 
   int consecutive_backsteps_allowed;
 

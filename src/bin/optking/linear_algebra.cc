@@ -317,6 +317,13 @@ double array_abs_max(double *v1, int n) {
   return max;
 }
 
+double array_max(double *v1, int n) {
+  double max = 0.0;
+  for (int i=0; i<n; ++i)
+    if (v1[i] > max) max = v1[i];
+  return max;
+}
+
 double array_rms(double *v1, int n) {
   double rms = array_dot(v1, v1, n);
   rms = rms / ((double) n);
