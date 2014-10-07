@@ -1,0 +1,11 @@
+Driver:
+    CASSCF program 
+        Orbital rotations
+        Build Hessians
+    DETCI
+        Everything else
+
+Problems:
+
+
+All psi headers should be in "" not <>
