@@ -81,6 +81,8 @@ set(TutorialLong tu6-cp-ne2)
 set(MISCShort ci-multi sad1 matrix1 gibbs)
 set(MISCLong frac ghosts large_atoms min_input mom psithon1 psithon2 pubchem1 zaptn-nh2)
 
+set(CASShort casscf-fzc-sp casscf-sp)
+
 set(AutoTestSubjects cc8 cc9 cc11 cc18 cc19 cc28 cc29 cc30 cc31 cc34 cc36 cc37 cc38 cc39 cc40 cc41 cc42 cc43 cc46 cc47 cc48 cc49 cc50 cc51 cc52 cc55)
 
 ###### END test definitions ################
@@ -93,7 +95,7 @@ set(QuickTests ${CastUpShort} ${CCShort} ${CDShort} ${CISDShort} ${DCFTShort}
     ${DFShort} ${DFTShort} ${FCIShort} ${FNOCCShort} ${MCSCFShort}
 ${MintsShort} ${MP2Short} ${OCEPAShort} ${OMPShort} ${OPTShort}
 ${PSIMRCCShort} ${PYWrapShort} ${RASCIShort} ${SAPTShort} ${SCFShort}
-${TutorialShort} ${MISCShort}
+${TutorialShort} ${MISCShort} ${CASShort}
 )
 
 #And these are the rest of the tests
