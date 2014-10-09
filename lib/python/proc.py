@@ -2808,3 +2808,65 @@ def run_cepa(name, **kwargs):
 
     return psi4.get_variable("CURRENT ENERGY")
 
+
+def run_detcas(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    determinant-based multireference wavefuncations,
+    namely CASSCF and RASSCF.
+    """
+
+    optstash = p4util.OptionsState(
+        ['TRANSQT2', 'WFN'],
+        ['DETCI', 'WFN'],
+        ['DETCAS', 'WFN']
+    )
+
+
+    user_ref = psi4.get_option('DETCI', 'REFERENCE')
+    if (user_ref != 'RHF') and (user_ref != 'ROHF'):
+        raise ValidationError('Reference %s for DETCI is not available.' % user_ref)
+
+    if (name.lower() == 'rasscf'):
+        psi4.set_local_option('TRANSQT2', 'WFN', 'RASSCF')
+        psi4.set_local_option('DETCI', 'WFN', 'RASSCF')
+        psi4.set_local_option('DETCAS', 'WFN', 'RASSCF')
+    elif (name.lower() == 'casscf'):
+        psi4.set_local_option('TRANSQT2', 'WFN', 'CASSCF')
+        psi4.set_local_option('DETCI', 'WFN', 'CASSCF')
+        psi4.set_local_option('DETCAS', 'WFN', 'CASSCF')
+
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
+
+        # If the scf type is DF/CD, then the AO integrals were never written to disk
+        if psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
+            psi4.MintsHelper().integrals()
+
+    psioh = psi4.IOManager.shared_object()
+    psioh.set_specific_retention(p4const.PSIF_CHKPT, True)
+
+    for x in range(5):
+        psi4.transqt2()
+        print("Finished TRANSQT!")
+        psi4.detci()
+        print("Finished DETCI!")
+        psi4.detcas()
+        print("Finished DETCAS!")
+        print("Finished iteration %d\n" % x)
+        #psi4.clean()
+
+#   For Future
+#        if psi4.optking() == psi4.PsiReturnType.EndLoop:
+#            print('Optimizer: Optimization complete!')
+#            psi4.print_out('\n    Final optimized geometry and variables:\n')
+#            psi4.get_active_molecule().print_in_input_format()
+#            # Check if user wants to see the intcos; if so, don't delete them.
+#            if (psi4.get_option('OPTKING', 'INTCOS_GENERATE_EXIT') == False):
+#                psi4.opt_clean()
+#            psi4.clean()
+#    while n <= psi4.get_global_option('GEOM_MAXITER'):
+
+    optstash.restore()
+
+    return psi4.get_variable("CURRENT ENERGY")

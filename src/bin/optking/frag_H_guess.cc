@@ -117,14 +117,15 @@ double ** FRAG::H_guess(void) {
     for (int j=i+1; j<natom; ++j)
       R[i][j] = R[j][i] = v3d_dist(geom[i], geom[j]);
 
-  double *f = init_array(intcos.size());
+  // to hold diagonal force constant guesses for simples
+  double *f = init_array(coords.simples.size());
 
   int cnt = 0;
 
   // Form diagonal Hessian in simple internals
   if (Opt_params.intrafragment_H == OPT_PARAMS::SCHLEGEL) {
-    for (int i=0; i<intcos.size(); ++i) {
-      SIMPLE *q = intcos.at(i);
+    for (int i=0; i<coords.simples.size(); ++i) {
+      SIMPLE_COORDINATE *q = coords.simples.at(i);
 
       int a,b,c;
       double A,B,rBCcov;
@@ -179,11 +180,11 @@ double ** FRAG::H_guess(void) {
           oprintf_out("H_guess encountered unknown internal type.\n");
           f[cnt++] = 1.0;
       } // end switch coordinate type
-    } // loop over intcos
+    } // loop over coords.simples
   } // end Schlegel
   else if (Opt_params.intrafragment_H == OPT_PARAMS::FISCHER) {
-    for (int i=0; i<intcos.size(); ++i) {
-      SIMPLE *q = intcos.at(i);
+    for (int i=0; i<coords.simples.size(); ++i) {
+      SIMPLE_COORDINATE *q = coords.simples.at(i);
 
       int a,b,c,L;
       double A,B,C,D,E,rABcov, rBCcov;
@@ -244,12 +245,12 @@ double ** FRAG::H_guess(void) {
         default:
           oprintf_out("H_guess encountered unknown internal type.\n");
           f[cnt++] = 1.0;
-      } // end switch intcos
-    } // end loop intcos
+      } // end switch simples
+    } // end loop simples
   } // end Fischer
   else if (Opt_params.intrafragment_H == OPT_PARAMS::SIMPLE) {
-    for (int i=0; i<intcos.size(); ++i) {
-      SIMPLE *q = intcos.at(i);
+    for (int i=0; i<coords.simples.size(); ++i) {
+      SIMPLE_COORDINATE *q = coords.simples.at(i);
       switch (q->g_type()) {
         case (stre_type) :
           f[cnt++] = 0.5;
@@ -279,8 +280,8 @@ double ** FRAG::H_guess(void) {
     const double k_phi = 0.15;
     const double k_tau = 0.005;
 
-    for (int i=0; i<intcos.size(); ++i) {
-      SIMPLE * q = intcos.at(i);
+    for (int i=0; i<coords.simples.size(); ++i) {
+      SIMPLE_COORDINATE * q = coords.simples.at(i);
 
       int a,b,c,d;
 
@@ -323,10 +324,20 @@ double ** FRAG::H_guess(void) {
 
   free_matrix(R);
 
-  double **H = init_matrix(intcos.size(), intcos.size());
-  for (int i=0; i<intcos.size(); ++i)
-    H[i][i] = f[i];
+  if (Opt_params.print_lvl > 1) {
+    oprintf_out("diagonal Hessian values for simple coordinates.\n");
+    oprint_array_out(f, coords.simples.size());
+  }
+
+  // all off-diagonal entries are zero, so this seem silly
+  double **H_simple = init_matrix(coords.simples.size(), coords.simples.size());
+  for (int i=0; i<coords.simples.size(); ++i)
+    H_simple[i][i] = f[i];
   free_array(f);
+
+  double **H = coords.transform_simples_to_combo(H_simple);
+  free_matrix(H_simple);
+
   return H;
 }
 

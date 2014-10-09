@@ -1,0 +1,24 @@
+
+
+molecule {
+O
+H 1 1.00
+H 1 1.00 2 103.1
+}
+
+set {
+    scf_type pk
+    basis 6-31G**
+    reference rhf
+    restricted_docc [1, 0, 0, 0]
+    active          [3, 0, 1, 2] 
+}
+
+set detcas e_convergence 5
+
+set detci dipmom False
+#set detcas print 2
+energy('casscf')
+
+
+# compare_values(-76.073865006902, get_variable("CURRENT_ENERGY"), 6, 'CASSCF Energy')

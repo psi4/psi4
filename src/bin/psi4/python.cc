@@ -48,6 +48,7 @@
 #include <psi4-dec.h>
 #include "script.h"
 #include "psi4.h"
+#include "gitversion.h"
 #include "libparallel/ParallelPrinter.h"
 #include "../ccenergy/ccwave.h"
 #include "../cclambda/cclambda.h"
@@ -128,6 +129,7 @@ namespace psi {
     namespace ccresponse { PsiReturnType ccresponse(Options&);}
     namespace cceom      { PsiReturnType cceom(Options&);     }
     namespace detci      { PsiReturnType detci(Options&);     }
+    namespace detcas     { PsiReturnType detcas(Options&);     }
     namespace fnocc      { PsiReturnType fnocc(Options&);     }
     namespace stable     { PsiReturnType stability(Options&); }
     namespace occwave    { PsiReturnType occwave(Options&);   }
@@ -546,10 +548,21 @@ double py_psi_fnocc()
     else
         return 0.0;
 }
+
 double py_psi_detci()
 {
     py_psi_prepare_options_for_module("DETCI");
     if (detci::detci(Process::environment.options) == Success) {
+        return Process::environment.globals["CURRENT ENERGY"];
+    }
+    else
+        return 0.0;
+}
+
+double py_psi_detcas()
+{
+    py_psi_prepare_options_for_module("DETCAS");
+    if (detcas::detcas(Process::environment.options) == Success) {
         return Process::environment.globals["CURRENT ENERGY"];
     }
     else
@@ -635,6 +648,11 @@ double py_psi_thermo()
 char const* py_psi_version()
 {
     return PSI_VERSION;
+}
+
+char const* py_psi_git_version()
+{
+    return GIT_VERSION;
 }
 
 void py_psi_clean()
@@ -1307,6 +1325,7 @@ BOOST_PYTHON_MODULE(psi4)
 
 
     def("version", py_psi_version, "Returns the version ID of this copy of Psi.");
+    def("git_version", py_psi_git_version, "Returns the git version of this copy of Psi.");
     def("clean", py_psi_clean, "Function to remove scratch files. Call between independent jobs.");
 
     // Benchmarks
@@ -1442,6 +1461,7 @@ BOOST_PYTHON_MODULE(psi4)
     def("ccenergy", py_psi_ccenergy, "Runs the coupled cluster energy code.");
     def("cctriples", py_psi_cctriples, "Runs the coupled cluster (T) energy code.");
     def("detci", py_psi_detci, "Runs the determinant-based configuration interaction code.");
+    def("detcas", py_psi_detcas, "Runs the determinant-based complete active space self consistent field.");
     def("fnocc", py_psi_fnocc, "Runs the fno-ccsd(t)/qcisd(t)/mp4/cepa energy code");
     def("cchbar", py_psi_cchbar, "Runs the code to generate the similariry transformed Hamiltonian.");
     def("cclambda", py_psi_cclambda, "Runs the coupled cluster lambda equations code.");

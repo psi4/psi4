@@ -127,7 +127,7 @@ class OPT_DATA {
     double g_energy(void) const { return steps[steps.size()-1]->g_energy(); }
     double *g_rfo_eigenvector_pointer(void) const { return rfo_eigenvector; }
     // return dimension of Hessian matrix
-    int g_nintco(void) const { return Nintco; }
+    int Ncoord(void) const { return Nintco; }
 
     void set_rfo_eigenvector(double *evect_in) {
       for (int i=0; i<Nintco+1; ++i)

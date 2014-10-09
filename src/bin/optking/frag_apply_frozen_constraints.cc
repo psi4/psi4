@@ -106,13 +106,13 @@ bool FRAG::apply_frozen_constraints(string R_string, string B_string, string D_s
 
     STRE *one_stre = new STRE(a, b, 1); // create frozen stretch between atoms a and b
 
-    // check if intco is already present; returns 1 past the end if not found
+    // check if coord is already present; returns 1 past the end if not found
     int index = find(one_stre);
 
-    if (index == intcos.size())
-      intcos.push_back(one_stre);// add it
+    if (index == coords.simples.size())
+      coords.simples.push_back(one_stre);// add it
     else { 
-      intcos[index]->freeze();   // it's there already; make sure it's frozen
+      coords.simples[index]->freeze();   // it's there already; make sure it's frozen
       delete one_stre;
     }
   }
@@ -127,13 +127,13 @@ bool FRAG::apply_frozen_constraints(string R_string, string B_string, string D_s
 
     BEND *one_bend = new BEND(a, b, c, 1); // create frozen bend between atoms a,b,c
 
-    // check if intco is already present; returns 1 past the end if not found
+    // check if coord is already present; returns 1 past the end if not found
     int index = find(one_bend);
 
-    if (index == intcos.size())
-      intcos.push_back(one_bend);// add it
+    if (index == coords.simples.size())
+      coords.simples.push_back(one_bend);// add it
     else { 
-      intcos[index]->freeze();   // it's there already; make sure it's frozen
+      coords.simples[index]->freeze();   // it's there already; make sure it's frozen
       delete one_bend;
     }
   }
@@ -149,13 +149,13 @@ bool FRAG::apply_frozen_constraints(string R_string, string B_string, string D_s
 
     TORS *one_tors = new TORS(a, b, c, d, 1); // create frozen dihedral between a,b,c,d
 
-    // check if intco is already present; returns 1 past the end if not found
+    // check if coord is already present; returns 1 past the end if not found
     int index = find(one_tors);
 
-    if (index == intcos.size())
-      intcos.push_back(one_tors);// add it
+    if (index == coords.simples.size())
+      coords.simples.push_back(one_tors);// add it
     else { 
-      intcos[index]->freeze();   // it's there already; make sure it's frozen
+      coords.simples[index]->freeze();   // it's there already; make sure it's frozen
       delete one_tors;
     }
   }
@@ -202,13 +202,13 @@ bool FRAG::apply_fixed_constraints(string R_string, string B_string, string D_st
     // Insist on user-specified fixed coordinates to be given in Angstroms/radians
     one_stre->set_fixed_eq_val(R[i].eq_val/_bohr2angstroms);
 
-    // check if intco is already present; returns 1 past the end if not found
+    // check if coord is already present; returns 1 past the end if not found
     int index = find(one_stre);
 
-    if (index == intcos.size())
-      intcos.push_back(one_stre);// add it
+    if (index == coords.simples.size())
+      coords.simples.push_back(one_stre);// add it
     else { 
-      intcos[index]->set_fixed_eq_val(R[i].eq_val/_bohr2angstroms); // it's there already, add the fixed value
+      coords.simples[index]->set_fixed_eq_val(R[i].eq_val/_bohr2angstroms); // it's there already, add the fixed value
       delete one_stre;
     }
   }
@@ -225,13 +225,13 @@ bool FRAG::apply_fixed_constraints(string R_string, string B_string, string D_st
     // Insist on user-specified fixed coordinates to be given in Angstroms/radians
     one_bend->set_fixed_eq_val(B[i].eq_val/180.0*_pi);
 
-    // check if intco is already present; returns 1 past the end if not found
+    // check if coord is already present; returns 1 past the end if not found
     int index = find(one_bend);
   
-    if (index == intcos.size())
-      intcos.push_back(one_bend);// add it
+    if (index == coords.simples.size())
+      coords.simples.push_back(one_bend);// add it
     else {
-      intcos[index]->set_fixed_eq_val(B[i].eq_val/180.0*_pi); // it's there already, add the fixed value
+      coords.simples[index]->set_fixed_eq_val(B[i].eq_val/180.0*_pi); // it's there already, add the fixed value
       delete one_bend;
     }
   }
@@ -249,13 +249,13 @@ bool FRAG::apply_fixed_constraints(string R_string, string B_string, string D_st
     // Insist on user-specified fixed coordinates to be given in Angstroms/radians
     one_tors->set_fixed_eq_val(D[i].eq_val/180.0*_pi);
 
-    // check if intco is already present; returns 1 past the end if not found
+    // check if coord is already present; returns 1 past the end if not found
     int index = find(one_tors);
 
-    if (index == intcos.size())
-      intcos.push_back(one_tors);// add it
+    if (index == coords.simples.size())
+      coords.simples.push_back(one_tors);// add it
     else {
-      intcos[index]->set_fixed_eq_val(D[i].eq_val/180.0*_pi); // it's there already, add the fixed value
+      coords.simples[index]->set_fixed_eq_val(D[i].eq_val/180.0*_pi); // it's there already, add the fixed value
       delete one_tors;
     }
   }

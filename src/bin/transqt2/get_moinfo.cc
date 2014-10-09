@@ -106,14 +106,23 @@ void get_moinfo(Options& options)
     moinfo.mopi = chkpt_rd_orbspi();
     moinfo.clsdpi = chkpt_rd_clsdpi();
     moinfo.openpi = chkpt_rd_openpi();
-    moinfo.frdocc = Process::environment.wavefunction()->frzcpi();
+
+    moinfo.frdocc = init_int_array(moinfo.nirreps);
+    moinfo.fruocc = init_int_array(moinfo.nirreps);
+
+   for (int h=0; h<moinfo.nirreps; h++) {
+     moinfo.frdocc[h] = Process::environment.wavefunction()->frzcpi()[h];
+     moinfo.fruocc[h] = Process::environment.wavefunction()->frzvpi()[h];
+   }
+
+    //moinfo.frdocc = Process::environment.wavefunction()->frzcpi();
     if(options["FROZEN_DOCC"].has_changed()){
         if(options["FROZEN_DOCC"].size() != moinfo.nirreps)
             throw PSIEXCEPTION("FROZEN_DOCC array should be the same size as the number of irreps.");
         for(int h = 0; h < moinfo.nirreps; ++h)
             moinfo.frdocc[h] = options["FROZEN_DOCC"][h].to_integer();
     }
-    moinfo.fruocc = Process::environment.wavefunction()->frzvpi();
+    //moinfo.fruocc = Process::environment.wavefunction()->frzvpi();
     if(options["FROZEN_UOCC"].has_changed()){
         if(options["FROZEN_UOCC"].size() != moinfo.nirreps)
             throw PSIEXCEPTION("FROZEN_UOCC array should be the same size as the number of irreps.");
@@ -156,6 +165,7 @@ void get_moinfo(Options& options)
         moinfo.C = C;
         moinfo.C_full = C_full;
     }
+
     else if(params.ref == 2) { /* UHF */
         C_a = (double ***) malloc(moinfo.nirreps * sizeof(double **));
         C_b = (double ***) malloc(moinfo.nirreps * sizeof(double **));
@@ -192,6 +202,21 @@ void get_moinfo(Options& options)
         // should not be zeroed out even if the frozen orbitals are to be
         // transformed
         moinfo.pitz2corr_one = init_int_array(moinfo.nmo);
+        // DS EDIT
+        outfile->Printf("DS Checkpoint Start!\n");
+
+        outfile->Printf("nirreps %d\n", moinfo.nirreps);
+        outfile->Printf("nmo %d\n", moinfo.nmo);
+        outfile->Printf("orb_irr, docc, socc, fdocc, fuocc\n"); 
+        for(i=0; i<moinfo.nirreps; i++){
+          outfile->Printf("%d  ", moinfo.mopi[i]);
+          outfile->Printf("%d  ", moinfo.clsdpi[i]);
+          outfile->Printf("%d  ", moinfo.openpi[i]);
+          outfile->Printf("%d  ", moinfo.frdocc[i]);
+          outfile->Printf("%d  ", moinfo.fruocc[i]);
+          outfile->Printf("\n");    
+        }
+
         if (!ras_set2(moinfo.nirreps, moinfo.nmo, 1, 1,
                       moinfo.mopi, moinfo.clsdpi, moinfo.openpi,
                       moinfo.frdocc, moinfo.fruocc,
@@ -200,6 +225,8 @@ void get_moinfo(Options& options)
         {
             throw PsiException("Error in ras_set(). Aborting.", __FILE__, __LINE__);
         }
+        // DS EDIT
+        outfile->Printf("DS Checkpoint END!\n");
 
         /* "core" array needed for frozen-core operator */
         /* core for CI wfns is frozen-docc plus restricted-docc */
@@ -212,6 +239,7 @@ void get_moinfo(Options& options)
 
         /* Definition of nactive, actpi, and actsym varies depending
        on the type of CI calculation */
+
         if((params.wfn == "MCSCF") || (params.wfn == "CASSCF") ||
                 (params.wfn == "RASSCF") || (params.wfn == "DETCAS") ||
                 params.dertype == 1) {
@@ -505,9 +533,9 @@ void cleanup(void)
     free(moinfo.clsdpi);
     free(moinfo.openpi);
     free(moinfo.uoccpi);
-    // Wavefunction owns these two arrays
-    //      free(moinfo.frdocc);
-    //      free(moinfo.fruocc);
+    // Wavefunction did own the following 2 arrays, but not in current test
+    free(moinfo.frdocc);
+    free(moinfo.fruocc);
     free(moinfo.core);
 }
 

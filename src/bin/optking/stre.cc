@@ -41,7 +41,7 @@ using namespace v3d;
 using std::ostringstream;
 
 // constructor - makes sure A<B ; default freeze_in =false
-STRE::STRE(int A_in, int B_in, bool freeze_in) : SIMPLE(stre_type, 2, freeze_in) {
+STRE::STRE(int A_in, int B_in, bool freeze_in) : SIMPLE_COORDINATE(stre_type, 2, freeze_in) {
   //fprintf(stdout,"constructing STRE A_in:%d B_in:%d, frozen %d\n",
   //  A_in, B_in, freeze_in);
   if (A_in == B_in) throw(INTCO_EXCEPT("STRE::STRE() atoms defining strech are not unique."));
@@ -203,7 +203,7 @@ void STRE::print_s(std::string psi_fp, FILE *qc_fp, GeomType geom) const {
   free_matrix(dqdx);
 }
 
-bool STRE::operator==(const SIMPLE & s2) const {
+bool STRE::operator==(const SIMPLE_COORDINATE & s2) const {
   if (stre_type != s2.g_type())
     return false;
 

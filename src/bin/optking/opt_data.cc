@@ -118,7 +118,7 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
 
     // compute p_m, mass-weighted hypersphere vector
     const double *q_pivot = p_irc_data->g_q_pivot();
-    double *q = mol.intco_values();
+    double *q = mol.coord_values();
     double *p = init_array(Nintco);
     for (int i=0; i<Nintco; ++i)
       p[i] = q[i] - q_pivot[i];
@@ -316,7 +316,7 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
   x = steps[step_this]->g_geom_const_pointer();
 
   mol.set_geom_array(x);
-  q = mol.intco_values();
+  q = mol.coord_values();
   mol.fix_tors_near_180(); // Fix configurations of torsions.
 
   if (Opt_params.H_update_use_last == 0) { // use all available old gradients
@@ -349,7 +349,7 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
     x_old = g_geom_const_pointer(i_step);
 
     mol.set_geom_array(x_old);
-    q_old = mol.intco_values();
+    q_old = mol.coord_values();
 
     for (i=0;i<Nintco;++i) {
       // Turns out you don't have to correct for torsional changes through 180 in the forces.
