@@ -49,6 +49,8 @@ void oprint_array(const std::string psi_fp, const FILE *qc_fp, double *A, const 
 
 void oprint_array_out(double *A, const int x);
 
+void offlush_out(void);
+
 }
 
 #endif

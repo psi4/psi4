@@ -20,18 +20,20 @@
  *@END LICENSE
  */
 
-/*! \file intcos.h
-    \ingroup optking
-    \brief internal coordinate includes class declaration
+/*! \file
+    \ingroup DETCAS
+    \brief Enter brief description of file here 
 */
 
-#ifndef _opt_intcos_h_
-#define _opt_intcos_h_
+#ifndef _psi_src_bin_detcas_setup_io_h
+#define _psi_src_bin_detcas_setup_io_h
 
-#include "simple.h"
-#include "stre.h"
-#include "bend.h"
-#include "tors.h"
-#include "cart.h"
+namespace psi { namespace detcas {
 
-#endif
+// extern void init_io(int argc, char *argv[]);
+// extern void close_io(void);
+extern void check(int a, char *errmsg);
+
+}} // end namespace psi::detcas
+
+#endif // header guard

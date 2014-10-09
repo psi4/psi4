@@ -116,9 +116,15 @@ OptReturnType optking(void) {
 
     // read internal coordinate and fragment definitions
     // create, allocate, and add fragment objects
-    mol1->read_intcos(if_intco);
+    mol1->read_coords(if_intco);
 
     if_intco.close();
+    //mol1->form_intrafragment_coord_combinations();  // skip if already present
+
+    // If we only read simples, and there are no combinations indicated, then
+    // assume 'trivial' (no combos);
+    if (mol1->Ncoord() == 0)
+      mol1->form_trivial_coord_combinations();
 
     mol1->update_connectivity_by_bonds();
 
@@ -147,32 +153,49 @@ OptReturnType optking(void) {
 
     mol1->set_masses();
 
-    // use covalent radii to define bonds
+    // use covalent radii to define connectivity
     mol1->update_connectivity_by_distances();
 
-    // if fragment_mode == SINGLE, connects all separated groups of atoms by modifying frag.connectivity
-    // if fragment_mode == MULTI, splits into fragments and makes interfragment coordinates
+    // Critical function here.
+    // If fragment_mode == SINGLE, it connects all separated groups of atoms with additional connections.
+    // If fragment_mode == MULTI, splits into fragments based on connectivity.
     mol1->fragmentize();
     mol1->print_connectivity(psi_outfile, qc_outfile);
 
-    if (Opt_params.coordinates == OPT_PARAMS::CARTESIAN || Opt_params.coordinates == OPT_PARAMS::BOTH)
-      mol1->add_cartesians();
+    // General simple internal coordinates
+    if (Opt_params.coordinates == OPT_PARAMS::REDUNDANT ||
+        Opt_params.coordinates == OPT_PARAMS::DELOCALIZED ||
+        Opt_params.coordinates == OPT_PARAMS::NATURAL ||
+        Opt_params.coordinates == OPT_PARAMS::BOTH) {
 
-    if (Opt_params.coordinates == OPT_PARAMS::INTERNAL || Opt_params.coordinates == OPT_PARAMS::BOTH) {
-      if (Opt_params.fragment_mode == OPT_PARAMS::SINGLE) {
-        mol1->add_intrafragment_simples_by_connectivity();
-        if (Opt_params.add_auxiliary_bonds)
-          mol1->add_intrafragment_auxiliary_bonds();
-      }
-      else if (Opt_params.fragment_mode == OPT_PARAMS::MULTI) {
-        mol1->add_intrafragment_simples_by_connectivity();
-        if (Opt_params.add_auxiliary_bonds)
-          mol1->add_intrafragment_auxiliary_bonds();
-        mol1->add_interfragment();
-        mol1->freeze_interfragment_asymm(); // remove problematic ones?
-      }
+          mol1->add_intrafragment_simples_by_connectivity();
+
+          if (Opt_params.add_auxiliary_bonds) { // adds auxiliary bonds (only) within existing fragments
+            if (Opt_params.coordinates == OPT_PARAMS::NATURAL)
+              oprintf_out("\tAuxiliary bonds not added, as considered contrary to natural internals.\n"); 
+            else 
+              mol1->add_intrafragment_auxiliary_bonds();
+          }
     }
 
+    if (mol1->g_nfragment() > 1) { // >1 EFP fragment need connected
+      mol1->add_interfragment();
+      mol1->freeze_interfragment_asymm(); // Try to remove some assymetric problematic ones.
+    }
+
+    if (Opt_params.coordinates == OPT_PARAMS::REDUNDANT ||
+        Opt_params.coordinates == OPT_PARAMS::BOTH)
+      mol1->form_trivial_coord_combinations();
+    else if (Opt_params.coordinates == OPT_PARAMS::DELOCALIZED)
+      mol1->form_delocalized_coord_combinations();
+    else if (Opt_params.coordinates == OPT_PARAMS::NATURAL)
+      mol1->form_natural_coord_combinations();
+
+    if ( Opt_params.coordinates == OPT_PARAMS::CARTESIAN ||
+         Opt_params.coordinates == OPT_PARAMS::BOTH )
+      mol1->add_cartesians(); // also adds trivial combos
+
+    // In the future, which all types of constraints will be support?
     mol1->apply_input_constraints();
 
     // print out internal coordinates for future steps
@@ -188,7 +211,7 @@ OptReturnType optking(void) {
 
     // only generate coordinates and print them out
     if (Opt_params.generate_intcos_only) {
-      oprintf_out("\tGenerating intcos and halting.");
+      oprintf_out("\tUpon request, generating intcos and halting.");
       close_output_dat();
 #if defined(OPTKING_PACKAGE_PSI)
       psi::psiclean();
@@ -198,19 +221,17 @@ OptReturnType optking(void) {
 
   }
 
-#if defined(OPTKING_PACKAGE_QCHEM)
-  if (Opt_params.efp_fragments_only)
+  if (Opt_params.fb_fragments_only)
     mol1 = new MOLECULE(0);       // construct an empty molecule
-  if (Opt_params.efp_fragments)
-    mol1->add_efp_fragments();    // add EFP fragments
-#endif
+  if (Opt_params.fb_fragments)
+    mol1->add_fb_fragments();    // add EFP fragments
 
   // print geometry and gradient
   mol1->print_geom_grad(psi_outfile, qc_outfile);
   //mol1->print_connectivity(psi_outfile, qc_outfile); 
 
   // read binary file for previous steps ; history needed to compute EFP values
-  p_Opt_data = new OPT_DATA(mol1->g_nintco(), 3*mol1->g_natom());
+  p_Opt_data = new OPT_DATA(mol1->Ncoord(), 3*mol1->g_natom());
   if (p_Opt_data->g_iteration() == 1 && Opt_params.opt_type == OPT_PARAMS::IRC) {
     p_irc_data = new IRC_DATA();
     oprintf_out("IRC data object created\n");
@@ -220,12 +241,11 @@ OptReturnType optking(void) {
   if (p_Opt_data->g_iteration() == 1)
     if (Opt_params.print_trajectory_xyz_file) mol1->print_xyz(-1);
 
-#if defined(OPTKING_PACKAGE_QCHEM)
-  mol1->update_efp_values(); // EFP values calculated from old opt_data
-#endif
+  mol1->update_fb_values(); // EFP values calculated from old opt_data
 
   // print internal coordinate definitions and values
-  mol1->print_intcos(psi_outfile, qc_outfile);
+  mol1->print_coords(psi_outfile, qc_outfile);
+  //mol1->print_simples(psi_outfile, qc_outfile);
 
   if (Opt_params.test_B)
     mol1->test_B();
