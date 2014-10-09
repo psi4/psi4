@@ -664,7 +664,7 @@ boost::python::list py_psi_get_global_option_list()
 
 void py_psi_print_out(std::string s)
 {
-    outfile->Printf("%s",s.c_str());
+    (*outfile)<<s;
 }
 
 /**
