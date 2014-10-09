@@ -385,7 +385,7 @@ OptReturnType optking(void) {
     }
     else
     {
-      oprintf_out("\n  **** Optimization is complete! ****\n");
+      oprintf_out("\n  **** Optimization is complete! (in %d steps) ****\n", p_Opt_data->nsteps());
       p_Opt_data->summary();
       p_Opt_data->write(); // save data to optimization binary file
 
