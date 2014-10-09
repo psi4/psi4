@@ -124,7 +124,7 @@ void SCF::iterate_scf_equations()
   }
   
 
-    if( (fabs(delta_energy) < options_.get_double("E_CONVERGENCE"))
+    if(cycle > 15 and (fabs(delta_energy) < options_.get_double("E_CONVERGENCE"))
           && (rms_dens < options_.get_double("D_CONVERGENCE") )){
       if(reference == tcscf){
         if(2.0 * fabs(norm_ci_grad) < options_.get_double("D_CONVERGENCE"))
