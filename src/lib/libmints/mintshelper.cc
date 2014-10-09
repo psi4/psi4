@@ -398,6 +398,7 @@ void MintsHelper::one_electron_integrals()
         // Potential
         so_potential()->save(psio_, PSIF_OEI);
     }else if (options_.get_str("RELATIVISTIC") == "X2C"){
+        outfile->Printf( "      Using modified relativistic integrals from X2C\n");
     }
 
     // Dipoles
