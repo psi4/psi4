@@ -279,6 +279,10 @@
 #define PSIF_DFOCC_AMPS        277  /*- DFOCC Amplitudes -*/
 #define PSIF_DFOCC_DENS        278  /*- DFOCC PDMs -*/
 
+#define PSIF_DETCAS_THETAS     279 /*- DETCAS THETAS file-*/
+#define PSIF_DETCAS_ORBS       280 /*- DETCAS ORBS file -*/
+#define PSIF_DETCAS_DIIS       281 /*- DETCAS DIIS file-*/
+
 /* All of these one-electron quantities have been moved into PSIF_OEI
    Most integrals are real Hermitian hence only lower triangle of the matrix is written out */
 /* These macros give libpsio TOC strings for easy identification.     */
