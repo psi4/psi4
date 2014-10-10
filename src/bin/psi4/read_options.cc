@@ -176,6 +176,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   // Same goes for restricted_docc, restricted_uocc, ras1, ras2, ras3,
   // frozen_uocc.
 
+  /*- Relativistic Hamiltonian type !expert -*/
+  options.add_str("RELATIVISTIC", "NO","NO X2C");
+
   if (name == "DETCI" || options.read_globals()) {
     /*- MODULEDESCRIPTION Performs configuration interaction (CI)
     computations of various types, including restricted-active-space
